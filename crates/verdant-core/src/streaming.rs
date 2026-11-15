@@ -122,8 +122,8 @@ impl PhysicalEnvironment {
         let half = half_f64();
         let ten = pow10_u64(1) as f64;
         let thousand = pow10_u64(three_u32()) as f64;
-        let sound = prism_kernel::wasmSoundSpeedMps()
-            .expect("verified Prism wasmSoundSpeedMps") as f64;
+        let sound =
+            prism_kernel::wasmSoundSpeedMps().expect("verified Prism wasmSoundSpeedMps") as f64;
         let five = nth_prime_u64(two_u32()) as f64;
         let seven = nth_prime_u64(three_u32()) as f64;
         Self {
@@ -131,7 +131,8 @@ impl PhysicalEnvironment {
             fluid_density_kg_m3: thousand,
             sound_speed_mps: sound,
             key_light_temperature_kelvin: thousand * five + pow10_u64(two_u32()) as f64 * seven,
-            key_light_irradiance_w_m2: thousand + pow10_u64(two_u32()) as f64 * (three_u32() as f64),
+            key_light_irradiance_w_m2: thousand
+                + pow10_u64(two_u32()) as f64 * (three_u32() as f64),
             water_level_meters: -half,
         }
     }
@@ -184,20 +185,14 @@ impl TerrainReliefParams {
 
 /// Evaluates continuous deterministic terrain elevation `y(x, z)` in meters.
 #[must_use]
-pub fn terrain_height_with_params(
-    seed: u64,
-    relief: &TerrainReliefParams,
-    x: f64,
-    z: f64,
-) -> f64 {
+pub fn terrain_height_with_params(seed: u64, relief: &TerrainReliefParams, x: f64, z: f64) -> f64 {
     let phase = ((seed & ((1_u64 << (four_u32() * two_u32())) - 1)) as f64)
         / (pow2_u64(four_u32() * two_u32()) as f64)
         * std::f64::consts::TAU;
     let dx = x - relief.basin_center_x;
     let dz = z - relief.basin_center_z;
     let basin_r2 = dx * dx + dz * dz;
-    let basin =
-        -relief.basin_depth_meters * (-basin_r2 / relief.basin_variance_m2.max(1.0)).exp();
+    let basin = -relief.basin_depth_meters * (-basin_r2 / relief.basin_variance_m2.max(1.0)).exp();
 
     let fx = x * relief.hill_frequency_per_meter + phase;
     let fz = z * relief.hill_frequency_per_meter - phase * half_f64();
@@ -210,12 +205,7 @@ pub fn terrain_height_with_params(
 
 /// Evaluates analytical finite-difference unit surface normal of `terrain_height_with_params`.
 #[must_use]
-pub fn terrain_normal_with_params(
-    seed: u64,
-    relief: &TerrainReliefParams,
-    x: f64,
-    z: f64,
-) -> Vec3 {
+pub fn terrain_normal_with_params(seed: u64, relief: &TerrainReliefParams, x: f64, z: f64) -> Vec3 {
     let h = half_f64() * half_f64();
     let two_h = two_f64() * h;
     let hx_pos = terrain_height_with_params(seed, relief, x + h, z);
@@ -349,7 +339,11 @@ fn preset_world_position(
     Vec3::new(x, ground_y + y_offset, z)
 }
 
-fn build_scene_nodes(seed: u64, params: &SceneBuildParams, lod: LodLevel) -> Vec<SceneNodeInstance> {
+fn build_scene_nodes(
+    seed: u64,
+    params: &SceneBuildParams,
+    lod: LodLevel,
+) -> Vec<SceneNodeInstance> {
     if lod == LodLevel::Lod0CoarseProxy {
         return Vec::new();
     }
@@ -501,8 +495,8 @@ impl StandardSceneState {
         while r < target_rank {
             let earlier = LodLevel::from_rank(r)?.prism_spec();
             let later = LodLevel::from_rank(r + 1)?.prism_spec();
-            let valid = prism_kernel::lodStepValid(&earlier, &later)
-                .expect("verified Prism lodStepValid");
+            let valid =
+                prism_kernel::lodStepValid(&earlier, &later).expect("verified Prism lodStepValid");
             if !valid {
                 return Err(StreamingError::NonMonotonicLodTransition {
                     current_rank: r,
@@ -548,7 +542,10 @@ impl StandardSceneState {
                 scale: Vec3::new(1.0, 1.0, 1.0),
             },
             Aabb::from_center_half_extents(Vec3::ZERO, Vec3::new(1.0, 1.0, 1.0)),
-            (LodLevel::Lod0CoarseProxy.resolution_ratio(), "LOD0 directional light"),
+            (
+                LodLevel::Lod0CoarseProxy.resolution_ratio(),
+                "LOD0 directional light",
+            ),
         );
 
         let terrain_id = scene.spawn(
@@ -560,7 +557,10 @@ impl StandardSceneState {
                 Vec3::new(-extent, -four, -extent),
                 Vec3::new(extent, four * two, extent),
             ),
-            (LodLevel::Lod0CoarseProxy.resolution_ratio(), "LOD0 heightfield proxy"),
+            (
+                LodLevel::Lod0CoarseProxy.resolution_ratio(),
+                "LOD0 heightfield proxy",
+            ),
         );
         scene.attach_renderable(terrain_id, 0, 0);
 
@@ -573,11 +573,11 @@ impl StandardSceneState {
                 self.params.environment.water_level_meters,
                 self.params.terrain.basin_center_z,
             ),
-            Aabb::from_center_half_extents(
-                Vec3::ZERO,
-                Vec3::new(four * four, half, four * four),
+            Aabb::from_center_half_extents(Vec3::ZERO, Vec3::new(four * four, half, four * four)),
+            (
+                LodLevel::Lod0CoarseProxy.resolution_ratio(),
+                "LOD0 fluid plane",
             ),
-            (LodLevel::Lod0CoarseProxy.resolution_ratio(), "LOD0 fluid plane"),
         );
         scene.attach_renderable(fluid_id, 1, 1);
 
@@ -599,7 +599,10 @@ impl StandardSceneState {
                     Some(terrain_id),
                     Transform::from_xyz(x, y, z),
                     Aabb::new(Vec3::new(-half, 0.0, -half), Vec3::new(half, two, half)),
-                    (LodLevel::Lod1MediumDetail.resolution_ratio(), "LOD1 dielectric prop"),
+                    (
+                        LodLevel::Lod1MediumDetail.resolution_ratio(),
+                        "LOD1 dielectric prop",
+                    ),
                 );
                 scene.attach_renderable(cid, i2, i2);
             }
@@ -627,7 +630,10 @@ impl StandardSceneState {
                 EntityRole::SurfaceFoliage,
                 Some(terrain_id),
                 Transform::from_xyz(x, y, z),
-                Aabb::new(Vec3::new(-1.0, 0.0, -1.0), Vec3::new(1.0, three_u32() as f64, 1.0)),
+                Aabb::new(
+                    Vec3::new(-1.0, 0.0, -1.0),
+                    Vec3::new(1.0, three_u32() as f64, 1.0),
+                ),
                 (lod.resolution_ratio(), "Progressive instanced foliage"),
             );
             scene.attach_renderable(fid, i3, i3);
@@ -693,8 +699,8 @@ pub struct UorcStreamSummary {
 
 #[cfg(feature = "uorc-streaming")]
 fn uorc_work_budget() -> u64 {
-    let shift = prism_kernel::uorcDefaultDecodeWork()
-        .expect("verified Prism uorcDefaultDecodeWork") as u32;
+    let shift =
+        prism_kernel::uorcDefaultDecodeWork().expect("verified Prism uorcDefaultDecodeWork") as u32;
     pow2_u64(shift)
 }
 
@@ -717,16 +723,17 @@ pub fn pack_progressive_uorc_stream(seed: u64) -> Result<Vec<u8>, StreamingError
         lod_blobs.push(snap);
     }
 
-    let steps = prism_kernel::uorcDefaultCompressSteps()
-        .expect("verified Prism uorcDefaultCompressSteps");
+    let steps =
+        prism_kernel::uorcDefaultCompressSteps().expect("verified Prism uorcDefaultCompressSteps");
     let mut encoder = FrameEncoder::objects(&lengths);
     let mut stream = Vec::new();
     for blob in &lod_blobs {
-        let chunk = encoder
-            .push(blob, steps)
-            .map_err(|err| StreamingError::UorcArchiveRejected {
-                detail: err.to_string(),
-            })?;
+        let chunk =
+            encoder
+                .push(blob, steps)
+                .map_err(|err| StreamingError::UorcArchiveRejected {
+                    detail: err.to_string(),
+                })?;
         stream.extend_from_slice(&chunk);
     }
     let tail = encoder
@@ -771,11 +778,12 @@ pub fn verify_progressive_uorc_stream(
     }
     let mut decoded_concat_len = 0usize;
     for arch in &archives_vec {
-        let plain = frame_decoder.push(arch).map_err(|err| {
-            StreamingError::UorcArchiveRejected {
-                detail: err.to_string(),
-            }
-        })?;
+        let plain =
+            frame_decoder
+                .push(arch)
+                .map_err(|err| StreamingError::UorcArchiveRejected {
+                    detail: err.to_string(),
+                })?;
         decoded_concat_len += plain.len();
     }
 
@@ -797,11 +805,10 @@ pub fn verify_progressive_uorc_stream(
     let mut prev_spec: Option<prism_kernel::StreamingLodSpec> = None;
     let mut max_lod_rank = 0_u64;
     for (idx, obj_bytes) in objects.iter().enumerate() {
-        let state = WorldSnapshot::decode(obj_bytes).map_err(|err| {
-            StreamingError::LodPayloadMismatch {
+        let state =
+            WorldSnapshot::decode(obj_bytes).map_err(|err| StreamingError::LodPayloadMismatch {
                 detail: err.to_string(),
-            }
-        })?;
+            })?;
         if state.active_lod.rank() != (idx as u64) {
             return Err(StreamingError::LodPayloadMismatch {
                 detail: format!(
@@ -812,8 +819,8 @@ pub fn verify_progressive_uorc_stream(
         }
         let spec = state.active_lod.prism_spec();
         if let Some(earlier) = &prev_spec {
-            let step_ok = prism_kernel::lodStepValid(earlier, &spec)
-                .expect("verified Prism lodStepValid");
+            let step_ok =
+                prism_kernel::lodStepValid(earlier, &spec).expect("verified Prism lodStepValid");
             if !step_ok {
                 return Err(StreamingError::NonMonotonicLodTransition {
                     current_rank: earlier.rank,

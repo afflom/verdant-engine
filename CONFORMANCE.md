@@ -22,22 +22,22 @@ model does not sanction.
 
 | ID | Level | Statement |
 | --- | --- | --- |
-| `VE-01` | `build` | World expansion advances monotonically across cosmological epochs to t_obs and refuses out-of-order or out-of-bounds scale factors |
-| `VE-02` | `build` | All seven Builder artifacts and the autonomous perimeter rover satisfy Heyman middle-third statics at t_obs while unstable or pre-Builder blueprints are refused |
+| `VE-01` | `build` | Progressive multi-LOD UORC scene streams advance monotonically to lossless SHA-256 chain-verified resolution and refuse regressive LODs or corrupted UORC frames |
+| `VE-02` | `build` | Exact Laurent and tropical uor-matmul tensor contractions and portable 16x16 software tile PBR rasterization execute deterministically and refuse mismatched dimensions or non-finite inputs |
 | `VE-03` | `build` | Archetype ECS world and surface-area-heuristic BVH execute deterministic raycasts and frustum culling across arbitrary 3D scenes |
 | `VE-04` | `build` | Procedural meshes, morph targets, and PBR scenes export to binary glTF 2.0 validated by the Khronos gltf oracle and refuse degenerate geometry |
-| `VE-05` | `build` | PBR, terrain, water, and sky WGSL shader modules pass W3C naga validation and invalid shader sources are refused |
-| `VE-06` | `build` | Symplectic Euler rigid bodies, capsule controllers, and autonomous spline rovers step deterministically and refuse invalid substeps or non-finite timesteps |
-| `VE-07` | `build` | Spatial audio listener and modal resonators synthesize deterministic stereo buffers with distance attenuation and Sabine RT60 reverberation |
+| `VE-05` | `build` | PBR, terrain, fluid, and sky portable WGSL shader modules pass W3C naga validation and invalid shader sources are refused |
+| `VE-06` | `build` | Symplectic Euler rigid bodies, capsule controllers, and arc-length kinematic spline movers step deterministically and refuse invalid substeps or non-finite timesteps |
+| `VE-07` | `build` | Spatial audio listener and modal bar emitters synthesize deterministic stereo buffers with distance attenuation and Sabine RT60 reverberation |
 | `VE-08` | `build` | Browser worker job graphs and frame-budget profilers validate acyclic schedules and refuse cyclic dependencies or invalid engine configurations |
 | `VE-09` | `build` | Binary IEEE-754 world snapshots with SHA-256 trailers round-trip bit-identically and refuse truncated or tampered payloads |
-| `VE-10` | `build` | The compiled Core-Wasm engine verifier proves monotonic expansion and Builder equilibrium in Lean without Classical.choice and answers queries deterministically |
+| `VE-10` | `build` | The compiled Core-Wasm engine verifier proves monotonic UORC streaming and exact tensor kernel bounds in Lean without Classical.choice and answers queries deterministically |
 | `VE-11` | `build` | Skeletal joint hierarchies, normalized four-joint linear-blend skinning weights, and clamped keyframe clips deform procedural meshes deterministically and refuse cyclic joints or unnormalized weights |
-| `VE-12` | `build` | Four-cascade shadow frustum splits, GGX image-based lighting mip chains, five-pass GPU render graphs, and skinned shadow WGSL shaders validate cleanly and refuse invalid frusta or cyclic pass dependencies |
+| `VE-12` | `build` | Four-cascade shadow frustum splits, GGX image-based lighting mip chains, five-pass acyclic render barrier graphs, and skinned shadow WGSL shaders validate cleanly and refuse invalid frusta or cyclic pass dependencies |
 | `VE-13` | `build` | Bounded 3D GJK convex hull collision detection, Baumgarte contact stabilization, and Coulomb friction cones resolve rigid-body contacts deterministically and refuse degenerate hulls |
 | `VE-14` | `build` | Slope-filtered terrain navigation meshes and admissible A-star corridor pathfinding steer autonomous agents around obstacles and refuse unwalkable endpoints or disconnected goals |
-| `VE-15` | `build` | The WebAssembly worker runtime bridge steps deterministic sanctuary physics, encodes and restores SHA-256 VDNT world snapshots within Prism envelope bounds, and refuses invalid epochs, ring overflows, or tampered payloads |
-| `VE-16` | `build` | The verdant CLI packs causal sanctuary worlds into validated binary glTF 2.0 and SHA-256 VDNT snapshots, verifies WGSL shaders and headless benchmarks, and refuses invalid commands or corrupted assets |
+| `VE-15` | `build` | The WebAssembly worker runtime bridge steps deterministic 3D physics, renders portable tensor framebuffers, encodes and restores SHA-256 VDNT world snapshots within Prism envelope bounds, and refuses invalid LOD ranks, ring overflows, or tampered payloads |
+| `VE-16` | `build` | The verdant CLI packs multi-LOD 3D scenes into validated progressive UORC streams, binary glTF 2.0, and SHA-256 VDNT snapshots, verifies portable WGSL shaders and headless benchmarks, and refuses invalid commands or corrupted assets |
 
 ## fidelity
 

@@ -331,11 +331,12 @@ pub fn run_cli(args: &[String]) -> Result<String, CliCommandError> {
                 }
             })?;
 
-            let world = StandardSceneState::synthesize_at_lod(seven, prism_kernel::wasmMaxLodRank())
-                .map_err(|e| CliCommandError::ValidationRejected {
-                    command: "benchmark".to_string(),
-                    diagnostic: e.to_string(),
-                })?;
+            let world =
+                StandardSceneState::synthesize_at_lod(seven, prism_kernel::wasmMaxLodRank())
+                    .map_err(|e| CliCommandError::ValidationRejected {
+                        command: "benchmark".to_string(),
+                        diagnostic: e.to_string(),
+                    })?;
             let meshes = canonical_scene_mesh_library(world.seed);
             let nav = NavMesh::from_mesh(&meshes[0]).map_err(|e| {
                 CliCommandError::ValidationRejected {

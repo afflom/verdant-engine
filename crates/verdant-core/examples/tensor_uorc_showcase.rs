@@ -36,7 +36,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let positions = [[1.0_f32, 0.0, -2.0], [0.0, 3.0, 1.0]];
     let xform = Mat4::from_translation(Vec3::new(2.0, 1.0, -3.0));
     let transformed = batch_transform_positions_exact(&positions, &xform)?;
-    println!("Exact uor-matmul transformed vertex 0: {:?}", transformed[0]);
+    println!(
+        "Exact uor-matmul transformed vertex 0: {:?}",
+        transformed[0]
+    );
 
     let vp = Mat4::perspective(1.0, 16.0 / 9.0, 0.1, 150.0)
         * Mat4::look_at(Vec3::new(0.0, 2.0, 8.0), Vec3::ZERO, Vec3::UP);
@@ -45,14 +48,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         normal: [0.0, 0.0, 1.0],
         base_color: [0.28, 0.72, 0.90],
     };
-    let fb = render_triangles_tile_framebuffer(
-        128,
-        80,
-        &vp,
-        Vec3::new(0.35, 0.8, 0.45),
-        3,
-        &[tri],
-    )?;
+    let fb =
+        render_triangles_tile_framebuffer(128, 80, &vp, Vec3::new(0.35, 0.8, 0.45), 3, &[tri])?;
     println!(
         "Portable Prism 16x16 tile framebuffer rendered: {}x{} ({} tiles, {} triangles)",
         fb.width, fb.height, fb.tiles_shaded, fb.rasterized_triangles

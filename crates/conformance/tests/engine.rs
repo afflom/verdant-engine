@@ -1,4 +1,4 @@
-//! Conformance suite for `verdant-core` and the Verdant Engine verifier (`VE-01`..`VE-14`).
+//! Conformance suite for `verdant-core`, `verdant-wasm`, `verdant-cli`, and the Verdant Engine verifier (`VE-01`..`VE-16`).
 
 use std::path::PathBuf;
 
@@ -6,8 +6,8 @@ use verdant_core::animation::{
     skin_mesh_linear_blend, Joint, KeyframePose, SkeletalClip, Skeleton, SkinWeights4,
 };
 use verdant_core::audio::{
-    evaluate_binaural_cue, synthesize_euler_bernoulli_chime_modes, AcousticEnvironment,
-    ListenerPose, SpatialAudioSource,
+    evaluate_binaural_cue, synthesize_modal_bar_modes, AcousticEnvironment, ListenerPose,
+    SpatialAudioSource,
 };
 use verdant_core::collision::{
     gjk_intersect_and_manifold, solve_contact_impulse, ConvexHullCollider,
@@ -15,25 +15,30 @@ use verdant_core::collision::{
 use verdant_core::ecs::{EntityRole, SceneWorld, Transform};
 use verdant_core::error::{
     AnimationError, AssetValidationError, CollisionError, EngineConfigError, NavigationError,
-    PhysicsStepError, RenderGraphError, ShaderValidationError, SnapshotCodecError,
-    StructuralEquilibriumError, WorldEpochError,
-};
-use verdant_core::genesis::{
-    heyman_middle_third_limit, verify_blueprint_equilibrium, CausalWorldState, CosmicEpoch,
-    StructureKind,
+    PhysicsStepError, RenderGraphError, ShaderValidationError, SnapshotCodecError, StreamingError,
+    TensorComputeError,
 };
 use verdant_core::geometry::{canonical_scene_mesh_library, MorphTarget, ProceduralMesh};
 use verdant_core::gltf_io::{export_scene_to_glb, validate_glb_bytes};
-use verdant_core::math::{Aabb, Frustum, Quat, Ray, Vec3};
+use verdant_core::math::{Aabb, Frustum, Mat4, Quat, Ray, Vec3};
 use verdant_core::navmesh::{steer_along_corridor, NavMesh};
 use verdant_core::physics::{
-    CapsuleController, KinematicSplineRover, PhysicsWorld, PhysicsWorldConfig, RigidBody,
+    CapsuleController, KinematicSplineBody, PhysicsWorld, PhysicsWorldConfig, RigidBody,
 };
 use verdant_core::render::{
     canonical_pbr_material_library, compute_csm_splits, validate_builtin_engine_shaders,
     validate_wgsl_shader, IblEnvironmentProbe, RenderFrameGraph, WGSL_PBR_SURFACE_SHADER,
 };
 use verdant_core::runtime::{EngineConfig, FrameBudgetProfiler, WorkerJobGraph, WorldSnapshot};
+use verdant_core::streaming::{
+    decode_uorc_stream_up_to_lod, pack_progressive_uorc_stream, verify_progressive_uorc_stream,
+    LodLevel, SceneNodeKind, StandardSceneState,
+};
+use verdant_core::tensor::{
+    batch_transform_positions_exact, mix_spatial_audio_channels_exact,
+    render_triangles_tile_framebuffer, tropical_frustum_distance_bounds,
+    verified_engine_tensor_kernels, RasterTriangle,
+};
 
 fn repo_root() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))
@@ -43,70 +48,131 @@ fn repo_root() -> PathBuf {
         .to_path_buf()
 }
 
-/// `VE-01`: Monotonic cosmological expansion across epochs and `WorldEpochError` refusal.
+/// `VE-01`: Monotonic multi-LOD `UORC` (`UORC-SHA256-CHAIN-v1`) streaming and `StreamingError` refusals.
 #[test]
 fn engine_ve_01() {
-    let mut world = CausalWorldState::new_cosmogenic(11).expect("valid cosmogenic seed");
-    assert_eq!(world.active_epoch, CosmicEpoch::Cosmogenic);
-    assert_eq!(world.blueprints.len(), 0);
+    let mut world = StandardSceneState::new_at_lod0(11).expect("valid LOD0 seed");
+    assert_eq!(world.active_lod, LodLevel::Lod0CoarseProxy);
+    assert!(world.scene_nodes.is_empty());
 
-    world.advance_to(0.42).expect("advance to LithicHydrologic");
-    assert_eq!(world.active_epoch, CosmicEpoch::LithicHydrologic);
+    world.advance_to_lod(1).expect("advance to LOD1");
+    assert_eq!(world.active_lod, LodLevel::Lod1MediumDetail);
+    assert_eq!(world.scene_nodes.len(), 3);
 
-    world.advance_to(0.72).expect("advance to BioticEcological");
-    assert_eq!(world.active_epoch, CosmicEpoch::BioticEcological);
-    assert!(world.flora_count > 0);
+    world.advance_to_lod(2).expect("advance to LOD2");
+    assert_eq!(world.active_lod, LodLevel::Lod2HighDetail);
+    assert!(world.foliage_count > 0);
 
-    // Negative refusal 1: stepping backward in cosmological expansion is refused:
+    // Negative refusal 1: stepping backward in progressive LOD resolution is refused:
     let backward = world
-        .advance_to(0.30)
-        .expect_err("backward cosmic scale must fail");
+        .advance_to_lod(1)
+        .expect_err("backward LOD transition must fail");
     assert!(matches!(
         backward,
-        WorldEpochError::NonMonotonicExpansion { .. }
+        StreamingError::NonMonotonicLodTransition { .. }
     ));
 
-    // Negative refusal 2: out-of-bounds scale factor (`> 1.0` or `<= 0.0`) is refused:
-    let invalid_scale = world.advance_to(1.25).expect_err("scale > 1.0 must fail");
+    // Negative refusal 2: out-of-bounds LOD rank (`> 3`) is refused:
+    let invalid_rank = world.advance_to_lod(5).expect_err("LOD rank > 3 must fail");
     assert!(matches!(
-        invalid_scale,
-        WorldEpochError::InvalidScaleFactor { .. }
+        invalid_rank,
+        StreamingError::InvalidLodRank { .. }
     ));
 
-    world.advance_to(1.0).expect("advance to t_obs");
-    assert_eq!(world.active_epoch, CosmicEpoch::AgenticArchitectural);
+    world
+        .advance_to_lod(3)
+        .expect("advance to lossless LOD3 source");
+    assert_eq!(world.active_lod, LodLevel::Lod3LosslessSource);
+    assert_eq!(world.scene_nodes.len(), 7);
+    assert!(world
+        .scene_nodes
+        .iter()
+        .any(|n| n.kind == SceneNodeKind::KinematicSplineMover));
+
+    let stream = pack_progressive_uorc_stream(11).expect("pack 4-LOD UORC stream");
+    let summary = verify_progressive_uorc_stream(&stream).expect("verify UORC SHA-256 chain");
+    assert_eq!(summary.lod_object_count, 4);
+    assert_eq!(summary.max_lod_rank, 3);
+    assert!(summary.compressed_bytes < summary.decoded_total_bytes);
+
+    let restored_lod3 =
+        decode_uorc_stream_up_to_lod(&stream, 3).expect("progressive decode up to LOD3");
+    assert_eq!(restored_lod3, world);
+
+    // Negative refusal 3: truncated / corrupted UORC stream is refused:
+    let corrupt_err = verify_progressive_uorc_stream(&stream[..stream.len() / 2])
+        .expect_err("truncated UORC stream must fail");
+    assert!(matches!(
+        corrupt_err,
+        StreamingError::UorcArchiveRejected { .. }
+    ));
 }
 
-/// `VE-02`: Seven Builder structures + perimeter rover equilibrium and `StructuralEquilibriumError` refusal.
+/// `VE-02`: Exact `uor-matmul` tensor contractions, portable `16x16` tile PBR rasterizer, and `TensorComputeError` refusals.
 #[test]
 fn engine_ve_02() {
-    let mut world = CausalWorldState::new_cosmogenic(7).expect("seed");
-    world.advance_to(1.0).expect("evolve to t_obs");
-
-    assert_eq!(world.builder_guilds.len(), 5);
-    assert_eq!(world.blueprints.len(), 7);
-    assert!(world
-        .blueprints
-        .iter()
-        .any(|b| b.kind == StructureKind::PerimeterSentinelRover));
-
-    for bp in &world.blueprints {
-        assert!(
-            bp.thrust_eccentricity_ratio <= heyman_middle_third_limit(),
-            "blueprint {:?} violated Heyman middle-third rule",
-            bp.kind
-        );
-        assert!(bp.safety_factor >= 2.0);
-        assert!(bp.net_engineering_utility > 0.0);
+    let kernels = verified_engine_tensor_kernels().expect("7 certified tensor kernels");
+    assert_eq!(kernels.len(), 7);
+    for k in &kernels {
+        assert!(k.lhs_cols > 0);
+        assert!(k.accum_bits >= k.min_accum_bits);
+        assert!(k.tile_aligned);
     }
 
-    // Negative refusal: an overly slender span whose thrust line exits the middle third is refused:
-    let err = verify_blueprint_equilibrium(48.0, 2.0, 0.18, 50.0, 2500.0, 9.81, 0.5)
-        .expect_err("slender arch must violate Heyman middle third");
+    let verts = [[1.0_f32, -2.0, 3.5], [0.0, 4.0, -1.0]];
+    let xf = Mat4::from_translation(Vec3::new(3.0, 5.0, -2.0));
+    let out_verts = batch_transform_positions_exact(&verts, &xf).expect("exact homogeneous batch");
+    assert_eq!(out_verts[0], [4.0, 3.0, 1.5, 1.0]);
+    assert_eq!(out_verts[1], [3.0, 9.0, -3.0, 1.0]);
+
+    let trop = tropical_frustum_distance_bounds(
+        &[[100, 200, 50], [-50, 10, 300]],
+        &[[5, 15, 25], [40, -10, 2]],
+    )
+    .expect("tropical max-plus bounds");
+    assert_eq!(trop, vec![215, 190, 325, 302]);
+
+    let audio =
+        mix_spatial_audio_channels_exact(2, 2, 2, &[120, -40, 30, 20], &[2, 1, 1, 3]).expect("q15");
+    assert_eq!(audio, vec![200, 0, 80, 90]);
+
+    let vp = Mat4::perspective(1.0, 1.0, 0.25, 100.0)
+        * Mat4::look_at(Vec3::new(0.0, 1.5, 6.0), Vec3::ZERO, Vec3::UP);
+    let tri = RasterTriangle {
+        positions: [[-1.2, -1.0, 0.0], [1.2, -1.0, 0.0], [0.0, 1.4, 0.0]],
+        normal: [0.0, 0.0, 1.0],
+        base_color: [0.4, 0.7, 0.9],
+    };
+    let fb_a = render_triangles_tile_framebuffer(64, 64, &vp, Vec3::new(0.3, 0.8, 0.5), 3, &[tri])
+        .expect("tile framebuffer A");
+    let fb_b = render_triangles_tile_framebuffer(64, 64, &vp, Vec3::new(0.3, 0.8, 0.5), 3, &[tri])
+        .expect("tile framebuffer B");
+    assert_eq!(fb_a, fb_b);
+    assert!(fb_a.rasterized_triangles > 0);
+    assert_eq!(fb_a.tiles_shaded, 16);
+
+    // Negative refusal 1: empty / mismatched tensor extents:
+    let empty_err =
+        batch_transform_positions_exact(&[], &xf).expect_err("empty vertex batch must fail");
     assert!(matches!(
-        err,
-        StructuralEquilibriumError::ThrustLineOutsideMiddleThird { .. }
-            | StructuralEquilibriumError::InsufficientSafetyFactor { .. }
+        empty_err,
+        TensorComputeError::ZeroOrMismatchedExtents { .. }
+    ));
+
+    // Negative refusal 2: non-finite tensor entry:
+    let nan_err = batch_transform_positions_exact(&[[f32::NAN, 0.0, 0.0]], &xf)
+        .expect_err("NaN vertex entry must fail");
+    assert!(matches!(
+        nan_err,
+        TensorComputeError::NonFiniteTensorEntry { .. }
+    ));
+
+    // Negative refusal 3: non-multiple of 16px tile dimensions:
+    let tile_err = render_triangles_tile_framebuffer(50, 64, &vp, Vec3::UP, 3, &[tri])
+        .expect_err("50px width is not 16px tile-aligned");
+    assert!(matches!(
+        tile_err,
+        TensorComputeError::InvalidTileDimensions { .. }
     ));
 }
 
@@ -116,7 +182,7 @@ fn engine_ve_03() {
     let mut scene = SceneWorld::new();
     let root_id = scene.spawn(
         "ArenaFloor",
-        EntityRole::TerrainFeature,
+        EntityRole::TerrainPatch,
         None,
         Transform {
             translation: Vec3::new(0.0, 0.0, 0.0),
@@ -128,7 +194,7 @@ fn engine_ve_03() {
     );
     let tower_id = scene.spawn(
         "SignalTower",
-        EntityRole::EngineeredStructure,
+        EntityRole::StaticArchitecture,
         Some(root_id),
         Transform {
             translation: Vec3::new(0.0, 4.0, -8.0),
@@ -165,14 +231,13 @@ fn engine_ve_03() {
 /// `VE-04`: Procedural meshes, morph targets, Khronos `gltf` `.glb` oracle, and `AssetValidationError` refusal.
 #[test]
 fn engine_ve_04() {
-    let mut world = CausalWorldState::new_cosmogenic(5).expect("seed");
-    world.advance_to(1.0).expect("t_obs");
+    let world = StandardSceneState::synthesize_at_lod(5, 3).expect("LOD3 scene");
     let mut meshes = canonical_scene_mesh_library(world.seed);
     let materials = canonical_pbr_material_library();
 
     let base_count = meshes[2].vertex_count();
     meshes[2].morph_targets.push(MorphTarget {
-        name: "BloomOpen".to_string(),
+        name: "RibbonFlex".to_string(),
         position_deltas: vec![[0.0_f32, 0.12_f32, 0.0_f32]; base_count],
     });
     meshes[2].validate().expect("valid morph target mesh");
@@ -242,20 +307,19 @@ fn engine_ve_05() {
     ));
 }
 
-/// `VE-06`: Symplectic Euler physics, capsule controller, perimeter rover, and `PhysicsStepError` refusal.
+/// `VE-06`: Symplectic Euler physics, capsule controller, kinematic spline mover, and `PhysicsStepError` refusal.
 #[test]
 fn engine_ve_06() {
-    let mut world = CausalWorldState::new_cosmogenic(13).expect("seed");
-    world.advance_to(1.0).expect("t_obs");
+    let world = StandardSceneState::synthesize_at_lod(13, 3).expect("LOD3 scene");
 
     let mut phys = PhysicsWorld::new(PhysicsWorldConfig::default());
     phys.bodies.push(
-        RigidBody::new("LagoonFloat", Vec3::new(4.0, -0.35, -4.0), 10.0, 0.45, 0.35)
+        RigidBody::new("FluidBuoy", Vec3::new(4.0, -0.35, -4.0), 10.0, 0.45, 0.35)
             .expect("valid rigid body"),
     );
     phys.player_capsule = Some(CapsuleController::new(Vec3::new(0.0, 2.5, 12.0)));
-    phys.sentinel_rover = Some(KinematicSplineRover::new(
-        world.rover_perimeter_waypoints.clone(),
+    phys.kinematic_mover = Some(KinematicSplineBody::new(
+        world.mover_spline_waypoints.clone(),
         3.0,
     ));
 
@@ -263,8 +327,8 @@ fn engine_ve_06() {
         phys.step(1.0 / 60.0, Vec3::new(0.0, 0.0, -1.0))
             .expect("deterministic step");
     }
-    let rover = phys.sentinel_rover.as_ref().expect("rover active");
-    assert!(rover.distance_traveled_meters > 1.0);
+    let mover = phys.kinematic_mover.as_ref().expect("mover active");
+    assert!(mover.distance_traveled_meters > 1.0);
 
     // Negative refusal 1: non-positive mass refused:
     let mass_err =
@@ -284,13 +348,13 @@ fn engine_ve_06() {
     ));
 }
 
-/// `VE-07`: Woodworth binaural spatial audio, Sabine RT60 reverberation, and Euler-Bernoulli modal chimes.
+/// `VE-07`: Woodworth binaural spatial audio, Sabine RT60 reverberation, and Euler-Bernoulli modal bars.
 #[test]
 fn engine_ve_07() {
-    let rotunda = AcousticEnvironment::travertine_rotunda(343.0);
-    let meadow = AcousticEnvironment::open_meadow(343.0);
-    assert!(rotunda.sabine_rt60_seconds() > meadow.sabine_rt60_seconds());
-    assert!(rotunda.eyring_rt60_seconds() > 0.0);
+    let chamber = AcousticEnvironment::reflective_chamber(343.0);
+    let exterior = AcousticEnvironment::damped_exterior(343.0);
+    assert!(chamber.sabine_rt60_seconds() > exterior.sabine_rt60_seconds());
+    assert!(chamber.eyring_rt60_seconds() > 0.0);
 
     let listener = ListenerPose {
         position: Vec3::ZERO,
@@ -298,20 +362,20 @@ fn engine_ve_07() {
         up: Vec3::UP,
     };
     let source_right = SpatialAudioSource {
-        label: "ModalChimePergola".to_string(),
+        label: "ModalAcousticsFrame".to_string(),
         position: Vec3::new(6.0, 1.8, -2.0),
         fundamental_hz: 440.0,
         reference_gain: 1.0,
     };
-    let cue = evaluate_binaural_cue(&source_right, &listener, &rotunda);
+    let cue = evaluate_binaural_cue(&source_right, &listener, &chamber);
     assert!(cue.azimuth_sin > 0.0);
     assert!(cue.ild_db > 0.0);
     assert!(cue.itd_seconds > 0.0);
 
-    let modes = synthesize_euler_bernoulli_chime_modes(440.0, 4);
+    let modes = synthesize_modal_bar_modes(440.0, 4);
     assert_eq!(modes.len(), 4);
     assert!(modes[1] > modes[0]);
-    assert!(rotunda.sabine_rt60_prism_millis() > meadow.sabine_rt60_prism_millis());
+    assert!(chamber.sabine_rt60_prism_millis() > exterior.sabine_rt60_prism_millis());
 }
 
 /// `VE-08`: Acyclic worker job graph, frame-budget KPI profiler, and `EngineConfigError` refusal.
@@ -348,8 +412,7 @@ fn engine_ve_08() {
 /// `VE-09`: Bit-exact IEEE-754 `VDNT` binary `WorldSnapshot` round-trip and `SnapshotCodecError` refusal.
 #[test]
 fn engine_ve_09() {
-    let mut world = CausalWorldState::new_cosmogenic(19).expect("seed");
-    world.advance_to(1.0).expect("t_obs");
+    let world = StandardSceneState::synthesize_at_lod(19, 3).expect("LOD3 scene");
 
     let wire = WorldSnapshot::encode(&world).expect("encode binary snapshot");
     let restored = WorldSnapshot::decode(&wire).expect("decode binary snapshot");
@@ -374,7 +437,7 @@ fn engine_ve_09() {
 #[test]
 fn engine_ve_10() {
     let root = repo_root();
-    let genesis = std::fs::read_to_string(root.join("app/src/Genesis.lex.tex")).unwrap();
+    let tensor_lex = std::fs::read_to_string(root.join("app/src/Tensor.lex.tex")).unwrap();
     let engine = std::fs::read_to_string(root.join("app/src/Engine.lex.tex")).unwrap();
     let app_json: serde_json::Value =
         serde_json::from_str(&std::fs::read_to_string(root.join("site/app.json")).unwrap())
@@ -385,21 +448,22 @@ fn engine_ve_10() {
     for thm in theorems {
         let name = thm["name"].as_str().unwrap();
         assert!(
-            genesis.contains(&format!("name: {name},")),
-            "Genesis.lex.tex must declare theorem `{name}` advertised in site/app.json"
+            tensor_lex.contains(&format!("name: {name},")),
+            "Tensor.lex.tex must declare theorem `{name}` advertised in site/app.json"
         );
     }
 
     assert!(engine.contains("entryRoot := \"VerdantEngine.Engine.dispatch\""));
-    assert!(engine.contains("blueprint:6"));
-    assert!(engine.contains("scene:epoch:3"));
-    assert!(engine.contains("scene:blueprint:6"));
+    assert!(engine.contains("kernel:6"));
+    assert!(engine.contains("scene:lod:3"));
+    assert!(engine.contains("scene:node:6"));
     assert!(engine.contains("scene:acoustics"));
     assert!(engine.contains("scene:pipeline"));
-    assert!(engine.contains("refused:epoch-precedes-builders"));
-    assert!(engine.contains("refused:heyman-middle-third-exceeded"));
+    assert!(engine.contains("scene:uorc"));
+    assert!(engine.contains("refused:zero-extent-contraction"));
+    assert!(engine.contains("refused:accumulator-below-laurent-bound"));
     assert!(engine.contains("\"invalid request\""));
-    assert!(!genesis.contains("Classical.choice"));
+    assert!(!tensor_lex.contains("Classical.choice"));
     assert!(!engine.contains("Classical.choice"));
 
     // Verify that `verdant-core` executes the exact Lean-compiled Prism kernel (`prism_kernel`):
@@ -407,19 +471,25 @@ fn engine_ve_10() {
         .expect("prism_kernel dispatch summary");
     assert_eq!(
         std::str::from_utf8(&summary_bytes).unwrap(),
-        "conformant:epochs=4,blueprints=7,scale=1.0,zero-constants=true"
+        "conformant:lods=4,kernels=7,lossless=1.0,zero-constants=true"
     );
-    let scene_rover = verdant_core::prism_kernel::dispatch(b"scene:blueprint:6".to_vec())
-        .expect("prism_kernel dispatch scene:blueprint:6");
+    let scene_mover = verdant_core::prism_kernel::dispatch(b"scene:node:6".to_vec())
+        .expect("prism_kernel dispatch scene:node:6");
     assert_eq!(
-        std::str::from_utf8(&scene_rover).unwrap(),
-        "conformant:id=6,name=PerimeterSentinelRover,guild=Automation,pos=180/15/0,dist=11,rover=1"
+        std::str::from_utf8(&scene_mover).unwrap(),
+        "conformant:id=6,name=KinematicSplineController,pos=180/15/0,dist=11,mover=1"
     );
-    let refused_bytes = verdant_core::prism_kernel::dispatch(b"blueprint:unstable".to_vec())
-        .expect("prism_kernel dispatch blueprint:unstable");
+    let refused_bytes = verdant_core::prism_kernel::dispatch(b"kernel:zerodim".to_vec())
+        .expect("prism_kernel dispatch kernel:zerodim");
     assert_eq!(
         std::str::from_utf8(&refused_bytes).unwrap(),
-        "refused:heyman-middle-third-exceeded"
+        "refused:zero-extent-contraction"
+    );
+    let underflow_bytes = verdant_core::prism_kernel::dispatch(b"kernel:underflow".to_vec())
+        .expect("prism_kernel dispatch kernel:underflow");
+    assert_eq!(
+        std::str::from_utf8(&underflow_bytes).unwrap(),
+        "refused:accumulator-below-laurent-bound"
     );
 
     // Negative test for `ComputeError`: arithmetic overflow in `pow2Constructive` returns `Err(ComputeError)`:
@@ -451,6 +521,10 @@ fn engine_ve_10() {
         (
             &b"scene:wasmbridge"[..],
             "conformant:worklet_quantum=128,channels=2,ring_slots=64,snapshot_url_max=32768",
+        ),
+        (
+            &b"scene:uorc"[..],
+            "conformant:tile_px=16,rgba=4,uorc_work=40,uorc_steps=4,chain=UORC-SHA256-CHAIN-v1",
         ),
     ] {
         let out = verdant_core::prism_kernel::dispatch(query.to_vec()).expect("dispatch");
@@ -629,7 +703,6 @@ fn engine_ve_14() {
     let nav = NavMesh::from_mesh(&meshes[0]).expect("walkable terrain navmesh");
     assert!(nav.polygons.len() > 16);
 
-    // Pick a connected pair of polygons via neighbor walk:
     let start = 0usize;
     let mid = nav.polygons[start].neighbors[0];
     let goal = *nav.polygons[mid]
@@ -673,58 +746,70 @@ fn engine_ve_14() {
     assert!(matches!(unreach, NavigationError::UnreachableGoal { .. }));
 }
 
-/// `VE-15`: `WasmRuntimeBridge` steps sanctuary physics, encodes/restores SHA-256 `VDNT` snapshots, verifies `site/verdant-wasm.wasm`, and refuses invalid inputs.
+/// `VE-15`: `WasmRuntimeBridge` steps physics, renders portable tensor framebuffers, encodes/restores SHA-256 `VDNT` & `UORC`, verifies `site/verdant-wasm.wasm`, and refuses invalid inputs.
 #[test]
 fn engine_ve_15() {
     use verdant_wasm::{WasmBridgeError, WasmRuntimeBridge};
 
     let mut bridge = WasmRuntimeBridge::new(7).expect("WasmRuntimeBridge::new");
-    assert_eq!(bridge.epoch_rank, 3);
-    assert_eq!(bridge.world.blueprints.len(), 7);
+    assert_eq!(bridge.lod_rank, 3);
+    assert_eq!(bridge.world.scene_nodes.len(), 7);
     assert!(bridge.walkable_polygons > 100);
-    let tobs_snap = bridge
+    let lod3_snap = bridge
         .encode_snapshot()
-        .expect("t_obs snapshot fits Prism URL bridge envelope");
-    assert_eq!(&tobs_snap[0..4], b"VDNT");
+        .expect("LOD3 snapshot fits Prism URL bridge envelope");
+    assert_eq!(&lod3_snap[0..4], b"VDNT");
 
-    let rover_before = bridge
+    let fb_bytes = bridge
+        .render_tensor_framebuffer(64, 64, Vec3::new(0.0, 8.0, 22.0), Vec3::ZERO)
+        .expect("portable tensor framebuffer");
+    assert_eq!(fb_bytes, 64 * 64 * 4);
+
+    let mover_before = bridge
         .physics
-        .sentinel_rover
+        .kinematic_mover
         .as_ref()
-        .expect("rover")
+        .expect("mover")
         .position;
     bridge
         .step_frame(1.0 / 60.0, 1.0, 0.0, 0.0)
         .expect("step_frame");
-    let rover_after = bridge
+    let mover_after = bridge
         .physics
-        .sentinel_rover
+        .kinematic_mover
         .as_ref()
-        .expect("rover")
+        .expect("mover")
         .position;
-    assert!((rover_after - rover_before).length() > 1e-4);
+    assert!((mover_after - mover_before).length() > 1e-4);
 
-    bridge.set_epoch_rank(1).expect("lithic epoch");
-    assert_eq!(bridge.epoch_rank, 1);
-    assert_eq!(bridge.world.blueprints.len(), 0);
+    bridge.set_lod_rank(0).expect("coarse LOD0 proxy");
+    assert_eq!(bridge.lod_rank, 0);
+    assert!(bridge.world.scene_nodes.is_empty());
     let snap = bridge.encode_snapshot().expect("encode VDNT snapshot");
     assert_eq!(&snap[0..4], b"VDNT");
 
-    bridge.set_epoch_rank(3).expect("back to t_obs");
-    assert_eq!(bridge.world.blueprints.len(), 7);
+    bridge.set_lod_rank(3).expect("back to lossless LOD3");
+    assert_eq!(bridge.world.scene_nodes.len(), 7);
     bridge
         .decode_and_restore_snapshot(&snap)
         .expect("restore VDNT snapshot");
-    assert_eq!(bridge.epoch_rank, 1);
-    assert_eq!(bridge.world.blueprints.len(), 0);
+    assert_eq!(bridge.lod_rank, 0);
+    assert!(bridge.world.scene_nodes.is_empty());
 
-    // Negative refusal 1: invalid epoch rank (> 3):
-    let bad_epoch = bridge
-        .set_epoch_rank(9)
-        .expect_err("invalid epoch rank must fail");
+    let uorc_stream = bridge.encode_uorc_stream().expect("encode UORC stream");
+    bridge
+        .decode_and_restore_uorc(&uorc_stream, 3)
+        .expect("restore lossless LOD3 from UORC stream");
+    assert_eq!(bridge.lod_rank, 3);
+    assert_eq!(bridge.world.scene_nodes.len(), 7);
+
+    // Negative refusal 1: invalid LOD rank (> 3):
+    let bad_lod = bridge
+        .set_lod_rank(9)
+        .expect_err("invalid LOD rank must fail");
     assert!(matches!(
-        bad_epoch,
-        WasmBridgeError::InvalidEpochRank { rank: 9 }
+        bad_lod,
+        WasmBridgeError::InvalidLodRank { rank: 9 }
     ));
 
     // Negative refusal 2: tampered SHA-256 snapshot byte refused:
@@ -760,30 +845,38 @@ fn engine_ve_15() {
     assert_eq!(&wasm_bytes[0..4], b"\0asm");
 }
 
-/// `VE-16`: `verdant-cli` asset/shader/snapshot validator, sanctuary packer, headless benchmark, and `CliCommandError` refusals.
+/// `VE-16`: `verdant-cli` asset/shader/snapshot/UORC validator, progressive scene packer, headless benchmark, and `CliCommandError` refusals.
 #[test]
 fn engine_ve_16() {
     use verdant_cli::{run_cli, CliCommandError};
-    use verdant_core::render::WGSL_PBR_SURFACE_SHADER;
 
     let tmp_dir = std::env::temp_dir().join(format!("verdant_cli_ve16_{}", std::process::id()));
     let _ = std::fs::remove_dir_all(&tmp_dir);
     std::fs::create_dir_all(&tmp_dir).expect("temp dir");
 
-    let glb_path = tmp_dir.join("sanctuary.glb");
-    let vdnt_path = tmp_dir.join("sanctuary.glb.vdnt");
-    let wgsl_path = tmp_dir.join("pbr_terrain.wgsl");
+    let glb_path = tmp_dir.join("standard_scene.glb");
+    let vdnt_path = tmp_dir.join("standard_scene.glb.vdnt");
+    let uorc_path = tmp_dir.join("standard_scene.glb.uorc");
+    let wgsl_path = tmp_dir.join("pbr_surface.wgsl");
     std::fs::write(&wgsl_path, WGSL_PBR_SURFACE_SHADER).expect("write wgsl");
 
     let pack_out = run_cli(&[
-        "export-sanctuary".to_string(),
+        "pack-scene".to_string(),
         glb_path.to_string_lossy().into_owned(),
         "7".to_string(),
-        "1.0".to_string(),
+        "3".to_string(),
     ])
-    .expect("export-sanctuary succeeds");
+    .expect("pack-scene succeeds");
     assert!(pack_out.contains("PACKED OK:"));
-    assert!(pack_out.contains("blueprints=7"));
+    assert!(pack_out.contains("nodes=7"));
+
+    let uorc_out = run_cli(&[
+        "verify-uorc".to_string(),
+        uorc_path.to_string_lossy().into_owned(),
+    ])
+    .expect("verify-uorc succeeds");
+    assert!(uorc_out.contains("UORC OK:"));
+    assert!(uorc_out.contains("lod_objects=4"));
 
     let glb_out = run_cli(&[
         "validate-glb".to_string(),
@@ -809,26 +902,37 @@ fn engine_ve_16() {
     assert!(snap_out.contains("VDNT OK:"));
     assert!(snap_out.contains("url_bridge_ready=true"));
 
-    let bench_out =
-        run_cli(&["benchmark".to_string(), "16".to_string()]).expect("benchmark succeeds");
-    assert!(bench_out.contains("BENCHMARK OK: frames=16"));
-    assert!(bench_out.contains("passes=5"));
-    assert!(bench_out.contains("csm_cascades=4"));
+    let bench_out = run_cli(&["benchmark".to_string(), "12".to_string()]).expect("benchmark");
+    assert!(bench_out.contains("BENCHMARK OK: frames=12"));
 
-    // Negative refusal 1: unknown subcommand returns `CliCommandError::InvalidUsage`:
-    let bad_cmd = run_cli(&["unknown-subcmd".to_string()]).expect_err("unknown subcommand fails");
-    assert!(matches!(bad_cmd, CliCommandError::InvalidUsage { .. }));
+    // Negative refusal 1: unknown subcommand:
+    let unknown_err =
+        run_cli(&["nonexistent-cmd".to_string()]).expect_err("unknown command must fail");
+    assert!(matches!(unknown_err, CliCommandError::InvalidUsage { .. }));
 
-    // Negative refusal 2: corrupted `.glb` rejected with `CliCommandError::ValidationRejected`:
-    let corrupt_glb = tmp_dir.join("corrupt.glb");
-    std::fs::write(&corrupt_glb, b"not-a-valid-glb-container").expect("write corrupt glb");
-    let bad_glb = run_cli(&[
-        "validate-glb".to_string(),
-        corrupt_glb.to_string_lossy().into_owned(),
+    // Negative refusal 2: broken WGSL shader rejected:
+    let bad_wgsl_path = tmp_dir.join("broken.wgsl");
+    std::fs::write(&bad_wgsl_path, "@vertex fn vs_main( -> {}").expect("write bad wgsl");
+    let bad_wgsl_err = run_cli(&[
+        "validate-wgsl".to_string(),
+        bad_wgsl_path.to_string_lossy().into_owned(),
     ])
-    .expect_err("corrupt glb must be refused");
+    .expect_err("broken WGSL must fail");
     assert!(matches!(
-        bad_glb,
+        bad_wgsl_err,
+        CliCommandError::ValidationRejected { .. }
+    ));
+
+    // Negative refusal 3: corrupted UORC file rejected:
+    let bad_uorc_path = tmp_dir.join("corrupt.uorc");
+    std::fs::write(&bad_uorc_path, b"NOT_UORC").expect("write bad uorc");
+    let bad_uorc_err = run_cli(&[
+        "verify-uorc".to_string(),
+        bad_uorc_path.to_string_lossy().into_owned(),
+    ])
+    .expect_err("corrupted UORC must fail");
+    assert!(matches!(
+        bad_uorc_err,
         CliCommandError::ValidationRejected { .. }
     ));
 

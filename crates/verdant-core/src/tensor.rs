@@ -156,36 +156,33 @@ pub fn batch_transform_positions_exact(
 
     #[cfg(target_arch = "wasm32")]
     {
-        let shift = prism_kernel::tileEdgePixels().expect("verified Prism tileEdgePixels") as u32;
+        let shift = prism_kernel::tileEdgePixels().unwrap_or(1) as u32;
         let q_scale = pow2_u64(shift) as f64;
         let inv_q2 = 1.0_f64 / (q_scale * q_scale);
         let one_q = (q_scale as i32).max(1);
-        let mut a_q = Vec::with_capacity(m * k);
-        for p in positions {
-            a_q.push((f64::from(p[0]) * q_scale).round() as i32);
-            a_q.push((f64::from(p[1]) * q_scale).round() as i32);
-            a_q.push((f64::from(p[i2]) * q_scale).round() as i32);
-            a_q.push(one_q);
-        }
-        let mut b_q = vec![0_i32; k * n];
+        let mut b_cols = [[0_i32; DIM_HOMOGENEOUS]; DIM_HOMOGENEOUS];
         for r in 0..k {
             for c in 0..n {
-                b_q[r * n + c] = (matrix.cols[r][c] * q_scale).round() as i32;
+                b_cols[c][r] = (matrix.cols[r][c] * q_scale).round() as i32;
             }
         }
-        let mut c_q = vec![0_i64; m * n];
-        let mut scratch = vec![0_i32; suggested_scratch(Shape { m, k, n })];
-        slice::gemm(m, k, n, &a_q, &b_q, &mut c_q, &mut scratch).map_err(|err| {
-            TensorComputeError::ZeroOrMismatchedExtents {
-                detail: format!("{err:?}"),
-            }
-        })?;
-        for chunk in c_q.chunks_exact(DIM_HOMOGENEOUS) {
+        for p in positions {
+            let row_q = [
+                (f64::from(p[0]) * q_scale).round() as i32,
+                (f64::from(p[1]) * q_scale).round() as i32,
+                (f64::from(p[i2]) * q_scale).round() as i32,
+                one_q,
+            ];
+            let a_alpha = uor_matmul::as_alphabet_full(&row_q);
+            let c0 = uor_matmul::dot_ref(a_alpha, uor_matmul::as_alphabet_full(&b_cols[0]));
+            let c1 = uor_matmul::dot_ref(a_alpha, uor_matmul::as_alphabet_full(&b_cols[1]));
+            let c2 = uor_matmul::dot_ref(a_alpha, uor_matmul::as_alphabet_full(&b_cols[i2]));
+            let c3 = uor_matmul::dot_ref(a_alpha, uor_matmul::as_alphabet_full(&b_cols[i3]));
             out.push([
-                ((chunk[0] as f64) * inv_q2) as f32,
-                ((chunk[1] as f64) * inv_q2) as f32,
-                ((chunk[i2] as f64) * inv_q2) as f32,
-                ((chunk[i3] as f64) * inv_q2) as f32,
+                ((c0 as f64) * inv_q2) as f32,
+                ((c1 as f64) * inv_q2) as f32,
+                ((c2 as f64) * inv_q2) as f32,
+                ((c3 as f64) * inv_q2) as f32,
             ]);
         }
     }
@@ -350,7 +347,11 @@ pub fn render_triangles_tile_framebuffer(
     triangles: &[RasterTriangle],
 ) -> Result<SoftwareTileFramebuffer, TensorComputeError> {
     let tile_edge = prism_kernel::tileEdgePixels().expect("verified Prism tileEdgePixels") as u32;
-    if width == 0 || height == 0 || !width.is_multiple_of(tile_edge) || !height.is_multiple_of(tile_edge) {
+    if width == 0
+        || height == 0
+        || !width.is_multiple_of(tile_edge)
+        || !height.is_multiple_of(tile_edge)
+    {
         return Err(TensorComputeError::InvalidTileDimensions {
             width,
             height,
@@ -481,10 +482,10 @@ pub fn render_triangles_tile_framebuffer(
         let ambient = half * half + half * half * hemi;
         let shade = (ambient + (1.0 - half * half) * ndotl).min(two);
 
-        let lit_r = ((tri.base_color[0] * shade) / (1.0 + tri.base_color[0] * shade) * two)
-            .clamp(0.0, 1.0);
-        let lit_g = ((tri.base_color[1] * shade) / (1.0 + tri.base_color[1] * shade) * two)
-            .clamp(0.0, 1.0);
+        let lit_r =
+            ((tri.base_color[0] * shade) / (1.0 + tri.base_color[0] * shade) * two).clamp(0.0, 1.0);
+        let lit_g =
+            ((tri.base_color[1] * shade) / (1.0 + tri.base_color[1] * shade) * two).clamp(0.0, 1.0);
         let lit_b = ((tri.base_color[i2] * shade) / (1.0 + tri.base_color[i2] * shade) * two)
             .clamp(0.0, 1.0);
 

@@ -126,7 +126,8 @@ mod tests {
         // Progressive UORC multi-LOD stream encode + cryptographic chain verify + decode:
         let stream_bytes = pack_progressive_uorc_stream(7).expect("uorc encode");
         assert!(!stream_bytes.is_empty());
-        let uorc_summary = verify_progressive_uorc_stream(&stream_bytes).expect("uorc chain verify");
+        let uorc_summary =
+            verify_progressive_uorc_stream(&stream_bytes).expect("uorc chain verify");
         assert_eq!(uorc_summary.lod_object_count, 4);
         assert_eq!(uorc_summary.max_lod_rank, 3);
         let decoded_lod3 =
@@ -145,31 +146,20 @@ mod tests {
                 .expect("tropical max-plus");
         assert_eq!(bounds.len(), 4);
 
-        let mixed =
-            mix_spatial_audio_channels_exact(2, 2, 2, &[100, -50, 25, 10], &[2, 1, 1, 2])
-                .expect("exact integer audio mix");
+        let mixed = mix_spatial_audio_channels_exact(2, 2, 2, &[100, -50, 25, 10], &[2, 1, 1, 2])
+            .expect("exact integer audio mix");
         assert_eq!(mixed, vec![150, 0, 60, 45]);
 
         let vp = Mat4::perspective(1.0, 1.0, 0.1, 100.0)
             * Mat4::look_at(Vec3::new(0.0, 1.5, 6.0), Vec3::ZERO, Vec3::UP);
         let tri = RasterTriangle {
-            positions: [
-                [-1.0, -1.0, 0.0],
-                [1.0, -1.0, 0.0],
-                [0.0, 1.2, 0.0],
-            ],
+            positions: [[-1.0, -1.0, 0.0], [1.0, -1.0, 0.0], [0.0, 1.2, 0.0]],
             normal: [0.0, 0.0, 1.0],
             base_color: [0.35, 0.72, 0.88],
         };
-        let fb = render_triangles_tile_framebuffer(
-            64,
-            64,
-            &vp,
-            Vec3::new(0.4, 0.8, 0.5),
-            3,
-            &[tri],
-        )
-        .expect("tile framebuffer");
+        let fb =
+            render_triangles_tile_framebuffer(64, 64, &vp, Vec3::new(0.4, 0.8, 0.5), 3, &[tri])
+                .expect("tile framebuffer");
         assert!(fb.rasterized_triangles > 0);
         assert_eq!(fb.rgba8.len(), 64 * 64 * 4);
 

@@ -295,8 +295,8 @@ definition{name: groupBare, parameters: [], result: Foundation.Experience.V1.Mod
     let repo = root();
     let live = score(&repo.join("app"), &repo).unwrap();
     for closed_rec in [
-        "Subsystems::epochVisual0",
-        "Subsystems::placement6",
+        "Subsystems::lodEnvelope0",
+        "Subsystems::nodePreset6",
         "Architecture::edgeCoreToStudio",
         "Architecture::viewpointGameDeveloper",
         "Quality::subcharacteristicTimeBehaviour",

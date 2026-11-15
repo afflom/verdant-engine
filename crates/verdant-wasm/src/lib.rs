@@ -58,10 +58,7 @@ impl fmt::Display for WasmBridgeError {
                 write!(f, "invalid progressive LOD rank {rank}; expected 0..=3")
             }
             Self::InvalidSnapshotEnvelope { byte_len, reason } => {
-                write!(
-                    f,
-                    "invalid VDNT/UORC envelope ({byte_len} bytes): {reason}"
-                )
+                write!(f, "invalid VDNT/UORC envelope ({byte_len} bytes): {reason}")
             }
             Self::CommandRingOverflow { capacity } => {
                 write!(
@@ -123,12 +120,12 @@ impl WasmRuntimeBridge {
                 reason: e.to_string(),
             }
         })?;
-        world.advance_to_lod(max_rank).map_err(|e| {
-            WasmBridgeError::InvalidSnapshotEnvelope {
+        world
+            .advance_to_lod(max_rank)
+            .map_err(|e| WasmBridgeError::InvalidSnapshotEnvelope {
                 byte_len: 0,
                 reason: e.to_string(),
-            }
-        })?;
+            })?;
 
         let physics = Self::build_physics(&world);
         let bvh = world.scene.build_bvh();
@@ -144,7 +141,10 @@ impl WasmRuntimeBridge {
             pavilion_half_y,
             pavilion_half_xz,
         ))
-        .expect("valid pavilion box");
+        .map_err(|_| WasmBridgeError::InvalidSnapshotEnvelope {
+            byte_len: 0,
+            reason: "invalid pavilion collider".to_string(),
+        })?;
         let player_half_xz = pk_f64(prism_kernel::sFour()) / ten;
         let player_half_y = pk_f64(prism_kernel::sNine()) / ten;
         let player_hull = ConvexHullCollider::from_box_half_extents(Vec3::new(
@@ -152,7 +152,10 @@ impl WasmRuntimeBridge {
             player_half_y,
             player_half_xz,
         ))
-        .expect("valid player box");
+        .map_err(|_| WasmBridgeError::InvalidSnapshotEnvelope {
+            byte_len: 0,
+            reason: "invalid player collider".to_string(),
+        })?;
 
         Ok(Self {
             world,
@@ -268,10 +271,10 @@ impl WasmRuntimeBridge {
             0.0,
             walk_yaw_rad.cos() * move_forward + walk_yaw_rad.sin() * move_strafe,
         );
-        self.physics.step(clamped_dt, wish).map_err(|e| {
+        self.physics.step(clamped_dt, wish).map_err(|_| {
             WasmBridgeError::InvalidSnapshotEnvelope {
                 byte_len: 0,
-                reason: e.to_string(),
+                reason: "physics step out of bounds".to_string(),
             }
         })?;
 
@@ -313,9 +316,8 @@ impl WasmRuntimeBridge {
 
         let two_f = prism_kernel::sTwo() as f32;
         let half_f = 1.0_f32 / two_f;
-        let y0 =
-            terrain_height_with_params(self.world.seed, &self.world.params.terrain, 0.0, 0.0)
-                as f32;
+        let y0 = terrain_height_with_params(self.world.seed, &self.world.params.terrain, 0.0, 0.0)
+            as f32;
         let span = pk_f64(prism_kernel::sTwelve()) as f32;
         let height_f = pk_f64(prism_kernel::sFour()) as f32;
 
