@@ -71,3 +71,4 @@ Feature: engine
     Given app/src/Genesis.lex.tex and app/src/Engine.lex.tex
     When checked against site/app.json and LexLean axioms
     Then monotonic expansion, seven-blueprint equilibrium, and unstable refusal theorems hold with zero Classical.choice axioms
+    And arithmetic overflow in the compiled kernel returns ComputeError

@@ -123,3 +123,34 @@ Verdant Engine is a multi-purpose commercial 3D browser and WebAssembly game eng
 
 - prismpm/text-application/1 — Verdant Engine (verdant-engine-guest, 0.1.0): Verifies Verdant Engine expansion epochs and Builder blueprint static equilibrium in WebAssembly. Repository: https://github.com/afflom/verdant-engine, Homepage: https://afflom.github.io/verdant-engine/, Entry: VerdantEngine.Engine.dispatch, Contract: hologram:guest/core-wasm@1.
 - View: Verdant Engine — Verdant Engine Studio and Verifier, Engine verification query, Verify, Engine verdict, Enter a UTF-8 engine query of at most 64 bytes., The engine verdict could not be displayed.
+
+## Engine Runtime Subsystems
+
+- LinearAlgebraAndFrustum: Vector, quaternion, matrix, ray, AABB, and six-plane Gribb-Hartmann frustum kernels derived without magic constants.
+- ArchetypeEcsAndSahBvh: Generational entity handles, hierarchical world-transform propagation, and surface-area-heuristic BVH raycast and frustum culling.
+- CausalWorldGenesis: Deterministic cosmic expansion from t_0 seed to t_obs observation synthesizing amphitheater terrain, flora, and seven Builder blueprints.
+- ProceduralGeometryAndLSystems: Heightfield terrain grids, Vitruvian entasis colonnades, Cardan astrolabe gimbals, and phyllotactic L-system botanical meshes.
+- PbrMaterialsAndWgslShaders: Metallic-roughness PBR material descriptors, shadow cascades, and W3C WGSL shaders validated by naga.
+- BinaryGltfSceneExporter: Aligned binary glTF 2.0 container serializer validated mechanically against the Khronos gltf reference crate.
+- SymplecticPhysicsAndRover: Symplectic Euler rigid bodies, Archimedes lagoon buoyancy, player capsule ground clamping, and autonomous spline rover patrol.
+- SpatialModalAcoustics: Euler-Bernoulli chime overtone synthesis, Woodworth interaural stereo panning, and Sabine RT60 reverberation.
+- JobGraphAndWorldSnapshots: Topological six-stage worker frame scheduler and deterministic IEEE-754 binary world snapshots with SHA-256 trailers.
+
+## Developer Relations, Documentation, SDK Artifacts, and Studio Controls
+
+- DocsIndex: Commercial 3D browser and WebAssembly game engine documentation landing page organizing tutorials, how-to guides, explanations, and API reference.
+- First3DSceneTutorial: Step-by-step tutorial creating a SceneWorld, spawning procedural meshes, stepping physics, and exporting binary glTF 2.0.
+- CustomGameHowTo: Task-focused guide building a custom 3D browser game from templates/browser-3d-starter with capsule controllers and rigid bodies.
+- AssetShaderPipelineHowTo: Technical artist guide validating binary glTF 2.0 exports and W3C WGSL shaders against Khronos gltf and naga.
+- CausalWorldArchitectureExplanation: Architectural explanation of causal cosmic expansion epochs, differentiated Builder guilds, and Heyman middle-third static equilibrium.
+- VerdantCoreApiReference: Complete technical reference for verdant-core modules, binary world snapshot framing, and Core-Wasm verifier queries.
+- ExampleCosmicSanctuary: Runnable example crates/verdant-core/examples/cosmic_sanctuary.rs synthesizing the t_obs sanctuary and exporting binary glTF 2.0.
+- ExampleCustomGameArena: Runnable example crates/verdant-core/examples/custom_game_arena.rs stepping a custom physics arena with capsule controller and spatial audio.
+- ExampleHeadlessBenchmark: Runnable example crates/verdant-core/examples/headless_benchmark.rs executing the six-stage worker job graph and SHA-256 snapshot round-trip.
+- TemplateBrowser3DStarter: Standalone starter project templates/browser-3d-starter/Cargo.toml for building custom 3D browser and WebAssembly games on verdant-core.
+- ve-epoch-btn: Cycles cosmic expansion epoch from initial Cosmogenic seed to present observation t_obs.
+- ve-sim-btn: Toggles between demand-driven stepped inspection and continuous 60fps orbital and rover simulation.
+- ve-cam-btn: Switches between 3D Orbit camera framing and First-Person WASD capsule walk mode.
+- ve-audio-btn: Toggles WebAudio Euler-Bernoulli modal chime harmonics and lagoon water acoustics.
+- ve-glb-btn: Serializes and downloads the active 3D scene as a standards-valid binary glTF 2.0 (.glb) asset.
+- ve-docs-link: Navigates directly from the Engine Studio bar to the Diataxis documentation suite.

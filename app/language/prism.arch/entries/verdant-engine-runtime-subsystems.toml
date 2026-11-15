@@ -1,0 +1,17 @@
+spec = "lexlean/entry/1"
+id = "verdant-engine-runtime-subsystems"
+category = "label-word"
+surface_arity = 0
+frame = "atom"
+
+[denotation]
+kind = "document"
+module = "Subsystems"
+component = "subsystems"
+
+[[form]]
+id = "verdant-engine-runtime-subsystems"
+channel = "text"
+surface = "Verdant Engine runtime subsystems"
+canonical_source = true
+features = ["sentence-case", "singular"]

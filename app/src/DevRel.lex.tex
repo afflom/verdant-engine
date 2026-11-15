@@ -1,0 +1,236 @@
+\begin{lexlean}{DevRel}
+\useglossary{lexlean.std.bool@1.2.0}
+\useglossary{lexlean.std.nat@1.2.0}
+\useglossary{prism.arch@1.0.0}
+\importmodule{Subsystems}
+\title{Verdant Engine developer relations}
+\begin{semanticmodule}
+inductive{
+  name: DiataxisQuadrant,
+  type_parameters: [],
+  parameters: [],
+  constructors: [
+    {name: tutorial, fields: []},
+    {name: howTo, fields: []},
+    {name: explanation, fields: []},
+    {name: reference, fields: []}
+  ]
+}
+
+structure{
+  name: DocPageSpec,
+  type_parameters: [],
+  parameters: [],
+  fields: [
+    {name: index, type: Nat},
+    {name: quadrant, type: DiataxisQuadrant},
+    {name: stakeholderIndex, type: Nat},
+    {name: name, type: String},
+    {name: text, type: String}
+  ]
+}
+
+structure{
+  name: SdkArtifactSpec,
+  type_parameters: [],
+  parameters: [],
+  fields: [
+    {name: index, type: Nat},
+    {name: runnable, type: Bool},
+    {name: name, type: String},
+    {name: text, type: String}
+  ]
+}
+
+structure{
+  name: StudioControlSpec,
+  type_parameters: [],
+  parameters: [],
+  fields: [
+    {name: index, type: Nat},
+    {name: minTargetCssPx, type: Nat},
+    {name: keyboardOperable, type: Bool},
+    {name: name, type: String},
+    {name: text, type: String}
+  ]
+}
+
+definition{
+  name: docLanding,
+  parameters: [],
+  result: DocPageSpec,
+  body: (record DocPageSpec {index := 0, quadrant := (ctor DiataxisQuadrant.tutorial), stakeholderIndex := 0, name := "DocsIndex", text := "Commercial 3D browser and WebAssembly game engine documentation landing page organizing tutorials, how-to guides, explanations, and API reference."})
+}
+
+definition{
+  name: docFirstScene,
+  parameters: [],
+  result: DocPageSpec,
+  body: (record DocPageSpec {index := 1, quadrant := (ctor DiataxisQuadrant.tutorial), stakeholderIndex := 0, name := "First3DSceneTutorial", text := "Step-by-step tutorial creating a SceneWorld, spawning procedural meshes, stepping physics, and exporting binary glTF 2.0."})
+}
+
+definition{
+  name: docCustomGame,
+  parameters: [],
+  result: DocPageSpec,
+  body: (record DocPageSpec {index := (Subsystems::sTwo), quadrant := (ctor DiataxisQuadrant.howTo), stakeholderIndex := 0, name := "CustomGameHowTo", text := "Task-focused guide building a custom 3D browser game from templates/browser-3d-starter with capsule controllers and rigid bodies."})
+}
+
+definition{
+  name: docAssetPipeline,
+  parameters: [],
+  result: DocPageSpec,
+  body: (record DocPageSpec {index := (Subsystems::sThree), quadrant := (ctor DiataxisQuadrant.howTo), stakeholderIndex := 1, name := "AssetShaderPipelineHowTo", text := "Technical artist guide validating binary glTF 2.0 exports and W3C WGSL shaders against Khronos gltf and naga."})
+}
+
+definition{
+  name: docArchitecture,
+  parameters: [],
+  result: DocPageSpec,
+  body: (record DocPageSpec {index := (Subsystems::sFour), quadrant := (ctor DiataxisQuadrant.explanation), stakeholderIndex := (Subsystems::sTwo), name := "CausalWorldArchitectureExplanation", text := "Architectural explanation of causal cosmic expansion epochs, differentiated Builder guilds, and Heyman middle-third static equilibrium."})
+}
+
+definition{
+  name: docApiReference,
+  parameters: [],
+  result: DocPageSpec,
+  body: (record DocPageSpec {index := (Subsystems::sFive), quadrant := (ctor DiataxisQuadrant.reference), stakeholderIndex := (Subsystems::sFour), name := "VerdantCoreApiReference", text := "Complete technical reference for verdant-core modules, binary world snapshot framing, and Core-Wasm verifier queries."})
+}
+
+definition{
+  name: docPages,
+  parameters: [],
+  result: (List DocPageSpec),
+  body: (cons (docLanding) (cons (docFirstScene) (cons (docCustomGame) (cons (docAssetPipeline) (cons (docArchitecture) (cons (docApiReference) (nil DocPageSpec)))))))
+}
+
+definition{
+  name: sdkExampleSanctuary,
+  parameters: [],
+  result: SdkArtifactSpec,
+  body: (record SdkArtifactSpec {index := 0, runnable := true, name := "ExampleCosmicSanctuary", text := "Runnable example crates/verdant-core/examples/cosmic_sanctuary.rs synthesizing the t_obs sanctuary and exporting binary glTF 2.0."})
+}
+
+definition{
+  name: sdkExampleCustomArena,
+  parameters: [],
+  result: SdkArtifactSpec,
+  body: (record SdkArtifactSpec {index := 1, runnable := true, name := "ExampleCustomGameArena", text := "Runnable example crates/verdant-core/examples/custom_game_arena.rs stepping a custom physics arena with capsule controller and spatial audio."})
+}
+
+definition{
+  name: sdkExampleHeadlessBenchmark,
+  parameters: [],
+  result: SdkArtifactSpec,
+  body: (record SdkArtifactSpec {index := (Subsystems::sTwo), runnable := true, name := "ExampleHeadlessBenchmark", text := "Runnable example crates/verdant-core/examples/headless_benchmark.rs executing the six-stage worker job graph and SHA-256 snapshot round-trip."})
+}
+
+definition{
+  name: sdkStarterTemplate,
+  parameters: [],
+  result: SdkArtifactSpec,
+  body: (record SdkArtifactSpec {index := (Subsystems::sThree), runnable := true, name := "TemplateBrowser3DStarter", text := "Standalone starter project templates/browser-3d-starter/Cargo.toml for building custom 3D browser and WebAssembly games on verdant-core."})
+}
+
+definition{
+  name: sdkArtifacts,
+  parameters: [],
+  result: (List SdkArtifactSpec),
+  body: (cons (sdkExampleSanctuary) (cons (sdkExampleCustomArena) (cons (sdkExampleHeadlessBenchmark) (cons (sdkStarterTemplate) (nil SdkArtifactSpec)))))
+}
+
+definition{
+  name: controlEpochScrubber,
+  parameters: [],
+  result: StudioControlSpec,
+  body: (record StudioControlSpec {index := 0, minTargetCssPx := (Subsystems::sFortyFour), keyboardOperable := true, name := "ve-epoch-btn", text := "Cycles cosmic expansion epoch from initial Cosmogenic seed to present observation t_obs."})
+}
+
+definition{
+  name: controlSimulationMode,
+  parameters: [],
+  result: StudioControlSpec,
+  body: (record StudioControlSpec {index := 1, minTargetCssPx := (Subsystems::sFortyFour), keyboardOperable := true, name := "ve-sim-btn", text := "Toggles between demand-driven stepped inspection and continuous 60fps orbital and rover simulation."})
+}
+
+definition{
+  name: controlCameraMode,
+  parameters: [],
+  result: StudioControlSpec,
+  body: (record StudioControlSpec {index := (Subsystems::sTwo), minTargetCssPx := (Subsystems::sFortyFour), keyboardOperable := true, name := "ve-cam-btn", text := "Switches between 3D Orbit camera framing and First-Person WASD capsule walk mode."})
+}
+
+definition{
+  name: controlSpatialAudio,
+  parameters: [],
+  result: StudioControlSpec,
+  body: (record StudioControlSpec {index := (Subsystems::sThree), minTargetCssPx := (Subsystems::sFortyFour), keyboardOperable := true, name := "ve-audio-btn", text := "Toggles WebAudio Euler-Bernoulli modal chime harmonics and lagoon water acoustics."})
+}
+
+definition{
+  name: controlGlbExport,
+  parameters: [],
+  result: StudioControlSpec,
+  body: (record StudioControlSpec {index := (Subsystems::sFour), minTargetCssPx := (Subsystems::sFortyFour), keyboardOperable := true, name := "ve-glb-btn", text := "Serializes and downloads the active 3D scene as a standards-valid binary glTF 2.0 (.glb) asset."})
+}
+
+definition{
+  name: controlDocsNavigation,
+  parameters: [],
+  result: StudioControlSpec,
+  body: (record StudioControlSpec {index := (Subsystems::sFive), minTargetCssPx := (Subsystems::sFortyFour), keyboardOperable := true, name := "ve-docs-link", text := "Navigates directly from the Engine Studio bar to the Diataxis documentation suite."})
+}
+
+definition{
+  name: studioControls,
+  parameters: [],
+  result: (List StudioControlSpec),
+  body: (cons (controlEpochScrubber) (cons (controlSimulationMode) (cons (controlCameraMode) (cons (controlSpatialAudio) (cons (controlGlbExport) (cons (controlDocsNavigation) (nil StudioControlSpec)))))))
+}
+
+definition{
+  name: docsValid,
+  parameters: [pos : Nat, items : (List DocPageSpec)],
+  result: Bool,
+  body: (match items
+    | List.nil => true
+    | List.cons item rest => (if (((project item index) =? pos) && ((project item stakeholderIndex) <? (Subsystems::sFive))) then (docsValid (pos + 1) rest) else false)),
+  recursive_argument: items
+}
+
+definition{
+  name: sdkValid,
+  parameters: [pos : Nat, items : (List SdkArtifactSpec)],
+  result: Bool,
+  body: (match items
+    | List.nil => true
+    | List.cons item rest => (if (((project item index) =? pos) && (project item runnable)) then (sdkValid (pos + 1) rest) else false)),
+  recursive_argument: items
+}
+
+definition{
+  name: controlsValid,
+  parameters: [pos : Nat, items : (List StudioControlSpec)],
+  result: Bool,
+  body: (match items
+    | List.nil => true
+    | List.cons item rest => (if (((project item index) =? pos) && (((Subsystems::sFortyFour) <=? (project item minTargetCssPx)) && (project item keyboardOperable))) then (controlsValid (pos + 1) rest) else false)),
+  recursive_argument: items
+}
+
+definition{
+  name: studioControlsAccessible,
+  parameters: [],
+  result: Bool,
+  body: (controlsValid 0 (studioControls))
+}
+
+theorem{
+  name: devRelCatalogComplete,
+  parameters: [],
+  statement: ((if ((docsValid 0 (docPages)) && ((sdkValid 0 (sdkArtifacts)) && (studioControlsAccessible))) then (if (((project (docLanding) index) =? 0) && (((project (docFirstScene) index) =? 1) && (((project (docCustomGame) index) =? (Subsystems::sTwo)) && (((project (docAssetPipeline) index) =? (Subsystems::sThree)) && (((project (docArchitecture) index) =? (Subsystems::sFour)) && ((project (docApiReference) index) =? (Subsystems::sFive))))))) then (if (((project (sdkExampleSanctuary) index) =? 0) && (((project (sdkExampleCustomArena) index) =? 1) && (((project (sdkExampleHeadlessBenchmark) index) =? (Subsystems::sTwo)) && ((project (sdkStarterTemplate) index) =? (Subsystems::sThree))))) then (((project (controlEpochScrubber) index) =? 0) && (((project (controlSimulationMode) index) =? 1) && (((project (controlCameraMode) index) =? (Subsystems::sTwo)) && (((project (controlSpatialAudio) index) =? (Subsystems::sThree)) && (((project (controlGlbExport) index) =? (Subsystems::sFour)) && ((project (controlDocsNavigation) index) =? (Subsystems::sFive))))))) else false) else false) else false) = true),
+  proof: decide{},
+  axioms: []
+}
+\end{semanticmodule}
+\end{lexlean}

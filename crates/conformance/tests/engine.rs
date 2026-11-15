@@ -383,9 +383,41 @@ fn engine_ve_10() {
 
     assert!(engine.contains("entryRoot := \"VerdantEngine.Engine.dispatch\""));
     assert!(engine.contains("blueprint:6"));
+    assert!(engine.contains("scene:epoch:3"));
+    assert!(engine.contains("scene:blueprint:6"));
+    assert!(engine.contains("scene:acoustics"));
+    assert!(engine.contains("scene:pipeline"));
     assert!(engine.contains("refused:epoch-precedes-builders"));
     assert!(engine.contains("refused:heyman-middle-third-exceeded"));
     assert!(engine.contains("\"invalid request\""));
     assert!(!genesis.contains("Classical.choice"));
     assert!(!engine.contains("Classical.choice"));
+
+    // Verify that `verdant-core` executes the exact Lean-compiled Prism kernel (`prism_kernel`):
+    let summary_bytes = verdant_core::prism_kernel::dispatch(b"summary".to_vec())
+        .expect("prism_kernel dispatch summary");
+    assert_eq!(
+        std::str::from_utf8(&summary_bytes).unwrap(),
+        "conformant:epochs=4,blueprints=7,scale=1.0,zero-constants=true"
+    );
+    let scene_rover = verdant_core::prism_kernel::dispatch(b"scene:blueprint:6".to_vec())
+        .expect("prism_kernel dispatch scene:blueprint:6");
+    assert_eq!(
+        std::str::from_utf8(&scene_rover).unwrap(),
+        "conformant:id=6,name=PerimeterSentinelRover,guild=Automation,pos=180/15/0,dist=11,rover=1"
+    );
+    let refused_bytes = verdant_core::prism_kernel::dispatch(b"blueprint:unstable".to_vec())
+        .expect("prism_kernel dispatch blueprint:unstable");
+    assert_eq!(
+        std::str::from_utf8(&refused_bytes).unwrap(),
+        "refused:heyman-middle-third-exceeded"
+    );
+
+    // Negative test for `ComputeError`: arithmetic overflow in `pow2Constructive` returns `Err(ComputeError)`:
+    let overflow = verdant_core::prism_kernel::pow2Constructive(1_000)
+        .expect_err("overflowing constructive power must return ComputeError");
+    assert_eq!(
+        overflow,
+        verdant_core::prism_kernel::ComputeError::MulOverflow
+    );
 }

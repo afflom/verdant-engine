@@ -6,9 +6,7 @@
 
 use serde::{Deserialize, Serialize};
 
-use crate::math::{
-    four_u32, geometric_epsilon, half_f64, nth_prime_u64, pow10_u64, three_u32, two_f64, Vec3,
-};
+use crate::math::{four_u32, geometric_epsilon, half_f64, pow10_u64, three_u32, two_f64, Vec3};
 
 /// Parametric acoustic propagation and enclosure reverberation environment.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
@@ -31,15 +29,16 @@ impl AcousticEnvironment {
     pub fn travertine_rotunda(sound_speed_mps: f64) -> Self {
         let ten = pow10_u64(1) as f64;
         let hundred = pow10_u64(1 + 1) as f64;
-        let half = half_f64();
-        let quarter = half * half;
+        let rotunda_num = crate::prism_kernel::rotundaAbsorptionNumer() as f64;
+        let abs_denom = crate::prism_kernel::absorptionDenom()
+            .expect("verified Prism kernel absorptionDenom") as f64;
         let head_r = 1.0 / (ten + 1.0); // ~0.0909 m spherical head radius
         Self {
             sound_speed_mps,
             listener_head_radius_meters: head_r,
             enclosure_volume_m3: hundred * (four_u32() as f64),
             boundary_surface_area_m2: hundred * (three_u32() as f64),
-            mean_absorption_coeff: quarter,
+            mean_absorption_coeff: rotunda_num / abs_denom,
         }
     }
 
@@ -47,10 +46,11 @@ impl AcousticEnvironment {
     #[must_use]
     pub fn open_meadow(sound_speed_mps: f64) -> Self {
         let rotunda = Self::travertine_rotunda(sound_speed_mps);
-        let half = half_f64();
-        let quarter = half * half;
+        let meadow_num = crate::prism_kernel::meadowAbsorptionNumer() as f64;
+        let abs_denom = crate::prism_kernel::absorptionDenom()
+            .expect("verified Prism kernel absorptionDenom") as f64;
         Self {
-            mean_absorption_coeff: half + quarter,
+            mean_absorption_coeff: meadow_num / abs_denom,
             ..rotunda
         }
     }
@@ -59,7 +59,8 @@ impl AcousticEnvironment {
     /// `RT60 = (24 * ln(10) / c) * V / (S * alpha_bar)`.
     #[must_use]
     pub fn sabine_rt60_seconds(&self) -> f64 {
-        let twenty_four = (four_u32() * nth_prime_u64(0) as u32 * nth_prime_u64(1) as u32) as f64;
+        let twenty_four = crate::prism_kernel::sabinePrefactorNumer()
+            .expect("verified Prism kernel sabinePrefactorNumer") as f64;
         let ten = pow10_u64(1) as f64;
         let sabine_factor = (twenty_four * ten.ln()) / self.sound_speed_mps.max(1.0);
         let sabins = (self.boundary_surface_area_m2
@@ -72,7 +73,8 @@ impl AcousticEnvironment {
     /// `RT60 = (24 * ln(10) / c) * V / (-S * ln(1 - alpha_bar))`.
     #[must_use]
     pub fn eyring_rt60_seconds(&self) -> f64 {
-        let twenty_four = (four_u32() * nth_prime_u64(0) as u32 * nth_prime_u64(1) as u32) as f64;
+        let twenty_four = crate::prism_kernel::sabinePrefactorNumer()
+            .expect("verified Prism kernel sabinePrefactorNumer") as f64;
         let ten = pow10_u64(1) as f64;
         let factor = (twenty_four * ten.ln()) / self.sound_speed_mps.max(1.0);
         let alpha = self
@@ -171,12 +173,12 @@ pub fn evaluate_binaural_cue(
 /// from fundamental `f_0`, where higher transverse modes scale as `(2n + 1)^2 / 3^2`.
 #[must_use]
 pub fn synthesize_euler_bernoulli_chime_modes(fundamental_hz: f64, mode_count: usize) -> Vec<f64> {
-    let base = (three_u32() * three_u32()) as f64; // (2*1 + 1)^2 = 9
-    let two = two_f64();
+    let base = crate::prism_kernel::eulerBernoulliModeDenom() as f64;
     let mut modes = Vec::with_capacity(mode_count);
-    for n in 1..=mode_count {
-        let odd = two * (n as f64) + 1.0;
-        modes.push(fundamental_hz * (odd * odd) / base);
+    for idx in 0..mode_count {
+        let numer = crate::prism_kernel::eulerBernoulliModeNumer(idx as u64)
+            .expect("verified Prism kernel eulerBernoulliModeNumer") as f64;
+        modes.push(fundamental_hz * numer / base);
     }
     modes
 }

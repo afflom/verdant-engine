@@ -59,14 +59,42 @@ const EPOCHS = [
 ];
 
 const BLUEPRINTS = [
-  { id: 0, query: "blueprint:0", name: "Harmonic Rotunda", guild: "Masonry", target: [0, 2.2, 0], dist: 16 },
-  { id: 1, query: "blueprint:1", name: "Meridian Sundial", guild: "Gnomonics", target: [9.5, 1.2, -3.5], dist: 9 },
-  { id: 2, query: "blueprint:2", name: "Modal Chime Pergola", guild: "Acoustics", target: [-9.0, 1.8, -4.0], dist: 10 },
-  { id: 3, query: "blueprint:3", name: "Quartz Torsion Chamber", guild: "Masonry", target: [-6.5, 1.8, 9.0], dist: 10 },
-  { id: 4, query: "blueprint:4", name: "Lagoon Pier Causeway", guild: "Hydrology", target: [5.5, 0.6, 8.5], dist: 11 },
-  { id: 5, query: "blueprint:5", name: "Travertine Path Network", guild: "Masonry", target: [0, 0.8, 5.0], dist: 18 },
-  { id: 6, query: "blueprint:6", name: "Perimeter Sentinel Rover", guild: "Automation", target: [18, 1.5, 0], dist: 11, followRover: true },
+  { id: 0, query: "blueprint:0", sceneQuery: "scene:blueprint:0", name: "Harmonic Rotunda", guild: "Masonry", target: [0, 2.2, 0], dist: 16 },
+  { id: 1, query: "blueprint:1", sceneQuery: "scene:blueprint:1", name: "Meridian Sundial", guild: "Gnomonics", target: [9.5, 1.2, -3.5], dist: 9 },
+  { id: 2, query: "blueprint:2", sceneQuery: "scene:blueprint:2", name: "Modal Chime Pergola", guild: "Acoustics", target: [-9.0, 1.8, -4.0], dist: 10 },
+  { id: 3, query: "blueprint:3", sceneQuery: "scene:blueprint:3", name: "Quartz Torsion Chamber", guild: "Masonry", target: [-6.5, 1.8, 9.0], dist: 10 },
+  { id: 4, query: "blueprint:4", sceneQuery: "scene:blueprint:4", name: "Lagoon Pier Causeway", guild: "Hydrology", target: [5.5, 0.6, 8.5], dist: 11 },
+  { id: 5, query: "blueprint:5", sceneQuery: "scene:blueprint:5", name: "Travertine Path Network", guild: "Masonry", target: [0, 0.8, 5.0], dist: 18 },
+  { id: 6, query: "blueprint:6", sceneQuery: "scene:blueprint:6", name: "Perimeter Sentinel Rover", guild: "Automation", target: [18, 1.5, 0], dist: 11, followRover: true },
 ];
+
+const ACOUSTIC_SPEC = {
+  fundamentalHz: 110.0,
+  modeRatios: [1.0, 25 / 9, 49 / 9, 81 / 9, 121 / 9],
+  rotundaRt60Sec: 1.8,
+};
+
+function parseConformantFields(line) {
+  if (!line || !line.startsWith("conformant:")) return null;
+  const fields = {};
+  for (const part of line.slice("conformant:".length).split(",")) {
+    const eq = part.indexOf("=");
+    if (eq > 0) fields[part.slice(0, eq)] = part.slice(eq + 1);
+  }
+  return fields;
+}
+
+function parseRatioPair(raw, fallback) {
+  if (!raw) return fallback;
+  const [n, d] = raw.split("/").map(Number);
+  return Number.isFinite(n) && Number.isFinite(d) && d !== 0 ? n / d : fallback;
+}
+
+function parseTriplet(raw, scale, fallback) {
+  if (!raw) return fallback;
+  const parts = raw.split("/").map(Number);
+  return parts.length === 3 && parts.every(Number.isFinite) ? parts.map((v) => v / scale) : fallback;
+}
 
 function terrainHeight(x, z, amp = 1.0) {
   const r = Math.hypot(x, z);
@@ -814,8 +842,8 @@ export default async function start({ app, reason, $, chip, show, parse }) {
     if (!audioCtx || !audioOn) return;
     const dist = Math.hypot(eye[0] + 9.0, eye[1] - 2.0, eye[2] + 4.0);
     const atten = Math.min(0.14, 0.9 / (1.0 + 0.18 * dist));
-    const modes = [293.66, 440.0, 587.33, 659.25, 880.0];
-    const baseFreq = modes[Math.floor(Math.random() * modes.length)];
+    const ratio = ACOUSTIC_SPEC.modeRatios[Math.floor(Math.random() * ACOUSTIC_SPEC.modeRatios.length)];
+    const baseFreq = Math.min(1320.0, ACOUSTIC_SPEC.fundamentalHz * ratio);
     const now = audioCtx.currentTime;
     const osc = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
@@ -823,10 +851,10 @@ export default async function start({ app, reason, $, chip, show, parse }) {
     osc.frequency.setValueAtTime(baseFreq, now);
     gain.gain.setValueAtTime(0.0001, now);
     gain.gain.exponentialRampToValueAtTime(atten, now + 0.02);
-    gain.gain.exponentialRampToValueAtTime(0.0001, now + 1.8);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + ACOUSTIC_SPEC.rotundaRt60Sec);
     osc.connect(gain).connect(audioCtx.destination);
     osc.start(now);
-    osc.stop(now + 1.85);
+    osc.stop(now + ACOUSTIC_SPEC.rotundaRt60Sec + 0.05);
   }
 
   audioBtn?.addEventListener("click", () => {
@@ -986,6 +1014,46 @@ export default async function start({ app, reason, $, chip, show, parse }) {
     }
   }
 
+  async function hydrateSceneFromHolo(badges) {
+    if (!app) return;
+    for (let i = 0; i < EPOCHS.length; i++) {
+      await yieldTask();
+      const fields = parseConformantFields(await queryVerifier(`scene:epoch:${i}`));
+      if (!fields) continue;
+      const ep = EPOCHS[i];
+      ep.scale = parseRatioPair(fields.scale, ep.scale);
+      ep.terrainAmp = parseRatioPair(fields.amp, ep.terrainAmp);
+      ep.water = fields.water === "1";
+      ep.flora = fields.flora === "1";
+      ep.builders = fields.builders === "1";
+      ep.sky = parseTriplet(fields.sky, 100, ep.sky);
+      ep.fog = parseTriplet(fields.fog, 100, ep.fog);
+    }
+    for (const { bp, badge } of badges) {
+      await yieldTask();
+      const sceneFields = parseConformantFields(await queryVerifier(bp.sceneQuery));
+      if (sceneFields) {
+        bp.target = parseTriplet(sceneFields.pos, 10, bp.target);
+        const dist = Number(sceneFields.dist);
+        if (Number.isFinite(dist) && dist > 0) bp.dist = dist;
+        if (sceneFields.guild) bp.guild = sceneFields.guild;
+        bp.followRover = sceneFields.rover === "1";
+      }
+      const verdict = await queryVerifier(bp.query);
+      const ok = verdict && verdict.startsWith("conformant:");
+      badge.className = ok ? "tag good" : "tag";
+      badge.textContent = ok ? bp.guild.replace(/([a-z])([A-Z])/g, "$1 $2") : "Offline";
+    }
+    await yieldTask();
+    const acFields = parseConformantFields(await queryVerifier("scene:acoustics"));
+    if (acFields?.modes && acFields?.denom) {
+      const denom = Number(acFields.denom) || 9;
+      const nums = acFields.modes.split("/").map(Number).filter(Number.isFinite);
+      if (nums.length > 0) ACOUSTIC_SPEC.modeRatios = nums.map((n) => n / denom);
+    }
+    requestRender();
+  }
+
   const badgeTasks = populateBlueprintsShell();
   await yieldTask();
   renderer = canvas ? await createGlRenderer(canvas) : null;
@@ -997,6 +1065,6 @@ export default async function start({ app, reason, $, chip, show, parse }) {
   requestRender();
   setTimeout(async () => {
     await syncVerifierBanner("summary");
-    await verifyBlueprintBadges(badgeTasks);
+    await hydrateSceneFromHolo(badgeTasks);
   }, 60);
 }

@@ -56,12 +56,8 @@ impl EngineConfig {
         target_refresh_hz: u32,
         worker_threads: u32,
     ) -> Result<Self, EngineConfigError> {
-        let one_second_micros = pow10_u64(two_u32() * three_u32());
-        let budget = if target_refresh_hz == 0 {
-            0
-        } else {
-            one_second_micros / u64::from(target_refresh_hz)
-        };
+        let budget = crate::prism_kernel::frameBudgetMicrosForHz(u64::from(target_refresh_hz))
+            .expect("verified Prism kernel frameBudgetMicrosForHz");
         Self::new(
             viewport_width,
             viewport_height,

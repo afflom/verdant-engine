@@ -1,0 +1,17 @@
+spec = "lexlean/entry/1"
+id = "verdant-engine-developer-relations"
+category = "label-word"
+surface_arity = 0
+frame = "atom"
+
+[denotation]
+kind = "document"
+module = "DevRel"
+component = "docPages"
+
+[[form]]
+id = "verdant-engine-developer-relations"
+channel = "text"
+surface = "Verdant Engine developer relations"
+canonical_source = true
+features = ["sentence-case", "singular"]

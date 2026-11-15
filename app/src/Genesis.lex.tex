@@ -205,7 +205,7 @@ definition{
   name: epochChainDirect,
   parameters: [],
   result: Bool,
-  body: ((epochStepValid (epochCosmogenic) (epochLithicHydrologic)) && ((epochStepValid (epochLithicHydrologic) (epochBioticEcological)) && ((epochStepValid (epochBioticEcological) (epochAgenticArchitectural)) && (((project (epochAgenticArchitectural) rank) =? (natThree)) && (((project (epochAgenticArchitectural) scaleNumer) =? (project (epochAgenticArchitectural) scaleDenom)) && (project (epochAgenticArchitectural) buildersActive)))))),
+  body: (if (epochStepValid (epochCosmogenic) (epochLithicHydrologic)) then (if (epochStepValid (epochLithicHydrologic) (epochBioticEcological)) then (if (epochStepValid (epochBioticEcological) (epochAgenticArchitectural)) then (if ((project (epochAgenticArchitectural) rank) =? (natThree)) then (if ((project (epochAgenticArchitectural) scaleNumer) =? (project (epochAgenticArchitectural) scaleDenom)) then (project (epochAgenticArchitectural) buildersActive) else false) else false) else false) else false) else false),
   axioms: []
 }
 
@@ -230,7 +230,7 @@ definition{
   name: sevenBlueprintsDirect,
   parameters: [],
   result: Bool,
-  body: ((((project (blueprintHarmonicRotunda) index) =? 0) && (blueprintValid (blueprintHarmonicRotunda))) && ((((project (blueprintMeridianSundial) index) =? 1) && (blueprintValid (blueprintMeridianSundial))) && ((((project (blueprintModalChimePergola) index) =? (natTwo)) && (blueprintValid (blueprintModalChimePergola))) && ((((project (blueprintQuartzTorsionChamber) index) =? (natThree)) && (blueprintValid (blueprintQuartzTorsionChamber))) && ((((project (blueprintLagoonPierCauseway) index) =? (natFour)) && (blueprintValid (blueprintLagoonPierCauseway))) && ((((project (blueprintGeodesicTravertinePaths) index) =? (natFive)) && (blueprintValid (blueprintGeodesicTravertinePaths))) && (((project (blueprintPerimeterSentinelRover) index) =? (natSix)) && (blueprintValid (blueprintPerimeterSentinelRover))))))))),
+  body: (if (((project (blueprintHarmonicRotunda) index) =? 0) && (blueprintValid (blueprintHarmonicRotunda))) then (if (((project (blueprintMeridianSundial) index) =? 1) && (blueprintValid (blueprintMeridianSundial))) then (if (((project (blueprintModalChimePergola) index) =? (natTwo)) && (blueprintValid (blueprintModalChimePergola))) then (if (((project (blueprintQuartzTorsionChamber) index) =? (natThree)) && (blueprintValid (blueprintQuartzTorsionChamber))) then (if (((project (blueprintLagoonPierCauseway) index) =? (natFour)) && (blueprintValid (blueprintLagoonPierCauseway))) then (if (((project (blueprintGeodesicTravertinePaths) index) =? (natFive)) && (blueprintValid (blueprintGeodesicTravertinePaths))) then (((project (blueprintPerimeterSentinelRover) index) =? (natSix)) && (blueprintValid (blueprintPerimeterSentinelRover))) else false) else false) else false) else false) else false) else false),
   axioms: []
 }
 

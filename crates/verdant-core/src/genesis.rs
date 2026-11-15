@@ -28,14 +28,15 @@ use crate::math::{
 /// edge, placing the maximum eccentricity at `1/2 - 1/3 = 1/6`.
 #[must_use]
 pub fn heyman_middle_third_limit() -> f64 {
-    let six = (nth_prime_u64(0) * nth_prime_u64(1)) as f64;
+    let six = crate::prism_kernel::heymanMiddleThirdDenom()
+        .expect("verified Prism kernel heymanMiddleThirdDenom") as f64;
     1.0 / six
 }
 
 /// Constructive minimum structural compressive and overturning safety factor (`2.0`).
 #[must_use]
 pub fn minimum_structural_safety_factor() -> f64 {
-    two_f64()
+    crate::prism_kernel::minimumSafetyFactor() as f64
 }
 
 /// Parametric physical environment of a planetary or artificial world scene.

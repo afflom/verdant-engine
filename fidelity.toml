@@ -1405,9 +1405,179 @@ record = "Design::viewUmlVerifierStates"
 axis = "meant"
 
 [[closed]]
+kappa = "f74ee9949adad35aaad25d066b35071e7db8631fa3581d0e609ddf85dce51dd9"
+record = "DevRel::controlCameraMode"
+axis = "derived"
+
+[[closed]]
+kappa = "fe957d7a0eadc660f8dd7e7e2f1577148d384e8a1d5419b7e9d415b49a35459c"
+record = "DevRel::controlCameraMode"
+axis = "meant"
+
+[[closed]]
+kappa = "ece8c0fd97dff5bad64378e7558fd47b6b165c14453ee4f7e91b899c09b3dab2"
+record = "DevRel::controlDocsNavigation"
+axis = "derived"
+
+[[closed]]
+kappa = "f7f94fed96909a4d55bd75e74bc30a21960f22a43b0db085076de099a4ddf244"
+record = "DevRel::controlDocsNavigation"
+axis = "meant"
+
+[[closed]]
+kappa = "971eeff5f8c0e153be270b79684fee96b04d3d54eb0f710ea9c6282a6a8cdc83"
+record = "DevRel::controlEpochScrubber"
+axis = "derived"
+
+[[closed]]
+kappa = "087e31e7357ad2b65187ae165054883bbeee651ab4ee2a9263af6cb2abef03f7"
+record = "DevRel::controlEpochScrubber"
+axis = "meant"
+
+[[closed]]
+kappa = "fecf6f4401ffafd174dd2f84faa92f69e8c4665d66846a7f549013bae1e6df52"
+record = "DevRel::controlGlbExport"
+axis = "derived"
+
+[[closed]]
+kappa = "1dadaf4ca301b05b3619a3600dd453c5a6bf76479d2956c60e71ae9be121db81"
+record = "DevRel::controlGlbExport"
+axis = "meant"
+
+[[closed]]
+kappa = "a3d0788f9ebbf8861fbaac96d5dd7ff80c3f932e24241901ec513d33b29265b1"
+record = "DevRel::controlSimulationMode"
+axis = "derived"
+
+[[closed]]
+kappa = "a337d9e3e7e8cf65b94e27a1e4a68c5aa946d0824278bbbd8ab9f2178969b2ab"
+record = "DevRel::controlSimulationMode"
+axis = "meant"
+
+[[closed]]
+kappa = "a9bbe2441c17b7ba9c1992e95e13ef55127f06b90af8bb1175f81351448a5e59"
+record = "DevRel::controlSpatialAudio"
+axis = "derived"
+
+[[closed]]
+kappa = "b40f60a2fac75c870e9c8731728802884d4075f9ecde932d5beccdeae3077448"
+record = "DevRel::controlSpatialAudio"
+axis = "meant"
+
+[[closed]]
+kappa = "0c885fb32de0767d77c34c900388fbf18b9018eb1304b756185d20f1e68aa3b1"
+record = "DevRel::docApiReference"
+axis = "derived"
+
+[[closed]]
+kappa = "361311447890018e4539bc9f4be3a2581fbe844316afe8f08b258ab0845f6a78"
+record = "DevRel::docApiReference"
+axis = "meant"
+
+[[closed]]
+kappa = "c95a825d2d74c9ce1923af35c1bd5685768c3cfe54b82c9b2d8528f0c47ec6cf"
+record = "DevRel::docArchitecture"
+axis = "derived"
+
+[[closed]]
+kappa = "c75bbc254feca9be4d891902a9764071bf6f77c34f07fbe9fdbe0b484f3bcc25"
+record = "DevRel::docArchitecture"
+axis = "meant"
+
+[[closed]]
+kappa = "0d6798f26e8277ee2b324eac7c461f7b658173b27ae32dd0810ad9088d180149"
+record = "DevRel::docAssetPipeline"
+axis = "derived"
+
+[[closed]]
+kappa = "54bb53b4b0ad5811d11cd68fb05d100976b456f0a457eaf154b2acce7f83b675"
+record = "DevRel::docAssetPipeline"
+axis = "meant"
+
+[[closed]]
+kappa = "ddfe0b58e951e7ed38d4299e3177ab15c22380687ba44fdc27172b67c3a44ffa"
+record = "DevRel::docCustomGame"
+axis = "derived"
+
+[[closed]]
+kappa = "36f0c94d4205a8db16b0b24b1ff0589d242db40961f1e077aa4996cd38ab03a9"
+record = "DevRel::docCustomGame"
+axis = "meant"
+
+[[closed]]
+kappa = "6f8c6e88c3612a548fbc7c0bf36d904f8c738c5d96dc9bc76a09df460ec855c8"
+record = "DevRel::docFirstScene"
+axis = "derived"
+
+[[closed]]
+kappa = "7ee096b08fe20a493d28646145372e0eea3ca343d6b59724dce2615891a083f2"
+record = "DevRel::docFirstScene"
+axis = "meant"
+
+[[closed]]
+kappa = "101f45eefa13a15e27fcef72ee4ce08f71008fb3c7c242d918c1b9401fc344c5"
+record = "DevRel::docLanding"
+axis = "derived"
+
+[[closed]]
+kappa = "f4fc7c41a50dafb12bab6fa09fd901287ce0f7996062fc7fe9093c0ec79a5924"
+record = "DevRel::docLanding"
+axis = "meant"
+
+[[closed]]
+kappa = "8b0c0e37411ffe19b41687ff1bd138ab877ec9c1841527dacb277d003ba246c0"
+record = "DevRel::sdkExampleCustomArena"
+axis = "derived"
+
+[[closed]]
+kappa = "fcb038f9742196c84c89560e23fae1c72c72468c7f3982148c0f4c5d9c0d7133"
+record = "DevRel::sdkExampleCustomArena"
+axis = "meant"
+
+[[closed]]
+kappa = "48b43bbaaf4c116a2e3c83bf3a46368403ed5f529955412581a905b6939c4c8a"
+record = "DevRel::sdkExampleHeadlessBenchmark"
+axis = "derived"
+
+[[closed]]
+kappa = "ccb3e4e2b2d343c7a68d6efe0d1cfaf0e3698f32f04ccda1e31a4bd42ba96af9"
+record = "DevRel::sdkExampleHeadlessBenchmark"
+axis = "meant"
+
+[[closed]]
+kappa = "02851a08f85f0abb6bd9282e8e69ec11ed7fe3fde095c1556445d7e2c8e1ae19"
+record = "DevRel::sdkExampleSanctuary"
+axis = "derived"
+
+[[closed]]
+kappa = "0f07c0369baeca41e1dc1a3ad9dac23ae8bc0f5fdf6645b15b17376377a51392"
+record = "DevRel::sdkExampleSanctuary"
+axis = "meant"
+
+[[closed]]
+kappa = "d2fe1995ad9d9e1ee59a871e6bded6c867804341680c2c84eecc0a625e8c41a3"
+record = "DevRel::sdkStarterTemplate"
+axis = "derived"
+
+[[closed]]
+kappa = "d0b05c0989671922841f5e22182c399fb4f4b844859cc6b0c045100a324a7cab"
+record = "DevRel::sdkStarterTemplate"
+axis = "meant"
+
+[[closed]]
 kappa = "5e801d51bf3400942aef4abd405911d6eae32ace85578445b6f7e41383364c18"
 record = "Engine::application"
 axis = "derived"
+
+[[closed]]
+kappa = "80b24e9382fcdf9634c3666531aedfa38389fa2fa46f7e4cc05e0f6df7630d4a"
+record = "Engine::application"
+axis = "derived"
+
+[[closed]]
+kappa = "79cdd49296cfa6ec4e37eff966a0a4492275187342fe2cb186565a1d12c17431"
+record = "Engine::application"
+axis = "meant"
 
 [[closed]]
 kappa = "c4caf2090b4fc1ef3b918843934cb3c81b8ca5cf034d447bb3c3741740722fc5"
@@ -1422,6 +1592,36 @@ axis = "meant"
 [[closed]]
 kappa = "59ee5bad9e170ef8df853cf1fdf59ab25e3b07cbeb91f42e5dd7a78f68964a10"
 record = "Engine::vectors#1"
+axis = "meant"
+
+[[closed]]
+kappa = "77771fb059a24418602449d8d044ff8e041e5fed2cdff11008fac43031ebfc4c"
+record = "Engine::vectors#10"
+axis = "meant"
+
+[[closed]]
+kappa = "05a96e42bb0e522cd3e7850392409f1a843b4f3bb65e7ce625a1a9b3ea3b1ca9"
+record = "Engine::vectors#11"
+axis = "meant"
+
+[[closed]]
+kappa = "286e06d0253e07a8e5ebf54cf58ac9b6fa13e6ab364ef9f9fd863ef926d1090f"
+record = "Engine::vectors#12"
+axis = "meant"
+
+[[closed]]
+kappa = "bcafc415d793ba5af055920ef52f59dd70328ec5dd4e33b8c828673e312bc57b"
+record = "Engine::vectors#13"
+axis = "meant"
+
+[[closed]]
+kappa = "372be81c8a9c7c6270e7f8338895a6315a58e60eff0836c657fd3a2ee885d298"
+record = "Engine::vectors#14"
+axis = "meant"
+
+[[closed]]
+kappa = "ffd44fc913c663d19b77b0f47f0075c37cc9c65f55694bdff3ecfd4e8fb0b1b4"
+record = "Engine::vectors#15"
 axis = "meant"
 
 [[closed]]
@@ -1455,12 +1655,27 @@ record = "Engine::vectors#7"
 axis = "meant"
 
 [[closed]]
+kappa = "c72b9f0ce4de040cd9b8c03f0d97c0ef5d2016db12cca668c14553c15e134a68"
+record = "Engine::vectors#7"
+axis = "meant"
+
+[[closed]]
+kappa = "0568a96d6ed732c1a88070fafd3d29ba22ce61a47cfbe0aa8f1bc3ec571c7e29"
+record = "Engine::vectors#8"
+axis = "meant"
+
+[[closed]]
 kappa = "54bc2e79b0984643271fdea7d55e05b0f660a257aa854635927bd553c73da6bf"
 record = "Engine::vectors#8"
 axis = "meant"
 
 [[closed]]
 kappa = "3edac793510b43f1d285e1addfc25867d9979eaf4cb291f12ae7fd480e2fb06a"
+record = "Engine::vectors#9"
+axis = "meant"
+
+[[closed]]
+kappa = "8d05319a8e7a5be93441971d4b6abbd8ada213d66a480025b8c75b4fe3a122b2"
 record = "Engine::vectors#9"
 axis = "meant"
 
@@ -1788,6 +2003,11 @@ axis = "meant"
 kappa = "efae3e29996ce334fa307dc865440cacb795f6c600a0674f4e0d84c142c5207c"
 record = "Quality::measureAccessibilityScore"
 axis = "meant"
+
+[[closed]]
+kappa = "5c998181f7aea6b51db5275987403e8d18c0f86fac63a5111f0571377bb86428"
+record = "Quality::measureAccessibilityScore"
+axis = "measured"
 
 [[closed]]
 kappa = "139498f7b37346dafe77c71091ab09f106b42974d0397564e1eb2af0c94ad202"
@@ -2402,6 +2622,156 @@ axis = "meant"
 [[closed]]
 kappa = "6c83db489b6d2de190d8becdc920d8b0c566bc02e31e95c50313343772975156"
 record = "Security::threatVerifierQueryExhaustion"
+axis = "meant"
+
+[[closed]]
+kappa = "00dc94f6f342528844c8f537d469587a80f79b3d3c1cd6b35aa386f229a6d3a1"
+record = "Subsystems::canonicalDimensions"
+axis = "meant"
+
+[[closed]]
+kappa = "9978ce24171b7fee0305ee03d9ad56234460cda80986a2daad01afc5302de804"
+record = "Subsystems::epochVisual0"
+axis = "meant"
+
+[[closed]]
+kappa = "391d3623fbf67702088944a3b4c8616f4dab1ff3eb51e4c9b51e511d48ba38e5"
+record = "Subsystems::epochVisual1"
+axis = "meant"
+
+[[closed]]
+kappa = "dafdea4bc48edda80e3427b3574bc197606fb87c74241250295099eb51bd0590"
+record = "Subsystems::epochVisual2"
+axis = "meant"
+
+[[closed]]
+kappa = "68b6f19aa86e4698144728aa89c92459c9e38af7265e25136d912bad88b2b4e1"
+record = "Subsystems::epochVisual3"
+axis = "meant"
+
+[[closed]]
+kappa = "4ef50d460ef4f6a6c36ebf0405b703bf1ff88d61697c404d12e08197211b48be"
+record = "Subsystems::placement0"
+axis = "meant"
+
+[[closed]]
+kappa = "745874790c8315de9ad186f77452b34a1e19b0d76dada858ed22d7aaaba88353"
+record = "Subsystems::placement1"
+axis = "meant"
+
+[[closed]]
+kappa = "1c944dd92be0afa687c2a2088c2f1fb3347f21a9f7282b83d03834eee296181a"
+record = "Subsystems::placement2"
+axis = "meant"
+
+[[closed]]
+kappa = "62dd2a827471592bbf405312657d50819fa3daaea0fb2727b291c6300bdb84f3"
+record = "Subsystems::placement3"
+axis = "meant"
+
+[[closed]]
+kappa = "165e437faaf5b19c0de061e65327fae54d012d7b83723d31b7677fa79b40bae6"
+record = "Subsystems::placement4"
+axis = "meant"
+
+[[closed]]
+kappa = "7f1e9c82108efaa303a8d319d958e2ea704f8d0a7b5d67759ba8fb780f3365f5"
+record = "Subsystems::placement5"
+axis = "meant"
+
+[[closed]]
+kappa = "8defe86ace05c58a3c8d1011cff65ce5e1a7cb04d3e48b199572c4f13a87286a"
+record = "Subsystems::placement6"
+axis = "meant"
+
+[[closed]]
+kappa = "71c8ca6f4ce4bcf9fe3f4f59e5ae3c9be708426f4cf1ab8ae1ea4f35779aaec3"
+record = "Subsystems::subsystemEcsBvh"
+axis = "derived"
+
+[[closed]]
+kappa = "9971e8bdd7a89833de06361d2d12edaf71291c47c005d7acc68b1618cef2547f"
+record = "Subsystems::subsystemEcsBvh"
+axis = "meant"
+
+[[closed]]
+kappa = "3e9b8cd48f6242674a220191b37cacab5ff24d050e68752c43b8e1c3ad4a79ff"
+record = "Subsystems::subsystemGenesis"
+axis = "derived"
+
+[[closed]]
+kappa = "813915b6e0e9a45e4e0d905a881c391244f1a437950a75e33e9ff6b0974cb5a1"
+record = "Subsystems::subsystemGenesis"
+axis = "meant"
+
+[[closed]]
+kappa = "a25d6d7199e5f5c3b19b3d766e17513dfd56b2d3a42b5763f5079d19b4d027f1"
+record = "Subsystems::subsystemGeometry"
+axis = "derived"
+
+[[closed]]
+kappa = "a6bde1fd429f8186f5b619b7bcc358a8c76da5ee5200ca1d965aceedf217affd"
+record = "Subsystems::subsystemGeometry"
+axis = "meant"
+
+[[closed]]
+kappa = "1d6e8a5164a4b48e1d31566d49338647ad801996e3ada7123c741b46ff0b0e5c"
+record = "Subsystems::subsystemGltfExport"
+axis = "derived"
+
+[[closed]]
+kappa = "99ae17501ab34896b57fdc419a3caa46b8ded4b55c81219fff12d34544e8392e"
+record = "Subsystems::subsystemGltfExport"
+axis = "meant"
+
+[[closed]]
+kappa = "14d9e566bae302f67da06b01618312ca7b41fb9b628d1d2f984cc2613de7576e"
+record = "Subsystems::subsystemJobSnapshots"
+axis = "derived"
+
+[[closed]]
+kappa = "359e10356b3c21db67f045aed016783544550d18e302ab8225f7993bba024154"
+record = "Subsystems::subsystemJobSnapshots"
+axis = "meant"
+
+[[closed]]
+kappa = "3758ffd6a123549396ff3806d510ddaf46fda619cdf3e124c69aa48f56d9bc34"
+record = "Subsystems::subsystemMath"
+axis = "derived"
+
+[[closed]]
+kappa = "82ee31bb7e265b25b9379c0ccbbd4e38023b41a1d91e10b4612a260581079dd2"
+record = "Subsystems::subsystemMath"
+axis = "meant"
+
+[[closed]]
+kappa = "131a158603ae70a0577593dfd85195cd402276aee8169a0e162fbc4e00c09af5"
+record = "Subsystems::subsystemModalAudio"
+axis = "derived"
+
+[[closed]]
+kappa = "d0676442d0fd128a8c9893b7ac195ccf84fb554155f5227b6f048f0c60fecab5"
+record = "Subsystems::subsystemModalAudio"
+axis = "meant"
+
+[[closed]]
+kappa = "e26c08e0dbcf46711446949f83eff6c7445403ffc636c55ee1159afd58ed2b80"
+record = "Subsystems::subsystemPhysicsRover"
+axis = "derived"
+
+[[closed]]
+kappa = "7d963ad1f2295116a3fe11f7b60249f4a89d3f628125c7c9d7d1660b67fe0b63"
+record = "Subsystems::subsystemPhysicsRover"
+axis = "meant"
+
+[[closed]]
+kappa = "6092757342bbd2aa07ed35448dc9f054221d361aa84d741fadb38a017fd75bf6"
+record = "Subsystems::subsystemRenderWgsl"
+axis = "derived"
+
+[[closed]]
+kappa = "9ff76bb48088b8f7700ae2b4ea60514a0fa7e8ef67ac341697b9ee92391fccf7"
+record = "Subsystems::subsystemRenderWgsl"
 axis = "meant"
 
 [[closed]]
@@ -3051,6 +3421,42 @@ axis = "derived"
 reason = "no derivation names it (prov:wasDerivedFrom)"
 
 [[residue]]
+kappa = "022aebfce0087d34594dc5a213d72c07ef4fb4d2573727a50b56aa06259b2e6f"
+record = "Engine::vectors#10"
+axis = "derived"
+reason = "no derivation names it (prov:wasDerivedFrom)"
+
+[[residue]]
+kappa = "852e49261a4f9792f2bbd7c5bd15f6abf9dd2cd1571086e33c15298e780dc263"
+record = "Engine::vectors#11"
+axis = "derived"
+reason = "no derivation names it (prov:wasDerivedFrom)"
+
+[[residue]]
+kappa = "4355d64e9841c162a7885b4163b58bfdef5c6189ce5d0ac47d1c12deb3ad6a6a"
+record = "Engine::vectors#12"
+axis = "derived"
+reason = "no derivation names it (prov:wasDerivedFrom)"
+
+[[residue]]
+kappa = "bfcce10012380944f631ea972a9d0b10e5cdf955f6e3082fa041dea0881ac1a4"
+record = "Engine::vectors#13"
+axis = "derived"
+reason = "no derivation names it (prov:wasDerivedFrom)"
+
+[[residue]]
+kappa = "27749c235a9b1345a5d5d48203afddbb215061607cd3f89f9101c7f26b92fcd9"
+record = "Engine::vectors#14"
+axis = "derived"
+reason = "no derivation names it (prov:wasDerivedFrom)"
+
+[[residue]]
+kappa = "6cbdefce1b7d2ca2e88d0c56f300915f76c58b30f7999523790d0a39996caffb"
+record = "Engine::vectors#15"
+axis = "derived"
+reason = "no derivation names it (prov:wasDerivedFrom)"
+
+[[residue]]
 kappa = "9b2c91412b67f8c1540ad3996f5a316e34cf06f3899ed799160606f89e435b78"
 record = "Engine::vectors#2"
 axis = "derived"
@@ -3081,19 +3487,19 @@ axis = "derived"
 reason = "no derivation names it (prov:wasDerivedFrom)"
 
 [[residue]]
-kappa = "60caf701c32eb5b60665df74ff1b57a2b6f57fee5bede9a0ad3553eac1adf285"
+kappa = "29435488932b65f3032f684d80e6d6c4ae8945ab3a5bf8d27596bc54e83245a3"
 record = "Engine::vectors#7"
 axis = "derived"
 reason = "no derivation names it (prov:wasDerivedFrom)"
 
 [[residue]]
-kappa = "f72d5250cfe8dbfa2e2a93649700ca080a949517d5895175c0bf90787e0201d6"
+kappa = "bd8a407c7f2e80bfcff9426c63ba198f85fee2f7335d810fa46e0944eff40564"
 record = "Engine::vectors#8"
 axis = "derived"
 reason = "no derivation names it (prov:wasDerivedFrom)"
 
 [[residue]]
-kappa = "4ebd0facca7ef433a0c5cc76491835aca79b8acc73adaef72691a8e9c77266af"
+kappa = "5c462aeecdde0f9f649709721346c2322dbea9678359b9d27a621495a13706e3"
 record = "Engine::vectors#9"
 axis = "derived"
 reason = "no derivation names it (prov:wasDerivedFrom)"
@@ -3127,12 +3533,6 @@ kappa = "29000f20934f14dbfeb886d52b8a34a9175cb965ed0ed48297e6d62c1f3c615b"
 record = "Quality::measureAccessibilityScore"
 axis = "derived"
 reason = "no derivation names it (prov:wasDerivedFrom)"
-
-[[residue]]
-kappa = "5c998181f7aea6b51db5275987403e8d18c0f86fac63a5111f0571377bb86428"
-record = "Quality::measureAccessibilityScore"
-axis = "measured"
-reason = "no indicator named for it has a measurement result (ISO/IEC/IEEE 15939)"
 
 [[residue]]
 kappa = "6e5129831e0be73e4896a4fb2f0249729d26d20331611be42e59b7031f0622ab"
@@ -3359,6 +3759,78 @@ reason = "no derivation names it (prov:wasDerivedFrom)"
 [[residue]]
 kappa = "fb4acc8a97d7b99fb891130ce82992ad9515335c6038bb6924c5d48e9057653c"
 record = "Security::threatVerifierQueryExhaustion"
+axis = "derived"
+reason = "no derivation names it (prov:wasDerivedFrom)"
+
+[[residue]]
+kappa = "0bc2875cefa2e3b8bf843e56f3accbfcaf463e4ab04f268e889a7ac443c56ae6"
+record = "Subsystems::canonicalDimensions"
+axis = "derived"
+reason = "no derivation names it (prov:wasDerivedFrom)"
+
+[[residue]]
+kappa = "84bb34ee78b018ff5ead486ab983d8adb1cedbde3fe72b2e7a67922b1d1055ec"
+record = "Subsystems::epochVisual0"
+axis = "derived"
+reason = "no derivation names it (prov:wasDerivedFrom)"
+
+[[residue]]
+kappa = "24a4d4916866aeda343e8e33d29aea9da66edfe9796788e98383ac06d14a299d"
+record = "Subsystems::epochVisual1"
+axis = "derived"
+reason = "no derivation names it (prov:wasDerivedFrom)"
+
+[[residue]]
+kappa = "453137903cfafc852394f1dbf3743e16b74faecbe03e8cf136e91113a084fdd4"
+record = "Subsystems::epochVisual2"
+axis = "derived"
+reason = "no derivation names it (prov:wasDerivedFrom)"
+
+[[residue]]
+kappa = "bf10d7de60e9ab7d966201e5839d2db4a648aa9bdcc4ad272f0187a7b58771e7"
+record = "Subsystems::epochVisual3"
+axis = "derived"
+reason = "no derivation names it (prov:wasDerivedFrom)"
+
+[[residue]]
+kappa = "88bfab43a64e9ca598c00fec93c369c3fba7ce27054a3274ec70df3cc4faf9d6"
+record = "Subsystems::placement0"
+axis = "derived"
+reason = "no derivation names it (prov:wasDerivedFrom)"
+
+[[residue]]
+kappa = "47f61e3fa9645f9f4936528f35f0a477ca9e1969fca40ca45dbef4c77d12f66c"
+record = "Subsystems::placement1"
+axis = "derived"
+reason = "no derivation names it (prov:wasDerivedFrom)"
+
+[[residue]]
+kappa = "22fbedbeb75c62a3601ee3c85f934bc727051e4816d7698a70ba2d1fe7717af7"
+record = "Subsystems::placement2"
+axis = "derived"
+reason = "no derivation names it (prov:wasDerivedFrom)"
+
+[[residue]]
+kappa = "0cc2520e550fff7231738a95bd34350de756e8aca14f094455b5094391715e86"
+record = "Subsystems::placement3"
+axis = "derived"
+reason = "no derivation names it (prov:wasDerivedFrom)"
+
+[[residue]]
+kappa = "b13f175fdacd6d0d1410b325b285a95d1222156a51d07a4cec59b1daff19f4d3"
+record = "Subsystems::placement4"
+axis = "derived"
+reason = "no derivation names it (prov:wasDerivedFrom)"
+
+[[residue]]
+kappa = "856839b889247137b448d4b8708783688e51b806c3eeb438abe4d44d73941d1a"
+record = "Subsystems::placement5"
+axis = "derived"
+reason = "no derivation names it (prov:wasDerivedFrom)"
+
+[[residue]]
+kappa = "fbe495a4b0716596c4dc8348de723528b350dc715126fa5defaaf26cbba34113"
+record = "Subsystems::placement6"
 axis = "derived"
 reason = "no derivation names it (prov:wasDerivedFrom)"
 

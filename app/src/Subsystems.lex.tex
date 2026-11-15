@@ -1,0 +1,576 @@
+\begin{lexlean}{Subsystems}
+\useglossary{lexlean.std.bool@1.2.0}
+\useglossary{lexlean.std.nat@1.2.0}
+\useglossary{prism.arch@1.0.0}
+\importmodule{Foundation.Ontology.V1.Model}
+\importmodule{Genesis}
+\title{Verdant Engine runtime subsystems}
+\begin{semanticmodule}
+structure{
+  name: EngineDimensions,
+  type_parameters: [],
+  parameters: [],
+  fields: [
+    {name: dimPlanar, type: Nat},
+    {name: dimSpatial, type: Nat},
+    {name: dimHomogeneous, type: Nat},
+    {name: frustumPlaneCount, type: Nat},
+    {name: gltfChunkAlignment, type: Nat},
+    {name: glbChunkHeaderBytes, type: Nat},
+    {name: glbFileHeaderBytes, type: Nat},
+    {name: snapshotDigestBytes, type: Nat}
+  ]
+}
+
+structure{
+  name: EpochVisualSpec,
+  type_parameters: [],
+  parameters: [],
+  fields: [
+    {name: rank, type: Nat},
+    {name: scaleNumer, type: Nat},
+    {name: scaleDenom, type: Nat},
+    {name: terrainAmpPercent, type: Nat},
+    {name: waterActive, type: Bool},
+    {name: floraActive, type: Bool},
+    {name: buildersActive, type: Bool},
+    {name: skyRedPercent, type: Nat},
+    {name: skyGreenPercent, type: Nat},
+    {name: skyBluePercent, type: Nat},
+    {name: fogRedPercent, type: Nat},
+    {name: fogGreenPercent, type: Nat},
+    {name: fogBluePercent, type: Nat}
+  ]
+}
+
+structure{
+  name: BlueprintPlacementSpec,
+  type_parameters: [],
+  parameters: [],
+  fields: [
+    {name: index, type: Nat},
+    {name: xTenths, type: Nat},
+    {name: xNeg, type: Bool},
+    {name: yTenths, type: Nat},
+    {name: zTenths, type: Nat},
+    {name: zNeg, type: Bool},
+    {name: orbitDistanceMeters, type: Nat},
+    {name: followRover, type: Bool}
+  ]
+}
+
+structure{
+  name: SubsystemSpec,
+  type_parameters: [],
+  parameters: [],
+  fields: [
+    {name: index, type: Nat},
+    {name: stratum, type: Nat},
+    {name: name, type: String},
+    {name: text, type: String}
+  ]
+}
+
+definition{name: sTwo, parameters: [], result: Nat, body: (1 + 1)}
+
+definition{name: sThree, parameters: [], result: Nat, body: ((sTwo) + 1)}
+
+definition{
+  name: sFour,
+  parameters: [],
+  result: Nat,
+  body: (Foundation.Ontology.V1.Model::pow2Constructive (sTwo))
+}
+
+definition{name: sFive, parameters: [], result: Nat, body: ((sFour) + 1)}
+
+definition{name: sSix, parameters: [], result: Nat, body: (prim multiply (sTwo) (sThree) : Nat)}
+
+definition{name: sSeven, parameters: [], result: Nat, body: ((sSix) + 1)}
+
+definition{
+  name: sEight,
+  parameters: [],
+  result: Nat,
+  body: (Foundation.Ontology.V1.Model::pow2Constructive (sThree))
+}
+
+definition{name: sNine, parameters: [], result: Nat, body: (prim multiply (sThree) (sThree) : Nat)}
+
+definition{name: sTen, parameters: [], result: Nat, body: (prim multiply (sTwo) (sFive) : Nat)}
+
+definition{name: sEleven, parameters: [], result: Nat, body: ((sTen) + 1)}
+
+definition{name: sTwelve, parameters: [], result: Nat, body: (prim multiply (sThree) (sFour) : Nat)}
+
+definition{
+  name: sFourteen,
+  parameters: [],
+  result: Nat,
+  body: (prim multiply (sTwo) (sSeven) : Nat)
+}
+
+definition{name: sFifteen, parameters: [], result: Nat, body: ((sFourteen) + 1)}
+
+definition{
+  name: sSixteen,
+  parameters: [],
+  result: Nat,
+  body: (Foundation.Ontology.V1.Model::pow2Constructive (sFour))
+}
+
+definition{name: sSeventeen, parameters: [], result: Nat, body: ((sSixteen) + 1)}
+
+definition{name: sEighteen, parameters: [], result: Nat, body: (prim multiply (sTwo) (sNine) : Nat)}
+
+definition{name: sNineteen, parameters: [], result: Nat, body: ((sEighteen) + 1)}
+
+definition{
+  name: sTwentyTwo,
+  parameters: [],
+  result: Nat,
+  body: (prim multiply (sTwo) (sEleven) : Nat)
+}
+
+definition{name: sTwentyThree, parameters: [], result: Nat, body: ((sTwentyTwo) + 1)}
+
+definition{
+  name: sTwentyFour,
+  parameters: [],
+  result: Nat,
+  body: (prim multiply (sThree) (sEight) : Nat)
+}
+
+definition{
+  name: sTwentySix,
+  parameters: [],
+  result: Nat,
+  body: (prim multiply (sTwo) ((sTwelve) + 1) : Nat)
+}
+
+definition{
+  name: sTwentySeven,
+  parameters: [],
+  result: Nat,
+  body: (prim multiply (sThree) (sNine) : Nat)
+}
+
+definition{name: sThirty, parameters: [], result: Nat, body: (prim multiply (sThree) (sTen) : Nat)}
+
+definition{name: sThirtyOne, parameters: [], result: Nat, body: ((sThirty) + 1)}
+
+definition{
+  name: sThirtyTwo,
+  parameters: [],
+  result: Nat,
+  body: (Foundation.Ontology.V1.Model::pow2Constructive (sFive))
+}
+
+definition{
+  name: sThirtyFour,
+  parameters: [],
+  result: Nat,
+  body: (prim multiply (sTwo) (sSeventeen) : Nat)
+}
+
+definition{
+  name: sThirtyFive,
+  parameters: [],
+  result: Nat,
+  body: (prim multiply (sFive) (sSeven) : Nat)
+}
+
+definition{
+  name: sThirtyEight,
+  parameters: [],
+  result: Nat,
+  body: (prim multiply (sTwo) (sNineteen) : Nat)
+}
+
+definition{name: sThirtyNine, parameters: [], result: Nat, body: ((sThirtyEight) + 1)}
+
+definition{name: sForty, parameters: [], result: Nat, body: (prim multiply (sFour) (sTen) : Nat)}
+
+definition{
+  name: sFortyFour,
+  parameters: [],
+  result: Nat,
+  body: (prim multiply (sFour) (sEleven) : Nat)
+}
+
+definition{name: sFifty, parameters: [], result: Nat, body: (prim multiply (sFive) (sTen) : Nat)}
+
+definition{
+  name: sFiftyFive,
+  parameters: [],
+  result: Nat,
+  body: (prim multiply (sFive) (sEleven) : Nat)
+}
+
+definition{name: sSixty, parameters: [], result: Nat, body: (prim multiply (sSix) (sTen) : Nat)}
+
+definition{
+  name: sSixtyFive,
+  parameters: [],
+  result: Nat,
+  body: ((Foundation.Ontology.V1.Model::pow2Constructive (sSix)) + 1)
+}
+
+definition{
+  name: sSeventyTwo,
+  parameters: [],
+  result: Nat,
+  body: (prim multiply (sEight) (sNine) : Nat)
+}
+
+definition{
+  name: sEightyFive,
+  parameters: [],
+  result: Nat,
+  body: (prim multiply (sFive) (sSeventeen) : Nat)
+}
+
+definition{name: sNinety, parameters: [], result: Nat, body: (prim multiply (sNine) (sTen) : Nat)}
+
+definition{
+  name: sNinetyTwo,
+  parameters: [],
+  result: Nat,
+  body: (prim multiply (sFour) (sTwentyThree) : Nat)
+}
+
+definition{
+  name: sNinetyFive,
+  parameters: [],
+  result: Nat,
+  body: (prim multiply (sFive) (sNineteen) : Nat)
+}
+
+definition{
+  name: sHundred,
+  parameters: [],
+  result: Nat,
+  body: (Foundation.Ontology.V1.Model::pow10Constructive (sTwo))
+}
+
+definition{
+  name: sOneEighty,
+  parameters: [],
+  result: Nat,
+  body: (prim multiply (sEighteen) (sTen) : Nat)
+}
+
+definition{
+  name: canonicalDimensions,
+  parameters: [],
+  result: EngineDimensions,
+  body: (record EngineDimensions {dimPlanar := (sTwo), dimSpatial := (sThree), dimHomogeneous := (sFour), frustumPlaneCount := (sSix), gltfChunkAlignment := (sFour), glbChunkHeaderBytes := (sEight), glbFileHeaderBytes := (sTwelve), snapshotDigestBytes := (sThirtyTwo)})
+}
+
+definition{name: heymanMiddleThirdDenom, parameters: [], result: Nat, body: (sSix)}
+
+definition{name: minimumSafetyFactor, parameters: [], result: Nat, body: (sTwo)}
+
+definition{name: roverWaypointCount, parameters: [], result: Nat, body: (sSixteen)}
+
+definition{name: roverPatrolRadiusMeters, parameters: [], result: Nat, body: (sTwentySix)}
+
+definition{name: percentDenominator, parameters: [], result: Nat, body: (sHundred)}
+
+definition{name: coordinateTenthsDenom, parameters: [], result: Nat, body: (sTen)}
+
+definition{
+  name: epochVisual0,
+  parameters: [],
+  result: EpochVisualSpec,
+  body: (record EpochVisualSpec {rank := 0, scaleNumer := 1, scaleDenom := (sEight), terrainAmpPercent := (sThirtyFive), waterActive := false, floraActive := false, buildersActive := false, skyRedPercent := (sNine), skyGreenPercent := (sEight), skyBluePercent := (sTwelve), fogRedPercent := (sFourteen), fogGreenPercent := (sEleven), fogBluePercent := (sSixteen)})
+}
+
+definition{
+  name: epochVisual1,
+  parameters: [],
+  result: EpochVisualSpec,
+  body: (record EpochVisualSpec {rank := 1, scaleNumer := (sTwo), scaleDenom := (sEight), terrainAmpPercent := (sSeventyTwo), waterActive := true, floraActive := false, buildersActive := false, skyRedPercent := (sTwelve), skyGreenPercent := (sSeventeen), skyBluePercent := (sTwentyFour), fogRedPercent := (sEighteen), fogGreenPercent := (sTwentyFour), fogBluePercent := (sThirtyOne)})
+}
+
+definition{
+  name: epochVisual2,
+  parameters: [],
+  result: EpochVisualSpec,
+  body: (record EpochVisualSpec {rank := (sTwo), scaleNumer := (sFive), scaleDenom := (sEight), terrainAmpPercent := (sNinetyTwo), waterActive := true, floraActive := true, buildersActive := false, skyRedPercent := (sSixteen), skyGreenPercent := (sTwentySeven), skyBluePercent := (sThirtyFour), fogRedPercent := (sTwentyFour), fogGreenPercent := (sThirtyFive), fogBluePercent := (sThirtyNine)})
+}
+
+definition{
+  name: epochVisual3,
+  parameters: [],
+  result: EpochVisualSpec,
+  body: (record EpochVisualSpec {rank := (sThree), scaleNumer := (sEight), scaleDenom := (sEight), terrainAmpPercent := (sHundred), waterActive := true, floraActive := true, buildersActive := true, skyRedPercent := (sEighteen), skyGreenPercent := (sThirty), skyBluePercent := (sThirtyEight), fogRedPercent := (sThirty), fogGreenPercent := (sForty), fogBluePercent := (sFortyFour)})
+}
+
+definition{
+  name: epochVisualByRank,
+  parameters: [rank : Nat],
+  result: EpochVisualSpec,
+  body: (if (rank =? 0) then (epochVisual0) else (if (rank =? 1) then (epochVisual1) else (if (rank =? (sTwo)) then (epochVisual2) else (epochVisual3))))
+}
+
+definition{
+  name: placement0,
+  parameters: [],
+  result: BlueprintPlacementSpec,
+  body: (record BlueprintPlacementSpec {index := 0, xTenths := 0, xNeg := false, yTenths := (sTwentyTwo), zTenths := 0, zNeg := false, orbitDistanceMeters := (sSixteen), followRover := false})
+}
+
+definition{
+  name: placement1,
+  parameters: [],
+  result: BlueprintPlacementSpec,
+  body: (record BlueprintPlacementSpec {index := 1, xTenths := (sNinetyFive), xNeg := false, yTenths := (sTwelve), zTenths := (sThirtyFive), zNeg := true, orbitDistanceMeters := (sNine), followRover := false})
+}
+
+definition{
+  name: placement2,
+  parameters: [],
+  result: BlueprintPlacementSpec,
+  body: (record BlueprintPlacementSpec {index := (sTwo), xTenths := (sNinety), xNeg := true, yTenths := (sEighteen), zTenths := (sForty), zNeg := true, orbitDistanceMeters := (sTen), followRover := false})
+}
+
+definition{
+  name: placement3,
+  parameters: [],
+  result: BlueprintPlacementSpec,
+  body: (record BlueprintPlacementSpec {index := (sThree), xTenths := (sSixtyFive), xNeg := true, yTenths := (sEighteen), zTenths := (sNinety), zNeg := false, orbitDistanceMeters := (sTen), followRover := false})
+}
+
+definition{
+  name: placement4,
+  parameters: [],
+  result: BlueprintPlacementSpec,
+  body: (record BlueprintPlacementSpec {index := (sFour), xTenths := (sFiftyFive), xNeg := false, yTenths := (sSix), zTenths := (sEightyFive), zNeg := false, orbitDistanceMeters := (sEleven), followRover := false})
+}
+
+definition{
+  name: placement5,
+  parameters: [],
+  result: BlueprintPlacementSpec,
+  body: (record BlueprintPlacementSpec {index := (sFive), xTenths := 0, xNeg := false, yTenths := (sEight), zTenths := (sFifty), zNeg := false, orbitDistanceMeters := (sEighteen), followRover := false})
+}
+
+definition{
+  name: placement6,
+  parameters: [],
+  result: BlueprintPlacementSpec,
+  body: (record BlueprintPlacementSpec {index := (sSix), xTenths := (sOneEighty), xNeg := false, yTenths := (sFifteen), zTenths := 0, zNeg := false, orbitDistanceMeters := (sEleven), followRover := true})
+}
+
+definition{
+  name: blueprintPlacementByIndex,
+  parameters: [idx : Nat],
+  result: BlueprintPlacementSpec,
+  body: (if (idx =? 0) then (placement0) else (if (idx =? 1) then (placement1) else (if (idx =? (sTwo)) then (placement2) else (if (idx =? (sThree)) then (placement3) else (if (idx =? (sFour)) then (placement4) else (if (idx =? (sFive)) then (placement5) else (placement6)))))))
+}
+
+definition{
+  name: terrainVertexCount,
+  parameters: [segs : Nat],
+  result: Nat,
+  body: (prim multiply (segs + 1) (segs + 1) : Nat)
+}
+
+definition{
+  name: terrainIndexCount,
+  parameters: [segs : Nat],
+  result: Nat,
+  body: (prim multiply (sSix) (prim multiply segs segs : Nat) : Nat)
+}
+
+definition{
+  name: meshTopologyValid,
+  parameters: [
+    vertexCount : Nat,
+    indexCount : Nat,
+    normalCount : Nat,
+    uvCount : Nat,
+    colorCount : Nat
+  ],
+  result: Bool,
+  body: (if (vertexCount =? 0) then false else (if (indexCount =? 0) then false else (if ((prim remainder indexCount (sThree) 0 : Nat) =? 0) then (if (normalCount =? vertexCount) then (if (uvCount =? vertexCount) then (colorCount =? vertexCount) else false) else false) else false)))
+}
+
+definition{
+  name: glbAlignedByteLength,
+  parameters: [rawBytes : Nat],
+  result: Nat,
+  body: (let align : Nat := (project (canonicalDimensions) gltfChunkAlignment); (let rem : Nat := (prim remainder rawBytes align 0 : Nat); (if (rem =? 0) then rawBytes else (rawBytes + (prim subtract align rem : Nat)))))
+}
+
+definition{
+  name: glbContainerByteLength,
+  parameters: [jsonAlignedBytes : Nat, binAlignedBytes : Nat],
+  result: Nat,
+  body: (let dims : EngineDimensions := (canonicalDimensions); ((project dims glbFileHeaderBytes) + (((project dims glbChunkHeaderBytes) + jsonAlignedBytes) + ((project dims glbChunkHeaderBytes) + binAlignedBytes))))
+}
+
+definition{
+  name: eulerBernoulliModeNumer,
+  parameters: [modeIndex : Nat],
+  result: Nat,
+  body: (let odd : Nat := ((prim multiply (sTwo) (modeIndex + 1) : Nat) + 1); (prim multiply odd odd : Nat))
+}
+
+definition{name: eulerBernoulliModeDenom, parameters: [], result: Nat, body: (sNine)}
+
+definition{name: sabinePrefactorNumer, parameters: [], result: Nat, body: (sTwentyFour)}
+
+definition{
+  name: sabinePrefactorDenom,
+  parameters: [],
+  result: Nat,
+  body: (prim multiply (sTen) (sFifteen) : Nat)
+}
+
+definition{name: rotundaAbsorptionNumer, parameters: [], result: Nat, body: 1}
+
+definition{name: meadowAbsorptionNumer, parameters: [], result: Nat, body: (sThree)}
+
+definition{name: absorptionDenom, parameters: [], result: Nat, body: (sFour)}
+
+definition{
+  name: maxNatPair,
+  parameters: [a : Nat, b : Nat],
+  result: Nat,
+  body: (if (a <=? b) then b else a)
+}
+
+definition{
+  name: canonicalPipelineMakespan,
+  parameters: [
+    transformsUs : Nat,
+    physicsUs : Nat,
+    bvhUs : Nat,
+    cullUs : Nat,
+    audioUs : Nat,
+    gpuSubmitUs : Nat
+  ],
+  result: Nat,
+  body: (let afterPhysics : Nat := (transformsUs + physicsUs); (let afterBvh : Nat := (afterPhysics + bvhUs); (let afterCullGpu : Nat := ((afterBvh + cullUs) + gpuSubmitUs); (let afterAudio : Nat := (afterPhysics + audioUs); (maxNatPair afterCullGpu afterAudio)))))
+}
+
+definition{
+  name: frameBudgetMicrosForHz,
+  parameters: [refreshHz : Nat],
+  result: Nat,
+  body: (let million : Nat := (Foundation.Ontology.V1.Model::pow10Constructive (sSix)); (if (refreshHz =? 0) then 0 else (prim quotient million refreshHz 0 : Nat)))
+}
+
+definition{
+  name: kernelParametersActive,
+  parameters: [],
+  result: Bool,
+  body: (if (((heymanMiddleThirdDenom) =? (sSix)) && ((minimumSafetyFactor) =? (sTwo))) then (if (((roverWaypointCount) =? (sSixteen)) && ((roverPatrolRadiusMeters) =? (sTwentySix))) then (if (((percentDenominator) =? (sHundred)) && ((coordinateTenthsDenom) =? (sTen))) then (if (((sabinePrefactorNumer) <? (sabinePrefactorDenom)) && ((absorptionDenom) =? (sFour))) then ((glbContainerByteLength (glbAlignedByteLength (sFive)) (sEight)) =? (sFortyFour)) else false) else false) else false) else false)
+}
+
+definition{
+  name: runtimeInvariantsDirect,
+  parameters: [],
+  result: Bool,
+  body: (if (kernelParametersActive) then (if ((terrainIndexCount (sFour)) =? (prim multiply (sSix) (sSixteen) : Nat)) then (if (meshTopologyValid (terrainVertexCount (sFour)) (terrainIndexCount (sFour)) (terrainVertexCount (sFour)) (terrainVertexCount (sFour)) (terrainVertexCount (sFour))) then (if ((eulerBernoulliModeNumer 0) <? (eulerBernoulliModeNumer 1)) then (if ((rotundaAbsorptionNumer) <? (meadowAbsorptionNumer)) then ((canonicalPipelineMakespan (sHundred) (sHundred) (sHundred) (sHundred) (sHundred) (sHundred)) <=? (frameBudgetMicrosForHz (sSixty))) else false) else false) else false) else false) else false)
+}
+
+definition{
+  name: subsystemMath,
+  parameters: [],
+  result: SubsystemSpec,
+  body: (record SubsystemSpec {index := 0, stratum := 0, name := "LinearAlgebraAndFrustum", text := "Vector, quaternion, matrix, ray, AABB, and six-plane Gribb-Hartmann frustum kernels derived without magic constants."})
+}
+
+definition{
+  name: subsystemEcsBvh,
+  parameters: [],
+  result: SubsystemSpec,
+  body: (record SubsystemSpec {index := 1, stratum := (sTwo), name := "ArchetypeEcsAndSahBvh", text := "Generational entity handles, hierarchical world-transform propagation, and surface-area-heuristic BVH raycast and frustum culling."})
+}
+
+definition{
+  name: subsystemGenesis,
+  parameters: [],
+  result: SubsystemSpec,
+  body: (record SubsystemSpec {index := (sTwo), stratum := 1, name := "CausalWorldGenesis", text := "Deterministic cosmic expansion from t_0 seed to t_obs observation synthesizing amphitheater terrain, flora, and seven Builder blueprints."})
+}
+
+definition{
+  name: subsystemGeometry,
+  parameters: [],
+  result: SubsystemSpec,
+  body: (record SubsystemSpec {index := (sThree), stratum := (sTwo), name := "ProceduralGeometryAndLSystems", text := "Heightfield terrain grids, Vitruvian entasis colonnades, Cardan astrolabe gimbals, and phyllotactic L-system botanical meshes."})
+}
+
+definition{
+  name: subsystemRenderWgsl,
+  parameters: [],
+  result: SubsystemSpec,
+  body: (record SubsystemSpec {index := (sFour), stratum := (sThree), name := "PbrMaterialsAndWgslShaders", text := "Metallic-roughness PBR material descriptors, shadow cascades, and W3C WGSL shaders validated by naga."})
+}
+
+definition{
+  name: subsystemGltfExport,
+  parameters: [],
+  result: SubsystemSpec,
+  body: (record SubsystemSpec {index := (sFive), stratum := (sFive), name := "BinaryGltfSceneExporter", text := "Aligned binary glTF 2.0 container serializer validated mechanically against the Khronos gltf reference crate."})
+}
+
+definition{
+  name: subsystemPhysicsRover,
+  parameters: [],
+  result: SubsystemSpec,
+  body: (record SubsystemSpec {index := (sSix), stratum := (sTwo), name := "SymplecticPhysicsAndRover", text := "Symplectic Euler rigid bodies, Archimedes lagoon buoyancy, player capsule ground clamping, and autonomous spline rover patrol."})
+}
+
+definition{
+  name: subsystemModalAudio,
+  parameters: [],
+  result: SubsystemSpec,
+  body: (record SubsystemSpec {index := (sSeven), stratum := (sSix), name := "SpatialModalAcoustics", text := "Euler-Bernoulli chime overtone synthesis, Woodworth interaural stereo panning, and Sabine RT60 reverberation."})
+}
+
+definition{
+  name: subsystemJobSnapshots,
+  parameters: [],
+  result: SubsystemSpec,
+  body: (record SubsystemSpec {index := (sEight), stratum := (sFour), name := "JobGraphAndWorldSnapshots", text := "Topological six-stage worker frame scheduler and deterministic IEEE-754 binary world snapshots with SHA-256 trailers."})
+}
+
+definition{
+  name: subsystems,
+  parameters: [],
+  result: (List SubsystemSpec),
+  body: (cons (subsystemMath) (cons (subsystemEcsBvh) (cons (subsystemGenesis) (cons (subsystemGeometry) (cons (subsystemRenderWgsl) (cons (subsystemGltfExport) (cons (subsystemPhysicsRover) (cons (subsystemModalAudio) (cons (subsystemJobSnapshots) (nil SubsystemSpec))))))))))
+}
+
+definition{
+  name: subsystemsNumbered,
+  parameters: [pos : Nat, items : (List SubsystemSpec)],
+  result: Bool,
+  body: (match items
+    | List.nil => true
+    | List.cons item rest => (if (((project item index) =? pos) && ((project item stratum) <=? (sSeven))) then (subsystemsNumbered (pos + 1) rest) else false)),
+  recursive_argument: items
+}
+
+theorem{
+  name: epochVisualsAndPlacementsVerified,
+  parameters: [],
+  statement: ((if ((project (canonicalDimensions) frustumPlaneCount) =? (sSix)) then (if (((project (epochVisual0) rank) =? 0) && (((project (epochVisual1) rank) =? 1) && (((project (epochVisual2) rank) =? (sTwo)) && ((project (epochVisual3) rank) =? (sThree))))) then (if (((project (placement0) index) =? 0) && (((project (placement1) index) =? 1) && (((project (placement2) index) =? (sTwo)) && ((project (placement3) index) =? (sThree))))) then (((project (placement4) index) =? (sFour)) && (((project (placement5) index) =? (sFive)) && ((project (placement6) followRover) && ((project (placement6) index) =? (sSix))))) else false) else false) else false) = true),
+  proof: decide{},
+  axioms: []
+}
+
+theorem{
+  name: engineSubsystemsVerified,
+  parameters: [],
+  statement: ((if ((runtimeInvariantsDirect) && (subsystemsNumbered 0 (subsystems))) then (if (((project (subsystemMath) index) =? 0) && (((project (subsystemEcsBvh) index) =? 1) && (((project (subsystemGenesis) index) =? (sTwo)) && ((project (subsystemGeometry) index) =? (sThree))))) then (((project (subsystemRenderWgsl) index) =? (sFour)) && (((project (subsystemGltfExport) index) =? (sFive)) && (((project (subsystemPhysicsRover) index) =? (sSix)) && (((project (subsystemModalAudio) index) =? (sSeven)) && (((project (subsystemJobSnapshots) index) =? (sEight)) && ((glbAlignedByteLength (sFive)) =? (sEight))))))) else false) else false) = true),
+  proof: decide{},
+  axioms: []
+}
+\end{semanticmodule}
+\end{lexlean}

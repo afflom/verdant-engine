@@ -77,6 +77,8 @@ statement = "Binary IEEE-754 world snapshots with SHA-256 trailers round-trip bi
 id = "VE-10"
 level = "build"
 suite = "engine"
+failure = "ComputeError"
+negative = "VE-10"
 statement = "The compiled Core-Wasm engine verifier proves monotonic expansion and Builder equilibrium in Lean without Classical.choice and answers queries deterministically"
 
 [[id]]

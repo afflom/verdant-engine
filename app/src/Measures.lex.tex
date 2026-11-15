@@ -2,6 +2,7 @@
 \useglossary{lexlean.std.bool@1.2.0}
 \useglossary{lexlean.std.nat@1.2.0}
 \useglossary{prism.arch@1.0.0}
+\importmodule{DevRel}
 \importmodule{Engine}
 \importmodule{Foundation.Experience.V1.Model}
 \importmodule{Foundation.Ontology.V1.Model}
@@ -92,6 +93,13 @@ definition{
   parameters: [],
   result: Nat,
   body: (Engine::maxAcceptedRequestBytes)
+}
+
+definition{
+  name: accessibilityScore,
+  parameters: [],
+  result: Nat,
+  body: (if (DevRel::studioControlsAccessible) then (Foundation.Ontology.V1.Model::pow10Constructive (1 + 1)) else 0)
 }
 \end{semanticmodule}
 \end{lexlean}

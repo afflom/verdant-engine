@@ -6,6 +6,12 @@
 spec = "prism/measures/1"
 
 [[measure]]
+record = "Quality::measureAccessibilityScore"
+method = "Measures::accessibilityScore"
+source = "app/src/Measures.lex.tex"
+direction = "atLeast"
+
+[[measure]]
 record = "Quality::measureUnstableBlueprints"
 method = "Measures::unstableBlueprints"
 source = "app/src/Measures.lex.tex"

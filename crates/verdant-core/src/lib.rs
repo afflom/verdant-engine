@@ -35,6 +35,16 @@ pub mod geometry;
 pub mod gltf_io;
 pub mod math;
 pub mod physics;
+#[doc(hidden)]
+#[allow(
+    dead_code,
+    non_snake_case,
+    non_camel_case_types,
+    unused_parens,
+    unused_variables,
+    clippy::all
+)]
+pub mod prism_kernel;
 pub mod render;
 pub mod runtime;
 

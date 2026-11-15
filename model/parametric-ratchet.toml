@@ -7,6 +7,8 @@ engine_rust_root = "crates/verdant-core/src"
 pure_zero_one_lex_modules = [
   "app/src/Foundation/Ontology/V1/Model.lex.tex",
   "app/src/Genesis.lex.tex",
+  "app/src/Subsystems.lex.tex",
+  "app/src/DevRel.lex.tex",
   "app/src/Measures.lex.tex",
   "app/src/Production/ThreatModel.lex.tex",
 ]
@@ -33,6 +35,11 @@ role = "Bounded deterministic byte slices and ordering primitives without Classi
 path = "app/src/Genesis.lex.tex"
 stratum = 1
 role = "Cosmological expansion epochs t_0 -> t_obs, Builder guild differentiation, and Heyman middle-third equilibrium."
+
+[[stratum_module]]
+path = "app/src/Subsystems.lex.tex"
+stratum = 1
+role = "Constructive {0, 1} runtime kernels for dimensions, epoch visuals, 3D blueprint coordinates, mesh/GLB topology, modal acoustics, and frame pipeline budgets."
 
 [[stratum_module]]
 path = "app/src/Foundation/Arch.lex.tex"
@@ -132,4 +139,9 @@ role = "Core-Wasm text application contract and deterministic acceptance vector 
 [[stratum_module]]
 path = "app/src/Engine.lex.tex"
 stratum = 7
-role = "Compiled Core-Wasm engine verifier entrypoint dispatching epoch and blueprint verification queries."
+role = "Compiled Core-Wasm engine verifier entrypoint dispatching epoch, blueprint, and live studio scene telemetry queries."
+
+[[stratum_module]]
+path = "app/src/DevRel.lex.tex"
+stratum = 7
+role = "Diataxis documentation suite, runnable SDK examples, browser starter template, and accessible Engine Studio controls."

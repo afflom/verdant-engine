@@ -62,6 +62,13 @@ impl ProceduralMesh {
         if self.normals.len() != v_count
             || self.uvs.len() != v_count
             || self.colors.len() != v_count
+            || !crate::prism_kernel::meshTopologyValid(
+                v_count as u64,
+                self.indices.len() as u64,
+                self.normals.len() as u64,
+                self.uvs.len() as u64,
+                self.colors.len() as u64,
+            )
         {
             return Err(AssetValidationError::AttributeLengthMismatch {
                 mesh_name: self.name.clone(),

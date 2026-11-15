@@ -52,7 +52,7 @@ version = "1.0.0"
 kind = "path"
 source = "language/prism.arch"
 revision = "none"
-tree_sha256 = "d4a0785e6b3123bba4cc8be161a636d7ffa635937ff7c483471368950bd7d5f9"
+tree_sha256 = "a4919b068de5a515acc66de8c8be18f717f4ac6f7a88c317baa7a8666d83a466"
 manifest_sha256 = "14c95df8b512edacacdb1788b58ae90cf573b4e3f1dca0e41074bfde5a380c9f"
 imports = ["lexlean.core@1.2.0", "lexlean.std.bool@1.2.0", "lexlean.std.nat@1.2.0"]
 
