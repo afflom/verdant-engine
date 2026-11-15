@@ -100,3 +100,10 @@ Feature: engine
     When a slope-filtered NavMesh is extracted and A-star corridor search runs
     Then agents receive deterministic multi-polygon corridors and unit steering vectors
     And disconnected polygon targets or out-of-bounds indices return NavigationError
+
+  @VE-15 @build
+  Scenario: The WebAssembly worker runtime bridge steps deterministic sanctuary physics, encodes and restores SHA-256 VDNT world snapshots within Prism envelope bounds, and refuses invalid epochs, ring overflows, or tampered payloads
+    Given a WasmRuntimeBridge initialized at the t_obs Builder sanctuary epoch
+    When worker frames step and VDNT snapshots are encoded and restored
+    Then rover kinematics, BVH visibility, and restored world state remain bit-exact
+    And invalid epoch ranks, command ring overflows, or tampered snapshot bytes return WasmBridgeError

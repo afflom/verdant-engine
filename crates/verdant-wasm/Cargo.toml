@@ -1,0 +1,21 @@
+[package]
+name = "verdant-wasm"
+description = "Safe WebAssembly simulation, physics, spatial acoustics, and authenticated VDNT world-snapshot bridge over verdant-core."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+authors.workspace = true
+keywords.workspace = true
+categories.workspace = true
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+verdant-core.workspace = true
+
+[lints]
+workspace = true

@@ -1765,6 +1765,16 @@ record = "DevRel::controlDocsNavigation"
 axis = "derived"
 
 [[closed]]
+kappa = "ef09ee97a300c8eb9a6a266205ad3dd74d954fd9575d7770e07dcede03835ea2"
+record = "DevRel::controlDocsNavigation"
+axis = "derived"
+
+[[closed]]
+kappa = "ad2dacd9933d71f94e38f8ffefafdb72b5749e51cdbd3557621b01b8a466d460"
+record = "DevRel::controlDocsNavigation"
+axis = "meant"
+
+[[closed]]
 kappa = "f7f94fed96909a4d55bd75e74bc30a21960f22a43b0db085076de099a4ddf244"
 record = "DevRel::controlDocsNavigation"
 axis = "meant"
@@ -1797,6 +1807,16 @@ axis = "derived"
 [[closed]]
 kappa = "a337d9e3e7e8cf65b94e27a1e4a68c5aa946d0824278bbbd8ab9f2178969b2ab"
 record = "DevRel::controlSimulationMode"
+axis = "meant"
+
+[[closed]]
+kappa = "30358639a58d94237f39425e658aa6e3f71e28a99b656de6f7995ff50f17ac3b"
+record = "DevRel::controlSnapshotShare"
+axis = "derived"
+
+[[closed]]
+kappa = "fc7c41219c810b879995ed54461596193e522cfef4f152fe4240e0d4a6f4daab"
+record = "DevRel::controlSnapshotShare"
 axis = "meant"
 
 [[closed]]
@@ -1907,6 +1927,16 @@ axis = "derived"
 [[closed]]
 kappa = "d0b05c0989671922841f5e22182c399fb4f4b844859cc6b0c045100a324a7cab"
 record = "DevRel::sdkStarterTemplate"
+axis = "meant"
+
+[[closed]]
+kappa = "082a1501e3d9384339d04c300e16909022b1a0acffd32428ce47f59d2bb09d9e"
+record = "DevRel::sdkVerdantWasm"
+axis = "derived"
+
+[[closed]]
+kappa = "b932b9cc01ca2c94858abae609dd2c435d81e6830e5ba945eff89569c2f095dc"
+record = "DevRel::sdkVerdantWasm"
 axis = "meant"
 
 [[closed]]

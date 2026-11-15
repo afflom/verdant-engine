@@ -114,6 +114,14 @@ negative = "VE-14"
 statement = "Slope-filtered terrain navigation meshes and admissible A-star corridor pathfinding steer autonomous agents around obstacles and refuse unwalkable endpoints or disconnected goals"
 
 [[id]]
+id = "VE-15"
+level = "build"
+suite = "engine"
+failure = "WasmBridgeError"
+negative = "VE-15"
+statement = "The WebAssembly worker runtime bridge steps deterministic sanctuary physics, encodes and restores SHA-256 VDNT world snapshots within Prism envelope bounds, and refuses invalid epochs, ring overflows, or tampered payloads"
+
+[[id]]
 id = "FR-01"
 level = "build"
 suite = "frame"

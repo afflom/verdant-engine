@@ -18,6 +18,7 @@ prism-fidelity = { version = "0.1.0", path = "crates/fidelity" }
 repo-model = { version = "0.1.0", path = "crates/model" }
 repo-conformance = { version = "0.1.0", path = "crates/conformance" }
 verdant-core = { version = "0.1.0", path = "crates/verdant-core" }
+verdant-wasm = { version = "0.1.0", path = "crates/verdant-wasm" }
 
 [workspace.lints.rust]
 missing_docs = "deny"
@@ -28,6 +29,8 @@ undocumented_unsafe_blocks = "deny"
 missing_safety_doc = "deny"
 
 [profile.release]
-opt-level = 3
-lto = "thin"
+opt-level = "z"
+lto = true
 codegen-units = 1
+strip = "symbols"
+panic = "abort"

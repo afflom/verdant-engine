@@ -672,3 +672,86 @@ fn engine_ve_14() {
         .expect_err("disconnected island must fail");
     assert!(matches!(unreach, NavigationError::UnreachableGoal { .. }));
 }
+
+/// `VE-15`: `WasmRuntimeBridge` steps sanctuary physics, encodes/restores SHA-256 `VDNT` snapshots, verifies `site/verdant-wasm.wasm`, and refuses invalid inputs.
+#[test]
+fn engine_ve_15() {
+    use verdant_wasm::{WasmBridgeError, WasmRuntimeBridge};
+
+    let mut bridge = WasmRuntimeBridge::new(7).expect("WasmRuntimeBridge::new");
+    assert_eq!(bridge.epoch_rank, 3);
+    assert_eq!(bridge.world.blueprints.len(), 7);
+    assert!(bridge.walkable_polygons > 100);
+
+    let rover_before = bridge
+        .physics
+        .sentinel_rover
+        .as_ref()
+        .expect("rover")
+        .position;
+    bridge
+        .step_frame(1.0 / 60.0, 1.0, 0.0, 0.0)
+        .expect("step_frame");
+    let rover_after = bridge
+        .physics
+        .sentinel_rover
+        .as_ref()
+        .expect("rover")
+        .position;
+    assert!((rover_after - rover_before).length() > 1e-4);
+
+    bridge.set_epoch_rank(1).expect("lithic epoch");
+    assert_eq!(bridge.epoch_rank, 1);
+    assert_eq!(bridge.world.blueprints.len(), 0);
+    let snap = bridge.encode_snapshot().expect("encode VDNT snapshot");
+    assert_eq!(&snap[0..4], b"VDNT");
+
+    bridge.set_epoch_rank(3).expect("back to t_obs");
+    assert_eq!(bridge.world.blueprints.len(), 7);
+    bridge
+        .decode_and_restore_snapshot(&snap)
+        .expect("restore VDNT snapshot");
+    assert_eq!(bridge.epoch_rank, 1);
+    assert_eq!(bridge.world.blueprints.len(), 0);
+
+    // Negative refusal 1: invalid epoch rank (> 3):
+    let bad_epoch = bridge
+        .set_epoch_rank(9)
+        .expect_err("invalid epoch rank must fail");
+    assert!(matches!(
+        bad_epoch,
+        WasmBridgeError::InvalidEpochRank { rank: 9 }
+    ));
+
+    // Negative refusal 2: tampered SHA-256 snapshot byte refused:
+    let mut tampered = snap;
+    let last = tampered.len() - 1;
+    tampered[last] ^= 0x5A;
+    let bad_snap = bridge
+        .decode_and_restore_snapshot(&tampered)
+        .expect_err("tampered snapshot must fail");
+    assert!(matches!(
+        bad_snap,
+        WasmBridgeError::InvalidSnapshotEnvelope { .. }
+    ));
+
+    // Negative refusal 3: worker command ring capacity overflow refused:
+    let mut overflow_bridge = WasmRuntimeBridge::new(7).expect("bridge");
+    for _ in 0..64 {
+        overflow_bridge.record_command().expect("within ring");
+    }
+    let ring_err = overflow_bridge
+        .record_command()
+        .expect_err("65th queued command must refuse");
+    assert!(matches!(
+        ring_err,
+        WasmBridgeError::CommandRingOverflow { capacity: 64 }
+    ));
+
+    // Verify committed site/verdant-wasm.wasm binary artifact has valid WebAssembly header:
+    let wasm_path = repo_model::repo_root()
+        .join("site")
+        .join("verdant-wasm.wasm");
+    let wasm_bytes = std::fs::read(&wasm_path).expect("site/verdant-wasm.wasm must exist");
+    assert_eq!(&wasm_bytes[0..4], b"\0asm");
+}

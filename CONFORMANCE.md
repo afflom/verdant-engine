@@ -36,6 +36,7 @@ model does not sanction.
 | `VE-12` | `build` | Four-cascade shadow frustum splits, GGX image-based lighting mip chains, five-pass GPU render graphs, and skinned shadow WGSL shaders validate cleanly and refuse invalid frusta or cyclic pass dependencies |
 | `VE-13` | `build` | Bounded 3D GJK convex hull collision detection, Baumgarte contact stabilization, and Coulomb friction cones resolve rigid-body contacts deterministically and refuse degenerate hulls |
 | `VE-14` | `build` | Slope-filtered terrain navigation meshes and admissible A-star corridor pathfinding steer autonomous agents around obstacles and refuse unwalkable endpoints or disconnected goals |
+| `VE-15` | `build` | The WebAssembly worker runtime bridge steps deterministic sanctuary physics, encodes and restores SHA-256 VDNT world snapshots within Prism envelope bounds, and refuses invalid epochs, ring overflows, or tampered payloads |
 
 ## fidelity
 

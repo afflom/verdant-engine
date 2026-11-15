@@ -59,6 +59,8 @@
 
 .rail .controls button,
 .rail .controls a.ghost {
+  min-width: 2.75rem;
+  justify-content: center;
   padding: 0 var(--space-3);
   white-space: nowrap;
 }

@@ -153,9 +153,11 @@ Verdant Engine is a multi-purpose commercial 3D browser and WebAssembly game eng
 - ExampleCustomGameArena: Runnable example crates/verdant-core/examples/custom_game_arena.rs stepping a custom physics arena with capsule controller and spatial audio.
 - ExampleHeadlessBenchmark: Runnable example crates/verdant-core/examples/headless_benchmark.rs executing the six-stage worker job graph and SHA-256 snapshot round-trip.
 - TemplateBrowser3DStarter: Standalone starter project templates/browser-3d-starter/Cargo.toml for building custom 3D browser and WebAssembly games on verdant-core.
+- VerdantWasmRuntime: Dedicated WebAssembly runtime crate crates/verdant-wasm/Cargo.toml driving off-thread simulation, frustum culling, spatial acoustics, and SHA-256 VDNT snapshots.
 - ve-epoch-btn: Cycles cosmic expansion epoch from initial Cosmogenic seed to present observation t_obs.
 - ve-sim-btn: Toggles between demand-driven stepped inspection and continuous 60fps orbital and rover simulation.
 - ve-cam-btn: Switches between 3D Orbit camera framing and First-Person WASD capsule walk mode.
 - ve-audio-btn: Toggles WebAudio Euler-Bernoulli modal chime harmonics and lagoon water acoustics.
 - ve-glb-btn: Serializes and downloads the active 3D scene as a standards-valid binary glTF 2.0 (.glb) asset.
+- ve-snap-btn: Encodes an authenticated SHA-256 VDNT binary world snapshot and copies a shareable #vdnt= studio URL.
 - ve-docs-link: Navigates directly from the Engine Studio bar to the Diataxis documentation suite.
