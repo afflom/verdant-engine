@@ -11,13 +11,19 @@ Verdant Engine is a universal commercial 3D browser, WebAssembly, and native gam
 
 ## Portable Prism-Hosted Tensor Kernels (`uor-matmul`)
 
-- StaticMeshTransformBatch: Exact Laurent 4x4 homogeneous world-view-projection vertex batch contraction via uor-matmul.
+- StaticMeshTransformBatch: Exact Laurent 4x4 homogeneous world-view-projection and scene hierarchy matrix contraction via uor-matmul.
 - LinearBlendSkinningBatch: Normalized four-joint skeletal skinning and morph target matrix contraction without intermediate rounding.
-- TropicalBvhVisibilityCull: Tropical max-plus semiring bounding-volume frustum and occlusion distance culling across scene hierarchies.
+- TropicalBvhVisibilityCull: Tropical max-plus semiring bounding-volume frustum and GJK directional support contraction across scene hierarchies.
 - TileFramebufferRasterizer: Portable 16x16 software tile depth-buffered PBR rasterizer hosting deterministic rendering without conditional browser GPU APIs.
-- ShadowCascadeProjector: Four-cascade directional shadow frustum projection and GGX roughness mip chain evaluation.
-- ModalAudioMixMatrix: Multi-emitter modal bar overtone synthesis, Woodworth stereo panning, and Sabine RT60 reverberation contraction.
+- ShadowCascadeProjector: Four-cascade directional shadow frustum projection, Delassus constraint effective mass, and GGX roughness mip evaluation.
+- ModalAudioMixMatrix: Multi-emitter modal FIR convolution, Woodworth stereo panning, and Sabine/Eyring feedback delay network contraction.
 - KinematicSplineController: Arc-length parameterized spline trajectory evaluation, GJK convex contact impulse solve, and A-star navmesh steering.
+- TropicalMinPlusNavClosure: Tropical min-plus semiring matrix squaring for exact all-pairs and corridor shortest-path closure over walkable navmeshes.
+- CodedStreamZeroDecodeGemm: Zero-decode uor_matmul::codec contraction over Grid, Packed, and Runs UORC frames without intermediate float expansion.
+- GridQuantizedGeometry: Fixed-width 16-entry Grid lookup CodedMatrix contracting quantized UORC mesh positions and normals directly into world space.
+- PackedNibbleAnimationTracks: Sub-byte 4-bit Packed<Grid<16>, 2> CodedMatrix streaming two animation curve samples per byte into exact pose accumulators.
+- SparseRunsIblProbes: Variable-length Runs<Grid<16>, 16> CodedMatrix contracting sparse environment irradiance and shadow cascade residuals.
+- InvalidZeroCodeTier: Invalid coded matrix tier with zero code width and narrow accumulator refused before execution.
 - ZeroExtentContraction: Invalid tensor contraction with zero inner extent refused before execution.
 - NarrowAccumulatorContraction: Invalid tensor contraction whose accumulator bit-width falls below exact Laurent overflow bounds.
 
@@ -141,6 +147,9 @@ Verdant Engine is a universal commercial 3D browser, WebAssembly, and native gam
 - NavMeshCorridorPathfinding: Slope-filtered walkable terrain navmeshes, bounded admissible A-star polygon search, and portal corridor steering.
 - BrowserWasmWorkerBridge: Dedicated WebAssembly simulation worker ring framing, 128-frame WebAudio worklet quanta, and bounded URL-safe VDNT snapshot envelopes.
 - CliAssetPackerAndOracle: Command-line binary glTF 2.0, WGSL, and UORC stream validator, multi-LOD scene packer, and headless 60fps benchmark.
+- GlbIngestionAndUorcTranscoder: Full Khronos binary glTF 2.0 scene hierarchy, skeletal skin, keyframe clip, and PBR material importer transcoding directly into progressive multi-LOD UORC streams.
+- XpbdJointsVehiclesAndOcclusion: Delassus and XPBD hinge, ball-socket, slider, and spring-damper rigid joints, swept capsule and four-wheel raycast vehicle controllers, and BVH acoustic occlusion.
+- DeterministicRollbackAndInputJournal: Frame-indexed SHA-256 input journals, 64-frame ring-buffered rollback resimulation, and UORC-compressed delta world snapshots for lockstep and rollback netcode.
 
 ## Developer Relations, Documentation, SDK Artifacts, and Studio Controls
 
@@ -156,6 +165,7 @@ Verdant Engine is a universal commercial 3D browser, WebAssembly, and native gam
 - TemplateBrowser3DStarter: Standalone starter project templates/browser-3d-starter/Cargo.toml for building custom 3D browser and WebAssembly games on verdant-core.
 - VerdantWasmRuntime: Dedicated WebAssembly runtime crate crates/verdant-wasm/Cargo.toml driving off-thread simulation, portable tensor rendering, spatial acoustics, and SHA-256 VDNT snapshots.
 - VerdantCliPacker: Command-line asset validator, progressive UORC, GLB, and VDNT scene packer, and headless 60fps benchmark crate crates/verdant-cli/Cargo.toml.
+- VerdantTensorCore: Pure no_std semiring tensor-logic substrate crate crates/verdant-tensor/Cargo.toml hosting linear, tropical, audio-ring, and zero-decode uor-matmul contractions.
 - ve-lod-btn: Cycles progressive UORC streaming level of detail from coarse collision proxy LOD0 to lossless source LOD3.
 - ve-sim-btn: Toggles between demand-driven stepped inspection and continuous 60fps orbital and spline mover simulation.
 - ve-cam-btn: Switches between 3D Orbit camera framing and First-Person WASD capsule walk mode.
@@ -163,6 +173,8 @@ Verdant Engine is a universal commercial 3D browser, WebAssembly, and native gam
 - ve-glb-btn: Serializes and downloads the active 3D scene as a standards-valid binary glTF 2.0 (.glb) asset.
 - ve-snap-btn: Encodes an authenticated SHA-256 VDNT binary world snapshot and copies a shareable #vdnt= studio URL.
 - ve-docs-link: Navigates directly from the Engine Studio bar to the Diataxis documentation suite.
+- ve-uorc-btn: Decodes the progressive multi-LOD UORC scene stream natively in WebAssembly via uorc_decompress and runs zero-decode coded_gemm contractions.
+- ve-viz-btn: Opens the interactive four-tab Engine Architecture, Semiring Matrix, Zero-Decode UORC, and Rollback Visual Inspector modal.
 
 ## Brand Identity and Context of Use
 

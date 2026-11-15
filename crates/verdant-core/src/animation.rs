@@ -94,7 +94,8 @@ impl Skeleton {
         })
     }
 
-    /// Evaluates skinning palette matrices `M_world(j) * M_inv_bind(j)` for a sampled pose.
+    /// Evaluates skinning palette matrices `M_world(j) * M_inv_bind(j)` for a sampled pose
+    /// via `verdant_tensor::propagate_hierarchy_matrices_exact` and `multiply_mat4_cols_exact`.
     pub fn evaluate_skinning_palette(
         &self,
         pose: &SampledPose,
@@ -108,22 +109,40 @@ impl Skeleton {
         }
 
         let unit_scale = Vec3::new(1.0, 1.0, 1.0);
-        let mut world_mats: Vec<Mat4> = Vec::with_capacity(self.joints.len());
-        let mut palette: Vec<Mat4> = Vec::with_capacity(self.joints.len());
-
+        let mut parent_indices = Vec::with_capacity(self.joints.len());
+        let mut local_cols = Vec::with_capacity(self.joints.len());
         for (idx, joint) in self.joints.iter().enumerate() {
-            let local = Mat4::from_trs(
-                pose.joint_translations[idx],
-                pose.joint_rotations[idx].normalized(),
-                unit_scale,
-            );
-            let world = if joint.is_root {
-                local
+            parent_indices.push(if joint.is_root {
+                None
             } else {
-                world_mats[joint.parent_index] * local
-            };
-            world_mats.push(world);
-            palette.push(world * self.inverse_bind_matrices[idx]);
+                Some(joint.parent_index)
+            });
+            local_cols.push(
+                Mat4::from_trs(
+                    pose.joint_translations[idx],
+                    pose.joint_rotations[idx].normalized(),
+                    unit_scale,
+                )
+                .cols,
+            );
+        }
+
+        let world_cols =
+            verdant_tensor::propagate_hierarchy_matrices_exact(&parent_indices, &local_cols)
+                .map_err(|err| AnimationError::InvalidClipChannel {
+                    detail: err.to_string(),
+                })?;
+
+        let mut palette: Vec<Mat4> = Vec::with_capacity(self.joints.len());
+        for (idx, w_cols) in world_cols.iter().enumerate() {
+            let p_cols = verdant_tensor::linear::multiply_mat4_cols_exact(
+                w_cols,
+                &self.inverse_bind_matrices[idx].cols,
+            )
+            .map_err(|err| AnimationError::InvalidClipChannel {
+                detail: err.to_string(),
+            })?;
+            palette.push(Mat4 { cols: p_cols });
         }
 
         Ok(palette)
@@ -329,12 +348,8 @@ impl SkeletalClip {
     }
 }
 
-fn transform_dir3(mat: Mat4, dir: Vec3) -> Vec3 {
-    let origin = mat.transform_point3(Vec3::ZERO);
-    (mat.transform_point3(dir) - origin).normalized()
-}
-
-/// Applies morph target deltas and four-joint linear-blend skinning (`LBS`) to `mesh`.
+/// Applies morph target deltas and four-joint linear-blend skinning (`LBS`) to `mesh` via
+/// `verdant_tensor::skin_vertices_linear_blend_exact` (`uor-matmul`).
 pub fn skin_mesh_linear_blend(
     mesh: &ProceduralMesh,
     skeleton: &Skeleton,
@@ -350,8 +365,12 @@ pub fn skin_mesh_linear_blend(
     let palette = skeleton.evaluate_skinning_palette(pose)?;
     let scale =
         crate::prism_kernel::skinWeightScale().expect("verified Prism skinWeightScale") as f64;
+    let i2 = 1usize + 1usize;
 
-    let mut out = mesh.clone();
+    let mut morphed_positions = Vec::with_capacity(mesh.positions.len());
+    let mut joint_indices = Vec::with_capacity(vertex_weights.len());
+    let mut weights_permille = Vec::with_capacity(vertex_weights.len());
+
     for (v_idx, sw) in vertex_weights.iter().enumerate() {
         let [px, py, pz] = mesh.positions[v_idx];
         let mut base_pos = Vec3::new(f64::from(px), f64::from(py), f64::from(pz));
@@ -366,37 +385,73 @@ pub fn skin_mesh_linear_blend(
                 }
             }
         }
+        morphed_positions.push([base_pos.x as f32, base_pos.y as f32, base_pos.z as f32]);
 
-        let [nx, ny, nz] = mesh.normals[v_idx];
-        let base_nrm = Vec3::new(f64::from(nx), f64::from(ny), f64::from(nz)).normalized();
-
-        let mut blended_pos = Vec3::ZERO;
-        let mut blended_nrm = Vec3::ZERO;
         for slot in 0..DIM_HOMOGENEOUS {
-            let w_raw = sw.weights_permille[slot];
-            if w_raw == 0 {
-                continue;
-            }
-            let j_idx = usize::from(sw.joints[slot]);
-            if j_idx >= palette.len() {
+            if sw.weights_permille[slot] > 0 && usize::from(sw.joints[slot]) >= palette.len() {
                 return Err(AnimationError::InvalidClipChannel {
                     detail: "skin weight joint index exceeds skeleton palette".to_string(),
                 });
             }
-            let weight = f64::from(w_raw) / scale;
-            let mat = palette[j_idx];
-            blended_pos = blended_pos + mat.transform_point3(base_pos).scale(weight);
-            blended_nrm = blended_nrm + transform_dir3(mat, base_nrm).scale(weight);
         }
-
-        let unit_nrm = blended_nrm.normalized();
-        out.positions[v_idx] = [
-            blended_pos.x as f32,
-            blended_pos.y as f32,
-            blended_pos.z as f32,
-        ];
-        out.normals[v_idx] = [unit_nrm.x as f32, unit_nrm.y as f32, unit_nrm.z as f32];
+        joint_indices.push(sw.joints);
+        weights_permille.push(sw.weights_permille);
     }
 
+    let palette_cols: Vec<[[f64; DIM_HOMOGENEOUS]; DIM_HOMOGENEOUS]> =
+        palette.iter().map(|m| m.cols).collect();
+    let (skinned_pos, skinned_nrm) = verdant_tensor::skin_vertices_linear_blend_exact(
+        &morphed_positions,
+        &mesh.normals,
+        &palette_cols,
+        &joint_indices,
+        &weights_permille,
+    )
+    .map_err(|err| AnimationError::InvalidClipChannel {
+        detail: err.to_string(),
+    })?;
+
+    let mut out = mesh.clone();
+    for v_idx in 0..out.positions.len() {
+        out.positions[v_idx] = [
+            skinned_pos[v_idx][0],
+            skinned_pos[v_idx][1],
+            skinned_pos[v_idx][i2],
+        ];
+        out.normals[v_idx] = [
+            skinned_nrm[v_idx][0],
+            skinned_nrm[v_idx][1],
+            skinned_nrm[v_idx][i2],
+        ];
+    }
     Ok(out)
+}
+
+/// Evaluates zero-decode `Packed<Grid<16>, 2>` nibble animation track offsets directly through
+/// `verdant_tensor::contract_packed_animation_tracks` (`coded_gemm`) without intermediate float expansion.
+pub fn evaluate_packed_nibble_pose_offsets(
+    blend_weights_permille: &[i32],
+    track_count: usize,
+    channel_cols: usize,
+    codebook_milli: &[i32; verdant_tensor::CODED_TABLE_LEN],
+    packed_nibbles: &[u8],
+) -> Result<Vec<f64>, AnimationError> {
+    let scale =
+        crate::prism_kernel::skinWeightScale().expect("verified Prism skinWeightScale") as f64;
+    let inv_scale_sq = 1.0 / (scale * scale);
+    let accum = verdant_tensor::contract_packed_animation_tracks(
+        blend_weights_permille,
+        1,
+        track_count,
+        channel_cols,
+        codebook_milli,
+        packed_nibbles,
+    )
+    .map_err(|err| AnimationError::InvalidClipChannel {
+        detail: err.to_string(),
+    })?;
+    Ok(accum
+        .into_iter()
+        .map(|v| (v as f64) * inv_scale_sq)
+        .collect())
 }

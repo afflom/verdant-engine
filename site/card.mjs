@@ -142,6 +142,8 @@ export default async function start({ app, reason, $, chip, show, parse }) {
   const canvas = $("ve-canvas");
   const statusEl = $("ve-status");
   const lodBtn = $("ve-lod-btn");
+  const uorcBtn = $("ve-uorc-btn");
+  const vizBtn = $("ve-viz-btn");
   const simBtn = $("ve-sim-btn");
   const camBtn = $("ve-cam-btn");
   const audioBtn = $("ve-audio-btn");
@@ -170,6 +172,7 @@ export default async function start({ app, reason, $, chip, show, parse }) {
   let lastMoverPos = [16.5, 0.5, 0];
   let lastTris = 0;
   let lastBvhVis = 47;
+  let lastKernelCount = 9;
   let workerBackend = "webgl2";
   let isSoftwareGpu = false;
   let snapshotHandledOnBoot = false;
@@ -263,7 +266,7 @@ export default async function start({ app, reason, $, chip, show, parse }) {
           }
           if (!isAnimating() && hudStats) {
             const lod = STREAMING_LODS[lodIdx];
-            hudStats.textContent = `${workerBackend.toUpperCase()} · ${lastTris} tris · ${lastBvhVis} vis · ${lod.lossless ? "7 kernels" : "streaming"}`;
+            hudStats.textContent = `${workerBackend.toUpperCase()} · ${lastTris} tris · ${lastBvhVis} vis · ${lod.lossless ? `${lastKernelCount} kernels` : "UORC stream"}`;
           }
         }
       };
@@ -322,7 +325,7 @@ export default async function start({ app, reason, $, chip, show, parse }) {
     if (!res) return;
     if (res.startsWith("conformant:")) {
       const lod = STREAMING_LODS[lodIdx];
-      chip(statusEl, `${lod.short} · ${lod.lossless ? "7/7 Exact Kernels" : "UORC Stream OK"}`, "good");
+      chip(statusEl, `${lod.short} · ${lod.lossless ? `${lastKernelCount}/9 Exact Kernels` : "UORC Stream OK"}`, "good");
     } else if (res.startsWith("refused:")) {
       chip(statusEl, res.replace("refused:", "Refused: "), "warn");
     } else {
@@ -386,7 +389,67 @@ export default async function start({ app, reason, $, chip, show, parse }) {
     if (updateBanner) syncVerifierBanner(lod.key);
   }
 
+  async function focusNodePreset(nodeIndex) {
+    const node = NODE_KERNELS[nodeIndex];
+    if (!node) return;
+    if (lodIdx !== 3) setLod(3, false);
+    camMode = "orbit";
+    if (camBtn) camBtn.textContent = "Cam: Orbit";
+    followMover = Boolean(node.followMover);
+    if (followMover || node.id === 3) setSimLive(true);
+    target = [...node.target];
+    orbitDist = node.dist;
+    requestRender();
+    await syncVerifierBanner(node.query);
+  }
+
+  async function streamUorcToRank(targetRank) {
+    const clamped = Math.max(0, Math.min(STREAMING_LODS.length - 1, targetRank | 0));
+    lodIdx = clamped;
+    const lod = STREAMING_LODS[lodIdx];
+    if (lodBtn) lodBtn.textContent = `LOD: ${lod.short}`;
+    if (hudLod) hudLod.textContent = lod.label;
+    if (lod.rank < 2) followMover = false;
+    const pose = computeCameraPose(lod, 0.016);
+    chip(statusEl, `Streaming .uorc -> ${lod.short} in Wasm…`, "wait");
+    if (engineWorker) {
+      const reply = await callWorker("stream-uorc", {
+        targetRank: clamped,
+        lod,
+        eye: pose.eye,
+        lookTarget: pose.lookTarget,
+        simClockSec,
+      });
+      if (!offscreenActive && fallbackMod && fallbackRenderer) {
+        fallbackStatic = fallbackMod.buildStaticWorld(lod, isSoftwareGpu ? 18 : 36);
+        fallbackRenderer.uploadStatic(fallbackStatic);
+      }
+      requestRender();
+      if (reply?.ok) {
+        chip(
+          statusEl,
+          `UORC Wasm · ${lod.short} (${reply.streamBytes}B · coded Σ=${reply.codedChecksum})`,
+          "good",
+        );
+        return reply;
+      }
+    }
+    setLod(clamped, true);
+    return null;
+  }
+
   lodBtn?.addEventListener("click", () => setLod(lodIdx + 1));
+  uorcBtn?.addEventListener("click", () => {
+    const nextRank = (lodIdx + 1) % STREAMING_LODS.length;
+    streamUorcToRank(nextRank);
+  });
+  vizBtn?.addEventListener("click", async () => {
+    const { openVisualsModal } = await import("./visuals.mjs");
+    openVisualsModal({
+      onFocusNode: focusNodePreset,
+      onStreamUorc: streamUorcToRank,
+    });
+  });
   simBtn?.addEventListener("click", () => setSimLive(!simLive));
 
   camBtn?.addEventListener("click", () => {
@@ -610,14 +673,14 @@ export default async function start({ app, reason, $, chip, show, parse }) {
     frames++;
     if (!isAnimating()) {
       if (hudStats && lastTris > 0) {
-        hudStats.textContent = `${workerBackend.toUpperCase()} · ${lastTris} tris · ${lastBvhVis} vis · ${lod.lossless ? "7 kernels" : "streaming"}`;
+        hudStats.textContent = `${workerBackend.toUpperCase()} · ${lastTris} tris · ${lastBvhVis} vis · ${lod.lossless ? `${lastKernelCount} kernels` : "UORC stream"}`;
       }
     } else if (now - lastFpsStamp >= 600) {
       shownFps = Math.max(1, Math.round((frames * 1000) / (now - lastFpsStamp)));
       frames = 0;
       lastFpsStamp = now;
       if (hudStats) {
-        hudStats.textContent = `${shownFps} fps · ${lastTris} tris · ${lastBvhVis} vis · ${lod.lossless ? "7 kernels" : "streaming"}`;
+        hudStats.textContent = `${shownFps} fps · ${lastTris} tris · ${lastBvhVis} vis · ${lod.lossless ? `${lastKernelCount} kernels` : "UORC stream"}`;
       }
     }
 
@@ -693,6 +756,7 @@ export default async function start({ app, reason, $, chip, show, parse }) {
         workerBackend = readyMsg.backend || "webgl2";
         isSoftwareGpu = Boolean(readyMsg.isSoftware);
         lastTris = readyMsg.tris || 0;
+        if (readyMsg.tensorKernels) lastKernelCount = readyMsg.tensorKernels;
       }
     } catch {
       offscreenActive = false;

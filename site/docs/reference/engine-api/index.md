@@ -1,90 +1,113 @@
-# Verdant Core API reference
+# Verdant Engine API reference
 
       
 
-Look up engine modules, core types, CLI commands, and 60fps budgets.
+Look up crates, modules, rollback types, CLI commands, and 60fps budgets.
 
-      60fps frame stage budgets in microseconds. A 60fps browser frame spans 16,666 microseconds; the six-stage job graph completes in 6,300 microseconds.The data in this figure
+      60fps worker frame stage budgets in microseconds. A 60fps frame spans 16,666 microseconds; the six-stage parallel worker DAG completes in 6,300 microseconds.The data in this figure
 |  | us |
 | --- | --- |
 | ECS hierarchy | 900 |
-| Physics step | 1800 |
+| Physics + XPBD | 1800 |
 | --- | --- |
-| BVH culling | 1100 |
-| Spline steering | 700 |
+| BVH + cull | 1100 |
+| NavMesh min-plus | 700 |
 | --- | --- |
-| Spatial audio | 600 |
+| FDN audio ring | 600 |
 | Tile and draw | 1200 |
       
       
 
-## Core modules in crates/verdant-core
+## Semiring and simulation modules
 
       
-        Simulation, tensor, and streaming modules
+        Crates and simulation modules across verdant-tensor and verdant-core
         
           
 | Module | Primary types and functions | Purpose |
         
         
           
-| math | Vec3, Quat, Mat4, Aabb, Frustum | 3D linear algebra, rays, and frustum planes |
+| verdant_tensor::linear | propagate_hierarchy_matrices_exact, delassus_effective_mass_matrix | Exact (+, *) transforms, 4-joint LBS skinning, and Delassus operators |
           
-| ecs | SceneWorld, EntityId, BoundingVolumeHierarchy | Entity hierarchy, raycasts, and frustum culling |
+| verdant_tensor::coded | contract_coded_geometry_grid, contract_packed_animation_tracks | Zero-decode coded_gemm over Grid, Packed, and Runs |
           
-| tensor | batch_transform_positions_exact, render_triangles_tile_framebuffer | Exact uor-matmul contractions and 16x16 tile PBR |
+| verdant_tensor::tropical | tropical_frustum_distance_bounds, tropical_min_plus_all_pairs_closure | Tropical (max, +) culling/GJK and (min, +) NavMesh closure |
           
-| streaming | StandardSceneState, LodLevel, pack_progressive_uorc_stream | Progressive LOD synthesis and UORC chain streaming |
+| verdant_tensor::audio_ring | convolve_modal_fir_exact, step_sabine_fdn_reverb_ring | Quantized Q15 FIR bars, stereo pan, and 4x4 Hadamard FDN |
           
-| geometry | ProceduralMesh, MorphTarget, generate_terrain_mesh | Procedural terrain, columns, prisms, and ribbons |
+| ecs & render | SceneWorld, BoundingVolumeHierarchy, RenderFrameGraph | Entity hierarchy, SAH raycasts, 5-pass CSM/IBL graph, and WGSL |
           
-| animation | Skeleton, SkeletalClip, skin_mesh_linear_blend | Acyclic joint trees and four-joint LBS skinning |
-          
-| render | PbrMaterial, RenderFrameGraph, compute_csm_splits | Five-pass PBR graph, CSM splits, IBL mips, and WGSL |
+| streaming | StandardSceneState, decode_portable_uorc_single_frame, CodedLodFrameBundle | Stateless Wasm UORC streaming and zero-decode coded bundles |
         
       
       
 
-## Physics, audio, and runtime modules
+## Authoring, physics, and deterministic rollback modules
 
       
-        Dynamics, navigation, audio, and snapshot modules
+        GLB transcoding, articulated dynamics, audio occlusion, and netcode
         
           
 | Module | Primary types and functions | Purpose |
         
         
           
-| gltf_io | export_scene_to_glb, validate_glb_bytes | Binary Khronos glTF 2.0 export and verification |
+| gltf_io | import_glb_to_scene, transcode_glb_to_progressive_uorc | Full Khronos GLB ingestion and progressive UORC transcoding |
           
-| collision | ConvexHullCollider, gjk_intersect_and_manifold | 3D GJK manifolds, Baumgarte, and Coulomb cones |
+| physics | RigidJointConstraint, RaycastVehicle, CapsuleController | XPBD joints, 4-wheel suspension vehicles, and swept BVH capsules |
           
-| physics | PhysicsWorld, RigidBody, KinematicSplineBody | 60Hz rigid bodies, capsules, buoyancy, and splines |
+| collision & navmesh | gjk_intersect_and_manifold, NavMesh | Tropical GJK hulls, Coulomb friction, and A-star / min-plus paths |
           
-| navmesh | NavMesh, NavPolygon, steer_along_corridor | Slope-filtered navmeshes and admissible A-star paths |
+| audio | evaluate_binaural_cue_with_occlusion, synthesize_binaural_reverb_quantum_exact | BVH-occluded Woodworth binaural cues and Hadamard FDN reverb |
           
-| audio | AcousticEnvironment, evaluate_binaural_cue | Woodworth binaural cues, Sabine RT60, and modal bars |
-          
-| runtime | EngineConfig, WorkerJobGraph, WorldSnapshot | Topological job scheduling and SHA-256 world snapshots |
+| runtime | RollbackSession, DeterministicInputJournal, DeltaUorcSnapshot | 64-frame rollback resimulation, SHA-256 input logs, and delta UORC |
         
       
       
 
-## WebAssembly bridge and CLI commands
+## Deterministic rollback and delta snapshot timeline
+
+      
+
+Networked lockstep and rollback sessions record quantized inputs in a SHA-256 chain and synchronize state deltas via stateless UORC.
+
+      
+
+  
+    
+  
+  Deterministic rollback and delta state sync. Late network commands rewind the bounded 64-frame physics ring and resimulate to bit-identical convergence.
+  Rollback and netcode bounds table
+    
+      
+| Component | Bound or format | Verification predicate |
+      
+        
+| DeterministicInputJournal | Monotonic frame commands + 32B SHA-256 chain | inputJournalSequenceValid |
+        
+| RollbackSession | 64-frame PhysicsWorld history ring | rollbackFrameWithinWindow |
+        
+| DeltaUorcSnapshot | XOR residual compressed via stateless UORC | WorldSnapshot::decode SHA-256 seal |
+      
+    
+  
+
+      
+
+## CLI subcommands in crates/verdant-cli
 
       
         
-- crates/verdant-wasm compiles verdant-core to WebAssembly for OffscreenCanvas workers, 16x16 tile rendering, AudioWorklet synthesis, and #vdnt= URLs.
+- verdant import-glb  imports nodes, meshes, skeletons, keyframe clips, and PBR materials.
         
-- cargo run -p verdant-cli -- pack-scene  packs a validated .glb, .vdnt world snapshot, and .uorc stream.
+- verdant transcode-glb   [seed] transcodes an authored GLB into a portable four-LOD UORC stream.
         
-- cargo run -p verdant-cli -- verify-uorc  verifies UORC-SHA256-CHAIN-v1 multi-LOD archives.
+- verdant pack-portable-uorc  [seed] and verify-portable-uorc  pack and verify stateless Wasm streams.
         
-- cargo run -p verdant-cli -- validate-glb  and validate-wgsl  run Khronos and W3C validators.
-        
-- cargo run -p verdant-cli -- benchmark profiles 120 headless simulation frames against the 60fps budget.
+- verdant pack-scene , validate-glb, validate-wgsl, snapshot-verify, and benchmark validate assets in CI.
       
     
       
-        Previous: Stream high-resolution scenes with UORC
-        Next: Portable tensor kernels and UORC streaming
+        Previous: Stream zero-decode scenes with UORC
+        Next: Unified semiring tensor core and UORC streaming

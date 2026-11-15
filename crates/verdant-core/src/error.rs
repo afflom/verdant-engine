@@ -126,63 +126,7 @@ impl fmt::Display for StreamingError {
 
 impl std::error::Error for StreamingError {}
 
-/// Refusal returned when a Prism-hosted `uor-matmul` tensor contraction or software tile rasterizer fails bounds checks.
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub enum TensorComputeError {
-    /// Matrix or batch dimensions are zero or non-conformant (`NotAProduct` or buffer length mismatch).
-    ZeroOrMismatchedExtents {
-        /// Diagnostic shape description.
-        detail: String,
-    },
-    /// Input matrix or camera transform contains `NaN` or infinite IEEE-754 entries.
-    NonFiniteTensorEntry {
-        /// Diagnostic label of the offending operand.
-        operand: &'static str,
-    },
-    /// Declared tensor kernel failed `prism_kernel::tensorKernelValid` accumulator or tile alignment bounds.
-    InvalidKernelSpecification {
-        /// Kernel name.
-        kernel_name: String,
-    },
-    /// Software tile framebuffer dimensions are zero or not aligned to `prism_kernel::tileEdgePixels()`.
-    InvalidTileDimensions {
-        /// Requested width in pixels.
-        width: u32,
-        /// Requested height in pixels.
-        height: u32,
-        /// Required tile multiple in pixels.
-        tile_edge: u32,
-    },
-}
-
-impl fmt::Display for TensorComputeError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Self::ZeroOrMismatchedExtents { detail } => {
-                write!(f, "tensor contraction extents invalid: {detail}")
-            }
-            Self::NonFiniteTensorEntry { operand } => {
-                write!(f, "tensor operand `{operand}` contains non-finite entries")
-            }
-            Self::InvalidKernelSpecification { kernel_name } => {
-                write!(
-                    f,
-                    "tensor kernel `{kernel_name}` failed Prism accumulator or tile alignment verification"
-                )
-            }
-            Self::InvalidTileDimensions {
-                width,
-                height,
-                tile_edge,
-            } => write!(
-                f,
-                "tile framebuffer {width}x{height} must be positive and aligned to {tile_edge}px tiles"
-            ),
-        }
-    }
-}
-
-impl std::error::Error for TensorComputeError {}
+pub use verdant_tensor::TensorComputeError;
 
 /// Refusal returned when a physics integration step receives invalid timestep or body parameters.
 #[derive(Clone, Debug, PartialEq)]

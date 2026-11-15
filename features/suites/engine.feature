@@ -115,3 +115,31 @@ Feature: engine
     When pack-scene, verify-uorc, validate-glb, validate-wgsl, snapshot-verify, and benchmark execute
     Then exported UORC streams, GLB containers, WGSL shaders, and VDNT snapshots pass authoritative checks
     And unknown subcommands, malformed shaders, or corrupted UORC/GLB files return CliCommandError
+
+  @VE-17 @build
+  Scenario: Unified verdant-tensor semiring contractions execute linear transforms, four-joint skinning, Delassus effective-mass operators, tropical min-plus navmesh shortest paths, and Hadamard FDN audio feedback deterministically and refuse mismatched dimensions
+    Given the pure verdant-tensor semiring substrate backed by uor-matmul
+    When linear transform, skinning, Delassus Jacobian-mass, tropical min-plus navmesh, and Q15 Hadamard FDN passes execute
+    Then every subsystem contraction matches exact semiring invariants across 9 certified kernels
+    And mismatched Jacobian or transform tensor shapes return TensorComputeError
+
+  @VE-18 @build
+  Scenario: Portable UORC progressive streams decode natively via uorc_decompress and uor_matmul coded_gemm contracts Grid geometry, Packed animation, and Runs IBL matrices without float expansion while refusing corrupted archives
+    Given a stateless four-LOD portable UORC stream and CodedLodFrameBundle tiers
+    When uorc_decompress decodes progressive LOD frames and coded_gemm contracts Grid, Packed, and Runs matrices
+    Then decoded StandardSceneState snapshots and integer coded accumulators match bit-identically
+    And truncated or tampered portable UORC frames return StreamingError
+
+  @VE-19 @build
+  Scenario: Khronos glTF 2.0 scene import, glb-to-UORC transcoding, XPBD articulated joints, swept capsule and four-wheel raycast vehicle controllers, and BVH acoustic occlusion execute deterministically and refuse invalid joint bodies
+    Given exported Khronos GLB scenes, articulated XPBD joint rigs, four-wheel raycast vehicles, and BVH occluders
+    When GLB import, progressive UORC transcoding, physics stepping, and occluded binaural raycasts run
+    Then imported hierarchies, transcoded UORC streams, joint constraints, vehicle suspension, and occluded audio gains verify cleanly
+    And joints referencing out-of-bounds rigid bodies return PhysicsStepError
+
+  @VE-20 @build
+  Scenario: SHA-256-chained deterministic input journals, bounded 64-frame rollback resimulation sessions, and stateless XOR-residual delta UORC snapshots synchronize game state bit-identically and refuse regressive or out-of-window frames
+    Given a deterministic RollbackSession and sequential StandardSceneState snapshots
+    When frame inputs advance, historical inputs are corrected within the 64-frame window, and delta UORC snapshots round-trip
+    Then resimulated physics trajectories and decoded delta snapshots match fresh execution bit-identically
+    And regressive input frames or out-of-window rollback targets return SnapshotCodecError

@@ -938,3 +938,385 @@ fn engine_ve_16() {
 
     let _ = std::fs::remove_dir_all(&tmp_dir);
 }
+
+/// `VE-17`: Unified `verdant-tensor` semiring contractions (`(+, *)`, tropical `(max, +)` / `(min, +)`, `Q15` Hadamard FDN audio ring) and `TensorComputeError` refusals.
+#[test]
+fn engine_ve_17() {
+    use verdant_core::audio::synthesize_binaural_reverb_quantum_exact;
+    use verdant_tensor::{
+        delassus_effective_mass_matrix, verified_coded_matrix_tiers,
+        verified_unified_tensor_kernels,
+    };
+
+    let kernels = verified_unified_tensor_kernels().expect("9 unified semiring kernels");
+    assert_eq!(kernels.len(), 9);
+    let tiers = verified_coded_matrix_tiers().expect("3 zero-decode coded matrix tiers");
+    assert_eq!(tiers.len(), 3);
+    assert!(tiers.iter().all(|t| t.zero_scratch));
+
+    // Hierarchical scene propagation via exact `(+, *)` tensor contraction:
+    let world = StandardSceneState::synthesize_at_lod(7, 3).expect("LOD3 scene");
+    let world_mats = world
+        .scene
+        .propagate_all_world_matrices()
+        .expect("hierarchical propagation");
+    assert_eq!(world_mats.len(), world.scene.entity_count());
+
+    // Delassus effective-mass contraction `K = J * M^-1 * J^T`:
+    let jacobian = [1.0, 0.0, 0.0, -1.0, 0.0, 0.0];
+    let inv_masses = [0.5, 0.5, 0.5, 0.25, 0.25, 0.25];
+    let k_mat =
+        delassus_effective_mass_matrix(&jacobian, &inv_masses, 1, 6).expect("Delassus matrix");
+    assert_eq!(k_mat.len(), 1);
+    assert!((k_mat[0] - 0.75).abs() < 1e-3);
+
+    // Tropical `(min, +)` all-pairs shortest-path closure on NavMesh:
+    let meshes = canonical_scene_mesh_library(7);
+    let mut small_mesh = meshes[0].clone();
+    small_mesh.indices.truncate(3 * 24);
+    let nav = NavMesh::from_mesh(&small_mesh).expect("walkable small navmesh");
+    let closure = nav
+        .all_pairs_shortest_paths_tropical()
+        .expect("tropical min-plus all-pairs closure");
+    assert_eq!(closure.len(), nav.polygons.len() * nav.polygons.len());
+    assert_eq!(closure[0], Some(0));
+
+    // Quantized Q15 modal FIR + Woodworth panning + 4-channel Hadamard FDN reverb ring:
+    let dry: Vec<i16> = (0..16)
+        .map(|i| if i == 0 { 16_000 } else { 1_200 })
+        .collect();
+    let taps = [16_384_i16, 8_192, 4_096, 2_048];
+    let env = AcousticEnvironment::reflective_chamber(343.2);
+    let src = SpatialAudioSource {
+        label: "ModalBar".to_string(),
+        position: Vec3::new(4.0, 1.5, -3.0),
+        fundamental_hz: 440.0,
+        reference_gain: 1.0,
+    };
+    let listener = ListenerPose {
+        position: Vec3::new(0.0, 1.7, 0.0),
+        forward: Vec3::new(0.0, 0.0, -1.0),
+        up: Vec3::UP,
+    };
+    let quantum = synthesize_binaural_reverb_quantum_exact(&dry, &taps, &src, &listener, &env)
+        .expect("exact audio-ring FDN quantum");
+    assert_eq!(quantum.stereo_frames_accum.len(), 32);
+    assert_eq!(quantum.fdn_reverb_tank.len(), 16);
+
+    // Negative refusal: mismatched Delassus Jacobian dimensions return `TensorComputeError`:
+    let bad_delassus = delassus_effective_mass_matrix(&[1.0, 0.0], &inv_masses, 2, 6)
+        .expect_err("mismatched Jacobian rows/cols must refuse");
+    assert!(matches!(
+        bad_delassus,
+        TensorComputeError::ZeroOrMismatchedExtents { .. }
+    ));
+}
+
+/// `VE-18`: Portable `.uorc` progressive streams via `uorc_decompress::run`, `uor_matmul::codec` (`Grid`, `Packed`, `Runs`) zero-decode contractions, and `StreamingError` refusals.
+#[test]
+fn engine_ve_18() {
+    use verdant_core::streaming::{
+        decode_portable_uorc_single_frame, decode_portable_uorc_stream_up_to_lod,
+        pack_portable_progressive_uorc_stream, split_self_delimiting_uorc_archives,
+        CodedLodFrameBundle,
+    };
+
+    let stream = pack_portable_progressive_uorc_stream(7).expect("portable 4-LOD UORC stream");
+    let frames = split_self_delimiting_uorc_archives(&stream).expect("4 self-delimiting frames");
+    assert_eq!(frames.len(), 4);
+
+    let lod3_full =
+        decode_portable_uorc_stream_up_to_lod(&stream, 3).expect("monotonic 4-frame decode");
+    let lod3_fast =
+        decode_portable_uorc_single_frame(&stream, 3).expect("single-frame LOD3 decode");
+    assert_eq!(lod3_full, lod3_fast);
+    assert_eq!(lod3_fast.active_lod, LodLevel::Lod3LosslessSource);
+    assert_eq!(lod3_fast.scene_nodes.len(), 7);
+
+    // Zero-decode `uor_matmul::coded_gemm` contractions across Grid, Packed, and Runs:
+    let coded = CodedLodFrameBundle::synthesize(7, 3).expect("coded LOD3 bundle");
+    let summary = coded
+        .contract_zero_decode(&[1, 2, 3, 4], &[4, 3, 2, 1], &[1, -1, 1, -1])
+        .expect("zero-decode coded_gemm contractions");
+    assert_eq!(summary.geometry_accum.len(), 4);
+    assert_eq!(summary.animation_accum.len(), 4);
+    assert_eq!(summary.ibl_accum.len(), 4);
+
+    // Negative refusal: tampered portable `.uorc` seal refused by `uorc_decompress::run`:
+    let mut corrupted = stream;
+    let tail = corrupted.len() - 1;
+    corrupted[tail] ^= 0xFF;
+    let err = decode_portable_uorc_single_frame(&corrupted, 3)
+        .expect_err("tampered UORC SHA-256 chain seal must fail");
+    assert!(matches!(err, StreamingError::UorcArchiveRejected { .. }));
+}
+
+/// `VE-19`: Full `.glb` scene import, `.glb -> .uorc` transcoding, XPBD joints, swept capsule & 4-wheel raycast vehicle controllers, BVH acoustic occlusion, and `PhysicsStepError` refusals.
+#[test]
+fn engine_ve_19() {
+    use verdant_cli::run_cli;
+    use verdant_core::audio::evaluate_binaural_cue_with_occlusion;
+    use verdant_core::gltf_io::{import_glb_to_scene, transcode_glb_to_progressive_uorc};
+    use verdant_core::physics::{JointKind, RaycastVehicle, RigidJointConstraint};
+    use verdant_core::streaming::decode_portable_uorc_single_frame;
+
+    // 1. Export a rich scene to `.glb`, import back into `SceneWorld`, and transcode `.glb -> .uorc`:
+    let mut source_state = StandardSceneState::synthesize_at_lod(7, 2).expect("LOD2 scene");
+    let meshes = canonical_scene_mesh_library(7);
+    let materials = canonical_pbr_material_library();
+    let eids: Vec<_> = source_state.scene.entities().map(|e| e.id).collect();
+    for (idx, eid) in eids.into_iter().take(meshes.len()).enumerate() {
+        source_state
+            .scene
+            .attach_renderable(eid, idx, idx % materials.len());
+    }
+    let glb_bytes = export_scene_to_glb(&source_state.scene, &meshes, &materials).expect("export");
+    let imported = import_glb_to_scene(&glb_bytes).expect("import_glb_to_scene");
+    assert_eq!(imported.meshes.len(), meshes.len());
+    assert!(!imported.materials.is_empty());
+    assert!(imported.scene.entity_count() >= meshes.len());
+
+    let transcoded_uorc =
+        transcode_glb_to_progressive_uorc(&glb_bytes, 7).expect("transcode .glb -> .uorc");
+    let restored_lod3 =
+        decode_portable_uorc_single_frame(&transcoded_uorc, 3).expect("decode transcoded UORC");
+    assert!(restored_lod3.scene.entity_count() > source_state.scene.entity_count());
+
+    // Exercise CLI `import-glb` and `transcode-glb`:
+    let tmp_dir = std::env::temp_dir().join(format!("verdant_ve19_{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&tmp_dir);
+    std::fs::create_dir_all(&tmp_dir).expect("temp dir");
+    let glb_file = tmp_dir.join("authored.glb");
+    let uorc_file = tmp_dir.join("authored.uorc");
+    std::fs::write(&glb_file, &glb_bytes).expect("write glb");
+    let cli_imp = run_cli(&[
+        "import-glb".to_string(),
+        glb_file.to_string_lossy().into_owned(),
+    ])
+    .expect("CLI import-glb");
+    assert!(cli_imp.contains("GLB IMPORTED OK:"));
+    let cli_tr = run_cli(&[
+        "transcode-glb".to_string(),
+        glb_file.to_string_lossy().into_owned(),
+        uorc_file.to_string_lossy().into_owned(),
+        "7".to_string(),
+    ])
+    .expect("CLI transcode-glb");
+    assert!(cli_tr.contains("GLB TRANSCODED UORC OK:"));
+    let _ = std::fs::remove_dir_all(&tmp_dir);
+
+    // 2. XPBD bilateral joint constraint + 4-wheel raycast suspension vehicle + swept BVH capsule:
+    let mut physics = PhysicsWorld::new(PhysicsWorldConfig::default());
+    physics.bodies.push(
+        RigidBody::new("AnchorLink", Vec3::new(0.0, 4.0, 0.0), 10.0, 0.4, 0.2).expect("body A"),
+    );
+    physics.bodies.push(
+        RigidBody::new("PendulumBob", Vec3::new(3.2, 4.0, 0.0), 5.0, 0.4, 0.2).expect("body B"),
+    );
+    assert_eq!(JointKind::Hinge.locked_dofs(), 5);
+    assert_eq!(JointKind::BallSocket.locked_dofs(), 3);
+    physics.rigid_joints.push(RigidJointConstraint {
+        label: "ArmHinge".to_string(),
+        body_a: 0,
+        body_b: 1,
+        kind: JointKind::Hinge,
+        axis_world: Vec3::new(0.0, 0.0, 1.0),
+        target_distance_meters: 2.0,
+        compliance_permille: 1,
+    });
+    let mut vehicle =
+        RaycastVehicle::new("ChassisRig", Vec3::new(0.0, 1.0, 6.0), 850.0).expect("vehicle");
+    vehicle.throttle = 1.0;
+    vehicle.steering_radians = 0.15;
+    physics.vehicles.push(vehicle);
+
+    for _ in 0..15 {
+        physics.step(1.0 / 60.0, Vec3::ZERO).expect("step physics");
+    }
+    let sep = (physics.bodies[1].position - physics.bodies[0].position).length();
+    assert!(
+        sep < 3.0,
+        "XPBD joint pulled separation from 3.2m toward 2.0m (got {sep})"
+    );
+    assert!(physics.vehicles[0].chassis_position.z > 6.01);
+
+    // Swept capsule against BVH wall + BVH acoustic occlusion:
+    let mut wall_scene = SceneWorld::new();
+    wall_scene.spawn(
+        "AcousticWall",
+        EntityRole::StaticArchitecture,
+        None,
+        Transform::from_xyz(0.0, 1.5, 0.0),
+        Aabb::new(Vec3::new(-4.0, -1.5, -0.5), Vec3::new(4.0, 2.5, 0.5)),
+        (1.0, "Wall occluder"),
+    );
+    let wall_bvh = wall_scene.build_bvh();
+    let mut capsule = CapsuleController::new(Vec3::new(0.0, 0.0, 2.0));
+    capsule
+        .step_swept_against_bvh(0.25, Vec3::new(0.0, 0.0, -1.0), 9.81, &wall_bvh, |_, _| 0.0)
+        .expect("swept capsule step");
+    assert!(
+        capsule.foot_position.z > 0.5,
+        "swept capsule stopped before penetrating wall"
+    );
+
+    let env = AcousticEnvironment::reflective_chamber(343.2);
+    let src = SpatialAudioSource {
+        label: "BehindWall".to_string(),
+        position: Vec3::new(0.0, 1.5, -4.0),
+        fundamental_hz: 330.0,
+        reference_gain: 1.0,
+    };
+    let listener = ListenerPose {
+        position: Vec3::new(0.0, 1.5, 4.0),
+        forward: Vec3::new(0.0, 0.0, -1.0),
+        up: Vec3::UP,
+    };
+    let unoccluded = evaluate_binaural_cue(&src, &listener, &env);
+    let (occluded_cue, is_occluded) =
+        evaluate_binaural_cue_with_occlusion(&src, &listener, &env, &wall_bvh);
+    assert!(is_occluded);
+    assert!(occluded_cue.direct_gain < unoccluded.direct_gain);
+
+    // Negative refusal: XPBD joint referencing non-existent body index returns `PhysicsStepError`:
+    physics.rigid_joints.push(RigidJointConstraint {
+        label: "DanglingJoint".to_string(),
+        body_a: 0,
+        body_b: 99,
+        kind: JointKind::BallSocket,
+        axis_world: Vec3::UP,
+        target_distance_meters: 1.0,
+        compliance_permille: 1,
+    });
+    let joint_err = physics
+        .step(1.0 / 60.0, Vec3::ZERO)
+        .expect_err("out-of-bounds joint body must refuse");
+    assert!(matches!(
+        joint_err,
+        PhysicsStepError::InvalidBodyMassOrRadius { .. }
+    ));
+}
+
+/// `VE-20`: SHA-256-chained `DeterministicInputJournal`, 64-frame `RollbackSession` resimulation, stateless `DeltaUorcSnapshot`, and `SnapshotCodecError` refusals.
+#[test]
+fn engine_ve_20() {
+    use verdant_core::runtime::{
+        DeltaUorcSnapshot, DeterministicInputJournal, FrameInputCommand, RollbackSession,
+    };
+
+    // 1. Rollback session vs clean forward oracle:
+    let make_world = || {
+        let mut pw = PhysicsWorld::new(PhysicsWorldConfig::default());
+        pw.player_capsule = Some(CapsuleController::new(Vec3::new(0.0, 2.0, 10.0)));
+        pw
+    };
+    let dt = 1.0 / 60.0;
+    let mut rollback = RollbackSession::new(make_world(), dt);
+    assert_eq!(RollbackSession::max_window_frames(), 64);
+
+    for f in 0..12 {
+        rollback
+            .advance_frame(FrameInputCommand {
+                frame_index: f,
+                player_slot: 0,
+                move_fwd_milli: if f < 6 { 1_000 } else { 0 },
+                move_strafe_milli: 0,
+                yaw_milli: 0,
+                action_mask: 0,
+            })
+            .expect("advance frame");
+    }
+
+    // Correct frame 4 to strafe right (`move_strafe_milli = 800`) and resimulate `4..12`:
+    let corrected = FrameInputCommand {
+        frame_index: 4,
+        player_slot: 0,
+        move_fwd_milli: 1_000,
+        move_strafe_milli: 800,
+        yaw_milli: 0,
+        action_mask: 1,
+    };
+    let resim_count = rollback
+        .rollback_and_resimulate(corrected)
+        .expect("rollback within 64-frame window");
+    assert_eq!(resim_count, 8);
+
+    // Run a fresh session with the exact corrected command history and verify bit-identity:
+    let mut oracle = RollbackSession::new(make_world(), dt);
+    for cmd in rollback.journal.commands().iter().copied() {
+        oracle.advance_frame(cmd).expect("oracle step");
+    }
+    assert_eq!(
+        rollback.journal.chain_digest_hex(),
+        oracle.journal.chain_digest_hex()
+    );
+    assert_eq!(
+        rollback.physics.player_capsule,
+        oracle.physics.player_capsule
+    );
+
+    // 2. Stateless XOR-residual `DeltaUorcSnapshot` round-trip:
+    let lod1 = StandardSceneState::synthesize_at_lod(7, 1).expect("LOD1");
+    let lod2 = StandardSceneState::synthesize_at_lod(7, 2).expect("LOD2");
+    let delta_bytes = DeltaUorcSnapshot::encode_delta(&lod1, &lod2).expect("encode delta UORC");
+    assert_eq!(&delta_bytes[0..4], b"UORC");
+    let reconstructed =
+        DeltaUorcSnapshot::decode_delta(&lod1, &delta_bytes).expect("decode delta UORC");
+    assert_eq!(reconstructed, lod2);
+
+    // Negative refusal 1: regressive input journal frame refused:
+    let mut journal = DeterministicInputJournal::new();
+    journal
+        .append(FrameInputCommand {
+            frame_index: 5,
+            player_slot: 0,
+            move_fwd_milli: 0,
+            move_strafe_milli: 0,
+            yaw_milli: 0,
+            action_mask: 0,
+        })
+        .expect("initial frame 5");
+    let reg_err = journal
+        .append(FrameInputCommand {
+            frame_index: 5,
+            player_slot: 0,
+            move_fwd_milli: 0,
+            move_strafe_milli: 0,
+            yaw_milli: 0,
+            action_mask: 0,
+        })
+        .expect_err("duplicate/regressive frame must refuse");
+    assert!(matches!(
+        reg_err,
+        SnapshotCodecError::MalformedStatePayload { .. }
+    ));
+
+    // Negative refusal 2: rollback beyond 64-frame window refused:
+    let mut long_session = RollbackSession::new(make_world(), dt);
+    for f in 0..70 {
+        long_session
+            .advance_frame(FrameInputCommand {
+                frame_index: f,
+                player_slot: 0,
+                move_fwd_milli: 500,
+                move_strafe_milli: 0,
+                yaw_milli: 0,
+                action_mask: 0,
+            })
+            .expect("step");
+    }
+    let window_err = long_session
+        .rollback_and_resimulate(FrameInputCommand {
+            frame_index: 2,
+            player_slot: 0,
+            move_fwd_milli: -500,
+            move_strafe_milli: 0,
+            yaw_milli: 0,
+            action_mask: 0,
+        })
+        .expect_err("frame 2 is >64 frames behind frame 69");
+    assert!(matches!(
+        window_err,
+        SnapshotCodecError::MalformedStatePayload { .. }
+    ));
+}

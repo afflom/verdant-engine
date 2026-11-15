@@ -1,61 +1,84 @@
-# Stream high-resolution scenes with UORC
+# Stream zero-decode scenes with UORC
 
       
 
-Stream multi-LOD 3D scenes smoothly up to lossless source detail.
+Pack and read UORC scene streams step by step in the browser.
 
-      Four progressive UORC streaming levels from LOD0 to LOD3. Scenes boot fast from coarse proxy bounds and refine monotonically up to SHA-256 verified lossless resolution.The data in this figure
+      Four progressive UORC streaming levels from LOD0 to LOD3. Browser workers decode stateless UORC frames in WebAssembly and refine scenes monotonically to lossless source fidelity.The data in this figure
 | Step | What happens |
 | --- | --- |
-| 1. LOD0 proxy | 1/8 scale · bounds and NavMesh |
-| 2. LOD1 medium | 2/8 scale · terrain and shadows |
+| 1. LOD0 proxy | 1/8 scale · bounds + NavMesh |
+| 2. LOD1 medium | 2/8 scale · terrain + shadows |
 | --- | --- |
-| 3. LOD2 high | 5/8 scale · IBL and spline mover |
-| 4. LOD3 lossless | 8/8 scale · 1:1 UORC source |
+| 3. LOD2 high | 5/8 scale · IBL + vehicle rig |
+| 4. LOD3 lossless | 8/8 scale · 5.7 KB UORC |
       
       
 
-## Keep the 3D viewport fast on every device
+## Decode UORC natively inside the browser worker
 
       
 
-Verdant Engine runs simulation, bounding volume hierarchy culling, and WebGL2 or software tile rendering inside an OffscreenCanvas worker.
+Verdant Engine compiles uorc_decompress directly to wasm32-unknown-unknown without shipping the five-megabyte search tables.
 
       
 
-The studio bar keeps six clear controls beside the 3D stage: LOD scrubbing, simulation mode, camera mode, spatial audio, glTF export, and world snapshot sharing.
+Cold boot stays inside the 120 KiB mobile budget while verdant-uorc.wasm decodes scene-stream.uorc frames on demand.
 
       
 
-## Scrub progressive LODs and inspect scene nodes
+  
+    
+  
+  Native WebAssembly zero-decode streaming. Portable .uorc archives decompress inside the worker and contract directly via uor_matmul::codec without float buffer expansion.
+  Zero-decode codec tier table
+    
+      
+| Stage or tier | Representation | Scratch memory |
+      
+        
+| Portable UORC stream | 4 self-delimiting UORC-SHA256-CHAIN-v1 frames (5.7 KB) | Stateless uorc_decompress::run |
+        
+| Tier 0 · Geometry | CodedMatrix Grid 16-entry codebook | 0 bytes intermediate float buffer |
+        
+| Tier 1 · Animation | Packed sub-byte 4-bit nibbles | 0 bytes intermediate float buffer |
+        
+| Tier 2 · IBL harmonics | Runs run-length sparse stream | 0 bytes intermediate float buffer |
+      
+    
+  
 
       
 
-Select LOD in the studio bar to step from LOD0 proxy bounds up to lossless LOD3 detail.
+## Contract CodedMatrix tiers without float expansion
 
       
 
-In Orbit mode, drag or scroll to frame any of the seven canonical engine node presets or follow the kinematic spline mover.
+Each streamed tier pairs with uor_matmul::codec so coded_gemm contracts compressed weights without intermediate float buffers.
 
       
 
-Switch to Walk mode on desktop to traverse the terrain at eye level with WASD or arrow keys.
+Geometry uses Grid lookup tables, animation tracks use 4-bit Packed nibbles, and IBL probes use sparse Runs.
 
       
 
-## Pack and verify progressive UORC streams
+## Scrub progressive LODs and inspect visual telemetry
 
       
 
-Encode all four LOD tiers into one UORC-SHA256-CHAIN-v1 stream and verify every frame within bounded memory.
+Select LOD or Stream .uorc in the Studio rail to step from coarse proxy bounds to lossless LOD3 detail.
+
+      
+
+Select Visuals in the Studio rail to open the high-contrast pipeline, semiring kernel, and UORC compression inspector.
 
       
 
 ```
-let stream = pack_progressive_uorc_stream(7)?; let summary = verify_progressive_uorc_stream(&stream)?; let lod3 = decode_uorc_stream_up_to_lod(&stream, 3)?;
+let stream = pack_portable_progressive_uorc_stream(7)?; let lod3 = decode_portable_uorc_single_frame(&stream, 3)?; let coded = CodedLodFrameBundle::synthesize(7, 3)?;
 ```
 
     
       
-        Previous: Author terrain, shaders, and spatial audio
-        Next: Verdant Core API reference
+        Previous: Author scenes, physics joints, and spatial audio
+        Next: Verdant Engine API reference

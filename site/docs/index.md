@@ -4,10 +4,10 @@
 
 Build fast 3D games and interactive worlds for the web and Rust.
 
-      Four ways to read Verdant Engine documentation. Each section serves a distinct engineering goal, from your first 3D scene to the full API reference.The data in this figure
+      Four ways to explore Verdant Engine documentation. Pick a hands-on tutorial, an authoring guide, the crate API reference, or the semiring tensor architecture.The data in this figure
 |  | Study and design | Hands-on code |
 | --- | --- | --- |
-| Deep context | Tensor architecture | Custom world guide |
+| Deep context | Tensor architecture | Authoring & GLB |
 | Practical steps | API reference | Getting started |
       
       
@@ -16,11 +16,11 @@ Build fast 3D games and interactive worlds for the web and Rust.
 
       
 
-Verdant Engine is a standalone 3D game engine written in Rust for native tools and WebAssembly browsers.
+Verdant Engine is a universal 3D game engine written in Rust for native tools and WebAssembly browsers.
 
       
 
-Every subsystem in verdant-core speaks standard 3D concepts: scene worlds, bounding volume hierarchies, rigid bodies, spatial audio, WGSL shaders, glTF 2.0, and UORC streaming.
+Every pass runs on standard 3D constructs: scene worlds, bounding volume hierarchies, XPBD physics, spatial audio, WGSL shaders, glTF 2.0, and UORC streaming.
 
       
 - KaiGame developerA runnable 3D game world with ECS, rigid-body physics, spatial audio, and a starter template.
@@ -30,19 +30,50 @@ Every subsystem in verdant-core speaks standard 3D concepts: scene worlds, bound
 - WrenBrowser playerA responsive, clutter-free 60fps 3D viewport with progressive LOD streaming, orbit and walk cameras, and spatial audio.
       
 
+## Full-stack engine architecture
+
+      
+
+Constructive Prism proofs generate the semiring kernel bounds that drive verdant-tensor, verdant-core, and verdant-wasm.
+
+      
+
+  
+    
+  
+  Verdant Engine full-stack architecture. Constructive Prism theorems compile directly into the semiring tensor substrate, 3D subsystems, and WebAssembly workers.
+  Architecture layer table
+    
+      
+| Layer | Crate or directory | Core responsibilities |
+      
+        
+| 4 · Browser Studio | site/, crates/verdant-wasm | OffscreenCanvas rendering, native Wasm uorc_decompress, AudioWorklet, and #vdnt= snapshots |
+        
+| 3 · Engine Core | crates/verdant-core, crates/verdant-cli | ECS, BVH, .glb import and transcode, XPBD joints, vehicles, rollback, and WGSL checks |
+        
+| 2 · Tensor Substrate | crates/verdant-tensor | Nine semiring kernels and three zero-decode CodedMatrix tiers over uor-matmul |
+        
+| 1 · Prism Model | app/src/*.lex.tex | Constructive Lean proofs compiled into prism_kernel.rs and app.holo |
+      
+    
+  
+
+      
+
 ## Documentation map
 
       
         
 - Build your first 3D world walks through spawning entities, stepping physics, and saving a binary asset.
         
-- Author terrain, shaders, and spatial audio covers heightfields, procedural meshes, shader checks, and 3D sound.
+- Author scenes, physics joints, and spatial audio covers .glb import, XPBD joints, vehicles, and occluded 3D sound.
         
-- Stream high-resolution scenes with UORC shows how LOD0 through LOD3 frames stream in the browser studio.
+- Stream zero-decode scenes with UORC shows how uorc_decompress and coded_gemm stream LOD0 through LOD3 in WebAssembly.
         
-- Verdant Core API reference lists modules, types, CLI commands, and 60fps frame budgets.
+- Verdant Engine API reference lists crates, types, deterministic rollback sessions, CLI commands, and 60fps budgets.
         
-- Portable tensor kernels and UORC streaming explains exact Laurent contractions and cryptographic frame chains.
+- Unified semiring tensor core and UORC streaming explains linear, tropical, coded, and audio-ring contractions.
       
     
       

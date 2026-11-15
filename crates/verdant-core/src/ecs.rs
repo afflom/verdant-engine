@@ -4,7 +4,8 @@ use std::collections::BTreeMap;
 
 use serde::{Deserialize, Serialize};
 
-use crate::math::{Aabb, Frustum, Mat4, Quat, Ray, Vec3, DIM_PLANAR};
+use crate::error::TensorComputeError;
+use crate::math::{pow10_u64, three_u32, Aabb, Frustum, Mat4, Quat, Ray, Vec3, DIM_PLANAR};
 
 /// Stable, deterministic identifier of a scene entity.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
@@ -258,6 +259,78 @@ impl BoundingVolumeHierarchy {
             }
         }
     }
+
+    fn collect_leaves(node: &BvhNode, out: &mut Vec<(EntityId, Aabb)>) {
+        match node {
+            BvhNode::Leaf { bounds, entity } => out.push((*entity, *bounds)),
+            BvhNode::Internal { left, right, .. } => {
+                Self::collect_leaves(left, out);
+                Self::collect_leaves(right, out);
+            }
+        }
+    }
+
+    /// Evaluates frustum visibility across all indexed entities via tropical `(max, +)` directional
+    /// support contractions in `verdant_tensor::tropical_gjk_support_batch`.
+    pub fn query_frustum_tropical(
+        &self,
+        frustum: &Frustum,
+    ) -> Result<Vec<EntityId>, TensorComputeError> {
+        let Some(root) = &self.root else {
+            return Ok(Vec::new());
+        };
+        let mut leaves = Vec::with_capacity(self.leaf_count);
+        Self::collect_leaves(root, &mut leaves);
+        if leaves.is_empty() {
+            return Ok(Vec::new());
+        }
+
+        let scale = pow10_u64(three_u32()) as f64;
+        let scale_sq = scale * scale;
+        let plane_dirs: Vec<[i32; 1 + 1 + 1]> = frustum
+            .planes
+            .iter()
+            .map(|p| {
+                [
+                    (p.normal.x * scale).round() as i32,
+                    (p.normal.y * scale).round() as i32,
+                    (p.normal.z * scale).round() as i32,
+                ]
+            })
+            .collect();
+
+        let mut visible = Vec::new();
+        for (entity, aabb) in leaves {
+            let xs = [aabb.min.x, aabb.max.x];
+            let ys = [aabb.min.y, aabb.max.y];
+            let zs = [aabb.min.z, aabb.max.z];
+            let mut corners = Vec::new();
+            for &x in &xs {
+                for &y in &ys {
+                    for &z in &zs {
+                        corners.push([
+                            (x * scale).round() as i32,
+                            (y * scale).round() as i32,
+                            (z * scale).round() as i32,
+                        ]);
+                    }
+                }
+            }
+            let supports = verdant_tensor::tropical_gjk_support_batch(&plane_dirs, &corners)?;
+            let inside =
+                supports
+                    .iter()
+                    .zip(frustum.planes.iter())
+                    .all(|(&(_, max_dot_q), plane)| {
+                        (max_dot_q as f64) + plane.distance * scale_sq >= 0.0
+                    });
+            if inside {
+                visible.push(entity);
+            }
+        }
+        visible.sort();
+        Ok(visible)
+    }
 }
 
 /// Deterministic hierarchical scene world container (`BTreeMap`-backed for bit-exact iteration).
@@ -368,9 +441,79 @@ impl SceneWorld {
         Some(rec.local_bounds.transformed(mat))
     }
 
+    /// Propagates world-space transformation matrices across the entire scene hierarchy in a
+    /// topological pass via `verdant_tensor::propagate_hierarchy_matrices_exact` (`uor-matmul`).
+    pub fn propagate_all_world_matrices(
+        &self,
+    ) -> Result<Vec<(EntityId, Mat4)>, TensorComputeError> {
+        if self.entities.is_empty() {
+            return Ok(Vec::new());
+        }
+        let mut ordered_ids: Vec<EntityId> = Vec::with_capacity(self.entities.len());
+        let mut remaining: Vec<EntityId> = self.entities.keys().copied().collect();
+
+        while !remaining.is_empty() {
+            let prev_len = remaining.len();
+            let mut deferred = Vec::new();
+            for id in remaining {
+                let Some(rec) = self.entities.get(&id) else {
+                    continue;
+                };
+                match rec.parent {
+                    None => ordered_ids.push(id),
+                    Some(pid)
+                        if ordered_ids.contains(&pid) || !self.entities.contains_key(&pid) =>
+                    {
+                        ordered_ids.push(id);
+                    }
+                    Some(_) => deferred.push(id),
+                }
+            }
+            if deferred.len() == prev_len {
+                return Err(TensorComputeError::ZeroOrMismatchedExtents {
+                    detail: "scene hierarchy contains a parent cycle".to_string(),
+                });
+            }
+            remaining = deferred;
+        }
+
+        let mut parent_slots = Vec::with_capacity(ordered_ids.len());
+        let mut local_cols = Vec::with_capacity(ordered_ids.len());
+        for &id in &ordered_ids {
+            let Some(rec) = self.entities.get(&id) else {
+                continue;
+            };
+            parent_slots.push(
+                rec.parent
+                    .and_then(|pid| ordered_ids.iter().position(|&oid| oid == pid)),
+            );
+            local_cols.push(rec.local_transform.local_matrix().cols);
+        }
+
+        let world_cols =
+            verdant_tensor::propagate_hierarchy_matrices_exact(&parent_slots, &local_cols)?;
+        let mut pairs = Vec::with_capacity(ordered_ids.len());
+        for (id, cols) in ordered_ids.into_iter().zip(world_cols) {
+            pairs.push((id, Mat4 { cols }));
+        }
+        Ok(pairs)
+    }
+
     /// Builds a fresh world-space `BoundingVolumeHierarchy` over all active entities.
     #[must_use]
     pub fn build_bvh(&self) -> BoundingVolumeHierarchy {
+        #[cfg(not(target_arch = "wasm32"))]
+        if let Ok(mut world_mats) = self.propagate_all_world_matrices() {
+            world_mats.sort_by_key(|(id, _)| *id);
+            let items: Vec<(EntityId, Aabb)> = world_mats
+                .into_iter()
+                .filter_map(|(id, mat)| {
+                    let rec = self.entities.get(&id)?;
+                    Some((id, rec.local_bounds.transformed(mat)))
+                })
+                .collect();
+            return BoundingVolumeHierarchy::build(items);
+        }
         let items: Vec<(EntityId, Aabb)> = self
             .entities
             .keys()

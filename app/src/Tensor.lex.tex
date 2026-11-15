@@ -12,7 +12,20 @@ inductive{
   constructors: [
     {name: linearExact, fields: []},
     {name: tropicalMaxPlus, fields: []},
-    {name: modularAudioRing, fields: []}
+    {name: tropicalMinPlus, fields: []},
+    {name: modularAudioRing, fields: []},
+    {name: codedZeroDecode, fields: []}
+  ]
+}
+
+inductive{
+  name: CodedMatrixTier,
+  type_parameters: [],
+  parameters: [],
+  constructors: [
+    {name: gridLookup, fields: []},
+    {name: packedNibble, fields: []},
+    {name: sparseRuns, fields: []}
   ]
 }
 
@@ -43,6 +56,23 @@ structure{
     {name: minAccumBits, type: Nat},
     {name: tileAligned, type: Bool},
     {name: autonomousKinematic, type: Bool},
+    {name: name, type: String},
+    {name: text, type: String}
+  ]
+}
+
+structure{
+  name: CodedStreamSpec,
+  type_parameters: [],
+  parameters: [],
+  fields: [
+    {name: index, type: Nat},
+    {name: tier, type: CodedMatrixTier},
+    {name: codeBits, type: Nat},
+    {name: blockLen, type: Nat},
+    {name: tableSize, type: Nat},
+    {name: accumBits, type: Nat},
+    {name: zeroScratch, type: Bool},
     {name: name, type: String},
     {name: text, type: String}
   ]
@@ -103,6 +133,13 @@ definition{
   parameters: [],
   result: Nat,
   body: (prim multiply (natThree) (natTen) : Nat)
+}
+
+definition{
+  name: natThirtyTwo,
+  parameters: [],
+  result: Nat,
+  body: (Foundation.Ontology.V1.Model::pow2Constructive (natFive))
 }
 
 definition{
@@ -172,7 +209,7 @@ definition{
   name: kernel0StaticMesh,
   parameters: [],
   result: TensorKernelSpec,
-  body: (record TensorKernelSpec {index := 0, semiring := (ctor TensorSemiring.linearExact), lhsCols := (natFour), accumBits := (natNinetySix), minAccumBits := (natSixtyFour), tileAligned := true, autonomousKinematic := false, name := "StaticMeshTransformBatch", text := "Exact Laurent 4x4 homogeneous world-view-projection vertex batch contraction via uor-matmul."})
+  body: (record TensorKernelSpec {index := 0, semiring := (ctor TensorSemiring.linearExact), lhsCols := (natFour), accumBits := (natNinetySix), minAccumBits := (natSixtyFour), tileAligned := true, autonomousKinematic := false, name := "StaticMeshTransformBatch", text := "Exact Laurent 4x4 homogeneous world-view-projection and scene hierarchy matrix contraction via uor-matmul."})
 }
 
 definition{
@@ -186,7 +223,7 @@ definition{
   name: kernel2TropicalBvhCull,
   parameters: [],
   result: TensorKernelSpec,
-  body: (record TensorKernelSpec {index := (natTwo), semiring := (ctor TensorSemiring.tropicalMaxPlus), lhsCols := (natSix), accumBits := (natSixtyFour), minAccumBits := (natThirty), tileAligned := true, autonomousKinematic := false, name := "TropicalBvhVisibilityCull", text := "Tropical max-plus semiring bounding-volume frustum and occlusion distance culling across scene hierarchies."})
+  body: (record TensorKernelSpec {index := (natTwo), semiring := (ctor TensorSemiring.tropicalMaxPlus), lhsCols := (natSix), accumBits := (natSixtyFour), minAccumBits := (natThirty), tileAligned := true, autonomousKinematic := false, name := "TropicalBvhVisibilityCull", text := "Tropical max-plus semiring bounding-volume frustum and GJK directional support contraction across scene hierarchies."})
 }
 
 definition{
@@ -200,14 +237,14 @@ definition{
   name: kernel4ShadowCascade,
   parameters: [],
   result: TensorKernelSpec,
-  body: (record TensorKernelSpec {index := (natFour), semiring := (ctor TensorSemiring.linearExact), lhsCols := (natFour), accumBits := (natNinetySix), minAccumBits := (natSixtyFour), tileAligned := true, autonomousKinematic := false, name := "ShadowCascadeProjector", text := "Four-cascade directional shadow frustum projection and GGX roughness mip chain evaluation."})
+  body: (record TensorKernelSpec {index := (natFour), semiring := (ctor TensorSemiring.linearExact), lhsCols := (natFour), accumBits := (natNinetySix), minAccumBits := (natSixtyFour), tileAligned := true, autonomousKinematic := false, name := "ShadowCascadeProjector", text := "Four-cascade directional shadow frustum projection, Delassus constraint effective mass, and GGX roughness mip evaluation."})
 }
 
 definition{
   name: kernel5ModalAudioMix,
   parameters: [],
   result: TensorKernelSpec,
-  body: (record TensorKernelSpec {index := (natFive), semiring := (ctor TensorSemiring.modularAudioRing), lhsCols := (natEight), accumBits := (natOneTwentyEight), minAccumBits := (natSixtyFour), tileAligned := true, autonomousKinematic := false, name := "ModalAudioMixMatrix", text := "Multi-emitter modal bar overtone synthesis, Woodworth stereo panning, and Sabine RT60 reverberation contraction."})
+  body: (record TensorKernelSpec {index := (natFive), semiring := (ctor TensorSemiring.modularAudioRing), lhsCols := (natEight), accumBits := (natOneTwentyEight), minAccumBits := (natSixtyFour), tileAligned := true, autonomousKinematic := false, name := "ModalAudioMixMatrix", text := "Multi-emitter modal FIR convolution, Woodworth stereo panning, and Sabine/Eyring feedback delay network contraction."})
 }
 
 definition{
@@ -218,10 +255,84 @@ definition{
 }
 
 definition{
+  name: kernel7TropicalMinPlusNav,
+  parameters: [],
+  result: TensorKernelSpec,
+  body: (record TensorKernelSpec {index := (natSeven), semiring := (ctor TensorSemiring.tropicalMinPlus), lhsCols := (natSixteen), accumBits := (natSixtyFour), minAccumBits := (natThirty), tileAligned := true, autonomousKinematic := false, name := "TropicalMinPlusNavClosure", text := "Tropical min-plus semiring matrix squaring for exact all-pairs and corridor shortest-path closure over walkable navmeshes."})
+}
+
+definition{
+  name: kernel8CodedStreamGemm,
+  parameters: [],
+  result: TensorKernelSpec,
+  body: (record TensorKernelSpec {index := (natEight), semiring := (ctor TensorSemiring.codedZeroDecode), lhsCols := (natSixteen), accumBits := (natNinetySix), minAccumBits := (natSixtyFour), tileAligned := true, autonomousKinematic := false, name := "CodedStreamZeroDecodeGemm", text := "Zero-decode uor_matmul::codec contraction over Grid, Packed, and Runs UORC frames without intermediate float expansion."})
+}
+
+definition{
   name: tensorKernels,
   parameters: [],
   result: (List TensorKernelSpec),
   body: (cons (kernel0StaticMesh) (cons (kernel1LinearSkinning) (cons (kernel2TropicalBvhCull) (cons (kernel3TileRasterizer) (cons (kernel4ShadowCascade) (cons (kernel5ModalAudioMix) (cons (kernel6KinematicSpline) (nil TensorKernelSpec))))))))
+}
+
+definition{
+  name: unifiedTensorKernels,
+  parameters: [],
+  result: (List TensorKernelSpec),
+  body: (cons (kernel0StaticMesh) (cons (kernel1LinearSkinning) (cons (kernel2TropicalBvhCull) (cons (kernel3TileRasterizer) (cons (kernel4ShadowCascade) (cons (kernel5ModalAudioMix) (cons (kernel6KinematicSpline) (cons (kernel7TropicalMinPlusNav) (cons (kernel8CodedStreamGemm) (nil TensorKernelSpec))))))))))
+}
+
+definition{
+  name: codedTier0GridGeometry,
+  parameters: [],
+  result: CodedStreamSpec,
+  body: (record CodedStreamSpec {index := 0, tier := (ctor CodedMatrixTier.gridLookup), codeBits := (natSixteen), blockLen := 1, tableSize := (natSixteen), accumBits := (natSixtyFour), zeroScratch := true, name := "GridQuantizedGeometry", text := "Fixed-width 16-entry Grid lookup CodedMatrix contracting quantized UORC mesh positions and normals directly into world space."})
+}
+
+definition{
+  name: codedTier1PackedAnimation,
+  parameters: [],
+  result: CodedStreamSpec,
+  body: (record CodedStreamSpec {index := 1, tier := (ctor CodedMatrixTier.packedNibble), codeBits := (natEight), blockLen := (natTwo), tableSize := (natSixteen), accumBits := (natSixtyFour), zeroScratch := true, name := "PackedNibbleAnimationTracks", text := "Sub-byte 4-bit Packed<Grid<16>, 2> CodedMatrix streaming two animation curve samples per byte into exact pose accumulators."})
+}
+
+definition{
+  name: codedTier2RunsIblProbes,
+  parameters: [],
+  result: CodedStreamSpec,
+  body: (record CodedStreamSpec {index := (natTwo), tier := (ctor CodedMatrixTier.sparseRuns), codeBits := (natThirtyTwo), blockLen := (natSixteen), tableSize := (natSixteen), accumBits := (natSixtyFour), zeroScratch := true, name := "SparseRunsIblProbes", text := "Variable-length Runs<Grid<16>, 16> CodedMatrix contracting sparse environment irradiance and shadow cascade residuals."})
+}
+
+definition{
+  name: codedTiers,
+  parameters: [],
+  result: (List CodedStreamSpec),
+  body: (cons (codedTier0GridGeometry) (cons (codedTier1PackedAnimation) (cons (codedTier2RunsIblProbes) (nil CodedStreamSpec))))
+}
+
+definition{
+  name: codedTierValid,
+  parameters: [spec : CodedStreamSpec],
+  result: Bool,
+  body: ((((0 <? (project spec codeBits)) && (0 <? (project spec blockLen))) && ((0 <? (project spec tableSize)) && ((natSixtyFour) <=? (project spec accumBits)))) && (project spec zeroScratch))
+}
+
+definition{
+  name: allCodedTiersValid,
+  parameters: [position : Nat, items : (List CodedStreamSpec)],
+  result: Bool,
+  body: (match items
+    | List.nil => true
+    | List.cons item rest => ((((project item index) =? position) && (codedTierValid item)) && (allCodedTiersValid (position + 1) rest))),
+  recursive_argument: items
+}
+
+definition{
+  name: codedTiersDirect,
+  parameters: [],
+  result: Bool,
+  body: (if (((project (codedTier0GridGeometry) index) =? 0) && (codedTierValid (codedTier0GridGeometry))) then (if (((project (codedTier1PackedAnimation) index) =? 1) && (codedTierValid (codedTier1PackedAnimation))) then (((project (codedTier2RunsIblProbes) index) =? (natTwo)) && (codedTierValid (codedTier2RunsIblProbes))) else false) else false),
+  axioms: []
 }
 
 definition{
@@ -284,6 +395,14 @@ definition{
 }
 
 definition{
+  name: unifiedTensorKernelsDirect,
+  parameters: [],
+  result: Bool,
+  body: (if (sevenTensorKernelsDirect) then (if (((project (kernel7TropicalMinPlusNav) index) =? (natSeven)) && (tensorKernelValid (kernel7TropicalMinPlusNav))) then (if (((project (kernel8CodedStreamGemm) index) =? (natEight)) && (tensorKernelValid (kernel8CodedStreamGemm))) then (codedTiersDirect) else false) else false) else false),
+  axioms: []
+}
+
+definition{
   name: zeroDimKernelSample,
   parameters: [],
   result: TensorKernelSpec,
@@ -295,6 +414,13 @@ definition{
   parameters: [],
   result: TensorKernelSpec,
   body: (record TensorKernelSpec {index := 0, semiring := (ctor TensorSemiring.linearExact), lhsCols := (natFour), accumBits := (natThirty), minAccumBits := (natSixtyFour), tileAligned := true, autonomousKinematic := false, name := "NarrowAccumulatorContraction", text := "Invalid tensor contraction whose accumulator bit-width falls below exact Laurent overflow bounds."})
+}
+
+definition{
+  name: invalidCodedTierSample,
+  parameters: [],
+  result: CodedStreamSpec,
+  body: (record CodedStreamSpec {index := 0, tier := (ctor CodedMatrixTier.gridLookup), codeBits := 0, blockLen := 0, tableSize := 0, accumBits := (natThirty), zeroScratch := false, name := "InvalidZeroCodeTier", text := "Invalid coded matrix tier with zero code width and narrow accumulator refused before execution."})
 }
 
 definition{
@@ -326,6 +452,14 @@ theorem{
   parameters: [],
   statement: ((((allTensorKernelsValid 0 (tensorKernels)) && (tensorKernelValid (kernel0StaticMesh))) && (((tensorKernelValid (kernel1LinearSkinning)) && (tensorKernelValid (kernel2TropicalBvhCull))) && (((tensorKernelValid (kernel3TileRasterizer)) && (tensorKernelValid (kernel4ShadowCascade))) && ((tensorKernelValid (kernel5ModalAudioMix)) && ((tensorKernelValid (kernel6KinematicSpline)) && (project (kernel6KinematicSpline) autonomousKinematic)))))) = true),
   proof: decide{}
+}
+
+theorem{
+  name: unifiedTensorAndCodedTiersVerified,
+  parameters: [],
+  statement: (((((allTensorKernelsValid 0 (unifiedTensorKernels)) && (allCodedTiersValid 0 (codedTiers))) && ((tensorKernelValid (kernel7TropicalMinPlusNav)) && (tensorKernelValid (kernel8CodedStreamGemm)))) && (((codedTierValid (codedTier0GridGeometry)) && (codedTierValid (codedTier1PackedAnimation))) && ((codedTierValid (codedTier2RunsIblProbes)) && ((unifiedTensorKernelsDirect) && (not (codedTierValid (invalidCodedTierSample))))))) = true),
+  proof: decide{},
+  axioms: []
 }
 
 theorem{

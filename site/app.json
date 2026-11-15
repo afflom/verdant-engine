@@ -40,6 +40,12 @@
       "where": "app/src/Tensor.lex.tex"
     },
     {
+      "name": "unifiedTensorAndCodedTiersVerified",
+      "statement": "allTensorKernelsValid 0 unifiedTensorKernels = true /\\ allCodedTiersValid 0 codedTiers = true",
+      "how": "Proved by constructive kernel decision over all nine unified semiring kernels (Linear, Tropical max/+, Tropical min/+, Audio Ring, CodedZeroDecode) and all three uor_matmul::codec zero-decode streaming tiers (Grid, Packed, Runs)",
+      "where": "app/src/Tensor.lex.tex"
+    },
+    {
       "name": "invalidTensorKernelsRefused",
       "statement": "tensorKernelValid zeroDimKernelSample = false /\\ tensorKernelValid underflowAccumKernelSample = false",
       "how": "Proved by kernel evaluation showing zero-extent inner dimensions and narrow accumulators below exact Laurent bounds are rejected",

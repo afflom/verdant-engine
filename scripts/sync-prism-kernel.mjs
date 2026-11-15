@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Mechanically synchronizes the Lean-verified Rust package emitted by `prismpm`
-// (`app/.prism/build/*/cargo/package/src/lib.rs`) into `crates/verdant-core/src/prism_kernel.rs`
-// so `verdant-core` executes the exact Prism-compiled kernel while preserving the
+// (`app/.prism/build/*/cargo/package/src/lib.rs`) into `crates/verdant-tensor/src/prism_kernel.rs`
+// so `verdant-tensor` and `verdant-core` execute the exact Prism-compiled kernel while preserving the
 // permanent Zero-Constants Parametric Ratchet (`{0, 1}` token representation).
 
 import { spawnSync } from "node:child_process";
@@ -185,7 +185,7 @@ if (candidates.length === 0) {
 }
 
 const sourcePath = candidates[0];
-const destPath = join(repoRoot, "crates", "verdant-core", "src", "prism_kernel.rs");
+const destPath = join(repoRoot, "crates", "verdant-tensor", "src", "prism_kernel.rs");
 const rawTransformed = rewriteRustSource(readFileSync(sourcePath, "utf8"));
 const fmtRes = spawnSync("rustfmt", ["--edition", "2021"], {
   input: rawTransformed,

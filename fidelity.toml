@@ -1695,6 +1695,26 @@ record = "DevRel::controlSpatialAudio"
 axis = "meant"
 
 [[closed]]
+kappa = "c0527e2b6c73289692fcb155ea121a17bcb112ec05e99939494bbe0aecd10e7f"
+record = "DevRel::controlUorcStream"
+axis = "derived"
+
+[[closed]]
+kappa = "1b237dddded5a7cd94b9cba990b4c223fa292dc13e43c125d1eefbd7d9c9b959"
+record = "DevRel::controlUorcStream"
+axis = "meant"
+
+[[closed]]
+kappa = "6842393cb5a93e7ace38193a9eedf5b193972f44ee9055540d0f00d9ca43c530"
+record = "DevRel::controlVisualInspector"
+axis = "derived"
+
+[[closed]]
+kappa = "9d8210151d79d4c042606a40631bf3272257cd9e8e0b95f0f9d546886030bd55"
+record = "DevRel::controlVisualInspector"
+axis = "meant"
+
+[[closed]]
 kappa = "de37ba3ae79812c2b28ddbd618953a55da9c1db511a793c1c6f18f76084f7780"
 record = "DevRel::docApiReference"
 axis = "derived"
@@ -1802,6 +1822,16 @@ axis = "derived"
 [[closed]]
 kappa = "e61556cc9f599955e08b1807cf39b7103916c41ad02dc89b4a83a2fd250eb7e6"
 record = "DevRel::sdkVerdantCli"
+axis = "meant"
+
+[[closed]]
+kappa = "52ab1fc02d0dfda86541723d852072d1770c74d99bc0b94da5f3f97f55443e18"
+record = "DevRel::sdkVerdantTensor"
+axis = "derived"
+
+[[closed]]
+kappa = "924439537c95201f2a0d5e43b5dfabcf1eb74fb57a7f400ced736bb6e1620383"
+record = "DevRel::sdkVerdantTensor"
 axis = "meant"
 
 [[closed]]
@@ -3205,6 +3235,16 @@ record = "Subsystems::nodePreset6"
 axis = "meant"
 
 [[closed]]
+kappa = "54bc7a4e195888466849815a169b595614c08583028f674b0cd254f32a14c9b4"
+record = "Subsystems::subsystemArticulatedJointsAndVehicles"
+axis = "derived"
+
+[[closed]]
+kappa = "20db865794bb5dfeae666bf9e23a70e72df5f2f181fa201185e5e2f0113f43ae"
+record = "Subsystems::subsystemArticulatedJointsAndVehicles"
+axis = "meant"
+
+[[closed]]
 kappa = "4b243494191e0517d467f0efb13ca3db26fb756e08e8a751b0f2c012841e10f6"
 record = "Subsystems::subsystemCliAssetPacker"
 axis = "derived"
@@ -3225,6 +3265,16 @@ record = "Subsystems::subsystemConvexCollision"
 axis = "meant"
 
 [[closed]]
+kappa = "ac733159f0d891ca835d1230f940ac19ea5d294d1cb6f103b3922f491bb0fa34"
+record = "Subsystems::subsystemDeterministicRollback"
+axis = "derived"
+
+[[closed]]
+kappa = "e997c79be944531a87f3eabaa9df5b21cc5ad07aaf648e807c3b8b9e58aab681"
+record = "Subsystems::subsystemDeterministicRollback"
+axis = "meant"
+
+[[closed]]
 kappa = "71c8ca6f4ce4bcf9fe3f4f59e5ae3c9be708426f4cf1ab8ae1ea4f35779aaec3"
 record = "Subsystems::subsystemEcsBvh"
 axis = "derived"
@@ -3242,6 +3292,16 @@ axis = "derived"
 [[closed]]
 kappa = "d3baab878f0732b21e10e20bd25eded88d9157e0b5e0d44ba4f4fc60c6209c6c"
 record = "Subsystems::subsystemGeometry"
+axis = "meant"
+
+[[closed]]
+kappa = "4dc6f4464cb74e068d4ed430742bc83fe1676aa3856a55aec3f03b44ce9bd7a5"
+record = "Subsystems::subsystemGlbSceneImporter"
+axis = "derived"
+
+[[closed]]
+kappa = "910facfe026e420540783ab460573e40b56d4bd9ab7d526833e9815e7dfdede0"
+record = "Subsystems::subsystemGlbSceneImporter"
 axis = "meant"
 
 [[closed]]
@@ -3355,12 +3415,52 @@ record = "Subsystems::subsystemWasmWorkerBridge"
 axis = "meant"
 
 [[closed]]
-kappa = "04d7b7b6edf644fc29e2e6e6208033383f3de60e26356b6ad973ad7b97fa3576"
+kappa = "ae66f3b838847bbb5f06b35d2541418c0e9fa53641bba4ec700badb755c528b6"
+record = "Tensor::codedTier0GridGeometry"
+axis = "derived"
+
+[[closed]]
+kappa = "78d1ab302d6806f6a4577980bc07ecaaa56c10aaf2e89bc2f440e65a957a3dd6"
+record = "Tensor::codedTier0GridGeometry"
+axis = "meant"
+
+[[closed]]
+kappa = "7dc19cd4abcb89fbf52bc35b25f0cc881b013f5f0e236d426a84de176394831e"
+record = "Tensor::codedTier1PackedAnimation"
+axis = "derived"
+
+[[closed]]
+kappa = "7b3fe77361f6c9a5eca9412210b2f61db187a2b948f87d268ad4c5eb2bcbc49a"
+record = "Tensor::codedTier1PackedAnimation"
+axis = "meant"
+
+[[closed]]
+kappa = "67469c006c7c5fb1cd98be7afdc101a65d025c2bf9af1086f5b084b03f0bc0bb"
+record = "Tensor::codedTier2RunsIblProbes"
+axis = "derived"
+
+[[closed]]
+kappa = "c17033cc68d3b31974698b0ed29996697014910bb4813015caa9dd12178fa007"
+record = "Tensor::codedTier2RunsIblProbes"
+axis = "meant"
+
+[[closed]]
+kappa = "e9507fad53e610a5882572580df1ea09561816cb2ed8dec46eb08f2c7bc4d5ae"
+record = "Tensor::invalidCodedTierSample"
+axis = "derived"
+
+[[closed]]
+kappa = "8755a0b895ebde9bbfc4d0fc5b9746a341e737725451127883cbbef06a7c5a70"
+record = "Tensor::invalidCodedTierSample"
+axis = "meant"
+
+[[closed]]
+kappa = "d4e51696d4b05bc85eb5af755050be33d1f0d577ae9677dea69ad0d86a35ce54"
 record = "Tensor::kernel0StaticMesh"
 axis = "derived"
 
 [[closed]]
-kappa = "67c23080d8420d347c90f972c023b1189d2582ec200de95e390b4f687c180389"
+kappa = "2926b012794c156e1299db71cf4e1bf223ef22900f6aa6e15f2f99d6216ef15a"
 record = "Tensor::kernel0StaticMesh"
 axis = "meant"
 
@@ -3375,12 +3475,12 @@ record = "Tensor::kernel1LinearSkinning"
 axis = "meant"
 
 [[closed]]
-kappa = "19634d97fe0a244111fd28da2ba67d6e43e49de4ebf04c4f83fb27d7821a329d"
+kappa = "d3181f70f51cae32275330cf7c12bb2bfce4f8702db1f1e2b4e32b33590d7293"
 record = "Tensor::kernel2TropicalBvhCull"
 axis = "derived"
 
 [[closed]]
-kappa = "e59d11793a2e561668b290f79f9a2ed237325f3eb3bb08e2bce18e5fe825fda8"
+kappa = "1dd13b38fe736581783e2c5b598627d7391ee4f36982f73ccb4688414fd1a866"
 record = "Tensor::kernel2TropicalBvhCull"
 axis = "meant"
 
@@ -3395,22 +3495,22 @@ record = "Tensor::kernel3TileRasterizer"
 axis = "meant"
 
 [[closed]]
-kappa = "7aa9a9360cc6e1565656794497032e8c9adfd814480a7b50e46ab16429615ae3"
+kappa = "ca28959e20948950bbb334608fba94a28203872bf90f80e23e36772df0760723"
 record = "Tensor::kernel4ShadowCascade"
 axis = "derived"
 
 [[closed]]
-kappa = "71d8b695c866499a8af246209dc0c3922845f339359237e323642b7650b72f82"
+kappa = "bd5bb0bcc5ba49e6e85ae03e0005643e913dbb767cf4f3262b75189339a33f99"
 record = "Tensor::kernel4ShadowCascade"
 axis = "meant"
 
 [[closed]]
-kappa = "bd0f68a50ba6791a1500894ecd16720392e8fabc35fac3f1f0ab84789085a938"
+kappa = "66a628b3ec418aa2fb82f04c3627ce477d24175eb5944f7d97103c2878d20dc8"
 record = "Tensor::kernel5ModalAudioMix"
 axis = "derived"
 
 [[closed]]
-kappa = "6c4ba180124f39ef825f8c3588d62660e880235fcbd09bc955d1e1d285c5a03f"
+kappa = "54292ad572e7e45c40127aeb39255517248861c97eb6163f6228b65c4c68fcaa"
 record = "Tensor::kernel5ModalAudioMix"
 axis = "meant"
 
@@ -3422,6 +3522,26 @@ axis = "derived"
 [[closed]]
 kappa = "3785a2dc96aba320a2e243ff3580849d97879b3d1e497ab669eccd329c95da1e"
 record = "Tensor::kernel6KinematicSpline"
+axis = "meant"
+
+[[closed]]
+kappa = "381a6ba0ff0a227458dc598caa2fa79f03c095cf9fc6cf28f273fd7228a9677a"
+record = "Tensor::kernel7TropicalMinPlusNav"
+axis = "derived"
+
+[[closed]]
+kappa = "f8d1d7673727b13e209326c9fceb08747becdb7fdb484140e191572c8a6eabc6"
+record = "Tensor::kernel7TropicalMinPlusNav"
+axis = "meant"
+
+[[closed]]
+kappa = "8363d64b83deb080eb195578b6b0d48623f0bd0f7bf540b279bc256701dafbeb"
+record = "Tensor::kernel8CodedStreamGemm"
+axis = "derived"
+
+[[closed]]
+kappa = "33bdb7a3db6acacceccc7721f24fd8ddc7e2581e013a1bd059d9e4f6ce3a4c50"
+record = "Tensor::kernel8CodedStreamGemm"
 axis = "meant"
 
 [[closed]]

@@ -470,6 +470,7 @@ dependencies = [
  "serde_json",
  "verdant-cli",
  "verdant-core",
+ "verdant-tensor",
  "verdant-wasm",
 ]
 
@@ -809,6 +810,16 @@ dependencies = [
  "sha2 0.10.9",
  "uor-matmul",
  "uorc",
+ "uorc_decompress",
+ "verdant-tensor",
+]
+
+[[package]]
+name = "verdant-tensor"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "uor-matmul",
 ]
 
 [[package]]

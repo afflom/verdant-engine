@@ -12,8 +12,9 @@ keywords.workspace = true
 categories.workspace = true
 
 [features]
-default = ["uorc-streaming"]
-uorc-streaming = ["dep:uorc"]
+default = ["uorc-streaming", "uorc-wasm-decode"]
+uorc-streaming = ["dep:uorc", "uorc-wasm-decode"]
+uorc-wasm-decode = ["dep:uorc_decompress"]
 
 [dependencies]
 gltf = "1.4.1"
@@ -23,6 +24,8 @@ serde_json = "1.0.140"
 sha2 = "0.10.9"
 uor-matmul.workspace = true
 uorc = { workspace = true, optional = true }
+uorc_decompress = { workspace = true, optional = true }
+verdant-tensor.workspace = true
 
 [lints]
 workspace = true

@@ -72,6 +72,11 @@ impl ConvexHullCollider {
     /// Furthest world-space vertex along `direction`.
     #[must_use]
     pub fn support(&self, world_offset: Vec3, direction: Vec3) -> Vec3 {
+        if let Ok(batch) = self.support_batch_tropical(world_offset, &[direction]) {
+            if let Some(&v) = batch.first() {
+                return v;
+            }
+        }
         let mut best = self.vertices[0] + world_offset;
         let mut best_dot = best.dot(direction);
         for &v in self.vertices.iter().skip(1) {
@@ -83,6 +88,55 @@ impl ConvexHullCollider {
             }
         }
         best
+    }
+
+    /// Evaluates batch GJK directional support vertices across `directions` via tropical `(max, +)`
+    /// contractions in `verdant_tensor::tropical_gjk_support_batch`.
+    pub fn support_batch_tropical(
+        &self,
+        world_offset: Vec3,
+        directions: &[Vec3],
+    ) -> Result<Vec<Vec3>, CollisionError> {
+        if self.vertices.is_empty() || directions.is_empty() {
+            return Err(CollisionError::EmptyOrDegenerateHull {
+                vertex_count: self.vertices.len(),
+            });
+        }
+        let scale =
+            crate::prism_kernel::skinWeightScale().expect("verified Prism skinWeightScale") as f64;
+        let dirs_q: Vec<[i32; 1 + 1 + 1]> = directions
+            .iter()
+            .map(|d| {
+                let u = d.normalized();
+                [
+                    (u.x * scale).round() as i32,
+                    (u.y * scale).round() as i32,
+                    (u.z * scale).round() as i32,
+                ]
+            })
+            .collect();
+        let verts_q: Vec<[i32; 1 + 1 + 1]> = self
+            .vertices
+            .iter()
+            .map(|&v| {
+                let p = v + world_offset;
+                [
+                    (p.x * scale).round() as i32,
+                    (p.y * scale).round() as i32,
+                    (p.z * scale).round() as i32,
+                ]
+            })
+            .collect();
+        let winners =
+            verdant_tensor::tropical_gjk_support_batch(&dirs_q, &verts_q).map_err(|_| {
+                CollisionError::EmptyOrDegenerateHull {
+                    vertex_count: self.vertices.len(),
+                }
+            })?;
+        Ok(winners
+            .into_iter()
+            .map(|(idx, _)| self.vertices[idx] + world_offset)
+            .collect())
     }
 }
 

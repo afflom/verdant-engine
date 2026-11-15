@@ -208,10 +208,12 @@ export function buildStaticWorld(lodSpec, baseGridN = 36) {
   }
 
   if (rank >= 2) {
-    // Node 3: TileFramebufferRasterizer — Articulated Rig Bay
+    // Node 3: Articulated Rig Bay — XPBD joint gantry frame
     const qcy = terrainHeight(-6.5, 9.0, amp);
-    mb.addCylinder(-6.5, qcy - 0.1, 9.0, 1.9, 1.75, 0.55, 8, slate);
-    mb.addCylinder(-6.5, qcy + 0.45, 9.0, 0.45, 0.08, 2.25, 6, [0.84, 0.90, 0.98]);
+    mb.addCylinder(-6.5, qcy - 0.1, 9.0, 2.05, 1.85, 0.45, 10, slate);
+    mb.addCylinder(-7.75, qcy + 0.35, 9.0, 0.16, 0.14, 2.85, 8, slate);
+    mb.addCylinder(-5.25, qcy + 0.35, 9.0, 0.16, 0.14, 2.85, 8, slate);
+    mb.addBox(-6.5, qcy + 3.22, 9.0, 2.95, 0.20, 0.26, alloy, 0);
 
     // Node 4: ShadowCascadeProjector — Elevated Deck Bridge
     for (let s = 0; s < 5; s++) {
@@ -258,6 +260,16 @@ export function buildDynamicActors(lodSpec, timeSec, wasmMover = null) {
 
   if (rank < 2) return { mb, moverPos: [16.5, 0.5, 0] };
 
+  // Node 3: XPBD Articulated Hinge + Slider + BallSocket dynamic rig
+  const qcy = terrainHeight(-6.5, 9.0, amp);
+  const slideX = -6.5 + Math.sin(timeSec * 1.35) * 0.72;
+  const swing = Math.sin(timeSec * 2.05) * 0.52;
+  mb.addBox(slideX, qcy + 3.22, 9.0, 0.46, 0.32, 0.42, [0.26, 0.80, 0.88], 0);
+  const bobX = slideX + Math.sin(swing) * 1.35;
+  const bobY = qcy + 3.12 - Math.cos(swing) * 1.35;
+  mb.addCylinder((slideX + bobX) * 0.5, Math.min(qcy + 3.12, bobY), 9.0, 0.06, 0.06, Math.max(0.4, qcy + 3.12 - bobY), 6, [0.82, 0.88, 0.94]);
+  mb.addTorusRing(bobX, bobY, 9.0, 0.34, 0.10, 14, 6, gold, timeSec * 1.6, swing);
+
   let rx;
   let rz;
   let heading;
@@ -272,19 +284,23 @@ export function buildDynamicActors(lodSpec, timeSec, wasmMover = null) {
     rz = Math.sin(theta) * 16.5;
     heading = -theta;
   }
-  const ry = terrainHeight(rx, rz, amp) + 0.36;
+  const ry = terrainHeight(rx, rz, amp) + 0.42;
 
-  // Node 6: KinematicSplineController articulated vehicle
-  mb.addBox(rx, ry, rz, 0.95, 0.34, 1.45, [0.80, 0.62, 0.30], heading);
-  mb.addBox(rx, ry + 0.28, rz - 0.1, 0.58, 0.24, 0.68, [0.90, 0.88, 0.82], heading);
-  mb.addCylinder(rx, ry + 0.38, rz, 0.08, 0.06, 0.52, 8, [0.30, 0.34, 0.38]);
-  mb.addBox(rx, ry + 0.92, rz, 0.32, 0.16, 0.22, [0.24, 0.78, 0.86], heading + Math.sin(timeSec * 2.2) * 0.6);
+  // Node 6: 4-Wheel Raycast Suspension Vehicle + Kinematic Spline Mover
+  mb.addBox(rx, ry, rz, 1.04, 0.34, 1.56, [0.84, 0.64, 0.30], heading);
+  mb.addBox(rx, ry + 0.28, rz - 0.08, 0.64, 0.24, 0.74, [0.92, 0.90, 0.84], heading);
+  mb.addCylinder(rx, ry + 0.38, rz, 0.08, 0.06, 0.52, 8, [0.34, 0.38, 0.44]);
+  mb.addBox(rx, ry + 0.92, rz, 0.34, 0.16, 0.24, [0.24, 0.82, 0.90], heading + Math.sin(timeSec * 2.2) * 0.6);
 
   const c = Math.cos(heading), s = Math.sin(heading);
-  for (const [wx, wz] of [[-0.55, -0.52], [0.55, -0.52], [-0.58, 0], [0.58, 0], [-0.55, 0.52], [0.55, 0.52]]) {
+  for (const [wx, wz] of [[-0.58, -0.56], [0.58, -0.56], [-0.58, 0.56], [0.58, 0.56]]) {
     const px = rx + wx * c - wz * s;
     const pz = rz + wx * s + wz * c;
-    mb.addCylinder(px, ry - 0.34, pz, 0.20, 0.20, 0.22, 8, [0.20, 0.22, 0.25]);
+    const groundY = terrainHeight(px, pz, amp);
+    const wheelY = Math.max(groundY + 0.02, ry - 0.38 + Math.sin(timeSec * 4.5 + wx * 2.0 + wz) * 0.04);
+    const strutLen = Math.max(0.14, ry - wheelY);
+    mb.addCylinder(px, wheelY + 0.12, pz, 0.05, 0.05, strutLen, 6, [0.68, 0.78, 0.86]);
+    mb.addCylinder(px, wheelY, pz, 0.22, 0.22, 0.24, 10, [0.22, 0.25, 0.30]);
   }
 
   return { mb, moverPos: [rx, ry, rz] };
@@ -398,15 +414,16 @@ export async function createGlRenderer(canvas) {
          vec3 h = normalize(l + v);
          float ndl = max(dot(n, l), 0.0);
          float hemi = 0.5 + 0.5 * n.y;
-         vec3 amb = mix(vec3(0.16, 0.15, 0.14), vec3(0.38, 0.48, 0.56), hemi);
-         float spec = pow(max(dot(n, h), 0.0), 36.0) * 0.28;
+         vec3 amb = mix(vec3(0.22, 0.21, 0.20), vec3(0.44, 0.56, 0.66), hemi);
+         float spec = pow(max(dot(n, h), 0.0), 36.0) * 0.30;
+         float rim = pow(1.0 - max(dot(n, v), 0.0), 2.8) * 0.16;
          vec3 base = v_col;
          if (v_col.b > v_col.r * 1.6 && abs(n.y) > 0.9) {
            float ripple = 0.04 * sin(v_pos.x * 2.8 + u_time * 2.4) * cos(v_pos.z * 2.6 - u_time * 1.9);
            base += ripple;
-           spec += pow(1.0 - max(dot(n, v), 0.0), 3.0) * 0.35;
+           spec += pow(1.0 - max(dot(n, v), 0.0), 3.0) * 0.38;
          }
-         vec3 lit = base * (amb + vec3(1.02, 0.95, 0.82) * ndl * 0.82) + spec;
+         vec3 lit = base * (amb + vec3(1.04, 0.96, 0.84) * ndl * 0.84) + spec + vec3(0.45, 0.78, 0.92) * rim;
          float dist = length(u_eye - v_pos);
          float fogFactor = 1.0 - exp(-dist * 0.016);
          vec3 col = mix(lit, u_fog, clamp(fogFactor, 0.0, 0.78));

@@ -13,7 +13,7 @@ use verdant_core::audio::{
 };
 use verdant_core::collision::{gjk_intersect_and_manifold, ConvexHullCollider};
 use verdant_core::ecs::BoundingVolumeHierarchy;
-use verdant_core::geometry::canonical_scene_mesh_library;
+use verdant_core::geometry::generate_terrain_patch_mesh;
 use verdant_core::math::{Frustum, Mat4, Vec3};
 use verdant_core::navmesh::NavMesh;
 use verdant_core::physics::{
@@ -22,12 +22,12 @@ use verdant_core::physics::{
 use verdant_core::prism_kernel;
 use verdant_core::render::compute_csm_splits;
 use verdant_core::runtime::WorldSnapshot;
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+use verdant_core::streaming::{decode_portable_uorc_single_frame, CodedLodFrameBundle};
 #[cfg(not(target_arch = "wasm32"))]
 use verdant_core::streaming::{decode_uorc_stream_up_to_lod, pack_progressive_uorc_stream};
 use verdant_core::streaming::{terrain_height_with_params, StandardSceneState};
-use verdant_core::tensor::{
-    render_triangles_tile_framebuffer, verified_engine_tensor_kernels, RasterTriangle,
-};
+use verdant_core::tensor::{render_triangles_tile_framebuffer, RasterTriangle};
 
 /// Refusal returned when a browser worker command, LOD rank, or snapshot/UORC envelope is invalid.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -110,6 +110,16 @@ fn pk_f64(res: Result<u64, prism_kernel::ComputeError>) -> f64 {
     pk_u64(res) as f64
 }
 
+#[cfg(not(target_arch = "wasm32"))]
+fn bridge_reason<E: fmt::Display>(err: E) -> String {
+    err.to_string()
+}
+
+#[cfg(target_arch = "wasm32")]
+fn bridge_reason<E>(_err: E) -> String {
+    String::new()
+}
+
 impl WasmRuntimeBridge {
     /// Initializes a deterministic `LOD3` lossless-source runtime from `seed`.
     pub fn new(seed: u64) -> Result<Self, WasmBridgeError> {
@@ -117,20 +127,22 @@ impl WasmRuntimeBridge {
         let mut world = StandardSceneState::new_at_lod0(seed.max(1)).map_err(|e| {
             WasmBridgeError::InvalidSnapshotEnvelope {
                 byte_len: 0,
-                reason: e.to_string(),
+                reason: bridge_reason(e),
             }
         })?;
         world
             .advance_to_lod(max_rank)
             .map_err(|e| WasmBridgeError::InvalidSnapshotEnvelope {
                 byte_len: 0,
-                reason: e.to_string(),
+                reason: bridge_reason(e),
             })?;
 
         let physics = Self::build_physics(&world);
         let bvh = world.scene.build_bvh();
-        let meshes = canonical_scene_mesh_library(world.seed);
-        let walkable_polygons = NavMesh::from_mesh(&meshes[0])
+        let terrain_segs = pk_u64(prism_kernel::sThirtyTwo()) as usize;
+        let terrain_span = pk_f64(prism_kernel::sSixteen()) * (prism_kernel::sThree() as f64);
+        let terrain_mesh = generate_terrain_patch_mesh(world.seed, terrain_span, terrain_segs);
+        let walkable_polygons = NavMesh::from_mesh(&terrain_mesh)
             .map(|nm| nm.polygons.len())
             .unwrap_or(0);
         let ten = pk_f64(prism_kernel::sTen());
@@ -233,13 +245,13 @@ impl WasmRuntimeBridge {
         let mut fresh = StandardSceneState::new_at_lod0(self.world.seed).map_err(|e| {
             WasmBridgeError::InvalidSnapshotEnvelope {
                 byte_len: 0,
-                reason: e.to_string(),
+                reason: bridge_reason(e),
             }
         })?;
         fresh.advance_to_lod(u64::from(rank)).map_err(|e| {
             WasmBridgeError::InvalidSnapshotEnvelope {
                 byte_len: 0,
-                reason: e.to_string(),
+                reason: bridge_reason(e),
             }
         })?;
         self.bvh = fresh.scene.build_bvh();
@@ -402,7 +414,7 @@ impl WasmRuntimeBridge {
         let restored =
             WorldSnapshot::decode(wire).map_err(|e| WasmBridgeError::InvalidSnapshotEnvelope {
                 byte_len: wire.len(),
-                reason: e.to_string(),
+                reason: bridge_reason(e),
             })?;
         self.lod_rank = restored.active_lod.rank() as u32;
         self.bvh = restored.scene.build_bvh();
@@ -447,6 +459,67 @@ impl WasmRuntimeBridge {
         self.physics = Self::build_physics(&restored);
         self.world = restored;
         Ok(())
+    }
+
+    /// Decodes a portable `UORC-SHA256-CHAIN-v1` progressive stream natively via `uorc_decompress::run`
+    /// on both host and `wasm32-unknown-unknown` (`feature = "uorc-decoder"`), restoring the scene up
+    /// to `target_lod_rank` and staging the verified `VDNT` snapshot into `self.io_buffer`.
+    #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+    pub fn decode_and_restore_portable_uorc(
+        &mut self,
+        stream_bytes: &[u8],
+        target_lod_rank: u32,
+    ) -> Result<(), WasmBridgeError> {
+        let restored = decode_portable_uorc_single_frame(stream_bytes, u64::from(target_lod_rank))
+            .map_err(|e| WasmBridgeError::InvalidSnapshotEnvelope {
+                byte_len: stream_bytes.len(),
+                reason: bridge_reason(e),
+            })?;
+        let snap = WorldSnapshot::encode(&restored).map_err(|e| {
+            WasmBridgeError::InvalidSnapshotEnvelope {
+                byte_len: stream_bytes.len(),
+                reason: bridge_reason(e),
+            }
+        })?;
+        self.lod_rank = restored.active_lod.rank() as u32;
+        self.bvh = restored.scene.build_bvh();
+        self.physics = Self::build_physics(&restored);
+        self.world = restored;
+        self.io_buffer = snap;
+        Ok(())
+    }
+
+    /// Evaluates zero-decode `uor_matmul::codec` contractions (`Grid`, `Packed`, `Runs`) at `lod_rank`.
+    #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+    pub fn evaluate_coded_zero_decode_checksum(
+        &self,
+        lod_rank: u32,
+    ) -> Result<i64, WasmBridgeError> {
+        let bundle = CodedLodFrameBundle::synthesize(self.world.seed, u64::from(lod_rank))
+            .map_err(|e| WasmBridgeError::InvalidSnapshotEnvelope {
+                byte_len: 0,
+                reason: bridge_reason(e),
+            })?;
+        let basis_len = bundle.inner_k;
+        let transform_q: Vec<i32> = (0..basis_len).map(|i| (i as i32) + 1).collect();
+        let weights_q: Vec<i32> = (0..basis_len).map(|i| (basis_len - i) as i32).collect();
+        let sh_q: Vec<i32> = (0..basis_len)
+            .map(|i| if (i & 1) == 0 { 1 } else { -1 })
+            .collect();
+        let summary = bundle
+            .contract_zero_decode(&transform_q, &weights_q, &sh_q)
+            .map_err(|e| WasmBridgeError::InvalidSnapshotEnvelope {
+                byte_len: 0,
+                reason: bridge_reason(e),
+            })?;
+        let total = summary
+            .geometry_accum
+            .iter()
+            .chain(summary.animation_accum.iter())
+            .chain(summary.ibl_accum.iter())
+            .copied()
+            .fold(0_i64, i64::wrapping_add);
+        Ok(total)
     }
 }
 
@@ -1051,9 +1124,16 @@ pub extern "C" fn verdant_wasm_node_modal_hz(index: u32) -> f64 {
 /// Number of certified Prism `uor-matmul` tensor kernels (`7`).
 #[no_mangle]
 pub extern "C" fn verdant_wasm_tensor_kernel_count() -> u32 {
-    verified_engine_tensor_kernels()
-        .map(|k| k.len() as u32)
-        .unwrap_or(0)
+    #[cfg(target_arch = "wasm32")]
+    {
+        pk_u64(prism_kernel::sSeven()) as u32
+    }
+    #[cfg(not(target_arch = "wasm32"))]
+    if prism_kernel::sevenTensorKernelsDirect().unwrap_or(false) {
+        pk_u64(prism_kernel::sSeven()) as u32
+    } else {
+        0
+    }
 }
 
 /// Tile edge dimension in pixels (`16`) from `prism_kernel::tileEdgePixels()`.
@@ -1090,4 +1170,88 @@ pub extern "C" fn verdant_wasm_max_lod_rank() -> u32 {
 #[no_mangle]
 pub extern "C" fn verdant_wasm_snapshot_min_wire_bytes() -> u32 {
     pk_u64(prism_kernel::snapshotMinWireBytes()) as u32
+}
+
+/// Number of unified Prism semiring tensor kernels (`9`, covering linear, tropical max/min, audio ring, and coded stream).
+#[no_mangle]
+pub extern "C" fn verdant_wasm_unified_tensor_kernel_count() -> u32 {
+    #[cfg(target_arch = "wasm32")]
+    {
+        pk_u64(prism_kernel::sNine()) as u32
+    }
+    #[cfg(not(target_arch = "wasm32"))]
+    {
+        let base_ok = prism_kernel::sevenTensorKernelsDirect().unwrap_or(false);
+        let k7_ok = prism_kernel::kernel7TropicalMinPlusNav()
+            .map(|s| prism_kernel::tensorKernelValid(&s))
+            .unwrap_or(false);
+        let k8_ok = prism_kernel::kernel8CodedStreamGemm()
+            .map(|s| prism_kernel::tensorKernelValid(&s))
+            .unwrap_or(false);
+        if base_ok && k7_ok && k8_ok {
+            pk_u64(prism_kernel::sNine()) as u32
+        } else {
+            0
+        }
+    }
+}
+
+/// Number of zero-decode `uor_matmul::codec` streaming matrix tiers (`3`: `Grid`, `Packed`, `Runs`).
+#[no_mangle]
+pub extern "C" fn verdant_wasm_coded_tier_count() -> u32 {
+    #[cfg(target_arch = "wasm32")]
+    {
+        prism_kernel::sThree() as u32
+    }
+    #[cfg(not(target_arch = "wasm32"))]
+    {
+        let t0_ok = prism_kernel::codedTier0GridGeometry()
+            .and_then(|s| prism_kernel::codedTierValid(&s))
+            .unwrap_or(false);
+        let t1_ok = prism_kernel::codedTier1PackedAnimation()
+            .and_then(|s| prism_kernel::codedTierValid(&s))
+            .unwrap_or(false);
+        let t2_ok = prism_kernel::codedTier2RunsIblProbes()
+            .and_then(|s| prism_kernel::codedTierValid(&s))
+            .unwrap_or(false);
+        if t0_ok && t1_ok && t2_ok {
+            prism_kernel::sThree() as u32
+        } else {
+            0
+        }
+    }
+}
+
+/// Executes zero-decode `uor_matmul::coded_gemm` contractions (`Grid`, `Packed`, `Runs`) at `lod_rank`.
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+#[no_mangle]
+pub extern "C" fn verdant_wasm_coded_zero_decode_checksum(lod_rank: u32) -> i64 {
+    global_bridge()
+        .lock()
+        .ok()
+        .and_then(|g| {
+            g.as_ref()?
+                .evaluate_coded_zero_decode_checksum(lod_rank)
+                .ok()
+        })
+        .unwrap_or(0)
+}
+
+/// Decodes a portable `.uorc` progressive stream from `io_buffer` via `uorc_decompress::run`, restores
+/// up to `target_lod_rank` (`0..=3`), and replaces `io_buffer` with the verified `VDNT` snapshot (`1` = ok, `0` = refused).
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+#[no_mangle]
+pub extern "C" fn verdant_wasm_uorc_decode_and_restore(target_lod_rank: u32) -> u32 {
+    let Ok(mut guard) = global_bridge().lock() else {
+        return 0;
+    };
+    let Some(bridge) = guard.as_mut() else {
+        return 0;
+    };
+    let stream = bridge.io_buffer.clone();
+    u32::from(
+        bridge
+            .decode_and_restore_portable_uorc(&stream, target_lod_rank)
+            .is_ok(),
+    )
 }

@@ -1,33 +1,49 @@
-# Author terrain, shaders, and spatial audio
+# Author scenes, physics joints, and spatial audio
 
       
 
-Build 3D terrain meshes, check portable shaders, and mix 3D sound.
+Import GLB scenes, solve articulated joints and vehicles, and mix occluded 3D sound.
 
-      Asset and sensory pipeline in verdant-core. Procedural geometry, PBR materials, WGSL shaders, and spatial audio converge into browser rendering and GLB export.The data in this figure
+      Authoring, physics, and sensory pipeline in verdant-core. External GLB assets, procedural meshes, XPBD joints, raycast vehicles, and occluded audio unite inside SceneWorld.The data in this figure
 | From | Link | To |
 | --- | --- | --- |
-| Geometry | → | SceneWorld |
-| PBR materials | → | SceneWorld |
+| GLB importer | → | SceneWorld + BVH |
+| WGSL shaders | → | SceneWorld + BVH |
 | --- | --- | --- |
-| SceneWorld | → | Browser and GLB |
-| AudioScene | → | Browser and GLB |
+| SceneWorld + BVH | → | XPBD + vehicles |
+| SceneWorld + BVH | → | UORC + Studio |
+| --- | --- | --- |
+| XPBD + vehicles | → | UORC + Studio |
       
       
 
-## Generate heightfield terrain and procedural meshes
+## Import external GLB scenes and transcode to UORC
 
       
 
-Call generate_terrain_mesh with TerrainReliefParams to create an indexed triangle grid with analytical surface normals.
+Call import_glb_to_scene to load node hierarchies, indexed meshes, skin weights, skeletal clips, and PBR materials into a SceneWorld.
 
       
 
-For columns, faceted prisms, and ribbons, call generate_fluted_entasis_column_mesh, generate_faceted_prism_mesh, or canonical_scene_mesh_library.
+Call transcode_glb_to_progressive_uorc or run verdant transcode-glb authored.glb scene.uorc to emit a four-LOD stream.
 
       
 
-When deformable ribbons bend in the wind, blend vertex offsets with MorphTarget.
+```
+let imported = import_glb_to_scene(&glb_bytes)?; let uorc_stream = transcode_glb_to_progressive_uorc(&glb_bytes, 7)?;
+```
+
+      
+
+## Configure XPBD joints, swept capsules, and raycast vehicles
+
+      
+
+Attach RigidJointConstraint links with Hinge, BallSocket, Slider, or SpringDamper topology solved via Delassus matrices.
+
+      
+
+Drive characters over stairs with step_swept_against_bvh and simulate four-wheel suspension rigs with RaycastVehicle.
 
       
 
@@ -35,39 +51,27 @@ When deformable ribbons bend in the wind, blend vertex offsets with MorphTarget.
 
       
 
-Every shader passes through W3C naga front-end parsing and module validation before shipping in an asset bundle.
+Every built-in PBR, terrain, fluid, sky, and skinned shadow shader passes W3C naga validation before asset packing.
 
       
 
 ```
-let shaders = validate_builtin_engine_shaders()?; assert_eq!(shaders.len(), 4);
+let shaders = validate_builtin_engine_shaders()?; assert_eq!(shaders.len(), 5);
 ```
 
       
 
-## Mix spatial audio with AudioWorklet synthesis
+## Mix occluded spatial audio and Hadamard reverb
 
       
 
-Create an AcousticEnvironment with a ListenerPose and evaluate SpatialAudioSource emitters in 3D space.
+Call evaluate_binaural_cue_with_occlusion to cast a line-of-sight ray against the BVH and attenuate obstructed sound sources.
 
       
 
-Each call to evaluate_binaural_cue computes Woodworth interaural time difference, level difference, and Sabine RT60 decay for the 128-frame AudioWorklet.
-
-      
-
-## Pack and verify assets with verdant-cli
-
-      
-
-Call export_scene_to_glb(&scene, &meshes, &materials) in Rust, or run cargo run -p verdant-cli -- pack-scene out.glb from your shell.
-
-      
-
-Run verdant verify-uorc, verdant validate-glb, verdant validate-wgsl, and verdant snapshot-verify in continuous integration.
+Call synthesize_binaural_reverb_quantum_exact to convolve Euler-Bernoulli modal bars and step the four-channel Hadamard FDN tank.
 
     
       
         Previous: Build your first 3D world
-        Next: Stream high-resolution scenes with UORC
+        Next: Stream zero-decode scenes with UORC

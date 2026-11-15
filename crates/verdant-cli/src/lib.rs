@@ -9,7 +9,9 @@ use std::time::Instant;
 
 use verdant_core::collision::{gjk_intersect_and_manifold, ConvexHullCollider};
 use verdant_core::geometry::canonical_scene_mesh_library;
-use verdant_core::gltf_io::{export_scene_to_glb, validate_glb_bytes};
+use verdant_core::gltf_io::{
+    export_scene_to_glb, import_glb_to_scene, transcode_glb_to_progressive_uorc, validate_glb_bytes,
+};
 use verdant_core::math::Vec3;
 use verdant_core::navmesh::NavMesh;
 use verdant_core::physics::{
@@ -22,7 +24,9 @@ use verdant_core::render::{
 };
 use verdant_core::runtime::WorldSnapshot;
 use verdant_core::streaming::{
-    pack_progressive_uorc_stream, verify_progressive_uorc_stream, StandardSceneState,
+    decode_portable_uorc_stream_up_to_lod, pack_portable_progressive_uorc_stream,
+    pack_progressive_uorc_stream, split_self_delimiting_uorc_archives,
+    verify_progressive_uorc_stream, StandardSceneState,
 };
 
 /// Refusal returned when a `verdant` CLI subcommand receives invalid arguments, unreadable paths,
@@ -69,9 +73,13 @@ impl std::error::Error for CliCommandError {}
 pub const CLI_USAGE: &str = "\
 verdant <subcommand> [options]
   validate-glb <file.glb>                     Verify binary Khronos glTF 2.0 container
+  import-glb <file.glb>                       Import .glb hierarchy, meshes, skins, clips, & PBR materials
+  transcode-glb <in.glb> <out.uorc> [seed]    Transcode .glb scene into progressive LOD0..LOD3 .uorc stream
   validate-wgsl <file.wgsl> [entry...]        Verify W3C WGSL shader module via naga
   pack-scene <out.glb> [seed] [lod_rank]      Pack progressive .uorc + .glb + .vdnt scene bundle
+  pack-portable-uorc <out.uorc> [seed]        Pack stateless Wasm-portable LOD0..LOD3 .uorc stream
   verify-uorc <file.uorc>                     Verify UORC-SHA256-CHAIN-v1 multi-LOD stream
+  verify-portable-uorc <file.uorc> [lod_rank] Verify portable .uorc stream via uorc_decompress::run
   snapshot-verify <file.vdnt>                 Verify VDNT + SHA-256 snapshot and Prism envelope
   benchmark [frames]                          Run headless 60fps physics + BVH + GJK + NavMesh benchmark";
 
@@ -114,6 +122,76 @@ pub fn run_cli(args: &[String]) -> Result<String, CliCommandError> {
                 summary.mesh_count,
                 summary.material_count,
                 summary.total_buffer_bytes
+            ))
+        }
+        "import-glb" => {
+            let Some(path) = args.get(1) else {
+                return Err(CliCommandError::InvalidUsage {
+                    usage: "verdant import-glb <file.glb>".to_string(),
+                });
+            };
+            let bytes = std::fs::read(path).map_err(|e| CliCommandError::IoFailure {
+                path: path.clone(),
+                reason: e.to_string(),
+            })?;
+            let imported =
+                import_glb_to_scene(&bytes).map_err(|e| CliCommandError::ValidationRejected {
+                    command: "import-glb".to_string(),
+                    diagnostic: e.to_string(),
+                })?;
+            Ok(format!(
+                "GLB IMPORTED OK: path={path} entities={} meshes={} materials={} skeletons={} clips={}",
+                imported.scene.entity_count(),
+                imported.meshes.len(),
+                imported.materials.len(),
+                imported.skeletons.len(),
+                imported.clips.len()
+            ))
+        }
+        "transcode-glb" => {
+            let out_idx = prism_kernel::sTwo() as usize;
+            let seed_idx = prism_kernel::sThree() as usize;
+            let (Some(in_glb), Some(out_uorc)) = (args.get(1), args.get(out_idx)) else {
+                return Err(CliCommandError::InvalidUsage {
+                    usage: "verdant transcode-glb <in.glb> <out.uorc> [seed]".to_string(),
+                });
+            };
+            let seed = match args.get(seed_idx) {
+                Some(raw) => raw
+                    .parse::<u64>()
+                    .map_err(|_| CliCommandError::InvalidUsage {
+                        usage: format!("invalid u64 seed `{raw}`"),
+                    })?,
+                None => pk("transcode-glb", prism_kernel::wasmDefaultSeed())?,
+            };
+            let glb_bytes = std::fs::read(in_glb).map_err(|e| CliCommandError::IoFailure {
+                path: in_glb.clone(),
+                reason: e.to_string(),
+            })?;
+            let uorc_stream = transcode_glb_to_progressive_uorc(&glb_bytes, seed).map_err(|e| {
+                CliCommandError::ValidationRejected {
+                    command: "transcode-glb".to_string(),
+                    diagnostic: e.to_string(),
+                }
+            })?;
+            let max_lod = prism_kernel::wasmMaxLodRank();
+            let restored =
+                decode_portable_uorc_stream_up_to_lod(&uorc_stream, max_lod).map_err(|e| {
+                    CliCommandError::ValidationRejected {
+                        command: "transcode-glb".to_string(),
+                        diagnostic: e.to_string(),
+                    }
+                })?;
+            std::fs::write(out_uorc, &uorc_stream).map_err(|e| CliCommandError::IoFailure {
+                path: out_uorc.clone(),
+                reason: e.to_string(),
+            })?;
+            Ok(format!(
+                "GLB TRANSCODED UORC OK: in={in_glb} ({}B) out={out_uorc} ({}B) max_lod={} entities={}",
+                glb_bytes.len(),
+                uorc_stream.len(),
+                restored.active_lod.rank(),
+                restored.scene.entity_count()
             ))
         }
         "validate-wgsl" => {
@@ -248,6 +326,87 @@ pub fn run_cli(args: &[String]) -> Result<String, CliCommandError> {
                 summary.archive_frame_count,
                 summary.lod_object_count,
                 summary.max_lod_rank
+            ))
+        }
+        "pack-portable-uorc" => {
+            let Some(out_uorc) = args.get(1) else {
+                return Err(CliCommandError::InvalidUsage {
+                    usage: "verdant pack-portable-uorc <out.uorc> [seed]".to_string(),
+                });
+            };
+            let seed_arg_idx = prism_kernel::sTwo() as usize;
+            let seed = match args.get(seed_arg_idx) {
+                Some(raw) => raw
+                    .parse::<u64>()
+                    .map_err(|_| CliCommandError::InvalidUsage {
+                        usage: format!("invalid u64 seed `{raw}`"),
+                    })?,
+                None => pk("pack-portable-uorc", prism_kernel::wasmDefaultSeed())?,
+            };
+            let stream = pack_portable_progressive_uorc_stream(seed).map_err(|e| {
+                CliCommandError::ValidationRejected {
+                    command: "pack-portable-uorc".to_string(),
+                    diagnostic: e.to_string(),
+                }
+            })?;
+            let max_lod = prism_kernel::wasmMaxLodRank();
+            let restored =
+                decode_portable_uorc_stream_up_to_lod(&stream, max_lod).map_err(|e| {
+                    CliCommandError::ValidationRejected {
+                        command: "pack-portable-uorc".to_string(),
+                        diagnostic: e.to_string(),
+                    }
+                })?;
+            std::fs::write(out_uorc, &stream).map_err(|e| CliCommandError::IoFailure {
+                path: out_uorc.clone(),
+                reason: e.to_string(),
+            })?;
+            Ok(format!(
+                "PORTABLE UORC OK: path={out_uorc} bytes={} seed={} max_lod={} nodes={}",
+                stream.len(),
+                restored.seed,
+                restored.active_lod.rank(),
+                restored.scene_nodes.len()
+            ))
+        }
+        "verify-portable-uorc" => {
+            let Some(path) = args.get(1) else {
+                return Err(CliCommandError::InvalidUsage {
+                    usage: "verdant verify-portable-uorc <file.uorc> [lod_rank]".to_string(),
+                });
+            };
+            let lod_arg_idx = prism_kernel::sTwo() as usize;
+            let target_lod = match args.get(lod_arg_idx) {
+                Some(raw) => raw
+                    .parse::<u64>()
+                    .map_err(|_| CliCommandError::InvalidUsage {
+                        usage: format!("invalid u64 lod_rank `{raw}`"),
+                    })?,
+                None => prism_kernel::wasmMaxLodRank(),
+            };
+            let stream = std::fs::read(path).map_err(|e| CliCommandError::IoFailure {
+                path: path.clone(),
+                reason: e.to_string(),
+            })?;
+            let frames = split_self_delimiting_uorc_archives(&stream).map_err(|e| {
+                CliCommandError::ValidationRejected {
+                    command: "verify-portable-uorc".to_string(),
+                    diagnostic: e.to_string(),
+                }
+            })?;
+            let restored =
+                decode_portable_uorc_stream_up_to_lod(&stream, target_lod).map_err(|e| {
+                    CliCommandError::ValidationRejected {
+                        command: "verify-portable-uorc".to_string(),
+                        diagnostic: e.to_string(),
+                    }
+                })?;
+            Ok(format!(
+                "PORTABLE UORC VERIFIED: path={path} bytes={} frames={} lod={} nodes={}",
+                stream.len(),
+                frames.len(),
+                restored.active_lod.rank(),
+                restored.scene_nodes.len()
             ))
         }
         "snapshot-verify" => {

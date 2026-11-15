@@ -16,7 +16,7 @@ use crate::math::{
     pow10_u64, pow2_u64, three_u32, two_f64, two_u32, Aabb, DeterministicRng, Quat, Vec3,
 };
 use crate::prism_kernel;
-#[cfg(feature = "uorc-streaming")]
+#[cfg(any(feature = "uorc-streaming", feature = "uorc-wasm-decode"))]
 use crate::runtime::WorldSnapshot;
 
 /// Progressive streaming Level-of-Detail (`LOD`) tier verified by `Tensor.lex.tex`.
@@ -697,7 +697,7 @@ pub struct UorcStreamSummary {
     pub max_lod_rank: u64,
 }
 
-#[cfg(feature = "uorc-streaming")]
+#[cfg(any(feature = "uorc-streaming", feature = "uorc-wasm-decode"))]
 fn uorc_work_budget() -> u64 {
     let shift =
         prism_kernel::uorcDefaultDecodeWork().expect("verified Prism uorcDefaultDecodeWork") as u32;
@@ -865,4 +865,428 @@ pub fn decode_uorc_stream_up_to_lod(
     WorldSnapshot::decode(payload).map_err(|err| StreamingError::LodPayloadMismatch {
         detail: err.to_string(),
     })
+}
+
+/// Zero-decode `uor_matmul::codec` streaming payload bundled per progressive LOD tier.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct CodedLodFrameBundle {
+    /// Progressive LOD rank (`0..=3`).
+    pub lod_rank: u64,
+    /// Shared 16-entry signed quantization codebook (`Grid<i32, Full<i32>, 16>`).
+    pub grid_codebook: [i32; verdant_tensor::CODED_TABLE_LEN],
+    /// Fixed-width `Grid` vertex/normal transform codes (`inner_k * cols`).
+    pub geometry_grid_codes: Vec<u16>,
+    /// Sub-byte `Packed<Grid<16>, 2>` animation curve codes (`2` nibbles per byte).
+    pub animation_packed_nibbles: Vec<u8>,
+    /// Variable-length `Runs<Grid<16>, 16>` dictionary (`(run_len, code_idx)`).
+    pub ibl_run_dictionary: Vec<(u32, u16)>,
+    /// Row-ordered run dictionary indices for sparse IBL environment harmonics.
+    pub ibl_run_indices: Vec<u32>,
+    /// Inner contraction extent `k` for coded geometry, animation, and IBL matrices.
+    pub inner_k: usize,
+    /// Output column extent `n` for coded geometry, animation, and IBL matrices.
+    pub cols: usize,
+}
+
+/// Exact integer accumulator outputs from contracting a [`CodedLodFrameBundle`] with zero float expansion.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ZeroDecodeContractionSummary {
+    /// Exact `Grid` geometry contraction accumulators.
+    pub geometry_accum: Vec<i64>,
+    /// Exact `Packed` nibble animation contraction accumulators.
+    pub animation_accum: Vec<i64>,
+    /// Exact `Runs` sparse IBL harmonic contraction accumulators.
+    pub ibl_accum: Vec<i64>,
+}
+
+impl CodedLodFrameBundle {
+    /// Synthesizes a deterministic `CodedLodFrameBundle` for `seed` and `lod_rank` (`0..=3`).
+    pub fn synthesize(seed: u64, lod_rank: u64) -> Result<Self, StreamingError> {
+        let lod = LodLevel::from_rank(lod_rank)?;
+        let scale_step = ((lod.rank() + 1) * prism_kernel::sSixteen().unwrap_or(1)) as i32;
+        let half_len = (verdant_tensor::CODED_TABLE_LEN / (1 + 1)) as i32;
+        let grid_codebook: [i32; verdant_tensor::CODED_TABLE_LEN] =
+            core::array::from_fn(|i| ((i as i32) - half_len) * scale_step);
+
+        let inner_k = verdant_tensor::DIM_HOMOGENEOUS;
+        let cols = verdant_tensor::DIM_HOMOGENEOUS;
+        let tbl_mask = (verdant_tensor::CODED_TABLE_LEN - 1) as u64;
+
+        let mut rng = DeterministicRng::new(seed ^ (lod.rank() + 1));
+        let mut geometry_grid_codes = Vec::with_capacity(inner_k * cols);
+        for _ in 0..(inner_k * cols) {
+            geometry_grid_codes.push((rng.next_u64() & tbl_mask) as u16);
+        }
+
+        let nibble_shift = four_u32();
+        let nibble_bytes = inner_k * (cols / verdant_tensor::PACKED_NIBBLE_BLOCK);
+        let mut animation_packed_nibbles = Vec::with_capacity(nibble_bytes);
+        for _ in 0..nibble_bytes {
+            let lo = (rng.next_u64() & tbl_mask) as u8;
+            let hi = (rng.next_u64() & tbl_mask) as u8;
+            animation_packed_nibbles.push(lo | (hi << nibble_shift));
+        }
+
+        // Each row of `cols` (4) elements is encoded as two runs of length 2:
+        let run_len = two_u32();
+        let mut ibl_run_dictionary = Vec::with_capacity(inner_k * (1 + 1));
+        let mut ibl_run_indices = Vec::with_capacity(inner_k * (1 + 1));
+        for r in 0..(inner_k * (1 + 1)) {
+            let code = (rng.next_u64() & tbl_mask) as u16;
+            ibl_run_dictionary.push((run_len, code));
+            ibl_run_indices.push(r as u32);
+        }
+
+        Ok(Self {
+            lod_rank: lod.rank(),
+            grid_codebook,
+            geometry_grid_codes,
+            animation_packed_nibbles,
+            ibl_run_dictionary,
+            ibl_run_indices,
+            inner_k,
+            cols,
+        })
+    }
+
+    /// Contracts geometry (`Grid`), animation (`Packed`), and IBL (`Runs`) directly through
+    /// `uor_matmul::coded_gemm` without intermediate float decoding.
+    pub fn contract_zero_decode(
+        &self,
+        transform_row_q: &[i32],
+        blend_weights_q: &[i32],
+        sh_basis_q: &[i32],
+    ) -> Result<ZeroDecodeContractionSummary, StreamingError> {
+        let geometry_accum = verdant_tensor::contract_coded_geometry_grid(
+            transform_row_q,
+            1,
+            self.inner_k,
+            self.cols,
+            &self.grid_codebook,
+            &self.geometry_grid_codes,
+        )
+        .map_err(|err| StreamingError::LodPayloadMismatch {
+            detail: err.to_string(),
+        })?;
+        let animation_accum = verdant_tensor::contract_packed_animation_tracks(
+            blend_weights_q,
+            1,
+            self.inner_k,
+            self.cols,
+            &self.grid_codebook,
+            &self.animation_packed_nibbles,
+        )
+        .map_err(|err| StreamingError::LodPayloadMismatch {
+            detail: err.to_string(),
+        })?;
+        let ibl_accum = verdant_tensor::contract_runs_ibl_harmonics(
+            sh_basis_q,
+            1,
+            self.inner_k,
+            self.cols,
+            &self.grid_codebook,
+            &self.ibl_run_dictionary,
+            &self.ibl_run_indices,
+        )
+        .map_err(|err| StreamingError::LodPayloadMismatch {
+            detail: err.to_string(),
+        })?;
+
+        Ok(ZeroDecodeContractionSummary {
+            geometry_accum,
+            animation_accum,
+            ibl_accum,
+        })
+    }
+}
+
+fn read_uleb128(data: &[u8], cursor: &mut usize) -> Result<u64, StreamingError> {
+    let seven = prism_kernel::sSeven().unwrap_or(1) as u32;
+    let cont_bit = 1_u8 << seven;
+    let low_mask = cont_bit - 1;
+    let max_bits = prism_kernel::natSixtyFour().unwrap_or(1) as u32;
+    let mut acc = 0_u64;
+    let mut shift = 0_u32;
+
+    loop {
+        let byte = *data
+            .get(*cursor)
+            .ok_or_else(|| StreamingError::UorcArchiveRejected {
+                detail: "truncated UORC ULEB128 header".to_string(),
+            })?;
+        *cursor += 1;
+        if shift >= max_bits {
+            return Err(StreamingError::UorcArchiveRejected {
+                detail: "ULEB128 integer overflow in UORC header".to_string(),
+            });
+        }
+        acc |= u64::from(byte & low_mask) << shift;
+        if (byte & cont_bit) == 0 {
+            return Ok(acc);
+        }
+        shift += seven;
+    }
+}
+
+/// Splits a concatenated self-delimiting `UORC-SHA256-CHAIN-v1` byte stream into individual frame
+/// archives without requiring `std::io::Seek` or warm-state tables (works identically on `wasm32`).
+pub fn split_self_delimiting_uorc_archives(
+    stream_bytes: &[u8],
+) -> Result<Vec<&[u8]>, StreamingError> {
+    if stream_bytes.is_empty() {
+        return Err(StreamingError::UorcArchiveRejected {
+            detail: "empty UORC stream".to_string(),
+        });
+    }
+    let magic_len = prism_kernel::snapshotMagicBytes().unwrap_or(1) as usize;
+    let seal_len = prism_kernel::sThirtyTwo().unwrap_or(1) as usize;
+    let mut frames = Vec::new();
+    let mut offset = 0usize;
+
+    while offset < stream_bytes.len() {
+        let rem = &stream_bytes[offset..];
+        if rem.len() < magic_len || &rem[..magic_len] != b"UORC" {
+            return Err(StreamingError::UorcArchiveRejected {
+                detail: "missing UORC frame magic header".to_string(),
+            });
+        }
+        let mut at = magic_len;
+        // `format`, `profile`, `conditional`, `program` header octets:
+        let header_flags =
+            rem.get(at..at + magic_len)
+                .ok_or_else(|| StreamingError::UorcArchiveRejected {
+                    detail: "truncated UORC header flags".to_string(),
+                })?;
+        let conditional = header_flags[1 + 1];
+        let program = header_flags[1 + 1 + 1];
+        if conditional > 1 || program > 1 {
+            return Err(StreamingError::UorcArchiveRejected {
+                detail: "invalid UORC scope or representation octet".to_string(),
+            });
+        }
+        at += magic_len;
+
+        let count = read_uleb128(rem, &mut at)?;
+        for _ in 0..count {
+            let _obj_len = read_uleb128(rem, &mut at)?;
+        }
+        let body_len = usize::try_from(read_uleb128(rem, &mut at)?).map_err(|_| {
+            StreamingError::UorcArchiveRejected {
+                detail: "UORC body length exceeds address space".to_string(),
+            }
+        })?;
+        if conditional == 1 {
+            at = at
+                .checked_add(seal_len)
+                .ok_or_else(|| StreamingError::UorcArchiveRejected {
+                    detail: "UORC basis header overflow".to_string(),
+                })?;
+        }
+        let frame_end = at
+            .checked_add(body_len)
+            .and_then(|v| v.checked_add(seal_len))
+            .ok_or_else(|| StreamingError::UorcArchiveRejected {
+                detail: "UORC frame length overflow".to_string(),
+            })?;
+        if frame_end > rem.len() {
+            return Err(StreamingError::UorcArchiveRejected {
+                detail: "truncated UORC frame body or SHA-256 chain seal".to_string(),
+            });
+        }
+        frames.push(&rem[..frame_end]);
+        offset += frame_end;
+    }
+
+    Ok(frames)
+}
+
+/// Encodes `LOD0..=LOD3` `StandardSceneState`s into a portable 4-frame `UORC-SHA256-CHAIN-v1`
+/// progressive stream using stateless `state: 0` NCM strategies (`uorc::portfolio::V04_PAIR`) so
+/// browser `wasm32-unknown-unknown` workers decode every LOD natively via `uorc_decompress::run`
+/// without `uorc_search` or warm-state blobs.
+#[cfg(feature = "uorc-streaming")]
+pub fn pack_portable_progressive_uorc_stream(seed: u64) -> Result<Vec<u8>, StreamingError> {
+    let max_rank = prism_kernel::wasmMaxLodRank();
+    let max_strats = if cfg!(debug_assertions) {
+        1
+    } else {
+        prism_kernel::sEight().unwrap_or(1) as usize
+    };
+    let mut strategies = Vec::new();
+    for pair in &uorc::portfolio::V04_PAIR {
+        for strat in pair {
+            if strat.state == 0
+                && !strat.x86
+                && strategies.len() < max_strats
+                && !strategies.contains(&Some(*strat))
+            {
+                strategies.push(Some(*strat));
+            }
+        }
+    }
+
+    let mut stream = Vec::new();
+    let mut state = StandardSceneState::new_at_lod0(seed)?;
+    for rank in 0..=max_rank {
+        state.advance_to_lod(rank)?;
+        let snap =
+            WorldSnapshot::encode(&state).map_err(|err| StreamingError::LodPayloadMismatch {
+                detail: err.to_string(),
+            })?;
+        let archive = uorc::compress_with_strategies(&snap, &[snap.len() as u64], &[], &strategies);
+        stream.extend_from_slice(&archive);
+    }
+    Ok(stream)
+}
+
+/// Decodes a portable `.uorc` progressive multi-LOD stream up to `target_lod_rank` (`0..=3`) using
+/// the Lean-exported `uorc_decompress::run` kernel on both native and `wasm32-unknown-unknown`
+/// targets while enforcing `prism_kernel::lodStepValid` monotonicity across every frame.
+#[cfg(feature = "uorc-wasm-decode")]
+pub fn decode_portable_uorc_stream_up_to_lod(
+    stream_bytes: &[u8],
+    target_lod_rank: u64,
+) -> Result<StandardSceneState, StreamingError> {
+    let target_lod = LodLevel::from_rank(target_lod_rank)?;
+    let frames = split_self_delimiting_uorc_archives(stream_bytes)?;
+    let needed = (target_lod.rank() as usize) + 1;
+    if frames.len() < needed {
+        return Err(StreamingError::LodPayloadMismatch {
+            detail: format!(
+                "portable UORC stream holds {} frames, need at least {needed}",
+                frames.len()
+            ),
+        });
+    }
+
+    let work = uorc_work_budget();
+    let mut prev_spec: Option<prism_kernel::StreamingLodSpec> = None;
+    let mut latest_state: Option<StandardSceneState> = None;
+
+    for (idx, frame_archive) in frames.iter().take(needed).enumerate() {
+        let plain_bytes = match uorc_decompress::run(
+            uorc_decompress::Bytes::lit(frame_archive),
+            uorc_decompress::List::nil(),
+            uorc_decompress::List::nil(),
+            work,
+        ) {
+            Ok(Some(out)) => out.octets().to_vec(),
+            Ok(None) => {
+                return Err(StreamingError::UorcArchiveRejected {
+                    detail: format!(
+                        "uorc_decompress::run rejected seal or exceeded work budget at frame {idx}"
+                    ),
+                });
+            }
+            Err(_) => {
+                return Err(StreamingError::UorcArchiveRejected {
+                    detail: format!("uorc_decompress::run overflow at frame {idx}"),
+                });
+            }
+        };
+
+        let decoded_state = WorldSnapshot::decode(&plain_bytes).map_err(|err| {
+            StreamingError::LodPayloadMismatch {
+                detail: err.to_string(),
+            }
+        })?;
+        if decoded_state.active_lod.rank() != (idx as u64) {
+            return Err(StreamingError::LodPayloadMismatch {
+                detail: format!(
+                    "portable UORC frame {idx} decoded rank {}",
+                    decoded_state.active_lod.rank()
+                ),
+            });
+        }
+        let spec = decoded_state.active_lod.prism_spec();
+        if let Some(earlier) = &prev_spec {
+            let step_ok =
+                prism_kernel::lodStepValid(earlier, &spec).expect("verified Prism lodStepValid");
+            if !step_ok {
+                return Err(StreamingError::NonMonotonicLodTransition {
+                    current_rank: earlier.rank,
+                    requested_rank: spec.rank,
+                });
+            }
+        }
+        prev_spec = Some(spec);
+        latest_state = Some(decoded_state);
+    }
+
+    latest_state.ok_or_else(|| StreamingError::LodPayloadMismatch {
+        detail: "no progressive LOD frame decoded".to_string(),
+    })
+}
+
+/// Validates self-delimiting framing across an entire portable `.uorc` progressive stream and
+/// decodes the single stateless frame at `target_lod_rank` (`0..=3`) via `uorc_decompress::run`,
+/// enforcing `prism_kernel::lodStepValid` from `LOD0` without redundantly decompressing earlier frames.
+#[cfg(feature = "uorc-wasm-decode")]
+pub fn decode_portable_uorc_single_frame(
+    stream_bytes: &[u8],
+    target_lod_rank: u64,
+) -> Result<StandardSceneState, StreamingError> {
+    let target_lod = LodLevel::from_rank(target_lod_rank)?;
+    let frames = split_self_delimiting_uorc_archives(stream_bytes)?;
+    let idx = target_lod.rank() as usize;
+    let frame_archive = *frames
+        .get(idx)
+        .ok_or_else(|| StreamingError::LodPayloadMismatch {
+            detail: format!(
+                "portable UORC stream holds {} frames, missing rank {idx}",
+                frames.len()
+            ),
+        })?;
+
+    let plain_bytes = match uorc_decompress::run(
+        uorc_decompress::Bytes::lit(frame_archive),
+        uorc_decompress::List::nil(),
+        uorc_decompress::List::nil(),
+        uorc_work_budget(),
+    ) {
+        Ok(Some(out)) => out.octets().to_vec(),
+        Ok(None) => {
+            return Err(StreamingError::UorcArchiveRejected {
+                detail: format!(
+                    "uorc_decompress::run rejected seal or exceeded work budget at frame {idx}"
+                ),
+            });
+        }
+        Err(_) => {
+            return Err(StreamingError::UorcArchiveRejected {
+                detail: format!("uorc_decompress::run overflow at frame {idx}"),
+            });
+        }
+    };
+
+    let decoded_state =
+        WorldSnapshot::decode(&plain_bytes).map_err(|err| StreamingError::LodPayloadMismatch {
+            detail: err.to_string(),
+        })?;
+    if decoded_state.active_lod.rank() != target_lod.rank() {
+        return Err(StreamingError::LodPayloadMismatch {
+            detail: format!(
+                "portable UORC frame {idx} decoded rank {}",
+                decoded_state.active_lod.rank()
+            ),
+        });
+    }
+    let mut prev_spec = LodLevel::Lod0CoarseProxy.prism_spec();
+    for step_rank in 1..=target_lod.rank() {
+        let next_spec = if step_rank == target_lod.rank() {
+            decoded_state.active_lod.prism_spec()
+        } else {
+            LodLevel::from_rank(step_rank)?.prism_spec()
+        };
+        let step_ok = prism_kernel::lodStepValid(&prev_spec, &next_spec)
+            .expect("verified Prism lodStepValid");
+        if !step_ok {
+            return Err(StreamingError::NonMonotonicLodTransition {
+                current_rank: prev_spec.rank,
+                requested_rank: next_spec.rank,
+            });
+        }
+        prev_spec = next_spec;
+    }
+    Ok(decoded_state)
 }

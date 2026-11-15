@@ -1,0 +1,19 @@
+[package]
+name = "verdant-tensor"
+description = "Pure Prism-mechanized tensor-logic core executing linear Laurent, coded zero-decode (Grid/Packed/Runs), tropical (max,+)/(min,+), quantized audio-ring, and 16x16 tile PBR contractions over uor-matmul."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+authors.workspace = true
+keywords.workspace = true
+categories.workspace = true
+
+[dependencies]
+serde = { version = "1.0.219", features = ["derive"] }
+uor-matmul.workspace = true
+
+[lints]
+workspace = true

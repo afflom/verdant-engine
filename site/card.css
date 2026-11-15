@@ -1,6 +1,6 @@
-/* Verdant Engine 3D Browser Studio — responsive viewport and rail layout.
- * Zero inline styles; respects all Material 3 window classes (360x780 compact,
- * 720x400 compact-height, 840+ two-pane workspace) and 48px coarse targets. */
+/* Verdant Engine 3D Browser Studio — responsive viewport, high-contrast dark-mode
+ * readability overrides for HUD, rail, and Spec drawer, and 48px coarse touch targets.
+ * Zero inline styles; respects all Material 3 window classes. */
 
 .stage .board-fit > .ve-viewport {
   position: relative;
@@ -14,6 +14,10 @@
   border: var(--border-width) solid var(--border);
   background: var(--card);
   overflow: hidden;
+}
+
+:root.dark .stage .board-fit > .ve-viewport {
+  border-color: #35495e;
 }
 
 #ve-canvas {
@@ -45,8 +49,8 @@
   align-items: center;
   padding: 0.1875rem var(--space-2);
   border-radius: var(--radius-control);
-  border: var(--border-width) solid color-mix(in oklab, var(--border) 80%, transparent);
-  background: color-mix(in oklab, var(--background) 76%, transparent);
+  border: var(--border-width) solid color-mix(in oklab, var(--border) 85%, transparent);
+  background: color-mix(in oklab, var(--background) 88%, transparent);
   color: var(--foreground);
   font-family: var(--font-mono);
   font-size: var(--text-14);
@@ -57,9 +61,76 @@
   white-space: nowrap;
 }
 
+:root.dark .ve-pill {
+  background: rgba(11, 17, 24, 0.92);
+  border-color: rgba(110, 231, 183, 0.52);
+  color: #f4f9fc;
+}
+
+:root.dark .lede,
+:root.dark .rail .k {
+  color: #ccd6e0;
+}
+
+:root.dark .spec-link {
+  color: #edf4fa;
+  background: #1d2630;
+  border: 1px solid #3b4f63;
+}
+
+:root.dark .spec-link:hover {
+  background: #283645;
+  border-color: #5b7896;
+}
+
+:root.dark #ve-telemetry > li {
+  color: #e2eaf2;
+  border-top-color: #ffffff29;
+}
+
+/* High-contrast dark-mode readability for the slide-out Spec drawer (#spec) */
+:root.dark aside.spec {
+  --sidebar: #151c24;
+  --muted: #0c1117;
+  --foreground: #f4f8fc;
+  --muted-foreground: #cfdae6;
+  --border: #ffffff3d;
+  --accent: #223140;
+  border-left: 1px solid #3c5269;
+  box-shadow: -14px 0 36px rgba(0, 0, 0, 0.62);
+}
+
+:root.dark aside.spec pre.code {
+  border-color: #364d63;
+  background: #0b1016;
+  color: #f0f7ff;
+}
+
+:root.dark aside.spec button.term {
+  border: 1px solid #38526b;
+  border-radius: var(--radius-control);
+  background: #182533;
+  color: #7dd3fc;
+}
+
+:root.dark aside.spec button.term:hover,
+:root.dark aside.spec button.term[aria-expanded="true"] {
+  background: #23384d;
+  border-color: #38bdf8;
+  color: #f0f9ff;
+}
+
+:root.dark aside.spec .links a,
+:root.dark aside.spec button.copy {
+  border: 1px solid #38526b;
+  border-radius: var(--radius-control);
+  background: #182533;
+  color: #e6f1fb;
+}
+
 .rail .controls button,
 .rail .controls a.ghost {
-  min-width: 2.75rem;
+  min-width: 3rem;
   justify-content: center;
   padding: 0 var(--space-3);
   white-space: nowrap;

@@ -1,0 +1,241 @@
+//! Tropical `(max, +)` and `(min, +)` semiring contractions over `uor-matmul`.
+//!
+//! Hosts batch BVH/frustum half-space support culling, GJK directional convex-hull support maps,
+//! and exact `(min, +)` all-pairs shortest-path closure over walkable navigation meshes via
+//! `ceil(log2(V))` tropical matrix squarings.
+
+#[cfg(not(target_arch = "wasm32"))]
+use uor_matmul::driver::{GemmOptions, MaxPlus, Scratch};
+use uor_matmul::Trop;
+#[cfg(target_arch = "wasm32")]
+use uor_matmul::{as_alphabet_tropical, dot_tropical_ref};
+#[cfg(not(target_arch = "wasm32"))]
+use uor_matmul::{as_alphabet_tropical, MatView, MatViewMut, Triple};
+
+use crate::{TensorComputeError, DIM_SPATIAL};
+
+fn contract_tropical_max_plus(
+    a_trop: &[Trop<i32>],
+    b_trop_row_major: &[Trop<i32>],
+    m: usize,
+    k: usize,
+    n: usize,
+) -> Result<Vec<Trop<i64>>, TensorComputeError> {
+    if m == 0
+        || k == 0
+        || n == 0
+        || a_trop.len() != m.saturating_mul(k)
+        || b_trop_row_major.len() != k.saturating_mul(n)
+    {
+        return Err(TensorComputeError::ZeroOrMismatchedExtents {
+            detail: "tropical matrix contraction dimensions invalid".to_string(),
+        });
+    }
+
+    #[cfg(not(target_arch = "wasm32"))]
+    {
+        let mut c_trop = vec![Trop::<i64>::NEG_INF; m * n];
+        let av = MatView::row_major(as_alphabet_tropical(a_trop), m, k).ok_or_else(|| {
+            TensorComputeError::ZeroOrMismatchedExtents {
+                detail: "invalid row-major tropical LHS view".to_string(),
+            }
+        })?;
+        let bv =
+            MatView::row_major(as_alphabet_tropical(b_trop_row_major), k, n).ok_or_else(|| {
+                TensorComputeError::ZeroOrMismatchedExtents {
+                    detail: "invalid row-major tropical RHS view".to_string(),
+                }
+            })?;
+        let cv = MatViewMut::row_major(&mut c_trop, m, n).ok_or_else(|| {
+            TensorComputeError::ZeroOrMismatchedExtents {
+                detail: "invalid row-major tropical output view".to_string(),
+            }
+        })?;
+        let mut triple =
+            Triple::new(av, bv, cv).map_err(|_| TensorComputeError::ZeroOrMismatchedExtents {
+                detail: "tropical Triple construction failed".to_string(),
+            })?;
+        uor_matmul::driver::gemm(
+            &mut triple,
+            &MaxPlus::OVERWRITE,
+            GemmOptions::default(),
+            &mut Scratch::none(),
+        );
+        Ok(c_trop)
+    }
+
+    #[cfg(target_arch = "wasm32")]
+    {
+        let mut b_cols = vec![vec![Trop::<i32>::NEG_INF; k]; n];
+        for r in 0..k {
+            for c in 0..n {
+                b_cols[c][r] = b_trop_row_major[r * n + c];
+            }
+        }
+        let mut out = vec![Trop::<i64>::NEG_INF; m * n];
+        for r in 0..m {
+            let row_slice = &a_trop[r * k..(r + 1) * k];
+            let a_alpha = as_alphabet_tropical(row_slice);
+            for c in 0..n {
+                let b_alpha = as_alphabet_tropical(&b_cols[c]);
+                out[r * n + c] = match dot_tropical_ref(a_alpha, b_alpha).get() {
+                    Some(v) => Trop::finite(
+                        v.max(i128::from(i64::MIN) + 1).min(i128::from(i64::MAX)) as i64,
+                    ),
+                    None => Trop::NEG_INF,
+                };
+            }
+        }
+        Ok(out)
+    }
+}
+
+/// Evaluates exact tropical `(max, +)` support bounds `C[p, v] = max_{axis} (plane[p, axis] + vertex[v, axis])`
+/// across `plane_axes_milli` (`P x 3`) and `hull_vertices_milli` (`V x 3`) via `uor_matmul`.
+pub fn tropical_frustum_distance_bounds(
+    plane_axes_milli: &[[i32; DIM_SPATIAL]],
+    hull_vertices_milli: &[[i32; DIM_SPATIAL]],
+) -> Result<Vec<i64>, TensorComputeError> {
+    if plane_axes_milli.is_empty() || hull_vertices_milli.is_empty() {
+        return Err(TensorComputeError::ZeroOrMismatchedExtents {
+            detail: "tropical plane and hull vertex slices must be non-empty".to_string(),
+        });
+    }
+
+    let m = plane_axes_milli.len();
+    let k = DIM_SPATIAL;
+    let n = hull_vertices_milli.len();
+    let i2 = 1usize + 1usize;
+
+    let mut a_trop = Vec::with_capacity(m * k);
+    for p in plane_axes_milli {
+        a_trop.push(Trop::finite(p[0]));
+        a_trop.push(Trop::finite(p[1]));
+        a_trop.push(Trop::finite(p[i2]));
+    }
+
+    let mut b_trop = vec![Trop::<i32>::NEG_INF; k * n];
+    for (v_idx, v) in hull_vertices_milli.iter().enumerate() {
+        b_trop[v_idx] = Trop::finite(v[0]);
+        b_trop[n + v_idx] = Trop::finite(v[1]);
+        b_trop[i2 * n + v_idx] = Trop::finite(v[i2]);
+    }
+
+    let c_trop = contract_tropical_max_plus(&a_trop, &b_trop, m, k, n)?;
+    Ok(c_trop
+        .into_iter()
+        .map(|entry| entry.get().unwrap_or(i64::MIN))
+        .collect())
+}
+
+/// Evaluates batch GJK directional support queries across `directions_milli` (`D x 3`) and
+/// `hull_vertices_milli` (`V x 3`), returning `(best_vertex_index, max_scaled_projection)` per direction
+/// by reducing directional projections to tropical `(max, +)` / exact dot contractions in `uor-matmul`.
+pub fn tropical_gjk_support_batch(
+    directions_milli: &[[i32; DIM_SPATIAL]],
+    hull_vertices_milli: &[[i32; DIM_SPATIAL]],
+) -> Result<Vec<(usize, i64)>, TensorComputeError> {
+    if directions_milli.is_empty() || hull_vertices_milli.is_empty() {
+        return Err(TensorComputeError::ZeroOrMismatchedExtents {
+            detail: "GJK support batch requires non-empty directions and hull vertices".to_string(),
+        });
+    }
+
+    let d_count = directions_milli.len();
+    let v_count = hull_vertices_milli.len();
+    let i2 = 1usize + 1usize;
+
+    // Step 1: Exact linear dot products `P[d, v] = sum_axis dir[d, axis] * vert[v, axis]` via `uor_matmul::dot_ref`:
+    let mut v_rows_q = Vec::with_capacity(v_count);
+    for v in hull_vertices_milli {
+        v_rows_q.push([v[0], v[1], v[i2]]);
+    }
+
+    // Step 2: Tropical `(max, +)` argmax reduction `max_v (P[d, v] + 0)` via `contract_tropical_max_plus`:
+    let mut proj_trop = Vec::with_capacity(d_count * v_count);
+    let mut raw_projs = Vec::with_capacity(d_count * v_count);
+    for dir in directions_milli {
+        let d_alpha = uor_matmul::as_alphabet_full(dir);
+        for v_row in &v_rows_q {
+            let p_wide = uor_matmul::dot_ref(d_alpha, uor_matmul::as_alphabet_full(v_row));
+            let p = p_wide.max(i128::from(i64::MIN)).min(i128::from(i64::MAX)) as i64;
+            raw_projs.push(p);
+            let clamped = p.max(i64::from(i32::MIN) + 1).min(i64::from(i32::MAX)) as i32;
+            proj_trop.push(Trop::finite(clamped));
+        }
+    }
+    let zero_col = vec![Trop::finite(0_i32); v_count];
+    let maxima = contract_tropical_max_plus(&proj_trop, &zero_col, d_count, v_count, 1)?;
+
+    let mut results = Vec::with_capacity(d_count);
+    for (d_idx, max_trop) in maxima.into_iter().enumerate() {
+        let target = max_trop.get().unwrap_or(i64::MIN);
+        let row = &raw_projs[d_idx * v_count..(d_idx + 1) * v_count];
+        let mut best_idx = 0usize;
+        let mut best_val = row[0];
+        for (v_idx, &val) in row.iter().enumerate().skip(1) {
+            if val > best_val || (val == target && best_val < target) {
+                best_val = val;
+                best_idx = v_idx;
+            }
+        }
+        results.push((best_idx, best_val));
+    }
+    Ok(results)
+}
+
+/// Computes exact `(min, +)` all-pairs shortest-path distances over a `node_count x node_count`
+/// edge-cost matrix (`None` = disconnected, `Some(cost_milli)` = directed edge weight) via
+/// `ceil(log2(node_count))` tropical matrix squarings in `uor-matmul` using the exact algebraic
+/// duality `min_p(a + b) = -max_p((-a) + (-b))` with `+\infty <-> NEG_INF`.
+pub fn tropical_min_plus_all_pairs_closure(
+    edge_costs_milli: &[Option<u32>],
+    node_count: usize,
+) -> Result<Vec<Option<u64>>, TensorComputeError> {
+    if node_count == 0 || edge_costs_milli.len() != node_count.saturating_mul(node_count) {
+        return Err(TensorComputeError::ZeroOrMismatchedExtents {
+            detail: "NavMesh tropical (min, +) closure requires non-empty square adjacency matrix"
+                .to_string(),
+        });
+    }
+
+    let cap = (i32::MAX / (1 + 1)) as u64;
+    let mut dist = vec![Trop::<i32>::NEG_INF; node_count * node_count];
+    for r in 0..node_count {
+        for c in 0..node_count {
+            let idx = r * node_count + c;
+            if r == c {
+                dist[idx] = Trop::finite(0);
+            } else if let Some(cost) = edge_costs_milli[idx] {
+                let bounded = u64::from(cost).min(cap) as i32;
+                dist[idx] = Trop::finite(-bounded);
+            }
+        }
+    }
+
+    let mut reach = 1usize;
+    while reach < node_count {
+        let squared = contract_tropical_max_plus(&dist, &dist, node_count, node_count, node_count)?;
+        let mut changed = false;
+        for (slot, sq) in dist.iter_mut().zip(squared) {
+            if let Some(neg_sum) = sq.get() {
+                let clamped = (-neg_sum).clamp(0, cap as i64) as i32;
+                let candidate = Trop::finite(-clamped);
+                let prev = slot.get().unwrap_or(i32::MIN);
+                if -clamped > prev {
+                    *slot = candidate;
+                    changed = true;
+                }
+            }
+        }
+        if !changed {
+            break;
+        }
+        reach = reach.saturating_mul(1 + 1);
+    }
+
+    Ok(dist
+        .into_iter()
+        .map(|entry| entry.get().map(|neg_cost| (-neg_cost).max(0) as u64))
+        .collect())
+}

@@ -38,6 +38,10 @@ model does not sanction.
 | `VE-14` | `build` | Slope-filtered terrain navigation meshes and admissible A-star corridor pathfinding steer autonomous agents around obstacles and refuse unwalkable endpoints or disconnected goals |
 | `VE-15` | `build` | The WebAssembly worker runtime bridge steps deterministic 3D physics, renders portable tensor framebuffers, encodes and restores SHA-256 VDNT world snapshots within Prism envelope bounds, and refuses invalid LOD ranks, ring overflows, or tampered payloads |
 | `VE-16` | `build` | The verdant CLI packs multi-LOD 3D scenes into validated progressive UORC streams, binary glTF 2.0, and SHA-256 VDNT snapshots, verifies portable WGSL shaders and headless benchmarks, and refuses invalid commands or corrupted assets |
+| `VE-17` | `build` | Unified verdant-tensor semiring contractions execute linear transforms, four-joint skinning, Delassus effective-mass operators, tropical min-plus navmesh shortest paths, and Hadamard FDN audio feedback deterministically and refuse mismatched dimensions |
+| `VE-18` | `build` | Portable UORC progressive streams decode natively via uorc_decompress and uor_matmul coded_gemm contracts Grid geometry, Packed animation, and Runs IBL matrices without float expansion while refusing corrupted archives |
+| `VE-19` | `build` | Khronos glTF 2.0 scene import, glb-to-UORC transcoding, XPBD articulated joints, swept capsule and four-wheel raycast vehicle controllers, and BVH acoustic occlusion execute deterministically and refuse invalid joint bodies |
+| `VE-20` | `build` | SHA-256-chained deterministic input journals, bounded 64-frame rollback resimulation sessions, and stateless XOR-residual delta UORC snapshots synchronize game state bit-identically and refuse regressive or out-of-window frames |
 
 ## fidelity
 

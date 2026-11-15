@@ -1,21 +1,21 @@
 # Verdant Engine
 
-> Universal 3D browser and WebAssembly game engine in Rust (`crates/verdant-core`) mechanized with Prism, exact `uor-matmul` tensor contractions, progressive `UORC` multi-LOD streaming, archetype ECS, SAH BVH culling, procedural geometry, skeletal animation, PBR materials, portable W3C WGSL shader validation, Khronos glTF 2.0 binary export, 60Hz rigid-body and GJK physics, NavMesh pathfinding, Woodworth spatial audio, and SHA-256 world snapshots.
+> Universal 3D browser and WebAssembly game engine in Rust (`crates/verdant-tensor`, `crates/verdant-core`, `crates/verdant-wasm`, `crates/verdant-cli`) mechanized with Prism, unified `uor-matmul` semiring contractions, native WebAssembly `uorc_decompress` + `uor_matmul::codec` zero-decode streaming, Khronos `.glb` scene import and `.glb -> .uorc` transcoding, XPBD articulated joints, 4-wheel raycast vehicles, BVH acoustic occlusion, and 64-frame deterministic rollback.
 
 ## Documentation
 
 - [Verdant Engine documentation](https://afflom.github.io/verdant-engine/docs/): Build fast 3D games and interactive worlds for the web and Rust.
 - [Build your first 3D world](https://afflom.github.io/verdant-engine/docs/getting-started/): Create a Rust 3D scene, step rigid-body physics, and export a binary asset.
-- [Author terrain, shaders, and spatial audio](https://afflom.github.io/verdant-engine/docs/guides/custom-game-world/): Build 3D terrain meshes, check portable shaders, and mix 3D sound.
-- [Stream high-resolution scenes with UORC](https://afflom.github.io/verdant-engine/docs/guides/progressive-uorc-streaming/): Stream multi-LOD 3D scenes smoothly up to lossless source detail.
-- [Verdant Core API reference](https://afflom.github.io/verdant-engine/docs/reference/engine-api/): Look up engine modules, core types, CLI commands, and 60fps budgets.
-- [Portable tensor kernels and UORC streaming](https://afflom.github.io/verdant-engine/docs/explanation/tensor-and-uorc-streaming/): Learn how exact tensor contractions and UORC chains run in every browser.
+- [Author scenes, physics joints, and spatial audio](https://afflom.github.io/verdant-engine/docs/guides/custom-game-world/): Import GLB scenes, solve articulated joints and vehicles, and mix occluded 3D sound.
+- [Stream zero-decode scenes with UORC](https://afflom.github.io/verdant-engine/docs/guides/progressive-uorc-streaming/): Pack and read UORC scene streams step by step in the browser.
+- [Verdant Engine API reference](https://afflom.github.io/verdant-engine/docs/reference/engine-api/): Look up crates, modules, rollback types, CLI commands, and 60fps budgets.
+- [Unified semiring tensor core and UORC streaming](https://afflom.github.io/verdant-engine/docs/explanation/tensor-and-uorc-streaming/): See how the engine runs exact math and scene streams in any browser.
 
 ## Markdown twins
 
 - [Verdant Engine documentation (Markdown)](https://afflom.github.io/verdant-engine/docs/index.md)
 - [Build your first 3D world (Markdown)](https://afflom.github.io/verdant-engine/docs/getting-started/index.md)
-- [Author terrain, shaders, and spatial audio (Markdown)](https://afflom.github.io/verdant-engine/docs/guides/custom-game-world/index.md)
-- [Stream high-resolution scenes with UORC (Markdown)](https://afflom.github.io/verdant-engine/docs/guides/progressive-uorc-streaming/index.md)
-- [Verdant Core API reference (Markdown)](https://afflom.github.io/verdant-engine/docs/reference/engine-api/index.md)
-- [Portable tensor kernels and UORC streaming (Markdown)](https://afflom.github.io/verdant-engine/docs/explanation/tensor-and-uorc-streaming/index.md)
+- [Author scenes, physics joints, and spatial audio (Markdown)](https://afflom.github.io/verdant-engine/docs/guides/custom-game-world/index.md)
+- [Stream zero-decode scenes with UORC (Markdown)](https://afflom.github.io/verdant-engine/docs/guides/progressive-uorc-streaming/index.md)
+- [Verdant Engine API reference (Markdown)](https://afflom.github.io/verdant-engine/docs/reference/engine-api/index.md)
+- [Unified semiring tensor core and UORC streaming (Markdown)](https://afflom.github.io/verdant-engine/docs/explanation/tensor-and-uorc-streaming/index.md)

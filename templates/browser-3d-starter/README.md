@@ -1,6 +1,6 @@
 # Verdant Engine Browser 3D Starter — Orbital Beacon Arena
 
-A standalone, playable 3D starter project for building browser and native games on [`verdant-core`](../../crates/verdant-core).
+A standalone, playable 3D starter project for building browser and native games on [`verdant-core`](../../crates/verdant-core) and its pure [`verdant-tensor`](../../crates/verdant-tensor) semiring substrate.
 
 ## Included files
 

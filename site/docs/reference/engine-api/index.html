@@ -2,152 +2,314 @@
 <html lang="en"><head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Look up engine modules, core types, CLI commands, and 60fps budgets.">
+    <meta name="description" content="Look up crates, modules, rollback types, CLI commands, and 60fps budgets.">
     <meta name="diataxis" content="reference">
     <meta name="developer-journey" content="scale">
     <meta name="audience" content="otto">
     <link rel="canonical" href="https://afflom.github.io/verdant-engine/docs/reference/engine-api/">
-    <title>Verdant Core API reference — Verdant Engine</title>
+    <title>Verdant Engine API reference — Verdant Engine</title>
     <style>
   :root {
-    --fd-bg: #151312;
-    --fd-fg: #f4f2ee;
-    --fd-muted: #b5ada4;
-    --fd-card: #1e1b19;
-    --fd-border: rgba(244, 242, 238, 0.14);
-    --fd-accent: #6ec49c;
+    color-scheme: dark;
+    --fd-bg: 208 32% 7%;
+    --fd-panel: 208 26% 12%;
+    --fd-fg: 196 36% 96%;
+    --fd-dim: 204 22% 77%;
+    --fd-line: 204 24% 25%;
+    --fd-line-strong: 168 48% 52%;
+    --fd-accent: 160 72% 66%;
+    --fd-code-bg: 210 30% 10%;
+    --fd-code-fg: 152 76% 78%;
+    --fd-spectrum: linear-gradient(100deg, hsl(356 92% 66%) 0%, hsl(28 95% 60%) 18%, hsl(48 95% 58%) 34%, hsl(154 72% 52%) 52%, hsl(192 90% 56%) 70%, hsl(226 90% 68%) 86%, hsl(282 84% 72%) 100%);
   }
   @media (prefers-color-scheme: light) {
     :root {
-      --fd-bg: #f5f4ef;
-      --fd-fg: #1f1c1a;
-      --fd-muted: #5b534c;
-      --fd-card: #ffffff;
-      --fd-border: rgba(31, 28, 26, 0.14);
-      --fd-accent: #1d6f4e;
+      color-scheme: light;
+      --fd-bg: 48 24% 96%;
+      --fd-panel: 0 0% 100%;
+      --fd-fg: 210 28% 12%;
+      --fd-dim: 210 16% 33%;
+      --fd-line: 210 18% 78%;
+      --fd-line-strong: 164 62% 32%;
+      --fd-accent: 162 76% 24%;
+      --fd-code-bg: 205 25% 93%;
+      --fd-code-fg: 164 78% 20%;
     }
+    .cs-canvas {
+      background: radial-gradient(120% 140% at 0% 0%, hsl(48 30% 99%), hsl(var(--fd-bg))) !important;
+    }
+    .cs-card { fill: hsl(0 0% 100%) !important; }
+    .cs-cell { fill: hsl(200 20% 95%) !important; }
+    .cs-track { fill: hsl(200 18% 89%) !important; }
   }
   * { box-sizing: border-box; }
   body {
     margin: 0;
-    background: var(--fd-bg);
-    color: var(--fd-fg);
-    font-family: system-ui, -apple-system, sans-serif;
-    font-size: 1rem;
-    line-height: 1.6;
+    background: hsl(var(--fd-bg));
+    color: hsl(var(--fd-fg));
+    font-family: "Space Grotesk", system-ui, -apple-system, sans-serif;
+    font-size: 1.03125rem;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+  .ve-nav-wrap {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: hsl(var(--fd-bg) / 0.9);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid hsl(var(--fd-line));
   }
   .ve-nav {
-    max-width: 52rem;
+    max-width: 56rem;
     margin: 0 auto;
-    padding: 1rem 1.25rem;
+    padding: 0.75rem 1.25rem;
     display: flex;
     flex-wrap: wrap;
-    gap: 0.75rem 1.25rem;
-    border-bottom: 1px solid var(--fd-border);
-    font-size: 0.9375rem;
+    align-items: center;
+    gap: 0.5rem 0.625rem;
+    font-size: 0.9rem;
   }
-  .ve-nav a, main a {
-    color: var(--fd-accent);
+  .ve-nav a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.25rem;
+    padding: 0.25rem 0.7rem;
+    border-radius: 999px;
+    border: 1px solid hsl(var(--fd-line));
+    background: hsl(var(--fd-panel));
+    color: hsl(var(--fd-fg));
+    text-decoration: none;
+    font-weight: 500;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .ve-nav a:first-child {
+    border-color: hsl(var(--fd-line-strong));
+    color: hsl(var(--fd-accent));
+    font-weight: 700;
+  }
+  .ve-nav a:hover {
+    border-color: hsl(var(--fd-accent));
+    color: hsl(var(--fd-accent));
+  }
+  main a {
+    color: hsl(var(--fd-accent));
     text-decoration: underline;
-    text-underline-offset: 0.18em;
+    text-underline-offset: 0.2em;
+    font-weight: 500;
+  }
+  main a:hover {
+    color: hsl(var(--fd-fg));
   }
   main {
-    max-width: 52rem;
+    max-width: 56rem;
     margin: 0 auto;
-    padding: 1.75rem 1.25rem 4rem;
+    padding: 2rem 1.25rem 4.5rem;
   }
-  h1 { font-size: 2rem; line-height: 1.2; margin: 0 0 0.75rem; }
-  h2 { font-size: 1.375rem; line-height: 1.3; margin: 2.25rem 0 0.75rem; }
-  h3 { font-size: 1.125rem; line-height: 1.35; margin: 1.5rem 0 0.5rem; }
-  p, li { max-width: 68ch; }
-  code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.9em; }
+  h1 {
+    font-size: clamp(1.85rem, 3.6vw, 2.45rem);
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    margin: 0 0 0.75rem;
+    color: hsl(var(--fd-fg));
+  }
+  h2 {
+    font-size: 1.42rem;
+    line-height: 1.28;
+    margin: 2.4rem 0 0.75rem;
+    padding-bottom: 0.35rem;
+    border-bottom: 1px solid hsl(var(--fd-line));
+    color: hsl(var(--fd-fg));
+  }
+  h3 {
+    font-size: 1.15rem;
+    line-height: 1.35;
+    margin: 1.5rem 0 0.5rem;
+    color: hsl(var(--fd-fg));
+  }
+  p, li { max-width: 70ch; color: hsl(var(--fd-fg)); }
+  li + li { margin-top: 0.35rem; }
+  code, pre {
+    font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.88em;
+  }
+  p code, li code, td code {
+    padding: 0.12rem 0.38rem;
+    border-radius: 0.32rem;
+    background: hsl(var(--fd-code-bg));
+    border: 1px solid hsl(var(--fd-line));
+    color: hsl(var(--fd-code-fg));
+  }
   pre {
-    padding: 0.875rem 1rem;
-    background: var(--fd-card);
-    border: 1px solid var(--fd-border);
-    border-radius: 0.5rem;
+    padding: 1rem 1.125rem;
+    background: hsl(var(--fd-code-bg));
+    color: hsl(var(--fd-fg));
+    border: 1px solid hsl(var(--fd-line));
+    border-radius: 0.75rem;
     overflow-x: auto;
+    line-height: 1.55;
+  }
+  pre code {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
   }
   table {
     width: 100%;
     border-collapse: collapse;
-    margin: 1rem 0;
+    margin: 1.15rem 0;
     font-size: 0.9375rem;
+    background: hsl(var(--fd-panel));
+    border: 1px solid hsl(var(--fd-line));
+    border-radius: 0.75rem;
+    overflow: hidden;
   }
-  th, td {
+  caption {
     text-align: left;
-    padding: 0.5rem 0.625rem;
-    border-bottom: 1px solid var(--fd-border);
+    font-weight: 700;
+    padding: 0.5rem 0.25rem;
+    color: hsl(var(--fd-dim));
+  }
+  th {
+    text-align: left;
+    padding: 0.65rem 0.75rem;
+    background: hsl(var(--fd-code-bg));
+    color: hsl(var(--fd-fg));
+    border-bottom: 1px solid hsl(var(--fd-line-strong));
+    font-weight: 700;
+  }
+  td {
+    text-align: left;
+    padding: 0.6rem 0.75rem;
+    border-bottom: 1px solid hsl(var(--fd-line));
+    color: hsl(var(--fd-fg));
+  }
+  .ve-diagram {
+    margin: 1.75rem 0 2.25rem;
+  }
+  .ve-diagram svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-height: 21rem;
   }
   .dc-pager {
-    margin-top: 2.5rem;
-    padding-top: 1rem;
-    border-top: 1px solid var(--fd-border);
+    margin-top: 2.75rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid hsl(var(--fd-line));
     display: flex;
     flex-wrap: wrap;
     justify-content: space-between;
     gap: 1rem;
   }
 </style>
-  <link rel="alternate" type="text/markdown" href="index.md"><link rel="stylesheet" href="../../content.css"><script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"Verdant Core API reference","description":"Look up engine modules, core types, CLI commands, and 60fps budgets.","url":"https://afflom.github.io/verdant-engine/docs/reference/engine-api/","inLanguage":"en","audience":{"@type":"Audience","audienceType":"Engine systems engineer","description":"Maintains exact uor-matmul tensor kernels, progressive UORC streaming frames, frame-budget job graphs, and zero-constant parametric simulation."},"learningResourceType":"reference","educationalLevel":"scale","isPartOf":{"@type":"WebSite","name":"Verdant Engine","url":"https://afflom.github.io/verdant-engine/"},"publisher":{"@type":"Organization","name":"UOR Foundation","url":"https://uor.foundation/"}}</script></head>
+  <link rel="alternate" type="text/markdown" href="index.md"><link rel="stylesheet" href="../../content.css"><script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"Verdant Engine API reference","description":"Look up crates, modules, rollback types, CLI commands, and 60fps budgets.","url":"https://afflom.github.io/verdant-engine/docs/reference/engine-api/","inLanguage":"en","audience":{"@type":"Audience","audienceType":"Engine systems engineer","description":"Maintains exact uor-matmul tensor kernels, progressive UORC streaming frames, frame-budget job graphs, and zero-constant parametric simulation."},"learningResourceType":"reference","educationalLevel":"scale","isPartOf":{"@type":"WebSite","name":"Verdant Engine","url":"https://afflom.github.io/verdant-engine/"},"publisher":{"@type":"Organization","name":"UOR Foundation","url":"https://uor.foundation/"}}</script></head>
   <body>
-    <nav class="ve-nav" aria-label="Documentation navigation">
-      <a href="../../../">3D Studio</a>
-      <a href="../../">Docs home</a>
-      <a href="../../getting-started/">Getting started</a>
-      <a href="../../guides/custom-game-world/">Custom world guide</a>
-      <a href="../../guides/progressive-uorc-streaming/">UORC streaming</a>
-      <a href="../../reference/engine-api/">API reference</a>
-      <a href="../../explanation/tensor-and-uorc-streaming/">Tensor architecture</a>
-    </nav>
+    <div class="ve-nav-wrap">
+      <nav class="ve-nav" aria-label="Documentation navigation">
+        <a href="../../../">3D Studio</a>
+        <a href="../../">Docs home</a>
+        <a href="../../getting-started/">Getting started</a>
+        <a href="../../guides/custom-game-world/">Authoring &amp; GLB</a>
+        <a href="../../guides/progressive-uorc-streaming/">UORC streaming</a>
+        <a href="../../reference/engine-api/">API reference</a>
+        <a href="../../explanation/tensor-and-uorc-streaming/">Tensor core</a>
+      </nav>
+    </div>
     <main>
-      <h1>Verdant Core API reference</h1>
-      <p>Look up engine modules, core types, CLI commands, and 60fps budgets.</p><aside class="cs-guide" data-persona="otto" aria-label="Your guide on this page"><svg class="cs-avatar" viewBox="0 0 120 120" width="96" height="96" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="cs-g11" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="hsl(222 92% 78%)"></stop><stop offset="1" stop-color="hsl(222 92% 48%)"></stop></linearGradient></defs><path d="M0 64L32 58" stroke="hsl(0 0% 98%)" stroke-width="2.4" stroke-linecap="round" opacity=".8"></path><path d="M88 58L120 34.0" stroke="hsl(356 95% 66%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 41.0" stroke="hsl(22 95% 58%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 48.0" stroke="hsl(48 95% 56%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 55.0" stroke="hsl(55 92% 54%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 62.0" stroke="hsl(140 70% 48%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 69.0" stroke="hsl(190 90% 54%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 76.0" stroke="hsl(222 92% 64%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 83.0" stroke="hsl(268 88% 70%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 90.0" stroke="hsl(320 85% 68%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><ellipse cx="60" cy="108" rx="30" ry="5" class="cs-g-shadow"></ellipse><path d="M60 14L92 32V76L60 98L28 76V32Z" fill="url(#cs-g11)"></path><path d="M60 14L92 32L60 48L28 32Z" fill="hsl(0 0% 100% / .28)"></path><path d="M60 48L92 32V76L60 98Z" fill="hsl(0 0% 0% / .18)"></path><path d="M60 14L92 32V76L60 98L28 76V32Z" fill="none" stroke="hsl(0 0% 100% / .45)" stroke-width="1.5" stroke-linejoin="round"></path><ellipse cx="49" cy="62" rx="6.5" ry="7.5" fill="hsl(0 0% 99%)"></ellipse><ellipse cx="71" cy="62" rx="6.5" ry="7.5" fill="hsl(0 0% 99%)"></ellipse><circle cx="51" cy="63.5" r="3.4" class="cs-g-dark"></circle><circle cx="73" cy="63.5" r="3.4" class="cs-g-dark"></circle><circle cx="52.2" cy="62" r="1.1" fill="hsl(0 0% 100%)"></circle><circle cx="74.2" cy="62" r="1.1" fill="hsl(0 0% 100%)"></circle><ellipse cx="41" cy="73" rx="4" ry="2.4" fill="hsl(350 90% 75% / .55)"></ellipse><ellipse cx="79" cy="73" rx="4" ry="2.4" fill="hsl(350 90% 75% / .55)"></ellipse><path d="M53 76q7 6 14 0" fill="none" stroke="hsl(0 0% 8%)" stroke-width="2.2" stroke-linecap="round"></path><ellipse cx="47" cy="100" rx="7" ry="3.6" class="cs-g-dark"></ellipse><ellipse cx="73" cy="100" rx="7" ry="3.6" class="cs-g-dark"></ellipse><path d="M36 30c4-14 44-14 48 0z" class="cs-g-hat"></path><rect x="33" y="27" width="54" height="7" rx="3.5" class="cs-g-hat-band"></rect><circle cx="60" cy="12" r="5" class="cs-g-hat"></circle><path d="M92 70q8 2 10 8" fill="none" stroke="hsl(222 92% 48%)" stroke-width="4" stroke-linecap="round"></path><g transform="translate(94 76) scale(1.05)" class="cs-g-prop"><rect x="-2" y="-2" width="28" height="28" rx="8" class="cs-g-chip"></rect><g fill="none" stroke="hsl(0 0% 98%)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 5.5a4 4 0 0 0 4.9 5L12 18a2.1 2.1 0 0 1-3-3l7.5-7.4a4 4 0 0 0-2-2.1z"></path></g></g></svg><div class="cs-guide-text"><p class="cs-guide-who"><strong>Otto</strong> <span>Engine systems engineer</span></p><p class="cs-guide-says">“What are the exact API signatures, error variants, and frame limits?”</p><p class="cs-guide-how">Reference: look up types, budgets, and commands in any order.</p></div></aside>
-      <figure class="cs-figure cs-bars"><div class="cs-canvas"><svg class="cs-svg cs-any" viewBox="0 0 640 202" role="img" aria-labelledby="cs-t39 cs-d40" xmlns="http://www.w3.org/2000/svg"><title id="cs-t39">60fps frame stage budgets in microseconds</title><desc id="cs-d40">ECS hierarchy: 900 us; Physics step: 1800 us; BVH culling: 1100 us; Spline steering: 700 us; Spatial audio: 600 us; Tile and draw: 1200 us</desc><text x="111.20000000000002" y="15" text-anchor="end" dominant-baseline="middle" class="cs-label cs-left">ECS hierarchy</text><rect x="121.20000000000002" y="6" width="454.79999999999995" height="18" rx="4" class="cs-track"></rect><rect x="121.2" y="6" width="24.6" height="18" rx="4" fill="hsl(356 95% 66%)"></rect><text x="584" y="15" dominant-baseline="middle" class="cs-value">World matrix propagation</text><text x="111.20000000000002" y="45" text-anchor="end" dominant-baseline="middle" class="cs-label cs-left">Physics step</text><rect x="121.20000000000002" y="36" width="454.79999999999995" height="18" rx="4" class="cs-track"></rect><rect x="121.2" y="36" width="49.1" height="18" rx="4" fill="hsl(356 95% 66%)"></rect><text x="584" y="45" dominant-baseline="middle" class="cs-value">Symplectic Euler + GJK contacts</text><text x="111.20000000000002" y="75" text-anchor="end" dominant-baseline="middle" class="cs-label cs-left">BVH culling</text><rect x="121.20000000000002" y="66" width="454.79999999999995" height="18" rx="4" class="cs-track"></rect><rect x="121.2" y="66" width="30.0" height="18" rx="4" fill="hsl(356 95% 66%)"></rect><text x="584" y="75" dominant-baseline="middle" class="cs-value">Frustum planes + tropical bounds</text><text x="111.20000000000002" y="105" text-anchor="end" dominant-baseline="middle" class="cs-label cs-left">Spline steering</text><rect x="121.20000000000002" y="96" width="454.79999999999995" height="18" rx="4" class="cs-track"></rect><rect x="121.2" y="96" width="19.1" height="18" rx="4" fill="hsl(356 95% 66%)"></rect><text x="584" y="105" dominant-baseline="middle" class="cs-value">Arc-length mover + NavMesh A*</text><text x="111.20000000000002" y="135" text-anchor="end" dominant-baseline="middle" class="cs-label cs-left">Spatial audio</text><rect x="121.20000000000002" y="126" width="454.79999999999995" height="18" rx="4" class="cs-track"></rect><rect x="121.2" y="126" width="16.4" height="18" rx="4" fill="hsl(356 95% 66%)"></rect><text x="584" y="135" dominant-baseline="middle" class="cs-value">Modal harmonics + stereo mix</text><text x="111.20000000000002" y="165" text-anchor="end" dominant-baseline="middle" class="cs-label cs-left">Tile and draw</text><rect x="121.20000000000002" y="156" width="454.79999999999995" height="18" rx="4" class="cs-track"></rect><rect x="121.2" y="156" width="32.7" height="18" rx="4" fill="hsl(356 95% 66%)"></rect><text x="584" y="165" dominant-baseline="middle" class="cs-value">Batch prep + tile rasterizer</text><line x1="576" y1="0" x2="576" y2="180" class="cs-bound"></line><text x="576" y="192" text-anchor="middle" class="cs-sub">60fps frame ceiling (16,666 us)</text></svg></div><figcaption><strong>60fps frame stage budgets in microseconds.</strong> A 60fps browser frame spans 16,666 microseconds; the six-stage job graph completes in 6,300 microseconds.</figcaption><details class="cs-data"><summary>The data in this figure</summary><table><thead><tr><th scope="col"></th><th scope="col">us</th></tr></thead><tbody><tr><td>ECS hierarchy</td><td>900</td></tr><tr><td>Physics step</td><td>1800</td></tr><tr><td>BVH culling</td><td>1100</td></tr><tr><td>Spline steering</td><td>700</td></tr><tr><td>Spatial audio</td><td>600</td></tr><tr><td>Tile and draw</td><td>1200</td></tr></tbody></table></details><script type="application/vnd.prism.figure+json">{"kind":"bars","title":"60fps frame stage budgets in microseconds","caption":"A 60fps browser frame spans 16,666 microseconds; the six-stage job graph completes in 6,300 microseconds.","unit":"us","bound":{"value":16666,"label":"60fps frame ceiling (16,666 us)"},"rows":[{"label":"ECS hierarchy","value":900,"note":"World matrix propagation"},{"label":"Physics step","value":1800,"note":"Symplectic Euler + GJK contacts"},{"label":"BVH culling","value":1100,"note":"Frustum planes + tropical bounds"},{"label":"Spline steering","value":700,"note":"Arc-length mover + NavMesh A*"},{"label":"Spatial audio","value":600,"note":"Modal harmonics + stereo mix"},{"label":"Tile and draw","value":1200,"note":"Batch prep + tile rasterizer"}]}</script></figure>
+      <h1>Verdant Engine API reference</h1>
+      <p>Look up crates, modules, rollback types, CLI commands, and 60fps budgets.</p><aside class="cs-guide" data-persona="otto" aria-label="Your guide on this page"><svg class="cs-avatar" viewBox="0 0 120 120" width="96" height="96" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="cs-g11" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="hsl(222 92% 78%)"></stop><stop offset="1" stop-color="hsl(222 92% 48%)"></stop></linearGradient></defs><path d="M0 64L32 58" stroke="hsl(0 0% 98%)" stroke-width="2.4" stroke-linecap="round" opacity=".8"></path><path d="M88 58L120 34.0" stroke="hsl(356 95% 66%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 41.0" stroke="hsl(22 95% 58%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 48.0" stroke="hsl(48 95% 56%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 55.0" stroke="hsl(55 92% 54%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 62.0" stroke="hsl(140 70% 48%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 69.0" stroke="hsl(190 90% 54%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 76.0" stroke="hsl(222 92% 64%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 83.0" stroke="hsl(268 88% 70%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 90.0" stroke="hsl(320 85% 68%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><ellipse cx="60" cy="108" rx="30" ry="5" class="cs-g-shadow"></ellipse><path d="M60 14L92 32V76L60 98L28 76V32Z" fill="url(#cs-g11)"></path><path d="M60 14L92 32L60 48L28 32Z" fill="hsl(0 0% 100% / .28)"></path><path d="M60 48L92 32V76L60 98Z" fill="hsl(0 0% 0% / .18)"></path><path d="M60 14L92 32V76L60 98L28 76V32Z" fill="none" stroke="hsl(0 0% 100% / .45)" stroke-width="1.5" stroke-linejoin="round"></path><ellipse cx="49" cy="62" rx="6.5" ry="7.5" fill="hsl(0 0% 99%)"></ellipse><ellipse cx="71" cy="62" rx="6.5" ry="7.5" fill="hsl(0 0% 99%)"></ellipse><circle cx="51" cy="63.5" r="3.4" class="cs-g-dark"></circle><circle cx="73" cy="63.5" r="3.4" class="cs-g-dark"></circle><circle cx="52.2" cy="62" r="1.1" fill="hsl(0 0% 100%)"></circle><circle cx="74.2" cy="62" r="1.1" fill="hsl(0 0% 100%)"></circle><ellipse cx="41" cy="73" rx="4" ry="2.4" fill="hsl(350 90% 75% / .55)"></ellipse><ellipse cx="79" cy="73" rx="4" ry="2.4" fill="hsl(350 90% 75% / .55)"></ellipse><path d="M53 76q7 6 14 0" fill="none" stroke="hsl(0 0% 8%)" stroke-width="2.2" stroke-linecap="round"></path><ellipse cx="47" cy="100" rx="7" ry="3.6" class="cs-g-dark"></ellipse><ellipse cx="73" cy="100" rx="7" ry="3.6" class="cs-g-dark"></ellipse><path d="M36 30c4-14 44-14 48 0z" class="cs-g-hat"></path><rect x="33" y="27" width="54" height="7" rx="3.5" class="cs-g-hat-band"></rect><circle cx="60" cy="12" r="5" class="cs-g-hat"></circle><path d="M92 70q8 2 10 8" fill="none" stroke="hsl(222 92% 48%)" stroke-width="4" stroke-linecap="round"></path><g transform="translate(94 76) scale(1.05)" class="cs-g-prop"><rect x="-2" y="-2" width="28" height="28" rx="8" class="cs-g-chip"></rect><g fill="none" stroke="hsl(0 0% 98%)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 5.5a4 4 0 0 0 4.9 5L12 18a2.1 2.1 0 0 1-3-3l7.5-7.4a4 4 0 0 0-2-2.1z"></path></g></g></svg><div class="cs-guide-text"><p class="cs-guide-who"><strong>Otto</strong> <span>Engine systems engineer</span></p><p class="cs-guide-says">“What are the exact API signatures, error variants, and frame limits?”</p><p class="cs-guide-how">Reference: look up types, budgets, and commands in any order.</p></div></aside>
+      <figure class="cs-figure cs-bars"><div class="cs-canvas"><svg class="cs-svg cs-any" viewBox="0 0 640 202" role="img" aria-labelledby="cs-t39 cs-d40" xmlns="http://www.w3.org/2000/svg"><title id="cs-t39">60fps worker frame stage budgets in microseconds</title><desc id="cs-d40">ECS hierarchy: 900 us; Physics + XPBD: 1800 us; BVH + cull: 1100 us; NavMesh min-plus: 700 us; FDN audio ring: 600 us; Tile and draw: 1200 us</desc><text x="118.48000000000002" y="15" text-anchor="end" dominant-baseline="middle" class="cs-label cs-left">ECS hierarchy</text><rect x="128.48000000000002" y="6" width="447.52" height="18" rx="4" class="cs-track"></rect><rect x="128.5" y="6" width="24.2" height="18" rx="4" fill="hsl(356 95% 66%)"></rect><text x="584" y="15" dominant-baseline="middle" class="cs-value">Topological uor-matmul propagation</text><text x="118.48000000000002" y="45" text-anchor="end" dominant-baseline="middle" class="cs-label cs-left">Physics + XPBD</text><rect x="128.48000000000002" y="36" width="447.52" height="18" rx="4" class="cs-track"></rect><rect x="128.5" y="36" width="48.3" height="18" rx="4" fill="hsl(356 95% 66%)"></rect><text x="584" y="45" dominant-baseline="middle" class="cs-value">Delassus joints + 4-wheel vehicle</text><text x="118.48000000000002" y="75" text-anchor="end" dominant-baseline="middle" class="cs-label cs-left">BVH + cull</text><rect x="128.48000000000002" y="66" width="447.52" height="18" rx="4" class="cs-track"></rect><rect x="128.5" y="66" width="29.5" height="18" rx="4" fill="hsl(356 95% 66%)"></rect><text x="584" y="75" dominant-baseline="middle" class="cs-value">SAH build + tropical frustum cull</text><text x="118.48000000000002" y="105" text-anchor="end" dominant-baseline="middle" class="cs-label cs-left">NavMesh min-plus</text><rect x="128.48000000000002" y="96" width="447.52" height="18" rx="4" class="cs-track"></rect><rect x="128.5" y="96" width="18.8" height="18" rx="4" fill="hsl(356 95% 66%)"></rect><text x="584" y="105" dominant-baseline="middle" class="cs-value">Tropical shortest paths + spline</text><text x="118.48000000000002" y="135" text-anchor="end" dominant-baseline="middle" class="cs-label cs-left">FDN audio ring</text><rect x="128.48000000000002" y="126" width="447.52" height="18" rx="4" class="cs-track"></rect><rect x="128.5" y="126" width="16.1" height="18" rx="4" fill="hsl(356 95% 66%)"></rect><text x="584" y="135" dominant-baseline="middle" class="cs-value">Modal FIR + occluded Woodworth</text><text x="118.48000000000002" y="165" text-anchor="end" dominant-baseline="middle" class="cs-label cs-left">Tile and draw</text><rect x="128.48000000000002" y="156" width="447.52" height="18" rx="4" class="cs-track"></rect><rect x="128.5" y="156" width="32.2" height="18" rx="4" fill="hsl(356 95% 66%)"></rect><text x="584" y="165" dominant-baseline="middle" class="cs-value">WebGL2 or 16x16 software PBR</text><line x1="576" y1="0" x2="576" y2="180" class="cs-bound"></line><text x="576" y="192" text-anchor="middle" class="cs-sub">60fps frame ceiling (16,666 us)</text></svg></div><figcaption><strong>60fps worker frame stage budgets in microseconds.</strong> A 60fps frame spans 16,666 microseconds; the six-stage parallel worker DAG completes in 6,300 microseconds.</figcaption><details class="cs-data"><summary>The data in this figure</summary><table><thead><tr><th scope="col"></th><th scope="col">us</th></tr></thead><tbody><tr><td>ECS hierarchy</td><td>900</td></tr><tr><td>Physics + XPBD</td><td>1800</td></tr><tr><td>BVH + cull</td><td>1100</td></tr><tr><td>NavMesh min-plus</td><td>700</td></tr><tr><td>FDN audio ring</td><td>600</td></tr><tr><td>Tile and draw</td><td>1200</td></tr></tbody></table></details><script type="application/vnd.prism.figure+json">{"kind":"bars","title":"60fps worker frame stage budgets in microseconds","caption":"A 60fps frame spans 16,666 microseconds; the six-stage parallel worker DAG completes in 6,300 microseconds.","unit":"us","bound":{"value":16666,"label":"60fps frame ceiling (16,666 us)"},"rows":[{"label":"ECS hierarchy","value":900,"note":"Topological uor-matmul propagation"},{"label":"Physics + XPBD","value":1800,"note":"Delassus joints + 4-wheel vehicle"},{"label":"BVH + cull","value":1100,"note":"SAH build + tropical frustum cull"},{"label":"NavMesh min-plus","value":700,"note":"Tropical shortest paths + spline"},{"label":"FDN audio ring","value":600,"note":"Modal FIR + occluded Woodworth"},{"label":"Tile and draw","value":1200,"note":"WebGL2 or 16x16 software PBR"}]}</script></figure>
       
-      <h2>Core modules in crates/verdant-core</h2>
-      <details class="cs-fold"><summary><span class="cs-fold-what">Simulation, tensor, and streaming modules</span> <span class="cs-fold-n">7 rows</span></summary><table>
-        <caption>Simulation, tensor, and streaming modules</caption>
+      <h2>Semiring and simulation modules</h2>
+      <details class="cs-fold"><summary><span class="cs-fold-what">Crates and simulation modules across verdant-tensor and verdant-core</span> <span class="cs-fold-n">6 rows</span></summary><table>
+        <caption>Crates and simulation modules across verdant-tensor and verdant-core</caption>
         <thead>
           <tr><th>Module</th><th>Primary types and functions</th><th>Purpose</th></tr>
         </thead>
         <tbody>
-          <tr><td><code>math</code></td><td><code>Vec3</code>, <code>Quat</code>, <code>Mat4</code>, <code>Aabb</code>, <code>Frustum</code></td><td>3D linear algebra, rays, and frustum planes</td></tr>
-          <tr><td><code>ecs</code></td><td><code>SceneWorld</code>, <code>EntityId</code>, <code>BoundingVolumeHierarchy</code></td><td>Entity hierarchy, raycasts, and frustum culling</td></tr>
-          <tr><td><code>tensor</code></td><td><code>batch_transform_positions_exact</code>, <code>render_triangles_tile_framebuffer</code></td><td>Exact <code>uor-matmul</code> contractions and 16x16 tile PBR</td></tr>
-          <tr><td><code>streaming</code></td><td><code>StandardSceneState</code>, <code>LodLevel</code>, <code>pack_progressive_uorc_stream</code></td><td>Progressive LOD synthesis and UORC chain streaming</td></tr>
-          <tr><td><code>geometry</code></td><td><code>ProceduralMesh</code>, <code>MorphTarget</code>, <code>generate_terrain_mesh</code></td><td>Procedural terrain, columns, prisms, and ribbons</td></tr>
-          <tr><td><code>animation</code></td><td><code>Skeleton</code>, <code>SkeletalClip</code>, <code>skin_mesh_linear_blend</code></td><td>Acyclic joint trees and four-joint LBS skinning</td></tr>
-          <tr><td><code>render</code></td><td><code>PbrMaterial</code>, <code>RenderFrameGraph</code>, <code>compute_csm_splits</code></td><td>Five-pass PBR graph, CSM splits, IBL mips, and WGSL</td></tr>
+          <tr><td><code>verdant_tensor::linear</code></td><td><code>propagate_hierarchy_matrices_exact</code>, <code>delassus_effective_mass_matrix</code></td><td>Exact <code>(+, *)</code> transforms, 4-joint LBS skinning, and Delassus operators</td></tr>
+          <tr><td><code>verdant_tensor::coded</code></td><td><code>contract_coded_geometry_grid</code>, <code>contract_packed_animation_tracks</code></td><td>Zero-decode <code>coded_gemm</code> over <code>Grid</code>, <code>Packed</code>, and <code>Runs</code></td></tr>
+          <tr><td><code>verdant_tensor::tropical</code></td><td><code>tropical_frustum_distance_bounds</code>, <code>tropical_min_plus_all_pairs_closure</code></td><td>Tropical <code>(max, +)</code> culling/GJK and <code>(min, +)</code> NavMesh closure</td></tr>
+          <tr><td><code>verdant_tensor::audio_ring</code></td><td><code>convolve_modal_fir_exact</code>, <code>step_sabine_fdn_reverb_ring</code></td><td>Quantized <code>Q15</code> FIR bars, stereo pan, and 4x4 Hadamard FDN</td></tr>
+          <tr><td><code>ecs</code> &amp; <code>render</code></td><td><code>SceneWorld</code>, <code>BoundingVolumeHierarchy</code>, <code>RenderFrameGraph</code></td><td>Entity hierarchy, SAH raycasts, 5-pass CSM/IBL graph, and WGSL</td></tr>
+          <tr><td><code>streaming</code></td><td><code>StandardSceneState</code>, <code>decode_portable_uorc_single_frame</code>, <code>CodedLodFrameBundle</code></td><td>Stateless Wasm UORC streaming and zero-decode coded bundles</td></tr>
         </tbody>
       </table></details>
-      <h2>Physics, audio, and runtime modules</h2>
-      <details class="cs-fold"><summary><span class="cs-fold-what">Dynamics, navigation, audio, and snapshot modules</span> <span class="cs-fold-n">6 rows</span></summary><table>
-        <caption>Dynamics, navigation, audio, and snapshot modules</caption>
+      <h2>Authoring, physics, and deterministic rollback modules</h2>
+      <details class="cs-fold"><summary><span class="cs-fold-what">GLB transcoding, articulated dynamics, audio occlusion, and netcode</span> <span class="cs-fold-n">5 rows</span></summary><table>
+        <caption>GLB transcoding, articulated dynamics, audio occlusion, and netcode</caption>
         <thead>
           <tr><th>Module</th><th>Primary types and functions</th><th>Purpose</th></tr>
         </thead>
         <tbody>
-          <tr><td><code>gltf_io</code></td><td><code>export_scene_to_glb</code>, <code>validate_glb_bytes</code></td><td>Binary Khronos glTF 2.0 export and verification</td></tr>
-          <tr><td><code>collision</code></td><td><code>ConvexHullCollider</code>, <code>gjk_intersect_and_manifold</code></td><td>3D GJK manifolds, Baumgarte, and Coulomb cones</td></tr>
-          <tr><td><code>physics</code></td><td><code>PhysicsWorld</code>, <code>RigidBody</code>, <code>KinematicSplineBody</code></td><td>60Hz rigid bodies, capsules, buoyancy, and splines</td></tr>
-          <tr><td><code>navmesh</code></td><td><code>NavMesh</code>, <code>NavPolygon</code>, <code>steer_along_corridor</code></td><td>Slope-filtered navmeshes and admissible A-star paths</td></tr>
-          <tr><td><code>audio</code></td><td><code>AcousticEnvironment</code>, <code>evaluate_binaural_cue</code></td><td>Woodworth binaural cues, Sabine RT60, and modal bars</td></tr>
-          <tr><td><code>runtime</code></td><td><code>EngineConfig</code>, <code>WorkerJobGraph</code>, <code>WorldSnapshot</code></td><td>Topological job scheduling and SHA-256 world snapshots</td></tr>
+          <tr><td><code>gltf_io</code></td><td><code>import_glb_to_scene</code>, <code>transcode_glb_to_progressive_uorc</code></td><td>Full Khronos GLB ingestion and progressive UORC transcoding</td></tr>
+          <tr><td><code>physics</code></td><td><code>RigidJointConstraint</code>, <code>RaycastVehicle</code>, <code>CapsuleController</code></td><td>XPBD joints, 4-wheel suspension vehicles, and swept BVH capsules</td></tr>
+          <tr><td><code>collision</code> &amp; <code>navmesh</code></td><td><code>gjk_intersect_and_manifold</code>, <code>NavMesh</code></td><td>Tropical GJK hulls, Coulomb friction, and A-star / min-plus paths</td></tr>
+          <tr><td><code>audio</code></td><td><code>evaluate_binaural_cue_with_occlusion</code>, <code>synthesize_binaural_reverb_quantum_exact</code></td><td>BVH-occluded Woodworth binaural cues and Hadamard FDN reverb</td></tr>
+          <tr><td><code>runtime</code></td><td><code>RollbackSession</code>, <code>DeterministicInputJournal</code>, <code>DeltaUorcSnapshot</code></td><td>64-frame rollback resimulation, SHA-256 input logs, and delta UORC</td></tr>
         </tbody>
       </table></details>
-      <h2>WebAssembly bridge and CLI commands</h2>
+      <h2>Deterministic rollback and delta snapshot timeline</h2>
+      <p>Networked lockstep and rollback sessions <a class="cs-term" href="#term-record" title="One entry in a facet: a component, a threat, a measure or a journey step, with the place in the source it came from.">record</a> quantized inputs in a SHA-256 chain and synchronize state deltas via stateless <a class="cs-term" href="#term-uorc" title="Universal Object Reference Compression: progressive SHA-256 chain-verified multi-frame compression streaming 3D scenes up to lossless resolution.">UORC</a>.</p>
+      
+<figure class="cs-figure ve-diagram" id="fig-rollback">
+  <div class="cs-canvas">
+    <svg viewBox="0 0 680 204" role="img" aria-labelledby="ve-rb-t ve-rb-d" xmlns="http://www.w3.org/2000/svg">
+      <title id="ve-rb-t">Deterministic 64-frame rollback and DeltaUorcSnapshot timeline</title>
+      <desc id="ve-rb-d">Shows predicted frames advancing from t=60 to t=67, a remote input arriving for frame t=64, ring-buffer state restore at t=64, and deterministic resimulation back to t=67 with identical SHA-256 chain digests.</desc>
+      <text x="24" y="32" fill="hsl(196 36% 94%)" font-size="13" font-weight="700">64-Frame Ring Buffer + SHA-256 Chained Input Journal</text>
+      <line x1="24" y1="74" x2="650" y2="74" stroke="hsl(204 28% 44%)" stroke-width="2"></line>
+      <g font-family="JetBrains Mono, monospace" font-size="11">
+        <rect x="34" y="54" width="76" height="40" rx="8" fill="hsl(208 28% 15%)" stroke="hsl(204 26% 42%)"></rect>
+        <text x="72" y="78" text-anchor="middle" fill="hsl(204 22% 80%)">f = 62</text>
+
+        <rect x="132" y="54" width="76" height="40" rx="8" fill="hsl(208 28% 15%)" stroke="hsl(204 26% 42%)"></rect>
+        <text x="170" y="78" text-anchor="middle" fill="hsl(204 22% 80%)">f = 63</text>
+
+        <rect x="230" y="48" width="96" height="52" rx="9" fill="hsl(38 72% 18%)" stroke="hsl(42 95% 62%)" stroke-width="2"></rect>
+        <text x="278" y="70" text-anchor="middle" fill="hsl(44 96% 86%)" font-weight="700">f = 64*</text>
+        <text x="278" y="88" text-anchor="middle" fill="hsl(44 90% 76%)" font-size="10">late input</text>
+
+        <rect x="348" y="54" width="84" height="40" rx="8" fill="hsl(164 52% 16%)" stroke="hsl(160 72% 58%)"></rect>
+        <text x="390" y="78" text-anchor="middle" fill="hsl(160 86% 86%)">resim 65</text>
+
+        <rect x="454" y="54" width="84" height="40" rx="8" fill="hsl(164 52% 16%)" stroke="hsl(160 72% 58%)"></rect>
+        <text x="496" y="78" text-anchor="middle" fill="hsl(160 86% 86%)">resim 66</text>
+
+        <rect x="560" y="54" width="90" height="40" rx="8" fill="hsl(192 60% 17%)" stroke="hsl(192 88% 62%)" stroke-width="1.8"></rect>
+        <text x="605" y="78" text-anchor="middle" fill="hsl(192 92% 88%)" font-weight="700">sync 67</text>
+      </g>
+      <path d="M605,100 C540,148 340,148 278,104" fill="none" stroke="hsl(42 95% 62%)" stroke-width="2" stroke-dasharray="6 4"></path>
+      <text x="442" y="156" text-anchor="middle" fill="hsl(44 96% 84%)" font-size="11.5" font-family="JetBrains Mono, monospace">1. Restore ring state at f=64  -&gt;  2. Replay 64..67  -&gt;  3. Emit XOR DeltaUorcSnapshot</text>
+      <text x="24" y="184" fill="hsl(204 22% 76%)" font-size="11.5">Guarded by Lean predicates: rollbackFrameWithinWindow (max 64) &amp; inputJournalSequenceValid</text>
+    </svg>
+  </div>
+  <figcaption><strong>Deterministic rollback and delta state sync.</strong> Late network commands rewind the bounded 64-frame physics ring and resimulate to bit-identical convergence.</figcaption>
+  <details class="cs-data"><summary>Rollback and netcode bounds table</summary>
+    <table>
+      <thead><tr><th>Component</th><th>Bound or format</th><th>Verification predicate</th></tr></thead>
+      <tbody>
+        <tr><td><code>DeterministicInputJournal</code></td><td>Monotonic frame commands + 32B SHA-256 chain</td><td><code>inputJournalSequenceValid</code></td></tr>
+        <tr><td><code>RollbackSession</code></td><td>64-frame <code>PhysicsWorld</code> history ring</td><td><code>rollbackFrameWithinWindow</code></td></tr>
+        <tr><td><code>DeltaUorcSnapshot</code></td><td>XOR residual compressed via stateless <code>UORC</code></td><td><code>WorldSnapshot::decode</code> SHA-256 seal</td></tr>
+      </tbody>
+    </table>
+  </details>
+</figure>
+      <h2>CLI subcommands in crates/verdant-cli</h2>
       <ul>
-        <li><code>crates/verdant-wasm</code> compiles <code>verdant-core</code> to WebAssembly for OffscreenCanvas workers, 16x16 tile rendering, AudioWorklet synthesis, and <code>#vdnt=</code> URLs.</li>
-        <li><code>cargo run -p verdant-cli -- pack-scene &lt;out.glb&gt;</code> packs a validated <code>.glb</code>, <code>.vdnt</code> <a class="cs-term" href="#term-world-snapshot" title="A deterministic binary save of tick count, streaming LOD rank, and entity transforms protected by a 32-byte SHA-256 digest.">world snapshot</a>, and <code>.uorc</code> stream.</li>
-        <li><code>cargo run -p verdant-cli -- verify-uorc &lt;file.uorc&gt;</code> verifies <code>UORC-SHA256-CHAIN-v1</code> multi-LOD archives.</li>
-        <li><code>cargo run -p verdant-cli -- validate-glb &lt;file.glb&gt;</code> and <code>validate-wgsl &lt;file.wgsl&gt;</code> run Khronos and W3C validators.</li>
-        <li><code>cargo run -p verdant-cli -- benchmark</code> profiles 120 headless simulation frames against the 60fps budget.</li>
+        <li><code>verdant import-glb &lt;file.glb&gt;</code> imports nodes, meshes, skeletons, keyframe clips, and PBR materials.</li>
+        <li><code>verdant transcode-glb &lt;in.glb&gt; &lt;out.uorc&gt; [seed]</code> transcodes an authored <a class="cs-term" href="#term-gltf" title="The Khronos Group 3D scene transmission standard. GLB is its single-file binary container.">GLB</a> into a portable four-LOD UORC stream.</li>
+        <li><code>verdant pack-portable-uorc &lt;out.uorc&gt; [seed]</code> and <code>verify-portable-uorc &lt;file.uorc&gt;</code> pack and verify stateless Wasm streams.</li>
+        <li><code>verdant pack-scene &lt;out.glb&gt;</code>, <code>validate-glb</code>, <code>validate-wgsl</code>, <code>snapshot-verify</code>, and <code>benchmark</code> validate assets in CI.</li>
       </ul>
     
-      <details class="cs-terms" id="words"><summary>Words on this page <span>1</span></summary><dl><dt id="term-world-snapshot">world snapshot</dt><dd>A deterministic binary save of tick count, streaming LOD rank, and entity transforms protected by a 32-byte SHA-256 digest.</dd></dl></details><nav class="dc-pager" aria-label="Page sequence">
-        <a href="../../guides/progressive-uorc-streaming/">Previous: Stream high-resolution scenes with UORC</a>
-        <a href="../../explanation/tensor-and-uorc-streaming/">Next: Portable tensor kernels and UORC streaming</a>
+      <details class="cs-terms" id="words"><summary>Words on this page <span>3</span></summary><dl><dt id="term-record">record</dt><dd>One entry in a facet: a component, a threat, a measure or a journey step, with the place in the source it came from.</dd><dt id="term-gltf">glTF</dt><dd>The Khronos Group 3D scene transmission standard. GLB is its single-file binary container.</dd><dt id="term-uorc">UORC</dt><dd>Universal Object Reference Compression: progressive SHA-256 chain-verified multi-frame compression streaming 3D scenes up to lossless resolution.</dd></dl></details><nav class="dc-pager" aria-label="Page sequence">
+        <a href="../../guides/progressive-uorc-streaming/">Previous: Stream zero-decode scenes with UORC</a>
+        <a href="../../explanation/tensor-and-uorc-streaming/">Next: Unified semiring tensor core and UORC streaming</a>
       </nav>
     </main>
   

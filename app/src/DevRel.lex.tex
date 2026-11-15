@@ -147,10 +147,17 @@ definition{
 }
 
 definition{
+  name: sdkVerdantTensor,
+  parameters: [],
+  result: SdkArtifactSpec,
+  body: (record SdkArtifactSpec {index := (Subsystems::sSix), runnable := true, name := "VerdantTensorCore", text := "Pure no_std semiring tensor-logic substrate crate crates/verdant-tensor/Cargo.toml hosting linear, tropical, audio-ring, and zero-decode uor-matmul contractions."})
+}
+
+definition{
   name: sdkArtifacts,
   parameters: [],
   result: (List SdkArtifactSpec),
-  body: (cons (sdkExampleTensorUorc) (cons (sdkExampleCustomArena) (cons (sdkExampleHeadlessBenchmark) (cons (sdkStarterTemplate) (cons (sdkVerdantWasm) (cons (sdkVerdantCli) (nil SdkArtifactSpec)))))))
+  body: (cons (sdkExampleTensorUorc) (cons (sdkExampleCustomArena) (cons (sdkExampleHeadlessBenchmark) (cons (sdkStarterTemplate) (cons (sdkVerdantWasm) (cons (sdkVerdantCli) (cons (sdkVerdantTensor) (nil SdkArtifactSpec))))))))
 }
 
 definition{
@@ -203,10 +210,24 @@ definition{
 }
 
 definition{
+  name: controlUorcStream,
+  parameters: [],
+  result: StudioControlSpec,
+  body: (record StudioControlSpec {index := (Subsystems::sSeven), minTargetCssPx := (Subsystems::sFortyFour), keyboardOperable := true, name := "ve-uorc-btn", text := "Decodes the progressive multi-LOD UORC scene stream natively in WebAssembly via uorc_decompress and runs zero-decode coded_gemm contractions."})
+}
+
+definition{
+  name: controlVisualInspector,
+  parameters: [],
+  result: StudioControlSpec,
+  body: (record StudioControlSpec {index := (Subsystems::sEight), minTargetCssPx := (Subsystems::sFortyFour), keyboardOperable := true, name := "ve-viz-btn", text := "Opens the interactive four-tab Engine Architecture, Semiring Matrix, Zero-Decode UORC, and Rollback Visual Inspector modal."})
+}
+
+definition{
   name: studioControls,
   parameters: [],
   result: (List StudioControlSpec),
-  body: (cons (controlLodScrubber) (cons (controlSimulationMode) (cons (controlCameraMode) (cons (controlSpatialAudio) (cons (controlGlbExport) (cons (controlSnapshotShare) (cons (controlDocsNavigation) (nil StudioControlSpec))))))))
+  body: (cons (controlLodScrubber) (cons (controlSimulationMode) (cons (controlCameraMode) (cons (controlSpatialAudio) (cons (controlGlbExport) (cons (controlSnapshotShare) (cons (controlDocsNavigation) (cons (controlUorcStream) (cons (controlVisualInspector) (nil StudioControlSpec))))))))))
 }
 
 definition{
@@ -249,7 +270,7 @@ definition{
 theorem{
   name: devRelCatalogComplete,
   parameters: [],
-  statement: ((if ((docsValid 0 (docPages)) && ((sdkValid 0 (sdkArtifacts)) && (studioControlsAccessible))) then (if (((project (docLanding) index) =? 0) && (((project (docFirstScene) index) =? 1) && (((project (docCustomGame) index) =? (Subsystems::sTwo)) && (((project (docAssetPipeline) index) =? (Subsystems::sThree)) && (((project (docArchitecture) index) =? (Subsystems::sFour)) && ((project (docApiReference) index) =? (Subsystems::sFive))))))) then (if (((project (sdkExampleTensorUorc) index) =? 0) && (((project (sdkExampleCustomArena) index) =? 1) && (((project (sdkExampleHeadlessBenchmark) index) =? (Subsystems::sTwo)) && (((project (sdkStarterTemplate) index) =? (Subsystems::sThree)) && (((project (sdkVerdantWasm) index) =? (Subsystems::sFour)) && ((project (sdkVerdantCli) index) =? (Subsystems::sFive))))))) then (((project (controlLodScrubber) index) =? 0) && (((project (controlSimulationMode) index) =? 1) && (((project (controlCameraMode) index) =? (Subsystems::sTwo)) && (((project (controlSpatialAudio) index) =? (Subsystems::sThree)) && (((project (controlGlbExport) index) =? (Subsystems::sFour)) && (((project (controlSnapshotShare) index) =? (Subsystems::sFive)) && ((project (controlDocsNavigation) index) =? (Subsystems::sSix)))))))) else false) else false) else false) = true),
+  statement: ((if ((docsValid 0 (docPages)) && ((sdkValid 0 (sdkArtifacts)) && (studioControlsAccessible))) then (if (((project (docLanding) index) =? 0) && (((project (docFirstScene) index) =? 1) && (((project (docCustomGame) index) =? (Subsystems::sTwo)) && (((project (docAssetPipeline) index) =? (Subsystems::sThree)) && (((project (docArchitecture) index) =? (Subsystems::sFour)) && ((project (docApiReference) index) =? (Subsystems::sFive))))))) then (if (((project (sdkExampleTensorUorc) index) =? 0) && (((project (sdkExampleCustomArena) index) =? 1) && (((project (sdkExampleHeadlessBenchmark) index) =? (Subsystems::sTwo)) && (((project (sdkStarterTemplate) index) =? (Subsystems::sThree)) && (((project (sdkVerdantWasm) index) =? (Subsystems::sFour)) && (((project (sdkVerdantCli) index) =? (Subsystems::sFive)) && ((project (sdkVerdantTensor) index) =? (Subsystems::sSix)))))))) then (((project (controlLodScrubber) index) =? 0) && (((project (controlSimulationMode) index) =? 1) && (((project (controlCameraMode) index) =? (Subsystems::sTwo)) && (((project (controlSpatialAudio) index) =? (Subsystems::sThree)) && (((project (controlGlbExport) index) =? (Subsystems::sFour)) && (((project (controlSnapshotShare) index) =? (Subsystems::sFive)) && (((project (controlDocsNavigation) index) =? (Subsystems::sSix)) && (((project (controlUorcStream) index) =? (Subsystems::sSeven)) && ((project (controlVisualInspector) index) =? (Subsystems::sEight)))))))))) else false) else false) else false) = true),
   proof: decide{},
   axioms: []
 }

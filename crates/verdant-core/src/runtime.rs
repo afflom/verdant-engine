@@ -9,6 +9,7 @@ use sha2::{Digest, Sha256};
 use crate::ecs::{EntityId, EntityRecord, EntityRole, SceneWorld, Transform};
 use crate::error::{EngineConfigError, SnapshotCodecError};
 use crate::math::{Aabb, Quat, Vec3, DIM_HOMOGENEOUS};
+use crate::physics::PhysicsWorld;
 use crate::prism_kernel;
 use crate::streaming::{
     LodLevel, PhysicalEnvironment, SceneBuildParams, SceneNodeInstance, SceneNodeKind,
@@ -837,5 +838,338 @@ impl WorldSnapshot {
         }
 
         decode_scene_payload(payload)
+    }
+}
+
+/// Quantized per-frame player input command for deterministic lockstep, replay, and rollback netcode.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct FrameInputCommand {
+    /// Strictly advancing simulation frame index.
+    pub frame_index: u64,
+    /// Player slot identifier (`0..=255`).
+    pub player_slot: u8,
+    /// Forward wish input in milli-units (`-1000..=1000`).
+    pub move_fwd_milli: i32,
+    /// Strafe wish input in milli-units (`-1000..=1000`).
+    pub move_strafe_milli: i32,
+    /// Heading yaw angle in milli-radians.
+    pub yaw_milli: i32,
+    /// Bitmask of discrete action triggers (`jump`, `interact`, `throttle`, `brake`).
+    pub action_mask: u32,
+}
+
+impl FrameInputCommand {
+    /// Converts quantized milli-inputs into a world-space horizontal wish vector.
+    #[must_use]
+    pub fn wish_direction(&self) -> Vec3 {
+        let scale = prism_kernel::skinWeightScale().unwrap_or(1) as f64;
+        let fwd = f64::from(self.move_fwd_milli) / scale;
+        let strafe = f64::from(self.move_strafe_milli) / scale;
+        let yaw = f64::from(self.yaw_milli) / scale;
+        Vec3::new(
+            yaw.sin() * fwd - yaw.cos() * strafe,
+            0.0,
+            yaw.cos() * fwd + yaw.sin() * strafe,
+        )
+    }
+
+    fn feed_sha256(&self, hasher: &mut Sha256) {
+        hasher.update(self.frame_index.to_le_bytes());
+        hasher.update([self.player_slot]);
+        hasher.update(self.move_fwd_milli.to_le_bytes());
+        hasher.update(self.move_strafe_milli.to_le_bytes());
+        hasher.update(self.yaw_milli.to_le_bytes());
+        hasher.update(self.action_mask.to_le_bytes());
+    }
+}
+
+/// SHA-256-chained frame-indexed input log guarded by `prism_kernel::inputJournalSequenceValid`.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct DeterministicInputJournal {
+    commands: Vec<FrameInputCommand>,
+    chain_digest: Vec<u8>,
+}
+
+impl Default for DeterministicInputJournal {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl DeterministicInputJournal {
+    /// Creates an empty deterministic input journal with a zero-initialized SHA-256 chain seed.
+    #[must_use]
+    pub fn new() -> Self {
+        let digest_len = prism_kernel::snapshotSha256Bytes().unwrap_or(1) as usize;
+        Self {
+            commands: Vec::new(),
+            chain_digest: vec![0_u8; digest_len],
+        }
+    }
+
+    /// Appends `cmd` if `prism_kernel::inputJournalSequenceValid` certifies strict frame progression.
+    pub fn append(&mut self, cmd: FrameInputCommand) -> Result<(), SnapshotCodecError> {
+        let is_first = self.commands.is_empty();
+        let prev_frame = self.commands.last().map_or(0, |c| c.frame_index);
+        if !prism_kernel::inputJournalSequenceValid(prev_frame, cmd.frame_index, is_first) {
+            return Err(SnapshotCodecError::MalformedStatePayload {
+                detail: format!(
+                    "non-increasing input journal frame {} after frame {prev_frame}",
+                    cmd.frame_index
+                ),
+            });
+        }
+        let mut hasher = Sha256::new();
+        hasher.update(&self.chain_digest);
+        cmd.feed_sha256(&mut hasher);
+        self.chain_digest = hasher.finalize().to_vec();
+        self.commands.push(cmd);
+        Ok(())
+    }
+
+    /// Ordered slice of recorded input commands.
+    #[must_use]
+    pub fn commands(&self) -> &[FrameInputCommand] {
+        &self.commands
+    }
+
+    /// Current 32-byte chained SHA-256 digest over all recorded commands.
+    #[must_use]
+    pub fn chain_digest_bytes(&self) -> &[u8] {
+        &self.chain_digest
+    }
+
+    /// Lowercase hexadecimal representation of [`Self::chain_digest_bytes`].
+    #[must_use]
+    pub fn chain_digest_hex(&self) -> String {
+        bytes_to_hex(&self.chain_digest)
+    }
+
+    fn recompute_chain_digest(&mut self) {
+        let digest_len = prism_kernel::snapshotSha256Bytes().unwrap_or(1) as usize;
+        let mut digest = vec![0_u8; digest_len];
+        for cmd in &self.commands {
+            let mut hasher = Sha256::new();
+            hasher.update(&digest);
+            cmd.feed_sha256(&mut hasher);
+            digest = hasher.finalize().to_vec();
+        }
+        self.chain_digest = digest;
+    }
+}
+
+/// Ring-buffered deterministic rollback & resimulation session bounded by `prism_kernel::rollbackMaxWindowFrames()`.
+#[derive(Clone, Debug)]
+pub struct RollbackSession {
+    /// Live deterministic physics world at `current_frame`.
+    pub physics: PhysicsWorld,
+    /// Fixed deterministic simulation timestep in seconds.
+    pub dt_seconds: f64,
+    /// Current simulated frame index.
+    pub current_frame: u64,
+    /// Verified frame-indexed input journal.
+    pub journal: DeterministicInputJournal,
+    history: VecDeque<(u64, PhysicsWorld)>,
+}
+
+impl RollbackSession {
+    /// Initializes a rollback session at frame `0` with fixed `dt_seconds`.
+    #[must_use]
+    pub fn new(physics: PhysicsWorld, dt_seconds: f64) -> Self {
+        Self {
+            physics,
+            dt_seconds,
+            current_frame: 0,
+            journal: DeterministicInputJournal::new(),
+            history: VecDeque::new(),
+        }
+    }
+
+    /// Maximum rollback window in frames (`64`) derived from `prism_kernel::rollbackMaxWindowFrames()`.
+    #[must_use]
+    pub fn max_window_frames() -> usize {
+        prism_kernel::rollbackMaxWindowFrames().unwrap_or(1) as usize
+    }
+
+    /// Records `cmd` at `self.current_frame`, snapshots pre-step `PhysicsWorld` into the bounded
+    /// history ring, and steps simulation deterministically by `self.dt_seconds`.
+    pub fn advance_frame(&mut self, mut cmd: FrameInputCommand) -> Result<(), SnapshotCodecError> {
+        cmd.frame_index = self.current_frame;
+        self.journal.append(cmd)?;
+        let cap = Self::max_window_frames();
+        if self.history.len() >= cap {
+            self.history.pop_front();
+        }
+        self.history
+            .push_back((self.current_frame, self.physics.clone()));
+        self.physics
+            .step(self.dt_seconds, cmd.wish_direction())
+            .map_err(|err| SnapshotCodecError::MalformedStatePayload {
+                detail: err.to_string(),
+            })?;
+        self.current_frame += 1;
+        Ok(())
+    }
+
+    /// Rolls back to `corrected_cmd.frame_index` (verified by `prism_kernel::rollbackFrameWithinWindow`),
+    /// replaces that frame's command in the journal, and resimulates forward to `self.current_frame`,
+    /// returning the count of resimulated frames.
+    pub fn rollback_and_resimulate(
+        &mut self,
+        corrected_cmd: FrameInputCommand,
+    ) -> Result<usize, SnapshotCodecError> {
+        if self.current_frame == 0 || corrected_cmd.frame_index >= self.current_frame {
+            return Err(SnapshotCodecError::MalformedStatePayload {
+                detail: format!(
+                    "rollback target frame {} is not behind current frame {}",
+                    corrected_cmd.frame_index, self.current_frame
+                ),
+            });
+        }
+        let last_stepped = self.current_frame - 1;
+        let within_window =
+            prism_kernel::rollbackFrameWithinWindow(last_stepped, corrected_cmd.frame_index)
+                .unwrap_or(false);
+        if !within_window {
+            return Err(SnapshotCodecError::MalformedStatePayload {
+                detail: format!(
+                    "rollback target frame {} outside {}-frame window from {last_stepped}",
+                    corrected_cmd.frame_index,
+                    Self::max_window_frames()
+                ),
+            });
+        }
+
+        let hist_pos = self
+            .history
+            .iter()
+            .position(|(f, _)| *f == corrected_cmd.frame_index)
+            .ok_or_else(|| SnapshotCodecError::MalformedStatePayload {
+                detail: format!(
+                    "frame {} not present in rollback ring buffer",
+                    corrected_cmd.frame_index
+                ),
+            })?;
+
+        let cmd_pos = self
+            .journal
+            .commands
+            .iter()
+            .position(|c| c.frame_index == corrected_cmd.frame_index)
+            .ok_or_else(|| SnapshotCodecError::MalformedStatePayload {
+                detail: format!(
+                    "frame {} missing from deterministic input journal",
+                    corrected_cmd.frame_index
+                ),
+            })?;
+
+        self.journal.commands[cmd_pos] = corrected_cmd;
+        self.journal.recompute_chain_digest();
+
+        let restored_physics = self.history[hist_pos].1.clone();
+        self.history.truncate(hist_pos);
+        self.physics = restored_physics;
+
+        let replay_cmds: Vec<FrameInputCommand> = self.journal.commands[cmd_pos..].to_vec();
+        for step_cmd in &replay_cmds {
+            let cap = Self::max_window_frames();
+            if self.history.len() >= cap {
+                self.history.pop_front();
+            }
+            self.history
+                .push_back((step_cmd.frame_index, self.physics.clone()));
+            self.physics
+                .step(self.dt_seconds, step_cmd.wish_direction())
+                .map_err(|err| SnapshotCodecError::MalformedStatePayload {
+                    detail: err.to_string(),
+                })?;
+        }
+
+        Ok(replay_cmds.len())
+    }
+}
+
+/// Stateless XOR-residual `UORC-SHA256-CHAIN-v1` delta snapshot codec between two `StandardSceneState`s.
+pub struct DeltaUorcSnapshot;
+
+impl DeltaUorcSnapshot {
+    /// Encodes the bytewise XOR residual from `base` to `next` into a stateless `UORC-SHA256-CHAIN-v1`
+    /// archive ready for low-bandwidth rollback/network state synchronization.
+    #[cfg(feature = "uorc-streaming")]
+    pub fn encode_delta(
+        base: &StandardSceneState,
+        next: &StandardSceneState,
+    ) -> Result<Vec<u8>, SnapshotCodecError> {
+        let base_wire = WorldSnapshot::encode(base)?;
+        let next_wire = WorldSnapshot::encode(next)?;
+        let residual: Vec<u8> = next_wire
+            .iter()
+            .enumerate()
+            .map(|(i, &b)| b ^ base_wire.get(i).copied().unwrap_or(0))
+            .collect();
+
+        let max_strats = if cfg!(debug_assertions) {
+            1
+        } else {
+            prism_kernel::sEight().unwrap_or(1) as usize
+        };
+        let mut strategies = Vec::new();
+        for pair in &uorc::portfolio::V04_PAIR {
+            for strat in pair {
+                if strat.state == 0
+                    && !strat.x86
+                    && strategies.len() < max_strats
+                    && !strategies.contains(&Some(*strat))
+                {
+                    strategies.push(Some(*strat));
+                }
+            }
+        }
+        Ok(uorc::compress_with_strategies(
+            &residual,
+            &[residual.len() as u64],
+            &[],
+            &strategies,
+        ))
+    }
+
+    /// Decompresses `delta_uorc` via `uorc_decompress::run`, reconstructs the target `VDNT` wire
+    /// against `base`, and verifies its SHA-256 trailer via [`WorldSnapshot::decode`].
+    #[cfg(feature = "uorc-wasm-decode")]
+    pub fn decode_delta(
+        base: &StandardSceneState,
+        delta_uorc: &[u8],
+    ) -> Result<StandardSceneState, SnapshotCodecError> {
+        if delta_uorc.is_empty() {
+            return Err(SnapshotCodecError::TruncatedSnapshot { byte_len: 0 });
+        }
+        let base_wire = WorldSnapshot::encode(base)?;
+        let shift = prism_kernel::uorcDefaultDecodeWork().unwrap_or(1) as u32;
+        let work = 1_u64 << shift;
+        let residual = match uorc_decompress::run(
+            uorc_decompress::Bytes::lit(delta_uorc),
+            uorc_decompress::List::nil(),
+            uorc_decompress::List::nil(),
+            work,
+        ) {
+            Ok(Some(out)) => out.octets().to_vec(),
+            Ok(None) => {
+                return Err(SnapshotCodecError::MalformedStatePayload {
+                    detail: "uorc_decompress::run rejected delta snapshot seal or work budget"
+                        .to_string(),
+                });
+            }
+            Err(_) => {
+                return Err(SnapshotCodecError::MalformedStatePayload {
+                    detail: "uorc_decompress::run overflow on delta snapshot".to_string(),
+                });
+            }
+        };
+        let next_wire: Vec<u8> = residual
+            .iter()
+            .enumerate()
+            .map(|(i, &r)| r ^ base_wire.get(i).copied().unwrap_or(0))
+            .collect();
+        WorldSnapshot::decode(&next_wire)
     }
 }

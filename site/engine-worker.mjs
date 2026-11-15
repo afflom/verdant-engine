@@ -20,16 +20,18 @@ import {
 } from "./scene-renderer.mjs";
 
 const wasmUrl = new URL("./verdant-wasm.wasm", import.meta.url);
+const uorcWasmUrl = new URL("./verdant-uorc.wasm", import.meta.url);
+const uorcStreamUrl = new URL("./scene-stream.uorc", import.meta.url);
 
-async function instantiateVerdantWasm() {
-  const response = await fetch(wasmUrl);
-  if (!response.ok) throw new Error(`verdant-wasm HTTP ${response.status}`);
+async function instantiateWasmModule(targetUrl) {
+  const response = await fetch(targetUrl);
+  if (!response.ok) throw new Error(`wasm HTTP ${response.status}`);
   if (typeof WebAssembly.instantiateStreaming === "function") {
     try {
       const { instance } = await WebAssembly.instantiateStreaming(response, {});
       return instance.exports;
     } catch {
-      const fallbackResp = await fetch(wasmUrl);
+      const fallbackResp = await fetch(targetUrl);
       const buf = await fallbackResp.arrayBuffer();
       const { instance } = await WebAssembly.instantiate(buf, {});
       return instance.exports;
@@ -38,6 +40,29 @@ async function instantiateVerdantWasm() {
   const buf = await response.arrayBuffer();
   const { instance } = await WebAssembly.instantiate(buf, {});
   return instance.exports;
+}
+
+async function instantiateVerdantWasm() {
+  return instantiateWasmModule(wasmUrl);
+}
+
+let uorcRuntimePromise = null;
+function getUorcDecoderRuntime() {
+  uorcRuntimePromise ??= Promise.all([
+    instantiateWasmModule(uorcWasmUrl).then((ex) => {
+      const seed =
+        typeof ex.verdant_wasm_default_seed === "function"
+          ? ex.verdant_wasm_default_seed()
+          : BigInt(PRISM_DEFAULT_WORLD_SEED);
+      ex.verdant_wasm_init(seed);
+      return ex;
+    }),
+    fetch(uorcStreamUrl).then(async (resp) => {
+      if (!resp.ok) throw new Error(`scene-stream.uorc HTTP ${resp.status}`);
+      return new Uint8Array(await resp.arrayBuffer());
+    }),
+  ]).then(([uorcEx, streamBytes]) => ({ uorcEx, streamBytes }));
+  return uorcRuntimePromise;
 }
 
 let ringCapacity = PRISM_WORKER_RING_CAPACITY;
@@ -141,7 +166,14 @@ self.onmessage = async ({ data: msg }) => {
         backend: renderer?.backend ?? "headless",
         isSoftware: Boolean(renderer?.isSoftware),
         walkablePolys: wasm.verdant_wasm_navmesh_polygon_count() >>> 0,
-        tensorKernels: wasm.verdant_wasm_tensor_kernel_count() >>> 0,
+        tensorKernels:
+          (typeof wasm.verdant_wasm_unified_tensor_kernel_count === "function"
+            ? wasm.verdant_wasm_unified_tensor_kernel_count()
+            : wasm.verdant_wasm_tensor_kernel_count()) >>> 0,
+        codedTiers:
+          typeof wasm.verdant_wasm_coded_tier_count === "function"
+            ? wasm.verdant_wasm_coded_tier_count() >>> 0
+            : 3,
         tris: stats?.tris ?? Math.round((staticMesh?.idx.length ?? 0) / 3),
       });
       return;
@@ -257,6 +289,53 @@ self.onmessage = async ({ data: msg }) => {
         lodRank,
         seed,
         byteLen: raw.byteLength,
+      });
+      return;
+    }
+
+    if (msg.kind === "stream-uorc") {
+      const targetRank = Math.max(0, Math.min(3, msg.targetRank | 0)) >>> 0;
+      const { uorcEx, streamBytes } = await getUorcDecoderRuntime();
+      uorcEx.verdant_wasm_io_clear();
+      for (let i = 0; i < streamBytes.byteLength; i++) {
+        uorcEx.verdant_wasm_io_push_byte(streamBytes[i]);
+      }
+      const decodedOk = uorcEx.verdant_wasm_uorc_decode_and_restore(targetRank) === 1;
+      if (!decodedOk) {
+        self.postMessage({ kind: "uorc-streamed", id: msg.id, ok: false });
+        return;
+      }
+      const snapLen = uorcEx.verdant_wasm_io_len() >>> 0;
+      const snapBytes = new Uint8Array(snapLen);
+      for (let i = 0; i < snapLen; i++) {
+        snapBytes[i] = uorcEx.verdant_wasm_io_get_byte(i) & 0xff;
+      }
+      const codedChecksum =
+        typeof uorcEx.verdant_wasm_coded_zero_decode_checksum === "function"
+          ? Number(uorcEx.verdant_wasm_coded_zero_decode_checksum(targetRank))
+          : 0;
+
+      wasm.verdant_wasm_io_clear();
+      for (let i = 0; i < snapBytes.byteLength; i++) {
+        wasm.verdant_wasm_io_push_byte(snapBytes[i]);
+      }
+      const restoredOk = wasm.verdant_wasm_snapshot_decode_and_restore() === 1;
+      if (msg.lod) {
+        currentLod = msg.lod;
+        staticMesh = buildStaticWorld(currentLod, terrainGrid);
+        renderer?.uploadStatic(staticMesh);
+        if (msg.eye && msg.lookTarget) {
+          drawScene(msg.eye, msg.lookTarget, currentLod, msg.simClockSec || 0);
+        }
+      }
+      self.postMessage({
+        kind: "uorc-streamed",
+        id: msg.id,
+        ok: restoredOk,
+        lodRank: wasm.verdant_wasm_active_lod_rank() >>> 0,
+        streamBytes: streamBytes.byteLength,
+        snapshotBytes: snapBytes.byteLength,
+        codedChecksum,
       });
     }
   } catch (err) {

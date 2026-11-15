@@ -2,7 +2,7 @@
         <canvas id="ve-canvas" aria-label="Verdant Engine interactive 3D studio viewport"></canvas>
         <div class="ve-hud" aria-hidden="true">
           <span id="ve-hud-lod" class="ve-pill">LOD3 · Lossless UORC (1.00)</span>
-          <span id="ve-hud-stats" class="ve-pill">60 fps · 7 tensor kernels · mover active</span>
+          <span id="ve-hud-stats" class="ve-pill">60 fps · 9 tensor kernels · zero-decode</span>
         </div>
       </div>
       <div class="result" id="game-status" data-slot="result" aria-live="polite">
@@ -10,11 +10,13 @@
       </div>
       <div class="controls" data-slot="actions" data-label="Engine Studio">
         <button id="ve-lod-btn" class="primary" type="button" title="Cycle progressive UORC streaming level of detail from LOD0 proxy to lossless LOD3">LOD: LOD3</button>
-        <button id="ve-sim-btn" type="button" aria-pressed="false" title="Toggle continuous 60fps orbital and kinematic spline mover simulation">Sim: Step</button>
+        <button id="ve-uorc-btn" type="button" title="Decode progressive .uorc stream natively in WebAssembly via uorc_decompress and coded_gemm">.uorc</button>
+        <button id="ve-viz-btn" type="button" title="Open interactive semiring tensor, UORC zero-decode, XPBD physics, and 60fps pipeline visuals">Visuals</button>
+        <button id="ve-sim-btn" type="button" aria-pressed="false" title="Toggle continuous 60fps XPBD joints, 4-wheel suspension vehicle, and spline mover simulation">Sim: Step</button>
         <button id="ve-cam-btn" type="button" title="Switch between Orbit camera and First-Person WASD walk">Cam: Orbit</button>
-        <button id="ve-audio-btn" type="button" aria-pressed="false" title="Toggle spatialized modal bar harmonics and room reverberation WebAudio">Audio: Off</button>
-        <button id="ve-glb-btn" type="button" title="Export active 3D scene as binary glTF 2.0 (.glb)">Export .glb</button>
-        <button id="ve-snap-btn" type="button" title="Capture deterministic VDNT binary world snapshot and copy shareable #vdnt= URL">Snapshot</button>
+        <button id="ve-audio-btn" type="button" aria-pressed="false" title="Toggle spatialized modal bar harmonics, BVH ray occlusion, and Hadamard FDN reverb">Audio: Off</button>
+        <button id="ve-glb-btn" type="button" title="Export active 3D scene as binary glTF 2.0 (.glb)">.glb</button>
+        <button id="ve-snap-btn" type="button" title="Capture deterministic VDNT binary world snapshot and copy shareable #vdnt= URL">Snap</button>
         <a id="ve-docs-link" class="ghost" href="./docs/">Docs</a>
       </div>
-      <ol id="ve-telemetry" data-slot="history" data-label="Tensor Kernels &amp; Scene Nodes"></ol>
+      <ol id="ve-telemetry" data-slot="history" data-label="Semiring Kernels &amp; Scene Nodes"></ol>

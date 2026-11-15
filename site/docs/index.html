@@ -9,79 +9,195 @@
     <title>Verdant Engine documentation — Verdant Engine</title>
     <style>
   :root {
-    --fd-bg: #151312;
-    --fd-fg: #f4f2ee;
-    --fd-muted: #b5ada4;
-    --fd-card: #1e1b19;
-    --fd-border: rgba(244, 242, 238, 0.14);
-    --fd-accent: #6ec49c;
+    color-scheme: dark;
+    --fd-bg: 208 32% 7%;
+    --fd-panel: 208 26% 12%;
+    --fd-fg: 196 36% 96%;
+    --fd-dim: 204 22% 77%;
+    --fd-line: 204 24% 25%;
+    --fd-line-strong: 168 48% 52%;
+    --fd-accent: 160 72% 66%;
+    --fd-code-bg: 210 30% 10%;
+    --fd-code-fg: 152 76% 78%;
+    --fd-spectrum: linear-gradient(100deg, hsl(356 92% 66%) 0%, hsl(28 95% 60%) 18%, hsl(48 95% 58%) 34%, hsl(154 72% 52%) 52%, hsl(192 90% 56%) 70%, hsl(226 90% 68%) 86%, hsl(282 84% 72%) 100%);
   }
   @media (prefers-color-scheme: light) {
     :root {
-      --fd-bg: #f5f4ef;
-      --fd-fg: #1f1c1a;
-      --fd-muted: #5b534c;
-      --fd-card: #ffffff;
-      --fd-border: rgba(31, 28, 26, 0.14);
-      --fd-accent: #1d6f4e;
+      color-scheme: light;
+      --fd-bg: 48 24% 96%;
+      --fd-panel: 0 0% 100%;
+      --fd-fg: 210 28% 12%;
+      --fd-dim: 210 16% 33%;
+      --fd-line: 210 18% 78%;
+      --fd-line-strong: 164 62% 32%;
+      --fd-accent: 162 76% 24%;
+      --fd-code-bg: 205 25% 93%;
+      --fd-code-fg: 164 78% 20%;
     }
+    .cs-canvas {
+      background: radial-gradient(120% 140% at 0% 0%, hsl(48 30% 99%), hsl(var(--fd-bg))) !important;
+    }
+    .cs-card { fill: hsl(0 0% 100%) !important; }
+    .cs-cell { fill: hsl(200 20% 95%) !important; }
+    .cs-track { fill: hsl(200 18% 89%) !important; }
   }
   * { box-sizing: border-box; }
   body {
     margin: 0;
-    background: var(--fd-bg);
-    color: var(--fd-fg);
-    font-family: system-ui, -apple-system, sans-serif;
-    font-size: 1rem;
-    line-height: 1.6;
+    background: hsl(var(--fd-bg));
+    color: hsl(var(--fd-fg));
+    font-family: "Space Grotesk", system-ui, -apple-system, sans-serif;
+    font-size: 1.03125rem;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+  .ve-nav-wrap {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: hsl(var(--fd-bg) / 0.9);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid hsl(var(--fd-line));
   }
   .ve-nav {
-    max-width: 52rem;
+    max-width: 56rem;
     margin: 0 auto;
-    padding: 1rem 1.25rem;
+    padding: 0.75rem 1.25rem;
     display: flex;
     flex-wrap: wrap;
-    gap: 0.75rem 1.25rem;
-    border-bottom: 1px solid var(--fd-border);
-    font-size: 0.9375rem;
+    align-items: center;
+    gap: 0.5rem 0.625rem;
+    font-size: 0.9rem;
   }
-  .ve-nav a, main a {
-    color: var(--fd-accent);
+  .ve-nav a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.25rem;
+    padding: 0.25rem 0.7rem;
+    border-radius: 999px;
+    border: 1px solid hsl(var(--fd-line));
+    background: hsl(var(--fd-panel));
+    color: hsl(var(--fd-fg));
+    text-decoration: none;
+    font-weight: 500;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .ve-nav a:first-child {
+    border-color: hsl(var(--fd-line-strong));
+    color: hsl(var(--fd-accent));
+    font-weight: 700;
+  }
+  .ve-nav a:hover {
+    border-color: hsl(var(--fd-accent));
+    color: hsl(var(--fd-accent));
+  }
+  main a {
+    color: hsl(var(--fd-accent));
     text-decoration: underline;
-    text-underline-offset: 0.18em;
+    text-underline-offset: 0.2em;
+    font-weight: 500;
+  }
+  main a:hover {
+    color: hsl(var(--fd-fg));
   }
   main {
-    max-width: 52rem;
+    max-width: 56rem;
     margin: 0 auto;
-    padding: 1.75rem 1.25rem 4rem;
+    padding: 2rem 1.25rem 4.5rem;
   }
-  h1 { font-size: 2rem; line-height: 1.2; margin: 0 0 0.75rem; }
-  h2 { font-size: 1.375rem; line-height: 1.3; margin: 2.25rem 0 0.75rem; }
-  h3 { font-size: 1.125rem; line-height: 1.35; margin: 1.5rem 0 0.5rem; }
-  p, li { max-width: 68ch; }
-  code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.9em; }
+  h1 {
+    font-size: clamp(1.85rem, 3.6vw, 2.45rem);
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    margin: 0 0 0.75rem;
+    color: hsl(var(--fd-fg));
+  }
+  h2 {
+    font-size: 1.42rem;
+    line-height: 1.28;
+    margin: 2.4rem 0 0.75rem;
+    padding-bottom: 0.35rem;
+    border-bottom: 1px solid hsl(var(--fd-line));
+    color: hsl(var(--fd-fg));
+  }
+  h3 {
+    font-size: 1.15rem;
+    line-height: 1.35;
+    margin: 1.5rem 0 0.5rem;
+    color: hsl(var(--fd-fg));
+  }
+  p, li { max-width: 70ch; color: hsl(var(--fd-fg)); }
+  li + li { margin-top: 0.35rem; }
+  code, pre {
+    font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.88em;
+  }
+  p code, li code, td code {
+    padding: 0.12rem 0.38rem;
+    border-radius: 0.32rem;
+    background: hsl(var(--fd-code-bg));
+    border: 1px solid hsl(var(--fd-line));
+    color: hsl(var(--fd-code-fg));
+  }
   pre {
-    padding: 0.875rem 1rem;
-    background: var(--fd-card);
-    border: 1px solid var(--fd-border);
-    border-radius: 0.5rem;
+    padding: 1rem 1.125rem;
+    background: hsl(var(--fd-code-bg));
+    color: hsl(var(--fd-fg));
+    border: 1px solid hsl(var(--fd-line));
+    border-radius: 0.75rem;
     overflow-x: auto;
+    line-height: 1.55;
+  }
+  pre code {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
   }
   table {
     width: 100%;
     border-collapse: collapse;
-    margin: 1rem 0;
+    margin: 1.15rem 0;
     font-size: 0.9375rem;
+    background: hsl(var(--fd-panel));
+    border: 1px solid hsl(var(--fd-line));
+    border-radius: 0.75rem;
+    overflow: hidden;
   }
-  th, td {
+  caption {
     text-align: left;
-    padding: 0.5rem 0.625rem;
-    border-bottom: 1px solid var(--fd-border);
+    font-weight: 700;
+    padding: 0.5rem 0.25rem;
+    color: hsl(var(--fd-dim));
+  }
+  th {
+    text-align: left;
+    padding: 0.65rem 0.75rem;
+    background: hsl(var(--fd-code-bg));
+    color: hsl(var(--fd-fg));
+    border-bottom: 1px solid hsl(var(--fd-line-strong));
+    font-weight: 700;
+  }
+  td {
+    text-align: left;
+    padding: 0.6rem 0.75rem;
+    border-bottom: 1px solid hsl(var(--fd-line));
+    color: hsl(var(--fd-fg));
+  }
+  .ve-diagram {
+    margin: 1.75rem 0 2.25rem;
+  }
+  .ve-diagram svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-height: 21rem;
   }
   .dc-pager {
-    margin-top: 2.5rem;
-    padding-top: 1rem;
-    border-top: 1px solid var(--fd-border);
+    margin-top: 2.75rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid hsl(var(--fd-line));
     display: flex;
     flex-wrap: wrap;
     justify-content: space-between;
@@ -90,34 +206,74 @@
 </style>
   <link rel="alternate" type="text/markdown" href="index.md"><link rel="stylesheet" href="content.css"><script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"Verdant Engine documentation","description":"Build fast 3D games and interactive worlds for the web and Rust.","url":"https://afflom.github.io/verdant-engine/docs/","inLanguage":"en","audience":{"@type":"Audience","audienceType":"Game developer","description":"Builds 3D games and interactive worlds on verdant-core with deterministic ECS, rigid-body physics, spatial audio, and starter templates."},"learningResourceType":"explanation","educationalLevel":"discover","isPartOf":{"@type":"WebSite","name":"Verdant Engine","url":"https://afflom.github.io/verdant-engine/"},"publisher":{"@type":"Organization","name":"UOR Foundation","url":"https://uor.foundation/"}}</script></head>
   <body>
-    <nav class="ve-nav" aria-label="Documentation navigation">
-      <a href="../">3D Studio</a>
-      <a href="./">Docs home</a>
-      <a href="./getting-started/">Getting started</a>
-      <a href="./guides/custom-game-world/">Custom world guide</a>
-      <a href="./guides/progressive-uorc-streaming/">UORC streaming</a>
-      <a href="./reference/engine-api/">API reference</a>
-      <a href="./explanation/tensor-and-uorc-streaming/">Tensor architecture</a>
-    </nav>
+    <div class="ve-nav-wrap">
+      <nav class="ve-nav" aria-label="Documentation navigation">
+        <a href="../">3D Studio</a>
+        <a href="./">Docs home</a>
+        <a href="./getting-started/">Getting started</a>
+        <a href="./guides/custom-game-world/">Authoring &amp; GLB</a>
+        <a href="./guides/progressive-uorc-streaming/">UORC streaming</a>
+        <a href="./reference/engine-api/">API reference</a>
+        <a href="./explanation/tensor-and-uorc-streaming/">Tensor core</a>
+      </nav>
+    </div>
     <main>
       <h1>Verdant Engine documentation</h1>
       <p>Build fast 3D games and interactive worlds for the web and Rust.</p><aside class="cs-guide" data-persona="kai" aria-label="Your guide on this page"><svg class="cs-avatar" viewBox="0 0 120 120" width="96" height="96" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="cs-g10" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="hsl(48 95% 70%)"></stop><stop offset="1" stop-color="hsl(48 95% 40%)"></stop></linearGradient></defs><path d="M0 64L32 58" stroke="hsl(0 0% 98%)" stroke-width="2.4" stroke-linecap="round" opacity=".8"></path><path d="M88 58L120 34.0" stroke="hsl(356 95% 66%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 41.0" stroke="hsl(22 95% 58%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 48.0" stroke="hsl(48 95% 56%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 55.0" stroke="hsl(55 92% 54%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 62.0" stroke="hsl(140 70% 48%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 69.0" stroke="hsl(190 90% 54%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 76.0" stroke="hsl(222 92% 64%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 83.0" stroke="hsl(268 88% 70%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 90.0" stroke="hsl(320 85% 68%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><ellipse cx="60" cy="108" rx="30" ry="5" class="cs-g-shadow"></ellipse><path d="M60 14L92 32V76L60 98L28 76V32Z" fill="url(#cs-g10)"></path><path d="M60 14L92 32L60 48L28 32Z" fill="hsl(0 0% 100% / .28)"></path><path d="M60 48L92 32V76L60 98Z" fill="hsl(0 0% 0% / .18)"></path><path d="M60 14L92 32V76L60 98L28 76V32Z" fill="none" stroke="hsl(0 0% 100% / .45)" stroke-width="1.5" stroke-linejoin="round"></path><ellipse cx="49" cy="62" rx="6.5" ry="7.5" fill="hsl(0 0% 99%)"></ellipse><ellipse cx="71" cy="62" rx="6.5" ry="7.5" fill="hsl(0 0% 99%)"></ellipse><circle cx="51" cy="63.5" r="3.4" class="cs-g-dark"></circle><circle cx="73" cy="63.5" r="3.4" class="cs-g-dark"></circle><circle cx="52.2" cy="62" r="1.1" fill="hsl(0 0% 100%)"></circle><circle cx="74.2" cy="62" r="1.1" fill="hsl(0 0% 100%)"></circle><ellipse cx="41" cy="73" rx="4" ry="2.4" fill="hsl(350 90% 75% / .55)"></ellipse><ellipse cx="79" cy="73" rx="4" ry="2.4" fill="hsl(350 90% 75% / .55)"></ellipse><path d="M53 76q7 6 14 0" fill="none" stroke="hsl(0 0% 8%)" stroke-width="2.2" stroke-linecap="round"></path><ellipse cx="47" cy="100" rx="7" ry="3.6" class="cs-g-dark"></ellipse><ellipse cx="73" cy="100" rx="7" ry="3.6" class="cs-g-dark"></ellipse><rect x="37" y="40" width="46" height="13" rx="6.5" class="cs-g-dark"></rect><circle cx="49" cy="46.5" r="4.5" class="cs-g-lens"></circle><circle cx="71" cy="46.5" r="4.5" class="cs-g-lens"></circle><path d="M92 70q8 2 10 8" fill="none" stroke="hsl(48 95% 40%)" stroke-width="4" stroke-linecap="round"></path><g transform="translate(94 76) scale(1.05)" class="cs-g-prop"><rect x="-2" y="-2" width="28" height="28" rx="8" class="cs-g-chip"></rect><g fill="none" stroke="hsl(0 0% 98%)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="3"></rect><path d="m6 10 3 2-3 2M11 15h5"></path></g></g></svg><div class="cs-guide-text"><p class="cs-guide-who"><strong>Kai</strong> <span>Game developer</span></p><p class="cs-guide-says">“What can Verdant Engine build in the browser and in Rust?”</p><p class="cs-guide-how">Start here. Choose your role or jump straight to a tutorial, guide, or API reference.</p></div></aside>
-      <figure class="cs-figure cs-quadrant"><div class="cs-canvas"><svg class="cs-svg cs-any cs-square" viewBox="0 0 520 520" role="img" aria-labelledby="cs-t37 cs-d38" xmlns="http://www.w3.org/2000/svg"><title id="cs-t37">Four ways to read Verdant Engine documentation</title><desc id="cs-d38">Getting started (Hands-on code, Practical steps): Build a 3D scene in five minutes; Custom world guide (Hands-on code, Deep context): Terrain, WGSL shaders, and GLB export; API reference (Study and design, Practical steps): Crates, types, budgets, and snapshots; Tensor architecture (Study and design, Deep context): Exact kernels and progressive UORC</desc><rect x="56" y="56" width="408" height="408" rx="16" class="cs-card"></rect><line x1="260" y1="56" x2="260" y2="464" class="cs-axis"></line><line x1="56" y1="260" x2="464" y2="260" class="cs-axis"></line><text x="158" y="502" text-anchor="middle" class="cs-sub">Study and design</text><text x="362" y="502" text-anchor="middle" class="cs-sub">Hands-on code</text><text transform="translate(22 362) rotate(-90)" text-anchor="middle" class="cs-sub">Practical steps</text><text transform="translate(22 158) rotate(-90)" text-anchor="middle" class="cs-sub">Deep context</text><a href="./getting-started/"><rect x="270" y="270" width="184" height="184" rx="12" class="cs-cell"></rect><rect x="282" y="282" width="28" height="4" rx="2" fill="hsl(356 95% 66%)"></rect><text x="362.0" y="348.0" class="cs-big" text-anchor="middle" dominant-baseline="middle">Getting started</text><text x="362.0" y="384.2" class="cs-sub" text-anchor="middle" dominant-baseline="middle">Build a 3D scene in five</text><text x="362.0" y="399.8" class="cs-sub" text-anchor="middle" dominant-baseline="middle">minutes</text></a><a href="./guides/custom-game-world/"><rect x="270" y="66" width="184" height="184" rx="12" class="cs-cell"></rect><rect x="282" y="78" width="28" height="4" rx="2" fill="hsl(55 92% 54%)"></rect><text x="362.0" y="131.0" class="cs-big" text-anchor="middle" dominant-baseline="middle">Custom world</text><text x="362.0" y="157.0" class="cs-big" text-anchor="middle" dominant-baseline="middle">guide</text><text x="362.0" y="180.2" class="cs-sub" text-anchor="middle" dominant-baseline="middle">Terrain, WGSL shaders,</text><text x="362.0" y="195.8" class="cs-sub" text-anchor="middle" dominant-baseline="middle">and GLB export</text></a><a href="./reference/engine-api/"><rect x="66" y="270" width="184" height="184" rx="12" class="cs-cell"></rect><rect x="78" y="282" width="28" height="4" rx="2" fill="hsl(190 90% 54%)"></rect><text x="158.0" y="348.0" class="cs-big" text-anchor="middle" dominant-baseline="middle">API reference</text><text x="158.0" y="384.2" class="cs-sub" text-anchor="middle" dominant-baseline="middle">Crates, types, budgets,</text><text x="158.0" y="399.8" class="cs-sub" text-anchor="middle" dominant-baseline="middle">and snapshots</text></a><a href="./explanation/tensor-and-uorc-streaming/"><rect x="66" y="66" width="184" height="184" rx="12" class="cs-cell"></rect><rect x="78" y="78" width="28" height="4" rx="2" fill="hsl(320 85% 68%)"></rect><text x="158.0" y="131.0" class="cs-big" text-anchor="middle" dominant-baseline="middle">Tensor</text><text x="158.0" y="157.0" class="cs-big" text-anchor="middle" dominant-baseline="middle">architecture</text><text x="158.0" y="180.2" class="cs-sub" text-anchor="middle" dominant-baseline="middle">Exact kernels and</text><text x="158.0" y="195.8" class="cs-sub" text-anchor="middle" dominant-baseline="middle">progressive UORC</text></a></svg></div><figcaption><strong>Four ways to read Verdant Engine documentation.</strong> Each section serves a distinct engineering goal, from your first 3D scene to the full API reference.</figcaption><details class="cs-data"><summary>The data in this figure</summary><table><thead><tr><th scope="col"></th><th scope="col">Study and design</th><th scope="col">Hands-on code</th></tr></thead><tbody><tr><th scope="row">Deep context</th><td>Tensor architecture</td><td>Custom world guide</td></tr><tr><th scope="row">Practical steps</th><td>API reference</td><td>Getting started</td></tr></tbody></table></details><script type="application/vnd.prism.figure+json">{"kind":"quadrant","title":"Four ways to read Verdant Engine documentation","caption":"Each section serves a distinct engineering goal, from your first 3D scene to the full API reference.","x":["Study and design","Hands-on code"],"y":["Practical steps","Deep context"],"cells":[{"label":"Getting started","sub":"Build a 3D scene in five minutes","x":1,"y":0,"href":"./getting-started/"},{"label":"Custom world guide","sub":"Terrain, WGSL shaders, and GLB export","x":1,"y":1,"href":"./guides/custom-game-world/"},{"label":"API reference","sub":"Crates, types, budgets, and snapshots","x":0,"y":0,"href":"./reference/engine-api/"},{"label":"Tensor architecture","sub":"Exact kernels and progressive UORC","x":0,"y":1,"href":"./explanation/tensor-and-uorc-streaming/"}]}</script></figure>
+      <figure class="cs-figure cs-quadrant"><div class="cs-canvas"><svg class="cs-svg cs-any cs-square" viewBox="0 0 520 520" role="img" aria-labelledby="cs-t37 cs-d38" xmlns="http://www.w3.org/2000/svg"><title id="cs-t37">Four ways to explore Verdant Engine documentation</title><desc id="cs-d38">Getting started (Hands-on code, Practical steps): Run a 3D world in five minutes; Authoring &amp; GLB (Hands-on code, Deep context): Import GLB, XPBD joints, and audio; API reference (Study and design, Practical steps): Crates, rollback, and CLI commands; Tensor architecture (Study and design, Deep context): Semirings and zero-decode UORC</desc><rect x="56" y="56" width="408" height="408" rx="16" class="cs-card"></rect><line x1="260" y1="56" x2="260" y2="464" class="cs-axis"></line><line x1="56" y1="260" x2="464" y2="260" class="cs-axis"></line><text x="158" y="502" text-anchor="middle" class="cs-sub">Study and design</text><text x="362" y="502" text-anchor="middle" class="cs-sub">Hands-on code</text><text transform="translate(22 362) rotate(-90)" text-anchor="middle" class="cs-sub">Practical steps</text><text transform="translate(22 158) rotate(-90)" text-anchor="middle" class="cs-sub">Deep context</text><a href="./getting-started/"><rect x="270" y="270" width="184" height="184" rx="12" class="cs-cell"></rect><rect x="282" y="282" width="28" height="4" rx="2" fill="hsl(356 95% 66%)"></rect><text x="362.0" y="348.0" class="cs-big" text-anchor="middle" dominant-baseline="middle">Getting started</text><text x="362.0" y="384.2" class="cs-sub" text-anchor="middle" dominant-baseline="middle">Run a 3D world in five</text><text x="362.0" y="399.8" class="cs-sub" text-anchor="middle" dominant-baseline="middle">minutes</text></a><a href="./guides/custom-game-world/"><rect x="270" y="66" width="184" height="184" rx="12" class="cs-cell"></rect><rect x="282" y="78" width="28" height="4" rx="2" fill="hsl(55 92% 54%)"></rect><text x="362.0" y="144.0" class="cs-big" text-anchor="middle" dominant-baseline="middle">Authoring &amp; GLB</text><text x="362.0" y="180.2" class="cs-sub" text-anchor="middle" dominant-baseline="middle">Import GLB, XPBD joints,</text><text x="362.0" y="195.8" class="cs-sub" text-anchor="middle" dominant-baseline="middle">and audio</text></a><a href="./reference/engine-api/"><rect x="66" y="270" width="184" height="184" rx="12" class="cs-cell"></rect><rect x="78" y="282" width="28" height="4" rx="2" fill="hsl(190 90% 54%)"></rect><text x="158.0" y="348.0" class="cs-big" text-anchor="middle" dominant-baseline="middle">API reference</text><text x="158.0" y="384.2" class="cs-sub" text-anchor="middle" dominant-baseline="middle">Crates, rollback, and</text><text x="158.0" y="399.8" class="cs-sub" text-anchor="middle" dominant-baseline="middle">CLI commands</text></a><a href="./explanation/tensor-and-uorc-streaming/"><rect x="66" y="66" width="184" height="184" rx="12" class="cs-cell"></rect><rect x="78" y="78" width="28" height="4" rx="2" fill="hsl(320 85% 68%)"></rect><text x="158.0" y="131.0" class="cs-big" text-anchor="middle" dominant-baseline="middle">Tensor</text><text x="158.0" y="157.0" class="cs-big" text-anchor="middle" dominant-baseline="middle">architecture</text><text x="158.0" y="180.2" class="cs-sub" text-anchor="middle" dominant-baseline="middle">Semirings and</text><text x="158.0" y="195.8" class="cs-sub" text-anchor="middle" dominant-baseline="middle">zero-decode UORC</text></a></svg></div><figcaption><strong>Four ways to explore Verdant Engine documentation.</strong> Pick a hands-on tutorial, an authoring guide, the crate API reference, or the semiring tensor architecture.</figcaption><details class="cs-data"><summary>The data in this figure</summary><table><thead><tr><th scope="col"></th><th scope="col">Study and design</th><th scope="col">Hands-on code</th></tr></thead><tbody><tr><th scope="row">Deep context</th><td>Tensor architecture</td><td>Authoring &amp; GLB</td></tr><tr><th scope="row">Practical steps</th><td>API reference</td><td>Getting started</td></tr></tbody></table></details><script type="application/vnd.prism.figure+json">{"kind":"quadrant","title":"Four ways to explore Verdant Engine documentation","caption":"Pick a hands-on tutorial, an authoring guide, the crate API reference, or the semiring tensor architecture.","x":["Study and design","Hands-on code"],"y":["Practical steps","Deep context"],"cells":[{"label":"Getting started","sub":"Run a 3D world in five minutes","x":1,"y":0,"href":"./getting-started/"},{"label":"Authoring & GLB","sub":"Import GLB, XPBD joints, and audio","x":1,"y":1,"href":"./guides/custom-game-world/"},{"label":"API reference","sub":"Crates, rollback, and CLI commands","x":0,"y":0,"href":"./reference/engine-api/"},{"label":"Tensor architecture","sub":"Semirings and zero-decode UORC","x":0,"y":1,"href":"./explanation/tensor-and-uorc-streaming/"}]}</script></figure>
       
       <h2>Choose your path by role</h2>
-      <p>Verdant Engine is a standalone 3D game engine written in Rust for native tools and WebAssembly browsers.</p>
-      <p>Every subsystem in <code>verdant-core</code> speaks standard 3D concepts: <a class="cs-term" href="#term-scene-world" title="The entity-component-system container in verdant-core that stores entities, parent-child transforms, meshes, and PBR materials.">scene worlds</a>, <a class="cs-term" href="#term-bounding-volume-hierarchy" title="A tree of 3D bounding boxes partitioned by surface area so raycasts and camera frustum checks skip distant geometry.">bounding volume hierarchies</a>, rigid bodies, spatial audio, <a class="cs-term" href="#term-wgsl" title="The W3C portable shading language whose modules are parsed and type-checked in Verdant Engine by naga.">WGSL</a> shaders, <a class="cs-term" href="#term-gltf" title="The Khronos Group 3D scene transmission standard. GLB is its single-file binary container.">glTF</a> 2.0, and <a class="cs-term" href="#term-uorc" title="Universal Object Reference Compression: progressive SHA-256 chain-verified multi-frame compression streaming 3D scenes up to lossless resolution.">UORC</a> streaming.</p>
+      <p>Verdant Engine is a universal 3D game engine written in Rust for native tools and WebAssembly browsers.</p>
+      <p>Every pass runs on standard 3D constructs: <a class="cs-term" href="#term-scene-world" title="The entity-component-system container in verdant-core that stores entities, parent-child transforms, meshes, and PBR materials.">scene worlds</a>, <a class="cs-term" href="#term-bounding-volume-hierarchy" title="A tree of 3D bounding boxes partitioned by surface area so raycasts and camera frustum checks skip distant geometry.">bounding volume hierarchies</a>, XPBD physics, spatial audio, <a class="cs-term" href="#term-wgsl" title="The W3C portable shading language whose modules are parsed and type-checked in Verdant Engine by naga.">WGSL</a> shaders, <a class="cs-term" href="#term-gltf" title="The Khronos Group 3D scene transmission standard. GLB is its single-file binary container.">glTF</a> 2.0, and <a class="cs-term" href="#term-uorc" title="Universal Object Reference Compression: progressive SHA-256 chain-verified multi-frame compression streaming 3D scenes up to lossless resolution.">UORC</a> streaming.</p>
       <ul class="cs-cast"><li class="cs-cast-member" data-persona="kai"><a href="getting-started/"><svg class="cs-avatar" viewBox="0 0 120 120" width="88" height="88" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="cs-g5" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="hsl(48 95% 70%)"></stop><stop offset="1" stop-color="hsl(48 95% 40%)"></stop></linearGradient></defs><path d="M0 64L32 58" stroke="hsl(0 0% 98%)" stroke-width="2.4" stroke-linecap="round" opacity=".8"></path><path d="M88 58L120 34.0" stroke="hsl(356 95% 66%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 41.0" stroke="hsl(22 95% 58%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 48.0" stroke="hsl(48 95% 56%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 55.0" stroke="hsl(55 92% 54%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 62.0" stroke="hsl(140 70% 48%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 69.0" stroke="hsl(190 90% 54%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 76.0" stroke="hsl(222 92% 64%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 83.0" stroke="hsl(268 88% 70%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 90.0" stroke="hsl(320 85% 68%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><ellipse cx="60" cy="108" rx="30" ry="5" class="cs-g-shadow"></ellipse><path d="M60 14L92 32V76L60 98L28 76V32Z" fill="url(#cs-g5)"></path><path d="M60 14L92 32L60 48L28 32Z" fill="hsl(0 0% 100% / .28)"></path><path d="M60 48L92 32V76L60 98Z" fill="hsl(0 0% 0% / .18)"></path><path d="M60 14L92 32V76L60 98L28 76V32Z" fill="none" stroke="hsl(0 0% 100% / .45)" stroke-width="1.5" stroke-linejoin="round"></path><ellipse cx="49" cy="62" rx="6.5" ry="7.5" fill="hsl(0 0% 99%)"></ellipse><ellipse cx="71" cy="62" rx="6.5" ry="7.5" fill="hsl(0 0% 99%)"></ellipse><circle cx="51" cy="63.5" r="3.4" class="cs-g-dark"></circle><circle cx="73" cy="63.5" r="3.4" class="cs-g-dark"></circle><circle cx="52.2" cy="62" r="1.1" fill="hsl(0 0% 100%)"></circle><circle cx="74.2" cy="62" r="1.1" fill="hsl(0 0% 100%)"></circle><ellipse cx="41" cy="73" rx="4" ry="2.4" fill="hsl(350 90% 75% / .55)"></ellipse><ellipse cx="79" cy="73" rx="4" ry="2.4" fill="hsl(350 90% 75% / .55)"></ellipse><path d="M53 76q7 6 14 0" fill="none" stroke="hsl(0 0% 8%)" stroke-width="2.2" stroke-linecap="round"></path><ellipse cx="47" cy="100" rx="7" ry="3.6" class="cs-g-dark"></ellipse><ellipse cx="73" cy="100" rx="7" ry="3.6" class="cs-g-dark"></ellipse><rect x="37" y="40" width="46" height="13" rx="6.5" class="cs-g-dark"></rect><circle cx="49" cy="46.5" r="4.5" class="cs-g-lens"></circle><circle cx="71" cy="46.5" r="4.5" class="cs-g-lens"></circle><path d="M92 70q8 2 10 8" fill="none" stroke="hsl(48 95% 40%)" stroke-width="4" stroke-linecap="round"></path><g transform="translate(94 76) scale(1.05)" class="cs-g-prop"><rect x="-2" y="-2" width="28" height="28" rx="8" class="cs-g-chip"></rect><g fill="none" stroke="hsl(0 0% 98%)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="3"></rect><path d="m6 10 3 2-3 2M11 15h5"></path></g></g></svg><strong>Kai</strong><span class="cs-cast-role">Game developer</span><span class="cs-cast-need">A runnable 3D game world with ECS, rigid-body physics, spatial audio, and a starter template.</span></a></li><li class="cs-cast-member" data-persona="iris"><a href="guides/custom-game-world/"><svg class="cs-avatar" viewBox="0 0 120 120" width="88" height="88" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="cs-g6" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="hsl(320 85% 82%)"></stop><stop offset="1" stop-color="hsl(320 85% 52%)"></stop></linearGradient></defs><path d="M0 64L32 58" stroke="hsl(0 0% 98%)" stroke-width="2.4" stroke-linecap="round" opacity=".8"></path><path d="M88 58L120 34.0" stroke="hsl(356 95% 66%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 41.0" stroke="hsl(22 95% 58%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 48.0" stroke="hsl(48 95% 56%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 55.0" stroke="hsl(55 92% 54%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 62.0" stroke="hsl(140 70% 48%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 69.0" stroke="hsl(190 90% 54%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 76.0" stroke="hsl(222 92% 64%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 83.0" stroke="hsl(268 88% 70%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 90.0" stroke="hsl(320 85% 68%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><ellipse cx="60" cy="108" rx="30" ry="5" class="cs-g-shadow"></ellipse><path d="M60 14L92 32V76L60 98L28 76V32Z" fill="url(#cs-g6)"></path><path d="M60 14L92 32L60 48L28 32Z" fill="hsl(0 0% 100% / .28)"></path><path d="M60 48L92 32V76L60 98Z" fill="hsl(0 0% 0% / .18)"></path><path d="M60 14L92 32V76L60 98L28 76V32Z" fill="none" stroke="hsl(0 0% 100% / .45)" stroke-width="1.5" stroke-linejoin="round"></path><ellipse cx="49" cy="62" rx="6.5" ry="7.5" fill="hsl(0 0% 99%)"></ellipse><ellipse cx="71" cy="62" rx="6.5" ry="7.5" fill="hsl(0 0% 99%)"></ellipse><circle cx="51" cy="63.5" r="3.4" class="cs-g-dark"></circle><circle cx="73" cy="63.5" r="3.4" class="cs-g-dark"></circle><circle cx="52.2" cy="62" r="1.1" fill="hsl(0 0% 100%)"></circle><circle cx="74.2" cy="62" r="1.1" fill="hsl(0 0% 100%)"></circle><ellipse cx="41" cy="73" rx="4" ry="2.4" fill="hsl(350 90% 75% / .55)"></ellipse><ellipse cx="79" cy="73" rx="4" ry="2.4" fill="hsl(350 90% 75% / .55)"></ellipse><path d="M53 76q7 6 14 0" fill="none" stroke="hsl(0 0% 8%)" stroke-width="2.2" stroke-linecap="round"></path><ellipse cx="47" cy="100" rx="7" ry="3.6" class="cs-g-dark"></ellipse><ellipse cx="73" cy="100" rx="7" ry="3.6" class="cs-g-dark"></ellipse><path d="M90 14l2.5 6 6 2.5-6 2.5-2.5 6-2.5-6-6-2.5 6-2.5z" class="cs-g-spark"></path><path d="M24 20l1.5 3.5 3.5 1.5-3.5 1.5-1.5 3.5-1.5-3.5-3.5-1.5 3.5-1.5z" class="cs-g-spark"></path><path d="M92 70q8 2 10 8" fill="none" stroke="hsl(320 85% 52%)" stroke-width="4" stroke-linecap="round"></path><g transform="translate(94 76) scale(1.05)" class="cs-g-prop"><rect x="-2" y="-2" width="28" height="28" rx="8" class="cs-g-chip"></rect><g fill="none" stroke="hsl(0 0% 98%)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="m15.5 8.5-2 5-5 2 2-5z"></path></g></g></svg><strong>Iris</strong><span class="cs-cast-role">Technical artist</span><span class="cs-cast-need">Procedural terrain, skeletal rigs, validated portable WGSL shaders, progressive UORC streams, and binary glTF 2.0 exports.</span></a></li><li class="cs-cast-member" data-persona="otto"><a href="reference/engine-api/"><svg class="cs-avatar" viewBox="0 0 120 120" width="88" height="88" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="cs-g7" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="hsl(222 92% 78%)"></stop><stop offset="1" stop-color="hsl(222 92% 48%)"></stop></linearGradient></defs><path d="M0 64L32 58" stroke="hsl(0 0% 98%)" stroke-width="2.4" stroke-linecap="round" opacity=".8"></path><path d="M88 58L120 34.0" stroke="hsl(356 95% 66%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 41.0" stroke="hsl(22 95% 58%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 48.0" stroke="hsl(48 95% 56%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 55.0" stroke="hsl(55 92% 54%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 62.0" stroke="hsl(140 70% 48%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 69.0" stroke="hsl(190 90% 54%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 76.0" stroke="hsl(222 92% 64%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 83.0" stroke="hsl(268 88% 70%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 90.0" stroke="hsl(320 85% 68%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><ellipse cx="60" cy="108" rx="30" ry="5" class="cs-g-shadow"></ellipse><path d="M60 14L92 32V76L60 98L28 76V32Z" fill="url(#cs-g7)"></path><path d="M60 14L92 32L60 48L28 32Z" fill="hsl(0 0% 100% / .28)"></path><path d="M60 48L92 32V76L60 98Z" fill="hsl(0 0% 0% / .18)"></path><path d="M60 14L92 32V76L60 98L28 76V32Z" fill="none" stroke="hsl(0 0% 100% / .45)" stroke-width="1.5" stroke-linejoin="round"></path><ellipse cx="49" cy="62" rx="6.5" ry="7.5" fill="hsl(0 0% 99%)"></ellipse><ellipse cx="71" cy="62" rx="6.5" ry="7.5" fill="hsl(0 0% 99%)"></ellipse><circle cx="51" cy="63.5" r="3.4" class="cs-g-dark"></circle><circle cx="73" cy="63.5" r="3.4" class="cs-g-dark"></circle><circle cx="52.2" cy="62" r="1.1" fill="hsl(0 0% 100%)"></circle><circle cx="74.2" cy="62" r="1.1" fill="hsl(0 0% 100%)"></circle><ellipse cx="41" cy="73" rx="4" ry="2.4" fill="hsl(350 90% 75% / .55)"></ellipse><ellipse cx="79" cy="73" rx="4" ry="2.4" fill="hsl(350 90% 75% / .55)"></ellipse><path d="M53 76q7 6 14 0" fill="none" stroke="hsl(0 0% 8%)" stroke-width="2.2" stroke-linecap="round"></path><ellipse cx="47" cy="100" rx="7" ry="3.6" class="cs-g-dark"></ellipse><ellipse cx="73" cy="100" rx="7" ry="3.6" class="cs-g-dark"></ellipse><path d="M36 30c4-14 44-14 48 0z" class="cs-g-hat"></path><rect x="33" y="27" width="54" height="7" rx="3.5" class="cs-g-hat-band"></rect><circle cx="60" cy="12" r="5" class="cs-g-hat"></circle><path d="M92 70q8 2 10 8" fill="none" stroke="hsl(222 92% 48%)" stroke-width="4" stroke-linecap="round"></path><g transform="translate(94 76) scale(1.05)" class="cs-g-prop"><rect x="-2" y="-2" width="28" height="28" rx="8" class="cs-g-chip"></rect><g fill="none" stroke="hsl(0 0% 98%)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 5.5a4 4 0 0 0 4.9 5L12 18a2.1 2.1 0 0 1-3-3l7.5-7.4a4 4 0 0 0-2-2.1z"></path></g></g></svg><strong>Otto</strong><span class="cs-cast-role">Engine systems engineer</span><span class="cs-cast-need">Exact uor-matmul tensor kernels, progressive UORC streaming budgets, 60fps worker job graphs, and zero magic constants.</span></a></li><li class="cs-cast-member" data-persona="vera"><a href="explanation/tensor-and-uorc-streaming/"><svg class="cs-avatar" viewBox="0 0 120 120" width="88" height="88" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="cs-g8" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="hsl(140 70% 62%)"></stop><stop offset="1" stop-color="hsl(140 70% 32%)"></stop></linearGradient></defs><path d="M0 64L32 58" stroke="hsl(0 0% 98%)" stroke-width="2.4" stroke-linecap="round" opacity=".8"></path><path d="M88 58L120 34.0" stroke="hsl(356 95% 66%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 41.0" stroke="hsl(22 95% 58%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 48.0" stroke="hsl(48 95% 56%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 55.0" stroke="hsl(55 92% 54%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 62.0" stroke="hsl(140 70% 48%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 69.0" stroke="hsl(190 90% 54%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 76.0" stroke="hsl(222 92% 64%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 83.0" stroke="hsl(268 88% 70%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 90.0" stroke="hsl(320 85% 68%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><ellipse cx="60" cy="108" rx="30" ry="5" class="cs-g-shadow"></ellipse><path d="M60 14L92 32V76L60 98L28 76V32Z" fill="url(#cs-g8)"></path><path d="M60 14L92 32L60 48L28 32Z" fill="hsl(0 0% 100% / .28)"></path><path d="M60 48L92 32V76L60 98Z" fill="hsl(0 0% 0% / .18)"></path><path d="M60 14L92 32V76L60 98L28 76V32Z" fill="none" stroke="hsl(0 0% 100% / .45)" stroke-width="1.5" stroke-linejoin="round"></path><ellipse cx="49" cy="62" rx="6.5" ry="7.5" fill="hsl(0 0% 99%)"></ellipse><ellipse cx="71" cy="62" rx="6.5" ry="7.5" fill="hsl(0 0% 99%)"></ellipse><circle cx="51" cy="63.5" r="3.4" class="cs-g-dark"></circle><circle cx="73" cy="63.5" r="3.4" class="cs-g-dark"></circle><circle cx="52.2" cy="62" r="1.1" fill="hsl(0 0% 100%)"></circle><circle cx="74.2" cy="62" r="1.1" fill="hsl(0 0% 100%)"></circle><ellipse cx="41" cy="73" rx="4" ry="2.4" fill="hsl(350 90% 75% / .55)"></ellipse><ellipse cx="79" cy="73" rx="4" ry="2.4" fill="hsl(350 90% 75% / .55)"></ellipse><path d="M53 76q7 6 14 0" fill="none" stroke="hsl(0 0% 8%)" stroke-width="2.2" stroke-linecap="round"></path><ellipse cx="47" cy="100" rx="7" ry="3.6" class="cs-g-dark"></ellipse><ellipse cx="73" cy="100" rx="7" ry="3.6" class="cs-g-dark"></ellipse><g class="cs-g-line"><circle cx="49" cy="62" r="8.5"></circle><circle cx="71" cy="62" r="8.5"></circle><path d="M57.5 61h5M40.5 60l-6-3M79.5 60l6-3"></path></g><path d="M92 70q8 2 10 8" fill="none" stroke="hsl(140 70% 32%)" stroke-width="4" stroke-linecap="round"></path><g transform="translate(94 76) scale(1.05)" class="cs-g-prop"><rect x="-2" y="-2" width="28" height="28" rx="8" class="cs-g-chip"></rect><g fill="none" stroke="hsl(0 0% 98%)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 5v6c0 5 3.4 9.3 8 11 4.6-1.7 8-6 8-11V5z"></path><path d="m9 12 2 2 4-4"></path></g></g></svg><strong>Vera</strong><span class="cs-cast-role">Security auditor</span><span class="cs-cast-need">Proof that UORC streaming is monotonic, tensor contractions never overflow, and all assets and snapshots are validated.</span></a></li><li class="cs-cast-member" data-persona="wren"><a href="guides/progressive-uorc-streaming/"><svg class="cs-avatar" viewBox="0 0 120 120" width="88" height="88" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="cs-g9" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="hsl(356 95% 80%)"></stop><stop offset="1" stop-color="hsl(356 95% 50%)"></stop></linearGradient></defs><path d="M0 64L32 58" stroke="hsl(0 0% 98%)" stroke-width="2.4" stroke-linecap="round" opacity=".8"></path><path d="M88 58L120 34.0" stroke="hsl(356 95% 66%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 41.0" stroke="hsl(22 95% 58%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 48.0" stroke="hsl(48 95% 56%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 55.0" stroke="hsl(55 92% 54%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 62.0" stroke="hsl(140 70% 48%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 69.0" stroke="hsl(190 90% 54%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 76.0" stroke="hsl(222 92% 64%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 83.0" stroke="hsl(268 88% 70%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 90.0" stroke="hsl(320 85% 68%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><ellipse cx="60" cy="108" rx="30" ry="5" class="cs-g-shadow"></ellipse><path d="M60 14L92 32V76L60 98L28 76V32Z" fill="url(#cs-g9)"></path><path d="M60 14L92 32L60 48L28 32Z" fill="hsl(0 0% 100% / .28)"></path><path d="M60 48L92 32V76L60 98Z" fill="hsl(0 0% 0% / .18)"></path><path d="M60 14L92 32V76L60 98L28 76V32Z" fill="none" stroke="hsl(0 0% 100% / .45)" stroke-width="1.5" stroke-linejoin="round"></path><ellipse cx="49" cy="62" rx="6.5" ry="7.5" fill="hsl(0 0% 99%)"></ellipse><ellipse cx="71" cy="62" rx="6.5" ry="7.5" fill="hsl(0 0% 99%)"></ellipse><circle cx="51" cy="63.5" r="3.4" class="cs-g-dark"></circle><circle cx="73" cy="63.5" r="3.4" class="cs-g-dark"></circle><circle cx="52.2" cy="62" r="1.1" fill="hsl(0 0% 100%)"></circle><circle cx="74.2" cy="62" r="1.1" fill="hsl(0 0% 100%)"></circle><ellipse cx="41" cy="73" rx="4" ry="2.4" fill="hsl(350 90% 75% / .55)"></ellipse><ellipse cx="79" cy="73" rx="4" ry="2.4" fill="hsl(350 90% 75% / .55)"></ellipse><path d="M53 76q7 6 14 0" fill="none" stroke="hsl(0 0% 8%)" stroke-width="2.2" stroke-linecap="round"></path><ellipse cx="47" cy="100" rx="7" ry="3.6" class="cs-g-dark"></ellipse><ellipse cx="73" cy="100" rx="7" ry="3.6" class="cs-g-dark"></ellipse><g class="cs-g-line"><path d="M30 56c0-24 60-24 60 0"></path><path d="M90 60v8c0 6-6 9-14 9"></path></g><rect x="25" y="52" width="9" height="16" rx="4" class="cs-g-dark"></rect><rect x="86" y="52" width="9" height="16" rx="4" class="cs-g-dark"></rect><circle cx="75" cy="77" r="2.5" class="cs-g-dark"></circle><path d="M92 70q8 2 10 8" fill="none" stroke="hsl(356 95% 50%)" stroke-width="4" stroke-linecap="round"></path><g transform="translate(94 76) scale(1.05)" class="cs-g-prop"><rect x="-2" y="-2" width="28" height="28" rx="8" class="cs-g-chip"></rect><g fill="none" stroke="hsl(0 0% 98%)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="m15.5 8.5-2 5-5 2 2-5z"></path></g></g></svg><strong>Wren</strong><span class="cs-cast-role">Browser player</span><span class="cs-cast-need">A responsive, clutter-free 60fps 3D viewport with progressive LOD streaming, orbit and walk cameras, and spatial audio.</span></a></li></ul>
+      <h2>Full-stack engine architecture</h2>
+      <p>Constructive Prism proofs generate the semiring kernel bounds that drive <code>verdant-tensor</code>, <code>verdant-core</code>, and <code>verdant-wasm</code>.</p>
+      
+<figure class="cs-figure ve-diagram" id="fig-arch-stack">
+  <div class="cs-canvas">
+    <svg viewBox="0 0 800 250" role="img" aria-labelledby="ve-stack-t ve-stack-d" xmlns="http://www.w3.org/2000/svg">
+      <title id="ve-stack-t">Verdant Engine four-layer Prism and WebAssembly stack</title>
+      <desc id="ve-stack-d">Four horizontal layers from constructive LexLean specs at the bottom through verdant-tensor semiring kernels and verdant-core subsystems up to the browser OffscreenCanvas and uorc_decompress worker.</desc>
+      <rect x="16" y="14" width="768" height="46" rx="10" fill="hsl(164 60% 18%)" stroke="hsl(160 72% 58%)" stroke-width="1.6"></rect>
+      <text x="34" y="35" fill="hsl(160 80% 88%)" font-size="13.5" font-weight="700">4 · Browser Studio &amp; Wasm Workers (site/ + crates/verdant-wasm)</text>
+      <text x="34" y="51" fill="hsl(196 30% 84%)" font-size="11" font-family="JetBrains Mono, monospace">OffscreenCanvas WebGL2 + 16x16 Tile Blit · uorc_decompress Wasm · 128f AudioWorklet · #vdnt= URLs</text>
+
+      <rect x="16" y="72" width="768" height="48" rx="10" fill="hsl(202 52% 17%)" stroke="hsl(192 86% 60%)" stroke-width="1.6"></rect>
+      <text x="34" y="93" fill="hsl(192 90% 88%)" font-size="13.5" font-weight="700">3 · Universal 3D Engine Subsystems (crates/verdant-core + crates/verdant-cli)</text>
+      <text x="34" y="110" fill="hsl(196 30% 84%)" font-size="11" font-family="JetBrains Mono, monospace">ECS + SAH BVH · Khronos .glb -&gt; .uorc · XPBD Joints &amp; 4-Wheel Vehicle · 64f Rollback · Naga WGSL</text>
+
+      <rect x="16" y="132" width="768" height="48" rx="10" fill="hsl(252 40% 19%)" stroke="hsl(264 84% 72%)" stroke-width="1.6"></rect>
+      <text x="34" y="153" fill="hsl(264 90% 90%)" font-size="13.5" font-weight="700">2 · Unified Semiring Tensor Substrate (crates/verdant-tensor + uor-matmul)</text>
+      <text x="34" y="170" fill="hsl(196 30% 84%)" font-size="11" font-family="JetBrains Mono, monospace">Linear (+, *) · CodedMatrix (Grid, Packed, Runs) · Tropical (max, +)/(min, +) · Q15 Hadamard FDN</text>
+
+      <rect x="16" y="192" width="768" height="44" rx="10" fill="hsl(32 48% 17%)" stroke="hsl(42 92% 62%)" stroke-width="1.6"></rect>
+      <text x="34" y="212" fill="hsl(44 96% 88%)" font-size="13.5" font-weight="700">1 · Constructive Prism Model (app/src/Tensor.lex.tex + Subsystems.lex.tex)</text>
+      <text x="34" y="228" fill="hsl(196 30% 84%)" font-size="11" font-family="JetBrains Mono, monospace">Zero Classical.choice · {0, 1} Parametric Ratchet · Compiled Mechanically to prism_kernel.rs + app.holo</text>
+    </svg>
+  </div>
+  <figcaption><strong>Verdant Engine full-stack architecture.</strong> Constructive Prism <a class="cs-term" href="#term-theorem" title="A statement about the model that the Lean kernel has checked, so it holds for every input, not only the ones tested.">theorems</a> compile directly into the semiring tensor substrate, 3D subsystems, and WebAssembly workers.</figcaption>
+  <details class="cs-data"><summary>Architecture layer table</summary>
+    <table>
+      <thead><tr><th>Layer</th><th>Crate or directory</th><th>Core responsibilities</th></tr></thead>
+      <tbody>
+        <tr><td>4 · Browser Studio</td><td><code>site/</code>, <code>crates/verdant-wasm</code></td><td>OffscreenCanvas rendering, native Wasm <code>uorc_decompress</code>, AudioWorklet, and <code>#vdnt=</code> snapshots</td></tr>
+        <tr><td>3 · Engine Core</td><td><code>crates/verdant-core</code>, <code>crates/verdant-cli</code></td><td>ECS, BVH, <code>.glb</code> import and transcode, XPBD joints, vehicles, rollback, and WGSL checks</td></tr>
+        <tr><td>2 · Tensor Substrate</td><td><code>crates/verdant-tensor</code></td><td>Nine semiring kernels and three zero-decode <code>CodedMatrix</code> tiers over <code>uor-matmul</code></td></tr>
+        <tr><td>1 · Prism Model</td><td><code>app/src/*.lex.tex</code></td><td>Constructive Lean proofs compiled into <code>prism_kernel.rs</code> and <code>app.holo</code></td></tr>
+      </tbody>
+    </table>
+  </details>
+</figure>
       <h2>Documentation map</h2>
       <ul>
         <li><a href="./getting-started/">Build your first 3D world</a> walks through spawning entities, stepping physics, and saving a binary asset.</li>
-        <li><a href="./guides/custom-game-world/">Author terrain, shaders, and spatial audio</a> covers heightfields, procedural meshes, shader checks, and 3D sound.</li>
-        <li><a href="./guides/progressive-uorc-streaming/">Stream high-resolution scenes with UORC</a> shows how LOD0 through LOD3 frames stream in the browser studio.</li>
-        <li><a href="./reference/engine-api/">Verdant Core API reference</a> lists modules, types, CLI commands, and 60fps frame budgets.</li>
-        <li><a href="./explanation/tensor-and-uorc-streaming/">Portable tensor kernels and UORC streaming</a> explains exact Laurent contractions and cryptographic frame chains.</li>
+        <li><a href="./guides/custom-game-world/">Author scenes, physics joints, and spatial audio</a> covers <code>.glb</code> import, XPBD joints, vehicles, and occluded 3D sound.</li>
+        <li><a href="./guides/progressive-uorc-streaming/">Stream zero-decode scenes with UORC</a> shows how <code>uorc_decompress</code> and <code>coded_gemm</code> stream LOD0 through LOD3 in WebAssembly.</li>
+        <li><a href="./reference/engine-api/">Verdant Engine API reference</a> lists crates, types, deterministic rollback sessions, CLI commands, and 60fps budgets.</li>
+        <li><a href="./explanation/tensor-and-uorc-streaming/">Unified semiring tensor core and UORC streaming</a> explains linear, tropical, coded, and audio-ring contractions.</li>
       </ul>
     
-      <details class="cs-terms" id="words"><summary>Words on this page <span>5</span></summary><dl><dt id="term-scene-world">scene world</dt><dd>The entity-component-system container in verdant-core that stores entities, parent-child transforms, meshes, and PBR materials.</dd><dt id="term-bounding-volume-hierarchy">bounding volume hierarchy</dt><dd>A tree of 3D bounding boxes partitioned by surface area so raycasts and camera frustum checks skip distant geometry.</dd><dt id="term-wgsl">WGSL</dt><dd>The W3C portable shading language whose modules are parsed and type-checked in Verdant Engine by naga.</dd><dt id="term-gltf">glTF</dt><dd>The Khronos Group 3D scene transmission standard. GLB is its single-file binary container.</dd><dt id="term-uorc">UORC</dt><dd>Universal Object Reference Compression: progressive SHA-256 chain-verified multi-frame compression streaming 3D scenes up to lossless resolution.</dd></dl></details><nav class="dc-pager" aria-label="Page sequence">
+      <details class="cs-terms" id="words"><summary>Words on this page <span>6</span></summary><dl><dt id="term-theorem">theorem</dt><dd>A statement about the model that the Lean kernel has checked, so it holds for every input, not only the ones tested.</dd><dt id="term-scene-world">scene world</dt><dd>The entity-component-system container in verdant-core that stores entities, parent-child transforms, meshes, and PBR materials.</dd><dt id="term-bounding-volume-hierarchy">bounding volume hierarchy</dt><dd>A tree of 3D bounding boxes partitioned by surface area so raycasts and camera frustum checks skip distant geometry.</dd><dt id="term-wgsl">WGSL</dt><dd>The W3C portable shading language whose modules are parsed and type-checked in Verdant Engine by naga.</dd><dt id="term-gltf">glTF</dt><dd>The Khronos Group 3D scene transmission standard. GLB is its single-file binary container.</dd><dt id="term-uorc">UORC</dt><dd>Universal Object Reference Compression: progressive SHA-256 chain-verified multi-frame compression streaming 3D scenes up to lossless resolution.</dd></dl></details><nav class="dc-pager" aria-label="Page sequence">
         <span></span>
         <a href="./getting-started/">Next: Build your first 3D world</a>
       </nav>

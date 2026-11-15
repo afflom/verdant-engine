@@ -247,6 +247,64 @@ impl NavMesh {
             goal_polygon,
         })
     }
+
+    /// Computes exact `(min, +)` all-pairs shortest-path distances in millimeters across the
+    /// walkable polygon adjacency matrix via `verdant_tensor::tropical_min_plus_all_pairs_closure`.
+    pub fn all_pairs_shortest_paths_tropical(&self) -> Result<Vec<Option<u64>>, NavigationError> {
+        let count = self.polygons.len();
+        if count == 0 {
+            return Err(NavigationError::EmptyWalkableNavMesh);
+        }
+        let scale =
+            crate::prism_kernel::skinWeightScale().expect("verified Prism skinWeightScale") as f64;
+        let mut edge_costs = vec![None; count * count];
+        for (idx, poly) in self.polygons.iter().enumerate() {
+            edge_costs[idx * count + idx] = Some(0);
+            for &nbr in &poly.neighbors {
+                if nbr < count {
+                    let dist_milli = (((self.polygons[nbr].centroid - poly.centroid).length()
+                        * scale)
+                        .round() as u32)
+                        .max(1);
+                    edge_costs[idx * count + nbr] = Some(dist_milli);
+                }
+            }
+        }
+        verdant_tensor::tropical_min_plus_all_pairs_closure(&edge_costs, count)
+            .map_err(|_| NavigationError::EmptyWalkableNavMesh)
+    }
+
+    /// Evaluates the exact tropical `(min, +)` shortest corridor distance in meters between
+    /// `start_polygon` and `goal_polygon`.
+    pub fn shortest_corridor_cost_tropical(
+        &self,
+        start_polygon: usize,
+        goal_polygon: usize,
+    ) -> Result<f64, NavigationError> {
+        let count = self.polygons.len();
+        if start_polygon >= count {
+            return Err(NavigationError::InvalidPolygonIndex {
+                polygon_index: start_polygon,
+                polygon_count: count,
+            });
+        }
+        if goal_polygon >= count {
+            return Err(NavigationError::InvalidPolygonIndex {
+                polygon_index: goal_polygon,
+                polygon_count: count,
+            });
+        }
+        let closure = self.all_pairs_shortest_paths_tropical()?;
+        let scale =
+            crate::prism_kernel::skinWeightScale().expect("verified Prism skinWeightScale") as f64;
+        let cost_milli = closure[start_polygon * count + goal_polygon].ok_or(
+            NavigationError::UnreachableGoal {
+                start_polygon,
+                goal_polygon,
+            },
+        )?;
+        Ok((cost_milli as f64) / scale)
+    }
 }
 
 /// Computes a normalized steering direction from `position` toward the furthest corridor waypoint

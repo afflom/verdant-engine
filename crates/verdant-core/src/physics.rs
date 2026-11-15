@@ -6,8 +6,14 @@
 
 use serde::{Deserialize, Serialize};
 
+use crate::ecs::BoundingVolumeHierarchy;
 use crate::error::PhysicsStepError;
-use crate::math::{geometric_epsilon, half_f64, three_u32, two_f64, Aabb, Quat, Vec3};
+#[cfg(not(target_arch = "wasm32"))]
+use crate::math::DIM_SPATIAL;
+use crate::math::{
+    geometric_epsilon, half_f64, pow10_u64, three_u32, two_f64, Aabb, Quat, Ray, Vec3,
+    DIM_HOMOGENEOUS,
+};
 use crate::streaming::{terrain_height_with_params, PhysicalEnvironment, TerrainReliefParams};
 
 /// Parametric configuration of a deterministic 3D physics world.
@@ -158,6 +164,220 @@ impl CapsuleController {
             self.foot_position.z,
         )
     }
+
+    /// Advances the capsule by `dt_seconds` with continuous BVH raycast obstacle sweep, wall sliding,
+    /// and `prism_kernel::sweptCapsuleMaxStepMilli` (`0.35m`) stair step-up.
+    pub fn step_swept_against_bvh<F>(
+        &mut self,
+        dt_seconds: f64,
+        planar_wish_dir: Vec3,
+        gravity_mps2: f64,
+        bvh: &BoundingVolumeHierarchy,
+        support_height_at: F,
+    ) -> Result<(), PhysicsStepError>
+    where
+        F: Fn(f64, f64) -> f64,
+    {
+        if !dt_seconds.is_finite() || dt_seconds <= 0.0 {
+            return Err(PhysicsStepError::InvalidTimeStepSeconds {
+                dt_seconds,
+                max_dt_seconds: 1.0,
+            });
+        }
+        let scale_milli = crate::prism_kernel::skinWeightScale().unwrap_or(1).max(1) as f64;
+        let max_step_m =
+            (crate::prism_kernel::sweptCapsuleMaxStepMilli().unwrap_or(1) as f64) / scale_milli;
+
+        let wish_planar = Vec3::new(planar_wish_dir.x, 0.0, planar_wish_dir.z);
+        let wish = if wish_planar.length_squared() > geometric_epsilon() {
+            wish_planar.normalized()
+        } else {
+            Vec3::ZERO
+        };
+
+        let delta = wish.scale(self.move_speed_mps * dt_seconds);
+        let move_len = delta.length();
+        let mut target_pos = self.foot_position + delta;
+
+        if move_len > geometric_epsilon() {
+            let dir = delta.scale(1.0 / move_len);
+            let waist_origin = Vec3::new(
+                self.foot_position.x,
+                self.foot_position.y + max_step_m + geometric_epsilon(),
+                self.foot_position.z,
+            );
+            let sweep_dist = move_len + self.radius_meters;
+            if let Some(hit) = bvh.raycast(Ray::new(waist_origin, dir), sweep_dist) {
+                // Check if stepping up by `max_step_m` clears the obstacle:
+                let knee_clear_origin = Vec3::new(
+                    self.foot_position.x,
+                    self.foot_position.y + max_step_m + self.radius_meters,
+                    self.foot_position.z,
+                );
+                if bvh
+                    .raycast(Ray::new(knee_clear_origin, dir), sweep_dist)
+                    .is_none()
+                {
+                    target_pos.y += max_step_m * half_f64();
+                } else {
+                    let safe_travel = (hit.distance_meters - self.radius_meters).max(0.0);
+                    target_pos = self.foot_position + dir.scale(safe_travel);
+                }
+            }
+        }
+
+        self.velocity.x = (target_pos.x - self.foot_position.x) / dt_seconds;
+        self.velocity.z = (target_pos.z - self.foot_position.z) / dt_seconds;
+        self.velocity.y -= gravity_mps2 * dt_seconds;
+        self.foot_position.x = target_pos.x;
+        self.foot_position.z = target_pos.z;
+        self.foot_position.y = target_pos.y + self.velocity.y * dt_seconds;
+
+        let floor_y = support_height_at(self.foot_position.x, self.foot_position.z);
+        if self.foot_position.y <= floor_y {
+            self.foot_position.y = floor_y;
+            self.velocity.y = 0.0;
+            self.grounded = true;
+        } else {
+            self.grounded = false;
+        }
+        Ok(())
+    }
+}
+
+/// Articulated rigid-body joint constraint topology modeled in `Subsystems.lex.tex`.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub enum JointKind {
+    /// Revolute hinge joint locking `5` DOFs and allowing rotation around a single axis.
+    Hinge,
+    /// Spherical ball-and-socket joint locking `3` linear DOFs.
+    BallSocket,
+    /// Prismatic slider joint locking `5` DOFs and allowing translation along `axis_world`.
+    Slider,
+    /// Compliant axial distance spring-damper locking `1` distance DOF.
+    SpringDamper,
+}
+
+impl JointKind {
+    /// Returns the Prism-verified number of locked degrees of freedom (`prism_kernel::jointLockedDofs`).
+    #[must_use]
+    pub fn locked_dofs(self) -> u64 {
+        let idx = match self {
+            Self::Hinge => 0,
+            Self::BallSocket => 1,
+            Self::Slider => crate::prism_kernel::sTwo(),
+            Self::SpringDamper => crate::prism_kernel::sThree(),
+        };
+        crate::prism_kernel::jointLockedDofs(idx).unwrap_or(1)
+    }
+}
+
+/// XPBD / Delassus bilateral joint constraint coupling two rigid bodies in [`PhysicsWorld`].
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct RigidJointConstraint {
+    /// Constraint identifier.
+    pub label: String,
+    /// Index of primary body `A` in `PhysicsWorld::bodies`.
+    pub body_a: usize,
+    /// Index of secondary body `B` in `PhysicsWorld::bodies`.
+    pub body_b: usize,
+    /// Joint constraint kind (`Hinge`, `BallSocket`, `Slider`, `SpringDamper`).
+    pub kind: JointKind,
+    /// Unit constraint axis in world space (hinge/slider axis).
+    pub axis_world: Vec3,
+    /// Target separation distance between body centers in meters.
+    pub target_distance_meters: f64,
+    /// XPBD compliance regularization in permille (`>= 0`).
+    pub compliance_permille: u64,
+}
+
+/// Single suspension wheel mount on a [`RaycastVehicle`].
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+pub struct WheelMount {
+    /// Local wheel attachment offset relative to chassis center in meters.
+    pub local_offset: Vec3,
+    /// Uncompressed suspension strut rest length in meters.
+    pub rest_length_meters: f64,
+    /// Rolling wheel radius in meters.
+    pub wheel_radius_meters: f64,
+    /// Latest compression distance in meters (`>= 0`).
+    pub compression_meters: f64,
+    /// Whether the wheel raycast contacted terrain/deck on the latest step.
+    pub in_contact: bool,
+}
+
+/// Four-wheel raycast suspension vehicle controller with Hooke spring + viscous rebound damping.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct RaycastVehicle {
+    /// Vehicle identifier.
+    pub label: String,
+    /// Chassis center-of-mass world position in meters.
+    pub chassis_position: Vec3,
+    /// Chassis linear velocity in `m/s`.
+    pub chassis_velocity: Vec3,
+    /// Chassis heading yaw in radians around `Vec3::UP`.
+    pub yaw_radians: f64,
+    /// Chassis mass in kilograms (`> 0`).
+    pub mass_kg: f64,
+    /// Suspension spring stiffness (`N / m`).
+    pub suspension_stiffness_n_m: f64,
+    /// Suspension viscous damping (`N * s / m`).
+    pub suspension_damping_ns_m: f64,
+    /// Normalized throttle input in `[-1, 1]`.
+    pub throttle: f64,
+    /// Steer angle input in radians.
+    pub steering_radians: f64,
+    /// Four raycast wheel mounts (`prism_kernel::vehicleWheelCount() == 4`).
+    pub wheels: [WheelMount; DIM_HOMOGENEOUS],
+}
+
+impl RaycastVehicle {
+    /// Constructs a validated 4-wheel raycast vehicle at `chassis_position`.
+    pub fn new(
+        label: impl Into<String>,
+        chassis_position: Vec3,
+        mass_kg: f64,
+    ) -> Result<Self, PhysicsStepError> {
+        if !mass_kg.is_finite() || mass_kg <= 0.0 {
+            return Err(PhysicsStepError::InvalidBodyMassOrRadius {
+                mass_kg,
+                radius_meters: 1.0,
+            });
+        }
+        debug_assert_eq!(
+            crate::prism_kernel::vehicleWheelCount().unwrap_or(1) as usize,
+            DIM_HOMOGENEOUS
+        );
+        let half = half_f64();
+        let rest_len = half + half * half;
+        let wheel_r = half * (1.0 - half * half);
+        let half_track = 1.0;
+        let half_wheelbase = 1.0 + half;
+        let mk_wheel = |x: f64, z: f64| WheelMount {
+            local_offset: Vec3::new(x, -half * half, z),
+            rest_length_meters: rest_len,
+            wheel_radius_meters: wheel_r,
+            compression_meters: 0.0,
+            in_contact: false,
+        };
+        Ok(Self {
+            label: label.into(),
+            chassis_position,
+            chassis_velocity: Vec3::ZERO,
+            yaw_radians: 0.0,
+            mass_kg,
+            suspension_stiffness_n_m: mass_kg * (pow10_u64(1) as f64) * two_f64(),
+            suspension_damping_ns_m: mass_kg * two_f64(),
+            throttle: 0.0,
+            steering_radians: 0.0,
+            wheels: [
+                mk_wheel(-half_track, half_wheelbase),
+                mk_wheel(half_track, half_wheelbase),
+                mk_wheel(-half_track, -half_wheelbase),
+                mk_wheel(half_track, -half_wheelbase),
+            ],
+        })
+    }
 }
 
 /// Harmonic damped torsion or flexural spring oscillator (`m * x'' + c * x' + k * x = F_ext`).
@@ -254,7 +474,7 @@ impl KinematicSplineBody {
     }
 }
 
-/// Deterministic 3D physics world combining rigid bodies, capsule player, spring joints, and spline mover.
+/// Deterministic 3D physics world combining rigid bodies, capsule player, spring/XPBD joints, vehicles, and spline mover.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct PhysicsWorld {
     /// Parametric physics configuration.
@@ -265,6 +485,10 @@ pub struct PhysicsWorld {
     pub player_capsule: Option<CapsuleController>,
     /// Harmonic spring-damper joints.
     pub joints: Vec<ArticulatedSpringJoint>,
+    /// Bilateral XPBD / Delassus rigid-body joint constraints.
+    pub rigid_joints: Vec<RigidJointConstraint>,
+    /// Four-wheel raycast suspension vehicles.
+    pub vehicles: Vec<RaycastVehicle>,
     /// Optional closed-spline kinematic mover.
     pub kinematic_mover: Option<KinematicSplineBody>,
     /// Total simulated time in seconds.
@@ -280,6 +504,8 @@ impl PhysicsWorld {
             bodies: Vec::new(),
             player_capsule: None,
             joints: Vec::new(),
+            rigid_joints: Vec::new(),
+            vehicles: Vec::new(),
             kinematic_mover: None,
             elapsed_seconds: 0.0,
         }
@@ -396,6 +622,177 @@ impl PhysicsWorld {
         let breeze_drive = (self.elapsed_seconds * std::f64::consts::TAU * half_f64()).sin();
         for joint in &mut self.joints {
             joint.step(dt_seconds, breeze_drive);
+        }
+
+        // Solve bilateral XPBD / Delassus rigid-body constraints via `verdant_tensor::delassus_effective_mass_matrix`:
+        #[cfg(not(target_arch = "wasm32"))]
+        if !self.rigid_joints.is_empty() && self.bodies.len() >= (1 + 1) {
+            let dof_stride = DIM_SPATIAL + DIM_SPATIAL;
+            let total_dofs = self.bodies.len() * dof_stride;
+            let mut inv_mass_diag = vec![0.0_f64; total_dofs];
+            for (b_idx, b) in self.bodies.iter().enumerate() {
+                let inv_m = 1.0 / b.mass_kg.max(geometric_epsilon());
+                let base = b_idx * dof_stride;
+                inv_mass_diag[base] = inv_m;
+                inv_mass_diag[base + 1] = inv_m;
+                inv_mass_diag[base + (1 + 1)] = inv_m;
+                inv_mass_diag[base + DIM_SPATIAL] = inv_m;
+                inv_mass_diag[base + DIM_SPATIAL + 1] = inv_m;
+                inv_mass_diag[base + DIM_SPATIAL + (1 + 1)] = inv_m;
+            }
+
+            let milli_scale = crate::prism_kernel::skinWeightScale().unwrap_or(1).max(1) as f64;
+            let constraints_snapshot = self.rigid_joints.clone();
+            for cj in &constraints_snapshot {
+                if cj.body_a >= self.bodies.len()
+                    || cj.body_b >= self.bodies.len()
+                    || cj.body_a == cj.body_b
+                {
+                    return Err(PhysicsStepError::InvalidBodyMassOrRadius {
+                        mass_kg: 0.0,
+                        radius_meters: 0.0,
+                    });
+                }
+                let _locked = cj.kind.locked_dofs();
+                let pa = self.bodies[cj.body_a].position;
+                let pb = self.bodies[cj.body_b].position;
+                let delta = pb - pa;
+                let dist = delta.length().max(geometric_epsilon());
+                let n = match cj.kind {
+                    JointKind::Slider => cj.axis_world.normalized(),
+                    _ => delta.scale(1.0 / dist),
+                };
+
+                let mut j_row = vec![0.0_f64; total_dofs];
+                let base_a = cj.body_a * dof_stride;
+                let base_b = cj.body_b * dof_stride;
+                j_row[base_a] = -n.x;
+                j_row[base_a + 1] = -n.y;
+                j_row[base_a + (1 + 1)] = -n.z;
+                j_row[base_b] = n.x;
+                j_row[base_b + 1] = n.y;
+                j_row[base_b + (1 + 1)] = n.z;
+
+                let eff = verdant_tensor::delassus_effective_mass_matrix(
+                    &j_row,
+                    &inv_mass_diag,
+                    1,
+                    total_dofs,
+                )
+                .map_err(|_| PhysicsStepError::InvalidBodyMassOrRadius {
+                    mass_kg: 0.0,
+                    radius_meters: 0.0,
+                })?;
+                let w_sum = eff.first().copied().unwrap_or(0.0).max(geometric_epsilon());
+                let pos_err = match cj.kind {
+                    JointKind::Slider => delta.dot(n) - cj.target_distance_meters,
+                    _ => dist - cj.target_distance_meters,
+                };
+                let err_milli = (pos_err.abs() * milli_scale).round() as u64;
+                let inv_m_milli = (w_sum * milli_scale).round().max(1.0) as u64;
+                let lambda_milli = crate::prism_kernel::xpbdConstraintImpulseMilli(
+                    err_milli,
+                    inv_m_milli,
+                    cj.compliance_permille,
+                )
+                .unwrap_or(0);
+                let corr_mag = ((lambda_milli as f64) / milli_scale) * pos_err.signum();
+                let inv_ma = 1.0 / self.bodies[cj.body_a].mass_kg;
+                let inv_mb = 1.0 / self.bodies[cj.body_b].mass_kg;
+                self.bodies[cj.body_a].position =
+                    self.bodies[cj.body_a].position + n.scale(corr_mag * inv_ma);
+                self.bodies[cj.body_b].position =
+                    self.bodies[cj.body_b].position - n.scale(corr_mag * inv_mb);
+
+                // Project out relative velocity along the locked direction (or transverse directions for Slider/Hinge):
+                let rel_v = self.bodies[cj.body_b].velocity - self.bodies[cj.body_a].velocity;
+                let vn = rel_v.dot(n);
+                let j_vel = -vn / (w_sum + (cj.compliance_permille as f64) / milli_scale);
+                self.bodies[cj.body_a].velocity =
+                    self.bodies[cj.body_a].velocity - n.scale(j_vel * inv_ma);
+                self.bodies[cj.body_b].velocity =
+                    self.bodies[cj.body_b].velocity + n.scale(j_vel * inv_mb);
+            }
+        }
+
+        // Step 4-wheel raycast suspension vehicles:
+        #[cfg(not(target_arch = "wasm32"))]
+        if !self.vehicles.is_empty() {
+            let milli_scale = crate::prism_kernel::skinWeightScale().unwrap_or(1).max(1) as f64;
+            let ten = pow10_u64(1) as f64;
+            let mut updated_vehicles = std::mem::take(&mut self.vehicles);
+            for veh in &mut updated_vehicles {
+                if !veh.mass_kg.is_finite() || veh.mass_kg <= 0.0 {
+                    let bad_mass = veh.mass_kg;
+                    self.vehicles = updated_vehicles;
+                    return Err(PhysicsStepError::InvalidBodyMassOrRadius {
+                        mass_kg: bad_mass,
+                        radius_meters: 1.0,
+                    });
+                }
+                let q_yaw = Quat::from_axis_angle(Vec3::UP, veh.yaw_radians);
+                let fwd = q_yaw.rotate_vec3(Vec3::new(0.0, 0.0, 1.0)).normalized();
+                let right = q_yaw.rotate_vec3(Vec3::new(1.0, 0.0, 0.0)).normalized();
+                let mut total_up_force = 0.0_f64;
+                let mut grounded_wheels = 0usize;
+
+                for wheel in &mut veh.wheels {
+                    let mount_world = veh.chassis_position + q_yaw.rotate_vec3(wheel.local_offset);
+                    let ground_y = self.support_surface_height(mount_world.x, mount_world.z);
+                    let wheel_bottom_rest =
+                        mount_world.y - wheel.rest_length_meters - wheel.wheel_radius_meters;
+                    if wheel_bottom_rest <= ground_y {
+                        let comp =
+                            (ground_y - wheel_bottom_rest).clamp(0.0, wheel.rest_length_meters);
+                        wheel.compression_meters = comp;
+                        wheel.in_contact = true;
+                        grounded_wheels += 1;
+                        let comp_milli = (comp * milli_scale).round() as u64;
+                        let rebound_milli =
+                            (veh.chassis_velocity.y.max(0.0) * milli_scale).round() as u64;
+                        let f_milli = crate::prism_kernel::raycastSuspensionForceMilli(
+                            comp_milli,
+                            veh.suspension_stiffness_n_m.max(1.0).round() as u64,
+                            rebound_milli,
+                            veh.suspension_damping_ns_m.max(0.0).round() as u64,
+                        )
+                        .unwrap_or(0);
+                        total_up_force += (f_milli as f64) / milli_scale;
+                    } else {
+                        wheel.compression_meters = 0.0;
+                        wheel.in_contact = false;
+                    }
+                }
+
+                let drive_accel = if grounded_wheels > 0 {
+                    veh.throttle.clamp(-1.0, 1.0) * ten
+                } else {
+                    0.0
+                };
+                veh.chassis_velocity.y += (-g + total_up_force / veh.mass_kg) * dt_seconds;
+                veh.chassis_velocity = veh.chassis_velocity + fwd.scale(drive_accel * dt_seconds);
+
+                // Dampen lateral tire slip when wheels are in contact:
+                if grounded_wheels > 0 {
+                    let lat_speed = veh.chassis_velocity.dot(right);
+                    let slip_damp = (two * two * dt_seconds).clamp(0.0, 1.0);
+                    veh.chassis_velocity =
+                        veh.chassis_velocity - right.scale(lat_speed * slip_damp);
+                    let fwd_speed = veh.chassis_velocity.dot(fwd);
+                    veh.yaw_radians += veh.steering_radians * fwd_speed * half_f64() * dt_seconds;
+                }
+                veh.chassis_velocity = veh.chassis_velocity.scale(damp);
+                veh.chassis_position =
+                    veh.chassis_position + veh.chassis_velocity.scale(dt_seconds);
+                let chassis_floor = self
+                    .support_surface_height(veh.chassis_position.x, veh.chassis_position.z)
+                    + half_f64();
+                if veh.chassis_position.y < chassis_floor {
+                    veh.chassis_position.y = chassis_floor;
+                    veh.chassis_velocity.y = veh.chassis_velocity.y.max(0.0);
+                }
+            }
+            self.vehicles = updated_vehicles;
         }
 
         if let Some(mover) = &mut self.kinematic_mover {

@@ -6,7 +6,12 @@
 
 use serde::{Deserialize, Serialize};
 
-use crate::math::{four_u32, geometric_epsilon, half_f64, pow10_u64, three_u32, two_f64, Vec3};
+use crate::ecs::BoundingVolumeHierarchy;
+use crate::error::TensorComputeError;
+use crate::math::{
+    four_u32, geometric_epsilon, half_f64, pow10_u64, pow2_u64, three_u32, two_f64, Ray, Vec3,
+    DIM_HOMOGENEOUS, DIM_PLANAR,
+};
 
 /// Parametric acoustic propagation and enclosure reverberation environment.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
@@ -184,6 +189,35 @@ pub fn evaluate_binaural_cue(
     }
 }
 
+/// Evaluates Woodworth binaural cues and casts an acoustic line-of-sight ray against `bvh`,
+/// attenuating `direct_gain` by `prism_kernel::acousticOccludedGainPermille` / `skinWeightScale`
+/// whenever scene geometry occludes the direct path between `listener` and `source`.
+#[must_use]
+pub fn evaluate_binaural_cue_with_occlusion(
+    source: &SpatialAudioSource,
+    listener: &ListenerPose,
+    env: &AcousticEnvironment,
+    bvh: &BoundingVolumeHierarchy,
+) -> (BinauralCue, bool) {
+    let mut cue = evaluate_binaural_cue(source, listener, env);
+    let to_source = source.position - listener.position;
+    let seg_len = to_source.length();
+    let eps = geometric_epsilon() * (pow10_u64(1 + 1) as f64);
+    if seg_len <= eps + eps {
+        return (cue, false);
+    }
+    let dir = to_source.scale(1.0 / seg_len);
+    let ray = Ray::new(listener.position + dir.scale(eps), dir);
+    let max_dist = (seg_len - (eps + eps)).max(0.0);
+    let occluded = bvh.raycast(ray, max_dist).is_some();
+    if occluded {
+        let num = crate::prism_kernel::acousticOccludedGainPermille().unwrap_or(1) as f64;
+        let den = crate::prism_kernel::skinWeightScale().unwrap_or(1).max(1) as f64;
+        cue.direct_gain *= (num / den).clamp(0.0, 1.0);
+    }
+    (cue, occluded)
+}
+
 /// Synthesizes `mode_count` Euler-Bernoulli free-free cylindrical bar overtone frequencies (Hz)
 /// from fundamental `f_0`, where higher transverse modes scale as `(2n + 1)^2 / 3^2`.
 #[must_use]
@@ -196,4 +230,68 @@ pub fn synthesize_modal_bar_modes(fundamental_hz: f64, mode_count: usize) -> Vec
         modes.push(fundamental_hz * numer / base);
     }
     modes
+}
+
+/// Rendered stereo + 4-channel Hadamard FDN reverberation audio quantum produced by `verdant-tensor`.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct BinauralReverbQuantum {
+    /// Interleaved exact `i64` stereo frames (`frame_count * 2`).
+    pub stereo_frames_accum: Vec<i64>,
+    /// Modal FIR convolved excitation frames (`frame_count`).
+    pub modal_fir_accum: Vec<i64>,
+    /// 4-channel Hadamard Sabine/Eyring feedback delay network outputs (`frame_count x 4`).
+    pub fdn_reverb_tank: Vec<[i64; DIM_HOMOGENEOUS]>,
+}
+
+/// Synthesizes a deterministic binaural + modal FIR + 4-channel Sabine/Eyring FDN audio quantum
+/// entirely via quantized audio-ring contractions in `verdant-tensor` (`uor-matmul`).
+pub fn synthesize_binaural_reverb_quantum_exact(
+    dry_excitation_q15: &[i16],
+    modal_taps_q15: &[i16],
+    source: &SpatialAudioSource,
+    listener: &ListenerPose,
+    env: &AcousticEnvironment,
+) -> Result<BinauralReverbQuantum, TensorComputeError> {
+    let modal_fir_accum =
+        verdant_tensor::convolve_modal_fir_exact(dry_excitation_q15, modal_taps_q15)?;
+    let frame_count = modal_fir_accum.len();
+    let fifteen = (crate::prism_kernel::sFifteen().unwrap_or(1)) as u32;
+    let q15_scale = (pow2_u64(fifteen) - 1) as f64;
+
+    let cue = evaluate_binaural_cue(source, listener, env);
+    let left_pan = ((1.0 - cue.azimuth_sin) * half_f64()).clamp(0.0, 1.0) * cue.direct_gain;
+    let right_pan = ((1.0 + cue.azimuth_sin) * half_f64()).clamp(0.0, 1.0) * cue.direct_gain;
+    let pan_gains_q15 = [
+        (left_pan.clamp(0.0, 1.0) * q15_scale).round() as i16,
+        (right_pan.clamp(0.0, 1.0) * q15_scale).round() as i16,
+    ];
+
+    let convolved_q15: Vec<i16> = modal_fir_accum
+        .iter()
+        .map(|&acc| (acc >> fifteen).clamp(i64::from(i16::MIN), i64::from(i16::MAX)) as i16)
+        .collect();
+    let stereo_frames_accum = verdant_tensor::mix_spatial_audio_channels_exact(
+        frame_count,
+        1,
+        DIM_PLANAR,
+        &convolved_q15,
+        &pan_gains_q15,
+    )?;
+
+    let rt60 = env.eyring_rt60_seconds().max(geometric_epsilon());
+    let decay = (-(1.0 / rt60.max(1.0))).exp().clamp(0.0, 1.0);
+    let g = (decay * q15_scale).round() as i16;
+    let decay_gains = [g, g, g, g];
+    let i2 = 1usize + 1usize;
+    let delay_lines: Vec<[i16; DIM_HOMOGENEOUS]> = convolved_q15
+        .iter()
+        .map(|&s| [s, s / (i2 as i16), -s / (i2 as i16), s])
+        .collect();
+    let fdn_reverb_tank = verdant_tensor::step_sabine_fdn_reverb_ring(&delay_lines, &decay_gains)?;
+
+    Ok(BinauralReverbQuantum {
+        stereo_frames_accum,
+        modal_fir_accum,
+        fdn_reverb_tank,
+    })
 }

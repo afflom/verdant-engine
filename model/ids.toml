@@ -130,6 +130,30 @@ negative = "VE-16"
 statement = "The verdant CLI packs multi-LOD 3D scenes into validated progressive UORC streams, binary glTF 2.0, and SHA-256 VDNT snapshots, verifies portable WGSL shaders and headless benchmarks, and refuses invalid commands or corrupted assets"
 
 [[id]]
+id = "VE-17"
+level = "build"
+suite = "engine"
+statement = "Unified verdant-tensor semiring contractions execute linear transforms, four-joint skinning, Delassus effective-mass operators, tropical min-plus navmesh shortest paths, and Hadamard FDN audio feedback deterministically and refuse mismatched dimensions"
+
+[[id]]
+id = "VE-18"
+level = "build"
+suite = "engine"
+statement = "Portable UORC progressive streams decode natively via uorc_decompress and uor_matmul coded_gemm contracts Grid geometry, Packed animation, and Runs IBL matrices without float expansion while refusing corrupted archives"
+
+[[id]]
+id = "VE-19"
+level = "build"
+suite = "engine"
+statement = "Khronos glTF 2.0 scene import, glb-to-UORC transcoding, XPBD articulated joints, swept capsule and four-wheel raycast vehicle controllers, and BVH acoustic occlusion execute deterministically and refuse invalid joint bodies"
+
+[[id]]
+id = "VE-20"
+level = "build"
+suite = "engine"
+statement = "SHA-256-chained deterministic input journals, bounded 64-frame rollback resimulation sessions, and stateless XOR-residual delta UORC snapshots synchronize game state bit-identically and refuse regressive or out-of-window frames"
+
+[[id]]
 id = "FR-01"
 level = "build"
 suite = "frame"

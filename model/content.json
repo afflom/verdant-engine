@@ -48,7 +48,16 @@
     "WebAssembly",
     "Wasm",
     "WASD",
-    "Prism"
+    "Prism",
+    "Delassus",
+    "Hadamard",
+    "Eyring",
+    "Hooke",
+    "XPBD",
+    "FDN",
+    "RGBA8",
+    "SIMD",
+    "TRS"
   ],
   "personas": [
     {

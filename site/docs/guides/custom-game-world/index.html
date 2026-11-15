@@ -2,127 +2,246 @@
 <html lang="en"><head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Build 3D terrain meshes, check portable shaders, and mix 3D sound.">
+    <meta name="description" content="Import GLB scenes, solve articulated joints and vehicles, and mix occluded 3D sound.">
     <meta name="diataxis" content="howToGuide">
     <meta name="developer-journey" content="build">
     <meta name="audience" content="iris">
     <link rel="canonical" href="https://afflom.github.io/verdant-engine/docs/guides/custom-game-world/">
-    <title>Author terrain, shaders, and spatial audio — Verdant Engine</title>
+    <title>Author scenes, physics joints, and spatial audio — Verdant Engine</title>
     <style>
   :root {
-    --fd-bg: #151312;
-    --fd-fg: #f4f2ee;
-    --fd-muted: #b5ada4;
-    --fd-card: #1e1b19;
-    --fd-border: rgba(244, 242, 238, 0.14);
-    --fd-accent: #6ec49c;
+    color-scheme: dark;
+    --fd-bg: 208 32% 7%;
+    --fd-panel: 208 26% 12%;
+    --fd-fg: 196 36% 96%;
+    --fd-dim: 204 22% 77%;
+    --fd-line: 204 24% 25%;
+    --fd-line-strong: 168 48% 52%;
+    --fd-accent: 160 72% 66%;
+    --fd-code-bg: 210 30% 10%;
+    --fd-code-fg: 152 76% 78%;
+    --fd-spectrum: linear-gradient(100deg, hsl(356 92% 66%) 0%, hsl(28 95% 60%) 18%, hsl(48 95% 58%) 34%, hsl(154 72% 52%) 52%, hsl(192 90% 56%) 70%, hsl(226 90% 68%) 86%, hsl(282 84% 72%) 100%);
   }
   @media (prefers-color-scheme: light) {
     :root {
-      --fd-bg: #f5f4ef;
-      --fd-fg: #1f1c1a;
-      --fd-muted: #5b534c;
-      --fd-card: #ffffff;
-      --fd-border: rgba(31, 28, 26, 0.14);
-      --fd-accent: #1d6f4e;
+      color-scheme: light;
+      --fd-bg: 48 24% 96%;
+      --fd-panel: 0 0% 100%;
+      --fd-fg: 210 28% 12%;
+      --fd-dim: 210 16% 33%;
+      --fd-line: 210 18% 78%;
+      --fd-line-strong: 164 62% 32%;
+      --fd-accent: 162 76% 24%;
+      --fd-code-bg: 205 25% 93%;
+      --fd-code-fg: 164 78% 20%;
     }
+    .cs-canvas {
+      background: radial-gradient(120% 140% at 0% 0%, hsl(48 30% 99%), hsl(var(--fd-bg))) !important;
+    }
+    .cs-card { fill: hsl(0 0% 100%) !important; }
+    .cs-cell { fill: hsl(200 20% 95%) !important; }
+    .cs-track { fill: hsl(200 18% 89%) !important; }
   }
   * { box-sizing: border-box; }
   body {
     margin: 0;
-    background: var(--fd-bg);
-    color: var(--fd-fg);
-    font-family: system-ui, -apple-system, sans-serif;
-    font-size: 1rem;
-    line-height: 1.6;
+    background: hsl(var(--fd-bg));
+    color: hsl(var(--fd-fg));
+    font-family: "Space Grotesk", system-ui, -apple-system, sans-serif;
+    font-size: 1.03125rem;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+  .ve-nav-wrap {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: hsl(var(--fd-bg) / 0.9);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid hsl(var(--fd-line));
   }
   .ve-nav {
-    max-width: 52rem;
+    max-width: 56rem;
     margin: 0 auto;
-    padding: 1rem 1.25rem;
+    padding: 0.75rem 1.25rem;
     display: flex;
     flex-wrap: wrap;
-    gap: 0.75rem 1.25rem;
-    border-bottom: 1px solid var(--fd-border);
-    font-size: 0.9375rem;
+    align-items: center;
+    gap: 0.5rem 0.625rem;
+    font-size: 0.9rem;
   }
-  .ve-nav a, main a {
-    color: var(--fd-accent);
+  .ve-nav a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.25rem;
+    padding: 0.25rem 0.7rem;
+    border-radius: 999px;
+    border: 1px solid hsl(var(--fd-line));
+    background: hsl(var(--fd-panel));
+    color: hsl(var(--fd-fg));
+    text-decoration: none;
+    font-weight: 500;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .ve-nav a:first-child {
+    border-color: hsl(var(--fd-line-strong));
+    color: hsl(var(--fd-accent));
+    font-weight: 700;
+  }
+  .ve-nav a:hover {
+    border-color: hsl(var(--fd-accent));
+    color: hsl(var(--fd-accent));
+  }
+  main a {
+    color: hsl(var(--fd-accent));
     text-decoration: underline;
-    text-underline-offset: 0.18em;
+    text-underline-offset: 0.2em;
+    font-weight: 500;
+  }
+  main a:hover {
+    color: hsl(var(--fd-fg));
   }
   main {
-    max-width: 52rem;
+    max-width: 56rem;
     margin: 0 auto;
-    padding: 1.75rem 1.25rem 4rem;
+    padding: 2rem 1.25rem 4.5rem;
   }
-  h1 { font-size: 2rem; line-height: 1.2; margin: 0 0 0.75rem; }
-  h2 { font-size: 1.375rem; line-height: 1.3; margin: 2.25rem 0 0.75rem; }
-  h3 { font-size: 1.125rem; line-height: 1.35; margin: 1.5rem 0 0.5rem; }
-  p, li { max-width: 68ch; }
-  code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.9em; }
+  h1 {
+    font-size: clamp(1.85rem, 3.6vw, 2.45rem);
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    margin: 0 0 0.75rem;
+    color: hsl(var(--fd-fg));
+  }
+  h2 {
+    font-size: 1.42rem;
+    line-height: 1.28;
+    margin: 2.4rem 0 0.75rem;
+    padding-bottom: 0.35rem;
+    border-bottom: 1px solid hsl(var(--fd-line));
+    color: hsl(var(--fd-fg));
+  }
+  h3 {
+    font-size: 1.15rem;
+    line-height: 1.35;
+    margin: 1.5rem 0 0.5rem;
+    color: hsl(var(--fd-fg));
+  }
+  p, li { max-width: 70ch; color: hsl(var(--fd-fg)); }
+  li + li { margin-top: 0.35rem; }
+  code, pre {
+    font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.88em;
+  }
+  p code, li code, td code {
+    padding: 0.12rem 0.38rem;
+    border-radius: 0.32rem;
+    background: hsl(var(--fd-code-bg));
+    border: 1px solid hsl(var(--fd-line));
+    color: hsl(var(--fd-code-fg));
+  }
   pre {
-    padding: 0.875rem 1rem;
-    background: var(--fd-card);
-    border: 1px solid var(--fd-border);
-    border-radius: 0.5rem;
+    padding: 1rem 1.125rem;
+    background: hsl(var(--fd-code-bg));
+    color: hsl(var(--fd-fg));
+    border: 1px solid hsl(var(--fd-line));
+    border-radius: 0.75rem;
     overflow-x: auto;
+    line-height: 1.55;
+  }
+  pre code {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
   }
   table {
     width: 100%;
     border-collapse: collapse;
-    margin: 1rem 0;
+    margin: 1.15rem 0;
     font-size: 0.9375rem;
+    background: hsl(var(--fd-panel));
+    border: 1px solid hsl(var(--fd-line));
+    border-radius: 0.75rem;
+    overflow: hidden;
   }
-  th, td {
+  caption {
     text-align: left;
-    padding: 0.5rem 0.625rem;
-    border-bottom: 1px solid var(--fd-border);
+    font-weight: 700;
+    padding: 0.5rem 0.25rem;
+    color: hsl(var(--fd-dim));
+  }
+  th {
+    text-align: left;
+    padding: 0.65rem 0.75rem;
+    background: hsl(var(--fd-code-bg));
+    color: hsl(var(--fd-fg));
+    border-bottom: 1px solid hsl(var(--fd-line-strong));
+    font-weight: 700;
+  }
+  td {
+    text-align: left;
+    padding: 0.6rem 0.75rem;
+    border-bottom: 1px solid hsl(var(--fd-line));
+    color: hsl(var(--fd-fg));
+  }
+  .ve-diagram {
+    margin: 1.75rem 0 2.25rem;
+  }
+  .ve-diagram svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-height: 21rem;
   }
   .dc-pager {
-    margin-top: 2.5rem;
-    padding-top: 1rem;
-    border-top: 1px solid var(--fd-border);
+    margin-top: 2.75rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid hsl(var(--fd-line));
     display: flex;
     flex-wrap: wrap;
     justify-content: space-between;
     gap: 1rem;
   }
 </style>
-  <link rel="alternate" type="text/markdown" href="index.md"><link rel="stylesheet" href="../../content.css"><script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"Author terrain, shaders, and spatial audio","description":"Build 3D terrain meshes, check portable shaders, and mix 3D sound.","url":"https://afflom.github.io/verdant-engine/docs/guides/custom-game-world/","inLanguage":"en","audience":{"@type":"Audience","audienceType":"Technical artist","description":"Authors procedural terrain, skeletal rigs, PBR materials, portable WGSL shaders, and glTF 2.0 scene exports that validate cleanly."},"learningResourceType":"howToGuide","educationalLevel":"build","isPartOf":{"@type":"WebSite","name":"Verdant Engine","url":"https://afflom.github.io/verdant-engine/"},"publisher":{"@type":"Organization","name":"UOR Foundation","url":"https://uor.foundation/"}}</script></head>
+  <link rel="alternate" type="text/markdown" href="index.md"><link rel="stylesheet" href="../../content.css"><script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"Author scenes, physics joints, and spatial audio","description":"Import GLB scenes, solve articulated joints and vehicles, and mix occluded 3D sound.","url":"https://afflom.github.io/verdant-engine/docs/guides/custom-game-world/","inLanguage":"en","audience":{"@type":"Audience","audienceType":"Technical artist","description":"Authors procedural terrain, skeletal rigs, PBR materials, portable WGSL shaders, and glTF 2.0 scene exports that validate cleanly."},"learningResourceType":"howToGuide","educationalLevel":"build","isPartOf":{"@type":"WebSite","name":"Verdant Engine","url":"https://afflom.github.io/verdant-engine/"},"publisher":{"@type":"Organization","name":"UOR Foundation","url":"https://uor.foundation/"}}</script></head>
   <body>
-    <nav class="ve-nav" aria-label="Documentation navigation">
-      <a href="../../../">3D Studio</a>
-      <a href="../../">Docs home</a>
-      <a href="../../getting-started/">Getting started</a>
-      <a href="../../guides/custom-game-world/">Custom world guide</a>
-      <a href="../../guides/progressive-uorc-streaming/">UORC streaming</a>
-      <a href="../../reference/engine-api/">API reference</a>
-      <a href="../../explanation/tensor-and-uorc-streaming/">Tensor architecture</a>
-    </nav>
+    <div class="ve-nav-wrap">
+      <nav class="ve-nav" aria-label="Documentation navigation">
+        <a href="../../../">3D Studio</a>
+        <a href="../../">Docs home</a>
+        <a href="../../getting-started/">Getting started</a>
+        <a href="../../guides/custom-game-world/">Authoring &amp; GLB</a>
+        <a href="../../guides/progressive-uorc-streaming/">UORC streaming</a>
+        <a href="../../reference/engine-api/">API reference</a>
+        <a href="../../explanation/tensor-and-uorc-streaming/">Tensor core</a>
+      </nav>
+    </div>
     <main>
-      <h1>Author terrain, shaders, and spatial audio</h1>
-      <p>Build 3D terrain meshes, check portable shaders, and mix 3D sound.</p><aside class="cs-guide" data-persona="iris" aria-label="Your guide on this page"><svg class="cs-avatar" viewBox="0 0 120 120" width="96" height="96" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="cs-g3" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="hsl(320 85% 82%)"></stop><stop offset="1" stop-color="hsl(320 85% 52%)"></stop></linearGradient></defs><path d="M0 64L32 58" stroke="hsl(0 0% 98%)" stroke-width="2.4" stroke-linecap="round" opacity=".8"></path><path d="M88 58L120 34.0" stroke="hsl(356 95% 66%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 41.0" stroke="hsl(22 95% 58%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 48.0" stroke="hsl(48 95% 56%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 55.0" stroke="hsl(55 92% 54%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 62.0" stroke="hsl(140 70% 48%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 69.0" stroke="hsl(190 90% 54%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 76.0" stroke="hsl(222 92% 64%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 83.0" stroke="hsl(268 88% 70%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 90.0" stroke="hsl(320 85% 68%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><ellipse cx="60" cy="108" rx="30" ry="5" class="cs-g-shadow"></ellipse><path d="M60 14L92 32V76L60 98L28 76V32Z" fill="url(#cs-g3)"></path><path d="M60 14L92 32L60 48L28 32Z" fill="hsl(0 0% 100% / .28)"></path><path d="M60 48L92 32V76L60 98Z" fill="hsl(0 0% 0% / .18)"></path><path d="M60 14L92 32V76L60 98L28 76V32Z" fill="none" stroke="hsl(0 0% 100% / .45)" stroke-width="1.5" stroke-linejoin="round"></path><ellipse cx="49" cy="62" rx="6.5" ry="7.5" fill="hsl(0 0% 99%)"></ellipse><ellipse cx="71" cy="62" rx="6.5" ry="7.5" fill="hsl(0 0% 99%)"></ellipse><circle cx="51" cy="63.5" r="3.4" class="cs-g-dark"></circle><circle cx="73" cy="63.5" r="3.4" class="cs-g-dark"></circle><circle cx="52.2" cy="62" r="1.1" fill="hsl(0 0% 100%)"></circle><circle cx="74.2" cy="62" r="1.1" fill="hsl(0 0% 100%)"></circle><ellipse cx="41" cy="73" rx="4" ry="2.4" fill="hsl(350 90% 75% / .55)"></ellipse><ellipse cx="79" cy="73" rx="4" ry="2.4" fill="hsl(350 90% 75% / .55)"></ellipse><path d="M53 76q7 6 14 0" fill="none" stroke="hsl(0 0% 8%)" stroke-width="2.2" stroke-linecap="round"></path><ellipse cx="47" cy="100" rx="7" ry="3.6" class="cs-g-dark"></ellipse><ellipse cx="73" cy="100" rx="7" ry="3.6" class="cs-g-dark"></ellipse><path d="M90 14l2.5 6 6 2.5-6 2.5-2.5 6-2.5-6-6-2.5 6-2.5z" class="cs-g-spark"></path><path d="M24 20l1.5 3.5 3.5 1.5-3.5 1.5-1.5 3.5-1.5-3.5-3.5-1.5 3.5-1.5z" class="cs-g-spark"></path><path d="M92 70q8 2 10 8" fill="none" stroke="hsl(320 85% 52%)" stroke-width="4" stroke-linecap="round"></path><g transform="translate(94 76) scale(1.05)" class="cs-g-prop"><rect x="-2" y="-2" width="28" height="28" rx="8" class="cs-g-chip"></rect><g fill="none" stroke="hsl(0 0% 98%)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="m15.5 8.5-2 5-5 2 2-5z"></path></g></g></svg><div class="cs-guide-text"><p class="cs-guide-who"><strong>Iris</strong> <span>Technical artist</span></p><p class="cs-guide-says">“How do I author PBR materials, validate WGSL shaders, and pack GLB and UORC files?”</p><p class="cs-guide-how">A how-to guide: each section completes one practical engine task.</p></div></aside>
-      <figure class="cs-figure cs-graph"><div class="cs-canvas"><svg class="cs-svg cs-wide" viewBox="0 0 680 152" role="img" aria-labelledby="cs-t18 cs-d19" xmlns="http://www.w3.org/2000/svg"><title id="cs-t18">Asset and sensory pipeline in verdant-core</title><desc id="cs-d19">5 nodes and 4 links. Geometry to SceneWorld; PBR materials to SceneWorld; SceneWorld to Browser and GLB; AudioScene to Browser and GLB.</desc><g transform="translate(0 0)"><defs><marker id="cs-a17" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="cs-arrowhead"></path></marker></defs><path d="M146.66666666666666 33C205.66666666666663 33 205.66666666666663 33 264.66666666666663 33" class="cs-edge" marker-end="url(#cs-a17)"></path><path d="M146.66666666666666 115C205.66666666666663 115 205.66666666666663 33 264.66666666666663 33" class="cs-edge" marker-end="url(#cs-a17)"></path><path d="M413.33333333333326 33C472.33333333333326 33 472.33333333333326 74 531.3333333333333 74" class="cs-edge" marker-end="url(#cs-a17)"></path><path d="M413.33333333333326 115C472.33333333333326 115 472.33333333333326 74 531.3333333333333 74" class="cs-edge" marker-end="url(#cs-a17)"></path><g class="cs-node"><rect x="0" y="0" width="146.66666666666666" height="66" rx="10" class="cs-card"></rect><rect x="0" y="8" width="3" height="50" rx="1.5" fill="hsl(356 95% 66%)"></rect><text x="73.3" y="19.0" class="cs-label" text-anchor="middle" dominant-baseline="middle">Geometry</text><text x="73.3" y="37.9" class="cs-sub" text-anchor="middle" dominant-baseline="middle">Terrain, columns,</text><text x="73.3" y="52.2" class="cs-sub" text-anchor="middle" dominant-baseline="middle">morphs</text></g><g class="cs-node"><rect x="0" y="82" width="146.66666666666666" height="66" rx="10" class="cs-card"></rect><rect x="0" y="90" width="3" height="50" rx="1.5" fill="hsl(356 95% 66%)"></rect><text x="73.3" y="101.0" class="cs-label" text-anchor="middle" dominant-baseline="middle">PBR materials</text><text x="73.3" y="119.8" class="cs-sub" text-anchor="middle" dominant-baseline="middle">Metallic-roughness +</text><text x="73.3" y="134.2" class="cs-sub" text-anchor="middle" dominant-baseline="middle">WGSL</text></g><g class="cs-node"><rect x="266.66666666666663" y="0" width="146.66666666666666" height="66" rx="10" class="cs-card"></rect><rect x="266.66666666666663" y="8" width="3" height="50" rx="1.5" fill="hsl(356 95% 66%)"></rect><text x="340.0" y="19.0" class="cs-label" text-anchor="middle" dominant-baseline="middle">SceneWorld</text><text x="340.0" y="37.9" class="cs-sub" text-anchor="middle" dominant-baseline="middle">Transform hierarchy</text><text x="340.0" y="52.2" class="cs-sub" text-anchor="middle" dominant-baseline="middle">+ BVH</text></g><g class="cs-node"><rect x="266.66666666666663" y="82" width="146.66666666666666" height="66" rx="10" class="cs-card"></rect><rect x="266.66666666666663" y="90" width="3" height="50" rx="1.5" fill="hsl(356 95% 66%)"></rect><text x="340.0" y="101.0" class="cs-label" text-anchor="middle" dominant-baseline="middle">AudioScene</text><text x="340.0" y="119.8" class="cs-sub" text-anchor="middle" dominant-baseline="middle">Inverse-distance +</text><text x="340.0" y="134.2" class="cs-sub" text-anchor="middle" dominant-baseline="middle">RT60</text></g><g class="cs-node"><rect x="533.3333333333333" y="41" width="146.66666666666666" height="66" rx="10" class="cs-card"></rect><rect x="533.3333333333333" y="49" width="3" height="50" rx="1.5" fill="hsl(356 95% 66%)"></rect><text x="606.7" y="60.0" class="cs-label" text-anchor="middle" dominant-baseline="middle">Browser and GLB</text><text x="606.7" y="78.8" class="cs-sub" text-anchor="middle" dominant-baseline="middle">WebGL2, WebAudio,</text><text x="606.7" y="93.1" class="cs-sub" text-anchor="middle" dominant-baseline="middle">glTF 2.0</text></g></g></svg><svg class="cs-svg cs-tall" viewBox="0 0 340 220" role="img" aria-labelledby="cs-t21 cs-d22" xmlns="http://www.w3.org/2000/svg"><title id="cs-t21">Asset and sensory pipeline in verdant-core</title><desc id="cs-d22">5 nodes and 4 links. Geometry to SceneWorld; PBR materials to SceneWorld; SceneWorld to Browser and GLB; AudioScene to Browser and GLB.</desc><defs><marker id="cs-a20" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="cs-arrowhead"></path></marker></defs><path d="M214 14C258.8 14 258.8 108 218 108" class="cs-edge" marker-end="url(#cs-a20)"></path><path d="M214 58C243.4 58 243.4 108 218 108" class="cs-edge" marker-end="url(#cs-a20)"></path><path d="M214 102C258.8 102 258.8 196 218 196" class="cs-edge" marker-end="url(#cs-a20)"></path><path d="M214 146C243.4 146 243.4 196 218 196" class="cs-edge" marker-end="url(#cs-a20)"></path><g class="cs-node"><rect x="0" y="0" width="210" height="34" rx="10" class="cs-card"></rect><rect x="0" y="6" width="3" height="22" rx="1.5" fill="hsl(356 95% 66%)"></rect><text x="12.0" y="17.0" class="cs-label" text-anchor="start" dominant-baseline="middle">Geometry</text></g><g class="cs-node"><rect x="0" y="44" width="210" height="34" rx="10" class="cs-card"></rect><rect x="0" y="50" width="3" height="22" rx="1.5" fill="hsl(356 95% 66%)"></rect><text x="12.0" y="61.0" class="cs-label" text-anchor="start" dominant-baseline="middle">PBR materials</text></g><g class="cs-node"><rect x="0" y="88" width="210" height="34" rx="10" class="cs-card"></rect><rect x="0" y="94" width="3" height="22" rx="1.5" fill="hsl(356 95% 66%)"></rect><text x="12.0" y="105.0" class="cs-label" text-anchor="start" dominant-baseline="middle">SceneWorld</text></g><g class="cs-node"><rect x="0" y="132" width="210" height="34" rx="10" class="cs-card"></rect><rect x="0" y="138" width="3" height="22" rx="1.5" fill="hsl(356 95% 66%)"></rect><text x="12.0" y="149.0" class="cs-label" text-anchor="start" dominant-baseline="middle">AudioScene</text></g><g class="cs-node"><rect x="0" y="176" width="210" height="34" rx="10" class="cs-card"></rect><rect x="0" y="182" width="3" height="22" rx="1.5" fill="hsl(356 95% 66%)"></rect><text x="12.0" y="193.0" class="cs-label" text-anchor="start" dominant-baseline="middle">Browser and GLB</text></g></svg></div><figcaption><strong>Asset and sensory pipeline in verdant-core.</strong> Procedural geometry, PBR materials, <a class="cs-term" href="#term-wgsl" title="The W3C portable shading language whose modules are parsed and type-checked in Verdant Engine by naga.">WGSL</a> shaders, and spatial audio converge into browser rendering and <a class="cs-term" href="#term-gltf" title="The Khronos Group 3D scene transmission standard. GLB is its single-file binary container.">GLB</a> export.</figcaption><details class="cs-data"><summary>The data in this figure</summary><table><thead><tr><th scope="col">From</th><th scope="col">Link</th><th scope="col">To</th></tr></thead><tbody><tr><td>Geometry</td><td>→</td><td>SceneWorld</td></tr><tr><td>PBR materials</td><td>→</td><td>SceneWorld</td></tr><tr><td>SceneWorld</td><td>→</td><td>Browser and GLB</td></tr><tr><td>AudioScene</td><td>→</td><td>Browser and GLB</td></tr></tbody></table></details><script type="application/vnd.prism.figure+json">{"kind":"graph","title":"Asset and sensory pipeline in verdant-core","caption":"Procedural geometry, PBR materials, WGSL shaders, and spatial audio converge into browser rendering and GLB export.","nodes":[{"id":"geo","label":"Geometry","sub":"Terrain, columns, morphs","layer":0},{"id":"mat","label":"PBR materials","sub":"Metallic-roughness + WGSL","layer":0},{"id":"ecs","label":"SceneWorld","sub":"Transform hierarchy + BVH","layer":1},{"id":"aud","label":"AudioScene","sub":"Inverse-distance + RT60","layer":1},{"id":"out","label":"Browser and GLB","sub":"WebGL2, WebAudio, glTF 2.0","layer":2}],"edges":[{"from":"geo","to":"ecs"},{"from":"mat","to":"ecs"},{"from":"ecs","to":"out"},{"from":"aud","to":"out"}]}</script></figure>
+      <h1>Author scenes, physics joints, and spatial audio</h1>
+      <p>Import <a class="cs-term" href="#term-gltf" title="The Khronos Group 3D scene transmission standard. GLB is its single-file binary container.">GLB</a> scenes, solve articulated joints and vehicles, and mix occluded 3D sound.</p><aside class="cs-guide" data-persona="iris" aria-label="Your guide on this page"><svg class="cs-avatar" viewBox="0 0 120 120" width="96" height="96" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="cs-g3" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="hsl(320 85% 82%)"></stop><stop offset="1" stop-color="hsl(320 85% 52%)"></stop></linearGradient></defs><path d="M0 64L32 58" stroke="hsl(0 0% 98%)" stroke-width="2.4" stroke-linecap="round" opacity=".8"></path><path d="M88 58L120 34.0" stroke="hsl(356 95% 66%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 41.0" stroke="hsl(22 95% 58%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 48.0" stroke="hsl(48 95% 56%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 55.0" stroke="hsl(55 92% 54%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 62.0" stroke="hsl(140 70% 48%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 69.0" stroke="hsl(190 90% 54%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 76.0" stroke="hsl(222 92% 64%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 83.0" stroke="hsl(268 88% 70%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 90.0" stroke="hsl(320 85% 68%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><ellipse cx="60" cy="108" rx="30" ry="5" class="cs-g-shadow"></ellipse><path d="M60 14L92 32V76L60 98L28 76V32Z" fill="url(#cs-g3)"></path><path d="M60 14L92 32L60 48L28 32Z" fill="hsl(0 0% 100% / .28)"></path><path d="M60 48L92 32V76L60 98Z" fill="hsl(0 0% 0% / .18)"></path><path d="M60 14L92 32V76L60 98L28 76V32Z" fill="none" stroke="hsl(0 0% 100% / .45)" stroke-width="1.5" stroke-linejoin="round"></path><ellipse cx="49" cy="62" rx="6.5" ry="7.5" fill="hsl(0 0% 99%)"></ellipse><ellipse cx="71" cy="62" rx="6.5" ry="7.5" fill="hsl(0 0% 99%)"></ellipse><circle cx="51" cy="63.5" r="3.4" class="cs-g-dark"></circle><circle cx="73" cy="63.5" r="3.4" class="cs-g-dark"></circle><circle cx="52.2" cy="62" r="1.1" fill="hsl(0 0% 100%)"></circle><circle cx="74.2" cy="62" r="1.1" fill="hsl(0 0% 100%)"></circle><ellipse cx="41" cy="73" rx="4" ry="2.4" fill="hsl(350 90% 75% / .55)"></ellipse><ellipse cx="79" cy="73" rx="4" ry="2.4" fill="hsl(350 90% 75% / .55)"></ellipse><path d="M53 76q7 6 14 0" fill="none" stroke="hsl(0 0% 8%)" stroke-width="2.2" stroke-linecap="round"></path><ellipse cx="47" cy="100" rx="7" ry="3.6" class="cs-g-dark"></ellipse><ellipse cx="73" cy="100" rx="7" ry="3.6" class="cs-g-dark"></ellipse><path d="M90 14l2.5 6 6 2.5-6 2.5-2.5 6-2.5-6-6-2.5 6-2.5z" class="cs-g-spark"></path><path d="M24 20l1.5 3.5 3.5 1.5-3.5 1.5-1.5 3.5-1.5-3.5-3.5-1.5 3.5-1.5z" class="cs-g-spark"></path><path d="M92 70q8 2 10 8" fill="none" stroke="hsl(320 85% 52%)" stroke-width="4" stroke-linecap="round"></path><g transform="translate(94 76) scale(1.05)" class="cs-g-prop"><rect x="-2" y="-2" width="28" height="28" rx="8" class="cs-g-chip"></rect><g fill="none" stroke="hsl(0 0% 98%)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="m15.5 8.5-2 5-5 2 2-5z"></path></g></g></svg><div class="cs-guide-text"><p class="cs-guide-who"><strong>Iris</strong> <span>Technical artist</span></p><p class="cs-guide-says">“How do I author PBR materials, validate WGSL shaders, and pack GLB and UORC files?”</p><p class="cs-guide-how">A how-to guide: each section completes one practical engine task.</p></div></aside>
+      <figure class="cs-figure cs-graph"><div class="cs-canvas"><svg class="cs-svg cs-wide" viewBox="0 0 680 190" role="img" aria-labelledby="cs-t18 cs-d19" xmlns="http://www.w3.org/2000/svg"><title id="cs-t18">Authoring, physics, and sensory pipeline in verdant-core</title><desc id="cs-d19">5 nodes and 5 links. GLB importer to SceneWorld + BVH; WGSL shaders to SceneWorld + BVH; SceneWorld + BVH to XPBD + vehicles; SceneWorld + BVH to UORC + Studio; XPBD + vehicles to UORC + Studio.</desc><g transform="translate(0 0)"><defs><marker id="cs-a17" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="cs-arrowhead"></path></marker></defs><path d="M146.66666666666666 71C205.66666666666663 71 205.66666666666663 71 264.66666666666663 71" class="cs-edge" marker-end="url(#cs-a17)"></path><path d="M146.66666666666666 153C205.66666666666663 153 205.66666666666663 71 264.66666666666663 71" class="cs-edge" marker-end="url(#cs-a17)"></path><path d="M357.59999999999997 38C357.59999999999997 19.24 322.4 -7.960000000000001 322.4 118" class="cs-edge cs-back" marker-end="url(#cs-a17)"></path><path d="M413.33333333333326 71C472.33333333333326 71 472.33333333333326 112 531.3333333333333 112" class="cs-edge" marker-end="url(#cs-a17)"></path><path d="M413.33333333333326 153C472.33333333333326 153 472.33333333333326 112 531.3333333333333 112" class="cs-edge" marker-end="url(#cs-a17)"></path><g class="cs-node"><rect x="0" y="38" width="146.66666666666666" height="66" rx="10" class="cs-card"></rect><rect x="0" y="46" width="3" height="50" rx="1.5" fill="hsl(356 95% 66%)"></rect><text x="73.3" y="57.0" class="cs-label" text-anchor="middle" dominant-baseline="middle">GLB importer</text><text x="73.3" y="75.8" class="cs-sub" text-anchor="middle" dominant-baseline="middle">Meshes, skins,</text><text x="73.3" y="90.1" class="cs-sub" text-anchor="middle" dominant-baseline="middle">clips, PBR</text></g><g class="cs-node"><rect x="0" y="120" width="146.66666666666666" height="66" rx="10" class="cs-card"></rect><rect x="0" y="128" width="3" height="50" rx="1.5" fill="hsl(356 95% 66%)"></rect><text x="73.3" y="139.0" class="cs-label" text-anchor="middle" dominant-baseline="middle">WGSL shaders</text><text x="73.3" y="157.8" class="cs-sub" text-anchor="middle" dominant-baseline="middle">5 validated Naga</text><text x="73.3" y="172.2" class="cs-sub" text-anchor="middle" dominant-baseline="middle">modules</text></g><g class="cs-node"><rect x="266.66666666666663" y="38" width="146.66666666666666" height="66" rx="10" class="cs-card"></rect><rect x="266.66666666666663" y="46" width="3" height="50" rx="1.5" fill="hsl(356 95% 66%)"></rect><text x="340.0" y="57.0" class="cs-label" text-anchor="middle" dominant-baseline="middle">SceneWorld + BVH</text><text x="340.0" y="75.8" class="cs-sub" text-anchor="middle" dominant-baseline="middle">Exact hierarchy +</text><text x="340.0" y="90.1" class="cs-sub" text-anchor="middle" dominant-baseline="middle">raycasts</text></g><g class="cs-node"><rect x="266.66666666666663" y="120" width="146.66666666666666" height="66" rx="10" class="cs-card"></rect><rect x="266.66666666666663" y="128" width="3" height="50" rx="1.5" fill="hsl(356 95% 66%)"></rect><text x="340.0" y="139.0" class="cs-label" text-anchor="middle" dominant-baseline="middle">XPBD + vehicles</text><text x="340.0" y="157.8" class="cs-sub" text-anchor="middle" dominant-baseline="middle">Joints, capsule,</text><text x="340.0" y="172.2" class="cs-sub" text-anchor="middle" dominant-baseline="middle">4-wheel rig</text></g><g class="cs-node"><rect x="533.3333333333333" y="79" width="146.66666666666666" height="66" rx="10" class="cs-card"></rect><rect x="533.3333333333333" y="87" width="3" height="50" rx="1.5" fill="hsl(356 95% 66%)"></rect><text x="606.7" y="98.0" class="cs-label" text-anchor="middle" dominant-baseline="middle">UORC + Studio</text><text x="606.7" y="116.8" class="cs-sub" text-anchor="middle" dominant-baseline="middle">Progressive</text><text x="606.7" y="131.2" class="cs-sub" text-anchor="middle" dominant-baseline="middle">LOD0..LOD3</text></g></g></svg><svg class="cs-svg cs-tall" viewBox="0 0 340 220" role="img" aria-labelledby="cs-t21 cs-d22" xmlns="http://www.w3.org/2000/svg"><title id="cs-t21">Authoring, physics, and sensory pipeline in verdant-core</title><desc id="cs-d22">5 nodes and 5 links. GLB importer to SceneWorld + BVH; WGSL shaders to SceneWorld + BVH; SceneWorld + BVH to XPBD + vehicles; SceneWorld + BVH to UORC + Studio; XPBD + vehicles to UORC + Studio.</desc><defs><marker id="cs-a20" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="cs-arrowhead"></path></marker></defs><path d="M214 14C258.8 14 258.8 108 218 108" class="cs-edge" marker-end="url(#cs-a20)"></path><path d="M214 58C243.4 58 243.4 108 218 108" class="cs-edge" marker-end="url(#cs-a20)"></path><path d="M214 102C243.4 102 243.4 152 218 152" class="cs-edge" marker-end="url(#cs-a20)"></path><path d="M214 102C258.8 102 258.8 196 218 196" class="cs-edge" marker-end="url(#cs-a20)"></path><path d="M214 146C243.4 146 243.4 196 218 196" class="cs-edge" marker-end="url(#cs-a20)"></path><g class="cs-node"><rect x="0" y="0" width="210" height="34" rx="10" class="cs-card"></rect><rect x="0" y="6" width="3" height="22" rx="1.5" fill="hsl(356 95% 66%)"></rect><text x="12.0" y="17.0" class="cs-label" text-anchor="start" dominant-baseline="middle">GLB importer</text></g><g class="cs-node"><rect x="0" y="44" width="210" height="34" rx="10" class="cs-card"></rect><rect x="0" y="50" width="3" height="22" rx="1.5" fill="hsl(356 95% 66%)"></rect><text x="12.0" y="61.0" class="cs-label" text-anchor="start" dominant-baseline="middle">WGSL shaders</text></g><g class="cs-node"><rect x="0" y="88" width="210" height="34" rx="10" class="cs-card"></rect><rect x="0" y="94" width="3" height="22" rx="1.5" fill="hsl(356 95% 66%)"></rect><text x="12.0" y="105.0" class="cs-label" text-anchor="start" dominant-baseline="middle">SceneWorld + BVH</text></g><g class="cs-node"><rect x="0" y="132" width="210" height="34" rx="10" class="cs-card"></rect><rect x="0" y="138" width="3" height="22" rx="1.5" fill="hsl(356 95% 66%)"></rect><text x="12.0" y="149.0" class="cs-label" text-anchor="start" dominant-baseline="middle">XPBD + vehicles</text></g><g class="cs-node"><rect x="0" y="176" width="210" height="34" rx="10" class="cs-card"></rect><rect x="0" y="182" width="3" height="22" rx="1.5" fill="hsl(356 95% 66%)"></rect><text x="12.0" y="193.0" class="cs-label" text-anchor="start" dominant-baseline="middle">UORC + Studio</text></g></svg></div><figcaption><strong>Authoring, physics, and sensory pipeline in verdant-core.</strong> External GLB assets, procedural meshes, XPBD joints, raycast vehicles, and occluded audio unite inside <a class="cs-term" href="#term-scene-world" title="The entity-component-system container in verdant-core that stores entities, parent-child transforms, meshes, and PBR materials.">SceneWorld</a>.</figcaption><details class="cs-data"><summary>The data in this figure</summary><table><thead><tr><th scope="col">From</th><th scope="col">Link</th><th scope="col">To</th></tr></thead><tbody><tr><td>GLB importer</td><td>→</td><td>SceneWorld + BVH</td></tr><tr><td>WGSL shaders</td><td>→</td><td>SceneWorld + BVH</td></tr><tr><td>SceneWorld + BVH</td><td>→</td><td>XPBD + vehicles</td></tr><tr><td>SceneWorld + BVH</td><td>→</td><td>UORC + Studio</td></tr><tr><td>XPBD + vehicles</td><td>→</td><td>UORC + Studio</td></tr></tbody></table></details><script type="application/vnd.prism.figure+json">{"kind":"graph","title":"Authoring, physics, and sensory pipeline in verdant-core","caption":"External GLB assets, procedural meshes, XPBD joints, raycast vehicles, and occluded audio unite inside SceneWorld.","nodes":[{"id":"glb","label":"GLB importer","sub":"Meshes, skins, clips, PBR","layer":0},{"id":"mat","label":"WGSL shaders","sub":"5 validated Naga modules","layer":0},{"id":"ecs","label":"SceneWorld + BVH","sub":"Exact hierarchy + raycasts","layer":1},{"id":"phy","label":"XPBD + vehicles","sub":"Joints, capsule, 4-wheel rig","layer":1},{"id":"out","label":"UORC + Studio","sub":"Progressive LOD0..LOD3","layer":2}],"edges":[{"from":"glb","to":"ecs"},{"from":"mat","to":"ecs"},{"from":"ecs","to":"phy"},{"from":"ecs","to":"out"},{"from":"phy","to":"out"}]}</script></figure>
       
-      <h2>Generate heightfield terrain and procedural meshes</h2>
-      <p>Call <code>generate_terrain_mesh</code> with <code>TerrainReliefParams</code> to create an indexed triangle grid with analytical surface normals.</p>
-      <p>For columns, faceted prisms, and ribbons, call <code>generate_fluted_entasis_column_mesh</code>, <code>generate_faceted_prism_mesh</code>, or <code>canonical_scene_mesh_library</code>.</p>
-      <p>When deformable ribbons bend in the wind, blend vertex offsets with <code>MorphTarget</code>.</p>
+      <h2>Import external GLB scenes and transcode to UORC</h2>
+      <p>Call <code>import_glb_to_scene</code> to load node hierarchies, indexed meshes, skin weights, skeletal clips, and PBR materials into a <code>SceneWorld</code>.</p>
+      <p>Call <code>transcode_glb_to_progressive_uorc</code> or run <code>verdant transcode-glb authored.glb scene.uorc</code> to emit a four-LOD stream.</p>
+      <pre><code>let imported = import_glb_to_scene(&amp;glb_bytes)?;
+let uorc_stream = transcode_glb_to_progressive_uorc(&amp;glb_bytes, 7)?;</code></pre>
+      <h2>Configure XPBD joints, swept capsules, and raycast vehicles</h2>
+      <p>Attach <code>RigidJointConstraint</code> links with <code>Hinge</code>, <code>BallSocket</code>, <code>Slider</code>, or <code>SpringDamper</code> topology solved via Delassus matrices.</p>
+      <p>Drive characters over stairs with <code>step_swept_against_bvh</code> and simulate four-wheel suspension rigs with <code>RaycastVehicle</code>.</p>
       <h2>Validate portable WGSL shaders</h2>
-      <p>Every shader passes through W3C <code>naga</code> front-end parsing and module validation before shipping in an asset bundle.</p>
+      <p>Every built-in PBR, terrain, fluid, sky, and skinned shadow shader passes W3C <code>naga</code> validation before asset packing.</p>
       <pre><code>let shaders = validate_builtin_engine_shaders()?;
-assert_eq!(shaders.len(), 4);</code></pre>
-      <h2>Mix spatial audio with AudioWorklet synthesis</h2>
-      <p>Create an <code>AcousticEnvironment</code> with a <code>ListenerPose</code> and evaluate <code>SpatialAudioSource</code> emitters in 3D space.</p>
-      <p>Each call to <code>evaluate_binaural_cue</code> computes Woodworth interaural time difference, level difference, and Sabine RT60 decay for the 128-frame AudioWorklet.</p>
-      <h2>Pack and verify assets with verdant-cli</h2>
-      <p>Call <code>export_scene_to_glb(&amp;scene, &amp;meshes, &amp;materials)</code> in Rust, or run <code>cargo run -p verdant-cli -- pack-scene out.glb</code> from your shell.</p>
-      <p>Run <code>verdant verify-uorc</code>, <code>verdant validate-glb</code>, <code>verdant validate-wgsl</code>, and <code>verdant snapshot-verify</code> in continuous integration.</p>
+assert_eq!(shaders.len(), 5);</code></pre>
+      <h2>Mix occluded spatial audio and Hadamard reverb</h2>
+      <p>Call <code>evaluate_binaural_cue_with_occlusion</code> to cast a line-of-sight ray against the <a class="cs-term" href="#term-bounding-volume-hierarchy" title="A tree of 3D bounding boxes partitioned by surface area so raycasts and camera frustum checks skip distant geometry.">BVH</a> and attenuate obstructed sound sources.</p>
+      <p>Call <code>synthesize_binaural_reverb_quantum_exact</code> to convolve Euler-Bernoulli modal bars and step the four-channel Hadamard FDN tank.</p>
     
-      <details class="cs-terms" id="words"><summary>Words on this page <span>2</span></summary><dl><dt id="term-wgsl">WGSL</dt><dd>The W3C portable shading language whose modules are parsed and type-checked in Verdant Engine by naga.</dd><dt id="term-gltf">glTF</dt><dd>The Khronos Group 3D scene transmission standard. GLB is its single-file binary container.</dd></dl></details><nav class="dc-pager" aria-label="Page sequence">
+      <details class="cs-terms" id="words"><summary>Words on this page <span>3</span></summary><dl><dt id="term-scene-world">scene world</dt><dd>The entity-component-system container in verdant-core that stores entities, parent-child transforms, meshes, and PBR materials.</dd><dt id="term-bounding-volume-hierarchy">bounding volume hierarchy</dt><dd>A tree of 3D bounding boxes partitioned by surface area so raycasts and camera frustum checks skip distant geometry.</dd><dt id="term-gltf">glTF</dt><dd>The Khronos Group 3D scene transmission standard. GLB is its single-file binary container.</dd></dl></details><nav class="dc-pager" aria-label="Page sequence">
         <a href="../../getting-started/">Previous: Build your first 3D world</a>
-        <a href="../../guides/progressive-uorc-streaming/">Next: Stream high-resolution scenes with UORC</a>
+        <a href="../../guides/progressive-uorc-streaming/">Next: Stream zero-decode scenes with UORC</a>
       </nav>
     </main>
   
