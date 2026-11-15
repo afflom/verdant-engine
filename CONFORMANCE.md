@@ -18,11 +18,33 @@ The three honesty levels (R2):
 `cargo xtask audit-limits` fails if any code path returns an error the
 model does not sanction.
 
-## contract
+## engine
 
 | ID | Level | Statement |
 | --- | --- | --- |
-| `TC-01` | `build` | The checker answers conformant exactly when every universal policy file's observed digest equals its locked digest |
+| `VE-01` | `build` | World expansion advances monotonically across cosmological epochs to t_obs and refuses out-of-order or out-of-bounds scale factors |
+| `VE-02` | `build` | All seven Builder artifacts and the autonomous perimeter rover satisfy Heyman middle-third statics at t_obs while unstable or pre-Builder blueprints are refused |
+| `VE-03` | `build` | Archetype ECS world and surface-area-heuristic BVH execute deterministic raycasts and frustum culling across arbitrary 3D scenes |
+| `VE-04` | `build` | Procedural meshes, morph targets, and PBR scenes export to binary glTF 2.0 validated by the Khronos gltf oracle and refuse degenerate geometry |
+| `VE-05` | `build` | PBR, terrain, water, and sky WGSL shader modules pass W3C naga validation and invalid shader sources are refused |
+| `VE-06` | `build` | Symplectic Euler rigid bodies, capsule controllers, and autonomous spline rovers step deterministically and refuse invalid substeps or non-finite timesteps |
+| `VE-07` | `build` | Spatial audio listener and modal resonators synthesize deterministic stereo buffers with distance attenuation and Sabine RT60 reverberation |
+| `VE-08` | `build` | Browser worker job graphs and frame-budget profilers validate acyclic schedules and refuse cyclic dependencies or invalid engine configurations |
+| `VE-09` | `build` | Binary IEEE-754 world snapshots with SHA-256 trailers round-trip bit-identically and refuse truncated or tampered payloads |
+| `VE-10` | `build` | The compiled Core-Wasm engine verifier proves monotonic expansion and Builder equilibrium in Lean without Classical.choice and answers queries deterministically |
+
+## fidelity
+
+| ID | Level | Statement |
+| --- | --- | --- |
+| `FI-01` | `build` | Every record of a Prism project is scored on W3C PROV-O derivation, ISO/IEC/IEEE 29148 verification, and ISO/IEC/IEEE 15939 measurement, refusing falsified digests |
+| `FI-02` | `build` | The fidelity register only shrinks: a closed kappa never reopens, and committed fidelity.toml and Fidelity.lex.tex match the live model |
+| `FI-03` | `build` | Verdant Engine's own model fidelity is measured by ISO/IEC/IEEE 15939 indicators checked by the Lean kernel |
+| `FI-04` | `build` | Records are cited mechanically from the smallest verbatim span in model/provenance.toml primary sources |
+| `FI-05` | `build` | Every quality measure listed in model/measures.toml is evaluated by the Lean kernel against its declared threshold |
+| `FI-06` | `build` | Record-to-record W3C PROV-O derivations close only when their upstream records close and refuse unreferenced derivations |
+| `FI-07` | `build` | Primary charter sources are attributed to their human author as a W3C PROV-O person agent |
+| `FI-08` | `build` | The permanent zero-constants parametric ratchet enforces zero magic float or integer literals across verdant-core and constructive LexLean modules and refuses planted constants |
 
 ## frame
 

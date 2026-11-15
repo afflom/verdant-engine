@@ -1,0 +1,21 @@
+[package]
+name = "prism-fidelity"
+description = "Fidelity scorer, W3C PROV-O citation engine, ISO/IEC/IEEE 15939 measurement ratchet, and permanent zero-constants parametric ratchet."
+publish = false
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+authors.workspace = true
+keywords.workspace = true
+categories.workspace = true
+
+[dependencies]
+serde = { version = "1.0.219", features = ["derive"] }
+sha2 = "0.10.9"
+toml = "1.2"
+
+[lints]
+workspace = true

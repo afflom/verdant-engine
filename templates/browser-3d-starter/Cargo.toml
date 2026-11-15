@@ -1,0 +1,12 @@
+[package]
+name = "verdant-browser-3d-starter"
+version = "0.1.0"
+edition = "2024"
+publish = false
+license = "Apache-2.0 OR MIT"
+description = "Starter template for custom 3D worlds built with Verdant Engine."
+
+[workspace]
+
+[dependencies]
+verdant-core = { path = "../../crates/verdant-core" }

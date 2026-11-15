@@ -1,0 +1,135 @@
+# Permanent Zero-Constants & Purely Parametric Ratchet (FI-08).
+# Every ceiling is permanently locked at 0 from commit 1 so no magic constants,
+# ungrounded LexLean strata, or non-constructive Classical.choice axioms can enter.
+spec = "prism/parametric-ratchet/1"
+ontology_root = "app/src/Foundation/Ontology/V1/Model.lex.tex"
+engine_rust_root = "crates/verdant-core/src"
+pure_zero_one_lex_modules = [
+  "app/src/Foundation/Ontology/V1/Model.lex.tex",
+  "app/src/Genesis.lex.tex",
+  "app/src/Measures.lex.tex",
+  "app/src/Production/ThreatModel.lex.tex",
+]
+
+[ceilings]
+max_ontology_root_literal_gt_one_count = 0
+max_ontology_root_string_field_count = 0
+max_classical_choice_count = 0
+max_ungrounded_lex_module_count = 0
+max_domain_lex_magic_literal_count = 0
+max_engine_rust_magic_literal_count = 0
+
+[[stratum_module]]
+path = "app/src/Foundation/Ontology/V1/Model.lex.tex"
+stratum = 0
+role = "Constructive {0, 1} arithmetic, prime generators, W5H certificates, and 8-stratum obstruction calculus."
+
+[[stratum_module]]
+path = "app/src/Foundation/Bytes.lex.tex"
+stratum = 0
+role = "Bounded deterministic byte slices and ordering primitives without Classical.choice."
+
+[[stratum_module]]
+path = "app/src/Genesis.lex.tex"
+stratum = 1
+role = "Cosmological expansion epochs t_0 -> t_obs, Builder guild differentiation, and Heyman middle-third equilibrium."
+
+[[stratum_module]]
+path = "app/src/Foundation/Arch.lex.tex"
+stratum = 2
+role = "ISO/IEC/IEEE 42010 architecture, OPM ISO 19450, and UML 2.5.1 metamodel foundations."
+
+[[stratum_module]]
+path = "app/src/Architecture.lex.tex"
+stratum = 2
+role = "Verdant Engine stakeholders, concerns, runtime components, dataflows, viewpoints, and views."
+
+[[stratum_module]]
+path = "app/src/Design.lex.tex"
+stratum = 2
+role = "OPM world-genesis pipeline, UML engine component topology, frame sequence, and verifier state machine."
+
+[[stratum_module]]
+path = "app/src/Foundation/Sec.lex.tex"
+stratum = 3
+role = "ISO/IEC 27005 risk and ISO/IEC 27034 application security control metamodel."
+
+[[stratum_module]]
+path = "app/src/Production/ThreatModel.lex.tex"
+stratum = 3
+role = "Constructive STRIDE threat modeling, risk tolerance matrices, and control evidence structures."
+
+[[stratum_module]]
+path = "app/src/Security.lex.tex"
+stratum = 3
+role = "Verdant Engine browser/Wasm threat model, shader/asset validation controls, and host-substitution boundary."
+
+[[stratum_module]]
+path = "app/src/Foundation/Qual.lex.tex"
+stratum = 4
+role = "ISO/IEC 25010:2023 product quality characteristic, requirement, and measure metamodel."
+
+[[stratum_module]]
+path = "app/src/Quality.lex.tex"
+stratum = 4
+role = "Verdant Engine quality model covering frame-time budgets, equilibrium invariants, and WCAG 2.2 AA accessibility."
+
+[[stratum_module]]
+path = "app/src/Foundation/Measurement/V1/Model.lex.tex"
+stratum = 4
+role = "ISO/IEC/IEEE 15939 measurement indicators, decision criteria, and constructive boolean reflection."
+
+[[stratum_module]]
+path = "app/src/Measures.lex.tex"
+stratum = 4
+role = "Constructive Lean kernel evaluators for unstable blueprints, disordered epochs, and stakeholder journey coverage."
+
+[[stratum_module]]
+path = "app/src/Fidelity.lex.tex"
+stratum = 4
+role = "ISO/IEC/IEEE 15939 self-measurement of derived, meant, and measured model fidelity."
+
+[[stratum_module]]
+path = "app/src/Foundation/Provenance/V1/Model.lex.tex"
+stratum = 5
+role = "W3C PROV-O source entities, span digests, agent attributions, and record derivations."
+
+[[stratum_module]]
+path = "app/src/Provenance.lex.tex"
+stratum = 5
+role = "Mechanical W3C PROV-O citations binding every Verdant Engine model record to its primary source span."
+
+[[stratum_module]]
+path = "app/src/Compliance.lex.tex"
+stratum = 5
+role = "Standards compliance register across ISO 42010, OPM, UML, ISO 25010, ISO 27005, Khronos glTF 2.0, W3C WGSL, and WCAG 2.2."
+
+[[stratum_module]]
+path = "app/src/Foundation/Experience/V1/Model.lex.tex"
+stratum = 6
+role = "Brand identity, W3C DTCG 2025.10 design tokens, WCAG contrast ratios, and ISO 9241-11 context-of-use metamodel."
+
+[[stratum_module]]
+path = "app/src/Brand.lex.tex"
+stratum = 6
+role = "Verdant Engine brand elements, DTCG color/typography tokens, and kernel-proved contrast ratios."
+
+[[stratum_module]]
+path = "app/src/Features.lex.tex"
+stratum = 7
+role = "Commercial 3D game engine capabilities and end-to-end journeys for developers, technical artists, players, and auditors."
+
+[[stratum_module]]
+path = "app/src/Users.lex.tex"
+stratum = 7
+role = "ISO 9241-11 user groups, goals, tasks, technical environments, and usability outcomes."
+
+[[stratum_module]]
+path = "app/src/Foundation/View/Text/V1/Model.lex.tex"
+stratum = 7
+role = "Core-Wasm text application contract and deterministic acceptance vector specification."
+
+[[stratum_module]]
+path = "app/src/Engine.lex.tex"
+stratum = 7
+role = "Compiled Core-Wasm engine verifier entrypoint dispatching epoch and blueprint verification queries."

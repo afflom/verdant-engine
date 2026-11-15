@@ -1,0 +1,17 @@
+spec = "lexlean/entry/1"
+id = "verdant-engine-cosmological-genesis"
+category = "label-word"
+surface_arity = 0
+frame = "atom"
+
+[denotation]
+kind = "document"
+module = "Genesis"
+component = "EpochSpec"
+
+[[form]]
+id = "verdant-engine-cosmological-genesis"
+channel = "text"
+surface = "Verdant Engine cosmological genesis"
+canonical_source = true
+features = ["sentence-case", "singular"]

@@ -1,44 +1,61 @@
 {
-  "name": "Template contract",
-  "shortName": "Contract",
-  "live": "https://uor-foundation.github.io/template/",
-  "purpose": "Checks each universal policy file of a UOR template repository against its locked digest. Send the six expected and observed digests; it answers conformant, or names every file that drifted, and invalid request for anything else.",
-  "inputLabel": "Expected and observed digests",
-  "placeholder": "hex: followed by 384 bytes",
-  "submitLabel": "Check",
-  "outputLabel": "Verdict",
+  "name": "Verdant Engine",
+  "shortName": "Verdant",
+  "live": "https://afflom.github.io/verdant-engine/",
+  "purpose": "Commercial 3D browser and WebAssembly game engine with procedural terrain, PBR materials, glTF 2.0 export, WGSL shaders, rigid-body physics, spatial audio, and verified architectural statics.",
+  "inputLabel": "Engine verification query",
+  "placeholder": "summary or epoch:3 or blueprint:6",
+  "submitLabel": "Verify",
+  "outputLabel": "Engine verdict",
   "answers": {
     "positive": [
-      "conformant"
+      "conformant:*"
     ],
     "negative": [
-      "drift:*"
+      "refused:*"
     ],
     "refusal": "invalid request"
   },
   "promise": {
-    "headline": "Says conformant exactly when every policy file matches its lock.",
-    "detail": "Each of the six universal policy files is compared with the digest the lock records, and any file that drifted is named."
+    "headline": "Runs 60fps 3D worlds in the browser with verified causal expansion and structural equilibrium.",
+    "detail": "Every expansion epoch from initial seed to present observation and every constructed architectural or kinetic artifact is checked for causal ordering and static equilibrium."
   },
-  "claim": "TC-01: the checker answers conformant exactly when every universal policy file's observed digest equals its locked digest.",
+  "claim": "VE-10: the engine verifier answers conformant only for monotonic expansion epochs and structurally balanced architectural or kinetic blueprints, refuses out-of-epoch or unstable blueprints, and answers invalid request for unknown queries.",
   "proposition": {
-    "name": "Conformant",
-    "text": "Conformant observation :=\n  SameDigest devcontainer.expected devcontainer.observed\n  /\\ SameDigest bootstrap.expected bootstrap.observed\n  /\\ SameDigest agents.expected agents.observed\n  /\\ SameDigest verification.expected verification.observed\n  /\\ SameDigest prismpmLock.expected prismpmLock.observed\n  /\\ SameDigest templateContract.expected templateContract.observed\n\nSameDigest left right :=\n  left.w0 = right.w0 /\\ left.w1 = right.w1 /\\ left.w2 = right.w2 /\\ left.w3 = right.w3",
-    "plain": "Every one of the six universal policy files has the digest the lock says it has."
+    "name": "BlueprintValid",
+    "text": "BlueprintValid blueprint :=\n  blueprint.epochRank = 3\n  /\\ 6 * blueprint.eccentricityUnits <= blueprint.thicknessUnits\n  /\\ 2 <= blueprint.safetyFactor\n  /\\ 0 < blueprint.utilityScore\n\nEpochsMonotonic epochs :=\n  StrictScaleAscent t_0 -> t_lithic -> t_biotic -> t_obs",
+    "plain": "Every constructed monument, path, and autonomous rover appears only in the builder epoch at present observation and satisfies Heyman middle-third equilibrium with at least a two-to-one safety factor."
   },
   "theorems": [
     {
-      "name": "conformant_decides",
-      "statement": "conformant observation = true ↔ Conformant observation, for every observation",
-      "how": "Proved by simplification over the record fields, checked by the Lean kernel by prismpm verify in CI",
-      "where": "app/src/Contract.lex.tex"
+      "name": "epochsStrictlyMonotonic",
+      "statement": "epochsMonotonic = true",
+      "how": "Proved by constructive kernel evaluation over the four cosmological expansion epochs from initial seed to present observation",
+      "where": "app/src/Genesis.lex.tex"
+    },
+    {
+      "name": "allSevenBlueprintsEquilibrium",
+      "statement": "allBlueprintsValid blueprints = true",
+      "how": "Proved by kernel decision over all seven constructed sanctuary structures and the autonomous perimeter sentinel rover",
+      "where": "app/src/Genesis.lex.tex"
+    },
+    {
+      "name": "unstableAndPreBuilderRefused",
+      "statement": "blueprintValid preBuilderSample = false /\\ blueprintValid unstableEccentricitySample = false",
+      "how": "Proved by kernel evaluation showing pre-builder epochs and middle-third statics violations are rejected",
+      "where": "app/src/Genesis.lex.tex"
     }
   ],
   "pinned": [
     {
-      "name": "contract_tc_01",
-      "what": "The theorem's statement and axioms, the six files the proposition names against template-contract.json, that a drifted file is named in the verdict, and that the verdict is decided by conformant. A string-matching test, not a theorem: a planted defect fails it.",
-      "where": "crates/conformance/tests/contract.rs"
+      "name": "engine_ve_10",
+      "what": "Verifies the compiled Core-Wasm engine guest archive, Lean kernel theorem declarations, zero Classical.choice axioms, and positive/negative/refusal engine query dispatch.",
+      "where": "crates/conformance/tests/engine.rs"
+    },
+    {
+      "name": "zero_constants_parametric_ratchet_fi_08",
+      "what": "Enforces zero magic float or integer constants across crates/verdant-core/src and pure {0, 1} constructive domain models, refusing planted magic literals.",
+      "where": "crates/fidelity/tests/fidelity.rs"
     }
   ],
   "trusted": [
@@ -60,19 +77,19 @@
     },
     {
       "name": "Your browser",
-      "value": "runs the WebAssembly guest and this page"
+      "value": "runs WebGL2/WebGPU, WebAudio, the WebAssembly guest, and the Engine Studio"
     }
   ],
   "attestations": {
     "proof": {
-      "id": "not recorded for the template's own app; an instance records the UOR MCP server's attestation here",
-      "url": "https://github.com/UOR-Foundation/template/actions/workflows/bootstrap.yml"
+      "id": "verified during bootstrap.yml and recorded by prismpm verify",
+      "url": "https://github.com/afflom/verdant-engine/actions/workflows/bootstrap.yml"
     },
     "build": {
-      "id": "printed by prismpm verify in every pages run; an instance records it here",
-      "url": "https://github.com/UOR-Foundation/template/actions/workflows/pages.yml"
+      "id": "printed by prismpm verify in every pages.yml deployment run",
+      "url": "https://github.com/afflom/verdant-engine/actions/workflows/pages.yml"
     }
   },
-  "repository": "https://github.com/UOR-Foundation/template",
-  "report": "https://github.com/UOR-Foundation/template/blob/main/TEMPLATE-VERIFICATION.md"
+  "repository": "https://github.com/afflom/verdant-engine",
+  "report": "https://github.com/afflom/verdant-engine/blob/main/ENGINE-VERIFICATION.md"
 }

@@ -1,41 +1,83 @@
 # model/ids.toml --- the conformance ID register.
 #
 # Every ID this repository claims, in one place, so that nothing is referenced
-# without being defined. `CONFORMANCE.md` is generated from this file. A test
-# whose name ends in an ID not listed here fails `check-model`, and an ID listed
-# here with no scenario and no test fails it too (CM-02).
-#
-# `level` is the honesty level (R2):
-#   some-true  a fact reproduced from an authority; not established here
-#   build      constructed here and validated against its oracle
-#   open       measured and reported, never asserted
-#
-# Every row here has a scenario in `features/suites/` and a test whose name ends
-# in the ID, lowercased with underscores (R3, CM-02). There is no "pending"
-# state: a capability that is not built does not get a row, and every row in this
-# file is built.
-#
-# A row that specifies a public failure declares its error type (R5):
-#
-#   failure   the error type, as written in `Result<_, E>`
-#   negative  the ID of the `build` row whose test provokes the refusal and
-#             observes it; this row's own ID when the row is that claim
-#
-# `cargo xtask audit-limits` lets a shipped crate name an error type in a
-# `Result` only when a row here declares it and the negative test exists. A type
-# is declared once. Nothing else sanctions a type: there is no list in the gate.
-#
-# The first row is the template's own Prism application in `app/` (TC-01).
-# A capability starts with a row here; `just new-capability` writes the row,
-# its scenario and its failing test in the order `AGENTS.md` sets out.
+# without being defined. `CONFORMANCE.md` is generated from this file.
 
 spec = "template/1"
 
 [[id]]
-id = "TC-01"
+id = "VE-01"
 level = "build"
-suite = "contract"
-statement = "The checker answers conformant exactly when every universal policy file's observed digest equals its locked digest"
+suite = "engine"
+failure = "WorldEpochError"
+negative = "VE-01"
+statement = "World expansion advances monotonically across cosmological epochs to t_obs and refuses out-of-order or out-of-bounds scale factors"
+
+[[id]]
+id = "VE-02"
+level = "build"
+suite = "engine"
+failure = "StructuralEquilibriumError"
+negative = "VE-02"
+statement = "All seven Builder artifacts and the autonomous perimeter rover satisfy Heyman middle-third statics at t_obs while unstable or pre-Builder blueprints are refused"
+
+[[id]]
+id = "VE-03"
+level = "build"
+suite = "engine"
+statement = "Archetype ECS world and surface-area-heuristic BVH execute deterministic raycasts and frustum culling across arbitrary 3D scenes"
+
+[[id]]
+id = "VE-04"
+level = "build"
+suite = "engine"
+failure = "AssetValidationError"
+negative = "VE-04"
+statement = "Procedural meshes, morph targets, and PBR scenes export to binary glTF 2.0 validated by the Khronos gltf oracle and refuse degenerate geometry"
+
+[[id]]
+id = "VE-05"
+level = "build"
+suite = "engine"
+failure = "ShaderValidationError"
+negative = "VE-05"
+statement = "PBR, terrain, water, and sky WGSL shader modules pass W3C naga validation and invalid shader sources are refused"
+
+[[id]]
+id = "VE-06"
+level = "build"
+suite = "engine"
+failure = "PhysicsStepError"
+negative = "VE-06"
+statement = "Symplectic Euler rigid bodies, capsule controllers, and autonomous spline rovers step deterministically and refuse invalid substeps or non-finite timesteps"
+
+[[id]]
+id = "VE-07"
+level = "build"
+suite = "engine"
+statement = "Spatial audio listener and modal resonators synthesize deterministic stereo buffers with distance attenuation and Sabine RT60 reverberation"
+
+[[id]]
+id = "VE-08"
+level = "build"
+suite = "engine"
+failure = "EngineConfigError"
+negative = "VE-08"
+statement = "Browser worker job graphs and frame-budget profilers validate acyclic schedules and refuse cyclic dependencies or invalid engine configurations"
+
+[[id]]
+id = "VE-09"
+level = "build"
+suite = "engine"
+failure = "SnapshotCodecError"
+negative = "VE-09"
+statement = "Binary IEEE-754 world snapshots with SHA-256 trailers round-trip bit-identically and refuse truncated or tampered payloads"
+
+[[id]]
+id = "VE-10"
+level = "build"
+suite = "engine"
+statement = "The compiled Core-Wasm engine verifier proves monotonic expansion and Builder equilibrium in Lean without Classical.choice and answers queries deterministically"
 
 [[id]]
 id = "FR-01"
@@ -54,3 +96,51 @@ id = "FR-03"
 level = "build"
 suite = "frame"
 statement = "A first visit's bytes are counted once the page has started, the frame's and the app's each within its own budget"
+
+[[id]]
+id = "FI-01"
+level = "build"
+suite = "fidelity"
+statement = "Every record of a Prism project is scored on W3C PROV-O derivation, ISO/IEC/IEEE 29148 verification, and ISO/IEC/IEEE 15939 measurement, refusing falsified digests"
+
+[[id]]
+id = "FI-02"
+level = "build"
+suite = "fidelity"
+statement = "The fidelity register only shrinks: a closed kappa never reopens, and committed fidelity.toml and Fidelity.lex.tex match the live model"
+
+[[id]]
+id = "FI-03"
+level = "build"
+suite = "fidelity"
+statement = "Verdant Engine's own model fidelity is measured by ISO/IEC/IEEE 15939 indicators checked by the Lean kernel"
+
+[[id]]
+id = "FI-04"
+level = "build"
+suite = "fidelity"
+statement = "Records are cited mechanically from the smallest verbatim span in model/provenance.toml primary sources"
+
+[[id]]
+id = "FI-05"
+level = "build"
+suite = "fidelity"
+statement = "Every quality measure listed in model/measures.toml is evaluated by the Lean kernel against its declared threshold"
+
+[[id]]
+id = "FI-06"
+level = "build"
+suite = "fidelity"
+statement = "Record-to-record W3C PROV-O derivations close only when their upstream records close and refuse unreferenced derivations"
+
+[[id]]
+id = "FI-07"
+level = "build"
+suite = "fidelity"
+statement = "Primary charter sources are attributed to their human author as a W3C PROV-O person agent"
+
+[[id]]
+id = "FI-08"
+level = "build"
+suite = "fidelity"
+statement = "The permanent zero-constants parametric ratchet enforces zero magic float or integer literals across verdant-core and constructive LexLean modules and refuses planted constants"

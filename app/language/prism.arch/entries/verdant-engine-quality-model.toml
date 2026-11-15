@@ -1,0 +1,17 @@
+spec = "lexlean/entry/1"
+id = "verdant-engine-quality-model"
+category = "label-word"
+surface_arity = 0
+frame = "atom"
+
+[denotation]
+kind = "document"
+module = "Quality"
+component = "qualityValid"
+
+[[form]]
+id = "verdant-engine-quality-model"
+channel = "text"
+surface = "Verdant Engine quality model"
+canonical_source = true
+features = ["sentence-case", "singular"]

@@ -8,7 +8,7 @@
 default: vv
 
 # The whole gate.
-vv: fmt-check model template-check lint test deny app
+vv: fmt-check model template-check experience-check fidelity lint test deny app
     @echo "vv: the acceptance gate passed"
 
 fmt-check:
@@ -86,6 +86,28 @@ fmt:
 # Regenerate everything the model owns: CONFORMANCE.md.
 model-write:
     cargo run -q --locked -p xtask -- check-model --write
+
+# FI-01..FI-08: W3C PROV-O citations, ISO 15939 measures, monotonic register,
+# and the permanent zero-constants parametric ratchet.
+fidelity:
+    cargo run -q --locked -p prism-fidelity -- --project app --repo . --register fidelity.toml --ratchet model/parametric-ratchet.toml --cite model/provenance.toml app/src/Provenance.lex.tex --measures model/measures.toml --lean app/src/Fidelity.lex.tex --check
+
+# Cite, rescore, and audit the model: Provenance.lex.tex, fidelity.toml, and Fidelity.lex.tex.
+fidelity-write:
+    cargo run -q --locked -p prism-fidelity -- --project app --repo . --register fidelity.toml --ratchet model/parametric-ratchet.toml --cite model/provenance.toml app/src/Provenance.lex.tex --measures model/measures.toml --lean app/src/Fidelity.lex.tex
+
+# Emit Brand.lex.tex, Users.lex.tex, brand/tokens.json, and brand/foundation.css.
+experience:
+    python3 -I scripts/experience/authority.py . --check
+    python3 -I scripts/experience/experience.py .
+    cd app && lexlean lock && lexlean fmt
+
+experience-check:
+    scripts/experience/check.sh
+
+# Check the mechanized Diataxis documentation and plain-language content standard.
+content site="site":
+    node scripts/content/check.mjs {{site}}
 
 # R3's first step in one command: a register row, its scenario, a failing test
 # named for the ID, and the regenerated CONFORMANCE.md.

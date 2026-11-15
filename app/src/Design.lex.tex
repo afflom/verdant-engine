@@ -1,0 +1,573 @@
+\begin{lexlean}{Design}
+\useglossary{lexlean.std.bool@1.2.0}
+\useglossary{lexlean.std.nat@1.2.0}
+\useglossary{prism.arch@1.0.0}
+\importmodule{Architecture}
+\title{Verdant Engine design views}
+\begin{semanticmodule}
+inductive{
+  name: DiagramKind,
+  type_parameters: [],
+  parameters: [],
+  constructors: [
+    {name: opmObjectProcess, fields: []},
+    {name: umlComponent, fields: []},
+    {name: umlSequence, fields: []},
+    {name: umlStateMachine, fields: []}
+  ]
+}
+
+inductive{
+  name: OpmThingKind,
+  type_parameters: [],
+  parameters: [],
+  constructors: [{name: object, fields: []}, {name: process, fields: []}]
+}
+
+inductive{
+  name: OpmLinkKind,
+  type_parameters: [],
+  parameters: [],
+  constructors: [
+    {name: agent, fields: []},
+    {name: instrument, fields: []},
+    {name: consumption, fields: []},
+    {name: result, fields: []},
+    {name: effect, fields: []},
+    {name: invocation, fields: []}
+  ]
+}
+
+inductive{
+  name: UmlMessageKind,
+  type_parameters: [],
+  parameters: [],
+  constructors: [
+    {name: synchronous, fields: []},
+    {name: asynchronous, fields: []},
+    {name: reply, fields: []}
+  ]
+}
+
+structure{
+  name: DiagramView,
+  type_parameters: [],
+  parameters: [],
+  fields: [
+    {name: title, type: String},
+    {name: viewpoint, type: String},
+    {name: diagram, type: DiagramKind}
+  ]
+}
+
+structure{
+  name: EngineProcess,
+  type_parameters: [],
+  parameters: [],
+  fields: [{name: owner, type: String}]
+}
+
+structure{
+  name: EngineState,
+  type_parameters: [],
+  parameters: [],
+  fields: [{name: owner, type: String}]
+}
+
+structure{
+  name: OpmThingSpec,
+  type_parameters: [],
+  parameters: [],
+  fields: [
+    {name: view, type: String},
+    {name: kind, type: OpmThingKind},
+    {name: subject, type: String}
+  ]
+}
+
+structure{
+  name: OpmStateSpec,
+  type_parameters: [],
+  parameters: [],
+  fields: [{name: view, type: String}, {name: thing, type: String}, {name: state, type: String}]
+}
+
+structure{
+  name: OpmLinkSpec,
+  type_parameters: [],
+  parameters: [],
+  fields: [
+    {name: view, type: String},
+    {name: kind, type: OpmLinkKind},
+    {name: source, type: String},
+    {name: target, type: String}
+  ]
+}
+
+structure{
+  name: OpmZoomSpec,
+  type_parameters: [],
+  parameters: [],
+  fields: [
+    {name: view, type: String},
+    {name: process, type: String},
+    {name: subprocess, type: String},
+    {name: order, type: Nat}
+  ]
+}
+
+structure{
+  name: UmlComponentSpec,
+  type_parameters: [],
+  parameters: [],
+  fields: [{name: view, type: String}, {name: component, type: String}]
+}
+
+structure{
+  name: UmlConnectorSpec,
+  type_parameters: [],
+  parameters: [],
+  fields: [{name: view, type: String}, {name: edge, type: String}]
+}
+
+structure{
+  name: UmlLifelineSpec,
+  type_parameters: [],
+  parameters: [],
+  fields: [{name: view, type: String}, {name: component, type: String}, {name: order, type: Nat}]
+}
+
+structure{
+  name: UmlMessageSpec,
+  type_parameters: [],
+  parameters: [],
+  fields: [
+    {name: view, type: String},
+    {name: kind, type: UmlMessageKind},
+    {name: order, type: Nat},
+    {name: source, type: String},
+    {name: target, type: String},
+    {name: process, type: String}
+  ]
+}
+
+structure{
+  name: UmlStateSpec,
+  type_parameters: [],
+  parameters: [],
+  fields: [{name: view, type: String}, {name: state, type: String}, {name: initial, type: Bool}]
+}
+
+structure{
+  name: UmlTransitionSpec,
+  type_parameters: [],
+  parameters: [],
+  fields: [
+    {name: view, type: String},
+    {name: order, type: Nat},
+    {name: source, type: String},
+    {name: target, type: String},
+    {name: trigger, type: String}
+  ]
+}
+
+definition{
+  name: viewOpmWorldGenesis,
+  parameters: [],
+  result: DiagramView,
+  body: (record DiagramView {title := "Synthesizing a world across expansion epochs", viewpoint := "Architecture::viewpointSystemsCausalFidelity", diagram := (ctor DiagramKind.opmObjectProcess)})
+}
+
+definition{
+  name: viewUmlComponents,
+  parameters: [],
+  result: DiagramView,
+  body: (record DiagramView {title := "Components of Verdant Engine", viewpoint := "Architecture::viewpointDeveloperOnboarding", diagram := (ctor DiagramKind.umlComponent)})
+}
+
+definition{
+  name: viewUmlFrameSequence,
+  parameters: [],
+  result: DiagramView,
+  body: (record DiagramView {title := "Executing a verified browser frame", viewpoint := "Architecture::viewpointSystemsPerformance", diagram := (ctor DiagramKind.umlSequence)})
+}
+
+definition{
+  name: viewUmlVerifierStates,
+  parameters: [],
+  result: DiagramView,
+  body: (record DiagramView {title := "States of the engine verifier guest", viewpoint := "Architecture::viewpointAuditorIntegrity", diagram := (ctor DiagramKind.umlStateMachine)})
+}
+
+definition{
+  name: processSynthesizeWorld,
+  parameters: [],
+  result: EngineProcess,
+  body: (record EngineProcess {owner := "Architecture::componentVerdantCoreCrate"})
+}
+
+definition{
+  name: processAdvanceEpochs,
+  parameters: [],
+  result: EngineProcess,
+  body: (record EngineProcess {owner := "Architecture::componentVerdantCoreCrate"})
+}
+
+definition{
+  name: processConstructBlueprints,
+  parameters: [],
+  result: EngineProcess,
+  body: (record EngineProcess {owner := "Architecture::componentVerdantCoreCrate"})
+}
+
+definition{
+  name: processExportGlbAndShaders,
+  parameters: [],
+  result: EngineProcess,
+  body: (record EngineProcess {owner := "Architecture::componentVerdantCoreCrate"})
+}
+
+definition{
+  name: processParseQuery,
+  parameters: [],
+  result: EngineProcess,
+  body: (record EngineProcess {owner := "Architecture::componentVerifierGuest"})
+}
+
+definition{
+  name: processVerifyBlueprintAndEpoch,
+  parameters: [],
+  result: EngineProcess,
+  body: (record EngineProcess {owner := "Architecture::componentVerifierGuest"})
+}
+
+definition{
+  name: processRenderViewportFrame,
+  parameters: [],
+  result: EngineProcess,
+  body: (record EngineProcess {owner := "Architecture::componentBrowserGpuHost"})
+}
+
+definition{
+  name: stateWorldSeeded,
+  parameters: [],
+  result: EngineState,
+  body: (record EngineState {owner := "Architecture::componentEngineStudioSite"})
+}
+
+definition{
+  name: stateWorldAtObservation,
+  parameters: [],
+  result: EngineState,
+  body: (record EngineState {owner := "Architecture::componentEngineStudioSite"})
+}
+
+definition{
+  name: stateVerifierIdle,
+  parameters: [],
+  result: EngineState,
+  body: (record EngineState {owner := "Architecture::componentVerifierGuest"})
+}
+
+definition{
+  name: stateVerifierEvaluating,
+  parameters: [],
+  result: EngineState,
+  body: (record EngineState {owner := "Architecture::componentVerifierGuest"})
+}
+
+definition{
+  name: opmCoreEngine,
+  parameters: [],
+  result: OpmThingSpec,
+  body: (record OpmThingSpec {view := "Design::viewOpmWorldGenesis", kind := (ctor OpmThingKind.object), subject := "Architecture::componentVerdantCoreCrate"})
+}
+
+definition{
+  name: opmStudioScene,
+  parameters: [],
+  result: OpmThingSpec,
+  body: (record OpmThingSpec {view := "Design::viewOpmWorldGenesis", kind := (ctor OpmThingKind.object), subject := "Architecture::componentEngineStudioSite"})
+}
+
+definition{
+  name: opmSynthesize,
+  parameters: [],
+  result: OpmThingSpec,
+  body: (record OpmThingSpec {view := "Design::viewOpmWorldGenesis", kind := (ctor OpmThingKind.process), subject := "Design::processSynthesizeWorld"})
+}
+
+definition{
+  name: opmAdvance,
+  parameters: [],
+  result: OpmThingSpec,
+  body: (record OpmThingSpec {view := "Design::viewOpmWorldGenesis", kind := (ctor OpmThingKind.process), subject := "Design::processAdvanceEpochs"})
+}
+
+definition{
+  name: opmConstruct,
+  parameters: [],
+  result: OpmThingSpec,
+  body: (record OpmThingSpec {view := "Design::viewOpmWorldGenesis", kind := (ctor OpmThingKind.process), subject := "Design::processConstructBlueprints"})
+}
+
+definition{
+  name: opmExport,
+  parameters: [],
+  result: OpmThingSpec,
+  body: (record OpmThingSpec {view := "Design::viewOpmWorldGenesis", kind := (ctor OpmThingKind.process), subject := "Design::processExportGlbAndShaders"})
+}
+
+definition{
+  name: opmSceneSeeded,
+  parameters: [],
+  result: OpmStateSpec,
+  body: (record OpmStateSpec {view := "Design::viewOpmWorldGenesis", thing := "Architecture::componentEngineStudioSite", state := "Design::stateWorldSeeded"})
+}
+
+definition{
+  name: opmSceneAtObservation,
+  parameters: [],
+  result: OpmStateSpec,
+  body: (record OpmStateSpec {view := "Design::viewOpmWorldGenesis", thing := "Architecture::componentEngineStudioSite", state := "Design::stateWorldAtObservation"})
+}
+
+definition{
+  name: opmCoreAgent,
+  parameters: [],
+  result: OpmLinkSpec,
+  body: (record OpmLinkSpec {view := "Design::viewOpmWorldGenesis", kind := (ctor OpmLinkKind.agent), source := "Architecture::componentVerdantCoreCrate", target := "Design::processSynthesizeWorld"})
+}
+
+definition{
+  name: opmAdvanceInvokesConstruct,
+  parameters: [],
+  result: OpmLinkSpec,
+  body: (record OpmLinkSpec {view := "Design::viewOpmWorldGenesis", kind := (ctor OpmLinkKind.invocation), source := "Design::processAdvanceEpochs", target := "Design::processConstructBlueprints"})
+}
+
+definition{
+  name: opmConstructInvokesExport,
+  parameters: [],
+  result: OpmLinkSpec,
+  body: (record OpmLinkSpec {view := "Design::viewOpmWorldGenesis", kind := (ctor OpmLinkKind.invocation), source := "Design::processConstructBlueprints", target := "Design::processExportGlbAndShaders"})
+}
+
+definition{
+  name: opmExportAffectsScene,
+  parameters: [],
+  result: OpmLinkSpec,
+  body: (record OpmLinkSpec {view := "Design::viewOpmWorldGenesis", kind := (ctor OpmLinkKind.effect), source := "Architecture::componentEngineStudioSite", target := "Design::processExportGlbAndShaders"})
+}
+
+definition{
+  name: opmZoomAdvance,
+  parameters: [],
+  result: OpmZoomSpec,
+  body: (record OpmZoomSpec {view := "Design::viewOpmWorldGenesis", process := "Design::processSynthesizeWorld", subprocess := "Design::processAdvanceEpochs", order := 0})
+}
+
+definition{
+  name: opmZoomConstruct,
+  parameters: [],
+  result: OpmZoomSpec,
+  body: (record OpmZoomSpec {view := "Design::viewOpmWorldGenesis", process := "Design::processSynthesizeWorld", subprocess := "Design::processConstructBlueprints", order := 1})
+}
+
+definition{
+  name: opmZoomExport,
+  parameters: [],
+  result: OpmZoomSpec,
+  body: (record OpmZoomSpec {view := "Design::viewOpmWorldGenesis", process := "Design::processSynthesizeWorld", subprocess := "Design::processExportGlbAndShaders", order := 2})
+}
+
+definition{
+  name: umlVerdantCore,
+  parameters: [],
+  result: UmlComponentSpec,
+  body: (record UmlComponentSpec {view := "Design::viewUmlComponents", component := "Architecture::componentVerdantCoreCrate"})
+}
+
+definition{
+  name: umlCliExamples,
+  parameters: [],
+  result: UmlComponentSpec,
+  body: (record UmlComponentSpec {view := "Design::viewUmlComponents", component := "Architecture::componentEngineCliExamples"})
+}
+
+definition{
+  name: umlEngineStudio,
+  parameters: [],
+  result: UmlComponentSpec,
+  body: (record UmlComponentSpec {view := "Design::viewUmlComponents", component := "Architecture::componentEngineStudioSite"})
+}
+
+definition{
+  name: umlVerifierGuest,
+  parameters: [],
+  result: UmlComponentSpec,
+  body: (record UmlComponentSpec {view := "Design::viewUmlComponents", component := "Architecture::componentVerifierGuest"})
+}
+
+definition{
+  name: umlBrowserGpu,
+  parameters: [],
+  result: UmlComponentSpec,
+  body: (record UmlComponentSpec {view := "Design::viewUmlComponents", component := "Architecture::componentBrowserGpuHost"})
+}
+
+definition{
+  name: umlBrowserAudio,
+  parameters: [],
+  result: UmlComponentSpec,
+  body: (record UmlComponentSpec {view := "Design::viewUmlComponents", component := "Architecture::componentBrowserAudioHost"})
+}
+
+definition{
+  name: umlCoreToExamples,
+  parameters: [],
+  result: UmlConnectorSpec,
+  body: (record UmlConnectorSpec {view := "Design::viewUmlComponents", edge := "Architecture::edgeCoreToExamples"})
+}
+
+definition{
+  name: umlCoreToStudio,
+  parameters: [],
+  result: UmlConnectorSpec,
+  body: (record UmlConnectorSpec {view := "Design::viewUmlComponents", edge := "Architecture::edgeCoreToStudio"})
+}
+
+definition{
+  name: umlStudioToGpu,
+  parameters: [],
+  result: UmlConnectorSpec,
+  body: (record UmlConnectorSpec {view := "Design::viewUmlComponents", edge := "Architecture::edgeStudioToGpu"})
+}
+
+definition{
+  name: umlStudioToAudio,
+  parameters: [],
+  result: UmlConnectorSpec,
+  body: (record UmlConnectorSpec {view := "Design::viewUmlComponents", edge := "Architecture::edgeStudioToAudio"})
+}
+
+definition{
+  name: umlStudioToVerifier,
+  parameters: [],
+  result: UmlConnectorSpec,
+  body: (record UmlConnectorSpec {view := "Design::viewUmlComponents", edge := "Architecture::edgeStudioToVerifier"})
+}
+
+definition{
+  name: umlVerifierToStudio,
+  parameters: [],
+  result: UmlConnectorSpec,
+  body: (record UmlConnectorSpec {view := "Design::viewUmlComponents", edge := "Architecture::edgeVerifierToStudio"})
+}
+
+definition{
+  name: seqStudio,
+  parameters: [],
+  result: UmlLifelineSpec,
+  body: (record UmlLifelineSpec {view := "Design::viewUmlFrameSequence", component := "Architecture::componentEngineStudioSite", order := 0})
+}
+
+definition{
+  name: seqVerifier,
+  parameters: [],
+  result: UmlLifelineSpec,
+  body: (record UmlLifelineSpec {view := "Design::viewUmlFrameSequence", component := "Architecture::componentVerifierGuest", order := 1})
+}
+
+definition{
+  name: seqGpuHost,
+  parameters: [],
+  result: UmlLifelineSpec,
+  body: (record UmlLifelineSpec {view := "Design::viewUmlFrameSequence", component := "Architecture::componentBrowserGpuHost", order := 2})
+}
+
+definition{
+  name: seqVerifyRequest,
+  parameters: [],
+  result: UmlMessageSpec,
+  body: (record UmlMessageSpec {view := "Design::viewUmlFrameSequence", kind := (ctor UmlMessageKind.synchronous), order := 0, source := "Architecture::componentEngineStudioSite", target := "Architecture::componentVerifierGuest", process := "Design::processVerifyBlueprintAndEpoch"})
+}
+
+definition{
+  name: seqVerifyReply,
+  parameters: [],
+  result: UmlMessageSpec,
+  body: (record UmlMessageSpec {view := "Design::viewUmlFrameSequence", kind := (ctor UmlMessageKind.reply), order := 1, source := "Architecture::componentVerifierGuest", target := "Architecture::componentEngineStudioSite", process := "Design::processVerifyBlueprintAndEpoch"})
+}
+
+definition{
+  name: seqDrawSubmit,
+  parameters: [],
+  result: UmlMessageSpec,
+  body: (record UmlMessageSpec {view := "Design::viewUmlFrameSequence", kind := (ctor UmlMessageKind.asynchronous), order := 2, source := "Architecture::componentEngineStudioSite", target := "Architecture::componentBrowserGpuHost", process := "Design::processRenderViewportFrame"})
+}
+
+definition{
+  name: stVerifierIdle,
+  parameters: [],
+  result: UmlStateSpec,
+  body: (record UmlStateSpec {view := "Design::viewUmlVerifierStates", state := "Design::stateVerifierIdle", initial := true})
+}
+
+definition{
+  name: stVerifierEvaluating,
+  parameters: [],
+  result: UmlStateSpec,
+  body: (record UmlStateSpec {view := "Design::viewUmlVerifierStates", state := "Design::stateVerifierEvaluating", initial := false})
+}
+
+definition{
+  name: trParseQuery,
+  parameters: [],
+  result: UmlTransitionSpec,
+  body: (record UmlTransitionSpec {view := "Design::viewUmlVerifierStates", order := 0, source := "Design::stateVerifierIdle", target := "Design::stateVerifierEvaluating", trigger := "Design::processParseQuery"})
+}
+
+definition{
+  name: trEmitVerdict,
+  parameters: [],
+  result: UmlTransitionSpec,
+  body: (record UmlTransitionSpec {view := "Design::viewUmlVerifierStates", order := 1, source := "Design::stateVerifierEvaluating", target := "Design::stateVerifierIdle", trigger := "Design::processVerifyBlueprintAndEpoch"})
+}
+
+definition{
+  name: allStringsPopulated,
+  parameters: [items : (List String)],
+  result: Bool,
+  body: (match items
+    | List.nil => true
+    | List.cons item rest => ((not (prim equal item "" : Bool)) && (allStringsPopulated rest))),
+  axioms: [],
+  recursive_argument: items
+}
+
+theorem{
+  name: designViewsConsistent,
+  parameters: [],
+  statement: (((((project (opmZoomAdvance) order) =? 0) && (((project (opmZoomConstruct) order) =? 1) && ((project (opmZoomExport) order) =? 2))) && ((((project (seqStudio) order) =? 0) && (((project (seqVerifier) order) =? 1) && ((project (seqGpuHost) order) =? 2))) && ((((project (seqVerifyRequest) order) =? 0) && (((project (seqVerifyReply) order) =? 1) && ((project (seqDrawSubmit) order) =? 2))) && (((project (stVerifierIdle) initial) && (not (project (stVerifierEvaluating) initial))) && (((project (trParseQuery) order) =? 0) && ((project (trEmitVerdict) order) =? 1)))))) = true),
+  proof: decide{},
+  axioms: []
+}
+
+theorem{
+  name: designViewsAndProcessesNamed,
+  parameters: [],
+  statement: ((allStringsPopulated (cons (project (viewOpmWorldGenesis) title) (cons (project (viewUmlComponents) title) (cons (project (viewUmlFrameSequence) title) (cons (project (viewUmlVerifierStates) title) (cons (project (processSynthesizeWorld) owner) (cons (project (processAdvanceEpochs) owner) (cons (project (processConstructBlueprints) owner) (cons (project (processExportGlbAndShaders) owner) (cons (project (processParseQuery) owner) (cons (project (processVerifyBlueprintAndEpoch) owner) (cons (project (processRenderViewportFrame) owner) (cons (project (stateWorldSeeded) owner) (cons (project (stateWorldAtObservation) owner) (cons (project (stateVerifierIdle) owner) (cons (project (stateVerifierEvaluating) owner) (nil String))))))))))))))))) = true),
+  proof: decide{},
+  axioms: []
+}
+
+theorem{
+  name: designOpmAndUmlElementsBound,
+  parameters: [],
+  statement: ((allStringsPopulated (cons (project (opmCoreEngine) subject) (cons (project (opmStudioScene) subject) (cons (project (opmSynthesize) subject) (cons (project (opmAdvance) subject) (cons (project (opmConstruct) subject) (cons (project (opmExport) subject) (cons (project (opmSceneSeeded) state) (cons (project (opmSceneAtObservation) state) (cons (project (opmCoreAgent) target) (cons (project (opmAdvanceInvokesConstruct) target) (cons (project (opmConstructInvokesExport) target) (cons (project (opmExportAffectsScene) target) (cons (project (umlVerdantCore) component) (cons (project (umlCliExamples) component) (cons (project (umlEngineStudio) component) (cons (project (umlVerifierGuest) component) (cons (project (umlBrowserGpu) component) (cons (project (umlBrowserAudio) component) (cons (project (umlCoreToExamples) edge) (cons (project (umlCoreToStudio) edge) (cons (project (umlStudioToGpu) edge) (cons (project (umlStudioToAudio) edge) (cons (project (umlStudioToVerifier) edge) (cons (project (umlVerifierToStudio) edge) (nil String)))))))))))))))))))))))))) = true),
+  proof: decide{},
+  axioms: []
+}
+\end{semanticmodule}
+\end{lexlean}

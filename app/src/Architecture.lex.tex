@@ -1,0 +1,412 @@
+\begin{lexlean}{Architecture}
+\useglossary{lexlean.std.bool@1.2.0}
+\useglossary{lexlean.std.nat@1.2.0}
+\useglossary{prism.arch@1.0.0}
+\importmodule{Foundation.Arch}
+\title{Verdant Engine architecture description}
+\begin{semanticmodule}
+definition{
+  name: standardIso25010,
+  parameters: [],
+  result: Foundation.Arch::StandardReference,
+  body: (record Foundation.Arch::StandardReference {standardIndex := 0, editionIndex := 0, standardId := "ISO-25010-2023", edition := "2023"})
+}
+
+definition{
+  name: standardIso27005,
+  parameters: [],
+  result: Foundation.Arch::StandardReference,
+  body: (record Foundation.Arch::StandardReference {standardIndex := 1, editionIndex := 0, standardId := "ISO-27005-2022", edition := "2022"})
+}
+
+definition{
+  name: standardIso27034,
+  parameters: [],
+  result: Foundation.Arch::StandardReference,
+  body: (record Foundation.Arch::StandardReference {standardIndex := 2, editionIndex := 0, standardId := "ISO-27034-1-2011", edition := "2011"})
+}
+
+definition{
+  name: standardIso42010,
+  parameters: [],
+  result: Foundation.Arch::StandardReference,
+  body: (record Foundation.Arch::StandardReference {standardIndex := 4, editionIndex := 0, standardId := "ISO-42010-2022", edition := "2022"})
+}
+
+definition{
+  name: stakeholderBrowserPlayer,
+  parameters: [],
+  result: Foundation.Arch::Stakeholder,
+  body: (record Foundation.Arch::Stakeholder {index := 0, name := "Browser player", text := "Explores responsive 60fps 3D scenes in the browser across desktop and mobile viewports with keyboard, pointer, and spatial audio controls."})
+}
+
+definition{
+  name: stakeholderGameDeveloper,
+  parameters: [],
+  result: Foundation.Arch::Stakeholder,
+  body: (record Foundation.Arch::Stakeholder {index := 1, name := "Game developer", text := "Builds 3D games and interactive worlds on verdant-core with deterministic ECS, rigid-body physics, spatial audio, and starter templates."})
+}
+
+definition{
+  name: stakeholderSecurityAuditor,
+  parameters: [],
+  result: Foundation.Arch::Stakeholder,
+  body: (record Foundation.Arch::Stakeholder {index := 2, name := "Security auditor", text := "Verifies shader safety, snapshot integrity, strict Content-Security-Policy isolation, and Core-Wasm archive provenance."})
+}
+
+definition{
+  name: stakeholderSystemsEngineer,
+  parameters: [],
+  result: Foundation.Arch::Stakeholder,
+  body: (record Foundation.Arch::Stakeholder {index := 3, name := "Engine systems engineer", text := "Maintains frame-budget job graphs, deterministic binary world snapshots, and zero-constant parametric simulation kernels."})
+}
+
+definition{
+  name: stakeholderTechnicalArtist,
+  parameters: [],
+  result: Foundation.Arch::Stakeholder,
+  body: (record Foundation.Arch::Stakeholder {index := 4, name := "Technical artist", text := "Authors procedural terrain, L-system flora, PBR materials, WGSL shaders, and glTF 2.0 scene exports that validate cleanly."})
+}
+
+definition{
+  name: concernAccessibilityAndResponsiveUi,
+  parameters: [],
+  result: Foundation.Arch::Concern,
+  body: (record Foundation.Arch::Concern {index := 0, name := "Accessible and clutter-free studio viewport", text := "The browser Engine Studio keeps the 3D viewport front-and-center while meeting WCAG 2.2 AA contrast and coarse touch-target standards."})
+}
+
+definition{
+  name: concernCausalWorldFidelity,
+  parameters: [],
+  result: Foundation.Arch::Concern,
+  body: (record Foundation.Arch::Concern {index := 1, name := "Causal expansion and structural equilibrium", text := "Every natural formation and Builder-constructed structure emerges monotonically at its valid cosmic epoch in static equilibrium."})
+}
+
+definition{
+  name: concernDeveloperOnboarding,
+  parameters: [],
+  result: Foundation.Arch::Concern,
+  body: (record Foundation.Arch::Concern {index := 2, name := "Commercial developer onboarding", text := "Developers and agents can adopt the engine through runnable examples, a browser starter template, Diataxis documentation, and llms.txt."})
+}
+
+definition{
+  name: concernFramePerformance,
+  parameters: [],
+  result: Foundation.Arch::Concern,
+  body: (record Foundation.Arch::Concern {index := 3, name := "Frame-time determinism and 60fps budget", text := "Simulation, culling, rendering, and audio synthesis execute within bounded frame budgets across browser worker and GPU pipelines."})
+}
+
+definition{
+  name: concernRuntimeIntegrity,
+  parameters: [],
+  result: Foundation.Arch::Concern,
+  body: (record Foundation.Arch::Concern {index := 4, name := "Sandbox and snapshot integrity", text := "World snapshots carry SHA-256 trailers, shaders validate before GPU compilation, and the Wasm verifier runs in an isolated worker."})
+}
+
+definition{
+  name: concernStandardsInteroperability,
+  parameters: [],
+  result: Foundation.Arch::Concern,
+  body: (record Foundation.Arch::Concern {index := 5, name := "Graphics and asset standards compliance", text := "Exported binary glTF 2.0 scenes and WGSL shaders pass authoritative Khronos gltf and W3C naga validators."})
+}
+
+definition{
+  name: componentAgentClient,
+  parameters: [],
+  result: Foundation.Arch::Component,
+  body: (record Foundation.Arch::Component {index := 0, kind := (ctor Foundation.Arch::ComponentKind.externalSystem), name := "Agent Client", text := "An automated coding agent reading llms.txt and Markdown documentation twins to build 3D applications on Verdant Engine."})
+}
+
+definition{
+  name: componentBrowserAudioHost,
+  parameters: [],
+  result: Foundation.Arch::Component,
+  body: (record Foundation.Arch::Component {index := 1, kind := (ctor Foundation.Arch::ComponentKind.externalSystem), name := "Browser WebAudio Host", text := "The browser audio graph rendering spatialized modal chime harmonics and lagoon water acoustics."})
+}
+
+definition{
+  name: componentBrowserGpuHost,
+  parameters: [],
+  result: Foundation.Arch::Component,
+  body: (record Foundation.Arch::Component {index := 2, kind := (ctor Foundation.Arch::ComponentKind.externalSystem), name := "Browser WebGPU and WebGL2 Host", text := "The visitor's browser graphics runtime executing compiled shaders, depth-buffered 3D draw calls, and pointer/keyboard input."})
+}
+
+definition{
+  name: componentEngineCliExamples,
+  parameters: [],
+  result: Foundation.Arch::Component,
+  body: (record Foundation.Arch::Component {index := 3, kind := (ctor Foundation.Arch::ComponentKind.cliAdapter), name := "Engine CLI Examples and Starter", text := "Runnable examples (cosmic_sanctuary, custom_game_arena, headless_benchmark) and templates/browser-3d-starter for custom 3D games."})
+}
+
+definition{
+  name: componentEngineStudioSite,
+  parameters: [],
+  result: Foundation.Arch::Component,
+  body: (record Foundation.Arch::Component {index := 4, kind := (ctor Foundation.Arch::ComponentKind.staticSite), name := "Verdant Engine Studio and Docs", text := "Interactive WebGL2 3D browser studio, cosmic expansion scrubber, glTF exporter, Diataxis documentation pages, Markdown twins, and llms.txt."})
+}
+
+definition{
+  name: componentPagesTarget,
+  parameters: [],
+  result: Foundation.Arch::Component,
+  body: (record Foundation.Arch::Component {index := 5, kind := (ctor Foundation.Arch::ComponentKind.externalSystem), name := "GitHub Pages", text := "Publishes the verified Engine Studio, documentation suite, and signed holo archive from CI."})
+}
+
+definition{
+  name: componentVerdantCoreCrate,
+  parameters: [],
+  result: Foundation.Arch::Component,
+  body: (record Foundation.Arch::Component {index := 6, kind := (ctor Foundation.Arch::ComponentKind.releaseBinary), name := "Verdant Core Engine", text := "crates/verdant-core: standalone Rust and WebAssembly 3D game engine library providing ECS, BVH, procedural meshes, glTF 2.0, WGSL, physics, spatial audio, and snapshots."})
+}
+
+definition{
+  name: componentVerifierGuest,
+  parameters: [],
+  result: Foundation.Arch::Component,
+  body: (record Foundation.Arch::Component {index := 7, kind := (ctor Foundation.Arch::ComponentKind.service), name := "Engine Verifier Guest", text := "The Core-Wasm guest compiled from Engine.lex.tex that verifies expansion epochs and Builder blueprint equilibrium inside a Web Worker."})
+}
+
+definition{
+  name: edgeCoreToExamples,
+  parameters: [],
+  result: Foundation.Arch::Edge,
+  body: (record Foundation.Arch::Edge {index := 0, fromIndex := 6, toIndex := 3, kind := (ctor Foundation.Arch::EdgeKind.dataFlow)})
+}
+
+definition{
+  name: edgeCoreToStudio,
+  parameters: [],
+  result: Foundation.Arch::Edge,
+  body: (record Foundation.Arch::Edge {index := 1, fromIndex := 6, toIndex := 4, kind := (ctor Foundation.Arch::EdgeKind.dataFlow)})
+}
+
+definition{
+  name: edgePagesToAgent,
+  parameters: [],
+  result: Foundation.Arch::Edge,
+  body: (record Foundation.Arch::Edge {index := 2, fromIndex := 5, toIndex := 0, kind := (ctor Foundation.Arch::EdgeKind.dataFlow)})
+}
+
+definition{
+  name: edgePagesToGpu,
+  parameters: [],
+  result: Foundation.Arch::Edge,
+  body: (record Foundation.Arch::Edge {index := 3, fromIndex := 5, toIndex := 2, kind := (ctor Foundation.Arch::EdgeKind.dataFlow)})
+}
+
+definition{
+  name: edgeStudioToAudio,
+  parameters: [],
+  result: Foundation.Arch::Edge,
+  body: (record Foundation.Arch::Edge {index := 4, fromIndex := 4, toIndex := 1, kind := (ctor Foundation.Arch::EdgeKind.dataFlow)})
+}
+
+definition{
+  name: edgeStudioToGpu,
+  parameters: [],
+  result: Foundation.Arch::Edge,
+  body: (record Foundation.Arch::Edge {index := 5, fromIndex := 4, toIndex := 2, kind := (ctor Foundation.Arch::EdgeKind.dataFlow)})
+}
+
+definition{
+  name: edgeStudioToPages,
+  parameters: [],
+  result: Foundation.Arch::Edge,
+  body: (record Foundation.Arch::Edge {index := 6, fromIndex := 4, toIndex := 5, kind := (ctor Foundation.Arch::EdgeKind.dataFlow)})
+}
+
+definition{
+  name: edgeStudioToVerifier,
+  parameters: [],
+  result: Foundation.Arch::Edge,
+  body: (record Foundation.Arch::Edge {index := 7, fromIndex := 4, toIndex := 7, kind := (ctor Foundation.Arch::EdgeKind.dataFlow)})
+}
+
+definition{
+  name: edgeVerifierToStudio,
+  parameters: [],
+  result: Foundation.Arch::Edge,
+  body: (record Foundation.Arch::Edge {index := 8, fromIndex := 7, toIndex := 4, kind := (ctor Foundation.Arch::EdgeKind.dataFlow)})
+}
+
+definition{
+  name: viewpointArtistStandards,
+  parameters: [],
+  result: Foundation.Arch::Viewpoint,
+  body: (record Foundation.Arch::Viewpoint {index := 0, stakeholderIndex := 4, concernIndex := 5, modelKindIndex := 0})
+}
+
+definition{
+  name: viewpointAuditorIntegrity,
+  parameters: [],
+  result: Foundation.Arch::Viewpoint,
+  body: (record Foundation.Arch::Viewpoint {index := 1, stakeholderIndex := 2, concernIndex := 4, modelKindIndex := 2})
+}
+
+definition{
+  name: viewpointDeveloperOnboarding,
+  parameters: [],
+  result: Foundation.Arch::Viewpoint,
+  body: (record Foundation.Arch::Viewpoint {index := 2, stakeholderIndex := 1, concernIndex := 2, modelKindIndex := 0})
+}
+
+definition{
+  name: viewpointPlayerAccessibility,
+  parameters: [],
+  result: Foundation.Arch::Viewpoint,
+  body: (record Foundation.Arch::Viewpoint {index := 3, stakeholderIndex := 0, concernIndex := 0, modelKindIndex := 1})
+}
+
+definition{
+  name: viewpointSystemsCausalFidelity,
+  parameters: [],
+  result: Foundation.Arch::Viewpoint,
+  body: (record Foundation.Arch::Viewpoint {index := 4, stakeholderIndex := 3, concernIndex := 1, modelKindIndex := 0})
+}
+
+definition{
+  name: viewpointSystemsPerformance,
+  parameters: [],
+  result: Foundation.Arch::Viewpoint,
+  body: (record Foundation.Arch::Viewpoint {index := 5, stakeholderIndex := 3, concernIndex := 3, modelKindIndex := 1})
+}
+
+definition{
+  name: viewArtistStandards,
+  parameters: [],
+  result: Foundation.Arch::View,
+  body: (record Foundation.Arch::View {index := 0, viewpointIndex := 0, modelKindIndex := 0})
+}
+
+definition{
+  name: viewAuditorIntegrity,
+  parameters: [],
+  result: Foundation.Arch::View,
+  body: (record Foundation.Arch::View {index := 1, viewpointIndex := 1, modelKindIndex := 2})
+}
+
+definition{
+  name: viewDeveloperOnboarding,
+  parameters: [],
+  result: Foundation.Arch::View,
+  body: (record Foundation.Arch::View {index := 2, viewpointIndex := 2, modelKindIndex := 0})
+}
+
+definition{
+  name: viewPlayerAccessibility,
+  parameters: [],
+  result: Foundation.Arch::View,
+  body: (record Foundation.Arch::View {index := 3, viewpointIndex := 3, modelKindIndex := 1})
+}
+
+definition{
+  name: viewSystemsCausalFidelity,
+  parameters: [],
+  result: Foundation.Arch::View,
+  body: (record Foundation.Arch::View {index := 4, viewpointIndex := 4, modelKindIndex := 0})
+}
+
+definition{
+  name: viewSystemsPerformance,
+  parameters: [],
+  result: Foundation.Arch::View,
+  body: (record Foundation.Arch::View {index := 5, viewpointIndex := 5, modelKindIndex := 1})
+}
+
+definition{
+  name: componentRecords,
+  parameters: [],
+  result: (List Foundation.Arch::Component),
+  body: (cons (componentAgentClient) (cons (componentBrowserAudioHost) (cons (componentBrowserGpuHost) (cons (componentEngineCliExamples) (cons (componentEngineStudioSite) (cons (componentPagesTarget) (cons (componentVerdantCoreCrate) (cons (componentVerifierGuest) (nil Foundation.Arch::Component)))))))))
+}
+
+definition{
+  name: edgeRecords,
+  parameters: [],
+  result: (List Foundation.Arch::Edge),
+  body: (cons (edgeCoreToExamples) (cons (edgeCoreToStudio) (cons (edgePagesToAgent) (cons (edgePagesToGpu) (cons (edgeStudioToAudio) (cons (edgeStudioToGpu) (cons (edgeStudioToPages) (cons (edgeStudioToVerifier) (cons (edgeVerifierToStudio) (nil Foundation.Arch::Edge))))))))))
+}
+
+definition{
+  name: viewpointRecords,
+  parameters: [],
+  result: (List Foundation.Arch::Viewpoint),
+  body: (cons (viewpointArtistStandards) (cons (viewpointAuditorIntegrity) (cons (viewpointDeveloperOnboarding) (cons (viewpointPlayerAccessibility) (cons (viewpointSystemsCausalFidelity) (cons (viewpointSystemsPerformance) (nil Foundation.Arch::Viewpoint)))))))
+}
+
+definition{
+  name: viewRecords,
+  parameters: [],
+  result: (List Foundation.Arch::View),
+  body: (cons (viewArtistStandards) (cons (viewAuditorIntegrity) (cons (viewDeveloperOnboarding) (cons (viewPlayerAccessibility) (cons (viewSystemsCausalFidelity) (cons (viewSystemsPerformance) (nil Foundation.Arch::View)))))))
+}
+
+definition{
+  name: edgesKnown,
+  parameters: [count : Nat, records : (List Foundation.Arch::Edge)],
+  result: Bool,
+  body: (match records
+    | List.nil => true
+    | List.cons edge rest => (((project edge fromIndex) <? count) && (((project edge toIndex) <? count) && (edgesKnown count rest)))),
+  recursive_argument: records
+}
+
+definition{
+  name: viewpointsKnown,
+  parameters: [
+    stakeholderCount : Nat,
+    concernCount : Nat,
+    records : (List Foundation.Arch::Viewpoint)
+  ],
+  result: Bool,
+  body: (match records
+    | List.nil => true
+    | List.cons viewpoint rest => (((project viewpoint stakeholderIndex) <? stakeholderCount) && (((project viewpoint concernIndex) <? concernCount) && (((project viewpoint modelKindIndex) <? 3) && (viewpointsKnown stakeholderCount concernCount rest))))),
+  recursive_argument: records
+}
+
+definition{
+  name: viewMatches,
+  parameters: [view : Foundation.Arch::View, viewpoints : (List Foundation.Arch::Viewpoint)],
+  result: Bool,
+  body: (match viewpoints
+    | List.nil => false
+    | List.cons viewpoint rest => ((((project viewpoint index) =? (project view viewpointIndex)) && ((project viewpoint modelKindIndex) =? (project view modelKindIndex))) || (viewMatches view rest))),
+  recursive_argument: viewpoints
+}
+
+definition{
+  name: viewsConform,
+  parameters: [
+    viewpoints : (List Foundation.Arch::Viewpoint),
+    records : (List Foundation.Arch::View)
+  ],
+  result: Bool,
+  body: (match records
+    | List.nil => true
+    | List.cons view rest => ((viewMatches view viewpoints) && (viewsConform viewpoints rest))),
+  recursive_argument: records
+}
+
+definition{
+  name: architectureValid,
+  parameters: [],
+  result: Bool,
+  body: ((edgesKnown 8 (edgeRecords)) && ((viewpointsKnown 5 6 (viewpointRecords)) && (viewsConform (viewpointRecords) (viewRecords))))
+}
+
+theorem{
+  name: architectureDescriptionHolds,
+  parameters: [],
+  statement: ((((architectureValid) && (((project (standardIso25010) editionIndex) =? 0) && (((project (standardIso27005) editionIndex) =? 0) && (((project (standardIso27034) editionIndex) =? 0) && ((project (standardIso42010) editionIndex) =? 0))))) && ((((project (stakeholderBrowserPlayer) index) =? 0) && (((project (stakeholderGameDeveloper) index) =? 1) && (((project (stakeholderSecurityAuditor) index) =? 2) && (((project (stakeholderSystemsEngineer) index) =? 3) && ((project (stakeholderTechnicalArtist) index) =? 4))))) && ((((project (concernAccessibilityAndResponsiveUi) index) =? 0) && (((project (concernCausalWorldFidelity) index) =? 1) && (((project (concernDeveloperOnboarding) index) =? 2) && (((project (concernFramePerformance) index) =? 3) && (((project (concernRuntimeIntegrity) index) =? 4) && ((project (concernStandardsInteroperability) index) =? 5)))))) && (((project (componentAgentClient) index) =? 0) && (((project (componentBrowserAudioHost) index) =? 1) && (((project (componentBrowserGpuHost) index) =? 2) && (((project (componentEngineCliExamples) index) =? 3) && (((project (componentEngineStudioSite) index) =? 4) && (((project (componentPagesTarget) index) =? 5) && (((project (componentVerdantCoreCrate) index) =? 6) && ((project (componentVerifierGuest) index) =? 7))))))))))) = true),
+  proof: decide{}
+}
+
+theorem{
+  name: architectureEdgesAndViewsIndexed,
+  parameters: [],
+  statement: (((((project (edgeCoreToExamples) index) =? 0) && (((project (edgeCoreToStudio) index) =? 1) && (((project (edgePagesToAgent) index) =? 2) && (((project (edgePagesToGpu) index) =? 3) && (((project (edgeStudioToAudio) index) =? 4) && (((project (edgeStudioToGpu) index) =? 5) && (((project (edgeStudioToPages) index) =? 6) && (((project (edgeStudioToVerifier) index) =? 7) && ((project (edgeVerifierToStudio) index) =? 8))))))))) && ((((project (viewpointArtistStandards) index) =? 0) && (((project (viewpointAuditorIntegrity) index) =? 1) && (((project (viewpointDeveloperOnboarding) index) =? 2) && (((project (viewpointPlayerAccessibility) index) =? 3) && (((project (viewpointSystemsCausalFidelity) index) =? 4) && ((project (viewpointSystemsPerformance) index) =? 5)))))) && (((project (viewArtistStandards) index) =? 0) && (((project (viewAuditorIntegrity) index) =? 1) && (((project (viewDeveloperOnboarding) index) =? 2) && (((project (viewPlayerAccessibility) index) =? 3) && (((project (viewSystemsCausalFidelity) index) =? 4) && ((project (viewSystemsPerformance) index) =? 5)))))))) = true),
+  proof: decide{}
+}
+\end{semanticmodule}
+\end{lexlean}

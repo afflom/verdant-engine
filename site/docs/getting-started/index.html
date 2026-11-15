@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en"><head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Create a Rust 3D scene, step rigid-body physics, and export a binary asset.">
+    <meta name="diataxis" content="tutorial">
+    <meta name="developer-journey" content="learn">
+    <meta name="audience" content="kai">
+    <link rel="canonical" href="https://afflom.github.io/verdant-engine/docs/getting-started/">
+    <title>Build your first 3D world — Verdant Engine</title>
+    <style>
+  :root {
+    --fd-bg: #151312;
+    --fd-fg: #f4f2ee;
+    --fd-muted: #b5ada4;
+    --fd-card: #1e1b19;
+    --fd-border: rgba(244, 242, 238, 0.14);
+    --fd-accent: #6ec49c;
+  }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --fd-bg: #f5f4ef;
+      --fd-fg: #1f1c1a;
+      --fd-muted: #5b534c;
+      --fd-card: #ffffff;
+      --fd-border: rgba(31, 28, 26, 0.14);
+      --fd-accent: #1d6f4e;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--fd-bg);
+    color: var(--fd-fg);
+    font-family: system-ui, -apple-system, sans-serif;
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+  .ve-nav {
+    max-width: 52rem;
+    margin: 0 auto;
+    padding: 1rem 1.25rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem 1.25rem;
+    border-bottom: 1px solid var(--fd-border);
+    font-size: 0.9375rem;
+  }
+  .ve-nav a, main a {
+    color: var(--fd-accent);
+    text-decoration: underline;
+    text-underline-offset: 0.18em;
+  }
+  main {
+    max-width: 52rem;
+    margin: 0 auto;
+    padding: 1.75rem 1.25rem 4rem;
+  }
+  h1 { font-size: 2rem; line-height: 1.2; margin: 0 0 0.75rem; }
+  h2 { font-size: 1.375rem; line-height: 1.3; margin: 2.25rem 0 0.75rem; }
+  h3 { font-size: 1.125rem; line-height: 1.35; margin: 1.5rem 0 0.5rem; }
+  p, li { max-width: 68ch; }
+  code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.9em; }
+  pre {
+    padding: 0.875rem 1rem;
+    background: var(--fd-card);
+    border: 1px solid var(--fd-border);
+    border-radius: 0.5rem;
+    overflow-x: auto;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+    font-size: 0.9375rem;
+  }
+  th, td {
+    text-align: left;
+    padding: 0.5rem 0.625rem;
+    border-bottom: 1px solid var(--fd-border);
+  }
+  .dc-pager {
+    margin-top: 2.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--fd-border);
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+</style>
+  <link rel="alternate" type="text/markdown" href="index.md"><link rel="stylesheet" href="../content.css"><script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"Build your first 3D world","description":"Create a Rust 3D scene, step rigid-body physics, and export a binary asset.","url":"https://afflom.github.io/verdant-engine/docs/getting-started/","inLanguage":"en","audience":{"@type":"Audience","audienceType":"Game developer","description":"Builds 3D games and interactive worlds on verdant-core with deterministic ECS, rigid-body physics, spatial audio, and starter templates."},"learningResourceType":"tutorial","educationalLevel":"learn","isPartOf":{"@type":"WebSite","name":"Verdant Engine","url":"https://afflom.github.io/verdant-engine/"},"publisher":{"@type":"Organization","name":"UOR Foundation","url":"https://uor.foundation/"}}</script></head>
+  <body>
+    <nav class="ve-nav" aria-label="Documentation navigation">
+      <a href="../../">3D Studio</a>
+      <a href="../">Docs home</a>
+      <a href="../getting-started/">Getting started</a>
+      <a href="../guides/custom-game-world/">Custom world guide</a>
+      <a href="../reference/engine-api/">API reference</a>
+      <a href="../explanation/cosmology-and-builders/">World expansion</a>
+      <a href="../case-studies/verdant-resonance/">Verdant Resonance</a>
+    </nav>
+    <main>
+      <h1>Build your first 3D world</h1>
+      <p>Create a Rust 3D scene, step rigid-body physics, and export a binary asset.</p><aside class="cs-guide" data-persona="kai" aria-label="Your guide on this page"><svg class="cs-avatar" viewBox="0 0 120 120" width="96" height="96" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="cs-g3" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="hsl(48 95% 70%)"></stop><stop offset="1" stop-color="hsl(48 95% 40%)"></stop></linearGradient></defs><path d="M0 64L32 58" stroke="hsl(0 0% 98%)" stroke-width="2.4" stroke-linecap="round" opacity=".8"></path><path d="M88 58L120 34.0" stroke="hsl(356 95% 66%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 41.0" stroke="hsl(22 95% 58%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 48.0" stroke="hsl(48 95% 56%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 55.0" stroke="hsl(55 92% 54%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 62.0" stroke="hsl(140 70% 48%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 69.0" stroke="hsl(190 90% 54%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 76.0" stroke="hsl(222 92% 64%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 83.0" stroke="hsl(268 88% 70%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 90.0" stroke="hsl(320 85% 68%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><ellipse cx="60" cy="108" rx="30" ry="5" class="cs-g-shadow"></ellipse><path d="M60 14L92 32V76L60 98L28 76V32Z" fill="url(#cs-g3)"></path><path d="M60 14L92 32L60 48L28 32Z" fill="hsl(0 0% 100% / .28)"></path><path d="M60 48L92 32V76L60 98Z" fill="hsl(0 0% 0% / .18)"></path><path d="M60 14L92 32V76L60 98L28 76V32Z" fill="none" stroke="hsl(0 0% 100% / .45)" stroke-width="1.5" stroke-linejoin="round"></path><ellipse cx="49" cy="62" rx="6.5" ry="7.5" fill="hsl(0 0% 99%)"></ellipse><ellipse cx="71" cy="62" rx="6.5" ry="7.5" fill="hsl(0 0% 99%)"></ellipse><circle cx="51" cy="63.5" r="3.4" class="cs-g-dark"></circle><circle cx="73" cy="63.5" r="3.4" class="cs-g-dark"></circle><circle cx="52.2" cy="62" r="1.1" fill="hsl(0 0% 100%)"></circle><circle cx="74.2" cy="62" r="1.1" fill="hsl(0 0% 100%)"></circle><ellipse cx="41" cy="73" rx="4" ry="2.4" fill="hsl(350 90% 75% / .55)"></ellipse><ellipse cx="79" cy="73" rx="4" ry="2.4" fill="hsl(350 90% 75% / .55)"></ellipse><path d="M53 76q7 6 14 0" fill="none" stroke="hsl(0 0% 8%)" stroke-width="2.2" stroke-linecap="round"></path><ellipse cx="47" cy="100" rx="7" ry="3.6" class="cs-g-dark"></ellipse><ellipse cx="73" cy="100" rx="7" ry="3.6" class="cs-g-dark"></ellipse><rect x="37" y="40" width="46" height="13" rx="6.5" class="cs-g-dark"></rect><circle cx="49" cy="46.5" r="4.5" class="cs-g-lens"></circle><circle cx="71" cy="46.5" r="4.5" class="cs-g-lens"></circle><path d="M92 70q8 2 10 8" fill="none" stroke="hsl(48 95% 40%)" stroke-width="4" stroke-linecap="round"></path><g transform="translate(94 76) scale(1.05)" class="cs-g-prop"><rect x="-2" y="-2" width="28" height="28" rx="8" class="cs-g-chip"></rect><g fill="none" stroke="hsl(0 0% 98%)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="3"></rect><path d="m6 10 3 2-3 2M11 15h5"></path></g></g></svg><div class="cs-guide-text"><p class="cs-guide-who"><strong>Kai</strong> <span>Game developer</span></p><p class="cs-guide-says">“Walk me from an empty Cargo crate to a running 3D scene.”</p><p class="cs-guide-how">A tutorial: follow the steps in order. Each step builds on the one before it.</p></div></aside>
+      <figure class="cs-figure cs-flow"><div class="cs-canvas"><svg class="cs-svg cs-wide" viewBox="0 0 680 113" role="img" aria-labelledby="cs-t27 cs-d28" xmlns="http://www.w3.org/2000/svg"><title id="cs-t27">Four steps from starter template to exported 3D world</title><desc id="cs-d28">1. Spawn entities: SceneWorld and PBR materials 2. Build BVH: Fast raycasts and frustum culling 3. Step physics: 60Hz symplectic Euler integration 4. Export GLB: Validated Khronos glTF 2.0 binary</desc><defs><marker id="cs-a17" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="cs-arrowhead"></path></marker></defs><g class="cs-node"><rect x="0" y="0" width="149" height="111" rx="12" class="cs-card"></rect><rect x="0" y="0" width="149" height="4" rx="2" fill="hsl(356 95% 66%)"></rect><text x="12" y="20" class="cs-step" dominant-baseline="middle">01</text><text x="74.5" y="42.5" class="cs-label" text-anchor="middle" dominant-baseline="middle">Spawn entities</text><text x="74.5" y="64.5" class="cs-sub" text-anchor="middle" dominant-baseline="middle">SceneWorld and PBR</text><text x="74.5" y="79.5" class="cs-sub" text-anchor="middle" dominant-baseline="middle">materials</text></g><line x1="152" y1="55.5" x2="174" y2="55.5" class="cs-edge" marker-end="url(#cs-a17)"></line><g class="cs-node"><rect x="177" y="0" width="149" height="111" rx="12" class="cs-card"></rect><rect x="177" y="0" width="149" height="4" rx="2" fill="hsl(55 92% 54%)"></rect><text x="189" y="20" class="cs-step" dominant-baseline="middle">02</text><text x="251.5" y="42.5" class="cs-label" text-anchor="middle" dominant-baseline="middle">Build BVH</text><text x="251.5" y="64.5" class="cs-sub" text-anchor="middle" dominant-baseline="middle">Fast raycasts and</text><text x="251.5" y="79.5" class="cs-sub" text-anchor="middle" dominant-baseline="middle">frustum culling</text></g><line x1="329" y1="55.5" x2="351" y2="55.5" class="cs-edge" marker-end="url(#cs-a17)"></line><g class="cs-node"><rect x="354" y="0" width="149" height="111" rx="12" class="cs-card"></rect><rect x="354" y="0" width="149" height="4" rx="2" fill="hsl(190 90% 54%)"></rect><text x="366" y="20" class="cs-step" dominant-baseline="middle">03</text><text x="428.5" y="42.5" class="cs-label" text-anchor="middle" dominant-baseline="middle">Step physics</text><text x="428.5" y="64.5" class="cs-sub" text-anchor="middle" dominant-baseline="middle">60Hz symplectic</text><text x="428.5" y="79.5" class="cs-sub" text-anchor="middle" dominant-baseline="middle">Euler integration</text></g><line x1="506" y1="55.5" x2="528" y2="55.5" class="cs-edge" marker-end="url(#cs-a17)"></line><g class="cs-node"><rect x="531" y="0" width="149" height="111" rx="12" class="cs-card"></rect><rect x="531" y="0" width="149" height="4" rx="2" fill="hsl(320 85% 68%)"></rect><text x="543" y="20" class="cs-step" dominant-baseline="middle">04</text><text x="605.5" y="42.5" class="cs-label" text-anchor="middle" dominant-baseline="middle">Export GLB</text><text x="605.5" y="64.5" class="cs-sub" text-anchor="middle" dominant-baseline="middle">Validated Khronos</text><text x="605.5" y="79.5" class="cs-sub" text-anchor="middle" dominant-baseline="middle">glTF 2.0 binary</text></g></svg><svg class="cs-svg cs-tall" viewBox="0 0 340 470" role="img" aria-labelledby="cs-t29 cs-d30" xmlns="http://www.w3.org/2000/svg"><title id="cs-t29">Four steps from starter template to exported 3D world</title><desc id="cs-d30">1. Spawn entities: SceneWorld and PBR materials 2. Build BVH: Fast raycasts and frustum culling 3. Step physics: 60Hz symplectic Euler integration 4. Export GLB: Validated Khronos glTF 2.0 binary</desc><defs><marker id="cs-a22" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="cs-arrowhead"></path></marker></defs><g class="cs-node"><rect x="0" y="0" width="340" height="96" rx="12" class="cs-card"></rect><rect x="0" y="0" width="340" height="4" rx="2" fill="hsl(356 95% 66%)"></rect><text x="12" y="20" class="cs-step" dominant-baseline="middle">01</text><text x="170.0" y="42.5" class="cs-label" text-anchor="middle" dominant-baseline="middle">Spawn entities</text><text x="170.0" y="64.5" class="cs-sub" text-anchor="middle" dominant-baseline="middle">SceneWorld and PBR materials</text></g><line x1="170" y1="99" x2="170" y2="121" class="cs-edge" marker-end="url(#cs-a22)"></line><g class="cs-node"><rect x="0" y="124" width="340" height="96" rx="12" class="cs-card"></rect><rect x="0" y="124" width="340" height="4" rx="2" fill="hsl(55 92% 54%)"></rect><text x="12" y="144" class="cs-step" dominant-baseline="middle">02</text><text x="170.0" y="166.5" class="cs-label" text-anchor="middle" dominant-baseline="middle">Build BVH</text><text x="170.0" y="188.5" class="cs-sub" text-anchor="middle" dominant-baseline="middle">Fast raycasts and frustum culling</text></g><line x1="170" y1="223" x2="170" y2="245" class="cs-edge" marker-end="url(#cs-a22)"></line><g class="cs-node"><rect x="0" y="248" width="340" height="96" rx="12" class="cs-card"></rect><rect x="0" y="248" width="340" height="4" rx="2" fill="hsl(190 90% 54%)"></rect><text x="12" y="268" class="cs-step" dominant-baseline="middle">03</text><text x="170.0" y="290.5" class="cs-label" text-anchor="middle" dominant-baseline="middle">Step physics</text><text x="170.0" y="312.5" class="cs-sub" text-anchor="middle" dominant-baseline="middle">60Hz symplectic Euler integration</text></g><line x1="170" y1="347" x2="170" y2="369" class="cs-edge" marker-end="url(#cs-a22)"></line><g class="cs-node"><rect x="0" y="372" width="340" height="96" rx="12" class="cs-card"></rect><rect x="0" y="372" width="340" height="4" rx="2" fill="hsl(320 85% 68%)"></rect><text x="12" y="392" class="cs-step" dominant-baseline="middle">04</text><text x="170.0" y="414.5" class="cs-label" text-anchor="middle" dominant-baseline="middle">Export GLB</text><text x="170.0" y="436.5" class="cs-sub" text-anchor="middle" dominant-baseline="middle">Validated Khronos glTF 2.0 binary</text></g></svg></div><figcaption><strong>Four steps from starter template to exported 3D world.</strong> The starter template constructs a <a class="cs-term" href="#term-scene-world" title="The entity-component-system container in verdant-core that stores entities, parent-child transforms, meshes, and PBR materials.">scene world</a>, steps 60Hz physics, captures a <a class="cs-term" href="#term-world-snapshot" title="A deterministic binary save of tick count, expansion scale, and entity transforms protected by a 32-byte SHA-256 digest.">world snapshot</a>, and writes a binary <a class="cs-term" href="#term-gltf" title="The Khronos Group 3D scene transmission standard. GLB is its single-file binary container.">GLB</a> file.</figcaption><details class="cs-data"><summary>The data in this figure</summary><table><thead><tr><th scope="col">Step</th><th scope="col">What happens</th></tr></thead><tbody><tr><td>1. Spawn entities</td><td>SceneWorld and PBR materials</td></tr><tr><td>2. Build BVH</td><td>Fast raycasts and frustum culling</td></tr><tr><td>3. Step physics</td><td>60Hz symplectic Euler integration</td></tr><tr><td>4. Export GLB</td><td>Validated Khronos glTF 2.0 binary</td></tr></tbody></table></details><script type="application/vnd.prism.figure+json">{"kind":"flow","title":"Four steps from starter template to exported 3D world","caption":"The starter template constructs a scene world, steps 60Hz physics, captures a world snapshot, and writes a binary GLB file.","steps":[{"label":"Spawn entities","sub":"SceneWorld and PBR materials"},{"label":"Build BVH","sub":"Fast raycasts and frustum culling"},{"label":"Step physics","sub":"60Hz symplectic Euler integration"},{"label":"Export GLB","sub":"Validated Khronos glTF 2.0 binary"}]}</script></figure>
+      
+      <h2>Run the starter template</h2>
+      <p>The repository ships a complete project in <code>templates/browser-3d-starter</code> so you can run a custom 3D scene right away.</p>
+      <pre><code>cargo run --manifest-path templates/browser-3d-starter/Cargo.toml</code></pre>
+      <p>That command builds <code>verdant-core</code>, validates the built-in <a class="cs-term" href="#term-wgsl" title="WebGPU Shading Language: the W3C standard shader language validated in Verdant Engine by naga.">WGSL</a> shader, runs 30 physics ticks, and writes <code>custom-starter-world.glb</code>.</p>
+      <h2>Spawn terrain and a child entity</h2>
+      <p>Open <code>templates/browser-3d-starter/src/main.rs</code> to inspect how a scene world organizes 3D objects.</p>
+      <p>You spawn a root terrain mesh first, attach a fluted column and crystal beacon as child transforms, and build the <a class="cs-term" href="#term-bounding-volume-hierarchy" title="A tree of 3D bounding boxes partitioned by surface area so raycasts and camera frustum checks skip distant geometry.">bounding volume hierarchy</a>.</p>
+      <pre><code>let mut scene = SceneWorld::new();
+let ground_id = scene.spawn("StarterTerrain", EntityRole::TerrainSurface, None, Transform::IDENTITY, bounds, (1.0, "Terrain"));
+let beacon_id = scene.spawn("GoalCrystalBeacon", EntityRole::EngineeredStructure, Some(ground_id), Transform::from_xyz(0.0, 4.6, 0.0), beacon_bounds, (1.0, "Beacon"));
+let bvh = scene.build_bvh();</code></pre>
+      <h2>Capture a deterministic snapshot</h2>
+      <p>Before exporting the scene, encode a world snapshot so network clients or replay tools can restore the exact state with SHA-256 verification.</p>
+      <pre><code>let snap_bytes = WorldSnapshot::encode(&amp;causal_world)?;
+let restored = WorldSnapshot::decode(&amp;snap_bytes)?;</code></pre>
+      <h2>Preview in the browser</h2>
+      <p>Serve <code>templates/browser-3d-starter</code> over HTTP and open <code>index.html</code> in any WebGL2 browser to orbit the 3D arena.</p>
+    
+      <details class="cs-terms" id="words"><summary>Words on this page <span>5</span></summary><dl><dt id="term-scene-world">scene world</dt><dd>The entity-component-system container in verdant-core that stores entities, parent-child transforms, meshes, and PBR materials.</dd><dt id="term-bounding-volume-hierarchy">bounding volume hierarchy</dt><dd>A tree of 3D bounding boxes partitioned by surface area so raycasts and camera frustum checks skip distant geometry.</dd><dt id="term-wgsl">WGSL</dt><dd>WebGPU Shading Language: the W3C standard shader language validated in Verdant Engine by naga.</dd><dt id="term-gltf">glTF</dt><dd>The Khronos Group 3D scene transmission standard. GLB is its single-file binary container.</dd><dt id="term-world-snapshot">world snapshot</dt><dd>A deterministic binary save of tick count, expansion scale, and entity transforms protected by a 32-byte SHA-256 digest.</dd></dl></details><nav class="dc-pager" aria-label="Page sequence">
+        <a href="../">Previous: Verdant Engine documentation</a>
+        <a href="../guides/custom-game-world/">Next: Author terrain, shaders, and spatial audio</a>
+      </nav>
+    </main>
+  
+
+</body></html>

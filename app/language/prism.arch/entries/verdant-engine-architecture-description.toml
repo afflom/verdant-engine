@@ -1,0 +1,17 @@
+spec = "lexlean/entry/1"
+id = "verdant-engine-architecture-description"
+category = "label-word"
+surface_arity = 0
+frame = "atom"
+
+[denotation]
+kind = "document"
+module = "Architecture"
+component = "architectureValid"
+
+[[form]]
+id = "verdant-engine-architecture-description"
+channel = "text"
+surface = "Verdant Engine architecture description"
+canonical_source = true
+features = ["sentence-case", "singular"]

@@ -5,22 +5,19 @@ members = ["crates/*", "xtask"]
 [workspace.package]
 version = "0.1.0"
 edition = "2021"
-# Raise this when something here needs a newer compiler; nothing does yet.
 rust-version = "1.89"
 license = "MIT OR Apache-2.0"
-# Instantiated repositories set their own URLs here.
-repository = "https://github.com/UOR-Foundation/template"
-homepage = "https://github.com/UOR-Foundation/template"
-authors = ["UOR Foundation"]
-keywords = []
-categories = []
+repository = "https://github.com/afflom/verdant-engine"
+homepage = "https://afflom.github.io/verdant-engine/"
+authors = ["Alex"]
+keywords = ["game-engine", "3d", "webgpu", "wasm", "gltf"]
+categories = ["game-engines", "graphics", "simulation", "wasm"]
 
 [workspace.dependencies]
+prism-fidelity = { version = "0.1.0", path = "crates/fidelity" }
 repo-model = { version = "0.1.0", path = "crates/model" }
-# A `path` dependency with no `version` is a wildcard requirement, and
-# `cargo deny` refuses those (`wildcards = "deny"`). Every internal dependency
-# carries both.
 repo-conformance = { version = "0.1.0", path = "crates/conformance" }
+verdant-core = { version = "0.1.0", path = "crates/verdant-core" }
 
 [workspace.lints.rust]
 missing_docs = "deny"

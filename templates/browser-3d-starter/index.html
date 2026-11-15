@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Verdant Engine — Browser 3D Starter</title>
+    <style>
+      html, body { margin: 0; height: 100%; background: #121619; color: #eef2f5; font-family: system-ui, sans-serif; overflow: hidden; }
+      #arena { display: block; width: 100vw; height: 100vh; }
+      header { position: fixed; top: 1rem; left: 1rem; padding: 0.5rem 0.75rem; border-radius: 0.5rem; background: rgba(18, 22, 25, 0.82); border: 1px solid rgba(255, 255, 255, 0.14); font-size: 0.875rem; }
+    </style>
+  </head>
+  <body>
+    <header>Verdant Engine Starter · Drag to orbit</header>
+    <canvas id="arena" aria-label="Starter 3D arena viewport"></canvas>
+    <script type="module" src="./game.mjs"></script>
+  </body>
+</html>

@@ -1,0 +1,17 @@
+spec = "lexlean/entry/1"
+id = "verdant-engine-threat-model"
+category = "label-word"
+surface_arity = 0
+frame = "atom"
+
+[denotation]
+kind = "document"
+module = "Security"
+component = "controlSet"
+
+[[form]]
+id = "verdant-engine-threat-model"
+channel = "text"
+surface = "Verdant Engine threat model"
+canonical_source = true
+features = ["sentence-case", "singular"]

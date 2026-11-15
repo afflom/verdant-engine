@@ -1,0 +1,36 @@
+# The quality measures Verdant Engine measures itself (ISO/IEC/IEEE 15939): each
+# names its QualityMeasure record, the LexLean method that computes its value
+# (the Lean kernel evaluates it when it checks app/src/Fidelity.lex.tex), the
+# file the method is written in (its κ is the result's), and whether the
+# record's threshold bounds the value from above (atMost) or below (atLeast).
+spec = "prism/measures/1"
+
+[[measure]]
+record = "Quality::measureUnstableBlueprints"
+method = "Measures::unstableBlueprints"
+source = "app/src/Measures.lex.tex"
+direction = "atMost"
+
+[[measure]]
+record = "Quality::measureDisorderedEpochs"
+method = "Measures::disorderedEpochs"
+source = "app/src/Measures.lex.tex"
+direction = "atMost"
+
+[[measure]]
+record = "Quality::measureJourneysPerStakeholder"
+method = "Measures::journeysPerStakeholder"
+source = "app/src/Measures.lex.tex"
+direction = "atLeast"
+
+[[measure]]
+record = "Quality::measureMagicConstantViolations"
+method = "Measures::magicConstantViolations"
+source = "app/src/Measures.lex.tex"
+direction = "atMost"
+
+[[measure]]
+record = "Quality::measureVerifierRequestCapBytes"
+method = "Measures::verifierRequestCapBytes"
+source = "app/src/Measures.lex.tex"
+direction = "atMost"

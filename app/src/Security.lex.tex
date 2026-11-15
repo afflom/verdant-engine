@@ -1,0 +1,364 @@
+\begin{lexlean}{Security}
+\useglossary{lexlean.std.bool@1.2.0}
+\useglossary{lexlean.std.nat@1.2.0}
+\useglossary{prism.arch@1.0.0}
+\useglossary{prism.sec@1.0.0}
+\importmodule{Foundation.Sec}
+\importmodule{Production.ThreatModel}
+\importmodule{Architecture}
+\title{Verdant Engine threat model}
+\begin{semanticmodule}
+definition{
+  name: assetPublishedPagesArtifact,
+  parameters: [],
+  result: Foundation.Sec::Asset,
+  body: (record Foundation.Sec::Asset {index := 0, componentIndex := 5})
+}
+
+definition{
+  name: assetStudioAndDocsPages,
+  parameters: [],
+  result: Foundation.Sec::Asset,
+  body: (record Foundation.Sec::Asset {index := 1, componentIndex := 4})
+}
+
+definition{
+  name: assetVerdantCoreRuntime,
+  parameters: [],
+  result: Foundation.Sec::Asset,
+  body: (record Foundation.Sec::Asset {index := 2, componentIndex := 6})
+}
+
+definition{
+  name: assetVerifierGuestArchive,
+  parameters: [],
+  result: Foundation.Sec::Asset,
+  body: (record Foundation.Sec::Asset {index := 3, componentIndex := 7})
+}
+
+definition{
+  name: threatHostSubstitution,
+  parameters: [],
+  result: Foundation.Sec::Threat,
+  body: (record Foundation.Sec::Threat {index := 0})
+}
+
+definition{
+  name: threatInvalidShaderCompilation,
+  parameters: [],
+  result: Foundation.Sec::Threat,
+  body: (record Foundation.Sec::Threat {index := 1})
+}
+
+definition{
+  name: threatMalformedGlbExport,
+  parameters: [],
+  result: Foundation.Sec::Threat,
+  body: (record Foundation.Sec::Threat {index := 2})
+}
+
+definition{
+  name: threatSnapshotTampering,
+  parameters: [],
+  result: Foundation.Sec::Threat,
+  body: (record Foundation.Sec::Threat {index := 3})
+}
+
+definition{
+  name: threatStudioScriptInjection,
+  parameters: [],
+  result: Foundation.Sec::Threat,
+  body: (record Foundation.Sec::Threat {index := 4})
+}
+
+definition{
+  name: threatVerifierQueryExhaustion,
+  parameters: [],
+  result: Foundation.Sec::Threat,
+  body: (record Foundation.Sec::Threat {index := 5})
+}
+
+definition{
+  name: riskHostSubstitution,
+  parameters: [],
+  result: Foundation.Sec::Risk,
+  body: (record Foundation.Sec::Risk {index := 0, assetIndex := 0, threatIndex := 0, likelihood := (ctor Foundation.Sec::Likelihood.low), impact := (ctor Foundation.Sec::Impact.critical)})
+}
+
+definition{
+  name: riskInvalidShaderCompilation,
+  parameters: [],
+  result: Foundation.Sec::Risk,
+  body: (record Foundation.Sec::Risk {index := 1, assetIndex := 2, threatIndex := 1, likelihood := (ctor Foundation.Sec::Likelihood.medium), impact := (ctor Foundation.Sec::Impact.major)})
+}
+
+definition{
+  name: riskMalformedGlbExport,
+  parameters: [],
+  result: Foundation.Sec::Risk,
+  body: (record Foundation.Sec::Risk {index := 2, assetIndex := 2, threatIndex := 2, likelihood := (ctor Foundation.Sec::Likelihood.low), impact := (ctor Foundation.Sec::Impact.major)})
+}
+
+definition{
+  name: riskSnapshotTampering,
+  parameters: [],
+  result: Foundation.Sec::Risk,
+  body: (record Foundation.Sec::Risk {index := 3, assetIndex := 2, threatIndex := 3, likelihood := (ctor Foundation.Sec::Likelihood.medium), impact := (ctor Foundation.Sec::Impact.major)})
+}
+
+definition{
+  name: riskStudioScriptInjection,
+  parameters: [],
+  result: Foundation.Sec::Risk,
+  body: (record Foundation.Sec::Risk {index := 4, assetIndex := 1, threatIndex := 4, likelihood := (ctor Foundation.Sec::Likelihood.low), impact := (ctor Foundation.Sec::Impact.major)})
+}
+
+definition{
+  name: riskVerifierQueryExhaustion,
+  parameters: [],
+  result: Foundation.Sec::Risk,
+  body: (record Foundation.Sec::Risk {index := 5, assetIndex := 3, threatIndex := 5, likelihood := (ctor Foundation.Sec::Likelihood.low), impact := (ctor Foundation.Sec::Impact.minor)})
+}
+
+definition{
+  name: controlKhronosGltfOracle,
+  parameters: [],
+  result: Foundation.Sec::ApplicationSecurityControl,
+  body: (record Foundation.Sec::ApplicationSecurityControl {index := 0, riskIndex := 2})
+}
+
+definition{
+  name: controlNagaShaderOracle,
+  parameters: [],
+  result: Foundation.Sec::ApplicationSecurityControl,
+  body: (record Foundation.Sec::ApplicationSecurityControl {index := 1, riskIndex := 1})
+}
+
+definition{
+  name: controlSnapshotSha256Trailer,
+  parameters: [],
+  result: Foundation.Sec::ApplicationSecurityControl,
+  body: (record Foundation.Sec::ApplicationSecurityControl {index := 2, riskIndex := 3})
+}
+
+definition{
+  name: controlStrictHashedCsp,
+  parameters: [],
+  result: Foundation.Sec::ApplicationSecurityControl,
+  body: (record Foundation.Sec::ApplicationSecurityControl {index := 3, riskIndex := 4})
+}
+
+definition{
+  name: controlVerifierRequestCap,
+  parameters: [],
+  result: Foundation.Sec::ApplicationSecurityControl,
+  body: (record Foundation.Sec::ApplicationSecurityControl {index := 4, riskIndex := 5})
+}
+
+definition{
+  name: controlSet,
+  parameters: [],
+  result: Production.ThreatModel::ControlSet,
+  body: (record Production.ThreatModel::ControlSet {title := "Verdant Engine security controls", text := "Verdant Engine runs wholly client-side in WebGPU/WebGL2, WebAudio, and an isolated Core-Wasm Web Worker, validating shaders, binary glTF assets, and SHA-256 world snapshots.", version := "0.1.0", lastModified := "2026-11-14T00:00:00Z"})
+}
+
+definition{
+  name: modeledAssetPublishedPagesArtifact,
+  parameters: [],
+  result: Production.ThreatModel::ModeledAsset,
+  body: (record Production.ThreatModel::ModeledAsset {asset := "Security::assetPublishedPagesArtifact", name := "Published Pages bundle", text := "The static Engine Studio and holo bundle deployed by the GitHub Pages workflow."})
+}
+
+definition{
+  name: modeledAssetStudioAndDocsPages,
+  parameters: [],
+  result: Production.ThreatModel::ModeledAsset,
+  body: (record Production.ThreatModel::ModeledAsset {asset := "Security::assetStudioAndDocsPages", name := "Studio and documentation pages", text := "The interactive 3D browser Engine Studio, Diataxis documentation pages, Markdown twins, and llms.txt."})
+}
+
+definition{
+  name: modeledAssetVerdantCoreRuntime,
+  parameters: [],
+  result: Production.ThreatModel::ModeledAsset,
+  body: (record Production.ThreatModel::ModeledAsset {asset := "Security::assetVerdantCoreRuntime", name := "Verdant Core runtime", text := "The ECS, physics, shader, glTF 2.0, and binary world-snapshot kernels in crates/verdant-core."})
+}
+
+definition{
+  name: modeledAssetVerifierGuestArchive,
+  parameters: [],
+  result: Production.ThreatModel::ModeledAsset,
+  body: (record Production.ThreatModel::ModeledAsset {asset := "Security::assetVerifierGuestArchive", name := "Engine verifier holo", text := "The signed Core-Wasm guest archive verified inside the browser worker before dispatch."})
+}
+
+definition{
+  name: modeledThreatHostSubstitution,
+  parameters: [],
+  result: Production.ThreatModel::ModeledThreat,
+  body: (record Production.ThreatModel::ModeledThreat {threat := "Security::threatHostSubstitution", name := "Substituted static host", text := "An untrusted server serves modified HTML in place of the repository's GitHub Pages deployment.", category := (ctor Production.ThreatModel::Stride.spoofing)})
+}
+
+definition{
+  name: modeledThreatInvalidShaderCompilation,
+  parameters: [],
+  result: Production.ThreatModel::ModeledThreat,
+  body: (record Production.ThreatModel::ModeledThreat {threat := "Security::threatInvalidShaderCompilation", name := "Invalid or unsafe WGSL shader", text := "A malformed or out-of-bounds shader source reaches GPU compilation without front-end type and binding validation.", category := (ctor Production.ThreatModel::Stride.tampering)})
+}
+
+definition{
+  name: modeledThreatMalformedGlbExport,
+  parameters: [],
+  result: Production.ThreatModel::ModeledThreat,
+  body: (record Production.ThreatModel::ModeledThreat {threat := "Security::threatMalformedGlbExport", name := "Non-conformant glTF 2.0 buffer layout", text := "A degenerate mesh or misaligned buffer produces a binary glTF asset that downstream DCC tools reject or misread.", category := (ctor Production.ThreatModel::Stride.repudiation)})
+}
+
+definition{
+  name: modeledThreatSnapshotTampering,
+  parameters: [],
+  result: Production.ThreatModel::ModeledThreat,
+  body: (record Production.ThreatModel::ModeledThreat {threat := "Security::threatSnapshotTampering", name := "Corrupted or tampered world snapshot", text := "A truncated or modified binary world snapshot alters simulation state or entity transforms silently.", category := (ctor Production.ThreatModel::Stride.tampering)})
+}
+
+definition{
+  name: modeledThreatStudioScriptInjection,
+  parameters: [],
+  result: Production.ThreatModel::ModeledThreat,
+  body: (record Production.ThreatModel::ModeledThreat {threat := "Security::threatStudioScriptInjection", name := "Inline style or script injection", text := "Unescaped markup or inline styles bypass Content-Security-Policy hashes in the browser Engine Studio.", category := (ctor Production.ThreatModel::Stride.elevationOfPrivilege)})
+}
+
+definition{
+  name: modeledThreatVerifierQueryExhaustion,
+  parameters: [],
+  result: Production.ThreatModel::ModeledThreat,
+  body: (record Production.ThreatModel::ModeledThreat {threat := "Security::threatVerifierQueryExhaustion", name := "Oversized verifier query", text := "An unbounded byte payload sent to the Core-Wasm verifier exhausts guest memory or worker CPU budget.", category := (ctor Production.ThreatModel::Stride.denialOfService)})
+}
+
+definition{
+  name: modeledControlKhronosGltfOracle,
+  parameters: [],
+  result: Production.ThreatModel::ModeledControl,
+  body: (record Production.ThreatModel::ModeledControl {control := "Security::controlKhronosGltfOracle", name := "Khronos gltf 2.0 binary validator", text := "Exported GLB payloads refuse empty geometry and pass gltf::Glb and gltf::import buffer validation.", evidence := (cons (record Production.ThreatModel::Evidence {kind := (ctor Production.ThreatModel::EvidenceKind.gate), reference := "cargo test -p repo-conformance engine_ve_04"}) (nil Production.ThreatModel::Evidence))})
+}
+
+definition{
+  name: modeledControlNagaShaderOracle,
+  parameters: [],
+  result: Production.ThreatModel::ModeledControl,
+  body: (record Production.ThreatModel::ModeledControl {control := "Security::controlNagaShaderOracle", name := "W3C naga WGSL validator", text := "Every WGSL shader module is parsed and type-checked by naga::valid::Validator before acceptance.", evidence := (cons (record Production.ThreatModel::Evidence {kind := (ctor Production.ThreatModel::EvidenceKind.gate), reference := "cargo test -p repo-conformance engine_ve_05"}) (nil Production.ThreatModel::Evidence))})
+}
+
+definition{
+  name: modeledControlSnapshotSha256Trailer,
+  parameters: [],
+  result: Production.ThreatModel::ModeledControl,
+  body: (record Production.ThreatModel::ModeledControl {control := "Security::controlSnapshotSha256Trailer", name := "Authenticated SHA-256 snapshot trailer", text := "Every WorldSnapshot verifies magic bytes, exact payload length, and a 32-byte SHA-256 digest before decoding.", evidence := (cons (record Production.ThreatModel::Evidence {kind := (ctor Production.ThreatModel::EvidenceKind.gate), reference := "cargo test -p repo-conformance engine_ve_09"}) (nil Production.ThreatModel::Evidence))})
+}
+
+definition{
+  name: modeledControlStrictHashedCsp,
+  parameters: [],
+  result: Production.ThreatModel::ModeledControl,
+  body: (record Production.ThreatModel::ModeledControl {control := "Security::controlStrictHashedCsp", name := "Hash-locked Content-Security-Policy and worker verification", text := "bootstrap/page.mjs hashes all styles and scripts into CSP with zero inline style mutations, and guest-worker.mjs verifies app.holo off the main thread.", evidence := (cons (record Production.ThreatModel::Evidence {kind := (ctor Production.ThreatModel::EvidenceKind.gate), reference := "cargo test -p repo-conformance frame_fr_01"}) (nil Production.ThreatModel::Evidence))})
+}
+
+definition{
+  name: modeledControlVerifierRequestCap,
+  parameters: [],
+  result: Production.ThreatModel::ModeledControl,
+  body: (record Production.ThreatModel::ModeledControl {control := "Security::controlVerifierRequestCap", name := "Bounded 64-byte Core-Wasm request cap", text := "The Core-Wasm guest enforces requestMaximum := 64 and refuses unknown or empty queries deterministically.", evidence := (cons (record Production.ThreatModel::Evidence {kind := (ctor Production.ThreatModel::EvidenceKind.gate), reference := "prismpm --project app verify acceptance vectors"}) (nil Production.ThreatModel::Evidence))})
+}
+
+definition{
+  name: mappingInvalidShaderCompilation,
+  parameters: [],
+  result: Production.ThreatModel::ThreatMapping,
+  body: (record Production.ThreatModel::ThreatMapping {threat := "Security::threatInvalidShaderCompilation", controls := (cons "Security::controlNagaShaderOracle" (nil String))})
+}
+
+definition{
+  name: mappingMalformedGlbExport,
+  parameters: [],
+  result: Production.ThreatModel::ThreatMapping,
+  body: (record Production.ThreatModel::ThreatMapping {threat := "Security::threatMalformedGlbExport", controls := (cons "Security::controlKhronosGltfOracle" (nil String))})
+}
+
+definition{
+  name: mappingSnapshotTampering,
+  parameters: [],
+  result: Production.ThreatModel::ThreatMapping,
+  body: (record Production.ThreatModel::ThreatMapping {threat := "Security::threatSnapshotTampering", controls := (cons "Security::controlSnapshotSha256Trailer" (nil String))})
+}
+
+definition{
+  name: mappingStudioScriptInjection,
+  parameters: [],
+  result: Production.ThreatModel::ThreatMapping,
+  body: (record Production.ThreatModel::ThreatMapping {threat := "Security::threatStudioScriptInjection", controls := (cons "Security::controlStrictHashedCsp" (nil String))})
+}
+
+definition{
+  name: mappingVerifierQueryExhaustion,
+  parameters: [],
+  result: Production.ThreatModel::ThreatMapping,
+  body: (record Production.ThreatModel::ThreatMapping {threat := "Security::threatVerifierQueryExhaustion", controls := (cons "Security::controlVerifierRequestCap" (nil String))})
+}
+
+definition{
+  name: acceptedHostSubstitution,
+  parameters: [],
+  result: Production.ThreatModel::AcceptedRisk,
+  body: (record Production.ThreatModel::AcceptedRisk {threat := "Security::threatHostSubstitution", rationale := "A static browser bundle cannot prevent substitution of its own HTTP origin; the holo archive carries verifiable cryptographic provenance and the repository rebuilds deterministically from source."})
+}
+
+definition{
+  name: nonEmptyString,
+  parameters: [value : String],
+  result: Bool,
+  body: (not (prim equal value "" : Bool)),
+  axioms: []
+}
+
+definition{
+  name: hasEvidence,
+  parameters: [items : (List Production.ThreatModel::Evidence)],
+  result: Bool,
+  body: match{
+    branches: [
+      {body: false, binders: [], constructor: List.nil},
+      {body: true, binders: [first, rest], constructor: List.cons}
+    ],
+    scrutinee: items
+  },
+  axioms: []
+}
+
+definition{
+  name: hasMappedControls,
+  parameters: [items : (List String)],
+  result: Bool,
+  body: match{
+    branches: [
+      {body: false, binders: [], constructor: List.nil},
+      {body: true, binders: [first, rest], constructor: List.cons}
+    ],
+    scrutinee: items
+  },
+  axioms: []
+}
+
+theorem{
+  name: securityThreatModelComplete,
+  parameters: [],
+  statement: (((((project (assetPublishedPagesArtifact) index) =? 0) && (((project (assetStudioAndDocsPages) index) =? 1) && (((project (assetVerdantCoreRuntime) index) =? 2) && ((project (assetVerifierGuestArchive) index) =? 3)))) && ((((project (threatHostSubstitution) index) =? 0) && (((project (threatInvalidShaderCompilation) index) =? 1) && (((project (threatMalformedGlbExport) index) =? 2) && (((project (threatSnapshotTampering) index) =? 3) && (((project (threatStudioScriptInjection) index) =? 4) && ((project (threatVerifierQueryExhaustion) index) =? 5)))))) && ((((project (riskHostSubstitution) index) =? 0) && (((project (riskInvalidShaderCompilation) index) =? 1) && (((project (riskMalformedGlbExport) index) =? 2) && (((project (riskSnapshotTampering) index) =? 3) && (((project (riskStudioScriptInjection) index) =? 4) && ((project (riskVerifierQueryExhaustion) index) =? 5)))))) && (((project (controlKhronosGltfOracle) index) =? 0) && (((project (controlNagaShaderOracle) index) =? 1) && (((project (controlSnapshotSha256Trailer) index) =? 2) && (((project (controlStrictHashedCsp) index) =? 3) && ((project (controlVerifierRequestCap) index) =? 4)))))))) = true),
+  proof: decide{},
+  axioms: []
+}
+
+theorem{
+  name: modeledSecurityControlsEvidenced,
+  parameters: [],
+  statement: (((((nonEmptyString (project (controlSet) title)) && (nonEmptyString (project (acceptedHostSubstitution) rationale))) && (((nonEmptyString (project (modeledAssetPublishedPagesArtifact) name)) && ((nonEmptyString (project (modeledAssetStudioAndDocsPages) name)) && ((nonEmptyString (project (modeledAssetVerdantCoreRuntime) name)) && (nonEmptyString (project (modeledAssetVerifierGuestArchive) name))))) && ((nonEmptyString (project (modeledThreatHostSubstitution) name)) && ((nonEmptyString (project (modeledThreatInvalidShaderCompilation) name)) && ((nonEmptyString (project (modeledThreatMalformedGlbExport) name)) && ((nonEmptyString (project (modeledThreatSnapshotTampering) name)) && ((nonEmptyString (project (modeledThreatStudioScriptInjection) name)) && (nonEmptyString (project (modeledThreatVerifierQueryExhaustion) name))))))))) && (((hasEvidence (project (modeledControlKhronosGltfOracle) evidence)) && ((hasEvidence (project (modeledControlNagaShaderOracle) evidence)) && ((hasEvidence (project (modeledControlSnapshotSha256Trailer) evidence)) && ((hasEvidence (project (modeledControlStrictHashedCsp) evidence)) && (hasEvidence (project (modeledControlVerifierRequestCap) evidence)))))) && ((hasMappedControls (project (mappingInvalidShaderCompilation) controls)) && ((hasMappedControls (project (mappingMalformedGlbExport) controls)) && ((hasMappedControls (project (mappingSnapshotTampering) controls)) && ((hasMappedControls (project (mappingStudioScriptInjection) controls)) && (hasMappedControls (project (mappingVerifierQueryExhaustion) controls)))))))) = true),
+  proof: decide{},
+  axioms: []
+}
+\end{semanticmodule}
+\end{lexlean}

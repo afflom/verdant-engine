@@ -1,0 +1,87 @@
+\begin{lexlean}{Users}
+\useglossary{lexlean.std.bool@1.2.0}
+\useglossary{lexlean.std.nat@1.2.0}
+\useglossary{prism.arch@1.0.0}
+\importmodule{Foundation.Experience.V1.Model}
+\importmodule{Architecture}
+\importmodule{Features}
+\title{Verdant Engine context of use}
+\begin{semanticmodule}
+definition{
+  name: authority,
+  parameters: [],
+  result: Foundation.Experience.V1.Model::Authority,
+  body: (record Foundation.Experience.V1.Model::Authority {framework := "ISO 9241-11:2018 context of use and usability; ISO 9241-210:2019 human-centred design", repository := "https://github.com/afflom/verdant-engine", commit := "the revision of this model"})
+}
+
+definition{
+  name: groups,
+  parameters: [],
+  result: (List Foundation.Experience.V1.Model::UserGroup),
+  body: (cons (record Foundation.Experience.V1.Model::UserGroup {stakeholder := (Architecture::stakeholderGameDeveloper), characteristics := "Builds 3D games and interactive worlds on verdant-core with deterministic ECS, rigid-body physics, spatial audio, and starter templates."}) (cons (record Foundation.Experience.V1.Model::UserGroup {stakeholder := (Architecture::stakeholderTechnicalArtist), characteristics := "Authors procedural terrain, L-system flora, PBR materials, WGSL shaders, and glTF 2.0 scene exports that validate cleanly."}) (cons (record Foundation.Experience.V1.Model::UserGroup {stakeholder := (Architecture::stakeholderSystemsEngineer), characteristics := "Maintains frame-budget job graphs, deterministic binary world snapshots, and zero-constant parametric simulation kernels."}) (cons (record Foundation.Experience.V1.Model::UserGroup {stakeholder := (Architecture::stakeholderBrowserPlayer), characteristics := "Explores responsive 60fps 3D scenes in the browser across desktop and mobile viewports with keyboard, pointer, and spatial audio controls."}) (cons (record Foundation.Experience.V1.Model::UserGroup {stakeholder := (Architecture::stakeholderSecurityAuditor), characteristics := "Verifies shader safety, snapshot integrity, strict Content-Security-Policy isolation, and Core-Wasm archive provenance."}) (nil Foundation.Experience.V1.Model::UserGroup))))))
+}
+
+definition{
+  name: goals,
+  parameters: [],
+  result: (List Foundation.Experience.V1.Model::Goal),
+  body: (cons (record Foundation.Experience.V1.Model::Goal {user := 0, journey := (Features::journeyGameDeveloper), outcome := "Developers, players, and coding agents explore the interactive 3D WebGL2 Engine Studio, browser starter template, Diataxis documentation, and llms.txt."}) (cons (record Foundation.Experience.V1.Model::Goal {user := 1, journey := (Features::journeyTechnicalArtist), outcome := "Technical artists generate procedural terrain, L-system flora, morph targets, binary glTF 2.0 scenes, and WGSL shaders validated by Khronos gltf and W3C naga."}) (cons (record Foundation.Experience.V1.Model::Goal {user := 2, journey := (Features::journeySystemsEngineer), outcome := "Five Builder guilds synthesize seven non-natural sanctuary structures and an autonomous perimeter sentinel rover verified for Heyman middle-third equilibrium."}) (cons (record Foundation.Experience.V1.Model::Goal {user := 3, journey := (Features::journeyBrowserPlayer), outcome := "Developers, players, and coding agents explore the interactive 3D WebGL2 Engine Studio, browser starter template, Diataxis documentation, and llms.txt."}) (cons (record Foundation.Experience.V1.Model::Goal {user := 4, journey := (Features::journeySecurityAuditor), outcome := "Developers, players, and coding agents explore the interactive 3D WebGL2 Engine Studio, browser starter template, Diataxis documentation, and llms.txt."}) (nil Foundation.Experience.V1.Model::Goal))))))
+}
+
+definition{
+  name: tasks,
+  parameters: [],
+  result: (List Foundation.Experience.V1.Model::Task),
+  body: (cons (record Foundation.Experience.V1.Model::Task {goal := 0, order := 0, feature := (Features::featureEcsAndBvh)}) (cons (record Foundation.Experience.V1.Model::Task {goal := 0, order := 1, feature := (Features::featurePhysicsAndRover)}) (cons (record Foundation.Experience.V1.Model::Task {goal := 0, order := 2, feature := (Features::featureSpatialAudio)}) (cons (record Foundation.Experience.V1.Model::Task {goal := 0, order := 3, feature := (Features::featureStudioAndDocs)}) (cons (record Foundation.Experience.V1.Model::Task {goal := 1, order := 0, feature := (Features::featureWorldExpansion)}) (cons (record Foundation.Experience.V1.Model::Task {goal := 1, order := 1, feature := (Features::featureBuilderBlueprints)}) (cons (record Foundation.Experience.V1.Model::Task {goal := 1, order := 2, feature := (Features::featureGltfAndWgsl)}) (cons (record Foundation.Experience.V1.Model::Task {goal := 2, order := 0, feature := (Features::featureEcsAndBvh)}) (cons (record Foundation.Experience.V1.Model::Task {goal := 2, order := 1, feature := (Features::featureSnapshotsAndJobGraph)}) (cons (record Foundation.Experience.V1.Model::Task {goal := 2, order := 2, feature := (Features::featureBuilderBlueprints)}) (cons (record Foundation.Experience.V1.Model::Task {goal := 3, order := 0, feature := (Features::featureWorldExpansion)}) (cons (record Foundation.Experience.V1.Model::Task {goal := 3, order := 1, feature := (Features::featureSpatialAudio)}) (cons (record Foundation.Experience.V1.Model::Task {goal := 3, order := 2, feature := (Features::featureStudioAndDocs)}) (cons (record Foundation.Experience.V1.Model::Task {goal := 4, order := 0, feature := (Features::featureGltfAndWgsl)}) (cons (record Foundation.Experience.V1.Model::Task {goal := 4, order := 1, feature := (Features::featureSnapshotsAndJobGraph)}) (cons (record Foundation.Experience.V1.Model::Task {goal := 4, order := 2, feature := (Features::featureStudioAndDocs)}) (nil Foundation.Experience.V1.Model::Task)))))))))))))))))
+}
+
+definition{
+  name: environments,
+  parameters: [],
+  result: (List Foundation.Experience.V1.Model::Environment),
+  body: (cons (record Foundation.Experience.V1.Model::Environment {kind := (ctor Foundation.Experience.V1.Model::EnvironmentKind.technical), component := (Architecture::componentEngineCliExamples)}) (cons (record Foundation.Experience.V1.Model::Environment {kind := (ctor Foundation.Experience.V1.Model::EnvironmentKind.technical), component := (Architecture::componentEngineStudioSite)}) (cons (record Foundation.Experience.V1.Model::Environment {kind := (ctor Foundation.Experience.V1.Model::EnvironmentKind.technical), component := (Architecture::componentVerdantCoreCrate)}) (nil Foundation.Experience.V1.Model::Environment))))
+}
+
+definition{
+  name: measures,
+  parameters: [],
+  result: (List Foundation.Experience.V1.Model::UsabilityMeasure),
+  body: (cons (record Foundation.Experience.V1.Model::UsabilityMeasure {goal := 0, outcome := (ctor Foundation.Experience.V1.Model::UsabilityOutcome.effectiveness), observed := (ctor Option.some [Nat] 4), method := "acceptance rows of the goal's tasks: each is a test that the task's feature completes"}) (cons (record Foundation.Experience.V1.Model::UsabilityMeasure {goal := 0, outcome := (ctor Foundation.Experience.V1.Model::UsabilityOutcome.efficiency), observed := (ctor Option.some [Nat] 4), method := "tasks the goal takes, from its journey's steps"}) (cons (record Foundation.Experience.V1.Model::UsabilityMeasure {goal := 0, outcome := (ctor Foundation.Experience.V1.Model::UsabilityOutcome.satisfaction), observed := (ctor Option.none [Nat]), method := "open: no instrument in the model measures it"}) (cons (record Foundation.Experience.V1.Model::UsabilityMeasure {goal := 1, outcome := (ctor Foundation.Experience.V1.Model::UsabilityOutcome.effectiveness), observed := (ctor Option.some [Nat] 4), method := "acceptance rows of the goal's tasks: each is a test that the task's feature completes"}) (cons (record Foundation.Experience.V1.Model::UsabilityMeasure {goal := 1, outcome := (ctor Foundation.Experience.V1.Model::UsabilityOutcome.efficiency), observed := (ctor Option.some [Nat] 3), method := "tasks the goal takes, from its journey's steps"}) (cons (record Foundation.Experience.V1.Model::UsabilityMeasure {goal := 1, outcome := (ctor Foundation.Experience.V1.Model::UsabilityOutcome.satisfaction), observed := (ctor Option.none [Nat]), method := "open: no instrument in the model measures it"}) (cons (record Foundation.Experience.V1.Model::UsabilityMeasure {goal := 2, outcome := (ctor Foundation.Experience.V1.Model::UsabilityOutcome.effectiveness), observed := (ctor Option.some [Nat] 3), method := "acceptance rows of the goal's tasks: each is a test that the task's feature completes"}) (cons (record Foundation.Experience.V1.Model::UsabilityMeasure {goal := 2, outcome := (ctor Foundation.Experience.V1.Model::UsabilityOutcome.efficiency), observed := (ctor Option.some [Nat] 3), method := "tasks the goal takes, from its journey's steps"}) (cons (record Foundation.Experience.V1.Model::UsabilityMeasure {goal := 2, outcome := (ctor Foundation.Experience.V1.Model::UsabilityOutcome.satisfaction), observed := (ctor Option.none [Nat]), method := "open: no instrument in the model measures it"}) (cons (record Foundation.Experience.V1.Model::UsabilityMeasure {goal := 3, outcome := (ctor Foundation.Experience.V1.Model::UsabilityOutcome.effectiveness), observed := (ctor Option.some [Nat] 3), method := "acceptance rows of the goal's tasks: each is a test that the task's feature completes"}) (cons (record Foundation.Experience.V1.Model::UsabilityMeasure {goal := 3, outcome := (ctor Foundation.Experience.V1.Model::UsabilityOutcome.efficiency), observed := (ctor Option.some [Nat] 3), method := "tasks the goal takes, from its journey's steps"}) (cons (record Foundation.Experience.V1.Model::UsabilityMeasure {goal := 3, outcome := (ctor Foundation.Experience.V1.Model::UsabilityOutcome.satisfaction), observed := (ctor Option.none [Nat]), method := "open: no instrument in the model measures it"}) (cons (record Foundation.Experience.V1.Model::UsabilityMeasure {goal := 4, outcome := (ctor Foundation.Experience.V1.Model::UsabilityOutcome.effectiveness), observed := (ctor Option.some [Nat] 4), method := "acceptance rows of the goal's tasks: each is a test that the task's feature completes"}) (cons (record Foundation.Experience.V1.Model::UsabilityMeasure {goal := 4, outcome := (ctor Foundation.Experience.V1.Model::UsabilityOutcome.efficiency), observed := (ctor Option.some [Nat] 3), method := "tasks the goal takes, from its journey's steps"}) (cons (record Foundation.Experience.V1.Model::UsabilityMeasure {goal := 4, outcome := (ctor Foundation.Experience.V1.Model::UsabilityOutcome.satisfaction), observed := (ctor Option.none [Nat]), method := "open: no instrument in the model measures it"}) (nil Foundation.Experience.V1.Model::UsabilityMeasure))))))))))))))))
+}
+
+theorem{
+  name: everyGoalHasItsUser,
+  parameters: [],
+  statement: ((Foundation.Experience.V1.Model::goalsOfGroups (goals) 5) = true),
+  proof: decide{}
+}
+
+theorem{
+  name: everyTaskServesAGoal,
+  parameters: [],
+  statement: ((Foundation.Experience.V1.Model::tasksOfGoals (tasks) 5) = true),
+  proof: decide{}
+}
+
+theorem{
+  name: everyTaskIsAccepted,
+  parameters: [],
+  statement: ((Foundation.Experience.V1.Model::tasksAccepted (tasks)) = true),
+  proof: decide{}
+}
+
+theorem{
+  name: everyMeasureNamesAGoal,
+  parameters: [],
+  statement: ((Foundation.Experience.V1.Model::measuresOfGoals (measures) 5) = true),
+  proof: decide{}
+}
+
+theorem{
+  name: contextOfUsePopulated,
+  parameters: [],
+  statement: (((Foundation.Experience.V1.Model::authorityNamed (authority)) && ((Foundation.Experience.V1.Model::groupsDescribed (groups)) && (Foundation.Experience.V1.Model::environmentsNamed (environments)))) = true),
+  proof: decide{}
+}
+\end{semanticmodule}
+\end{lexlean}

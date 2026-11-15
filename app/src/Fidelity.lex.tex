@@ -1,0 +1,235 @@
+\begin{lexlean}{Fidelity}
+\useglossary{lexlean.std.bool@1.2.0}
+\useglossary{lexlean.std.nat@1.2.0}
+\useglossary{prism.arch@1.0.0}
+\importmodule{Foundation.Measurement.V1.Model}
+\importmodule{Foundation.Qual}
+\importmodule{Measures}
+\importmodule{Quality}
+\title{Fidelity of the model}
+\begin{semanticmodule}
+definition{
+  name: informationNeed,
+  parameters: [],
+  result: Foundation.Measurement.V1.Model::InformationNeed,
+  body: (record Foundation.Measurement.V1.Model::InformationNeed {index := 0, name := "Fidelity of the model", text := "How much of what the model claims is derived from its sources, verified by a theorem and measured, and how much is still open."})
+}
+
+definition{
+  name: conceptOpenQuestions,
+  parameters: [],
+  result: Foundation.Measurement.V1.Model::MeasurableConcept,
+  body: (record Foundation.Measurement.V1.Model::MeasurableConcept {index := 0, informationNeedIndex := 0, name := "Open questions per property"})
+}
+
+definition{
+  name: entityRecord,
+  parameters: [],
+  result: Foundation.Measurement.V1.Model::Entity,
+  body: (record Foundation.Measurement.V1.Model::Entity {index := 0, name := "record of the model"})
+}
+
+definition{
+  name: criteriaNoneOpen,
+  parameters: [],
+  result: Foundation.Measurement.V1.Model::DecisionCriteria,
+  body: (record Foundation.Measurement.V1.Model::DecisionCriteria {index := 0, direction := (ctor Foundation.Measurement.V1.Model::Direction.atMost), bound := 0, basis := "closed: every question the model raises is answered, and the register never reopens one"})
+}
+
+definition{
+  name: attributeDerived,
+  parameters: [],
+  result: Foundation.Measurement.V1.Model::Attribute,
+  body: (record Foundation.Measurement.V1.Model::Attribute {index := 0, entityIndex := 0, name := "derived"})
+}
+
+definition{
+  name: attributeMeant,
+  parameters: [],
+  result: Foundation.Measurement.V1.Model::Attribute,
+  body: (record Foundation.Measurement.V1.Model::Attribute {index := 1, entityIndex := 0, name := "meant"})
+}
+
+definition{
+  name: attributeMeasured,
+  parameters: [],
+  result: Foundation.Measurement.V1.Model::Attribute,
+  body: (record Foundation.Measurement.V1.Model::Attribute {index := 2, entityIndex := 0, name := "measured"})
+}
+
+definition{
+  name: baseMeasureDerivedOpen,
+  parameters: [],
+  result: Foundation.Measurement.V1.Model::BaseMeasure,
+  body: (record Foundation.Measurement.V1.Model::BaseMeasure {index := 0, attributeIndex := 0, name := "open derived questions", method := "count the residue rows on the derived axis: records no W3C PROV-O derivation from a source span names", scale := (ctor Foundation.Measurement.V1.Model::Scale.ratio), unit := "question"})
+}
+
+definition{
+  name: baseMeasureMeantOpen,
+  parameters: [],
+  result: Foundation.Measurement.V1.Model::BaseMeasure,
+  body: (record Foundation.Measurement.V1.Model::BaseMeasure {index := 1, attributeIndex := 1, name := "open meant questions", method := "count the residue rows on the meant axis: records no theorem states anything about (ISO/IEC/IEEE 29148)", scale := (ctor Foundation.Measurement.V1.Model::Scale.ratio), unit := "question"})
+}
+
+definition{
+  name: baseMeasureMeasuredOpen,
+  parameters: [],
+  result: Foundation.Measurement.V1.Model::BaseMeasure,
+  body: (record Foundation.Measurement.V1.Model::BaseMeasure {index := 2, attributeIndex := 2, name := "open measured questions", method := "count the residue rows on the measured axis: quality measures with no ISO/IEC/IEEE 15939 measurement result", scale := (ctor Foundation.Measurement.V1.Model::Scale.ratio), unit := "question"})
+}
+
+definition{
+  name: derivedMeasureDerivedOpen,
+  parameters: [],
+  result: Foundation.Measurement.V1.Model::DerivedMeasure,
+  body: (record Foundation.Measurement.V1.Model::DerivedMeasure {index := 0, name := "open derived questions", function := "identity of the base measure", baseMeasureIndices := (cons 0 (nil Nat))})
+}
+
+definition{
+  name: derivedMeasureMeantOpen,
+  parameters: [],
+  result: Foundation.Measurement.V1.Model::DerivedMeasure,
+  body: (record Foundation.Measurement.V1.Model::DerivedMeasure {index := 1, name := "open meant questions", function := "identity of the base measure", baseMeasureIndices := (cons 1 (nil Nat))})
+}
+
+definition{
+  name: derivedMeasureMeasuredOpen,
+  parameters: [],
+  result: Foundation.Measurement.V1.Model::DerivedMeasure,
+  body: (record Foundation.Measurement.V1.Model::DerivedMeasure {index := 2, name := "open measured questions", function := "identity of the base measure", baseMeasureIndices := (cons 2 (nil Nat))})
+}
+
+definition{
+  name: derivedMeasureMeasureUnstableBlueprints,
+  parameters: [],
+  result: Foundation.Measurement.V1.Model::DerivedMeasure,
+  body: (record Foundation.Measurement.V1.Model::DerivedMeasure {index := 3, name := "Quality::measureUnstableBlueprints", function := "Measures::unstableBlueprints", baseMeasureIndices := (nil Nat)})
+}
+
+definition{
+  name: derivedMeasureMeasureDisorderedEpochs,
+  parameters: [],
+  result: Foundation.Measurement.V1.Model::DerivedMeasure,
+  body: (record Foundation.Measurement.V1.Model::DerivedMeasure {index := 4, name := "Quality::measureDisorderedEpochs", function := "Measures::disorderedEpochs", baseMeasureIndices := (nil Nat)})
+}
+
+definition{
+  name: derivedMeasureMeasureJourneysPerStakeholder,
+  parameters: [],
+  result: Foundation.Measurement.V1.Model::DerivedMeasure,
+  body: (record Foundation.Measurement.V1.Model::DerivedMeasure {index := 5, name := "Quality::measureJourneysPerStakeholder", function := "Measures::journeysPerStakeholder", baseMeasureIndices := (nil Nat)})
+}
+
+definition{
+  name: derivedMeasureMeasureMagicConstantViolations,
+  parameters: [],
+  result: Foundation.Measurement.V1.Model::DerivedMeasure,
+  body: (record Foundation.Measurement.V1.Model::DerivedMeasure {index := 6, name := "Quality::measureMagicConstantViolations", function := "Measures::magicConstantViolations", baseMeasureIndices := (nil Nat)})
+}
+
+definition{
+  name: derivedMeasureMeasureVerifierRequestCapBytes,
+  parameters: [],
+  result: Foundation.Measurement.V1.Model::DerivedMeasure,
+  body: (record Foundation.Measurement.V1.Model::DerivedMeasure {index := 7, name := "Quality::measureVerifierRequestCapBytes", function := "Measures::verifierRequestCapBytes", baseMeasureIndices := (nil Nat)})
+}
+
+definition{
+  name: criteriaMeasureUnstableBlueprints,
+  parameters: [],
+  result: Foundation.Measurement.V1.Model::DecisionCriteria,
+  body: (record Foundation.Measurement.V1.Model::DecisionCriteria {index := 1, direction := (ctor Foundation.Measurement.V1.Model::Direction.atMost), bound := (project (Quality::measureUnstableBlueprints) threshold), basis := "the threshold of Quality::measureUnstableBlueprints"})
+}
+
+definition{
+  name: criteriaMeasureDisorderedEpochs,
+  parameters: [],
+  result: Foundation.Measurement.V1.Model::DecisionCriteria,
+  body: (record Foundation.Measurement.V1.Model::DecisionCriteria {index := 2, direction := (ctor Foundation.Measurement.V1.Model::Direction.atMost), bound := (project (Quality::measureDisorderedEpochs) threshold), basis := "the threshold of Quality::measureDisorderedEpochs"})
+}
+
+definition{
+  name: criteriaMeasureJourneysPerStakeholder,
+  parameters: [],
+  result: Foundation.Measurement.V1.Model::DecisionCriteria,
+  body: (record Foundation.Measurement.V1.Model::DecisionCriteria {index := 3, direction := (ctor Foundation.Measurement.V1.Model::Direction.atLeast), bound := (project (Quality::measureJourneysPerStakeholder) threshold), basis := "the threshold of Quality::measureJourneysPerStakeholder"})
+}
+
+definition{
+  name: criteriaMeasureMagicConstantViolations,
+  parameters: [],
+  result: Foundation.Measurement.V1.Model::DecisionCriteria,
+  body: (record Foundation.Measurement.V1.Model::DecisionCriteria {index := 4, direction := (ctor Foundation.Measurement.V1.Model::Direction.atMost), bound := (project (Quality::measureMagicConstantViolations) threshold), basis := "the threshold of Quality::measureMagicConstantViolations"})
+}
+
+definition{
+  name: criteriaMeasureVerifierRequestCapBytes,
+  parameters: [],
+  result: Foundation.Measurement.V1.Model::DecisionCriteria,
+  body: (record Foundation.Measurement.V1.Model::DecisionCriteria {index := 5, direction := (ctor Foundation.Measurement.V1.Model::Direction.atMost), bound := (project (Quality::measureVerifierRequestCapBytes) threshold), basis := "the threshold of Quality::measureVerifierRequestCapBytes"})
+}
+
+definition{
+  name: indicators,
+  parameters: [],
+  result: (List Foundation.Measurement.V1.Model::Indicator),
+  body: (cons (record Foundation.Measurement.V1.Model::Indicator {index := 0, name := "Fidelity::indicatorDerived", conceptIndex := 0, derivedMeasureIndex := 0, analysisModel := "excess of the open count over the criteria's bound", criteriaIndex := 0}) (cons (record Foundation.Measurement.V1.Model::Indicator {index := 1, name := "Fidelity::indicatorMeant", conceptIndex := 0, derivedMeasureIndex := 1, analysisModel := "excess of the open count over the criteria's bound", criteriaIndex := 0}) (cons (record Foundation.Measurement.V1.Model::Indicator {index := 2, name := "Fidelity::indicatorMeasured", conceptIndex := 0, derivedMeasureIndex := 2, analysisModel := "excess of the open count over the criteria's bound", criteriaIndex := 0}) (cons (record Foundation.Measurement.V1.Model::Indicator {index := 3, name := "Quality::measureUnstableBlueprints", conceptIndex := 0, derivedMeasureIndex := 3, analysisModel := "excess of the measured value over the threshold", criteriaIndex := 1}) (cons (record Foundation.Measurement.V1.Model::Indicator {index := 4, name := "Quality::measureDisorderedEpochs", conceptIndex := 0, derivedMeasureIndex := 4, analysisModel := "excess of the measured value over the threshold", criteriaIndex := 2}) (cons (record Foundation.Measurement.V1.Model::Indicator {index := 5, name := "Quality::measureJourneysPerStakeholder", conceptIndex := 0, derivedMeasureIndex := 5, analysisModel := "excess of the measured value over the threshold", criteriaIndex := 3}) (cons (record Foundation.Measurement.V1.Model::Indicator {index := 6, name := "Quality::measureMagicConstantViolations", conceptIndex := 0, derivedMeasureIndex := 6, analysisModel := "excess of the measured value over the threshold", criteriaIndex := 4}) (cons (record Foundation.Measurement.V1.Model::Indicator {index := 7, name := "Quality::measureVerifierRequestCapBytes", conceptIndex := 0, derivedMeasureIndex := 7, analysisModel := "excess of the measured value over the threshold", criteriaIndex := 5}) (nil Foundation.Measurement.V1.Model::Indicator)))))))))
+}
+
+definition{
+  name: results,
+  parameters: [],
+  result: (List Foundation.Measurement.V1.Model::MeasurementResult),
+  body: (cons (record Foundation.Measurement.V1.Model::MeasurementResult {indicatorIndex := 0, value := 113, source := "fidelity.toml", kappa := "1e21a226bc2c14dc593518d8b1576ae8458e088f4948ad7fcfbc9b0fa1542134"}) (cons (record Foundation.Measurement.V1.Model::MeasurementResult {indicatorIndex := 1, value := 0, source := "fidelity.toml", kappa := "1e21a226bc2c14dc593518d8b1576ae8458e088f4948ad7fcfbc9b0fa1542134"}) (cons (record Foundation.Measurement.V1.Model::MeasurementResult {indicatorIndex := 2, value := 1, source := "fidelity.toml", kappa := "1e21a226bc2c14dc593518d8b1576ae8458e088f4948ad7fcfbc9b0fa1542134"}) (cons (record Foundation.Measurement.V1.Model::MeasurementResult {indicatorIndex := 3, value := (Measures::unstableBlueprints), source := "app/src/Measures.lex.tex", kappa := "b90d77261201a4e43a3c5eac392e411b86d8de8c7fd915e52246da02317ed707"}) (cons (record Foundation.Measurement.V1.Model::MeasurementResult {indicatorIndex := 4, value := (Measures::disorderedEpochs), source := "app/src/Measures.lex.tex", kappa := "b90d77261201a4e43a3c5eac392e411b86d8de8c7fd915e52246da02317ed707"}) (cons (record Foundation.Measurement.V1.Model::MeasurementResult {indicatorIndex := 5, value := (Measures::journeysPerStakeholder), source := "app/src/Measures.lex.tex", kappa := "b90d77261201a4e43a3c5eac392e411b86d8de8c7fd915e52246da02317ed707"}) (cons (record Foundation.Measurement.V1.Model::MeasurementResult {indicatorIndex := 6, value := (Measures::magicConstantViolations), source := "app/src/Measures.lex.tex", kappa := "b90d77261201a4e43a3c5eac392e411b86d8de8c7fd915e52246da02317ed707"}) (cons (record Foundation.Measurement.V1.Model::MeasurementResult {indicatorIndex := 7, value := (Measures::verifierRequestCapBytes), source := "app/src/Measures.lex.tex", kappa := "b90d77261201a4e43a3c5eac392e411b86d8de8c7fd915e52246da02317ed707"}) (nil Foundation.Measurement.V1.Model::MeasurementResult)))))))))
+}
+
+theorem{
+  name: indicatorsKnown,
+  parameters: [],
+  statement: ((Foundation.Measurement.V1.Model::indicatorsKnown 1 8 6 (indicators)) = true),
+  proof: decide{}
+}
+
+theorem{
+  name: measureUnstableBlueprintsHolds,
+  parameters: [],
+  statement: ((Foundation.Measurement.V1.Model::satisfies (criteriaMeasureUnstableBlueprints) (Measures::unstableBlueprints)) = true),
+  proof: decide{}
+}
+
+theorem{
+  name: measureDisorderedEpochsHolds,
+  parameters: [],
+  statement: ((Foundation.Measurement.V1.Model::satisfies (criteriaMeasureDisorderedEpochs) (Measures::disorderedEpochs)) = true),
+  proof: decide{}
+}
+
+theorem{
+  name: measureJourneysPerStakeholderHolds,
+  parameters: [],
+  statement: ((Foundation.Measurement.V1.Model::satisfies (criteriaMeasureJourneysPerStakeholder) (Measures::journeysPerStakeholder)) = true),
+  proof: decide{}
+}
+
+theorem{
+  name: measureMagicConstantViolationsHolds,
+  parameters: [],
+  statement: ((Foundation.Measurement.V1.Model::satisfies (criteriaMeasureMagicConstantViolations) (Measures::magicConstantViolations)) = true),
+  proof: decide{}
+}
+
+theorem{
+  name: measureVerifierRequestCapBytesHolds,
+  parameters: [],
+  statement: ((Foundation.Measurement.V1.Model::satisfies (criteriaMeasureVerifierRequestCapBytes) (Measures::verifierRequestCapBytes)) = true),
+  proof: decide{}
+}
+
+theorem{
+  name: everyIndicatorMeasured,
+  parameters: [],
+  statement: ((Foundation.Measurement.V1.Model::everyIndicatorMeasured (indicators) (results)) = true),
+  proof: decide{}
+}
+\end{semanticmodule}
+\end{lexlean}

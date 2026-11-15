@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en"><head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Learn why natural biomes and constructed monuments emerge in strict order.">
+    <meta name="diataxis" content="explanation">
+    <meta name="developer-journey" content="evaluate">
+    <meta name="audience" content="vera">
+    <link rel="canonical" href="https://afflom.github.io/verdant-engine/docs/explanation/cosmology-and-builders/">
+    <title>World expansion and architectural statics — Verdant Engine</title>
+    <style>
+  :root {
+    --fd-bg: #151312;
+    --fd-fg: #f4f2ee;
+    --fd-muted: #b5ada4;
+    --fd-card: #1e1b19;
+    --fd-border: rgba(244, 242, 238, 0.14);
+    --fd-accent: #6ec49c;
+  }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --fd-bg: #f5f4ef;
+      --fd-fg: #1f1c1a;
+      --fd-muted: #5b534c;
+      --fd-card: #ffffff;
+      --fd-border: rgba(31, 28, 26, 0.14);
+      --fd-accent: #1d6f4e;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--fd-bg);
+    color: var(--fd-fg);
+    font-family: system-ui, -apple-system, sans-serif;
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+  .ve-nav {
+    max-width: 52rem;
+    margin: 0 auto;
+    padding: 1rem 1.25rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem 1.25rem;
+    border-bottom: 1px solid var(--fd-border);
+    font-size: 0.9375rem;
+  }
+  .ve-nav a, main a {
+    color: var(--fd-accent);
+    text-decoration: underline;
+    text-underline-offset: 0.18em;
+  }
+  main {
+    max-width: 52rem;
+    margin: 0 auto;
+    padding: 1.75rem 1.25rem 4rem;
+  }
+  h1 { font-size: 2rem; line-height: 1.2; margin: 0 0 0.75rem; }
+  h2 { font-size: 1.375rem; line-height: 1.3; margin: 2.25rem 0 0.75rem; }
+  h3 { font-size: 1.125rem; line-height: 1.35; margin: 1.5rem 0 0.5rem; }
+  p, li { max-width: 68ch; }
+  code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.9em; }
+  pre {
+    padding: 0.875rem 1rem;
+    background: var(--fd-card);
+    border: 1px solid var(--fd-border);
+    border-radius: 0.5rem;
+    overflow-x: auto;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+    font-size: 0.9375rem;
+  }
+  th, td {
+    text-align: left;
+    padding: 0.5rem 0.625rem;
+    border-bottom: 1px solid var(--fd-border);
+  }
+  .dc-pager {
+    margin-top: 2.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--fd-border);
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+</style>
+  <link rel="alternate" type="text/markdown" href="index.md"><link rel="stylesheet" href="../../content.css"><script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"World expansion and architectural statics","description":"Learn why natural biomes and constructed monuments emerge in strict order.","url":"https://afflom.github.io/verdant-engine/docs/explanation/cosmology-and-builders/","inLanguage":"en","audience":{"@type":"Audience","audienceType":"Security auditor","description":"Verifies shader safety, snapshot integrity, strict Content-Security-Policy isolation, and Core-Wasm archive provenance."},"learningResourceType":"explanation","educationalLevel":"evaluate","isPartOf":{"@type":"WebSite","name":"Verdant Engine","url":"https://afflom.github.io/verdant-engine/"},"publisher":{"@type":"Organization","name":"UOR Foundation","url":"https://uor.foundation/"}}</script></head>
+  <body>
+    <nav class="ve-nav" aria-label="Documentation navigation">
+      <a href="../../../">3D Studio</a>
+      <a href="../../">Docs home</a>
+      <a href="../../getting-started/">Getting started</a>
+      <a href="../../guides/custom-game-world/">Custom world guide</a>
+      <a href="../../reference/engine-api/">API reference</a>
+      <a href="../../explanation/cosmology-and-builders/">World expansion</a>
+      <a href="../../case-studies/verdant-resonance/">Verdant Resonance</a>
+    </nav>
+    <main>
+      <h1>World expansion and architectural statics</h1>
+      <p>Learn why natural biomes and constructed monuments emerge in strict order.</p><aside class="cs-guide" data-persona="vera" aria-label="Your guide on this page"><svg class="cs-avatar" viewBox="0 0 120 120" width="96" height="96" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="cs-g2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="hsl(140 70% 62%)"></stop><stop offset="1" stop-color="hsl(140 70% 32%)"></stop></linearGradient></defs><path d="M0 64L32 58" stroke="hsl(0 0% 98%)" stroke-width="2.4" stroke-linecap="round" opacity=".8"></path><path d="M88 58L120 34.0" stroke="hsl(356 95% 66%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 41.0" stroke="hsl(22 95% 58%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 48.0" stroke="hsl(48 95% 56%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 55.0" stroke="hsl(55 92% 54%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 62.0" stroke="hsl(140 70% 48%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 69.0" stroke="hsl(190 90% 54%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 76.0" stroke="hsl(222 92% 64%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 83.0" stroke="hsl(268 88% 70%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 90.0" stroke="hsl(320 85% 68%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><ellipse cx="60" cy="108" rx="30" ry="5" class="cs-g-shadow"></ellipse><path d="M60 14L92 32V76L60 98L28 76V32Z" fill="url(#cs-g2)"></path><path d="M60 14L92 32L60 48L28 32Z" fill="hsl(0 0% 100% / .28)"></path><path d="M60 48L92 32V76L60 98Z" fill="hsl(0 0% 0% / .18)"></path><path d="M60 14L92 32V76L60 98L28 76V32Z" fill="none" stroke="hsl(0 0% 100% / .45)" stroke-width="1.5" stroke-linejoin="round"></path><ellipse cx="49" cy="62" rx="6.5" ry="7.5" fill="hsl(0 0% 99%)"></ellipse><ellipse cx="71" cy="62" rx="6.5" ry="7.5" fill="hsl(0 0% 99%)"></ellipse><circle cx="51" cy="63.5" r="3.4" class="cs-g-dark"></circle><circle cx="73" cy="63.5" r="3.4" class="cs-g-dark"></circle><circle cx="52.2" cy="62" r="1.1" fill="hsl(0 0% 100%)"></circle><circle cx="74.2" cy="62" r="1.1" fill="hsl(0 0% 100%)"></circle><ellipse cx="41" cy="73" rx="4" ry="2.4" fill="hsl(350 90% 75% / .55)"></ellipse><ellipse cx="79" cy="73" rx="4" ry="2.4" fill="hsl(350 90% 75% / .55)"></ellipse><path d="M53 76q7 6 14 0" fill="none" stroke="hsl(0 0% 8%)" stroke-width="2.2" stroke-linecap="round"></path><ellipse cx="47" cy="100" rx="7" ry="3.6" class="cs-g-dark"></ellipse><ellipse cx="73" cy="100" rx="7" ry="3.6" class="cs-g-dark"></ellipse><g class="cs-g-line"><circle cx="49" cy="62" r="8.5"></circle><circle cx="71" cy="62" r="8.5"></circle><path d="M57.5 61h5M40.5 60l-6-3M79.5 60l6-3"></path></g><path d="M92 70q8 2 10 8" fill="none" stroke="hsl(140 70% 32%)" stroke-width="4" stroke-linecap="round"></path><g transform="translate(94 76) scale(1.05)" class="cs-g-prop"><rect x="-2" y="-2" width="28" height="28" rx="8" class="cs-g-chip"></rect><g fill="none" stroke="hsl(0 0% 98%)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 5v6c0 5 3.4 9.3 8 11 4.6-1.7 8-6 8-11V5z"></path><path d="m9 12 2 2 4-4"></path></g></g></svg><div class="cs-guide-text"><p class="cs-guide-who"><strong>Vera</strong> <span>Security auditor</span></p><p class="cs-guide-says">“Why do monuments and the autonomous rover appear only at present observation, and how are shaders and snapshots checked?”</p><p class="cs-guide-how">Explanation: read end to end to understand the design and physics.</p></div></aside>
+      <figure class="cs-figure cs-flow"><div class="cs-canvas"><svg class="cs-svg cs-wide" viewBox="0 0 680 128" role="img" aria-labelledby="cs-t13 cs-d14" xmlns="http://www.w3.org/2000/svg"><title id="cs-t13">Four monotonic epochs from initial seed to present observation</title><desc id="cs-d14">1. Cosmogenic: a = 0.125 · solar flux and seed field 2. Lithic-Hydrologic: a = 0.25 · basin terrain, lagoon, quartz 3. Biotic-Ecological: a = 0.625 · soil and L-system flora 4. Agentic-Architectural: a = 1.00 · five Builder guilds + rover</desc><defs><marker id="cs-a3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="cs-arrowhead"></path></marker></defs><g class="cs-node"><rect x="0" y="0" width="149" height="126" rx="12" class="cs-card"></rect><rect x="0" y="0" width="149" height="4" rx="2" fill="hsl(356 95% 66%)"></rect><text x="12" y="20" class="cs-step" dominant-baseline="middle">01</text><text x="74.5" y="42.5" class="cs-label" text-anchor="middle" dominant-baseline="middle">Cosmogenic</text><text x="74.5" y="64.5" class="cs-sub" text-anchor="middle" dominant-baseline="middle">a = 0.125 · solar</text><text x="74.5" y="79.5" class="cs-sub" text-anchor="middle" dominant-baseline="middle">flux and seed</text><text x="74.5" y="94.5" class="cs-sub" text-anchor="middle" dominant-baseline="middle">field</text></g><line x1="152" y1="63" x2="174" y2="63" class="cs-edge" marker-end="url(#cs-a3)"></line><g class="cs-node"><rect x="177" y="0" width="149" height="126" rx="12" class="cs-card"></rect><rect x="177" y="0" width="149" height="4" rx="2" fill="hsl(55 92% 54%)"></rect><text x="189" y="20" class="cs-step" dominant-baseline="middle">02</text><text x="251.5" y="42.5" class="cs-label" text-anchor="middle" dominant-baseline="middle">Lithic-Hydrologic</text><text x="251.5" y="64.5" class="cs-sub" text-anchor="middle" dominant-baseline="middle">a = 0.25 · basin</text><text x="251.5" y="79.5" class="cs-sub" text-anchor="middle" dominant-baseline="middle">terrain, lagoon,</text><text x="251.5" y="94.5" class="cs-sub" text-anchor="middle" dominant-baseline="middle">quartz</text></g><line x1="329" y1="63" x2="351" y2="63" class="cs-edge" marker-end="url(#cs-a3)"></line><g class="cs-node"><rect x="354" y="0" width="149" height="126" rx="12" class="cs-card"></rect><rect x="354" y="0" width="149" height="4" rx="2" fill="hsl(190 90% 54%)"></rect><text x="366" y="20" class="cs-step" dominant-baseline="middle">03</text><text x="428.5" y="42.5" class="cs-label" text-anchor="middle" dominant-baseline="middle">Biotic-Ecological</text><text x="428.5" y="64.5" class="cs-sub" text-anchor="middle" dominant-baseline="middle">a = 0.625 · soil</text><text x="428.5" y="79.5" class="cs-sub" text-anchor="middle" dominant-baseline="middle">and L-system flora</text></g><line x1="506" y1="63" x2="528" y2="63" class="cs-edge" marker-end="url(#cs-a3)"></line><g class="cs-node"><rect x="531" y="0" width="149" height="126" rx="12" class="cs-card"></rect><rect x="531" y="0" width="149" height="4" rx="2" fill="hsl(320 85% 68%)"></rect><text x="543" y="20" class="cs-step" dominant-baseline="middle">04</text><text x="605.5" y="42.5" class="cs-label" text-anchor="middle" dominant-baseline="middle">Agentic-Architectural</text><text x="605.5" y="64.5" class="cs-sub" text-anchor="middle" dominant-baseline="middle">a = 1.00 · five</text><text x="605.5" y="79.5" class="cs-sub" text-anchor="middle" dominant-baseline="middle">Builder guilds +</text><text x="605.5" y="94.5" class="cs-sub" text-anchor="middle" dominant-baseline="middle">rover</text></g></svg><svg class="cs-svg cs-tall" viewBox="0 0 340 530" role="img" aria-labelledby="cs-t15 cs-d16" xmlns="http://www.w3.org/2000/svg"><title id="cs-t15">Four monotonic epochs from initial seed to present observation</title><desc id="cs-d16">1. Cosmogenic: a = 0.125 · solar flux and seed field 2. Lithic-Hydrologic: a = 0.25 · basin terrain, lagoon, quartz 3. Biotic-Ecological: a = 0.625 · soil and L-system flora 4. Agentic-Architectural: a = 1.00 · five Builder guilds + rover</desc><defs><marker id="cs-a8" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="cs-arrowhead"></path></marker></defs><g class="cs-node"><rect x="0" y="0" width="340" height="111" rx="12" class="cs-card"></rect><rect x="0" y="0" width="340" height="4" rx="2" fill="hsl(356 95% 66%)"></rect><text x="12" y="20" class="cs-step" dominant-baseline="middle">01</text><text x="170.0" y="42.5" class="cs-label" text-anchor="middle" dominant-baseline="middle">Cosmogenic</text><text x="170.0" y="64.5" class="cs-sub" text-anchor="middle" dominant-baseline="middle">a = 0.125 · solar flux and seed</text><text x="170.0" y="79.5" class="cs-sub" text-anchor="middle" dominant-baseline="middle">field</text></g><line x1="170" y1="114" x2="170" y2="136" class="cs-edge" marker-end="url(#cs-a8)"></line><g class="cs-node"><rect x="0" y="139" width="340" height="111" rx="12" class="cs-card"></rect><rect x="0" y="139" width="340" height="4" rx="2" fill="hsl(55 92% 54%)"></rect><text x="12" y="159" class="cs-step" dominant-baseline="middle">02</text><text x="170.0" y="181.5" class="cs-label" text-anchor="middle" dominant-baseline="middle">Lithic-Hydrologic</text><text x="170.0" y="203.5" class="cs-sub" text-anchor="middle" dominant-baseline="middle">a = 0.25 · basin terrain, lagoon,</text><text x="170.0" y="218.5" class="cs-sub" text-anchor="middle" dominant-baseline="middle">quartz</text></g><line x1="170" y1="253" x2="170" y2="275" class="cs-edge" marker-end="url(#cs-a8)"></line><g class="cs-node"><rect x="0" y="278" width="340" height="111" rx="12" class="cs-card"></rect><rect x="0" y="278" width="340" height="4" rx="2" fill="hsl(190 90% 54%)"></rect><text x="12" y="298" class="cs-step" dominant-baseline="middle">03</text><text x="170.0" y="320.5" class="cs-label" text-anchor="middle" dominant-baseline="middle">Biotic-Ecological</text><text x="170.0" y="342.5" class="cs-sub" text-anchor="middle" dominant-baseline="middle">a = 0.625 · soil and L-system</text><text x="170.0" y="357.5" class="cs-sub" text-anchor="middle" dominant-baseline="middle">flora</text></g><line x1="170" y1="392" x2="170" y2="414" class="cs-edge" marker-end="url(#cs-a8)"></line><g class="cs-node"><rect x="0" y="417" width="340" height="111" rx="12" class="cs-card"></rect><rect x="0" y="417" width="340" height="4" rx="2" fill="hsl(320 85% 68%)"></rect><text x="12" y="437" class="cs-step" dominant-baseline="middle">04</text><text x="170.0" y="459.5" class="cs-label" text-anchor="middle" dominant-baseline="middle">Agentic-Architectural</text><text x="170.0" y="481.5" class="cs-sub" text-anchor="middle" dominant-baseline="middle">a = 1.00 · five Builder guilds +</text><text x="170.0" y="496.5" class="cs-sub" text-anchor="middle" dominant-baseline="middle">rover</text></g></svg></div><figcaption><strong>Four monotonic epochs from initial seed to present observation.</strong> Natural formations precede agency; constructed stone, bronze, and kinetic artifacts appear only at present observation t_obs.</figcaption><details class="cs-data"><summary>The data in this figure</summary><table><thead><tr><th scope="col">Step</th><th scope="col">What happens</th></tr></thead><tbody><tr><td>1. Cosmogenic</td><td>a = 0.125 · solar flux and seed field</td></tr><tr><td>2. Lithic-Hydrologic</td><td>a = 0.25 · basin terrain, lagoon, quartz</td></tr><tr><td>3. Biotic-Ecological</td><td>a = 0.625 · soil and L-system flora</td></tr><tr><td>4. Agentic-Architectural</td><td>a = 1.00 · five Builder guilds + rover</td></tr></tbody></table></details><script type="application/vnd.prism.figure+json">{"kind":"flow","title":"Four monotonic epochs from initial seed to present observation","caption":"Natural formations precede agency; constructed stone, bronze, and kinetic artifacts appear only at present observation t_obs.","steps":[{"label":"Cosmogenic","sub":"a = 0.125 · solar flux and seed field"},{"label":"Lithic-Hydrologic","sub":"a = 0.25 · basin terrain, lagoon, quartz"},{"label":"Biotic-Ecological","sub":"a = 0.625 · soil and L-system flora"},{"label":"Agentic-Architectural","sub":"a = 1.00 · five Builder guilds + rover"}]}</script></figure>
+      
+      <h2>Why world synthesis tracks universal expansion</h2>
+      <p>When a player enters a rich 3D world, rocks, water, trees, pathways, monuments, and autonomous machines already coexist in one scene.</p>
+      <p>Verdant Engine models that scene as a monotonic expansion timeline from initial seed <code>t_0</code> to present observation <code>t_obs</code>.</p>
+      <p>Terrain and water condense in the Lithic-Hydrologic epoch, and phyllotactic flora colonizes the basin in the Biotic-Ecological epoch.</p>
+      <h2>How the five Builder guilds differentiate</h2>
+      <p>Arches, colonnades, sundials, tuned chimes, piers, paved paths, and wheeled rovers do not arise from unguided erosion.</p>
+      <p>At scale factor <code>a = 1.0</code>, five specialized Builder disciplines emerge to optimize shelter, solar timekeeping, modal acoustics, safe water crossing, and perimeter stewardship.</p>
+      <ul>
+        <li><strong>Lithic Masonry</strong> raises the Harmonic Rotunda, the Quartz Torsion Chamber, and the Geodesic Travertine Path Network.</li>
+        <li><strong>Celestial Gnomonics</strong> aligns the Equatorial Meridian Sundial with solar elevation.</li>
+        <li><strong>Modal Acoustics</strong> suspends golden-ratio bronze tubes on the Modal Chime Pergola.</li>
+        <li><strong>Hydrological Engineering</strong> bridges the lagoon with the Stone Pier Causeway.</li>
+        <li><strong>Kinetic Automation</strong> deploys the six-wheeled Autonomous Perimeter Sentinel Rover along the perimeter spline.</li>
+      </ul>
+      <h2>Heyman equilibrium and runtime integrity</h2>
+      <p>Every blueprint must satisfy <a class="cs-term" href="#term-heyman-equilibrium" title="Jacques Heyman's masonry stability rule: thrust eccentricity stays within one sixth of wall thickness so joints remain in compression.">Heyman equilibrium</a> (<code>e / t &lt;= 1 / 6</code>) and a minimum two-to-one safety factor before placement.</p>
+      <p>At runtime, <a class="cs-term" href="#term-wgsl" title="WebGPU Shading Language: the W3C standard shader language validated in Verdant Engine by naga.">WGSL</a> shaders are checked by <code>naga</code>, <a class="cs-term" href="#term-gltf" title="The Khronos Group 3D scene transmission standard. GLB is its single-file binary container.">GLB</a> exports are checked by <code>gltf</code>, and every <a class="cs-term" href="#term-world-snapshot" title="A deterministic binary save of tick count, expansion scale, and entity transforms protected by a 32-byte SHA-256 digest.">world snapshot</a> verifies a 32-byte SHA-256 trailer.</p>
+    
+      <details class="cs-terms" id="words"><summary>Words on this page <span>4</span></summary><dl><dt id="term-wgsl">WGSL</dt><dd>WebGPU Shading Language: the W3C standard shader language validated in Verdant Engine by naga.</dd><dt id="term-gltf">glTF</dt><dd>The Khronos Group 3D scene transmission standard. GLB is its single-file binary container.</dd><dt id="term-heyman-equilibrium">Heyman equilibrium</dt><dd>Jacques Heyman's masonry stability rule: thrust eccentricity stays within one sixth of wall thickness so joints remain in compression.</dd><dt id="term-world-snapshot">world snapshot</dt><dd>A deterministic binary save of tick count, expansion scale, and entity transforms protected by a 32-byte SHA-256 digest.</dd></dl></details><nav class="dc-pager" aria-label="Page sequence">
+        <a href="../../reference/engine-api/">Previous: Verdant Core API reference</a>
+        <a href="../../case-studies/verdant-resonance/">Next: Powering Verdant Resonance</a>
+      </nav>
+    </main>
+  
+
+</body></html>

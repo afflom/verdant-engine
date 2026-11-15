@@ -1,0 +1,274 @@
+\begin{lexlean}{Quality}
+\useglossary{lexlean.std.bool@1.2.0}
+\useglossary{lexlean.std.nat@1.2.0}
+\useglossary{prism.arch@1.0.0}
+\useglossary{prism.qual@1.0.0}
+\importmodule{Foundation.Qual}
+\title{Verdant Engine quality model}
+\begin{semanticmodule}
+structure{
+  name: Named,
+  type_parameters: [],
+  parameters: [],
+  fields: [{name: index, type: Nat}, {name: name, type: String}, {name: text, type: String}]
+}
+
+definition{
+  name: characteristicFunctionalSuitability,
+  parameters: [],
+  result: Foundation.Qual::ProductQualityCharacteristic,
+  body: (record Foundation.Qual::ProductQualityCharacteristic {index := 0})
+}
+
+definition{
+  name: characteristicInteractionCapability,
+  parameters: [],
+  result: Foundation.Qual::ProductQualityCharacteristic,
+  body: (record Foundation.Qual::ProductQualityCharacteristic {index := 1})
+}
+
+definition{
+  name: characteristicMaintainability,
+  parameters: [],
+  result: Foundation.Qual::ProductQualityCharacteristic,
+  body: (record Foundation.Qual::ProductQualityCharacteristic {index := 2})
+}
+
+definition{
+  name: characteristicPerformanceEfficiency,
+  parameters: [],
+  result: Foundation.Qual::ProductQualityCharacteristic,
+  body: (record Foundation.Qual::ProductQualityCharacteristic {index := 3})
+}
+
+definition{
+  name: subcharacteristicFunctionalCompleteness,
+  parameters: [],
+  result: Foundation.Qual::QualitySubcharacteristic,
+  body: (record Foundation.Qual::QualitySubcharacteristic {index := 0, characteristicIndex := 0})
+}
+
+definition{
+  name: subcharacteristicFunctionalCorrectness,
+  parameters: [],
+  result: Foundation.Qual::QualitySubcharacteristic,
+  body: (record Foundation.Qual::QualitySubcharacteristic {index := 1, characteristicIndex := 0})
+}
+
+definition{
+  name: subcharacteristicInclusivity,
+  parameters: [],
+  result: Foundation.Qual::QualitySubcharacteristic,
+  body: (record Foundation.Qual::QualitySubcharacteristic {index := 2, characteristicIndex := 1})
+}
+
+definition{
+  name: subcharacteristicLearnability,
+  parameters: [],
+  result: Foundation.Qual::QualitySubcharacteristic,
+  body: (record Foundation.Qual::QualitySubcharacteristic {index := 3, characteristicIndex := 1})
+}
+
+definition{
+  name: subcharacteristicModifiability,
+  parameters: [],
+  result: Foundation.Qual::QualitySubcharacteristic,
+  body: (record Foundation.Qual::QualitySubcharacteristic {index := 4, characteristicIndex := 2})
+}
+
+definition{
+  name: subcharacteristicTimeBehaviour,
+  parameters: [],
+  result: Foundation.Qual::QualitySubcharacteristic,
+  body: (record Foundation.Qual::QualitySubcharacteristic {index := 5, characteristicIndex := 3})
+}
+
+definition{
+  name: requirementAccessibleStudio,
+  parameters: [],
+  result: Foundation.Qual::QualityRequirement,
+  body: (record Foundation.Qual::QualityRequirement {index := 0, subcharacteristicIndex := 2})
+}
+
+definition{
+  name: requirementBoundedFrameAndVerifier,
+  parameters: [],
+  result: Foundation.Qual::QualityRequirement,
+  body: (record Foundation.Qual::QualityRequirement {index := 1, subcharacteristicIndex := 5})
+}
+
+definition{
+  name: requirementEquilibriumBlueprints,
+  parameters: [],
+  result: Foundation.Qual::QualityRequirement,
+  body: (record Foundation.Qual::QualityRequirement {index := 2, subcharacteristicIndex := 1})
+}
+
+definition{
+  name: requirementMonotonicExpansion,
+  parameters: [],
+  result: Foundation.Qual::QualityRequirement,
+  body: (record Foundation.Qual::QualityRequirement {index := 3, subcharacteristicIndex := 0})
+}
+
+definition{
+  name: requirementStakeholderJourneys,
+  parameters: [],
+  result: Foundation.Qual::QualityRequirement,
+  body: (record Foundation.Qual::QualityRequirement {index := 4, subcharacteristicIndex := 3})
+}
+
+definition{
+  name: requirementZeroConstantsKernel,
+  parameters: [],
+  result: Foundation.Qual::QualityRequirement,
+  body: (record Foundation.Qual::QualityRequirement {index := 5, subcharacteristicIndex := 4})
+}
+
+definition{
+  name: measureAccessibilityScore,
+  parameters: [],
+  result: Foundation.Qual::QualityMeasure,
+  body: (record Foundation.Qual::QualityMeasure {index := 0, requirementIndex := 0, threshold := 100})
+}
+
+definition{
+  name: measureDisorderedEpochs,
+  parameters: [],
+  result: Foundation.Qual::QualityMeasure,
+  body: (record Foundation.Qual::QualityMeasure {index := 1, requirementIndex := 3, threshold := 0})
+}
+
+definition{
+  name: measureJourneysPerStakeholder,
+  parameters: [],
+  result: Foundation.Qual::QualityMeasure,
+  body: (record Foundation.Qual::QualityMeasure {index := 2, requirementIndex := 4, threshold := 1})
+}
+
+definition{
+  name: measureMagicConstantViolations,
+  parameters: [],
+  result: Foundation.Qual::QualityMeasure,
+  body: (record Foundation.Qual::QualityMeasure {index := 3, requirementIndex := 5, threshold := 0})
+}
+
+definition{
+  name: measureUnstableBlueprints,
+  parameters: [],
+  result: Foundation.Qual::QualityMeasure,
+  body: (record Foundation.Qual::QualityMeasure {index := 4, requirementIndex := 2, threshold := 0})
+}
+
+definition{
+  name: measureVerifierRequestCapBytes,
+  parameters: [],
+  result: Foundation.Qual::QualityMeasure,
+  body: (record Foundation.Qual::QualityMeasure {index := 5, requirementIndex := 1, threshold := 64})
+}
+
+definition{
+  name: characteristicNames,
+  parameters: [],
+  result: (List Named),
+  body: (cons (record Named {index := 0, name := "Functional suitability", text := "Verdant Engine synthesizes causally ordered worlds, statically balanced structures, and standards-valid 3D assets."}) (cons (record Named {index := 1, name := "Interaction capability", text := "Developers, players, and coding agents operate the 3D studio and documentation cleanly across devices."}) (cons (record Named {index := 2, name := "Maintainability", text := "Every engine kernel is purely parametric with zero unexplained magic constants."}) (cons (record Named {index := 3, name := "Performance efficiency", text := "Simulation, rendering, and Wasm verification execute within bounded frame and byte budgets."}) (nil Named)))))
+}
+
+definition{
+  name: subcharacteristicNames,
+  parameters: [],
+  result: (List Named),
+  body: (cons (record Named {index := 0, name := "Functional completeness", text := "Functional suitability: Functional completeness."}) (cons (record Named {index := 1, name := "Functional correctness", text := "Functional suitability: Functional correctness."}) (cons (record Named {index := 2, name := "Inclusivity", text := "Interaction capability: Inclusivity."}) (cons (record Named {index := 3, name := "Learnability", text := "Interaction capability: Learnability."}) (cons (record Named {index := 4, name := "Modifiability", text := "Maintainability: Modifiability."}) (cons (record Named {index := 5, name := "Time behaviour", text := "Performance efficiency: Time behaviour."}) (nil Named)))))))
+}
+
+definition{
+  name: requirementNames,
+  parameters: [],
+  result: (List Named),
+  body: (cons (record Named {index := 0, name := "AccessibleStudio", text := "Every studio and documentation page meets WCAG 2.2 AA and scores 100 in mobile Lighthouse accessibility."}) (cons (record Named {index := 1, name := "BoundedFrameAndVerifier", text := "The Core-Wasm engine verifier bounds requests to at most 64 bytes before evaluation."}) (cons (record Named {index := 2, name := "EquilibriumBlueprints", text := "Every constructed sanctuary structure and autonomous rover satisfies Heyman middle-third statics and safety factor bounds."}) (cons (record Named {index := 3, name := "MonotonicExpansion", text := "World expansion progresses strictly monotonically from Cosmogenic seed to AgenticArchitectural observation."}) (cons (record Named {index := 4, name := "StakeholderJourneys", text := "Every declared engine stakeholder has at least one end-to-end journey through the product."}) (cons (record Named {index := 5, name := "ZeroConstantsKernel", text := "Shipped engine Rust sources and constructive domain modules contain zero unexplained magic constants."}) (nil Named)))))))
+}
+
+definition{
+  name: measureNames,
+  parameters: [],
+  result: (List Named),
+  body: (cons (record Named {index := 0, name := "AccessibilityScore", text := "Lighthouse mobile accessibility score of the Engine Studio root page."}) (cons (record Named {index := 1, name := "DisorderedEpochs", text := "Count of cosmological expansion epoch transitions violating strict scale monotonicity."}) (cons (record Named {index := 2, name := "JourneysPerStakeholder", text := "Minimum number of journeys declared for any engine stakeholder."}) (cons (record Named {index := 3, name := "MagicConstantViolations", text := "Count of magic numeric literals detected by the permanent parametric ratchet."}) (cons (record Named {index := 4, name := "UnstableBlueprints", text := "Count of declared Builder blueprints failing static equilibrium or epoch gating."}) (cons (record Named {index := 5, name := "VerifierRequestCapBytes", text := "Maximum byte length accepted by the Core-Wasm engine verifier."}) (nil Named)))))))
+}
+
+definition{
+  name: subcharacteristicRecords,
+  parameters: [],
+  result: (List Foundation.Qual::QualitySubcharacteristic),
+  body: (cons (subcharacteristicFunctionalCompleteness) (cons (subcharacteristicFunctionalCorrectness) (cons (subcharacteristicInclusivity) (cons (subcharacteristicLearnability) (cons (subcharacteristicModifiability) (cons (subcharacteristicTimeBehaviour) (nil Foundation.Qual::QualitySubcharacteristic)))))))
+}
+
+definition{
+  name: requirementRecords,
+  parameters: [],
+  result: (List Foundation.Qual::QualityRequirement),
+  body: (cons (requirementAccessibleStudio) (cons (requirementBoundedFrameAndVerifier) (cons (requirementEquilibriumBlueprints) (cons (requirementMonotonicExpansion) (cons (requirementStakeholderJourneys) (cons (requirementZeroConstantsKernel) (nil Foundation.Qual::QualityRequirement)))))))
+}
+
+definition{
+  name: measureRecords,
+  parameters: [],
+  result: (List Foundation.Qual::QualityMeasure),
+  body: (cons (measureAccessibilityScore) (cons (measureDisorderedEpochs) (cons (measureJourneysPerStakeholder) (cons (measureMagicConstantViolations) (cons (measureUnstableBlueprints) (cons (measureVerifierRequestCapBytes) (nil Foundation.Qual::QualityMeasure)))))))
+}
+
+definition{
+  name: namesNumbered,
+  parameters: [position : Nat, names : (List Named)],
+  result: Bool,
+  body: (match names
+    | List.nil => true
+    | List.cons item rest => (((project item index) =? position) && (namesNumbered (position + 1) rest))),
+  recursive_argument: names
+}
+
+definition{
+  name: parentsKnown,
+  parameters: [count : Nat, records : (List Foundation.Qual::QualitySubcharacteristic)],
+  result: Bool,
+  body: (match records
+    | List.nil => true
+    | List.cons item rest => (((project item characteristicIndex) <? count) && (parentsKnown count rest))),
+  recursive_argument: records
+}
+
+definition{
+  name: requirementsKnown,
+  parameters: [count : Nat, records : (List Foundation.Qual::QualityRequirement)],
+  result: Bool,
+  body: (match records
+    | List.nil => true
+    | List.cons item rest => (((project item subcharacteristicIndex) <? count) && (requirementsKnown count rest))),
+  recursive_argument: records
+}
+
+definition{
+  name: measuresKnown,
+  parameters: [count : Nat, records : (List Foundation.Qual::QualityMeasure)],
+  result: Bool,
+  body: (match records
+    | List.nil => true
+    | List.cons item rest => (((project item requirementIndex) <? count) && (measuresKnown count rest))),
+  recursive_argument: records
+}
+
+definition{
+  name: qualityValid,
+  parameters: [],
+  result: Bool,
+  body: ((namesNumbered 0 (characteristicNames)) && ((namesNumbered 0 (subcharacteristicNames)) && ((namesNumbered 0 (requirementNames)) && ((namesNumbered 0 (measureNames)) && ((parentsKnown 4 (subcharacteristicRecords)) && ((requirementsKnown 6 (requirementRecords)) && (measuresKnown 6 (measureRecords))))))))
+}
+
+theorem{
+  name: qualityModelHolds,
+  parameters: [],
+  statement: ((((qualityValid) && (((namesNumbered 0 (characteristicNames)) && ((namesNumbered 0 (subcharacteristicNames)) && ((namesNumbered 0 (requirementNames)) && (namesNumbered 0 (measureNames))))) && (((project (characteristicFunctionalSuitability) index) =? 0) && (((project (characteristicInteractionCapability) index) =? 1) && (((project (characteristicMaintainability) index) =? 2) && ((project (characteristicPerformanceEfficiency) index) =? 3)))))) && ((((project (subcharacteristicFunctionalCompleteness) index) =? 0) && (((project (subcharacteristicFunctionalCorrectness) index) =? 1) && (((project (subcharacteristicInclusivity) index) =? 2) && (((project (subcharacteristicLearnability) index) =? 3) && (((project (subcharacteristicModifiability) index) =? 4) && ((project (subcharacteristicTimeBehaviour) index) =? 5)))))) && ((((project (requirementAccessibleStudio) index) =? 0) && (((project (requirementBoundedFrameAndVerifier) index) =? 1) && (((project (requirementEquilibriumBlueprints) index) =? 2) && (((project (requirementMonotonicExpansion) index) =? 3) && (((project (requirementStakeholderJourneys) index) =? 4) && ((project (requirementZeroConstantsKernel) index) =? 5)))))) && (((project (measureAccessibilityScore) threshold) =? 100) && (((project (measureDisorderedEpochs) threshold) =? 0) && (((project (measureJourneysPerStakeholder) threshold) =? 1) && (((project (measureMagicConstantViolations) threshold) =? 0) && (((project (measureUnstableBlueprints) threshold) =? 0) && ((project (measureVerifierRequestCapBytes) threshold) =? 64))))))))) = true),
+  proof: decide{},
+  axioms: []
+}
+\end{semanticmodule}
+\end{lexlean}

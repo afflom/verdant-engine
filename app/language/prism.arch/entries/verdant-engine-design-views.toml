@@ -1,0 +1,17 @@
+spec = "lexlean/entry/1"
+id = "verdant-engine-design-views"
+category = "label-word"
+surface_arity = 0
+frame = "atom"
+
+[denotation]
+kind = "document"
+module = "Design"
+component = "viewOpmWorldGenesis"
+
+[[form]]
+id = "verdant-engine-design-views"
+channel = "text"
+surface = "Verdant Engine design views"
+canonical_source = true
+features = ["sentence-case", "singular"]

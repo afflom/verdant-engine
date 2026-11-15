@@ -1,0 +1,22 @@
+[package]
+name = "verdant-core"
+description = "General-purpose 3D browser and WebAssembly game engine with causal world generation, architectural statics, physically based rendering, Khronos glTF 2.0, W3C WGSL shaders, rigid-body and fluid physics, and spatial audio."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+authors.workspace = true
+keywords.workspace = true
+categories.workspace = true
+
+[dependencies]
+gltf = "1.4.1"
+naga = { version = "24.0.0", features = ["wgsl-in"] }
+serde = { version = "1.0.219", features = ["derive"] }
+serde_json = "1.0.140"
+sha2 = "0.10.9"
+
+[lints]
+workspace = true

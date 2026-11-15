@@ -1,0 +1,109 @@
+\begin{lexlean}{Engine}
+\useglossary{lexlean.std.bool@1.2.0}
+\useglossary{lexlean.std.nat@1.2.0}
+\useglossary{prism.arch@1.0.0}
+\importmodule{Foundation.Bytes}
+\importmodule{Foundation.View.Text.V1.Model}
+\importmodule{Genesis}
+\title{Verdant Engine verifier}
+\begin{semanticmodule}
+definition{
+  name: bytesEqualAt,
+  parameters: [left : Bytes, right : Bytes, offset : Nat, remaining : Nat],
+  result: Bool,
+  body: (match remaining
+    | Nat.zero => true
+    | Nat.succ rest => (match (Foundation.Bytes::byteAt left offset)
+      | Option.none => false
+      | Option.some leftOctet => (match (Foundation.Bytes::byteAt right offset)
+        | Option.none => false
+        | Option.some rightOctet => ((prim equal leftOctet rightOctet : Bool) && (bytesEqualAt left right (offset + 1) rest))))),
+  axioms: [],
+  recursive_argument: remaining
+}
+
+definition{
+  name: sameBytes,
+  parameters: [left : Bytes, right : Bytes],
+  result: Bool,
+  body: (if ((Foundation.Bytes::byteLength left) =? (Foundation.Bytes::byteLength right)) then (bytesEqualAt left right 0 (Foundation.Bytes::byteLength left)) else false),
+  axioms: []
+}
+
+definition{
+  name: matchesQuery,
+  parameters: [request : Bytes, literal : String],
+  result: Bool,
+  body: (sameBytes request (prim utf8_encode literal : Bytes)),
+  axioms: []
+}
+
+definition{
+  name: answerQuery,
+  parameters: [request : Bytes],
+  result: String,
+  body: (if ((Foundation.Bytes::byteLength request) =? 0) then "invalid request" else (if (matchesQuery request "summary") then (if ((Genesis::epochChainDirect) && (Genesis::sevenBlueprintsDirect)) then "conformant:epochs=4,blueprints=7,scale=1.0,zero-constants=true" else "refused:model-invariant-broken") else (if (matchesQuery request "epoch:0") then "conformant:epoch=Cosmogenic,scale=1/8,builders=false" else (if (matchesQuery request "epoch:1") then "conformant:epoch=LithicHydrologic,scale=2/8,builders=false" else (if (matchesQuery request "epoch:2") then "conformant:epoch=BioticEcological,scale=5/8,builders=false" else (if (matchesQuery request "epoch:3") then "conformant:epoch=AgenticArchitectural,scale=8/8,builders=true" else (if (matchesQuery request "blueprint:0") then (if (Genesis::blueprintValid (Genesis::blueprintHarmonicRotunda)) then "conformant:blueprint=HarmonicRotunda,guild=LithicMasonry,safety=3" else "refused:unstable") else (if (matchesQuery request "blueprint:1") then (if (Genesis::blueprintValid (Genesis::blueprintMeridianSundial)) then "conformant:blueprint=MeridianSundial,guild=CelestialGnomonics,safety=3" else "refused:unstable") else (if (matchesQuery request "blueprint:2") then (if (Genesis::blueprintValid (Genesis::blueprintModalChimePergola)) then "conformant:blueprint=ModalChimePergola,guild=ModalAcoustics,safety=4" else "refused:unstable") else (if (matchesQuery request "blueprint:3") then (if (Genesis::blueprintValid (Genesis::blueprintQuartzTorsionChamber)) then "conformant:blueprint=QuartzTorsionChamber,guild=LithicMasonry,safety=4" else "refused:unstable") else (if (matchesQuery request "blueprint:4") then (if (Genesis::blueprintValid (Genesis::blueprintLagoonPierCauseway)) then "conformant:blueprint=LagoonPierCauseway,guild=HydrologicalEngineering,safety=3" else "refused:unstable") else (if (matchesQuery request "blueprint:5") then (if (Genesis::blueprintValid (Genesis::blueprintGeodesicTravertinePaths)) then "conformant:blueprint=GeodesicTravertinePaths,guild=LithicMasonry,safety=4" else "refused:unstable") else (if (matchesQuery request "blueprint:6") then (if (Genesis::blueprintValid (Genesis::blueprintPerimeterSentinelRover)) then "conformant:blueprint=PerimeterSentinelRover,guild=KineticAutomation,safety=3,autonomous=true" else "refused:unstable") else (if (matchesQuery request "blueprint:premature") then (if (Genesis::blueprintValid (Genesis::preBuilderSample)) then "conformant:unexpected" else "refused:epoch-precedes-builders") else (if (matchesQuery request "blueprint:unstable") then (if (Genesis::blueprintValid (Genesis::unstableEccentricitySample)) then "conformant:unexpected" else "refused:heyman-middle-third-exceeded") else "invalid request"))))))))))))))),
+  axioms: []
+}
+
+definition{
+  name: dispatch,
+  parameters: [request : Bytes],
+  result: Bytes,
+  body: (prim utf8_encode (answerQuery request) : Bytes),
+  axioms: []
+}
+
+definition{
+  name: vectors,
+  parameters: [],
+  result: (List Foundation.View.Text.V1.Model::AcceptanceVector),
+  body: (cons (record Foundation.View.Text.V1.Model::AcceptanceVector {request := 0x73756d6d617279, response := 0x636f6e666f726d616e743a65706f6368733d342c626c75657072696e74733d372c7363616c653d312e302c7a65726f2d636f6e7374616e74733d74727565}) (cons (record Foundation.View.Text.V1.Model::AcceptanceVector {request := 0x65706f63683a30, response := 0x636f6e666f726d616e743a65706f63683d436f736d6f67656e69632c7363616c653d312f382c6275696c646572733d66616c7365}) (cons (record Foundation.View.Text.V1.Model::AcceptanceVector {request := 0x65706f63683a33, response := 0x636f6e666f726d616e743a65706f63683d4167656e7469634172636869746563747572616c2c7363616c653d382f382c6275696c646572733d74727565}) (cons (record Foundation.View.Text.V1.Model::AcceptanceVector {request := 0x626c75657072696e743a30, response := 0x636f6e666f726d616e743a626c75657072696e743d4861726d6f6e6963526f74756e64612c6775696c643d4c69746869634d61736f6e72792c7361666574793d33}) (cons (record Foundation.View.Text.V1.Model::AcceptanceVector {request := 0x626c75657072696e743a36, response := 0x636f6e666f726d616e743a626c75657072696e743d506572696d6574657253656e74696e656c526f7665722c6775696c643d4b696e657469634175746f6d6174696f6e2c7361666574793d332c6175746f6e6f6d6f75733d74727565}) (cons (record Foundation.View.Text.V1.Model::AcceptanceVector {request := 0x626c75657072696e743a7072656d6174757265, response := 0x726566757365643a65706f63682d70726563656465732d6275696c64657273}) (cons (record Foundation.View.Text.V1.Model::AcceptanceVector {request := 0x626c75657072696e743a756e737461626c65, response := 0x726566757365643a6865796d616e2d6d6964646c652d74686972642d6578636565646564}) (cons (record Foundation.View.Text.V1.Model::AcceptanceVector {request := 0x756e6b6e6f776e, response := 0x696e76616c69642072657175657374}) (cons (record Foundation.View.Text.V1.Model::AcceptanceVector {request := 0x, response := 0x696e76616c69642072657175657374}) (cons (record Foundation.View.Text.V1.Model::AcceptanceVector {request := 0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000, response := 0x696e76616c69642072657175657374}) (nil Foundation.View.Text.V1.Model::AcceptanceVector)))))))))))
+}
+
+definition{
+  name: application,
+  parameters: [],
+  result: Foundation.View.Text.V1.Model::TextApplication,
+  body: (record Foundation.View.Text.V1.Model::TextApplication {profile := "prismpm/text-application/1", name := "Verdant Engine", cargoName := "verdant-engine-guest", cargoVersion := "0.1.0", cargoDescription := "Verifies Verdant Engine expansion epochs and Builder blueprint static equilibrium in WebAssembly.", cargoRepository := "https://github.com/afflom/verdant-engine", cargoHomepage := "https://afflom.github.io/verdant-engine/", libraryRoots := (cons "VerdantEngine.Engine.dispatch" (nil String)), acceptanceVectors := (vectors), entryRoot := "VerdantEngine.Engine.dispatch", coreContract := "hologram:guest/core-wasm@1", requestMaximum := (64 : UInt32), responseMaximum := (512 : UInt32), guestAllocationMaximum := (65 : UInt32), capabilitiesEmpty := true, fatArchive := true, primaryLayer := (0 : UInt8), viewLayer := (1 : UInt8), view := (record Foundation.View.Text.V1.Model::TextView {title := "Verdant Engine", heading := "Verdant Engine Studio and Verifier", inputLabel := "Engine verification query", submitLabel := "Verify", outputLabel := "Engine verdict", inputError := "Enter a UTF-8 engine query of at most 64 bytes.", responseError := "The engine verdict could not be displayed."})})
+}
+
+definition{
+  name: vectorsNonEmptyResponses,
+  parameters: [items : (List Foundation.View.Text.V1.Model::AcceptanceVector)],
+  result: Bool,
+  body: (match items
+    | List.nil => true
+    | List.cons item rest => (((0 <? (Foundation.Bytes::byteLength (project item response))) && ((Foundation.Bytes::byteLength (project item response)) <=? 512)) && (vectorsNonEmptyResponses rest))),
+  axioms: [],
+  recursive_argument: items
+}
+
+definition{
+  name: maxAcceptedRequestBytesIn,
+  parameters: [items : (List Foundation.View.Text.V1.Model::AcceptanceVector)],
+  result: Nat,
+  body: (match items
+    | List.nil => 0
+    | List.cons item rest => (let restMax : Nat := (maxAcceptedRequestBytesIn rest); (let reqLen : Nat := (Foundation.Bytes::byteLength (project item request)); (if ((sameBytes (project item response) 0x696e76616c69642072657175657374) || (reqLen <=? restMax)) then restMax else reqLen)))),
+  axioms: [],
+  recursive_argument: items
+}
+
+definition{
+  name: maxAcceptedRequestBytes,
+  parameters: [],
+  result: Nat,
+  body: (maxAcceptedRequestBytesIn (vectors)),
+  axioms: []
+}
+
+theorem{
+  name: engineApplicationConfigured,
+  parameters: [],
+  statement: (((((project (application) capabilitiesEmpty) && (project (application) fatArchive)) && (vectorsNonEmptyResponses (vectors))) && ((Genesis::epochsMonotonic) && (Genesis::allBlueprintsValid 0 (Genesis::blueprints)))) = true),
+  proof: decide{},
+  axioms: []
+}
+\end{semanticmodule}
+\end{lexlean}

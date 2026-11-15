@@ -1,0 +1,18 @@
+      <div class="ve-viewport" data-slot="surface">
+        <canvas id="ve-canvas" aria-label="Verdant Engine interactive 3D sanctuary viewport"></canvas>
+        <div class="ve-hud" aria-hidden="true">
+          <span id="ve-hud-epoch" class="ve-pill">t_obs · Builders (a = 1.00)</span>
+          <span id="ve-hud-stats" class="ve-pill">60 fps · 7 blueprints · rover active</span>
+        </div>
+      </div>
+      <div class="result" id="game-status" data-slot="result" aria-live="polite">
+        <span id="ve-status" class="chip chip-wait">Verifying engine…</span>
+      </div>
+      <div class="controls" data-slot="actions" data-label="Engine Studio">
+        <button id="ve-epoch-btn" class="primary" type="button" title="Cycle cosmic expansion epoch from seed to present observation">Epoch: t_obs</button>
+        <button id="ve-cam-btn" type="button" title="Switch between Orbit camera and First-Person WASD walk">Cam: Orbit</button>
+        <button id="ve-audio-btn" type="button" aria-pressed="false" title="Toggle spatialized modal chime and lagoon WebAudio">Audio: Off</button>
+        <button id="ve-glb-btn" type="button" title="Export active 3D scene as binary glTF 2.0 (.glb)">Export .glb</button>
+        <a id="ve-docs-link" class="ghost" href="./docs/">Docs</a>
+      </div>
+      <ol id="ve-telemetry" data-slot="history" data-label="Builder Blueprints &amp; Epochs"></ol>

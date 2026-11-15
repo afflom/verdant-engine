@@ -1,0 +1,167 @@
+{
+  "spec": "prism/content/1",
+  "about": "Mechanized Diataxis documentation model for Verdant Engine: maps every stakeholder in app/src/Architecture.lex.tex to a guide persona, defines engine glossary terms, and configures plain-language and accessibility checks.",
+  "site": "Verdant Engine",
+  "pages": ["docs/"],
+  "css": "docs/content.css",
+  "defaultStage": "discover",
+  "defaultType": "explanation",
+  "proper": [
+    "Verdant",
+    "Engine",
+    "Resonance",
+    "Builder",
+    "Builders",
+    "Core",
+    "Studio",
+    "WebGL2",
+    "WebGPU",
+    "WebAudio",
+    "WGSL",
+    "Khronos",
+    "Heyman",
+    "Sabine",
+    "Euler",
+    "Bernoulli",
+    "Cardan",
+    "Travertine",
+    "Rotunda",
+    "Sentinel",
+    "Rover",
+    "ECS",
+    "BVH",
+    "PBR",
+    "GLB",
+    "SHA"
+  ],
+  "personas": [
+    {
+      "id": "kai",
+      "start": "docs/getting-started",
+      "stakeholder": "stakeholderGameDeveloper",
+      "name": "Kai",
+      "prop": "terminal",
+      "accessory": "goggles",
+      "need": "A runnable 3D game world with ECS, rigid-body physics, spatial audio, and a starter template.",
+      "asks": {
+        "discover": "What can Verdant Engine build in the browser and in Rust?",
+        "evaluate": "Does verdant-core give me real 3D physics, culling, and asset export?",
+        "learn": "Walk me from an empty Cargo crate to a running 3D scene.",
+        "build": "How do I spawn entities, step physics, and export a scene?",
+        "scale": "How do I keep simulation deterministic across frames?"
+      }
+    },
+    {
+      "id": "iris",
+      "start": "docs/guides/custom-game-world",
+      "stakeholder": "stakeholderTechnicalArtist",
+      "name": "Iris",
+      "prop": "compass",
+      "accessory": "sparkle",
+      "need": "Procedural terrain, botanical flora, validated WGSL shaders, and binary glTF 2.0 exports.",
+      "asks": {
+        "discover": "Which 3D geometry, material, and shader standards does the engine speak?",
+        "evaluate": "Do exported scenes open cleanly in standard 3D tools?",
+        "learn": "Show me how terrain heightfields and L-system flora are generated.",
+        "build": "How do I author PBR materials, validate WGSL shaders, and export GLB files?",
+        "scale": "How are morph targets and mesh normals kept valid at scale?"
+      }
+    },
+    {
+      "id": "otto",
+      "start": "docs/reference/engine-api",
+      "stakeholder": "stakeholderSystemsEngineer",
+      "name": "Otto",
+      "prop": "wrench",
+      "accessory": "beanie",
+      "need": "Exact API types, 60fps worker job budgets, binary world snapshots, and zero magic constants.",
+      "asks": {
+        "discover": "How is the runtime split across crates, workers, and frame stages?",
+        "evaluate": "Are frame budgets, snapshots, and numeric kernels bounded?",
+        "learn": "Where does each subsystem live in crates/verdant-core?",
+        "build": "Which types schedule jobs and serialize world state?",
+        "scale": "What are the exact API signatures, error variants, and frame limits?"
+      }
+    },
+    {
+      "id": "vera",
+      "start": "docs/explanation/cosmology-and-builders",
+      "stakeholder": "stakeholderSecurityAuditor",
+      "name": "Vera",
+      "prop": "shield",
+      "accessory": "glasses",
+      "need": "Proof that world expansion is monotonic, structures are in static equilibrium, and inputs are validated.",
+      "asks": {
+        "discover": "What invariants govern world synthesis and asset safety?",
+        "evaluate": "Why do monuments and the autonomous rover appear only at present observation, and how are shaders and snapshots checked?",
+        "learn": "How are Heyman middle-third statics and safety factors verified?",
+        "build": "What refuses a tampered snapshot or an invalid WGSL shader?",
+        "scale": "How does the browser worker isolate and verify the engine archive?"
+      }
+    },
+    {
+      "id": "wren",
+      "start": "docs/case-studies/verdant-resonance",
+      "stakeholder": "stakeholderBrowserPlayer",
+      "name": "Wren",
+      "prop": "headset",
+      "accessory": "headset",
+      "need": "A responsive, clutter-free 60fps 3D viewport with orbit and walk cameras plus spatial audio.",
+      "asks": {
+        "discover": "How does Verdant Engine power the living 3D sanctuary of Verdant Resonance in the browser?",
+        "evaluate": "Does the 3D viewport stay responsive on both phones and desktop monitors?",
+        "learn": "How do camera modes, expansion scrubbing, and spatial chimes work?",
+        "build": "Which seven structures and kinetic actors inhabit the sanctuary?",
+        "scale": "How does the studio stay fast within a small browser download budget?"
+      }
+    }
+  ],
+  "audience": [
+    { "path": "^docs/getting-started/", "persona": "kai" },
+    { "path": "^docs/guides/", "persona": "iris" },
+    { "path": "^docs/reference/", "persona": "otto" },
+    { "path": "^docs/explanation/", "persona": "vera" },
+    { "path": "^docs/case-studies/", "persona": "wren" },
+    { "path": "^docs/", "persona": "kai" }
+  ],
+  "reading": {
+    "tutorial": "A tutorial: follow the steps in order. Each step builds on the one before it.",
+    "howToGuide": "A how-to guide: each section completes one practical engine task.",
+    "reference": "Reference: look up types, budgets, and commands in any order.",
+    "explanation": "Explanation: read end to end to understand the design and physics.",
+    "home": "Start here. Choose your role or jump straight to a tutorial, guide, or API reference."
+  },
+  "terms": [
+    {
+      "term": "scene world",
+      "match": ["scene worlds?", "SceneWorld"],
+      "plain": "The entity-component-system container in verdant-core that stores entities, parent-child transforms, meshes, and PBR materials."
+    },
+    {
+      "term": "bounding volume hierarchy",
+      "match": ["bounding volume hierarch(?:y|ies)", "BVH"],
+      "plain": "A tree of 3D bounding boxes partitioned by surface area so raycasts and camera frustum checks skip distant geometry."
+    },
+    {
+      "term": "WGSL",
+      "case": true,
+      "plain": "WebGPU Shading Language: the W3C standard shader language validated in Verdant Engine by naga."
+    },
+    {
+      "term": "glTF",
+      "match": ["glTF", "GLB"],
+      "case": true,
+      "plain": "The Khronos Group 3D scene transmission standard. GLB is its single-file binary container."
+    },
+    {
+      "term": "Heyman equilibrium",
+      "match": ["Heyman equilibrium", "middle-third"],
+      "plain": "Jacques Heyman's masonry stability rule: thrust eccentricity stays within one sixth of wall thickness so joints remain in compression."
+    },
+    {
+      "term": "world snapshot",
+      "match": ["world snapshots?", "WorldSnapshot"],
+      "plain": "A deterministic binary save of tick count, expansion scale, and entity transforms protected by a 32-byte SHA-256 digest."
+    }
+  ]
+}

@@ -1,0 +1,125 @@
+\begin{lexlean}{Features}
+\useglossary{lexlean.std.bool@1.2.0}
+\useglossary{lexlean.std.nat@1.2.0}
+\useglossary{prism.arch@1.0.0}
+\importmodule{Architecture}
+\importmodule{Design}
+\importmodule{Engine}
+\importmodule{Foundation.Arch}
+\importmodule{Genesis}
+\importmodule{Security}
+\title{Verdant Engine features and journeys}
+\begin{semanticmodule}
+definition{
+  name: featureWorldExpansion,
+  parameters: [],
+  result: Foundation.Arch::Feature,
+  body: (record Foundation.Arch::Feature {statement := "A developer or player scrubs cosmic expansion from initial seed to present observation t_obs, watching terrain, water, flora, and Builder artifacts emerge causally.", calls := (cons "Genesis::epochs" (cons "Design::processAdvanceEpochs" (nil String))), acceptance := (cons "Genesis::epochsMonotonic" (nil String))})
+}
+
+definition{
+  name: featureBuilderBlueprints,
+  parameters: [],
+  result: Foundation.Arch::Feature,
+  body: (record Foundation.Arch::Feature {statement := "Five Builder guilds synthesize seven non-natural sanctuary structures and an autonomous perimeter sentinel rover verified for Heyman middle-third equilibrium.", calls := (cons "Genesis::blueprints" (cons "Design::processConstructBlueprints" (nil String))), acceptance := (cons "Genesis::allBlueprintsValid" (nil String))})
+}
+
+definition{
+  name: featureEcsAndBvh,
+  parameters: [],
+  result: Foundation.Arch::Feature,
+  body: (record Foundation.Arch::Feature {statement := "Game developers spawn entities, hierarchical transforms, and PBR materials into an archetype ECS indexed by a surface-area-heuristic BVH for raycasts and frustum culling.", calls := (cons "Design::processSynthesizeWorld" (nil String)), acceptance := (cons "Architecture::componentVerdantCoreCrate" (nil String))})
+}
+
+definition{
+  name: featureGltfAndWgsl,
+  parameters: [],
+  result: Foundation.Arch::Feature,
+  body: (record Foundation.Arch::Feature {statement := "Technical artists generate procedural terrain, L-system flora, morph targets, binary glTF 2.0 scenes, and WGSL shaders validated by Khronos gltf and W3C naga.", calls := (cons "Design::processExportGlbAndShaders" (nil String)), acceptance := (cons "Security::modeledControlKhronosGltfOracle" (cons "Security::modeledControlNagaShaderOracle" (nil String)))})
+}
+
+definition{
+  name: featurePhysicsAndRover,
+  parameters: [],
+  result: Foundation.Arch::Feature,
+  body: (record Foundation.Arch::Feature {statement := "Symplectic Euler rigid bodies, player capsule controllers, and autonomous spline-following rovers step deterministically over terrain heightfields.", calls := (cons "Genesis::blueprintPerimeterSentinelRover" (nil String)), acceptance := (cons "Genesis::blueprintValid" (nil String))})
+}
+
+definition{
+  name: featureSpatialAudio,
+  parameters: [],
+  result: Foundation.Arch::Feature,
+  body: (record Foundation.Arch::Feature {statement := "Spatial audio listeners render stereo modal chime harmonics and water soundscapes with inverse-distance attenuation and Sabine RT60 reverberation.", calls := (cons "Genesis::blueprintModalChimePergola" (nil String)), acceptance := (cons "Architecture::componentBrowserAudioHost" (nil String))})
+}
+
+definition{
+  name: featureSnapshotsAndJobGraph,
+  parameters: [],
+  result: Foundation.Arch::Feature,
+  body: (record Foundation.Arch::Feature {statement := "Systems engineers schedule acyclic worker job graphs within 60fps frame budgets and capture bit-exact IEEE-754 world snapshots with SHA-256 trailers.", calls := (cons "Security::controlSnapshotSha256Trailer" (nil String)), acceptance := (cons "Security::modeledControlSnapshotSha256Trailer" (nil String))})
+}
+
+definition{
+  name: featureStudioAndDocs,
+  parameters: [],
+  result: Foundation.Arch::Feature,
+  body: (record Foundation.Arch::Feature {statement := "Developers, players, and coding agents explore the interactive 3D WebGL2 Engine Studio, browser starter template, Diataxis documentation, and llms.txt.", calls := (cons "Engine::dispatch" (cons "Design::processRenderViewportFrame" (nil String))), acceptance := (cons "Engine::vectors" (nil String))})
+}
+
+definition{
+  name: journeyGameDeveloper,
+  parameters: [],
+  result: Foundation.Arch::Journey,
+  body: (record Foundation.Arch::Journey {actor := "Architecture::stakeholderGameDeveloper", steps := (cons "Features::featureEcsAndBvh" (cons "Features::featurePhysicsAndRover" (cons "Features::featureSpatialAudio" (cons "Features::featureStudioAndDocs" (nil String)))))})
+}
+
+definition{
+  name: journeyTechnicalArtist,
+  parameters: [],
+  result: Foundation.Arch::Journey,
+  body: (record Foundation.Arch::Journey {actor := "Architecture::stakeholderTechnicalArtist", steps := (cons "Features::featureWorldExpansion" (cons "Features::featureBuilderBlueprints" (cons "Features::featureGltfAndWgsl" (nil String))))})
+}
+
+definition{
+  name: journeySystemsEngineer,
+  parameters: [],
+  result: Foundation.Arch::Journey,
+  body: (record Foundation.Arch::Journey {actor := "Architecture::stakeholderSystemsEngineer", steps := (cons "Features::featureEcsAndBvh" (cons "Features::featureSnapshotsAndJobGraph" (cons "Features::featureBuilderBlueprints" (nil String))))})
+}
+
+definition{
+  name: journeyBrowserPlayer,
+  parameters: [],
+  result: Foundation.Arch::Journey,
+  body: (record Foundation.Arch::Journey {actor := "Architecture::stakeholderBrowserPlayer", steps := (cons "Features::featureWorldExpansion" (cons "Features::featureSpatialAudio" (cons "Features::featureStudioAndDocs" (nil String))))})
+}
+
+definition{
+  name: journeySecurityAuditor,
+  parameters: [],
+  result: Foundation.Arch::Journey,
+  body: (record Foundation.Arch::Journey {actor := "Architecture::stakeholderSecurityAuditor", steps := (cons "Features::featureGltfAndWgsl" (cons "Features::featureSnapshotsAndJobGraph" (cons "Features::featureStudioAndDocs" (nil String))))})
+}
+
+definition{
+  name: hasCall,
+  parameters: [f : Foundation.Arch::Feature],
+  result: Bool,
+  body: (match (project f calls) | List.nil => false | List.cons head rest => true)
+}
+
+definition{
+  name: hasStep,
+  parameters: [j : Foundation.Arch::Journey],
+  result: Bool,
+  body: (match (project j steps) | List.nil => false | List.cons head rest => true)
+}
+
+theorem{
+  name: featuresAndJourneysRealized,
+  parameters: [],
+  statement: ((((hasCall (featureWorldExpansion)) && ((hasCall (featureBuilderBlueprints)) && ((hasCall (featureEcsAndBvh)) && ((hasCall (featureGltfAndWgsl)) && ((hasCall (featurePhysicsAndRover)) && ((hasCall (featureSpatialAudio)) && ((hasCall (featureSnapshotsAndJobGraph)) && (hasCall (featureStudioAndDocs))))))))) && (((hasStep (journeyGameDeveloper)) && (hasStep (journeyTechnicalArtist))) && (((hasStep (journeySystemsEngineer)) && (hasStep (journeyBrowserPlayer))) && (hasStep (journeySecurityAuditor))))) = true),
+  proof: decide{}
+}
+\end{semanticmodule}
+\end{lexlean}

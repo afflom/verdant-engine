@@ -1,0 +1,26 @@
+{
+  "spec": "prism/brand-authority/1",
+  "about": "uor.foundation, the brand authority of every brand and design facet: these files, copied byte for byte into brand/foundation/ (scripts/experience/authority.py).",
+  "source": {
+    "repository": "UOR-Foundation/website",
+    "commit": "e82ffdedc5d85ebd0bde239d50d4651005045d31"
+  },
+  "files": [
+    {
+      "path": "index.html",
+      "sha256": "6412e5766d86465124aa5f306fbab72fa085ae53193383f7359a0595753c849f"
+    },
+    {
+      "path": "src/index.css",
+      "sha256": "a73b568eeff8b0993154cd3e4a0438aa30037bb16abe560ef95cb5dd1be48869"
+    },
+    {
+      "path": "src/site/copy.ts",
+      "sha256": "9ee1a77e77f811628f0c95344c71f7a204caa7cb38a313e804408ba05a4e3e61"
+    },
+    {
+      "path": "public/favicon.png",
+      "sha256": "e8452c600dc9a40a33de1d6ee00acaba1ceff00f3acebc3d97ca90d559eb9681"
+    }
+  ]
+}

@@ -1,0 +1,97 @@
+\begin{lexlean}{Measures}
+\useglossary{lexlean.std.bool@1.2.0}
+\useglossary{lexlean.std.nat@1.2.0}
+\useglossary{prism.arch@1.0.0}
+\importmodule{Engine}
+\importmodule{Foundation.Experience.V1.Model}
+\importmodule{Foundation.Ontology.V1.Model}
+\importmodule{Genesis}
+\importmodule{Users}
+\title{Measurement methods of the model}
+\begin{semanticmodule}
+definition{
+  name: countInvalidBlueprints,
+  parameters: [items : (List Genesis::BlueprintSpec)],
+  result: Nat,
+  body: (match items
+    | List.nil => 0
+    | List.cons item rest => ((if (Genesis::blueprintValid item) then 0 else 1) + (countInvalidBlueprints rest))),
+  recursive_argument: items
+}
+
+definition{
+  name: unstableBlueprints,
+  parameters: [],
+  result: Nat,
+  body: (countInvalidBlueprints (Genesis::blueprints))
+}
+
+definition{
+  name: disorderedEpochs,
+  parameters: [],
+  result: Nat,
+  body: (if (Genesis::epochsMonotonic) then 0 else 1)
+}
+
+definition{
+  name: sameNat,
+  parameters: [a : Nat, b : Nat],
+  result: Nat,
+  body: (prim subtract 1 ((prim subtract a b : Nat) + (prim subtract b a : Nat)) : Nat)
+}
+
+definition{
+  name: smallerNat,
+  parameters: [a : Nat, b : Nat],
+  result: Nat,
+  body: (prim subtract a (prim subtract a b : Nat) : Nat)
+}
+
+definition{
+  name: goalsOf,
+  parameters: [user : Nat, goals : (List Foundation.Experience.V1.Model::Goal)],
+  result: Nat,
+  body: (match goals
+    | List.nil => 0
+    | List.cons goal rest => ((sameNat (project goal user) user) + (goalsOf user rest))),
+  recursive_argument: goals
+}
+
+definition{
+  name: fewestGoals,
+  parameters: [
+    user : Nat,
+    groups : (List Foundation.Experience.V1.Model::UserGroup),
+    goals : (List Foundation.Experience.V1.Model::Goal)
+  ],
+  result: Nat,
+  body: (match groups
+    | List.nil => 0
+    | List.cons group rest => (match rest
+      | List.nil => (goalsOf user goals)
+      | List.cons next others => (smallerNat (goalsOf user goals) (fewestGoals (user + 1) rest goals)))),
+  recursive_argument: groups
+}
+
+definition{
+  name: journeysPerStakeholder,
+  parameters: [],
+  result: Nat,
+  body: (fewestGoals 0 (Users::groups) (Users::goals))
+}
+
+definition{
+  name: magicConstantViolations,
+  parameters: [],
+  result: Nat,
+  body: (if (((Foundation.Ontology.V1.Model::distinctionBitsForCardinality 1) =? 0) && ((Foundation.Ontology.V1.Model::nthPrimeConstructive 0) =? (1 + 1))) then 0 else 1)
+}
+
+definition{
+  name: verifierRequestCapBytes,
+  parameters: [],
+  result: Nat,
+  body: (Engine::maxAcceptedRequestBytes)
+}
+\end{semanticmodule}
+\end{lexlean}

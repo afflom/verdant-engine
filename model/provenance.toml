@@ -1,0 +1,28 @@
+# The primary sources prism-fidelity cites a record's text from (W3C PROV-O
+# wasDerivedFrom), in priority order: what the repository itself states.
+spec = "prism/provenance-sources/1"
+sources = [
+  "model/charter.md",
+  "README.md",
+  "Cargo.toml",
+  "crates/verdant-core/Cargo.toml",
+  "crates/fidelity/Cargo.toml",
+  "crates/model/Cargo.toml",
+  "crates/conformance/Cargo.toml",
+  "model/ids.toml",
+  "features/suites/*.feature",
+  ".github/workflows/*.yml",
+  "Justfile",
+  "AGENTS.md",
+  "lighthouserc.json",
+  "app/language/prism.arch/entries/*.toml",
+  "app/language/prism.sec/entries/*.toml",
+  "app/language/prism.qual/entries/*.toml",
+  "brand/foundation/src/site/copy.ts",
+  "site/app.json",
+]
+
+[[author]]
+name = "Alex"
+kind = "person"
+attributed = ["model/charter.md"]

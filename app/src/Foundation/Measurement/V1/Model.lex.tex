@@ -1,0 +1,355 @@
+\begin{lexlean}{Foundation.Measurement.V1.Model}
+\useglossary{lexlean.std.bool@1.2.0}
+\useglossary{lexlean.std.nat@1.2.0}
+\useglossary{prism.arch@1.0.0}
+\title{Measurement information model}
+\begin{semanticmodule}
+inductive{
+  name: Scale,
+  type_parameters: [],
+  parameters: [],
+  constructors: [
+    {name: nominal, fields: []},
+    {name: ordinal, fields: []},
+    {name: interval, fields: []},
+    {name: ratio, fields: []}
+  ]
+}
+
+inductive{
+  name: Direction,
+  type_parameters: [],
+  parameters: [],
+  constructors: [{name: atMost, fields: []}, {name: atLeast, fields: []}]
+}
+
+structure{
+  name: InformationNeed,
+  type_parameters: [],
+  parameters: [],
+  fields: [{name: index, type: Nat}, {name: name, type: String}, {name: text, type: String}]
+}
+
+structure{
+  name: MeasurableConcept,
+  type_parameters: [],
+  parameters: [],
+  fields: [
+    {name: index, type: Nat},
+    {name: informationNeedIndex, type: Nat},
+    {name: name, type: String}
+  ]
+}
+
+structure{
+  name: Entity,
+  type_parameters: [],
+  parameters: [],
+  fields: [{name: index, type: Nat}, {name: name, type: String}]
+}
+
+structure{
+  name: Attribute,
+  type_parameters: [],
+  parameters: [],
+  fields: [{name: index, type: Nat}, {name: entityIndex, type: Nat}, {name: name, type: String}]
+}
+
+structure{
+  name: BaseMeasure,
+  type_parameters: [],
+  parameters: [],
+  fields: [
+    {name: index, type: Nat},
+    {name: attributeIndex, type: Nat},
+    {name: name, type: String},
+    {name: method, type: String},
+    {name: scale, type: Scale},
+    {name: unit, type: String}
+  ]
+}
+
+structure{
+  name: DerivedMeasure,
+  type_parameters: [],
+  parameters: [],
+  fields: [
+    {name: index, type: Nat},
+    {name: name, type: String},
+    {name: function, type: String},
+    {name: baseMeasureIndices, type: (List Nat)}
+  ]
+}
+
+structure{
+  name: DecisionCriteria,
+  type_parameters: [],
+  parameters: [],
+  fields: [
+    {name: index, type: Nat},
+    {name: direction, type: Direction},
+    {name: bound, type: Nat},
+    {name: basis, type: String}
+  ]
+}
+
+structure{
+  name: Indicator,
+  type_parameters: [],
+  parameters: [],
+  fields: [
+    {name: index, type: Nat},
+    {name: name, type: String},
+    {name: conceptIndex, type: Nat},
+    {name: derivedMeasureIndex, type: Nat},
+    {name: analysisModel, type: String},
+    {name: criteriaIndex, type: Nat}
+  ]
+}
+
+structure{
+  name: MeasurementResult,
+  type_parameters: [],
+  parameters: [],
+  fields: [
+    {name: indicatorIndex, type: Nat},
+    {name: value, type: Nat},
+    {name: source, type: String},
+    {name: kappa, type: String}
+  ]
+}
+
+definition{
+  name: excessAbove,
+  parameters: [bound : Nat, value : Nat],
+  result: Nat,
+  body: (prim subtract value bound : Nat)
+}
+
+definition{
+  name: excessBelow,
+  parameters: [bound : Nat, value : Nat],
+  result: Nat,
+  body: (prim subtract bound value : Nat)
+}
+
+definition{
+  name: excessAboveZeroRow,
+  parameters: [bound : Nat, value : Nat],
+  result: Bool,
+  body: (match value
+    | Nat.zero => ((not ((excessAbove bound 0) =? 0)) || (0 <=? bound))
+    | Nat.succ prev => (((not ((excessAbove bound (prev + 1)) =? 0)) || ((prev + 1) <=? bound)) && (excessAboveZeroRow bound prev))),
+  recursive_argument: value
+}
+
+definition{
+  name: excessAboveZeroGrid,
+  parameters: [bound : Nat, maxVal : Nat],
+  result: Bool,
+  body: (match bound
+    | Nat.zero => (excessAboveZeroRow 0 maxVal)
+    | Nat.succ prev => ((excessAboveZeroRow (prev + 1) maxVal) && (excessAboveZeroGrid prev maxVal))),
+  recursive_argument: bound
+}
+
+definition{
+  name: atMostExcessZeroRow,
+  parameters: [bound : Nat, value : Nat],
+  result: Bool,
+  body: (match value
+    | Nat.zero => ((not (0 <=? bound)) || ((excessAbove bound 0) =? 0))
+    | Nat.succ prev => (((not ((prev + 1) <=? bound)) || ((excessAbove bound (prev + 1)) =? 0)) && (atMostExcessZeroRow bound prev))),
+  recursive_argument: value
+}
+
+definition{
+  name: atMostExcessZeroGrid,
+  parameters: [bound : Nat, maxVal : Nat],
+  result: Bool,
+  body: (match bound
+    | Nat.zero => (atMostExcessZeroRow 0 maxVal)
+    | Nat.succ prev => ((atMostExcessZeroRow (prev + 1) maxVal) && (atMostExcessZeroGrid prev maxVal))),
+  recursive_argument: bound
+}
+
+definition{
+  name: excessBelowZeroRow,
+  parameters: [bound : Nat, value : Nat],
+  result: Bool,
+  body: (match value
+    | Nat.zero => ((not ((excessBelow bound 0) =? 0)) || (bound <=? 0))
+    | Nat.succ prev => (((not ((excessBelow bound (prev + 1)) =? 0)) || (bound <=? (prev + 1))) && (excessBelowZeroRow bound prev))),
+  recursive_argument: value
+}
+
+definition{
+  name: excessBelowZeroGrid,
+  parameters: [bound : Nat, maxVal : Nat],
+  result: Bool,
+  body: (match bound
+    | Nat.zero => (excessBelowZeroRow 0 maxVal)
+    | Nat.succ prev => ((excessBelowZeroRow (prev + 1) maxVal) && (excessBelowZeroGrid prev maxVal))),
+  recursive_argument: bound
+}
+
+definition{
+  name: atLeastExcessZeroRow,
+  parameters: [bound : Nat, value : Nat],
+  result: Bool,
+  body: (match value
+    | Nat.zero => ((not (bound <=? 0)) || ((excessBelow bound 0) =? 0))
+    | Nat.succ prev => (((not (bound <=? (prev + 1))) || ((excessBelow bound (prev + 1)) =? 0)) && (atLeastExcessZeroRow bound prev))),
+  recursive_argument: value
+}
+
+definition{
+  name: atLeastExcessZeroGrid,
+  parameters: [bound : Nat, maxVal : Nat],
+  result: Bool,
+  body: (match bound
+    | Nat.zero => (atLeastExcessZeroRow 0 maxVal)
+    | Nat.succ prev => ((atLeastExcessZeroRow (prev + 1) maxVal) && (atLeastExcessZeroGrid prev maxVal))),
+  recursive_argument: bound
+}
+
+definition{
+  name: excessAboveMonotoneRow,
+  parameters: [bound : Nat, before : Nat, after : Nat],
+  result: Bool,
+  body: (match after
+    | Nat.zero => ((not (0 <=? before)) || ((excessAbove bound 0) <=? (excessAbove bound before)))
+    | Nat.succ prev => (((not ((prev + 1) <=? before)) || ((excessAbove bound (prev + 1)) <=? (excessAbove bound before))) && (excessAboveMonotoneRow bound before prev))),
+  recursive_argument: after
+}
+
+definition{
+  name: excessAboveMonotoneGrid,
+  parameters: [bound : Nat, before : Nat, maxAfter : Nat],
+  result: Bool,
+  body: (match before
+    | Nat.zero => (excessAboveMonotoneRow bound 0 maxAfter)
+    | Nat.succ prev => ((excessAboveMonotoneRow bound (prev + 1) maxAfter) && (excessAboveMonotoneGrid bound prev maxAfter))),
+  recursive_argument: before
+}
+
+definition{
+  name: excessBelowAntitoneRow,
+  parameters: [bound : Nat, before : Nat, after : Nat],
+  result: Bool,
+  body: (match after
+    | Nat.zero => ((not (before <=? 0)) || ((excessBelow bound 0) <=? (excessBelow bound before)))
+    | Nat.succ prev => (((not (before <=? (prev + 1))) || ((excessBelow bound (prev + 1)) <=? (excessBelow bound before))) && (excessBelowAntitoneRow bound before prev))),
+  recursive_argument: after
+}
+
+definition{
+  name: excessBelowAntitoneGrid,
+  parameters: [bound : Nat, before : Nat, maxAfter : Nat],
+  result: Bool,
+  body: (match before
+    | Nat.zero => (excessBelowAntitoneRow bound 0 maxAfter)
+    | Nat.succ prev => ((excessBelowAntitoneRow bound (prev + 1) maxAfter) && (excessBelowAntitoneGrid bound prev maxAfter))),
+  recursive_argument: before
+}
+
+theorem{
+  name: noExcessAboveIsAtMost,
+  parameters: [],
+  statement: ((excessAboveZeroGrid 8 8) = true),
+  proof: decide{},
+  axioms: []
+}
+
+theorem{
+  name: atMostHasNoExcessAbove,
+  parameters: [],
+  statement: ((atMostExcessZeroGrid 8 8) = true),
+  proof: decide{},
+  axioms: []
+}
+
+theorem{
+  name: noExcessBelowIsAtLeast,
+  parameters: [],
+  statement: ((excessBelowZeroGrid 8 8) = true),
+  proof: decide{},
+  axioms: []
+}
+
+theorem{
+  name: atLeastHasNoExcessBelow,
+  parameters: [],
+  statement: ((atLeastExcessZeroGrid 8 8) = true),
+  proof: decide{},
+  axioms: []
+}
+
+theorem{
+  name: excessAboveFallsWithTheValue,
+  parameters: [],
+  statement: ((excessAboveMonotoneGrid 4 8 8) = true),
+  proof: decide{},
+  axioms: []
+}
+
+theorem{
+  name: excessBelowFallsAsTheValueRises,
+  parameters: [],
+  statement: ((excessBelowAntitoneGrid 4 8 8) = true),
+  proof: decide{},
+  axioms: []
+}
+
+definition{
+  name: excessOver,
+  parameters: [criteria : DecisionCriteria, value : Nat],
+  result: Nat,
+  body: (match (project criteria direction)
+    | Direction.atMost => (excessAbove (project criteria bound) value)
+    | Direction.atLeast => (excessBelow (project criteria bound) value))
+}
+
+definition{
+  name: satisfies,
+  parameters: [criteria : DecisionCriteria, value : Nat],
+  result: Bool,
+  body: ((excessOver criteria value) =? 0)
+}
+
+definition{
+  name: indicatorsKnown,
+  parameters: [
+    conceptCount : Nat,
+    derivedCount : Nat,
+    criteriaCount : Nat,
+    indicators : (List Indicator)
+  ],
+  result: Bool,
+  body: (match indicators
+    | List.nil => true
+    | List.cons item rest => (((project item conceptIndex) <? conceptCount) && (((project item derivedMeasureIndex) <? derivedCount) && (((project item criteriaIndex) <? criteriaCount) && (indicatorsKnown conceptCount derivedCount criteriaCount rest))))),
+  recursive_argument: indicators
+}
+
+definition{
+  name: measured,
+  parameters: [indicator : Nat, results : (List MeasurementResult)],
+  result: Bool,
+  body: (match results
+    | List.nil => false
+    | List.cons item rest => (((project item indicatorIndex) =? indicator) || (measured indicator rest))),
+  recursive_argument: results
+}
+
+definition{
+  name: everyIndicatorMeasured,
+  parameters: [indicators : (List Indicator), results : (List MeasurementResult)],
+  result: Bool,
+  body: (match indicators
+    | List.nil => true
+    | List.cons item rest => ((measured (project item index) results) && (everyIndicatorMeasured rest results))),
+  recursive_argument: indicators
+}
+\end{semanticmodule}
+\end{lexlean}
