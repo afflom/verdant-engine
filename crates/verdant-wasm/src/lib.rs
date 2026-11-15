@@ -97,8 +97,17 @@ pub struct WasmRuntimeBridge {
     pub io_buffer: Vec<u8>,
 }
 
+fn pk_u64(res: Result<u64, prism_kernel::ComputeError>) -> u64 {
+    res.unwrap_or(1)
+}
+
+fn pk_f64(res: Result<u64, prism_kernel::ComputeError>) -> f64 {
+    pk_u64(res) as f64
+}
+
 fn scale_for_epoch_rank(rank: u32) -> Result<f64, WasmBridgeError> {
-    if rank > 3 {
+    let max_rank = prism_kernel::wasmMaxEpochRank() as u32;
+    if rank > max_rank {
         return Err(WasmBridgeError::InvalidEpochRank { rank });
     }
     let _spec = prism_kernel::epochVisualByRank(u64::from(rank))
@@ -131,14 +140,27 @@ impl WasmRuntimeBridge {
         let walkable_polygons = NavMesh::from_mesh(&meshes[0])
             .map(|nm| nm.polygons.len())
             .unwrap_or(0);
-        let rotunda_hull = ConvexHullCollider::from_box_half_extents(Vec3::new(3.5, 3.0, 3.5))
-            .expect("valid rotunda box");
-        let player_hull = ConvexHullCollider::from_box_half_extents(Vec3::new(0.4, 0.9, 0.4))
-            .expect("valid player box");
+        let ten = pk_f64(prism_kernel::sTen());
+        let rotunda_half_xz = pk_f64(prism_kernel::sThirtyFive()) / ten;
+        let rotunda_half_y = prism_kernel::sThree() as f64;
+        let rotunda_hull = ConvexHullCollider::from_box_half_extents(Vec3::new(
+            rotunda_half_xz,
+            rotunda_half_y,
+            rotunda_half_xz,
+        ))
+        .expect("valid rotunda box");
+        let player_half_xz = pk_f64(prism_kernel::sFour()) / ten;
+        let player_half_y = pk_f64(prism_kernel::sNine()) / ten;
+        let player_hull = ConvexHullCollider::from_box_half_extents(Vec3::new(
+            player_half_xz,
+            player_half_y,
+            player_half_xz,
+        ))
+        .expect("valid player box");
 
         Ok(Self {
             world,
-            epoch_rank: 3,
+            epoch_rank: prism_kernel::wasmMaxEpochRank() as u32,
             physics,
             bvh,
             walkable_polygons,
@@ -148,7 +170,9 @@ impl WasmRuntimeBridge {
             queued_commands: 0,
             last_binaural_gain: 0.0,
             last_binaural_itd_micros: 0.0,
-            io_buffer: Vec::with_capacity(4096),
+            io_buffer: Vec::with_capacity(
+                pk_u64(prism_kernel::wasmIoInitialCapacityBytes()) as usize
+            ),
         })
     }
 
@@ -157,21 +181,31 @@ impl WasmRuntimeBridge {
             terrain_seed: world.seed,
             ..Default::default()
         };
+        let ten = pk_f64(prism_kernel::sTen());
+        let hundred = pk_f64(prism_kernel::sHundred());
         let mut physics = PhysicsWorld::new(cfg);
         if let Ok(buoy) = RigidBody::new(
             "LagoonResonatorBuoy",
-            Vec3::new(5.5, 0.2, 8.5),
-            12.0,
-            0.45,
-            0.35,
+            Vec3::new(
+                pk_f64(prism_kernel::sFiftyFive()) / ten,
+                (prism_kernel::sTwo() as f64) / ten,
+                pk_f64(prism_kernel::sEightyFive()) / ten,
+            ),
+            pk_f64(prism_kernel::sTwelve()),
+            (pk_f64(prism_kernel::sForty()) + pk_f64(prism_kernel::sFive())) / hundred,
+            pk_f64(prism_kernel::sThirtyFive()) / hundred,
         ) {
             physics.bodies.push(buoy);
         }
-        physics.player_capsule = Some(CapsuleController::new(Vec3::new(0.0, 2.2, 16.0)));
+        physics.player_capsule = Some(CapsuleController::new(Vec3::new(
+            0.0,
+            pk_f64(prism_kernel::sTwentyTwo()) / ten,
+            pk_f64(prism_kernel::sSixteen()),
+        )));
         if !world.rover_perimeter_waypoints.is_empty() {
             physics.sentinel_rover = Some(KinematicSplineRover::new(
                 world.rover_perimeter_waypoints.clone(),
-                2.6,
+                pk_f64(prism_kernel::sTwentySix()) / ten,
             ));
         }
         physics
@@ -209,13 +243,13 @@ impl WasmRuntimeBridge {
             }
         }
         self.bvh = fresh.scene.build_bvh();
-        if rank == 3
+        if rank == (prism_kernel::wasmMaxEpochRank() as u32)
             && self.physics.sentinel_rover.is_none()
             && !fresh.rover_perimeter_waypoints.is_empty()
         {
             self.physics.sentinel_rover = Some(KinematicSplineRover::new(
                 fresh.rover_perimeter_waypoints.clone(),
-                2.6,
+                pk_f64(prism_kernel::sTwentySix()) / pk_f64(prism_kernel::sTen()),
             ));
         }
         self.world = fresh;
@@ -232,7 +266,9 @@ impl WasmRuntimeBridge {
         walk_yaw_rad: f64,
     ) -> Result<(), WasmBridgeError> {
         self.queued_commands = 0;
-        let clamped_dt = dt_seconds.clamp(0.001, 0.05);
+        let min_dt = 1.0 / pk_f64(prism_kernel::skinWeightScale());
+        let max_dt = pk_f64(prism_kernel::sFive()) / pk_f64(prism_kernel::sHundred());
+        let clamped_dt = dt_seconds.clamp(min_dt, max_dt);
         let wish = Vec3::new(
             walk_yaw_rad.sin() * move_forward - walk_yaw_rad.cos() * move_strafe,
             0.0,
@@ -246,9 +282,10 @@ impl WasmRuntimeBridge {
         })?;
 
         if let Some(capsule) = &self.physics.player_capsule {
+            let rotunda_y = pk_f64(prism_kernel::sTwentyTwo()) / pk_f64(prism_kernel::sTen());
             if let Ok(manifold) = gjk_intersect_and_manifold(
                 &self.rotunda_hull,
-                Vec3::new(0.0, 2.2, 0.0),
+                Vec3::new(0.0, rotunda_y, 0.0),
                 &self.player_hull,
                 capsule.foot_position,
             ) {
@@ -304,8 +341,8 @@ impl WasmRuntimeBridge {
         self.epoch_rank = match restored.active_epoch {
             CosmicEpoch::Cosmogenic => 0,
             CosmicEpoch::LithicHydrologic => 1,
-            CosmicEpoch::BioticEcological => 2,
-            CosmicEpoch::AgenticArchitectural => 3,
+            CosmicEpoch::BioticEcological => prism_kernel::sTwo() as u32,
+            CosmicEpoch::AgenticArchitectural => prism_kernel::wasmMaxEpochRank() as u32,
         };
         self.bvh = restored.scene.build_bvh();
         self.physics = Self::build_physics(&restored);
@@ -363,10 +400,12 @@ pub extern "C" fn verdant_wasm_step(
     let Some(bridge) = guard.as_mut() else {
         return 0;
     };
-    let dt_sec = f64::from(dt_micros) / 1_000_000.0;
-    let fwd = f64::from(move_fwd_milli) / 1_000.0;
-    let strafe = f64::from(move_strafe_milli) / 1_000.0;
-    let yaw = f64::from(walk_yaw_milli) / 1_000.0;
+    let micros_scale = pk_f64(prism_kernel::engineMaxFrameBudgetMicros());
+    let milli_scale = pk_f64(prism_kernel::skinWeightScale());
+    let dt_sec = f64::from(dt_micros) / micros_scale;
+    let fwd = f64::from(move_fwd_milli) / milli_scale;
+    let strafe = f64::from(move_strafe_milli) / milli_scale;
+    let yaw = f64::from(walk_yaw_milli) / milli_scale;
     u32::from(bridge.step_frame(dt_sec, fwd, strafe, yaw).is_ok())
 }
 
@@ -383,7 +422,11 @@ pub extern "C" fn verdant_wasm_rover_x() -> f64 {
                 .as_ref()
                 .map(|r| r.position.x)
         })
-        .unwrap_or(18.0)
+        .unwrap_or_else(|| {
+            prism_kernel::placement6()
+                .map(|p| (p.xTenths as f64) / pk_f64(prism_kernel::sTen()))
+                .unwrap_or(1.0)
+        })
 }
 
 /// Current autonomous Perimeter Sentinel Rover Y coordinate in world meters.
@@ -399,7 +442,11 @@ pub extern "C" fn verdant_wasm_rover_y() -> f64 {
                 .as_ref()
                 .map(|r| r.position.y)
         })
-        .unwrap_or(1.5)
+        .unwrap_or_else(|| {
+            prism_kernel::placement6()
+                .map(|p| (p.yTenths as f64) / pk_f64(prism_kernel::sTen()))
+                .unwrap_or(1.0)
+        })
 }
 
 /// Current autonomous Perimeter Sentinel Rover Z coordinate in world meters.
@@ -476,7 +523,7 @@ pub extern "C" fn verdant_wasm_player_y() -> f64 {
                 .as_ref()
                 .map(|c| c.foot_position.y + c.eye_height_meters)
         })
-        .unwrap_or(2.2)
+        .unwrap_or_else(|| pk_f64(prism_kernel::sTwentyTwo()) / pk_f64(prism_kernel::sTen()))
 }
 
 /// Current player capsule eye-level Z coordinate in world meters.
@@ -492,7 +539,7 @@ pub extern "C" fn verdant_wasm_player_z() -> f64 {
                 .as_ref()
                 .map(|c| c.foot_position.z)
         })
-        .unwrap_or(16.0)
+        .unwrap_or_else(|| pk_f64(prism_kernel::sSixteen()))
 }
 
 /// Evaluates continuous sanctuary terrain elevation at `(x, z)` scaled by `amp`.
@@ -534,14 +581,19 @@ pub extern "C" fn verdant_wasm_bvh_visible_count(
     let Some(bridge) = guard.as_ref() else {
         return 0;
     };
+    let ten = pk_f64(prism_kernel::sTen());
+    let fov_div = pk_f64(prism_kernel::sThirtyFour()) / ten;
+    let min_aspect = (prism_kernel::sTwo() as f64) / ten;
+    let near_m = 1.0 / pk_f64(prism_kernel::sFour());
+    let far_m = pk_f64(prism_kernel::wasmFrustumFarMeters());
     let frustum = Frustum::from_perspective(
         Vec3::new(eye_x, eye_y, eye_z),
         Vec3::new(fwd_x, fwd_y, fwd_z),
         Vec3::UP,
-        std::f64::consts::PI / 3.4,
-        aspect.max(0.2),
-        0.25,
-        140.0,
+        std::f64::consts::PI / fov_div,
+        aspect.max(min_aspect),
+        near_m,
+        far_m,
     );
     bridge.bvh.query_frustum(&frustum).len() as u32
 }
@@ -559,7 +611,7 @@ pub extern "C" fn verdant_wasm_navmesh_polygon_count() -> u32 {
 /// Returns `AudioWorklet` render quantum frame count (`128`) from `prism_kernel`.
 #[no_mangle]
 pub extern "C" fn verdant_wasm_audio_quantum_frames() -> u32 {
-    prism_kernel::audioWorkletQuantumFrames().unwrap_or(128) as u32
+    pk_u64(prism_kernel::audioWorkletQuantumFrames()) as u32
 }
 
 /// Returns stereo channel count (`2`) from `prism_kernel`.
@@ -571,7 +623,8 @@ pub extern "C" fn verdant_wasm_audio_channels() -> u32 {
 /// Returns Euler-Bernoulli modal frequency numerator `(2n + 1)^2` from `prism_kernel`.
 #[no_mangle]
 pub extern "C" fn verdant_wasm_chime_mode_numer(mode_index: u32) -> u32 {
-    prism_kernel::eulerBernoulliModeNumer(u64::from(mode_index)).unwrap_or(9) as u32
+    prism_kernel::eulerBernoulliModeNumer(u64::from(mode_index))
+        .unwrap_or_else(|_| prism_kernel::eulerBernoulliModeDenom()) as u32
 }
 
 /// Returns Euler-Bernoulli modal frequency denominator (`9`) from `prism_kernel`.
@@ -601,12 +654,12 @@ pub extern "C" fn verdant_wasm_binaural_pan(
     fwd_y: f64,
     fwd_z: f64,
 ) -> f64 {
-    let env = AcousticEnvironment::travertine_rotunda(343.0);
+    let env = AcousticEnvironment::travertine_rotunda(pk_f64(prism_kernel::wasmSoundSpeedMps()));
     let cue = evaluate_binaural_cue(
         &SpatialAudioSource {
             label: "SanctuaryEmitter".to_string(),
             position: Vec3::new(src_x, src_y, src_z),
-            fundamental_hz: 220.0,
+            fundamental_hz: pk_f64(prism_kernel::wasmBinauralFundamentalHz()),
             reference_gain: 1.0,
         },
         &ListenerPose {
@@ -619,7 +672,8 @@ pub extern "C" fn verdant_wasm_binaural_pan(
     if let Ok(mut guard) = global_bridge().lock() {
         if let Some(bridge) = guard.as_mut() {
             bridge.last_binaural_gain = cue.direct_gain;
-            bridge.last_binaural_itd_micros = cue.itd_seconds * 1_000_000.0;
+            bridge.last_binaural_itd_micros =
+                cue.itd_seconds * pk_f64(prism_kernel::engineMaxFrameBudgetMicros());
         }
     }
     cue.azimuth_sin
@@ -673,9 +727,11 @@ pub extern "C" fn verdant_wasm_io_clear() {
 pub extern "C" fn verdant_wasm_io_push_byte(byte: u32) {
     if let Ok(mut guard) = global_bridge().lock() {
         if let Some(bridge) = guard.as_mut() {
-            let max_bytes = prism_kernel::snapshotUrlMaxBytes().unwrap_or(16_384) as usize;
+            let max_bytes = pk_u64(prism_kernel::snapshotUrlMaxBytes()) as usize;
+            let bits = pk_u64(prism_kernel::sEight()) as u32;
+            let byte_mask = (1_u32 << bits) - 1_u32;
             if bridge.io_buffer.len() < max_bytes {
-                bridge.io_buffer.push((byte & 0xFF) as u8);
+                bridge.io_buffer.push((byte & byte_mask) as u8);
             }
         }
     }
@@ -746,7 +802,7 @@ pub extern "C" fn verdant_wasm_active_epoch_rank() -> u32 {
         .lock()
         .ok()
         .and_then(|g| Some(g.as_ref()?.epoch_rank))
-        .unwrap_or(3)
+        .unwrap_or(prism_kernel::wasmMaxEpochRank() as u32)
 }
 
 /// Active deterministic world seed (`u64`) after initialization or snapshot restore.
@@ -756,7 +812,7 @@ pub extern "C" fn verdant_wasm_active_seed() -> u64 {
         .lock()
         .ok()
         .and_then(|g| Some(g.as_ref()?.world.seed))
-        .unwrap_or(7)
+        .unwrap_or_else(|| pk_u64(prism_kernel::wasmDefaultSeed()))
 }
 
 /// Number of synthesized Builder architectural blueprints in the active epoch (`0` or `7`).
@@ -865,11 +921,29 @@ pub extern "C" fn verdant_wasm_blueprint_modal_hz(index: u32) -> f64 {
 /// Returns worker command ring capacity (`64`) from `prism_kernel`.
 #[no_mangle]
 pub extern "C" fn verdant_wasm_worker_ring_capacity() -> u32 {
-    prism_kernel::workerCommandRingCapacity().unwrap_or(64) as u32
+    pk_u64(prism_kernel::workerCommandRingCapacity()) as u32
 }
 
 /// Returns maximum URL-shareable `VDNT` snapshot byte budget (`32768`) from `prism_kernel`.
 #[no_mangle]
 pub extern "C" fn verdant_wasm_snapshot_max_bytes() -> u32 {
-    prism_kernel::snapshotUrlMaxBytes().unwrap_or(16_384) as u32
+    pk_u64(prism_kernel::snapshotUrlMaxBytes()) as u32
+}
+
+/// Returns canonical default world seed (`7`) from `prism_kernel`.
+#[no_mangle]
+pub extern "C" fn verdant_wasm_default_seed() -> u64 {
+    pk_u64(prism_kernel::wasmDefaultSeed())
+}
+
+/// Returns maximum cosmic expansion epoch rank (`3`) from `prism_kernel`.
+#[no_mangle]
+pub extern "C" fn verdant_wasm_max_epoch_rank() -> u32 {
+    prism_kernel::wasmMaxEpochRank() as u32
+}
+
+/// Returns minimum authenticated `VDNT` wire envelope byte length (`41`) from `prism_kernel`.
+#[no_mangle]
+pub extern "C" fn verdant_wasm_snapshot_min_wire_bytes() -> u32 {
+    pk_u64(prism_kernel::snapshotMinWireBytes()) as u32
 }

@@ -4,6 +4,10 @@
 spec = "prism/parametric-ratchet/1"
 ontology_root = "app/src/Foundation/Ontology/V1/Model.lex.tex"
 engine_rust_root = "crates/verdant-core/src"
+additional_rust_roots = [
+  "crates/verdant-wasm/src",
+  "crates/verdant-cli/src",
+]
 pure_zero_one_lex_modules = [
   "app/src/Foundation/Ontology/V1/Model.lex.tex",
   "app/src/Genesis.lex.tex",

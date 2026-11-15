@@ -13,7 +13,8 @@ use crate::genesis::{
     CausalWorldState, CosmicEpoch, LithicSubstrate, PhysicalEnvironment, StructureKind,
     TerrainReliefParams, WorldGenesisParams,
 };
-use crate::math::{pow10_u64, three_u32, two_u32, Aabb, Quat, Vec3, DIM_HOMOGENEOUS};
+use crate::math::{Aabb, Quat, Vec3, DIM_HOMOGENEOUS};
+use crate::prism_kernel;
 
 /// Browser / WebAssembly host capability envelope discovered at startup.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -81,14 +82,16 @@ impl EngineConfig {
                 height: viewport_height,
             });
         }
-        let max_hz = pow10_u64(three_u32()) as u32;
+        let max_hz = prism_kernel::engineMaxTickRateHz()
+            .expect("verified Prism kernel engineMaxTickRateHz") as u32;
         if tick_rate_hz == 0 || tick_rate_hz > max_hz {
             return Err(EngineConfigError::InvalidTickRateHz {
                 tick_rate_hz,
                 max_hz,
             });
         }
-        let max_micros = pow10_u64(two_u32() * three_u32());
+        let max_micros = prism_kernel::engineMaxFrameBudgetMicros()
+            .expect("verified Prism kernel engineMaxFrameBudgetMicros");
         if frame_budget_micros == 0 || frame_budget_micros > max_micros {
             return Err(EngineConfigError::InvalidFrameBudgetMicros {
                 budget_micros: frame_budget_micros,
@@ -98,6 +101,16 @@ impl EngineConfig {
         if worker_threads == 0 {
             return Err(EngineConfigError::ZeroWorkerThreads);
         }
+        debug_assert_eq!(
+            prism_kernel::engineConfigBoundsValid(
+                u64::from(viewport_width),
+                u64::from(viewport_height),
+                u64::from(tick_rate_hz),
+                frame_budget_micros,
+                u64::from(worker_threads),
+            ),
+            Ok(true)
+        );
         Ok(Self {
             viewport_width,
             viewport_height,
@@ -180,6 +193,11 @@ impl WorkerJobGraph {
             "gpu_command_submit",
             gpu_submit_us,
             &["physics_step", "frustum_cull", "spatial_audio"],
+        );
+        debug_assert_eq!(
+            g.nodes.len() as u64,
+            prism_kernel::canonicalFrameStageCount()
+                .expect("verified Prism kernel canonicalFrameStageCount")
         );
         g
     }
@@ -327,7 +345,7 @@ fn bytes_to_hex(bytes: &[u8]) -> String {
     let hex_chars = b"0123456789abcdef";
     let shift = (1_u8 + 1_u8) * (1_u8 + 1_u8);
     let mask = (1_u8 << shift) - 1_u8;
-    let mut out = String::with_capacity(bytes.len() * (two_u32() as usize));
+    let mut out = String::with_capacity(bytes.len() * (prism_kernel::sTwo() as usize));
     for &b in bytes {
         out.push(char::from(hex_chars[(b >> shift) as usize]));
         out.push(char::from(hex_chars[(b & mask) as usize]));
@@ -812,11 +830,13 @@ impl WorldSnapshot {
     /// Encodes `world` into a self-verifying `VDNT\x01` + length + IEEE-754 binary payload + 32-byte SHA-256 trailer.
     pub fn encode(world: &CausalWorldState) -> Result<Vec<u8>, SnapshotCodecError> {
         let payload = encode_world_payload(world)?;
-        let digest_len = Sha256::output_size();
+        let header_len = prism_kernel::snapshotHeaderBytes()
+            .expect("verified Prism kernel snapshotHeaderBytes") as usize;
+        let digest_len = prism_kernel::snapshotSha256Bytes()
+            .expect("verified Prism kernel snapshotSha256Bytes") as usize;
+        debug_assert_eq!(digest_len, Sha256::output_size());
         let len_bytes = (payload.len() as u32).to_le_bytes();
-        let mut wire = Vec::with_capacity(
-            SNAPSHOT_MAGIC.len() + 1 + len_bytes.len() + payload.len() + digest_len,
-        );
+        let mut wire = Vec::with_capacity(header_len + payload.len() + digest_len);
         wire.extend_from_slice(SNAPSHOT_MAGIC);
         wire.push(SNAPSHOT_VERSION);
         wire.extend_from_slice(&len_bytes);
@@ -824,15 +844,21 @@ impl WorldSnapshot {
 
         let digest = Sha256::digest(&wire);
         wire.extend_from_slice(&digest);
+        debug_assert_eq!(
+            prism_kernel::snapshotWireFramingValid(wire.len() as u64, payload.len() as u64),
+            Ok(true)
+        );
         Ok(wire)
     }
 
     /// Verifies the `VDNT\x01` header and SHA-256 integrity digest before deserializing `CausalWorldState`.
     pub fn decode(bytes: &[u8]) -> Result<CausalWorldState, SnapshotCodecError> {
-        let u32_bytes = std::mem::size_of::<u32>();
-        let header_len = SNAPSHOT_MAGIC.len() + 1 + u32_bytes;
-        let digest_len = Sha256::output_size();
-        let min_len = header_len + digest_len;
+        let header_len = prism_kernel::snapshotHeaderBytes()
+            .expect("verified Prism kernel snapshotHeaderBytes") as usize;
+        let digest_len = prism_kernel::snapshotSha256Bytes()
+            .expect("verified Prism kernel snapshotSha256Bytes") as usize;
+        let min_len = prism_kernel::snapshotMinWireBytes()
+            .expect("verified Prism kernel snapshotMinWireBytes") as usize;
         if bytes.len() < min_len {
             return Err(SnapshotCodecError::TruncatedSnapshot {
                 byte_len: bytes.len(),
@@ -859,7 +885,10 @@ impl WorldSnapshot {
         len_arr.copy_from_slice(&signed_prefix[len_start..header_len]);
         let declared_len = u32::from_le_bytes(len_arr) as usize;
         let payload = &signed_prefix[header_len..];
-        if payload.len() != declared_len {
+        let framing_ok =
+            prism_kernel::snapshotWireFramingValid(bytes.len() as u64, declared_len as u64)
+                .unwrap_or(false);
+        if !framing_ok || payload.len() != declared_len {
             return Err(SnapshotCodecError::TruncatedSnapshot {
                 byte_len: bytes.len(),
             });

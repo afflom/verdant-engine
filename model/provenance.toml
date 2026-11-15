@@ -19,6 +19,7 @@ sources = [
   "app/language/prism.sec/entries/*.toml",
   "app/language/prism.qual/entries/*.toml",
   "brand/foundation/src/site/copy.ts",
+  "brand/tokens.json",
   "site/app.json",
 ]
 

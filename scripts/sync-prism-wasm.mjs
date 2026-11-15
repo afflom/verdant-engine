@@ -51,9 +51,10 @@ if (
 const { instance } = await WebAssembly.instantiate(wasmBytes, {});
 const ex = instance.exports;
 
-const initOk = ex.verdant_wasm_init(7n);
+const defaultSeed = ex.verdant_wasm_default_seed();
+const initOk = ex.verdant_wasm_init(defaultSeed);
 if (initOk !== 1) {
-  console.error("sync-prism-wasm: verdant_wasm_init(7) failed");
+  console.error(`sync-prism-wasm: verdant_wasm_init(${defaultSeed}) failed`);
   process.exit(1);
 }
 
@@ -69,10 +70,15 @@ const csmSplits = [0, 1, 2, 3].map((i) =>
 );
 const ringCapacity = ex.verdant_wasm_worker_ring_capacity() >>> 0;
 const snapshotMaxBytes = ex.verdant_wasm_snapshot_max_bytes() >>> 0;
+const maxEpochRank = ex.verdant_wasm_max_epoch_rank() >>> 0;
+const snapshotMinWireBytes = ex.verdant_wasm_snapshot_min_wire_bytes() >>> 0;
 
 const expectedMeta = `// Generated mechanically by scripts/sync-prism-wasm.mjs from Prism-verified verdant-wasm.
 // Do not edit by hand.
 
+export const PRISM_DEFAULT_WORLD_SEED = ${Number(defaultSeed)};
+export const PRISM_MAX_EPOCH_RANK = ${maxEpochRank};
+export const PRISM_SNAPSHOT_MIN_WIRE_BYTES = ${snapshotMinWireBytes};
 export const PRISM_AUDIO_QUANTUM_FRAMES = ${quantumFrames};
 export const PRISM_AUDIO_STEREO_CHANNELS = ${stereoChannels};
 export const PRISM_CHIME_MODE_DENOM = ${chimeDenom};

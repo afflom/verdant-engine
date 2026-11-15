@@ -123,7 +123,8 @@ pub fn run_cli(args: &[String]) -> Result<String, CliCommandError> {
                 path: path.clone(),
                 reason: e.to_string(),
             })?;
-            let req_entries: Vec<&str> = args.iter().skip(2).map(String::as_str).collect();
+            let skip_args = prism_kernel::sTwo() as usize;
+            let req_entries: Vec<&str> = args.iter().skip(skip_args).map(String::as_str).collect();
             let label = Path::new(path)
                 .file_name()
                 .and_then(|n| n.to_str())
@@ -148,15 +149,17 @@ pub fn run_cli(args: &[String]) -> Result<String, CliCommandError> {
                     usage: "verdant export-sanctuary <out.glb> [seed] [scale]".to_string(),
                 });
             };
-            let seed = match args.get(2) {
+            let seed_arg_idx = prism_kernel::sTwo() as usize;
+            let scale_arg_idx = prism_kernel::sThree() as usize;
+            let seed = match args.get(seed_arg_idx) {
                 Some(raw) => raw
                     .parse::<u64>()
                     .map_err(|_| CliCommandError::InvalidUsage {
                         usage: format!("invalid u64 seed `{raw}`"),
                     })?,
-                None => pk("export-sanctuary", prism_kernel::sSeven())?,
+                None => pk("export-sanctuary", prism_kernel::wasmDefaultSeed())?,
             };
-            let scale = match args.get(3) {
+            let scale = match args.get(scale_arg_idx) {
                 Some(raw) => raw
                     .parse::<f64>()
                     .map_err(|_| CliCommandError::InvalidUsage {
@@ -246,14 +249,13 @@ pub fn run_cli(args: &[String]) -> Result<String, CliCommandError> {
             let two = prism_kernel::sTwo();
             let four = pk("benchmark", prism_kernel::sFour())?;
             let five = pk("benchmark", prism_kernel::sFive())?;
-            let seven = pk("benchmark", prism_kernel::sSeven())?;
+            let seven = pk("benchmark", prism_kernel::wasmDefaultSeed())?;
             let eight = pk("benchmark", prism_kernel::sEight())?;
-            let ten = pk("benchmark", prism_kernel::sTen())?;
             let twelve = pk("benchmark", prism_kernel::sTwelve())?;
             let sixty = pk("benchmark", prism_kernel::sSixty())?;
-            let hundred = pk("benchmark", prism_kernel::sHundred())?;
-            let default_frames = (two * sixty) as usize;
-            let max_frames = (hundred * hundred) as usize;
+            let default_frames =
+                pk("benchmark", prism_kernel::cliDefaultBenchmarkFrames())? as usize;
+            let max_frames = pk("benchmark", prism_kernel::cliMaxBenchmarkFrames())? as usize;
             let frames = match args.get(1) {
                 Some(raw) => raw
                     .parse::<usize>()
@@ -281,7 +283,7 @@ pub fn run_cli(args: &[String]) -> Result<String, CliCommandError> {
                     diagnostic: e.to_string(),
                 })?;
             let near_m = 1.0 / (four as f64);
-            let far_m = (seven * two * ten) as f64;
+            let far_m = pk("benchmark", prism_kernel::wasmFrustumFarMeters())? as f64;
             let csm = compute_csm_splits(near_m, far_m).map_err(|e| {
                 CliCommandError::ValidationRejected {
                     command: "benchmark".to_string(),

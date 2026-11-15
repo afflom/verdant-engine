@@ -1,6 +1,6 @@
 # Verdant Engine Charter
 
-Verdant Engine is a multi-purpose commercial 3D browser and WebAssembly game engine extracted from Verdant Resonance in the Unreal Engine tradition. It runs 60fps 3D worlds in the browser with procedural terrain, PBR materials, binary glTF 2.0 export, WGSL shaders, symplectic rigid-body physics, spatial audio, deterministic snapshots, and verified causal expansion and structural equilibrium.
+Verdant Engine is a multi-purpose commercial 3D browser and WebAssembly game engine extracted from Verdant Resonance and modeled end-to-end with Prism. It runs 60fps 3D worlds in the browser with procedural terrain, PBR materials, binary glTF 2.0 export, WGSL shaders, symplectic rigid-body physics, spatial audio, deterministic snapshots, and verified causal expansion and structural equilibrium.
 
 ## Cosmological Expansion Epochs (`t_0 -> t_obs`)
 
@@ -140,6 +140,7 @@ Verdant Engine is a multi-purpose commercial 3D browser and WebAssembly game eng
 - GjkConvexCollisionAndSolver: Bounded 3D Gilbert-Johnson-Keerthi Minkowski support intersections, Baumgarte position stabilization, and Coulomb friction cones.
 - NavMeshCorridorPathfinding: Slope-filtered walkable terrain navmeshes, bounded admissible A-star polygon search, and portal corridor steering.
 - BrowserWasmWorkerBridge: Dedicated WebAssembly simulation worker ring framing, 128-frame WebAudio worklet quanta, and bounded URL-safe VDNT snapshot envelopes.
+- CliAssetPackerAndOracle: Command-line binary glTF 2.0 and WGSL validator, sanctuary scene and snapshot packer, and headless 60fps benchmark.
 
 ## Developer Relations, Documentation, SDK Artifacts, and Studio Controls
 
@@ -162,3 +163,15 @@ Verdant Engine is a multi-purpose commercial 3D browser and WebAssembly game eng
 - ve-glb-btn: Serializes and downloads the active 3D scene as a standards-valid binary glTF 2.0 (.glb) asset.
 - ve-snap-btn: Encodes an authenticated SHA-256 VDNT binary world snapshot and copies a shareable #vdnt= studio URL.
 - ve-docs-link: Navigates directly from the Engine Studio bar to the Diataxis documentation suite.
+
+## Brand Identity and Context of Use
+
+- Brand authority: Alina Wheeler, Designing Brand Identity, 5th ed., Wiley, 2017; W3C Design Tokens Format Module 2025.10; WCAG 2.2 — UOR-Foundation/website at commit e82ffdedc5d85ebd0bde239d50d4651005045d31.
+- Core brand values and mark: Open by default | Identity from content | No central authority | public/favicon.png.
+- Canonical surface palette: fd-bg #0a0a0a, fd-panel #121212, fd-fg #fafafa, fd-dim #999999, fd-line #333333, fd-line-strong #616161, fd-accent #fafafa.
+- Canonical typography: Space Grotesk, system-ui, sans-serif; JetBrains Mono, ui-monospace, monospace (tokens fd-head Space Grotesk, system-ui, sans-serif and fd-mono JetBrains Mono, ui-monospace, monospace).
+- Canonical spectrum gradient: fd-spectrum 100deg, #fb5661 0, #fa792e 0.07, #f9cf24 0.14, #f6e41e 0.19, #25d05e 0.25, #20d0f3 0.31, #4f81f8 0.38, #ae6ff6 0.45, #f368c5 0.48, #fb5661 0.5, #fa792e 0.57, #f9cf24 0.64, #f6e41e 0.69, #25d05e 0.75, #20d0f3 0.81, #4f81f8 0.88, #ae6ff6 0.95, #f368c5 0.98, #fb5661 1.
+- Context-of-use authority: ISO 9241-11:2018 context of use and usability; ISO 9241-210:2019 human-centred design — https://github.com/afflom/verdant-engine at the revision of this model.
+- Usability effectiveness method: acceptance rows of the goal's tasks: each is a test that the task's feature completes.
+- Usability efficiency method: tasks the goal takes, from its journey's steps.
+- Usability satisfaction method: open: no instrument in the model measures it.

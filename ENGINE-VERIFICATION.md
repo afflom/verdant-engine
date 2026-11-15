@@ -27,14 +27,14 @@ Every capability of `crates/verdant-core` is registered in `model/ids.toml`, spe
 
 `model/parametric-ratchet.toml` permanently locks every literal ceiling to `0`:
 
-- `max_ontology_magic_numbers = 0`
-- `max_constructive_lex_magic_numbers = 0`
-- `max_total_lex_magic_numbers = 0`
-- `max_rust_unexplained_floats = 0`
-- `max_rust_unexplained_ints = 0`
-- `max_rust_files_with_magic = 0`
+- `max_ontology_root_literal_gt_one_count = 0`
+- `max_ontology_root_string_field_count = 0`
+- `max_classical_choice_count = 0`
+- `max_ungrounded_lex_module_count = 0`
+- `max_domain_lex_magic_literal_count = 0`
+- `max_engine_rust_magic_literal_count = 0`
 
-On every `just fidelity` and `just vv` run, `crates/fidelity/src/ratchet.rs` scans all 23 backend `.lex.tex` modules and all 11 Rust modules in `crates/verdant-core/src/`. Any unexplained numeric literal outside named `const` declarations fails the build immediately, and `zero_constants_parametric_ratchet_fi_08` verifies that planted magic float and integer literals in temporary workspaces are deterministically caught and refused.
+On every `just fidelity` and `just vv` run, `crates/fidelity/src/ratchet.rs` scans all 25 backend `.lex.tex` modules and all shipped Rust source files across `crates/verdant-core/src/`, `crates/verdant-wasm/src/`, and `crates/verdant-cli/src/`. Any unexplained numeric literal outside `{0, 1}` / `{0.0, 1.0}` fails the build immediately, and `zero_constants_parametric_ratchet_fi_08` verifies that planted magic float and integer literals in temporary workspaces are deterministically caught and refused.
 
 ---
 

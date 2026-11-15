@@ -349,7 +349,7 @@ fn zero_constants_parametric_ratchet_fi_08() {
     assert_eq!(report.ungrounded_lex_module_count, 0);
     assert_eq!(report.domain_lex_magic_literal_count, 0);
     assert_eq!(report.engine_rust_magic_literal_count, 0);
-    assert!(report.audited_rust_file_count >= 10);
+    assert!(report.audited_rust_file_count >= 18);
 
     // Planted defect checks in an isolated scratch workspace:
     let dir = scratch("fi08");

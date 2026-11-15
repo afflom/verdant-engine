@@ -655,6 +655,11 @@ record = "Architecture::viewpointSystemsPerformance"
 axis = "meant"
 
 [[closed]]
+kappa = "b900887b9a4d98ad9c351abdd72383e52edd042cd0d9bdde5fbdb675bb83bca5"
+record = "Brand::authority"
+axis = "derived"
+
+[[closed]]
 kappa = "b2424190f1de41adb915a75010da8be147cc87b5b45d0bc5e7bfeb8d2338b7bb"
 record = "Brand::authority"
 axis = "meant"
@@ -800,14 +805,29 @@ record = "Brand::elements#1"
 axis = "meant"
 
 [[closed]]
+kappa = "61062a14e42a78bc5059956706ab343f3f684b0385d6bc6045e287a146d781bb"
+record = "Brand::elements#10"
+axis = "derived"
+
+[[closed]]
 kappa = "e888db3c9ed6fdbbd63b0309bb38d5ad8db17adfad6fe0deb47d8ae3a7ace329"
 record = "Brand::elements#10"
 axis = "meant"
 
 [[closed]]
+kappa = "dffefe8d2a9aa3dbd441dd41790abcbc8ca2b86bea6617aedb82362e2184a606"
+record = "Brand::elements#11"
+axis = "derived"
+
+[[closed]]
 kappa = "287fe6f6fb0f06de0c700bbc08157a69663b3fa6194e92a42763d3e2acf29a8c"
 record = "Brand::elements#11"
 axis = "meant"
+
+[[closed]]
+kappa = "cfc1ae6b73749c3e8248a20e3b595348a595482d4e4f57313e2920133fcbec31"
+record = "Brand::elements#12"
+axis = "derived"
 
 [[closed]]
 kappa = "4d1181893cf7d7d73a012edf7a98947e49188dc40a77aae37c834bf270e148ef"
@@ -865,14 +885,29 @@ record = "Brand::elements#4"
 axis = "meant"
 
 [[closed]]
+kappa = "57aade71c786b80788170284cb072c1519796b57933e6bc5b762829e1e31d2f8"
+record = "Brand::elements#5"
+axis = "derived"
+
+[[closed]]
 kappa = "149ce04b8722755bb9bf1e5378a571b40dc35b736a69a2d7801320c9d6f1faee"
 record = "Brand::elements#5"
 axis = "meant"
 
 [[closed]]
+kappa = "56f7e02f30d211a2016402ed5bbf59614d675b810165120be838b909e7e64285"
+record = "Brand::elements#6"
+axis = "derived"
+
+[[closed]]
 kappa = "657649bfce5dba9826483f65a1caa359b972d09b8073978a0bc38bb97fd82f9b"
 record = "Brand::elements#6"
 axis = "meant"
+
+[[closed]]
+kappa = "3a752dced79f7ee53a880520fd62e85a44906584f6bd850c35b20473bb31fc7d"
+record = "Brand::elements#7"
+axis = "derived"
 
 [[closed]]
 kappa = "46d3702c153bde87801b8ee7c5615dc28433971cb93c3e7e040f03f276df9a47"
@@ -930,9 +965,19 @@ record = "Brand::tokens#10"
 axis = "meant"
 
 [[closed]]
+kappa = "53d1c5ec6814fa9aea09aaf1bee3a73c45c8464e1beac6a94020c0d4029f437e"
+record = "Brand::tokens#11"
+axis = "derived"
+
+[[closed]]
 kappa = "e70f9e0d66f7d641d1aef3ee672c1bcab180d66414432592d2027a0412ba102c"
 record = "Brand::tokens#11"
 axis = "meant"
+
+[[closed]]
+kappa = "f5a17f22823abf259e5b5450ac54a95daa19972364b80018cd55017dcd03e7cd"
+record = "Brand::tokens#12"
+axis = "derived"
 
 [[closed]]
 kappa = "f51fbe92f82961fa5cdd9732563ec2293eed344cc1cd99065c9987a85845752d"
@@ -940,9 +985,19 @@ record = "Brand::tokens#12"
 axis = "meant"
 
 [[closed]]
+kappa = "85a2753d1cfaac245e17641c6b63c64e7b699eefaeb64c15a0c81f129abbea5f"
+record = "Brand::tokens#13"
+axis = "derived"
+
+[[closed]]
 kappa = "158dca5532f8a9f48a0982f776ec980dad368aeb8a1db30cc836f04072b298a8"
 record = "Brand::tokens#13"
 axis = "meant"
+
+[[closed]]
+kappa = "fd7520bcfb84eac0fe30a70cb3d0df334df7deb92be458a594b93f1b86516524"
+record = "Brand::tokens#14"
+axis = "derived"
 
 [[closed]]
 kappa = "cfd4e884713315abbac17cf5c2884c467c8591300b7435241920bdda4b5350e4"
@@ -950,14 +1005,29 @@ record = "Brand::tokens#14"
 axis = "meant"
 
 [[closed]]
+kappa = "5be51b0ee802fd0496f8b601814e04163e2f0032ce8c0cc3f7ba593f9ca773a9"
+record = "Brand::tokens#15"
+axis = "derived"
+
+[[closed]]
 kappa = "fea82820a31480a3c1bfe94687c1ae572b2f8d24349ab7522d6c7c9504f3201a"
 record = "Brand::tokens#15"
 axis = "meant"
 
 [[closed]]
+kappa = "0ecba25a926d067085a1fc69dd78687e99e08aced15c52f828624b51c2c3691f"
+record = "Brand::tokens#16"
+axis = "derived"
+
+[[closed]]
 kappa = "0f4ad2d70086393470634f3d50e30bb7b023c5bfdbc2a1e5f4d9e55b20223475"
 record = "Brand::tokens#16"
 axis = "meant"
+
+[[closed]]
+kappa = "0154d4ee44753762d4e0adaf6b50a99bf51e19561bd9aecb995515ef205f7ce6"
+record = "Brand::tokens#17"
+axis = "derived"
 
 [[closed]]
 kappa = "1123e25e6ce218c884135274890442457ae942d6466a40d66835b370cacec55b"
@@ -993,6 +1063,11 @@ axis = "derived"
 kappa = "5db155c282de13910da972894feec05cd99968b3fc02a681e896535dbf8beae2"
 record = "Brand::tokens#2"
 axis = "meant"
+
+[[closed]]
+kappa = "e542b1365305f97286e92391cecc9381944e2e766bc492250511d92442d49b33"
+record = "Brand::tokens#20"
+axis = "derived"
 
 [[closed]]
 kappa = "368ed08eed81262d337ecb45d1fdd74488292d8d06f1092d3a143d805a88a98d"
@@ -1070,9 +1145,19 @@ record = "Brand::tokens#27"
 axis = "meant"
 
 [[closed]]
+kappa = "fecea31ff9fef82c6ca92e89825f01abb063ae4ff52c3c50e8438bb1f4ee0999"
+record = "Brand::tokens#28"
+axis = "derived"
+
+[[closed]]
 kappa = "82430ea8691283ca41271884ff30901b6527ee656a4b73af6e0dfcdb734af384"
 record = "Brand::tokens#28"
 axis = "meant"
+
+[[closed]]
+kappa = "73f056518785c8d09019e4f1f480eafcbad7b2e7d03cb2d7fe4ca576e452a833"
+record = "Brand::tokens#29"
+axis = "derived"
 
 [[closed]]
 kappa = "59fee221e22f340ca1d236acc35c3c6de3a7e0418f369bb73f4232cae676c334"
@@ -1970,9 +2055,19 @@ record = "Engine::application"
 axis = "meant"
 
 [[closed]]
+kappa = "7528f8f2dafbb94f010d1c770bf59f74c9bbda7f59402e17777b5c3e99773519"
+record = "Engine::vectors#0"
+axis = "derived"
+
+[[closed]]
 kappa = "a7cf477d9ae0a8b5b8092b96ea1b3cbb82a3a79436a7258c35932c6270448dd0"
 record = "Engine::vectors#0"
 axis = "meant"
+
+[[closed]]
+kappa = "1c62027d1a0c12a0a0b2ea7e2ca16536f8372db1ecb9bb160f12d8e11560889e"
+record = "Engine::vectors#1"
+axis = "derived"
 
 [[closed]]
 kappa = "59ee5bad9e170ef8df853cf1fdf59ab25e3b07cbeb91f42e5dd7a78f68964a10"
@@ -1980,9 +2075,19 @@ record = "Engine::vectors#1"
 axis = "meant"
 
 [[closed]]
+kappa = "022aebfce0087d34594dc5a213d72c07ef4fb4d2573727a50b56aa06259b2e6f"
+record = "Engine::vectors#10"
+axis = "derived"
+
+[[closed]]
 kappa = "77771fb059a24418602449d8d044ff8e041e5fed2cdff11008fac43031ebfc4c"
 record = "Engine::vectors#10"
 axis = "meant"
+
+[[closed]]
+kappa = "852e49261a4f9792f2bbd7c5bd15f6abf9dd2cd1571086e33c15298e780dc263"
+record = "Engine::vectors#11"
+axis = "derived"
 
 [[closed]]
 kappa = "05a96e42bb0e522cd3e7850392409f1a843b4f3bb65e7ce625a1a9b3ea3b1ca9"
@@ -1990,9 +2095,19 @@ record = "Engine::vectors#11"
 axis = "meant"
 
 [[closed]]
+kappa = "4355d64e9841c162a7885b4163b58bfdef5c6189ce5d0ac47d1c12deb3ad6a6a"
+record = "Engine::vectors#12"
+axis = "derived"
+
+[[closed]]
 kappa = "286e06d0253e07a8e5ebf54cf58ac9b6fa13e6ab364ef9f9fd863ef926d1090f"
 record = "Engine::vectors#12"
 axis = "meant"
+
+[[closed]]
+kappa = "b2e11f197474afd1adb279d201ec5255455905da6541c12aff549e7da87ea189"
+record = "Engine::vectors#13"
+axis = "derived"
 
 [[closed]]
 kappa = "8c682ba257e7f125f6b72d2274579612707075dbadc9b1394ac581df6168886c"
@@ -2005,6 +2120,11 @@ record = "Engine::vectors#13"
 axis = "meant"
 
 [[closed]]
+kappa = "9c74ad09e392826413847e10a600304d3ac103fca6dcbe449589ee4452cb0c79"
+record = "Engine::vectors#14"
+axis = "derived"
+
+[[closed]]
 kappa = "0f9724dbceca1f87ff77d5ddd56a1ea61f5deb2f87b4c7ccc1c1014d0f5e95df"
 record = "Engine::vectors#14"
 axis = "meant"
@@ -2013,6 +2133,11 @@ axis = "meant"
 kappa = "372be81c8a9c7c6270e7f8338895a6315a58e60eff0836c657fd3a2ee885d298"
 record = "Engine::vectors#14"
 axis = "meant"
+
+[[closed]]
+kappa = "ac713787c43cacb6ac32a41bd4f07676d5491354c68f766c3061a9f63d45d35b"
+record = "Engine::vectors#15"
+axis = "derived"
 
 [[closed]]
 kappa = "187e3b848b9b99c6ca7050bfcaa2c67e967377f4db5973486cbf21228eceaff2"
@@ -2025,9 +2150,19 @@ record = "Engine::vectors#15"
 axis = "meant"
 
 [[closed]]
+kappa = "1a533b6ed6c11feedc789ccf24659fbdd80fa2710492822ff001375fa8068642"
+record = "Engine::vectors#16"
+axis = "derived"
+
+[[closed]]
 kappa = "136c374f0fff819f81cf8e0a26bb470d367401a4c4cdac22d906d6366903ee43"
 record = "Engine::vectors#16"
 axis = "meant"
+
+[[closed]]
+kappa = "fe050d8d647a46e14cfcf44c3d0d7e88fab6257e433fa215d5eb247fb362eba6"
+record = "Engine::vectors#17"
+axis = "derived"
 
 [[closed]]
 kappa = "0d0a060ad6e0e29b5f75ae18b1e0c85bdd7d62b7d265063f9be3ce1c012e468a"
@@ -2040,9 +2175,24 @@ record = "Engine::vectors#17"
 axis = "meant"
 
 [[closed]]
+kappa = "20792c2f22379bc724eea232897e2f1543dccdf4a6e0bae41d9278adc8ecb6fb"
+record = "Engine::vectors#18"
+axis = "derived"
+
+[[closed]]
 kappa = "6e7cea64208e31651fd95bec7b094ad2dbbcbe5ffb5c302dc34162aca3a1ba5f"
 record = "Engine::vectors#18"
 axis = "meant"
+
+[[closed]]
+kappa = "bc7a1a182095cc6952cde3504725f6f7ac884d793769880990c3d9d64e4191a5"
+record = "Engine::vectors#18"
+axis = "meant"
+
+[[closed]]
+kappa = "be3afd945894715cc11440dfad78dfba386d9e622594d272eba2a1928a1fcde1"
+record = "Engine::vectors#19"
+axis = "derived"
 
 [[closed]]
 kappa = "001f2f447d9cec2c57e8dc5e1880acffd7f9f18f2d42bf605c2897fe4aa13649"
@@ -2050,9 +2200,24 @@ record = "Engine::vectors#19"
 axis = "meant"
 
 [[closed]]
+kappa = "20d1c2a6eec6631c5cd2db3ab1b8cf79aee95760069f91cae9117acf5be3b14b"
+record = "Engine::vectors#19"
+axis = "meant"
+
+[[closed]]
+kappa = "9b2c91412b67f8c1540ad3996f5a316e34cf06f3899ed799160606f89e435b78"
+record = "Engine::vectors#2"
+axis = "derived"
+
+[[closed]]
 kappa = "b3fe2956a22b0ce3251a0f4dc63c30d92bff7ed2251d4bea03b16ab7e8b56075"
 record = "Engine::vectors#2"
 axis = "meant"
+
+[[closed]]
+kappa = "515f74cdd4dd6b243ee29cbc3167d8a55cdd476d75157b5a3e0d79cdcf4d14ce"
+record = "Engine::vectors#20"
+axis = "derived"
 
 [[closed]]
 kappa = "625b4950f7e8d974a94167132abbcafde97299eadb3dc1a6a2dc9751ed6941f4"
@@ -2060,9 +2225,34 @@ record = "Engine::vectors#20"
 axis = "meant"
 
 [[closed]]
+kappa = "a949db140420750530f7ebc943944796803fdde27077677039c7fb043eda56c4"
+record = "Engine::vectors#20"
+axis = "meant"
+
+[[closed]]
+kappa = "0c03164ef2cf36983c9aafa4531dae808a700f6123e84b2a24c74a1927e31a7e"
+record = "Engine::vectors#21"
+axis = "derived"
+
+[[closed]]
+kappa = "46489a21606c2ea8101e0592fc8d3e75ec115ef862bbe431335c8307fbdc0584"
+record = "Engine::vectors#21"
+axis = "meant"
+
+[[closed]]
+kappa = "7eb4fe0fe96904db6dc8162f19f050ca5ac39941aaf62cd6a5bc23bd4f29d5df"
+record = "Engine::vectors#3"
+axis = "derived"
+
+[[closed]]
 kappa = "9e71105fef19d080661cc81aca57e56a2894e8e335407e64b014a8a42f54f9fd"
 record = "Engine::vectors#3"
 axis = "meant"
+
+[[closed]]
+kappa = "128e0a46e190a3a70e782b7991b0cda0daaf6c1182cce0dca7fd9d2ab7c3e15c"
+record = "Engine::vectors#4"
+axis = "derived"
 
 [[closed]]
 kappa = "9080c9036a94aee4b4770450fcede2479a39170e8d8bce885e15f9c02ab28bff"
@@ -2070,14 +2260,29 @@ record = "Engine::vectors#4"
 axis = "meant"
 
 [[closed]]
+kappa = "0492e23e559d569152881f51f01cc52c6cc43a14d26c5005230fb1c081b9d615"
+record = "Engine::vectors#5"
+axis = "derived"
+
+[[closed]]
 kappa = "f6dcc4e13bcab9e2bf82bbce69de31054141cf29ffdebc91bd39bce2c610dbdd"
 record = "Engine::vectors#5"
 axis = "meant"
 
 [[closed]]
+kappa = "cc7f566f75c09b6985f03771f9fb8d8f40a6cd7ec0c7086ed9ba9b66f60d2511"
+record = "Engine::vectors#6"
+axis = "derived"
+
+[[closed]]
 kappa = "2fcee53af5b058b0f50d49c16669f2bd580fe1c8aaab3f5e381e08376483d8ef"
 record = "Engine::vectors#6"
 axis = "meant"
+
+[[closed]]
+kappa = "29435488932b65f3032f684d80e6d6c4ae8945ab3a5bf8d27596bc54e83245a3"
+record = "Engine::vectors#7"
+axis = "derived"
 
 [[closed]]
 kappa = "4cb4f7deb2a90710ff26bfcf052f5e401a758c485caac2ac1ac35873fac41b1a"
@@ -2090,6 +2295,11 @@ record = "Engine::vectors#7"
 axis = "meant"
 
 [[closed]]
+kappa = "bd8a407c7f2e80bfcff9426c63ba198f85fee2f7335d810fa46e0944eff40564"
+record = "Engine::vectors#8"
+axis = "derived"
+
+[[closed]]
 kappa = "0568a96d6ed732c1a88070fafd3d29ba22ce61a47cfbe0aa8f1bc3ec571c7e29"
 record = "Engine::vectors#8"
 axis = "meant"
@@ -2098,6 +2308,11 @@ axis = "meant"
 kappa = "54bc2e79b0984643271fdea7d55e05b0f660a257aa854635927bd553c73da6bf"
 record = "Engine::vectors#8"
 axis = "meant"
+
+[[closed]]
+kappa = "5c462aeecdde0f9f649709721346c2322dbea9678359b9d27a621495a13706e3"
+record = "Engine::vectors#9"
+axis = "derived"
 
 [[closed]]
 kappa = "3edac793510b43f1d285e1addfc25867d9979eaf4cb291f12ae7fd480e2fb06a"
@@ -3910,6 +4125,16 @@ record = "Subsystems::placement6"
 axis = "meant"
 
 [[closed]]
+kappa = "848e12abaa6a515db3d930644fd9c6a95db39cd3d27bc94deb31cca301ea588f"
+record = "Subsystems::subsystemCliAssetPacker"
+axis = "derived"
+
+[[closed]]
+kappa = "cd779fa162b29f07ec04a64fa8c6004da6b2522f0e6ebe5a2e1663bf9d8c365a"
+record = "Subsystems::subsystemCliAssetPacker"
+axis = "meant"
+
+[[closed]]
 kappa = "84bd05893825539154d1d1cf3aaf0df2d1e59b50110c7a4162e3552c92304a33"
 record = "Subsystems::subsystemConvexCollision"
 axis = "derived"
@@ -4050,6 +4275,11 @@ record = "Subsystems::subsystemWasmWorkerBridge"
 axis = "meant"
 
 [[closed]]
+kappa = "e26ecffba4ab605d665d6229ef6f3c5e705ca14f87a9b5e28ba67241e3f29510"
+record = "Users::authority"
+axis = "derived"
+
+[[closed]]
 kappa = "de5a476520ed86a4d92cc2e72bc2b9032d430c844d38778cf0867834857180b7"
 record = "Users::authority"
 axis = "meant"
@@ -4185,9 +4415,19 @@ record = "Users::groups#4"
 axis = "meant"
 
 [[closed]]
+kappa = "d609271c484064d45ecda75cac8a2c38276f57d8a78fc7ac9cd1f055a64cf8c7"
+record = "Users::measures#0"
+axis = "derived"
+
+[[closed]]
 kappa = "342126c92c0d8a352193640355ec49689b38fdc5fe464a348da6dd1be0930435"
 record = "Users::measures#0"
 axis = "meant"
+
+[[closed]]
+kappa = "e4c97d635588bbc987b7e6481c0ad76d4a04f2e4b21c84abfcf2c0f6a1ac11c5"
+record = "Users::measures#1"
+axis = "derived"
 
 [[closed]]
 kappa = "98c76fb5055536d603cde0487c8f1b77c5373705b1ed1f755947bca30ce49b47"
@@ -4195,9 +4435,19 @@ record = "Users::measures#1"
 axis = "meant"
 
 [[closed]]
+kappa = "f89844959e64ee79057ce0f800e7c07ecb7a99d84ac3e954d3045c499407f1eb"
+record = "Users::measures#10"
+axis = "derived"
+
+[[closed]]
 kappa = "d02eb62c934cd17ac3c15e9f6fe756db44fe47ec10df7293721b6db6bab29d2e"
 record = "Users::measures#10"
 axis = "meant"
+
+[[closed]]
+kappa = "c916e3750abda17198a76b2b9d6679129f593580195031f63782e71381963658"
+record = "Users::measures#11"
+axis = "derived"
 
 [[closed]]
 kappa = "be6266c6215ddf2c1390bb5d46630584b5e093ee46fd8e8c1fd2515905fb240e"
@@ -4205,9 +4455,19 @@ record = "Users::measures#11"
 axis = "meant"
 
 [[closed]]
+kappa = "b788143b15a1f1b87f0cff860f4a872e11f47ffdf58a83fc65e77a0ba9c2a4c7"
+record = "Users::measures#12"
+axis = "derived"
+
+[[closed]]
 kappa = "852bbf848c0831080edb16aa082cc5fec2b5bc90f7f8e4dd2ecedcace0b21161"
 record = "Users::measures#12"
 axis = "meant"
+
+[[closed]]
+kappa = "7cdc0717fb8973f920a733919029eb7bb73cba0c3814f283b2d0b0d6da908e63"
+record = "Users::measures#13"
+axis = "derived"
 
 [[closed]]
 kappa = "daedfbc0e5439a17e6a4419b52a755460160bcb96acb93204fcf0812804b088e"
@@ -4215,9 +4475,19 @@ record = "Users::measures#13"
 axis = "meant"
 
 [[closed]]
+kappa = "1103cd8a575cf38ea107167a41137829dd0367071ea8ee6d084a730aca6bbe2b"
+record = "Users::measures#14"
+axis = "derived"
+
+[[closed]]
 kappa = "cc44746cffebe8b497d37be8b187081efd5f6fc0a12e7b5f545b152d72e6ac3b"
 record = "Users::measures#14"
 axis = "meant"
+
+[[closed]]
+kappa = "1db4b8b8ada1686a7d1b20c7dcba0fee65a20fcbd2b1337928245b56808a5ed4"
+record = "Users::measures#2"
+axis = "derived"
 
 [[closed]]
 kappa = "7ad9e11a99cf13ce7e4ef09690a0725780a37af9a70a6c897bb8f73f9b67bb91"
@@ -4225,9 +4495,19 @@ record = "Users::measures#2"
 axis = "meant"
 
 [[closed]]
+kappa = "d3ec6393eca8bf9764e411032947920fad6002672aa71432e92136f0c6c92f05"
+record = "Users::measures#3"
+axis = "derived"
+
+[[closed]]
 kappa = "5923f597d30aeb4708287697dc43f73f0fab0c65651967fffea15b0dd46d2c59"
 record = "Users::measures#3"
 axis = "meant"
+
+[[closed]]
+kappa = "3a56843e06c19e4bfbc0d8eee14692603e273b3540d3247b13085932e4f3273c"
+record = "Users::measures#4"
+axis = "derived"
 
 [[closed]]
 kappa = "07d6d0ab0a015a8d2ec2f224c854a86e86bb76a7faec5184fdea1ecc31ae72be"
@@ -4235,9 +4515,19 @@ record = "Users::measures#4"
 axis = "meant"
 
 [[closed]]
+kappa = "e6c964b5aeb4e33dbf0601b6ae9e3f2bf764b51560fdddaad276aed5c2ab283e"
+record = "Users::measures#5"
+axis = "derived"
+
+[[closed]]
 kappa = "caca1a702c34e93e9c5d40e03a9af8f7c1840d137137d1fbe537722eb3032307"
 record = "Users::measures#5"
 axis = "meant"
+
+[[closed]]
+kappa = "c68729b7fc87d1de40050fcaafdad57fc311644df590e39b7d3dce756891978d"
+record = "Users::measures#6"
+axis = "derived"
 
 [[closed]]
 kappa = "1a5418e63b210e6560503d9f0dd0caa4364d5f00b422596aca9548d987a007ab"
@@ -4245,14 +4535,29 @@ record = "Users::measures#6"
 axis = "meant"
 
 [[closed]]
+kappa = "d8d9198f9bfee667fcdf68bf359d55cf4ad46e5885e2d24cf8efcfcdaebb46f0"
+record = "Users::measures#7"
+axis = "derived"
+
+[[closed]]
 kappa = "0b9594ac439dcd3e3f6b4038f40454e9f4066b6df196e0acb9751789201c4dc3"
 record = "Users::measures#7"
 axis = "meant"
 
 [[closed]]
+kappa = "1f98acf13cfe6f6d364cc8dd6ea6b7c1703bc6bbc4851e67ed7197486e6c7a1e"
+record = "Users::measures#8"
+axis = "derived"
+
+[[closed]]
 kappa = "684c939a269961cfd8bee82d8a6896f88ff24d0e71dc445e0457fb9fc56abb9c"
 record = "Users::measures#8"
 axis = "meant"
+
+[[closed]]
+kappa = "c622afef2d4bf197560fb784635a50fc7fb56dc5f16a0e440f5bdefce9a33f46"
+record = "Users::measures#9"
+axis = "derived"
 
 [[closed]]
 kappa = "b830c5d9e0f5da21026505e44d904123f31a01ecf33f4bcedcccf184f098aedd"
@@ -4418,327 +4723,3 @@ axis = "derived"
 kappa = "7a8215f036f3ea09855f2a601b3653b8a9e56d79680be4d51e91bad665d29a55"
 record = "Users::tasks#9"
 axis = "meant"
-
-[[residue]]
-kappa = "b900887b9a4d98ad9c351abdd72383e52edd042cd0d9bdde5fbdb675bb83bca5"
-record = "Brand::authority"
-axis = "derived"
-reason = "no derivation names it (prov:wasDerivedFrom)"
-
-[[residue]]
-kappa = "61062a14e42a78bc5059956706ab343f3f684b0385d6bc6045e287a146d781bb"
-record = "Brand::elements#10"
-axis = "derived"
-reason = "derived from sources that do not hold its text \"public/favicon.png\" verbatim"
-
-[[residue]]
-kappa = "dffefe8d2a9aa3dbd441dd41790abcbc8ca2b86bea6617aedb82362e2184a606"
-record = "Brand::elements#11"
-axis = "derived"
-reason = "derived from sources that do not hold its text \"fd-bg #0a0a0a, fd-panel #121212, fd-fg #fafafa, fd-dim #999999, fd-line #333333, fd-line-strong #616161, fd-accent #fafafa\" verbatim"
-
-[[residue]]
-kappa = "cfc1ae6b73749c3e8248a20e3b595348a595482d4e4f57313e2920133fcbec31"
-record = "Brand::elements#12"
-axis = "derived"
-reason = "derived from sources that do not hold its text \"Space Grotesk, system-ui, sans-serif; JetBrains Mono, ui-monospace, monospace\" verbatim"
-
-[[residue]]
-kappa = "57aade71c786b80788170284cb072c1519796b57933e6bc5b762829e1e31d2f8"
-record = "Brand::elements#5"
-axis = "derived"
-reason = "derived from sources that do not hold its text \"Open by default\" verbatim"
-
-[[residue]]
-kappa = "56f7e02f30d211a2016402ed5bbf59614d675b810165120be838b909e7e64285"
-record = "Brand::elements#6"
-axis = "derived"
-reason = "derived from sources that do not hold its text \"Identity from content\" verbatim"
-
-[[residue]]
-kappa = "3a752dced79f7ee53a880520fd62e85a44906584f6bd850c35b20473bb31fc7d"
-record = "Brand::elements#7"
-axis = "derived"
-reason = "derived from sources that do not hold its text \"No central authority\" verbatim"
-
-[[residue]]
-kappa = "53d1c5ec6814fa9aea09aaf1bee3a73c45c8464e1beac6a94020c0d4029f437e"
-record = "Brand::tokens#11"
-axis = "derived"
-reason = "derived from sources that do not hold its text \"#0a0a0a\" verbatim"
-
-[[residue]]
-kappa = "f5a17f22823abf259e5b5450ac54a95daa19972364b80018cd55017dcd03e7cd"
-record = "Brand::tokens#12"
-axis = "derived"
-reason = "derived from sources that do not hold its text \"#121212\" verbatim"
-
-[[residue]]
-kappa = "85a2753d1cfaac245e17641c6b63c64e7b699eefaeb64c15a0c81f129abbea5f"
-record = "Brand::tokens#13"
-axis = "derived"
-reason = "derived from sources that do not hold its text \"#fafafa\" verbatim"
-
-[[residue]]
-kappa = "fd7520bcfb84eac0fe30a70cb3d0df334df7deb92be458a594b93f1b86516524"
-record = "Brand::tokens#14"
-axis = "derived"
-reason = "derived from sources that do not hold its text \"#999999\" verbatim"
-
-[[residue]]
-kappa = "5be51b0ee802fd0496f8b601814e04163e2f0032ce8c0cc3f7ba593f9ca773a9"
-record = "Brand::tokens#15"
-axis = "derived"
-reason = "derived from sources that do not hold its text \"#333333\" verbatim"
-
-[[residue]]
-kappa = "0ecba25a926d067085a1fc69dd78687e99e08aced15c52f828624b51c2c3691f"
-record = "Brand::tokens#16"
-axis = "derived"
-reason = "derived from sources that do not hold its text \"#616161\" verbatim"
-
-[[residue]]
-kappa = "0154d4ee44753762d4e0adaf6b50a99bf51e19561bd9aecb995515ef205f7ce6"
-record = "Brand::tokens#17"
-axis = "derived"
-reason = "derived from sources that do not hold its text \"#fafafa\" verbatim"
-
-[[residue]]
-kappa = "e542b1365305f97286e92391cecc9381944e2e766bc492250511d92442d49b33"
-record = "Brand::tokens#20"
-axis = "derived"
-reason = "derived from sources that do not hold its text \"100deg, #fb5661 0, #fa792e 0.07, #f9cf24 0.14, #f6e41e 0.19, #25d05e 0.25, #20d0f3 0.31, #4f81f8 0.38, #ae6ff6 0.45, #f368c5 0.48, #fb5661 0.5, #fa792e 0.57, #f9cf24 0.64, #f6e41e 0.69, #25d05e 0.75, #20d0f3 0.81, #4f81f8 0.88, #ae6ff6 0.95, #f368c5 0.98, #fb5661 1\" verbatim"
-
-[[residue]]
-kappa = "fecea31ff9fef82c6ca92e89825f01abb063ae4ff52c3c50e8438bb1f4ee0999"
-record = "Brand::tokens#28"
-axis = "derived"
-reason = "derived from sources that do not hold its text \"Space Grotesk, system-ui, sans-serif\" verbatim"
-
-[[residue]]
-kappa = "73f056518785c8d09019e4f1f480eafcbad7b2e7d03cb2d7fe4ca576e452a833"
-record = "Brand::tokens#29"
-axis = "derived"
-reason = "derived from sources that do not hold its text \"JetBrains Mono, ui-monospace, monospace\" verbatim"
-
-[[residue]]
-kappa = "7528f8f2dafbb94f010d1c770bf59f74c9bbda7f59402e17777b5c3e99773519"
-record = "Engine::vectors#0"
-axis = "derived"
-reason = "no derivation names it (prov:wasDerivedFrom)"
-
-[[residue]]
-kappa = "1c62027d1a0c12a0a0b2ea7e2ca16536f8372db1ecb9bb160f12d8e11560889e"
-record = "Engine::vectors#1"
-axis = "derived"
-reason = "no derivation names it (prov:wasDerivedFrom)"
-
-[[residue]]
-kappa = "022aebfce0087d34594dc5a213d72c07ef4fb4d2573727a50b56aa06259b2e6f"
-record = "Engine::vectors#10"
-axis = "derived"
-reason = "no derivation names it (prov:wasDerivedFrom)"
-
-[[residue]]
-kappa = "852e49261a4f9792f2bbd7c5bd15f6abf9dd2cd1571086e33c15298e780dc263"
-record = "Engine::vectors#11"
-axis = "derived"
-reason = "no derivation names it (prov:wasDerivedFrom)"
-
-[[residue]]
-kappa = "4355d64e9841c162a7885b4163b58bfdef5c6189ce5d0ac47d1c12deb3ad6a6a"
-record = "Engine::vectors#12"
-axis = "derived"
-reason = "no derivation names it (prov:wasDerivedFrom)"
-
-[[residue]]
-kappa = "b2e11f197474afd1adb279d201ec5255455905da6541c12aff549e7da87ea189"
-record = "Engine::vectors#13"
-axis = "derived"
-reason = "no derivation names it (prov:wasDerivedFrom)"
-
-[[residue]]
-kappa = "9c74ad09e392826413847e10a600304d3ac103fca6dcbe449589ee4452cb0c79"
-record = "Engine::vectors#14"
-axis = "derived"
-reason = "no derivation names it (prov:wasDerivedFrom)"
-
-[[residue]]
-kappa = "ac713787c43cacb6ac32a41bd4f07676d5491354c68f766c3061a9f63d45d35b"
-record = "Engine::vectors#15"
-axis = "derived"
-reason = "no derivation names it (prov:wasDerivedFrom)"
-
-[[residue]]
-kappa = "1a533b6ed6c11feedc789ccf24659fbdd80fa2710492822ff001375fa8068642"
-record = "Engine::vectors#16"
-axis = "derived"
-reason = "no derivation names it (prov:wasDerivedFrom)"
-
-[[residue]]
-kappa = "fe050d8d647a46e14cfcf44c3d0d7e88fab6257e433fa215d5eb247fb362eba6"
-record = "Engine::vectors#17"
-axis = "derived"
-reason = "no derivation names it (prov:wasDerivedFrom)"
-
-[[residue]]
-kappa = "8376a776d47d1f268ff9b3aae8f2860d696fee68425a378e40774856ce0637b8"
-record = "Engine::vectors#18"
-axis = "derived"
-reason = "no derivation names it (prov:wasDerivedFrom)"
-
-[[residue]]
-kappa = "57a7b70a8f560db4e1040ba29628752984c2201d0be27c75a372a7bf0e21eb6f"
-record = "Engine::vectors#19"
-axis = "derived"
-reason = "no derivation names it (prov:wasDerivedFrom)"
-
-[[residue]]
-kappa = "9b2c91412b67f8c1540ad3996f5a316e34cf06f3899ed799160606f89e435b78"
-record = "Engine::vectors#2"
-axis = "derived"
-reason = "no derivation names it (prov:wasDerivedFrom)"
-
-[[residue]]
-kappa = "13ecfc88f2f07f62a2077a9b7572539e45c4e5be8e4d9985e603a86396fb0415"
-record = "Engine::vectors#20"
-axis = "derived"
-reason = "no derivation names it (prov:wasDerivedFrom)"
-
-[[residue]]
-kappa = "7eb4fe0fe96904db6dc8162f19f050ca5ac39941aaf62cd6a5bc23bd4f29d5df"
-record = "Engine::vectors#3"
-axis = "derived"
-reason = "no derivation names it (prov:wasDerivedFrom)"
-
-[[residue]]
-kappa = "128e0a46e190a3a70e782b7991b0cda0daaf6c1182cce0dca7fd9d2ab7c3e15c"
-record = "Engine::vectors#4"
-axis = "derived"
-reason = "no derivation names it (prov:wasDerivedFrom)"
-
-[[residue]]
-kappa = "0492e23e559d569152881f51f01cc52c6cc43a14d26c5005230fb1c081b9d615"
-record = "Engine::vectors#5"
-axis = "derived"
-reason = "no derivation names it (prov:wasDerivedFrom)"
-
-[[residue]]
-kappa = "cc7f566f75c09b6985f03771f9fb8d8f40a6cd7ec0c7086ed9ba9b66f60d2511"
-record = "Engine::vectors#6"
-axis = "derived"
-reason = "no derivation names it (prov:wasDerivedFrom)"
-
-[[residue]]
-kappa = "29435488932b65f3032f684d80e6d6c4ae8945ab3a5bf8d27596bc54e83245a3"
-record = "Engine::vectors#7"
-axis = "derived"
-reason = "no derivation names it (prov:wasDerivedFrom)"
-
-[[residue]]
-kappa = "bd8a407c7f2e80bfcff9426c63ba198f85fee2f7335d810fa46e0944eff40564"
-record = "Engine::vectors#8"
-axis = "derived"
-reason = "no derivation names it (prov:wasDerivedFrom)"
-
-[[residue]]
-kappa = "5c462aeecdde0f9f649709721346c2322dbea9678359b9d27a621495a13706e3"
-record = "Engine::vectors#9"
-axis = "derived"
-reason = "no derivation names it (prov:wasDerivedFrom)"
-
-[[residue]]
-kappa = "e26ecffba4ab605d665d6229ef6f3c5e705ca14f87a9b5e28ba67241e3f29510"
-record = "Users::authority"
-axis = "derived"
-reason = "no derivation names it (prov:wasDerivedFrom)"
-
-[[residue]]
-kappa = "d609271c484064d45ecda75cac8a2c38276f57d8a78fc7ac9cd1f055a64cf8c7"
-record = "Users::measures#0"
-axis = "derived"
-reason = "no derivation names it (prov:wasDerivedFrom)"
-
-[[residue]]
-kappa = "e4c97d635588bbc987b7e6481c0ad76d4a04f2e4b21c84abfcf2c0f6a1ac11c5"
-record = "Users::measures#1"
-axis = "derived"
-reason = "no derivation names it (prov:wasDerivedFrom)"
-
-[[residue]]
-kappa = "f89844959e64ee79057ce0f800e7c07ecb7a99d84ac3e954d3045c499407f1eb"
-record = "Users::measures#10"
-axis = "derived"
-reason = "no derivation names it (prov:wasDerivedFrom)"
-
-[[residue]]
-kappa = "c916e3750abda17198a76b2b9d6679129f593580195031f63782e71381963658"
-record = "Users::measures#11"
-axis = "derived"
-reason = "no derivation names it (prov:wasDerivedFrom)"
-
-[[residue]]
-kappa = "b788143b15a1f1b87f0cff860f4a872e11f47ffdf58a83fc65e77a0ba9c2a4c7"
-record = "Users::measures#12"
-axis = "derived"
-reason = "no derivation names it (prov:wasDerivedFrom)"
-
-[[residue]]
-kappa = "7cdc0717fb8973f920a733919029eb7bb73cba0c3814f283b2d0b0d6da908e63"
-record = "Users::measures#13"
-axis = "derived"
-reason = "no derivation names it (prov:wasDerivedFrom)"
-
-[[residue]]
-kappa = "1103cd8a575cf38ea107167a41137829dd0367071ea8ee6d084a730aca6bbe2b"
-record = "Users::measures#14"
-axis = "derived"
-reason = "no derivation names it (prov:wasDerivedFrom)"
-
-[[residue]]
-kappa = "1db4b8b8ada1686a7d1b20c7dcba0fee65a20fcbd2b1337928245b56808a5ed4"
-record = "Users::measures#2"
-axis = "derived"
-reason = "no derivation names it (prov:wasDerivedFrom)"
-
-[[residue]]
-kappa = "d3ec6393eca8bf9764e411032947920fad6002672aa71432e92136f0c6c92f05"
-record = "Users::measures#3"
-axis = "derived"
-reason = "no derivation names it (prov:wasDerivedFrom)"
-
-[[residue]]
-kappa = "3a56843e06c19e4bfbc0d8eee14692603e273b3540d3247b13085932e4f3273c"
-record = "Users::measures#4"
-axis = "derived"
-reason = "no derivation names it (prov:wasDerivedFrom)"
-
-[[residue]]
-kappa = "e6c964b5aeb4e33dbf0601b6ae9e3f2bf764b51560fdddaad276aed5c2ab283e"
-record = "Users::measures#5"
-axis = "derived"
-reason = "no derivation names it (prov:wasDerivedFrom)"
-
-[[residue]]
-kappa = "c68729b7fc87d1de40050fcaafdad57fc311644df590e39b7d3dce756891978d"
-record = "Users::measures#6"
-axis = "derived"
-reason = "no derivation names it (prov:wasDerivedFrom)"
-
-[[residue]]
-kappa = "d8d9198f9bfee667fcdf68bf359d55cf4ad46e5885e2d24cf8efcfcdaebb46f0"
-record = "Users::measures#7"
-axis = "derived"
-reason = "no derivation names it (prov:wasDerivedFrom)"
-
-[[residue]]
-kappa = "1f98acf13cfe6f6d364cc8dd6ea6b7c1703bc6bbc4851e67ed7197486e6c7a1e"
-record = "Users::measures#8"
-axis = "derived"
-reason = "no derivation names it (prov:wasDerivedFrom)"
-
-[[residue]]
-kappa = "c622afef2d4bf197560fb784635a50fc7fb56dc5f16a0e440f5bdefce9a33f46"
-record = "Users::measures#9"
-axis = "derived"
-reason = "no derivation names it (prov:wasDerivedFrom)"

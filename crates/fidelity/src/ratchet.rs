@@ -33,6 +33,9 @@ pub struct ParametricRatchetConfig {
     pub ontology_root: String,
     /// Relative directory of shipped Rust engine sources (`crates/verdant-core/src`).
     pub engine_rust_root: String,
+    /// Additional shipped Rust crate source roots permanently audited for zero magic literals.
+    #[serde(default)]
+    pub additional_rust_roots: Vec<String>,
     /// LexLean modules whose `semanticmodule` body must contain zero numeric literals `> 1`.
     pub pure_zero_one_lex_modules: Vec<String>,
     /// Hard zero ceilings enforced by the ratchet.
@@ -255,17 +258,22 @@ pub fn audit_parametric_ratchet(
         }
     }
 
-    // 4. Audit shipped Rust engine sources `crates/verdant-core/src/**/*.rs`:
-    let rust_root = repo.join(&cfg.engine_rust_root);
+    // 4. Audit shipped Rust engine sources across `engine_rust_root` and `additional_rust_roots`:
     let mut rust_files = Vec::new();
-    collect_files_with_suffix(&rust_root, ".rs", &mut rust_files)?;
-    rust_files.sort();
-    if rust_files.is_empty() {
-        return Err(FidelityError::Register(format!(
-            "engine_rust_root `{}` contains no `.rs` files",
-            cfg.engine_rust_root
-        )));
+    let mut all_roots = vec![cfg.engine_rust_root.clone()];
+    all_roots.extend(cfg.additional_rust_roots.iter().cloned());
+    for root_rel in &all_roots {
+        let rust_root = repo.join(root_rel);
+        let before = rust_files.len();
+        collect_files_with_suffix(&rust_root, ".rs", &mut rust_files)?;
+        if rust_files.len() == before {
+            return Err(FidelityError::Register(format!(
+                "rust source root `{root_rel}` contains no `.rs` files"
+            )));
+        }
     }
+    rust_files.sort();
+    rust_files.dedup();
 
     let mut engine_rust_magic_literal_count = 0usize;
     for full in &rust_files {

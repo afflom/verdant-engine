@@ -463,6 +463,18 @@ pub fn references_in(record: &Record, records: &[Record], ids: &BTreeSet<&str>) 
                 push(find_record_by_kind_index(records, "Risk", r_idx));
             }
         }
+        "AcceptanceVector" => {
+            for r in records {
+                let same_mod = r.id.starts_with(&format!("{module_prefix}::"));
+                if r.kind == "TextApplication"
+                    && ((same_mod && r.normalized.contains(&format!("({})", record.name)))
+                        || r.normalized
+                            .contains(&format!("({module_prefix}::{})", record.name)))
+                {
+                    push(Some(r.id.clone()));
+                }
+            }
+        }
         _ => {}
     }
     out

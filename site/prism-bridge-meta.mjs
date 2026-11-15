@@ -1,6 +1,9 @@
 // Generated mechanically by scripts/sync-prism-wasm.mjs from Prism-verified verdant-wasm.
 // Do not edit by hand.
 
+export const PRISM_DEFAULT_WORLD_SEED = 7;
+export const PRISM_MAX_EPOCH_RANK = 3;
+export const PRISM_SNAPSHOT_MIN_WIRE_BYTES = 41;
 export const PRISM_AUDIO_QUANTUM_FRAMES = 128;
 export const PRISM_AUDIO_STEREO_CHANNELS = 2;
 export const PRISM_CHIME_MODE_DENOM = 9;

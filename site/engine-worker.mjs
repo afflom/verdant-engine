@@ -4,6 +4,11 @@
 // binary glTF 2.0 (.glb) scene packing, and SHA-256 VDNT WorldSnapshot save/restore.
 
 import {
+  PRISM_DEFAULT_WORLD_SEED,
+  PRISM_SNAPSHOT_URL_MAX_BYTES,
+  PRISM_WORKER_RING_CAPACITY,
+} from "./prism-bridge-meta.mjs";
+import {
   buildDynamicActors,
   buildGlbArrayBuffer,
   buildStaticWorld,
@@ -35,11 +40,15 @@ async function instantiateVerdantWasm() {
   return instance.exports;
 }
 
-let ringCapacity = 64;
-let snapshotMaxBytes = 32768;
+let ringCapacity = PRISM_WORKER_RING_CAPACITY;
+let snapshotMaxBytes = PRISM_SNAPSHOT_URL_MAX_BYTES;
 
 const wasmPromise = instantiateVerdantWasm().then((ex) => {
-  ex.verdant_wasm_init(7n);
+  const seed =
+    typeof ex.verdant_wasm_default_seed === "function"
+      ? ex.verdant_wasm_default_seed()
+      : BigInt(PRISM_DEFAULT_WORLD_SEED);
+  ex.verdant_wasm_init(seed);
   ringCapacity = ex.verdant_wasm_worker_ring_capacity() >>> 0;
   snapshotMaxBytes = ex.verdant_wasm_snapshot_max_bytes() >>> 0;
   return ex;
