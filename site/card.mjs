@@ -182,10 +182,9 @@ class MeshBuilder {
   }
 }
 
-function buildStaticWorld(epoch) {
+function buildStaticWorld(epoch, gridN = 36) {
   const mb = new MeshBuilder();
   const amp = epoch.terrainAmp;
-  const gridN = 44;
   const half = 28;
   const base = mb.pos.length / 3;
 
@@ -402,13 +401,21 @@ function mat4Mul(a, b) {
   return out;
 }
 
-function createGlRenderer(canvas) {
-  const gl = canvas.getContext("webgl2", { antialias: true, depth: true, alpha: false })
-    || canvas.getContext("webgl", { antialias: true, depth: true, alpha: false });
+const yieldTask = () => new Promise((resolve) => setTimeout(resolve, 0));
+
+async function createGlRenderer(canvas) {
+  const gl = canvas.getContext("webgl2", { antialias: false, depth: true, alpha: false, powerPreference: "high-performance" })
+    || canvas.getContext("webgl", { antialias: false, depth: true, alpha: false });
   if (!gl) return null;
 
   const isWebGL2 = typeof WebGL2RenderingContext !== "undefined" && gl instanceof WebGL2RenderingContext;
   if (!isWebGL2) gl.getExtension("OES_element_index_uint");
+  const dbg = gl.getExtension("WEBGL_debug_renderer_info");
+  const rendererStr = String(
+    (dbg ? gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER)) || ""
+  );
+  const isSoftware = /SwiftShader|llvmpipe|Software|Basic Render/i.test(rendererStr);
+  await yieldTask();
 
   const vsSrc = isWebGL2
     ? `#version 300 es
@@ -496,8 +503,10 @@ function createGlRenderer(canvas) {
     return s;
   };
   const vs = compile(gl.VERTEX_SHADER, vsSrc);
+  await yieldTask();
   const fs = compile(gl.FRAGMENT_SHADER, fsSrc);
   if (!vs || !fs) return null;
+  await yieldTask();
 
   const prog = gl.createProgram();
   gl.attachShader(prog, vs);
@@ -507,6 +516,7 @@ function createGlRenderer(canvas) {
   gl.bindAttribLocation(prog, 2, "a_col");
   gl.linkProgram(prog);
   if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) return null;
+  await yieldTask();
 
   const makeBuffers = () => ({
     pos: gl.createBuffer(),
@@ -552,6 +562,7 @@ function createGlRenderer(canvas) {
   };
 
   return {
+    isSoftware,
     uploadStatic: (mb) => upload(staticGpu, mb, gl.STATIC_DRAW),
     uploadDynamic: (mb) => upload(dynamicGpu, mb, gl.DYNAMIC_DRAW),
     render(mvp, eye, epoch, timeSec) {
@@ -657,6 +668,7 @@ export default async function start({ app, reason, $, chip, show, parse }) {
   const canvas = $("ve-canvas");
   const statusEl = $("ve-status");
   const epochBtn = $("ve-epoch-btn");
+  const simBtn = $("ve-sim-btn");
   const camBtn = $("ve-cam-btn");
   const audioBtn = $("ve-audio-btn");
   const glbBtn = $("ve-glb-btn");
@@ -665,6 +677,7 @@ export default async function start({ app, reason, $, chip, show, parse }) {
   const telemetryList = $("ve-telemetry");
 
   let epochIdx = 3;
+  let simLive = false;
   let camMode = "orbit";
   let followRover = false;
   let orbitYaw = 0.68;
@@ -674,12 +687,33 @@ export default async function start({ app, reason, $, chip, show, parse }) {
   let walkPos = [0, 2.2, 13.5];
   let walkYaw = Math.PI;
   let walkPitch = -0.08;
+  let dragging = false;
+  let rafId = 0;
   const keys = new Set();
 
-  let staticMesh = buildStaticWorld(EPOCHS[epochIdx]);
-  let lastDynMesh = buildDynamicActors(EPOCHS[epochIdx], 0);
-  const renderer = canvas ? createGlRenderer(canvas) : null;
-  if (renderer) renderer.uploadStatic(staticMesh);
+  let renderer = null;
+  let terrainGrid = 20;
+  let staticMesh = null;
+  let lastDynMesh = null;
+
+  function isAnimating() {
+    return simLive || dragging || followRover || (camMode === "walk" && keys.size > 0);
+  }
+
+  function setSimLive(next) {
+    simLive = Boolean(next);
+    if (simBtn) {
+      simBtn.setAttribute("aria-pressed", String(simLive));
+      simBtn.textContent = simLive ? "Sim: Live" : "Sim: Step";
+    }
+    requestRender();
+  }
+
+  function requestRender() {
+    if (rafId !== 0) return;
+    prevNow = performance.now();
+    rafId = requestAnimationFrame(frame);
+  }
 
   async function queryVerifier(reqText) {
     if (!app) return null;
@@ -707,9 +741,10 @@ export default async function start({ app, reason, $, chip, show, parse }) {
     }
   }
 
-  async function populateBlueprints() {
-    if (!telemetryList) return;
+  function populateBlueprintsShell() {
+    if (!telemetryList) return [];
     telemetryList.replaceChildren();
+    const badges = [];
     for (const bp of BLUEPRINTS) {
       const li = document.createElement("li");
       const btn = document.createElement("button");
@@ -718,22 +753,34 @@ export default async function start({ app, reason, $, chip, show, parse }) {
       const label = document.createElement("span");
       label.textContent = bp.name;
       const badge = document.createElement("span");
-      const verdict = await queryVerifier(bp.query);
-      const ok = verdict && verdict.startsWith("conformant:");
-      badge.className = ok ? "tag good" : "tag";
-      badge.textContent = ok ? bp.guild.replace(/([a-z])([A-Z])/g, "$1 $2") : "Pending";
+      badge.className = "tag";
+      badge.textContent = bp.guild;
       btn.append(label, badge);
       btn.addEventListener("click", async () => {
         if (epochIdx !== 3) setEpoch(3);
         camMode = "orbit";
         camBtn.textContent = "Cam: Orbit";
         followRover = Boolean(bp.followRover);
+        if (followRover) setSimLive(true);
         target = [...bp.target];
         orbitDist = bp.dist;
+        requestRender();
         await syncVerifierBanner(bp.query);
       });
       li.append(btn);
       telemetryList.append(li);
+      badges.push({ bp, badge });
+    }
+    return badges;
+  }
+
+  async function verifyBlueprintBadges(badges) {
+    for (const { bp, badge } of badges) {
+      await yieldTask();
+      const verdict = await queryVerifier(bp.query);
+      const ok = verdict && verdict.startsWith("conformant:");
+      badge.className = ok ? "tag good" : "tag";
+      badge.textContent = ok ? bp.guild.replace(/([a-z])([A-Z])/g, "$1 $2") : "Offline";
     }
   }
 
@@ -743,16 +790,19 @@ export default async function start({ app, reason, $, chip, show, parse }) {
     epochBtn.textContent = `Epoch: ${ep.short}`;
     hudEpoch.textContent = ep.label;
     if (!ep.builders) followRover = false;
-    staticMesh = buildStaticWorld(ep);
+    staticMesh = buildStaticWorld(ep, terrainGrid);
     if (renderer) renderer.uploadStatic(staticMesh);
+    requestRender();
     syncVerifierBanner(ep.key);
   }
 
   epochBtn?.addEventListener("click", () => setEpoch(epochIdx + 1));
+  simBtn?.addEventListener("click", () => setSimLive(!simLive));
 
   camBtn?.addEventListener("click", () => {
     camMode = camMode === "orbit" ? "walk" : "orbit";
     camBtn.textContent = camMode === "orbit" ? "Cam: Orbit" : "Cam: Walk";
+    requestRender();
   });
 
   // Spatial WebAudio synthesis (Euler-Bernoulli modal chimes + lagoon shimmer)
@@ -797,6 +847,7 @@ export default async function start({ app, reason, $, chip, show, parse }) {
   });
 
   glbBtn?.addEventListener("click", () => {
+    if (!staticMesh || !lastDynMesh) return;
     const blob = buildGlbBinary(staticMesh, lastDynMesh.mb);
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -807,13 +858,13 @@ export default async function start({ app, reason, $, chip, show, parse }) {
   });
 
   // Pointer & keyboard navigation
-  let dragging = false;
   let lastX = 0, lastY = 0;
   canvas?.addEventListener("pointerdown", (e) => {
     dragging = true;
     lastX = e.clientX;
     lastY = e.clientY;
     canvas.setPointerCapture?.(e.pointerId);
+    requestRender();
   });
   canvas?.addEventListener("pointermove", (e) => {
     if (!dragging) return;
@@ -828,6 +879,7 @@ export default async function start({ app, reason, $, chip, show, parse }) {
       walkYaw -= dx * 0.0055;
       walkPitch = Math.max(-1.1, Math.min(1.1, walkPitch - dy * 0.0055));
     }
+    requestRender();
   });
   const endDrag = () => { dragging = false; };
   canvas?.addEventListener("pointerup", endDrag);
@@ -835,28 +887,38 @@ export default async function start({ app, reason, $, chip, show, parse }) {
   canvas?.addEventListener("wheel", (e) => {
     e.preventDefault();
     orbitDist = Math.max(5.0, Math.min(42.0, orbitDist + e.deltaY * 0.02));
+    requestRender();
   }, { passive: false });
 
   addEventListener("keydown", (e) => {
     if (/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName ?? "")) return;
     keys.add(e.code);
+    requestRender();
   });
   addEventListener("keyup", (e) => keys.delete(e.code));
+  addEventListener("resize", requestRender);
+  if (typeof ResizeObserver !== "undefined" && canvas?.parentElement) {
+    new ResizeObserver(() => requestRender()).observe(canvas.parentElement);
+  }
 
   let currentEye = [16, 11, 18];
   let frames = 0;
   let lastFpsStamp = performance.now();
   let shownFps = 60;
   let prevNow = performance.now();
+  let simClockSec = 0;
 
   function frame(now) {
+    rafId = 0;
+    if (!staticMesh) return;
     const dt = Math.min(0.05, Math.max(0.001, (now - prevNow) * 0.001));
     prevNow = now;
-    const timeSec = now * 0.001;
+    if (simLive || followRover) simClockSec += dt;
     const ep = EPOCHS[epochIdx];
 
     if (canvas) {
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const maxDpr = renderer?.isSoftware ? 1 : 2;
+      const dpr = Math.min(window.devicePixelRatio || 1, maxDpr);
       const w = Math.max(1, Math.floor(canvas.clientWidth * dpr));
       const h = Math.max(1, Math.floor(canvas.clientHeight * dpr));
       if (canvas.width !== w || canvas.height !== h) {
@@ -865,14 +927,14 @@ export default async function start({ app, reason, $, chip, show, parse }) {
       }
     }
 
-    lastDynMesh = buildDynamicActors(ep, timeSec);
+    lastDynMesh = buildDynamicActors(ep, simClockSec);
     if (followRover && ep.builders) {
       target = [...lastDynMesh.roverPos];
     }
 
     let lookTarget;
     if (camMode === "orbit") {
-      if (!dragging && !followRover) orbitYaw += dt * 0.08;
+      if (simLive && !dragging && !followRover) orbitYaw += dt * 0.08;
       const cp = Math.cos(orbitPitch), sp = Math.sin(orbitPitch);
       currentEye = [
         target[0] + Math.sin(orbitYaw) * cp * orbitDist,
@@ -901,24 +963,40 @@ export default async function start({ app, reason, $, chip, show, parse }) {
       renderer.uploadDynamic(lastDynMesh.mb);
       const proj = mat4Perspective(Math.PI / 3.4, canvas.width / canvas.height, 0.25, 140.0);
       const view = mat4LookAt(currentEye, lookTarget, [0, 1, 0]);
-      renderer.render(mat4Mul(proj, view), currentEye, ep, timeSec);
+      renderer.render(mat4Mul(proj, view), currentEye, ep, simClockSec);
     }
 
     frames++;
-    if (now - lastFpsStamp >= 600) {
+    const tris = Math.round((staticMesh.idx.length + lastDynMesh.mb.idx.length) / 3);
+    if (!isAnimating()) {
+      if (hudStats) {
+        hudStats.textContent = `Ready · ${tris} tris · ${ep.builders ? "7 blueprints + rover" : "evolving"}`;
+      }
+    } else if (now - lastFpsStamp >= 600) {
       shownFps = Math.max(1, Math.round((frames * 1000) / (now - lastFpsStamp)));
       frames = 0;
       lastFpsStamp = now;
       if (hudStats) {
-        const tris = Math.round((staticMesh.idx.length + lastDynMesh.mb.idx.length) / 3);
         hudStats.textContent = `${shownFps} fps · ${tris} tris · ${ep.builders ? "7 blueprints + rover" : "evolving"}`;
       }
     }
 
-    requestAnimationFrame(frame);
+    if (isAnimating()) {
+      rafId = requestAnimationFrame(frame);
+    }
   }
 
-  await syncVerifierBanner("summary");
-  await populateBlueprints();
-  requestAnimationFrame(frame);
+  const badgeTasks = populateBlueprintsShell();
+  await yieldTask();
+  renderer = canvas ? await createGlRenderer(canvas) : null;
+  terrainGrid = renderer?.isSoftware ? 18 : 36;
+  staticMesh = buildStaticWorld(EPOCHS[epochIdx], terrainGrid);
+  await yieldTask();
+  if (renderer) renderer.uploadStatic(staticMesh);
+  await yieldTask();
+  requestRender();
+  setTimeout(async () => {
+    await syncVerifierBanner("summary");
+    await verifyBlueprintBadges(badgeTasks);
+  }, 60);
 }
