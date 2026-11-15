@@ -3,7 +3,7 @@
 \useglossary{lexlean.std.nat@1.2.0}
 \useglossary{prism.arch@1.0.0}
 \importmodule{Foundation.Ontology.V1.Model}
-\importmodule{Genesis}
+\importmodule{Tensor}
 \title{Verdant Engine runtime subsystems}
 \begin{semanticmodule}
 structure{
@@ -23,17 +23,17 @@ structure{
 }
 
 structure{
-  name: EpochVisualSpec,
+  name: LodRenderEnvelopeSpec,
   type_parameters: [],
   parameters: [],
   fields: [
     {name: rank, type: Nat},
-    {name: scaleNumer, type: Nat},
-    {name: scaleDenom, type: Nat},
-    {name: terrainAmpPercent, type: Nat},
-    {name: waterActive, type: Bool},
-    {name: floraActive, type: Bool},
-    {name: buildersActive, type: Bool},
+    {name: resNumer, type: Nat},
+    {name: resDenom, type: Nat},
+    {name: meshDensityPercent, type: Nat},
+    {name: shadowsActive, type: Bool},
+    {name: iblActive, type: Bool},
+    {name: losslessActive, type: Bool},
     {name: skyRedPercent, type: Nat},
     {name: skyGreenPercent, type: Nat},
     {name: skyBluePercent, type: Nat},
@@ -44,7 +44,7 @@ structure{
 }
 
 structure{
-  name: BlueprintPlacementSpec,
+  name: SceneNodePresetSpec,
   type_parameters: [],
   parameters: [],
   fields: [
@@ -55,7 +55,7 @@ structure{
     {name: zTenths, type: Nat},
     {name: zNeg, type: Bool},
     {name: orbitDistanceMeters, type: Nat},
-    {name: followRover, type: Bool}
+    {name: followMover, type: Bool}
   ]
 }
 
@@ -268,110 +268,114 @@ definition{
   name: canonicalDimensions,
   parameters: [],
   result: EngineDimensions,
-  body: (record EngineDimensions {dimPlanar := ((project (Genesis::epochCosmogenic) scaleNumer) + 1), dimSpatial := (sThree), dimHomogeneous := (sFour), frustumPlaneCount := (sSix), gltfChunkAlignment := (sFour), glbChunkHeaderBytes := (sEight), glbFileHeaderBytes := (sTwelve), snapshotDigestBytes := (sThirtyTwo)})
+  body: (record EngineDimensions {dimPlanar := ((project (Tensor::lod0CoarseProxy) resNumer) + 1), dimSpatial := (sThree), dimHomogeneous := (sFour), frustumPlaneCount := (sSix), gltfChunkAlignment := (sFour), glbChunkHeaderBytes := (sEight), glbFileHeaderBytes := (sTwelve), snapshotDigestBytes := (sThirtyTwo)})
 }
 
-definition{name: heymanMiddleThirdDenom, parameters: [], result: Nat, body: (sSix)}
+definition{name: tileEdgePixels, parameters: [], result: Nat, body: (sSixteen)}
 
-definition{name: minimumSafetyFactor, parameters: [], result: Nat, body: (sTwo)}
+definition{name: rgbaChannelCount, parameters: [], result: Nat, body: (sFour)}
 
-definition{name: roverWaypointCount, parameters: [], result: Nat, body: (sSixteen)}
+definition{name: splineWaypointCount, parameters: [], result: Nat, body: (sSixteen)}
 
-definition{name: roverPatrolRadiusMeters, parameters: [], result: Nat, body: (sTwentySix)}
+definition{name: splineOrbitRadiusMeters, parameters: [], result: Nat, body: (sTwentySix)}
+
+definition{name: uorcDefaultDecodeWork, parameters: [], result: Nat, body: (sForty)}
+
+definition{name: uorcDefaultCompressSteps, parameters: [], result: Nat, body: (sFour)}
 
 definition{name: percentDenominator, parameters: [], result: Nat, body: (sHundred)}
 
 definition{name: coordinateTenthsDenom, parameters: [], result: Nat, body: (sTen)}
 
 definition{
-  name: epochVisual0,
+  name: lodEnvelope0,
   parameters: [],
-  result: EpochVisualSpec,
-  body: (record EpochVisualSpec {rank := (project (Genesis::epochCosmogenic) rank), scaleNumer := (project (Genesis::epochCosmogenic) scaleNumer), scaleDenom := (project (Genesis::epochCosmogenic) scaleDenom), terrainAmpPercent := (sThirtyFive), waterActive := false, floraActive := false, buildersActive := (project (Genesis::epochCosmogenic) buildersActive), skyRedPercent := (sNine), skyGreenPercent := (sEight), skyBluePercent := (sTwelve), fogRedPercent := (sFourteen), fogGreenPercent := (sEleven), fogBluePercent := (sSixteen)})
+  result: LodRenderEnvelopeSpec,
+  body: (record LodRenderEnvelopeSpec {rank := (project (Tensor::lod0CoarseProxy) rank), resNumer := (project (Tensor::lod0CoarseProxy) resNumer), resDenom := (project (Tensor::lod0CoarseProxy) resDenom), meshDensityPercent := (sThirtyFive), shadowsActive := false, iblActive := false, losslessActive := (project (Tensor::lod0CoarseProxy) losslessSource), skyRedPercent := (sNine), skyGreenPercent := (sEight), skyBluePercent := (sTwelve), fogRedPercent := (sFourteen), fogGreenPercent := (sEleven), fogBluePercent := (sSixteen)})
 }
 
 definition{
-  name: epochVisual1,
+  name: lodEnvelope1,
   parameters: [],
-  result: EpochVisualSpec,
-  body: (record EpochVisualSpec {rank := (project (Genesis::epochLithicHydrologic) rank), scaleNumer := (project (Genesis::epochLithicHydrologic) scaleNumer), scaleDenom := (project (Genesis::epochLithicHydrologic) scaleDenom), terrainAmpPercent := (sSeventyTwo), waterActive := true, floraActive := false, buildersActive := (project (Genesis::epochLithicHydrologic) buildersActive), skyRedPercent := (sTwelve), skyGreenPercent := (sSeventeen), skyBluePercent := (sTwentyFour), fogRedPercent := (sEighteen), fogGreenPercent := (sTwentyFour), fogBluePercent := (sThirtyOne)})
+  result: LodRenderEnvelopeSpec,
+  body: (record LodRenderEnvelopeSpec {rank := (project (Tensor::lod1MediumDetail) rank), resNumer := (project (Tensor::lod1MediumDetail) resNumer), resDenom := (project (Tensor::lod1MediumDetail) resDenom), meshDensityPercent := (sSeventyTwo), shadowsActive := true, iblActive := false, losslessActive := (project (Tensor::lod1MediumDetail) losslessSource), skyRedPercent := (sTwelve), skyGreenPercent := (sSeventeen), skyBluePercent := (sTwentyFour), fogRedPercent := (sEighteen), fogGreenPercent := (sTwentyFour), fogBluePercent := (sThirtyOne)})
 }
 
 definition{
-  name: epochVisual2,
+  name: lodEnvelope2,
   parameters: [],
-  result: EpochVisualSpec,
-  body: (record EpochVisualSpec {rank := (project (Genesis::epochBioticEcological) rank), scaleNumer := (project (Genesis::epochBioticEcological) scaleNumer), scaleDenom := (project (Genesis::epochBioticEcological) scaleDenom), terrainAmpPercent := (sNinetyTwo), waterActive := true, floraActive := true, buildersActive := (project (Genesis::epochBioticEcological) buildersActive), skyRedPercent := (sSixteen), skyGreenPercent := (sTwentySeven), skyBluePercent := (sThirtyFour), fogRedPercent := (sTwentyFour), fogGreenPercent := (sThirtyFive), fogBluePercent := (sThirtyNine)})
+  result: LodRenderEnvelopeSpec,
+  body: (record LodRenderEnvelopeSpec {rank := (project (Tensor::lod2HighDetail) rank), resNumer := (project (Tensor::lod2HighDetail) resNumer), resDenom := (project (Tensor::lod2HighDetail) resDenom), meshDensityPercent := (sNinetyTwo), shadowsActive := true, iblActive := true, losslessActive := (project (Tensor::lod2HighDetail) losslessSource), skyRedPercent := (sSixteen), skyGreenPercent := (sTwentySeven), skyBluePercent := (sThirtyFour), fogRedPercent := (sTwentyFour), fogGreenPercent := (sThirtyFive), fogBluePercent := (sThirtyNine)})
 }
 
 definition{
-  name: epochVisual3,
+  name: lodEnvelope3,
   parameters: [],
-  result: EpochVisualSpec,
-  body: (record EpochVisualSpec {rank := (project (Genesis::epochAgenticArchitectural) rank), scaleNumer := (project (Genesis::epochAgenticArchitectural) scaleNumer), scaleDenom := (project (Genesis::epochAgenticArchitectural) scaleDenom), terrainAmpPercent := (sHundred), waterActive := true, floraActive := true, buildersActive := (project (Genesis::epochAgenticArchitectural) buildersActive), skyRedPercent := (sEighteen), skyGreenPercent := (sThirty), skyBluePercent := (sThirtyEight), fogRedPercent := (sThirty), fogGreenPercent := (sForty), fogBluePercent := (sFortyFour)})
+  result: LodRenderEnvelopeSpec,
+  body: (record LodRenderEnvelopeSpec {rank := (project (Tensor::lod3LosslessSource) rank), resNumer := (project (Tensor::lod3LosslessSource) resNumer), resDenom := (project (Tensor::lod3LosslessSource) resDenom), meshDensityPercent := (sHundred), shadowsActive := true, iblActive := true, losslessActive := (project (Tensor::lod3LosslessSource) losslessSource), skyRedPercent := (sEighteen), skyGreenPercent := (sThirty), skyBluePercent := (sThirtyEight), fogRedPercent := (sThirty), fogGreenPercent := (sForty), fogBluePercent := (sFortyFour)})
 }
 
 definition{
-  name: epochVisualByRank,
+  name: lodEnvelopeByRank,
   parameters: [rank : Nat],
-  result: EpochVisualSpec,
-  body: (if (rank =? 0) then (epochVisual0) else (if (rank =? 1) then (epochVisual1) else (if (rank =? (sTwo)) then (epochVisual2) else (epochVisual3))))
+  result: LodRenderEnvelopeSpec,
+  body: (if (rank =? 0) then (lodEnvelope0) else (if (rank =? 1) then (lodEnvelope1) else (if (rank =? (sTwo)) then (lodEnvelope2) else (lodEnvelope3))))
 }
 
 definition{
-  name: placement0,
+  name: nodePreset0,
   parameters: [],
-  result: BlueprintPlacementSpec,
-  body: (record BlueprintPlacementSpec {index := (project (Genesis::blueprintHarmonicRotunda) index), xTenths := 0, xNeg := false, yTenths := (sTwentyTwo), zTenths := 0, zNeg := false, orbitDistanceMeters := (sSixteen), followRover := (project (Genesis::blueprintHarmonicRotunda) kineticAutonomous)})
+  result: SceneNodePresetSpec,
+  body: (record SceneNodePresetSpec {index := (project (Tensor::kernel0StaticMesh) index), xTenths := 0, xNeg := false, yTenths := (sTwentyTwo), zTenths := 0, zNeg := false, orbitDistanceMeters := (sSixteen), followMover := (project (Tensor::kernel0StaticMesh) autonomousKinematic)})
 }
 
 definition{
-  name: placement1,
+  name: nodePreset1,
   parameters: [],
-  result: BlueprintPlacementSpec,
-  body: (record BlueprintPlacementSpec {index := (project (Genesis::blueprintMeridianSundial) index), xTenths := (sNinetyFive), xNeg := false, yTenths := (sTwelve), zTenths := (sThirtyFive), zNeg := true, orbitDistanceMeters := (sNine), followRover := (project (Genesis::blueprintMeridianSundial) kineticAutonomous)})
+  result: SceneNodePresetSpec,
+  body: (record SceneNodePresetSpec {index := (project (Tensor::kernel1LinearSkinning) index), xTenths := (sNinetyFive), xNeg := false, yTenths := (sTwelve), zTenths := (sThirtyFive), zNeg := true, orbitDistanceMeters := (sNine), followMover := (project (Tensor::kernel1LinearSkinning) autonomousKinematic)})
 }
 
 definition{
-  name: placement2,
+  name: nodePreset2,
   parameters: [],
-  result: BlueprintPlacementSpec,
-  body: (record BlueprintPlacementSpec {index := (project (Genesis::blueprintModalChimePergola) index), xTenths := (sNinety), xNeg := true, yTenths := (sEighteen), zTenths := (sForty), zNeg := true, orbitDistanceMeters := (sTen), followRover := (project (Genesis::blueprintModalChimePergola) kineticAutonomous)})
+  result: SceneNodePresetSpec,
+  body: (record SceneNodePresetSpec {index := (project (Tensor::kernel2TropicalBvhCull) index), xTenths := (sNinety), xNeg := true, yTenths := (sEighteen), zTenths := (sForty), zNeg := true, orbitDistanceMeters := (sTen), followMover := (project (Tensor::kernel2TropicalBvhCull) autonomousKinematic)})
 }
 
 definition{
-  name: placement3,
+  name: nodePreset3,
   parameters: [],
-  result: BlueprintPlacementSpec,
-  body: (record BlueprintPlacementSpec {index := (project (Genesis::blueprintQuartzTorsionChamber) index), xTenths := (sSixtyFive), xNeg := true, yTenths := (sEighteen), zTenths := (sNinety), zNeg := false, orbitDistanceMeters := (sTen), followRover := (project (Genesis::blueprintQuartzTorsionChamber) kineticAutonomous)})
+  result: SceneNodePresetSpec,
+  body: (record SceneNodePresetSpec {index := (project (Tensor::kernel3TileRasterizer) index), xTenths := (sSixtyFive), xNeg := true, yTenths := (sEighteen), zTenths := (sNinety), zNeg := false, orbitDistanceMeters := (sTen), followMover := (project (Tensor::kernel3TileRasterizer) autonomousKinematic)})
 }
 
 definition{
-  name: placement4,
+  name: nodePreset4,
   parameters: [],
-  result: BlueprintPlacementSpec,
-  body: (record BlueprintPlacementSpec {index := (project (Genesis::blueprintLagoonPierCauseway) index), xTenths := (sFiftyFive), xNeg := false, yTenths := (sSix), zTenths := (sEightyFive), zNeg := false, orbitDistanceMeters := (sEleven), followRover := (project (Genesis::blueprintLagoonPierCauseway) kineticAutonomous)})
+  result: SceneNodePresetSpec,
+  body: (record SceneNodePresetSpec {index := (project (Tensor::kernel4ShadowCascade) index), xTenths := (sFiftyFive), xNeg := false, yTenths := (sSix), zTenths := (sEightyFive), zNeg := false, orbitDistanceMeters := (sEleven), followMover := (project (Tensor::kernel4ShadowCascade) autonomousKinematic)})
 }
 
 definition{
-  name: placement5,
+  name: nodePreset5,
   parameters: [],
-  result: BlueprintPlacementSpec,
-  body: (record BlueprintPlacementSpec {index := (project (Genesis::blueprintGeodesicTravertinePaths) index), xTenths := 0, xNeg := false, yTenths := (sEight), zTenths := (sFifty), zNeg := false, orbitDistanceMeters := (sEighteen), followRover := (project (Genesis::blueprintGeodesicTravertinePaths) kineticAutonomous)})
+  result: SceneNodePresetSpec,
+  body: (record SceneNodePresetSpec {index := (project (Tensor::kernel5ModalAudioMix) index), xTenths := 0, xNeg := false, yTenths := (sEight), zTenths := (sFifty), zNeg := false, orbitDistanceMeters := (sEighteen), followMover := (project (Tensor::kernel5ModalAudioMix) autonomousKinematic)})
 }
 
 definition{
-  name: placement6,
+  name: nodePreset6,
   parameters: [],
-  result: BlueprintPlacementSpec,
-  body: (record BlueprintPlacementSpec {index := (project (Genesis::blueprintPerimeterSentinelRover) index), xTenths := (sOneEighty), xNeg := false, yTenths := (sFifteen), zTenths := 0, zNeg := false, orbitDistanceMeters := (sEleven), followRover := (project (Genesis::blueprintPerimeterSentinelRover) kineticAutonomous)})
+  result: SceneNodePresetSpec,
+  body: (record SceneNodePresetSpec {index := (project (Tensor::kernel6KinematicSpline) index), xTenths := (sOneEighty), xNeg := false, yTenths := (sFifteen), zTenths := 0, zNeg := false, orbitDistanceMeters := (sEleven), followMover := (project (Tensor::kernel6KinematicSpline) autonomousKinematic)})
 }
 
 definition{
-  name: blueprintPlacementByIndex,
+  name: sceneNodePresetByIndex,
   parameters: [idx : Nat],
-  result: BlueprintPlacementSpec,
-  body: (if (idx =? 0) then (placement0) else (if (idx =? 1) then (placement1) else (if (idx =? (sTwo)) then (placement2) else (if (idx =? (sThree)) then (placement3) else (if (idx =? (sFour)) then (placement4) else (if (idx =? (sFive)) then (placement5) else (placement6)))))))
+  result: SceneNodePresetSpec,
+  body: (if (idx =? 0) then (nodePreset0) else (if (idx =? 1) then (nodePreset1) else (if (idx =? (sTwo)) then (nodePreset2) else (if (idx =? (sThree)) then (nodePreset3) else (if (idx =? (sFour)) then (nodePreset4) else (if (idx =? (sFive)) then (nodePreset5) else (nodePreset6)))))))
 }
 
 definition{
@@ -433,9 +437,9 @@ definition{
   body: (prim multiply (sTen) (sFifteen) : Nat)
 }
 
-definition{name: rotundaAbsorptionNumer, parameters: [], result: Nat, body: 1}
+definition{name: reflectiveRoomAbsorptionNumer, parameters: [], result: Nat, body: 1}
 
-definition{name: meadowAbsorptionNumer, parameters: [], result: Nat, body: (sThree)}
+definition{name: dampedExteriorAbsorptionNumer, parameters: [], result: Nat, body: (sThree)}
 
 definition{name: absorptionDenom, parameters: [], result: Nat, body: (sFour)}
 
@@ -454,10 +458,10 @@ definition{
     bvhUs : Nat,
     cullUs : Nat,
     audioUs : Nat,
-    gpuSubmitUs : Nat
+    rasterSubmitUs : Nat
   ],
   result: Nat,
-  body: (let afterPhysics : Nat := (transformsUs + physicsUs); (let afterBvh : Nat := (afterPhysics + bvhUs); (let afterCullGpu : Nat := ((afterBvh + cullUs) + gpuSubmitUs); (let afterAudio : Nat := (afterPhysics + audioUs); (maxNatPair afterCullGpu afterAudio)))))
+  body: (let afterPhysics : Nat := (transformsUs + physicsUs); (let afterBvh : Nat := (afterPhysics + bvhUs); (let afterCullRaster : Nat := ((afterBvh + cullUs) + rasterSubmitUs); (let afterAudio : Nat := (afterPhysics + audioUs); (maxNatPair afterCullRaster afterAudio)))))
 }
 
 definition{
@@ -706,7 +710,7 @@ definition{
 
 definition{name: wasmDefaultSeed, parameters: [], result: Nat, body: (sSeven)}
 
-definition{name: wasmMaxEpochRank, parameters: [], result: Nat, body: (sThree)}
+definition{name: wasmMaxLodRank, parameters: [], result: Nat, body: (sThree)}
 
 definition{
   name: wasmIoInitialCapacityBytes,
@@ -754,7 +758,7 @@ definition{
   name: runtimeAndToolingEnvelopeActive,
   parameters: [],
   result: Bool,
-  body: (if ((engineConfigBoundsValid (sHundred) (sHundred) (sSixty) (frameBudgetMicrosForHz (sSixty)) 1) && (not (engineConfigBoundsValid 0 (sHundred) (sSixty) (sHundred) 1))) then (if (((snapshotMinWireBytes) =? (sFortyOne)) && (snapshotWireFramingValid ((sFortyOne) + (sTen)) (sTen))) then (if (((canonicalFrameStageCount) =? (sSix)) && (((wasmDefaultSeed) =? (sSeven)) && (((wasmMaxEpochRank) =? (sThree)) && ((wasmIoInitialCapacityBytes) =? (Foundation.Ontology.V1.Model::pow2Constructive (sTwelve)))))) then ((((wasmFrustumFarMeters) =? (prim multiply (sFourteen) (sTen) : Nat)) && ((sHundred) <? (wasmSoundSpeedMps))) && (((sHundred) <? (wasmBinauralFundamentalHz)) && (((cliDefaultBenchmarkFrames) =? (prim multiply (sTwo) (sSixty) : Nat)) && ((cliDefaultBenchmarkFrames) <? (cliMaxBenchmarkFrames))))) else false) else false) else false)
+  body: (if ((engineConfigBoundsValid (sHundred) (sHundred) (sSixty) (frameBudgetMicrosForHz (sSixty)) 1) && (not (engineConfigBoundsValid 0 (sHundred) (sSixty) (sHundred) 1))) then (if (((snapshotMinWireBytes) =? (sFortyOne)) && (snapshotWireFramingValid ((sFortyOne) + (sTen)) (sTen))) then (if (((canonicalFrameStageCount) =? (sSix)) && (((wasmDefaultSeed) =? (sSeven)) && (((wasmMaxLodRank) =? (sThree)) && ((wasmIoInitialCapacityBytes) =? (Foundation.Ontology.V1.Model::pow2Constructive (sTwelve)))))) then ((((wasmFrustumFarMeters) =? (prim multiply (sFourteen) (sTen) : Nat)) && ((sHundred) <? (wasmSoundSpeedMps))) && (((sHundred) <? (wasmBinauralFundamentalHz)) && (((cliDefaultBenchmarkFrames) =? (prim multiply (sTwo) (sSixty) : Nat)) && ((cliDefaultBenchmarkFrames) <? (cliMaxBenchmarkFrames))))) else false) else false) else false)
 }
 
 definition{
@@ -768,14 +772,14 @@ definition{
   name: kernelParametersActive,
   parameters: [],
   result: Bool,
-  body: (if (((heymanMiddleThirdDenom) =? (sSix)) && ((minimumSafetyFactor) =? (sTwo))) then (if (((roverWaypointCount) =? (sSixteen)) && ((roverPatrolRadiusMeters) =? (sTwentySix))) then (if (((percentDenominator) =? (sHundred)) && ((coordinateTenthsDenom) =? (sTen))) then (if (((sabinePrefactorNumer) <? (sabinePrefactorDenom)) && ((absorptionDenom) =? (sFour))) then (((glbContainerByteLength (glbAlignedByteLength (sFive)) (sEight)) =? (sFortyFour)) && (deepenedSubsystemsActive)) else false) else false) else false) else false)
+  body: (if ((((tileEdgePixels) =? (sSixteen)) && ((rgbaChannelCount) =? (sFour))) && (((uorcDefaultDecodeWork) =? (sForty)) && ((uorcDefaultCompressSteps) =? (sFour)))) then (if (((splineWaypointCount) =? (sSixteen)) && ((splineOrbitRadiusMeters) =? (sTwentySix))) then (if (((percentDenominator) =? (sHundred)) && ((coordinateTenthsDenom) =? (sTen))) then (if (((sabinePrefactorNumer) <? (sabinePrefactorDenom)) && ((absorptionDenom) =? (sFour))) then (((glbContainerByteLength (glbAlignedByteLength (sFive)) (sEight)) =? (sFortyFour)) && (deepenedSubsystemsActive)) else false) else false) else false) else false)
 }
 
 definition{
   name: runtimeInvariantsDirect,
   parameters: [],
   result: Bool,
-  body: (if (kernelParametersActive) then (if ((terrainIndexCount (sFour)) =? (prim multiply (sSix) (sSixteen) : Nat)) then (if (meshTopologyValid (terrainVertexCount (sFour)) (terrainIndexCount (sFour)) (terrainVertexCount (sFour)) (terrainVertexCount (sFour)) (terrainVertexCount (sFour))) then (if ((eulerBernoulliModeNumer 0) <? (eulerBernoulliModeNumer 1)) then (if ((rotundaAbsorptionNumer) <? (meadowAbsorptionNumer)) then ((canonicalPipelineMakespan (sHundred) (sHundred) (sHundred) (sHundred) (sHundred) (sHundred)) <=? (frameBudgetMicrosForHz (sSixty))) else false) else false) else false) else false) else false)
+  body: (if (kernelParametersActive) then (if ((terrainIndexCount (sFour)) =? (prim multiply (sSix) (sSixteen) : Nat)) then (if (meshTopologyValid (terrainVertexCount (sFour)) (terrainIndexCount (sFour)) (terrainVertexCount (sFour)) (terrainVertexCount (sFour)) (terrainVertexCount (sFour))) then (if ((eulerBernoulliModeNumer 0) <? (eulerBernoulliModeNumer 1)) then (if ((reflectiveRoomAbsorptionNumer) <? (dampedExteriorAbsorptionNumer)) then ((canonicalPipelineMakespan (sHundred) (sHundred) (sHundred) (sHundred) (sHundred) (sHundred)) <=? (frameBudgetMicrosForHz (sSixty))) else false) else false) else false) else false) else false)
 }
 
 definition{
@@ -793,24 +797,24 @@ definition{
 }
 
 definition{
-  name: subsystemGenesis,
+  name: subsystemTensorUorc,
   parameters: [],
   result: SubsystemSpec,
-  body: (record SubsystemSpec {index := (sTwo), stratum := 1, name := "CausalWorldGenesis", text := "Deterministic cosmic expansion from t_0 seed to t_obs observation synthesizing amphitheater terrain, flora, and seven Builder blueprints."})
+  body: (record SubsystemSpec {index := (sTwo), stratum := 1, name := "TensorAndUorcStreaming", text := "Exact Laurent and tropical uor-matmul tensor contractions, portable software tile rasterization, and progressive UORC multi-LOD streaming."})
 }
 
 definition{
   name: subsystemGeometry,
   parameters: [],
   result: SubsystemSpec,
-  body: (record SubsystemSpec {index := (sThree), stratum := (sTwo), name := "ProceduralGeometryAndLSystems", text := "Heightfield terrain grids, Vitruvian entasis colonnades, Cardan astrolabe gimbals, and phyllotactic L-system botanical meshes."})
+  body: (record SubsystemSpec {index := (sThree), stratum := (sTwo), name := "ProceduralGeometryPrimitives", text := "Heightfield terrain grids, fluted cylindrical columns, deformable ribbon strips, and faceted convex prism meshes."})
 }
 
 definition{
   name: subsystemRenderWgsl,
   parameters: [],
   result: SubsystemSpec,
-  body: (record SubsystemSpec {index := (sFour), stratum := (sThree), name := "PbrMaterialsAndWgslShaders", text := "Metallic-roughness PBR material descriptors, shadow cascades, and W3C WGSL shaders validated by naga."})
+  body: (record SubsystemSpec {index := (sFour), stratum := (sThree), name := "PbrMaterialsAndPortableShaders", text := "Metallic-roughness PBR material descriptors, shadow cascades, and W3C WGSL portable shader modules validated by naga."})
 }
 
 definition{
@@ -821,17 +825,17 @@ definition{
 }
 
 definition{
-  name: subsystemPhysicsRover,
+  name: subsystemPhysicsSpline,
   parameters: [],
   result: SubsystemSpec,
-  body: (record SubsystemSpec {index := (sSix), stratum := (sTwo), name := "SymplecticPhysicsAndRover", text := "Symplectic Euler rigid bodies, Archimedes lagoon buoyancy, player capsule ground clamping, and autonomous spline rover patrol."})
+  body: (record SubsystemSpec {index := (sSix), stratum := (sTwo), name := "SymplecticPhysicsAndSplines", text := "Symplectic Euler rigid bodies, Archimedes fluid buoyancy, player capsule ground clamping, and arc-length kinematic spline movers."})
 }
 
 definition{
   name: subsystemModalAudio,
   parameters: [],
   result: SubsystemSpec,
-  body: (record SubsystemSpec {index := (sSeven), stratum := (sSix), name := "SpatialModalAcoustics", text := "Euler-Bernoulli chime overtone synthesis, Woodworth interaural stereo panning, and Sabine RT60 reverberation."})
+  body: (record SubsystemSpec {index := (sSeven), stratum := (sSix), name := "SpatialModalAcoustics", text := "Euler-Bernoulli modal bar overtone synthesis, Woodworth interaural stereo panning, and Sabine RT60 reverberation."})
 }
 
 definition{
@@ -852,7 +856,7 @@ definition{
   name: subsystemPbrRenderGraph,
   parameters: [],
   result: SubsystemSpec,
-  body: (record SubsystemSpec {index := (sTen), stratum := (sThree), name := "PbrShadowAndIblRenderGraph", text := "Four-cascade logarithmic-uniform shadow frustum splits, GGX specular roughness mip chains, and five-pass acyclic GPU barrier graphs."})
+  body: (record SubsystemSpec {index := (sTen), stratum := (sThree), name := "PbrShadowAndIblRenderGraph", text := "Four-cascade logarithmic-uniform shadow frustum splits, GGX specular roughness mip chains, and five-pass acyclic render barrier graphs."})
 }
 
 definition{
@@ -880,14 +884,14 @@ definition{
   name: subsystemCliAssetPacker,
   parameters: [],
   result: SubsystemSpec,
-  body: (record SubsystemSpec {index := (sFourteen), stratum := (sFive), name := "CliAssetPackerAndOracle", text := "Command-line binary glTF 2.0 and WGSL validator, sanctuary scene and snapshot packer, and headless 60fps benchmark."})
+  body: (record SubsystemSpec {index := (sFourteen), stratum := (sFive), name := "CliAssetPackerAndOracle", text := "Command-line binary glTF 2.0, WGSL, and UORC stream validator, multi-LOD scene packer, and headless 60fps benchmark."})
 }
 
 definition{
   name: subsystems,
   parameters: [],
   result: (List SubsystemSpec),
-  body: (cons (subsystemMath) (cons (subsystemEcsBvh) (cons (subsystemGenesis) (cons (subsystemGeometry) (cons (subsystemRenderWgsl) (cons (subsystemGltfExport) (cons (subsystemPhysicsRover) (cons (subsystemModalAudio) (cons (subsystemJobSnapshots) (cons (subsystemSkeletalAnimation) (cons (subsystemPbrRenderGraph) (cons (subsystemConvexCollision) (cons (subsystemNavMeshPathfinding) (cons (subsystemWasmWorkerBridge) (cons (subsystemCliAssetPacker) (nil SubsystemSpec))))))))))))))))
+  body: (cons (subsystemMath) (cons (subsystemEcsBvh) (cons (subsystemTensorUorc) (cons (subsystemGeometry) (cons (subsystemRenderWgsl) (cons (subsystemGltfExport) (cons (subsystemPhysicsSpline) (cons (subsystemModalAudio) (cons (subsystemJobSnapshots) (cons (subsystemSkeletalAnimation) (cons (subsystemPbrRenderGraph) (cons (subsystemConvexCollision) (cons (subsystemNavMeshPathfinding) (cons (subsystemWasmWorkerBridge) (cons (subsystemCliAssetPacker) (nil SubsystemSpec))))))))))))))))
 }
 
 definition{
@@ -901,9 +905,9 @@ definition{
 }
 
 theorem{
-  name: epochVisualsAndPlacementsVerified,
+  name: lodEnvelopesAndNodePresetsVerified,
   parameters: [],
-  statement: ((if ((project (canonicalDimensions) frustumPlaneCount) =? (sSix)) then (if (((project (epochVisual0) rank) =? 0) && (((project (epochVisual1) rank) =? 1) && (((project (epochVisual2) rank) =? (sTwo)) && ((project (epochVisual3) rank) =? (sThree))))) then (if (((project (placement0) index) =? 0) && (((project (placement1) index) =? 1) && (((project (placement2) index) =? (sTwo)) && ((project (placement3) index) =? (sThree))))) then (((project (placement4) index) =? (sFour)) && (((project (placement5) index) =? (sFive)) && ((project (placement6) followRover) && ((project (placement6) index) =? (sSix))))) else false) else false) else false) = true),
+  statement: ((if ((project (canonicalDimensions) frustumPlaneCount) =? (sSix)) then (if (((project (lodEnvelope0) rank) =? 0) && (((project (lodEnvelope1) rank) =? 1) && (((project (lodEnvelope2) rank) =? (sTwo)) && ((project (lodEnvelope3) rank) =? (sThree))))) then (if (((project (nodePreset0) index) =? 0) && (((project (nodePreset1) index) =? 1) && (((project (nodePreset2) index) =? (sTwo)) && ((project (nodePreset3) index) =? (sThree))))) then (((project (nodePreset4) index) =? (sFour)) && (((project (nodePreset5) index) =? (sFive)) && ((project (nodePreset6) followMover) && ((project (nodePreset6) index) =? (sSix))))) else false) else false) else false) = true),
   proof: decide{},
   axioms: []
 }
@@ -911,7 +915,7 @@ theorem{
 theorem{
   name: engineSubsystemsVerified,
   parameters: [],
-  statement: ((if ((runtimeInvariantsDirect) && (subsystemsNumbered 0 (subsystems))) then (if (((project (subsystemMath) index) =? 0) && (((project (subsystemEcsBvh) index) =? 1) && (((project (subsystemGenesis) index) =? (sTwo)) && ((project (subsystemGeometry) index) =? (sThree))))) then (if (((project (subsystemRenderWgsl) index) =? (sFour)) && (((project (subsystemGltfExport) index) =? (sFive)) && (((project (subsystemPhysicsRover) index) =? (sSix)) && ((project (subsystemModalAudio) index) =? (sSeven))))) then (((project (subsystemJobSnapshots) index) =? (sEight)) && (((project (subsystemSkeletalAnimation) index) =? (sNine)) && (((project (subsystemPbrRenderGraph) index) =? (sTen)) && (((project (subsystemConvexCollision) index) =? (sEleven)) && (((project (subsystemNavMeshPathfinding) index) =? (sTwelve)) && (((project (subsystemWasmWorkerBridge) index) =? (sThirteen)) && (((project (subsystemCliAssetPacker) index) =? (sFourteen)) && ((glbAlignedByteLength (sFive)) =? (sEight))))))))) else false) else false) else false) = true),
+  statement: ((if ((runtimeInvariantsDirect) && (subsystemsNumbered 0 (subsystems))) then (if (((project (subsystemMath) index) =? 0) && (((project (subsystemEcsBvh) index) =? 1) && (((project (subsystemTensorUorc) index) =? (sTwo)) && ((project (subsystemGeometry) index) =? (sThree))))) then (if (((project (subsystemRenderWgsl) index) =? (sFour)) && (((project (subsystemGltfExport) index) =? (sFive)) && (((project (subsystemPhysicsSpline) index) =? (sSix)) && ((project (subsystemModalAudio) index) =? (sSeven))))) then (((project (subsystemJobSnapshots) index) =? (sEight)) && (((project (subsystemSkeletalAnimation) index) =? (sNine)) && (((project (subsystemPbrRenderGraph) index) =? (sTen)) && (((project (subsystemConvexCollision) index) =? (sEleven)) && (((project (subsystemNavMeshPathfinding) index) =? (sTwelve)) && (((project (subsystemWasmWorkerBridge) index) =? (sThirteen)) && (((project (subsystemCliAssetPacker) index) =? (sFourteen)) && ((glbAlignedByteLength (sFive)) =? (sEight))))))))) else false) else false) else false) = true),
   proof: decide{},
   axioms: []
 }

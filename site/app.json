@@ -2,9 +2,9 @@
   "name": "Verdant Engine",
   "shortName": "Verdant",
   "live": "https://afflom.github.io/verdant-engine/",
-  "purpose": "Commercial 3D browser and WebAssembly game engine with procedural terrain, PBR materials, glTF 2.0 export, WGSL shaders, rigid-body physics, spatial audio, and verified architectural statics.",
+  "purpose": "Universal 3D browser and WebAssembly game engine mechanized with Prism, exact uor-matmul tensor contractions, progressive UORC streaming, glTF 2.0, portable WGSL, rigid-body physics, and spatial audio.",
   "inputLabel": "Engine verification query",
-  "placeholder": "summary or epoch:3 or blueprint:6",
+  "placeholder": "summary or lod:3 or kernel:3",
   "submitLabel": "Verify",
   "outputLabel": "Engine verdict",
   "answers": {
@@ -17,33 +17,33 @@
     "refusal": "invalid request"
   },
   "promise": {
-    "headline": "Runs 60fps 3D worlds in the browser with verified causal expansion and structural equilibrium.",
-    "detail": "Every expansion epoch from initial seed to present observation and every constructed architectural or kinetic artifact is checked for causal ordering and static equilibrium."
+    "headline": "Runs deterministic 60fps 3D worlds in every browser via portable tensor kernels and progressive UORC streaming.",
+    "detail": "Every tensor contraction accumulates without intermediate rounding via uor-matmul and every multi-LOD UORC stream advances monotonically up to SHA-256 chain-verified lossless source fidelity."
   },
-  "claim": "VE-10: the engine verifier answers conformant only for monotonic expansion epochs and structurally balanced architectural or kinetic blueprints, refuses out-of-epoch or unstable blueprints, and answers invalid request for unknown queries.",
+  "claim": "VE-10: the engine verifier answers conformant only for monotonic progressive UORC streaming LODs and overflow-safe uor-matmul tensor kernels, refuses zero-extent or narrow-accumulator contractions, and answers invalid request for unknown queries.",
   "proposition": {
-    "name": "BlueprintValid",
-    "text": "BlueprintValid blueprint :=\n  blueprint.epochRank = 3\n  /\\ 6 * blueprint.eccentricityUnits <= blueprint.thicknessUnits\n  /\\ 2 <= blueprint.safetyFactor\n  /\\ 0 < blueprint.utilityScore\n\nEpochsMonotonic epochs :=\n  StrictScaleAscent t_0 -> t_lithic -> t_biotic -> t_obs",
-    "plain": "Every constructed monument, path, and autonomous rover appears only in the builder epoch at present observation and satisfies Heyman middle-third equilibrium with at least a two-to-one safety factor."
+    "name": "TensorKernelValid",
+    "text": "TensorKernelValid kernel :=\n  0 < kernel.lhsCols\n  /\\ kernel.minAccumBits <= kernel.accumBits\n  /\\ 0 < kernel.minAccumBits\n  /\\ kernel.tileAligned = true\n\nLodsMonotonic lods :=\n  StrictResolutionAscent LOD0 -> LOD1 -> LOD2 -> LOD3 (lossless UORC)",
+    "plain": "Every Prism-hosted engine tensor kernel satisfies exact Laurent or tropical accumulator bit-width bounds and tile alignment, while UORC scene frames stream strictly monotonically up to lossless source fidelity."
   },
   "theorems": [
     {
-      "name": "epochsStrictlyMonotonic",
-      "statement": "epochsMonotonic = true",
-      "how": "Proved by constructive kernel evaluation over the four cosmological expansion epochs from initial seed to present observation",
-      "where": "app/src/Genesis.lex.tex"
+      "name": "streamingLodsStrictlyMonotonic",
+      "statement": "lodsMonotonic = true",
+      "how": "Proved by constructive kernel evaluation over the four progressive UORC streaming levels from coarse collision proxy to lossless source resolution",
+      "where": "app/src/Tensor.lex.tex"
     },
     {
-      "name": "allSevenBlueprintsEquilibrium",
-      "statement": "allBlueprintsValid blueprints = true",
-      "how": "Proved by kernel decision over all seven constructed sanctuary structures and the autonomous perimeter sentinel rover",
-      "where": "app/src/Genesis.lex.tex"
+      "name": "allSevenTensorKernelsValid",
+      "statement": "allTensorKernelsValid 0 tensorKernels = true",
+      "how": "Proved by kernel decision over all seven Prism-hosted uor-matmul tensor contraction and software tile rasterizer kernels",
+      "where": "app/src/Tensor.lex.tex"
     },
     {
-      "name": "unstableAndPreBuilderRefused",
-      "statement": "blueprintValid preBuilderSample = false /\\ blueprintValid unstableEccentricitySample = false",
-      "how": "Proved by kernel evaluation showing pre-builder epochs and middle-third statics violations are rejected",
-      "where": "app/src/Genesis.lex.tex"
+      "name": "invalidTensorKernelsRefused",
+      "statement": "tensorKernelValid zeroDimKernelSample = false /\\ tensorKernelValid underflowAccumKernelSample = false",
+      "how": "Proved by kernel evaluation showing zero-extent inner dimensions and narrow accumulators below exact Laurent bounds are rejected",
+      "where": "app/src/Tensor.lex.tex"
     }
   ],
   "pinned": [
@@ -77,7 +77,7 @@
     },
     {
       "name": "Your browser",
-      "value": "runs WebGL2/WebGPU, WebAudio, the WebAssembly guest, and the Engine Studio"
+      "value": "runs universal Canvas/WebGL2 viewports, WebAudio, the WebAssembly guest, and the Engine Studio"
     }
   ],
   "attestations": {

@@ -159,7 +159,7 @@ definition{
   name: controlSet,
   parameters: [],
   result: Production.ThreatModel::ControlSet,
-  body: (record Production.ThreatModel::ControlSet {title := "Verdant Engine security controls", text := "Verdant Engine runs wholly client-side in WebGPU/WebGL2, WebAudio, and an isolated Core-Wasm Web Worker, validating shaders, binary glTF assets, and SHA-256 world snapshots.", version := "0.1.0", lastModified := "2026-11-14T00:00:00Z"})
+  body: (record Production.ThreatModel::ControlSet {title := "Verdant Engine security controls", text := "Verdant Engine runs wholly client-side across universal browser viewports, WebAudio, and an isolated Core-Wasm Web Worker, validating portable WGSL shaders, binary glTF assets, UORC streams, and SHA-256 world snapshots.", version := "0.1.0", lastModified := "2026-11-15T00:00:00Z"})
 }
 
 definition{
@@ -180,7 +180,7 @@ definition{
   name: modeledAssetVerdantCoreRuntime,
   parameters: [],
   result: Production.ThreatModel::ModeledAsset,
-  body: (record Production.ThreatModel::ModeledAsset {asset := "Security::assetVerdantCoreRuntime", name := "Verdant Core runtime", text := "The ECS, physics, shader, glTF 2.0, and binary world-snapshot kernels in crates/verdant-core."})
+  body: (record Production.ThreatModel::ModeledAsset {asset := "Security::assetVerdantCoreRuntime", name := "Verdant Core runtime", text := "The uor-matmul tensor, UORC streaming, ECS, physics, shader, glTF 2.0, and binary world-snapshot kernels in crates/verdant-core."})
 }
 
 definition{
@@ -201,7 +201,7 @@ definition{
   name: modeledThreatInvalidShaderCompilation,
   parameters: [],
   result: Production.ThreatModel::ModeledThreat,
-  body: (record Production.ThreatModel::ModeledThreat {threat := "Security::threatInvalidShaderCompilation", name := "Invalid or unsafe WGSL shader", text := "A malformed or out-of-bounds shader source reaches GPU compilation without front-end type and binding validation.", category := (ctor Production.ThreatModel::Stride.tampering)})
+  body: (record Production.ThreatModel::ModeledThreat {threat := "Security::threatInvalidShaderCompilation", name := "Invalid or unsafe WGSL shader", text := "A malformed or out-of-bounds portable shader source reaches compilation without front-end type and binding validation.", category := (ctor Production.ThreatModel::Stride.tampering)})
 }
 
 definition{
@@ -215,7 +215,7 @@ definition{
   name: modeledThreatSnapshotTampering,
   parameters: [],
   result: Production.ThreatModel::ModeledThreat,
-  body: (record Production.ThreatModel::ModeledThreat {threat := "Security::threatSnapshotTampering", name := "Corrupted or tampered world snapshot", text := "A truncated or modified binary world snapshot alters simulation state or entity transforms silently.", category := (ctor Production.ThreatModel::Stride.tampering)})
+  body: (record Production.ThreatModel::ModeledThreat {threat := "Security::threatSnapshotTampering", name := "Corrupted UORC stream or world snapshot", text := "A truncated or modified UORC multi-LOD stream or binary world snapshot alters simulation state or entity transforms silently.", category := (ctor Production.ThreatModel::Stride.tampering)})
 }
 
 definition{
@@ -243,14 +243,14 @@ definition{
   name: modeledControlNagaShaderOracle,
   parameters: [],
   result: Production.ThreatModel::ModeledControl,
-  body: (record Production.ThreatModel::ModeledControl {control := "Security::controlNagaShaderOracle", name := "W3C naga WGSL validator", text := "Every WGSL shader module is parsed and type-checked by naga::valid::Validator before acceptance.", evidence := (cons (record Production.ThreatModel::Evidence {kind := (ctor Production.ThreatModel::EvidenceKind.gate), reference := "cargo test -p repo-conformance engine_ve_05"}) (nil Production.ThreatModel::Evidence))})
+  body: (record Production.ThreatModel::ModeledControl {control := "Security::controlNagaShaderOracle", name := "W3C naga WGSL validator", text := "Every portable WGSL shader module is parsed and type-checked by naga::valid::Validator before acceptance.", evidence := (cons (record Production.ThreatModel::Evidence {kind := (ctor Production.ThreatModel::EvidenceKind.gate), reference := "cargo test -p repo-conformance engine_ve_05"}) (nil Production.ThreatModel::Evidence))})
 }
 
 definition{
   name: modeledControlSnapshotSha256Trailer,
   parameters: [],
   result: Production.ThreatModel::ModeledControl,
-  body: (record Production.ThreatModel::ModeledControl {control := "Security::controlSnapshotSha256Trailer", name := "Authenticated SHA-256 snapshot trailer", text := "Every WorldSnapshot verifies magic bytes, exact payload length, and a 32-byte SHA-256 digest before decoding.", evidence := (cons (record Production.ThreatModel::Evidence {kind := (ctor Production.ThreatModel::EvidenceKind.gate), reference := "cargo test -p repo-conformance engine_ve_09"}) (nil Production.ThreatModel::Evidence))})
+  body: (record Production.ThreatModel::ModeledControl {control := "Security::controlSnapshotSha256Trailer", name := "Authenticated SHA-256 snapshot and UORC chain verifier", text := "Every WorldSnapshot and progressive UORC frame verifies magic bytes, exact framing, and SHA-256 digests before decoding.", evidence := (cons (record Production.ThreatModel::Evidence {kind := (ctor Production.ThreatModel::EvidenceKind.gate), reference := "cargo test -p repo-conformance engine_ve_09"}) (nil Production.ThreatModel::Evidence))})
 }
 
 definition{

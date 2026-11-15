@@ -10,25 +10,25 @@ use crate::math::{Aabb, Frustum, Mat4, Quat, Ray, Vec3, DIM_PLANAR};
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub struct EntityId(pub u64);
 
-/// Domain category of an entity within a world scene.
+/// Universal 3D scene role classification of an entity within `SceneWorld`.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 pub enum EntityRole {
-    /// Directional star or sky light source.
-    CelestialLight,
-    /// Geological terrain sector or mineral outcrop.
-    TerrainFeature,
-    /// Hydrological basin, river, or lagoon body.
-    WaterBody,
-    /// Vascular botanical organism (`L-system` tree, reed, flower).
-    BotanicalOrganism,
-    /// Autonomous mobile fauna (shoaling fish, bird, pollinator).
-    AutonomousFauna,
-    /// Differentiated Builder agent guild site.
-    BuilderGuild,
-    /// Engineered masonry, acoustic, astronomical, or hydraulic structure.
-    EngineeredStructure,
-    /// Articulated kinetic rover or mechanical sentinel.
-    KineticMachine,
+    /// Directional sun, sky, or analytical light source.
+    DirectionalLight,
+    /// Heightfield terrain patch or rock outcrop.
+    TerrainPatch,
+    /// Buoyant fluid volume or water surface plane.
+    FluidVolume,
+    /// Instanced surface foliage or deformable prop.
+    SurfaceFoliage,
+    /// Autonomous NavMesh or steering agent.
+    AutonomousAgent,
+    /// Static architectural or structural mesh.
+    StaticArchitecture,
+    /// Articulated skeletal or spring-joint rig.
+    ArticulatedRig,
+    /// Kinematic spline mover or moving platform.
+    KinematicMover,
     /// Interactive player avatar or camera rig.
     PlayerRig,
 }
@@ -92,9 +92,9 @@ pub struct EntityRecord {
     pub mesh_index: Option<usize>,
     /// Optional PBR material index in the scene's material library.
     pub material_index: Option<usize>,
-    /// Cosmic scale factor `a(t)` at which this entity emerged in the world.
-    pub emerged_at_scale: f64,
-    /// Semantic engineering or ecological provenance tag.
+    /// Progressive streaming LOD resolution scale in `[0, 1]` at which this entity activates.
+    pub emerged_at_lod_scale: f64,
+    /// Asset or authoring provenance tag.
     pub provenance_tag: String,
 }
 
@@ -287,7 +287,7 @@ impl SceneWorld {
         local_bounds: Aabb,
         emergence: (f64, S),
     ) -> EntityId {
-        let (emerged_at_scale, provenance_tag) = emergence;
+        let (emerged_at_lod_scale, provenance_tag) = emergence;
         let id = EntityId(self.next_id);
         self.next_id += 1;
         if let Some(parent_id) = parent {
@@ -307,7 +307,7 @@ impl SceneWorld {
                 local_bounds,
                 mesh_index: None,
                 material_index: None,
-                emerged_at_scale,
+                emerged_at_lod_scale,
                 provenance_tag: provenance_tag.into(),
             },
         );

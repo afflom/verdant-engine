@@ -9,29 +9,32 @@
   "proper": [
     "Verdant",
     "Engine",
-    "Resonance",
-    "Builder",
-    "Builders",
     "Core",
     "Studio",
     "WebGL2",
-    "WebGPU",
     "WebAudio",
     "WGSL",
     "Khronos",
-    "Heyman",
+    "UOR",
+    "UORC",
+    "Laurent",
     "Sabine",
     "Euler",
     "Bernoulli",
-    "Cardan",
-    "Travertine",
-    "Rotunda",
-    "Sentinel",
-    "Rover",
+    "Woodworth",
+    "Gribb",
+    "Hartmann",
+    "Baumgarte",
+    "Coulomb",
     "ECS",
     "BVH",
     "PBR",
     "GLB",
+    "LOD",
+    "LOD0",
+    "LOD1",
+    "LOD2",
+    "LOD3",
     "SHA",
     "GJK",
     "NavMesh",
@@ -45,10 +48,7 @@
     "WebAssembly",
     "Wasm",
     "WASD",
-    "Relic",
-    "Resonator",
-    "Guardian",
-    "Drone"
+    "Prism"
   ],
   "personas": [
     {
@@ -74,13 +74,13 @@
       "name": "Iris",
       "prop": "compass",
       "accessory": "sparkle",
-      "need": "Procedural terrain, botanical flora, validated WGSL shaders, and binary glTF 2.0 exports.",
+      "need": "Procedural terrain, skeletal rigs, validated portable WGSL shaders, progressive UORC streams, and binary glTF 2.0 exports.",
       "asks": {
-        "discover": "Which 3D geometry, material, and shader standards does the engine speak?",
+        "discover": "Which 3D geometry, material, streaming, and shader standards does the engine speak?",
         "evaluate": "Do exported scenes open cleanly in standard 3D tools?",
-        "learn": "Show me how terrain heightfields and L-system flora are generated.",
-        "build": "How do I author PBR materials, validate WGSL shaders, and export GLB files?",
-        "scale": "How are morph targets and mesh normals kept valid at scale?"
+        "learn": "Show me how terrain heightfields, procedural meshes, and multi-LOD streams are generated.",
+        "build": "How do I author PBR materials, validate WGSL shaders, and pack GLB and UORC files?",
+        "scale": "How are morph targets and mesh normals kept valid across progressive LODs?"
       }
     },
     {
@@ -90,54 +90,54 @@
       "name": "Otto",
       "prop": "wrench",
       "accessory": "beanie",
-      "need": "Exact API types, 60fps worker job budgets, binary world snapshots, and zero magic constants.",
+      "need": "Exact uor-matmul tensor kernels, progressive UORC streaming budgets, 60fps worker job graphs, and zero magic constants.",
       "asks": {
-        "discover": "How is the runtime split across crates, workers, and frame stages?",
-        "evaluate": "Are frame budgets, snapshots, and numeric kernels bounded?",
+        "discover": "How is the runtime split across crates, workers, tensor kernels, and frame stages?",
+        "evaluate": "Are tensor accumulators, frame budgets, snapshots, and UORC decode buffers bounded?",
         "learn": "Where does each subsystem live in crates/verdant-core?",
-        "build": "Which types schedule jobs and serialize world state?",
+        "build": "Which types execute tensor contractions, schedule jobs, and serialize world state?",
         "scale": "What are the exact API signatures, error variants, and frame limits?"
       }
     },
     {
       "id": "vera",
-      "start": "docs/explanation/cosmology-and-builders",
+      "start": "docs/explanation/tensor-and-uorc-streaming",
       "stakeholder": "stakeholderSecurityAuditor",
       "name": "Vera",
       "prop": "shield",
       "accessory": "glasses",
-      "need": "Proof that world expansion is monotonic, structures are in static equilibrium, and inputs are validated.",
+      "need": "Proof that UORC streaming is monotonic, tensor contractions never overflow, and all assets and snapshots are validated.",
       "asks": {
-        "discover": "What invariants govern world synthesis and asset safety?",
-        "evaluate": "Why do monuments and the autonomous rover appear only at present observation, and how are shaders and snapshots checked?",
-        "learn": "How are Heyman middle-third statics and safety factors verified?",
-        "build": "What refuses a tampered snapshot or an invalid WGSL shader?",
+        "discover": "What invariants govern tensor contractions, progressive streaming, and asset safety?",
+        "evaluate": "How are UORC SHA-256 frame chains, shaders, and binary snapshots verified?",
+        "learn": "How does exact Laurent accumulation eliminate rounding drift without conditional GPU APIs?",
+        "build": "What refuses a corrupted UORC stream, tampered snapshot, or invalid WGSL shader?",
         "scale": "How does the browser worker isolate and verify the engine archive?"
       }
     },
     {
       "id": "wren",
-      "start": "docs/case-studies/verdant-resonance",
+      "start": "docs/guides/progressive-uorc-streaming",
       "stakeholder": "stakeholderBrowserPlayer",
       "name": "Wren",
       "prop": "headset",
       "accessory": "headset",
-      "need": "A responsive, clutter-free 60fps 3D viewport with orbit and walk cameras plus spatial audio.",
+      "need": "A responsive, clutter-free 60fps 3D viewport with progressive LOD streaming, orbit and walk cameras, and spatial audio.",
       "asks": {
-        "discover": "How does Verdant Engine power the living 3D sanctuary of Verdant Resonance in the browser?",
-        "evaluate": "Does the 3D viewport stay responsive on both phones and desktop monitors?",
-        "learn": "How do camera modes, expansion scrubbing, and spatial chimes work?",
-        "build": "Which seven structures and kinetic actors inhabit the sanctuary?",
-        "scale": "How does the studio stay fast within a small browser download budget?"
+        "discover": "How does Verdant Engine stream high-resolution 3D worlds smoothly in every browser?",
+        "evaluate": "Does the 3D viewport stay responsive on both phones and desktop monitors without special GPU flags?",
+        "learn": "How do camera modes, progressive LOD scrubbing, and spatial harmonics work?",
+        "build": "Which seven canonical 3D engine node presets run inside the studio benchmark?",
+        "scale": "How does the studio stay fast within a small first-visit browser download budget?"
       }
     }
   ],
   "audience": [
     { "path": "^docs/getting-started/", "persona": "kai" },
+    { "path": "^docs/guides/progressive-uorc-streaming", "persona": "wren" },
     { "path": "^docs/guides/", "persona": "iris" },
     { "path": "^docs/reference/", "persona": "otto" },
     { "path": "^docs/explanation/", "persona": "vera" },
-    { "path": "^docs/case-studies/", "persona": "wren" },
     { "path": "^docs/", "persona": "kai" }
   ],
   "reading": {
@@ -161,7 +161,7 @@
     {
       "term": "WGSL",
       "case": true,
-      "plain": "WebGPU Shading Language: the W3C standard shader language validated in Verdant Engine by naga."
+      "plain": "The W3C portable shading language whose modules are parsed and type-checked in Verdant Engine by naga."
     },
     {
       "term": "glTF",
@@ -170,14 +170,14 @@
       "plain": "The Khronos Group 3D scene transmission standard. GLB is its single-file binary container."
     },
     {
-      "term": "Heyman equilibrium",
-      "match": ["Heyman equilibrium", "middle-third"],
-      "plain": "Jacques Heyman's masonry stability rule: thrust eccentricity stays within one sixth of wall thickness so joints remain in compression."
+      "term": "UORC",
+      "case": true,
+      "plain": "Universal Object Reference Compression: progressive SHA-256 chain-verified multi-frame compression streaming 3D scenes up to lossless resolution."
     },
     {
       "term": "world snapshot",
       "match": ["world snapshots?", "WorldSnapshot"],
-      "plain": "A deterministic binary save of tick count, expansion scale, and entity transforms protected by a 32-byte SHA-256 digest."
+      "plain": "A deterministic binary save of tick count, streaming LOD rank, and entity transforms protected by a 32-byte SHA-256 digest."
     }
   ]
 }

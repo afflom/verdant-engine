@@ -10,7 +10,7 @@ additional_rust_roots = [
 ]
 pure_zero_one_lex_modules = [
   "app/src/Foundation/Ontology/V1/Model.lex.tex",
-  "app/src/Genesis.lex.tex",
+  "app/src/Tensor.lex.tex",
   "app/src/Subsystems.lex.tex",
   "app/src/DevRel.lex.tex",
   "app/src/Measures.lex.tex",
@@ -36,14 +36,14 @@ stratum = 0
 role = "Bounded deterministic byte slices and ordering primitives without Classical.choice."
 
 [[stratum_module]]
-path = "app/src/Genesis.lex.tex"
+path = "app/src/Tensor.lex.tex"
 stratum = 1
-role = "Cosmological expansion epochs t_0 -> t_obs, Builder guild differentiation, and Heyman middle-third equilibrium."
+role = "Exact Laurent and tropical uor-matmul tensor kernels, portable software tile rasterization, and progressive UORC multi-LOD streaming."
 
 [[stratum_module]]
 path = "app/src/Subsystems.lex.tex"
 stratum = 1
-role = "Constructive {0, 1} runtime kernels for dimensions, epoch visuals, 3D blueprint coordinates, mesh/GLB topology, modal acoustics, and frame pipeline budgets."
+role = "Constructive {0, 1} runtime kernels for dimensions, LOD render envelopes, 3D scene node presets, mesh/GLB topology, modal acoustics, and frame pipeline budgets."
 
 [[stratum_module]]
 path = "app/src/Foundation/Arch.lex.tex"
@@ -58,7 +58,7 @@ role = "Verdant Engine stakeholders, concerns, runtime components, dataflows, vi
 [[stratum_module]]
 path = "app/src/Design.lex.tex"
 stratum = 2
-role = "OPM world-genesis pipeline, UML engine component topology, frame sequence, and verifier state machine."
+role = "OPM progressive UORC scene-streaming pipeline, UML engine component topology, frame sequence, and verifier state machine."
 
 [[stratum_module]]
 path = "app/src/Foundation/Sec.lex.tex"
@@ -73,7 +73,7 @@ role = "Constructive STRIDE threat modeling, risk tolerance matrices, and contro
 [[stratum_module]]
 path = "app/src/Security.lex.tex"
 stratum = 3
-role = "Verdant Engine browser/Wasm threat model, shader/asset validation controls, and host-substitution boundary."
+role = "Verdant Engine browser/Wasm threat model, shader/asset/UORC validation controls, and host-substitution boundary."
 
 [[stratum_module]]
 path = "app/src/Foundation/Qual.lex.tex"
@@ -83,7 +83,7 @@ role = "ISO/IEC 25010:2023 product quality characteristic, requirement, and meas
 [[stratum_module]]
 path = "app/src/Quality.lex.tex"
 stratum = 4
-role = "Verdant Engine quality model covering frame-time budgets, equilibrium invariants, and WCAG 2.2 AA accessibility."
+role = "Verdant Engine quality model covering frame-time budgets, exact tensor kernels, monotonic UORC streaming, and WCAG 2.2 AA accessibility."
 
 [[stratum_module]]
 path = "app/src/Foundation/Measurement/V1/Model.lex.tex"
@@ -93,7 +93,7 @@ role = "ISO/IEC/IEEE 15939 measurement indicators, decision criteria, and constr
 [[stratum_module]]
 path = "app/src/Measures.lex.tex"
 stratum = 4
-role = "Constructive Lean kernel evaluators for unstable blueprints, disordered epochs, and stakeholder journey coverage."
+role = "Constructive Lean kernel evaluators for invalid tensor kernels, disordered streaming LODs, and stakeholder journey coverage."
 
 [[stratum_module]]
 path = "app/src/Fidelity.lex.tex"
@@ -113,7 +113,7 @@ role = "Mechanical W3C PROV-O citations binding every Verdant Engine model recor
 [[stratum_module]]
 path = "app/src/Compliance.lex.tex"
 stratum = 5
-role = "Standards compliance register across ISO 42010, OPM, UML, ISO 25010, ISO 27005, Khronos glTF 2.0, W3C WGSL, and WCAG 2.2."
+role = "Standards compliance register across ISO 42010, OPM, UML, ISO 25010, ISO 27005, Khronos glTF 2.0, W3C WGSL, UORC, and WCAG 2.2."
 
 [[stratum_module]]
 path = "app/src/Foundation/Experience/V1/Model.lex.tex"
@@ -128,7 +128,7 @@ role = "Verdant Engine brand elements, DTCG color/typography tokens, and kernel-
 [[stratum_module]]
 path = "app/src/Features.lex.tex"
 stratum = 7
-role = "Commercial 3D game engine capabilities and end-to-end journeys for developers, technical artists, players, and auditors."
+role = "Commercial 3D game engine capabilities and end-to-end journeys for developers, technical artists, systems engineers, players, and auditors."
 
 [[stratum_module]]
 path = "app/src/Users.lex.tex"
@@ -143,7 +143,7 @@ role = "Core-Wasm text application contract and deterministic acceptance vector 
 [[stratum_module]]
 path = "app/src/Engine.lex.tex"
 stratum = 7
-role = "Compiled Core-Wasm engine verifier entrypoint dispatching epoch, blueprint, and live studio scene telemetry queries."
+role = "Compiled Core-Wasm engine verifier entrypoint dispatching UORC LOD, tensor kernel, and live studio scene telemetry queries."
 
 [[stratum_module]]
 path = "app/src/DevRel.lex.tex"

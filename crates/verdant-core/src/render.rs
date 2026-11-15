@@ -1,4 +1,4 @@
-//! Physically Based Rendering (`PBR`) material definitions and W3C WebGPU (`WGSL`) shader oracle.
+//! Physically Based Rendering (`PBR`) material definitions and portable W3C `WGSL` shader oracle.
 //!
 //! Every shader shipped by `verdant-core` is parsed and type/capability-validated against the
 //! authoritative `naga` compiler frontend and IR validator (`naga::front::wgsl` +
@@ -13,7 +13,7 @@ use crate::math::{
     golden_ratio, half_f64, nth_prime_u64, three_u32, two_f64, DIM_HOMOGENEOUS, DIM_SPATIAL,
 };
 
-/// Metallic-roughness + thin-film PBR surface material compatible with Khronos glTF and WebGPU.
+/// Metallic-roughness + thin-film PBR surface material compatible with Khronos glTF 2.0 and portable shaders.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct PbrMaterial {
     /// Material asset name.
@@ -26,7 +26,7 @@ pub struct PbrMaterial {
     pub roughness_factor: f32,
     /// Linear RGB emissive radiance `[r, g, b]`.
     pub emissive_factor: [f32; DIM_SPATIAL],
-    /// Dielectric index of refraction (`4/3` water, `~1.54` quartz, `~1.58` travertine).
+    /// Dielectric index of refraction (`4/3` fluid, `~1.54` crystal, `~1.58` limestone).
     pub ior: f32,
     /// Whether two-sided rendering is enabled.
     pub double_sided: bool,
@@ -125,8 +125,8 @@ fn fs_main(in: VertexOutput) -> @location(0) vec4<f32> {
 }
 "#;
 
-/// Canonical W3C WGSL shallow-water wave dispersion & Fresnel reflection shader.
-pub const WGSL_WATER_LAGOON_SHADER: &str = r#"
+/// Canonical W3C WGSL shallow-fluid wave dispersion & Fresnel reflection shader.
+pub const WGSL_FLUID_SURFACE_SHADER: &str = r#"
 struct WaterUniforms {
     view_proj: mat4x4<f32>,
     camera_pos_and_time: vec4<f32>,
@@ -304,7 +304,7 @@ pub fn validate_wgsl_shader(
     })
 }
 
-/// Validates all built-in W3C WGSL engine shaders (`PBR`, `WaterLagoon`, `SkyScattering`, `SkinnedShadow`).
+/// Validates all built-in W3C WGSL engine shaders (`PBR`, `FluidSurface`, `SkyScattering`, `SkinnedShadow`).
 pub fn validate_builtin_engine_shaders() -> Result<Vec<VerifiedShaderModule>, ShaderValidationError>
 {
     Ok(vec![
@@ -314,8 +314,8 @@ pub fn validate_builtin_engine_shaders() -> Result<Vec<VerifiedShaderModule>, Sh
             &["vs_main", "fs_main"],
         )?,
         validate_wgsl_shader(
-            "water_lagoon.wgsl",
-            WGSL_WATER_LAGOON_SHADER,
+            "fluid_surface.wgsl",
+            WGSL_FLUID_SURFACE_SHADER,
             &["vs_main", "fs_main"],
         )?,
         validate_wgsl_shader(
@@ -477,7 +477,7 @@ pub fn canonical_pbr_material_library() -> Vec<PbrMaterial> {
 
     vec![
         PbrMaterial {
-            name: "SanctuaryLoamAndMoss".to_string(),
+            name: "TerrainAggregate".to_string(),
             base_color_factor: [quarter, half, quarter, 1.0],
             metallic_factor: 0.0,
             roughness_factor: 1.0 - eighth,
@@ -486,16 +486,16 @@ pub fn canonical_pbr_material_library() -> Vec<PbrMaterial> {
             double_sided: false,
         },
         PbrMaterial {
-            name: "FreshwaterMirrorLagoon".to_string(),
+            name: "DielectricFluid".to_string(),
             base_color_factor: [eighth, quarter + eighth, half, 1.0 - eighth],
             metallic_factor: sixteenth * half,
             roughness_factor: sixteenth,
             emissive_factor: [0.0, sixteenth * half, sixteenth],
-            ior: four / three, // 4/3 freshwater optical index
+            ior: four / three,
             double_sided: true,
         },
         PbrMaterial {
-            name: "HydrothermalAlphaQuartz".to_string(),
+            name: "CrystallineDielectric".to_string(),
             base_color_factor: [half + quarter, 1.0 - sixteenth, 1.0, 1.0 - sixteenth],
             metallic_factor: sixteenth,
             roughness_factor: eighth,
@@ -504,7 +504,7 @@ pub fn canonical_pbr_material_library() -> Vec<PbrMaterial> {
             double_sided: true,
         },
         PbrMaterial {
-            name: "BotanicalVascularFoliage".to_string(),
+            name: "SubsurfaceCanopy".to_string(),
             base_color_factor: [quarter + eighth, 1.0 / phi, quarter + sixteenth, 1.0],
             metallic_factor: 0.0,
             roughness_factor: half + sixteenth,
@@ -513,7 +513,7 @@ pub fn canonical_pbr_material_library() -> Vec<PbrMaterial> {
             double_sided: true,
         },
         PbrMaterial {
-            name: "BuilderCarvedTravertine".to_string(),
+            name: "ArchitecturalStone".to_string(),
             base_color_factor: [
                 1.0 - eighth,
                 1.0 - eighth - sixteenth * half,

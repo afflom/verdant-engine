@@ -230,7 +230,7 @@ pub fn export_scene_to_glb(
             "scale": ent.local_transform.scale.to_f32_array(),
             "extras": {
                 "role": format!("{:?}", ent.role),
-                "emergedAtScale": ent.emerged_at_scale,
+                "lodActivationScale": ent.emerged_at_lod_scale,
                 "provenance": ent.provenance_tag
             }
         });

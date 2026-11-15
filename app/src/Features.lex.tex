@@ -6,50 +6,50 @@
 \importmodule{Design}
 \importmodule{Engine}
 \importmodule{Foundation.Arch}
-\importmodule{Genesis}
 \importmodule{Security}
+\importmodule{Tensor}
 \title{Verdant Engine features and journeys}
 \begin{semanticmodule}
 definition{
-  name: featureWorldExpansion,
+  name: featureProgressiveUorcStreaming,
   parameters: [],
   result: Foundation.Arch::Feature,
-  body: (record Foundation.Arch::Feature {statement := "A developer or player scrubs cosmic expansion from initial seed to present observation t_obs, watching terrain, water, flora, and Builder artifacts emerge causally.", calls := (cons "Genesis::epochs" (cons "Design::processAdvanceEpochs" (nil String))), acceptance := (cons "Genesis::epochsMonotonic" (nil String))})
+  body: (record Foundation.Arch::Feature {statement := "A developer or player streams multi-LOD 3D scenes progressively via UORC from coarse collision proxies up to lossless SHA-256 chain-verified source resolution.", calls := (cons "Tensor::streamingLods" (cons "Design::processStreamUorcLods" (nil String))), acceptance := (cons "Tensor::lodsMonotonic" (nil String))})
 }
 
 definition{
-  name: featureBuilderBlueprints,
+  name: featurePortableTensorKernels,
   parameters: [],
   result: Foundation.Arch::Feature,
-  body: (record Foundation.Arch::Feature {statement := "Five Builder guilds synthesize seven non-natural sanctuary structures and an autonomous perimeter sentinel rover verified for Heyman middle-third equilibrium.", calls := (cons "Genesis::blueprints" (cons "Design::processConstructBlueprints" (nil String))), acceptance := (cons "Genesis::allBlueprintsValid" (nil String))})
+  body: (record Foundation.Arch::Feature {statement := "Systems engineers execute exact Laurent and tropical uor-matmul tensor contractions and portable 16x16 software tile PBR rasterization without conditional browser GPU APIs.", calls := (cons "Tensor::tensorKernels" (cons "Design::processExecuteTensorKernels" (nil String))), acceptance := (cons "Tensor::allTensorKernelsValid" (nil String))})
 }
 
 definition{
   name: featureEcsAndBvh,
   parameters: [],
   result: Foundation.Arch::Feature,
-  body: (record Foundation.Arch::Feature {statement := "Game developers spawn entities, hierarchical transforms, and PBR materials into an archetype ECS indexed by a surface-area-heuristic BVH for raycasts and frustum culling.", calls := (cons "Design::processSynthesizeWorld" (nil String)), acceptance := (cons "Architecture::componentVerdantCoreCrate" (nil String))})
+  body: (record Foundation.Arch::Feature {statement := "Game developers spawn entities, hierarchical transforms, and PBR materials into an archetype ECS indexed by a surface-area-heuristic BVH for raycasts and frustum culling.", calls := (cons "Design::processBuildSceneWorld" (nil String)), acceptance := (cons "Architecture::componentVerdantCoreCrate" (nil String))})
 }
 
 definition{
   name: featureGltfAndWgsl,
   parameters: [],
   result: Foundation.Arch::Feature,
-  body: (record Foundation.Arch::Feature {statement := "Technical artists generate procedural terrain, L-system flora, morph targets, binary glTF 2.0 scenes, and WGSL shaders validated by Khronos gltf and W3C naga.", calls := (cons "Design::processExportGlbAndShaders" (nil String)), acceptance := (cons "Security::modeledControlKhronosGltfOracle" (cons "Security::modeledControlNagaShaderOracle" (nil String)))})
+  body: (record Foundation.Arch::Feature {statement := "Technical artists generate procedural terrain, skeletal rigs, morph targets, binary glTF 2.0 scenes, and portable WGSL shaders validated by Khronos gltf and W3C naga.", calls := (cons "Design::processExportGlbAndShaders" (nil String)), acceptance := (cons "Security::modeledControlKhronosGltfOracle" (cons "Security::modeledControlNagaShaderOracle" (nil String)))})
 }
 
 definition{
-  name: featurePhysicsAndRover,
+  name: featurePhysicsAndSplines,
   parameters: [],
   result: Foundation.Arch::Feature,
-  body: (record Foundation.Arch::Feature {statement := "Symplectic Euler rigid bodies, player capsule controllers, and autonomous spline-following rovers step deterministically over terrain heightfields.", calls := (cons "Genesis::blueprintPerimeterSentinelRover" (nil String)), acceptance := (cons "Genesis::blueprintValid" (nil String))})
+  body: (record Foundation.Arch::Feature {statement := "Symplectic Euler rigid bodies, player capsule controllers, and arc-length kinematic spline movers step deterministically over terrain heightfields.", calls := (cons "Tensor::kernel6KinematicSpline" (nil String)), acceptance := (cons "Tensor::tensorKernelValid" (nil String))})
 }
 
 definition{
   name: featureSpatialAudio,
   parameters: [],
   result: Foundation.Arch::Feature,
-  body: (record Foundation.Arch::Feature {statement := "Spatial audio listeners render stereo modal chime harmonics and water soundscapes with inverse-distance attenuation and Sabine RT60 reverberation.", calls := (cons "Genesis::blueprintModalChimePergola" (nil String)), acceptance := (cons "Architecture::componentBrowserAudioHost" (nil String))})
+  body: (record Foundation.Arch::Feature {statement := "Spatial audio listeners render stereo modal bar harmonics and environmental soundscapes with inverse-distance attenuation and Sabine RT60 reverberation.", calls := (cons "Tensor::kernel5ModalAudioMix" (nil String)), acceptance := (cons "Architecture::componentBrowserAudioHost" (nil String))})
 }
 
 definition{
@@ -63,35 +63,35 @@ definition{
   name: featureStudioAndDocs,
   parameters: [],
   result: Foundation.Arch::Feature,
-  body: (record Foundation.Arch::Feature {statement := "Developers, players, and coding agents explore the interactive 3D WebGL2 Engine Studio, browser starter template, Diataxis documentation, and llms.txt.", calls := (cons "Engine::dispatch" (cons "Design::processRenderViewportFrame" (nil String))), acceptance := (cons "Engine::vectors" (nil String))})
+  body: (record Foundation.Arch::Feature {statement := "Developers, players, and coding agents explore the interactive 3D Engine Studio, browser starter template, Diataxis documentation, and llms.txt.", calls := (cons "Engine::dispatch" (cons "Design::processRenderViewportFrame" (nil String))), acceptance := (cons "Engine::vectors" (nil String))})
 }
 
 definition{
   name: journeyGameDeveloper,
   parameters: [],
   result: Foundation.Arch::Journey,
-  body: (record Foundation.Arch::Journey {actor := "Architecture::stakeholderGameDeveloper", steps := (cons "Features::featureEcsAndBvh" (cons "Features::featurePhysicsAndRover" (cons "Features::featureSpatialAudio" (cons "Features::featureStudioAndDocs" (nil String)))))})
+  body: (record Foundation.Arch::Journey {actor := "Architecture::stakeholderGameDeveloper", steps := (cons "Features::featureEcsAndBvh" (cons "Features::featurePhysicsAndSplines" (cons "Features::featureSpatialAudio" (cons "Features::featureStudioAndDocs" (nil String)))))})
 }
 
 definition{
   name: journeyTechnicalArtist,
   parameters: [],
   result: Foundation.Arch::Journey,
-  body: (record Foundation.Arch::Journey {actor := "Architecture::stakeholderTechnicalArtist", steps := (cons "Features::featureWorldExpansion" (cons "Features::featureBuilderBlueprints" (cons "Features::featureGltfAndWgsl" (nil String))))})
+  body: (record Foundation.Arch::Journey {actor := "Architecture::stakeholderTechnicalArtist", steps := (cons "Features::featureProgressiveUorcStreaming" (cons "Features::featurePortableTensorKernels" (cons "Features::featureGltfAndWgsl" (nil String))))})
 }
 
 definition{
   name: journeySystemsEngineer,
   parameters: [],
   result: Foundation.Arch::Journey,
-  body: (record Foundation.Arch::Journey {actor := "Architecture::stakeholderSystemsEngineer", steps := (cons "Features::featureEcsAndBvh" (cons "Features::featureSnapshotsAndJobGraph" (cons "Features::featureBuilderBlueprints" (nil String))))})
+  body: (record Foundation.Arch::Journey {actor := "Architecture::stakeholderSystemsEngineer", steps := (cons "Features::featureEcsAndBvh" (cons "Features::featureSnapshotsAndJobGraph" (cons "Features::featurePortableTensorKernels" (nil String))))})
 }
 
 definition{
   name: journeyBrowserPlayer,
   parameters: [],
   result: Foundation.Arch::Journey,
-  body: (record Foundation.Arch::Journey {actor := "Architecture::stakeholderBrowserPlayer", steps := (cons "Features::featureWorldExpansion" (cons "Features::featureSpatialAudio" (cons "Features::featureStudioAndDocs" (nil String))))})
+  body: (record Foundation.Arch::Journey {actor := "Architecture::stakeholderBrowserPlayer", steps := (cons "Features::featureProgressiveUorcStreaming" (cons "Features::featureSpatialAudio" (cons "Features::featureStudioAndDocs" (nil String))))})
 }
 
 definition{
@@ -118,7 +118,7 @@ definition{
 theorem{
   name: featuresAndJourneysRealized,
   parameters: [],
-  statement: ((((hasCall (featureWorldExpansion)) && ((hasCall (featureBuilderBlueprints)) && ((hasCall (featureEcsAndBvh)) && ((hasCall (featureGltfAndWgsl)) && ((hasCall (featurePhysicsAndRover)) && ((hasCall (featureSpatialAudio)) && ((hasCall (featureSnapshotsAndJobGraph)) && (hasCall (featureStudioAndDocs))))))))) && (((hasStep (journeyGameDeveloper)) && (hasStep (journeyTechnicalArtist))) && (((hasStep (journeySystemsEngineer)) && (hasStep (journeyBrowserPlayer))) && (hasStep (journeySecurityAuditor))))) = true),
+  statement: ((((hasCall (featureProgressiveUorcStreaming)) && ((hasCall (featurePortableTensorKernels)) && ((hasCall (featureEcsAndBvh)) && ((hasCall (featureGltfAndWgsl)) && ((hasCall (featurePhysicsAndSplines)) && ((hasCall (featureSpatialAudio)) && ((hasCall (featureSnapshotsAndJobGraph)) && (hasCall (featureStudioAndDocs))))))))) && (((hasStep (journeyGameDeveloper)) && (hasStep (journeyTechnicalArtist))) && (((hasStep (journeySystemsEngineer)) && (hasStep (journeyBrowserPlayer))) && (hasStep (journeySecurityAuditor))))) = true),
   proof: decide{}
 }
 \end{semanticmodule}

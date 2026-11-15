@@ -1,17 +1,17 @@
 spec = "lexlean/entry/1"
-id = "verdant-engine-cosmological-genesis"
+id = "verdant-engine-tensor-and-streaming"
 category = "label-word"
 surface_arity = 0
 frame = "atom"
 
 [denotation]
 kind = "document"
-module = "Genesis"
-component = "EpochSpec"
+module = "Tensor"
+component = "StreamingLodSpec"
 
 [[form]]
-id = "verdant-engine-cosmological-genesis"
+id = "verdant-engine-tensor-and-streaming"
 channel = "text"
-surface = "Verdant Engine cosmological genesis"
+surface = "Verdant Engine tensor and streaming"
 canonical_source = true
 features = ["sentence-case", "singular"]

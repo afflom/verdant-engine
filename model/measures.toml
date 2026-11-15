@@ -12,14 +12,14 @@ source = "app/src/Measures.lex.tex"
 direction = "atLeast"
 
 [[measure]]
-record = "Quality::measureUnstableBlueprints"
-method = "Measures::unstableBlueprints"
+record = "Quality::measureInvalidTensorKernels"
+method = "Measures::invalidTensorKernels"
 source = "app/src/Measures.lex.tex"
 direction = "atMost"
 
 [[measure]]
-record = "Quality::measureDisorderedEpochs"
-method = "Measures::disorderedEpochs"
+record = "Quality::measureDisorderedStreamingLods"
+method = "Measures::disorderedStreamingLods"
 source = "app/src/Measures.lex.tex"
 direction = "atMost"
 

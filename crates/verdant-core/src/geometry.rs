@@ -1,28 +1,29 @@
-//! Parametric B-Mesh, architectural entasis/catenary, botanical, and crystal geometry synthesis.
+//! Parametric procedural B-Mesh, architectural column, deformable ribbon, and faceted prism synthesis.
 //!
-//! Every generator takes an explicit parameter record (`TerrainMeshParams`,
-//! `EntasisColumnParams`, `BotanicalPetalParams`, `QuartzCrystalParams`) whose canonical defaults
-//! are synthesized constructively from `{0, 1}` with zero arbitrary magic constants.
+//! Every generator takes explicit geometric parameters whose canonical defaults are synthesized
+//! constructively from `{0, 1}` with zero arbitrary magic constants.
 
 use serde::{Deserialize, Serialize};
 
 use crate::error::AssetValidationError;
-use crate::genesis::{terrain_height_with_params, terrain_normal_with_params, TerrainReliefParams};
 use crate::math::{
     fibonacci_u64, four_u32, golden_ratio, half_f64, nth_prime_u64, pow10_u64, pow2_u64, three_u32,
     two_f64, two_u32, Aabb, Vec2, Vec3, DIM_HOMOGENEOUS, DIM_PLANAR, DIM_SPATIAL,
 };
+use crate::streaming::{
+    terrain_height_with_params, terrain_normal_with_params, TerrainReliefParams,
+};
 
-/// Named vertex displacement morph target (`shape key`) for GPU skeletal/botanical deformation.
+/// Named vertex displacement morph target (`shape key`) for skeletal and surface deformation.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct MorphTarget {
-    /// Shape-key name (`bloom_open`, `wind_sway`, `acoustic_ripple`).
+    /// Shape-key name (`curl_expand`, `wind_sway`, `wave_ripple`).
     pub name: String,
     /// Per-vertex `[dx, dy, dz]` position deltas matching the base mesh vertex count.
     pub position_deltas: Vec<[f32; DIM_SPATIAL]>,
 }
 
-/// Validated indexed triangle mesh ready for WebGPU/WebGL upload or Khronos glTF export.
+/// Validated indexed triangle mesh ready for viewport/software rasterization or Khronos glTF export.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct ProceduralMesh {
     /// Asset identifier.
@@ -201,7 +202,7 @@ pub fn generate_terrain_patch_with_params(seed: u64, params: &TerrainMeshParams)
     }
 
     ProceduralMesh {
-        name: "SanctuaryTerrainPatch".to_string(),
+        name: "HeightfieldTerrainPatch".to_string(),
         positions,
         normals,
         uvs,
@@ -223,14 +224,14 @@ pub fn generate_terrain_patch_mesh(
         &TerrainMeshParams {
             half_extent_meters,
             grid_segments,
-            relief: TerrainReliefParams::sanctuary_amphitheater(),
+            relief: TerrainReliefParams::standard_basin_valley(),
         },
     )
 }
 
-/// Synthesizes a classical fluted entasis architectural column mesh used by Builder rotundas.
+/// Synthesizes a fluted entasis architectural column mesh.
 #[must_use]
-pub fn generate_fluted_entasis_column_mesh(
+pub fn generate_fluted_column_mesh(
     base_radius: f64,
     top_radius: f64,
     height: f64,
@@ -292,7 +293,7 @@ pub fn generate_fluted_entasis_column_mesh(
 
     let _ = half;
     ProceduralMesh {
-        name: "FlutedEntasisColumn".to_string(),
+        name: "FlutedArchitecturalColumn".to_string(),
         positions,
         normals,
         uvs,
@@ -302,9 +303,9 @@ pub fn generate_fluted_entasis_column_mesh(
     }
 }
 
-/// Synthesizes a sculpted botanical petal B-Mesh with `bloom_open` and `acoustic_ripple` morph targets.
+/// Synthesizes a curved deformable ribbon B-Mesh with `curl_expand` and `wave_ripple` morph targets.
 #[must_use]
-pub fn generate_sculpted_petal_mesh(
+pub fn generate_deformable_ribbon_mesh(
     length_meters: f64,
     max_width_meters: f64,
     u_segments: usize,
@@ -387,7 +388,7 @@ pub fn generate_sculpted_petal_mesh(
     }
 
     ProceduralMesh {
-        name: "SculptedBotanicalPetal".to_string(),
+        name: "DeformableRibbonMesh".to_string(),
         positions,
         normals,
         uvs,
@@ -395,20 +396,20 @@ pub fn generate_sculpted_petal_mesh(
         indices,
         morph_targets: vec![
             MorphTarget {
-                name: "bloom_open".to_string(),
+                name: "curl_expand".to_string(),
                 position_deltas: bloom_deltas,
             },
             MorphTarget {
-                name: "acoustic_ripple".to_string(),
+                name: "wave_ripple".to_string(),
                 position_deltas: ripple_deltas,
             },
         ],
     }
 }
 
-/// Synthesizes a hexagonal prism-and-bipyramid alpha-quartz Bravais crystal mesh.
+/// Synthesizes a hexagonal prism-and-bipyramid dielectric crystal mesh.
 #[must_use]
-pub fn generate_hexagonal_quartz_mesh(radius: f64, height: f64) -> ProceduralMesh {
+pub fn generate_faceted_prism_mesh(radius: f64, height: f64) -> ProceduralMesh {
     let sides = (nth_prime_u64(0) * nth_prime_u64(1)) as usize; // 6 hexagonal Bravais faces
     let mut positions = Vec::new();
     let mut normals = Vec::new();
@@ -456,7 +457,7 @@ pub fn generate_hexagonal_quartz_mesh(radius: f64, height: f64) -> ProceduralMes
     }
 
     ProceduralMesh {
-        name: "HexagonalQuartzCrystal".to_string(),
+        name: "FacetedDielectricPrism".to_string(),
         positions,
         normals,
         uvs,
@@ -466,7 +467,7 @@ pub fn generate_hexagonal_quartz_mesh(radius: f64, height: f64) -> ProceduralMes
     }
 }
 
-/// Synthesizes the complete default mesh library indexed by [`crate::genesis::CausalWorldState`].
+/// Synthesizes the default engine mesh library indexed by [`crate::streaming::StandardSceneState`].
 #[must_use]
 pub fn canonical_scene_mesh_library(seed: u64) -> Vec<ProceduralMesh> {
     let half = half_f64();
@@ -484,9 +485,9 @@ pub fn canonical_scene_mesh_library(seed: u64) -> Vec<ProceduralMesh> {
     vec![
         generate_terrain_patch_mesh(seed, forty_eight, thirty_two),
         generate_terrain_patch_mesh(seed ^ pow2_u64(four_u32()), sixteen as f64, twelve),
-        generate_hexagonal_quartz_mesh(1.0 / phi, phi),
-        generate_sculpted_petal_mesh(1.0, 1.0 / (phi * phi), eight, twelve),
-        generate_fluted_entasis_column_mesh(
+        generate_faceted_prism_mesh(1.0 / phi, phi),
+        generate_deformable_ribbon_mesh(1.0, 1.0 / (phi * phi), eight, twelve),
+        generate_fluted_column_mesh(
             half,
             half - quarter * half,
             five_f,
@@ -494,6 +495,6 @@ pub fn canonical_scene_mesh_library(seed: u64) -> Vec<ProceduralMesh> {
             twenty_four,
             twelve,
         ),
-        generate_hexagonal_quartz_mesh(half, 1.0 + quarter),
+        generate_faceted_prism_mesh(half, 1.0 + quarter),
     ]
 }

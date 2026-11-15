@@ -98,24 +98,24 @@ definition{
 }
 
 definition{
-  name: requirementEquilibriumBlueprints,
+  name: requirementMonotonicUorcStreaming,
   parameters: [],
   result: Foundation.Qual::QualityRequirement,
-  body: (record Foundation.Qual::QualityRequirement {index := 2, subcharacteristicIndex := 1})
-}
-
-definition{
-  name: requirementMonotonicExpansion,
-  parameters: [],
-  result: Foundation.Qual::QualityRequirement,
-  body: (record Foundation.Qual::QualityRequirement {index := 3, subcharacteristicIndex := 0})
+  body: (record Foundation.Qual::QualityRequirement {index := 2, subcharacteristicIndex := 0})
 }
 
 definition{
   name: requirementStakeholderJourneys,
   parameters: [],
   result: Foundation.Qual::QualityRequirement,
-  body: (record Foundation.Qual::QualityRequirement {index := 4, subcharacteristicIndex := 3})
+  body: (record Foundation.Qual::QualityRequirement {index := 3, subcharacteristicIndex := 3})
+}
+
+definition{
+  name: requirementValidTensorKernels,
+  parameters: [],
+  result: Foundation.Qual::QualityRequirement,
+  body: (record Foundation.Qual::QualityRequirement {index := 4, subcharacteristicIndex := 1})
 }
 
 definition{
@@ -133,31 +133,31 @@ definition{
 }
 
 definition{
-  name: measureDisorderedEpochs,
+  name: measureDisorderedStreamingLods,
   parameters: [],
   result: Foundation.Qual::QualityMeasure,
-  body: (record Foundation.Qual::QualityMeasure {index := 1, requirementIndex := 3, threshold := 0})
+  body: (record Foundation.Qual::QualityMeasure {index := 1, requirementIndex := 2, threshold := 0})
+}
+
+definition{
+  name: measureInvalidTensorKernels,
+  parameters: [],
+  result: Foundation.Qual::QualityMeasure,
+  body: (record Foundation.Qual::QualityMeasure {index := 2, requirementIndex := 4, threshold := 0})
 }
 
 definition{
   name: measureJourneysPerStakeholder,
   parameters: [],
   result: Foundation.Qual::QualityMeasure,
-  body: (record Foundation.Qual::QualityMeasure {index := 2, requirementIndex := 4, threshold := 1})
+  body: (record Foundation.Qual::QualityMeasure {index := 3, requirementIndex := 3, threshold := 1})
 }
 
 definition{
   name: measureMagicConstantViolations,
   parameters: [],
   result: Foundation.Qual::QualityMeasure,
-  body: (record Foundation.Qual::QualityMeasure {index := 3, requirementIndex := 5, threshold := 0})
-}
-
-definition{
-  name: measureUnstableBlueprints,
-  parameters: [],
-  result: Foundation.Qual::QualityMeasure,
-  body: (record Foundation.Qual::QualityMeasure {index := 4, requirementIndex := 2, threshold := 0})
+  body: (record Foundation.Qual::QualityMeasure {index := 4, requirementIndex := 5, threshold := 0})
 }
 
 definition{
@@ -171,7 +171,7 @@ definition{
   name: characteristicNames,
   parameters: [],
   result: (List Named),
-  body: (cons (record Named {index := 0, name := "Functional suitability", text := "Verdant Engine synthesizes causally ordered worlds, statically balanced structures, and standards-valid 3D assets."}) (cons (record Named {index := 1, name := "Interaction capability", text := "Developers, players, and coding agents operate the 3D studio and documentation cleanly across devices."}) (cons (record Named {index := 2, name := "Maintainability", text := "Every engine kernel is purely parametric with zero unexplained magic constants."}) (cons (record Named {index := 3, name := "Performance efficiency", text := "Simulation, rendering, and Wasm verification execute within bounded frame and byte budgets."}) (nil Named)))))
+  body: (cons (record Named {index := 0, name := "Functional suitability", text := "Verdant Engine executes exact uor-matmul tensor contractions, streams progressive UORC scenes, and exports standards-valid 3D assets."}) (cons (record Named {index := 1, name := "Interaction capability", text := "Developers, players, and coding agents operate the 3D studio and documentation cleanly across devices."}) (cons (record Named {index := 2, name := "Maintainability", text := "Every engine kernel is purely parametric with zero unexplained magic constants."}) (cons (record Named {index := 3, name := "Performance efficiency", text := "Simulation, portable tensor rendering, UORC streaming, and Wasm verification execute within bounded frame and byte budgets."}) (nil Named)))))
 }
 
 definition{
@@ -185,14 +185,14 @@ definition{
   name: requirementNames,
   parameters: [],
   result: (List Named),
-  body: (cons (record Named {index := 0, name := "AccessibleStudio", text := "Every studio and documentation page meets WCAG 2.2 AA and scores 100 in mobile Lighthouse accessibility."}) (cons (record Named {index := 1, name := "BoundedFrameAndVerifier", text := "The Core-Wasm engine verifier bounds requests to at most 64 bytes before evaluation."}) (cons (record Named {index := 2, name := "EquilibriumBlueprints", text := "Every constructed sanctuary structure and autonomous rover satisfies Heyman middle-third statics and safety factor bounds."}) (cons (record Named {index := 3, name := "MonotonicExpansion", text := "World expansion progresses strictly monotonically from Cosmogenic seed to AgenticArchitectural observation."}) (cons (record Named {index := 4, name := "StakeholderJourneys", text := "Every declared engine stakeholder has at least one end-to-end journey through the product."}) (cons (record Named {index := 5, name := "ZeroConstantsKernel", text := "Shipped engine Rust sources and constructive domain modules contain zero unexplained magic constants."}) (nil Named)))))))
+  body: (cons (record Named {index := 0, name := "AccessibleStudio", text := "Every studio and documentation page meets WCAG 2.2 AA and scores 100 in mobile Lighthouse accessibility."}) (cons (record Named {index := 1, name := "BoundedFrameAndVerifier", text := "The Core-Wasm engine verifier bounds requests to at most 64 bytes before evaluation."}) (cons (record Named {index := 2, name := "MonotonicUorcStreaming", text := "Progressive UORC scene streaming advances strictly monotonically from coarse proxy to lossless source resolution."}) (cons (record Named {index := 3, name := "StakeholderJourneys", text := "Every declared engine stakeholder has at least one end-to-end journey through the product."}) (cons (record Named {index := 4, name := "ValidTensorKernels", text := "Every declared uor-matmul and software tile rasterizer kernel satisfies accumulator overflow bounds and tile alignment."}) (cons (record Named {index := 5, name := "ZeroConstantsKernel", text := "Shipped engine Rust sources and constructive domain modules contain zero unexplained magic constants."}) (nil Named)))))))
 }
 
 definition{
   name: measureNames,
   parameters: [],
   result: (List Named),
-  body: (cons (record Named {index := 0, name := "AccessibilityScore", text := "Lighthouse mobile accessibility score of the Engine Studio root page."}) (cons (record Named {index := 1, name := "DisorderedEpochs", text := "Count of cosmological expansion epoch transitions violating strict scale monotonicity."}) (cons (record Named {index := 2, name := "JourneysPerStakeholder", text := "Minimum number of journeys declared for any engine stakeholder."}) (cons (record Named {index := 3, name := "MagicConstantViolations", text := "Count of magic numeric literals detected by the permanent parametric ratchet."}) (cons (record Named {index := 4, name := "UnstableBlueprints", text := "Count of declared Builder blueprints failing static equilibrium or epoch gating."}) (cons (record Named {index := 5, name := "VerifierRequestCapBytes", text := "Maximum byte length accepted by the Core-Wasm engine verifier."}) (nil Named)))))))
+  body: (cons (record Named {index := 0, name := "AccessibilityScore", text := "Lighthouse mobile accessibility score of the Engine Studio root page."}) (cons (record Named {index := 1, name := "DisorderedStreamingLods", text := "Count of UORC progressive LOD transitions violating strict resolution or work monotonicity."}) (cons (record Named {index := 2, name := "InvalidTensorKernels", text := "Count of declared engine tensor kernels failing accumulator bit-width or tile-alignment bounds."}) (cons (record Named {index := 3, name := "JourneysPerStakeholder", text := "Minimum number of journeys declared for any engine stakeholder."}) (cons (record Named {index := 4, name := "MagicConstantViolations", text := "Count of magic numeric literals detected by the permanent parametric ratchet."}) (cons (record Named {index := 5, name := "VerifierRequestCapBytes", text := "Maximum byte length accepted by the Core-Wasm engine verifier."}) (nil Named)))))))
 }
 
 definition{
@@ -206,14 +206,14 @@ definition{
   name: requirementRecords,
   parameters: [],
   result: (List Foundation.Qual::QualityRequirement),
-  body: (cons (requirementAccessibleStudio) (cons (requirementBoundedFrameAndVerifier) (cons (requirementEquilibriumBlueprints) (cons (requirementMonotonicExpansion) (cons (requirementStakeholderJourneys) (cons (requirementZeroConstantsKernel) (nil Foundation.Qual::QualityRequirement)))))))
+  body: (cons (requirementAccessibleStudio) (cons (requirementBoundedFrameAndVerifier) (cons (requirementMonotonicUorcStreaming) (cons (requirementStakeholderJourneys) (cons (requirementValidTensorKernels) (cons (requirementZeroConstantsKernel) (nil Foundation.Qual::QualityRequirement)))))))
 }
 
 definition{
   name: measureRecords,
   parameters: [],
   result: (List Foundation.Qual::QualityMeasure),
-  body: (cons (measureAccessibilityScore) (cons (measureDisorderedEpochs) (cons (measureJourneysPerStakeholder) (cons (measureMagicConstantViolations) (cons (measureUnstableBlueprints) (cons (measureVerifierRequestCapBytes) (nil Foundation.Qual::QualityMeasure)))))))
+  body: (cons (measureAccessibilityScore) (cons (measureDisorderedStreamingLods) (cons (measureInvalidTensorKernels) (cons (measureJourneysPerStakeholder) (cons (measureMagicConstantViolations) (cons (measureVerifierRequestCapBytes) (nil Foundation.Qual::QualityMeasure)))))))
 }
 
 definition{
@@ -266,7 +266,7 @@ definition{
 theorem{
   name: qualityModelHolds,
   parameters: [],
-  statement: ((((qualityValid) && (((namesNumbered 0 (characteristicNames)) && ((namesNumbered 0 (subcharacteristicNames)) && ((namesNumbered 0 (requirementNames)) && (namesNumbered 0 (measureNames))))) && (((project (characteristicFunctionalSuitability) index) =? 0) && (((project (characteristicInteractionCapability) index) =? 1) && (((project (characteristicMaintainability) index) =? 2) && ((project (characteristicPerformanceEfficiency) index) =? 3)))))) && ((((project (subcharacteristicFunctionalCompleteness) index) =? 0) && (((project (subcharacteristicFunctionalCorrectness) index) =? 1) && (((project (subcharacteristicInclusivity) index) =? 2) && (((project (subcharacteristicLearnability) index) =? 3) && (((project (subcharacteristicModifiability) index) =? 4) && ((project (subcharacteristicTimeBehaviour) index) =? 5)))))) && ((((project (requirementAccessibleStudio) index) =? 0) && (((project (requirementBoundedFrameAndVerifier) index) =? 1) && (((project (requirementEquilibriumBlueprints) index) =? 2) && (((project (requirementMonotonicExpansion) index) =? 3) && (((project (requirementStakeholderJourneys) index) =? 4) && ((project (requirementZeroConstantsKernel) index) =? 5)))))) && (((project (measureAccessibilityScore) threshold) =? 100) && (((project (measureDisorderedEpochs) threshold) =? 0) && (((project (measureJourneysPerStakeholder) threshold) =? 1) && (((project (measureMagicConstantViolations) threshold) =? 0) && (((project (measureUnstableBlueprints) threshold) =? 0) && ((project (measureVerifierRequestCapBytes) threshold) =? 64))))))))) = true),
+  statement: ((((qualityValid) && (((namesNumbered 0 (characteristicNames)) && ((namesNumbered 0 (subcharacteristicNames)) && ((namesNumbered 0 (requirementNames)) && (namesNumbered 0 (measureNames))))) && (((project (characteristicFunctionalSuitability) index) =? 0) && (((project (characteristicInteractionCapability) index) =? 1) && (((project (characteristicMaintainability) index) =? 2) && ((project (characteristicPerformanceEfficiency) index) =? 3)))))) && ((((project (subcharacteristicFunctionalCompleteness) index) =? 0) && (((project (subcharacteristicFunctionalCorrectness) index) =? 1) && (((project (subcharacteristicInclusivity) index) =? 2) && (((project (subcharacteristicLearnability) index) =? 3) && (((project (subcharacteristicModifiability) index) =? 4) && ((project (subcharacteristicTimeBehaviour) index) =? 5)))))) && ((((project (requirementAccessibleStudio) index) =? 0) && (((project (requirementBoundedFrameAndVerifier) index) =? 1) && (((project (requirementMonotonicUorcStreaming) index) =? 2) && (((project (requirementStakeholderJourneys) index) =? 3) && (((project (requirementValidTensorKernels) index) =? 4) && ((project (requirementZeroConstantsKernel) index) =? 5)))))) && (((project (measureAccessibilityScore) threshold) =? 100) && (((project (measureDisorderedStreamingLods) threshold) =? 0) && (((project (measureInvalidTensorKernels) threshold) =? 0) && (((project (measureJourneysPerStakeholder) threshold) =? 1) && (((project (measureMagicConstantViolations) threshold) =? 0) && ((project (measureVerifierRequestCapBytes) threshold) =? 64))))))))) = true),
   proof: decide{},
   axioms: []
 }

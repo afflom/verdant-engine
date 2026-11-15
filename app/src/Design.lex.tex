@@ -172,10 +172,10 @@ structure{
 }
 
 definition{
-  name: viewOpmWorldGenesis,
+  name: viewOpmSceneStreaming,
   parameters: [],
   result: DiagramView,
-  body: (record DiagramView {title := "Synthesizing a world across expansion epochs", viewpoint := "Architecture::viewpointSystemsCausalFidelity", diagram := (ctor DiagramKind.opmObjectProcess)})
+  body: (record DiagramView {title := "Streaming a 3D scene across progressive UORC LODs", viewpoint := "Architecture::viewpointSystemsTensorStreaming", diagram := (ctor DiagramKind.opmObjectProcess)})
 }
 
 definition{
@@ -200,21 +200,21 @@ definition{
 }
 
 definition{
-  name: processSynthesizeWorld,
+  name: processBuildSceneWorld,
   parameters: [],
   result: EngineProcess,
   body: (record EngineProcess {owner := "Architecture::componentVerdantCoreCrate"})
 }
 
 definition{
-  name: processAdvanceEpochs,
+  name: processStreamUorcLods,
   parameters: [],
   result: EngineProcess,
   body: (record EngineProcess {owner := "Architecture::componentVerdantCoreCrate"})
 }
 
 definition{
-  name: processConstructBlueprints,
+  name: processExecuteTensorKernels,
   parameters: [],
   result: EngineProcess,
   body: (record EngineProcess {owner := "Architecture::componentVerdantCoreCrate"})
@@ -235,7 +235,7 @@ definition{
 }
 
 definition{
-  name: processVerifyBlueprintAndEpoch,
+  name: processVerifyTensorAndLod,
   parameters: [],
   result: EngineProcess,
   body: (record EngineProcess {owner := "Architecture::componentVerifierGuest"})
@@ -245,18 +245,18 @@ definition{
   name: processRenderViewportFrame,
   parameters: [],
   result: EngineProcess,
-  body: (record EngineProcess {owner := "Architecture::componentBrowserGpuHost"})
+  body: (record EngineProcess {owner := "Architecture::componentBrowserCanvasHost"})
 }
 
 definition{
-  name: stateWorldSeeded,
+  name: stateSceneProxyLod,
   parameters: [],
   result: EngineState,
   body: (record EngineState {owner := "Architecture::componentEngineStudioSite"})
 }
 
 definition{
-  name: stateWorldAtObservation,
+  name: stateSceneLosslessLod,
   parameters: [],
   result: EngineState,
   body: (record EngineState {owner := "Architecture::componentEngineStudioSite"})
@@ -280,105 +280,105 @@ definition{
   name: opmCoreEngine,
   parameters: [],
   result: OpmThingSpec,
-  body: (record OpmThingSpec {view := "Design::viewOpmWorldGenesis", kind := (ctor OpmThingKind.object), subject := "Architecture::componentVerdantCoreCrate"})
+  body: (record OpmThingSpec {view := "Design::viewOpmSceneStreaming", kind := (ctor OpmThingKind.object), subject := "Architecture::componentVerdantCoreCrate"})
 }
 
 definition{
   name: opmStudioScene,
   parameters: [],
   result: OpmThingSpec,
-  body: (record OpmThingSpec {view := "Design::viewOpmWorldGenesis", kind := (ctor OpmThingKind.object), subject := "Architecture::componentEngineStudioSite"})
+  body: (record OpmThingSpec {view := "Design::viewOpmSceneStreaming", kind := (ctor OpmThingKind.object), subject := "Architecture::componentEngineStudioSite"})
 }
 
 definition{
-  name: opmSynthesize,
+  name: opmBuildScene,
   parameters: [],
   result: OpmThingSpec,
-  body: (record OpmThingSpec {view := "Design::viewOpmWorldGenesis", kind := (ctor OpmThingKind.process), subject := "Design::processSynthesizeWorld"})
+  body: (record OpmThingSpec {view := "Design::viewOpmSceneStreaming", kind := (ctor OpmThingKind.process), subject := "Design::processBuildSceneWorld"})
 }
 
 definition{
-  name: opmAdvance,
+  name: opmStreamLods,
   parameters: [],
   result: OpmThingSpec,
-  body: (record OpmThingSpec {view := "Design::viewOpmWorldGenesis", kind := (ctor OpmThingKind.process), subject := "Design::processAdvanceEpochs"})
+  body: (record OpmThingSpec {view := "Design::viewOpmSceneStreaming", kind := (ctor OpmThingKind.process), subject := "Design::processStreamUorcLods"})
 }
 
 definition{
-  name: opmConstruct,
+  name: opmExecuteTensors,
   parameters: [],
   result: OpmThingSpec,
-  body: (record OpmThingSpec {view := "Design::viewOpmWorldGenesis", kind := (ctor OpmThingKind.process), subject := "Design::processConstructBlueprints"})
+  body: (record OpmThingSpec {view := "Design::viewOpmSceneStreaming", kind := (ctor OpmThingKind.process), subject := "Design::processExecuteTensorKernels"})
 }
 
 definition{
   name: opmExport,
   parameters: [],
   result: OpmThingSpec,
-  body: (record OpmThingSpec {view := "Design::viewOpmWorldGenesis", kind := (ctor OpmThingKind.process), subject := "Design::processExportGlbAndShaders"})
+  body: (record OpmThingSpec {view := "Design::viewOpmSceneStreaming", kind := (ctor OpmThingKind.process), subject := "Design::processExportGlbAndShaders"})
 }
 
 definition{
-  name: opmSceneSeeded,
+  name: opmSceneAtProxy,
   parameters: [],
   result: OpmStateSpec,
-  body: (record OpmStateSpec {view := "Design::viewOpmWorldGenesis", thing := "Architecture::componentEngineStudioSite", state := "Design::stateWorldSeeded"})
+  body: (record OpmStateSpec {view := "Design::viewOpmSceneStreaming", thing := "Architecture::componentEngineStudioSite", state := "Design::stateSceneProxyLod"})
 }
 
 definition{
-  name: opmSceneAtObservation,
+  name: opmSceneAtLossless,
   parameters: [],
   result: OpmStateSpec,
-  body: (record OpmStateSpec {view := "Design::viewOpmWorldGenesis", thing := "Architecture::componentEngineStudioSite", state := "Design::stateWorldAtObservation"})
+  body: (record OpmStateSpec {view := "Design::viewOpmSceneStreaming", thing := "Architecture::componentEngineStudioSite", state := "Design::stateSceneLosslessLod"})
 }
 
 definition{
   name: opmCoreAgent,
   parameters: [],
   result: OpmLinkSpec,
-  body: (record OpmLinkSpec {view := "Design::viewOpmWorldGenesis", kind := (ctor OpmLinkKind.agent), source := "Architecture::componentVerdantCoreCrate", target := "Design::processSynthesizeWorld"})
+  body: (record OpmLinkSpec {view := "Design::viewOpmSceneStreaming", kind := (ctor OpmLinkKind.agent), source := "Architecture::componentVerdantCoreCrate", target := "Design::processBuildSceneWorld"})
 }
 
 definition{
-  name: opmAdvanceInvokesConstruct,
+  name: opmStreamInvokesTensors,
   parameters: [],
   result: OpmLinkSpec,
-  body: (record OpmLinkSpec {view := "Design::viewOpmWorldGenesis", kind := (ctor OpmLinkKind.invocation), source := "Design::processAdvanceEpochs", target := "Design::processConstructBlueprints"})
+  body: (record OpmLinkSpec {view := "Design::viewOpmSceneStreaming", kind := (ctor OpmLinkKind.invocation), source := "Design::processStreamUorcLods", target := "Design::processExecuteTensorKernels"})
 }
 
 definition{
-  name: opmConstructInvokesExport,
+  name: opmTensorsInvokeExport,
   parameters: [],
   result: OpmLinkSpec,
-  body: (record OpmLinkSpec {view := "Design::viewOpmWorldGenesis", kind := (ctor OpmLinkKind.invocation), source := "Design::processConstructBlueprints", target := "Design::processExportGlbAndShaders"})
+  body: (record OpmLinkSpec {view := "Design::viewOpmSceneStreaming", kind := (ctor OpmLinkKind.invocation), source := "Design::processExecuteTensorKernels", target := "Design::processExportGlbAndShaders"})
 }
 
 definition{
   name: opmExportAffectsScene,
   parameters: [],
   result: OpmLinkSpec,
-  body: (record OpmLinkSpec {view := "Design::viewOpmWorldGenesis", kind := (ctor OpmLinkKind.effect), source := "Architecture::componentEngineStudioSite", target := "Design::processExportGlbAndShaders"})
+  body: (record OpmLinkSpec {view := "Design::viewOpmSceneStreaming", kind := (ctor OpmLinkKind.effect), source := "Architecture::componentEngineStudioSite", target := "Design::processExportGlbAndShaders"})
 }
 
 definition{
-  name: opmZoomAdvance,
+  name: opmZoomStream,
   parameters: [],
   result: OpmZoomSpec,
-  body: (record OpmZoomSpec {view := "Design::viewOpmWorldGenesis", process := "Design::processSynthesizeWorld", subprocess := "Design::processAdvanceEpochs", order := 0})
+  body: (record OpmZoomSpec {view := "Design::viewOpmSceneStreaming", process := "Design::processBuildSceneWorld", subprocess := "Design::processStreamUorcLods", order := 0})
 }
 
 definition{
-  name: opmZoomConstruct,
+  name: opmZoomTensors,
   parameters: [],
   result: OpmZoomSpec,
-  body: (record OpmZoomSpec {view := "Design::viewOpmWorldGenesis", process := "Design::processSynthesizeWorld", subprocess := "Design::processConstructBlueprints", order := 1})
+  body: (record OpmZoomSpec {view := "Design::viewOpmSceneStreaming", process := "Design::processBuildSceneWorld", subprocess := "Design::processExecuteTensorKernels", order := 1})
 }
 
 definition{
   name: opmZoomExport,
   parameters: [],
   result: OpmZoomSpec,
-  body: (record OpmZoomSpec {view := "Design::viewOpmWorldGenesis", process := "Design::processSynthesizeWorld", subprocess := "Design::processExportGlbAndShaders", order := 2})
+  body: (record OpmZoomSpec {view := "Design::viewOpmSceneStreaming", process := "Design::processBuildSceneWorld", subprocess := "Design::processExportGlbAndShaders", order := 2})
 }
 
 definition{
@@ -410,10 +410,10 @@ definition{
 }
 
 definition{
-  name: umlBrowserGpu,
+  name: umlBrowserCanvas,
   parameters: [],
   result: UmlComponentSpec,
-  body: (record UmlComponentSpec {view := "Design::viewUmlComponents", component := "Architecture::componentBrowserGpuHost"})
+  body: (record UmlComponentSpec {view := "Design::viewUmlComponents", component := "Architecture::componentBrowserCanvasHost"})
 }
 
 definition{
@@ -438,10 +438,10 @@ definition{
 }
 
 definition{
-  name: umlStudioToGpu,
+  name: umlStudioToCanvas,
   parameters: [],
   result: UmlConnectorSpec,
-  body: (record UmlConnectorSpec {view := "Design::viewUmlComponents", edge := "Architecture::edgeStudioToGpu"})
+  body: (record UmlConnectorSpec {view := "Design::viewUmlComponents", edge := "Architecture::edgeStudioToCanvas"})
 }
 
 definition{
@@ -480,31 +480,31 @@ definition{
 }
 
 definition{
-  name: seqGpuHost,
+  name: seqCanvasHost,
   parameters: [],
   result: UmlLifelineSpec,
-  body: (record UmlLifelineSpec {view := "Design::viewUmlFrameSequence", component := "Architecture::componentBrowserGpuHost", order := 2})
+  body: (record UmlLifelineSpec {view := "Design::viewUmlFrameSequence", component := "Architecture::componentBrowserCanvasHost", order := 2})
 }
 
 definition{
   name: seqVerifyRequest,
   parameters: [],
   result: UmlMessageSpec,
-  body: (record UmlMessageSpec {view := "Design::viewUmlFrameSequence", kind := (ctor UmlMessageKind.synchronous), order := 0, source := "Architecture::componentEngineStudioSite", target := "Architecture::componentVerifierGuest", process := "Design::processVerifyBlueprintAndEpoch"})
+  body: (record UmlMessageSpec {view := "Design::viewUmlFrameSequence", kind := (ctor UmlMessageKind.synchronous), order := 0, source := "Architecture::componentEngineStudioSite", target := "Architecture::componentVerifierGuest", process := "Design::processVerifyTensorAndLod"})
 }
 
 definition{
   name: seqVerifyReply,
   parameters: [],
   result: UmlMessageSpec,
-  body: (record UmlMessageSpec {view := "Design::viewUmlFrameSequence", kind := (ctor UmlMessageKind.reply), order := 1, source := "Architecture::componentVerifierGuest", target := "Architecture::componentEngineStudioSite", process := "Design::processVerifyBlueprintAndEpoch"})
+  body: (record UmlMessageSpec {view := "Design::viewUmlFrameSequence", kind := (ctor UmlMessageKind.reply), order := 1, source := "Architecture::componentVerifierGuest", target := "Architecture::componentEngineStudioSite", process := "Design::processVerifyTensorAndLod"})
 }
 
 definition{
   name: seqDrawSubmit,
   parameters: [],
   result: UmlMessageSpec,
-  body: (record UmlMessageSpec {view := "Design::viewUmlFrameSequence", kind := (ctor UmlMessageKind.asynchronous), order := 2, source := "Architecture::componentEngineStudioSite", target := "Architecture::componentBrowserGpuHost", process := "Design::processRenderViewportFrame"})
+  body: (record UmlMessageSpec {view := "Design::viewUmlFrameSequence", kind := (ctor UmlMessageKind.asynchronous), order := 2, source := "Architecture::componentEngineStudioSite", target := "Architecture::componentBrowserCanvasHost", process := "Design::processRenderViewportFrame"})
 }
 
 definition{
@@ -532,7 +532,7 @@ definition{
   name: trEmitVerdict,
   parameters: [],
   result: UmlTransitionSpec,
-  body: (record UmlTransitionSpec {view := "Design::viewUmlVerifierStates", order := 1, source := "Design::stateVerifierEvaluating", target := "Design::stateVerifierIdle", trigger := "Design::processVerifyBlueprintAndEpoch"})
+  body: (record UmlTransitionSpec {view := "Design::viewUmlVerifierStates", order := 1, source := "Design::stateVerifierEvaluating", target := "Design::stateVerifierIdle", trigger := "Design::processVerifyTensorAndLod"})
 }
 
 definition{
@@ -549,7 +549,7 @@ definition{
 theorem{
   name: designViewsConsistent,
   parameters: [],
-  statement: (((((project (opmZoomAdvance) order) =? 0) && (((project (opmZoomConstruct) order) =? 1) && ((project (opmZoomExport) order) =? 2))) && ((((project (seqStudio) order) =? 0) && (((project (seqVerifier) order) =? 1) && ((project (seqGpuHost) order) =? 2))) && ((((project (seqVerifyRequest) order) =? 0) && (((project (seqVerifyReply) order) =? 1) && ((project (seqDrawSubmit) order) =? 2))) && (((project (stVerifierIdle) initial) && (not (project (stVerifierEvaluating) initial))) && (((project (trParseQuery) order) =? 0) && ((project (trEmitVerdict) order) =? 1)))))) = true),
+  statement: (((((project (opmZoomStream) order) =? 0) && (((project (opmZoomTensors) order) =? 1) && ((project (opmZoomExport) order) =? 2))) && ((((project (seqStudio) order) =? 0) && (((project (seqVerifier) order) =? 1) && ((project (seqCanvasHost) order) =? 2))) && ((((project (seqVerifyRequest) order) =? 0) && (((project (seqVerifyReply) order) =? 1) && ((project (seqDrawSubmit) order) =? 2))) && (((project (stVerifierIdle) initial) && (not (project (stVerifierEvaluating) initial))) && (((project (trParseQuery) order) =? 0) && ((project (trEmitVerdict) order) =? 1)))))) = true),
   proof: decide{},
   axioms: []
 }
@@ -557,7 +557,7 @@ theorem{
 theorem{
   name: designViewsAndProcessesNamed,
   parameters: [],
-  statement: ((allStringsPopulated (cons (project (viewOpmWorldGenesis) title) (cons (project (viewUmlComponents) title) (cons (project (viewUmlFrameSequence) title) (cons (project (viewUmlVerifierStates) title) (cons (project (processSynthesizeWorld) owner) (cons (project (processAdvanceEpochs) owner) (cons (project (processConstructBlueprints) owner) (cons (project (processExportGlbAndShaders) owner) (cons (project (processParseQuery) owner) (cons (project (processVerifyBlueprintAndEpoch) owner) (cons (project (processRenderViewportFrame) owner) (cons (project (stateWorldSeeded) owner) (cons (project (stateWorldAtObservation) owner) (cons (project (stateVerifierIdle) owner) (cons (project (stateVerifierEvaluating) owner) (nil String))))))))))))))))) = true),
+  statement: ((allStringsPopulated (cons (project (viewOpmSceneStreaming) title) (cons (project (viewUmlComponents) title) (cons (project (viewUmlFrameSequence) title) (cons (project (viewUmlVerifierStates) title) (cons (project (processBuildSceneWorld) owner) (cons (project (processStreamUorcLods) owner) (cons (project (processExecuteTensorKernels) owner) (cons (project (processExportGlbAndShaders) owner) (cons (project (processParseQuery) owner) (cons (project (processVerifyTensorAndLod) owner) (cons (project (processRenderViewportFrame) owner) (cons (project (stateSceneProxyLod) owner) (cons (project (stateSceneLosslessLod) owner) (cons (project (stateVerifierIdle) owner) (cons (project (stateVerifierEvaluating) owner) (nil String))))))))))))))))) = true),
   proof: decide{},
   axioms: []
 }
@@ -565,7 +565,7 @@ theorem{
 theorem{
   name: designOpmAndUmlElementsBound,
   parameters: [],
-  statement: ((allStringsPopulated (cons (project (opmCoreEngine) subject) (cons (project (opmStudioScene) subject) (cons (project (opmSynthesize) subject) (cons (project (opmAdvance) subject) (cons (project (opmConstruct) subject) (cons (project (opmExport) subject) (cons (project (opmSceneSeeded) state) (cons (project (opmSceneAtObservation) state) (cons (project (opmCoreAgent) target) (cons (project (opmAdvanceInvokesConstruct) target) (cons (project (opmConstructInvokesExport) target) (cons (project (opmExportAffectsScene) target) (cons (project (umlVerdantCore) component) (cons (project (umlCliExamples) component) (cons (project (umlEngineStudio) component) (cons (project (umlVerifierGuest) component) (cons (project (umlBrowserGpu) component) (cons (project (umlBrowserAudio) component) (cons (project (umlCoreToExamples) edge) (cons (project (umlCoreToStudio) edge) (cons (project (umlStudioToGpu) edge) (cons (project (umlStudioToAudio) edge) (cons (project (umlStudioToVerifier) edge) (cons (project (umlVerifierToStudio) edge) (nil String)))))))))))))))))))))))))) = true),
+  statement: ((allStringsPopulated (cons (project (opmCoreEngine) subject) (cons (project (opmStudioScene) subject) (cons (project (opmBuildScene) subject) (cons (project (opmStreamLods) subject) (cons (project (opmExecuteTensors) subject) (cons (project (opmExport) subject) (cons (project (opmSceneAtProxy) state) (cons (project (opmSceneAtLossless) state) (cons (project (opmCoreAgent) target) (cons (project (opmStreamInvokesTensors) target) (cons (project (opmTensorsInvokeExport) target) (cons (project (opmExportAffectsScene) target) (cons (project (umlVerdantCore) component) (cons (project (umlCliExamples) component) (cons (project (umlEngineStudio) component) (cons (project (umlVerifierGuest) component) (cons (project (umlBrowserCanvas) component) (cons (project (umlBrowserAudio) component) (cons (project (umlCoreToExamples) edge) (cons (project (umlCoreToStudio) edge) (cons (project (umlStudioToCanvas) edge) (cons (project (umlStudioToAudio) edge) (cons (project (umlStudioToVerifier) edge) (cons (project (umlVerifierToStudio) edge) (nil String)))))))))))))))))))))))))) = true),
   proof: decide{},
   axioms: []
 }

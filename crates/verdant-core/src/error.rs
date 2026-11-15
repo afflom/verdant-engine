@@ -68,137 +68,121 @@ impl fmt::Display for EngineConfigError {
 
 impl std::error::Error for EngineConfigError {}
 
-/// Refusal returned when world expansion violates causal epoch ordering or prerequisites.
+/// Refusal returned when progressive multi-LOD scene streaming or UORC framing fails.
 #[derive(Clone, Debug, PartialEq)]
-pub enum WorldEpochError {
-    /// Cosmic scale factor lies outside `(0, 1]`.
-    InvalidScaleFactor {
-        /// Observed cosmic scale factor.
-        scale_factor: f64,
+pub enum StreamingError {
+    /// Requested LOD rank exceeds the maximum verified engine LOD rank.
+    InvalidLodRank {
+        /// Requested LOD rank.
+        requested_rank: u64,
+        /// Maximum admissible LOD rank (`prism_kernel::wasmMaxLodRank()`).
+        max_rank: u64,
     },
-    /// Attempted to step backward in cosmological time.
-    NonMonotonicExpansion {
-        /// Current world scale factor.
-        current_scale: f64,
-        /// Requested target scale factor.
-        requested_scale: f64,
+    /// Attempted to regress in LOD rank or scale during progressive UORC streaming.
+    NonMonotonicLodTransition {
+        /// Active scene LOD rank.
+        current_rank: u64,
+        /// Requested target LOD rank.
+        requested_rank: u64,
     },
-    /// Attempted to synthesize higher-order entities before precursor epoch completion.
-    MissingPrecursorEpoch {
-        /// Epoch required before the requested synthesis stage.
-        required_epoch: &'static str,
-        /// Current active world epoch.
-        actual_epoch: &'static str,
+    /// Authoritative `uorc` encoder, verifier, or decoder refused the archive or stream.
+    UorcArchiveRejected {
+        /// Diagnostic message emitted by `uorc`.
+        detail: String,
     },
-    /// Differentiated Builder guilds have not yet emerged from ecological evolution.
-    BuildersNotYetDifferentiated {
-        /// Ecological biomass index observed at the attempted build time.
-        ecological_maturity: f64,
-        /// Minimum ecological maturity required for Builder differentiation.
-        minimum_required: f64,
+    /// Decoded progressive LOD object count or digest does not match the stream manifest.
+    LodPayloadMismatch {
+        /// Diagnostic detail.
+        detail: String,
     },
 }
 
-impl fmt::Display for WorldEpochError {
+impl fmt::Display for StreamingError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::InvalidScaleFactor { scale_factor } => {
+            Self::InvalidLodRank {
+                requested_rank,
+                max_rank,
+            } => write!(
+                f,
+                "streaming LOD rank must be at most {max_rank}, got {requested_rank}"
+            ),
+            Self::NonMonotonicLodTransition {
+                current_rank,
+                requested_rank,
+            } => write!(
+                f,
+                "progressive UORC streaming is monotonic: cannot regress from LOD{current_rank} to LOD{requested_rank}"
+            ),
+            Self::UorcArchiveRejected { detail } => {
+                write!(f, "UORC archive stream rejected: {detail}")
+            }
+            Self::LodPayloadMismatch { detail } => {
+                write!(f, "progressive LOD payload mismatch: {detail}")
+            }
+        }
+    }
+}
+
+impl std::error::Error for StreamingError {}
+
+/// Refusal returned when a Prism-hosted `uor-matmul` tensor contraction or software tile rasterizer fails bounds checks.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum TensorComputeError {
+    /// Matrix or batch dimensions are zero or non-conformant (`NotAProduct` or buffer length mismatch).
+    ZeroOrMismatchedExtents {
+        /// Diagnostic shape description.
+        detail: String,
+    },
+    /// Input matrix or camera transform contains `NaN` or infinite IEEE-754 entries.
+    NonFiniteTensorEntry {
+        /// Diagnostic label of the offending operand.
+        operand: &'static str,
+    },
+    /// Declared tensor kernel failed `prism_kernel::tensorKernelValid` accumulator or tile alignment bounds.
+    InvalidKernelSpecification {
+        /// Kernel name.
+        kernel_name: String,
+    },
+    /// Software tile framebuffer dimensions are zero or not aligned to `prism_kernel::tileEdgePixels()`.
+    InvalidTileDimensions {
+        /// Requested width in pixels.
+        width: u32,
+        /// Requested height in pixels.
+        height: u32,
+        /// Required tile multiple in pixels.
+        tile_edge: u32,
+    },
+}
+
+impl fmt::Display for TensorComputeError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::ZeroOrMismatchedExtents { detail } => {
+                write!(f, "tensor contraction extents invalid: {detail}")
+            }
+            Self::NonFiniteTensorEntry { operand } => {
+                write!(f, "tensor operand `{operand}` contains non-finite entries")
+            }
+            Self::InvalidKernelSpecification { kernel_name } => {
                 write!(
                     f,
-                    "cosmic scale factor must be positive and at most unit scale, got {scale_factor}"
+                    "tensor kernel `{kernel_name}` failed Prism accumulator or tile alignment verification"
                 )
             }
-            Self::NonMonotonicExpansion {
-                current_scale,
-                requested_scale,
+            Self::InvalidTileDimensions {
+                width,
+                height,
+                tile_edge,
             } => write!(
                 f,
-                "world expansion is monotonic: cannot regress from {current_scale} to {requested_scale}"
-            ),
-            Self::MissingPrecursorEpoch {
-                required_epoch,
-                actual_epoch,
-            } => write!(
-                f,
-                "stage requires precursor epoch {required_epoch}, active epoch is {actual_epoch}"
-            ),
-            Self::BuildersNotYetDifferentiated {
-                ecological_maturity,
-                minimum_required,
-            } => write!(
-                f,
-                "builder guilds require ecological maturity >= {minimum_required}, observed {ecological_maturity}"
+                "tile framebuffer {width}x{height} must be positive and aligned to {tile_edge}px tiles"
             ),
         }
     }
 }
 
-impl std::error::Error for WorldEpochError {}
-
-/// Refusal returned when a proposed architectural structure violates static equilibrium or utility.
-#[derive(Clone, Debug, PartialEq)]
-pub enum StructuralEquilibriumError {
-    /// Masonry thrust-line eccentricity exceeds Heyman's middle-third stability limit.
-    ThrustLineOutsideMiddleThird {
-        /// Ratio `eccentricity / thickness` observed in the arch or pier section.
-        eccentricity_ratio: f64,
-        /// Maximum admissible Heyman middle-third eccentricity ratio.
-        max_admissible_ratio: f64,
-    },
-    /// Compressive safety factor against material crushing falls below admissible bound.
-    InsufficientSafetyFactor {
-        /// Computed compressive or overturning safety factor.
-        safety_factor: f64,
-        /// Minimum admissible safety factor.
-        minimum_required: f64,
-    },
-    /// Multi-objective Builder engineering utility is non-positive after material cost.
-    NonPositiveEngineeringUtility {
-        /// Evaluated net utility score.
-        net_utility: f64,
-    },
-    /// Span or height dimension is non-positive or non-finite.
-    InvalidStructuralDimensions {
-        /// Span in meters.
-        span_meters: f64,
-        /// Height in meters.
-        height_meters: f64,
-    },
-}
-
-impl fmt::Display for StructuralEquilibriumError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Self::ThrustLineOutsideMiddleThird {
-                eccentricity_ratio,
-                max_admissible_ratio,
-            } => write!(
-                f,
-                "masonry thrust line exits middle third: e/t = {eccentricity_ratio} > {max_admissible_ratio}"
-            ),
-            Self::InsufficientSafetyFactor {
-                safety_factor,
-                minimum_required,
-            } => write!(
-                f,
-                "structural safety factor {safety_factor} is below minimum {minimum_required}"
-            ),
-            Self::NonPositiveEngineeringUtility { net_utility } => write!(
-                f,
-                "builder optimization refused structure with non-positive net utility {net_utility}"
-            ),
-            Self::InvalidStructuralDimensions {
-                span_meters,
-                height_meters,
-            } => write!(
-                f,
-                "structural span ({span_meters}) and height ({height_meters}) must be finite and positive"
-            ),
-        }
-    }
-}
-
-impl std::error::Error for StructuralEquilibriumError {}
+impl std::error::Error for TensorComputeError {}
 
 /// Refusal returned when a physics integration step receives invalid timestep or body parameters.
 #[derive(Clone, Debug, PartialEq)]

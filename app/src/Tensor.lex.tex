@@ -1,0 +1,353 @@
+\begin{lexlean}{Tensor}
+\useglossary{lexlean.std.bool@1.2.0}
+\useglossary{lexlean.std.nat@1.2.0}
+\useglossary{prism.arch@1.0.0}
+\importmodule{Foundation.Ontology.V1.Model}
+\title{Verdant Engine tensor and streaming}
+\begin{semanticmodule}
+inductive{
+  name: TensorSemiring,
+  type_parameters: [],
+  parameters: [],
+  constructors: [
+    {name: linearExact, fields: []},
+    {name: tropicalMaxPlus, fields: []},
+    {name: modularAudioRing, fields: []}
+  ]
+}
+
+structure{
+  name: StreamingLodSpec,
+  type_parameters: [],
+  parameters: [],
+  fields: [
+    {name: rank, type: Nat},
+    {name: resNumer, type: Nat},
+    {name: resDenom, type: Nat},
+    {name: uorcWorkUnits, type: Nat},
+    {name: losslessSource, type: Bool},
+    {name: name, type: String},
+    {name: text, type: String}
+  ]
+}
+
+structure{
+  name: TensorKernelSpec,
+  type_parameters: [],
+  parameters: [],
+  fields: [
+    {name: index, type: Nat},
+    {name: semiring, type: TensorSemiring},
+    {name: lhsCols, type: Nat},
+    {name: accumBits, type: Nat},
+    {name: minAccumBits, type: Nat},
+    {name: tileAligned, type: Bool},
+    {name: autonomousKinematic, type: Bool},
+    {name: name, type: String},
+    {name: text, type: String}
+  ]
+}
+
+definition{name: natTwo, parameters: [], result: Nat, body: (1 + 1)}
+
+definition{name: natThree, parameters: [], result: Nat, body: ((1 + 1) + 1)}
+
+definition{
+  name: natFour,
+  parameters: [],
+  result: Nat,
+  body: (Foundation.Ontology.V1.Model::pow2Constructive (natTwo))
+}
+
+definition{name: natFive, parameters: [], result: Nat, body: ((natFour) + 1)}
+
+definition{
+  name: natSix,
+  parameters: [],
+  result: Nat,
+  body: (prim multiply (natTwo) (natThree) : Nat)
+}
+
+definition{name: natSeven, parameters: [], result: Nat, body: ((natSix) + 1)}
+
+definition{
+  name: natEight,
+  parameters: [],
+  result: Nat,
+  body: (Foundation.Ontology.V1.Model::pow2Constructive (natThree))
+}
+
+definition{
+  name: natTen,
+  parameters: [],
+  result: Nat,
+  body: (prim multiply (natTwo) (natFive) : Nat)
+}
+
+definition{
+  name: natSixteen,
+  parameters: [],
+  result: Nat,
+  body: (Foundation.Ontology.V1.Model::pow2Constructive (natFour))
+}
+
+definition{
+  name: natTwenty,
+  parameters: [],
+  result: Nat,
+  body: (prim multiply (natTwo) (natTen) : Nat)
+}
+
+definition{
+  name: natThirty,
+  parameters: [],
+  result: Nat,
+  body: (prim multiply (natThree) (natTen) : Nat)
+}
+
+definition{
+  name: natForty,
+  parameters: [],
+  result: Nat,
+  body: (prim multiply (natFour) (natTen) : Nat)
+}
+
+definition{
+  name: natSixtyFour,
+  parameters: [],
+  result: Nat,
+  body: (Foundation.Ontology.V1.Model::pow2Constructive (natSix))
+}
+
+definition{
+  name: natNinetySix,
+  parameters: [],
+  result: Nat,
+  body: (prim multiply (natSix) (natSixteen) : Nat)
+}
+
+definition{
+  name: natOneTwentyEight,
+  parameters: [],
+  result: Nat,
+  body: (Foundation.Ontology.V1.Model::pow2Constructive (natSeven))
+}
+
+definition{
+  name: lod0CoarseProxy,
+  parameters: [],
+  result: StreamingLodSpec,
+  body: (record StreamingLodSpec {rank := 0, resNumer := 1, resDenom := (natEight), uorcWorkUnits := (natTen), losslessSource := false, name := "Lod0CoarseProxy", text := "Initial UORC coarse proxy frame streaming low-poly collision hulls, heightfield bounds, and ambient sky."})
+}
+
+definition{
+  name: lod1MediumDetail,
+  parameters: [],
+  result: StreamingLodSpec,
+  body: (record StreamingLodSpec {rank := 1, resNumer := (natTwo), resDenom := (natEight), uorcWorkUnits := (natTwenty), losslessSource := false, name := "Lod1MediumDetail", text := "Progressive UORC medium-detail frame refining terrain subdivisions, rigid-body colliders, and directional shadow splits."})
+}
+
+definition{
+  name: lod2HighDetail,
+  parameters: [],
+  result: StreamingLodSpec,
+  body: (record StreamingLodSpec {rank := (natTwo), resNumer := (natFive), resDenom := (natEight), uorcWorkUnits := (natThirty), losslessSource := false, name := "Lod2HighDetail", text := "Progressive UORC high-detail frame streaming skeletal skinning weights, specular IBL mip chains, and spatial audio emitters."})
+}
+
+definition{
+  name: lod3LosslessSource,
+  parameters: [],
+  result: StreamingLodSpec,
+  body: (record StreamingLodSpec {rank := (natThree), resNumer := (natEight), resDenom := (natEight), uorcWorkUnits := (natForty), losslessSource := true, name := "Lod3LosslessSource", text := "Terminal UORC lossless source frame delivering bit-exact full-resolution geometry, PBR materials, and SHA-256 chain verification."})
+}
+
+definition{
+  name: streamingLods,
+  parameters: [],
+  result: (List StreamingLodSpec),
+  body: (cons (lod0CoarseProxy) (cons (lod1MediumDetail) (cons (lod2HighDetail) (cons (lod3LosslessSource) (nil StreamingLodSpec)))))
+}
+
+definition{
+  name: kernel0StaticMesh,
+  parameters: [],
+  result: TensorKernelSpec,
+  body: (record TensorKernelSpec {index := 0, semiring := (ctor TensorSemiring.linearExact), lhsCols := (natFour), accumBits := (natNinetySix), minAccumBits := (natSixtyFour), tileAligned := true, autonomousKinematic := false, name := "StaticMeshTransformBatch", text := "Exact Laurent 4x4 homogeneous world-view-projection vertex batch contraction via uor-matmul."})
+}
+
+definition{
+  name: kernel1LinearSkinning,
+  parameters: [],
+  result: TensorKernelSpec,
+  body: (record TensorKernelSpec {index := 1, semiring := (ctor TensorSemiring.linearExact), lhsCols := (natFour), accumBits := (natOneTwentyEight), minAccumBits := (natNinetySix), tileAligned := true, autonomousKinematic := false, name := "LinearBlendSkinningBatch", text := "Normalized four-joint skeletal skinning and morph target matrix contraction without intermediate rounding."})
+}
+
+definition{
+  name: kernel2TropicalBvhCull,
+  parameters: [],
+  result: TensorKernelSpec,
+  body: (record TensorKernelSpec {index := (natTwo), semiring := (ctor TensorSemiring.tropicalMaxPlus), lhsCols := (natSix), accumBits := (natSixtyFour), minAccumBits := (natThirty), tileAligned := true, autonomousKinematic := false, name := "TropicalBvhVisibilityCull", text := "Tropical max-plus semiring bounding-volume frustum and occlusion distance culling across scene hierarchies."})
+}
+
+definition{
+  name: kernel3TileRasterizer,
+  parameters: [],
+  result: TensorKernelSpec,
+  body: (record TensorKernelSpec {index := (natThree), semiring := (ctor TensorSemiring.linearExact), lhsCols := (natSixteen), accumBits := (natOneTwentyEight), minAccumBits := (natNinetySix), tileAligned := true, autonomousKinematic := false, name := "TileFramebufferRasterizer", text := "Portable 16x16 software tile depth-buffered PBR rasterizer hosting deterministic rendering without conditional browser GPU APIs."})
+}
+
+definition{
+  name: kernel4ShadowCascade,
+  parameters: [],
+  result: TensorKernelSpec,
+  body: (record TensorKernelSpec {index := (natFour), semiring := (ctor TensorSemiring.linearExact), lhsCols := (natFour), accumBits := (natNinetySix), minAccumBits := (natSixtyFour), tileAligned := true, autonomousKinematic := false, name := "ShadowCascadeProjector", text := "Four-cascade directional shadow frustum projection and GGX roughness mip chain evaluation."})
+}
+
+definition{
+  name: kernel5ModalAudioMix,
+  parameters: [],
+  result: TensorKernelSpec,
+  body: (record TensorKernelSpec {index := (natFive), semiring := (ctor TensorSemiring.modularAudioRing), lhsCols := (natEight), accumBits := (natOneTwentyEight), minAccumBits := (natSixtyFour), tileAligned := true, autonomousKinematic := false, name := "ModalAudioMixMatrix", text := "Multi-emitter modal bar overtone synthesis, Woodworth stereo panning, and Sabine RT60 reverberation contraction."})
+}
+
+definition{
+  name: kernel6KinematicSpline,
+  parameters: [],
+  result: TensorKernelSpec,
+  body: (record TensorKernelSpec {index := (natSix), semiring := (ctor TensorSemiring.linearExact), lhsCols := (natFour), accumBits := (natNinetySix), minAccumBits := (natSixtyFour), tileAligned := true, autonomousKinematic := true, name := "KinematicSplineController", text := "Arc-length parameterized spline trajectory evaluation, GJK convex contact impulse solve, and A-star navmesh steering."})
+}
+
+definition{
+  name: tensorKernels,
+  parameters: [],
+  result: (List TensorKernelSpec),
+  body: (cons (kernel0StaticMesh) (cons (kernel1LinearSkinning) (cons (kernel2TropicalBvhCull) (cons (kernel3TileRasterizer) (cons (kernel4ShadowCascade) (cons (kernel5ModalAudioMix) (cons (kernel6KinematicSpline) (nil TensorKernelSpec))))))))
+}
+
+definition{
+  name: lodStepValid,
+  parameters: [earlier : StreamingLodSpec, later : StreamingLodSpec],
+  result: Bool,
+  body: ((((project earlier rank) + 1) =? (project later rank)) && (((prim multiply (project earlier resNumer) (project later resDenom) : Nat) <? (prim multiply (project later resNumer) (project earlier resDenom) : Nat)) && (((project earlier uorcWorkUnits) <? (project later uorcWorkUnits)) && (not (project earlier losslessSource)))))
+}
+
+definition{
+  name: lodChainAscending,
+  parameters: [items : (List StreamingLodSpec)],
+  result: Bool,
+  body: (match items
+    | List.nil => true
+    | List.cons headLod rest => (match rest
+      | List.nil => (((project headLod rank) =? (natThree)) && (((project headLod resNumer) =? (project headLod resDenom)) && (project headLod losslessSource)))
+      | List.cons nextLod tail => ((lodStepValid headLod nextLod) && (lodChainAscending rest)))),
+  recursive_argument: items
+}
+
+definition{
+  name: lodsMonotonic,
+  parameters: [],
+  result: Bool,
+  body: (lodChainAscending (streamingLods))
+}
+
+definition{
+  name: lodChainDirect,
+  parameters: [],
+  result: Bool,
+  body: (if (lodStepValid (lod0CoarseProxy) (lod1MediumDetail)) then (if (lodStepValid (lod1MediumDetail) (lod2HighDetail)) then (if (lodStepValid (lod2HighDetail) (lod3LosslessSource)) then (if ((project (lod3LosslessSource) rank) =? (natThree)) then (if ((project (lod3LosslessSource) resNumer) =? (project (lod3LosslessSource) resDenom)) then (project (lod3LosslessSource) losslessSource) else false) else false) else false) else false) else false),
+  axioms: []
+}
+
+definition{
+  name: tensorKernelValid,
+  parameters: [k : TensorKernelSpec],
+  result: Bool,
+  body: (((0 <? (project k lhsCols)) && ((project k minAccumBits) <=? (project k accumBits))) && ((0 <? (project k minAccumBits)) && (project k tileAligned)))
+}
+
+definition{
+  name: allTensorKernelsValid,
+  parameters: [position : Nat, items : (List TensorKernelSpec)],
+  result: Bool,
+  body: (match items
+    | List.nil => true
+    | List.cons k rest => ((((project k index) =? position) && (tensorKernelValid k)) && (allTensorKernelsValid (position + 1) rest))),
+  recursive_argument: items
+}
+
+definition{
+  name: sevenTensorKernelsDirect,
+  parameters: [],
+  result: Bool,
+  body: (if (((project (kernel0StaticMesh) index) =? 0) && (tensorKernelValid (kernel0StaticMesh))) then (if (((project (kernel1LinearSkinning) index) =? 1) && (tensorKernelValid (kernel1LinearSkinning))) then (if (((project (kernel2TropicalBvhCull) index) =? (natTwo)) && (tensorKernelValid (kernel2TropicalBvhCull))) then (if (((project (kernel3TileRasterizer) index) =? (natThree)) && (tensorKernelValid (kernel3TileRasterizer))) then (if (((project (kernel4ShadowCascade) index) =? (natFour)) && (tensorKernelValid (kernel4ShadowCascade))) then (if (((project (kernel5ModalAudioMix) index) =? (natFive)) && (tensorKernelValid (kernel5ModalAudioMix))) then (((project (kernel6KinematicSpline) index) =? (natSix)) && (tensorKernelValid (kernel6KinematicSpline))) else false) else false) else false) else false) else false) else false),
+  axioms: []
+}
+
+definition{
+  name: zeroDimKernelSample,
+  parameters: [],
+  result: TensorKernelSpec,
+  body: (record TensorKernelSpec {index := 0, semiring := (ctor TensorSemiring.linearExact), lhsCols := 0, accumBits := (natNinetySix), minAccumBits := (natSixtyFour), tileAligned := true, autonomousKinematic := false, name := "ZeroExtentContraction", text := "Invalid tensor contraction with zero inner extent refused before execution."})
+}
+
+definition{
+  name: underflowAccumKernelSample,
+  parameters: [],
+  result: TensorKernelSpec,
+  body: (record TensorKernelSpec {index := 0, semiring := (ctor TensorSemiring.linearExact), lhsCols := (natFour), accumBits := (natThirty), minAccumBits := (natSixtyFour), tileAligned := true, autonomousKinematic := false, name := "NarrowAccumulatorContraction", text := "Invalid tensor contraction whose accumulator bit-width falls below exact Laurent overflow bounds."})
+}
+
+definition{
+  name: stratumCertifiedAt,
+  parameters: [rank : Nat],
+  result: Bool,
+  body: (let p : Nat := (Foundation.Ontology.V1.Model::nthPrimeConstructive rank); (Foundation.Ontology.V1.Model::verifyW5HCertificateComplete p p rank (Foundation.Ontology.V1.Model::triadicAgencyPrimeProduct true true true) 1 1 1 true))
+}
+
+definition{
+  name: strataCertifiedUpTo,
+  parameters: [rank : Nat],
+  result: Bool,
+  body: (match rank
+    | Nat.zero => (stratumCertifiedAt 0)
+    | Nat.succ prev => ((stratumCertifiedAt (prev + 1)) && (strataCertifiedUpTo prev))),
+  recursive_argument: rank
+}
+
+theorem{
+  name: streamingLodsStrictlyMonotonic,
+  parameters: [],
+  statement: ((((lodsMonotonic) && (not (project (lod0CoarseProxy) losslessSource))) && ((not (project (lod1MediumDetail) losslessSource)) && ((not (project (lod2HighDetail) losslessSource)) && (project (lod3LosslessSource) losslessSource)))) = true),
+  proof: decide{}
+}
+
+theorem{
+  name: allSevenTensorKernelsValid,
+  parameters: [],
+  statement: ((((allTensorKernelsValid 0 (tensorKernels)) && (tensorKernelValid (kernel0StaticMesh))) && (((tensorKernelValid (kernel1LinearSkinning)) && (tensorKernelValid (kernel2TropicalBvhCull))) && (((tensorKernelValid (kernel3TileRasterizer)) && (tensorKernelValid (kernel4ShadowCascade))) && ((tensorKernelValid (kernel5ModalAudioMix)) && ((tensorKernelValid (kernel6KinematicSpline)) && (project (kernel6KinematicSpline) autonomousKinematic)))))) = true),
+  proof: decide{}
+}
+
+theorem{
+  name: invalidTensorKernelsRefused,
+  parameters: [],
+  statement: (((not (tensorKernelValid (zeroDimKernelSample))) && (not (tensorKernelValid (underflowAccumKernelSample)))) = true),
+  proof: decide{}
+}
+
+theorem{
+  name: allEngineStrataCertified,
+  parameters: [],
+  statement: ((strataCertifiedUpTo (Foundation.Ontology.V1.Model::bitMaskConstructive (natThree))) = true),
+  proof: decide{}
+}
+
+theorem{
+  name: directChecksMatchLists,
+  parameters: [],
+  statement: (((lodChainDirect) && (sevenTensorKernelsDirect)) = ((lodsMonotonic) && (allTensorKernelsValid 0 (tensorKernels)))),
+  proof: decide{},
+  axioms: []
+}
+\end{semanticmodule}
+\end{lexlean}

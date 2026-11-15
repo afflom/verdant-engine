@@ -428,6 +428,51 @@ impl Mat4 {
         }
     }
 
+    /// Builds a pure translation matrix.
+    #[must_use]
+    pub fn from_translation(translation: Vec3) -> Self {
+        Self::from_trs(translation, Quat::IDENTITY, Vec3::new(1.0, 1.0, 1.0))
+    }
+
+    /// Builds a right-handed perspective projection matrix.
+    #[must_use]
+    pub fn perspective(fov_y_radians: f64, aspect_ratio: f64, z_near: f64, z_far: f64) -> Self {
+        let half = half_f64();
+        let two = two_f64();
+        let f = 1.0 / (fov_y_radians * half).tan().max(geometric_epsilon());
+        let aspect = aspect_ratio.max(geometric_epsilon());
+        let span = z_near - z_far;
+        let nf = if span.abs() < geometric_epsilon() {
+            -1.0
+        } else {
+            1.0 / span
+        };
+        Self {
+            cols: [
+                [f / aspect, 0.0, 0.0, 0.0],
+                [0.0, f, 0.0, 0.0],
+                [0.0, 0.0, (z_far + z_near) * nf, -1.0],
+                [0.0, 0.0, two * z_far * z_near * nf, 0.0],
+            ],
+        }
+    }
+
+    /// Builds a right-handed camera view matrix looking from `eye` toward `target`.
+    #[must_use]
+    pub fn look_at(eye: Vec3, target: Vec3, up: Vec3) -> Self {
+        let z_axis = (eye - target).normalized();
+        let x_axis = up.cross(z_axis).normalized();
+        let y_axis = z_axis.cross(x_axis);
+        Self {
+            cols: [
+                [x_axis.x, y_axis.x, z_axis.x, 0.0],
+                [x_axis.y, y_axis.y, z_axis.y, 0.0],
+                [x_axis.z, y_axis.z, z_axis.z, 0.0],
+                [-x_axis.dot(eye), -y_axis.dot(eye), -z_axis.dot(eye), 1.0],
+            ],
+        }
+    }
+
     /// Transforms a spatial point `(x, y, z, 1)`.
     #[must_use]
     pub fn transform_point3(self, p: Vec3) -> Vec3 {

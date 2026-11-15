@@ -24,12 +24,12 @@ pub struct AcousticEnvironment {
 }
 
 impl AcousticEnvironment {
-    /// Synthesizes an open-colonade travertine rotunda acoustic enclosure constructively.
+    /// Synthesizes a stone or masonry reflective chamber enclosure constructively.
     #[must_use]
-    pub fn travertine_rotunda(sound_speed_mps: f64) -> Self {
+    pub fn reflective_chamber(sound_speed_mps: f64) -> Self {
         let ten = pow10_u64(1) as f64;
         let hundred = pow10_u64(1 + 1) as f64;
-        let rotunda_num = crate::prism_kernel::rotundaAbsorptionNumer() as f64;
+        let chamber_num = crate::prism_kernel::reflectiveRoomAbsorptionNumer() as f64;
         let abs_denom = crate::prism_kernel::absorptionDenom()
             .expect("verified Prism kernel absorptionDenom") as f64;
         let head_r = 1.0 / (ten + 1.0); // ~0.0909 m spherical head radius
@@ -38,20 +38,20 @@ impl AcousticEnvironment {
             listener_head_radius_meters: head_r,
             enclosure_volume_m3: hundred * (four_u32() as f64),
             boundary_surface_area_m2: hundred * (three_u32() as f64),
-            mean_absorption_coeff: rotunda_num / abs_denom,
+            mean_absorption_coeff: chamber_num / abs_denom,
         }
     }
 
-    /// Synthesizes a vegetated open meadow enclosure with high canopy absorption.
+    /// Synthesizes a high-absorption damped exterior acoustic environment.
     #[must_use]
-    pub fn open_meadow(sound_speed_mps: f64) -> Self {
-        let rotunda = Self::travertine_rotunda(sound_speed_mps);
-        let meadow_num = crate::prism_kernel::meadowAbsorptionNumer() as f64;
+    pub fn damped_exterior(sound_speed_mps: f64) -> Self {
+        let chamber = Self::reflective_chamber(sound_speed_mps);
+        let ext_num = crate::prism_kernel::dampedExteriorAbsorptionNumer() as f64;
         let abs_denom = crate::prism_kernel::absorptionDenom()
             .expect("verified Prism kernel absorptionDenom") as f64;
         Self {
-            mean_absorption_coeff: meadow_num / abs_denom,
-            ..rotunda
+            mean_absorption_coeff: ext_num / abs_denom,
+            ..chamber
         }
     }
 
@@ -184,10 +184,10 @@ pub fn evaluate_binaural_cue(
     }
 }
 
-/// Synthesizes `mode_count` Euler-Bernoulli free-free cylindrical chime overtone frequencies (Hz)
+/// Synthesizes `mode_count` Euler-Bernoulli free-free cylindrical bar overtone frequencies (Hz)
 /// from fundamental `f_0`, where higher transverse modes scale as `(2n + 1)^2 / 3^2`.
 #[must_use]
-pub fn synthesize_euler_bernoulli_chime_modes(fundamental_hz: f64, mode_count: usize) -> Vec<f64> {
+pub fn synthesize_modal_bar_modes(fundamental_hz: f64, mode_count: usize) -> Vec<f64> {
     let base = crate::prism_kernel::eulerBernoulliModeDenom() as f64;
     let mut modes = Vec::with_capacity(mode_count);
     for idx in 0..mode_count {

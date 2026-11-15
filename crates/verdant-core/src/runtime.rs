@@ -1,5 +1,5 @@
 //! Browser/WebAssembly host runtime configuration, multi-worker DAG job scheduler,
-//! frame-budget KPI profiler, and SHA-256 deterministic binary world snapshot codec.
+//! frame-budget KPI profiler, and SHA-256 deterministic binary scene snapshot codec.
 
 use std::collections::{BTreeMap, BTreeSet, VecDeque};
 
@@ -8,20 +8,19 @@ use sha2::{Digest, Sha256};
 
 use crate::ecs::{EntityId, EntityRecord, EntityRole, SceneWorld, Transform};
 use crate::error::{EngineConfigError, SnapshotCodecError};
-use crate::genesis::{
-    ArchitecturalBlueprint, BuilderDiscipline, BuilderGuildSpec, BuilderOptimizationWeights,
-    CausalWorldState, CosmicEpoch, LithicSubstrate, PhysicalEnvironment, StructureKind,
-    TerrainReliefParams, WorldGenesisParams,
-};
 use crate::math::{Aabb, Quat, Vec3, DIM_HOMOGENEOUS};
 use crate::prism_kernel;
+use crate::streaming::{
+    LodLevel, PhysicalEnvironment, SceneBuildParams, SceneNodeInstance, SceneNodeKind,
+    StandardSceneState, TerrainReliefParams,
+};
 
 /// Browser / WebAssembly host capability envelope discovered at startup.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct BrowserCapabilities {
-    /// Whether `navigator.gpu` (`WebGPU`) is available.
-    pub webgpu_available: bool,
-    /// Whether `WebGL2RenderingContext` fallback is available.
+    /// Whether 128-bit WebAssembly SIMD tensor acceleration is available.
+    pub wasm_simd_available: bool,
+    /// Whether `WebGL2RenderingContext` viewport presentation is available.
     pub webgl2_available: bool,
     /// Logical hardware concurrency (`navigator.hardwareConcurrency`).
     pub hardware_concurrency: u32,
@@ -29,7 +28,7 @@ pub struct BrowserCapabilities {
     pub shared_array_buffer: bool,
     /// Whether `AudioWorklet` real-time spatial DSP is available.
     pub audio_worklet: bool,
-    /// Whether `OffscreenCanvas` worker rendering is available.
+    /// Whether `OffscreenCanvas` worker presentation is available.
     pub offscreen_canvas: bool,
 }
 
@@ -124,7 +123,7 @@ impl EngineConfig {
 /// Stage node in the engine's per-frame multi-worker task graph.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct JobNode {
-    /// Unique stage identifier (`ecs_transforms`, `bvh_rebuild`, `physics_step`, `cull_frustum`, `audio_mix`, `gpu_submit`).
+    /// Unique stage identifier (`ecs_transforms`, `bvh_rebuild`, `physics_step`, `frustum_cull`, `spatial_audio`, `frame_present`).
     pub id: String,
     /// Estimated execution cost in microseconds.
     pub estimated_micros: u64,
@@ -173,7 +172,7 @@ impl WorkerJobGraph {
         );
     }
 
-    /// Builds the canonical 6-stage parallel frame pipeline (`transforms -> {physics, bvh} -> {cull, audio} -> gpu_submit`).
+    /// Builds the canonical 6-stage parallel frame pipeline (`transforms -> {physics, bvh} -> {cull, audio} -> frame_present`).
     #[must_use]
     pub fn canonical_frame_pipeline(
         transforms_us: u64,
@@ -181,7 +180,7 @@ impl WorkerJobGraph {
         bvh_us: u64,
         cull_us: u64,
         audio_us: u64,
-        gpu_submit_us: u64,
+        present_us: u64,
     ) -> Self {
         let mut g = Self::new();
         g.add_job("ecs_transforms", transforms_us, &[]);
@@ -190,8 +189,8 @@ impl WorkerJobGraph {
         g.add_job("frustum_cull", cull_us, &["bvh_rebuild"]);
         g.add_job("spatial_audio", audio_us, &["physics_step"]);
         g.add_job(
-            "gpu_command_submit",
-            gpu_submit_us,
+            "frame_present",
+            present_us,
             &["physics_step", "frustum_cull", "spatial_audio"],
         );
         debug_assert_eq!(
@@ -241,7 +240,6 @@ impl WorkerJobGraph {
                 .max()
                 .unwrap_or(0);
 
-            // Choose earliest-available worker lane deterministically:
             let mut best_lane = 0usize;
             for l in 1..lanes {
                 if lane_free_at[l] < lane_free_at[best_lane] {
@@ -353,40 +351,32 @@ fn bytes_to_hex(bytes: &[u8]) -> String {
     out
 }
 
-const ALL_EPOCHS: &[CosmicEpoch] = &[
-    CosmicEpoch::Cosmogenic,
-    CosmicEpoch::LithicHydrologic,
-    CosmicEpoch::BioticEcological,
-    CosmicEpoch::AgenticArchitectural,
+const ALL_LOD_LEVELS: &[LodLevel] = &[
+    LodLevel::Lod0CoarseProxy,
+    LodLevel::Lod1MediumDetail,
+    LodLevel::Lod2HighDetail,
+    LodLevel::Lod3LosslessSource,
 ];
 
-const ALL_DISCIPLINES: &[BuilderDiscipline] = &[
-    BuilderDiscipline::LithicMasonry,
-    BuilderDiscipline::CelestialGnomonics,
-    BuilderDiscipline::ModalAcoustics,
-    BuilderDiscipline::HydrologicalEngineering,
-    BuilderDiscipline::KineticAutomation,
-];
-
-const ALL_STRUCTURE_KINDS: &[StructureKind] = &[
-    StructureKind::HarmonicRotundaPavilion,
-    StructureKind::SolarMeridianSundial,
-    StructureKind::ResonantChimePergola,
-    StructureKind::QuartzPendulumChamber,
-    StructureKind::HydrologicalPierCauseway,
-    StructureKind::TravertinePathNetwork,
-    StructureKind::PerimeterSentinelRover,
+const ALL_SCENE_NODE_KINDS: &[SceneNodeKind] = &[
+    SceneNodeKind::CentralArchPavilion,
+    SceneNodeKind::AxialMarkerTower,
+    SceneNodeKind::ModalAcousticsFrame,
+    SceneNodeKind::ArticulatedRigBay,
+    SceneNodeKind::ElevatedDeckBridge,
+    SceneNodeKind::NavigablePathGrid,
+    SceneNodeKind::KinematicSplineMover,
 ];
 
 const ALL_ENTITY_ROLES: &[EntityRole] = &[
-    EntityRole::CelestialLight,
-    EntityRole::TerrainFeature,
-    EntityRole::WaterBody,
-    EntityRole::BotanicalOrganism,
-    EntityRole::AutonomousFauna,
-    EntityRole::BuilderGuild,
-    EntityRole::EngineeredStructure,
-    EntityRole::KineticMachine,
+    EntityRole::DirectionalLight,
+    EntityRole::TerrainPatch,
+    EntityRole::FluidVolume,
+    EntityRole::SurfaceFoliage,
+    EntityRole::AutonomousAgent,
+    EntityRole::StaticArchitecture,
+    EntityRole::ArticulatedRig,
+    EntityRole::KinematicMover,
     EntityRole::PlayerRig,
 ];
 
@@ -401,6 +391,10 @@ impl BinWriter {
 
     fn write_u8(&mut self, v: u8) {
         self.buf.push(v);
+    }
+
+    fn write_bool(&mut self, v: bool) {
+        self.write_u8(u8::from(v));
     }
 
     fn write_u32(&mut self, v: u32) {
@@ -482,7 +476,7 @@ impl<'a> BinReader<'a> {
         })?;
         if end > self.bytes.len() {
             return Err(SnapshotCodecError::MalformedStatePayload {
-                detail: "unexpected end of binary world payload".to_string(),
+                detail: "unexpected end of binary scene payload".to_string(),
             });
         }
         let slice = &self.bytes[self.cursor..end];
@@ -492,6 +486,16 @@ impl<'a> BinReader<'a> {
 
     fn read_u8(&mut self) -> Result<u8, SnapshotCodecError> {
         Ok(self.read_exact(1)?[0])
+    }
+
+    fn read_bool(&mut self) -> Result<bool, SnapshotCodecError> {
+        match self.read_u8()? {
+            0 => Ok(false),
+            1 => Ok(true),
+            _ => Err(SnapshotCodecError::MalformedStatePayload {
+                detail: "invalid boolean byte in binary scene payload".to_string(),
+            }),
+        }
     }
 
     fn read_u32(&mut self) -> Result<u32, SnapshotCodecError> {
@@ -556,7 +560,7 @@ impl<'a> BinReader<'a> {
             .get(idx)
             .copied()
             .ok_or_else(|| SnapshotCodecError::MalformedStatePayload {
-                detail: "invalid enum ordinal in binary world payload".to_string(),
+                detail: "invalid enum ordinal in binary scene payload".to_string(),
             })
     }
 
@@ -565,21 +569,21 @@ impl<'a> BinReader<'a> {
             0 => Ok(None),
             1 => Ok(Some(self.read_u64()?)),
             _ => Err(SnapshotCodecError::MalformedStatePayload {
-                detail: "invalid option tag in binary world payload".to_string(),
+                detail: "invalid option tag in binary scene payload".to_string(),
             }),
         }
     }
 }
 
-fn encode_world_payload(world: &CausalWorldState) -> Result<Vec<u8>, SnapshotCodecError> {
+fn encode_scene_payload(world: &StandardSceneState) -> Result<Vec<u8>, SnapshotCodecError> {
     let mut w = BinWriter::new();
     w.write_u64(world.seed);
     let env = &world.params.environment;
     w.write_f64(env.gravity_mps2);
     w.write_f64(env.fluid_density_kg_m3);
     w.write_f64(env.sound_speed_mps);
-    w.write_f64(env.stellar_temperature_kelvin);
-    w.write_f64(env.solar_irradiance_w_m2);
+    w.write_f64(env.key_light_temperature_kelvin);
+    w.write_f64(env.key_light_irradiance_w_m2);
     w.write_f64(env.water_level_meters);
 
     let ter = &world.params.terrain;
@@ -592,60 +596,33 @@ fn encode_world_payload(world: &CausalWorldState) -> Result<Vec<u8>, SnapshotCod
     w.write_f64(ter.outer_rim_curvature);
     w.write_f64(ter.outer_rim_cap_m2);
 
-    w.write_f64(world.params.min_builder_ecological_maturity);
-    w.write_usize(world.params.max_flora_count);
-    w.write_usize(world.params.max_fauna_count);
-    w.write_usize(world.params.mineral_outcrop_count);
-    w.write_usize(world.params.rover_waypoint_count);
-    w.write_f64(world.params.rover_patrol_radius_meters);
+    w.write_usize(world.params.max_foliage_instances);
+    w.write_usize(world.params.max_agent_count);
+    w.write_usize(world.params.crystal_prop_count);
+    w.write_usize(world.params.spline_waypoint_count);
+    w.write_f64(world.params.spline_orbit_radius_meters);
 
-    w.write_f64(world.scale_factor);
-    w.write_enum(ALL_EPOCHS, &world.active_epoch)?;
+    w.write_enum(ALL_LOD_LEVELS, &world.active_lod)?;
+    w.write_f64(world.resolution_scale);
+    w.write_usize(world.foliage_count);
+    w.write_usize(world.agent_count);
 
-    w.write_f64(world.substrate.stellar_temperature_kelvin);
-    w.write_f64(world.substrate.solar_irradiance_w_m2);
-    w.write_f64(world.substrate.travertine_reserve_tons);
-    w.write_f64(world.substrate.quartz_reserve_tons);
-    w.write_f64(world.substrate.basalt_reserve_tons);
-    w.write_f64(world.substrate.metallic_trim_reserve_tons);
-    w.write_f64(world.substrate.lagoon_max_depth_meters);
-
-    w.write_f64(world.ecological_maturity);
-    w.write_usize(world.flora_count);
-    w.write_usize(world.fauna_count);
-
-    w.write_usize(world.builder_guilds.len());
-    for g in &world.builder_guilds {
-        w.write_str(&g.name);
-        w.write_enum(ALL_DISCIPLINES, &g.discipline)?;
-        w.write_f64(g.weights.shelter);
-        w.write_f64(g.weights.acoustic_resonance);
-        w.write_f64(g.weights.celestial_alignment);
-        w.write_f64(g.weights.geodesic_traversal);
-        w.write_f64(g.weights.focal_framing);
-        w.write_f64(g.weights.material_cost_penalty);
-        w.write_str(&g.governing_science);
+    w.write_usize(world.scene_nodes.len());
+    for node in &world.scene_nodes {
+        w.write_u64(node.preset_index);
+        w.write_str(&node.id_slug);
+        w.write_str(&node.title);
+        w.write_enum(ALL_SCENE_NODE_KINDS, &node.kind)?;
+        w.write_vec3(node.world_position);
+        w.write_f64(node.span_meters);
+        w.write_f64(node.height_meters);
+        w.write_f64(node.orbit_distance_meters);
+        w.write_f64(node.modal_frequency_hz);
+        w.write_bool(node.follow_mover);
     }
 
-    w.write_usize(world.blueprints.len());
-    for bp in &world.blueprints {
-        w.write_str(&bp.id_slug);
-        w.write_str(&bp.title);
-        w.write_enum(ALL_STRUCTURE_KINDS, &bp.kind)?;
-        w.write_enum(ALL_DISCIPLINES, &bp.lead_discipline)?;
-        w.write_vec3(bp.world_position);
-        w.write_f64(bp.span_meters);
-        w.write_f64(bp.height_meters);
-        w.write_f64(bp.section_thickness_meters);
-        w.write_f64(bp.thrust_eccentricity_ratio);
-        w.write_f64(bp.safety_factor);
-        w.write_f64(bp.net_engineering_utility);
-        w.write_f64(bp.modal_frequency_hz);
-        w.write_str(&bp.civilizational_purpose);
-    }
-
-    w.write_usize(world.rover_perimeter_waypoints.len());
-    for &wp in &world.rover_perimeter_waypoints {
+    w.write_usize(world.mover_spline_waypoints.len());
+    for &wp in &world.mover_spline_waypoints {
         w.write_vec3(wp);
     }
 
@@ -666,21 +643,21 @@ fn encode_world_payload(world: &CausalWorldState) -> Result<Vec<u8>, SnapshotCod
         w.write_aabb(rec.local_bounds);
         w.write_opt_u64(rec.mesh_index.map(|m| m as u64));
         w.write_opt_u64(rec.material_index.map(|m| m as u64));
-        w.write_f64(rec.emerged_at_scale);
+        w.write_f64(rec.emerged_at_lod_scale);
         w.write_str(&rec.provenance_tag);
     }
     Ok(w.buf)
 }
 
-fn decode_world_payload(payload: &[u8]) -> Result<CausalWorldState, SnapshotCodecError> {
+fn decode_scene_payload(payload: &[u8]) -> Result<StandardSceneState, SnapshotCodecError> {
     let mut r = BinReader::new(payload);
     let seed = r.read_u64()?;
     let environment = PhysicalEnvironment {
         gravity_mps2: r.read_f64()?,
         fluid_density_kg_m3: r.read_f64()?,
         sound_speed_mps: r.read_f64()?,
-        stellar_temperature_kelvin: r.read_f64()?,
-        solar_irradiance_w_m2: r.read_f64()?,
+        key_light_temperature_kelvin: r.read_f64()?,
+        key_light_irradiance_w_m2: r.read_f64()?,
         water_level_meters: r.read_f64()?,
     };
     let terrain = TerrainReliefParams {
@@ -693,73 +670,41 @@ fn decode_world_payload(payload: &[u8]) -> Result<CausalWorldState, SnapshotCode
         outer_rim_curvature: r.read_f64()?,
         outer_rim_cap_m2: r.read_f64()?,
     };
-    let params = WorldGenesisParams {
+    let params = SceneBuildParams {
         environment,
         terrain,
-        min_builder_ecological_maturity: r.read_f64()?,
-        max_flora_count: r.read_usize()?,
-        max_fauna_count: r.read_usize()?,
-        mineral_outcrop_count: r.read_usize()?,
-        rover_waypoint_count: r.read_usize()?,
-        rover_patrol_radius_meters: r.read_f64()?,
+        max_foliage_instances: r.read_usize()?,
+        max_agent_count: r.read_usize()?,
+        crystal_prop_count: r.read_usize()?,
+        spline_waypoint_count: r.read_usize()?,
+        spline_orbit_radius_meters: r.read_f64()?,
     };
-    let scale_factor = r.read_f64()?;
-    let active_epoch = r.read_enum(ALL_EPOCHS)?;
-    let substrate = LithicSubstrate {
-        stellar_temperature_kelvin: r.read_f64()?,
-        solar_irradiance_w_m2: r.read_f64()?,
-        travertine_reserve_tons: r.read_f64()?,
-        quartz_reserve_tons: r.read_f64()?,
-        basalt_reserve_tons: r.read_f64()?,
-        metallic_trim_reserve_tons: r.read_f64()?,
-        lagoon_max_depth_meters: r.read_f64()?,
-    };
-    let ecological_maturity = r.read_f64()?;
-    let flora_count = r.read_usize()?;
-    let fauna_count = r.read_usize()?;
+    let active_lod = r.read_enum(ALL_LOD_LEVELS)?;
+    let resolution_scale = r.read_f64()?;
+    let foliage_count = r.read_usize()?;
+    let agent_count = r.read_usize()?;
 
-    let guild_len = r.read_usize()?;
-    let mut builder_guilds = Vec::with_capacity(guild_len.min(payload.len()));
-    for _ in 0..guild_len {
-        builder_guilds.push(BuilderGuildSpec {
-            name: r.read_string()?,
-            discipline: r.read_enum(ALL_DISCIPLINES)?,
-            weights: BuilderOptimizationWeights {
-                shelter: r.read_f64()?,
-                acoustic_resonance: r.read_f64()?,
-                celestial_alignment: r.read_f64()?,
-                geodesic_traversal: r.read_f64()?,
-                focal_framing: r.read_f64()?,
-                material_cost_penalty: r.read_f64()?,
-            },
-            governing_science: r.read_string()?,
-        });
-    }
-
-    let bp_len = r.read_usize()?;
-    let mut blueprints = Vec::with_capacity(bp_len.min(payload.len()));
-    for _ in 0..bp_len {
-        blueprints.push(ArchitecturalBlueprint {
+    let node_len = r.read_usize()?;
+    let mut scene_nodes = Vec::with_capacity(node_len.min(payload.len()));
+    for _ in 0..node_len {
+        scene_nodes.push(SceneNodeInstance {
+            preset_index: r.read_u64()?,
             id_slug: r.read_string()?,
             title: r.read_string()?,
-            kind: r.read_enum(ALL_STRUCTURE_KINDS)?,
-            lead_discipline: r.read_enum(ALL_DISCIPLINES)?,
+            kind: r.read_enum(ALL_SCENE_NODE_KINDS)?,
             world_position: r.read_vec3()?,
             span_meters: r.read_f64()?,
             height_meters: r.read_f64()?,
-            section_thickness_meters: r.read_f64()?,
-            thrust_eccentricity_ratio: r.read_f64()?,
-            safety_factor: r.read_f64()?,
-            net_engineering_utility: r.read_f64()?,
+            orbit_distance_meters: r.read_f64()?,
             modal_frequency_hz: r.read_f64()?,
-            civilizational_purpose: r.read_string()?,
+            follow_mover: r.read_bool()?,
         });
     }
 
     let wp_len = r.read_usize()?;
-    let mut rover_perimeter_waypoints = Vec::with_capacity(wp_len.min(payload.len()));
+    let mut mover_spline_waypoints = Vec::with_capacity(wp_len.min(payload.len()));
     for _ in 0..wp_len {
-        rover_perimeter_waypoints.push(r.read_vec3()?);
+        mover_spline_waypoints.push(r.read_vec3()?);
     }
 
     let next_id = r.read_u64()?;
@@ -783,7 +728,7 @@ fn decode_world_payload(payload: &[u8]) -> Result<CausalWorldState, SnapshotCode
         let local_bounds = r.read_aabb()?;
         let mesh_index = r.read_opt_u64()?.map(|v| v as usize);
         let material_index = r.read_opt_u64()?.map(|v| v as usize);
-        let emerged_at_scale = r.read_f64()?;
+        let emerged_at_lod_scale = r.read_f64()?;
         let provenance_tag = r.read_string()?;
         entities.insert(
             id,
@@ -797,39 +742,36 @@ fn decode_world_payload(payload: &[u8]) -> Result<CausalWorldState, SnapshotCode
                 local_bounds,
                 mesh_index,
                 material_index,
-                emerged_at_scale,
+                emerged_at_lod_scale,
                 provenance_tag,
             },
         );
     }
     if r.cursor != payload.len() {
         return Err(SnapshotCodecError::MalformedStatePayload {
-            detail: "trailing bytes in binary world payload".to_string(),
+            detail: "trailing bytes in binary scene payload".to_string(),
         });
     }
-    Ok(CausalWorldState {
+    Ok(StandardSceneState {
         seed,
         params,
-        scale_factor,
-        active_epoch,
-        substrate,
-        ecological_maturity,
-        flora_count,
-        fauna_count,
-        builder_guilds,
-        blueprints,
-        rover_perimeter_waypoints,
+        active_lod,
+        resolution_scale,
+        foliage_count,
+        agent_count,
+        scene_nodes,
+        mover_spline_waypoints,
         scene: SceneWorld { next_id, entities },
     })
 }
 
-/// Deterministic `VDNT` v1 + SHA-256 binary world snapshot envelope for save/load & replay verification.
+/// Deterministic `VDNT` v1 + SHA-256 binary scene snapshot envelope for save/load & replay verification.
 pub struct WorldSnapshot;
 
 impl WorldSnapshot {
     /// Encodes `world` into a self-verifying `VDNT\x01` + length + IEEE-754 binary payload + 32-byte SHA-256 trailer.
-    pub fn encode(world: &CausalWorldState) -> Result<Vec<u8>, SnapshotCodecError> {
-        let payload = encode_world_payload(world)?;
+    pub fn encode(world: &StandardSceneState) -> Result<Vec<u8>, SnapshotCodecError> {
+        let payload = encode_scene_payload(world)?;
         let header_len = prism_kernel::snapshotHeaderBytes()
             .expect("verified Prism kernel snapshotHeaderBytes") as usize;
         let digest_len = prism_kernel::snapshotSha256Bytes()
@@ -851,8 +793,8 @@ impl WorldSnapshot {
         Ok(wire)
     }
 
-    /// Verifies the `VDNT\x01` header and SHA-256 integrity digest before deserializing `CausalWorldState`.
-    pub fn decode(bytes: &[u8]) -> Result<CausalWorldState, SnapshotCodecError> {
+    /// Verifies the `VDNT\x01` header and SHA-256 integrity digest before deserializing `StandardSceneState`.
+    pub fn decode(bytes: &[u8]) -> Result<StandardSceneState, SnapshotCodecError> {
         let header_len = prism_kernel::snapshotHeaderBytes()
             .expect("verified Prism kernel snapshotHeaderBytes") as usize;
         let digest_len = prism_kernel::snapshotSha256Bytes()
@@ -894,6 +836,6 @@ impl WorldSnapshot {
             });
         }
 
-        decode_world_payload(payload)
+        decode_scene_payload(payload)
     }
 }

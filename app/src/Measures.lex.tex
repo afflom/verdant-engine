@@ -6,32 +6,32 @@
 \importmodule{Engine}
 \importmodule{Foundation.Experience.V1.Model}
 \importmodule{Foundation.Ontology.V1.Model}
-\importmodule{Genesis}
+\importmodule{Tensor}
 \importmodule{Users}
 \title{Measurement methods of the model}
 \begin{semanticmodule}
 definition{
-  name: countInvalidBlueprints,
-  parameters: [items : (List Genesis::BlueprintSpec)],
+  name: countInvalidTensorKernels,
+  parameters: [items : (List Tensor::TensorKernelSpec)],
   result: Nat,
   body: (match items
     | List.nil => 0
-    | List.cons item rest => ((if (Genesis::blueprintValid item) then 0 else 1) + (countInvalidBlueprints rest))),
+    | List.cons item rest => ((if (Tensor::tensorKernelValid item) then 0 else 1) + (countInvalidTensorKernels rest))),
   recursive_argument: items
 }
 
 definition{
-  name: unstableBlueprints,
+  name: invalidTensorKernels,
   parameters: [],
   result: Nat,
-  body: (countInvalidBlueprints (Genesis::blueprints))
+  body: (countInvalidTensorKernels (Tensor::tensorKernels))
 }
 
 definition{
-  name: disorderedEpochs,
+  name: disorderedStreamingLods,
   parameters: [],
   result: Nat,
-  body: (if (Genesis::epochsMonotonic) then 0 else 1)
+  body: (if (Tensor::lodsMonotonic) then 0 else 1)
 }
 
 definition{

@@ -1,14 +1,14 @@
 //! Deterministic Symplectic Euler rigid-body, capsule controller, fluid buoyancy, and spline physics.
 //!
 //! All dynamics are parameterized by [`PhysicsWorldConfig`] (`PhysicalEnvironment`,
-//! `TerrainReliefParams`, stability timestep cap, restitution, damping, and optional causeway deck
+//! `TerrainReliefParams`, stability timestep cap, restitution, damping, and optional elevated deck
 //! elevation) with zero arbitrary magic constants.
 
 use serde::{Deserialize, Serialize};
 
 use crate::error::PhysicsStepError;
-use crate::genesis::{terrain_height_with_params, PhysicalEnvironment, TerrainReliefParams};
 use crate::math::{geometric_epsilon, half_f64, three_u32, two_f64, Aabb, Quat, Vec3};
+use crate::streaming::{terrain_height_with_params, PhysicalEnvironment, TerrainReliefParams};
 
 /// Parametric configuration of a deterministic 3D physics world.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
@@ -23,8 +23,8 @@ pub struct PhysicsWorldConfig {
     pub max_dt_seconds: f64,
     /// Default linear velocity air/ground damping coefficient (`1/s`).
     pub linear_damping: f64,
-    /// Optional stone causeway deck box `(bounds, deck_top_y)` bridging water basins.
-    pub causeway_deck: Option<(Aabb, f64)>,
+    /// Optional elevated platform deck box `(bounds, deck_top_y)` bridging fluid basins.
+    pub platform_deck: Option<(Aabb, f64)>,
 }
 
 impl Default for PhysicsWorldConfig {
@@ -32,7 +32,7 @@ impl Default for PhysicsWorldConfig {
         let half = half_f64();
         let quarter = half * half;
         let env = PhysicalEnvironment::temperate_terrestrial();
-        let relief = TerrainReliefParams::sanctuary_amphitheater();
+        let relief = TerrainReliefParams::standard_basin_valley();
         let deck_half = (three_u32() as f64) + two_f64();
         let deck_y = env.water_level_meters + quarter;
         let deck_bounds = Aabb::from_center_half_extents(
@@ -45,7 +45,7 @@ impl Default for PhysicsWorldConfig {
             terrain_relief: relief,
             max_dt_seconds: quarter,
             linear_damping: half,
-            causeway_deck: Some((deck_bounds, deck_y)),
+            platform_deck: Some((deck_bounds, deck_y)),
         }
     }
 }
@@ -129,7 +129,7 @@ pub struct CapsuleController {
     pub eye_height_meters: f64,
     /// Maximum planar walk speed in `m/s`.
     pub move_speed_mps: f64,
-    /// Whether the capsule is grounded on terrain or a structural causeway deck.
+    /// Whether the capsule is grounded on terrain or an elevated platform deck.
     pub grounded: bool,
 }
 
@@ -163,7 +163,7 @@ impl CapsuleController {
 /// Harmonic damped torsion or flexural spring oscillator (`m * x'' + c * x' + k * x = F_ext`).
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct ArticulatedSpringJoint {
-    /// Joint identifier (`rotunda_gimbal`, `quartz_torsion_pendulum`, `flora_culm`).
+    /// Joint identifier (`gimbal_ring`, `torsion_pendulum`, `flexural_beam`).
     pub name: String,
     /// Angular or linear displacement from equilibrium.
     pub displacement: f64,
@@ -186,9 +186,9 @@ impl ArticulatedSpringJoint {
     }
 }
 
-/// Autonomous rover following a closed piecewise-smooth waypoint loop around the world scene.
+/// Autonomous kinematic mover following a closed piecewise-smooth waypoint spline loop.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct KinematicSplineRover {
+pub struct KinematicSplineBody {
     /// Closed-loop world-space waypoints.
     pub waypoints: Vec<Vec3>,
     /// Continuous arc-progress parameter along `[0, waypoints.len())`.
@@ -205,8 +205,8 @@ pub struct KinematicSplineRover {
     pub distance_traveled_meters: f64,
 }
 
-impl KinematicSplineRover {
-    /// Initializes an autonomous rover on `waypoints` cruising at `cruise_speed_mps`.
+impl KinematicSplineBody {
+    /// Initializes a kinematic spline mover on `waypoints` cruising at `cruise_speed_mps`.
     #[must_use]
     pub fn new(waypoints: Vec<Vec3>, cruise_speed_mps: f64) -> Self {
         let initial_pos = waypoints.first().copied().unwrap_or(Vec3::ZERO);
@@ -227,7 +227,7 @@ impl KinematicSplineRover {
         }
     }
 
-    /// Advances the rover along its closed perimeter spline by `dt_seconds`.
+    /// Advances the kinematic mover along its closed waypoint spline by `dt_seconds`.
     pub fn step(&mut self, dt_seconds: f64) {
         let count = self.waypoints.len();
         if count <= 1 {
@@ -254,7 +254,7 @@ impl KinematicSplineRover {
     }
 }
 
-/// Deterministic 3D physics world combining rigid bodies, capsule player, spring joints, and rover.
+/// Deterministic 3D physics world combining rigid bodies, capsule player, spring joints, and spline mover.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct PhysicsWorld {
     /// Parametric physics configuration.
@@ -265,8 +265,8 @@ pub struct PhysicsWorld {
     pub player_capsule: Option<CapsuleController>,
     /// Harmonic spring-damper joints.
     pub joints: Vec<ArticulatedSpringJoint>,
-    /// Optional autonomous perimeter sentinel rover.
-    pub sentinel_rover: Option<KinematicSplineRover>,
+    /// Optional closed-spline kinematic mover.
+    pub kinematic_mover: Option<KinematicSplineBody>,
     /// Total simulated time in seconds.
     pub elapsed_seconds: f64,
 }
@@ -280,17 +280,17 @@ impl PhysicsWorld {
             bodies: Vec::new(),
             player_capsule: None,
             joints: Vec::new(),
-            sentinel_rover: None,
+            kinematic_mover: None,
             elapsed_seconds: 0.0,
         }
     }
 
-    /// Evaluates supporting surface height (`terrain` or `causeway_deck`) at `(x, z)`.
+    /// Evaluates supporting surface height (`terrain` or `platform_deck`) at `(x, z)`.
     #[must_use]
     pub fn support_surface_height(&self, x: f64, z: f64) -> f64 {
         let mut h =
             terrain_height_with_params(self.config.terrain_seed, &self.config.terrain_relief, x, z);
-        if let Some((deck_box, deck_top_y)) = self.config.causeway_deck {
+        if let Some((deck_box, deck_top_y)) = self.config.platform_deck {
             if x >= deck_box.min.x
                 && x <= deck_box.max.x
                 && z >= deck_box.min.z
@@ -302,7 +302,7 @@ impl PhysicsWorld {
         h
     }
 
-    /// Advances all bodies, capsule controllers, joints, and rovers by `dt_seconds`.
+    /// Advances all bodies, capsule controllers, joints, and kinematic movers by `dt_seconds`.
     pub fn step(&mut self, dt_seconds: f64, planar_wish_dir: Vec3) -> Result<(), PhysicsStepError> {
         if !dt_seconds.is_finite() || dt_seconds <= 0.0 || dt_seconds > self.config.max_dt_seconds {
             return Err(PhysicsStepError::InvalidTimeStepSeconds {
@@ -379,7 +379,7 @@ impl PhysicsWorld {
             capsule.velocity.y -= g * dt_seconds;
             capsule.foot_position = capsule.foot_position + capsule.velocity.scale(dt_seconds);
 
-            // Keep wading or walking cleanly on terrain or causeway piers above water table:
+            // Keep wading or walking cleanly on terrain or elevated decks above water table:
             let support_y = self
                 .support_surface_height(capsule.foot_position.x, capsule.foot_position.z)
                 .max(water_y - half_f64());
@@ -398,8 +398,8 @@ impl PhysicsWorld {
             joint.step(dt_seconds, breeze_drive);
         }
 
-        if let Some(rover) = &mut self.sentinel_rover {
-            rover.step(dt_seconds);
+        if let Some(mover) = &mut self.kinematic_mover {
+            mover.step(dt_seconds);
         }
 
         self.elapsed_seconds += dt_seconds;

@@ -7,7 +7,7 @@ frame = "atom"
 [denotation]
 kind = "document"
 module = "Features"
-component = "featureWorldExpansion"
+component = "featureProgressiveUorcStreaming"
 
 [[form]]
 id = "verdant-engine-features-and-journeys"

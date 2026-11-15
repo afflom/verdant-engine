@@ -37,3 +37,25 @@ deny = []
 unknown-registry = "deny"
 unknown-git = "deny"
 allow-registry = ["https://github.com/rust-lang/crates.io-index"]
+allow-git = [
+    "https://github.com/UOR-Foundation/compression",
+    "https://github.com/UOR-Foundation/uor-matmul",
+]
+
+# The client crates LexLean exports inside UOR-Foundation/compression carry no
+# separate package license field; they are UOR-Foundation/compression's own
+# generated code under its MIT OR Apache-2.0 workspace license.
+[[licenses.clarify]]
+crate = "uorc_compress"
+expression = "MIT OR Apache-2.0"
+license-files = []
+
+[[licenses.clarify]]
+crate = "uorc_decompress"
+expression = "MIT OR Apache-2.0"
+license-files = []
+
+[[licenses.clarify]]
+crate = "uorc_search"
+expression = "MIT OR Apache-2.0"
+license-files = []

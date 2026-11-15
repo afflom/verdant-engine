@@ -1,6 +1,6 @@
 [package]
 name = "verdant-core"
-description = "General-purpose 3D browser and WebAssembly game engine with causal world generation, architectural statics, physically based rendering, Khronos glTF 2.0, W3C WGSL shaders, rigid-body and fluid physics, and spatial audio."
+description = "Universal 3D browser and WebAssembly game engine powered by Prism tensor kernels, UORC high-resolution streaming, physically based rendering, Khronos glTF 2.0, rigid-body physics, skeletal animation, navmesh pathfinding, and spatial audio."
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
@@ -17,6 +17,8 @@ naga = { version = "24.0.0", features = ["wgsl-in"] }
 serde = { version = "1.0.219", features = ["derive"] }
 serde_json = "1.0.140"
 sha2 = "0.10.9"
+uor-matmul.workspace = true
+uorc.workspace = true
 
 [lints]
 workspace = true

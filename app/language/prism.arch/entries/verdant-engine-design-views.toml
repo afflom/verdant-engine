@@ -7,7 +7,7 @@ frame = "atom"
 [denotation]
 kind = "document"
 module = "Design"
-component = "viewOpmWorldGenesis"
+component = "viewOpmSceneStreaming"
 
 [[form]]
 id = "verdant-engine-design-views"
