@@ -1,15 +1,22 @@
-//! Conformance suite for `verdant-core` and the Verdant Engine verifier (`VE-01`..`VE-10`).
+//! Conformance suite for `verdant-core` and the Verdant Engine verifier (`VE-01`..`VE-14`).
 
 use std::path::PathBuf;
 
+use verdant_core::animation::{
+    skin_mesh_linear_blend, Joint, KeyframePose, SkeletalClip, Skeleton, SkinWeights4,
+};
 use verdant_core::audio::{
     evaluate_binaural_cue, synthesize_euler_bernoulli_chime_modes, AcousticEnvironment,
     ListenerPose, SpatialAudioSource,
 };
+use verdant_core::collision::{
+    gjk_intersect_and_manifold, solve_contact_impulse, ConvexHullCollider,
+};
 use verdant_core::ecs::{EntityRole, SceneWorld, Transform};
 use verdant_core::error::{
-    AssetValidationError, EngineConfigError, PhysicsStepError, ShaderValidationError,
-    SnapshotCodecError, StructuralEquilibriumError, WorldEpochError,
+    AnimationError, AssetValidationError, CollisionError, EngineConfigError, NavigationError,
+    PhysicsStepError, RenderGraphError, ShaderValidationError, SnapshotCodecError,
+    StructuralEquilibriumError, WorldEpochError,
 };
 use verdant_core::genesis::{
     heyman_middle_third_limit, verify_blueprint_equilibrium, CausalWorldState, CosmicEpoch,
@@ -18,12 +25,13 @@ use verdant_core::genesis::{
 use verdant_core::geometry::{canonical_scene_mesh_library, MorphTarget, ProceduralMesh};
 use verdant_core::gltf_io::{export_scene_to_glb, validate_glb_bytes};
 use verdant_core::math::{Aabb, Frustum, Quat, Ray, Vec3};
+use verdant_core::navmesh::{steer_along_corridor, NavMesh};
 use verdant_core::physics::{
     CapsuleController, KinematicSplineRover, PhysicsWorld, PhysicsWorldConfig, RigidBody,
 };
 use verdant_core::render::{
-    canonical_pbr_material_library, validate_builtin_engine_shaders, validate_wgsl_shader,
-    WGSL_PBR_SURFACE_SHADER,
+    canonical_pbr_material_library, compute_csm_splits, validate_builtin_engine_shaders,
+    validate_wgsl_shader, IblEnvironmentProbe, RenderFrameGraph, WGSL_PBR_SURFACE_SHADER,
 };
 use verdant_core::runtime::{EngineConfig, FrameBudgetProfiler, WorkerJobGraph, WorldSnapshot};
 
@@ -211,7 +219,7 @@ fn engine_ve_04() {
 #[test]
 fn engine_ve_05() {
     let modules = validate_builtin_engine_shaders().expect("all built-in WGSL shaders valid");
-    assert_eq!(modules.len(), 3);
+    assert_eq!(modules.len(), 4);
 
     // Negative refusal 1: malformed WGSL syntax rejected by `naga`:
     let syntax_err = validate_wgsl_shader("broken.wgsl", "@vertex fn vs_main( -> {}", &["vs_main"])
@@ -303,6 +311,7 @@ fn engine_ve_07() {
     let modes = synthesize_euler_bernoulli_chime_modes(440.0, 4);
     assert_eq!(modes.len(), 4);
     assert!(modes[1] > modes[0]);
+    assert!(rotunda.sabine_rt60_prism_millis() > meadow.sabine_rt60_prism_millis());
 }
 
 /// `VE-08`: Acyclic worker job graph, frame-budget KPI profiler, and `EngineConfigError` refusal.
@@ -420,4 +429,246 @@ fn engine_ve_10() {
         overflow,
         verdant_core::prism_kernel::ComputeError::MulOverflow
     );
+
+    // Verify deepened Prism subsystem acceptance queries directly in `prism_kernel::dispatch`:
+    for (query, expected) in [
+        (
+            &b"scene:animation"[..],
+            "conformant:joints_per_vertex=4,weight_scale=1000,morph_limit=8,acyclic=true",
+        ),
+        (
+            &b"scene:rendergraph"[..],
+            "conformant:csm_cascades=4,splits=1/3/7/15,denom=15,ibl_mips_256=9,passes=5",
+        ),
+        (
+            &b"scene:collision"[..],
+            "conformant:simplex=4,gjk_iters=32,baumgarte=1/5,coulomb_cone=true",
+        ),
+        (
+            &b"scene:navmesh"[..],
+            "conformant:walkable_ny_min=700/1000,max_nodes=1024,admissible_astar=true",
+        ),
+        (
+            &b"scene:wasmbridge"[..],
+            "conformant:worklet_quantum=128,channels=2,ring_slots=64,snapshot_url_max=16384",
+        ),
+    ] {
+        let out = verdant_core::prism_kernel::dispatch(query.to_vec()).expect("dispatch");
+        assert_eq!(std::str::from_utf8(&out).unwrap(), expected);
+    }
+}
+
+/// `VE-11`: Skeletal joint hierarchies, normalized four-joint LBS skinning, keyframe sampling, and `AnimationError` refusal.
+#[test]
+fn engine_ve_11() {
+    let skeleton = Skeleton::new(vec![
+        Joint {
+            name: "root".to_string(),
+            parent_index: 0,
+            is_root: true,
+            rest_translation: Vec3::ZERO,
+            rest_rotation: Quat::IDENTITY,
+        },
+        Joint {
+            name: "arm".to_string(),
+            parent_index: 0,
+            is_root: false,
+            rest_translation: Vec3::new(0.0, 1.0, 0.0),
+            rest_rotation: Quat::IDENTITY,
+        },
+    ])
+    .expect("valid acyclic skeleton");
+
+    let clip = SkeletalClip {
+        name: "LiftArm".to_string(),
+        duration_millis: 1_000,
+        keyframes: vec![
+            KeyframePose {
+                time_millis: 0,
+                joint_translations: vec![Vec3::ZERO, Vec3::new(0.0, 1.0, 0.0)],
+                joint_rotations: vec![Quat::IDENTITY, Quat::IDENTITY],
+                morph_weights_permille: vec![0],
+            },
+            KeyframePose {
+                time_millis: 1_000,
+                joint_translations: vec![Vec3::ZERO, Vec3::new(0.0, 3.0, 0.0)],
+                joint_rotations: vec![
+                    Quat::IDENTITY,
+                    Quat::from_axis_angle(Vec3::new(0.0, 0.0, 1.0), 0.5),
+                ],
+                morph_weights_permille: vec![1_000],
+            },
+        ],
+    };
+
+    let mid_pose = clip.sample(&skeleton, 500).expect("midpoint pose");
+    assert!((mid_pose.joint_translations[1].y - 2.0).abs() < 1e-3);
+    assert_eq!(mid_pose.morph_weights_permille[0], 500);
+
+    let mesh = ProceduralMesh {
+        name: "LimbQuad".to_string(),
+        positions: vec![[0.0, 1.0, 0.0], [0.5, 1.0, 0.0], [0.0, 2.0, 0.0]],
+        normals: vec![[0.0, 0.0, 1.0]; 3],
+        uvs: vec![[0.0, 0.0], [1.0, 0.0], [0.0, 1.0]],
+        colors: vec![[1.0, 1.0, 1.0, 1.0]; 3],
+        indices: vec![0, 1, 2],
+        morph_targets: vec![MorphTarget {
+            name: "Crest".to_string(),
+            position_deltas: vec![[0.0, 0.2, 0.0]; 3],
+        }],
+    };
+    let weights = vec![
+        SkinWeights4::new([0, 1, 0, 0], [500, 500, 0, 0], skeleton.joints.len()).unwrap(),
+        SkinWeights4::new([1, 0, 0, 0], [1_000, 0, 0, 0], skeleton.joints.len()).unwrap(),
+        SkinWeights4::new([1, 0, 0, 0], [1_000, 0, 0, 0], skeleton.joints.len()).unwrap(),
+    ];
+    let deformed =
+        skin_mesh_linear_blend(&mesh, &skeleton, &mid_pose, &weights).expect("skinned mesh");
+    assert!(deformed.positions[2][1] > mesh.positions[2][1]);
+
+    // Negative refusal 1: cyclic / out-of-order parent joint refused:
+    let bad_skel = Skeleton::new(vec![
+        Joint {
+            name: "root".to_string(),
+            parent_index: 0,
+            is_root: true,
+            rest_translation: Vec3::ZERO,
+            rest_rotation: Quat::IDENTITY,
+        },
+        Joint {
+            name: "self_parent".to_string(),
+            parent_index: 1,
+            is_root: false,
+            rest_translation: Vec3::ZERO,
+            rest_rotation: Quat::IDENTITY,
+        },
+    ])
+    .expect_err("self-parented joint must be refused");
+    assert!(matches!(
+        bad_skel,
+        AnimationError::InvalidJointHierarchy { .. }
+    ));
+
+    // Negative refusal 2: unnormalized skinning weights refused:
+    let bad_weights = SkinWeights4::new([0, 1, 0, 0], [400, 400, 0, 0], skeleton.joints.len())
+        .expect_err("weights summing to 800 != 1000 must fail");
+    assert!(matches!(
+        bad_weights,
+        AnimationError::UnnormalizedOrInvalidSkinWeights { .. }
+    ));
+}
+
+/// `VE-12`: Cascaded shadow frustum splits, IBL mip chains, five-pass render graph, and `RenderGraphError` refusal.
+#[test]
+fn engine_ve_12() {
+    let splits = compute_csm_splits(0.5, 150.5).expect("valid CSM splits");
+    assert_eq!(splits.len(), 4);
+    assert!((splits[0].near_meters - 0.5).abs() < 1e-3);
+    assert!((splits[3].far_meters - 150.5).abs() < 1e-3);
+    for pair in splits.windows(2) {
+        assert!(pair[1].far_meters > pair[0].far_meters);
+    }
+
+    let probe = IblEnvironmentProbe::from_resolution(256).expect("256px cubemap");
+    assert_eq!(probe.mip_level_count, 9);
+
+    let graph = RenderFrameGraph::canonical_pbr_shadow_pipeline();
+    assert_eq!(graph.validate().expect("canonical 5-pass graph"), 5);
+
+    // Negative refusal 1: inverted shadow bounds refused:
+    let bounds_err = compute_csm_splits(50.0, 10.0).expect_err("far < near must fail");
+    assert!(matches!(
+        bounds_err,
+        RenderGraphError::InvalidShadowFrustumBounds { .. }
+    ));
+
+    // Negative refusal 2: backward render-pass barrier edge refused:
+    let mut bad_graph = RenderFrameGraph::canonical_pbr_shadow_pipeline();
+    bad_graph.dependencies.push((3, 1));
+    let dep_err = bad_graph.validate().expect_err("backward pass edge fails");
+    assert!(matches!(
+        dep_err,
+        RenderGraphError::InvalidPassDependency { .. }
+    ));
+}
+
+/// `VE-13`: 3D GJK convex hull collision manifolds, Prism contact solver, and `CollisionError` refusal.
+#[test]
+fn engine_ve_13() {
+    let box_a = ConvexHullCollider::from_box_half_extents(Vec3::new(1.0, 1.0, 1.0)).unwrap();
+    let box_b = ConvexHullCollider::from_box_half_extents(Vec3::new(1.0, 1.0, 1.0)).unwrap();
+
+    let hit =
+        gjk_intersect_and_manifold(&box_a, Vec3::ZERO, &box_b, Vec3::new(1.2, 0.0, 0.0)).unwrap();
+    assert!(hit.intersecting);
+    assert!(hit.penetration_meters > 0.7 && hit.penetration_meters < 0.9);
+
+    let sep =
+        gjk_intersect_and_manifold(&box_a, Vec3::ZERO, &box_b, Vec3::new(3.5, 0.0, 0.0)).unwrap();
+    assert!(!sep.intersecting);
+    assert_eq!(sep.penetration_meters, 0.0);
+
+    let solved = solve_contact_impulse(4.0, 3.0, 5.0, 0.5, 0.4, 0.05, 0.01, 1.0 / 60.0)
+        .expect("valid contact impulse");
+    assert!(solved.normal_impulse_ns > 0.0);
+    assert!(solved.friction_cone_valid);
+    assert!(solved.tangent_impulse_ns <= solved.normal_impulse_ns * 0.4 + 1e-3);
+
+    // Negative refusal: empty hull refused with `CollisionError`:
+    let empty_err = ConvexHullCollider::new(Vec::new()).expect_err("empty hull must fail");
+    assert_eq!(
+        empty_err,
+        CollisionError::EmptyOrDegenerateHull { vertex_count: 0 }
+    );
+}
+
+/// `VE-14`: Slope-filtered terrain `NavMesh`, admissible `A*` corridor pathfinding, and `NavigationError` refusal.
+#[test]
+fn engine_ve_14() {
+    let meshes = canonical_scene_mesh_library(7);
+    let nav = NavMesh::from_mesh(&meshes[0]).expect("walkable terrain navmesh");
+    assert!(nav.polygons.len() > 16);
+
+    // Pick a connected pair of polygons via neighbor walk:
+    let start = 0usize;
+    let mid = nav.polygons[start].neighbors[0];
+    let goal = *nav.polygons[mid]
+        .neighbors
+        .iter()
+        .find(|&&n| n != start)
+        .unwrap_or(&mid);
+    let corridor = nav
+        .find_path_astar(start, goal)
+        .expect("connected corridor");
+    assert!(corridor.polygon_indices.len() >= 2);
+    let dir = steer_along_corridor(nav.polygons[start].centroid, &corridor, 2.0)
+        .expect("unit steering vector");
+    assert!((dir.length() - 1.0).abs() < 1e-6);
+
+    // Negative refusal 1: out-of-bounds polygon index refused:
+    let oob = nav
+        .find_path_astar(0, nav.polygons.len() + 5)
+        .expect_err("out-of-bounds polygon must fail");
+    assert!(matches!(oob, NavigationError::InvalidPolygonIndex { .. }));
+
+    // Negative refusal 2: disconnected island polygon refused:
+    let mut disconnected = nav.clone();
+    let island_idx = disconnected.polygons.len();
+    disconnected
+        .polygons
+        .push(verdant_core::navmesh::NavPolygon {
+            index: island_idx,
+            vertices: [
+                Vec3::new(90.0, 0.0, 90.0),
+                Vec3::new(91.0, 0.0, 90.0),
+                Vec3::new(90.0, 0.0, 91.0),
+            ],
+            centroid: Vec3::new(90.3, 0.0, 90.3),
+            normal_y_milli: 1_000,
+            neighbors: Vec::new(),
+        });
+    let unreach = disconnected
+        .find_path_astar(0, island_idx)
+        .expect_err("disconnected island must fail");
+    assert!(matches!(unreach, NavigationError::UnreachableGoal { .. }));
 }

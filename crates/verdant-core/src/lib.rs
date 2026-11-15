@@ -23,17 +23,26 @@
 //!   ISO 3382-1 Sabine/Eyring enclosure reverberation (`RT60`), and Euler-Bernoulli modal chimes.
 //! - [`runtime`]: Browser capability envelope, multi-worker DAG `WorkerJobGraph`, refresh-derived
 //!   `FrameBudgetProfiler`, and SHA-256 integrity-checked `WorldSnapshot` serialization.
+//! - [`animation`]: Skeletal joint hierarchies, normalized four-joint linear-blend skinning, and
+//!   keyframe/morph interpolation backed by `prism_kernel`.
+//! - [`collision`]: Bounded 3D Gilbert-Johnson-Keerthi (`GJK`) convex collision manifolds and
+//!   Baumgarte + Coulomb contact impulse resolution backed by `prism_kernel`.
+//! - [`navmesh`]: Slope-filtered walkable `NavMesh` extraction and admissible `A*` corridor
+//!   pathfinding backed by `prism_kernel`.
 //! - [`error`]: Domain-typed refusal classifications for every fallible operation.
 
 #![forbid(unsafe_code)]
 
+pub mod animation;
 pub mod audio;
+pub mod collision;
 pub mod ecs;
 pub mod error;
 pub mod genesis;
 pub mod geometry;
 pub mod gltf_io;
 pub mod math;
+pub mod navmesh;
 pub mod physics;
 #[doc(hidden)]
 #[allow(
@@ -111,7 +120,7 @@ mod tests {
 
         // Validate WGSL shaders via Naga and GLB export via gltf:
         let shaders = validate_builtin_engine_shaders().expect("builtin WGSL valid");
-        assert_eq!(shaders.len(), 3);
+        assert_eq!(shaders.len(), 4);
 
         let meshes = canonical_scene_mesh_library(world.seed);
         let materials = canonical_pbr_material_library();

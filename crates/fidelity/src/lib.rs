@@ -316,22 +316,154 @@ struct Entity {
 }
 
 /// The records `record` references: a declaration it names as a term, such
-/// as `(Architecture::stakeholderMaintainer)`, or a text field that is a
-/// record's identifier, such as `"Features::featureCli"`.
+/// as `(Architecture::stakeholderMaintainer)` or an intra-module `(stakeholderMaintainer)`,
+/// or a text field that is a record's identifier, such as `"Features::featureCli"`.
 pub fn references(record: &Record, ids: &BTreeSet<&str>) -> Vec<String> {
     let mut out: Vec<String> = Vec::new();
+    let module_prefix = record.id.split_once("::").map(|(m, _)| m).unwrap_or("");
     for (at, _) in record.normalized.match_indices('(') {
         let rest = &record.normalized[at + 1..];
         let Some(end) = rest.find(')') else { continue };
         let term = &rest[..end];
-        if term != record.id && ids.contains(term) && !out.iter().any(|o| o == term) {
-            out.push(term.to_string());
+        let candidate = if term.contains("::") || module_prefix.is_empty() {
+            term.to_string()
+        } else {
+            format!("{module_prefix}::{term}")
+        };
+        if candidate != record.id && ids.contains(candidate.as_str()) && !out.contains(&candidate) {
+            out.push(candidate);
         }
     }
     for t in &record.texts {
         if t != &record.id && ids.contains(t.as_str()) && !out.contains(t) {
             out.push(t.clone());
         }
+    }
+    out
+}
+
+fn record_literal_fields(record: &Record) -> Vec<crate::lextex::Field> {
+    if let Some(at) = record.normalized.find("(record ") {
+        return lextex::record_fields(&record.normalized[at..]);
+    }
+    Vec::new()
+}
+
+fn find_record_by_kind_index(records: &[Record], kind: &str, idx: usize) -> Option<String> {
+    records.iter().find_map(|r| {
+        if r.kind != kind {
+            return None;
+        }
+        let fields = record_literal_fields(r);
+        (nat(&fields, "index") == Some(idx)).then(|| r.id.clone())
+    })
+}
+
+/// [`references`], expanded with typed foreign-key links across standard
+/// `prism.arch`, `prism.qual`, and `prism.sec` facet records whose `Nat`
+/// indices are required by `prismpm` to remain literal numerals.
+pub fn references_in(record: &Record, records: &[Record], ids: &BTreeSet<&str>) -> Vec<String> {
+    let mut out = references(record, ids);
+    let mut push = |opt: Option<String>| {
+        if let Some(id) = opt {
+            if id != record.id && ids.contains(id.as_str()) && !out.contains(&id) {
+                out.push(id);
+            }
+        }
+    };
+    let module_prefix = record.id.split_once("::").map(|(m, _)| m).unwrap_or("");
+    let fields = record_literal_fields(record);
+    match record.kind.as_str() {
+        "Edge" => {
+            if let Some(from_idx) = nat(&fields, "fromIndex") {
+                push(find_record_by_kind_index(records, "Component", from_idx));
+            }
+            if let Some(to_idx) = nat(&fields, "toIndex") {
+                push(find_record_by_kind_index(records, "Component", to_idx));
+            }
+        }
+        "Viewpoint" => {
+            if let Some(s_idx) = nat(&fields, "stakeholderIndex") {
+                push(find_record_by_kind_index(records, "Stakeholder", s_idx));
+            }
+            if let Some(c_idx) = nat(&fields, "concernIndex") {
+                push(find_record_by_kind_index(records, "Concern", c_idx));
+            }
+        }
+        "View" => {
+            if let Some(vp_idx) = nat(&fields, "viewpointIndex") {
+                push(find_record_by_kind_index(records, "Viewpoint", vp_idx));
+            }
+        }
+        "ProductQualityCharacteristic" => {
+            if let Some(idx) = nat(&fields, "index") {
+                push(Some(format!("{module_prefix}::characteristicNames#{idx}")));
+            }
+        }
+        "QualitySubcharacteristic" => {
+            if let Some(idx) = nat(&fields, "index") {
+                push(Some(format!(
+                    "{module_prefix}::subcharacteristicNames#{idx}"
+                )));
+            }
+            if let Some(c_idx) = nat(&fields, "characteristicIndex") {
+                push(find_record_by_kind_index(
+                    records,
+                    "ProductQualityCharacteristic",
+                    c_idx,
+                ));
+            }
+        }
+        "QualityRequirement" => {
+            if let Some(idx) = nat(&fields, "index") {
+                push(Some(format!("{module_prefix}::requirementNames#{idx}")));
+            }
+            if let Some(sc_idx) = nat(&fields, "subcharacteristicIndex") {
+                push(find_record_by_kind_index(
+                    records,
+                    "QualitySubcharacteristic",
+                    sc_idx,
+                ));
+            }
+        }
+        "QualityMeasure" => {
+            if let Some(idx) = nat(&fields, "index") {
+                push(Some(format!("{module_prefix}::measureNames#{idx}")));
+            }
+            if let Some(req_idx) = nat(&fields, "requirementIndex") {
+                push(find_record_by_kind_index(
+                    records,
+                    "QualityRequirement",
+                    req_idx,
+                ));
+            }
+        }
+        "Asset" => {
+            if let Some(comp_idx) = nat(&fields, "componentIndex") {
+                push(find_record_by_kind_index(records, "Component", comp_idx));
+            }
+        }
+        "Threat" => {
+            for r in records {
+                if r.kind == "ModeledThreat" && r.texts.iter().any(|t| t == &record.id) {
+                    push(Some(r.id.clone()));
+                }
+            }
+        }
+        "Risk" => {
+            if let Some(a_idx) = nat(&fields, "assetIndex") {
+                push(find_record_by_kind_index(records, "Asset", a_idx));
+            }
+            if let Some(t_idx) = nat(&fields, "threatIndex") {
+                push(find_record_by_kind_index(records, "Threat", t_idx));
+            }
+        }
+        "ApplicationSecurityControl" => {
+            if let Some(r_idx) = nat(&fields, "riskIndex") {
+                push(find_record_by_kind_index(records, "Risk", r_idx));
+            }
+        }
+        _ => {}
     }
     out
 }
@@ -538,7 +670,7 @@ pub fn score_ignoring(
             .texts
             .iter()
             .any(|t| u.texts.iter().any(|ut| ut.contains(t.as_str())));
-        if !references(g, &ids).contains(&u.id) && !quotes {
+        if !references_in(g, &records, &ids).contains(&u.id) && !quotes {
             return Err(FidelityError::False(format!(
                 "{generated} is said to derive from {used}, which it neither references nor quotes"
             )));

@@ -32,6 +32,10 @@ model does not sanction.
 | `VE-08` | `build` | Browser worker job graphs and frame-budget profilers validate acyclic schedules and refuse cyclic dependencies or invalid engine configurations |
 | `VE-09` | `build` | Binary IEEE-754 world snapshots with SHA-256 trailers round-trip bit-identically and refuse truncated or tampered payloads |
 | `VE-10` | `build` | The compiled Core-Wasm engine verifier proves monotonic expansion and Builder equilibrium in Lean without Classical.choice and answers queries deterministically |
+| `VE-11` | `build` | Skeletal joint hierarchies, normalized four-joint linear-blend skinning weights, and clamped keyframe clips deform procedural meshes deterministically and refuse cyclic joints or unnormalized weights |
+| `VE-12` | `build` | Four-cascade shadow frustum splits, GGX image-based lighting mip chains, five-pass GPU render graphs, and skinned shadow WGSL shaders validate cleanly and refuse invalid frusta or cyclic pass dependencies |
+| `VE-13` | `build` | Bounded 3D GJK convex hull collision detection, Baumgarte contact stabilization, and Coulomb friction cones resolve rigid-body contacts deterministically and refuse degenerate hulls |
+| `VE-14` | `build` | Slope-filtered terrain navigation meshes and admissible A-star corridor pathfinding steer autonomous agents around obstacles and refuse unwalkable endpoints or disconnected goals |
 
 ## fidelity
 

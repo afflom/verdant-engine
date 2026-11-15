@@ -290,6 +290,26 @@ definition{name: groupBare, parameters: [], result: Foundation.Experience.V1.Mod
     .unwrap();
     assert!(score(&dir.join("app"), &dir).is_err());
     let _ = std::fs::remove_dir_all(&dir);
+
+    // Verify intra-module and foreign-key derivations in the live Verdant Engine repository:
+    let repo = root();
+    let live = score(&repo.join("app"), &repo).unwrap();
+    for closed_rec in [
+        "Subsystems::epochVisual0",
+        "Subsystems::placement6",
+        "Architecture::edgeCoreToStudio",
+        "Architecture::viewpointGameDeveloper",
+        "Quality::subcharacteristicTimeBehaviour",
+        "Security::assetVerdantCoreRuntime",
+        "Security::riskSnapshotTampering",
+    ] {
+        if live.records.iter().any(|r| r.name == closed_rec) {
+            assert!(
+                !open(&live, closed_rec, Axis::Derived),
+                "expected `{closed_rec}` derived axis to be closed via RecordDerivation"
+            );
+        }
+    }
 }
 
 /// `FI-07`: charter sources are attributed to their human author as a W3C PROV-O person agent.

@@ -88,6 +88,263 @@ pub struct BlueprintPlacementSpec {
     pub followRover: bool,
 }
 
+pub fn answerDeepSubsystemQuery(
+    request: std::vec::Vec<u8>,
+) -> Result<std::string::String, self::ComputeError> {
+    Ok({
+        let _x_2 = matchesQuery((request).as_ref(), "scene:animation")?;
+        match _x_2 {
+            false => {
+                let _x_903 = matchesQuery((request).as_ref(), "scene:rendergraph")?;
+                match _x_903 {
+                    false => {
+                        let _x_961 = matchesQuery((request).as_ref(), "scene:collision")?;
+                        match _x_961 {
+                            false => {
+                                let _x_999 = matchesQuery((request).as_ref(), "scene:navmesh")?;
+                                match _x_999 {
+                                    false => {
+                                        let _x_1022 =
+                                            matchesQuery((request).as_ref(), "scene:wasmbridge")?;
+                                        match _x_1022 {
+                                            false => std::string::String::from("invalid request"),
+                                            true => {
+                                                let _x_1031 =
+                                                    (1 << (((1 << (1 << 1)) + (1 << 1)) + 1));
+                                                {
+                                                    let _x_1032 = (1 << 1);
+                                                    {
+                                                        let _x_1033 =
+                                                            (1 << ((1 << ((1 << 1) + 1)) + 1));
+                                                        {
+                                                            let _x_1034 = wasmBridgeEnvelopeValid(
+                                                                _x_1031, _x_1032, _x_1033,
+                                                            )?;
+                                                            match _x_1034 {
+        false => std::string::String::from("refused:wasmbridge-mismatch"),
+        true => std::string::String::from("conformant:worklet_quantum=128,channels=2,ring_slots=64,snapshot_url_max=16384"),
+    }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                    true => {
+                                        let _x_1037 = ((((((1 << ((1 << ((1 << 1) + 1)) + 1))
+                                            + (1 << (((1 << (1 << 1)) + (1 << 1)) + 1)))
+                                            + (1 << ((1 << (1 << 1)) + 1)))
+                                            + (1 << (1 << (1 << 1))))
+                                            + (1 << ((1 << 1) + 1)))
+                                            + (1 << (1 << 1)));
+                                        {
+                                            let _x_1038 = navTriangleWalkable(_x_1037)?;
+                                            match _x_1038 {
+                                                false => {
+                                                    let _y_1040 = _x_1038;
+                                                    match _y_1040 {
+        false => std::string::String::from("refused:navmesh-mismatch"),
+        true => std::string::String::from("conformant:walkable_ny_min=700/1000,max_nodes=1024,admissible_astar=true"),
+    }
+                                                }
+                                                true => {
+                                                    let _x_1043 = navMaxSearchNodes()?;
+                                                    {
+                                                        let _x_1044 = (1
+                                                            << ((1 << ((1 << 1) + 1)) + (1 << 1)));
+                                                        {
+                                                            let _x_1045 = (_x_1043 == _x_1044);
+                                                            {
+                                                                let prod_local_0 = _x_1045;
+                                                                match prod_local_0 {
+        false => std::string::String::from("refused:navmesh-mismatch"),
+        true => std::string::String::from("conformant:walkable_ny_min=700/1000,max_nodes=1024,admissible_astar=true"),
+    }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            true => {
+                                let _x_1046 = sFour()?;
+                                {
+                                    let _x_1047 = (1 << (1 << 1));
+                                    {
+                                        let _x_1048 = (_x_1046 == _x_1047);
+                                        match _x_1048 {
+                                            false => {
+                                                let _y_1050 = _x_1048;
+                                                match _y_1050 {
+        false => std::string::String::from("refused:collision-mismatch"),
+        true => std::string::String::from("conformant:simplex=4,gjk_iters=32,baumgarte=1/5,coulomb_cone=true"),
+    }
+                                            }
+                                            true => {
+                                                let _x_1053 = (1 << (1 << 1));
+                                                {
+                                                    let _x_1054 =
+                                                        ((1 << ((1 << 1) + 1)) + (1 << 1));
+                                                    {
+                                                        let _x_1055 = ((((((1
+                                                            << (1 << ((1 << 1) + 1)))
+                                                            + (1 << (((1 << (1 << 1))
+                                                                + (1 << 1))
+                                                                + 1)))
+                                                            + (1 << ((1 << (1 << 1))
+                                                                + (1 << 1))))
+                                                            + (1 << ((1 << (1 << 1)) + 1)))
+                                                            + (1 << (1 << (1 << 1))))
+                                                            + (1 << (1 << 1)));
+                                                        {
+                                                            let _x_1056 = coulombFrictionConeValid(
+                                                                _x_1053, _x_1054, _x_1055,
+                                                            )?;
+                                                            {
+                                                                let prod_local_3 = _x_1056;
+                                                                match prod_local_3 {
+        false => std::string::String::from("refused:collision-mismatch"),
+        true => std::string::String::from("conformant:simplex=4,gjk_iters=32,baumgarte=1/5,coulomb_cone=true"),
+    }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    true => {
+                        let _x_1057 = sFour()?;
+                        {
+                            let _x_1058 = (1 << (1 << 1));
+                            {
+                                let _x_1059 = (_x_1057 == _x_1058);
+                                match _x_1059 {
+                                    false => {
+                                        let _y_1061 = _x_1059;
+                                        match _y_1061 {
+        false => std::string::String::from("refused:rendergraph-mismatch"),
+        true => std::string::String::from("conformant:csm_cascades=4,splits=1/3/7/15,denom=15,ibl_mips_256=9,passes=5"),
+    }
+                                    }
+                                    true => {
+                                        let _x_1066 = (1 << (1 << ((1 << 1) + 1)));
+                                        {
+                                            let _x_1067 = iblMipLevelCount(_x_1066)?;
+                                            {
+                                                let _x_1068 = ((1 << ((1 << 1) + 1)) + 1);
+                                                {
+                                                    let _x_1069 = (_x_1067 == _x_1068);
+                                                    match _x_1069 {
+                                                        false => {
+                                                            let prod_local_6 = _x_1069;
+                                                            match prod_local_6 {
+        false => std::string::String::from("refused:rendergraph-mismatch"),
+        true => std::string::String::from("conformant:csm_cascades=4,splits=1/3/7/15,denom=15,ibl_mips_256=9,passes=5"),
+    }
+                                                        }
+                                                        true => {
+                                                            let _x_1070 = 0;
+                                                            {
+                                                                let _x_1071 = (1 << (1 << 1));
+                                                                {
+                                                                    let _x_1072 =
+                                                                        renderPassDependencyValid(
+                                                                            _x_1070, _x_1071,
+                                                                        )?;
+                                                                    {
+                                                                        let prod_local_9 = _x_1072;
+                                                                        match prod_local_9 {
+        false => std::string::String::from("refused:rendergraph-mismatch"),
+        true => std::string::String::from("conformant:csm_cascades=4,splits=1/3/7/15,denom=15,ibl_mips_256=9,passes=5"),
+    }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            true => {
+                let _x_1073 = sFour()?;
+                {
+                    let _x_1074 = (1 << (1 << 1));
+                    {
+                        let _x_1075 = (_x_1073 == _x_1074);
+                        match _x_1075 {
+                            false => {
+                                let _y_1077 = _x_1075;
+                                match _y_1077 {
+        false => std::string::String::from("refused:animation-mismatch"),
+        true => std::string::String::from("conformant:joints_per_vertex=4,weight_scale=1000,morph_limit=8,acyclic=true"),
+    }
+                            }
+                            true => {
+                                let _x_1082 = (1 << 1);
+                                {
+                                    let _x_1083 = 1;
+                                    {
+                                        let _x_1084 = false;
+                                        {
+                                            let _x_1085 =
+                                                jointHierarchyAcyclic(_x_1082, _x_1083, _x_1084);
+                                            match _x_1085 {
+                                                false => {
+                                                    let prod_local_12 = _x_1085;
+                                                    match prod_local_12 {
+        false => std::string::String::from("refused:animation-mismatch"),
+        true => std::string::String::from("conformant:joints_per_vertex=4,weight_scale=1000,morph_limit=8,acyclic=true"),
+    }
+                                                }
+                                                true => {
+                                                    let _x_1086 = ((((((1
+                                                        << (((1 << (1 << 1)) + (1 << 1)) + 1))
+                                                        + (1 << ((1 << (1 << 1)) + (1 << 1))))
+                                                        + (1 << ((1 << (1 << 1)) + 1)))
+                                                        + (1 << (1 << (1 << 1))))
+                                                        + (1 << ((1 << 1) + 1)))
+                                                        + (1 << 1));
+                                                    {
+                                                        let _x_1087 = skinWeightsNormalized(
+                                                            _x_1086, _x_1086, _x_1086, _x_1086,
+                                                        )?;
+                                                        {
+                                                            let prod_local_15 = _x_1087;
+                                                            match prod_local_15 {
+        false => std::string::String::from("refused:animation-mismatch"),
+        true => std::string::String::from("conformant:joints_per_vertex=4,weight_scale=1000,morph_limit=8,acyclic=true"),
+    }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    })
+}
+
 pub fn answerQuery(request: std::vec::Vec<u8>) -> Result<std::string::String, self::ComputeError> {
     Ok({
         let _x_194 = (request).len() as u64;
@@ -259,7 +516,7 @@ pub fn answerSceneQuery(
         false => { let _x_6206 = matchesQuery((request).as_ref(), "scene:blueprint:6")?; match _x_6206 {
         false => { let _x_6208 = matchesQuery((request).as_ref(), "scene:acoustics")?; match _x_6208 {
         false => { let _x_6210 = matchesQuery((request).as_ref(), "scene:pipeline")?; match _x_6210 {
-        false => std::string::String::from("invalid request"),
+        false => { let _x_6211 = answerDeepSubsystemQuery(request.clone())?; _x_6211 },
         true => { let _x_6212 = ((((1 << ((1 << (1 << 1)) + 1)) + (1 << (1 << (1 << 1)))) + (1 << ((1 << 1) + 1))) + (1 << (1 << 1))); { let _x_6213 = frameBudgetMicrosForHz(_x_6212)?; { let _x_6214 = (((((1 << (((1 << ((1 << 1) + 1)) + (1 << (1 << 1))) + (1 << 1))) + (1 << (1 << ((1 << 1) + 1)))) + (1 << (1 << (1 << 1)))) + (1 << ((1 << 1) + 1))) + (1 << 1)); { let _x_6215 = (_x_6213 == _x_6214); match _x_6215 {
         false => { let _y_6217 = _x_6215; match _y_6217 {
         false => std::string::String::from("refused:pipeline-mismatch"),
@@ -2488,6 +2745,46 @@ pub fn absorptionDenom() -> Result<u64, self::ComputeError> {
     })
 }
 
+pub fn astarPriorityMilli(gCostMilli: u64, hCostMilli: u64) -> Result<u64, self::ComputeError> {
+    Ok({
+        let _x_11 = core::convert::identity::<u64>(gCostMilli)
+            .checked_add(hCostMilli)
+            .ok_or(self::ComputeError::AddOverflow)?;
+        _x_11
+    })
+}
+
+pub fn audioStereoChannels() -> u64 {
+    {
+        let _x_2 = (1 << 1);
+        _x_2
+    }
+}
+
+pub fn audioWorkletQuantumFrames() -> Result<u64, self::ComputeError> {
+    Ok({
+        let _x_1 = sSeven()?;
+        {
+            let _x_2 = pow2Constructive(_x_1)?;
+            _x_2
+        }
+    })
+}
+
+pub fn baumgarteBetaDenom() -> Result<u64, self::ComputeError> {
+    Ok({
+        let _x_1 = sFive()?;
+        _x_1
+    })
+}
+
+pub fn baumgarteBetaNumer() -> u64 {
+    {
+        let _x_1 = 1;
+        _x_1
+    }
+}
+
 pub fn blueprintPlacementByIndex(
     idx: u64,
 ) -> Result<self::BlueprintPlacementSpec, self::ComputeError> {
@@ -2574,31 +2871,42 @@ pub fn blueprintPlacementByIndex(
 
 pub fn canonicalDimensions() -> Result<self::EngineDimensions, self::ComputeError> {
     Ok({
-        let _x_9 = (1 << 1);
+        let _x_4 = epochCosmogenic()?;
         {
-            let _x_10 = ((1 << 1) + 1);
+            let _x_5 = (_x_4).scaleNumer;
             {
-                let _x_3 = sFour()?;
+                let _x_6 = 1;
                 {
-                    let _x_4 = sSix()?;
+                    let _x_23 = core::convert::identity::<u64>(_x_5)
+                        .checked_add(_x_6)
+                        .ok_or(self::ComputeError::AddOverflow)?;
                     {
-                        let _x_5 = sEight()?;
+                        let _x_26 = ((1 << 1) + 1);
                         {
-                            let _x_6 = sTwelve()?;
+                            let _x_11 = sFour()?;
                             {
-                                let _x_7 = sThirtyTwo()?;
+                                let _x_12 = sSix()?;
                                 {
-                                    let _x_8 = self::EngineDimensions {
-                                        dimPlanar: _x_9,
-                                        dimSpatial: _x_10,
-                                        dimHomogeneous: _x_3,
-                                        frustumPlaneCount: _x_4,
-                                        gltfChunkAlignment: _x_3,
-                                        glbChunkHeaderBytes: _x_5,
-                                        glbFileHeaderBytes: _x_6,
-                                        snapshotDigestBytes: _x_7,
-                                    };
-                                    _x_8
+                                    let _x_13 = sEight()?;
+                                    {
+                                        let _x_14 = sTwelve()?;
+                                        {
+                                            let _x_15 = sThirtyTwo()?;
+                                            {
+                                                let _x_16 = self::EngineDimensions {
+                                                    dimPlanar: _x_23,
+                                                    dimSpatial: _x_26,
+                                                    dimHomogeneous: _x_11,
+                                                    frustumPlaneCount: _x_12,
+                                                    gltfChunkAlignment: _x_11,
+                                                    glbChunkHeaderBytes: _x_13,
+                                                    glbFileHeaderBytes: _x_14,
+                                                    snapshotDigestBytes: _x_15,
+                                                };
+                                                _x_16
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -2648,6 +2956,34 @@ pub fn canonicalPipelineMakespan(
     })
 }
 
+pub fn clampCoulombFrictionMilli(
+    desiredTangentMilli: u64,
+    normalImpulseMilli: u64,
+    muMilli: u64,
+) -> Result<u64, self::ComputeError> {
+    Ok({
+        let _x_3 = core::convert::identity::<u64>(normalImpulseMilli)
+            .checked_mul(muMilli)
+            .ok_or(self::ComputeError::MulOverflow)?;
+        {
+            let _x_4 = skinWeightScale()?;
+            {
+                let _x_5 = 0;
+                {
+                    let maxFriction = if _x_4 == 0 { _x_5 } else { _x_3 / _x_4 };
+                    {
+                        let _x_9 = (desiredTangentMilli <= maxFriction);
+                        match _x_9 {
+                            false => maxFriction,
+                            true => desiredTangentMilli,
+                        }
+                    }
+                }
+            }
+        }
+    })
+}
+
 pub fn coordinateTenthsDenom() -> Result<u64, self::ComputeError> {
     Ok({
         let _x_1 = sTen()?;
@@ -2655,44 +2991,3312 @@ pub fn coordinateTenthsDenom() -> Result<u64, self::ComputeError> {
     })
 }
 
+pub fn coulombFrictionConeValid(
+    tangentImpulseMilli: u64,
+    normalImpulseMilli: u64,
+    muMilli: u64,
+) -> Result<bool, self::ComputeError> {
+    Ok({
+        let _x_2 = skinWeightScale()?;
+        {
+            let _x_3 = core::convert::identity::<u64>(tangentImpulseMilli)
+                .checked_mul(_x_2)
+                .ok_or(self::ComputeError::MulOverflow)?;
+            {
+                let _x_4 = core::convert::identity::<u64>(muMilli)
+                    .checked_mul(normalImpulseMilli)
+                    .ok_or(self::ComputeError::MulOverflow)?;
+                {
+                    let _x_5 = (_x_3 <= _x_4);
+                    _x_5
+                }
+            }
+        }
+    })
+}
+
+pub fn csmCascadeCount() -> Result<u64, self::ComputeError> {
+    Ok({
+        let _x_1 = sFour()?;
+        _x_1
+    })
+}
+
+pub fn csmPracticalSplitDenom() -> Result<u64, self::ComputeError> {
+    Ok({
+        let _x_1 = sFifteen()?;
+        _x_1
+    })
+}
+
+pub fn csmPracticalSplitNumer(cascadeIndex: u64) -> Result<u64, self::ComputeError> {
+    Ok({
+        let _x_5 = 1;
+        {
+            let _x_18 = core::convert::identity::<u64>(cascadeIndex)
+                .checked_add(_x_5)
+                .ok_or(self::ComputeError::AddOverflow)?;
+            {
+                let _x_9 = pow2Constructive(_x_18)?;
+                {
+                    let _x_10 = core::convert::identity::<u64>(_x_9).saturating_sub(_x_5);
+                    _x_10
+                }
+            }
+        }
+    })
+}
+
+pub fn csmSplitDistanceMilli(
+    nearMilli: u64,
+    farMilli: u64,
+    cascadeIndex: u64,
+) -> Result<u64, self::ComputeError> {
+    Ok({
+        let _x_1 = (farMilli <= nearMilli);
+        match _x_1 {
+            false => {
+                let _x_56 = core::convert::identity::<u64>(farMilli).saturating_sub(nearMilli);
+                {
+                    let _x_57 = csmPracticalSplitNumer(cascadeIndex)?;
+                    {
+                        let _x_58 = core::convert::identity::<u64>(_x_56)
+                            .checked_mul(_x_57)
+                            .ok_or(self::ComputeError::MulOverflow)?;
+                        {
+                            let _x_59 = sFifteen()?;
+                            {
+                                let _x_60 = 0;
+                                {
+                                    let _x_61 = if _x_59 == 0 { _x_60 } else { _x_58 / _x_59 };
+                                    {
+                                        let _x_62 = core::convert::identity::<u64>(nearMilli)
+                                            .checked_add(_x_61)
+                                            .ok_or(self::ComputeError::AddOverflow)?;
+                                        _x_62
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            true => nearMilli,
+        }
+    })
+}
+
+pub fn deepenedSubsystemsActive() -> Result<bool, self::ComputeError> {
+    Ok({
+        let _x_55 = 0;
+        {
+            let _x_58 = true;
+            {
+                let _x_59 = jointHierarchyAcyclic(_x_55, _x_55, _x_58);
+                match _x_59 {
+                    false => {
+                        let _y_64 = _x_59;
+                        match _y_64 {
+                            false => _y_64,
+                            true => {
+                                let _x_910 = skinWeightScale()?;
+                                {
+                                    let _x_911 = 0;
+                                    {
+                                        let _x_912 =
+                                            skinWeightsNormalized(_x_910, _x_911, _x_911, _x_911)?;
+                                        match _x_912 {
+                                            false => {
+                                                let _y_914 = _x_912;
+                                                match _y_914 {
+                                                    false => _y_914,
+                                                    true => {
+                                                        let _x_921 = sEight()?;
+                                                        {
+                                                            let _x_922 = sEight()?;
+                                                            {
+                                                                let _x_923 = (_x_921 == _x_922);
+                                                                match _x_923 {
+                                                                    false => _x_923,
+                                                                    true => {
+                                                                        let _x_1171 = sFour()?;
+                                                                        {
+                                                                            let _x_1172 = sFour()?;
+                                                                            {
+                                                                                let _x_1173 =
+                                                                                    (_x_1171
+                                                                                        == _x_1172);
+                                                                                match _x_1173 {
+                                                                                    false => {
+                                                                                        let _y_1175 =
+                                                                                            _x_1173;
+                                                                                        match _y_1175 {
+        false => _y_1175,
+        true => { let _x_1248 = sEight()?; { let _x_1249 = pow2Constructive(_x_1248)?; { let _x_1250 = iblMipLevelCount(_x_1249)?; { let _x_1251 = ((1 << ((1 << 1) + 1)) + 1); { let _x_1252 = (_x_1250 == _x_1251); match _x_1252 {
+        false => { let _y_1179 = _x_1252; match _y_1179 {
+        false => _y_1179,
+        true => { let _x_1180 = sFour()?; { let _x_1181 = (_x_1180 == _x_1172); match _x_1181 {
+        false => { let _y_1183 = _x_1181; match _y_1183 {
+        false => _y_1183,
+        true => { let _x_1227 = ((1 << ((1 << 1) + 1)) + 1); { let _x_1228 = sTen()?; { let _x_1230 = sFive()?; { let _x_1231 = sHundred()?; { let _x_1232 = core::convert::identity::<u64>(_x_1230).checked_mul(_x_1231).ok_or(self::ComputeError::MulOverflow)?; { let _x_1233 = clampCoulombFrictionMilli(_x_1227, _x_1228, _x_1232)?; { let _x_1234 = coulombFrictionConeValid(_x_1233, _x_1228, _x_1232)?; match _x_1234 {
+        false => _x_1234,
+        true => { let _x_1263 = ((1 << ((1 << 1) + 1)) + 1); { let _x_1264 = navTriangleWalkable(_x_1263)?; match _x_1264 {
+        false => { let _y_1266 = _x_1234; match _y_1266 {
+        false => _y_1266,
+        true => { let _x_1288 = sEight()?; { let _x_1289 = sHundred()?; { let _x_1290 = core::convert::identity::<u64>(_x_1288).checked_mul(_x_1289).ok_or(self::ComputeError::MulOverflow)?; { let _x_1291 = navTriangleWalkable(_x_1290)?; match _x_1291 {
+        false => { let _y_1270 = _x_1291; match _y_1270 {
+        false => _y_1270,
+        true => { let _x_1271 = audioWorkletQuantumFrames()?; { let _x_1272 = (1 << 1); { let _x_1273 = sHundred()?; { let _x_1274 = wasmBridgeEnvelopeValid(_x_1271, _x_1272, _x_1273)?; match _x_1274 {
+        false => _x_1274,
+        true => { let _x_1275 = sHundred()?; { let _x_1277 = sFive()?; { let _x_1278 = core::convert::identity::<u64>(_x_1277).checked_mul(_x_1277).ok_or(self::ComputeError::MulOverflow)?; { let _x_1279 = skinWeightScale()?; { let _x_1280 = core::convert::identity::<u64>(_x_1278).checked_mul(_x_1279).ok_or(self::ComputeError::MulOverflow)?; { let _x_1281 = sabineRt60Millis(_x_1275, _x_1280)?; { let _x_1282 = (_x_55 < _x_1281); match _x_1282 {
+        false => _x_1282,
+        true => { let _x_1283 = workerCommandRingCapacity()?; { let _x_1284 = sSix()?; { let _x_1285 = pow2Constructive(_x_1284)?; { let _x_1286 = (_x_1283 == _x_1285); _x_1286 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let _x_1292 = sTen()?; { let _x_1293 = sFive()?; { let _x_1294 = core::convert::identity::<u64>(_x_1292).checked_add(_x_1293).ok_or(self::ComputeError::AddOverflow)?; { let _x_1296 = navMaxSearchNodes()?; { let _x_1297 = sFifteen()?; { let _x_1298 = core::convert::identity::<u64>(_x_1296).saturating_sub(_x_1297); { let _x_1299 = core::convert::identity::<u64>(_x_1296).saturating_sub(_x_1298); { let _x_1300 = (_x_1294 == _x_1299); { let prod_local_0 = _x_1300; match prod_local_0 {
+        false => prod_local_0,
+        true => { let prod_local_1 = audioWorkletQuantumFrames()?; { let prod_local_2 = (1 << 1); { let prod_local_3 = sHundred()?; { let prod_local_4 = wasmBridgeEnvelopeValid(prod_local_1, prod_local_2, prod_local_3)?; match prod_local_4 {
+        false => prod_local_4,
+        true => { let prod_local_5 = sHundred()?; { let prod_local_6 = sFive()?; { let prod_local_7 = core::convert::identity::<u64>(prod_local_6).checked_mul(prod_local_6).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_8 = skinWeightScale()?; { let prod_local_9 = core::convert::identity::<u64>(prod_local_7).checked_mul(prod_local_8).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_10 = sabineRt60Millis(prod_local_5, prod_local_9)?; { let prod_local_11 = (_x_55 < prod_local_10); match prod_local_11 {
+        false => prod_local_11,
+        true => { let prod_local_12 = workerCommandRingCapacity()?; { let prod_local_13 = sSix()?; { let prod_local_14 = pow2Constructive(prod_local_13)?; { let prod_local_15 = (prod_local_12 == prod_local_14); prod_local_15 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } },
+        true => { let _x_1301 = false; { let prod_local_16 = _x_1301; match prod_local_16 {
+        false => prod_local_16,
+        true => { let prod_local_18 = sEight()?; { let prod_local_19 = sHundred()?; { let prod_local_20 = core::convert::identity::<u64>(prod_local_18).checked_mul(prod_local_19).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_21 = navTriangleWalkable(prod_local_20)?; match prod_local_21 {
+        false => { let prod_local_22 = prod_local_21; match prod_local_22 {
+        false => prod_local_22,
+        true => { let prod_local_23 = audioWorkletQuantumFrames()?; { let prod_local_24 = (1 << 1); { let prod_local_25 = sHundred()?; { let prod_local_26 = wasmBridgeEnvelopeValid(prod_local_23, prod_local_24, prod_local_25)?; match prod_local_26 {
+        false => prod_local_26,
+        true => { let prod_local_27 = sHundred()?; { let prod_local_28 = sFive()?; { let prod_local_29 = core::convert::identity::<u64>(prod_local_28).checked_mul(prod_local_28).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_30 = skinWeightScale()?; { let prod_local_31 = core::convert::identity::<u64>(prod_local_29).checked_mul(prod_local_30).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_32 = sabineRt60Millis(prod_local_27, prod_local_31)?; { let prod_local_33 = (_x_55 < prod_local_32); match prod_local_33 {
+        false => prod_local_33,
+        true => { let prod_local_34 = workerCommandRingCapacity()?; { let prod_local_35 = sSix()?; { let prod_local_36 = pow2Constructive(prod_local_35)?; { let prod_local_37 = (prod_local_34 == prod_local_36); prod_local_37 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_38 = sTen()?; { let prod_local_39 = sFive()?; { let prod_local_40 = core::convert::identity::<u64>(prod_local_38).checked_add(prod_local_39).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_41 = navMaxSearchNodes()?; { let prod_local_42 = sFifteen()?; { let prod_local_43 = core::convert::identity::<u64>(prod_local_41).saturating_sub(prod_local_42); { let prod_local_44 = core::convert::identity::<u64>(prod_local_41).saturating_sub(prod_local_43); { let prod_local_45 = (prod_local_40 == prod_local_44); { let prod_local_46 = prod_local_45; match prod_local_46 {
+        false => prod_local_46,
+        true => { let prod_local_47 = audioWorkletQuantumFrames()?; { let prod_local_48 = (1 << 1); { let prod_local_49 = sHundred()?; { let prod_local_50 = wasmBridgeEnvelopeValid(prod_local_47, prod_local_48, prod_local_49)?; match prod_local_50 {
+        false => prod_local_50,
+        true => { let prod_local_51 = sHundred()?; { let prod_local_52 = sFive()?; { let prod_local_53 = core::convert::identity::<u64>(prod_local_52).checked_mul(prod_local_52).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_54 = skinWeightScale()?; { let prod_local_55 = core::convert::identity::<u64>(prod_local_53).checked_mul(prod_local_54).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_56 = sabineRt60Millis(prod_local_51, prod_local_55)?; { let prod_local_57 = (_x_55 < prod_local_56); match prod_local_57 {
+        false => prod_local_57,
+        true => { let prod_local_58 = workerCommandRingCapacity()?; { let prod_local_59 = sSix()?; { let prod_local_60 = pow2Constructive(prod_local_59)?; { let prod_local_61 = (prod_local_58 == prod_local_60); prod_local_61 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } } },
+    } } },
+    } } } } } } } },
+    } },
+        true => { let _x_1235 = sThirtyTwo()?; { let _x_1236 = sThirtyTwo()?; { let _x_1237 = (_x_1235 == _x_1236); match _x_1237 {
+        false => { let prod_local_62 = _x_1237; match prod_local_62 {
+        false => prod_local_62,
+        true => { let prod_local_63 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_64 = sTen()?; { let prod_local_65 = sFive()?; { let prod_local_66 = sHundred()?; { let prod_local_67 = core::convert::identity::<u64>(prod_local_65).checked_mul(prod_local_66).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_68 = clampCoulombFrictionMilli(prod_local_63, prod_local_64, prod_local_67)?; { let prod_local_69 = coulombFrictionConeValid(prod_local_68, prod_local_64, prod_local_67)?; match prod_local_69 {
+        false => prod_local_69,
+        true => { let prod_local_70 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_71 = navTriangleWalkable(prod_local_70)?; match prod_local_71 {
+        false => { let prod_local_73 = prod_local_69; match prod_local_73 {
+        false => prod_local_73,
+        true => { let prod_local_75 = sEight()?; { let prod_local_76 = sHundred()?; { let prod_local_77 = core::convert::identity::<u64>(prod_local_75).checked_mul(prod_local_76).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_78 = navTriangleWalkable(prod_local_77)?; match prod_local_78 {
+        false => { let prod_local_79 = prod_local_78; match prod_local_79 {
+        false => prod_local_79,
+        true => { let prod_local_80 = audioWorkletQuantumFrames()?; { let prod_local_81 = (1 << 1); { let prod_local_82 = sHundred()?; { let prod_local_83 = wasmBridgeEnvelopeValid(prod_local_80, prod_local_81, prod_local_82)?; match prod_local_83 {
+        false => prod_local_83,
+        true => { let prod_local_84 = sHundred()?; { let prod_local_85 = sFive()?; { let prod_local_86 = core::convert::identity::<u64>(prod_local_85).checked_mul(prod_local_85).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_87 = skinWeightScale()?; { let prod_local_88 = core::convert::identity::<u64>(prod_local_86).checked_mul(prod_local_87).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_89 = sabineRt60Millis(prod_local_84, prod_local_88)?; { let prod_local_90 = (_x_55 < prod_local_89); match prod_local_90 {
+        false => prod_local_90,
+        true => { let prod_local_91 = workerCommandRingCapacity()?; { let prod_local_92 = sSix()?; { let prod_local_93 = pow2Constructive(prod_local_92)?; { let prod_local_94 = (prod_local_91 == prod_local_93); prod_local_94 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_95 = sTen()?; { let prod_local_96 = sFive()?; { let prod_local_97 = core::convert::identity::<u64>(prod_local_95).checked_add(prod_local_96).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_98 = navMaxSearchNodes()?; { let prod_local_99 = sFifteen()?; { let prod_local_100 = core::convert::identity::<u64>(prod_local_98).saturating_sub(prod_local_99); { let prod_local_101 = core::convert::identity::<u64>(prod_local_98).saturating_sub(prod_local_100); { let prod_local_102 = (prod_local_97 == prod_local_101); { let prod_local_103 = prod_local_102; match prod_local_103 {
+        false => prod_local_103,
+        true => { let prod_local_104 = audioWorkletQuantumFrames()?; { let prod_local_105 = (1 << 1); { let prod_local_106 = sHundred()?; { let prod_local_107 = wasmBridgeEnvelopeValid(prod_local_104, prod_local_105, prod_local_106)?; match prod_local_107 {
+        false => prod_local_107,
+        true => { let prod_local_108 = sHundred()?; { let prod_local_109 = sFive()?; { let prod_local_110 = core::convert::identity::<u64>(prod_local_109).checked_mul(prod_local_109).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_111 = skinWeightScale()?; { let prod_local_112 = core::convert::identity::<u64>(prod_local_110).checked_mul(prod_local_111).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_113 = sabineRt60Millis(prod_local_108, prod_local_112)?; { let prod_local_114 = (_x_55 < prod_local_113); match prod_local_114 {
+        false => prod_local_114,
+        true => { let prod_local_115 = workerCommandRingCapacity()?; { let prod_local_116 = sSix()?; { let prod_local_117 = pow2Constructive(prod_local_116)?; { let prod_local_118 = (prod_local_115 == prod_local_117); prod_local_118 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_119 = false; { let prod_local_120 = prod_local_119; match prod_local_120 {
+        false => prod_local_120,
+        true => { let prod_local_122 = sEight()?; { let prod_local_123 = sHundred()?; { let prod_local_124 = core::convert::identity::<u64>(prod_local_122).checked_mul(prod_local_123).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_125 = navTriangleWalkable(prod_local_124)?; match prod_local_125 {
+        false => { let prod_local_126 = prod_local_125; match prod_local_126 {
+        false => prod_local_126,
+        true => { let prod_local_127 = audioWorkletQuantumFrames()?; { let prod_local_128 = (1 << 1); { let prod_local_129 = sHundred()?; { let prod_local_130 = wasmBridgeEnvelopeValid(prod_local_127, prod_local_128, prod_local_129)?; match prod_local_130 {
+        false => prod_local_130,
+        true => { let prod_local_131 = sHundred()?; { let prod_local_132 = sFive()?; { let prod_local_133 = core::convert::identity::<u64>(prod_local_132).checked_mul(prod_local_132).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_134 = skinWeightScale()?; { let prod_local_135 = core::convert::identity::<u64>(prod_local_133).checked_mul(prod_local_134).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_136 = sabineRt60Millis(prod_local_131, prod_local_135)?; { let prod_local_137 = (_x_55 < prod_local_136); match prod_local_137 {
+        false => prod_local_137,
+        true => { let prod_local_138 = workerCommandRingCapacity()?; { let prod_local_139 = sSix()?; { let prod_local_140 = pow2Constructive(prod_local_139)?; { let prod_local_141 = (prod_local_138 == prod_local_140); prod_local_141 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_142 = sTen()?; { let prod_local_143 = sFive()?; { let prod_local_144 = core::convert::identity::<u64>(prod_local_142).checked_add(prod_local_143).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_145 = navMaxSearchNodes()?; { let prod_local_146 = sFifteen()?; { let prod_local_147 = core::convert::identity::<u64>(prod_local_145).saturating_sub(prod_local_146); { let prod_local_148 = core::convert::identity::<u64>(prod_local_145).saturating_sub(prod_local_147); { let prod_local_149 = (prod_local_144 == prod_local_148); { let prod_local_150 = prod_local_149; match prod_local_150 {
+        false => prod_local_150,
+        true => { let prod_local_151 = audioWorkletQuantumFrames()?; { let prod_local_152 = (1 << 1); { let prod_local_153 = sHundred()?; { let prod_local_154 = wasmBridgeEnvelopeValid(prod_local_151, prod_local_152, prod_local_153)?; match prod_local_154 {
+        false => prod_local_154,
+        true => { let prod_local_155 = sHundred()?; { let prod_local_156 = sFive()?; { let prod_local_157 = core::convert::identity::<u64>(prod_local_156).checked_mul(prod_local_156).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_158 = skinWeightScale()?; { let prod_local_159 = core::convert::identity::<u64>(prod_local_157).checked_mul(prod_local_158).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_160 = sabineRt60Millis(prod_local_155, prod_local_159)?; { let prod_local_161 = (_x_55 < prod_local_160); match prod_local_161 {
+        false => prod_local_161,
+        true => { let prod_local_162 = workerCommandRingCapacity()?; { let prod_local_163 = sSix()?; { let prod_local_164 = pow2Constructive(prod_local_163)?; { let prod_local_165 = (prod_local_162 == prod_local_164); prod_local_165 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } } },
+    } } },
+    } } } } } } } },
+    } },
+        true => { let _x_1238 = sHundred()?; { let _x_1240 = sFive()?; { let _x_1241 = core::convert::identity::<u64>(_x_1240).checked_mul(_x_1238).ok_or(self::ComputeError::MulOverflow)?; { let _x_1242 = (1 << 1); { let _x_1243 = sTen()?; { let _x_1244 = core::convert::identity::<u64>(_x_1242).checked_mul(_x_1243).ok_or(self::ComputeError::MulOverflow)?; { let _x_1245 = sSixteen()?; { let _x_1246 = solveContactImpulseMilli(_x_1238, _x_1241, _x_1244, _x_1240, _x_1245)?; { let _x_1247 = (_x_55 < _x_1246); { let prod_local_166 = _x_1247; match prod_local_166 {
+        false => prod_local_166,
+        true => { let prod_local_167 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_168 = sTen()?; { let prod_local_169 = sFive()?; { let prod_local_170 = sHundred()?; { let prod_local_171 = core::convert::identity::<u64>(prod_local_169).checked_mul(prod_local_170).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_172 = clampCoulombFrictionMilli(prod_local_167, prod_local_168, prod_local_171)?; { let prod_local_173 = coulombFrictionConeValid(prod_local_172, prod_local_168, prod_local_171)?; match prod_local_173 {
+        false => prod_local_173,
+        true => { let prod_local_174 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_175 = navTriangleWalkable(prod_local_174)?; match prod_local_175 {
+        false => { let prod_local_177 = prod_local_173; match prod_local_177 {
+        false => prod_local_177,
+        true => { let prod_local_179 = sEight()?; { let prod_local_180 = sHundred()?; { let prod_local_181 = core::convert::identity::<u64>(prod_local_179).checked_mul(prod_local_180).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_182 = navTriangleWalkable(prod_local_181)?; match prod_local_182 {
+        false => { let prod_local_183 = prod_local_182; match prod_local_183 {
+        false => prod_local_183,
+        true => { let prod_local_184 = audioWorkletQuantumFrames()?; { let prod_local_185 = (1 << 1); { let prod_local_186 = sHundred()?; { let prod_local_187 = wasmBridgeEnvelopeValid(prod_local_184, prod_local_185, prod_local_186)?; match prod_local_187 {
+        false => prod_local_187,
+        true => { let prod_local_188 = sHundred()?; { let prod_local_189 = sFive()?; { let prod_local_190 = core::convert::identity::<u64>(prod_local_189).checked_mul(prod_local_189).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_191 = skinWeightScale()?; { let prod_local_192 = core::convert::identity::<u64>(prod_local_190).checked_mul(prod_local_191).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_193 = sabineRt60Millis(prod_local_188, prod_local_192)?; { let prod_local_194 = (_x_55 < prod_local_193); match prod_local_194 {
+        false => prod_local_194,
+        true => { let prod_local_195 = workerCommandRingCapacity()?; { let prod_local_196 = sSix()?; { let prod_local_197 = pow2Constructive(prod_local_196)?; { let prod_local_198 = (prod_local_195 == prod_local_197); prod_local_198 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_199 = sTen()?; { let prod_local_200 = sFive()?; { let prod_local_201 = core::convert::identity::<u64>(prod_local_199).checked_add(prod_local_200).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_202 = navMaxSearchNodes()?; { let prod_local_203 = sFifteen()?; { let prod_local_204 = core::convert::identity::<u64>(prod_local_202).saturating_sub(prod_local_203); { let prod_local_205 = core::convert::identity::<u64>(prod_local_202).saturating_sub(prod_local_204); { let prod_local_206 = (prod_local_201 == prod_local_205); { let prod_local_207 = prod_local_206; match prod_local_207 {
+        false => prod_local_207,
+        true => { let prod_local_208 = audioWorkletQuantumFrames()?; { let prod_local_209 = (1 << 1); { let prod_local_210 = sHundred()?; { let prod_local_211 = wasmBridgeEnvelopeValid(prod_local_208, prod_local_209, prod_local_210)?; match prod_local_211 {
+        false => prod_local_211,
+        true => { let prod_local_212 = sHundred()?; { let prod_local_213 = sFive()?; { let prod_local_214 = core::convert::identity::<u64>(prod_local_213).checked_mul(prod_local_213).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_215 = skinWeightScale()?; { let prod_local_216 = core::convert::identity::<u64>(prod_local_214).checked_mul(prod_local_215).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_217 = sabineRt60Millis(prod_local_212, prod_local_216)?; { let prod_local_218 = (_x_55 < prod_local_217); match prod_local_218 {
+        false => prod_local_218,
+        true => { let prod_local_219 = workerCommandRingCapacity()?; { let prod_local_220 = sSix()?; { let prod_local_221 = pow2Constructive(prod_local_220)?; { let prod_local_222 = (prod_local_219 == prod_local_221); prod_local_222 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_223 = false; { let prod_local_224 = prod_local_223; match prod_local_224 {
+        false => prod_local_224,
+        true => { let prod_local_226 = sEight()?; { let prod_local_227 = sHundred()?; { let prod_local_228 = core::convert::identity::<u64>(prod_local_226).checked_mul(prod_local_227).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_229 = navTriangleWalkable(prod_local_228)?; match prod_local_229 {
+        false => { let prod_local_230 = prod_local_229; match prod_local_230 {
+        false => prod_local_230,
+        true => { let prod_local_231 = audioWorkletQuantumFrames()?; { let prod_local_232 = (1 << 1); { let prod_local_233 = sHundred()?; { let prod_local_234 = wasmBridgeEnvelopeValid(prod_local_231, prod_local_232, prod_local_233)?; match prod_local_234 {
+        false => prod_local_234,
+        true => { let prod_local_235 = sHundred()?; { let prod_local_236 = sFive()?; { let prod_local_237 = core::convert::identity::<u64>(prod_local_236).checked_mul(prod_local_236).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_238 = skinWeightScale()?; { let prod_local_239 = core::convert::identity::<u64>(prod_local_237).checked_mul(prod_local_238).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_240 = sabineRt60Millis(prod_local_235, prod_local_239)?; { let prod_local_241 = (_x_55 < prod_local_240); match prod_local_241 {
+        false => prod_local_241,
+        true => { let prod_local_242 = workerCommandRingCapacity()?; { let prod_local_243 = sSix()?; { let prod_local_244 = pow2Constructive(prod_local_243)?; { let prod_local_245 = (prod_local_242 == prod_local_244); prod_local_245 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_246 = sTen()?; { let prod_local_247 = sFive()?; { let prod_local_248 = core::convert::identity::<u64>(prod_local_246).checked_add(prod_local_247).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_249 = navMaxSearchNodes()?; { let prod_local_250 = sFifteen()?; { let prod_local_251 = core::convert::identity::<u64>(prod_local_249).saturating_sub(prod_local_250); { let prod_local_252 = core::convert::identity::<u64>(prod_local_249).saturating_sub(prod_local_251); { let prod_local_253 = (prod_local_248 == prod_local_252); { let prod_local_254 = prod_local_253; match prod_local_254 {
+        false => prod_local_254,
+        true => { let prod_local_255 = audioWorkletQuantumFrames()?; { let prod_local_256 = (1 << 1); { let prod_local_257 = sHundred()?; { let prod_local_258 = wasmBridgeEnvelopeValid(prod_local_255, prod_local_256, prod_local_257)?; match prod_local_258 {
+        false => prod_local_258,
+        true => { let prod_local_259 = sHundred()?; { let prod_local_260 = sFive()?; { let prod_local_261 = core::convert::identity::<u64>(prod_local_260).checked_mul(prod_local_260).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_262 = skinWeightScale()?; { let prod_local_263 = core::convert::identity::<u64>(prod_local_261).checked_mul(prod_local_262).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_264 = sabineRt60Millis(prod_local_259, prod_local_263)?; { let prod_local_265 = (_x_55 < prod_local_264); match prod_local_265 {
+        false => prod_local_265,
+        true => { let prod_local_266 = workerCommandRingCapacity()?; { let prod_local_267 = sSix()?; { let prod_local_268 = pow2Constructive(prod_local_267)?; { let prod_local_269 = (prod_local_266 == prod_local_268); prod_local_269 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } } },
+    } } },
+    } } } } } } } },
+    } } } } } } } } } } },
+    } } } },
+    } } },
+    } },
+        true => { let _x_1253 = sFour()?; { let _x_1254 = renderPassDependencyValid(_x_55, _x_1253)?; { let prod_local_270 = _x_1254; match prod_local_270 {
+        false => prod_local_270,
+        true => { let prod_local_271 = sFour()?; { let prod_local_272 = (prod_local_271 == _x_1172); match prod_local_272 {
+        false => { let prod_local_274 = prod_local_272; match prod_local_274 {
+        false => prod_local_274,
+        true => { let prod_local_275 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_276 = sTen()?; { let prod_local_277 = sFive()?; { let prod_local_278 = sHundred()?; { let prod_local_279 = core::convert::identity::<u64>(prod_local_277).checked_mul(prod_local_278).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_280 = clampCoulombFrictionMilli(prod_local_275, prod_local_276, prod_local_279)?; { let prod_local_281 = coulombFrictionConeValid(prod_local_280, prod_local_276, prod_local_279)?; match prod_local_281 {
+        false => prod_local_281,
+        true => { let prod_local_282 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_283 = navTriangleWalkable(prod_local_282)?; match prod_local_283 {
+        false => { let prod_local_285 = prod_local_281; match prod_local_285 {
+        false => prod_local_285,
+        true => { let prod_local_287 = sEight()?; { let prod_local_288 = sHundred()?; { let prod_local_289 = core::convert::identity::<u64>(prod_local_287).checked_mul(prod_local_288).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_290 = navTriangleWalkable(prod_local_289)?; match prod_local_290 {
+        false => { let prod_local_291 = prod_local_290; match prod_local_291 {
+        false => prod_local_291,
+        true => { let prod_local_292 = audioWorkletQuantumFrames()?; { let prod_local_293 = (1 << 1); { let prod_local_294 = sHundred()?; { let prod_local_295 = wasmBridgeEnvelopeValid(prod_local_292, prod_local_293, prod_local_294)?; match prod_local_295 {
+        false => prod_local_295,
+        true => { let prod_local_296 = sHundred()?; { let prod_local_297 = sFive()?; { let prod_local_298 = core::convert::identity::<u64>(prod_local_297).checked_mul(prod_local_297).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_299 = skinWeightScale()?; { let prod_local_300 = core::convert::identity::<u64>(prod_local_298).checked_mul(prod_local_299).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_301 = sabineRt60Millis(prod_local_296, prod_local_300)?; { let prod_local_302 = (_x_55 < prod_local_301); match prod_local_302 {
+        false => prod_local_302,
+        true => { let prod_local_303 = workerCommandRingCapacity()?; { let prod_local_304 = sSix()?; { let prod_local_305 = pow2Constructive(prod_local_304)?; { let prod_local_306 = (prod_local_303 == prod_local_305); prod_local_306 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_307 = sTen()?; { let prod_local_308 = sFive()?; { let prod_local_309 = core::convert::identity::<u64>(prod_local_307).checked_add(prod_local_308).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_310 = navMaxSearchNodes()?; { let prod_local_311 = sFifteen()?; { let prod_local_312 = core::convert::identity::<u64>(prod_local_310).saturating_sub(prod_local_311); { let prod_local_313 = core::convert::identity::<u64>(prod_local_310).saturating_sub(prod_local_312); { let prod_local_314 = (prod_local_309 == prod_local_313); { let prod_local_315 = prod_local_314; match prod_local_315 {
+        false => prod_local_315,
+        true => { let prod_local_316 = audioWorkletQuantumFrames()?; { let prod_local_317 = (1 << 1); { let prod_local_318 = sHundred()?; { let prod_local_319 = wasmBridgeEnvelopeValid(prod_local_316, prod_local_317, prod_local_318)?; match prod_local_319 {
+        false => prod_local_319,
+        true => { let prod_local_320 = sHundred()?; { let prod_local_321 = sFive()?; { let prod_local_322 = core::convert::identity::<u64>(prod_local_321).checked_mul(prod_local_321).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_323 = skinWeightScale()?; { let prod_local_324 = core::convert::identity::<u64>(prod_local_322).checked_mul(prod_local_323).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_325 = sabineRt60Millis(prod_local_320, prod_local_324)?; { let prod_local_326 = (_x_55 < prod_local_325); match prod_local_326 {
+        false => prod_local_326,
+        true => { let prod_local_327 = workerCommandRingCapacity()?; { let prod_local_328 = sSix()?; { let prod_local_329 = pow2Constructive(prod_local_328)?; { let prod_local_330 = (prod_local_327 == prod_local_329); prod_local_330 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_331 = false; { let prod_local_332 = prod_local_331; match prod_local_332 {
+        false => prod_local_332,
+        true => { let prod_local_334 = sEight()?; { let prod_local_335 = sHundred()?; { let prod_local_336 = core::convert::identity::<u64>(prod_local_334).checked_mul(prod_local_335).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_337 = navTriangleWalkable(prod_local_336)?; match prod_local_337 {
+        false => { let prod_local_338 = prod_local_337; match prod_local_338 {
+        false => prod_local_338,
+        true => { let prod_local_339 = audioWorkletQuantumFrames()?; { let prod_local_340 = (1 << 1); { let prod_local_341 = sHundred()?; { let prod_local_342 = wasmBridgeEnvelopeValid(prod_local_339, prod_local_340, prod_local_341)?; match prod_local_342 {
+        false => prod_local_342,
+        true => { let prod_local_343 = sHundred()?; { let prod_local_344 = sFive()?; { let prod_local_345 = core::convert::identity::<u64>(prod_local_344).checked_mul(prod_local_344).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_346 = skinWeightScale()?; { let prod_local_347 = core::convert::identity::<u64>(prod_local_345).checked_mul(prod_local_346).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_348 = sabineRt60Millis(prod_local_343, prod_local_347)?; { let prod_local_349 = (_x_55 < prod_local_348); match prod_local_349 {
+        false => prod_local_349,
+        true => { let prod_local_350 = workerCommandRingCapacity()?; { let prod_local_351 = sSix()?; { let prod_local_352 = pow2Constructive(prod_local_351)?; { let prod_local_353 = (prod_local_350 == prod_local_352); prod_local_353 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_354 = sTen()?; { let prod_local_355 = sFive()?; { let prod_local_356 = core::convert::identity::<u64>(prod_local_354).checked_add(prod_local_355).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_357 = navMaxSearchNodes()?; { let prod_local_358 = sFifteen()?; { let prod_local_359 = core::convert::identity::<u64>(prod_local_357).saturating_sub(prod_local_358); { let prod_local_360 = core::convert::identity::<u64>(prod_local_357).saturating_sub(prod_local_359); { let prod_local_361 = (prod_local_356 == prod_local_360); { let prod_local_362 = prod_local_361; match prod_local_362 {
+        false => prod_local_362,
+        true => { let prod_local_363 = audioWorkletQuantumFrames()?; { let prod_local_364 = (1 << 1); { let prod_local_365 = sHundred()?; { let prod_local_366 = wasmBridgeEnvelopeValid(prod_local_363, prod_local_364, prod_local_365)?; match prod_local_366 {
+        false => prod_local_366,
+        true => { let prod_local_367 = sHundred()?; { let prod_local_368 = sFive()?; { let prod_local_369 = core::convert::identity::<u64>(prod_local_368).checked_mul(prod_local_368).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_370 = skinWeightScale()?; { let prod_local_371 = core::convert::identity::<u64>(prod_local_369).checked_mul(prod_local_370).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_372 = sabineRt60Millis(prod_local_367, prod_local_371)?; { let prod_local_373 = (_x_55 < prod_local_372); match prod_local_373 {
+        false => prod_local_373,
+        true => { let prod_local_374 = workerCommandRingCapacity()?; { let prod_local_375 = sSix()?; { let prod_local_376 = pow2Constructive(prod_local_375)?; { let prod_local_377 = (prod_local_374 == prod_local_376); prod_local_377 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } } },
+    } } },
+    } } } } } } } },
+    } },
+        true => { let prod_local_378 = sThirtyTwo()?; { let prod_local_379 = sThirtyTwo()?; { let prod_local_380 = (prod_local_378 == prod_local_379); match prod_local_380 {
+        false => { let prod_local_381 = prod_local_380; match prod_local_381 {
+        false => prod_local_381,
+        true => { let prod_local_382 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_383 = sTen()?; { let prod_local_384 = sFive()?; { let prod_local_385 = sHundred()?; { let prod_local_386 = core::convert::identity::<u64>(prod_local_384).checked_mul(prod_local_385).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_387 = clampCoulombFrictionMilli(prod_local_382, prod_local_383, prod_local_386)?; { let prod_local_388 = coulombFrictionConeValid(prod_local_387, prod_local_383, prod_local_386)?; match prod_local_388 {
+        false => prod_local_388,
+        true => { let prod_local_389 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_390 = navTriangleWalkable(prod_local_389)?; match prod_local_390 {
+        false => { let prod_local_392 = prod_local_388; match prod_local_392 {
+        false => prod_local_392,
+        true => { let prod_local_394 = sEight()?; { let prod_local_395 = sHundred()?; { let prod_local_396 = core::convert::identity::<u64>(prod_local_394).checked_mul(prod_local_395).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_397 = navTriangleWalkable(prod_local_396)?; match prod_local_397 {
+        false => { let prod_local_398 = prod_local_397; match prod_local_398 {
+        false => prod_local_398,
+        true => { let prod_local_399 = audioWorkletQuantumFrames()?; { let prod_local_400 = (1 << 1); { let prod_local_401 = sHundred()?; { let prod_local_402 = wasmBridgeEnvelopeValid(prod_local_399, prod_local_400, prod_local_401)?; match prod_local_402 {
+        false => prod_local_402,
+        true => { let prod_local_403 = sHundred()?; { let prod_local_404 = sFive()?; { let prod_local_405 = core::convert::identity::<u64>(prod_local_404).checked_mul(prod_local_404).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_406 = skinWeightScale()?; { let prod_local_407 = core::convert::identity::<u64>(prod_local_405).checked_mul(prod_local_406).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_408 = sabineRt60Millis(prod_local_403, prod_local_407)?; { let prod_local_409 = (_x_55 < prod_local_408); match prod_local_409 {
+        false => prod_local_409,
+        true => { let prod_local_410 = workerCommandRingCapacity()?; { let prod_local_411 = sSix()?; { let prod_local_412 = pow2Constructive(prod_local_411)?; { let prod_local_413 = (prod_local_410 == prod_local_412); prod_local_413 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_414 = sTen()?; { let prod_local_415 = sFive()?; { let prod_local_416 = core::convert::identity::<u64>(prod_local_414).checked_add(prod_local_415).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_417 = navMaxSearchNodes()?; { let prod_local_418 = sFifteen()?; { let prod_local_419 = core::convert::identity::<u64>(prod_local_417).saturating_sub(prod_local_418); { let prod_local_420 = core::convert::identity::<u64>(prod_local_417).saturating_sub(prod_local_419); { let prod_local_421 = (prod_local_416 == prod_local_420); { let prod_local_422 = prod_local_421; match prod_local_422 {
+        false => prod_local_422,
+        true => { let prod_local_423 = audioWorkletQuantumFrames()?; { let prod_local_424 = (1 << 1); { let prod_local_425 = sHundred()?; { let prod_local_426 = wasmBridgeEnvelopeValid(prod_local_423, prod_local_424, prod_local_425)?; match prod_local_426 {
+        false => prod_local_426,
+        true => { let prod_local_427 = sHundred()?; { let prod_local_428 = sFive()?; { let prod_local_429 = core::convert::identity::<u64>(prod_local_428).checked_mul(prod_local_428).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_430 = skinWeightScale()?; { let prod_local_431 = core::convert::identity::<u64>(prod_local_429).checked_mul(prod_local_430).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_432 = sabineRt60Millis(prod_local_427, prod_local_431)?; { let prod_local_433 = (_x_55 < prod_local_432); match prod_local_433 {
+        false => prod_local_433,
+        true => { let prod_local_434 = workerCommandRingCapacity()?; { let prod_local_435 = sSix()?; { let prod_local_436 = pow2Constructive(prod_local_435)?; { let prod_local_437 = (prod_local_434 == prod_local_436); prod_local_437 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_438 = false; { let prod_local_439 = prod_local_438; match prod_local_439 {
+        false => prod_local_439,
+        true => { let prod_local_441 = sEight()?; { let prod_local_442 = sHundred()?; { let prod_local_443 = core::convert::identity::<u64>(prod_local_441).checked_mul(prod_local_442).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_444 = navTriangleWalkable(prod_local_443)?; match prod_local_444 {
+        false => { let prod_local_445 = prod_local_444; match prod_local_445 {
+        false => prod_local_445,
+        true => { let prod_local_446 = audioWorkletQuantumFrames()?; { let prod_local_447 = (1 << 1); { let prod_local_448 = sHundred()?; { let prod_local_449 = wasmBridgeEnvelopeValid(prod_local_446, prod_local_447, prod_local_448)?; match prod_local_449 {
+        false => prod_local_449,
+        true => { let prod_local_450 = sHundred()?; { let prod_local_451 = sFive()?; { let prod_local_452 = core::convert::identity::<u64>(prod_local_451).checked_mul(prod_local_451).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_453 = skinWeightScale()?; { let prod_local_454 = core::convert::identity::<u64>(prod_local_452).checked_mul(prod_local_453).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_455 = sabineRt60Millis(prod_local_450, prod_local_454)?; { let prod_local_456 = (_x_55 < prod_local_455); match prod_local_456 {
+        false => prod_local_456,
+        true => { let prod_local_457 = workerCommandRingCapacity()?; { let prod_local_458 = sSix()?; { let prod_local_459 = pow2Constructive(prod_local_458)?; { let prod_local_460 = (prod_local_457 == prod_local_459); prod_local_460 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_461 = sTen()?; { let prod_local_462 = sFive()?; { let prod_local_463 = core::convert::identity::<u64>(prod_local_461).checked_add(prod_local_462).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_464 = navMaxSearchNodes()?; { let prod_local_465 = sFifteen()?; { let prod_local_466 = core::convert::identity::<u64>(prod_local_464).saturating_sub(prod_local_465); { let prod_local_467 = core::convert::identity::<u64>(prod_local_464).saturating_sub(prod_local_466); { let prod_local_468 = (prod_local_463 == prod_local_467); { let prod_local_469 = prod_local_468; match prod_local_469 {
+        false => prod_local_469,
+        true => { let prod_local_470 = audioWorkletQuantumFrames()?; { let prod_local_471 = (1 << 1); { let prod_local_472 = sHundred()?; { let prod_local_473 = wasmBridgeEnvelopeValid(prod_local_470, prod_local_471, prod_local_472)?; match prod_local_473 {
+        false => prod_local_473,
+        true => { let prod_local_474 = sHundred()?; { let prod_local_475 = sFive()?; { let prod_local_476 = core::convert::identity::<u64>(prod_local_475).checked_mul(prod_local_475).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_477 = skinWeightScale()?; { let prod_local_478 = core::convert::identity::<u64>(prod_local_476).checked_mul(prod_local_477).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_479 = sabineRt60Millis(prod_local_474, prod_local_478)?; { let prod_local_480 = (_x_55 < prod_local_479); match prod_local_480 {
+        false => prod_local_480,
+        true => { let prod_local_481 = workerCommandRingCapacity()?; { let prod_local_482 = sSix()?; { let prod_local_483 = pow2Constructive(prod_local_482)?; { let prod_local_484 = (prod_local_481 == prod_local_483); prod_local_484 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } } },
+    } } },
+    } } } } } } } },
+    } },
+        true => { let prod_local_485 = sHundred()?; { let prod_local_486 = sFive()?; { let prod_local_487 = core::convert::identity::<u64>(prod_local_486).checked_mul(prod_local_485).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_488 = (1 << 1); { let prod_local_489 = sTen()?; { let prod_local_490 = core::convert::identity::<u64>(prod_local_488).checked_mul(prod_local_489).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_491 = sSixteen()?; { let prod_local_492 = solveContactImpulseMilli(prod_local_485, prod_local_487, prod_local_490, prod_local_486, prod_local_491)?; { let prod_local_493 = (_x_55 < prod_local_492); { let prod_local_494 = prod_local_493; match prod_local_494 {
+        false => prod_local_494,
+        true => { let prod_local_495 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_496 = sTen()?; { let prod_local_497 = sFive()?; { let prod_local_498 = sHundred()?; { let prod_local_499 = core::convert::identity::<u64>(prod_local_497).checked_mul(prod_local_498).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_500 = clampCoulombFrictionMilli(prod_local_495, prod_local_496, prod_local_499)?; { let prod_local_501 = coulombFrictionConeValid(prod_local_500, prod_local_496, prod_local_499)?; match prod_local_501 {
+        false => prod_local_501,
+        true => { let prod_local_502 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_503 = navTriangleWalkable(prod_local_502)?; match prod_local_503 {
+        false => { let prod_local_505 = prod_local_501; match prod_local_505 {
+        false => prod_local_505,
+        true => { let prod_local_507 = sEight()?; { let prod_local_508 = sHundred()?; { let prod_local_509 = core::convert::identity::<u64>(prod_local_507).checked_mul(prod_local_508).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_510 = navTriangleWalkable(prod_local_509)?; match prod_local_510 {
+        false => { let prod_local_511 = prod_local_510; match prod_local_511 {
+        false => prod_local_511,
+        true => { let prod_local_512 = audioWorkletQuantumFrames()?; { let prod_local_513 = (1 << 1); { let prod_local_514 = sHundred()?; { let prod_local_515 = wasmBridgeEnvelopeValid(prod_local_512, prod_local_513, prod_local_514)?; match prod_local_515 {
+        false => prod_local_515,
+        true => { let prod_local_516 = sHundred()?; { let prod_local_517 = sFive()?; { let prod_local_518 = core::convert::identity::<u64>(prod_local_517).checked_mul(prod_local_517).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_519 = skinWeightScale()?; { let prod_local_520 = core::convert::identity::<u64>(prod_local_518).checked_mul(prod_local_519).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_521 = sabineRt60Millis(prod_local_516, prod_local_520)?; { let prod_local_522 = (_x_55 < prod_local_521); match prod_local_522 {
+        false => prod_local_522,
+        true => { let prod_local_523 = workerCommandRingCapacity()?; { let prod_local_524 = sSix()?; { let prod_local_525 = pow2Constructive(prod_local_524)?; { let prod_local_526 = (prod_local_523 == prod_local_525); prod_local_526 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_527 = sTen()?; { let prod_local_528 = sFive()?; { let prod_local_529 = core::convert::identity::<u64>(prod_local_527).checked_add(prod_local_528).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_530 = navMaxSearchNodes()?; { let prod_local_531 = sFifteen()?; { let prod_local_532 = core::convert::identity::<u64>(prod_local_530).saturating_sub(prod_local_531); { let prod_local_533 = core::convert::identity::<u64>(prod_local_530).saturating_sub(prod_local_532); { let prod_local_534 = (prod_local_529 == prod_local_533); { let prod_local_535 = prod_local_534; match prod_local_535 {
+        false => prod_local_535,
+        true => { let prod_local_536 = audioWorkletQuantumFrames()?; { let prod_local_537 = (1 << 1); { let prod_local_538 = sHundred()?; { let prod_local_539 = wasmBridgeEnvelopeValid(prod_local_536, prod_local_537, prod_local_538)?; match prod_local_539 {
+        false => prod_local_539,
+        true => { let prod_local_540 = sHundred()?; { let prod_local_541 = sFive()?; { let prod_local_542 = core::convert::identity::<u64>(prod_local_541).checked_mul(prod_local_541).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_543 = skinWeightScale()?; { let prod_local_544 = core::convert::identity::<u64>(prod_local_542).checked_mul(prod_local_543).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_545 = sabineRt60Millis(prod_local_540, prod_local_544)?; { let prod_local_546 = (_x_55 < prod_local_545); match prod_local_546 {
+        false => prod_local_546,
+        true => { let prod_local_547 = workerCommandRingCapacity()?; { let prod_local_548 = sSix()?; { let prod_local_549 = pow2Constructive(prod_local_548)?; { let prod_local_550 = (prod_local_547 == prod_local_549); prod_local_550 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_551 = false; { let prod_local_552 = prod_local_551; match prod_local_552 {
+        false => prod_local_552,
+        true => { let prod_local_554 = sEight()?; { let prod_local_555 = sHundred()?; { let prod_local_556 = core::convert::identity::<u64>(prod_local_554).checked_mul(prod_local_555).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_557 = navTriangleWalkable(prod_local_556)?; match prod_local_557 {
+        false => { let prod_local_558 = prod_local_557; match prod_local_558 {
+        false => prod_local_558,
+        true => { let prod_local_559 = audioWorkletQuantumFrames()?; { let prod_local_560 = (1 << 1); { let prod_local_561 = sHundred()?; { let prod_local_562 = wasmBridgeEnvelopeValid(prod_local_559, prod_local_560, prod_local_561)?; match prod_local_562 {
+        false => prod_local_562,
+        true => { let prod_local_563 = sHundred()?; { let prod_local_564 = sFive()?; { let prod_local_565 = core::convert::identity::<u64>(prod_local_564).checked_mul(prod_local_564).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_566 = skinWeightScale()?; { let prod_local_567 = core::convert::identity::<u64>(prod_local_565).checked_mul(prod_local_566).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_568 = sabineRt60Millis(prod_local_563, prod_local_567)?; { let prod_local_569 = (_x_55 < prod_local_568); match prod_local_569 {
+        false => prod_local_569,
+        true => { let prod_local_570 = workerCommandRingCapacity()?; { let prod_local_571 = sSix()?; { let prod_local_572 = pow2Constructive(prod_local_571)?; { let prod_local_573 = (prod_local_570 == prod_local_572); prod_local_573 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_574 = sTen()?; { let prod_local_575 = sFive()?; { let prod_local_576 = core::convert::identity::<u64>(prod_local_574).checked_add(prod_local_575).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_577 = navMaxSearchNodes()?; { let prod_local_578 = sFifteen()?; { let prod_local_579 = core::convert::identity::<u64>(prod_local_577).saturating_sub(prod_local_578); { let prod_local_580 = core::convert::identity::<u64>(prod_local_577).saturating_sub(prod_local_579); { let prod_local_581 = (prod_local_576 == prod_local_580); { let prod_local_582 = prod_local_581; match prod_local_582 {
+        false => prod_local_582,
+        true => { let prod_local_583 = audioWorkletQuantumFrames()?; { let prod_local_584 = (1 << 1); { let prod_local_585 = sHundred()?; { let prod_local_586 = wasmBridgeEnvelopeValid(prod_local_583, prod_local_584, prod_local_585)?; match prod_local_586 {
+        false => prod_local_586,
+        true => { let prod_local_587 = sHundred()?; { let prod_local_588 = sFive()?; { let prod_local_589 = core::convert::identity::<u64>(prod_local_588).checked_mul(prod_local_588).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_590 = skinWeightScale()?; { let prod_local_591 = core::convert::identity::<u64>(prod_local_589).checked_mul(prod_local_590).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_592 = sabineRt60Millis(prod_local_587, prod_local_591)?; { let prod_local_593 = (_x_55 < prod_local_592); match prod_local_593 {
+        false => prod_local_593,
+        true => { let prod_local_594 = workerCommandRingCapacity()?; { let prod_local_595 = sSix()?; { let prod_local_596 = pow2Constructive(prod_local_595)?; { let prod_local_597 = (prod_local_594 == prod_local_596); prod_local_597 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } } },
+    } } },
+    } } } } } } } },
+    } } } } } } } } } } },
+    } } } },
+    } } },
+    } } } },
+    } } } } } },
+    }
+                                                                                    }
+                                                                                    true => {
+                                                                                        let _x_1255 = sHundred()?;
+                                                                                        {
+                                                                                            let _x_1257 = sSixteen()?;
+                                                                                            {
+                                                                                                let _x_1258 = core::convert::identity::<u64>(_x_1257).checked_mul(_x_1255).ok_or(self::ComputeError::MulOverflow)?;
+                                                                                                {
+                                                                                                    let _x_1259 = csmSplitDistanceMilli(_x_1255, _x_1258, _x_55)?;
+                                                                                                    {
+                                                                                                        let _x_1260 = ((1 << 1) + 1);
+                                                                                                        {
+                                                                                                            let _x_1261 = csmSplitDistanceMilli(_x_1255, _x_1258, _x_1260)?;
+                                                                                                            {
+                                                                                                                let _x_1262 = (_x_1259 < _x_1261);
+                                                                                                                {
+                                                                                                                    let prod_local_598 = _x_1262;
+                                                                                                                    match prod_local_598 {
+        false => prod_local_598,
+        true => { let prod_local_600 = sEight()?; { let prod_local_601 = pow2Constructive(prod_local_600)?; { let prod_local_602 = iblMipLevelCount(prod_local_601)?; { let prod_local_603 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_604 = (prod_local_602 == prod_local_603); match prod_local_604 {
+        false => { let prod_local_605 = prod_local_604; match prod_local_605 {
+        false => prod_local_605,
+        true => { let prod_local_606 = sFour()?; { let prod_local_607 = (prod_local_606 == _x_1172); match prod_local_607 {
+        false => { let prod_local_609 = prod_local_607; match prod_local_609 {
+        false => prod_local_609,
+        true => { let prod_local_610 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_611 = sTen()?; { let prod_local_612 = sFive()?; { let prod_local_613 = sHundred()?; { let prod_local_614 = core::convert::identity::<u64>(prod_local_612).checked_mul(prod_local_613).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_615 = clampCoulombFrictionMilli(prod_local_610, prod_local_611, prod_local_614)?; { let prod_local_616 = coulombFrictionConeValid(prod_local_615, prod_local_611, prod_local_614)?; match prod_local_616 {
+        false => prod_local_616,
+        true => { let prod_local_617 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_618 = navTriangleWalkable(prod_local_617)?; match prod_local_618 {
+        false => { let prod_local_620 = prod_local_616; match prod_local_620 {
+        false => prod_local_620,
+        true => { let prod_local_622 = sEight()?; { let prod_local_623 = sHundred()?; { let prod_local_624 = core::convert::identity::<u64>(prod_local_622).checked_mul(prod_local_623).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_625 = navTriangleWalkable(prod_local_624)?; match prod_local_625 {
+        false => { let prod_local_626 = prod_local_625; match prod_local_626 {
+        false => prod_local_626,
+        true => { let prod_local_627 = audioWorkletQuantumFrames()?; { let prod_local_628 = (1 << 1); { let prod_local_629 = sHundred()?; { let prod_local_630 = wasmBridgeEnvelopeValid(prod_local_627, prod_local_628, prod_local_629)?; match prod_local_630 {
+        false => prod_local_630,
+        true => { let prod_local_631 = sHundred()?; { let prod_local_632 = sFive()?; { let prod_local_633 = core::convert::identity::<u64>(prod_local_632).checked_mul(prod_local_632).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_634 = skinWeightScale()?; { let prod_local_635 = core::convert::identity::<u64>(prod_local_633).checked_mul(prod_local_634).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_636 = sabineRt60Millis(prod_local_631, prod_local_635)?; { let prod_local_637 = (_x_55 < prod_local_636); match prod_local_637 {
+        false => prod_local_637,
+        true => { let prod_local_638 = workerCommandRingCapacity()?; { let prod_local_639 = sSix()?; { let prod_local_640 = pow2Constructive(prod_local_639)?; { let prod_local_641 = (prod_local_638 == prod_local_640); prod_local_641 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_642 = sTen()?; { let prod_local_643 = sFive()?; { let prod_local_644 = core::convert::identity::<u64>(prod_local_642).checked_add(prod_local_643).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_645 = navMaxSearchNodes()?; { let prod_local_646 = sFifteen()?; { let prod_local_647 = core::convert::identity::<u64>(prod_local_645).saturating_sub(prod_local_646); { let prod_local_648 = core::convert::identity::<u64>(prod_local_645).saturating_sub(prod_local_647); { let prod_local_649 = (prod_local_644 == prod_local_648); { let prod_local_650 = prod_local_649; match prod_local_650 {
+        false => prod_local_650,
+        true => { let prod_local_651 = audioWorkletQuantumFrames()?; { let prod_local_652 = (1 << 1); { let prod_local_653 = sHundred()?; { let prod_local_654 = wasmBridgeEnvelopeValid(prod_local_651, prod_local_652, prod_local_653)?; match prod_local_654 {
+        false => prod_local_654,
+        true => { let prod_local_655 = sHundred()?; { let prod_local_656 = sFive()?; { let prod_local_657 = core::convert::identity::<u64>(prod_local_656).checked_mul(prod_local_656).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_658 = skinWeightScale()?; { let prod_local_659 = core::convert::identity::<u64>(prod_local_657).checked_mul(prod_local_658).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_660 = sabineRt60Millis(prod_local_655, prod_local_659)?; { let prod_local_661 = (_x_55 < prod_local_660); match prod_local_661 {
+        false => prod_local_661,
+        true => { let prod_local_662 = workerCommandRingCapacity()?; { let prod_local_663 = sSix()?; { let prod_local_664 = pow2Constructive(prod_local_663)?; { let prod_local_665 = (prod_local_662 == prod_local_664); prod_local_665 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_666 = false; { let prod_local_667 = prod_local_666; match prod_local_667 {
+        false => prod_local_667,
+        true => { let prod_local_669 = sEight()?; { let prod_local_670 = sHundred()?; { let prod_local_671 = core::convert::identity::<u64>(prod_local_669).checked_mul(prod_local_670).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_672 = navTriangleWalkable(prod_local_671)?; match prod_local_672 {
+        false => { let prod_local_673 = prod_local_672; match prod_local_673 {
+        false => prod_local_673,
+        true => { let prod_local_674 = audioWorkletQuantumFrames()?; { let prod_local_675 = (1 << 1); { let prod_local_676 = sHundred()?; { let prod_local_677 = wasmBridgeEnvelopeValid(prod_local_674, prod_local_675, prod_local_676)?; match prod_local_677 {
+        false => prod_local_677,
+        true => { let prod_local_678 = sHundred()?; { let prod_local_679 = sFive()?; { let prod_local_680 = core::convert::identity::<u64>(prod_local_679).checked_mul(prod_local_679).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_681 = skinWeightScale()?; { let prod_local_682 = core::convert::identity::<u64>(prod_local_680).checked_mul(prod_local_681).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_683 = sabineRt60Millis(prod_local_678, prod_local_682)?; { let prod_local_684 = (_x_55 < prod_local_683); match prod_local_684 {
+        false => prod_local_684,
+        true => { let prod_local_685 = workerCommandRingCapacity()?; { let prod_local_686 = sSix()?; { let prod_local_687 = pow2Constructive(prod_local_686)?; { let prod_local_688 = (prod_local_685 == prod_local_687); prod_local_688 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_689 = sTen()?; { let prod_local_690 = sFive()?; { let prod_local_691 = core::convert::identity::<u64>(prod_local_689).checked_add(prod_local_690).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_692 = navMaxSearchNodes()?; { let prod_local_693 = sFifteen()?; { let prod_local_694 = core::convert::identity::<u64>(prod_local_692).saturating_sub(prod_local_693); { let prod_local_695 = core::convert::identity::<u64>(prod_local_692).saturating_sub(prod_local_694); { let prod_local_696 = (prod_local_691 == prod_local_695); { let prod_local_697 = prod_local_696; match prod_local_697 {
+        false => prod_local_697,
+        true => { let prod_local_698 = audioWorkletQuantumFrames()?; { let prod_local_699 = (1 << 1); { let prod_local_700 = sHundred()?; { let prod_local_701 = wasmBridgeEnvelopeValid(prod_local_698, prod_local_699, prod_local_700)?; match prod_local_701 {
+        false => prod_local_701,
+        true => { let prod_local_702 = sHundred()?; { let prod_local_703 = sFive()?; { let prod_local_704 = core::convert::identity::<u64>(prod_local_703).checked_mul(prod_local_703).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_705 = skinWeightScale()?; { let prod_local_706 = core::convert::identity::<u64>(prod_local_704).checked_mul(prod_local_705).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_707 = sabineRt60Millis(prod_local_702, prod_local_706)?; { let prod_local_708 = (_x_55 < prod_local_707); match prod_local_708 {
+        false => prod_local_708,
+        true => { let prod_local_709 = workerCommandRingCapacity()?; { let prod_local_710 = sSix()?; { let prod_local_711 = pow2Constructive(prod_local_710)?; { let prod_local_712 = (prod_local_709 == prod_local_711); prod_local_712 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } } },
+    } } },
+    } } } } } } } },
+    } },
+        true => { let prod_local_713 = sThirtyTwo()?; { let prod_local_714 = sThirtyTwo()?; { let prod_local_715 = (prod_local_713 == prod_local_714); match prod_local_715 {
+        false => { let prod_local_716 = prod_local_715; match prod_local_716 {
+        false => prod_local_716,
+        true => { let prod_local_717 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_718 = sTen()?; { let prod_local_719 = sFive()?; { let prod_local_720 = sHundred()?; { let prod_local_721 = core::convert::identity::<u64>(prod_local_719).checked_mul(prod_local_720).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_722 = clampCoulombFrictionMilli(prod_local_717, prod_local_718, prod_local_721)?; { let prod_local_723 = coulombFrictionConeValid(prod_local_722, prod_local_718, prod_local_721)?; match prod_local_723 {
+        false => prod_local_723,
+        true => { let prod_local_724 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_725 = navTriangleWalkable(prod_local_724)?; match prod_local_725 {
+        false => { let prod_local_727 = prod_local_723; match prod_local_727 {
+        false => prod_local_727,
+        true => { let prod_local_729 = sEight()?; { let prod_local_730 = sHundred()?; { let prod_local_731 = core::convert::identity::<u64>(prod_local_729).checked_mul(prod_local_730).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_732 = navTriangleWalkable(prod_local_731)?; match prod_local_732 {
+        false => { let prod_local_733 = prod_local_732; match prod_local_733 {
+        false => prod_local_733,
+        true => { let prod_local_734 = audioWorkletQuantumFrames()?; { let prod_local_735 = (1 << 1); { let prod_local_736 = sHundred()?; { let prod_local_737 = wasmBridgeEnvelopeValid(prod_local_734, prod_local_735, prod_local_736)?; match prod_local_737 {
+        false => prod_local_737,
+        true => { let prod_local_738 = sHundred()?; { let prod_local_739 = sFive()?; { let prod_local_740 = core::convert::identity::<u64>(prod_local_739).checked_mul(prod_local_739).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_741 = skinWeightScale()?; { let prod_local_742 = core::convert::identity::<u64>(prod_local_740).checked_mul(prod_local_741).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_743 = sabineRt60Millis(prod_local_738, prod_local_742)?; { let prod_local_744 = (_x_55 < prod_local_743); match prod_local_744 {
+        false => prod_local_744,
+        true => { let prod_local_745 = workerCommandRingCapacity()?; { let prod_local_746 = sSix()?; { let prod_local_747 = pow2Constructive(prod_local_746)?; { let prod_local_748 = (prod_local_745 == prod_local_747); prod_local_748 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_749 = sTen()?; { let prod_local_750 = sFive()?; { let prod_local_751 = core::convert::identity::<u64>(prod_local_749).checked_add(prod_local_750).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_752 = navMaxSearchNodes()?; { let prod_local_753 = sFifteen()?; { let prod_local_754 = core::convert::identity::<u64>(prod_local_752).saturating_sub(prod_local_753); { let prod_local_755 = core::convert::identity::<u64>(prod_local_752).saturating_sub(prod_local_754); { let prod_local_756 = (prod_local_751 == prod_local_755); { let prod_local_757 = prod_local_756; match prod_local_757 {
+        false => prod_local_757,
+        true => { let prod_local_758 = audioWorkletQuantumFrames()?; { let prod_local_759 = (1 << 1); { let prod_local_760 = sHundred()?; { let prod_local_761 = wasmBridgeEnvelopeValid(prod_local_758, prod_local_759, prod_local_760)?; match prod_local_761 {
+        false => prod_local_761,
+        true => { let prod_local_762 = sHundred()?; { let prod_local_763 = sFive()?; { let prod_local_764 = core::convert::identity::<u64>(prod_local_763).checked_mul(prod_local_763).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_765 = skinWeightScale()?; { let prod_local_766 = core::convert::identity::<u64>(prod_local_764).checked_mul(prod_local_765).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_767 = sabineRt60Millis(prod_local_762, prod_local_766)?; { let prod_local_768 = (_x_55 < prod_local_767); match prod_local_768 {
+        false => prod_local_768,
+        true => { let prod_local_769 = workerCommandRingCapacity()?; { let prod_local_770 = sSix()?; { let prod_local_771 = pow2Constructive(prod_local_770)?; { let prod_local_772 = (prod_local_769 == prod_local_771); prod_local_772 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_773 = false; { let prod_local_774 = prod_local_773; match prod_local_774 {
+        false => prod_local_774,
+        true => { let prod_local_776 = sEight()?; { let prod_local_777 = sHundred()?; { let prod_local_778 = core::convert::identity::<u64>(prod_local_776).checked_mul(prod_local_777).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_779 = navTriangleWalkable(prod_local_778)?; match prod_local_779 {
+        false => { let prod_local_780 = prod_local_779; match prod_local_780 {
+        false => prod_local_780,
+        true => { let prod_local_781 = audioWorkletQuantumFrames()?; { let prod_local_782 = (1 << 1); { let prod_local_783 = sHundred()?; { let prod_local_784 = wasmBridgeEnvelopeValid(prod_local_781, prod_local_782, prod_local_783)?; match prod_local_784 {
+        false => prod_local_784,
+        true => { let prod_local_785 = sHundred()?; { let prod_local_786 = sFive()?; { let prod_local_787 = core::convert::identity::<u64>(prod_local_786).checked_mul(prod_local_786).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_788 = skinWeightScale()?; { let prod_local_789 = core::convert::identity::<u64>(prod_local_787).checked_mul(prod_local_788).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_790 = sabineRt60Millis(prod_local_785, prod_local_789)?; { let prod_local_791 = (_x_55 < prod_local_790); match prod_local_791 {
+        false => prod_local_791,
+        true => { let prod_local_792 = workerCommandRingCapacity()?; { let prod_local_793 = sSix()?; { let prod_local_794 = pow2Constructive(prod_local_793)?; { let prod_local_795 = (prod_local_792 == prod_local_794); prod_local_795 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_796 = sTen()?; { let prod_local_797 = sFive()?; { let prod_local_798 = core::convert::identity::<u64>(prod_local_796).checked_add(prod_local_797).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_799 = navMaxSearchNodes()?; { let prod_local_800 = sFifteen()?; { let prod_local_801 = core::convert::identity::<u64>(prod_local_799).saturating_sub(prod_local_800); { let prod_local_802 = core::convert::identity::<u64>(prod_local_799).saturating_sub(prod_local_801); { let prod_local_803 = (prod_local_798 == prod_local_802); { let prod_local_804 = prod_local_803; match prod_local_804 {
+        false => prod_local_804,
+        true => { let prod_local_805 = audioWorkletQuantumFrames()?; { let prod_local_806 = (1 << 1); { let prod_local_807 = sHundred()?; { let prod_local_808 = wasmBridgeEnvelopeValid(prod_local_805, prod_local_806, prod_local_807)?; match prod_local_808 {
+        false => prod_local_808,
+        true => { let prod_local_809 = sHundred()?; { let prod_local_810 = sFive()?; { let prod_local_811 = core::convert::identity::<u64>(prod_local_810).checked_mul(prod_local_810).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_812 = skinWeightScale()?; { let prod_local_813 = core::convert::identity::<u64>(prod_local_811).checked_mul(prod_local_812).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_814 = sabineRt60Millis(prod_local_809, prod_local_813)?; { let prod_local_815 = (_x_55 < prod_local_814); match prod_local_815 {
+        false => prod_local_815,
+        true => { let prod_local_816 = workerCommandRingCapacity()?; { let prod_local_817 = sSix()?; { let prod_local_818 = pow2Constructive(prod_local_817)?; { let prod_local_819 = (prod_local_816 == prod_local_818); prod_local_819 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } } },
+    } } },
+    } } } } } } } },
+    } },
+        true => { let prod_local_820 = sHundred()?; { let prod_local_821 = sFive()?; { let prod_local_822 = core::convert::identity::<u64>(prod_local_821).checked_mul(prod_local_820).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_823 = (1 << 1); { let prod_local_824 = sTen()?; { let prod_local_825 = core::convert::identity::<u64>(prod_local_823).checked_mul(prod_local_824).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_826 = sSixteen()?; { let prod_local_827 = solveContactImpulseMilli(prod_local_820, prod_local_822, prod_local_825, prod_local_821, prod_local_826)?; { let prod_local_828 = (_x_55 < prod_local_827); { let prod_local_829 = prod_local_828; match prod_local_829 {
+        false => prod_local_829,
+        true => { let prod_local_830 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_831 = sTen()?; { let prod_local_832 = sFive()?; { let prod_local_833 = sHundred()?; { let prod_local_834 = core::convert::identity::<u64>(prod_local_832).checked_mul(prod_local_833).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_835 = clampCoulombFrictionMilli(prod_local_830, prod_local_831, prod_local_834)?; { let prod_local_836 = coulombFrictionConeValid(prod_local_835, prod_local_831, prod_local_834)?; match prod_local_836 {
+        false => prod_local_836,
+        true => { let prod_local_837 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_838 = navTriangleWalkable(prod_local_837)?; match prod_local_838 {
+        false => { let prod_local_840 = prod_local_836; match prod_local_840 {
+        false => prod_local_840,
+        true => { let prod_local_842 = sEight()?; { let prod_local_843 = sHundred()?; { let prod_local_844 = core::convert::identity::<u64>(prod_local_842).checked_mul(prod_local_843).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_845 = navTriangleWalkable(prod_local_844)?; match prod_local_845 {
+        false => { let prod_local_846 = prod_local_845; match prod_local_846 {
+        false => prod_local_846,
+        true => { let prod_local_847 = audioWorkletQuantumFrames()?; { let prod_local_848 = (1 << 1); { let prod_local_849 = sHundred()?; { let prod_local_850 = wasmBridgeEnvelopeValid(prod_local_847, prod_local_848, prod_local_849)?; match prod_local_850 {
+        false => prod_local_850,
+        true => { let prod_local_851 = sHundred()?; { let prod_local_852 = sFive()?; { let prod_local_853 = core::convert::identity::<u64>(prod_local_852).checked_mul(prod_local_852).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_854 = skinWeightScale()?; { let prod_local_855 = core::convert::identity::<u64>(prod_local_853).checked_mul(prod_local_854).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_856 = sabineRt60Millis(prod_local_851, prod_local_855)?; { let prod_local_857 = (_x_55 < prod_local_856); match prod_local_857 {
+        false => prod_local_857,
+        true => { let prod_local_858 = workerCommandRingCapacity()?; { let prod_local_859 = sSix()?; { let prod_local_860 = pow2Constructive(prod_local_859)?; { let prod_local_861 = (prod_local_858 == prod_local_860); prod_local_861 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_862 = sTen()?; { let prod_local_863 = sFive()?; { let prod_local_864 = core::convert::identity::<u64>(prod_local_862).checked_add(prod_local_863).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_865 = navMaxSearchNodes()?; { let prod_local_866 = sFifteen()?; { let prod_local_867 = core::convert::identity::<u64>(prod_local_865).saturating_sub(prod_local_866); { let prod_local_868 = core::convert::identity::<u64>(prod_local_865).saturating_sub(prod_local_867); { let prod_local_869 = (prod_local_864 == prod_local_868); { let prod_local_870 = prod_local_869; match prod_local_870 {
+        false => prod_local_870,
+        true => { let prod_local_871 = audioWorkletQuantumFrames()?; { let prod_local_872 = (1 << 1); { let prod_local_873 = sHundred()?; { let prod_local_874 = wasmBridgeEnvelopeValid(prod_local_871, prod_local_872, prod_local_873)?; match prod_local_874 {
+        false => prod_local_874,
+        true => { let prod_local_875 = sHundred()?; { let prod_local_876 = sFive()?; { let prod_local_877 = core::convert::identity::<u64>(prod_local_876).checked_mul(prod_local_876).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_878 = skinWeightScale()?; { let prod_local_879 = core::convert::identity::<u64>(prod_local_877).checked_mul(prod_local_878).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_880 = sabineRt60Millis(prod_local_875, prod_local_879)?; { let prod_local_881 = (_x_55 < prod_local_880); match prod_local_881 {
+        false => prod_local_881,
+        true => { let prod_local_882 = workerCommandRingCapacity()?; { let prod_local_883 = sSix()?; { let prod_local_884 = pow2Constructive(prod_local_883)?; { let prod_local_885 = (prod_local_882 == prod_local_884); prod_local_885 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_886 = false; { let prod_local_887 = prod_local_886; match prod_local_887 {
+        false => prod_local_887,
+        true => { let prod_local_889 = sEight()?; { let prod_local_890 = sHundred()?; { let prod_local_891 = core::convert::identity::<u64>(prod_local_889).checked_mul(prod_local_890).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_892 = navTriangleWalkable(prod_local_891)?; match prod_local_892 {
+        false => { let prod_local_893 = prod_local_892; match prod_local_893 {
+        false => prod_local_893,
+        true => { let prod_local_894 = audioWorkletQuantumFrames()?; { let prod_local_895 = (1 << 1); { let prod_local_896 = sHundred()?; { let prod_local_897 = wasmBridgeEnvelopeValid(prod_local_894, prod_local_895, prod_local_896)?; match prod_local_897 {
+        false => prod_local_897,
+        true => { let prod_local_898 = sHundred()?; { let prod_local_899 = sFive()?; { let prod_local_900 = core::convert::identity::<u64>(prod_local_899).checked_mul(prod_local_899).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_901 = skinWeightScale()?; { let prod_local_902 = core::convert::identity::<u64>(prod_local_900).checked_mul(prod_local_901).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_903 = sabineRt60Millis(prod_local_898, prod_local_902)?; { let prod_local_904 = (_x_55 < prod_local_903); match prod_local_904 {
+        false => prod_local_904,
+        true => { let prod_local_905 = workerCommandRingCapacity()?; { let prod_local_906 = sSix()?; { let prod_local_907 = pow2Constructive(prod_local_906)?; { let prod_local_908 = (prod_local_905 == prod_local_907); prod_local_908 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_909 = sTen()?; { let prod_local_910 = sFive()?; { let prod_local_911 = core::convert::identity::<u64>(prod_local_909).checked_add(prod_local_910).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_912 = navMaxSearchNodes()?; { let prod_local_913 = sFifteen()?; { let prod_local_914 = core::convert::identity::<u64>(prod_local_912).saturating_sub(prod_local_913); { let prod_local_915 = core::convert::identity::<u64>(prod_local_912).saturating_sub(prod_local_914); { let prod_local_916 = (prod_local_911 == prod_local_915); { let prod_local_917 = prod_local_916; match prod_local_917 {
+        false => prod_local_917,
+        true => { let prod_local_918 = audioWorkletQuantumFrames()?; { let prod_local_919 = (1 << 1); { let prod_local_920 = sHundred()?; { let prod_local_921 = wasmBridgeEnvelopeValid(prod_local_918, prod_local_919, prod_local_920)?; match prod_local_921 {
+        false => prod_local_921,
+        true => { let prod_local_922 = sHundred()?; { let prod_local_923 = sFive()?; { let prod_local_924 = core::convert::identity::<u64>(prod_local_923).checked_mul(prod_local_923).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_925 = skinWeightScale()?; { let prod_local_926 = core::convert::identity::<u64>(prod_local_924).checked_mul(prod_local_925).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_927 = sabineRt60Millis(prod_local_922, prod_local_926)?; { let prod_local_928 = (_x_55 < prod_local_927); match prod_local_928 {
+        false => prod_local_928,
+        true => { let prod_local_929 = workerCommandRingCapacity()?; { let prod_local_930 = sSix()?; { let prod_local_931 = pow2Constructive(prod_local_930)?; { let prod_local_932 = (prod_local_929 == prod_local_931); prod_local_932 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } } },
+    } } },
+    } } } } } } } },
+    } } } } } } } } } } },
+    } } } },
+    } } },
+    } },
+        true => { let prod_local_933 = sFour()?; { let prod_local_934 = renderPassDependencyValid(_x_55, prod_local_933)?; { let prod_local_935 = prod_local_934; match prod_local_935 {
+        false => prod_local_935,
+        true => { let prod_local_936 = sFour()?; { let prod_local_937 = (prod_local_936 == _x_1172); match prod_local_937 {
+        false => { let prod_local_939 = prod_local_937; match prod_local_939 {
+        false => prod_local_939,
+        true => { let prod_local_940 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_941 = sTen()?; { let prod_local_942 = sFive()?; { let prod_local_943 = sHundred()?; { let prod_local_944 = core::convert::identity::<u64>(prod_local_942).checked_mul(prod_local_943).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_945 = clampCoulombFrictionMilli(prod_local_940, prod_local_941, prod_local_944)?; { let prod_local_946 = coulombFrictionConeValid(prod_local_945, prod_local_941, prod_local_944)?; match prod_local_946 {
+        false => prod_local_946,
+        true => { let prod_local_947 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_948 = navTriangleWalkable(prod_local_947)?; match prod_local_948 {
+        false => { let prod_local_950 = prod_local_946; match prod_local_950 {
+        false => prod_local_950,
+        true => { let prod_local_952 = sEight()?; { let prod_local_953 = sHundred()?; { let prod_local_954 = core::convert::identity::<u64>(prod_local_952).checked_mul(prod_local_953).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_955 = navTriangleWalkable(prod_local_954)?; match prod_local_955 {
+        false => { let prod_local_956 = prod_local_955; match prod_local_956 {
+        false => prod_local_956,
+        true => { let prod_local_957 = audioWorkletQuantumFrames()?; { let prod_local_958 = (1 << 1); { let prod_local_959 = sHundred()?; { let prod_local_960 = wasmBridgeEnvelopeValid(prod_local_957, prod_local_958, prod_local_959)?; match prod_local_960 {
+        false => prod_local_960,
+        true => { let prod_local_961 = sHundred()?; { let prod_local_962 = sFive()?; { let prod_local_963 = core::convert::identity::<u64>(prod_local_962).checked_mul(prod_local_962).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_964 = skinWeightScale()?; { let prod_local_965 = core::convert::identity::<u64>(prod_local_963).checked_mul(prod_local_964).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_966 = sabineRt60Millis(prod_local_961, prod_local_965)?; { let prod_local_967 = (_x_55 < prod_local_966); match prod_local_967 {
+        false => prod_local_967,
+        true => { let prod_local_968 = workerCommandRingCapacity()?; { let prod_local_969 = sSix()?; { let prod_local_970 = pow2Constructive(prod_local_969)?; { let prod_local_971 = (prod_local_968 == prod_local_970); prod_local_971 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_972 = sTen()?; { let prod_local_973 = sFive()?; { let prod_local_974 = core::convert::identity::<u64>(prod_local_972).checked_add(prod_local_973).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_975 = navMaxSearchNodes()?; { let prod_local_976 = sFifteen()?; { let prod_local_977 = core::convert::identity::<u64>(prod_local_975).saturating_sub(prod_local_976); { let prod_local_978 = core::convert::identity::<u64>(prod_local_975).saturating_sub(prod_local_977); { let prod_local_979 = (prod_local_974 == prod_local_978); { let prod_local_980 = prod_local_979; match prod_local_980 {
+        false => prod_local_980,
+        true => { let prod_local_981 = audioWorkletQuantumFrames()?; { let prod_local_982 = (1 << 1); { let prod_local_983 = sHundred()?; { let prod_local_984 = wasmBridgeEnvelopeValid(prod_local_981, prod_local_982, prod_local_983)?; match prod_local_984 {
+        false => prod_local_984,
+        true => { let prod_local_985 = sHundred()?; { let prod_local_986 = sFive()?; { let prod_local_987 = core::convert::identity::<u64>(prod_local_986).checked_mul(prod_local_986).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_988 = skinWeightScale()?; { let prod_local_989 = core::convert::identity::<u64>(prod_local_987).checked_mul(prod_local_988).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_990 = sabineRt60Millis(prod_local_985, prod_local_989)?; { let prod_local_991 = (_x_55 < prod_local_990); match prod_local_991 {
+        false => prod_local_991,
+        true => { let prod_local_992 = workerCommandRingCapacity()?; { let prod_local_993 = sSix()?; { let prod_local_994 = pow2Constructive(prod_local_993)?; { let prod_local_995 = (prod_local_992 == prod_local_994); prod_local_995 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_996 = false; { let prod_local_997 = prod_local_996; match prod_local_997 {
+        false => prod_local_997,
+        true => { let prod_local_999 = sEight()?; { let prod_local_1000 = sHundred()?; { let prod_local_1001 = core::convert::identity::<u64>(prod_local_999).checked_mul(prod_local_1000).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1002 = navTriangleWalkable(prod_local_1001)?; match prod_local_1002 {
+        false => { let prod_local_1003 = prod_local_1002; match prod_local_1003 {
+        false => prod_local_1003,
+        true => { let prod_local_1004 = audioWorkletQuantumFrames()?; { let prod_local_1005 = (1 << 1); { let prod_local_1006 = sHundred()?; { let prod_local_1007 = wasmBridgeEnvelopeValid(prod_local_1004, prod_local_1005, prod_local_1006)?; match prod_local_1007 {
+        false => prod_local_1007,
+        true => { let prod_local_1008 = sHundred()?; { let prod_local_1009 = sFive()?; { let prod_local_1010 = core::convert::identity::<u64>(prod_local_1009).checked_mul(prod_local_1009).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1011 = skinWeightScale()?; { let prod_local_1012 = core::convert::identity::<u64>(prod_local_1010).checked_mul(prod_local_1011).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1013 = sabineRt60Millis(prod_local_1008, prod_local_1012)?; { let prod_local_1014 = (_x_55 < prod_local_1013); match prod_local_1014 {
+        false => prod_local_1014,
+        true => { let prod_local_1015 = workerCommandRingCapacity()?; { let prod_local_1016 = sSix()?; { let prod_local_1017 = pow2Constructive(prod_local_1016)?; { let prod_local_1018 = (prod_local_1015 == prod_local_1017); prod_local_1018 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_1019 = sTen()?; { let prod_local_1020 = sFive()?; { let prod_local_1021 = core::convert::identity::<u64>(prod_local_1019).checked_add(prod_local_1020).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_1022 = navMaxSearchNodes()?; { let prod_local_1023 = sFifteen()?; { let prod_local_1024 = core::convert::identity::<u64>(prod_local_1022).saturating_sub(prod_local_1023); { let prod_local_1025 = core::convert::identity::<u64>(prod_local_1022).saturating_sub(prod_local_1024); { let prod_local_1026 = (prod_local_1021 == prod_local_1025); { let prod_local_1027 = prod_local_1026; match prod_local_1027 {
+        false => prod_local_1027,
+        true => { let prod_local_1028 = audioWorkletQuantumFrames()?; { let prod_local_1029 = (1 << 1); { let prod_local_1030 = sHundred()?; { let prod_local_1031 = wasmBridgeEnvelopeValid(prod_local_1028, prod_local_1029, prod_local_1030)?; match prod_local_1031 {
+        false => prod_local_1031,
+        true => { let prod_local_1032 = sHundred()?; { let prod_local_1033 = sFive()?; { let prod_local_1034 = core::convert::identity::<u64>(prod_local_1033).checked_mul(prod_local_1033).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1035 = skinWeightScale()?; { let prod_local_1036 = core::convert::identity::<u64>(prod_local_1034).checked_mul(prod_local_1035).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1037 = sabineRt60Millis(prod_local_1032, prod_local_1036)?; { let prod_local_1038 = (_x_55 < prod_local_1037); match prod_local_1038 {
+        false => prod_local_1038,
+        true => { let prod_local_1039 = workerCommandRingCapacity()?; { let prod_local_1040 = sSix()?; { let prod_local_1041 = pow2Constructive(prod_local_1040)?; { let prod_local_1042 = (prod_local_1039 == prod_local_1041); prod_local_1042 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } } },
+    } } },
+    } } } } } } } },
+    } },
+        true => { let prod_local_1043 = sThirtyTwo()?; { let prod_local_1044 = sThirtyTwo()?; { let prod_local_1045 = (prod_local_1043 == prod_local_1044); match prod_local_1045 {
+        false => { let prod_local_1046 = prod_local_1045; match prod_local_1046 {
+        false => prod_local_1046,
+        true => { let prod_local_1047 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_1048 = sTen()?; { let prod_local_1049 = sFive()?; { let prod_local_1050 = sHundred()?; { let prod_local_1051 = core::convert::identity::<u64>(prod_local_1049).checked_mul(prod_local_1050).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1052 = clampCoulombFrictionMilli(prod_local_1047, prod_local_1048, prod_local_1051)?; { let prod_local_1053 = coulombFrictionConeValid(prod_local_1052, prod_local_1048, prod_local_1051)?; match prod_local_1053 {
+        false => prod_local_1053,
+        true => { let prod_local_1054 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_1055 = navTriangleWalkable(prod_local_1054)?; match prod_local_1055 {
+        false => { let prod_local_1057 = prod_local_1053; match prod_local_1057 {
+        false => prod_local_1057,
+        true => { let prod_local_1059 = sEight()?; { let prod_local_1060 = sHundred()?; { let prod_local_1061 = core::convert::identity::<u64>(prod_local_1059).checked_mul(prod_local_1060).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1062 = navTriangleWalkable(prod_local_1061)?; match prod_local_1062 {
+        false => { let prod_local_1063 = prod_local_1062; match prod_local_1063 {
+        false => prod_local_1063,
+        true => { let prod_local_1064 = audioWorkletQuantumFrames()?; { let prod_local_1065 = (1 << 1); { let prod_local_1066 = sHundred()?; { let prod_local_1067 = wasmBridgeEnvelopeValid(prod_local_1064, prod_local_1065, prod_local_1066)?; match prod_local_1067 {
+        false => prod_local_1067,
+        true => { let prod_local_1068 = sHundred()?; { let prod_local_1069 = sFive()?; { let prod_local_1070 = core::convert::identity::<u64>(prod_local_1069).checked_mul(prod_local_1069).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1071 = skinWeightScale()?; { let prod_local_1072 = core::convert::identity::<u64>(prod_local_1070).checked_mul(prod_local_1071).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1073 = sabineRt60Millis(prod_local_1068, prod_local_1072)?; { let prod_local_1074 = (_x_55 < prod_local_1073); match prod_local_1074 {
+        false => prod_local_1074,
+        true => { let prod_local_1075 = workerCommandRingCapacity()?; { let prod_local_1076 = sSix()?; { let prod_local_1077 = pow2Constructive(prod_local_1076)?; { let prod_local_1078 = (prod_local_1075 == prod_local_1077); prod_local_1078 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_1079 = sTen()?; { let prod_local_1080 = sFive()?; { let prod_local_1081 = core::convert::identity::<u64>(prod_local_1079).checked_add(prod_local_1080).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_1082 = navMaxSearchNodes()?; { let prod_local_1083 = sFifteen()?; { let prod_local_1084 = core::convert::identity::<u64>(prod_local_1082).saturating_sub(prod_local_1083); { let prod_local_1085 = core::convert::identity::<u64>(prod_local_1082).saturating_sub(prod_local_1084); { let prod_local_1086 = (prod_local_1081 == prod_local_1085); { let prod_local_1087 = prod_local_1086; match prod_local_1087 {
+        false => prod_local_1087,
+        true => { let prod_local_1088 = audioWorkletQuantumFrames()?; { let prod_local_1089 = (1 << 1); { let prod_local_1090 = sHundred()?; { let prod_local_1091 = wasmBridgeEnvelopeValid(prod_local_1088, prod_local_1089, prod_local_1090)?; match prod_local_1091 {
+        false => prod_local_1091,
+        true => { let prod_local_1092 = sHundred()?; { let prod_local_1093 = sFive()?; { let prod_local_1094 = core::convert::identity::<u64>(prod_local_1093).checked_mul(prod_local_1093).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1095 = skinWeightScale()?; { let prod_local_1096 = core::convert::identity::<u64>(prod_local_1094).checked_mul(prod_local_1095).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1097 = sabineRt60Millis(prod_local_1092, prod_local_1096)?; { let prod_local_1098 = (_x_55 < prod_local_1097); match prod_local_1098 {
+        false => prod_local_1098,
+        true => { let prod_local_1099 = workerCommandRingCapacity()?; { let prod_local_1100 = sSix()?; { let prod_local_1101 = pow2Constructive(prod_local_1100)?; { let prod_local_1102 = (prod_local_1099 == prod_local_1101); prod_local_1102 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_1103 = false; { let prod_local_1104 = prod_local_1103; match prod_local_1104 {
+        false => prod_local_1104,
+        true => { let prod_local_1106 = sEight()?; { let prod_local_1107 = sHundred()?; { let prod_local_1108 = core::convert::identity::<u64>(prod_local_1106).checked_mul(prod_local_1107).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1109 = navTriangleWalkable(prod_local_1108)?; match prod_local_1109 {
+        false => { let prod_local_1110 = prod_local_1109; match prod_local_1110 {
+        false => prod_local_1110,
+        true => { let prod_local_1111 = audioWorkletQuantumFrames()?; { let prod_local_1112 = (1 << 1); { let prod_local_1113 = sHundred()?; { let prod_local_1114 = wasmBridgeEnvelopeValid(prod_local_1111, prod_local_1112, prod_local_1113)?; match prod_local_1114 {
+        false => prod_local_1114,
+        true => { let prod_local_1115 = sHundred()?; { let prod_local_1116 = sFive()?; { let prod_local_1117 = core::convert::identity::<u64>(prod_local_1116).checked_mul(prod_local_1116).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1118 = skinWeightScale()?; { let prod_local_1119 = core::convert::identity::<u64>(prod_local_1117).checked_mul(prod_local_1118).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1120 = sabineRt60Millis(prod_local_1115, prod_local_1119)?; { let prod_local_1121 = (_x_55 < prod_local_1120); match prod_local_1121 {
+        false => prod_local_1121,
+        true => { let prod_local_1122 = workerCommandRingCapacity()?; { let prod_local_1123 = sSix()?; { let prod_local_1124 = pow2Constructive(prod_local_1123)?; { let prod_local_1125 = (prod_local_1122 == prod_local_1124); prod_local_1125 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_1126 = sTen()?; { let prod_local_1127 = sFive()?; { let prod_local_1128 = core::convert::identity::<u64>(prod_local_1126).checked_add(prod_local_1127).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_1129 = navMaxSearchNodes()?; { let prod_local_1130 = sFifteen()?; { let prod_local_1131 = core::convert::identity::<u64>(prod_local_1129).saturating_sub(prod_local_1130); { let prod_local_1132 = core::convert::identity::<u64>(prod_local_1129).saturating_sub(prod_local_1131); { let prod_local_1133 = (prod_local_1128 == prod_local_1132); { let prod_local_1134 = prod_local_1133; match prod_local_1134 {
+        false => prod_local_1134,
+        true => { let prod_local_1135 = audioWorkletQuantumFrames()?; { let prod_local_1136 = (1 << 1); { let prod_local_1137 = sHundred()?; { let prod_local_1138 = wasmBridgeEnvelopeValid(prod_local_1135, prod_local_1136, prod_local_1137)?; match prod_local_1138 {
+        false => prod_local_1138,
+        true => { let prod_local_1139 = sHundred()?; { let prod_local_1140 = sFive()?; { let prod_local_1141 = core::convert::identity::<u64>(prod_local_1140).checked_mul(prod_local_1140).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1142 = skinWeightScale()?; { let prod_local_1143 = core::convert::identity::<u64>(prod_local_1141).checked_mul(prod_local_1142).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1144 = sabineRt60Millis(prod_local_1139, prod_local_1143)?; { let prod_local_1145 = (_x_55 < prod_local_1144); match prod_local_1145 {
+        false => prod_local_1145,
+        true => { let prod_local_1146 = workerCommandRingCapacity()?; { let prod_local_1147 = sSix()?; { let prod_local_1148 = pow2Constructive(prod_local_1147)?; { let prod_local_1149 = (prod_local_1146 == prod_local_1148); prod_local_1149 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } } },
+    } } },
+    } } } } } } } },
+    } },
+        true => { let prod_local_1150 = sHundred()?; { let prod_local_1151 = sFive()?; { let prod_local_1152 = core::convert::identity::<u64>(prod_local_1151).checked_mul(prod_local_1150).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1153 = (1 << 1); { let prod_local_1154 = sTen()?; { let prod_local_1155 = core::convert::identity::<u64>(prod_local_1153).checked_mul(prod_local_1154).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1156 = sSixteen()?; { let prod_local_1157 = solveContactImpulseMilli(prod_local_1150, prod_local_1152, prod_local_1155, prod_local_1151, prod_local_1156)?; { let prod_local_1158 = (_x_55 < prod_local_1157); { let prod_local_1159 = prod_local_1158; match prod_local_1159 {
+        false => prod_local_1159,
+        true => { let prod_local_1160 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_1161 = sTen()?; { let prod_local_1162 = sFive()?; { let prod_local_1163 = sHundred()?; { let prod_local_1164 = core::convert::identity::<u64>(prod_local_1162).checked_mul(prod_local_1163).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1165 = clampCoulombFrictionMilli(prod_local_1160, prod_local_1161, prod_local_1164)?; { let prod_local_1166 = coulombFrictionConeValid(prod_local_1165, prod_local_1161, prod_local_1164)?; match prod_local_1166 {
+        false => prod_local_1166,
+        true => { let prod_local_1167 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_1168 = navTriangleWalkable(prod_local_1167)?; match prod_local_1168 {
+        false => { let prod_local_1170 = prod_local_1166; match prod_local_1170 {
+        false => prod_local_1170,
+        true => { let prod_local_1172 = sEight()?; { let prod_local_1173 = sHundred()?; { let prod_local_1174 = core::convert::identity::<u64>(prod_local_1172).checked_mul(prod_local_1173).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1175 = navTriangleWalkable(prod_local_1174)?; match prod_local_1175 {
+        false => { let prod_local_1176 = prod_local_1175; match prod_local_1176 {
+        false => prod_local_1176,
+        true => { let prod_local_1177 = audioWorkletQuantumFrames()?; { let prod_local_1178 = (1 << 1); { let prod_local_1179 = sHundred()?; { let prod_local_1180 = wasmBridgeEnvelopeValid(prod_local_1177, prod_local_1178, prod_local_1179)?; match prod_local_1180 {
+        false => prod_local_1180,
+        true => { let prod_local_1181 = sHundred()?; { let prod_local_1182 = sFive()?; { let prod_local_1183 = core::convert::identity::<u64>(prod_local_1182).checked_mul(prod_local_1182).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1184 = skinWeightScale()?; { let prod_local_1185 = core::convert::identity::<u64>(prod_local_1183).checked_mul(prod_local_1184).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1186 = sabineRt60Millis(prod_local_1181, prod_local_1185)?; { let prod_local_1187 = (_x_55 < prod_local_1186); match prod_local_1187 {
+        false => prod_local_1187,
+        true => { let prod_local_1188 = workerCommandRingCapacity()?; { let prod_local_1189 = sSix()?; { let prod_local_1190 = pow2Constructive(prod_local_1189)?; { let prod_local_1191 = (prod_local_1188 == prod_local_1190); prod_local_1191 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_1192 = sTen()?; { let prod_local_1193 = sFive()?; { let prod_local_1194 = core::convert::identity::<u64>(prod_local_1192).checked_add(prod_local_1193).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_1195 = navMaxSearchNodes()?; { let prod_local_1196 = sFifteen()?; { let prod_local_1197 = core::convert::identity::<u64>(prod_local_1195).saturating_sub(prod_local_1196); { let prod_local_1198 = core::convert::identity::<u64>(prod_local_1195).saturating_sub(prod_local_1197); { let prod_local_1199 = (prod_local_1194 == prod_local_1198); { let prod_local_1200 = prod_local_1199; match prod_local_1200 {
+        false => prod_local_1200,
+        true => { let prod_local_1201 = audioWorkletQuantumFrames()?; { let prod_local_1202 = (1 << 1); { let prod_local_1203 = sHundred()?; { let prod_local_1204 = wasmBridgeEnvelopeValid(prod_local_1201, prod_local_1202, prod_local_1203)?; match prod_local_1204 {
+        false => prod_local_1204,
+        true => { let prod_local_1205 = sHundred()?; { let prod_local_1206 = sFive()?; { let prod_local_1207 = core::convert::identity::<u64>(prod_local_1206).checked_mul(prod_local_1206).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1208 = skinWeightScale()?; { let prod_local_1209 = core::convert::identity::<u64>(prod_local_1207).checked_mul(prod_local_1208).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1210 = sabineRt60Millis(prod_local_1205, prod_local_1209)?; { let prod_local_1211 = (_x_55 < prod_local_1210); match prod_local_1211 {
+        false => prod_local_1211,
+        true => { let prod_local_1212 = workerCommandRingCapacity()?; { let prod_local_1213 = sSix()?; { let prod_local_1214 = pow2Constructive(prod_local_1213)?; { let prod_local_1215 = (prod_local_1212 == prod_local_1214); prod_local_1215 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_1216 = false; { let prod_local_1217 = prod_local_1216; match prod_local_1217 {
+        false => prod_local_1217,
+        true => { let prod_local_1219 = sEight()?; { let prod_local_1220 = sHundred()?; { let prod_local_1221 = core::convert::identity::<u64>(prod_local_1219).checked_mul(prod_local_1220).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1222 = navTriangleWalkable(prod_local_1221)?; match prod_local_1222 {
+        false => { let prod_local_1223 = prod_local_1222; match prod_local_1223 {
+        false => prod_local_1223,
+        true => { let prod_local_1224 = audioWorkletQuantumFrames()?; { let prod_local_1225 = (1 << 1); { let prod_local_1226 = sHundred()?; { let prod_local_1227 = wasmBridgeEnvelopeValid(prod_local_1224, prod_local_1225, prod_local_1226)?; match prod_local_1227 {
+        false => prod_local_1227,
+        true => { let prod_local_1228 = sHundred()?; { let prod_local_1229 = sFive()?; { let prod_local_1230 = core::convert::identity::<u64>(prod_local_1229).checked_mul(prod_local_1229).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1231 = skinWeightScale()?; { let prod_local_1232 = core::convert::identity::<u64>(prod_local_1230).checked_mul(prod_local_1231).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1233 = sabineRt60Millis(prod_local_1228, prod_local_1232)?; { let prod_local_1234 = (_x_55 < prod_local_1233); match prod_local_1234 {
+        false => prod_local_1234,
+        true => { let prod_local_1235 = workerCommandRingCapacity()?; { let prod_local_1236 = sSix()?; { let prod_local_1237 = pow2Constructive(prod_local_1236)?; { let prod_local_1238 = (prod_local_1235 == prod_local_1237); prod_local_1238 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_1239 = sTen()?; { let prod_local_1240 = sFive()?; { let prod_local_1241 = core::convert::identity::<u64>(prod_local_1239).checked_add(prod_local_1240).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_1242 = navMaxSearchNodes()?; { let prod_local_1243 = sFifteen()?; { let prod_local_1244 = core::convert::identity::<u64>(prod_local_1242).saturating_sub(prod_local_1243); { let prod_local_1245 = core::convert::identity::<u64>(prod_local_1242).saturating_sub(prod_local_1244); { let prod_local_1246 = (prod_local_1241 == prod_local_1245); { let prod_local_1247 = prod_local_1246; match prod_local_1247 {
+        false => prod_local_1247,
+        true => { let prod_local_1248 = audioWorkletQuantumFrames()?; { let prod_local_1249 = (1 << 1); { let prod_local_1250 = sHundred()?; { let prod_local_1251 = wasmBridgeEnvelopeValid(prod_local_1248, prod_local_1249, prod_local_1250)?; match prod_local_1251 {
+        false => prod_local_1251,
+        true => { let prod_local_1252 = sHundred()?; { let prod_local_1253 = sFive()?; { let prod_local_1254 = core::convert::identity::<u64>(prod_local_1253).checked_mul(prod_local_1253).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1255 = skinWeightScale()?; { let prod_local_1256 = core::convert::identity::<u64>(prod_local_1254).checked_mul(prod_local_1255).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1257 = sabineRt60Millis(prod_local_1252, prod_local_1256)?; { let prod_local_1258 = (_x_55 < prod_local_1257); match prod_local_1258 {
+        false => prod_local_1258,
+        true => { let prod_local_1259 = workerCommandRingCapacity()?; { let prod_local_1260 = sSix()?; { let prod_local_1261 = pow2Constructive(prod_local_1260)?; { let prod_local_1262 = (prod_local_1259 == prod_local_1261); prod_local_1262 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } } },
+    } } },
+    } } } } } } } },
+    } } } } } } } } } } },
+    } } } },
+    } } },
+    } } } },
+    } } } } } },
+    }
+                                                                                                                }
+                                                                                                            }
+                                                                                                        }
+                                                                                                    }
+                                                                                                }
+                                                                                            }
+                                                                                        }
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            true => {
+                                                let _x_924 = sTen()?;
+                                                {
+                                                    let _x_925 = sThirty()?;
+                                                    {
+                                                        let _x_926 = sFive()?;
+                                                        {
+                                                            let _x_927 = keyframeAlphaPermille(
+                                                                _x_926, _x_924,
+                                                            )?;
+                                                            {
+                                                                let _x_928 = lerpPermille(
+                                                                    _x_924, _x_925, _x_927,
+                                                                )?;
+                                                                {
+                                                                    let _x_930 = (1 << 1);
+                                                                    {
+                                                                        let _x_931 = core::convert::identity::<u64>(_x_930).checked_mul(_x_924).ok_or(self::ComputeError::MulOverflow)?;
+                                                                        {
+                                                                            let _x_932 =
+                                                                                (_x_928 == _x_931);
+                                                                            {
+                                                                                let prod_local_1263 =
+                                                                                    _x_932;
+                                                                                match prod_local_1263 {
+        false => prod_local_1263,
+        true => { let prod_local_1264 = sEight()?; { let prod_local_1265 = sEight()?; { let prod_local_1266 = (prod_local_1264 == prod_local_1265); match prod_local_1266 {
+        false => prod_local_1266,
+        true => { let prod_local_1267 = sFour()?; { let prod_local_1268 = sFour()?; { let prod_local_1269 = (prod_local_1267 == prod_local_1268); match prod_local_1269 {
+        false => { let prod_local_1271 = prod_local_1269; match prod_local_1271 {
+        false => prod_local_1271,
+        true => { let prod_local_1273 = sEight()?; { let prod_local_1274 = pow2Constructive(prod_local_1273)?; { let prod_local_1275 = iblMipLevelCount(prod_local_1274)?; { let prod_local_1276 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_1277 = (prod_local_1275 == prod_local_1276); match prod_local_1277 {
+        false => { let prod_local_1278 = prod_local_1277; match prod_local_1278 {
+        false => prod_local_1278,
+        true => { let prod_local_1279 = sFour()?; { let prod_local_1280 = (prod_local_1279 == prod_local_1268); match prod_local_1280 {
+        false => { let prod_local_1282 = prod_local_1280; match prod_local_1282 {
+        false => prod_local_1282,
+        true => { let prod_local_1283 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_1284 = sTen()?; { let prod_local_1285 = sFive()?; { let prod_local_1286 = sHundred()?; { let prod_local_1287 = core::convert::identity::<u64>(prod_local_1285).checked_mul(prod_local_1286).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1288 = clampCoulombFrictionMilli(prod_local_1283, prod_local_1284, prod_local_1287)?; { let prod_local_1289 = coulombFrictionConeValid(prod_local_1288, prod_local_1284, prod_local_1287)?; match prod_local_1289 {
+        false => prod_local_1289,
+        true => { let prod_local_1290 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_1291 = navTriangleWalkable(prod_local_1290)?; match prod_local_1291 {
+        false => { let prod_local_1293 = prod_local_1289; match prod_local_1293 {
+        false => prod_local_1293,
+        true => { let prod_local_1295 = sEight()?; { let prod_local_1296 = sHundred()?; { let prod_local_1297 = core::convert::identity::<u64>(prod_local_1295).checked_mul(prod_local_1296).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1298 = navTriangleWalkable(prod_local_1297)?; match prod_local_1298 {
+        false => { let prod_local_1299 = prod_local_1298; match prod_local_1299 {
+        false => prod_local_1299,
+        true => { let prod_local_1300 = audioWorkletQuantumFrames()?; { let prod_local_1301 = (1 << 1); { let prod_local_1302 = sHundred()?; { let prod_local_1303 = wasmBridgeEnvelopeValid(prod_local_1300, prod_local_1301, prod_local_1302)?; match prod_local_1303 {
+        false => prod_local_1303,
+        true => { let prod_local_1304 = sHundred()?; { let prod_local_1305 = sFive()?; { let prod_local_1306 = core::convert::identity::<u64>(prod_local_1305).checked_mul(prod_local_1305).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1307 = skinWeightScale()?; { let prod_local_1308 = core::convert::identity::<u64>(prod_local_1306).checked_mul(prod_local_1307).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1309 = sabineRt60Millis(prod_local_1304, prod_local_1308)?; { let prod_local_1310 = (_x_55 < prod_local_1309); match prod_local_1310 {
+        false => prod_local_1310,
+        true => { let prod_local_1311 = workerCommandRingCapacity()?; { let prod_local_1312 = sSix()?; { let prod_local_1313 = pow2Constructive(prod_local_1312)?; { let prod_local_1314 = (prod_local_1311 == prod_local_1313); prod_local_1314 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_1315 = sTen()?; { let prod_local_1316 = sFive()?; { let prod_local_1317 = core::convert::identity::<u64>(prod_local_1315).checked_add(prod_local_1316).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_1318 = navMaxSearchNodes()?; { let prod_local_1319 = sFifteen()?; { let prod_local_1320 = core::convert::identity::<u64>(prod_local_1318).saturating_sub(prod_local_1319); { let prod_local_1321 = core::convert::identity::<u64>(prod_local_1318).saturating_sub(prod_local_1320); { let prod_local_1322 = (prod_local_1317 == prod_local_1321); { let prod_local_1323 = prod_local_1322; match prod_local_1323 {
+        false => prod_local_1323,
+        true => { let prod_local_1324 = audioWorkletQuantumFrames()?; { let prod_local_1325 = (1 << 1); { let prod_local_1326 = sHundred()?; { let prod_local_1327 = wasmBridgeEnvelopeValid(prod_local_1324, prod_local_1325, prod_local_1326)?; match prod_local_1327 {
+        false => prod_local_1327,
+        true => { let prod_local_1328 = sHundred()?; { let prod_local_1329 = sFive()?; { let prod_local_1330 = core::convert::identity::<u64>(prod_local_1329).checked_mul(prod_local_1329).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1331 = skinWeightScale()?; { let prod_local_1332 = core::convert::identity::<u64>(prod_local_1330).checked_mul(prod_local_1331).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1333 = sabineRt60Millis(prod_local_1328, prod_local_1332)?; { let prod_local_1334 = (_x_55 < prod_local_1333); match prod_local_1334 {
+        false => prod_local_1334,
+        true => { let prod_local_1335 = workerCommandRingCapacity()?; { let prod_local_1336 = sSix()?; { let prod_local_1337 = pow2Constructive(prod_local_1336)?; { let prod_local_1338 = (prod_local_1335 == prod_local_1337); prod_local_1338 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_1339 = false; { let prod_local_1340 = prod_local_1339; match prod_local_1340 {
+        false => prod_local_1340,
+        true => { let prod_local_1342 = sEight()?; { let prod_local_1343 = sHundred()?; { let prod_local_1344 = core::convert::identity::<u64>(prod_local_1342).checked_mul(prod_local_1343).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1345 = navTriangleWalkable(prod_local_1344)?; match prod_local_1345 {
+        false => { let prod_local_1346 = prod_local_1345; match prod_local_1346 {
+        false => prod_local_1346,
+        true => { let prod_local_1347 = audioWorkletQuantumFrames()?; { let prod_local_1348 = (1 << 1); { let prod_local_1349 = sHundred()?; { let prod_local_1350 = wasmBridgeEnvelopeValid(prod_local_1347, prod_local_1348, prod_local_1349)?; match prod_local_1350 {
+        false => prod_local_1350,
+        true => { let prod_local_1351 = sHundred()?; { let prod_local_1352 = sFive()?; { let prod_local_1353 = core::convert::identity::<u64>(prod_local_1352).checked_mul(prod_local_1352).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1354 = skinWeightScale()?; { let prod_local_1355 = core::convert::identity::<u64>(prod_local_1353).checked_mul(prod_local_1354).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1356 = sabineRt60Millis(prod_local_1351, prod_local_1355)?; { let prod_local_1357 = (_x_55 < prod_local_1356); match prod_local_1357 {
+        false => prod_local_1357,
+        true => { let prod_local_1358 = workerCommandRingCapacity()?; { let prod_local_1359 = sSix()?; { let prod_local_1360 = pow2Constructive(prod_local_1359)?; { let prod_local_1361 = (prod_local_1358 == prod_local_1360); prod_local_1361 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_1362 = sTen()?; { let prod_local_1363 = sFive()?; { let prod_local_1364 = core::convert::identity::<u64>(prod_local_1362).checked_add(prod_local_1363).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_1365 = navMaxSearchNodes()?; { let prod_local_1366 = sFifteen()?; { let prod_local_1367 = core::convert::identity::<u64>(prod_local_1365).saturating_sub(prod_local_1366); { let prod_local_1368 = core::convert::identity::<u64>(prod_local_1365).saturating_sub(prod_local_1367); { let prod_local_1369 = (prod_local_1364 == prod_local_1368); { let prod_local_1370 = prod_local_1369; match prod_local_1370 {
+        false => prod_local_1370,
+        true => { let prod_local_1371 = audioWorkletQuantumFrames()?; { let prod_local_1372 = (1 << 1); { let prod_local_1373 = sHundred()?; { let prod_local_1374 = wasmBridgeEnvelopeValid(prod_local_1371, prod_local_1372, prod_local_1373)?; match prod_local_1374 {
+        false => prod_local_1374,
+        true => { let prod_local_1375 = sHundred()?; { let prod_local_1376 = sFive()?; { let prod_local_1377 = core::convert::identity::<u64>(prod_local_1376).checked_mul(prod_local_1376).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1378 = skinWeightScale()?; { let prod_local_1379 = core::convert::identity::<u64>(prod_local_1377).checked_mul(prod_local_1378).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1380 = sabineRt60Millis(prod_local_1375, prod_local_1379)?; { let prod_local_1381 = (_x_55 < prod_local_1380); match prod_local_1381 {
+        false => prod_local_1381,
+        true => { let prod_local_1382 = workerCommandRingCapacity()?; { let prod_local_1383 = sSix()?; { let prod_local_1384 = pow2Constructive(prod_local_1383)?; { let prod_local_1385 = (prod_local_1382 == prod_local_1384); prod_local_1385 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } } },
+    } } },
+    } } } } } } } },
+    } },
+        true => { let prod_local_1386 = sThirtyTwo()?; { let prod_local_1387 = sThirtyTwo()?; { let prod_local_1388 = (prod_local_1386 == prod_local_1387); match prod_local_1388 {
+        false => { let prod_local_1389 = prod_local_1388; match prod_local_1389 {
+        false => prod_local_1389,
+        true => { let prod_local_1390 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_1391 = sTen()?; { let prod_local_1392 = sFive()?; { let prod_local_1393 = sHundred()?; { let prod_local_1394 = core::convert::identity::<u64>(prod_local_1392).checked_mul(prod_local_1393).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1395 = clampCoulombFrictionMilli(prod_local_1390, prod_local_1391, prod_local_1394)?; { let prod_local_1396 = coulombFrictionConeValid(prod_local_1395, prod_local_1391, prod_local_1394)?; match prod_local_1396 {
+        false => prod_local_1396,
+        true => { let prod_local_1397 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_1398 = navTriangleWalkable(prod_local_1397)?; match prod_local_1398 {
+        false => { let prod_local_1400 = prod_local_1396; match prod_local_1400 {
+        false => prod_local_1400,
+        true => { let prod_local_1402 = sEight()?; { let prod_local_1403 = sHundred()?; { let prod_local_1404 = core::convert::identity::<u64>(prod_local_1402).checked_mul(prod_local_1403).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1405 = navTriangleWalkable(prod_local_1404)?; match prod_local_1405 {
+        false => { let prod_local_1406 = prod_local_1405; match prod_local_1406 {
+        false => prod_local_1406,
+        true => { let prod_local_1407 = audioWorkletQuantumFrames()?; { let prod_local_1408 = (1 << 1); { let prod_local_1409 = sHundred()?; { let prod_local_1410 = wasmBridgeEnvelopeValid(prod_local_1407, prod_local_1408, prod_local_1409)?; match prod_local_1410 {
+        false => prod_local_1410,
+        true => { let prod_local_1411 = sHundred()?; { let prod_local_1412 = sFive()?; { let prod_local_1413 = core::convert::identity::<u64>(prod_local_1412).checked_mul(prod_local_1412).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1414 = skinWeightScale()?; { let prod_local_1415 = core::convert::identity::<u64>(prod_local_1413).checked_mul(prod_local_1414).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1416 = sabineRt60Millis(prod_local_1411, prod_local_1415)?; { let prod_local_1417 = (_x_55 < prod_local_1416); match prod_local_1417 {
+        false => prod_local_1417,
+        true => { let prod_local_1418 = workerCommandRingCapacity()?; { let prod_local_1419 = sSix()?; { let prod_local_1420 = pow2Constructive(prod_local_1419)?; { let prod_local_1421 = (prod_local_1418 == prod_local_1420); prod_local_1421 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_1422 = sTen()?; { let prod_local_1423 = sFive()?; { let prod_local_1424 = core::convert::identity::<u64>(prod_local_1422).checked_add(prod_local_1423).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_1425 = navMaxSearchNodes()?; { let prod_local_1426 = sFifteen()?; { let prod_local_1427 = core::convert::identity::<u64>(prod_local_1425).saturating_sub(prod_local_1426); { let prod_local_1428 = core::convert::identity::<u64>(prod_local_1425).saturating_sub(prod_local_1427); { let prod_local_1429 = (prod_local_1424 == prod_local_1428); { let prod_local_1430 = prod_local_1429; match prod_local_1430 {
+        false => prod_local_1430,
+        true => { let prod_local_1431 = audioWorkletQuantumFrames()?; { let prod_local_1432 = (1 << 1); { let prod_local_1433 = sHundred()?; { let prod_local_1434 = wasmBridgeEnvelopeValid(prod_local_1431, prod_local_1432, prod_local_1433)?; match prod_local_1434 {
+        false => prod_local_1434,
+        true => { let prod_local_1435 = sHundred()?; { let prod_local_1436 = sFive()?; { let prod_local_1437 = core::convert::identity::<u64>(prod_local_1436).checked_mul(prod_local_1436).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1438 = skinWeightScale()?; { let prod_local_1439 = core::convert::identity::<u64>(prod_local_1437).checked_mul(prod_local_1438).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1440 = sabineRt60Millis(prod_local_1435, prod_local_1439)?; { let prod_local_1441 = (_x_55 < prod_local_1440); match prod_local_1441 {
+        false => prod_local_1441,
+        true => { let prod_local_1442 = workerCommandRingCapacity()?; { let prod_local_1443 = sSix()?; { let prod_local_1444 = pow2Constructive(prod_local_1443)?; { let prod_local_1445 = (prod_local_1442 == prod_local_1444); prod_local_1445 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_1446 = false; { let prod_local_1447 = prod_local_1446; match prod_local_1447 {
+        false => prod_local_1447,
+        true => { let prod_local_1449 = sEight()?; { let prod_local_1450 = sHundred()?; { let prod_local_1451 = core::convert::identity::<u64>(prod_local_1449).checked_mul(prod_local_1450).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1452 = navTriangleWalkable(prod_local_1451)?; match prod_local_1452 {
+        false => { let prod_local_1453 = prod_local_1452; match prod_local_1453 {
+        false => prod_local_1453,
+        true => { let prod_local_1454 = audioWorkletQuantumFrames()?; { let prod_local_1455 = (1 << 1); { let prod_local_1456 = sHundred()?; { let prod_local_1457 = wasmBridgeEnvelopeValid(prod_local_1454, prod_local_1455, prod_local_1456)?; match prod_local_1457 {
+        false => prod_local_1457,
+        true => { let prod_local_1458 = sHundred()?; { let prod_local_1459 = sFive()?; { let prod_local_1460 = core::convert::identity::<u64>(prod_local_1459).checked_mul(prod_local_1459).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1461 = skinWeightScale()?; { let prod_local_1462 = core::convert::identity::<u64>(prod_local_1460).checked_mul(prod_local_1461).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1463 = sabineRt60Millis(prod_local_1458, prod_local_1462)?; { let prod_local_1464 = (_x_55 < prod_local_1463); match prod_local_1464 {
+        false => prod_local_1464,
+        true => { let prod_local_1465 = workerCommandRingCapacity()?; { let prod_local_1466 = sSix()?; { let prod_local_1467 = pow2Constructive(prod_local_1466)?; { let prod_local_1468 = (prod_local_1465 == prod_local_1467); prod_local_1468 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_1469 = sTen()?; { let prod_local_1470 = sFive()?; { let prod_local_1471 = core::convert::identity::<u64>(prod_local_1469).checked_add(prod_local_1470).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_1472 = navMaxSearchNodes()?; { let prod_local_1473 = sFifteen()?; { let prod_local_1474 = core::convert::identity::<u64>(prod_local_1472).saturating_sub(prod_local_1473); { let prod_local_1475 = core::convert::identity::<u64>(prod_local_1472).saturating_sub(prod_local_1474); { let prod_local_1476 = (prod_local_1471 == prod_local_1475); { let prod_local_1477 = prod_local_1476; match prod_local_1477 {
+        false => prod_local_1477,
+        true => { let prod_local_1478 = audioWorkletQuantumFrames()?; { let prod_local_1479 = (1 << 1); { let prod_local_1480 = sHundred()?; { let prod_local_1481 = wasmBridgeEnvelopeValid(prod_local_1478, prod_local_1479, prod_local_1480)?; match prod_local_1481 {
+        false => prod_local_1481,
+        true => { let prod_local_1482 = sHundred()?; { let prod_local_1483 = sFive()?; { let prod_local_1484 = core::convert::identity::<u64>(prod_local_1483).checked_mul(prod_local_1483).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1485 = skinWeightScale()?; { let prod_local_1486 = core::convert::identity::<u64>(prod_local_1484).checked_mul(prod_local_1485).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1487 = sabineRt60Millis(prod_local_1482, prod_local_1486)?; { let prod_local_1488 = (_x_55 < prod_local_1487); match prod_local_1488 {
+        false => prod_local_1488,
+        true => { let prod_local_1489 = workerCommandRingCapacity()?; { let prod_local_1490 = sSix()?; { let prod_local_1491 = pow2Constructive(prod_local_1490)?; { let prod_local_1492 = (prod_local_1489 == prod_local_1491); prod_local_1492 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } } },
+    } } },
+    } } } } } } } },
+    } },
+        true => { let prod_local_1493 = sHundred()?; { let prod_local_1494 = sFive()?; { let prod_local_1495 = core::convert::identity::<u64>(prod_local_1494).checked_mul(prod_local_1493).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1496 = (1 << 1); { let prod_local_1497 = sTen()?; { let prod_local_1498 = core::convert::identity::<u64>(prod_local_1496).checked_mul(prod_local_1497).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1499 = sSixteen()?; { let prod_local_1500 = solveContactImpulseMilli(prod_local_1493, prod_local_1495, prod_local_1498, prod_local_1494, prod_local_1499)?; { let prod_local_1501 = (_x_55 < prod_local_1500); { let prod_local_1502 = prod_local_1501; match prod_local_1502 {
+        false => prod_local_1502,
+        true => { let prod_local_1503 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_1504 = sTen()?; { let prod_local_1505 = sFive()?; { let prod_local_1506 = sHundred()?; { let prod_local_1507 = core::convert::identity::<u64>(prod_local_1505).checked_mul(prod_local_1506).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1508 = clampCoulombFrictionMilli(prod_local_1503, prod_local_1504, prod_local_1507)?; { let prod_local_1509 = coulombFrictionConeValid(prod_local_1508, prod_local_1504, prod_local_1507)?; match prod_local_1509 {
+        false => prod_local_1509,
+        true => { let prod_local_1510 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_1511 = navTriangleWalkable(prod_local_1510)?; match prod_local_1511 {
+        false => { let prod_local_1513 = prod_local_1509; match prod_local_1513 {
+        false => prod_local_1513,
+        true => { let prod_local_1515 = sEight()?; { let prod_local_1516 = sHundred()?; { let prod_local_1517 = core::convert::identity::<u64>(prod_local_1515).checked_mul(prod_local_1516).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1518 = navTriangleWalkable(prod_local_1517)?; match prod_local_1518 {
+        false => { let prod_local_1519 = prod_local_1518; match prod_local_1519 {
+        false => prod_local_1519,
+        true => { let prod_local_1520 = audioWorkletQuantumFrames()?; { let prod_local_1521 = (1 << 1); { let prod_local_1522 = sHundred()?; { let prod_local_1523 = wasmBridgeEnvelopeValid(prod_local_1520, prod_local_1521, prod_local_1522)?; match prod_local_1523 {
+        false => prod_local_1523,
+        true => { let prod_local_1524 = sHundred()?; { let prod_local_1525 = sFive()?; { let prod_local_1526 = core::convert::identity::<u64>(prod_local_1525).checked_mul(prod_local_1525).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1527 = skinWeightScale()?; { let prod_local_1528 = core::convert::identity::<u64>(prod_local_1526).checked_mul(prod_local_1527).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1529 = sabineRt60Millis(prod_local_1524, prod_local_1528)?; { let prod_local_1530 = (_x_55 < prod_local_1529); match prod_local_1530 {
+        false => prod_local_1530,
+        true => { let prod_local_1531 = workerCommandRingCapacity()?; { let prod_local_1532 = sSix()?; { let prod_local_1533 = pow2Constructive(prod_local_1532)?; { let prod_local_1534 = (prod_local_1531 == prod_local_1533); prod_local_1534 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_1535 = sTen()?; { let prod_local_1536 = sFive()?; { let prod_local_1537 = core::convert::identity::<u64>(prod_local_1535).checked_add(prod_local_1536).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_1538 = navMaxSearchNodes()?; { let prod_local_1539 = sFifteen()?; { let prod_local_1540 = core::convert::identity::<u64>(prod_local_1538).saturating_sub(prod_local_1539); { let prod_local_1541 = core::convert::identity::<u64>(prod_local_1538).saturating_sub(prod_local_1540); { let prod_local_1542 = (prod_local_1537 == prod_local_1541); { let prod_local_1543 = prod_local_1542; match prod_local_1543 {
+        false => prod_local_1543,
+        true => { let prod_local_1544 = audioWorkletQuantumFrames()?; { let prod_local_1545 = (1 << 1); { let prod_local_1546 = sHundred()?; { let prod_local_1547 = wasmBridgeEnvelopeValid(prod_local_1544, prod_local_1545, prod_local_1546)?; match prod_local_1547 {
+        false => prod_local_1547,
+        true => { let prod_local_1548 = sHundred()?; { let prod_local_1549 = sFive()?; { let prod_local_1550 = core::convert::identity::<u64>(prod_local_1549).checked_mul(prod_local_1549).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1551 = skinWeightScale()?; { let prod_local_1552 = core::convert::identity::<u64>(prod_local_1550).checked_mul(prod_local_1551).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1553 = sabineRt60Millis(prod_local_1548, prod_local_1552)?; { let prod_local_1554 = (_x_55 < prod_local_1553); match prod_local_1554 {
+        false => prod_local_1554,
+        true => { let prod_local_1555 = workerCommandRingCapacity()?; { let prod_local_1556 = sSix()?; { let prod_local_1557 = pow2Constructive(prod_local_1556)?; { let prod_local_1558 = (prod_local_1555 == prod_local_1557); prod_local_1558 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_1559 = false; { let prod_local_1560 = prod_local_1559; match prod_local_1560 {
+        false => prod_local_1560,
+        true => { let prod_local_1562 = sEight()?; { let prod_local_1563 = sHundred()?; { let prod_local_1564 = core::convert::identity::<u64>(prod_local_1562).checked_mul(prod_local_1563).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1565 = navTriangleWalkable(prod_local_1564)?; match prod_local_1565 {
+        false => { let prod_local_1566 = prod_local_1565; match prod_local_1566 {
+        false => prod_local_1566,
+        true => { let prod_local_1567 = audioWorkletQuantumFrames()?; { let prod_local_1568 = (1 << 1); { let prod_local_1569 = sHundred()?; { let prod_local_1570 = wasmBridgeEnvelopeValid(prod_local_1567, prod_local_1568, prod_local_1569)?; match prod_local_1570 {
+        false => prod_local_1570,
+        true => { let prod_local_1571 = sHundred()?; { let prod_local_1572 = sFive()?; { let prod_local_1573 = core::convert::identity::<u64>(prod_local_1572).checked_mul(prod_local_1572).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1574 = skinWeightScale()?; { let prod_local_1575 = core::convert::identity::<u64>(prod_local_1573).checked_mul(prod_local_1574).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1576 = sabineRt60Millis(prod_local_1571, prod_local_1575)?; { let prod_local_1577 = (_x_55 < prod_local_1576); match prod_local_1577 {
+        false => prod_local_1577,
+        true => { let prod_local_1578 = workerCommandRingCapacity()?; { let prod_local_1579 = sSix()?; { let prod_local_1580 = pow2Constructive(prod_local_1579)?; { let prod_local_1581 = (prod_local_1578 == prod_local_1580); prod_local_1581 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_1582 = sTen()?; { let prod_local_1583 = sFive()?; { let prod_local_1584 = core::convert::identity::<u64>(prod_local_1582).checked_add(prod_local_1583).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_1585 = navMaxSearchNodes()?; { let prod_local_1586 = sFifteen()?; { let prod_local_1587 = core::convert::identity::<u64>(prod_local_1585).saturating_sub(prod_local_1586); { let prod_local_1588 = core::convert::identity::<u64>(prod_local_1585).saturating_sub(prod_local_1587); { let prod_local_1589 = (prod_local_1584 == prod_local_1588); { let prod_local_1590 = prod_local_1589; match prod_local_1590 {
+        false => prod_local_1590,
+        true => { let prod_local_1591 = audioWorkletQuantumFrames()?; { let prod_local_1592 = (1 << 1); { let prod_local_1593 = sHundred()?; { let prod_local_1594 = wasmBridgeEnvelopeValid(prod_local_1591, prod_local_1592, prod_local_1593)?; match prod_local_1594 {
+        false => prod_local_1594,
+        true => { let prod_local_1595 = sHundred()?; { let prod_local_1596 = sFive()?; { let prod_local_1597 = core::convert::identity::<u64>(prod_local_1596).checked_mul(prod_local_1596).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1598 = skinWeightScale()?; { let prod_local_1599 = core::convert::identity::<u64>(prod_local_1597).checked_mul(prod_local_1598).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1600 = sabineRt60Millis(prod_local_1595, prod_local_1599)?; { let prod_local_1601 = (_x_55 < prod_local_1600); match prod_local_1601 {
+        false => prod_local_1601,
+        true => { let prod_local_1602 = workerCommandRingCapacity()?; { let prod_local_1603 = sSix()?; { let prod_local_1604 = pow2Constructive(prod_local_1603)?; { let prod_local_1605 = (prod_local_1602 == prod_local_1604); prod_local_1605 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } } },
+    } } },
+    } } } } } } } },
+    } } } } } } } } } } },
+    } } } },
+    } } },
+    } },
+        true => { let prod_local_1606 = sFour()?; { let prod_local_1607 = renderPassDependencyValid(_x_55, prod_local_1606)?; { let prod_local_1608 = prod_local_1607; match prod_local_1608 {
+        false => prod_local_1608,
+        true => { let prod_local_1609 = sFour()?; { let prod_local_1610 = (prod_local_1609 == prod_local_1268); match prod_local_1610 {
+        false => { let prod_local_1612 = prod_local_1610; match prod_local_1612 {
+        false => prod_local_1612,
+        true => { let prod_local_1613 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_1614 = sTen()?; { let prod_local_1615 = sFive()?; { let prod_local_1616 = sHundred()?; { let prod_local_1617 = core::convert::identity::<u64>(prod_local_1615).checked_mul(prod_local_1616).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1618 = clampCoulombFrictionMilli(prod_local_1613, prod_local_1614, prod_local_1617)?; { let prod_local_1619 = coulombFrictionConeValid(prod_local_1618, prod_local_1614, prod_local_1617)?; match prod_local_1619 {
+        false => prod_local_1619,
+        true => { let prod_local_1620 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_1621 = navTriangleWalkable(prod_local_1620)?; match prod_local_1621 {
+        false => { let prod_local_1623 = prod_local_1619; match prod_local_1623 {
+        false => prod_local_1623,
+        true => { let prod_local_1625 = sEight()?; { let prod_local_1626 = sHundred()?; { let prod_local_1627 = core::convert::identity::<u64>(prod_local_1625).checked_mul(prod_local_1626).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1628 = navTriangleWalkable(prod_local_1627)?; match prod_local_1628 {
+        false => { let prod_local_1629 = prod_local_1628; match prod_local_1629 {
+        false => prod_local_1629,
+        true => { let prod_local_1630 = audioWorkletQuantumFrames()?; { let prod_local_1631 = (1 << 1); { let prod_local_1632 = sHundred()?; { let prod_local_1633 = wasmBridgeEnvelopeValid(prod_local_1630, prod_local_1631, prod_local_1632)?; match prod_local_1633 {
+        false => prod_local_1633,
+        true => { let prod_local_1634 = sHundred()?; { let prod_local_1635 = sFive()?; { let prod_local_1636 = core::convert::identity::<u64>(prod_local_1635).checked_mul(prod_local_1635).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1637 = skinWeightScale()?; { let prod_local_1638 = core::convert::identity::<u64>(prod_local_1636).checked_mul(prod_local_1637).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1639 = sabineRt60Millis(prod_local_1634, prod_local_1638)?; { let prod_local_1640 = (_x_55 < prod_local_1639); match prod_local_1640 {
+        false => prod_local_1640,
+        true => { let prod_local_1641 = workerCommandRingCapacity()?; { let prod_local_1642 = sSix()?; { let prod_local_1643 = pow2Constructive(prod_local_1642)?; { let prod_local_1644 = (prod_local_1641 == prod_local_1643); prod_local_1644 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_1645 = sTen()?; { let prod_local_1646 = sFive()?; { let prod_local_1647 = core::convert::identity::<u64>(prod_local_1645).checked_add(prod_local_1646).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_1648 = navMaxSearchNodes()?; { let prod_local_1649 = sFifteen()?; { let prod_local_1650 = core::convert::identity::<u64>(prod_local_1648).saturating_sub(prod_local_1649); { let prod_local_1651 = core::convert::identity::<u64>(prod_local_1648).saturating_sub(prod_local_1650); { let prod_local_1652 = (prod_local_1647 == prod_local_1651); { let prod_local_1653 = prod_local_1652; match prod_local_1653 {
+        false => prod_local_1653,
+        true => { let prod_local_1654 = audioWorkletQuantumFrames()?; { let prod_local_1655 = (1 << 1); { let prod_local_1656 = sHundred()?; { let prod_local_1657 = wasmBridgeEnvelopeValid(prod_local_1654, prod_local_1655, prod_local_1656)?; match prod_local_1657 {
+        false => prod_local_1657,
+        true => { let prod_local_1658 = sHundred()?; { let prod_local_1659 = sFive()?; { let prod_local_1660 = core::convert::identity::<u64>(prod_local_1659).checked_mul(prod_local_1659).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1661 = skinWeightScale()?; { let prod_local_1662 = core::convert::identity::<u64>(prod_local_1660).checked_mul(prod_local_1661).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1663 = sabineRt60Millis(prod_local_1658, prod_local_1662)?; { let prod_local_1664 = (_x_55 < prod_local_1663); match prod_local_1664 {
+        false => prod_local_1664,
+        true => { let prod_local_1665 = workerCommandRingCapacity()?; { let prod_local_1666 = sSix()?; { let prod_local_1667 = pow2Constructive(prod_local_1666)?; { let prod_local_1668 = (prod_local_1665 == prod_local_1667); prod_local_1668 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_1669 = false; { let prod_local_1670 = prod_local_1669; match prod_local_1670 {
+        false => prod_local_1670,
+        true => { let prod_local_1672 = sEight()?; { let prod_local_1673 = sHundred()?; { let prod_local_1674 = core::convert::identity::<u64>(prod_local_1672).checked_mul(prod_local_1673).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1675 = navTriangleWalkable(prod_local_1674)?; match prod_local_1675 {
+        false => { let prod_local_1676 = prod_local_1675; match prod_local_1676 {
+        false => prod_local_1676,
+        true => { let prod_local_1677 = audioWorkletQuantumFrames()?; { let prod_local_1678 = (1 << 1); { let prod_local_1679 = sHundred()?; { let prod_local_1680 = wasmBridgeEnvelopeValid(prod_local_1677, prod_local_1678, prod_local_1679)?; match prod_local_1680 {
+        false => prod_local_1680,
+        true => { let prod_local_1681 = sHundred()?; { let prod_local_1682 = sFive()?; { let prod_local_1683 = core::convert::identity::<u64>(prod_local_1682).checked_mul(prod_local_1682).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1684 = skinWeightScale()?; { let prod_local_1685 = core::convert::identity::<u64>(prod_local_1683).checked_mul(prod_local_1684).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1686 = sabineRt60Millis(prod_local_1681, prod_local_1685)?; { let prod_local_1687 = (_x_55 < prod_local_1686); match prod_local_1687 {
+        false => prod_local_1687,
+        true => { let prod_local_1688 = workerCommandRingCapacity()?; { let prod_local_1689 = sSix()?; { let prod_local_1690 = pow2Constructive(prod_local_1689)?; { let prod_local_1691 = (prod_local_1688 == prod_local_1690); prod_local_1691 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_1692 = sTen()?; { let prod_local_1693 = sFive()?; { let prod_local_1694 = core::convert::identity::<u64>(prod_local_1692).checked_add(prod_local_1693).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_1695 = navMaxSearchNodes()?; { let prod_local_1696 = sFifteen()?; { let prod_local_1697 = core::convert::identity::<u64>(prod_local_1695).saturating_sub(prod_local_1696); { let prod_local_1698 = core::convert::identity::<u64>(prod_local_1695).saturating_sub(prod_local_1697); { let prod_local_1699 = (prod_local_1694 == prod_local_1698); { let prod_local_1700 = prod_local_1699; match prod_local_1700 {
+        false => prod_local_1700,
+        true => { let prod_local_1701 = audioWorkletQuantumFrames()?; { let prod_local_1702 = (1 << 1); { let prod_local_1703 = sHundred()?; { let prod_local_1704 = wasmBridgeEnvelopeValid(prod_local_1701, prod_local_1702, prod_local_1703)?; match prod_local_1704 {
+        false => prod_local_1704,
+        true => { let prod_local_1705 = sHundred()?; { let prod_local_1706 = sFive()?; { let prod_local_1707 = core::convert::identity::<u64>(prod_local_1706).checked_mul(prod_local_1706).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1708 = skinWeightScale()?; { let prod_local_1709 = core::convert::identity::<u64>(prod_local_1707).checked_mul(prod_local_1708).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1710 = sabineRt60Millis(prod_local_1705, prod_local_1709)?; { let prod_local_1711 = (_x_55 < prod_local_1710); match prod_local_1711 {
+        false => prod_local_1711,
+        true => { let prod_local_1712 = workerCommandRingCapacity()?; { let prod_local_1713 = sSix()?; { let prod_local_1714 = pow2Constructive(prod_local_1713)?; { let prod_local_1715 = (prod_local_1712 == prod_local_1714); prod_local_1715 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } } },
+    } } },
+    } } } } } } } },
+    } },
+        true => { let prod_local_1716 = sThirtyTwo()?; { let prod_local_1717 = sThirtyTwo()?; { let prod_local_1718 = (prod_local_1716 == prod_local_1717); match prod_local_1718 {
+        false => { let prod_local_1719 = prod_local_1718; match prod_local_1719 {
+        false => prod_local_1719,
+        true => { let prod_local_1720 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_1721 = sTen()?; { let prod_local_1722 = sFive()?; { let prod_local_1723 = sHundred()?; { let prod_local_1724 = core::convert::identity::<u64>(prod_local_1722).checked_mul(prod_local_1723).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1725 = clampCoulombFrictionMilli(prod_local_1720, prod_local_1721, prod_local_1724)?; { let prod_local_1726 = coulombFrictionConeValid(prod_local_1725, prod_local_1721, prod_local_1724)?; match prod_local_1726 {
+        false => prod_local_1726,
+        true => { let prod_local_1727 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_1728 = navTriangleWalkable(prod_local_1727)?; match prod_local_1728 {
+        false => { let prod_local_1730 = prod_local_1726; match prod_local_1730 {
+        false => prod_local_1730,
+        true => { let prod_local_1732 = sEight()?; { let prod_local_1733 = sHundred()?; { let prod_local_1734 = core::convert::identity::<u64>(prod_local_1732).checked_mul(prod_local_1733).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1735 = navTriangleWalkable(prod_local_1734)?; match prod_local_1735 {
+        false => { let prod_local_1736 = prod_local_1735; match prod_local_1736 {
+        false => prod_local_1736,
+        true => { let prod_local_1737 = audioWorkletQuantumFrames()?; { let prod_local_1738 = (1 << 1); { let prod_local_1739 = sHundred()?; { let prod_local_1740 = wasmBridgeEnvelopeValid(prod_local_1737, prod_local_1738, prod_local_1739)?; match prod_local_1740 {
+        false => prod_local_1740,
+        true => { let prod_local_1741 = sHundred()?; { let prod_local_1742 = sFive()?; { let prod_local_1743 = core::convert::identity::<u64>(prod_local_1742).checked_mul(prod_local_1742).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1744 = skinWeightScale()?; { let prod_local_1745 = core::convert::identity::<u64>(prod_local_1743).checked_mul(prod_local_1744).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1746 = sabineRt60Millis(prod_local_1741, prod_local_1745)?; { let prod_local_1747 = (_x_55 < prod_local_1746); match prod_local_1747 {
+        false => prod_local_1747,
+        true => { let prod_local_1748 = workerCommandRingCapacity()?; { let prod_local_1749 = sSix()?; { let prod_local_1750 = pow2Constructive(prod_local_1749)?; { let prod_local_1751 = (prod_local_1748 == prod_local_1750); prod_local_1751 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_1752 = sTen()?; { let prod_local_1753 = sFive()?; { let prod_local_1754 = core::convert::identity::<u64>(prod_local_1752).checked_add(prod_local_1753).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_1755 = navMaxSearchNodes()?; { let prod_local_1756 = sFifteen()?; { let prod_local_1757 = core::convert::identity::<u64>(prod_local_1755).saturating_sub(prod_local_1756); { let prod_local_1758 = core::convert::identity::<u64>(prod_local_1755).saturating_sub(prod_local_1757); { let prod_local_1759 = (prod_local_1754 == prod_local_1758); { let prod_local_1760 = prod_local_1759; match prod_local_1760 {
+        false => prod_local_1760,
+        true => { let prod_local_1761 = audioWorkletQuantumFrames()?; { let prod_local_1762 = (1 << 1); { let prod_local_1763 = sHundred()?; { let prod_local_1764 = wasmBridgeEnvelopeValid(prod_local_1761, prod_local_1762, prod_local_1763)?; match prod_local_1764 {
+        false => prod_local_1764,
+        true => { let prod_local_1765 = sHundred()?; { let prod_local_1766 = sFive()?; { let prod_local_1767 = core::convert::identity::<u64>(prod_local_1766).checked_mul(prod_local_1766).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1768 = skinWeightScale()?; { let prod_local_1769 = core::convert::identity::<u64>(prod_local_1767).checked_mul(prod_local_1768).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1770 = sabineRt60Millis(prod_local_1765, prod_local_1769)?; { let prod_local_1771 = (_x_55 < prod_local_1770); match prod_local_1771 {
+        false => prod_local_1771,
+        true => { let prod_local_1772 = workerCommandRingCapacity()?; { let prod_local_1773 = sSix()?; { let prod_local_1774 = pow2Constructive(prod_local_1773)?; { let prod_local_1775 = (prod_local_1772 == prod_local_1774); prod_local_1775 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_1776 = false; { let prod_local_1777 = prod_local_1776; match prod_local_1777 {
+        false => prod_local_1777,
+        true => { let prod_local_1779 = sEight()?; { let prod_local_1780 = sHundred()?; { let prod_local_1781 = core::convert::identity::<u64>(prod_local_1779).checked_mul(prod_local_1780).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1782 = navTriangleWalkable(prod_local_1781)?; match prod_local_1782 {
+        false => { let prod_local_1783 = prod_local_1782; match prod_local_1783 {
+        false => prod_local_1783,
+        true => { let prod_local_1784 = audioWorkletQuantumFrames()?; { let prod_local_1785 = (1 << 1); { let prod_local_1786 = sHundred()?; { let prod_local_1787 = wasmBridgeEnvelopeValid(prod_local_1784, prod_local_1785, prod_local_1786)?; match prod_local_1787 {
+        false => prod_local_1787,
+        true => { let prod_local_1788 = sHundred()?; { let prod_local_1789 = sFive()?; { let prod_local_1790 = core::convert::identity::<u64>(prod_local_1789).checked_mul(prod_local_1789).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1791 = skinWeightScale()?; { let prod_local_1792 = core::convert::identity::<u64>(prod_local_1790).checked_mul(prod_local_1791).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1793 = sabineRt60Millis(prod_local_1788, prod_local_1792)?; { let prod_local_1794 = (_x_55 < prod_local_1793); match prod_local_1794 {
+        false => prod_local_1794,
+        true => { let prod_local_1795 = workerCommandRingCapacity()?; { let prod_local_1796 = sSix()?; { let prod_local_1797 = pow2Constructive(prod_local_1796)?; { let prod_local_1798 = (prod_local_1795 == prod_local_1797); prod_local_1798 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_1799 = sTen()?; { let prod_local_1800 = sFive()?; { let prod_local_1801 = core::convert::identity::<u64>(prod_local_1799).checked_add(prod_local_1800).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_1802 = navMaxSearchNodes()?; { let prod_local_1803 = sFifteen()?; { let prod_local_1804 = core::convert::identity::<u64>(prod_local_1802).saturating_sub(prod_local_1803); { let prod_local_1805 = core::convert::identity::<u64>(prod_local_1802).saturating_sub(prod_local_1804); { let prod_local_1806 = (prod_local_1801 == prod_local_1805); { let prod_local_1807 = prod_local_1806; match prod_local_1807 {
+        false => prod_local_1807,
+        true => { let prod_local_1808 = audioWorkletQuantumFrames()?; { let prod_local_1809 = (1 << 1); { let prod_local_1810 = sHundred()?; { let prod_local_1811 = wasmBridgeEnvelopeValid(prod_local_1808, prod_local_1809, prod_local_1810)?; match prod_local_1811 {
+        false => prod_local_1811,
+        true => { let prod_local_1812 = sHundred()?; { let prod_local_1813 = sFive()?; { let prod_local_1814 = core::convert::identity::<u64>(prod_local_1813).checked_mul(prod_local_1813).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1815 = skinWeightScale()?; { let prod_local_1816 = core::convert::identity::<u64>(prod_local_1814).checked_mul(prod_local_1815).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1817 = sabineRt60Millis(prod_local_1812, prod_local_1816)?; { let prod_local_1818 = (_x_55 < prod_local_1817); match prod_local_1818 {
+        false => prod_local_1818,
+        true => { let prod_local_1819 = workerCommandRingCapacity()?; { let prod_local_1820 = sSix()?; { let prod_local_1821 = pow2Constructive(prod_local_1820)?; { let prod_local_1822 = (prod_local_1819 == prod_local_1821); prod_local_1822 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } } },
+    } } },
+    } } } } } } } },
+    } },
+        true => { let prod_local_1823 = sHundred()?; { let prod_local_1824 = sFive()?; { let prod_local_1825 = core::convert::identity::<u64>(prod_local_1824).checked_mul(prod_local_1823).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1826 = (1 << 1); { let prod_local_1827 = sTen()?; { let prod_local_1828 = core::convert::identity::<u64>(prod_local_1826).checked_mul(prod_local_1827).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1829 = sSixteen()?; { let prod_local_1830 = solveContactImpulseMilli(prod_local_1823, prod_local_1825, prod_local_1828, prod_local_1824, prod_local_1829)?; { let prod_local_1831 = (_x_55 < prod_local_1830); { let prod_local_1832 = prod_local_1831; match prod_local_1832 {
+        false => prod_local_1832,
+        true => { let prod_local_1833 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_1834 = sTen()?; { let prod_local_1835 = sFive()?; { let prod_local_1836 = sHundred()?; { let prod_local_1837 = core::convert::identity::<u64>(prod_local_1835).checked_mul(prod_local_1836).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1838 = clampCoulombFrictionMilli(prod_local_1833, prod_local_1834, prod_local_1837)?; { let prod_local_1839 = coulombFrictionConeValid(prod_local_1838, prod_local_1834, prod_local_1837)?; match prod_local_1839 {
+        false => prod_local_1839,
+        true => { let prod_local_1840 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_1841 = navTriangleWalkable(prod_local_1840)?; match prod_local_1841 {
+        false => { let prod_local_1843 = prod_local_1839; match prod_local_1843 {
+        false => prod_local_1843,
+        true => { let prod_local_1845 = sEight()?; { let prod_local_1846 = sHundred()?; { let prod_local_1847 = core::convert::identity::<u64>(prod_local_1845).checked_mul(prod_local_1846).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1848 = navTriangleWalkable(prod_local_1847)?; match prod_local_1848 {
+        false => { let prod_local_1849 = prod_local_1848; match prod_local_1849 {
+        false => prod_local_1849,
+        true => { let prod_local_1850 = audioWorkletQuantumFrames()?; { let prod_local_1851 = (1 << 1); { let prod_local_1852 = sHundred()?; { let prod_local_1853 = wasmBridgeEnvelopeValid(prod_local_1850, prod_local_1851, prod_local_1852)?; match prod_local_1853 {
+        false => prod_local_1853,
+        true => { let prod_local_1854 = sHundred()?; { let prod_local_1855 = sFive()?; { let prod_local_1856 = core::convert::identity::<u64>(prod_local_1855).checked_mul(prod_local_1855).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1857 = skinWeightScale()?; { let prod_local_1858 = core::convert::identity::<u64>(prod_local_1856).checked_mul(prod_local_1857).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1859 = sabineRt60Millis(prod_local_1854, prod_local_1858)?; { let prod_local_1860 = (_x_55 < prod_local_1859); match prod_local_1860 {
+        false => prod_local_1860,
+        true => { let prod_local_1861 = workerCommandRingCapacity()?; { let prod_local_1862 = sSix()?; { let prod_local_1863 = pow2Constructive(prod_local_1862)?; { let prod_local_1864 = (prod_local_1861 == prod_local_1863); prod_local_1864 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_1865 = sTen()?; { let prod_local_1866 = sFive()?; { let prod_local_1867 = core::convert::identity::<u64>(prod_local_1865).checked_add(prod_local_1866).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_1868 = navMaxSearchNodes()?; { let prod_local_1869 = sFifteen()?; { let prod_local_1870 = core::convert::identity::<u64>(prod_local_1868).saturating_sub(prod_local_1869); { let prod_local_1871 = core::convert::identity::<u64>(prod_local_1868).saturating_sub(prod_local_1870); { let prod_local_1872 = (prod_local_1867 == prod_local_1871); { let prod_local_1873 = prod_local_1872; match prod_local_1873 {
+        false => prod_local_1873,
+        true => { let prod_local_1874 = audioWorkletQuantumFrames()?; { let prod_local_1875 = (1 << 1); { let prod_local_1876 = sHundred()?; { let prod_local_1877 = wasmBridgeEnvelopeValid(prod_local_1874, prod_local_1875, prod_local_1876)?; match prod_local_1877 {
+        false => prod_local_1877,
+        true => { let prod_local_1878 = sHundred()?; { let prod_local_1879 = sFive()?; { let prod_local_1880 = core::convert::identity::<u64>(prod_local_1879).checked_mul(prod_local_1879).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1881 = skinWeightScale()?; { let prod_local_1882 = core::convert::identity::<u64>(prod_local_1880).checked_mul(prod_local_1881).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1883 = sabineRt60Millis(prod_local_1878, prod_local_1882)?; { let prod_local_1884 = (_x_55 < prod_local_1883); match prod_local_1884 {
+        false => prod_local_1884,
+        true => { let prod_local_1885 = workerCommandRingCapacity()?; { let prod_local_1886 = sSix()?; { let prod_local_1887 = pow2Constructive(prod_local_1886)?; { let prod_local_1888 = (prod_local_1885 == prod_local_1887); prod_local_1888 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_1889 = false; { let prod_local_1890 = prod_local_1889; match prod_local_1890 {
+        false => prod_local_1890,
+        true => { let prod_local_1892 = sEight()?; { let prod_local_1893 = sHundred()?; { let prod_local_1894 = core::convert::identity::<u64>(prod_local_1892).checked_mul(prod_local_1893).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1895 = navTriangleWalkable(prod_local_1894)?; match prod_local_1895 {
+        false => { let prod_local_1896 = prod_local_1895; match prod_local_1896 {
+        false => prod_local_1896,
+        true => { let prod_local_1897 = audioWorkletQuantumFrames()?; { let prod_local_1898 = (1 << 1); { let prod_local_1899 = sHundred()?; { let prod_local_1900 = wasmBridgeEnvelopeValid(prod_local_1897, prod_local_1898, prod_local_1899)?; match prod_local_1900 {
+        false => prod_local_1900,
+        true => { let prod_local_1901 = sHundred()?; { let prod_local_1902 = sFive()?; { let prod_local_1903 = core::convert::identity::<u64>(prod_local_1902).checked_mul(prod_local_1902).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1904 = skinWeightScale()?; { let prod_local_1905 = core::convert::identity::<u64>(prod_local_1903).checked_mul(prod_local_1904).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1906 = sabineRt60Millis(prod_local_1901, prod_local_1905)?; { let prod_local_1907 = (_x_55 < prod_local_1906); match prod_local_1907 {
+        false => prod_local_1907,
+        true => { let prod_local_1908 = workerCommandRingCapacity()?; { let prod_local_1909 = sSix()?; { let prod_local_1910 = pow2Constructive(prod_local_1909)?; { let prod_local_1911 = (prod_local_1908 == prod_local_1910); prod_local_1911 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_1912 = sTen()?; { let prod_local_1913 = sFive()?; { let prod_local_1914 = core::convert::identity::<u64>(prod_local_1912).checked_add(prod_local_1913).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_1915 = navMaxSearchNodes()?; { let prod_local_1916 = sFifteen()?; { let prod_local_1917 = core::convert::identity::<u64>(prod_local_1915).saturating_sub(prod_local_1916); { let prod_local_1918 = core::convert::identity::<u64>(prod_local_1915).saturating_sub(prod_local_1917); { let prod_local_1919 = (prod_local_1914 == prod_local_1918); { let prod_local_1920 = prod_local_1919; match prod_local_1920 {
+        false => prod_local_1920,
+        true => { let prod_local_1921 = audioWorkletQuantumFrames()?; { let prod_local_1922 = (1 << 1); { let prod_local_1923 = sHundred()?; { let prod_local_1924 = wasmBridgeEnvelopeValid(prod_local_1921, prod_local_1922, prod_local_1923)?; match prod_local_1924 {
+        false => prod_local_1924,
+        true => { let prod_local_1925 = sHundred()?; { let prod_local_1926 = sFive()?; { let prod_local_1927 = core::convert::identity::<u64>(prod_local_1926).checked_mul(prod_local_1926).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1928 = skinWeightScale()?; { let prod_local_1929 = core::convert::identity::<u64>(prod_local_1927).checked_mul(prod_local_1928).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1930 = sabineRt60Millis(prod_local_1925, prod_local_1929)?; { let prod_local_1931 = (_x_55 < prod_local_1930); match prod_local_1931 {
+        false => prod_local_1931,
+        true => { let prod_local_1932 = workerCommandRingCapacity()?; { let prod_local_1933 = sSix()?; { let prod_local_1934 = pow2Constructive(prod_local_1933)?; { let prod_local_1935 = (prod_local_1932 == prod_local_1934); prod_local_1935 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } } },
+    } } },
+    } } } } } } } },
+    } } } } } } } } } } },
+    } } } },
+    } } },
+    } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_1936 = sHundred()?; { let prod_local_1937 = sSixteen()?; { let prod_local_1938 = core::convert::identity::<u64>(prod_local_1937).checked_mul(prod_local_1936).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1939 = csmSplitDistanceMilli(prod_local_1936, prod_local_1938, _x_55)?; { let prod_local_1940 = ((1 << 1) + 1); { let prod_local_1941 = csmSplitDistanceMilli(prod_local_1936, prod_local_1938, prod_local_1940)?; { let prod_local_1942 = (prod_local_1939 < prod_local_1941); { let prod_local_1943 = prod_local_1942; match prod_local_1943 {
+        false => prod_local_1943,
+        true => { let prod_local_1945 = sEight()?; { let prod_local_1946 = pow2Constructive(prod_local_1945)?; { let prod_local_1947 = iblMipLevelCount(prod_local_1946)?; { let prod_local_1948 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_1949 = (prod_local_1947 == prod_local_1948); match prod_local_1949 {
+        false => { let prod_local_1950 = prod_local_1949; match prod_local_1950 {
+        false => prod_local_1950,
+        true => { let prod_local_1951 = sFour()?; { let prod_local_1952 = (prod_local_1951 == prod_local_1268); match prod_local_1952 {
+        false => { let prod_local_1954 = prod_local_1952; match prod_local_1954 {
+        false => prod_local_1954,
+        true => { let prod_local_1955 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_1956 = sTen()?; { let prod_local_1957 = sFive()?; { let prod_local_1958 = sHundred()?; { let prod_local_1959 = core::convert::identity::<u64>(prod_local_1957).checked_mul(prod_local_1958).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1960 = clampCoulombFrictionMilli(prod_local_1955, prod_local_1956, prod_local_1959)?; { let prod_local_1961 = coulombFrictionConeValid(prod_local_1960, prod_local_1956, prod_local_1959)?; match prod_local_1961 {
+        false => prod_local_1961,
+        true => { let prod_local_1962 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_1963 = navTriangleWalkable(prod_local_1962)?; match prod_local_1963 {
+        false => { let prod_local_1965 = prod_local_1961; match prod_local_1965 {
+        false => prod_local_1965,
+        true => { let prod_local_1967 = sEight()?; { let prod_local_1968 = sHundred()?; { let prod_local_1969 = core::convert::identity::<u64>(prod_local_1967).checked_mul(prod_local_1968).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1970 = navTriangleWalkable(prod_local_1969)?; match prod_local_1970 {
+        false => { let prod_local_1971 = prod_local_1970; match prod_local_1971 {
+        false => prod_local_1971,
+        true => { let prod_local_1972 = audioWorkletQuantumFrames()?; { let prod_local_1973 = (1 << 1); { let prod_local_1974 = sHundred()?; { let prod_local_1975 = wasmBridgeEnvelopeValid(prod_local_1972, prod_local_1973, prod_local_1974)?; match prod_local_1975 {
+        false => prod_local_1975,
+        true => { let prod_local_1976 = sHundred()?; { let prod_local_1977 = sFive()?; { let prod_local_1978 = core::convert::identity::<u64>(prod_local_1977).checked_mul(prod_local_1977).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1979 = skinWeightScale()?; { let prod_local_1980 = core::convert::identity::<u64>(prod_local_1978).checked_mul(prod_local_1979).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1981 = sabineRt60Millis(prod_local_1976, prod_local_1980)?; { let prod_local_1982 = (_x_55 < prod_local_1981); match prod_local_1982 {
+        false => prod_local_1982,
+        true => { let prod_local_1983 = workerCommandRingCapacity()?; { let prod_local_1984 = sSix()?; { let prod_local_1985 = pow2Constructive(prod_local_1984)?; { let prod_local_1986 = (prod_local_1983 == prod_local_1985); prod_local_1986 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_1987 = sTen()?; { let prod_local_1988 = sFive()?; { let prod_local_1989 = core::convert::identity::<u64>(prod_local_1987).checked_add(prod_local_1988).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_1990 = navMaxSearchNodes()?; { let prod_local_1991 = sFifteen()?; { let prod_local_1992 = core::convert::identity::<u64>(prod_local_1990).saturating_sub(prod_local_1991); { let prod_local_1993 = core::convert::identity::<u64>(prod_local_1990).saturating_sub(prod_local_1992); { let prod_local_1994 = (prod_local_1989 == prod_local_1993); { let prod_local_1995 = prod_local_1994; match prod_local_1995 {
+        false => prod_local_1995,
+        true => { let prod_local_1996 = audioWorkletQuantumFrames()?; { let prod_local_1997 = (1 << 1); { let prod_local_1998 = sHundred()?; { let prod_local_1999 = wasmBridgeEnvelopeValid(prod_local_1996, prod_local_1997, prod_local_1998)?; match prod_local_1999 {
+        false => prod_local_1999,
+        true => { let prod_local_2000 = sHundred()?; { let prod_local_2001 = sFive()?; { let prod_local_2002 = core::convert::identity::<u64>(prod_local_2001).checked_mul(prod_local_2001).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2003 = skinWeightScale()?; { let prod_local_2004 = core::convert::identity::<u64>(prod_local_2002).checked_mul(prod_local_2003).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2005 = sabineRt60Millis(prod_local_2000, prod_local_2004)?; { let prod_local_2006 = (_x_55 < prod_local_2005); match prod_local_2006 {
+        false => prod_local_2006,
+        true => { let prod_local_2007 = workerCommandRingCapacity()?; { let prod_local_2008 = sSix()?; { let prod_local_2009 = pow2Constructive(prod_local_2008)?; { let prod_local_2010 = (prod_local_2007 == prod_local_2009); prod_local_2010 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_2011 = false; { let prod_local_2012 = prod_local_2011; match prod_local_2012 {
+        false => prod_local_2012,
+        true => { let prod_local_2014 = sEight()?; { let prod_local_2015 = sHundred()?; { let prod_local_2016 = core::convert::identity::<u64>(prod_local_2014).checked_mul(prod_local_2015).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2017 = navTriangleWalkable(prod_local_2016)?; match prod_local_2017 {
+        false => { let prod_local_2018 = prod_local_2017; match prod_local_2018 {
+        false => prod_local_2018,
+        true => { let prod_local_2019 = audioWorkletQuantumFrames()?; { let prod_local_2020 = (1 << 1); { let prod_local_2021 = sHundred()?; { let prod_local_2022 = wasmBridgeEnvelopeValid(prod_local_2019, prod_local_2020, prod_local_2021)?; match prod_local_2022 {
+        false => prod_local_2022,
+        true => { let prod_local_2023 = sHundred()?; { let prod_local_2024 = sFive()?; { let prod_local_2025 = core::convert::identity::<u64>(prod_local_2024).checked_mul(prod_local_2024).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2026 = skinWeightScale()?; { let prod_local_2027 = core::convert::identity::<u64>(prod_local_2025).checked_mul(prod_local_2026).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2028 = sabineRt60Millis(prod_local_2023, prod_local_2027)?; { let prod_local_2029 = (_x_55 < prod_local_2028); match prod_local_2029 {
+        false => prod_local_2029,
+        true => { let prod_local_2030 = workerCommandRingCapacity()?; { let prod_local_2031 = sSix()?; { let prod_local_2032 = pow2Constructive(prod_local_2031)?; { let prod_local_2033 = (prod_local_2030 == prod_local_2032); prod_local_2033 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_2034 = sTen()?; { let prod_local_2035 = sFive()?; { let prod_local_2036 = core::convert::identity::<u64>(prod_local_2034).checked_add(prod_local_2035).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_2037 = navMaxSearchNodes()?; { let prod_local_2038 = sFifteen()?; { let prod_local_2039 = core::convert::identity::<u64>(prod_local_2037).saturating_sub(prod_local_2038); { let prod_local_2040 = core::convert::identity::<u64>(prod_local_2037).saturating_sub(prod_local_2039); { let prod_local_2041 = (prod_local_2036 == prod_local_2040); { let prod_local_2042 = prod_local_2041; match prod_local_2042 {
+        false => prod_local_2042,
+        true => { let prod_local_2043 = audioWorkletQuantumFrames()?; { let prod_local_2044 = (1 << 1); { let prod_local_2045 = sHundred()?; { let prod_local_2046 = wasmBridgeEnvelopeValid(prod_local_2043, prod_local_2044, prod_local_2045)?; match prod_local_2046 {
+        false => prod_local_2046,
+        true => { let prod_local_2047 = sHundred()?; { let prod_local_2048 = sFive()?; { let prod_local_2049 = core::convert::identity::<u64>(prod_local_2048).checked_mul(prod_local_2048).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2050 = skinWeightScale()?; { let prod_local_2051 = core::convert::identity::<u64>(prod_local_2049).checked_mul(prod_local_2050).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2052 = sabineRt60Millis(prod_local_2047, prod_local_2051)?; { let prod_local_2053 = (_x_55 < prod_local_2052); match prod_local_2053 {
+        false => prod_local_2053,
+        true => { let prod_local_2054 = workerCommandRingCapacity()?; { let prod_local_2055 = sSix()?; { let prod_local_2056 = pow2Constructive(prod_local_2055)?; { let prod_local_2057 = (prod_local_2054 == prod_local_2056); prod_local_2057 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } } },
+    } } },
+    } } } } } } } },
+    } },
+        true => { let prod_local_2058 = sThirtyTwo()?; { let prod_local_2059 = sThirtyTwo()?; { let prod_local_2060 = (prod_local_2058 == prod_local_2059); match prod_local_2060 {
+        false => { let prod_local_2061 = prod_local_2060; match prod_local_2061 {
+        false => prod_local_2061,
+        true => { let prod_local_2062 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_2063 = sTen()?; { let prod_local_2064 = sFive()?; { let prod_local_2065 = sHundred()?; { let prod_local_2066 = core::convert::identity::<u64>(prod_local_2064).checked_mul(prod_local_2065).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2067 = clampCoulombFrictionMilli(prod_local_2062, prod_local_2063, prod_local_2066)?; { let prod_local_2068 = coulombFrictionConeValid(prod_local_2067, prod_local_2063, prod_local_2066)?; match prod_local_2068 {
+        false => prod_local_2068,
+        true => { let prod_local_2069 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_2070 = navTriangleWalkable(prod_local_2069)?; match prod_local_2070 {
+        false => { let prod_local_2072 = prod_local_2068; match prod_local_2072 {
+        false => prod_local_2072,
+        true => { let prod_local_2074 = sEight()?; { let prod_local_2075 = sHundred()?; { let prod_local_2076 = core::convert::identity::<u64>(prod_local_2074).checked_mul(prod_local_2075).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2077 = navTriangleWalkable(prod_local_2076)?; match prod_local_2077 {
+        false => { let prod_local_2078 = prod_local_2077; match prod_local_2078 {
+        false => prod_local_2078,
+        true => { let prod_local_2079 = audioWorkletQuantumFrames()?; { let prod_local_2080 = (1 << 1); { let prod_local_2081 = sHundred()?; { let prod_local_2082 = wasmBridgeEnvelopeValid(prod_local_2079, prod_local_2080, prod_local_2081)?; match prod_local_2082 {
+        false => prod_local_2082,
+        true => { let prod_local_2083 = sHundred()?; { let prod_local_2084 = sFive()?; { let prod_local_2085 = core::convert::identity::<u64>(prod_local_2084).checked_mul(prod_local_2084).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2086 = skinWeightScale()?; { let prod_local_2087 = core::convert::identity::<u64>(prod_local_2085).checked_mul(prod_local_2086).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2088 = sabineRt60Millis(prod_local_2083, prod_local_2087)?; { let prod_local_2089 = (_x_55 < prod_local_2088); match prod_local_2089 {
+        false => prod_local_2089,
+        true => { let prod_local_2090 = workerCommandRingCapacity()?; { let prod_local_2091 = sSix()?; { let prod_local_2092 = pow2Constructive(prod_local_2091)?; { let prod_local_2093 = (prod_local_2090 == prod_local_2092); prod_local_2093 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_2094 = sTen()?; { let prod_local_2095 = sFive()?; { let prod_local_2096 = core::convert::identity::<u64>(prod_local_2094).checked_add(prod_local_2095).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_2097 = navMaxSearchNodes()?; { let prod_local_2098 = sFifteen()?; { let prod_local_2099 = core::convert::identity::<u64>(prod_local_2097).saturating_sub(prod_local_2098); { let prod_local_2100 = core::convert::identity::<u64>(prod_local_2097).saturating_sub(prod_local_2099); { let prod_local_2101 = (prod_local_2096 == prod_local_2100); { let prod_local_2102 = prod_local_2101; match prod_local_2102 {
+        false => prod_local_2102,
+        true => { let prod_local_2103 = audioWorkletQuantumFrames()?; { let prod_local_2104 = (1 << 1); { let prod_local_2105 = sHundred()?; { let prod_local_2106 = wasmBridgeEnvelopeValid(prod_local_2103, prod_local_2104, prod_local_2105)?; match prod_local_2106 {
+        false => prod_local_2106,
+        true => { let prod_local_2107 = sHundred()?; { let prod_local_2108 = sFive()?; { let prod_local_2109 = core::convert::identity::<u64>(prod_local_2108).checked_mul(prod_local_2108).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2110 = skinWeightScale()?; { let prod_local_2111 = core::convert::identity::<u64>(prod_local_2109).checked_mul(prod_local_2110).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2112 = sabineRt60Millis(prod_local_2107, prod_local_2111)?; { let prod_local_2113 = (_x_55 < prod_local_2112); match prod_local_2113 {
+        false => prod_local_2113,
+        true => { let prod_local_2114 = workerCommandRingCapacity()?; { let prod_local_2115 = sSix()?; { let prod_local_2116 = pow2Constructive(prod_local_2115)?; { let prod_local_2117 = (prod_local_2114 == prod_local_2116); prod_local_2117 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_2118 = false; { let prod_local_2119 = prod_local_2118; match prod_local_2119 {
+        false => prod_local_2119,
+        true => { let prod_local_2121 = sEight()?; { let prod_local_2122 = sHundred()?; { let prod_local_2123 = core::convert::identity::<u64>(prod_local_2121).checked_mul(prod_local_2122).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2124 = navTriangleWalkable(prod_local_2123)?; match prod_local_2124 {
+        false => { let prod_local_2125 = prod_local_2124; match prod_local_2125 {
+        false => prod_local_2125,
+        true => { let prod_local_2126 = audioWorkletQuantumFrames()?; { let prod_local_2127 = (1 << 1); { let prod_local_2128 = sHundred()?; { let prod_local_2129 = wasmBridgeEnvelopeValid(prod_local_2126, prod_local_2127, prod_local_2128)?; match prod_local_2129 {
+        false => prod_local_2129,
+        true => { let prod_local_2130 = sHundred()?; { let prod_local_2131 = sFive()?; { let prod_local_2132 = core::convert::identity::<u64>(prod_local_2131).checked_mul(prod_local_2131).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2133 = skinWeightScale()?; { let prod_local_2134 = core::convert::identity::<u64>(prod_local_2132).checked_mul(prod_local_2133).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2135 = sabineRt60Millis(prod_local_2130, prod_local_2134)?; { let prod_local_2136 = (_x_55 < prod_local_2135); match prod_local_2136 {
+        false => prod_local_2136,
+        true => { let prod_local_2137 = workerCommandRingCapacity()?; { let prod_local_2138 = sSix()?; { let prod_local_2139 = pow2Constructive(prod_local_2138)?; { let prod_local_2140 = (prod_local_2137 == prod_local_2139); prod_local_2140 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_2141 = sTen()?; { let prod_local_2142 = sFive()?; { let prod_local_2143 = core::convert::identity::<u64>(prod_local_2141).checked_add(prod_local_2142).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_2144 = navMaxSearchNodes()?; { let prod_local_2145 = sFifteen()?; { let prod_local_2146 = core::convert::identity::<u64>(prod_local_2144).saturating_sub(prod_local_2145); { let prod_local_2147 = core::convert::identity::<u64>(prod_local_2144).saturating_sub(prod_local_2146); { let prod_local_2148 = (prod_local_2143 == prod_local_2147); { let prod_local_2149 = prod_local_2148; match prod_local_2149 {
+        false => prod_local_2149,
+        true => { let prod_local_2150 = audioWorkletQuantumFrames()?; { let prod_local_2151 = (1 << 1); { let prod_local_2152 = sHundred()?; { let prod_local_2153 = wasmBridgeEnvelopeValid(prod_local_2150, prod_local_2151, prod_local_2152)?; match prod_local_2153 {
+        false => prod_local_2153,
+        true => { let prod_local_2154 = sHundred()?; { let prod_local_2155 = sFive()?; { let prod_local_2156 = core::convert::identity::<u64>(prod_local_2155).checked_mul(prod_local_2155).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2157 = skinWeightScale()?; { let prod_local_2158 = core::convert::identity::<u64>(prod_local_2156).checked_mul(prod_local_2157).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2159 = sabineRt60Millis(prod_local_2154, prod_local_2158)?; { let prod_local_2160 = (_x_55 < prod_local_2159); match prod_local_2160 {
+        false => prod_local_2160,
+        true => { let prod_local_2161 = workerCommandRingCapacity()?; { let prod_local_2162 = sSix()?; { let prod_local_2163 = pow2Constructive(prod_local_2162)?; { let prod_local_2164 = (prod_local_2161 == prod_local_2163); prod_local_2164 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } } },
+    } } },
+    } } } } } } } },
+    } },
+        true => { let prod_local_2165 = sHundred()?; { let prod_local_2166 = sFive()?; { let prod_local_2167 = core::convert::identity::<u64>(prod_local_2166).checked_mul(prod_local_2165).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2168 = (1 << 1); { let prod_local_2169 = sTen()?; { let prod_local_2170 = core::convert::identity::<u64>(prod_local_2168).checked_mul(prod_local_2169).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2171 = sSixteen()?; { let prod_local_2172 = solveContactImpulseMilli(prod_local_2165, prod_local_2167, prod_local_2170, prod_local_2166, prod_local_2171)?; { let prod_local_2173 = (_x_55 < prod_local_2172); { let prod_local_2174 = prod_local_2173; match prod_local_2174 {
+        false => prod_local_2174,
+        true => { let prod_local_2175 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_2176 = sTen()?; { let prod_local_2177 = sFive()?; { let prod_local_2178 = sHundred()?; { let prod_local_2179 = core::convert::identity::<u64>(prod_local_2177).checked_mul(prod_local_2178).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2180 = clampCoulombFrictionMilli(prod_local_2175, prod_local_2176, prod_local_2179)?; { let prod_local_2181 = coulombFrictionConeValid(prod_local_2180, prod_local_2176, prod_local_2179)?; match prod_local_2181 {
+        false => prod_local_2181,
+        true => { let prod_local_2182 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_2183 = navTriangleWalkable(prod_local_2182)?; match prod_local_2183 {
+        false => { let prod_local_2185 = prod_local_2181; match prod_local_2185 {
+        false => prod_local_2185,
+        true => { let prod_local_2187 = sEight()?; { let prod_local_2188 = sHundred()?; { let prod_local_2189 = core::convert::identity::<u64>(prod_local_2187).checked_mul(prod_local_2188).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2190 = navTriangleWalkable(prod_local_2189)?; match prod_local_2190 {
+        false => { let prod_local_2191 = prod_local_2190; match prod_local_2191 {
+        false => prod_local_2191,
+        true => { let prod_local_2192 = audioWorkletQuantumFrames()?; { let prod_local_2193 = (1 << 1); { let prod_local_2194 = sHundred()?; { let prod_local_2195 = wasmBridgeEnvelopeValid(prod_local_2192, prod_local_2193, prod_local_2194)?; match prod_local_2195 {
+        false => prod_local_2195,
+        true => { let prod_local_2196 = sHundred()?; { let prod_local_2197 = sFive()?; { let prod_local_2198 = core::convert::identity::<u64>(prod_local_2197).checked_mul(prod_local_2197).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2199 = skinWeightScale()?; { let prod_local_2200 = core::convert::identity::<u64>(prod_local_2198).checked_mul(prod_local_2199).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2201 = sabineRt60Millis(prod_local_2196, prod_local_2200)?; { let prod_local_2202 = (_x_55 < prod_local_2201); match prod_local_2202 {
+        false => prod_local_2202,
+        true => { let prod_local_2203 = workerCommandRingCapacity()?; { let prod_local_2204 = sSix()?; { let prod_local_2205 = pow2Constructive(prod_local_2204)?; { let prod_local_2206 = (prod_local_2203 == prod_local_2205); prod_local_2206 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_2207 = sTen()?; { let prod_local_2208 = sFive()?; { let prod_local_2209 = core::convert::identity::<u64>(prod_local_2207).checked_add(prod_local_2208).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_2210 = navMaxSearchNodes()?; { let prod_local_2211 = sFifteen()?; { let prod_local_2212 = core::convert::identity::<u64>(prod_local_2210).saturating_sub(prod_local_2211); { let prod_local_2213 = core::convert::identity::<u64>(prod_local_2210).saturating_sub(prod_local_2212); { let prod_local_2214 = (prod_local_2209 == prod_local_2213); { let prod_local_2215 = prod_local_2214; match prod_local_2215 {
+        false => prod_local_2215,
+        true => { let prod_local_2216 = audioWorkletQuantumFrames()?; { let prod_local_2217 = (1 << 1); { let prod_local_2218 = sHundred()?; { let prod_local_2219 = wasmBridgeEnvelopeValid(prod_local_2216, prod_local_2217, prod_local_2218)?; match prod_local_2219 {
+        false => prod_local_2219,
+        true => { let prod_local_2220 = sHundred()?; { let prod_local_2221 = sFive()?; { let prod_local_2222 = core::convert::identity::<u64>(prod_local_2221).checked_mul(prod_local_2221).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2223 = skinWeightScale()?; { let prod_local_2224 = core::convert::identity::<u64>(prod_local_2222).checked_mul(prod_local_2223).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2225 = sabineRt60Millis(prod_local_2220, prod_local_2224)?; { let prod_local_2226 = (_x_55 < prod_local_2225); match prod_local_2226 {
+        false => prod_local_2226,
+        true => { let prod_local_2227 = workerCommandRingCapacity()?; { let prod_local_2228 = sSix()?; { let prod_local_2229 = pow2Constructive(prod_local_2228)?; { let prod_local_2230 = (prod_local_2227 == prod_local_2229); prod_local_2230 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_2231 = false; { let prod_local_2232 = prod_local_2231; match prod_local_2232 {
+        false => prod_local_2232,
+        true => { let prod_local_2234 = sEight()?; { let prod_local_2235 = sHundred()?; { let prod_local_2236 = core::convert::identity::<u64>(prod_local_2234).checked_mul(prod_local_2235).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2237 = navTriangleWalkable(prod_local_2236)?; match prod_local_2237 {
+        false => { let prod_local_2238 = prod_local_2237; match prod_local_2238 {
+        false => prod_local_2238,
+        true => { let prod_local_2239 = audioWorkletQuantumFrames()?; { let prod_local_2240 = (1 << 1); { let prod_local_2241 = sHundred()?; { let prod_local_2242 = wasmBridgeEnvelopeValid(prod_local_2239, prod_local_2240, prod_local_2241)?; match prod_local_2242 {
+        false => prod_local_2242,
+        true => { let prod_local_2243 = sHundred()?; { let prod_local_2244 = sFive()?; { let prod_local_2245 = core::convert::identity::<u64>(prod_local_2244).checked_mul(prod_local_2244).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2246 = skinWeightScale()?; { let prod_local_2247 = core::convert::identity::<u64>(prod_local_2245).checked_mul(prod_local_2246).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2248 = sabineRt60Millis(prod_local_2243, prod_local_2247)?; { let prod_local_2249 = (_x_55 < prod_local_2248); match prod_local_2249 {
+        false => prod_local_2249,
+        true => { let prod_local_2250 = workerCommandRingCapacity()?; { let prod_local_2251 = sSix()?; { let prod_local_2252 = pow2Constructive(prod_local_2251)?; { let prod_local_2253 = (prod_local_2250 == prod_local_2252); prod_local_2253 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_2254 = sTen()?; { let prod_local_2255 = sFive()?; { let prod_local_2256 = core::convert::identity::<u64>(prod_local_2254).checked_add(prod_local_2255).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_2257 = navMaxSearchNodes()?; { let prod_local_2258 = sFifteen()?; { let prod_local_2259 = core::convert::identity::<u64>(prod_local_2257).saturating_sub(prod_local_2258); { let prod_local_2260 = core::convert::identity::<u64>(prod_local_2257).saturating_sub(prod_local_2259); { let prod_local_2261 = (prod_local_2256 == prod_local_2260); { let prod_local_2262 = prod_local_2261; match prod_local_2262 {
+        false => prod_local_2262,
+        true => { let prod_local_2263 = audioWorkletQuantumFrames()?; { let prod_local_2264 = (1 << 1); { let prod_local_2265 = sHundred()?; { let prod_local_2266 = wasmBridgeEnvelopeValid(prod_local_2263, prod_local_2264, prod_local_2265)?; match prod_local_2266 {
+        false => prod_local_2266,
+        true => { let prod_local_2267 = sHundred()?; { let prod_local_2268 = sFive()?; { let prod_local_2269 = core::convert::identity::<u64>(prod_local_2268).checked_mul(prod_local_2268).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2270 = skinWeightScale()?; { let prod_local_2271 = core::convert::identity::<u64>(prod_local_2269).checked_mul(prod_local_2270).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2272 = sabineRt60Millis(prod_local_2267, prod_local_2271)?; { let prod_local_2273 = (_x_55 < prod_local_2272); match prod_local_2273 {
+        false => prod_local_2273,
+        true => { let prod_local_2274 = workerCommandRingCapacity()?; { let prod_local_2275 = sSix()?; { let prod_local_2276 = pow2Constructive(prod_local_2275)?; { let prod_local_2277 = (prod_local_2274 == prod_local_2276); prod_local_2277 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } } },
+    } } },
+    } } } } } } } },
+    } } } } } } } } } } },
+    } } } },
+    } } },
+    } },
+        true => { let prod_local_2278 = sFour()?; { let prod_local_2279 = renderPassDependencyValid(_x_55, prod_local_2278)?; { let prod_local_2280 = prod_local_2279; match prod_local_2280 {
+        false => prod_local_2280,
+        true => { let prod_local_2281 = sFour()?; { let prod_local_2282 = (prod_local_2281 == prod_local_1268); match prod_local_2282 {
+        false => { let prod_local_2284 = prod_local_2282; match prod_local_2284 {
+        false => prod_local_2284,
+        true => { let prod_local_2285 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_2286 = sTen()?; { let prod_local_2287 = sFive()?; { let prod_local_2288 = sHundred()?; { let prod_local_2289 = core::convert::identity::<u64>(prod_local_2287).checked_mul(prod_local_2288).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2290 = clampCoulombFrictionMilli(prod_local_2285, prod_local_2286, prod_local_2289)?; { let prod_local_2291 = coulombFrictionConeValid(prod_local_2290, prod_local_2286, prod_local_2289)?; match prod_local_2291 {
+        false => prod_local_2291,
+        true => { let prod_local_2292 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_2293 = navTriangleWalkable(prod_local_2292)?; match prod_local_2293 {
+        false => { let prod_local_2295 = prod_local_2291; match prod_local_2295 {
+        false => prod_local_2295,
+        true => { let prod_local_2297 = sEight()?; { let prod_local_2298 = sHundred()?; { let prod_local_2299 = core::convert::identity::<u64>(prod_local_2297).checked_mul(prod_local_2298).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2300 = navTriangleWalkable(prod_local_2299)?; match prod_local_2300 {
+        false => { let prod_local_2301 = prod_local_2300; match prod_local_2301 {
+        false => prod_local_2301,
+        true => { let prod_local_2302 = audioWorkletQuantumFrames()?; { let prod_local_2303 = (1 << 1); { let prod_local_2304 = sHundred()?; { let prod_local_2305 = wasmBridgeEnvelopeValid(prod_local_2302, prod_local_2303, prod_local_2304)?; match prod_local_2305 {
+        false => prod_local_2305,
+        true => { let prod_local_2306 = sHundred()?; { let prod_local_2307 = sFive()?; { let prod_local_2308 = core::convert::identity::<u64>(prod_local_2307).checked_mul(prod_local_2307).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2309 = skinWeightScale()?; { let prod_local_2310 = core::convert::identity::<u64>(prod_local_2308).checked_mul(prod_local_2309).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2311 = sabineRt60Millis(prod_local_2306, prod_local_2310)?; { let prod_local_2312 = (_x_55 < prod_local_2311); match prod_local_2312 {
+        false => prod_local_2312,
+        true => { let prod_local_2313 = workerCommandRingCapacity()?; { let prod_local_2314 = sSix()?; { let prod_local_2315 = pow2Constructive(prod_local_2314)?; { let prod_local_2316 = (prod_local_2313 == prod_local_2315); prod_local_2316 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_2317 = sTen()?; { let prod_local_2318 = sFive()?; { let prod_local_2319 = core::convert::identity::<u64>(prod_local_2317).checked_add(prod_local_2318).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_2320 = navMaxSearchNodes()?; { let prod_local_2321 = sFifteen()?; { let prod_local_2322 = core::convert::identity::<u64>(prod_local_2320).saturating_sub(prod_local_2321); { let prod_local_2323 = core::convert::identity::<u64>(prod_local_2320).saturating_sub(prod_local_2322); { let prod_local_2324 = (prod_local_2319 == prod_local_2323); { let prod_local_2325 = prod_local_2324; match prod_local_2325 {
+        false => prod_local_2325,
+        true => { let prod_local_2326 = audioWorkletQuantumFrames()?; { let prod_local_2327 = (1 << 1); { let prod_local_2328 = sHundred()?; { let prod_local_2329 = wasmBridgeEnvelopeValid(prod_local_2326, prod_local_2327, prod_local_2328)?; match prod_local_2329 {
+        false => prod_local_2329,
+        true => { let prod_local_2330 = sHundred()?; { let prod_local_2331 = sFive()?; { let prod_local_2332 = core::convert::identity::<u64>(prod_local_2331).checked_mul(prod_local_2331).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2333 = skinWeightScale()?; { let prod_local_2334 = core::convert::identity::<u64>(prod_local_2332).checked_mul(prod_local_2333).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2335 = sabineRt60Millis(prod_local_2330, prod_local_2334)?; { let prod_local_2336 = (_x_55 < prod_local_2335); match prod_local_2336 {
+        false => prod_local_2336,
+        true => { let prod_local_2337 = workerCommandRingCapacity()?; { let prod_local_2338 = sSix()?; { let prod_local_2339 = pow2Constructive(prod_local_2338)?; { let prod_local_2340 = (prod_local_2337 == prod_local_2339); prod_local_2340 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_2341 = false; { let prod_local_2342 = prod_local_2341; match prod_local_2342 {
+        false => prod_local_2342,
+        true => { let prod_local_2344 = sEight()?; { let prod_local_2345 = sHundred()?; { let prod_local_2346 = core::convert::identity::<u64>(prod_local_2344).checked_mul(prod_local_2345).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2347 = navTriangleWalkable(prod_local_2346)?; match prod_local_2347 {
+        false => { let prod_local_2348 = prod_local_2347; match prod_local_2348 {
+        false => prod_local_2348,
+        true => { let prod_local_2349 = audioWorkletQuantumFrames()?; { let prod_local_2350 = (1 << 1); { let prod_local_2351 = sHundred()?; { let prod_local_2352 = wasmBridgeEnvelopeValid(prod_local_2349, prod_local_2350, prod_local_2351)?; match prod_local_2352 {
+        false => prod_local_2352,
+        true => { let prod_local_2353 = sHundred()?; { let prod_local_2354 = sFive()?; { let prod_local_2355 = core::convert::identity::<u64>(prod_local_2354).checked_mul(prod_local_2354).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2356 = skinWeightScale()?; { let prod_local_2357 = core::convert::identity::<u64>(prod_local_2355).checked_mul(prod_local_2356).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2358 = sabineRt60Millis(prod_local_2353, prod_local_2357)?; { let prod_local_2359 = (_x_55 < prod_local_2358); match prod_local_2359 {
+        false => prod_local_2359,
+        true => { let prod_local_2360 = workerCommandRingCapacity()?; { let prod_local_2361 = sSix()?; { let prod_local_2362 = pow2Constructive(prod_local_2361)?; { let prod_local_2363 = (prod_local_2360 == prod_local_2362); prod_local_2363 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_2364 = sTen()?; { let prod_local_2365 = sFive()?; { let prod_local_2366 = core::convert::identity::<u64>(prod_local_2364).checked_add(prod_local_2365).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_2367 = navMaxSearchNodes()?; { let prod_local_2368 = sFifteen()?; { let prod_local_2369 = core::convert::identity::<u64>(prod_local_2367).saturating_sub(prod_local_2368); { let prod_local_2370 = core::convert::identity::<u64>(prod_local_2367).saturating_sub(prod_local_2369); { let prod_local_2371 = (prod_local_2366 == prod_local_2370); { let prod_local_2372 = prod_local_2371; match prod_local_2372 {
+        false => prod_local_2372,
+        true => { let prod_local_2373 = audioWorkletQuantumFrames()?; { let prod_local_2374 = (1 << 1); { let prod_local_2375 = sHundred()?; { let prod_local_2376 = wasmBridgeEnvelopeValid(prod_local_2373, prod_local_2374, prod_local_2375)?; match prod_local_2376 {
+        false => prod_local_2376,
+        true => { let prod_local_2377 = sHundred()?; { let prod_local_2378 = sFive()?; { let prod_local_2379 = core::convert::identity::<u64>(prod_local_2378).checked_mul(prod_local_2378).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2380 = skinWeightScale()?; { let prod_local_2381 = core::convert::identity::<u64>(prod_local_2379).checked_mul(prod_local_2380).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2382 = sabineRt60Millis(prod_local_2377, prod_local_2381)?; { let prod_local_2383 = (_x_55 < prod_local_2382); match prod_local_2383 {
+        false => prod_local_2383,
+        true => { let prod_local_2384 = workerCommandRingCapacity()?; { let prod_local_2385 = sSix()?; { let prod_local_2386 = pow2Constructive(prod_local_2385)?; { let prod_local_2387 = (prod_local_2384 == prod_local_2386); prod_local_2387 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } } },
+    } } },
+    } } } } } } } },
+    } },
+        true => { let prod_local_2388 = sThirtyTwo()?; { let prod_local_2389 = sThirtyTwo()?; { let prod_local_2390 = (prod_local_2388 == prod_local_2389); match prod_local_2390 {
+        false => { let prod_local_2391 = prod_local_2390; match prod_local_2391 {
+        false => prod_local_2391,
+        true => { let prod_local_2392 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_2393 = sTen()?; { let prod_local_2394 = sFive()?; { let prod_local_2395 = sHundred()?; { let prod_local_2396 = core::convert::identity::<u64>(prod_local_2394).checked_mul(prod_local_2395).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2397 = clampCoulombFrictionMilli(prod_local_2392, prod_local_2393, prod_local_2396)?; { let prod_local_2398 = coulombFrictionConeValid(prod_local_2397, prod_local_2393, prod_local_2396)?; match prod_local_2398 {
+        false => prod_local_2398,
+        true => { let prod_local_2399 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_2400 = navTriangleWalkable(prod_local_2399)?; match prod_local_2400 {
+        false => { let prod_local_2402 = prod_local_2398; match prod_local_2402 {
+        false => prod_local_2402,
+        true => { let prod_local_2404 = sEight()?; { let prod_local_2405 = sHundred()?; { let prod_local_2406 = core::convert::identity::<u64>(prod_local_2404).checked_mul(prod_local_2405).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2407 = navTriangleWalkable(prod_local_2406)?; match prod_local_2407 {
+        false => { let prod_local_2408 = prod_local_2407; match prod_local_2408 {
+        false => prod_local_2408,
+        true => { let prod_local_2409 = audioWorkletQuantumFrames()?; { let prod_local_2410 = (1 << 1); { let prod_local_2411 = sHundred()?; { let prod_local_2412 = wasmBridgeEnvelopeValid(prod_local_2409, prod_local_2410, prod_local_2411)?; match prod_local_2412 {
+        false => prod_local_2412,
+        true => { let prod_local_2413 = sHundred()?; { let prod_local_2414 = sFive()?; { let prod_local_2415 = core::convert::identity::<u64>(prod_local_2414).checked_mul(prod_local_2414).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2416 = skinWeightScale()?; { let prod_local_2417 = core::convert::identity::<u64>(prod_local_2415).checked_mul(prod_local_2416).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2418 = sabineRt60Millis(prod_local_2413, prod_local_2417)?; { let prod_local_2419 = (_x_55 < prod_local_2418); match prod_local_2419 {
+        false => prod_local_2419,
+        true => { let prod_local_2420 = workerCommandRingCapacity()?; { let prod_local_2421 = sSix()?; { let prod_local_2422 = pow2Constructive(prod_local_2421)?; { let prod_local_2423 = (prod_local_2420 == prod_local_2422); prod_local_2423 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_2424 = sTen()?; { let prod_local_2425 = sFive()?; { let prod_local_2426 = core::convert::identity::<u64>(prod_local_2424).checked_add(prod_local_2425).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_2427 = navMaxSearchNodes()?; { let prod_local_2428 = sFifteen()?; { let prod_local_2429 = core::convert::identity::<u64>(prod_local_2427).saturating_sub(prod_local_2428); { let prod_local_2430 = core::convert::identity::<u64>(prod_local_2427).saturating_sub(prod_local_2429); { let prod_local_2431 = (prod_local_2426 == prod_local_2430); { let prod_local_2432 = prod_local_2431; match prod_local_2432 {
+        false => prod_local_2432,
+        true => { let prod_local_2433 = audioWorkletQuantumFrames()?; { let prod_local_2434 = (1 << 1); { let prod_local_2435 = sHundred()?; { let prod_local_2436 = wasmBridgeEnvelopeValid(prod_local_2433, prod_local_2434, prod_local_2435)?; match prod_local_2436 {
+        false => prod_local_2436,
+        true => { let prod_local_2437 = sHundred()?; { let prod_local_2438 = sFive()?; { let prod_local_2439 = core::convert::identity::<u64>(prod_local_2438).checked_mul(prod_local_2438).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2440 = skinWeightScale()?; { let prod_local_2441 = core::convert::identity::<u64>(prod_local_2439).checked_mul(prod_local_2440).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2442 = sabineRt60Millis(prod_local_2437, prod_local_2441)?; { let prod_local_2443 = (_x_55 < prod_local_2442); match prod_local_2443 {
+        false => prod_local_2443,
+        true => { let prod_local_2444 = workerCommandRingCapacity()?; { let prod_local_2445 = sSix()?; { let prod_local_2446 = pow2Constructive(prod_local_2445)?; { let prod_local_2447 = (prod_local_2444 == prod_local_2446); prod_local_2447 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_2448 = false; { let prod_local_2449 = prod_local_2448; match prod_local_2449 {
+        false => prod_local_2449,
+        true => { let prod_local_2451 = sEight()?; { let prod_local_2452 = sHundred()?; { let prod_local_2453 = core::convert::identity::<u64>(prod_local_2451).checked_mul(prod_local_2452).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2454 = navTriangleWalkable(prod_local_2453)?; match prod_local_2454 {
+        false => { let prod_local_2455 = prod_local_2454; match prod_local_2455 {
+        false => prod_local_2455,
+        true => { let prod_local_2456 = audioWorkletQuantumFrames()?; { let prod_local_2457 = (1 << 1); { let prod_local_2458 = sHundred()?; { let prod_local_2459 = wasmBridgeEnvelopeValid(prod_local_2456, prod_local_2457, prod_local_2458)?; match prod_local_2459 {
+        false => prod_local_2459,
+        true => { let prod_local_2460 = sHundred()?; { let prod_local_2461 = sFive()?; { let prod_local_2462 = core::convert::identity::<u64>(prod_local_2461).checked_mul(prod_local_2461).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2463 = skinWeightScale()?; { let prod_local_2464 = core::convert::identity::<u64>(prod_local_2462).checked_mul(prod_local_2463).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2465 = sabineRt60Millis(prod_local_2460, prod_local_2464)?; { let prod_local_2466 = (_x_55 < prod_local_2465); match prod_local_2466 {
+        false => prod_local_2466,
+        true => { let prod_local_2467 = workerCommandRingCapacity()?; { let prod_local_2468 = sSix()?; { let prod_local_2469 = pow2Constructive(prod_local_2468)?; { let prod_local_2470 = (prod_local_2467 == prod_local_2469); prod_local_2470 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_2471 = sTen()?; { let prod_local_2472 = sFive()?; { let prod_local_2473 = core::convert::identity::<u64>(prod_local_2471).checked_add(prod_local_2472).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_2474 = navMaxSearchNodes()?; { let prod_local_2475 = sFifteen()?; { let prod_local_2476 = core::convert::identity::<u64>(prod_local_2474).saturating_sub(prod_local_2475); { let prod_local_2477 = core::convert::identity::<u64>(prod_local_2474).saturating_sub(prod_local_2476); { let prod_local_2478 = (prod_local_2473 == prod_local_2477); { let prod_local_2479 = prod_local_2478; match prod_local_2479 {
+        false => prod_local_2479,
+        true => { let prod_local_2480 = audioWorkletQuantumFrames()?; { let prod_local_2481 = (1 << 1); { let prod_local_2482 = sHundred()?; { let prod_local_2483 = wasmBridgeEnvelopeValid(prod_local_2480, prod_local_2481, prod_local_2482)?; match prod_local_2483 {
+        false => prod_local_2483,
+        true => { let prod_local_2484 = sHundred()?; { let prod_local_2485 = sFive()?; { let prod_local_2486 = core::convert::identity::<u64>(prod_local_2485).checked_mul(prod_local_2485).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2487 = skinWeightScale()?; { let prod_local_2488 = core::convert::identity::<u64>(prod_local_2486).checked_mul(prod_local_2487).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2489 = sabineRt60Millis(prod_local_2484, prod_local_2488)?; { let prod_local_2490 = (_x_55 < prod_local_2489); match prod_local_2490 {
+        false => prod_local_2490,
+        true => { let prod_local_2491 = workerCommandRingCapacity()?; { let prod_local_2492 = sSix()?; { let prod_local_2493 = pow2Constructive(prod_local_2492)?; { let prod_local_2494 = (prod_local_2491 == prod_local_2493); prod_local_2494 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } } },
+    } } },
+    } } } } } } } },
+    } },
+        true => { let prod_local_2495 = sHundred()?; { let prod_local_2496 = sFive()?; { let prod_local_2497 = core::convert::identity::<u64>(prod_local_2496).checked_mul(prod_local_2495).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2498 = (1 << 1); { let prod_local_2499 = sTen()?; { let prod_local_2500 = core::convert::identity::<u64>(prod_local_2498).checked_mul(prod_local_2499).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2501 = sSixteen()?; { let prod_local_2502 = solveContactImpulseMilli(prod_local_2495, prod_local_2497, prod_local_2500, prod_local_2496, prod_local_2501)?; { let prod_local_2503 = (_x_55 < prod_local_2502); { let prod_local_2504 = prod_local_2503; match prod_local_2504 {
+        false => prod_local_2504,
+        true => { let prod_local_2505 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_2506 = sTen()?; { let prod_local_2507 = sFive()?; { let prod_local_2508 = sHundred()?; { let prod_local_2509 = core::convert::identity::<u64>(prod_local_2507).checked_mul(prod_local_2508).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2510 = clampCoulombFrictionMilli(prod_local_2505, prod_local_2506, prod_local_2509)?; { let prod_local_2511 = coulombFrictionConeValid(prod_local_2510, prod_local_2506, prod_local_2509)?; match prod_local_2511 {
+        false => prod_local_2511,
+        true => { let prod_local_2512 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_2513 = navTriangleWalkable(prod_local_2512)?; match prod_local_2513 {
+        false => { let prod_local_2515 = prod_local_2511; match prod_local_2515 {
+        false => prod_local_2515,
+        true => { let prod_local_2517 = sEight()?; { let prod_local_2518 = sHundred()?; { let prod_local_2519 = core::convert::identity::<u64>(prod_local_2517).checked_mul(prod_local_2518).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2520 = navTriangleWalkable(prod_local_2519)?; match prod_local_2520 {
+        false => { let prod_local_2521 = prod_local_2520; match prod_local_2521 {
+        false => prod_local_2521,
+        true => { let prod_local_2522 = audioWorkletQuantumFrames()?; { let prod_local_2523 = (1 << 1); { let prod_local_2524 = sHundred()?; { let prod_local_2525 = wasmBridgeEnvelopeValid(prod_local_2522, prod_local_2523, prod_local_2524)?; match prod_local_2525 {
+        false => prod_local_2525,
+        true => { let prod_local_2526 = sHundred()?; { let prod_local_2527 = sFive()?; { let prod_local_2528 = core::convert::identity::<u64>(prod_local_2527).checked_mul(prod_local_2527).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2529 = skinWeightScale()?; { let prod_local_2530 = core::convert::identity::<u64>(prod_local_2528).checked_mul(prod_local_2529).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2531 = sabineRt60Millis(prod_local_2526, prod_local_2530)?; { let prod_local_2532 = (_x_55 < prod_local_2531); match prod_local_2532 {
+        false => prod_local_2532,
+        true => { let prod_local_2533 = workerCommandRingCapacity()?; { let prod_local_2534 = sSix()?; { let prod_local_2535 = pow2Constructive(prod_local_2534)?; { let prod_local_2536 = (prod_local_2533 == prod_local_2535); prod_local_2536 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_2537 = sTen()?; { let prod_local_2538 = sFive()?; { let prod_local_2539 = core::convert::identity::<u64>(prod_local_2537).checked_add(prod_local_2538).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_2540 = navMaxSearchNodes()?; { let prod_local_2541 = sFifteen()?; { let prod_local_2542 = core::convert::identity::<u64>(prod_local_2540).saturating_sub(prod_local_2541); { let prod_local_2543 = core::convert::identity::<u64>(prod_local_2540).saturating_sub(prod_local_2542); { let prod_local_2544 = (prod_local_2539 == prod_local_2543); { let prod_local_2545 = prod_local_2544; match prod_local_2545 {
+        false => prod_local_2545,
+        true => { let prod_local_2546 = audioWorkletQuantumFrames()?; { let prod_local_2547 = (1 << 1); { let prod_local_2548 = sHundred()?; { let prod_local_2549 = wasmBridgeEnvelopeValid(prod_local_2546, prod_local_2547, prod_local_2548)?; match prod_local_2549 {
+        false => prod_local_2549,
+        true => { let prod_local_2550 = sHundred()?; { let prod_local_2551 = sFive()?; { let prod_local_2552 = core::convert::identity::<u64>(prod_local_2551).checked_mul(prod_local_2551).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2553 = skinWeightScale()?; { let prod_local_2554 = core::convert::identity::<u64>(prod_local_2552).checked_mul(prod_local_2553).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2555 = sabineRt60Millis(prod_local_2550, prod_local_2554)?; { let prod_local_2556 = (_x_55 < prod_local_2555); match prod_local_2556 {
+        false => prod_local_2556,
+        true => { let prod_local_2557 = workerCommandRingCapacity()?; { let prod_local_2558 = sSix()?; { let prod_local_2559 = pow2Constructive(prod_local_2558)?; { let prod_local_2560 = (prod_local_2557 == prod_local_2559); prod_local_2560 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_2561 = false; { let prod_local_2562 = prod_local_2561; match prod_local_2562 {
+        false => prod_local_2562,
+        true => { let prod_local_2564 = sEight()?; { let prod_local_2565 = sHundred()?; { let prod_local_2566 = core::convert::identity::<u64>(prod_local_2564).checked_mul(prod_local_2565).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2567 = navTriangleWalkable(prod_local_2566)?; match prod_local_2567 {
+        false => { let prod_local_2568 = prod_local_2567; match prod_local_2568 {
+        false => prod_local_2568,
+        true => { let prod_local_2569 = audioWorkletQuantumFrames()?; { let prod_local_2570 = (1 << 1); { let prod_local_2571 = sHundred()?; { let prod_local_2572 = wasmBridgeEnvelopeValid(prod_local_2569, prod_local_2570, prod_local_2571)?; match prod_local_2572 {
+        false => prod_local_2572,
+        true => { let prod_local_2573 = sHundred()?; { let prod_local_2574 = sFive()?; { let prod_local_2575 = core::convert::identity::<u64>(prod_local_2574).checked_mul(prod_local_2574).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2576 = skinWeightScale()?; { let prod_local_2577 = core::convert::identity::<u64>(prod_local_2575).checked_mul(prod_local_2576).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2578 = sabineRt60Millis(prod_local_2573, prod_local_2577)?; { let prod_local_2579 = (_x_55 < prod_local_2578); match prod_local_2579 {
+        false => prod_local_2579,
+        true => { let prod_local_2580 = workerCommandRingCapacity()?; { let prod_local_2581 = sSix()?; { let prod_local_2582 = pow2Constructive(prod_local_2581)?; { let prod_local_2583 = (prod_local_2580 == prod_local_2582); prod_local_2583 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_2584 = sTen()?; { let prod_local_2585 = sFive()?; { let prod_local_2586 = core::convert::identity::<u64>(prod_local_2584).checked_add(prod_local_2585).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_2587 = navMaxSearchNodes()?; { let prod_local_2588 = sFifteen()?; { let prod_local_2589 = core::convert::identity::<u64>(prod_local_2587).saturating_sub(prod_local_2588); { let prod_local_2590 = core::convert::identity::<u64>(prod_local_2587).saturating_sub(prod_local_2589); { let prod_local_2591 = (prod_local_2586 == prod_local_2590); { let prod_local_2592 = prod_local_2591; match prod_local_2592 {
+        false => prod_local_2592,
+        true => { let prod_local_2593 = audioWorkletQuantumFrames()?; { let prod_local_2594 = (1 << 1); { let prod_local_2595 = sHundred()?; { let prod_local_2596 = wasmBridgeEnvelopeValid(prod_local_2593, prod_local_2594, prod_local_2595)?; match prod_local_2596 {
+        false => prod_local_2596,
+        true => { let prod_local_2597 = sHundred()?; { let prod_local_2598 = sFive()?; { let prod_local_2599 = core::convert::identity::<u64>(prod_local_2598).checked_mul(prod_local_2598).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2600 = skinWeightScale()?; { let prod_local_2601 = core::convert::identity::<u64>(prod_local_2599).checked_mul(prod_local_2600).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2602 = sabineRt60Millis(prod_local_2597, prod_local_2601)?; { let prod_local_2603 = (_x_55 < prod_local_2602); match prod_local_2603 {
+        false => prod_local_2603,
+        true => { let prod_local_2604 = workerCommandRingCapacity()?; { let prod_local_2605 = sSix()?; { let prod_local_2606 = pow2Constructive(prod_local_2605)?; { let prod_local_2607 = (prod_local_2604 == prod_local_2606); prod_local_2607 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } } },
+    } } },
+    } } } } } } } },
+    } } } } } } } } } } },
+    } } } },
+    } } },
+    } } } },
+    } } } } } },
+    } } } } } } } } },
+    } } } },
+    } } } },
+    }
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    true => {
+                        let _x_935 = ((1 << 1) + 1);
+                        {
+                            let _x_936 = 1;
+                            {
+                                let _x_937 = false;
+                                {
+                                    let _x_938 = jointHierarchyAcyclic(_x_935, _x_936, _x_937);
+                                    {
+                                        let prod_local_2608 = _x_938;
+                                        match prod_local_2608 {
+                                            false => prod_local_2608,
+                                            true => {
+                                                let prod_local_2609 = skinWeightScale()?;
+                                                {
+                                                    let prod_local_2610 = 0;
+                                                    {
+                                                        let prod_local_2611 =
+                                                            skinWeightsNormalized(
+                                                                prod_local_2609,
+                                                                prod_local_2610,
+                                                                prod_local_2610,
+                                                                prod_local_2610,
+                                                            )?;
+                                                        match prod_local_2611 {
+                                                            false => {
+                                                                let prod_local_2613 =
+                                                                    prod_local_2611;
+                                                                match prod_local_2613 {
+                                                                    false => prod_local_2613,
+                                                                    true => {
+                                                                        let prod_local_2614 =
+                                                                            sEight()?;
+                                                                        {
+                                                                            let prod_local_2615 =
+                                                                                sEight()?;
+                                                                            {
+                                                                                let prod_local_2616 = (prod_local_2614 == prod_local_2615);
+                                                                                match prod_local_2616 {
+        false => prod_local_2616,
+        true => { let prod_local_2617 = sFour()?; { let prod_local_2618 = sFour()?; { let prod_local_2619 = (prod_local_2617 == prod_local_2618); match prod_local_2619 {
+        false => { let prod_local_2621 = prod_local_2619; match prod_local_2621 {
+        false => prod_local_2621,
+        true => { let prod_local_2623 = sEight()?; { let prod_local_2624 = pow2Constructive(prod_local_2623)?; { let prod_local_2625 = iblMipLevelCount(prod_local_2624)?; { let prod_local_2626 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_2627 = (prod_local_2625 == prod_local_2626); match prod_local_2627 {
+        false => { let prod_local_2628 = prod_local_2627; match prod_local_2628 {
+        false => prod_local_2628,
+        true => { let prod_local_2629 = sFour()?; { let prod_local_2630 = (prod_local_2629 == prod_local_2618); match prod_local_2630 {
+        false => { let prod_local_2632 = prod_local_2630; match prod_local_2632 {
+        false => prod_local_2632,
+        true => { let prod_local_2633 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_2634 = sTen()?; { let prod_local_2635 = sFive()?; { let prod_local_2636 = sHundred()?; { let prod_local_2637 = core::convert::identity::<u64>(prod_local_2635).checked_mul(prod_local_2636).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2638 = clampCoulombFrictionMilli(prod_local_2633, prod_local_2634, prod_local_2637)?; { let prod_local_2639 = coulombFrictionConeValid(prod_local_2638, prod_local_2634, prod_local_2637)?; match prod_local_2639 {
+        false => prod_local_2639,
+        true => { let prod_local_2640 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_2641 = navTriangleWalkable(prod_local_2640)?; match prod_local_2641 {
+        false => { let prod_local_2643 = prod_local_2639; match prod_local_2643 {
+        false => prod_local_2643,
+        true => { let prod_local_2645 = sEight()?; { let prod_local_2646 = sHundred()?; { let prod_local_2647 = core::convert::identity::<u64>(prod_local_2645).checked_mul(prod_local_2646).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2648 = navTriangleWalkable(prod_local_2647)?; match prod_local_2648 {
+        false => { let prod_local_2649 = prod_local_2648; match prod_local_2649 {
+        false => prod_local_2649,
+        true => { let prod_local_2650 = audioWorkletQuantumFrames()?; { let prod_local_2651 = (1 << 1); { let prod_local_2652 = sHundred()?; { let prod_local_2653 = wasmBridgeEnvelopeValid(prod_local_2650, prod_local_2651, prod_local_2652)?; match prod_local_2653 {
+        false => prod_local_2653,
+        true => { let prod_local_2654 = sHundred()?; { let prod_local_2655 = sFive()?; { let prod_local_2656 = core::convert::identity::<u64>(prod_local_2655).checked_mul(prod_local_2655).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2657 = skinWeightScale()?; { let prod_local_2658 = core::convert::identity::<u64>(prod_local_2656).checked_mul(prod_local_2657).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2659 = sabineRt60Millis(prod_local_2654, prod_local_2658)?; { let prod_local_2660 = (_x_55 < prod_local_2659); match prod_local_2660 {
+        false => prod_local_2660,
+        true => { let prod_local_2661 = workerCommandRingCapacity()?; { let prod_local_2662 = sSix()?; { let prod_local_2663 = pow2Constructive(prod_local_2662)?; { let prod_local_2664 = (prod_local_2661 == prod_local_2663); prod_local_2664 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_2665 = sTen()?; { let prod_local_2666 = sFive()?; { let prod_local_2667 = core::convert::identity::<u64>(prod_local_2665).checked_add(prod_local_2666).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_2668 = navMaxSearchNodes()?; { let prod_local_2669 = sFifteen()?; { let prod_local_2670 = core::convert::identity::<u64>(prod_local_2668).saturating_sub(prod_local_2669); { let prod_local_2671 = core::convert::identity::<u64>(prod_local_2668).saturating_sub(prod_local_2670); { let prod_local_2672 = (prod_local_2667 == prod_local_2671); { let prod_local_2673 = prod_local_2672; match prod_local_2673 {
+        false => prod_local_2673,
+        true => { let prod_local_2674 = audioWorkletQuantumFrames()?; { let prod_local_2675 = (1 << 1); { let prod_local_2676 = sHundred()?; { let prod_local_2677 = wasmBridgeEnvelopeValid(prod_local_2674, prod_local_2675, prod_local_2676)?; match prod_local_2677 {
+        false => prod_local_2677,
+        true => { let prod_local_2678 = sHundred()?; { let prod_local_2679 = sFive()?; { let prod_local_2680 = core::convert::identity::<u64>(prod_local_2679).checked_mul(prod_local_2679).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2681 = skinWeightScale()?; { let prod_local_2682 = core::convert::identity::<u64>(prod_local_2680).checked_mul(prod_local_2681).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2683 = sabineRt60Millis(prod_local_2678, prod_local_2682)?; { let prod_local_2684 = (_x_55 < prod_local_2683); match prod_local_2684 {
+        false => prod_local_2684,
+        true => { let prod_local_2685 = workerCommandRingCapacity()?; { let prod_local_2686 = sSix()?; { let prod_local_2687 = pow2Constructive(prod_local_2686)?; { let prod_local_2688 = (prod_local_2685 == prod_local_2687); prod_local_2688 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_2689 = false; { let prod_local_2690 = prod_local_2689; match prod_local_2690 {
+        false => prod_local_2690,
+        true => { let prod_local_2692 = sEight()?; { let prod_local_2693 = sHundred()?; { let prod_local_2694 = core::convert::identity::<u64>(prod_local_2692).checked_mul(prod_local_2693).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2695 = navTriangleWalkable(prod_local_2694)?; match prod_local_2695 {
+        false => { let prod_local_2696 = prod_local_2695; match prod_local_2696 {
+        false => prod_local_2696,
+        true => { let prod_local_2697 = audioWorkletQuantumFrames()?; { let prod_local_2698 = (1 << 1); { let prod_local_2699 = sHundred()?; { let prod_local_2700 = wasmBridgeEnvelopeValid(prod_local_2697, prod_local_2698, prod_local_2699)?; match prod_local_2700 {
+        false => prod_local_2700,
+        true => { let prod_local_2701 = sHundred()?; { let prod_local_2702 = sFive()?; { let prod_local_2703 = core::convert::identity::<u64>(prod_local_2702).checked_mul(prod_local_2702).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2704 = skinWeightScale()?; { let prod_local_2705 = core::convert::identity::<u64>(prod_local_2703).checked_mul(prod_local_2704).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2706 = sabineRt60Millis(prod_local_2701, prod_local_2705)?; { let prod_local_2707 = (_x_55 < prod_local_2706); match prod_local_2707 {
+        false => prod_local_2707,
+        true => { let prod_local_2708 = workerCommandRingCapacity()?; { let prod_local_2709 = sSix()?; { let prod_local_2710 = pow2Constructive(prod_local_2709)?; { let prod_local_2711 = (prod_local_2708 == prod_local_2710); prod_local_2711 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_2712 = sTen()?; { let prod_local_2713 = sFive()?; { let prod_local_2714 = core::convert::identity::<u64>(prod_local_2712).checked_add(prod_local_2713).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_2715 = navMaxSearchNodes()?; { let prod_local_2716 = sFifteen()?; { let prod_local_2717 = core::convert::identity::<u64>(prod_local_2715).saturating_sub(prod_local_2716); { let prod_local_2718 = core::convert::identity::<u64>(prod_local_2715).saturating_sub(prod_local_2717); { let prod_local_2719 = (prod_local_2714 == prod_local_2718); { let prod_local_2720 = prod_local_2719; match prod_local_2720 {
+        false => prod_local_2720,
+        true => { let prod_local_2721 = audioWorkletQuantumFrames()?; { let prod_local_2722 = (1 << 1); { let prod_local_2723 = sHundred()?; { let prod_local_2724 = wasmBridgeEnvelopeValid(prod_local_2721, prod_local_2722, prod_local_2723)?; match prod_local_2724 {
+        false => prod_local_2724,
+        true => { let prod_local_2725 = sHundred()?; { let prod_local_2726 = sFive()?; { let prod_local_2727 = core::convert::identity::<u64>(prod_local_2726).checked_mul(prod_local_2726).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2728 = skinWeightScale()?; { let prod_local_2729 = core::convert::identity::<u64>(prod_local_2727).checked_mul(prod_local_2728).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2730 = sabineRt60Millis(prod_local_2725, prod_local_2729)?; { let prod_local_2731 = (_x_55 < prod_local_2730); match prod_local_2731 {
+        false => prod_local_2731,
+        true => { let prod_local_2732 = workerCommandRingCapacity()?; { let prod_local_2733 = sSix()?; { let prod_local_2734 = pow2Constructive(prod_local_2733)?; { let prod_local_2735 = (prod_local_2732 == prod_local_2734); prod_local_2735 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } } },
+    } } },
+    } } } } } } } },
+    } },
+        true => { let prod_local_2736 = sThirtyTwo()?; { let prod_local_2737 = sThirtyTwo()?; { let prod_local_2738 = (prod_local_2736 == prod_local_2737); match prod_local_2738 {
+        false => { let prod_local_2739 = prod_local_2738; match prod_local_2739 {
+        false => prod_local_2739,
+        true => { let prod_local_2740 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_2741 = sTen()?; { let prod_local_2742 = sFive()?; { let prod_local_2743 = sHundred()?; { let prod_local_2744 = core::convert::identity::<u64>(prod_local_2742).checked_mul(prod_local_2743).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2745 = clampCoulombFrictionMilli(prod_local_2740, prod_local_2741, prod_local_2744)?; { let prod_local_2746 = coulombFrictionConeValid(prod_local_2745, prod_local_2741, prod_local_2744)?; match prod_local_2746 {
+        false => prod_local_2746,
+        true => { let prod_local_2747 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_2748 = navTriangleWalkable(prod_local_2747)?; match prod_local_2748 {
+        false => { let prod_local_2750 = prod_local_2746; match prod_local_2750 {
+        false => prod_local_2750,
+        true => { let prod_local_2752 = sEight()?; { let prod_local_2753 = sHundred()?; { let prod_local_2754 = core::convert::identity::<u64>(prod_local_2752).checked_mul(prod_local_2753).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2755 = navTriangleWalkable(prod_local_2754)?; match prod_local_2755 {
+        false => { let prod_local_2756 = prod_local_2755; match prod_local_2756 {
+        false => prod_local_2756,
+        true => { let prod_local_2757 = audioWorkletQuantumFrames()?; { let prod_local_2758 = (1 << 1); { let prod_local_2759 = sHundred()?; { let prod_local_2760 = wasmBridgeEnvelopeValid(prod_local_2757, prod_local_2758, prod_local_2759)?; match prod_local_2760 {
+        false => prod_local_2760,
+        true => { let prod_local_2761 = sHundred()?; { let prod_local_2762 = sFive()?; { let prod_local_2763 = core::convert::identity::<u64>(prod_local_2762).checked_mul(prod_local_2762).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2764 = skinWeightScale()?; { let prod_local_2765 = core::convert::identity::<u64>(prod_local_2763).checked_mul(prod_local_2764).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2766 = sabineRt60Millis(prod_local_2761, prod_local_2765)?; { let prod_local_2767 = (_x_55 < prod_local_2766); match prod_local_2767 {
+        false => prod_local_2767,
+        true => { let prod_local_2768 = workerCommandRingCapacity()?; { let prod_local_2769 = sSix()?; { let prod_local_2770 = pow2Constructive(prod_local_2769)?; { let prod_local_2771 = (prod_local_2768 == prod_local_2770); prod_local_2771 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_2772 = sTen()?; { let prod_local_2773 = sFive()?; { let prod_local_2774 = core::convert::identity::<u64>(prod_local_2772).checked_add(prod_local_2773).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_2775 = navMaxSearchNodes()?; { let prod_local_2776 = sFifteen()?; { let prod_local_2777 = core::convert::identity::<u64>(prod_local_2775).saturating_sub(prod_local_2776); { let prod_local_2778 = core::convert::identity::<u64>(prod_local_2775).saturating_sub(prod_local_2777); { let prod_local_2779 = (prod_local_2774 == prod_local_2778); { let prod_local_2780 = prod_local_2779; match prod_local_2780 {
+        false => prod_local_2780,
+        true => { let prod_local_2781 = audioWorkletQuantumFrames()?; { let prod_local_2782 = (1 << 1); { let prod_local_2783 = sHundred()?; { let prod_local_2784 = wasmBridgeEnvelopeValid(prod_local_2781, prod_local_2782, prod_local_2783)?; match prod_local_2784 {
+        false => prod_local_2784,
+        true => { let prod_local_2785 = sHundred()?; { let prod_local_2786 = sFive()?; { let prod_local_2787 = core::convert::identity::<u64>(prod_local_2786).checked_mul(prod_local_2786).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2788 = skinWeightScale()?; { let prod_local_2789 = core::convert::identity::<u64>(prod_local_2787).checked_mul(prod_local_2788).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2790 = sabineRt60Millis(prod_local_2785, prod_local_2789)?; { let prod_local_2791 = (_x_55 < prod_local_2790); match prod_local_2791 {
+        false => prod_local_2791,
+        true => { let prod_local_2792 = workerCommandRingCapacity()?; { let prod_local_2793 = sSix()?; { let prod_local_2794 = pow2Constructive(prod_local_2793)?; { let prod_local_2795 = (prod_local_2792 == prod_local_2794); prod_local_2795 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_2796 = false; { let prod_local_2797 = prod_local_2796; match prod_local_2797 {
+        false => prod_local_2797,
+        true => { let prod_local_2799 = sEight()?; { let prod_local_2800 = sHundred()?; { let prod_local_2801 = core::convert::identity::<u64>(prod_local_2799).checked_mul(prod_local_2800).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2802 = navTriangleWalkable(prod_local_2801)?; match prod_local_2802 {
+        false => { let prod_local_2803 = prod_local_2802; match prod_local_2803 {
+        false => prod_local_2803,
+        true => { let prod_local_2804 = audioWorkletQuantumFrames()?; { let prod_local_2805 = (1 << 1); { let prod_local_2806 = sHundred()?; { let prod_local_2807 = wasmBridgeEnvelopeValid(prod_local_2804, prod_local_2805, prod_local_2806)?; match prod_local_2807 {
+        false => prod_local_2807,
+        true => { let prod_local_2808 = sHundred()?; { let prod_local_2809 = sFive()?; { let prod_local_2810 = core::convert::identity::<u64>(prod_local_2809).checked_mul(prod_local_2809).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2811 = skinWeightScale()?; { let prod_local_2812 = core::convert::identity::<u64>(prod_local_2810).checked_mul(prod_local_2811).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2813 = sabineRt60Millis(prod_local_2808, prod_local_2812)?; { let prod_local_2814 = (_x_55 < prod_local_2813); match prod_local_2814 {
+        false => prod_local_2814,
+        true => { let prod_local_2815 = workerCommandRingCapacity()?; { let prod_local_2816 = sSix()?; { let prod_local_2817 = pow2Constructive(prod_local_2816)?; { let prod_local_2818 = (prod_local_2815 == prod_local_2817); prod_local_2818 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_2819 = sTen()?; { let prod_local_2820 = sFive()?; { let prod_local_2821 = core::convert::identity::<u64>(prod_local_2819).checked_add(prod_local_2820).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_2822 = navMaxSearchNodes()?; { let prod_local_2823 = sFifteen()?; { let prod_local_2824 = core::convert::identity::<u64>(prod_local_2822).saturating_sub(prod_local_2823); { let prod_local_2825 = core::convert::identity::<u64>(prod_local_2822).saturating_sub(prod_local_2824); { let prod_local_2826 = (prod_local_2821 == prod_local_2825); { let prod_local_2827 = prod_local_2826; match prod_local_2827 {
+        false => prod_local_2827,
+        true => { let prod_local_2828 = audioWorkletQuantumFrames()?; { let prod_local_2829 = (1 << 1); { let prod_local_2830 = sHundred()?; { let prod_local_2831 = wasmBridgeEnvelopeValid(prod_local_2828, prod_local_2829, prod_local_2830)?; match prod_local_2831 {
+        false => prod_local_2831,
+        true => { let prod_local_2832 = sHundred()?; { let prod_local_2833 = sFive()?; { let prod_local_2834 = core::convert::identity::<u64>(prod_local_2833).checked_mul(prod_local_2833).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2835 = skinWeightScale()?; { let prod_local_2836 = core::convert::identity::<u64>(prod_local_2834).checked_mul(prod_local_2835).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2837 = sabineRt60Millis(prod_local_2832, prod_local_2836)?; { let prod_local_2838 = (_x_55 < prod_local_2837); match prod_local_2838 {
+        false => prod_local_2838,
+        true => { let prod_local_2839 = workerCommandRingCapacity()?; { let prod_local_2840 = sSix()?; { let prod_local_2841 = pow2Constructive(prod_local_2840)?; { let prod_local_2842 = (prod_local_2839 == prod_local_2841); prod_local_2842 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } } },
+    } } },
+    } } } } } } } },
+    } },
+        true => { let prod_local_2843 = sHundred()?; { let prod_local_2844 = sFive()?; { let prod_local_2845 = core::convert::identity::<u64>(prod_local_2844).checked_mul(prod_local_2843).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2846 = (1 << 1); { let prod_local_2847 = sTen()?; { let prod_local_2848 = core::convert::identity::<u64>(prod_local_2846).checked_mul(prod_local_2847).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2849 = sSixteen()?; { let prod_local_2850 = solveContactImpulseMilli(prod_local_2843, prod_local_2845, prod_local_2848, prod_local_2844, prod_local_2849)?; { let prod_local_2851 = (_x_55 < prod_local_2850); { let prod_local_2852 = prod_local_2851; match prod_local_2852 {
+        false => prod_local_2852,
+        true => { let prod_local_2853 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_2854 = sTen()?; { let prod_local_2855 = sFive()?; { let prod_local_2856 = sHundred()?; { let prod_local_2857 = core::convert::identity::<u64>(prod_local_2855).checked_mul(prod_local_2856).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2858 = clampCoulombFrictionMilli(prod_local_2853, prod_local_2854, prod_local_2857)?; { let prod_local_2859 = coulombFrictionConeValid(prod_local_2858, prod_local_2854, prod_local_2857)?; match prod_local_2859 {
+        false => prod_local_2859,
+        true => { let prod_local_2860 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_2861 = navTriangleWalkable(prod_local_2860)?; match prod_local_2861 {
+        false => { let prod_local_2863 = prod_local_2859; match prod_local_2863 {
+        false => prod_local_2863,
+        true => { let prod_local_2865 = sEight()?; { let prod_local_2866 = sHundred()?; { let prod_local_2867 = core::convert::identity::<u64>(prod_local_2865).checked_mul(prod_local_2866).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2868 = navTriangleWalkable(prod_local_2867)?; match prod_local_2868 {
+        false => { let prod_local_2869 = prod_local_2868; match prod_local_2869 {
+        false => prod_local_2869,
+        true => { let prod_local_2870 = audioWorkletQuantumFrames()?; { let prod_local_2871 = (1 << 1); { let prod_local_2872 = sHundred()?; { let prod_local_2873 = wasmBridgeEnvelopeValid(prod_local_2870, prod_local_2871, prod_local_2872)?; match prod_local_2873 {
+        false => prod_local_2873,
+        true => { let prod_local_2874 = sHundred()?; { let prod_local_2875 = sFive()?; { let prod_local_2876 = core::convert::identity::<u64>(prod_local_2875).checked_mul(prod_local_2875).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2877 = skinWeightScale()?; { let prod_local_2878 = core::convert::identity::<u64>(prod_local_2876).checked_mul(prod_local_2877).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2879 = sabineRt60Millis(prod_local_2874, prod_local_2878)?; { let prod_local_2880 = (_x_55 < prod_local_2879); match prod_local_2880 {
+        false => prod_local_2880,
+        true => { let prod_local_2881 = workerCommandRingCapacity()?; { let prod_local_2882 = sSix()?; { let prod_local_2883 = pow2Constructive(prod_local_2882)?; { let prod_local_2884 = (prod_local_2881 == prod_local_2883); prod_local_2884 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_2885 = sTen()?; { let prod_local_2886 = sFive()?; { let prod_local_2887 = core::convert::identity::<u64>(prod_local_2885).checked_add(prod_local_2886).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_2888 = navMaxSearchNodes()?; { let prod_local_2889 = sFifteen()?; { let prod_local_2890 = core::convert::identity::<u64>(prod_local_2888).saturating_sub(prod_local_2889); { let prod_local_2891 = core::convert::identity::<u64>(prod_local_2888).saturating_sub(prod_local_2890); { let prod_local_2892 = (prod_local_2887 == prod_local_2891); { let prod_local_2893 = prod_local_2892; match prod_local_2893 {
+        false => prod_local_2893,
+        true => { let prod_local_2894 = audioWorkletQuantumFrames()?; { let prod_local_2895 = (1 << 1); { let prod_local_2896 = sHundred()?; { let prod_local_2897 = wasmBridgeEnvelopeValid(prod_local_2894, prod_local_2895, prod_local_2896)?; match prod_local_2897 {
+        false => prod_local_2897,
+        true => { let prod_local_2898 = sHundred()?; { let prod_local_2899 = sFive()?; { let prod_local_2900 = core::convert::identity::<u64>(prod_local_2899).checked_mul(prod_local_2899).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2901 = skinWeightScale()?; { let prod_local_2902 = core::convert::identity::<u64>(prod_local_2900).checked_mul(prod_local_2901).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2903 = sabineRt60Millis(prod_local_2898, prod_local_2902)?; { let prod_local_2904 = (_x_55 < prod_local_2903); match prod_local_2904 {
+        false => prod_local_2904,
+        true => { let prod_local_2905 = workerCommandRingCapacity()?; { let prod_local_2906 = sSix()?; { let prod_local_2907 = pow2Constructive(prod_local_2906)?; { let prod_local_2908 = (prod_local_2905 == prod_local_2907); prod_local_2908 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_2909 = false; { let prod_local_2910 = prod_local_2909; match prod_local_2910 {
+        false => prod_local_2910,
+        true => { let prod_local_2912 = sEight()?; { let prod_local_2913 = sHundred()?; { let prod_local_2914 = core::convert::identity::<u64>(prod_local_2912).checked_mul(prod_local_2913).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2915 = navTriangleWalkable(prod_local_2914)?; match prod_local_2915 {
+        false => { let prod_local_2916 = prod_local_2915; match prod_local_2916 {
+        false => prod_local_2916,
+        true => { let prod_local_2917 = audioWorkletQuantumFrames()?; { let prod_local_2918 = (1 << 1); { let prod_local_2919 = sHundred()?; { let prod_local_2920 = wasmBridgeEnvelopeValid(prod_local_2917, prod_local_2918, prod_local_2919)?; match prod_local_2920 {
+        false => prod_local_2920,
+        true => { let prod_local_2921 = sHundred()?; { let prod_local_2922 = sFive()?; { let prod_local_2923 = core::convert::identity::<u64>(prod_local_2922).checked_mul(prod_local_2922).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2924 = skinWeightScale()?; { let prod_local_2925 = core::convert::identity::<u64>(prod_local_2923).checked_mul(prod_local_2924).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2926 = sabineRt60Millis(prod_local_2921, prod_local_2925)?; { let prod_local_2927 = (_x_55 < prod_local_2926); match prod_local_2927 {
+        false => prod_local_2927,
+        true => { let prod_local_2928 = workerCommandRingCapacity()?; { let prod_local_2929 = sSix()?; { let prod_local_2930 = pow2Constructive(prod_local_2929)?; { let prod_local_2931 = (prod_local_2928 == prod_local_2930); prod_local_2931 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_2932 = sTen()?; { let prod_local_2933 = sFive()?; { let prod_local_2934 = core::convert::identity::<u64>(prod_local_2932).checked_add(prod_local_2933).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_2935 = navMaxSearchNodes()?; { let prod_local_2936 = sFifteen()?; { let prod_local_2937 = core::convert::identity::<u64>(prod_local_2935).saturating_sub(prod_local_2936); { let prod_local_2938 = core::convert::identity::<u64>(prod_local_2935).saturating_sub(prod_local_2937); { let prod_local_2939 = (prod_local_2934 == prod_local_2938); { let prod_local_2940 = prod_local_2939; match prod_local_2940 {
+        false => prod_local_2940,
+        true => { let prod_local_2941 = audioWorkletQuantumFrames()?; { let prod_local_2942 = (1 << 1); { let prod_local_2943 = sHundred()?; { let prod_local_2944 = wasmBridgeEnvelopeValid(prod_local_2941, prod_local_2942, prod_local_2943)?; match prod_local_2944 {
+        false => prod_local_2944,
+        true => { let prod_local_2945 = sHundred()?; { let prod_local_2946 = sFive()?; { let prod_local_2947 = core::convert::identity::<u64>(prod_local_2946).checked_mul(prod_local_2946).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2948 = skinWeightScale()?; { let prod_local_2949 = core::convert::identity::<u64>(prod_local_2947).checked_mul(prod_local_2948).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2950 = sabineRt60Millis(prod_local_2945, prod_local_2949)?; { let prod_local_2951 = (_x_55 < prod_local_2950); match prod_local_2951 {
+        false => prod_local_2951,
+        true => { let prod_local_2952 = workerCommandRingCapacity()?; { let prod_local_2953 = sSix()?; { let prod_local_2954 = pow2Constructive(prod_local_2953)?; { let prod_local_2955 = (prod_local_2952 == prod_local_2954); prod_local_2955 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } } },
+    } } },
+    } } } } } } } },
+    } } } } } } } } } } },
+    } } } },
+    } } },
+    } },
+        true => { let prod_local_2956 = sFour()?; { let prod_local_2957 = renderPassDependencyValid(_x_55, prod_local_2956)?; { let prod_local_2958 = prod_local_2957; match prod_local_2958 {
+        false => prod_local_2958,
+        true => { let prod_local_2959 = sFour()?; { let prod_local_2960 = (prod_local_2959 == prod_local_2618); match prod_local_2960 {
+        false => { let prod_local_2962 = prod_local_2960; match prod_local_2962 {
+        false => prod_local_2962,
+        true => { let prod_local_2963 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_2964 = sTen()?; { let prod_local_2965 = sFive()?; { let prod_local_2966 = sHundred()?; { let prod_local_2967 = core::convert::identity::<u64>(prod_local_2965).checked_mul(prod_local_2966).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2968 = clampCoulombFrictionMilli(prod_local_2963, prod_local_2964, prod_local_2967)?; { let prod_local_2969 = coulombFrictionConeValid(prod_local_2968, prod_local_2964, prod_local_2967)?; match prod_local_2969 {
+        false => prod_local_2969,
+        true => { let prod_local_2970 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_2971 = navTriangleWalkable(prod_local_2970)?; match prod_local_2971 {
+        false => { let prod_local_2973 = prod_local_2969; match prod_local_2973 {
+        false => prod_local_2973,
+        true => { let prod_local_2975 = sEight()?; { let prod_local_2976 = sHundred()?; { let prod_local_2977 = core::convert::identity::<u64>(prod_local_2975).checked_mul(prod_local_2976).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2978 = navTriangleWalkable(prod_local_2977)?; match prod_local_2978 {
+        false => { let prod_local_2979 = prod_local_2978; match prod_local_2979 {
+        false => prod_local_2979,
+        true => { let prod_local_2980 = audioWorkletQuantumFrames()?; { let prod_local_2981 = (1 << 1); { let prod_local_2982 = sHundred()?; { let prod_local_2983 = wasmBridgeEnvelopeValid(prod_local_2980, prod_local_2981, prod_local_2982)?; match prod_local_2983 {
+        false => prod_local_2983,
+        true => { let prod_local_2984 = sHundred()?; { let prod_local_2985 = sFive()?; { let prod_local_2986 = core::convert::identity::<u64>(prod_local_2985).checked_mul(prod_local_2985).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2987 = skinWeightScale()?; { let prod_local_2988 = core::convert::identity::<u64>(prod_local_2986).checked_mul(prod_local_2987).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_2989 = sabineRt60Millis(prod_local_2984, prod_local_2988)?; { let prod_local_2990 = (_x_55 < prod_local_2989); match prod_local_2990 {
+        false => prod_local_2990,
+        true => { let prod_local_2991 = workerCommandRingCapacity()?; { let prod_local_2992 = sSix()?; { let prod_local_2993 = pow2Constructive(prod_local_2992)?; { let prod_local_2994 = (prod_local_2991 == prod_local_2993); prod_local_2994 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_2995 = sTen()?; { let prod_local_2996 = sFive()?; { let prod_local_2997 = core::convert::identity::<u64>(prod_local_2995).checked_add(prod_local_2996).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_2998 = navMaxSearchNodes()?; { let prod_local_2999 = sFifteen()?; { let prod_local_3000 = core::convert::identity::<u64>(prod_local_2998).saturating_sub(prod_local_2999); { let prod_local_3001 = core::convert::identity::<u64>(prod_local_2998).saturating_sub(prod_local_3000); { let prod_local_3002 = (prod_local_2997 == prod_local_3001); { let prod_local_3003 = prod_local_3002; match prod_local_3003 {
+        false => prod_local_3003,
+        true => { let prod_local_3004 = audioWorkletQuantumFrames()?; { let prod_local_3005 = (1 << 1); { let prod_local_3006 = sHundred()?; { let prod_local_3007 = wasmBridgeEnvelopeValid(prod_local_3004, prod_local_3005, prod_local_3006)?; match prod_local_3007 {
+        false => prod_local_3007,
+        true => { let prod_local_3008 = sHundred()?; { let prod_local_3009 = sFive()?; { let prod_local_3010 = core::convert::identity::<u64>(prod_local_3009).checked_mul(prod_local_3009).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3011 = skinWeightScale()?; { let prod_local_3012 = core::convert::identity::<u64>(prod_local_3010).checked_mul(prod_local_3011).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3013 = sabineRt60Millis(prod_local_3008, prod_local_3012)?; { let prod_local_3014 = (_x_55 < prod_local_3013); match prod_local_3014 {
+        false => prod_local_3014,
+        true => { let prod_local_3015 = workerCommandRingCapacity()?; { let prod_local_3016 = sSix()?; { let prod_local_3017 = pow2Constructive(prod_local_3016)?; { let prod_local_3018 = (prod_local_3015 == prod_local_3017); prod_local_3018 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_3019 = false; { let prod_local_3020 = prod_local_3019; match prod_local_3020 {
+        false => prod_local_3020,
+        true => { let prod_local_3022 = sEight()?; { let prod_local_3023 = sHundred()?; { let prod_local_3024 = core::convert::identity::<u64>(prod_local_3022).checked_mul(prod_local_3023).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3025 = navTriangleWalkable(prod_local_3024)?; match prod_local_3025 {
+        false => { let prod_local_3026 = prod_local_3025; match prod_local_3026 {
+        false => prod_local_3026,
+        true => { let prod_local_3027 = audioWorkletQuantumFrames()?; { let prod_local_3028 = (1 << 1); { let prod_local_3029 = sHundred()?; { let prod_local_3030 = wasmBridgeEnvelopeValid(prod_local_3027, prod_local_3028, prod_local_3029)?; match prod_local_3030 {
+        false => prod_local_3030,
+        true => { let prod_local_3031 = sHundred()?; { let prod_local_3032 = sFive()?; { let prod_local_3033 = core::convert::identity::<u64>(prod_local_3032).checked_mul(prod_local_3032).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3034 = skinWeightScale()?; { let prod_local_3035 = core::convert::identity::<u64>(prod_local_3033).checked_mul(prod_local_3034).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3036 = sabineRt60Millis(prod_local_3031, prod_local_3035)?; { let prod_local_3037 = (_x_55 < prod_local_3036); match prod_local_3037 {
+        false => prod_local_3037,
+        true => { let prod_local_3038 = workerCommandRingCapacity()?; { let prod_local_3039 = sSix()?; { let prod_local_3040 = pow2Constructive(prod_local_3039)?; { let prod_local_3041 = (prod_local_3038 == prod_local_3040); prod_local_3041 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_3042 = sTen()?; { let prod_local_3043 = sFive()?; { let prod_local_3044 = core::convert::identity::<u64>(prod_local_3042).checked_add(prod_local_3043).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_3045 = navMaxSearchNodes()?; { let prod_local_3046 = sFifteen()?; { let prod_local_3047 = core::convert::identity::<u64>(prod_local_3045).saturating_sub(prod_local_3046); { let prod_local_3048 = core::convert::identity::<u64>(prod_local_3045).saturating_sub(prod_local_3047); { let prod_local_3049 = (prod_local_3044 == prod_local_3048); { let prod_local_3050 = prod_local_3049; match prod_local_3050 {
+        false => prod_local_3050,
+        true => { let prod_local_3051 = audioWorkletQuantumFrames()?; { let prod_local_3052 = (1 << 1); { let prod_local_3053 = sHundred()?; { let prod_local_3054 = wasmBridgeEnvelopeValid(prod_local_3051, prod_local_3052, prod_local_3053)?; match prod_local_3054 {
+        false => prod_local_3054,
+        true => { let prod_local_3055 = sHundred()?; { let prod_local_3056 = sFive()?; { let prod_local_3057 = core::convert::identity::<u64>(prod_local_3056).checked_mul(prod_local_3056).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3058 = skinWeightScale()?; { let prod_local_3059 = core::convert::identity::<u64>(prod_local_3057).checked_mul(prod_local_3058).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3060 = sabineRt60Millis(prod_local_3055, prod_local_3059)?; { let prod_local_3061 = (_x_55 < prod_local_3060); match prod_local_3061 {
+        false => prod_local_3061,
+        true => { let prod_local_3062 = workerCommandRingCapacity()?; { let prod_local_3063 = sSix()?; { let prod_local_3064 = pow2Constructive(prod_local_3063)?; { let prod_local_3065 = (prod_local_3062 == prod_local_3064); prod_local_3065 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } } },
+    } } },
+    } } } } } } } },
+    } },
+        true => { let prod_local_3066 = sThirtyTwo()?; { let prod_local_3067 = sThirtyTwo()?; { let prod_local_3068 = (prod_local_3066 == prod_local_3067); match prod_local_3068 {
+        false => { let prod_local_3069 = prod_local_3068; match prod_local_3069 {
+        false => prod_local_3069,
+        true => { let prod_local_3070 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_3071 = sTen()?; { let prod_local_3072 = sFive()?; { let prod_local_3073 = sHundred()?; { let prod_local_3074 = core::convert::identity::<u64>(prod_local_3072).checked_mul(prod_local_3073).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3075 = clampCoulombFrictionMilli(prod_local_3070, prod_local_3071, prod_local_3074)?; { let prod_local_3076 = coulombFrictionConeValid(prod_local_3075, prod_local_3071, prod_local_3074)?; match prod_local_3076 {
+        false => prod_local_3076,
+        true => { let prod_local_3077 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_3078 = navTriangleWalkable(prod_local_3077)?; match prod_local_3078 {
+        false => { let prod_local_3080 = prod_local_3076; match prod_local_3080 {
+        false => prod_local_3080,
+        true => { let prod_local_3082 = sEight()?; { let prod_local_3083 = sHundred()?; { let prod_local_3084 = core::convert::identity::<u64>(prod_local_3082).checked_mul(prod_local_3083).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3085 = navTriangleWalkable(prod_local_3084)?; match prod_local_3085 {
+        false => { let prod_local_3086 = prod_local_3085; match prod_local_3086 {
+        false => prod_local_3086,
+        true => { let prod_local_3087 = audioWorkletQuantumFrames()?; { let prod_local_3088 = (1 << 1); { let prod_local_3089 = sHundred()?; { let prod_local_3090 = wasmBridgeEnvelopeValid(prod_local_3087, prod_local_3088, prod_local_3089)?; match prod_local_3090 {
+        false => prod_local_3090,
+        true => { let prod_local_3091 = sHundred()?; { let prod_local_3092 = sFive()?; { let prod_local_3093 = core::convert::identity::<u64>(prod_local_3092).checked_mul(prod_local_3092).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3094 = skinWeightScale()?; { let prod_local_3095 = core::convert::identity::<u64>(prod_local_3093).checked_mul(prod_local_3094).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3096 = sabineRt60Millis(prod_local_3091, prod_local_3095)?; { let prod_local_3097 = (_x_55 < prod_local_3096); match prod_local_3097 {
+        false => prod_local_3097,
+        true => { let prod_local_3098 = workerCommandRingCapacity()?; { let prod_local_3099 = sSix()?; { let prod_local_3100 = pow2Constructive(prod_local_3099)?; { let prod_local_3101 = (prod_local_3098 == prod_local_3100); prod_local_3101 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_3102 = sTen()?; { let prod_local_3103 = sFive()?; { let prod_local_3104 = core::convert::identity::<u64>(prod_local_3102).checked_add(prod_local_3103).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_3105 = navMaxSearchNodes()?; { let prod_local_3106 = sFifteen()?; { let prod_local_3107 = core::convert::identity::<u64>(prod_local_3105).saturating_sub(prod_local_3106); { let prod_local_3108 = core::convert::identity::<u64>(prod_local_3105).saturating_sub(prod_local_3107); { let prod_local_3109 = (prod_local_3104 == prod_local_3108); { let prod_local_3110 = prod_local_3109; match prod_local_3110 {
+        false => prod_local_3110,
+        true => { let prod_local_3111 = audioWorkletQuantumFrames()?; { let prod_local_3112 = (1 << 1); { let prod_local_3113 = sHundred()?; { let prod_local_3114 = wasmBridgeEnvelopeValid(prod_local_3111, prod_local_3112, prod_local_3113)?; match prod_local_3114 {
+        false => prod_local_3114,
+        true => { let prod_local_3115 = sHundred()?; { let prod_local_3116 = sFive()?; { let prod_local_3117 = core::convert::identity::<u64>(prod_local_3116).checked_mul(prod_local_3116).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3118 = skinWeightScale()?; { let prod_local_3119 = core::convert::identity::<u64>(prod_local_3117).checked_mul(prod_local_3118).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3120 = sabineRt60Millis(prod_local_3115, prod_local_3119)?; { let prod_local_3121 = (_x_55 < prod_local_3120); match prod_local_3121 {
+        false => prod_local_3121,
+        true => { let prod_local_3122 = workerCommandRingCapacity()?; { let prod_local_3123 = sSix()?; { let prod_local_3124 = pow2Constructive(prod_local_3123)?; { let prod_local_3125 = (prod_local_3122 == prod_local_3124); prod_local_3125 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_3126 = false; { let prod_local_3127 = prod_local_3126; match prod_local_3127 {
+        false => prod_local_3127,
+        true => { let prod_local_3129 = sEight()?; { let prod_local_3130 = sHundred()?; { let prod_local_3131 = core::convert::identity::<u64>(prod_local_3129).checked_mul(prod_local_3130).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3132 = navTriangleWalkable(prod_local_3131)?; match prod_local_3132 {
+        false => { let prod_local_3133 = prod_local_3132; match prod_local_3133 {
+        false => prod_local_3133,
+        true => { let prod_local_3134 = audioWorkletQuantumFrames()?; { let prod_local_3135 = (1 << 1); { let prod_local_3136 = sHundred()?; { let prod_local_3137 = wasmBridgeEnvelopeValid(prod_local_3134, prod_local_3135, prod_local_3136)?; match prod_local_3137 {
+        false => prod_local_3137,
+        true => { let prod_local_3138 = sHundred()?; { let prod_local_3139 = sFive()?; { let prod_local_3140 = core::convert::identity::<u64>(prod_local_3139).checked_mul(prod_local_3139).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3141 = skinWeightScale()?; { let prod_local_3142 = core::convert::identity::<u64>(prod_local_3140).checked_mul(prod_local_3141).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3143 = sabineRt60Millis(prod_local_3138, prod_local_3142)?; { let prod_local_3144 = (_x_55 < prod_local_3143); match prod_local_3144 {
+        false => prod_local_3144,
+        true => { let prod_local_3145 = workerCommandRingCapacity()?; { let prod_local_3146 = sSix()?; { let prod_local_3147 = pow2Constructive(prod_local_3146)?; { let prod_local_3148 = (prod_local_3145 == prod_local_3147); prod_local_3148 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_3149 = sTen()?; { let prod_local_3150 = sFive()?; { let prod_local_3151 = core::convert::identity::<u64>(prod_local_3149).checked_add(prod_local_3150).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_3152 = navMaxSearchNodes()?; { let prod_local_3153 = sFifteen()?; { let prod_local_3154 = core::convert::identity::<u64>(prod_local_3152).saturating_sub(prod_local_3153); { let prod_local_3155 = core::convert::identity::<u64>(prod_local_3152).saturating_sub(prod_local_3154); { let prod_local_3156 = (prod_local_3151 == prod_local_3155); { let prod_local_3157 = prod_local_3156; match prod_local_3157 {
+        false => prod_local_3157,
+        true => { let prod_local_3158 = audioWorkletQuantumFrames()?; { let prod_local_3159 = (1 << 1); { let prod_local_3160 = sHundred()?; { let prod_local_3161 = wasmBridgeEnvelopeValid(prod_local_3158, prod_local_3159, prod_local_3160)?; match prod_local_3161 {
+        false => prod_local_3161,
+        true => { let prod_local_3162 = sHundred()?; { let prod_local_3163 = sFive()?; { let prod_local_3164 = core::convert::identity::<u64>(prod_local_3163).checked_mul(prod_local_3163).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3165 = skinWeightScale()?; { let prod_local_3166 = core::convert::identity::<u64>(prod_local_3164).checked_mul(prod_local_3165).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3167 = sabineRt60Millis(prod_local_3162, prod_local_3166)?; { let prod_local_3168 = (_x_55 < prod_local_3167); match prod_local_3168 {
+        false => prod_local_3168,
+        true => { let prod_local_3169 = workerCommandRingCapacity()?; { let prod_local_3170 = sSix()?; { let prod_local_3171 = pow2Constructive(prod_local_3170)?; { let prod_local_3172 = (prod_local_3169 == prod_local_3171); prod_local_3172 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } } },
+    } } },
+    } } } } } } } },
+    } },
+        true => { let prod_local_3173 = sHundred()?; { let prod_local_3174 = sFive()?; { let prod_local_3175 = core::convert::identity::<u64>(prod_local_3174).checked_mul(prod_local_3173).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3176 = (1 << 1); { let prod_local_3177 = sTen()?; { let prod_local_3178 = core::convert::identity::<u64>(prod_local_3176).checked_mul(prod_local_3177).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3179 = sSixteen()?; { let prod_local_3180 = solveContactImpulseMilli(prod_local_3173, prod_local_3175, prod_local_3178, prod_local_3174, prod_local_3179)?; { let prod_local_3181 = (_x_55 < prod_local_3180); { let prod_local_3182 = prod_local_3181; match prod_local_3182 {
+        false => prod_local_3182,
+        true => { let prod_local_3183 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_3184 = sTen()?; { let prod_local_3185 = sFive()?; { let prod_local_3186 = sHundred()?; { let prod_local_3187 = core::convert::identity::<u64>(prod_local_3185).checked_mul(prod_local_3186).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3188 = clampCoulombFrictionMilli(prod_local_3183, prod_local_3184, prod_local_3187)?; { let prod_local_3189 = coulombFrictionConeValid(prod_local_3188, prod_local_3184, prod_local_3187)?; match prod_local_3189 {
+        false => prod_local_3189,
+        true => { let prod_local_3190 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_3191 = navTriangleWalkable(prod_local_3190)?; match prod_local_3191 {
+        false => { let prod_local_3193 = prod_local_3189; match prod_local_3193 {
+        false => prod_local_3193,
+        true => { let prod_local_3195 = sEight()?; { let prod_local_3196 = sHundred()?; { let prod_local_3197 = core::convert::identity::<u64>(prod_local_3195).checked_mul(prod_local_3196).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3198 = navTriangleWalkable(prod_local_3197)?; match prod_local_3198 {
+        false => { let prod_local_3199 = prod_local_3198; match prod_local_3199 {
+        false => prod_local_3199,
+        true => { let prod_local_3200 = audioWorkletQuantumFrames()?; { let prod_local_3201 = (1 << 1); { let prod_local_3202 = sHundred()?; { let prod_local_3203 = wasmBridgeEnvelopeValid(prod_local_3200, prod_local_3201, prod_local_3202)?; match prod_local_3203 {
+        false => prod_local_3203,
+        true => { let prod_local_3204 = sHundred()?; { let prod_local_3205 = sFive()?; { let prod_local_3206 = core::convert::identity::<u64>(prod_local_3205).checked_mul(prod_local_3205).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3207 = skinWeightScale()?; { let prod_local_3208 = core::convert::identity::<u64>(prod_local_3206).checked_mul(prod_local_3207).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3209 = sabineRt60Millis(prod_local_3204, prod_local_3208)?; { let prod_local_3210 = (_x_55 < prod_local_3209); match prod_local_3210 {
+        false => prod_local_3210,
+        true => { let prod_local_3211 = workerCommandRingCapacity()?; { let prod_local_3212 = sSix()?; { let prod_local_3213 = pow2Constructive(prod_local_3212)?; { let prod_local_3214 = (prod_local_3211 == prod_local_3213); prod_local_3214 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_3215 = sTen()?; { let prod_local_3216 = sFive()?; { let prod_local_3217 = core::convert::identity::<u64>(prod_local_3215).checked_add(prod_local_3216).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_3218 = navMaxSearchNodes()?; { let prod_local_3219 = sFifteen()?; { let prod_local_3220 = core::convert::identity::<u64>(prod_local_3218).saturating_sub(prod_local_3219); { let prod_local_3221 = core::convert::identity::<u64>(prod_local_3218).saturating_sub(prod_local_3220); { let prod_local_3222 = (prod_local_3217 == prod_local_3221); { let prod_local_3223 = prod_local_3222; match prod_local_3223 {
+        false => prod_local_3223,
+        true => { let prod_local_3224 = audioWorkletQuantumFrames()?; { let prod_local_3225 = (1 << 1); { let prod_local_3226 = sHundred()?; { let prod_local_3227 = wasmBridgeEnvelopeValid(prod_local_3224, prod_local_3225, prod_local_3226)?; match prod_local_3227 {
+        false => prod_local_3227,
+        true => { let prod_local_3228 = sHundred()?; { let prod_local_3229 = sFive()?; { let prod_local_3230 = core::convert::identity::<u64>(prod_local_3229).checked_mul(prod_local_3229).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3231 = skinWeightScale()?; { let prod_local_3232 = core::convert::identity::<u64>(prod_local_3230).checked_mul(prod_local_3231).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3233 = sabineRt60Millis(prod_local_3228, prod_local_3232)?; { let prod_local_3234 = (_x_55 < prod_local_3233); match prod_local_3234 {
+        false => prod_local_3234,
+        true => { let prod_local_3235 = workerCommandRingCapacity()?; { let prod_local_3236 = sSix()?; { let prod_local_3237 = pow2Constructive(prod_local_3236)?; { let prod_local_3238 = (prod_local_3235 == prod_local_3237); prod_local_3238 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_3239 = false; { let prod_local_3240 = prod_local_3239; match prod_local_3240 {
+        false => prod_local_3240,
+        true => { let prod_local_3242 = sEight()?; { let prod_local_3243 = sHundred()?; { let prod_local_3244 = core::convert::identity::<u64>(prod_local_3242).checked_mul(prod_local_3243).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3245 = navTriangleWalkable(prod_local_3244)?; match prod_local_3245 {
+        false => { let prod_local_3246 = prod_local_3245; match prod_local_3246 {
+        false => prod_local_3246,
+        true => { let prod_local_3247 = audioWorkletQuantumFrames()?; { let prod_local_3248 = (1 << 1); { let prod_local_3249 = sHundred()?; { let prod_local_3250 = wasmBridgeEnvelopeValid(prod_local_3247, prod_local_3248, prod_local_3249)?; match prod_local_3250 {
+        false => prod_local_3250,
+        true => { let prod_local_3251 = sHundred()?; { let prod_local_3252 = sFive()?; { let prod_local_3253 = core::convert::identity::<u64>(prod_local_3252).checked_mul(prod_local_3252).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3254 = skinWeightScale()?; { let prod_local_3255 = core::convert::identity::<u64>(prod_local_3253).checked_mul(prod_local_3254).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3256 = sabineRt60Millis(prod_local_3251, prod_local_3255)?; { let prod_local_3257 = (_x_55 < prod_local_3256); match prod_local_3257 {
+        false => prod_local_3257,
+        true => { let prod_local_3258 = workerCommandRingCapacity()?; { let prod_local_3259 = sSix()?; { let prod_local_3260 = pow2Constructive(prod_local_3259)?; { let prod_local_3261 = (prod_local_3258 == prod_local_3260); prod_local_3261 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_3262 = sTen()?; { let prod_local_3263 = sFive()?; { let prod_local_3264 = core::convert::identity::<u64>(prod_local_3262).checked_add(prod_local_3263).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_3265 = navMaxSearchNodes()?; { let prod_local_3266 = sFifteen()?; { let prod_local_3267 = core::convert::identity::<u64>(prod_local_3265).saturating_sub(prod_local_3266); { let prod_local_3268 = core::convert::identity::<u64>(prod_local_3265).saturating_sub(prod_local_3267); { let prod_local_3269 = (prod_local_3264 == prod_local_3268); { let prod_local_3270 = prod_local_3269; match prod_local_3270 {
+        false => prod_local_3270,
+        true => { let prod_local_3271 = audioWorkletQuantumFrames()?; { let prod_local_3272 = (1 << 1); { let prod_local_3273 = sHundred()?; { let prod_local_3274 = wasmBridgeEnvelopeValid(prod_local_3271, prod_local_3272, prod_local_3273)?; match prod_local_3274 {
+        false => prod_local_3274,
+        true => { let prod_local_3275 = sHundred()?; { let prod_local_3276 = sFive()?; { let prod_local_3277 = core::convert::identity::<u64>(prod_local_3276).checked_mul(prod_local_3276).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3278 = skinWeightScale()?; { let prod_local_3279 = core::convert::identity::<u64>(prod_local_3277).checked_mul(prod_local_3278).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3280 = sabineRt60Millis(prod_local_3275, prod_local_3279)?; { let prod_local_3281 = (_x_55 < prod_local_3280); match prod_local_3281 {
+        false => prod_local_3281,
+        true => { let prod_local_3282 = workerCommandRingCapacity()?; { let prod_local_3283 = sSix()?; { let prod_local_3284 = pow2Constructive(prod_local_3283)?; { let prod_local_3285 = (prod_local_3282 == prod_local_3284); prod_local_3285 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } } },
+    } } },
+    } } } } } } } },
+    } } } } } } } } } } },
+    } } } },
+    } } },
+    } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_3286 = sHundred()?; { let prod_local_3287 = sSixteen()?; { let prod_local_3288 = core::convert::identity::<u64>(prod_local_3287).checked_mul(prod_local_3286).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3289 = csmSplitDistanceMilli(prod_local_3286, prod_local_3288, _x_55)?; { let prod_local_3290 = ((1 << 1) + 1); { let prod_local_3291 = csmSplitDistanceMilli(prod_local_3286, prod_local_3288, prod_local_3290)?; { let prod_local_3292 = (prod_local_3289 < prod_local_3291); { let prod_local_3293 = prod_local_3292; match prod_local_3293 {
+        false => prod_local_3293,
+        true => { let prod_local_3295 = sEight()?; { let prod_local_3296 = pow2Constructive(prod_local_3295)?; { let prod_local_3297 = iblMipLevelCount(prod_local_3296)?; { let prod_local_3298 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_3299 = (prod_local_3297 == prod_local_3298); match prod_local_3299 {
+        false => { let prod_local_3300 = prod_local_3299; match prod_local_3300 {
+        false => prod_local_3300,
+        true => { let prod_local_3301 = sFour()?; { let prod_local_3302 = (prod_local_3301 == prod_local_2618); match prod_local_3302 {
+        false => { let prod_local_3304 = prod_local_3302; match prod_local_3304 {
+        false => prod_local_3304,
+        true => { let prod_local_3305 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_3306 = sTen()?; { let prod_local_3307 = sFive()?; { let prod_local_3308 = sHundred()?; { let prod_local_3309 = core::convert::identity::<u64>(prod_local_3307).checked_mul(prod_local_3308).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3310 = clampCoulombFrictionMilli(prod_local_3305, prod_local_3306, prod_local_3309)?; { let prod_local_3311 = coulombFrictionConeValid(prod_local_3310, prod_local_3306, prod_local_3309)?; match prod_local_3311 {
+        false => prod_local_3311,
+        true => { let prod_local_3312 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_3313 = navTriangleWalkable(prod_local_3312)?; match prod_local_3313 {
+        false => { let prod_local_3315 = prod_local_3311; match prod_local_3315 {
+        false => prod_local_3315,
+        true => { let prod_local_3317 = sEight()?; { let prod_local_3318 = sHundred()?; { let prod_local_3319 = core::convert::identity::<u64>(prod_local_3317).checked_mul(prod_local_3318).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3320 = navTriangleWalkable(prod_local_3319)?; match prod_local_3320 {
+        false => { let prod_local_3321 = prod_local_3320; match prod_local_3321 {
+        false => prod_local_3321,
+        true => { let prod_local_3322 = audioWorkletQuantumFrames()?; { let prod_local_3323 = (1 << 1); { let prod_local_3324 = sHundred()?; { let prod_local_3325 = wasmBridgeEnvelopeValid(prod_local_3322, prod_local_3323, prod_local_3324)?; match prod_local_3325 {
+        false => prod_local_3325,
+        true => { let prod_local_3326 = sHundred()?; { let prod_local_3327 = sFive()?; { let prod_local_3328 = core::convert::identity::<u64>(prod_local_3327).checked_mul(prod_local_3327).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3329 = skinWeightScale()?; { let prod_local_3330 = core::convert::identity::<u64>(prod_local_3328).checked_mul(prod_local_3329).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3331 = sabineRt60Millis(prod_local_3326, prod_local_3330)?; { let prod_local_3332 = (_x_55 < prod_local_3331); match prod_local_3332 {
+        false => prod_local_3332,
+        true => { let prod_local_3333 = workerCommandRingCapacity()?; { let prod_local_3334 = sSix()?; { let prod_local_3335 = pow2Constructive(prod_local_3334)?; { let prod_local_3336 = (prod_local_3333 == prod_local_3335); prod_local_3336 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_3337 = sTen()?; { let prod_local_3338 = sFive()?; { let prod_local_3339 = core::convert::identity::<u64>(prod_local_3337).checked_add(prod_local_3338).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_3340 = navMaxSearchNodes()?; { let prod_local_3341 = sFifteen()?; { let prod_local_3342 = core::convert::identity::<u64>(prod_local_3340).saturating_sub(prod_local_3341); { let prod_local_3343 = core::convert::identity::<u64>(prod_local_3340).saturating_sub(prod_local_3342); { let prod_local_3344 = (prod_local_3339 == prod_local_3343); { let prod_local_3345 = prod_local_3344; match prod_local_3345 {
+        false => prod_local_3345,
+        true => { let prod_local_3346 = audioWorkletQuantumFrames()?; { let prod_local_3347 = (1 << 1); { let prod_local_3348 = sHundred()?; { let prod_local_3349 = wasmBridgeEnvelopeValid(prod_local_3346, prod_local_3347, prod_local_3348)?; match prod_local_3349 {
+        false => prod_local_3349,
+        true => { let prod_local_3350 = sHundred()?; { let prod_local_3351 = sFive()?; { let prod_local_3352 = core::convert::identity::<u64>(prod_local_3351).checked_mul(prod_local_3351).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3353 = skinWeightScale()?; { let prod_local_3354 = core::convert::identity::<u64>(prod_local_3352).checked_mul(prod_local_3353).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3355 = sabineRt60Millis(prod_local_3350, prod_local_3354)?; { let prod_local_3356 = (_x_55 < prod_local_3355); match prod_local_3356 {
+        false => prod_local_3356,
+        true => { let prod_local_3357 = workerCommandRingCapacity()?; { let prod_local_3358 = sSix()?; { let prod_local_3359 = pow2Constructive(prod_local_3358)?; { let prod_local_3360 = (prod_local_3357 == prod_local_3359); prod_local_3360 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_3361 = false; { let prod_local_3362 = prod_local_3361; match prod_local_3362 {
+        false => prod_local_3362,
+        true => { let prod_local_3364 = sEight()?; { let prod_local_3365 = sHundred()?; { let prod_local_3366 = core::convert::identity::<u64>(prod_local_3364).checked_mul(prod_local_3365).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3367 = navTriangleWalkable(prod_local_3366)?; match prod_local_3367 {
+        false => { let prod_local_3368 = prod_local_3367; match prod_local_3368 {
+        false => prod_local_3368,
+        true => { let prod_local_3369 = audioWorkletQuantumFrames()?; { let prod_local_3370 = (1 << 1); { let prod_local_3371 = sHundred()?; { let prod_local_3372 = wasmBridgeEnvelopeValid(prod_local_3369, prod_local_3370, prod_local_3371)?; match prod_local_3372 {
+        false => prod_local_3372,
+        true => { let prod_local_3373 = sHundred()?; { let prod_local_3374 = sFive()?; { let prod_local_3375 = core::convert::identity::<u64>(prod_local_3374).checked_mul(prod_local_3374).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3376 = skinWeightScale()?; { let prod_local_3377 = core::convert::identity::<u64>(prod_local_3375).checked_mul(prod_local_3376).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3378 = sabineRt60Millis(prod_local_3373, prod_local_3377)?; { let prod_local_3379 = (_x_55 < prod_local_3378); match prod_local_3379 {
+        false => prod_local_3379,
+        true => { let prod_local_3380 = workerCommandRingCapacity()?; { let prod_local_3381 = sSix()?; { let prod_local_3382 = pow2Constructive(prod_local_3381)?; { let prod_local_3383 = (prod_local_3380 == prod_local_3382); prod_local_3383 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_3384 = sTen()?; { let prod_local_3385 = sFive()?; { let prod_local_3386 = core::convert::identity::<u64>(prod_local_3384).checked_add(prod_local_3385).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_3387 = navMaxSearchNodes()?; { let prod_local_3388 = sFifteen()?; { let prod_local_3389 = core::convert::identity::<u64>(prod_local_3387).saturating_sub(prod_local_3388); { let prod_local_3390 = core::convert::identity::<u64>(prod_local_3387).saturating_sub(prod_local_3389); { let prod_local_3391 = (prod_local_3386 == prod_local_3390); { let prod_local_3392 = prod_local_3391; match prod_local_3392 {
+        false => prod_local_3392,
+        true => { let prod_local_3393 = audioWorkletQuantumFrames()?; { let prod_local_3394 = (1 << 1); { let prod_local_3395 = sHundred()?; { let prod_local_3396 = wasmBridgeEnvelopeValid(prod_local_3393, prod_local_3394, prod_local_3395)?; match prod_local_3396 {
+        false => prod_local_3396,
+        true => { let prod_local_3397 = sHundred()?; { let prod_local_3398 = sFive()?; { let prod_local_3399 = core::convert::identity::<u64>(prod_local_3398).checked_mul(prod_local_3398).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3400 = skinWeightScale()?; { let prod_local_3401 = core::convert::identity::<u64>(prod_local_3399).checked_mul(prod_local_3400).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3402 = sabineRt60Millis(prod_local_3397, prod_local_3401)?; { let prod_local_3403 = (_x_55 < prod_local_3402); match prod_local_3403 {
+        false => prod_local_3403,
+        true => { let prod_local_3404 = workerCommandRingCapacity()?; { let prod_local_3405 = sSix()?; { let prod_local_3406 = pow2Constructive(prod_local_3405)?; { let prod_local_3407 = (prod_local_3404 == prod_local_3406); prod_local_3407 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } } },
+    } } },
+    } } } } } } } },
+    } },
+        true => { let prod_local_3408 = sThirtyTwo()?; { let prod_local_3409 = sThirtyTwo()?; { let prod_local_3410 = (prod_local_3408 == prod_local_3409); match prod_local_3410 {
+        false => { let prod_local_3411 = prod_local_3410; match prod_local_3411 {
+        false => prod_local_3411,
+        true => { let prod_local_3412 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_3413 = sTen()?; { let prod_local_3414 = sFive()?; { let prod_local_3415 = sHundred()?; { let prod_local_3416 = core::convert::identity::<u64>(prod_local_3414).checked_mul(prod_local_3415).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3417 = clampCoulombFrictionMilli(prod_local_3412, prod_local_3413, prod_local_3416)?; { let prod_local_3418 = coulombFrictionConeValid(prod_local_3417, prod_local_3413, prod_local_3416)?; match prod_local_3418 {
+        false => prod_local_3418,
+        true => { let prod_local_3419 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_3420 = navTriangleWalkable(prod_local_3419)?; match prod_local_3420 {
+        false => { let prod_local_3422 = prod_local_3418; match prod_local_3422 {
+        false => prod_local_3422,
+        true => { let prod_local_3424 = sEight()?; { let prod_local_3425 = sHundred()?; { let prod_local_3426 = core::convert::identity::<u64>(prod_local_3424).checked_mul(prod_local_3425).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3427 = navTriangleWalkable(prod_local_3426)?; match prod_local_3427 {
+        false => { let prod_local_3428 = prod_local_3427; match prod_local_3428 {
+        false => prod_local_3428,
+        true => { let prod_local_3429 = audioWorkletQuantumFrames()?; { let prod_local_3430 = (1 << 1); { let prod_local_3431 = sHundred()?; { let prod_local_3432 = wasmBridgeEnvelopeValid(prod_local_3429, prod_local_3430, prod_local_3431)?; match prod_local_3432 {
+        false => prod_local_3432,
+        true => { let prod_local_3433 = sHundred()?; { let prod_local_3434 = sFive()?; { let prod_local_3435 = core::convert::identity::<u64>(prod_local_3434).checked_mul(prod_local_3434).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3436 = skinWeightScale()?; { let prod_local_3437 = core::convert::identity::<u64>(prod_local_3435).checked_mul(prod_local_3436).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3438 = sabineRt60Millis(prod_local_3433, prod_local_3437)?; { let prod_local_3439 = (_x_55 < prod_local_3438); match prod_local_3439 {
+        false => prod_local_3439,
+        true => { let prod_local_3440 = workerCommandRingCapacity()?; { let prod_local_3441 = sSix()?; { let prod_local_3442 = pow2Constructive(prod_local_3441)?; { let prod_local_3443 = (prod_local_3440 == prod_local_3442); prod_local_3443 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_3444 = sTen()?; { let prod_local_3445 = sFive()?; { let prod_local_3446 = core::convert::identity::<u64>(prod_local_3444).checked_add(prod_local_3445).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_3447 = navMaxSearchNodes()?; { let prod_local_3448 = sFifteen()?; { let prod_local_3449 = core::convert::identity::<u64>(prod_local_3447).saturating_sub(prod_local_3448); { let prod_local_3450 = core::convert::identity::<u64>(prod_local_3447).saturating_sub(prod_local_3449); { let prod_local_3451 = (prod_local_3446 == prod_local_3450); { let prod_local_3452 = prod_local_3451; match prod_local_3452 {
+        false => prod_local_3452,
+        true => { let prod_local_3453 = audioWorkletQuantumFrames()?; { let prod_local_3454 = (1 << 1); { let prod_local_3455 = sHundred()?; { let prod_local_3456 = wasmBridgeEnvelopeValid(prod_local_3453, prod_local_3454, prod_local_3455)?; match prod_local_3456 {
+        false => prod_local_3456,
+        true => { let prod_local_3457 = sHundred()?; { let prod_local_3458 = sFive()?; { let prod_local_3459 = core::convert::identity::<u64>(prod_local_3458).checked_mul(prod_local_3458).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3460 = skinWeightScale()?; { let prod_local_3461 = core::convert::identity::<u64>(prod_local_3459).checked_mul(prod_local_3460).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3462 = sabineRt60Millis(prod_local_3457, prod_local_3461)?; { let prod_local_3463 = (_x_55 < prod_local_3462); match prod_local_3463 {
+        false => prod_local_3463,
+        true => { let prod_local_3464 = workerCommandRingCapacity()?; { let prod_local_3465 = sSix()?; { let prod_local_3466 = pow2Constructive(prod_local_3465)?; { let prod_local_3467 = (prod_local_3464 == prod_local_3466); prod_local_3467 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_3468 = false; { let prod_local_3469 = prod_local_3468; match prod_local_3469 {
+        false => prod_local_3469,
+        true => { let prod_local_3471 = sEight()?; { let prod_local_3472 = sHundred()?; { let prod_local_3473 = core::convert::identity::<u64>(prod_local_3471).checked_mul(prod_local_3472).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3474 = navTriangleWalkable(prod_local_3473)?; match prod_local_3474 {
+        false => { let prod_local_3475 = prod_local_3474; match prod_local_3475 {
+        false => prod_local_3475,
+        true => { let prod_local_3476 = audioWorkletQuantumFrames()?; { let prod_local_3477 = (1 << 1); { let prod_local_3478 = sHundred()?; { let prod_local_3479 = wasmBridgeEnvelopeValid(prod_local_3476, prod_local_3477, prod_local_3478)?; match prod_local_3479 {
+        false => prod_local_3479,
+        true => { let prod_local_3480 = sHundred()?; { let prod_local_3481 = sFive()?; { let prod_local_3482 = core::convert::identity::<u64>(prod_local_3481).checked_mul(prod_local_3481).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3483 = skinWeightScale()?; { let prod_local_3484 = core::convert::identity::<u64>(prod_local_3482).checked_mul(prod_local_3483).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3485 = sabineRt60Millis(prod_local_3480, prod_local_3484)?; { let prod_local_3486 = (_x_55 < prod_local_3485); match prod_local_3486 {
+        false => prod_local_3486,
+        true => { let prod_local_3487 = workerCommandRingCapacity()?; { let prod_local_3488 = sSix()?; { let prod_local_3489 = pow2Constructive(prod_local_3488)?; { let prod_local_3490 = (prod_local_3487 == prod_local_3489); prod_local_3490 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_3491 = sTen()?; { let prod_local_3492 = sFive()?; { let prod_local_3493 = core::convert::identity::<u64>(prod_local_3491).checked_add(prod_local_3492).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_3494 = navMaxSearchNodes()?; { let prod_local_3495 = sFifteen()?; { let prod_local_3496 = core::convert::identity::<u64>(prod_local_3494).saturating_sub(prod_local_3495); { let prod_local_3497 = core::convert::identity::<u64>(prod_local_3494).saturating_sub(prod_local_3496); { let prod_local_3498 = (prod_local_3493 == prod_local_3497); { let prod_local_3499 = prod_local_3498; match prod_local_3499 {
+        false => prod_local_3499,
+        true => { let prod_local_3500 = audioWorkletQuantumFrames()?; { let prod_local_3501 = (1 << 1); { let prod_local_3502 = sHundred()?; { let prod_local_3503 = wasmBridgeEnvelopeValid(prod_local_3500, prod_local_3501, prod_local_3502)?; match prod_local_3503 {
+        false => prod_local_3503,
+        true => { let prod_local_3504 = sHundred()?; { let prod_local_3505 = sFive()?; { let prod_local_3506 = core::convert::identity::<u64>(prod_local_3505).checked_mul(prod_local_3505).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3507 = skinWeightScale()?; { let prod_local_3508 = core::convert::identity::<u64>(prod_local_3506).checked_mul(prod_local_3507).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3509 = sabineRt60Millis(prod_local_3504, prod_local_3508)?; { let prod_local_3510 = (_x_55 < prod_local_3509); match prod_local_3510 {
+        false => prod_local_3510,
+        true => { let prod_local_3511 = workerCommandRingCapacity()?; { let prod_local_3512 = sSix()?; { let prod_local_3513 = pow2Constructive(prod_local_3512)?; { let prod_local_3514 = (prod_local_3511 == prod_local_3513); prod_local_3514 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } } },
+    } } },
+    } } } } } } } },
+    } },
+        true => { let prod_local_3515 = sHundred()?; { let prod_local_3516 = sFive()?; { let prod_local_3517 = core::convert::identity::<u64>(prod_local_3516).checked_mul(prod_local_3515).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3518 = (1 << 1); { let prod_local_3519 = sTen()?; { let prod_local_3520 = core::convert::identity::<u64>(prod_local_3518).checked_mul(prod_local_3519).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3521 = sSixteen()?; { let prod_local_3522 = solveContactImpulseMilli(prod_local_3515, prod_local_3517, prod_local_3520, prod_local_3516, prod_local_3521)?; { let prod_local_3523 = (_x_55 < prod_local_3522); { let prod_local_3524 = prod_local_3523; match prod_local_3524 {
+        false => prod_local_3524,
+        true => { let prod_local_3525 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_3526 = sTen()?; { let prod_local_3527 = sFive()?; { let prod_local_3528 = sHundred()?; { let prod_local_3529 = core::convert::identity::<u64>(prod_local_3527).checked_mul(prod_local_3528).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3530 = clampCoulombFrictionMilli(prod_local_3525, prod_local_3526, prod_local_3529)?; { let prod_local_3531 = coulombFrictionConeValid(prod_local_3530, prod_local_3526, prod_local_3529)?; match prod_local_3531 {
+        false => prod_local_3531,
+        true => { let prod_local_3532 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_3533 = navTriangleWalkable(prod_local_3532)?; match prod_local_3533 {
+        false => { let prod_local_3535 = prod_local_3531; match prod_local_3535 {
+        false => prod_local_3535,
+        true => { let prod_local_3537 = sEight()?; { let prod_local_3538 = sHundred()?; { let prod_local_3539 = core::convert::identity::<u64>(prod_local_3537).checked_mul(prod_local_3538).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3540 = navTriangleWalkable(prod_local_3539)?; match prod_local_3540 {
+        false => { let prod_local_3541 = prod_local_3540; match prod_local_3541 {
+        false => prod_local_3541,
+        true => { let prod_local_3542 = audioWorkletQuantumFrames()?; { let prod_local_3543 = (1 << 1); { let prod_local_3544 = sHundred()?; { let prod_local_3545 = wasmBridgeEnvelopeValid(prod_local_3542, prod_local_3543, prod_local_3544)?; match prod_local_3545 {
+        false => prod_local_3545,
+        true => { let prod_local_3546 = sHundred()?; { let prod_local_3547 = sFive()?; { let prod_local_3548 = core::convert::identity::<u64>(prod_local_3547).checked_mul(prod_local_3547).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3549 = skinWeightScale()?; { let prod_local_3550 = core::convert::identity::<u64>(prod_local_3548).checked_mul(prod_local_3549).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3551 = sabineRt60Millis(prod_local_3546, prod_local_3550)?; { let prod_local_3552 = (_x_55 < prod_local_3551); match prod_local_3552 {
+        false => prod_local_3552,
+        true => { let prod_local_3553 = workerCommandRingCapacity()?; { let prod_local_3554 = sSix()?; { let prod_local_3555 = pow2Constructive(prod_local_3554)?; { let prod_local_3556 = (prod_local_3553 == prod_local_3555); prod_local_3556 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_3557 = sTen()?; { let prod_local_3558 = sFive()?; { let prod_local_3559 = core::convert::identity::<u64>(prod_local_3557).checked_add(prod_local_3558).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_3560 = navMaxSearchNodes()?; { let prod_local_3561 = sFifteen()?; { let prod_local_3562 = core::convert::identity::<u64>(prod_local_3560).saturating_sub(prod_local_3561); { let prod_local_3563 = core::convert::identity::<u64>(prod_local_3560).saturating_sub(prod_local_3562); { let prod_local_3564 = (prod_local_3559 == prod_local_3563); { let prod_local_3565 = prod_local_3564; match prod_local_3565 {
+        false => prod_local_3565,
+        true => { let prod_local_3566 = audioWorkletQuantumFrames()?; { let prod_local_3567 = (1 << 1); { let prod_local_3568 = sHundred()?; { let prod_local_3569 = wasmBridgeEnvelopeValid(prod_local_3566, prod_local_3567, prod_local_3568)?; match prod_local_3569 {
+        false => prod_local_3569,
+        true => { let prod_local_3570 = sHundred()?; { let prod_local_3571 = sFive()?; { let prod_local_3572 = core::convert::identity::<u64>(prod_local_3571).checked_mul(prod_local_3571).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3573 = skinWeightScale()?; { let prod_local_3574 = core::convert::identity::<u64>(prod_local_3572).checked_mul(prod_local_3573).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3575 = sabineRt60Millis(prod_local_3570, prod_local_3574)?; { let prod_local_3576 = (_x_55 < prod_local_3575); match prod_local_3576 {
+        false => prod_local_3576,
+        true => { let prod_local_3577 = workerCommandRingCapacity()?; { let prod_local_3578 = sSix()?; { let prod_local_3579 = pow2Constructive(prod_local_3578)?; { let prod_local_3580 = (prod_local_3577 == prod_local_3579); prod_local_3580 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_3581 = false; { let prod_local_3582 = prod_local_3581; match prod_local_3582 {
+        false => prod_local_3582,
+        true => { let prod_local_3584 = sEight()?; { let prod_local_3585 = sHundred()?; { let prod_local_3586 = core::convert::identity::<u64>(prod_local_3584).checked_mul(prod_local_3585).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3587 = navTriangleWalkable(prod_local_3586)?; match prod_local_3587 {
+        false => { let prod_local_3588 = prod_local_3587; match prod_local_3588 {
+        false => prod_local_3588,
+        true => { let prod_local_3589 = audioWorkletQuantumFrames()?; { let prod_local_3590 = (1 << 1); { let prod_local_3591 = sHundred()?; { let prod_local_3592 = wasmBridgeEnvelopeValid(prod_local_3589, prod_local_3590, prod_local_3591)?; match prod_local_3592 {
+        false => prod_local_3592,
+        true => { let prod_local_3593 = sHundred()?; { let prod_local_3594 = sFive()?; { let prod_local_3595 = core::convert::identity::<u64>(prod_local_3594).checked_mul(prod_local_3594).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3596 = skinWeightScale()?; { let prod_local_3597 = core::convert::identity::<u64>(prod_local_3595).checked_mul(prod_local_3596).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3598 = sabineRt60Millis(prod_local_3593, prod_local_3597)?; { let prod_local_3599 = (_x_55 < prod_local_3598); match prod_local_3599 {
+        false => prod_local_3599,
+        true => { let prod_local_3600 = workerCommandRingCapacity()?; { let prod_local_3601 = sSix()?; { let prod_local_3602 = pow2Constructive(prod_local_3601)?; { let prod_local_3603 = (prod_local_3600 == prod_local_3602); prod_local_3603 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_3604 = sTen()?; { let prod_local_3605 = sFive()?; { let prod_local_3606 = core::convert::identity::<u64>(prod_local_3604).checked_add(prod_local_3605).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_3607 = navMaxSearchNodes()?; { let prod_local_3608 = sFifteen()?; { let prod_local_3609 = core::convert::identity::<u64>(prod_local_3607).saturating_sub(prod_local_3608); { let prod_local_3610 = core::convert::identity::<u64>(prod_local_3607).saturating_sub(prod_local_3609); { let prod_local_3611 = (prod_local_3606 == prod_local_3610); { let prod_local_3612 = prod_local_3611; match prod_local_3612 {
+        false => prod_local_3612,
+        true => { let prod_local_3613 = audioWorkletQuantumFrames()?; { let prod_local_3614 = (1 << 1); { let prod_local_3615 = sHundred()?; { let prod_local_3616 = wasmBridgeEnvelopeValid(prod_local_3613, prod_local_3614, prod_local_3615)?; match prod_local_3616 {
+        false => prod_local_3616,
+        true => { let prod_local_3617 = sHundred()?; { let prod_local_3618 = sFive()?; { let prod_local_3619 = core::convert::identity::<u64>(prod_local_3618).checked_mul(prod_local_3618).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3620 = skinWeightScale()?; { let prod_local_3621 = core::convert::identity::<u64>(prod_local_3619).checked_mul(prod_local_3620).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3622 = sabineRt60Millis(prod_local_3617, prod_local_3621)?; { let prod_local_3623 = (_x_55 < prod_local_3622); match prod_local_3623 {
+        false => prod_local_3623,
+        true => { let prod_local_3624 = workerCommandRingCapacity()?; { let prod_local_3625 = sSix()?; { let prod_local_3626 = pow2Constructive(prod_local_3625)?; { let prod_local_3627 = (prod_local_3624 == prod_local_3626); prod_local_3627 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } } },
+    } } },
+    } } } } } } } },
+    } } } } } } } } } } },
+    } } } },
+    } } },
+    } },
+        true => { let prod_local_3628 = sFour()?; { let prod_local_3629 = renderPassDependencyValid(_x_55, prod_local_3628)?; { let prod_local_3630 = prod_local_3629; match prod_local_3630 {
+        false => prod_local_3630,
+        true => { let prod_local_3631 = sFour()?; { let prod_local_3632 = (prod_local_3631 == prod_local_2618); match prod_local_3632 {
+        false => { let prod_local_3634 = prod_local_3632; match prod_local_3634 {
+        false => prod_local_3634,
+        true => { let prod_local_3635 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_3636 = sTen()?; { let prod_local_3637 = sFive()?; { let prod_local_3638 = sHundred()?; { let prod_local_3639 = core::convert::identity::<u64>(prod_local_3637).checked_mul(prod_local_3638).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3640 = clampCoulombFrictionMilli(prod_local_3635, prod_local_3636, prod_local_3639)?; { let prod_local_3641 = coulombFrictionConeValid(prod_local_3640, prod_local_3636, prod_local_3639)?; match prod_local_3641 {
+        false => prod_local_3641,
+        true => { let prod_local_3642 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_3643 = navTriangleWalkable(prod_local_3642)?; match prod_local_3643 {
+        false => { let prod_local_3645 = prod_local_3641; match prod_local_3645 {
+        false => prod_local_3645,
+        true => { let prod_local_3647 = sEight()?; { let prod_local_3648 = sHundred()?; { let prod_local_3649 = core::convert::identity::<u64>(prod_local_3647).checked_mul(prod_local_3648).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3650 = navTriangleWalkable(prod_local_3649)?; match prod_local_3650 {
+        false => { let prod_local_3651 = prod_local_3650; match prod_local_3651 {
+        false => prod_local_3651,
+        true => { let prod_local_3652 = audioWorkletQuantumFrames()?; { let prod_local_3653 = (1 << 1); { let prod_local_3654 = sHundred()?; { let prod_local_3655 = wasmBridgeEnvelopeValid(prod_local_3652, prod_local_3653, prod_local_3654)?; match prod_local_3655 {
+        false => prod_local_3655,
+        true => { let prod_local_3656 = sHundred()?; { let prod_local_3657 = sFive()?; { let prod_local_3658 = core::convert::identity::<u64>(prod_local_3657).checked_mul(prod_local_3657).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3659 = skinWeightScale()?; { let prod_local_3660 = core::convert::identity::<u64>(prod_local_3658).checked_mul(prod_local_3659).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3661 = sabineRt60Millis(prod_local_3656, prod_local_3660)?; { let prod_local_3662 = (_x_55 < prod_local_3661); match prod_local_3662 {
+        false => prod_local_3662,
+        true => { let prod_local_3663 = workerCommandRingCapacity()?; { let prod_local_3664 = sSix()?; { let prod_local_3665 = pow2Constructive(prod_local_3664)?; { let prod_local_3666 = (prod_local_3663 == prod_local_3665); prod_local_3666 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_3667 = sTen()?; { let prod_local_3668 = sFive()?; { let prod_local_3669 = core::convert::identity::<u64>(prod_local_3667).checked_add(prod_local_3668).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_3670 = navMaxSearchNodes()?; { let prod_local_3671 = sFifteen()?; { let prod_local_3672 = core::convert::identity::<u64>(prod_local_3670).saturating_sub(prod_local_3671); { let prod_local_3673 = core::convert::identity::<u64>(prod_local_3670).saturating_sub(prod_local_3672); { let prod_local_3674 = (prod_local_3669 == prod_local_3673); { let prod_local_3675 = prod_local_3674; match prod_local_3675 {
+        false => prod_local_3675,
+        true => { let prod_local_3676 = audioWorkletQuantumFrames()?; { let prod_local_3677 = (1 << 1); { let prod_local_3678 = sHundred()?; { let prod_local_3679 = wasmBridgeEnvelopeValid(prod_local_3676, prod_local_3677, prod_local_3678)?; match prod_local_3679 {
+        false => prod_local_3679,
+        true => { let prod_local_3680 = sHundred()?; { let prod_local_3681 = sFive()?; { let prod_local_3682 = core::convert::identity::<u64>(prod_local_3681).checked_mul(prod_local_3681).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3683 = skinWeightScale()?; { let prod_local_3684 = core::convert::identity::<u64>(prod_local_3682).checked_mul(prod_local_3683).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3685 = sabineRt60Millis(prod_local_3680, prod_local_3684)?; { let prod_local_3686 = (_x_55 < prod_local_3685); match prod_local_3686 {
+        false => prod_local_3686,
+        true => { let prod_local_3687 = workerCommandRingCapacity()?; { let prod_local_3688 = sSix()?; { let prod_local_3689 = pow2Constructive(prod_local_3688)?; { let prod_local_3690 = (prod_local_3687 == prod_local_3689); prod_local_3690 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_3691 = false; { let prod_local_3692 = prod_local_3691; match prod_local_3692 {
+        false => prod_local_3692,
+        true => { let prod_local_3694 = sEight()?; { let prod_local_3695 = sHundred()?; { let prod_local_3696 = core::convert::identity::<u64>(prod_local_3694).checked_mul(prod_local_3695).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3697 = navTriangleWalkable(prod_local_3696)?; match prod_local_3697 {
+        false => { let prod_local_3698 = prod_local_3697; match prod_local_3698 {
+        false => prod_local_3698,
+        true => { let prod_local_3699 = audioWorkletQuantumFrames()?; { let prod_local_3700 = (1 << 1); { let prod_local_3701 = sHundred()?; { let prod_local_3702 = wasmBridgeEnvelopeValid(prod_local_3699, prod_local_3700, prod_local_3701)?; match prod_local_3702 {
+        false => prod_local_3702,
+        true => { let prod_local_3703 = sHundred()?; { let prod_local_3704 = sFive()?; { let prod_local_3705 = core::convert::identity::<u64>(prod_local_3704).checked_mul(prod_local_3704).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3706 = skinWeightScale()?; { let prod_local_3707 = core::convert::identity::<u64>(prod_local_3705).checked_mul(prod_local_3706).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3708 = sabineRt60Millis(prod_local_3703, prod_local_3707)?; { let prod_local_3709 = (_x_55 < prod_local_3708); match prod_local_3709 {
+        false => prod_local_3709,
+        true => { let prod_local_3710 = workerCommandRingCapacity()?; { let prod_local_3711 = sSix()?; { let prod_local_3712 = pow2Constructive(prod_local_3711)?; { let prod_local_3713 = (prod_local_3710 == prod_local_3712); prod_local_3713 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_3714 = sTen()?; { let prod_local_3715 = sFive()?; { let prod_local_3716 = core::convert::identity::<u64>(prod_local_3714).checked_add(prod_local_3715).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_3717 = navMaxSearchNodes()?; { let prod_local_3718 = sFifteen()?; { let prod_local_3719 = core::convert::identity::<u64>(prod_local_3717).saturating_sub(prod_local_3718); { let prod_local_3720 = core::convert::identity::<u64>(prod_local_3717).saturating_sub(prod_local_3719); { let prod_local_3721 = (prod_local_3716 == prod_local_3720); { let prod_local_3722 = prod_local_3721; match prod_local_3722 {
+        false => prod_local_3722,
+        true => { let prod_local_3723 = audioWorkletQuantumFrames()?; { let prod_local_3724 = (1 << 1); { let prod_local_3725 = sHundred()?; { let prod_local_3726 = wasmBridgeEnvelopeValid(prod_local_3723, prod_local_3724, prod_local_3725)?; match prod_local_3726 {
+        false => prod_local_3726,
+        true => { let prod_local_3727 = sHundred()?; { let prod_local_3728 = sFive()?; { let prod_local_3729 = core::convert::identity::<u64>(prod_local_3728).checked_mul(prod_local_3728).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3730 = skinWeightScale()?; { let prod_local_3731 = core::convert::identity::<u64>(prod_local_3729).checked_mul(prod_local_3730).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3732 = sabineRt60Millis(prod_local_3727, prod_local_3731)?; { let prod_local_3733 = (_x_55 < prod_local_3732); match prod_local_3733 {
+        false => prod_local_3733,
+        true => { let prod_local_3734 = workerCommandRingCapacity()?; { let prod_local_3735 = sSix()?; { let prod_local_3736 = pow2Constructive(prod_local_3735)?; { let prod_local_3737 = (prod_local_3734 == prod_local_3736); prod_local_3737 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } } },
+    } } },
+    } } } } } } } },
+    } },
+        true => { let prod_local_3738 = sThirtyTwo()?; { let prod_local_3739 = sThirtyTwo()?; { let prod_local_3740 = (prod_local_3738 == prod_local_3739); match prod_local_3740 {
+        false => { let prod_local_3741 = prod_local_3740; match prod_local_3741 {
+        false => prod_local_3741,
+        true => { let prod_local_3742 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_3743 = sTen()?; { let prod_local_3744 = sFive()?; { let prod_local_3745 = sHundred()?; { let prod_local_3746 = core::convert::identity::<u64>(prod_local_3744).checked_mul(prod_local_3745).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3747 = clampCoulombFrictionMilli(prod_local_3742, prod_local_3743, prod_local_3746)?; { let prod_local_3748 = coulombFrictionConeValid(prod_local_3747, prod_local_3743, prod_local_3746)?; match prod_local_3748 {
+        false => prod_local_3748,
+        true => { let prod_local_3749 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_3750 = navTriangleWalkable(prod_local_3749)?; match prod_local_3750 {
+        false => { let prod_local_3752 = prod_local_3748; match prod_local_3752 {
+        false => prod_local_3752,
+        true => { let prod_local_3754 = sEight()?; { let prod_local_3755 = sHundred()?; { let prod_local_3756 = core::convert::identity::<u64>(prod_local_3754).checked_mul(prod_local_3755).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3757 = navTriangleWalkable(prod_local_3756)?; match prod_local_3757 {
+        false => { let prod_local_3758 = prod_local_3757; match prod_local_3758 {
+        false => prod_local_3758,
+        true => { let prod_local_3759 = audioWorkletQuantumFrames()?; { let prod_local_3760 = (1 << 1); { let prod_local_3761 = sHundred()?; { let prod_local_3762 = wasmBridgeEnvelopeValid(prod_local_3759, prod_local_3760, prod_local_3761)?; match prod_local_3762 {
+        false => prod_local_3762,
+        true => { let prod_local_3763 = sHundred()?; { let prod_local_3764 = sFive()?; { let prod_local_3765 = core::convert::identity::<u64>(prod_local_3764).checked_mul(prod_local_3764).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3766 = skinWeightScale()?; { let prod_local_3767 = core::convert::identity::<u64>(prod_local_3765).checked_mul(prod_local_3766).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3768 = sabineRt60Millis(prod_local_3763, prod_local_3767)?; { let prod_local_3769 = (_x_55 < prod_local_3768); match prod_local_3769 {
+        false => prod_local_3769,
+        true => { let prod_local_3770 = workerCommandRingCapacity()?; { let prod_local_3771 = sSix()?; { let prod_local_3772 = pow2Constructive(prod_local_3771)?; { let prod_local_3773 = (prod_local_3770 == prod_local_3772); prod_local_3773 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_3774 = sTen()?; { let prod_local_3775 = sFive()?; { let prod_local_3776 = core::convert::identity::<u64>(prod_local_3774).checked_add(prod_local_3775).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_3777 = navMaxSearchNodes()?; { let prod_local_3778 = sFifteen()?; { let prod_local_3779 = core::convert::identity::<u64>(prod_local_3777).saturating_sub(prod_local_3778); { let prod_local_3780 = core::convert::identity::<u64>(prod_local_3777).saturating_sub(prod_local_3779); { let prod_local_3781 = (prod_local_3776 == prod_local_3780); { let prod_local_3782 = prod_local_3781; match prod_local_3782 {
+        false => prod_local_3782,
+        true => { let prod_local_3783 = audioWorkletQuantumFrames()?; { let prod_local_3784 = (1 << 1); { let prod_local_3785 = sHundred()?; { let prod_local_3786 = wasmBridgeEnvelopeValid(prod_local_3783, prod_local_3784, prod_local_3785)?; match prod_local_3786 {
+        false => prod_local_3786,
+        true => { let prod_local_3787 = sHundred()?; { let prod_local_3788 = sFive()?; { let prod_local_3789 = core::convert::identity::<u64>(prod_local_3788).checked_mul(prod_local_3788).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3790 = skinWeightScale()?; { let prod_local_3791 = core::convert::identity::<u64>(prod_local_3789).checked_mul(prod_local_3790).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3792 = sabineRt60Millis(prod_local_3787, prod_local_3791)?; { let prod_local_3793 = (_x_55 < prod_local_3792); match prod_local_3793 {
+        false => prod_local_3793,
+        true => { let prod_local_3794 = workerCommandRingCapacity()?; { let prod_local_3795 = sSix()?; { let prod_local_3796 = pow2Constructive(prod_local_3795)?; { let prod_local_3797 = (prod_local_3794 == prod_local_3796); prod_local_3797 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_3798 = false; { let prod_local_3799 = prod_local_3798; match prod_local_3799 {
+        false => prod_local_3799,
+        true => { let prod_local_3801 = sEight()?; { let prod_local_3802 = sHundred()?; { let prod_local_3803 = core::convert::identity::<u64>(prod_local_3801).checked_mul(prod_local_3802).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3804 = navTriangleWalkable(prod_local_3803)?; match prod_local_3804 {
+        false => { let prod_local_3805 = prod_local_3804; match prod_local_3805 {
+        false => prod_local_3805,
+        true => { let prod_local_3806 = audioWorkletQuantumFrames()?; { let prod_local_3807 = (1 << 1); { let prod_local_3808 = sHundred()?; { let prod_local_3809 = wasmBridgeEnvelopeValid(prod_local_3806, prod_local_3807, prod_local_3808)?; match prod_local_3809 {
+        false => prod_local_3809,
+        true => { let prod_local_3810 = sHundred()?; { let prod_local_3811 = sFive()?; { let prod_local_3812 = core::convert::identity::<u64>(prod_local_3811).checked_mul(prod_local_3811).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3813 = skinWeightScale()?; { let prod_local_3814 = core::convert::identity::<u64>(prod_local_3812).checked_mul(prod_local_3813).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3815 = sabineRt60Millis(prod_local_3810, prod_local_3814)?; { let prod_local_3816 = (_x_55 < prod_local_3815); match prod_local_3816 {
+        false => prod_local_3816,
+        true => { let prod_local_3817 = workerCommandRingCapacity()?; { let prod_local_3818 = sSix()?; { let prod_local_3819 = pow2Constructive(prod_local_3818)?; { let prod_local_3820 = (prod_local_3817 == prod_local_3819); prod_local_3820 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_3821 = sTen()?; { let prod_local_3822 = sFive()?; { let prod_local_3823 = core::convert::identity::<u64>(prod_local_3821).checked_add(prod_local_3822).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_3824 = navMaxSearchNodes()?; { let prod_local_3825 = sFifteen()?; { let prod_local_3826 = core::convert::identity::<u64>(prod_local_3824).saturating_sub(prod_local_3825); { let prod_local_3827 = core::convert::identity::<u64>(prod_local_3824).saturating_sub(prod_local_3826); { let prod_local_3828 = (prod_local_3823 == prod_local_3827); { let prod_local_3829 = prod_local_3828; match prod_local_3829 {
+        false => prod_local_3829,
+        true => { let prod_local_3830 = audioWorkletQuantumFrames()?; { let prod_local_3831 = (1 << 1); { let prod_local_3832 = sHundred()?; { let prod_local_3833 = wasmBridgeEnvelopeValid(prod_local_3830, prod_local_3831, prod_local_3832)?; match prod_local_3833 {
+        false => prod_local_3833,
+        true => { let prod_local_3834 = sHundred()?; { let prod_local_3835 = sFive()?; { let prod_local_3836 = core::convert::identity::<u64>(prod_local_3835).checked_mul(prod_local_3835).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3837 = skinWeightScale()?; { let prod_local_3838 = core::convert::identity::<u64>(prod_local_3836).checked_mul(prod_local_3837).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3839 = sabineRt60Millis(prod_local_3834, prod_local_3838)?; { let prod_local_3840 = (_x_55 < prod_local_3839); match prod_local_3840 {
+        false => prod_local_3840,
+        true => { let prod_local_3841 = workerCommandRingCapacity()?; { let prod_local_3842 = sSix()?; { let prod_local_3843 = pow2Constructive(prod_local_3842)?; { let prod_local_3844 = (prod_local_3841 == prod_local_3843); prod_local_3844 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } } },
+    } } },
+    } } } } } } } },
+    } },
+        true => { let prod_local_3845 = sHundred()?; { let prod_local_3846 = sFive()?; { let prod_local_3847 = core::convert::identity::<u64>(prod_local_3846).checked_mul(prod_local_3845).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3848 = (1 << 1); { let prod_local_3849 = sTen()?; { let prod_local_3850 = core::convert::identity::<u64>(prod_local_3848).checked_mul(prod_local_3849).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3851 = sSixteen()?; { let prod_local_3852 = solveContactImpulseMilli(prod_local_3845, prod_local_3847, prod_local_3850, prod_local_3846, prod_local_3851)?; { let prod_local_3853 = (_x_55 < prod_local_3852); { let prod_local_3854 = prod_local_3853; match prod_local_3854 {
+        false => prod_local_3854,
+        true => { let prod_local_3855 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_3856 = sTen()?; { let prod_local_3857 = sFive()?; { let prod_local_3858 = sHundred()?; { let prod_local_3859 = core::convert::identity::<u64>(prod_local_3857).checked_mul(prod_local_3858).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3860 = clampCoulombFrictionMilli(prod_local_3855, prod_local_3856, prod_local_3859)?; { let prod_local_3861 = coulombFrictionConeValid(prod_local_3860, prod_local_3856, prod_local_3859)?; match prod_local_3861 {
+        false => prod_local_3861,
+        true => { let prod_local_3862 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_3863 = navTriangleWalkable(prod_local_3862)?; match prod_local_3863 {
+        false => { let prod_local_3865 = prod_local_3861; match prod_local_3865 {
+        false => prod_local_3865,
+        true => { let prod_local_3867 = sEight()?; { let prod_local_3868 = sHundred()?; { let prod_local_3869 = core::convert::identity::<u64>(prod_local_3867).checked_mul(prod_local_3868).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3870 = navTriangleWalkable(prod_local_3869)?; match prod_local_3870 {
+        false => { let prod_local_3871 = prod_local_3870; match prod_local_3871 {
+        false => prod_local_3871,
+        true => { let prod_local_3872 = audioWorkletQuantumFrames()?; { let prod_local_3873 = (1 << 1); { let prod_local_3874 = sHundred()?; { let prod_local_3875 = wasmBridgeEnvelopeValid(prod_local_3872, prod_local_3873, prod_local_3874)?; match prod_local_3875 {
+        false => prod_local_3875,
+        true => { let prod_local_3876 = sHundred()?; { let prod_local_3877 = sFive()?; { let prod_local_3878 = core::convert::identity::<u64>(prod_local_3877).checked_mul(prod_local_3877).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3879 = skinWeightScale()?; { let prod_local_3880 = core::convert::identity::<u64>(prod_local_3878).checked_mul(prod_local_3879).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3881 = sabineRt60Millis(prod_local_3876, prod_local_3880)?; { let prod_local_3882 = (_x_55 < prod_local_3881); match prod_local_3882 {
+        false => prod_local_3882,
+        true => { let prod_local_3883 = workerCommandRingCapacity()?; { let prod_local_3884 = sSix()?; { let prod_local_3885 = pow2Constructive(prod_local_3884)?; { let prod_local_3886 = (prod_local_3883 == prod_local_3885); prod_local_3886 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_3887 = sTen()?; { let prod_local_3888 = sFive()?; { let prod_local_3889 = core::convert::identity::<u64>(prod_local_3887).checked_add(prod_local_3888).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_3890 = navMaxSearchNodes()?; { let prod_local_3891 = sFifteen()?; { let prod_local_3892 = core::convert::identity::<u64>(prod_local_3890).saturating_sub(prod_local_3891); { let prod_local_3893 = core::convert::identity::<u64>(prod_local_3890).saturating_sub(prod_local_3892); { let prod_local_3894 = (prod_local_3889 == prod_local_3893); { let prod_local_3895 = prod_local_3894; match prod_local_3895 {
+        false => prod_local_3895,
+        true => { let prod_local_3896 = audioWorkletQuantumFrames()?; { let prod_local_3897 = (1 << 1); { let prod_local_3898 = sHundred()?; { let prod_local_3899 = wasmBridgeEnvelopeValid(prod_local_3896, prod_local_3897, prod_local_3898)?; match prod_local_3899 {
+        false => prod_local_3899,
+        true => { let prod_local_3900 = sHundred()?; { let prod_local_3901 = sFive()?; { let prod_local_3902 = core::convert::identity::<u64>(prod_local_3901).checked_mul(prod_local_3901).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3903 = skinWeightScale()?; { let prod_local_3904 = core::convert::identity::<u64>(prod_local_3902).checked_mul(prod_local_3903).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3905 = sabineRt60Millis(prod_local_3900, prod_local_3904)?; { let prod_local_3906 = (_x_55 < prod_local_3905); match prod_local_3906 {
+        false => prod_local_3906,
+        true => { let prod_local_3907 = workerCommandRingCapacity()?; { let prod_local_3908 = sSix()?; { let prod_local_3909 = pow2Constructive(prod_local_3908)?; { let prod_local_3910 = (prod_local_3907 == prod_local_3909); prod_local_3910 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_3911 = false; { let prod_local_3912 = prod_local_3911; match prod_local_3912 {
+        false => prod_local_3912,
+        true => { let prod_local_3914 = sEight()?; { let prod_local_3915 = sHundred()?; { let prod_local_3916 = core::convert::identity::<u64>(prod_local_3914).checked_mul(prod_local_3915).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3917 = navTriangleWalkable(prod_local_3916)?; match prod_local_3917 {
+        false => { let prod_local_3918 = prod_local_3917; match prod_local_3918 {
+        false => prod_local_3918,
+        true => { let prod_local_3919 = audioWorkletQuantumFrames()?; { let prod_local_3920 = (1 << 1); { let prod_local_3921 = sHundred()?; { let prod_local_3922 = wasmBridgeEnvelopeValid(prod_local_3919, prod_local_3920, prod_local_3921)?; match prod_local_3922 {
+        false => prod_local_3922,
+        true => { let prod_local_3923 = sHundred()?; { let prod_local_3924 = sFive()?; { let prod_local_3925 = core::convert::identity::<u64>(prod_local_3924).checked_mul(prod_local_3924).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3926 = skinWeightScale()?; { let prod_local_3927 = core::convert::identity::<u64>(prod_local_3925).checked_mul(prod_local_3926).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3928 = sabineRt60Millis(prod_local_3923, prod_local_3927)?; { let prod_local_3929 = (_x_55 < prod_local_3928); match prod_local_3929 {
+        false => prod_local_3929,
+        true => { let prod_local_3930 = workerCommandRingCapacity()?; { let prod_local_3931 = sSix()?; { let prod_local_3932 = pow2Constructive(prod_local_3931)?; { let prod_local_3933 = (prod_local_3930 == prod_local_3932); prod_local_3933 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_3934 = sTen()?; { let prod_local_3935 = sFive()?; { let prod_local_3936 = core::convert::identity::<u64>(prod_local_3934).checked_add(prod_local_3935).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_3937 = navMaxSearchNodes()?; { let prod_local_3938 = sFifteen()?; { let prod_local_3939 = core::convert::identity::<u64>(prod_local_3937).saturating_sub(prod_local_3938); { let prod_local_3940 = core::convert::identity::<u64>(prod_local_3937).saturating_sub(prod_local_3939); { let prod_local_3941 = (prod_local_3936 == prod_local_3940); { let prod_local_3942 = prod_local_3941; match prod_local_3942 {
+        false => prod_local_3942,
+        true => { let prod_local_3943 = audioWorkletQuantumFrames()?; { let prod_local_3944 = (1 << 1); { let prod_local_3945 = sHundred()?; { let prod_local_3946 = wasmBridgeEnvelopeValid(prod_local_3943, prod_local_3944, prod_local_3945)?; match prod_local_3946 {
+        false => prod_local_3946,
+        true => { let prod_local_3947 = sHundred()?; { let prod_local_3948 = sFive()?; { let prod_local_3949 = core::convert::identity::<u64>(prod_local_3948).checked_mul(prod_local_3948).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3950 = skinWeightScale()?; { let prod_local_3951 = core::convert::identity::<u64>(prod_local_3949).checked_mul(prod_local_3950).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3952 = sabineRt60Millis(prod_local_3947, prod_local_3951)?; { let prod_local_3953 = (_x_55 < prod_local_3952); match prod_local_3953 {
+        false => prod_local_3953,
+        true => { let prod_local_3954 = workerCommandRingCapacity()?; { let prod_local_3955 = sSix()?; { let prod_local_3956 = pow2Constructive(prod_local_3955)?; { let prod_local_3957 = (prod_local_3954 == prod_local_3956); prod_local_3957 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } } },
+    } } },
+    } } } } } } } },
+    } } } } } } } } } } },
+    } } } },
+    } } },
+    } } } },
+    } } } } } },
+    } } } } } } } } },
+    } } } },
+    }
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                            true => {
+                                                                let prod_local_3958 = sTen()?;
+                                                                {
+                                                                    let prod_local_3959 =
+                                                                        sThirty()?;
+                                                                    {
+                                                                        let prod_local_3960 =
+                                                                            sFive()?;
+                                                                        {
+                                                                            let prod_local_3961 = keyframeAlphaPermille(prod_local_3960, prod_local_3958)?;
+                                                                            {
+                                                                                let prod_local_3962 = lerpPermille(prod_local_3958, prod_local_3959, prod_local_3961)?;
+                                                                                {
+                                                                                    let prod_local_3963 =
+                                                                                        (1 << 1);
+                                                                                    {
+                                                                                        let prod_local_3964 = core::convert::identity::<u64>(prod_local_3963).checked_mul(prod_local_3958).ok_or(self::ComputeError::MulOverflow)?;
+                                                                                        {
+                                                                                            let prod_local_3965 = (prod_local_3962 == prod_local_3964);
+                                                                                            {
+                                                                                                let prod_local_3966 = prod_local_3965;
+                                                                                                match prod_local_3966 {
+        false => prod_local_3966,
+        true => { let prod_local_3967 = sEight()?; { let prod_local_3968 = sEight()?; { let prod_local_3969 = (prod_local_3967 == prod_local_3968); match prod_local_3969 {
+        false => prod_local_3969,
+        true => { let prod_local_3970 = sFour()?; { let prod_local_3971 = sFour()?; { let prod_local_3972 = (prod_local_3970 == prod_local_3971); match prod_local_3972 {
+        false => { let prod_local_3974 = prod_local_3972; match prod_local_3974 {
+        false => prod_local_3974,
+        true => { let prod_local_3976 = sEight()?; { let prod_local_3977 = pow2Constructive(prod_local_3976)?; { let prod_local_3978 = iblMipLevelCount(prod_local_3977)?; { let prod_local_3979 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_3980 = (prod_local_3978 == prod_local_3979); match prod_local_3980 {
+        false => { let prod_local_3981 = prod_local_3980; match prod_local_3981 {
+        false => prod_local_3981,
+        true => { let prod_local_3982 = sFour()?; { let prod_local_3983 = (prod_local_3982 == prod_local_3971); match prod_local_3983 {
+        false => { let prod_local_3985 = prod_local_3983; match prod_local_3985 {
+        false => prod_local_3985,
+        true => { let prod_local_3986 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_3987 = sTen()?; { let prod_local_3988 = sFive()?; { let prod_local_3989 = sHundred()?; { let prod_local_3990 = core::convert::identity::<u64>(prod_local_3988).checked_mul(prod_local_3989).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_3991 = clampCoulombFrictionMilli(prod_local_3986, prod_local_3987, prod_local_3990)?; { let prod_local_3992 = coulombFrictionConeValid(prod_local_3991, prod_local_3987, prod_local_3990)?; match prod_local_3992 {
+        false => prod_local_3992,
+        true => { let prod_local_3993 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_3994 = navTriangleWalkable(prod_local_3993)?; match prod_local_3994 {
+        false => { let prod_local_3996 = prod_local_3992; match prod_local_3996 {
+        false => prod_local_3996,
+        true => { let prod_local_3998 = sEight()?; { let prod_local_3999 = sHundred()?; { let prod_local_4000 = core::convert::identity::<u64>(prod_local_3998).checked_mul(prod_local_3999).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4001 = navTriangleWalkable(prod_local_4000)?; match prod_local_4001 {
+        false => { let prod_local_4002 = prod_local_4001; match prod_local_4002 {
+        false => prod_local_4002,
+        true => { let prod_local_4003 = audioWorkletQuantumFrames()?; { let prod_local_4004 = (1 << 1); { let prod_local_4005 = sHundred()?; { let prod_local_4006 = wasmBridgeEnvelopeValid(prod_local_4003, prod_local_4004, prod_local_4005)?; match prod_local_4006 {
+        false => prod_local_4006,
+        true => { let prod_local_4007 = sHundred()?; { let prod_local_4008 = sFive()?; { let prod_local_4009 = core::convert::identity::<u64>(prod_local_4008).checked_mul(prod_local_4008).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4010 = skinWeightScale()?; { let prod_local_4011 = core::convert::identity::<u64>(prod_local_4009).checked_mul(prod_local_4010).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4012 = sabineRt60Millis(prod_local_4007, prod_local_4011)?; { let prod_local_4013 = (_x_55 < prod_local_4012); match prod_local_4013 {
+        false => prod_local_4013,
+        true => { let prod_local_4014 = workerCommandRingCapacity()?; { let prod_local_4015 = sSix()?; { let prod_local_4016 = pow2Constructive(prod_local_4015)?; { let prod_local_4017 = (prod_local_4014 == prod_local_4016); prod_local_4017 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_4018 = sTen()?; { let prod_local_4019 = sFive()?; { let prod_local_4020 = core::convert::identity::<u64>(prod_local_4018).checked_add(prod_local_4019).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_4021 = navMaxSearchNodes()?; { let prod_local_4022 = sFifteen()?; { let prod_local_4023 = core::convert::identity::<u64>(prod_local_4021).saturating_sub(prod_local_4022); { let prod_local_4024 = core::convert::identity::<u64>(prod_local_4021).saturating_sub(prod_local_4023); { let prod_local_4025 = (prod_local_4020 == prod_local_4024); { let prod_local_4026 = prod_local_4025; match prod_local_4026 {
+        false => prod_local_4026,
+        true => { let prod_local_4027 = audioWorkletQuantumFrames()?; { let prod_local_4028 = (1 << 1); { let prod_local_4029 = sHundred()?; { let prod_local_4030 = wasmBridgeEnvelopeValid(prod_local_4027, prod_local_4028, prod_local_4029)?; match prod_local_4030 {
+        false => prod_local_4030,
+        true => { let prod_local_4031 = sHundred()?; { let prod_local_4032 = sFive()?; { let prod_local_4033 = core::convert::identity::<u64>(prod_local_4032).checked_mul(prod_local_4032).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4034 = skinWeightScale()?; { let prod_local_4035 = core::convert::identity::<u64>(prod_local_4033).checked_mul(prod_local_4034).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4036 = sabineRt60Millis(prod_local_4031, prod_local_4035)?; { let prod_local_4037 = (_x_55 < prod_local_4036); match prod_local_4037 {
+        false => prod_local_4037,
+        true => { let prod_local_4038 = workerCommandRingCapacity()?; { let prod_local_4039 = sSix()?; { let prod_local_4040 = pow2Constructive(prod_local_4039)?; { let prod_local_4041 = (prod_local_4038 == prod_local_4040); prod_local_4041 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_4042 = false; { let prod_local_4043 = prod_local_4042; match prod_local_4043 {
+        false => prod_local_4043,
+        true => { let prod_local_4045 = sEight()?; { let prod_local_4046 = sHundred()?; { let prod_local_4047 = core::convert::identity::<u64>(prod_local_4045).checked_mul(prod_local_4046).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4048 = navTriangleWalkable(prod_local_4047)?; match prod_local_4048 {
+        false => { let prod_local_4049 = prod_local_4048; match prod_local_4049 {
+        false => prod_local_4049,
+        true => { let prod_local_4050 = audioWorkletQuantumFrames()?; { let prod_local_4051 = (1 << 1); { let prod_local_4052 = sHundred()?; { let prod_local_4053 = wasmBridgeEnvelopeValid(prod_local_4050, prod_local_4051, prod_local_4052)?; match prod_local_4053 {
+        false => prod_local_4053,
+        true => { let prod_local_4054 = sHundred()?; { let prod_local_4055 = sFive()?; { let prod_local_4056 = core::convert::identity::<u64>(prod_local_4055).checked_mul(prod_local_4055).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4057 = skinWeightScale()?; { let prod_local_4058 = core::convert::identity::<u64>(prod_local_4056).checked_mul(prod_local_4057).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4059 = sabineRt60Millis(prod_local_4054, prod_local_4058)?; { let prod_local_4060 = (_x_55 < prod_local_4059); match prod_local_4060 {
+        false => prod_local_4060,
+        true => { let prod_local_4061 = workerCommandRingCapacity()?; { let prod_local_4062 = sSix()?; { let prod_local_4063 = pow2Constructive(prod_local_4062)?; { let prod_local_4064 = (prod_local_4061 == prod_local_4063); prod_local_4064 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_4065 = sTen()?; { let prod_local_4066 = sFive()?; { let prod_local_4067 = core::convert::identity::<u64>(prod_local_4065).checked_add(prod_local_4066).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_4068 = navMaxSearchNodes()?; { let prod_local_4069 = sFifteen()?; { let prod_local_4070 = core::convert::identity::<u64>(prod_local_4068).saturating_sub(prod_local_4069); { let prod_local_4071 = core::convert::identity::<u64>(prod_local_4068).saturating_sub(prod_local_4070); { let prod_local_4072 = (prod_local_4067 == prod_local_4071); { let prod_local_4073 = prod_local_4072; match prod_local_4073 {
+        false => prod_local_4073,
+        true => { let prod_local_4074 = audioWorkletQuantumFrames()?; { let prod_local_4075 = (1 << 1); { let prod_local_4076 = sHundred()?; { let prod_local_4077 = wasmBridgeEnvelopeValid(prod_local_4074, prod_local_4075, prod_local_4076)?; match prod_local_4077 {
+        false => prod_local_4077,
+        true => { let prod_local_4078 = sHundred()?; { let prod_local_4079 = sFive()?; { let prod_local_4080 = core::convert::identity::<u64>(prod_local_4079).checked_mul(prod_local_4079).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4081 = skinWeightScale()?; { let prod_local_4082 = core::convert::identity::<u64>(prod_local_4080).checked_mul(prod_local_4081).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4083 = sabineRt60Millis(prod_local_4078, prod_local_4082)?; { let prod_local_4084 = (_x_55 < prod_local_4083); match prod_local_4084 {
+        false => prod_local_4084,
+        true => { let prod_local_4085 = workerCommandRingCapacity()?; { let prod_local_4086 = sSix()?; { let prod_local_4087 = pow2Constructive(prod_local_4086)?; { let prod_local_4088 = (prod_local_4085 == prod_local_4087); prod_local_4088 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } } },
+    } } },
+    } } } } } } } },
+    } },
+        true => { let prod_local_4089 = sThirtyTwo()?; { let prod_local_4090 = sThirtyTwo()?; { let prod_local_4091 = (prod_local_4089 == prod_local_4090); match prod_local_4091 {
+        false => { let prod_local_4092 = prod_local_4091; match prod_local_4092 {
+        false => prod_local_4092,
+        true => { let prod_local_4093 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_4094 = sTen()?; { let prod_local_4095 = sFive()?; { let prod_local_4096 = sHundred()?; { let prod_local_4097 = core::convert::identity::<u64>(prod_local_4095).checked_mul(prod_local_4096).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4098 = clampCoulombFrictionMilli(prod_local_4093, prod_local_4094, prod_local_4097)?; { let prod_local_4099 = coulombFrictionConeValid(prod_local_4098, prod_local_4094, prod_local_4097)?; match prod_local_4099 {
+        false => prod_local_4099,
+        true => { let prod_local_4100 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_4101 = navTriangleWalkable(prod_local_4100)?; match prod_local_4101 {
+        false => { let prod_local_4103 = prod_local_4099; match prod_local_4103 {
+        false => prod_local_4103,
+        true => { let prod_local_4105 = sEight()?; { let prod_local_4106 = sHundred()?; { let prod_local_4107 = core::convert::identity::<u64>(prod_local_4105).checked_mul(prod_local_4106).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4108 = navTriangleWalkable(prod_local_4107)?; match prod_local_4108 {
+        false => { let prod_local_4109 = prod_local_4108; match prod_local_4109 {
+        false => prod_local_4109,
+        true => { let prod_local_4110 = audioWorkletQuantumFrames()?; { let prod_local_4111 = (1 << 1); { let prod_local_4112 = sHundred()?; { let prod_local_4113 = wasmBridgeEnvelopeValid(prod_local_4110, prod_local_4111, prod_local_4112)?; match prod_local_4113 {
+        false => prod_local_4113,
+        true => { let prod_local_4114 = sHundred()?; { let prod_local_4115 = sFive()?; { let prod_local_4116 = core::convert::identity::<u64>(prod_local_4115).checked_mul(prod_local_4115).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4117 = skinWeightScale()?; { let prod_local_4118 = core::convert::identity::<u64>(prod_local_4116).checked_mul(prod_local_4117).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4119 = sabineRt60Millis(prod_local_4114, prod_local_4118)?; { let prod_local_4120 = (_x_55 < prod_local_4119); match prod_local_4120 {
+        false => prod_local_4120,
+        true => { let prod_local_4121 = workerCommandRingCapacity()?; { let prod_local_4122 = sSix()?; { let prod_local_4123 = pow2Constructive(prod_local_4122)?; { let prod_local_4124 = (prod_local_4121 == prod_local_4123); prod_local_4124 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_4125 = sTen()?; { let prod_local_4126 = sFive()?; { let prod_local_4127 = core::convert::identity::<u64>(prod_local_4125).checked_add(prod_local_4126).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_4128 = navMaxSearchNodes()?; { let prod_local_4129 = sFifteen()?; { let prod_local_4130 = core::convert::identity::<u64>(prod_local_4128).saturating_sub(prod_local_4129); { let prod_local_4131 = core::convert::identity::<u64>(prod_local_4128).saturating_sub(prod_local_4130); { let prod_local_4132 = (prod_local_4127 == prod_local_4131); { let prod_local_4133 = prod_local_4132; match prod_local_4133 {
+        false => prod_local_4133,
+        true => { let prod_local_4134 = audioWorkletQuantumFrames()?; { let prod_local_4135 = (1 << 1); { let prod_local_4136 = sHundred()?; { let prod_local_4137 = wasmBridgeEnvelopeValid(prod_local_4134, prod_local_4135, prod_local_4136)?; match prod_local_4137 {
+        false => prod_local_4137,
+        true => { let prod_local_4138 = sHundred()?; { let prod_local_4139 = sFive()?; { let prod_local_4140 = core::convert::identity::<u64>(prod_local_4139).checked_mul(prod_local_4139).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4141 = skinWeightScale()?; { let prod_local_4142 = core::convert::identity::<u64>(prod_local_4140).checked_mul(prod_local_4141).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4143 = sabineRt60Millis(prod_local_4138, prod_local_4142)?; { let prod_local_4144 = (_x_55 < prod_local_4143); match prod_local_4144 {
+        false => prod_local_4144,
+        true => { let prod_local_4145 = workerCommandRingCapacity()?; { let prod_local_4146 = sSix()?; { let prod_local_4147 = pow2Constructive(prod_local_4146)?; { let prod_local_4148 = (prod_local_4145 == prod_local_4147); prod_local_4148 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_4149 = false; { let prod_local_4150 = prod_local_4149; match prod_local_4150 {
+        false => prod_local_4150,
+        true => { let prod_local_4152 = sEight()?; { let prod_local_4153 = sHundred()?; { let prod_local_4154 = core::convert::identity::<u64>(prod_local_4152).checked_mul(prod_local_4153).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4155 = navTriangleWalkable(prod_local_4154)?; match prod_local_4155 {
+        false => { let prod_local_4156 = prod_local_4155; match prod_local_4156 {
+        false => prod_local_4156,
+        true => { let prod_local_4157 = audioWorkletQuantumFrames()?; { let prod_local_4158 = (1 << 1); { let prod_local_4159 = sHundred()?; { let prod_local_4160 = wasmBridgeEnvelopeValid(prod_local_4157, prod_local_4158, prod_local_4159)?; match prod_local_4160 {
+        false => prod_local_4160,
+        true => { let prod_local_4161 = sHundred()?; { let prod_local_4162 = sFive()?; { let prod_local_4163 = core::convert::identity::<u64>(prod_local_4162).checked_mul(prod_local_4162).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4164 = skinWeightScale()?; { let prod_local_4165 = core::convert::identity::<u64>(prod_local_4163).checked_mul(prod_local_4164).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4166 = sabineRt60Millis(prod_local_4161, prod_local_4165)?; { let prod_local_4167 = (_x_55 < prod_local_4166); match prod_local_4167 {
+        false => prod_local_4167,
+        true => { let prod_local_4168 = workerCommandRingCapacity()?; { let prod_local_4169 = sSix()?; { let prod_local_4170 = pow2Constructive(prod_local_4169)?; { let prod_local_4171 = (prod_local_4168 == prod_local_4170); prod_local_4171 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_4172 = sTen()?; { let prod_local_4173 = sFive()?; { let prod_local_4174 = core::convert::identity::<u64>(prod_local_4172).checked_add(prod_local_4173).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_4175 = navMaxSearchNodes()?; { let prod_local_4176 = sFifteen()?; { let prod_local_4177 = core::convert::identity::<u64>(prod_local_4175).saturating_sub(prod_local_4176); { let prod_local_4178 = core::convert::identity::<u64>(prod_local_4175).saturating_sub(prod_local_4177); { let prod_local_4179 = (prod_local_4174 == prod_local_4178); { let prod_local_4180 = prod_local_4179; match prod_local_4180 {
+        false => prod_local_4180,
+        true => { let prod_local_4181 = audioWorkletQuantumFrames()?; { let prod_local_4182 = (1 << 1); { let prod_local_4183 = sHundred()?; { let prod_local_4184 = wasmBridgeEnvelopeValid(prod_local_4181, prod_local_4182, prod_local_4183)?; match prod_local_4184 {
+        false => prod_local_4184,
+        true => { let prod_local_4185 = sHundred()?; { let prod_local_4186 = sFive()?; { let prod_local_4187 = core::convert::identity::<u64>(prod_local_4186).checked_mul(prod_local_4186).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4188 = skinWeightScale()?; { let prod_local_4189 = core::convert::identity::<u64>(prod_local_4187).checked_mul(prod_local_4188).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4190 = sabineRt60Millis(prod_local_4185, prod_local_4189)?; { let prod_local_4191 = (_x_55 < prod_local_4190); match prod_local_4191 {
+        false => prod_local_4191,
+        true => { let prod_local_4192 = workerCommandRingCapacity()?; { let prod_local_4193 = sSix()?; { let prod_local_4194 = pow2Constructive(prod_local_4193)?; { let prod_local_4195 = (prod_local_4192 == prod_local_4194); prod_local_4195 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } } },
+    } } },
+    } } } } } } } },
+    } },
+        true => { let prod_local_4196 = sHundred()?; { let prod_local_4197 = sFive()?; { let prod_local_4198 = core::convert::identity::<u64>(prod_local_4197).checked_mul(prod_local_4196).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4199 = (1 << 1); { let prod_local_4200 = sTen()?; { let prod_local_4201 = core::convert::identity::<u64>(prod_local_4199).checked_mul(prod_local_4200).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4202 = sSixteen()?; { let prod_local_4203 = solveContactImpulseMilli(prod_local_4196, prod_local_4198, prod_local_4201, prod_local_4197, prod_local_4202)?; { let prod_local_4204 = (_x_55 < prod_local_4203); { let prod_local_4205 = prod_local_4204; match prod_local_4205 {
+        false => prod_local_4205,
+        true => { let prod_local_4206 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_4207 = sTen()?; { let prod_local_4208 = sFive()?; { let prod_local_4209 = sHundred()?; { let prod_local_4210 = core::convert::identity::<u64>(prod_local_4208).checked_mul(prod_local_4209).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4211 = clampCoulombFrictionMilli(prod_local_4206, prod_local_4207, prod_local_4210)?; { let prod_local_4212 = coulombFrictionConeValid(prod_local_4211, prod_local_4207, prod_local_4210)?; match prod_local_4212 {
+        false => prod_local_4212,
+        true => { let prod_local_4213 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_4214 = navTriangleWalkable(prod_local_4213)?; match prod_local_4214 {
+        false => { let prod_local_4216 = prod_local_4212; match prod_local_4216 {
+        false => prod_local_4216,
+        true => { let prod_local_4218 = sEight()?; { let prod_local_4219 = sHundred()?; { let prod_local_4220 = core::convert::identity::<u64>(prod_local_4218).checked_mul(prod_local_4219).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4221 = navTriangleWalkable(prod_local_4220)?; match prod_local_4221 {
+        false => { let prod_local_4222 = prod_local_4221; match prod_local_4222 {
+        false => prod_local_4222,
+        true => { let prod_local_4223 = audioWorkletQuantumFrames()?; { let prod_local_4224 = (1 << 1); { let prod_local_4225 = sHundred()?; { let prod_local_4226 = wasmBridgeEnvelopeValid(prod_local_4223, prod_local_4224, prod_local_4225)?; match prod_local_4226 {
+        false => prod_local_4226,
+        true => { let prod_local_4227 = sHundred()?; { let prod_local_4228 = sFive()?; { let prod_local_4229 = core::convert::identity::<u64>(prod_local_4228).checked_mul(prod_local_4228).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4230 = skinWeightScale()?; { let prod_local_4231 = core::convert::identity::<u64>(prod_local_4229).checked_mul(prod_local_4230).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4232 = sabineRt60Millis(prod_local_4227, prod_local_4231)?; { let prod_local_4233 = (_x_55 < prod_local_4232); match prod_local_4233 {
+        false => prod_local_4233,
+        true => { let prod_local_4234 = workerCommandRingCapacity()?; { let prod_local_4235 = sSix()?; { let prod_local_4236 = pow2Constructive(prod_local_4235)?; { let prod_local_4237 = (prod_local_4234 == prod_local_4236); prod_local_4237 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_4238 = sTen()?; { let prod_local_4239 = sFive()?; { let prod_local_4240 = core::convert::identity::<u64>(prod_local_4238).checked_add(prod_local_4239).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_4241 = navMaxSearchNodes()?; { let prod_local_4242 = sFifteen()?; { let prod_local_4243 = core::convert::identity::<u64>(prod_local_4241).saturating_sub(prod_local_4242); { let prod_local_4244 = core::convert::identity::<u64>(prod_local_4241).saturating_sub(prod_local_4243); { let prod_local_4245 = (prod_local_4240 == prod_local_4244); { let prod_local_4246 = prod_local_4245; match prod_local_4246 {
+        false => prod_local_4246,
+        true => { let prod_local_4247 = audioWorkletQuantumFrames()?; { let prod_local_4248 = (1 << 1); { let prod_local_4249 = sHundred()?; { let prod_local_4250 = wasmBridgeEnvelopeValid(prod_local_4247, prod_local_4248, prod_local_4249)?; match prod_local_4250 {
+        false => prod_local_4250,
+        true => { let prod_local_4251 = sHundred()?; { let prod_local_4252 = sFive()?; { let prod_local_4253 = core::convert::identity::<u64>(prod_local_4252).checked_mul(prod_local_4252).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4254 = skinWeightScale()?; { let prod_local_4255 = core::convert::identity::<u64>(prod_local_4253).checked_mul(prod_local_4254).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4256 = sabineRt60Millis(prod_local_4251, prod_local_4255)?; { let prod_local_4257 = (_x_55 < prod_local_4256); match prod_local_4257 {
+        false => prod_local_4257,
+        true => { let prod_local_4258 = workerCommandRingCapacity()?; { let prod_local_4259 = sSix()?; { let prod_local_4260 = pow2Constructive(prod_local_4259)?; { let prod_local_4261 = (prod_local_4258 == prod_local_4260); prod_local_4261 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_4262 = false; { let prod_local_4263 = prod_local_4262; match prod_local_4263 {
+        false => prod_local_4263,
+        true => { let prod_local_4265 = sEight()?; { let prod_local_4266 = sHundred()?; { let prod_local_4267 = core::convert::identity::<u64>(prod_local_4265).checked_mul(prod_local_4266).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4268 = navTriangleWalkable(prod_local_4267)?; match prod_local_4268 {
+        false => { let prod_local_4269 = prod_local_4268; match prod_local_4269 {
+        false => prod_local_4269,
+        true => { let prod_local_4270 = audioWorkletQuantumFrames()?; { let prod_local_4271 = (1 << 1); { let prod_local_4272 = sHundred()?; { let prod_local_4273 = wasmBridgeEnvelopeValid(prod_local_4270, prod_local_4271, prod_local_4272)?; match prod_local_4273 {
+        false => prod_local_4273,
+        true => { let prod_local_4274 = sHundred()?; { let prod_local_4275 = sFive()?; { let prod_local_4276 = core::convert::identity::<u64>(prod_local_4275).checked_mul(prod_local_4275).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4277 = skinWeightScale()?; { let prod_local_4278 = core::convert::identity::<u64>(prod_local_4276).checked_mul(prod_local_4277).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4279 = sabineRt60Millis(prod_local_4274, prod_local_4278)?; { let prod_local_4280 = (_x_55 < prod_local_4279); match prod_local_4280 {
+        false => prod_local_4280,
+        true => { let prod_local_4281 = workerCommandRingCapacity()?; { let prod_local_4282 = sSix()?; { let prod_local_4283 = pow2Constructive(prod_local_4282)?; { let prod_local_4284 = (prod_local_4281 == prod_local_4283); prod_local_4284 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_4285 = sTen()?; { let prod_local_4286 = sFive()?; { let prod_local_4287 = core::convert::identity::<u64>(prod_local_4285).checked_add(prod_local_4286).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_4288 = navMaxSearchNodes()?; { let prod_local_4289 = sFifteen()?; { let prod_local_4290 = core::convert::identity::<u64>(prod_local_4288).saturating_sub(prod_local_4289); { let prod_local_4291 = core::convert::identity::<u64>(prod_local_4288).saturating_sub(prod_local_4290); { let prod_local_4292 = (prod_local_4287 == prod_local_4291); { let prod_local_4293 = prod_local_4292; match prod_local_4293 {
+        false => prod_local_4293,
+        true => { let prod_local_4294 = audioWorkletQuantumFrames()?; { let prod_local_4295 = (1 << 1); { let prod_local_4296 = sHundred()?; { let prod_local_4297 = wasmBridgeEnvelopeValid(prod_local_4294, prod_local_4295, prod_local_4296)?; match prod_local_4297 {
+        false => prod_local_4297,
+        true => { let prod_local_4298 = sHundred()?; { let prod_local_4299 = sFive()?; { let prod_local_4300 = core::convert::identity::<u64>(prod_local_4299).checked_mul(prod_local_4299).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4301 = skinWeightScale()?; { let prod_local_4302 = core::convert::identity::<u64>(prod_local_4300).checked_mul(prod_local_4301).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4303 = sabineRt60Millis(prod_local_4298, prod_local_4302)?; { let prod_local_4304 = (_x_55 < prod_local_4303); match prod_local_4304 {
+        false => prod_local_4304,
+        true => { let prod_local_4305 = workerCommandRingCapacity()?; { let prod_local_4306 = sSix()?; { let prod_local_4307 = pow2Constructive(prod_local_4306)?; { let prod_local_4308 = (prod_local_4305 == prod_local_4307); prod_local_4308 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } } },
+    } } },
+    } } } } } } } },
+    } } } } } } } } } } },
+    } } } },
+    } } },
+    } },
+        true => { let prod_local_4309 = sFour()?; { let prod_local_4310 = renderPassDependencyValid(_x_55, prod_local_4309)?; { let prod_local_4311 = prod_local_4310; match prod_local_4311 {
+        false => prod_local_4311,
+        true => { let prod_local_4312 = sFour()?; { let prod_local_4313 = (prod_local_4312 == prod_local_3971); match prod_local_4313 {
+        false => { let prod_local_4315 = prod_local_4313; match prod_local_4315 {
+        false => prod_local_4315,
+        true => { let prod_local_4316 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_4317 = sTen()?; { let prod_local_4318 = sFive()?; { let prod_local_4319 = sHundred()?; { let prod_local_4320 = core::convert::identity::<u64>(prod_local_4318).checked_mul(prod_local_4319).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4321 = clampCoulombFrictionMilli(prod_local_4316, prod_local_4317, prod_local_4320)?; { let prod_local_4322 = coulombFrictionConeValid(prod_local_4321, prod_local_4317, prod_local_4320)?; match prod_local_4322 {
+        false => prod_local_4322,
+        true => { let prod_local_4323 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_4324 = navTriangleWalkable(prod_local_4323)?; match prod_local_4324 {
+        false => { let prod_local_4326 = prod_local_4322; match prod_local_4326 {
+        false => prod_local_4326,
+        true => { let prod_local_4328 = sEight()?; { let prod_local_4329 = sHundred()?; { let prod_local_4330 = core::convert::identity::<u64>(prod_local_4328).checked_mul(prod_local_4329).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4331 = navTriangleWalkable(prod_local_4330)?; match prod_local_4331 {
+        false => { let prod_local_4332 = prod_local_4331; match prod_local_4332 {
+        false => prod_local_4332,
+        true => { let prod_local_4333 = audioWorkletQuantumFrames()?; { let prod_local_4334 = (1 << 1); { let prod_local_4335 = sHundred()?; { let prod_local_4336 = wasmBridgeEnvelopeValid(prod_local_4333, prod_local_4334, prod_local_4335)?; match prod_local_4336 {
+        false => prod_local_4336,
+        true => { let prod_local_4337 = sHundred()?; { let prod_local_4338 = sFive()?; { let prod_local_4339 = core::convert::identity::<u64>(prod_local_4338).checked_mul(prod_local_4338).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4340 = skinWeightScale()?; { let prod_local_4341 = core::convert::identity::<u64>(prod_local_4339).checked_mul(prod_local_4340).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4342 = sabineRt60Millis(prod_local_4337, prod_local_4341)?; { let prod_local_4343 = (_x_55 < prod_local_4342); match prod_local_4343 {
+        false => prod_local_4343,
+        true => { let prod_local_4344 = workerCommandRingCapacity()?; { let prod_local_4345 = sSix()?; { let prod_local_4346 = pow2Constructive(prod_local_4345)?; { let prod_local_4347 = (prod_local_4344 == prod_local_4346); prod_local_4347 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_4348 = sTen()?; { let prod_local_4349 = sFive()?; { let prod_local_4350 = core::convert::identity::<u64>(prod_local_4348).checked_add(prod_local_4349).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_4351 = navMaxSearchNodes()?; { let prod_local_4352 = sFifteen()?; { let prod_local_4353 = core::convert::identity::<u64>(prod_local_4351).saturating_sub(prod_local_4352); { let prod_local_4354 = core::convert::identity::<u64>(prod_local_4351).saturating_sub(prod_local_4353); { let prod_local_4355 = (prod_local_4350 == prod_local_4354); { let prod_local_4356 = prod_local_4355; match prod_local_4356 {
+        false => prod_local_4356,
+        true => { let prod_local_4357 = audioWorkletQuantumFrames()?; { let prod_local_4358 = (1 << 1); { let prod_local_4359 = sHundred()?; { let prod_local_4360 = wasmBridgeEnvelopeValid(prod_local_4357, prod_local_4358, prod_local_4359)?; match prod_local_4360 {
+        false => prod_local_4360,
+        true => { let prod_local_4361 = sHundred()?; { let prod_local_4362 = sFive()?; { let prod_local_4363 = core::convert::identity::<u64>(prod_local_4362).checked_mul(prod_local_4362).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4364 = skinWeightScale()?; { let prod_local_4365 = core::convert::identity::<u64>(prod_local_4363).checked_mul(prod_local_4364).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4366 = sabineRt60Millis(prod_local_4361, prod_local_4365)?; { let prod_local_4367 = (_x_55 < prod_local_4366); match prod_local_4367 {
+        false => prod_local_4367,
+        true => { let prod_local_4368 = workerCommandRingCapacity()?; { let prod_local_4369 = sSix()?; { let prod_local_4370 = pow2Constructive(prod_local_4369)?; { let prod_local_4371 = (prod_local_4368 == prod_local_4370); prod_local_4371 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_4372 = false; { let prod_local_4373 = prod_local_4372; match prod_local_4373 {
+        false => prod_local_4373,
+        true => { let prod_local_4375 = sEight()?; { let prod_local_4376 = sHundred()?; { let prod_local_4377 = core::convert::identity::<u64>(prod_local_4375).checked_mul(prod_local_4376).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4378 = navTriangleWalkable(prod_local_4377)?; match prod_local_4378 {
+        false => { let prod_local_4379 = prod_local_4378; match prod_local_4379 {
+        false => prod_local_4379,
+        true => { let prod_local_4380 = audioWorkletQuantumFrames()?; { let prod_local_4381 = (1 << 1); { let prod_local_4382 = sHundred()?; { let prod_local_4383 = wasmBridgeEnvelopeValid(prod_local_4380, prod_local_4381, prod_local_4382)?; match prod_local_4383 {
+        false => prod_local_4383,
+        true => { let prod_local_4384 = sHundred()?; { let prod_local_4385 = sFive()?; { let prod_local_4386 = core::convert::identity::<u64>(prod_local_4385).checked_mul(prod_local_4385).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4387 = skinWeightScale()?; { let prod_local_4388 = core::convert::identity::<u64>(prod_local_4386).checked_mul(prod_local_4387).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4389 = sabineRt60Millis(prod_local_4384, prod_local_4388)?; { let prod_local_4390 = (_x_55 < prod_local_4389); match prod_local_4390 {
+        false => prod_local_4390,
+        true => { let prod_local_4391 = workerCommandRingCapacity()?; { let prod_local_4392 = sSix()?; { let prod_local_4393 = pow2Constructive(prod_local_4392)?; { let prod_local_4394 = (prod_local_4391 == prod_local_4393); prod_local_4394 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_4395 = sTen()?; { let prod_local_4396 = sFive()?; { let prod_local_4397 = core::convert::identity::<u64>(prod_local_4395).checked_add(prod_local_4396).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_4398 = navMaxSearchNodes()?; { let prod_local_4399 = sFifteen()?; { let prod_local_4400 = core::convert::identity::<u64>(prod_local_4398).saturating_sub(prod_local_4399); { let prod_local_4401 = core::convert::identity::<u64>(prod_local_4398).saturating_sub(prod_local_4400); { let prod_local_4402 = (prod_local_4397 == prod_local_4401); { let prod_local_4403 = prod_local_4402; match prod_local_4403 {
+        false => prod_local_4403,
+        true => { let prod_local_4404 = audioWorkletQuantumFrames()?; { let prod_local_4405 = (1 << 1); { let prod_local_4406 = sHundred()?; { let prod_local_4407 = wasmBridgeEnvelopeValid(prod_local_4404, prod_local_4405, prod_local_4406)?; match prod_local_4407 {
+        false => prod_local_4407,
+        true => { let prod_local_4408 = sHundred()?; { let prod_local_4409 = sFive()?; { let prod_local_4410 = core::convert::identity::<u64>(prod_local_4409).checked_mul(prod_local_4409).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4411 = skinWeightScale()?; { let prod_local_4412 = core::convert::identity::<u64>(prod_local_4410).checked_mul(prod_local_4411).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4413 = sabineRt60Millis(prod_local_4408, prod_local_4412)?; { let prod_local_4414 = (_x_55 < prod_local_4413); match prod_local_4414 {
+        false => prod_local_4414,
+        true => { let prod_local_4415 = workerCommandRingCapacity()?; { let prod_local_4416 = sSix()?; { let prod_local_4417 = pow2Constructive(prod_local_4416)?; { let prod_local_4418 = (prod_local_4415 == prod_local_4417); prod_local_4418 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } } },
+    } } },
+    } } } } } } } },
+    } },
+        true => { let prod_local_4419 = sThirtyTwo()?; { let prod_local_4420 = sThirtyTwo()?; { let prod_local_4421 = (prod_local_4419 == prod_local_4420); match prod_local_4421 {
+        false => { let prod_local_4422 = prod_local_4421; match prod_local_4422 {
+        false => prod_local_4422,
+        true => { let prod_local_4423 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_4424 = sTen()?; { let prod_local_4425 = sFive()?; { let prod_local_4426 = sHundred()?; { let prod_local_4427 = core::convert::identity::<u64>(prod_local_4425).checked_mul(prod_local_4426).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4428 = clampCoulombFrictionMilli(prod_local_4423, prod_local_4424, prod_local_4427)?; { let prod_local_4429 = coulombFrictionConeValid(prod_local_4428, prod_local_4424, prod_local_4427)?; match prod_local_4429 {
+        false => prod_local_4429,
+        true => { let prod_local_4430 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_4431 = navTriangleWalkable(prod_local_4430)?; match prod_local_4431 {
+        false => { let prod_local_4433 = prod_local_4429; match prod_local_4433 {
+        false => prod_local_4433,
+        true => { let prod_local_4435 = sEight()?; { let prod_local_4436 = sHundred()?; { let prod_local_4437 = core::convert::identity::<u64>(prod_local_4435).checked_mul(prod_local_4436).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4438 = navTriangleWalkable(prod_local_4437)?; match prod_local_4438 {
+        false => { let prod_local_4439 = prod_local_4438; match prod_local_4439 {
+        false => prod_local_4439,
+        true => { let prod_local_4440 = audioWorkletQuantumFrames()?; { let prod_local_4441 = (1 << 1); { let prod_local_4442 = sHundred()?; { let prod_local_4443 = wasmBridgeEnvelopeValid(prod_local_4440, prod_local_4441, prod_local_4442)?; match prod_local_4443 {
+        false => prod_local_4443,
+        true => { let prod_local_4444 = sHundred()?; { let prod_local_4445 = sFive()?; { let prod_local_4446 = core::convert::identity::<u64>(prod_local_4445).checked_mul(prod_local_4445).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4447 = skinWeightScale()?; { let prod_local_4448 = core::convert::identity::<u64>(prod_local_4446).checked_mul(prod_local_4447).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4449 = sabineRt60Millis(prod_local_4444, prod_local_4448)?; { let prod_local_4450 = (_x_55 < prod_local_4449); match prod_local_4450 {
+        false => prod_local_4450,
+        true => { let prod_local_4451 = workerCommandRingCapacity()?; { let prod_local_4452 = sSix()?; { let prod_local_4453 = pow2Constructive(prod_local_4452)?; { let prod_local_4454 = (prod_local_4451 == prod_local_4453); prod_local_4454 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_4455 = sTen()?; { let prod_local_4456 = sFive()?; { let prod_local_4457 = core::convert::identity::<u64>(prod_local_4455).checked_add(prod_local_4456).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_4458 = navMaxSearchNodes()?; { let prod_local_4459 = sFifteen()?; { let prod_local_4460 = core::convert::identity::<u64>(prod_local_4458).saturating_sub(prod_local_4459); { let prod_local_4461 = core::convert::identity::<u64>(prod_local_4458).saturating_sub(prod_local_4460); { let prod_local_4462 = (prod_local_4457 == prod_local_4461); { let prod_local_4463 = prod_local_4462; match prod_local_4463 {
+        false => prod_local_4463,
+        true => { let prod_local_4464 = audioWorkletQuantumFrames()?; { let prod_local_4465 = (1 << 1); { let prod_local_4466 = sHundred()?; { let prod_local_4467 = wasmBridgeEnvelopeValid(prod_local_4464, prod_local_4465, prod_local_4466)?; match prod_local_4467 {
+        false => prod_local_4467,
+        true => { let prod_local_4468 = sHundred()?; { let prod_local_4469 = sFive()?; { let prod_local_4470 = core::convert::identity::<u64>(prod_local_4469).checked_mul(prod_local_4469).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4471 = skinWeightScale()?; { let prod_local_4472 = core::convert::identity::<u64>(prod_local_4470).checked_mul(prod_local_4471).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4473 = sabineRt60Millis(prod_local_4468, prod_local_4472)?; { let prod_local_4474 = (_x_55 < prod_local_4473); match prod_local_4474 {
+        false => prod_local_4474,
+        true => { let prod_local_4475 = workerCommandRingCapacity()?; { let prod_local_4476 = sSix()?; { let prod_local_4477 = pow2Constructive(prod_local_4476)?; { let prod_local_4478 = (prod_local_4475 == prod_local_4477); prod_local_4478 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_4479 = false; { let prod_local_4480 = prod_local_4479; match prod_local_4480 {
+        false => prod_local_4480,
+        true => { let prod_local_4482 = sEight()?; { let prod_local_4483 = sHundred()?; { let prod_local_4484 = core::convert::identity::<u64>(prod_local_4482).checked_mul(prod_local_4483).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4485 = navTriangleWalkable(prod_local_4484)?; match prod_local_4485 {
+        false => { let prod_local_4486 = prod_local_4485; match prod_local_4486 {
+        false => prod_local_4486,
+        true => { let prod_local_4487 = audioWorkletQuantumFrames()?; { let prod_local_4488 = (1 << 1); { let prod_local_4489 = sHundred()?; { let prod_local_4490 = wasmBridgeEnvelopeValid(prod_local_4487, prod_local_4488, prod_local_4489)?; match prod_local_4490 {
+        false => prod_local_4490,
+        true => { let prod_local_4491 = sHundred()?; { let prod_local_4492 = sFive()?; { let prod_local_4493 = core::convert::identity::<u64>(prod_local_4492).checked_mul(prod_local_4492).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4494 = skinWeightScale()?; { let prod_local_4495 = core::convert::identity::<u64>(prod_local_4493).checked_mul(prod_local_4494).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4496 = sabineRt60Millis(prod_local_4491, prod_local_4495)?; { let prod_local_4497 = (_x_55 < prod_local_4496); match prod_local_4497 {
+        false => prod_local_4497,
+        true => { let prod_local_4498 = workerCommandRingCapacity()?; { let prod_local_4499 = sSix()?; { let prod_local_4500 = pow2Constructive(prod_local_4499)?; { let prod_local_4501 = (prod_local_4498 == prod_local_4500); prod_local_4501 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_4502 = sTen()?; { let prod_local_4503 = sFive()?; { let prod_local_4504 = core::convert::identity::<u64>(prod_local_4502).checked_add(prod_local_4503).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_4505 = navMaxSearchNodes()?; { let prod_local_4506 = sFifteen()?; { let prod_local_4507 = core::convert::identity::<u64>(prod_local_4505).saturating_sub(prod_local_4506); { let prod_local_4508 = core::convert::identity::<u64>(prod_local_4505).saturating_sub(prod_local_4507); { let prod_local_4509 = (prod_local_4504 == prod_local_4508); { let prod_local_4510 = prod_local_4509; match prod_local_4510 {
+        false => prod_local_4510,
+        true => { let prod_local_4511 = audioWorkletQuantumFrames()?; { let prod_local_4512 = (1 << 1); { let prod_local_4513 = sHundred()?; { let prod_local_4514 = wasmBridgeEnvelopeValid(prod_local_4511, prod_local_4512, prod_local_4513)?; match prod_local_4514 {
+        false => prod_local_4514,
+        true => { let prod_local_4515 = sHundred()?; { let prod_local_4516 = sFive()?; { let prod_local_4517 = core::convert::identity::<u64>(prod_local_4516).checked_mul(prod_local_4516).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4518 = skinWeightScale()?; { let prod_local_4519 = core::convert::identity::<u64>(prod_local_4517).checked_mul(prod_local_4518).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4520 = sabineRt60Millis(prod_local_4515, prod_local_4519)?; { let prod_local_4521 = (_x_55 < prod_local_4520); match prod_local_4521 {
+        false => prod_local_4521,
+        true => { let prod_local_4522 = workerCommandRingCapacity()?; { let prod_local_4523 = sSix()?; { let prod_local_4524 = pow2Constructive(prod_local_4523)?; { let prod_local_4525 = (prod_local_4522 == prod_local_4524); prod_local_4525 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } } },
+    } } },
+    } } } } } } } },
+    } },
+        true => { let prod_local_4526 = sHundred()?; { let prod_local_4527 = sFive()?; { let prod_local_4528 = core::convert::identity::<u64>(prod_local_4527).checked_mul(prod_local_4526).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4529 = (1 << 1); { let prod_local_4530 = sTen()?; { let prod_local_4531 = core::convert::identity::<u64>(prod_local_4529).checked_mul(prod_local_4530).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4532 = sSixteen()?; { let prod_local_4533 = solveContactImpulseMilli(prod_local_4526, prod_local_4528, prod_local_4531, prod_local_4527, prod_local_4532)?; { let prod_local_4534 = (_x_55 < prod_local_4533); { let prod_local_4535 = prod_local_4534; match prod_local_4535 {
+        false => prod_local_4535,
+        true => { let prod_local_4536 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_4537 = sTen()?; { let prod_local_4538 = sFive()?; { let prod_local_4539 = sHundred()?; { let prod_local_4540 = core::convert::identity::<u64>(prod_local_4538).checked_mul(prod_local_4539).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4541 = clampCoulombFrictionMilli(prod_local_4536, prod_local_4537, prod_local_4540)?; { let prod_local_4542 = coulombFrictionConeValid(prod_local_4541, prod_local_4537, prod_local_4540)?; match prod_local_4542 {
+        false => prod_local_4542,
+        true => { let prod_local_4543 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_4544 = navTriangleWalkable(prod_local_4543)?; match prod_local_4544 {
+        false => { let prod_local_4546 = prod_local_4542; match prod_local_4546 {
+        false => prod_local_4546,
+        true => { let prod_local_4548 = sEight()?; { let prod_local_4549 = sHundred()?; { let prod_local_4550 = core::convert::identity::<u64>(prod_local_4548).checked_mul(prod_local_4549).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4551 = navTriangleWalkable(prod_local_4550)?; match prod_local_4551 {
+        false => { let prod_local_4552 = prod_local_4551; match prod_local_4552 {
+        false => prod_local_4552,
+        true => { let prod_local_4553 = audioWorkletQuantumFrames()?; { let prod_local_4554 = (1 << 1); { let prod_local_4555 = sHundred()?; { let prod_local_4556 = wasmBridgeEnvelopeValid(prod_local_4553, prod_local_4554, prod_local_4555)?; match prod_local_4556 {
+        false => prod_local_4556,
+        true => { let prod_local_4557 = sHundred()?; { let prod_local_4558 = sFive()?; { let prod_local_4559 = core::convert::identity::<u64>(prod_local_4558).checked_mul(prod_local_4558).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4560 = skinWeightScale()?; { let prod_local_4561 = core::convert::identity::<u64>(prod_local_4559).checked_mul(prod_local_4560).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4562 = sabineRt60Millis(prod_local_4557, prod_local_4561)?; { let prod_local_4563 = (_x_55 < prod_local_4562); match prod_local_4563 {
+        false => prod_local_4563,
+        true => { let prod_local_4564 = workerCommandRingCapacity()?; { let prod_local_4565 = sSix()?; { let prod_local_4566 = pow2Constructive(prod_local_4565)?; { let prod_local_4567 = (prod_local_4564 == prod_local_4566); prod_local_4567 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_4568 = sTen()?; { let prod_local_4569 = sFive()?; { let prod_local_4570 = core::convert::identity::<u64>(prod_local_4568).checked_add(prod_local_4569).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_4571 = navMaxSearchNodes()?; { let prod_local_4572 = sFifteen()?; { let prod_local_4573 = core::convert::identity::<u64>(prod_local_4571).saturating_sub(prod_local_4572); { let prod_local_4574 = core::convert::identity::<u64>(prod_local_4571).saturating_sub(prod_local_4573); { let prod_local_4575 = (prod_local_4570 == prod_local_4574); { let prod_local_4576 = prod_local_4575; match prod_local_4576 {
+        false => prod_local_4576,
+        true => { let prod_local_4577 = audioWorkletQuantumFrames()?; { let prod_local_4578 = (1 << 1); { let prod_local_4579 = sHundred()?; { let prod_local_4580 = wasmBridgeEnvelopeValid(prod_local_4577, prod_local_4578, prod_local_4579)?; match prod_local_4580 {
+        false => prod_local_4580,
+        true => { let prod_local_4581 = sHundred()?; { let prod_local_4582 = sFive()?; { let prod_local_4583 = core::convert::identity::<u64>(prod_local_4582).checked_mul(prod_local_4582).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4584 = skinWeightScale()?; { let prod_local_4585 = core::convert::identity::<u64>(prod_local_4583).checked_mul(prod_local_4584).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4586 = sabineRt60Millis(prod_local_4581, prod_local_4585)?; { let prod_local_4587 = (_x_55 < prod_local_4586); match prod_local_4587 {
+        false => prod_local_4587,
+        true => { let prod_local_4588 = workerCommandRingCapacity()?; { let prod_local_4589 = sSix()?; { let prod_local_4590 = pow2Constructive(prod_local_4589)?; { let prod_local_4591 = (prod_local_4588 == prod_local_4590); prod_local_4591 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_4592 = false; { let prod_local_4593 = prod_local_4592; match prod_local_4593 {
+        false => prod_local_4593,
+        true => { let prod_local_4595 = sEight()?; { let prod_local_4596 = sHundred()?; { let prod_local_4597 = core::convert::identity::<u64>(prod_local_4595).checked_mul(prod_local_4596).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4598 = navTriangleWalkable(prod_local_4597)?; match prod_local_4598 {
+        false => { let prod_local_4599 = prod_local_4598; match prod_local_4599 {
+        false => prod_local_4599,
+        true => { let prod_local_4600 = audioWorkletQuantumFrames()?; { let prod_local_4601 = (1 << 1); { let prod_local_4602 = sHundred()?; { let prod_local_4603 = wasmBridgeEnvelopeValid(prod_local_4600, prod_local_4601, prod_local_4602)?; match prod_local_4603 {
+        false => prod_local_4603,
+        true => { let prod_local_4604 = sHundred()?; { let prod_local_4605 = sFive()?; { let prod_local_4606 = core::convert::identity::<u64>(prod_local_4605).checked_mul(prod_local_4605).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4607 = skinWeightScale()?; { let prod_local_4608 = core::convert::identity::<u64>(prod_local_4606).checked_mul(prod_local_4607).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4609 = sabineRt60Millis(prod_local_4604, prod_local_4608)?; { let prod_local_4610 = (_x_55 < prod_local_4609); match prod_local_4610 {
+        false => prod_local_4610,
+        true => { let prod_local_4611 = workerCommandRingCapacity()?; { let prod_local_4612 = sSix()?; { let prod_local_4613 = pow2Constructive(prod_local_4612)?; { let prod_local_4614 = (prod_local_4611 == prod_local_4613); prod_local_4614 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_4615 = sTen()?; { let prod_local_4616 = sFive()?; { let prod_local_4617 = core::convert::identity::<u64>(prod_local_4615).checked_add(prod_local_4616).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_4618 = navMaxSearchNodes()?; { let prod_local_4619 = sFifteen()?; { let prod_local_4620 = core::convert::identity::<u64>(prod_local_4618).saturating_sub(prod_local_4619); { let prod_local_4621 = core::convert::identity::<u64>(prod_local_4618).saturating_sub(prod_local_4620); { let prod_local_4622 = (prod_local_4617 == prod_local_4621); { let prod_local_4623 = prod_local_4622; match prod_local_4623 {
+        false => prod_local_4623,
+        true => { let prod_local_4624 = audioWorkletQuantumFrames()?; { let prod_local_4625 = (1 << 1); { let prod_local_4626 = sHundred()?; { let prod_local_4627 = wasmBridgeEnvelopeValid(prod_local_4624, prod_local_4625, prod_local_4626)?; match prod_local_4627 {
+        false => prod_local_4627,
+        true => { let prod_local_4628 = sHundred()?; { let prod_local_4629 = sFive()?; { let prod_local_4630 = core::convert::identity::<u64>(prod_local_4629).checked_mul(prod_local_4629).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4631 = skinWeightScale()?; { let prod_local_4632 = core::convert::identity::<u64>(prod_local_4630).checked_mul(prod_local_4631).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4633 = sabineRt60Millis(prod_local_4628, prod_local_4632)?; { let prod_local_4634 = (_x_55 < prod_local_4633); match prod_local_4634 {
+        false => prod_local_4634,
+        true => { let prod_local_4635 = workerCommandRingCapacity()?; { let prod_local_4636 = sSix()?; { let prod_local_4637 = pow2Constructive(prod_local_4636)?; { let prod_local_4638 = (prod_local_4635 == prod_local_4637); prod_local_4638 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } } },
+    } } },
+    } } } } } } } },
+    } } } } } } } } } } },
+    } } } },
+    } } },
+    } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_4639 = sHundred()?; { let prod_local_4640 = sSixteen()?; { let prod_local_4641 = core::convert::identity::<u64>(prod_local_4640).checked_mul(prod_local_4639).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4642 = csmSplitDistanceMilli(prod_local_4639, prod_local_4641, _x_55)?; { let prod_local_4643 = ((1 << 1) + 1); { let prod_local_4644 = csmSplitDistanceMilli(prod_local_4639, prod_local_4641, prod_local_4643)?; { let prod_local_4645 = (prod_local_4642 < prod_local_4644); { let prod_local_4646 = prod_local_4645; match prod_local_4646 {
+        false => prod_local_4646,
+        true => { let prod_local_4648 = sEight()?; { let prod_local_4649 = pow2Constructive(prod_local_4648)?; { let prod_local_4650 = iblMipLevelCount(prod_local_4649)?; { let prod_local_4651 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_4652 = (prod_local_4650 == prod_local_4651); match prod_local_4652 {
+        false => { let prod_local_4653 = prod_local_4652; match prod_local_4653 {
+        false => prod_local_4653,
+        true => { let prod_local_4654 = sFour()?; { let prod_local_4655 = (prod_local_4654 == prod_local_3971); match prod_local_4655 {
+        false => { let prod_local_4657 = prod_local_4655; match prod_local_4657 {
+        false => prod_local_4657,
+        true => { let prod_local_4658 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_4659 = sTen()?; { let prod_local_4660 = sFive()?; { let prod_local_4661 = sHundred()?; { let prod_local_4662 = core::convert::identity::<u64>(prod_local_4660).checked_mul(prod_local_4661).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4663 = clampCoulombFrictionMilli(prod_local_4658, prod_local_4659, prod_local_4662)?; { let prod_local_4664 = coulombFrictionConeValid(prod_local_4663, prod_local_4659, prod_local_4662)?; match prod_local_4664 {
+        false => prod_local_4664,
+        true => { let prod_local_4665 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_4666 = navTriangleWalkable(prod_local_4665)?; match prod_local_4666 {
+        false => { let prod_local_4668 = prod_local_4664; match prod_local_4668 {
+        false => prod_local_4668,
+        true => { let prod_local_4670 = sEight()?; { let prod_local_4671 = sHundred()?; { let prod_local_4672 = core::convert::identity::<u64>(prod_local_4670).checked_mul(prod_local_4671).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4673 = navTriangleWalkable(prod_local_4672)?; match prod_local_4673 {
+        false => { let prod_local_4674 = prod_local_4673; match prod_local_4674 {
+        false => prod_local_4674,
+        true => { let prod_local_4675 = audioWorkletQuantumFrames()?; { let prod_local_4676 = (1 << 1); { let prod_local_4677 = sHundred()?; { let prod_local_4678 = wasmBridgeEnvelopeValid(prod_local_4675, prod_local_4676, prod_local_4677)?; match prod_local_4678 {
+        false => prod_local_4678,
+        true => { let prod_local_4679 = sHundred()?; { let prod_local_4680 = sFive()?; { let prod_local_4681 = core::convert::identity::<u64>(prod_local_4680).checked_mul(prod_local_4680).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4682 = skinWeightScale()?; { let prod_local_4683 = core::convert::identity::<u64>(prod_local_4681).checked_mul(prod_local_4682).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4684 = sabineRt60Millis(prod_local_4679, prod_local_4683)?; { let prod_local_4685 = (_x_55 < prod_local_4684); match prod_local_4685 {
+        false => prod_local_4685,
+        true => { let prod_local_4686 = workerCommandRingCapacity()?; { let prod_local_4687 = sSix()?; { let prod_local_4688 = pow2Constructive(prod_local_4687)?; { let prod_local_4689 = (prod_local_4686 == prod_local_4688); prod_local_4689 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_4690 = sTen()?; { let prod_local_4691 = sFive()?; { let prod_local_4692 = core::convert::identity::<u64>(prod_local_4690).checked_add(prod_local_4691).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_4693 = navMaxSearchNodes()?; { let prod_local_4694 = sFifteen()?; { let prod_local_4695 = core::convert::identity::<u64>(prod_local_4693).saturating_sub(prod_local_4694); { let prod_local_4696 = core::convert::identity::<u64>(prod_local_4693).saturating_sub(prod_local_4695); { let prod_local_4697 = (prod_local_4692 == prod_local_4696); { let prod_local_4698 = prod_local_4697; match prod_local_4698 {
+        false => prod_local_4698,
+        true => { let prod_local_4699 = audioWorkletQuantumFrames()?; { let prod_local_4700 = (1 << 1); { let prod_local_4701 = sHundred()?; { let prod_local_4702 = wasmBridgeEnvelopeValid(prod_local_4699, prod_local_4700, prod_local_4701)?; match prod_local_4702 {
+        false => prod_local_4702,
+        true => { let prod_local_4703 = sHundred()?; { let prod_local_4704 = sFive()?; { let prod_local_4705 = core::convert::identity::<u64>(prod_local_4704).checked_mul(prod_local_4704).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4706 = skinWeightScale()?; { let prod_local_4707 = core::convert::identity::<u64>(prod_local_4705).checked_mul(prod_local_4706).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4708 = sabineRt60Millis(prod_local_4703, prod_local_4707)?; { let prod_local_4709 = (_x_55 < prod_local_4708); match prod_local_4709 {
+        false => prod_local_4709,
+        true => { let prod_local_4710 = workerCommandRingCapacity()?; { let prod_local_4711 = sSix()?; { let prod_local_4712 = pow2Constructive(prod_local_4711)?; { let prod_local_4713 = (prod_local_4710 == prod_local_4712); prod_local_4713 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_4714 = false; { let prod_local_4715 = prod_local_4714; match prod_local_4715 {
+        false => prod_local_4715,
+        true => { let prod_local_4717 = sEight()?; { let prod_local_4718 = sHundred()?; { let prod_local_4719 = core::convert::identity::<u64>(prod_local_4717).checked_mul(prod_local_4718).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4720 = navTriangleWalkable(prod_local_4719)?; match prod_local_4720 {
+        false => { let prod_local_4721 = prod_local_4720; match prod_local_4721 {
+        false => prod_local_4721,
+        true => { let prod_local_4722 = audioWorkletQuantumFrames()?; { let prod_local_4723 = (1 << 1); { let prod_local_4724 = sHundred()?; { let prod_local_4725 = wasmBridgeEnvelopeValid(prod_local_4722, prod_local_4723, prod_local_4724)?; match prod_local_4725 {
+        false => prod_local_4725,
+        true => { let prod_local_4726 = sHundred()?; { let prod_local_4727 = sFive()?; { let prod_local_4728 = core::convert::identity::<u64>(prod_local_4727).checked_mul(prod_local_4727).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4729 = skinWeightScale()?; { let prod_local_4730 = core::convert::identity::<u64>(prod_local_4728).checked_mul(prod_local_4729).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4731 = sabineRt60Millis(prod_local_4726, prod_local_4730)?; { let prod_local_4732 = (_x_55 < prod_local_4731); match prod_local_4732 {
+        false => prod_local_4732,
+        true => { let prod_local_4733 = workerCommandRingCapacity()?; { let prod_local_4734 = sSix()?; { let prod_local_4735 = pow2Constructive(prod_local_4734)?; { let prod_local_4736 = (prod_local_4733 == prod_local_4735); prod_local_4736 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_4737 = sTen()?; { let prod_local_4738 = sFive()?; { let prod_local_4739 = core::convert::identity::<u64>(prod_local_4737).checked_add(prod_local_4738).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_4740 = navMaxSearchNodes()?; { let prod_local_4741 = sFifteen()?; { let prod_local_4742 = core::convert::identity::<u64>(prod_local_4740).saturating_sub(prod_local_4741); { let prod_local_4743 = core::convert::identity::<u64>(prod_local_4740).saturating_sub(prod_local_4742); { let prod_local_4744 = (prod_local_4739 == prod_local_4743); { let prod_local_4745 = prod_local_4744; match prod_local_4745 {
+        false => prod_local_4745,
+        true => { let prod_local_4746 = audioWorkletQuantumFrames()?; { let prod_local_4747 = (1 << 1); { let prod_local_4748 = sHundred()?; { let prod_local_4749 = wasmBridgeEnvelopeValid(prod_local_4746, prod_local_4747, prod_local_4748)?; match prod_local_4749 {
+        false => prod_local_4749,
+        true => { let prod_local_4750 = sHundred()?; { let prod_local_4751 = sFive()?; { let prod_local_4752 = core::convert::identity::<u64>(prod_local_4751).checked_mul(prod_local_4751).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4753 = skinWeightScale()?; { let prod_local_4754 = core::convert::identity::<u64>(prod_local_4752).checked_mul(prod_local_4753).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4755 = sabineRt60Millis(prod_local_4750, prod_local_4754)?; { let prod_local_4756 = (_x_55 < prod_local_4755); match prod_local_4756 {
+        false => prod_local_4756,
+        true => { let prod_local_4757 = workerCommandRingCapacity()?; { let prod_local_4758 = sSix()?; { let prod_local_4759 = pow2Constructive(prod_local_4758)?; { let prod_local_4760 = (prod_local_4757 == prod_local_4759); prod_local_4760 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } } },
+    } } },
+    } } } } } } } },
+    } },
+        true => { let prod_local_4761 = sThirtyTwo()?; { let prod_local_4762 = sThirtyTwo()?; { let prod_local_4763 = (prod_local_4761 == prod_local_4762); match prod_local_4763 {
+        false => { let prod_local_4764 = prod_local_4763; match prod_local_4764 {
+        false => prod_local_4764,
+        true => { let prod_local_4765 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_4766 = sTen()?; { let prod_local_4767 = sFive()?; { let prod_local_4768 = sHundred()?; { let prod_local_4769 = core::convert::identity::<u64>(prod_local_4767).checked_mul(prod_local_4768).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4770 = clampCoulombFrictionMilli(prod_local_4765, prod_local_4766, prod_local_4769)?; { let prod_local_4771 = coulombFrictionConeValid(prod_local_4770, prod_local_4766, prod_local_4769)?; match prod_local_4771 {
+        false => prod_local_4771,
+        true => { let prod_local_4772 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_4773 = navTriangleWalkable(prod_local_4772)?; match prod_local_4773 {
+        false => { let prod_local_4775 = prod_local_4771; match prod_local_4775 {
+        false => prod_local_4775,
+        true => { let prod_local_4777 = sEight()?; { let prod_local_4778 = sHundred()?; { let prod_local_4779 = core::convert::identity::<u64>(prod_local_4777).checked_mul(prod_local_4778).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4780 = navTriangleWalkable(prod_local_4779)?; match prod_local_4780 {
+        false => { let prod_local_4781 = prod_local_4780; match prod_local_4781 {
+        false => prod_local_4781,
+        true => { let prod_local_4782 = audioWorkletQuantumFrames()?; { let prod_local_4783 = (1 << 1); { let prod_local_4784 = sHundred()?; { let prod_local_4785 = wasmBridgeEnvelopeValid(prod_local_4782, prod_local_4783, prod_local_4784)?; match prod_local_4785 {
+        false => prod_local_4785,
+        true => { let prod_local_4786 = sHundred()?; { let prod_local_4787 = sFive()?; { let prod_local_4788 = core::convert::identity::<u64>(prod_local_4787).checked_mul(prod_local_4787).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4789 = skinWeightScale()?; { let prod_local_4790 = core::convert::identity::<u64>(prod_local_4788).checked_mul(prod_local_4789).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4791 = sabineRt60Millis(prod_local_4786, prod_local_4790)?; { let prod_local_4792 = (_x_55 < prod_local_4791); match prod_local_4792 {
+        false => prod_local_4792,
+        true => { let prod_local_4793 = workerCommandRingCapacity()?; { let prod_local_4794 = sSix()?; { let prod_local_4795 = pow2Constructive(prod_local_4794)?; { let prod_local_4796 = (prod_local_4793 == prod_local_4795); prod_local_4796 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_4797 = sTen()?; { let prod_local_4798 = sFive()?; { let prod_local_4799 = core::convert::identity::<u64>(prod_local_4797).checked_add(prod_local_4798).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_4800 = navMaxSearchNodes()?; { let prod_local_4801 = sFifteen()?; { let prod_local_4802 = core::convert::identity::<u64>(prod_local_4800).saturating_sub(prod_local_4801); { let prod_local_4803 = core::convert::identity::<u64>(prod_local_4800).saturating_sub(prod_local_4802); { let prod_local_4804 = (prod_local_4799 == prod_local_4803); { let prod_local_4805 = prod_local_4804; match prod_local_4805 {
+        false => prod_local_4805,
+        true => { let prod_local_4806 = audioWorkletQuantumFrames()?; { let prod_local_4807 = (1 << 1); { let prod_local_4808 = sHundred()?; { let prod_local_4809 = wasmBridgeEnvelopeValid(prod_local_4806, prod_local_4807, prod_local_4808)?; match prod_local_4809 {
+        false => prod_local_4809,
+        true => { let prod_local_4810 = sHundred()?; { let prod_local_4811 = sFive()?; { let prod_local_4812 = core::convert::identity::<u64>(prod_local_4811).checked_mul(prod_local_4811).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4813 = skinWeightScale()?; { let prod_local_4814 = core::convert::identity::<u64>(prod_local_4812).checked_mul(prod_local_4813).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4815 = sabineRt60Millis(prod_local_4810, prod_local_4814)?; { let prod_local_4816 = (_x_55 < prod_local_4815); match prod_local_4816 {
+        false => prod_local_4816,
+        true => { let prod_local_4817 = workerCommandRingCapacity()?; { let prod_local_4818 = sSix()?; { let prod_local_4819 = pow2Constructive(prod_local_4818)?; { let prod_local_4820 = (prod_local_4817 == prod_local_4819); prod_local_4820 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_4821 = false; { let prod_local_4822 = prod_local_4821; match prod_local_4822 {
+        false => prod_local_4822,
+        true => { let prod_local_4824 = sEight()?; { let prod_local_4825 = sHundred()?; { let prod_local_4826 = core::convert::identity::<u64>(prod_local_4824).checked_mul(prod_local_4825).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4827 = navTriangleWalkable(prod_local_4826)?; match prod_local_4827 {
+        false => { let prod_local_4828 = prod_local_4827; match prod_local_4828 {
+        false => prod_local_4828,
+        true => { let prod_local_4829 = audioWorkletQuantumFrames()?; { let prod_local_4830 = (1 << 1); { let prod_local_4831 = sHundred()?; { let prod_local_4832 = wasmBridgeEnvelopeValid(prod_local_4829, prod_local_4830, prod_local_4831)?; match prod_local_4832 {
+        false => prod_local_4832,
+        true => { let prod_local_4833 = sHundred()?; { let prod_local_4834 = sFive()?; { let prod_local_4835 = core::convert::identity::<u64>(prod_local_4834).checked_mul(prod_local_4834).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4836 = skinWeightScale()?; { let prod_local_4837 = core::convert::identity::<u64>(prod_local_4835).checked_mul(prod_local_4836).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4838 = sabineRt60Millis(prod_local_4833, prod_local_4837)?; { let prod_local_4839 = (_x_55 < prod_local_4838); match prod_local_4839 {
+        false => prod_local_4839,
+        true => { let prod_local_4840 = workerCommandRingCapacity()?; { let prod_local_4841 = sSix()?; { let prod_local_4842 = pow2Constructive(prod_local_4841)?; { let prod_local_4843 = (prod_local_4840 == prod_local_4842); prod_local_4843 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_4844 = sTen()?; { let prod_local_4845 = sFive()?; { let prod_local_4846 = core::convert::identity::<u64>(prod_local_4844).checked_add(prod_local_4845).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_4847 = navMaxSearchNodes()?; { let prod_local_4848 = sFifteen()?; { let prod_local_4849 = core::convert::identity::<u64>(prod_local_4847).saturating_sub(prod_local_4848); { let prod_local_4850 = core::convert::identity::<u64>(prod_local_4847).saturating_sub(prod_local_4849); { let prod_local_4851 = (prod_local_4846 == prod_local_4850); { let prod_local_4852 = prod_local_4851; match prod_local_4852 {
+        false => prod_local_4852,
+        true => { let prod_local_4853 = audioWorkletQuantumFrames()?; { let prod_local_4854 = (1 << 1); { let prod_local_4855 = sHundred()?; { let prod_local_4856 = wasmBridgeEnvelopeValid(prod_local_4853, prod_local_4854, prod_local_4855)?; match prod_local_4856 {
+        false => prod_local_4856,
+        true => { let prod_local_4857 = sHundred()?; { let prod_local_4858 = sFive()?; { let prod_local_4859 = core::convert::identity::<u64>(prod_local_4858).checked_mul(prod_local_4858).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4860 = skinWeightScale()?; { let prod_local_4861 = core::convert::identity::<u64>(prod_local_4859).checked_mul(prod_local_4860).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4862 = sabineRt60Millis(prod_local_4857, prod_local_4861)?; { let prod_local_4863 = (_x_55 < prod_local_4862); match prod_local_4863 {
+        false => prod_local_4863,
+        true => { let prod_local_4864 = workerCommandRingCapacity()?; { let prod_local_4865 = sSix()?; { let prod_local_4866 = pow2Constructive(prod_local_4865)?; { let prod_local_4867 = (prod_local_4864 == prod_local_4866); prod_local_4867 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } } },
+    } } },
+    } } } } } } } },
+    } },
+        true => { let prod_local_4868 = sHundred()?; { let prod_local_4869 = sFive()?; { let prod_local_4870 = core::convert::identity::<u64>(prod_local_4869).checked_mul(prod_local_4868).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4871 = (1 << 1); { let prod_local_4872 = sTen()?; { let prod_local_4873 = core::convert::identity::<u64>(prod_local_4871).checked_mul(prod_local_4872).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4874 = sSixteen()?; { let prod_local_4875 = solveContactImpulseMilli(prod_local_4868, prod_local_4870, prod_local_4873, prod_local_4869, prod_local_4874)?; { let prod_local_4876 = (_x_55 < prod_local_4875); { let prod_local_4877 = prod_local_4876; match prod_local_4877 {
+        false => prod_local_4877,
+        true => { let prod_local_4878 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_4879 = sTen()?; { let prod_local_4880 = sFive()?; { let prod_local_4881 = sHundred()?; { let prod_local_4882 = core::convert::identity::<u64>(prod_local_4880).checked_mul(prod_local_4881).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4883 = clampCoulombFrictionMilli(prod_local_4878, prod_local_4879, prod_local_4882)?; { let prod_local_4884 = coulombFrictionConeValid(prod_local_4883, prod_local_4879, prod_local_4882)?; match prod_local_4884 {
+        false => prod_local_4884,
+        true => { let prod_local_4885 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_4886 = navTriangleWalkable(prod_local_4885)?; match prod_local_4886 {
+        false => { let prod_local_4888 = prod_local_4884; match prod_local_4888 {
+        false => prod_local_4888,
+        true => { let prod_local_4890 = sEight()?; { let prod_local_4891 = sHundred()?; { let prod_local_4892 = core::convert::identity::<u64>(prod_local_4890).checked_mul(prod_local_4891).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4893 = navTriangleWalkable(prod_local_4892)?; match prod_local_4893 {
+        false => { let prod_local_4894 = prod_local_4893; match prod_local_4894 {
+        false => prod_local_4894,
+        true => { let prod_local_4895 = audioWorkletQuantumFrames()?; { let prod_local_4896 = (1 << 1); { let prod_local_4897 = sHundred()?; { let prod_local_4898 = wasmBridgeEnvelopeValid(prod_local_4895, prod_local_4896, prod_local_4897)?; match prod_local_4898 {
+        false => prod_local_4898,
+        true => { let prod_local_4899 = sHundred()?; { let prod_local_4900 = sFive()?; { let prod_local_4901 = core::convert::identity::<u64>(prod_local_4900).checked_mul(prod_local_4900).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4902 = skinWeightScale()?; { let prod_local_4903 = core::convert::identity::<u64>(prod_local_4901).checked_mul(prod_local_4902).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4904 = sabineRt60Millis(prod_local_4899, prod_local_4903)?; { let prod_local_4905 = (_x_55 < prod_local_4904); match prod_local_4905 {
+        false => prod_local_4905,
+        true => { let prod_local_4906 = workerCommandRingCapacity()?; { let prod_local_4907 = sSix()?; { let prod_local_4908 = pow2Constructive(prod_local_4907)?; { let prod_local_4909 = (prod_local_4906 == prod_local_4908); prod_local_4909 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_4910 = sTen()?; { let prod_local_4911 = sFive()?; { let prod_local_4912 = core::convert::identity::<u64>(prod_local_4910).checked_add(prod_local_4911).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_4913 = navMaxSearchNodes()?; { let prod_local_4914 = sFifteen()?; { let prod_local_4915 = core::convert::identity::<u64>(prod_local_4913).saturating_sub(prod_local_4914); { let prod_local_4916 = core::convert::identity::<u64>(prod_local_4913).saturating_sub(prod_local_4915); { let prod_local_4917 = (prod_local_4912 == prod_local_4916); { let prod_local_4918 = prod_local_4917; match prod_local_4918 {
+        false => prod_local_4918,
+        true => { let prod_local_4919 = audioWorkletQuantumFrames()?; { let prod_local_4920 = (1 << 1); { let prod_local_4921 = sHundred()?; { let prod_local_4922 = wasmBridgeEnvelopeValid(prod_local_4919, prod_local_4920, prod_local_4921)?; match prod_local_4922 {
+        false => prod_local_4922,
+        true => { let prod_local_4923 = sHundred()?; { let prod_local_4924 = sFive()?; { let prod_local_4925 = core::convert::identity::<u64>(prod_local_4924).checked_mul(prod_local_4924).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4926 = skinWeightScale()?; { let prod_local_4927 = core::convert::identity::<u64>(prod_local_4925).checked_mul(prod_local_4926).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4928 = sabineRt60Millis(prod_local_4923, prod_local_4927)?; { let prod_local_4929 = (_x_55 < prod_local_4928); match prod_local_4929 {
+        false => prod_local_4929,
+        true => { let prod_local_4930 = workerCommandRingCapacity()?; { let prod_local_4931 = sSix()?; { let prod_local_4932 = pow2Constructive(prod_local_4931)?; { let prod_local_4933 = (prod_local_4930 == prod_local_4932); prod_local_4933 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_4934 = false; { let prod_local_4935 = prod_local_4934; match prod_local_4935 {
+        false => prod_local_4935,
+        true => { let prod_local_4937 = sEight()?; { let prod_local_4938 = sHundred()?; { let prod_local_4939 = core::convert::identity::<u64>(prod_local_4937).checked_mul(prod_local_4938).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4940 = navTriangleWalkable(prod_local_4939)?; match prod_local_4940 {
+        false => { let prod_local_4941 = prod_local_4940; match prod_local_4941 {
+        false => prod_local_4941,
+        true => { let prod_local_4942 = audioWorkletQuantumFrames()?; { let prod_local_4943 = (1 << 1); { let prod_local_4944 = sHundred()?; { let prod_local_4945 = wasmBridgeEnvelopeValid(prod_local_4942, prod_local_4943, prod_local_4944)?; match prod_local_4945 {
+        false => prod_local_4945,
+        true => { let prod_local_4946 = sHundred()?; { let prod_local_4947 = sFive()?; { let prod_local_4948 = core::convert::identity::<u64>(prod_local_4947).checked_mul(prod_local_4947).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4949 = skinWeightScale()?; { let prod_local_4950 = core::convert::identity::<u64>(prod_local_4948).checked_mul(prod_local_4949).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4951 = sabineRt60Millis(prod_local_4946, prod_local_4950)?; { let prod_local_4952 = (_x_55 < prod_local_4951); match prod_local_4952 {
+        false => prod_local_4952,
+        true => { let prod_local_4953 = workerCommandRingCapacity()?; { let prod_local_4954 = sSix()?; { let prod_local_4955 = pow2Constructive(prod_local_4954)?; { let prod_local_4956 = (prod_local_4953 == prod_local_4955); prod_local_4956 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_4957 = sTen()?; { let prod_local_4958 = sFive()?; { let prod_local_4959 = core::convert::identity::<u64>(prod_local_4957).checked_add(prod_local_4958).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_4960 = navMaxSearchNodes()?; { let prod_local_4961 = sFifteen()?; { let prod_local_4962 = core::convert::identity::<u64>(prod_local_4960).saturating_sub(prod_local_4961); { let prod_local_4963 = core::convert::identity::<u64>(prod_local_4960).saturating_sub(prod_local_4962); { let prod_local_4964 = (prod_local_4959 == prod_local_4963); { let prod_local_4965 = prod_local_4964; match prod_local_4965 {
+        false => prod_local_4965,
+        true => { let prod_local_4966 = audioWorkletQuantumFrames()?; { let prod_local_4967 = (1 << 1); { let prod_local_4968 = sHundred()?; { let prod_local_4969 = wasmBridgeEnvelopeValid(prod_local_4966, prod_local_4967, prod_local_4968)?; match prod_local_4969 {
+        false => prod_local_4969,
+        true => { let prod_local_4970 = sHundred()?; { let prod_local_4971 = sFive()?; { let prod_local_4972 = core::convert::identity::<u64>(prod_local_4971).checked_mul(prod_local_4971).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4973 = skinWeightScale()?; { let prod_local_4974 = core::convert::identity::<u64>(prod_local_4972).checked_mul(prod_local_4973).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4975 = sabineRt60Millis(prod_local_4970, prod_local_4974)?; { let prod_local_4976 = (_x_55 < prod_local_4975); match prod_local_4976 {
+        false => prod_local_4976,
+        true => { let prod_local_4977 = workerCommandRingCapacity()?; { let prod_local_4978 = sSix()?; { let prod_local_4979 = pow2Constructive(prod_local_4978)?; { let prod_local_4980 = (prod_local_4977 == prod_local_4979); prod_local_4980 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } } },
+    } } },
+    } } } } } } } },
+    } } } } } } } } } } },
+    } } } },
+    } } },
+    } },
+        true => { let prod_local_4981 = sFour()?; { let prod_local_4982 = renderPassDependencyValid(_x_55, prod_local_4981)?; { let prod_local_4983 = prod_local_4982; match prod_local_4983 {
+        false => prod_local_4983,
+        true => { let prod_local_4984 = sFour()?; { let prod_local_4985 = (prod_local_4984 == prod_local_3971); match prod_local_4985 {
+        false => { let prod_local_4987 = prod_local_4985; match prod_local_4987 {
+        false => prod_local_4987,
+        true => { let prod_local_4988 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_4989 = sTen()?; { let prod_local_4990 = sFive()?; { let prod_local_4991 = sHundred()?; { let prod_local_4992 = core::convert::identity::<u64>(prod_local_4990).checked_mul(prod_local_4991).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_4993 = clampCoulombFrictionMilli(prod_local_4988, prod_local_4989, prod_local_4992)?; { let prod_local_4994 = coulombFrictionConeValid(prod_local_4993, prod_local_4989, prod_local_4992)?; match prod_local_4994 {
+        false => prod_local_4994,
+        true => { let prod_local_4995 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_4996 = navTriangleWalkable(prod_local_4995)?; match prod_local_4996 {
+        false => { let prod_local_4998 = prod_local_4994; match prod_local_4998 {
+        false => prod_local_4998,
+        true => { let prod_local_5000 = sEight()?; { let prod_local_5001 = sHundred()?; { let prod_local_5002 = core::convert::identity::<u64>(prod_local_5000).checked_mul(prod_local_5001).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_5003 = navTriangleWalkable(prod_local_5002)?; match prod_local_5003 {
+        false => { let prod_local_5004 = prod_local_5003; match prod_local_5004 {
+        false => prod_local_5004,
+        true => { let prod_local_5005 = audioWorkletQuantumFrames()?; { let prod_local_5006 = (1 << 1); { let prod_local_5007 = sHundred()?; { let prod_local_5008 = wasmBridgeEnvelopeValid(prod_local_5005, prod_local_5006, prod_local_5007)?; match prod_local_5008 {
+        false => prod_local_5008,
+        true => { let prod_local_5009 = sHundred()?; { let prod_local_5010 = sFive()?; { let prod_local_5011 = core::convert::identity::<u64>(prod_local_5010).checked_mul(prod_local_5010).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_5012 = skinWeightScale()?; { let prod_local_5013 = core::convert::identity::<u64>(prod_local_5011).checked_mul(prod_local_5012).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_5014 = sabineRt60Millis(prod_local_5009, prod_local_5013)?; { let prod_local_5015 = (_x_55 < prod_local_5014); match prod_local_5015 {
+        false => prod_local_5015,
+        true => { let prod_local_5016 = workerCommandRingCapacity()?; { let prod_local_5017 = sSix()?; { let prod_local_5018 = pow2Constructive(prod_local_5017)?; { let prod_local_5019 = (prod_local_5016 == prod_local_5018); prod_local_5019 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_5020 = sTen()?; { let prod_local_5021 = sFive()?; { let prod_local_5022 = core::convert::identity::<u64>(prod_local_5020).checked_add(prod_local_5021).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_5023 = navMaxSearchNodes()?; { let prod_local_5024 = sFifteen()?; { let prod_local_5025 = core::convert::identity::<u64>(prod_local_5023).saturating_sub(prod_local_5024); { let prod_local_5026 = core::convert::identity::<u64>(prod_local_5023).saturating_sub(prod_local_5025); { let prod_local_5027 = (prod_local_5022 == prod_local_5026); { let prod_local_5028 = prod_local_5027; match prod_local_5028 {
+        false => prod_local_5028,
+        true => { let prod_local_5029 = audioWorkletQuantumFrames()?; { let prod_local_5030 = (1 << 1); { let prod_local_5031 = sHundred()?; { let prod_local_5032 = wasmBridgeEnvelopeValid(prod_local_5029, prod_local_5030, prod_local_5031)?; match prod_local_5032 {
+        false => prod_local_5032,
+        true => { let prod_local_5033 = sHundred()?; { let prod_local_5034 = sFive()?; { let prod_local_5035 = core::convert::identity::<u64>(prod_local_5034).checked_mul(prod_local_5034).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_5036 = skinWeightScale()?; { let prod_local_5037 = core::convert::identity::<u64>(prod_local_5035).checked_mul(prod_local_5036).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_5038 = sabineRt60Millis(prod_local_5033, prod_local_5037)?; { let prod_local_5039 = (_x_55 < prod_local_5038); match prod_local_5039 {
+        false => prod_local_5039,
+        true => { let prod_local_5040 = workerCommandRingCapacity()?; { let prod_local_5041 = sSix()?; { let prod_local_5042 = pow2Constructive(prod_local_5041)?; { let prod_local_5043 = (prod_local_5040 == prod_local_5042); prod_local_5043 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_5044 = false; { let prod_local_5045 = prod_local_5044; match prod_local_5045 {
+        false => prod_local_5045,
+        true => { let prod_local_5047 = sEight()?; { let prod_local_5048 = sHundred()?; { let prod_local_5049 = core::convert::identity::<u64>(prod_local_5047).checked_mul(prod_local_5048).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_5050 = navTriangleWalkable(prod_local_5049)?; match prod_local_5050 {
+        false => { let prod_local_5051 = prod_local_5050; match prod_local_5051 {
+        false => prod_local_5051,
+        true => { let prod_local_5052 = audioWorkletQuantumFrames()?; { let prod_local_5053 = (1 << 1); { let prod_local_5054 = sHundred()?; { let prod_local_5055 = wasmBridgeEnvelopeValid(prod_local_5052, prod_local_5053, prod_local_5054)?; match prod_local_5055 {
+        false => prod_local_5055,
+        true => { let prod_local_5056 = sHundred()?; { let prod_local_5057 = sFive()?; { let prod_local_5058 = core::convert::identity::<u64>(prod_local_5057).checked_mul(prod_local_5057).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_5059 = skinWeightScale()?; { let prod_local_5060 = core::convert::identity::<u64>(prod_local_5058).checked_mul(prod_local_5059).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_5061 = sabineRt60Millis(prod_local_5056, prod_local_5060)?; { let prod_local_5062 = (_x_55 < prod_local_5061); match prod_local_5062 {
+        false => prod_local_5062,
+        true => { let prod_local_5063 = workerCommandRingCapacity()?; { let prod_local_5064 = sSix()?; { let prod_local_5065 = pow2Constructive(prod_local_5064)?; { let prod_local_5066 = (prod_local_5063 == prod_local_5065); prod_local_5066 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_5067 = sTen()?; { let prod_local_5068 = sFive()?; { let prod_local_5069 = core::convert::identity::<u64>(prod_local_5067).checked_add(prod_local_5068).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_5070 = navMaxSearchNodes()?; { let prod_local_5071 = sFifteen()?; { let prod_local_5072 = core::convert::identity::<u64>(prod_local_5070).saturating_sub(prod_local_5071); { let prod_local_5073 = core::convert::identity::<u64>(prod_local_5070).saturating_sub(prod_local_5072); { let prod_local_5074 = (prod_local_5069 == prod_local_5073); { let prod_local_5075 = prod_local_5074; match prod_local_5075 {
+        false => prod_local_5075,
+        true => { let prod_local_5076 = audioWorkletQuantumFrames()?; { let prod_local_5077 = (1 << 1); { let prod_local_5078 = sHundred()?; { let prod_local_5079 = wasmBridgeEnvelopeValid(prod_local_5076, prod_local_5077, prod_local_5078)?; match prod_local_5079 {
+        false => prod_local_5079,
+        true => { let prod_local_5080 = sHundred()?; { let prod_local_5081 = sFive()?; { let prod_local_5082 = core::convert::identity::<u64>(prod_local_5081).checked_mul(prod_local_5081).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_5083 = skinWeightScale()?; { let prod_local_5084 = core::convert::identity::<u64>(prod_local_5082).checked_mul(prod_local_5083).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_5085 = sabineRt60Millis(prod_local_5080, prod_local_5084)?; { let prod_local_5086 = (_x_55 < prod_local_5085); match prod_local_5086 {
+        false => prod_local_5086,
+        true => { let prod_local_5087 = workerCommandRingCapacity()?; { let prod_local_5088 = sSix()?; { let prod_local_5089 = pow2Constructive(prod_local_5088)?; { let prod_local_5090 = (prod_local_5087 == prod_local_5089); prod_local_5090 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } } },
+    } } },
+    } } } } } } } },
+    } },
+        true => { let prod_local_5091 = sThirtyTwo()?; { let prod_local_5092 = sThirtyTwo()?; { let prod_local_5093 = (prod_local_5091 == prod_local_5092); match prod_local_5093 {
+        false => { let prod_local_5094 = prod_local_5093; match prod_local_5094 {
+        false => prod_local_5094,
+        true => { let prod_local_5095 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_5096 = sTen()?; { let prod_local_5097 = sFive()?; { let prod_local_5098 = sHundred()?; { let prod_local_5099 = core::convert::identity::<u64>(prod_local_5097).checked_mul(prod_local_5098).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_5100 = clampCoulombFrictionMilli(prod_local_5095, prod_local_5096, prod_local_5099)?; { let prod_local_5101 = coulombFrictionConeValid(prod_local_5100, prod_local_5096, prod_local_5099)?; match prod_local_5101 {
+        false => prod_local_5101,
+        true => { let prod_local_5102 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_5103 = navTriangleWalkable(prod_local_5102)?; match prod_local_5103 {
+        false => { let prod_local_5105 = prod_local_5101; match prod_local_5105 {
+        false => prod_local_5105,
+        true => { let prod_local_5107 = sEight()?; { let prod_local_5108 = sHundred()?; { let prod_local_5109 = core::convert::identity::<u64>(prod_local_5107).checked_mul(prod_local_5108).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_5110 = navTriangleWalkable(prod_local_5109)?; match prod_local_5110 {
+        false => { let prod_local_5111 = prod_local_5110; match prod_local_5111 {
+        false => prod_local_5111,
+        true => { let prod_local_5112 = audioWorkletQuantumFrames()?; { let prod_local_5113 = (1 << 1); { let prod_local_5114 = sHundred()?; { let prod_local_5115 = wasmBridgeEnvelopeValid(prod_local_5112, prod_local_5113, prod_local_5114)?; match prod_local_5115 {
+        false => prod_local_5115,
+        true => { let prod_local_5116 = sHundred()?; { let prod_local_5117 = sFive()?; { let prod_local_5118 = core::convert::identity::<u64>(prod_local_5117).checked_mul(prod_local_5117).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_5119 = skinWeightScale()?; { let prod_local_5120 = core::convert::identity::<u64>(prod_local_5118).checked_mul(prod_local_5119).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_5121 = sabineRt60Millis(prod_local_5116, prod_local_5120)?; { let prod_local_5122 = (_x_55 < prod_local_5121); match prod_local_5122 {
+        false => prod_local_5122,
+        true => { let prod_local_5123 = workerCommandRingCapacity()?; { let prod_local_5124 = sSix()?; { let prod_local_5125 = pow2Constructive(prod_local_5124)?; { let prod_local_5126 = (prod_local_5123 == prod_local_5125); prod_local_5126 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_5127 = sTen()?; { let prod_local_5128 = sFive()?; { let prod_local_5129 = core::convert::identity::<u64>(prod_local_5127).checked_add(prod_local_5128).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_5130 = navMaxSearchNodes()?; { let prod_local_5131 = sFifteen()?; { let prod_local_5132 = core::convert::identity::<u64>(prod_local_5130).saturating_sub(prod_local_5131); { let prod_local_5133 = core::convert::identity::<u64>(prod_local_5130).saturating_sub(prod_local_5132); { let prod_local_5134 = (prod_local_5129 == prod_local_5133); { let prod_local_5135 = prod_local_5134; match prod_local_5135 {
+        false => prod_local_5135,
+        true => { let prod_local_5136 = audioWorkletQuantumFrames()?; { let prod_local_5137 = (1 << 1); { let prod_local_5138 = sHundred()?; { let prod_local_5139 = wasmBridgeEnvelopeValid(prod_local_5136, prod_local_5137, prod_local_5138)?; match prod_local_5139 {
+        false => prod_local_5139,
+        true => { let prod_local_5140 = sHundred()?; { let prod_local_5141 = sFive()?; { let prod_local_5142 = core::convert::identity::<u64>(prod_local_5141).checked_mul(prod_local_5141).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_5143 = skinWeightScale()?; { let prod_local_5144 = core::convert::identity::<u64>(prod_local_5142).checked_mul(prod_local_5143).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_5145 = sabineRt60Millis(prod_local_5140, prod_local_5144)?; { let prod_local_5146 = (_x_55 < prod_local_5145); match prod_local_5146 {
+        false => prod_local_5146,
+        true => { let prod_local_5147 = workerCommandRingCapacity()?; { let prod_local_5148 = sSix()?; { let prod_local_5149 = pow2Constructive(prod_local_5148)?; { let prod_local_5150 = (prod_local_5147 == prod_local_5149); prod_local_5150 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_5151 = false; { let prod_local_5152 = prod_local_5151; match prod_local_5152 {
+        false => prod_local_5152,
+        true => { let prod_local_5154 = sEight()?; { let prod_local_5155 = sHundred()?; { let prod_local_5156 = core::convert::identity::<u64>(prod_local_5154).checked_mul(prod_local_5155).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_5157 = navTriangleWalkable(prod_local_5156)?; match prod_local_5157 {
+        false => { let prod_local_5158 = prod_local_5157; match prod_local_5158 {
+        false => prod_local_5158,
+        true => { let prod_local_5159 = audioWorkletQuantumFrames()?; { let prod_local_5160 = (1 << 1); { let prod_local_5161 = sHundred()?; { let prod_local_5162 = wasmBridgeEnvelopeValid(prod_local_5159, prod_local_5160, prod_local_5161)?; match prod_local_5162 {
+        false => prod_local_5162,
+        true => { let prod_local_5163 = sHundred()?; { let prod_local_5164 = sFive()?; { let prod_local_5165 = core::convert::identity::<u64>(prod_local_5164).checked_mul(prod_local_5164).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_5166 = skinWeightScale()?; { let prod_local_5167 = core::convert::identity::<u64>(prod_local_5165).checked_mul(prod_local_5166).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_5168 = sabineRt60Millis(prod_local_5163, prod_local_5167)?; { let prod_local_5169 = (_x_55 < prod_local_5168); match prod_local_5169 {
+        false => prod_local_5169,
+        true => { let prod_local_5170 = workerCommandRingCapacity()?; { let prod_local_5171 = sSix()?; { let prod_local_5172 = pow2Constructive(prod_local_5171)?; { let prod_local_5173 = (prod_local_5170 == prod_local_5172); prod_local_5173 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_5174 = sTen()?; { let prod_local_5175 = sFive()?; { let prod_local_5176 = core::convert::identity::<u64>(prod_local_5174).checked_add(prod_local_5175).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_5177 = navMaxSearchNodes()?; { let prod_local_5178 = sFifteen()?; { let prod_local_5179 = core::convert::identity::<u64>(prod_local_5177).saturating_sub(prod_local_5178); { let prod_local_5180 = core::convert::identity::<u64>(prod_local_5177).saturating_sub(prod_local_5179); { let prod_local_5181 = (prod_local_5176 == prod_local_5180); { let prod_local_5182 = prod_local_5181; match prod_local_5182 {
+        false => prod_local_5182,
+        true => { let prod_local_5183 = audioWorkletQuantumFrames()?; { let prod_local_5184 = (1 << 1); { let prod_local_5185 = sHundred()?; { let prod_local_5186 = wasmBridgeEnvelopeValid(prod_local_5183, prod_local_5184, prod_local_5185)?; match prod_local_5186 {
+        false => prod_local_5186,
+        true => { let prod_local_5187 = sHundred()?; { let prod_local_5188 = sFive()?; { let prod_local_5189 = core::convert::identity::<u64>(prod_local_5188).checked_mul(prod_local_5188).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_5190 = skinWeightScale()?; { let prod_local_5191 = core::convert::identity::<u64>(prod_local_5189).checked_mul(prod_local_5190).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_5192 = sabineRt60Millis(prod_local_5187, prod_local_5191)?; { let prod_local_5193 = (_x_55 < prod_local_5192); match prod_local_5193 {
+        false => prod_local_5193,
+        true => { let prod_local_5194 = workerCommandRingCapacity()?; { let prod_local_5195 = sSix()?; { let prod_local_5196 = pow2Constructive(prod_local_5195)?; { let prod_local_5197 = (prod_local_5194 == prod_local_5196); prod_local_5197 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } } },
+    } } },
+    } } } } } } } },
+    } },
+        true => { let prod_local_5198 = sHundred()?; { let prod_local_5199 = sFive()?; { let prod_local_5200 = core::convert::identity::<u64>(prod_local_5199).checked_mul(prod_local_5198).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_5201 = (1 << 1); { let prod_local_5202 = sTen()?; { let prod_local_5203 = core::convert::identity::<u64>(prod_local_5201).checked_mul(prod_local_5202).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_5204 = sSixteen()?; { let prod_local_5205 = solveContactImpulseMilli(prod_local_5198, prod_local_5200, prod_local_5203, prod_local_5199, prod_local_5204)?; { let prod_local_5206 = (_x_55 < prod_local_5205); { let prod_local_5207 = prod_local_5206; match prod_local_5207 {
+        false => prod_local_5207,
+        true => { let prod_local_5208 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_5209 = sTen()?; { let prod_local_5210 = sFive()?; { let prod_local_5211 = sHundred()?; { let prod_local_5212 = core::convert::identity::<u64>(prod_local_5210).checked_mul(prod_local_5211).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_5213 = clampCoulombFrictionMilli(prod_local_5208, prod_local_5209, prod_local_5212)?; { let prod_local_5214 = coulombFrictionConeValid(prod_local_5213, prod_local_5209, prod_local_5212)?; match prod_local_5214 {
+        false => prod_local_5214,
+        true => { let prod_local_5215 = ((1 << ((1 << 1) + 1)) + 1); { let prod_local_5216 = navTriangleWalkable(prod_local_5215)?; match prod_local_5216 {
+        false => { let prod_local_5218 = prod_local_5214; match prod_local_5218 {
+        false => prod_local_5218,
+        true => { let prod_local_5220 = sEight()?; { let prod_local_5221 = sHundred()?; { let prod_local_5222 = core::convert::identity::<u64>(prod_local_5220).checked_mul(prod_local_5221).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_5223 = navTriangleWalkable(prod_local_5222)?; match prod_local_5223 {
+        false => { let prod_local_5224 = prod_local_5223; match prod_local_5224 {
+        false => prod_local_5224,
+        true => { let prod_local_5225 = audioWorkletQuantumFrames()?; { let prod_local_5226 = (1 << 1); { let prod_local_5227 = sHundred()?; { let prod_local_5228 = wasmBridgeEnvelopeValid(prod_local_5225, prod_local_5226, prod_local_5227)?; match prod_local_5228 {
+        false => prod_local_5228,
+        true => { let prod_local_5229 = sHundred()?; { let prod_local_5230 = sFive()?; { let prod_local_5231 = core::convert::identity::<u64>(prod_local_5230).checked_mul(prod_local_5230).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_5232 = skinWeightScale()?; { let prod_local_5233 = core::convert::identity::<u64>(prod_local_5231).checked_mul(prod_local_5232).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_5234 = sabineRt60Millis(prod_local_5229, prod_local_5233)?; { let prod_local_5235 = (_x_55 < prod_local_5234); match prod_local_5235 {
+        false => prod_local_5235,
+        true => { let prod_local_5236 = workerCommandRingCapacity()?; { let prod_local_5237 = sSix()?; { let prod_local_5238 = pow2Constructive(prod_local_5237)?; { let prod_local_5239 = (prod_local_5236 == prod_local_5238); prod_local_5239 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_5240 = sTen()?; { let prod_local_5241 = sFive()?; { let prod_local_5242 = core::convert::identity::<u64>(prod_local_5240).checked_add(prod_local_5241).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_5243 = navMaxSearchNodes()?; { let prod_local_5244 = sFifteen()?; { let prod_local_5245 = core::convert::identity::<u64>(prod_local_5243).saturating_sub(prod_local_5244); { let prod_local_5246 = core::convert::identity::<u64>(prod_local_5243).saturating_sub(prod_local_5245); { let prod_local_5247 = (prod_local_5242 == prod_local_5246); { let prod_local_5248 = prod_local_5247; match prod_local_5248 {
+        false => prod_local_5248,
+        true => { let prod_local_5249 = audioWorkletQuantumFrames()?; { let prod_local_5250 = (1 << 1); { let prod_local_5251 = sHundred()?; { let prod_local_5252 = wasmBridgeEnvelopeValid(prod_local_5249, prod_local_5250, prod_local_5251)?; match prod_local_5252 {
+        false => prod_local_5252,
+        true => { let prod_local_5253 = sHundred()?; { let prod_local_5254 = sFive()?; { let prod_local_5255 = core::convert::identity::<u64>(prod_local_5254).checked_mul(prod_local_5254).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_5256 = skinWeightScale()?; { let prod_local_5257 = core::convert::identity::<u64>(prod_local_5255).checked_mul(prod_local_5256).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_5258 = sabineRt60Millis(prod_local_5253, prod_local_5257)?; { let prod_local_5259 = (_x_55 < prod_local_5258); match prod_local_5259 {
+        false => prod_local_5259,
+        true => { let prod_local_5260 = workerCommandRingCapacity()?; { let prod_local_5261 = sSix()?; { let prod_local_5262 = pow2Constructive(prod_local_5261)?; { let prod_local_5263 = (prod_local_5260 == prod_local_5262); prod_local_5263 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_5264 = false; { let prod_local_5265 = prod_local_5264; match prod_local_5265 {
+        false => prod_local_5265,
+        true => { let prod_local_5267 = sEight()?; { let prod_local_5268 = sHundred()?; { let prod_local_5269 = core::convert::identity::<u64>(prod_local_5267).checked_mul(prod_local_5268).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_5270 = navTriangleWalkable(prod_local_5269)?; match prod_local_5270 {
+        false => { let prod_local_5271 = prod_local_5270; match prod_local_5271 {
+        false => prod_local_5271,
+        true => { let prod_local_5272 = audioWorkletQuantumFrames()?; { let prod_local_5273 = (1 << 1); { let prod_local_5274 = sHundred()?; { let prod_local_5275 = wasmBridgeEnvelopeValid(prod_local_5272, prod_local_5273, prod_local_5274)?; match prod_local_5275 {
+        false => prod_local_5275,
+        true => { let prod_local_5276 = sHundred()?; { let prod_local_5277 = sFive()?; { let prod_local_5278 = core::convert::identity::<u64>(prod_local_5277).checked_mul(prod_local_5277).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_5279 = skinWeightScale()?; { let prod_local_5280 = core::convert::identity::<u64>(prod_local_5278).checked_mul(prod_local_5279).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_5281 = sabineRt60Millis(prod_local_5276, prod_local_5280)?; { let prod_local_5282 = (_x_55 < prod_local_5281); match prod_local_5282 {
+        false => prod_local_5282,
+        true => { let prod_local_5283 = workerCommandRingCapacity()?; { let prod_local_5284 = sSix()?; { let prod_local_5285 = pow2Constructive(prod_local_5284)?; { let prod_local_5286 = (prod_local_5283 == prod_local_5285); prod_local_5286 } } } },
+    } } } } } } } },
+    } } } } },
+    } },
+        true => { let prod_local_5287 = sTen()?; { let prod_local_5288 = sFive()?; { let prod_local_5289 = core::convert::identity::<u64>(prod_local_5287).checked_add(prod_local_5288).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_5290 = navMaxSearchNodes()?; { let prod_local_5291 = sFifteen()?; { let prod_local_5292 = core::convert::identity::<u64>(prod_local_5290).saturating_sub(prod_local_5291); { let prod_local_5293 = core::convert::identity::<u64>(prod_local_5290).saturating_sub(prod_local_5292); { let prod_local_5294 = (prod_local_5289 == prod_local_5293); { let prod_local_5295 = prod_local_5294; match prod_local_5295 {
+        false => prod_local_5295,
+        true => { let prod_local_5296 = audioWorkletQuantumFrames()?; { let prod_local_5297 = (1 << 1); { let prod_local_5298 = sHundred()?; { let prod_local_5299 = wasmBridgeEnvelopeValid(prod_local_5296, prod_local_5297, prod_local_5298)?; match prod_local_5299 {
+        false => prod_local_5299,
+        true => { let prod_local_5300 = sHundred()?; { let prod_local_5301 = sFive()?; { let prod_local_5302 = core::convert::identity::<u64>(prod_local_5301).checked_mul(prod_local_5301).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_5303 = skinWeightScale()?; { let prod_local_5304 = core::convert::identity::<u64>(prod_local_5302).checked_mul(prod_local_5303).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_5305 = sabineRt60Millis(prod_local_5300, prod_local_5304)?; { let prod_local_5306 = (_x_55 < prod_local_5305); match prod_local_5306 {
+        false => prod_local_5306,
+        true => { let prod_local_5307 = workerCommandRingCapacity()?; { let prod_local_5308 = sSix()?; { let prod_local_5309 = pow2Constructive(prod_local_5308)?; { let prod_local_5310 = (prod_local_5307 == prod_local_5309); prod_local_5310 } } } },
+    } } } } } } } },
+    } } } } },
+    } } } } } } } } } },
+    } } } } },
+    } } },
+    } } },
+    } } } } } } } },
+    } } } } } } } } } } },
+    } } } },
+    } } },
+    } } } },
+    } } } } } },
+    } } } } } } } } },
+    } } } },
+    } } } },
+    }
+                                                                                            }
+                                                                                        }
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    })
+}
+
 pub fn epochVisual0() -> Result<self::EpochVisualSpec, self::ComputeError> {
     Ok({
-        let _x_1 = 0;
+        let _x_1 = epochCosmogenic()?;
         {
-            let _x_4 = 1;
+            let _x_2 = (_x_1).rank;
             {
-                let _x_7 = sEight()?;
+                let _x_3 = (_x_1).scaleNumer;
                 {
-                    let _x_8 = sThirtyFive()?;
+                    let _x_4 = (_x_1).scaleDenom;
                     {
-                        let _x_9 = false;
+                        let _x_5 = sThirtyFive()?;
                         {
-                            let _x_18 = ((1 << ((1 << 1) + 1)) + 1);
+                            let _x_6 = false;
                             {
-                                let _x_11 = sTwelve()?;
+                                let _x_7 = (_x_1).buildersActive;
                                 {
-                                    let _x_12 = sFourteen()?;
+                                    let _x_15 = ((1 << ((1 << 1) + 1)) + 1);
                                     {
-                                        let _x_13 = sEleven()?;
+                                        let _x_9 = sEight()?;
                                         {
-                                            let _x_14 = sSixteen()?;
+                                            let _x_10 = sTwelve()?;
                                             {
-                                                let _x_15 = self::EpochVisualSpec {
-                                                    rank: _x_1,
-                                                    scaleNumer: _x_4,
-                                                    scaleDenom: _x_7,
-                                                    terrainAmpPercent: _x_8,
-                                                    waterActive: _x_9,
-                                                    floraActive: _x_9,
-                                                    buildersActive: _x_9,
-                                                    skyRedPercent: _x_18,
-                                                    skyGreenPercent: _x_7,
-                                                    skyBluePercent: _x_11,
-                                                    fogRedPercent: _x_12,
-                                                    fogGreenPercent: _x_13,
-                                                    fogBluePercent: _x_14,
-                                                };
-                                                _x_15
+                                                let _x_11 = sFourteen()?;
+                                                {
+                                                    let _x_12 = sEleven()?;
+                                                    {
+                                                        let _x_13 = sSixteen()?;
+                                                        {
+                                                            let _x_14 = self::EpochVisualSpec {
+                                                                rank: _x_2,
+                                                                scaleNumer: _x_3,
+                                                                scaleDenom: _x_4,
+                                                                terrainAmpPercent: _x_5,
+                                                                waterActive: _x_6,
+                                                                floraActive: _x_6,
+                                                                buildersActive: _x_7,
+                                                                skyRedPercent: _x_15,
+                                                                skyGreenPercent: _x_9,
+                                                                skyBluePercent: _x_10,
+                                                                fogRedPercent: _x_11,
+                                                                fogGreenPercent: _x_12,
+                                                                fogBluePercent: _x_13,
+                                                            };
+                                                            _x_14
+                                                        }
+                                                    }
+                                                }
                                             }
                                         }
                                     }
@@ -2708,44 +6312,50 @@ pub fn epochVisual0() -> Result<self::EpochVisualSpec, self::ComputeError> {
 
 pub fn epochVisual1() -> Result<self::EpochVisualSpec, self::ComputeError> {
     Ok({
-        let _x_1 = 1;
+        let _x_1 = epochLithicHydrologic()?;
         {
-            let _x_16 = (1 << 1);
+            let _x_2 = (_x_1).rank;
             {
-                let _x_5 = sEight()?;
+                let _x_3 = (_x_1).scaleNumer;
                 {
-                    let _x_6 = sSeventyTwo()?;
+                    let _x_4 = (_x_1).scaleDenom;
                     {
-                        let _x_7 = true;
+                        let _x_5 = sSeventyTwo()?;
                         {
-                            let _x_8 = false;
+                            let _x_6 = true;
                             {
-                                let _x_9 = sTwelve()?;
+                                let _x_7 = false;
                                 {
-                                    let _x_10 = sSeventeen()?;
+                                    let _x_8 = (_x_1).buildersActive;
                                     {
-                                        let _x_11 = sTwentyFour()?;
+                                        let _x_9 = sTwelve()?;
                                         {
-                                            let _x_17 = ((1 << (1 << (1 << 1))) + (1 << 1));
+                                            let _x_10 = sSeventeen()?;
                                             {
-                                                let _x_13 = sThirtyOne()?;
+                                                let _x_11 = sTwentyFour()?;
                                                 {
-                                                    let _x_14 = self::EpochVisualSpec {
-                                                        rank: _x_1,
-                                                        scaleNumer: _x_16,
-                                                        scaleDenom: _x_5,
-                                                        terrainAmpPercent: _x_6,
-                                                        waterActive: _x_7,
-                                                        floraActive: _x_8,
-                                                        buildersActive: _x_8,
-                                                        skyRedPercent: _x_9,
-                                                        skyGreenPercent: _x_10,
-                                                        skyBluePercent: _x_11,
-                                                        fogRedPercent: _x_17,
-                                                        fogGreenPercent: _x_11,
-                                                        fogBluePercent: _x_13,
-                                                    };
-                                                    _x_14
+                                                    let _x_15 = ((1 << (1 << (1 << 1))) + (1 << 1));
+                                                    {
+                                                        let _x_13 = sThirtyOne()?;
+                                                        {
+                                                            let _x_14 = self::EpochVisualSpec {
+                                                                rank: _x_2,
+                                                                scaleNumer: _x_3,
+                                                                scaleDenom: _x_4,
+                                                                terrainAmpPercent: _x_5,
+                                                                waterActive: _x_6,
+                                                                floraActive: _x_7,
+                                                                buildersActive: _x_8,
+                                                                skyRedPercent: _x_9,
+                                                                skyGreenPercent: _x_10,
+                                                                skyBluePercent: _x_11,
+                                                                fogRedPercent: _x_15,
+                                                                fogGreenPercent: _x_11,
+                                                                fogBluePercent: _x_13,
+                                                            };
+                                                            _x_14
+                                                        }
+                                                    }
                                                 }
                                             }
                                         }
@@ -2762,52 +6372,56 @@ pub fn epochVisual1() -> Result<self::EpochVisualSpec, self::ComputeError> {
 
 pub fn epochVisual2() -> Result<self::EpochVisualSpec, self::ComputeError> {
     Ok({
-        let _x_14 = (1 << 1);
+        let _x_1 = epochBioticEcological()?;
         {
-            let _x_2 = sFive()?;
+            let _x_2 = (_x_1).rank;
             {
-                let _x_3 = sEight()?;
+                let _x_3 = (_x_1).scaleNumer;
                 {
-                    let _x_4 = sNinetyTwo()?;
+                    let _x_4 = (_x_1).scaleDenom;
                     {
-                        let _x_5 = true;
+                        let _x_5 = sNinetyTwo()?;
                         {
-                            let _x_6 = false;
+                            let _x_6 = true;
                             {
-                                let _x_7 = sSixteen()?;
+                                let _x_7 = (_x_1).buildersActive;
                                 {
-                                    let _x_15 = ((((1 << (1 << (1 << 1)))
-                                        + (1 << ((1 << 1) + 1)))
-                                        + (1 << 1))
-                                        + 1);
+                                    let _x_8 = sSixteen()?;
                                     {
-                                        let _x_9 = sThirtyFour()?;
+                                        let _x_15 = ((((1 << (1 << (1 << 1)))
+                                            + (1 << ((1 << 1) + 1)))
+                                            + (1 << 1))
+                                            + 1);
                                         {
-                                            let _x_10 = sTwentyFour()?;
+                                            let _x_10 = sThirtyFour()?;
                                             {
-                                                let _x_11 = sThirtyFive()?;
+                                                let _x_11 = sTwentyFour()?;
                                                 {
-                                                    let _x_16 = ((((1 << ((1 << (1 << 1)) + 1))
-                                                        + (1 << (1 << 1)))
-                                                        + (1 << 1))
-                                                        + 1);
+                                                    let _x_12 = sThirtyFive()?;
                                                     {
-                                                        let _x_13 = self::EpochVisualSpec {
-                                                            rank: _x_14,
-                                                            scaleNumer: _x_2,
-                                                            scaleDenom: _x_3,
-                                                            terrainAmpPercent: _x_4,
-                                                            waterActive: _x_5,
-                                                            floraActive: _x_5,
-                                                            buildersActive: _x_6,
-                                                            skyRedPercent: _x_7,
-                                                            skyGreenPercent: _x_15,
-                                                            skyBluePercent: _x_9,
-                                                            fogRedPercent: _x_10,
-                                                            fogGreenPercent: _x_11,
-                                                            fogBluePercent: _x_16,
-                                                        };
-                                                        _x_13
+                                                        let _x_16 = ((((1
+                                                            << ((1 << (1 << 1)) + 1))
+                                                            + (1 << (1 << 1)))
+                                                            + (1 << 1))
+                                                            + 1);
+                                                        {
+                                                            let _x_14 = self::EpochVisualSpec {
+                                                                rank: _x_2,
+                                                                scaleNumer: _x_3,
+                                                                scaleDenom: _x_4,
+                                                                terrainAmpPercent: _x_5,
+                                                                waterActive: _x_6,
+                                                                floraActive: _x_6,
+                                                                buildersActive: _x_7,
+                                                                skyRedPercent: _x_8,
+                                                                skyGreenPercent: _x_15,
+                                                                skyBluePercent: _x_10,
+                                                                fogRedPercent: _x_11,
+                                                                fogGreenPercent: _x_12,
+                                                                fogBluePercent: _x_16,
+                                                            };
+                                                            _x_14
+                                                        }
                                                     }
                                                 }
                                             }
@@ -2825,41 +6439,51 @@ pub fn epochVisual2() -> Result<self::EpochVisualSpec, self::ComputeError> {
 
 pub fn epochVisual3() -> Result<self::EpochVisualSpec, self::ComputeError> {
     Ok({
-        let _x_11 = ((1 << 1) + 1);
+        let _x_1 = epochAgenticArchitectural()?;
         {
-            let _x_2 = sEight()?;
+            let _x_2 = (_x_1).rank;
             {
-                let _x_3 = sHundred()?;
+                let _x_3 = (_x_1).scaleNumer;
                 {
-                    let _x_4 = true;
+                    let _x_4 = (_x_1).scaleDenom;
                     {
-                        let _x_12 = ((1 << (1 << (1 << 1))) + (1 << 1));
+                        let _x_5 = sHundred()?;
                         {
-                            let _x_6 = sThirty()?;
+                            let _x_6 = true;
                             {
-                                let _x_13 =
-                                    (((1 << ((1 << (1 << 1)) + 1)) + (1 << (1 << 1))) + (1 << 1));
+                                let _x_7 = (_x_1).buildersActive;
                                 {
-                                    let _x_8 = sForty()?;
+                                    let _x_14 = ((1 << (1 << (1 << 1))) + (1 << 1));
                                     {
-                                        let _x_9 = sFortyFour()?;
+                                        let _x_9 = sThirty()?;
                                         {
-                                            let _x_10 = self::EpochVisualSpec {
-                                                rank: _x_11,
-                                                scaleNumer: _x_2,
-                                                scaleDenom: _x_2,
-                                                terrainAmpPercent: _x_3,
-                                                waterActive: _x_4,
-                                                floraActive: _x_4,
-                                                buildersActive: _x_4,
-                                                skyRedPercent: _x_12,
-                                                skyGreenPercent: _x_6,
-                                                skyBluePercent: _x_13,
-                                                fogRedPercent: _x_6,
-                                                fogGreenPercent: _x_8,
-                                                fogBluePercent: _x_9,
-                                            };
-                                            _x_10
+                                            let _x_15 = (((1 << ((1 << (1 << 1)) + 1))
+                                                + (1 << (1 << 1)))
+                                                + (1 << 1));
+                                            {
+                                                let _x_11 = sForty()?;
+                                                {
+                                                    let _x_12 = sFortyFour()?;
+                                                    {
+                                                        let _x_13 = self::EpochVisualSpec {
+                                                            rank: _x_2,
+                                                            scaleNumer: _x_3,
+                                                            scaleDenom: _x_4,
+                                                            terrainAmpPercent: _x_5,
+                                                            waterActive: _x_6,
+                                                            floraActive: _x_6,
+                                                            buildersActive: _x_7,
+                                                            skyRedPercent: _x_14,
+                                                            skyGreenPercent: _x_9,
+                                                            skyBluePercent: _x_15,
+                                                            fogRedPercent: _x_9,
+                                                            fogGreenPercent: _x_11,
+                                                            fogBluePercent: _x_12,
+                                                        };
+                                                        _x_13
+                                                    }
+                                                }
+                                            }
                                         }
                                     }
                                 }
@@ -2978,6 +6602,20 @@ pub fn frameBudgetMicrosForHz(refreshHz: u64) -> Result<u64, self::ComputeError>
     })
 }
 
+pub fn gjkMaxIterations() -> Result<u64, self::ComputeError> {
+    Ok({
+        let _x_1 = sThirtyTwo()?;
+        _x_1
+    })
+}
+
+pub fn gjkSimplexMaxVertices() -> Result<u64, self::ComputeError> {
+    Ok({
+        let _x_1 = sFour()?;
+        _x_1
+    })
+}
+
 pub fn glbAlignedByteLength(rawBytes: u64) -> Result<u64, self::ComputeError> {
     Ok({
         let _x_1 = canonicalDimensions()?;
@@ -3052,55 +6690,135 @@ pub fn heymanMiddleThirdDenom() -> Result<u64, self::ComputeError> {
     })
 }
 
+pub fn iblMipLevelCount(baseResolution: u64) -> Result<u64, self::ComputeError> {
+    Ok({
+        let _x_1 = sThirtyTwo()?;
+        {
+            let _x_2 = iblMipLevelsRec(baseResolution, _x_1)?;
+            _x_2
+        }
+    })
+}
+
+pub fn iblMipLevelsRec(x_1: u64, x_2: u64) -> Result<u64, self::ComputeError> {
+    Ok(match x_2 {
+        0 => {
+            let _x_55 = 1;
+            _x_55
+        }
+        _ => {
+            let n_32 = (x_2).saturating_sub(1);
+            {
+                let _x_66 = 1;
+                {
+                    let _x_67 = (x_1 <= _x_66);
+                    match _x_67 {
+                        false => {
+                            let _x_83 = (1 << 1);
+                            {
+                                let _x_84 = 0;
+                                {
+                                    let _x_85 = if _x_83 == 0 { _x_84 } else { x_1 / _x_83 };
+                                    {
+                                        let _x_86 = iblMipLevelsRec(_x_85, n_32)?;
+                                        {
+                                            let _x_87 = core::convert::identity::<u64>(_x_66)
+                                                .checked_add(_x_86)
+                                                .ok_or(self::ComputeError::AddOverflow)?;
+                                            _x_87
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        true => _x_66,
+                    }
+                }
+            }
+        }
+    })
+}
+
+pub fn jointHierarchyAcyclic(jointIndex: u64, parentIndex: u64, isRoot: bool) -> bool {
+    match isRoot {
+        false => {
+            let _x_53 = (parentIndex < jointIndex);
+            _x_53
+        }
+        true => {
+            let _x_54 = 0;
+            {
+                let _x_55 = (jointIndex == _x_54);
+                match _x_55 {
+                    false => _x_55,
+                    true => {
+                        let _x_56 = 0;
+                        {
+                            let _x_57 = (parentIndex == _x_56);
+                            _x_57
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 pub fn kernelParametersActive() -> Result<bool, self::ComputeError> {
     Ok({
-        let _x_116 = sSix()?;
+        let _x_125 = sSix()?;
         {
             let _x_10 = sSix()?;
             {
-                let _x_11 = (_x_116 == _x_10);
+                let _x_11 = (_x_125 == _x_10);
                 match _x_11 {
                     false => {
                         let _y_16 = _x_11;
                         match _y_16 {
                             false => _y_16,
                             true => {
-                                let _x_369 = sSixteen()?;
+                                let _x_394 = sSixteen()?;
                                 {
-                                    let _x_370 = sSixteen()?;
+                                    let _x_395 = sSixteen()?;
                                     {
-                                        let _x_371 = (_x_369 == _x_370);
-                                        match _x_371 {
+                                        let _x_396 = (_x_394 == _x_395);
+                                        match _x_396 {
                                             false => {
-                                                let _y_373 = _x_371;
-                                                match _y_373 {
-                                                    false => _y_373,
+                                                let _y_398 = _x_396;
+                                                match _y_398 {
+                                                    false => _y_398,
                                                     true => {
-                                                        let _x_402 = sHundred()?;
+                                                        let _x_428 = sHundred()?;
                                                         {
-                                                            let _x_403 = sHundred()?;
+                                                            let _x_429 = sHundred()?;
                                                             {
-                                                                let _x_404 = (_x_402 == _x_403);
-                                                                match _x_404 {
+                                                                let _x_430 = (_x_428 == _x_429);
+                                                                match _x_430 {
                                                                     false => {
-                                                                        let _y_406 = _x_404;
-                                                                        match _y_406 {
-                                                                            false => _y_406,
+                                                                        let _y_432 = _x_430;
+                                                                        match _y_432 {
+                                                                            false => _y_432,
                                                                             true => {
-                                                                                let _x_426 =
+                                                                                let _x_453 =
                                                                                     sTwentyFour()?;
                                                                                 {
-                                                                                    let _x_427 = sabinePrefactorDenom()?;
+                                                                                    let _x_454 = sabinePrefactorDenom()?;
                                                                                     {
-                                                                                        let _x_428 = (_x_426 < _x_427);
-                                                                                        match _x_428 {
-        false => { let _y_430 = _x_428; match _y_430 {
-        false => _y_430,
-        true => { let _x_441 = sFive()?; { let _x_442 = glbAlignedByteLength(_x_441)?; { let _x_443 = sEight()?; { let _x_444 = glbContainerByteLength(_x_442, _x_443)?; { let _x_445 = sFortyFour()?; { let _x_446 = (_x_444 == _x_445); _x_446 } } } } } },
+                                                                                        let _x_455 = (_x_453 < _x_454);
+                                                                                        match _x_455 {
+        false => { let _y_457 = _x_455; match _y_457 {
+        false => _y_457,
+        true => { let _x_469 = sFive()?; { let _x_470 = glbAlignedByteLength(_x_469)?; { let _x_471 = sEight()?; { let _x_472 = glbContainerByteLength(_x_470, _x_471)?; { let _x_473 = sFortyFour()?; { let _x_474 = (_x_472 == _x_473); match _x_474 {
+        false => _x_474,
+        true => { let _x_475 = deepenedSubsystemsActive()?; _x_475 },
+    } } } } } } },
     } },
-        true => { let _x_438 = sFour()?; { let _x_439 = sFour()?; { let _x_440 = (_x_438 == _x_439); { let prod_local_0 = _x_440; match prod_local_0 {
+        true => { let _x_466 = sFour()?; { let _x_467 = sFour()?; { let _x_468 = (_x_466 == _x_467); { let prod_local_0 = _x_468; match prod_local_0 {
         false => prod_local_0,
-        true => { let prod_local_1 = sFive()?; { let prod_local_2 = glbAlignedByteLength(prod_local_1)?; { let prod_local_3 = sEight()?; { let prod_local_4 = glbContainerByteLength(prod_local_2, prod_local_3)?; { let prod_local_5 = sFortyFour()?; { let prod_local_6 = (prod_local_4 == prod_local_5); prod_local_6 } } } } } },
+        true => { let prod_local_1 = sFive()?; { let prod_local_2 = glbAlignedByteLength(prod_local_1)?; { let prod_local_3 = sEight()?; { let prod_local_4 = glbContainerByteLength(prod_local_2, prod_local_3)?; { let prod_local_5 = sFortyFour()?; { let prod_local_6 = (prod_local_4 == prod_local_5); match prod_local_6 {
+        false => prod_local_6,
+        true => { let prod_local_7 = deepenedSubsystemsActive()?; prod_local_7 },
+    } } } } } } },
     } } } } },
     }
                                                                                     }
@@ -3109,25 +6827,31 @@ pub fn kernelParametersActive() -> Result<bool, self::ComputeError> {
                                                                         }
                                                                     }
                                                                     true => {
-                                                                        let _x_423 = sTen()?;
+                                                                        let _x_450 = sTen()?;
                                                                         {
-                                                                            let _x_424 = sTen()?;
+                                                                            let _x_451 = sTen()?;
                                                                             {
-                                                                                let _x_425 = (_x_423
-                                                                                    == _x_424);
+                                                                                let _x_452 = (_x_450
+                                                                                    == _x_451);
                                                                                 {
-                                                                                    let prod_local_7 =
-                                                                                        _x_425;
-                                                                                    match prod_local_7 {
-        false => prod_local_7,
-        true => { let prod_local_8 = sTwentyFour()?; { let prod_local_9 = sabinePrefactorDenom()?; { let prod_local_10 = (prod_local_8 < prod_local_9); match prod_local_10 {
-        false => { let prod_local_12 = prod_local_10; match prod_local_12 {
-        false => prod_local_12,
-        true => { let prod_local_13 = sFive()?; { let prod_local_14 = glbAlignedByteLength(prod_local_13)?; { let prod_local_15 = sEight()?; { let prod_local_16 = glbContainerByteLength(prod_local_14, prod_local_15)?; { let prod_local_17 = sFortyFour()?; { let prod_local_18 = (prod_local_16 == prod_local_17); prod_local_18 } } } } } },
+                                                                                    let prod_local_8 =
+                                                                                        _x_452;
+                                                                                    match prod_local_8 {
+        false => prod_local_8,
+        true => { let prod_local_9 = sTwentyFour()?; { let prod_local_10 = sabinePrefactorDenom()?; { let prod_local_11 = (prod_local_9 < prod_local_10); match prod_local_11 {
+        false => { let prod_local_13 = prod_local_11; match prod_local_13 {
+        false => prod_local_13,
+        true => { let prod_local_14 = sFive()?; { let prod_local_15 = glbAlignedByteLength(prod_local_14)?; { let prod_local_16 = sEight()?; { let prod_local_17 = glbContainerByteLength(prod_local_15, prod_local_16)?; { let prod_local_18 = sFortyFour()?; { let prod_local_19 = (prod_local_17 == prod_local_18); match prod_local_19 {
+        false => prod_local_19,
+        true => { let prod_local_20 = deepenedSubsystemsActive()?; prod_local_20 },
+    } } } } } } },
     } },
-        true => { let prod_local_19 = sFour()?; { let prod_local_20 = sFour()?; { let prod_local_21 = (prod_local_19 == prod_local_20); { let prod_local_22 = prod_local_21; match prod_local_22 {
-        false => prod_local_22,
-        true => { let prod_local_23 = sFive()?; { let prod_local_24 = glbAlignedByteLength(prod_local_23)?; { let prod_local_25 = sEight()?; { let prod_local_26 = glbContainerByteLength(prod_local_24, prod_local_25)?; { let prod_local_27 = sFortyFour()?; { let prod_local_28 = (prod_local_26 == prod_local_27); prod_local_28 } } } } } },
+        true => { let prod_local_21 = sFour()?; { let prod_local_22 = sFour()?; { let prod_local_23 = (prod_local_21 == prod_local_22); { let prod_local_24 = prod_local_23; match prod_local_24 {
+        false => prod_local_24,
+        true => { let prod_local_25 = sFive()?; { let prod_local_26 = glbAlignedByteLength(prod_local_25)?; { let prod_local_27 = sEight()?; { let prod_local_28 = glbContainerByteLength(prod_local_26, prod_local_27)?; { let prod_local_29 = sFortyFour()?; { let prod_local_30 = (prod_local_28 == prod_local_29); match prod_local_30 {
+        false => prod_local_30,
+        true => { let prod_local_31 = deepenedSubsystemsActive()?; prod_local_31 },
+    } } } } } } },
     } } } } },
     } } } },
     }
@@ -3142,59 +6866,71 @@ pub fn kernelParametersActive() -> Result<bool, self::ComputeError> {
                                                 }
                                             }
                                             true => {
-                                                let _x_399 = sTwentySix()?;
+                                                let _x_425 = sTwentySix()?;
                                                 {
-                                                    let _x_400 = sTwentySix()?;
+                                                    let _x_426 = sTwentySix()?;
                                                     {
-                                                        let _x_401 = (_x_399 == _x_400);
+                                                        let _x_427 = (_x_425 == _x_426);
                                                         {
-                                                            let prod_local_29 = _x_401;
-                                                            match prod_local_29 {
-                                                                false => prod_local_29,
+                                                            let prod_local_32 = _x_427;
+                                                            match prod_local_32 {
+                                                                false => prod_local_32,
                                                                 true => {
-                                                                    let prod_local_30 = sHundred()?;
+                                                                    let prod_local_33 = sHundred()?;
                                                                     {
-                                                                        let prod_local_31 =
+                                                                        let prod_local_34 =
                                                                             sHundred()?;
                                                                         {
-                                                                            let prod_local_32 = (prod_local_30 == prod_local_31);
-                                                                            match prod_local_32 {
+                                                                            let prod_local_35 = (prod_local_33 == prod_local_34);
+                                                                            match prod_local_35 {
                                                                                 false => {
-                                                                                    let prod_local_34 = prod_local_32;
-                                                                                    match prod_local_34 {
-        false => prod_local_34,
-        true => { let prod_local_35 = sTwentyFour()?; { let prod_local_36 = sabinePrefactorDenom()?; { let prod_local_37 = (prod_local_35 < prod_local_36); match prod_local_37 {
-        false => { let prod_local_39 = prod_local_37; match prod_local_39 {
-        false => prod_local_39,
-        true => { let prod_local_40 = sFive()?; { let prod_local_41 = glbAlignedByteLength(prod_local_40)?; { let prod_local_42 = sEight()?; { let prod_local_43 = glbContainerByteLength(prod_local_41, prod_local_42)?; { let prod_local_44 = sFortyFour()?; { let prod_local_45 = (prod_local_43 == prod_local_44); prod_local_45 } } } } } },
+                                                                                    let prod_local_37 = prod_local_35;
+                                                                                    match prod_local_37 {
+        false => prod_local_37,
+        true => { let prod_local_38 = sTwentyFour()?; { let prod_local_39 = sabinePrefactorDenom()?; { let prod_local_40 = (prod_local_38 < prod_local_39); match prod_local_40 {
+        false => { let prod_local_42 = prod_local_40; match prod_local_42 {
+        false => prod_local_42,
+        true => { let prod_local_43 = sFive()?; { let prod_local_44 = glbAlignedByteLength(prod_local_43)?; { let prod_local_45 = sEight()?; { let prod_local_46 = glbContainerByteLength(prod_local_44, prod_local_45)?; { let prod_local_47 = sFortyFour()?; { let prod_local_48 = (prod_local_46 == prod_local_47); match prod_local_48 {
+        false => prod_local_48,
+        true => { let prod_local_49 = deepenedSubsystemsActive()?; prod_local_49 },
+    } } } } } } },
     } },
-        true => { let prod_local_46 = sFour()?; { let prod_local_47 = sFour()?; { let prod_local_48 = (prod_local_46 == prod_local_47); { let prod_local_49 = prod_local_48; match prod_local_49 {
-        false => prod_local_49,
-        true => { let prod_local_50 = sFive()?; { let prod_local_51 = glbAlignedByteLength(prod_local_50)?; { let prod_local_52 = sEight()?; { let prod_local_53 = glbContainerByteLength(prod_local_51, prod_local_52)?; { let prod_local_54 = sFortyFour()?; { let prod_local_55 = (prod_local_53 == prod_local_54); prod_local_55 } } } } } },
+        true => { let prod_local_50 = sFour()?; { let prod_local_51 = sFour()?; { let prod_local_52 = (prod_local_50 == prod_local_51); { let prod_local_53 = prod_local_52; match prod_local_53 {
+        false => prod_local_53,
+        true => { let prod_local_54 = sFive()?; { let prod_local_55 = glbAlignedByteLength(prod_local_54)?; { let prod_local_56 = sEight()?; { let prod_local_57 = glbContainerByteLength(prod_local_55, prod_local_56)?; { let prod_local_58 = sFortyFour()?; { let prod_local_59 = (prod_local_57 == prod_local_58); match prod_local_59 {
+        false => prod_local_59,
+        true => { let prod_local_60 = deepenedSubsystemsActive()?; prod_local_60 },
+    } } } } } } },
     } } } } },
     } } } },
     }
                                                                                 }
                                                                                 true => {
-                                                                                    let prod_local_56 =
+                                                                                    let prod_local_61 =
                                                                                         sTen()?;
                                                                                     {
-                                                                                        let prod_local_57 =
+                                                                                        let prod_local_62 =
                                                                                             sTen()?;
                                                                                         {
-                                                                                            let prod_local_58 = (prod_local_56 == prod_local_57);
+                                                                                            let prod_local_63 = (prod_local_61 == prod_local_62);
                                                                                             {
-                                                                                                let prod_local_59 = prod_local_58;
-                                                                                                match prod_local_59 {
-        false => prod_local_59,
-        true => { let prod_local_60 = sTwentyFour()?; { let prod_local_61 = sabinePrefactorDenom()?; { let prod_local_62 = (prod_local_60 < prod_local_61); match prod_local_62 {
-        false => { let prod_local_64 = prod_local_62; match prod_local_64 {
+                                                                                                let prod_local_64 = prod_local_63;
+                                                                                                match prod_local_64 {
         false => prod_local_64,
-        true => { let prod_local_65 = sFive()?; { let prod_local_66 = glbAlignedByteLength(prod_local_65)?; { let prod_local_67 = sEight()?; { let prod_local_68 = glbContainerByteLength(prod_local_66, prod_local_67)?; { let prod_local_69 = sFortyFour()?; { let prod_local_70 = (prod_local_68 == prod_local_69); prod_local_70 } } } } } },
+        true => { let prod_local_65 = sTwentyFour()?; { let prod_local_66 = sabinePrefactorDenom()?; { let prod_local_67 = (prod_local_65 < prod_local_66); match prod_local_67 {
+        false => { let prod_local_69 = prod_local_67; match prod_local_69 {
+        false => prod_local_69,
+        true => { let prod_local_70 = sFive()?; { let prod_local_71 = glbAlignedByteLength(prod_local_70)?; { let prod_local_72 = sEight()?; { let prod_local_73 = glbContainerByteLength(prod_local_71, prod_local_72)?; { let prod_local_74 = sFortyFour()?; { let prod_local_75 = (prod_local_73 == prod_local_74); match prod_local_75 {
+        false => prod_local_75,
+        true => { let prod_local_76 = deepenedSubsystemsActive()?; prod_local_76 },
+    } } } } } } },
     } },
-        true => { let prod_local_71 = sFour()?; { let prod_local_72 = sFour()?; { let prod_local_73 = (prod_local_71 == prod_local_72); { let prod_local_74 = prod_local_73; match prod_local_74 {
-        false => prod_local_74,
-        true => { let prod_local_75 = sFive()?; { let prod_local_76 = glbAlignedByteLength(prod_local_75)?; { let prod_local_77 = sEight()?; { let prod_local_78 = glbContainerByteLength(prod_local_76, prod_local_77)?; { let prod_local_79 = sFortyFour()?; { let prod_local_80 = (prod_local_78 == prod_local_79); prod_local_80 } } } } } },
+        true => { let prod_local_77 = sFour()?; { let prod_local_78 = sFour()?; { let prod_local_79 = (prod_local_77 == prod_local_78); { let prod_local_80 = prod_local_79; match prod_local_80 {
+        false => prod_local_80,
+        true => { let prod_local_81 = sFive()?; { let prod_local_82 = glbAlignedByteLength(prod_local_81)?; { let prod_local_83 = sEight()?; { let prod_local_84 = glbContainerByteLength(prod_local_82, prod_local_83)?; { let prod_local_85 = sFortyFour()?; { let prod_local_86 = (prod_local_84 == prod_local_85); match prod_local_86 {
+        false => prod_local_86,
+        true => { let prod_local_87 = deepenedSubsystemsActive()?; prod_local_87 },
+    } } } } } } },
     } } } } },
     } } } },
     }
@@ -3218,71 +6954,83 @@ pub fn kernelParametersActive() -> Result<bool, self::ComputeError> {
                         }
                     }
                     true => {
-                        let _x_366 = (1 << 1);
+                        let _x_391 = (1 << 1);
                         {
-                            let _x_367 = (1 << 1);
+                            let _x_392 = (1 << 1);
                             {
-                                let _x_368 = (_x_366 == _x_367);
+                                let _x_393 = (_x_391 == _x_392);
                                 {
-                                    let prod_local_81 = _x_368;
-                                    match prod_local_81 {
-                                        false => prod_local_81,
+                                    let prod_local_88 = _x_393;
+                                    match prod_local_88 {
+                                        false => prod_local_88,
                                         true => {
-                                            let prod_local_82 = sSixteen()?;
+                                            let prod_local_89 = sSixteen()?;
                                             {
-                                                let prod_local_83 = sSixteen()?;
+                                                let prod_local_90 = sSixteen()?;
                                                 {
-                                                    let prod_local_84 =
-                                                        (prod_local_82 == prod_local_83);
-                                                    match prod_local_84 {
+                                                    let prod_local_91 =
+                                                        (prod_local_89 == prod_local_90);
+                                                    match prod_local_91 {
                                                         false => {
-                                                            let prod_local_86 = prod_local_84;
-                                                            match prod_local_86 {
-                                                                false => prod_local_86,
+                                                            let prod_local_93 = prod_local_91;
+                                                            match prod_local_93 {
+                                                                false => prod_local_93,
                                                                 true => {
-                                                                    let prod_local_87 = sHundred()?;
+                                                                    let prod_local_94 = sHundred()?;
                                                                     {
-                                                                        let prod_local_88 =
+                                                                        let prod_local_95 =
                                                                             sHundred()?;
                                                                         {
-                                                                            let prod_local_89 = (prod_local_87 == prod_local_88);
-                                                                            match prod_local_89 {
+                                                                            let prod_local_96 = (prod_local_94 == prod_local_95);
+                                                                            match prod_local_96 {
                                                                                 false => {
-                                                                                    let prod_local_91 = prod_local_89;
-                                                                                    match prod_local_91 {
-        false => prod_local_91,
-        true => { let prod_local_92 = sTwentyFour()?; { let prod_local_93 = sabinePrefactorDenom()?; { let prod_local_94 = (prod_local_92 < prod_local_93); match prod_local_94 {
-        false => { let prod_local_96 = prod_local_94; match prod_local_96 {
-        false => prod_local_96,
-        true => { let prod_local_97 = sFive()?; { let prod_local_98 = glbAlignedByteLength(prod_local_97)?; { let prod_local_99 = sEight()?; { let prod_local_100 = glbContainerByteLength(prod_local_98, prod_local_99)?; { let prod_local_101 = sFortyFour()?; { let prod_local_102 = (prod_local_100 == prod_local_101); prod_local_102 } } } } } },
+                                                                                    let prod_local_98 = prod_local_96;
+                                                                                    match prod_local_98 {
+        false => prod_local_98,
+        true => { let prod_local_99 = sTwentyFour()?; { let prod_local_100 = sabinePrefactorDenom()?; { let prod_local_101 = (prod_local_99 < prod_local_100); match prod_local_101 {
+        false => { let prod_local_103 = prod_local_101; match prod_local_103 {
+        false => prod_local_103,
+        true => { let prod_local_104 = sFive()?; { let prod_local_105 = glbAlignedByteLength(prod_local_104)?; { let prod_local_106 = sEight()?; { let prod_local_107 = glbContainerByteLength(prod_local_105, prod_local_106)?; { let prod_local_108 = sFortyFour()?; { let prod_local_109 = (prod_local_107 == prod_local_108); match prod_local_109 {
+        false => prod_local_109,
+        true => { let prod_local_110 = deepenedSubsystemsActive()?; prod_local_110 },
+    } } } } } } },
     } },
-        true => { let prod_local_103 = sFour()?; { let prod_local_104 = sFour()?; { let prod_local_105 = (prod_local_103 == prod_local_104); { let prod_local_106 = prod_local_105; match prod_local_106 {
-        false => prod_local_106,
-        true => { let prod_local_107 = sFive()?; { let prod_local_108 = glbAlignedByteLength(prod_local_107)?; { let prod_local_109 = sEight()?; { let prod_local_110 = glbContainerByteLength(prod_local_108, prod_local_109)?; { let prod_local_111 = sFortyFour()?; { let prod_local_112 = (prod_local_110 == prod_local_111); prod_local_112 } } } } } },
+        true => { let prod_local_111 = sFour()?; { let prod_local_112 = sFour()?; { let prod_local_113 = (prod_local_111 == prod_local_112); { let prod_local_114 = prod_local_113; match prod_local_114 {
+        false => prod_local_114,
+        true => { let prod_local_115 = sFive()?; { let prod_local_116 = glbAlignedByteLength(prod_local_115)?; { let prod_local_117 = sEight()?; { let prod_local_118 = glbContainerByteLength(prod_local_116, prod_local_117)?; { let prod_local_119 = sFortyFour()?; { let prod_local_120 = (prod_local_118 == prod_local_119); match prod_local_120 {
+        false => prod_local_120,
+        true => { let prod_local_121 = deepenedSubsystemsActive()?; prod_local_121 },
+    } } } } } } },
     } } } } },
     } } } },
     }
                                                                                 }
                                                                                 true => {
-                                                                                    let prod_local_113 =
+                                                                                    let prod_local_122 =
                                                                                         sTen()?;
                                                                                     {
-                                                                                        let prod_local_114 =
+                                                                                        let prod_local_123 =
                                                                                             sTen()?;
                                                                                         {
-                                                                                            let prod_local_115 = (prod_local_113 == prod_local_114);
+                                                                                            let prod_local_124 = (prod_local_122 == prod_local_123);
                                                                                             {
-                                                                                                let prod_local_116 = prod_local_115;
-                                                                                                match prod_local_116 {
-        false => prod_local_116,
-        true => { let prod_local_117 = sTwentyFour()?; { let prod_local_118 = sabinePrefactorDenom()?; { let prod_local_119 = (prod_local_117 < prod_local_118); match prod_local_119 {
-        false => { let prod_local_121 = prod_local_119; match prod_local_121 {
-        false => prod_local_121,
-        true => { let prod_local_122 = sFive()?; { let prod_local_123 = glbAlignedByteLength(prod_local_122)?; { let prod_local_124 = sEight()?; { let prod_local_125 = glbContainerByteLength(prod_local_123, prod_local_124)?; { let prod_local_126 = sFortyFour()?; { let prod_local_127 = (prod_local_125 == prod_local_126); prod_local_127 } } } } } },
+                                                                                                let prod_local_125 = prod_local_124;
+                                                                                                match prod_local_125 {
+        false => prod_local_125,
+        true => { let prod_local_126 = sTwentyFour()?; { let prod_local_127 = sabinePrefactorDenom()?; { let prod_local_128 = (prod_local_126 < prod_local_127); match prod_local_128 {
+        false => { let prod_local_130 = prod_local_128; match prod_local_130 {
+        false => prod_local_130,
+        true => { let prod_local_131 = sFive()?; { let prod_local_132 = glbAlignedByteLength(prod_local_131)?; { let prod_local_133 = sEight()?; { let prod_local_134 = glbContainerByteLength(prod_local_132, prod_local_133)?; { let prod_local_135 = sFortyFour()?; { let prod_local_136 = (prod_local_134 == prod_local_135); match prod_local_136 {
+        false => prod_local_136,
+        true => { let prod_local_137 = deepenedSubsystemsActive()?; prod_local_137 },
+    } } } } } } },
     } },
-        true => { let prod_local_128 = sFour()?; { let prod_local_129 = sFour()?; { let prod_local_130 = (prod_local_128 == prod_local_129); { let prod_local_131 = prod_local_130; match prod_local_131 {
-        false => prod_local_131,
-        true => { let prod_local_132 = sFive()?; { let prod_local_133 = glbAlignedByteLength(prod_local_132)?; { let prod_local_134 = sEight()?; { let prod_local_135 = glbContainerByteLength(prod_local_133, prod_local_134)?; { let prod_local_136 = sFortyFour()?; { let prod_local_137 = (prod_local_135 == prod_local_136); prod_local_137 } } } } } },
+        true => { let prod_local_138 = sFour()?; { let prod_local_139 = sFour()?; { let prod_local_140 = (prod_local_138 == prod_local_139); { let prod_local_141 = prod_local_140; match prod_local_141 {
+        false => prod_local_141,
+        true => { let prod_local_142 = sFive()?; { let prod_local_143 = glbAlignedByteLength(prod_local_142)?; { let prod_local_144 = sEight()?; { let prod_local_145 = glbContainerByteLength(prod_local_143, prod_local_144)?; { let prod_local_146 = sFortyFour()?; { let prod_local_147 = (prod_local_145 == prod_local_146); match prod_local_147 {
+        false => prod_local_147,
+        true => { let prod_local_148 = deepenedSubsystemsActive()?; prod_local_148 },
+    } } } } } } },
     } } } } },
     } } } },
     }
@@ -3297,50 +7045,62 @@ pub fn kernelParametersActive() -> Result<bool, self::ComputeError> {
                                                             }
                                                         }
                                                         true => {
-                                                            let prod_local_138 = sTwentySix()?;
+                                                            let prod_local_149 = sTwentySix()?;
                                                             {
-                                                                let prod_local_139 = sTwentySix()?;
+                                                                let prod_local_150 = sTwentySix()?;
                                                                 {
-                                                                    let prod_local_140 =
-                                                                        (prod_local_138
-                                                                            == prod_local_139);
+                                                                    let prod_local_151 =
+                                                                        (prod_local_149
+                                                                            == prod_local_150);
                                                                     {
-                                                                        let prod_local_141 =
-                                                                            prod_local_140;
-                                                                        match prod_local_141 {
-                                                                            false => prod_local_141,
+                                                                        let prod_local_152 =
+                                                                            prod_local_151;
+                                                                        match prod_local_152 {
+                                                                            false => prod_local_152,
                                                                             true => {
-                                                                                let prod_local_142 =
+                                                                                let prod_local_153 =
                                                                                     sHundred()?;
                                                                                 {
-                                                                                    let prod_local_143 =
+                                                                                    let prod_local_154 =
                                                                                         sHundred()?;
                                                                                     {
-                                                                                        let prod_local_144 = (prod_local_142 == prod_local_143);
-                                                                                        match prod_local_144 {
-        false => { let prod_local_146 = prod_local_144; match prod_local_146 {
-        false => prod_local_146,
-        true => { let prod_local_147 = sTwentyFour()?; { let prod_local_148 = sabinePrefactorDenom()?; { let prod_local_149 = (prod_local_147 < prod_local_148); match prod_local_149 {
-        false => { let prod_local_151 = prod_local_149; match prod_local_151 {
-        false => prod_local_151,
-        true => { let prod_local_152 = sFive()?; { let prod_local_153 = glbAlignedByteLength(prod_local_152)?; { let prod_local_154 = sEight()?; { let prod_local_155 = glbContainerByteLength(prod_local_153, prod_local_154)?; { let prod_local_156 = sFortyFour()?; { let prod_local_157 = (prod_local_155 == prod_local_156); prod_local_157 } } } } } },
+                                                                                        let prod_local_155 = (prod_local_153 == prod_local_154);
+                                                                                        match prod_local_155 {
+        false => { let prod_local_157 = prod_local_155; match prod_local_157 {
+        false => prod_local_157,
+        true => { let prod_local_158 = sTwentyFour()?; { let prod_local_159 = sabinePrefactorDenom()?; { let prod_local_160 = (prod_local_158 < prod_local_159); match prod_local_160 {
+        false => { let prod_local_162 = prod_local_160; match prod_local_162 {
+        false => prod_local_162,
+        true => { let prod_local_163 = sFive()?; { let prod_local_164 = glbAlignedByteLength(prod_local_163)?; { let prod_local_165 = sEight()?; { let prod_local_166 = glbContainerByteLength(prod_local_164, prod_local_165)?; { let prod_local_167 = sFortyFour()?; { let prod_local_168 = (prod_local_166 == prod_local_167); match prod_local_168 {
+        false => prod_local_168,
+        true => { let prod_local_169 = deepenedSubsystemsActive()?; prod_local_169 },
+    } } } } } } },
     } },
-        true => { let prod_local_158 = sFour()?; { let prod_local_159 = sFour()?; { let prod_local_160 = (prod_local_158 == prod_local_159); { let prod_local_161 = prod_local_160; match prod_local_161 {
-        false => prod_local_161,
-        true => { let prod_local_162 = sFive()?; { let prod_local_163 = glbAlignedByteLength(prod_local_162)?; { let prod_local_164 = sEight()?; { let prod_local_165 = glbContainerByteLength(prod_local_163, prod_local_164)?; { let prod_local_166 = sFortyFour()?; { let prod_local_167 = (prod_local_165 == prod_local_166); prod_local_167 } } } } } },
+        true => { let prod_local_170 = sFour()?; { let prod_local_171 = sFour()?; { let prod_local_172 = (prod_local_170 == prod_local_171); { let prod_local_173 = prod_local_172; match prod_local_173 {
+        false => prod_local_173,
+        true => { let prod_local_174 = sFive()?; { let prod_local_175 = glbAlignedByteLength(prod_local_174)?; { let prod_local_176 = sEight()?; { let prod_local_177 = glbContainerByteLength(prod_local_175, prod_local_176)?; { let prod_local_178 = sFortyFour()?; { let prod_local_179 = (prod_local_177 == prod_local_178); match prod_local_179 {
+        false => prod_local_179,
+        true => { let prod_local_180 = deepenedSubsystemsActive()?; prod_local_180 },
+    } } } } } } },
     } } } } },
     } } } },
     } },
-        true => { let prod_local_168 = sTen()?; { let prod_local_169 = sTen()?; { let prod_local_170 = (prod_local_168 == prod_local_169); { let prod_local_171 = prod_local_170; match prod_local_171 {
-        false => prod_local_171,
-        true => { let prod_local_172 = sTwentyFour()?; { let prod_local_173 = sabinePrefactorDenom()?; { let prod_local_174 = (prod_local_172 < prod_local_173); match prod_local_174 {
-        false => { let prod_local_176 = prod_local_174; match prod_local_176 {
-        false => prod_local_176,
-        true => { let prod_local_177 = sFive()?; { let prod_local_178 = glbAlignedByteLength(prod_local_177)?; { let prod_local_179 = sEight()?; { let prod_local_180 = glbContainerByteLength(prod_local_178, prod_local_179)?; { let prod_local_181 = sFortyFour()?; { let prod_local_182 = (prod_local_180 == prod_local_181); prod_local_182 } } } } } },
+        true => { let prod_local_181 = sTen()?; { let prod_local_182 = sTen()?; { let prod_local_183 = (prod_local_181 == prod_local_182); { let prod_local_184 = prod_local_183; match prod_local_184 {
+        false => prod_local_184,
+        true => { let prod_local_185 = sTwentyFour()?; { let prod_local_186 = sabinePrefactorDenom()?; { let prod_local_187 = (prod_local_185 < prod_local_186); match prod_local_187 {
+        false => { let prod_local_189 = prod_local_187; match prod_local_189 {
+        false => prod_local_189,
+        true => { let prod_local_190 = sFive()?; { let prod_local_191 = glbAlignedByteLength(prod_local_190)?; { let prod_local_192 = sEight()?; { let prod_local_193 = glbContainerByteLength(prod_local_191, prod_local_192)?; { let prod_local_194 = sFortyFour()?; { let prod_local_195 = (prod_local_193 == prod_local_194); match prod_local_195 {
+        false => prod_local_195,
+        true => { let prod_local_196 = deepenedSubsystemsActive()?; prod_local_196 },
+    } } } } } } },
     } },
-        true => { let prod_local_183 = sFour()?; { let prod_local_184 = sFour()?; { let prod_local_185 = (prod_local_183 == prod_local_184); { let prod_local_186 = prod_local_185; match prod_local_186 {
-        false => prod_local_186,
-        true => { let prod_local_187 = sFive()?; { let prod_local_188 = glbAlignedByteLength(prod_local_187)?; { let prod_local_189 = sEight()?; { let prod_local_190 = glbContainerByteLength(prod_local_188, prod_local_189)?; { let prod_local_191 = sFortyFour()?; { let prod_local_192 = (prod_local_190 == prod_local_191); prod_local_192 } } } } } },
+        true => { let prod_local_197 = sFour()?; { let prod_local_198 = sFour()?; { let prod_local_199 = (prod_local_197 == prod_local_198); { let prod_local_200 = prod_local_199; match prod_local_200 {
+        false => prod_local_200,
+        true => { let prod_local_201 = sFive()?; { let prod_local_202 = glbAlignedByteLength(prod_local_201)?; { let prod_local_203 = sEight()?; { let prod_local_204 = glbContainerByteLength(prod_local_202, prod_local_203)?; { let prod_local_205 = sFortyFour()?; { let prod_local_206 = (prod_local_204 == prod_local_205); match prod_local_206 {
+        false => prod_local_206,
+        true => { let prod_local_207 = deepenedSubsystemsActive()?; prod_local_207 },
+    } } } } } } },
     } } } } },
     } } } },
     } } } } },
@@ -3351,6 +7111,349 @@ pub fn kernelParametersActive() -> Result<bool, self::ComputeError> {
                                                                         }
                                                                     }
                                                                 }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    })
+}
+
+pub fn keyframeAlphaPermille(
+    elapsedMillis: u64,
+    clipDurationMillis: u64,
+) -> Result<u64, self::ComputeError> {
+    Ok({
+        let _x_1 = 0;
+        {
+            let _x_4 = (clipDurationMillis == _x_1);
+            match _x_4 {
+                false => {
+                    let _x_70 = (clipDurationMillis <= elapsedMillis);
+                    match _x_70 {
+                        false => {
+                            let _x_80 = skinWeightScale()?;
+                            {
+                                let _x_81 = core::convert::identity::<u64>(elapsedMillis)
+                                    .checked_mul(_x_80)
+                                    .ok_or(self::ComputeError::MulOverflow)?;
+                                {
+                                    let _x_82 = if clipDurationMillis == 0 {
+                                        _x_1
+                                    } else {
+                                        _x_81 / clipDurationMillis
+                                    };
+                                    _x_82
+                                }
+                            }
+                        }
+                        true => {
+                            let _x_77 = skinWeightScale()?;
+                            _x_77
+                        }
+                    }
+                }
+                true => _x_1,
+            }
+        }
+    })
+}
+
+pub fn lerpPermille(
+    fromVal: u64,
+    toVal: u64,
+    alphaPermille: u64,
+) -> Result<u64, self::ComputeError> {
+    Ok({
+        let _x_1 = skinWeightScale()?;
+        {
+            let _x_2 = (_x_1 <= alphaPermille);
+            match _x_2 {
+                false => {
+                    let _x_40 = false;
+                    {
+                        let _y_43 = _x_40;
+                        match _y_43 {
+                            false => {
+                                let _y_8 = alphaPermille;
+                                {
+                                    let _x_9 = (fromVal <= toVal);
+                                    match _x_9 {
+                                        false => {
+                                            let _x_84 = core::convert::identity::<u64>(fromVal)
+                                                .saturating_sub(toVal);
+                                            {
+                                                let _x_85 = core::convert::identity::<u64>(_x_84)
+                                                    .checked_mul(_y_8)
+                                                    .ok_or(self::ComputeError::MulOverflow)?;
+                                                {
+                                                    let _x_86 = 0;
+                                                    {
+                                                        let _x_87 = if _x_1 == 0 {
+                                                            _x_86
+                                                        } else {
+                                                            _x_85 / _x_1
+                                                        };
+                                                        {
+                                                            let _x_88 =
+                                                                core::convert::identity::<u64>(
+                                                                    fromVal,
+                                                                )
+                                                                .saturating_sub(_x_87);
+                                                            _x_88
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        true => {
+                                            let _x_92 = core::convert::identity::<u64>(toVal)
+                                                .saturating_sub(fromVal);
+                                            {
+                                                let _x_93 = core::convert::identity::<u64>(_x_92)
+                                                    .checked_mul(_y_8)
+                                                    .ok_or(self::ComputeError::MulOverflow)?;
+                                                {
+                                                    let _x_94 = 0;
+                                                    {
+                                                        let _x_95 = if _x_1 == 0 {
+                                                            _x_94
+                                                        } else {
+                                                            _x_93 / _x_1
+                                                        };
+                                                        {
+                                                            let _x_96 =
+                                                                core::convert::identity::<u64>(
+                                                                    fromVal,
+                                                                )
+                                                                .checked_add(_x_95)
+                                                                .ok_or(
+                                                                    self::ComputeError::AddOverflow,
+                                                                )?;
+                                                            _x_96
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            true => {
+                                let _x_7 = skinWeightScale()?;
+                                {
+                                    let prod_local_0 = _x_7;
+                                    {
+                                        let prod_local_1 = (fromVal <= toVal);
+                                        match prod_local_1 {
+                                            false => {
+                                                let prod_local_3 =
+                                                    core::convert::identity::<u64>(fromVal)
+                                                        .saturating_sub(toVal);
+                                                {
+                                                    let prod_local_4 =
+                                                        core::convert::identity::<u64>(
+                                                            prod_local_3,
+                                                        )
+                                                        .checked_mul(prod_local_0)
+                                                        .ok_or(self::ComputeError::MulOverflow)?;
+                                                    {
+                                                        let prod_local_5 = 0;
+                                                        {
+                                                            let prod_local_6 = if _x_1 == 0 {
+                                                                prod_local_5
+                                                            } else {
+                                                                prod_local_4 / _x_1
+                                                            };
+                                                            {
+                                                                let prod_local_7 =
+                                                                    core::convert::identity::<u64>(
+                                                                        fromVal,
+                                                                    )
+                                                                    .saturating_sub(prod_local_6);
+                                                                prod_local_7
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            true => {
+                                                let prod_local_9 =
+                                                    core::convert::identity::<u64>(toVal)
+                                                        .saturating_sub(fromVal);
+                                                {
+                                                    let prod_local_10 =
+                                                        core::convert::identity::<u64>(
+                                                            prod_local_9,
+                                                        )
+                                                        .checked_mul(prod_local_0)
+                                                        .ok_or(self::ComputeError::MulOverflow)?;
+                                                    {
+                                                        let prod_local_11 = 0;
+                                                        {
+                                                            let prod_local_12 = if _x_1 == 0 {
+                                                                prod_local_11
+                                                            } else {
+                                                                prod_local_10 / _x_1
+                                                            };
+                                                            {
+                                                                let prod_local_13 = core::convert::identity::<u64>(fromVal).checked_add(prod_local_12).ok_or(self::ComputeError::AddOverflow)?;
+                                                                prod_local_13
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                true => {
+                    let _x_42 = true;
+                    {
+                        let prod_local_14 = _x_42;
+                        match prod_local_14 {
+                            false => {
+                                let prod_local_16 = alphaPermille;
+                                {
+                                    let prod_local_17 = (fromVal <= toVal);
+                                    match prod_local_17 {
+                                        false => {
+                                            let prod_local_19 =
+                                                core::convert::identity::<u64>(fromVal)
+                                                    .saturating_sub(toVal);
+                                            {
+                                                let prod_local_20 =
+                                                    core::convert::identity::<u64>(prod_local_19)
+                                                        .checked_mul(prod_local_16)
+                                                        .ok_or(self::ComputeError::MulOverflow)?;
+                                                {
+                                                    let prod_local_21 = 0;
+                                                    {
+                                                        let prod_local_22 = if _x_1 == 0 {
+                                                            prod_local_21
+                                                        } else {
+                                                            prod_local_20 / _x_1
+                                                        };
+                                                        {
+                                                            let prod_local_23 =
+                                                                core::convert::identity::<u64>(
+                                                                    fromVal,
+                                                                )
+                                                                .saturating_sub(prod_local_22);
+                                                            prod_local_23
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        true => {
+                                            let prod_local_25 =
+                                                core::convert::identity::<u64>(toVal)
+                                                    .saturating_sub(fromVal);
+                                            {
+                                                let prod_local_26 =
+                                                    core::convert::identity::<u64>(prod_local_25)
+                                                        .checked_mul(prod_local_16)
+                                                        .ok_or(self::ComputeError::MulOverflow)?;
+                                                {
+                                                    let prod_local_27 = 0;
+                                                    {
+                                                        let prod_local_28 = if _x_1 == 0 {
+                                                            prod_local_27
+                                                        } else {
+                                                            prod_local_26 / _x_1
+                                                        };
+                                                        {
+                                                            let prod_local_29 =
+                                                                core::convert::identity::<u64>(
+                                                                    fromVal,
+                                                                )
+                                                                .checked_add(prod_local_28)
+                                                                .ok_or(
+                                                                    self::ComputeError::AddOverflow,
+                                                                )?;
+                                                            prod_local_29
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            true => {
+                                let prod_local_30 = skinWeightScale()?;
+                                {
+                                    let prod_local_31 = prod_local_30;
+                                    {
+                                        let prod_local_32 = (fromVal <= toVal);
+                                        match prod_local_32 {
+                                            false => {
+                                                let prod_local_34 =
+                                                    core::convert::identity::<u64>(fromVal)
+                                                        .saturating_sub(toVal);
+                                                {
+                                                    let prod_local_35 =
+                                                        core::convert::identity::<u64>(
+                                                            prod_local_34,
+                                                        )
+                                                        .checked_mul(prod_local_31)
+                                                        .ok_or(self::ComputeError::MulOverflow)?;
+                                                    {
+                                                        let prod_local_36 = 0;
+                                                        {
+                                                            let prod_local_37 = if _x_1 == 0 {
+                                                                prod_local_36
+                                                            } else {
+                                                                prod_local_35 / _x_1
+                                                            };
+                                                            {
+                                                                let prod_local_38 =
+                                                                    core::convert::identity::<u64>(
+                                                                        fromVal,
+                                                                    )
+                                                                    .saturating_sub(prod_local_37);
+                                                                prod_local_38
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            true => {
+                                                let prod_local_40 =
+                                                    core::convert::identity::<u64>(toVal)
+                                                        .saturating_sub(fromVal);
+                                                {
+                                                    let prod_local_41 =
+                                                        core::convert::identity::<u64>(
+                                                            prod_local_40,
+                                                        )
+                                                        .checked_mul(prod_local_31)
+                                                        .ok_or(self::ComputeError::MulOverflow)?;
+                                                    {
+                                                        let prod_local_42 = 0;
+                                                        {
+                                                            let prod_local_43 = if _x_1 == 0 {
+                                                                prod_local_42
+                                                            } else {
+                                                                prod_local_41 / _x_1
+                                                            };
+                                                            {
+                                                                let prod_local_44 = core::convert::identity::<u64>(fromVal).checked_add(prod_local_43).ok_or(self::ComputeError::AddOverflow)?;
+                                                                prod_local_44
                                                             }
                                                         }
                                                     }
@@ -3452,6 +7555,57 @@ pub fn minimumSafetyFactor() -> u64 {
     }
 }
 
+pub fn morphTargetCountLimit() -> Result<u64, self::ComputeError> {
+    Ok({
+        let _x_1 = sEight()?;
+        _x_1
+    })
+}
+
+pub fn navMaxSearchNodes() -> Result<u64, self::ComputeError> {
+    Ok({
+        let _x_1 = sTen()?;
+        {
+            let _x_2 = pow2Constructive(_x_1)?;
+            _x_2
+        }
+    })
+}
+
+pub fn navTriangleWalkable(normalYMilli: u64) -> Result<bool, self::ComputeError> {
+    Ok({
+        let _x_8 = navWalkableNormalYMinMilli()?;
+        {
+            let _x_9 = (_x_8 <= normalYMilli);
+            match _x_9 {
+                false => _x_9,
+                true => {
+                    let _x_19 = skinWeightScale()?;
+                    {
+                        let _x_20 = (normalYMilli <= _x_19);
+                        _x_20
+                    }
+                }
+            }
+        }
+    })
+}
+
+pub fn navWalkableNormalYMinMilli() -> Result<u64, self::ComputeError> {
+    Ok({
+        let _x_2 = sSeven()?;
+        {
+            let _x_3 = sHundred()?;
+            {
+                let _x_4 = core::convert::identity::<u64>(_x_2)
+                    .checked_mul(_x_3)
+                    .ok_or(self::ComputeError::MulOverflow)?;
+                _x_4
+            }
+        }
+    })
+}
+
 pub fn percentDenominator() -> Result<u64, self::ComputeError> {
     Ok({
         let _x_1 = sHundred()?;
@@ -3461,25 +7615,34 @@ pub fn percentDenominator() -> Result<u64, self::ComputeError> {
 
 pub fn placement0() -> Result<self::BlueprintPlacementSpec, self::ComputeError> {
     Ok({
-        let _x_1 = 0;
+        let _x_1 = blueprintHarmonicRotunda()?;
         {
-            let _x_4 = false;
+            let _x_2 = (_x_1).index;
             {
-                let _x_5 = sTwentyTwo()?;
+                let _x_3 = 0;
                 {
-                    let _x_6 = sSixteen()?;
+                    let _x_6 = false;
                     {
-                        let _x_7 = self::BlueprintPlacementSpec {
-                            index: _x_1,
-                            xTenths: _x_1,
-                            xNeg: _x_4,
-                            yTenths: _x_5,
-                            zTenths: _x_1,
-                            zNeg: _x_4,
-                            orbitDistanceMeters: _x_6,
-                            followRover: _x_4,
-                        };
-                        _x_7
+                        let _x_7 = sTwentyTwo()?;
+                        {
+                            let _x_8 = sSixteen()?;
+                            {
+                                let _x_9 = (_x_1).kineticAutonomous;
+                                {
+                                    let _x_10 = self::BlueprintPlacementSpec {
+                                        index: _x_2,
+                                        xTenths: _x_3,
+                                        xNeg: _x_6,
+                                        yTenths: _x_7,
+                                        zTenths: _x_3,
+                                        zNeg: _x_6,
+                                        orbitDistanceMeters: _x_8,
+                                        followRover: _x_9,
+                                    };
+                                    _x_10
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -3489,31 +7652,37 @@ pub fn placement0() -> Result<self::BlueprintPlacementSpec, self::ComputeError> 
 
 pub fn placement1() -> Result<self::BlueprintPlacementSpec, self::ComputeError> {
     Ok({
-        let _x_1 = 1;
+        let _x_1 = blueprintMeridianSundial()?;
         {
-            let _x_4 = sNinetyFive()?;
+            let _x_2 = (_x_1).index;
             {
-                let _x_5 = false;
+                let _x_3 = sNinetyFive()?;
                 {
-                    let _x_6 = sTwelve()?;
+                    let _x_4 = false;
                     {
-                        let _x_7 = sThirtyFive()?;
+                        let _x_5 = sTwelve()?;
                         {
-                            let _x_8 = true;
+                            let _x_6 = sThirtyFive()?;
                             {
-                                let _x_12 = ((1 << ((1 << 1) + 1)) + 1);
+                                let _x_7 = true;
                                 {
-                                    let _x_10 = self::BlueprintPlacementSpec {
-                                        index: _x_1,
-                                        xTenths: _x_4,
-                                        xNeg: _x_5,
-                                        yTenths: _x_6,
-                                        zTenths: _x_7,
-                                        zNeg: _x_8,
-                                        orbitDistanceMeters: _x_12,
-                                        followRover: _x_5,
-                                    };
-                                    _x_10
+                                    let _x_11 = ((1 << ((1 << 1) + 1)) + 1);
+                                    {
+                                        let _x_9 = (_x_1).kineticAutonomous;
+                                        {
+                                            let _x_10 = self::BlueprintPlacementSpec {
+                                                index: _x_2,
+                                                xTenths: _x_3,
+                                                xNeg: _x_4,
+                                                yTenths: _x_5,
+                                                zTenths: _x_6,
+                                                zNeg: _x_7,
+                                                orbitDistanceMeters: _x_11,
+                                                followRover: _x_9,
+                                            };
+                                            _x_10
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -3526,31 +7695,34 @@ pub fn placement1() -> Result<self::BlueprintPlacementSpec, self::ComputeError> 
 
 pub fn placement2() -> Result<self::BlueprintPlacementSpec, self::ComputeError> {
     Ok({
-        let _x_9 = (1 << 1);
+        let _x_1 = blueprintModalChimePergola()?;
         {
-            let _x_2 = sNinety()?;
+            let _x_2 = (_x_1).index;
             {
-                let _x_3 = true;
+                let _x_3 = sNinety()?;
                 {
-                    let _x_10 = ((1 << (1 << (1 << 1))) + (1 << 1));
+                    let _x_4 = true;
                     {
-                        let _x_5 = sForty()?;
+                        let _x_10 = ((1 << (1 << (1 << 1))) + (1 << 1));
                         {
-                            let _x_6 = sTen()?;
+                            let _x_6 = sForty()?;
                             {
-                                let _x_7 = false;
+                                let _x_7 = sTen()?;
                                 {
-                                    let _x_8 = self::BlueprintPlacementSpec {
-                                        index: _x_9,
-                                        xTenths: _x_2,
-                                        xNeg: _x_3,
-                                        yTenths: _x_10,
-                                        zTenths: _x_5,
-                                        zNeg: _x_3,
-                                        orbitDistanceMeters: _x_6,
-                                        followRover: _x_7,
-                                    };
-                                    _x_8
+                                    let _x_8 = (_x_1).kineticAutonomous;
+                                    {
+                                        let _x_9 = self::BlueprintPlacementSpec {
+                                            index: _x_2,
+                                            xTenths: _x_3,
+                                            xNeg: _x_4,
+                                            yTenths: _x_10,
+                                            zTenths: _x_6,
+                                            zNeg: _x_4,
+                                            orbitDistanceMeters: _x_7,
+                                            followRover: _x_8,
+                                        };
+                                        _x_9
+                                    }
                                 }
                             }
                         }
@@ -3563,31 +7735,37 @@ pub fn placement2() -> Result<self::BlueprintPlacementSpec, self::ComputeError> 
 
 pub fn placement3() -> Result<self::BlueprintPlacementSpec, self::ComputeError> {
     Ok({
-        let _x_9 = ((1 << 1) + 1);
+        let _x_1 = blueprintQuartzTorsionChamber()?;
         {
-            let _x_2 = sSixtyFive()?;
+            let _x_2 = (_x_1).index;
             {
-                let _x_3 = true;
+                let _x_3 = sSixtyFive()?;
                 {
-                    let _x_10 = ((1 << (1 << (1 << 1))) + (1 << 1));
+                    let _x_4 = true;
                     {
-                        let _x_5 = sNinety()?;
+                        let _x_11 = ((1 << (1 << (1 << 1))) + (1 << 1));
                         {
-                            let _x_6 = false;
+                            let _x_6 = sNinety()?;
                             {
-                                let _x_7 = sTen()?;
+                                let _x_7 = false;
                                 {
-                                    let _x_8 = self::BlueprintPlacementSpec {
-                                        index: _x_9,
-                                        xTenths: _x_2,
-                                        xNeg: _x_3,
-                                        yTenths: _x_10,
-                                        zTenths: _x_5,
-                                        zNeg: _x_6,
-                                        orbitDistanceMeters: _x_7,
-                                        followRover: _x_6,
-                                    };
-                                    _x_8
+                                    let _x_8 = sTen()?;
+                                    {
+                                        let _x_9 = (_x_1).kineticAutonomous;
+                                        {
+                                            let _x_10 = self::BlueprintPlacementSpec {
+                                                index: _x_2,
+                                                xTenths: _x_3,
+                                                xNeg: _x_4,
+                                                yTenths: _x_11,
+                                                zTenths: _x_6,
+                                                zNeg: _x_7,
+                                                orbitDistanceMeters: _x_8,
+                                                followRover: _x_9,
+                                            };
+                                            _x_10
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -3600,29 +7778,35 @@ pub fn placement3() -> Result<self::BlueprintPlacementSpec, self::ComputeError> 
 
 pub fn placement4() -> Result<self::BlueprintPlacementSpec, self::ComputeError> {
     Ok({
-        let _x_1 = sFour()?;
+        let _x_1 = blueprintLagoonPierCauseway()?;
         {
-            let _x_2 = sFiftyFive()?;
+            let _x_2 = (_x_1).index;
             {
-                let _x_3 = false;
+                let _x_3 = sFiftyFive()?;
                 {
-                    let _x_4 = sSix()?;
+                    let _x_4 = false;
                     {
-                        let _x_5 = sEightyFive()?;
+                        let _x_5 = sSix()?;
                         {
-                            let _x_6 = sEleven()?;
+                            let _x_6 = sEightyFive()?;
                             {
-                                let _x_7 = self::BlueprintPlacementSpec {
-                                    index: _x_1,
-                                    xTenths: _x_2,
-                                    xNeg: _x_3,
-                                    yTenths: _x_4,
-                                    zTenths: _x_5,
-                                    zNeg: _x_3,
-                                    orbitDistanceMeters: _x_6,
-                                    followRover: _x_3,
-                                };
-                                _x_7
+                                let _x_7 = sEleven()?;
+                                {
+                                    let _x_8 = (_x_1).kineticAutonomous;
+                                    {
+                                        let _x_9 = self::BlueprintPlacementSpec {
+                                            index: _x_2,
+                                            xTenths: _x_3,
+                                            xNeg: _x_4,
+                                            yTenths: _x_5,
+                                            zTenths: _x_6,
+                                            zNeg: _x_4,
+                                            orbitDistanceMeters: _x_7,
+                                            followRover: _x_8,
+                                        };
+                                        _x_9
+                                    }
+                                }
                             }
                         }
                     }
@@ -3634,29 +7818,35 @@ pub fn placement4() -> Result<self::BlueprintPlacementSpec, self::ComputeError> 
 
 pub fn placement5() -> Result<self::BlueprintPlacementSpec, self::ComputeError> {
     Ok({
-        let _x_1 = sFive()?;
+        let _x_1 = blueprintGeodesicTravertinePaths()?;
         {
-            let _x_2 = 0;
+            let _x_2 = (_x_1).index;
             {
-                let _x_5 = false;
+                let _x_3 = 0;
                 {
-                    let _x_6 = sEight()?;
+                    let _x_6 = false;
                     {
-                        let _x_7 = sFifty()?;
+                        let _x_7 = sEight()?;
                         {
-                            let _x_11 = ((1 << (1 << (1 << 1))) + (1 << 1));
+                            let _x_8 = sFifty()?;
                             {
-                                let _x_9 = self::BlueprintPlacementSpec {
-                                    index: _x_1,
-                                    xTenths: _x_2,
-                                    xNeg: _x_5,
-                                    yTenths: _x_6,
-                                    zTenths: _x_7,
-                                    zNeg: _x_5,
-                                    orbitDistanceMeters: _x_11,
-                                    followRover: _x_5,
-                                };
-                                _x_9
+                                let _x_13 = ((1 << (1 << (1 << 1))) + (1 << 1));
+                                {
+                                    let _x_10 = (_x_1).kineticAutonomous;
+                                    {
+                                        let _x_11 = self::BlueprintPlacementSpec {
+                                            index: _x_2,
+                                            xTenths: _x_3,
+                                            xNeg: _x_6,
+                                            yTenths: _x_7,
+                                            zTenths: _x_8,
+                                            zNeg: _x_6,
+                                            orbitDistanceMeters: _x_13,
+                                            followRover: _x_10,
+                                        };
+                                        _x_11
+                                    }
+                                }
                             }
                         }
                     }
@@ -3668,35 +7858,64 @@ pub fn placement5() -> Result<self::BlueprintPlacementSpec, self::ComputeError> 
 
 pub fn placement6() -> Result<self::BlueprintPlacementSpec, self::ComputeError> {
     Ok({
-        let _x_1 = sSix()?;
+        let _x_1 = blueprintPerimeterSentinelRover()?;
         {
-            let _x_2 = sOneEighty()?;
+            let _x_2 = (_x_1).index;
             {
-                let _x_3 = false;
+                let _x_3 = sOneEighty()?;
                 {
-                    let _x_4 = sFifteen()?;
+                    let _x_4 = false;
                     {
-                        let _x_5 = 0;
+                        let _x_5 = sFifteen()?;
                         {
-                            let _x_8 = sEleven()?;
+                            let _x_6 = 0;
                             {
-                                let _x_9 = true;
+                                let _x_9 = sEleven()?;
                                 {
-                                    let _x_10 = self::BlueprintPlacementSpec {
-                                        index: _x_1,
-                                        xTenths: _x_2,
-                                        xNeg: _x_3,
-                                        yTenths: _x_4,
-                                        zTenths: _x_5,
-                                        zNeg: _x_3,
-                                        orbitDistanceMeters: _x_8,
-                                        followRover: _x_9,
-                                    };
-                                    _x_10
+                                    let _x_10 = (_x_1).kineticAutonomous;
+                                    {
+                                        let _x_11 = self::BlueprintPlacementSpec {
+                                            index: _x_2,
+                                            xTenths: _x_3,
+                                            xNeg: _x_4,
+                                            yTenths: _x_5,
+                                            zTenths: _x_6,
+                                            zNeg: _x_4,
+                                            orbitDistanceMeters: _x_9,
+                                            followRover: _x_10,
+                                        };
+                                        _x_11
+                                    }
                                 }
                             }
                         }
                     }
+                }
+            }
+        }
+    })
+}
+
+pub fn renderPassCount() -> Result<u64, self::ComputeError> {
+    Ok({
+        let _x_1 = sFive()?;
+        _x_1
+    })
+}
+
+pub fn renderPassDependencyValid(
+    producerPass: u64,
+    consumerPass: u64,
+) -> Result<bool, self::ComputeError> {
+    Ok({
+        let _x_8 = (producerPass < consumerPass);
+        match _x_8 {
+            false => _x_8,
+            true => {
+                let _x_19 = sFive()?;
+                {
+                    let _x_20 = (consumerPass < _x_19);
+                    _x_20
                 }
             }
         }
@@ -4408,6 +8627,183 @@ pub fn sabinePrefactorNumer() -> Result<u64, self::ComputeError> {
     })
 }
 
+pub fn sabineRt60Millis(
+    volumeMeters3: u64,
+    absorptionMilliM2: u64,
+) -> Result<u64, self::ComputeError> {
+    Ok({
+        let _x_1 = 0;
+        {
+            let _x_4 = (absorptionMilliM2 == _x_1);
+            match _x_4 {
+                false => {
+                    let _x_47 = sTwentyFour()?;
+                    {
+                        let _x_48 = sSix()?;
+                        {
+                            let _x_49 = pow10Constructive(_x_48)?;
+                            {
+                                let _x_50 = core::convert::identity::<u64>(volumeMeters3)
+                                    .checked_mul(_x_49)
+                                    .ok_or(self::ComputeError::MulOverflow)?;
+                                {
+                                    let _x_51 = core::convert::identity::<u64>(_x_47)
+                                        .checked_mul(_x_50)
+                                        .ok_or(self::ComputeError::MulOverflow)?;
+                                    {
+                                        let _x_52 = sabinePrefactorDenom()?;
+                                        {
+                                            let _x_53 = core::convert::identity::<u64>(_x_52)
+                                                .checked_mul(absorptionMilliM2)
+                                                .ok_or(self::ComputeError::MulOverflow)?;
+                                            {
+                                                let _x_54 =
+                                                    if _x_53 == 0 { _x_1 } else { _x_51 / _x_53 };
+                                                _x_54
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                true => _x_1,
+            }
+        }
+    })
+}
+
+pub fn skinJointInfluenceLimit() -> Result<u64, self::ComputeError> {
+    Ok({
+        let _x_1 = sFour()?;
+        _x_1
+    })
+}
+
+pub fn skinWeightScale() -> Result<u64, self::ComputeError> {
+    Ok({
+        let _x_3 = ((1 << 1) + 1);
+        {
+            let _x_2 = pow10Constructive(_x_3)?;
+            _x_2
+        }
+    })
+}
+
+pub fn skinWeightsNormalized(
+    w0: u64,
+    w1: u64,
+    w2: u64,
+    w3: u64,
+) -> Result<bool, self::ComputeError> {
+    Ok({
+        let _x_15 = core::convert::identity::<u64>(w0)
+            .checked_add(w1)
+            .ok_or(self::ComputeError::AddOverflow)?;
+        {
+            let _x_19 = core::convert::identity::<u64>(_x_15)
+                .checked_add(w2)
+                .ok_or(self::ComputeError::AddOverflow)?;
+            {
+                let _x_23 = core::convert::identity::<u64>(_x_19)
+                    .checked_add(w3)
+                    .ok_or(self::ComputeError::AddOverflow)?;
+                {
+                    let _x_7 = skinWeightScale()?;
+                    {
+                        let _x_8 = (_x_23 == _x_7);
+                        _x_8
+                    }
+                }
+            }
+        }
+    })
+}
+
+pub fn snapshotUrlMaxBytes() -> Result<u64, self::ComputeError> {
+    Ok({
+        let _x_1 = sFourteen()?;
+        {
+            let _x_2 = pow2Constructive(_x_1)?;
+            _x_2
+        }
+    })
+}
+
+pub fn solveContactImpulseMilli(
+    closingVelMilli: u64,
+    restitutionPermille: u64,
+    penetrationMilli: u64,
+    slopMilli: u64,
+    dtMillis: u64,
+) -> Result<u64, self::ComputeError> {
+    Ok({
+        let _x_6 = core::convert::identity::<u64>(closingVelMilli)
+            .checked_mul(restitutionPermille)
+            .ok_or(self::ComputeError::MulOverflow)?;
+        {
+            let _x_7 = skinWeightScale()?;
+            {
+                let _x_8 = 0;
+                {
+                    let _x_11 = if _x_7 == 0 { _x_8 } else { _x_6 / _x_7 };
+                    {
+                        let bounceMilli = core::convert::identity::<u64>(closingVelMilli)
+                            .checked_add(_x_11)
+                            .ok_or(self::ComputeError::AddOverflow)?;
+                        {
+                            let excessPen = core::convert::identity::<u64>(penetrationMilli)
+                                .saturating_sub(slopMilli);
+                            {
+                                let _x_15 = (dtMillis == _x_8);
+                                match _x_15 {
+                                    false => {
+                                        let _x_67 = 1;
+                                        {
+                                            let _x_68 = core::convert::identity::<u64>(excessPen)
+                                                .checked_mul(_x_7)
+                                                .ok_or(self::ComputeError::MulOverflow)?;
+                                            {
+                                                let _x_69 = core::convert::identity::<u64>(_x_67)
+                                                    .checked_mul(_x_68)
+                                                    .ok_or(self::ComputeError::MulOverflow)?;
+                                                {
+                                                    let _x_70 = sFive()?;
+                                                    {
+                                                        let _x_71 =
+                                                            core::convert::identity::<u64>(_x_70)
+                                                                .checked_mul(dtMillis)
+                                                                .ok_or(
+                                                                    self::ComputeError::MulOverflow,
+                                                                )?;
+                                                        {
+                                                            let _x_72 = if _x_71 == 0 {
+                                                                _x_8
+                                                            } else {
+                                                                _x_69 / _x_71
+                                                            };
+                                                            {
+                                                                let _x_73 = core::convert::identity::<u64>(bounceMilli).checked_add(_x_72).ok_or(self::ComputeError::AddOverflow)?;
+                                                                _x_73
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                    true => bounceMilli,
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    })
+}
+
 pub fn terrainIndexCount(segs: u64) -> Result<u64, self::ComputeError> {
     Ok({
         let _x_2 = sSix()?;
@@ -4438,6 +8834,82 @@ pub fn terrainVertexCount(segs: u64) -> Result<u64, self::ComputeError> {
                     .ok_or(self::ComputeError::MulOverflow)?;
                 _x_9
             }
+        }
+    })
+}
+
+pub fn wasmBridgeEnvelopeValid(
+    quantumFrames: u64,
+    channels: u64,
+    snapshotBytes: u64,
+) -> Result<bool, self::ComputeError> {
+    Ok({
+        let _x_8 = audioWorkletQuantumFrames()?;
+        {
+            let _x_9 = (quantumFrames == _x_8);
+            match _x_9 {
+                false => {
+                    let _y_14 = _x_9;
+                    match _y_14 {
+                        false => _y_14,
+                        true => {
+                            let _x_78 = 0;
+                            {
+                                let _x_79 = (_x_78 < snapshotBytes);
+                                match _x_79 {
+                                    false => _x_79,
+                                    true => {
+                                        let _x_80 = snapshotUrlMaxBytes()?;
+                                        {
+                                            let _x_81 = (snapshotBytes <= _x_80);
+                                            _x_81
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                true => {
+                    let _x_76 = (1 << 1);
+                    {
+                        let _x_77 = (channels == _x_76);
+                        {
+                            let prod_local_0 = _x_77;
+                            match prod_local_0 {
+                                false => prod_local_0,
+                                true => {
+                                    let prod_local_1 = 0;
+                                    {
+                                        let prod_local_2 = (prod_local_1 < snapshotBytes);
+                                        match prod_local_2 {
+                                            false => prod_local_2,
+                                            true => {
+                                                let prod_local_3 = snapshotUrlMaxBytes()?;
+                                                {
+                                                    let prod_local_4 =
+                                                        (snapshotBytes <= prod_local_3);
+                                                    prod_local_4
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    })
+}
+
+pub fn workerCommandRingCapacity() -> Result<u64, self::ComputeError> {
+    Ok({
+        let _x_1 = sSix()?;
+        {
+            let _x_2 = pow2Constructive(_x_1)?;
+            _x_2
         }
     })
 }

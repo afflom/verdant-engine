@@ -199,7 +199,7 @@ pub fn module(project: &Path, repo: &Path, list: &str) -> Result<(String, usize)
         if !open.contains(record.id.as_str()) || cited.contains(record.id.as_str()) {
             continue;
         }
-        let direct = crate::references(record, &ids);
+        let direct = crate::references_in(record, &score.records, &ids);
         if direct.is_empty() {
             continue;
         }
@@ -207,7 +207,7 @@ pub fn module(project: &Path, repo: &Path, list: &str) -> Result<(String, usize)
         let mut at = 0;
         while at < reach.len() {
             if let Some(r) = by_id.get(reach[at].as_str()) {
-                for next in crate::references(r, &ids) {
+                for next in crate::references_in(r, &score.records, &ids) {
                     if next != record.id && !reach.contains(&next) {
                         reach.push(next);
                     }

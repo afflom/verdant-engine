@@ -82,6 +82,38 @@ negative = "VE-10"
 statement = "The compiled Core-Wasm engine verifier proves monotonic expansion and Builder equilibrium in Lean without Classical.choice and answers queries deterministically"
 
 [[id]]
+id = "VE-11"
+level = "build"
+suite = "engine"
+failure = "AnimationError"
+negative = "VE-11"
+statement = "Skeletal joint hierarchies, normalized four-joint linear-blend skinning weights, and clamped keyframe clips deform procedural meshes deterministically and refuse cyclic joints or unnormalized weights"
+
+[[id]]
+id = "VE-12"
+level = "build"
+suite = "engine"
+failure = "RenderGraphError"
+negative = "VE-12"
+statement = "Four-cascade shadow frustum splits, GGX image-based lighting mip chains, five-pass GPU render graphs, and skinned shadow WGSL shaders validate cleanly and refuse invalid frusta or cyclic pass dependencies"
+
+[[id]]
+id = "VE-13"
+level = "build"
+suite = "engine"
+failure = "CollisionError"
+negative = "VE-13"
+statement = "Bounded 3D GJK convex hull collision detection, Baumgarte contact stabilization, and Coulomb friction cones resolve rigid-body contacts deterministically and refuse degenerate hulls"
+
+[[id]]
+id = "VE-14"
+level = "build"
+suite = "engine"
+failure = "NavigationError"
+negative = "VE-14"
+statement = "Slope-filtered terrain navigation meshes and admissible A-star corridor pathfinding steer autonomous agents around obstacles and refuse unwalkable endpoints or disconnected goals"
+
+[[id]]
 id = "FR-01"
 level = "build"
 suite = "frame"

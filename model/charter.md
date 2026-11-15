@@ -135,6 +135,11 @@ Verdant Engine is a multi-purpose commercial 3D browser and WebAssembly game eng
 - SymplecticPhysicsAndRover: Symplectic Euler rigid bodies, Archimedes lagoon buoyancy, player capsule ground clamping, and autonomous spline rover patrol.
 - SpatialModalAcoustics: Euler-Bernoulli chime overtone synthesis, Woodworth interaural stereo panning, and Sabine RT60 reverberation.
 - JobGraphAndWorldSnapshots: Topological six-stage worker frame scheduler and deterministic IEEE-754 binary world snapshots with SHA-256 trailers.
+- SkeletalAndMorphAnimation: Acyclic joint hierarchies, four-joint normalized linear-blend skinning weights, clamped keyframe interpolation, and morph target channels.
+- PbrShadowAndIblRenderGraph: Four-cascade logarithmic-uniform shadow frustum splits, GGX specular roughness mip chains, and five-pass acyclic GPU barrier graphs.
+- GjkConvexCollisionAndSolver: Bounded 3D Gilbert-Johnson-Keerthi Minkowski support intersections, Baumgarte position stabilization, and Coulomb friction cones.
+- NavMeshCorridorPathfinding: Slope-filtered walkable terrain navmeshes, bounded admissible A-star polygon search, and portal corridor steering.
+- BrowserWasmWorkerBridge: Dedicated WebAssembly simulation worker ring framing, 128-frame WebAudio worklet quanta, and bounded URL-safe VDNT snapshot envelopes.
 
 ## Developer Relations, Documentation, SDK Artifacts, and Studio Controls
 

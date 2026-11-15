@@ -8,7 +8,7 @@
 use naga::valid::{Capabilities, ValidationFlags, Validator};
 use serde::{Deserialize, Serialize};
 
-use crate::error::ShaderValidationError;
+use crate::error::{RenderGraphError, ShaderValidationError};
 use crate::math::{
     golden_ratio, half_f64, nth_prime_u64, three_u32, two_f64, DIM_HOMOGENEOUS, DIM_SPATIAL,
 };
@@ -215,6 +215,51 @@ fn fs_main(in: SkyOut) -> @location(0) vec4<f32> {
 }
 "#;
 
+/// Canonical W3C WGSL four-joint linear-blend skinned shadow cascade depth + PCF shader.
+pub const WGSL_SKINNED_SHADOW_SHADER: &str = r#"
+struct ShadowCascadeUniforms {
+    light_view_proj: mat4x4<f32>,
+    joint_matrices: array<mat4x4<f32>, 16>,
+    cascade_splits: vec4<f32>,
+};
+
+@group(0) @binding(0)
+var<uniform> u_shadow: ShadowCascadeUniforms;
+
+struct SkinnedVertexIn {
+    @location(0) position: vec3<f32>,
+    @location(1) joints: vec4<u32>,
+    @location(2) weights: vec4<f32>,
+};
+
+struct ShadowOut {
+    @builtin(position) clip_pos: vec4<f32>,
+    @location(0) linear_depth: f32,
+};
+
+@vertex
+fn vs_main(in: SkinnedVertexIn) -> ShadowOut {
+    let p = vec4<f32>(in.position, 1.0);
+    let skinned =
+        (u_shadow.joint_matrices[in.joints.x] * p) * in.weights.x +
+        (u_shadow.joint_matrices[in.joints.y] * p) * in.weights.y +
+        (u_shadow.joint_matrices[in.joints.z] * p) * in.weights.z +
+        (u_shadow.joint_matrices[in.joints.w] * p) * in.weights.w;
+    let clip = u_shadow.light_view_proj * vec4<f32>(skinned.xyz, 1.0);
+    var out: ShadowOut;
+    out.clip_pos = clip;
+    out.linear_depth = clip.z / max(clip.w, 0.0001);
+    return out;
+}
+
+@fragment
+fn fs_main(in: ShadowOut) -> @location(0) vec4<f32> {
+    let d = clamp(in.linear_depth, 0.0, 1.0);
+    let moment2 = d * d;
+    return vec4<f32>(d, moment2, u_shadow.cascade_splits.x, 1.0);
+}
+"#;
+
 /// Parses and validates a W3C WGSL shader module using `naga`, enforcing required entry points.
 pub fn validate_wgsl_shader(
     label: &str,
@@ -259,7 +304,7 @@ pub fn validate_wgsl_shader(
     })
 }
 
-/// Validates all built-in W3C WGSL engine shaders (`PBR`, `WaterLagoon`, `SkyScattering`).
+/// Validates all built-in W3C WGSL engine shaders (`PBR`, `WaterLagoon`, `SkyScattering`, `SkinnedShadow`).
 pub fn validate_builtin_engine_shaders() -> Result<Vec<VerifiedShaderModule>, ShaderValidationError>
 {
     Ok(vec![
@@ -278,7 +323,144 @@ pub fn validate_builtin_engine_shaders() -> Result<Vec<VerifiedShaderModule>, Sh
             WGSL_SKY_SCATTERING_SHADER,
             &["vs_main", "fs_main"],
         )?,
+        validate_wgsl_shader(
+            "skinned_shadow.wgsl",
+            WGSL_SKINNED_SHADOW_SHADER,
+            &["vs_main", "fs_main"],
+        )?,
     ])
+}
+
+/// View-space depth slice `[near_meters, far_meters]` of a Cascaded Shadow Map (`CSM`).
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+pub struct ShadowCascadeSlice {
+    /// Zero-based cascade index (`0..csmCascadeCount()`).
+    pub cascade_index: usize,
+    /// Slice near plane in meters.
+    pub near_meters: f64,
+    /// Slice far plane in meters.
+    pub far_meters: f64,
+}
+
+/// Computes `prism_kernel::csmCascadeCount()` shadow frustum slices via `prism_kernel::csmSplitDistanceMilli`.
+pub fn compute_csm_splits(
+    near_meters: f64,
+    far_meters: f64,
+) -> Result<Vec<ShadowCascadeSlice>, RenderGraphError> {
+    if !near_meters.is_finite()
+        || !far_meters.is_finite()
+        || near_meters <= 0.0
+        || far_meters <= near_meters
+    {
+        return Err(RenderGraphError::InvalidShadowFrustumBounds {
+            near_meters,
+            far_meters,
+        });
+    }
+
+    let scale =
+        crate::prism_kernel::skinWeightScale().expect("verified Prism skinWeightScale") as f64;
+    let near_milli = (near_meters * scale).round().max(1.0) as u64;
+    let far_milli = (far_meters * scale).round().max((near_milli + 1) as f64) as u64;
+    let count =
+        crate::prism_kernel::csmCascadeCount().expect("verified Prism csmCascadeCount") as usize;
+
+    let mut slices = Vec::with_capacity(count);
+    let mut slice_near_milli = near_milli;
+    for idx in 0..count {
+        let slice_far_milli =
+            crate::prism_kernel::csmSplitDistanceMilli(near_milli, far_milli, idx as u64)
+                .expect("verified Prism csmSplitDistanceMilli");
+        slices.push(ShadowCascadeSlice {
+            cascade_index: idx,
+            near_meters: (slice_near_milli as f64) / scale,
+            far_meters: (slice_far_milli as f64) / scale,
+        });
+        slice_near_milli = slice_far_milli;
+    }
+
+    Ok(slices)
+}
+
+/// Pre-filtered Image-Based Lighting (`IBL`) environment cubemap probe descriptor.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct IblEnvironmentProbe {
+    /// Base cubemap face resolution in texels (`> 0`).
+    pub base_resolution: u32,
+    /// GGX specular roughness mip-chain count from `prism_kernel::iblMipLevelCount`.
+    pub mip_level_count: u32,
+}
+
+impl IblEnvironmentProbe {
+    /// Constructs a validated IBL environment probe via `prism_kernel::iblMipLevelCount`.
+    pub fn from_resolution(base_resolution: u32) -> Result<Self, RenderGraphError> {
+        if base_resolution == 0 {
+            return Err(RenderGraphError::ZeroProbeResolution);
+        }
+        let mips = crate::prism_kernel::iblMipLevelCount(u64::from(base_resolution))
+            .expect("verified Prism iblMipLevelCount") as u32;
+        Ok(Self {
+            base_resolution,
+            mip_level_count: mips,
+        })
+    }
+}
+
+/// Acyclic multi-pass GPU render frame graph validated by `prism_kernel::renderPassDependencyValid`.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct RenderFrameGraph {
+    /// Ordered GPU render pass labels (`ShadowMap`, `GBufferOpaque`, `IblAmbient`, `WaterForward`, `TonemapPresent`).
+    pub pass_names: Vec<String>,
+    /// Directed `(producer_pass, consumer_pass)` GPU barrier edges.
+    pub dependencies: Vec<(usize, usize)>,
+}
+
+impl RenderFrameGraph {
+    /// Canonical five-pass PBR + CSM shadow + IBL + forward water + tonemap render graph.
+    #[must_use]
+    pub fn canonical_pbr_shadow_pipeline() -> Self {
+        let p0 = 0usize;
+        let p1 = p0 + 1;
+        let p2 = p1 + 1;
+        let p3 = p2 + 1;
+        let p4 = p3 + 1;
+        Self {
+            pass_names: vec![
+                "ShadowCascades".to_string(),
+                "GBufferOpaque".to_string(),
+                "IblAmbientLighting".to_string(),
+                "WaterForward".to_string(),
+                "TonemapPresent".to_string(),
+            ],
+            dependencies: vec![(p0, p1), (p0, p2), (p1, p2), (p2, p3), (p3, p4)],
+        }
+    }
+
+    /// Validates pass count and every `(producer, consumer)` barrier via `prism_kernel::renderPassDependencyValid`.
+    pub fn validate(&self) -> Result<usize, RenderGraphError> {
+        let expected_passes = crate::prism_kernel::renderPassCount()
+            .expect("verified Prism renderPassCount") as usize;
+        if self.pass_names.len() != expected_passes {
+            return Err(RenderGraphError::InvalidPassDependency {
+                producer_pass: self.pass_names.len(),
+                consumer_pass: expected_passes,
+            });
+        }
+
+        for &(producer, consumer) in &self.dependencies {
+            let valid =
+                crate::prism_kernel::renderPassDependencyValid(producer as u64, consumer as u64)
+                    .expect("verified Prism renderPassDependencyValid");
+            if !valid {
+                return Err(RenderGraphError::InvalidPassDependency {
+                    producer_pass: producer,
+                    consumer_pass: consumer,
+                });
+            }
+        }
+
+        Ok(self.pass_names.len())
+    }
 }
 
 /// Canonical PBR material palette synthesized from constructive optical ratios.

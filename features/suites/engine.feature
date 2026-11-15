@@ -72,3 +72,31 @@ Feature: engine
     When checked against site/app.json and LexLean axioms
     Then monotonic expansion, seven-blueprint equilibrium, and unstable refusal theorems hold with zero Classical.choice axioms
     And arithmetic overflow in the compiled kernel returns ComputeError
+
+  @VE-11 @build
+  Scenario: Skeletal joint hierarchies, normalized four-joint linear-blend skinning weights, and clamped keyframe clips deform procedural meshes deterministically and refuse cyclic joints or unnormalized weights
+    Given a multi-joint skeletal rig, normalized four-joint skinning weights, and keyframe poses
+    When keyframes are sampled and linear-blend skinning deforms a procedural mesh
+    Then vertex positions and normals deform smoothly via the Prism-compiled interpolation kernel
+    And cyclic joint parents or unnormalized skin weights return AnimationError
+
+  @VE-12 @build
+  Scenario: Four-cascade shadow frustum splits, GGX image-based lighting mip chains, five-pass GPU render graphs, and skinned shadow WGSL shaders validate cleanly and refuse invalid frusta or cyclic pass dependencies
+    Given perspective near/far bounds, an environment probe resolution, and the five-pass PBR render graph
+    When cascaded shadow splits, IBL mip levels, render barriers, and skinned shadow WGSL shaders are validated
+    Then monotonic four-cascade splits, mip counts, acyclic barriers, and W3C WGSL modules pass validation
+    And inverted frustum bounds or backward pass dependencies return RenderGraphError
+
+  @VE-13 @build
+  Scenario: Bounded 3D GJK convex hull collision detection, Baumgarte contact stabilization, and Coulomb friction cones resolve rigid-body contacts deterministically and refuse degenerate hulls
+    Given convex polyhedral colliders in 3D world space
+    When GJK Minkowski support intersection and sequential-impulse contact resolution execute
+    Then overlapping hulls yield contact manifolds and Coulomb-clamped impulses via the Prism kernel
+    And empty or non-finite convex hulls return CollisionError
+
+  @VE-14 @build
+  Scenario: Slope-filtered terrain navigation meshes and admissible A-star corridor pathfinding steer autonomous agents around obstacles and refuse unwalkable endpoints or disconnected goals
+    Given a procedural terrain mesh with walkable slopes and steep cliff obstacles
+    When a slope-filtered NavMesh is extracted and A-star corridor search runs
+    Then agents receive deterministic multi-polygon corridors and unit steering vectors
+    And disconnected polygon targets or out-of-bounds indices return NavigationError

@@ -395,3 +395,186 @@ impl fmt::Display for SnapshotCodecError {
 }
 
 impl std::error::Error for SnapshotCodecError {}
+
+/// Refusal returned when skeletal rig topology, skin weights, or keyframe clips violate bounds.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum AnimationError {
+    /// Skeleton contains zero joints or a joint whose parent violates topological ordering.
+    InvalidJointHierarchy {
+        /// Offending joint index.
+        joint_index: usize,
+        /// Declared parent index.
+        parent_index: usize,
+    },
+    /// Four-joint linear-blend skinning weights do not sum to the Prism permille scale or reference an unknown joint.
+    UnnormalizedOrInvalidSkinWeights {
+        /// Sum of permille weights supplied.
+        observed_sum: u64,
+        /// Required permille scale (`1000`).
+        expected_scale: u64,
+    },
+    /// Keyframe clip is empty, has mismatched joint counts, or exceeds the morph target channel cap.
+    InvalidClipChannel {
+        /// Diagnostic description.
+        detail: String,
+    },
+}
+
+impl fmt::Display for AnimationError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::InvalidJointHierarchy {
+                joint_index,
+                parent_index,
+            } => write!(
+                f,
+                "invalid skeletal joint hierarchy at joint {joint_index} (parent {parent_index})"
+            ),
+            Self::UnnormalizedOrInvalidSkinWeights {
+                observed_sum,
+                expected_scale,
+            } => write!(
+                f,
+                "skinning weights sum to {observed_sum}, expected {expected_scale} with valid joint indices"
+            ),
+            Self::InvalidClipChannel { detail } => {
+                write!(f, "invalid animation clip or skinning binding: {detail}")
+            }
+        }
+    }
+}
+
+impl std::error::Error for AnimationError {}
+
+/// Refusal returned when shadow cascades, IBL probes, or GPU render-pass barrier graphs fail validation.
+#[derive(Clone, Debug, PartialEq)]
+pub enum RenderGraphError {
+    /// Perspective near/far shadow bounds are non-positive, non-finite, or inverted (`far <= near`).
+    InvalidShadowFrustumBounds {
+        /// Near clip plane in meters.
+        near_meters: f64,
+        /// Far clip plane in meters.
+        far_meters: f64,
+    },
+    /// Environment cubemap resolution is zero.
+    ZeroProbeResolution,
+    /// GPU render-pass barrier edge violates strict forward topological pass ordering.
+    InvalidPassDependency {
+        /// Producer pass index.
+        producer_pass: usize,
+        /// Consumer pass index.
+        consumer_pass: usize,
+    },
+}
+
+impl fmt::Display for RenderGraphError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::InvalidShadowFrustumBounds {
+                near_meters,
+                far_meters,
+            } => write!(
+                f,
+                "shadow cascade bounds require 0 < near < far, got [{near_meters}, {far_meters}]"
+            ),
+            Self::ZeroProbeResolution => {
+                write!(f, "IBL environment probe base resolution must be positive")
+            }
+            Self::InvalidPassDependency {
+                producer_pass,
+                consumer_pass,
+            } => write!(
+                f,
+                "invalid render graph dependency from pass {producer_pass} to pass {consumer_pass}"
+            ),
+        }
+    }
+}
+
+impl std::error::Error for RenderGraphError {}
+
+/// Refusal returned when GJK convex collision hulls or contact-solver inputs violate admissibility.
+#[derive(Clone, Debug, PartialEq)]
+pub enum CollisionError {
+    /// Convex hull has zero vertices or contains non-finite coordinates.
+    EmptyOrDegenerateHull {
+        /// Number of vertices supplied.
+        vertex_count: usize,
+    },
+    /// Contact solver received non-positive or non-finite effective mass or timestep.
+    InvalidContactSolverInputs {
+        /// Effective mass in kilograms.
+        effective_mass_kg: f64,
+        /// Step duration in seconds.
+        dt_seconds: f64,
+    },
+}
+
+impl fmt::Display for CollisionError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::EmptyOrDegenerateHull { vertex_count } => {
+                write!(
+                    f,
+                    "convex hull collider requires finite non-empty vertices, got {vertex_count}"
+                )
+            }
+            Self::InvalidContactSolverInputs {
+                effective_mass_kg,
+                dt_seconds,
+            } => write!(
+                f,
+                "contact solver requires positive finite mass ({effective_mass_kg}) and dt ({dt_seconds})"
+            ),
+        }
+    }
+}
+
+impl std::error::Error for CollisionError {}
+
+/// Refusal returned when terrain NavMesh extraction or A-star corridor pathfinding fails.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum NavigationError {
+    /// Source mesh yielded zero walkable triangles meeting the minimum slope normal threshold.
+    EmptyWalkableNavMesh,
+    /// Start or goal polygon index is out of bounds for the NavMesh.
+    InvalidPolygonIndex {
+        /// Requested polygon index.
+        polygon_index: usize,
+        /// Total polygon count in the NavMesh.
+        polygon_count: usize,
+    },
+    /// Goal polygon is disconnected from start polygon or exceeded the bounded node budget.
+    UnreachableGoal {
+        /// Start polygon index.
+        start_polygon: usize,
+        /// Goal polygon index.
+        goal_polygon: usize,
+    },
+}
+
+impl fmt::Display for NavigationError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::EmptyWalkableNavMesh => {
+                write!(f, "terrain mesh contains zero walkable navigation polygons")
+            }
+            Self::InvalidPolygonIndex {
+                polygon_index,
+                polygon_count,
+            } => write!(
+                f,
+                "navigation polygon index {polygon_index} out of bounds for count {polygon_count}"
+            ),
+            Self::UnreachableGoal {
+                start_polygon,
+                goal_polygon,
+            } => write!(
+                f,
+                "no walkable navigation corridor from polygon {start_polygon} to {goal_polygon}"
+            ),
+        }
+    }
+}
+
+impl std::error::Error for NavigationError {}

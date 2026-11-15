@@ -83,6 +83,21 @@ impl AcousticEnvironment {
         let denom = (-self.boundary_surface_area_m2 * (1.0 - alpha).ln()).max(geometric_epsilon());
         factor * self.enclosure_volume_m3 / denom
     }
+
+    /// Fixed-point Sabine reverberation time `RT60` in milliseconds evaluated directly by
+    /// `prism_kernel::sabineRt60Millis` for deterministic WebAssembly/AudioWorklet parity.
+    #[must_use]
+    pub fn sabine_rt60_prism_millis(&self) -> u64 {
+        let scale =
+            crate::prism_kernel::skinWeightScale().expect("verified Prism skinWeightScale") as f64;
+        let vol_m3 = self.enclosure_volume_m3.max(0.0).round() as u64;
+        let absorption_milli = (self.boundary_surface_area_m2
+            * self.mean_absorption_coeff.clamp(geometric_epsilon(), 1.0)
+            * scale)
+            .round() as u64;
+        crate::prism_kernel::sabineRt60Millis(vol_m3, absorption_milli)
+            .expect("verified Prism sabineRt60Millis")
+    }
 }
 
 /// Spatial listener pose (`position`, `forward`, `up`) for 3D binaural rendering.
