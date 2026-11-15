@@ -122,6 +122,14 @@ negative = "VE-15"
 statement = "The WebAssembly worker runtime bridge steps deterministic sanctuary physics, encodes and restores SHA-256 VDNT world snapshots within Prism envelope bounds, and refuses invalid epochs, ring overflows, or tampered payloads"
 
 [[id]]
+id = "VE-16"
+level = "build"
+suite = "engine"
+failure = "CliCommandError"
+negative = "VE-16"
+statement = "The verdant CLI packs causal sanctuary worlds into validated binary glTF 2.0 and SHA-256 VDNT snapshots, verifies WGSL shaders and headless benchmarks, and refuses invalid commands or corrupted assets"
+
+[[id]]
 id = "FR-01"
 level = "build"
 suite = "frame"

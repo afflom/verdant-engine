@@ -1,0 +1,22 @@
+[package]
+name = "verdant-cli"
+description = "Command-line scene packer, Khronos glTF 2.0 validator, W3C WGSL shader oracle, SHA-256 VDNT snapshot verifier, and frame-budget benchmark for Verdant Engine."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+authors.workspace = true
+keywords.workspace = true
+categories.workspace = true
+
+[[bin]]
+name = "verdant"
+path = "src/main.rs"
+
+[dependencies]
+verdant-core = { workspace = true }
+
+[lints]
+workspace = true

@@ -450,7 +450,7 @@ fn engine_ve_10() {
         ),
         (
             &b"scene:wasmbridge"[..],
-            "conformant:worklet_quantum=128,channels=2,ring_slots=64,snapshot_url_max=16384",
+            "conformant:worklet_quantum=128,channels=2,ring_slots=64,snapshot_url_max=32768",
         ),
     ] {
         let out = verdant_core::prism_kernel::dispatch(query.to_vec()).expect("dispatch");
@@ -682,6 +682,10 @@ fn engine_ve_15() {
     assert_eq!(bridge.epoch_rank, 3);
     assert_eq!(bridge.world.blueprints.len(), 7);
     assert!(bridge.walkable_polygons > 100);
+    let tobs_snap = bridge
+        .encode_snapshot()
+        .expect("t_obs snapshot fits Prism URL bridge envelope");
+    assert_eq!(&tobs_snap[0..4], b"VDNT");
 
     let rover_before = bridge
         .physics
@@ -754,4 +758,79 @@ fn engine_ve_15() {
         .join("verdant-wasm.wasm");
     let wasm_bytes = std::fs::read(&wasm_path).expect("site/verdant-wasm.wasm must exist");
     assert_eq!(&wasm_bytes[0..4], b"\0asm");
+}
+
+/// `VE-16`: `verdant-cli` asset/shader/snapshot validator, sanctuary packer, headless benchmark, and `CliCommandError` refusals.
+#[test]
+fn engine_ve_16() {
+    use verdant_cli::{run_cli, CliCommandError};
+    use verdant_core::render::WGSL_PBR_SURFACE_SHADER;
+
+    let tmp_dir = std::env::temp_dir().join(format!("verdant_cli_ve16_{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&tmp_dir);
+    std::fs::create_dir_all(&tmp_dir).expect("temp dir");
+
+    let glb_path = tmp_dir.join("sanctuary.glb");
+    let vdnt_path = tmp_dir.join("sanctuary.glb.vdnt");
+    let wgsl_path = tmp_dir.join("pbr_terrain.wgsl");
+    std::fs::write(&wgsl_path, WGSL_PBR_SURFACE_SHADER).expect("write wgsl");
+
+    let pack_out = run_cli(&[
+        "export-sanctuary".to_string(),
+        glb_path.to_string_lossy().into_owned(),
+        "7".to_string(),
+        "1.0".to_string(),
+    ])
+    .expect("export-sanctuary succeeds");
+    assert!(pack_out.contains("PACKED OK:"));
+    assert!(pack_out.contains("blueprints=7"));
+
+    let glb_out = run_cli(&[
+        "validate-glb".to_string(),
+        glb_path.to_string_lossy().into_owned(),
+    ])
+    .expect("validate-glb succeeds");
+    assert!(glb_out.contains("GLB OK:"));
+
+    let wgsl_out = run_cli(&[
+        "validate-wgsl".to_string(),
+        wgsl_path.to_string_lossy().into_owned(),
+        "vs_main".to_string(),
+        "fs_main".to_string(),
+    ])
+    .expect("validate-wgsl succeeds");
+    assert!(wgsl_out.contains("WGSL OK:"));
+
+    let snap_out = run_cli(&[
+        "snapshot-verify".to_string(),
+        vdnt_path.to_string_lossy().into_owned(),
+    ])
+    .expect("snapshot-verify succeeds");
+    assert!(snap_out.contains("VDNT OK:"));
+    assert!(snap_out.contains("url_bridge_ready=true"));
+
+    let bench_out =
+        run_cli(&["benchmark".to_string(), "16".to_string()]).expect("benchmark succeeds");
+    assert!(bench_out.contains("BENCHMARK OK: frames=16"));
+    assert!(bench_out.contains("passes=5"));
+    assert!(bench_out.contains("csm_cascades=4"));
+
+    // Negative refusal 1: unknown subcommand returns `CliCommandError::InvalidUsage`:
+    let bad_cmd = run_cli(&["unknown-subcmd".to_string()]).expect_err("unknown subcommand fails");
+    assert!(matches!(bad_cmd, CliCommandError::InvalidUsage { .. }));
+
+    // Negative refusal 2: corrupted `.glb` rejected with `CliCommandError::ValidationRejected`:
+    let corrupt_glb = tmp_dir.join("corrupt.glb");
+    std::fs::write(&corrupt_glb, b"not-a-valid-glb-container").expect("write corrupt glb");
+    let bad_glb = run_cli(&[
+        "validate-glb".to_string(),
+        corrupt_glb.to_string_lossy().into_owned(),
+    ])
+    .expect_err("corrupt glb must be refused");
+    assert!(matches!(
+        bad_glb,
+        CliCommandError::ValidationRejected { .. }
+    ));
+
+    let _ = std::fs::remove_dir_all(&tmp_dir);
 }

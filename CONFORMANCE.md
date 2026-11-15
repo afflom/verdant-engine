@@ -37,6 +37,7 @@ model does not sanction.
 | `VE-13` | `build` | Bounded 3D GJK convex hull collision detection, Baumgarte contact stabilization, and Coulomb friction cones resolve rigid-body contacts deterministically and refuse degenerate hulls |
 | `VE-14` | `build` | Slope-filtered terrain navigation meshes and admissible A-star corridor pathfinding steer autonomous agents around obstacles and refuse unwalkable endpoints or disconnected goals |
 | `VE-15` | `build` | The WebAssembly worker runtime bridge steps deterministic sanctuary physics, encodes and restores SHA-256 VDNT world snapshots within Prism envelope bounds, and refuses invalid epochs, ring overflows, or tampered payloads |
+| `VE-16` | `build` | The verdant CLI packs causal sanctuary worlds into validated binary glTF 2.0 and SHA-256 VDNT snapshots, verifies WGSL shaders and headless benchmarks, and refuses invalid commands or corrupted assets |
 
 ## fidelity
 

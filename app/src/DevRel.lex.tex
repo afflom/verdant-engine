@@ -140,10 +140,17 @@ definition{
 }
 
 definition{
+  name: sdkVerdantCli,
+  parameters: [],
+  result: SdkArtifactSpec,
+  body: (record SdkArtifactSpec {index := (Subsystems::sFive), runnable := true, name := "VerdantCliPacker", text := "Command-line asset validator, sanctuary GLB and VDNT scene packer, and headless 60fps benchmark crate crates/verdant-cli/Cargo.toml."})
+}
+
+definition{
   name: sdkArtifacts,
   parameters: [],
   result: (List SdkArtifactSpec),
-  body: (cons (sdkExampleSanctuary) (cons (sdkExampleCustomArena) (cons (sdkExampleHeadlessBenchmark) (cons (sdkStarterTemplate) (cons (sdkVerdantWasm) (nil SdkArtifactSpec))))))
+  body: (cons (sdkExampleSanctuary) (cons (sdkExampleCustomArena) (cons (sdkExampleHeadlessBenchmark) (cons (sdkStarterTemplate) (cons (sdkVerdantWasm) (cons (sdkVerdantCli) (nil SdkArtifactSpec)))))))
 }
 
 definition{
@@ -242,7 +249,7 @@ definition{
 theorem{
   name: devRelCatalogComplete,
   parameters: [],
-  statement: ((if ((docsValid 0 (docPages)) && ((sdkValid 0 (sdkArtifacts)) && (studioControlsAccessible))) then (if (((project (docLanding) index) =? 0) && (((project (docFirstScene) index) =? 1) && (((project (docCustomGame) index) =? (Subsystems::sTwo)) && (((project (docAssetPipeline) index) =? (Subsystems::sThree)) && (((project (docArchitecture) index) =? (Subsystems::sFour)) && ((project (docApiReference) index) =? (Subsystems::sFive))))))) then (if (((project (sdkExampleSanctuary) index) =? 0) && (((project (sdkExampleCustomArena) index) =? 1) && (((project (sdkExampleHeadlessBenchmark) index) =? (Subsystems::sTwo)) && (((project (sdkStarterTemplate) index) =? (Subsystems::sThree)) && ((project (sdkVerdantWasm) index) =? (Subsystems::sFour)))))) then (((project (controlEpochScrubber) index) =? 0) && (((project (controlSimulationMode) index) =? 1) && (((project (controlCameraMode) index) =? (Subsystems::sTwo)) && (((project (controlSpatialAudio) index) =? (Subsystems::sThree)) && (((project (controlGlbExport) index) =? (Subsystems::sFour)) && (((project (controlSnapshotShare) index) =? (Subsystems::sFive)) && ((project (controlDocsNavigation) index) =? (Subsystems::sSix)))))))) else false) else false) else false) = true),
+  statement: ((if ((docsValid 0 (docPages)) && ((sdkValid 0 (sdkArtifacts)) && (studioControlsAccessible))) then (if (((project (docLanding) index) =? 0) && (((project (docFirstScene) index) =? 1) && (((project (docCustomGame) index) =? (Subsystems::sTwo)) && (((project (docAssetPipeline) index) =? (Subsystems::sThree)) && (((project (docArchitecture) index) =? (Subsystems::sFour)) && ((project (docApiReference) index) =? (Subsystems::sFive))))))) then (if (((project (sdkExampleSanctuary) index) =? 0) && (((project (sdkExampleCustomArena) index) =? 1) && (((project (sdkExampleHeadlessBenchmark) index) =? (Subsystems::sTwo)) && (((project (sdkStarterTemplate) index) =? (Subsystems::sThree)) && (((project (sdkVerdantWasm) index) =? (Subsystems::sFour)) && ((project (sdkVerdantCli) index) =? (Subsystems::sFive))))))) then (((project (controlEpochScrubber) index) =? 0) && (((project (controlSimulationMode) index) =? 1) && (((project (controlCameraMode) index) =? (Subsystems::sTwo)) && (((project (controlSpatialAudio) index) =? (Subsystems::sThree)) && (((project (controlGlbExport) index) =? (Subsystems::sFour)) && (((project (controlSnapshotShare) index) =? (Subsystems::sFive)) && ((project (controlDocsNavigation) index) =? (Subsystems::sSix)))))))) else false) else false) else false) = true),
   proof: decide{},
   axioms: []
 }

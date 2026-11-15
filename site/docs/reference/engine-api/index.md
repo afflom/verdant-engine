@@ -35,16 +35,38 @@ Look up engine modules, core types, error codes, and 60fps frame budgets.
           
 | geometry | ProceduralMesh, MorphTarget, generate_terrain_mesh | Procedural terrain, fluted columns, crystals, and botanical geometry |
           
-| render | PbrMaterial, validate_wgsl_shader, validate_builtin_engine_shaders | Metallic-roughness PBR materials and W3C WGSL validation |
+| animation | Skeleton, SkeletalClip, SkinWeights4, skin_mesh_linear_blend | Acyclic joint trees, four-joint LBS skinning, and keyframe sampling |
+          
+| render | PbrMaterial, RenderFrameGraph, compute_csm_splits, IblEnvironmentProbe | Five-pass PBR frame graph, four-cascade CSM splits, IBL mips, and WGSL checks |
           
 | gltf_io | export_scene_to_glb, validate_glb_bytes | Binary Khronos glTF 2.0 export and verification |
           
-| physics | PhysicsWorld, RigidBody, CapsuleController, KinematicSplineRover | 60Hz rigid bodies, player capsules, and spline rovers |
+| collision | ConvexHullCollider, gjk_intersect_and_manifold, solve_contact_impulse | 3D GJK convex manifolds, Baumgarte stabilization, and Coulomb friction cones |
+          
+| physics | PhysicsWorld, RigidBody, CapsuleController, KinematicSplineRover | 60Hz rigid bodies, player capsules, lagoon buoyancy, and spline rovers |
+          
+| navmesh | NavMesh, NavPolygon, steer_along_corridor | Slope-filtered walkable navmeshes and admissible A-star corridor steering |
           
 | audio | AcousticEnvironment, ListenerPose, SpatialAudioSource, evaluate_binaural_cue | Binaural spatial audio, RT60, and Euler-Bernoulli chime synthesis |
           
 | runtime | EngineConfig, FrameBudgetProfiler, WorkerJobGraph, WorldSnapshot | Topological job scheduling and SHA-256 world snapshots |
         
+      
+      
+
+## WebAssembly bridge and CLI packer
+
+      
+        
+- crates/verdant-wasm compiles verdant-core to a compact WebAssembly module for OffscreenCanvas WebGPU and WebGL2 workers, AudioWorklet synthesis, and #vdnt= snapshot URLs.
+        
+- cargo run -p verdant-cli -- validate-glb  checks binary Khronos glTF 2.0 containers and buffer bounds.
+        
+- cargo run -p verdant-cli -- validate-wgsl  validates W3C WGSL shaders and entry points via naga.
+        
+- cargo run -p verdant-cli -- export-sanctuary  packs a causal world GLB asset and its companion .vdnt snapshot.
+        
+- cargo run -p verdant-cli -- snapshot-verify  verifies SHA-256 trailers and URL bridge byte bounds.
       
       
 

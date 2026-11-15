@@ -110,15 +110,15 @@
       <p>For columns, quartz outcrops, and botanical petals, call <code>generate_fluted_entasis_column_mesh</code>, <code>generate_hexagonal_quartz_mesh</code>, or <code>canonical_scene_mesh_library</code>.</p>
       <p>When foliage bends in the wind, blend vertex offsets with <code>MorphTarget</code>.</p>
       <h2>Validate custom WGSL shaders before GPU upload</h2>
-      <p>Every custom shader passes through W3C <code>naga</code> front-end parsing and module validation before reaching a browser GPU.</p>
+      <p>Every shader passes through W3C <code>naga</code> front-end parsing and module validation before reaching a browser WebGPU or WebGL2 context.</p>
       <pre><code>let shaders = validate_builtin_engine_shaders()?;
-assert_eq!(shaders.len(), 3);</code></pre>
-      <h2>Mix spatial audio with reverberation</h2>
+assert_eq!(shaders.len(), 4);</code></pre>
+      <h2>Mix spatial audio with AudioWorklet synthesis</h2>
       <p>Create an <code>AcousticEnvironment</code> with a <code>ListenerPose</code> and evaluate <code>SpatialAudioSource</code> emitters in 3D space.</p>
-      <p>Each call to <code>evaluate_binaural_cue</code> computes Woodworth spherical-head interaural time difference, level difference, and Sabine RT60 decay.</p>
-      <h2>Export binary glTF 2.0 scenes</h2>
-      <p>Call <code>export_scene_to_glb(&amp;scene, &amp;meshes, &amp;materials)</code> to pack positions, normals, UV coordinates, indices, and metallic-roughness materials into one GLB file.</p>
-      <p>Use <code>validate_glb_bytes</code> in asset pipelines to verify the binary container through the Khronos <code>gltf</code> parser.</p>
+      <p>Each call to <code>evaluate_binaural_cue</code> computes Woodworth interaural time difference, level difference, and Sabine RT60 decay for the 128-frame AudioWorklet.</p>
+      <h2>Pack and verify assets with verdant-cli</h2>
+      <p>Call <code>export_scene_to_glb(&amp;scene, &amp;meshes, &amp;materials)</code> in Rust, or run <code>cargo run -p verdant-cli -- export-sanctuary out.glb</code> from your shell.</p>
+      <p>Use <code>verdant validate-glb</code>, <code>verdant validate-wgsl</code>, and <code>verdant snapshot-verify</code> in continuous integration to reject broken assets early.</p>
     
       <details class="cs-terms" id="words"><summary>Words on this page <span>2</span></summary><dl><dt id="term-wgsl">WGSL</dt><dd>WebGPU Shading Language: the W3C standard shader language validated in Verdant Engine by naga.</dd><dt id="term-gltf">glTF</dt><dd>The Khronos Group 3D scene transmission standard. GLB is its single-file binary container.</dd></dl></details><nav class="dc-pager" aria-label="Page sequence">
         <a href="../../getting-started/">Previous: Build your first 3D world</a>

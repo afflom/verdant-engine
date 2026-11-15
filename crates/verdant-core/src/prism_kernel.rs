@@ -114,15 +114,27 @@ pub fn answerDeepSubsystemQuery(
                                                 {
                                                     let _x_1032 = (1 << 1);
                                                     {
-                                                        let _x_1033 =
-                                                            (1 << ((1 << ((1 << 1) + 1)) + 1));
+                                                        let _x_1033 = (((((((1
+                                                            << (((1 << ((1 << 1) + 1))
+                                                                + (1 << (1 << 1)))
+                                                                + (1 << 1)))
+                                                            + (1 << (((1
+                                                                << ((1 << 1) + 1))
+                                                                + (1 << 1))
+                                                                + 1)))
+                                                            + (1 << ((1 << ((1 << 1) + 1))
+                                                                + (1 << 1))))
+                                                            + (1 << ((1 << (1 << 1)) + 1)))
+                                                            + (1 << ((1 << 1) + 1)))
+                                                            + (1 << (1 << 1)))
+                                                            + (1 << 1));
                                                         {
                                                             let _x_1034 = wasmBridgeEnvelopeValid(
                                                                 _x_1031, _x_1032, _x_1033,
                                                             )?;
                                                             match _x_1034 {
         false => std::string::String::from("refused:wasmbridge-mismatch"),
-        true => std::string::String::from("conformant:worklet_quantum=128,channels=2,ring_slots=64,snapshot_url_max=16384"),
+        true => std::string::String::from("conformant:worklet_quantum=128,channels=2,ring_slots=64,snapshot_url_max=32768"),
     }
                                                         }
                                                     }
@@ -8723,7 +8735,7 @@ pub fn skinWeightsNormalized(
 
 pub fn snapshotUrlMaxBytes() -> Result<u64, self::ComputeError> {
     Ok({
-        let _x_1 = sFourteen()?;
+        let _x_1 = sFifteen()?;
         {
             let _x_2 = pow2Constructive(_x_1)?;
             _x_2

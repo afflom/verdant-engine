@@ -154,6 +154,7 @@ Verdant Engine is a multi-purpose commercial 3D browser and WebAssembly game eng
 - ExampleHeadlessBenchmark: Runnable example crates/verdant-core/examples/headless_benchmark.rs executing the six-stage worker job graph and SHA-256 snapshot round-trip.
 - TemplateBrowser3DStarter: Standalone starter project templates/browser-3d-starter/Cargo.toml for building custom 3D browser and WebAssembly games on verdant-core.
 - VerdantWasmRuntime: Dedicated WebAssembly runtime crate crates/verdant-wasm/Cargo.toml driving off-thread simulation, frustum culling, spatial acoustics, and SHA-256 VDNT snapshots.
+- VerdantCliPacker: Command-line asset validator, sanctuary GLB and VDNT scene packer, and headless 60fps benchmark crate crates/verdant-cli/Cargo.toml.
 - ve-epoch-btn: Cycles cosmic expansion epoch from initial Cosmogenic seed to present observation t_obs.
 - ve-sim-btn: Toggles between demand-driven stepped inspection and continuous 60fps orbital and rover simulation.
 - ve-cam-btn: Switches between 3D Orbit camera framing and First-Person WASD capsule walk mode.

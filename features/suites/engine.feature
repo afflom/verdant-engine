@@ -107,3 +107,10 @@ Feature: engine
     When worker frames step and VDNT snapshots are encoded and restored
     Then rover kinematics, BVH visibility, and restored world state remain bit-exact
     And invalid epoch ranks, command ring overflows, or tampered snapshot bytes return WasmBridgeError
+
+  @VE-16 @build
+  Scenario: The verdant CLI packs causal sanctuary worlds into validated binary glTF 2.0 and SHA-256 VDNT snapshots, verifies WGSL shaders and headless benchmarks, and refuses invalid commands or corrupted assets
+    Given the verdant CLI scene packer and asset validation subcommands
+    When export-sanctuary, validate-glb, validate-wgsl, snapshot-verify, and benchmark execute
+    Then exported GLB containers, WGSL shaders, and VDNT snapshots pass authoritative checks
+    And unknown subcommands, malformed shaders, or corrupted GLB files return CliCommandError

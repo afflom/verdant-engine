@@ -32,7 +32,23 @@
     "BVH",
     "PBR",
     "GLB",
-    "SHA"
+    "SHA",
+    "GJK",
+    "NavMesh",
+    "CSM",
+    "IBL",
+    "VDNT",
+    "CLI",
+    "LBS",
+    "OffscreenCanvas",
+    "AudioWorklet",
+    "WebAssembly",
+    "Wasm",
+    "WASD",
+    "Relic",
+    "Resonator",
+    "Guardian",
+    "Drone"
   ],
   "personas": [
     {

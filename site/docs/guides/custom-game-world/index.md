@@ -35,17 +35,17 @@ When foliage bends in the wind, blend vertex offsets with MorphTarget.
 
       
 
-Every custom shader passes through W3C naga front-end parsing and module validation before reaching a browser GPU.
+Every shader passes through W3C naga front-end parsing and module validation before reaching a browser WebGPU or WebGL2 context.
 
       
 
 ```
-let shaders = validate_builtin_engine_shaders()?; assert_eq!(shaders.len(), 3);
+let shaders = validate_builtin_engine_shaders()?; assert_eq!(shaders.len(), 4);
 ```
 
       
 
-## Mix spatial audio with reverberation
+## Mix spatial audio with AudioWorklet synthesis
 
       
 
@@ -53,19 +53,19 @@ Create an AcousticEnvironment with a ListenerPose and evaluate SpatialAudioSourc
 
       
 
-Each call to evaluate_binaural_cue computes Woodworth spherical-head interaural time difference, level difference, and Sabine RT60 decay.
+Each call to evaluate_binaural_cue computes Woodworth interaural time difference, level difference, and Sabine RT60 decay for the 128-frame AudioWorklet.
 
       
 
-## Export binary glTF 2.0 scenes
+## Pack and verify assets with verdant-cli
 
       
 
-Call export_scene_to_glb(&scene, &meshes, &materials) to pack positions, normals, UV coordinates, indices, and metallic-roughness materials into one GLB file.
+Call export_scene_to_glb(&scene, &meshes, &materials) in Rust, or run cargo run -p verdant-cli -- export-sanctuary out.glb from your shell.
 
       
 
-Use validate_glb_bytes in asset pipelines to verify the binary container through the Khronos gltf parser.
+Use verdant validate-glb, verdant validate-wgsl, and verdant snapshot-verify in continuous integration to reject broken assets early.
 
     
       

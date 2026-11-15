@@ -1930,6 +1930,16 @@ record = "DevRel::sdkStarterTemplate"
 axis = "meant"
 
 [[closed]]
+kappa = "08f87204e2e6362e4b96cc726e7c97b919d1292b63267d6520a21683a81d1232"
+record = "DevRel::sdkVerdantCli"
+axis = "derived"
+
+[[closed]]
+kappa = "378322c4d66f76df94dd8584d5574beeca84104007a78e1ff3435a1c9ff12d7e"
+record = "DevRel::sdkVerdantCli"
+axis = "meant"
+
+[[closed]]
 kappa = "082a1501e3d9384339d04c300e16909022b1a0acffd32428ce47f59d2bb09d9e"
 record = "DevRel::sdkVerdantWasm"
 axis = "derived"
@@ -2017,6 +2027,11 @@ axis = "meant"
 [[closed]]
 kappa = "136c374f0fff819f81cf8e0a26bb470d367401a4c4cdac22d906d6366903ee43"
 record = "Engine::vectors#16"
+axis = "meant"
+
+[[closed]]
+kappa = "0d0a060ad6e0e29b5f75ae18b1e0c85bdd7d62b7d265063f9be3ce1c012e468a"
+record = "Engine::vectors#17"
 axis = "meant"
 
 [[closed]]
@@ -4561,7 +4576,7 @@ axis = "derived"
 reason = "no derivation names it (prov:wasDerivedFrom)"
 
 [[residue]]
-kappa = "6c2c8f7832a8704778fb4347d090f97c8d3d5d9a1d74a0d7f3203275bdc03b50"
+kappa = "fe050d8d647a46e14cfcf44c3d0d7e88fab6257e433fa215d5eb247fb362eba6"
 record = "Engine::vectors#17"
 axis = "derived"
 reason = "no derivation names it (prov:wasDerivedFrom)"

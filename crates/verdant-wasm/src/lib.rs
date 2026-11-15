@@ -868,7 +868,7 @@ pub extern "C" fn verdant_wasm_worker_ring_capacity() -> u32 {
     prism_kernel::workerCommandRingCapacity().unwrap_or(64) as u32
 }
 
-/// Returns maximum URL-shareable `VDNT` snapshot byte budget (`16384`) from `prism_kernel`.
+/// Returns maximum URL-shareable `VDNT` snapshot byte budget (`32768`) from `prism_kernel`.
 #[no_mangle]
 pub extern "C" fn verdant_wasm_snapshot_max_bytes() -> u32 {
     prism_kernel::snapshotUrlMaxBytes().unwrap_or(16_384) as u32

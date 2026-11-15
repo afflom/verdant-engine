@@ -19,7 +19,7 @@ Create a Rust 3D scene, step rigid-body physics, and export a binary asset.
 
       
 
-The repository ships a complete project in templates/browser-3d-starter so you can run a custom 3D scene right away.
+The repository ships a playable project in templates/browser-3d-starter so you can run a 3D game world right away.
 
       
 
@@ -29,11 +29,11 @@ cargo run --manifest-path templates/browser-3d-starter/Cargo.toml
 
       
 
-That command builds verdant-core, validates the built-in WGSL shader, runs 30 physics ticks, and writes custom-starter-world.glb.
+That command builds verdant-core, validates all four built-in WGSL shaders, steps GJK relic triggers and NavMesh steering, and writes custom-starter-world.glb.
 
       
 
-## Spawn terrain and a child entity
+## Spawn terrain and child beacons
 
       
 
@@ -41,12 +41,12 @@ Open templates/browser-3d-starter/src/main.rs to inspect how a scene world organ
 
       
 
-You spawn a root terrain mesh first, attach a fluted column and crystal beacon as child transforms, and build the bounding volume hierarchy.
+You spawn a root terrain mesh first, attach three fluted columns and skinned quartz beacons as children, and build the bounding volume hierarchy.
 
       
 
 ```
-let mut scene = SceneWorld::new(); let ground_id = scene.spawn("StarterTerrain", EntityRole::TerrainSurface, None, Transform::IDENTITY, bounds, (1.0, "Terrain")); let beacon_id = scene.spawn("GoalCrystalBeacon", EntityRole::EngineeredStructure, Some(ground_id), Transform::from_xyz(0.0, 4.6, 0.0), beacon_bounds, (1.0, "Beacon")); let bvh = scene.build_bvh();
+let mut scene = SceneWorld::new(); let ground_id = scene.spawn("StarterTerrain", EntityRole::TerrainFeature, None, Transform::default(), bounds, (1.0, "Terrain")); let beacon_id = scene.spawn("NorthRelicBeacon", EntityRole::EngineeredStructure, Some(col_id), Transform::from_xyz(0.0, 4.6, 0.0), beacon_bounds, (1.0, "Beacon")); let bvh = scene.build_bvh();
 ```
 
       
@@ -55,7 +55,7 @@ let mut scene = SceneWorld::new(); let ground_id = scene.spawn("StarterTerrain",
 
       
 
-Before exporting the scene, encode a world snapshot so network clients or replay tools can restore the exact state with SHA-256 verification.
+Before exporting the scene, encode a world snapshot so worker threads or URL share links can restore the exact state with SHA-256 verification.
 
       
 
@@ -65,11 +65,11 @@ let snap_bytes = WorldSnapshot::encode(&causal_world)?; let restored = WorldSnap
 
       
 
-## Preview in the browser
+## Play Sanctuary Relic Resonator in the browser
 
       
 
-Serve templates/browser-3d-starter over HTTP and open index.html in any WebGL2 browser to orbit the 3D arena.
+Serve templates/browser-3d-starter over HTTP and open index.html to pilot the Resonator Orb with WASD keys and awaken all three beacons.
 
     
       

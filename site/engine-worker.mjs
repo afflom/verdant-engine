@@ -36,7 +36,7 @@ async function instantiateVerdantWasm() {
 }
 
 let ringCapacity = 64;
-let snapshotMaxBytes = 16384;
+let snapshotMaxBytes = 32768;
 
 const wasmPromise = instantiateVerdantWasm().then((ex) => {
   ex.verdant_wasm_init(7n);

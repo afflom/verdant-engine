@@ -28,11 +28,11 @@ Early iterations of Verdant Resonance suffered from cluttered menu controls that
 
       
 
-Extracting Verdant Engine automated world genesis, structural verification, and rover patrolling inside the engine lifecycle itself.
+Extracting Verdant Engine moved simulation, culling, and WebGPU or WebGL2 rendering into an OffscreenCanvas worker backed by verdant-wasm.
 
       
 
-The browser studio leaves four clean actions beside the WebGL2 stage: epoch scrubbing, camera mode, spatial audio, and binary glTF export.
+The studio leaves clean actions beside the 3D stage: epoch scrubbing, run mode, camera mode, spatial audio, GLB export, and #vdnt= snapshot sharing.
 
       
 

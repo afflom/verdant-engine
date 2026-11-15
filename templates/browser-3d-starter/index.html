@@ -3,16 +3,94 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Verdant Engine — Browser 3D Starter</title>
+    <title>Sanctuary Relic Resonator — Verdant Engine Starter</title>
     <style>
-      html, body { margin: 0; height: 100%; background: #121619; color: #eef2f5; font-family: system-ui, sans-serif; overflow: hidden; }
-      #arena { display: block; width: 100vw; height: 100vh; }
-      header { position: fixed; top: 1rem; left: 1rem; padding: 0.5rem 0.75rem; border-radius: 0.5rem; background: rgba(18, 22, 25, 0.82); border: 1px solid rgba(255, 255, 255, 0.14); font-size: 0.875rem; }
+      :root {
+        --bg: #111618;
+        --panel: rgba(17, 22, 24, 0.86);
+        --border: rgba(238, 244, 242, 0.16);
+        --fg: #eef4f2;
+        --muted: #a6b7b2;
+        --accent: #6ec49c;
+      }
+      * { box-sizing: border-box; }
+      html, body {
+        margin: 0;
+        height: 100%;
+        background: var(--bg);
+        color: var(--fg);
+        font-family: system-ui, -apple-system, sans-serif;
+        overflow: hidden;
+      }
+      #arena {
+        display: block;
+        width: 100vw;
+        height: 100vh;
+        touch-action: none;
+      }
+      .hud {
+        position: fixed;
+        top: 0.875rem;
+        left: 0.875rem;
+        right: 0.875rem;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.625rem;
+        pointer-events: none;
+      }
+      .card {
+        pointer-events: auto;
+        padding: 0.625rem 0.875rem;
+        border-radius: 0.75rem;
+        background: var(--panel);
+        border: 1px solid var(--border);
+        backdrop-filter: blur(10px);
+      }
+      .title {
+        font-weight: 650;
+        font-size: 0.9375rem;
+      }
+      .sub {
+        font-size: 0.8125rem;
+        color: var(--muted);
+        margin-top: 0.15rem;
+      }
+      .actions {
+        display: flex;
+        gap: 0.5rem;
+      }
+      button {
+        min-width: 2.75rem;
+        min-height: 2.75rem;
+        padding: 0.5rem 0.875rem;
+        border-radius: 0.625rem;
+        border: 1px solid var(--border);
+        background: rgba(110, 196, 156, 0.14);
+        color: var(--fg);
+        font: inherit;
+        font-size: 0.875rem;
+        cursor: pointer;
+      }
+      button:hover, button:focus-visible {
+        border-color: var(--accent);
+        outline: none;
+      }
     </style>
   </head>
   <body>
-    <header>Verdant Engine Starter · Drag to orbit</header>
-    <canvas id="arena" aria-label="Starter 3D arena viewport"></canvas>
+    <div class="hud">
+      <div class="card" role="status" aria-live="polite">
+        <div class="title" id="hud-score">Relics Harmonized: 0 / 3</div>
+        <div class="sub" id="hud-hint">Move with WASD or Arrow keys (drag to orbit camera) to awaken all three quartz beacons.</div>
+      </div>
+      <div class="card actions">
+        <button type="button" id="audio-btn" aria-pressed="false">Audio: Off</button>
+        <button type="button" id="reset-btn">Reset Arena</button>
+      </div>
+    </div>
+    <canvas id="arena" aria-label="Sanctuary Relic Resonator 3D viewport"></canvas>
     <script type="module" src="./game.mjs"></script>
   </body>
 </html>

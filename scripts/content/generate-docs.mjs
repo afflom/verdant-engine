@@ -194,22 +194,22 @@ const PAGES = [
     },
     body: `
       <h2>Run the starter template</h2>
-      <p>The repository ships a complete project in <code>templates/browser-3d-starter</code> so you can run a custom 3D scene right away.</p>
+      <p>The repository ships a playable project in <code>templates/browser-3d-starter</code> so you can run a 3D game world right away.</p>
       <pre><code>cargo run --manifest-path templates/browser-3d-starter/Cargo.toml</code></pre>
-      <p>That command builds <code>verdant-core</code>, validates the built-in WGSL shader, runs 30 physics ticks, and writes <code>custom-starter-world.glb</code>.</p>
-      <h2>Spawn terrain and a child entity</h2>
+      <p>That command builds <code>verdant-core</code>, validates all four built-in WGSL shaders, steps GJK relic triggers and NavMesh steering, and writes <code>custom-starter-world.glb</code>.</p>
+      <h2>Spawn terrain and child beacons</h2>
       <p>Open <code>templates/browser-3d-starter/src/main.rs</code> to inspect how a scene world organizes 3D objects.</p>
-      <p>You spawn a root terrain mesh first, attach a fluted column and crystal beacon as child transforms, and build the bounding volume hierarchy.</p>
+      <p>You spawn a root terrain mesh first, attach three fluted columns and skinned quartz beacons as children, and build the bounding volume hierarchy.</p>
       <pre><code>let mut scene = SceneWorld::new();
-let ground_id = scene.spawn("StarterTerrain", EntityRole::TerrainSurface, None, Transform::IDENTITY, bounds, (1.0, "Terrain"));
-let beacon_id = scene.spawn("GoalCrystalBeacon", EntityRole::EngineeredStructure, Some(ground_id), Transform::from_xyz(0.0, 4.6, 0.0), beacon_bounds, (1.0, "Beacon"));
+let ground_id = scene.spawn("StarterTerrain", EntityRole::TerrainFeature, None, Transform::default(), bounds, (1.0, "Terrain"));
+let beacon_id = scene.spawn("NorthRelicBeacon", EntityRole::EngineeredStructure, Some(col_id), Transform::from_xyz(0.0, 4.6, 0.0), beacon_bounds, (1.0, "Beacon"));
 let bvh = scene.build_bvh();</code></pre>
       <h2>Capture a deterministic snapshot</h2>
-      <p>Before exporting the scene, encode a world snapshot so network clients or replay tools can restore the exact state with SHA-256 verification.</p>
+      <p>Before exporting the scene, encode a world snapshot so worker threads or URL share links can restore the exact state with SHA-256 verification.</p>
       <pre><code>let snap_bytes = WorldSnapshot::encode(&amp;causal_world)?;
 let restored = WorldSnapshot::decode(&amp;snap_bytes)?;</code></pre>
-      <h2>Preview in the browser</h2>
-      <p>Serve <code>templates/browser-3d-starter</code> over HTTP and open <code>index.html</code> in any WebGL2 browser to orbit the 3D arena.</p>
+      <h2>Play Sanctuary Relic Resonator in the browser</h2>
+      <p>Serve <code>templates/browser-3d-starter</code> over HTTP and open <code>index.html</code> to pilot the Resonator Orb with WASD keys and awaken all three beacons.</p>
     `,
     prev: { href: "", label: "Verdant Engine documentation" },
     next: { href: "guides/custom-game-world/", label: "Author terrain, shaders, and spatial audio" },
@@ -245,15 +245,15 @@ let restored = WorldSnapshot::decode(&amp;snap_bytes)?;</code></pre>
       <p>For columns, quartz outcrops, and botanical petals, call <code>generate_fluted_entasis_column_mesh</code>, <code>generate_hexagonal_quartz_mesh</code>, or <code>canonical_scene_mesh_library</code>.</p>
       <p>When foliage bends in the wind, blend vertex offsets with <code>MorphTarget</code>.</p>
       <h2>Validate custom WGSL shaders before GPU upload</h2>
-      <p>Every custom shader passes through W3C <code>naga</code> front-end parsing and module validation before reaching a browser GPU.</p>
+      <p>Every shader passes through W3C <code>naga</code> front-end parsing and module validation before reaching a browser WebGPU or WebGL2 context.</p>
       <pre><code>let shaders = validate_builtin_engine_shaders()?;
-assert_eq!(shaders.len(), 3);</code></pre>
-      <h2>Mix spatial audio with reverberation</h2>
+assert_eq!(shaders.len(), 4);</code></pre>
+      <h2>Mix spatial audio with AudioWorklet synthesis</h2>
       <p>Create an <code>AcousticEnvironment</code> with a <code>ListenerPose</code> and evaluate <code>SpatialAudioSource</code> emitters in 3D space.</p>
-      <p>Each call to <code>evaluate_binaural_cue</code> computes Woodworth spherical-head interaural time difference, level difference, and Sabine RT60 decay.</p>
-      <h2>Export binary glTF 2.0 scenes</h2>
-      <p>Call <code>export_scene_to_glb(&amp;scene, &amp;meshes, &amp;materials)</code> to pack positions, normals, UV coordinates, indices, and metallic-roughness materials into one GLB file.</p>
-      <p>Use <code>validate_glb_bytes</code> in asset pipelines to verify the binary container through the Khronos <code>gltf</code> parser.</p>
+      <p>Each call to <code>evaluate_binaural_cue</code> computes Woodworth interaural time difference, level difference, and Sabine RT60 decay for the 128-frame AudioWorklet.</p>
+      <h2>Pack and verify assets with verdant-cli</h2>
+      <p>Call <code>export_scene_to_glb(&amp;scene, &amp;meshes, &amp;materials)</code> in Rust, or run <code>cargo run -p verdant-cli -- export-sanctuary out.glb</code> from your shell.</p>
+      <p>Use <code>verdant validate-glb</code>, <code>verdant validate-wgsl</code>, and <code>verdant snapshot-verify</code> in continuous integration to reject broken assets early.</p>
     `,
     prev: { href: "getting-started/", label: "Build your first 3D world" },
     next: { href: "reference/engine-api/", label: "Verdant Core API reference" },
@@ -291,13 +291,24 @@ assert_eq!(shaders.len(), 3);</code></pre>
           <tr><td><code>ecs</code></td><td><code>SceneWorld</code>, <code>EntityId</code>, <code>Transform</code>, <code>BoundingVolumeHierarchy</code></td><td>Entity hierarchy, world transforms, raycasts, and frustum culling</td></tr>
           <tr><td><code>genesis</code></td><td><code>CausalWorldState</code>, <code>CosmicEpoch</code>, <code>BuilderDiscipline</code>, <code>ArchitecturalBlueprint</code></td><td>Monotonic world expansion and Builder statics</td></tr>
           <tr><td><code>geometry</code></td><td><code>ProceduralMesh</code>, <code>MorphTarget</code>, <code>generate_terrain_mesh</code></td><td>Procedural terrain, fluted columns, crystals, and botanical geometry</td></tr>
-          <tr><td><code>render</code></td><td><code>PbrMaterial</code>, <code>validate_wgsl_shader</code>, <code>validate_builtin_engine_shaders</code></td><td>Metallic-roughness PBR materials and W3C WGSL validation</td></tr>
+          <tr><td><code>animation</code></td><td><code>Skeleton</code>, <code>SkeletalClip</code>, <code>SkinWeights4</code>, <code>skin_mesh_linear_blend</code></td><td>Acyclic joint trees, four-joint LBS skinning, and keyframe sampling</td></tr>
+          <tr><td><code>render</code></td><td><code>PbrMaterial</code>, <code>RenderFrameGraph</code>, <code>compute_csm_splits</code>, <code>IblEnvironmentProbe</code></td><td>Five-pass PBR frame graph, four-cascade CSM splits, IBL mips, and WGSL checks</td></tr>
           <tr><td><code>gltf_io</code></td><td><code>export_scene_to_glb</code>, <code>validate_glb_bytes</code></td><td>Binary Khronos glTF 2.0 export and verification</td></tr>
-          <tr><td><code>physics</code></td><td><code>PhysicsWorld</code>, <code>RigidBody</code>, <code>CapsuleController</code>, <code>KinematicSplineRover</code></td><td>60Hz rigid bodies, player capsules, and spline rovers</td></tr>
+          <tr><td><code>collision</code></td><td><code>ConvexHullCollider</code>, <code>gjk_intersect_and_manifold</code>, <code>solve_contact_impulse</code></td><td>3D GJK convex manifolds, Baumgarte stabilization, and Coulomb friction cones</td></tr>
+          <tr><td><code>physics</code></td><td><code>PhysicsWorld</code>, <code>RigidBody</code>, <code>CapsuleController</code>, <code>KinematicSplineRover</code></td><td>60Hz rigid bodies, player capsules, lagoon buoyancy, and spline rovers</td></tr>
+          <tr><td><code>navmesh</code></td><td><code>NavMesh</code>, <code>NavPolygon</code>, <code>steer_along_corridor</code></td><td>Slope-filtered walkable navmeshes and admissible A-star corridor steering</td></tr>
           <tr><td><code>audio</code></td><td><code>AcousticEnvironment</code>, <code>ListenerPose</code>, <code>SpatialAudioSource</code>, <code>evaluate_binaural_cue</code></td><td>Binaural spatial audio, RT60, and Euler-Bernoulli chime synthesis</td></tr>
           <tr><td><code>runtime</code></td><td><code>EngineConfig</code>, <code>FrameBudgetProfiler</code>, <code>WorkerJobGraph</code>, <code>WorldSnapshot</code></td><td>Topological job scheduling and SHA-256 world snapshots</td></tr>
         </tbody>
       </table>
+      <h2>WebAssembly bridge and CLI packer</h2>
+      <ul>
+        <li><code>crates/verdant-wasm</code> compiles <code>verdant-core</code> to a compact WebAssembly module for OffscreenCanvas WebGPU and WebGL2 workers, AudioWorklet synthesis, and <code>#vdnt=</code> snapshot URLs.</li>
+        <li><code>cargo run -p verdant-cli -- validate-glb &lt;file.glb&gt;</code> checks binary Khronos glTF 2.0 containers and buffer bounds.</li>
+        <li><code>cargo run -p verdant-cli -- validate-wgsl &lt;file.wgsl&gt;</code> validates W3C WGSL shaders and entry points via <code>naga</code>.</li>
+        <li><code>cargo run -p verdant-cli -- export-sanctuary &lt;out.glb&gt;</code> packs a causal world GLB asset and its companion <code>.vdnt</code> snapshot.</li>
+        <li><code>cargo run -p verdant-cli -- snapshot-verify &lt;file.vdnt&gt;</code> verifies SHA-256 trailers and URL bridge byte bounds.</li>
+      </ul>
       <h2>Runnable workspace examples</h2>
       <ul>
         <li><code>cargo run -p verdant-core --example cosmic_sanctuary</code> synthesizes the full sanctuary at <code>t_obs</code> and validates shaders, GLB bytes, physics, and audio.</li>
@@ -374,8 +385,8 @@ assert_eq!(shaders.len(), 3);</code></pre>
     body: `
       <h2>Keeping the 3D viewport front and center</h2>
       <p>Early iterations of Verdant Resonance suffered from cluttered menu controls that distracted players from exploring the 3D sanctuary.</p>
-      <p>Extracting Verdant Engine automated world genesis, structural verification, and rover patrolling inside the engine lifecycle itself.</p>
-      <p>The browser studio leaves four clean actions beside the WebGL2 stage: epoch scrubbing, camera mode, spatial audio, and binary glTF export.</p>
+      <p>Extracting Verdant Engine moved simulation, culling, and WebGPU or WebGL2 rendering into an OffscreenCanvas worker backed by <code>verdant-wasm</code>.</p>
+      <p>The studio leaves clean actions beside the 3D stage: epoch scrubbing, run mode, camera mode, spatial audio, GLB export, and <code>#vdnt=</code> snapshot sharing.</p>
       <h2>Exploring the sanctuary across devices</h2>
       <p>In Orbit mode, drag or scroll to inspect the rotating Cardan astrolabe rings inside the Harmonic Rotunda or follow the Perimeter Sentinel Rover.</p>
       <p>Switch to Walk mode on desktop to traverse the amphitheater terrain at eye level with <code>WASD</code> or arrow keys.</p>
