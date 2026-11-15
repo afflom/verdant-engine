@@ -4,10 +4,10 @@
 
 Build fast 3D games and interactive worlds for the web and Rust.
 
-      Four ways to read Verdant Engine documentation. Each Diátaxis section serves a distinct engineering goal, from your first runnable 3D scene to full API reference.The data in this figure
+      Four ways to read Verdant Engine documentation. Each section serves a distinct engineering goal, from your first 3D scene to the full API reference.The data in this figure
 |  | Study and design | Hands-on code |
 | --- | --- | --- |
-| Deep context | World expansion | Custom world guide |
+| Deep context | Tensor architecture | Custom world guide |
 | Practical steps | API reference | Getting started |
       
       
@@ -20,14 +20,14 @@ Verdant Engine is a standalone 3D game engine written in Rust for native tools a
 
       
 
-Every subsystem in verdant-core uses standard game engine concepts: scenes, spatial trees, rigid bodies, 3D audio, shaders, and binary glTF 2.0 assets.
+Every subsystem in verdant-core speaks standard 3D concepts: scene worlds, bounding volume hierarchies, rigid bodies, spatial audio, WGSL shaders, glTF 2.0, and UORC streaming.
 
       
 - KaiGame developerA runnable 3D game world with ECS, rigid-body physics, spatial audio, and a starter template.
-- IrisTechnical artistProcedural terrain, botanical flora, validated WGSL shaders, and binary glTF 2.0 exports.
-- OttoEngine systems engineerExact API types, 60fps worker job budgets, binary world snapshots, and zero magic constants.
-- VeraSecurity auditorProof that world expansion is monotonic, structures are in static equilibrium, and inputs are validated.
-- WrenBrowser playerA responsive, clutter-free 60fps 3D viewport with orbit and walk cameras plus spatial audio.
+- IrisTechnical artistProcedural terrain, skeletal rigs, validated portable WGSL shaders, progressive UORC streams, and binary glTF 2.0 exports.
+- OttoEngine systems engineerExact uor-matmul tensor kernels, progressive UORC streaming budgets, 60fps worker job graphs, and zero magic constants.
+- VeraSecurity auditorProof that UORC streaming is monotonic, tensor contractions never overflow, and all assets and snapshots are validated.
+- WrenBrowser playerA responsive, clutter-free 60fps 3D viewport with progressive LOD streaming, orbit and walk cameras, and spatial audio.
       
 
 ## Documentation map
@@ -36,13 +36,13 @@ Every subsystem in verdant-core uses standard game engine concepts: scenes, spat
         
 - Build your first 3D world walks through spawning entities, stepping physics, and saving a binary asset.
         
-- Author terrain, shaders, and spatial audio covers heightfields, flora, shader checks, and soundscapes.
+- Author terrain, shaders, and spatial audio covers heightfields, procedural meshes, shader checks, and 3D sound.
         
-- Verdant Core API reference lists modules, types, error variants, and 60fps frame budgets.
+- Stream high-resolution scenes with UORC shows how LOD0 through LOD3 frames stream in the browser studio.
         
-- World expansion and architectural statics explains cosmic epochs, Builder guilds, and Heyman equilibrium.
+- Verdant Core API reference lists modules, types, CLI commands, and 60fps frame budgets.
         
-- Powering Verdant Resonance shows how the browser studio renders seven structures and an autonomous rover at 60fps.
+- Portable tensor kernels and UORC streaming explains exact Laurent contractions and cryptographic frame chains.
       
     
       

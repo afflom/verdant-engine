@@ -2,7 +2,7 @@
 
       
 
-Build 3D terrain meshes, check GPU shaders, and mix 3D sound.
+Build 3D terrain meshes, check portable shaders, and mix 3D sound.
 
       Asset and sensory pipeline in verdant-core. Procedural geometry, PBR materials, WGSL shaders, and spatial audio converge into browser rendering and GLB export.The data in this figure
 | From | Link | To |
@@ -15,7 +15,7 @@ Build 3D terrain meshes, check GPU shaders, and mix 3D sound.
       
       
 
-## Generate heightfield terrain and botanical meshes
+## Generate heightfield terrain and procedural meshes
 
       
 
@@ -23,19 +23,19 @@ Call generate_terrain_mesh with TerrainReliefParams to create an indexed triangl
 
       
 
-For columns, quartz outcrops, and botanical petals, call generate_fluted_entasis_column_mesh, generate_hexagonal_quartz_mesh, or canonical_scene_mesh_library.
+For columns, faceted prisms, and ribbons, call generate_fluted_entasis_column_mesh, generate_faceted_prism_mesh, or canonical_scene_mesh_library.
 
       
 
-When foliage bends in the wind, blend vertex offsets with MorphTarget.
+When deformable ribbons bend in the wind, blend vertex offsets with MorphTarget.
 
       
 
-## Validate custom WGSL shaders before GPU upload
+## Validate portable WGSL shaders
 
       
 
-Every shader passes through W3C naga front-end parsing and module validation before reaching a browser WebGPU or WebGL2 context.
+Every shader passes through W3C naga front-end parsing and module validation before shipping in an asset bundle.
 
       
 
@@ -61,13 +61,13 @@ Each call to evaluate_binaural_cue computes Woodworth interaural time difference
 
       
 
-Call export_scene_to_glb(&scene, &meshes, &materials) in Rust, or run cargo run -p verdant-cli -- export-sanctuary out.glb from your shell.
+Call export_scene_to_glb(&scene, &meshes, &materials) in Rust, or run cargo run -p verdant-cli -- pack-scene out.glb from your shell.
 
       
 
-Use verdant validate-glb, verdant validate-wgsl, and verdant snapshot-verify in continuous integration to reject broken assets early.
+Run verdant verify-uorc, verdant validate-glb, verdant validate-wgsl, and verdant snapshot-verify in continuous integration.
 
     
       
         Previous: Build your first 3D world
-        Next: Verdant Core API reference
+        Next: Stream high-resolution scenes with UORC

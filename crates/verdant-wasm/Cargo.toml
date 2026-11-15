@@ -14,8 +14,11 @@ categories.workspace = true
 [lib]
 crate-type = ["cdylib", "rlib"]
 
-[dependencies]
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 verdant-core.workspace = true
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+verdant-core = { version = "0.1.0", path = "../verdant-core", default-features = false }
 
 [lints]
 workspace = true

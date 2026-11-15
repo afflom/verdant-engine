@@ -1,15 +1,16 @@
-// Verdant Engine — Shared OffscreenCanvas / HTMLCanvasElement WebGPU + WebGL2 Renderer,
-// Procedural Sanctuary Geometry, and Binary glTF 2.0 (.glb) Serializer.
+// Verdant Engine — Universal OffscreenCanvas / HTMLCanvasElement Renderer
+// (WebGL2/WebGL1 + Prism uor-matmul 16x16 Software Tile Framebuffer Blitter)
+// and Khronos Binary glTF 2.0 (.glb) Scene Serializer.
 
 export function terrainHeight(x, z, amp = 1.0) {
   const r = Math.hypot(x, z);
   const basin = -1.35 * Math.exp(-((x - 5.5) ** 2 + (z - 9.0) ** 2) / 52.0);
-  const acropolis = 0.55 * Math.exp(-(r * r) / 70.0);
+  const plateau = 0.55 * Math.exp(-(r * r) / 70.0);
   const rim = 2.6 * Math.max(0, (r - 17.5) / 14.0) ** 1.45;
   const ridge =
     0.42 * Math.sin(x * 0.19 + 0.4) * Math.cos(z * 0.17 - 0.2) +
     0.21 * Math.sin((x + z) * 0.33);
-  return (basin + acropolis + rim + ridge) * amp;
+  return (basin + plateau + rim + ridge) * amp;
 }
 
 export class MeshBuilder {
@@ -115,9 +116,16 @@ export class MeshBuilder {
   }
 }
 
-export function buildStaticWorld(epoch, gridN = 36) {
+export function buildStaticWorld(lodSpec, baseGridN = 36) {
   const mb = new MeshBuilder();
-  const amp = epoch.terrainAmp;
+  const rank = lodSpec?.rank ?? 3;
+  const amp = lodSpec?.density ?? 1.0;
+  const gridN =
+    rank === 0
+      ? Math.max(12, Math.floor(baseGridN * 0.5))
+      : rank === 1
+        ? Math.max(18, Math.floor(baseGridN * 0.75))
+        : baseGridN;
   const half = 28;
   const base = mb.pos.length / 3;
 
@@ -130,15 +138,15 @@ export function buildStaticWorld(epoch, gridN = 36) {
       const hz = terrainHeight(x, z + 0.5, amp) - terrainHeight(x, z - 0.5, amp);
       const len = Math.hypot(-hx, 1.0, -hz);
       let col;
-      if (!epoch.flora) {
-        col = y < -0.25 ? [0.24, 0.26, 0.30] : y > 1.8 ? [0.56, 0.52, 0.46] : [0.40, 0.38, 0.35];
+      if (rank === 0) {
+        col = y < -0.25 ? [0.24, 0.26, 0.30] : y > 1.8 ? [0.54, 0.52, 0.48] : [0.38, 0.37, 0.35];
       } else if (y < -0.22) {
-        col = [0.62, 0.57, 0.46];
+        col = [0.58, 0.55, 0.48];
       } else if (y > 2.1) {
-        col = [0.64, 0.61, 0.55];
+        col = [0.64, 0.61, 0.56];
       } else {
-        const lush = 0.5 + 0.5 * Math.sin(x * 0.25 + z * 0.2);
-        col = [0.20 + 0.08 * lush, 0.44 + 0.12 * lush, 0.22 + 0.06 * lush];
+        const checker = 0.5 + 0.5 * Math.sin(x * 0.25 + z * 0.2);
+        col = [0.22 + 0.08 * checker, 0.43 + 0.11 * checker, 0.26 + 0.06 * checker];
       }
       mb.addVertex(x, y, z, -hx / len, 1.0 / len, -hz / len, col[0], col[1], col[2]);
     }
@@ -152,8 +160,14 @@ export function buildStaticWorld(epoch, gridN = 36) {
     }
   }
 
-  if (epoch.water) {
-    const wSegs = 28;
+  const stone = [0.86, 0.84, 0.78];
+  const alloy = [0.76, 0.58, 0.28];
+  const slate = [0.27, 0.29, 0.33];
+  const y0 = terrainHeight(0, 0, amp);
+
+  if (rank >= 1) {
+    // Fluid wave testbed surface
+    const wSegs = rank >= 2 ? 28 : 16;
     const wx = 5.5, wz = 9.0, wr = 7.4, wy = -0.32 * amp;
     const center = mb.addVertex(wx, wy, wz, 0, 1, 0, 0.14, 0.46, 0.58);
     for (let i = 0; i <= wSegs; i++) {
@@ -163,72 +177,61 @@ export function buildStaticWorld(epoch, gridN = 36) {
     for (let i = 0; i < wSegs; i++) {
       mb.idx.push(center, center + 1 + i + 1, center + 1 + i);
     }
-    const crystals = [[-11, 6, 1.3], [12, 5, 1.1], [-13, -8, 1.4], [10, -11, 1.2]];
-    for (const [qx, qz, qh] of crystals) {
-      const qy = terrainHeight(qx, qz, amp);
-      mb.addCylinder(qx, qy - 0.1, qz, 0.45, 0.08, qh, 6, [0.76, 0.84, 0.92]);
-      mb.addCylinder(qx + 0.35, qy - 0.1, qz + 0.2, 0.28, 0.05, qh * 0.72, 6, [0.82, 0.76, 0.90]);
-    }
-  }
 
-  if (epoch.flora) {
-    const golden = 2.39996323;
-    for (let i = 0; i < 18; i++) {
-      const ang = i * golden;
-      const rad = 11.8 + (i % 5) * 2.1;
-      const tx = Math.cos(ang) * rad;
-      const tz = Math.sin(ang) * rad;
-      if (Math.hypot(tx - 5.5, tz - 9.0) < 7.8) continue;
-      const ty = terrainHeight(tx, tz, amp);
-      const h = 2.1 + (i % 4) * 0.45;
-      mb.addCylinder(tx, ty - 0.1, tz, 0.22, 0.13, h, 7, [0.36, 0.25, 0.16]);
-      mb.addCylinder(tx, ty + h * 0.65, tz, 1.25, 0.18, h * 0.85, 8, [0.16, 0.46, 0.24]);
-      mb.addCylinder(tx, ty + h * 1.05, tz, 0.92, 0.10, h * 0.65, 8, [0.22, 0.54, 0.28]);
-    }
-  }
-
-  if (epoch.builders) {
-    const travertine = [0.87, 0.84, 0.77];
-    const bronze = [0.76, 0.58, 0.28];
-    const basalt = [0.27, 0.29, 0.33];
-    const y0 = terrainHeight(0, 0, amp);
-
-    mb.addCylinder(0, y0 - 0.15, 0, 5.4, 5.2, 0.35, 24, travertine);
-    mb.addCylinder(0, y0 + 0.20, 0, 4.8, 4.7, 0.28, 24, [0.91, 0.88, 0.82]);
-    const colCount = 12;
+    // Node 0: StaticMeshTransformBatch — Central Arch Pavilion
+    const colSegs = rank >= 3 ? 12 : 8;
+    mb.addCylinder(0, y0 - 0.15, 0, 5.4, 5.2, 0.35, 20, stone);
+    mb.addCylinder(0, y0 + 0.20, 0, 4.8, 4.7, 0.28, 20, [0.91, 0.88, 0.82]);
+    const colCount = rank >= 2 ? 12 : 8;
     for (let i = 0; i < colCount; i++) {
       const a = (i / colCount) * Math.PI * 2;
-      mb.addCylinder(Math.cos(a) * 4.1, y0 + 0.48, Math.sin(a) * 4.1, 0.26, 0.21, 3.1, 10, travertine);
+      mb.addCylinder(Math.cos(a) * 4.1, y0 + 0.48, Math.sin(a) * 4.1, 0.26, 0.21, 3.1, colSegs, stone);
     }
-    mb.addTorusRing(0, y0 + 3.68, 0, 4.1, 0.28, 24, 8, travertine, Math.PI * 0.5, 0);
 
+    // Node 1: LinearBlendSkinningBatch — Axial Marker Tower
     const sy = terrainHeight(9.5, -3.5, amp);
-    mb.addCylinder(9.5, sy - 0.1, -3.5, 1.35, 1.15, 0.85, 12, travertine);
-    mb.addBox(9.5, sy + 1.15, -3.5, 0.14, 1.1, 1.2, bronze, 0.45);
+    mb.addCylinder(9.5, sy - 0.1, -3.5, 1.35, 1.15, 0.85, 12, stone);
+    mb.addBox(9.5, sy + 1.15, -3.5, 0.18, 1.2, 1.2, alloy, 0.45);
 
+    // Node 2: TropicalBvhVisibilityCull — Modal Acoustics Frame
     const py = terrainHeight(-9.0, -4.0, amp);
     for (const [dx, dz] of [[-1.4, -1.4], [1.4, -1.4], [-1.4, 1.4], [1.4, 1.4]]) {
-      mb.addCylinder(-9.0 + dx, py - 0.1, -4.0 + dz, 0.16, 0.14, 2.7, 8, basalt);
+      mb.addCylinder(-9.0 + dx, py - 0.1, -4.0 + dz, 0.16, 0.14, 2.7, 8, slate);
     }
-    mb.addBox(-9.0, py + 2.65, -4.0, 3.3, 0.18, 0.22, bronze, 0);
-    mb.addBox(-9.0, py + 2.65, -4.0, 0.22, 0.18, 3.3, bronze, 0);
-    for (let c = 0; c < 6; c++) {
-      const cx = -9.9 + c * 0.36;
-      const clen = 0.75 + c * 0.14;
+    mb.addBox(-9.0, py + 2.65, -4.0, 3.3, 0.18, 0.22, alloy, 0);
+    mb.addBox(-9.0, py + 2.65, -4.0, 0.22, 0.18, 3.3, alloy, 0);
+    for (let c = 0; c < 5; c++) {
+      const cx = -9.8 + c * 0.40;
+      const clen = 0.78 + c * 0.15;
       mb.addCylinder(cx, py + 2.55 - clen, -4.0, 0.05, 0.05, clen, 6, [0.86, 0.70, 0.36]);
     }
+  }
 
+  if (rank >= 2) {
+    // Node 3: TileFramebufferRasterizer — Articulated Rig Bay
     const qcy = terrainHeight(-6.5, 9.0, amp);
-    mb.addCylinder(-6.5, qcy - 0.1, 9.0, 1.9, 1.75, 0.55, 8, basalt);
+    mb.addCylinder(-6.5, qcy - 0.1, 9.0, 1.9, 1.75, 0.55, 8, slate);
     mb.addCylinder(-6.5, qcy + 0.45, 9.0, 0.45, 0.08, 2.25, 6, [0.84, 0.90, 0.98]);
 
+    // Node 4: ShadowCascadeProjector — Elevated Deck Bridge
     for (let s = 0; s < 5; s++) {
       const pz = 2.8 + s * 1.45;
       const px = 2.4 + s * 0.75;
-      mb.addBox(px, 0.05, pz, 1.35, 0.18, 1.35, travertine, 0.48);
-      mb.addCylinder(px, -0.9, pz, 0.18, 0.22, 0.95, 8, basalt);
+      mb.addBox(px, 0.05, pz, 1.35, 0.18, 1.35, stone, 0.48);
+      mb.addCylinder(px, -0.9, pz, 0.18, 0.22, 0.95, 8, slate);
     }
 
+    // Outer calibration pylons for BVH frustum & shadow cascade bounds
+    const pylonMarkers = [[-11, 6, 1.4], [12, 5, 1.2], [-13, -8, 1.5], [10, -11, 1.3]];
+    for (const [qx, qz, qh] of pylonMarkers) {
+      const qy = terrainHeight(qx, qz, amp);
+      mb.addCylinder(qx, qy - 0.1, qz, 0.42, 0.10, qh, 6, [0.74, 0.82, 0.90]);
+    }
+  }
+
+  if (rank >= 3) {
+    // Full lossless LOD3 detail: upper entablature torus + Node 5 ModalAudioMixMatrix path grid
+    mb.addTorusRing(0, y0 + 3.68, 0, 4.1, 0.28, 24, 8, stone, Math.PI * 0.5, 0);
     for (let s = 0; s < 16; s++) {
       const a = (s / 16) * Math.PI * 2;
       const rx = Math.cos(a) * 16.5;
@@ -241,25 +244,28 @@ export function buildStaticWorld(epoch, gridN = 36) {
   return mb;
 }
 
-export function buildDynamicActors(epoch, timeSec, wasmRover = null) {
+export function buildDynamicActors(lodSpec, timeSec, wasmMover = null) {
   const mb = new MeshBuilder();
-  if (!epoch.builders) return { mb, roverPos: [16.5, 0, 0] };
+  const rank = lodSpec?.rank ?? 3;
+  if (rank < 1) return { mb, moverPos: [16.5, 0, 0] };
 
-  const amp = epoch.terrainAmp;
+  const amp = lodSpec?.density ?? 1.0;
   const y0 = terrainHeight(0, 0, amp);
   const gold = [0.85, 0.68, 0.32];
 
   mb.addTorusRing(0, y0 + 2.25, 0, 1.55, 0.06, 20, 6, gold, timeSec * 0.55, 0.35);
   mb.addTorusRing(0, y0 + 2.25, 0, 1.18, 0.05, 18, 6, [0.72, 0.82, 0.88], -timeSec * 0.8, 1.05);
 
+  if (rank < 2) return { mb, moverPos: [16.5, 0.5, 0] };
+
   let rx;
   let rz;
   let heading;
-  if (wasmRover) {
+  if (wasmMover) {
     const scale = 16.5 / 26.0;
-    rx = wasmRover.x * scale;
-    rz = wasmRover.z * scale;
-    heading = wasmRover.yaw;
+    rx = wasmMover.x * scale;
+    rz = wasmMover.z * scale;
+    heading = wasmMover.yaw;
   } else {
     const theta = timeSec * 0.28;
     rx = Math.cos(theta) * 16.5;
@@ -268,6 +274,7 @@ export function buildDynamicActors(epoch, timeSec, wasmRover = null) {
   }
   const ry = terrainHeight(rx, rz, amp) + 0.36;
 
+  // Node 6: KinematicSplineController articulated vehicle
   mb.addBox(rx, ry, rz, 0.95, 0.34, 1.45, [0.80, 0.62, 0.30], heading);
   mb.addBox(rx, ry + 0.28, rz - 0.1, 0.58, 0.24, 0.68, [0.90, 0.88, 0.82], heading);
   mb.addCylinder(rx, ry + 0.38, rz, 0.08, 0.06, 0.52, 8, [0.30, 0.34, 0.38]);
@@ -280,7 +287,7 @@ export function buildDynamicActors(epoch, timeSec, wasmRover = null) {
     mb.addCylinder(px, ry - 0.34, pz, 0.20, 0.20, 0.22, 8, [0.20, 0.22, 0.25]);
   }
 
-  return { mb, roverPos: [rx, ry, rz] };
+  return { mb, moverPos: [rx, ry, rz] };
 }
 
 export function mat4Perspective(fovRad, aspect, near, far) {
@@ -291,17 +298,6 @@ export function mat4Perspective(fovRad, aspect, near, far) {
     0, f, 0, 0,
     0, 0, (far + near) * nf, -1,
     0, 0, 2 * far * near * nf, 0,
-  ]);
-}
-
-export function mat4PerspectiveZo(fovRad, aspect, near, far) {
-  const f = 1.0 / Math.tan(fovRad * 0.5);
-  const nf = 1.0 / (near - far);
-  return new Float32Array([
-    f / aspect, 0, 0, 0,
-    0, f, 0, 0,
-    0, 0, far * nf, -1,
-    0, 0, far * near * nf, 0,
   ]);
 }
 
@@ -340,215 +336,6 @@ export function mat4Mul(a, b) {
     }
   }
   return out;
-}
-
-const WGSL_STUDIO_SHADER = `
-struct FrameUniforms {
-  mvp: mat4x4<f32>,
-  eye_time: vec4<f32>,
-  fog: vec4<f32>,
-};
-
-@group(0) @binding(0)
-var<uniform> u: FrameUniforms;
-
-struct VsOut {
-  @builtin(position) clip: vec4<f32>,
-  @location(0) pos: vec3<f32>,
-  @location(1) norm: vec3<f32>,
-  @location(2) col: vec3<f32>,
-};
-
-@vertex
-fn vs_main(
-  @location(0) a_pos: vec3<f32>,
-  @location(1) a_norm: vec3<f32>,
-  @location(2) a_col: vec3<f32>,
-) -> VsOut {
-  var out: VsOut;
-  out.pos = a_pos;
-  out.norm = a_norm;
-  out.col = a_col;
-  out.clip = u.mvp * vec4<f32>(a_pos, 1.0);
-  return out;
-}
-
-@fragment
-fn fs_main(in: VsOut) -> @location(0) vec4<f32> {
-  let n = normalize(in.norm);
-  let l = normalize(vec3<f32>(0.58, 0.76, 0.30));
-  let eye = u.eye_time.xyz;
-  let t = u.eye_time.w;
-  let v = normalize(eye - in.pos);
-  let h = normalize(l + v);
-  let ndl = max(dot(n, l), 0.0);
-  let hemi = 0.5 + 0.5 * n.y;
-  let amb = mix(vec3<f32>(0.16, 0.15, 0.14), vec3<f32>(0.38, 0.48, 0.56), hemi);
-  var spec = pow(max(dot(n, h), 0.0), 36.0) * 0.28;
-  var base = in.col;
-  if (in.col.b > in.col.r * 1.6 && abs(n.y) > 0.9) {
-    let ripple = 0.04 * sin(in.pos.x * 2.8 + t * 2.4) * cos(in.pos.z * 2.6 - t * 1.9);
-    base = base + vec3<f32>(ripple);
-    spec = spec + pow(1.0 - max(dot(n, v), 0.0), 3.0) * 0.35;
-  }
-  let lit = base * (amb + vec3<f32>(1.02, 0.95, 0.82) * ndl * 0.82) + vec3<f32>(spec);
-  let dist = length(eye - in.pos);
-  let fog_factor = clamp(1.0 - exp(-dist * 0.016), 0.0, 0.78);
-  let col = mix(lit, u.fog.xyz, fog_factor);
-  return vec4<f32>(pow(max(col, vec3<f32>(0.0)), vec3<f32>(1.0 / 2.2)), 1.0);
-}
-`;
-
-export async function createWebGpuRenderer(canvas) {
-  const gpu = globalThis.navigator?.gpu;
-  if (!gpu) return null;
-  try {
-    const adapter = await gpu.requestAdapter({ powerPreference: "high-performance" });
-    if (!adapter || adapter.info?.isFallbackAdapter) return null;
-    const device = await adapter.requestDevice();
-    const ctx = canvas.getContext("webgpu");
-    if (!ctx) return null;
-    const format = gpu.getPreferredCanvasFormat();
-    ctx.configure({ device, format, alphaMode: "opaque" });
-
-    const shader = device.createShaderModule({ code: WGSL_STUDIO_SHADER });
-    const pipeline = device.createRenderPipeline({
-      layout: "auto",
-      vertex: {
-        module: shader,
-        entryPoint: "vs_main",
-        buffers: [
-          { arrayStride: 36, attributes: [
-            { shaderLocation: 0, offset: 0, format: "float32x3" },
-            { shaderLocation: 1, offset: 12, format: "float32x3" },
-            { shaderLocation: 2, offset: 24, format: "float32x3" },
-          ]},
-        ],
-      },
-      fragment: {
-        module: shader,
-        entryPoint: "fs_main",
-        targets: [{ format }],
-      },
-      primitive: { topology: "triangle-list", cullMode: "none" },
-      depthStencil: {
-        format: "depth24plus",
-        depthWriteEnabled: true,
-        depthCompare: "less",
-      },
-    });
-
-    const uniformBuf = device.createBuffer({
-      size: 96,
-      usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-    });
-    const bindGroup = device.createBindGroup({
-      layout: pipeline.getBindGroupLayout(0),
-      entries: [{ binding: 0, resource: { buffer: uniformBuf } }],
-    });
-
-    let depthTex = null;
-    let depthW = 0;
-    let depthH = 0;
-    const ensureDepth = (w, h) => {
-      if (depthTex && depthW === w && depthH === h) return;
-      depthTex?.destroy();
-      depthW = w;
-      depthH = h;
-      depthTex = device.createTexture({
-        size: [w, h],
-        format: "depth24plus",
-        usage: GPUTextureUsage.RENDER_ATTACHMENT,
-      });
-    };
-
-    const packInterleaved = (mb) => {
-      const vCount = mb.pos.length / 3;
-      const vtx = new Float32Array(vCount * 9);
-      for (let i = 0; i < vCount; i++) {
-        const s = i * 3;
-        const d = i * 9;
-        vtx[d] = mb.pos[s]; vtx[d + 1] = mb.pos[s + 1]; vtx[d + 2] = mb.pos[s + 2];
-        vtx[d + 3] = mb.norm[s]; vtx[d + 4] = mb.norm[s + 1]; vtx[d + 5] = mb.norm[s + 2];
-        vtx[d + 6] = mb.col[s]; vtx[d + 7] = mb.col[s + 1]; vtx[d + 8] = mb.col[s + 2];
-      }
-      const idx = new Uint32Array(mb.idx);
-      const vb = device.createBuffer({
-        size: Math.max(36, vtx.byteLength),
-        usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
-      });
-      const ib = device.createBuffer({
-        size: Math.max(4, idx.byteLength),
-        usage: GPUBufferUsage.INDEX | GPUBufferUsage.COPY_DST,
-      });
-      if (vtx.byteLength) device.queue.writeBuffer(vb, 0, vtx);
-      if (idx.byteLength) device.queue.writeBuffer(ib, 0, idx);
-      return { vb, ib, count: idx.length };
-    };
-
-    let staticGpu = null;
-    let dynamicGpu = null;
-    const uniformData = new Float32Array(24);
-
-    return {
-      backend: "webgpu",
-      isSoftware: false,
-      usesZeroToOneDepth: true,
-      uploadStatic(mb) {
-        staticGpu?.vb.destroy();
-        staticGpu?.ib.destroy();
-        staticGpu = packInterleaved(mb);
-      },
-      uploadDynamic(mb) {
-        dynamicGpu?.vb.destroy();
-        dynamicGpu?.ib.destroy();
-        dynamicGpu = packInterleaved(mb);
-      },
-      render(mvp, eye, epoch, timeSec) {
-        if (canvas.width <= 0 || canvas.height <= 0) return;
-        ensureDepth(canvas.width, canvas.height);
-        uniformData.set(mvp, 0);
-        uniformData[16] = eye[0];
-        uniformData[17] = eye[1];
-        uniformData[18] = eye[2];
-        uniformData[19] = timeSec;
-        uniformData[20] = epoch.fog[0];
-        uniformData[21] = epoch.fog[1];
-        uniformData[22] = epoch.fog[2];
-        uniformData[23] = 1.0;
-        device.queue.writeBuffer(uniformBuf, 0, uniformData);
-
-        const encoder = device.createCommandEncoder();
-        const pass = encoder.beginRenderPass({
-          colorAttachments: [{
-            view: ctx.getCurrentTexture().createView(),
-            clearValue: { r: epoch.sky[0], g: epoch.sky[1], b: epoch.sky[2], a: 1.0 },
-            loadOp: "clear",
-            storeOp: "store",
-          }],
-          depthStencilAttachment: {
-            view: depthTex.createView(),
-            depthClearValue: 1.0,
-            depthLoadOp: "clear",
-            depthStoreOp: "discard",
-          },
-        });
-        pass.setPipeline(pipeline);
-        pass.setBindGroup(0, bindGroup);
-        for (const batch of [staticGpu, dynamicGpu]) {
-          if (batch && batch.count > 0) {
-            pass.setVertexBuffer(0, batch.vb);
-            pass.setIndexBuffer(batch.ib, "uint32");
-            pass.drawIndexed(batch.count);
-          }
-        }
-        pass.end();
-        device.queue.submit([encoder.finish()]);
-      },
-    };
-  } catch {
-    return null;
-  }
 }
 
 export async function createGlRenderer(canvas) {
@@ -709,19 +496,18 @@ export async function createGlRenderer(canvas) {
   return {
     backend: isWebGL2 ? "webgl2" : "webgl1",
     isSoftware,
-    usesZeroToOneDepth: false,
     uploadStatic: (mb) => upload(staticGpu, mb, gl.STATIC_DRAW),
     uploadDynamic: (mb) => upload(dynamicGpu, mb, gl.DYNAMIC_DRAW),
-    render(mvp, eye, epoch, timeSec) {
+    render(mvp, eye, lodSpec, timeSec) {
       if (canvas.width <= 0 || canvas.height <= 0) return;
       gl.viewport(0, 0, canvas.width, canvas.height);
-      gl.clearColor(epoch.sky[0], epoch.sky[1], epoch.sky[2], 1.0);
+      gl.clearColor(lodSpec.sky[0], lodSpec.sky[1], lodSpec.sky[2], 1.0);
       gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
       gl.enable(gl.DEPTH_TEST);
       gl.useProgram(prog);
       gl.uniformMatrix4fv(uMvp, false, mvp);
       gl.uniform3fv(uEye, eye);
-      gl.uniform3fv(uFog, epoch.fog);
+      gl.uniform3fv(uFog, lodSpec.fog);
       gl.uniform1f(uTime, timeSec);
       drawBatch(staticGpu);
       drawBatch(dynamicGpu);
@@ -729,8 +515,33 @@ export async function createGlRenderer(canvas) {
   };
 }
 
+export function createCanvas2dTensorRenderer(canvas) {
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return null;
+  return {
+    backend: "tensor-2d",
+    isSoftware: true,
+    uploadStatic() {},
+    uploadDynamic() {},
+    render(_mvp, _eye, lodSpec) {
+      if (canvas.width <= 0 || canvas.height <= 0) return;
+      const r = Math.round((lodSpec?.sky?.[0] ?? 0.18) * 255);
+      const g = Math.round((lodSpec?.sky?.[1] ?? 0.3) * 255);
+      const b = Math.round((lodSpec?.sky?.[2] ?? 0.38) * 255);
+      ctx.fillStyle = `rgb(${r},${g},${b})`;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    },
+    blitTensorRgba(rgbaBytes, width, height) {
+      if (!rgbaBytes || width <= 0 || height <= 0 || typeof ImageData !== "function") return;
+      const clamped = new Uint8ClampedArray(rgbaBytes.buffer, rgbaBytes.byteOffset, width * height * 4);
+      const img = new ImageData(clamped, width, height);
+      ctx.putImageData(img, 0, 0);
+    },
+  };
+}
+
 export async function createBestRenderer(canvas) {
-  return (await createWebGpuRenderer(canvas)) || (await createGlRenderer(canvas));
+  return (await createGlRenderer(canvas)) || createCanvas2dTensorRenderer(canvas);
 }
 
 export function buildGlbArrayBuffer(staticMb, dynMb) {
@@ -767,13 +578,13 @@ export function buildGlbArrayBuffer(staticMb, dynMb) {
   const jsonObj = {
     asset: { version: "2.0", generator: "Verdant Engine 0.1.0" },
     scene: 0,
-    scenes: [{ name: "VerdantSanctuary", nodes: [0] }],
-    nodes: [{ name: "SanctuaryWorld", mesh: 0 }],
+    scenes: [{ name: "VerdantEngineScene", nodes: [0] }],
+    nodes: [{ name: "StandardWorldNode", mesh: 0 }],
     meshes: [{
-      name: "SanctuaryMesh",
+      name: "StandardWorldMesh",
       primitives: [{ attributes: { POSITION: 0, NORMAL: 1, COLOR_0: 2 }, indices: 3, material: 0 }],
     }],
-    materials: [{ name: "SanctuaryVertexPbr", pbrMetallicRoughness: { metallicFactor: 0.1, roughnessFactor: 0.78 } }],
+    materials: [{ name: "StandardVertexPbr", pbrMetallicRoughness: { metallicFactor: 0.1, roughnessFactor: 0.78 } }],
     buffers: [{ byteLength: binLen }],
     bufferViews: [
       { buffer: 0, byteOffset: 0, byteLength: pBytes, target: 34962 },
@@ -802,16 +613,17 @@ export function buildGlbArrayBuffer(staticMb, dynMb) {
   dv.setUint32(8, totalLen, true);
   dv.setUint32(12, jsonLen, true);
   dv.setUint32(16, 0x4e4f534a, true);
+  u8.fill(0x20, 20, 20 + jsonLen);
   u8.set(rawJson, 20);
-  for (let i = rawJson.byteLength; i < jsonLen; i++) u8[20 + i] = 0x20;
 
   const binStart = 20 + jsonLen;
   dv.setUint32(binStart, binLen, true);
   dv.setUint32(binStart + 4, 0x004e4942, true);
-  const dataStart = binStart + 8;
-  u8.set(new Uint8Array(pos.buffer), dataStart);
-  u8.set(new Uint8Array(norm.buffer), dataStart + pBytes);
-  u8.set(new Uint8Array(col.buffer), dataStart + pBytes + nBytes);
-  u8.set(new Uint8Array(idx.buffer), dataStart + pBytes + nBytes + cBytes);
+  let off = binStart + 8;
+  u8.set(new Uint8Array(pos.buffer), off); off += pBytes;
+  u8.set(new Uint8Array(norm.buffer), off); off += nBytes;
+  u8.set(new Uint8Array(col.buffer), off); off += cBytes;
+  u8.set(new Uint8Array(idx.buffer), off);
+
   return buf;
 }

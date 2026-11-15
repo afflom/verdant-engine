@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en"><head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Learn how exact tensor contractions and UORC chains run in every browser.">
+    <meta name="diataxis" content="explanation">
+    <meta name="developer-journey" content="evaluate">
+    <meta name="audience" content="vera">
+    <link rel="canonical" href="https://afflom.github.io/verdant-engine/docs/explanation/tensor-and-uorc-streaming/">
+    <title>Portable tensor kernels and UORC streaming — Verdant Engine</title>
+    <style>
+  :root {
+    --fd-bg: #151312;
+    --fd-fg: #f4f2ee;
+    --fd-muted: #b5ada4;
+    --fd-card: #1e1b19;
+    --fd-border: rgba(244, 242, 238, 0.14);
+    --fd-accent: #6ec49c;
+  }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --fd-bg: #f5f4ef;
+      --fd-fg: #1f1c1a;
+      --fd-muted: #5b534c;
+      --fd-card: #ffffff;
+      --fd-border: rgba(31, 28, 26, 0.14);
+      --fd-accent: #1d6f4e;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--fd-bg);
+    color: var(--fd-fg);
+    font-family: system-ui, -apple-system, sans-serif;
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+  .ve-nav {
+    max-width: 52rem;
+    margin: 0 auto;
+    padding: 1rem 1.25rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem 1.25rem;
+    border-bottom: 1px solid var(--fd-border);
+    font-size: 0.9375rem;
+  }
+  .ve-nav a, main a {
+    color: var(--fd-accent);
+    text-decoration: underline;
+    text-underline-offset: 0.18em;
+  }
+  main {
+    max-width: 52rem;
+    margin: 0 auto;
+    padding: 1.75rem 1.25rem 4rem;
+  }
+  h1 { font-size: 2rem; line-height: 1.2; margin: 0 0 0.75rem; }
+  h2 { font-size: 1.375rem; line-height: 1.3; margin: 2.25rem 0 0.75rem; }
+  h3 { font-size: 1.125rem; line-height: 1.35; margin: 1.5rem 0 0.5rem; }
+  p, li { max-width: 68ch; }
+  code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.9em; }
+  pre {
+    padding: 0.875rem 1rem;
+    background: var(--fd-card);
+    border: 1px solid var(--fd-border);
+    border-radius: 0.5rem;
+    overflow-x: auto;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+    font-size: 0.9375rem;
+  }
+  th, td {
+    text-align: left;
+    padding: 0.5rem 0.625rem;
+    border-bottom: 1px solid var(--fd-border);
+  }
+  .dc-pager {
+    margin-top: 2.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--fd-border);
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+</style>
+  <link rel="alternate" type="text/markdown" href="index.md"><link rel="stylesheet" href="../../content.css"><script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"Portable tensor kernels and UORC streaming","description":"Learn how exact tensor contractions and UORC chains run in every browser.","url":"https://afflom.github.io/verdant-engine/docs/explanation/tensor-and-uorc-streaming/","inLanguage":"en","audience":{"@type":"Audience","audienceType":"Security auditor","description":"Verifies shader safety, UORC stream and snapshot integrity, strict Content-Security-Policy isolation, and Core-Wasm archive provenance."},"learningResourceType":"explanation","educationalLevel":"evaluate","isPartOf":{"@type":"WebSite","name":"Verdant Engine","url":"https://afflom.github.io/verdant-engine/"},"publisher":{"@type":"Organization","name":"UOR Foundation","url":"https://uor.foundation/"}}</script></head>
+  <body>
+    <nav class="ve-nav" aria-label="Documentation navigation">
+      <a href="../../../">3D Studio</a>
+      <a href="../../">Docs home</a>
+      <a href="../../getting-started/">Getting started</a>
+      <a href="../../guides/custom-game-world/">Custom world guide</a>
+      <a href="../../guides/progressive-uorc-streaming/">UORC streaming</a>
+      <a href="../../reference/engine-api/">API reference</a>
+      <a href="../../explanation/tensor-and-uorc-streaming/">Tensor architecture</a>
+    </nav>
+    <main>
+      <h1>Portable tensor kernels and UORC streaming</h1>
+      <p>Learn how exact tensor contractions and <a class="cs-term" href="#term-uorc" title="Universal Object Reference Compression: progressive SHA-256 chain-verified multi-frame compression streaming 3D scenes up to lossless resolution.">UORC</a> chains run in every browser.</p><aside class="cs-guide" data-persona="vera" aria-label="Your guide on this page"><svg class="cs-avatar" viewBox="0 0 120 120" width="96" height="96" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="cs-g1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="hsl(140 70% 62%)"></stop><stop offset="1" stop-color="hsl(140 70% 32%)"></stop></linearGradient></defs><path d="M0 64L32 58" stroke="hsl(0 0% 98%)" stroke-width="2.4" stroke-linecap="round" opacity=".8"></path><path d="M88 58L120 34.0" stroke="hsl(356 95% 66%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 41.0" stroke="hsl(22 95% 58%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 48.0" stroke="hsl(48 95% 56%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 55.0" stroke="hsl(55 92% 54%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 62.0" stroke="hsl(140 70% 48%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 69.0" stroke="hsl(190 90% 54%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 76.0" stroke="hsl(222 92% 64%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 83.0" stroke="hsl(268 88% 70%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 90.0" stroke="hsl(320 85% 68%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><ellipse cx="60" cy="108" rx="30" ry="5" class="cs-g-shadow"></ellipse><path d="M60 14L92 32V76L60 98L28 76V32Z" fill="url(#cs-g1)"></path><path d="M60 14L92 32L60 48L28 32Z" fill="hsl(0 0% 100% / .28)"></path><path d="M60 48L92 32V76L60 98Z" fill="hsl(0 0% 0% / .18)"></path><path d="M60 14L92 32V76L60 98L28 76V32Z" fill="none" stroke="hsl(0 0% 100% / .45)" stroke-width="1.5" stroke-linejoin="round"></path><ellipse cx="49" cy="62" rx="6.5" ry="7.5" fill="hsl(0 0% 99%)"></ellipse><ellipse cx="71" cy="62" rx="6.5" ry="7.5" fill="hsl(0 0% 99%)"></ellipse><circle cx="51" cy="63.5" r="3.4" class="cs-g-dark"></circle><circle cx="73" cy="63.5" r="3.4" class="cs-g-dark"></circle><circle cx="52.2" cy="62" r="1.1" fill="hsl(0 0% 100%)"></circle><circle cx="74.2" cy="62" r="1.1" fill="hsl(0 0% 100%)"></circle><ellipse cx="41" cy="73" rx="4" ry="2.4" fill="hsl(350 90% 75% / .55)"></ellipse><ellipse cx="79" cy="73" rx="4" ry="2.4" fill="hsl(350 90% 75% / .55)"></ellipse><path d="M53 76q7 6 14 0" fill="none" stroke="hsl(0 0% 8%)" stroke-width="2.2" stroke-linecap="round"></path><ellipse cx="47" cy="100" rx="7" ry="3.6" class="cs-g-dark"></ellipse><ellipse cx="73" cy="100" rx="7" ry="3.6" class="cs-g-dark"></ellipse><g class="cs-g-line"><circle cx="49" cy="62" r="8.5"></circle><circle cx="71" cy="62" r="8.5"></circle><path d="M57.5 61h5M40.5 60l-6-3M79.5 60l6-3"></path></g><path d="M92 70q8 2 10 8" fill="none" stroke="hsl(140 70% 32%)" stroke-width="4" stroke-linecap="round"></path><g transform="translate(94 76) scale(1.05)" class="cs-g-prop"><rect x="-2" y="-2" width="28" height="28" rx="8" class="cs-g-chip"></rect><g fill="none" stroke="hsl(0 0% 98%)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 5v6c0 5 3.4 9.3 8 11 4.6-1.7 8-6 8-11V5z"></path><path d="m9 12 2 2 4-4"></path></g></g></svg><div class="cs-guide-text"><p class="cs-guide-who"><strong>Vera</strong> <span>Security auditor</span></p><p class="cs-guide-says">“How are UORC SHA-256 frame chains, shaders, and binary snapshots verified?”</p><p class="cs-guide-how">Explanation: read end to end to understand the design and physics.</p></div></aside>
+      <figure class="cs-figure cs-bars"><div class="cs-canvas"><svg class="cs-svg cs-any" viewBox="0 0 640 172" role="img" aria-labelledby="cs-t1 cs-d2" xmlns="http://www.w3.org/2000/svg"><title id="cs-t1">Exact accumulator bit widths across engine tensor kernels</title><desc id="cs-d2">Static mesh batch: 96 bits; Linear skinning: 128 bits; Tropical BVH cull: 64 bits; Tile rasterizer: 128 bits; Modal audio mix: 128 bits</desc><text x="125.75999999999999" y="15" text-anchor="end" dominant-baseline="middle" class="cs-label cs-left">Static mesh batch</text><rect x="135.76" y="6" width="440.24" height="18" rx="4" class="cs-track"></rect><rect x="135.8" y="6" width="330.2" height="18" rx="4" fill="hsl(356 95% 66%)"></rect><text x="584" y="15" dominant-baseline="middle" class="cs-value">LinearExact · k = 4 homogeneous</text><text x="125.75999999999999" y="45" text-anchor="end" dominant-baseline="middle" class="cs-label cs-left">Linear skinning</text><rect x="135.76" y="36" width="440.24" height="18" rx="4" class="cs-track"></rect><rect x="135.8" y="36" width="440.2" height="18" rx="4" fill="hsl(356 95% 66%)"></rect><text x="584" y="45" dominant-baseline="middle" class="cs-value">LinearExact · 4-joint LBS blend</text><text x="125.75999999999999" y="75" text-anchor="end" dominant-baseline="middle" class="cs-label cs-left">Tropical BVH cull</text><rect x="135.76" y="66" width="440.24" height="18" rx="4" class="cs-track"></rect><rect x="135.8" y="66" width="220.1" height="18" rx="4" fill="hsl(356 95% 66%)"></rect><text x="584" y="75" dominant-baseline="middle" class="cs-value">TropicalMaxPlus · 6 frustum planes</text><text x="125.75999999999999" y="105" text-anchor="end" dominant-baseline="middle" class="cs-label cs-left">Tile rasterizer</text><rect x="135.76" y="96" width="440.24" height="18" rx="4" class="cs-track"></rect><rect x="135.8" y="96" width="440.2" height="18" rx="4" fill="hsl(356 95% 66%)"></rect><text x="584" y="105" dominant-baseline="middle" class="cs-value">LinearExact · 16x16 RGBA8 + depth</text><text x="125.75999999999999" y="135" text-anchor="end" dominant-baseline="middle" class="cs-label cs-left">Modal audio mix</text><rect x="135.76" y="126" width="440.24" height="18" rx="4" class="cs-track"></rect><rect x="135.8" y="126" width="440.2" height="18" rx="4" fill="hsl(356 95% 66%)"></rect><text x="584" y="135" dominant-baseline="middle" class="cs-value">ModularAudioRing · 8 emitters</text><line x1="355.88" y1="0" x2="355.88" y2="150" class="cs-bound"></line><text x="355.88" y="162" text-anchor="middle" class="cs-sub">Minimum exact bound (64 bits)</text></svg></div><figcaption><strong>Exact accumulator bit widths across engine tensor kernels.</strong> Every Prism-certified engine tensor kernel reserves at least 64 bits so inner products never suffer intermediate rounding.</figcaption><details class="cs-data"><summary>The data in this figure</summary><table><thead><tr><th scope="col"></th><th scope="col">bits</th></tr></thead><tbody><tr><td>Static mesh batch</td><td>96</td></tr><tr><td>Linear skinning</td><td>128</td></tr><tr><td>Tropical BVH cull</td><td>64</td></tr><tr><td>Tile rasterizer</td><td>128</td></tr><tr><td>Modal audio mix</td><td>128</td></tr></tbody></table></details><script type="application/vnd.prism.figure+json">{"kind":"bars","title":"Exact accumulator bit widths across engine tensor kernels","caption":"Every Prism-certified engine tensor kernel reserves at least 64 bits so inner products never suffer intermediate rounding.","unit":"bits","bound":{"value":64,"label":"Minimum exact bound (64 bits)"},"rows":[{"label":"Static mesh batch","value":96,"note":"LinearExact · k = 4 homogeneous"},{"label":"Linear skinning","value":128,"note":"LinearExact · 4-joint LBS blend"},{"label":"Tropical BVH cull","value":64,"note":"TropicalMaxPlus · 6 frustum planes"},{"label":"Tile rasterizer","value":128,"note":"LinearExact · 16x16 RGBA8 + depth"},{"label":"Modal audio mix","value":128,"note":"ModularAudioRing · 8 emitters"}]}</script></figure>
+      
+      <h2>Why Verdant Engine hosts tensor compute in Prism</h2>
+      <p>Conditional browser GPU compute extensions are absent on many mobile browsers, embedded WebViews, and privacy-hardened clients.</p>
+      <p>Instead of branching on optional browser APIs, Verdant Engine models its seven core tensor kernels in Prism and executes them via <code>uor-matmul</code>.</p>
+      <p>Every contraction decodes operands into an exact Laurent, integer, or tropical accumulator, sums without intermediate rounding, and encodes once.</p>
+      <h2>Portable 16x16 software tile rasterization</h2>
+      <p>When a browser provides WebGL2, the worker streams static and dynamic batches at 60fps inside an OffscreenCanvas context.</p>
+      <p>When hardware contexts are unavailable, <code>render_triangles_tile_framebuffer</code> shades 16x16 RGBA8 tiles with depth testing in WebAssembly and blits directly to Canvas.</p>
+      <h2>Monotonic UORC streaming and runtime integrity</h2>
+      <p>Multi-LOD <a class="cs-term" href="#term-scene-world" title="The entity-component-system container in verdant-core that stores entities, parent-child transforms, meshes, and PBR materials.">scene worlds</a> compress through UORC into self-delimiting <code>UORC-SHA256-CHAIN-v1</code> archives achieving ten-to-one lossless compression across four progressive tiers.</p>
+      <p>At runtime, <a class="cs-term" href="#term-wgsl" title="The W3C portable shading language whose modules are parsed and type-checked in Verdant Engine by naga.">WGSL</a> shaders are checked by <code>naga</code>, <a class="cs-term" href="#term-gltf" title="The Khronos Group 3D scene transmission standard. GLB is its single-file binary container.">glTF</a> binaries are checked by <code>gltf</code>, and every <a class="cs-term" href="#term-world-snapshot" title="A deterministic binary save of tick count, streaming LOD rank, and entity transforms protected by a 32-byte SHA-256 digest.">world snapshot</a> verifies a 32-byte SHA-256 digest.</p>
+    
+      <details class="cs-terms" id="words"><summary>Words on this page <span>5</span></summary><dl><dt id="term-scene-world">scene world</dt><dd>The entity-component-system container in verdant-core that stores entities, parent-child transforms, meshes, and PBR materials.</dd><dt id="term-wgsl">WGSL</dt><dd>The W3C portable shading language whose modules are parsed and type-checked in Verdant Engine by naga.</dd><dt id="term-gltf">glTF</dt><dd>The Khronos Group 3D scene transmission standard. GLB is its single-file binary container.</dd><dt id="term-uorc">UORC</dt><dd>Universal Object Reference Compression: progressive SHA-256 chain-verified multi-frame compression streaming 3D scenes up to lossless resolution.</dd><dt id="term-world-snapshot">world snapshot</dt><dd>A deterministic binary save of tick count, streaming LOD rank, and entity transforms protected by a 32-byte SHA-256 digest.</dd></dl></details><nav class="dc-pager" aria-label="Page sequence">
+        <a href="../../reference/engine-api/">Previous: Verdant Core API reference</a>
+        <span></span>
+      </nav>
+    </main>
+  
+
+</body></html>

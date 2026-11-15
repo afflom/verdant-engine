@@ -6,6 +6,7 @@
 //! to lossless source resolution.
 
 use serde::{Deserialize, Serialize};
+#[cfg(feature = "uorc-streaming")]
 use uorc::{FrameDecoder, FrameEncoder};
 
 use crate::ecs::{EntityRole, SceneWorld, Transform};
@@ -15,6 +16,7 @@ use crate::math::{
     pow10_u64, pow2_u64, three_u32, two_f64, two_u32, Aabb, DeterministicRng, Quat, Vec3,
 };
 use crate::prism_kernel;
+#[cfg(feature = "uorc-streaming")]
 use crate::runtime::WorldSnapshot;
 
 /// Progressive streaming Level-of-Detail (`LOD`) tier verified by `Tensor.lex.tex`.
@@ -689,6 +691,7 @@ pub struct UorcStreamSummary {
     pub max_lod_rank: u64,
 }
 
+#[cfg(feature = "uorc-streaming")]
 fn uorc_work_budget() -> u64 {
     let shift = prism_kernel::uorcDefaultDecodeWork()
         .expect("verified Prism uorcDefaultDecodeWork") as u32;
@@ -697,6 +700,7 @@ fn uorc_work_budget() -> u64 {
 
 /// Synthesizes all four progressive LOD states (`LOD0..=LOD3`) for `seed` and encodes them into a
 /// single `UORC-SHA256-CHAIN-v1` progressive multi-object `.uorc` stream via `uorc::FrameEncoder`.
+#[cfg(feature = "uorc-streaming")]
 pub fn pack_progressive_uorc_stream(seed: u64) -> Result<Vec<u8>, StreamingError> {
     let max_rank = prism_kernel::wasmMaxLodRank();
     let mut lod_blobs = Vec::with_capacity((max_rank + 1) as usize);
@@ -737,6 +741,7 @@ pub fn pack_progressive_uorc_stream(seed: u64) -> Result<Vec<u8>, StreamingError
 
 /// Verifies a `.uorc` progressive multi-LOD stream through `uorc::verify`, `uorc::FrameDecoder`,
 /// and `prism_kernel::lodStepValid` without trusting unauthenticated headers.
+#[cfg(feature = "uorc-streaming")]
 pub fn verify_progressive_uorc_stream(
     stream_bytes: &[u8],
 ) -> Result<UorcStreamSummary, StreamingError> {
@@ -831,6 +836,7 @@ pub fn verify_progressive_uorc_stream(
 
 /// Progressively decodes a `.uorc` multi-LOD scene stream up to `target_lod_rank` (`0..=3`) and
 /// returns the authenticated `StandardSceneState`.
+#[cfg(feature = "uorc-streaming")]
 pub fn decode_uorc_stream_up_to_lod(
     stream_bytes: &[u8],
     target_lod_rank: u64,

@@ -39,25 +39,33 @@ strip = "symbols"
 panic = "abort"
 
 [profile.dev.package.uorc]
-opt-level = 3
+opt-level = 1
+debug = false
 
 [profile.dev.package.uorc_compress]
-opt-level = 3
+opt-level = 1
+debug = false
 
 [profile.dev.package.uorc_decompress]
-opt-level = 3
+opt-level = 1
+debug = false
 
 [profile.dev.package.uorc_search]
-opt-level = 3
+opt-level = 1
+debug = false
 
 [profile.test.package.uorc]
-opt-level = 3
+opt-level = 1
+debug = false
 
 [profile.test.package.uorc_compress]
-opt-level = 3
+opt-level = 1
+debug = false
 
 [profile.test.package.uorc_decompress]
-opt-level = 3
+opt-level = 1
+debug = false
 
 [profile.test.package.uorc_search]
-opt-level = 3
+opt-level = 1
+debug = false

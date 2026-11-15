@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en"><head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Stream multi-LOD 3D scenes smoothly up to lossless source detail.">
+    <meta name="diataxis" content="howToGuide">
+    <meta name="developer-journey" content="discover">
+    <meta name="audience" content="wren">
+    <link rel="canonical" href="https://afflom.github.io/verdant-engine/docs/guides/progressive-uorc-streaming/">
+    <title>Stream high-resolution scenes with UORC — Verdant Engine</title>
+    <style>
+  :root {
+    --fd-bg: #151312;
+    --fd-fg: #f4f2ee;
+    --fd-muted: #b5ada4;
+    --fd-card: #1e1b19;
+    --fd-border: rgba(244, 242, 238, 0.14);
+    --fd-accent: #6ec49c;
+  }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --fd-bg: #f5f4ef;
+      --fd-fg: #1f1c1a;
+      --fd-muted: #5b534c;
+      --fd-card: #ffffff;
+      --fd-border: rgba(31, 28, 26, 0.14);
+      --fd-accent: #1d6f4e;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--fd-bg);
+    color: var(--fd-fg);
+    font-family: system-ui, -apple-system, sans-serif;
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+  .ve-nav {
+    max-width: 52rem;
+    margin: 0 auto;
+    padding: 1rem 1.25rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem 1.25rem;
+    border-bottom: 1px solid var(--fd-border);
+    font-size: 0.9375rem;
+  }
+  .ve-nav a, main a {
+    color: var(--fd-accent);
+    text-decoration: underline;
+    text-underline-offset: 0.18em;
+  }
+  main {
+    max-width: 52rem;
+    margin: 0 auto;
+    padding: 1.75rem 1.25rem 4rem;
+  }
+  h1 { font-size: 2rem; line-height: 1.2; margin: 0 0 0.75rem; }
+  h2 { font-size: 1.375rem; line-height: 1.3; margin: 2.25rem 0 0.75rem; }
+  h3 { font-size: 1.125rem; line-height: 1.35; margin: 1.5rem 0 0.5rem; }
+  p, li { max-width: 68ch; }
+  code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.9em; }
+  pre {
+    padding: 0.875rem 1rem;
+    background: var(--fd-card);
+    border: 1px solid var(--fd-border);
+    border-radius: 0.5rem;
+    overflow-x: auto;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+    font-size: 0.9375rem;
+  }
+  th, td {
+    text-align: left;
+    padding: 0.5rem 0.625rem;
+    border-bottom: 1px solid var(--fd-border);
+  }
+  .dc-pager {
+    margin-top: 2.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--fd-border);
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+</style>
+  <link rel="alternate" type="text/markdown" href="index.md"><link rel="stylesheet" href="../../content.css"><script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"Stream high-resolution scenes with UORC","description":"Stream multi-LOD 3D scenes smoothly up to lossless source detail.","url":"https://afflom.github.io/verdant-engine/docs/guides/progressive-uorc-streaming/","inLanguage":"en","audience":{"@type":"Audience","audienceType":"Browser player","description":"Explores responsive 60fps 3D scenes in the browser across desktop and mobile viewports with keyboard, pointer, and spatial audio controls."},"learningResourceType":"howToGuide","educationalLevel":"discover","isPartOf":{"@type":"WebSite","name":"Verdant Engine","url":"https://afflom.github.io/verdant-engine/"},"publisher":{"@type":"Organization","name":"UOR Foundation","url":"https://uor.foundation/"}}</script></head>
+  <body>
+    <nav class="ve-nav" aria-label="Documentation navigation">
+      <a href="../../../">3D Studio</a>
+      <a href="../../">Docs home</a>
+      <a href="../../getting-started/">Getting started</a>
+      <a href="../../guides/custom-game-world/">Custom world guide</a>
+      <a href="../../guides/progressive-uorc-streaming/">UORC streaming</a>
+      <a href="../../reference/engine-api/">API reference</a>
+      <a href="../../explanation/tensor-and-uorc-streaming/">Tensor architecture</a>
+    </nav>
+    <main>
+      <h1>Stream high-resolution scenes with UORC</h1>
+      <p>Stream multi-LOD 3D scenes smoothly up to lossless source detail.</p><aside class="cs-guide" data-persona="wren" aria-label="Your guide on this page"><svg class="cs-avatar" viewBox="0 0 120 120" width="96" height="96" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="cs-g4" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="hsl(356 95% 80%)"></stop><stop offset="1" stop-color="hsl(356 95% 50%)"></stop></linearGradient></defs><path d="M0 64L32 58" stroke="hsl(0 0% 98%)" stroke-width="2.4" stroke-linecap="round" opacity=".8"></path><path d="M88 58L120 34.0" stroke="hsl(356 95% 66%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 41.0" stroke="hsl(22 95% 58%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 48.0" stroke="hsl(48 95% 56%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 55.0" stroke="hsl(55 92% 54%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 62.0" stroke="hsl(140 70% 48%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 69.0" stroke="hsl(190 90% 54%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 76.0" stroke="hsl(222 92% 64%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 83.0" stroke="hsl(268 88% 70%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 90.0" stroke="hsl(320 85% 68%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><ellipse cx="60" cy="108" rx="30" ry="5" class="cs-g-shadow"></ellipse><path d="M60 14L92 32V76L60 98L28 76V32Z" fill="url(#cs-g4)"></path><path d="M60 14L92 32L60 48L28 32Z" fill="hsl(0 0% 100% / .28)"></path><path d="M60 48L92 32V76L60 98Z" fill="hsl(0 0% 0% / .18)"></path><path d="M60 14L92 32V76L60 98L28 76V32Z" fill="none" stroke="hsl(0 0% 100% / .45)" stroke-width="1.5" stroke-linejoin="round"></path><ellipse cx="49" cy="62" rx="6.5" ry="7.5" fill="hsl(0 0% 99%)"></ellipse><ellipse cx="71" cy="62" rx="6.5" ry="7.5" fill="hsl(0 0% 99%)"></ellipse><circle cx="51" cy="63.5" r="3.4" class="cs-g-dark"></circle><circle cx="73" cy="63.5" r="3.4" class="cs-g-dark"></circle><circle cx="52.2" cy="62" r="1.1" fill="hsl(0 0% 100%)"></circle><circle cx="74.2" cy="62" r="1.1" fill="hsl(0 0% 100%)"></circle><ellipse cx="41" cy="73" rx="4" ry="2.4" fill="hsl(350 90% 75% / .55)"></ellipse><ellipse cx="79" cy="73" rx="4" ry="2.4" fill="hsl(350 90% 75% / .55)"></ellipse><path d="M53 76q7 6 14 0" fill="none" stroke="hsl(0 0% 8%)" stroke-width="2.2" stroke-linecap="round"></path><ellipse cx="47" cy="100" rx="7" ry="3.6" class="cs-g-dark"></ellipse><ellipse cx="73" cy="100" rx="7" ry="3.6" class="cs-g-dark"></ellipse><g class="cs-g-line"><path d="M30 56c0-24 60-24 60 0"></path><path d="M90 60v8c0 6-6 9-14 9"></path></g><rect x="25" y="52" width="9" height="16" rx="4" class="cs-g-dark"></rect><rect x="86" y="52" width="9" height="16" rx="4" class="cs-g-dark"></rect><circle cx="75" cy="77" r="2.5" class="cs-g-dark"></circle><path d="M92 70q8 2 10 8" fill="none" stroke="hsl(356 95% 50%)" stroke-width="4" stroke-linecap="round"></path><g transform="translate(94 76) scale(1.05)" class="cs-g-prop"><rect x="-2" y="-2" width="28" height="28" rx="8" class="cs-g-chip"></rect><g fill="none" stroke="hsl(0 0% 98%)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="m15.5 8.5-2 5-5 2 2-5z"></path></g></g></svg><div class="cs-guide-text"><p class="cs-guide-who"><strong>Wren</strong> <span>Browser player</span></p><p class="cs-guide-says">“How does Verdant Engine stream high-resolution 3D worlds smoothly in every browser?”</p><p class="cs-guide-how">A how-to guide: each section completes one practical engine task.</p></div></aside>
+      <figure class="cs-figure cs-flow"><div class="cs-canvas"><svg class="cs-svg cs-wide" viewBox="0 0 680 128" role="img" aria-labelledby="cs-t33 cs-d34" xmlns="http://www.w3.org/2000/svg"><title id="cs-t33">Four progressive UORC streaming levels from LOD0 to LOD3</title><desc id="cs-d34">1. LOD0 proxy: 1/8 scale · bounds and NavMesh 2. LOD1 medium: 2/8 scale · terrain and shadows 3. LOD2 high: 5/8 scale · IBL and spline mover 4. LOD3 lossless: 8/8 scale · 1:1 UORC source</desc><defs><marker id="cs-a23" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="cs-arrowhead"></path></marker></defs><g class="cs-node"><rect x="0" y="0" width="149" height="126" rx="12" class="cs-card"></rect><rect x="0" y="0" width="149" height="4" rx="2" fill="hsl(356 95% 66%)"></rect><text x="12" y="20" class="cs-step" dominant-baseline="middle">01</text><text x="74.5" y="42.5" class="cs-label" text-anchor="middle" dominant-baseline="middle">LOD0 proxy</text><text x="74.5" y="64.5" class="cs-sub" text-anchor="middle" dominant-baseline="middle">1/8 scale · bounds</text><text x="74.5" y="79.5" class="cs-sub" text-anchor="middle" dominant-baseline="middle">and NavMesh</text></g><line x1="152" y1="63" x2="174" y2="63" class="cs-edge" marker-end="url(#cs-a23)"></line><g class="cs-node"><rect x="177" y="0" width="149" height="126" rx="12" class="cs-card"></rect><rect x="177" y="0" width="149" height="4" rx="2" fill="hsl(55 92% 54%)"></rect><text x="189" y="20" class="cs-step" dominant-baseline="middle">02</text><text x="251.5" y="42.5" class="cs-label" text-anchor="middle" dominant-baseline="middle">LOD1 medium</text><text x="251.5" y="64.5" class="cs-sub" text-anchor="middle" dominant-baseline="middle">2/8 scale ·</text><text x="251.5" y="79.5" class="cs-sub" text-anchor="middle" dominant-baseline="middle">terrain and</text><text x="251.5" y="94.5" class="cs-sub" text-anchor="middle" dominant-baseline="middle">shadows</text></g><line x1="329" y1="63" x2="351" y2="63" class="cs-edge" marker-end="url(#cs-a23)"></line><g class="cs-node"><rect x="354" y="0" width="149" height="126" rx="12" class="cs-card"></rect><rect x="354" y="0" width="149" height="4" rx="2" fill="hsl(190 90% 54%)"></rect><text x="366" y="20" class="cs-step" dominant-baseline="middle">03</text><text x="428.5" y="42.5" class="cs-label" text-anchor="middle" dominant-baseline="middle">LOD2 high</text><text x="428.5" y="64.5" class="cs-sub" text-anchor="middle" dominant-baseline="middle">5/8 scale · IBL</text><text x="428.5" y="79.5" class="cs-sub" text-anchor="middle" dominant-baseline="middle">and spline mover</text></g><line x1="506" y1="63" x2="528" y2="63" class="cs-edge" marker-end="url(#cs-a23)"></line><g class="cs-node"><rect x="531" y="0" width="149" height="126" rx="12" class="cs-card"></rect><rect x="531" y="0" width="149" height="4" rx="2" fill="hsl(320 85% 68%)"></rect><text x="543" y="20" class="cs-step" dominant-baseline="middle">04</text><text x="605.5" y="42.5" class="cs-label" text-anchor="middle" dominant-baseline="middle">LOD3 lossless</text><text x="605.5" y="64.5" class="cs-sub" text-anchor="middle" dominant-baseline="middle">8/8 scale · 1:1</text><text x="605.5" y="79.5" class="cs-sub" text-anchor="middle" dominant-baseline="middle">UORC source</text></g></svg><svg class="cs-svg cs-tall" viewBox="0 0 340 470" role="img" aria-labelledby="cs-t35 cs-d36" xmlns="http://www.w3.org/2000/svg"><title id="cs-t35">Four progressive UORC streaming levels from LOD0 to LOD3</title><desc id="cs-d36">1. LOD0 proxy: 1/8 scale · bounds and NavMesh 2. LOD1 medium: 2/8 scale · terrain and shadows 3. LOD2 high: 5/8 scale · IBL and spline mover 4. LOD3 lossless: 8/8 scale · 1:1 UORC source</desc><defs><marker id="cs-a28" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="cs-arrowhead"></path></marker></defs><g class="cs-node"><rect x="0" y="0" width="340" height="96" rx="12" class="cs-card"></rect><rect x="0" y="0" width="340" height="4" rx="2" fill="hsl(356 95% 66%)"></rect><text x="12" y="20" class="cs-step" dominant-baseline="middle">01</text><text x="170.0" y="42.5" class="cs-label" text-anchor="middle" dominant-baseline="middle">LOD0 proxy</text><text x="170.0" y="64.5" class="cs-sub" text-anchor="middle" dominant-baseline="middle">1/8 scale · bounds and NavMesh</text></g><line x1="170" y1="99" x2="170" y2="121" class="cs-edge" marker-end="url(#cs-a28)"></line><g class="cs-node"><rect x="0" y="124" width="340" height="96" rx="12" class="cs-card"></rect><rect x="0" y="124" width="340" height="4" rx="2" fill="hsl(55 92% 54%)"></rect><text x="12" y="144" class="cs-step" dominant-baseline="middle">02</text><text x="170.0" y="166.5" class="cs-label" text-anchor="middle" dominant-baseline="middle">LOD1 medium</text><text x="170.0" y="188.5" class="cs-sub" text-anchor="middle" dominant-baseline="middle">2/8 scale · terrain and shadows</text></g><line x1="170" y1="223" x2="170" y2="245" class="cs-edge" marker-end="url(#cs-a28)"></line><g class="cs-node"><rect x="0" y="248" width="340" height="96" rx="12" class="cs-card"></rect><rect x="0" y="248" width="340" height="4" rx="2" fill="hsl(190 90% 54%)"></rect><text x="12" y="268" class="cs-step" dominant-baseline="middle">03</text><text x="170.0" y="290.5" class="cs-label" text-anchor="middle" dominant-baseline="middle">LOD2 high</text><text x="170.0" y="312.5" class="cs-sub" text-anchor="middle" dominant-baseline="middle">5/8 scale · IBL and spline mover</text></g><line x1="170" y1="347" x2="170" y2="369" class="cs-edge" marker-end="url(#cs-a28)"></line><g class="cs-node"><rect x="0" y="372" width="340" height="96" rx="12" class="cs-card"></rect><rect x="0" y="372" width="340" height="4" rx="2" fill="hsl(320 85% 68%)"></rect><text x="12" y="392" class="cs-step" dominant-baseline="middle">04</text><text x="170.0" y="414.5" class="cs-label" text-anchor="middle" dominant-baseline="middle">LOD3 lossless</text><text x="170.0" y="436.5" class="cs-sub" text-anchor="middle" dominant-baseline="middle">8/8 scale · 1:1 UORC source</text></g></svg></div><figcaption><strong>Four progressive <a class="cs-term" href="#term-uorc" title="Universal Object Reference Compression: progressive SHA-256 chain-verified multi-frame compression streaming 3D scenes up to lossless resolution.">UORC</a> streaming levels from LOD0 to LOD3.</strong> Scenes boot fast from coarse proxy bounds and refine monotonically up to SHA-256 verified lossless resolution.</figcaption><details class="cs-data"><summary>The data in this figure</summary><table><thead><tr><th scope="col">Step</th><th scope="col">What happens</th></tr></thead><tbody><tr><td>1. LOD0 proxy</td><td>1/8 scale · bounds and NavMesh</td></tr><tr><td>2. LOD1 medium</td><td>2/8 scale · terrain and shadows</td></tr><tr><td>3. LOD2 high</td><td>5/8 scale · IBL and spline mover</td></tr><tr><td>4. LOD3 lossless</td><td>8/8 scale · 1:1 UORC source</td></tr></tbody></table></details><script type="application/vnd.prism.figure+json">{"kind":"flow","title":"Four progressive UORC streaming levels from LOD0 to LOD3","caption":"Scenes boot fast from coarse proxy bounds and refine monotonically up to SHA-256 verified lossless resolution.","steps":[{"label":"LOD0 proxy","sub":"1/8 scale · bounds and NavMesh"},{"label":"LOD1 medium","sub":"2/8 scale · terrain and shadows"},{"label":"LOD2 high","sub":"5/8 scale · IBL and spline mover"},{"label":"LOD3 lossless","sub":"8/8 scale · 1:1 UORC source"}]}</script></figure>
+      
+      <h2>Keep the 3D viewport fast on every device</h2>
+      <p>Verdant Engine runs simulation, <a class="cs-term" href="#term-bounding-volume-hierarchy" title="A tree of 3D bounding boxes partitioned by surface area so raycasts and camera frustum checks skip distant geometry.">bounding volume hierarchy</a> culling, and WebGL2 or software tile rendering inside an OffscreenCanvas worker.</p>
+      <p>The studio bar keeps six clear controls beside the 3D stage: LOD scrubbing, simulation mode, camera mode, spatial audio, <a class="cs-term" href="#term-gltf" title="The Khronos Group 3D scene transmission standard. GLB is its single-file binary container.">glTF</a> export, and <a class="cs-term" href="#term-world-snapshot" title="A deterministic binary save of tick count, streaming LOD rank, and entity transforms protected by a 32-byte SHA-256 digest.">world snapshot</a> sharing.</p>
+      <h2>Scrub progressive LODs and inspect scene nodes</h2>
+      <p>Select <strong>LOD</strong> in the studio bar to step from <code>LOD0</code> proxy bounds up to lossless <code>LOD3</code> detail.</p>
+      <p>In Orbit mode, drag or scroll to frame any of the seven canonical engine node presets or follow the kinematic spline mover.</p>
+      <p>Switch to Walk mode on desktop to traverse the terrain at eye level with <code>WASD</code> or arrow keys.</p>
+      <h2>Pack and verify progressive UORC streams</h2>
+      <p>Encode all four LOD tiers into one <code>UORC-SHA256-CHAIN-v1</code> stream and verify every frame within bounded memory.</p>
+      <pre><code>let stream = pack_progressive_uorc_stream(7)?;
+let summary = verify_progressive_uorc_stream(&amp;stream)?;
+let lod3 = decode_uorc_stream_up_to_lod(&amp;stream, 3)?;</code></pre>
+    
+      <details class="cs-terms" id="words"><summary>Words on this page <span>4</span></summary><dl><dt id="term-bounding-volume-hierarchy">bounding volume hierarchy</dt><dd>A tree of 3D bounding boxes partitioned by surface area so raycasts and camera frustum checks skip distant geometry.</dd><dt id="term-gltf">glTF</dt><dd>The Khronos Group 3D scene transmission standard. GLB is its single-file binary container.</dd><dt id="term-uorc">UORC</dt><dd>Universal Object Reference Compression: progressive SHA-256 chain-verified multi-frame compression streaming 3D scenes up to lossless resolution.</dd><dt id="term-world-snapshot">world snapshot</dt><dd>A deterministic binary save of tick count, streaming LOD rank, and entity transforms protected by a 32-byte SHA-256 digest.</dd></dl></details><nav class="dc-pager" aria-label="Page sequence">
+        <a href="../../guides/custom-game-world/">Previous: Author terrain, shaders, and spatial audio</a>
+        <a href="../../reference/engine-api/">Next: Verdant Core API reference</a>
+      </nav>
+    </main>
+  
+
+</body></html>

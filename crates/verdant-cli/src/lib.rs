@@ -1,5 +1,5 @@
-//! Command-line asset validator, sanctuary `.glb` + `.vdnt` scene packer, and headless 60fps
-//! frame-budget benchmark for Verdant Engine (`verdant-cli`).
+//! Command-line asset validator, progressive `UORC` + `.glb` + `.vdnt` scene packer, and headless
+//! 60fps frame-budget benchmark for Verdant Engine (`verdant-cli`).
 
 #![forbid(unsafe_code)]
 
@@ -8,13 +8,12 @@ use std::path::Path;
 use std::time::Instant;
 
 use verdant_core::collision::{gjk_intersect_and_manifold, ConvexHullCollider};
-use verdant_core::genesis::CausalWorldState;
 use verdant_core::geometry::canonical_scene_mesh_library;
 use verdant_core::gltf_io::{export_scene_to_glb, validate_glb_bytes};
 use verdant_core::math::Vec3;
 use verdant_core::navmesh::NavMesh;
 use verdant_core::physics::{
-    CapsuleController, KinematicSplineRover, PhysicsWorld, PhysicsWorldConfig,
+    CapsuleController, KinematicSplineBody, PhysicsWorld, PhysicsWorldConfig,
 };
 use verdant_core::prism_kernel;
 use verdant_core::render::{
@@ -22,9 +21,12 @@ use verdant_core::render::{
     validate_wgsl_shader, RenderFrameGraph,
 };
 use verdant_core::runtime::WorldSnapshot;
+use verdant_core::streaming::{
+    pack_progressive_uorc_stream, verify_progressive_uorc_stream, StandardSceneState,
+};
 
 /// Refusal returned when a `verdant` CLI subcommand receives invalid arguments, unreadable paths,
-/// or a non-conformant asset/shader/snapshot payload.
+/// or a non-conformant asset/shader/snapshot/UORC payload.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum CliCommandError {
     /// Unknown or missing subcommand or required positional argument.
@@ -39,7 +41,7 @@ pub enum CliCommandError {
         /// Underlying OS diagnostic.
         reason: String,
     },
-    /// Asset, WGSL shader, causal epoch parameter, or `VDNT` snapshot failed engine validation.
+    /// Asset, WGSL shader, LOD rank, `UORC` stream, or `VDNT` snapshot failed engine validation.
     ValidationRejected {
         /// Subcommand that rejected the input.
         command: String,
@@ -68,7 +70,8 @@ pub const CLI_USAGE: &str = "\
 verdant <subcommand> [options]
   validate-glb <file.glb>                     Verify binary Khronos glTF 2.0 container
   validate-wgsl <file.wgsl> [entry...]        Verify W3C WGSL shader module via naga
-  export-sanctuary <out.glb> [seed] [scale]   Pack causal world .glb + companion .vdnt snapshot
+  pack-scene <out.glb> [seed] [lod_rank]      Pack progressive .uorc + .glb + .vdnt scene bundle
+  verify-uorc <file.uorc>                     Verify UORC-SHA256-CHAIN-v1 multi-LOD stream
   snapshot-verify <file.vdnt>                 Verify VDNT + SHA-256 snapshot and Prism envelope
   benchmark [frames]                          Run headless 60fps physics + BVH + GJK + NavMesh benchmark";
 
@@ -143,33 +146,33 @@ pub fn run_cli(args: &[String]) -> Result<String, CliCommandError> {
                 verified.expression_count
             ))
         }
-        "export-sanctuary" => {
+        "pack-scene" => {
             let Some(out_glb) = args.get(1) else {
                 return Err(CliCommandError::InvalidUsage {
-                    usage: "verdant export-sanctuary <out.glb> [seed] [scale]".to_string(),
+                    usage: "verdant pack-scene <out.glb> [seed] [lod_rank]".to_string(),
                 });
             };
             let seed_arg_idx = prism_kernel::sTwo() as usize;
-            let scale_arg_idx = prism_kernel::sThree() as usize;
+            let lod_arg_idx = prism_kernel::sThree() as usize;
             let seed = match args.get(seed_arg_idx) {
                 Some(raw) => raw
                     .parse::<u64>()
                     .map_err(|_| CliCommandError::InvalidUsage {
                         usage: format!("invalid u64 seed `{raw}`"),
                     })?,
-                None => pk("export-sanctuary", prism_kernel::wasmDefaultSeed())?,
+                None => pk("pack-scene", prism_kernel::wasmDefaultSeed())?,
             };
-            let scale = match args.get(scale_arg_idx) {
+            let lod_rank = match args.get(lod_arg_idx) {
                 Some(raw) => raw
-                    .parse::<f64>()
+                    .parse::<u64>()
                     .map_err(|_| CliCommandError::InvalidUsage {
-                        usage: format!("invalid f64 scale `{raw}`"),
+                        usage: format!("invalid u64 lod_rank `{raw}`"),
                     })?,
-                None => 1.0,
+                None => prism_kernel::wasmMaxLodRank(),
             };
-            let mut world = CausalWorldState::synthesize_at_scale(seed, scale).map_err(|e| {
+            let mut world = StandardSceneState::synthesize_at_lod(seed, lod_rank).map_err(|e| {
                 CliCommandError::ValidationRejected {
-                    command: "export-sanctuary".to_string(),
+                    command: "pack-scene".to_string(),
                     diagnostic: e.to_string(),
                 }
             })?;
@@ -184,15 +187,21 @@ pub fn run_cli(args: &[String]) -> Result<String, CliCommandError> {
             let glb_bytes =
                 export_scene_to_glb(&world.scene, &meshes, &materials).map_err(|e| {
                     CliCommandError::ValidationRejected {
-                        command: "export-sanctuary".to_string(),
+                        command: "pack-scene".to_string(),
                         diagnostic: e.to_string(),
                     }
                 })?;
             let snap_bytes =
                 WorldSnapshot::encode(&world).map_err(|e| CliCommandError::ValidationRejected {
-                    command: "export-sanctuary".to_string(),
+                    command: "pack-scene".to_string(),
                     diagnostic: e.to_string(),
                 })?;
+            let uorc_bytes = pack_progressive_uorc_stream(seed).map_err(|e| {
+                CliCommandError::ValidationRejected {
+                    command: "pack-scene".to_string(),
+                    diagnostic: e.to_string(),
+                }
+            })?;
             std::fs::write(out_glb, &glb_bytes).map_err(|e| CliCommandError::IoFailure {
                 path: out_glb.clone(),
                 reason: e.to_string(),
@@ -202,12 +211,43 @@ pub fn run_cli(args: &[String]) -> Result<String, CliCommandError> {
                 path: out_vdnt.clone(),
                 reason: e.to_string(),
             })?;
+            let out_uorc = format!("{out_glb}.uorc");
+            std::fs::write(&out_uorc, &uorc_bytes).map_err(|e| CliCommandError::IoFailure {
+                path: out_uorc.clone(),
+                reason: e.to_string(),
+            })?;
             Ok(format!(
-                "PACKED OK: glb={out_glb} ({}B) vdnt={out_vdnt} ({}B) epoch={} blueprints={}",
+                "PACKED OK: glb={out_glb} ({}B) vdnt={out_vdnt} ({}B) uorc={out_uorc} ({}B) lod={} nodes={}",
                 glb_bytes.len(),
                 snap_bytes.len(),
-                world.active_epoch.label(),
-                world.blueprints.len()
+                uorc_bytes.len(),
+                world.active_lod.rank(),
+                world.scene_nodes.len()
+            ))
+        }
+        "verify-uorc" => {
+            let Some(path) = args.get(1) else {
+                return Err(CliCommandError::InvalidUsage {
+                    usage: "verdant verify-uorc <file.uorc>".to_string(),
+                });
+            };
+            let stream = std::fs::read(path).map_err(|e| CliCommandError::IoFailure {
+                path: path.clone(),
+                reason: e.to_string(),
+            })?;
+            let summary = verify_progressive_uorc_stream(&stream).map_err(|e| {
+                CliCommandError::ValidationRejected {
+                    command: "verify-uorc".to_string(),
+                    diagnostic: e.to_string(),
+                }
+            })?;
+            Ok(format!(
+                "UORC OK: path={path} compressed_bytes={} decoded_bytes={} frames={} lod_objects={} max_lod={}",
+                summary.compressed_bytes,
+                summary.decoded_total_bytes,
+                summary.archive_frame_count,
+                summary.lod_object_count,
+                summary.max_lod_rank
             ))
         }
         "snapshot-verify" => {
@@ -236,12 +276,12 @@ pub fn run_cli(args: &[String]) -> Result<String, CliCommandError> {
                     diagnostic: e.to_string(),
                 })?;
             Ok(format!(
-                "VDNT OK: path={path} bytes={} seed={} epoch={} scale={:.3} blueprints={} url_bridge_ready={}",
+                "VDNT OK: path={path} bytes={} seed={} lod={} scale={:.3} nodes={} url_bridge_ready={}",
                 wire.len(),
                 world.seed,
-                world.active_epoch.label(),
-                world.scale_factor,
-                world.blueprints.len(),
+                world.active_lod.rank(),
+                world.resolution_scale,
+                world.scene_nodes.len(),
                 url_safe
             ))
         }
@@ -291,12 +331,11 @@ pub fn run_cli(args: &[String]) -> Result<String, CliCommandError> {
                 }
             })?;
 
-            let world = CausalWorldState::synthesize_at_scale(seven, 1.0).map_err(|e| {
-                CliCommandError::ValidationRejected {
+            let world = StandardSceneState::synthesize_at_lod(seven, prism_kernel::wasmMaxLodRank())
+                .map_err(|e| CliCommandError::ValidationRejected {
                     command: "benchmark".to_string(),
                     diagnostic: e.to_string(),
-                }
-            })?;
+                })?;
             let meshes = canonical_scene_mesh_library(world.seed);
             let nav = NavMesh::from_mesh(&meshes[0]).map_err(|e| {
                 CliCommandError::ValidationRejected {
@@ -319,10 +358,10 @@ pub fn run_cli(args: &[String]) -> Result<String, CliCommandError> {
                 two as f64,
                 eight as f64,
             )));
-            let rover_speed = ((twelve + 1) as f64) / (five as f64);
-            physics.sentinel_rover = Some(KinematicSplineRover::new(
-                world.rover_perimeter_waypoints.clone(),
-                rover_speed,
+            let mover_speed = ((twelve + 1) as f64) / (five as f64);
+            physics.kinematic_mover = Some(KinematicSplineBody::new(
+                world.mover_spline_waypoints.clone(),
+                mover_speed,
             ));
 
             let dt = 1.0 / (sixty as f64);

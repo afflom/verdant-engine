@@ -761,7 +761,7 @@ dependencies = [
 [[package]]
 name = "uorc"
 version = "0.6.0"
-source = "git+https://github.com/UOR-Foundation/compression?branch=main#c416f7f5f43e53f6888395e0b927041648b30f8f"
+source = "git+https://github.com/UOR-Foundation/compression?branch=main#79e08e2a25e8165932a21bf8567b39b40245286d"
 dependencies = [
  "libc",
  "sha2 0.11.1",
@@ -773,17 +773,17 @@ dependencies = [
 [[package]]
 name = "uorc_compress"
 version = "0.1.0"
-source = "git+https://github.com/UOR-Foundation/compression?branch=main#c416f7f5f43e53f6888395e0b927041648b30f8f"
+source = "git+https://github.com/UOR-Foundation/compression?branch=main#79e08e2a25e8165932a21bf8567b39b40245286d"
 
 [[package]]
 name = "uorc_decompress"
 version = "0.1.0"
-source = "git+https://github.com/UOR-Foundation/compression?branch=main#c416f7f5f43e53f6888395e0b927041648b30f8f"
+source = "git+https://github.com/UOR-Foundation/compression?branch=main#79e08e2a25e8165932a21bf8567b39b40245286d"
 
 [[package]]
 name = "uorc_search"
 version = "0.1.0"
-source = "git+https://github.com/UOR-Foundation/compression?branch=main#c416f7f5f43e53f6888395e0b927041648b30f8f"
+source = "git+https://github.com/UOR-Foundation/compression?branch=main#79e08e2a25e8165932a21bf8567b39b40245286d"
 
 [[package]]
 name = "urlencoding"

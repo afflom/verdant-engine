@@ -1,9 +1,9 @@
 /**
- * Sanctuary Relic Resonator — Playable 3D WebGL2 Starter Game on Verdant Engine.
+ * Orbital Beacon Arena — Playable 3D WebGL2 Starter Game on Verdant Engine.
  *
- * Move the Resonator Orb with WASD / Arrow keys across the procedural amphitheater heightfield
- * to harmonize all three Quartz Relic Beacons while the autonomous Guardian Drone patrols the
- * sanctuary perimeter. Drag horizontally to orbit the camera.
+ * Move the Kinetic Sphere with WASD / Arrow keys across the procedural basin heightfield
+ * to activate all three Crystalline Relay Beacons while the autonomous Patrol Drone orbits the
+ * arena perimeter. Drag horizontally to orbit the camera.
  */
 
 const canvas = document.getElementById("arena");
@@ -12,13 +12,13 @@ const hintEl = document.getElementById("hud-hint");
 const audioBtn = document.getElementById("audio-btn");
 const resetBtn = document.getElementById("reset-btn");
 
-const RELICS = [
+const BEACONS = [
   { name: "North Spire", x: 0.0, z: -6.5, baseColor: [0.92, 0.66, 0.28], freq: 220, active: false },
   { name: "East Spire", x: 6.0, z: 3.4, baseColor: [0.34, 0.76, 0.92], freq: 275, active: false },
   { name: "West Spire", x: -6.0, z: 3.4, baseColor: [0.78, 0.52, 0.94], freq: 330, active: false },
 ];
 
-const CHIME_RATIOS = [9 / 9, 25 / 9, 49 / 9, 81 / 9];
+const MODAL_BAR_RATIOS = [9 / 9, 25 / 9, 49 / 9, 81 / 9];
 
 function terrainHeight(x, z) {
   const r2 = x * x + z * z;
@@ -30,7 +30,7 @@ function terrainHeight(x, z) {
 let audioCtx = null;
 let audioEnabled = false;
 
-function playRelicChord(baseHz, panValue) {
+function playBeaconChord(baseHz, panValue) {
   if (!audioEnabled) return;
   if (!audioCtx) {
     const Ctx = window.AudioContext || window.webkitAudioContext;
@@ -44,7 +44,7 @@ function playRelicChord(baseHz, panValue) {
     panner.pan.setValueAtTime(Math.max(-1, Math.min(1, panValue)), now);
     panner.connect(audioCtx.destination);
   }
-  CHIME_RATIOS.forEach((ratio, idx) => {
+  MODAL_BAR_RATIOS.forEach((ratio, idx) => {
     const osc = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
     osc.type = "sine";
@@ -64,7 +64,7 @@ audioBtn?.addEventListener("click", () => {
   audioEnabled = !audioEnabled;
   audioBtn.setAttribute("aria-pressed", String(audioEnabled));
   audioBtn.textContent = audioEnabled ? "Audio: On" : "Audio: Off";
-  if (audioEnabled) playRelicChord(264, 0);
+  if (audioEnabled) playBeaconChord(264, 0);
 });
 
 const player = { x: 0, z: 7.5, vx: 0, vz: 0 };
@@ -73,18 +73,18 @@ let camYaw = 0.0;
 const keys = new Set();
 
 function updateHud(droneBump = false) {
-  const count = RELICS.filter((r) => r.active).length;
+  const count = BEACONS.filter((b) => b.active).length;
   if (scoreEl) {
     scoreEl.textContent =
-      count === RELICS.length
-        ? `Relics Harmonized: ${count} / ${RELICS.length} · Sanctuary Awake!`
-        : `Relics Harmonized: ${count} / ${RELICS.length}`;
+      count === BEACONS.length
+        ? `Beacons Activated: ${count} / ${BEACONS.length} · Arena Complete!`
+        : `Beacons Activated: ${count} / ${BEACONS.length}`;
   }
   if (hintEl) {
     if (droneBump) {
-      hintEl.textContent = "Guardian Drone deflected your orb! Steer clear of its perimeter patrol.";
-    } else if (count === RELICS.length) {
-      hintEl.textContent = "All three quartz beacons resonate in phase. Press Reset Arena to play again.";
+      hintEl.textContent = "Patrol Drone deflected your sphere! Steer clear of its orbit track.";
+    } else if (count === BEACONS.length) {
+      hintEl.textContent = "All three relay beacons are active. Press Reset Arena to play again.";
     }
   }
 }
@@ -94,9 +94,9 @@ resetBtn?.addEventListener("click", () => {
   player.z = 7.5;
   player.vx = 0;
   player.vz = 0;
-  RELICS.forEach((r) => { r.active = false; });
+  BEACONS.forEach((b) => { b.active = false; });
   if (hintEl) {
-    hintEl.textContent = "Move with WASD or Arrow keys (drag to orbit camera) to awaken all three quartz beacons.";
+    hintEl.textContent = "Move with WASD or Arrow keys (drag to orbit camera) to activate all three relay beacons.";
   }
   updateHud();
 });
@@ -313,7 +313,7 @@ if (gl) {
     player.x = Math.max(-12.5, Math.min(12.5, player.x + player.vx * dt));
     player.z = Math.max(-12.5, Math.min(12.5, player.z + player.vz * dt));
 
-    // Step autonomous Guardian Drone along perimeter circle:
+    // Step autonomous Patrol Drone along perimeter circle:
     drone.angle += dt * 0.65;
     const dx = Math.cos(drone.angle) * drone.radius;
     const dz = Math.sin(drone.angle) * drone.radius;
@@ -323,15 +323,15 @@ if (gl) {
       const nz = (player.z - dz) / (distDrone || 1);
       player.vx = nx * 9;
       player.vz = nz * 9;
-      playRelicChord(146.8, nx);
+      playBeaconChord(146.8, nx);
       updateHud(true);
     }
 
-    // Check GJK-style proximity harmonization with each Relic Beacon:
-    for (const r of RELICS) {
-      if (!r.active && Math.hypot(player.x - r.x, player.z - r.z) < 1.45) {
-        r.active = true;
-        playRelicChord(r.freq, Math.max(-1, Math.min(1, (r.x - player.x) * 0.25)));
+    // Check GJK-style proximity activation with each Relay Beacon:
+    for (const b of BEACONS) {
+      if (!b.active && Math.hypot(player.x - b.x, player.z - b.z) < 1.45) {
+        b.active = true;
+        playBeaconChord(b.freq, Math.max(-1, Math.min(1, (b.x - player.x) * 0.25)));
         updateHud(false);
       }
     }
@@ -363,33 +363,33 @@ if (gl) {
     gl.useProgram(prog);
     gl.uniformMatrix4fv(uVp, false, vp);
 
-    // Draw amphitheater terrain:
+    // Draw valley terrain:
     gl.bindVertexArray(terrainGpu.vao);
     gl.uniform3f(uOffset, 0, 0, 0);
     gl.uniform1f(uSpin, 0);
     gl.uniform3f(uTint, 1, 1, 1);
     gl.drawArrays(gl.TRIANGLES, 0, terrainGpu.count);
 
-    // Draw 3 Quartz Relic Beacons:
+    // Draw 3 Crystalline Relay Beacons:
     gl.bindVertexArray(crystalGpu.vao);
     const tSec = now * 0.001;
-    RELICS.forEach((r, idx) => {
-      const ry = terrainHeight(r.x, r.z) + 1.55 + Math.sin(tSec * 2.2 + idx) * 0.18;
-      gl.uniform3f(uOffset, r.x, ry, r.z);
-      gl.uniform1f(uSpin, tSec * (r.active ? 2.4 : 0.7) + idx);
-      const col = r.active ? [0.42, 0.96, 0.72] : r.baseColor;
+    BEACONS.forEach((b, idx) => {
+      const ry = terrainHeight(b.x, b.z) + 1.55 + Math.sin(tSec * 2.2 + idx) * 0.18;
+      gl.uniform3f(uOffset, b.x, ry, b.z);
+      gl.uniform1f(uSpin, tSec * (b.active ? 2.4 : 0.7) + idx);
+      const col = b.active ? [0.42, 0.96, 0.72] : b.baseColor;
       gl.uniform3f(uTint, col[0], col[1], col[2]);
       gl.drawArrays(gl.TRIANGLES, 0, crystalGpu.count);
     });
 
-    // Draw player Resonator Orb:
+    // Draw player Kinetic Sphere:
     gl.bindVertexArray(orbGpu.vao);
     gl.uniform3f(uOffset, player.x, terrainHeight(player.x, player.z) + 0.7, player.z);
     gl.uniform1f(uSpin, tSec * 1.8);
     gl.uniform3f(uTint, 1, 1, 1);
     gl.drawArrays(gl.TRIANGLES, 0, orbGpu.count);
 
-    // Draw patrolling Guardian Drone:
+    // Draw patrolling Drone:
     gl.bindVertexArray(droneGpu.vao);
     gl.uniform3f(uOffset, dx, terrainHeight(dx, dz) + 1.15, dz);
     gl.uniform1f(uSpin, -tSec * 3.0);

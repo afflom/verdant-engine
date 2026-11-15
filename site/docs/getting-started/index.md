@@ -4,7 +4,7 @@
 
 Create a Rust 3D scene, step rigid-body physics, and export a binary asset.
 
-      Four steps from starter template to exported 3D world. The starter template constructs a scene world, steps 60Hz physics, captures a world snapshot, and writes a binary GLB file.The data in this figure
+      Four steps from starter template to exported 3D world. The starter template builds a scene world, steps 60Hz physics, verifies a UORC stream, and writes a binary GLB file.The data in this figure
 | Step | What happens |
 | --- | --- |
 | 1. Spawn entities | SceneWorld and PBR materials |
@@ -29,7 +29,7 @@ cargo run --manifest-path templates/browser-3d-starter/Cargo.toml
 
       
 
-That command builds verdant-core, validates all four built-in WGSL shaders, steps GJK relic triggers and NavMesh steering, and writes custom-starter-world.glb.
+That command builds verdant-core, validates all four built-in WGSL shaders, steps GJK beacon triggers and NavMesh steering, and writes custom-starter-world.glb.
 
       
 
@@ -41,35 +41,35 @@ Open templates/browser-3d-starter/src/main.rs to inspect how a scene world organ
 
       
 
-You spawn a root terrain mesh first, attach three fluted columns and skinned quartz beacons as children, and build the bounding volume hierarchy.
+You spawn a root terrain patch first, attach three fluted columns and skinned beacons as children, and build the bounding volume hierarchy.
 
       
 
 ```
-let mut scene = SceneWorld::new(); let ground_id = scene.spawn("StarterTerrain", EntityRole::TerrainFeature, None, Transform::default(), bounds, (1.0, "Terrain")); let beacon_id = scene.spawn("NorthRelicBeacon", EntityRole::EngineeredStructure, Some(col_id), Transform::from_xyz(0.0, 4.6, 0.0), beacon_bounds, (1.0, "Beacon")); let bvh = scene.build_bvh();
+let mut scene = SceneWorld::new(); let ground_id = scene.spawn("StarterTerrain", EntityRole::TerrainPatch, None, Transform::default(), bounds, (1.0, "Terrain")); let beacon_id = scene.spawn("NorthBeacon", EntityRole::StaticArchitecture, Some(col_id), Transform::from_xyz(0.0, 4.6, 0.0), beacon_bounds, (1.0, "Beacon")); let bvh = scene.build_bvh();
 ```
 
       
 
-## Capture a deterministic snapshot
+## Capture a world snapshot and UORC stream
 
       
 
-Before exporting the scene, encode a world snapshot so worker threads or URL share links can restore the exact state with SHA-256 verification.
+Before exporting the scene, encode a world snapshot and a multi-LOD UORC stream with SHA-256 verification.
 
       
 
 ```
-let snap_bytes = WorldSnapshot::encode(&causal_world)?; let restored = WorldSnapshot::decode(&snap_bytes)?;
+let snap_bytes = WorldSnapshot::encode(&lod_scene)?; let restored = WorldSnapshot::decode(&snap_bytes)?; let uorc_bytes = pack_progressive_uorc_stream(7)?;
 ```
 
       
 
-## Play Sanctuary Relic Resonator in the browser
+## Play the starter arena in the browser
 
       
 
-Serve templates/browser-3d-starter over HTTP and open index.html to pilot the Resonator Orb with WASD keys and awaken all three beacons.
+Serve templates/browser-3d-starter over HTTP and open index.html to pilot the Kinetic Probe with WASD keys and activate all three beacons.
 
     
       

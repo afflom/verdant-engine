@@ -125,35 +125,71 @@ pub fn batch_transform_positions_exact(
     let n = DIM_HOMOGENEOUS;
     let i2 = 1usize + 1usize;
 
-    let mut a = Vec::with_capacity(m * k);
-    for p in positions {
-        a.push(p[0]);
-        a.push(p[1]);
-        a.push(p[i2]);
-        a.push(1.0_f32);
-    }
+    let i3 = i2 + 1usize;
+    let mut out = Vec::with_capacity(m);
 
-    // `Mat4::cols[col][row]` represents column `col`, row `row`.
-    // For row-vector multiplication `v_row * M^T`, row `r` of `B` (`k x n`) has `B[r, c] = M[c, r] = cols[r][c]`.
-    let mut b = vec![0.0_f32; k * n];
-    for r in 0..k {
-        for c in 0..n {
-            b[r * n + c] = matrix.cols[r][c] as f32;
+    #[cfg(not(target_arch = "wasm32"))]
+    {
+        let mut a = Vec::with_capacity(m * k);
+        for p in positions {
+            a.push(p[0]);
+            a.push(p[1]);
+            a.push(p[i2]);
+            a.push(1.0_f32);
+        }
+        let mut b = vec![0.0_f32; k * n];
+        for r in 0..k {
+            for c in 0..n {
+                b[r * n + c] = matrix.cols[r][c] as f32;
+            }
+        }
+        let mut c_flat = vec![0.0_f32; m * n];
+        slice::gemm_float::<f32, f32>(m, k, n, &a, &b, &mut c_flat, &mut [], &mut []).map_err(
+            |err| TensorComputeError::ZeroOrMismatchedExtents {
+                detail: format!("{err:?}"),
+            },
+        )?;
+        for chunk in c_flat.chunks_exact(DIM_HOMOGENEOUS) {
+            out.push([chunk[0], chunk[1], chunk[i2], chunk[i3]]);
         }
     }
 
-    let mut c_flat = vec![0.0_f32; m * n];
-    slice::gemm_float::<f32, f32>(m, k, n, &a, &b, &mut c_flat, &mut [], &mut []).map_err(
-        |err| TensorComputeError::ZeroOrMismatchedExtents {
-            detail: format!("{err:?}"),
-        },
-    )?;
-
-    let i3 = i2 + 1usize;
-    let mut out = Vec::with_capacity(m);
-    for chunk in c_flat.chunks_exact(DIM_HOMOGENEOUS) {
-        out.push([chunk[0], chunk[1], chunk[i2], chunk[i3]]);
+    #[cfg(target_arch = "wasm32")]
+    {
+        let shift = prism_kernel::tileEdgePixels().expect("verified Prism tileEdgePixels") as u32;
+        let q_scale = pow2_u64(shift) as f64;
+        let inv_q2 = 1.0_f64 / (q_scale * q_scale);
+        let one_q = (q_scale as i32).max(1);
+        let mut a_q = Vec::with_capacity(m * k);
+        for p in positions {
+            a_q.push((f64::from(p[0]) * q_scale).round() as i32);
+            a_q.push((f64::from(p[1]) * q_scale).round() as i32);
+            a_q.push((f64::from(p[i2]) * q_scale).round() as i32);
+            a_q.push(one_q);
+        }
+        let mut b_q = vec![0_i32; k * n];
+        for r in 0..k {
+            for c in 0..n {
+                b_q[r * n + c] = (matrix.cols[r][c] * q_scale).round() as i32;
+            }
+        }
+        let mut c_q = vec![0_i64; m * n];
+        let mut scratch = vec![0_i32; suggested_scratch(Shape { m, k, n })];
+        slice::gemm(m, k, n, &a_q, &b_q, &mut c_q, &mut scratch).map_err(|err| {
+            TensorComputeError::ZeroOrMismatchedExtents {
+                detail: format!("{err:?}"),
+            }
+        })?;
+        for chunk in c_q.chunks_exact(DIM_HOMOGENEOUS) {
+            out.push([
+                ((chunk[0] as f64) * inv_q2) as f32,
+                ((chunk[1] as f64) * inv_q2) as f32,
+                ((chunk[i2] as f64) * inv_q2) as f32,
+                ((chunk[i3] as f64) * inv_q2) as f32,
+            ]);
+        }
     }
+
     Ok(out)
 }
 

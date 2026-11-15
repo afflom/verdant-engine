@@ -11,6 +11,10 @@ authors.workspace = true
 keywords.workspace = true
 categories.workspace = true
 
+[features]
+default = ["uorc-streaming"]
+uorc-streaming = ["dep:uorc"]
+
 [dependencies]
 gltf = "1.4.1"
 naga = { version = "24.0.0", features = ["wgsl-in"] }
@@ -18,7 +22,7 @@ serde = { version = "1.0.219", features = ["derive"] }
 serde_json = "1.0.140"
 sha2 = "0.10.9"
 uor-matmul.workspace = true
-uorc.workspace = true
+uorc = { workspace = true, optional = true }
 
 [lints]
 workspace = true

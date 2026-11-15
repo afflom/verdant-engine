@@ -1,98 +1,98 @@
 // Verdant Engine — Browser 3D Studio Controller (OffscreenCanvas Worker + AudioWorklet + VDNT).
 // Pure ES module, zero inline style mutations (strict hash-locked CSP). Delegates simulation,
-// SAH BVH culling, WebGPU/WebGL2 rendering, .glb packing, and SHA-256 VDNT WorldSnapshot
-// verification to site/engine-worker.mjs + site/verdant-wasm.wasm, and spatial synthesis to
-// site/audio-worklet.mjs.
+// SAH BVH culling, universal WebGL2 / software tensor rendering, .glb packing, and SHA-256 VDNT
+// WorldSnapshot verification to site/engine-worker.mjs + site/verdant-wasm.wasm, and spatial
+// modal synthesis to site/audio-worklet.mjs.
 
 import {
   PRISM_AUDIO_QUANTUM_FRAMES,
   PRISM_AUDIO_STEREO_CHANNELS,
-  PRISM_CHIME_MODE_DENOM,
-  PRISM_CHIME_MODE_NUMERS,
-  PRISM_ROTUNDA_SABINE_RT60_MS,
+  PRISM_CHAMBER_SABINE_RT60_MS,
+  PRISM_MODAL_BAR_DENOM,
+  PRISM_MODAL_BAR_NUMERS,
 } from "./prism-bridge-meta.mjs";
 
-const EPOCHS = [
+const STREAMING_LODS = [
   {
     rank: 0,
-    key: "epoch:0",
-    short: "t_0",
-    label: "t_0 · Cosmogenic (a = 0.125)",
-    scale: 0.125,
-    terrainAmp: 0.35,
-    water: false,
-    flora: false,
-    builders: false,
+    key: "lod:0",
+    short: "LOD0",
+    label: "LOD0 · Coarse Proxy (0.125)",
+    res: 0.125,
+    density: 0.35,
+    shadows: false,
+    ibl: false,
+    lossless: false,
     sky: [0.09, 0.08, 0.12],
     fog: [0.14, 0.11, 0.16],
   },
   {
     rank: 1,
-    key: "epoch:1",
-    short: "Lithic",
-    label: "Lithic-Hydrologic (a = 0.25)",
-    scale: 0.25,
-    terrainAmp: 0.72,
-    water: true,
-    flora: false,
-    builders: false,
+    key: "lod:1",
+    short: "LOD1",
+    label: "LOD1 · Medium Detail (0.25)",
+    res: 0.25,
+    density: 0.72,
+    shadows: true,
+    ibl: false,
+    lossless: false,
     sky: [0.12, 0.17, 0.24],
     fog: [0.18, 0.24, 0.31],
   },
   {
     rank: 2,
-    key: "epoch:2",
-    short: "Biotic",
-    label: "Biotic-Ecological (a = 0.625)",
-    scale: 0.625,
-    terrainAmp: 0.92,
-    water: true,
-    flora: true,
-    builders: false,
+    key: "lod:2",
+    short: "LOD2",
+    label: "LOD2 · High Detail (0.625)",
+    res: 0.625,
+    density: 0.92,
+    shadows: true,
+    ibl: true,
+    lossless: false,
     sky: [0.16, 0.27, 0.34],
     fog: [0.24, 0.35, 0.39],
   },
   {
     rank: 3,
-    key: "epoch:3",
-    short: "t_obs",
-    label: "t_obs · Builders (a = 1.00)",
-    scale: 1.0,
-    terrainAmp: 1.0,
-    water: true,
-    flora: true,
-    builders: true,
+    key: "lod:3",
+    short: "LOD3",
+    label: "LOD3 · Lossless UORC (1.00)",
+    res: 1.0,
+    density: 1.0,
+    shadows: true,
+    ibl: true,
+    lossless: true,
     sky: [0.18, 0.30, 0.38],
     fog: [0.30, 0.40, 0.44],
   },
 ];
 
-const BLUEPRINTS = [
-  { id: 0, query: "blueprint:0", sceneQuery: "scene:blueprint:0", name: "Harmonic Rotunda", guild: "Masonry", target: [0, 2.2, 0], dist: 16 },
-  { id: 1, query: "blueprint:1", sceneQuery: "scene:blueprint:1", name: "Meridian Sundial", guild: "Gnomonics", target: [9.5, 1.2, -3.5], dist: 9 },
-  { id: 2, query: "blueprint:2", sceneQuery: "scene:blueprint:2", name: "Modal Chime Pergola", guild: "Acoustics", target: [-9.0, 1.8, -4.0], dist: 10 },
-  { id: 3, query: "blueprint:3", sceneQuery: "scene:blueprint:3", name: "Quartz Torsion Chamber", guild: "Masonry", target: [-6.5, 1.8, 9.0], dist: 10 },
-  { id: 4, query: "blueprint:4", sceneQuery: "scene:blueprint:4", name: "Lagoon Pier Causeway", guild: "Hydrology", target: [5.5, 0.6, 8.5], dist: 11 },
-  { id: 5, query: "blueprint:5", sceneQuery: "scene:blueprint:5", name: "Travertine Path Network", guild: "Masonry", target: [0, 0.8, 5.0], dist: 18 },
-  { id: 6, query: "blueprint:6", sceneQuery: "scene:blueprint:6", name: "Perimeter Sentinel Rover", guild: "Automation", target: [18, 1.5, 0], dist: 11, followRover: true },
+const NODE_KERNELS = [
+  { id: 0, query: "kernel:0", sceneQuery: "scene:node:0", name: "Central Arch Pavilion", semiring: "LinearExact", target: [0, 2.2, 0], dist: 16 },
+  { id: 1, query: "kernel:1", sceneQuery: "scene:node:1", name: "Axial Marker Tower", semiring: "LinearExact", target: [9.5, 1.2, -3.5], dist: 9 },
+  { id: 2, query: "kernel:2", sceneQuery: "scene:node:2", name: "Modal Acoustics Frame", semiring: "TropicalMaxPlus", target: [-9.0, 1.8, -4.0], dist: 10 },
+  { id: 3, query: "kernel:3", sceneQuery: "scene:node:3", name: "Articulated Rig Bay", semiring: "LinearExact", target: [-6.5, 1.8, 9.0], dist: 10 },
+  { id: 4, query: "kernel:4", sceneQuery: "scene:node:4", name: "Elevated Deck Bridge", semiring: "LinearExact", target: [5.5, 0.6, 8.5], dist: 11 },
+  { id: 5, query: "kernel:5", sceneQuery: "scene:node:5", name: "Navigable Path Grid", semiring: "ModularAudioRing", target: [0, 0.8, 5.0], dist: 18 },
+  { id: 6, query: "kernel:6", sceneQuery: "scene:node:6", name: "Kinematic Spline Mover", semiring: "LinearExact", target: [18, 1.5, 0], dist: 11, followMover: true },
 ];
 
 const ACOUSTIC_SPEC = {
   fundamentalHz: 110.0,
-  modeNumers: [...PRISM_CHIME_MODE_NUMERS],
-  modeDenom: PRISM_CHIME_MODE_DENOM,
-  rt60Ms: PRISM_ROTUNDA_SABINE_RT60_MS,
+  modeNumers: [...PRISM_MODAL_BAR_NUMERS],
+  modeDenom: PRISM_MODAL_BAR_DENOM,
+  rt60Ms: PRISM_CHAMBER_SABINE_RT60_MS,
 };
 
 function terrainHeight(x, z, amp = 1.0) {
   const r = Math.hypot(x, z);
   const basin = -1.35 * Math.exp(-((x - 5.5) ** 2 + (z - 9.0) ** 2) / 52.0);
-  const acropolis = 0.55 * Math.exp(-(r * r) / 70.0);
+  const plateau = 0.55 * Math.exp(-(r * r) / 70.0);
   const rim = 2.6 * Math.max(0, (r - 17.5) / 14.0) ** 1.45;
   const ridge =
     0.42 * Math.sin(x * 0.19 + 0.4) * Math.cos(z * 0.17 - 0.2) +
     0.21 * Math.sin((x + z) * 0.33);
-  return (basin + acropolis + rim + ridge) * amp;
+  return (basin + plateau + rim + ridge) * amp;
 }
 
 function bytesToBase64Url(bytes) {
@@ -141,20 +141,20 @@ const yieldTask = () => new Promise((resolve) => setTimeout(resolve, 0));
 export default async function start({ app, reason, $, chip, show, parse }) {
   const canvas = $("ve-canvas");
   const statusEl = $("ve-status");
-  const epochBtn = $("ve-epoch-btn");
+  const lodBtn = $("ve-lod-btn");
   const simBtn = $("ve-sim-btn");
   const camBtn = $("ve-cam-btn");
   const audioBtn = $("ve-audio-btn");
   const glbBtn = $("ve-glb-btn");
   const snapBtn = $("ve-snap-btn");
-  const hudEpoch = $("ve-hud-epoch");
+  const hudLod = $("ve-hud-lod");
   const hudStats = $("ve-hud-stats");
   const telemetryList = $("ve-telemetry");
 
-  let epochIdx = 3;
+  let lodIdx = 3;
   let simLive = false;
   let camMode = "orbit";
-  let followRover = false;
+  let followMover = false;
   let orbitYaw = 0.68;
   let orbitPitch = 0.42;
   let orbitDist = 24.0;
@@ -167,40 +167,37 @@ export default async function start({ app, reason, $, chip, show, parse }) {
   const keys = new Set();
 
   let currentEye = [16, 11, 18];
-  let lastRoverPos = [16.5, 0.5, 0];
+  let lastMoverPos = [16.5, 0.5, 0];
   let lastTris = 0;
   let lastBvhVis = 47;
   let workerBackend = "webgl2";
   let isSoftwareGpu = false;
   let snapshotHandledOnBoot = false;
 
-  // Dedicated Wasm + OffscreenCanvas simulation/rendering worker
   let engineWorker = null;
   let offscreenActive = false;
   let nextReqId = 1;
   const pendingCalls = new Map();
 
-  // AudioWorklet spatial DSP state
   let audioCtx = null;
   let workletNode = null;
   let audioTimer = 0;
   let audioOn = false;
-  let chimeStrikeIndex = 0;
+  let modalStrikeIndex = 0;
 
-  // Fallback main-thread renderer (only used if OffscreenCanvas or Worker is unavailable)
   let fallbackRenderer = null;
   let fallbackMod = null;
   let fallbackStatic = null;
   let fallbackDyn = null;
 
-  function computeCameraPose(ep, dt) {
+  function computeCameraPose(lod, dt) {
     if (camMode === "orbit") {
-      if (simLive && !dragging && !followRover) orbitYaw += dt * 0.08;
-      if (followRover && ep.builders) target = [...lastRoverPos];
+      if (simLive && !dragging && !followMover) orbitYaw += dt * 0.08;
+      if (followMover && lod.rank >= 2) target = [...lastMoverPos];
       const cp = Math.cos(orbitPitch), sp = Math.sin(orbitPitch);
       currentEye = [
         target[0] + Math.sin(orbitYaw) * cp * orbitDist,
-        Math.max(terrainHeight(target[0], target[2], ep.terrainAmp) + 0.8, target[1] + sp * orbitDist),
+        Math.max(terrainHeight(target[0], target[2], lod.density) + 0.8, target[1] + sp * orbitDist),
         target[2] + Math.cos(orbitYaw) * cp * orbitDist,
       ];
       return { eye: currentEye, lookTarget: target, fwd: 0, strafe: 0 };
@@ -212,7 +209,7 @@ export default async function start({ app, reason, $, chip, show, parse }) {
     walkPos[2] += (Math.cos(walkYaw) * fwd + Math.sin(walkYaw) * strafe) * speed;
     walkPos[0] = Math.max(-25, Math.min(25, walkPos[0]));
     walkPos[2] = Math.max(-25, Math.min(25, walkPos[2]));
-    walkPos[1] = Math.max(ep.water ? -0.1 : -2.0, terrainHeight(walkPos[0], walkPos[2], ep.terrainAmp)) + 1.72;
+    walkPos[1] = Math.max(lod.rank >= 1 ? -0.1 : -2.0, terrainHeight(walkPos[0], walkPos[2], lod.density)) + 1.72;
     currentEye = [...walkPos];
     const lookTarget = [
       walkPos[0] + Math.sin(walkYaw) * Math.cos(walkPitch),
@@ -256,7 +253,7 @@ export default async function start({ app, reason, $, chip, show, parse }) {
         if (msg.kind === "telemetry") {
           lastTris = msg.tris || lastTris;
           lastBvhVis = msg.bvhVisible ?? lastBvhVis;
-          if (Array.isArray(msg.roverPos)) lastRoverPos = msg.roverPos;
+          if (Array.isArray(msg.moverPos)) lastMoverPos = msg.moverPos;
           if (workletNode && audioOn) {
             workletNode.port.postMessage({
               kind: "spatial",
@@ -265,8 +262,8 @@ export default async function start({ app, reason, $, chip, show, parse }) {
             });
           }
           if (!isAnimating() && hudStats) {
-            const ep = EPOCHS[epochIdx];
-            hudStats.textContent = `${workerBackend.toUpperCase()} · ${lastTris} tris · ${lastBvhVis} vis · ${ep.builders ? "7 blueprints" : "evolving"}`;
+            const lod = STREAMING_LODS[lodIdx];
+            hudStats.textContent = `${workerBackend.toUpperCase()} · ${lastTris} tris · ${lastBvhVis} vis · ${lod.lossless ? "7 kernels" : "streaming"}`;
           }
         }
       };
@@ -283,7 +280,7 @@ export default async function start({ app, reason, $, chip, show, parse }) {
   engineWorker = startEngineWorker();
 
   function isAnimating() {
-    return simLive || dragging || followRover || (camMode === "walk" && keys.size > 0);
+    return simLive || dragging || followMover || (camMode === "walk" && keys.size > 0);
   }
 
   function setSimLive(next) {
@@ -316,7 +313,7 @@ export default async function start({ app, reason, $, chip, show, parse }) {
     }
   }
 
-  async function syncVerifierBanner(query = EPOCHS[epochIdx].key) {
+  async function syncVerifierBanner(query = STREAMING_LODS[lodIdx].key) {
     if (!app) {
       chip(statusEl, reason ? "Verifier unavailable" : "Engine offline", "bad");
       return;
@@ -324,8 +321,8 @@ export default async function start({ app, reason, $, chip, show, parse }) {
     const res = await queryVerifier(query);
     if (!res) return;
     if (res.startsWith("conformant:")) {
-      const ep = EPOCHS[epochIdx];
-      chip(statusEl, `${ep.short} · ${ep.builders ? "7/7 Equilibrium" : "Causal Epoch OK"}`, "good");
+      const lod = STREAMING_LODS[lodIdx];
+      chip(statusEl, `${lod.short} · ${lod.lossless ? "7/7 Exact Kernels" : "UORC Stream OK"}`, "good");
     } else if (res.startsWith("refused:")) {
       chip(statusEl, res.replace("refused:", "Refused: "), "warn");
     } else {
@@ -333,63 +330,63 @@ export default async function start({ app, reason, $, chip, show, parse }) {
     }
   }
 
-  function populateBlueprintsShell() {
+  function populateKernelsShell() {
     if (!telemetryList) return [];
     telemetryList.replaceChildren();
     const badges = [];
-    for (const bp of BLUEPRINTS) {
+    for (const node of NODE_KERNELS) {
       const li = document.createElement("li");
       const btn = document.createElement("button");
       btn.type = "button";
       btn.className = "again";
       const label = document.createElement("span");
-      label.textContent = bp.name;
+      label.textContent = node.name;
       const badge = document.createElement("span");
       badge.className = "tag";
-      badge.textContent = bp.guild;
+      badge.textContent = node.semiring;
       btn.append(label, badge);
       btn.addEventListener("click", async () => {
-        if (epochIdx !== 3) setEpoch(3, false);
+        if (lodIdx !== 3) setLod(3, false);
         camMode = "orbit";
         camBtn.textContent = "Cam: Orbit";
-        followRover = Boolean(bp.followRover);
-        if (followRover) setSimLive(true);
-        target = [...bp.target];
-        orbitDist = bp.dist;
+        followMover = Boolean(node.followMover);
+        if (followMover) setSimLive(true);
+        target = [...node.target];
+        orbitDist = node.dist;
         requestRender();
-        await syncVerifierBanner(bp.query);
+        await syncVerifierBanner(node.query);
       });
       li.append(btn);
       telemetryList.append(li);
-      badges.push({ bp, badge });
+      badges.push({ node, badge });
     }
     return badges;
   }
 
-  function setEpoch(nextIdx, updateBanner = true) {
-    epochIdx = ((nextIdx % EPOCHS.length) + EPOCHS.length) % EPOCHS.length;
-    const ep = EPOCHS[epochIdx];
-    if (epochBtn) epochBtn.textContent = `Epoch: ${ep.short}`;
-    if (hudEpoch) hudEpoch.textContent = ep.label;
-    if (!ep.builders) followRover = false;
-    const pose = computeCameraPose(ep, 0.016);
+  function setLod(nextIdx, updateBanner = true) {
+    lodIdx = ((nextIdx % STREAMING_LODS.length) + STREAMING_LODS.length) % STREAMING_LODS.length;
+    const lod = STREAMING_LODS[lodIdx];
+    if (lodBtn) lodBtn.textContent = `LOD: ${lod.short}`;
+    if (hudLod) hudLod.textContent = lod.label;
+    if (lod.rank < 2) followMover = false;
+    const pose = computeCameraPose(lod, 0.016);
     if (offscreenActive && engineWorker) {
       engineWorker.postMessage({
-        kind: "set-epoch",
-        epoch: ep,
+        kind: "set-lod",
+        lod,
         eye: pose.eye,
         lookTarget: pose.lookTarget,
         simClockSec,
       });
     } else if (fallbackMod && fallbackRenderer) {
-      fallbackStatic = fallbackMod.buildStaticWorld(ep, isSoftwareGpu ? 18 : 36);
+      fallbackStatic = fallbackMod.buildStaticWorld(lod, isSoftwareGpu ? 18 : 36);
       fallbackRenderer.uploadStatic(fallbackStatic);
     }
     requestRender();
-    if (updateBanner) syncVerifierBanner(ep.key);
+    if (updateBanner) syncVerifierBanner(lod.key);
   }
 
-  epochBtn?.addEventListener("click", () => setEpoch(epochIdx + 1));
+  lodBtn?.addEventListener("click", () => setLod(lodIdx + 1));
   simBtn?.addEventListener("click", () => setSimLive(!simLive));
 
   camBtn?.addEventListener("click", () => {
@@ -402,7 +399,7 @@ export default async function start({ app, reason, $, chip, show, parse }) {
     if (!audioCtx || !audioOn) return;
     const dist = Math.hypot(currentEye[0] + 9.0, currentEye[1] - 2.0, currentEye[2] + 4.0);
     const atten = Math.min(0.14, 0.9 / (1.0 + 0.18 * dist));
-    const idx = (chimeStrikeIndex++) % ACOUSTIC_SPEC.modeNumers.length;
+    const idx = (modalStrikeIndex++) % ACOUSTIC_SPEC.modeNumers.length;
     const ratio = ACOUSTIC_SPEC.modeNumers[idx] / ACOUSTIC_SPEC.modeDenom;
     const baseFreq = Math.min(1320.0, ACOUSTIC_SPEC.fundamentalHz * ratio);
     const rt60Sec = Math.max(0.5, ACOUSTIC_SPEC.rt60Ms / 1000.0);
@@ -419,10 +416,10 @@ export default async function start({ app, reason, $, chip, show, parse }) {
     osc.stop(now + rt60Sec + 0.05);
   }
 
-  function triggerChimeStrike() {
+  function triggerModalStrike() {
     if (!audioCtx || !audioOn) return;
     if (workletNode) {
-      workletNode.port.postMessage({ kind: "strike", modeIndex: chimeStrikeIndex++ });
+      workletNode.port.postMessage({ kind: "strike", modeIndex: modalStrikeIndex++ });
     } else {
       strikeFallbackOscillator();
     }
@@ -457,8 +454,8 @@ export default async function start({ app, reason, $, chip, show, parse }) {
         }
       }
       clearInterval(audioTimer);
-      audioTimer = window.setInterval(triggerChimeStrike, 1350);
-      triggerChimeStrike();
+      audioTimer = window.setInterval(triggerModalStrike, 1350);
+      triggerModalStrike();
     } else {
       clearInterval(audioTimer);
     }
@@ -477,7 +474,7 @@ export default async function start({ app, reason, $, chip, show, parse }) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `verdant-engine-${EPOCHS[epochIdx].short}.glb`;
+    a.download = `verdant-engine-${STREAMING_LODS[lodIdx].short.toLowerCase()}.glb`;
     a.click();
     setTimeout(() => URL.revokeObjectURL(url), 1500);
   });
@@ -492,10 +489,10 @@ export default async function start({ app, reason, $, chip, show, parse }) {
     }
     const reply = await callWorker("restore-snapshot", { bytes });
     if (reply?.ok) {
-      setEpoch(reply.epochRank ?? 3, false);
+      setLod(reply.lodRank ?? 3, false);
       chip(
         statusEl,
-        `Restored VDNT · ${EPOCHS[epochIdx].short} (${reply.byteLen}B SHA-256)`,
+        `Restored VDNT · ${STREAMING_LODS[lodIdx].short} (${reply.byteLen}B SHA-256)`,
         "good",
       );
     } else {
@@ -516,7 +513,7 @@ export default async function start({ app, reason, $, chip, show, parse }) {
     try {
       await navigator.clipboard?.writeText(location.href);
     } catch {
-      // Clipboard write requires user gesture / permissions in headless environments.
+      // Clipboard write requires user gesture in headless environments.
     }
     chip(statusEl, `VDNT · ${bytes.byteLength}B SHA-256 (#vdnt=)`, "good");
   });
@@ -574,11 +571,11 @@ export default async function start({ app, reason, $, chip, show, parse }) {
     rafId = 0;
     const dt = Math.min(0.05, Math.max(0.001, (now - prevNow) * 0.001));
     prevNow = now;
-    const stepping = simLive || followRover || (camMode === "walk" && keys.size > 0);
-    if (simLive || followRover) simClockSec += dt;
-    const ep = EPOCHS[epochIdx];
+    const stepping = simLive || followMover || (camMode === "walk" && keys.size > 0);
+    if (simLive || followMover) simClockSec += dt;
+    const lod = STREAMING_LODS[lodIdx];
     const { w, h } = measureCanvasPixels();
-    const pose = computeCameraPose(ep, dt);
+    const pose = computeCameraPose(lod, dt);
 
     if (offscreenActive && engineWorker) {
       engineWorker.postMessage({
@@ -592,7 +589,7 @@ export default async function start({ app, reason, $, chip, show, parse }) {
         walkYaw,
         eye: pose.eye,
         lookTarget: pose.lookTarget,
-        epoch: ep,
+        lod,
         simClockSec,
       });
     } else if (fallbackRenderer && fallbackMod && fallbackStatic && canvas) {
@@ -600,29 +597,27 @@ export default async function start({ app, reason, $, chip, show, parse }) {
         canvas.width = w;
         canvas.height = h;
       }
-      fallbackDyn = fallbackMod.buildDynamicActors(ep, simClockSec, null);
+      fallbackDyn = fallbackMod.buildDynamicActors(lod, simClockSec, null);
       fallbackRenderer.uploadDynamic(fallbackDyn.mb);
       const aspect = Math.max(0.2, w / h);
-      const proj = fallbackRenderer.usesZeroToOneDepth
-        ? fallbackMod.mat4PerspectiveZo(Math.PI / 3.4, aspect, 0.25, 140.0)
-        : fallbackMod.mat4Perspective(Math.PI / 3.4, aspect, 0.25, 140.0);
+      const proj = fallbackMod.mat4Perspective(Math.PI / 3.4, aspect, 0.25, 140.0);
       const view = fallbackMod.mat4LookAt(pose.eye, pose.lookTarget, [0, 1, 0]);
-      fallbackRenderer.render(fallbackMod.mat4Mul(proj, view), pose.eye, ep, simClockSec);
+      fallbackRenderer.render(fallbackMod.mat4Mul(proj, view), pose.eye, lod, simClockSec);
       lastTris = Math.round((fallbackStatic.idx.length + fallbackDyn.mb.idx.length) / 3);
-      lastRoverPos = fallbackDyn.roverPos;
+      lastMoverPos = fallbackDyn.moverPos;
     }
 
     frames++;
     if (!isAnimating()) {
       if (hudStats && lastTris > 0) {
-        hudStats.textContent = `${workerBackend.toUpperCase()} · ${lastTris} tris · ${lastBvhVis} vis · ${ep.builders ? "7 blueprints" : "evolving"}`;
+        hudStats.textContent = `${workerBackend.toUpperCase()} · ${lastTris} tris · ${lastBvhVis} vis · ${lod.lossless ? "7 kernels" : "streaming"}`;
       }
     } else if (now - lastFpsStamp >= 600) {
       shownFps = Math.max(1, Math.round((frames * 1000) / (now - lastFpsStamp)));
       frames = 0;
       lastFpsStamp = now;
       if (hudStats) {
-        hudStats.textContent = `${shownFps} fps · ${lastTris} tris · ${lastBvhVis} vis · ${ep.builders ? "7 blueprints" : "evolving"}`;
+        hudStats.textContent = `${shownFps} fps · ${lastTris} tris · ${lastBvhVis} vis · ${lod.lossless ? "7 kernels" : "streaming"}`;
       }
     }
 
@@ -633,33 +628,33 @@ export default async function start({ app, reason, $, chip, show, parse }) {
 
   async function hydrateSceneFromHolo(badges) {
     if (!app) return;
-    for (let i = 0; i < EPOCHS.length; i++) {
+    for (let i = 0; i < STREAMING_LODS.length; i++) {
       await yieldTask();
-      const fields = parseConformantFields(await queryVerifier(`scene:epoch:${i}`));
+      const fields = parseConformantFields(await queryVerifier(`scene:lod:${i}`));
       if (!fields) continue;
-      const ep = EPOCHS[i];
-      ep.scale = parseRatioPair(fields.scale, ep.scale);
-      ep.terrainAmp = parseRatioPair(fields.amp, ep.terrainAmp);
-      ep.water = fields.water === "1";
-      ep.flora = fields.flora === "1";
-      ep.builders = fields.builders === "1";
-      ep.sky = parseTriplet(fields.sky, 100, ep.sky);
-      ep.fog = parseTriplet(fields.fog, 100, ep.fog);
+      const lod = STREAMING_LODS[i];
+      lod.res = parseRatioPair(fields.res, lod.res);
+      lod.density = parseRatioPair(fields.density, lod.density);
+      lod.shadows = fields.shadows === "1";
+      lod.ibl = fields.ibl === "1";
+      lod.lossless = fields.lossless === "1";
+      lod.sky = parseTriplet(fields.sky, 100, lod.sky);
+      lod.fog = parseTriplet(fields.fog, 100, lod.fog);
     }
-    for (const { bp, badge } of badges) {
+    for (const { node, badge } of badges) {
       await yieldTask();
-      const sceneFields = parseConformantFields(await queryVerifier(bp.sceneQuery));
+      const sceneFields = parseConformantFields(await queryVerifier(node.sceneQuery));
       if (sceneFields) {
-        bp.target = parseTriplet(sceneFields.pos, 10, bp.target);
+        node.target = parseTriplet(sceneFields.pos, 10, node.target);
         const dist = Number(sceneFields.dist);
-        if (Number.isFinite(dist) && dist > 0) bp.dist = dist;
-        if (sceneFields.guild) bp.guild = sceneFields.guild;
-        bp.followRover = sceneFields.rover === "1";
+        if (Number.isFinite(dist) && dist > 0) node.dist = dist;
+        node.followMover = sceneFields.mover === "1";
       }
-      const verdict = await queryVerifier(bp.query);
-      const ok = verdict && verdict.startsWith("conformant:");
+      const kernelFields = parseConformantFields(await queryVerifier(node.query));
+      const ok = Boolean(kernelFields);
+      if (kernelFields?.semiring) node.semiring = kernelFields.semiring;
       badge.className = ok ? "tag good" : "tag";
-      badge.textContent = ok ? bp.guild.replace(/([a-z])([A-Z])/g, "$1 $2") : "Offline";
+      badge.textContent = ok ? node.semiring.replace(/([a-z])([A-Z])/g, "$1 $2") : "Offline";
     }
     await yieldTask();
     const acFields = parseConformantFields(await queryVerifier("scene:acoustics"));
@@ -674,9 +669,9 @@ export default async function start({ app, reason, $, chip, show, parse }) {
     requestRender();
   }
 
-  const badgeTasks = populateBlueprintsShell();
+  const badgeTasks = populateKernelsShell();
   const initialDims = measureCanvasPixels();
-  const initialPose = computeCameraPose(EPOCHS[epochIdx], 0.016);
+  const initialPose = computeCameraPose(STREAMING_LODS[lodIdx], 0.016);
 
   if (engineWorker && canvas && typeof canvas.transferControlToOffscreen === "function") {
     try {
@@ -687,7 +682,7 @@ export default async function start({ app, reason, $, chip, show, parse }) {
           canvas: offscreen,
           width: initialDims.w,
           height: initialDims.h,
-          epoch: EPOCHS[epochIdx],
+          lod: STREAMING_LODS[lodIdx],
           eye: initialPose.eye,
           lookTarget: initialPose.lookTarget,
         },
@@ -709,14 +704,14 @@ export default async function start({ app, reason, $, chip, show, parse }) {
     fallbackRenderer = await fallbackMod.createBestRenderer(canvas);
     workerBackend = fallbackRenderer?.backend || "webgl2";
     isSoftwareGpu = Boolean(fallbackRenderer?.isSoftware);
-    fallbackStatic = fallbackMod.buildStaticWorld(EPOCHS[epochIdx], isSoftwareGpu ? 18 : 36);
+    fallbackStatic = fallbackMod.buildStaticWorld(STREAMING_LODS[lodIdx], isSoftwareGpu ? 18 : 36);
     fallbackRenderer?.uploadStatic(fallbackStatic);
     if (engineWorker) {
       await callWorker("init", {
         canvas: null,
         width: initialDims.w,
         height: initialDims.h,
-        epoch: EPOCHS[epochIdx],
+        lod: STREAMING_LODS[lodIdx],
         eye: initialPose.eye,
         lookTarget: initialPose.lookTarget,
       });

@@ -1,6 +1,6 @@
-// Verdant Engine — AudioWorklet Modal Chime & Lagoon Spatial Acoustics Processor.
+// Verdant Engine — AudioWorklet Modal Bar & Room Reverberation Spatial Processor.
 // Synthesizes 128-frame stereo quanta driven by Prism-verified Euler-Bernoulli modal
-// ratios ([9, 25, 49, 81, 121] / 9), Sabine RT60 reverberant decay, and Woodworth
+// bar ratios ([9, 25, 49, 81, 121] / 9), Sabine RT60 reverberant decay, and Woodworth
 // spherical-head binaural panning streamed from engine-worker.mjs.
 
 class VerdantModalProcessor extends AudioWorkletProcessor {
@@ -19,7 +19,7 @@ class VerdantModalProcessor extends AudioWorkletProcessor {
     this.pan = 0.0;
     this.listenerGain = 0.22;
     this.voices = [];
-    this.shimmerPhase = 0.0;
+    this.airPhase = 0.0;
     this.rngState = 0x56444e54;
 
     this.port.onmessage = ({ data }) => {
@@ -70,9 +70,9 @@ class VerdantModalProcessor extends AudioWorkletProcessor {
         voice.env *= this.decayPerSample;
         if (voice.env < 0.00015) this.voices.splice(v, 1);
       }
-      this.shimmerPhase += (2.0 * Math.PI * 0.35) / sampleRate;
-      const lagoonShimmer = this.nextNoise() * (0.5 + 0.5 * Math.sin(this.shimmerPhase));
-      const mixed = sample + lagoonShimmer;
+      this.airPhase += (2.0 * Math.PI * 0.35) / sampleRate;
+      const ambientAirNoise = this.nextNoise() * (0.5 + 0.5 * Math.sin(this.airPhase));
+      const mixed = sample + ambientAirNoise;
       left[i] = mixed * gainL;
       if (right !== left) right[i] = mixed * gainR;
     }
