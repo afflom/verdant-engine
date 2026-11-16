@@ -1,22 +1,22 @@
-# Unified semiring tensor core and UORC streaming
+# Unified semiring tensor core and neuromorphic loop
 
       
 
-See how the engine runs exact math and scene streams in any browser.
+See how twelve exact math kernels run 3D views, UI, and peer worlds.
 
-      Exact accumulator bit widths across all nine unified tensor kernels. Every Prism-certified kernel in Tensor.lex.tex reserves 64 to 128 exact accumulator bits so contractions never round mid-sum.The data in this figure
+      Exact accumulator bit widths across all twelve unified tensor kernels. Every Prism-certified kernel in Tensor.lex.tex reserves 64 to 128 exact accumulator bits so contractions never drift.The data in this figure
 |  | bits |
 | --- | --- |
-| Linear (+,*) · transforms (k0,6) | 96 |
+| Linear (+,*) · transforms & PBR (k0,3,6) | 128 |
 | Linear (+,*) · LBS & CSM (k1,k4) | 128 |
 | --- | --- |
-| Tropical (max,+) · cull/GJK (k2) | 64 |
-| Linear (+,*) · tile PBR (k3) | 128 |
+| Tropical (max,+) · cull, GJK, UI (k2,9) | 64 |
+| Tropical (min,+) · NavMesh/focus (k7) | 64 |
 | --- | --- |
-| Audio Q15 · FIR & FDN (k5) | 128 |
-| Tropical (min,+) · NavMesh (k7) | 64 |
+| Audio Q15 · FIR & Hadamard FDN (k5) | 128 |
+| LIF/SSM · mutual observer (k10) | 64 |
 | --- | --- |
-| Coded zero-decode · stream (k8) | 128 |
+| Coded zero-decode · UORC & SLM (k8,11) | 128 |
       
       
 
@@ -24,62 +24,60 @@ See how the engine runs exact math and scene streams in any browser.
 
       
 
-Conditional browser GPU compute APIs are absent on many mobile browsers, embedded WebViews, and hardened desktop clients.
+Conditional browser GPU compute APIs are absent on many mobile browsers, embedded WebViews, and hardened clients.
 
       
 
-Instead of maintaining divergent code paths, Tensor.lex.tex models nine unified semiring kernels executed by crates/verdant-tensor over uor-matmul.
+Instead of maintaining divergent code paths, Tensor.lex.tex models twelve unified semiring kernels executed over uor-matmul.
 
       
 
   
     
+    Query CSM Splits (Wasm)Query Modal Harmonics (Wasm)
   
-  Four unified semiring execution domains in verdant-tensor. Every hot loop reduces to an exact, rounding-free contraction over uor-matmul.
-  Semiring kernel domain table
+  Live CSM shadow cascade splits, Sabine RT60, and Euler-Bernoulli modes queried from verdant-wasm.
+  Twelve unified semiring kernels
     
       
-| Semiring domain | Algebra | Engine subsystems |
+| Kernel group | Algebra | Engine subsystems |
       
-        
-| LinearExact | (+, *) exact Laurent / i128 | Transforms, 4-joint LBS skinning, Delassus joints, 16x16 tile PBR |
-        
-| CodedZeroDecode | coded_gemm over Grid, Packed, Runs | Zero-scratch compressed geometry, animation tracks, and IBL probes |
-        
-| TropicalMaxPlus / MinPlus | (max, +) and (min, +) | Frustum culling, GJK hull support, and NavMesh shortest-path closure |
-        
-| ModularAudioRing | Quantized Q15 -> i64 | Modal FIR bars, Woodworth stereo pan, and 4x4 Hadamard FDN reverb |
-      
+| k0, k1, k3, k4, k6 | Linear exact (+, *) | Hierarchy, LBS skinning, 16x16 tile PBR, CSM, and Delassus joints |
+| --- | --- | --- |
+| k2, k7, k9 | Tropical (max, +) / (min, +) | Frustum culling, GJK support, NavMesh closure, and formal UI |
+| k5, k10 | Quantized integer rings | Modal FIR, Hadamard FDN reverb, and Q15 LIF/SSM mutual attention |
+| --- | --- | --- |
+| k8, k11 | uor_matmul::codec zero-decode | Compressed UORC streaming and embedded coded_gemm SLM |
     
   
 
       
 
-## Zero-decode contraction with uor_matmul::codec
+## Second-order cybernetics and embedded coded_gemm reasoning
 
       
 
-Decompressing assets into temporary float arrays wastes cache bandwidth and mobile memory during progressive scene streaming.
+In Verdant Engine, the world observes player gaze cadence and locomotion while the player observes the world.
 
       
 
-By pairing uorc_decompress with CodedMatrix tiers, coded_gemm decodes each codebook entry into an exact integer accumulator and writes once.
+Integer-exact Q15 LIF state-space recurrence guarantees bit-identical attention state across 64-frame rollback resimulations.
 
       
 
-## Portable 16x16 software tile rasterization and runtime proofs
+Natural-language prompts contract directly against 4-bit Packed, 2> weights via coded_gemm with zero cloud calls.
 
       
 
-When WebGL2 is present, the OffscreenCanvas worker streams static and dynamic batches at 60fps off the main thread.
+## Capability-gated container saturation and sovereign identity
 
       
 
-When hardware contexts are absent, render_triangles_tile_framebuffer shades 16x16 RGBA8 tiles in WebAssembly with identical deterministic visibility.
+Non-sandboxed browser APIs follow Foundry's FK-07 denial-wins lattice so an explicit denial always overrides any grant.
 
       
 
-Every constant in shipped Rust and constructive LexLean derives from {0, 1}, enforced continuously by the FI-08 zero-constants ratchet.
+Foundry Prism ID sessions sign deterministic input journals locally while Stitch 2-of-3 parity shards keep worlds durable across peers.
 
     
       

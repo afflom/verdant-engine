@@ -1,7 +1,3 @@
-/* Verdant Engine 3D Browser Studio — responsive viewport, high-contrast dark-mode
- * readability overrides for HUD, rail, and Spec drawer, and 48px coarse touch targets.
- * Zero inline styles; respects all Material 3 window classes. */
-
 .stage .board-fit > .ve-viewport {
   position: relative;
   width: 100%;
@@ -15,23 +11,10 @@
   background: var(--card);
   overflow: hidden;
 }
-
-:root.dark .stage .board-fit > .ve-viewport {
-  border-color: #35495e;
-}
-
-#ve-canvas {
-  display: block;
-  width: 100%;
-  height: 100%;
-  touch-action: none;
-  cursor: grab;
-}
-
-#ve-canvas:active {
-  cursor: grabbing;
-}
-
+:root.dark .stage .board-fit > .ve-viewport { border-color: #2f5446; }
+.ve-viewport.drag-over { outline: 2px solid #34d399; outline-offset: -2px; }
+#ve-canvas { display: block; width: 100%; height: 100%; touch-action: none; cursor: grab; }
+#ve-canvas:active { cursor: grabbing; }
 .ve-hud {
   position: absolute;
   top: var(--space-2);
@@ -43,14 +26,13 @@
   gap: var(--space-1);
   pointer-events: none;
 }
-
 .ve-pill {
   display: inline-flex;
   align-items: center;
   padding: 0.1875rem var(--space-2);
   border-radius: var(--radius-control);
-  border: var(--border-width) solid color-mix(in oklab, var(--border) 85%, transparent);
-  background: color-mix(in oklab, var(--background) 88%, transparent);
+  border: var(--border-width) solid color-mix(in oklab, var(--border) 88%, transparent);
+  background: color-mix(in oklab, var(--background) 92%, transparent);
   color: var(--foreground);
   font-family: var(--font-mono);
   font-size: var(--text-14);
@@ -60,136 +42,90 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-
 :root.dark .ve-pill {
-  background: rgba(11, 17, 24, 0.92);
-  border-color: rgba(110, 231, 183, 0.52);
-  color: #f4f9fc;
+  background: rgba(9, 16, 22, 0.92);
+  border-color: rgba(52, 211, 153, 0.55);
+  color: #f2f9fc;
 }
-
-:root.dark .lede,
-:root.dark .rail .k {
-  color: #ccd6e0;
-}
-
-:root.dark .spec-link {
-  color: #edf4fa;
-  background: #1d2630;
-  border: 1px solid #3b4f63;
-}
-
-:root.dark .spec-link:hover {
-  background: #283645;
-  border-color: #5b7896;
-}
-
-:root.dark #ve-telemetry > li {
-  color: #e2eaf2;
-  border-top-color: #ffffff29;
-}
-
-/* High-contrast dark-mode readability for the slide-out Spec drawer (#spec) */
-:root.dark aside.spec {
-  --sidebar: #151c24;
-  --muted: #0c1117;
-  --foreground: #f4f8fc;
-  --muted-foreground: #cfdae6;
-  --border: #ffffff3d;
-  --accent: #223140;
-  border-left: 1px solid #3c5269;
-  box-shadow: -14px 0 36px rgba(0, 0, 0, 0.62);
-}
-
-:root.dark aside.spec pre.code {
-  border-color: #364d63;
-  background: #0b1016;
-  color: #f0f7ff;
-}
-
-:root.dark aside.spec button.term {
-  border: 1px solid #38526b;
+.ve-prompt-bar {
+  position: absolute;
+  left: var(--space-2);
+  right: var(--space-2);
+  bottom: var(--space-2);
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 0.25rem;
   border-radius: var(--radius-control);
-  background: #182533;
-  color: #7dd3fc;
+  border: 1px solid color-mix(in oklab, var(--border) 90%, transparent);
+  background: color-mix(in oklab, var(--background) 92%, transparent);
 }
-
-:root.dark aside.spec button.term:hover,
-:root.dark aside.spec button.term[aria-expanded="true"] {
-  background: #23384d;
-  border-color: #38bdf8;
-  color: #f0f9ff;
-}
-
-:root.dark aside.spec .links a,
-:root.dark aside.spec button.copy {
-  border: 1px solid #38526b;
-  border-radius: var(--radius-control);
-  background: #182533;
-  color: #e6f1fb;
-}
-
-.rail .controls button,
-.rail .controls a.ghost {
-  min-width: 3rem;
-  justify-content: center;
-  padding: 0 var(--space-3);
-  white-space: nowrap;
-}
-
-.rail .controls a.ghost {
-  border-color: var(--border);
-  color: var(--secondary-foreground);
-  background: var(--secondary);
-}
-
-.rail .controls a.ghost:hover {
-  background: var(--accent);
-  color: var(--foreground);
-}
-
-#ve-telemetry button.again {
-  gap: var(--space-2);
-}
-
-#ve-telemetry button.again > span:first-child {
+:root.dark .ve-prompt-bar { background: rgba(9, 16, 22, 0.92); border-color: rgba(52, 211, 153, 0.48); }
+#ve-prompt-input {
+  flex: 1;
   min-width: 0;
-  word-break: normal;
-  overflow-wrap: break-word;
+  min-height: 2.5rem;
+  padding: 0 var(--space-2);
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--foreground);
+  font-family: var(--font-mono);
+  font-size: var(--text-14);
 }
-
-#ve-telemetry button.again > .tag {
-  flex-shrink: 0;
+:root.dark #ve-prompt-input { color: #f4f9fc; }
+#ve-prompt-input::placeholder { color: var(--muted-foreground); }
+:root.dark #ve-prompt-input::placeholder { color: #9bb3c7; }
+#ve-prompt-btn {
+  flex: none;
+  min-height: 2.5rem;
+  min-width: 3.5rem;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-control);
+  border: 1px solid #2b6b53;
+  background: #0f6848;
+  color: #f0fdf4;
+  font-weight: 600;
 }
-
+#ve-prompt-btn:hover { background: #138059; }
+:root.dark .lede, :root.dark .rail .k { color: #d0dce8; }
+:root.dark .spec-link { color: #eef5fb; background: #19242e; border: 1px solid #385066; }
+:root.dark .spec-link:hover { background: #243444; border-color: #567999; }
+:root.dark #ve-telemetry > li { color: #e4edf5; border-top-color: #ffffff29; }
+:root.dark aside.spec {
+  --sidebar: #131b23;
+  --muted: #0b1016;
+  --foreground: #f4f8fc;
+  --muted-foreground: #d0dce8;
+  --border: #ffffff3d;
+  --accent: #203040;
+  border-left: 1px solid #395068;
+  box-shadow: -14px 0 36px rgba(0, 0, 0, 0.65);
+}
+:root.dark aside.spec pre.code { border-color: #354e66; background: #090e14; color: #f0f7ff; }
+:root.dark aside.spec button.term { border: 1px solid #38526b; border-radius: var(--radius-control); background: #172534; color: #7dd3fc; }
+:root.dark aside.spec button.term:hover, :root.dark aside.spec button.term[aria-expanded="true"] { background: #22384e; border-color: #38bdf8; color: #f0f9ff; }
+:root.dark aside.spec .links a, :root.dark aside.spec button.copy { border: 1px solid #38526b; border-radius: var(--radius-control); background: #172534; color: #eaf3fc; }
+.rail .controls { gap: var(--space-1); }
+.rail .controls button, .rail .controls a.ghost { min-width: 3rem; justify-content: center; padding: 0 var(--space-2); white-space: nowrap; }
+.rail .controls a.ghost { border-color: var(--border); color: var(--secondary-foreground); background: var(--secondary); }
+.rail .controls a.ghost:hover { background: var(--accent); color: var(--foreground); }
+#ve-telemetry button.again { gap: var(--space-2); }
+#ve-telemetry button.again > span:first-child { min-width: 0; word-break: normal; overflow-wrap: break-word; }
+#ve-telemetry button.again > .tag { flex-shrink: 0; }
+@media (pointer: coarse) {
+  #ve-prompt-input, #ve-prompt-btn { min-height: var(--touch); }
+  #ve-prompt-btn { min-width: var(--touch); }
+}
 @media (max-width: 839px) {
-  .rail {
-    gap: var(--space-2);
-    padding-top: var(--space-2);
-    padding-bottom: calc(var(--space-2) + var(--safe-bottom));
-  }
-  .result,
-  .has-card .result {
-    min-height: 1.75rem;
-  }
-  .rail .controls {
-    gap: var(--space-1);
-  }
-  .rail .controls button,
-  .rail .controls a.ghost {
-    padding: 0 var(--space-2);
-  }
+  .rail { gap: var(--space-2); padding-top: var(--space-2); padding-bottom: calc(var(--space-2) + var(--safe-bottom)); }
+  .result, .has-card .result { min-height: 1.75rem; }
+  .rail .controls { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; gap: var(--space-1); }
+  .rail .controls::-webkit-scrollbar { display: none; }
+  .rail .controls button, .rail .controls a.ghost { flex: none; padding: 0 var(--space-2); }
 }
-
+@media (max-height: 520px) { .ve-prompt-bar { display: none; } }
 @media (max-height: 480px) {
-  .ve-hud {
-    display: none;
-  }
-  .result,
-  .has-card .result {
-    display: none;
-  }
-  .rail {
-    padding-top: var(--space-1);
-    padding-bottom: var(--space-1);
-  }
+  .ve-hud, .result, .has-card .result { display: none; }
+  .rail { padding-top: var(--space-1); padding-bottom: var(--space-1); }
 }

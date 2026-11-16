@@ -280,8 +280,11 @@ impl CyberneticObserverLoop {
             &self.c_salience_q,
             self.entity_slots,
         )
-        .map_err(|e| CyberneticError::InvalidObserverDimensions {
-            detail: e.to_string(),
+        .map_err(|_e| CyberneticError::InvalidObserverDimensions {
+            #[cfg(not(target_arch = "wasm32"))]
+            detail: _e.to_string(),
+            #[cfg(target_arch = "wasm32")]
+            detail: String::new(),
         })?;
 
         self.membrane_milli = out
@@ -576,8 +579,11 @@ impl CodedSlmDirector {
             &self.w1_packed_nibbles,
             &self.w2_grid_codes,
         )
-        .map_err(|e| CyberneticError::InvalidObserverDimensions {
-            detail: e.to_string(),
+        .map_err(|_e| CyberneticError::InvalidObserverDimensions {
+            #[cfg(not(target_arch = "wasm32"))]
+            detail: _e.to_string(),
+            #[cfg(target_arch = "wasm32")]
+            detail: String::new(),
         })?;
 
         let mut best_idx = 0usize;

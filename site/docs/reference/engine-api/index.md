@@ -2,94 +2,69 @@
 
       
 
-Look up crates, modules, rollback types, CLI commands, and 60fps budgets.
+Find Rust crates, UI and peer types, CLI flags, and 60fps budgets.
 
-      60fps worker frame stage budgets in microseconds. A 60fps frame spans 16,666 microseconds; the six-stage parallel worker DAG completes in 6,300 microseconds.The data in this figure
+      60fps worker frame stage budgets in microseconds. A 60fps frame spans 16,666 microseconds; the parallel worker DAG completes in 6,300 microseconds.The data in this figure
 |  | us |
 | --- | --- |
-| ECS hierarchy | 900 |
+| ECS + UI solver | 900 |
 | Physics + XPBD | 1800 |
 | --- | --- |
 | BVH + cull | 1100 |
-| NavMesh min-plus | 700 |
+| LIF + NavMesh | 700 |
 | --- | --- |
 | FDN audio ring | 600 |
 | Tile and draw | 1200 |
       
       
 
-## Semiring and simulation modules
+## Core, UI, cybernetic, and network modules
 
       
-        Crates and simulation modules across verdant-tensor and verdant-core
+        Primary modules across verdant-tensor and verdant-core
         
           
 | Module | Primary types and functions | Purpose |
         
         
           
-| verdant_tensor::linear | propagate_hierarchy_matrices_exact, delassus_effective_mass_matrix | Exact (+, *) transforms, 4-joint LBS skinning, and Delassus operators |
+| verdant_tensor | propagate_hierarchy_matrices_exact, tropical_ui_box_extents, step_neuromorphic_lif_ssm_ring, infer_coded_slm_intent_logits | Twelve unified semiring kernels over uor-matmul |
           
-| verdant_tensor::coded | contract_coded_geometry_grid, contract_packed_animation_tracks | Zero-decode coded_gemm over Grid, Packed, and Runs |
+| ui | UiTree, UiWidget, SolvedUiRect | Tropical 2D/3D layout, 48px targets, and WCAG 2.2 AA verification |
           
-| verdant_tensor::tropical | tropical_frustum_distance_bounds, tropical_min_plus_all_pairs_closure | Tropical (max, +) culling/GJK and (min, +) NavMesh closure |
+| cybernetics | CyberneticObserverLoop, CodedSlmDirector, ContainerGrantMatrix | Mutual-attention LIF recurrence, local SLM, and FK-07 denial-wins grants |
           
-| verdant_tensor::audio_ring | convolve_modal_fir_exact, step_sabine_fdn_reverb_ring | Quantized Q15 FIR bars, stereo pan, and 4x4 Hadamard FDN |
+| network | SignedJournalBatch, StitchFragment, SurvivalEntropyTracker | Prism ID session signing and 2-of-3 Stitch parity custody |
           
-| ecs & render | SceneWorld, BoundingVolumeHierarchy, RenderFrameGraph | Entity hierarchy, SAH raycasts, 5-pass CSM/IBL graph, and WGSL |
+| gltf_io & streaming | import_glb_to_scene, transcode_glb_to_progressive_uorc, StandardSceneState | Khronos GLB authoring and stateless Wasm UORC streaming |
           
-| streaming | StandardSceneState, decode_portable_uorc_single_frame, CodedLodFrameBundle | Stateless Wasm UORC streaming and zero-decode coded bundles |
+| physics & runtime | RigidJointConstraint, RollbackSession, WorldSnapshot | XPBD joints, 64-frame rollback, and SHA-256 world snapshots |
         
       
       
 
-## Authoring, physics, and deterministic rollback modules
-
-      
-        GLB transcoding, articulated dynamics, audio occlusion, and netcode
-        
-          
-| Module | Primary types and functions | Purpose |
-        
-        
-          
-| gltf_io | import_glb_to_scene, transcode_glb_to_progressive_uorc | Full Khronos GLB ingestion and progressive UORC transcoding |
-          
-| physics | RigidJointConstraint, RaycastVehicle, CapsuleController | XPBD joints, 4-wheel suspension vehicles, and swept BVH capsules |
-          
-| collision & navmesh | gjk_intersect_and_manifold, NavMesh | Tropical GJK hulls, Coulomb friction, and A-star / min-plus paths |
-          
-| audio | evaluate_binaural_cue_with_occlusion, synthesize_binaural_reverb_quantum_exact | BVH-occluded Woodworth binaural cues and Hadamard FDN reverb |
-          
-| runtime | RollbackSession, DeterministicInputJournal, DeltaUorcSnapshot | 64-frame rollback resimulation, SHA-256 input logs, and delta UORC |
-        
-      
-      
-
-## Deterministic rollback and delta snapshot timeline
+## Test live SHA-256 snapshot verification in WebAssembly
 
       
 
-Networked lockstep and rollback sessions record quantized inputs in a SHA-256 chain and synchronize state deltas via stateless UORC.
+Click Tamper 1 Byte below to watch verdant_wasm_snapshot_decode_and_restore refuse a corrupted payload live.
 
       
 
   
     
+    Encode & Verify Clean VDNTTamper 1 Byte & Test Refusal
   
-  Deterministic rollback and delta state sync. Late network commands rewind the bounded 64-frame physics ring and resimulate to bit-identical convergence.
-  Rollback and netcode bounds table
+  Live WorldSnapshot SHA-256 round-trip and single-bit tamper refusal executed in verdant-wasm.
+  Rollback and snapshot bounds
     
       
 | Component | Bound or format | Verification predicate |
       
-        
-| DeterministicInputJournal | Monotonic frame commands + 32B SHA-256 chain | inputJournalSequenceValid |
-        
-| RollbackSession | 64-frame PhysicsWorld history ring | rollbackFrameWithinWindow |
-        
-| DeltaUorcSnapshot | XOR residual compressed via stateless UORC | WorldSnapshot::decode SHA-256 seal |
-      
+| WorldSnapshot | VDNT + 32B SHA-256 (max 32,768 B) | wasmBridgeEnvelopeValid |
+| --- | --- | --- |
+| RollbackSession | 64-frame PhysicsWorld ring | rollbackFrameWithinWindow |
+| StitchFragment | STCH binary 2-of-3 parity | stitchPairRecoverable |
     
   
 
@@ -99,15 +74,15 @@ Networked lockstep and rollback sessions record quantized inputs in a SHA-256 ch
 
       
         
-- verdant import-glb  imports nodes, meshes, skeletons, keyframe clips, and PBR materials.
+- verdant import-glb and verdant transcode-glb ingest authored GLB files and pack progressive UORC streams.
         
-- verdant transcode-glb   [seed] transcodes an authored GLB into a portable four-LOD UORC stream.
+- verdant verify-ui [width] [height] proves 2D and 3D widget touch bounds, WCAG contrast, and focus closure.
         
-- verdant pack-portable-uorc  [seed] and verify-portable-uorc  pack and verify stateless Wasm streams.
+- verdant route-intent  routes natural-language commands through the embedded coded_gemm SLM.
         
-- verdant pack-scene , validate-glb, validate-wgsl, snapshot-verify, and benchmark validate assets in CI.
+- verdant stitch-shard and verdant stitch-recover split and reconstruct 2-of-3 SHA-256 Stitch shards.
       
     
       
-        Previous: Stream zero-decode scenes with UORC
-        Next: Unified semiring tensor core and UORC streaming
+        Previous: Stream zero-decode scenes and Stitch shards
+        Next: Unified semiring tensor core and neuromorphic loop

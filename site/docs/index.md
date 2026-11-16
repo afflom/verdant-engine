@@ -2,12 +2,12 @@
 
       
 
-Build fast 3D games and interactive worlds for the web and Rust.
+Build verified 3D games, compliant interfaces, and neural worlds for Rust and the web.
 
-      Four ways to explore Verdant Engine documentation. Pick a hands-on tutorial, an authoring guide, the crate API reference, or the semiring tensor architecture.The data in this figure
+      Four ways to explore Verdant Engine documentation. Pick a hands-on tutorial, an authoring guide, the crate API reference, or the semiring architecture.The data in this figure
 |  | Study and design | Hands-on code |
 | --- | --- | --- |
-| Deep context | Tensor architecture | Authoring & GLB |
+| Deep context | Tensor & Neuro | Authoring & UI |
 | Practical steps | API reference | Getting started |
       
       
@@ -16,46 +16,50 @@ Build fast 3D games and interactive worlds for the web and Rust.
 
       
 
-Verdant Engine is a universal 3D game engine written in Rust for native tools and WebAssembly browsers.
+Verdant Engine is a universal 3D game and interface engine written in Rust and WebAssembly.
 
       
 
-Every pass runs on standard 3D constructs: scene worlds, bounding volume hierarchies, XPBD physics, spatial audio, WGSL shaders, glTF 2.0, and UORC streaming.
-
-      
-- KaiGame developerA runnable 3D game world with ECS, rigid-body physics, spatial audio, and a starter template.
-- IrisTechnical artistProcedural terrain, skeletal rigs, validated portable WGSL shaders, progressive UORC streams, and binary glTF 2.0 exports.
-- OttoEngine systems engineerExact uor-matmul tensor kernels, progressive UORC streaming budgets, 60fps worker job graphs, and zero magic constants.
-- VeraSecurity auditorProof that UORC streaming is monotonic, tensor contractions never overflow, and all assets and snapshots are validated.
-- WrenBrowser playerA responsive, clutter-free 60fps 3D viewport with progressive LOD streaming, orbit and walk cameras, and spatial audio.
-      
-
-## Full-stack engine architecture
+Every pass runs on scene worlds, bounding volume hierarchies, XPBD physics, WGSL shaders, glTF 2.0, and UORC streaming.
 
       
 
-Constructive Prism proofs generate the semiring kernel bounds that drive verdant-tensor, verdant-core, and verdant-wasm.
+It also verifies 2D and 3D UI compliance, local SLM commands, and Stitch peer shards.
+
+      
+- KaiGame developerA runnable 3D game world with ECS, XPBD physics, neuromorphic attention, spatial audio, and a starter template.
+- IrisTechnical artistExternal GLB scene ingestion, skeletal rigs, validated portable WGSL shaders, and progressive UORC transcoding.
+- MiraUI and compliance architectVerified 2D screen-space and 3D diegetic interfaces with 48px touch targets, WCAG contrast, and reachable focus graphs.
+- OttoEngine systems engineerTwelve unified uor-matmul semiring kernels, zero-copy Wasm buffers, 60fps worker budgets, and zero magic constants.
+- VeraSecurity auditorProof that UORC streaming is monotonic, capability grants enforce denial-wins, and Stitch shards verify SHA-256 seals.
+- WrenBrowser playerA responsive 60fps 3D viewport with progressive UORC streaming, mutual-attention camera framing, and spatial audio.
+- SolMultiplayer world citizenSelf-custodied Foundry Prism ID sessions, 2-of-3 Stitch parity shards, and deterministic peer rollback rooms.
+      
+
+## Live WebAssembly 16x16 software tile viewport
+
+      
+
+Every page in these docs runs site/verdant-wasm.wasm live so you can test the engine while reading.
 
       
 
   
     
+    Orbit +25 degCycle LOD0..LOD3
   
-  Verdant Engine full-stack architecture. Constructive Prism theorems compile directly into the semiring tensor substrate, 3D subsystems, and WebAssembly workers.
-  Architecture layer table
+  Live 16x16 software tile PBR render executed directly by verdant-wasm without conditional GPU flags.
+  Engine layer table
     
       
-| Layer | Crate or directory | Core responsibilities |
+| Layer | Crate or path | Core responsibilities |
       
-        
-| 4 · Browser Studio | site/, crates/verdant-wasm | OffscreenCanvas rendering, native Wasm uorc_decompress, AudioWorklet, and #vdnt= snapshots |
-        
-| 3 · Engine Core | crates/verdant-core, crates/verdant-cli | ECS, BVH, .glb import and transcode, XPBD joints, vehicles, rollback, and WGSL checks |
-        
-| 2 · Tensor Substrate | crates/verdant-tensor | Nine semiring kernels and three zero-decode CodedMatrix tiers over uor-matmul |
-        
-| 1 · Prism Model | app/src/*.lex.tex | Constructive Lean proofs compiled into prism_kernel.rs and app.holo |
-      
+| 4 · Browser Studio | site/, crates/verdant-wasm | Zero-copy WebGL2 and 16x16 tile PBR, LIF/SLM, OPFS, and Stitch mesh |
+| --- | --- | --- |
+| 3 · Engine Core | crates/verdant-core, crates/verdant-cli | ECS, BVH, GLB import, XPBD joints, formal UI, and 64-frame rollback |
+| 2 · Tensor Substrate | crates/verdant-tensor | Twelve unified semiring kernels and three zero-decode codec tiers |
+| --- | --- | --- |
+| 1 · Prism Model | app/src/*.lex.tex | Constructive Lean proofs compiled into prism_kernel.rs |
     
   
 
@@ -65,15 +69,15 @@ Constructive Prism proofs generate the semiring kernel bounds that drive verdant
 
       
         
-- Build your first 3D world walks through spawning entities, stepping physics, and saving a binary asset.
+- Build your first 3D world walks through spawning entities, stepping physics, and observing mutual attention.
         
-- Author scenes, physics joints, and spatial audio covers .glb import, XPBD joints, vehicles, and occluded 3D sound.
+- Author scenes, UI compliance, and spatial audio covers .glb import, XPBD joints, formal UI checks, and occluded sound.
         
-- Stream zero-decode scenes with UORC shows how uorc_decompress and coded_gemm stream LOD0 through LOD3 in WebAssembly.
+- Stream zero-decode scenes and Stitch shards shows how uorc_decompress, coded_gemm, and Stitch parity shards run in WebAssembly.
         
-- Verdant Engine API reference lists crates, types, deterministic rollback sessions, CLI commands, and 60fps budgets.
+- Verdant Engine API reference lists crates, types, rollback sessions, CLI subcommands, and 60fps budgets.
         
-- Unified semiring tensor core and UORC streaming explains linear, tropical, coded, and audio-ring contractions.
+- Unified semiring tensor core and neuromorphic loop explains all twelve semiring kernels, LIF recurrence, and embedded SLM routing.
       
     
       

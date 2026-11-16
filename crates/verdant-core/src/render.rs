@@ -561,6 +561,85 @@ impl PackedSceneRenderBuffers {
     pub fn triangle_count(&self) -> usize {
         self.indices.len() / DIM_SPATIAL
     }
+
+    /// Appends a counter-clockwise world-space quad (`p0, p1, p2, p3`) into both GPU and `16x16` tile buffers.
+    pub fn append_quad(
+        &mut self,
+        p0: Vec3,
+        p1: Vec3,
+        p2: Vec3,
+        p3: Vec3,
+        color_rgb: [f32; DIM_SPATIAL],
+    ) {
+        let i2 = 1usize + 1usize;
+        let i3 = i2 + 1usize;
+        let normal = (p1 - p0).cross(p2 - p0).normalized();
+        let n_arr = normal.to_f32_array();
+        let base = (self.positions_xyz.len() / DIM_SPATIAL) as u32;
+        for p in [p0, p1, p2, p3] {
+            let pa = p.to_f32_array();
+            self.positions_xyz.extend_from_slice(&pa);
+            self.normals_xyz.extend_from_slice(&n_arr);
+            self.colors_rgb.extend_from_slice(&color_rgb);
+        }
+        let b1 = base + 1;
+        let b2 = base + (i2 as u32);
+        let b3 = base + (i3 as u32);
+        self.indices
+            .extend_from_slice(&[base, b1, b2, base, b2, b3]);
+        self.tile_triangles.push(RasterTriangle {
+            positions: [p0.to_f32_array(), p1.to_f32_array(), p2.to_f32_array()],
+            normal: n_arr,
+            base_color: color_rgb,
+        });
+        self.tile_triangles.push(RasterTriangle {
+            positions: [p0.to_f32_array(), p2.to_f32_array(), p3.to_f32_array()],
+            normal: n_arr,
+            base_color: color_rgb,
+        });
+    }
+
+    /// Appends an oriented world-space 3D box (`6` quads = `12` triangles) into GPU and `16x16` tile buffers.
+    pub fn append_oriented_box(
+        &mut self,
+        center: Vec3,
+        half_extents: Vec3,
+        yaw_rad: f64,
+        pitch_rad: f64,
+        color_rgb: [f32; DIM_SPATIAL],
+    ) {
+        let cy = yaw_rad.cos();
+        let sy = yaw_rad.sin();
+        let cp = pitch_rad.cos();
+        let sp = pitch_rad.sin();
+        let xf = |lx: f64, ly: f64, lz: f64| -> Vec3 {
+            let y1 = ly * cp - lz * sp;
+            let z1 = ly * sp + lz * cp;
+            Vec3::new(
+                center.x + lx * cy - z1 * sy,
+                center.y + y1,
+                center.z + lx * sy + z1 * cy,
+            )
+        };
+        let hx = half_extents.x;
+        let hy = half_extents.y;
+        let hz = half_extents.z;
+        let p000 = xf(-hx, -hy, -hz);
+        let p100 = xf(hx, -hy, -hz);
+        let p110 = xf(hx, hy, -hz);
+        let p010 = xf(-hx, hy, -hz);
+        let p001 = xf(-hx, -hy, hz);
+        let p101 = xf(hx, -hy, hz);
+        let p111 = xf(hx, hy, hz);
+        let p011 = xf(-hx, hy, hz);
+
+        self.append_quad(p001, p101, p111, p011, color_rgb);
+        self.append_quad(p100, p000, p010, p110, color_rgb);
+        self.append_quad(p011, p111, p110, p010, color_rgb);
+        self.append_quad(p000, p100, p101, p001, color_rgb);
+        self.append_quad(p101, p100, p110, p111, color_rgb);
+        self.append_quad(p000, p001, p011, p010, color_rgb);
+    }
 }
 
 /// Propagates `SceneWorld` hierarchy matrices via exact `verdant-tensor` contractions and packs
@@ -576,19 +655,15 @@ pub fn pack_world_meshes_to_buffers(
         });
     }
 
-    let world_mats: std::collections::BTreeMap<_, _> =
-        scene.propagate_all_world_matrices()?.into_iter().collect();
+    let world_mats = scene.propagate_all_world_matrices()?;
     let mut out = PackedSceneRenderBuffers::default();
     let i2 = 1usize + 1usize;
 
-    for entity in scene.entities() {
+    for (entity, (_, world_mat)) in scene.entities().zip(world_mats.iter()) {
         let Some(mesh_idx) = entity.mesh_index else {
             continue;
         };
         let Some(mesh) = meshes.get(mesh_idx) else {
-            continue;
-        };
-        let Some(world_mat) = world_mats.get(&entity.id) else {
             continue;
         };
         let mat_tint = entity

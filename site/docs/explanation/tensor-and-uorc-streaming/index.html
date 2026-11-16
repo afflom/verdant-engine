@@ -2,12 +2,12 @@
 <html lang="en"><head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="See how the engine runs exact math and scene streams in any browser.">
+    <meta name="description" content="See how twelve exact math kernels run 3D views, UI, and peer worlds.">
     <meta name="diataxis" content="explanation">
     <meta name="developer-journey" content="evaluate">
     <meta name="audience" content="vera">
     <link rel="canonical" href="https://afflom.github.io/verdant-engine/docs/explanation/tensor-and-uorc-streaming/">
-    <title>Unified semiring tensor core and UORC streaming — Verdant Engine</title>
+    <title>Unified semiring tensor core and neuromorphic loop — Verdant Engine</title>
     <style>
   :root {
     color-scheme: dark;
@@ -56,7 +56,7 @@
     position: sticky;
     top: 0;
     z-index: 20;
-    background: hsl(var(--fd-bg) / 0.9);
+    background: hsl(var(--fd-bg) / 0.92);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     border-bottom: 1px solid hsl(var(--fd-line));
@@ -74,15 +74,14 @@
   .ve-nav a {
     display: inline-flex;
     align-items: center;
-    min-height: 2.25rem;
-    padding: 0.25rem 0.7rem;
+    min-height: 3rem;
+    padding: 0.25rem 0.85rem;
     border-radius: 999px;
     border: 1px solid hsl(var(--fd-line));
     background: hsl(var(--fd-panel));
     color: hsl(var(--fd-fg));
     text-decoration: none;
     font-weight: 500;
-    transition: border-color 0.15s, background 0.15s;
   }
   .ve-nav a:first-child {
     border-color: hsl(var(--fd-line-strong));
@@ -99,9 +98,7 @@
     text-underline-offset: 0.2em;
     font-weight: 500;
   }
-  main a:hover {
-    color: hsl(var(--fd-fg));
-  }
+  main a:hover { color: hsl(var(--fd-fg)); }
   main {
     max-width: 56rem;
     margin: 0 auto;
@@ -150,12 +147,7 @@
     overflow-x: auto;
     line-height: 1.55;
   }
-  pre code {
-    padding: 0;
-    border: 0;
-    background: transparent;
-    color: inherit;
-  }
+  pre code { padding: 0; border: 0; background: transparent; color: inherit; }
   table {
     width: 100%;
     border-collapse: collapse;
@@ -166,12 +158,7 @@
     border-radius: 0.75rem;
     overflow: hidden;
   }
-  caption {
-    text-align: left;
-    font-weight: 700;
-    padding: 0.5rem 0.25rem;
-    color: hsl(var(--fd-dim));
-  }
+  caption { text-align: left; font-weight: 700; padding: 0.5rem 0.25rem; color: hsl(var(--fd-dim)); }
   th {
     text-align: left;
     padding: 0.65rem 0.75rem;
@@ -186,14 +173,40 @@
     border-bottom: 1px solid hsl(var(--fd-line));
     color: hsl(var(--fd-fg));
   }
-  .ve-diagram {
+  .ve-live-fig {
     margin: 1.75rem 0 2.25rem;
   }
-  .ve-diagram svg {
+  .ve-live-canvas {
     display: block;
     width: 100%;
     height: auto;
-    max-height: 21rem;
+    max-height: 15.5rem;
+    border-radius: 0.65rem;
+    border: 1px solid hsl(var(--fd-line));
+    background: #081119;
+  }
+  .ve-live-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.65rem;
+  }
+  .ve-live-controls button {
+    min-height: 3rem;
+    min-width: 3rem;
+    padding: 0 0.85rem;
+    border-radius: 0.5rem;
+    border: 1px solid hsl(var(--fd-line-strong));
+    background: hsl(var(--fd-panel));
+    color: hsl(var(--fd-fg));
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .ve-live-controls button:hover {
+    border-color: hsl(var(--fd-accent));
+    color: hsl(var(--fd-accent));
   }
   .dc-pager {
     margin-top: 2.75rem;
@@ -205,84 +218,55 @@
     gap: 1rem;
   }
 </style>
-  <link rel="alternate" type="text/markdown" href="index.md"><link rel="stylesheet" href="../../content.css"><script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"Unified semiring tensor core and UORC streaming","description":"See how the engine runs exact math and scene streams in any browser.","url":"https://afflom.github.io/verdant-engine/docs/explanation/tensor-and-uorc-streaming/","inLanguage":"en","audience":{"@type":"Audience","audienceType":"Security auditor","description":"Verifies shader safety, UORC stream and snapshot integrity, strict Content-Security-Policy isolation, and Core-Wasm archive provenance."},"learningResourceType":"explanation","educationalLevel":"evaluate","isPartOf":{"@type":"WebSite","name":"Verdant Engine","url":"https://afflom.github.io/verdant-engine/"},"publisher":{"@type":"Organization","name":"UOR Foundation","url":"https://uor.foundation/"}}</script></head>
+  <link rel="alternate" type="text/markdown" href="index.md"><link rel="stylesheet" href="../../content.css"><script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"Unified semiring tensor core and neuromorphic loop","description":"See how twelve exact math kernels run 3D views, UI, and peer worlds.","url":"https://afflom.github.io/verdant-engine/docs/explanation/tensor-and-uorc-streaming/","inLanguage":"en","audience":{"@type":"Audience","audienceType":"Security auditor","description":"Verifies shader safety, UORC stream and snapshot integrity, strict Content-Security-Policy isolation, and Core-Wasm archive provenance."},"learningResourceType":"explanation","educationalLevel":"evaluate","isPartOf":{"@type":"WebSite","name":"Verdant Engine","url":"https://afflom.github.io/verdant-engine/"},"publisher":{"@type":"Organization","name":"UOR Foundation","url":"https://uor.foundation/"}}</script></head>
   <body>
     <div class="ve-nav-wrap">
       <nav class="ve-nav" aria-label="Documentation navigation">
         <a href="../../../">3D Studio</a>
         <a href="../../">Docs home</a>
         <a href="../../getting-started/">Getting started</a>
-        <a href="../../guides/custom-game-world/">Authoring &amp; GLB</a>
-        <a href="../../guides/progressive-uorc-streaming/">UORC streaming</a>
+        <a href="../../guides/custom-game-world/">Authoring &amp; UI</a>
+        <a href="../../guides/progressive-uorc-streaming/">UORC &amp; Stitch</a>
         <a href="../../reference/engine-api/">API reference</a>
-        <a href="../../explanation/tensor-and-uorc-streaming/">Tensor core</a>
+        <a href="../../explanation/tensor-and-uorc-streaming/">Tensor &amp; Neuro</a>
       </nav>
     </div>
     <main>
-      <h1>Unified semiring tensor core and UORC streaming</h1>
-      <p>See how the engine runs exact math and scene streams in any browser.</p><aside class="cs-guide" data-persona="vera" aria-label="Your guide on this page"><svg class="cs-avatar" viewBox="0 0 120 120" width="96" height="96" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="cs-g1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="hsl(140 70% 62%)"></stop><stop offset="1" stop-color="hsl(140 70% 32%)"></stop></linearGradient></defs><path d="M0 64L32 58" stroke="hsl(0 0% 98%)" stroke-width="2.4" stroke-linecap="round" opacity=".8"></path><path d="M88 58L120 34.0" stroke="hsl(356 95% 66%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 41.0" stroke="hsl(22 95% 58%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 48.0" stroke="hsl(48 95% 56%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 55.0" stroke="hsl(55 92% 54%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 62.0" stroke="hsl(140 70% 48%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 69.0" stroke="hsl(190 90% 54%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 76.0" stroke="hsl(222 92% 64%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 83.0" stroke="hsl(268 88% 70%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 90.0" stroke="hsl(320 85% 68%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><ellipse cx="60" cy="108" rx="30" ry="5" class="cs-g-shadow"></ellipse><path d="M60 14L92 32V76L60 98L28 76V32Z" fill="url(#cs-g1)"></path><path d="M60 14L92 32L60 48L28 32Z" fill="hsl(0 0% 100% / .28)"></path><path d="M60 48L92 32V76L60 98Z" fill="hsl(0 0% 0% / .18)"></path><path d="M60 14L92 32V76L60 98L28 76V32Z" fill="none" stroke="hsl(0 0% 100% / .45)" stroke-width="1.5" stroke-linejoin="round"></path><ellipse cx="49" cy="62" rx="6.5" ry="7.5" fill="hsl(0 0% 99%)"></ellipse><ellipse cx="71" cy="62" rx="6.5" ry="7.5" fill="hsl(0 0% 99%)"></ellipse><circle cx="51" cy="63.5" r="3.4" class="cs-g-dark"></circle><circle cx="73" cy="63.5" r="3.4" class="cs-g-dark"></circle><circle cx="52.2" cy="62" r="1.1" fill="hsl(0 0% 100%)"></circle><circle cx="74.2" cy="62" r="1.1" fill="hsl(0 0% 100%)"></circle><ellipse cx="41" cy="73" rx="4" ry="2.4" fill="hsl(350 90% 75% / .55)"></ellipse><ellipse cx="79" cy="73" rx="4" ry="2.4" fill="hsl(350 90% 75% / .55)"></ellipse><path d="M53 76q7 6 14 0" fill="none" stroke="hsl(0 0% 8%)" stroke-width="2.2" stroke-linecap="round"></path><ellipse cx="47" cy="100" rx="7" ry="3.6" class="cs-g-dark"></ellipse><ellipse cx="73" cy="100" rx="7" ry="3.6" class="cs-g-dark"></ellipse><g class="cs-g-line"><circle cx="49" cy="62" r="8.5"></circle><circle cx="71" cy="62" r="8.5"></circle><path d="M57.5 61h5M40.5 60l-6-3M79.5 60l6-3"></path></g><path d="M92 70q8 2 10 8" fill="none" stroke="hsl(140 70% 32%)" stroke-width="4" stroke-linecap="round"></path><g transform="translate(94 76) scale(1.05)" class="cs-g-prop"><rect x="-2" y="-2" width="28" height="28" rx="8" class="cs-g-chip"></rect><g fill="none" stroke="hsl(0 0% 98%)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 5v6c0 5 3.4 9.3 8 11 4.6-1.7 8-6 8-11V5z"></path><path d="m9 12 2 2 4-4"></path></g></g></svg><div class="cs-guide-text"><p class="cs-guide-who"><strong>Vera</strong> <span>Security auditor</span></p><p class="cs-guide-says">“How are UORC SHA-256 frame chains, shaders, and binary snapshots verified?”</p><p class="cs-guide-how">Explanation: read end to end to understand the design and physics.</p></div></aside>
-      <figure class="cs-figure cs-bars"><div class="cs-canvas"><svg class="cs-svg cs-any" viewBox="0 0 640 232" role="img" aria-labelledby="cs-t1 cs-d2" xmlns="http://www.w3.org/2000/svg"><title id="cs-t1">Exact accumulator bit widths across all nine unified tensor kernels</title><desc id="cs-d2">Linear (+,*) · transforms (k0,6): 96 bits; Linear (+,*) · LBS &amp; CSM (k1,k4): 128 bits; Tropical (max,+) · cull/GJK (k2): 64 bits; Linear (+,*) · tile PBR (k3): 128 bits; Audio Q15 · FIR &amp; FDN (k5): 128 bits; Tropical (min,+) · NavMesh (k7): 64 bits; Coded zero-decode · stream (k8): 128 bits</desc><text x="230" y="15" text-anchor="end" dominant-baseline="middle" class="cs-label cs-left">Linear (+,*) · transforms (k0,6)</text><rect x="240" y="6" width="336" height="18" rx="4" class="cs-track"></rect><rect x="240.0" y="6" width="252.0" height="18" rx="4" fill="hsl(356 95% 66%)"></rect><text x="584" y="15" dominant-baseline="middle" class="cs-value">96 bits</text><text x="230" y="45" text-anchor="end" dominant-baseline="middle" class="cs-label cs-left">Linear (+,*) · LBS &amp; CSM (k1,k4)</text><rect x="240" y="36" width="336" height="18" rx="4" class="cs-track"></rect><rect x="240.0" y="36" width="336.0" height="18" rx="4" fill="hsl(356 95% 66%)"></rect><text x="584" y="45" dominant-baseline="middle" class="cs-value">128 bits</text><text x="230" y="75" text-anchor="end" dominant-baseline="middle" class="cs-label cs-left">Tropical (max,+) · cull/GJK (k2)</text><rect x="240" y="66" width="336" height="18" rx="4" class="cs-track"></rect><rect x="240.0" y="66" width="168.0" height="18" rx="4" fill="hsl(356 95% 66%)"></rect><text x="584" y="75" dominant-baseline="middle" class="cs-value">64 bits</text><text x="230" y="105" text-anchor="end" dominant-baseline="middle" class="cs-label cs-left">Linear (+,*) · tile PBR (k3)</text><rect x="240" y="96" width="336" height="18" rx="4" class="cs-track"></rect><rect x="240.0" y="96" width="336.0" height="18" rx="4" fill="hsl(356 95% 66%)"></rect><text x="584" y="105" dominant-baseline="middle" class="cs-value">128 bits</text><text x="230" y="135" text-anchor="end" dominant-baseline="middle" class="cs-label cs-left">Audio Q15 · FIR &amp; FDN (k5)</text><rect x="240" y="126" width="336" height="18" rx="4" class="cs-track"></rect><rect x="240.0" y="126" width="336.0" height="18" rx="4" fill="hsl(356 95% 66%)"></rect><text x="584" y="135" dominant-baseline="middle" class="cs-value">128 bits</text><text x="230" y="165" text-anchor="end" dominant-baseline="middle" class="cs-label cs-left">Tropical (min,+) · NavMesh (k7)</text><rect x="240" y="156" width="336" height="18" rx="4" class="cs-track"></rect><rect x="240.0" y="156" width="168.0" height="18" rx="4" fill="hsl(356 95% 66%)"></rect><text x="584" y="165" dominant-baseline="middle" class="cs-value">64 bits</text><text x="230" y="195" text-anchor="end" dominant-baseline="middle" class="cs-label cs-left">Coded zero-decode · stream (k8)</text><rect x="240" y="186" width="336" height="18" rx="4" class="cs-track"></rect><rect x="240.0" y="186" width="336.0" height="18" rx="4" fill="hsl(356 95% 66%)"></rect><text x="584" y="195" dominant-baseline="middle" class="cs-value">128 bits</text><line x1="408" y1="0" x2="408" y2="210" class="cs-bound"></line><text x="408" y="222" text-anchor="middle" class="cs-sub">Minimum exact bound (64 bits)</text></svg></div><figcaption><strong>Exact accumulator bit widths across all nine unified tensor kernels.</strong> Every Prism-certified kernel in Tensor.lex.tex reserves 64 to 128 exact accumulator bits so contractions never round mid-sum.</figcaption><details class="cs-data"><summary>The data in this figure</summary><table><thead><tr><th scope="col"></th><th scope="col">bits</th></tr></thead><tbody><tr><td>Linear (+,*) · transforms (k0,6)</td><td>96</td></tr><tr><td>Linear (+,*) · LBS &amp; CSM (k1,k4)</td><td>128</td></tr><tr><td>Tropical (max,+) · cull/GJK (k2)</td><td>64</td></tr><tr><td>Linear (+,*) · tile PBR (k3)</td><td>128</td></tr><tr><td>Audio Q15 · FIR &amp; FDN (k5)</td><td>128</td></tr><tr><td>Tropical (min,+) · NavMesh (k7)</td><td>64</td></tr><tr><td>Coded zero-decode · stream (k8)</td><td>128</td></tr></tbody></table></details><script type="application/vnd.prism.figure+json">{"kind":"bars","title":"Exact accumulator bit widths across all nine unified tensor kernels","caption":"Every Prism-certified kernel in Tensor.lex.tex reserves 64 to 128 exact accumulator bits so contractions never round mid-sum.","unit":"bits","bound":{"value":64,"label":"Minimum exact bound (64 bits)"},"rows":[{"label":"Linear (+,*) · transforms (k0,6)","value":96,"note":"96 bits"},{"label":"Linear (+,*) · LBS & CSM (k1,k4)","value":128,"note":"128 bits"},{"label":"Tropical (max,+) · cull/GJK (k2)","value":64,"note":"64 bits"},{"label":"Linear (+,*) · tile PBR (k3)","value":128,"note":"128 bits"},{"label":"Audio Q15 · FIR & FDN (k5)","value":128,"note":"128 bits"},{"label":"Tropical (min,+) · NavMesh (k7)","value":64,"note":"64 bits"},{"label":"Coded zero-decode · stream (k8)","value":128,"note":"128 bits"}]}</script></figure>
+      <h1>Unified semiring tensor core and neuromorphic loop</h1>
+      <p>See how twelve exact math kernels run 3D views, UI, and peer worlds.</p><aside class="cs-guide" data-persona="vera" aria-label="Your guide on this page"><svg class="cs-avatar" viewBox="0 0 120 120" width="96" height="96" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="cs-g1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="hsl(140 70% 62%)"></stop><stop offset="1" stop-color="hsl(140 70% 32%)"></stop></linearGradient></defs><path d="M0 64L32 58" stroke="hsl(0 0% 98%)" stroke-width="2.4" stroke-linecap="round" opacity=".8"></path><path d="M88 58L120 34.0" stroke="hsl(356 95% 66%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 41.0" stroke="hsl(22 95% 58%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 48.0" stroke="hsl(48 95% 56%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 55.0" stroke="hsl(55 92% 54%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 62.0" stroke="hsl(140 70% 48%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 69.0" stroke="hsl(190 90% 54%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 76.0" stroke="hsl(222 92% 64%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 83.0" stroke="hsl(268 88% 70%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><path d="M88 58L120 90.0" stroke="hsl(320 85% 68%)" stroke-width="2.4" stroke-linecap="round" opacity=".75"></path><ellipse cx="60" cy="108" rx="30" ry="5" class="cs-g-shadow"></ellipse><path d="M60 14L92 32V76L60 98L28 76V32Z" fill="url(#cs-g1)"></path><path d="M60 14L92 32L60 48L28 32Z" fill="hsl(0 0% 100% / .28)"></path><path d="M60 48L92 32V76L60 98Z" fill="hsl(0 0% 0% / .18)"></path><path d="M60 14L92 32V76L60 98L28 76V32Z" fill="none" stroke="hsl(0 0% 100% / .45)" stroke-width="1.5" stroke-linejoin="round"></path><ellipse cx="49" cy="62" rx="6.5" ry="7.5" fill="hsl(0 0% 99%)"></ellipse><ellipse cx="71" cy="62" rx="6.5" ry="7.5" fill="hsl(0 0% 99%)"></ellipse><circle cx="51" cy="63.5" r="3.4" class="cs-g-dark"></circle><circle cx="73" cy="63.5" r="3.4" class="cs-g-dark"></circle><circle cx="52.2" cy="62" r="1.1" fill="hsl(0 0% 100%)"></circle><circle cx="74.2" cy="62" r="1.1" fill="hsl(0 0% 100%)"></circle><ellipse cx="41" cy="73" rx="4" ry="2.4" fill="hsl(350 90% 75% / .55)"></ellipse><ellipse cx="79" cy="73" rx="4" ry="2.4" fill="hsl(350 90% 75% / .55)"></ellipse><path d="M53 76q7 6 14 0" fill="none" stroke="hsl(0 0% 8%)" stroke-width="2.2" stroke-linecap="round"></path><ellipse cx="47" cy="100" rx="7" ry="3.6" class="cs-g-dark"></ellipse><ellipse cx="73" cy="100" rx="7" ry="3.6" class="cs-g-dark"></ellipse><g class="cs-g-line"><circle cx="49" cy="62" r="8.5"></circle><circle cx="71" cy="62" r="8.5"></circle><path d="M57.5 61h5M40.5 60l-6-3M79.5 60l6-3"></path></g><path d="M92 70q8 2 10 8" fill="none" stroke="hsl(140 70% 32%)" stroke-width="4" stroke-linecap="round"></path><g transform="translate(94 76) scale(1.05)" class="cs-g-prop"><rect x="-2" y="-2" width="28" height="28" rx="8" class="cs-g-chip"></rect><g fill="none" stroke="hsl(0 0% 98%)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 5v6c0 5 3.4 9.3 8 11 4.6-1.7 8-6 8-11V5z"></path><path d="m9 12 2 2 4-4"></path></g></g></svg><div class="cs-guide-text"><p class="cs-guide-who"><strong>Vera</strong> <span>Security auditor</span></p><p class="cs-guide-says">“How are UORC SHA-256 chains, Prism ID journals, and Stitch parity shards verified?”</p><p class="cs-guide-how">Explanation: read end to end to understand the design and physics.</p></div></aside>
+      <figure class="cs-figure cs-bars"><div class="cs-canvas"><svg class="cs-svg cs-any" viewBox="0 0 640 232" role="img" aria-labelledby="cs-t1 cs-d2" xmlns="http://www.w3.org/2000/svg"><title id="cs-t1">Exact accumulator bit widths across all twelve unified tensor kernels</title><desc id="cs-d2">Linear (+,*) · transforms &amp; PBR (k0,3,6): 128 bits; Linear (+,*) · LBS &amp; CSM (k1,k4): 128 bits; Tropical (max,+) · cull, GJK, UI (k2,9): 64 bits; Tropical (min,+) · NavMesh/focus (k7): 64 bits; Audio Q15 · FIR &amp; Hadamard FDN (k5): 128 bits; LIF/SSM · mutual observer (k10): 64 bits; Coded zero-decode · UORC &amp; SLM (k8,11): 128 bits</desc><text x="230" y="15" text-anchor="end" dominant-baseline="middle" class="cs-label cs-left">Linear (+,*) · transforms &amp; PBR (…</text><rect x="240" y="6" width="336" height="18" rx="4" class="cs-track"></rect><rect x="240.0" y="6" width="336.0" height="18" rx="4" fill="hsl(356 95% 66%)"></rect><text x="584" y="15" dominant-baseline="middle" class="cs-value">96..128 bits</text><text x="230" y="45" text-anchor="end" dominant-baseline="middle" class="cs-label cs-left">Linear (+,*) · LBS &amp; CSM (k1,k4)</text><rect x="240" y="36" width="336" height="18" rx="4" class="cs-track"></rect><rect x="240.0" y="36" width="336.0" height="18" rx="4" fill="hsl(356 95% 66%)"></rect><text x="584" y="45" dominant-baseline="middle" class="cs-value">128 bits</text><text x="230" y="75" text-anchor="end" dominant-baseline="middle" class="cs-label cs-left">Tropical (max,+) · cull, GJK, UI …</text><rect x="240" y="66" width="336" height="18" rx="4" class="cs-track"></rect><rect x="240.0" y="66" width="168.0" height="18" rx="4" fill="hsl(356 95% 66%)"></rect><text x="584" y="75" dominant-baseline="middle" class="cs-value">64 bits</text><text x="230" y="105" text-anchor="end" dominant-baseline="middle" class="cs-label cs-left">Tropical (min,+) · NavMesh/focus …</text><rect x="240" y="96" width="336" height="18" rx="4" class="cs-track"></rect><rect x="240.0" y="96" width="168.0" height="18" rx="4" fill="hsl(356 95% 66%)"></rect><text x="584" y="105" dominant-baseline="middle" class="cs-value">64 bits</text><text x="230" y="135" text-anchor="end" dominant-baseline="middle" class="cs-label cs-left">Audio Q15 · FIR &amp; Hadamard FDN (k…</text><rect x="240" y="126" width="336" height="18" rx="4" class="cs-track"></rect><rect x="240.0" y="126" width="336.0" height="18" rx="4" fill="hsl(356 95% 66%)"></rect><text x="584" y="135" dominant-baseline="middle" class="cs-value">128 bits</text><text x="230" y="165" text-anchor="end" dominant-baseline="middle" class="cs-label cs-left">LIF/SSM · mutual observer (k10)</text><rect x="240" y="156" width="336" height="18" rx="4" class="cs-track"></rect><rect x="240.0" y="156" width="168.0" height="18" rx="4" fill="hsl(356 95% 66%)"></rect><text x="584" y="165" dominant-baseline="middle" class="cs-value">64 bits</text><text x="230" y="195" text-anchor="end" dominant-baseline="middle" class="cs-label cs-left">Coded zero-decode · UORC &amp; SLM (k…</text><rect x="240" y="186" width="336" height="18" rx="4" class="cs-track"></rect><rect x="240.0" y="186" width="336.0" height="18" rx="4" fill="hsl(356 95% 66%)"></rect><text x="584" y="195" dominant-baseline="middle" class="cs-value">128 bits</text><line x1="408" y1="0" x2="408" y2="210" class="cs-bound"></line><text x="408" y="222" text-anchor="middle" class="cs-sub">Minimum exact bound (64 bits)</text></svg></div><figcaption><strong>Exact accumulator bit widths across all twelve unified tensor kernels.</strong> Every Prism-certified kernel in Tensor.lex.tex reserves 64 to 128 exact accumulator bits so contractions never drift.</figcaption><details class="cs-data"><summary>The data in this figure</summary><table><thead><tr><th scope="col"></th><th scope="col">bits</th></tr></thead><tbody><tr><td>Linear (+,*) · transforms &amp; PBR (k0,3,6)</td><td>128</td></tr><tr><td>Linear (+,*) · LBS &amp; CSM (k1,k4)</td><td>128</td></tr><tr><td>Tropical (max,+) · cull, GJK, UI (k2,9)</td><td>64</td></tr><tr><td>Tropical (min,+) · NavMesh/focus (k7)</td><td>64</td></tr><tr><td>Audio Q15 · FIR &amp; Hadamard FDN (k5)</td><td>128</td></tr><tr><td>LIF/SSM · mutual observer (k10)</td><td>64</td></tr><tr><td>Coded zero-decode · UORC &amp; SLM (k8,11)</td><td>128</td></tr></tbody></table></details><script type="application/vnd.prism.figure+json">{"kind":"bars","title":"Exact accumulator bit widths across all twelve unified tensor kernels","caption":"Every Prism-certified kernel in Tensor.lex.tex reserves 64 to 128 exact accumulator bits so contractions never drift.","unit":"bits","bound":{"value":64,"label":"Minimum exact bound (64 bits)"},"rows":[{"label":"Linear (+,*) · transforms & PBR (k0,3,6)","value":128,"note":"96..128 bits"},{"label":"Linear (+,*) · LBS & CSM (k1,k4)","value":128,"note":"128 bits"},{"label":"Tropical (max,+) · cull, GJK, UI (k2,9)","value":64,"note":"64 bits"},{"label":"Tropical (min,+) · NavMesh/focus (k7)","value":64,"note":"64 bits"},{"label":"Audio Q15 · FIR & Hadamard FDN (k5)","value":128,"note":"128 bits"},{"label":"LIF/SSM · mutual observer (k10)","value":64,"note":"64 bits"},{"label":"Coded zero-decode · UORC & SLM (k8,11)","value":128,"note":"128 bits"}]}</script></figure>
       
       <h2>Why Verdant Engine distills every pass to semiring tensor logic</h2>
-      <p>Conditional browser GPU compute APIs are absent on many mobile browsers, embedded WebViews, and hardened desktop clients.</p>
-      <p>Instead of maintaining divergent code paths, <code>Tensor.lex.tex</code> models nine unified semiring kernels executed by <code>crates/verdant-tensor</code> over <code>uor-matmul</code>.</p>
+      <p>Conditional browser GPU compute APIs are absent on many mobile browsers, embedded WebViews, and hardened clients.</p>
+      <p>Instead of maintaining divergent code paths, <code>Tensor.lex.tex</code> models twelve unified semiring kernels executed over <code>uor-matmul</code>.</p>
       
-<figure class="cs-figure ve-diagram" id="fig-semiring-grid">
+<figure class="cs-figure ve-live-fig" id="fig-live-semirings" data-ve-live="semirings">
   <div class="cs-canvas">
-    <svg viewBox="0 0 800 244" role="img" aria-labelledby="ve-sr-t ve-sr-d" xmlns="http://www.w3.org/2000/svg">
-      <title id="ve-sr-t">Unified verdant-tensor semiring execution domains</title>
-      <desc id="ve-sr-d">Four semiring quadrants in verdant-tensor: Linear exact (+, *), Coded zero-decode streaming, Tropical (max, +) and (min, +), and Modular Q15 Hadamard FDN audio ring.</desc>
-      <rect x="16" y="16" width="374" height="98" rx="10" fill="hsl(196 50% 15%)" stroke="hsl(192 88% 62%)" stroke-width="1.6"></rect>
-      <text x="32" y="42" fill="hsl(192 92% 88%)" font-size="13.5" font-weight="700">Linear Exact Semiring (+, *) · i128 / Laurent</text>
-      <text x="32" y="64" fill="hsl(196 30% 86%)" font-size="11" font-family="JetBrains Mono, monospace">· Hierarchical ECS &amp; skeleton world matrices</text>
-      <text x="32" y="82" fill="hsl(196 30% 86%)" font-size="11" font-family="JetBrains Mono, monospace">· 4-joint LBS skinning &amp; Delassus J*M^-1*J^T</text>
-      <text x="32" y="100" fill="hsl(196 30% 86%)" font-size="11" font-family="JetBrains Mono, monospace">· 16x16 software tile PBR + 4-cascade CSM</text>
-
-      <rect x="410" y="16" width="374" height="98" rx="10" fill="hsl(262 40% 17%)" stroke="hsl(268 86% 74%)" stroke-width="1.6"></rect>
-      <text x="426" y="42" fill="hsl(268 92% 90%)" font-size="13.5" font-weight="700">Coded Zero-Decode · uor_matmul::codec</text>
-      <text x="426" y="64" fill="hsl(196 30% 86%)" font-size="11" font-family="JetBrains Mono, monospace">· Grid&lt;16&gt; quantized vertex batches</text>
-      <text x="426" y="82" fill="hsl(196 30% 86%)" font-size="11" font-family="JetBrains Mono, monospace">· Packed&lt;Grid, 2&gt; nibble animation curves</text>
-      <text x="426" y="100" fill="hsl(196 30% 86%)" font-size="11" font-family="JetBrains Mono, monospace">· Runs&lt;Grid, 16&gt; sparse GGX IBL harmonics</text>
-
-      <rect x="16" y="128" width="374" height="98" rx="10" fill="hsl(36 48% 16%)" stroke="hsl(42 94% 62%)" stroke-width="1.6"></rect>
-      <text x="32" y="154" fill="hsl(44 96% 88%)" font-size="13.5" font-weight="700">Tropical Semirings (max, +) &amp; (min, +)</text>
-      <text x="32" y="176" fill="hsl(196 30% 86%)" font-size="11" font-family="JetBrains Mono, monospace">· Batch 6-plane Gribb-Hartmann frustum cull</text>
-      <text x="32" y="194" fill="hsl(196 30% 86%)" font-size="11" font-family="JetBrains Mono, monospace">· GJK Minkowski directional support maps</text>
-      <text x="32" y="212" fill="hsl(196 30% 86%)" font-size="11" font-family="JetBrains Mono, monospace">· NavMesh all-pairs shortest-path closure</text>
-
-      <rect x="410" y="128" width="374" height="98" rx="10" fill="hsl(156 44% 15%)" stroke="hsl(154 74% 56%)" stroke-width="1.6"></rect>
-      <text x="426" y="154" fill="hsl(154 88% 86%)" font-size="13.5" font-weight="700">Quantized Audio Ring · Q15 + Hadamard FDN</text>
-      <text x="426" y="176" fill="hsl(196 30% 86%)" font-size="11" font-family="JetBrains Mono, monospace">· Toeplitz Euler-Bernoulli modal FIR</text>
-      <text x="426" y="194" fill="hsl(196 30% 86%)" font-size="11" font-family="JetBrains Mono, monospace">· Woodworth ITD/ILD + BVH ray occlusion</text>
-      <text x="426" y="212" fill="hsl(196 30% 86%)" font-size="11" font-family="JetBrains Mono, monospace">· 4-channel unitary Hadamard Sabine reverb</text>
-    </svg>
+    <canvas class="ve-live-canvas" width="576" height="224" role="img" aria-label="Live Prism 12-kernel telemetry plotting cascaded shadow splits and modal bar harmonics from verdant-wasm"></canvas>
+    <div class="ve-live-controls" data-prose="data"><button type="button" data-ve-act="csm">Query CSM Splits (Wasm)</button><button type="button" data-ve-act="audio">Query Modal Harmonics (Wasm)</button></div>
   </div>
-  <figcaption><strong>Four unified semiring execution domains in <code>verdant-tensor</code>.</strong> Every hot loop reduces to an exact, rounding-free contraction over <code>uor-matmul</code>.</figcaption>
-  <details class="cs-data"><summary>Semiring kernel domain table</summary>
+  <figcaption>Live CSM shadow cascade splits, Sabine RT60, and Euler-Bernoulli modes queried from verdant-wasm.</figcaption>
+  <details class="cs-data"><summary>Twelve unified semiring kernels</summary>
     <table>
-      <thead><tr><th>Semiring domain</th><th>Algebra</th><th>Engine subsystems</th></tr></thead>
-      <tbody>
-        <tr><td><code>LinearExact</code></td><td><code>(+, *)</code> exact Laurent / <code>i128</code></td><td>Transforms, 4-joint LBS skinning, Delassus joints, 16x16 tile PBR</td></tr>
-        <tr><td><code>CodedZeroDecode</code></td><td><code>coded_gemm</code> over <code>Grid</code>, <code>Packed</code>, <code>Runs</code></td><td>Zero-scratch compressed geometry, animation tracks, and IBL probes</td></tr>
-        <tr><td><code>TropicalMaxPlus</code> / <code>MinPlus</code></td><td><code>(max, +)</code> and <code>(min, +)</code></td><td>Frustum culling, GJK hull support, and NavMesh shortest-path closure</td></tr>
-        <tr><td><code>ModularAudioRing</code></td><td>Quantized <code>Q15</code> -&gt; <code>i64</code></td><td>Modal FIR bars, Woodworth stereo pan, and 4x4 Hadamard FDN reverb</td></tr>
-      </tbody>
+      <thead><tr><th>Kernel group</th><th>Algebra</th><th>Engine subsystems</th></tr></thead>
+      <tbody><tr><td><code>k0, k1, k3, k4, k6</code></td><td>Linear exact <code>(+, *)</code></td><td>Hierarchy, LBS skinning, 16x16 tile PBR, CSM, and Delassus joints</td></tr><tr><td><code>k2, k7, k9</code></td><td>Tropical <code>(max, +)</code> / <code>(min, +)</code></td><td>Frustum culling, GJK support, NavMesh closure, and formal UI</td></tr><tr><td><code>k5, k10</code></td><td>Quantized integer rings</td><td>Modal FIR, Hadamard FDN reverb, and Q15 LIF/SSM mutual attention</td></tr><tr><td><code>k8, k11</code></td><td><code>uor_matmul::codec</code> zero-decode</td><td>Compressed UORC streaming and embedded <code>coded_gemm</code> SLM</td></tr></tbody>
     </table>
   </details>
 </figure>
-      <h2>Zero-decode contraction with uor_matmul::codec</h2>
-      <p>Decompressing assets into temporary float arrays wastes cache bandwidth and mobile memory during progressive scene streaming.</p>
-      <p>By pairing <code>uorc_decompress</code> with <code>CodedMatrix</code> tiers, <code>coded_gemm</code> decodes each codebook entry into an exact integer accumulator and writes once.</p>
-      <h2>Portable 16x16 software tile rasterization and runtime proofs</h2>
-      <p>When WebGL2 is present, the OffscreenCanvas worker streams static and dynamic batches at 60fps off the main thread.</p>
-      <p>When hardware contexts are absent, <code>render_triangles_tile_framebuffer</code> shades 16x16 RGBA8 tiles in WebAssembly with identical deterministic visibility.</p>
-      <p>Every constant in shipped Rust and constructive <a class="cs-term" href="#term-lexlean" title="The language Prism models are written in. It reads like LaTeX and compiles to Lean 4.">LexLean</a> derives from <code>{0, 1}</code>, enforced continuously by the <code>FI-08</code> zero-constants ratchet.</p>
+      <h2>Second-order cybernetics and embedded coded_gemm reasoning</h2>
+      <p>In Verdant Engine, the world observes player gaze cadence and locomotion while the player observes the world.</p>
+      <p>Integer-exact Q15 LIF state-space recurrence guarantees bit-identical attention state across 64-frame rollback resimulations.</p>
+      <p>Natural-language prompts contract directly against 4-bit <code>Packed&lt;Grid&lt;16&gt;, 2&gt;</code> weights via <code>coded_gemm</code> with zero cloud calls.</p>
+      <h2>Capability-gated container saturation and sovereign identity</h2>
+      <p>Non-sandboxed browser APIs follow Foundry's <code>FK-07</code> denial-wins lattice so an explicit denial always overrides any grant.</p>
+      <p>Foundry Prism ID sessions sign deterministic input journals locally while Stitch 2-of-3 parity shards keep worlds durable across peers.</p>
     
-      <details class="cs-terms" id="words"><summary>Words on this page <span>1</span></summary><dl><dt id="term-lexlean">LexLean</dt><dd>The language Prism models are written in. It reads like LaTeX and compiles to Lean 4.</dd></dl></details><nav class="dc-pager" aria-label="Page sequence">
+      <nav class="dc-pager" aria-label="Page sequence">
         <a href="../../reference/engine-api/">Previous: Verdant Engine API reference</a>
         <span></span>
       </nav>
     </main>
+    <script type="module" src="../../live-embed.mjs"></script>
   
 
 </body></html>

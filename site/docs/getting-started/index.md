@@ -2,15 +2,15 @@
 
       
 
-Create a Rust 3D scene, step rigid-body physics, and export a binary asset.
+Make a Rust 3D scene, step physics, and test live world focus.
 
-      Four steps from starter crate to live 3D scene. The starter project builds a scene world, constructs a BVH, steps 60Hz physics, and exports a validated GLB file.The data in this figure
+      Four steps from starter crate to live 3D scene. The starter project builds a scene world, constructs a BVH, steps 60Hz physics, and packs a UORC stream.The data in this figure
 | Step | What happens |
 | --- | --- |
 | 1. Spawn entities | SceneWorld + PBR materials |
 | 2. Build BVH | Raycasts + frustum culling |
 | --- | --- |
-| 3. Step physics | 60Hz joints + vehicles |
+| 3. Step physics | 60Hz joints +observer |
 | 4. Stream UORC | Portable GLB + UORC pack |
       
       
@@ -19,7 +19,7 @@ Create a Rust 3D scene, step rigid-body physics, and export a binary asset.
 
       
 
-The repository ships a runnable project in templates/browser-3d-starter so you can launch a 3D game world right away.
+The repository ships a runnable project in templates/browser-3d-starter so you can launch a 3D world right away.
 
       
 
@@ -29,7 +29,7 @@ cargo run --manifest-path templates/browser-3d-starter/Cargo.toml
 
       
 
-That command builds verdant-core, validates all five built-in WGSL shaders, steps GJK triggers and NavMesh steering, and writes custom-starter-world.glb.
+That command builds verdant-core, validates all five built-in WGSL shaders, steps GJK triggers, and writes custom-starter-world.glb.
 
       
 
@@ -41,13 +41,40 @@ Open templates/browser-3d-starter/src/main.rs to inspect how a scene world organ
 
       
 
-You spawn a root terrain patch first, attach fluted columns and beacons as children, and build the bounding volume hierarchy.
+Spawn a root terrain patch first, attach columns as children, and build the bounding volume hierarchy.
 
       
 
 ```
-let mut scene = SceneWorld::new(); let ground_id = scene.spawn("StarterTerrain", EntityRole::TerrainPatch, None, Transform::default(), bounds, (1.0, "Terrain")); let beacon_id = scene.spawn("NorthBeacon", EntityRole::StaticArchitecture, Some(col_id), Transform::from_xyz(0.0, 4.6, 0.0), beacon_bounds, (1.0, "Beacon")); let bvh = scene.build_bvh();
+let mut scene = SceneWorld::new(); let ground_id = scene.spawn("StarterTerrain", EntityRole::TerrainPatch, None, Transform::default(), bounds, (1.0, "Terrain")); let bvh = scene.build_bvh();
 ```
+
+      
+
+## Observe player attention with the live LIF loop
+
+      
+
+Test the integer-exact CyberneticObserverLoop right below by focusing different world slots in WebAssembly.
+
+      
+
+  
+    
+    Focus Slot 0Focus Slot 2Focus Slot 3Focus Slot 6
+  
+  Live integer-exact LIF spike raster and entity salience scores computed by verdant-wasm.
+  Neuromorphic observer parameters
+    
+      
+| Parameter | Verified bound | Role |
+      
+| State neurons | 8 Q15 LIF units | Recurrent membrane integration without float drift |
+| --- | --- | --- |
+| Decay factor | 7 / 8 per tick | Bounded exponential leak across rollback frames |
+| Mutual gimbal yaw | -player_yaw_milli | Orients the world observer toward the player |
+    
+  
 
       
 
@@ -55,7 +82,7 @@ let mut scene = SceneWorld::new(); let ground_id = scene.spawn("StarterTerrain",
 
       
 
-Before exporting the scene, encode a world snapshot and a portable multi-LOD UORC stream with SHA-256 verification.
+Encode a world snapshot and a portable four-LOD UORC stream with SHA-256 verification before exporting.
 
       
 
@@ -63,15 +90,7 @@ Before exporting the scene, encode a world snapshot and a portable multi-LOD UOR
 let snap_bytes = WorldSnapshot::encode(&lod_scene)?; let restored = WorldSnapshot::decode(&snap_bytes)?; let uorc_bytes = pack_portable_progressive_uorc_stream(7)?;
 ```
 
-      
-
-## Play the starter arena in the browser
-
-      
-
-Serve templates/browser-3d-starter over HTTP and open index.html to pilot the probe with WASD keys and activate all three beacons.
-
     
       
         Previous: Verdant Engine documentation
-        Next: Author scenes, physics joints, and spatial audio
+        Next: Author scenes, UI compliance, and spatial audio
