@@ -519,57 +519,147 @@ pub fn import_glb_to_scene(bytes: &[u8]) -> Result<ImportedGlbScene, AssetValida
     let mut skin_weights = Vec::new();
     let i2 = 1usize + 1usize;
 
+    let max_skin_joints = document
+        .skins()
+        .map(|s| s.joints().count())
+        .max()
+        .unwrap_or(usize::from(u16::MAX) + 1);
+    let i3 = i2 + 1usize;
+
     for (m_idx, mesh) in document.meshes().enumerate() {
-        let Some(prim) = mesh.primitives().next() else {
+        let tri_prims: Vec<_> = mesh
+            .primitives()
+            .filter(|p| p.mode() == gltf::mesh::Mode::Triangles)
+            .collect();
+        let Some(first_prim) = tri_prims.first() else {
             return Err(AssetValidationError::EmptyMeshTopology {
                 mesh_name: mesh.name().unwrap_or("GlbMesh").to_string(),
             });
         };
-        let reader = prim.reader(|buffer| buffers.get(buffer.index()).map(|d| d.0.as_slice()));
-        let positions: Vec<[f32; DIM_SPATIAL]> = reader
-            .read_positions()
-            .ok_or_else(|| AssetValidationError::GltfOracleRejected {
-                oracle_message: format!("mesh {m_idx} missing POSITION attribute"),
-            })?
-            .collect();
-        let v_count = positions.len();
+        let bake_mat_tint = tri_prims.len() > 1;
+        let mut positions: Vec<[f32; DIM_SPATIAL]> = Vec::new();
+        let mut normals: Vec<[f32; DIM_SPATIAL]> = Vec::new();
+        let mut uvs: Vec<[f32; DIM_PLANAR]> = Vec::new();
+        let mut colors: Vec<[f32; DIM_HOMOGENEOUS]> = Vec::new();
+        let mut indices: Vec<u32> = Vec::new();
+        let mut prim_weights: Vec<SkinWeights4> = Vec::new();
+        let mut all_prims_skinned = true;
 
-        let normals: Vec<[f32; DIM_SPATIAL]> = match reader.read_normals() {
-            Some(iter) => iter
-                .map(|n| {
-                    let v =
-                        Vec3::new(f64::from(n[0]), f64::from(n[1]), f64::from(n[i2])).normalized();
-                    v.to_f32_array()
-                })
-                .collect(),
-            None => vec![[0.0, 1.0, 0.0]; v_count],
-        };
-        let uvs: Vec<[f32; DIM_PLANAR]> = match reader.read_tex_coords(0) {
-            Some(tc) => tc.into_f32().collect(),
-            None => vec![[0.0, 0.0]; v_count],
-        };
-        let colors: Vec<[f32; DIM_HOMOGENEOUS]> = match reader.read_colors(0) {
-            Some(col) => col.into_rgba_f32().collect(),
-            None => vec![[1.0, 1.0, 1.0, 1.0]; v_count],
-        };
-        let indices: Vec<u32> = match reader.read_indices() {
-            Some(ind) => ind.into_u32().collect(),
-            None => (0..v_count as u32).collect(),
-        };
+        for prim in &tri_prims {
+            let reader = prim.reader(|buffer| buffers.get(buffer.index()).map(|d| d.0.as_slice()));
+            let prim_pos: Vec<[f32; DIM_SPATIAL]> = reader
+                .read_positions()
+                .ok_or_else(|| AssetValidationError::GltfOracleRejected {
+                    oracle_message: format!("mesh {m_idx} missing POSITION attribute"),
+                })?
+                .collect();
+            let v_count = prim_pos.len();
+            if v_count == 0 || positions.len().saturating_add(v_count) > (u32::MAX as usize) {
+                return Err(AssetValidationError::EmptyMeshTopology {
+                    mesh_name: mesh.name().unwrap_or("GlbMesh").to_string(),
+                });
+            }
+            let base_vertex = positions.len() as u32;
+            positions.extend_from_slice(&prim_pos);
 
-        let max_skin_joints = document
-            .skins()
-            .map(|s| s.joints().count())
-            .max()
-            .unwrap_or(usize::from(u16::MAX) + 1);
-        let mut prim_weights = Vec::new();
-        if let (Some(j_iter), Some(w_iter)) = (reader.read_joints(0), reader.read_weights(0)) {
-            for (joints, raw_w) in j_iter.into_u16().zip(w_iter.into_f32()) {
-                let norm_w = normalize_weights_permille(raw_w);
-                if let Ok(sw) = SkinWeights4::new(joints, norm_w, max_skin_joints.max(1)) {
-                    prim_weights.push(sw);
+            match reader.read_normals() {
+                Some(iter) => {
+                    let mut n_read = 0usize;
+                    for n in iter {
+                        let nx = if n[0].is_finite() {
+                            f64::from(n[0])
+                        } else {
+                            0.0
+                        };
+                        let ny = if n[1].is_finite() {
+                            f64::from(n[1])
+                        } else {
+                            1.0
+                        };
+                        let nz = if n[i2].is_finite() {
+                            f64::from(n[i2])
+                        } else {
+                            0.0
+                        };
+                        normals.push(Vec3::new(nx, ny, nz).normalized().to_f32_array());
+                        n_read += 1;
+                    }
+                    if n_read < v_count {
+                        normals.resize(positions.len(), [0.0, 1.0, 0.0]);
+                    }
+                }
+                None => normals.resize(positions.len(), [0.0, 1.0, 0.0]),
+            }
+
+            match reader.read_tex_coords(0) {
+                Some(tc) => {
+                    uvs.extend(tc.into_f32());
+                    if uvs.len() < positions.len() {
+                        uvs.resize(positions.len(), [0.0, 0.0]);
+                    }
+                }
+                None => uvs.resize(positions.len(), [0.0, 0.0]),
+            }
+
+            let mat_tint = if bake_mat_tint {
+                prim.material().pbr_metallic_roughness().base_color_factor()
+            } else {
+                [1.0, 1.0, 1.0, 1.0]
+            };
+            match reader.read_colors(0) {
+                Some(col) => {
+                    for c in col.into_rgba_f32() {
+                        colors.push([
+                            (c[0] * mat_tint[0]).clamp(0.0, 1.0),
+                            (c[1] * mat_tint[1]).clamp(0.0, 1.0),
+                            (c[i2] * mat_tint[i2]).clamp(0.0, 1.0),
+                            (c[i3] * mat_tint[i3]).clamp(0.0, 1.0),
+                        ]);
+                    }
+                    if colors.len() < positions.len() {
+                        colors.resize(positions.len(), mat_tint);
+                    }
+                }
+                None => colors.resize(positions.len(), mat_tint),
+            }
+
+            match reader.read_indices() {
+                Some(ind) => {
+                    for raw_idx in ind.into_u32() {
+                        if (raw_idx as usize) >= v_count {
+                            return Err(AssetValidationError::GltfOracleRejected {
+                                oracle_message: format!(
+                                    "mesh {m_idx} index {raw_idx} exceeds vertex count {v_count}"
+                                ),
+                            });
+                        }
+                        indices.push(base_vertex + raw_idx);
+                    }
+                }
+                None => {
+                    for local_v in 0..(v_count as u32) {
+                        indices.push(base_vertex + local_v);
+                    }
                 }
             }
+
+            if let (Some(j_iter), Some(w_iter)) = (reader.read_joints(0), reader.read_weights(0)) {
+                let before_w = prim_weights.len();
+                for (joints, raw_w) in j_iter.into_u16().zip(w_iter.into_f32()) {
+                    let norm_w = normalize_weights_permille(raw_w);
+                    if let Ok(sw) = SkinWeights4::new(joints, norm_w, max_skin_joints.max(1)) {
+                        prim_weights.push(sw);
+                    }
+                }
+                if prim_weights.len() - before_w != v_count {
+                    all_prims_skinned = false;
+                }
+            } else {
+                all_prims_skinned = false;
+            }
+        }
+        if !all_prims_skinned {
+            prim_weights.clear();
         }
 
         let pm = ProceduralMesh {
@@ -585,7 +675,7 @@ pub fn import_glb_to_scene(bytes: &[u8]) -> Result<ImportedGlbScene, AssetValida
             morph_targets: Vec::new(),
         };
         pm.validate()?;
-        mesh_first_prim_mat.push(prim.material().index());
+        mesh_first_prim_mat.push(first_prim.material().index());
         meshes.push(pm);
         skin_weights.push(prim_weights);
     }
@@ -601,7 +691,6 @@ pub fn import_glb_to_scene(bytes: &[u8]) -> Result<ImportedGlbScene, AssetValida
 
     let mut skeletons = Vec::new();
     let mut skin_joint_node_map: Vec<std::collections::BTreeMap<usize, usize>> = Vec::new();
-    let i3 = i2 + 1usize;
     for skin in document.skins() {
         let skin_nodes: Vec<_> = skin.joints().collect();
         if skin_nodes.is_empty() {
@@ -866,4 +955,94 @@ pub fn transcode_glb_to_progressive_uorc(
     }
 
     Ok(stream)
+}
+
+/// Packs multiple `(ProceduralMesh, material_index)` primitives into a single multi-primitive
+/// Khronos binary glTF 2.0 (`.glb`) mesh validated by [`validate_glb_bytes`].
+pub fn pack_multi_primitive_glb(
+    mesh_name: &str,
+    primitives: &[(&ProceduralMesh, usize)],
+    materials: &[PbrMaterial],
+) -> Result<Vec<u8>, AssetValidationError> {
+    if primitives.is_empty() {
+        return Err(AssetValidationError::EmptyMeshTopology {
+            mesh_name: mesh_name.to_string(),
+        });
+    }
+    let mut temp_scene = SceneWorld::new();
+    let mut mesh_vec = Vec::with_capacity(primitives.len());
+    for (p_idx, &(pm, mat_idx)) in primitives.iter().enumerate() {
+        let eid = temp_scene.spawn(
+            format!("{mesh_name}_{p_idx}"),
+            EntityRole::StaticArchitecture,
+            None,
+            Transform::default(),
+            pm.bounds(),
+            (1.0, "MultiPrimitiveGlbSource"),
+        );
+        temp_scene.attach_renderable(eid, p_idx, mat_idx);
+        mesh_vec.push(pm.clone());
+    }
+    let base_glb = export_scene_to_glb(&temp_scene, &mesh_vec, materials)?;
+    let hdr = GLB_FILE_HEADER_BYTES;
+    let chk = GLB_CHUNK_HEADER_BYTES;
+    let i4 = 1usize << (1usize + 1usize);
+    let json_len = u32::from_le_bytes([
+        base_glb[hdr],
+        base_glb[hdr + 1],
+        base_glb[hdr + (1 + 1)],
+        base_glb[hdr + (1 + 1 + 1)],
+    ]) as usize;
+    let json_start = hdr + chk;
+    let json_end = json_start + json_len;
+    let bin_tail = &base_glb[json_end..];
+
+    let mut root_val: serde_json::Value = serde_json::from_slice(&base_glb[json_start..json_end])
+        .map_err(|e| {
+        AssetValidationError::GltfOracleRejected {
+            oracle_message: e.to_string(),
+        }
+    })?;
+    let mut merged_prims = Vec::with_capacity(primitives.len());
+    if let Some(arr) = root_val.get("meshes").and_then(|v| v.as_array()) {
+        for m in arr {
+            if let Some(p0) = m
+                .get("primitives")
+                .and_then(|p| p.as_array())
+                .and_then(|pa| pa.first())
+            {
+                merged_prims.push(p0.clone());
+            }
+        }
+    }
+    root_val["meshes"] = json!([{
+        "name": mesh_name,
+        "primitives": merged_prims
+    }]);
+    root_val["nodes"] = json!([{
+        "name": mesh_name,
+        "mesh": 0
+    }]);
+    root_val["scenes"] = json!([{
+        "name": "VerdantWorldScene",
+        "nodes": [0]
+    }]);
+
+    let mut json_bytes =
+        serde_json::to_vec(&root_val).map_err(|e| AssetValidationError::GltfOracleRejected {
+            oracle_message: e.to_string(),
+        })?;
+    while !json_bytes.len().is_multiple_of(GLTF_CHUNK_ALIGNMENT) {
+        json_bytes.push(b' ');
+    }
+    let total_len = hdr + chk + json_bytes.len() + bin_tail.len();
+    let mut glb = Vec::with_capacity(total_len);
+    glb.extend_from_slice(&base_glb[..i4 * (1 + 1)]);
+    glb.extend_from_slice(&(total_len as u32).to_le_bytes());
+    glb.extend_from_slice(&(json_bytes.len() as u32).to_le_bytes());
+    glb.extend_from_slice(b"JSON");
+    glb.extend_from_slice(&json_bytes);
+    glb.extend_from_slice(bin_tail);
+    validate_glb_bytes(&glb)?;
+    Ok(glb)
 }

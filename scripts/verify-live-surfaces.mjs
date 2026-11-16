@@ -157,6 +157,16 @@ try {
     if (!aqmLogText.includes("monoid_fusion=true")) {
       failures.push(`AQM 16k bit-plane & monoid benchmark did not report conformant scene:aqm: ${aqmLogText}`);
     }
+    await page.click('[data-stability-audit="512"]');
+    await page.waitForFunction(
+      () => (document.getElementById("ve-perf-log")?.textContent || "").includes("CSR Flat Tile Bins:"),
+      null,
+      { timeout: 10000 },
+    );
+    const stabLogText = (await page.textContent("#ve-perf-log")) || "";
+    if (!stabLogText.includes("csr_tile_bins=true") || !stabLogText.includes("steady_alloc_growth=0 B")) {
+      failures.push(`Stability & 512-body broadphase audit did not report conformant scene:stability: ${stabLogText}`);
+    }
     await page.click('[data-inst-preset="0"]');
 
     // Close Studio Workbench and open Stitch Mesh modal (`#ve-mesh-btn`):

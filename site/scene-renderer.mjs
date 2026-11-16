@@ -65,12 +65,15 @@ export async function createGlRenderer(canvas) {
 
   const instDecl = `layout(location=3) in vec4 i_c0;layout(location=4) in vec4 i_c1;layout(location=5) in vec4 i_c2;layout(location=6) in vec4 i_c3;uniform float u_inst;`;
   const instPos = `vec3 wp=u_inst>0.5?(i_c0.xyz*a_pos.x+i_c1.xyz*a_pos.y+i_c2.xyz*a_pos.z+i_c3.xyz):a_pos;`;
-
-  const shadowProg = link(
-    `#version 300 es\nlayout(location=0) in vec3 a_pos;${instDecl}uniform mat4 u_lmvp;void main(){${instPos}gl_Position=u_lmvp*vec4(wp,1.0);}`,
-    `#version 300 es\nprecision mediump float;void main(){}`,
-  );
-  const skyProg = link(
+  const B = gl.ARRAY_BUFFER, E = gl.ELEMENT_ARRAY_BUFFER, T = gl.TEXTURE_2D, F = gl.FRAMEBUFFER, R = gl.RENDERBUFFER;
+  let shadowProg, skyProg, pbrProg, postProg, blitProg, staticGpu, dynGpu, instGpu, quadVao, staticShadow, shadow, hdrTex, hdrDepth, hdrFbo, blitTex, uShadow, uSky, uPbr, uPost;
+  let contextLost = false, cachedShadowKey = "", hdrW = 0, hdrH = 0, renderScale = 1, lastStaticBytes = 0, lastDynBytes = 0, gpuFence = null;
+  const buildProgs = () => {
+    shadowProg = link(
+      `#version 300 es\nlayout(location=0) in vec3 a_pos;${instDecl}uniform mat4 u_lmvp;void main(){${instPos}gl_Position=u_lmvp*vec4(wp,1.0);}`,
+      `#version 300 es\nprecision mediump float;void main(){}`,
+    );
+    skyProg = link(
     `#version 300 es\nlayout(location=0) in vec2 a_uv;out vec2 v_ndc;void main(){v_ndc=a_uv*2.0-1.0;gl_Position=vec4(v_ndc,0.9999,1.0);}`,
     `#version 300 es\nprecision highp float;in vec2 v_ndc;uniform vec3 u_fwd,u_right,u_up,u_sky,u_fog,u_sun;uniform float u_aspect,u_tanHalf;out vec4 o_hdr;
 void main(){
@@ -84,7 +87,7 @@ float mu=max(dot(rd,u_sun),0.0);
 col+=vec3(1.05,0.80,0.46)*pow(mu,9.0)*0.32+vec3(2.2,1.9,1.45)*smoothstep(0.9984,0.9997,mu);
 o_hdr=vec4(max(col,vec3(0.0)),1.0);}`,
   );
-  const pbrProg = link(
+    pbrProg = link(
     `#version 300 es\nlayout(location=0) in vec3 a_pos;layout(location=1) in vec3 a_norm;layout(location=2) in vec3 a_col;${instDecl}uniform mat4 u_mvp,u_lmvp;out vec3 v_pos,v_norm,v_col;out vec4 v_lpos;
 void main(){${instPos}vec3 wn=u_inst>0.5?normalize(i_c0.xyz*a_norm.x+i_c1.xyz*a_norm.y+i_c2.xyz*a_norm.z):a_norm;
 v_pos=wp;v_norm=wn;v_col=u_inst>0.5?a_col*vec3(i_c0.w,i_c1.w,i_c2.w):a_col;v_lpos=u_lmvp*vec4(wp+wn*0.04,1.0);gl_Position=u_mvp*vec4(wp,1.0);}`,
@@ -133,7 +136,7 @@ if(isVisor)lit+=albedo*0.38;
 if(isWater)lit=mix(albedo*(hemi+0.4*shadow),skyLin+sunRad*pow(ndh,96.0),clamp(0.18+0.78*pow(1.0-ndv,4.0),0.0,0.95));
 o_hdr=vec4(max(mix(lit,fogLin,clamp(1.0-exp(-dist*0.0115),0.0,0.74)),vec3(0.0)),1.0);}`,
   );
-  const postProg = link(
+    postProg = link(
     `#version 300 es\nlayout(location=0) in vec2 a_uv;out vec2 v_uv;void main(){v_uv=a_uv;gl_Position=vec4(a_uv*2.0-1.0,0.0,1.0);}`,
     `#version 300 es\nprecision highp float;in vec2 v_uv;uniform sampler2D u_hdr;uniform vec2 u_invRes;out vec4 o_col;
 vec3 aces(vec3 x){return clamp((x*(2.51*x+0.03))/(x*(2.43*x+0.59)+0.14),0.0,1.0);}
@@ -142,13 +145,13 @@ vec3 c=texture(u_hdr,v_uv).rgb,avg=(texture(u_hdr,v_uv+vec2(0.0,u_invRes.y)).rgb
 vec3 aa=mix(c,(c+avg)*0.5,clamp(length(c-avg)*2.2,0.0,0.45));
 o_col=vec4(pow(aces(aa*1.06),vec3(1.0/2.2)),1.0);}`,
   );
-  const blitProg = link(
-    `#version 300 es\nlayout(location=0) in vec2 a_uv;out vec2 v_uv;void main(){v_uv=vec2(a_uv.x,1.0-a_uv.y);gl_Position=vec4(a_uv*2.0-1.0,0.0,1.0);}`,
-    `#version 300 es\nprecision mediump float;in vec2 v_uv;uniform sampler2D u_tex;out vec4 o_col;void main(){o_col=texture(u_tex,v_uv);}`,
-  );
-  if (!shadowProg || !skyProg || !pbrProg || !postProg) return null;
+    blitProg = link(
+      `#version 300 es\nlayout(location=0) in vec2 a_uv;out vec2 v_uv;void main(){v_uv=vec2(a_uv.x,1.0-a_uv.y);gl_Position=vec4(a_uv*2.0-1.0,0.0,1.0);}`,
+      `#version 300 es\nprecision mediump float;in vec2 v_uv;uniform sampler2D u_tex;out vec4 o_col;void main(){o_col=texture(u_tex,v_uv);}`,
+    );
+    return Boolean(shadowProg && skyProg && pbrProg && postProg);
+  };
 
-  const B = gl.ARRAY_BUFFER, E = gl.ELEMENT_ARRAY_BUFFER, T = gl.TEXTURE_2D, F = gl.FRAMEBUFFER, R = gl.RENDERBUFFER;
   const makeVao = (instanced = false) => {
     const vao = gl.createVertexArray(), pos = gl.createBuffer(), norm = gl.createBuffer(), col = gl.createBuffer(), idx = gl.createBuffer();
     const inst = instanced ? gl.createBuffer() : null;
@@ -161,14 +164,6 @@ o_col=vec4(pow(aces(aa*1.06),vec3(1.0/2.2)),1.0);}`,
     gl.bindBuffer(E, idx); gl.bindVertexArray(null);
     return { vao, pos, norm, col, idx, inst, count: 0, instCount: 0, capPos: 0, capIdx: 0, epoch: 0 };
   };
-  const staticGpu = makeVao(false), dynGpu = makeVao(false), instGpu = makeVao(true);
-
-  const quadVao = gl.createVertexArray(), quadBuf = gl.createBuffer();
-  gl.bindVertexArray(quadVao); gl.bindBuffer(B, quadBuf);
-  gl.bufferData(B, new Float32Array([0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1]), gl.STATIC_DRAW);
-  gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0); gl.bindVertexArray(null);
-  const drawQuad = () => { gl.bindVertexArray(quadVao); gl.drawArrays(gl.TRIANGLES, 0, 6); };
-
   const makeShadow = () => {
     const tex = gl.createTexture(), fbo = gl.createFramebuffer();
     gl.bindTexture(T, tex); gl.texImage2D(T, 0, gl.DEPTH_COMPONENT24, shadowSize, shadowSize, 0, gl.DEPTH_COMPONENT, gl.UNSIGNED_INT, null);
@@ -176,10 +171,28 @@ o_col=vec4(pow(aces(aa*1.06),vec3(1.0/2.2)),1.0);}`,
     gl.bindFramebuffer(F, fbo); gl.framebufferTexture2D(F, gl.DEPTH_ATTACHMENT, T, tex, 0); gl.drawBuffers([gl.NONE]); gl.readBuffer(gl.NONE);
     return { tex, fbo };
   };
-  const staticShadow = makeShadow(), shadow = makeShadow();
-  let cachedShadowKey = "", hdrW = 0, hdrH = 0, renderScale = 1, lastStaticBytes = 0, lastDynBytes = 0, gpuFence = null;
-
-  const hdrTex = gl.createTexture(), hdrDepth = gl.createRenderbuffer(), hdrFbo = gl.createFramebuffer();
+  const buildGpu = () => {
+    gl.getExtension("EXT_color_buffer_half_float");
+    if (!buildProgs()) return false;
+    staticGpu = makeVao(false); dynGpu = makeVao(false); instGpu = makeVao(true);
+    quadVao = gl.createVertexArray(); const quadBuf = gl.createBuffer();
+    gl.bindVertexArray(quadVao); gl.bindBuffer(B, quadBuf);
+    gl.bufferData(B, new Float32Array([0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1]), gl.STATIC_DRAW);
+    gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0); gl.bindVertexArray(null);
+    staticShadow = makeShadow(); shadow = makeShadow();
+    hdrTex = gl.createTexture(); hdrDepth = gl.createRenderbuffer(); hdrFbo = gl.createFramebuffer();
+    blitTex = gl.createTexture(); gl.bindTexture(T, blitTex); setTexClamp(gl.NEAREST); gl.bindFramebuffer(F, null);
+    uShadow = uniforms(shadowProg, ["lmvp", "inst"]);
+    uSky = uniforms(skyProg, ["fwd", "right", "up", "sky", "fog", "sun", "aspect", "tanHalf"]);
+    uPbr = uniforms(pbrProg, ["mvp", "lmvp", "eye", "fog", "sky", "sun", "time", "shadows", "invSmap", "smap", "inst", "quality"]);
+    uPost = uniforms(postProg, ["hdr", "invRes"]);
+    hdrW = hdrH = 0; cachedShadowKey = ""; gpuFence = null;
+    return true;
+  };
+  if (!buildGpu()) return null;
+  canvas.addEventListener?.("webglcontextlost", (e) => { e.preventDefault?.(); contextLost = true; gpuFence = null; });
+  canvas.addEventListener?.("webglcontextrestored", () => { contextLost = false; buildGpu(); });
+  const drawQuad = () => { gl.bindVertexArray(quadVao); gl.drawArrays(gl.TRIANGLES, 0, 6); };
   const ensureHdrFbo = (w, h) => {
     if (w === hdrW && h === hdrH) return true;
     hdrW = w; hdrH = h;
@@ -188,12 +201,6 @@ o_col=vec4(pow(aces(aa*1.06),vec3(1.0/2.2)),1.0);}`,
     gl.bindFramebuffer(F, hdrFbo); gl.framebufferTexture2D(F, gl.COLOR_ATTACHMENT0, T, hdrTex, 0); gl.framebufferRenderbuffer(F, gl.DEPTH_ATTACHMENT, R, hdrDepth);
     const ok = gl.checkFramebufferStatus(F) === gl.FRAMEBUFFER_COMPLETE; gl.bindFramebuffer(F, null); return ok;
   };
-  const blitTex = gl.createTexture(); gl.bindTexture(T, blitTex); setTexClamp(gl.NEAREST); gl.bindFramebuffer(F, null);
-
-  const uShadow = uniforms(shadowProg, ["lmvp", "inst"]);
-  const uSky = uniforms(skyProg, ["fwd", "right", "up", "sky", "fog", "sun", "aspect", "tanHalf"]);
-  const uPbr = uniforms(pbrProg, ["mvp", "lmvp", "eye", "fog", "sky", "sun", "time", "shadows", "invSmap", "smap", "inst", "quality"]);
-  const uPost = uniforms(postProg, ["hdr", "invRes"]);
   const lightOrtho = mat4Ortho(-34, 34, -34, 34, -48, 64);
 
   const streamUpload = (target, buf, view, capKey) => {
@@ -206,8 +213,9 @@ o_col=vec4(pow(aces(aa*1.06),vec3(1.0/2.2)),1.0);}`,
     backend: "webgl2",
     isSoftware,
     setRenderScale(pm) { renderScale = Math.max(0.65, Math.min(1, (pm || 1000) / 1000)); },
-    getUploadTelemetry() { return { staticBytes: lastStaticBytes, dynBytes: lastDynBytes, staticEpoch: staticGpu.epoch, instCount: instGpu.instCount }; },
+    getUploadTelemetry() { return { staticBytes: lastStaticBytes, dynBytes: lastDynBytes, staticEpoch: staticGpu.epoch, instCount: instGpu.instCount, contextLost }; },
     uploadSplitBuffers(sv, dv, iv = null) {
+      if (contextLost || gl.isContextLost()) return;
       lastStaticBytes = 0; lastDynBytes = 0;
       if (sv && sv.epoch !== staticGpu.epoch) {
         [[B, staticGpu.pos, sv.pos], [B, staticGpu.norm, sv.norm], [B, staticGpu.col, sv.col], [E, staticGpu.idx, sv.idx]].forEach(([t, b, d]) => {
@@ -233,6 +241,7 @@ o_col=vec4(pow(aces(aa*1.06),vec3(1.0/2.2)),1.0);}`,
       } else instGpu.instCount = 0;
     },
     uploadPackedBuffers(posF32, normF32, colF32, idxU32) {
+      if (contextLost || gl.isContextLost()) return;
       [[B, staticGpu.pos, posF32], [B, staticGpu.norm, normF32], [B, staticGpu.col, colF32], [E, staticGpu.idx, idxU32]].forEach(([t, b, d]) => {
         gl.bindBuffer(t, b); gl.bufferData(t, d, gl.STATIC_DRAW);
       });
@@ -240,7 +249,7 @@ o_col=vec4(pow(aces(aa*1.06),vec3(1.0/2.2)),1.0);}`,
     },
     render(mvp, eye, lodSpec, timeSec, lookTarget = [0, 1.8, 0], fovRad = Math.PI / 3.4) {
       const w = canvas.width | 0, h = canvas.height | 0;
-      if (w <= 0 || h <= 0) return;
+      if (contextLost || w <= 0 || h <= 0 || gl.isContextLost()) return;
       if (gpuFence) {
         if (gl.getSyncParameter(gpuFence, gl.SYNC_STATUS) === gl.UNSIGNALED && isSoftware) return;
         gl.deleteSync(gpuFence); gpuFence = null;
@@ -307,7 +316,7 @@ o_col=vec4(pow(aces(aa*1.06),vec3(1.0/2.2)),1.0);}`,
       if (typeof gl.fenceSync === "function") { gpuFence = gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE, 0); gl.flush(); }
     },
     blitTensorRgba(rgbaBytes, width, height) {
-      if (!blitProg || !rgbaBytes || width <= 0 || height <= 0) return;
+      if (contextLost || !blitProg || !rgbaBytes || width <= 0 || height <= 0 || gl.isContextLost()) return;
       gl.bindFramebuffer(F, null); gl.viewport(0, 0, canvas.width, canvas.height); gl.disable(gl.DEPTH_TEST); gl.useProgram(blitProg);
       gl.activeTexture(gl.TEXTURE0); gl.bindTexture(T, blitTex); gl.texImage2D(T, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, rgbaBytes);
       drawQuad(); gl.bindVertexArray(null);

@@ -38,14 +38,16 @@ let ringCapacity = 64;
 let snapshotMaxBytes = 32768;
 let tileEdgePx = 16;
 
-const wasmPromise = instantiateWasmModule(wasmUrl).then((ex) => {
-  const seed = ex.verdant_wasm_default_seed();
-  ex.verdant_wasm_init(seed);
-  ringCapacity = ex.verdant_wasm_worker_ring_capacity() >>> 0;
-  snapshotMaxBytes = ex.verdant_wasm_snapshot_max_bytes() >>> 0;
-  tileEdgePx = ex.verdant_wasm_tile_edge_pixels() >>> 0;
-  return ex;
-});
+const initCoreSceneWasm = () =>
+  instantiateWasmModule(wasmUrl).then((ex) => {
+    const seed = ex.verdant_wasm_default_seed();
+    ex.verdant_wasm_init(seed);
+    ringCapacity = ex.verdant_wasm_worker_ring_capacity() >>> 0;
+    snapshotMaxBytes = ex.verdant_wasm_snapshot_max_bytes() >>> 0;
+    tileEdgePx = ex.verdant_wasm_tile_edge_pixels() >>> 0;
+    return ex;
+  });
+let wasmPromise = initCoreSceneWasm();
 
 let uorcModPromise = null;
 function getUorcWasm() {
@@ -312,7 +314,10 @@ function drawScene(eye, lookTarget, lodSpec, simClockSec, rebuildDynamic = false
 
 self.onmessage = async ({ data: msg }) => {
   if (!msg || typeof msg.kind !== "string") return;
-  if (pendingCommands >= ringCapacity && msg.kind === "frame") return;
+  if (pendingCommands >= ringCapacity && msg.kind === "frame") {
+    self.postMessage({ kind: "frame-dropped" });
+    return;
+  }
   pendingCommands++;
   try {
     wasm ??= await wasmPromise;
@@ -826,6 +831,24 @@ self.onmessage = async ({ data: msg }) => {
       return;
     }
 
+    if (msg.kind === "stability-audit") {
+      uorcWasm ??= await getUorcWasm();
+      const t0 = performance.now();
+      const len = uorcWasm.verdant_wasm_stability_audit_aux((msg.bodyCount || 512) >>> 0) >>> 0;
+      const elapsedMs = performance.now() - t0;
+      if (len === 0) {
+        self.postMessage({ kind: "stability-audit", id: msg.id, ok: false });
+        return;
+      }
+      const kvMap = {};
+      for (const part of new TextDecoder().decode(readAuxBytes(uorcWasm)).split("|")) {
+        const eq = part.indexOf("=");
+        if (eq > 0) kvMap[part.slice(0, eq)] = part.slice(eq + 1);
+      }
+      self.postMessage({ kind: "stability-audit", id: msg.id, ok: true, elapsedMs, metrics: kvMap });
+      return;
+    }
+
     if (msg.kind === "verify-ui") {
       uorcWasm ??= await getUorcWasm();
       const count = uorcWasm.verdant_wasm_verify_ui((msg.width || 1280) >>> 0, (msg.height || 900) >>> 0) >>> 0;
@@ -977,6 +1000,12 @@ self.onmessage = async ({ data: msg }) => {
       });
       return;
     }
+  } catch (err) {
+    if (typeof WebAssembly !== "undefined" && err instanceof WebAssembly.RuntimeError) {
+      wasm = null; uorcWasm = null; uorcModPromise = null; wasmPromise = initCoreSceneWasm();
+    }
+    if (msg.kind === "frame") self.postMessage({ kind: "frame-dropped" });
+    else if (msg.id) self.postMessage({ kind: "worker-error", id: msg.id, ok: false, error: String(err?.message || err) });
   } finally {
     pendingCommands = Math.max(0, pendingCommands - 1);
   }

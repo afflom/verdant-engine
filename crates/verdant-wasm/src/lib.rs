@@ -25,9 +25,9 @@ use verdant_core::ecs::TwoLevelBvh;
 #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
 use verdant_core::ecs::{BoundingVolumeHierarchy, SceneWorld};
 #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
-use verdant_core::geometry::ProceduralMesh;
+use verdant_core::geometry::{generate_faceted_prism_mesh, ProceduralMesh};
 #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
-use verdant_core::gltf_io::{export_scene_to_glb, import_glb_to_scene};
+use verdant_core::gltf_io::{export_scene_to_glb, import_glb_to_scene, pack_multi_primitive_glb};
 use verdant_core::hd_world::{hd_terrain_height, synthesize_hd_citadel_sector, HdSectorBundle};
 #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
 use verdant_core::math::Mat4;
@@ -65,9 +65,11 @@ use verdant_core::streaming::{
     terrain_height_with_params, PhysicalEnvironment, TerrainReliefParams,
 };
 #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
-use verdant_core::tensor::render_triangles_tile_framebuffer;
+use verdant_core::tensor::{render_triangles_tile_framebuffer_with_scratch, TileRasterScratch};
 #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
 use verdant_core::ui::UiTree;
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+use verdant_core::universe::UniverseCellCoord;
 use verdant_core::universe::{UniverseManager, UniversePosition};
 
 /// Refusal returned when a browser worker command, LOD rank, or snapshot/UORC envelope is invalid.
@@ -150,6 +152,9 @@ pub struct WasmRuntimeBridge {
     /// Portable `16x16` tile-shaded `RGBA8` framebuffer rendered by `uor-matmul` tensor kernels.
     #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
     pub framebuffer_rgba: Vec<u8>,
+    /// Reusable CSR software tile-binning arena (`0` steady-state inner `Vec` allocations).
+    #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+    pub tile_scratch: TileRasterScratch,
     /// Zero-copy world-space vertex, normal, color, index, and `16x16` tile triangle buffers.
     pub scene_buffers: PackedSceneRenderBuffers,
     /// Second-order neuromorphic LIF/SSM observer recurrence coupling player and world attention.
@@ -436,6 +441,8 @@ impl WasmRuntimeBridge {
             aux_buffer: Vec::new(),
             #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
             framebuffer_rgba: Vec::new(),
+            #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+            tile_scratch: TileRasterScratch::new(),
             scene_buffers: PackedSceneRenderBuffers::default(),
             observer_loop,
             last_directive: None,
@@ -1151,9 +1158,9 @@ impl WasmRuntimeBridge {
                 },
                 &self.two_level_bvh,
             )
-            .map_err(|_| WasmBridgeError::InvalidSnapshotEnvelope {
+            .map_err(|e| WasmBridgeError::InvalidSnapshotEnvelope {
                 byte_len: 0,
-                reason: "lawful physics step out of bounds".to_string(),
+                reason: bridge_reason(e),
             })?;
 
         let mut cap_pos = prev_local;
@@ -1326,14 +1333,16 @@ impl WasmRuntimeBridge {
         let max_tris = pk_u64(prism_kernel::skinWeightScale()) as usize;
         let all_tris = &self.scene_buffers.tile_triangles;
         let sun = Vec3::new(1.0 / two_f, 1.0, 1.0 / four);
-        let fb = if all_tris.len() <= max_tris {
-            render_triangles_tile_framebuffer(
+        core::mem::swap(&mut self.tile_scratch.rgba8, &mut self.framebuffer_rgba);
+        let res = if all_tris.len() <= max_tris {
+            render_triangles_tile_framebuffer_with_scratch(
                 aligned_w,
                 aligned_h,
                 &vp,
                 sun,
                 u64::from(self.lod_rank),
                 all_tris,
+                &mut self.tile_scratch,
             )
         } else {
             let tail_keep = (pk_u64(prism_kernel::sHundred()) * prism_kernel::sThree()) as usize;
@@ -1347,20 +1356,21 @@ impl WasmRuntimeBridge {
                 idx += stride;
             }
             sampled.extend_from_slice(&all_tris[tail_start..]);
-            render_triangles_tile_framebuffer(
+            render_triangles_tile_framebuffer_with_scratch(
                 aligned_w,
                 aligned_h,
                 &vp,
                 sun,
                 u64::from(self.lod_rank),
                 &sampled,
+                &mut self.tile_scratch,
             )
-        }
-        .map_err(|e| WasmBridgeError::InvalidSnapshotEnvelope {
+        };
+        core::mem::swap(&mut self.tile_scratch.rgba8, &mut self.framebuffer_rgba);
+        res.map_err(|e| WasmBridgeError::InvalidSnapshotEnvelope {
             byte_len: 0,
             reason: bridge_reason(e),
         })?;
-        self.framebuffer_rgba = fb.rgba8;
         Ok(self.framebuffer_rgba.len())
     }
 
@@ -1672,11 +1682,12 @@ fn global_bridge() -> &'static Mutex<Option<WasmRuntimeBridge>> {
 pub extern "C" fn verdant_wasm_init(seed: u64) -> u32 {
     match WasmRuntimeBridge::new(seed) {
         Ok(bridge) => {
-            if let Ok(mut guard) = global_bridge().lock() {
-                *guard = Some(bridge);
-                return 1;
-            }
-            0
+            global_bridge().clear_poison();
+            let mut guard = global_bridge()
+                .lock()
+                .unwrap_or_else(|poisoned| poisoned.into_inner());
+            *guard = Some(bridge);
+            1
         }
         Err(_) => 0,
     }
@@ -2265,6 +2276,7 @@ pub extern "C" fn verdant_wasm_mover_x() -> f64 {
 }
 
 /// Current autonomous kinematic spline mover Y coordinate in world meters.
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
 #[no_mangle]
 pub extern "C" fn verdant_wasm_mover_y() -> f64 {
     global_bridge()
@@ -2301,6 +2313,7 @@ pub extern "C" fn verdant_wasm_mover_z() -> f64 {
 }
 
 /// Current autonomous kinematic spline mover heading yaw in radians.
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
 #[no_mangle]
 pub extern "C" fn verdant_wasm_mover_yaw() -> f64 {
     global_bridge()
@@ -3725,6 +3738,134 @@ pub extern "C" fn verdant_wasm_aqm_benchmark_aux(entity_count: u32) -> u32 {
         monoid.involution_cancellations,
         monoid.additive_merges,
         journal.stored_checkpoint_count(),
+    );
+    bridge.aux_buffer = summary.into_bytes();
+    bridge.aux_buffer.len() as u32
+}
+
+/// Executes a live rock-solid stability and arbitrary-workload audit in WebAssembly (`VE-35`):
+/// 1. Flat CSR software tile rasterization (`steady_alloc_growth == 0` bytes on frame 2),
+/// 2. `body_count`-body spatial-grid broadphase sphere-sphere collision resolution + `NaN` intent sanitization,
+/// 3. `52`-bit IEEE-754 floating-origin horizon refusal (`UniversePosition::new_canonical`),
+/// 4. Multi-primitive Khronos `.glb` packing and merging via `import_glb_to_scene`.
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+#[no_mangle]
+pub extern "C" fn verdant_wasm_stability_audit_aux(body_count: u32) -> u32 {
+    let mut guard = global_bridge()
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
+    let Some(bridge) = guard.as_mut() else {
+        return 0;
+    };
+
+    let two = 1usize + 1usize;
+    let four = two * two;
+    let eight = four * two;
+    let sixteen = eight * two;
+    let tile_w = (sixteen * eight) as u32;
+    let tile_h = (sixteen * four) as u32;
+
+    if bridge.scene_buffers.indices.is_empty() {
+        let _ = bridge.rebuild_scene_buffers(0.0);
+    }
+    bridge.scene_buffers.ensure_tile_triangles_built();
+    let sample_len = bridge
+        .scene_buffers
+        .tile_triangles
+        .len()
+        .min(sixteen * eight);
+    let sample_tris = bridge.scene_buffers.tile_triangles[..sample_len].to_vec();
+    let vp = Mat4::perspective(
+        std::f64::consts::FRAC_PI_3,
+        (tile_w as f64) / (tile_h as f64),
+        1.0 / (four as f64),
+        (sixteen * eight) as f64,
+    ) * Mat4::look_at(
+        bridge.last_camera_frame.eye,
+        bridge.last_camera_frame.target,
+        Vec3::UP,
+    );
+    let sun = Vec3::new(1.0 / (two as f64), 1.0, 1.0 / (four as f64));
+    let mut csr_scratch = TileRasterScratch::new();
+    let (csr_tiles, csr_tris) = render_triangles_tile_framebuffer_with_scratch(
+        tile_w,
+        tile_h,
+        &vp,
+        sun,
+        u64::from(bridge.lod_rank),
+        &sample_tris,
+        &mut csr_scratch,
+    )
+    .unwrap_or((0, 0));
+    let cap_after_first = csr_scratch.total_allocated_bytes();
+    let _ = render_triangles_tile_framebuffer_with_scratch(
+        tile_w,
+        tile_h,
+        &vp,
+        sun,
+        u64::from(bridge.lod_rank),
+        &sample_tris,
+        &mut csr_scratch,
+    );
+    let csr_alloc_growth = csr_scratch
+        .total_allocated_bytes()
+        .saturating_sub(cap_after_first);
+
+    // Spatial-grid dynamic sphere broadphase + NaN wish sanitization:
+    let n_bodies = (body_count as usize).max(sixteen * four);
+    let mut pw = PhysicsWorld::new(PhysicsWorldConfig::default());
+    let cols = sixteen;
+    let half_f = 1.0 / (two as f64);
+    let radius = half_f;
+    let spacing = radius * (1.0 + half_f);
+    for i in 0..n_bodies {
+        let gx = (i % cols) as f64;
+        let gz = (i / cols) as f64;
+        if let Ok(mut rb) = RigidBody::new(
+            "AuditSphere",
+            Vec3::new(gx * spacing, (four as f64) + radius, gz * spacing),
+            1.0 + half_f,
+            radius,
+            half_f,
+        ) {
+            rb.velocity = Vec3::new(if i % two == 0 { 1.0 } else { -1.0 }, 0.0, 0.0);
+            pw.bodies.push(rb);
+        }
+    }
+    pw.player_capsule = Some(CapsuleController::new(Vec3::new(0.0, two as f64, 0.0)));
+    let contacts = pw.resolve_dynamic_body_broadphase();
+    let dt = 1.0 / ((sixteen * four) as f64);
+    let _ = pw.step(dt, Vec3::new(f64::NAN, f64::INFINITY, f64::NEG_INFINITY));
+    let nan_safe = u32::from(
+        pw.player_capsule
+            .as_ref()
+            .is_some_and(|c| c.foot_position.x.is_finite() && c.foot_position.z.is_finite()),
+    );
+
+    // 52-bit exact IEEE-754 floating-origin horizon guard:
+    let kc = verdant_core::verdant_tensor::kernel_consts();
+    let cell_span = verdant_core::universe::canonical_cell_span_meters();
+    let astro_x = (verdant_core::verdant_tensor::pow2_u64(kc.f64_exact_mantissa_bits) as f64)
+        * cell_span
+        * (two as f64);
+    let horizon_refused = u32::from(
+        UniversePosition::new_canonical(UniverseCellCoord::ORIGIN, Vec3::new(astro_x, 0.0, 0.0))
+            .is_err(),
+    );
+
+    // Multi-primitive Khronos GLB pack + import merge:
+    let mats = canonical_pbr_material_library();
+    let ma = generate_faceted_prism_mesh(half_f, 1.0);
+    let mb = generate_faceted_prism_mesh(1.0, two as f64);
+    let glb_tris = pack_multi_primitive_glb("AuditMulti", &[(&ma, 0), (&mb, 1)], &mats)
+        .and_then(|bytes| import_glb_to_scene(&bytes))
+        .ok()
+        .and_then(|imp| imp.meshes.first().map(|m| m.triangle_count()))
+        .unwrap_or(0);
+
+    let summary = format!(
+        "csr_tiles={csr_tiles}|csr_tris={csr_tris}|csr_alloc_growth={csr_alloc_growth}|bodies={}|contacts={contacts}|nan_safe={nan_safe}|horizon_refused={horizon_refused}|glb_tris={glb_tris}",
+        pw.bodies.len(),
     );
     bridge.aux_buffer = summary.into_bytes();
     bridge.aux_buffer.len() as u32

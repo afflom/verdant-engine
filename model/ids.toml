@@ -312,3 +312,9 @@ id = "VE-34"
 level = "build"
 suite = "engine"
 statement = "Prism algebraic monoid command canonicalization, eight-column 64-bit bit-plane archetype matrices, in-place tropical min-plus closure with next-hop paths, O(P) hash-indexed NavMesh extraction, sparse two-body XPBD Delassus solves, stride-8 rollback checkpointing, and content-addressed kappa transition memoization scale deterministically and refuse invalid coded or cyclic inputs"
+
+[[id]]
+id = "VE-35"
+level = "build"
+suite = "engine"
+statement = "Flat CSR prefix-sum software tile rasterization, spatial-grid multi-body broadphase collisions, multi-primitive Khronos GLB ingestion, WebGL2 context-loss recovery, deadlock-free worker frame-ack and RPC watchdogs, and 52-bit floating-origin horizon guards execute with zero steady-state inner heap allocations and refuse astronomical or degenerate inputs"

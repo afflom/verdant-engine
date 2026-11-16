@@ -121,6 +121,12 @@ pub struct VerifiedKernelConsts {
     pub q12_scale_f64: f64,
     /// Reciprocal squared `Q12` scale (`1.0 / 4096.0^2`).
     pub inv_q12_sq_f64: f64,
+    /// Exact IEEE-754 `f64` mantissa bit horizon (`52`) for floating-origin sector shifts.
+    pub f64_exact_mantissa_bits: u32,
+    /// Maximum worker RPC watchdog timeout in milliseconds (`15000`).
+    pub worker_rpc_watchdog_millis: u64,
+    /// Terminal linear velocity stability ceiling in meters per second (`120.0`).
+    pub physics_max_speed_mps: f64,
 }
 
 static KERNEL_CONSTS: OnceLock<VerifiedKernelConsts> = OnceLock::new();
@@ -156,6 +162,10 @@ pub fn kernel_consts() -> &'static VerifiedKernelConsts {
         let codebook_lut_len = CODEBOOK_PRODUCT_LUT_LEN;
         let worker_max_in_flight = 1_u32 + 1_u32;
 
+        let f64_exact_mantissa_bits = (five_u * ten_u + two_u) as u32;
+        let worker_rpc_watchdog_millis = (ten_u + five_u) * skin_weight_scale;
+        let physics_max_speed_mps = (two_u * (five_u + 1_u64) * ten_u) as f64;
+
         #[cfg(not(target_arch = "wasm32"))]
         {
             debug_assert_eq!(prism_kernel::ccdSkinMarginMilli(), ccd_skin_margin_milli);
@@ -184,6 +194,18 @@ pub fn kernel_consts() -> &'static VerifiedKernelConsts {
             debug_assert_eq!(
                 prism_kernel::workerMaxInFlightFrames(),
                 u64::from(worker_max_in_flight)
+            );
+            debug_assert_eq!(
+                prism_kernel::f64ExactMantissaBits(),
+                Ok(u64::from(f64_exact_mantissa_bits))
+            );
+            debug_assert_eq!(
+                prism_kernel::workerRpcWatchdogMillis(),
+                Ok(worker_rpc_watchdog_millis)
+            );
+            debug_assert_eq!(
+                prism_kernel::physicsMaxSpeedMetersPerSec(),
+                Ok(physics_max_speed_mps as u64)
             );
         }
 
@@ -214,6 +236,9 @@ pub fn kernel_consts() -> &'static VerifiedKernelConsts {
             inv_q16_sq_f64,
             q12_scale_f64,
             inv_q12_sq_f64,
+            f64_exact_mantissa_bits,
+            worker_rpc_watchdog_millis,
+            physics_max_speed_mps,
         }
     })
 }
@@ -815,7 +840,10 @@ pub use neural::{
     infer_coded_slm_intent_logits, step_neuromorphic_lif_ssm_ring,
     verify_conservation_and_reachability, ConservationAuditReport, NeuromorphicStepOutput,
 };
-pub use raster::{render_triangles_tile_framebuffer, RasterTriangle, SoftwareTileFramebuffer};
+pub use raster::{
+    render_triangles_tile_framebuffer, render_triangles_tile_framebuffer_with_scratch,
+    RasterTriangle, SoftwareTileFramebuffer, TileRasterScratch,
+};
 pub use tropical::{
     reconstruct_tropical_next_hop_path, tropical_frustum_distance_bounds,
     tropical_gjk_support_batch, tropical_gjk_support_single, tropical_inf_sentinel,

@@ -56,6 +56,7 @@ model does not sanction.
 | `VE-32` | `build` | Verdant Studio themes, six-tab game-creation workbench, seven executable stakeholder journeys, four starter archetypes, and six live WebAssembly documentation embeds satisfy W3C DTCG token purity, Core-Wasm verification, and zero-error C-ABI export parity |
 | `VE-33` | `build` | Hoisted Stratum-0 Prism constants, 256-entry CodebookProductLut contractions, 64-bit word-packed SoaSceneTable sweeps, contiguous 32-byte SAH FlatBvh traversal, epoch-split static and dynamic WebGL2 VAOs without gl.finish stalls, and hardware drawElementsInstanced batching scale deterministically to arbitrary 10k-entity and 50k-triangle workloads |
 | `VE-34` | `build` | Prism algebraic monoid command canonicalization, eight-column 64-bit bit-plane archetype matrices, in-place tropical min-plus closure with next-hop paths, O(P) hash-indexed NavMesh extraction, sparse two-body XPBD Delassus solves, stride-8 rollback checkpointing, and content-addressed kappa transition memoization scale deterministically and refuse invalid coded or cyclic inputs |
+| `VE-35` | `build` | Flat CSR prefix-sum software tile rasterization, spatial-grid multi-body broadphase collisions, multi-primitive Khronos GLB ingestion, WebGL2 context-loss recovery, deadlock-free worker frame-ack and RPC watchdogs, and 52-bit floating-origin horizon guards execute with zero steady-state inner heap allocations and refuse astronomical or degenerate inputs |
 
 ## fidelity
 

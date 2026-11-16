@@ -1479,11 +1479,55 @@ definition{
   body: (if ((((archetypeBitPlaneColumns) =? (sEight)) && ((rollbackCheckpointStrideFrames) =? (sEight))) && (((octantMod8Fusion 1 (sSeven)) =? 0) && (((octantMod8Fusion (sTwo) (sTwo)) =? (sFour)) && ((commandInvolutionCancels (sTwo) (sTwo) true true) && ((not (commandInvolutionCancels (sTwo) (sTwo) false true)) && (not (commandInvolutionCancels 1 (sTwo) true true))))))) then (((codedMatmulAdmissionValid (Foundation.Ontology.V1.Model::pow2Constructive (sSix)) (sThirtyTwo) false true) && ((not (codedMatmulAdmissionValid (Foundation.Ontology.V1.Model::pow2Constructive (sSix)) (sThirtyTwo) true true)) && (not (codedMatmulAdmissionValid (sSixteen) (sThirtyTwo) false true)))) && ((uorcChallengerAdmissionValid (sTen) (sTwenty) true true) && ((not (uorcChallengerAdmissionValid (sThirty) (sTwenty) true true)) && (not (uorcChallengerAdmissionValid (sTen) (sTwenty) false true))))) else false)
 }
 
+definition{name: f64ExactMantissaBits, parameters: [], result: Nat, body: ((sFifty) + (sTwo))}
+
+definition{
+  name: workerRpcWatchdogMillis,
+  parameters: [],
+  result: Nat,
+  body: (prim multiply (sFifteen) (skinWeightScale) : Nat)
+}
+
+definition{
+  name: physicsMaxSpeedMetersPerSec,
+  parameters: [],
+  result: Nat,
+  body: (prim multiply (sTwo) (sSixty) : Nat)
+}
+
+definition{
+  name: csrTilePrefixMonotonic,
+  parameters: [offsetCur : Nat, offsetNext : Nat, tileCount : Nat],
+  result: Bool,
+  body: ((offsetCur + tileCount) =? offsetNext)
+}
+
+definition{
+  name: gpuContextHealthy,
+  parameters: [contextLost : Bool, dimensionsValid : Bool],
+  result: Bool,
+  body: ((not contextLost) && dimensionsValid)
+}
+
+definition{
+  name: watchdogWithinBound,
+  parameters: [elapsedMillis : Nat, maxTimeoutMillis : Nat],
+  result: Bool,
+  body: (elapsedMillis <=? maxTimeoutMillis)
+}
+
+definition{
+  name: stabilityAndRefinementDirect,
+  parameters: [],
+  result: Bool,
+  body: (if ((((f64ExactMantissaBits) =? ((sFifty) + (sTwo))) && ((workerRpcWatchdogMillis) =? (prim multiply (sFifteen) (skinWeightScale) : Nat))) && ((physicsMaxSpeedMetersPerSec) =? (prim multiply (sTwo) (sSixty) : Nat))) then (((csrTilePrefixMonotonic (sTen) (sFourteen) (sFour)) && (not (csrTilePrefixMonotonic (sTen) (sFifteen) (sFour)))) && (((gpuContextHealthy false true) && ((not (gpuContextHealthy true true)) && (not (gpuContextHealthy false false)))) && ((watchdogWithinBound (skinWeightScale) (workerRpcWatchdogMillis)) && (not (watchdogWithinBound ((workerRpcWatchdogMillis) + 1) (workerRpcWatchdogMillis)))))) else false)
+}
+
 definition{
   name: workloadPerformanceDirect,
   parameters: [],
   result: Bool,
-  body: (if ((((wordBitWidth) =? (Foundation.Ontology.V1.Model::pow2Constructive (sSix))) && (((wordCountForEntities 0) =? 0) && (((wordCountForEntities 1) =? 1) && (((wordCountForEntities (sSixtyFive)) =? (sTwo)) && ((wordPackedFilterValid (sSixtyFive) (sTwo)) && (not (wordPackedFilterValid (sSixtyFive) 1))))))) && ((((sahBinCount) =? (sEight)) && (((flatBvhLeafMaxPrims) =? (sFour)) && ((flatBvhStackCapacity) =? (Foundation.Ontology.V1.Model::pow2Constructive (sSix))))) && ((flatBvhChildOrderNearFirst (sTen) (sTwenty)) && ((not (flatBvhChildOrderNearFirst (sTwenty) (sTen))) && ((flatBvhNodeBoundsValid 0 1 (sFour)) && ((not (flatBvhNodeBoundsValid (sTwo) 1 (sFour))) && (not (flatBvhNodeBoundsValid 0 (sFour) (sFour))))))))) then (((((epochElisionAdmissible (sThree) (sThree) false) && ((not (epochElisionAdmissible (sTwo) (sThree) false)) && (not (epochElisionAdmissible (sThree) (sThree) true)))) && (((workerInFlightAdmissible 1) && ((workerInFlightAdmissible (sTwo)) && (not (workerInFlightAdmissible (sThree))))) && ((((governorRecommendedScalePermille (sTen) (sTwenty)) =? (skinWeightScale)) && (((governorRecommendedScalePermille (sThirty) (sTwenty)) =? (prim multiply (sEightyFive) (sTen) : Nat)) && ((governorRecommendedScalePermille (sFifty) (sTwenty)) =? (prim multiply (sSeven) (sHundred) : Nat)))) && ((codebookProductTableSize) =? (Foundation.Ontology.V1.Model::pow2Constructive (sEight)))))) && (aqmWorkloadExtrapolationsDirect)) && (runtimeInvariantsDirect)) else false)
+  body: (if ((((wordBitWidth) =? (Foundation.Ontology.V1.Model::pow2Constructive (sSix))) && (((wordCountForEntities 0) =? 0) && (((wordCountForEntities 1) =? 1) && (((wordCountForEntities (sSixtyFive)) =? (sTwo)) && ((wordPackedFilterValid (sSixtyFive) (sTwo)) && (not (wordPackedFilterValid (sSixtyFive) 1))))))) && ((((sahBinCount) =? (sEight)) && (((flatBvhLeafMaxPrims) =? (sFour)) && ((flatBvhStackCapacity) =? (Foundation.Ontology.V1.Model::pow2Constructive (sSix))))) && ((flatBvhChildOrderNearFirst (sTen) (sTwenty)) && ((not (flatBvhChildOrderNearFirst (sTwenty) (sTen))) && ((flatBvhNodeBoundsValid 0 1 (sFour)) && ((not (flatBvhNodeBoundsValid (sTwo) 1 (sFour))) && (not (flatBvhNodeBoundsValid 0 (sFour) (sFour))))))))) then ((((((epochElisionAdmissible (sThree) (sThree) false) && ((not (epochElisionAdmissible (sTwo) (sThree) false)) && (not (epochElisionAdmissible (sThree) (sThree) true)))) && (((workerInFlightAdmissible 1) && ((workerInFlightAdmissible (sTwo)) && (not (workerInFlightAdmissible (sThree))))) && ((((governorRecommendedScalePermille (sTen) (sTwenty)) =? (skinWeightScale)) && (((governorRecommendedScalePermille (sThirty) (sTwenty)) =? (prim multiply (sEightyFive) (sTen) : Nat)) && ((governorRecommendedScalePermille (sFifty) (sTwenty)) =? (prim multiply (sSeven) (sHundred) : Nat)))) && ((codebookProductTableSize) =? (Foundation.Ontology.V1.Model::pow2Constructive (sEight)))))) && (aqmWorkloadExtrapolationsDirect)) && (stabilityAndRefinementDirect)) && (runtimeInvariantsDirect)) else false)
 }
 
 definition{
@@ -1529,10 +1573,17 @@ definition{
 }
 
 definition{
+  name: perfTier6RockSolidStabilityAndBroadphase,
+  parameters: [],
+  result: WorkloadOptimizationSpec,
+  body: (record WorkloadOptimizationSpec {index := (sSix), stratum := (sTwo), zeroPerFrameHeapAllocs := true, epochGuarded := true, name := "PerfTierRockSolidStabilityCsrRasterAndBroadphase", text := "Flat CSR prefix-sum software tile binning, spatial-grid multi-body broadphase collisions, multi-primitive GLB merging, WebGL2 context-loss recovery, and deadlock-free worker watchdog guards."})
+}
+
+definition{
   name: workloadOptimizations,
   parameters: [],
   result: (List WorkloadOptimizationSpec),
-  body: (cons (perfTier0HoistedStratumConsts) (cons (perfTier1WordPackedSoaEcs) (cons (perfTier2ContiguousSahFlatBvh) (cons (perfTier3EpochSplitAsyncGpu) (cons (perfTier4HardwareInstancedBatches) (cons (perfTier5AqmMonoidBitPlanesKappa) (nil WorkloadOptimizationSpec)))))))
+  body: (cons (perfTier0HoistedStratumConsts) (cons (perfTier1WordPackedSoaEcs) (cons (perfTier2ContiguousSahFlatBvh) (cons (perfTier3EpochSplitAsyncGpu) (cons (perfTier4HardwareInstancedBatches) (cons (perfTier5AqmMonoidBitPlanesKappa) (cons (perfTier6RockSolidStabilityAndBroadphase) (nil WorkloadOptimizationSpec))))))))
 }
 
 definition{
@@ -1548,7 +1599,7 @@ definition{
 theorem{
   name: arbitraryWorkloadOptimizationsVerified,
   parameters: [],
-  statement: ((if ((workloadPerformanceDirect) && (workloadOptimizationsValid 0 (workloadOptimizations))) then (((project (perfTier0HoistedStratumConsts) index) =? 0) && (((project (perfTier1WordPackedSoaEcs) index) =? 1) && (((project (perfTier2ContiguousSahFlatBvh) index) =? (sTwo)) && (((project (perfTier3EpochSplitAsyncGpu) index) =? (sThree)) && (((project (perfTier4HardwareInstancedBatches) index) =? (sFour)) && ((project (perfTier5AqmMonoidBitPlanesKappa) index) =? (sFive))))))) else false) = true),
+  statement: ((if ((workloadPerformanceDirect) && (workloadOptimizationsValid 0 (workloadOptimizations))) then (((project (perfTier0HoistedStratumConsts) index) =? 0) && (((project (perfTier1WordPackedSoaEcs) index) =? 1) && (((project (perfTier2ContiguousSahFlatBvh) index) =? (sTwo)) && (((project (perfTier3EpochSplitAsyncGpu) index) =? (sThree)) && (((project (perfTier4HardwareInstancedBatches) index) =? (sFour)) && (((project (perfTier5AqmMonoidBitPlanesKappa) index) =? (sFive)) && ((project (perfTier6RockSolidStabilityAndBroadphase) index) =? (sSix)))))))) else false) = true),
   proof: decide{},
   axioms: []
 }

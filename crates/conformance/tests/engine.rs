@@ -3399,5 +3399,202 @@ fn engine_ve_34() {
     let renderer_mjs = std::fs::read_to_string(repo_root.join("site/scene-renderer.mjs"))
         .expect("site/scene-renderer.mjs");
     assert!(renderer_mjs.contains("fenceSync"));
+    assert!(verdant_wasm::verdant_wasm_init(7) == 1);
     assert!(verdant_wasm::verdant_wasm_aqm_benchmark_aux(16_384) > 40);
+}
+
+/// `VE-35`: Flat CSR software tile rasterizer, 512-body spatial broadphase, multi-primitive GLB
+/// ingestion, WebGL2 context recovery, worker watchdogs, and 52-bit floating-origin horizon guard.
+#[test]
+fn engine_ve_35() {
+    use std::path::Path;
+    use verdant_core::ecs::{SceneWorld, TwoLevelBvh};
+    use verdant_core::error::{NarrativeLawError, TensorComputeError};
+    use verdant_core::geometry::{generate_faceted_prism_mesh, generate_fluted_column_mesh};
+    use verdant_core::gltf_io::{import_glb_to_scene, pack_multi_primitive_glb};
+    use verdant_core::math::{Mat4, Vec3};
+    use verdant_core::physics::{
+        CapsuleController, CharacterMoveIntent, PhysicsWorld, PhysicsWorldConfig, RigidBody,
+    };
+    use verdant_core::render::canonical_pbr_material_library;
+    use verdant_core::tensor::{
+        render_triangles_tile_framebuffer_with_scratch, RasterTriangle, TileRasterScratch,
+    };
+    use verdant_core::universe::{UniverseCellCoord, UniversePosition};
+
+    // 1. Core-Wasm `scene:stability` acceptance query & Lean-proved `stabilityAndRefinementDirect`:
+    assert_eq!(
+        verdant_core::prism_kernel::stabilityAndRefinementDirect(),
+        Ok(true)
+    );
+    let verdict = verdant_core::prism_kernel::dispatch(b"scene:stability".to_vec())
+        .expect("dispatch scene:stability");
+    assert_eq!(
+        std::str::from_utf8(&verdict).expect("utf8 verdict"),
+        "conformant:csr_tile_bins=true,spatial_broadphase=true,context_recovery=true,watchdog_ms=15000,mantissa_bits=52"
+    );
+
+    // 2. Flat CSR `TileRasterScratch` steady-state zero heap growth + extreme near-clip safety + NaN refusal:
+    let vp = Mat4::perspective(std::f64::consts::FRAC_PI_3, 128.0 / 64.0, 0.25, 200.0)
+        * Mat4::look_at(Vec3::new(0.0, 2.0, 8.0), Vec3::ZERO, Vec3::UP);
+    let tris = vec![
+        RasterTriangle {
+            positions: [[-1.5, -1.0, 0.0], [1.5, -1.0, 0.0], [0.0, 2.0, 0.0]],
+            normal: [0.0, 0.0, 1.0],
+            base_color: [0.8, 0.4, 0.2],
+        },
+        // Extreme off-screen / near-clip huge span triangle that must clamp safely without u32 overflow:
+        RasterTriangle {
+            positions: [
+                [-1.0e5, -1.0e5, -20.0],
+                [1.0e5, -1.0e5, -20.0],
+                [0.0, 1.0e5, -20.0],
+            ],
+            normal: [0.0, 1.0, 0.0],
+            base_color: [0.2, 0.7, 0.9],
+        },
+    ];
+    let mut scratch = TileRasterScratch::new();
+    let (tiles_1, rast_1) = render_triangles_tile_framebuffer_with_scratch(
+        128,
+        64,
+        &vp,
+        Vec3::new(0.4, 0.8, 0.5),
+        3,
+        &tris,
+        &mut scratch,
+    )
+    .expect("CSR frame 1");
+    assert_eq!(tiles_1, 32);
+    assert!(rast_1 >= 1);
+    let cap_after_frame_1 = scratch.total_allocated_bytes();
+    let (tiles_2, rast_2) = render_triangles_tile_framebuffer_with_scratch(
+        128,
+        64,
+        &vp,
+        Vec3::new(0.4, 0.8, 0.5),
+        3,
+        &tris,
+        &mut scratch,
+    )
+    .expect("CSR frame 2");
+    assert_eq!((tiles_2, rast_2), (tiles_1, rast_1));
+    assert_eq!(
+        scratch.total_allocated_bytes(),
+        cap_after_frame_1,
+        "CSR tile arena must incur zero heap capacity growth in steady state"
+    );
+
+    let nan_sun_err = render_triangles_tile_framebuffer_with_scratch(
+        64,
+        64,
+        &vp,
+        Vec3::new(f64::NAN, 1.0, 0.0),
+        3,
+        &tris,
+        &mut scratch,
+    )
+    .expect_err("NaN sun_direction must be refused");
+    assert!(matches!(
+        nan_sun_err,
+        TensorComputeError::NonFiniteTensorEntry {
+            operand: "sun_direction"
+        }
+    ));
+
+    // 3. 512-body 3D spatial-grid broadphase sphere collisions + NaN intent & terminal speed clamping:
+    let mut pw = PhysicsWorld::new(PhysicsWorldConfig::default());
+    for i in 0..512usize {
+        let gx = (i % 16) as f64;
+        let gz = (i / 16) as f64;
+        let mut rb = RigidBody::new(
+            format!("s_{i}"),
+            Vec3::new(gx * 0.72, 5.0, gz * 0.72),
+            1.5,
+            0.5,
+            0.4,
+        )
+        .expect("valid sphere");
+        rb.velocity = if i == 0 {
+            Vec3::new(1.0e9, f64::NAN, -1.0e9)
+        } else {
+            Vec3::new(if i % 2 == 0 { 1.5 } else { -1.5 }, 0.0, 0.0)
+        };
+        pw.bodies.push(rb);
+    }
+    pw.player_capsule = Some(CapsuleController::new(Vec3::new(0.0, 3.0, 0.0)));
+    let contacts = pw.resolve_dynamic_body_broadphase();
+    assert!(
+        contacts >= 256,
+        "expected dense 512-sphere lattice contacts, got {contacts}"
+    );
+
+    let empty_bvh = TwoLevelBvh::build_solid(&SceneWorld::new(), &[]).expect("empty BVH");
+    pw.step_lawful(
+        1.0 / 60.0,
+        CharacterMoveIntent {
+            planar_wish_dir: Vec3::new(f64::NAN, f64::INFINITY, f64::NEG_INFINITY),
+            speed_scale: f64::NAN,
+            jump_requested: false,
+        },
+        &empty_bvh,
+    )
+    .expect("step_lawful with sanitized NaN intent");
+    let cap = pw.player_capsule.as_ref().expect("capsule present");
+    assert!(
+        cap.foot_position.x.is_finite()
+            && cap.foot_position.y.is_finite()
+            && cap.foot_position.z.is_finite()
+    );
+    let max_speed = verdant_core::verdant_tensor::kernel_consts().physics_max_speed_mps;
+    assert!(pw.bodies[0].velocity.length() <= max_speed + 1.0e-6);
+
+    // 4. 52-bit exact IEEE-754 floating-origin horizon guard (`UniversePosition::new_canonical`):
+    let ok_far = UniversePosition::new_canonical(
+        UniverseCellCoord::ORIGIN,
+        Vec3::new(1.0e9 * 128.0 + 12.5, 0.0, -3.25),
+    )
+    .expect("sub-horizon astronomical offset");
+    assert!(ok_far.bounds_verified);
+
+    let beyond_52 = ((1_u64 << 52) as f64) * 128.0 * 2.0;
+    let horizon_err =
+        UniversePosition::new_canonical(UniverseCellCoord::ORIGIN, Vec3::new(beyond_52, 0.0, 0.0))
+            .expect_err("offset >= 2^52 cells must refuse precision loss");
+    assert!(matches!(
+        horizon_err,
+        NarrativeLawError::InvalidPortalOrUniverseCell { .. }
+    ));
+
+    // 5. Multi-primitive Khronos `.glb` export + `import_glb_to_scene` primitive merging:
+    let mats = canonical_pbr_material_library();
+    let mesh_a = generate_faceted_prism_mesh(0.6, 1.2);
+    let mesh_b = generate_fluted_column_mesh(0.4, 0.35, 1.6, 8, 16, 8);
+    let expected_tris = mesh_a.triangle_count() + mesh_b.triangle_count();
+    let multi_glb = pack_multi_primitive_glb("MultiAsset", &[(&mesh_a, 0), (&mesh_b, 1)], &mats)
+        .expect("valid multi-primitive GLB");
+    let imported = import_glb_to_scene(&multi_glb).expect("import multi-primitive GLB");
+    assert_eq!(imported.meshes.len(), 1);
+    assert_eq!(imported.meshes[0].triangle_count(), expected_tris);
+
+    // 6. WebGL2 context recovery, worker frame-ack + RPC watchdogs, & live Wasm stability audit:
+    let repo_root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+    let renderer_mjs = std::fs::read_to_string(repo_root.join("site/scene-renderer.mjs"))
+        .expect("site/scene-renderer.mjs");
+    assert!(renderer_mjs.contains("webglcontextlost"));
+    assert!(renderer_mjs.contains("webglcontextrestored"));
+    assert!(renderer_mjs.contains("isContextLost"));
+
+    let worker_mjs = std::fs::read_to_string(repo_root.join("site/engine-worker.mjs"))
+        .expect("site/engine-worker.mjs");
+    assert!(worker_mjs.contains("frame-dropped"));
+    assert!(worker_mjs.contains("WebAssembly.RuntimeError"));
+
+    let card_mjs = std::fs::read_to_string(repo_root.join("site/card.mjs")).expect("site/card.mjs");
+    assert!(card_mjs.contains("frame-dropped"));
+    assert!(card_mjs.contains("15000"));
+
+    assert_eq!(verdant_wasm::verdant_wasm_init(7), 1);
+    let aux_len = verdant_wasm::verdant_wasm_stability_audit_aux(512);
+    assert!(aux_len > 40);
 }

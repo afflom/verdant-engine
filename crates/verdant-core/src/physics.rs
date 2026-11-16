@@ -499,6 +499,94 @@ pub struct PhysicsWorld {
     /// Reusable scratch buffer storing pre-step rigid-body positions (`0` per-frame heap allocations).
     #[serde(skip)]
     prev_positions_scratch: Vec<Vec3>,
+    /// Reusable packed-`u32` `(cell_hash_16 << 16) | body_idx_16` broadphase arena (`0` steady-state heap allocs).
+    #[serde(skip)]
+    broadphase_scratch: Vec<u32>,
+}
+
+fn sanitize_vec3(v: Vec3) -> Vec3 {
+    Vec3::new(
+        if v.x.is_finite() { v.x } else { 0.0 },
+        if v.y.is_finite() { v.y } else { 0.0 },
+        if v.z.is_finite() { v.z } else { 0.0 },
+    )
+}
+
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-wasm-decode"))]
+fn sort_u32_shell(slice: &mut [u32]) {
+    let n = slice.len();
+    let two = 1usize + 1usize;
+    let three = two + 1usize;
+    let mut gap = 1usize;
+    while gap < n / three {
+        gap = gap * three + 1usize;
+    }
+    while gap >= 1usize {
+        for i in gap..n {
+            let val = slice[i];
+            let mut j = i;
+            while j >= gap && slice[j - gap] > val {
+                slice[j] = slice[j - gap];
+                j -= gap;
+            }
+            slice[j] = val;
+        }
+        gap /= three;
+    }
+}
+
+fn clamp_velocity_speed(v: Vec3, max_speed: f64) -> Vec3 {
+    let clean = sanitize_vec3(v);
+    let len_sq = clean.length_squared();
+    let max_sq = max_speed * max_speed;
+    if len_sq > max_sq && len_sq > 0.0 {
+        clean.scale(max_speed / len_sq.sqrt())
+    } else {
+        clean
+    }
+}
+
+fn resolve_sphere_pair(
+    bodies: &mut [RigidBody],
+    ia: usize,
+    ib: usize,
+    half: f64,
+    eps: f64,
+    max_speed: f64,
+) -> bool {
+    let pa = bodies[ia].position;
+    let pb = bodies[ib].position;
+    let min_dist = bodies[ia].radius_meters + bodies[ib].radius_meters;
+    let delta = pb - pa;
+    let dist_sq = delta.length_squared();
+    if dist_sq >= min_dist * min_dist {
+        return false;
+    }
+    let dist = dist_sq.sqrt();
+    let normal = if dist > eps {
+        delta.scale(1.0 / dist)
+    } else {
+        Vec3::new(1.0, 0.0, 0.0)
+    };
+    let penetration = min_dist - dist;
+    let inv_ma = 1.0 / bodies[ia].mass_kg.max(eps);
+    let inv_mb = 1.0 / bodies[ib].mass_kg.max(eps);
+    let inv_sum = (inv_ma + inv_mb).max(eps);
+    let corr = penetration / inv_sum;
+    bodies[ia].position = pa - normal.scale(corr * inv_ma);
+    bodies[ib].position = pb + normal.scale(corr * inv_mb);
+
+    let rel_v = bodies[ib].velocity - bodies[ia].velocity;
+    let vn = rel_v.dot(normal);
+    if vn < 0.0 {
+        let e = (bodies[ia].restitution + bodies[ib].restitution) * half;
+        let j = -(1.0 + e.clamp(0.0, 1.0)) * vn / inv_sum;
+        bodies[ia].velocity =
+            clamp_velocity_speed(bodies[ia].velocity - normal.scale(j * inv_ma), max_speed);
+        bodies[ib].velocity =
+            clamp_velocity_speed(bodies[ib].velocity + normal.scale(j * inv_mb), max_speed);
+    }
+    true
 }
 
 impl PhysicsWorld {
@@ -515,6 +603,148 @@ impl PhysicsWorld {
             kinematic_mover: None,
             elapsed_seconds: 0.0,
             prev_positions_scratch: Vec::new(),
+            broadphase_scratch: Vec::new(),
+        }
+    }
+
+    /// Resolves pairwise sphere-sphere contacts across arbitrary dynamic rigid-body counts using a
+    /// deterministic cell-sorted 3D spatial broadphase (`0` steady-state heap allocations).
+    /// Returns the number of resolved overlapping contact pairs.
+    #[allow(clippy::manual_clamp)]
+    pub fn resolve_dynamic_body_broadphase(&mut self) -> u32 {
+        let min_pair = 1usize + 1usize;
+        if self.bodies.len() < min_pair {
+            return 0;
+        }
+        let two = two_f64();
+        let half = half_f64();
+        let eps = geometric_epsilon();
+        let max_speed = verdant_tensor::kernel_consts().physics_max_speed_mps;
+
+        #[cfg(all(target_arch = "wasm32", not(feature = "uorc-wasm-decode")))]
+        {
+            let _ = two;
+            let _ = &self.broadphase_scratch;
+            let mut resolved_contacts = 0_u32;
+            let n = self.bodies.len();
+            for ia in 0..n {
+                for ib in (ia + 1)..n {
+                    if resolve_sphere_pair(&mut self.bodies, ia, ib, half, eps, max_speed) {
+                        resolved_contacts += 1;
+                    }
+                }
+            }
+            return resolved_contacts;
+        }
+
+        #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-wasm-decode"))]
+        {
+            let small_cutoff = 1usize << (1usize + 1usize + 1usize);
+            if self.bodies.len() <= small_cutoff {
+                let mut resolved_contacts = 0_u32;
+                let n = self.bodies.len();
+                for ia in 0..n {
+                    for ib in (ia + 1)..n {
+                        if resolve_sphere_pair(&mut self.bodies, ia, ib, half, eps, max_speed) {
+                            resolved_contacts += 1;
+                        }
+                    }
+                }
+                return resolved_contacts;
+            }
+
+            let mut max_radius = half;
+            for b in &self.bodies {
+                if b.radius_meters.is_finite() && b.radius_meters > max_radius {
+                    max_radius = b.radius_meters;
+                }
+            }
+            let cell_size = (two * max_radius).max(half);
+            let inv_cell = 1.0 / cell_size;
+
+            let shift16 = 1_u32 << ((1_u32 + 1_u32) * (1_u32 + 1_u32));
+            let mask16 = (1_u32 << shift16) - 1_u32;
+            let max_bodies = (mask16 as usize) + 1usize;
+            let p_y = (1_u32 << (1_u32 + 1_u32 + 1_u32 + 1_u32 + 1_u32)) - 1_u32;
+            let p_z =
+                (1_u32 << ((1_u32 + 1_u32 + 1_u32) + (1_u32 + 1_u32 + 1_u32 + 1_u32))) - 1_u32;
+
+            let mut grid = std::mem::take(&mut self.broadphase_scratch);
+            grid.clear();
+            let body_limit = self.bodies.len().min(max_bodies);
+            grid.reserve(body_limit * min_pair);
+            let max_coord_span =
+                (verdant_tensor::pow2_u64(verdant_tensor::kernel_consts().f64_exact_mantissa_bits)
+                    as f64)
+                    * half;
+
+            for (idx, b) in self.bodies.iter().take(body_limit).enumerate() {
+                let p = sanitize_vec3(b.position);
+                let r = b.radius_meters.max(eps);
+                let x0 = ((p.x - r) * inv_cell)
+                    .floor()
+                    .max(-max_coord_span)
+                    .min(max_coord_span) as i64;
+                let x1 = ((p.x + r) * inv_cell)
+                    .floor()
+                    .max(-max_coord_span)
+                    .min(max_coord_span) as i64;
+                let y0 = ((p.y - r) * inv_cell)
+                    .floor()
+                    .max(-max_coord_span)
+                    .min(max_coord_span) as i64;
+                let y1 = ((p.y + r) * inv_cell)
+                    .floor()
+                    .max(-max_coord_span)
+                    .min(max_coord_span) as i64;
+                let z0 = ((p.z - r) * inv_cell)
+                    .floor()
+                    .max(-max_coord_span)
+                    .min(max_coord_span) as i64;
+                let z1 = ((p.z + r) * inv_cell)
+                    .floor()
+                    .max(-max_coord_span)
+                    .min(max_coord_span) as i64;
+                let low_idx = (idx as u32) & mask16;
+                for cx in x0..=x1 {
+                    for cy in y0..=y1 {
+                        for cz in z0..=z1 {
+                            let h = ((cx as u32)
+                                ^ (cy as u32).wrapping_mul(p_y)
+                                ^ (cz as u32).wrapping_mul(p_z))
+                                & mask16;
+                            grid.push((h << shift16) | low_idx);
+                        }
+                    }
+                }
+            }
+
+            sort_u32_shell(&mut grid);
+            let mut resolved_contacts = 0_u32;
+            let mut run_start = 0usize;
+            while run_start < grid.len() {
+                let cell = grid[run_start] >> shift16;
+                let mut run_end = run_start + 1;
+                while run_end < grid.len() && (grid[run_end] >> shift16) == cell {
+                    run_end += 1;
+                }
+                for u in run_start..run_end {
+                    let ia = (grid[u] & mask16) as usize;
+                    for &packed_b in grid.iter().take(run_end).skip(u + 1) {
+                        let ib = (packed_b & mask16) as usize;
+                        if ia != ib
+                            && resolve_sphere_pair(&mut self.bodies, ia, ib, half, eps, max_speed)
+                        {
+                            resolved_contacts += 1;
+                        }
+                    }
+                }
+                run_start = run_end;
+            }
+
+            grid.clear();
+            self.broadphase_scratch = grid;
+            resolved_contacts
         }
     }
 
@@ -550,6 +780,8 @@ impl PhysicsWorld {
         let damp = (1.0 - self.config.linear_damping * dt_seconds).clamp(0.0, 1.0);
         let two = two_f64();
 
+        let max_speed = verdant_tensor::kernel_consts().physics_max_speed_mps;
+
         for body in &mut self.bodies {
             if !body.mass_kg.is_finite()
                 || !body.radius_meters.is_finite()
@@ -561,6 +793,8 @@ impl PhysicsWorld {
                     radius_meters: body.radius_meters,
                 });
             }
+            body.position = sanitize_vec3(body.position);
+            body.velocity = clamp_velocity_speed(body.velocity, max_speed);
 
             let sub_vol = body.submerged_volume_m3(water_y);
             let sub_depth = (water_y - (body.position.y - body.radius_meters))
@@ -579,7 +813,7 @@ impl PhysicsWorld {
             };
 
             body.velocity.y += net_accel_y * dt_seconds;
-            body.velocity = body.velocity.scale(fluid_drag);
+            body.velocity = clamp_velocity_speed(body.velocity.scale(fluid_drag), max_speed);
             body.position = body.position + body.velocity.scale(dt_seconds);
 
             let floor_y = terrain_height_with_params(
@@ -591,7 +825,7 @@ impl PhysicsWorld {
             if body.position.y <= floor_y {
                 body.position.y = floor_y;
                 if body.velocity.y < 0.0 {
-                    body.velocity.y = -body.velocity.y * body.restitution;
+                    body.velocity.y = -body.velocity.y * body.restitution.clamp(0.0, 1.0);
                 }
                 body.grounded = true;
             } else {
@@ -599,9 +833,12 @@ impl PhysicsWorld {
             }
         }
 
+        let _ = self.resolve_dynamic_body_broadphase();
+
         // Precompute support height if a player capsule is active.
         if self.player_capsule.is_some() {
-            let wish_planar = Vec3::new(planar_wish_dir.x, 0.0, planar_wish_dir.z);
+            let clean_wish = sanitize_vec3(planar_wish_dir);
+            let wish_planar = Vec3::new(clean_wish.x, 0.0, clean_wish.z);
             let wish = if wish_planar.length_squared() > geometric_epsilon() {
                 wish_planar.normalized()
             } else {
@@ -1044,13 +1281,21 @@ impl CapsuleController {
             skin_m,
         );
 
-        let wish_planar = Vec3::new(intent.planar_wish_dir.x, 0.0, intent.planar_wish_dir.z);
+        let clean_wish = sanitize_vec3(intent.planar_wish_dir);
+        let wish_planar = Vec3::new(clean_wish.x, 0.0, clean_wish.z);
         let wish = if wish_planar.length_squared() > eps {
             wish_planar.normalized()
         } else {
             Vec3::ZERO
         };
-        let speed = self.move_speed_mps * intent.speed_scale.max(0.0).min(two * two);
+        let safe_scale = if intent.speed_scale.is_finite() {
+            intent.speed_scale.max(0.0).min(two * two)
+        } else {
+            0.0
+        };
+        let speed = (self.move_speed_mps * safe_scale).min(kc.physics_max_speed_mps);
+        self.foot_position = sanitize_vec3(self.foot_position);
+        self.velocity = clamp_velocity_speed(self.velocity, kc.physics_max_speed_mps);
         let mut rem = wish.scale(speed * dt_seconds);
 
         let mut hit_planes: Vec<Vec3> = Vec::new();

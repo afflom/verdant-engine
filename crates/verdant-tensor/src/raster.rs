@@ -75,17 +75,82 @@ fn normalize3(v: [f64; DIM_SPATIAL]) -> [f64; DIM_SPATIAL] {
     }
 }
 
-/// Renders world-space `triangles` into a portable `RGBA8` software tile framebuffer using
-/// `batch_transform_positions_exact` (`uor-matmul`) for clip-space projection and `prism_kernel`
-/// LOD atmosphere parameters, requiring zero conditional browser GPU extensions.
-pub fn render_triangles_tile_framebuffer(
+#[derive(Clone, Copy, Debug)]
+struct BinnedRasterTri {
+    sx0: f32,
+    sy0: f32,
+    z0: f32,
+    sx1: f32,
+    sy1: f32,
+    z1: f32,
+    sx2: f32,
+    sy2: f32,
+    z2: f32,
+    inv_area: f32,
+    min_x: u32,
+    max_x: u32,
+    min_y: u32,
+    max_y: u32,
+    tile_x0: u32,
+    tile_x1: u32,
+    tile_y0: u32,
+    tile_y1: u32,
+    rgba: [u8; DIM_HOMOGENEOUS],
+}
+
+/// Reusable Compressed-Sparse-Row (`CSR`) tile-binning and framebuffer arena eliminating per-frame
+/// inner `Vec` allocations across arbitrary software-rasterized workloads.
+#[derive(Clone, Debug, Default)]
+pub struct TileRasterScratch {
+    flat_positions: Vec<[f32; DIM_SPATIAL]>,
+    clip_verts: Vec<[f32; DIM_HOMOGENEOUS]>,
+    binned_tris: Vec<BinnedRasterTri>,
+    tile_counts: Vec<u32>,
+    tile_offsets: Vec<u32>,
+    tile_write_heads: Vec<u32>,
+    tile_tri_indices: Vec<u32>,
+    /// Row-major `RGBA8` color buffer populated by [`render_triangles_tile_framebuffer_with_scratch`].
+    pub rgba8: Vec<u8>,
+    /// Row-major depth buffer populated by [`render_triangles_tile_framebuffer_with_scratch`].
+    pub depth: Vec<f32>,
+}
+
+impl TileRasterScratch {
+    /// Allocates an empty reusable CSR tile-rasterization arena.
+    #[must_use]
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    /// Total heap byte capacity held by all reusable CSR and pixel buffers (`0` growth in steady state).
+    #[must_use]
+    pub fn total_allocated_bytes(&self) -> usize {
+        self.flat_positions.capacity() * core::mem::size_of::<[f32; DIM_SPATIAL]>()
+            + self.clip_verts.capacity() * core::mem::size_of::<[f32; DIM_HOMOGENEOUS]>()
+            + self.binned_tris.capacity() * core::mem::size_of::<BinnedRasterTri>()
+            + (self.tile_counts.capacity()
+                + self.tile_offsets.capacity()
+                + self.tile_write_heads.capacity()
+                + self.tile_tri_indices.capacity())
+                * core::mem::size_of::<u32>()
+            + self.rgba8.capacity()
+            + self.depth.capacity() * core::mem::size_of::<f32>()
+    }
+}
+
+/// Renders world-space `triangles` into `scratch.rgba8` and `scratch.depth` using a flat 2-pass
+/// CSR prefix-sum `16x16` tile bin table (`0` per-frame inner `Vec` heap allocations) and strict
+/// screen-space coordinate clamping. Returns `(tiles_shaded, rasterized_triangles)`.
+#[allow(clippy::manual_clamp)]
+pub fn render_triangles_tile_framebuffer_with_scratch(
     width: u32,
     height: u32,
     view_proj_cols: &[[f64; DIM_HOMOGENEOUS]; DIM_HOMOGENEOUS],
     sun_direction: [f64; DIM_SPATIAL],
     lod_rank: u64,
     triangles: &[RasterTriangle],
-) -> Result<SoftwareTileFramebuffer, TensorComputeError> {
+    scratch: &mut TileRasterScratch,
+) -> Result<(u32, u32), TensorComputeError> {
     let kc = kernel_consts();
     let tile_edge = kc.tile_edge_pixels;
     if width == 0
@@ -97,6 +162,11 @@ pub fn render_triangles_tile_framebuffer(
             width,
             height,
             tile_edge,
+        });
+    }
+    if !sun_direction.iter().all(|v| v.is_finite()) {
+        return Err(TensorComputeError::NonFiniteTensorEntry {
+            operand: "sun_direction",
         });
     }
 
@@ -114,8 +184,9 @@ pub fn render_triangles_tile_framebuffer(
     let fog_b = (env.fogBluePercent as f32) / pct_denom;
 
     let pixel_count = (width as usize) * (height as usize);
-    let mut rgba8 = vec![0_u8; pixel_count * channels];
-    let depth = vec![1.0_f32; pixel_count];
+    scratch.rgba8.resize(pixel_count * channels, 0_u8);
+    scratch.depth.clear();
+    scratch.depth.resize(pixel_count, 1.0_f32);
 
     let i2 = 1usize + 1usize;
     let i3 = i2 + 1usize;
@@ -125,14 +196,14 @@ pub fn render_triangles_tile_framebuffer(
         let r = ((sky_r * (1.0 - t) + fog_r * t).clamp(0.0, 1.0) * byte_max).round() as u8;
         let g = ((sky_g * (1.0 - t) + fog_g * t).clamp(0.0, 1.0) * byte_max).round() as u8;
         let b = ((sky_b * (1.0 - t) + fog_b * t).clamp(0.0, 1.0) * byte_max).round() as u8;
-        let mut x = 0_u32;
-        while x < width {
-            let base = ((y * width + x) as usize) * channels;
-            rgba8[base] = r;
-            rgba8[base + 1] = g;
-            rgba8[base + i2] = b;
-            rgba8[base + i3] = byte_max as u8;
-            x += 1;
+        let alpha = byte_max as u8;
+        let row_start = (y * width) as usize * channels;
+        let row_end = row_start + (width as usize) * channels;
+        for px in scratch.rgba8[row_start..row_end].chunks_exact_mut(channels) {
+            px[0] = r;
+            px[1] = g;
+            px[i2] = b;
+            px[i3] = alpha;
         }
     }
 
@@ -140,47 +211,26 @@ pub fn render_triangles_tile_framebuffer(
     let tiles_y = height / tile_edge;
     let tiles_shaded = tiles_x * tiles_y;
     if triangles.is_empty() {
-        return Ok(SoftwareTileFramebuffer {
-            width,
-            height,
-            rgba8,
-            depth,
-            tiles_shaded,
-            rasterized_triangles: 0,
-        });
+        return Ok((tiles_shaded, 0));
     }
 
-    let mut flat_positions = Vec::with_capacity(triangles.len() * DIM_SPATIAL);
+    let vert_len = triangles.len() * DIM_SPATIAL;
+    scratch.flat_positions.clear();
+    scratch.flat_positions.reserve(vert_len);
     for tri in triangles {
-        flat_positions.push(tri.positions[0]);
-        flat_positions.push(tri.positions[1]);
-        flat_positions.push(tri.positions[1]);
-        let last = flat_positions.len() - 1;
-        flat_positions[last] = tri.positions[i2];
+        scratch.flat_positions.push(tri.positions[0]);
+        scratch.flat_positions.push(tri.positions[1]);
+        scratch.flat_positions.push(tri.positions[i2]);
     }
-    let mut clip_verts = vec![[0.0_f32; DIM_HOMOGENEOUS]; flat_positions.len()];
-    batch_transform_positions_into(&flat_positions, view_proj_cols, &mut clip_verts)?;
+    scratch
+        .clip_verts
+        .resize(vert_len, [0.0_f32; DIM_HOMOGENEOUS]);
+    batch_transform_positions_into(
+        &scratch.flat_positions,
+        view_proj_cols,
+        &mut scratch.clip_verts,
+    )?;
 
-    #[derive(Clone, Copy)]
-    struct BinnedRasterTri {
-        sx0: f32,
-        sy0: f32,
-        z0: f32,
-        sx1: f32,
-        sy1: f32,
-        z1: f32,
-        sx2: f32,
-        sy2: f32,
-        z2: f32,
-        inv_area: f32,
-        min_x: u32,
-        max_x: u32,
-        min_y: u32,
-        max_y: u32,
-        rgba: [u8; DIM_HOMOGENEOUS],
-    }
-
-    let mut depth_buf = depth;
     let mut rasterized_triangles = 0_u32;
     let sun = normalize3(sun_direction);
     let half = half_f64() as f32;
@@ -188,19 +238,26 @@ pub fn render_triangles_tile_framebuffer(
     let eps = geometric_epsilon() as f32;
     let w_f = width as f32;
     let h_f = height as f32;
+    let max_w_px = (width - 1) as f32;
+    let max_h_px = (height - 1) as f32;
     let shadow_boost = if env.shadowsActive { 1.0_f32 } else { half };
     let ibl_boost = if env.iblActive { 1.0_f32 } else { half };
 
-    // Stage 1: Coarse screen-space tile binning (`16x16` tiles, inspired by `verdant-aqm` tileRasterizer):
+    // Stage 1: Two-pass flat CSR `16x16` screen-space tile binning (`0` inner Vec heap allocations):
     let total_tiles = (tiles_x * tiles_y) as usize;
-    let mut tile_bins: Vec<Vec<u32>> = vec![Vec::new(); total_tiles];
-    let mut binned_tris: Vec<BinnedRasterTri> = Vec::with_capacity(triangles.len());
+    scratch.binned_tris.clear();
+    scratch.tile_counts.clear();
+    scratch.tile_counts.resize(total_tiles, 0_u32);
+    scratch.tile_offsets.clear();
+    scratch.tile_offsets.resize(total_tiles + 1, 0_u32);
+    scratch.tile_write_heads.clear();
+    scratch.tile_write_heads.resize(total_tiles, 0_u32);
 
     for (tri_idx, tri) in triangles.iter().enumerate() {
         let base_v = tri_idx * DIM_SPATIAL;
-        let c0 = clip_verts[base_v];
-        let c1 = clip_verts[base_v + 1];
-        let c2 = clip_verts[base_v + i2];
+        let c0 = scratch.clip_verts[base_v];
+        let c1 = scratch.clip_verts[base_v + 1];
+        let c2 = scratch.clip_verts[base_v + i2];
         if c0[i3] <= eps || c1[i3] <= eps || c2[i3] <= eps {
             continue;
         }
@@ -218,19 +275,37 @@ pub fn render_triangles_tile_framebuffer(
         let (sx0, sy0, z0) = to_screen(c0);
         let (sx1, sy1, z1) = to_screen(c1);
         let (sx2, sy2, z2) = to_screen(c2);
-        let area = edge_fn(sx0, sy0, sx1, sy1, sx2, sy2);
-        if area.abs() <= eps {
+        if !(sx0.is_finite()
+            && sy0.is_finite()
+            && z0.is_finite()
+            && sx1.is_finite()
+            && sy1.is_finite()
+            && z1.is_finite()
+            && sx2.is_finite()
+            && sy2.is_finite()
+            && z2.is_finite())
+        {
             continue;
         }
-        let inv_area = 1.0 / area;
-
-        let min_x = sx0.min(sx1).min(sx2).floor().max(0.0) as u32;
-        let max_x = (sx0.max(sx1).max(sx2).ceil().max(0.0) as u32).min(width - 1);
-        let min_y = sy0.min(sy1).min(sy2).floor().max(0.0) as u32;
-        let max_y = (sy0.max(sy1).max(sy2).ceil().max(0.0) as u32).min(height - 1);
+        let area = edge_fn(sx0, sy0, sx1, sy1, sx2, sy2);
+        if !area.is_finite() || area.abs() <= eps {
+            continue;
+        }
+        let lo_x = sx0.min(sx1).min(sx2);
+        let hi_x = sx0.max(sx1).max(sx2);
+        let lo_y = sy0.min(sy1).min(sy2);
+        let hi_y = sy0.max(sy1).max(sy2);
+        if hi_x < 0.0 || lo_x >= w_f || hi_y < 0.0 || lo_y >= h_f {
+            continue;
+        }
+        let min_x = lo_x.floor().max(0.0).min(max_w_px) as u32;
+        let max_x = hi_x.ceil().max(0.0).min(max_w_px) as u32;
+        let min_y = lo_y.floor().max(0.0).min(max_h_px) as u32;
+        let max_y = hi_y.ceil().max(0.0).min(max_h_px) as u32;
         if min_x > max_x || min_y > max_y {
             continue;
         }
+        let inv_area = 1.0 / area;
 
         rasterized_triangles += 1;
         let nrm = normalize3([
@@ -243,15 +318,25 @@ pub fn render_triangles_tile_framebuffer(
         let ambient = (half * half + half * half * hemi) * ibl_boost;
         let shade = (ambient + (1.0 - half * half) * ndotl * shadow_boost).min(two);
 
-        let lit_r =
-            ((tri.base_color[0] * shade) / (1.0 + tri.base_color[0] * shade) * two).clamp(0.0, 1.0);
-        let lit_g =
-            ((tri.base_color[1] * shade) / (1.0 + tri.base_color[1] * shade) * two).clamp(0.0, 1.0);
-        let lit_b = ((tri.base_color[i2] * shade) / (1.0 + tri.base_color[i2] * shade) * two)
-            .clamp(0.0, 1.0);
+        let cr = tri.base_color[0].clamp(0.0, 1.0);
+        let cg = tri.base_color[1].clamp(0.0, 1.0);
+        let cb = tri.base_color[i2].clamp(0.0, 1.0);
+        let lit_r = ((cr * shade) / (1.0 + cr * shade) * two).clamp(0.0, 1.0);
+        let lit_g = ((cg * shade) / (1.0 + cg * shade) * two).clamp(0.0, 1.0);
+        let lit_b = ((cb * shade) / (1.0 + cb * shade) * two).clamp(0.0, 1.0);
 
-        let binned_slot = binned_tris.len() as u32;
-        binned_tris.push(BinnedRasterTri {
+        let tile_x0 = min_x / tile_edge;
+        let tile_x1 = max_x / tile_edge;
+        let tile_y0 = min_y / tile_edge;
+        let tile_y1 = max_y / tile_edge;
+        for ty in tile_y0..=tile_y1 {
+            let row_off = (ty * tiles_x) as usize;
+            for tx in tile_x0..=tile_x1 {
+                scratch.tile_counts[row_off + (tx as usize)] += 1;
+            }
+        }
+
+        scratch.binned_tris.push(BinnedRasterTri {
             sx0,
             sy0,
             z0,
@@ -266,6 +351,10 @@ pub fn render_triangles_tile_framebuffer(
             max_x,
             min_y,
             max_y,
+            tile_x0,
+            tile_x1,
+            tile_y0,
+            tile_y1,
             rgba: [
                 (lit_r * byte_max).round() as u8,
                 (lit_g * byte_max).round() as u8,
@@ -273,33 +362,58 @@ pub fn render_triangles_tile_framebuffer(
                 byte_max as u8,
             ],
         });
+    }
 
-        let tile_x0 = min_x / tile_edge;
-        let tile_x1 = max_x / tile_edge;
-        let tile_y0 = min_y / tile_edge;
-        let tile_y1 = max_y / tile_edge;
-        for ty in tile_y0..=tile_y1 {
+    // Prefix-sum offsets + flat index scatter:
+    let mut running = 0_u32;
+    scratch.tile_offsets[0] = 0;
+    for t in 0..total_tiles {
+        let count = scratch.tile_counts[t];
+        scratch.tile_write_heads[t] = running;
+        let next = running.saturating_add(count);
+        scratch.tile_offsets[t + 1] = next;
+        #[cfg(not(target_arch = "wasm32"))]
+        debug_assert_eq!(
+            prism_kernel::csrTilePrefixMonotonic(
+                u64::from(running),
+                u64::from(next),
+                u64::from(count),
+            ),
+            Ok(true)
+        );
+        running = next;
+    }
+    scratch.tile_tri_indices.clear();
+    scratch.tile_tri_indices.resize(running as usize, 0_u32);
+    for (slot_usize, bt) in scratch.binned_tris.iter().enumerate() {
+        let slot = slot_usize as u32;
+        for ty in bt.tile_y0..=bt.tile_y1 {
             let row_off = (ty * tiles_x) as usize;
-            for tx in tile_x0..=tile_x1 {
-                tile_bins[row_off + (tx as usize)].push(binned_slot);
+            for tx in bt.tile_x0..=bt.tile_x1 {
+                let cell = row_off + (tx as usize);
+                let head = scratch.tile_write_heads[cell] as usize;
+                scratch.tile_tri_indices[head] = slot;
+                scratch.tile_write_heads[cell] += 1;
             }
         }
     }
 
-    // Stage 2: Tile-coherent L1-cache rasterization (empty tiles skipped in O(1)):
+    // Stage 2: Tile-coherent L1-cache rasterization over flat CSR slice `[start..end]`:
     for ty in 0..tiles_y {
         let tile_y_px = ty * tile_edge;
         let tile_y_max = (tile_y_px + tile_edge - 1).min(height - 1);
         for tx in 0..tiles_x {
-            let bin = &tile_bins[(ty * tiles_x + tx) as usize];
-            if bin.is_empty() {
+            let cell = (ty * tiles_x + tx) as usize;
+            let start = scratch.tile_offsets[cell] as usize;
+            let end = scratch.tile_offsets[cell + 1] as usize;
+            if start == end {
                 continue;
             }
             let tile_x_px = tx * tile_edge;
             let tile_x_max = (tile_x_px + tile_edge - 1).min(width - 1);
 
-            for &slot in bin {
-                let bt = &binned_tris[slot as usize];
+            for &slot in &scratch.tile_tri_indices[start..end] {
+                let bt = &scratch.binned_tris[slot as usize];
                 let py_start = tile_y_px.max(bt.min_y);
                 let py_end = tile_y_max.min(bt.max_y);
                 let px_start = tile_x_px.max(bt.min_x);
@@ -315,13 +429,13 @@ pub fn render_triangles_tile_framebuffer(
                         if w0 >= 0.0 && w1 >= 0.0 && w2 >= 0.0 {
                             let z = w0 * bt.z0 + w1 * bt.z1 + w2 * bt.z2;
                             let idx = (py * width + px) as usize;
-                            if z < depth_buf[idx] {
-                                depth_buf[idx] = z;
+                            if z < scratch.depth[idx] {
+                                scratch.depth[idx] = z;
                                 let c_idx = idx * channels;
-                                rgba8[c_idx] = bt.rgba[0];
-                                rgba8[c_idx + 1] = bt.rgba[1];
-                                rgba8[c_idx + i2] = bt.rgba[i2];
-                                rgba8[c_idx + i3] = bt.rgba[i3];
+                                scratch.rgba8[c_idx] = bt.rgba[0];
+                                scratch.rgba8[c_idx + 1] = bt.rgba[1];
+                                scratch.rgba8[c_idx + i2] = bt.rgba[i2];
+                                scratch.rgba8[c_idx + i3] = bt.rgba[i3];
                             }
                         }
                     }
@@ -330,11 +444,35 @@ pub fn render_triangles_tile_framebuffer(
         }
     }
 
+    Ok((tiles_shaded, rasterized_triangles))
+}
+
+/// Renders world-space `triangles` into a portable `RGBA8` software tile framebuffer using
+/// `batch_transform_positions_exact` (`uor-matmul`) for clip-space projection and `prism_kernel`
+/// LOD atmosphere parameters, requiring zero conditional browser GPU extensions.
+pub fn render_triangles_tile_framebuffer(
+    width: u32,
+    height: u32,
+    view_proj_cols: &[[f64; DIM_HOMOGENEOUS]; DIM_HOMOGENEOUS],
+    sun_direction: [f64; DIM_SPATIAL],
+    lod_rank: u64,
+    triangles: &[RasterTriangle],
+) -> Result<SoftwareTileFramebuffer, TensorComputeError> {
+    let mut scratch = TileRasterScratch::new();
+    let (tiles_shaded, rasterized_triangles) = render_triangles_tile_framebuffer_with_scratch(
+        width,
+        height,
+        view_proj_cols,
+        sun_direction,
+        lod_rank,
+        triangles,
+        &mut scratch,
+    )?;
     Ok(SoftwareTileFramebuffer {
         width,
         height,
-        rgba8,
-        depth: depth_buf,
+        rgba8: scratch.rgba8,
+        depth: scratch.depth,
         tiles_shaded,
         rasterized_triangles,
     })

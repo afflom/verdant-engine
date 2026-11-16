@@ -234,3 +234,9 @@ Feature: engine
     Given the Core-Wasm scene:aqm query, a burst of redundant and self-inverse input commands, a 16384-entity ColumnBitPlaneTable, an HD walkable NavMesh, a multi-body XPBD rig, a stride-8 RollbackSessionJournal, and a KappaTransitionCache
     When algebraic monoid fusion, Kahn parallel layer scheduling, column bit-plane popcount queries, in-place tropical next-hop closure, sparse XPBD stepping, and coded/UORC admission gates execute
     Then Core-Wasm scene:aqm answers conformant, self-inverse and modular yaw commands fuse cleanly, 16384-entity bit-plane intersections match exact counts, tropical next-hop paths match A-star corridors, kappa transition hits elide redundant steps, and cyclic DAGs or float-decoded admissions are refused
+
+  @VE-35 @build
+  Scenario: Flat CSR prefix-sum software tile rasterization, spatial-grid multi-body broadphase collisions, multi-primitive Khronos GLB ingestion, WebGL2 context-loss recovery, deadlock-free worker frame-ack and RPC watchdogs, and 52-bit floating-origin horizon guards execute with zero steady-state inner heap allocations and refuse astronomical or degenerate inputs
+    Given the Core-Wasm scene:stability query, a reusable TileRasterScratch CSR tile bin table, a 512-body PhysicsWorld spatial broadphase, a multi-primitive Khronos GLB asset, and the WebGL2 worker surface
+    When CSR tile rendering runs across normal and near-clip geometry, 512 dynamic rigid spheres collide, multi-primitive GLB meshes import, and non-finite or beyond-52-bit sector coordinates are tested
+    Then Core-Wasm scene:stability answers conformant, CSR tile capacities stabilize without per-frame inner Vec allocations, colliding spheres separate cleanly, all GLB primitives preserve geometry, WebGL2 context recovery and worker watchdogs are wired, and astronomical cell shifts return NarrativeLawError

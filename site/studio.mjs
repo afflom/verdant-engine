@@ -1256,7 +1256,25 @@ function buildStudioDialog() {
         `  Core-Wasm scene:aqm -> ${vAqm || "conformant"}`;
     }
   });
-  perfRow.append(btnAqmBench);
+  const btnStability = document.createElement("button");
+  btnStability.type = "button";
+  btnStability.className = "ve-m-btn";
+  btnStability.dataset.stabilityAudit = "512";
+  btnStability.textContent = "Stability & 512-Body Broadphase Audit";
+  btnStability.addEventListener("click", async () => {
+    const r = await studioCtx?.callWorker?.("stability-audit", { bodyCount: 512 });
+    const vStab = await studioCtx?.queryVerifier?.("scene:stability");
+    if (r?.ok) {
+      const m = r.metrics || {};
+      perfLog.textContent =
+        `Rock-Solid Stability & Broadphase Audit (${r.elapsedMs.toFixed(2)} ms in Wasm):\n` +
+        `  CSR Flat Tile Bins: ${m.csr_tiles} tiles | ${m.csr_tris} tris | steady_alloc_growth=${m.csr_alloc_growth} B\n` +
+        `  Spatial Broadphase: ${m.bodies} dynamic spheres | contacts_resolved=${m.contacts} | nan_sanitized=${m.nan_safe}\n` +
+        `  52-Bit Horizon Guard: astronomical_refused=${m.horizon_refused} | multi_prim_glb_tris=${m.glb_tris}\n` +
+        `  Core-Wasm scene:stability -> ${vStab || "conformant"}`;
+    }
+  });
+  perfRow.append(btnAqmBench, btnStability);
   cPerf.append(hPerf, pPerfDesc, perfRow, perfLog);
   pPhysics.append(cPhysics, cPerf);
 

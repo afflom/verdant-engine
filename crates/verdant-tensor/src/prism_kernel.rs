@@ -1735,55 +1735,67 @@ pub fn answerLawfulHdEngineQuery(
             let _x_3 = true;
             match _x_2 {
                 false => {
-                    let _x_2209 = matchesQuery((request).as_ref(), "scene:character")?;
-                    match _x_2209 {
+                    let _x_2487 = matchesQuery((request).as_ref(), "scene:character")?;
+                    match _x_2487 {
                         false => {
-                            let _x_2331 = matchesQuery((request).as_ref(), "scene:universe")?;
-                            match _x_2331 {
+                            let _x_2616 = matchesQuery((request).as_ref(), "scene:universe")?;
+                            match _x_2616 {
                                 false => {
-                                    let _x_2439 =
+                                    let _x_2731 =
                                         matchesQuery((request).as_ref(), "scene:narrative")?;
-                                    match _x_2439 {
+                                    match _x_2731 {
                                         false => {
-                                            let _x_2533 =
+                                            let _x_2832 =
                                                 matchesQuery((request).as_ref(), "scene:lod:4")?;
-                                            match _x_2533 {
+                                            match _x_2832 {
                                                 false => {
-                                                    let _x_2607 = matchesQuery(
+                                                    let _x_2913 = matchesQuery(
                                                         (request).as_ref(),
                                                         "scene:telos",
                                                     )?;
-                                                    match _x_2607 {
+                                                    match _x_2913 {
                                                         false => {
-                                                            let _x_2664 = matchesQuery(
+                                                            let _x_2977 = matchesQuery(
                                                                 (request).as_ref(),
                                                                 "scene:studio",
                                                             )?;
-                                                            match _x_2664 {
+                                                            match _x_2977 {
                                                                 false => {
-                                                                    let _x_2685 = matchesQuery(
+                                                                    let _x_3005 = matchesQuery(
                                                                         (request).as_ref(),
                                                                         "scene:perf",
                                                                     )?;
-                                                                    match _x_2685 {
+                                                                    match _x_3005 {
                                                                         false => {
-                                                                            let _x_2699 =
+                                                                            let _x_3026 =
                                                                                 matchesQuery(
                                                                                     (request)
                                                                                         .as_ref(),
                                                                                     "scene:aqm",
                                                                                 )?;
-                                                                            match _x_2699 {
+                                                                            match _x_3026 {
+                                                                                false => {
+                                                                                    let _x_3040 = matchesQuery((request).as_ref(), "scene:stability")?;
+                                                                                    match _x_3040 {
         false => std::string::String::from("invalid request"),
-        true => { let _x_2705 = aqmWorkloadExtrapolationsDirect()?; match _x_2705 {
-        false => std::string::String::from("refused:aqm-mismatch"),
-        true => std::string::String::from("conformant:monoid_fusion=true,bit_planes=8,checkpoint_stride=8,kappa_cache=true,coded_admission=true"),
+        true => { let _x_3046 = stabilityAndRefinementDirect()?; match _x_3046 {
+        false => std::string::String::from("refused:stability-mismatch"),
+        true => std::string::String::from("conformant:csr_tile_bins=true,spatial_broadphase=true,context_recovery=true,watchdog_ms=15000,mantissa_bits=52"),
     } },
     }
+                                                                                }
+                                                                                true => {
+                                                                                    let _x_3049 = aqmWorkloadExtrapolationsDirect()?;
+                                                                                    match _x_3049 {
+        false => std::string::String::from("refused:aqm-mismatch"),
+        true => std::string::String::from("conformant:monoid_fusion=true,bit_planes=8,checkpoint_stride=8,kappa_cache=true,coded_admission=true"),
+    }
+                                                                                }
+                                                                            }
                                                                         }
                                                                         true => {
-                                                                            let _x_2708 = workloadPerformanceDirect()?;
-                                                                            match _x_2708 {
+                                                                            let _x_3052 = workloadPerformanceDirect()?;
+                                                                            match _x_3052 {
         false => std::string::String::from("refused:perf-mismatch"),
         true => std::string::String::from("conformant:word_bits=64,sah_bins=8,bvh_stack=64,codebook_lut=256,epoch_elision=true,max_inflight=2"),
     }
@@ -1791,9 +1803,9 @@ pub fn answerLawfulHdEngineQuery(
                                                                     }
                                                                 }
                                                                 true => {
-                                                                    let _x_2711 =
+                                                                    let _x_3055 =
                                                                         studioSurfaceDirect()?;
-                                                                    match _x_2711 {
+                                                                    match _x_3055 {
         false => std::string::String::from("refused:studio-mismatch"),
         true => std::string::String::from("conformant:themes=3,tabs=6,journeys=7,archetypes=4,doc_embeds=6,controls=13"),
     }
@@ -1801,13 +1813,13 @@ pub fn answerLawfulHdEngineQuery(
                                                             }
                                                         }
                                                         true => {
-                                                            let _x_2714 = (1 << (1 << 1));
+                                                            let _x_3058 = (1 << (1 << 1));
                                                             {
-                                                                let _x_2715 = (1
+                                                                let _x_3059 = (1
                                                                     << ((1 << (1 << 1))
                                                                         + (1 << 1)));
                                                                 {
-                                                                    let _x_2716 = (((((1
+                                                                    let _x_3060 = (((((1
                                                                         << (((1
                                                                             << ((1 << 1)
                                                                                 + 1))
@@ -1820,7 +1832,7 @@ pub fn answerLawfulHdEngineQuery(
                                                                         + (1 << ((1 << 1) + 1)))
                                                                         + (1 << 1));
                                                                     {
-                                                                        let _x_2717 = (((((1
+                                                                        let _x_3061 = (((((1
                                                                             << (((1
                                                                                 << ((1
                                                                                     << 1)
@@ -1838,7 +1850,7 @@ pub fn answerLawfulHdEngineQuery(
                                                                                 << (1 << 1))))
                                                                             + (1 << (1 << 1)));
                                                                         {
-                                                                            let _x_2718 = (((((((1
+                                                                            let _x_3062 = (((((((1
                                                                                 << ((((1
                                                                                     << ((1 << 1)
                                                                                         + 1))
@@ -1878,49 +1890,49 @@ pub fn answerLawfulHdEngineQuery(
                                                                                     + (1 << 1))
                                                                                     + 1)));
                                                                             {
-                                                                                let _x_2719 = (1
+                                                                                let _x_3063 = (1
                                                                                     << (((1
                                                                                         << (1
                                                                                             << 1))
                                                                                         + (1 << 1))
                                                                                         + 1));
                                                                                 {
-                                                                                    let hostSample = self::HostEnvelope { logicalCores: _x_2714, memoryUnits: _x_2715, frameBudgetMicros: _x_2716, observedFrameMicros: _x_2717, audioSampleRateHz: _x_2718, audioQuantumFrames: _x_2719 };
+                                                                                    let hostSample = self::HostEnvelope { logicalCores: _x_3058, memoryUnits: _x_3059, frameBudgetMicros: _x_3060, observedFrameMicros: _x_3061, audioSampleRateHz: _x_3062, audioQuantumFrames: _x_3063 };
                                                                                     {
-                                                                                        let _x_2720 = (1 << ((1 << 1) + 1));
+                                                                                        let _x_3064 = (1 << ((1 << 1) + 1));
                                                                                         {
-                                                                                            let _x_2721 = (((((((1 << ((1 << ((1 << 1) + 1)) + 1)) + (1 << (1 << ((1 << 1) + 1)))) + (1 << (((1 << (1 << 1)) + (1 << 1)) + 1))) + (1 << ((1 << (1 << 1)) + 1))) + (1 << (1 << (1 << 1)))) + (1 << (1 << 1))) + (1 << 1));
+                                                                                            let _x_3065 = (((((((1 << ((1 << ((1 << 1) + 1)) + 1)) + (1 << (1 << ((1 << 1) + 1)))) + (1 << (((1 << (1 << 1)) + (1 << 1)) + 1))) + (1 << ((1 << (1 << 1)) + 1))) + (1 << (1 << (1 << 1)))) + (1 << (1 << 1))) + (1 << 1));
                                                                                             {
-                                                                                                let _x_2722 = (((1 << ((1 << ((1 << 1) + 1)) + 1)) + (1 << (1 << ((1 << 1) + 1)))) + (1 << ((1 << (1 << 1)) + 1)));
+                                                                                                let _x_3066 = (((1 << ((1 << ((1 << 1) + 1)) + 1)) + (1 << (1 << ((1 << 1) + 1)))) + (1 << ((1 << (1 << 1)) + 1)));
                                                                                                 {
-                                                                                                    let _x_2723 = ((((1 << ((1 << ((1 << 1) + 1)) + 1)) + (1 << (1 << ((1 << 1) + 1)))) + (1 << (((1 << (1 << 1)) + (1 << 1)) + 1))) + (1 << (1 << 1)));
+                                                                                                    let _x_3067 = ((((1 << ((1 << ((1 << 1) + 1)) + 1)) + (1 << (1 << ((1 << 1) + 1)))) + (1 << (((1 << (1 << 1)) + (1 << 1)) + 1))) + (1 << (1 << 1)));
                                                                                                     {
-                                                                                                        let witSample = self::WitnessEnvelope { criticalBands: _x_2720, inputPollMillis: _x_2720, cameraStabilityRatio: _x_2721, focusDwellRatio: _x_2722, audioHeadroomRatio: _x_2723, activePresence: _x_3 };
+                                                                                                        let witSample = self::WitnessEnvelope { criticalBands: _x_3064, inputPollMillis: _x_3064, cameraStabilityRatio: _x_3065, focusDwellRatio: _x_3066, audioHeadroomRatio: _x_3067, activePresence: _x_3 };
                                                                                                         {
-                                                                                                            let _x_2724 = 0;
+                                                                                                            let _x_3068 = 0;
                                                                                                             {
-                                                                                                                let eval = evaluateHolonTelosState(hostSample, witSample, _x_2724, _x_2724, _x_2724)?;
+                                                                                                                let eval = evaluateHolonTelosState(hostSample, witSample, _x_3068, _x_3068, _x_3068)?;
                                                                                                                 {
-                                                                                                                    let _x_2725 = (((1 << (1 << 1)) + (1 << 1)) + 1);
+                                                                                                                    let _x_3069 = (((1 << (1 << 1)) + (1 << 1)) + 1);
                                                                                                                     {
-                                                                                                                        let _x_2726 = strataCertifiedUpTo(_x_2725)?;
-                                                                                                                        match _x_2726 {
-        false => { let _y_2728 = _x_2726; match _y_2728 {
+                                                                                                                        let _x_3070 = strataCertifiedUpTo(_x_3069)?;
+                                                                                                                        match _x_3070 {
+        false => { let _y_3072 = _x_3070; match _y_3072 {
         false => std::string::String::from("refused:telos-mismatch"),
-        true => { let _x_2734 = sTwoHundred()?; { let _x_2735 = sweptCapsuleMaxStepMilli()?; { let _x_2736 = citadelPortalWidthMilli()?; { let _x_2737 = (((1 << (1 << ((1 << 1) + 1))) + (1 << (((1 << (1 << 1)) + (1 << 1)) + 1))) + (1 << (1 << (1 << 1)))); { let _x_2738 = citadelSpringHeightMilli()?; { let _x_2739 = ((((1 << ((1 << ((1 << 1) + 1)) + (1 << 1))) + (1 << ((1 << ((1 << 1) + 1)) + 1))) + (1 << (1 << ((1 << 1) + 1)))) + (1 << ((1 << 1) + 1))); { let _x_2740 = architecturalWalkabilityValid(_x_2734, _x_2735, _x_2736, _x_2737, _x_2738, _x_2739)?; match _x_2740 {
+        true => { let _x_3078 = sTwoHundred()?; { let _x_3079 = sweptCapsuleMaxStepMilli()?; { let _x_3080 = citadelPortalWidthMilli()?; { let _x_3081 = (((1 << (1 << ((1 << 1) + 1))) + (1 << (((1 << (1 << 1)) + (1 << 1)) + 1))) + (1 << (1 << (1 << 1)))); { let _x_3082 = citadelSpringHeightMilli()?; { let _x_3083 = ((((1 << ((1 << ((1 << 1) + 1)) + (1 << 1))) + (1 << ((1 << ((1 << 1) + 1)) + 1))) + (1 << (1 << ((1 << 1) + 1)))) + (1 << ((1 << 1) + 1))); { let _x_3084 = architecturalWalkabilityValid(_x_3078, _x_3079, _x_3080, _x_3081, _x_3082, _x_3083)?; match _x_3084 {
         false => std::string::String::from("refused:telos-mismatch"),
         true => std::string::String::from("conformant:w5h_strata=8,telos_loss=0,triadic_active=true,walkable_citadel=true"),
     } } } } } } } },
     } },
-        true => { let _x_2743 = (eval).totalTelosLoss; { let _x_2744 = (_x_2743 == _x_2724); match _x_2744 {
-        false => { let prod_local_0 = _x_2744; match prod_local_0 {
+        true => { let _x_3087 = (eval).totalTelosLoss; { let _x_3088 = (_x_3087 == _x_3068); match _x_3088 {
+        false => { let prod_local_0 = _x_3088; match prod_local_0 {
         false => std::string::String::from("refused:telos-mismatch"),
         true => { let prod_local_2 = sTwoHundred()?; { let prod_local_3 = sweptCapsuleMaxStepMilli()?; { let prod_local_4 = citadelPortalWidthMilli()?; { let prod_local_5 = (((1 << (1 << ((1 << 1) + 1))) + (1 << (((1 << (1 << 1)) + (1 << 1)) + 1))) + (1 << (1 << (1 << 1)))); { let prod_local_6 = citadelSpringHeightMilli()?; { let prod_local_7 = ((((1 << ((1 << ((1 << 1) + 1)) + (1 << 1))) + (1 << ((1 << ((1 << 1) + 1)) + 1))) + (1 << (1 << ((1 << 1) + 1)))) + (1 << ((1 << 1) + 1))); { let prod_local_8 = architecturalWalkabilityValid(prod_local_2, prod_local_3, prod_local_4, prod_local_5, prod_local_6, prod_local_7)?; match prod_local_8 {
         false => std::string::String::from("refused:telos-mismatch"),
         true => std::string::String::from("conformant:w5h_strata=8,telos_loss=0,triadic_active=true,walkable_citadel=true"),
     } } } } } } } },
     } },
-        true => { let _x_2745 = (eval).triadicConnectionActive; { let prod_local_11 = _x_2745; match prod_local_11 {
+        true => { let _x_3089 = (eval).triadicConnectionActive; { let prod_local_11 = _x_3089; match prod_local_11 {
         false => std::string::String::from("refused:telos-mismatch"),
         true => { let prod_local_13 = sTwoHundred()?; { let prod_local_14 = sweptCapsuleMaxStepMilli()?; { let prod_local_15 = citadelPortalWidthMilli()?; { let prod_local_16 = (((1 << (1 << ((1 << 1) + 1))) + (1 << (((1 << (1 << 1)) + (1 << 1)) + 1))) + (1 << (1 << (1 << 1)))); { let prod_local_17 = citadelSpringHeightMilli()?; { let prod_local_18 = ((((1 << ((1 << ((1 << 1) + 1)) + (1 << 1))) + (1 << ((1 << ((1 << 1) + 1)) + 1))) + (1 << (1 << ((1 << 1) + 1)))) + (1 << ((1 << 1) + 1))); { let prod_local_19 = architecturalWalkabilityValid(prod_local_13, prod_local_14, prod_local_15, prod_local_16, prod_local_17, prod_local_18)?; match prod_local_19 {
         false => std::string::String::from("refused:telos-mismatch"),
@@ -1948,27 +1960,27 @@ pub fn answerLawfulHdEngineQuery(
                                                     }
                                                 }
                                                 true => {
-                                                    let _x_2749 = (1 << (1 << 1));
+                                                    let _x_3093 = (1 << (1 << 1));
                                                     {
-                                                        let _x_2750 = lodEnvelopeByRank(_x_2749)?;
+                                                        let _x_3094 = lodEnvelopeByRank(_x_3093)?;
                                                         {
-                                                            let _x_2751 = (_x_2750).losslessActive;
-                                                            match _x_2751 {
+                                                            let _x_3095 = (_x_3094).losslessActive;
+                                                            match _x_3095 {
                                                                 false => std::string::String::from(
                                                                     "refused:lod4-mismatch",
                                                                 ),
                                                                 true => {
-                                                                    let _x_2757 = (1 << (1 << 1));
+                                                                    let _x_3101 = (1 << (1 << 1));
                                                                     {
-                                                                        let _x_2758 =
+                                                                        let _x_3102 =
                                                                             lodEnvelopeByRank(
-                                                                                _x_2757,
+                                                                                _x_3101,
                                                                             )?;
                                                                         {
-                                                                            let _x_2759 = (_x_2758)
+                                                                            let _x_3103 = (_x_3102)
                                                                                 .meshDensityPercent;
                                                                             {
-                                                                                let _x_2760 = (((1
+                                                                                let _x_3104 = (((1
                                                                                     << (((1
                                                                                         << (1
                                                                                             << 1))
@@ -1982,8 +1994,8 @@ pub fn answerLawfulHdEngineQuery(
                                                                                         << 1)
                                                                                         + 1)));
                                                                                 {
-                                                                                    let _x_2761 = (_x_2759 == _x_2760);
-                                                                                    match _x_2761 {
+                                                                                    let _x_3105 = (_x_3103 == _x_3104);
+                                                                                    match _x_3105 {
         false => std::string::String::from("refused:lod4-mismatch"),
         true => std::string::String::from("conformant:rank=4,res=16/8,density=200/100,shadows=1,ibl=1,lossless=1,sky=20/34/44,fog=34/44/48"),
     }
@@ -1999,44 +2011,44 @@ pub fn answerLawfulHdEngineQuery(
                                             }
                                         }
                                         true => {
-                                            let _x_2765 = ((1 << ((1 << 1) + 1)) + (1 << 1));
+                                            let _x_3109 = ((1 << ((1 << 1) + 1)) + (1 << 1));
                                             {
-                                                let _x_2766 = ((1 << (1 << 1)) + 1);
+                                                let _x_3110 = ((1 << (1 << 1)) + 1);
                                                 {
-                                                    let _x_2767 = ((1 << 1) + 1);
+                                                    let _x_3111 = ((1 << 1) + 1);
                                                     {
-                                                        let _x_2768 = ((1 << ((1 << 1) + 1))
+                                                        let _x_3112 = ((1 << ((1 << 1) + 1))
                                                             + (1 << (1 << 1)));
                                                         {
-                                                            let _x_2769 = conservationLawValid(
-                                                                _x_2765, _x_2766, _x_2767, _x_2768,
+                                                            let _x_3113 = conservationLawValid(
+                                                                _x_3109, _x_3110, _x_3111, _x_3112,
                                                             )?;
-                                                            match _x_2769 {
+                                                            match _x_3113 {
                                                                 false => {
-                                                                    let _y_2771 = _x_2769;
-                                                                    match _y_2771 {
+                                                                    let _y_3115 = _x_3113;
+                                                                    match _y_3115 {
         false => std::string::String::from("refused:narrative-mismatch"),
         true => std::string::String::from("conformant:conservation=exact,tropical_reachability=true"),
     }
                                                                 }
                                                                 true => {
-                                                                    let _x_2776 = ((1
+                                                                    let _x_3120 = ((1
                                                                         << ((1 << 1) + 1))
                                                                         + (1 << 1));
                                                                     {
-                                                                        let _x_2777 = 0;
+                                                                        let _x_3121 = 0;
                                                                         {
-                                                                            let _x_2778 = (((1
+                                                                            let _x_3122 = (((1
                                                                                 << ((1 << 1)
                                                                                     + 1))
                                                                                 + (1 << 1))
                                                                                 + 1);
                                                                             {
-                                                                                let _x_2779 = conservationLawValid(_x_2776, _x_2777, _x_2777, _x_2778)?;
-                                                                                match _x_2779 {
+                                                                                let _x_3123 = conservationLawValid(_x_3120, _x_3121, _x_3121, _x_3122)?;
+                                                                                match _x_3123 {
                                                                                     false => {
                                                                                         let prod_local_22 =
-                                                                                            _x_2769;
+                                                                                            _x_3113;
                                                                                         match prod_local_22 {
         false => std::string::String::from("refused:narrative-mismatch"),
         true => std::string::String::from("conformant:conservation=exact,tropical_reachability=true"),
@@ -2044,7 +2056,7 @@ pub fn answerLawfulHdEngineQuery(
                                                                                     }
                                                                                     true => {
                                                                                         let prod_local_25 =
-                                                                                            _x_2331;
+                                                                                            _x_2616;
                                                                                         match prod_local_25 {
         false => std::string::String::from("refused:narrative-mismatch"),
         true => std::string::String::from("conformant:conservation=exact,tropical_reachability=true"),
@@ -2064,21 +2076,21 @@ pub fn answerLawfulHdEngineQuery(
                                     }
                                 }
                                 true => {
-                                    let _x_2781 = universeCellSpanMeters()?;
+                                    let _x_3125 = universeCellSpanMeters()?;
                                     {
-                                        let _x_2782 = (1 << (((1 << (1 << 1)) + (1 << 1)) + 1));
+                                        let _x_3126 = (1 << (((1 << (1 << 1)) + (1 << 1)) + 1));
                                         {
-                                            let _x_2783 = (_x_2781 == _x_2782);
-                                            match _x_2783 {
+                                            let _x_3127 = (_x_3125 == _x_3126);
+                                            match _x_3127 {
                                                 false => {
-                                                    let _y_2785 = _x_2783;
-                                                    match _y_2785 {
+                                                    let _y_3129 = _x_3127;
+                                                    match _y_3129 {
         false => std::string::String::from("refused:universe-mismatch"),
         true => std::string::String::from("conformant:cell_span_m=128,floating_origin=true,portals=true"),
     }
                                                 }
                                                 true => {
-                                                    let _x_2788 = ((((((1
+                                                    let _x_3132 = ((((((1
                                                         << (((1 << ((1 << 1) + 1))
                                                             + (1 << (1 << 1)))
                                                             + (1 << 1)))
@@ -2094,11 +2106,11 @@ pub fn answerLawfulHdEngineQuery(
                                                             + (1 << 1))))
                                                         + (1 << (1 << ((1 << 1) + 1))));
                                                     {
-                                                        let _x_2789 = universeHalfSpanMilli()?;
+                                                        let _x_3133 = universeHalfSpanMilli()?;
                                                         {
-                                                            let _x_2790 = (_x_2788 < _x_2789);
+                                                            let _x_3134 = (_x_3132 < _x_3133);
                                                             {
-                                                                let prod_local_28 = _x_2790;
+                                                                let prod_local_28 = _x_3134;
                                                                 match prod_local_28 {
         false => std::string::String::from("refused:universe-mismatch"),
         true => std::string::String::from("conformant:cell_span_m=128,floating_origin=true,portals=true"),
@@ -2114,26 +2126,26 @@ pub fn answerLawfulHdEngineQuery(
                             }
                         }
                         true => {
-                            let _x_2791 = sTwentyTwo()?;
+                            let _x_3135 = sTwentyTwo()?;
                             {
-                                let _x_2792 =
+                                let _x_3136 =
                                     (((1 << (1 << (1 << 1))) + (1 << (1 << 1))) + (1 << 1));
                                 {
-                                    let _x_2793 = (_x_2791 == _x_2792);
-                                    match _x_2793 {
+                                    let _x_3137 = (_x_3135 == _x_3136);
+                                    match _x_3137 {
                                         false => {
-                                            let _y_2795 = _x_2793;
-                                            match _y_2795 {
+                                            let _y_3139 = _x_3137;
+                                            match _y_3139 {
         false => std::string::String::from("refused:character-mismatch"),
         true => std::string::String::from("conformant:joints=22,two_bone_ik=true,lbs_scale=1000"),
     }
                                         }
                                         true => {
-                                            let _x_2798 = (((1 << (1 << ((1 << 1) + 1)))
+                                            let _x_3142 = (((1 << (1 << ((1 << 1) + 1)))
                                                 + (1 << (((1 << (1 << 1)) + (1 << 1)) + 1)))
                                                 + (1 << (1 << (1 << 1))));
                                             {
-                                                let _x_2799 = ((((((1
+                                                let _x_3143 = ((((((1
                                                     << ((1 << ((1 << 1) + 1)) + 1))
                                                     + (1 << (((1 << (1 << 1)) + (1 << 1))
                                                         + 1)))
@@ -2142,11 +2154,11 @@ pub fn answerLawfulHdEngineQuery(
                                                     + (1 << ((1 << 1) + 1)))
                                                     + (1 << (1 << 1)));
                                                 {
-                                                    let _x_2800 = twoBoneIkReachable(
-                                                        _x_2798, _x_2798, _x_2799,
+                                                    let _x_3144 = twoBoneIkReachable(
+                                                        _x_3142, _x_3142, _x_3143,
                                                     )?;
                                                     {
-                                                        let prod_local_31 = _x_2800;
+                                                        let prod_local_31 = _x_3144;
                                                         match prod_local_31 {
         false => std::string::String::from("refused:character-mismatch"),
         true => std::string::String::from("conformant:joints=22,two_bone_ik=true,lbs_scale=1000"),
@@ -2162,52 +2174,52 @@ pub fn answerLawfulHdEngineQuery(
                     }
                 }
                 true => {
-                    let _x_2801 = sFour()?;
+                    let _x_3145 = sFour()?;
                     {
-                        let _x_2802 = (1 << (1 << 1));
+                        let _x_3146 = (1 << (1 << 1));
                         {
-                            let _x_2803 = (_x_2801 == _x_2802);
-                            match _x_2803 {
+                            let _x_3147 = (_x_3145 == _x_3146);
+                            match _x_3147 {
                                 false => {
-                                    let _y_2805 = _x_2803;
-                                    match _y_2805 {
+                                    let _y_3149 = _x_3147;
+                                    match _y_3149 {
         false => std::string::String::from("refused:lawful-mismatch"),
         true => std::string::String::from("conformant:ccd_slides=4,non_penetrating=true,near_sphere_guard=true"),
     }
                                 }
                                 true => {
-                                    let _x_2810 = (((1 << ((1 << (1 << 1)) + 1))
+                                    let _x_3154 = (((1 << ((1 << (1 << 1)) + 1))
                                         + (1 << (1 << (1 << 1))))
                                         + (1 << 1));
                                     {
-                                        let _x_2811 =
+                                        let _x_3155 =
                                             ((1 << ((1 << (1 << 1)) + 1)) + (1 << (1 << (1 << 1))));
                                         {
-                                            let _x_2812 = (1 << 1);
+                                            let _x_3156 = (1 << 1);
                                             {
-                                                let _x_2813 =
-                                                    sweptClearanceValid(_x_2810, _x_2811, _x_2812)?;
-                                                match _x_2813 {
+                                                let _x_3157 =
+                                                    sweptClearanceValid(_x_3154, _x_3155, _x_3156)?;
+                                                match _x_3157 {
                                                     false => {
-                                                        let prod_local_34 = _x_2813;
+                                                        let prod_local_34 = _x_3157;
                                                         match prod_local_34 {
         false => std::string::String::from("refused:lawful-mismatch"),
         true => std::string::String::from("conformant:ccd_slides=4,non_penetrating=true,near_sphere_guard=true"),
     }
                                                     }
                                                     true => {
-                                                        let _x_2814 = (((1
+                                                        let _x_3158 = (((1
                                                             << (((1 << (1 << 1)) + (1 << 1))
                                                                 + 1))
                                                             + (1 << ((1 << (1 << 1)) + (1 << 1))))
                                                             + (1 << ((1 << 1) + 1)));
                                                         {
-                                                            let _x_2815 = (((1
+                                                            let _x_3159 = (((1
                                                                 << ((1 << (1 << 1)) + (1 << 1)))
                                                                 + (1 << ((1 << (1 << 1)) + 1)))
                                                                 + (1 << (1 << 1)));
                                                             {
-                                                                let _x_2816 = (((((((1
+                                                                let _x_3160 = (((((((1
                                                                     << ((1
                                                                         << ((1 << 1) + 1))
                                                                         + (1 << 1)))
@@ -2223,13 +2235,13 @@ pub fn answerLawfulHdEngineQuery(
                                                                     + (1 << ((1 << 1) + 1)))
                                                                     + (1 << (1 << 1)));
                                                                 {
-                                                                    let _x_2817 =
+                                                                    let _x_3161 =
                                                                         cameraNearSphereGuarded(
-                                                                            _x_2814, _x_2815,
-                                                                            _x_2816,
+                                                                            _x_3158, _x_3159,
+                                                                            _x_3160,
                                                                         )?;
                                                                     {
-                                                                        let prod_local_37 = _x_2817;
+                                                                        let prod_local_37 = _x_3161;
                                                                         match prod_local_37 {
         false => std::string::String::from("refused:lawful-mismatch"),
         true => std::string::String::from("conformant:ccd_slides=4,non_penetrating=true,near_sphere_guard=true"),
@@ -7094,6 +7106,22 @@ pub fn csmSplitDistanceMilli(
                 }
             }
             true => nearMilli,
+        }
+    })
+}
+
+pub fn csrTilePrefixMonotonic(
+    offsetCur: u64,
+    offsetNext: u64,
+    tileCount: u64,
+) -> Result<bool, self::ComputeError> {
+    Ok({
+        let _x_12 = core::convert::identity::<u64>(offsetCur)
+            .checked_add(tileCount)
+            .ok_or(self::ComputeError::AddOverflow)?;
+        {
+            let _x_5 = (_x_12 == offsetNext);
+            _x_5
         }
     })
 }
@@ -12687,6 +12715,21 @@ pub fn eulerBernoulliModeNumer(modeIndex: u64) -> Result<u64, self::ComputeError
     })
 }
 
+pub fn f64ExactMantissaBits() -> Result<u64, self::ComputeError> {
+    Ok({
+        let _x_4 = sFifty()?;
+        {
+            let _x_11 = (1 << 1);
+            {
+                let _x_13 = core::convert::identity::<u64>(_x_4)
+                    .checked_add(_x_11)
+                    .ok_or(self::ComputeError::AddOverflow)?;
+                _x_13
+            }
+        }
+    })
+}
+
 pub fn flatBvhChildOrderNearFirst(toiLeftMilli: u64, toiRightMilli: u64) -> bool {
     {
         let _x_1 = (toiLeftMilli <= toiRightMilli);
@@ -12881,6 +12924,16 @@ pub fn governorRecommendedScalePermille(
             }
         }
     })
+}
+
+pub fn gpuContextHealthy(contextLost: bool, dimensionsValid: bool) -> bool {
+    match contextLost {
+        false => dimensionsValid,
+        true => {
+            let _x_14 = false;
+            _x_14
+        }
+    }
 }
 
 pub fn humanoidJointCount() -> Result<u64, self::ComputeError> {
@@ -18459,6 +18512,21 @@ pub fn percentDenominator() -> Result<u64, self::ComputeError> {
     })
 }
 
+pub fn physicsMaxSpeedMetersPerSec() -> Result<u64, self::ComputeError> {
+    Ok({
+        let _x_5 = (1 << 1);
+        {
+            let _x_3 = sSixty()?;
+            {
+                let _x_4 = core::convert::identity::<u64>(_x_5)
+                    .checked_mul(_x_3)
+                    .ok_or(self::ComputeError::MulOverflow)?;
+                _x_4
+            }
+        }
+    })
+}
+
 pub fn proposalAdmitted(
     scoreMilli: u64,
     minThresholdMilli: u64,
@@ -20599,6 +20667,321 @@ pub fn splineWaypointCount() -> Result<u64, self::ComputeError> {
     })
 }
 
+pub fn stabilityAndRefinementDirect() -> Result<bool, self::ComputeError> {
+    Ok({
+        let _x_21 = f64ExactMantissaBits()?;
+        {
+            let _x_25 = sFifty()?;
+            {
+                let _x_152 = (1 << 1);
+                {
+                    let _x_154 = core::convert::identity::<u64>(_x_25)
+                        .checked_add(_x_152)
+                        .ok_or(self::ComputeError::AddOverflow)?;
+                    {
+                        let _x_28 = (_x_21 == _x_154);
+                        match _x_28 {
+                            false => {
+                                let _y_33 = _x_28;
+                                match _y_33 {
+                                    false => _y_33,
+                                    true => {
+                                        let _x_376 = physicsMaxSpeedMetersPerSec()?;
+                                        {
+                                            let _x_378 = (1 << 1);
+                                            {
+                                                let _x_379 = sSixty()?;
+                                                {
+                                                    let _x_380 =
+                                                        core::convert::identity::<u64>(_x_378)
+                                                            .checked_mul(_x_379)
+                                                            .ok_or(
+                                                                self::ComputeError::MulOverflow,
+                                                            )?;
+                                                    {
+                                                        let _x_381 = (_x_376 == _x_380);
+                                                        match _x_381 {
+                                                            false => _x_381,
+                                                            true => {
+                                                                let _x_432 = sTen()?;
+                                                                {
+                                                                    let _x_433 = sFourteen()?;
+                                                                    {
+                                                                        let _x_434 = sFour()?;
+                                                                        {
+                                                                            let _x_435 = csrTilePrefixMonotonic(_x_432, _x_433, _x_434)?;
+                                                                            match _x_435 {
+                                                                                false => {
+                                                                                    let _y_439 =
+                                                                                        _x_435;
+                                                                                    match _y_439 {
+                                                                                        false => {
+                                                                                            _y_439
+                                                                                        }
+                                                                                        true => {
+                                                                                            let _x_440 = false;
+                                                                                            {
+                                                                                                let _x_441 = gpuContextHealthy(_x_440, _y_33);
+                                                                                                match _x_441 {
+        false => { let _y_445 = _x_441; match _y_445 {
+        false => _y_445,
+        true => { let _x_446 = skinWeightScale()?; { let _x_447 = workerRpcWatchdogMillis()?; { let _x_448 = (_x_446 <= _x_447); match _x_448 {
+        false => _x_448,
+        true => { let _x_449 = workerRpcWatchdogMillis()?; { let _x_450 = 1; { let _x_451 = core::convert::identity::<u64>(_x_449).checked_add(_x_450).ok_or(self::ComputeError::AddOverflow)?; { let _x_452 = (_x_451 <= _x_449); match _x_452 {
+        false => _x_448,
+        true => { let _x_453 = false; _x_453 },
+    } } } } },
+    } } } },
+    } },
+        true => { let _x_454 = gpuContextHealthy(_y_33, _y_33); match _x_454 {
+        false => { let _x_455 = gpuContextHealthy(_x_454, _x_454); match _x_455 {
+        false => { let prod_local_0 = _x_441; match prod_local_0 {
+        false => prod_local_0,
+        true => { let prod_local_1 = skinWeightScale()?; { let prod_local_2 = workerRpcWatchdogMillis()?; { let prod_local_3 = (prod_local_1 <= prod_local_2); match prod_local_3 {
+        false => prod_local_3,
+        true => { let prod_local_4 = workerRpcWatchdogMillis()?; { let prod_local_5 = 1; { let prod_local_6 = core::convert::identity::<u64>(prod_local_4).checked_add(prod_local_5).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_7 = (prod_local_6 <= prod_local_4); match prod_local_7 {
+        false => prod_local_3,
+        true => { let prod_local_8 = false; prod_local_8 },
+    } } } } },
+    } } } },
+    } },
+        true => { let prod_local_9 = _x_454; match prod_local_9 {
+        false => prod_local_9,
+        true => { let prod_local_10 = skinWeightScale()?; { let prod_local_11 = workerRpcWatchdogMillis()?; { let prod_local_12 = (prod_local_10 <= prod_local_11); match prod_local_12 {
+        false => prod_local_12,
+        true => { let prod_local_13 = workerRpcWatchdogMillis()?; { let prod_local_14 = 1; { let prod_local_15 = core::convert::identity::<u64>(prod_local_13).checked_add(prod_local_14).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_16 = (prod_local_15 <= prod_local_13); match prod_local_16 {
+        false => prod_local_12,
+        true => { let prod_local_17 = false; prod_local_17 },
+    } } } } },
+    } } } },
+    } },
+    } },
+        true => { let _x_456 = false; _x_456 },
+    } },
+    }
+                                                                                            }
+                                                                                        }
+                                                                                    }
+                                                                                }
+                                                                                true => {
+                                                                                    let _x_457 =
+                                                                                        sTen()?;
+                                                                                    {
+                                                                                        let _x_458 = sFifteen()?;
+                                                                                        {
+                                                                                            let _x_459 = sFour()?;
+                                                                                            {
+                                                                                                let _x_460 = csrTilePrefixMonotonic(_x_457, _x_458, _x_459)?;
+                                                                                                match _x_460 {
+        false => { let prod_local_18 = _x_435; match prod_local_18 {
+        false => prod_local_18,
+        true => { let prod_local_19 = false; { let prod_local_20 = gpuContextHealthy(prod_local_19, _y_33); match prod_local_20 {
+        false => { let prod_local_22 = prod_local_20; match prod_local_22 {
+        false => prod_local_22,
+        true => { let prod_local_23 = skinWeightScale()?; { let prod_local_24 = workerRpcWatchdogMillis()?; { let prod_local_25 = (prod_local_23 <= prod_local_24); match prod_local_25 {
+        false => prod_local_25,
+        true => { let prod_local_26 = workerRpcWatchdogMillis()?; { let prod_local_27 = 1; { let prod_local_28 = core::convert::identity::<u64>(prod_local_26).checked_add(prod_local_27).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_29 = (prod_local_28 <= prod_local_26); match prod_local_29 {
+        false => prod_local_25,
+        true => { let prod_local_30 = false; prod_local_30 },
+    } } } } },
+    } } } },
+    } },
+        true => { let prod_local_31 = gpuContextHealthy(_y_33, _y_33); match prod_local_31 {
+        false => { let prod_local_32 = gpuContextHealthy(prod_local_31, prod_local_31); match prod_local_32 {
+        false => { let prod_local_33 = prod_local_20; match prod_local_33 {
+        false => prod_local_33,
+        true => { let prod_local_34 = skinWeightScale()?; { let prod_local_35 = workerRpcWatchdogMillis()?; { let prod_local_36 = (prod_local_34 <= prod_local_35); match prod_local_36 {
+        false => prod_local_36,
+        true => { let prod_local_37 = workerRpcWatchdogMillis()?; { let prod_local_38 = 1; { let prod_local_39 = core::convert::identity::<u64>(prod_local_37).checked_add(prod_local_38).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_40 = (prod_local_39 <= prod_local_37); match prod_local_40 {
+        false => prod_local_36,
+        true => { let prod_local_41 = false; prod_local_41 },
+    } } } } },
+    } } } },
+    } },
+        true => { let prod_local_42 = prod_local_31; match prod_local_42 {
+        false => prod_local_42,
+        true => { let prod_local_43 = skinWeightScale()?; { let prod_local_44 = workerRpcWatchdogMillis()?; { let prod_local_45 = (prod_local_43 <= prod_local_44); match prod_local_45 {
+        false => prod_local_45,
+        true => { let prod_local_46 = workerRpcWatchdogMillis()?; { let prod_local_47 = 1; { let prod_local_48 = core::convert::identity::<u64>(prod_local_46).checked_add(prod_local_47).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_49 = (prod_local_48 <= prod_local_46); match prod_local_49 {
+        false => prod_local_45,
+        true => { let prod_local_50 = false; prod_local_50 },
+    } } } } },
+    } } } },
+    } },
+    } },
+        true => { let prod_local_51 = false; prod_local_51 },
+    } },
+    } } },
+    } },
+        true => { let _x_461 = false; _x_461 },
+    }
+                                                                                            }
+                                                                                        }
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            true => {
+                                let _x_382 = workerRpcWatchdogMillis()?;
+                                {
+                                    let _x_384 = sFifteen()?;
+                                    {
+                                        let _x_385 = skinWeightScale()?;
+                                        {
+                                            let _x_386 = core::convert::identity::<u64>(_x_384)
+                                                .checked_mul(_x_385)
+                                                .ok_or(self::ComputeError::MulOverflow)?;
+                                            {
+                                                let _x_387 = (_x_382 == _x_386);
+                                                {
+                                                    let prod_local_52 = _x_387;
+                                                    match prod_local_52 {
+                                                        false => prod_local_52,
+                                                        true => {
+                                                            let prod_local_53 =
+                                                                physicsMaxSpeedMetersPerSec()?;
+                                                            {
+                                                                let prod_local_54 = (1 << 1);
+                                                                {
+                                                                    let prod_local_55 = sSixty()?;
+                                                                    {
+                                                                        let prod_local_56 = core::convert::identity::<u64>(prod_local_54).checked_mul(prod_local_55).ok_or(self::ComputeError::MulOverflow)?;
+                                                                        {
+                                                                            let prod_local_57 = (prod_local_53 == prod_local_56);
+                                                                            match prod_local_57 {
+                                                                                false => {
+                                                                                    prod_local_57
+                                                                                }
+                                                                                true => {
+                                                                                    let prod_local_58 =
+                                                                                        sTen()?;
+                                                                                    {
+                                                                                        let prod_local_59 = sFourteen()?;
+                                                                                        {
+                                                                                            let prod_local_60 = sFour()?;
+                                                                                            {
+                                                                                                let prod_local_61 = csrTilePrefixMonotonic(prod_local_58, prod_local_59, prod_local_60)?;
+                                                                                                match prod_local_61 {
+        false => { let prod_local_63 = prod_local_61; match prod_local_63 {
+        false => prod_local_63,
+        true => { let prod_local_64 = false; { let prod_local_65 = gpuContextHealthy(prod_local_64, prod_local_52); match prod_local_65 {
+        false => { let prod_local_67 = prod_local_65; match prod_local_67 {
+        false => prod_local_67,
+        true => { let prod_local_68 = skinWeightScale()?; { let prod_local_69 = workerRpcWatchdogMillis()?; { let prod_local_70 = (prod_local_68 <= prod_local_69); match prod_local_70 {
+        false => prod_local_70,
+        true => { let prod_local_71 = workerRpcWatchdogMillis()?; { let prod_local_72 = 1; { let prod_local_73 = core::convert::identity::<u64>(prod_local_71).checked_add(prod_local_72).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_74 = (prod_local_73 <= prod_local_71); match prod_local_74 {
+        false => prod_local_70,
+        true => { let prod_local_75 = false; prod_local_75 },
+    } } } } },
+    } } } },
+    } },
+        true => { let prod_local_76 = gpuContextHealthy(prod_local_52, prod_local_52); match prod_local_76 {
+        false => { let prod_local_77 = gpuContextHealthy(prod_local_76, prod_local_76); match prod_local_77 {
+        false => { let prod_local_78 = prod_local_65; match prod_local_78 {
+        false => prod_local_78,
+        true => { let prod_local_79 = skinWeightScale()?; { let prod_local_80 = workerRpcWatchdogMillis()?; { let prod_local_81 = (prod_local_79 <= prod_local_80); match prod_local_81 {
+        false => prod_local_81,
+        true => { let prod_local_82 = workerRpcWatchdogMillis()?; { let prod_local_83 = 1; { let prod_local_84 = core::convert::identity::<u64>(prod_local_82).checked_add(prod_local_83).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_85 = (prod_local_84 <= prod_local_82); match prod_local_85 {
+        false => prod_local_81,
+        true => { let prod_local_86 = false; prod_local_86 },
+    } } } } },
+    } } } },
+    } },
+        true => { let prod_local_87 = prod_local_76; match prod_local_87 {
+        false => prod_local_87,
+        true => { let prod_local_88 = skinWeightScale()?; { let prod_local_89 = workerRpcWatchdogMillis()?; { let prod_local_90 = (prod_local_88 <= prod_local_89); match prod_local_90 {
+        false => prod_local_90,
+        true => { let prod_local_91 = workerRpcWatchdogMillis()?; { let prod_local_92 = 1; { let prod_local_93 = core::convert::identity::<u64>(prod_local_91).checked_add(prod_local_92).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_94 = (prod_local_93 <= prod_local_91); match prod_local_94 {
+        false => prod_local_90,
+        true => { let prod_local_95 = false; prod_local_95 },
+    } } } } },
+    } } } },
+    } },
+    } },
+        true => { let prod_local_96 = false; prod_local_96 },
+    } },
+    } } },
+    } },
+        true => { let prod_local_97 = sTen()?; { let prod_local_98 = sFifteen()?; { let prod_local_99 = sFour()?; { let prod_local_100 = csrTilePrefixMonotonic(prod_local_97, prod_local_98, prod_local_99)?; match prod_local_100 {
+        false => { let prod_local_101 = prod_local_61; match prod_local_101 {
+        false => prod_local_101,
+        true => { let prod_local_102 = false; { let prod_local_103 = gpuContextHealthy(prod_local_102, prod_local_52); match prod_local_103 {
+        false => { let prod_local_105 = prod_local_103; match prod_local_105 {
+        false => prod_local_105,
+        true => { let prod_local_106 = skinWeightScale()?; { let prod_local_107 = workerRpcWatchdogMillis()?; { let prod_local_108 = (prod_local_106 <= prod_local_107); match prod_local_108 {
+        false => prod_local_108,
+        true => { let prod_local_109 = workerRpcWatchdogMillis()?; { let prod_local_110 = 1; { let prod_local_111 = core::convert::identity::<u64>(prod_local_109).checked_add(prod_local_110).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_112 = (prod_local_111 <= prod_local_109); match prod_local_112 {
+        false => prod_local_108,
+        true => { let prod_local_113 = false; prod_local_113 },
+    } } } } },
+    } } } },
+    } },
+        true => { let prod_local_114 = gpuContextHealthy(prod_local_52, prod_local_52); match prod_local_114 {
+        false => { let prod_local_115 = gpuContextHealthy(prod_local_114, prod_local_114); match prod_local_115 {
+        false => { let prod_local_116 = prod_local_103; match prod_local_116 {
+        false => prod_local_116,
+        true => { let prod_local_117 = skinWeightScale()?; { let prod_local_118 = workerRpcWatchdogMillis()?; { let prod_local_119 = (prod_local_117 <= prod_local_118); match prod_local_119 {
+        false => prod_local_119,
+        true => { let prod_local_120 = workerRpcWatchdogMillis()?; { let prod_local_121 = 1; { let prod_local_122 = core::convert::identity::<u64>(prod_local_120).checked_add(prod_local_121).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_123 = (prod_local_122 <= prod_local_120); match prod_local_123 {
+        false => prod_local_119,
+        true => { let prod_local_124 = false; prod_local_124 },
+    } } } } },
+    } } } },
+    } },
+        true => { let prod_local_125 = prod_local_114; match prod_local_125 {
+        false => prod_local_125,
+        true => { let prod_local_126 = skinWeightScale()?; { let prod_local_127 = workerRpcWatchdogMillis()?; { let prod_local_128 = (prod_local_126 <= prod_local_127); match prod_local_128 {
+        false => prod_local_128,
+        true => { let prod_local_129 = workerRpcWatchdogMillis()?; { let prod_local_130 = 1; { let prod_local_131 = core::convert::identity::<u64>(prod_local_129).checked_add(prod_local_130).ok_or(self::ComputeError::AddOverflow)?; { let prod_local_132 = (prod_local_131 <= prod_local_129); match prod_local_132 {
+        false => prod_local_128,
+        true => { let prod_local_133 = false; prod_local_133 },
+    } } } } },
+    } } } },
+    } },
+    } },
+        true => { let prod_local_134 = false; prod_local_134 },
+    } },
+    } } },
+    } },
+        true => { let prod_local_135 = false; prod_local_135 },
+    } } } } },
+    }
+                                                                                            }
+                                                                                        }
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    })
+}
+
 pub fn stepLifMembraneMilli(
     prevMembraneMilli: u64,
     inputDriveMilli: u64,
@@ -21872,6 +22255,13 @@ pub fn wasmSoundSpeedMps() -> Result<u64, self::ComputeError> {
     })
 }
 
+pub fn watchdogWithinBound(elapsedMillis: u64, maxTimeoutMillis: u64) -> bool {
+    {
+        let _x_1 = (elapsedMillis <= maxTimeoutMillis);
+        _x_1
+    }
+}
+
 pub fn wordBitWidth() -> Result<u64, self::ComputeError> {
     Ok({
         let _x_1 = sSix()?;
@@ -21948,6 +22338,21 @@ pub fn workerMaxInFlightFrames() -> u64 {
     }
 }
 
+pub fn workerRpcWatchdogMillis() -> Result<u64, self::ComputeError> {
+    Ok({
+        let _x_2 = sFifteen()?;
+        {
+            let _x_3 = skinWeightScale()?;
+            {
+                let _x_4 = core::convert::identity::<u64>(_x_2)
+                    .checked_mul(_x_3)
+                    .ok_or(self::ComputeError::MulOverflow)?;
+                _x_4
+            }
+        }
+    })
+}
+
 pub fn workloadPerformanceDirect() -> Result<bool, self::ComputeError> {
     Ok({
         let _x_165 = wordBitWidth()?;
@@ -21961,49 +22366,49 @@ pub fn workloadPerformanceDirect() -> Result<bool, self::ComputeError> {
                         let _y_173 = match _x_168 {
                             false => _x_168,
                             true => {
-                                let _x_1082 = 0;
+                                let _x_1109 = 0;
                                 {
-                                    let _x_1083 = wordCountForEntities(_x_1082)?;
+                                    let _x_1110 = wordCountForEntities(_x_1109)?;
                                     {
-                                        let _x_1084 = (_x_1083 == _x_1082);
-                                        match _x_1084 {
-                                            false => _x_1084,
+                                        let _x_1111 = (_x_1110 == _x_1109);
+                                        match _x_1111 {
+                                            false => _x_1111,
                                             true => {
-                                                let _x_1109 = 1;
+                                                let _x_1136 = 1;
                                                 {
-                                                    let _x_1110 = wordCountForEntities(_x_1109)?;
+                                                    let _x_1137 = wordCountForEntities(_x_1136)?;
                                                     {
-                                                        let _x_1111 = (_x_1110 == _x_1109);
-                                                        match _x_1111 {
-                                                            false => _x_1111,
+                                                        let _x_1138 = (_x_1137 == _x_1136);
+                                                        match _x_1138 {
+                                                            false => _x_1138,
                                                             true => {
-                                                                let _x_1128 = sSixtyFive()?;
+                                                                let _x_1155 = sSixtyFive()?;
                                                                 {
-                                                                    let _x_1129 =
+                                                                    let _x_1156 =
                                                                         wordCountForEntities(
-                                                                            _x_1128,
+                                                                            _x_1155,
                                                                         )?;
                                                                     {
-                                                                        let _x_1130 = (1 << 1);
+                                                                        let _x_1157 = (1 << 1);
                                                                         {
-                                                                            let _x_1131 = (_x_1129
-                                                                                == _x_1130);
-                                                                            match _x_1131 {
-                                                                                false => _x_1131,
+                                                                            let _x_1158 = (_x_1156
+                                                                                == _x_1157);
+                                                                            match _x_1158 {
+                                                                                false => _x_1158,
                                                                                 true => {
-                                                                                    let _x_1141 =
+                                                                                    let _x_1168 =
                                                                                         sSixtyFive(
                                                                                         )?;
                                                                                     {
-                                                                                        let _x_1142 =
+                                                                                        let _x_1169 =
                                                                                             (1 << 1);
                                                                                         {
-                                                                                            let _x_1143 = wordPackedFilterValid(_x_1141, _x_1142)?;
-                                                                                            match _x_1143 {
-        false => _x_1143,
-        true => { let _x_1147 = sSixtyFive()?; { let _x_1148 = 1; { let _x_1149 = wordPackedFilterValid(_x_1147, _x_1148)?; match _x_1149 {
-        false => _x_1143,
-        true => { let _x_1151 = false; _x_1151 },
+                                                                                            let _x_1170 = wordPackedFilterValid(_x_1168, _x_1169)?;
+                                                                                            match _x_1170 {
+        false => _x_1170,
+        true => { let _x_1174 = sSixtyFive()?; { let _x_1175 = 1; { let _x_1176 = wordPackedFilterValid(_x_1174, _x_1175)?; match _x_1176 {
+        false => _x_1170,
+        true => { let _x_1178 = false; _x_1178 },
     } } } },
     }
                                                                                         }
@@ -22026,37 +22431,37 @@ pub fn workloadPerformanceDirect() -> Result<bool, self::ComputeError> {
                         match _y_173 {
                             false => _y_173,
                             true => {
-                                let _x_880 = sEight()?;
+                                let _x_907 = sEight()?;
                                 {
-                                    let _x_881 = sEight()?;
+                                    let _x_908 = sEight()?;
                                     {
-                                        let _x_882 = (_x_880 == _x_881);
+                                        let _x_909 = (_x_907 == _x_908);
                                         {
-                                            let _y_884 = match _x_882 {
-                                                false => _x_882,
+                                            let _y_911 = match _x_909 {
+                                                false => _x_909,
                                                 true => {
-                                                    let _x_1040 = sFour()?;
+                                                    let _x_1067 = sFour()?;
                                                     {
-                                                        let _x_1041 = sFour()?;
+                                                        let _x_1068 = sFour()?;
                                                         {
-                                                            let _x_1042 = (_x_1040 == _x_1041);
-                                                            match _x_1042 {
-                                                                false => _x_1042,
+                                                            let _x_1069 = (_x_1067 == _x_1068);
+                                                            match _x_1069 {
+                                                                false => _x_1069,
                                                                 true => {
-                                                                    let _x_1046 =
+                                                                    let _x_1073 =
                                                                         flatBvhStackCapacity()?;
                                                                     {
-                                                                        let _x_1047 = sSix()?;
+                                                                        let _x_1074 = sSix()?;
                                                                         {
-                                                                            let _x_1048 =
+                                                                            let _x_1075 =
                                                                                 pow2Constructive(
-                                                                                    _x_1047,
+                                                                                    _x_1074,
                                                                                 )?;
                                                                             {
-                                                                                let _x_1049 =
-                                                                                    (_x_1046
-                                                                                        == _x_1048);
-                                                                                _x_1049
+                                                                                let _x_1076 =
+                                                                                    (_x_1073
+                                                                                        == _x_1075);
+                                                                                _x_1076
                                                                             }
                                                                         }
                                                                     }
@@ -22066,54 +22471,57 @@ pub fn workloadPerformanceDirect() -> Result<bool, self::ComputeError> {
                                                     }
                                                 }
                                             };
-                                            match _y_884 {
-                                                false => _y_884,
+                                            match _y_911 {
+                                                false => _y_911,
                                                 true => {
-                                                    let _x_934 = sTen()?;
+                                                    let _x_961 = sTen()?;
                                                     {
-                                                        let _x_935 = sTwenty()?;
+                                                        let _x_962 = sTwenty()?;
                                                         {
-                                                            let _x_936 = (_x_934 <= _x_935);
-                                                            match _x_936 {
+                                                            let _x_963 = (_x_961 <= _x_962);
+                                                            match _x_963 {
                                                                 false => {
-                                                                    let _y_178 = _x_936;
+                                                                    let _y_178 = _x_963;
                                                                     {
                                                                         let _x_179 = true;
                                                                         match _y_178 {
                                                                             false => _y_178,
                                                                             true => {
-                                                                                let _x_1156 =
+                                                                                let _x_1183 =
                                                                                     ((1 << 1) + 1);
                                                                                 {
-                                                                                    let _x_1157 =
+                                                                                    let _x_1184 =
                                                                                         false;
                                                                                     {
-                                                                                        let _x_1158 = epochElisionAdmissible(_x_1156, _x_1156, _x_1157);
-                                                                                        match _x_1158 {
-        false => { let _y_1160 = _x_1158; match _y_1160 {
-        false => _y_1160,
-        true => { let _x_1169 = 1; { let _x_1170 = workerInFlightAdmissible(_x_1169); match _x_1170 {
-        false => { let _y_1172 = _x_1170; match _y_1172 {
-        false => _y_1172,
-        true => { let _x_1173 = sTen()?; { let _x_1174 = sTwenty()?; { let _x_1175 = governorRecommendedScalePermille(_x_1173, _x_1174)?; { let _x_1176 = skinWeightScale()?; { let _x_1177 = (_x_1175 == _x_1176); { let _y_1179 = match _x_1177 {
-        false => _x_1177,
-        true => { let _x_1186 = sThirty()?; { let _x_1187 = sTwenty()?; { let _x_1188 = governorRecommendedScalePermille(_x_1186, _x_1187)?; { let _x_1190 = sEightyFive()?; { let _x_1191 = sTen()?; { let _x_1192 = core::convert::identity::<u64>(_x_1190).checked_mul(_x_1191).ok_or(self::ComputeError::MulOverflow)?; { let _x_1193 = (_x_1188 == _x_1192); match _x_1193 {
-        false => _x_1193,
-        true => { let _x_1194 = sFifty()?; { let _x_1195 = sTwenty()?; { let _x_1196 = governorRecommendedScalePermille(_x_1194, _x_1195)?; { let _x_1198 = sSeven()?; { let _x_1199 = sHundred()?; { let _x_1200 = core::convert::identity::<u64>(_x_1198).checked_mul(_x_1199).ok_or(self::ComputeError::MulOverflow)?; { let _x_1201 = (_x_1196 == _x_1200); _x_1201 } } } } } } },
+                                                                                        let _x_1185 = epochElisionAdmissible(_x_1183, _x_1183, _x_1184);
+                                                                                        match _x_1185 {
+        false => { let _y_1187 = _x_1185; match _y_1187 {
+        false => _y_1187,
+        true => { let _x_1199 = 1; { let _x_1200 = workerInFlightAdmissible(_x_1199); match _x_1200 {
+        false => { let _y_1202 = _x_1200; match _y_1202 {
+        false => _y_1202,
+        true => { let _x_1203 = sTen()?; { let _x_1204 = sTwenty()?; { let _x_1205 = governorRecommendedScalePermille(_x_1203, _x_1204)?; { let _x_1206 = skinWeightScale()?; { let _x_1207 = (_x_1205 == _x_1206); { let _y_1209 = match _x_1207 {
+        false => _x_1207,
+        true => { let _x_1216 = sThirty()?; { let _x_1217 = sTwenty()?; { let _x_1218 = governorRecommendedScalePermille(_x_1216, _x_1217)?; { let _x_1220 = sEightyFive()?; { let _x_1221 = sTen()?; { let _x_1222 = core::convert::identity::<u64>(_x_1220).checked_mul(_x_1221).ok_or(self::ComputeError::MulOverflow)?; { let _x_1223 = (_x_1218 == _x_1222); match _x_1223 {
+        false => _x_1223,
+        true => { let _x_1224 = sFifty()?; { let _x_1225 = sTwenty()?; { let _x_1226 = governorRecommendedScalePermille(_x_1224, _x_1225)?; { let _x_1228 = sSeven()?; { let _x_1229 = sHundred()?; { let _x_1230 = core::convert::identity::<u64>(_x_1228).checked_mul(_x_1229).ok_or(self::ComputeError::MulOverflow)?; { let _x_1231 = (_x_1226 == _x_1230); _x_1231 } } } } } } },
     } } } } } } } },
-    }; match _y_1179 {
-        false => _y_1179,
-        true => { let _x_1180 = codebookProductTableSize()?; { let _x_1181 = sEight()?; { let _x_1182 = pow2Constructive(_x_1181)?; { let _x_1183 = (_x_1180 == _x_1182); match _x_1183 {
-        false => _x_1183,
-        true => { let _x_1252 = aqmWorkloadExtrapolationsDirect()?; match _x_1252 {
-        false => _x_1252,
-        true => { let _x_1253 = runtimeInvariantsDirect()?; _x_1253 },
+    }; match _y_1209 {
+        false => _y_1209,
+        true => { let _x_1210 = codebookProductTableSize()?; { let _x_1211 = sEight()?; { let _x_1212 = pow2Constructive(_x_1211)?; { let _x_1213 = (_x_1210 == _x_1212); match _x_1213 {
+        false => _x_1213,
+        true => { let _x_1280 = aqmWorkloadExtrapolationsDirect()?; match _x_1280 {
+        false => _x_1280,
+        true => { let _x_1281 = stabilityAndRefinementDirect()?; match _x_1281 {
+        false => _x_1281,
+        true => { let _x_1282 = runtimeInvariantsDirect()?; _x_1282 },
+    } },
     } },
     } } } } },
     } } } } } } },
     } },
-        true => { let _x_1204 = (1 << 1); { let _x_1205 = workerInFlightAdmissible(_x_1204); match _x_1205 {
-        false => { let prod_local_0 = _x_1205; match prod_local_0 {
+        true => { let _x_1234 = (1 << 1); { let _x_1235 = workerInFlightAdmissible(_x_1234); match _x_1235 {
+        false => { let prod_local_0 = _x_1235; match prod_local_0 {
         false => prod_local_0,
         true => { let prod_local_1 = sTen()?; { let prod_local_2 = sTwenty()?; { let prod_local_3 = governorRecommendedScalePermille(prod_local_1, prod_local_2)?; { let prod_local_4 = skinWeightScale()?; { let prod_local_5 = (prod_local_3 == prod_local_4); { let prod_local_21 = match prod_local_5 {
         false => prod_local_5,
@@ -22127,108 +22535,123 @@ pub fn workloadPerformanceDirect() -> Result<bool, self::ComputeError> {
         false => prod_local_25,
         true => { let prod_local_26 = aqmWorkloadExtrapolationsDirect()?; match prod_local_26 {
         false => prod_local_26,
-        true => { let prod_local_27 = runtimeInvariantsDirect()?; prod_local_27 },
+        true => { let prod_local_27 = stabilityAndRefinementDirect()?; match prod_local_27 {
+        false => prod_local_27,
+        true => { let prod_local_28 = runtimeInvariantsDirect()?; prod_local_28 },
+    } },
     } },
     } } } } },
     } } } } } } },
     } },
-        true => { let _x_1206 = ((1 << 1) + 1); { let _x_1207 = workerInFlightAdmissible(_x_1206); match _x_1207 {
-        false => { let prod_local_28 = _x_1205; match prod_local_28 {
-        false => prod_local_28,
-        true => { let prod_local_29 = sTen()?; { let prod_local_30 = sTwenty()?; { let prod_local_31 = governorRecommendedScalePermille(prod_local_29, prod_local_30)?; { let prod_local_32 = skinWeightScale()?; { let prod_local_33 = (prod_local_31 == prod_local_32); { let prod_local_49 = match prod_local_33 {
-        false => prod_local_33,
-        true => { let prod_local_35 = sThirty()?; { let prod_local_36 = sTwenty()?; { let prod_local_37 = governorRecommendedScalePermille(prod_local_35, prod_local_36)?; { let prod_local_38 = sEightyFive()?; { let prod_local_39 = sTen()?; { let prod_local_40 = core::convert::identity::<u64>(prod_local_38).checked_mul(prod_local_39).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_41 = (prod_local_37 == prod_local_40); match prod_local_41 {
-        false => prod_local_41,
-        true => { let prod_local_42 = sFifty()?; { let prod_local_43 = sTwenty()?; { let prod_local_44 = governorRecommendedScalePermille(prod_local_42, prod_local_43)?; { let prod_local_45 = sSeven()?; { let prod_local_46 = sHundred()?; { let prod_local_47 = core::convert::identity::<u64>(prod_local_45).checked_mul(prod_local_46).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_48 = (prod_local_44 == prod_local_47); prod_local_48 } } } } } } },
+        true => { let _x_1236 = ((1 << 1) + 1); { let _x_1237 = workerInFlightAdmissible(_x_1236); match _x_1237 {
+        false => { let prod_local_29 = _x_1235; match prod_local_29 {
+        false => prod_local_29,
+        true => { let prod_local_30 = sTen()?; { let prod_local_31 = sTwenty()?; { let prod_local_32 = governorRecommendedScalePermille(prod_local_30, prod_local_31)?; { let prod_local_33 = skinWeightScale()?; { let prod_local_34 = (prod_local_32 == prod_local_33); { let prod_local_50 = match prod_local_34 {
+        false => prod_local_34,
+        true => { let prod_local_36 = sThirty()?; { let prod_local_37 = sTwenty()?; { let prod_local_38 = governorRecommendedScalePermille(prod_local_36, prod_local_37)?; { let prod_local_39 = sEightyFive()?; { let prod_local_40 = sTen()?; { let prod_local_41 = core::convert::identity::<u64>(prod_local_39).checked_mul(prod_local_40).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_42 = (prod_local_38 == prod_local_41); match prod_local_42 {
+        false => prod_local_42,
+        true => { let prod_local_43 = sFifty()?; { let prod_local_44 = sTwenty()?; { let prod_local_45 = governorRecommendedScalePermille(prod_local_43, prod_local_44)?; { let prod_local_46 = sSeven()?; { let prod_local_47 = sHundred()?; { let prod_local_48 = core::convert::identity::<u64>(prod_local_46).checked_mul(prod_local_47).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_49 = (prod_local_45 == prod_local_48); prod_local_49 } } } } } } },
     } } } } } } } },
-    }; match prod_local_49 {
-        false => prod_local_49,
-        true => { let prod_local_50 = codebookProductTableSize()?; { let prod_local_51 = sEight()?; { let prod_local_52 = pow2Constructive(prod_local_51)?; { let prod_local_53 = (prod_local_50 == prod_local_52); match prod_local_53 {
-        false => prod_local_53,
-        true => { let prod_local_54 = aqmWorkloadExtrapolationsDirect()?; match prod_local_54 {
+    }; match prod_local_50 {
+        false => prod_local_50,
+        true => { let prod_local_51 = codebookProductTableSize()?; { let prod_local_52 = sEight()?; { let prod_local_53 = pow2Constructive(prod_local_52)?; { let prod_local_54 = (prod_local_51 == prod_local_53); match prod_local_54 {
         false => prod_local_54,
-        true => { let prod_local_55 = runtimeInvariantsDirect()?; prod_local_55 },
-    } },
-    } } } } },
-    } } } } } } },
-    } },
-        true => { let _x_1208 = false; _x_1208 },
-    } } },
-    } } },
-    } } },
-    } },
-        true => { let _x_1211 = (1 << 1); { let _x_1212 = ((1 << 1) + 1); { let _x_1213 = false; { let _x_1214 = epochElisionAdmissible(_x_1211, _x_1212, _x_1213); match _x_1214 {
-        false => { let _x_1222 = ((1 << 1) + 1); { let _x_1223 = epochElisionAdmissible(_x_1222, _x_1222, _x_179); { let prod_local_56 = match _x_1223 {
-        false => _x_1158,
-        true => _x_1214,
-    }; match prod_local_56 {
+        true => { let prod_local_55 = aqmWorkloadExtrapolationsDirect()?; match prod_local_55 {
+        false => prod_local_55,
+        true => { let prod_local_56 = stabilityAndRefinementDirect()?; match prod_local_56 {
         false => prod_local_56,
-        true => { let prod_local_57 = 1; { let prod_local_58 = workerInFlightAdmissible(prod_local_57); match prod_local_58 {
-        false => { let prod_local_60 = prod_local_58; match prod_local_60 {
-        false => prod_local_60,
-        true => { let prod_local_61 = sTen()?; { let prod_local_62 = sTwenty()?; { let prod_local_63 = governorRecommendedScalePermille(prod_local_61, prod_local_62)?; { let prod_local_64 = skinWeightScale()?; { let prod_local_65 = (prod_local_63 == prod_local_64); { let prod_local_81 = match prod_local_65 {
-        false => prod_local_65,
-        true => { let prod_local_67 = sThirty()?; { let prod_local_68 = sTwenty()?; { let prod_local_69 = governorRecommendedScalePermille(prod_local_67, prod_local_68)?; { let prod_local_70 = sEightyFive()?; { let prod_local_71 = sTen()?; { let prod_local_72 = core::convert::identity::<u64>(prod_local_70).checked_mul(prod_local_71).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_73 = (prod_local_69 == prod_local_72); match prod_local_73 {
-        false => prod_local_73,
-        true => { let prod_local_74 = sFifty()?; { let prod_local_75 = sTwenty()?; { let prod_local_76 = governorRecommendedScalePermille(prod_local_74, prod_local_75)?; { let prod_local_77 = sSeven()?; { let prod_local_78 = sHundred()?; { let prod_local_79 = core::convert::identity::<u64>(prod_local_77).checked_mul(prod_local_78).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_80 = (prod_local_76 == prod_local_79); prod_local_80 } } } } } } },
-    } } } } } } } },
-    }; match prod_local_81 {
-        false => prod_local_81,
-        true => { let prod_local_82 = codebookProductTableSize()?; { let prod_local_83 = sEight()?; { let prod_local_84 = pow2Constructive(prod_local_83)?; { let prod_local_85 = (prod_local_82 == prod_local_84); match prod_local_85 {
-        false => prod_local_85,
-        true => { let prod_local_86 = aqmWorkloadExtrapolationsDirect()?; match prod_local_86 {
-        false => prod_local_86,
-        true => { let prod_local_87 = runtimeInvariantsDirect()?; prod_local_87 },
+        true => { let prod_local_57 = runtimeInvariantsDirect()?; prod_local_57 },
+    } },
     } },
     } } } } },
     } } } } } } },
     } },
-        true => { let prod_local_88 = (1 << 1); { let prod_local_89 = workerInFlightAdmissible(prod_local_88); match prod_local_89 {
-        false => { let prod_local_90 = prod_local_89; match prod_local_90 {
-        false => prod_local_90,
-        true => { let prod_local_91 = sTen()?; { let prod_local_92 = sTwenty()?; { let prod_local_93 = governorRecommendedScalePermille(prod_local_91, prod_local_92)?; { let prod_local_94 = skinWeightScale()?; { let prod_local_95 = (prod_local_93 == prod_local_94); { let prod_local_111 = match prod_local_95 {
-        false => prod_local_95,
-        true => { let prod_local_97 = sThirty()?; { let prod_local_98 = sTwenty()?; { let prod_local_99 = governorRecommendedScalePermille(prod_local_97, prod_local_98)?; { let prod_local_100 = sEightyFive()?; { let prod_local_101 = sTen()?; { let prod_local_102 = core::convert::identity::<u64>(prod_local_100).checked_mul(prod_local_101).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_103 = (prod_local_99 == prod_local_102); match prod_local_103 {
-        false => prod_local_103,
-        true => { let prod_local_104 = sFifty()?; { let prod_local_105 = sTwenty()?; { let prod_local_106 = governorRecommendedScalePermille(prod_local_104, prod_local_105)?; { let prod_local_107 = sSeven()?; { let prod_local_108 = sHundred()?; { let prod_local_109 = core::convert::identity::<u64>(prod_local_107).checked_mul(prod_local_108).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_110 = (prod_local_106 == prod_local_109); prod_local_110 } } } } } } },
+        true => { let _x_1238 = false; _x_1238 },
+    } } },
+    } } },
+    } } },
+    } },
+        true => { let _x_1241 = (1 << 1); { let _x_1242 = ((1 << 1) + 1); { let _x_1243 = false; { let _x_1244 = epochElisionAdmissible(_x_1241, _x_1242, _x_1243); match _x_1244 {
+        false => { let _x_1252 = ((1 << 1) + 1); { let _x_1253 = epochElisionAdmissible(_x_1252, _x_1252, _x_179); { let prod_local_58 = match _x_1253 {
+        false => _x_1185,
+        true => _x_1244,
+    }; match prod_local_58 {
+        false => prod_local_58,
+        true => { let prod_local_59 = 1; { let prod_local_60 = workerInFlightAdmissible(prod_local_59); match prod_local_60 {
+        false => { let prod_local_62 = prod_local_60; match prod_local_62 {
+        false => prod_local_62,
+        true => { let prod_local_63 = sTen()?; { let prod_local_64 = sTwenty()?; { let prod_local_65 = governorRecommendedScalePermille(prod_local_63, prod_local_64)?; { let prod_local_66 = skinWeightScale()?; { let prod_local_67 = (prod_local_65 == prod_local_66); { let prod_local_83 = match prod_local_67 {
+        false => prod_local_67,
+        true => { let prod_local_69 = sThirty()?; { let prod_local_70 = sTwenty()?; { let prod_local_71 = governorRecommendedScalePermille(prod_local_69, prod_local_70)?; { let prod_local_72 = sEightyFive()?; { let prod_local_73 = sTen()?; { let prod_local_74 = core::convert::identity::<u64>(prod_local_72).checked_mul(prod_local_73).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_75 = (prod_local_71 == prod_local_74); match prod_local_75 {
+        false => prod_local_75,
+        true => { let prod_local_76 = sFifty()?; { let prod_local_77 = sTwenty()?; { let prod_local_78 = governorRecommendedScalePermille(prod_local_76, prod_local_77)?; { let prod_local_79 = sSeven()?; { let prod_local_80 = sHundred()?; { let prod_local_81 = core::convert::identity::<u64>(prod_local_79).checked_mul(prod_local_80).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_82 = (prod_local_78 == prod_local_81); prod_local_82 } } } } } } },
     } } } } } } } },
-    }; match prod_local_111 {
-        false => prod_local_111,
-        true => { let prod_local_112 = codebookProductTableSize()?; { let prod_local_113 = sEight()?; { let prod_local_114 = pow2Constructive(prod_local_113)?; { let prod_local_115 = (prod_local_112 == prod_local_114); match prod_local_115 {
-        false => prod_local_115,
-        true => { let prod_local_116 = aqmWorkloadExtrapolationsDirect()?; match prod_local_116 {
-        false => prod_local_116,
-        true => { let prod_local_117 = runtimeInvariantsDirect()?; prod_local_117 },
+    }; match prod_local_83 {
+        false => prod_local_83,
+        true => { let prod_local_84 = codebookProductTableSize()?; { let prod_local_85 = sEight()?; { let prod_local_86 = pow2Constructive(prod_local_85)?; { let prod_local_87 = (prod_local_84 == prod_local_86); match prod_local_87 {
+        false => prod_local_87,
+        true => { let prod_local_88 = aqmWorkloadExtrapolationsDirect()?; match prod_local_88 {
+        false => prod_local_88,
+        true => { let prod_local_89 = stabilityAndRefinementDirect()?; match prod_local_89 {
+        false => prod_local_89,
+        true => { let prod_local_90 = runtimeInvariantsDirect()?; prod_local_90 },
+    } },
     } },
     } } } } },
     } } } } } } },
     } },
-        true => { let prod_local_118 = ((1 << 1) + 1); { let prod_local_119 = workerInFlightAdmissible(prod_local_118); match prod_local_119 {
-        false => { let prod_local_120 = prod_local_89; match prod_local_120 {
+        true => { let prod_local_91 = (1 << 1); { let prod_local_92 = workerInFlightAdmissible(prod_local_91); match prod_local_92 {
+        false => { let prod_local_93 = prod_local_92; match prod_local_93 {
+        false => prod_local_93,
+        true => { let prod_local_94 = sTen()?; { let prod_local_95 = sTwenty()?; { let prod_local_96 = governorRecommendedScalePermille(prod_local_94, prod_local_95)?; { let prod_local_97 = skinWeightScale()?; { let prod_local_98 = (prod_local_96 == prod_local_97); { let prod_local_114 = match prod_local_98 {
+        false => prod_local_98,
+        true => { let prod_local_100 = sThirty()?; { let prod_local_101 = sTwenty()?; { let prod_local_102 = governorRecommendedScalePermille(prod_local_100, prod_local_101)?; { let prod_local_103 = sEightyFive()?; { let prod_local_104 = sTen()?; { let prod_local_105 = core::convert::identity::<u64>(prod_local_103).checked_mul(prod_local_104).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_106 = (prod_local_102 == prod_local_105); match prod_local_106 {
+        false => prod_local_106,
+        true => { let prod_local_107 = sFifty()?; { let prod_local_108 = sTwenty()?; { let prod_local_109 = governorRecommendedScalePermille(prod_local_107, prod_local_108)?; { let prod_local_110 = sSeven()?; { let prod_local_111 = sHundred()?; { let prod_local_112 = core::convert::identity::<u64>(prod_local_110).checked_mul(prod_local_111).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_113 = (prod_local_109 == prod_local_112); prod_local_113 } } } } } } },
+    } } } } } } } },
+    }; match prod_local_114 {
+        false => prod_local_114,
+        true => { let prod_local_115 = codebookProductTableSize()?; { let prod_local_116 = sEight()?; { let prod_local_117 = pow2Constructive(prod_local_116)?; { let prod_local_118 = (prod_local_115 == prod_local_117); match prod_local_118 {
+        false => prod_local_118,
+        true => { let prod_local_119 = aqmWorkloadExtrapolationsDirect()?; match prod_local_119 {
+        false => prod_local_119,
+        true => { let prod_local_120 = stabilityAndRefinementDirect()?; match prod_local_120 {
         false => prod_local_120,
-        true => { let prod_local_121 = sTen()?; { let prod_local_122 = sTwenty()?; { let prod_local_123 = governorRecommendedScalePermille(prod_local_121, prod_local_122)?; { let prod_local_124 = skinWeightScale()?; { let prod_local_125 = (prod_local_123 == prod_local_124); { let prod_local_141 = match prod_local_125 {
-        false => prod_local_125,
-        true => { let prod_local_127 = sThirty()?; { let prod_local_128 = sTwenty()?; { let prod_local_129 = governorRecommendedScalePermille(prod_local_127, prod_local_128)?; { let prod_local_130 = sEightyFive()?; { let prod_local_131 = sTen()?; { let prod_local_132 = core::convert::identity::<u64>(prod_local_130).checked_mul(prod_local_131).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_133 = (prod_local_129 == prod_local_132); match prod_local_133 {
-        false => prod_local_133,
-        true => { let prod_local_134 = sFifty()?; { let prod_local_135 = sTwenty()?; { let prod_local_136 = governorRecommendedScalePermille(prod_local_134, prod_local_135)?; { let prod_local_137 = sSeven()?; { let prod_local_138 = sHundred()?; { let prod_local_139 = core::convert::identity::<u64>(prod_local_137).checked_mul(prod_local_138).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_140 = (prod_local_136 == prod_local_139); prod_local_140 } } } } } } },
-    } } } } } } } },
-    }; match prod_local_141 {
-        false => prod_local_141,
-        true => { let prod_local_142 = codebookProductTableSize()?; { let prod_local_143 = sEight()?; { let prod_local_144 = pow2Constructive(prod_local_143)?; { let prod_local_145 = (prod_local_142 == prod_local_144); match prod_local_145 {
-        false => prod_local_145,
-        true => { let prod_local_146 = aqmWorkloadExtrapolationsDirect()?; match prod_local_146 {
-        false => prod_local_146,
-        true => { let prod_local_147 = runtimeInvariantsDirect()?; prod_local_147 },
+        true => { let prod_local_121 = runtimeInvariantsDirect()?; prod_local_121 },
+    } },
     } },
     } } } } },
     } } } } } } },
     } },
-        true => { let prod_local_148 = false; prod_local_148 },
+        true => { let prod_local_122 = ((1 << 1) + 1); { let prod_local_123 = workerInFlightAdmissible(prod_local_122); match prod_local_123 {
+        false => { let prod_local_124 = prod_local_92; match prod_local_124 {
+        false => prod_local_124,
+        true => { let prod_local_125 = sTen()?; { let prod_local_126 = sTwenty()?; { let prod_local_127 = governorRecommendedScalePermille(prod_local_125, prod_local_126)?; { let prod_local_128 = skinWeightScale()?; { let prod_local_129 = (prod_local_127 == prod_local_128); { let prod_local_145 = match prod_local_129 {
+        false => prod_local_129,
+        true => { let prod_local_131 = sThirty()?; { let prod_local_132 = sTwenty()?; { let prod_local_133 = governorRecommendedScalePermille(prod_local_131, prod_local_132)?; { let prod_local_134 = sEightyFive()?; { let prod_local_135 = sTen()?; { let prod_local_136 = core::convert::identity::<u64>(prod_local_134).checked_mul(prod_local_135).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_137 = (prod_local_133 == prod_local_136); match prod_local_137 {
+        false => prod_local_137,
+        true => { let prod_local_138 = sFifty()?; { let prod_local_139 = sTwenty()?; { let prod_local_140 = governorRecommendedScalePermille(prod_local_138, prod_local_139)?; { let prod_local_141 = sSeven()?; { let prod_local_142 = sHundred()?; { let prod_local_143 = core::convert::identity::<u64>(prod_local_141).checked_mul(prod_local_142).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_144 = (prod_local_140 == prod_local_143); prod_local_144 } } } } } } },
+    } } } } } } } },
+    }; match prod_local_145 {
+        false => prod_local_145,
+        true => { let prod_local_146 = codebookProductTableSize()?; { let prod_local_147 = sEight()?; { let prod_local_148 = pow2Constructive(prod_local_147)?; { let prod_local_149 = (prod_local_146 == prod_local_148); match prod_local_149 {
+        false => prod_local_149,
+        true => { let prod_local_150 = aqmWorkloadExtrapolationsDirect()?; match prod_local_150 {
+        false => prod_local_150,
+        true => { let prod_local_151 = stabilityAndRefinementDirect()?; match prod_local_151 {
+        false => prod_local_151,
+        true => { let prod_local_152 = runtimeInvariantsDirect()?; prod_local_152 },
+    } },
+    } },
+    } } } } },
+    } } } } } } },
+    } },
+        true => { let prod_local_153 = false; prod_local_153 },
     } } },
     } } },
     } } },
     } } } },
-        true => { let _x_1219 = false; _x_1219 },
+        true => { let _x_1249 = false; _x_1249 },
     } } } } },
     }
                                                                                     }
@@ -22238,177 +22661,195 @@ pub fn workloadPerformanceDirect() -> Result<bool, self::ComputeError> {
                                                                     }
                                                                 }
                                                                 true => {
-                                                                    let _x_969 = sTwenty()?;
+                                                                    let _x_996 = sTwenty()?;
                                                                     {
-                                                                        let _x_970 = sTen()?;
+                                                                        let _x_997 = sTen()?;
                                                                         {
-                                                                            let _x_971 =
-                                                                                (_x_969 <= _x_970);
-                                                                            match _x_971 {
+                                                                            let _x_998 =
+                                                                                (_x_996 <= _x_997);
+                                                                            match _x_998 {
                                                                                 false => {
-                                                                                    let _x_1225 = 0;
+                                                                                    let _x_1255 = 0;
                                                                                     {
-                                                                                        let _x_1226 =
+                                                                                        let _x_1256 =
                                                                                             1;
                                                                                         {
-                                                                                            let _x_1227 = sFour()?;
+                                                                                            let _x_1257 = sFour()?;
                                                                                             {
-                                                                                                let _x_1228 = flatBvhNodeBoundsValid(_x_1225, _x_1226, _x_1227);
+                                                                                                let _x_1258 = flatBvhNodeBoundsValid(_x_1255, _x_1256, _x_1257);
                                                                                                 {
-                                                                                                    let prod_local_149 = match _x_1228 {
-        false => _x_1228,
-        true => { let _x_1229 = (1 << 1); { let _x_1230 = 1; { let _x_1231 = sFour()?; { let _x_1232 = flatBvhNodeBoundsValid(_x_1229, _x_1230, _x_1231); match _x_1232 {
-        false => { let _x_1239 = 0; { let _x_1240 = sFour()?; { let _x_1241 = flatBvhNodeBoundsValid(_x_1239, _x_1240, _x_1240); match _x_1241 {
-        false => _x_1228,
-        true => _x_1232,
+                                                                                                    let prod_local_154 = match _x_1258 {
+        false => _x_1258,
+        true => { let _x_1259 = (1 << 1); { let _x_1260 = 1; { let _x_1261 = sFour()?; { let _x_1262 = flatBvhNodeBoundsValid(_x_1259, _x_1260, _x_1261); match _x_1262 {
+        false => { let _x_1269 = 0; { let _x_1270 = sFour()?; { let _x_1271 = flatBvhNodeBoundsValid(_x_1269, _x_1270, _x_1270); match _x_1271 {
+        false => _x_1258,
+        true => _x_1262,
     } } } },
-        true => _x_971,
+        true => _x_998,
     } } } } },
     };
                                                                                                     {
-                                                                                                        let prod_local_150 = true;
-                                                                                                        match prod_local_149 {
-        false => prod_local_149,
-        true => { let prod_local_151 = ((1 << 1) + 1); { let prod_local_152 = false; { let prod_local_153 = epochElisionAdmissible(prod_local_151, prod_local_151, prod_local_152); match prod_local_153 {
-        false => { let prod_local_155 = prod_local_153; match prod_local_155 {
-        false => prod_local_155,
-        true => { let prod_local_156 = 1; { let prod_local_157 = workerInFlightAdmissible(prod_local_156); match prod_local_157 {
-        false => { let prod_local_159 = prod_local_157; match prod_local_159 {
-        false => prod_local_159,
-        true => { let prod_local_160 = sTen()?; { let prod_local_161 = sTwenty()?; { let prod_local_162 = governorRecommendedScalePermille(prod_local_160, prod_local_161)?; { let prod_local_163 = skinWeightScale()?; { let prod_local_164 = (prod_local_162 == prod_local_163); { let prod_local_180 = match prod_local_164 {
+                                                                                                        let prod_local_155 = true;
+                                                                                                        match prod_local_154 {
+        false => prod_local_154,
+        true => { let prod_local_156 = ((1 << 1) + 1); { let prod_local_157 = false; { let prod_local_158 = epochElisionAdmissible(prod_local_156, prod_local_156, prod_local_157); match prod_local_158 {
+        false => { let prod_local_160 = prod_local_158; match prod_local_160 {
+        false => prod_local_160,
+        true => { let prod_local_161 = 1; { let prod_local_162 = workerInFlightAdmissible(prod_local_161); match prod_local_162 {
+        false => { let prod_local_164 = prod_local_162; match prod_local_164 {
         false => prod_local_164,
-        true => { let prod_local_166 = sThirty()?; { let prod_local_167 = sTwenty()?; { let prod_local_168 = governorRecommendedScalePermille(prod_local_166, prod_local_167)?; { let prod_local_169 = sEightyFive()?; { let prod_local_170 = sTen()?; { let prod_local_171 = core::convert::identity::<u64>(prod_local_169).checked_mul(prod_local_170).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_172 = (prod_local_168 == prod_local_171); match prod_local_172 {
-        false => prod_local_172,
-        true => { let prod_local_173 = sFifty()?; { let prod_local_174 = sTwenty()?; { let prod_local_175 = governorRecommendedScalePermille(prod_local_173, prod_local_174)?; { let prod_local_176 = sSeven()?; { let prod_local_177 = sHundred()?; { let prod_local_178 = core::convert::identity::<u64>(prod_local_176).checked_mul(prod_local_177).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_179 = (prod_local_175 == prod_local_178); prod_local_179 } } } } } } },
+        true => { let prod_local_165 = sTen()?; { let prod_local_166 = sTwenty()?; { let prod_local_167 = governorRecommendedScalePermille(prod_local_165, prod_local_166)?; { let prod_local_168 = skinWeightScale()?; { let prod_local_169 = (prod_local_167 == prod_local_168); { let prod_local_185 = match prod_local_169 {
+        false => prod_local_169,
+        true => { let prod_local_171 = sThirty()?; { let prod_local_172 = sTwenty()?; { let prod_local_173 = governorRecommendedScalePermille(prod_local_171, prod_local_172)?; { let prod_local_174 = sEightyFive()?; { let prod_local_175 = sTen()?; { let prod_local_176 = core::convert::identity::<u64>(prod_local_174).checked_mul(prod_local_175).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_177 = (prod_local_173 == prod_local_176); match prod_local_177 {
+        false => prod_local_177,
+        true => { let prod_local_178 = sFifty()?; { let prod_local_179 = sTwenty()?; { let prod_local_180 = governorRecommendedScalePermille(prod_local_178, prod_local_179)?; { let prod_local_181 = sSeven()?; { let prod_local_182 = sHundred()?; { let prod_local_183 = core::convert::identity::<u64>(prod_local_181).checked_mul(prod_local_182).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_184 = (prod_local_180 == prod_local_183); prod_local_184 } } } } } } },
     } } } } } } } },
-    }; match prod_local_180 {
-        false => prod_local_180,
-        true => { let prod_local_181 = codebookProductTableSize()?; { let prod_local_182 = sEight()?; { let prod_local_183 = pow2Constructive(prod_local_182)?; { let prod_local_184 = (prod_local_181 == prod_local_183); match prod_local_184 {
-        false => prod_local_184,
-        true => { let prod_local_185 = aqmWorkloadExtrapolationsDirect()?; match prod_local_185 {
+    }; match prod_local_185 {
         false => prod_local_185,
-        true => { let prod_local_186 = runtimeInvariantsDirect()?; prod_local_186 },
-    } },
-    } } } } },
-    } } } } } } },
-    } },
-        true => { let prod_local_187 = (1 << 1); { let prod_local_188 = workerInFlightAdmissible(prod_local_187); match prod_local_188 {
-        false => { let prod_local_189 = prod_local_188; match prod_local_189 {
+        true => { let prod_local_186 = codebookProductTableSize()?; { let prod_local_187 = sEight()?; { let prod_local_188 = pow2Constructive(prod_local_187)?; { let prod_local_189 = (prod_local_186 == prod_local_188); match prod_local_189 {
         false => prod_local_189,
-        true => { let prod_local_190 = sTen()?; { let prod_local_191 = sTwenty()?; { let prod_local_192 = governorRecommendedScalePermille(prod_local_190, prod_local_191)?; { let prod_local_193 = skinWeightScale()?; { let prod_local_194 = (prod_local_192 == prod_local_193); { let prod_local_210 = match prod_local_194 {
-        false => prod_local_194,
-        true => { let prod_local_196 = sThirty()?; { let prod_local_197 = sTwenty()?; { let prod_local_198 = governorRecommendedScalePermille(prod_local_196, prod_local_197)?; { let prod_local_199 = sEightyFive()?; { let prod_local_200 = sTen()?; { let prod_local_201 = core::convert::identity::<u64>(prod_local_199).checked_mul(prod_local_200).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_202 = (prod_local_198 == prod_local_201); match prod_local_202 {
-        false => prod_local_202,
-        true => { let prod_local_203 = sFifty()?; { let prod_local_204 = sTwenty()?; { let prod_local_205 = governorRecommendedScalePermille(prod_local_203, prod_local_204)?; { let prod_local_206 = sSeven()?; { let prod_local_207 = sHundred()?; { let prod_local_208 = core::convert::identity::<u64>(prod_local_206).checked_mul(prod_local_207).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_209 = (prod_local_205 == prod_local_208); prod_local_209 } } } } } } },
-    } } } } } } } },
-    }; match prod_local_210 {
-        false => prod_local_210,
-        true => { let prod_local_211 = codebookProductTableSize()?; { let prod_local_212 = sEight()?; { let prod_local_213 = pow2Constructive(prod_local_212)?; { let prod_local_214 = (prod_local_211 == prod_local_213); match prod_local_214 {
-        false => prod_local_214,
-        true => { let prod_local_215 = aqmWorkloadExtrapolationsDirect()?; match prod_local_215 {
-        false => prod_local_215,
-        true => { let prod_local_216 = runtimeInvariantsDirect()?; prod_local_216 },
+        true => { let prod_local_190 = aqmWorkloadExtrapolationsDirect()?; match prod_local_190 {
+        false => prod_local_190,
+        true => { let prod_local_191 = stabilityAndRefinementDirect()?; match prod_local_191 {
+        false => prod_local_191,
+        true => { let prod_local_192 = runtimeInvariantsDirect()?; prod_local_192 },
+    } },
     } },
     } } } } },
     } } } } } } },
     } },
-        true => { let prod_local_217 = ((1 << 1) + 1); { let prod_local_218 = workerInFlightAdmissible(prod_local_217); match prod_local_218 {
-        false => { let prod_local_219 = prod_local_188; match prod_local_219 {
-        false => prod_local_219,
-        true => { let prod_local_220 = sTen()?; { let prod_local_221 = sTwenty()?; { let prod_local_222 = governorRecommendedScalePermille(prod_local_220, prod_local_221)?; { let prod_local_223 = skinWeightScale()?; { let prod_local_224 = (prod_local_222 == prod_local_223); { let prod_local_240 = match prod_local_224 {
-        false => prod_local_224,
-        true => { let prod_local_226 = sThirty()?; { let prod_local_227 = sTwenty()?; { let prod_local_228 = governorRecommendedScalePermille(prod_local_226, prod_local_227)?; { let prod_local_229 = sEightyFive()?; { let prod_local_230 = sTen()?; { let prod_local_231 = core::convert::identity::<u64>(prod_local_229).checked_mul(prod_local_230).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_232 = (prod_local_228 == prod_local_231); match prod_local_232 {
-        false => prod_local_232,
-        true => { let prod_local_233 = sFifty()?; { let prod_local_234 = sTwenty()?; { let prod_local_235 = governorRecommendedScalePermille(prod_local_233, prod_local_234)?; { let prod_local_236 = sSeven()?; { let prod_local_237 = sHundred()?; { let prod_local_238 = core::convert::identity::<u64>(prod_local_236).checked_mul(prod_local_237).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_239 = (prod_local_235 == prod_local_238); prod_local_239 } } } } } } },
+        true => { let prod_local_193 = (1 << 1); { let prod_local_194 = workerInFlightAdmissible(prod_local_193); match prod_local_194 {
+        false => { let prod_local_195 = prod_local_194; match prod_local_195 {
+        false => prod_local_195,
+        true => { let prod_local_196 = sTen()?; { let prod_local_197 = sTwenty()?; { let prod_local_198 = governorRecommendedScalePermille(prod_local_196, prod_local_197)?; { let prod_local_199 = skinWeightScale()?; { let prod_local_200 = (prod_local_198 == prod_local_199); { let prod_local_216 = match prod_local_200 {
+        false => prod_local_200,
+        true => { let prod_local_202 = sThirty()?; { let prod_local_203 = sTwenty()?; { let prod_local_204 = governorRecommendedScalePermille(prod_local_202, prod_local_203)?; { let prod_local_205 = sEightyFive()?; { let prod_local_206 = sTen()?; { let prod_local_207 = core::convert::identity::<u64>(prod_local_205).checked_mul(prod_local_206).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_208 = (prod_local_204 == prod_local_207); match prod_local_208 {
+        false => prod_local_208,
+        true => { let prod_local_209 = sFifty()?; { let prod_local_210 = sTwenty()?; { let prod_local_211 = governorRecommendedScalePermille(prod_local_209, prod_local_210)?; { let prod_local_212 = sSeven()?; { let prod_local_213 = sHundred()?; { let prod_local_214 = core::convert::identity::<u64>(prod_local_212).checked_mul(prod_local_213).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_215 = (prod_local_211 == prod_local_214); prod_local_215 } } } } } } },
     } } } } } } } },
-    }; match prod_local_240 {
-        false => prod_local_240,
-        true => { let prod_local_241 = codebookProductTableSize()?; { let prod_local_242 = sEight()?; { let prod_local_243 = pow2Constructive(prod_local_242)?; { let prod_local_244 = (prod_local_241 == prod_local_243); match prod_local_244 {
-        false => prod_local_244,
-        true => { let prod_local_245 = aqmWorkloadExtrapolationsDirect()?; match prod_local_245 {
-        false => prod_local_245,
-        true => { let prod_local_246 = runtimeInvariantsDirect()?; prod_local_246 },
+    }; match prod_local_216 {
+        false => prod_local_216,
+        true => { let prod_local_217 = codebookProductTableSize()?; { let prod_local_218 = sEight()?; { let prod_local_219 = pow2Constructive(prod_local_218)?; { let prod_local_220 = (prod_local_217 == prod_local_219); match prod_local_220 {
+        false => prod_local_220,
+        true => { let prod_local_221 = aqmWorkloadExtrapolationsDirect()?; match prod_local_221 {
+        false => prod_local_221,
+        true => { let prod_local_222 = stabilityAndRefinementDirect()?; match prod_local_222 {
+        false => prod_local_222,
+        true => { let prod_local_223 = runtimeInvariantsDirect()?; prod_local_223 },
+    } },
     } },
     } } } } },
     } } } } } } },
     } },
-        true => { let prod_local_247 = false; prod_local_247 },
+        true => { let prod_local_224 = ((1 << 1) + 1); { let prod_local_225 = workerInFlightAdmissible(prod_local_224); match prod_local_225 {
+        false => { let prod_local_226 = prod_local_194; match prod_local_226 {
+        false => prod_local_226,
+        true => { let prod_local_227 = sTen()?; { let prod_local_228 = sTwenty()?; { let prod_local_229 = governorRecommendedScalePermille(prod_local_227, prod_local_228)?; { let prod_local_230 = skinWeightScale()?; { let prod_local_231 = (prod_local_229 == prod_local_230); { let prod_local_247 = match prod_local_231 {
+        false => prod_local_231,
+        true => { let prod_local_233 = sThirty()?; { let prod_local_234 = sTwenty()?; { let prod_local_235 = governorRecommendedScalePermille(prod_local_233, prod_local_234)?; { let prod_local_236 = sEightyFive()?; { let prod_local_237 = sTen()?; { let prod_local_238 = core::convert::identity::<u64>(prod_local_236).checked_mul(prod_local_237).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_239 = (prod_local_235 == prod_local_238); match prod_local_239 {
+        false => prod_local_239,
+        true => { let prod_local_240 = sFifty()?; { let prod_local_241 = sTwenty()?; { let prod_local_242 = governorRecommendedScalePermille(prod_local_240, prod_local_241)?; { let prod_local_243 = sSeven()?; { let prod_local_244 = sHundred()?; { let prod_local_245 = core::convert::identity::<u64>(prod_local_243).checked_mul(prod_local_244).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_246 = (prod_local_242 == prod_local_245); prod_local_246 } } } } } } },
+    } } } } } } } },
+    }; match prod_local_247 {
+        false => prod_local_247,
+        true => { let prod_local_248 = codebookProductTableSize()?; { let prod_local_249 = sEight()?; { let prod_local_250 = pow2Constructive(prod_local_249)?; { let prod_local_251 = (prod_local_248 == prod_local_250); match prod_local_251 {
+        false => prod_local_251,
+        true => { let prod_local_252 = aqmWorkloadExtrapolationsDirect()?; match prod_local_252 {
+        false => prod_local_252,
+        true => { let prod_local_253 = stabilityAndRefinementDirect()?; match prod_local_253 {
+        false => prod_local_253,
+        true => { let prod_local_254 = runtimeInvariantsDirect()?; prod_local_254 },
+    } },
+    } },
+    } } } } },
+    } } } } } } },
+    } },
+        true => { let prod_local_255 = false; prod_local_255 },
     } } },
     } } },
     } } },
     } },
-        true => { let prod_local_248 = (1 << 1); { let prod_local_249 = ((1 << 1) + 1); { let prod_local_250 = false; { let prod_local_251 = epochElisionAdmissible(prod_local_248, prod_local_249, prod_local_250); match prod_local_251 {
-        false => { let prod_local_252 = ((1 << 1) + 1); { let prod_local_253 = epochElisionAdmissible(prod_local_252, prod_local_252, prod_local_150); { let prod_local_254 = match prod_local_253 {
-        false => prod_local_153,
-        true => prod_local_251,
-    }; match prod_local_254 {
-        false => prod_local_254,
-        true => { let prod_local_255 = 1; { let prod_local_256 = workerInFlightAdmissible(prod_local_255); match prod_local_256 {
-        false => { let prod_local_258 = prod_local_256; match prod_local_258 {
-        false => prod_local_258,
-        true => { let prod_local_259 = sTen()?; { let prod_local_260 = sTwenty()?; { let prod_local_261 = governorRecommendedScalePermille(prod_local_259, prod_local_260)?; { let prod_local_262 = skinWeightScale()?; { let prod_local_263 = (prod_local_261 == prod_local_262); { let prod_local_279 = match prod_local_263 {
-        false => prod_local_263,
-        true => { let prod_local_265 = sThirty()?; { let prod_local_266 = sTwenty()?; { let prod_local_267 = governorRecommendedScalePermille(prod_local_265, prod_local_266)?; { let prod_local_268 = sEightyFive()?; { let prod_local_269 = sTen()?; { let prod_local_270 = core::convert::identity::<u64>(prod_local_268).checked_mul(prod_local_269).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_271 = (prod_local_267 == prod_local_270); match prod_local_271 {
+        true => { let prod_local_256 = (1 << 1); { let prod_local_257 = ((1 << 1) + 1); { let prod_local_258 = false; { let prod_local_259 = epochElisionAdmissible(prod_local_256, prod_local_257, prod_local_258); match prod_local_259 {
+        false => { let prod_local_260 = ((1 << 1) + 1); { let prod_local_261 = epochElisionAdmissible(prod_local_260, prod_local_260, prod_local_155); { let prod_local_262 = match prod_local_261 {
+        false => prod_local_158,
+        true => prod_local_259,
+    }; match prod_local_262 {
+        false => prod_local_262,
+        true => { let prod_local_263 = 1; { let prod_local_264 = workerInFlightAdmissible(prod_local_263); match prod_local_264 {
+        false => { let prod_local_266 = prod_local_264; match prod_local_266 {
+        false => prod_local_266,
+        true => { let prod_local_267 = sTen()?; { let prod_local_268 = sTwenty()?; { let prod_local_269 = governorRecommendedScalePermille(prod_local_267, prod_local_268)?; { let prod_local_270 = skinWeightScale()?; { let prod_local_271 = (prod_local_269 == prod_local_270); { let prod_local_287 = match prod_local_271 {
         false => prod_local_271,
-        true => { let prod_local_272 = sFifty()?; { let prod_local_273 = sTwenty()?; { let prod_local_274 = governorRecommendedScalePermille(prod_local_272, prod_local_273)?; { let prod_local_275 = sSeven()?; { let prod_local_276 = sHundred()?; { let prod_local_277 = core::convert::identity::<u64>(prod_local_275).checked_mul(prod_local_276).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_278 = (prod_local_274 == prod_local_277); prod_local_278 } } } } } } },
-    } } } } } } } },
-    }; match prod_local_279 {
+        true => { let prod_local_273 = sThirty()?; { let prod_local_274 = sTwenty()?; { let prod_local_275 = governorRecommendedScalePermille(prod_local_273, prod_local_274)?; { let prod_local_276 = sEightyFive()?; { let prod_local_277 = sTen()?; { let prod_local_278 = core::convert::identity::<u64>(prod_local_276).checked_mul(prod_local_277).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_279 = (prod_local_275 == prod_local_278); match prod_local_279 {
         false => prod_local_279,
-        true => { let prod_local_280 = codebookProductTableSize()?; { let prod_local_281 = sEight()?; { let prod_local_282 = pow2Constructive(prod_local_281)?; { let prod_local_283 = (prod_local_280 == prod_local_282); match prod_local_283 {
-        false => prod_local_283,
-        true => { let prod_local_284 = aqmWorkloadExtrapolationsDirect()?; match prod_local_284 {
-        false => prod_local_284,
-        true => { let prod_local_285 = runtimeInvariantsDirect()?; prod_local_285 },
-    } },
-    } } } } },
-    } } } } } } },
-    } },
-        true => { let prod_local_286 = (1 << 1); { let prod_local_287 = workerInFlightAdmissible(prod_local_286); match prod_local_287 {
-        false => { let prod_local_288 = prod_local_287; match prod_local_288 {
-        false => prod_local_288,
-        true => { let prod_local_289 = sTen()?; { let prod_local_290 = sTwenty()?; { let prod_local_291 = governorRecommendedScalePermille(prod_local_289, prod_local_290)?; { let prod_local_292 = skinWeightScale()?; { let prod_local_293 = (prod_local_291 == prod_local_292); { let prod_local_309 = match prod_local_293 {
+        true => { let prod_local_280 = sFifty()?; { let prod_local_281 = sTwenty()?; { let prod_local_282 = governorRecommendedScalePermille(prod_local_280, prod_local_281)?; { let prod_local_283 = sSeven()?; { let prod_local_284 = sHundred()?; { let prod_local_285 = core::convert::identity::<u64>(prod_local_283).checked_mul(prod_local_284).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_286 = (prod_local_282 == prod_local_285); prod_local_286 } } } } } } },
+    } } } } } } } },
+    }; match prod_local_287 {
+        false => prod_local_287,
+        true => { let prod_local_288 = codebookProductTableSize()?; { let prod_local_289 = sEight()?; { let prod_local_290 = pow2Constructive(prod_local_289)?; { let prod_local_291 = (prod_local_288 == prod_local_290); match prod_local_291 {
+        false => prod_local_291,
+        true => { let prod_local_292 = aqmWorkloadExtrapolationsDirect()?; match prod_local_292 {
+        false => prod_local_292,
+        true => { let prod_local_293 = stabilityAndRefinementDirect()?; match prod_local_293 {
         false => prod_local_293,
-        true => { let prod_local_295 = sThirty()?; { let prod_local_296 = sTwenty()?; { let prod_local_297 = governorRecommendedScalePermille(prod_local_295, prod_local_296)?; { let prod_local_298 = sEightyFive()?; { let prod_local_299 = sTen()?; { let prod_local_300 = core::convert::identity::<u64>(prod_local_298).checked_mul(prod_local_299).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_301 = (prod_local_297 == prod_local_300); match prod_local_301 {
-        false => prod_local_301,
-        true => { let prod_local_302 = sFifty()?; { let prod_local_303 = sTwenty()?; { let prod_local_304 = governorRecommendedScalePermille(prod_local_302, prod_local_303)?; { let prod_local_305 = sSeven()?; { let prod_local_306 = sHundred()?; { let prod_local_307 = core::convert::identity::<u64>(prod_local_305).checked_mul(prod_local_306).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_308 = (prod_local_304 == prod_local_307); prod_local_308 } } } } } } },
-    } } } } } } } },
-    }; match prod_local_309 {
-        false => prod_local_309,
-        true => { let prod_local_310 = codebookProductTableSize()?; { let prod_local_311 = sEight()?; { let prod_local_312 = pow2Constructive(prod_local_311)?; { let prod_local_313 = (prod_local_310 == prod_local_312); match prod_local_313 {
-        false => prod_local_313,
-        true => { let prod_local_314 = aqmWorkloadExtrapolationsDirect()?; match prod_local_314 {
-        false => prod_local_314,
-        true => { let prod_local_315 = runtimeInvariantsDirect()?; prod_local_315 },
+        true => { let prod_local_294 = runtimeInvariantsDirect()?; prod_local_294 },
+    } },
     } },
     } } } } },
     } } } } } } },
     } },
-        true => { let prod_local_316 = ((1 << 1) + 1); { let prod_local_317 = workerInFlightAdmissible(prod_local_316); match prod_local_317 {
-        false => { let prod_local_318 = prod_local_287; match prod_local_318 {
+        true => { let prod_local_295 = (1 << 1); { let prod_local_296 = workerInFlightAdmissible(prod_local_295); match prod_local_296 {
+        false => { let prod_local_297 = prod_local_296; match prod_local_297 {
+        false => prod_local_297,
+        true => { let prod_local_298 = sTen()?; { let prod_local_299 = sTwenty()?; { let prod_local_300 = governorRecommendedScalePermille(prod_local_298, prod_local_299)?; { let prod_local_301 = skinWeightScale()?; { let prod_local_302 = (prod_local_300 == prod_local_301); { let prod_local_318 = match prod_local_302 {
+        false => prod_local_302,
+        true => { let prod_local_304 = sThirty()?; { let prod_local_305 = sTwenty()?; { let prod_local_306 = governorRecommendedScalePermille(prod_local_304, prod_local_305)?; { let prod_local_307 = sEightyFive()?; { let prod_local_308 = sTen()?; { let prod_local_309 = core::convert::identity::<u64>(prod_local_307).checked_mul(prod_local_308).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_310 = (prod_local_306 == prod_local_309); match prod_local_310 {
+        false => prod_local_310,
+        true => { let prod_local_311 = sFifty()?; { let prod_local_312 = sTwenty()?; { let prod_local_313 = governorRecommendedScalePermille(prod_local_311, prod_local_312)?; { let prod_local_314 = sSeven()?; { let prod_local_315 = sHundred()?; { let prod_local_316 = core::convert::identity::<u64>(prod_local_314).checked_mul(prod_local_315).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_317 = (prod_local_313 == prod_local_316); prod_local_317 } } } } } } },
+    } } } } } } } },
+    }; match prod_local_318 {
         false => prod_local_318,
-        true => { let prod_local_319 = sTen()?; { let prod_local_320 = sTwenty()?; { let prod_local_321 = governorRecommendedScalePermille(prod_local_319, prod_local_320)?; { let prod_local_322 = skinWeightScale()?; { let prod_local_323 = (prod_local_321 == prod_local_322); { let prod_local_339 = match prod_local_323 {
+        true => { let prod_local_319 = codebookProductTableSize()?; { let prod_local_320 = sEight()?; { let prod_local_321 = pow2Constructive(prod_local_320)?; { let prod_local_322 = (prod_local_319 == prod_local_321); match prod_local_322 {
+        false => prod_local_322,
+        true => { let prod_local_323 = aqmWorkloadExtrapolationsDirect()?; match prod_local_323 {
         false => prod_local_323,
-        true => { let prod_local_325 = sThirty()?; { let prod_local_326 = sTwenty()?; { let prod_local_327 = governorRecommendedScalePermille(prod_local_325, prod_local_326)?; { let prod_local_328 = sEightyFive()?; { let prod_local_329 = sTen()?; { let prod_local_330 = core::convert::identity::<u64>(prod_local_328).checked_mul(prod_local_329).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_331 = (prod_local_327 == prod_local_330); match prod_local_331 {
-        false => prod_local_331,
-        true => { let prod_local_332 = sFifty()?; { let prod_local_333 = sTwenty()?; { let prod_local_334 = governorRecommendedScalePermille(prod_local_332, prod_local_333)?; { let prod_local_335 = sSeven()?; { let prod_local_336 = sHundred()?; { let prod_local_337 = core::convert::identity::<u64>(prod_local_335).checked_mul(prod_local_336).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_338 = (prod_local_334 == prod_local_337); prod_local_338 } } } } } } },
-    } } } } } } } },
-    }; match prod_local_339 {
-        false => prod_local_339,
-        true => { let prod_local_340 = codebookProductTableSize()?; { let prod_local_341 = sEight()?; { let prod_local_342 = pow2Constructive(prod_local_341)?; { let prod_local_343 = (prod_local_340 == prod_local_342); match prod_local_343 {
-        false => prod_local_343,
-        true => { let prod_local_344 = aqmWorkloadExtrapolationsDirect()?; match prod_local_344 {
-        false => prod_local_344,
-        true => { let prod_local_345 = runtimeInvariantsDirect()?; prod_local_345 },
+        true => { let prod_local_324 = stabilityAndRefinementDirect()?; match prod_local_324 {
+        false => prod_local_324,
+        true => { let prod_local_325 = runtimeInvariantsDirect()?; prod_local_325 },
+    } },
     } },
     } } } } },
     } } } } } } },
     } },
-        true => { let prod_local_346 = false; prod_local_346 },
+        true => { let prod_local_326 = ((1 << 1) + 1); { let prod_local_327 = workerInFlightAdmissible(prod_local_326); match prod_local_327 {
+        false => { let prod_local_328 = prod_local_296; match prod_local_328 {
+        false => prod_local_328,
+        true => { let prod_local_329 = sTen()?; { let prod_local_330 = sTwenty()?; { let prod_local_331 = governorRecommendedScalePermille(prod_local_329, prod_local_330)?; { let prod_local_332 = skinWeightScale()?; { let prod_local_333 = (prod_local_331 == prod_local_332); { let prod_local_349 = match prod_local_333 {
+        false => prod_local_333,
+        true => { let prod_local_335 = sThirty()?; { let prod_local_336 = sTwenty()?; { let prod_local_337 = governorRecommendedScalePermille(prod_local_335, prod_local_336)?; { let prod_local_338 = sEightyFive()?; { let prod_local_339 = sTen()?; { let prod_local_340 = core::convert::identity::<u64>(prod_local_338).checked_mul(prod_local_339).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_341 = (prod_local_337 == prod_local_340); match prod_local_341 {
+        false => prod_local_341,
+        true => { let prod_local_342 = sFifty()?; { let prod_local_343 = sTwenty()?; { let prod_local_344 = governorRecommendedScalePermille(prod_local_342, prod_local_343)?; { let prod_local_345 = sSeven()?; { let prod_local_346 = sHundred()?; { let prod_local_347 = core::convert::identity::<u64>(prod_local_345).checked_mul(prod_local_346).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_348 = (prod_local_344 == prod_local_347); prod_local_348 } } } } } } },
+    } } } } } } } },
+    }; match prod_local_349 {
+        false => prod_local_349,
+        true => { let prod_local_350 = codebookProductTableSize()?; { let prod_local_351 = sEight()?; { let prod_local_352 = pow2Constructive(prod_local_351)?; { let prod_local_353 = (prod_local_350 == prod_local_352); match prod_local_353 {
+        false => prod_local_353,
+        true => { let prod_local_354 = aqmWorkloadExtrapolationsDirect()?; match prod_local_354 {
+        false => prod_local_354,
+        true => { let prod_local_355 = stabilityAndRefinementDirect()?; match prod_local_355 {
+        false => prod_local_355,
+        true => { let prod_local_356 = runtimeInvariantsDirect()?; prod_local_356 },
+    } },
+    } },
+    } } } } },
+    } } } } } } },
+    } },
+        true => { let prod_local_357 = false; prod_local_357 },
     } } },
     } } },
     } } },
     } } } },
-        true => { let prod_local_347 = false; prod_local_347 },
+        true => { let prod_local_358 = false; prod_local_358 },
     } } } } },
     } } } },
     }
@@ -22419,9 +22860,9 @@ pub fn workloadPerformanceDirect() -> Result<bool, self::ComputeError> {
                                                                                     }
                                                                                 }
                                                                                 true => {
-                                                                                    let _x_981 =
+                                                                                    let _x_1008 =
                                                                                         false;
-                                                                                    _x_981
+                                                                                    _x_1008
                                                                                 }
                                                                             }
                                                                         }

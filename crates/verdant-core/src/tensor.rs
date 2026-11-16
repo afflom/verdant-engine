@@ -14,8 +14,8 @@ pub use verdant_tensor::{
     verified_coded_matrix_tiers, verified_engine_tensor_kernels, verified_unified_tensor_kernels,
     verify_coded_tier_spec, verify_conservation_and_reachability, verify_tensor_kernel_spec,
     CodedMatrixTierKind, ConservationAuditReport, RasterTriangle, SoftwareTileFramebuffer,
-    TensorSemiringKind, TwoBoneIkSolution, VerifiedCodedTier, VerifiedTensorKernel,
-    CODED_TABLE_LEN, PACKED_NIBBLE_BLOCK,
+    TensorSemiringKind, TileRasterScratch, TwoBoneIkSolution, VerifiedCodedTier,
+    VerifiedTensorKernel, CODED_TABLE_LEN, PACKED_NIBBLE_BLOCK,
 };
 
 use crate::error::TensorComputeError;
@@ -58,5 +58,27 @@ pub fn render_triangles_tile_framebuffer(
         [sun_direction.x, sun_direction.y, sun_direction.z],
         lod_rank,
         triangles,
+    )
+}
+
+/// Renders world-space `triangles` into a reusable [`TileRasterScratch`] CSR arena (`0` inner `Vec`
+/// heap allocations in steady state). Returns `(tiles_shaded, rasterized_triangles)`.
+pub fn render_triangles_tile_framebuffer_with_scratch(
+    width: u32,
+    height: u32,
+    view_proj: &Mat4,
+    sun_direction: Vec3,
+    lod_rank: u64,
+    triangles: &[RasterTriangle],
+    scratch: &mut TileRasterScratch,
+) -> Result<(u32, u32), TensorComputeError> {
+    verdant_tensor::render_triangles_tile_framebuffer_with_scratch(
+        width,
+        height,
+        &view_proj.cols,
+        [sun_direction.x, sun_direction.y, sun_direction.z],
+        lod_rank,
+        triangles,
+        scratch,
     )
 }

@@ -63,7 +63,7 @@ export default async function start({ app, reason, $, chip, show, parse }) {
   let solvedEye = [10.2, 8.5, 25.3], solvedTarget = [2.2, 3.8, 9.2], universeCell = [0, 0, 0];
   let dragging = false, rafId = 0;
   let lastTris = 0, lastBvhVis = 24, lastKernelCount = 15;
-  let workerBackend = "webgl2", isSoftwareGpu = false, offscreenActive = false, nextReqId = 1, workerFramesInFlight = 0;
+  let workerBackend = "webgl2", isSoftwareGpu = false, offscreenActive = false, nextReqId = 1, workerFramesInFlight = 0, lastFrameSentAt = 0;
   let fallbackRenderer = null, fallbackMod = null, studioMod = null;
   const keys = new Set(), pendingCalls = new Map();
   const getStudio = async () => (studioMod ??= await import("./studio.mjs"));
@@ -121,6 +121,10 @@ export default async function start({ app, reason, $, chip, show, parse }) {
           r(msg);
           return;
         }
+        if (msg.kind === "frame-dropped") {
+          workerFramesInFlight = Math.max(0, workerFramesInFlight - 1);
+          return;
+        }
         if (msg.kind === "telemetry") {
           workerFramesInFlight = Math.max(0, workerFramesInFlight - 1);
           lastTris = msg.tris || lastTris;
@@ -135,6 +139,7 @@ export default async function start({ app, reason, $, chip, show, parse }) {
         }
       };
       engineWorker.onerror = () => {
+        workerFramesInFlight = 0;
         for (const r of pendingCalls.values()) r(null);
         pendingCalls.clear();
       };
@@ -146,7 +151,8 @@ export default async function start({ app, reason, $, chip, show, parse }) {
   const callWorker = (kind, payload = {}, transfer = []) =>
     !engineWorker ? Promise.resolve(null) : new Promise((res) => {
       const id = nextReqId++;
-      pendingCalls.set(id, res);
+      const wd = setTimeout(() => { if (pendingCalls.delete(id)) res(null); }, 15000);
+      pendingCalls.set(id, (v) => { clearTimeout(wd); res(v); });
       engineWorker.postMessage({ kind, id, ...payload }, transfer);
     });
 
@@ -285,26 +291,17 @@ export default async function start({ app, reason, $, chip, show, parse }) {
   async function launchStudioModal(initialTab = null) {
     const mod = await getStudio();
     mod.openStudioModal({
-      initialTab: typeof initialTab === "string" ? initialTab : null,
-      callWorker,
-      queryVerifier,
-      onPickGlb: () => glbFileInput?.click(),
-      onResetGlb: resetImportedGlb,
+      initialTab: typeof initialTab === "string" ? initialTab : null, callWorker, queryVerifier,
+      onPickGlb: () => glbFileInput?.click(), onResetGlb: resetImportedGlb,
       onExportGlb: () => mod.exportGlbDownload(callWorker, STREAMING_LODS[lodIdx].short),
       onShareSnapshot: () => mod.shareVdntSnapshot(callWorker, chip, statusEl),
-      onToggleRenderMode: (force) => toggleRenderBackend(force),
-      onSetLod: (rank) => streamUorcToRank(rank),
-      onSetCameraMode: (preset) => cycleCameraMode(preset),
-      onSetSimLive: (live) => setSimLive(live),
+      onToggleRenderMode: toggleRenderBackend, onSetLod: streamUorcToRank,
+      onSetCameraMode: cycleCameraMode, onSetSimLive: setSimLive,
       onToggleAudio: () => mod.toggleModalAudio(audioBtn, ACOUSTIC_SPEC, () => solvedEye),
-      onFocusPoint: focusWorldPoint,
-      onFocusPreset: focusNodePreset,
-      onSetSeed: setWorldSeed,
+      onFocusPoint: focusWorldPoint, onFocusPreset: focusNodePreset, onSetSeed: setWorldSeed,
       onOpenStitchMesh: async () => (await import("./stitch-mesh.mjs")).openStitchMeshModal({ callWorker, onRestoreSnapshot: restoreRawSnapshot }),
-      onRoutePrompt: executePromptIntent,
-      onInteractStory: interactChronicle,
-      getRenderMode: () => renderMode,
-      getLodRank: () => lodIdx,
+      onRoutePrompt: executePromptIntent, onInteractStory: interactChronicle,
+      getRenderMode: () => renderMode, getLodRank: () => lodIdx,
     });
   }
 
@@ -314,40 +311,24 @@ export default async function start({ app, reason, $, chip, show, parse }) {
     if (lodBtn) lodBtn.textContent = lod.short;
     if (hudLod) hudLod.textContent = lod.label;
     if (lod.rank < 2) followMover = false;
-    if (engineWorker) {
-      engineWorker.postMessage({ kind: "set-lod", lod, simClockSec });
-      await syncFallbackBuffers();
-    }
-    requestRender();
-    if (updateBanner) syncVerifierBanner(lod.key);
+    if (engineWorker) { engineWorker.postMessage({ kind: "set-lod", lod, simClockSec }); await syncFallbackBuffers(); }
+    requestRender(); if (updateBanner) syncVerifierBanner(lod.key);
   }
 
   async function focusNodePreset(idx) {
     const node = NODE_KERNELS[idx];
     if (!node) return;
-    activeNodeSlot = node.id;
-    gazeDwellMs = 1400;
+    activeNodeSlot = node.id; gazeDwellMs = 1400;
     if (lodIdx < 3) await setLod(3, false);
     followMover = Boolean(node.followMover);
     if (followMover || node.id === 3) setSimLive(true);
-    if (node.possessExplorer) {
-      camPreset = "third";
-      if (camBtn) camBtn.textContent = "Cam: 3rd IK";
-    } else {
-      camPreset = "landmark";
-      if (camBtn) camBtn.textContent = "Cam: Orbit";
-    }
+    camPreset = node.possessExplorer ? "third" : "landmark";
+    if (camBtn) camBtn.textContent = node.possessExplorer ? "Cam: 3rd IK" : "Cam: Orbit";
     applyCamReply(await callWorker("camera-focus-landmark", {
-      possessExplorer: Boolean(node.possessExplorer),
-      target: node.target,
-      dist: node.dist,
-      yawMilli: node.yawMilli ?? 620,
-      pitchMilli: node.pitchMilli ?? 350,
-      simClockSec,
+      possessExplorer: Boolean(node.possessExplorer), target: node.target, dist: node.dist,
+      yawMilli: node.yawMilli ?? 620, pitchMilli: node.pitchMilli ?? 350, simClockSec,
     }));
-    await syncFallbackBuffers();
-    requestRender();
-    await syncVerifierBanner(node.query);
+    await syncFallbackBuffers(); requestRender(); await syncVerifierBanner(node.query);
   }
 
   async function streamUorcToRank(targetRank) {
@@ -448,8 +429,8 @@ export default async function start({ app, reason, $, chip, show, parse }) {
     rafId = 0;
     if (document.hidden) return;
     if (offscreenActive && engineWorker && workerFramesInFlight >= 2) {
-      if (isAnimating()) rafId = requestAnimationFrame(frame);
-      return;
+      if (now - lastFrameSentAt > 1500) workerFramesInFlight = 0;
+      else { if (isAnimating()) rafId = requestAnimationFrame(frame); return; }
     }
     const dt = Math.min(0.05, Math.max(0.001, (now - prevNow) * 0.001));
     prevNow = now;
@@ -460,26 +441,12 @@ export default async function start({ app, reason, $, chip, show, parse }) {
     const lod = STREAMING_LODS[lodIdx], { w, h } = measureCanvasPixels();
 
     if (offscreenActive && engineWorker) {
-      workerFramesInFlight++;
+      workerFramesInFlight++; lastFrameSentAt = now;
       engineWorker.postMessage({
-        kind: "frame",
-        width: w,
-        height: h,
-        dt,
-        stepPhysics: stepping,
-        followMover,
-        fwd: intent.fwd,
-        strafe: intent.strafe,
-        speedScale: intent.speedScale,
-        jump: intent.jump,
-        deltaYaw: intent.dYaw,
-        deltaPitch: intent.dPitch,
-        deltaDist: intent.dDist,
-        gazedSlot: activeNodeSlot,
-        dwellMs: gazeDwellMs,
-        angSpeedMilli: dragging ? 600 : 60,
-        lod,
-        simClockSec,
+        kind: "frame", width: w, height: h, dt, stepPhysics: stepping, followMover,
+        fwd: intent.fwd, strafe: intent.strafe, speedScale: intent.speedScale, jump: intent.jump,
+        deltaYaw: intent.dYaw, deltaPitch: intent.dPitch, deltaDist: intent.dDist,
+        gazedSlot: activeNodeSlot, dwellMs: gazeDwellMs, angSpeedMilli: dragging ? 600 : 60, lod, simClockSec,
       });
     } else if (fallbackRenderer && fallbackMod && canvas) {
       if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
@@ -499,27 +466,29 @@ export default async function start({ app, reason, $, chip, show, parse }) {
 
   const fmtSemiring = (s) => s.replace(/([a-z])([A-Z])/g, "$1 $2");
   const badges = [];
+  const makeRailRow = (label, tagText, onClick, id = "") => {
+    const li = document.createElement("li"), btn = document.createElement("button");
+    btn.type = "button"; btn.className = "again"; if (id) btn.id = id;
+    const lbl = document.createElement("span"); lbl.textContent = label;
+    const badge = document.createElement("span"); badge.className = "tag good"; badge.textContent = tagText;
+    btn.append(lbl, badge); btn.addEventListener("click", onClick); li.append(btn); telemetryList.append(li);
+    return badge;
+  };
   if (telemetryList) {
     telemetryList.replaceChildren();
-    const jLi = document.createElement("li"), jBtn = document.createElement("button");
-    jBtn.type = "button"; jBtn.className = "again"; jBtn.id = "ve-journeys-rail-btn";
-    const jLbl = document.createElement("span"); jLbl.textContent = "Guided Journeys & Create Game";
-    const jBadge = document.createElement("span"); jBadge.className = "tag good"; jBadge.textContent = "7 Personas";
-    jBtn.append(jLbl, jBadge);
-    jBtn.addEventListener("click", () => launchStudioModal("journeys"));
-    jLi.append(jBtn); telemetryList.append(jLi);
+    makeRailRow("Guided Journeys & Create Game", "7 Personas", () => launchStudioModal("journeys"), "ve-journeys-rail-btn");
     for (const node of NODE_KERNELS) {
-      const li = document.createElement("li"), btn = document.createElement("button");
-      btn.type = "button"; btn.className = "again";
-      const lbl = document.createElement("span"); lbl.textContent = node.name;
-      const badge = document.createElement("span"); badge.className = "tag good"; badge.textContent = fmtSemiring(node.semiring);
-      btn.append(lbl, badge);
-      btn.addEventListener("click", () => focusNodePreset(node.id));
-      li.append(btn); telemetryList.append(li);
-      badges.push({ node, badge });
+      badges.push({ node, badge: makeRailRow(node.name, fmtSemiring(node.semiring), () => focusNodePreset(node.id)) });
     }
   }
 
+  const applyInitReply = (r) => {
+    if (!r) return;
+    applyCamReply(r);
+    if (r.audioSpec) Object.assign(ACOUSTIC_SPEC, r.audioSpec);
+    if (r.tensorKernels) lastKernelCount = r.tensorKernels;
+    if (Array.isArray(r.universeCell)) universeCell = r.universeCell;
+  };
   const initialDims = measureCanvasPixels();
   if (engineWorker && canvas && typeof canvas.transferControlToOffscreen === "function") {
     try {
@@ -527,11 +496,7 @@ export default async function start({ app, reason, $, chip, show, parse }) {
       const r = await callWorker("init", { canvas: offscreen, width: initialDims.w, height: initialDims.h, lod: STREAMING_LODS[lodIdx] }, [offscreen]);
       if (r?.kind === "ready") {
         offscreenActive = true; workerBackend = r.backend || "webgl2"; isSoftwareGpu = Boolean(r.isSoftware);
-      applyCamReply(r);
-      if (r.audioSpec) Object.assign(ACOUSTIC_SPEC, r.audioSpec);
-      if (r.tensorKernels) lastKernelCount = r.tensorKernels;
-      if (Array.isArray(r.universeCell)) universeCell = r.universeCell;
-        if (hudStats) hudStats.textContent = formatHudStats("");
+        applyInitReply(r); if (hudStats) hudStats.textContent = formatHudStats("");
       }
     } catch { offscreenActive = false; }
   }
@@ -542,11 +507,7 @@ export default async function start({ app, reason, $, chip, show, parse }) {
     workerBackend = fallbackRenderer?.backend || "webgl2";
     isSoftwareGpu = Boolean(fallbackRenderer?.isSoftware);
     if (engineWorker) {
-      const r = await callWorker("init", { canvas: null, width: initialDims.w, height: initialDims.h, lod: STREAMING_LODS[lodIdx] });
-      if (r?.tensorKernels) lastKernelCount = r.tensorKernels;
-      if (r?.camera) { solvedEye = r.camera.eye; solvedTarget = r.camera.lookTarget; }
-      if (Array.isArray(r.universeCell)) universeCell = r.universeCell;
-      if (r?.audioSpec) Object.assign(ACOUSTIC_SPEC, r.audioSpec);
+      applyInitReply(await callWorker("init", { canvas: null, width: initialDims.w, height: initialDims.h, lod: STREAMING_LODS[lodIdx] }));
       await syncFallbackBuffers();
     }
   }

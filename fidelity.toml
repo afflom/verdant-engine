@@ -4370,6 +4370,16 @@ record = "Engine::vectors#41"
 axis = "derived"
 
 [[closed]]
+kappa = "abfeb7031c9279d3035786ed9b46f76e5318ade7ab3b2a6dfbdaa7129bf2aa6b"
+record = "Engine::vectors#41"
+axis = "derived"
+
+[[closed]]
+kappa = "42149f02dadea1d1008dcee727354c348caf7e28636c129fbe610c65336fe950"
+record = "Engine::vectors#41"
+axis = "meant"
+
+[[closed]]
 kappa = "9d087c2a0d58305d02082832a81a998e461da2bb11117471e5cbc51dc1095825"
 record = "Engine::vectors#41"
 axis = "meant"
@@ -4395,7 +4405,17 @@ record = "Engine::vectors#42"
 axis = "derived"
 
 [[closed]]
+kappa = "de3fc23147ff31e5a2189a77229966fb8f20f546038a7396f93d654317d3b391"
+record = "Engine::vectors#42"
+axis = "derived"
+
+[[closed]]
 kappa = "03952ba35ac35fa9c14dbea465e826e41db0f598d8d5048ea236a90ff588709a"
+record = "Engine::vectors#42"
+axis = "meant"
+
+[[closed]]
+kappa = "8f73a96d5e8616ee8c3542d6ec0f80d25bca87e899aad2970791e53760e928b1"
 record = "Engine::vectors#42"
 axis = "meant"
 
@@ -4410,8 +4430,28 @@ record = "Engine::vectors#43"
 axis = "derived"
 
 [[closed]]
+kappa = "b4c06b9fcd8271a354e43e4a3767449072d221afae82d93d9abcd5c4b6a52b70"
+record = "Engine::vectors#43"
+axis = "derived"
+
+[[closed]]
 kappa = "47815dc0a7f5fb3502bb4abe57073b0c47b10901913c10d792957fcc6a9b032a"
 record = "Engine::vectors#43"
+axis = "meant"
+
+[[closed]]
+kappa = "fabee99913a2cd041ff1169cc6d1e62793fae266b020e8e4a551ad4205e53c31"
+record = "Engine::vectors#43"
+axis = "meant"
+
+[[closed]]
+kappa = "d4500e565c8de3eb2eca50710e528f74fb1ea7d552a894d599acff6bcce47cee"
+record = "Engine::vectors#44"
+axis = "derived"
+
+[[closed]]
+kappa = "5eacaedf8e5c4150f858810685db966b90a5daf2bd5d8401fb5930585aea9e8a"
+record = "Engine::vectors#44"
 axis = "meant"
 
 [[closed]]
@@ -7477,6 +7517,16 @@ axis = "derived"
 [[closed]]
 kappa = "bff2ed48c48da92a1ece19a6ed324fe8ef3668ba7b2f7bd49561536a67822e36"
 record = "Subsystems::perfTier5AqmMonoidBitPlanesKappa"
+axis = "meant"
+
+[[closed]]
+kappa = "a5950562f1e7d4a89a423dbee6e8f466b28b7ea2c9ef7fe9241ab3ff1843e4da"
+record = "Subsystems::perfTier6RockSolidStabilityAndBroadphase"
+axis = "derived"
+
+[[closed]]
+kappa = "d503fbf4738772d1b4f820ab42837a37d1ab8bf9fe2b5fbd86ccf07b402ab321"
+record = "Subsystems::perfTier6RockSolidStabilityAndBroadphase"
 axis = "meant"
 
 [[closed]]
