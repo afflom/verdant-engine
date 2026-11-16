@@ -10,6 +10,7 @@ use crate::geometry::ProceduralMesh;
 use crate::math::{
     geometric_epsilon, pow10_u64, three_u32, Aabb, Frustum, Mat4, Quat, Ray, Vec3, DIM_PLANAR,
 };
+use crate::prism_kernel;
 
 /// Stable, deterministic identifier of a scene entity.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
@@ -918,5 +919,19 @@ impl TwoLevelBvh {
             }
         }
         best
+    }
+
+    /// Verifies that `TwoLevelBvh` instance counts and surface clearance predicates align with
+    /// `Subsystems::canonicalDimensions` and `Subsystems::sweptClearanceValid` in `prism_kernel`.
+    #[must_use]
+    pub fn prism_bvh_invariants_valid(&self) -> bool {
+        let Ok(dims) = prism_kernel::canonicalDimensions() else {
+            return false;
+        };
+        let margin = prism_kernel::ccdSkinMarginMilli();
+        let radius = prism_kernel::sFortyEight().unwrap_or(1);
+        dims.dimSpatial == u64::from(three_u32())
+            && self.instances.len() <= self.blas_pool.len()
+            && prism_kernel::sweptClearanceValid(radius + margin, radius, margin) == Ok(true)
     }
 }

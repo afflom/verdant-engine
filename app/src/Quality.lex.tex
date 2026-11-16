@@ -42,87 +42,122 @@ definition{
 }
 
 definition{
-  name: subcharacteristicFunctionalCompleteness,
+  name: characteristicReliability,
   parameters: [],
-  result: Foundation.Qual::QualitySubcharacteristic,
-  body: (record Foundation.Qual::QualitySubcharacteristic {index := 0, characteristicIndex := 0})
+  result: Foundation.Qual::ProductQualityCharacteristic,
+  body: (record Foundation.Qual::ProductQualityCharacteristic {index := 4})
 }
 
 definition{
-  name: subcharacteristicFunctionalCorrectness,
+  name: subcharacteristicFunctionalCompleteness,
   parameters: [],
   result: Foundation.Qual::QualitySubcharacteristic,
   body: (record Foundation.Qual::QualitySubcharacteristic {index := 1, characteristicIndex := 0})
 }
 
 definition{
-  name: subcharacteristicInclusivity,
+  name: subcharacteristicFunctionalCorrectness,
   parameters: [],
   result: Foundation.Qual::QualitySubcharacteristic,
-  body: (record Foundation.Qual::QualitySubcharacteristic {index := 2, characteristicIndex := 1})
+  body: (record Foundation.Qual::QualitySubcharacteristic {index := 2, characteristicIndex := 0})
 }
 
 definition{
-  name: subcharacteristicLearnability,
+  name: subcharacteristicInclusivity,
   parameters: [],
   result: Foundation.Qual::QualitySubcharacteristic,
   body: (record Foundation.Qual::QualitySubcharacteristic {index := 3, characteristicIndex := 1})
 }
 
 definition{
+  name: subcharacteristicLearnability,
+  parameters: [],
+  result: Foundation.Qual::QualitySubcharacteristic,
+  body: (record Foundation.Qual::QualitySubcharacteristic {index := 4, characteristicIndex := 1})
+}
+
+definition{
   name: subcharacteristicModifiability,
   parameters: [],
   result: Foundation.Qual::QualitySubcharacteristic,
-  body: (record Foundation.Qual::QualitySubcharacteristic {index := 4, characteristicIndex := 2})
+  body: (record Foundation.Qual::QualitySubcharacteristic {index := 5, characteristicIndex := 2})
 }
 
 definition{
   name: subcharacteristicTimeBehaviour,
   parameters: [],
   result: Foundation.Qual::QualitySubcharacteristic,
-  body: (record Foundation.Qual::QualitySubcharacteristic {index := 5, characteristicIndex := 3})
+  body: (record Foundation.Qual::QualitySubcharacteristic {index := 6, characteristicIndex := 3})
+}
+
+definition{
+  name: subcharacteristicFaultlessness,
+  parameters: [],
+  result: Foundation.Qual::QualitySubcharacteristic,
+  body: (record Foundation.Qual::QualitySubcharacteristic {index := 0, characteristicIndex := 4})
 }
 
 definition{
   name: requirementAccessibleStudio,
   parameters: [],
   result: Foundation.Qual::QualityRequirement,
-  body: (record Foundation.Qual::QualityRequirement {index := 0, subcharacteristicIndex := 2})
+  body: (record Foundation.Qual::QualityRequirement {index := 0, subcharacteristicIndex := 3})
 }
 
 definition{
   name: requirementBoundedFrameAndVerifier,
   parameters: [],
   result: Foundation.Qual::QualityRequirement,
-  body: (record Foundation.Qual::QualityRequirement {index := 1, subcharacteristicIndex := 5})
+  body: (record Foundation.Qual::QualityRequirement {index := 2, subcharacteristicIndex := 6})
 }
 
 definition{
   name: requirementMonotonicUorcStreaming,
   parameters: [],
   result: Foundation.Qual::QualityRequirement,
-  body: (record Foundation.Qual::QualityRequirement {index := 2, subcharacteristicIndex := 0})
+  body: (record Foundation.Qual::QualityRequirement {index := 3, subcharacteristicIndex := 1})
 }
 
 definition{
   name: requirementStakeholderJourneys,
   parameters: [],
   result: Foundation.Qual::QualityRequirement,
-  body: (record Foundation.Qual::QualityRequirement {index := 3, subcharacteristicIndex := 3})
+  body: (record Foundation.Qual::QualityRequirement {index := 4, subcharacteristicIndex := 4})
 }
 
 definition{
   name: requirementValidTensorKernels,
   parameters: [],
   result: Foundation.Qual::QualityRequirement,
-  body: (record Foundation.Qual::QualityRequirement {index := 4, subcharacteristicIndex := 1})
+  body: (record Foundation.Qual::QualityRequirement {index := 6, subcharacteristicIndex := 2})
 }
 
 definition{
   name: requirementZeroConstantsKernel,
   parameters: [],
   result: Foundation.Qual::QualityRequirement,
-  body: (record Foundation.Qual::QualityRequirement {index := 5, subcharacteristicIndex := 4})
+  body: (record Foundation.Qual::QualityRequirement {index := 8, subcharacteristicIndex := 5})
+}
+
+definition{
+  name: requirementVerifiedEngineSubsystems,
+  parameters: [],
+  result: Foundation.Qual::QualityRequirement,
+  body: (record Foundation.Qual::QualityRequirement {index := 7, subcharacteristicIndex := 0})
+}
+
+definition{
+  name: requirementValidCodedMatrixTiers,
+  parameters: [],
+  result: Foundation.Qual::QualityRequirement,
+  body: (record Foundation.Qual::QualityRequirement {index := 5, subcharacteristicIndex := 2})
+}
+
+definition{
+  name: requirementArchitecturalWalkability,
+  parameters: [],
+  result: Foundation.Qual::QualityRequirement,
+  body: (record Foundation.Qual::QualityRequirement {index := 1, subcharacteristicIndex := 0})
 }
 
 definition{
@@ -136,84 +171,105 @@ definition{
   name: measureDisorderedStreamingLods,
   parameters: [],
   result: Foundation.Qual::QualityMeasure,
-  body: (record Foundation.Qual::QualityMeasure {index := 1, requirementIndex := 2, threshold := 0})
+  body: (record Foundation.Qual::QualityMeasure {index := 1, requirementIndex := 3, threshold := 0})
 }
 
 definition{
   name: measureInvalidTensorKernels,
   parameters: [],
   result: Foundation.Qual::QualityMeasure,
-  body: (record Foundation.Qual::QualityMeasure {index := 2, requirementIndex := 4, threshold := 0})
+  body: (record Foundation.Qual::QualityMeasure {index := 4, requirementIndex := 6, threshold := 0})
 }
 
 definition{
   name: measureJourneysPerStakeholder,
   parameters: [],
   result: Foundation.Qual::QualityMeasure,
-  body: (record Foundation.Qual::QualityMeasure {index := 3, requirementIndex := 3, threshold := 1})
+  body: (record Foundation.Qual::QualityMeasure {index := 5, requirementIndex := 4, threshold := 1})
 }
 
 definition{
   name: measureMagicConstantViolations,
   parameters: [],
   result: Foundation.Qual::QualityMeasure,
-  body: (record Foundation.Qual::QualityMeasure {index := 4, requirementIndex := 5, threshold := 0})
+  body: (record Foundation.Qual::QualityMeasure {index := 6, requirementIndex := 8, threshold := 0})
 }
 
 definition{
   name: measureVerifierRequestCapBytes,
   parameters: [],
   result: Foundation.Qual::QualityMeasure,
-  body: (record Foundation.Qual::QualityMeasure {index := 5, requirementIndex := 1, threshold := 64})
+  body: (record Foundation.Qual::QualityMeasure {index := 8, requirementIndex := 2, threshold := 64})
+}
+
+definition{
+  name: measureUnverifiedEngineSubsystems,
+  parameters: [],
+  result: Foundation.Qual::QualityMeasure,
+  body: (record Foundation.Qual::QualityMeasure {index := 7, requirementIndex := 7, threshold := 0})
+}
+
+definition{
+  name: measureInvalidCodedMatrixTiers,
+  parameters: [],
+  result: Foundation.Qual::QualityMeasure,
+  body: (record Foundation.Qual::QualityMeasure {index := 3, requirementIndex := 5, threshold := 0})
+}
+
+definition{
+  name: measureImpassableArchitecturalPortals,
+  parameters: [],
+  result: Foundation.Qual::QualityMeasure,
+  body: (record Foundation.Qual::QualityMeasure {index := 2, requirementIndex := 1, threshold := 0})
 }
 
 definition{
   name: characteristicNames,
   parameters: [],
   result: (List Named),
-  body: (cons (record Named {index := 0, name := "Functional suitability", text := "Verdant Engine executes exact uor-matmul tensor contractions, streams progressive UORC scenes, and exports standards-valid 3D assets."}) (cons (record Named {index := 1, name := "Interaction capability", text := "Developers, players, and coding agents operate the 3D studio and documentation cleanly across devices."}) (cons (record Named {index := 2, name := "Maintainability", text := "Every engine kernel is purely parametric with zero unexplained magic constants."}) (cons (record Named {index := 3, name := "Performance efficiency", text := "Simulation, portable tensor rendering, UORC streaming, and Wasm verification execute within bounded frame and byte budgets."}) (nil Named)))))
+  body: (cons (record Named {index := 0, name := "Functional suitability", text := "Verdant Engine executes exact uor-matmul tensor contractions, streams progressive UORC scenes, and exports standards-valid 3D assets."}) (cons (record Named {index := 1, name := "Interaction capability", text := "Developers, players, and coding agents operate the 3D studio and documentation cleanly across devices."}) (cons (record Named {index := 2, name := "Maintainability", text := "Every engine kernel is purely parametric with zero unexplained magic constants."}) (cons (record Named {index := 3, name := "Performance efficiency", text := "Simulation, portable tensor rendering, UORC streaming, and Wasm verification execute within bounded frame and byte budgets."}) (cons (record Named {index := 4, name := "Reliability", text := "Swept spatial collision, near-sphere camera guards, architectural portals, and story conservation automatons preserve faultless invariants."}) (nil Named))))))
 }
 
 definition{
   name: subcharacteristicNames,
   parameters: [],
   result: (List Named),
-  body: (cons (record Named {index := 0, name := "Functional completeness", text := "Functional suitability: Functional completeness."}) (cons (record Named {index := 1, name := "Functional correctness", text := "Functional suitability: Functional correctness."}) (cons (record Named {index := 2, name := "Inclusivity", text := "Interaction capability: Inclusivity."}) (cons (record Named {index := 3, name := "Learnability", text := "Interaction capability: Learnability."}) (cons (record Named {index := 4, name := "Modifiability", text := "Maintainability: Modifiability."}) (cons (record Named {index := 5, name := "Time behaviour", text := "Performance efficiency: Time behaviour."}) (nil Named)))))))
+  body: (cons (record Named {index := 0, name := "Faultlessness", text := "Reliability: Faultlessness."}) (cons (record Named {index := 1, name := "Functional completeness", text := "Functional suitability: Functional completeness."}) (cons (record Named {index := 2, name := "Functional correctness", text := "Functional suitability: Functional correctness."}) (cons (record Named {index := 3, name := "Inclusivity", text := "Interaction capability: Inclusivity."}) (cons (record Named {index := 4, name := "Learnability", text := "Interaction capability: Learnability."}) (cons (record Named {index := 5, name := "Modifiability", text := "Maintainability: Modifiability."}) (cons (record Named {index := 6, name := "Time behaviour", text := "Performance efficiency: Time behaviour."}) (nil Named))))))))
 }
 
 definition{
   name: requirementNames,
   parameters: [],
   result: (List Named),
-  body: (cons (record Named {index := 0, name := "AccessibleStudio", text := "Every studio and documentation page meets WCAG 2.2 AA and scores 100 in mobile Lighthouse accessibility."}) (cons (record Named {index := 1, name := "BoundedFrameAndVerifier", text := "The Core-Wasm engine verifier bounds requests to at most 64 bytes before evaluation."}) (cons (record Named {index := 2, name := "MonotonicUorcStreaming", text := "Progressive UORC scene streaming advances strictly monotonically from coarse proxy to lossless source resolution."}) (cons (record Named {index := 3, name := "StakeholderJourneys", text := "Every declared engine stakeholder has at least one end-to-end journey through the product."}) (cons (record Named {index := 4, name := "ValidTensorKernels", text := "Every declared uor-matmul and software tile rasterizer kernel satisfies accumulator overflow bounds and tile alignment."}) (cons (record Named {index := 5, name := "ZeroConstantsKernel", text := "Shipped engine Rust sources and constructive domain modules contain zero unexplained magic constants."}) (nil Named)))))))
+  body: (cons (record Named {index := 0, name := "AccessibleStudio", text := "Every studio and documentation page meets WCAG 2.2 AA and scores 100 in mobile Lighthouse accessibility."}) (cons (record Named {index := 1, name := "ArchitecturalWalkability", text := "Every vaulted Citadel staircase riser and arched portal clears capsule step height, radius, and standing height bounds."}) (cons (record Named {index := 2, name := "BoundedFrameAndVerifier", text := "The Core-Wasm engine verifier bounds requests to at most 64 bytes before evaluation."}) (cons (record Named {index := 3, name := "MonotonicUorcStreaming", text := "Progressive UORC scene streaming advances strictly monotonically from coarse proxy to lossless source resolution."}) (cons (record Named {index := 4, name := "StakeholderJourneys", text := "Every declared engine stakeholder has at least one end-to-end journey through the product."}) (cons (record Named {index := 5, name := "ValidCodedMatrixTiers", text := "Every zero-decode uor_matmul::codec tier and HD LOD envelope satisfies lossless bit-width and monotonicity bounds."}) (cons (record Named {index := 6, name := "ValidTensorKernels", text := "Every declared uor-matmul and software tile rasterizer kernel satisfies accumulator overflow bounds and tile alignment."}) (cons (record Named {index := 7, name := "VerifiedEngineSubsystems", text := "Every declared engine runtime subsystem satisfies stratum ordering and constructive runtime invariants."}) (cons (record Named {index := 8, name := "ZeroConstantsKernel", text := "Shipped engine Rust sources and constructive domain modules contain zero unexplained magic constants."}) (nil Named))))))))))
 }
 
 definition{
   name: measureNames,
   parameters: [],
   result: (List Named),
-  body: (cons (record Named {index := 0, name := "AccessibilityScore", text := "Lighthouse mobile accessibility score of the Engine Studio root page."}) (cons (record Named {index := 1, name := "DisorderedStreamingLods", text := "Count of UORC progressive LOD transitions violating strict resolution or work monotonicity."}) (cons (record Named {index := 2, name := "InvalidTensorKernels", text := "Count of declared engine tensor kernels failing accumulator bit-width or tile-alignment bounds."}) (cons (record Named {index := 3, name := "JourneysPerStakeholder", text := "Minimum number of journeys declared for any engine stakeholder."}) (cons (record Named {index := 4, name := "MagicConstantViolations", text := "Count of magic numeric literals detected by the permanent parametric ratchet."}) (cons (record Named {index := 5, name := "VerifierRequestCapBytes", text := "Maximum byte length accepted by the Core-Wasm engine verifier."}) (nil Named)))))))
+  body: (cons (record Named {index := 0, name := "AccessibilityScore", text := "Lighthouse mobile accessibility score of the Engine Studio root page."}) (cons (record Named {index := 1, name := "DisorderedStreamingLods", text := "Count of UORC progressive LOD transitions violating strict resolution or work monotonicity."}) (cons (record Named {index := 2, name := "ImpassableArchitecturalPortals", text := "Count of Citadel staircase or arched portal walkability violations against character capsule bounds."}) (cons (record Named {index := 3, name := "InvalidCodedMatrixTiers", text := "Count of zero-decode CodedMatrix streaming tiers or HD LOD steps failing validation."}) (cons (record Named {index := 4, name := "InvalidTensorKernels", text := "Count of declared engine tensor kernels failing accumulator bit-width or tile-alignment bounds."}) (cons (record Named {index := 5, name := "JourneysPerStakeholder", text := "Minimum number of journeys declared for any engine stakeholder."}) (cons (record Named {index := 6, name := "MagicConstantViolations", text := "Count of magic numeric literals detected by the permanent parametric ratchet."}) (cons (record Named {index := 7, name := "UnverifiedEngineSubsystems", text := "Count of runtime subsystems failing constructive numbering, stratum bounds, or runtime invariants."}) (cons (record Named {index := 8, name := "VerifierRequestCapBytes", text := "Maximum byte length accepted by the Core-Wasm engine verifier."}) (nil Named))))))))))
 }
 
 definition{
   name: subcharacteristicRecords,
   parameters: [],
   result: (List Foundation.Qual::QualitySubcharacteristic),
-  body: (cons (subcharacteristicFunctionalCompleteness) (cons (subcharacteristicFunctionalCorrectness) (cons (subcharacteristicInclusivity) (cons (subcharacteristicLearnability) (cons (subcharacteristicModifiability) (cons (subcharacteristicTimeBehaviour) (nil Foundation.Qual::QualitySubcharacteristic)))))))
+  body: (cons (subcharacteristicFaultlessness) (cons (subcharacteristicFunctionalCompleteness) (cons (subcharacteristicFunctionalCorrectness) (cons (subcharacteristicInclusivity) (cons (subcharacteristicLearnability) (cons (subcharacteristicModifiability) (cons (subcharacteristicTimeBehaviour) (nil Foundation.Qual::QualitySubcharacteristic))))))))
 }
 
 definition{
   name: requirementRecords,
   parameters: [],
   result: (List Foundation.Qual::QualityRequirement),
-  body: (cons (requirementAccessibleStudio) (cons (requirementBoundedFrameAndVerifier) (cons (requirementMonotonicUorcStreaming) (cons (requirementStakeholderJourneys) (cons (requirementValidTensorKernels) (cons (requirementZeroConstantsKernel) (nil Foundation.Qual::QualityRequirement)))))))
+  body: (cons (requirementAccessibleStudio) (cons (requirementArchitecturalWalkability) (cons (requirementBoundedFrameAndVerifier) (cons (requirementMonotonicUorcStreaming) (cons (requirementStakeholderJourneys) (cons (requirementValidCodedMatrixTiers) (cons (requirementValidTensorKernels) (cons (requirementVerifiedEngineSubsystems) (cons (requirementZeroConstantsKernel) (nil Foundation.Qual::QualityRequirement))))))))))
 }
 
 definition{
   name: measureRecords,
   parameters: [],
   result: (List Foundation.Qual::QualityMeasure),
-  body: (cons (measureAccessibilityScore) (cons (measureDisorderedStreamingLods) (cons (measureInvalidTensorKernels) (cons (measureJourneysPerStakeholder) (cons (measureMagicConstantViolations) (cons (measureVerifierRequestCapBytes) (nil Foundation.Qual::QualityMeasure)))))))
+  body: (cons (measureAccessibilityScore) (cons (measureDisorderedStreamingLods) (cons (measureImpassableArchitecturalPortals) (cons (measureInvalidCodedMatrixTiers) (cons (measureInvalidTensorKernels) (cons (measureJourneysPerStakeholder) (cons (measureMagicConstantViolations) (cons (measureUnverifiedEngineSubsystems) (cons (measureVerifierRequestCapBytes) (nil Foundation.Qual::QualityMeasure))))))))))
 }
 
 definition{
@@ -260,13 +316,13 @@ definition{
   name: qualityValid,
   parameters: [],
   result: Bool,
-  body: ((namesNumbered 0 (characteristicNames)) && ((namesNumbered 0 (subcharacteristicNames)) && ((namesNumbered 0 (requirementNames)) && ((namesNumbered 0 (measureNames)) && ((parentsKnown 4 (subcharacteristicRecords)) && ((requirementsKnown 6 (requirementRecords)) && (measuresKnown 6 (measureRecords))))))))
+  body: ((namesNumbered 0 (characteristicNames)) && ((namesNumbered 0 (subcharacteristicNames)) && ((namesNumbered 0 (requirementNames)) && ((namesNumbered 0 (measureNames)) && ((parentsKnown 5 (subcharacteristicRecords)) && ((requirementsKnown 7 (requirementRecords)) && (measuresKnown 9 (measureRecords))))))))
 }
 
 theorem{
   name: qualityModelHolds,
   parameters: [],
-  statement: ((((qualityValid) && (((namesNumbered 0 (characteristicNames)) && ((namesNumbered 0 (subcharacteristicNames)) && ((namesNumbered 0 (requirementNames)) && (namesNumbered 0 (measureNames))))) && (((project (characteristicFunctionalSuitability) index) =? 0) && (((project (characteristicInteractionCapability) index) =? 1) && (((project (characteristicMaintainability) index) =? 2) && ((project (characteristicPerformanceEfficiency) index) =? 3)))))) && ((((project (subcharacteristicFunctionalCompleteness) index) =? 0) && (((project (subcharacteristicFunctionalCorrectness) index) =? 1) && (((project (subcharacteristicInclusivity) index) =? 2) && (((project (subcharacteristicLearnability) index) =? 3) && (((project (subcharacteristicModifiability) index) =? 4) && ((project (subcharacteristicTimeBehaviour) index) =? 5)))))) && ((((project (requirementAccessibleStudio) index) =? 0) && (((project (requirementBoundedFrameAndVerifier) index) =? 1) && (((project (requirementMonotonicUorcStreaming) index) =? 2) && (((project (requirementStakeholderJourneys) index) =? 3) && (((project (requirementValidTensorKernels) index) =? 4) && ((project (requirementZeroConstantsKernel) index) =? 5)))))) && (((project (measureAccessibilityScore) threshold) =? 100) && (((project (measureDisorderedStreamingLods) threshold) =? 0) && (((project (measureInvalidTensorKernels) threshold) =? 0) && (((project (measureJourneysPerStakeholder) threshold) =? 1) && (((project (measureMagicConstantViolations) threshold) =? 0) && ((project (measureVerifierRequestCapBytes) threshold) =? 64))))))))) = true),
+  statement: ((((qualityValid) && (((namesNumbered 0 (characteristicNames)) && ((namesNumbered 0 (subcharacteristicNames)) && ((namesNumbered 0 (requirementNames)) && (namesNumbered 0 (measureNames))))) && (((project (characteristicFunctionalSuitability) index) =? 0) && (((project (characteristicInteractionCapability) index) =? 1) && (((project (characteristicMaintainability) index) =? 2) && (((project (characteristicPerformanceEfficiency) index) =? 3) && ((project (characteristicReliability) index) =? 4))))))) && ((((project (subcharacteristicFunctionalCompleteness) index) =? 1) && (((project (subcharacteristicFunctionalCorrectness) index) =? 2) && (((project (subcharacteristicInclusivity) index) =? 3) && (((project (subcharacteristicLearnability) index) =? 4) && (((project (subcharacteristicModifiability) index) =? 5) && (((project (subcharacteristicTimeBehaviour) index) =? 6) && ((project (subcharacteristicFaultlessness) index) =? 0))))))) && ((((project (requirementAccessibleStudio) index) =? 0) && (((project (requirementBoundedFrameAndVerifier) index) =? 2) && (((project (requirementMonotonicUorcStreaming) index) =? 3) && (((project (requirementStakeholderJourneys) index) =? 4) && (((project (requirementValidTensorKernels) index) =? 6) && (((project (requirementZeroConstantsKernel) index) =? 8) && (((project (requirementVerifiedEngineSubsystems) index) =? 7) && (((project (requirementValidCodedMatrixTiers) index) =? 5) && ((project (requirementArchitecturalWalkability) index) =? 1))))))))) && (((project (measureAccessibilityScore) threshold) =? 100) && (((project (measureDisorderedStreamingLods) threshold) =? 0) && (((project (measureInvalidTensorKernels) threshold) =? 0) && (((project (measureJourneysPerStakeholder) threshold) =? 1) && (((project (measureMagicConstantViolations) threshold) =? 0) && (((project (measureVerifierRequestCapBytes) threshold) =? 64) && (((project (measureUnverifiedEngineSubsystems) threshold) =? 0) && (((project (measureInvalidCodedMatrixTiers) threshold) =? 0) && ((project (measureImpassableArchitecturalPortals) threshold) =? 0)))))))))))) = true),
   proof: decide{},
   axioms: []
 }

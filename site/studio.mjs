@@ -701,3 +701,149 @@ function buildStudioDialog({
   dlg.append(shell);
   return dlg;
 }
+
+export function bytesToBase64Url(bytes) {
+  let bin = "";
+  for (let i = 0; i < bytes.byteLength; i++) bin += String.fromCharCode(bytes[i]);
+  return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+}
+
+export function base64UrlToBytes(raw) {
+  if (!raw || /[^A-Za-z0-9\-_]/.test(raw)) return null;
+  try {
+    const bin = atob(raw.replace(/-/g, "+").replace(/_/g, "/") + "===".slice((raw.length + 3) % 4));
+    return Uint8Array.from(bin, (c) => c.charCodeAt(0));
+  } catch {
+    return null;
+  }
+}
+
+export async function exportGlbDownload(callWorker, lodShort) {
+  const r = await callWorker("export-glb");
+  if (!r?.buffer) return;
+  const url = URL.createObjectURL(new Blob([r.buffer], { type: "model/gltf-binary" }));
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `verdant-engine-${String(lodShort || "lod3").toLowerCase()}.glb`;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1500);
+}
+
+export async function shareVdntSnapshot(callWorker, chip, statusEl) {
+  const r = await callWorker("encode-snapshot");
+  if (!r?.ok || !r.bytes) {
+    chip(statusEl, "Snapshot unavailable", "warn");
+    return;
+  }
+  const bytes = r.bytes instanceof Uint8Array ? r.bytes : new Uint8Array(r.bytes);
+  history.replaceState(null, "", `${location.pathname}${location.search}#vdnt=${bytesToBase64Url(bytes)}`);
+  try {
+    await navigator.clipboard?.writeText(location.href);
+  } catch {}
+  chip(statusEl, `VDNT · ${bytes.byteLength}B SHA-256 (#vdnt=)`, "good");
+}
+
+let audioState = { ctx: null, worklet: null, timer: 0, on: false, strikeIdx: 0 };
+
+export function syncModalAudioSpatial(pan, gain) {
+  if (audioState.worklet && audioState.on) {
+    audioState.worklet.port.postMessage({ kind: "spatial", pan, gain });
+  }
+}
+
+export async function toggleModalAudio(audioBtn, acousticSpec, getSolvedEye) {
+  const Ctx = window.AudioContext || window.webkitAudioContext;
+  if (!Ctx) return;
+  audioState.on = !audioState.on;
+  audioBtn.setAttribute("aria-pressed", String(audioState.on));
+  audioBtn.textContent = audioState.on ? "Audio: On" : "Audio";
+  const strike = () => {
+    if (!audioState.ctx || !audioState.on) return;
+    if (audioState.worklet) {
+      audioState.worklet.port.postMessage({ kind: "strike", modeIndex: audioState.strikeIdx++ });
+      return;
+    }
+    const eye = getSolvedEye();
+    const dist = Math.hypot(eye[0] + 9.0, eye[1] - 2.0, eye[2] + 4.0);
+    const atten = Math.min(0.14, 0.9 / (1.0 + 0.18 * dist));
+    const idx = (audioState.strikeIdx++) % acousticSpec.modeNumers.length;
+    const freq = Math.min(1320.0, (acousticSpec.fundamentalHz * acousticSpec.modeNumers[idx]) / acousticSpec.modeDenom);
+    const rt = Math.max(0.5, acousticSpec.rt60Ms / 1000.0);
+    const now = audioState.ctx.currentTime;
+    const osc = audioState.ctx.createOscillator();
+    const gain = audioState.ctx.createGain();
+    osc.frequency.setValueAtTime(freq, now);
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.exponentialRampToValueAtTime(atten, now + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + rt);
+    osc.connect(gain).connect(audioState.ctx.destination);
+    osc.start(now);
+    osc.stop(now + rt + 0.05);
+  };
+  if (audioState.on) {
+    audioState.ctx ??= new Ctx();
+    await audioState.ctx.resume?.();
+    if (!audioState.worklet && audioState.ctx.audioWorklet && typeof AudioWorkletNode === "function") {
+      try {
+        await audioState.ctx.audioWorklet.addModule("./audio-worklet.mjs");
+        audioState.worklet = new AudioWorkletNode(audioState.ctx, "verdant-modal-processor", {
+          numberOfOutputs: 1,
+          outputChannelCount: [acousticSpec.stereoChannels],
+          processorOptions: {
+            quantumFrames: acousticSpec.quantumFrames,
+            modeNumers: acousticSpec.modeNumers,
+            modeDenom: acousticSpec.modeDenom,
+            rt60Ms: acousticSpec.rt60Ms,
+            fundamentalHz: acousticSpec.fundamentalHz,
+          },
+        });
+        audioState.worklet.connect(audioState.ctx.destination);
+      } catch {
+        audioState.worklet = null;
+      }
+    }
+    clearInterval(audioState.timer);
+    audioState.timer = window.setInterval(strike, 1350);
+    strike();
+  } else {
+    clearInterval(audioState.timer);
+  }
+}
+
+export async function routeStudioPrompt(text, ctx) {
+  const prompt = String(text || "").trim();
+  if (!prompt) return null;
+  const lower = prompt.toLowerCase();
+  if (lower.includes("lod4") || lower.includes("ultra hd")) {
+    await ctx.streamUorcToRank(4);
+    return { ok: true, slug: "stream-uorc-lod4", scoreMilli: 980, rawLogit: 42, summary: "Upgraded world to LOD4 Ultra HD Citadel & Bridge" };
+  }
+  if (lower.includes("1st") || lower.includes("first person")) {
+    await ctx.cycleCameraMode("first");
+    return { ok: true, slug: "camera-first-person", scoreMilli: 970, rawLogit: 40, summary: "Possessed Explorer in 1st-person head-masked mode" };
+  }
+  if (lower.includes("3rd") || lower.includes("third person") || lower.includes("explorer")) {
+    await ctx.cycleCameraMode("third");
+    return { ok: true, slug: "camera-third-person", scoreMilli: 970, rawLogit: 40, summary: "Possessed 22-joint Explorer in 3rd-person spring-arm mode" };
+  }
+  if (lower.includes("interact") || lower.includes("chronicle") || lower.includes("archivist")) {
+    await ctx.interactChronicle();
+    return { ok: true, slug: "chronicle-interact", scoreMilli: 960, rawLogit: 38, summary: "Evaluated Chronicle StoryAutomaton & ConservationLedger" };
+  }
+  const r = await ctx.callWorker("route-prompt", { prompt });
+  if (!r?.ok) {
+    ctx.chip(ctx.statusEl, "Refused empty intent", "warn");
+    return r;
+  }
+  const s = r.slug;
+  if (s === "focus-observer") { await ctx.focusNodePreset(0); ctx.setSimLive(true); }
+  else if (s === "drive-vehicle") { await ctx.focusNodePreset(6); ctx.setSimLive(true); }
+  else if (s === "render-tile-wasm") await ctx.toggleRenderBackend("tile");
+  else if (s === "render-webgl2") await ctx.toggleRenderBackend("webgl2");
+  else if (s === "stream-uorc-lod3") await ctx.streamUorcToRank(4);
+  else if (s === "stitch-shard-sync") (await import("./stitch-mesh.mjs")).openStitchMeshModal({ callWorker: ctx.callWorker, onRestoreSnapshot: ctx.restoreRawSnapshot });
+  else if (s === "inspect-formal-ui") await ctx.launchStudioModal();
+  else if (s === "step-xpbd-physics") { await ctx.focusNodePreset(3); ctx.setSimLive(true); }
+  ctx.chip(ctx.statusEl, `SLM -> ${s} (${(r.scoreMilli / 10).toFixed(0)}% coded_gemm)`, "good");
+  return r;
+}

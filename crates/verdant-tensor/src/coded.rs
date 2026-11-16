@@ -10,7 +10,14 @@ use uor_matmul::{
     Linear, MatView, MatViewMut, Packed, Runs,
 };
 
-use crate::{TensorComputeError, CODED_TABLE_LEN, PACKED_NIBBLE_BLOCK};
+use crate::{prism_kernel, TensorComputeError, CODED_TABLE_LEN, PACKED_NIBBLE_BLOCK};
+
+/// Verifies that all three `uor_matmul::codec` zero-decode streaming tiers (`Grid`, `Packed`, `Runs`)
+/// satisfy constructive bit-width, block-size, and zero-scratch invariants in `prism_kernel`.
+#[must_use]
+pub fn prism_coded_tiers_certified() -> bool {
+    prism_kernel::codedTiersDirect() == Ok(true)
+}
 
 fn build_alphabet_table(
     codebook: &[i32; CODED_TABLE_LEN],
@@ -72,6 +79,7 @@ pub fn contract_coded_geometry_grid(
     })?;
 
     coded_gemm(&mut triple, &Linear::OVERWRITE, GemmOptions::default());
+    debug_assert_eq!(prism_kernel::codedTiersDirect(), Ok(true));
     Ok(out)
 }
 
@@ -130,6 +138,7 @@ pub fn contract_packed_animation_tracks(
     })?;
 
     coded_gemm(&mut triple, &Linear::OVERWRITE, GemmOptions::default());
+    debug_assert_eq!(prism_kernel::codedTiersDirect(), Ok(true));
     Ok(out)
 }
 
@@ -189,5 +198,6 @@ pub fn contract_runs_ibl_harmonics(
     })?;
 
     coded_gemm(&mut triple, &Linear::OVERWRITE, GemmOptions::default());
+    debug_assert_eq!(prism_kernel::codedTiersDirect(), Ok(true));
     Ok(out)
 }

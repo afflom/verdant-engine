@@ -224,6 +224,12 @@ negative = "VE-30"
 statement = "StoryAutomaton and ConservationLedger verify tropical reachability and exact integer resource conservation across NPC dialogues, SLM proposals, and CLI audits and refuse deadlocked graphs, item duplication or underflow, out-of-range guards, and invalid universe portals"
 
 [[id]]
+id = "VE-31"
+level = "build"
+suite = "engine"
+statement = "OntologicalRuntimeGovernor synthesizes constructive W5H certificates across all eight causal strata, evaluates HostEnvelope and WitnessEnvelope telos loss with non-coercive LOD0-to-LOD4 descent, and closes every Prism subsystem and Core-Wasm acceptance query"
+
+[[id]]
 id = "FR-01"
 level = "build"
 suite = "frame"

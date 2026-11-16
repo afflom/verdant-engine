@@ -6,6 +6,7 @@
 \importmodule{Engine}
 \importmodule{Foundation.Experience.V1.Model}
 \importmodule{Foundation.Ontology.V1.Model}
+\importmodule{Subsystems}
 \importmodule{Tensor}
 \importmodule{Users}
 \title{Measurement methods of the model}
@@ -100,6 +101,47 @@ definition{
   parameters: [],
   result: Nat,
   body: (if (DevRel::studioControlsAccessible) then (Foundation.Ontology.V1.Model::pow10Constructive (1 + 1)) else 0)
+}
+
+definition{
+  name: countUnnumberedSubsystems,
+  parameters: [pos : Nat, items : (List Subsystems::SubsystemSpec)],
+  result: Nat,
+  body: (match items
+    | List.nil => 0
+    | List.cons item rest => ((if (((project item index) =? pos) && ((project item stratum) <=? (Subsystems::sSeven))) then 0 else 1) + (countUnnumberedSubsystems (pos + 1) rest))),
+  recursive_argument: items
+}
+
+definition{
+  name: unverifiedEngineSubsystems,
+  parameters: [],
+  result: Nat,
+  body: ((countUnnumberedSubsystems 0 (Subsystems::subsystems)) + (if (Subsystems::runtimeInvariantsDirect) then 0 else 1))
+}
+
+definition{
+  name: countInvalidCodedTiers,
+  parameters: [pos : Nat, items : (List Tensor::CodedStreamSpec)],
+  result: Nat,
+  body: (match items
+    | List.nil => 0
+    | List.cons item rest => ((if (((project item index) =? pos) && (Tensor::codedTierValid item)) then 0 else 1) + (countInvalidCodedTiers (pos + 1) rest))),
+  recursive_argument: items
+}
+
+definition{
+  name: invalidCodedMatrixTiers,
+  parameters: [],
+  result: Nat,
+  body: ((countInvalidCodedTiers 0 (Tensor::codedTiers)) + (if (Tensor::hdLodsMonotonic) then 0 else 1))
+}
+
+definition{
+  name: impassableArchitecturalPortals,
+  parameters: [],
+  result: Nat,
+  body: (if (Subsystems::architecturalWalkabilityValid (Subsystems::citadelStairRiserMilli) (Subsystems::sweptCapsuleMaxStepMilli) (Subsystems::citadelPortalWidthMilli) (prim multiply (Subsystems::sFour) (Subsystems::sHundred) : Nat) (Subsystems::citadelSpringHeightMilli) (prim multiply (Subsystems::sEighteen) (Subsystems::sHundred) : Nat)) then 0 else 1)
 }
 \end{semanticmodule}
 \end{lexlean}

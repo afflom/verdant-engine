@@ -40,3 +40,21 @@ record = "Quality::measureVerifierRequestCapBytes"
 method = "Measures::verifierRequestCapBytes"
 source = "app/src/Measures.lex.tex"
 direction = "atMost"
+
+[[measure]]
+record = "Quality::measureUnverifiedEngineSubsystems"
+method = "Measures::unverifiedEngineSubsystems"
+source = "app/src/Measures.lex.tex"
+direction = "atMost"
+
+[[measure]]
+record = "Quality::measureInvalidCodedMatrixTiers"
+method = "Measures::invalidCodedMatrixTiers"
+source = "app/src/Measures.lex.tex"
+direction = "atMost"
+
+[[measure]]
+record = "Quality::measureImpassableArchitecturalPortals"
+method = "Measures::impassableArchitecturalPortals"
+source = "app/src/Measures.lex.tex"
+direction = "atMost"

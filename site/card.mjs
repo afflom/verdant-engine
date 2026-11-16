@@ -18,22 +18,6 @@ const NODE_KERNELS = [
 
 const ACOUSTIC_SPEC = { quantumFrames: 128, stereoChannels: 2, fundamentalHz: 110.0, modeNumers: [9, 25, 49, 81, 121], modeDenom: 9, rt60Ms: 3019 };
 
-function bytesToBase64Url(bytes) {
-  let bin = "";
-  for (let i = 0; i < bytes.byteLength; i++) bin += String.fromCharCode(bytes[i]);
-  return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
-}
-
-function base64UrlToBytes(raw) {
-  if (!raw || /[^A-Za-z0-9\-_]/.test(raw)) return null;
-  try {
-    const bin = atob(raw.replace(/-/g, "+").replace(/_/g, "/") + "===".slice((raw.length + 3) % 4));
-    return Uint8Array.from(bin, (c) => c.charCodeAt(0));
-  } catch {
-    return null;
-  }
-}
-
 function parseConformantFields(line) {
   if (!line?.startsWith("conformant:")) return null;
   const fields = {};
@@ -80,9 +64,9 @@ export default async function start({ app, reason, $, chip, show, parse }) {
   let dragging = false, rafId = 0;
   let lastTris = 0, lastBvhVis = 24, lastKernelCount = 15, lastAttendedSlot = 0;
   let workerBackend = "webgl2", isSoftwareGpu = false, offscreenActive = false, nextReqId = 1;
-  let audioCtx = null, workletNode = null, audioTimer = 0, audioOn = false, modalStrikeIndex = 0;
   let fallbackRenderer = null, fallbackMod = null, studioMod = null;
   const keys = new Set(), pendingCalls = new Map();
+  const getStudio = async () => (studioMod ??= await import("./studio.mjs"));
 
   function measureCanvasPixels() {
     if (!canvas) return { w: 1, h: 1 };
@@ -145,7 +129,7 @@ export default async function start({ app, reason, $, chip, show, parse }) {
           if (Array.isArray(msg.lookTarget)) solvedTarget = msg.lookTarget;
           if (Array.isArray(msg.universeCell)) universeCell = msg.universeCell;
           studioMod?.pushStudioTelemetry(msg);
-          if (workletNode && audioOn) workletNode.port.postMessage({ kind: "spatial", pan: msg.binauralPan, gain: msg.binauralGain });
+          studioMod?.syncModalAudioSpatial(msg.binauralPan, msg.binauralGain);
           if (!isAnimating() && hudStats) hudStats.textContent = formatHudStats("");
         }
       };
@@ -256,8 +240,8 @@ export default async function start({ app, reason, $, chip, show, parse }) {
     const r = await callWorker("import-glb", { bytes: copy }, [copy.buffer]);
     if (!r?.ok) { chip(statusEl, `Refused invalid .glb (${fileName})`, "warn"); return; }
     lastTris = r.tris || lastTris;
-    studioMod ??= await import("./studio.mjs");
-    if (r.vdntBytes?.byteLength) await studioMod.cacheBytesInOpfs(`${fileName}.vdnt`, r.vdntBytes);
+    const mod = await getStudio();
+    if (r.vdntBytes?.byteLength) await mod.cacheBytesInOpfs(`${fileName}.vdnt`, r.vdntBytes);
     await syncFallbackBuffers();
     if (hudLod) hudLod.textContent = `GLB · ${fileName} (${r.tris} tris)`;
     chip(statusEl, `Imported ${fileName} · ${r.tris} tris · OPFS cached`, "good");
@@ -273,44 +257,16 @@ export default async function start({ app, reason, $, chip, show, parse }) {
     requestRender();
   }
 
-  async function executePromptIntent(text) {
-    const prompt = String(text || "").trim();
-    if (!prompt) return null;
-    const lower = prompt.toLowerCase();
-    if (lower.includes("lod4") || lower.includes("ultra hd")) {
-      await streamUorcToRank(4);
-      return { ok: true, slug: "stream-uorc-lod4", scoreMilli: 980, rawLogit: 42, summary: "Upgraded world to LOD4 Ultra HD Citadel & Bridge" };
-    }
-    if (lower.includes("1st") || lower.includes("first person")) {
-      await cycleCameraMode("first");
-      return { ok: true, slug: "camera-first-person", scoreMilli: 970, rawLogit: 40, summary: "Possessed Explorer in 1st-person head-masked mode" };
-    }
-    if (lower.includes("3rd") || lower.includes("third person") || lower.includes("explorer")) {
-      await cycleCameraMode("third");
-      return { ok: true, slug: "camera-third-person", scoreMilli: 970, rawLogit: 40, summary: "Possessed 22-joint Explorer in 3rd-person spring-arm mode" };
-    }
-    if (lower.includes("interact") || lower.includes("chronicle") || lower.includes("archivist")) {
-      await interactChronicle();
-      return { ok: true, slug: "chronicle-interact", scoreMilli: 960, rawLogit: 38, summary: "Evaluated Chronicle StoryAutomaton & ConservationLedger" };
-    }
-    const r = await callWorker("route-prompt", { prompt });
-    if (!r?.ok) { chip(statusEl, "Refused empty intent", "warn"); return r; }
-    const s = r.slug;
-    if (s === "focus-observer") { await focusNodePreset(0); setSimLive(true); }
-    else if (s === "drive-vehicle") { await focusNodePreset(6); setSimLive(true); }
-    else if (s === "render-tile-wasm") await toggleRenderBackend("tile");
-    else if (s === "render-webgl2") await toggleRenderBackend("webgl2");
-    else if (s === "stream-uorc-lod3") await streamUorcToRank(4);
-    else if (s === "stitch-shard-sync") (await import("./stitch-mesh.mjs")).openStitchMeshModal({ callWorker, onRestoreSnapshot: restoreRawSnapshot });
-    else if (s === "inspect-formal-ui") await launchStudioModal();
-    else if (s === "step-xpbd-physics") { await focusNodePreset(3); setSimLive(true); }
-    chip(statusEl, `SLM -> ${s} (${(r.scoreMilli / 10).toFixed(0)}% coded_gemm)`, "good");
-    return r;
-  }
+  const executePromptIntent = async (text) =>
+    (await getStudio()).routeStudioPrompt(text, {
+      callWorker, chip, statusEl, streamUorcToRank, cycleCameraMode,
+      interactChronicle, focusNodePreset, setSimLive, toggleRenderBackend,
+      restoreRawSnapshot, launchStudioModal,
+    });
 
   async function launchStudioModal() {
-    studioMod ??= await import("./studio.mjs");
-    studioMod.openStudioModal({
+    const mod = await getStudio();
+    mod.openStudioModal({
       callWorker,
       onPickGlb: () => glbFileInput?.click(),
       onResetGlb: resetImportedGlb,
@@ -401,56 +357,8 @@ export default async function start({ app, reason, $, chip, show, parse }) {
   viewportEl?.addEventListener("dragleave", () => viewportEl.classList.remove("drag-over"));
   viewportEl?.addEventListener("drop", async (e) => { e.preventDefault(); viewportEl.classList.remove("drag-over"); const f = e.dataTransfer?.files?.[0]; if (f) await importGlbBytes(f.name, await f.arrayBuffer()); });
 
-  function triggerModalStrike() {
-    if (!audioCtx || !audioOn) return;
-    if (workletNode) { workletNode.port.postMessage({ kind: "strike", modeIndex: modalStrikeIndex++ }); return; }
-    const dist = Math.hypot(solvedEye[0] + 9.0, solvedEye[1] - 2.0, solvedEye[2] + 4.0);
-    const atten = Math.min(0.14, 0.9 / (1.0 + 0.18 * dist));
-    const idx = (modalStrikeIndex++) % ACOUSTIC_SPEC.modeNumers.length;
-    const freq = Math.min(1320.0, (ACOUSTIC_SPEC.fundamentalHz * ACOUSTIC_SPEC.modeNumers[idx]) / ACOUSTIC_SPEC.modeDenom);
-    const rt = Math.max(0.5, ACOUSTIC_SPEC.rt60Ms / 1000.0), now = audioCtx.currentTime;
-    const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
-    osc.frequency.setValueAtTime(freq, now);
-    gain.gain.setValueAtTime(0.0001, now);
-    gain.gain.exponentialRampToValueAtTime(atten, now + 0.02);
-    gain.gain.exponentialRampToValueAtTime(0.0001, now + rt);
-    osc.connect(gain).connect(audioCtx.destination);
-    osc.start(now); osc.stop(now + rt + 0.05);
-  }
-
-  audioBtn?.addEventListener("click", async () => {
-    const Ctx = window.AudioContext || window.webkitAudioContext;
-    if (!Ctx) return;
-    audioOn = !audioOn;
-    audioBtn.setAttribute("aria-pressed", String(audioOn));
-    audioBtn.textContent = audioOn ? "Audio: On" : "Audio";
-    if (audioOn) {
-      audioCtx ??= new Ctx();
-      await audioCtx.resume?.();
-      if (!workletNode && audioCtx.audioWorklet && typeof AudioWorkletNode === "function") {
-        try {
-          await audioCtx.audioWorklet.addModule("./audio-worklet.mjs");
-          workletNode = new AudioWorkletNode(audioCtx, "verdant-modal-processor", {
-            numberOfOutputs: 1, outputChannelCount: [ACOUSTIC_SPEC.stereoChannels],
-            processorOptions: { quantumFrames: ACOUSTIC_SPEC.quantumFrames, modeNumers: ACOUSTIC_SPEC.modeNumers, modeDenom: ACOUSTIC_SPEC.modeDenom, rt60Ms: ACOUSTIC_SPEC.rt60Ms, fundamentalHz: ACOUSTIC_SPEC.fundamentalHz },
-          });
-          workletNode.connect(audioCtx.destination);
-        } catch { workletNode = null; }
-      }
-      clearInterval(audioTimer);
-      audioTimer = window.setInterval(triggerModalStrike, 1350);
-      triggerModalStrike();
-    } else clearInterval(audioTimer);
-  });
-
-  glbBtn?.addEventListener("click", async () => {
-    const r = await callWorker("export-glb");
-    if (!r?.buffer) return;
-    const url = URL.createObjectURL(new Blob([r.buffer], { type: "model/gltf-binary" }));
-    const a = document.createElement("a");
-    a.href = url; a.download = `verdant-engine-${STREAMING_LODS[lodIdx].short.toLowerCase()}.glb`; a.click();
-    setTimeout(() => URL.revokeObjectURL(url), 1500);
-  });
+  audioBtn?.addEventListener("click", async () => (await getStudio()).toggleModalAudio(audioBtn, ACOUSTIC_SPEC, () => solvedEye));
+  glbBtn?.addEventListener("click", async () => (await getStudio()).exportGlbDownload(callWorker, STREAMING_LODS[lodIdx].short));
 
   async function restoreRawSnapshot(bytes, label = "VDNT") {
     const r = await callWorker("restore-snapshot", { bytes });
@@ -461,20 +369,14 @@ export default async function start({ app, reason, $, chip, show, parse }) {
 
   async function restoreHashSnapshotIfPresent() {
     if (!location.hash.startsWith("#vdnt=")) return false;
-    const bytes = base64UrlToBytes(location.hash.slice(6).trim());
+    const mod = await getStudio();
+    const bytes = mod.base64UrlToBytes(location.hash.slice(6).trim());
     if (!bytes?.byteLength) { chip(statusEl, "Refused malformed VDNT snapshot", "warn"); return true; }
     await restoreRawSnapshot(bytes, "VDNT");
     return true;
   }
 
-  snapBtn?.addEventListener("click", async () => {
-    const r = await callWorker("encode-snapshot");
-    if (!r?.ok || !r.bytes) { chip(statusEl, "Snapshot unavailable", "warn"); return; }
-    const bytes = r.bytes instanceof Uint8Array ? r.bytes : new Uint8Array(r.bytes);
-    history.replaceState(null, "", `${location.pathname}${location.search}#vdnt=${bytesToBase64Url(bytes)}`);
-    try { await navigator.clipboard?.writeText(location.href); } catch {}
-    chip(statusEl, `VDNT · ${bytes.byteLength}B SHA-256 (#vdnt=)`, "good");
-  });
+  snapBtn?.addEventListener("click", async () => (await getStudio()).shareVdntSnapshot(callWorker, chip, statusEl));
 
   addEventListener("hashchange", () => { if (location.hash.startsWith("#vdnt=")) restoreHashSnapshotIfPresent(); });
 

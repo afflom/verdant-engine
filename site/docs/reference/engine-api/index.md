@@ -36,7 +36,7 @@ Find Rust crates, UI and peer types, CLI flags, and 60fps budgets.
           
 | ui & cybernetics | UiTree, CyberneticObserverLoop, CodedSlmDirector, ContainerGrantMatrix | Tropical UI compliance, LIF observer, local SLM, and FK-07 grants |
           
-| network & runtime | SignedJournalBatch, StitchFragment, RollbackSession, WorldSnapshot | Prism ID signing, 2-of-3 Stitch parity, and 64-frame rollback |
+| network & runtime | OntologicalRuntimeGovernor, SignedJournalBatch, StitchFragment, RollbackSession, WorldSnapshot | W5H telos governor, Prism ID signing, 2-of-3 Stitch parity, and 64-frame rollback |
         
       
       

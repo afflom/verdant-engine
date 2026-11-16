@@ -210,3 +210,9 @@ Feature: engine
     When spatial and SLM-guided interactions advance through the Chronicle and verdant verify-story audits reachability and conservation
     Then every live state reaches a milestone with conserved item supply across all transitions
     And deadlocked graphs, ledger underflow, out-of-range guards, or invalid portal definitions return NarrativeLawError
+
+  @VE-31 @build
+  Scenario: OntologicalRuntimeGovernor synthesizes constructive W5H certificates across all eight causal strata, evaluates HostEnvelope and WitnessEnvelope telos loss with non-coercive LOD0-to-LOD4 descent, and closes every Prism subsystem and Core-Wasm acceptance query
+    Given an OntologicalRuntimeGovernor bound to a 60Hz EngineConfig and BrowserCapabilities
+    When certify_all_eight_strata, evaluate_frame_telos, recommend_non_coercive_lod, and Core-Wasm dispatch execute across healthy, over-budget, and coercive-locked states
+    Then all eight causal strata pass W5H verification with triadic agency product 30, healthy frames achieve zero telos loss and ascend to LOD4, over-budget frames descend unless coercively pinned, and summary:hd, lod:4, and scene:telos answer conformant

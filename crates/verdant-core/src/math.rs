@@ -868,3 +868,24 @@ impl DeterministicRng {
         low + (high - low) * self.next_f64()
     }
 }
+
+/// Cross-verifies `verdant_core::math` constructive dimensions, powers, and primes against
+/// `Foundation.Ontology.V1.Model` and `Subsystems::canonicalDimensions` in `prism_kernel`.
+#[must_use]
+pub fn verify_constructive_math_with_prism_kernel() -> bool {
+    let Ok(dims) = crate::prism_kernel::canonicalDimensions() else {
+        return false;
+    };
+    let dims_ok = dims.dimPlanar == (DIM_PLANAR as u64)
+        && dims.dimSpatial == (DIM_SPATIAL as u64)
+        && dims.dimHomogeneous == (DIM_HOMOGENEOUS as u64)
+        && dims.frustumPlaneCount == (FRUSTUM_PLANE_COUNT as u64);
+    let exp_four = four_u32();
+    let pow2_ok =
+        crate::prism_kernel::pow2Constructive(u64::from(exp_four)) == Ok(pow2_u64(exp_four));
+    let pow10_ok = crate::prism_kernel::pow10Constructive(u64::from(three_u32()))
+        == Ok(pow10_u64(three_u32()));
+    let prime_ok = crate::prism_kernel::nthPrimeConstructive(u64::from(exp_four))
+        == Ok(nth_prime_u64(exp_four));
+    dims_ok && pow2_ok && pow10_ok && prime_ok
+}

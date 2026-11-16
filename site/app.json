@@ -4,7 +4,7 @@
   "live": "https://afflom.github.io/verdant-engine/",
   "purpose": "Universal 3D browser and WebAssembly game engine mechanized with Prism, exact uor-matmul tensor contractions, progressive UORC streaming, glTF 2.0, portable WGSL, rigid-body physics, and spatial audio.",
   "inputLabel": "Engine verification query",
-  "placeholder": "summary or lod:3 or kernel:3",
+  "placeholder": "summary:hd or lod:4 or scene:telos",
   "submitLabel": "Verify",
   "outputLabel": "Engine verdict",
   "answers": {
@@ -17,20 +17,26 @@
     "refusal": "invalid request"
   },
   "promise": {
-    "headline": "Self-verifying 3D worlds, formal UI, neuromorphic mutual attention, and Stitch multiplayer in every browser.",
-    "detail": "Every pass reduces to exact uor-matmul semiring contractions, zero-decode UORC progressive streams, WCAG-proved UI layout, local coded_gemm reasoning, and 2-of-3 Stitch parity custody."
+    "headline": "Lawful high-definition 3D worlds, 22-joint IK characters, neuromorphic attention, and Stitch multiplayer in every browser.",
+    "detail": "Every pass reduces to exact uor-matmul semiring contractions, LOD0..LOD4 progressive UORC synthesis, swept triangle BLAS CCD, near-sphere camera guards, floating-origin cells, and 2-of-3 Stitch parity custody."
   },
-  "claim": "VE-10: the engine verifier answers conformant only for monotonic progressive UORC streaming LODs and overflow-safe uor-matmul tensor kernels, refuses zero-extent or narrow-accumulator contractions, and answers invalid request for unknown queries.",
+  "claim": "VE-10: the engine verifier answers conformant only for monotonic progressive UORC and HD streaming LODs, overflow-safe uor-matmul tensor kernels, and constructive subsystem/telos invariants, refuses zero-extent or narrow-accumulator contractions, and answers invalid request for unknown queries.",
   "proposition": {
     "name": "TensorKernelValid",
-    "text": "TensorKernelValid kernel :=\n  0 < kernel.lhsCols\n  /\\ kernel.minAccumBits <= kernel.accumBits\n  /\\ 0 < kernel.minAccumBits\n  /\\ kernel.tileAligned = true\n\nLodsMonotonic lods :=\n  StrictResolutionAscent LOD0 -> LOD1 -> LOD2 -> LOD3 (lossless UORC)",
-    "plain": "Every Prism-hosted engine tensor kernel satisfies exact Laurent or tropical accumulator bit-width bounds and tile alignment, while UORC scene frames stream strictly monotonically up to lossless source fidelity."
+    "text": "TensorKernelValid kernel :=\n  0 < kernel.lhsCols\n  /\\ kernel.minAccumBits <= kernel.accumBits\n  /\\ 0 < kernel.minAccumBits\n  /\\ kernel.tileAligned = true\n\nHdLodsMonotonic lods :=\n  StrictResolutionAscent LOD0 -> LOD1 -> LOD2 -> LOD3 (lossless UORC) -> LOD4 (HD synthesis)",
+    "plain": "Every Prism-hosted engine tensor kernel satisfies exact Laurent or tropical accumulator bit-width bounds and tile alignment, while UORC and HD synthesis frames stream strictly monotonically from coarse proxy through ultra-high-definition architectural fidelity."
   },
   "theorems": [
     {
       "name": "streamingLodsStrictlyMonotonic",
       "statement": "lodsMonotonic = true",
       "how": "Proved by constructive kernel evaluation over the four progressive UORC streaming levels from coarse collision proxy to lossless source resolution",
+      "where": "app/src/Tensor.lex.tex"
+    },
+    {
+      "name": "hdStreamingLodsStrictlyMonotonic",
+      "statement": "hdLodsMonotonic = true /\\ hdLodChainDirect = true",
+      "how": "Proved by constructive kernel evaluation over all five LOD0..LOD4 streaming and ultra-high-definition synthesis tiers",
       "where": "app/src/Tensor.lex.tex"
     },
     {
@@ -42,8 +48,20 @@
     {
       "name": "unifiedTensorAndCodedTiersVerified",
       "statement": "allTensorKernelsValid 0 unifiedTensorKernels = true /\\ allCodedTiersValid 0 codedTiers = true",
-      "how": "Proved by constructive kernel decision over all twelve unified semiring kernels (Linear, Tropical max/+, Tropical min/+, Audio/Neuromorphic Ring, CodedZeroDecode SLM) and all three uor_matmul::codec zero-decode tiers (Grid, Packed, Runs)",
+      "how": "Proved by constructive kernel decision over all fifteen unified semiring kernels (Linear, Tropical max/+, Tropical min/+, Audio/Neuromorphic Ring, CodedZeroDecode SLM) and all three uor_matmul::codec zero-decode tiers (Grid, Packed, Runs)",
       "where": "app/src/Tensor.lex.tex"
+    },
+    {
+      "name": "architecturalWalkabilityVerified",
+      "statement": "architecturalWalkabilityValid citadelStairRiserMilli sweptCapsuleMaxStepMilli citadelPortalWidthMilli 400 citadelSpringHeightMilli 1800 = true",
+      "how": "Proved by constructive kernel decision showing Citadel staircase risers and arched portals satisfy capsule step, radius, and standing height clearances",
+      "where": "app/src/Subsystems.lex.tex"
+    },
+    {
+      "name": "engineSubsystemsVerified",
+      "statement": "runtimeInvariantsDirect = true /\\ subsystemsNumbered 0 subsystems = true",
+      "how": "Proved by constructive kernel decision across all twenty-seven runtime subsystems from Stratum 0 Ontological Telos to Stratum 7 Studio and Multiplayer",
+      "where": "app/src/Subsystems.lex.tex"
     },
     {
       "name": "invalidTensorKernelsRefused",

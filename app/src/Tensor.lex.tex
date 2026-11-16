@@ -177,6 +177,13 @@ definition{
 }
 
 definition{
+  name: natEighty,
+  parameters: [],
+  result: Nat,
+  body: (prim multiply (natEight) (natTen) : Nat)
+}
+
+definition{
   name: natNinetySix,
   parameters: [],
   result: Nat,
@@ -219,10 +226,24 @@ definition{
 }
 
 definition{
+  name: lod4UltraHighDef,
+  parameters: [],
+  result: StreamingLodSpec,
+  body: (record StreamingLodSpec {rank := (natFour), resNumer := (natSixteen), resDenom := (natEight), uorcWorkUnits := (natEighty), losslessSource := true, name := "Lod4UltraHighDef", text := "Ultra-high-definition synthesis tier subdividing vaulted Citadel masonry, parabolic arch bridges, and multi-octave cliff terrain past lossless UORC frames."})
+}
+
+definition{
   name: streamingLods,
   parameters: [],
   result: (List StreamingLodSpec),
   body: (cons (lod0CoarseProxy) (cons (lod1MediumDetail) (cons (lod2HighDetail) (cons (lod3LosslessSource) (nil StreamingLodSpec)))))
+}
+
+definition{
+  name: hdStreamingLods,
+  parameters: [],
+  result: (List StreamingLodSpec),
+  body: (cons (lod0CoarseProxy) (cons (lod1MediumDetail) (cons (lod2HighDetail) (cons (lod3LosslessSource) (cons (lod4UltraHighDef) (nil StreamingLodSpec))))))
 }
 
 definition{
@@ -432,6 +453,40 @@ definition{
 }
 
 definition{
+  name: hdLodStepValid,
+  parameters: [earlier : StreamingLodSpec, later : StreamingLodSpec],
+  result: Bool,
+  body: ((((project earlier rank) + 1) =? (project later rank)) && (((prim multiply (project earlier resNumer) (project later resDenom) : Nat) <? (prim multiply (project later resNumer) (project earlier resDenom) : Nat)) && (((project earlier uorcWorkUnits) <? (project later uorcWorkUnits)) && ((not (project earlier losslessSource)) || (project later losslessSource)))))
+}
+
+definition{
+  name: hdLodChainAscending,
+  parameters: [items : (List StreamingLodSpec)],
+  result: Bool,
+  body: (match items
+    | List.nil => true
+    | List.cons headLod rest => (match rest
+      | List.nil => (((project headLod rank) =? (natFour)) && (((project headLod resDenom) <? (project headLod resNumer)) && (project headLod losslessSource)))
+      | List.cons nextLod tail => ((hdLodStepValid headLod nextLod) && (hdLodChainAscending rest)))),
+  recursive_argument: items
+}
+
+definition{
+  name: hdLodsMonotonic,
+  parameters: [],
+  result: Bool,
+  body: (hdLodChainAscending (hdStreamingLods))
+}
+
+definition{
+  name: hdLodChainDirect,
+  parameters: [],
+  result: Bool,
+  body: (if (lodChainDirect) then (if (hdLodStepValid (lod3LosslessSource) (lod4UltraHighDef)) then (((project (lod4UltraHighDef) rank) =? (natFour)) && (project (lod4UltraHighDef) losslessSource)) else false) else false),
+  axioms: []
+}
+
+definition{
   name: tensorKernelValid,
   parameters: [k : TensorKernelSpec],
   result: Bool,
@@ -507,6 +562,14 @@ theorem{
   parameters: [],
   statement: ((((lodsMonotonic) && (not (project (lod0CoarseProxy) losslessSource))) && ((not (project (lod1MediumDetail) losslessSource)) && ((not (project (lod2HighDetail) losslessSource)) && (project (lod3LosslessSource) losslessSource)))) = true),
   proof: decide{}
+}
+
+theorem{
+  name: hdStreamingLodsStrictlyMonotonic,
+  parameters: [],
+  statement: ((((hdLodsMonotonic) && (hdLodChainDirect)) && ((project (lod4UltraHighDef) losslessSource) && ((project (lod4UltraHighDef) rank) =? (natFour)))) = true),
+  proof: decide{},
+  axioms: []
 }
 
 theorem{

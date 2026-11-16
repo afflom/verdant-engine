@@ -33,14 +33,21 @@ definition{
   name: assetVerdantCoreRuntime,
   parameters: [],
   result: Foundation.Sec::Asset,
-  body: (record Foundation.Sec::Asset {index := 3, componentIndex := 7})
+  body: (record Foundation.Sec::Asset {index := 3, componentIndex := 8})
 }
 
 definition{
   name: assetVerifierGuestArchive,
   parameters: [],
   result: Foundation.Sec::Asset,
-  body: (record Foundation.Sec::Asset {index := 4, componentIndex := 9})
+  body: (record Foundation.Sec::Asset {index := 5, componentIndex := 11})
+}
+
+definition{
+  name: assetVerdantWasmBridge,
+  parameters: [],
+  result: Foundation.Sec::Asset,
+  body: (record Foundation.Sec::Asset {index := 4, componentIndex := 10})
 }
 
 definition{
@@ -82,28 +89,49 @@ definition{
   name: threatSnapshotTampering,
   parameters: [],
   result: Foundation.Sec::Threat,
-  body: (record Foundation.Sec::Threat {index := 5})
+  body: (record Foundation.Sec::Threat {index := 6})
 }
 
 definition{
   name: threatStudioScriptInjection,
   parameters: [],
   result: Foundation.Sec::Threat,
-  body: (record Foundation.Sec::Threat {index := 6})
+  body: (record Foundation.Sec::Threat {index := 7})
 }
 
 definition{
   name: threatUngrantedContainerOrganAccess,
   parameters: [],
   result: Foundation.Sec::Threat,
-  body: (record Foundation.Sec::Threat {index := 7})
+  body: (record Foundation.Sec::Threat {index := 8})
 }
 
 definition{
   name: threatVerifierQueryExhaustion,
   parameters: [],
   result: Foundation.Sec::Threat,
-  body: (record Foundation.Sec::Threat {index := 8})
+  body: (record Foundation.Sec::Threat {index := 10})
+}
+
+definition{
+  name: threatWallClippingOrTunnelingBypass,
+  parameters: [],
+  result: Foundation.Sec::Threat,
+  body: (record Foundation.Sec::Threat {index := 11})
+}
+
+definition{
+  name: threatUniverseCoordinatePrecisionCollapse,
+  parameters: [],
+  result: Foundation.Sec::Threat,
+  body: (record Foundation.Sec::Threat {index := 9})
+}
+
+definition{
+  name: threatNarrativeSupplyInflationOrDeadlock,
+  parameters: [],
+  result: Foundation.Sec::Threat,
+  body: (record Foundation.Sec::Threat {index := 5})
 }
 
 definition{
@@ -145,84 +173,126 @@ definition{
   name: riskSnapshotTampering,
   parameters: [],
   result: Foundation.Sec::Risk,
-  body: (record Foundation.Sec::Risk {index := 5, assetIndex := 3, threatIndex := 5, likelihood := (ctor Foundation.Sec::Likelihood.medium), impact := (ctor Foundation.Sec::Impact.major)})
+  body: (record Foundation.Sec::Risk {index := 6, assetIndex := 3, threatIndex := 6, likelihood := (ctor Foundation.Sec::Likelihood.medium), impact := (ctor Foundation.Sec::Impact.major)})
 }
 
 definition{
   name: riskStudioScriptInjection,
   parameters: [],
   result: Foundation.Sec::Risk,
-  body: (record Foundation.Sec::Risk {index := 6, assetIndex := 2, threatIndex := 6, likelihood := (ctor Foundation.Sec::Likelihood.low), impact := (ctor Foundation.Sec::Impact.major)})
+  body: (record Foundation.Sec::Risk {index := 7, assetIndex := 2, threatIndex := 7, likelihood := (ctor Foundation.Sec::Likelihood.low), impact := (ctor Foundation.Sec::Impact.major)})
 }
 
 definition{
   name: riskUngrantedContainerOrganAccess,
   parameters: [],
   result: Foundation.Sec::Risk,
-  body: (record Foundation.Sec::Risk {index := 7, assetIndex := 2, threatIndex := 7, likelihood := (ctor Foundation.Sec::Likelihood.low), impact := (ctor Foundation.Sec::Impact.major)})
+  body: (record Foundation.Sec::Risk {index := 8, assetIndex := 2, threatIndex := 8, likelihood := (ctor Foundation.Sec::Likelihood.low), impact := (ctor Foundation.Sec::Impact.major)})
 }
 
 definition{
   name: riskVerifierQueryExhaustion,
   parameters: [],
   result: Foundation.Sec::Risk,
-  body: (record Foundation.Sec::Risk {index := 8, assetIndex := 4, threatIndex := 8, likelihood := (ctor Foundation.Sec::Likelihood.low), impact := (ctor Foundation.Sec::Impact.minor)})
+  body: (record Foundation.Sec::Risk {index := 10, assetIndex := 5, threatIndex := 10, likelihood := (ctor Foundation.Sec::Likelihood.low), impact := (ctor Foundation.Sec::Impact.minor)})
+}
+
+definition{
+  name: riskWallClippingOrTunnelingBypass,
+  parameters: [],
+  result: Foundation.Sec::Risk,
+  body: (record Foundation.Sec::Risk {index := 11, assetIndex := 4, threatIndex := 11, likelihood := (ctor Foundation.Sec::Likelihood.medium), impact := (ctor Foundation.Sec::Impact.major)})
+}
+
+definition{
+  name: riskUniverseCoordinatePrecisionCollapse,
+  parameters: [],
+  result: Foundation.Sec::Risk,
+  body: (record Foundation.Sec::Risk {index := 9, assetIndex := 3, threatIndex := 9, likelihood := (ctor Foundation.Sec::Likelihood.low), impact := (ctor Foundation.Sec::Impact.major)})
+}
+
+definition{
+  name: riskNarrativeSupplyInflationOrDeadlock,
+  parameters: [],
+  result: Foundation.Sec::Risk,
+  body: (record Foundation.Sec::Risk {index := 5, assetIndex := 3, threatIndex := 5, likelihood := (ctor Foundation.Sec::Likelihood.low), impact := (ctor Foundation.Sec::Impact.major)})
 }
 
 definition{
   name: controlCapabilityGrantLattice,
   parameters: [],
   result: Foundation.Sec::ApplicationSecurityControl,
-  body: (record Foundation.Sec::ApplicationSecurityControl {index := 0, riskIndex := 7})
+  body: (record Foundation.Sec::ApplicationSecurityControl {index := 0, riskIndex := 8})
 }
 
 definition{
   name: controlKhronosGltfOracle,
   parameters: [],
   result: Foundation.Sec::ApplicationSecurityControl,
-  body: (record Foundation.Sec::ApplicationSecurityControl {index := 1, riskIndex := 4})
+  body: (record Foundation.Sec::ApplicationSecurityControl {index := 3, riskIndex := 4})
 }
 
 definition{
   name: controlNagaShaderOracle,
   parameters: [],
   result: Foundation.Sec::ApplicationSecurityControl,
-  body: (record Foundation.Sec::ApplicationSecurityControl {index := 2, riskIndex := 3})
+  body: (record Foundation.Sec::ApplicationSecurityControl {index := 4, riskIndex := 3})
 }
 
 definition{
   name: controlPrismIdJournalSignature,
   parameters: [],
   result: Foundation.Sec::ApplicationSecurityControl,
-  body: (record Foundation.Sec::ApplicationSecurityControl {index := 3, riskIndex := 1})
+  body: (record Foundation.Sec::ApplicationSecurityControl {index := 5, riskIndex := 1})
 }
 
 definition{
   name: controlSnapshotSha256Trailer,
   parameters: [],
   result: Foundation.Sec::ApplicationSecurityControl,
-  body: (record Foundation.Sec::ApplicationSecurityControl {index := 4, riskIndex := 5})
+  body: (record Foundation.Sec::ApplicationSecurityControl {index := 6, riskIndex := 6})
 }
 
 definition{
   name: controlStitchFragmentCommitment,
   parameters: [],
   result: Foundation.Sec::ApplicationSecurityControl,
-  body: (record Foundation.Sec::ApplicationSecurityControl {index := 5, riskIndex := 0})
+  body: (record Foundation.Sec::ApplicationSecurityControl {index := 7, riskIndex := 0})
 }
 
 definition{
   name: controlStrictHashedCsp,
   parameters: [],
   result: Foundation.Sec::ApplicationSecurityControl,
-  body: (record Foundation.Sec::ApplicationSecurityControl {index := 6, riskIndex := 6})
+  body: (record Foundation.Sec::ApplicationSecurityControl {index := 8, riskIndex := 7})
 }
 
 definition{
   name: controlVerifierRequestCap,
   parameters: [],
   result: Foundation.Sec::ApplicationSecurityControl,
-  body: (record Foundation.Sec::ApplicationSecurityControl {index := 7, riskIndex := 8})
+  body: (record Foundation.Sec::ApplicationSecurityControl {index := 10, riskIndex := 10})
+}
+
+definition{
+  name: controlSweptBlasAndCameraGuard,
+  parameters: [],
+  result: Foundation.Sec::ApplicationSecurityControl,
+  body: (record Foundation.Sec::ApplicationSecurityControl {index := 9, riskIndex := 11})
+}
+
+definition{
+  name: controlFloatingOriginCanonicalizer,
+  parameters: [],
+  result: Foundation.Sec::ApplicationSecurityControl,
+  body: (record Foundation.Sec::ApplicationSecurityControl {index := 2, riskIndex := 9})
+}
+
+definition{
+  name: controlConservationAndReachabilityOracle,
+  parameters: [],
+  result: Foundation.Sec::ApplicationSecurityControl,
+  body: (record Foundation.Sec::ApplicationSecurityControl {index := 1, riskIndex := 5})
 }
 
 definition{
@@ -265,6 +335,13 @@ definition{
   parameters: [],
   result: Production.ThreatModel::ModeledAsset,
   body: (record Production.ThreatModel::ModeledAsset {asset := "Security::assetVerifierGuestArchive", name := "Engine verifier holo", text := "The signed Core-Wasm guest archive verified inside the browser worker before dispatch."})
+}
+
+definition{
+  name: modeledAssetVerdantWasmBridge,
+  parameters: [],
+  result: Production.ThreatModel::ModeledAsset,
+  body: (record Production.ThreatModel::ModeledAsset {asset := "Security::assetVerdantWasmBridge", name := "Verdant Wasm worker bridge", text := "The WebAssembly C-ABI simulation, lawful camera, and progressive UORC worker runtime in crates/verdant-wasm."})
 }
 
 definition{
@@ -331,6 +408,27 @@ definition{
 }
 
 definition{
+  name: modeledThreatWallClippingOrTunnelingBypass,
+  parameters: [],
+  result: Production.ThreatModel::ModeledThreat,
+  body: (record Production.ThreatModel::ModeledThreat {threat := "Security::threatWallClippingOrTunnelingBypass", name := "Wall clipping or camera near-plane peeking", text := "High-velocity movement or orbital camera angles clip through solid walls, ceilings, or floors to expose hidden geometry or tunnel out of bounds.", category := (ctor Production.ThreatModel::Stride.informationDisclosure)})
+}
+
+definition{
+  name: modeledThreatUniverseCoordinatePrecisionCollapse,
+  parameters: [],
+  result: Production.ThreatModel::ModeledThreat,
+  body: (record Production.ThreatModel::ModeledThreat {threat := "Security::threatUniverseCoordinatePrecisionCollapse", name := "Planetary coordinate precision collapse", text := "Large world-space coordinates degrade IEEE-754 float precision or produce non-canonical cell offsets across multi-sector portals.", category := (ctor Production.ThreatModel::Stride.tampering)})
+}
+
+definition{
+  name: modeledThreatNarrativeSupplyInflationOrDeadlock,
+  parameters: [],
+  result: Production.ThreatModel::ModeledThreat,
+  body: (record Production.ThreatModel::ModeledThreat {threat := "Security::threatNarrativeSupplyInflationOrDeadlock", name := "Narrative token duplication or quest deadlock", text := "An unverified story or quest transition mints unaccounted items or traps players in a non-terminal state with no reachable completion path.", category := (ctor Production.ThreatModel::Stride.tampering)})
+}
+
+definition{
   name: modeledControlCapabilityGrantLattice,
   parameters: [],
   result: Production.ThreatModel::ModeledControl,
@@ -384,6 +482,27 @@ definition{
   parameters: [],
   result: Production.ThreatModel::ModeledControl,
   body: (record Production.ThreatModel::ModeledControl {control := "Security::controlVerifierRequestCap", name := "Bounded 64-byte Core-Wasm request cap", text := "The Core-Wasm guest enforces requestMaximum := 64 and refuses unknown or empty queries deterministically.", evidence := (cons (record Production.ThreatModel::Evidence {kind := (ctor Production.ThreatModel::EvidenceKind.gate), reference := "prismpm --project app verify acceptance vectors"}) (nil Production.ThreatModel::Evidence))})
+}
+
+definition{
+  name: modeledControlSweptBlasAndCameraGuard,
+  parameters: [],
+  result: Production.ThreatModel::ModeledControl,
+  body: (record Production.ThreatModel::ModeledControl {control := "Security::controlSweptBlasAndCameraGuard", name := "Swept triangle BLAS CCD and near-sphere camera guard", text := "Every movement and camera step sweeps capsules and near-plane diagonal guard spheres against TwoLevelBvh inside Rust, preventing wall peeking and tunneling.", evidence := (cons (record Production.ThreatModel::Evidence {kind := (ctor Production.ThreatModel::EvidenceKind.gate), reference := "cargo test -p repo-conformance engine_ve_25"}) (cons (record Production.ThreatModel::Evidence {kind := (ctor Production.ThreatModel::EvidenceKind.gate), reference := "cargo test -p repo-conformance engine_ve_26"}) (nil Production.ThreatModel::Evidence)))})
+}
+
+definition{
+  name: modeledControlFloatingOriginCanonicalizer,
+  parameters: [],
+  result: Production.ThreatModel::ModeledControl,
+  body: (record Production.ThreatModel::ModeledControl {control := "Security::controlFloatingOriginCanonicalizer", name := "Canonical i64 sector floating-origin verifier", text := "UniversePosition canonicalizes local offsets strictly inside [-64m, +64m)^3 and evaluates camera-cell-relative GPU matrices.", evidence := (cons (record Production.ThreatModel::Evidence {kind := (ctor Production.ThreatModel::EvidenceKind.gate), reference := "cargo test -p repo-conformance engine_ve_29"}) (nil Production.ThreatModel::Evidence))})
+}
+
+definition{
+  name: modeledControlConservationAndReachabilityOracle,
+  parameters: [],
+  result: Production.ThreatModel::ModeledControl,
+  body: (record Production.ThreatModel::ModeledControl {control := "Security::controlConservationAndReachabilityOracle", name := "Story conservation and tropical reachability verifier", text := "StoryAutomaton verifies exact integer supply conservation and tropical min-plus terminal reachability before admitting any narrative graph.", evidence := (cons (record Production.ThreatModel::Evidence {kind := (ctor Production.ThreatModel::EvidenceKind.gate), reference := "cargo test -p repo-conformance engine_ve_30"}) (nil Production.ThreatModel::Evidence))})
 }
 
 definition{
@@ -443,6 +562,27 @@ definition{
 }
 
 definition{
+  name: mappingWallClippingOrTunnelingBypass,
+  parameters: [],
+  result: Production.ThreatModel::ThreatMapping,
+  body: (record Production.ThreatModel::ThreatMapping {threat := "Security::threatWallClippingOrTunnelingBypass", controls := (cons "Security::controlSweptBlasAndCameraGuard" (nil String))})
+}
+
+definition{
+  name: mappingUniverseCoordinatePrecisionCollapse,
+  parameters: [],
+  result: Production.ThreatModel::ThreatMapping,
+  body: (record Production.ThreatModel::ThreatMapping {threat := "Security::threatUniverseCoordinatePrecisionCollapse", controls := (cons "Security::controlFloatingOriginCanonicalizer" (nil String))})
+}
+
+definition{
+  name: mappingNarrativeSupplyInflationOrDeadlock,
+  parameters: [],
+  result: Production.ThreatModel::ThreatMapping,
+  body: (record Production.ThreatModel::ThreatMapping {threat := "Security::threatNarrativeSupplyInflationOrDeadlock", controls := (cons "Security::controlConservationAndReachabilityOracle" (nil String))})
+}
+
+definition{
   name: acceptedHostSubstitution,
   parameters: [],
   result: Production.ThreatModel::AcceptedRisk,
@@ -488,7 +628,7 @@ definition{
 theorem{
   name: securityThreatModelComplete,
   parameters: [],
-  statement: (((((project (assetPublishedPagesArtifact) index) =? 0) && (((project (assetStitchMultiplayerFabric) index) =? 1) && (((project (assetStudioAndDocsPages) index) =? 2) && (((project (assetVerdantCoreRuntime) index) =? 3) && ((project (assetVerifierGuestArchive) index) =? 4))))) && ((((project (threatCorruptedStitchParityShard) index) =? 0) && (((project (threatForgedPeerInputEnvelope) index) =? 1) && (((project (threatHostSubstitution) index) =? 2) && (((project (threatInvalidShaderCompilation) index) =? 3) && (((project (threatMalformedGlbExport) index) =? 4) && (((project (threatSnapshotTampering) index) =? 5) && (((project (threatStudioScriptInjection) index) =? 6) && (((project (threatUngrantedContainerOrganAccess) index) =? 7) && ((project (threatVerifierQueryExhaustion) index) =? 8))))))))) && ((((project (riskCorruptedStitchParityShard) index) =? 0) && (((project (riskForgedPeerInputEnvelope) index) =? 1) && (((project (riskHostSubstitution) index) =? 2) && (((project (riskInvalidShaderCompilation) index) =? 3) && (((project (riskMalformedGlbExport) index) =? 4) && (((project (riskSnapshotTampering) index) =? 5) && (((project (riskStudioScriptInjection) index) =? 6) && (((project (riskUngrantedContainerOrganAccess) index) =? 7) && ((project (riskVerifierQueryExhaustion) index) =? 8))))))))) && (((project (controlCapabilityGrantLattice) index) =? 0) && (((project (controlKhronosGltfOracle) index) =? 1) && (((project (controlNagaShaderOracle) index) =? 2) && (((project (controlPrismIdJournalSignature) index) =? 3) && (((project (controlSnapshotSha256Trailer) index) =? 4) && (((project (controlStitchFragmentCommitment) index) =? 5) && (((project (controlStrictHashedCsp) index) =? 6) && ((project (controlVerifierRequestCap) index) =? 7))))))))))) = true),
+  statement: (((((project (assetPublishedPagesArtifact) index) =? 0) && (((project (assetStitchMultiplayerFabric) index) =? 1) && (((project (assetStudioAndDocsPages) index) =? 2) && (((project (assetVerdantCoreRuntime) index) =? 3) && (((project (assetVerifierGuestArchive) index) =? 5) && ((project (assetVerdantWasmBridge) index) =? 4)))))) && ((((project (threatCorruptedStitchParityShard) index) =? 0) && (((project (threatForgedPeerInputEnvelope) index) =? 1) && (((project (threatHostSubstitution) index) =? 2) && (((project (threatInvalidShaderCompilation) index) =? 3) && (((project (threatMalformedGlbExport) index) =? 4) && (((project (threatSnapshotTampering) index) =? 6) && (((project (threatStudioScriptInjection) index) =? 7) && (((project (threatUngrantedContainerOrganAccess) index) =? 8) && (((project (threatVerifierQueryExhaustion) index) =? 10) && (((project (threatWallClippingOrTunnelingBypass) index) =? 11) && (((project (threatUniverseCoordinatePrecisionCollapse) index) =? 9) && ((project (threatNarrativeSupplyInflationOrDeadlock) index) =? 5)))))))))))) && ((((project (riskCorruptedStitchParityShard) index) =? 0) && (((project (riskForgedPeerInputEnvelope) index) =? 1) && (((project (riskHostSubstitution) index) =? 2) && (((project (riskInvalidShaderCompilation) index) =? 3) && (((project (riskMalformedGlbExport) index) =? 4) && (((project (riskSnapshotTampering) index) =? 6) && (((project (riskStudioScriptInjection) index) =? 7) && (((project (riskUngrantedContainerOrganAccess) index) =? 8) && (((project (riskVerifierQueryExhaustion) index) =? 10) && (((project (riskWallClippingOrTunnelingBypass) index) =? 11) && (((project (riskUniverseCoordinatePrecisionCollapse) index) =? 9) && ((project (riskNarrativeSupplyInflationOrDeadlock) index) =? 5)))))))))))) && (((project (controlCapabilityGrantLattice) index) =? 0) && (((project (controlKhronosGltfOracle) index) =? 3) && (((project (controlNagaShaderOracle) index) =? 4) && (((project (controlPrismIdJournalSignature) index) =? 5) && (((project (controlSnapshotSha256Trailer) index) =? 6) && (((project (controlStitchFragmentCommitment) index) =? 7) && (((project (controlStrictHashedCsp) index) =? 8) && (((project (controlVerifierRequestCap) index) =? 10) && (((project (controlSweptBlasAndCameraGuard) index) =? 9) && (((project (controlFloatingOriginCanonicalizer) index) =? 2) && ((project (controlConservationAndReachabilityOracle) index) =? 1)))))))))))))) = true),
   proof: decide{},
   axioms: []
 }
@@ -496,7 +636,7 @@ theorem{
 theorem{
   name: modeledSecurityControlsEvidenced,
   parameters: [],
-  statement: (((((nonEmptyString (project (controlSet) title)) && (nonEmptyString (project (acceptedHostSubstitution) rationale))) && (((nonEmptyString (project (modeledAssetPublishedPagesArtifact) name)) && ((nonEmptyString (project (modeledAssetStitchMultiplayerFabric) name)) && ((nonEmptyString (project (modeledAssetStudioAndDocsPages) name)) && ((nonEmptyString (project (modeledAssetVerdantCoreRuntime) name)) && (nonEmptyString (project (modeledAssetVerifierGuestArchive) name)))))) && ((nonEmptyString (project (modeledThreatCorruptedStitchParityShard) name)) && ((nonEmptyString (project (modeledThreatForgedPeerInputEnvelope) name)) && ((nonEmptyString (project (modeledThreatHostSubstitution) name)) && ((nonEmptyString (project (modeledThreatInvalidShaderCompilation) name)) && ((nonEmptyString (project (modeledThreatMalformedGlbExport) name)) && ((nonEmptyString (project (modeledThreatSnapshotTampering) name)) && ((nonEmptyString (project (modeledThreatStudioScriptInjection) name)) && ((nonEmptyString (project (modeledThreatUngrantedContainerOrganAccess) name)) && (nonEmptyString (project (modeledThreatVerifierQueryExhaustion) name)))))))))))) && (((hasEvidence (project (modeledControlCapabilityGrantLattice) evidence)) && ((hasEvidence (project (modeledControlKhronosGltfOracle) evidence)) && ((hasEvidence (project (modeledControlNagaShaderOracle) evidence)) && ((hasEvidence (project (modeledControlPrismIdJournalSignature) evidence)) && ((hasEvidence (project (modeledControlSnapshotSha256Trailer) evidence)) && ((hasEvidence (project (modeledControlStitchFragmentCommitment) evidence)) && ((hasEvidence (project (modeledControlStrictHashedCsp) evidence)) && (hasEvidence (project (modeledControlVerifierRequestCap) evidence))))))))) && ((hasMappedControls (project (mappingCorruptedStitchParityShard) controls)) && ((hasMappedControls (project (mappingForgedPeerInputEnvelope) controls)) && ((hasMappedControls (project (mappingInvalidShaderCompilation) controls)) && ((hasMappedControls (project (mappingMalformedGlbExport) controls)) && ((hasMappedControls (project (mappingSnapshotTampering) controls)) && ((hasMappedControls (project (mappingStudioScriptInjection) controls)) && ((hasMappedControls (project (mappingUngrantedContainerOrganAccess) controls)) && (hasMappedControls (project (mappingVerifierQueryExhaustion) controls))))))))))) = true),
+  statement: (((((nonEmptyString (project (controlSet) title)) && (nonEmptyString (project (acceptedHostSubstitution) rationale))) && (((nonEmptyString (project (modeledAssetPublishedPagesArtifact) name)) && ((nonEmptyString (project (modeledAssetStitchMultiplayerFabric) name)) && ((nonEmptyString (project (modeledAssetStudioAndDocsPages) name)) && ((nonEmptyString (project (modeledAssetVerdantCoreRuntime) name)) && ((nonEmptyString (project (modeledAssetVerifierGuestArchive) name)) && (nonEmptyString (project (modeledAssetVerdantWasmBridge) name))))))) && ((nonEmptyString (project (modeledThreatCorruptedStitchParityShard) name)) && ((nonEmptyString (project (modeledThreatForgedPeerInputEnvelope) name)) && ((nonEmptyString (project (modeledThreatHostSubstitution) name)) && ((nonEmptyString (project (modeledThreatInvalidShaderCompilation) name)) && ((nonEmptyString (project (modeledThreatMalformedGlbExport) name)) && ((nonEmptyString (project (modeledThreatSnapshotTampering) name)) && ((nonEmptyString (project (modeledThreatStudioScriptInjection) name)) && ((nonEmptyString (project (modeledThreatUngrantedContainerOrganAccess) name)) && ((nonEmptyString (project (modeledThreatVerifierQueryExhaustion) name)) && ((nonEmptyString (project (modeledThreatWallClippingOrTunnelingBypass) name)) && ((nonEmptyString (project (modeledThreatUniverseCoordinatePrecisionCollapse) name)) && (nonEmptyString (project (modeledThreatNarrativeSupplyInflationOrDeadlock) name))))))))))))))) && (((hasEvidence (project (modeledControlCapabilityGrantLattice) evidence)) && ((hasEvidence (project (modeledControlKhronosGltfOracle) evidence)) && ((hasEvidence (project (modeledControlNagaShaderOracle) evidence)) && ((hasEvidence (project (modeledControlPrismIdJournalSignature) evidence)) && ((hasEvidence (project (modeledControlSnapshotSha256Trailer) evidence)) && ((hasEvidence (project (modeledControlStitchFragmentCommitment) evidence)) && ((hasEvidence (project (modeledControlStrictHashedCsp) evidence)) && ((hasEvidence (project (modeledControlVerifierRequestCap) evidence)) && ((hasEvidence (project (modeledControlSweptBlasAndCameraGuard) evidence)) && ((hasEvidence (project (modeledControlFloatingOriginCanonicalizer) evidence)) && (hasEvidence (project (modeledControlConservationAndReachabilityOracle) evidence)))))))))))) && ((hasMappedControls (project (mappingCorruptedStitchParityShard) controls)) && ((hasMappedControls (project (mappingForgedPeerInputEnvelope) controls)) && ((hasMappedControls (project (mappingInvalidShaderCompilation) controls)) && ((hasMappedControls (project (mappingMalformedGlbExport) controls)) && ((hasMappedControls (project (mappingSnapshotTampering) controls)) && ((hasMappedControls (project (mappingStudioScriptInjection) controls)) && ((hasMappedControls (project (mappingUngrantedContainerOrganAccess) controls)) && ((hasMappedControls (project (mappingVerifierQueryExhaustion) controls)) && ((hasMappedControls (project (mappingWallClippingOrTunnelingBypass) controls)) && ((hasMappedControls (project (mappingUniverseCoordinatePrecisionCollapse) controls)) && (hasMappedControls (project (mappingNarrativeSupplyInflationOrDeadlock) controls)))))))))))))) = true),
   proof: decide{},
   axioms: []
 }

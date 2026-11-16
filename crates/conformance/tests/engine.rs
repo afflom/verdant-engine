@@ -447,9 +447,11 @@ fn engine_ve_10() {
     assert!(!theorems.is_empty());
     for thm in theorems {
         let name = thm["name"].as_str().unwrap();
+        let rel_where = thm["where"].as_str().expect("theorem where path");
+        let lex_src = std::fs::read_to_string(root.join(rel_where)).expect("read theorem module");
         assert!(
-            tensor_lex.contains(&format!("name: {name},")),
-            "Tensor.lex.tex must declare theorem `{name}` advertised in site/app.json"
+            lex_src.contains(&format!("name: {name},")),
+            "{rel_where} must declare theorem `{name}` advertised in site/app.json"
         );
     }
 
@@ -2584,4 +2586,93 @@ fn engine_ve_30() {
         }]),
         Err(NarrativeLawError::InvalidPortalOrUniverseCell { .. })
     ));
+}
+
+/// `VE-31`: Stratum-0 `OntologicalRuntimeGovernor`, 8-stratum `W5H` certificates, `HostEnvelope`/`WitnessEnvelope` telos loss, non-coercive `LOD0..LOD4` descent, and full Prism closure.
+#[test]
+fn engine_ve_31() {
+    use verdant_core::ecs::TwoLevelBvh;
+    use verdant_core::hd_world::synthesize_hd_citadel_sector;
+    use verdant_core::math::verify_constructive_math_with_prism_kernel;
+    use verdant_core::runtime::{BrowserCapabilities, OntologicalRuntimeGovernor};
+    use verdant_core::streaming::TerrainReliefParams;
+    use verdant_core::tensor::prism_tensor_substrate_certified;
+    use verdant_tensor::prism_coded_tiers_certified;
+
+    let cfg = EngineConfig::from_refresh_rate(1920, 1080, 60, 60, 4).expect("60Hz config");
+    let caps = BrowserCapabilities {
+        wasm_simd_available: true,
+        webgl2_available: true,
+        hardware_concurrency: 4,
+        shared_array_buffer: true,
+        audio_worklet: true,
+        offscreen_canvas: true,
+    };
+    let governor = OntologicalRuntimeGovernor::new(cfg, caps);
+
+    // 1. Constructive W5H certificates across all 8 causal strata (`0..=7`):
+    let certs = governor.certify_all_eight_strata();
+    assert_eq!(certs.len(), 8);
+    let primes: Vec<u64> = certs.iter().map(|c| c.intrinsic_prime).collect();
+    assert_eq!(primes, vec![2, 3, 5, 7, 11, 13, 17, 19]);
+    for (idx, cert) in certs.iter().enumerate() {
+        assert_eq!(cert.stratum_rank, idx as u64);
+        assert_eq!(cert.triadic_agency_product, 30);
+        assert!(
+            cert.complete_verified,
+            "stratum {idx} W5HCertificate must verify"
+        );
+    }
+
+    // 2. Healthy frame telos evaluation & non-coercive LOD0..LOD4 ascent/descent:
+    let healthy = governor.evaluate_frame_telos(8_200, true, 960, 840, 0, 0, 0);
+    assert_eq!(healthy.total_telos_loss, 0);
+    assert_eq!(healthy.host_ceiling_excess, 0);
+    assert!(healthy.triadic_connection_active);
+    assert!(healthy.all_eight_strata_certified);
+    assert_eq!(governor.recommend_non_coercive_lod(3, 5_000, 0), 4);
+
+    // Over-budget frame (`20,000 us > 16,666 us`) steps down when unpinned, or preserves pin when coercive_lock_count > 0:
+    let overloaded = governor.evaluate_frame_telos(20_000, true, 900, 800, 0, 0, 0);
+    assert_eq!(overloaded.host_ceiling_excess, 20_000 - 16_666);
+    assert_eq!(overloaded.total_telos_loss, 20_000 - 16_666);
+    assert_eq!(governor.recommend_non_coercive_lod(3, 20_000, 0), 2);
+    assert_eq!(governor.recommend_non_coercive_lod(3, 20_000, 1), 3);
+
+    // Non-zero epistemic opacity debt disables triadic connection:
+    let opaque = governor.evaluate_frame_telos(8_200, true, 960, 840, 2, 0, 0);
+    assert!(!opaque.triadic_connection_active);
+    assert_eq!(opaque.epistemic_opacity_debt, 2);
+
+    // 3. Cross-verify newly bound domain modules (`math`, `ecs`, `tensor`, `coded`, `hd_world`):
+    assert!(verify_constructive_math_with_prism_kernel());
+    assert!(prism_tensor_substrate_certified());
+    assert!(prism_coded_tiers_certified());
+    let sector =
+        synthesize_hd_citadel_sector(7, &TerrainReliefParams::standard_basin_valley(), -1.35, 1);
+    let bvh = TwoLevelBvh::build_solid(&sector.scene, &sector.meshes).expect("TwoLevelBvh");
+    assert!(bvh.prism_bvh_invariants_valid());
+
+    // 4. Verify all newly added Core-Wasm queries in `prism_kernel::dispatch`:
+    for (query, expected) in [
+        (
+            &b"summary:hd"[..],
+            "conformant:lods=5,kernels=15,subsystems=27,lossless=2.0,zero-constants=true",
+        ),
+        (
+            &b"lod:4"[..],
+            "conformant:lod=Lod4UltraHighDef,res=16/8,work=80,lossless=true",
+        ),
+        (
+            &b"scene:lod:4"[..],
+            "conformant:rank=4,res=16/8,density=200/100,shadows=1,ibl=1,lossless=1,sky=20/34/44,fog=34/44/48",
+        ),
+        (
+            &b"scene:telos"[..],
+            "conformant:w5h_strata=8,telos_loss=0,triadic_active=true,walkable_citadel=true",
+        ),
+    ] {
+        let out = verdant_core::prism_kernel::dispatch(query.to_vec()).expect("dispatch");
+        assert_eq!(std::str::from_utf8(&out).unwrap(), expected);
+    }
 }

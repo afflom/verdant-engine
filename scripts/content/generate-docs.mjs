@@ -731,7 +731,7 @@ let uorc_bytes = pack_portable_progressive_uorc_stream(7)?;</code></pre>
         { id: "ui", label: "Formal UiTree", sub: "48px + WCAG + diegetic BVH", layer: 0 },
         { id: "ecs", label: "SceneWorld + BVH", sub: "Exact hierarchy + raycasts", layer: 1 },
         { id: "phy", label: "XPBD + vehicles", sub: "Joints, capsule, 4-wheel rig", layer: 1 },
-        { id: "out", label: "UORC + Studio", sub: "Progressive LOD0..LOD3", layer: 2 },
+        { id: "out", label: "UORC + Studio", sub: "Progressive LOD0..LOD4", layer: 2 },
       ],
       edges: [
         { from: "glb", to: "ecs" },
@@ -784,13 +784,14 @@ let diegetic_bvh = UiTree::build_diegetic_bvh(&amp;rects);</code></pre>
     audience: "wren",
     figure: {
       kind: "flow",
-      title: "Four progressive UORC streaming levels from LOD0 to LOD3",
-      caption: "Browser workers decode stateless UORC frames in WebAssembly and refine scenes monotonically to lossless fidelity.",
+      title: "Five progressive UORC and HD synthesis levels from LOD0 to LOD4",
+      caption: "Browser workers decode stateless UORC frames in WebAssembly and subdivide vaulted architecture up to ultra-high-definition LOD4.",
       steps: [
         { label: "LOD0 proxy", sub: "1/8 scale · bounds + NavMesh", icon: ICONS.bvh },
         { label: "LOD1 medium", sub: "2/8 scale · pavilion + observer", icon: ICONS.cube },
         { label: "LOD2 high", sub: "5/8 scale · XPBD + vehicle rig", icon: ICONS.physics },
-        { label: "LOD3 lossless", sub: "8/8 scale · 5.7 KB UORC", icon: ICONS.stream },
+        { label: "LOD3 lossless", sub: "8/8 scale · SHA-256 UORC", icon: ICONS.stream },
+        { label: "LOD4 ultra HD", sub: "16/8 scale · vaulted Citadel", icon: ICONS.cube },
       ],
     },
     body: `
@@ -800,8 +801,8 @@ let diegetic_bvh = UiTree::build_diegetic_bvh(&amp;rects);</code></pre>
       ${liveWasmFigure({
         id: "fig-live-lod-stream",
         mode: "lod-stream",
-        label: "Live progressive LOD0 through LOD3 snapshot size and triangle count chart from verdant-wasm",
-        caption: "Live VDNT byte sizes, triangle counts, and node presets measured across LOD0..LOD3 in verdant-wasm.",
+        label: "Live progressive LOD0 through LOD4 snapshot size and triangle count chart from verdant-wasm",
+        caption: "Live VDNT byte sizes, triangle counts, and node presets measured across LOD0..LOD4 in verdant-wasm.",
         summaryTitle: "Zero-decode UORC and codec tiers",
         headers: ["Stage or tier", "Representation", "Scratch memory"],
         rows: [
@@ -861,7 +862,7 @@ let recovered = recover_bytes_from_stitch_pair(&amp;a, &amp;parity)?;</code></pr
           <tr><td><code>camera</code> &amp; <code>character</code></td><td><code>LawfulCameraRig</code>, <code>ArticulatedCharacter</code>, <code>TwoLevelBvh</code></td><td>Near-frustum guard sphere, 22-joint Foot IK, and swept crease CCD</td></tr>
           <tr><td><code>universe</code> &amp; <code>narrative</code></td><td><code>UniversePosition</code>, <code>PortalGraph</code>, <code>StoryAutomaton</code>, <code>ConservationLedger</code></td><td>128m floating-origin cells, portals, and conserved story automata</td></tr>
           <tr><td><code>ui</code> &amp; <code>cybernetics</code></td><td><code>UiTree</code>, <code>CyberneticObserverLoop</code>, <code>CodedSlmDirector</code>, <code>ContainerGrantMatrix</code></td><td>Tropical UI compliance, LIF observer, local SLM, and FK-07 grants</td></tr>
-          <tr><td><code>network</code> &amp; <code>runtime</code></td><td><code>SignedJournalBatch</code>, <code>StitchFragment</code>, <code>RollbackSession</code>, <code>WorldSnapshot</code></td><td>Prism ID signing, 2-of-3 Stitch parity, and 64-frame rollback</td></tr>
+          <tr><td><code>network</code> &amp; <code>runtime</code></td><td><code>OntologicalRuntimeGovernor</code>, <code>SignedJournalBatch</code>, <code>StitchFragment</code>, <code>RollbackSession</code>, <code>WorldSnapshot</code></td><td>W5H telos governor, Prism ID signing, 2-of-3 Stitch parity, and 64-frame rollback</td></tr>
         </tbody>
       </table>
       <h2>Test live SHA-256 snapshot verification in WebAssembly</h2>

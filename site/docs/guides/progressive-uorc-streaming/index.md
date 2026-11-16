@@ -4,14 +4,16 @@
 
 Decode UORC streams in WebAssembly and shard snapshots across Stitch peers.
 
-      Four progressive UORC streaming levels from LOD0 to LOD3. Browser workers decode stateless UORC frames in WebAssembly and refine scenes monotonically to lossless fidelity.The data in this figure
+      Five progressive UORC and HD synthesis levels from LOD0 to LOD4. Browser workers decode stateless UORC frames in WebAssembly and subdivide vaulted architecture up to ultra-high-definition LOD4.The data in this figure
 | Step | What happens |
 | --- | --- |
 | 1. LOD0 proxy | 1/8 scale · bounds + NavMesh |
 | 2. LOD1 medium | 2/8 scale · pavilion + observer |
 | --- | --- |
 | 3. LOD2 high | 5/8 scale · XPBD + vehicle rig |
-| 4. LOD3 lossless | 8/8 scale · 5.7 KB UORC |
+| 4. LOD3 lossless | 8/8 scale · SHA-256 UORC |
+| --- | --- |
+| 5. LOD4 ultra HD | 16/8 scale · vaulted Citadel |
       
       
 
@@ -31,7 +33,7 @@ Cold boot stays under the 120 KiB mobile budget while verdant-uorc.wasm decodes 
     
     Inspect LOD0Inspect LOD1Inspect LOD2Inspect LOD3Inspect LOD4 HD
   
-  Live VDNT byte sizes, triangle counts, and node presets measured across LOD0..LOD3 in verdant-wasm.
+  Live VDNT byte sizes, triangle counts, and node presets measured across LOD0..LOD4 in verdant-wasm.
   Zero-decode UORC and codec tiers
     
       

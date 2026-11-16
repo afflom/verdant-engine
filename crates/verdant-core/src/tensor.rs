@@ -20,6 +20,16 @@ pub use verdant_tensor::{
 
 use crate::error::TensorComputeError;
 use crate::math::{Mat4, Vec3, DIM_HOMOGENEOUS, DIM_SPATIAL};
+use crate::prism_kernel;
+
+/// Verifies that all 15 unified `uor-matmul` tensor kernels, all 3 zero-decode `CodedMatrix` tiers,
+/// and the 5-tier `LOD0..LOD4` streaming chain pass constructive `prism_kernel` checks.
+#[must_use]
+pub fn prism_tensor_substrate_certified() -> bool {
+    prism_kernel::unifiedTensorKernelsDirect() == Ok(true)
+        && prism_kernel::codedTiersDirect() == Ok(true)
+        && prism_kernel::hdLodChainDirect() == Ok(true)
+}
 
 /// Transforms a batch of 3D positions `N x 4` by a `4 x 4` homogeneous [`Mat4`] using
 /// `verdant_tensor::linear::batch_transform_positions_exact` (`uor-matmul`).
@@ -27,6 +37,7 @@ pub fn batch_transform_positions_exact(
     positions: &[[f32; DIM_SPATIAL]],
     matrix: &Mat4,
 ) -> Result<Vec<[f32; DIM_HOMOGENEOUS]>, TensorComputeError> {
+    debug_assert_eq!(prism_kernel::unifiedTensorKernelsDirect(), Ok(true));
     verdant_tensor::batch_transform_positions_exact(positions, &matrix.cols)
 }
 

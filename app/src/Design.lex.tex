@@ -214,6 +214,13 @@ definition{
 }
 
 definition{
+  name: viewOpmLawfulWorldAndStory,
+  parameters: [],
+  result: DiagramView,
+  body: (record DiagramView {title := "Stepping lawful swept physics, camera guards, and story conservation", viewpoint := "Architecture::viewpointPlayerLawfulWorld", diagram := (ctor DiagramKind.opmObjectProcess)})
+}
+
+definition{
   name: processBuildSceneWorld,
   parameters: [],
   result: EngineProcess,
@@ -281,6 +288,20 @@ definition{
   parameters: [],
   result: EngineProcess,
   body: (record EngineProcess {owner := "Architecture::componentStitchMultiplayerFabric"})
+}
+
+definition{
+  name: processStepLawfulPhysicsAndCamera,
+  parameters: [],
+  result: EngineProcess,
+  body: (record EngineProcess {owner := "Architecture::componentVerdantWasmCrate"})
+}
+
+definition{
+  name: processAdvanceStoryConservation,
+  parameters: [],
+  result: EngineProcess,
+  body: (record EngineProcess {owner := "Architecture::componentVerdantCoreCrate"})
 }
 
 definition{
@@ -571,6 +592,146 @@ definition{
 }
 
 definition{
+  name: opmCyberneticStudio,
+  parameters: [],
+  result: OpmThingSpec,
+  body: (record OpmThingSpec {view := "Design::viewOpmCyberneticLoop", kind := (ctor OpmThingKind.object), subject := "Architecture::componentEngineStudioSite"})
+}
+
+definition{
+  name: opmCyberneticStepProcess,
+  parameters: [],
+  result: OpmThingSpec,
+  body: (record OpmThingSpec {view := "Design::viewOpmCyberneticLoop", kind := (ctor OpmThingKind.process), subject := "Design::processStepCyberneticObserver"})
+}
+
+definition{
+  name: opmCyberneticUiProcess,
+  parameters: [],
+  result: OpmThingSpec,
+  body: (record OpmThingSpec {view := "Design::viewOpmCyberneticLoop", kind := (ctor OpmThingKind.process), subject := "Design::processSolveUiConstraints"})
+}
+
+definition{
+  name: opmCyberneticDrivesUi,
+  parameters: [],
+  result: OpmLinkSpec,
+  body: (record OpmLinkSpec {view := "Design::viewOpmCyberneticLoop", kind := (ctor OpmLinkKind.invocation), source := "Design::processStepCyberneticObserver", target := "Design::processSolveUiConstraints"})
+}
+
+definition{
+  name: opmLawfulWasmHost,
+  parameters: [],
+  result: OpmThingSpec,
+  body: (record OpmThingSpec {view := "Design::viewOpmLawfulWorldAndStory", kind := (ctor OpmThingKind.object), subject := "Architecture::componentVerdantWasmCrate"})
+}
+
+definition{
+  name: opmLawfulStepProcess,
+  parameters: [],
+  result: OpmThingSpec,
+  body: (record OpmThingSpec {view := "Design::viewOpmLawfulWorldAndStory", kind := (ctor OpmThingKind.process), subject := "Design::processStepLawfulPhysicsAndCamera"})
+}
+
+definition{
+  name: opmStoryConservationProcess,
+  parameters: [],
+  result: OpmThingSpec,
+  body: (record OpmThingSpec {view := "Design::viewOpmLawfulWorldAndStory", kind := (ctor OpmThingKind.process), subject := "Design::processAdvanceStoryConservation"})
+}
+
+definition{
+  name: opmLawfulInvokesStory,
+  parameters: [],
+  result: OpmLinkSpec,
+  body: (record OpmLinkSpec {view := "Design::viewOpmLawfulWorldAndStory", kind := (ctor OpmLinkKind.invocation), source := "Design::processStepLawfulPhysicsAndCamera", target := "Design::processAdvanceStoryConservation"})
+}
+
+definition{
+  name: umlVerdantTensor,
+  parameters: [],
+  result: UmlComponentSpec,
+  body: (record UmlComponentSpec {view := "Design::viewUmlComponents", component := "Architecture::componentVerdantTensorCrate"})
+}
+
+definition{
+  name: umlVerdantWasm,
+  parameters: [],
+  result: UmlComponentSpec,
+  body: (record UmlComponentSpec {view := "Design::viewUmlComponents", component := "Architecture::componentVerdantWasmCrate"})
+}
+
+definition{
+  name: umlVerdantCli,
+  parameters: [],
+  result: UmlComponentSpec,
+  body: (record UmlComponentSpec {view := "Design::viewUmlComponents", component := "Architecture::componentVerdantCliCrate"})
+}
+
+definition{
+  name: umlStitchFabric,
+  parameters: [],
+  result: UmlComponentSpec,
+  body: (record UmlComponentSpec {view := "Design::viewUmlComponents", component := "Architecture::componentStitchMultiplayerFabric"})
+}
+
+definition{
+  name: umlTensorToCore,
+  parameters: [],
+  result: UmlConnectorSpec,
+  body: (record UmlConnectorSpec {view := "Design::viewUmlComponents", edge := "Architecture::edgeTensorToCore"})
+}
+
+definition{
+  name: umlCoreToWasm,
+  parameters: [],
+  result: UmlConnectorSpec,
+  body: (record UmlConnectorSpec {view := "Design::viewUmlComponents", edge := "Architecture::edgeCoreToWasm"})
+}
+
+definition{
+  name: umlWasmToStudio,
+  parameters: [],
+  result: UmlConnectorSpec,
+  body: (record UmlConnectorSpec {view := "Design::viewUmlComponents", edge := "Architecture::edgeWasmToStudio"})
+}
+
+definition{
+  name: umlCoreToCli,
+  parameters: [],
+  result: UmlConnectorSpec,
+  body: (record UmlConnectorSpec {view := "Design::viewUmlComponents", edge := "Architecture::edgeCoreToCli"})
+}
+
+definition{
+  name: seqStitchStudio,
+  parameters: [],
+  result: UmlLifelineSpec,
+  body: (record UmlLifelineSpec {view := "Design::viewUmlStitchRollback", component := "Architecture::componentEngineStudioSite", order := 0})
+}
+
+definition{
+  name: seqStitchFabric,
+  parameters: [],
+  result: UmlLifelineSpec,
+  body: (record UmlLifelineSpec {view := "Design::viewUmlStitchRollback", component := "Architecture::componentStitchMultiplayerFabric", order := 1})
+}
+
+definition{
+  name: seqStitchShardRequest,
+  parameters: [],
+  result: UmlMessageSpec,
+  body: (record UmlMessageSpec {view := "Design::viewUmlStitchRollback", kind := (ctor UmlMessageKind.synchronous), order := 0, source := "Architecture::componentEngineStudioSite", target := "Architecture::componentStitchMultiplayerFabric", process := "Design::processRecoverStitchFragments"})
+}
+
+definition{
+  name: seqStitchRecoverReply,
+  parameters: [],
+  result: UmlMessageSpec,
+  body: (record UmlMessageSpec {view := "Design::viewUmlStitchRollback", kind := (ctor UmlMessageKind.reply), order := 1, source := "Architecture::componentStitchMultiplayerFabric", target := "Architecture::componentEngineStudioSite", process := "Design::processRecoverStitchFragments"})
+}
+
+definition{
   name: allStringsPopulated,
   parameters: [items : (List String)],
   result: Bool,
@@ -584,7 +745,7 @@ definition{
 theorem{
   name: designViewsConsistent,
   parameters: [],
-  statement: (((((project (opmZoomStream) order) =? 0) && (((project (opmZoomTensors) order) =? 1) && ((project (opmZoomExport) order) =? 2))) && ((((project (seqStudio) order) =? 0) && (((project (seqVerifier) order) =? 1) && ((project (seqCanvasHost) order) =? 2))) && ((((project (seqVerifyRequest) order) =? 0) && (((project (seqVerifyReply) order) =? 1) && ((project (seqDrawSubmit) order) =? 2))) && (((project (stVerifierIdle) initial) && (not (project (stVerifierEvaluating) initial))) && (((project (trParseQuery) order) =? 0) && ((project (trEmitVerdict) order) =? 1)))))) = true),
+  statement: (((((project (opmZoomStream) order) =? 0) && (((project (opmZoomTensors) order) =? 1) && ((project (opmZoomExport) order) =? 2))) && ((((project (seqStudio) order) =? 0) && (((project (seqVerifier) order) =? 1) && (((project (seqCanvasHost) order) =? 2) && (((project (seqStitchStudio) order) =? 0) && ((project (seqStitchFabric) order) =? 1))))) && ((((project (seqVerifyRequest) order) =? 0) && (((project (seqVerifyReply) order) =? 1) && (((project (seqDrawSubmit) order) =? 2) && (((project (seqStitchShardRequest) order) =? 0) && ((project (seqStitchRecoverReply) order) =? 1))))) && (((project (stVerifierIdle) initial) && (not (project (stVerifierEvaluating) initial))) && (((project (trParseQuery) order) =? 0) && ((project (trEmitVerdict) order) =? 1)))))) = true),
   proof: decide{},
   axioms: []
 }
@@ -592,7 +753,7 @@ theorem{
 theorem{
   name: designViewsAndProcessesNamed,
   parameters: [],
-  statement: ((allStringsPopulated (cons (project (viewOpmSceneStreaming) title) (cons (project (viewUmlComponents) title) (cons (project (viewUmlFrameSequence) title) (cons (project (viewUmlVerifierStates) title) (cons (project (viewOpmCyberneticLoop) title) (cons (project (viewUmlStitchRollback) title) (cons (project (processBuildSceneWorld) owner) (cons (project (processStreamUorcLods) owner) (cons (project (processExecuteTensorKernels) owner) (cons (project (processExportGlbAndShaders) owner) (cons (project (processParseQuery) owner) (cons (project (processVerifyTensorAndLod) owner) (cons (project (processRenderViewportFrame) owner) (cons (project (processSolveUiConstraints) owner) (cons (project (processStepCyberneticObserver) owner) (cons (project (processRecoverStitchFragments) owner) (cons (project (stateSceneProxyLod) owner) (cons (project (stateSceneLosslessLod) owner) (cons (project (stateVerifierIdle) owner) (cons (project (stateVerifierEvaluating) owner) (nil String)))))))))))))))))))))) = true),
+  statement: ((allStringsPopulated (cons (project (viewOpmSceneStreaming) title) (cons (project (viewUmlComponents) title) (cons (project (viewUmlFrameSequence) title) (cons (project (viewUmlVerifierStates) title) (cons (project (viewOpmCyberneticLoop) title) (cons (project (viewUmlStitchRollback) title) (cons (project (viewOpmLawfulWorldAndStory) title) (cons (project (processBuildSceneWorld) owner) (cons (project (processStreamUorcLods) owner) (cons (project (processExecuteTensorKernels) owner) (cons (project (processExportGlbAndShaders) owner) (cons (project (processParseQuery) owner) (cons (project (processVerifyTensorAndLod) owner) (cons (project (processRenderViewportFrame) owner) (cons (project (processSolveUiConstraints) owner) (cons (project (processStepCyberneticObserver) owner) (cons (project (processRecoverStitchFragments) owner) (cons (project (processStepLawfulPhysicsAndCamera) owner) (cons (project (processAdvanceStoryConservation) owner) (cons (project (stateSceneProxyLod) owner) (cons (project (stateSceneLosslessLod) owner) (cons (project (stateVerifierIdle) owner) (cons (project (stateVerifierEvaluating) owner) (nil String))))))))))))))))))))))))) = true),
   proof: decide{},
   axioms: []
 }
@@ -600,7 +761,7 @@ theorem{
 theorem{
   name: designOpmAndUmlElementsBound,
   parameters: [],
-  statement: ((allStringsPopulated (cons (project (opmCoreEngine) subject) (cons (project (opmStudioScene) subject) (cons (project (opmBuildScene) subject) (cons (project (opmStreamLods) subject) (cons (project (opmExecuteTensors) subject) (cons (project (opmExport) subject) (cons (project (opmSceneAtProxy) state) (cons (project (opmSceneAtLossless) state) (cons (project (opmCoreAgent) target) (cons (project (opmStreamInvokesTensors) target) (cons (project (opmTensorsInvokeExport) target) (cons (project (opmExportAffectsScene) target) (cons (project (umlVerdantCore) component) (cons (project (umlCliExamples) component) (cons (project (umlEngineStudio) component) (cons (project (umlVerifierGuest) component) (cons (project (umlBrowserCanvas) component) (cons (project (umlBrowserAudio) component) (cons (project (umlCoreToExamples) edge) (cons (project (umlCoreToStudio) edge) (cons (project (umlStudioToCanvas) edge) (cons (project (umlStudioToAudio) edge) (cons (project (umlStudioToVerifier) edge) (cons (project (umlVerifierToStudio) edge) (nil String)))))))))))))))))))))))))) = true),
+  statement: ((allStringsPopulated (cons (project (opmCoreEngine) subject) (cons (project (opmStudioScene) subject) (cons (project (opmBuildScene) subject) (cons (project (opmStreamLods) subject) (cons (project (opmExecuteTensors) subject) (cons (project (opmExport) subject) (cons (project (opmCyberneticStudio) subject) (cons (project (opmCyberneticStepProcess) subject) (cons (project (opmCyberneticUiProcess) subject) (cons (project (opmCyberneticDrivesUi) target) (cons (project (opmLawfulWasmHost) subject) (cons (project (opmLawfulStepProcess) subject) (cons (project (opmStoryConservationProcess) subject) (cons (project (opmLawfulInvokesStory) target) (cons (project (opmSceneAtProxy) state) (cons (project (opmSceneAtLossless) state) (cons (project (opmCoreAgent) target) (cons (project (opmStreamInvokesTensors) target) (cons (project (opmTensorsInvokeExport) target) (cons (project (opmExportAffectsScene) target) (cons (project (umlVerdantCore) component) (cons (project (umlVerdantTensor) component) (cons (project (umlVerdantWasm) component) (cons (project (umlVerdantCli) component) (cons (project (umlStitchFabric) component) (cons (project (umlCliExamples) component) (cons (project (umlEngineStudio) component) (cons (project (umlVerifierGuest) component) (cons (project (umlBrowserCanvas) component) (cons (project (umlBrowserAudio) component) (cons (project (umlTensorToCore) edge) (cons (project (umlCoreToWasm) edge) (cons (project (umlWasmToStudio) edge) (cons (project (umlCoreToCli) edge) (cons (project (umlCoreToExamples) edge) (cons (project (umlCoreToStudio) edge) (cons (project (umlStudioToCanvas) edge) (cons (project (umlStudioToAudio) edge) (cons (project (umlStudioToVerifier) edge) (cons (project (umlVerifierToStudio) edge) (nil String)))))))))))))))))))))))))))))))))))))))))) = true),
   proof: decide{},
   axioms: []
 }

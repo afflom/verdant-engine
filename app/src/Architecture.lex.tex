@@ -114,35 +114,42 @@ definition{
   name: concernNeuromorphicMutualAttention,
   parameters: [],
   result: Foundation.Arch::Concern,
-  body: (record Foundation.Arch::Concern {index := 4, name := "Second-order cybernetic mutual attention", text := "The world observes player gaze, cadence, and focus via exact integer state-space recurrence and embedded coded_gemm reasoning without cloud APIs."})
+  body: (record Foundation.Arch::Concern {index := 5, name := "Second-order cybernetic mutual attention", text := "The world observes player gaze, cadence, and focus via exact integer state-space recurrence and embedded coded_gemm reasoning without cloud APIs."})
 }
 
 definition{
   name: concernRuntimeIntegrity,
   parameters: [],
   result: Foundation.Arch::Concern,
-  body: (record Foundation.Arch::Concern {index := 5, name := "Sandbox and snapshot integrity", text := "World snapshots and UORC streams carry SHA-256 digests, shaders validate before compilation, and the Wasm verifier runs in an isolated worker."})
+  body: (record Foundation.Arch::Concern {index := 6, name := "Sandbox and snapshot integrity", text := "World snapshots and UORC streams carry SHA-256 digests, shaders validate before compilation, and the Wasm verifier runs in an isolated worker."})
 }
 
 definition{
   name: concernSovereignIdentityAndStitchMesh,
   parameters: [],
   result: Foundation.Arch::Concern,
-  body: (record Foundation.Arch::Concern {index := 6, name := "Sovereign identity and Stitch peer persistence", text := "Input journals carry non-extractable Prism ID signatures and world snapshots recover from any two of three SHA-256 Stitch parity fragments."})
+  body: (record Foundation.Arch::Concern {index := 7, name := "Sovereign identity and Stitch peer persistence", text := "Input journals carry non-extractable Prism ID signatures and world snapshots recover from any two of three SHA-256 Stitch parity fragments."})
 }
 
 definition{
   name: concernStandardsInteroperability,
   parameters: [],
   result: Foundation.Arch::Concern,
-  body: (record Foundation.Arch::Concern {index := 7, name := "Graphics and asset standards compliance", text := "Exported binary glTF 2.0 scenes, portable WGSL shaders, and UORC archives pass authoritative Khronos gltf, W3C naga, and UOR validators."})
+  body: (record Foundation.Arch::Concern {index := 8, name := "Graphics and asset standards compliance", text := "Exported binary glTF 2.0 scenes, portable WGSL shaders, and UORC archives pass authoritative Khronos gltf, W3C naga, and UOR validators."})
 }
 
 definition{
   name: concernTensorAndStreamingFidelity,
   parameters: [],
   result: Foundation.Arch::Concern,
-  body: (record Foundation.Arch::Concern {index := 8, name := "Tensor determinism and progressive UORC streaming", text := "Every uor-matmul tensor contraction accumulates without intermediate rounding and UORC scene frames stream monotonically up to lossless source fidelity."})
+  body: (record Foundation.Arch::Concern {index := 9, name := "Tensor determinism and progressive UORC streaming", text := "Every uor-matmul tensor contraction accumulates without intermediate rounding and UORC scene frames stream monotonically up to lossless source fidelity."})
+}
+
+definition{
+  name: concernLawfulSpatialAndNarrativeInvariants,
+  parameters: [],
+  result: Foundation.Arch::Concern,
+  body: (record Foundation.Arch::Concern {index := 4, name := "Unbreakable spatial, optical, and narrative laws", text := "Two-level triangle BLAS swept collision, near-sphere camera guards, floating-origin sector coordinates, and tropical conservation story automatons prevent clipping and deadlocks."})
 }
 
 definition{
@@ -198,168 +205,217 @@ definition{
   name: componentVerdantCoreCrate,
   parameters: [],
   result: Foundation.Arch::Component,
-  body: (record Foundation.Arch::Component {index := 7, kind := (ctor Foundation.Arch::ComponentKind.releaseBinary), name := "Verdant Core Engine", text := "crates/verdant-core: standalone Rust and WebAssembly 3D game engine library providing uor-matmul tensor kernels, UORC streaming, ECS, BVH, glTF 2.0, WGSL, physics, spatial audio, and snapshots."})
+  body: (record Foundation.Arch::Component {index := 8, kind := (ctor Foundation.Arch::ComponentKind.releaseBinary), name := "Verdant Core Engine", text := "crates/verdant-core: standalone Rust and WebAssembly 3D game engine library providing uor-matmul tensor kernels, UORC streaming, ECS, BVH, glTF 2.0, WGSL, physics, spatial audio, and snapshots."})
 }
 
 definition{
   name: componentVerdantTensorCrate,
   parameters: [],
   result: Foundation.Arch::Component,
-  body: (record Foundation.Arch::Component {index := 8, kind := (ctor Foundation.Arch::ComponentKind.releaseBinary), name := "Verdant Tensor Semiring Substrate", text := "crates/verdant-tensor: pure semiring tensor-logic substrate executing linear, tropical, audio and neuromorphic ring, and zero-decode coded_gemm SLM kernels."})
+  body: (record Foundation.Arch::Component {index := 9, kind := (ctor Foundation.Arch::ComponentKind.releaseBinary), name := "Verdant Tensor Semiring Substrate", text := "crates/verdant-tensor: pure semiring tensor-logic substrate executing linear, tropical, audio and neuromorphic ring, and zero-decode coded_gemm SLM kernels."})
 }
 
 definition{
   name: componentVerifierGuest,
   parameters: [],
   result: Foundation.Arch::Component,
-  body: (record Foundation.Arch::Component {index := 9, kind := (ctor Foundation.Arch::ComponentKind.service), name := "Engine Verifier Guest", text := "The Core-Wasm guest compiled from Engine.lex.tex that verifies progressive UORC streaming LODs and uor-matmul tensor kernels inside a Web Worker."})
+  body: (record Foundation.Arch::Component {index := 11, kind := (ctor Foundation.Arch::ComponentKind.service), name := "Engine Verifier Guest", text := "The Core-Wasm guest compiled from Engine.lex.tex that verifies progressive UORC streaming LODs and uor-matmul tensor kernels inside a Web Worker."})
+}
+
+definition{
+  name: componentVerdantWasmCrate,
+  parameters: [],
+  result: Foundation.Arch::Component,
+  body: (record Foundation.Arch::Component {index := 10, kind := (ctor Foundation.Arch::ComponentKind.releaseBinary), name := "Verdant Wasm Worker Bridge", text := "crates/verdant-wasm: zero-unsafe WebAssembly C-ABI simulation, lawful camera, progressive uorc_decompress streaming, and zero-copy OffscreenCanvas host."})
+}
+
+definition{
+  name: componentVerdantCliCrate,
+  parameters: [],
+  result: Foundation.Arch::Component,
+  body: (record Foundation.Arch::Component {index := 7, kind := (ctor Foundation.Arch::ComponentKind.cliAdapter), name := "Verdant CLI Asset and Universe Packer", text := "crates/verdant-cli: command-line binary glTF 2.0 importer, progressive UORC transcoder, universe sector bundler, story conservation verifier, and benchmark oracle."})
 }
 
 definition{
   name: edgeCoreToExamples,
   parameters: [],
   result: Foundation.Arch::Edge,
-  body: (record Foundation.Arch::Edge {index := 0, fromIndex := 7, toIndex := 3, kind := (ctor Foundation.Arch::EdgeKind.dataFlow)})
+  body: (record Foundation.Arch::Edge {index := 1, fromIndex := 8, toIndex := 3, kind := (ctor Foundation.Arch::EdgeKind.dataFlow)})
 }
 
 definition{
   name: edgeCoreToStudio,
   parameters: [],
   result: Foundation.Arch::Edge,
-  body: (record Foundation.Arch::Edge {index := 1, fromIndex := 7, toIndex := 4, kind := (ctor Foundation.Arch::EdgeKind.dataFlow)})
+  body: (record Foundation.Arch::Edge {index := 2, fromIndex := 8, toIndex := 4, kind := (ctor Foundation.Arch::EdgeKind.dataFlow)})
 }
 
 definition{
   name: edgePagesToAgent,
   parameters: [],
   result: Foundation.Arch::Edge,
-  body: (record Foundation.Arch::Edge {index := 2, fromIndex := 5, toIndex := 0, kind := (ctor Foundation.Arch::EdgeKind.dataFlow)})
+  body: (record Foundation.Arch::Edge {index := 4, fromIndex := 5, toIndex := 0, kind := (ctor Foundation.Arch::EdgeKind.dataFlow)})
 }
 
 definition{
   name: edgePagesToCanvas,
   parameters: [],
   result: Foundation.Arch::Edge,
-  body: (record Foundation.Arch::Edge {index := 3, fromIndex := 5, toIndex := 2, kind := (ctor Foundation.Arch::EdgeKind.dataFlow)})
+  body: (record Foundation.Arch::Edge {index := 5, fromIndex := 5, toIndex := 2, kind := (ctor Foundation.Arch::EdgeKind.dataFlow)})
 }
 
 definition{
   name: edgeStitchToStudio,
   parameters: [],
   result: Foundation.Arch::Edge,
-  body: (record Foundation.Arch::Edge {index := 4, fromIndex := 6, toIndex := 4, kind := (ctor Foundation.Arch::EdgeKind.dataFlow)})
+  body: (record Foundation.Arch::Edge {index := 6, fromIndex := 6, toIndex := 4, kind := (ctor Foundation.Arch::EdgeKind.dataFlow)})
 }
 
 definition{
   name: edgeStudioToAudio,
   parameters: [],
   result: Foundation.Arch::Edge,
-  body: (record Foundation.Arch::Edge {index := 5, fromIndex := 4, toIndex := 1, kind := (ctor Foundation.Arch::EdgeKind.dataFlow)})
+  body: (record Foundation.Arch::Edge {index := 7, fromIndex := 4, toIndex := 1, kind := (ctor Foundation.Arch::EdgeKind.dataFlow)})
 }
 
 definition{
   name: edgeStudioToCanvas,
   parameters: [],
   result: Foundation.Arch::Edge,
-  body: (record Foundation.Arch::Edge {index := 6, fromIndex := 4, toIndex := 2, kind := (ctor Foundation.Arch::EdgeKind.dataFlow)})
+  body: (record Foundation.Arch::Edge {index := 8, fromIndex := 4, toIndex := 2, kind := (ctor Foundation.Arch::EdgeKind.dataFlow)})
 }
 
 definition{
   name: edgeStudioToPages,
   parameters: [],
   result: Foundation.Arch::Edge,
-  body: (record Foundation.Arch::Edge {index := 7, fromIndex := 4, toIndex := 5, kind := (ctor Foundation.Arch::EdgeKind.dataFlow)})
+  body: (record Foundation.Arch::Edge {index := 9, fromIndex := 4, toIndex := 5, kind := (ctor Foundation.Arch::EdgeKind.dataFlow)})
 }
 
 definition{
   name: edgeStudioToStitch,
   parameters: [],
   result: Foundation.Arch::Edge,
-  body: (record Foundation.Arch::Edge {index := 8, fromIndex := 4, toIndex := 6, kind := (ctor Foundation.Arch::EdgeKind.dataFlow)})
+  body: (record Foundation.Arch::Edge {index := 10, fromIndex := 4, toIndex := 6, kind := (ctor Foundation.Arch::EdgeKind.dataFlow)})
 }
 
 definition{
   name: edgeStudioToVerifier,
   parameters: [],
   result: Foundation.Arch::Edge,
-  body: (record Foundation.Arch::Edge {index := 9, fromIndex := 4, toIndex := 9, kind := (ctor Foundation.Arch::EdgeKind.dataFlow)})
+  body: (record Foundation.Arch::Edge {index := 11, fromIndex := 4, toIndex := 11, kind := (ctor Foundation.Arch::EdgeKind.dataFlow)})
 }
 
 definition{
   name: edgeTensorToCore,
   parameters: [],
   result: Foundation.Arch::Edge,
-  body: (record Foundation.Arch::Edge {index := 10, fromIndex := 8, toIndex := 7, kind := (ctor Foundation.Arch::EdgeKind.dataFlow)})
+  body: (record Foundation.Arch::Edge {index := 12, fromIndex := 9, toIndex := 8, kind := (ctor Foundation.Arch::EdgeKind.dataFlow)})
 }
 
 definition{
   name: edgeVerifierToStudio,
   parameters: [],
   result: Foundation.Arch::Edge,
-  body: (record Foundation.Arch::Edge {index := 11, fromIndex := 9, toIndex := 4, kind := (ctor Foundation.Arch::EdgeKind.dataFlow)})
+  body: (record Foundation.Arch::Edge {index := 13, fromIndex := 11, toIndex := 4, kind := (ctor Foundation.Arch::EdgeKind.dataFlow)})
+}
+
+definition{
+  name: edgeCoreToWasm,
+  parameters: [],
+  result: Foundation.Arch::Edge,
+  body: (record Foundation.Arch::Edge {index := 3, fromIndex := 8, toIndex := 10, kind := (ctor Foundation.Arch::EdgeKind.dataFlow)})
+}
+
+definition{
+  name: edgeWasmToStudio,
+  parameters: [],
+  result: Foundation.Arch::Edge,
+  body: (record Foundation.Arch::Edge {index := 14, fromIndex := 10, toIndex := 4, kind := (ctor Foundation.Arch::EdgeKind.dataFlow)})
+}
+
+definition{
+  name: edgeCoreToCli,
+  parameters: [],
+  result: Foundation.Arch::Edge,
+  body: (record Foundation.Arch::Edge {index := 0, fromIndex := 8, toIndex := 7, kind := (ctor Foundation.Arch::EdgeKind.dataFlow)})
 }
 
 definition{
   name: viewpointArtistStandards,
   parameters: [],
   result: Foundation.Arch::Viewpoint,
-  body: (record Foundation.Arch::Viewpoint {index := 0, stakeholderIndex := 5, concernIndex := 7, modelKindIndex := 0})
+  body: (record Foundation.Arch::Viewpoint {index := 0, stakeholderIndex := 5, concernIndex := 8, modelKindIndex := 0})
 }
 
 definition{
   name: viewpointAuditorIntegrity,
   parameters: [],
   result: Foundation.Arch::Viewpoint,
-  body: (record Foundation.Arch::Viewpoint {index := 1, stakeholderIndex := 3, concernIndex := 5, modelKindIndex := 2})
+  body: (record Foundation.Arch::Viewpoint {index := 1, stakeholderIndex := 3, concernIndex := 6, modelKindIndex := 2})
 }
 
 definition{
   name: viewpointCitizenStitchMesh,
   parameters: [],
   result: Foundation.Arch::Viewpoint,
-  body: (record Foundation.Arch::Viewpoint {index := 2, stakeholderIndex := 2, concernIndex := 6, modelKindIndex := 1})
+  body: (record Foundation.Arch::Viewpoint {index := 2, stakeholderIndex := 2, concernIndex := 7, modelKindIndex := 1})
 }
 
 definition{
   name: viewpointDeveloperOnboarding,
   parameters: [],
   result: Foundation.Arch::Viewpoint,
-  body: (record Foundation.Arch::Viewpoint {index := 3, stakeholderIndex := 1, concernIndex := 1, modelKindIndex := 0})
+  body: (record Foundation.Arch::Viewpoint {index := 4, stakeholderIndex := 1, concernIndex := 1, modelKindIndex := 0})
 }
 
 definition{
   name: viewpointPlayerAccessibility,
   parameters: [],
   result: Foundation.Arch::Viewpoint,
-  body: (record Foundation.Arch::Viewpoint {index := 4, stakeholderIndex := 0, concernIndex := 0, modelKindIndex := 1})
+  body: (record Foundation.Arch::Viewpoint {index := 5, stakeholderIndex := 0, concernIndex := 0, modelKindIndex := 1})
 }
 
 definition{
   name: viewpointPlayerCybernetics,
   parameters: [],
   result: Foundation.Arch::Viewpoint,
-  body: (record Foundation.Arch::Viewpoint {index := 5, stakeholderIndex := 0, concernIndex := 4, modelKindIndex := 1})
+  body: (record Foundation.Arch::Viewpoint {index := 6, stakeholderIndex := 0, concernIndex := 5, modelKindIndex := 1})
 }
 
 definition{
   name: viewpointSystemsPerformance,
   parameters: [],
   result: Foundation.Arch::Viewpoint,
-  body: (record Foundation.Arch::Viewpoint {index := 6, stakeholderIndex := 4, concernIndex := 3, modelKindIndex := 1})
+  body: (record Foundation.Arch::Viewpoint {index := 8, stakeholderIndex := 4, concernIndex := 3, modelKindIndex := 1})
 }
 
 definition{
   name: viewpointSystemsTensorStreaming,
   parameters: [],
   result: Foundation.Arch::Viewpoint,
-  body: (record Foundation.Arch::Viewpoint {index := 7, stakeholderIndex := 4, concernIndex := 8, modelKindIndex := 0})
+  body: (record Foundation.Arch::Viewpoint {index := 9, stakeholderIndex := 4, concernIndex := 9, modelKindIndex := 0})
 }
 
 definition{
   name: viewpointUiCompliance,
   parameters: [],
   result: Foundation.Arch::Viewpoint,
-  body: (record Foundation.Arch::Viewpoint {index := 8, stakeholderIndex := 6, concernIndex := 2, modelKindIndex := 0})
+  body: (record Foundation.Arch::Viewpoint {index := 10, stakeholderIndex := 6, concernIndex := 2, modelKindIndex := 0})
+}
+
+definition{
+  name: viewpointPlayerLawfulWorld,
+  parameters: [],
+  result: Foundation.Arch::Viewpoint,
+  body: (record Foundation.Arch::Viewpoint {index := 7, stakeholderIndex := 0, concernIndex := 4, modelKindIndex := 1})
+}
+
+definition{
+  name: viewpointDeveloperLawfulWorld,
+  parameters: [],
+  result: Foundation.Arch::Viewpoint,
+  body: (record Foundation.Arch::Viewpoint {index := 3, stakeholderIndex := 1, concernIndex := 4, modelKindIndex := 0})
 }
 
 definition{
@@ -387,70 +443,84 @@ definition{
   name: viewDeveloperOnboarding,
   parameters: [],
   result: Foundation.Arch::View,
-  body: (record Foundation.Arch::View {index := 3, viewpointIndex := 3, modelKindIndex := 0})
+  body: (record Foundation.Arch::View {index := 4, viewpointIndex := 4, modelKindIndex := 0})
 }
 
 definition{
   name: viewPlayerAccessibility,
   parameters: [],
   result: Foundation.Arch::View,
-  body: (record Foundation.Arch::View {index := 4, viewpointIndex := 4, modelKindIndex := 1})
+  body: (record Foundation.Arch::View {index := 5, viewpointIndex := 5, modelKindIndex := 1})
 }
 
 definition{
   name: viewPlayerCybernetics,
   parameters: [],
   result: Foundation.Arch::View,
-  body: (record Foundation.Arch::View {index := 5, viewpointIndex := 5, modelKindIndex := 1})
+  body: (record Foundation.Arch::View {index := 6, viewpointIndex := 6, modelKindIndex := 1})
 }
 
 definition{
   name: viewSystemsPerformance,
   parameters: [],
   result: Foundation.Arch::View,
-  body: (record Foundation.Arch::View {index := 6, viewpointIndex := 6, modelKindIndex := 1})
+  body: (record Foundation.Arch::View {index := 8, viewpointIndex := 8, modelKindIndex := 1})
 }
 
 definition{
   name: viewSystemsTensorStreaming,
   parameters: [],
   result: Foundation.Arch::View,
-  body: (record Foundation.Arch::View {index := 7, viewpointIndex := 7, modelKindIndex := 0})
+  body: (record Foundation.Arch::View {index := 9, viewpointIndex := 9, modelKindIndex := 0})
 }
 
 definition{
   name: viewUiCompliance,
   parameters: [],
   result: Foundation.Arch::View,
-  body: (record Foundation.Arch::View {index := 8, viewpointIndex := 8, modelKindIndex := 0})
+  body: (record Foundation.Arch::View {index := 10, viewpointIndex := 10, modelKindIndex := 0})
+}
+
+definition{
+  name: viewPlayerLawfulWorld,
+  parameters: [],
+  result: Foundation.Arch::View,
+  body: (record Foundation.Arch::View {index := 7, viewpointIndex := 7, modelKindIndex := 1})
+}
+
+definition{
+  name: viewDeveloperLawfulWorld,
+  parameters: [],
+  result: Foundation.Arch::View,
+  body: (record Foundation.Arch::View {index := 3, viewpointIndex := 3, modelKindIndex := 0})
 }
 
 definition{
   name: componentRecords,
   parameters: [],
   result: (List Foundation.Arch::Component),
-  body: (cons (componentAgentClient) (cons (componentBrowserAudioHost) (cons (componentBrowserCanvasHost) (cons (componentEngineCliExamples) (cons (componentEngineStudioSite) (cons (componentPagesTarget) (cons (componentStitchMultiplayerFabric) (cons (componentVerdantCoreCrate) (cons (componentVerdantTensorCrate) (cons (componentVerifierGuest) (nil Foundation.Arch::Component)))))))))))
+  body: (cons (componentAgentClient) (cons (componentBrowserAudioHost) (cons (componentBrowserCanvasHost) (cons (componentEngineCliExamples) (cons (componentEngineStudioSite) (cons (componentPagesTarget) (cons (componentStitchMultiplayerFabric) (cons (componentVerdantCliCrate) (cons (componentVerdantCoreCrate) (cons (componentVerdantTensorCrate) (cons (componentVerdantWasmCrate) (cons (componentVerifierGuest) (nil Foundation.Arch::Component)))))))))))))
 }
 
 definition{
   name: edgeRecords,
   parameters: [],
   result: (List Foundation.Arch::Edge),
-  body: (cons (edgeCoreToExamples) (cons (edgeCoreToStudio) (cons (edgePagesToAgent) (cons (edgePagesToCanvas) (cons (edgeStitchToStudio) (cons (edgeStudioToAudio) (cons (edgeStudioToCanvas) (cons (edgeStudioToPages) (cons (edgeStudioToStitch) (cons (edgeStudioToVerifier) (cons (edgeTensorToCore) (cons (edgeVerifierToStudio) (nil Foundation.Arch::Edge)))))))))))))
+  body: (cons (edgeCoreToCli) (cons (edgeCoreToExamples) (cons (edgeCoreToStudio) (cons (edgeCoreToWasm) (cons (edgePagesToAgent) (cons (edgePagesToCanvas) (cons (edgeStitchToStudio) (cons (edgeStudioToAudio) (cons (edgeStudioToCanvas) (cons (edgeStudioToPages) (cons (edgeStudioToStitch) (cons (edgeStudioToVerifier) (cons (edgeTensorToCore) (cons (edgeVerifierToStudio) (cons (edgeWasmToStudio) (nil Foundation.Arch::Edge))))))))))))))))
 }
 
 definition{
   name: viewpointRecords,
   parameters: [],
   result: (List Foundation.Arch::Viewpoint),
-  body: (cons (viewpointArtistStandards) (cons (viewpointAuditorIntegrity) (cons (viewpointCitizenStitchMesh) (cons (viewpointDeveloperOnboarding) (cons (viewpointPlayerAccessibility) (cons (viewpointPlayerCybernetics) (cons (viewpointSystemsPerformance) (cons (viewpointSystemsTensorStreaming) (cons (viewpointUiCompliance) (nil Foundation.Arch::Viewpoint))))))))))
+  body: (cons (viewpointArtistStandards) (cons (viewpointAuditorIntegrity) (cons (viewpointCitizenStitchMesh) (cons (viewpointDeveloperLawfulWorld) (cons (viewpointDeveloperOnboarding) (cons (viewpointPlayerAccessibility) (cons (viewpointPlayerCybernetics) (cons (viewpointPlayerLawfulWorld) (cons (viewpointSystemsPerformance) (cons (viewpointSystemsTensorStreaming) (cons (viewpointUiCompliance) (nil Foundation.Arch::Viewpoint))))))))))))
 }
 
 definition{
   name: viewRecords,
   parameters: [],
   result: (List Foundation.Arch::View),
-  body: (cons (viewArtistStandards) (cons (viewAuditorIntegrity) (cons (viewCitizenStitchMesh) (cons (viewDeveloperOnboarding) (cons (viewPlayerAccessibility) (cons (viewPlayerCybernetics) (cons (viewSystemsPerformance) (cons (viewSystemsTensorStreaming) (cons (viewUiCompliance) (nil Foundation.Arch::View))))))))))
+  body: (cons (viewArtistStandards) (cons (viewAuditorIntegrity) (cons (viewCitizenStitchMesh) (cons (viewDeveloperLawfulWorld) (cons (viewDeveloperOnboarding) (cons (viewPlayerAccessibility) (cons (viewPlayerCybernetics) (cons (viewPlayerLawfulWorld) (cons (viewSystemsPerformance) (cons (viewSystemsTensorStreaming) (cons (viewUiCompliance) (nil Foundation.Arch::View))))))))))))
 }
 
 definition{
@@ -504,20 +574,20 @@ definition{
   name: architectureValid,
   parameters: [],
   result: Bool,
-  body: ((edgesKnown 10 (edgeRecords)) && ((viewpointsKnown 7 9 (viewpointRecords)) && (viewsConform (viewpointRecords) (viewRecords))))
+  body: ((edgesKnown 12 (edgeRecords)) && ((viewpointsKnown 7 10 (viewpointRecords)) && (viewsConform (viewpointRecords) (viewRecords))))
 }
 
 theorem{
   name: architectureDescriptionHolds,
   parameters: [],
-  statement: ((((architectureValid) && (((project (standardIso25010) editionIndex) =? 0) && (((project (standardIso27005) editionIndex) =? 0) && (((project (standardIso27034) editionIndex) =? 0) && ((project (standardIso42010) editionIndex) =? 0))))) && ((((project (stakeholderBrowserPlayer) index) =? 0) && (((project (stakeholderGameDeveloper) index) =? 1) && (((project (stakeholderMultiplayerCitizen) index) =? 2) && (((project (stakeholderSecurityAuditor) index) =? 3) && (((project (stakeholderSystemsEngineer) index) =? 4) && (((project (stakeholderTechnicalArtist) index) =? 5) && ((project (stakeholderUiComplianceArchitect) index) =? 6))))))) && ((((project (concernAccessibilityAndResponsiveUi) index) =? 0) && (((project (concernDeveloperOnboarding) index) =? 1) && (((project (concernFormalUiAndCompliance) index) =? 2) && (((project (concernFramePerformance) index) =? 3) && (((project (concernNeuromorphicMutualAttention) index) =? 4) && (((project (concernRuntimeIntegrity) index) =? 5) && (((project (concernSovereignIdentityAndStitchMesh) index) =? 6) && (((project (concernStandardsInteroperability) index) =? 7) && ((project (concernTensorAndStreamingFidelity) index) =? 8))))))))) && (((project (componentAgentClient) index) =? 0) && (((project (componentBrowserAudioHost) index) =? 1) && (((project (componentBrowserCanvasHost) index) =? 2) && (((project (componentEngineCliExamples) index) =? 3) && (((project (componentEngineStudioSite) index) =? 4) && (((project (componentPagesTarget) index) =? 5) && (((project (componentStitchMultiplayerFabric) index) =? 6) && (((project (componentVerdantCoreCrate) index) =? 7) && (((project (componentVerdantTensorCrate) index) =? 8) && ((project (componentVerifierGuest) index) =? 9))))))))))))) = true),
+  statement: ((((architectureValid) && (((project (standardIso25010) editionIndex) =? 0) && (((project (standardIso27005) editionIndex) =? 0) && (((project (standardIso27034) editionIndex) =? 0) && ((project (standardIso42010) editionIndex) =? 0))))) && ((((project (stakeholderBrowserPlayer) index) =? 0) && (((project (stakeholderGameDeveloper) index) =? 1) && (((project (stakeholderMultiplayerCitizen) index) =? 2) && (((project (stakeholderSecurityAuditor) index) =? 3) && (((project (stakeholderSystemsEngineer) index) =? 4) && (((project (stakeholderTechnicalArtist) index) =? 5) && ((project (stakeholderUiComplianceArchitect) index) =? 6))))))) && ((((project (concernAccessibilityAndResponsiveUi) index) =? 0) && (((project (concernDeveloperOnboarding) index) =? 1) && (((project (concernFormalUiAndCompliance) index) =? 2) && (((project (concernFramePerformance) index) =? 3) && (((project (concernNeuromorphicMutualAttention) index) =? 5) && (((project (concernRuntimeIntegrity) index) =? 6) && (((project (concernSovereignIdentityAndStitchMesh) index) =? 7) && (((project (concernStandardsInteroperability) index) =? 8) && (((project (concernTensorAndStreamingFidelity) index) =? 9) && ((project (concernLawfulSpatialAndNarrativeInvariants) index) =? 4)))))))))) && (((project (componentAgentClient) index) =? 0) && (((project (componentBrowserAudioHost) index) =? 1) && (((project (componentBrowserCanvasHost) index) =? 2) && (((project (componentEngineCliExamples) index) =? 3) && (((project (componentEngineStudioSite) index) =? 4) && (((project (componentPagesTarget) index) =? 5) && (((project (componentStitchMultiplayerFabric) index) =? 6) && (((project (componentVerdantCoreCrate) index) =? 8) && (((project (componentVerdantTensorCrate) index) =? 9) && (((project (componentVerifierGuest) index) =? 11) && (((project (componentVerdantWasmCrate) index) =? 10) && ((project (componentVerdantCliCrate) index) =? 7))))))))))))))) = true),
   proof: decide{}
 }
 
 theorem{
   name: architectureEdgesAndViewsIndexed,
   parameters: [],
-  statement: (((((project (edgeCoreToExamples) index) =? 0) && (((project (edgeCoreToStudio) index) =? 1) && (((project (edgePagesToAgent) index) =? 2) && (((project (edgePagesToCanvas) index) =? 3) && (((project (edgeStitchToStudio) index) =? 4) && (((project (edgeStudioToAudio) index) =? 5) && (((project (edgeStudioToCanvas) index) =? 6) && (((project (edgeStudioToPages) index) =? 7) && (((project (edgeStudioToStitch) index) =? 8) && (((project (edgeStudioToVerifier) index) =? 9) && (((project (edgeTensorToCore) index) =? 10) && ((project (edgeVerifierToStudio) index) =? 11)))))))))))) && ((((project (viewpointArtistStandards) index) =? 0) && (((project (viewpointAuditorIntegrity) index) =? 1) && (((project (viewpointCitizenStitchMesh) index) =? 2) && (((project (viewpointDeveloperOnboarding) index) =? 3) && (((project (viewpointPlayerAccessibility) index) =? 4) && (((project (viewpointPlayerCybernetics) index) =? 5) && (((project (viewpointSystemsPerformance) index) =? 6) && (((project (viewpointSystemsTensorStreaming) index) =? 7) && ((project (viewpointUiCompliance) index) =? 8))))))))) && (((project (viewArtistStandards) index) =? 0) && (((project (viewAuditorIntegrity) index) =? 1) && (((project (viewCitizenStitchMesh) index) =? 2) && (((project (viewDeveloperOnboarding) index) =? 3) && (((project (viewPlayerAccessibility) index) =? 4) && (((project (viewPlayerCybernetics) index) =? 5) && (((project (viewSystemsPerformance) index) =? 6) && (((project (viewSystemsTensorStreaming) index) =? 7) && ((project (viewUiCompliance) index) =? 8))))))))))) = true),
+  statement: (((((project (edgeCoreToExamples) index) =? 1) && (((project (edgeCoreToStudio) index) =? 2) && (((project (edgePagesToAgent) index) =? 4) && (((project (edgePagesToCanvas) index) =? 5) && (((project (edgeStitchToStudio) index) =? 6) && (((project (edgeStudioToAudio) index) =? 7) && (((project (edgeStudioToCanvas) index) =? 8) && (((project (edgeStudioToPages) index) =? 9) && (((project (edgeStudioToStitch) index) =? 10) && (((project (edgeStudioToVerifier) index) =? 11) && (((project (edgeTensorToCore) index) =? 12) && (((project (edgeVerifierToStudio) index) =? 13) && (((project (edgeCoreToWasm) index) =? 3) && (((project (edgeWasmToStudio) index) =? 14) && ((project (edgeCoreToCli) index) =? 0))))))))))))))) && ((((project (viewpointArtistStandards) index) =? 0) && (((project (viewpointAuditorIntegrity) index) =? 1) && (((project (viewpointCitizenStitchMesh) index) =? 2) && (((project (viewpointDeveloperOnboarding) index) =? 4) && (((project (viewpointPlayerAccessibility) index) =? 5) && (((project (viewpointPlayerCybernetics) index) =? 6) && (((project (viewpointSystemsPerformance) index) =? 8) && (((project (viewpointSystemsTensorStreaming) index) =? 9) && (((project (viewpointUiCompliance) index) =? 10) && (((project (viewpointPlayerLawfulWorld) index) =? 7) && ((project (viewpointDeveloperLawfulWorld) index) =? 3))))))))))) && (((project (viewArtistStandards) index) =? 0) && (((project (viewAuditorIntegrity) index) =? 1) && (((project (viewCitizenStitchMesh) index) =? 2) && (((project (viewDeveloperOnboarding) index) =? 4) && (((project (viewPlayerAccessibility) index) =? 5) && (((project (viewPlayerCybernetics) index) =? 6) && (((project (viewSystemsPerformance) index) =? 8) && (((project (viewSystemsTensorStreaming) index) =? 9) && (((project (viewUiCompliance) index) =? 10) && (((project (viewPlayerLawfulWorld) index) =? 7) && ((project (viewDeveloperLawfulWorld) index) =? 3))))))))))))) = true),
   proof: decide{}
 }
 \end{semanticmodule}

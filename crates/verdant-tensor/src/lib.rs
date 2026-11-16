@@ -329,6 +329,7 @@ pub use audio_ring::{
 };
 pub use coded::{
     contract_coded_geometry_grid, contract_packed_animation_tracks, contract_runs_ibl_harmonics,
+    prism_coded_tiers_certified,
 };
 pub use linear::{
     batch_transform_positions_exact, delassus_effective_mass_matrix,

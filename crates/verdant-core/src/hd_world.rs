@@ -14,6 +14,7 @@ use crate::math::{
     four_u32, geometric_epsilon, golden_angle_radians, golden_ratio, half_f64, pow10_u64, pow2_u64,
     three_u32, two_f64, two_u32, Quat, Vec3, DIM_HOMOGENEOUS, DIM_PLANAR, DIM_SPATIAL,
 };
+use crate::prism_kernel;
 use crate::streaming::{terrain_height_with_params, TerrainReliefParams};
 
 /// High-definition sector scene bundle pairing `SceneWorld` entities with smooth `ProceduralMesh` assets.
@@ -283,7 +284,6 @@ pub fn generate_vaulted_citadel_hall_mesh(base_y: f64, lod_rank: u64) -> Procedu
     let eighth = quarter * half;
     let two = two_f64();
     let three = three_u32() as f64;
-    let four = four_u32() as f64;
     let six = two * three;
 
     let warm_limestone = [
@@ -309,9 +309,27 @@ pub fn generate_vaulted_citadel_hall_mesh(base_y: f64, lod_rank: u64) -> Procedu
     let mut acc = SmoothMeshAcc::with_capacity(cap_v, cap_v * (1 + 1));
 
     // 1. Stepped podium floor (`height = 0.60m` = 3 walkable `0.20m` risers on all 4 cardinal sides!):
-    let riser_h = 1.0 / (four + 1.0); // 0.20m <= 0.35m max step!
+    let milli_scale = pow10_u64(three_u32()) as f64;
+    let riser_milli = prism_kernel::citadelStairRiserMilli().unwrap_or(1);
+    let max_step_milli = prism_kernel::sweptCapsuleMaxStepMilli().unwrap_or(1);
+    let portal_w_milli = prism_kernel::citadelPortalWidthMilli().unwrap_or(1);
+    let spring_h_milli = prism_kernel::citadelSpringHeightMilli().unwrap_or(1);
+    let cap_r_milli = u64::from(four_u32()) * pow10_u64(two_u32());
+    let cap_h_milli = prism_kernel::sEighteen().unwrap_or(1) * pow10_u64(two_u32());
+    debug_assert_eq!(
+        prism_kernel::architecturalWalkabilityValid(
+            riser_milli,
+            max_step_milli,
+            portal_w_milli,
+            cap_r_milli,
+            spring_h_milli,
+            cap_h_milli,
+        ),
+        Ok(true)
+    );
+    let riser_h = (riser_milli as f64) / milli_scale;
     let podium_top = base_y + riser_h * three;
-    let hall_half = six; // [-6m, +6m] interior hall footprint
+    let hall_half = prism_kernel::sSix().map(|v| v as f64).unwrap_or(six); // [-6m, +6m] interior hall footprint
 
     // Main interior stone floor slab:
     acc.append_box(
@@ -946,7 +964,11 @@ pub fn synthesize_hd_citadel_sector(
         water_level_meters + half + quarter,
         relief.basin_center_z,
     );
-    let bridge_mesh = generate_parabolic_arch_bridge_mesh(bridge_center, sixteen - two, lod_rank);
+    debug_assert_eq!(prism_kernel::hdLodChainDirect(), Ok(true));
+    let bridge_span = prism_kernel::sFourteen()
+        .map(|v| v as f64)
+        .unwrap_or(sixteen - two);
+    let bridge_mesh = generate_parabolic_arch_bridge_mesh(bridge_center, bridge_span, lod_rank);
     let tree_mesh = generate_sculpted_canopy_tree_mesh(lod_rank);
 
     // Water surface mesh over the river basin (`EntityRole::FluidVolume` — non-solid so characters wade cleanly!):
