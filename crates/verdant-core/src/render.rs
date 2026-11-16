@@ -12,7 +12,8 @@ use crate::ecs::SceneWorld;
 use crate::error::{RenderGraphError, ShaderValidationError, TensorComputeError};
 use crate::geometry::ProceduralMesh;
 use crate::math::{
-    golden_ratio, half_f64, nth_prime_u64, three_u32, two_f64, Vec3, DIM_HOMOGENEOUS, DIM_SPATIAL,
+    golden_ratio, half_f64, nth_prime_u64, three_u32, two_f64, Mat4, Vec3, DIM_HOMOGENEOUS,
+    DIM_SPATIAL,
 };
 use crate::tensor::RasterTriangle;
 
@@ -640,14 +641,236 @@ impl PackedSceneRenderBuffers {
         self.append_quad(p101, p100, p110, p111, color_rgb);
         self.append_quad(p000, p001, p011, p010, color_rgb);
     }
+
+    /// Appends a world-space quad into WebGL2 vertex/index streams without eagerly allocating
+    /// `RasterTriangle` structs (`ensure_tile_triangles_built` materializes them lazily if needed).
+    pub fn append_quad_gpu_only(
+        &mut self,
+        p0: Vec3,
+        p1: Vec3,
+        p2: Vec3,
+        p3: Vec3,
+        color_rgb: [f32; DIM_SPATIAL],
+    ) {
+        let i2 = 1usize + 1usize;
+        let i3 = i2 + 1usize;
+        let normal = (p1 - p0).cross(p2 - p0).normalized();
+        let n_arr = normal.to_f32_array();
+        let base = (self.positions_xyz.len() / DIM_SPATIAL) as u32;
+        for p in [p0, p1, p2, p3] {
+            let pa = p.to_f32_array();
+            self.positions_xyz.extend_from_slice(&pa);
+            self.normals_xyz.extend_from_slice(&n_arr);
+            self.colors_rgb.extend_from_slice(&color_rgb);
+        }
+        let b1 = base + 1;
+        let b2 = base + (i2 as u32);
+        let b3 = base + (i3 as u32);
+        self.indices
+            .extend_from_slice(&[base, b1, b2, base, b2, b3]);
+    }
+
+    /// Appends an oriented world-space 3D box into GPU streams only (`0` software tile overhead).
+    pub fn append_oriented_box_gpu_only(
+        &mut self,
+        center: Vec3,
+        half_extents: Vec3,
+        yaw_rad: f64,
+        pitch_rad: f64,
+        color_rgb: [f32; DIM_SPATIAL],
+    ) {
+        let cy = yaw_rad.cos();
+        let sy = yaw_rad.sin();
+        let cp = pitch_rad.cos();
+        let sp = pitch_rad.sin();
+        let xf = |lx: f64, ly: f64, lz: f64| -> Vec3 {
+            let y1 = ly * cp - lz * sp;
+            let z1 = ly * sp + lz * cp;
+            Vec3::new(
+                center.x + lx * cy - z1 * sy,
+                center.y + y1,
+                center.z + lx * sy + z1 * cy,
+            )
+        };
+        let hx = half_extents.x;
+        let hy = half_extents.y;
+        let hz = half_extents.z;
+        let p000 = xf(-hx, -hy, -hz);
+        let p100 = xf(hx, -hy, -hz);
+        let p110 = xf(hx, hy, -hz);
+        let p010 = xf(-hx, hy, -hz);
+        let p001 = xf(-hx, -hy, hz);
+        let p101 = xf(hx, -hy, hz);
+        let p111 = xf(hx, hy, hz);
+        let p011 = xf(-hx, hy, hz);
+
+        self.append_quad_gpu_only(p001, p101, p111, p011, color_rgb);
+        self.append_quad_gpu_only(p100, p000, p010, p110, color_rgb);
+        self.append_quad_gpu_only(p011, p111, p110, p010, color_rgb);
+        self.append_quad_gpu_only(p000, p100, p101, p001, color_rgb);
+        self.append_quad_gpu_only(p101, p100, p110, p111, color_rgb);
+        self.append_quad_gpu_only(p000, p001, p011, p010, color_rgb);
+    }
+
+    /// Lazily populates `tile_triangles` from `positions_xyz`, `normals_xyz`, `colors_rgb`, and
+    /// `indices` when switching into `16x16` software tile rasterization mode.
+    pub fn ensure_tile_triangles_built(&mut self) {
+        let total_tris = self.indices.len() / DIM_SPATIAL;
+        if self.tile_triangles.len() >= total_tris {
+            return;
+        }
+        let i2 = 1usize + 1usize;
+        let third = 1.0_f32 / ((1 + 1 + 1) as f32);
+        self.tile_triangles
+            .reserve(total_tris - self.tile_triangles.len());
+        for tri in self.indices[self.tile_triangles.len() * DIM_SPATIAL..].chunks_exact(DIM_SPATIAL)
+        {
+            let pa = (tri[0] as usize) * DIM_SPATIAL;
+            let pb = (tri[1] as usize) * DIM_SPATIAL;
+            let pc = (tri[i2] as usize) * DIM_SPATIAL;
+            self.tile_triangles.push(RasterTriangle {
+                positions: [
+                    [
+                        self.positions_xyz[pa],
+                        self.positions_xyz[pa + 1],
+                        self.positions_xyz[pa + i2],
+                    ],
+                    [
+                        self.positions_xyz[pb],
+                        self.positions_xyz[pb + 1],
+                        self.positions_xyz[pb + i2],
+                    ],
+                    [
+                        self.positions_xyz[pc],
+                        self.positions_xyz[pc + 1],
+                        self.positions_xyz[pc + i2],
+                    ],
+                ],
+                normal: [
+                    (self.normals_xyz[pa] + self.normals_xyz[pb] + self.normals_xyz[pc]) * third,
+                    (self.normals_xyz[pa + 1]
+                        + self.normals_xyz[pb + 1]
+                        + self.normals_xyz[pc + 1])
+                        * third,
+                    (self.normals_xyz[pa + i2]
+                        + self.normals_xyz[pb + i2]
+                        + self.normals_xyz[pc + i2])
+                        * third,
+                ],
+                base_color: [
+                    (self.colors_rgb[pa] + self.colors_rgb[pb] + self.colors_rgb[pc]) * third,
+                    (self.colors_rgb[pa + 1] + self.colors_rgb[pb + 1] + self.colors_rgb[pc + 1])
+                        * third,
+                    (self.colors_rgb[pa + i2]
+                        + self.colors_rgb[pb + i2]
+                        + self.colors_rgb[pc + i2])
+                        * third,
+                ],
+            });
+        }
+    }
 }
 
-/// Propagates `SceneWorld` hierarchy matrices via exact `verdant-tensor` contractions and packs
-/// all visible entity meshes into flat zero-copy vertex/index buffers and `16x16` tile triangles.
-pub fn pack_world_meshes_to_buffers(
+/// Hardware-instanced batch buffer (`gl.drawElementsInstanced`) pairing a shared base mesh with a
+/// flat `16`-`f32`-per-instance stream (`col0.xyz, r, col1.xyz, g, col2.xyz, b, trans.xyz, a`),
+/// rendering `10,000–100,000+` props, foliage clusters, crowds, or lattice cells in a single draw call.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct InstancedBatchBuffer {
+    /// Base mesh local positions (`3 * V` `f32`s).
+    pub mesh_positions_xyz: Vec<f32>,
+    /// Base mesh local normals (`3 * V` `f32`s).
+    pub mesh_normals_xyz: Vec<f32>,
+    /// Base mesh local RGB colors (`3 * V` `f32`s).
+    pub mesh_colors_rgb: Vec<f32>,
+    /// Base mesh triangle indices (`3 * T` `u32`s).
+    pub mesh_indices: Vec<u32>,
+    /// Contiguous `16 * instance_count` `f32` stream (`4 x vec4` attributes with `divisor = 1`).
+    pub instance_rows_f32: Vec<f32>,
+    /// Monotonic epoch incremented whenever the base mesh or instance buffer mutates.
+    pub epoch: u32,
+}
+
+impl InstancedBatchBuffer {
+    /// Initializes an instanced batch buffer from `mesh`.
+    #[must_use]
+    pub fn from_mesh(mesh: &ProceduralMesh) -> Self {
+        let i2 = 1usize + 1usize;
+        let v_len = mesh.positions.len();
+        let mut mesh_positions_xyz = Vec::with_capacity(v_len * DIM_SPATIAL);
+        let mut mesh_normals_xyz = Vec::with_capacity(v_len * DIM_SPATIAL);
+        let mut mesh_colors_rgb = Vec::with_capacity(v_len * DIM_SPATIAL);
+        for idx in 0..v_len {
+            mesh_positions_xyz.extend_from_slice(&mesh.positions[idx]);
+            mesh_normals_xyz.extend_from_slice(&mesh.normals[idx]);
+            let c = mesh.colors[idx];
+            mesh_colors_rgb.extend_from_slice(&[c[0], c[1], c[i2]]);
+        }
+        Self {
+            mesh_positions_xyz,
+            mesh_normals_xyz,
+            mesh_colors_rgb,
+            mesh_indices: mesh.indices.clone(),
+            instance_rows_f32: Vec::new(),
+            epoch: 1,
+        }
+    }
+
+    /// Number of active instances (`instance_rows_f32.len() / 16`).
+    #[must_use]
+    pub fn instance_count(&self) -> usize {
+        let stride = (1 + 1 + 1 + 1) * (1 + 1 + 1 + 1);
+        self.instance_rows_f32.len() / stride
+    }
+
+    /// Total effective triangles drawn (`(mesh_indices.len() / 3) * instance_count()`).
+    #[must_use]
+    pub fn effective_triangle_count(&self) -> usize {
+        (self.mesh_indices.len() / DIM_SPATIAL).saturating_mul(self.instance_count())
+    }
+
+    /// Clears all instances and advances `epoch`.
+    pub fn clear_instances(&mut self) {
+        if !self.instance_rows_f32.is_empty() {
+            self.instance_rows_f32.clear();
+            self.epoch = self.epoch.wrapping_add(1);
+        }
+    }
+
+    /// Appends an instance with world affine `transform` and `color_rgb` tint.
+    pub fn push_instance(&mut self, world_mat: Mat4, color_rgb: [f32; DIM_SPATIAL]) {
+        let i2 = 1usize + 1usize;
+        let i3 = i2 + 1usize;
+        let m = &world_mat.cols;
+        self.instance_rows_f32.extend_from_slice(&[
+            m[0][0] as f32,
+            m[0][1] as f32,
+            m[0][i2] as f32,
+            color_rgb[0],
+            m[1][0] as f32,
+            m[1][1] as f32,
+            m[1][i2] as f32,
+            color_rgb[1],
+            m[i2][0] as f32,
+            m[i2][1] as f32,
+            m[i2][i2] as f32,
+            color_rgb[i2],
+            m[i3][0] as f32,
+            m[i3][1] as f32,
+            m[i3][i2] as f32,
+            1.0_f32,
+        ]);
+        self.epoch = self.epoch.wrapping_add(1);
+    }
+}
+
+/// Propagates `SceneWorld` hierarchy matrices and packs all visible entity meshes into flat
+/// zero-copy vertex/index buffers, optionally skipping `tile_triangles` when `build_software_tiles`
+/// is `false` (`WebGL2` mode).
+pub fn pack_world_meshes_to_buffers_opts(
     scene: &SceneWorld,
     meshes: &[ProceduralMesh],
     materials: &[PbrMaterial],
+    build_software_tiles: bool,
 ) -> Result<PackedSceneRenderBuffers, TensorComputeError> {
     if meshes.is_empty() {
         return Err(TensorComputeError::ZeroOrMismatchedExtents {
@@ -655,8 +878,10 @@ pub fn pack_world_meshes_to_buffers(
         });
     }
 
-    let world_mats = scene.propagate_all_world_matrices()?;
+    let mut world_mats = scene.propagate_all_world_matrices()?;
+    world_mats.sort_unstable_by_key(|(id, _)| *id);
     let mut out = PackedSceneRenderBuffers::default();
+    let mut scratch_xformed: Vec<[f32; 1 + 1 + 1 + 1]> = Vec::new();
     let i2 = 1usize + 1usize;
 
     for (entity, (_, world_mat)) in scene.entities().zip(world_mats.iter()) {
@@ -677,23 +902,39 @@ pub fn pack_world_meshes_to_buffers(
                 ]
             });
 
+        let v_len = mesh.positions.len();
         let base_vertex = (out.positions_xyz.len() / DIM_SPATIAL) as u32;
-        let transformed =
-            verdant_tensor::batch_transform_positions_exact(&mesh.positions, &world_mat.cols)?;
+        scratch_xformed.resize(v_len, [0.0_f32; 1 + 1 + 1 + 1]);
+        verdant_tensor::batch_transform_positions_into(
+            &mesh.positions,
+            &world_mat.cols,
+            &mut scratch_xformed,
+        )?;
 
-        for (v_idx, wp) in transformed.iter().enumerate() {
+        out.positions_xyz.reserve(v_len * DIM_SPATIAL);
+        out.normals_xyz.reserve(v_len * DIM_SPATIAL);
+        out.colors_rgb.reserve(v_len * DIM_SPATIAL);
+        out.indices.reserve(mesh.indices.len());
+
+        let m_c0 = world_mat.cols[0];
+        let m_c1 = world_mat.cols[1];
+        let m_c2 = world_mat.cols[i2];
+
+        for (v_idx, wp) in scratch_xformed.iter().enumerate() {
             out.positions_xyz.push(wp[0]);
             out.positions_xyz.push(wp[1]);
             out.positions_xyz.push(wp[i2]);
 
             let n_local = mesh.normals[v_idx];
-            let origin_w = world_mat.transform_point3(Vec3::ZERO);
-            let nw = (world_mat.transform_point3(Vec3::new(
-                f64::from(n_local[0]),
-                f64::from(n_local[1]),
-                f64::from(n_local[i2]),
-            )) - origin_w)
-                .normalized();
+            let nlx = f64::from(n_local[0]);
+            let nly = f64::from(n_local[1]);
+            let nlz = f64::from(n_local[i2]);
+            let nw = Vec3::new(
+                nlx * m_c0[0] + nly * m_c1[0] + nlz * m_c2[0],
+                nlx * m_c0[1] + nly * m_c1[1] + nlz * m_c2[1],
+                nlx * m_c0[i2] + nly * m_c1[i2] + nlz * m_c2[i2],
+            )
+            .normalized();
             out.normals_xyz.push(nw.x as f32);
             out.normals_xyz.push(nw.y as f32);
             out.normals_xyz.push(nw.z as f32);
@@ -705,54 +946,24 @@ pub fn pack_world_meshes_to_buffers(
         }
 
         for tri in mesh.indices.chunks_exact(DIM_SPATIAL) {
-            let a = base_vertex + tri[0];
-            let b = base_vertex + tri[1];
-            let c = base_vertex + tri[i2];
-            out.indices.push(a);
-            out.indices.push(b);
-            out.indices.push(c);
-
-            let pa = (a as usize) * DIM_SPATIAL;
-            let pb = (b as usize) * DIM_SPATIAL;
-            let pc = (c as usize) * DIM_SPATIAL;
-            let third = 1.0_f32 / ((1 + 1 + 1) as f32);
-            out.tile_triangles.push(RasterTriangle {
-                positions: [
-                    [
-                        out.positions_xyz[pa],
-                        out.positions_xyz[pa + 1],
-                        out.positions_xyz[pa + i2],
-                    ],
-                    [
-                        out.positions_xyz[pb],
-                        out.positions_xyz[pb + 1],
-                        out.positions_xyz[pb + i2],
-                    ],
-                    [
-                        out.positions_xyz[pc],
-                        out.positions_xyz[pc + 1],
-                        out.positions_xyz[pc + i2],
-                    ],
-                ],
-                normal: [
-                    (out.normals_xyz[pa] + out.normals_xyz[pb] + out.normals_xyz[pc]) * third,
-                    (out.normals_xyz[pa + 1] + out.normals_xyz[pb + 1] + out.normals_xyz[pc + 1])
-                        * third,
-                    (out.normals_xyz[pa + i2]
-                        + out.normals_xyz[pb + i2]
-                        + out.normals_xyz[pc + i2])
-                        * third,
-                ],
-                base_color: [
-                    (out.colors_rgb[pa] + out.colors_rgb[pb] + out.colors_rgb[pc]) * third,
-                    (out.colors_rgb[pa + 1] + out.colors_rgb[pb + 1] + out.colors_rgb[pc + 1])
-                        * third,
-                    (out.colors_rgb[pa + i2] + out.colors_rgb[pb + i2] + out.colors_rgb[pc + i2])
-                        * third,
-                ],
-            });
+            out.indices.push(base_vertex + tri[0]);
+            out.indices.push(base_vertex + tri[1]);
+            out.indices.push(base_vertex + tri[i2]);
         }
     }
 
+    if build_software_tiles {
+        out.ensure_tile_triangles_built();
+    }
     Ok(out)
+}
+
+/// Propagates `SceneWorld` hierarchy matrices via exact `verdant-tensor` contractions and packs
+/// all visible entity meshes into flat zero-copy vertex/index buffers and `16x16` tile triangles.
+pub fn pack_world_meshes_to_buffers(
+    scene: &SceneWorld,
+    meshes: &[ProceduralMesh],
+    materials: &[PbrMaterial],
+) -> Result<PackedSceneRenderBuffers, TensorComputeError> {
+    pack_world_meshes_to_buffers_opts(scene, meshes, materials, true)
 }

@@ -1361,4 +1361,15 @@ impl OntologicalRuntimeGovernor {
             clamped
         }
     }
+
+    /// Recommends an adaptive internal framebuffer resolution scale in permille (`1000` = `1.0x`,
+    /// `850` = `0.85x`, `700` = `0.70x`) via `prism_kernel::governorRecommendedScalePermille`.
+    #[must_use]
+    pub fn recommend_render_scale_permille(&self, observed_frame_micros: u64) -> u64 {
+        prism_kernel::governorRecommendedScalePermille(
+            observed_frame_micros,
+            self.config.frame_budget_micros,
+        )
+        .unwrap_or_else(|_| verdant_tensor::kernel_consts().skin_weight_scale)
+    }
 }

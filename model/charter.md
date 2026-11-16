@@ -206,6 +206,11 @@ Verdant Engine is a universal commercial 3D browser, WebAssembly, and native gam
 - ArticulatedHumanoidAndFootIk: Twenty-two-joint humanoid rig, normalized linear-blend skinning, analytical two-bone foot IK stair adaptation, and neuromorphic head-look possession.
 - FloatingOriginUniverseAndStoryAutomaton: Exact i64 cell-relative floating-origin coordinates, multi-sector UORC streaming portals, and conservation-verified tropical story and app automatons.
 - OntologicalTelosAndW5HGovernor: Constructive W5H stratum certificates, HostEnvelope and WitnessEnvelope telos loss evaluation, and non-coercive parametric LOD descent.
+- PerfTierHoistedStratumConstsAndCodebookLut: OnceLock-hoisted constructive {0, 1} Prism kernel constants and 256-entry codebook product lookup tables executing inner contractions in machine registers with zero magic literals.
+- PerfTierWordPackedSoaArchetypeEcs: Contiguous Structure-of-Arrays entity storage paired with 64-bit word-packed visibility, dirty-transform, and awake-physics bitmasks sweeping arbitrary entity counts in O(N/64).
+- PerfTierContiguousSahFlatBvhAndToiOrder: Cache-line-aligned 32-byte linear SAH TLAS and triangle MeshBlas arrays with 64-slot stack traversal, near-child-first TOI pruning, and zero per-query heap allocations.
+- PerfTierEpochSplitVboAndAsyncShadowCache: Epoch-guarded static STATIC_DRAW and dynamic STREAM_DRAW WebGL2 VAO split, asynchronous zero-gl.finish command pipelining, texel-snapped shadow caching, and worker frame-ack coalescing.
+- PerfTierHardwareInstancedCrowdAndLatticeBatches: Hardware drawElementsInstanced batch buffers, lazy software 16x16 tile screen-space binning, and OntologicalRuntimeGovernor render-scale adaptation supporting tens of thousands of active instances.
 
 ## Developer Relations, Documentation, SDK Artifacts, and Studio Controls
 

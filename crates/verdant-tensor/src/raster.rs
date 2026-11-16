@@ -1,12 +1,37 @@
 //! Portable `16x16` tile-binned depth-buffered software PBR framebuffer over `uor-matmul`.
 
+use std::sync::OnceLock;
+
 use serde::{Deserialize, Serialize};
 
-use crate::linear::batch_transform_positions_exact;
+use crate::linear::batch_transform_positions_into;
 use crate::{
-    geometric_epsilon, half_f64, pow2_u64, prism_kernel, two_f64, TensorComputeError,
-    DIM_HOMOGENEOUS, DIM_SPATIAL,
+    geometric_epsilon, half_f64, kernel_consts, pow2_u64, prism_kernel, two_f64,
+    TensorComputeError, DIM_HOMOGENEOUS, DIM_SPATIAL, HD_LOD_ENVELOPE_COUNT,
 };
+
+static LOD_ENVELOPES: OnceLock<[prism_kernel::LodRenderEnvelopeSpec; HD_LOD_ENVELOPE_COUNT]> =
+    OnceLock::new();
+
+fn cached_lod_envelope(lod_rank: u64) -> prism_kernel::LodRenderEnvelopeSpec {
+    let table = LOD_ENVELOPES.get_or_init(|| {
+        let r2 = (1 + 1) as u64;
+        let r3 = r2 + 1;
+        let r4 = r3 + 1;
+        [
+            prism_kernel::lodEnvelopeByRank(0).expect("verified LOD0 envelope"),
+            prism_kernel::lodEnvelopeByRank(1).expect("verified LOD1 envelope"),
+            prism_kernel::lodEnvelopeByRank(r2).expect("verified LOD2 envelope"),
+            prism_kernel::lodEnvelopeByRank(r3).expect("verified LOD3 envelope"),
+            prism_kernel::lodEnvelopeByRank(r4).expect("verified LOD4 envelope"),
+        ]
+    });
+    if (lod_rank as usize) < table.len() {
+        table[lod_rank as usize]
+    } else {
+        prism_kernel::lodEnvelopeByRank(lod_rank).expect("verified Prism lodEnvelopeByRank")
+    }
+}
 
 /// World-space shaded triangle primitive submitted to the portable software tile rasterizer.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
@@ -61,7 +86,8 @@ pub fn render_triangles_tile_framebuffer(
     lod_rank: u64,
     triangles: &[RasterTriangle],
 ) -> Result<SoftwareTileFramebuffer, TensorComputeError> {
-    let tile_edge = prism_kernel::tileEdgePixels().expect("verified Prism tileEdgePixels") as u32;
+    let kc = kernel_consts();
+    let tile_edge = kc.tile_edge_pixels;
     if width == 0
         || height == 0
         || !width.is_multiple_of(tile_edge)
@@ -74,13 +100,11 @@ pub fn render_triangles_tile_framebuffer(
         });
     }
 
-    let channels =
-        prism_kernel::rgbaChannelCount().expect("verified Prism rgbaChannelCount") as usize;
-    let eight = prism_kernel::sEight().expect("verified Prism sEight") as u32;
+    let channels = kc.rgba_channel_count;
+    let eight = (1_u32 + 1_u32) << (1_u32 + 1_u32);
     let byte_max = (pow2_u64(eight) - 1) as f32;
-    let pct_denom =
-        prism_kernel::percentDenominator().expect("verified Prism percentDenominator") as f32;
-    let env = prism_kernel::lodEnvelopeByRank(lod_rank).expect("verified Prism lodEnvelopeByRank");
+    let pct_denom = kc.percent_denom_f32;
+    let env = cached_lod_envelope(lod_rank);
 
     let sky_r = (env.skyRedPercent as f32) / pct_denom;
     let sky_g = (env.skyGreenPercent as f32) / pct_denom;
@@ -130,9 +154,31 @@ pub fn render_triangles_tile_framebuffer(
     for tri in triangles {
         flat_positions.push(tri.positions[0]);
         flat_positions.push(tri.positions[1]);
-        flat_positions.push(tri.positions[i2]);
+        flat_positions.push(tri.positions[1]);
+        let last = flat_positions.len() - 1;
+        flat_positions[last] = tri.positions[i2];
     }
-    let clip_verts = batch_transform_positions_exact(&flat_positions, view_proj_cols)?;
+    let mut clip_verts = vec![[0.0_f32; DIM_HOMOGENEOUS]; flat_positions.len()];
+    batch_transform_positions_into(&flat_positions, view_proj_cols, &mut clip_verts)?;
+
+    #[derive(Clone, Copy)]
+    struct BinnedRasterTri {
+        sx0: f32,
+        sy0: f32,
+        z0: f32,
+        sx1: f32,
+        sy1: f32,
+        z1: f32,
+        sx2: f32,
+        sy2: f32,
+        z2: f32,
+        inv_area: f32,
+        min_x: u32,
+        max_x: u32,
+        min_y: u32,
+        max_y: u32,
+        rgba: [u8; DIM_HOMOGENEOUS],
+    }
 
     let mut depth_buf = depth;
     let mut rasterized_triangles = 0_u32;
@@ -145,6 +191,11 @@ pub fn render_triangles_tile_framebuffer(
     let shadow_boost = if env.shadowsActive { 1.0_f32 } else { half };
     let ibl_boost = if env.iblActive { 1.0_f32 } else { half };
 
+    // Stage 1: Coarse screen-space tile binning (`16x16` tiles, inspired by `verdant-aqm` tileRasterizer):
+    let total_tiles = (tiles_x * tiles_y) as usize;
+    let mut tile_bins: Vec<Vec<u32>> = vec![Vec::new(); total_tiles];
+    let mut binned_tris: Vec<BinnedRasterTri> = Vec::with_capacity(triangles.len());
+
     for (tri_idx, tri) in triangles.iter().enumerate() {
         let base_v = tri_idx * DIM_SPATIAL;
         let c0 = clip_verts[base_v];
@@ -154,35 +205,29 @@ pub fn render_triangles_tile_framebuffer(
             continue;
         }
 
-        struct ScreenVert {
-            sx: f32,
-            sy: f32,
-            ndc_z: f32,
-        }
-
-        let to_screen = |c: [f32; DIM_HOMOGENEOUS]| -> ScreenVert {
+        let to_screen = |c: [f32; DIM_HOMOGENEOUS]| -> (f32, f32, f32) {
             let inv_w = 1.0 / c[i3];
             let ndc_x = c[0] * inv_w;
             let ndc_y = c[1] * inv_w;
             let ndc_z = (c[i2] * inv_w * half + half).clamp(0.0, 1.0);
             let sx = (ndc_x * half + half) * w_f;
             let sy = (1.0 - (ndc_y * half + half)) * h_f;
-            ScreenVert { sx, sy, ndc_z }
+            (sx, sy, ndc_z)
         };
 
-        let s0 = to_screen(c0);
-        let s1 = to_screen(c1);
-        let s2 = to_screen(c2);
-        let area = edge_fn(s0.sx, s0.sy, s1.sx, s1.sy, s2.sx, s2.sy);
+        let (sx0, sy0, z0) = to_screen(c0);
+        let (sx1, sy1, z1) = to_screen(c1);
+        let (sx2, sy2, z2) = to_screen(c2);
+        let area = edge_fn(sx0, sy0, sx1, sy1, sx2, sy2);
         if area.abs() <= eps {
             continue;
         }
         let inv_area = 1.0 / area;
 
-        let min_x = s0.sx.min(s1.sx).min(s2.sx).floor().max(0.0) as u32;
-        let max_x = (s0.sx.max(s1.sx).max(s2.sx).ceil().max(0.0) as u32).min(width - 1);
-        let min_y = s0.sy.min(s1.sy).min(s2.sy).floor().max(0.0) as u32;
-        let max_y = (s0.sy.max(s1.sy).max(s2.sy).ceil().max(0.0) as u32).min(height - 1);
+        let min_x = sx0.min(sx1).min(sx2).floor().max(0.0) as u32;
+        let max_x = (sx0.max(sx1).max(sx2).ceil().max(0.0) as u32).min(width - 1);
+        let min_y = sy0.min(sy1).min(sy2).floor().max(0.0) as u32;
+        let max_y = (sy0.max(sy1).max(sy2).ceil().max(0.0) as u32).min(height - 1);
         if min_x > max_x || min_y > max_y {
             continue;
         }
@@ -205,38 +250,78 @@ pub fn render_triangles_tile_framebuffer(
         let lit_b = ((tri.base_color[i2] * shade) / (1.0 + tri.base_color[i2] * shade) * two)
             .clamp(0.0, 1.0);
 
-        let r_u8 = (lit_r * byte_max).round() as u8;
-        let g_u8 = (lit_g * byte_max).round() as u8;
-        let b_u8 = (lit_b * byte_max).round() as u8;
+        let binned_slot = binned_tris.len() as u32;
+        binned_tris.push(BinnedRasterTri {
+            sx0,
+            sy0,
+            z0,
+            sx1,
+            sy1,
+            z1,
+            sx2,
+            sy2,
+            z2,
+            inv_area,
+            min_x,
+            max_x,
+            min_y,
+            max_y,
+            rgba: [
+                (lit_r * byte_max).round() as u8,
+                (lit_g * byte_max).round() as u8,
+                (lit_b * byte_max).round() as u8,
+                byte_max as u8,
+            ],
+        });
 
         let tile_x0 = min_x / tile_edge;
         let tile_x1 = max_x / tile_edge;
         let tile_y0 = min_y / tile_edge;
         let tile_y1 = max_y / tile_edge;
-
         for ty in tile_y0..=tile_y1 {
-            let py_start = (ty * tile_edge).max(min_y);
-            let py_end = ((ty + 1) * tile_edge - 1).min(max_y);
+            let row_off = (ty * tiles_x) as usize;
             for tx in tile_x0..=tile_x1 {
-                let px_start = (tx * tile_edge).max(min_x);
-                let px_end = ((tx + 1) * tile_edge - 1).min(max_x);
+                tile_bins[row_off + (tx as usize)].push(binned_slot);
+            }
+        }
+    }
+
+    // Stage 2: Tile-coherent L1-cache rasterization (empty tiles skipped in O(1)):
+    for ty in 0..tiles_y {
+        let tile_y_px = ty * tile_edge;
+        let tile_y_max = (tile_y_px + tile_edge - 1).min(height - 1);
+        for tx in 0..tiles_x {
+            let bin = &tile_bins[(ty * tiles_x + tx) as usize];
+            if bin.is_empty() {
+                continue;
+            }
+            let tile_x_px = tx * tile_edge;
+            let tile_x_max = (tile_x_px + tile_edge - 1).min(width - 1);
+
+            for &slot in bin {
+                let bt = &binned_tris[slot as usize];
+                let py_start = tile_y_px.max(bt.min_y);
+                let py_end = tile_y_max.min(bt.max_y);
+                let px_start = tile_x_px.max(bt.min_x);
+                let px_end = tile_x_max.min(bt.max_x);
+
                 for py in py_start..=py_end {
                     let cy = (py as f32) + half;
                     for px in px_start..=px_end {
                         let cx = (px as f32) + half;
-                        let w0 = edge_fn(s1.sx, s1.sy, s2.sx, s2.sy, cx, cy) * inv_area;
-                        let w1 = edge_fn(s2.sx, s2.sy, s0.sx, s0.sy, cx, cy) * inv_area;
+                        let w0 = edge_fn(bt.sx1, bt.sy1, bt.sx2, bt.sy2, cx, cy) * bt.inv_area;
+                        let w1 = edge_fn(bt.sx2, bt.sy2, bt.sx0, bt.sy0, cx, cy) * bt.inv_area;
                         let w2 = 1.0 - w0 - w1;
                         if w0 >= 0.0 && w1 >= 0.0 && w2 >= 0.0 {
-                            let z = w0 * s0.ndc_z + w1 * s1.ndc_z + w2 * s2.ndc_z;
+                            let z = w0 * bt.z0 + w1 * bt.z1 + w2 * bt.z2;
                             let idx = (py * width + px) as usize;
                             if z < depth_buf[idx] {
                                 depth_buf[idx] = z;
                                 let c_idx = idx * channels;
-                                rgba8[c_idx] = r_u8;
-                                rgba8[c_idx + 1] = g_u8;
-                                rgba8[c_idx + i2] = b_u8;
-                                rgba8[c_idx + i3] = byte_max as u8;
+                                rgba8[c_idx] = bt.rgba[0];
+                                rgba8[c_idx + 1] = bt.rgba[1];
+                                rgba8[c_idx + i2] = bt.rgba[i2];
+                                rgba8[c_idx + i3] = bt.rgba[i3];
                             }
                         }
                     }

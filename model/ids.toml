@@ -300,3 +300,9 @@ id = "VE-32"
 level = "build"
 suite = "engine"
 statement = "Verdant Studio themes, six-tab game-creation workbench, seven executable stakeholder journeys, four starter archetypes, and six live WebAssembly documentation embeds satisfy W3C DTCG token purity, Core-Wasm verification, and zero-error C-ABI export parity"
+
+[[id]]
+id = "VE-33"
+level = "build"
+suite = "engine"
+statement = "Hoisted Stratum-0 Prism constants, 256-entry CodebookProductLut contractions, 64-bit word-packed SoaSceneTable sweeps, contiguous 32-byte SAH FlatBvh traversal, epoch-split static and dynamic WebGL2 VAOs without gl.finish stalls, and hardware drawElementsInstanced batching scale deterministically to arbitrary 10k-entity and 50k-triangle workloads"

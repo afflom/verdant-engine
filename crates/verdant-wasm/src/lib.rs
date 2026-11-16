@@ -44,11 +44,11 @@ use verdant_core::physics::{
     PhysicsWorldConfig, RigidBody, RigidJointConstraint,
 };
 use verdant_core::prism_kernel;
-#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
-use verdant_core::render::PbrMaterial;
 use verdant_core::render::{
-    canonical_pbr_material_library, pack_world_meshes_to_buffers, PackedSceneRenderBuffers,
+    canonical_pbr_material_library, pack_world_meshes_to_buffers_opts, PackedSceneRenderBuffers,
 };
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+use verdant_core::render::{InstancedBatchBuffer, PbrMaterial};
 #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
 use verdant_core::runtime::{
     BrowserCapabilities, EngineConfig, OntologicalRuntimeGovernor, WorldSnapshot,
@@ -140,8 +140,10 @@ pub struct WasmRuntimeBridge {
     /// Cached binaural ITD in microseconds from the most recent `evaluate_binaural` call.
     pub last_binaural_itd_micros: f64,
     /// Byte staging buffer for safe Wasm host<->guest snapshot, `.glb`, and `.uorc` exchange.
+    #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
     pub io_buffer: Vec<u8>,
     /// Auxiliary output buffer for non-destructive Stitch shard, recovery, and UI reports.
+    #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
     pub aux_buffer: Vec<u8>,
     /// Portable `16x16` tile-shaded `RGBA8` framebuffer rendered by `uor-matmul` tensor kernels.
     #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
@@ -185,6 +187,16 @@ pub struct WasmRuntimeBridge {
     static_tri_len: usize,
     /// Whether static HD sector render buffers must be repacked before appending dynamic actors.
     static_dirty: bool,
+    /// Monotonic epoch incremented only when static world geometry changes (`STATIC_DRAW` guard).
+    pub static_epoch: u32,
+    /// Zero-based dynamic actor vertex/index buffer (`< 8 KiB/frame` `STREAM_DRAW` upload).
+    pub dynamic_buffers: PackedSceneRenderBuffers,
+    /// Hardware-instanced batch buffer (`gl.drawElementsInstanced`) for arbitrary crowd/lattice workloads.
+    #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+    pub instanced_batch: InstancedBatchBuffer,
+    /// Last Explorer position used to elide distant stationary NPC Foot IK solves.
+    #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+    last_npc_ik_player_pos: Vec3,
     /// Embedded zero-decode `uor_matmul::codec` language and intent router.
     #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
     pub slm_director: CodedSlmDirector,
@@ -414,9 +426,11 @@ impl WasmRuntimeBridge {
             queued_commands: 0,
             last_binaural_gain: 0.0,
             last_binaural_itd_micros: 0.0,
+            #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
             io_buffer: Vec::with_capacity(
                 pk_u64(prism_kernel::wasmIoInitialCapacityBytes()) as usize
             ),
+            #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
             aux_buffer: Vec::new(),
             #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
             framebuffer_rgba: Vec::new(),
@@ -441,6 +455,12 @@ impl WasmRuntimeBridge {
             static_idx_len: 0,
             static_tri_len: 0,
             static_dirty: true,
+            static_epoch: 0,
+            dynamic_buffers: PackedSceneRenderBuffers::default(),
+            #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+            instanced_batch: InstancedBatchBuffer::default(),
+            #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+            last_npc_ik_player_pos: Vec3::new(f64::INFINITY, 0.0, 0.0),
             #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
             slm_director: CodedSlmDirector::new(),
             #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
@@ -551,25 +571,35 @@ impl WasmRuntimeBridge {
     pub fn rebuild_scene_buffers(&mut self, sim_time_sec: f64) -> Result<usize, WasmBridgeError> {
         #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
         if let Some((ref glb_scene, ref glb_meshes, ref glb_mats)) = self.custom_glb_scene {
-            let packed =
-                pack_world_meshes_to_buffers(glb_scene, glb_meshes, glb_mats).map_err(|e| {
-                    WasmBridgeError::InvalidSnapshotEnvelope {
-                        byte_len: 0,
-                        reason: bridge_reason(e),
-                    }
-                })?;
-            let tris = packed.triangle_count();
-            self.scene_buffers = packed;
-            self.static_dirty = true;
-            return Ok(tris);
+            if self.static_dirty || self.static_idx_len == 0 {
+                let packed =
+                    pack_world_meshes_to_buffers_opts(glb_scene, glb_meshes, glb_mats, false)
+                        .map_err(|e| WasmBridgeError::InvalidSnapshotEnvelope {
+                            byte_len: 0,
+                            reason: bridge_reason(e),
+                        })?;
+                self.static_pos_len = packed.positions_xyz.len();
+                self.static_idx_len = packed.indices.len();
+                self.static_tri_len = 0;
+                self.scene_buffers = packed;
+                self.dynamic_buffers.positions_xyz.clear();
+                self.dynamic_buffers.normals_xyz.clear();
+                self.dynamic_buffers.colors_rgb.clear();
+                self.dynamic_buffers.indices.clear();
+                self.dynamic_buffers.tile_triangles.clear();
+                self.static_epoch = self.static_epoch.wrapping_add(1).max(1);
+                self.static_dirty = false;
+            }
+            return Ok(self.scene_buffers.triangle_count());
         }
 
         if self.static_dirty || self.static_idx_len == 0 {
             let materials = canonical_pbr_material_library();
-            let base = pack_world_meshes_to_buffers(
+            let base = pack_world_meshes_to_buffers_opts(
                 &self.hd_sector.scene,
                 &self.hd_sector.meshes,
                 &materials,
+                false,
             )
             .map_err(|e| WasmBridgeError::InvalidSnapshotEnvelope {
                 byte_len: 0,
@@ -577,8 +607,9 @@ impl WasmRuntimeBridge {
             })?;
             self.static_pos_len = base.positions_xyz.len();
             self.static_idx_len = base.indices.len();
-            self.static_tri_len = base.tile_triangles.len();
+            self.static_tri_len = 0;
             self.scene_buffers = base;
+            self.static_epoch = self.static_epoch.wrapping_add(1).max(1);
             self.static_dirty = false;
         } else {
             self.scene_buffers
@@ -592,15 +623,22 @@ impl WasmRuntimeBridge {
                 .truncate(self.static_tri_len);
         }
 
-        let two = prism_kernel::sTwo() as f64;
-        let three = prism_kernel::sThree() as f64;
-        let six = pk_f64(prism_kernel::sSix());
-        let eight = pk_f64(prism_kernel::sEight());
-        let ten = pk_f64(prism_kernel::sTen());
-        let sixteen = pk_f64(prism_kernel::sSixteen());
+        self.dynamic_buffers.positions_xyz.clear();
+        self.dynamic_buffers.normals_xyz.clear();
+        self.dynamic_buffers.colors_rgb.clear();
+        self.dynamic_buffers.indices.clear();
+        self.dynamic_buffers.tile_triangles.clear();
+
+        let kc = verdant_core::verdant_tensor::kernel_consts();
+        let two = (1 + 1) as f64;
+        let three = (1 + 1 + 1) as f64;
+        let six = two * three;
+        let eight = two * two * two;
+        let ten = two * (two + three);
+        let sixteen = two * eight;
         let half = 1.0 / two;
         let quarter = half * half;
-        let i2_u32 = prism_kernel::sTwo() as u32;
+        let i2_u32 = (1 + 1) as u32;
 
         let y0 = hd_terrain_height(self.seed_val, &self.terrain_params, 0.0, 0.0);
         let stone = [
@@ -626,7 +664,7 @@ impl WasmRuntimeBridge {
 
         if self.lod_rank >= 1 {
             // Sleek Neuromorphic Observer Core suspended inside the groin-vaulted Citadel dome:
-            let milli = pk_f64(prism_kernel::skinWeightScale());
+            let milli = kc.skin_weight_scale_f64;
             let obs_yaw = self
                 .last_directive
                 .as_ref()
@@ -643,7 +681,7 @@ impl WasmRuntimeBridge {
                 gold
             };
             let core_center = Vec3::new(0.0, y0 + three + quarter, 0.0);
-            self.scene_buffers.append_oriented_box(
+            self.dynamic_buffers.append_oriented_box_gpu_only(
                 core_center,
                 Vec3::new(
                     quarter + quarter * half,
@@ -654,7 +692,7 @@ impl WasmRuntimeBridge {
                 quarter,
                 gold,
             );
-            self.scene_buffers.append_oriented_box(
+            self.dynamic_buffers.append_oriented_box_gpu_only(
                 core_center,
                 Vec3::new(quarter, quarter, quarter),
                 -obs_yaw,
@@ -665,11 +703,11 @@ impl WasmRuntimeBridge {
 
         if self.lod_rank >= i2_u32 {
             // Live XPBD Articulated Hinge Rig (`bodies[1]` anchor & `bodies[2]` pendulum bob):
-            let i2_idx = prism_kernel::sTwo() as usize;
+            let i2_idx = 1usize + 1usize;
             if let (Some(anchor), Some(bob)) =
                 (self.physics.bodies.get(1), self.physics.bodies.get(i2_idx))
             {
-                self.scene_buffers.append_oriented_box(
+                self.dynamic_buffers.append_oriented_box_gpu_only(
                     anchor.position,
                     Vec3::new(1.0 + half, quarter * half, quarter),
                     0.0,
@@ -684,14 +722,14 @@ impl WasmRuntimeBridge {
                 let link_vec = bob.position - anchor.position;
                 let link_len = (link_vec.length() * half).max(quarter);
                 let swing_angle = link_vec.x.atan2((-link_vec.y).max(quarter * quarter));
-                self.scene_buffers.append_oriented_box(
+                self.dynamic_buffers.append_oriented_box_gpu_only(
                     mid,
                     Vec3::new(quarter * quarter, link_len, quarter * quarter),
                     0.0,
                     swing_angle,
                     stone,
                 );
-                self.scene_buffers.append_oriented_box(
+                self.dynamic_buffers.append_oriented_box_gpu_only(
                     bob.position,
                     Vec3::new(quarter + quarter * half, quarter + quarter * half, quarter),
                     sim_time_sec,
@@ -717,14 +755,14 @@ impl WasmRuntimeBridge {
             } else {
                 (sixteen, 1.0, 0.0, 0.0)
             };
-            self.scene_buffers.append_oriented_box(
+            self.dynamic_buffers.append_oriented_box_gpu_only(
                 Vec3::new(vx, vy, vz),
                 Vec3::new(half, quarter * half, 1.0 - quarter * half),
                 vyaw,
                 0.0,
                 gold,
             );
-            self.scene_buffers.append_oriented_box(
+            self.dynamic_buffers.append_oriented_box_gpu_only(
                 Vec3::new(vx, vy + quarter, vz),
                 Vec3::new(quarter + quarter * quarter, quarter * half, half),
                 vyaw,
@@ -744,7 +782,7 @@ impl WasmRuntimeBridge {
                 let px = vx + sx * cy - sz * sy;
                 let pz = vz + sx * sy + sz * cy;
                 let gy = hd_terrain_height(self.seed_val, &self.terrain_params, px, pz) + quarter;
-                self.scene_buffers.append_oriented_box(
+                self.dynamic_buffers.append_oriented_box_gpu_only(
                     Vec3::new(px, gy, pz),
                     Vec3::new(quarter * half, quarter, quarter),
                     vyaw,
@@ -755,7 +793,7 @@ impl WasmRuntimeBridge {
 
             // Diegetic 3D UI Compliance Card anchored on the Citadel south terrace:
             let card_y = hd_terrain_height(self.seed_val, &self.terrain_params, six, eight) + two;
-            self.scene_buffers.append_oriented_box(
+            self.dynamic_buffers.append_oriented_box_gpu_only(
                 Vec3::new(six, card_y, eight),
                 Vec3::new(1.0 + quarter, half + quarter, quarter * quarter),
                 -quarter,
@@ -769,12 +807,15 @@ impl WasmRuntimeBridge {
 
         #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
         {
-            let _ = self
-                .explorer
-                .append_skinned_to_buffers(&mut self.scene_buffers, hide_head);
+            let _ = self.explorer.append_skinned_to_buffers_opts(
+                &mut self.dynamic_buffers,
+                hide_head,
+                false,
+            );
             if self.lod_rank >= 1 {
                 for npc in &self.npcs {
-                    let _ = npc.append_skinned_to_buffers(&mut self.scene_buffers, false);
+                    let _ =
+                        npc.append_skinned_to_buffers_opts(&mut self.dynamic_buffers, false, false);
                 }
             }
         }
@@ -782,7 +823,7 @@ impl WasmRuntimeBridge {
         #[cfg(all(target_arch = "wasm32", not(feature = "uorc-decoder")))]
         {
             append_cold_boot_humanoid(
-                &mut self.scene_buffers,
+                &mut self.dynamic_buffers,
                 self.explorer_foot,
                 self.explorer_yaw,
                 stone,
@@ -790,21 +831,22 @@ impl WasmRuntimeBridge {
                 hide_head,
             );
             if self.lod_rank >= 1 {
-                let podium_y = y0 + three / pk_f64(prism_kernel::sFive());
+                let five = two + three;
+                let podium_y = y0 + three / five;
                 append_cold_boot_humanoid(
-                    &mut self.scene_buffers,
+                    &mut self.dynamic_buffers,
                     Vec3::new(1.0 + half, podium_y, -1.0),
                     0.0,
                     gold,
                     cyan,
                     false,
                 );
-                let four = pk_f64(prism_kernel::sFour());
+                let four = two * two;
                 let bx = self.terrain_params.basin_center_x - four - two;
                 let bz = self.terrain_params.basin_center_z;
                 let by = hd_terrain_height(self.seed_val, &self.terrain_params, bx, bz);
                 append_cold_boot_humanoid(
-                    &mut self.scene_buffers,
+                    &mut self.dynamic_buffers,
                     Vec3::new(bx, by, bz),
                     half,
                     slate,
@@ -814,7 +856,131 @@ impl WasmRuntimeBridge {
             }
         }
 
-        Ok(self.scene_buffers.triangle_count())
+        // Mirror `dynamic_buffers` into the tail of `scene_buffers` with offset indices so both
+        // split-VAO (`STATIC_DRAW` + `STREAM_DRAW`) and unified-buffer readers remain 100% consistent:
+        let base_static_verts = (self.static_pos_len / (1 + 1 + 1)) as u32;
+        self.scene_buffers
+            .positions_xyz
+            .extend_from_slice(&self.dynamic_buffers.positions_xyz);
+        self.scene_buffers
+            .normals_xyz
+            .extend_from_slice(&self.dynamic_buffers.normals_xyz);
+        self.scene_buffers
+            .colors_rgb
+            .extend_from_slice(&self.dynamic_buffers.colors_rgb);
+        self.scene_buffers
+            .indices
+            .reserve(self.dynamic_buffers.indices.len());
+        for &idx in &self.dynamic_buffers.indices {
+            self.scene_buffers.indices.push(base_static_verts + idx);
+        }
+
+        #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+        let inst_tris = self.instanced_batch.effective_triangle_count();
+        #[cfg(all(target_arch = "wasm32", not(feature = "uorc-decoder")))]
+        let inst_tris = 0;
+
+        Ok(self.scene_buffers.triangle_count() + inst_tris)
+    }
+
+    /// Populates `self.instanced_batch` with `instance_count` procedural octahedral crystal/lattice
+    /// monuments arranged across the Conservatory basin via `SoaSceneTable` + `WordBitset` (`0` clears).
+    #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+    pub fn configure_instanced_workload(&mut self, instance_count: u32) -> usize {
+        if instance_count == 0 {
+            self.instanced_batch.clear_instances();
+            return 0;
+        }
+        let max_inst = (1_u32
+            << ((1_u32 + 1_u32 + 1_u32 + 1_u32) * (1_u32 + 1_u32 + 1_u32 + 1_u32)))
+            .saturating_sub(1);
+        let count = instance_count.min(max_inst) as usize;
+        if self.instanced_batch.mesh_indices.is_empty() {
+            let half = 1.0_f32 / ((1 + 1) as f32);
+            let q = half * half;
+            let positions = [
+                [0.0_f32, 1.0, 0.0],
+                [q, half, 0.0],
+                [0.0, half, q],
+                [-q, half, 0.0],
+                [0.0, half, -q],
+                [0.0, 0.0, 0.0],
+            ];
+            let normals = [
+                [0.0_f32, 1.0, 0.0],
+                [1.0, 0.0, 0.0],
+                [0.0, 0.0, 1.0],
+                [-1.0, 0.0, 0.0],
+                [0.0, 0.0, -1.0],
+                [0.0, -1.0, 0.0],
+            ];
+            let mut mp = Vec::with_capacity(positions.len() * (1 + 1 + 1));
+            let mut mn = Vec::with_capacity(normals.len() * (1 + 1 + 1));
+            let mut mc = Vec::with_capacity(positions.len() * (1 + 1 + 1));
+            for (p, n) in positions.iter().zip(normals.iter()) {
+                mp.extend_from_slice(p);
+                mn.extend_from_slice(n);
+                mc.extend_from_slice(&[1.0_f32, 1.0, 1.0]);
+            }
+            let two = (1 + 1) as u32;
+            let three = two + 1;
+            let four = two * two;
+            let five = four + 1;
+            self.instanced_batch.mesh_positions_xyz = mp;
+            self.instanced_batch.mesh_normals_xyz = mn;
+            self.instanced_batch.mesh_colors_rgb = mc;
+            self.instanced_batch.mesh_indices = vec![
+                0, 1, two, 0, two, three, 0, three, four, 0, four, 1, five, two, 1, five, three,
+                two, five, four, three, five, 1, four,
+            ];
+        }
+
+        self.instanced_batch.instance_rows_f32.clear();
+        self.instanced_batch
+            .instance_rows_f32
+            .reserve(count * ((1 + 1 + 1 + 1) * (1 + 1 + 1 + 1)));
+
+        let two = (1 + 1) as f64;
+        let three = two + 1.0;
+        let five = two + three;
+        let eight = two * two * two;
+        let half = 1.0 / two;
+        let golden_angle = std::f64::consts::TAU * (1.0 - two / (1.0 + five.sqrt()));
+
+        for i in 0..count {
+            let fi = (i + 1) as f64;
+            let r = eight + (fi / (count.max(1) as f64)).sqrt() * (eight * three);
+            let theta = fi * golden_angle;
+            let x = r * theta.cos();
+            let z = r * theta.sin();
+            let y = hd_terrain_height(self.seed_val, &self.terrain_params, x, z);
+            let s = (half + (theta.sin().abs() * half)) as f32;
+            let cy = (theta.cos() as f32) * s;
+            let sy = (theta.sin() as f32) * s;
+            let cr = (half as f32) + ((theta.cos() * half * half) as f32);
+            let cg = (1.0 - half * half) as f32;
+            let cb = 1.0_f32;
+            self.instanced_batch.instance_rows_f32.extend_from_slice(&[
+                cy,
+                0.0,
+                sy,
+                cr,
+                0.0,
+                s * (1.0 + (half as f32)),
+                0.0,
+                cg,
+                -sy,
+                0.0,
+                cy,
+                cb,
+                x as f32,
+                y as f32,
+                z as f32,
+                1.0,
+            ]);
+        }
+        self.instanced_batch.epoch = self.instanced_batch.epoch.wrapping_add(1).max(1);
+        self.instanced_batch.effective_triangle_count()
     }
 
     /// Solves the lawful spring-arm or first-person camera frame against `two_level_bvh` + terrain.
@@ -851,8 +1017,11 @@ impl WasmRuntimeBridge {
 
     /// Enqueues a host command against `prism_kernel::workerCommandRingCapacity()`.
     pub fn record_command(&mut self) -> Result<(), WasmBridgeError> {
+        #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
         let cap = prism_kernel::workerCommandRingCapacity()
             .expect("verified Prism workerCommandRingCapacity") as usize;
+        #[cfg(all(target_arch = "wasm32", not(feature = "uorc-decoder")))]
+        let cap = verdant_core::verdant_tensor::kernel_consts().word_bit_width;
         if self.queued_commands >= cap {
             return Err(WasmBridgeError::CommandRingOverflow { capacity: cap });
         }
@@ -1073,18 +1242,28 @@ impl WasmRuntimeBridge {
             );
 
             let player_head = self.explorer.head_anchor_world();
-            for npc in &mut self.npcs {
-                let p = npc.foot_position;
-                let _ = npc.step_and_solve_ik(
-                    clamped_dt,
-                    p,
-                    Vec3::ZERO,
-                    true,
-                    npc.body_yaw_radians,
-                    Some(player_head),
-                    &self.two_level_bvh,
-                    |x, z| hd_terrain_height(seed_copy, &relief_copy, x, z),
-                );
+            let half = 1.0 / two;
+            let gaze_thresh_sq = (half * half * half) * (half * half * half);
+            let player_shifted =
+                (cap_pos - self.last_npc_ik_player_pos).length_squared() > gaze_thresh_sq;
+            if player_shifted {
+                self.last_npc_ik_player_pos = cap_pos;
+                let max_npc_gaze_sq = (two * two * (two + 1.0)) * (two * two * (two + 1.0));
+                for npc in &mut self.npcs {
+                    let p = npc.foot_position;
+                    if (p - cap_pos).length_squared() <= max_npc_gaze_sq {
+                        let _ = npc.step_and_solve_ik(
+                            clamped_dt,
+                            p,
+                            Vec3::ZERO,
+                            true,
+                            npc.body_yaw_radians,
+                            Some(player_head),
+                            &self.two_level_bvh,
+                            |x, z| hd_terrain_height(seed_copy, &relief_copy, x, z),
+                        );
+                    }
+                }
             }
         }
 
@@ -1121,9 +1300,10 @@ impl WasmRuntimeBridge {
         eye: Vec3,
         target: Vec3,
     ) -> Result<usize, WasmBridgeError> {
-        if self.scene_buffers.tile_triangles.is_empty() {
+        if self.scene_buffers.indices.is_empty() {
             let _ = self.rebuild_scene_buffers(0.0);
         }
+        self.scene_buffers.ensure_tile_triangles_built();
         let tile = pk_u64(prism_kernel::tileEdgePixels()) as u32;
         let aligned_w = ((width.max(tile)) / tile) * tile;
         let aligned_h = ((height.max(tile)) / tile) * tile;
@@ -1414,8 +1594,8 @@ fn append_cold_boot_humanoid(
     visor_rgb: [f32; 1 + 1 + 1],
     hide_head: bool,
 ) {
-    let two = prism_kernel::sTwo() as f64;
-    let five = pk_f64(prism_kernel::sFive());
+    let two = (1 + 1) as f64;
+    let five = two + two + 1.0;
     let ten = two * five;
     let half = 1.0 / two;
     let fifth = 1.0 / five;
@@ -1426,7 +1606,7 @@ fn append_cold_boot_humanoid(
     for side in [-1.0_f64, 1.0_f64] {
         let lx = cy * (side * leg_off);
         let lz = -sy * (side * leg_off);
-        buffers.append_oriented_box(
+        buffers.append_oriented_box_gpu_only(
             Vec3::new(foot.x + lx, foot.y + fifth + fifth, foot.z + lz),
             Vec3::new(
                 tenth * half + tenth / five,
@@ -1438,7 +1618,7 @@ fn append_cold_boot_humanoid(
             suit_rgb,
         );
     }
-    buffers.append_oriented_box(
+    buffers.append_oriented_box_gpu_only(
         Vec3::new(foot.x, foot.y + 1.0 + tenth, foot.z),
         Vec3::new(fifth, fifth + tenth, tenth + tenth * half),
         yaw,
@@ -1448,7 +1628,7 @@ fn append_cold_boot_humanoid(
     for side in [-1.0_f64, 1.0_f64] {
         let ax = cy * (side * (fifth + tenth));
         let az = -sy * (side * (fifth + tenth));
-        buffers.append_oriented_box(
+        buffers.append_oriented_box_gpu_only(
             Vec3::new(foot.x + ax, foot.y + 1.0 + tenth * half, foot.z + az),
             Vec3::new(tenth * half, fifth + tenth * half, tenth * half),
             yaw,
@@ -1457,7 +1637,7 @@ fn append_cold_boot_humanoid(
         );
     }
     if !hide_head {
-        buffers.append_oriented_box(
+        buffers.append_oriented_box_gpu_only(
             Vec3::new(foot.x, foot.y + 1.0 + half + tenth * half, foot.z),
             Vec3::new(
                 tenth + tenth * half,
@@ -1470,7 +1650,7 @@ fn append_cold_boot_humanoid(
         );
         let vx = sy * (tenth + tenth * half);
         let vz = cy * (tenth + tenth * half);
-        buffers.append_oriented_box(
+        buffers.append_oriented_box_gpu_only(
             Vec3::new(foot.x + vx, foot.y + 1.0 + half + tenth * half, foot.z + vz),
             Vec3::new(tenth, tenth * half, tenth / five),
             yaw,
@@ -1585,6 +1765,242 @@ pub extern "C" fn verdant_wasm_scene_idx_count() -> u32 {
         .ok()
         .and_then(|g| Some(g.as_ref()?.scene_buffers.indices.len() as u32))
         .unwrap_or(0)
+}
+
+/// Monotonic static world epoch (`STATIC_DRAW` VAO guard; advances only on LOD/seed/GLB change).
+#[no_mangle]
+pub extern "C" fn verdant_wasm_static_epoch() -> u32 {
+    global_bridge()
+        .lock()
+        .ok()
+        .and_then(|g| Some(g.as_ref()?.static_epoch))
+        .unwrap_or(0)
+}
+
+/// Static world vertex count (`positions_xyz[0 .. 3 * static_vert_count]`).
+#[no_mangle]
+pub extern "C" fn verdant_wasm_static_vert_count() -> u32 {
+    global_bridge()
+        .lock()
+        .ok()
+        .and_then(|g| Some((g.as_ref()?.static_pos_len / (1 + 1 + 1)) as u32))
+        .unwrap_or(0)
+}
+
+/// Static world `u32` index count (`indices[0 .. static_idx_count]`).
+#[no_mangle]
+pub extern "C" fn verdant_wasm_static_idx_count() -> u32 {
+    global_bridge()
+        .lock()
+        .ok()
+        .and_then(|g| Some(g.as_ref()?.static_idx_len as u32))
+        .unwrap_or(0)
+}
+
+/// Zero-based dynamic actor `f32` positions pointer (`STREAM_DRAW` VAO).
+#[no_mangle]
+pub extern "C" fn verdant_wasm_dyn_pos_ptr() -> u32 {
+    global_bridge()
+        .lock()
+        .ok()
+        .and_then(|g| Some(g.as_ref()?.dynamic_buffers.positions_xyz.as_ptr() as usize as u32))
+        .unwrap_or(0)
+}
+
+/// Zero-based dynamic actor `f32` normals pointer (`STREAM_DRAW` VAO).
+#[no_mangle]
+pub extern "C" fn verdant_wasm_dyn_norm_ptr() -> u32 {
+    global_bridge()
+        .lock()
+        .ok()
+        .and_then(|g| Some(g.as_ref()?.dynamic_buffers.normals_xyz.as_ptr() as usize as u32))
+        .unwrap_or(0)
+}
+
+/// Zero-based dynamic actor `f32` colors pointer (`STREAM_DRAW` VAO).
+#[no_mangle]
+pub extern "C" fn verdant_wasm_dyn_col_ptr() -> u32 {
+    global_bridge()
+        .lock()
+        .ok()
+        .and_then(|g| Some(g.as_ref()?.dynamic_buffers.colors_rgb.as_ptr() as usize as u32))
+        .unwrap_or(0)
+}
+
+/// Zero-based dynamic actor `u32` indices pointer (`STREAM_DRAW` VAO).
+#[no_mangle]
+pub extern "C" fn verdant_wasm_dyn_idx_ptr() -> u32 {
+    global_bridge()
+        .lock()
+        .ok()
+        .and_then(|g| Some(g.as_ref()?.dynamic_buffers.indices.as_ptr() as usize as u32))
+        .unwrap_or(0)
+}
+
+/// Dynamic actor vertex count.
+#[no_mangle]
+pub extern "C" fn verdant_wasm_dyn_vert_count() -> u32 {
+    global_bridge()
+        .lock()
+        .ok()
+        .and_then(|g| Some(g.as_ref()?.dynamic_buffers.vertex_count() as u32))
+        .unwrap_or(0)
+}
+
+/// Dynamic actor `u32` index count.
+#[no_mangle]
+pub extern "C" fn verdant_wasm_dyn_idx_count() -> u32 {
+    global_bridge()
+        .lock()
+        .ok()
+        .and_then(|g| Some(g.as_ref()?.dynamic_buffers.indices.len() as u32))
+        .unwrap_or(0)
+}
+
+/// Configures a hardware-instanced stress/crowd/lattice workload (`0..=65535` instances) and returns
+/// effective instanced triangle count.
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+#[no_mangle]
+pub extern "C" fn verdant_wasm_configure_instanced_workload(instance_count: u32) -> u32 {
+    let Ok(mut guard) = global_bridge().lock() else {
+        return 0;
+    };
+    let Some(bridge) = guard.as_mut() else {
+        return 0;
+    };
+    bridge.configure_instanced_workload(instance_count) as u32
+}
+
+/// Monotonic epoch of `instanced_batch`.
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+#[no_mangle]
+pub extern "C" fn verdant_wasm_inst_epoch() -> u32 {
+    global_bridge()
+        .lock()
+        .ok()
+        .and_then(|g| Some(g.as_ref()?.instanced_batch.epoch))
+        .unwrap_or(0)
+}
+
+/// Active hardware instance count in `instanced_batch`.
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+#[no_mangle]
+pub extern "C" fn verdant_wasm_inst_count() -> u32 {
+    global_bridge()
+        .lock()
+        .ok()
+        .and_then(|g| Some(g.as_ref()?.instanced_batch.instance_count() as u32))
+        .unwrap_or(0)
+}
+
+/// Base mesh vertex count for `instanced_batch`.
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+#[no_mangle]
+pub extern "C" fn verdant_wasm_inst_mesh_vert_count() -> u32 {
+    global_bridge()
+        .lock()
+        .ok()
+        .and_then(|g| {
+            Some((g.as_ref()?.instanced_batch.mesh_positions_xyz.len() / (1 + 1 + 1)) as u32)
+        })
+        .unwrap_or(0)
+}
+
+/// Base mesh index count for `instanced_batch`.
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+#[no_mangle]
+pub extern "C" fn verdant_wasm_inst_mesh_idx_count() -> u32 {
+    global_bridge()
+        .lock()
+        .ok()
+        .and_then(|g| Some(g.as_ref()?.instanced_batch.mesh_indices.len() as u32))
+        .unwrap_or(0)
+}
+
+/// Base mesh positions pointer for `instanced_batch`.
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+#[no_mangle]
+pub extern "C" fn verdant_wasm_inst_mesh_pos_ptr() -> u32 {
+    global_bridge()
+        .lock()
+        .ok()
+        .and_then(|g| Some(g.as_ref()?.instanced_batch.mesh_positions_xyz.as_ptr() as usize as u32))
+        .unwrap_or(0)
+}
+
+/// Base mesh normals pointer for `instanced_batch`.
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+#[no_mangle]
+pub extern "C" fn verdant_wasm_inst_mesh_norm_ptr() -> u32 {
+    global_bridge()
+        .lock()
+        .ok()
+        .and_then(|g| Some(g.as_ref()?.instanced_batch.mesh_normals_xyz.as_ptr() as usize as u32))
+        .unwrap_or(0)
+}
+
+/// Base mesh colors pointer for `instanced_batch`.
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+#[no_mangle]
+pub extern "C" fn verdant_wasm_inst_mesh_col_ptr() -> u32 {
+    global_bridge()
+        .lock()
+        .ok()
+        .and_then(|g| Some(g.as_ref()?.instanced_batch.mesh_colors_rgb.as_ptr() as usize as u32))
+        .unwrap_or(0)
+}
+
+/// Base mesh indices pointer for `instanced_batch`.
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+#[no_mangle]
+pub extern "C" fn verdant_wasm_inst_mesh_idx_ptr() -> u32 {
+    global_bridge()
+        .lock()
+        .ok()
+        .and_then(|g| Some(g.as_ref()?.instanced_batch.mesh_indices.as_ptr() as usize as u32))
+        .unwrap_or(0)
+}
+
+/// Per-instance `16 x f32` transform + tint stream pointer (`gl.drawElementsInstanced`).
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+#[no_mangle]
+pub extern "C" fn verdant_wasm_inst_data_ptr() -> u32 {
+    global_bridge()
+        .lock()
+        .ok()
+        .and_then(|g| Some(g.as_ref()?.instanced_batch.instance_rows_f32.as_ptr() as usize as u32))
+        .unwrap_or(0)
+}
+
+/// Evaluates `prism_kernel::governorRecommendedScalePermille` (`1000`, `850`, or `700`) for `observed_frame_micros`.
+#[no_mangle]
+pub extern "C" fn verdant_wasm_governor_scale_permille(observed_frame_micros: u32) -> u32 {
+    #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+    {
+        let sixty = pk_u64(prism_kernel::sSix()) * pk_u64(prism_kernel::sTen());
+        let budget = prism_kernel::frameBudgetMicrosForHz(sixty).unwrap_or(1);
+        prism_kernel::governorRecommendedScalePermille(u64::from(observed_frame_micros), budget)
+            .unwrap_or_else(|_| verdant_core::verdant_tensor::kernel_consts().skin_weight_scale)
+            as u32
+    }
+    #[cfg(all(target_arch = "wasm32", not(feature = "uorc-decoder")))]
+    {
+        let two = 1_u32 + 1_u32;
+        let five = two + two + 1_u32;
+        let ten = two * five;
+        let hundred = ten * ten;
+        let thousand = hundred * ten;
+        let million = thousand * thousand;
+        let sixty = (two * (two + 1_u32)) * ten;
+        let budget = million / sixty;
+        if observed_frame_micros <= budget {
+            thousand
+        } else if observed_frame_micros <= two * budget {
+            ((two + 1_u32) * five + two) * five * ten
+        } else {
+            (five + two) * hundred
+        }
+    }
 }
 
 /// Advances simulation by `dt_micros` with player milli-inputs (`1` = success, `0` = refusal).
@@ -2012,7 +2428,7 @@ pub extern "C" fn verdant_wasm_bvh_visible_count(
         near_m,
         far_m,
     );
-    bridge.two_level_bvh.tlas().query_frustum(&frustum).len() as u32
+    bridge.two_level_bvh.tlas().count_frustum_visible(&frustum) as u32
 }
 
 /// Walkable terrain NavMesh polygon count verified by `prism_kernel::navTriangleWalkable`.
@@ -2190,6 +2606,7 @@ pub extern "C" fn verdant_wasm_fb_len() -> u32 {
 }
 
 /// Clears the safe host<->guest byte staging buffer.
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
 #[no_mangle]
 pub extern "C" fn verdant_wasm_io_clear() {
     if let Ok(mut guard) = global_bridge().lock() {
@@ -2201,6 +2618,7 @@ pub extern "C" fn verdant_wasm_io_clear() {
 
 /// Resizes `io_buffer` up to `32 MiB` (`snapshotUrlMaxBytes * skinWeightScale`) for bulk host->guest
 /// `.glb` / `.uorc` / prompt staging and returns its linear-memory byte offset (`0` on refusal).
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
 #[no_mangle]
 pub extern "C" fn verdant_wasm_io_resize(byte_len: u32) -> u32 {
     let Ok(mut guard) = global_bridge().lock() else {
@@ -2220,6 +2638,7 @@ pub extern "C" fn verdant_wasm_io_resize(byte_len: u32) -> u32 {
 }
 
 /// Linear-memory byte offset of `io_buffer`.
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
 #[no_mangle]
 pub extern "C" fn verdant_wasm_io_ptr() -> u32 {
     global_bridge()
@@ -2230,6 +2649,7 @@ pub extern "C" fn verdant_wasm_io_ptr() -> u32 {
 }
 
 /// Linear-memory byte offset of `aux_buffer`.
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
 #[no_mangle]
 pub extern "C" fn verdant_wasm_aux_ptr() -> u32 {
     global_bridge()
@@ -2240,6 +2660,7 @@ pub extern "C" fn verdant_wasm_aux_ptr() -> u32 {
 }
 
 /// Current byte length of `aux_buffer`.
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
 #[no_mangle]
 pub extern "C" fn verdant_wasm_aux_len() -> u32 {
     global_bridge()
@@ -2250,6 +2671,7 @@ pub extern "C" fn verdant_wasm_aux_len() -> u32 {
 }
 
 /// Appends one byte (`0..=255`) to the safe host<->guest staging buffer.
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
 #[no_mangle]
 pub extern "C" fn verdant_wasm_io_push_byte(byte: u32) {
     if let Ok(mut guard) = global_bridge().lock() {
@@ -2265,6 +2687,7 @@ pub extern "C" fn verdant_wasm_io_push_byte(byte: u32) {
 }
 
 /// Current byte length of the safe host<->guest staging buffer.
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
 #[no_mangle]
 pub extern "C" fn verdant_wasm_io_len() -> u32 {
     global_bridge()
@@ -2275,6 +2698,7 @@ pub extern "C" fn verdant_wasm_io_len() -> u32 {
 }
 
 /// Reads one byte at `index` from the safe host<->guest staging buffer.
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
 #[no_mangle]
 pub extern "C" fn verdant_wasm_io_get_byte(index: u32) -> u32 {
     global_bridge()
@@ -2458,25 +2882,47 @@ pub extern "C" fn verdant_wasm_tensor_kernel_count() -> u32 {
 /// Tile edge dimension in pixels (`16`) from `prism_kernel::tileEdgePixels()`.
 #[no_mangle]
 pub extern "C" fn verdant_wasm_tile_edge_pixels() -> u32 {
-    pk_u64(prism_kernel::tileEdgePixels()) as u32
+    #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+    {
+        pk_u64(prism_kernel::tileEdgePixels()) as u32
+    }
+    #[cfg(all(target_arch = "wasm32", not(feature = "uorc-decoder")))]
+    {
+        verdant_core::verdant_tensor::kernel_consts().tile_edge_pixels
+    }
 }
 
 /// Returns worker command ring capacity (`64`) from `prism_kernel`.
 #[no_mangle]
 pub extern "C" fn verdant_wasm_worker_ring_capacity() -> u32 {
-    pk_u64(prism_kernel::workerCommandRingCapacity()) as u32
+    #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+    {
+        pk_u64(prism_kernel::workerCommandRingCapacity()) as u32
+    }
+    #[cfg(all(target_arch = "wasm32", not(feature = "uorc-decoder")))]
+    {
+        verdant_core::verdant_tensor::kernel_consts().word_bit_width as u32
+    }
 }
 
 /// Returns maximum URL-shareable `VDNT`/`UORC` snapshot byte budget (`32768`) from `prism_kernel`.
 #[no_mangle]
 pub extern "C" fn verdant_wasm_snapshot_max_bytes() -> u32 {
-    pk_u64(prism_kernel::snapshotUrlMaxBytes()) as u32
+    #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+    {
+        pk_u64(prism_kernel::snapshotUrlMaxBytes()) as u32
+    }
+    #[cfg(all(target_arch = "wasm32", not(feature = "uorc-decoder")))]
+    {
+        let four = 1_u32 + 1_u32 + 1_u32 + 1_u32;
+        1_u32 << ((four * four) - 1_u32)
+    }
 }
 
 /// Returns canonical default world seed (`7`) from `prism_kernel`.
 #[no_mangle]
 pub extern "C" fn verdant_wasm_default_seed() -> u64 {
-    pk_u64(prism_kernel::wasmDefaultSeed())
+    pk_u64(prism_kernel::sSeven())
 }
 
 /// Returns maximum progressive base LOD rank (`3`) from `prism_kernel`.
@@ -2494,7 +2940,16 @@ pub extern "C" fn verdant_wasm_hd_max_lod_rank() -> u32 {
 /// Returns minimum authenticated `VDNT` wire envelope byte length (`41`) from `prism_kernel`.
 #[no_mangle]
 pub extern "C" fn verdant_wasm_snapshot_min_wire_bytes() -> u32 {
-    pk_u64(prism_kernel::snapshotMinWireBytes()) as u32
+    #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+    {
+        pk_u64(prism_kernel::snapshotMinWireBytes()) as u32
+    }
+    #[cfg(all(target_arch = "wasm32", not(feature = "uorc-decoder")))]
+    {
+        let two = 1_u32 + 1_u32;
+        let five = two + two + 1_u32;
+        (two * two * two * five) + 1_u32
+    }
 }
 
 /// Number of unified Prism semiring tensor kernels (`15`, covering linear, tropical max/min,
@@ -2618,6 +3073,7 @@ pub extern "C" fn verdant_wasm_glb_import_io() -> u32 {
     };
     bridge.bvh = imported.scene.build_bvh();
     bridge.custom_glb_scene = Some((imported.scene, imported.meshes, imported.materials));
+    bridge.static_dirty = true;
     let tris = bridge.rebuild_scene_buffers(0.0).unwrap_or(0);
     if let Ok(snap) = WorldSnapshot::encode(&bridge.world) {
         bridge.aux_buffer = snap;

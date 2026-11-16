@@ -3,12 +3,17 @@
 use std::collections::BTreeMap;
 
 use serde::{Deserialize, Serialize};
+use verdant_tensor::WordBitset;
 
-use crate::collision::{BlasTriangleHit, MeshBlas, SweptSphereHit};
+use crate::collision::{
+    aabb_point_dist_sq, build_flat_sah_bvh, segment_swept_aabb_toi, BlasTriangleHit, FlatBvhNode,
+    MeshBlas, SweptSphereHit,
+};
 use crate::error::{CollisionError, TensorComputeError};
 use crate::geometry::ProceduralMesh;
 use crate::math::{
-    geometric_epsilon, pow10_u64, three_u32, Aabb, Frustum, Mat4, Quat, Ray, Vec3, DIM_PLANAR,
+    geometric_epsilon, pow10_u64, three_u32, Aabb, Frustum, Mat4, Quat, Ray, Vec3, DIM_HOMOGENEOUS,
+    DIM_SPATIAL,
 };
 use crate::prism_kernel;
 
@@ -115,93 +120,136 @@ pub struct RaycastHit {
     pub point_world: Vec3,
 }
 
-#[derive(Clone, Debug)]
-enum BvhNode {
-    Leaf {
-        bounds: Aabb,
-        entity: EntityId,
-    },
-    Internal {
-        bounds: Aabb,
-        left: Box<BvhNode>,
-        right: Box<BvhNode>,
-    },
-}
-
-/// Bounding Volume Hierarchy (`BVH`) over world-space entity bounds for culling and picking.
+/// Bounding Volume Hierarchy (`BVH`) over world-space entity bounds backed by a contiguous
+/// 32-byte binned-SAH `FlatBvhNode` array (`O(log N)` zero-allocation stack traversal).
 #[derive(Clone, Debug, Default)]
 pub struct BoundingVolumeHierarchy {
-    root: Option<BvhNode>,
-    leaf_count: usize,
+    pub(crate) items: Vec<(EntityId, Aabb)>,
+    pub(crate) nodes: Vec<FlatBvhNode>,
+    pub(crate) prim_indices: Vec<u32>,
 }
 
 impl BoundingVolumeHierarchy {
-    /// Builds a top-down median-split BVH from `(EntityId, world_aabb)` pairs.
+    /// Builds a top-down binned-SAH flat BVH from `(EntityId, world_aabb)` pairs.
     #[must_use]
-    pub fn build(mut items: Vec<(EntityId, Aabb)>) -> Self {
-        let leaf_count = items.len();
-        let root = Self::build_recursive(&mut items);
-        Self { root, leaf_count }
+    pub fn build(items: Vec<(EntityId, Aabb)>) -> Self {
+        if items.is_empty() {
+            return Self::default();
+        }
+        let prim_bounds: Vec<Aabb> = items.iter().map(|(_, b)| *b).collect();
+        let leaf_cap = verdant_tensor::kernel_consts().flat_bvh_leaf_max_prims;
+        let (nodes, prim_indices) = build_flat_sah_bvh(&prim_bounds, leaf_cap);
+        Self {
+            items,
+            nodes,
+            prim_indices,
+        }
     }
 
     /// Number of indexed scene entities in this BVH.
     #[must_use]
-    pub const fn len(&self) -> usize {
-        self.leaf_count
+    pub fn len(&self) -> usize {
+        self.items.len()
     }
 
     /// Returns whether the BVH contains zero entities.
     #[must_use]
-    pub const fn is_empty(&self) -> bool {
-        self.leaf_count == 0
+    pub fn is_empty(&self) -> bool {
+        self.items.is_empty()
     }
 
-    fn build_recursive(items: &mut [(EntityId, Aabb)]) -> Option<BvhNode> {
-        match items {
-            [] => None,
-            [(entity, bounds)] => Some(BvhNode::Leaf {
-                bounds: *bounds,
-                entity: *entity,
-            }),
-            many => {
-                let mut total = many[0].1;
-                for (_, b) in &many[1..] {
-                    total = total.union(*b);
-                }
-                let span = total.max - total.min;
-                let axis = if span.x >= span.y && span.x >= span.z {
-                    0
-                } else if span.y >= span.z {
-                    1
-                } else {
-                    DIM_PLANAR
-                };
-                many.sort_unstable_by(|(id_a, a), (id_b, b)| {
-                    let ca = a.center();
-                    let cb = b.center();
-                    let va = [ca.x, ca.y, ca.z][axis];
-                    let vb = [cb.x, cb.y, cb.z][axis];
-                    va.total_cmp(&vb).then_with(|| id_a.cmp(id_b))
-                });
-                let mid = many.len() / DIM_PLANAR;
-                let (left_slice, right_slice) = many.split_at_mut(mid);
-                let left = Box::new(Self::build_recursive(left_slice)?);
-                let right = Box::new(Self::build_recursive(right_slice)?);
-                Some(BvhNode::Internal {
-                    bounds: total,
-                    left,
-                    right,
-                })
-            }
-        }
+    /// Number of contiguous 32-byte `FlatBvhNode` entries in this TLAS.
+    #[must_use]
+    pub fn node_count(&self) -> usize {
+        self.nodes.len()
     }
 
-    /// Returns the closest entity intersected by `ray` within `max_distance_meters`.
+    /// Returns the closest entity intersected by `ray` within `max_distance_meters` (`0` heap allocations).
     #[must_use]
     pub fn raycast(&self, ray: Ray, max_distance_meters: f64) -> Option<RaycastHit> {
-        let root = self.root.as_ref()?;
+        if self.nodes.is_empty() {
+            return None;
+        }
         let mut best: Option<(EntityId, f64)> = None;
-        Self::raycast_node(root, ray, max_distance_meters, &mut best);
+        let mut limit = max_distance_meters;
+        let mut stack = [0_u32; verdant_tensor::FLAT_BVH_STACK_CAP];
+        let mut sp = 0usize;
+
+        if ray
+            .intersect_aabb(self.nodes[0].bounds())
+            .is_some_and(|t| t <= limit)
+        {
+            stack[0] = 0;
+            sp = 1;
+        }
+
+        while sp > 0 {
+            sp -= 1;
+            let idx = stack[sp] as usize;
+            let node = &self.nodes[idx];
+            if ray.intersect_aabb(node.bounds()).is_none_or(|t| t > limit) {
+                continue;
+            }
+            if node.prim_count > 0 {
+                let start = node.right_or_first as usize;
+                let end = start + (node.prim_count as usize);
+                for &pi in &self.prim_indices[start..end] {
+                    let (entity, bounds) = self.items[pi as usize];
+                    if let Some(t) = ray.intersect_aabb(bounds) {
+                        if t <= limit {
+                            limit = t;
+                            best = Some((entity, t));
+                        }
+                    }
+                }
+            } else {
+                let left_idx = (idx + 1) as u32;
+                let right_idx = node.right_or_first;
+                let tl = ray
+                    .intersect_aabb(self.nodes[left_idx as usize].bounds())
+                    .filter(|&d| d <= limit);
+                let tr = ray
+                    .intersect_aabb(self.nodes[right_idx as usize].bounds())
+                    .filter(|&d| d <= limit);
+                match (tl, tr) {
+                    (Some(dl), Some(dr)) => {
+                        if dl <= dr {
+                            if sp < stack.len() {
+                                stack[sp] = right_idx;
+                                sp += 1;
+                            }
+                            if sp < stack.len() {
+                                stack[sp] = left_idx;
+                                sp += 1;
+                            }
+                        } else {
+                            if sp < stack.len() {
+                                stack[sp] = left_idx;
+                                sp += 1;
+                            }
+                            if sp < stack.len() {
+                                stack[sp] = right_idx;
+                                sp += 1;
+                            }
+                        }
+                    }
+                    (Some(_), None) => {
+                        if sp < stack.len() {
+                            stack[sp] = left_idx;
+                            sp += 1;
+                        }
+                    }
+                    (None, Some(_)) => {
+                        if sp < stack.len() {
+                            stack[sp] = right_idx;
+                            sp += 1;
+                        }
+                    }
+                    (None, None) => {}
+                }
+            }
+        }
+
         best.map(|(entity, dist)| RaycastHit {
             entity,
             distance_meters: dist,
@@ -209,70 +257,108 @@ impl BoundingVolumeHierarchy {
         })
     }
 
-    fn raycast_node(node: &BvhNode, ray: Ray, max_dist: f64, best: &mut Option<(EntityId, f64)>) {
-        let limit = best.map_or(max_dist, |(_, d)| d);
-        match node {
-            BvhNode::Leaf { bounds, entity } => {
-                if let Some(t) = ray.intersect_aabb(*bounds) {
-                    if t <= limit {
-                        *best = Some((*entity, t));
+    /// Marks intersecting primitive indices (`0..self.len()`) directly into a 64-bit `WordBitset`
+    /// with zero heap allocations.
+    pub fn query_frustum_into_mask(&self, frustum: &Frustum, out_mask: &mut WordBitset) {
+        if out_mask.len() != self.items.len() {
+            out_mask.resize(self.items.len());
+        }
+        out_mask.clear_all();
+        if self.nodes.is_empty() {
+            return;
+        }
+        let mut stack = [0_u32; verdant_tensor::FLAT_BVH_STACK_CAP];
+        let mut sp = 0usize;
+        if frustum.intersects_aabb(self.nodes[0].bounds()) {
+            stack[0] = 0;
+            sp = 1;
+        }
+        while sp > 0 {
+            sp -= 1;
+            let idx = stack[sp] as usize;
+            let node = &self.nodes[idx];
+            if !frustum.intersects_aabb(node.bounds()) {
+                continue;
+            }
+            if node.prim_count > 0 {
+                let start = node.right_or_first as usize;
+                let end = start + (node.prim_count as usize);
+                for &pi in &self.prim_indices[start..end] {
+                    let (_, bounds) = self.items[pi as usize];
+                    if frustum.intersects_aabb(bounds) {
+                        out_mask.set(pi as usize);
                     }
                 }
-            }
-            BvhNode::Internal {
-                bounds,
-                left,
-                right,
-            } => {
-                if let Some(t) = ray.intersect_aabb(*bounds) {
-                    if t <= limit {
-                        Self::raycast_node(left, ray, max_dist, best);
-                        Self::raycast_node(right, ray, max_dist, best);
-                    }
+            } else {
+                let left_idx = (idx + 1) as u32;
+                let right_idx = node.right_or_first;
+                if sp < stack.len() {
+                    stack[sp] = right_idx;
+                    sp += 1;
+                }
+                if sp < stack.len() {
+                    stack[sp] = left_idx;
+                    sp += 1;
                 }
             }
         }
+    }
+
+    /// Counts entities whose world-space AABB intersects `frustum` with zero `Vec` allocations.
+    #[must_use]
+    pub fn count_frustum_visible(&self, frustum: &Frustum) -> usize {
+        if self.nodes.is_empty() {
+            return 0;
+        }
+        let mut count = 0usize;
+        let mut stack = [0_u32; verdant_tensor::FLAT_BVH_STACK_CAP];
+        let mut sp = 0usize;
+        if frustum.intersects_aabb(self.nodes[0].bounds()) {
+            stack[0] = 0;
+            sp = 1;
+        }
+        while sp > 0 {
+            sp -= 1;
+            let idx = stack[sp] as usize;
+            let node = &self.nodes[idx];
+            if !frustum.intersects_aabb(node.bounds()) {
+                continue;
+            }
+            if node.prim_count > 0 {
+                let start = node.right_or_first as usize;
+                let end = start + (node.prim_count as usize);
+                for &pi in &self.prim_indices[start..end] {
+                    if frustum.intersects_aabb(self.items[pi as usize].1) {
+                        count += 1;
+                    }
+                }
+            } else {
+                let left_idx = (idx + 1) as u32;
+                let right_idx = node.right_or_first;
+                if sp < stack.len() {
+                    stack[sp] = right_idx;
+                    sp += 1;
+                }
+                if sp < stack.len() {
+                    stack[sp] = left_idx;
+                    sp += 1;
+                }
+            }
+        }
+        count
     }
 
     /// Collects all entities whose world-space AABB intersects `frustum`, sorted deterministically.
     #[must_use]
     pub fn query_frustum(&self, frustum: &Frustum) -> Vec<EntityId> {
-        let mut visible = Vec::new();
-        if let Some(root) = &self.root {
-            Self::frustum_node(root, frustum, &mut visible);
-        }
-        visible.sort();
+        let mut mask = WordBitset::with_len(self.items.len());
+        self.query_frustum_into_mask(frustum, &mut mask);
+        let mut visible = Vec::with_capacity(mask.count_ones());
+        mask.for_each_set_bit(|slot| {
+            visible.push(self.items[slot].0);
+        });
+        visible.sort_unstable();
         visible
-    }
-
-    fn frustum_node(node: &BvhNode, frustum: &Frustum, out: &mut Vec<EntityId>) {
-        match node {
-            BvhNode::Leaf { bounds, entity } => {
-                if frustum.intersects_aabb(*bounds) {
-                    out.push(*entity);
-                }
-            }
-            BvhNode::Internal {
-                bounds,
-                left,
-                right,
-            } => {
-                if frustum.intersects_aabb(*bounds) {
-                    Self::frustum_node(left, frustum, out);
-                    Self::frustum_node(right, frustum, out);
-                }
-            }
-        }
-    }
-
-    fn collect_leaves(node: &BvhNode, out: &mut Vec<(EntityId, Aabb)>) {
-        match node {
-            BvhNode::Leaf { bounds, entity } => out.push((*entity, *bounds)),
-            BvhNode::Internal { left, right, .. } => {
-                Self::collect_leaves(left, out);
-                Self::collect_leaves(right, out);
-            }
-        }
     }
 
     /// Evaluates frustum visibility across all indexed entities via tropical `(max, +)` directional
@@ -281,18 +367,13 @@ impl BoundingVolumeHierarchy {
         &self,
         frustum: &Frustum,
     ) -> Result<Vec<EntityId>, TensorComputeError> {
-        let Some(root) = &self.root else {
-            return Ok(Vec::new());
-        };
-        let mut leaves = Vec::with_capacity(self.leaf_count);
-        Self::collect_leaves(root, &mut leaves);
-        if leaves.is_empty() {
+        if self.items.is_empty() {
             return Ok(Vec::new());
         }
 
         let scale = pow10_u64(three_u32()) as f64;
         let scale_sq = scale * scale;
-        let plane_dirs: Vec<[i32; 1 + 1 + 1]> = frustum
+        let plane_dirs: Vec<[i32; DIM_SPATIAL]> = frustum
             .planes
             .iter()
             .map(|p| {
@@ -305,19 +386,21 @@ impl BoundingVolumeHierarchy {
             .collect();
 
         let mut visible = Vec::new();
-        for (entity, aabb) in leaves {
+        for &(entity, aabb) in &self.items {
             let xs = [aabb.min.x, aabb.max.x];
             let ys = [aabb.min.y, aabb.max.y];
             let zs = [aabb.min.z, aabb.max.z];
-            let mut corners = Vec::new();
+            let mut corners = [[0_i32; DIM_SPATIAL]; 1 << DIM_SPATIAL];
+            let mut c_idx = 0usize;
             for &x in &xs {
                 for &y in &ys {
                     for &z in &zs {
-                        corners.push([
+                        corners[c_idx] = [
                             (x * scale).round() as i32,
                             (y * scale).round() as i32,
                             (z * scale).round() as i32,
-                        ]);
+                        ];
+                        c_idx += 1;
                     }
                 }
             }
@@ -333,8 +416,275 @@ impl BoundingVolumeHierarchy {
                 visible.push(entity);
             }
         }
-        visible.sort();
+        visible.sort_unstable();
         Ok(visible)
+    }
+}
+
+/// Cache-oblivious Structure-of-Arrays (`SoA`) archetype table paired with 64-bit word-packed
+/// bitsets (`WordBitset`, adapted from `verdant-aqm`), scaling ECS transform propagation, frustum
+/// visibility, and GPU hardware instancing compaction to `100,000+` entities in `O(dirty + N / 64)`.
+#[derive(Clone, Debug, Default)]
+pub struct SoaSceneTable {
+    /// Dense slot -> `EntityId`.
+    pub entity_ids: Vec<EntityId>,
+    /// Dense slot -> `EntityRole`.
+    pub roles: Vec<EntityRole>,
+    /// Topologically ordered parent slot (`parent_slot < slot`).
+    pub parent_slots: Vec<Option<u32>>,
+    /// Dense local transforms.
+    pub local_transforms: Vec<Transform>,
+    /// Dense local AABBs.
+    pub local_bounds: Vec<Aabb>,
+    /// Cached world matrices.
+    pub world_matrices: Vec<Mat4>,
+    /// Cached world AABBs.
+    pub world_bounds: Vec<Aabb>,
+    /// Optional mesh index per slot.
+    pub mesh_indices: Vec<Option<u32>>,
+    /// Packed linear RGBA tint per slot for GPU instancing.
+    pub color_tints: Vec<[f32; DIM_HOMOGENEOUS]>,
+    /// 64-bit word-packed mask of dirty transforms awaiting propagation.
+    pub dirty_mask: WordBitset,
+    /// 64-bit word-packed mask of static world entities.
+    pub static_mask: WordBitset,
+    /// 64-bit word-packed mask of renderable entities (`mesh_index.is_some()`).
+    pub renderable_mask: WordBitset,
+    /// 64-bit word-packed mask of frustum-visible entities.
+    pub visible_mask: WordBitset,
+    /// Monotonic epoch incremented whenever static geometry changes.
+    pub static_epoch: u64,
+}
+
+impl SoaSceneTable {
+    /// Preallocates contiguous `SoA` columns for `capacity` entities.
+    #[must_use]
+    pub fn with_capacity(capacity: usize) -> Self {
+        Self {
+            entity_ids: Vec::with_capacity(capacity),
+            roles: Vec::with_capacity(capacity),
+            parent_slots: Vec::with_capacity(capacity),
+            local_transforms: Vec::with_capacity(capacity),
+            local_bounds: Vec::with_capacity(capacity),
+            world_matrices: Vec::with_capacity(capacity),
+            world_bounds: Vec::with_capacity(capacity),
+            mesh_indices: Vec::with_capacity(capacity),
+            color_tints: Vec::with_capacity(capacity),
+            dirty_mask: WordBitset::with_len(0),
+            static_mask: WordBitset::with_len(0),
+            renderable_mask: WordBitset::with_len(0),
+            visible_mask: WordBitset::with_len(0),
+            static_epoch: 1,
+        }
+    }
+
+    /// Compiles a `SceneWorld` into topologically ordered `SoA` columns + `WordBitset` masks in `O(N)`.
+    pub fn from_scene_world(scene: &SceneWorld) -> Result<Self, TensorComputeError> {
+        let mats = scene.propagate_all_world_matrices()?;
+        let n = mats.len();
+        let mut table = Self::with_capacity(n);
+        table.dirty_mask = WordBitset::with_len(n);
+        table.static_mask = WordBitset::with_len(n);
+        table.renderable_mask = WordBitset::with_len(n);
+        table.visible_mask = WordBitset::all_ones(n);
+
+        let mut id_to_slot: BTreeMap<EntityId, u32> = BTreeMap::new();
+        for (slot, &(id, world_mat)) in mats.iter().enumerate() {
+            id_to_slot.insert(id, slot as u32);
+            let Some(rec) = scene.get(id) else {
+                continue;
+            };
+            let wb = rec.local_bounds.transformed(world_mat);
+            table.entity_ids.push(id);
+            table.roles.push(rec.role);
+            table
+                .parent_slots
+                .push(rec.parent.and_then(|pid| id_to_slot.get(&pid).copied()));
+            table.local_transforms.push(rec.local_transform);
+            table.local_bounds.push(rec.local_bounds);
+            table.world_matrices.push(world_mat);
+            table.world_bounds.push(wb);
+            table.mesh_indices.push(rec.mesh_index.map(|m| m as u32));
+            table.color_tints.push([1.0, 1.0, 1.0, 1.0]);
+            if matches!(
+                rec.role,
+                EntityRole::TerrainPatch
+                    | EntityRole::StaticArchitecture
+                    | EntityRole::FluidVolume
+                    | EntityRole::SurfaceFoliage
+            ) {
+                table.static_mask.set(slot);
+            }
+            if rec.mesh_index.is_some() {
+                table.renderable_mask.set(slot);
+            }
+        }
+        Ok(table)
+    }
+
+    /// Appends a dense entity directly into the `SoA` table in `O(1)` amortized time.
+    pub fn spawn_dense(
+        &mut self,
+        id: EntityId,
+        role: EntityRole,
+        parent_slot: Option<u32>,
+        local_transform: Transform,
+        local_bounds: Aabb,
+        visual: (Option<u32>, [f32; DIM_HOMOGENEOUS]),
+    ) -> usize {
+        let (mesh_index, color_tint) = visual;
+        let slot = self.entity_ids.len();
+        let local_mat = local_transform.local_matrix();
+        let world_mat = match parent_slot {
+            Some(ps) if (ps as usize) < self.world_matrices.len() => {
+                self.world_matrices[ps as usize] * local_mat
+            }
+            _ => local_mat,
+        };
+        let wb = local_bounds.transformed(world_mat);
+        self.entity_ids.push(id);
+        self.roles.push(role);
+        self.parent_slots.push(parent_slot);
+        self.local_transforms.push(local_transform);
+        self.local_bounds.push(local_bounds);
+        self.world_matrices.push(world_mat);
+        self.world_bounds.push(wb);
+        self.mesh_indices.push(mesh_index);
+        self.color_tints.push(color_tint);
+
+        let new_len = slot + 1;
+        self.dirty_mask.resize(new_len);
+        self.static_mask.resize(new_len);
+        self.renderable_mask.resize(new_len);
+        self.visible_mask.resize(new_len);
+        self.visible_mask.set(slot);
+        if matches!(
+            role,
+            EntityRole::TerrainPatch
+                | EntityRole::StaticArchitecture
+                | EntityRole::FluidVolume
+                | EntityRole::SurfaceFoliage
+        ) {
+            self.static_mask.set(slot);
+            self.static_epoch = self.static_epoch.wrapping_add(1);
+        }
+        if mesh_index.is_some() {
+            self.renderable_mask.set(slot);
+        }
+        slot
+    }
+
+    /// Total dense entity count.
+    #[must_use]
+    pub fn len(&self) -> usize {
+        self.entity_ids.len()
+    }
+
+    /// Returns true if empty.
+    #[must_use]
+    pub fn is_empty(&self) -> bool {
+        self.entity_ids.is_empty()
+    }
+
+    /// Updates `local_transforms[slot]` and sets bit `slot` in `dirty_mask` (`O(1)`).
+    #[inline]
+    pub fn set_local_transform(&mut self, slot: usize, transform: Transform) {
+        if slot < self.local_transforms.len() {
+            self.local_transforms[slot] = transform;
+            self.dirty_mask.set(slot);
+            if self.static_mask.test(slot) {
+                self.static_epoch = self.static_epoch.wrapping_add(1);
+            }
+        }
+    }
+
+    /// Sweeps `dirty_mask` via 64-bit hardware `trailing_zeros` (`O(dirty + N / 64)`), updating
+    /// strictly dirty world matrices & AABBs and returning the exact count of recomputed transforms.
+    pub fn propagate_dirty_transforms(&mut self) -> usize {
+        if self.dirty_mask.count_ones() == 0 {
+            return 0;
+        }
+        let mut updated = 0usize;
+        // Propagate dirty bits to descendants whose parent slot was marked dirty:
+        for slot in 0..self.parent_slots.len() {
+            if let Some(ps) = self.parent_slots[slot] {
+                if self.dirty_mask.test(ps as usize) {
+                    self.dirty_mask.set(slot);
+                }
+            }
+        }
+        let world_mats = &mut self.world_matrices;
+        let world_bnds = &mut self.world_bounds;
+        let local_xfs = &self.local_transforms;
+        let local_bnds = &self.local_bounds;
+        let parents = &self.parent_slots;
+
+        self.dirty_mask.for_each_set_bit(|slot| {
+            let local_mat = local_xfs[slot].local_matrix();
+            let w_mat = match parents[slot] {
+                Some(ps) => world_mats[ps as usize] * local_mat,
+                None => local_mat,
+            };
+            world_mats[slot] = w_mat;
+            world_bnds[slot] = local_bnds[slot].transformed(w_mat);
+            updated += 1;
+        });
+        self.dirty_mask.clear_all();
+        updated
+    }
+
+    /// Sweeps `renderable_mask` in `O(renderable + N / 64)` to populate `visible_mask` against
+    /// `frustum` and returns the visible count via hardware `popcnt`.
+    pub fn cull_frustum_word_packed(&mut self, frustum: &Frustum) -> usize {
+        self.visible_mask.clear_all();
+        let bounds = &self.world_bounds;
+        let vis = &mut self.visible_mask;
+        self.renderable_mask.for_each_set_bit(|slot| {
+            if frustum.intersects_aabb(bounds[slot]) {
+                vis.set(slot);
+            }
+        });
+        self.visible_mask.count_ones()
+    }
+
+    /// Compacts all frustum-visible instances matching `target_mesh_index` into `16`-float GPU
+    /// instance rows (`col0.xyz, tint.r, col1.xyz, tint.g, col2.xyz, tint.b, trans.xyz, tint.a`)
+    /// ready for a single `gl.drawElementsInstanced` call.
+    pub fn compact_visible_instances_for_mesh(
+        &self,
+        target_mesh_index: u32,
+        out_f32_x16: &mut Vec<f32>,
+    ) -> usize {
+        out_f32_x16.clear();
+        let i2 = 1usize + 1usize;
+        let i3 = i2 + 1usize;
+        let mut count = 0usize;
+        self.visible_mask.for_each_set_bit(|slot| {
+            if self.mesh_indices[slot] == Some(target_mesh_index) {
+                let m = &self.world_matrices[slot].cols;
+                let c = self.color_tints[slot];
+                out_f32_x16.extend_from_slice(&[
+                    m[0][0] as f32,
+                    m[0][1] as f32,
+                    m[0][i2] as f32,
+                    c[0],
+                    m[1][0] as f32,
+                    m[1][1] as f32,
+                    m[1][i2] as f32,
+                    c[1],
+                    m[i2][0] as f32,
+                    m[i2][1] as f32,
+                    m[i2][i2] as f32,
+                    c[i2],
+                    m[i3][0] as f32,
+                    m[i3][1] as f32,
+                    m[i3][i2] as f32,
+                    c[i3],
+                ]);
+                count += 1;
+            }
+        });
+        count
     }
 }
 
@@ -446,15 +796,17 @@ impl SceneWorld {
         Some(rec.local_bounds.transformed(mat))
     }
 
-    /// Propagates world-space transformation matrices across the entire scene hierarchy in a
-    /// topological pass via `verdant_tensor::propagate_hierarchy_matrices_exact` (`uor-matmul`).
+    /// Propagates world-space transformation matrices across the entire scene hierarchy in an
+    /// `O(N)` topological Kahn pass via `verdant_tensor::propagate_hierarchy_matrices_exact` (`uor-matmul`).
     pub fn propagate_all_world_matrices(
         &self,
     ) -> Result<Vec<(EntityId, Mat4)>, TensorComputeError> {
         if self.entities.is_empty() {
             return Ok(Vec::new());
         }
-        let mut ordered_ids: Vec<EntityId> = Vec::with_capacity(self.entities.len());
+        let n = self.entities.len();
+        let mut ordered_ids: Vec<EntityId> = Vec::with_capacity(n);
+        let mut id_to_order_slot: BTreeMap<EntityId, usize> = BTreeMap::new();
         let mut remaining: Vec<EntityId> = self.entities.keys().copied().collect();
 
         while !remaining.is_empty() {
@@ -465,10 +817,15 @@ impl SceneWorld {
                     continue;
                 };
                 match rec.parent {
-                    None => ordered_ids.push(id),
+                    None => {
+                        id_to_order_slot.insert(id, ordered_ids.len());
+                        ordered_ids.push(id);
+                    }
                     Some(pid)
-                        if ordered_ids.contains(&pid) || !self.entities.contains_key(&pid) =>
+                        if id_to_order_slot.contains_key(&pid)
+                            || !self.entities.contains_key(&pid) =>
                     {
+                        id_to_order_slot.insert(id, ordered_ids.len());
                         ordered_ids.push(id);
                     }
                     Some(_) => deferred.push(id),
@@ -490,7 +847,7 @@ impl SceneWorld {
             };
             parent_slots.push(
                 rec.parent
-                    .and_then(|pid| ordered_ids.iter().position(|&oid| oid == pid)),
+                    .and_then(|pid| id_to_order_slot.get(&pid).copied()),
             );
             local_cols.push(rec.local_transform.local_matrix().cols);
         }
@@ -502,6 +859,11 @@ impl SceneWorld {
             pairs.push((id, Mat4 { cols }));
         }
         Ok(pairs)
+    }
+
+    /// Compiles this `SceneWorld` into a cache-oblivious `SoaSceneTable` backed by 64-bit `WordBitset` masks.
+    pub fn build_soa_table(&self) -> Result<SoaSceneTable, TensorComputeError> {
+        SoaSceneTable::from_scene_world(self)
     }
 
     /// Builds a fresh world-space `BoundingVolumeHierarchy` over all active entities.
@@ -738,6 +1100,157 @@ impl TwoLevelBvh {
         &self.tlas
     }
 
+    /// Total contiguous 32-byte `FlatBvhNode` count across the TLAS and all unique `MeshBlas` entries.
+    #[must_use]
+    pub fn total_bvh_nodes(&self) -> usize {
+        self.tlas.node_count()
+            + self
+                .blas_pool
+                .iter()
+                .map(MeshBlas::node_count)
+                .sum::<usize>()
+    }
+
+    /// Exact `O(log N)` two-level world-space raycast returning `(hit, total_visited_bvh_nodes)`
+    /// with zero heap allocations and near-child-first TLAS + BLAS traversal.
+    #[must_use]
+    pub fn raycast_exact_counted(
+        &self,
+        world_ray: Ray,
+        max_distance: f64,
+    ) -> (Option<(EntityId, BlasTriangleHit)>, usize) {
+        if self.tlas.nodes.is_empty() {
+            return (None, 0);
+        }
+        let eps = geometric_epsilon();
+        let mut best: Option<(EntityId, BlasTriangleHit)> = None;
+        let mut limit = max_distance;
+        let mut visited_nodes = 0usize;
+        let mut stack = [0_u32; verdant_tensor::FLAT_BVH_STACK_CAP];
+        let mut sp = 0usize;
+
+        if world_ray
+            .intersect_aabb(self.tlas.nodes[0].bounds())
+            .is_some_and(|t| t <= limit)
+        {
+            stack[0] = 0;
+            sp = 1;
+        }
+
+        while sp > 0 {
+            sp -= 1;
+            let idx = stack[sp] as usize;
+            let node = &self.tlas.nodes[idx];
+            visited_nodes += 1;
+            if world_ray
+                .intersect_aabb(node.bounds())
+                .is_none_or(|t| t > limit)
+            {
+                continue;
+            }
+
+            if node.prim_count > 0 {
+                let start = node.right_or_first as usize;
+                let end = start + (node.prim_count as usize);
+                for &pi in &self.tlas.prim_indices[start..end] {
+                    let inst = &self.instances[pi as usize];
+                    if world_ray
+                        .intersect_aabb(inst.world_bounds)
+                        .is_none_or(|t_box| t_box > limit)
+                    {
+                        continue;
+                    }
+                    let local_origin = inst.world_to_local.transform_point3(world_ray.origin);
+                    let local_dir_raw = inst.world_to_local.transform_vector3(world_ray.direction);
+                    let dir_scale = local_dir_raw.length();
+                    if dir_scale <= eps {
+                        continue;
+                    }
+                    let local_ray = Ray {
+                        origin: local_origin,
+                        direction: local_dir_raw.scale(1.0 / dir_scale),
+                    };
+                    let local_max = limit * dir_scale;
+                    let (local_hit_opt, blas_visited) =
+                        self.blas_pool[inst.blas_slot].raycast_exact_counted(local_ray, local_max);
+                    visited_nodes += blas_visited;
+                    if let Some(local_hit) = local_hit_opt {
+                        let world_point = inst.local_to_world.transform_point3(local_hit.point);
+                        let world_dist = world_point.distance(world_ray.origin);
+                        if world_dist <= limit {
+                            limit = world_dist;
+                            let geom_n = inst
+                                .local_to_world
+                                .transform_vector3(local_hit.geometric_normal)
+                                .normalized();
+                            let shade_n = inst
+                                .local_to_world
+                                .transform_vector3(local_hit.shading_normal)
+                                .normalized();
+                            best = Some((
+                                inst.entity,
+                                BlasTriangleHit {
+                                    triangle_index: local_hit.triangle_index,
+                                    distance_meters: world_dist,
+                                    point: world_point,
+                                    geometric_normal: geom_n,
+                                    shading_normal: shade_n,
+                                    barycentrics: local_hit.barycentrics,
+                                },
+                            ));
+                        }
+                    }
+                }
+            } else {
+                let left_idx = (idx + 1) as u32;
+                let right_idx = node.right_or_first;
+                let tl = world_ray
+                    .intersect_aabb(self.tlas.nodes[left_idx as usize].bounds())
+                    .filter(|&d| d <= limit);
+                let tr = world_ray
+                    .intersect_aabb(self.tlas.nodes[right_idx as usize].bounds())
+                    .filter(|&d| d <= limit);
+                match (tl, tr) {
+                    (Some(dl), Some(dr)) => {
+                        if dl <= dr {
+                            if sp < stack.len() {
+                                stack[sp] = right_idx;
+                                sp += 1;
+                            }
+                            if sp < stack.len() {
+                                stack[sp] = left_idx;
+                                sp += 1;
+                            }
+                        } else {
+                            if sp < stack.len() {
+                                stack[sp] = left_idx;
+                                sp += 1;
+                            }
+                            if sp < stack.len() {
+                                stack[sp] = right_idx;
+                                sp += 1;
+                            }
+                        }
+                    }
+                    (Some(_), None) => {
+                        if sp < stack.len() {
+                            stack[sp] = left_idx;
+                            sp += 1;
+                        }
+                    }
+                    (None, Some(_)) => {
+                        if sp < stack.len() {
+                            stack[sp] = right_idx;
+                            sp += 1;
+                        }
+                    }
+                    (None, None) => {}
+                }
+            }
+        }
+        (best, visited_nodes)
+    }
+
     /// Exact two-level world-space raycast against surface triangles (`TLAS -> MeshBlas`).
     #[must_use]
     pub fn raycast_exact(
@@ -745,62 +1258,145 @@ impl TwoLevelBvh {
         world_ray: Ray,
         max_distance: f64,
     ) -> Option<(EntityId, BlasTriangleHit)> {
-        let eps = geometric_epsilon();
-        let mut best: Option<(EntityId, BlasTriangleHit)> = None;
-        let mut limit = max_distance;
+        self.raycast_exact_counted(world_ray, max_distance).0
+    }
 
-        for inst in &self.instances {
-            if world_ray
-                .intersect_aabb(inst.world_bounds)
-                .is_none_or(|t_box| t_box > limit)
+    /// Exact continuous world-space swept-sphere query (`t in [0.0, 1.0]`) traversing the contiguous
+    /// `FlatBvhNode` TLAS and `MeshBlas` in `O(log N)` with near-child-first TOI ordering and zero heap allocations.
+    #[must_use]
+    pub fn sweep_sphere_counted(
+        &self,
+        world_origin: Vec3,
+        world_radius: f64,
+        world_delta: Vec3,
+    ) -> (Option<(EntityId, SweptSphereHit)>, usize) {
+        if self.tlas.nodes.is_empty() {
+            return (None, 0);
+        }
+        let r = world_radius.max(0.0);
+        let mut best: Option<(EntityId, SweptSphereHit)> = None;
+        let mut visited_nodes = 0usize;
+        let mut stack = [0_u32; verdant_tensor::FLAT_BVH_STACK_CAP];
+        let mut sp = 0usize;
+
+        if segment_swept_aabb_toi(world_origin, world_delta, self.tlas.nodes[0].bounds(), r)
+            .is_some()
+        {
+            stack[0] = 0;
+            sp = 1;
+        }
+
+        while sp > 0 {
+            sp -= 1;
+            let idx = stack[sp] as usize;
+            let node = &self.tlas.nodes[idx];
+            visited_nodes += 1;
+            let max_t = best.map_or(1.0, |(_, h)| h.toi);
+            if segment_swept_aabb_toi(world_origin, world_delta, node.bounds(), r)
+                .is_none_or(|t| t > max_t)
             {
                 continue;
             }
-            let local_origin = inst.world_to_local.transform_point3(world_ray.origin);
-            let local_dir_raw = inst.world_to_local.transform_vector3(world_ray.direction);
-            let dir_scale = local_dir_raw.length();
-            if dir_scale <= eps {
-                continue;
-            }
-            let local_ray = Ray {
-                origin: local_origin,
-                direction: local_dir_raw.scale(1.0 / dir_scale),
-            };
-            let local_max = limit * dir_scale;
-            if let Some(local_hit) =
-                self.blas_pool[inst.blas_slot].raycast_exact(local_ray, local_max)
-            {
-                let world_point = inst.local_to_world.transform_point3(local_hit.point);
-                let world_dist = world_point.distance(world_ray.origin);
-                if world_dist <= limit {
-                    limit = world_dist;
-                    let geom_n = inst
-                        .local_to_world
-                        .transform_vector3(local_hit.geometric_normal)
-                        .normalized();
-                    let shade_n = inst
-                        .local_to_world
-                        .transform_vector3(local_hit.shading_normal)
-                        .normalized();
-                    best = Some((
-                        inst.entity,
-                        BlasTriangleHit {
-                            triangle_index: local_hit.triangle_index,
-                            distance_meters: world_dist,
-                            point: world_point,
-                            geometric_normal: geom_n,
-                            shading_normal: shade_n,
-                            barycentrics: local_hit.barycentrics,
-                        },
-                    ));
+
+            if node.prim_count > 0 {
+                let start = node.right_or_first as usize;
+                let end = start + (node.prim_count as usize);
+                for &pi in &self.tlas.prim_indices[start..end] {
+                    let inst = &self.instances[pi as usize];
+                    let cur_t = best.map_or(1.0, |(_, h)| h.toi);
+                    if segment_swept_aabb_toi(world_origin, world_delta, inst.world_bounds, r)
+                        .is_none_or(|t| t > cur_t)
+                    {
+                        continue;
+                    }
+                    let local_origin = inst.world_to_local.transform_point3(world_origin);
+                    let local_delta = inst.world_to_local.transform_vector3(world_delta);
+                    let local_radius = r / inst.uniform_scale;
+                    let (local_hit_opt, blas_visited) = self.blas_pool[inst.blas_slot]
+                        .sweep_sphere_counted(local_origin, local_radius, local_delta);
+                    visited_nodes += blas_visited;
+
+                    if let Some(local_hit) = local_hit_opt {
+                        if best.is_none_or(|(_, prev)| local_hit.toi < prev.toi) {
+                            let world_contact = inst
+                                .local_to_world
+                                .transform_point3(local_hit.contact_point);
+                            let world_normal = inst
+                                .local_to_world
+                                .transform_vector3(local_hit.contact_normal)
+                                .normalized();
+                            best = Some((
+                                inst.entity,
+                                SweptSphereHit {
+                                    toi: local_hit.toi,
+                                    contact_point: world_contact,
+                                    contact_normal: world_normal,
+                                    triangle_index: local_hit.triangle_index,
+                                },
+                            ));
+                        }
+                    }
+                }
+            } else {
+                let left_idx = (idx + 1) as u32;
+                let right_idx = node.right_or_first;
+                let cur_t = best.map_or(1.0, |(_, h)| h.toi);
+                let tl = segment_swept_aabb_toi(
+                    world_origin,
+                    world_delta,
+                    self.tlas.nodes[left_idx as usize].bounds(),
+                    r,
+                )
+                .filter(|&t| t <= cur_t);
+                let tr = segment_swept_aabb_toi(
+                    world_origin,
+                    world_delta,
+                    self.tlas.nodes[right_idx as usize].bounds(),
+                    r,
+                )
+                .filter(|&t| t <= cur_t);
+                match (tl, tr) {
+                    (Some(dl), Some(dr)) => {
+                        if dl <= dr {
+                            if sp < stack.len() {
+                                stack[sp] = right_idx;
+                                sp += 1;
+                            }
+                            if sp < stack.len() {
+                                stack[sp] = left_idx;
+                                sp += 1;
+                            }
+                        } else {
+                            if sp < stack.len() {
+                                stack[sp] = left_idx;
+                                sp += 1;
+                            }
+                            if sp < stack.len() {
+                                stack[sp] = right_idx;
+                                sp += 1;
+                            }
+                        }
+                    }
+                    (Some(_), None) => {
+                        if sp < stack.len() {
+                            stack[sp] = left_idx;
+                            sp += 1;
+                        }
+                    }
+                    (None, Some(_)) => {
+                        if sp < stack.len() {
+                            stack[sp] = right_idx;
+                            sp += 1;
+                        }
+                    }
+                    (None, None) => {}
                 }
             }
         }
-        best
+        (best, visited_nodes)
     }
 
-    /// Exact continuous world-space swept-sphere query (`t in [0.0, 1.0]`) pruned via tropical
-    /// `kernel12TropicalBlasSweep` over the entity TLAS and solved against triangle `MeshBlas` leaves.
+    /// Exact continuous world-space swept-sphere query (`t in [0.0, 1.0]`).
     #[must_use]
     pub fn sweep_sphere(
         &self,
@@ -808,113 +1404,107 @@ impl TwoLevelBvh {
         world_radius: f64,
         world_delta: Vec3,
     ) -> Option<(EntityId, SweptSphereHit)> {
-        if self.instances.is_empty() {
-            return None;
-        }
-        let r = world_radius.max(0.0);
-        let scale = pow10_u64(three_u32()) as f64;
-        let pad_milli = 1_i32 + 1_i32;
-        let origin_milli = [
-            (world_origin.x * scale).round() as i32,
-            (world_origin.y * scale).round() as i32,
-            (world_origin.z * scale).round() as i32,
-        ];
-        let radius_milli = ((r * scale).ceil() as i32).saturating_add(pad_milli);
-        let delta_milli = [
-            (world_delta.x * scale).round() as i32,
-            (world_delta.y * scale).round() as i32,
-            (world_delta.z * scale).round() as i32,
-        ];
-
-        let mut mins_milli = Vec::with_capacity(self.instances.len());
-        let mut maxs_milli = Vec::with_capacity(self.instances.len());
-        for inst in &self.instances {
-            mins_milli.push([
-                (inst.world_bounds.min.x * scale).floor() as i32,
-                (inst.world_bounds.min.y * scale).floor() as i32,
-                (inst.world_bounds.min.z * scale).floor() as i32,
-            ]);
-            maxs_milli.push([
-                (inst.world_bounds.max.x * scale).ceil() as i32,
-                (inst.world_bounds.max.y * scale).ceil() as i32,
-                (inst.world_bounds.max.z * scale).ceil() as i32,
-            ]);
-        }
-
-        let pruned = verdant_tensor::tropical_swept_aabb_toi_bounds(
-            origin_milli,
-            radius_milli,
-            delta_milli,
-            &mins_milli,
-            &maxs_milli,
-        )
-        .ok();
-
-        let mut best: Option<(EntityId, SweptSphereHit)> = None;
-        for (idx, inst) in self.instances.iter().enumerate() {
-            if let Some(ref intervals) = pruned {
-                if intervals[idx].is_none() {
-                    continue;
-                }
-            }
-            let local_origin = inst.world_to_local.transform_point3(world_origin);
-            let local_delta = inst.world_to_local.transform_vector3(world_delta);
-            let local_radius = r / inst.uniform_scale;
-
-            if let Some(local_hit) =
-                self.blas_pool[inst.blas_slot].sweep_sphere(local_origin, local_radius, local_delta)
-            {
-                if best.is_none_or(|(_, prev)| local_hit.toi < prev.toi) {
-                    let world_contact = inst
-                        .local_to_world
-                        .transform_point3(local_hit.contact_point);
-                    let world_normal = inst
-                        .local_to_world
-                        .transform_vector3(local_hit.contact_normal)
-                        .normalized();
-                    best = Some((
-                        inst.entity,
-                        SweptSphereHit {
-                            toi: local_hit.toi,
-                            contact_point: world_contact,
-                            contact_normal: world_normal,
-                            triangle_index: local_hit.triangle_index,
-                        },
-                    ));
-                }
-            }
-        }
-        best
+        self.sweep_sphere_counted(world_origin, world_radius, world_delta)
+            .0
     }
 
-    /// Evaluates the minimum Euclidean surface clearance around `world_point` within `search_radius`,
-    /// returning `(entity, closest_world_point, outward_world_normal, world_distance)`.
+    /// Evaluates the minimum Euclidean surface clearance around `world_point` within `search_radius`
+    /// in `O(log N)` across `self.tlas` + `MeshBlas` with zero heap allocations.
     #[must_use]
     pub fn min_surface_clearance(
         &self,
         world_point: Vec3,
         search_radius: f64,
     ) -> Option<(EntityId, Vec3, Vec3, f64)> {
+        if self.tlas.nodes.is_empty() {
+            return None;
+        }
         let mut best_dist = search_radius.max(0.0);
+        let mut best_dist_sq = best_dist * best_dist;
         let mut best: Option<(EntityId, Vec3, Vec3, f64)> = None;
-        let query_box =
-            Aabb::from_center_half_extents(world_point, Vec3::new(best_dist, best_dist, best_dist));
+        let mut stack = [0_u32; verdant_tensor::FLAT_BVH_STACK_CAP];
+        let mut sp = 0usize;
 
-        for inst in &self.instances {
-            if !inst.world_bounds.intersects(query_box) {
+        if aabb_point_dist_sq(self.tlas.nodes[0].bounds(), world_point) <= best_dist_sq {
+            stack[0] = 0;
+            sp = 1;
+        }
+
+        while sp > 0 {
+            sp -= 1;
+            let idx = stack[sp] as usize;
+            let node = &self.tlas.nodes[idx];
+            if aabb_point_dist_sq(node.bounds(), world_point) > best_dist_sq {
                 continue;
             }
-            let local_pt = inst.world_to_local.transform_point3(world_point);
-            let local_r = best_dist / inst.uniform_scale;
-            if let Some((cp_local, n_local, d_local)) =
-                self.blas_pool[inst.blas_slot].closest_point(local_pt, local_r)
-            {
-                let d_world = d_local * inst.uniform_scale;
-                if d_world <= best_dist {
-                    best_dist = d_world;
-                    let cp_world = inst.local_to_world.transform_point3(cp_local);
-                    let n_world = inst.local_to_world.transform_vector3(n_local).normalized();
-                    best = Some((inst.entity, cp_world, n_world, d_world));
+            if node.prim_count > 0 {
+                let start = node.right_or_first as usize;
+                let end = start + (node.prim_count as usize);
+                for &pi in &self.tlas.prim_indices[start..end] {
+                    let inst = &self.instances[pi as usize];
+                    if aabb_point_dist_sq(inst.world_bounds, world_point) > best_dist_sq {
+                        continue;
+                    }
+                    let local_pt = inst.world_to_local.transform_point3(world_point);
+                    let local_r = best_dist / inst.uniform_scale;
+                    if let Some((cp_local, n_local, d_local)) =
+                        self.blas_pool[inst.blas_slot].closest_point(local_pt, local_r)
+                    {
+                        let d_world = d_local * inst.uniform_scale;
+                        if d_world <= best_dist {
+                            best_dist = d_world;
+                            best_dist_sq = d_world * d_world;
+                            let cp_world = inst.local_to_world.transform_point3(cp_local);
+                            let n_world =
+                                inst.local_to_world.transform_vector3(n_local).normalized();
+                            best = Some((inst.entity, cp_world, n_world, d_world));
+                        }
+                    }
+                }
+            } else {
+                let left_idx = (idx + 1) as u32;
+                let right_idx = node.right_or_first;
+                let dl =
+                    aabb_point_dist_sq(self.tlas.nodes[left_idx as usize].bounds(), world_point);
+                let dr =
+                    aabb_point_dist_sq(self.tlas.nodes[right_idx as usize].bounds(), world_point);
+                let l_ok = dl <= best_dist_sq;
+                let r_ok = dr <= best_dist_sq;
+                match (l_ok, r_ok) {
+                    (true, true) => {
+                        if dl <= dr {
+                            if sp < stack.len() {
+                                stack[sp] = right_idx;
+                                sp += 1;
+                            }
+                            if sp < stack.len() {
+                                stack[sp] = left_idx;
+                                sp += 1;
+                            }
+                        } else {
+                            if sp < stack.len() {
+                                stack[sp] = left_idx;
+                                sp += 1;
+                            }
+                            if sp < stack.len() {
+                                stack[sp] = right_idx;
+                                sp += 1;
+                            }
+                        }
+                    }
+                    (true, false) => {
+                        if sp < stack.len() {
+                            stack[sp] = left_idx;
+                            sp += 1;
+                        }
+                    }
+                    (false, true) => {
+                        if sp < stack.len() {
+                            stack[sp] = right_idx;
+                            sp += 1;
+                        }
+                    }
+                    (false, false) => {}
                 }
             }
         }

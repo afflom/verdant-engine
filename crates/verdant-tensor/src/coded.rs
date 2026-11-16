@@ -10,7 +10,82 @@ use uor_matmul::{
     Linear, MatView, MatViewMut, Packed, Runs,
 };
 
-use crate::{prism_kernel, TensorComputeError, CODED_TABLE_LEN, PACKED_NIBBLE_BLOCK};
+use crate::{
+    kernel_consts, prism_kernel, TensorComputeError, CODEBOOK_PRODUCT_LUT_LEN, CODED_TABLE_LEN,
+    PACKED_NIBBLE_BLOCK,
+};
+
+/// Precomputed `16 x 16` (`256`-entry) exact ring product lookup table adapted from
+/// `verdant-aqm` (`codedMatmul.ts`), enabling zero-decode, zero-allocation coded contractions.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct CodebookProductLut {
+    products: [i64; CODEBOOK_PRODUCT_LUT_LEN],
+}
+
+impl CodebookProductLut {
+    /// Precomputes all `256` pairwise products `lhs_codebook[a] * rhs_codebook[b]` once outside inner loops.
+    #[must_use]
+    pub fn new(
+        lhs_codebook: &[i32; CODED_TABLE_LEN],
+        rhs_codebook: &[i32; CODED_TABLE_LEN],
+    ) -> Self {
+        debug_assert_eq!(kernel_consts().codebook_lut_len, CODEBOOK_PRODUCT_LUT_LEN);
+        let mut products = [0_i64; CODEBOOK_PRODUCT_LUT_LEN];
+        for (a, &lhs_val) in lhs_codebook.iter().enumerate() {
+            let lhs = i64::from(lhs_val);
+            let row_base = a * CODED_TABLE_LEN;
+            for (b, &rhs_val) in rhs_codebook.iter().enumerate() {
+                products[row_base + b] = lhs * i64::from(rhs_val);
+            }
+        }
+        Self { products }
+    }
+
+    /// Looks up exact product `lhs[a] * rhs[b]` in `O(1)`.
+    #[inline]
+    #[must_use]
+    pub const fn lookup(&self, a_code: u8, b_code: u8) -> i64 {
+        let mask = CODED_TABLE_LEN - 1;
+        let idx = ((a_code as usize) & mask) * CODED_TABLE_LEN + ((b_code as usize) & mask);
+        self.products[idx]
+    }
+}
+
+/// Zero-allocation coded matrix contraction writing `C[rows x cols]` directly into `out_accum`
+/// using a precomputed [`CodebookProductLut`] (`0` heap allocations).
+pub fn contract_coded_pair_lut_into(
+    lhs_codes: &[u8],
+    rhs_codes: &[u8],
+    rows: usize,
+    inner_k: usize,
+    cols: usize,
+    lut: &CodebookProductLut,
+    out_accum: &mut [i64],
+) -> Result<(), TensorComputeError> {
+    if rows == 0
+        || inner_k == 0
+        || cols == 0
+        || lhs_codes.len() != rows.saturating_mul(inner_k)
+        || rhs_codes.len() != inner_k.saturating_mul(cols)
+        || out_accum.len() != rows.saturating_mul(cols)
+    {
+        return Err(TensorComputeError::ZeroOrMismatchedExtents {
+            detail: "CodebookProductLut contraction extents mismatch".to_string(),
+        });
+    }
+    out_accum.fill(0_i64);
+    for r in 0..rows {
+        let a_row = &lhs_codes[r * inner_k..(r + 1) * inner_k];
+        let out_row = &mut out_accum[r * cols..(r + 1) * cols];
+        for (p, &a_code) in a_row.iter().enumerate() {
+            let b_row = &rhs_codes[p * cols..(p + 1) * cols];
+            for (c, &b_code) in b_row.iter().enumerate() {
+                out_row[c] += lut.lookup(a_code, b_code);
+            }
+        }
+    }
+    Ok(())
+}
 
 /// Verifies that all three `uor_matmul::codec` zero-decode streaming tiers (`Grid`, `Packed`, `Runs`)
 /// satisfy constructive bit-width, block-size, and zero-scratch invariants in `prism_kernel`.
@@ -79,7 +154,6 @@ pub fn contract_coded_geometry_grid(
     })?;
 
     coded_gemm(&mut triple, &Linear::OVERWRITE, GemmOptions::default());
-    debug_assert_eq!(prism_kernel::codedTiersDirect(), Ok(true));
     Ok(out)
 }
 
@@ -138,7 +212,6 @@ pub fn contract_packed_animation_tracks(
     })?;
 
     coded_gemm(&mut triple, &Linear::OVERWRITE, GemmOptions::default());
-    debug_assert_eq!(prism_kernel::codedTiersDirect(), Ok(true));
     Ok(out)
 }
 
@@ -198,6 +271,5 @@ pub fn contract_runs_ibl_harmonics(
     })?;
 
     coded_gemm(&mut triple, &Linear::OVERWRITE, GemmOptions::default());
-    debug_assert_eq!(prism_kernel::codedTiersDirect(), Ok(true));
     Ok(out)
 }

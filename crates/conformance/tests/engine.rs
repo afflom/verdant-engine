@@ -2906,3 +2906,221 @@ fn engine_ve_32() {
         );
     }
 }
+
+/// `VE-33`: Hoisted Stratum-0 Prism constants, 256-entry CodebookProductLut contractions, 64-bit word-packed SoaSceneTable sweeps, contiguous 32-byte SAH FlatBvh traversal, epoch-split static and dynamic WebGL2 VAOs without gl.finish stalls, and hardware drawElementsInstanced batching scale deterministically to arbitrary 10k-entity and 50k-triangle workloads
+#[test]
+fn engine_ve_33() {
+    use std::path::Path;
+    use verdant_core::collision::FlatBvhNode;
+    use verdant_core::ecs::{EntityId, SoaSceneTable, TwoLevelBvh};
+    use verdant_core::hd_world::synthesize_hd_citadel_sector;
+    use verdant_core::streaming::TerrainReliefParams;
+    use verdant_core::verdant_tensor::{
+        contract_coded_pair_lut_into, kernel_consts, CodebookProductLut, WordBitset,
+    };
+
+    // 1. Core-Wasm `scene:perf` & Lean-verified arbitrary-workload predicates (positive + negative):
+    let verdict =
+        verdant_core::prism_kernel::dispatch(b"scene:perf".to_vec()).expect("dispatch scene:perf");
+    assert_eq!(
+        std::str::from_utf8(&verdict).unwrap(),
+        "conformant:word_bits=64,sah_bins=8,bvh_stack=64,codebook_lut=256,epoch_elision=true,max_inflight=2"
+    );
+    assert_eq!(
+        verdant_core::prism_kernel::workloadPerformanceDirect(),
+        Ok(true)
+    );
+    assert!(verdant_core::prism_kernel::epochElisionAdmissible(
+        7, 7, false
+    ));
+    assert!(!verdant_core::prism_kernel::epochElisionAdmissible(
+        6, 7, false
+    ));
+    assert!(!verdant_core::prism_kernel::epochElisionAdmissible(
+        7, 7, true
+    ));
+    assert!(verdant_core::prism_kernel::workerInFlightAdmissible(2));
+    assert!(!verdant_core::prism_kernel::workerInFlightAdmissible(3));
+    assert_eq!(
+        verdant_core::prism_kernel::governorRecommendedScalePermille(9_000, 16_666),
+        Ok(1000)
+    );
+    assert_eq!(
+        verdant_core::prism_kernel::governorRecommendedScalePermille(22_000, 16_666),
+        Ok(850)
+    );
+    assert_eq!(
+        verdant_core::prism_kernel::governorRecommendedScalePermille(40_000, 16_666),
+        Ok(700)
+    );
+
+    // 2. Hoisted `VerifiedKernelConsts` (`OnceLock` pointer identity) + `256`-entry `CodebookProductLut`:
+    let kc_a = kernel_consts();
+    let kc_b = kernel_consts();
+    assert!(
+        std::ptr::eq(kc_a, kc_b),
+        "OnceLock must hoist constants once"
+    );
+    assert_eq!(kc_a.skin_weight_scale, 1000);
+    assert_eq!(kc_a.word_bit_width, 64);
+    assert_eq!(kc_a.codebook_lut_len, 256);
+    assert_eq!(kc_a.sah_bin_count, 8);
+
+    let cb_lhs: [i32; 16] = core::array::from_fn(|i| (i as i32) - 8);
+    let cb_rhs: [i32; 16] = core::array::from_fn(|i| (i as i32) * 3 - 15);
+    let lut = CodebookProductLut::new(&cb_lhs, &cb_rhs);
+    let mut lut_out = [0_i64; 4];
+    contract_coded_pair_lut_into(&[2, 11, 5, 14], &[3, 7, 9, 1], 2, 2, 2, &lut, &mut lut_out)
+        .expect("zero-alloc LUT contraction");
+    assert_eq!(
+        lut_out[0],
+        i64::from(cb_lhs[2]) * i64::from(cb_rhs[3]) + i64::from(cb_lhs[11]) * i64::from(cb_rhs[9])
+    );
+    assert!(contract_coded_pair_lut_into(&[1], &[1], 2, 2, 2, &lut, &mut lut_out).is_err());
+
+    // 3. `10,000`-entity `SoaSceneTable` + `64`-bit `WordBitset` (`O(dirty + N/64)` sweep):
+    let entity_total = 10_000usize;
+    let mut soa = SoaSceneTable::with_capacity(entity_total);
+    let unit_bounds = Aabb::new(Vec3::new(-0.5, -0.5, -0.5), Vec3::new(0.5, 0.5, 0.5));
+    for i in 0..entity_total {
+        let gx = (i % 100) as f64;
+        let gz = (i / 100) as f64;
+        soa.spawn_dense(
+            EntityId((i + 1) as u64),
+            EntityRole::StaticArchitecture,
+            None,
+            Transform::from_xyz(gx * 2.0 - 100.0, 0.0, -gz * 2.0),
+            unit_bounds,
+            (Some(0), [0.8, 0.9, 1.0, 1.0]),
+        );
+    }
+    assert_eq!(soa.len(), entity_total);
+    assert_eq!(soa.visible_mask.words().len(), 157); // ceil(10_000 / 64) == 157 u64 words!
+    assert_eq!(soa.propagate_dirty_transforms(), 0);
+    for slot in 0..32 {
+        soa.set_local_transform(slot, Transform::from_xyz(slot as f64, 2.5, -5.0));
+    }
+    assert_eq!(
+        soa.propagate_dirty_transforms(),
+        32,
+        "WordBitset dirty propagation must touch strictly the 32 mutated slots"
+    );
+    assert_eq!(soa.propagate_dirty_transforms(), 0);
+
+    let frustum = Frustum::from_perspective(
+        Vec3::new(0.0, 4.0, 12.0),
+        Vec3::new(0.0, -0.1, -1.0),
+        Vec3::UP,
+        1.05,
+        16.0 / 9.0,
+        0.25,
+        90.0,
+    );
+    let vis_count = soa.cull_frustum_word_packed(&frustum);
+    assert!(vis_count > 32 && vis_count < entity_total);
+    let mut inst_buf = Vec::new();
+    let compacted = soa.compact_visible_instances_for_mesh(0, &mut inst_buf);
+    assert_eq!(compacted, vis_count);
+    assert_eq!(inst_buf.len(), vis_count * 16);
+
+    let mut wb = WordBitset::with_len(130);
+    wb.set(0);
+    wb.set(64);
+    wb.set(129);
+    assert_eq!(wb.count_ones(), 3);
+
+    // 4. `FlatBvhNode` 32-byte layout + `LOD4` `45,000+` triangle `TwoLevelBvh` `O(log N)` pruning proof:
+    assert_eq!(
+        std::mem::size_of::<FlatBvhNode>(),
+        32,
+        "FlatBvhNode must be 32 bytes (two nodes per 64-byte L1 cache line)"
+    );
+    let sector =
+        synthesize_hd_citadel_sector(7, &TerrainReliefParams::standard_basin_valley(), -1.35, 4);
+    assert!(sector.scene.entity_count() >= 5);
+    let bvh = TwoLevelBvh::build_solid(&sector.scene, &sector.meshes).expect("LOD4 TwoLevelBvh");
+    assert!(bvh.total_surface_triangles() > 45_000);
+    let total_nodes = bvh.total_bvh_nodes();
+    assert!(total_nodes > 10_000);
+
+    let mut total_ray_visits = 0usize;
+    let mut ray_hits = 0usize;
+    for i in 0..1_000usize {
+        let fx = ((i % 40) as f64) * 0.5 - 10.0;
+        let fz = ((i / 40) as f64) * 0.5 - 6.0;
+        let ray = Ray::new(Vec3::new(fx, 24.0, fz), Vec3::new(0.0, -1.0, 0.0));
+        let (hit, visited) = bvh.raycast_exact_counted(ray, 64.0);
+        if hit.is_some() {
+            ray_hits += 1;
+        }
+        total_ray_visits += visited;
+    }
+    let avg_ray_visits = total_ray_visits / 1_000;
+    assert!(
+        ray_hits > 800,
+        "vertical rays over Citadel basin must hit terrain/masonry"
+    );
+    assert!(
+        avg_ray_visits * 50 < total_nodes,
+        "O(log N) FlatBvh raycast must visit < 2% of total nodes (avg={avg_ray_visits}, total={total_nodes})"
+    );
+
+    let mut total_sweep_visits = 0usize;
+    for i in 0..100usize {
+        let fx = ((i % 10) as f64) - 4.5;
+        let (_, visited) =
+            bvh.sweep_sphere_counted(Vec3::new(fx, 3.0, 8.0), 0.4, Vec3::new(0.0, -2.5, -1.0));
+        total_sweep_visits += visited;
+    }
+    let avg_sweep_visits = total_sweep_visits / 100;
+    assert!(
+        avg_sweep_visits * 40 < total_nodes,
+        "O(log N) FlatBvh sphere sweep must visit < 2.5% of total nodes (avg={avg_sweep_visits}, total={total_nodes})"
+    );
+
+    // 5. Wasm epoch-split static/dynamic buffers, 10k hardware instancing, & CLI `stress-benchmark`:
+    assert_eq!(verdant_wasm::verdant_wasm_init(7), 1);
+    let ep0 = verdant_wasm::verdant_wasm_static_epoch();
+    let s_verts = verdant_wasm::verdant_wasm_static_vert_count();
+    let d_verts = verdant_wasm::verdant_wasm_dyn_vert_count();
+    assert!(ep0 >= 1 && s_verts > 1_000 && d_verts > 20);
+    assert_eq!(
+        verdant_wasm::verdant_wasm_step_lawful(16_000, 800, 0, 0, 1_000, 0),
+        1
+    );
+    verdant_wasm::verdant_wasm_scene_rebuild_buffers(0.1);
+    let ep1 = verdant_wasm::verdant_wasm_static_epoch();
+    assert_eq!(
+        ep0, ep1,
+        "static_epoch must remain unchanged across dynamic character/physics frames (0B static VBO re-upload)"
+    );
+    let inst_tris = verdant_wasm::verdant_wasm_configure_instanced_workload(10_000);
+    assert_eq!(verdant_wasm::verdant_wasm_inst_count(), 10_000);
+    assert_eq!(inst_tris, 80_000);
+    assert_eq!(
+        verdant_wasm::verdant_wasm_configure_instanced_workload(0),
+        0
+    );
+
+    let cli_out = verdant_cli::run_cli(&["stress-benchmark".to_string(), "10000".to_string()])
+        .expect("verdant stress-benchmark 10000");
+    assert!(
+        cli_out.contains("STRESS BENCHMARK OK: soa_entities=10000 word_masks=157 dirty_updated=32")
+    );
+
+    // 6. Verify WebGL2 pipeline has zero `gl.finish` stalls, split STATIC_DRAW/STREAM_DRAW VAOs, shadow blit cache, & worker frameAck backpressure:
+    let repo_root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+    let renderer_mjs = std::fs::read_to_string(repo_root.join("site/scene-renderer.mjs"))
+        .expect("site/scene-renderer.mjs");
+    let card_mjs = std::fs::read_to_string(repo_root.join("site/card.mjs")).expect("site/card.mjs");
+    assert!(
+        !renderer_mjs.contains("gl.finish("),
+        "site/scene-renderer.mjs must never stall the GPU pipeline with synchronous gl.finish()"
+    );
+    assert!(renderer_mjs.contains("uploadSplitBuffers"));
+    assert!(renderer_mjs.contains("gl.STATIC_DRAW"));
+    assert!(renderer_mjs.contains("gl.STREAM_DRAW"));
+    assert!(renderer_mjs.contains("drawElementsInstanced"));
+    assert!(renderer_mjs.contains("blitFramebuffer"));
+    assert!(card_mjs.contains("workerFramesInFlight"));
+}

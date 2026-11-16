@@ -12,7 +12,31 @@ use uor_matmul::{as_alphabet_tropical, dot_tropical_ref};
 #[cfg(not(target_arch = "wasm32"))]
 use uor_matmul::{as_alphabet_tropical, MatView, MatViewMut, Triple};
 
-use crate::{prism_kernel, TensorComputeError, DIM_PLANAR, DIM_SPATIAL};
+use crate::{kernel_consts, TensorComputeError, DIM_PLANAR, DIM_SPATIAL};
+
+/// Zero-allocation single-direction GJK support contraction (`0` heap allocations per simplex step).
+pub fn tropical_gjk_support_single(
+    direction_milli: [i32; DIM_SPATIAL],
+    hull_vertices_milli: &[[i32; DIM_SPATIAL]],
+) -> Result<(usize, i64), TensorComputeError> {
+    if hull_vertices_milli.is_empty() {
+        return Err(TensorComputeError::ZeroOrMismatchedExtents {
+            detail: "GJK support requires non-empty hull vertices".to_string(),
+        });
+    }
+    let d_alpha = uor_matmul::as_alphabet_full(&direction_milli);
+    let mut best_idx = 0usize;
+    let mut best_val = i64::MIN;
+    for (v_idx, v_row) in hull_vertices_milli.iter().enumerate() {
+        let p_wide = uor_matmul::dot_ref(d_alpha, uor_matmul::as_alphabet_full(v_row));
+        let p = p_wide.max(i128::from(i64::MIN)).min(i128::from(i64::MAX)) as i64;
+        if v_idx == 0 || p > best_val {
+            best_val = p;
+            best_idx = v_idx;
+        }
+    }
+    Ok((best_idx, best_val))
+}
 
 fn contract_tropical_max_plus(
     a_trop: &[Trop<i32>],
@@ -311,32 +335,33 @@ pub fn tropical_swept_aabb_toi_bounds(
         });
     }
 
-    let scale = prism_kernel::skinWeightScale().unwrap_or(1).max(1) as i64;
+    let scale = kernel_consts().skin_weight_scale as i64;
     let miss_enter = (scale + 1) as i32;
     let miss_neg_exit = 1_i32;
     let b_count = box_mins_milli.len();
-
-    let mut enter_rows = Vec::with_capacity(b_count * DIM_SPATIAL);
-    let mut neg_exit_rows = Vec::with_capacity(b_count * DIM_SPATIAL);
+    let i2 = 1usize + 1usize;
+    let mut intervals = Vec::with_capacity(b_count);
 
     for (b_min, b_max) in box_mins_milli.iter().zip(box_maxs_milli.iter()) {
+        let mut enter_row = [Trop::finite(0_i32); DIM_SPATIAL];
+        let mut neg_exit_row = [Trop::finite(0_i32); DIM_SPATIAL];
         for axis in 0..DIM_SPATIAL {
             let lo = i64::from(b_min[axis]) - i64::from(radius_milli);
             let hi = i64::from(b_max[axis]) + i64::from(radius_milli);
             if lo > hi {
-                enter_rows.push(Trop::finite(miss_enter));
-                neg_exit_rows.push(Trop::finite(miss_neg_exit));
+                enter_row[axis] = Trop::finite(miss_enter);
+                neg_exit_row[axis] = Trop::finite(miss_neg_exit);
                 continue;
             }
             let o = i64::from(origin_milli[axis]);
             let d = i64::from(delta_milli[axis]);
             if d == 0 {
                 if o < lo || o > hi {
-                    enter_rows.push(Trop::finite(miss_enter));
-                    neg_exit_rows.push(Trop::finite(miss_neg_exit));
+                    enter_row[axis] = Trop::finite(miss_enter);
+                    neg_exit_row[axis] = Trop::finite(miss_neg_exit);
                 } else {
-                    enter_rows.push(Trop::finite(0));
-                    neg_exit_rows.push(Trop::finite(-(scale as i32)));
+                    enter_row[axis] = Trop::finite(0);
+                    neg_exit_row[axis] = Trop::finite(-(scale as i32));
                 }
             } else {
                 let (enter_num, exit_num, den) = if d > 0 {
@@ -349,21 +374,21 @@ pub fn tropical_swept_aabb_toi_bounds(
                 let clamp_bound = scale * scale;
                 let te_i32 = t_enter.clamp(-clamp_bound, clamp_bound) as i32;
                 let tx_i32 = t_exit.clamp(-clamp_bound, clamp_bound) as i32;
-                enter_rows.push(Trop::finite(te_i32));
-                neg_exit_rows.push(Trop::finite(-tx_i32));
+                enter_row[axis] = Trop::finite(te_i32);
+                neg_exit_row[axis] = Trop::finite(-tx_i32);
             }
         }
-    }
-
-    let zero_col = vec![Trop::finite(0_i32); DIM_SPATIAL];
-    let max_enters = contract_tropical_max_plus(&enter_rows, &zero_col, b_count, DIM_SPATIAL, 1)?;
-    let max_neg_exits =
-        contract_tropical_max_plus(&neg_exit_rows, &zero_col, b_count, DIM_SPATIAL, 1)?;
-
-    let mut intervals = Vec::with_capacity(b_count);
-    for (enter_trop, neg_exit_trop) in max_enters.into_iter().zip(max_neg_exits) {
-        let raw_enter = enter_trop.get().unwrap_or(scale + 1);
-        let raw_exit = -neg_exit_trop.get().unwrap_or(1);
+        let raw_enter = enter_row[0]
+            .get()
+            .unwrap_or(scale as i32 + 1)
+            .max(enter_row[1].get().unwrap_or(scale as i32 + 1))
+            .max(enter_row[i2].get().unwrap_or(scale as i32 + 1)) as i64;
+        let max_neg_exit = neg_exit_row[0]
+            .get()
+            .unwrap_or(1)
+            .max(neg_exit_row[1].get().unwrap_or(1))
+            .max(neg_exit_row[i2].get().unwrap_or(1)) as i64;
+        let raw_exit = -max_neg_exit;
         let clamped_enter = raw_enter.max(0);
         let clamped_exit = raw_exit.min(scale);
         if raw_enter <= scale && raw_exit >= 0 && clamped_enter <= clamped_exit {

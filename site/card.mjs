@@ -63,7 +63,7 @@ export default async function start({ app, reason, $, chip, show, parse }) {
   let solvedEye = [10.2, 8.5, 25.3], solvedTarget = [2.2, 3.8, 9.2], universeCell = [0, 0, 0];
   let dragging = false, rafId = 0;
   let lastTris = 0, lastBvhVis = 24, lastKernelCount = 15;
-  let workerBackend = "webgl2", isSoftwareGpu = false, offscreenActive = false, nextReqId = 1;
+  let workerBackend = "webgl2", isSoftwareGpu = false, offscreenActive = false, nextReqId = 1, workerFramesInFlight = 0;
   let fallbackRenderer = null, fallbackMod = null, studioMod = null;
   const keys = new Set(), pendingCalls = new Map();
   const getStudio = async () => (studioMod ??= await import("./studio.mjs"));
@@ -122,6 +122,7 @@ export default async function start({ app, reason, $, chip, show, parse }) {
           return;
         }
         if (msg.kind === "telemetry") {
+          workerFramesInFlight = Math.max(0, workerFramesInFlight - 1);
           lastTris = msg.tris || lastTris;
           lastBvhVis = msg.bvhVisible ?? lastBvhVis;
           if (Array.isArray(msg.eye)) solvedEye = msg.eye;
@@ -130,6 +131,7 @@ export default async function start({ app, reason, $, chip, show, parse }) {
           studioMod?.pushStudioTelemetry(msg);
           studioMod?.syncModalAudioSpatial(msg.binauralPan, msg.binauralGain);
           if (!isAnimating() && hudStats) hudStats.textContent = formatHudStats("");
+          if ((pendingYaw !== 0 || pendingPitch !== 0 || pendingDist !== 0 || jumpQueued) && rafId === 0) requestRender();
         }
       };
       engineWorker.onerror = () => {
@@ -439,10 +441,16 @@ export default async function start({ app, reason, $, chip, show, parse }) {
   });
   addEventListener("keyup", (e) => keys.delete(e.code));
   addEventListener("resize", requestRender);
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) { prevNow = performance.now(); requestRender(); } });
   if (typeof ResizeObserver !== "undefined" && viewportEl) new ResizeObserver(requestRender).observe(viewportEl);
 
   function frame(now) {
     rafId = 0;
+    if (document.hidden) return;
+    if (offscreenActive && engineWorker && workerFramesInFlight >= 2) {
+      if (isAnimating()) rafId = requestAnimationFrame(frame);
+      return;
+    }
     const dt = Math.min(0.05, Math.max(0.001, (now - prevNow) * 0.001));
     prevNow = now;
     const intent = readMoveIntent(dt);
@@ -452,6 +460,7 @@ export default async function start({ app, reason, $, chip, show, parse }) {
     const lod = STREAMING_LODS[lodIdx], { w, h } = measureCanvasPixels();
 
     if (offscreenActive && engineWorker) {
+      workerFramesInFlight++;
       engineWorker.postMessage({
         kind: "frame",
         width: w,

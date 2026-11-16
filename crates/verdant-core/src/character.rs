@@ -16,7 +16,6 @@ use crate::math::{
     DIM_HOMOGENEOUS, DIM_PLANAR, DIM_SPATIAL,
 };
 use crate::render::PackedSceneRenderBuffers;
-use crate::tensor::RasterTriangle;
 
 /// Canonical 22-joint humanoid hierarchy indices (`0..22`).
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -1292,16 +1291,22 @@ impl ArticulatedCharacter {
         )
     }
 
-    /// Appends the posed, LBS-skinned character triangles into `out` (`PackedSceneRenderBuffers`),
-    /// optionally hiding head/visor triangles when possessed in `CameraMode::FirstPersonEye`.
-    pub fn append_skinned_to_buffers(
+    /// Appends posed, LBS-skinned character triangles into `out` (`PackedSceneRenderBuffers`),
+    /// skipping software `tile_triangles` materialization when `build_software_tiles` is `false`.
+    pub fn append_skinned_to_buffers_opts(
         &self,
         out: &mut PackedSceneRenderBuffers,
         hide_head_for_first_person: bool,
+        build_software_tiles: bool,
     ) -> Result<usize, AnimationError> {
         let skinned = self.evaluate_skinned_mesh()?;
         let base_vertex = (out.positions_xyz.len() / DIM_SPATIAL) as u32;
         let i2 = 1usize + 1usize;
+
+        out.positions_xyz
+            .reserve(skinned.positions.len() * DIM_SPATIAL);
+        out.normals_xyz.reserve(skinned.normals.len() * DIM_SPATIAL);
+        out.colors_rgb.reserve(skinned.colors.len() * DIM_SPATIAL);
 
         for v_idx in 0..skinned.positions.len() {
             out.positions_xyz
@@ -1311,7 +1316,6 @@ impl ArticulatedCharacter {
             out.colors_rgb.extend_from_slice(&[c[0], c[1], c[i2]]);
         }
 
-        let third = 1.0_f32 / (three_u32() as f32);
         let mut added_tris = 0usize;
         for tri in skinned.indices.chunks_exact(DIM_SPATIAL) {
             let ia = tri[0] as usize;
@@ -1329,46 +1333,20 @@ impl ArticulatedCharacter {
             let c = base_vertex + tri[i2];
             out.indices.extend_from_slice(&[a, b, c]);
             added_tris += 1;
-
-            let pa = (a as usize) * DIM_SPATIAL;
-            let pb = (b as usize) * DIM_SPATIAL;
-            let pc = (c as usize) * DIM_SPATIAL;
-            out.tile_triangles.push(RasterTriangle {
-                positions: [
-                    [
-                        out.positions_xyz[pa],
-                        out.positions_xyz[pa + 1],
-                        out.positions_xyz[pa + i2],
-                    ],
-                    [
-                        out.positions_xyz[pb],
-                        out.positions_xyz[pb + 1],
-                        out.positions_xyz[pb + i2],
-                    ],
-                    [
-                        out.positions_xyz[pc],
-                        out.positions_xyz[pc + 1],
-                        out.positions_xyz[pc + i2],
-                    ],
-                ],
-                normal: [
-                    (out.normals_xyz[pa] + out.normals_xyz[pb] + out.normals_xyz[pc]) * third,
-                    (out.normals_xyz[pa + 1] + out.normals_xyz[pb + 1] + out.normals_xyz[pc + 1])
-                        * third,
-                    (out.normals_xyz[pa + i2]
-                        + out.normals_xyz[pb + i2]
-                        + out.normals_xyz[pc + i2])
-                        * third,
-                ],
-                base_color: [
-                    (out.colors_rgb[pa] + out.colors_rgb[pb] + out.colors_rgb[pc]) * third,
-                    (out.colors_rgb[pa + 1] + out.colors_rgb[pb + 1] + out.colors_rgb[pc + 1])
-                        * third,
-                    (out.colors_rgb[pa + i2] + out.colors_rgb[pb + i2] + out.colors_rgb[pc + i2])
-                        * third,
-                ],
-            });
+        }
+        if build_software_tiles {
+            out.ensure_tile_triangles_built();
         }
         Ok(added_tris)
+    }
+
+    /// Appends the posed, LBS-skinned character triangles into `out` (`PackedSceneRenderBuffers`),
+    /// optionally hiding head/visor triangles when possessed in `CameraMode::FirstPersonEye`.
+    pub fn append_skinned_to_buffers(
+        &self,
+        out: &mut PackedSceneRenderBuffers,
+        hide_head_for_first_person: bool,
+    ) -> Result<usize, AnimationError> {
+        self.append_skinned_to_buffers_opts(out, hide_head_for_first_person, true)
     }
 }

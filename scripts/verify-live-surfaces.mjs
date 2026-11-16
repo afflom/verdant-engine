@@ -135,6 +135,20 @@ try {
       failures.push("Project Scaffolder failed to synthesize expected Rust code");
     }
 
+    // Switch to Tab 3 (`physics`) and trigger 10,000-instance hardware stress batch + scene:perf verification:
+    await page.click('[data-tab-key="physics"]');
+    await page.click('[data-inst-preset="10000"]');
+    await page.waitForFunction(
+      () => (document.getElementById("ve-perf-log")?.textContent || "").includes("Active Instances: 10000"),
+      null,
+      { timeout: 10000 },
+    );
+    const perfLogText = (await page.textContent("#ve-perf-log")) || "";
+    if (!perfLogText.includes("conformant")) {
+      failures.push(`10k hardware-instanced stress profiler did not report conformant scene:perf: ${perfLogText}`);
+    }
+    await page.click('[data-inst-preset="0"]');
+
     // Close Studio Workbench and open Stitch Mesh modal (`#ve-mesh-btn`):
     await page.click("dialog.ve-modal .ve-m-head .ve-m-btn");
     await page.click("#ve-mesh-btn");

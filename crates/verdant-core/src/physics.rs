@@ -832,8 +832,7 @@ impl PhysicsWorld {
         self.step(dt_seconds, Vec3::ZERO)?;
 
         // Sweep dynamic rigid bodies against solid two-level BVH triangles so props never tunnel walls:
-        let scale_milli = crate::prism_kernel::skinWeightScale().unwrap_or(1).max(1) as f64;
-        let skin_m = (crate::prism_kernel::ccdSkinMarginMilli().max(1) as f64) / scale_milli;
+        let skin_m = verdant_tensor::kernel_consts().ccd_skin_margin_meters;
         for (idx, body) in self.bodies.iter_mut().enumerate() {
             if let Some(&start_pos) = prev_bodies.get(idx) {
                 let delta = body.position - start_pos;
@@ -1025,16 +1024,13 @@ impl CapsuleController {
         let eps = geometric_epsilon();
         let half = half_f64();
         let two = two_f64();
-        let scale_milli = crate::prism_kernel::skinWeightScale().unwrap_or(1).max(1) as f64;
-        let max_slides = crate::prism_kernel::ccdMaxSlideIterations()
-            .unwrap_or(1)
-            .max(1) as u32;
-        let skin_milli_u64 = crate::prism_kernel::ccdSkinMarginMilli().max(1);
-        let skin_m = (skin_milli_u64 as f64) / scale_milli;
-        let max_step_m =
-            (crate::prism_kernel::sweptCapsuleMaxStepMilli().unwrap_or(1) as f64) / scale_milli;
-        let walkable_ny =
-            (crate::prism_kernel::navWalkableNormalYMinMilli().unwrap_or(1) as f64) / scale_milli;
+        let kc = verdant_tensor::kernel_consts();
+        let scale_milli = kc.skin_weight_scale_f64;
+        let max_slides = kc.ccd_max_slide_iterations;
+        let skin_milli_u64 = kc.ccd_skin_margin_milli;
+        let skin_m = kc.ccd_skin_margin_meters;
+        let max_step_m = kc.swept_capsule_max_step_meters;
+        let walkable_ny = kc.nav_walkable_ny_min;
 
         let start_foot = self.foot_position;
         depenetrate_capsule_stack(

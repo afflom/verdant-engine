@@ -7,11 +7,33 @@
 #[cfg(not(target_arch = "wasm32"))]
 use uor_matmul::slice;
 
-#[cfg(target_arch = "wasm32")]
-use crate::pow2_u64;
 use crate::{
-    geometric_epsilon, prism_kernel, two_f64, TensorComputeError, DIM_HOMOGENEOUS, DIM_SPATIAL,
+    geometric_epsilon, kernel_consts, prism_kernel, two_f64, TensorComputeError, DIM_HOMOGENEOUS,
+    DIM_SPATIAL,
 };
+
+#[inline]
+fn transform_triple_exact(
+    triple: &[[f32; DIM_SPATIAL]; DIM_SPATIAL],
+    matrix_cols: &[[f64; DIM_HOMOGENEOUS]; DIM_HOMOGENEOUS],
+) -> [[f32; DIM_HOMOGENEOUS]; DIM_SPATIAL] {
+    let i2 = 1usize + 1usize;
+    let i3 = i2 + 1usize;
+    let mut out = [[0.0_f32; DIM_HOMOGENEOUS]; DIM_SPATIAL];
+    for (row_idx, p) in triple.iter().enumerate() {
+        let px = f64::from(p[0]);
+        let py = f64::from(p[1]);
+        let pz = f64::from(p[i2]);
+        for c in 0..DIM_HOMOGENEOUS {
+            let val = px * matrix_cols[0][c]
+                + py * matrix_cols[1][c]
+                + pz * matrix_cols[i2][c]
+                + matrix_cols[i3][c];
+            out[row_idx][c] = val as f32;
+        }
+    }
+    out
+}
 
 /// Contracts two column-major `4x4` homogeneous matrices `lhs * rhs` via `uor-matmul`.
 pub fn multiply_mat4_cols_exact(
@@ -52,9 +74,9 @@ pub fn multiply_mat4_cols_exact(
 
     #[cfg(target_arch = "wasm32")]
     {
-        let shift = prism_kernel::tileEdgePixels().unwrap_or(1) as u32;
-        let q_scale = pow2_u64(shift) as f64;
-        let inv_q2 = 1.0_f64 / (q_scale * q_scale);
+        let kc = kernel_consts();
+        let q_scale = kc.q16_scale_f64;
+        let inv_q2 = kc.inv_q16_sq_f64;
         let mut l_rows_q = [[0_i32; DIM_HOMOGENEOUS]; DIM_HOMOGENEOUS];
         let mut r_cols_q = [[0_i32; DIM_HOMOGENEOUS]; DIM_HOMOGENEOUS];
         for r in 0..k {
@@ -74,6 +96,69 @@ pub fn multiply_mat4_cols_exact(
     }
 
     Ok(out_cols)
+}
+
+/// Zero-allocation variant of [`batch_transform_positions_exact`] writing `N x 4` homogeneous
+/// outputs directly into `out_slice` (`out_slice.len() == positions.len()`).
+pub fn batch_transform_positions_into(
+    positions: &[[f32; DIM_SPATIAL]],
+    matrix_cols: &[[f64; DIM_HOMOGENEOUS]; DIM_HOMOGENEOUS],
+    out_slice: &mut [[f32; DIM_HOMOGENEOUS]],
+) -> Result<(), TensorComputeError> {
+    if positions.is_empty() || out_slice.len() != positions.len() {
+        return Err(TensorComputeError::ZeroOrMismatchedExtents {
+            detail: "vertex batch must be non-empty and match output slice".to_string(),
+        });
+    }
+    for col in matrix_cols {
+        if !col.iter().all(|c| c.is_finite()) {
+            return Err(TensorComputeError::NonFiniteTensorEntry { operand: "matrix" });
+        }
+    }
+    let i2 = 1usize + 1usize;
+    let i3 = i2 + 1usize;
+    let c0 = [
+        matrix_cols[0][0] as f32,
+        matrix_cols[0][1] as f32,
+        matrix_cols[0][i2] as f32,
+        matrix_cols[0][i3] as f32,
+    ];
+    let c1 = [
+        matrix_cols[1][0] as f32,
+        matrix_cols[1][1] as f32,
+        matrix_cols[1][i2] as f32,
+        matrix_cols[1][i3] as f32,
+    ];
+    let c2 = [
+        matrix_cols[i2][0] as f32,
+        matrix_cols[i2][1] as f32,
+        matrix_cols[i2][i2] as f32,
+        matrix_cols[i2][i3] as f32,
+    ];
+    let c3 = [
+        matrix_cols[i3][0] as f32,
+        matrix_cols[i3][1] as f32,
+        matrix_cols[i3][i2] as f32,
+        matrix_cols[i3][i3] as f32,
+    ];
+
+    for (p, dst) in positions.iter().zip(out_slice.iter_mut()) {
+        if !p[0].is_finite() || !p[1].is_finite() || !p[i2].is_finite() {
+            return Err(TensorComputeError::NonFiniteTensorEntry {
+                operand: "positions",
+            });
+        }
+        let x = p[0];
+        let y = p[1];
+        let z = p[i2];
+        *dst = [
+            x * c0[0] + y * c1[0] + z * c2[0] + c3[0],
+            x * c0[1] + y * c1[1] + z * c2[1] + c3[1],
+            x * c0[i2] + y * c1[i2] + z * c2[i2] + c3[i2],
+            x * c0[i3] + y * c1[i3] + z * c2[i3] + c3[i3],
+        ];
+    }
+    Ok(())
 }
 
 /// Transforms a batch of 3D positions `N x 4` by a column-major `4 x 4` homogeneous matrix using
@@ -135,9 +220,9 @@ pub fn batch_transform_positions_exact(
 
     #[cfg(target_arch = "wasm32")]
     {
-        let shift = prism_kernel::tileEdgePixels().unwrap_or(1) as u32;
-        let q_scale = pow2_u64(shift) as f64;
-        let inv_q2 = 1.0_f64 / (q_scale * q_scale);
+        let kc = kernel_consts();
+        let q_scale = kc.q16_scale_f64;
+        let inv_q2 = kc.inv_q16_sq_f64;
         let one_q = (q_scale as i32).max(1);
         let mut b_cols = [[0_i32; DIM_HOMOGENEOUS]; DIM_HOMOGENEOUS];
         for r in 0..k {
@@ -214,12 +299,15 @@ pub fn solve_two_bone_ik_exact(
     let dz = target_pos[i2] - root_pos[i2];
     let raw_dist = (dx * dx + dy * dy + dz * dz).sqrt();
 
-    let scale_milli = prism_kernel::skinWeightScale().unwrap_or(1).max(1) as f64;
+    let scale_milli = kernel_consts().skin_weight_scale_f64;
     let upper_milli = (upper_len * scale_milli).round().max(1.0) as u64;
     let lower_milli = (lower_len * scale_milli).round().max(1.0) as u64;
     let dist_milli = (raw_dist * scale_milli).round().max(0.0) as u64;
-    let target_within_reach =
-        prism_kernel::twoBoneIkReachable(upper_milli, lower_milli, dist_milli).unwrap_or(false);
+    let target_within_reach = dist_milli <= upper_milli.saturating_add(lower_milli);
+    debug_assert_eq!(
+        prism_kernel::twoBoneIkReachable(upper_milli, lower_milli, dist_milli),
+        Ok(target_within_reach)
+    );
 
     let min_reach = (upper_len - lower_len).abs() + eps;
     let max_reach = (upper_len + lower_len - eps).max(min_reach);
@@ -352,20 +440,24 @@ pub fn propagate_hierarchy_matrices_exact(
 /// Skinned `(positions, normals)` output pair produced by [`skin_vertices_linear_blend_exact`].
 pub type SkinnedMeshPair = (Vec<[f32; DIM_SPATIAL]>, Vec<[f32; DIM_SPATIAL]>);
 
-/// Executes normalized 4-joint linear-blend skinning (`LBS`) over `positions` and `normals` by
-/// blending `4x4` joint palette matrices and contracting vertex batches through `uor-matmul`.
-pub fn skin_vertices_linear_blend_exact(
+/// Zero-allocation linear-blend skinning writing deformed `(positions, normals)` into pre-sized
+/// output buffers (`0` heap allocations per vertex or per frame).
+pub fn skin_vertices_linear_blend_into(
     positions: &[[f32; DIM_SPATIAL]],
     normals: &[[f32; DIM_SPATIAL]],
     palette_cols: &[[[f64; DIM_HOMOGENEOUS]; DIM_HOMOGENEOUS]],
     joint_indices: &[[u16; DIM_HOMOGENEOUS]],
     weights_permille: &[[u16; DIM_HOMOGENEOUS]],
-) -> Result<SkinnedMeshPair, TensorComputeError> {
+    out_pos: &mut [[f32; DIM_SPATIAL]],
+    out_nrm: &mut [[f32; DIM_SPATIAL]],
+) -> Result<(), TensorComputeError> {
     let v_count = positions.len();
     if v_count == 0
         || normals.len() != v_count
         || joint_indices.len() != v_count
         || weights_permille.len() != v_count
+        || out_pos.len() != v_count
+        || out_nrm.len() != v_count
         || palette_cols.is_empty()
     {
         return Err(TensorComputeError::ZeroOrMismatchedExtents {
@@ -373,13 +465,10 @@ pub fn skin_vertices_linear_blend_exact(
         });
     }
 
-    let scale = prism_kernel::skinWeightScale().unwrap_or(1) as f64;
+    let inv_scale = 1.0 / kernel_consts().skin_weight_scale_f64;
     let eps = geometric_epsilon();
     let i2 = 1usize + 1usize;
     let i3 = i2 + 1usize;
-
-    let mut out_pos = Vec::with_capacity(v_count);
-    let mut out_nrm = Vec::with_capacity(v_count);
 
     for v_idx in 0..v_count {
         let mut blended_cols = [[0.0_f64; DIM_HOMOGENEOUS]; DIM_HOMOGENEOUS];
@@ -397,7 +486,7 @@ pub fn skin_vertices_linear_blend_exact(
                     detail: "skinning joint index exceeds palette length".to_string(),
                 });
             }
-            let w = f64::from(w_raw) / scale;
+            let w = f64::from(w_raw) * inv_scale;
             let mat = &palette_cols[j_idx];
             for c in 0..DIM_HOMOGENEOUS {
                 for r in 0..DIM_HOMOGENEOUS {
@@ -409,8 +498,7 @@ pub fn skin_vertices_linear_blend_exact(
         let pos = positions[v_idx];
         let nrm = normals[v_idx];
         let origin_nrm = [0.0_f32, 0.0_f32, 0.0_f32];
-        let batch = [pos, nrm, origin_nrm];
-        let contracted = batch_transform_positions_exact(&batch, &blended_cols)?;
+        let contracted = transform_triple_exact(&[pos, nrm, origin_nrm], &blended_cols);
 
         let p_out = contracted[0];
         let n_tip = contracted[1];
@@ -434,10 +522,34 @@ pub fn skin_vertices_linear_blend_exact(
         } else {
             1.0_f32
         };
-        out_pos.push([p_out[0] * inv_w, p_out[1] * inv_w, p_out[i2] * inv_w]);
-        out_nrm.push(unit_n);
+        out_pos[v_idx] = [p_out[0] * inv_w, p_out[1] * inv_w, p_out[i2] * inv_w];
+        out_nrm[v_idx] = unit_n;
     }
 
+    Ok(())
+}
+
+/// Executes normalized 4-joint linear-blend skinning (`LBS`) over `positions` and `normals` by
+/// blending `4x4` joint palette matrices and contracting vertices with zero per-vertex allocations.
+pub fn skin_vertices_linear_blend_exact(
+    positions: &[[f32; DIM_SPATIAL]],
+    normals: &[[f32; DIM_SPATIAL]],
+    palette_cols: &[[[f64; DIM_HOMOGENEOUS]; DIM_HOMOGENEOUS]],
+    joint_indices: &[[u16; DIM_HOMOGENEOUS]],
+    weights_permille: &[[u16; DIM_HOMOGENEOUS]],
+) -> Result<SkinnedMeshPair, TensorComputeError> {
+    let v_count = positions.len();
+    let mut out_pos = vec![[0.0_f32; DIM_SPATIAL]; v_count];
+    let mut out_nrm = vec![[0.0_f32; DIM_SPATIAL]; v_count];
+    skin_vertices_linear_blend_into(
+        positions,
+        normals,
+        palette_cols,
+        joint_indices,
+        weights_permille,
+        &mut out_pos,
+        &mut out_nrm,
+    )?;
     Ok((out_pos, out_nrm))
 }
 
@@ -499,9 +611,9 @@ pub fn delassus_effective_mass_matrix(
 
     #[cfg(target_arch = "wasm32")]
     {
-        let shift = prism_kernel::sTwelve().unwrap_or(1) as u32;
-        let q_scale = pow2_u64(shift) as f64;
-        let inv_q2 = 1.0_f64 / (q_scale * q_scale);
+        let kc = kernel_consts();
+        let q_scale = kc.q12_scale_f64;
+        let inv_q2 = kc.inv_q12_sq_f64;
         let mut a_rows_q = vec![vec![0_i32; k]; m];
         let mut b_rows_q = vec![vec![0_i32; k]; m];
         for r in 0..m {

@@ -1192,12 +1192,54 @@ function buildStudioDialog() {
     const vLaw = await studioCtx?.queryVerifier?.("scene:lawful");
     const vTel = await studioCtx?.queryVerifier?.("scene:telos");
     const vNar = await studioCtx?.queryVerifier?.("scene:narrative");
+    const vPerf = await studioCtx?.queryVerifier?.("scene:perf");
     storyLog.textContent =
-      `Core-Wasm Verifier Verdicts:\n  scene:lawful    -> ${vLaw || "conformant"}\n  scene:telos     -> ${vTel || "conformant"}\n  scene:narrative -> ${vNar || "conformant"}`;
+      `Core-Wasm Verifier Verdicts:\n  scene:lawful    -> ${vLaw || "conformant"}\n  scene:telos     -> ${vTel || "conformant"}\n  scene:narrative -> ${vNar || "conformant"}\n  scene:perf      -> ${vPerf || "conformant"}`;
   });
   uRow.append(btnStoryStep, btnVerifyTelos);
   cPhysics.append(hPhysics, pPhysicsDesc, uRow, storyLog);
-  pPhysics.append(cPhysics);
+
+  const cPerf = document.createElement("div");
+  cPerf.className = "ve-m-card";
+  const hPerf = document.createElement("h3");
+  hPerf.textContent = "Arbitrary-Workload Hardware Instancing & Epoch VBO Profiler";
+  const pPerfDesc = document.createElement("p");
+  pPerfDesc.textContent =
+    "Spawn up to 25,000+ hardware-instanced lattice monuments in a single drawElementsInstanced call while static world VBOs remain epoch-cached (0 B/frame) and OntologicalRuntimeGovernor adapts render scale.";
+  const perfRow = document.createElement("div");
+  perfRow.className = "ve-m-row";
+  const perfLog = document.createElement("pre");
+  perfLog.className = "ve-m-log";
+  perfLog.id = "ve-perf-log";
+  perfLog.textContent = "Select an instanced workload tier or inspect live epoch-split GPU telemetry.";
+
+  for (const [label, count] of [
+    ["Clear Stress (0)", 0],
+    ["2.5k Instances (20k tris)", 2500],
+    ["10k Instances (80k tris)", 10000],
+    ["25k Instances (200k tris)", 25000],
+  ]) {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = count === 10000 ? "ve-m-btn primary" : "ve-m-btn";
+    b.dataset.instPreset = String(count);
+    b.textContent = label;
+    b.addEventListener("click", async () => {
+      const r = await studioCtx?.callWorker?.("configure-instanced", { count });
+      const vPerf = await studioCtx?.queryVerifier?.("scene:perf");
+      if (r?.ok) {
+        perfLog.textContent =
+          `Hardware Instanced Batch Configured:\n` +
+          `  Active Instances: ${r.instCount} (1x gl.drawElementsInstanced)\n` +
+          `  Total Scene Triangles: ${r.tris}\n` +
+          `  Static VBO Upload: ${r.upload?.staticBytes ?? 0} B | Dynamic VBO Stream: ${r.upload?.dynBytes ?? 0} B\n` +
+          `  Core-Wasm scene:perf -> ${vPerf || "conformant"}`;
+      }
+    });
+    perfRow.append(b);
+  }
+  cPerf.append(hPerf, pPerfDesc, perfRow, perfLog);
+  pPhysics.append(cPhysics, cPerf);
 
   // ==================== TAB 4: FORMAL UI & CYBERNETIC SLM ====================
   const pUiNeuro = document.createElement("section");

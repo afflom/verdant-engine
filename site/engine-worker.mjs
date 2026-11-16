@@ -109,6 +109,8 @@ let renderer = null;
 let forceTileMode = false;
 let currentLod = null;
 let pendingCommands = 0;
+let emaFrameMicros = 8000;
+let activeInstancedCount = 0;
 
 function simHost() {
   return uorcSceneActive && uorcWasm ? uorcWasm : wasm;
@@ -199,22 +201,81 @@ function readZeroCopyMeshViews(host) {
   };
 }
 
+function readSplitMeshViews(host) {
+  if (!host || !host.memory) return null;
+  const buf = host.memory.buffer;
+  const sEpoch = host.verdant_wasm_static_epoch() >>> 0;
+  const sVerts = host.verdant_wasm_static_vert_count() >>> 0;
+  const sIdx = host.verdant_wasm_static_idx_count() >>> 0;
+  const pPtr = host.verdant_wasm_scene_pos_ptr() >>> 0;
+  const nPtr = host.verdant_wasm_scene_norm_ptr() >>> 0;
+  const cPtr = host.verdant_wasm_scene_col_ptr() >>> 0;
+  const iPtr = host.verdant_wasm_scene_idx_ptr() >>> 0;
+
+  const staticViews = sVerts > 0 && sIdx > 0 && pPtr && nPtr && cPtr && iPtr ? {
+    epoch: sEpoch,
+    pos: new Float32Array(buf, pPtr, sVerts * 3),
+    norm: new Float32Array(buf, nPtr, sVerts * 3),
+    col: new Float32Array(buf, cPtr, sVerts * 3),
+    idx: new Uint32Array(buf, iPtr, sIdx),
+  } : null;
+
+  const dVerts = host.verdant_wasm_dyn_vert_count() >>> 0;
+  const dIdx = host.verdant_wasm_dyn_idx_count() >>> 0;
+  const dpPtr = host.verdant_wasm_dyn_pos_ptr() >>> 0;
+  const dnPtr = host.verdant_wasm_dyn_norm_ptr() >>> 0;
+  const dcPtr = host.verdant_wasm_dyn_col_ptr() >>> 0;
+  const diPtr = host.verdant_wasm_dyn_idx_ptr() >>> 0;
+  const dynViews = dVerts > 0 && dIdx > 0 && dpPtr && dnPtr && dcPtr && diPtr ? {
+    pos: new Float32Array(buf, dpPtr, dVerts * 3),
+    norm: new Float32Array(buf, dnPtr, dVerts * 3),
+    col: new Float32Array(buf, dcPtr, dVerts * 3),
+    idx: new Uint32Array(buf, diPtr, dIdx),
+  } : null;
+
+  let instViews = null, imIdx = 0, instCount = 0;
+  if (typeof host.verdant_wasm_inst_count === "function") {
+    instCount = host.verdant_wasm_inst_count() >>> 0;
+    const imVerts = host.verdant_wasm_inst_mesh_vert_count() >>> 0;
+    imIdx = host.verdant_wasm_inst_mesh_idx_count() >>> 0;
+    const ipPtr = host.verdant_wasm_inst_mesh_pos_ptr() >>> 0;
+    const inPtr = host.verdant_wasm_inst_mesh_norm_ptr() >>> 0;
+    const icPtr = host.verdant_wasm_inst_mesh_col_ptr() >>> 0;
+    const iiPtr = host.verdant_wasm_inst_mesh_idx_ptr() >>> 0;
+    const idPtr = host.verdant_wasm_inst_data_ptr() >>> 0;
+    if (instCount > 0 && imVerts > 0 && imIdx > 0 && ipPtr && idPtr) {
+      instViews = {
+        epoch: host.verdant_wasm_inst_epoch() >>> 0,
+        instCount,
+        pos: new Float32Array(buf, ipPtr, imVerts * 3),
+        norm: new Float32Array(buf, inPtr, imVerts * 3),
+        col: new Float32Array(buf, icPtr, imVerts * 3),
+        idx: new Uint32Array(buf, iiPtr, imIdx),
+        data: new Float32Array(buf, idPtr, instCount * 16),
+      };
+    }
+  }
+
+  const tris = Math.floor(sIdx / 3) + Math.floor(dIdx / 3) + (instViews ? Math.floor(imIdx / 3) * instCount : 0);
+  return { staticViews, dynViews, instViews, tris };
+}
+
 function drawScene(eye, lookTarget, lodSpec, simClockSec, rebuildDynamic = false, targetW = 0, targetH = 0) {
   const host = activeSceneHost();
   if (!host) return { tris: 0, aspect: 1.6 };
   if (rebuildDynamic && !customGlbActive) {
     host.verdant_wasm_scene_rebuild_buffers(simClockSec || 0);
   }
-  const views = readZeroCopyMeshViews(host);
+  const split = readSplitMeshViews(host);
   if (!canvas || !renderer) {
-    return { tris: views?.tris ?? 0, aspect: 1.6 };
+    return { tris: split?.tris ?? 0, aspect: 1.6 };
   }
   if (targetW > 0 && targetH > 0 && (canvas.width !== targetW || canvas.height !== targetH)) {
     canvas.width = targetW;
     canvas.height = targetH;
   }
   if (canvas.width <= 0 || canvas.height <= 0) {
-    return { tris: views?.tris ?? 0, aspect: 1.6 };
+    return { tris: split?.tris ?? 0, aspect: 1.6 };
   }
   const aspect = Math.max(0.2, canvas.width / canvas.height);
 
@@ -236,15 +297,15 @@ function drawScene(eye, lookTarget, lodSpec, simClockSec, rebuildDynamic = false
     if (byteLen === w * h * 4 && ptr > 0) {
       renderer.blitTensorRgba(new Uint8Array(host.memory.buffer, ptr, byteLen), w, h);
     }
-  } else if (views) {
-    renderer.uploadPackedBuffers(views.pos, views.norm, views.col, views.idx);
+  } else if (split) {
+    renderer.uploadSplitBuffers(split.staticViews, split.dynViews, split.instViews);
     const fovRad = Math.PI / 3.4;
     const proj = mat4Perspective(fovRad, aspect, 0.25, 160.0);
     const view = mat4LookAt(eye, lookTarget, [0, 1, 0]);
     renderer.render(mat4Mul(proj, view), eye, lodSpec, simClockSec || 0, lookTarget, fovRad);
   }
 
-  return { tris: views?.tris ?? 0, aspect };
+  return { tris: split?.tris ?? 0, aspect };
 }
 
 self.onmessage = async ({ data: msg }) => {
@@ -412,6 +473,7 @@ self.onmessage = async ({ data: msg }) => {
     }
 
     if (msg.kind === "frame") {
+      const tStart = performance.now();
       const lod = msg.lod || currentLod;
       currentLod = lod;
       const targetW = msg.width > 0 ? msg.width | 0 : 0;
@@ -483,10 +545,18 @@ self.onmessage = async ({ data: msg }) => {
       const mz = sh.verdant_wasm_mover_z() * scale;
       const my = sh.verdant_wasm_terrain_height(mx, mz, 1.0) + 0.5;
       const salience = [0, 1, 2, 3, 4, 5, 6].map((s) => sh.verdant_wasm_observer_salience_milli(s));
+      const frameMicros = Math.max(50, Math.round((performance.now() - tStart) * 1000));
+      emaFrameMicros = Math.round(emaFrameMicros * 0.85 + frameMicros * 0.15);
+      const scalePermille = sh.verdant_wasm_governor_scale_permille(emaFrameMicros >>> 0) >>> 0;
+      renderer?.setRenderScale?.(scalePermille);
+      const upload = renderer?.getUploadTelemetry?.() || { staticBytes: 0, dynBytes: 0, instCount: activeInstancedCount };
       self.postMessage({
         kind: "telemetry",
         tris: stats.tris,
         bvhVisible,
+        frameMicros: emaFrameMicros,
+        scalePermille,
+        upload,
         eye: cam.eye,
         lookTarget: cam.lookTarget,
         camMode: cam.camMode,
@@ -503,6 +573,24 @@ self.onmessage = async ({ data: msg }) => {
         gimbalYawMilli: sh.verdant_wasm_observer_gimbal_yaw_milli() | 0,
         spikeMask: sh.verdant_wasm_observer_spike_mask() >>> 0,
         salience,
+      });
+      return;
+    }
+
+    if (msg.kind === "configure-instanced") {
+      const sh = await ensureUorcSceneHost();
+      const count = Math.max(0, Math.min(65535, msg.count | 0)) >>> 0;
+      activeInstancedCount = count;
+      sh.verdant_wasm_configure_instanced_workload(count);
+      const cam = readSolvedCamera(sh);
+      const stats = drawScene(cam.eye, cam.lookTarget, currentLod, msg.simClockSec || 0, false);
+      self.postMessage({
+        kind: "instanced-configured",
+        id: msg.id,
+        ok: true,
+        instCount: count,
+        tris: stats.tris,
+        upload: renderer?.getUploadTelemetry?.() || { staticBytes: 0, dynBytes: 0, instCount: count },
       });
       return;
     }

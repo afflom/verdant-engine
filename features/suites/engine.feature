@@ -222,3 +222,9 @@ Feature: engine
     Given the Verdant Studio frontend modules, Diataxis live-embed harness, compiled WebAssembly binaries, and Core-Wasm guest kernel
     When scene:studio dispatches, Wasm export tables are audited against JS call sites, and Studio CSS and C-ABI outliner/CSM helpers execute
     Then Core-Wasm certifies 3 themes, 6 workbench tabs, 7 stakeholder journeys, 4 starter archetypes, 6 live doc embeds, and 13 studio controls, zero raw hex overrides appear in Studio stylesheets, and every cold-boot C-ABI call site resolves in verdant-wasm.wasm
+
+  @VE-33 @build
+  Scenario: Hoisted Stratum-0 Prism constants, 256-entry CodebookProductLut contractions, 64-bit word-packed SoaSceneTable sweeps, contiguous 32-byte SAH FlatBvh traversal, epoch-split static and dynamic WebGL2 VAOs without gl.finish stalls, and hardware drawElementsInstanced batching scale deterministically to arbitrary 10k-entity and 50k-triangle workloads
+    Given hoisted VerifiedKernelConsts, a 256-entry CodebookProductLut, a 10000-entity word-packed SoaSceneTable, a LOD4 45000-triangle FlatBvh TwoLevelBvh, and the WebGL2 worker pipeline
+    When Core-Wasm scene:perf dispatches, dirty-transform and frustum bitmasks sweep 10000 entities, 1000 raycasts and 100 sphere sweeps execute, and 10000 hardware instances stage in Wasm
+    Then FlatBvhNode is 32 bytes, average BVH node visits stay under 2 percent of total nodes, static epochs remain stable across dynamic steps, gl.finish is absent, and verdant stress-benchmark succeeds

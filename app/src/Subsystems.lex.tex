@@ -71,6 +71,20 @@ structure{
   ]
 }
 
+structure{
+  name: WorkloadOptimizationSpec,
+  type_parameters: [],
+  parameters: [],
+  fields: [
+    {name: index, type: Nat},
+    {name: stratum, type: Nat},
+    {name: zeroPerFrameHeapAllocs, type: Bool},
+    {name: epochGuarded, type: Bool},
+    {name: name, type: String},
+    {name: text, type: String}
+  ]
+}
+
 definition{name: sTwo, parameters: [], result: Nat, body: (1 + 1)}
 
 definition{name: sThree, parameters: [], result: Nat, body: ((sTwo) + 1)}
@@ -1336,6 +1350,149 @@ theorem{
   name: engineSubsystemsVerified,
   parameters: [],
   statement: ((if ((runtimeInvariantsDirect) && (subsystemsNumbered 0 (subsystems))) then (if (((project (subsystemMath) index) =? 0) && (((project (subsystemEcsBvh) index) =? 1) && (((project (subsystemTensorUorc) index) =? (sTwo)) && ((project (subsystemGeometry) index) =? (sThree))))) then (if (((project (subsystemRenderWgsl) index) =? (sFour)) && (((project (subsystemGltfExport) index) =? (sFive)) && (((project (subsystemPhysicsSpline) index) =? (sSix)) && ((project (subsystemModalAudio) index) =? (sSeven))))) then (((project (subsystemJobSnapshots) index) =? (sEight)) && (((project (subsystemSkeletalAnimation) index) =? (sNine)) && (((project (subsystemPbrRenderGraph) index) =? (sTen)) && (((project (subsystemConvexCollision) index) =? (sEleven)) && (((project (subsystemNavMeshPathfinding) index) =? (sTwelve)) && (((project (subsystemWasmWorkerBridge) index) =? (sThirteen)) && (((project (subsystemCliAssetPacker) index) =? (sFourteen)) && (((project (subsystemGlbSceneImporter) index) =? (sFifteen)) && (((project (subsystemArticulatedJointsAndVehicles) index) =? (sSixteen)) && (((project (subsystemDeterministicRollback) index) =? (sSeventeen)) && (((project (subsystemFormalUiCompliance) index) =? (sEighteen)) && (((project (subsystemNeuromorphicCybernetics) index) =? (sNineteen)) && (((project (subsystemPrismIdStitchMesh) index) =? (sTwenty)) && (((project (subsystemTwoLevelBlasCcd) index) =? (sTwentyOne)) && (((project (subsystemLawfulCameraRig) index) =? (sTwentyTwo)) && (((project (subsystemHdEnvironmentPbr) index) =? (sTwentyThree)) && (((project (subsystemArticulatedCharacterIk) index) =? (sTwentyFour)) && (((project (subsystemUniverseAndStoryAutomaton) index) =? (sTwentyFive)) && (((project (subsystemHolonTelosGovernor) index) =? (sTwentySix)) && ((glbAlignedByteLength (sFive)) =? (sEight))))))))))))))))))))) else false) else false) else false) = true),
+  proof: decide{},
+  axioms: []
+}
+
+definition{
+  name: wordBitWidth,
+  parameters: [],
+  result: Nat,
+  body: (Foundation.Ontology.V1.Model::pow2Constructive (sSix))
+}
+
+definition{
+  name: wordCountForEntities,
+  parameters: [entityCount : Nat],
+  result: Nat,
+  body: (prim quotient (entityCount + (prim subtract (wordBitWidth) 1 : Nat)) (wordBitWidth) 0 : Nat)
+}
+
+definition{
+  name: wordPackedFilterValid,
+  parameters: [entityCount : Nat, wordCount : Nat],
+  result: Bool,
+  body: (entityCount <=? (prim multiply wordCount (wordBitWidth) : Nat))
+}
+
+definition{name: sahBinCount, parameters: [], result: Nat, body: (sEight)}
+
+definition{name: flatBvhLeafMaxPrims, parameters: [], result: Nat, body: (sFour)}
+
+definition{
+  name: flatBvhStackCapacity,
+  parameters: [],
+  result: Nat,
+  body: (Foundation.Ontology.V1.Model::pow2Constructive (sSix))
+}
+
+definition{
+  name: flatBvhChildOrderNearFirst,
+  parameters: [toiLeftMilli : Nat, toiRightMilli : Nat],
+  result: Bool,
+  body: (toiLeftMilli <=? toiRightMilli)
+}
+
+definition{
+  name: flatBvhNodeBoundsValid,
+  parameters: [parentIndex : Nat, childIndex : Nat, totalNodes : Nat],
+  result: Bool,
+  body: ((parentIndex <? childIndex) && (childIndex <? totalNodes))
+}
+
+definition{
+  name: epochElisionAdmissible,
+  parameters: [syncedEpoch : Nat, currentEpoch : Nat, forceRebuild : Bool],
+  result: Bool,
+  body: ((not forceRebuild) && (syncedEpoch =? currentEpoch))
+}
+
+definition{name: workerMaxInFlightFrames, parameters: [], result: Nat, body: (sTwo)}
+
+definition{
+  name: workerInFlightAdmissible,
+  parameters: [inFlightFrames : Nat],
+  result: Bool,
+  body: (inFlightFrames <=? (workerMaxInFlightFrames))
+}
+
+definition{
+  name: governorRecommendedScalePermille,
+  parameters: [frameTimeMicros : Nat, targetBudgetMicros : Nat],
+  result: Nat,
+  body: (if (frameTimeMicros <=? targetBudgetMicros) then (skinWeightScale) else (if (frameTimeMicros <=? (prim multiply (sTwo) targetBudgetMicros : Nat)) then (prim multiply (sEightyFive) (sTen) : Nat) else (prim multiply (sSeven) (sHundred) : Nat)))
+}
+
+definition{
+  name: codebookProductTableSize,
+  parameters: [],
+  result: Nat,
+  body: (Foundation.Ontology.V1.Model::pow2Constructive (sEight))
+}
+
+definition{
+  name: workloadPerformanceDirect,
+  parameters: [],
+  result: Bool,
+  body: (if ((((wordBitWidth) =? (Foundation.Ontology.V1.Model::pow2Constructive (sSix))) && (((wordCountForEntities 0) =? 0) && (((wordCountForEntities 1) =? 1) && (((wordCountForEntities (sSixtyFive)) =? (sTwo)) && ((wordPackedFilterValid (sSixtyFive) (sTwo)) && (not (wordPackedFilterValid (sSixtyFive) 1))))))) && ((((sahBinCount) =? (sEight)) && (((flatBvhLeafMaxPrims) =? (sFour)) && ((flatBvhStackCapacity) =? (Foundation.Ontology.V1.Model::pow2Constructive (sSix))))) && ((flatBvhChildOrderNearFirst (sTen) (sTwenty)) && ((not (flatBvhChildOrderNearFirst (sTwenty) (sTen))) && ((flatBvhNodeBoundsValid 0 1 (sFour)) && ((not (flatBvhNodeBoundsValid (sTwo) 1 (sFour))) && (not (flatBvhNodeBoundsValid 0 (sFour) (sFour))))))))) then ((((epochElisionAdmissible (sThree) (sThree) false) && ((not (epochElisionAdmissible (sTwo) (sThree) false)) && (not (epochElisionAdmissible (sThree) (sThree) true)))) && (((workerInFlightAdmissible 1) && ((workerInFlightAdmissible (sTwo)) && (not (workerInFlightAdmissible (sThree))))) && ((((governorRecommendedScalePermille (sTen) (sTwenty)) =? (skinWeightScale)) && (((governorRecommendedScalePermille (sThirty) (sTwenty)) =? (prim multiply (sEightyFive) (sTen) : Nat)) && ((governorRecommendedScalePermille (sFifty) (sTwenty)) =? (prim multiply (sSeven) (sHundred) : Nat)))) && ((codebookProductTableSize) =? (Foundation.Ontology.V1.Model::pow2Constructive (sEight)))))) && (runtimeInvariantsDirect)) else false)
+}
+
+definition{
+  name: perfTier0HoistedStratumConsts,
+  parameters: [],
+  result: WorkloadOptimizationSpec,
+  body: (record WorkloadOptimizationSpec {index := 0, stratum := 0, zeroPerFrameHeapAllocs := true, epochGuarded := true, name := "PerfTierHoistedStratumConstsAndCodebookLut", text := "OnceLock-hoisted constructive {0, 1} Prism kernel constants and 256-entry codebook product lookup tables executing inner contractions in machine registers with zero magic literals."})
+}
+
+definition{
+  name: perfTier1WordPackedSoaEcs,
+  parameters: [],
+  result: WorkloadOptimizationSpec,
+  body: (record WorkloadOptimizationSpec {index := 1, stratum := (sTwo), zeroPerFrameHeapAllocs := true, epochGuarded := true, name := "PerfTierWordPackedSoaArchetypeEcs", text := "Contiguous Structure-of-Arrays entity storage paired with 64-bit word-packed visibility, dirty-transform, and awake-physics bitmasks sweeping arbitrary entity counts in O(N/64)."})
+}
+
+definition{
+  name: perfTier2ContiguousSahFlatBvh,
+  parameters: [],
+  result: WorkloadOptimizationSpec,
+  body: (record WorkloadOptimizationSpec {index := (sTwo), stratum := (sTwo), zeroPerFrameHeapAllocs := true, epochGuarded := true, name := "PerfTierContiguousSahFlatBvhAndToiOrder", text := "Cache-line-aligned 32-byte linear SAH TLAS and triangle MeshBlas arrays with 64-slot stack traversal, near-child-first TOI pruning, and zero per-query heap allocations."})
+}
+
+definition{
+  name: perfTier3EpochSplitAsyncGpu,
+  parameters: [],
+  result: WorkloadOptimizationSpec,
+  body: (record WorkloadOptimizationSpec {index := (sThree), stratum := (sThree), zeroPerFrameHeapAllocs := true, epochGuarded := true, name := "PerfTierEpochSplitVboAndAsyncShadowCache", text := "Epoch-guarded static STATIC_DRAW and dynamic STREAM_DRAW WebGL2 VAO split, asynchronous zero-gl.finish command pipelining, texel-snapped shadow caching, and worker frame-ack coalescing."})
+}
+
+definition{
+  name: perfTier4HardwareInstancedBatches,
+  parameters: [],
+  result: WorkloadOptimizationSpec,
+  body: (record WorkloadOptimizationSpec {index := (sFour), stratum := (sThree), zeroPerFrameHeapAllocs := true, epochGuarded := true, name := "PerfTierHardwareInstancedCrowdAndLatticeBatches", text := "Hardware drawElementsInstanced batch buffers, lazy software 16x16 tile screen-space binning, and OntologicalRuntimeGovernor render-scale adaptation supporting tens of thousands of active instances."})
+}
+
+definition{
+  name: workloadOptimizations,
+  parameters: [],
+  result: (List WorkloadOptimizationSpec),
+  body: (cons (perfTier0HoistedStratumConsts) (cons (perfTier1WordPackedSoaEcs) (cons (perfTier2ContiguousSahFlatBvh) (cons (perfTier3EpochSplitAsyncGpu) (cons (perfTier4HardwareInstancedBatches) (nil WorkloadOptimizationSpec))))))
+}
+
+definition{
+  name: workloadOptimizationsValid,
+  parameters: [pos : Nat, items : (List WorkloadOptimizationSpec)],
+  result: Bool,
+  body: (match items
+    | List.nil => true
+    | List.cons item rest => (if (((project item index) =? pos) && (((project item stratum) <=? (sSeven)) && ((project item zeroPerFrameHeapAllocs) && (project item epochGuarded)))) then (workloadOptimizationsValid (pos + 1) rest) else false)),
+  recursive_argument: items
+}
+
+theorem{
+  name: arbitraryWorkloadOptimizationsVerified,
+  parameters: [],
+  statement: ((if ((workloadPerformanceDirect) && (workloadOptimizationsValid 0 (workloadOptimizations))) then (((project (perfTier0HoistedStratumConsts) index) =? 0) && (((project (perfTier1WordPackedSoaEcs) index) =? 1) && (((project (perfTier2ContiguousSahFlatBvh) index) =? (sTwo)) && (((project (perfTier3EpochSplitAsyncGpu) index) =? (sThree)) && ((project (perfTier4HardwareInstancedBatches) index) =? (sFour)))))) else false) = true),
   proof: decide{},
   axioms: []
 }

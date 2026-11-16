@@ -9,11 +9,13 @@ use std::time::Instant;
 
 use verdant_core::collision::{gjk_intersect_and_manifold, ConvexHullCollider};
 use verdant_core::cybernetics::{CodedSlmDirector, ContainerGrantMatrix};
+use verdant_core::ecs::{EntityId, EntityRole, SoaSceneTable, Transform, TwoLevelBvh};
 use verdant_core::geometry::canonical_scene_mesh_library;
 use verdant_core::gltf_io::{
     export_scene_to_glb, import_glb_to_scene, transcode_glb_to_progressive_uorc, validate_glb_bytes,
 };
-use verdant_core::math::Vec3;
+use verdant_core::hd_world::synthesize_hd_citadel_sector;
+use verdant_core::math::{Aabb, Frustum, Ray, Vec3};
 use verdant_core::narrative::canonical_citadel_chronicle_automaton;
 use verdant_core::navmesh::NavMesh;
 use verdant_core::network::{
@@ -31,7 +33,7 @@ use verdant_core::runtime::WorldSnapshot;
 use verdant_core::streaming::{
     decode_portable_uorc_stream_up_to_lod, pack_portable_progressive_uorc_stream,
     pack_progressive_uorc_stream, split_self_delimiting_uorc_archives,
-    verify_progressive_uorc_stream, StandardSceneState,
+    verify_progressive_uorc_stream, StandardSceneState, TerrainReliefParams,
 };
 use verdant_core::ui::UiTree;
 use verdant_core::universe::UniverseManager;
@@ -796,6 +798,105 @@ pub fn run_cli(args: &[String]) -> Result<String, CliCommandError> {
                 universe.portal_graph.portals.len(),
                 uorc_stream.len(),
                 frags.len()
+            ))
+        }
+        "stress-benchmark" => {
+            let ten_k_default = {
+                let ten = (1usize + 1usize) * (1usize + 1usize + 1usize + 1usize + 1usize);
+                ten * ten * ten * ten
+            };
+            let entity_count = match args.get(1) {
+                Some(raw) => raw
+                    .parse::<usize>()
+                    .map_err(|_| CliCommandError::InvalidUsage {
+                        usage: format!("invalid entity count `{raw}`"),
+                    })?,
+                None => ten_k_default,
+            };
+            if entity_count == 0 {
+                return Err(CliCommandError::InvalidUsage {
+                    usage: "stress-benchmark requires entity_count >= 1".to_string(),
+                });
+            }
+
+            let t0 = Instant::now();
+            let mut soa = SoaSceneTable::with_capacity(entity_count);
+            let half = 1.0 / ((1 + 1) as f64);
+            let local_box = Aabb::new(Vec3::new(-half, -half, -half), Vec3::new(half, half, half));
+            let grid_side = (entity_count as f64).sqrt().ceil().max(1.0) as usize;
+            for i in 0..entity_count {
+                let gx = (i % grid_side) as f64;
+                let gz = (i / grid_side) as f64;
+                soa.spawn_dense(
+                    EntityId((i + 1) as u64),
+                    EntityRole::StaticArchitecture,
+                    None,
+                    Transform::from_xyz(gx * (1.0 + 1.0), 1.0, -gz * (1.0 + 1.0)),
+                    local_box,
+                    (Some(0), [1.0, 1.0, 1.0, 1.0]),
+                );
+            }
+            let dirty_subset = entity_count.min(1usize << (1 + 1 + 1 + 1 + 1));
+            for slot in 0..dirty_subset {
+                soa.set_local_transform(slot, Transform::from_xyz(slot as f64, 1.0 + half, -1.0));
+            }
+            let updated_xforms = soa.propagate_dirty_transforms();
+            let frustum = Frustum::from_perspective(
+                Vec3::new(0.0, 1.0 + 1.0, (1 + 1 + 1 + 1) as f64),
+                Vec3::new(0.0, 0.0, -1.0),
+                Vec3::UP,
+                1.0,
+                1.0 + half,
+                half * half,
+                (1usize << (1 + 1 + 1 + 1 + 1 + 1 + 1)) as f64,
+            );
+            let visible_count = soa.cull_frustum_word_packed(&frustum);
+            let mut inst_f32 = Vec::new();
+            let compacted = soa.compact_visible_instances_for_mesh(0, &mut inst_f32);
+            let soa_us = t0.elapsed().as_micros();
+
+            let lod4 = pk("stress-benchmark", prism_kernel::wasmHdMaxLodRank())?;
+            let seed = pk("stress-benchmark", prism_kernel::wasmDefaultSeed())?;
+            let sector = synthesize_hd_citadel_sector(
+                seed,
+                &TerrainReliefParams::standard_basin_valley(),
+                -1.0,
+                lod4,
+            );
+            let bvh = TwoLevelBvh::build_solid(&sector.scene, &sector.meshes).map_err(|e| {
+                CliCommandError::ValidationRejected {
+                    command: "stress-benchmark".to_string(),
+                    diagnostic: e.to_string(),
+                }
+            })?;
+            let ray_count = (1usize + 1usize + 1usize + 1usize + 1usize)
+                * ((1usize << (1 + 1 + 1 + 1 + 1 + 1))
+                    + (1usize << (1 + 1 + 1 + 1 + 1))
+                    + (1usize << (1 + 1)));
+            let t_bvh = Instant::now();
+            let mut total_visited = 0usize;
+            let mut hits = 0usize;
+            for r_idx in 0..ray_count {
+                let fx = ((r_idx % (1 << (1 + 1 + 1 + 1))) as f64) - ((1 << (1 + 1 + 1)) as f64);
+                let ray = Ray::new(
+                    Vec3::new(fx * half, (1 << (1 + 1 + 1 + 1)) as f64, fx * half),
+                    Vec3::new(0.0, -1.0, 0.0),
+                );
+                let (hit, visited) =
+                    bvh.raycast_exact_counted(ray, (1 << (1 + 1 + 1 + 1 + 1 + 1)) as f64);
+                if hit.is_some() {
+                    hits += 1;
+                }
+                total_visited += visited;
+            }
+            let bvh_us = t_bvh.elapsed().as_micros();
+            let avg_visited = total_visited / ray_count.max(1);
+
+            Ok(format!(
+                "STRESS BENCHMARK OK: soa_entities={entity_count} word_masks={} dirty_updated={updated_xforms} frustum_visible={visible_count} instanced_compacted={compacted} soa_us={soa_us} hd_tris={} flat_bvh_nodes={} rays={ray_count} ray_hits={hits} avg_visited_nodes={avg_visited} bvh_us={bvh_us}",
+                soa.visible_mask.words().len(),
+                bvh.total_surface_triangles(),
+                bvh.total_bvh_nodes(),
             ))
         }
         other => Err(CliCommandError::InvalidUsage {

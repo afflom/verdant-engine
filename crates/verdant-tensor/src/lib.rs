@@ -19,6 +19,7 @@
 #![forbid(unsafe_code)]
 
 use std::fmt;
+use std::sync::OnceLock;
 
 use serde::{Deserialize, Serialize};
 
@@ -30,8 +31,18 @@ pub const DIM_SPATIAL: usize = 1 + 1 + 1;
 pub const DIM_HOMOGENEOUS: usize = (1 + 1) * (1 + 1);
 /// Canonical `Grid` lookup codebook cardinality (`2^4 = 16`).
 pub const CODED_TABLE_LEN: usize = 1 << ((1 + 1) * (1 + 1));
+/// Exact `16 x 16` (`256`-entry) codebook ring product lookup table cardinality.
+pub const CODEBOOK_PRODUCT_LUT_LEN: usize = CODED_TABLE_LEN * CODED_TABLE_LEN;
 /// Sub-byte `Packed` nibble arity (`2` four-bit codes per byte).
 pub const PACKED_NIBBLE_BLOCK: usize = 1 + 1;
+/// Constructive 64-bit word width (`2^6 = 64`) for `O(N / 64)` bitset sweeps.
+pub const WORD_BIT_WIDTH: usize = 1 << ((1 + 1) * (1 + 1 + 1));
+/// Surface-Area-Heuristic (`SAH`) spatial partition bin count (`2^3 = 8`).
+pub const SAH_BIN_COUNT: usize = 1 << (1 + 1 + 1);
+/// Linearized `FlatBvh` explicit traversal stack capacity (`2^6 = 64`, zero heap allocation).
+pub const FLAT_BVH_STACK_CAP: usize = WORD_BIT_WIDTH;
+/// Progressive + HD LOD envelope count (`0..=4` -> `5` envelopes).
+pub const HD_LOD_ENVELOPE_COUNT: usize = 1 + (1 << (1 + 1));
 
 /// Constructive power of two (`2^exp`) computed purely from `{0, 1}`.
 #[must_use]
@@ -60,8 +71,303 @@ pub fn half_f64() -> f64 {
 /// Numerical degeneracy tolerance `2^-40` derived constructively from `{0, 1}`.
 #[must_use]
 pub fn geometric_epsilon() -> f64 {
-    let forty = (1_u32 + 1_u32 + 1_u32 + 1_u32 + 1_u32) * (1_u32 << (1_u32 + 1_u32 + 1_u32));
-    1.0 / (pow2_u64(forty) as f64)
+    const EPS_EXP: u32 =
+        (1_u32 + 1_u32 + 1_u32 + 1_u32 + 1_u32) * (1_u32 << (1_u32 + 1_u32 + 1_u32));
+    const EPS_VAL: f64 = 1.0 / (pow2_u64(EPS_EXP) as f64);
+    EPS_VAL
+}
+
+/// Hoisted Stratum-0 Prism kernel scalars evaluated once at startup (`OnceLock`) so hot loops
+/// read verified `{0, 1}` invariants in `O(1)` machine registers with zero repeated Peano evaluation.
+#[derive(Clone, Debug)]
+pub struct VerifiedKernelConsts {
+    /// Skinning and permille fixed-point denominator (`1000`).
+    pub skin_weight_scale: u64,
+    /// Double-precision permille denominator (`1000.0`).
+    pub skin_weight_scale_f64: f64,
+    /// Swept-capsule CCD skin clearance margin in millimeters (`2`).
+    pub ccd_skin_margin_milli: u64,
+    /// Swept-capsule CCD skin clearance margin in meters (`0.002`).
+    pub ccd_skin_margin_meters: f64,
+    /// Maximum swept-capsule slide iterations per step (`4`).
+    pub ccd_max_slide_iterations: u32,
+    /// Maximum walkable stair riser step height in meters (`0.35`).
+    pub swept_capsule_max_step_meters: f64,
+    /// Minimum walkable surface normal `ny` (`0.70`).
+    pub nav_walkable_ny_min: f64,
+    /// Software tile edge length in pixels (`16`).
+    pub tile_edge_pixels: u32,
+    /// Framebuffer channel count (`4`).
+    pub rgba_channel_count: usize,
+    /// Percentage denominator (`100.0`).
+    pub percent_denom_f32: f32,
+    /// SAH spatial bin count (`8`).
+    pub sah_bin_count: usize,
+    /// Maximum primitives per `FlatBvh` leaf (`4`).
+    pub flat_bvh_leaf_max_prims: usize,
+    /// Bounded traversal stack depth (`64`).
+    pub flat_bvh_stack_cap: usize,
+    /// Word-packed bitset width (`64`).
+    pub word_bit_width: usize,
+    /// Precomputed codebook product table size (`256`).
+    pub codebook_lut_len: usize,
+    /// Maximum in-flight worker frames before input coalescing (`2`).
+    pub worker_max_in_flight: u32,
+    /// `Q16` fixed-point quantization scale (`65536.0`).
+    pub q16_scale_f64: f64,
+    /// Reciprocal squared `Q16` scale (`1.0 / 65536.0^2`).
+    pub inv_q16_sq_f64: f64,
+    /// `Q12` fixed-point quantization scale (`4096.0`).
+    pub q12_scale_f64: f64,
+    /// Reciprocal squared `Q12` scale (`1.0 / 4096.0^2`).
+    pub inv_q12_sq_f64: f64,
+}
+
+static KERNEL_CONSTS: OnceLock<VerifiedKernelConsts> = OnceLock::new();
+
+/// Returns the process-wide `OnceLock`-hoisted Prism kernel constants.
+#[must_use]
+pub fn kernel_consts() -> &'static VerifiedKernelConsts {
+    KERNEL_CONSTS.get_or_init(|| {
+        let two_u = 1_u64 + 1_u64;
+        let five_u = two_u + two_u + 1_u64;
+        let ten_u = two_u * five_u;
+        let hundred_u = ten_u * ten_u;
+
+        #[cfg(not(target_arch = "wasm32"))]
+        let skin_weight_scale = prism_kernel::skinWeightScale().unwrap_or(1).max(1);
+        #[cfg(target_arch = "wasm32")]
+        let skin_weight_scale = hundred_u * ten_u;
+
+        let skin_weight_scale_f64 = skin_weight_scale as f64;
+        let ccd_skin_margin_milli = two_u;
+        let ccd_skin_margin_meters = (ccd_skin_margin_milli as f64) / skin_weight_scale_f64;
+        let ccd_max_slide_iterations = (two_u * two_u) as u32;
+        let swept_capsule_max_step_meters =
+            ((five_u * (five_u + two_u) * ten_u) as f64) / skin_weight_scale_f64;
+        let nav_walkable_ny_min = (((five_u + two_u) * hundred_u) as f64) / skin_weight_scale_f64;
+        let tile_edge_pixels = 1_u32 << ((1_u32 + 1_u32) * (1_u32 + 1_u32));
+        let rgba_channel_count = DIM_HOMOGENEOUS;
+        let percent_denom_f32 = hundred_u as f32;
+        let sah_bin_count = SAH_BIN_COUNT;
+        let flat_bvh_leaf_max_prims = DIM_HOMOGENEOUS;
+        let flat_bvh_stack_cap = FLAT_BVH_STACK_CAP;
+        let word_bit_width = WORD_BIT_WIDTH;
+        let codebook_lut_len = CODEBOOK_PRODUCT_LUT_LEN;
+        let worker_max_in_flight = 1_u32 + 1_u32;
+
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            debug_assert_eq!(prism_kernel::ccdSkinMarginMilli(), ccd_skin_margin_milli);
+            debug_assert_eq!(
+                prism_kernel::ccdMaxSlideIterations(),
+                Ok(u64::from(ccd_max_slide_iterations))
+            );
+            debug_assert_eq!(
+                prism_kernel::tileEdgePixels(),
+                Ok(u64::from(tile_edge_pixels))
+            );
+            debug_assert_eq!(prism_kernel::sahBinCount(), Ok(sah_bin_count as u64));
+            debug_assert_eq!(
+                prism_kernel::flatBvhLeafMaxPrims(),
+                Ok(flat_bvh_leaf_max_prims as u64)
+            );
+            debug_assert_eq!(
+                prism_kernel::flatBvhStackCapacity(),
+                Ok(flat_bvh_stack_cap as u64)
+            );
+            debug_assert_eq!(prism_kernel::wordBitWidth(), Ok(word_bit_width as u64));
+            debug_assert_eq!(
+                prism_kernel::codebookProductTableSize(),
+                Ok(codebook_lut_len as u64)
+            );
+            debug_assert_eq!(
+                prism_kernel::workerMaxInFlightFrames(),
+                u64::from(worker_max_in_flight)
+            );
+        }
+
+        let q16_scale_f64 = pow2_u64(tile_edge_pixels) as f64;
+        let inv_q16_sq_f64 = 1.0 / (q16_scale_f64 * q16_scale_f64);
+        let s12 = (1_u32 + 1_u32 + 1_u32) * (1_u32 << (1_u32 + 1_u32));
+        let q12_scale_f64 = pow2_u64(s12) as f64;
+        let inv_q12_sq_f64 = 1.0 / (q12_scale_f64 * q12_scale_f64);
+
+        VerifiedKernelConsts {
+            skin_weight_scale,
+            skin_weight_scale_f64,
+            ccd_skin_margin_milli,
+            ccd_skin_margin_meters,
+            ccd_max_slide_iterations,
+            swept_capsule_max_step_meters,
+            nav_walkable_ny_min,
+            tile_edge_pixels,
+            rgba_channel_count,
+            percent_denom_f32,
+            sah_bin_count,
+            flat_bvh_leaf_max_prims,
+            flat_bvh_stack_cap,
+            word_bit_width,
+            codebook_lut_len,
+            worker_max_in_flight,
+            q16_scale_f64,
+            inv_q16_sq_f64,
+            q12_scale_f64,
+            inv_q12_sq_f64,
+        }
+    })
+}
+
+/// Dense 64-bit word-packed bitset (`u64` words) enabling `O(N / 64)` ECS archetype visibility,
+/// dirty-transform propagation, and physics island sleep/wake sweeps (adapted from `verdant-aqm`).
+#[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub struct WordBitset {
+    words: Vec<u64>,
+    bit_len: usize,
+}
+
+impl WordBitset {
+    /// Allocates a cleared word-packed bitset covering `bit_len` dense entity slots.
+    #[must_use]
+    pub fn with_len(bit_len: usize) -> Self {
+        let word_count = bit_len.div_ceil(WORD_BIT_WIDTH);
+        #[cfg(not(target_arch = "wasm32"))]
+        debug_assert_eq!(
+            prism_kernel::wordPackedFilterValid(bit_len as u64, word_count as u64),
+            Ok(true)
+        );
+        Self {
+            words: vec![0_u64; word_count],
+            bit_len,
+        }
+    }
+
+    /// Allocates a word-packed bitset with all `0..bit_len` slots initialized to `1`.
+    #[must_use]
+    pub fn all_ones(bit_len: usize) -> Self {
+        let mut bs = Self::with_len(bit_len);
+        bs.fill_ones();
+        bs
+    }
+
+    /// Logical bit capacity (`N`).
+    #[must_use]
+    pub const fn len(&self) -> usize {
+        self.bit_len
+    }
+
+    /// Returns true if `len == 0`.
+    #[must_use]
+    pub const fn is_empty(&self) -> bool {
+        self.bit_len == 0
+    }
+
+    /// Underlying `u64` word slice (`ceil(N / 64)` words).
+    #[must_use]
+    pub fn words(&self) -> &[u64] {
+        &self.words
+    }
+
+    /// Resizes bitset to `new_len`, preserving existing lower bits and zero-filling newly grown slots.
+    pub fn resize(&mut self, new_len: usize) {
+        let word_count = new_len.div_ceil(WORD_BIT_WIDTH);
+        self.words.resize(word_count, 0_u64);
+        self.bit_len = new_len;
+        self.mask_tail();
+    }
+
+    fn mask_tail(&mut self) {
+        let rem = self.bit_len % WORD_BIT_WIDTH;
+        if rem != 0 {
+            if let Some(last) = self.words.last_mut() {
+                *last &= (1_u64 << rem).wrapping_sub(1);
+            }
+        }
+    }
+
+    /// Sets bit `index` (`1`).
+    #[inline]
+    pub fn set(&mut self, index: usize) {
+        if index < self.bit_len {
+            let w = index / WORD_BIT_WIDTH;
+            let b = index % WORD_BIT_WIDTH;
+            self.words[w] |= 1_u64 << b;
+        }
+    }
+
+    /// Clears bit `index` (`0`).
+    #[inline]
+    pub fn clear(&mut self, index: usize) {
+        if index < self.bit_len {
+            let w = index / WORD_BIT_WIDTH;
+            let b = index % WORD_BIT_WIDTH;
+            self.words[w] &= !(1_u64 << b);
+        }
+    }
+
+    /// Tests whether bit `index` is `1`.
+    #[inline]
+    #[must_use]
+    pub fn test(&self, index: usize) -> bool {
+        if index >= self.bit_len {
+            return false;
+        }
+        let w = index / WORD_BIT_WIDTH;
+        let b = index % WORD_BIT_WIDTH;
+        ((self.words[w] >> b) & 1_u64) != 0
+    }
+
+    /// Clears all words to `0` in `O(N / 64)`.
+    pub fn clear_all(&mut self) {
+        self.words.fill(0_u64);
+    }
+
+    /// Sets all valid slots `0..bit_len` to `1` in `O(N / 64)`.
+    pub fn fill_ones(&mut self) {
+        self.words.fill(!0_u64);
+        self.mask_tail();
+    }
+
+    /// Bitwise `self &= rhs` in `O(N / 64)`.
+    pub fn and_assign(&mut self, rhs: &Self) {
+        for (dst, &src) in self.words.iter_mut().zip(rhs.words.iter()) {
+            *dst &= src;
+        }
+        if rhs.words.len() < self.words.len() {
+            for dst in &mut self.words[rhs.words.len()..] {
+                *dst = 0_u64;
+            }
+        }
+    }
+
+    /// Bitwise `self |= rhs` in `O(N / 64)`.
+    pub fn or_assign(&mut self, rhs: &Self) {
+        for (dst, &src) in self.words.iter_mut().zip(rhs.words.iter()) {
+            *dst |= src;
+        }
+        self.mask_tail();
+    }
+
+    /// Hardware `popcnt` across all packed `u64` words in `O(N / 64)`.
+    #[must_use]
+    pub fn count_ones(&self) -> usize {
+        self.words.iter().map(|w| w.count_ones() as usize).sum()
+    }
+
+    /// Visits every set slot index in ascending order using `trailing_zeros` hardware bit scans
+    /// (`O(set_bits + N / 64)` — skipping 64 empty entities in a single cycle).
+    #[inline]
+    pub fn for_each_set_bit<F: FnMut(usize)>(&self, mut f: F) {
+        for (word_idx, &word_init) in self.words.iter().enumerate() {
+            let mut word = word_init;
+            let base = word_idx * WORD_BIT_WIDTH;
+            while word != 0 {
+                let tz = word.trailing_zeros() as usize;
+                f(base + tz);
+                word &= word.wrapping_sub(1);
+            }
+        }
+    }
 }
 
 #[doc(hidden)]
@@ -328,12 +634,13 @@ pub use audio_ring::{
     convolve_modal_fir_exact, mix_spatial_audio_channels_exact, step_sabine_fdn_reverb_ring,
 };
 pub use coded::{
-    contract_coded_geometry_grid, contract_packed_animation_tracks, contract_runs_ibl_harmonics,
-    prism_coded_tiers_certified,
+    contract_coded_geometry_grid, contract_coded_pair_lut_into, contract_packed_animation_tracks,
+    contract_runs_ibl_harmonics, prism_coded_tiers_certified, CodebookProductLut,
 };
 pub use linear::{
-    batch_transform_positions_exact, delassus_effective_mass_matrix,
-    propagate_hierarchy_matrices_exact, skin_vertices_linear_blend_exact, solve_two_bone_ik_exact,
+    batch_transform_positions_exact, batch_transform_positions_into,
+    delassus_effective_mass_matrix, propagate_hierarchy_matrices_exact,
+    skin_vertices_linear_blend_exact, skin_vertices_linear_blend_into, solve_two_bone_ik_exact,
     TwoBoneIkSolution,
 };
 pub use neural::{
@@ -342,6 +649,6 @@ pub use neural::{
 };
 pub use raster::{render_triangles_tile_framebuffer, RasterTriangle, SoftwareTileFramebuffer};
 pub use tropical::{
-    tropical_frustum_distance_bounds, tropical_gjk_support_batch,
+    tropical_frustum_distance_bounds, tropical_gjk_support_batch, tropical_gjk_support_single,
     tropical_min_plus_all_pairs_closure, tropical_swept_aabb_toi_bounds, tropical_ui_box_extents,
 };

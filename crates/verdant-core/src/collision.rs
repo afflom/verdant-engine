@@ -70,14 +70,9 @@ impl ConvexHullCollider {
         Aabb { min, max }
     }
 
-    /// Furthest world-space vertex along `direction`.
+    /// Furthest world-space vertex along `direction` (`0` heap allocations).
     #[must_use]
     pub fn support(&self, world_offset: Vec3, direction: Vec3) -> Vec3 {
-        if let Ok(batch) = self.support_batch_tropical(world_offset, &[direction]) {
-            if let Some(&v) = batch.first() {
-                return v;
-            }
-        }
         let mut best = self.vertices[0] + world_offset;
         let mut best_dot = best.dot(direction);
         for &v in self.vertices.iter().skip(1) {
@@ -103,8 +98,7 @@ impl ConvexHullCollider {
                 vertex_count: self.vertices.len(),
             });
         }
-        let scale =
-            crate::prism_kernel::skinWeightScale().expect("verified Prism skinWeightScale") as f64;
+        let scale = verdant_tensor::kernel_consts().skin_weight_scale_f64;
         let dirs_q: Vec<[i32; 1 + 1 + 1]> = directions
             .iter()
             .map(|d| {
@@ -488,25 +482,73 @@ struct BlasTriangle {
     tri_index: usize,
 }
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-enum BlasNode {
-    Leaf {
-        bounds: Aabb,
-        triangles: Vec<usize>,
-    },
-    Internal {
-        bounds: Aabb,
-        left: Box<Self>,
-        right: Box<Self>,
-    },
+/// Cache-line-packed 32-byte linear BVH node (`2` nodes per `64`-byte cache line, zero `Box` pointers).
+///
+/// Pre-order layout invariant (`prism_kernel::flatBvhNodeBoundsValid`):
+/// - When `prim_count > 0` (leaf): primitives live in `prim_indices[right_or_first .. right_or_first + prim_count]`.
+/// - When `prim_count == 0` (internal): `left_child = node_index + 1` and `right_child = right_or_first`.
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+pub struct FlatBvhNode {
+    /// Conservative lower `f32` AABB corner in local/world space.
+    pub aabb_min: [f32; DIM_SPATIAL],
+    /// First primitive offset (when `prim_count > 0`) or right child node index (when `prim_count == 0`).
+    pub right_or_first: u32,
+    /// Conservative upper `f32` AABB corner in local/world space.
+    pub aabb_max: [f32; DIM_SPATIAL],
+    /// Primitive count (`0` for internal nodes, `>= 1` for leaf nodes).
+    pub prim_count: u32,
 }
 
-/// Bottom-Level Acceleration Structure (`BLAS`) indexing a mesh's exact triangles for
-/// Möller–Trumbore raycasts, continuous swept-sphere `TOI` collision, and closest-point queries.
+impl FlatBvhNode {
+    /// Converts `f64` metric `Aabb` into conservative `f32` bounds guaranteed to enclose `bounds`.
+    #[inline]
+    #[must_use]
+    pub fn pack_bounds(bounds: Aabb) -> ([f32; DIM_SPATIAL], [f32; DIM_SPATIAL]) {
+        let pad = 1.0_f32
+            / ((1_u32 << ((1_u32 + 1_u32 + 1_u32 + 1_u32) * (1_u32 + 1_u32 + 1_u32 + 1_u32)))
+                as f32);
+        (
+            [
+                (bounds.min.x as f32) - pad,
+                (bounds.min.y as f32) - pad,
+                (bounds.min.z as f32) - pad,
+            ],
+            [
+                (bounds.max.x as f32) + pad,
+                (bounds.max.y as f32) + pad,
+                (bounds.max.z as f32) + pad,
+            ],
+        )
+    }
+
+    /// Unpacks conservative `Aabb` for exact ray/sweep slab tests.
+    #[inline]
+    #[must_use]
+    pub fn bounds(&self) -> Aabb {
+        let i2 = 1usize + 1usize;
+        Aabb {
+            min: Vec3::new(
+                f64::from(self.aabb_min[0]),
+                f64::from(self.aabb_min[1]),
+                f64::from(self.aabb_min[i2]),
+            ),
+            max: Vec3::new(
+                f64::from(self.aabb_max[0]),
+                f64::from(self.aabb_max[1]),
+                f64::from(self.aabb_max[i2]),
+            ),
+        }
+    }
+}
+
+/// Bottom-Level Acceleration Structure (`BLAS`) indexing a mesh's exact triangles in a contiguous
+/// 32-byte binned-SAH `FlatBvhNode` array for `O(log N)` zero-allocation raycasts, sweeps, and clearance.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct MeshBlas {
     triangles: Vec<BlasTriangle>,
-    root: Option<BlasNode>,
+    nodes: Vec<FlatBvhNode>,
+    prim_indices: Vec<u32>,
 }
 
 fn closest_point_on_triangle(p: Vec3, a: Vec3, b: Vec3, c: Vec3) -> Vec3 {
@@ -711,7 +753,12 @@ fn sweep_sphere_against_triangle(
     best
 }
 
-fn segment_hits_expanded_aabb(origin: Vec3, delta: Vec3, bounds: Aabb, radius: f64) -> bool {
+pub(crate) fn segment_swept_aabb_toi(
+    origin: Vec3,
+    delta: Vec3,
+    bounds: Aabb,
+    radius: f64,
+) -> Option<f64> {
     let eps = geometric_epsilon();
     let orig = [origin.x, origin.y, origin.z];
     let dir = [delta.x, delta.y, delta.z];
@@ -731,7 +778,7 @@ fn segment_hits_expanded_aabb(origin: Vec3, delta: Vec3, bounds: Aabb, radius: f
     for axis in 0..DIM_SPATIAL {
         if dir[axis].abs() <= eps {
             if orig[axis] < bmin[axis] || orig[axis] > bmax[axis] {
-                return false;
+                return None;
             }
         } else {
             let inv = 1.0 / dir[axis];
@@ -743,11 +790,193 @@ fn segment_hits_expanded_aabb(origin: Vec3, delta: Vec3, bounds: Aabb, radius: f
             tmin = tmin.max(t1);
             tmax = tmax.min(t2);
             if tmin > tmax {
-                return false;
+                return None;
             }
         }
     }
-    true
+    Some(tmin)
+}
+
+fn aabb_half_area(b: Aabb) -> f64 {
+    let d = b.max - b.min;
+    let dx = d.x.max(0.0);
+    let dy = d.y.max(0.0);
+    let dz = d.z.max(0.0);
+    dx * dy + dy * dz + dz * dx
+}
+
+pub(crate) fn aabb_point_dist_sq(bounds: Aabb, point: Vec3) -> f64 {
+    let cx = point.x.max(bounds.min.x).min(bounds.max.x) - point.x;
+    let cy = point.y.max(bounds.min.y).min(bounds.max.y) - point.y;
+    let cz = point.z.max(bounds.min.z).min(bounds.max.z) - point.z;
+    cx * cx + cy * cy + cz * cz
+}
+
+/// Builds a contiguous pre-order binned-SAH `FlatBvhNode` array over `prim_bounds`.
+pub(crate) fn build_flat_sah_bvh(
+    prim_bounds: &[Aabb],
+    leaf_max_prims: usize,
+) -> (Vec<FlatBvhNode>, Vec<u32>) {
+    if prim_bounds.is_empty() {
+        return (Vec::new(), Vec::new());
+    }
+    let mut prim_indices: Vec<u32> = (0..prim_bounds.len() as u32).collect();
+    let mut nodes = Vec::with_capacity(prim_bounds.len() * (1 + 1));
+
+    fn emit_node(
+        prim_bounds: &[Aabb],
+        prim_indices: &mut [u32],
+        base_offset: u32,
+        leaf_cap: usize,
+        nodes: &mut Vec<FlatBvhNode>,
+    ) -> u32 {
+        let node_idx = nodes.len() as u32;
+        let mut total = prim_bounds[prim_indices[0] as usize];
+        let first_c = total.center();
+        let mut c_min = first_c;
+        let mut c_max = first_c;
+
+        for &pi in &prim_indices[1..] {
+            let b = prim_bounds[pi as usize];
+            total = total.union(b);
+            let c = b.center();
+            c_min = Vec3::new(c_min.x.min(c.x), c_min.y.min(c.y), c_min.z.min(c.z));
+            c_max = Vec3::new(c_max.x.max(c.x), c_max.y.max(c.y), c_max.z.max(c.z));
+        }
+
+        let (aabb_min, aabb_max) = FlatBvhNode::pack_bounds(total);
+        if prim_indices.len() <= leaf_cap {
+            nodes.push(FlatBvhNode {
+                aabb_min,
+                right_or_first: base_offset,
+                aabb_max,
+                prim_count: prim_indices.len() as u32,
+            });
+            return node_idx;
+        }
+
+        let c_span = c_max - c_min;
+        let axis = if c_span.x >= c_span.y && c_span.x >= c_span.z {
+            0usize
+        } else if c_span.y >= c_span.z {
+            1usize
+        } else {
+            1usize + 1usize
+        };
+        let axis_min = [c_min.x, c_min.y, c_min.z][axis];
+        let axis_span = [c_span.x, c_span.y, c_span.z][axis];
+        let eps = geometric_epsilon();
+
+        // 8-bin Surface Area Heuristic (`SAH_BIN_COUNT`) partition with deterministic median fallback:
+        let mut split_mid = prim_indices.len() / (1 + 1);
+        if axis_span > eps && prim_indices.len() > verdant_tensor::SAH_BIN_COUNT {
+            const BINS: usize = verdant_tensor::SAH_BIN_COUNT;
+            let mut bin_counts = [0usize; BINS];
+            let mut bin_bounds: [Option<Aabb>; BINS] = [None; BINS];
+            let scale = (BINS as f64) / axis_span;
+
+            for &pi in prim_indices.iter() {
+                let pb = prim_bounds[pi as usize];
+                let pc = pb.center();
+                let coord = [pc.x, pc.y, pc.z][axis];
+                let b_idx = (((coord - axis_min) * scale).floor().max(0.0) as usize).min(BINS - 1);
+                bin_counts[b_idx] += 1;
+                bin_bounds[b_idx] = Some(match bin_bounds[b_idx] {
+                    Some(acc) => acc.union(pb),
+                    None => pb,
+                });
+            }
+
+            let mut left_area = [0.0_f64; BINS - 1];
+            let mut left_count = [0usize; BINS - 1];
+            let mut run_box: Option<Aabb> = None;
+            let mut run_cnt = 0usize;
+            for i in 0..(BINS - 1) {
+                run_cnt += bin_counts[i];
+                if let Some(bb) = bin_bounds[i] {
+                    run_box = Some(match run_box {
+                        Some(acc) => acc.union(bb),
+                        None => bb,
+                    });
+                }
+                left_count[i] = run_cnt;
+                left_area[i] = run_box.map_or(0.0, aabb_half_area);
+            }
+
+            let mut right_box: Option<Aabb> = None;
+            let mut right_cnt = 0usize;
+            let mut best_cost = f64::INFINITY;
+            let mut best_bin_split: Option<usize> = None;
+            for i in (0..(BINS - 1)).rev() {
+                right_cnt += bin_counts[i + 1];
+                if let Some(bb) = bin_bounds[i + 1] {
+                    right_box = Some(match right_box {
+                        Some(acc) => acc.union(bb),
+                        None => bb,
+                    });
+                }
+                if left_count[i] > 0 && right_cnt > 0 {
+                    let r_area = right_box.map_or(0.0, aabb_half_area);
+                    let cost = (left_count[i] as f64) * left_area[i] + (right_cnt as f64) * r_area;
+                    if cost < best_cost {
+                        best_cost = cost;
+                        best_bin_split = Some(i);
+                    }
+                }
+            }
+
+            if let Some(split_bin) = best_bin_split {
+                let threshold = axis_min + ((split_bin + 1) as f64) / scale;
+                let mut write_left = 0usize;
+                for cursor in 0..prim_indices.len() {
+                    let pi = prim_indices[cursor];
+                    let pc = prim_bounds[pi as usize].center();
+                    let coord = [pc.x, pc.y, pc.z][axis];
+                    if coord <= threshold {
+                        prim_indices.swap(write_left, cursor);
+                        write_left += 1;
+                    }
+                }
+                if write_left > 0 && write_left < prim_indices.len() {
+                    split_mid = write_left;
+                }
+            }
+        }
+
+        nodes.push(FlatBvhNode {
+            aabb_min,
+            right_or_first: 0,
+            aabb_max,
+            prim_count: 0,
+        });
+
+        let (left_slice, right_slice) = prim_indices.split_at_mut(split_mid);
+        let left_idx = emit_node(prim_bounds, left_slice, base_offset, leaf_cap, nodes);
+        debug_assert_eq!(left_idx, node_idx + 1);
+        let right_idx = emit_node(
+            prim_bounds,
+            right_slice,
+            base_offset + (split_mid as u32),
+            leaf_cap,
+            nodes,
+        );
+        nodes[node_idx as usize].right_or_first = right_idx;
+        debug_assert!(crate::prism_kernel::flatBvhNodeBoundsValid(
+            u64::from(node_idx),
+            u64::from(right_idx),
+            (nodes.len() as u64) + 1
+        ));
+        node_idx
+    }
+
+    emit_node(
+        prim_bounds,
+        &mut prim_indices,
+        0,
+        leaf_max_prims.max(1),
+        &mut nodes,
+    );
+    (nodes, prim_indices)
 }
 
 impl MeshBlas {
@@ -827,59 +1056,14 @@ impl MeshBlas {
             return Err(CollisionError::EmptyOrDegenerateHull { vertex_count: 0 });
         }
 
-        let indices: Vec<usize> = (0..triangles.len()).collect();
-        let root = Some(Self::build_node(&triangles, indices));
-        Ok(Self { triangles, root })
-    }
-
-    fn build_node(triangles: &[BlasTriangle], mut indices: Vec<usize>) -> BlasNode {
-        let mut total = triangles[indices[0]].bounds;
-        for &idx in &indices[1..] {
-            total = total.union(triangles[idx].bounds);
-        }
-
-        let leaf_cap = 1usize << (1usize + 1usize);
-        if indices.len() <= leaf_cap {
-            return BlasNode::Leaf {
-                bounds: total,
-                triangles: indices,
-            };
-        }
-
-        let span = total.max - total.min;
-        let axis = if span.x >= span.y && span.x >= span.z {
-            0usize
-        } else if span.y >= span.z {
-            1usize
-        } else {
-            1usize + 1usize
-        };
-
-        indices.sort_unstable_by(|&a, &b| {
-            let ca = triangles[a].bounds.center();
-            let cb = triangles[b].bounds.center();
-            let va = match axis {
-                0 => ca.x,
-                1 => ca.y,
-                _ => ca.z,
-            };
-            let vb = match axis {
-                0 => cb.x,
-                1 => cb.y,
-                _ => cb.z,
-            };
-            va.total_cmp(&vb)
-        });
-
-        let mid = indices.len() / (1usize + 1usize);
-        let right_indices = indices.split_off(mid);
-        let left = Self::build_node(triangles, indices);
-        let right = Self::build_node(triangles, right_indices);
-        BlasNode::Internal {
-            bounds: total,
-            left: Box::new(left),
-            right: Box::new(right),
-        }
+        let prim_bounds: Vec<Aabb> = triangles.iter().map(|t| t.bounds).collect();
+        let leaf_cap = verdant_tensor::kernel_consts().flat_bvh_leaf_max_prims;
+        let (nodes, prim_indices) = build_flat_sah_bvh(&prim_bounds, leaf_cap);
+        Ok(Self {
+            triangles,
+            nodes,
+            prim_indices,
+        })
     }
 
     /// Number of non-degenerate triangles indexed in this BLAS.
@@ -888,34 +1072,57 @@ impl MeshBlas {
         self.triangles.len()
     }
 
-    /// Exact Möller–Trumbore raycast returning the nearest triangle surface hit within `max_distance`.
+    /// Number of contiguous 32-byte `FlatBvhNode` entries in this BLAS.
     #[must_use]
-    pub fn raycast_exact(&self, ray: Ray, max_distance: f64) -> Option<BlasTriangleHit> {
-        let root = self.root.as_ref()?;
-        let mut best: Option<BlasTriangleHit> = None;
-        let mut limit = max_distance;
-        self.raycast_node(root, ray, &mut limit, &mut best);
-        best
+    pub fn node_count(&self) -> usize {
+        self.nodes.len()
     }
 
-    fn raycast_node(
+    /// Underlying contiguous 32-byte `FlatBvhNode` slice.
+    #[must_use]
+    pub fn flat_nodes(&self) -> &[FlatBvhNode] {
+        &self.nodes
+    }
+
+    /// Exact Möller–Trumbore raycast returning `(hit, visited_nodes)` with zero heap allocations.
+    #[must_use]
+    pub fn raycast_exact_counted(
         &self,
-        node: &BlasNode,
         ray: Ray,
-        max_distance: &mut f64,
-        best: &mut Option<BlasTriangleHit>,
-    ) {
+        max_distance: f64,
+    ) -> (Option<BlasTriangleHit>, usize) {
+        if self.nodes.is_empty() {
+            return (None, 0);
+        }
         let eps = geometric_epsilon();
-        match node {
-            BlasNode::Leaf { bounds, triangles } => {
-                if ray
-                    .intersect_aabb(*bounds)
-                    .is_none_or(|t| t > *max_distance)
-                {
-                    return;
-                }
-                for &ti in triangles {
-                    let tri = &self.triangles[ti];
+        let mut best: Option<BlasTriangleHit> = None;
+        let mut limit = max_distance;
+        let mut visited = 0usize;
+        let mut stack = [0_u32; verdant_tensor::FLAT_BVH_STACK_CAP];
+        let mut sp = 0usize;
+
+        if ray
+            .intersect_aabb(self.nodes[0].bounds())
+            .is_some_and(|t| t <= limit)
+        {
+            stack[0] = 0;
+            sp = 1;
+        }
+
+        while sp > 0 {
+            sp -= 1;
+            let idx = stack[sp] as usize;
+            let node = &self.nodes[idx];
+            visited += 1;
+            if ray.intersect_aabb(node.bounds()).is_none_or(|t| t > limit) {
+                continue;
+            }
+
+            if node.prim_count > 0 {
+                let start = node.right_or_first as usize;
+                let end = start + (node.prim_count as usize);
+                for &ti_u32 in &self.prim_indices[start..end] {
+                    let tri = &self.triangles[ti_u32 as usize];
                     let e1 = tri.v1 - tri.v0;
                     let e2 = tri.v2 - tri.v0;
                     let pvec = ray.direction.cross(e2);
@@ -935,8 +1142,8 @@ impl MeshBlas {
                         continue;
                     }
                     let t = e2.dot(qvec) * inv_det;
-                    if t >= 0.0 && t <= *max_distance {
-                        *max_distance = t;
+                    if t >= 0.0 && t <= limit {
+                        limit = t;
                         let w0 = 1.0 - u - v;
                         let geom_n = if ray.direction.dot(tri.face_normal) <= 0.0 {
                             tri.face_normal
@@ -949,7 +1156,7 @@ impl MeshBlas {
                         } else {
                             (Vec3::ZERO - raw_shade).normalized()
                         };
-                        *best = Some(BlasTriangleHit {
+                        best = Some(BlasTriangleHit {
                             triangle_index: tri.tri_index,
                             distance_meters: t,
                             point: ray.origin + ray.direction.scale(t),
@@ -959,135 +1166,215 @@ impl MeshBlas {
                         });
                     }
                 }
-            }
-            BlasNode::Internal {
-                bounds,
-                left,
-                right,
-            } => {
-                if ray
-                    .intersect_aabb(*bounds)
-                    .is_none_or(|t| t > *max_distance)
-                {
-                    return;
-                }
-                let tl = ray.intersect_aabb(Self::node_bounds(left));
-                let tr = ray.intersect_aabb(Self::node_bounds(right));
+            } else {
+                let left_idx = (idx + 1) as u32;
+                let right_idx = node.right_or_first;
+                let tl = ray
+                    .intersect_aabb(self.nodes[left_idx as usize].bounds())
+                    .filter(|&d| d <= limit);
+                let tr = ray
+                    .intersect_aabb(self.nodes[right_idx as usize].bounds())
+                    .filter(|&d| d <= limit);
                 match (tl, tr) {
-                    (Some(dl), Some(dr)) if dl <= dr => {
-                        if dl <= *max_distance {
-                            self.raycast_node(left, ray, max_distance, best);
-                        }
-                        if dr <= *max_distance {
-                            self.raycast_node(right, ray, max_distance, best);
-                        }
-                    }
                     (Some(dl), Some(dr)) => {
-                        if dr <= *max_distance {
-                            self.raycast_node(right, ray, max_distance, best);
+                        // Push farther child first so LIFO stack visits closer child first!
+                        if dl <= dr {
+                            if sp < stack.len() {
+                                stack[sp] = right_idx;
+                                sp += 1;
+                            }
+                            if sp < stack.len() {
+                                stack[sp] = left_idx;
+                                sp += 1;
+                            }
+                        } else {
+                            if sp < stack.len() {
+                                stack[sp] = left_idx;
+                                sp += 1;
+                            }
+                            if sp < stack.len() {
+                                stack[sp] = right_idx;
+                                sp += 1;
+                            }
                         }
-                        if dl <= *max_distance {
-                            self.raycast_node(left, ray, max_distance, best);
+                    }
+                    (Some(_), None) => {
+                        if sp < stack.len() {
+                            stack[sp] = left_idx;
+                            sp += 1;
                         }
                     }
-                    (Some(dl), None) if dl <= *max_distance => {
-                        self.raycast_node(left, ray, max_distance, best);
+                    (None, Some(_)) => {
+                        if sp < stack.len() {
+                            stack[sp] = right_idx;
+                            sp += 1;
+                        }
                     }
-                    (None, Some(dr)) if dr <= *max_distance => {
-                        self.raycast_node(right, ray, max_distance, best);
-                    }
-                    _ => {}
+                    (None, None) => {}
                 }
             }
         }
+        (best, visited)
     }
 
-    fn node_bounds(node: &BlasNode) -> Aabb {
-        match node {
-            BlasNode::Leaf { bounds, .. } | BlasNode::Internal { bounds, .. } => *bounds,
+    /// Exact Möller–Trumbore raycast returning the nearest triangle surface hit within `max_distance`.
+    #[must_use]
+    pub fn raycast_exact(&self, ray: Ray, max_distance: f64) -> Option<BlasTriangleHit> {
+        self.raycast_exact_counted(ray, max_distance).0
+    }
+
+    /// Continuous swept-sphere query returning `(hit, visited_nodes)` with near-child-first TOI pruning.
+    #[must_use]
+    pub fn sweep_sphere_counted(
+        &self,
+        origin: Vec3,
+        radius: f64,
+        delta: Vec3,
+    ) -> (Option<SweptSphereHit>, usize) {
+        if self.nodes.is_empty() {
+            return (None, 0);
         }
+        let r = radius.max(0.0);
+        let mut best: Option<SweptSphereHit> = None;
+        let mut visited = 0usize;
+        let mut stack = [0_u32; verdant_tensor::FLAT_BVH_STACK_CAP];
+        let mut sp = 0usize;
+
+        if segment_swept_aabb_toi(origin, delta, self.nodes[0].bounds(), r).is_some() {
+            stack[0] = 0;
+            sp = 1;
+        }
+
+        while sp > 0 {
+            sp -= 1;
+            let idx = stack[sp] as usize;
+            let node = &self.nodes[idx];
+            visited += 1;
+            let max_t = best.map_or(1.0, |h| h.toi);
+            if segment_swept_aabb_toi(origin, delta, node.bounds(), r).is_none_or(|t| t > max_t) {
+                continue;
+            }
+
+            if node.prim_count > 0 {
+                let start = node.right_or_first as usize;
+                let end = start + (node.prim_count as usize);
+                for &ti_u32 in &self.prim_indices[start..end] {
+                    let tri = &self.triangles[ti_u32 as usize];
+                    let cur_t = best.map_or(1.0, |h| h.toi);
+                    if segment_swept_aabb_toi(origin, delta, tri.bounds, r)
+                        .is_none_or(|t| t > cur_t)
+                    {
+                        continue;
+                    }
+                    if let Some(hit) = sweep_sphere_against_triangle(origin, r, delta, tri) {
+                        if best.is_none_or(|prev| hit.toi < prev.toi) {
+                            best = Some(hit);
+                        }
+                    }
+                }
+            } else {
+                let left_idx = (idx + 1) as u32;
+                let right_idx = node.right_or_first;
+                let cur_t = best.map_or(1.0, |h| h.toi);
+                let tl = segment_swept_aabb_toi(
+                    origin,
+                    delta,
+                    self.nodes[left_idx as usize].bounds(),
+                    r,
+                )
+                .filter(|&t| t <= cur_t);
+                let tr = segment_swept_aabb_toi(
+                    origin,
+                    delta,
+                    self.nodes[right_idx as usize].bounds(),
+                    r,
+                )
+                .filter(|&t| t <= cur_t);
+                match (tl, tr) {
+                    (Some(dl), Some(dr)) => {
+                        if dl <= dr {
+                            if sp < stack.len() {
+                                stack[sp] = right_idx;
+                                sp += 1;
+                            }
+                            if sp < stack.len() {
+                                stack[sp] = left_idx;
+                                sp += 1;
+                            }
+                        } else {
+                            if sp < stack.len() {
+                                stack[sp] = left_idx;
+                                sp += 1;
+                            }
+                            if sp < stack.len() {
+                                stack[sp] = right_idx;
+                                sp += 1;
+                            }
+                        }
+                    }
+                    (Some(_), None) => {
+                        if sp < stack.len() {
+                            stack[sp] = left_idx;
+                            sp += 1;
+                        }
+                    }
+                    (None, Some(_)) => {
+                        if sp < stack.len() {
+                            stack[sp] = right_idx;
+                            sp += 1;
+                        }
+                    }
+                    (None, None) => {}
+                }
+            }
+        }
+        (best, visited)
     }
 
     /// Continuous swept-sphere query returning the earliest surface `TOI` in `[0.0, 1.0]`.
     #[must_use]
     pub fn sweep_sphere(&self, origin: Vec3, radius: f64, delta: Vec3) -> Option<SweptSphereHit> {
-        let root = self.root.as_ref()?;
-        let r = radius.max(0.0);
-        let mut best: Option<SweptSphereHit> = None;
-        self.sweep_node(root, origin, r, delta, &mut best);
-        best
-    }
-
-    fn sweep_node(
-        &self,
-        node: &BlasNode,
-        origin: Vec3,
-        radius: f64,
-        delta: Vec3,
-        best: &mut Option<SweptSphereHit>,
-    ) {
-        let max_t = best.map_or(1.0, |h| h.toi);
-        let clipped_delta = delta.scale(max_t);
-        if !segment_hits_expanded_aabb(origin, clipped_delta, Self::node_bounds(node), radius) {
-            return;
-        }
-        match node {
-            BlasNode::Leaf { triangles, .. } => {
-                for &ti in triangles {
-                    let tri = &self.triangles[ti];
-                    let cur_t = best.map_or(1.0, |h| h.toi);
-                    if !segment_hits_expanded_aabb(origin, delta.scale(cur_t), tri.bounds, radius) {
-                        continue;
-                    }
-                    if let Some(hit) = sweep_sphere_against_triangle(origin, radius, delta, tri) {
-                        if best.is_none_or(|prev| hit.toi < prev.toi) {
-                            *best = Some(hit);
-                        }
-                    }
-                }
-            }
-            BlasNode::Internal { left, right, .. } => {
-                self.sweep_node(left, origin, radius, delta, best);
-                self.sweep_node(right, origin, radius, delta, best);
-            }
-        }
+        self.sweep_sphere_counted(origin, radius, delta).0
     }
 
     /// Queries the closest surface point within `max_radius`, returning `(closest_point, outward_normal, distance)`.
     #[must_use]
     pub fn closest_point(&self, point: Vec3, max_radius: f64) -> Option<(Vec3, Vec3, f64)> {
-        let root = self.root.as_ref()?;
-        let mut best_dist_sq = max_radius.max(0.0) * max_radius.max(0.0);
-        let mut best: Option<(Vec3, Vec3, f64)> = None;
-        self.closest_node(root, point, &mut best_dist_sq, &mut best);
-        best
-    }
-
-    fn closest_node(
-        &self,
-        node: &BlasNode,
-        point: Vec3,
-        best_dist_sq: &mut f64,
-        best: &mut Option<(Vec3, Vec3, f64)>,
-    ) {
-        let bounds = Self::node_bounds(node);
-        let cx = point.x.max(bounds.min.x).min(bounds.max.x);
-        let cy = point.y.max(bounds.min.y).min(bounds.max.y);
-        let cz = point.z.max(bounds.min.z).min(bounds.max.z);
-        let box_dist_sq = Vec3::new(cx, cy, cz).distance(point).powi(1 + 1);
-        if box_dist_sq > *best_dist_sq {
-            return;
+        if self.nodes.is_empty() {
+            return None;
         }
+        let r_clamped = max_radius.max(0.0);
+        let mut best_dist_sq = r_clamped * r_clamped;
+        let mut best: Option<(Vec3, Vec3, f64)> = None;
         let eps = geometric_epsilon();
-        match node {
-            BlasNode::Leaf { triangles, .. } => {
-                for &ti in triangles {
-                    let tri = &self.triangles[ti];
+        let mut stack = [0_u32; verdant_tensor::FLAT_BVH_STACK_CAP];
+        let mut sp = 0usize;
+
+        if aabb_point_dist_sq(self.nodes[0].bounds(), point) <= best_dist_sq {
+            stack[0] = 0;
+            sp = 1;
+        }
+
+        while sp > 0 {
+            sp -= 1;
+            let idx = stack[sp] as usize;
+            let node = &self.nodes[idx];
+            if aabb_point_dist_sq(node.bounds(), point) > best_dist_sq {
+                continue;
+            }
+            if node.prim_count > 0 {
+                let start = node.right_or_first as usize;
+                let end = start + (node.prim_count as usize);
+                for &ti_u32 in &self.prim_indices[start..end] {
+                    let tri = &self.triangles[ti_u32 as usize];
+                    if aabb_point_dist_sq(tri.bounds, point) > best_dist_sq {
+                        continue;
+                    }
                     let cp = closest_point_on_triangle(point, tri.v0, tri.v1, tri.v2);
                     let diff = point - cp;
                     let d_sq = diff.length_squared();
-                    if d_sq <= *best_dist_sq {
-                        *best_dist_sq = d_sq;
+                    if d_sq <= best_dist_sq {
+                        best_dist_sq = d_sq;
                         let dist = d_sq.sqrt();
                         let normal = if dist > eps {
                             diff.scale(1.0 / dist)
@@ -1096,14 +1383,54 @@ impl MeshBlas {
                         } else {
                             Vec3::ZERO - tri.face_normal
                         };
-                        *best = Some((cp, normal, dist));
+                        best = Some((cp, normal, dist));
                     }
                 }
-            }
-            BlasNode::Internal { left, right, .. } => {
-                self.closest_node(left, point, best_dist_sq, best);
-                self.closest_node(right, point, best_dist_sq, best);
+            } else {
+                let left_idx = (idx + 1) as u32;
+                let right_idx = node.right_or_first;
+                let dl = aabb_point_dist_sq(self.nodes[left_idx as usize].bounds(), point);
+                let dr = aabb_point_dist_sq(self.nodes[right_idx as usize].bounds(), point);
+                let l_ok = dl <= best_dist_sq;
+                let r_ok = dr <= best_dist_sq;
+                match (l_ok, r_ok) {
+                    (true, true) => {
+                        if dl <= dr {
+                            if sp < stack.len() {
+                                stack[sp] = right_idx;
+                                sp += 1;
+                            }
+                            if sp < stack.len() {
+                                stack[sp] = left_idx;
+                                sp += 1;
+                            }
+                        } else {
+                            if sp < stack.len() {
+                                stack[sp] = left_idx;
+                                sp += 1;
+                            }
+                            if sp < stack.len() {
+                                stack[sp] = right_idx;
+                                sp += 1;
+                            }
+                        }
+                    }
+                    (true, false) => {
+                        if sp < stack.len() {
+                            stack[sp] = left_idx;
+                            sp += 1;
+                        }
+                    }
+                    (false, true) => {
+                        if sp < stack.len() {
+                            stack[sp] = right_idx;
+                            sp += 1;
+                        }
+                    }
+                    (false, false) => {}
+                }
             }
         }
+        best
     }
 }

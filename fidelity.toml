@@ -4265,6 +4265,11 @@ record = "Engine::vectors#38"
 axis = "meant"
 
 [[closed]]
+kappa = "5d36295363cfb72e8689522d36a5abe47c03f918ae21cd72d6734a309fcb3c8c"
+record = "Engine::vectors#39"
+axis = "derived"
+
+[[closed]]
 kappa = "e9773847fb4d8e4f3fa18493601f2037b30647a5dbc3eb16101bf627032b585e"
 record = "Engine::vectors#39"
 axis = "derived"
@@ -4276,6 +4281,11 @@ axis = "derived"
 
 [[closed]]
 kappa = "3e67e35f54377adacd573927c79ddda267772ee95e347ab7804220da6a82b209"
+record = "Engine::vectors#39"
+axis = "meant"
+
+[[closed]]
+kappa = "509e916d72dceb68ddf854cce60f637fef87e8aaa21554b683ba4bf8e0d44480"
 record = "Engine::vectors#39"
 axis = "meant"
 
@@ -4305,6 +4315,11 @@ record = "Engine::vectors#4"
 axis = "meant"
 
 [[closed]]
+kappa = "14e41111a569d6933e152132723d74277f1dd28d7617beac7fbf34c6f2473647"
+record = "Engine::vectors#40"
+axis = "derived"
+
+[[closed]]
 kappa = "722e0fb86bf83f318fad7697e18ecd6605d68b67bb00a13131d451f72bed8710"
 record = "Engine::vectors#40"
 axis = "derived"
@@ -4313,6 +4328,11 @@ axis = "derived"
 kappa = "e1fc86a44ce8495a67274682940a4c5b4599fabf74403d423ed6903a374f13d7"
 record = "Engine::vectors#40"
 axis = "derived"
+
+[[closed]]
+kappa = "66e5ad117cd6c9fd6d8eefc797de0d023ca0ad1c43846e4f7a050c0e4498943f"
+record = "Engine::vectors#40"
+axis = "meant"
 
 [[closed]]
 kappa = "7e626f8d9eca77655446eb92a314f180a0cd83838239a2f7b7cdc9ed2152f10a"
@@ -4330,8 +4350,28 @@ record = "Engine::vectors#41"
 axis = "derived"
 
 [[closed]]
+kappa = "6cbcaff9639e35484103a6bd7c5f38996597455555630a391890440729341712"
+record = "Engine::vectors#41"
+axis = "derived"
+
+[[closed]]
 kappa = "d836ad7ff9271afe0e33f5e867992c84246515bc21de6e45c99eb2a6e5d64e6a"
 record = "Engine::vectors#41"
+axis = "meant"
+
+[[closed]]
+kappa = "e8b7dc44b0bd7fb2a643292df459da0b0cbebda532d7262be17003d1feec894c"
+record = "Engine::vectors#41"
+axis = "meant"
+
+[[closed]]
+kappa = "50fbe5f39b986ae4db635acc31e91e0dad2230076ee8dbf471e9640b9ec5c88d"
+record = "Engine::vectors#42"
+axis = "derived"
+
+[[closed]]
+kappa = "cdd5d21680e9e773d79e26e3249237c19f63b409ed8460bebdd1e2021d3e5521"
+record = "Engine::vectors#42"
 axis = "meant"
 
 [[closed]]
@@ -7337,6 +7377,56 @@ axis = "derived"
 [[closed]]
 kappa = "593d3a03c57c66ef288f2361b1f9d614da6507108b8b8fabadd7c43067baed66"
 record = "Subsystems::nodePreset6"
+axis = "meant"
+
+[[closed]]
+kappa = "d104f9fe12a998cdb446c29fa022abe197ddacf7a3ffbb2c098d0a6d6536d722"
+record = "Subsystems::perfTier0HoistedStratumConsts"
+axis = "derived"
+
+[[closed]]
+kappa = "7d21028e939e66121221f5985c4952804e249166e36fae55e6709786c763672f"
+record = "Subsystems::perfTier0HoistedStratumConsts"
+axis = "meant"
+
+[[closed]]
+kappa = "885a90da3a8ff7582d9d9648b092bc7e104492ba22299595b66195d424833b71"
+record = "Subsystems::perfTier1WordPackedSoaEcs"
+axis = "derived"
+
+[[closed]]
+kappa = "7185dc8772e5b50c14c9f368a7d35fc1f06b7c48281b89a8cbbd8f72783c9108"
+record = "Subsystems::perfTier1WordPackedSoaEcs"
+axis = "meant"
+
+[[closed]]
+kappa = "9f19660c75b08508bdbcdafced534c5f5187da86cac4df4ab2be8c68ffedbd7e"
+record = "Subsystems::perfTier2ContiguousSahFlatBvh"
+axis = "derived"
+
+[[closed]]
+kappa = "c7a3eb801e1c2eb958a9d0986a0f2e3c7ee86ab30afd83e90bfcd84e393bb8d6"
+record = "Subsystems::perfTier2ContiguousSahFlatBvh"
+axis = "meant"
+
+[[closed]]
+kappa = "aa243d74dc9a48a0cafc28fd631d4a2b6dae8dc8bf31bbff0519696cd7f19bbf"
+record = "Subsystems::perfTier3EpochSplitAsyncGpu"
+axis = "derived"
+
+[[closed]]
+kappa = "2eb04d35bf2131b89b3963739392f04e08cbc9d97b10327f89769dd8df14df7f"
+record = "Subsystems::perfTier3EpochSplitAsyncGpu"
+axis = "meant"
+
+[[closed]]
+kappa = "fada5e0bb04d70a517626dbf35516bb44e9b67ae41f46b3e3f93154fc4e5d005"
+record = "Subsystems::perfTier4HardwareInstancedBatches"
+axis = "derived"
+
+[[closed]]
+kappa = "a19357c522b1c256739e109ee29db61fe6753a9f24ef19d3b68a596f96ea3c8e"
+record = "Subsystems::perfTier4HardwareInstancedBatches"
 axis = "meant"
 
 [[closed]]
