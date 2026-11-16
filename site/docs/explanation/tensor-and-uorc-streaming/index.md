@@ -2,16 +2,16 @@
 
       
 
-See how twelve exact math kernels run 3D views, UI, and peer worlds.
+See how fifteen exact math kernels run lawful 3D worlds, IK rigs, and stories.
 
-      Exact accumulator bit widths across all twelve unified tensor kernels. Every Prism-certified kernel in Tensor.lex.tex reserves 64 to 128 exact accumulator bits so contractions never drift.The data in this figure
+      Exact accumulator bit widths across all fifteen unified tensor kernels. Every Prism-certified kernel in Tensor.lex.tex reserves 64 to 128 exact accumulator bits so contractions never drift.The data in this figure
 |  | bits |
 | --- | --- |
 | Linear (+,*) · transforms & PBR (k0,3,6) | 128 |
-| Linear (+,*) · LBS & CSM (k1,k4) | 128 |
+| Linear (+,*) · LBS, CSM & IK (k1,4,13) | 128 |
 | --- | --- |
 | Tropical (max,+) · cull, GJK, UI (k2,9) | 64 |
-| Tropical (min,+) · NavMesh/focus (k7) | 64 |
+| Tropical (min,+) · nav, CCD, story (k7,12,14) | 64 |
 | --- | --- |
 | Audio Q15 · FIR & Hadamard FDN (k5) | 128 |
 | LIF/SSM · mutual observer (k10) | 64 |
@@ -28,7 +28,7 @@ Conditional browser GPU compute APIs are absent on many mobile browsers, embedde
 
       
 
-Instead of maintaining divergent code paths, Tensor.lex.tex models twelve unified semiring kernels executed over uor-matmul.
+Instead of maintaining divergent code paths, Tensor.lex.tex models fifteen unified semiring kernels executed over uor-matmul.
 
       
 
@@ -37,14 +37,14 @@ Instead of maintaining divergent code paths, Tensor.lex.tex models twelve unifie
     Query CSM Splits (Wasm)Query Modal Harmonics (Wasm)
   
   Live CSM shadow cascade splits, Sabine RT60, and Euler-Bernoulli modes queried from verdant-wasm.
-  Twelve unified semiring kernels
+  Fifteen unified semiring kernels
     
       
 | Kernel group | Algebra | Engine subsystems |
       
-| k0, k1, k3, k4, k6 | Linear exact (+, *) | Hierarchy, LBS skinning, 16x16 tile PBR, CSM, and Delassus joints |
+| k0, k1, k3, k4, k6, k13 | Linear exact (+, *) | Hierarchy, LBS skinning, 16x16 tile PBR, CSM, Delassus, and Two-Bone IK |
 | --- | --- | --- |
-| k2, k7, k9 | Tropical (max, +) / (min, +) | Frustum culling, GJK support, NavMesh closure, and formal UI |
+| k2, k7, k9, k12, k14 | Tropical (max, +) / (min, +) | Frustum cull, NavMesh, formal UI, swept BLAS CCD, and Chronicle closure |
 | k5, k10 | Quantized integer rings | Modal FIR, Hadamard FDN reverb, and Q15 LIF/SSM mutual attention |
 | --- | --- | --- |
 | k8, k11 | uor_matmul::codec zero-decode | Compressed UORC streaming and embedded coded_gemm SLM |

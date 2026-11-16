@@ -283,6 +283,7 @@ export function openStudioModal({
   onResetGlb,
   onToggleRenderMode,
   onRoutePrompt,
+  onInteractStory,
   getRenderMode,
 }) {
   ensureModalStyles();
@@ -293,6 +294,7 @@ export function openStudioModal({
       onResetGlb,
       onToggleRenderMode,
       onRoutePrompt,
+      onInteractStory,
       getRenderMode,
     });
     document.body.append(studioDialog);
@@ -394,6 +396,7 @@ function buildStudioDialog({
   onResetGlb,
   onToggleRenderMode,
   onRoutePrompt,
+  onInteractStory,
   getRenderMode,
 }) {
   const dlg = document.createElement("dialog");
@@ -408,10 +411,10 @@ function buildStudioDialog({
   const titleWrap = document.createElement("div");
   const h2 = document.createElement("h2");
   h2.className = "ve-m-title";
-  h2.textContent = "Verdant Engine Studio · 12 Semiring Kernels in WebAssembly";
+  h2.textContent = "Verdant Engine Studio · 15 Semiring Kernels in WebAssembly";
   const sub = document.createElement("p");
   sub.className = "ve-m-sub";
-  sub.textContent = "100% dogfooded on verdant-wasm · GLB -> UORC · Formal UI · LIF/SLM · Container Grants";
+  sub.textContent = "Lawful CCD + Camera Guard · HD LOD4 · 22-Joint IK · Universe Portals · Conservation Chronicle";
   titleWrap.append(h2, sub);
 
   const closeBtn = document.createElement("button");
@@ -592,7 +595,48 @@ function buildStudioDialog({
   cOrgans.append(hOrgans, pOrgansDesc, organGrid);
   pOrgans.append(cOrgans);
 
+  // Panel 4: Floating-Origin Universe & Conservation Chronicle (kernel12..kernel14)
+  const pUniverse = document.createElement("section");
+  pUniverse.className = "ve-m-panel";
+  pUniverse.hidden = true;
+  const cUniverse = document.createElement("div");
+  cUniverse.className = "ve-m-card";
+  const hUniverse = document.createElement("h3");
+  hUniverse.textContent = "Floating-Origin Universe (128m Cells) & Conservation Chronicle (kernel14)";
+  const pUniverseDesc = document.createElement("p");
+  pUniverseDesc.textContent =
+    "UniversePosition pairs i64^3 sector indices with bounded [-64m, +64m)^3 local offsets for sub-millimeter camera-relative precision, while StoryAutomaton proves tropical deadlock freedom and exact integer item conservation.";
+  const uRow = document.createElement("div");
+  uRow.className = "ve-m-row";
+  const btnStoryStep = document.createElement("button");
+  btnStoryStep.type = "button";
+  btnStoryStep.className = "ve-m-btn primary";
+  btnStoryStep.textContent = "Interact at Archivist Podium";
+  const storyLog = document.createElement("pre");
+  storyLog.className = "ve-m-log";
+  storyLog.textContent = "Querying StoryAutomaton & ConservationLedger in WebAssembly…";
+  btnStoryStep.addEventListener("click", async () => {
+    const r = await callWorker?.("story-interact", { pos: [1.5, 2.2, -1.0] });
+    if (r?.ok) {
+      storyLog.textContent =
+        `Chronicle State [${r.stateIdx}]: ${r.title} (${r.advanced ? "ADVANCED" : "GUARD ACTIVE"})\n` +
+        `  Conserved World Supply: ${r.supply} tokens (before + minted - burned == after)\n` +
+        `  Objective: ${r.objective}\n` +
+        `  Guide Dialogue: "${r.dialogue}"`;
+      await onInteractStory?.();
+    }
+  });
+  const btnLod4 = document.createElement("button");
+  btnLod4.type = "button";
+  btnLod4.className = "ve-m-btn";
+  btnLod4.textContent = "Stream LOD4 Ultra HD";
+  btnLod4.addEventListener("click", () => onRoutePrompt?.("stream lod4 ultra hd"));
+  uRow.append(btnStoryStep, btnLod4);
+  cUniverse.append(hUniverse, pUniverseDesc, uRow, storyLog);
+  pUniverse.append(cUniverse);
+
   const panels = [
+    { label: "Universe & Story", el: pUniverse },
     { label: "GLB & Raster", el: pAuthor },
     { label: "Neuro & SLM", el: pNeuro },
     { label: "Formal UI Proof", el: pUi },
@@ -612,6 +656,9 @@ function buildStudioDialog({
       });
     });
     tabBar.append(b);
+    it_init: {
+      p.el.hidden = idx !== 0;
+    }
     body.append(p.el);
     return b;
   });
@@ -632,6 +679,17 @@ function buildStudioDialog({
     if (uiReply?.ok) {
       uiLog.textContent = `VERIFIED (${uiReply.widgetCount} widgets · 0 overlaps · >=48px targets · WCAG AA):\n${uiReply.report}`;
       drawUiComplianceCanvas(uiCanvas, vw, vh, uiReply.report);
+    }
+
+    const stReply = await callWorker?.("story-status");
+    if (stReply?.ok) {
+      const cell = latestObserverTelemetry?.universeCell ?? [0, 0, 0];
+      const clr = latestObserverTelemetry?.camClearanceMm ?? 290;
+      storyLog.textContent =
+        `Active Universe Cell: (${cell[0]}, ${cell[1]}, ${cell[2]}) · Camera Guard Clearance: ${clr} mm\n` +
+        `Chronicle State [${stReply.stateIdx}]: ${stReply.title} · Conserved Supply: ${stReply.supply} tokens\n` +
+        `Objective: ${stReply.objective}\n` +
+        `Dialogue: "${stReply.dialogue}"`;
     }
   });
 

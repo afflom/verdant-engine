@@ -3,16 +3,17 @@ const STREAMING_LODS = [
   { rank: 1, key: "lod:1", short: "LOD1", label: "LOD1 · Medium Detail (0.25)", res: 0.25, density: 0.72, lossless: false, sky: [0.12, 0.17, 0.24], fog: [0.18, 0.24, 0.31] },
   { rank: 2, key: "lod:2", short: "LOD2", label: "LOD2 · High Detail (0.625)", res: 0.625, density: 0.92, lossless: false, sky: [0.16, 0.27, 0.34], fog: [0.24, 0.35, 0.39] },
   { rank: 3, key: "lod:3", short: "LOD3", label: "LOD3 · Lossless UORC (1.00)", res: 1.0, density: 1.0, lossless: true, sky: [0.18, 0.30, 0.38], fog: [0.30, 0.40, 0.44] },
+  { rank: 4, key: "scene:lod:4", short: "LOD4", label: "LOD4 · Ultra HD Citadel (2.00)", res: 2.0, density: 2.0, lossless: true, sky: [0.19, 0.33, 0.43], fog: [0.32, 0.43, 0.48] },
 ];
 
 const NODE_KERNELS = [
-  { id: 0, query: "kernel:0", sceneQuery: "scene:node:0", name: "Central Pavilion & Observer", semiring: "LinearExact", target: [0, 2.2, 0], dist: 16 },
-  { id: 1, query: "kernel:1", sceneQuery: "scene:node:1", name: "Axial Skinning Spire", semiring: "LinearExact", target: [9.5, 1.2, -3.5], dist: 10 },
-  { id: 2, query: "kernel:2", sceneQuery: "scene:node:2", name: "Modal Acoustics Frame", semiring: "TropicalMaxPlus", target: [-9.0, 1.8, -4.0], dist: 10 },
-  { id: 3, query: "kernel:3", sceneQuery: "scene:node:3", name: "XPBD Articulated Rig Bay", semiring: "LinearExact", target: [-6.5, 1.8, 9.0], dist: 10 },
-  { id: 4, query: "kernel:4", sceneQuery: "scene:node:4", name: "Elevated Deck & Diegetic UI", semiring: "TropicalMaxPlus", target: [5.5, 1.2, 8.5], dist: 12 },
-  { id: 5, query: "kernel:5", sceneQuery: "scene:node:5", name: "Tropical NavMesh Corridor", semiring: "TropicalMinPlus", target: [0, 0.8, 5.0], dist: 18 },
-  { id: 6, query: "kernel:6", sceneQuery: "scene:node:6", name: "4-Wheel Suspension Vehicle", semiring: "LinearExact", target: [16.5, 1.2, 0], dist: 11, followMover: true },
+  { id: 0, query: "kernel:0", sceneQuery: "scene:node:0", name: "Vaulted Citadel & Observer", semiring: "LinearExact", target: [2.2, 3.8, 9.2], dist: 18.5, yawMilli: 460, pitchMilli: 260 },
+  { id: 1, query: "kernel:12", sceneQuery: "scene:lawful", name: "Parabolic Stone Arch Bridge", semiring: "TropicalMinPlus", target: [7.5, 1.8, -4.0], dist: 14, yawMilli: 560, pitchMilli: 340 },
+  { id: 2, query: "kernel:13", sceneQuery: "scene:character", name: "22-Joint Explorer & Foot IK", semiring: "LinearExact", target: [0, 1.6, 11.5], dist: 6.2, possessExplorer: true },
+  { id: 3, query: "kernel:6", sceneQuery: "scene:node:3", name: "XPBD Articulated Rig Bay", semiring: "LinearExact", target: [-6.5, 1.8, 9.0], dist: 10, yawMilli: -540, pitchMilli: 320 },
+  { id: 4, query: "kernel:9", sceneQuery: "scene:ui", name: "Diegetic UI & South Terrace", semiring: "TropicalMinPlus", target: [6.0, 2.0, 8.0], dist: 11, yawMilli: 520, pitchMilli: 300 },
+  { id: 5, query: "kernel:14", sceneQuery: "scene:narrative", name: "Citadel Chronicle", semiring: "TropicalMinPlus", target: [1.5, 2.2, -1.0], dist: 8.5, yawMilli: 350, pitchMilli: 260 },
+  { id: 6, query: "kernel:3", sceneQuery: "scene:node:6", name: "4-Wheel Suspension Vehicle", semiring: "LinearExact", target: [16.5, 1.2, 0], dist: 11, followMover: true },
 ];
 
 const ACOUSTIC_SPEC = { quantumFrames: 128, stereoChannels: 2, fundamentalHz: 110.0, modeNumers: [9, 25, 49, 81, 121], modeDenom: 9, rt60Ms: 3019 };
@@ -56,6 +57,12 @@ function parseTriplet(raw, scale, fb) {
 }
 
 const yieldTask = () => new Promise((r) => setTimeout(r, 0));
+let prewarmedWorker = null;
+try {
+  if (typeof Worker === "function") prewarmedWorker = new Worker("./engine-worker.mjs", { type: "module" });
+} catch {
+  prewarmedWorker = null;
+}
 
 export default async function start({ app, reason, $, chip, show, parse }) {
   const canvas = $("ve-canvas"), viewportEl = canvas?.parentElement, statusEl = $("ve-status");
@@ -66,45 +73,16 @@ export default async function start({ app, reason, $, chip, show, parse }) {
   const promptForm = $("ve-prompt-form"), promptInput = $("ve-prompt-input");
   const hudLod = $("ve-hud-lod"), hudStats = $("ve-hud-stats"), telemetryList = $("ve-telemetry");
 
-  let lodIdx = 3, simLive = false, camMode = "orbit", renderMode = "webgl2", followMover = false;
-  let activeNodeSlot = 0, gazeDwellMs = 300, orbitYaw = 0.68, orbitPitch = 0.42, orbitDist = 24.0;
-  let target = [0, 1.8, 1.5], walkPos = [0, 2.2, 13.5], walkYaw = Math.PI, walkPitch = -0.08;
-  let dragging = false, rafId = 0, currentEye = [16, 11, 18], lastMoverPos = [16.5, 0.5, 0];
-  let lastTris = 0, lastBvhVis = 32, lastKernelCount = 12, lastAttendedSlot = 0;
+  let lodIdx = 2, simLive = false, camPreset = "landmark", renderMode = "webgl2", followMover = false;
+  let activeNodeSlot = 0, gazeDwellMs = 300;
+  let pendingYaw = 0, pendingPitch = 0, pendingDist = 0, jumpQueued = false;
+  let solvedEye = [10.2, 8.5, 25.3], solvedTarget = [2.2, 3.8, 9.2], universeCell = [0, 0, 0];
+  let dragging = false, rafId = 0;
+  let lastTris = 0, lastBvhVis = 24, lastKernelCount = 15, lastAttendedSlot = 0;
   let workerBackend = "webgl2", isSoftwareGpu = false, offscreenActive = false, nextReqId = 1;
   let audioCtx = null, workletNode = null, audioTimer = 0, audioOn = false, modalStrikeIndex = 0;
   let fallbackRenderer = null, fallbackMod = null, studioMod = null;
   const keys = new Set(), pendingCalls = new Map();
-
-  function computeCameraPose(lod, dt) {
-    const pad = navigator.getGamepads?.()?.[0];
-    const dz = (v) => (Math.abs(v) > 0.16 ? v : 0);
-    const gx = pad ? dz(pad.axes[0] || 0) : 0, gy = pad ? -dz(pad.axes[1] || 0) : 0, lx = pad ? dz(pad.axes[2] || 0) : 0;
-    if (camMode === "orbit") {
-      if (simLive && !dragging && !followMover) orbitYaw += dt * 0.12;
-      orbitYaw -= lx * dt * 1.4;
-      if (followMover && lod.rank >= 2) target = [...lastMoverPos];
-      const cp = Math.cos(orbitPitch), sp = Math.sin(orbitPitch);
-      currentEye = [target[0] + Math.sin(orbitYaw) * cp * orbitDist, Math.max(0.8, target[1] + sp * orbitDist), target[2] + Math.cos(orbitYaw) * cp * orbitDist];
-      return { eye: currentEye, lookTarget: target, fwd: gy, strafe: gx, yaw: orbitYaw };
-    }
-    const kf = (keys.has("KeyW") || keys.has("ArrowUp") ? 1 : 0) - (keys.has("KeyS") || keys.has("ArrowDown") ? 1 : 0);
-    const ks = (keys.has("KeyD") || keys.has("ArrowRight") ? 1 : 0) - (keys.has("KeyA") || keys.has("ArrowLeft") ? 1 : 0);
-    const fwd = Math.max(-1, Math.min(1, kf + gy)), strafe = Math.max(-1, Math.min(1, ks + gx));
-    walkYaw -= lx * dt * 1.6;
-    const sp = 7.5 * dt;
-    walkPos = [
-      Math.max(-25, Math.min(25, walkPos[0] + (Math.sin(walkYaw) * fwd - Math.cos(walkYaw) * strafe) * sp)),
-      2.1,
-      Math.max(-25, Math.min(25, walkPos[2] + (Math.cos(walkYaw) * fwd + Math.sin(walkYaw) * strafe) * sp)),
-    ];
-    currentEye = [...walkPos];
-    return {
-      eye: currentEye,
-      lookTarget: [walkPos[0] + Math.sin(walkYaw) * Math.cos(walkPitch), walkPos[1] + Math.sin(walkPitch), walkPos[2] + Math.cos(walkYaw) * Math.cos(walkPitch)],
-      fwd, strafe, yaw: walkYaw,
-    };
-  }
 
   function measureCanvasPixels() {
     if (!canvas) return { w: 1, h: 1 };
@@ -112,17 +90,45 @@ export default async function start({ app, reason, $, chip, show, parse }) {
     return { w: Math.max(1, Math.floor((canvas.clientWidth || 320) * dpr)), h: Math.max(1, Math.floor((canvas.clientHeight || 240) * dpr)) };
   }
 
+  function readMoveIntent(dt) {
+    const pad = navigator.getGamepads?.()?.[0];
+    const dz = (v) => (Math.abs(v) > 0.16 ? v : 0);
+    const gx = pad ? dz(pad.axes[0] || 0) : 0, gy = pad ? -dz(pad.axes[1] || 0) : 0;
+    const rx = pad ? dz(pad.axes[2] || 0) : 0, ry = pad ? dz(pad.axes[3] || 0) : 0;
+    const kf = (keys.has("KeyW") || keys.has("ArrowUp") ? 1 : 0) - (keys.has("KeyS") || keys.has("ArrowDown") ? 1 : 0);
+    const ks = (keys.has("KeyD") || keys.has("ArrowRight") ? 1 : 0) - (keys.has("KeyA") || keys.has("ArrowLeft") ? 1 : 0);
+    const fwd = Math.max(-1, Math.min(1, kf + gy));
+    const strafe = Math.max(-1, Math.min(1, ks + gx));
+    const sprint = keys.has("ShiftLeft") || keys.has("ShiftRight") ? 1.65 : 1.0;
+    const jump = jumpQueued || keys.has("Space") || Boolean(pad?.buttons?.[0]?.pressed);
+    jumpQueued = false;
+    let dYaw = pendingYaw - rx * dt * 1.6;
+    let dPitch = pendingPitch + ry * dt * 1.1;
+    if (simLive && !dragging && !followMover && camPreset === "landmark" && fwd === 0 && strafe === 0) {
+      dYaw += dt * 0.14;
+    }
+    const dDist = pendingDist;
+    pendingYaw = 0; pendingPitch = 0; pendingDist = 0;
+    return { fwd, strafe, speedScale: sprint, jump, dYaw, dPitch, dDist, moving: fwd !== 0 || strafe !== 0 || jump };
+  }
+
   const formatHudStats = (fps) => {
     const b = renderMode === "tile" ? "TILE 16x16" : workerBackend.toUpperCase();
-    return `${fps ? `${fps} · ${b}` : b} · ${lastTris} tris · ${lastBvhVis} vis · N${lastAttendedSlot}`;
+    const sec = `S(${universeCell[0]},${universeCell[2]})`;
+    return `${fps ? `${fps} · ${b}` : b} · ${lastTris} tris · ${lastBvhVis} vis · ${sec}`;
   };
 
-  const isAnimating = () => simLive || dragging || followMover || (camMode === "walk" && keys.size > 0);
+  const hasMoveKeys = () =>
+    keys.has("KeyW") || keys.has("KeyA") || keys.has("KeyS") || keys.has("KeyD") ||
+    keys.has("ArrowUp") || keys.has("ArrowDown") || keys.has("ArrowLeft") || keys.has("ArrowRight") || keys.has("Space");
+
+  const isAnimating = () => simLive || dragging || followMover || hasMoveKeys();
 
   let engineWorker = null;
   if (typeof Worker === "function" && canvas) {
     try {
-      engineWorker = new Worker("./engine-worker.mjs", { type: "module" });
+      engineWorker = prewarmedWorker || new Worker("./engine-worker.mjs", { type: "module" });
+      prewarmedWorker = null;
       engineWorker.onmessage = ({ data: msg }) => {
         if (!msg) return;
         if (msg.id && pendingCalls.has(msg.id)) {
@@ -135,7 +141,9 @@ export default async function start({ app, reason, $, chip, show, parse }) {
           lastTris = msg.tris || lastTris;
           lastBvhVis = msg.bvhVisible ?? lastBvhVis;
           lastAttendedSlot = msg.attendedSlot ?? lastAttendedSlot;
-          if (Array.isArray(msg.moverPos)) lastMoverPos = msg.moverPos;
+          if (Array.isArray(msg.eye)) solvedEye = msg.eye;
+          if (Array.isArray(msg.lookTarget)) solvedTarget = msg.lookTarget;
+          if (Array.isArray(msg.universeCell)) universeCell = msg.universeCell;
           studioMod?.pushStudioTelemetry(msg);
           if (workletNode && audioOn) workletNode.port.postMessage({ kind: "spatial", pan: msg.binauralPan, gain: msg.binauralGain });
           if (!isAnimating() && hudStats) hudStats.textContent = formatHudStats("");
@@ -168,6 +176,45 @@ export default async function start({ app, reason, $, chip, show, parse }) {
     requestRender();
   }
 
+  async function cycleCameraMode(forcePreset = null) {
+    const order = ["landmark", "third", "first"];
+    camPreset = forcePreset || order[(order.indexOf(camPreset) + 1) % order.length];
+    followMover = false;
+    if (camPreset === "landmark") {
+      if (camBtn) camBtn.textContent = "Orbit";
+      const r = await callWorker("camera-focus-landmark", { target: [2.2, 3.8, 9.2], dist: 18.5, yawMilli: 460, pitchMilli: 260 });
+      if (r?.camera) { solvedEye = r.camera.eye; solvedTarget = r.camera.lookTarget; }
+      chip(statusEl, "Lawful Orbit · Near-Sphere Guarded", "good");
+    } else if (camPreset === "third") {
+      if (camBtn) camBtn.textContent = "3rd IK";
+      const r = await callWorker("camera-set-mode", { mode: 0, simClockSec });
+      if (r?.camera) { solvedEye = r.camera.eye; solvedTarget = r.camera.lookTarget; }
+      if (r?.tris) lastTris = r.tris;
+      chip(statusEl, "3rd-Person Explorer · WASD + Foot IK", "good");
+    } else {
+      if (camBtn) camBtn.textContent = "1st Eye";
+      const r = await callWorker("camera-set-mode", { mode: 1, simClockSec });
+      if (r?.camera) { solvedEye = r.camera.eye; solvedTarget = r.camera.lookTarget; }
+      if (r?.tris) lastTris = r.tris;
+      chip(statusEl, "1st-Person Possessed · Head Masked", "good");
+    }
+    await syncFallbackBuffers();
+    requestRender();
+  }
+
+  async function interactChronicle() {
+    const r = await callWorker("story-interact");
+    if (!r?.ok) return null;
+    chip(
+      statusEl,
+      r.advanced
+        ? `Chronicle -> ${r.title} · Supply ${r.supply}`
+        : `${r.title} · ${r.objective}`,
+      r.advanced ? "good" : "wait",
+    );
+    return r;
+  }
+
   const queryVerifier = async (q) => {
     if (!app) return null;
     try { return show(await app.dispatch(parse(q))); } catch { return null; }
@@ -179,7 +226,7 @@ export default async function start({ app, reason, $, chip, show, parse }) {
     if (!res) return;
     if (res.startsWith("conformant:")) {
       const lod = STREAMING_LODS[lodIdx];
-      chip(statusEl, `${lod.short} · ${lod.lossless ? `${lastKernelCount}/12 Kernels` : "UORC Stream OK"}`, "good");
+      chip(statusEl, `${lod.short} · ${lod.lossless ? `${lastKernelCount}/15 Kernels` : "UORC Stream OK"}`, "good");
     } else if (res.startsWith("refused:")) chip(statusEl, res.replace("refused:", "Refused: "), "warn");
     else chip(statusEl, res, "bad");
   }
@@ -187,24 +234,26 @@ export default async function start({ app, reason, $, chip, show, parse }) {
   async function syncFallbackBuffers() {
     if (offscreenActive || !fallbackRenderer || !engineWorker) return;
     const r = await callWorker("get-packed-buffers", { simClockSec });
-    if (r?.ok) { fallbackRenderer.uploadPackedBuffers(r.pos, r.norm, r.col, r.idx); lastTris = r.tris || 0; }
+    if (r?.ok) {
+      fallbackRenderer.uploadPackedBuffers(r.pos, r.norm, r.col, r.idx);
+      lastTris = r.tris || 0;
+      if (r.camera) { solvedEye = r.camera.eye; solvedTarget = r.camera.lookTarget; }
+    }
   }
 
   async function toggleRenderBackend(force = null) {
     renderMode = force || (renderMode === "webgl2" ? "tile" : "webgl2");
     if (renderBtn) renderBtn.textContent = renderMode === "tile" ? "Tile 16x16" : "WebGL2";
-    const pose = computeCameraPose(STREAMING_LODS[lodIdx], 0.016);
-    const r = await callWorker("set-render-mode", { mode: renderMode, eye: pose.eye, lookTarget: pose.lookTarget, simClockSec });
+    const r = await callWorker("set-render-mode", { mode: renderMode, simClockSec });
     if (hudStats) hudStats.textContent = formatHudStats("");
-    chip(statusEl, renderMode === "tile" ? `Wasm 16x16 Tile PBR (${r?.tris ?? lastTris} tris)` : `WebGL2 Hardware (${r?.tris ?? lastTris} tris)`, "good");
+    chip(statusEl, renderMode === "tile" ? `Wasm 16x16 Tile PBR (${r?.tris ?? lastTris} tris)` : `3-Pass WebGL2 HD (${r?.tris ?? lastTris} tris)`, "good");
     requestRender();
   }
 
   async function importGlbBytes(fileName, rawBytes) {
     chip(statusEl, `Importing ${fileName}…`, "wait");
-    const pose = computeCameraPose(STREAMING_LODS[lodIdx], 0.016);
     const copy = new Uint8Array(rawBytes);
-    const r = await callWorker("import-glb", { bytes: copy, eye: pose.eye, lookTarget: pose.lookTarget }, [copy.buffer]);
+    const r = await callWorker("import-glb", { bytes: copy }, [copy.buffer]);
     if (!r?.ok) { chip(statusEl, `Refused invalid .glb (${fileName})`, "warn"); return; }
     lastTris = r.tris || lastTris;
     studioMod ??= await import("./studio.mjs");
@@ -216,8 +265,7 @@ export default async function start({ app, reason, $, chip, show, parse }) {
   }
 
   async function resetImportedGlb() {
-    const pose = computeCameraPose(STREAMING_LODS[lodIdx], 0.016);
-    const r = await callWorker("reset-glb", { eye: pose.eye, lookTarget: pose.lookTarget });
+    const r = await callWorker("reset-glb");
     if (r?.tris) lastTris = r.tris;
     if (hudLod) hudLod.textContent = STREAMING_LODS[lodIdx].label;
     await syncFallbackBuffers();
@@ -228,6 +276,23 @@ export default async function start({ app, reason, $, chip, show, parse }) {
   async function executePromptIntent(text) {
     const prompt = String(text || "").trim();
     if (!prompt) return null;
+    const lower = prompt.toLowerCase();
+    if (lower.includes("lod4") || lower.includes("ultra hd")) {
+      await streamUorcToRank(4);
+      return { ok: true, slug: "stream-uorc-lod4", scoreMilli: 980, rawLogit: 42, summary: "Upgraded world to LOD4 Ultra HD Citadel & Bridge" };
+    }
+    if (lower.includes("1st") || lower.includes("first person")) {
+      await cycleCameraMode("first");
+      return { ok: true, slug: "camera-first-person", scoreMilli: 970, rawLogit: 40, summary: "Possessed Explorer in 1st-person head-masked mode" };
+    }
+    if (lower.includes("3rd") || lower.includes("third person") || lower.includes("explorer")) {
+      await cycleCameraMode("third");
+      return { ok: true, slug: "camera-third-person", scoreMilli: 970, rawLogit: 40, summary: "Possessed 22-joint Explorer in 3rd-person spring-arm mode" };
+    }
+    if (lower.includes("interact") || lower.includes("chronicle") || lower.includes("archivist")) {
+      await interactChronicle();
+      return { ok: true, slug: "chronicle-interact", scoreMilli: 960, rawLogit: 38, summary: "Evaluated Chronicle StoryAutomaton & ConservationLedger" };
+    }
     const r = await callWorker("route-prompt", { prompt });
     if (!r?.ok) { chip(statusEl, "Refused empty intent", "warn"); return r; }
     const s = r.slug;
@@ -235,7 +300,7 @@ export default async function start({ app, reason, $, chip, show, parse }) {
     else if (s === "drive-vehicle") { await focusNodePreset(6); setSimLive(true); }
     else if (s === "render-tile-wasm") await toggleRenderBackend("tile");
     else if (s === "render-webgl2") await toggleRenderBackend("webgl2");
-    else if (s === "stream-uorc-lod3") await streamUorcToRank(3);
+    else if (s === "stream-uorc-lod3") await streamUorcToRank(4);
     else if (s === "stitch-shard-sync") (await import("./stitch-mesh.mjs")).openStitchMeshModal({ callWorker, onRestoreSnapshot: restoreRawSnapshot });
     else if (s === "inspect-formal-ui") await launchStudioModal();
     else if (s === "step-xpbd-physics") { await focusNodePreset(3); setSimLive(true); }
@@ -251,6 +316,7 @@ export default async function start({ app, reason, $, chip, show, parse }) {
       onResetGlb: resetImportedGlb,
       onToggleRenderMode: () => toggleRenderBackend(),
       onRoutePrompt: executePromptIntent,
+      onInteractStory: interactChronicle,
       getRenderMode: () => renderMode,
     });
   }
@@ -261,9 +327,8 @@ export default async function start({ app, reason, $, chip, show, parse }) {
     if (lodBtn) lodBtn.textContent = `LOD: ${lod.short}`;
     if (hudLod) hudLod.textContent = lod.label;
     if (lod.rank < 2) followMover = false;
-    const pose = computeCameraPose(lod, 0.016);
     if (engineWorker) {
-      engineWorker.postMessage({ kind: "set-lod", lod, eye: pose.eye, lookTarget: pose.lookTarget, simClockSec });
+      engineWorker.postMessage({ kind: "set-lod", lod, simClockSec });
       await syncFallbackBuffers();
     }
     requestRender();
@@ -275,13 +340,27 @@ export default async function start({ app, reason, $, chip, show, parse }) {
     if (!node) return;
     activeNodeSlot = node.id;
     gazeDwellMs = 1400;
-    if (lodIdx !== 3) await setLod(3, false);
-    camMode = "orbit";
-    if (camBtn) camBtn.textContent = "Orbit";
+    if (lodIdx < 3) await setLod(3, false);
     followMover = Boolean(node.followMover);
     if (followMover || node.id === 3) setSimLive(true);
-    target = [...node.target];
-    orbitDist = node.dist;
+    if (node.possessExplorer) {
+      camPreset = "third";
+      if (camBtn) camBtn.textContent = "3rd IK";
+    } else {
+      camPreset = "landmark";
+      if (camBtn) camBtn.textContent = "Orbit";
+    }
+    const r = await callWorker("camera-focus-landmark", {
+      possessExplorer: Boolean(node.possessExplorer),
+      target: node.target,
+      dist: node.dist,
+      yawMilli: node.yawMilli ?? 620,
+      pitchMilli: node.pitchMilli ?? 350,
+      simClockSec,
+    });
+    if (r?.camera) { solvedEye = r.camera.eye; solvedTarget = r.camera.lookTarget; }
+    if (r?.tris) lastTris = r.tris;
+    await syncFallbackBuffers();
     requestRender();
     await syncVerifierBanner(node.query);
   }
@@ -293,20 +372,20 @@ export default async function start({ app, reason, $, chip, show, parse }) {
     if (lodBtn) lodBtn.textContent = `LOD: ${lod.short}`;
     if (hudLod) hudLod.textContent = lod.label;
     if (lod.rank < 2) followMover = false;
-    const pose = computeCameraPose(lod, 0.016);
     chip(statusEl, `Streaming .uorc -> ${lod.short}…`, "wait");
     if (engineWorker) {
-      const r = await callWorker("stream-uorc", { targetRank: clamped, lod, eye: pose.eye, lookTarget: pose.lookTarget, simClockSec });
+      const r = await callWorker("stream-uorc", { targetRank: clamped, lod, simClockSec });
+      if (r?.tris) lastTris = r.tris;
       await syncFallbackBuffers();
       requestRender();
-      if (r?.ok) { chip(statusEl, `UORC Wasm · ${lod.short} (${r.streamBytes}B · Σ=${r.codedChecksum})`, "good"); return r; }
+      if (r?.ok) { chip(statusEl, `UORC Wasm · ${lod.short} (${lastTris} tris · Σ=${r.codedChecksum})`, "good"); return r; }
     }
     await setLod(clamped, true);
     return null;
   }
 
   lodBtn?.addEventListener("click", () => setLod(lodIdx + 1));
-  uorcBtn?.addEventListener("click", () => streamUorcToRank((lodIdx + 1) % STREAMING_LODS.length));
+  uorcBtn?.addEventListener("click", () => streamUorcToRank(lodIdx < 4 ? 4 : 0));
   renderBtn?.addEventListener("click", () => toggleRenderBackend());
   importBtn?.addEventListener("click", () => glbFileInput?.click());
   glbFileInput?.addEventListener("change", async () => {
@@ -316,7 +395,7 @@ export default async function start({ app, reason, $, chip, show, parse }) {
   studioBtn?.addEventListener("click", launchStudioModal);
   meshBtn?.addEventListener("click", async () => (await import("./stitch-mesh.mjs")).openStitchMeshModal({ callWorker, onRestoreSnapshot: restoreRawSnapshot }));
   simBtn?.addEventListener("click", () => setSimLive(!simLive));
-  camBtn?.addEventListener("click", () => { camMode = camMode === "orbit" ? "walk" : "orbit"; camBtn.textContent = camMode === "orbit" ? "Orbit" : "Walk"; requestRender(); });
+  camBtn?.addEventListener("click", () => cycleCameraMode());
   promptForm?.addEventListener("submit", async (e) => { e.preventDefault(); await executePromptIntent(promptInput?.value); if (promptInput) promptInput.value = ""; });
   viewportEl?.addEventListener("dragover", (e) => { e.preventDefault(); viewportEl.classList.add("drag-over"); });
   viewportEl?.addEventListener("dragleave", () => viewportEl.classList.remove("drag-over"));
@@ -325,7 +404,7 @@ export default async function start({ app, reason, $, chip, show, parse }) {
   function triggerModalStrike() {
     if (!audioCtx || !audioOn) return;
     if (workletNode) { workletNode.port.postMessage({ kind: "strike", modeIndex: modalStrikeIndex++ }); return; }
-    const dist = Math.hypot(currentEye[0] + 9.0, currentEye[1] - 2.0, currentEye[2] + 4.0);
+    const dist = Math.hypot(solvedEye[0] + 9.0, solvedEye[1] - 2.0, solvedEye[2] + 4.0);
     const atten = Math.min(0.14, 0.9 / (1.0 + 0.18 * dist));
     const idx = (modalStrikeIndex++) % ACOUSTIC_SPEC.modeNumers.length;
     const freq = Math.min(1320.0, (ACOUSTIC_SPEC.fundamentalHz * ACOUSTIC_SPEC.modeNumers[idx]) / ACOUSTIC_SPEC.modeDenom);
@@ -406,14 +485,25 @@ export default async function start({ app, reason, $, chip, show, parse }) {
     const dx = e.clientX - lastX, dy = e.clientY - lastY;
     lastX = e.clientX; lastY = e.clientY;
     gazeDwellMs = Math.max(80, gazeDwellMs - 40);
-    if (camMode === "orbit") { orbitYaw -= dx * 0.0075; orbitPitch = Math.max(0.08, Math.min(1.38, orbitPitch + dy * 0.0065)); }
-    else { walkYaw -= dx * 0.0055; walkPitch = Math.max(-1.1, Math.min(1.1, walkPitch - dy * 0.0055)); }
+    pendingYaw -= dx * 0.007;
+    pendingPitch += camPreset === "first" ? -dy * 0.0055 : dy * 0.006;
     requestRender();
   });
   canvas?.addEventListener("pointerup", () => { dragging = false; });
   canvas?.addEventListener("pointercancel", () => { dragging = false; });
-  canvas?.addEventListener("wheel", (e) => { e.preventDefault(); orbitDist = Math.max(5.0, Math.min(42.0, orbitDist + e.deltaY * 0.02)); requestRender(); }, { passive: false });
-  addEventListener("keydown", (e) => { if (!/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName ?? "")) { keys.add(e.code); requestRender(); } });
+  canvas?.addEventListener("wheel", (e) => { e.preventDefault(); pendingDist += e.deltaY * 0.018; requestRender(); }, { passive: false });
+  addEventListener("keydown", (e) => {
+    if (/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName ?? "")) return;
+    if (e.code === "KeyE" && !e.repeat) { interactChronicle(); return; }
+    if (e.code === "Space") jumpQueued = true;
+    keys.add(e.code);
+    if (hasMoveKeys() && camPreset === "landmark") {
+      camPreset = "third";
+      followMover = false;
+      if (camBtn) camBtn.textContent = "3rd IK";
+    }
+    requestRender();
+  });
   addEventListener("keyup", (e) => keys.delete(e.code));
   addEventListener("resize", requestRender);
   if (typeof ResizeObserver !== "undefined" && viewportEl) new ResizeObserver(requestRender).observe(viewportEl);
@@ -422,21 +512,37 @@ export default async function start({ app, reason, $, chip, show, parse }) {
     rafId = 0;
     const dt = Math.min(0.05, Math.max(0.001, (now - prevNow) * 0.001));
     prevNow = now;
-    const stepping = simLive || followMover || (camMode === "walk" && keys.size > 0);
-    if (simLive || followMover) simClockSec += dt;
+    const intent = readMoveIntent(dt);
+    const stepping = simLive || followMover || intent.moving;
+    if (stepping) simClockSec += dt;
     if (!dragging) gazeDwellMs = Math.min(3000, gazeDwellMs + Math.round(dt * 1000));
-    const lod = STREAMING_LODS[lodIdx], { w, h } = measureCanvasPixels(), pose = computeCameraPose(lod, dt);
+    const lod = STREAMING_LODS[lodIdx], { w, h } = measureCanvasPixels();
 
     if (offscreenActive && engineWorker) {
       engineWorker.postMessage({
-        kind: "frame", width: w, height: h, dt, stepPhysics: stepping, fwd: pose.fwd, strafe: pose.strafe,
-        walkYaw, playerYaw: pose.yaw, gazedSlot: activeNodeSlot, dwellMs: gazeDwellMs,
-        angSpeedMilli: dragging ? 600 : 60, eye: pose.eye, lookTarget: pose.lookTarget, lod, simClockSec,
+        kind: "frame",
+        width: w,
+        height: h,
+        dt,
+        stepPhysics: stepping,
+        followMover,
+        fwd: intent.fwd,
+        strafe: intent.strafe,
+        speedScale: intent.speedScale,
+        jump: intent.jump,
+        deltaYaw: intent.dYaw,
+        deltaPitch: intent.dPitch,
+        deltaDist: intent.dDist,
+        gazedSlot: activeNodeSlot,
+        dwellMs: gazeDwellMs,
+        angSpeedMilli: dragging ? 600 : 60,
+        lod,
+        simClockSec,
       });
     } else if (fallbackRenderer && fallbackMod && canvas) {
       if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
       const proj = fallbackMod.mat4Perspective(Math.PI / 3.4, Math.max(0.2, w / h), 0.25, 160.0);
-      fallbackRenderer.render(fallbackMod.mat4Mul(proj, fallbackMod.mat4LookAt(pose.eye, pose.lookTarget, [0, 1, 0])), pose.eye, lod, simClockSec);
+      fallbackRenderer.render(fallbackMod.mat4Mul(proj, fallbackMod.mat4LookAt(solvedEye, solvedTarget, [0, 1, 0])), solvedEye, lod, simClockSec, solvedTarget, Math.PI / 3.4);
     }
 
     frames++;
@@ -449,6 +555,7 @@ export default async function start({ app, reason, $, chip, show, parse }) {
     if (isAnimating()) rafId = requestAnimationFrame(frame);
   }
 
+  const fmtSemiring = (s) => s.replace(/([a-z])([A-Z])/g, "$1 $2");
   const badges = [];
   if (telemetryList) {
     telemetryList.replaceChildren();
@@ -456,7 +563,7 @@ export default async function start({ app, reason, $, chip, show, parse }) {
       const li = document.createElement("li"), btn = document.createElement("button");
       btn.type = "button"; btn.className = "again";
       const lbl = document.createElement("span"); lbl.textContent = node.name;
-      const badge = document.createElement("span"); badge.className = "tag"; badge.textContent = node.semiring;
+      const badge = document.createElement("span"); badge.className = "tag good"; badge.textContent = fmtSemiring(node.semiring);
       btn.append(lbl, badge);
       btn.addEventListener("click", () => focusNodePreset(node.id));
       li.append(btn); telemetryList.append(li);
@@ -464,15 +571,19 @@ export default async function start({ app, reason, $, chip, show, parse }) {
     }
   }
 
-  const initialDims = measureCanvasPixels(), initialPose = computeCameraPose(STREAMING_LODS[lodIdx], 0.016);
+  const initialDims = measureCanvasPixels();
   if (engineWorker && canvas && typeof canvas.transferControlToOffscreen === "function") {
     try {
       const offscreen = canvas.transferControlToOffscreen();
-      const r = await callWorker("init", { canvas: offscreen, width: initialDims.w, height: initialDims.h, lod: STREAMING_LODS[lodIdx], eye: initialPose.eye, lookTarget: initialPose.lookTarget }, [offscreen]);
+      const r = await callWorker("init", { canvas: offscreen, width: initialDims.w, height: initialDims.h, lod: STREAMING_LODS[lodIdx] }, [offscreen]);
       if (r?.kind === "ready") {
         offscreenActive = true; workerBackend = r.backend || "webgl2"; isSoftwareGpu = Boolean(r.isSoftware);
-        lastTris = r.tris || 0; if (r.tensorKernels) lastKernelCount = r.tensorKernels;
+        lastTris = r.tris || 0; lastBvhVis = r.bvhVisible ?? lastBvhVis;
+        if (r.tensorKernels) lastKernelCount = r.tensorKernels;
+        if (r.camera) { solvedEye = r.camera.eye; solvedTarget = r.camera.lookTarget; }
+        if (Array.isArray(r.universeCell)) universeCell = r.universeCell;
         if (r.audioSpec) Object.assign(ACOUSTIC_SPEC, r.audioSpec);
+        if (hudStats) hudStats.textContent = formatHudStats("");
       }
     } catch { offscreenActive = false; }
   }
@@ -483,18 +594,26 @@ export default async function start({ app, reason, $, chip, show, parse }) {
     workerBackend = fallbackRenderer?.backend || "webgl2";
     isSoftwareGpu = Boolean(fallbackRenderer?.isSoftware);
     if (engineWorker) {
-      const r = await callWorker("init", { canvas: null, width: initialDims.w, height: initialDims.h, lod: STREAMING_LODS[lodIdx], eye: initialPose.eye, lookTarget: initialPose.lookTarget });
+      const r = await callWorker("init", { canvas: null, width: initialDims.w, height: initialDims.h, lod: STREAMING_LODS[lodIdx] });
       if (r?.tensorKernels) lastKernelCount = r.tensorKernels;
+      if (r?.camera) { solvedEye = r.camera.eye; solvedTarget = r.camera.lookTarget; }
+      if (Array.isArray(r.universeCell)) universeCell = r.universeCell;
       if (r?.audioSpec) Object.assign(ACOUSTIC_SPEC, r.audioSpec);
       await syncFallbackBuffers();
     }
   }
 
   const bootSnap = await restoreHashSnapshotIfPresent();
+  if (!bootSnap) chip(statusEl, `${STREAMING_LODS[lodIdx].short} · ${lastKernelCount}/15 Kernels · Lawful CCD`, "good");
   requestRender();
-  setTimeout(async () => {
+  (async () => {
+    if (!app) { if (!bootSnap) chip(statusEl, reason ? "Verifier unavailable" : "Engine offline", "bad"); return; }
+    for (let w = 0; w < 40; w++) {
+      const ex = document.getElementById("frame")?.getAttribute("examples") || "";
+      if (/^\d+\/\d+$/.test(ex)) break;
+      await new Promise((r) => setTimeout(r, 50));
+    }
     if (!bootSnap) await syncVerifierBanner("summary");
-    if (!app) return;
     for (let i = 0; i < STREAMING_LODS.length; i++) {
       await yieldTask();
       const f = parseConformantFields(await queryVerifier(`scene:lod:${i}`));
@@ -505,12 +624,11 @@ export default async function start({ app, reason, $, chip, show, parse }) {
     }
     for (const { node, badge } of badges) {
       await yieldTask();
-      const sf = parseConformantFields(await queryVerifier(node.sceneQuery));
-      if (sf) { node.target = parseTriplet(sf.pos, 10, node.target); const d = Number(sf.dist); if (d > 0) node.dist = d; node.followMover = sf.mover === "1"; }
       const kf = parseConformantFields(await queryVerifier(node.query));
-      if (kf?.semiring) node.semiring = kf.semiring;
-      badge.className = kf ? "tag good" : "tag";
-      badge.textContent = kf ? node.semiring.replace(/([a-z])([A-Z])/g, "$1 $2") : "Offline";
+      if (!kf) continue;
+      if (kf.semiring) node.semiring = kf.semiring;
+      badge.className = "tag good";
+      badge.textContent = fmtSemiring(node.semiring);
     }
     await yieldTask();
     const af = parseConformantFields(await queryVerifier("scene:acoustics"));
@@ -519,5 +637,5 @@ export default async function start({ app, reason, $, chip, show, parse }) {
       if (nums.length) { ACOUSTIC_SPEC.modeNumers = nums; ACOUSTIC_SPEC.modeDenom = Number(af.denom) || 9; }
     }
     requestRender();
-  }, 60);
+  })();
 }

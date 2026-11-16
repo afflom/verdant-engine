@@ -1095,7 +1095,7 @@ impl ArticulatedCharacter {
         let desired_sink = if grounded {
             let dl = ground_l - self.foot_position.y;
             let dr = ground_r - self.foot_position.y;
-            dl.min(dr).clamp(-q, e)
+            dl.min(dr).max(-q).min(e)
         } else {
             0.0
         };
@@ -1236,8 +1236,8 @@ impl ArticulatedCharacter {
                 let look_dir = to_sal.normalized();
                 let raw_yaw = look_dir.x.atan2(look_dir.z);
                 if raw_yaw.abs() < (1.0 + q) {
-                    let clamped_y = raw_yaw.clamp(-half - q, half + q);
-                    let clamped_p = (-look_dir.y).clamp(-half, half);
+                    let clamped_y = raw_yaw.max(-half - q).min(half + q);
+                    let clamped_p = (-look_dir.y).max(-half).min(half);
                     rotations[HumanoidJointId::Neck.index()] =
                         Quat::from_axis_angle(Vec3::UP, clamped_y * half);
                     rotations[HumanoidJointId::Head.index()] =

@@ -167,7 +167,9 @@ impl LawfulCameraRig {
                 max_meters: config.max_orbit_distance_meters,
             });
         }
-        let clamped_pitch = pitch_radians.clamp(config.min_pitch_radians, config.max_pitch_radians);
+        let clamped_pitch = pitch_radians
+            .max(config.min_pitch_radians)
+            .min(config.max_pitch_radians);
         Ok(Self {
             config,
             mode,
@@ -200,12 +202,14 @@ impl LawfulCameraRig {
         }
         if delta_pitch_radians.is_finite() {
             self.pitch_radians = (self.pitch_radians + delta_pitch_radians)
-                .clamp(self.config.min_pitch_radians, self.config.max_pitch_radians);
+                .max(self.config.min_pitch_radians)
+                .min(self.config.max_pitch_radians);
         }
         if delta_distance_meters.is_finite() {
             let min_orbit = half_f64();
             self.desired_distance_meters = (self.desired_distance_meters + delta_distance_meters)
-                .clamp(min_orbit, self.config.max_orbit_distance_meters);
+                .max(min_orbit)
+                .min(self.config.max_orbit_distance_meters);
         }
     }
 
@@ -261,7 +265,8 @@ impl LawfulCameraRig {
 
         let pitch = self
             .pitch_radians
-            .clamp(self.config.min_pitch_radians, self.config.max_pitch_radians);
+            .max(self.config.min_pitch_radians)
+            .min(self.config.max_pitch_radians);
         let (sy, cy) = self.yaw_radians.sin_cos();
         let (sp, cp) = pitch.sin_cos();
 

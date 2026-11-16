@@ -28,17 +28,15 @@ Find Rust crates, UI and peer types, CLI flags, and 60fps budgets.
         
         
           
-| verdant_tensor | propagate_hierarchy_matrices_exact, tropical_ui_box_extents, step_neuromorphic_lif_ssm_ring, infer_coded_slm_intent_logits | Twelve unified semiring kernels over uor-matmul |
+| verdant_tensor | propagate_hierarchy_matrices_exact, tropical_swept_aabb_toi_bounds, solve_two_bone_ik_exact, verify_conservation_and_reachability | Fifteen unified semiring kernels over uor-matmul |
           
-| ui | UiTree, UiWidget, SolvedUiRect | Tropical 2D/3D layout, 48px targets, and WCAG 2.2 AA verification |
+| camera & character | LawfulCameraRig, ArticulatedCharacter, TwoLevelBvh | Near-frustum guard sphere, 22-joint Foot IK, and swept crease CCD |
           
-| cybernetics | CyberneticObserverLoop, CodedSlmDirector, ContainerGrantMatrix | Mutual-attention LIF recurrence, local SLM, and FK-07 denial-wins grants |
+| universe & narrative | UniversePosition, PortalGraph, StoryAutomaton, ConservationLedger | 128m floating-origin cells, portals, and conserved story automata |
           
-| network | SignedJournalBatch, StitchFragment, SurvivalEntropyTracker | Prism ID session signing and 2-of-3 Stitch parity custody |
+| ui & cybernetics | UiTree, CyberneticObserverLoop, CodedSlmDirector, ContainerGrantMatrix | Tropical UI compliance, LIF observer, local SLM, and FK-07 grants |
           
-| gltf_io & streaming | import_glb_to_scene, transcode_glb_to_progressive_uorc, StandardSceneState | Khronos GLB authoring and stateless Wasm UORC streaming |
-          
-| physics & runtime | RigidJointConstraint, RollbackSession, WorldSnapshot | XPBD joints, 64-frame rollback, and SHA-256 world snapshots |
+| network & runtime | SignedJournalBatch, StitchFragment, RollbackSession, WorldSnapshot | Prism ID signing, 2-of-3 Stitch parity, and 64-frame rollback |
         
       
       
@@ -81,6 +79,8 @@ Click Tamper 1 Byte below to watch verdant_wasm_snapshot_decode_and_restore refu
 - verdant route-intent  routes natural-language commands through the embedded coded_gemm SLM.
         
 - verdant stitch-shard and verdant stitch-recover split and reconstruct 2-of-3 SHA-256 Stitch shards.
+        
+- verdant verify-story and verdant pack-universe audit Chronicle conservation and pack multi-sector Stitch universes.
       
     
       

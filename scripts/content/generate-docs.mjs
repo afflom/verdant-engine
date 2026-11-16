@@ -260,6 +260,7 @@ const LIVE_EMBED_MJS = `// Verdant Engine — Live Executable Documentation Harn
 
 const scriptUrl = new URL(import.meta.url);
 const wasmUrl = new URL("../verdant-wasm.wasm", scriptUrl);
+const uorcWasmUrl = new URL("../verdant-uorc.wasm", scriptUrl);
 
 function drawBanner(ctx, w, h, title, subtitle) {
   ctx.fillStyle = "#081119";
@@ -289,6 +290,19 @@ function loadWasm() {
       return ex;
     });
   return wasmPromise;
+}
+
+let uorcPromise = null;
+function loadUorcWasm() {
+  uorcPromise ??= fetch(uorcWasmUrl)
+    .then((r) => r.arrayBuffer())
+    .then((buf) => WebAssembly.instantiate(buf, {}))
+    .then(({ instance }) => {
+      const ex = instance.exports;
+      ex.verdant_wasm_init(ex.verdant_wasm_default_seed());
+      return ex;
+    });
+  return uorcPromise;
 }
 
 function renderTileViewport(ex, canvas, yaw, lodRank) {
@@ -358,17 +372,18 @@ function renderObserver(ex, canvas, slot, dwellMs) {
 function renderPhysics(ex, canvas, ticks) {
   const ctx = canvas.getContext("2d");
   if (!ctx) return;
-  for (let i = 0; i < ticks; i++) ex.verdant_wasm_step(16666, 900, 0, 0);
+  for (let i = 0; i < ticks; i++) ex.verdant_wasm_step_lawful(16666, 900, 0, 3142, 1000, 0);
   const mx = ex.verdant_wasm_mover_x(), mz = ex.verdant_wasm_mover_z(), dist = ex.verdant_wasm_mover_distance();
   const px = ex.verdant_wasm_player_x(), pz = ex.verdant_wasm_player_z();
+  const clr = ex.verdant_wasm_camera_clearance_milli() >>> 0;
   const vis = ex.verdant_wasm_bvh_visible_count(0, 10, 22, 0, -0.35, -0.93, 2.0) >>> 0;
   const pan = ex.verdant_wasm_binaural_pan(-9, 2, -4, px, 2, pz, 0, 0, -1);
   drawBanner(
     ctx,
     canvas.width,
     canvas.height,
-    \`LIVE PHYSICS + BVH + WOODWORTH AUDIO · MOVER DIST \${dist.toFixed(2)} m\`,
-    \`BVH Frustum Visible: \${vis} entities · Binaural Pan: \${pan.toFixed(3)} · ITD: \${ex.verdant_wasm_binaural_itd_micros().toFixed(1)} us\`,
+    \`LIVE LAWFUL CCD + CAMERA GUARD + AUDIO · CLEARANCE \${clr} mm\`,
+    \`Mover: \${dist.toFixed(2)} m · BVH Visible: \${vis} · Binaural Pan: \${pan.toFixed(3)} · ITD: \${ex.verdant_wasm_binaural_itd_micros().toFixed(1)} us\`,
   );
   const cx = 288, cy = 142, scale = 2.6;
   ctx.strokeStyle = "#29465e";
@@ -383,44 +398,44 @@ function renderPhysics(ex, canvas, ticks) {
   ctx.fillRect(cx + px * 2 - 5, cy + pz * 2 - 5, 10, 10);
   ctx.fillStyle = "#e2e8f0";
   ctx.fillText(\`Spline Mover (\${mx.toFixed(1)}, \${mz.toFixed(1)})\`, 18, 204);
-  ctx.fillText(\`Capsule (\${px.toFixed(1)}, \${pz.toFixed(1)})\`, 320, 204);
+  ctx.fillText(\`22-Joint Explorer (\${px.toFixed(1)}, \${pz.toFixed(1)})\`, 300, 204);
 }
 
 function renderLodStream(ex, canvas, activeRank) {
   const ctx = canvas.getContext("2d");
   if (!ctx) return;
-  const stats = [0, 1, 2, 3].map((r) => {
+  const stats = [0, 1, 2, 3, 4].map((r) => {
     ex.verdant_wasm_set_lod_rank(r);
-    const bytes = ex.verdant_wasm_snapshot_encode() >>> 0;
     const tris = Math.floor((ex.verdant_wasm_scene_idx_count() >>> 0) / 3);
     const nodes = ex.verdant_wasm_node_preset_count() >>> 0;
-    return { r, bytes, tris, nodes };
+    return { r, tris, nodes };
   });
   ex.verdant_wasm_set_lod_rank(activeRank);
   drawBanner(
     ctx,
     canvas.width,
     canvas.height,
-    \`LIVE PROGRESSIVE LOD0..LOD3 ENVELOPE · ACTIVE LOD\${activeRank}\`,
-    \`Portable UORC Stream: 5,711 B total -> monotonic SHA-256 scene refinement in Wasm\`,
+    \`LIVE PROGRESSIVE LOD0..LOD4 HD ENVELOPE · ACTIVE LOD\${activeRank}\`,
+    \`Cold Boot < 120 KiB -> Monotonic Vaulted Citadel, Bridge & 22-Joint IK Refinement\`,
   );
-  const maxBytes = Math.max(1, ...stats.map((s) => s.bytes));
+  const maxTris = Math.max(1, ...stats.map((s) => s.tris));
   stats.forEach((s, idx) => {
-    const y = 68 + idx * 36;
-    const bw = Math.max(24, Math.round((s.bytes / maxBytes) * 320));
+    const y = 62 + idx * 30;
+    const bw = Math.max(24, Math.round((s.tris / maxTris) * 320));
     ctx.fillStyle = s.r === activeRank ? "#10b981" : "#1e3a52";
-    ctx.fillRect(92, y, bw, 24);
+    ctx.fillRect(92, y, bw, 20);
     ctx.strokeStyle = s.r === activeRank ? "#6ee7b7" : "#38bdf8";
-    ctx.strokeRect(92, y, bw, 24);
+    ctx.strokeRect(92, y, bw, 20);
     ctx.fillStyle = "#f1f5f9";
-    ctx.fillText(\`LOD\${s.r}\`, 18, y + 16);
-    ctx.fillText(\`\${s.bytes} B VDNT · \${s.tris} tris · \${s.nodes} nodes\`, 102 + bw, y + 16);
+    ctx.fillText(\`LOD\${s.r}\`, 18, y + 14);
+    ctx.fillText(\`\${s.tris} tris · \${s.nodes} nodes\`, 102 + bw, y + 14);
   });
 }
 
-function renderSnapshotGuard(ex, canvas, tamper) {
+async function renderSnapshotGuard(canvas, tamper) {
   const ctx = canvas.getContext("2d");
   if (!ctx) return;
+  const ex = await loadUorcWasm();
   ex.verdant_wasm_set_lod_rank(3);
   const len = ex.verdant_wasm_snapshot_encode() >>> 0;
   const raw = new Uint8Array(len);
@@ -495,7 +510,7 @@ loadWasm()
           const act = e.target.closest("button")?.dataset.veAct;
           if (!act) return;
           if (act === "orbit") yaw += 0.45;
-          if (act === "lod") lod = (lod + 1) % 4;
+          if (act === "lod") lod = (lod + 1) % 5;
           renderTileViewport(ex, canvas, yaw, lod);
         });
       } else if (mode === "observer") {
@@ -511,17 +526,17 @@ loadWasm()
           if (act === "step") renderPhysics(ex, canvas, 15);
         });
       } else if (mode === "lod-stream") {
-        renderLodStream(ex, canvas, 3);
+        renderLodStream(ex, canvas, 4);
         fig.addEventListener("click", (e) => {
           const act = e.target.closest("button")?.dataset.veAct;
           if (act?.startsWith("lod-")) renderLodStream(ex, canvas, Number(act.slice(4)));
         });
       } else if (mode === "snapshot") {
-        renderSnapshotGuard(ex, canvas, false);
+        renderSnapshotGuard(canvas, false);
         fig.addEventListener("click", (e) => {
           const act = e.target.closest("button")?.dataset.veAct;
-          if (act === "valid") renderSnapshotGuard(ex, canvas, false);
-          if (act === "tamper") renderSnapshotGuard(ex, canvas, true);
+          if (act === "valid") renderSnapshotGuard(canvas, false);
+          if (act === "tamper") renderSnapshotGuard(canvas, true);
         });
       } else if (mode === "semirings") {
         renderSemirings(ex, canvas, "csm");
@@ -601,14 +616,14 @@ const PAGES = [
         { label: "Getting started", sub: "Run a 3D world in five minutes", x: 1, y: 0, href: "./getting-started/" },
         { label: "Authoring & UI", sub: "GLB import, XPBD, and WCAG UI", x: 1, y: 1, href: "./guides/custom-game-world/" },
         { label: "API reference", sub: "Crates, rollback, and CLI commands", x: 0, y: 0, href: "./reference/engine-api/" },
-        { label: "Tensor & Neuro", sub: "12 semiring kernels and LIF/SLM", x: 0, y: 1, href: "./explanation/tensor-and-uorc-streaming/" },
+        { label: "Tensor & Neuro", sub: "15 semiring kernels and LIF/SLM", x: 0, y: 1, href: "./explanation/tensor-and-uorc-streaming/" },
       ],
     },
     body: `
       <h2>Choose your path by role</h2>
-      <p>Verdant Engine is a universal 3D game and interface engine written in Rust and WebAssembly.</p>
-      <p>Every pass runs on scene worlds, bounding volume hierarchies, XPBD physics, WGSL shaders, glTF 2.0, and UORC streaming.</p>
-      <p>It also verifies 2D and 3D UI compliance, local SLM commands, and Stitch peer shards.</p>
+      <p>Verdant Engine is a lawful, high-definition 3D game, story, and interface engine in Rust and WebAssembly.</p>
+      <p>Every pass enforces solid two-level BVH collision, camera near-plane guard spheres, 22-joint Foot IK characters, and three-pass PBR shadows.</p>
+      <p>It also scales across floating-origin universe cells, conservation-verified Chronicles, formal UI proofs, and Stitch peer shards.</p>
       <div data-content="cast"></div>
       <h2>Live WebAssembly 16x16 software tile viewport</h2>
       <p>Every page in these docs runs <code>site/verdant-wasm.wasm</code> live so you can test the engine while reading.</p>
@@ -620,14 +635,14 @@ const PAGES = [
         summaryTitle: "Engine layer table",
         headers: ["Layer", "Crate or path", "Core responsibilities"],
         rows: [
-          ["4 · Browser Studio", "<code>site/</code>, <code>crates/verdant-wasm</code>", "Zero-copy WebGL2 and 16x16 tile PBR, LIF/SLM, OPFS, and Stitch mesh"],
-          ["3 · Engine Core", "<code>crates/verdant-core</code>, <code>crates/verdant-cli</code>", "ECS, BVH, GLB import, XPBD joints, formal UI, and 64-frame rollback"],
-          ["2 · Tensor Substrate", "<code>crates/verdant-tensor</code>", "Twelve unified semiring kernels and three zero-decode codec tiers"],
+          ["4 · Browser Studio", "<code>site/</code>, <code>crates/verdant-wasm</code>", "3-pass WebGL2 CSM/GGX/ACES and 16x16 tile PBR, LIF/SLM, OPFS, and Stitch"],
+          ["3 · Engine Core", "<code>crates/verdant-core</code>, <code>crates/verdant-cli</code>", "TwoLevelBvh CCD, LawfulCameraRig, 22-joint IK, UniversePosition, and StoryAutomaton"],
+          ["2 · Tensor Substrate", "<code>crates/verdant-tensor</code>", "Fifteen unified semiring kernels and three zero-decode codec tiers"],
           ["1 · Prism Model", "<code>app/src/*.lex.tex</code>", "Constructive Lean proofs compiled into <code>prism_kernel.rs</code>"],
         ],
         buttons: [
           ["orbit", "Orbit +25 deg"],
-          ["lod", "Cycle LOD0..LOD3"],
+          ["lod", "Cycle LOD0..LOD4"],
         ],
       })}
       <h2>Documentation map</h2>
@@ -636,7 +651,7 @@ const PAGES = [
         <li><a href="./guides/custom-game-world/">Author scenes, UI compliance, and spatial audio</a> covers <code>.glb</code> import, XPBD joints, formal UI checks, and occluded sound.</li>
         <li><a href="./guides/progressive-uorc-streaming/">Stream zero-decode scenes and Stitch shards</a> shows how <code>uorc_decompress</code>, <code>coded_gemm</code>, and Stitch parity shards run in WebAssembly.</li>
         <li><a href="./reference/engine-api/">Verdant Engine API reference</a> lists crates, types, rollback sessions, CLI subcommands, and 60fps budgets.</li>
-        <li><a href="./explanation/tensor-and-uorc-streaming/">Unified semiring tensor core and neuromorphic loop</a> explains all twelve semiring kernels, LIF recurrence, and embedded SLM routing.</li>
+        <li><a href="./explanation/tensor-and-uorc-streaming/">Unified semiring tensor core and neuromorphic loop</a> explains all fifteen semiring kernels, LIF recurrence, and embedded SLM routing.</li>
       </ul>
     `,
     next: { href: "getting-started/", label: "Build your first 3D world" },
@@ -800,6 +815,7 @@ let diegetic_bvh = UiTree::build_diegetic_bvh(&amp;rects);</code></pre>
           ["lod-1", "Inspect LOD1"],
           ["lod-2", "Inspect LOD2"],
           ["lod-3", "Inspect LOD3"],
+          ["lod-4", "Inspect LOD4 HD"],
         ],
       })}
       <h2>Shard worlds with Foundry Prism ID and Stitch parity</h2>
@@ -841,12 +857,11 @@ let recovered = recover_bytes_from_stitch_pair(&amp;a, &amp;parity)?;</code></pr
           <tr><th>Module</th><th>Primary types and functions</th><th>Purpose</th></tr>
         </thead>
         <tbody>
-          <tr><td><code>verdant_tensor</code></td><td><code>propagate_hierarchy_matrices_exact</code>, <code>tropical_ui_box_extents</code>, <code>step_neuromorphic_lif_ssm_ring</code>, <code>infer_coded_slm_intent_logits</code></td><td>Twelve unified semiring kernels over <code>uor-matmul</code></td></tr>
-          <tr><td><code>ui</code></td><td><code>UiTree</code>, <code>UiWidget</code>, <code>SolvedUiRect</code></td><td>Tropical 2D/3D layout, 48px targets, and WCAG 2.2 AA verification</td></tr>
-          <tr><td><code>cybernetics</code></td><td><code>CyberneticObserverLoop</code>, <code>CodedSlmDirector</code>, <code>ContainerGrantMatrix</code></td><td>Mutual-attention LIF recurrence, local SLM, and FK-07 denial-wins grants</td></tr>
-          <tr><td><code>network</code></td><td><code>SignedJournalBatch</code>, <code>StitchFragment</code>, <code>SurvivalEntropyTracker</code></td><td>Prism ID session signing and 2-of-3 Stitch parity custody</td></tr>
-          <tr><td><code>gltf_io</code> &amp; <code>streaming</code></td><td><code>import_glb_to_scene</code>, <code>transcode_glb_to_progressive_uorc</code>, <code>StandardSceneState</code></td><td>Khronos GLB authoring and stateless Wasm UORC streaming</td></tr>
-          <tr><td><code>physics</code> &amp; <code>runtime</code></td><td><code>RigidJointConstraint</code>, <code>RollbackSession</code>, <code>WorldSnapshot</code></td><td>XPBD joints, 64-frame rollback, and SHA-256 world snapshots</td></tr>
+          <tr><td><code>verdant_tensor</code></td><td><code>propagate_hierarchy_matrices_exact</code>, <code>tropical_swept_aabb_toi_bounds</code>, <code>solve_two_bone_ik_exact</code>, <code>verify_conservation_and_reachability</code></td><td>Fifteen unified semiring kernels over <code>uor-matmul</code></td></tr>
+          <tr><td><code>camera</code> &amp; <code>character</code></td><td><code>LawfulCameraRig</code>, <code>ArticulatedCharacter</code>, <code>TwoLevelBvh</code></td><td>Near-frustum guard sphere, 22-joint Foot IK, and swept crease CCD</td></tr>
+          <tr><td><code>universe</code> &amp; <code>narrative</code></td><td><code>UniversePosition</code>, <code>PortalGraph</code>, <code>StoryAutomaton</code>, <code>ConservationLedger</code></td><td>128m floating-origin cells, portals, and conserved story automata</td></tr>
+          <tr><td><code>ui</code> &amp; <code>cybernetics</code></td><td><code>UiTree</code>, <code>CyberneticObserverLoop</code>, <code>CodedSlmDirector</code>, <code>ContainerGrantMatrix</code></td><td>Tropical UI compliance, LIF observer, local SLM, and FK-07 grants</td></tr>
+          <tr><td><code>network</code> &amp; <code>runtime</code></td><td><code>SignedJournalBatch</code>, <code>StitchFragment</code>, <code>RollbackSession</code>, <code>WorldSnapshot</code></td><td>Prism ID signing, 2-of-3 Stitch parity, and 64-frame rollback</td></tr>
         </tbody>
       </table>
       <h2>Test live SHA-256 snapshot verification in WebAssembly</h2>
@@ -874,6 +889,7 @@ let recovered = recover_bytes_from_stitch_pair(&amp;a, &amp;parity)?;</code></pr
         <li><code>verdant verify-ui [width] [height]</code> proves 2D and 3D widget touch bounds, WCAG contrast, and focus closure.</li>
         <li><code>verdant route-intent &lt;prompt&gt;</code> routes natural-language commands through the embedded <code>coded_gemm</code> SLM.</li>
         <li><code>verdant stitch-shard</code> and <code>verdant stitch-recover</code> split and reconstruct 2-of-3 SHA-256 Stitch shards.</li>
+        <li><code>verdant verify-story</code> and <code>verdant pack-universe</code> audit Chronicle conservation and pack multi-sector Stitch universes.</li>
       </ul>
     `,
     prev: { href: "guides/progressive-uorc-streaming/", label: "Stream zero-decode scenes and Stitch shards" },
@@ -882,21 +898,21 @@ let recovered = recover_bytes_from_stitch_pair(&amp;a, &amp;parity)?;</code></pr
   {
     rel: "docs/explanation/tensor-and-uorc-streaming/index.html",
     title: "Unified semiring tensor core and neuromorphic loop",
-    summary: "See how twelve exact math kernels run 3D views, UI, and peer worlds.",
+    summary: "See how fifteen exact math kernels run lawful 3D worlds, IK rigs, and stories.",
     diataxis: "explanation",
     journey: "evaluate",
     audience: "vera",
     figure: {
       kind: "bars",
-      title: "Exact accumulator bit widths across all twelve unified tensor kernels",
+      title: "Exact accumulator bit widths across all fifteen unified tensor kernels",
       caption: "Every Prism-certified kernel in Tensor.lex.tex reserves 64 to 128 exact accumulator bits so contractions never drift.",
       unit: "bits",
       bound: { value: 64, label: "Minimum exact bound (64 bits)" },
       rows: [
         { label: "Linear (+,*) · transforms & PBR (k0,3,6)", value: 128, note: "96..128 bits" },
-        { label: "Linear (+,*) · LBS & CSM (k1,k4)", value: 128, note: "128 bits" },
+        { label: "Linear (+,*) · LBS, CSM & IK (k1,4,13)", value: 128, note: "96..128 bits" },
         { label: "Tropical (max,+) · cull, GJK, UI (k2,9)", value: 64, note: "64 bits" },
-        { label: "Tropical (min,+) · NavMesh/focus (k7)", value: 64, note: "64 bits" },
+        { label: "Tropical (min,+) · nav, CCD, story (k7,12,14)", value: 64, note: "64 bits" },
         { label: "Audio Q15 · FIR & Hadamard FDN (k5)", value: 128, note: "128 bits" },
         { label: "LIF/SSM · mutual observer (k10)", value: 64, note: "64 bits" },
         { label: "Coded zero-decode · UORC & SLM (k8,11)", value: 128, note: "128 bits" },
@@ -905,17 +921,17 @@ let recovered = recover_bytes_from_stitch_pair(&amp;a, &amp;parity)?;</code></pr
     body: `
       <h2>Why Verdant Engine distills every pass to semiring tensor logic</h2>
       <p>Conditional browser GPU compute APIs are absent on many mobile browsers, embedded WebViews, and hardened clients.</p>
-      <p>Instead of maintaining divergent code paths, <code>Tensor.lex.tex</code> models twelve unified semiring kernels executed over <code>uor-matmul</code>.</p>
+      <p>Instead of maintaining divergent code paths, <code>Tensor.lex.tex</code> models fifteen unified semiring kernels executed over <code>uor-matmul</code>.</p>
       ${liveWasmFigure({
         id: "fig-live-semirings",
         mode: "semirings",
-        label: "Live Prism 12-kernel telemetry plotting cascaded shadow splits and modal bar harmonics from verdant-wasm",
+        label: "Live Prism 15-kernel telemetry plotting cascaded shadow splits and modal bar harmonics from verdant-wasm",
         caption: "Live CSM shadow cascade splits, Sabine RT60, and Euler-Bernoulli modes queried from verdant-wasm.",
-        summaryTitle: "Twelve unified semiring kernels",
+        summaryTitle: "Fifteen unified semiring kernels",
         headers: ["Kernel group", "Algebra", "Engine subsystems"],
         rows: [
-          ["<code>k0, k1, k3, k4, k6</code>", "Linear exact <code>(+, *)</code>", "Hierarchy, LBS skinning, 16x16 tile PBR, CSM, and Delassus joints"],
-          ["<code>k2, k7, k9</code>", "Tropical <code>(max, +)</code> / <code>(min, +)</code>", "Frustum culling, GJK support, NavMesh closure, and formal UI"],
+          ["<code>k0, k1, k3, k4, k6, k13</code>", "Linear exact <code>(+, *)</code>", "Hierarchy, LBS skinning, 16x16 tile PBR, CSM, Delassus, and Two-Bone IK"],
+          ["<code>k2, k7, k9, k12, k14</code>", "Tropical <code>(max, +)</code> / <code>(min, +)</code>", "Frustum cull, NavMesh, formal UI, swept BLAS CCD, and Chronicle closure"],
           ["<code>k5, k10</code>", "Quantized integer rings", "Modal FIR, Hadamard FDN reverb, and Q15 LIF/SSM mutual attention"],
           ["<code>k8, k11</code>", "<code>uor_matmul::codec</code> zero-decode", "Compressed UORC streaming and embedded <code>coded_gemm</code> SLM"],
         ],
@@ -949,7 +965,7 @@ for (const page of PAGES) {
 const llmsLines = [
   "# Verdant Engine",
   "",
-  "> Universal 3D browser and WebAssembly game and interface engine in Rust (`crates/verdant-tensor`, `crates/verdant-core`, `crates/verdant-wasm`, `crates/verdant-cli`) mechanized with Prism, twelve unified `uor-matmul` semiring kernels, native WebAssembly `uorc_decompress` + `uor_matmul::codec` zero-decode streaming, Khronos `.glb` scene import and `.glb -> .uorc` transcoding, formal 2D/3D UI compliance, second-order neuromorphic LIF/SSM attention, embedded `coded_gemm` SLM intent routing, and Foundry Prism ID + `afflom/stitch` 2-of-3 parity multiplayer.",
+  "> Lawful high-definition 3D browser and WebAssembly game, story, and interface engine in Rust (`crates/verdant-tensor`, `crates/verdant-core`, `crates/verdant-wasm`, `crates/verdant-cli`) mechanized with Prism, fifteen unified `uor-matmul` semiring kernels, `TwoLevelBvh` swept CCD + crease projection, `LawfulCameraRig` near-frustum guard spheres, 3-pass WebGL2 CSM/GGX/ACES + `16x16` tile PBR, 22-joint LBS/Foot-IK characters, `128m` floating-origin `UniversePosition` portals, conservation-verified `StoryAutomaton` Chronicles, formal 2D/3D UI compliance, LIF/SLM direction, and Foundry Prism ID + `afflom/stitch` 2-of-3 parity custody.",
   "",
   "## Documentation",
   "",

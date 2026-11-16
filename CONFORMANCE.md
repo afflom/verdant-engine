@@ -50,6 +50,8 @@ model does not sanction.
 | `VE-26` | `build` | Lawful spring-arm and first-person camera rigs sweep an exact near-frustum diagonal guard sphere against TwoLevelBvh and terrain so the near clip plane never slices through walls or floors and refuse invalid frusta |
 | `VE-27` | `build` | High-definition vaulted Citadel halls, parabolic stone arch bridges, sculpted multi-octave terrain, and canopy clusters scale monotonically from LOD0 to LOD4, pass Khronos glTF 2.0 validation, and admit lawful portal and stair traversal |
 | `VE-28` | `build` | Twenty-two-joint articulated humanoid characters deform via normalized four-joint linear-blend skinning and morph targets, adapt to stairs via analytical two-bone Foot IK, mask head geometry in first-person possession, and bind external GLB meshes |
+| `VE-29` | `build` | Floating-origin UniversePosition cell coordinates wrap local offsets into [-64m, +64m)^3 with sub-millimeter camera-relative f32 precision at astronomical sector indices, traverse momentum-preserving PortalGraph arches, and pack multi-sector Stitch universes |
+| `VE-30` | `build` | StoryAutomaton and ConservationLedger verify tropical reachability and exact integer resource conservation across NPC dialogues, SLM proposals, and CLI audits and refuse deadlocked graphs, item duplication or underflow, out-of-range guards, and invalid universe portals |
 
 ## fidelity
 

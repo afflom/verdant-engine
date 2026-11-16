@@ -223,7 +223,7 @@ pub fn solve_two_bone_ik_exact(
 
     let min_reach = (upper_len - lower_len).abs() + eps;
     let max_reach = (upper_len + lower_len - eps).max(min_reach);
-    let clamped_dist = raw_dist.clamp(min_reach, max_reach);
+    let clamped_dist = raw_dist.max(min_reach).min(max_reach);
 
     let fwd = if raw_dist > eps {
         [dx / raw_dist, dy / raw_dist, dz / raw_dist]

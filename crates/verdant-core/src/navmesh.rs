@@ -52,6 +52,43 @@ fn quantized_vertex_key(v: Vec3, scale: f64) -> (i64, i64, i64) {
 }
 
 impl NavMesh {
+    /// Counts triangles satisfying `prism_kernel::navTriangleWalkable` without allocating full edge adjacency.
+    #[must_use]
+    pub fn count_walkable_triangles(mesh: &ProceduralMesh) -> usize {
+        let scale = crate::prism_kernel::skinWeightScale().unwrap_or(1).max(1) as f64;
+        let mut count = 0usize;
+        for tri in mesh.indices.chunks_exact(DIM_SPATIAL) {
+            let i0 = tri[0] as usize;
+            let i1 = tri[1] as usize;
+            let i2 = tri[1 + 1] as usize;
+            if i0 >= mesh.positions.len()
+                || i1 >= mesh.positions.len()
+                || i2 >= mesh.positions.len()
+            {
+                continue;
+            }
+            let p0 = mesh.positions[i0];
+            let p1 = mesh.positions[i1];
+            let p2 = mesh.positions[i2];
+            let v0 = Vec3::new(f64::from(p0[0]), f64::from(p0[1]), f64::from(p0[1 + 1]));
+            let v1 = Vec3::new(f64::from(p1[0]), f64::from(p1[1]), f64::from(p1[1 + 1]));
+            let v2 = Vec3::new(f64::from(p2[0]), f64::from(p2[1]), f64::from(p2[1 + 1]));
+            let cross = (v1 - v0).cross(v2 - v0);
+            if cross.length() <= geometric_epsilon() {
+                continue;
+            }
+            let normal = cross.normalized();
+            if normal.y <= 0.0 {
+                continue;
+            }
+            let normal_y_milli = (normal.y.min(1.0) * scale).round() as u64;
+            if crate::prism_kernel::navTriangleWalkable(normal_y_milli).unwrap_or(false) {
+                count += 1;
+            }
+        }
+        count
+    }
+
     /// Extracts walkable triangles via `prism_kernel::navTriangleWalkable` and builds edge adjacency.
     pub fn from_mesh(mesh: &ProceduralMesh) -> Result<Self, NavigationError> {
         let scale =

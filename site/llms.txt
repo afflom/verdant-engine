@@ -1,6 +1,6 @@
 # Verdant Engine
 
-> Universal 3D browser and WebAssembly game and interface engine in Rust (`crates/verdant-tensor`, `crates/verdant-core`, `crates/verdant-wasm`, `crates/verdant-cli`) mechanized with Prism, twelve unified `uor-matmul` semiring kernels, native WebAssembly `uorc_decompress` + `uor_matmul::codec` zero-decode streaming, Khronos `.glb` scene import and `.glb -> .uorc` transcoding, formal 2D/3D UI compliance, second-order neuromorphic LIF/SSM attention, embedded `coded_gemm` SLM intent routing, and Foundry Prism ID + `afflom/stitch` 2-of-3 parity multiplayer.
+> Lawful high-definition 3D browser and WebAssembly game, story, and interface engine in Rust (`crates/verdant-tensor`, `crates/verdant-core`, `crates/verdant-wasm`, `crates/verdant-cli`) mechanized with Prism, fifteen unified `uor-matmul` semiring kernels, `TwoLevelBvh` swept CCD + crease projection, `LawfulCameraRig` near-frustum guard spheres, 3-pass WebGL2 CSM/GGX/ACES + `16x16` tile PBR, 22-joint LBS/Foot-IK characters, `128m` floating-origin `UniversePosition` portals, conservation-verified `StoryAutomaton` Chronicles, formal 2D/3D UI compliance, LIF/SLM direction, and Foundry Prism ID + `afflom/stitch` 2-of-3 parity custody.
 
 ## Documentation
 
@@ -9,7 +9,7 @@
 - [Author scenes, UI compliance, and spatial audio](https://afflom.github.io/verdant-engine/docs/guides/custom-game-world/): Import GLB scenes, verify 2D and 3D UI compliance, and step physics with occluded sound.
 - [Stream zero-decode scenes and Stitch shards](https://afflom.github.io/verdant-engine/docs/guides/progressive-uorc-streaming/): Decode UORC streams in WebAssembly and shard snapshots across Stitch peers.
 - [Verdant Engine API reference](https://afflom.github.io/verdant-engine/docs/reference/engine-api/): Find Rust crates, UI and peer types, CLI flags, and 60fps budgets.
-- [Unified semiring tensor core and neuromorphic loop](https://afflom.github.io/verdant-engine/docs/explanation/tensor-and-uorc-streaming/): See how twelve exact math kernels run 3D views, UI, and peer worlds.
+- [Unified semiring tensor core and neuromorphic loop](https://afflom.github.io/verdant-engine/docs/explanation/tensor-and-uorc-streaming/): See how fifteen exact math kernels run lawful 3D worlds, IK rigs, and stories.
 
 ## Markdown twins
 

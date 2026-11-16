@@ -14,6 +14,7 @@ use verdant_core::gltf_io::{
     export_scene_to_glb, import_glb_to_scene, transcode_glb_to_progressive_uorc, validate_glb_bytes,
 };
 use verdant_core::math::Vec3;
+use verdant_core::narrative::canonical_citadel_chronicle_automaton;
 use verdant_core::navmesh::NavMesh;
 use verdant_core::network::{
     recover_bytes_from_stitch_pair, shard_bytes_to_stitch_fragments, StitchFragment,
@@ -33,6 +34,7 @@ use verdant_core::streaming::{
     verify_progressive_uorc_stream, StandardSceneState,
 };
 use verdant_core::ui::UiTree;
+use verdant_core::universe::UniverseManager;
 
 /// Refusal returned when a `verdant` CLI subcommand receives invalid arguments, unreadable paths,
 /// or a non-conformant asset/shader/snapshot/UORC payload.
@@ -90,6 +92,8 @@ verdant <subcommand> [options]
   route-intent <prompt>                       Route natural-language intent via embedded coded_gemm SLM
   stitch-shard <in.uorc> <out_dir>            Split object into 3 Stitch (A, B, parity) SHA-256 shards
   stitch-recover <frag1.stch> <frag2.stch> <out> Recover exact object from any 2 distinct Stitch shards
+  verify-story [seed]                         Verify StoryAutomaton tropical reachability & conservation
+  pack-universe <out_dir> [seed]              Pack 3-sector floating-origin universe & Stitch shards
   benchmark [frames]                          Run headless 60fps physics + BVH + GJK + NavMesh benchmark";
 
 fn pk(command: &str, res: Result<u64, prism_kernel::ComputeError>) -> Result<u64, CliCommandError> {
@@ -701,6 +705,97 @@ pub fn run_cli(args: &[String]) -> Result<String, CliCommandError> {
                 frag1.index,
                 frag2.index,
                 recovered.len()
+            ))
+        }
+        "verify-story" => {
+            let seed = match args.get(1) {
+                Some(raw) => raw
+                    .parse::<u64>()
+                    .map_err(|_| CliCommandError::InvalidUsage {
+                        usage: format!("invalid u64 seed `{raw}`"),
+                    })?,
+                None => pk("verify-story", prism_kernel::wasmDefaultSeed())?,
+            };
+            let (automaton, report) = canonical_citadel_chronicle_automaton(seed).map_err(|e| {
+                CliCommandError::ValidationRejected {
+                    command: "verify-story".to_string(),
+                    diagnostic: e.to_string(),
+                }
+            })?;
+            Ok(format!(
+                "STORY AUTOMATON OK: states={} edges={} live_reachable={} min_cost_milli={} supply={}",
+                automaton.nodes.len(),
+                automaton.edges.len(),
+                report.reachable_live_states,
+                report.min_cost_to_goal_milli,
+                automaton.ledger.total_supply()
+            ))
+        }
+        "pack-universe" => {
+            let Some(out_dir) = args.get(1) else {
+                return Err(CliCommandError::InvalidUsage {
+                    usage: "verdant pack-universe <out_dir> [seed]".to_string(),
+                });
+            };
+            let idx2 = prism_kernel::sTwo() as usize;
+            let seed = match args.get(idx2) {
+                Some(raw) => raw
+                    .parse::<u64>()
+                    .map_err(|_| CliCommandError::InvalidUsage {
+                        usage: format!("invalid u64 seed `{raw}`"),
+                    })?,
+                None => pk("pack-universe", prism_kernel::wasmDefaultSeed())?,
+            };
+            let universe = UniverseManager::canonical_citadel_universe(seed).map_err(|e| {
+                CliCommandError::ValidationRejected {
+                    command: "pack-universe".to_string(),
+                    diagnostic: e.to_string(),
+                }
+            })?;
+            std::fs::create_dir_all(out_dir).map_err(|e| CliCommandError::IoFailure {
+                path: out_dir.clone(),
+                reason: e.to_string(),
+            })?;
+            let manifest_bytes = universe.to_manifest_json_bytes().map_err(|e| {
+                CliCommandError::ValidationRejected {
+                    command: "pack-universe".to_string(),
+                    diagnostic: e.to_string(),
+                }
+            })?;
+            let manifest_path = Path::new(out_dir).join("universe-manifest.json");
+            std::fs::write(&manifest_path, &manifest_bytes).map_err(|e| {
+                CliCommandError::IoFailure {
+                    path: manifest_path.to_string_lossy().into_owned(),
+                    reason: e.to_string(),
+                }
+            })?;
+            let uorc_stream = pack_portable_progressive_uorc_stream(seed).map_err(|e| {
+                CliCommandError::ValidationRejected {
+                    command: "pack-universe".to_string(),
+                    diagnostic: e.to_string(),
+                }
+            })?;
+            let frags = shard_bytes_to_stitch_fragments(&uorc_stream).map_err(|e| {
+                CliCommandError::ValidationRejected {
+                    command: "pack-universe".to_string(),
+                    diagnostic: e.to_string(),
+                }
+            })?;
+            for frag in &frags {
+                let fp = Path::new(out_dir).join(format!("sector_0_0_0_shard_{}.stch", frag.index));
+                std::fs::write(&fp, frag.encode_wire()).map_err(|e| {
+                    CliCommandError::IoFailure {
+                        path: fp.to_string_lossy().into_owned(),
+                        reason: e.to_string(),
+                    }
+                })?;
+            }
+            Ok(format!(
+                "UNIVERSE PACKED OK: sectors={} portals={} uorc_bytes={} stitch_shards={}",
+                universe.sectors.len(),
+                universe.portal_graph.portals.len(),
+                uorc_stream.len(),
+                frags.len()
             ))
         }
         other => Err(CliCommandError::InvalidUsage {

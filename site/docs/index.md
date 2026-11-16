@@ -16,15 +16,15 @@ Build verified 3D games, compliant interfaces, and neural worlds for Rust and th
 
       
 
-Verdant Engine is a universal 3D game and interface engine written in Rust and WebAssembly.
+Verdant Engine is a lawful, high-definition 3D game, story, and interface engine in Rust and WebAssembly.
 
       
 
-Every pass runs on scene worlds, bounding volume hierarchies, XPBD physics, WGSL shaders, glTF 2.0, and UORC streaming.
+Every pass enforces solid two-level BVH collision, camera near-plane guard spheres, 22-joint Foot IK characters, and three-pass PBR shadows.
 
       
 
-It also verifies 2D and 3D UI compliance, local SLM commands, and Stitch peer shards.
+It also scales across floating-origin universe cells, conservation-verified Chronicles, formal UI proofs, and Stitch peer shards.
 
       
 - KaiGame developerA runnable 3D game world with ECS, XPBD physics, neuromorphic attention, spatial audio, and a starter template.
@@ -46,7 +46,7 @@ Every page in these docs runs site/verdant-wasm.wasm live so you can test the en
 
   
     
-    Orbit +25 degCycle LOD0..LOD3
+    Orbit +25 degCycle LOD0..LOD4
   
   Live 16x16 software tile PBR render executed directly by verdant-wasm without conditional GPU flags.
   Engine layer table
@@ -54,10 +54,10 @@ Every page in these docs runs site/verdant-wasm.wasm live so you can test the en
       
 | Layer | Crate or path | Core responsibilities |
       
-| 4 · Browser Studio | site/, crates/verdant-wasm | Zero-copy WebGL2 and 16x16 tile PBR, LIF/SLM, OPFS, and Stitch mesh |
+| 4 · Browser Studio | site/, crates/verdant-wasm | 3-pass WebGL2 CSM/GGX/ACES and 16x16 tile PBR, LIF/SLM, OPFS, and Stitch |
 | --- | --- | --- |
-| 3 · Engine Core | crates/verdant-core, crates/verdant-cli | ECS, BVH, GLB import, XPBD joints, formal UI, and 64-frame rollback |
-| 2 · Tensor Substrate | crates/verdant-tensor | Twelve unified semiring kernels and three zero-decode codec tiers |
+| 3 · Engine Core | crates/verdant-core, crates/verdant-cli | TwoLevelBvh CCD, LawfulCameraRig, 22-joint IK, UniversePosition, and StoryAutomaton |
+| 2 · Tensor Substrate | crates/verdant-tensor | Fifteen unified semiring kernels and three zero-decode codec tiers |
 | --- | --- | --- |
 | 1 · Prism Model | app/src/*.lex.tex | Constructive Lean proofs compiled into prism_kernel.rs |
     
@@ -77,7 +77,7 @@ Every page in these docs runs site/verdant-wasm.wasm live so you can test the en
         
 - Verdant Engine API reference lists crates, types, rollback sessions, CLI subcommands, and 60fps budgets.
         
-- Unified semiring tensor core and neuromorphic loop explains all twelve semiring kernels, LIF recurrence, and embedded SLM routing.
+- Unified semiring tensor core and neuromorphic loop explains all fifteen semiring kernels, LIF recurrence, and embedded SLM routing.
       
     
       

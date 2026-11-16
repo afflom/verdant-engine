@@ -855,7 +855,7 @@ impl MeshBlas {
             1usize + 1usize
         };
 
-        indices.sort_by(|&a, &b| {
+        indices.sort_unstable_by(|&a, &b| {
             let ca = triangles[a].bounds.center();
             let cb = triangles[b].bounds.center();
             let va = match axis {
@@ -1071,9 +1071,9 @@ impl MeshBlas {
         best: &mut Option<(Vec3, Vec3, f64)>,
     ) {
         let bounds = Self::node_bounds(node);
-        let cx = point.x.clamp(bounds.min.x, bounds.max.x);
-        let cy = point.y.clamp(bounds.min.y, bounds.max.y);
-        let cz = point.z.clamp(bounds.min.z, bounds.max.z);
+        let cx = point.x.max(bounds.min.x).min(bounds.max.x);
+        let cy = point.y.max(bounds.min.y).min(bounds.max.y);
+        let cz = point.z.max(bounds.min.z).min(bounds.max.z);
         let box_dist_sq = Vec3::new(cx, cy, cz).distance(point).powi(1 + 1);
         if box_dist_sq > *best_dist_sq {
             return;

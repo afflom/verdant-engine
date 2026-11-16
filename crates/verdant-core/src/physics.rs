@@ -9,9 +9,11 @@ use serde::{Deserialize, Serialize};
 use crate::collision::SweptSphereHit;
 use crate::ecs::{BoundingVolumeHierarchy, TwoLevelBvh};
 use crate::error::PhysicsStepError;
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-wasm-decode"))]
+use crate::math::DIM_SPATIAL;
 use crate::math::{
     geometric_epsilon, half_f64, pow10_u64, three_u32, two_f64, Aabb, Quat, Ray, Vec3,
-    DIM_HOMOGENEOUS, DIM_SPATIAL,
+    DIM_HOMOGENEOUS,
 };
 use crate::streaming::{terrain_height_with_params, PhysicalEnvironment, TerrainReliefParams};
 
@@ -111,7 +113,9 @@ impl RigidBody {
     #[must_use]
     pub fn submerged_volume_m3(&self, water_level_meters: f64) -> f64 {
         let bottom = self.position.y - self.radius_meters;
-        let depth = (water_level_meters - bottom).clamp(0.0, two_f64() * self.radius_meters);
+        let depth = (water_level_meters - bottom)
+            .max(0.0)
+            .min(two_f64() * self.radius_meters);
         if depth <= 0.0 {
             return 0.0;
         }
@@ -556,7 +560,8 @@ impl PhysicsWorld {
 
             let sub_vol = body.submerged_volume_m3(water_y);
             let sub_depth = (water_y - (body.position.y - body.radius_meters))
-                .clamp(0.0, two * body.radius_meters);
+                .max(0.0)
+                .min(two * body.radius_meters);
             body.submerged_fraction = sub_depth / (two * body.radius_meters);
 
             // Archimedes upward buoyancy force `F_b = rho_fluid * g * V_submerged`:
@@ -624,6 +629,7 @@ impl PhysicsWorld {
         }
 
         // Solve bilateral XPBD / Delassus rigid-body constraints via `verdant_tensor::delassus_effective_mass_matrix`:
+        #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-wasm-decode"))]
         if !self.rigid_joints.is_empty() && self.bodies.len() >= (1 + 1) {
             let dof_stride = DIM_SPATIAL + DIM_SPATIAL;
             let total_dofs = self.bodies.len() * dof_stride;
@@ -714,6 +720,7 @@ impl PhysicsWorld {
         }
 
         // Step 4-wheel raycast suspension vehicles:
+        #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-wasm-decode"))]
         if !self.vehicles.is_empty() {
             let milli_scale = crate::prism_kernel::skinWeightScale().unwrap_or(1).max(1) as f64;
             let ten = pow10_u64(1) as f64;
@@ -739,8 +746,9 @@ impl PhysicsWorld {
                     let wheel_bottom_rest =
                         mount_world.y - wheel.rest_length_meters - wheel.wheel_radius_meters;
                     if wheel_bottom_rest <= ground_y {
-                        let comp =
-                            (ground_y - wheel_bottom_rest).clamp(0.0, wheel.rest_length_meters);
+                        let comp = (ground_y - wheel_bottom_rest)
+                            .max(0.0)
+                            .min(wheel.rest_length_meters);
                         wheel.compression_meters = comp;
                         wheel.in_contact = true;
                         grounded_wheels += 1;
@@ -1043,7 +1051,7 @@ impl CapsuleController {
         } else {
             Vec3::ZERO
         };
-        let speed = self.move_speed_mps * intent.speed_scale.clamp(0.0, two * two);
+        let speed = self.move_speed_mps * intent.speed_scale.max(0.0).min(two * two);
         let mut rem = wish.scale(speed * dt_seconds);
 
         let mut hit_planes: Vec<Vec3> = Vec::new();

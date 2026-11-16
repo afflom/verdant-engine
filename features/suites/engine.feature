@@ -197,3 +197,16 @@ Feature: engine
     Given a 22-joint ArticulatedCharacter with normalized LBS weights and three morph target channels
     When step_and_solve_ik rays feet onto asymmetric stair risers, skin_mesh_linear_blend deforms the mesh, and first-person vs third-person buffers pack
     Then knee flexion adapts asymmetrically, skinned normals remain unit-length, first-person mode hides head triangles, and empty external meshes return AnimationError
+
+  @VE-29 @build
+  Scenario: Floating-origin UniversePosition cell coordinates wrap local offsets into [-64m, +64m)^3 with sub-millimeter camera-relative f32 precision at astronomical sector indices, traverse momentum-preserving PortalGraph arches, and pack multi-sector Stitch universes
+    Given a UniversePosition placed at an astronomical sector index and a canonical three-sector UniverseManager with SpatialPortals
+    When local offsets translate across 128m cell boundaries, camera-relative matrices cast to f32, portals traverse with velocity, and verdant pack-universe runs
+    Then universeLocalOffsetBounded holds on every step, camera-relative f32 error stays below 0.0001m, portal velocity rotates cleanly, and Stitch sector shards emit
+
+  @VE-30 @build
+  Scenario: StoryAutomaton and ConservationLedger verify tropical reachability and exact integer resource conservation across NPC dialogues, SLM proposals, and CLI audits and refuse deadlocked graphs, item duplication or underflow, out-of-range guards, and invalid universe portals
+    Given a canonical Citadel Chronicle StoryAutomaton with a seeded ConservationLedger and CodedSlmDirector
+    When spatial and SLM-guided interactions advance through the Chronicle and verdant verify-story audits reachability and conservation
+    Then every live state reaches a milestone with conserved item supply across all transitions
+    And deadlocked graphs, ledger underflow, out-of-range guards, or invalid portal definitions return NarrativeLawError

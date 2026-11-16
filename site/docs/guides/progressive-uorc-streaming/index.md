@@ -29,7 +29,7 @@ Cold boot stays under the 120 KiB mobile budget while verdant-uorc.wasm decodes 
 
   
     
-    Inspect LOD0Inspect LOD1Inspect LOD2Inspect LOD3
+    Inspect LOD0Inspect LOD1Inspect LOD2Inspect LOD3Inspect LOD4 HD
   
   Live VDNT byte sizes, triangle counts, and node presets measured across LOD0..LOD3 in verdant-wasm.
   Zero-decode UORC and codec tiers

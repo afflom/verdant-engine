@@ -49,6 +49,7 @@ pub mod geometry;
 pub mod gltf_io;
 pub mod hd_world;
 pub mod math;
+pub mod narrative;
 pub mod navmesh;
 pub mod network;
 pub mod physics;
@@ -60,6 +61,7 @@ pub mod runtime;
 pub mod streaming;
 pub mod tensor;
 pub mod ui;
+pub mod universe;
 
 #[cfg(test)]
 mod tests {

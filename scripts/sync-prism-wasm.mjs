@@ -118,6 +118,7 @@ const tensorKernelCount = ex.verdant_wasm_tensor_kernel_count() >>> 0;
 const unifiedKernelCount = ex.verdant_wasm_unified_tensor_kernel_count() >>> 0;
 const codedTierCount = ex.verdant_wasm_coded_tier_count() >>> 0;
 const maxLodRank = ex.verdant_wasm_max_lod_rank() >>> 0;
+const hdMaxLodRank = ex.verdant_wasm_hd_max_lod_rank() >>> 0;
 const tileEdgePixels = ex.verdant_wasm_tile_edge_pixels() >>> 0;
 const csmSplits = [0, 1, 2, 3].map((i) =>
   Number(ex.verdant_wasm_csm_split_meters(0.25, 140.0, i).toFixed(4)),
@@ -149,6 +150,7 @@ const expectedMeta = `// Generated mechanically by scripts/sync-prism-wasm.mjs f
 
 export const PRISM_DEFAULT_WORLD_SEED = ${Number(defaultSeed)};
 export const PRISM_MAX_LOD_RANK = ${maxLodRank};
+export const PRISM_HD_MAX_LOD_RANK = ${hdMaxLodRank};
 export const PRISM_SNAPSHOT_MIN_WIRE_BYTES = ${snapshotMinWireBytes};
 export const PRISM_AUDIO_QUANTUM_FRAMES = ${quantumFrames};
 export const PRISM_AUDIO_STEREO_CHANNELS = ${stereoChannels};

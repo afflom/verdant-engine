@@ -210,6 +210,20 @@ suite = "engine"
 statement = "Twenty-two-joint articulated humanoid characters deform via normalized four-joint linear-blend skinning and morph targets, adapt to stairs via analytical two-bone Foot IK, mask head geometry in first-person possession, and bind external GLB meshes"
 
 [[id]]
+id = "VE-29"
+level = "build"
+suite = "engine"
+statement = "Floating-origin UniversePosition cell coordinates wrap local offsets into [-64m, +64m)^3 with sub-millimeter camera-relative f32 precision at astronomical sector indices, traverse momentum-preserving PortalGraph arches, and pack multi-sector Stitch universes"
+
+[[id]]
+id = "VE-30"
+level = "build"
+suite = "engine"
+failure = "NarrativeLawError"
+negative = "VE-30"
+statement = "StoryAutomaton and ConservationLedger verify tropical reachability and exact integer resource conservation across NPC dialogues, SLM proposals, and CLI audits and refuse deadlocked graphs, item duplication or underflow, out-of-range guards, and invalid universe portals"
+
+[[id]]
 id = "FR-01"
 level = "build"
 suite = "frame"

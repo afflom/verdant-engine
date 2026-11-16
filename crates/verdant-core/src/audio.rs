@@ -69,7 +69,7 @@ impl AcousticEnvironment {
         let ten = pow10_u64(1) as f64;
         let sabine_factor = (twenty_four * ten.ln()) / self.sound_speed_mps.max(1.0);
         let sabins = (self.boundary_surface_area_m2
-            * self.mean_absorption_coeff.clamp(geometric_epsilon(), 1.0))
+            * self.mean_absorption_coeff.max(geometric_epsilon()).min(1.0))
         .max(geometric_epsilon());
         sabine_factor * self.enclosure_volume_m3 / sabins
     }
@@ -84,7 +84,8 @@ impl AcousticEnvironment {
         let factor = (twenty_four * ten.ln()) / self.sound_speed_mps.max(1.0);
         let alpha = self
             .mean_absorption_coeff
-            .clamp(geometric_epsilon(), 1.0 - geometric_epsilon());
+            .max(geometric_epsilon())
+            .min(1.0 - geometric_epsilon());
         let denom = (-self.boundary_surface_area_m2 * (1.0 - alpha).ln()).max(geometric_epsilon());
         factor * self.enclosure_volume_m3 / denom
     }
@@ -97,7 +98,7 @@ impl AcousticEnvironment {
             crate::prism_kernel::skinWeightScale().expect("verified Prism skinWeightScale") as f64;
         let vol_m3 = self.enclosure_volume_m3.max(0.0).round() as u64;
         let absorption_milli = (self.boundary_surface_area_m2
-            * self.mean_absorption_coeff.clamp(geometric_epsilon(), 1.0)
+            * self.mean_absorption_coeff.max(geometric_epsilon()).min(1.0)
             * scale)
             .round() as u64;
         crate::prism_kernel::sabineRt60Millis(vol_m3, absorption_milli)

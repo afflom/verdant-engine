@@ -2339,3 +2339,249 @@ fn engine_ve_28() {
         Err(AnimationError::InvalidClipChannel { .. })
     ));
 }
+
+/// `VE-29`: Floating-origin `UniversePosition`, camera-cell-relative `f32` precision at astronomical
+/// sector indices, momentum-preserving `PortalGraph` traversal, and CLI `pack-universe`.
+#[test]
+fn engine_ve_29() {
+    use verdant_cli::run_cli;
+    use verdant_core::math::{Quat, Vec3};
+    use verdant_core::universe::{
+        canonical_cell_span_meters, PortalGraph, SpatialPortal, UniverseCellCoord, UniverseManager,
+        UniversePosition,
+    };
+
+    assert!((canonical_cell_span_meters() - 128.0).abs() < 1e-9);
+
+    // Astronomical sector coordinate (10^9 sectors * 128m = 1.28e11 meters, ~0.85 AU from origin!):
+    let far_cell = UniverseCellCoord::new(1_000_000_000, -42_000, 999_999_999);
+    let cam_pos = UniversePosition::new_canonical(far_cell, Vec3::new(12.3456, 3.25, -18.75))
+        .expect("canonical astronomical camera pos");
+    assert!(cam_pos.bounds_verified);
+
+    // Translate +90m across the +64m cell boundary -> wraps into cx + 1 with exact local offset:
+    let stepped = cam_pos
+        .translate(Vec3::new(90.0, 0.0, 0.0))
+        .expect("cell wrap");
+    assert!(stepped.bounds_verified);
+    assert_eq!(stepped.cell.cx, far_cell.cx + 1);
+    assert!(stepped.local.x >= -64.0 && stepped.local.x < 64.0);
+    let disp = stepped.displacement_from(&cam_pos);
+    assert!((disp.x - 90.0).abs() < 1e-9);
+
+    // Verify sub-millimeter f32 precision in camera-cell space even at 1.28e11 meters:
+    let sub_mm_target = cam_pos
+        .translate(Vec3::new(0.1234, -0.0567, 0.8901))
+        .expect("nearby entity at astronomical cell");
+    let m =
+        sub_mm_target.camera_relative_matrix(&cam_pos, Quat::IDENTITY, Vec3::new(1.0, 1.0, 1.0));
+    let rel_f32 = [
+        m.cols[3][0] as f32,
+        m.cols[3][1] as f32,
+        m.cols[3][2] as f32,
+    ];
+    let exact_rel = sub_mm_target.relative_to_camera_cell(&cam_pos);
+    assert!((f64::from(rel_f32[0]) - exact_rel.x).abs() < 1e-4);
+    assert!((f64::from(rel_f32[1]) - exact_rel.y).abs() < 1e-4);
+    assert!((f64::from(rel_f32[2]) - exact_rel.z).abs() < 1e-4);
+
+    // Momentum-preserving portal traversal with 90-degree yaw rotation:
+    let portal = SpatialPortal {
+        portal_id: "quarter_turn_gate".to_string(),
+        source_cell: UniverseCellCoord::ORIGIN,
+        source_local: Vec3::new(0.0, 0.0, -32.0),
+        trigger_radius_meters: 2.0,
+        target_cell: UniverseCellCoord::new(0, 0, -1),
+        target_arrival_local: Vec3::new(0.0, 0.0, 20.0),
+        yaw_delta_radians: std::f64::consts::FRAC_PI_2,
+        federated_uri: None,
+    };
+    let graph = PortalGraph::new(vec![portal]).expect("valid portal graph");
+    let at_gate =
+        UniversePosition::new_canonical(UniverseCellCoord::ORIGIN, Vec3::new(0.25, 0.0, -31.5))
+            .expect("at gate");
+    let (arrived, rot_vel, _) = graph
+        .try_traverse(&at_gate, Vec3::new(0.0, 0.0, -5.0))
+        .expect("traverse ok")
+        .expect("portal triggered");
+    assert_eq!(arrived.cell, UniverseCellCoord::new(0, 0, -1));
+    assert!(
+        (rot_vel.length() - 5.0).abs() < 1e-9,
+        "momentum magnitude preserved"
+    );
+    assert!(
+        (rot_vel.x - (-5.0)).abs() < 1e-6,
+        "+90 deg Y-rotation maps -Z velocity to -X"
+    );
+
+    let universe = UniverseManager::canonical_citadel_universe(7).expect("canonical universe");
+    assert_eq!(universe.sectors.len(), 3);
+    assert_eq!(universe.portal_graph.portals.len(), 2);
+
+    let tmp_dir =
+        std::env::temp_dir().join(format!("verdant_universe_ve29_{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&tmp_dir);
+    let out = run_cli(&[
+        "pack-universe".to_string(),
+        tmp_dir.to_string_lossy().into_owned(),
+        "7".to_string(),
+    ])
+    .expect("verdant pack-universe");
+    assert!(out.contains("UNIVERSE PACKED OK: sectors=3 portals=2"));
+    assert!(tmp_dir.join("universe-manifest.json").exists());
+    assert!(tmp_dir.join("sector_0_0_0_shard_0.stch").exists());
+    let _ = std::fs::remove_dir_all(&tmp_dir);
+}
+
+/// `VE-30`: `StoryAutomaton` + `ConservationLedger` tropical reachability & exact resource conservation,
+/// SLM-grounded narrative routing, Wasm lawful bridge integration, CLI `verify-story`, and `NarrativeLawError` refusals.
+#[test]
+fn engine_ve_30() {
+    use verdant_cli::run_cli;
+    use verdant_core::cybernetics::CodedSlmDirector;
+    use verdant_core::error::NarrativeLawError;
+    use verdant_core::math::Vec3;
+    use verdant_core::narrative::{
+        canonical_citadel_chronicle_automaton, ConservationLedger, StoryAutomaton, StoryEdge,
+        StoryNode,
+    };
+    use verdant_core::universe::{PortalGraph, SpatialPortal, UniverseCellCoord, UniversePosition};
+    use verdant_wasm::WasmRuntimeBridge;
+
+    let (mut chronicle, report) =
+        canonical_citadel_chronicle_automaton(7).expect("canonical Citadel Chronicle");
+    assert_eq!(chronicle.nodes.len(), 4);
+    assert!(report.reachable_live_states >= 4);
+    let initial_supply = chronicle.ledger.total_supply();
+    assert!(initial_supply > 0);
+
+    // Negative refusal 1 (`GuardRefused`): player standing far outside interaction radius:
+    let far_err = chronicle
+        .try_advance(
+            &chronicle.available_edges()[0].action_id.clone(),
+            Vec3::new(50.0, 0.0, 50.0),
+        )
+        .expect_err("out-of-range NPC interaction must refuse");
+    assert!(matches!(far_err, NarrativeLawError::GuardRefused { .. }));
+
+    // Step 1 via `CodedSlmDirector` (`coded_gemm` grounded proposal at NPC anchor):
+    let director = CodedSlmDirector::new();
+    let e0_anchor = chronicle.available_edges()[0].world_anchor;
+    let step1 = chronicle
+        .advance_from_slm_prompt(
+            "speak with the archivist at the observer core",
+            e0_anchor,
+            &director,
+        )
+        .expect("SLM-guided Chronicle step 1");
+    assert_eq!(chronicle.current_state, step1.to_state);
+    assert_eq!(chronicle.ledger.total_supply(), initial_supply);
+
+    // Advance remaining Chronicle steps via spatial `interact_nearest` and verify invariant supply:
+    while !chronicle.active_node().is_milestone {
+        let next_anchor = chronicle.available_edges()[0].world_anchor;
+        let edge = chronicle
+            .interact_nearest(next_anchor)
+            .expect("lawful interaction")
+            .expect("edge in range");
+        assert!(!edge.dialogue_line.is_empty());
+        assert_eq!(
+            chronicle.ledger.total_supply(),
+            initial_supply,
+            "pure transfers strictly conserve world item supply"
+        );
+    }
+    chronicle.audit_live().expect("live audit at milestone");
+
+    // CLI `verify-story` verification:
+    let cli_out = run_cli(&["verify-story".to_string(), "7".to_string()]).expect("verify-story");
+    assert!(cli_out.contains("STORY AUTOMATON OK: states=4"));
+
+    // End-to-end `WasmRuntimeBridge` lawful step + camera guard + HD LOD4 verification:
+    let mut bridge = WasmRuntimeBridge::new(7).expect("lawful WasmRuntimeBridge");
+    bridge
+        .step_frame_lawful(1.0 / 60.0, 1.0, 0.0, std::f64::consts::PI, 1.0, false)
+        .expect("lawful step");
+    assert!(bridge.last_camera_frame.near_sphere_guarded);
+    bridge
+        .set_lod_rank(4)
+        .expect("upgrade WasmRuntimeBridge to LOD4 HD");
+    assert_eq!(bridge.lod_rank, 4);
+    assert!(bridge.scene_buffers.triangle_count() > 45_000);
+
+    // Negative refusal 2 (`UnreachableOrDeadlockedState`): planted trapped sink node `state 1` with no path to milestone `state 2`:
+    let bad_nodes = vec![
+        StoryNode {
+            index: 0,
+            slug: "start".to_string(),
+            title: "Start".to_string(),
+            objective: "Begin".to_string(),
+            is_milestone: false,
+        },
+        StoryNode {
+            index: 1,
+            slug: "deadlock_trap".to_string(),
+            title: "Trap".to_string(),
+            objective: "Stuck".to_string(),
+            is_milestone: false,
+        },
+        StoryNode {
+            index: 2,
+            slug: "goal".to_string(),
+            title: "Goal".to_string(),
+            objective: "Done".to_string(),
+            is_milestone: true,
+        },
+    ];
+    let bad_edges = vec![StoryEdge {
+        from_state: 0,
+        to_state: 1,
+        action_id: "enter_trap".to_string(),
+        actor_name: "Gate".to_string(),
+        dialogue_line: "Trapped".to_string(),
+        cost_milli: 100,
+        world_anchor: Vec3::ZERO,
+        interaction_radius_meters: 3.0,
+        from_account: None,
+        to_account: None,
+        transfer_amount: 0,
+        mint_amount: 0,
+        burn_amount: 0,
+    }];
+    let deadlock_err = StoryAutomaton::new(bad_nodes, bad_edges, 0, ConservationLedger::new())
+        .expect_err("deadlocked story branch must be refused at construction");
+    assert!(matches!(
+        deadlock_err,
+        NarrativeLawError::UnreachableOrDeadlockedState { .. }
+    ));
+
+    // Negative refusal 3 (`ConservationViolated`): debiting more tokens than account holds:
+    let mut ledger = ConservationLedger::new();
+    ledger.seed_account("vault", 2).expect("seed vault");
+    let underflow_err = ledger
+        .apply_conserved_delta(Some("vault"), Some("player"), 5, 0, 0)
+        .expect_err("debiting 5 from balance 2 must refuse");
+    assert!(matches!(
+        underflow_err,
+        NarrativeLawError::ConservationViolated { .. }
+    ));
+
+    // Negative refusal 4 (`InvalidPortalOrUniverseCell`): non-finite coordinate and zero-radius portal:
+    assert!(matches!(
+        UniversePosition::new_canonical(UniverseCellCoord::ORIGIN, Vec3::new(f64::NAN, 0.0, 0.0)),
+        Err(NarrativeLawError::InvalidPortalOrUniverseCell { .. })
+    ));
+    assert!(matches!(
+        PortalGraph::new(vec![SpatialPortal {
+            portal_id: "bad_zero_radius".to_string(),
+            source_cell: UniverseCellCoord::ORIGIN,
+            source_local: Vec3::ZERO,
+            trigger_radius_meters: 0.0,
+            target_cell: UniverseCellCoord::new(1, 0, 0),
+            target_arrival_local: Vec3::ZERO,
+            yaw_delta_radians: 0.0,
+            federated_uri: None,
+        }]),
+        Err(NarrativeLawError::InvalidPortalOrUniverseCell { .. })
+    ));
+}

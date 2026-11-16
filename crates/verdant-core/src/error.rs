@@ -739,3 +739,64 @@ impl fmt::Display for CameraRigError {
 }
 
 impl std::error::Error for CameraRigError {}
+
+/// Refusal returned when floating-origin universe cells, portals, or conservation-verified
+/// narrative/app automatons (`kernel14ConservationAutomaton`) violate physical or causal laws.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum NarrativeLawError {
+    /// Story/app graph has no valid path to a milestone or contains a deadlocked trap state.
+    UnreachableOrDeadlockedState {
+        /// Diagnostic description.
+        detail: String,
+    },
+    /// Resource delta violated `before + minted - burned == after` or underflowed an inventory.
+    ConservationViolated {
+        /// Total supply before transition.
+        before_total: u64,
+        /// Newly minted units.
+        minted: u64,
+        /// Burned/consumed units.
+        burned: u64,
+        /// Observed total supply after transition.
+        after_total: u64,
+    },
+    /// Spatial proximity, current state, or prerequisite guard refused the requested transition.
+    GuardRefused {
+        /// Candidate action or edge identifier.
+        action_id: String,
+        /// Diagnostic reason.
+        reason: String,
+    },
+    /// Universe cell span, non-finite coordinate, or portal topology is invalid.
+    InvalidPortalOrUniverseCell {
+        /// Diagnostic description.
+        detail: String,
+    },
+}
+
+impl fmt::Display for NarrativeLawError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::UnreachableOrDeadlockedState { detail } => {
+                write!(f, "story automaton reachability/deadlock refusal: {detail}")
+            }
+            Self::ConservationViolated {
+                before_total,
+                minted,
+                burned,
+                after_total,
+            } => write!(
+                f,
+                "resource conservation violated: before={before_total}, minted={minted}, burned={burned}, after={after_total}"
+            ),
+            Self::GuardRefused { action_id, reason } => {
+                write!(f, "story action `{action_id}` refused: {reason}")
+            }
+            Self::InvalidPortalOrUniverseCell { detail } => {
+                write!(f, "invalid universe cell or portal: {detail}")
+            }
+        }
+    }
+}
+
+impl std::error::Error for NarrativeLawError {}

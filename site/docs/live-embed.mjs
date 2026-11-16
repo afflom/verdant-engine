@@ -5,6 +5,7 @@
 
 const scriptUrl = new URL(import.meta.url);
 const wasmUrl = new URL("../verdant-wasm.wasm", scriptUrl);
+const uorcWasmUrl = new URL("../verdant-uorc.wasm", scriptUrl);
 
 function drawBanner(ctx, w, h, title, subtitle) {
   ctx.fillStyle = "#081119";
@@ -34,6 +35,19 @@ function loadWasm() {
       return ex;
     });
   return wasmPromise;
+}
+
+let uorcPromise = null;
+function loadUorcWasm() {
+  uorcPromise ??= fetch(uorcWasmUrl)
+    .then((r) => r.arrayBuffer())
+    .then((buf) => WebAssembly.instantiate(buf, {}))
+    .then(({ instance }) => {
+      const ex = instance.exports;
+      ex.verdant_wasm_init(ex.verdant_wasm_default_seed());
+      return ex;
+    });
+  return uorcPromise;
 }
 
 function renderTileViewport(ex, canvas, yaw, lodRank) {
@@ -103,17 +117,18 @@ function renderObserver(ex, canvas, slot, dwellMs) {
 function renderPhysics(ex, canvas, ticks) {
   const ctx = canvas.getContext("2d");
   if (!ctx) return;
-  for (let i = 0; i < ticks; i++) ex.verdant_wasm_step(16666, 900, 0, 0);
+  for (let i = 0; i < ticks; i++) ex.verdant_wasm_step_lawful(16666, 900, 0, 3142, 1000, 0);
   const mx = ex.verdant_wasm_mover_x(), mz = ex.verdant_wasm_mover_z(), dist = ex.verdant_wasm_mover_distance();
   const px = ex.verdant_wasm_player_x(), pz = ex.verdant_wasm_player_z();
+  const clr = ex.verdant_wasm_camera_clearance_milli() >>> 0;
   const vis = ex.verdant_wasm_bvh_visible_count(0, 10, 22, 0, -0.35, -0.93, 2.0) >>> 0;
   const pan = ex.verdant_wasm_binaural_pan(-9, 2, -4, px, 2, pz, 0, 0, -1);
   drawBanner(
     ctx,
     canvas.width,
     canvas.height,
-    `LIVE PHYSICS + BVH + WOODWORTH AUDIO · MOVER DIST ${dist.toFixed(2)} m`,
-    `BVH Frustum Visible: ${vis} entities · Binaural Pan: ${pan.toFixed(3)} · ITD: ${ex.verdant_wasm_binaural_itd_micros().toFixed(1)} us`,
+    `LIVE LAWFUL CCD + CAMERA GUARD + AUDIO · CLEARANCE ${clr} mm`,
+    `Mover: ${dist.toFixed(2)} m · BVH Visible: ${vis} · Binaural Pan: ${pan.toFixed(3)} · ITD: ${ex.verdant_wasm_binaural_itd_micros().toFixed(1)} us`,
   );
   const cx = 288, cy = 142, scale = 2.6;
   ctx.strokeStyle = "#29465e";
@@ -128,44 +143,44 @@ function renderPhysics(ex, canvas, ticks) {
   ctx.fillRect(cx + px * 2 - 5, cy + pz * 2 - 5, 10, 10);
   ctx.fillStyle = "#e2e8f0";
   ctx.fillText(`Spline Mover (${mx.toFixed(1)}, ${mz.toFixed(1)})`, 18, 204);
-  ctx.fillText(`Capsule (${px.toFixed(1)}, ${pz.toFixed(1)})`, 320, 204);
+  ctx.fillText(`22-Joint Explorer (${px.toFixed(1)}, ${pz.toFixed(1)})`, 300, 204);
 }
 
 function renderLodStream(ex, canvas, activeRank) {
   const ctx = canvas.getContext("2d");
   if (!ctx) return;
-  const stats = [0, 1, 2, 3].map((r) => {
+  const stats = [0, 1, 2, 3, 4].map((r) => {
     ex.verdant_wasm_set_lod_rank(r);
-    const bytes = ex.verdant_wasm_snapshot_encode() >>> 0;
     const tris = Math.floor((ex.verdant_wasm_scene_idx_count() >>> 0) / 3);
     const nodes = ex.verdant_wasm_node_preset_count() >>> 0;
-    return { r, bytes, tris, nodes };
+    return { r, tris, nodes };
   });
   ex.verdant_wasm_set_lod_rank(activeRank);
   drawBanner(
     ctx,
     canvas.width,
     canvas.height,
-    `LIVE PROGRESSIVE LOD0..LOD3 ENVELOPE · ACTIVE LOD${activeRank}`,
-    `Portable UORC Stream: 5,711 B total -> monotonic SHA-256 scene refinement in Wasm`,
+    `LIVE PROGRESSIVE LOD0..LOD4 HD ENVELOPE · ACTIVE LOD${activeRank}`,
+    `Cold Boot < 120 KiB -> Monotonic Vaulted Citadel, Bridge & 22-Joint IK Refinement`,
   );
-  const maxBytes = Math.max(1, ...stats.map((s) => s.bytes));
+  const maxTris = Math.max(1, ...stats.map((s) => s.tris));
   stats.forEach((s, idx) => {
-    const y = 68 + idx * 36;
-    const bw = Math.max(24, Math.round((s.bytes / maxBytes) * 320));
+    const y = 62 + idx * 30;
+    const bw = Math.max(24, Math.round((s.tris / maxTris) * 320));
     ctx.fillStyle = s.r === activeRank ? "#10b981" : "#1e3a52";
-    ctx.fillRect(92, y, bw, 24);
+    ctx.fillRect(92, y, bw, 20);
     ctx.strokeStyle = s.r === activeRank ? "#6ee7b7" : "#38bdf8";
-    ctx.strokeRect(92, y, bw, 24);
+    ctx.strokeRect(92, y, bw, 20);
     ctx.fillStyle = "#f1f5f9";
-    ctx.fillText(`LOD${s.r}`, 18, y + 16);
-    ctx.fillText(`${s.bytes} B VDNT · ${s.tris} tris · ${s.nodes} nodes`, 102 + bw, y + 16);
+    ctx.fillText(`LOD${s.r}`, 18, y + 14);
+    ctx.fillText(`${s.tris} tris · ${s.nodes} nodes`, 102 + bw, y + 14);
   });
 }
 
-function renderSnapshotGuard(ex, canvas, tamper) {
+async function renderSnapshotGuard(canvas, tamper) {
   const ctx = canvas.getContext("2d");
   if (!ctx) return;
+  const ex = await loadUorcWasm();
   ex.verdant_wasm_set_lod_rank(3);
   const len = ex.verdant_wasm_snapshot_encode() >>> 0;
   const raw = new Uint8Array(len);
@@ -240,7 +255,7 @@ loadWasm()
           const act = e.target.closest("button")?.dataset.veAct;
           if (!act) return;
           if (act === "orbit") yaw += 0.45;
-          if (act === "lod") lod = (lod + 1) % 4;
+          if (act === "lod") lod = (lod + 1) % 5;
           renderTileViewport(ex, canvas, yaw, lod);
         });
       } else if (mode === "observer") {
@@ -256,17 +271,17 @@ loadWasm()
           if (act === "step") renderPhysics(ex, canvas, 15);
         });
       } else if (mode === "lod-stream") {
-        renderLodStream(ex, canvas, 3);
+        renderLodStream(ex, canvas, 4);
         fig.addEventListener("click", (e) => {
           const act = e.target.closest("button")?.dataset.veAct;
           if (act?.startsWith("lod-")) renderLodStream(ex, canvas, Number(act.slice(4)));
         });
       } else if (mode === "snapshot") {
-        renderSnapshotGuard(ex, canvas, false);
+        renderSnapshotGuard(canvas, false);
         fig.addEventListener("click", (e) => {
           const act = e.target.closest("button")?.dataset.veAct;
-          if (act === "valid") renderSnapshotGuard(ex, canvas, false);
-          if (act === "tamper") renderSnapshotGuard(ex, canvas, true);
+          if (act === "valid") renderSnapshotGuard(canvas, false);
+          if (act === "tamper") renderSnapshotGuard(canvas, true);
         });
       } else if (mode === "semirings") {
         renderSemirings(ex, canvas, "csm");

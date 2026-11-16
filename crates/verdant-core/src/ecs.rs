@@ -175,7 +175,7 @@ impl BoundingVolumeHierarchy {
                 } else {
                     DIM_PLANAR
                 };
-                many.sort_by(|(id_a, a), (id_b, b)| {
+                many.sort_unstable_by(|(id_a, a), (id_b, b)| {
                     let ca = a.center();
                     let cb = b.center();
                     let va = [ca.x, ca.y, ca.z][axis];
@@ -508,7 +508,7 @@ impl SceneWorld {
     pub fn build_bvh(&self) -> BoundingVolumeHierarchy {
         #[cfg(not(target_arch = "wasm32"))]
         if let Ok(mut world_mats) = self.propagate_all_world_matrices() {
-            world_mats.sort_by_key(|(id, _)| *id);
+            world_mats.sort_unstable_by_key(|(id, _)| *id);
             let items: Vec<(EntityId, Aabb)> = world_mats
                 .into_iter()
                 .filter_map(|(id, mat)| {
@@ -681,7 +681,7 @@ impl TwoLevelBvh {
                     world_normals.push(nw.to_f32_array());
                 }
                 let baked_mesh = ProceduralMesh {
-                    name: format!("{}_world_blas", entity.name),
+                    name: "world_blas".to_string(),
                     positions: world_positions,
                     normals: world_normals,
                     uvs: mesh.uvs.clone(),

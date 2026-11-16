@@ -440,7 +440,7 @@ pub fn generate_vaulted_citadel_hall_mesh(base_y: f64, lod_rank: u64) -> Procedu
         }
     }
 
-    // 4. Twelve Smooth Lathed Entasis Columns (`8` outer peristyle + `4` interior sanctuary columns):
+    // 4. Twelve Smooth Lathed Entasis Columns (`8` outer peristyle + `4` interior nave columns):
     let col_radial = (sub * (1 + 1 + 1 + 1 + 1 + 1)).max(1 << (1 + 1 + 1));
     let col_height_segs = (sub * (1 + 1 + 1)).max(1 + 1 + 1 + 1);
     for sx in [-1.0_f64, 1.0_f64] {
@@ -792,7 +792,7 @@ pub fn generate_hd_sculpted_terrain_mesh(
                 ]
             } else {
                 // Sunlit highland turf:
-                let lush = ((y * quarter).clamp(0.0, eighth)) as f32;
+                let lush = ((y * quarter).max(0.0).min(eighth)) as f32;
                 [
                     (quarter + eighth * half) as f32 + lush * (half as f32),
                     (half - eighth * half) as f32 + lush,
@@ -820,7 +820,7 @@ pub fn generate_hd_sculpted_terrain_mesh(
     }
 
     ProceduralMesh {
-        name: format!("HdSculptedTerrain_LOD{lod_rank}"),
+        name: "HdSculptedTerrain".to_string(),
         positions,
         normals,
         uvs,
@@ -1064,7 +1064,7 @@ pub fn synthesize_hd_citadel_sector(
         }
         let scale_u = 1.0 - quarter * half + ((i % (1 + 1 + 1)) as f64) * (quarter * half);
         let e_tree = scene.spawn(
-            format!("canopy_tree_{i}"),
+            "canopy_tree",
             EntityRole::SurfaceFoliage,
             None,
             Transform {

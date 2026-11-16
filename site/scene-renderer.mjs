@@ -40,7 +40,7 @@ const SUN_DIR = (() => {
 })();
 
 export async function createGlRenderer(canvas) {
-  const gl = canvas.getContext("webgl2", { antialias: false, depth: true, alpha: false, powerPreference: "high-performance" });
+  const gl = canvas.getContext("webgl2", { antialias: false, depth: true, alpha: false, preserveDrawingBuffer: true, powerPreference: "high-performance" });
   if (!gl) return null;
   const dbg = gl.getExtension("WEBGL_debug_renderer_info");
   const isSoftware = /SwiftShader|llvmpipe|Software|Basic Render/i.test(
@@ -196,7 +196,7 @@ export async function createGlRenderer(canvas) {
        vec3 indirect = (kd * albedo * hemi + iblSpec * fEnv) * ao;
 
        vec3 lit = direct + indirect;
-       if (isVisor) lit += albedo * 1.65;
+       if (isVisor) lit += albedo * 0.38;
        if (isWater) lit = mix(albedo * (hemi + 0.4 * shadow), skyLin + sunRad * pow(ndh, 96.0), clamp(0.18 + 0.78 * pow(1.0 - ndv, 4.0), 0.0, 0.95));
 
        float dist = length(u_eye - v_pos);
@@ -461,6 +461,7 @@ export async function createGlRenderer(canvas) {
         gl.disableVertexAttribArray(2);
         gl.drawArrays(gl.TRIANGLES, 0, 6);
       }
+      gl.finish();
     },
     blitTensorRgba(rgbaBytes, width, height) {
       if (!blitProg || !rgbaBytes || width <= 0 || height <= 0) return;
