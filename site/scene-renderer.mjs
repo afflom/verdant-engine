@@ -145,12 +145,13 @@ o_col=vec4(pow(aces(aa*1.06),vec3(1.0/2.2)),1.0);}`,
   );
   if (!shadowProg || !skyProg || !pbrProg || !postProg) return null;
 
+  const B = gl.ARRAY_BUFFER, E = gl.ELEMENT_ARRAY_BUFFER, T = gl.TEXTURE_2D, F = gl.FRAMEBUFFER, R = gl.RENDERBUFFER;
   const gpu = { pos: gl.createBuffer(), norm: gl.createBuffer(), col: gl.createBuffer(), idx: gl.createBuffer(), count: 0 };
   const quadBuf = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, quadBuf);
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1]), gl.STATIC_DRAW);
+  gl.bindBuffer(B, quadBuf);
+  gl.bufferData(B, new Float32Array([0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1]), gl.STATIC_DRAW);
   const drawQuad = () => {
-    gl.bindBuffer(gl.ARRAY_BUFFER, quadBuf);
+    gl.bindBuffer(B, quadBuf);
     gl.enableVertexAttribArray(0);
     gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
     gl.disableVertexAttribArray(1);
@@ -159,14 +160,14 @@ o_col=vec4(pow(aces(aa*1.06),vec3(1.0/2.2)),1.0);}`,
   };
 
   const shadowTex = gl.createTexture();
-  gl.bindTexture(gl.TEXTURE_2D, shadowTex);
-  gl.texImage2D(gl.TEXTURE_2D, 0, gl.DEPTH_COMPONENT24, shadowSize, shadowSize, 0, gl.DEPTH_COMPONENT, gl.UNSIGNED_INT, null);
+  gl.bindTexture(T, shadowTex);
+  gl.texImage2D(T, 0, gl.DEPTH_COMPONENT24, shadowSize, shadowSize, 0, gl.DEPTH_COMPONENT, gl.UNSIGNED_INT, null);
   setTexClamp(gl.LINEAR);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_MODE, gl.COMPARE_REF_TO_TEXTURE);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_FUNC, gl.LEQUAL);
+  gl.texParameteri(T, gl.TEXTURE_COMPARE_MODE, gl.COMPARE_REF_TO_TEXTURE);
+  gl.texParameteri(T, gl.TEXTURE_COMPARE_FUNC, gl.LEQUAL);
   const shadowFbo = gl.createFramebuffer();
-  gl.bindFramebuffer(gl.FRAMEBUFFER, shadowFbo);
-  gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, shadowTex, 0);
+  gl.bindFramebuffer(F, shadowFbo);
+  gl.framebufferTexture2D(F, gl.DEPTH_ATTACHMENT, T, shadowTex, 0);
   gl.drawBuffers([gl.NONE]);
   gl.readBuffer(gl.NONE);
 
@@ -175,23 +176,23 @@ o_col=vec4(pow(aces(aa*1.06),vec3(1.0/2.2)),1.0);}`,
   const ensureHdrFbo = (w, h) => {
     if (w === hdrW && h === hdrH) return true;
     hdrW = w; hdrH = h;
-    gl.bindTexture(gl.TEXTURE_2D, hdrTex);
-    gl.texImage2D(gl.TEXTURE_2D, 0, hasHalfFloat ? gl.RGBA16F : gl.RGBA8, w, h, 0, gl.RGBA, hasHalfFloat ? gl.HALF_FLOAT : gl.UNSIGNED_BYTE, null);
+    gl.bindTexture(T, hdrTex);
+    gl.texImage2D(T, 0, hasHalfFloat ? gl.RGBA16F : gl.RGBA8, w, h, 0, gl.RGBA, hasHalfFloat ? gl.HALF_FLOAT : gl.UNSIGNED_BYTE, null);
     setTexClamp(gl.LINEAR);
-    gl.bindRenderbuffer(gl.RENDERBUFFER, hdrDepth);
-    gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT24, w, h);
-    gl.bindFramebuffer(gl.FRAMEBUFFER, hdrFbo);
-    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, hdrTex, 0);
-    gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, hdrDepth);
-    const ok = gl.checkFramebufferStatus(gl.FRAMEBUFFER) === gl.FRAMEBUFFER_COMPLETE;
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    gl.bindRenderbuffer(R, hdrDepth);
+    gl.renderbufferStorage(R, gl.DEPTH_COMPONENT24, w, h);
+    gl.bindFramebuffer(F, hdrFbo);
+    gl.framebufferTexture2D(F, gl.COLOR_ATTACHMENT0, T, hdrTex, 0);
+    gl.framebufferRenderbuffer(F, gl.DEPTH_ATTACHMENT, R, hdrDepth);
+    const ok = gl.checkFramebufferStatus(F) === gl.FRAMEBUFFER_COMPLETE;
+    gl.bindFramebuffer(F, null);
     return ok;
   };
 
   const blitTex = gl.createTexture();
-  gl.bindTexture(gl.TEXTURE_2D, blitTex);
+  gl.bindTexture(T, blitTex);
   setTexClamp(gl.NEAREST);
-  gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+  gl.bindFramebuffer(F, null);
 
   const uShadowLmvp = gl.getUniformLocation(shadowProg, "u_lmvp");
   const uSky = uniforms(skyProg, ["fwd", "right", "up", "sky", "fog", "sun", "aspect", "tanHalf"]);
@@ -203,10 +204,9 @@ o_col=vec4(pow(aces(aa*1.06),vec3(1.0/2.2)),1.0);}`,
     backend: "webgl2",
     isSoftware,
     uploadPackedBuffers(posF32, normF32, colF32, idxU32) {
-      gl.bindBuffer(gl.ARRAY_BUFFER, gpu.pos); gl.bufferData(gl.ARRAY_BUFFER, posF32, gl.DYNAMIC_DRAW);
-      gl.bindBuffer(gl.ARRAY_BUFFER, gpu.norm); gl.bufferData(gl.ARRAY_BUFFER, normF32, gl.DYNAMIC_DRAW);
-      gl.bindBuffer(gl.ARRAY_BUFFER, gpu.col); gl.bufferData(gl.ARRAY_BUFFER, colF32, gl.DYNAMIC_DRAW);
-      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, gpu.idx); gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, idxU32, gl.DYNAMIC_DRAW);
+      [[B, gpu.pos, posF32], [B, gpu.norm, normF32], [B, gpu.col, colF32], [E, gpu.idx, idxU32]].forEach(([t, b, d]) => {
+        gl.bindBuffer(t, b); gl.bufferData(t, d, gl.DYNAMIC_DRAW);
+      });
       gpu.count = idxU32.length;
     },
     render(mvp, eye, lodSpec, timeSec, lookTarget = [0, 1.8, 0], fovRad = Math.PI / 3.4) {
@@ -218,7 +218,7 @@ o_col=vec4(pow(aces(aa*1.06),vec3(1.0/2.2)),1.0);}`,
       const lmvp = mat4Mul(lightOrtho, mat4LookAt([fx + SUN_DIR[0] * 14, fy + SUN_DIR[1] * 14, fz + SUN_DIR[2] * 14], [fx, fy, fz], [0, 1, 0]));
 
       if (shadowsOn) {
-        gl.bindFramebuffer(gl.FRAMEBUFFER, shadowFbo);
+        gl.bindFramebuffer(F, shadowFbo);
         gl.viewport(0, 0, shadowSize, shadowSize);
         gl.colorMask(false, false, false, false);
         gl.enable(gl.DEPTH_TEST); gl.depthMask(true);
@@ -226,18 +226,18 @@ o_col=vec4(pow(aces(aa*1.06),vec3(1.0/2.2)),1.0);}`,
         gl.enable(gl.POLYGON_OFFSET_FILL); gl.polygonOffset(1.8, 3.0);
         gl.useProgram(shadowProg);
         gl.uniformMatrix4fv(uShadowLmvp, false, lmvp);
-        gl.bindBuffer(gl.ARRAY_BUFFER, gpu.pos);
+        gl.bindBuffer(B, gpu.pos);
         gl.enableVertexAttribArray(0);
         gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 0, 0);
         gl.disableVertexAttribArray(1); gl.disableVertexAttribArray(2);
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, gpu.idx);
+        gl.bindBuffer(E, gpu.idx);
         gl.drawElements(gl.TRIANGLES, gpu.count, gl.UNSIGNED_INT, 0);
         gl.disable(gl.POLYGON_OFFSET_FILL);
         gl.colorMask(true, true, true, true);
       }
 
       const useHdr = ensureHdrFbo(w, h);
-      gl.bindFramebuffer(gl.FRAMEBUFFER, useHdr ? hdrFbo : null);
+      gl.bindFramebuffer(F, useHdr ? hdrFbo : null);
       gl.viewport(0, 0, w, h);
       gl.clearColor(sky[0], sky[1], sky[2], 1.0);
       gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -273,24 +273,24 @@ o_col=vec4(pow(aces(aa*1.06),vec3(1.0/2.2)),1.0);}`,
         gl.uniform1f(uPbr.shadows, shadowsOn);
         gl.uniform1f(uPbr.invSmap, 1.0 / shadowSize);
         gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_2D, shadowTex);
+        gl.bindTexture(T, shadowTex);
         gl.uniform1i(uPbr.smap, 0);
         [gpu.pos, gpu.norm, gpu.col].forEach((buf, loc) => {
-          gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+          gl.bindBuffer(B, buf);
           gl.enableVertexAttribArray(loc);
           gl.vertexAttribPointer(loc, 3, gl.FLOAT, false, 0, 0);
         });
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, gpu.idx);
+        gl.bindBuffer(E, gpu.idx);
         gl.drawElements(gl.TRIANGLES, gpu.count, gl.UNSIGNED_INT, 0);
       }
 
       if (useHdr) {
-        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        gl.bindFramebuffer(F, null);
         gl.viewport(0, 0, w, h);
         gl.disable(gl.DEPTH_TEST);
         gl.useProgram(postProg);
         gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_2D, hdrTex);
+        gl.bindTexture(T, hdrTex);
         gl.uniform1i(uPost.hdr, 0);
         gl.uniform2f(uPost.invRes, 1.0 / w, 1.0 / h);
         drawQuad();
@@ -299,13 +299,13 @@ o_col=vec4(pow(aces(aa*1.06),vec3(1.0/2.2)),1.0);}`,
     },
     blitTensorRgba(rgbaBytes, width, height) {
       if (!blitProg || !rgbaBytes || width <= 0 || height <= 0) return;
-      gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+      gl.bindFramebuffer(F, null);
       gl.viewport(0, 0, canvas.width, canvas.height);
       gl.disable(gl.DEPTH_TEST);
       gl.useProgram(blitProg);
       gl.activeTexture(gl.TEXTURE0);
-      gl.bindTexture(gl.TEXTURE_2D, blitTex);
-      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, rgbaBytes);
+      gl.bindTexture(T, blitTex);
+      gl.texImage2D(T, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, rgbaBytes);
       drawQuad();
     },
   };

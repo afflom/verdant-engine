@@ -53,6 +53,7 @@ model does not sanction.
 | `VE-29` | `build` | Floating-origin UniversePosition cell coordinates wrap local offsets into [-64m, +64m)^3 with sub-millimeter camera-relative f32 precision at astronomical sector indices, traverse momentum-preserving PortalGraph arches, and pack multi-sector Stitch universes |
 | `VE-30` | `build` | StoryAutomaton and ConservationLedger verify tropical reachability and exact integer resource conservation across NPC dialogues, SLM proposals, and CLI audits and refuse deadlocked graphs, item duplication or underflow, out-of-range guards, and invalid universe portals |
 | `VE-31` | `build` | OntologicalRuntimeGovernor synthesizes constructive W5H certificates across all eight causal strata, evaluates HostEnvelope and WitnessEnvelope telos loss with non-coercive LOD0-to-LOD4 descent, and closes every Prism subsystem and Core-Wasm acceptance query |
+| `VE-32` | `build` | Verdant Studio themes, six-tab game-creation workbench, seven executable stakeholder journeys, four starter archetypes, and six live WebAssembly documentation embeds satisfy W3C DTCG token purity, Core-Wasm verification, and zero-error C-ABI export parity |
 
 ## fidelity
 

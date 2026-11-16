@@ -7,12 +7,14 @@
   min-width: 0;
   min-height: 0;
   border-radius: var(--radius);
-  border: var(--border-width) solid var(--border);
+  border: var(--border-width) solid var(--border-strong);
   background: var(--card);
   overflow: hidden;
 }
-:root.dark .stage .board-fit > .ve-viewport { border-color: #2f5446; }
-.ve-viewport.drag-over { outline: 2px solid #34d399; outline-offset: -2px; }
+.ve-viewport.drag-over {
+  outline: var(--ring-width) solid var(--success);
+  outline-offset: calc(var(--ring-width) * -1);
+}
 #ve-canvas { display: block; width: 100%; height: 100%; touch-action: none; cursor: grab; }
 #ve-canvas:active { cursor: grabbing; }
 .ve-hud {
@@ -31,9 +33,9 @@
   align-items: center;
   padding: 0.1875rem var(--space-2);
   border-radius: var(--radius-control);
-  border: var(--border-width) solid color-mix(in oklab, var(--border) 88%, transparent);
-  background: color-mix(in oklab, var(--background) 92%, transparent);
-  color: var(--foreground);
+  border: var(--border-width) solid var(--border-strong);
+  background: var(--card);
+  color: var(--card-foreground);
   font-family: var(--font-mono);
   font-size: var(--text-14);
   line-height: 1.25;
@@ -41,11 +43,6 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-:root.dark .ve-pill {
-  background: rgba(9, 16, 22, 0.92);
-  border-color: rgba(52, 211, 153, 0.55);
-  color: #f2f9fc;
 }
 .ve-prompt-bar {
   position: absolute;
@@ -57,10 +54,15 @@
   gap: var(--space-1);
   padding: 0.25rem;
   border-radius: var(--radius-control);
-  border: 1px solid color-mix(in oklab, var(--border) 90%, transparent);
-  background: color-mix(in oklab, var(--background) 92%, transparent);
+  border: var(--border-width) solid var(--border-strong);
+  background: var(--card);
 }
-:root.dark .ve-prompt-bar { background: rgba(9, 16, 22, 0.92); border-color: rgba(52, 211, 153, 0.48); }
+html.immersive .ve-pill,
+html.immersive .ve-prompt-bar {
+  background: color-mix(in oklab, var(--card) 84%, transparent);
+  -webkit-backdrop-filter: blur(14px) saturate(1.15);
+  backdrop-filter: blur(14px) saturate(1.15);
+}
 #ve-prompt-input {
   flex: 1;
   min-width: 0;
@@ -69,44 +71,24 @@
   border: 0;
   outline: 0;
   background: transparent;
-  color: var(--foreground);
+  color: var(--card-foreground);
   font-family: var(--font-mono);
   font-size: var(--text-14);
 }
-:root.dark #ve-prompt-input { color: #f4f9fc; }
 #ve-prompt-input::placeholder { color: var(--muted-foreground); }
-:root.dark #ve-prompt-input::placeholder { color: #9bb3c7; }
 #ve-prompt-btn {
   flex: none;
   min-height: 2.5rem;
   min-width: 3.5rem;
   padding: 0 var(--space-3);
   border-radius: var(--radius-control);
-  border: 1px solid #2b6b53;
-  background: #0f6848;
-  color: #f0fdf4;
+  border: var(--border-width) solid var(--primary);
+  background: var(--primary);
+  color: var(--primary-foreground);
   font-weight: 600;
 }
-#ve-prompt-btn:hover { background: #138059; }
-:root.dark .lede, :root.dark .rail .k { color: #d0dce8; }
-:root.dark .spec-link { color: #eef5fb; background: #19242e; border: 1px solid #385066; }
-:root.dark .spec-link:hover { background: #243444; border-color: #567999; }
-:root.dark #ve-telemetry > li { color: #e4edf5; border-top-color: #ffffff29; }
+#ve-prompt-btn:hover { background: var(--primary-hover); }
 aside.spec { transition-duration: 90ms !important; }
-:root.dark aside.spec {
-  --sidebar: #131b23;
-  --muted: #0b1016;
-  --foreground: #f4f8fc;
-  --muted-foreground: #d0dce8;
-  --border: #ffffff3d;
-  --accent: #203040;
-  border-left: 1px solid #395068;
-  box-shadow: -14px 0 36px rgba(0, 0, 0, 0.65);
-}
-:root.dark aside.spec pre.code { border-color: #354e66; background: #090e14; color: #f0f7ff; }
-:root.dark aside.spec button.term { border: 1px solid #38526b; border-radius: var(--radius-control); background: #172534; color: #7dd3fc; }
-:root.dark aside.spec button.term:hover, :root.dark aside.spec button.term[aria-expanded="true"] { background: #22384e; border-color: #38bdf8; color: #f0f9ff; }
-:root.dark aside.spec .links a, :root.dark aside.spec button.copy { border: 1px solid #38526b; border-radius: var(--radius-control); background: #172534; color: #eaf3fc; }
 .rail .controls { gap: var(--space-1); }
 .rail .controls button, .rail .controls a.ghost { min-width: 3rem; justify-content: center; padding: 0 var(--space-2); white-space: nowrap; }
 .rail .controls a.ghost { border-color: var(--border); color: var(--secondary-foreground); background: var(--secondary); }

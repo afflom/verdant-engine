@@ -7,7 +7,7 @@
 
 **Verdant Engine** (`verdant-tensor`, `verdant-core`, `verdant-wasm`, `verdant-cli`) is a standalone, universal 3D browser, WebAssembly, and native game and interface engine modeled, mechanized, and verified end-to-end with Prism.
 
-Rather than relying on conditional browser GPU APIs that are absent on many mobile and desktop clients, Verdant Engine distills a **pure tensor-logic substrate** (`crates/verdant-tensor`) over **`uor-matmul`** (*decode -> accumulate without intermediate rounding -> encode once* across exact Laurent `(+, *)`, tropical `(max, +)` and `(min, +)`, quantized audio and neuromorphic `Q15` state-space rings, and zero-decode `uor_matmul::codec` streams), paired with a `16x16` tile-binned software PBR rasterizer, zero-copy WebGL2 presentation, **native WebAssembly `uorc_decompress` progressive `LOD0 -> LOD3` streaming**, formal 2D/3D UI compliance, an embedded `coded_gemm` language/intent model, and **Foundry `Prism ID` + `afflom/stitch` 2-of-3 parity multiplayer custody**.
+Rather than relying on conditional browser GPU APIs that are absent on many mobile and desktop clients, Verdant Engine distills a **pure tensor-logic substrate** (`crates/verdant-tensor`) over **`uor-matmul`** (*decode -> accumulate without intermediate rounding -> encode once* across exact Laurent `(+, *)`, tropical `(max, +)` and `(min, +)`, quantized audio and neuromorphic `Q15` state-space rings, and zero-decode `uor_matmul::codec` streams), paired with a `16x16` tile-binned software PBR rasterizer, zero-copy 3-pass WebGL2 presentation, **native WebAssembly `uorc_decompress` progressive `LOD0 -> LOD4` HD streaming**, formal 2D/3D UI compliance, an embedded `coded_gemm` language/intent model, **executable stakeholder journeys + a rapid Rust/Wasm Game & App Scaffolder**, and **Foundry `Prism ID` + `afflom/stitch` 2-of-3 parity multiplayer custody**.
 
 ---
 
@@ -48,7 +48,7 @@ Every core engine pass reduces to Prism-scheduled semiring contractions over `uo
 | **Formal 2D/3D UI Modeling & WCAG Compliance** | `ui` | `UiTree`, `UiWidget`, `UiSurfaceSpace` (`ScreenSpace` + `DiegeticWorld`), `SolvedUiRect` (`>= 48x48` CSS px coarse targets, WCAG 2.2 AA contrast, tropical focus closure, diegetic BVH picking) |
 | **Second-Order Cybernetics, SLM & Container Grants** | `cybernetics` | `CyberneticObserverLoop` (`PlayerObserverSample <-> WorldAttentionDirective`), `CodedSlmDirector` (local `coded_gemm` intent router), `ContainerGrantMatrix` (`FK-07` denial-wins lattice) |
 | **Sovereign Identity & Stitch Multiplayer Custody** | `network` | `PrismIdSessionEnvelope`, `SignedJournalBatch`, `StitchFragment` (`STCH` 2-of-3 `(A, B, A ⊕ B)` SHA-256 parity shards), `SurvivalEntropyTracker` |
-| **Job Graph, Rollback Netcode & Delta UORC** | `runtime` | `WorkerJobGraph` (6-stage DAG), `FrameBudgetProfiler` (`16,666 us` KPI), `WorldSnapshot` (`VDNT` + SHA-256), `DeterministicInputJournal`, 64-frame `RollbackSession`, `DeltaUorcSnapshot` |
+| **Job Graph, W5H Governor & Rollback** | `runtime` | `OntologicalRuntimeGovernor` (8-stratum `W5H` + Telos loss), `WorkerJobGraph` (6-stage DAG), `FrameBudgetProfiler` (`16,666 us` KPI), `WorldSnapshot` (`VDNT` + SHA-256), `DeterministicInputJournal`, 64-frame `RollbackSession`, `DeltaUorcSnapshot` |
 | **Verified Prism Engine Kernel** | `prism_kernel` | Constructively proved `{0, 1}` engine invariants, LOD transition guards, UI/LIF/Stitch bounds, and tensor accumulator bounds projected mechanically from Lean 4 (`Tensor.lex.tex`, `Subsystems.lex.tex`) |
 | **Typed Engine Diagnostics** | `error` | `StreamingError`, `TensorComputeError`, `AssetValidationError`, `ShaderValidationError`, `PhysicsStepError`, `EngineConfigError`, `SnapshotCodecError`, `AnimationError`, `CollisionError`, `NavigationError`, `RenderGraphError`, `UiComplianceError`, `CyberneticError`, `StitchCustodyError` |
 
@@ -58,7 +58,7 @@ Every core engine pass reduces to Prism-scheduled semiring contractions over `uo
 
 1. **100% Dogfooded 3D Browser Engine Studio (`site/`)**:
    - Every 3D triangle, physics body, UI compliance box, neuromorphic LIF attention tick, `coded_gemm` SLM command, and Stitch 2-of-3 parity shard on GitHub Pages runs directly inside `verdant-wasm` (`site/engine-worker.mjs` + `site/verdant-wasm.wasm` + on-demand `site/verdant-uorc.wasm`) within the `120 KiB` mobile cold-boot budget.
-   - Drag-and-drop `.glb` import + `OPFS` caching, live WebGL2 ↔ pure Wasm `16x16` software tile PBR switcher, local natural-language SLM prompt bar, live **Verdant Studio** inspector (`site/studio.mjs`), and **Foundry `Prism ID` + `afflom/stitch` Mesh** custody (`site/stitch-mesh.mjs`).
+   - Drag-and-drop `.glb` import + `OPFS` caching, live WebGL2 ↔ pure Wasm `16x16` software tile PBR switcher, local natural-language SLM prompt bar, **6-tab Verdant Studio Workbench** (7 Executable Stakeholder Journeys, Live `SceneWorld` Entity Outliner, Rapid Rust + Wasm Game/App Project Scaffolder across 4 archetypes, Physics/Chronicle, UI/Neural, and Mesh/Trust in `site/studio.mjs`), and **Foundry `Prism ID` + `afflom/stitch` Mesh** custody (`site/stitch-mesh.mjs`) bound to Hologram-Warm Light, Dark, and Immersive tokens.
 2. **Runnable Engine Examples (`crates/verdant-core/examples/`)**:
    - `cargo run -p verdant-core --example tensor_uorc_showcase`
    - `cargo run -p verdant-core --example custom_game_arena`
@@ -86,7 +86,7 @@ Every core engine pass reduces to Prism-scheduled semiring contractions over `uo
 
 - **Zero Magic Constants (`FI-08`)**: `model/parametric-ratchet.toml` locks every unexplained literal ceiling strictly to `0` across all shipped Rust crates (`crates/verdant-tensor/src/`, `crates/verdant-core/src/`, `crates/verdant-wasm/src/`, and `crates/verdant-cli/src/`) and all constructive backend specification modules (`Model.lex.tex`, `Tensor.lex.tex`, `Subsystems.lex.tex`, `DevRel.lex.tex`, `Measures.lex.tex`, `ThreatModel.lex.tex`).
 - **100% Closed Prism Fidelity (`FI-01..FI-08`)**: `fidelity.toml` maintains `0` open questions across all three formal traceability axes (`derived = 100%`, `meant = 100%`, `measured = 100%`).
-- **Single Normative Gate (`just vv`)**: Runs `cargo fmt --check`, `xtask validate` (`R1`–`R6`), SDK lock & template policy checks, provenance and zero-constants ratchet checks (`just fidelity`), workspace `clippy -D warnings`, all unit and conformance tests (`VE-01..VE-30`, `FR-01..FR-03`, `FI-01..FI-08`), `cargo deny`, and the verified WebAssembly guest archive build (`just app`).
+- **Single Normative Gate (`just vv`)**: Runs `cargo fmt --check`, `xtask validate` (`R1`–`R6`), SDK lock & template policy checks, provenance and zero-constants ratchet checks (`just fidelity`), workspace `clippy -D warnings`, all unit and conformance tests (`VE-01..VE-32`, `FR-01..FR-03`, `FI-01..FI-08`), `cargo deny`, and the verified WebAssembly guest archive build (`just app`).
 
 See [CONFORMANCE.md](CONFORMANCE.md) for the generated capability ledger and [ENGINE-VERIFICATION.md](ENGINE-VERIFICATION.md) for the architectural and formal verification report.
 
@@ -103,7 +103,7 @@ See [CONFORMANCE.md](CONFORMANCE.md) for the generated capability ledger and [EN
 | `templates/browser-3d-starter/` | Ready-to-fork playable 3D Orbital Beacon Arena starter template built on `verdant-core`. |
 | `site/` | 100% dogfooded 3D OffscreenCanvas + AudioWorklet Engine Studio (`card.html`, `card.mjs`, `studio.mjs`, `stitch-mesh.mjs`, `engine-worker.mjs`, `scene-renderer.mjs`, `audio-worklet.mjs`), executable Diátaxis documentation (`site/docs/`), and `llms.txt`. |
 | `features/suites/` | Executable Gherkin specifications (`engine.feature`, `frame.feature`, `fidelity.feature`). |
-| `crates/conformance/` | End-to-end conformance and negative-refusal test suites (`VE-01..VE-24`, `FR-01..FR-03`, `CM-02`, `CM-03`). |
+| `crates/conformance/` | End-to-end conformance and negative-refusal test suites (`VE-01..VE-32`, `FR-01..FR-03`, `CM-02`, `CM-03`). |
 | `crates/fidelity/` | Provenance citation auditor, ISO/IEC 15939 measurement scorer, and permanent Zero-Constants Parametric Ratchet (`FI-01..FI-08`). |
 | `app/` | Full-stratum formal specification and Lean 4 verified Core-Wasm guest verifier (`Architecture`, `Design`, `Tensor`, `Subsystems`, `Features`, `Security`, `Compliance`, `DevRel`, `Engine`, `Brand`, `Users`, `Provenance`, `Fidelity`). |
 | `model/` | Normative capability register (`ids.toml`), zero-constants ratchet ceilings (`parametric-ratchet.toml`), charter, and content model. |

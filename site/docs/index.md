@@ -30,13 +30,13 @@ It also scales across floating-origin universe cells, conservation-verified Chro
 - KaiGame developerA runnable 3D game world with ECS, XPBD physics, neuromorphic attention, spatial audio, and a starter template.
 - IrisTechnical artistExternal GLB scene ingestion, skeletal rigs, validated portable WGSL shaders, and progressive UORC transcoding.
 - MiraUI and compliance architectVerified 2D screen-space and 3D diegetic interfaces with 48px touch targets, WCAG contrast, and reachable focus graphs.
-- OttoEngine systems engineerTwelve unified uor-matmul semiring kernels, zero-copy Wasm buffers, 60fps worker budgets, and zero magic constants.
+- OttoEngine systems engineerFifteen unified uor-matmul semiring kernels, zero-copy Wasm buffers, 60fps worker budgets, and zero magic constants.
 - VeraSecurity auditorProof that UORC streaming is monotonic, capability grants enforce denial-wins, and Stitch shards verify SHA-256 seals.
 - WrenBrowser playerA responsive 60fps 3D viewport with progressive UORC streaming, mutual-attention camera framing, and spatial audio.
 - SolMultiplayer world citizenSelf-custodied Foundry Prism ID sessions, 2-of-3 Stitch parity shards, and deterministic peer rollback rooms.
       
 
-## Live WebAssembly 16x16 software tile viewport
+## Live WebAssembly 3D Citadel and tile viewport
 
       
 
@@ -46,15 +46,15 @@ Every page in these docs runs site/verdant-wasm.wasm live so you can test the en
 
   
     
-    Orbit +25 degCycle LOD0..LOD4
+    Orbit +25 degCycle LOD0..LOD4Toggle 3rd-Person IKToggle 16x16 Tile PBR
   
-  Live 16x16 software tile PBR render executed directly by verdant-wasm without conditional GPU flags.
+  Live 3D WebGL2 and 16x16 software tile PBR viewport rendered directly from verdant-wasm zero-copy scene buffers.
   Engine layer table
     
       
 | Layer | Crate or path | Core responsibilities |
       
-| 4 · Browser Studio | site/, crates/verdant-wasm | 3-pass WebGL2 CSM/GGX/ACES and 16x16 tile PBR, LIF/SLM, OPFS, and Stitch |
+| 4 · Browser Studio | site/, crates/verdant-wasm | 6-tab Workbench, Guided Journeys, Game Scaffolder, 3-pass WebGL2, and 16x16 tile PBR |
 | --- | --- | --- |
 | 3 · Engine Core | crates/verdant-core, crates/verdant-cli | TwoLevelBvh CCD, LawfulCameraRig, 22-joint IK, UniversePosition, and StoryAutomaton |
 | 2 · Tensor Substrate | crates/verdant-tensor | Fifteen unified semiring kernels and three zero-decode codec tiers |

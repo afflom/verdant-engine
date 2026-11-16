@@ -41,6 +41,7 @@
     "LOD1",
     "LOD2",
     "LOD3",
+    "LOD4",
     "SHA",
     "GJK",
     "NavMesh",
@@ -131,7 +132,7 @@
       "name": "Otto",
       "prop": "wrench",
       "accessory": "beanie",
-      "need": "Twelve unified uor-matmul semiring kernels, zero-copy Wasm buffers, 60fps worker budgets, and zero magic constants.",
+      "need": "Fifteen unified uor-matmul semiring kernels, zero-copy Wasm buffers, 60fps worker budgets, and zero magic constants.",
       "asks": {
         "discover": "How is the runtime split across crates, workers, tensor kernels, and frame stages?",
         "evaluate": "Are tensor accumulators, frame budgets, snapshots, and UORC decode buffers bounded?",

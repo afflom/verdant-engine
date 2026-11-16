@@ -2676,3 +2676,233 @@ fn engine_ve_31() {
         assert_eq!(std::str::from_utf8(&out).unwrap(), expected);
     }
 }
+
+/// `VE-32`: Verdant Studio themes, six-tab game-creation workbench, seven executable stakeholder journeys, four starter archetypes, and six live WebAssembly documentation embeds satisfy W3C DTCG token purity, Core-Wasm verification, and zero-error C-ABI export parity
+#[test]
+fn engine_ve_32() {
+    use std::collections::BTreeSet;
+    use std::path::Path;
+
+    fn read_leb128_u32(bytes: &[u8], pos: &mut usize) -> u32 {
+        let mut res = 0_u32;
+        let mut shift = 0_u32;
+        loop {
+            let b = bytes[*pos];
+            *pos += 1;
+            res |= u32::from(b & 0x7f) << shift;
+            if (b & 0x80) == 0 {
+                return res;
+            }
+            shift += 7;
+        }
+    }
+
+    fn parse_wasm_exports(bytes: &[u8]) -> BTreeSet<String> {
+        assert_eq!(&bytes[0..4], b"\0asm", "valid Wasm magic header");
+        let mut pos = 8_usize;
+        let mut exports = BTreeSet::new();
+        while pos < bytes.len() {
+            let sec_id = bytes[pos];
+            pos += 1;
+            let sec_len = read_leb128_u32(bytes, &mut pos) as usize;
+            let sec_end = pos + sec_len;
+            if sec_id == 7 {
+                let count = read_leb128_u32(bytes, &mut pos);
+                for _ in 0..count {
+                    let name_len = read_leb128_u32(bytes, &mut pos) as usize;
+                    let name = std::str::from_utf8(&bytes[pos..pos + name_len])
+                        .expect("utf8 Wasm export")
+                        .to_string();
+                    pos += name_len;
+                    let _kind = bytes[pos];
+                    pos += 1;
+                    let _idx = read_leb128_u32(bytes, &mut pos);
+                    exports.insert(name);
+                }
+            }
+            pos = sec_end;
+        }
+        exports
+    }
+
+    fn collect_prefixed_symbols(js: &str, receiver: &str) -> BTreeSet<String> {
+        let needle = format!("{receiver}.verdant_wasm_");
+        let mut found = BTreeSet::new();
+        let mut offset = 0_usize;
+        while let Some(rel) = js[offset..].find(&needle) {
+            let abs = offset + rel;
+            let prev_is_ident = abs > 0
+                && (js.as_bytes()[abs - 1].is_ascii_alphanumeric()
+                    || js.as_bytes()[abs - 1] == b'_');
+            let sym_start = abs + receiver.len() + 1;
+            let after = &js[sym_start..];
+            let end = after
+                .find(|c: char| !c.is_ascii_alphanumeric() && c != '_')
+                .unwrap_or(after.len());
+            if !prev_is_ident {
+                found.insert(after[..end].to_string());
+            }
+            offset = sym_start + end;
+        }
+        found
+    }
+
+    fn contains_hex_color(src: &str) -> Option<String> {
+        let bytes = src.as_bytes();
+        for i in 0..bytes.len() {
+            if bytes[i] == b'#' {
+                // Skip HTML ID selectors like `#ve-canvas` (`ve-` is not all hex digits because `v` is not hex):
+                let tail = &src[i + 1..];
+                let hex_len = tail.bytes().take_while(|c| c.is_ascii_hexdigit()).count();
+                let next_non_id = tail
+                    .as_bytes()
+                    .get(hex_len)
+                    .copied()
+                    .is_none_or(|c| !c.is_ascii_alphanumeric() && c != b'-' && c != b'_');
+                if matches!(hex_len, 3 | 4 | 6 | 8) && next_non_id {
+                    return Some(src[i..=i + hex_len].to_string());
+                }
+            }
+        }
+        None
+    }
+
+    // 1. Core-Wasm `scene:studio` & constructive DevRel predicates (positive + negative refusals):
+    let verdict = verdant_core::prism_kernel::dispatch(b"scene:studio".to_vec())
+        .expect("dispatch scene:studio");
+    assert_eq!(
+        std::str::from_utf8(&verdict).unwrap(),
+        "conformant:themes=3,tabs=6,journeys=7,archetypes=4,doc_embeds=6,controls=13"
+    );
+    assert_eq!(verdant_core::prism_kernel::studioSurfaceDirect(), Ok(true));
+    assert!(verdant_core::prism_kernel::studioThemeTokenPure(true, true));
+    assert!(!verdant_core::prism_kernel::studioThemeTokenPure(
+        false, true
+    ));
+    assert_eq!(
+        verdant_core::prism_kernel::starterArchetypeValid(4, 1, true),
+        Ok(true)
+    );
+    assert_eq!(
+        verdant_core::prism_kernel::starterArchetypeValid(5, 0, true),
+        Ok(false)
+    );
+    assert!(verdant_core::prism_kernel::liveDocEmbedAdmissible(
+        5, 6, true, true
+    ));
+    assert!(!verdant_core::prism_kernel::liveDocEmbedAdmissible(
+        6, 6, true, true
+    ));
+
+    // 2. Verify live C-ABI `verdant_wasm_csm_split_meters` & `verdant_wasm_scene_outliner_aux`:
+    assert_eq!(verdant_wasm::verdant_wasm_init(7), 1);
+    let c0 = verdant_wasm::verdant_wasm_csm_split_meters(0.25, 140.0, 0);
+    let c3 = verdant_wasm::verdant_wasm_csm_split_meters(0.25, 140.0, 3);
+    assert!(c0 > 0.25 && c3 > c0 && (c3 - 140.0).abs() < 1e-4);
+    let out_len = verdant_wasm::verdant_wasm_scene_outliner_aux(8_200);
+    assert!(out_len > 64, "scene_outliner_aux must stage entity table");
+
+    // 3. Audit Studio token purity, 13 DevRel controls, 6 Workbench tabs, 7 Journeys, 4 Archetypes, & C-ABI parity:
+    let repo_root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+    let card_html = std::fs::read_to_string(repo_root.join("site/card.html")).expect("card.html");
+    let card_css = std::fs::read_to_string(repo_root.join("site/card.css")).expect("card.css");
+    let studio_mjs =
+        std::fs::read_to_string(repo_root.join("site/studio.mjs")).expect("studio.mjs");
+    let stitch_mjs =
+        std::fs::read_to_string(repo_root.join("site/stitch-mesh.mjs")).expect("stitch-mesh.mjs");
+    let worker_mjs = std::fs::read_to_string(repo_root.join("site/engine-worker.mjs"))
+        .expect("engine-worker.mjs");
+    let live_embed_mjs = std::fs::read_to_string(repo_root.join("site/docs/live-embed.mjs"))
+        .expect("site/docs/live-embed.mjs");
+
+    assert_eq!(
+        contains_hex_color(&card_css),
+        None,
+        "site/card.css must use 100% W3C DTCG variables with zero raw hex colors"
+    );
+    assert_eq!(
+        contains_hex_color(&studio_mjs),
+        None,
+        "site/studio.mjs must use 100% W3C DTCG variables with zero raw hex colors"
+    );
+    assert_eq!(
+        contains_hex_color(&stitch_mjs),
+        None,
+        "site/stitch-mesh.mjs must use 100% W3C DTCG variables with zero raw hex colors"
+    );
+    assert!(
+        !live_embed_mjs.contains(".catch(() => {})"),
+        "site/docs/live-embed.mjs must never silently swallow WebAssembly errors"
+    );
+
+    for control_id in [
+        "ve-lod-btn",
+        "ve-sim-btn",
+        "ve-cam-btn",
+        "ve-audio-btn",
+        "ve-glb-btn",
+        "ve-snap-btn",
+        "ve-docs-link",
+        "ve-uorc-btn",
+        "ve-studio-btn",
+        "ve-render-btn",
+        "ve-import-btn",
+        "ve-mesh-btn",
+        "ve-prompt-btn",
+    ] {
+        assert!(
+            card_html.contains(&format!("id=\"{control_id}\"")),
+            "site/card.html missing modeled DevRel control #{control_id}"
+        );
+    }
+
+    for tab_key in ["journeys", "outliner", "create", "physics", "ui", "mesh"] {
+        assert!(
+            studio_mjs.contains(&format!("key: \"{tab_key}\"")),
+            "site/studio.mjs missing Workbench tab '{tab_key}'"
+        );
+    }
+    for persona_id in ["kai", "iris", "otto", "wren", "vera", "mira", "sol"] {
+        assert!(
+            studio_mjs.contains(&format!("id: \"{persona_id}\"")),
+            "site/studio.mjs missing executable stakeholder journey '{persona_id}'"
+        );
+    }
+    for arch_slug in [
+        "citadel-explorer",
+        "architectural-walkthrough",
+        "conservation-chronicle-rpg",
+        "compliant-diegetic-app",
+    ] {
+        assert!(
+            studio_mjs.contains(&format!("slug: \"{arch_slug}\"")),
+            "site/studio.mjs missing starter archetype '{arch_slug}'"
+        );
+    }
+
+    // 4. Static WebAssembly C-ABI export verification across cold-boot & uorc binaries:
+    let cold_exports = parse_wasm_exports(
+        &std::fs::read(repo_root.join("site/verdant-wasm.wasm")).expect("cold wasm"),
+    );
+    let uorc_exports = parse_wasm_exports(
+        &std::fs::read(repo_root.join("site/verdant-uorc.wasm")).expect("uorc wasm"),
+    );
+
+    for sym in collect_prefixed_symbols(&live_embed_mjs, "ex")
+        .union(&collect_prefixed_symbols(&live_embed_mjs, "exCold"))
+        .chain(collect_prefixed_symbols(&worker_mjs, "wasm").iter())
+    {
+        assert!(
+            cold_exports.contains(sym),
+            "cold-boot site/verdant-wasm.wasm is missing required C-ABI export '{sym}'"
+        );
+    }
+    for sym in collect_prefixed_symbols(&live_embed_mjs, "uex")
+        .union(&collect_prefixed_symbols(&worker_mjs, "uorcWasm"))
+    {
+        assert!(
+            uorc_exports.contains(sym),
+            "site/verdant-uorc.wasm is missing required C-ABI export '{sym}'"
+        );
+    }
+}

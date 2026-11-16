@@ -235,6 +235,32 @@ Verdant Engine is a universal commercial 3D browser, WebAssembly, and native gam
 - ve-import-btn: Imports any external binary glTF 2.0 (.glb) model into SceneWorld and transcodes progressive multi-LOD UORC frames in WebAssembly.
 - ve-mesh-btn: Signs deterministic input journals with the visitor Prism ID, shards snapshots into Stitch parity fragments, and syncs rollback peers.
 - ve-prompt-btn: Routes natural-language world, camera, LOD4, and Chronicle intents locally via zero-decode coded_gemm SLM contractions.
+- StudioThemeLightPaper: Warm paper light theme bound to canonical Hologram W3C DTCG CSS custom properties with zero hardcoded hex overrides and WCAG 2.2 AA contrast.
+- StudioThemeDarkObsidian: Warm obsidian dark theme bound to canonical Hologram W3C DTCG CSS custom properties across studio panels, dialogs, and reactive 2D telemetry canvases.
+- StudioThemeImmersiveGlass: Translucent backdrop-blurred immersive frame theme adapting studio rails, HUD pills, and workbench surfaces over the canonical Prism backdrop.
+- WorkbenchTabGuidedJourneys: Interactive step-by-step stakeholder journeys executing live WebAssembly viewport, physics, shader, UI, security, and multiplayer actions.
+- WorkbenchTabSceneOutliner: Live SceneWorld entity hierarchy outliner with one-click camera framing, binary glTF 2.0 import and OPFS caching, progressive UORC streaming, and WebGL2 or 16x16 tile PBR switching.
+- WorkbenchTabCreateProject: Rapid game and app project scaffolder generating zero-magic-constant Cargo.toml, src/main.rs, WebAssembly browser harness, GLB scene, and SHA-256 VDNT snapshot files.
+- WorkbenchTabPhysicsAndStory: Live TwoLevelBvh swept-capsule and near-sphere camera clearance monitor, 22-joint Foot IK inspector, OntologicalRuntimeGovernor W5H telos readout, and StoryAutomaton conservation stepper.
+- WorkbenchTabUiAndNeural: Theme-aware tropical and linear 2D/3D UI compliance solver, 48px touch and WCAG 2.2 AA verifier, 8-neuron Q15 LIF spike raster, and local coded_gemm SLM intent tester.
+- WorkbenchTabMeshAndTrust: Denial-wins FK-07 browser container capability grant matrix paired with non-extractable Foundry Prism ID session signing and 2-of-3 SHA-256 Stitch parity shard recovery.
+- StudioJourneyKaiGameDev: Executable studio journey guiding game developers through 22-joint Foot IK possession, swept Citadel traversal, Chronicle interaction, and Rust game project scaffolding.
+- StudioJourneyIrisTechArt: Executable studio journey guiding technical artists through progressive LOD0-to-LOD4 UORC streaming, WebGL2 vs 16x16 software tile PBR comparison, and Khronos GLB export.
+- StudioJourneyOttoSystems: Executable studio journey guiding systems engineers through 15 unified uor-matmul semiring kernels, zero-copy WebAssembly scene buffers, and W5H frame-budget telos telemetry.
+- StudioJourneyWrenPlayer: Executable studio journey guiding browser players through landmark camera orbits, modal spatial audio harmonics, and natural-language coded_gemm SLM world direction.
+- StudioJourneyVeraSecurity: Executable studio journey guiding security auditors through FK-07 denial-wins capability gates, SHA-256 VDNT snapshot verification, and Core-Wasm acceptance queries.
+- StudioJourneyMiraUiCompliance: Executable studio journey guiding UI compliance architects through tropical max-plus widget layout, 48px coarse target proofs, and Light, Dark, and Immersive token contrast.
+- StudioJourneySolStitchMesh: Executable studio journey guiding multiplayer citizens through non-extractable Prism ID signing, 2-of-3 Stitch parity sharding, and single-shard-drop recovery.
+- ArchetypeThirdPersonCitadelExplorer: Playable third-person action-exploration starter archetype combining a 22-joint Foot IK character, swept TwoLevelBvh collision, near-sphere spring-arm camera, and vaulted Citadel geometry.
+- ArchetypeFirstPersonWalkthrough: First-person architectural walkthrough starter archetype featuring head-masked eye possession, LOD4 ultra-high-definition masonry, four-cascade shadows, and Sabine modal chamber acoustics.
+- ArchetypeConservationChronicleRpg: Narrative RPG starter archetype pairing a deadlock-free tropical StoryAutomaton and exact integer ConservationLedger with grounded NPC dialogue and floating-origin universe portals.
+- ArchetypeCompliantDiegetic3DApp: Spatial 3D application starter archetype solving screen-space and diegetic world UI panels via tropical constraints with proved 48px targets, WCAG 2.2 AA contrast, and signed VDNT state.
+- LiveEmbedDocsViewport: Interactive 3D WebGL2 and software tile documentation landing embed rendering zero-copy Citadel buffers from cold-boot verdant-wasm.wasm with orbit, LOD0-to-LOD4, and camera controls.
+- LiveEmbedFirstSceneObserver: Theme-aware getting-started live WebAssembly embed stepping the 8-neuron Q15 LIF mutual-attention observer and interactive landmark salience slots.
+- LiveEmbedCustomGamePhysics: Theme-aware custom-game live WebAssembly embed stepping lawful TwoLevelBvh capsule CCD, near-sphere camera clearance, spline movers, and Woodworth binaural cues.
+- LiveEmbedAssetPipelineLodStream: Theme-aware asset-pipeline live WebAssembly embed measuring monotonic LOD0-to-LOD4 triangle scaling, scene node counts, and UORC streaming envelopes.
+- LiveEmbedArchitectureSemirings: Theme-aware architecture explanation live WebAssembly embed computing four-cascade shadow splits, Sabine RT60 reverberation, and Euler-Bernoulli modal ratios from cold-boot exports.
+- LiveEmbedApiReferenceSnapshot: Progressive API reference live WebAssembly embed rendering instant cold-boot VDNT framing bounds and streaming the SHA-256 snapshot codec for clean vs bit-flipped tamper proofs.
 
 ## Brand Identity and Context of Use
 

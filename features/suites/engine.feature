@@ -216,3 +216,9 @@ Feature: engine
     Given an OntologicalRuntimeGovernor bound to a 60Hz EngineConfig and BrowserCapabilities
     When certify_all_eight_strata, evaluate_frame_telos, recommend_non_coercive_lod, and Core-Wasm dispatch execute across healthy, over-budget, and coercive-locked states
     Then all eight causal strata pass W5H verification with triadic agency product 30, healthy frames achieve zero telos loss and ascend to LOD4, over-budget frames descend unless coercively pinned, and summary:hd, lod:4, and scene:telos answer conformant
+
+  @VE-32 @build
+  Scenario: Verdant Studio themes, six-tab game-creation workbench, seven executable stakeholder journeys, four starter archetypes, and six live WebAssembly documentation embeds satisfy W3C DTCG token purity, Core-Wasm verification, and zero-error C-ABI export parity
+    Given the Verdant Studio frontend modules, Diataxis live-embed harness, compiled WebAssembly binaries, and Core-Wasm guest kernel
+    When scene:studio dispatches, Wasm export tables are audited against JS call sites, and Studio CSS and C-ABI outliner/CSM helpers execute
+    Then Core-Wasm certifies 3 themes, 6 workbench tabs, 7 stakeholder journeys, 4 starter archetypes, 6 live doc embeds, and 13 studio controls, zero raw hex overrides appear in Studio stylesheets, and every cold-boot C-ABI call site resolves in verdant-wasm.wasm

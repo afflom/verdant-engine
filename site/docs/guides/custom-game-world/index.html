@@ -9,54 +9,82 @@
     <link rel="canonical" href="https://afflom.github.io/verdant-engine/docs/guides/custom-game-world/">
     <title>Author scenes, UI compliance, and spatial audio — Verdant Engine</title>
     <style>
+  @font-face { font-family: "Archivo"; font-weight: 600; font-display: swap; src: url("../../../fonts/Archivo-SemiBold.woff2") format("woff2"); }
+  @font-face { font-family: "Geist"; font-weight: 400; font-display: swap; src: url("../../../fonts/Geist-Regular.woff2") format("woff2"); }
+  @font-face { font-family: "Geist"; font-weight: 500; font-display: swap; src: url("../../../fonts/Geist-Medium.woff2") format("woff2"); }
+  @font-face { font-family: "Geist Mono"; font-weight: 400; font-display: swap; src: url("../../../fonts/GeistMono-Regular.woff2") format("woff2"); }
   :root {
     color-scheme: dark;
-    --fd-bg: 208 32% 7%;
-    --fd-panel: 208 26% 12%;
-    --fd-fg: 196 36% 96%;
-    --fd-dim: 204 22% 77%;
-    --fd-line: 204 24% 25%;
-    --fd-line-strong: 168 48% 52%;
-    --fd-accent: 160 72% 66%;
-    --fd-code-bg: 210 30% 10%;
-    --fd-code-fg: 152 76% 78%;
+    --fd-bg: 20 8% 8%;
+    --fd-panel: 20 6% 12%;
+    --fd-fg: 30 10% 96%;
+    --fd-dim: 30 4% 72%;
+    --fd-line: 24 6% 24%;
+    --fd-line-strong: 146 48% 52%;
+    --fd-accent: 145 58% 62%;
+    --fd-brand: 15 99% 46%;
+    --fd-code-bg: 20 7% 14%;
+    --fd-code-fg: 145 62% 76%;
     --fd-spectrum: linear-gradient(100deg, hsl(356 92% 66%) 0%, hsl(28 95% 60%) 18%, hsl(48 95% 58%) 34%, hsl(154 72% 52%) 52%, hsl(192 90% 56%) 70%, hsl(226 90% 68%) 86%, hsl(282 84% 72%) 100%);
   }
   @media (prefers-color-scheme: light) {
-    :root {
+    :root:not(.dark) {
       color-scheme: light;
-      --fd-bg: 48 24% 96%;
+      --fd-bg: 60 14% 94%;
       --fd-panel: 0 0% 100%;
-      --fd-fg: 210 28% 12%;
-      --fd-dim: 210 16% 33%;
-      --fd-line: 210 18% 78%;
-      --fd-line-strong: 164 62% 32%;
-      --fd-accent: 162 76% 24%;
-      --fd-code-bg: 205 25% 93%;
-      --fd-code-fg: 164 78% 20%;
+      --fd-fg: 22 9% 17%;
+      --fd-dim: 28 5% 38%;
+      --fd-line: 54 11% 82%;
+      --fd-line-strong: 150 58% 30%;
+      --fd-accent: 150 64% 26%;
+      --fd-brand: 15 99% 42%;
+      --fd-code-bg: 53 16% 90%;
+      --fd-code-fg: 150 68% 22%;
     }
-    .cs-canvas {
-      background: radial-gradient(120% 140% at 0% 0%, hsl(48 30% 99%), hsl(var(--fd-bg))) !important;
+    :root:not(.dark) .cs-canvas {
+      background: radial-gradient(120% 140% at 0% 0%, hsl(0 0% 100%), hsl(var(--fd-bg))) !important;
     }
-    .cs-card { fill: hsl(0 0% 100%) !important; }
-    .cs-cell { fill: hsl(200 20% 95%) !important; }
-    .cs-track { fill: hsl(200 18% 89%) !important; }
+    :root:not(.dark) .cs-card { fill: hsl(0 0% 100%) !important; }
+    :root:not(.dark) .cs-cell { fill: hsl(53 16% 92%) !important; }
+    :root:not(.dark) .cs-track { fill: hsl(54 12% 86%) !important; }
   }
+  :root.light {
+    color-scheme: light;
+    --fd-bg: 60 14% 94%;
+    --fd-panel: 0 0% 100%;
+    --fd-fg: 22 9% 17%;
+    --fd-dim: 28 5% 38%;
+    --fd-line: 54 11% 82%;
+    --fd-line-strong: 150 58% 30%;
+    --fd-accent: 150 64% 26%;
+    --fd-brand: 15 99% 42%;
+    --fd-code-bg: 53 16% 90%;
+    --fd-code-fg: 150 68% 22%;
+  }
+  :root.light .cs-canvas {
+    background: radial-gradient(120% 140% at 0% 0%, hsl(0 0% 100%), hsl(var(--fd-bg))) !important;
+  }
+  :root.light .cs-card { fill: hsl(0 0% 100%) !important; }
+  :root.light .cs-cell { fill: hsl(53 16% 92%) !important; }
+  :root.light .cs-track { fill: hsl(54 12% 86%) !important; }
   * { box-sizing: border-box; }
   body {
     margin: 0;
     background: hsl(var(--fd-bg));
     color: hsl(var(--fd-fg));
-    font-family: "Space Grotesk", system-ui, -apple-system, sans-serif;
+    font-family: "Geist", system-ui, -apple-system, sans-serif;
     font-size: 1.03125rem;
     line-height: 1.65;
     -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3 {
+    font-family: "Archivo", "Geist", system-ui, sans-serif;
   }
   .ve-nav-wrap {
     position: sticky;
     top: 0;
     z-index: 20;
-    background: hsl(var(--fd-bg) / 0.92);
+    background: hsl(var(--fd-bg) / 0.94);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     border-bottom: 1px solid hsl(var(--fd-line));
@@ -71,26 +99,36 @@
     gap: 0.5rem 0.625rem;
     font-size: 0.9rem;
   }
-  .ve-nav a {
+  .ve-nav a,
+  .ve-nav button.ve-theme-btn {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     min-height: 3rem;
+    min-width: 3rem;
     padding: 0.25rem 0.85rem;
     border-radius: 999px;
     border: 1px solid hsl(var(--fd-line));
     background: hsl(var(--fd-panel));
     color: hsl(var(--fd-fg));
+    font-family: inherit;
+    font-size: 0.9rem;
     text-decoration: none;
     font-weight: 500;
+    cursor: pointer;
   }
   .ve-nav a:first-child {
     border-color: hsl(var(--fd-line-strong));
     color: hsl(var(--fd-accent));
     font-weight: 700;
   }
-  .ve-nav a:hover {
+  .ve-nav a:hover,
+  .ve-nav button.ve-theme-btn:hover {
     border-color: hsl(var(--fd-accent));
     color: hsl(var(--fd-accent));
+  }
+  .ve-nav button.ve-theme-btn {
+    margin-left: auto;
   }
   main a {
     color: hsl(var(--fd-accent));
@@ -128,7 +166,7 @@
   p, li { max-width: 70ch; color: hsl(var(--fd-fg)); }
   li + li { margin-top: 0.35rem; }
   code, pre {
-    font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-family: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
     font-size: 0.88em;
   }
   p code, li code, td code {
@@ -183,7 +221,7 @@
     max-height: 15.5rem;
     border-radius: 0.65rem;
     border: 1px solid hsl(var(--fd-line));
-    background: #081119;
+    background: hsl(var(--fd-code-bg));
   }
   .ve-live-controls {
     display: flex;
@@ -199,7 +237,7 @@
     border: 1px solid hsl(var(--fd-line-strong));
     background: hsl(var(--fd-panel));
     color: hsl(var(--fd-fg));
-    font-family: "JetBrains Mono", monospace;
+    font-family: "Geist Mono", ui-monospace, monospace;
     font-size: 0.8125rem;
     font-weight: 600;
     cursor: pointer;
@@ -223,12 +261,14 @@
     <div class="ve-nav-wrap">
       <nav class="ve-nav" aria-label="Documentation navigation">
         <a href="../../../">3D Studio</a>
+        <a href="../../../#studio=create">Create game</a>
         <a href="../../">Docs home</a>
         <a href="../../getting-started/">Getting started</a>
         <a href="../../guides/custom-game-world/">Authoring &amp; UI</a>
         <a href="../../guides/progressive-uorc-streaming/">UORC &amp; Stitch</a>
         <a href="../../reference/engine-api/">API reference</a>
         <a href="../../explanation/tensor-and-uorc-streaming/">Tensor &amp; Neuro</a>
+        <button type="button" class="ve-theme-btn" data-ve-theme-toggle="" aria-label="Toggle documentation theme">Theme</button>
       </nav>
     </div>
     <main>

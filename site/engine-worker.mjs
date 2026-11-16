@@ -778,6 +778,81 @@ self.onmessage = async ({ data: msg }) => {
       );
       return;
     }
+
+    if (msg.kind === "scene-outliner") {
+      uorcWasm ??= await getUorcWasm();
+      if (!customGlbActive) {
+        uorcWasm.verdant_wasm_set_lod_rank(simHost().verdant_wasm_active_lod_rank() >>> 0);
+      }
+      const len = uorcWasm.verdant_wasm_scene_outliner_aux((msg.observedFrameMicros || 8200) >>> 0) >>> 0;
+      if (len === 0) {
+        self.postMessage({ kind: "scene-outliner", id: msg.id, ok: false });
+        return;
+      }
+      const lines = new TextDecoder().decode(readAuxBytes(uorcWasm)).split("\n");
+      const header = {};
+      for (const kv of (lines[0] || "").split("|")) {
+        const eq = kv.indexOf("=");
+        if (eq > 0) header[kv.slice(0, eq)] = kv.slice(eq + 1);
+      }
+      const entities = lines.slice(1).filter(Boolean).map((line) => {
+        const [id, name, role, tris, coords, minLodScale] = line.split("|");
+        const [cx, cy, cz] = (coords || "0,0,0").split(",").map(Number);
+        return {
+          id: Number(id) || 0,
+          name: name || "Entity",
+          role: role || "StaticArchitecture",
+          tris: Number(tris) || 0,
+          center: [cx || 0, cy || 0, cz || 0],
+          minLodScale: Number(minLodScale) || 0,
+        };
+      });
+      const sh = simHost();
+      self.postMessage({
+        kind: "scene-outliner",
+        id: msg.id,
+        ok: true,
+        header,
+        entities,
+        camera: readSolvedCamera(sh),
+        universeCell: readUniverseCell(sh),
+      });
+      return;
+    }
+
+    if (msg.kind === "set-seed") {
+      const nextSeed = BigInt(Math.max(1, Number(msg.seed) || 7));
+      const rank = wasm.verdant_wasm_active_lod_rank() >>> 0;
+      wasm.verdant_wasm_init(nextSeed);
+      wasm.verdant_wasm_set_lod_rank(rank);
+      if (uorcWasm) {
+        uorcWasm.verdant_wasm_init(nextSeed);
+        uorcWasm.verdant_wasm_set_lod_rank(rank);
+      }
+      customGlbActive = false;
+      const sh = simHost();
+      if (lastAnchorActive) {
+        sh.verdant_wasm_camera_set_anchor(1, lastAnchor[0], lastAnchor[1], lastAnchor[2]);
+      }
+      sh.verdant_wasm_camera_set_pose_intent(
+        lastPose.yaw,
+        lastPose.pitch,
+        lastPose.distMm,
+        lastPose.aspectMilli,
+      );
+      sh.verdant_wasm_scene_rebuild_buffers(0);
+      const cam = readSolvedCamera(sh);
+      const stats = drawScene(cam.eye, cam.lookTarget, currentLod, 0, false);
+      self.postMessage({
+        kind: "seed-updated",
+        id: msg.id,
+        ok: true,
+        seed: Number(nextSeed),
+        tris: stats.tris,
+        camera: cam,
+      });
+      return;
+    }
   } finally {
     pendingCommands = Math.max(0, pendingCommands - 1);
   }

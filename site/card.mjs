@@ -7,13 +7,13 @@ const STREAMING_LODS = [
 ];
 
 const NODE_KERNELS = [
-  { id: 0, query: "kernel:0", sceneQuery: "scene:node:0", name: "Vaulted Citadel & Observer", semiring: "LinearExact", target: [2.2, 3.8, 9.2], dist: 18.5, yawMilli: 460, pitchMilli: 260 },
-  { id: 1, query: "kernel:12", sceneQuery: "scene:lawful", name: "Parabolic Stone Arch Bridge", semiring: "TropicalMinPlus", target: [7.5, 1.8, -4.0], dist: 14, yawMilli: 560, pitchMilli: 340 },
-  { id: 2, query: "kernel:13", sceneQuery: "scene:character", name: "22-Joint Explorer & Foot IK", semiring: "LinearExact", target: [0, 1.6, 11.5], dist: 6.2, possessExplorer: true },
-  { id: 3, query: "kernel:6", sceneQuery: "scene:node:3", name: "XPBD Articulated Rig Bay", semiring: "LinearExact", target: [-6.5, 1.8, 9.0], dist: 10, yawMilli: -540, pitchMilli: 320 },
-  { id: 4, query: "kernel:9", sceneQuery: "scene:ui", name: "Diegetic UI & South Terrace", semiring: "TropicalMinPlus", target: [6.0, 2.0, 8.0], dist: 11, yawMilli: 520, pitchMilli: 300 },
-  { id: 5, query: "kernel:14", sceneQuery: "scene:narrative", name: "Citadel Chronicle", semiring: "TropicalMinPlus", target: [1.5, 2.2, -1.0], dist: 8.5, yawMilli: 350, pitchMilli: 260 },
-  { id: 6, query: "kernel:3", sceneQuery: "scene:node:6", name: "4-Wheel Suspension Vehicle", semiring: "LinearExact", target: [16.5, 1.2, 0], dist: 11, followMover: true },
+  { id: 0, query: "kernel:0", name: "Vaulted Citadel & Observer", semiring: "LinearExact", target: [2.2, 3.8, 9.2], dist: 18.5, yawMilli: 460, pitchMilli: 260 },
+  { id: 1, query: "kernel:12", name: "Parabolic Stone Arch Bridge", semiring: "TropicalMinPlus", target: [7.5, 1.8, -4.0], dist: 14, yawMilli: 560, pitchMilli: 340 },
+  { id: 2, query: "kernel:13", name: "22-Joint Explorer & Foot IK", semiring: "LinearExact", target: [0, 1.6, 11.5], dist: 6.2, possessExplorer: true },
+  { id: 3, query: "kernel:6", name: "XPBD Articulated Rig Bay", semiring: "LinearExact", target: [-6.5, 1.8, 9.0], dist: 10, yawMilli: -540, pitchMilli: 320 },
+  { id: 4, query: "kernel:9", name: "Diegetic UI & South Terrace", semiring: "TropicalMinPlus", target: [6.0, 2.0, 8.0], dist: 11, yawMilli: 520, pitchMilli: 300 },
+  { id: 5, query: "kernel:14", name: "Citadel Chronicle", semiring: "TropicalMinPlus", target: [1.5, 2.2, -1.0], dist: 8.5, yawMilli: 350, pitchMilli: 260 },
+  { id: 6, query: "kernel:3", name: "4-Wheel Suspension Vehicle", semiring: "LinearExact", target: [16.5, 1.2, 0], dist: 11, followMover: true },
 ];
 
 const ACOUSTIC_SPEC = { quantumFrames: 128, stereoChannels: 2, fundamentalHz: 110.0, modeNumers: [9, 25, 49, 81, 121], modeDenom: 9, rt60Ms: 3019 };
@@ -62,7 +62,7 @@ export default async function start({ app, reason, $, chip, show, parse }) {
   let pendingYaw = 0, pendingPitch = 0, pendingDist = 0, jumpQueued = false;
   let solvedEye = [10.2, 8.5, 25.3], solvedTarget = [2.2, 3.8, 9.2], universeCell = [0, 0, 0];
   let dragging = false, rafId = 0;
-  let lastTris = 0, lastBvhVis = 24, lastKernelCount = 15, lastAttendedSlot = 0;
+  let lastTris = 0, lastBvhVis = 24, lastKernelCount = 15;
   let workerBackend = "webgl2", isSoftwareGpu = false, offscreenActive = false, nextReqId = 1;
   let fallbackRenderer = null, fallbackMod = null, studioMod = null;
   const keys = new Set(), pendingCalls = new Map();
@@ -124,7 +124,6 @@ export default async function start({ app, reason, $, chip, show, parse }) {
         if (msg.kind === "telemetry") {
           lastTris = msg.tris || lastTris;
           lastBvhVis = msg.bvhVisible ?? lastBvhVis;
-          lastAttendedSlot = msg.attendedSlot ?? lastAttendedSlot;
           if (Array.isArray(msg.eye)) solvedEye = msg.eye;
           if (Array.isArray(msg.lookTarget)) solvedTarget = msg.lookTarget;
           if (Array.isArray(msg.universeCell)) universeCell = msg.universeCell;
@@ -160,26 +159,26 @@ export default async function start({ app, reason, $, chip, show, parse }) {
     requestRender();
   }
 
+  const applyCamReply = (r) => {
+    if (r?.camera) { solvedEye = r.camera.eye; solvedTarget = r.camera.lookTarget; }
+    if (r?.tris) lastTris = r.tris;
+  };
+
   async function cycleCameraMode(forcePreset = null) {
     const order = ["landmark", "third", "first"];
     camPreset = forcePreset || order[(order.indexOf(camPreset) + 1) % order.length];
     followMover = false;
     if (camPreset === "landmark") {
-      if (camBtn) camBtn.textContent = "Orbit";
-      const r = await callWorker("camera-focus-landmark", { target: [2.2, 3.8, 9.2], dist: 18.5, yawMilli: 460, pitchMilli: 260 });
-      if (r?.camera) { solvedEye = r.camera.eye; solvedTarget = r.camera.lookTarget; }
+      if (camBtn) camBtn.textContent = "Cam: Orbit";
+      applyCamReply(await callWorker("camera-focus-landmark", { target: [2.2, 3.8, 9.2], dist: 18.5, yawMilli: 460, pitchMilli: 260 }));
       chip(statusEl, "Lawful Orbit · Near-Sphere Guarded", "good");
     } else if (camPreset === "third") {
-      if (camBtn) camBtn.textContent = "3rd IK";
-      const r = await callWorker("camera-set-mode", { mode: 0, simClockSec });
-      if (r?.camera) { solvedEye = r.camera.eye; solvedTarget = r.camera.lookTarget; }
-      if (r?.tris) lastTris = r.tris;
+      if (camBtn) camBtn.textContent = "Cam: 3rd IK";
+      applyCamReply(await callWorker("camera-set-mode", { mode: 0, simClockSec }));
       chip(statusEl, "3rd-Person Explorer · WASD + Foot IK", "good");
     } else {
-      if (camBtn) camBtn.textContent = "1st Eye";
-      const r = await callWorker("camera-set-mode", { mode: 1, simClockSec });
-      if (r?.camera) { solvedEye = r.camera.eye; solvedTarget = r.camera.lookTarget; }
-      if (r?.tris) lastTris = r.tris;
+      if (camBtn) camBtn.textContent = "Cam: 1st Eye";
+      applyCamReply(await callWorker("camera-set-mode", { mode: 1, simClockSec }));
       chip(statusEl, "1st-Person Possessed · Head Masked", "good");
     }
     await syncFallbackBuffers();
@@ -264,23 +263,53 @@ export default async function start({ app, reason, $, chip, show, parse }) {
       restoreRawSnapshot, launchStudioModal,
     });
 
-  async function launchStudioModal() {
+  async function focusWorldPoint(target, dist = 12, label = "Entity") {
+    camPreset = "landmark"; followMover = false;
+    if (camBtn) camBtn.textContent = "Cam: Orbit";
+    applyCamReply(await callWorker("camera-focus-landmark", { target, dist, yawMilli: 520, pitchMilli: 300, simClockSec }));
+    await syncFallbackBuffers(); requestRender();
+    chip(statusEl, `Framed ${label} · Guarded Orbit`, "good");
+  }
+
+  async function setWorldSeed(seed) {
+    const r = await callWorker("set-seed", { seed });
+    if (r?.ok) {
+      applyCamReply(r); await syncFallbackBuffers(); requestRender();
+      chip(statusEl, `Seed ${r.seed} · ${STREAMING_LODS[lodIdx].short} (${lastTris} tris)`, "good");
+    }
+    return r;
+  }
+
+  async function launchStudioModal(initialTab = null) {
     const mod = await getStudio();
     mod.openStudioModal({
+      initialTab: typeof initialTab === "string" ? initialTab : null,
       callWorker,
+      queryVerifier,
       onPickGlb: () => glbFileInput?.click(),
       onResetGlb: resetImportedGlb,
-      onToggleRenderMode: () => toggleRenderBackend(),
+      onExportGlb: () => mod.exportGlbDownload(callWorker, STREAMING_LODS[lodIdx].short),
+      onShareSnapshot: () => mod.shareVdntSnapshot(callWorker, chip, statusEl),
+      onToggleRenderMode: (force) => toggleRenderBackend(force),
+      onSetLod: (rank) => streamUorcToRank(rank),
+      onSetCameraMode: (preset) => cycleCameraMode(preset),
+      onSetSimLive: (live) => setSimLive(live),
+      onToggleAudio: () => mod.toggleModalAudio(audioBtn, ACOUSTIC_SPEC, () => solvedEye),
+      onFocusPoint: focusWorldPoint,
+      onFocusPreset: focusNodePreset,
+      onSetSeed: setWorldSeed,
+      onOpenStitchMesh: async () => (await import("./stitch-mesh.mjs")).openStitchMeshModal({ callWorker, onRestoreSnapshot: restoreRawSnapshot }),
       onRoutePrompt: executePromptIntent,
       onInteractStory: interactChronicle,
       getRenderMode: () => renderMode,
+      getLodRank: () => lodIdx,
     });
   }
 
   async function setLod(nextIdx, updateBanner = true) {
     lodIdx = ((nextIdx % STREAMING_LODS.length) + STREAMING_LODS.length) % STREAMING_LODS.length;
     const lod = STREAMING_LODS[lodIdx];
-    if (lodBtn) lodBtn.textContent = `LOD: ${lod.short}`;
+    if (lodBtn) lodBtn.textContent = lod.short;
     if (hudLod) hudLod.textContent = lod.label;
     if (lod.rank < 2) followMover = false;
     if (engineWorker) {
@@ -301,21 +330,19 @@ export default async function start({ app, reason, $, chip, show, parse }) {
     if (followMover || node.id === 3) setSimLive(true);
     if (node.possessExplorer) {
       camPreset = "third";
-      if (camBtn) camBtn.textContent = "3rd IK";
+      if (camBtn) camBtn.textContent = "Cam: 3rd IK";
     } else {
       camPreset = "landmark";
-      if (camBtn) camBtn.textContent = "Orbit";
+      if (camBtn) camBtn.textContent = "Cam: Orbit";
     }
-    const r = await callWorker("camera-focus-landmark", {
+    applyCamReply(await callWorker("camera-focus-landmark", {
       possessExplorer: Boolean(node.possessExplorer),
       target: node.target,
       dist: node.dist,
       yawMilli: node.yawMilli ?? 620,
       pitchMilli: node.pitchMilli ?? 350,
       simClockSec,
-    });
-    if (r?.camera) { solvedEye = r.camera.eye; solvedTarget = r.camera.lookTarget; }
-    if (r?.tris) lastTris = r.tris;
+    }));
     await syncFallbackBuffers();
     requestRender();
     await syncVerifierBanner(node.query);
@@ -325,7 +352,7 @@ export default async function start({ app, reason, $, chip, show, parse }) {
     const clamped = Math.max(0, Math.min(STREAMING_LODS.length - 1, targetRank | 0));
     lodIdx = clamped;
     const lod = STREAMING_LODS[lodIdx];
-    if (lodBtn) lodBtn.textContent = `LOD: ${lod.short}`;
+    if (lodBtn) lodBtn.textContent = lod.short;
     if (hudLod) hudLod.textContent = lod.label;
     if (lod.rank < 2) followMover = false;
     chip(statusEl, `Streaming .uorc -> ${lod.short}…`, "wait");
@@ -348,7 +375,7 @@ export default async function start({ app, reason, $, chip, show, parse }) {
     const f = glbFileInput.files?.[0];
     if (f) { await importGlbBytes(f.name, await f.arrayBuffer()); glbFileInput.value = ""; }
   });
-  studioBtn?.addEventListener("click", launchStudioModal);
+  studioBtn?.addEventListener("click", () => launchStudioModal());
   meshBtn?.addEventListener("click", async () => (await import("./stitch-mesh.mjs")).openStitchMeshModal({ callWorker, onRestoreSnapshot: restoreRawSnapshot }));
   simBtn?.addEventListener("click", () => setSimLive(!simLive));
   camBtn?.addEventListener("click", () => cycleCameraMode());
@@ -378,7 +405,10 @@ export default async function start({ app, reason, $, chip, show, parse }) {
 
   snapBtn?.addEventListener("click", async () => (await getStudio()).shareVdntSnapshot(callWorker, chip, statusEl));
 
-  addEventListener("hashchange", () => { if (location.hash.startsWith("#vdnt=")) restoreHashSnapshotIfPresent(); });
+  addEventListener("hashchange", () => {
+    if (location.hash.startsWith("#vdnt=")) restoreHashSnapshotIfPresent();
+    else if (location.hash.startsWith("#studio=")) launchStudioModal(location.hash.slice(8).trim());
+  });
 
   let lastX = 0, lastY = 0;
   canvas?.addEventListener("pointerdown", (e) => { dragging = true; lastX = e.clientX; lastY = e.clientY; canvas.setPointerCapture?.(e.pointerId); requestRender(); });
@@ -397,12 +427,13 @@ export default async function start({ app, reason, $, chip, show, parse }) {
   addEventListener("keydown", (e) => {
     if (/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName ?? "")) return;
     if (e.code === "KeyE" && !e.repeat) { interactChronicle(); return; }
+    if (e.code === "KeyG" && !e.repeat) { launchStudioModal("create"); return; }
     if (e.code === "Space") jumpQueued = true;
     keys.add(e.code);
     if (hasMoveKeys() && camPreset === "landmark") {
       camPreset = "third";
       followMover = false;
-      if (camBtn) camBtn.textContent = "3rd IK";
+      if (camBtn) camBtn.textContent = "Cam: 3rd IK";
     }
     requestRender();
   });
@@ -461,6 +492,13 @@ export default async function start({ app, reason, $, chip, show, parse }) {
   const badges = [];
   if (telemetryList) {
     telemetryList.replaceChildren();
+    const jLi = document.createElement("li"), jBtn = document.createElement("button");
+    jBtn.type = "button"; jBtn.className = "again"; jBtn.id = "ve-journeys-rail-btn";
+    const jLbl = document.createElement("span"); jLbl.textContent = "Guided Journeys & Create Game";
+    const jBadge = document.createElement("span"); jBadge.className = "tag good"; jBadge.textContent = "7 Personas";
+    jBtn.append(jLbl, jBadge);
+    jBtn.addEventListener("click", () => launchStudioModal("journeys"));
+    jLi.append(jBtn); telemetryList.append(jLi);
     for (const node of NODE_KERNELS) {
       const li = document.createElement("li"), btn = document.createElement("button");
       btn.type = "button"; btn.className = "again";
@@ -480,11 +518,10 @@ export default async function start({ app, reason, $, chip, show, parse }) {
       const r = await callWorker("init", { canvas: offscreen, width: initialDims.w, height: initialDims.h, lod: STREAMING_LODS[lodIdx] }, [offscreen]);
       if (r?.kind === "ready") {
         offscreenActive = true; workerBackend = r.backend || "webgl2"; isSoftwareGpu = Boolean(r.isSoftware);
-        lastTris = r.tris || 0; lastBvhVis = r.bvhVisible ?? lastBvhVis;
-        if (r.tensorKernels) lastKernelCount = r.tensorKernels;
-        if (r.camera) { solvedEye = r.camera.eye; solvedTarget = r.camera.lookTarget; }
-        if (Array.isArray(r.universeCell)) universeCell = r.universeCell;
-        if (r.audioSpec) Object.assign(ACOUSTIC_SPEC, r.audioSpec);
+      applyCamReply(r);
+      if (r.audioSpec) Object.assign(ACOUSTIC_SPEC, r.audioSpec);
+      if (r.tensorKernels) lastKernelCount = r.tensorKernels;
+      if (Array.isArray(r.universeCell)) universeCell = r.universeCell;
         if (hudStats) hudStats.textContent = formatHudStats("");
       }
     } catch { offscreenActive = false; }
@@ -506,6 +543,7 @@ export default async function start({ app, reason, $, chip, show, parse }) {
   }
 
   const bootSnap = await restoreHashSnapshotIfPresent();
+  if (location.hash.startsWith("#studio=")) launchStudioModal(location.hash.slice(8).trim());
   if (!bootSnap) chip(statusEl, `${STREAMING_LODS[lodIdx].short} · ${lastKernelCount}/15 Kernels · Lawful CCD`, "good");
   requestRender();
   (async () => {

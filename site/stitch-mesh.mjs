@@ -3,7 +3,7 @@
 // WebCrypto Prism ID signing, shards live snapshots into 3 STCH (A, B, A ^ B) fragments in Wasm,
 // proves bit-exact 2-of-3 recovery when any shard is dropped, and syncs cross-tab rollback rooms.
 
-import { ensureModalStyles } from "./studio.mjs";
+import { ensureModalStyles, readThemePalette, subscribeThemeChanges } from "./studio.mjs";
 
 let meshDialog = null;
 let broadcastChan = null;
@@ -83,13 +83,14 @@ export function broadcastWorldSnapshot(vdntBytes) {
 function drawShardsCanvas(canvas, shards, droppedIdx, recoveredBytes) {
   const ctx = canvas.getContext("2d");
   if (!ctx) return;
+  const pal = readThemePalette();
   const w = canvas.width;
   const h = canvas.height;
-  ctx.fillStyle = "#081018";
+  ctx.fillStyle = pal.bg;
   ctx.fillRect(0, 0, w, h);
 
-  ctx.fillStyle = "#8ce4be";
-  ctx.font = "600 12px monospace";
+  ctx.fillStyle = pal.fg;
+  ctx.font = `600 12px ${pal.fontMono}`;
   ctx.fillText("AFFLOM/STITCH 2-OF-3 XOR ERASURE CUSTODY · (Shard 0: A, Shard 1: B, Shard 2: A ⊕ B)", 14, 22);
 
   const labels = ["Shard 0 · Half A", "Shard 1 · Half B", "Shard 2 · Parity (A ⊕ B)"];
@@ -97,28 +98,28 @@ function drawShardsCanvas(canvas, shards, droppedIdx, recoveredBytes) {
     const x = 14 + i * 186;
     const dropped = i === droppedIdx;
     const shard = shards?.[i];
-    ctx.fillStyle = dropped ? "rgba(239, 68, 68, 0.16)" : "rgba(16, 185, 129, 0.16)";
-    ctx.strokeStyle = dropped ? "#f87171" : "#34d399";
+    ctx.fillStyle = pal.card;
+    ctx.strokeStyle = dropped ? pal.destructive : pal.success;
     ctx.fillRect(x, 36, 174, 86);
     ctx.strokeRect(x, 36, 174, 86);
-    ctx.fillStyle = "#f1f5f9";
-    ctx.font = "600 12px monospace";
+    ctx.fillStyle = pal.fg;
+    ctx.font = `600 12px ${pal.fontMono}`;
     ctx.fillText(labels[i], x + 8, 56);
-    ctx.font = "11px monospace";
-    ctx.fillStyle = dropped ? "#fca5a5" : "#a7f3d0";
+    ctx.font = `11px ${pal.fontMono}`;
+    ctx.fillStyle = dropped ? pal.destructive : pal.success;
     ctx.fillText(
       dropped ? "DROPPED / OFFLINE PEER" : shard ? `STCH wire: ${shard.byteLength} B` : "Ready",
       x + 8,
       78,
     );
     if (shard && !dropped) {
-      ctx.fillStyle = "#94a3b8";
+      ctx.fillStyle = pal.mutedFg;
       ctx.fillText(`sha256: ${bytesToHex(shard.subarray(9, 17))}…`, x + 8, 100);
     }
   }
 
-  ctx.fillStyle = recoveredBytes ? "#34d399" : "#9ec8e8";
-  ctx.font = "600 12px monospace";
+  ctx.fillStyle = recoveredBytes ? pal.success : pal.mutedFg;
+  ctx.font = `600 12px ${pal.fontMono}`;
   ctx.fillText(
     recoveredBytes
       ? `2-OF-3 RECOVERY PROVEN IN WASM: ${recoveredBytes} BYTES BIT-IDENTICAL TO SOURCE VDNT`
@@ -192,6 +193,12 @@ function buildMeshDialog({ callWorker, onRestoreSnapshot }) {
   btnShard.className = "ve-m-btn primary";
   btnShard.textContent = "Sign & Shard Active World";
 
+  let lastDropIdx = -1;
+  let lastRecovered = 0;
+  subscribeThemeChanges(() => {
+    if (dlg.open) drawShardsCanvas(canvas, lastShards, lastDropIdx, lastRecovered);
+  });
+
   const runShard = async () => {
     const snapReply = await callWorker("encode-snapshot");
     if (!snapReply?.ok || !snapReply.bytes) return;
@@ -199,6 +206,8 @@ function buildMeshDialog({ callWorker, onRestoreSnapshot }) {
     const shardReply = await callWorker("stitch-shard", { bytes: snapReply.bytes });
     if (!shardReply?.ok) return;
     lastShards = shardReply.shards;
+    lastDropIdx = -1;
+    lastRecovered = 0;
     drawShardsCanvas(canvas, lastShards, -1, 0);
     log.textContent =
       `Local Citizen Peer: ${localPeerShort} (tabs linked: ${peerCount})\n` +
@@ -223,6 +232,8 @@ function buildMeshDialog({ callWorker, onRestoreSnapshot }) {
         shardB: lastShards[survivors[1]],
       });
       if (rec?.ok && rec.recovered) {
+        lastDropIdx = dropIdx;
+        lastRecovered = rec.recovered.byteLength;
         drawShardsCanvas(canvas, lastShards, dropIdx, rec.recovered.byteLength);
         await onRestoreSnapshot?.(rec.recovered, `stitch-pair(${survivors[0]},${survivors[1]})`);
         log.textContent =

@@ -55,6 +55,86 @@ structure{
   ]
 }
 
+inductive{
+  name: StudioThemeMode,
+  type_parameters: [],
+  parameters: [],
+  constructors: [
+    {name: lightPaper, fields: []},
+    {name: darkObsidian, fields: []},
+    {name: immersiveGlass, fields: []}
+  ]
+}
+
+structure{
+  name: StudioThemeSpec,
+  type_parameters: [],
+  parameters: [],
+  fields: [
+    {name: index, type: Nat},
+    {name: mode, type: StudioThemeMode},
+    {name: zeroHardcodedHex, type: Bool},
+    {name: wcagContrastCompliant, type: Bool},
+    {name: name, type: String},
+    {name: text, type: String}
+  ]
+}
+
+structure{
+  name: StudioWorkbenchTabSpec,
+  type_parameters: [],
+  parameters: [],
+  fields: [
+    {name: index, type: Nat},
+    {name: lazyLoaded, type: Bool},
+    {name: keyboardOperable, type: Bool},
+    {name: name, type: String},
+    {name: text, type: String}
+  ]
+}
+
+structure{
+  name: StudioJourneySpec,
+  type_parameters: [],
+  parameters: [],
+  fields: [
+    {name: index, type: Nat},
+    {name: stakeholderIndex, type: Nat},
+    {name: executableInStudio, type: Bool},
+    {name: stepCount, type: Nat},
+    {name: name, type: String},
+    {name: text, type: String}
+  ]
+}
+
+structure{
+  name: StarterArchetypeSpec,
+  type_parameters: [],
+  parameters: [],
+  fields: [
+    {name: index, type: Nat},
+    {name: defaultLodRank, type: Nat},
+    {name: cameraModeCode, type: Nat},
+    {name: zeroConstantsRust, type: Bool},
+    {name: name, type: String},
+    {name: text, type: String}
+  ]
+}
+
+structure{
+  name: LiveDocEmbedSpec,
+  type_parameters: [],
+  parameters: [],
+  fields: [
+    {name: index, type: Nat},
+    {name: docPageIndex, type: Nat},
+    {name: bootsFromColdWasm, type: Bool},
+    {name: zeroSilentCatch, type: Bool},
+    {name: name, type: String},
+    {name: text, type: String}
+  ]
+}
+
 definition{
   name: docLanding,
   parameters: [],
@@ -299,6 +379,321 @@ theorem{
   name: devRelCatalogComplete,
   parameters: [],
   statement: ((if ((docsValid 0 (docPages)) && ((sdkValid 0 (sdkArtifacts)) && (studioControlsAccessible))) then (if (((project (docLanding) index) =? 0) && (((project (docFirstScene) index) =? 1) && (((project (docCustomGame) index) =? (Subsystems::sTwo)) && (((project (docAssetPipeline) index) =? (Subsystems::sThree)) && (((project (docArchitecture) index) =? (Subsystems::sFour)) && ((project (docApiReference) index) =? (Subsystems::sFive))))))) then (if (((project (sdkExampleTensorUorc) index) =? 0) && (((project (sdkExampleCustomArena) index) =? 1) && (((project (sdkExampleHeadlessBenchmark) index) =? (Subsystems::sTwo)) && (((project (sdkStarterTemplate) index) =? (Subsystems::sThree)) && (((project (sdkVerdantWasm) index) =? (Subsystems::sFour)) && (((project (sdkVerdantCli) index) =? (Subsystems::sFive)) && ((project (sdkVerdantTensor) index) =? (Subsystems::sSix)))))))) then (((project (controlLodScrubber) index) =? 0) && (((project (controlSimulationMode) index) =? 1) && (((project (controlCameraMode) index) =? (Subsystems::sTwo)) && (((project (controlSpatialAudio) index) =? (Subsystems::sThree)) && (((project (controlGlbExport) index) =? (Subsystems::sFour)) && (((project (controlSnapshotShare) index) =? (Subsystems::sFive)) && (((project (controlDocsNavigation) index) =? (Subsystems::sSix)) && (((project (controlUorcStream) index) =? (Subsystems::sSeven)) && (((project (controlVisualInspector) index) =? (Subsystems::sEight)) && (((project (controlRenderBackend) index) =? (Subsystems::sNine)) && (((project (controlGlbImport) index) =? (Subsystems::sTen)) && (((project (controlStitchMesh) index) =? (Subsystems::sEleven)) && ((project (controlSlmPromptDirector) index) =? (Subsystems::sTwelve)))))))))))))) else false) else false) else false) = true),
+  proof: decide{},
+  axioms: []
+}
+
+definition{name: studioThemeCount, parameters: [], result: Nat, body: (Subsystems::sThree)}
+
+definition{name: studioWorkbenchTabCount, parameters: [], result: Nat, body: (Subsystems::sSix)}
+
+definition{name: studioJourneyCount, parameters: [], result: Nat, body: (Subsystems::sSeven)}
+
+definition{name: starterArchetypeCount, parameters: [], result: Nat, body: (Subsystems::sFour)}
+
+definition{name: liveDocEmbedCount, parameters: [], result: Nat, body: (Subsystems::sSix)}
+
+definition{name: studioControlCount, parameters: [], result: Nat, body: ((Subsystems::sTwelve) + 1)}
+
+definition{
+  name: studioThemeTokenPure,
+  parameters: [zeroHex : Bool, wcagOk : Bool],
+  result: Bool,
+  body: (zeroHex && wcagOk)
+}
+
+definition{
+  name: starterArchetypeValid,
+  parameters: [lodRank : Nat, camCode : Nat, zeroConst : Bool],
+  result: Bool,
+  body: (((lodRank <=? (Subsystems::sFour)) && (camCode <? (Subsystems::sTwo))) && zeroConst)
+}
+
+definition{
+  name: liveDocEmbedAdmissible,
+  parameters: [docIdx : Nat, pageCount : Nat, coldWasm : Bool, zeroSilent : Bool],
+  result: Bool,
+  body: (((docIdx <? pageCount) && coldWasm) && zeroSilent)
+}
+
+definition{
+  name: studioSurfaceDirect,
+  parameters: [],
+  result: Bool,
+  body: ((((studioThemeCount) =? (Subsystems::sThree)) && (((studioWorkbenchTabCount) =? (Subsystems::sSix)) && (((studioJourneyCount) =? (Subsystems::sSeven)) && (((starterArchetypeCount) =? (Subsystems::sFour)) && (((liveDocEmbedCount) =? (Subsystems::sSix)) && ((studioControlCount) =? ((Subsystems::sTwelve) + 1))))))) && ((studioThemeTokenPure true true) && ((not (studioThemeTokenPure false true)) && ((starterArchetypeValid (Subsystems::sFour) 1 true) && ((not (starterArchetypeValid (Subsystems::sFive) 0 true)) && ((liveDocEmbedAdmissible (Subsystems::sFive) (Subsystems::sSix) true true) && (not (liveDocEmbedAdmissible (Subsystems::sSix) (Subsystems::sSix) true true))))))))
+}
+
+definition{
+  name: themeLightPaper,
+  parameters: [],
+  result: StudioThemeSpec,
+  body: (record StudioThemeSpec {index := 0, mode := (ctor StudioThemeMode.lightPaper), zeroHardcodedHex := true, wcagContrastCompliant := true, name := "StudioThemeLightPaper", text := "Warm paper light theme bound to canonical Hologram W3C DTCG CSS custom properties with zero hardcoded hex overrides and WCAG 2.2 AA contrast."})
+}
+
+definition{
+  name: themeDarkObsidian,
+  parameters: [],
+  result: StudioThemeSpec,
+  body: (record StudioThemeSpec {index := 1, mode := (ctor StudioThemeMode.darkObsidian), zeroHardcodedHex := true, wcagContrastCompliant := true, name := "StudioThemeDarkObsidian", text := "Warm obsidian dark theme bound to canonical Hologram W3C DTCG CSS custom properties across studio panels, dialogs, and reactive 2D telemetry canvases."})
+}
+
+definition{
+  name: themeImmersiveGlass,
+  parameters: [],
+  result: StudioThemeSpec,
+  body: (record StudioThemeSpec {index := (Subsystems::sTwo), mode := (ctor StudioThemeMode.immersiveGlass), zeroHardcodedHex := true, wcagContrastCompliant := true, name := "StudioThemeImmersiveGlass", text := "Translucent backdrop-blurred immersive frame theme adapting studio rails, HUD pills, and workbench surfaces over the canonical Prism backdrop."})
+}
+
+definition{
+  name: studioThemes,
+  parameters: [],
+  result: (List StudioThemeSpec),
+  body: (cons (themeLightPaper) (cons (themeDarkObsidian) (cons (themeImmersiveGlass) (nil StudioThemeSpec))))
+}
+
+definition{
+  name: tabGuidedJourneys,
+  parameters: [],
+  result: StudioWorkbenchTabSpec,
+  body: (record StudioWorkbenchTabSpec {index := 0, lazyLoaded := true, keyboardOperable := true, name := "WorkbenchTabGuidedJourneys", text := "Interactive step-by-step stakeholder journeys executing live WebAssembly viewport, physics, shader, UI, security, and multiplayer actions."})
+}
+
+definition{
+  name: tabSceneOutlinerAndAssets,
+  parameters: [],
+  result: StudioWorkbenchTabSpec,
+  body: (record StudioWorkbenchTabSpec {index := 1, lazyLoaded := true, keyboardOperable := true, name := "WorkbenchTabSceneOutliner", text := "Live SceneWorld entity hierarchy outliner with one-click camera framing, binary glTF 2.0 import and OPFS caching, progressive UORC streaming, and WebGL2 or 16x16 tile PBR switching."})
+}
+
+definition{
+  name: tabCreateGameOrApp,
+  parameters: [],
+  result: StudioWorkbenchTabSpec,
+  body: (record StudioWorkbenchTabSpec {index := (Subsystems::sTwo), lazyLoaded := true, keyboardOperable := true, name := "WorkbenchTabCreateProject", text := "Rapid game and app project scaffolder generating zero-magic-constant Cargo.toml, src/main.rs, WebAssembly browser harness, GLB scene, and SHA-256 VDNT snapshot files."})
+}
+
+definition{
+  name: tabLawfulPhysicsIkAndChronicle,
+  parameters: [],
+  result: StudioWorkbenchTabSpec,
+  body: (record StudioWorkbenchTabSpec {index := (Subsystems::sThree), lazyLoaded := true, keyboardOperable := true, name := "WorkbenchTabPhysicsAndStory", text := "Live TwoLevelBvh swept-capsule and near-sphere camera clearance monitor, 22-joint Foot IK inspector, OntologicalRuntimeGovernor W5H telos readout, and StoryAutomaton conservation stepper."})
+}
+
+definition{
+  name: tabFormalUiAndCybernetics,
+  parameters: [],
+  result: StudioWorkbenchTabSpec,
+  body: (record StudioWorkbenchTabSpec {index := (Subsystems::sFour), lazyLoaded := true, keyboardOperable := true, name := "WorkbenchTabUiAndNeural", text := "Theme-aware tropical and linear 2D/3D UI compliance solver, 48px touch and WCAG 2.2 AA verifier, 8-neuron Q15 LIF spike raster, and local coded_gemm SLM intent tester."})
+}
+
+definition{
+  name: tabPrismIdStitchAndCapabilities,
+  parameters: [],
+  result: StudioWorkbenchTabSpec,
+  body: (record StudioWorkbenchTabSpec {index := (Subsystems::sFive), lazyLoaded := true, keyboardOperable := true, name := "WorkbenchTabMeshAndTrust", text := "Denial-wins FK-07 browser container capability grant matrix paired with non-extractable Foundry Prism ID session signing and 2-of-3 SHA-256 Stitch parity shard recovery."})
+}
+
+definition{
+  name: studioWorkbenchTabs,
+  parameters: [],
+  result: (List StudioWorkbenchTabSpec),
+  body: (cons (tabGuidedJourneys) (cons (tabSceneOutlinerAndAssets) (cons (tabCreateGameOrApp) (cons (tabLawfulPhysicsIkAndChronicle) (cons (tabFormalUiAndCybernetics) (cons (tabPrismIdStitchAndCapabilities) (nil StudioWorkbenchTabSpec)))))))
+}
+
+definition{
+  name: studioJourneyGameDeveloper,
+  parameters: [],
+  result: StudioJourneySpec,
+  body: (record StudioJourneySpec {index := 0, stakeholderIndex := 0, executableInStudio := true, stepCount := (Subsystems::sFour), name := "StudioJourneyKaiGameDev", text := "Executable studio journey guiding game developers through 22-joint Foot IK possession, swept Citadel traversal, Chronicle interaction, and Rust game project scaffolding."})
+}
+
+definition{
+  name: studioJourneyTechnicalArtist,
+  parameters: [],
+  result: StudioJourneySpec,
+  body: (record StudioJourneySpec {index := 1, stakeholderIndex := 1, executableInStudio := true, stepCount := (Subsystems::sThree), name := "StudioJourneyIrisTechArt", text := "Executable studio journey guiding technical artists through progressive LOD0-to-LOD4 UORC streaming, WebGL2 vs 16x16 software tile PBR comparison, and Khronos GLB export."})
+}
+
+definition{
+  name: studioJourneySystemsEngineer,
+  parameters: [],
+  result: StudioJourneySpec,
+  body: (record StudioJourneySpec {index := (Subsystems::sTwo), stakeholderIndex := (Subsystems::sTwo), executableInStudio := true, stepCount := (Subsystems::sThree), name := "StudioJourneyOttoSystems", text := "Executable studio journey guiding systems engineers through 15 unified uor-matmul semiring kernels, zero-copy WebAssembly scene buffers, and W5H frame-budget telos telemetry."})
+}
+
+definition{
+  name: studioJourneyBrowserPlayer,
+  parameters: [],
+  result: StudioJourneySpec,
+  body: (record StudioJourneySpec {index := (Subsystems::sThree), stakeholderIndex := (Subsystems::sThree), executableInStudio := true, stepCount := (Subsystems::sThree), name := "StudioJourneyWrenPlayer", text := "Executable studio journey guiding browser players through landmark camera orbits, modal spatial audio harmonics, and natural-language coded_gemm SLM world direction."})
+}
+
+definition{
+  name: studioJourneySecurityAuditor,
+  parameters: [],
+  result: StudioJourneySpec,
+  body: (record StudioJourneySpec {index := (Subsystems::sFour), stakeholderIndex := (Subsystems::sFour), executableInStudio := true, stepCount := (Subsystems::sThree), name := "StudioJourneyVeraSecurity", text := "Executable studio journey guiding security auditors through FK-07 denial-wins capability gates, SHA-256 VDNT snapshot verification, and Core-Wasm acceptance queries."})
+}
+
+definition{
+  name: studioJourneyUiComplianceArchitect,
+  parameters: [],
+  result: StudioJourneySpec,
+  body: (record StudioJourneySpec {index := (Subsystems::sFive), stakeholderIndex := (Subsystems::sFive), executableInStudio := true, stepCount := (Subsystems::sThree), name := "StudioJourneyMiraUiCompliance", text := "Executable studio journey guiding UI compliance architects through tropical max-plus widget layout, 48px coarse target proofs, and Light, Dark, and Immersive token contrast."})
+}
+
+definition{
+  name: studioJourneyMultiplayerCitizen,
+  parameters: [],
+  result: StudioJourneySpec,
+  body: (record StudioJourneySpec {index := (Subsystems::sSix), stakeholderIndex := (Subsystems::sSix), executableInStudio := true, stepCount := (Subsystems::sThree), name := "StudioJourneySolStitchMesh", text := "Executable studio journey guiding multiplayer citizens through non-extractable Prism ID signing, 2-of-3 Stitch parity sharding, and single-shard-drop recovery."})
+}
+
+definition{
+  name: studioJourneys,
+  parameters: [],
+  result: (List StudioJourneySpec),
+  body: (cons (studioJourneyGameDeveloper) (cons (studioJourneyTechnicalArtist) (cons (studioJourneySystemsEngineer) (cons (studioJourneyBrowserPlayer) (cons (studioJourneySecurityAuditor) (cons (studioJourneyUiComplianceArchitect) (cons (studioJourneyMultiplayerCitizen) (nil StudioJourneySpec))))))))
+}
+
+definition{
+  name: archetypeCitadelExplorer,
+  parameters: [],
+  result: StarterArchetypeSpec,
+  body: (record StarterArchetypeSpec {index := 0, defaultLodRank := (Subsystems::sThree), cameraModeCode := 0, zeroConstantsRust := true, name := "ArchetypeThirdPersonCitadelExplorer", text := "Playable third-person action-exploration starter archetype combining a 22-joint Foot IK character, swept TwoLevelBvh collision, near-sphere spring-arm camera, and vaulted Citadel geometry."})
+}
+
+definition{
+  name: archetypeArchitecturalWalkthrough,
+  parameters: [],
+  result: StarterArchetypeSpec,
+  body: (record StarterArchetypeSpec {index := 1, defaultLodRank := (Subsystems::sFour), cameraModeCode := 1, zeroConstantsRust := true, name := "ArchetypeFirstPersonWalkthrough", text := "First-person architectural walkthrough starter archetype featuring head-masked eye possession, LOD4 ultra-high-definition masonry, four-cascade shadows, and Sabine modal chamber acoustics."})
+}
+
+definition{
+  name: archetypeConservationChronicle,
+  parameters: [],
+  result: StarterArchetypeSpec,
+  body: (record StarterArchetypeSpec {index := (Subsystems::sTwo), defaultLodRank := (Subsystems::sThree), cameraModeCode := 0, zeroConstantsRust := true, name := "ArchetypeConservationChronicleRpg", text := "Narrative RPG starter archetype pairing a deadlock-free tropical StoryAutomaton and exact integer ConservationLedger with grounded NPC dialogue and floating-origin universe portals."})
+}
+
+definition{
+  name: archetypeCompliantDiegeticApp,
+  parameters: [],
+  result: StarterArchetypeSpec,
+  body: (record StarterArchetypeSpec {index := (Subsystems::sThree), defaultLodRank := (Subsystems::sTwo), cameraModeCode := 0, zeroConstantsRust := true, name := "ArchetypeCompliantDiegetic3DApp", text := "Spatial 3D application starter archetype solving screen-space and diegetic world UI panels via tropical constraints with proved 48px targets, WCAG 2.2 AA contrast, and signed VDNT state."})
+}
+
+definition{
+  name: starterArchetypes,
+  parameters: [],
+  result: (List StarterArchetypeSpec),
+  body: (cons (archetypeCitadelExplorer) (cons (archetypeArchitecturalWalkthrough) (cons (archetypeConservationChronicle) (cons (archetypeCompliantDiegeticApp) (nil StarterArchetypeSpec)))))
+}
+
+definition{
+  name: embedDocsViewport,
+  parameters: [],
+  result: LiveDocEmbedSpec,
+  body: (record LiveDocEmbedSpec {index := 0, docPageIndex := 0, bootsFromColdWasm := true, zeroSilentCatch := true, name := "LiveEmbedDocsViewport", text := "Interactive 3D WebGL2 and software tile documentation landing embed rendering zero-copy Citadel buffers from cold-boot verdant-wasm.wasm with orbit, LOD0-to-LOD4, and camera controls."})
+}
+
+definition{
+  name: embedGettingStartedObserver,
+  parameters: [],
+  result: LiveDocEmbedSpec,
+  body: (record LiveDocEmbedSpec {index := 1, docPageIndex := 1, bootsFromColdWasm := true, zeroSilentCatch := true, name := "LiveEmbedFirstSceneObserver", text := "Theme-aware getting-started live WebAssembly embed stepping the 8-neuron Q15 LIF mutual-attention observer and interactive landmark salience slots."})
+}
+
+definition{
+  name: embedCustomGamePhysics,
+  parameters: [],
+  result: LiveDocEmbedSpec,
+  body: (record LiveDocEmbedSpec {index := (Subsystems::sTwo), docPageIndex := (Subsystems::sTwo), bootsFromColdWasm := true, zeroSilentCatch := true, name := "LiveEmbedCustomGamePhysics", text := "Theme-aware custom-game live WebAssembly embed stepping lawful TwoLevelBvh capsule CCD, near-sphere camera clearance, spline movers, and Woodworth binaural cues."})
+}
+
+definition{
+  name: embedAssetPipelineLodStream,
+  parameters: [],
+  result: LiveDocEmbedSpec,
+  body: (record LiveDocEmbedSpec {index := (Subsystems::sThree), docPageIndex := (Subsystems::sThree), bootsFromColdWasm := true, zeroSilentCatch := true, name := "LiveEmbedAssetPipelineLodStream", text := "Theme-aware asset-pipeline live WebAssembly embed measuring monotonic LOD0-to-LOD4 triangle scaling, scene node counts, and UORC streaming envelopes."})
+}
+
+definition{
+  name: embedArchitectureSemirings,
+  parameters: [],
+  result: LiveDocEmbedSpec,
+  body: (record LiveDocEmbedSpec {index := (Subsystems::sFour), docPageIndex := (Subsystems::sFour), bootsFromColdWasm := true, zeroSilentCatch := true, name := "LiveEmbedArchitectureSemirings", text := "Theme-aware architecture explanation live WebAssembly embed computing four-cascade shadow splits, Sabine RT60 reverberation, and Euler-Bernoulli modal ratios from cold-boot exports."})
+}
+
+definition{
+  name: embedApiReferenceSnapshot,
+  parameters: [],
+  result: LiveDocEmbedSpec,
+  body: (record LiveDocEmbedSpec {index := (Subsystems::sFive), docPageIndex := (Subsystems::sFive), bootsFromColdWasm := true, zeroSilentCatch := true, name := "LiveEmbedApiReferenceSnapshot", text := "Progressive API reference live WebAssembly embed rendering instant cold-boot VDNT framing bounds and streaming the SHA-256 snapshot codec for clean vs bit-flipped tamper proofs."})
+}
+
+definition{
+  name: liveDocEmbeds,
+  parameters: [],
+  result: (List LiveDocEmbedSpec),
+  body: (cons (embedDocsViewport) (cons (embedGettingStartedObserver) (cons (embedCustomGamePhysics) (cons (embedAssetPipelineLodStream) (cons (embedArchitectureSemirings) (cons (embedApiReferenceSnapshot) (nil LiveDocEmbedSpec)))))))
+}
+
+definition{
+  name: themesValid,
+  parameters: [pos : Nat, items : (List StudioThemeSpec)],
+  result: Bool,
+  body: (match items
+    | List.nil => true
+    | List.cons item rest => (if (((project item index) =? pos) && (studioThemeTokenPure (project item zeroHardcodedHex) (project item wcagContrastCompliant))) then (themesValid (pos + 1) rest) else false)),
+  recursive_argument: items
+}
+
+definition{
+  name: tabsValid,
+  parameters: [pos : Nat, items : (List StudioWorkbenchTabSpec)],
+  result: Bool,
+  body: (match items
+    | List.nil => true
+    | List.cons item rest => (if (((project item index) =? pos) && ((project item lazyLoaded) && (project item keyboardOperable))) then (tabsValid (pos + 1) rest) else false)),
+  recursive_argument: items
+}
+
+definition{
+  name: journeysValid,
+  parameters: [pos : Nat, items : (List StudioJourneySpec)],
+  result: Bool,
+  body: (match items
+    | List.nil => true
+    | List.cons item rest => (if (((project item index) =? pos) && (((project item stakeholderIndex) =? pos) && ((project item executableInStudio) && ((Subsystems::sThree) <=? (project item stepCount))))) then (journeysValid (pos + 1) rest) else false)),
+  recursive_argument: items
+}
+
+definition{
+  name: archetypesValid,
+  parameters: [pos : Nat, items : (List StarterArchetypeSpec)],
+  result: Bool,
+  body: (match items
+    | List.nil => true
+    | List.cons item rest => (if (((project item index) =? pos) && (starterArchetypeValid (project item defaultLodRank) (project item cameraModeCode) (project item zeroConstantsRust))) then (archetypesValid (pos + 1) rest) else false)),
+  recursive_argument: items
+}
+
+definition{
+  name: embedsValid,
+  parameters: [pos : Nat, items : (List LiveDocEmbedSpec)],
+  result: Bool,
+  body: (match items
+    | List.nil => true
+    | List.cons item rest => (if (((project item index) =? pos) && (((project item docPageIndex) =? pos) && (liveDocEmbedAdmissible (project item docPageIndex) (liveDocEmbedCount) (project item bootsFromColdWasm) (project item zeroSilentCatch)))) then (embedsValid (pos + 1) rest) else false)),
+  recursive_argument: items
+}
+
+theorem{
+  name: studioWorkbenchAndArchetypesComplete,
+  parameters: [],
+  statement: ((if ((studioSurfaceDirect) && ((themesValid 0 (studioThemes)) && ((tabsValid 0 (studioWorkbenchTabs)) && ((journeysValid 0 (studioJourneys)) && ((archetypesValid 0 (starterArchetypes)) && (embedsValid 0 (liveDocEmbeds))))))) then (if (((project (themeLightPaper) index) =? 0) && (((project (themeDarkObsidian) index) =? 1) && ((project (themeImmersiveGlass) index) =? (Subsystems::sTwo)))) then (if (((project (tabGuidedJourneys) index) =? 0) && (((project (tabSceneOutlinerAndAssets) index) =? 1) && (((project (tabCreateGameOrApp) index) =? (Subsystems::sTwo)) && (((project (tabLawfulPhysicsIkAndChronicle) index) =? (Subsystems::sThree)) && (((project (tabFormalUiAndCybernetics) index) =? (Subsystems::sFour)) && ((project (tabPrismIdStitchAndCapabilities) index) =? (Subsystems::sFive))))))) then (if (((project (studioJourneyGameDeveloper) index) =? 0) && (((project (studioJourneyTechnicalArtist) index) =? 1) && (((project (studioJourneySystemsEngineer) index) =? (Subsystems::sTwo)) && (((project (studioJourneyBrowserPlayer) index) =? (Subsystems::sThree)) && (((project (studioJourneySecurityAuditor) index) =? (Subsystems::sFour)) && (((project (studioJourneyUiComplianceArchitect) index) =? (Subsystems::sFive)) && ((project (studioJourneyMultiplayerCitizen) index) =? (Subsystems::sSix)))))))) then (if (((project (archetypeCitadelExplorer) index) =? 0) && (((project (archetypeArchitecturalWalkthrough) index) =? 1) && (((project (archetypeConservationChronicle) index) =? (Subsystems::sTwo)) && ((project (archetypeCompliantDiegeticApp) index) =? (Subsystems::sThree))))) then (((project (embedDocsViewport) index) =? 0) && (((project (embedGettingStartedObserver) index) =? 1) && (((project (embedCustomGamePhysics) index) =? (Subsystems::sTwo)) && (((project (embedAssetPipelineLodStream) index) =? (Subsystems::sThree)) && (((project (embedArchitectureSemirings) index) =? (Subsystems::sFour)) && ((project (embedApiReferenceSnapshot) index) =? (Subsystems::sFive))))))) else false) else false) else false) else false) else false) = true),
   proof: decide{},
   axioms: []
 }

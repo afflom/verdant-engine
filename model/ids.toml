@@ -294,3 +294,9 @@ id = "FI-08"
 level = "build"
 suite = "fidelity"
 statement = "The permanent zero-constants parametric ratchet enforces zero magic float or integer literals across verdant-core and constructive LexLean modules and refuses planted constants"
+
+[[id]]
+id = "VE-32"
+level = "build"
+suite = "engine"
+statement = "Verdant Studio themes, six-tab game-creation workbench, seven executable stakeholder journeys, four starter archetypes, and six live WebAssembly documentation embeds satisfy W3C DTCG token purity, Core-Wasm verification, and zero-error C-ABI export parity"

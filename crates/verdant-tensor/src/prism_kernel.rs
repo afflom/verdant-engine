@@ -139,6 +139,427 @@ pub enum CodedMatrixTier {
     sparseRuns = (1 << 1),
 }
 
+pub fn liveDocEmbedAdmissible(
+    docIdx: u64,
+    pageCount: u64,
+    coldWasm: bool,
+    zeroSilent: bool,
+) -> bool {
+    {
+        let _x_9 = (docIdx < pageCount);
+        match _x_9 {
+            false => match _x_9 {
+                false => _x_9,
+                true => zeroSilent,
+            },
+            true => match coldWasm {
+                false => coldWasm,
+                true => zeroSilent,
+            },
+        }
+    }
+}
+
+pub fn liveDocEmbedCount() -> Result<u64, self::ComputeError> {
+    Ok({
+        let _x_1 = sSix()?;
+        _x_1
+    })
+}
+
+pub fn starterArchetypeCount() -> Result<u64, self::ComputeError> {
+    Ok({
+        let _x_1 = sFour()?;
+        _x_1
+    })
+}
+
+pub fn starterArchetypeValid(
+    lodRank: u64,
+    camCode: u64,
+    zeroConst: bool,
+) -> Result<bool, self::ComputeError> {
+    Ok({
+        let _x_11 = sFour()?;
+        {
+            let _x_12 = (lodRank <= _x_11);
+            match _x_12 {
+                false => match _x_12 {
+                    false => _x_12,
+                    true => zeroConst,
+                },
+                true => {
+                    let _x_40 = (1 << 1);
+                    {
+                        let _x_41 = (camCode < _x_40);
+                        match _x_41 {
+                            false => _x_41,
+                            true => zeroConst,
+                        }
+                    }
+                }
+            }
+        }
+    })
+}
+
+pub fn studioControlCount() -> Result<u64, self::ComputeError> {
+    Ok({
+        let _x_4 = sTwelve()?;
+        {
+            let _x_5 = 1;
+            {
+                let _x_15 = core::convert::identity::<u64>(_x_4)
+                    .checked_add(_x_5)
+                    .ok_or(self::ComputeError::AddOverflow)?;
+                _x_15
+            }
+        }
+    })
+}
+
+pub fn studioJourneyCount() -> Result<u64, self::ComputeError> {
+    Ok({
+        let _x_1 = sSeven()?;
+        _x_1
+    })
+}
+
+pub fn studioSurfaceDirect() -> Result<bool, self::ComputeError> {
+    Ok({
+        let _x_196 = ((1 << 1) + 1);
+        {
+            let _x_197 = ((1 << 1) + 1);
+            {
+                let _x_132 = (_x_196 == _x_197);
+                match _x_132 {
+                    false => {
+                        let _y_137 = _x_132;
+                        match _y_137 {
+                            false => _y_137,
+                            true => {
+                                let _x_327 = sFour()?;
+                                {
+                                    let _x_328 = 1;
+                                    {
+                                        let _x_330 = starterArchetypeValid(_x_327, _x_328, _y_137)?;
+                                        match _x_330 {
+                                            false => _x_330,
+                                            true => {
+                                                let _x_348 = sFive()?;
+                                                {
+                                                    let _x_349 = 0;
+                                                    {
+                                                        let _x_351 = starterArchetypeValid(
+                                                            _x_348, _x_349, _x_330,
+                                                        )?;
+                                                        match _x_351 {
+                                                            false => {
+                                                                let _x_477 = sFive()?;
+                                                                {
+                                                                    let _x_478 = sSix()?;
+                                                                    {
+                                                                        let _x_479 =
+                                                                            liveDocEmbedAdmissible(
+                                                                                _x_477, _x_478,
+                                                                                _x_330, _x_330,
+                                                                            );
+                                                                        match _x_479 {
+                                                                            false => _x_479,
+                                                                            true => {
+                                                                                let _x_480 =
+                                                                                    sSix()?;
+                                                                                {
+                                                                                    let _x_481 = liveDocEmbedAdmissible(_x_480, _x_480, _x_479, _x_479);
+                                                                                    match _x_481 {
+                                                                                        false => {
+                                                                                            _x_479
+                                                                                        }
+                                                                                        true => {
+                                                                                            _x_351
+                                                                                        }
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                            true => {
+                                                                let _x_361 = false;
+                                                                _x_361
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    true => {
+                        let _x_407 = sSix()?;
+                        {
+                            let _x_408 = sSix()?;
+                            {
+                                let _x_409 = (_x_407 == _x_408);
+                                match _x_409 {
+                                    false => {
+                                        let prod_local_0 = _x_409;
+                                        match prod_local_0 {
+                                            false => prod_local_0,
+                                            true => {
+                                                let prod_local_1 = sFour()?;
+                                                {
+                                                    let prod_local_2 = 1;
+                                                    {
+                                                        let prod_local_3 = starterArchetypeValid(
+                                                            prod_local_1,
+                                                            prod_local_2,
+                                                            prod_local_0,
+                                                        )?;
+                                                        match prod_local_3 {
+                                                            false => prod_local_3,
+                                                            true => {
+                                                                let prod_local_4 = sFive()?;
+                                                                {
+                                                                    let prod_local_5 = 0;
+                                                                    {
+                                                                        let prod_local_6 =
+                                                                            starterArchetypeValid(
+                                                                                prod_local_4,
+                                                                                prod_local_5,
+                                                                                prod_local_3,
+                                                                            )?;
+                                                                        match prod_local_6 {
+                                                                            false => {
+                                                                                let prod_local_7 =
+                                                                                    sFive()?;
+                                                                                {
+                                                                                    let prod_local_8 =
+                                                                                        sSix()?;
+                                                                                    {
+                                                                                        let prod_local_9 = liveDocEmbedAdmissible(prod_local_7, prod_local_8, prod_local_3, prod_local_3);
+                                                                                        match prod_local_9 {
+        false => prod_local_9,
+        true => { let prod_local_10 = sSix()?; { let prod_local_11 = liveDocEmbedAdmissible(prod_local_10, prod_local_10, prod_local_9, prod_local_9); match prod_local_11 {
+        false => prod_local_9,
+        true => prod_local_6,
+    } } },
+    }
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                            true => {
+                                                                                let prod_local_12 =
+                                                                                    false;
+                                                                                prod_local_12
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                    true => {
+                                        let _x_433 = sSeven()?;
+                                        {
+                                            let _x_434 = sSeven()?;
+                                            {
+                                                let _x_435 = (_x_433 == _x_434);
+                                                match _x_435 {
+                                                    false => {
+                                                        let prod_local_13 = _x_435;
+                                                        match prod_local_13 {
+                                                            false => prod_local_13,
+                                                            true => {
+                                                                let prod_local_14 = sFour()?;
+                                                                {
+                                                                    let prod_local_15 = 1;
+                                                                    {
+                                                                        let prod_local_16 =
+                                                                            starterArchetypeValid(
+                                                                                prod_local_14,
+                                                                                prod_local_15,
+                                                                                prod_local_13,
+                                                                            )?;
+                                                                        match prod_local_16 {
+                                                                            false => prod_local_16,
+                                                                            true => {
+                                                                                let prod_local_17 =
+                                                                                    sFive()?;
+                                                                                {
+                                                                                    let prod_local_18 =
+                                                                                        0;
+                                                                                    {
+                                                                                        let prod_local_19 = starterArchetypeValid(prod_local_17, prod_local_18, prod_local_16)?;
+                                                                                        match prod_local_19 {
+        false => { let prod_local_20 = sFive()?; { let prod_local_21 = sSix()?; { let prod_local_22 = liveDocEmbedAdmissible(prod_local_20, prod_local_21, prod_local_16, prod_local_16); match prod_local_22 {
+        false => prod_local_22,
+        true => { let prod_local_23 = sSix()?; { let prod_local_24 = liveDocEmbedAdmissible(prod_local_23, prod_local_23, prod_local_22, prod_local_22); match prod_local_24 {
+        false => prod_local_22,
+        true => prod_local_19,
+    } } },
+    } } } },
+        true => { let prod_local_25 = false; prod_local_25 },
+    }
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                    true => {
+                                                        let _x_452 = sFour()?;
+                                                        {
+                                                            let _x_453 = sFour()?;
+                                                            {
+                                                                let _x_454 = (_x_452 == _x_453);
+                                                                match _x_454 {
+                                                                    false => {
+                                                                        let prod_local_26 = _x_454;
+                                                                        match prod_local_26 {
+                                                                            false => prod_local_26,
+                                                                            true => {
+                                                                                let prod_local_27 =
+                                                                                    sFour()?;
+                                                                                {
+                                                                                    let prod_local_28 =
+                                                                                        1;
+                                                                                    {
+                                                                                        let prod_local_29 = starterArchetypeValid(prod_local_27, prod_local_28, prod_local_26)?;
+                                                                                        match prod_local_29 {
+        false => prod_local_29,
+        true => { let prod_local_30 = sFive()?; { let prod_local_31 = 0; { let prod_local_32 = starterArchetypeValid(prod_local_30, prod_local_31, prod_local_29)?; match prod_local_32 {
+        false => { let prod_local_33 = sFive()?; { let prod_local_34 = sSix()?; { let prod_local_35 = liveDocEmbedAdmissible(prod_local_33, prod_local_34, prod_local_29, prod_local_29); match prod_local_35 {
+        false => prod_local_35,
+        true => { let prod_local_36 = sSix()?; { let prod_local_37 = liveDocEmbedAdmissible(prod_local_36, prod_local_36, prod_local_35, prod_local_35); match prod_local_37 {
+        false => prod_local_35,
+        true => prod_local_32,
+    } } },
+    } } } },
+        true => { let prod_local_38 = false; prod_local_38 },
+    } } } },
+    }
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                    true => {
+                                                                        let _x_464 = sSix()?;
+                                                                        {
+                                                                            let _x_465 = sSix()?;
+                                                                            {
+                                                                                let _x_466 = (_x_464
+                                                                                    == _x_465);
+                                                                                match _x_466 {
+                                                                                    false => {
+                                                                                        let prod_local_39 =
+                                                                                            _x_466;
+                                                                                        match prod_local_39 {
+        false => prod_local_39,
+        true => { let prod_local_40 = sFour()?; { let prod_local_41 = 1; { let prod_local_42 = starterArchetypeValid(prod_local_40, prod_local_41, prod_local_39)?; match prod_local_42 {
+        false => prod_local_42,
+        true => { let prod_local_43 = sFive()?; { let prod_local_44 = 0; { let prod_local_45 = starterArchetypeValid(prod_local_43, prod_local_44, prod_local_42)?; match prod_local_45 {
+        false => { let prod_local_46 = sFive()?; { let prod_local_47 = sSix()?; { let prod_local_48 = liveDocEmbedAdmissible(prod_local_46, prod_local_47, prod_local_42, prod_local_42); match prod_local_48 {
+        false => prod_local_48,
+        true => { let prod_local_49 = sSix()?; { let prod_local_50 = liveDocEmbedAdmissible(prod_local_49, prod_local_49, prod_local_48, prod_local_48); match prod_local_50 {
+        false => prod_local_48,
+        true => prod_local_45,
+    } } },
+    } } } },
+        true => { let prod_local_51 = false; prod_local_51 },
+    } } } },
+    } } } },
+    }
+                                                                                    }
+                                                                                    true => {
+                                                                                        let _x_470 = studioControlCount()?;
+                                                                                        {
+                                                                                            let _x_471 = sTwelve()?;
+                                                                                            {
+                                                                                                let _x_472 = 1;
+                                                                                                {
+                                                                                                    let _x_473 = core::convert::identity::<u64>(_x_471).checked_add(_x_472).ok_or(self::ComputeError::AddOverflow)?;
+                                                                                                    {
+                                                                                                        let _x_474 = (_x_470 == _x_473);
+                                                                                                        {
+                                                                                                            let prod_local_52 = _x_474;
+                                                                                                            match prod_local_52 {
+        false => prod_local_52,
+        true => { let prod_local_53 = sFour()?; { let prod_local_54 = 1; { let prod_local_55 = starterArchetypeValid(prod_local_53, prod_local_54, prod_local_52)?; match prod_local_55 {
+        false => prod_local_55,
+        true => { let prod_local_56 = sFive()?; { let prod_local_57 = 0; { let prod_local_58 = starterArchetypeValid(prod_local_56, prod_local_57, prod_local_55)?; match prod_local_58 {
+        false => { let prod_local_59 = sFive()?; { let prod_local_60 = sSix()?; { let prod_local_61 = liveDocEmbedAdmissible(prod_local_59, prod_local_60, prod_local_55, prod_local_55); match prod_local_61 {
+        false => prod_local_61,
+        true => { let prod_local_62 = sSix()?; { let prod_local_63 = liveDocEmbedAdmissible(prod_local_62, prod_local_62, prod_local_61, prod_local_61); match prod_local_63 {
+        false => prod_local_61,
+        true => prod_local_58,
+    } } },
+    } } } },
+        true => { let prod_local_64 = false; prod_local_64 },
+    } } } },
+    } } } },
+    }
+                                                                                                        }
+                                                                                                    }
+                                                                                                }
+                                                                                            }
+                                                                                        }
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    })
+}
+
+pub fn studioThemeCount() -> u64 {
+    {
+        let _x_2 = ((1 << 1) + 1);
+        _x_2
+    }
+}
+
+pub fn studioThemeTokenPure(zeroHex: bool, wcagOk: bool) -> bool {
+    match zeroHex {
+        false => zeroHex,
+        true => wcagOk,
+    }
+}
+
+pub fn studioWorkbenchTabCount() -> Result<u64, self::ComputeError> {
+    Ok({
+        let _x_1 = sSix()?;
+        _x_1
+    })
+}
+
 pub fn answerCommercialSubsystemQuery(
     request: std::vec::Vec<u8>,
 ) -> Result<std::string::String, self::ComputeError> {
@@ -1314,36 +1735,52 @@ pub fn answerLawfulHdEngineQuery(
             let _x_3 = true;
             match _x_2 {
                 false => {
-                    let _x_1525 = matchesQuery((request).as_ref(), "scene:character")?;
-                    match _x_1525 {
+                    let _x_1728 = matchesQuery((request).as_ref(), "scene:character")?;
+                    match _x_1728 {
                         false => {
-                            let _x_1626 = matchesQuery((request).as_ref(), "scene:universe")?;
-                            match _x_1626 {
+                            let _x_1836 = matchesQuery((request).as_ref(), "scene:universe")?;
+                            match _x_1836 {
                                 false => {
-                                    let _x_1713 =
+                                    let _x_1930 =
                                         matchesQuery((request).as_ref(), "scene:narrative")?;
-                                    match _x_1713 {
+                                    match _x_1930 {
                                         false => {
-                                            let _x_1786 =
+                                            let _x_2010 =
                                                 matchesQuery((request).as_ref(), "scene:lod:4")?;
-                                            match _x_1786 {
+                                            match _x_2010 {
                                                 false => {
-                                                    let _x_1839 = matchesQuery(
+                                                    let _x_2070 = matchesQuery(
                                                         (request).as_ref(),
                                                         "scene:telos",
                                                     )?;
-                                                    match _x_1839 {
-                                                        false => std::string::String::from(
-                                                            "invalid request",
-                                                        ),
+                                                    match _x_2070 {
+                                                        false => {
+                                                            let _x_2113 = matchesQuery(
+                                                                (request).as_ref(),
+                                                                "scene:studio",
+                                                            )?;
+                                                            match _x_2113 {
+                                                                false => std::string::String::from(
+                                                                    "invalid request",
+                                                                ),
+                                                                true => {
+                                                                    let _x_2119 =
+                                                                        studioSurfaceDirect()?;
+                                                                    match _x_2119 {
+        false => std::string::String::from("refused:studio-mismatch"),
+        true => std::string::String::from("conformant:themes=3,tabs=6,journeys=7,archetypes=4,doc_embeds=6,controls=13"),
+    }
+                                                                }
+                                                            }
+                                                        }
                                                         true => {
-                                                            let _x_1874 = (1 << (1 << 1));
+                                                            let _x_2122 = (1 << (1 << 1));
                                                             {
-                                                                let _x_1875 = (1
+                                                                let _x_2123 = (1
                                                                     << ((1 << (1 << 1))
                                                                         + (1 << 1)));
                                                                 {
-                                                                    let _x_1876 = (((((1
+                                                                    let _x_2124 = (((((1
                                                                         << (((1
                                                                             << ((1 << 1)
                                                                                 + 1))
@@ -1356,7 +1793,7 @@ pub fn answerLawfulHdEngineQuery(
                                                                         + (1 << ((1 << 1) + 1)))
                                                                         + (1 << 1));
                                                                     {
-                                                                        let _x_1877 = (((((1
+                                                                        let _x_2125 = (((((1
                                                                             << (((1
                                                                                 << ((1
                                                                                     << 1)
@@ -1374,7 +1811,7 @@ pub fn answerLawfulHdEngineQuery(
                                                                                 << (1 << 1))))
                                                                             + (1 << (1 << 1)));
                                                                         {
-                                                                            let _x_1878 = (((((((1
+                                                                            let _x_2126 = (((((((1
                                                                                 << ((((1
                                                                                     << ((1 << 1)
                                                                                         + 1))
@@ -1414,49 +1851,49 @@ pub fn answerLawfulHdEngineQuery(
                                                                                     + (1 << 1))
                                                                                     + 1)));
                                                                             {
-                                                                                let _x_1879 = (1
+                                                                                let _x_2127 = (1
                                                                                     << (((1
                                                                                         << (1
                                                                                             << 1))
                                                                                         + (1 << 1))
                                                                                         + 1));
                                                                                 {
-                                                                                    let hostSample = self::HostEnvelope { logicalCores: _x_1874, memoryUnits: _x_1875, frameBudgetMicros: _x_1876, observedFrameMicros: _x_1877, audioSampleRateHz: _x_1878, audioQuantumFrames: _x_1879 };
+                                                                                    let hostSample = self::HostEnvelope { logicalCores: _x_2122, memoryUnits: _x_2123, frameBudgetMicros: _x_2124, observedFrameMicros: _x_2125, audioSampleRateHz: _x_2126, audioQuantumFrames: _x_2127 };
                                                                                     {
-                                                                                        let _x_1880 = (1 << ((1 << 1) + 1));
+                                                                                        let _x_2128 = (1 << ((1 << 1) + 1));
                                                                                         {
-                                                                                            let _x_1881 = (((((((1 << ((1 << ((1 << 1) + 1)) + 1)) + (1 << (1 << ((1 << 1) + 1)))) + (1 << (((1 << (1 << 1)) + (1 << 1)) + 1))) + (1 << ((1 << (1 << 1)) + 1))) + (1 << (1 << (1 << 1)))) + (1 << (1 << 1))) + (1 << 1));
+                                                                                            let _x_2129 = (((((((1 << ((1 << ((1 << 1) + 1)) + 1)) + (1 << (1 << ((1 << 1) + 1)))) + (1 << (((1 << (1 << 1)) + (1 << 1)) + 1))) + (1 << ((1 << (1 << 1)) + 1))) + (1 << (1 << (1 << 1)))) + (1 << (1 << 1))) + (1 << 1));
                                                                                             {
-                                                                                                let _x_1882 = (((1 << ((1 << ((1 << 1) + 1)) + 1)) + (1 << (1 << ((1 << 1) + 1)))) + (1 << ((1 << (1 << 1)) + 1)));
+                                                                                                let _x_2130 = (((1 << ((1 << ((1 << 1) + 1)) + 1)) + (1 << (1 << ((1 << 1) + 1)))) + (1 << ((1 << (1 << 1)) + 1)));
                                                                                                 {
-                                                                                                    let _x_1883 = ((((1 << ((1 << ((1 << 1) + 1)) + 1)) + (1 << (1 << ((1 << 1) + 1)))) + (1 << (((1 << (1 << 1)) + (1 << 1)) + 1))) + (1 << (1 << 1)));
+                                                                                                    let _x_2131 = ((((1 << ((1 << ((1 << 1) + 1)) + 1)) + (1 << (1 << ((1 << 1) + 1)))) + (1 << (((1 << (1 << 1)) + (1 << 1)) + 1))) + (1 << (1 << 1)));
                                                                                                     {
-                                                                                                        let witSample = self::WitnessEnvelope { criticalBands: _x_1880, inputPollMillis: _x_1880, cameraStabilityRatio: _x_1881, focusDwellRatio: _x_1882, audioHeadroomRatio: _x_1883, activePresence: _x_3 };
+                                                                                                        let witSample = self::WitnessEnvelope { criticalBands: _x_2128, inputPollMillis: _x_2128, cameraStabilityRatio: _x_2129, focusDwellRatio: _x_2130, audioHeadroomRatio: _x_2131, activePresence: _x_3 };
                                                                                                         {
-                                                                                                            let _x_1884 = 0;
+                                                                                                            let _x_2132 = 0;
                                                                                                             {
-                                                                                                                let eval = evaluateHolonTelosState(hostSample, witSample, _x_1884, _x_1884, _x_1884)?;
+                                                                                                                let eval = evaluateHolonTelosState(hostSample, witSample, _x_2132, _x_2132, _x_2132)?;
                                                                                                                 {
-                                                                                                                    let _x_1885 = (((1 << (1 << 1)) + (1 << 1)) + 1);
+                                                                                                                    let _x_2133 = (((1 << (1 << 1)) + (1 << 1)) + 1);
                                                                                                                     {
-                                                                                                                        let _x_1886 = strataCertifiedUpTo(_x_1885)?;
-                                                                                                                        match _x_1886 {
-        false => { let _y_1888 = _x_1886; match _y_1888 {
+                                                                                                                        let _x_2134 = strataCertifiedUpTo(_x_2133)?;
+                                                                                                                        match _x_2134 {
+        false => { let _y_2136 = _x_2134; match _y_2136 {
         false => std::string::String::from("refused:telos-mismatch"),
-        true => { let _x_1894 = sTwoHundred()?; { let _x_1895 = sweptCapsuleMaxStepMilli()?; { let _x_1896 = citadelPortalWidthMilli()?; { let _x_1897 = (((1 << (1 << ((1 << 1) + 1))) + (1 << (((1 << (1 << 1)) + (1 << 1)) + 1))) + (1 << (1 << (1 << 1)))); { let _x_1898 = citadelSpringHeightMilli()?; { let _x_1899 = ((((1 << ((1 << ((1 << 1) + 1)) + (1 << 1))) + (1 << ((1 << ((1 << 1) + 1)) + 1))) + (1 << (1 << ((1 << 1) + 1)))) + (1 << ((1 << 1) + 1))); { let _x_1900 = architecturalWalkabilityValid(_x_1894, _x_1895, _x_1896, _x_1897, _x_1898, _x_1899)?; match _x_1900 {
+        true => { let _x_2142 = sTwoHundred()?; { let _x_2143 = sweptCapsuleMaxStepMilli()?; { let _x_2144 = citadelPortalWidthMilli()?; { let _x_2145 = (((1 << (1 << ((1 << 1) + 1))) + (1 << (((1 << (1 << 1)) + (1 << 1)) + 1))) + (1 << (1 << (1 << 1)))); { let _x_2146 = citadelSpringHeightMilli()?; { let _x_2147 = ((((1 << ((1 << ((1 << 1) + 1)) + (1 << 1))) + (1 << ((1 << ((1 << 1) + 1)) + 1))) + (1 << (1 << ((1 << 1) + 1)))) + (1 << ((1 << 1) + 1))); { let _x_2148 = architecturalWalkabilityValid(_x_2142, _x_2143, _x_2144, _x_2145, _x_2146, _x_2147)?; match _x_2148 {
         false => std::string::String::from("refused:telos-mismatch"),
         true => std::string::String::from("conformant:w5h_strata=8,telos_loss=0,triadic_active=true,walkable_citadel=true"),
     } } } } } } } },
     } },
-        true => { let _x_1903 = (eval).totalTelosLoss; { let _x_1904 = (_x_1903 == _x_1884); match _x_1904 {
-        false => { let prod_local_0 = _x_1904; match prod_local_0 {
+        true => { let _x_2151 = (eval).totalTelosLoss; { let _x_2152 = (_x_2151 == _x_2132); match _x_2152 {
+        false => { let prod_local_0 = _x_2152; match prod_local_0 {
         false => std::string::String::from("refused:telos-mismatch"),
         true => { let prod_local_2 = sTwoHundred()?; { let prod_local_3 = sweptCapsuleMaxStepMilli()?; { let prod_local_4 = citadelPortalWidthMilli()?; { let prod_local_5 = (((1 << (1 << ((1 << 1) + 1))) + (1 << (((1 << (1 << 1)) + (1 << 1)) + 1))) + (1 << (1 << (1 << 1)))); { let prod_local_6 = citadelSpringHeightMilli()?; { let prod_local_7 = ((((1 << ((1 << ((1 << 1) + 1)) + (1 << 1))) + (1 << ((1 << ((1 << 1) + 1)) + 1))) + (1 << (1 << ((1 << 1) + 1)))) + (1 << ((1 << 1) + 1))); { let prod_local_8 = architecturalWalkabilityValid(prod_local_2, prod_local_3, prod_local_4, prod_local_5, prod_local_6, prod_local_7)?; match prod_local_8 {
         false => std::string::String::from("refused:telos-mismatch"),
         true => std::string::String::from("conformant:w5h_strata=8,telos_loss=0,triadic_active=true,walkable_citadel=true"),
     } } } } } } } },
     } },
-        true => { let _x_1905 = (eval).triadicConnectionActive; { let prod_local_11 = _x_1905; match prod_local_11 {
+        true => { let _x_2153 = (eval).triadicConnectionActive; { let prod_local_11 = _x_2153; match prod_local_11 {
         false => std::string::String::from("refused:telos-mismatch"),
         true => { let prod_local_13 = sTwoHundred()?; { let prod_local_14 = sweptCapsuleMaxStepMilli()?; { let prod_local_15 = citadelPortalWidthMilli()?; { let prod_local_16 = (((1 << (1 << ((1 << 1) + 1))) + (1 << (((1 << (1 << 1)) + (1 << 1)) + 1))) + (1 << (1 << (1 << 1)))); { let prod_local_17 = citadelSpringHeightMilli()?; { let prod_local_18 = ((((1 << ((1 << ((1 << 1) + 1)) + (1 << 1))) + (1 << ((1 << ((1 << 1) + 1)) + 1))) + (1 << (1 << ((1 << 1) + 1)))) + (1 << ((1 << 1) + 1))); { let prod_local_19 = architecturalWalkabilityValid(prod_local_13, prod_local_14, prod_local_15, prod_local_16, prod_local_17, prod_local_18)?; match prod_local_19 {
         false => std::string::String::from("refused:telos-mismatch"),
@@ -1484,27 +1921,27 @@ pub fn answerLawfulHdEngineQuery(
                                                     }
                                                 }
                                                 true => {
-                                                    let _x_1909 = (1 << (1 << 1));
+                                                    let _x_2157 = (1 << (1 << 1));
                                                     {
-                                                        let _x_1910 = lodEnvelopeByRank(_x_1909)?;
+                                                        let _x_2158 = lodEnvelopeByRank(_x_2157)?;
                                                         {
-                                                            let _x_1911 = (_x_1910).losslessActive;
-                                                            match _x_1911 {
+                                                            let _x_2159 = (_x_2158).losslessActive;
+                                                            match _x_2159 {
                                                                 false => std::string::String::from(
                                                                     "refused:lod4-mismatch",
                                                                 ),
                                                                 true => {
-                                                                    let _x_1917 = (1 << (1 << 1));
+                                                                    let _x_2165 = (1 << (1 << 1));
                                                                     {
-                                                                        let _x_1918 =
+                                                                        let _x_2166 =
                                                                             lodEnvelopeByRank(
-                                                                                _x_1917,
+                                                                                _x_2165,
                                                                             )?;
                                                                         {
-                                                                            let _x_1919 = (_x_1918)
+                                                                            let _x_2167 = (_x_2166)
                                                                                 .meshDensityPercent;
                                                                             {
-                                                                                let _x_1920 = (((1
+                                                                                let _x_2168 = (((1
                                                                                     << (((1
                                                                                         << (1
                                                                                             << 1))
@@ -1518,8 +1955,8 @@ pub fn answerLawfulHdEngineQuery(
                                                                                         << 1)
                                                                                         + 1)));
                                                                                 {
-                                                                                    let _x_1921 = (_x_1919 == _x_1920);
-                                                                                    match _x_1921 {
+                                                                                    let _x_2169 = (_x_2167 == _x_2168);
+                                                                                    match _x_2169 {
         false => std::string::String::from("refused:lod4-mismatch"),
         true => std::string::String::from("conformant:rank=4,res=16/8,density=200/100,shadows=1,ibl=1,lossless=1,sky=20/34/44,fog=34/44/48"),
     }
@@ -1535,44 +1972,44 @@ pub fn answerLawfulHdEngineQuery(
                                             }
                                         }
                                         true => {
-                                            let _x_1925 = ((1 << ((1 << 1) + 1)) + (1 << 1));
+                                            let _x_2173 = ((1 << ((1 << 1) + 1)) + (1 << 1));
                                             {
-                                                let _x_1926 = ((1 << (1 << 1)) + 1);
+                                                let _x_2174 = ((1 << (1 << 1)) + 1);
                                                 {
-                                                    let _x_1927 = ((1 << 1) + 1);
+                                                    let _x_2175 = ((1 << 1) + 1);
                                                     {
-                                                        let _x_1928 = ((1 << ((1 << 1) + 1))
+                                                        let _x_2176 = ((1 << ((1 << 1) + 1))
                                                             + (1 << (1 << 1)));
                                                         {
-                                                            let _x_1929 = conservationLawValid(
-                                                                _x_1925, _x_1926, _x_1927, _x_1928,
+                                                            let _x_2177 = conservationLawValid(
+                                                                _x_2173, _x_2174, _x_2175, _x_2176,
                                                             )?;
-                                                            match _x_1929 {
+                                                            match _x_2177 {
                                                                 false => {
-                                                                    let _y_1931 = _x_1929;
-                                                                    match _y_1931 {
+                                                                    let _y_2179 = _x_2177;
+                                                                    match _y_2179 {
         false => std::string::String::from("refused:narrative-mismatch"),
         true => std::string::String::from("conformant:conservation=exact,tropical_reachability=true"),
     }
                                                                 }
                                                                 true => {
-                                                                    let _x_1936 = ((1
+                                                                    let _x_2184 = ((1
                                                                         << ((1 << 1) + 1))
                                                                         + (1 << 1));
                                                                     {
-                                                                        let _x_1937 = 0;
+                                                                        let _x_2185 = 0;
                                                                         {
-                                                                            let _x_1938 = (((1
+                                                                            let _x_2186 = (((1
                                                                                 << ((1 << 1)
                                                                                     + 1))
                                                                                 + (1 << 1))
                                                                                 + 1);
                                                                             {
-                                                                                let _x_1939 = conservationLawValid(_x_1936, _x_1937, _x_1937, _x_1938)?;
-                                                                                match _x_1939 {
+                                                                                let _x_2187 = conservationLawValid(_x_2184, _x_2185, _x_2185, _x_2186)?;
+                                                                                match _x_2187 {
                                                                                     false => {
                                                                                         let prod_local_22 =
-                                                                                            _x_1929;
+                                                                                            _x_2177;
                                                                                         match prod_local_22 {
         false => std::string::String::from("refused:narrative-mismatch"),
         true => std::string::String::from("conformant:conservation=exact,tropical_reachability=true"),
@@ -1580,7 +2017,7 @@ pub fn answerLawfulHdEngineQuery(
                                                                                     }
                                                                                     true => {
                                                                                         let prod_local_25 =
-                                                                                            _x_1626;
+                                                                                            _x_1836;
                                                                                         match prod_local_25 {
         false => std::string::String::from("refused:narrative-mismatch"),
         true => std::string::String::from("conformant:conservation=exact,tropical_reachability=true"),
@@ -1600,21 +2037,21 @@ pub fn answerLawfulHdEngineQuery(
                                     }
                                 }
                                 true => {
-                                    let _x_1941 = universeCellSpanMeters()?;
+                                    let _x_2189 = universeCellSpanMeters()?;
                                     {
-                                        let _x_1942 = (1 << (((1 << (1 << 1)) + (1 << 1)) + 1));
+                                        let _x_2190 = (1 << (((1 << (1 << 1)) + (1 << 1)) + 1));
                                         {
-                                            let _x_1943 = (_x_1941 == _x_1942);
-                                            match _x_1943 {
+                                            let _x_2191 = (_x_2189 == _x_2190);
+                                            match _x_2191 {
                                                 false => {
-                                                    let _y_1945 = _x_1943;
-                                                    match _y_1945 {
+                                                    let _y_2193 = _x_2191;
+                                                    match _y_2193 {
         false => std::string::String::from("refused:universe-mismatch"),
         true => std::string::String::from("conformant:cell_span_m=128,floating_origin=true,portals=true"),
     }
                                                 }
                                                 true => {
-                                                    let _x_1948 = ((((((1
+                                                    let _x_2196 = ((((((1
                                                         << (((1 << ((1 << 1) + 1))
                                                             + (1 << (1 << 1)))
                                                             + (1 << 1)))
@@ -1630,11 +2067,11 @@ pub fn answerLawfulHdEngineQuery(
                                                             + (1 << 1))))
                                                         + (1 << (1 << ((1 << 1) + 1))));
                                                     {
-                                                        let _x_1949 = universeHalfSpanMilli()?;
+                                                        let _x_2197 = universeHalfSpanMilli()?;
                                                         {
-                                                            let _x_1950 = (_x_1948 < _x_1949);
+                                                            let _x_2198 = (_x_2196 < _x_2197);
                                                             {
-                                                                let prod_local_28 = _x_1950;
+                                                                let prod_local_28 = _x_2198;
                                                                 match prod_local_28 {
         false => std::string::String::from("refused:universe-mismatch"),
         true => std::string::String::from("conformant:cell_span_m=128,floating_origin=true,portals=true"),
@@ -1650,26 +2087,26 @@ pub fn answerLawfulHdEngineQuery(
                             }
                         }
                         true => {
-                            let _x_1951 = sTwentyTwo()?;
+                            let _x_2199 = sTwentyTwo()?;
                             {
-                                let _x_1952 =
+                                let _x_2200 =
                                     (((1 << (1 << (1 << 1))) + (1 << (1 << 1))) + (1 << 1));
                                 {
-                                    let _x_1953 = (_x_1951 == _x_1952);
-                                    match _x_1953 {
+                                    let _x_2201 = (_x_2199 == _x_2200);
+                                    match _x_2201 {
                                         false => {
-                                            let _y_1955 = _x_1953;
-                                            match _y_1955 {
+                                            let _y_2203 = _x_2201;
+                                            match _y_2203 {
         false => std::string::String::from("refused:character-mismatch"),
         true => std::string::String::from("conformant:joints=22,two_bone_ik=true,lbs_scale=1000"),
     }
                                         }
                                         true => {
-                                            let _x_1958 = (((1 << (1 << ((1 << 1) + 1)))
+                                            let _x_2206 = (((1 << (1 << ((1 << 1) + 1)))
                                                 + (1 << (((1 << (1 << 1)) + (1 << 1)) + 1)))
                                                 + (1 << (1 << (1 << 1))));
                                             {
-                                                let _x_1959 = ((((((1
+                                                let _x_2207 = ((((((1
                                                     << ((1 << ((1 << 1) + 1)) + 1))
                                                     + (1 << (((1 << (1 << 1)) + (1 << 1))
                                                         + 1)))
@@ -1678,11 +2115,11 @@ pub fn answerLawfulHdEngineQuery(
                                                     + (1 << ((1 << 1) + 1)))
                                                     + (1 << (1 << 1)));
                                                 {
-                                                    let _x_1960 = twoBoneIkReachable(
-                                                        _x_1958, _x_1958, _x_1959,
+                                                    let _x_2208 = twoBoneIkReachable(
+                                                        _x_2206, _x_2206, _x_2207,
                                                     )?;
                                                     {
-                                                        let prod_local_31 = _x_1960;
+                                                        let prod_local_31 = _x_2208;
                                                         match prod_local_31 {
         false => std::string::String::from("refused:character-mismatch"),
         true => std::string::String::from("conformant:joints=22,two_bone_ik=true,lbs_scale=1000"),
@@ -1698,52 +2135,52 @@ pub fn answerLawfulHdEngineQuery(
                     }
                 }
                 true => {
-                    let _x_1961 = sFour()?;
+                    let _x_2209 = sFour()?;
                     {
-                        let _x_1962 = (1 << (1 << 1));
+                        let _x_2210 = (1 << (1 << 1));
                         {
-                            let _x_1963 = (_x_1961 == _x_1962);
-                            match _x_1963 {
+                            let _x_2211 = (_x_2209 == _x_2210);
+                            match _x_2211 {
                                 false => {
-                                    let _y_1965 = _x_1963;
-                                    match _y_1965 {
+                                    let _y_2213 = _x_2211;
+                                    match _y_2213 {
         false => std::string::String::from("refused:lawful-mismatch"),
         true => std::string::String::from("conformant:ccd_slides=4,non_penetrating=true,near_sphere_guard=true"),
     }
                                 }
                                 true => {
-                                    let _x_1970 = (((1 << ((1 << (1 << 1)) + 1))
+                                    let _x_2218 = (((1 << ((1 << (1 << 1)) + 1))
                                         + (1 << (1 << (1 << 1))))
                                         + (1 << 1));
                                     {
-                                        let _x_1971 =
+                                        let _x_2219 =
                                             ((1 << ((1 << (1 << 1)) + 1)) + (1 << (1 << (1 << 1))));
                                         {
-                                            let _x_1972 = (1 << 1);
+                                            let _x_2220 = (1 << 1);
                                             {
-                                                let _x_1973 =
-                                                    sweptClearanceValid(_x_1970, _x_1971, _x_1972)?;
-                                                match _x_1973 {
+                                                let _x_2221 =
+                                                    sweptClearanceValid(_x_2218, _x_2219, _x_2220)?;
+                                                match _x_2221 {
                                                     false => {
-                                                        let prod_local_34 = _x_1973;
+                                                        let prod_local_34 = _x_2221;
                                                         match prod_local_34 {
         false => std::string::String::from("refused:lawful-mismatch"),
         true => std::string::String::from("conformant:ccd_slides=4,non_penetrating=true,near_sphere_guard=true"),
     }
                                                     }
                                                     true => {
-                                                        let _x_1974 = (((1
+                                                        let _x_2222 = (((1
                                                             << (((1 << (1 << 1)) + (1 << 1))
                                                                 + 1))
                                                             + (1 << ((1 << (1 << 1)) + (1 << 1))))
                                                             + (1 << ((1 << 1) + 1)));
                                                         {
-                                                            let _x_1975 = (((1
+                                                            let _x_2223 = (((1
                                                                 << ((1 << (1 << 1)) + (1 << 1)))
                                                                 + (1 << ((1 << (1 << 1)) + 1)))
                                                                 + (1 << (1 << 1)));
                                                             {
-                                                                let _x_1976 = (((((((1
+                                                                let _x_2224 = (((((((1
                                                                     << ((1
                                                                         << ((1 << 1) + 1))
                                                                         + (1 << 1)))
@@ -1759,13 +2196,13 @@ pub fn answerLawfulHdEngineQuery(
                                                                     + (1 << ((1 << 1) + 1)))
                                                                     + (1 << (1 << 1)));
                                                                 {
-                                                                    let _x_1977 =
+                                                                    let _x_2225 =
                                                                         cameraNearSphereGuarded(
-                                                                            _x_1974, _x_1975,
-                                                                            _x_1976,
+                                                                            _x_2222, _x_2223,
+                                                                            _x_2224,
                                                                         )?;
                                                                     {
-                                                                        let prod_local_37 = _x_1977;
+                                                                        let prod_local_37 = _x_2225;
                                                                         match prod_local_37 {
         false => std::string::String::from("refused:lawful-mismatch"),
         true => std::string::String::from("conformant:ccd_slides=4,non_penetrating=true,near_sphere_guard=true"),

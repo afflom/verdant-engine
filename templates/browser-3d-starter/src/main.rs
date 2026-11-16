@@ -9,27 +9,36 @@ use verdant_core::audio::{
     evaluate_binaural_cue, synthesize_modal_bar_modes, AcousticEnvironment, ListenerPose,
     SpatialAudioSource,
 };
+use verdant_core::camera::{CameraMode, CameraRigConfig, LawfulCameraRig};
+use verdant_core::character::{ArticulatedCharacter, CharacterArchetype};
 use verdant_core::collision::{gjk_intersect_and_manifold, ConvexHullCollider};
-use verdant_core::ecs::{EntityRole, SceneWorld, Transform};
+use verdant_core::ecs::{EntityRole, SceneWorld, Transform, TwoLevelBvh};
 use verdant_core::geometry::{
     generate_faceted_prism_mesh, generate_fluted_column_mesh, generate_terrain_patch_with_params,
     MorphTarget, TerrainMeshParams,
 };
 use verdant_core::gltf_io::{export_scene_to_glb, validate_glb_bytes};
+use verdant_core::hd_world::{hd_terrain_height, synthesize_hd_citadel_sector};
 use verdant_core::math::{Aabb, Quat, Ray, Vec3};
+use verdant_core::narrative::canonical_citadel_chronicle_automaton;
 use verdant_core::navmesh::{steer_along_corridor, NavMesh};
-use verdant_core::physics::{CapsuleController, PhysicsWorld, PhysicsWorldConfig, RigidBody};
+use verdant_core::physics::{
+    CapsuleController, CharacterMoveIntent, PhysicsWorld, PhysicsWorldConfig, RigidBody,
+};
 use verdant_core::render::{
     canonical_pbr_material_library, compute_csm_splits, validate_builtin_engine_shaders,
     IblEnvironmentProbe, RenderFrameGraph,
 };
-use verdant_core::runtime::WorldSnapshot;
+use verdant_core::runtime::{
+    BrowserCapabilities, EngineConfig, OntologicalRuntimeGovernor, WorldSnapshot,
+};
 use verdant_core::streaming::{
     pack_progressive_uorc_stream, verify_progressive_uorc_stream, StandardSceneState,
     TerrainReliefParams,
 };
+use verdant_core::universe::{UniverseCellCoord, UniversePosition};
 
-/// Summary produced by stepping the Orbital Beacon Arena simulation.
+/// Summary produced by stepping the Orbital Beacon Arena & Lawful Citadel simulation.
 #[derive(Clone, Debug)]
 pub struct StarterSimulationReport {
     pub entity_count: usize,
@@ -40,6 +49,10 @@ pub struct StarterSimulationReport {
     pub walkable_polygons: usize,
     pub beacons_activated: usize,
     pub drone_steer_dir: Vec3,
+    pub camera_near_sphere_guarded: bool,
+    pub humanoid_joint_count: usize,
+    pub chronicle_conserved_supply: u64,
+    pub w5h_strata_certified: bool,
     pub snapshot_bytes: usize,
     pub uorc_stream_bytes: usize,
     pub glb_bytes: Vec<u8>,
@@ -240,6 +253,62 @@ pub fn run_beacon_arena_simulation() -> Result<StarterSimulationReport, Box<dyn 
     )?;
     let glb_summary = validate_glb_bytes(&glb)?;
 
+    // Step Lawful HD Citadel sector, TwoLevelBvh swept CCD, 22-joint Foot IK, LawfulCameraRig,
+    // StoryAutomaton conservation ledger, UniversePosition cell, & OntologicalRuntimeGovernor W5H:
+    let relief = TerrainReliefParams::standard_basin_valley();
+    let hd_sector = synthesize_hd_citadel_sector(7, &relief, -1.35, 3);
+    let two_level_bvh = TwoLevelBvh::build_solid(&hd_sector.scene, &hd_sector.meshes)?;
+    physics.step_lawful(
+        1.0 / 60.0,
+        CharacterMoveIntent::default(),
+        &two_level_bvh,
+    )?;
+    let mut explorer = ArticulatedCharacter::new_humanoid(
+        "StarterExplorer",
+        CharacterArchetype::Explorer,
+        Vec3::new(0.0, 2.0, 8.0),
+        1,
+    )?;
+    explorer.step_and_solve_ik(
+        1.0 / 60.0,
+        Vec3::new(0.0, 2.0, 8.0),
+        Vec3::new(0.0, 0.0, -1.0),
+        true,
+        0.0,
+        None,
+        &two_level_bvh,
+        |x, z| hd_terrain_height(7, &relief, x, z),
+    )?;
+    let mut camera_rig = LawfulCameraRig::new(
+        CameraRigConfig::default(),
+        CameraMode::ThirdPersonSpringArm,
+        0.0,
+        0.25,
+        6.0,
+    )?;
+    let cam_frame = camera_rig.solve_frame(
+        1.0 / 60.0,
+        explorer.head_anchor_world(),
+        &two_level_bvh,
+        |x, z| hd_terrain_height(7, &relief, x, z),
+    )?;
+    let (mut chronicle, _) = canonical_citadel_chronicle_automaton(7)?;
+    let _ = chronicle.interact_nearest(Vec3::new(1.5, 2.2, -1.0))?;
+    let _cell_pos =
+        UniversePosition::new_canonical(UniverseCellCoord::ORIGIN, explorer.foot_position)?;
+    let governor = OntologicalRuntimeGovernor::new(
+        EngineConfig::from_refresh_rate(1920, 1080, 60, 60, 4)?,
+        BrowserCapabilities {
+            wasm_simd_available: true,
+            webgl2_available: true,
+            hardware_concurrency: 4,
+            shared_array_buffer: false,
+            audio_worklet: true,
+            offscreen_canvas: true,
+        },
+    );
+    let telos = governor.evaluate_frame_telos(8_200, true, 960, 840, 0, 0, 0);
+
     Ok(StarterSimulationReport {
         entity_count: scene.entity_count(),
         shader_count: shaders.len(),
@@ -249,6 +318,10 @@ pub fn run_beacon_arena_simulation() -> Result<StarterSimulationReport, Box<dyn 
         walkable_polygons: navmesh.polygons.len(),
         beacons_activated,
         drone_steer_dir,
+        camera_near_sphere_guarded: cam_frame.near_sphere_guarded,
+        humanoid_joint_count: explorer.skeleton.joints.len(),
+        chronicle_conserved_supply: chronicle.ledger.total_supply(),
+        w5h_strata_certified: telos.all_eight_strata_certified,
         snapshot_bytes: snap_bytes.len(),
         uorc_stream_bytes: uorc_bytes.len(),
         glb_bytes: glb,
@@ -262,7 +335,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     std::fs::write(&out_path, &report.glb_bytes)?;
 
     println!(
-        "Verdant Orbital Beacon Arena OK: entities={} shaders={} passes={} csm={} ibl_mips={} nav_polys={} beacons={}/3 snap_bytes={} uorc_bytes={} glb_bytes={} glb_nodes={}",
+        "Verdant Orbital Beacon Arena OK: entities={} shaders={} passes={} csm={} ibl_mips={} nav_polys={} beacons={}/3 ik_joints={} cam_guarded={} supply={} w5h={} snap_bytes={} uorc_bytes={} glb_bytes={} glb_nodes={}",
         report.entity_count,
         report.shader_count,
         report.render_pass_count,
@@ -270,6 +343,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         report.ibl_mip_levels,
         report.walkable_polygons,
         report.beacons_activated,
+        report.humanoid_joint_count,
+        report.camera_near_sphere_guarded,
+        report.chronicle_conserved_supply,
+        report.w5h_strata_certified,
         report.snapshot_bytes,
         report.uorc_stream_bytes,
         report.glb_bytes.len(),
@@ -292,6 +369,10 @@ mod tests {
         assert_eq!(report.ibl_mip_levels, 9);
         assert!(report.walkable_polygons > 64);
         assert_eq!(report.beacons_activated, 3);
+        assert!(report.camera_near_sphere_guarded);
+        assert_eq!(report.humanoid_joint_count, 22);
+        assert!(report.chronicle_conserved_supply > 0);
+        assert!(report.w5h_strata_certified);
         assert!((report.drone_steer_dir.length() - 1.0).abs() < 1e-5);
         assert!(report.snapshot_bytes > 64);
         assert!(report.uorc_stream_bytes > 64);

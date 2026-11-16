@@ -4,7 +4,7 @@ This report documents the verification boundary, standards validation oracles, u
 
 ---
 
-## 1. Engine Conformance Matrix (`VE-01` – `VE-31`)
+## 1. Engine Conformance Matrix (`VE-01` – `VE-32`)
 
 Every capability of `crates/verdant-tensor`, `crates/verdant-core`, `crates/verdant-wasm`, and `crates/verdant-cli` is registered in `model/ids.toml`, specified as an executable Gherkin scenario in `features/suites/engine.feature`, mechanized across all 8 Prism strata (`app/src/*.lex.tex`), and verified with both positive assertions and typed negative-refusal tests in `crates/conformance/tests/engine.rs`:
 
@@ -19,7 +19,7 @@ Every capability of `crates/verdant-tensor`, `crates/verdant-core`, `crates/verd
 | `VE-07` | Spatial Audio & Modal Bar Synthesis | Woodworth spherical-head binaural ITD/ILD cues, Sabine & Eyring `RT60` reverberation, and Euler-Bernoulli modal bar eigenfrequencies | Positive acoustic separation and monotonic modal progression (`engine_ve_07`) |
 | `VE-08` | Multi-Worker Job Graph & Frame KPI | Kahn topological critical-path scheduling across worker threads and 60Hz (`16,666 us`) frame-budget profiling | Cyclic dependency rejection, `EngineConfigError::ZeroViewportDimension`, `EngineConfigError::ZeroWorkerThreads` (`engine_ve_08`) |
 | `VE-09` | Bit-Exact `VDNT` World Snapshots | Deterministic little-endian IEEE-754 snapshot serialization with 32-byte SHA-256 integrity verification | `SnapshotCodecError::TruncatedSnapshot`, `SnapshotCodecError::IntegrityDigestMismatch` (`engine_ve_09`) |
-| `VE-10` | Formal Core-Wasm Engine Verifier | Constructive Lean 4 proofs (`streamingLodsStrictlyMonotonic`, `hdStreamingLodsStrictlyMonotonic`, `unifiedTensorAndCodedTiersVerified`, `architecturalWalkabilityVerified`, `engineSubsystemsVerified`, `invalidTensorKernelsRefused`), zero `Classical.choice` axioms, and 41 sealed byte-request vectors | `refused:zero-extent-contraction`, `refused:accumulator-below-laurent-bound`, `invalid request`, and `ComputeError::MulOverflow` (`engine_ve_10`) |
+| `VE-10` | Formal Core-Wasm Engine Verifier | Constructive Lean 4 proofs (`streamingLodsStrictlyMonotonic`, `hdStreamingLodsStrictlyMonotonic`, `unifiedTensorAndCodedTiersVerified`, `architecturalWalkabilityVerified`, `engineSubsystemsVerified`, `invalidTensorKernelsRefused`), zero `Classical.choice` axioms, and 42 sealed byte-request vectors | `refused:zero-extent-contraction`, `refused:accumulator-below-laurent-bound`, `invalid request`, and `ComputeError::MulOverflow` (`engine_ve_10`) |
 | `VE-11` | Skeletal Rigging & Linear-Blend Skinning | Acyclic joint trees, normalized 4-joint LBS weights contracted via `verdant_tensor::skin_vertices_linear_blend_exact`, and keyframe/morph sampling | `AnimationError::InvalidJointHierarchy`, `AnimationError::UnnormalizedOrInvalidSkinWeights` (`engine_ve_11`) |
 | `VE-12` | Cascaded Shadows, IBL & Render Graph | Monotonic 4-cascade CSM frustum splits, GGX IBL mip counts, and 5-pass acyclic render barrier validation | `RenderGraphError::InvalidShadowFrustumBounds`, `RenderGraphError::InvalidPassDependency` (`engine_ve_12`) |
 | `VE-13` | 3D GJK Collision & Impulse Solver | Bounded 3D GJK Minkowski support manifolds via `verdant_tensor::tropical_gjk_support_batch`, Baumgarte stabilization, and Coulomb friction cones | `CollisionError::EmptyOrDegenerateHull` (`engine_ve_13`) |
@@ -41,6 +41,7 @@ Every capability of `crates/verdant-tensor`, `crates/verdant-core`, `crates/verd
 | `VE-29` | Floating-Origin `UniversePosition` & `PortalGraph` | Exact `i64` 3D sector coordinates (`128m` cells) with bounded `[-64m, +64m)^3` local offsets, sub-millimeter `f32` camera-relative matrices, momentum-preserving portals, and CLI `pack-universe` | Non-finite coordinate and invalid portal rejection (`engine_ve_29`) |
 | `VE-30` | Verified `StoryAutomaton` & `ConservationLedger` | Tropical `(min, +)` milestone reachability closure, exact integer supply conservation (`before + minted - burned == after`), SLM-guided NPC dialogue, and CLI `verify-story` | `NarrativeLawError::UnreachableOrDeadlockedState`, `NarrativeLawError::ConservationViolated`, `NarrativeLawError::InvalidPortalOrUniverseCell` (`engine_ve_30`) |
 | `VE-31` | Stratum-0 Ontological Telos, W5H Certificates & Full Prism Closure | `OntologicalRuntimeGovernor` synthesizing constructive `W5HCertificate`s across all 8 causal strata (`0..7`), `HostEnvelope`/`WitnessEnvelope` telos loss evaluation, non-coercive parametric LOD descent, and full Core-Wasm `summary:hd` / `lod:4` / `scene:telos` dispatch | Coercive coordinate lock, uncertified stratum opacity debt, and over-budget host ceiling excess detection (`engine_ve_31`) |
+| `VE-32` | Verdant Studio Themes, 6-Tab Workbench, Journeys, Scaffolder & Live Wasm Docs | Core-Wasm `scene:studio` verification (`themes=3,tabs=6,journeys=7,archetypes=4,doc_embeds=6,controls=13`), 100% Hologram-Warm W3C DTCG token purity, live `SceneWorld` outliner C-ABI, 4 zero-constants game/app archetypes, and static cold-boot vs UORC WebAssembly export parity | Raw hex color refusal, out-of-range archetype/embed refusal, silent catch refusal, and missing C-ABI export detection (`engine_ve_32`) |
 
 ---
 
@@ -67,6 +68,7 @@ The interactive 3D Engine Studio (`site/card.html`, `site/card.css`, `site/card.
 2. **Material 3 Window-Class Matrix**: `bootstrap/screens.mjs` renders all 6 window classes (`compact 360x780`, `compact-height 720x400`, `medium`, `expanded`, `large`, `extra-large`) across dark, light, and 200%-zoom configurations, enforcing zero viewport scroll overflow and 48px touch targets.
 3. **First-Visit Wire Budget (`FR-03`)**: `bootstrap/weight.mjs` verifies that a cold mobile visit stays strictly within the 100 KiB frame budget, 120 KiB application budget (`verdant-uorc.wasm` lazy-loads on demand so cold boot stays under budget), and 28-request ceiling.
 4. **Diátaxis & ISO 24495-1 Content Gate**: `scripts/content/check.mjs` audits every generated documentation page (`CS-01`–`CS-11`) for structural navigation, WCAG AA contrast across dark and light modes, copyable code examples, plain-language readability, and valid internal cross-references.
+5. **End-to-End Live WebAssembly Surface Gate**: `scripts/verify-live-surfaces.mjs` drives headless Chromium across the root Studio (`Light`, `Dark`, and `Immersive` themes, 6-tab Workbench, executable Journeys, SceneWorld Outliner, Project Scaffolder, and Stitch Mesh) and all 6 `/docs/*` pages, verifying zero runtime errors and interactive readiness on every live WebAssembly figure.
 
 ---
 

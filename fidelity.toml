@@ -3145,6 +3145,46 @@ record = "Design::viewUmlVerifierStates"
 axis = "meant"
 
 [[closed]]
+kappa = "731015eff5b1c1aac7af00bef8760bf4d0d57ff5294175d69a8aeb21382b07de"
+record = "DevRel::archetypeArchitecturalWalkthrough"
+axis = "derived"
+
+[[closed]]
+kappa = "9190ead3e7fe43b9a943616c8183badbed785b6cbc77a75df1d5bb8dc8555ceb"
+record = "DevRel::archetypeArchitecturalWalkthrough"
+axis = "meant"
+
+[[closed]]
+kappa = "f01e82e067a290c092dff54b5959d35e377f301e193d3aa75a2af51eb80155c4"
+record = "DevRel::archetypeCitadelExplorer"
+axis = "derived"
+
+[[closed]]
+kappa = "b15b1eb362bc520ceca5e435889bbb53230217a106c09da1533333d627a99251"
+record = "DevRel::archetypeCitadelExplorer"
+axis = "meant"
+
+[[closed]]
+kappa = "f72fd9e5b3aa2f42213410fe0fb36a3a66c9167ed23d755534faa9f854ac69fc"
+record = "DevRel::archetypeCompliantDiegeticApp"
+axis = "derived"
+
+[[closed]]
+kappa = "e33b60d64198528bac6133261d3baf1ecdbf093dcd78e5fff94ec0059e9e67fe"
+record = "DevRel::archetypeCompliantDiegeticApp"
+axis = "meant"
+
+[[closed]]
+kappa = "567e166ca00a57402b9b941b695b9eb60c3a767142bdb8d06a6d73e76a482f84"
+record = "DevRel::archetypeConservationChronicle"
+axis = "derived"
+
+[[closed]]
+kappa = "e850f2df1a4065772679409a37c43452281241a42894fc72bb5008a865ba283e"
+record = "DevRel::archetypeConservationChronicle"
+axis = "meant"
+
+[[closed]]
 kappa = "80c0b73bd70fb3d79bc1ce1be9ab6f4916867b50b4822b514acf88ba42ed0e60"
 record = "DevRel::controlCameraMode"
 axis = "derived"
@@ -3425,6 +3465,66 @@ record = "DevRel::docLanding"
 axis = "meant"
 
 [[closed]]
+kappa = "ff61a79c952ee7bb7d2d52937ebbc97f25af78bf435dfacbce1bb35a7fbd97ee"
+record = "DevRel::embedApiReferenceSnapshot"
+axis = "derived"
+
+[[closed]]
+kappa = "55f4557ebd6f6b5e1a9d89d0b04b87732f16b89b977c363b3a2df379a1b2203e"
+record = "DevRel::embedApiReferenceSnapshot"
+axis = "meant"
+
+[[closed]]
+kappa = "4790265ec205869fbb289dc717388b4fe1c1dbf8b416ca47a8c2f989fd3dc557"
+record = "DevRel::embedArchitectureSemirings"
+axis = "derived"
+
+[[closed]]
+kappa = "37b2ce6dc4ada4f7de8ecfd0c5caafcba2f3f06fde65ec3df58a6f7af6bbdb81"
+record = "DevRel::embedArchitectureSemirings"
+axis = "meant"
+
+[[closed]]
+kappa = "570ea2ebb1a65203199265d5ad55344256169aaf209cb153dac6fac11f00d1ef"
+record = "DevRel::embedAssetPipelineLodStream"
+axis = "derived"
+
+[[closed]]
+kappa = "74dcdffb80963f9e68300c65d8e3ebbbec09f8beda859aeb480648ecdb66c14a"
+record = "DevRel::embedAssetPipelineLodStream"
+axis = "meant"
+
+[[closed]]
+kappa = "22d207c5ed6f4809033bb2620e3e1b0db2fe1b17987485fffc6b8c8d2f35a424"
+record = "DevRel::embedCustomGamePhysics"
+axis = "derived"
+
+[[closed]]
+kappa = "4aba086a2ceca5125d3405bd9eb0e83b29bc66cf735bf70762848f3a01f9a707"
+record = "DevRel::embedCustomGamePhysics"
+axis = "meant"
+
+[[closed]]
+kappa = "126f853a0bc6958f78762a2e2bb3650bd8e91985bbcf0fb7eab30bb09104a6e1"
+record = "DevRel::embedDocsViewport"
+axis = "derived"
+
+[[closed]]
+kappa = "46b71b419ea5a741994c9b9a16c5e8762e44f29c57f982586833c1842982db8a"
+record = "DevRel::embedDocsViewport"
+axis = "meant"
+
+[[closed]]
+kappa = "46d5c4b9701f3148193bc2d79edd4ec4bf6a97535561e662ce57c03dc33fe3ea"
+record = "DevRel::embedGettingStartedObserver"
+axis = "derived"
+
+[[closed]]
+kappa = "ca2162eddd5bd791ffeccf7247379b7c5c98e70e91c32eacdce2a845c9d948bc"
+record = "DevRel::embedGettingStartedObserver"
+axis = "meant"
+
+[[closed]]
 kappa = "8b0c0e37411ffe19b41687ff1bd138ab877ec9c1841527dacb277d003ba246c0"
 record = "DevRel::sdkExampleCustomArena"
 axis = "derived"
@@ -3492,6 +3592,166 @@ axis = "derived"
 [[closed]]
 kappa = "b2f91c92120303debd618d6894a21db6f4999b51023c1c3a0e9dccac9346eb15"
 record = "DevRel::sdkVerdantWasm"
+axis = "meant"
+
+[[closed]]
+kappa = "9ce14082abc40a9a835a9ea3eb170ade8cec2c298a5a3b08834beecea2add5f6"
+record = "DevRel::studioJourneyBrowserPlayer"
+axis = "derived"
+
+[[closed]]
+kappa = "5ae82b51d0ea40b73c79c34697c107910f8fd3cf999bd944b622d57e2d9719f6"
+record = "DevRel::studioJourneyBrowserPlayer"
+axis = "meant"
+
+[[closed]]
+kappa = "6d0c822a8bd24f95f8767f1b1f6996dea68c3d8eb8809e743cef6b067d58fd47"
+record = "DevRel::studioJourneyGameDeveloper"
+axis = "derived"
+
+[[closed]]
+kappa = "24493278d8877983369354751cb4f51b8d02bc35551fefb030125c37b7e6397c"
+record = "DevRel::studioJourneyGameDeveloper"
+axis = "meant"
+
+[[closed]]
+kappa = "21e400450857fb49483b8e02b0f4752f55f069503b64943e75b0e472df6d4b08"
+record = "DevRel::studioJourneyMultiplayerCitizen"
+axis = "derived"
+
+[[closed]]
+kappa = "da475204da7e09500ab4b7bfc1000f77929141910a01393d48b112abfa7a8987"
+record = "DevRel::studioJourneyMultiplayerCitizen"
+axis = "meant"
+
+[[closed]]
+kappa = "0154cd022bbeb09fc0a09e04c6b49a3b6403ea9e6c5b87c941fcecb8b5b6f098"
+record = "DevRel::studioJourneySecurityAuditor"
+axis = "derived"
+
+[[closed]]
+kappa = "7a13f879238a7ad179e8256080b02a933333701cea35b204a928de79cc70f9c9"
+record = "DevRel::studioJourneySecurityAuditor"
+axis = "meant"
+
+[[closed]]
+kappa = "89979e41f31b5d37ec02f8032e567087f801e9dd83b19369c14632905195383d"
+record = "DevRel::studioJourneySystemsEngineer"
+axis = "derived"
+
+[[closed]]
+kappa = "056a849eee3a542942c1f2e8b82c8e44678f745f61dea75e85f19986626a0c40"
+record = "DevRel::studioJourneySystemsEngineer"
+axis = "meant"
+
+[[closed]]
+kappa = "6079cb878dcdc14e60fac84bedda915ed41d1849fce1c5ac036319b27132dd35"
+record = "DevRel::studioJourneyTechnicalArtist"
+axis = "derived"
+
+[[closed]]
+kappa = "a3722ac55395d766c30e4d16eab95870094b82008ebe9235326ab8734c231d4e"
+record = "DevRel::studioJourneyTechnicalArtist"
+axis = "meant"
+
+[[closed]]
+kappa = "a8f1b59b510ca02edb9a523d435a6945d004896526618955bf69e15be5605fa8"
+record = "DevRel::studioJourneyUiComplianceArchitect"
+axis = "derived"
+
+[[closed]]
+kappa = "6f4c1f06ea81c0e7a6260ec3e1f17f4108b1f36975c5cc5f947d3031d9526901"
+record = "DevRel::studioJourneyUiComplianceArchitect"
+axis = "meant"
+
+[[closed]]
+kappa = "2d8d45c980fb8da660b65aa2f063ddc18458792e01553381cc71fe627d412bfd"
+record = "DevRel::tabCreateGameOrApp"
+axis = "derived"
+
+[[closed]]
+kappa = "5daac0151d83e109acb758b4463f2fde6927f6ba1893ebdc0bc401636a326667"
+record = "DevRel::tabCreateGameOrApp"
+axis = "meant"
+
+[[closed]]
+kappa = "09d913d50df2e06ebc075376a74e696690525c3ded4ac48f13da838399745815"
+record = "DevRel::tabFormalUiAndCybernetics"
+axis = "derived"
+
+[[closed]]
+kappa = "95fc6fab5f74c792eb7a2da0f389a6ec0ce0a7fbc494c5f2a6f0b048c752f747"
+record = "DevRel::tabFormalUiAndCybernetics"
+axis = "meant"
+
+[[closed]]
+kappa = "b8edef1cf4685ce7bbd13864363d7ac39e4d2b97c81220df27062652f01c23d9"
+record = "DevRel::tabGuidedJourneys"
+axis = "derived"
+
+[[closed]]
+kappa = "e77b63c26112f8f03548c95dde69d8523558c69e5c7e4ebc2f607ca5e1cd95c6"
+record = "DevRel::tabGuidedJourneys"
+axis = "meant"
+
+[[closed]]
+kappa = "6f187d47fe473f8da5ee1b7e97cdd5e8ca5b32518593c13ec8082cf8e4650a9f"
+record = "DevRel::tabLawfulPhysicsIkAndChronicle"
+axis = "derived"
+
+[[closed]]
+kappa = "11b9aef1ede793f8bf68e36cc9224f7b44add813de6e9373f0d779bd70f4f7e7"
+record = "DevRel::tabLawfulPhysicsIkAndChronicle"
+axis = "meant"
+
+[[closed]]
+kappa = "f496cbf6668301cbb808544b50ed4a3f7c3817f2dd4d84c49ddd6298df61c660"
+record = "DevRel::tabPrismIdStitchAndCapabilities"
+axis = "derived"
+
+[[closed]]
+kappa = "f0f6d0768fe31cb612d76c9a019ff5826d8cb3b4e30835e1454989e27bfa2ec7"
+record = "DevRel::tabPrismIdStitchAndCapabilities"
+axis = "meant"
+
+[[closed]]
+kappa = "e0ce8d9e9c7ed9020838453e3b4f31bcda8f4a9fec83841c65d668b0f8ae170a"
+record = "DevRel::tabSceneOutlinerAndAssets"
+axis = "derived"
+
+[[closed]]
+kappa = "f91883e861f8c4f6c53efd0af7e03b700b13dc93b9da4f0d584e70251de6633b"
+record = "DevRel::tabSceneOutlinerAndAssets"
+axis = "meant"
+
+[[closed]]
+kappa = "322171b6cf5ce872d2fb26091336f5b23c0c749d6ffa87c870d32b357db43fe4"
+record = "DevRel::themeDarkObsidian"
+axis = "derived"
+
+[[closed]]
+kappa = "8addeab1f095d283034b1704acd70c3c521677f25ed7a791e7673c930f4cddb9"
+record = "DevRel::themeDarkObsidian"
+axis = "meant"
+
+[[closed]]
+kappa = "6427c0e979172eeb1fcee802c2bf1247bb50e49b1fc4822184ef74f1bdda5fc9"
+record = "DevRel::themeImmersiveGlass"
+axis = "derived"
+
+[[closed]]
+kappa = "dab560938a09c48faac2a07bd13ce42b0c1fdde6953d1d4ff0868b7627af463e"
+record = "DevRel::themeImmersiveGlass"
+axis = "meant"
+
+[[closed]]
+kappa = "ff7952599e6fe77ca76c0c50c299bade4bb05dfe4b43b2a26426d905591d3837"
+record = "DevRel::themeLightPaper"
+axis = "derived"
+
+[[closed]]
+kappa = "abb558bae132227a033c21cfc49c29af8e40b55d5a2c432b97353baaa3360da3"
+record = "DevRel::themeLightPaper"
 axis = "meant"
 
 [[closed]]
@@ -3985,6 +4245,11 @@ record = "Engine::vectors#37"
 axis = "meant"
 
 [[closed]]
+kappa = "2deae20b28d2daee59bf7cfd86dd2e2836abe7bb224e24d2a2829d6ccb7dafc4"
+record = "Engine::vectors#38"
+axis = "derived"
+
+[[closed]]
 kappa = "75c4bfdf490981c843dcfc22508493fae99f3ae8e33eaae9b4606094ac8c3c33"
 record = "Engine::vectors#38"
 axis = "derived"
@@ -3995,9 +4260,24 @@ record = "Engine::vectors#38"
 axis = "meant"
 
 [[closed]]
+kappa = "51078257686b484f263a01d41a5129dde447a48fb972a046ceef6638c04e7d20"
+record = "Engine::vectors#38"
+axis = "meant"
+
+[[closed]]
 kappa = "e9773847fb4d8e4f3fa18493601f2037b30647a5dbc3eb16101bf627032b585e"
 record = "Engine::vectors#39"
 axis = "derived"
+
+[[closed]]
+kappa = "fdcb6e84631ca45f091a35d97e37214437cfbae41f3f27f82dba6cc098dc382d"
+record = "Engine::vectors#39"
+axis = "derived"
+
+[[closed]]
+kappa = "3e67e35f54377adacd573927c79ddda267772ee95e347ab7804220da6a82b209"
+record = "Engine::vectors#39"
+axis = "meant"
 
 [[closed]]
 kappa = "86091def8fc116537aec8bf3c6fcc14c522accfc766a5f3c692b001a9de7e52c"
@@ -4025,6 +4305,11 @@ record = "Engine::vectors#4"
 axis = "meant"
 
 [[closed]]
+kappa = "722e0fb86bf83f318fad7697e18ecd6605d68b67bb00a13131d451f72bed8710"
+record = "Engine::vectors#40"
+axis = "derived"
+
+[[closed]]
 kappa = "e1fc86a44ce8495a67274682940a4c5b4599fabf74403d423ed6903a374f13d7"
 record = "Engine::vectors#40"
 axis = "derived"
@@ -4032,6 +4317,21 @@ axis = "derived"
 [[closed]]
 kappa = "7e626f8d9eca77655446eb92a314f180a0cd83838239a2f7b7cdc9ed2152f10a"
 record = "Engine::vectors#40"
+axis = "meant"
+
+[[closed]]
+kappa = "afa30c647623607fe3a102df5c853f0e0ab203f501e737e0d8c06ce3d72fb996"
+record = "Engine::vectors#40"
+axis = "meant"
+
+[[closed]]
+kappa = "1e129fd6be335dc61257e059d7a192356cb69736492324b2e0aab0126119fefe"
+record = "Engine::vectors#41"
+axis = "derived"
+
+[[closed]]
+kappa = "d836ad7ff9271afe0e33f5e867992c84246515bc21de6e45c99eb2a6e5d64e6a"
+record = "Engine::vectors#41"
 axis = "meant"
 
 [[closed]]

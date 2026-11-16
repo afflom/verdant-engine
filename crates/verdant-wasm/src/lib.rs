@@ -44,13 +44,15 @@ use verdant_core::physics::{
     PhysicsWorldConfig, RigidBody, RigidJointConstraint,
 };
 use verdant_core::prism_kernel;
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+use verdant_core::render::PbrMaterial;
 use verdant_core::render::{
     canonical_pbr_material_library, pack_world_meshes_to_buffers, PackedSceneRenderBuffers,
 };
 #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
-use verdant_core::render::{compute_csm_splits, PbrMaterial};
-#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
-use verdant_core::runtime::WorldSnapshot;
+use verdant_core::runtime::{
+    BrowserCapabilities, EngineConfig, OntologicalRuntimeGovernor, WorldSnapshot,
+};
 #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
 use verdant_core::streaming::{
     decode_portable_uorc_single_frame, CodedLodFrameBundle, StandardSceneState,
@@ -2115,17 +2117,24 @@ pub extern "C" fn verdant_wasm_binaural_itd_micros() -> f64 {
 }
 
 /// Returns the far split distance in meters for cascade `cascade_idx` (`0..4`).
-#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
 #[no_mangle]
 pub extern "C" fn verdant_wasm_csm_split_meters(
     near_meters: f64,
     far_meters: f64,
     cascade_idx: u32,
 ) -> f64 {
-    compute_csm_splits(near_meters, far_meters)
-        .ok()
-        .and_then(|s| s.get(cascade_idx as usize).map(|c| c.far_meters))
-        .unwrap_or(far_meters)
+    if !near_meters.is_finite()
+        || !far_meters.is_finite()
+        || near_meters <= 0.0
+        || far_meters <= near_meters
+    {
+        return far_meters;
+    }
+    let scale = pk_f64(prism_kernel::skinWeightScale());
+    let near_milli = (near_meters * scale).round().max(1.0) as u64;
+    let far_milli = (far_meters * scale).round().max((near_milli + 1) as f64) as u64;
+    prism_kernel::csmSplitDistanceMilli(near_milli, far_milli, u64::from(cascade_idx))
+        .map_or(far_meters, |m| (m as f64) / scale)
 }
 
 /// Renders the active scene into the portable `uor-matmul` `16x16` tile `RGBA8` framebuffer and returns byte length.
@@ -3049,5 +3058,90 @@ pub extern "C" fn verdant_wasm_story_status_aux() -> u32 {
         idx, node.title, supply, node.objective, bridge.story.last_dialogue
     );
     bridge.aux_buffer = formatted.into_bytes();
+    bridge.aux_buffer.len() as u32
+}
+
+/// Stages live `SceneWorld` entity hierarchy, world-space bounds centers, triangle counts, and
+/// `OntologicalRuntimeGovernor` 8-stratum `W5H` / Telos telemetry into `aux_buffer`, returning byte length.
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+#[no_mangle]
+pub extern "C" fn verdant_wasm_scene_outliner_aux(observed_frame_micros: u32) -> u32 {
+    let Ok(mut guard) = global_bridge().lock() else {
+        return 0;
+    };
+    let Some(bridge) = guard.as_mut() else {
+        return 0;
+    };
+    let sixty = pk_u64(prism_kernel::sSix()) * pk_u64(prism_kernel::sTen());
+    let four = pk_u64(prism_kernel::sFour()) as u32;
+    let nineteen = pk_u64(prism_kernel::sSixteen()) + prism_kernel::sThree();
+    let width =
+        (nineteen * pk_u64(prism_kernel::sHundred()) + pk_u64(prism_kernel::sTwenty())) as u32;
+    let height = (pk_u64(prism_kernel::sTen()) * pk_u64(prism_kernel::sHundred())
+        + pk_u64(prism_kernel::sEight()) * pk_u64(prism_kernel::sTen())) as u32;
+    let Ok(cfg) = EngineConfig::from_refresh_rate(width, height, sixty as u32, sixty as u32, four)
+    else {
+        return 0;
+    };
+    let caps = BrowserCapabilities {
+        wasm_simd_available: true,
+        webgl2_available: true,
+        hardware_concurrency: four,
+        shared_array_buffer: false,
+        audio_worklet: true,
+        offscreen_canvas: true,
+    };
+    let governor = OntologicalRuntimeGovernor::new(cfg, caps);
+    let certs = governor.certify_all_eight_strata();
+    let verified_strata = certs.iter().filter(|c| c.complete_verified).count();
+    let obs_us = if observed_frame_micros == 0 {
+        pk_u64(prism_kernel::sEight()) * pk_u64(prism_kernel::skinWeightScale())
+    } else {
+        u64::from(observed_frame_micros)
+    };
+    let milli = pk_u64(prism_kernel::skinWeightScale());
+    let telos = governor.evaluate_frame_telos(obs_us, true, milli, milli, 0, 0, 0);
+    let rec_lod = governor.recommend_non_coercive_lod(u64::from(bridge.lod_rank), obs_us, 0);
+
+    #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+    let (scene, meshes) = if let Some((ref sc, ref ms, _)) = bridge.custom_glb_scene {
+        (sc, ms.as_slice())
+    } else {
+        (&bridge.hd_sector.scene, bridge.hd_sector.meshes.as_slice())
+    };
+    #[cfg(not(any(not(target_arch = "wasm32"), feature = "uorc-decoder")))]
+    let (scene, meshes) = (&bridge.hd_sector.scene, bridge.hd_sector.meshes.as_slice());
+
+    let three = prism_kernel::sThree().max(1) as usize;
+    let mut lines = Vec::with_capacity(scene.entity_count() + 1);
+    lines.push(format!(
+        "w5h_strata={verified_strata}|telos_loss={}|triadic={}|rec_lod={rec_lod}|seed={}|lod={}|entities={}",
+        telos.total_telos_loss,
+        u32::from(telos.triadic_connection_active),
+        bridge.seed_val,
+        bridge.lod_rank,
+        scene.entity_count()
+    ));
+    for rec in scene.entities() {
+        let tris = rec
+            .mesh_index
+            .and_then(|mi| meshes.get(mi))
+            .map_or(0, |m| m.indices.len() / three);
+        let center = scene
+            .world_bounds(rec.id)
+            .map_or(rec.local_transform.translation, |b| b.center());
+        lines.push(format!(
+            "{}|{}|{:?}|{}|{:.2},{:.2},{:.2}|{:.3}",
+            rec.id.0,
+            rec.name,
+            rec.role,
+            tris,
+            center.x,
+            center.y,
+            center.z,
+            rec.emerged_at_lod_scale
+        ));
+    }
+    bridge.aux_buffer = lines.join("\n").into_bytes();
     bridge.aux_buffer.len() as u32
 }
