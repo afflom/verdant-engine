@@ -1689,3 +1689,440 @@ fn engine_ve_24() {
         StitchCustodyError::StalePeerObservation { peer_id: 9 }
     );
 }
+
+fn append_test_box_to_mesh(
+    mesh: &mut verdant_core::geometry::ProceduralMesh,
+    min: Vec3,
+    max: Vec3,
+) {
+    let corners = [
+        // +Z front
+        (
+            [min.x, min.y, max.z],
+            [max.x, min.y, max.z],
+            [max.x, max.y, max.z],
+            [min.x, max.y, max.z],
+            [0.0_f32, 0.0, 1.0],
+        ),
+        // -Z back
+        (
+            [max.x, min.y, min.z],
+            [min.x, min.y, min.z],
+            [min.x, max.y, min.z],
+            [max.x, max.y, min.z],
+            [0.0_f32, 0.0, -1.0],
+        ),
+        // +X right
+        (
+            [max.x, min.y, max.z],
+            [max.x, min.y, min.z],
+            [max.x, max.y, min.z],
+            [max.x, max.y, max.z],
+            [1.0_f32, 0.0, 0.0],
+        ),
+        // -X left
+        (
+            [min.x, min.y, min.z],
+            [min.x, min.y, max.z],
+            [min.x, max.y, max.z],
+            [min.x, max.y, min.z],
+            [-1.0_f32, 0.0, 0.0],
+        ),
+        // +Y top
+        (
+            [min.x, max.y, max.z],
+            [max.x, max.y, max.z],
+            [max.x, max.y, min.z],
+            [min.x, max.y, min.z],
+            [0.0_f32, 1.0, 0.0],
+        ),
+        // -Y bottom
+        (
+            [min.x, min.y, min.z],
+            [max.x, min.y, min.z],
+            [max.x, min.y, max.z],
+            [min.x, min.y, max.z],
+            [0.0_f32, -1.0, 0.0],
+        ),
+    ];
+
+    for (p0, p1, p2, p3, nrm) in corners {
+        let base = mesh.positions.len() as u32;
+        for p in [p0, p1, p2, p3] {
+            mesh.positions.push([p[0] as f32, p[1] as f32, p[2] as f32]);
+            mesh.normals.push(nrm);
+            mesh.uvs.push([0.5, 0.5]);
+            mesh.colors.push([0.8, 0.8, 0.8, 1.0]);
+        }
+        mesh.indices
+            .extend_from_slice(&[base, base + 1, base + 2, base, base + 2, base + 3]);
+    }
+}
+
+/// `VE-25`: Two-level entity TLAS + triangle `MeshBlas` BVH, hollow doorway traversal, acute 2-plane crease projection, and stair auto-stepping.
+#[test]
+fn engine_ve_25() {
+    use verdant_core::ecs::{EntityRole, SceneWorld, Transform, TwoLevelBvh};
+    use verdant_core::geometry::ProceduralMesh;
+    use verdant_core::physics::{
+        CapsuleController, CharacterMoveIntent, PhysicsWorld, PhysicsWorldConfig,
+    };
+
+    // Build a compound hollow doorway mesh at Z = 0:
+    // Left pier: X in [-3.0, -1.0], Right pier: X in [1.0, 3.0], Overhead lintel: Y in [2.6, 3.6].
+    // Opening in X in (-1.0, 1.0), Y in [0.0, 2.6] is completely hollow inside the mesh's AABB!
+    let mut doorway = ProceduralMesh {
+        name: "HollowDoorway".to_string(),
+        positions: Vec::new(),
+        normals: Vec::new(),
+        uvs: Vec::new(),
+        colors: Vec::new(),
+        indices: Vec::new(),
+        morph_targets: Vec::new(),
+    };
+    append_test_box_to_mesh(
+        &mut doorway,
+        Vec3::new(-3.0, 0.0, -0.4),
+        Vec3::new(-1.0, 3.6, 0.4),
+    );
+    append_test_box_to_mesh(
+        &mut doorway,
+        Vec3::new(1.0, 0.0, -0.4),
+        Vec3::new(3.0, 3.6, 0.4),
+    );
+    append_test_box_to_mesh(
+        &mut doorway,
+        Vec3::new(-3.0, 2.6, -0.4),
+        Vec3::new(3.0, 3.6, 0.4),
+    );
+
+    // Acute V-corner at Z = -6.0 (two walls angled inward):
+    let mut wall_slab = ProceduralMesh {
+        name: "WallSlab".to_string(),
+        positions: Vec::new(),
+        normals: Vec::new(),
+        uvs: Vec::new(),
+        colors: Vec::new(),
+        indices: Vec::new(),
+        morph_targets: Vec::new(),
+    };
+    append_test_box_to_mesh(
+        &mut wall_slab,
+        Vec3::new(-3.0, 0.0, -0.25),
+        Vec3::new(3.0, 3.0, 0.25),
+    );
+
+    // Two-step staircase at X = 6.0 (`0.24m` risers <= `0.35m` max step):
+    let mut stairs = ProceduralMesh {
+        name: "WalkableStairs".to_string(),
+        positions: Vec::new(),
+        normals: Vec::new(),
+        uvs: Vec::new(),
+        colors: Vec::new(),
+        indices: Vec::new(),
+        morph_targets: Vec::new(),
+    };
+    append_test_box_to_mesh(
+        &mut stairs,
+        Vec3::new(5.0, 0.0, -1.0),
+        Vec3::new(7.0, 0.24, 0.5),
+    );
+    append_test_box_to_mesh(
+        &mut stairs,
+        Vec3::new(5.0, 0.0, -6.0),
+        Vec3::new(7.0, 0.48, -1.0),
+    );
+
+    doorway.validate().expect("valid doorway mesh");
+    wall_slab.validate().expect("valid wall slab");
+    stairs.validate().expect("valid stairs mesh");
+    let meshes = vec![doorway, wall_slab, stairs];
+
+    let mut scene = SceneWorld::new();
+    let e_door = scene.spawn(
+        "doorway",
+        EntityRole::StaticArchitecture,
+        None,
+        Transform::default(),
+        meshes[0].bounds(),
+        (1.0, "test"),
+    );
+    scene.attach_renderable(e_door, 0, 0);
+
+    let e_corner_l = scene.spawn(
+        "corner_left",
+        EntityRole::StaticArchitecture,
+        None,
+        Transform {
+            translation: Vec3::new(-1.1, 0.0, -6.0),
+            rotation: Quat::from_axis_angle(Vec3::UP, 0.9),
+            scale: Vec3::new(1.0, 1.0, 1.0),
+        },
+        meshes[1].bounds(),
+        (1.0, "test"),
+    );
+    scene.attach_renderable(e_corner_l, 1, 0);
+
+    let e_corner_r = scene.spawn(
+        "corner_right",
+        EntityRole::StaticArchitecture,
+        None,
+        Transform {
+            translation: Vec3::new(1.1, 0.0, -6.0),
+            rotation: Quat::from_axis_angle(Vec3::UP, -0.9),
+            scale: Vec3::new(1.0, 1.0, 1.0),
+        },
+        meshes[1].bounds(),
+        (1.0, "test"),
+    );
+    scene.attach_renderable(e_corner_r, 1, 0);
+
+    let e_stairs = scene.spawn(
+        "stairs",
+        EntityRole::StaticArchitecture,
+        None,
+        Transform::default(),
+        meshes[2].bounds(),
+        (1.0, "test"),
+    );
+    scene.attach_renderable(e_stairs, 2, 0);
+
+    let bvh = TwoLevelBvh::build_solid(&scene, &meshes).expect("TwoLevelBvh built");
+    assert_eq!(bvh.instance_count(), 4);
+
+    // 1. Walk straight through the hollow doorway opening (`X = 0`, `Z: +2.0 -> -2.0`):
+    let mut cfg = PhysicsWorldConfig::default();
+    cfg.terrain_relief.basin_depth_meters = 0.0;
+    cfg.terrain_relief.hill_amplitude_meters = 0.0;
+    cfg.terrain_relief.outer_rim_curvature = 0.0;
+    cfg.platform_deck = None;
+    cfg.environment.water_level_meters = -10.0;
+
+    let mut phys = PhysicsWorld::new(cfg);
+    phys.player_capsule = Some(CapsuleController::new(Vec3::new(0.0, 0.0, 2.0)));
+    for _ in 0..40 {
+        let rep = phys
+            .step_lawful(
+                1.0 / 30.0,
+                CharacterMoveIntent {
+                    planar_wish_dir: Vec3::new(0.0, 0.0, -1.0),
+                    speed_scale: 1.0,
+                    jump_requested: false,
+                },
+                &bvh,
+            )
+            .expect("lawful step through open doorway");
+        assert!(rep.clearance_verified);
+    }
+    let pos_after_door = phys.player_capsule.as_ref().unwrap().foot_position;
+    assert!(
+        pos_after_door.z < -1.5,
+        "capsule walked cleanly through hollow doorway opening: z={}",
+        pos_after_door.z
+    );
+
+    // 2. Walk directly into solid left doorway pier (`X = -2.0`, `Z: +2.0 -> -2.0`) — must be 100% blocked!
+    phys.player_capsule = Some(CapsuleController::new(Vec3::new(-2.0, 0.0, 2.0)));
+    for _ in 0..40 {
+        let rep = phys
+            .step_lawful(
+                1.0 / 30.0,
+                CharacterMoveIntent {
+                    planar_wish_dir: Vec3::new(0.0, 0.0, -1.0),
+                    speed_scale: 1.0,
+                    jump_requested: false,
+                },
+                &bvh,
+            )
+            .expect("lawful step into solid pier");
+        assert!(rep.clearance_verified);
+    }
+    let pos_blocked = phys.player_capsule.as_ref().unwrap().foot_position;
+    assert!(
+        pos_blocked.z >= 0.88,
+        "solid stone pier blocked capsule from passing through: z={}",
+        pos_blocked.z
+    );
+
+    // 3. Drive capsule into the acute two-wall V-corner (`Z: -3.5 -> -8.0`) — zero tunneling & crease projection!
+    phys.player_capsule = Some(CapsuleController::new(Vec3::new(0.05, 0.0, -3.5)));
+    let mut saw_crease = false;
+    for _ in 0..45 {
+        let rep = phys
+            .step_lawful(
+                1.0 / 30.0,
+                CharacterMoveIntent {
+                    planar_wish_dir: Vec3::new(0.0, 0.0, -1.0),
+                    speed_scale: 1.5,
+                    jump_requested: false,
+                },
+                &bvh,
+            )
+            .expect("lawful step into acute V-corner");
+        if rep.crease_projected {
+            saw_crease = true;
+        }
+        assert!(
+            rep.clearance_verified,
+            "clearance violated in acute corner: {}",
+            rep.min_clearance_meters
+        );
+    }
+    assert!(
+        saw_crease,
+        "2-plane acute corner triggered crease projection"
+    );
+    let pos_corner = phys.player_capsule.as_ref().unwrap().foot_position;
+    assert!(
+        pos_corner.z > -6.5,
+        "acute V-corner halted capsule without wall tunneling: z={}",
+        pos_corner.z
+    );
+
+    // 4. Climb the two-step staircase (`X = 6.0`, `Z: +1.6 -> -2.0`):
+    phys.player_capsule = Some(CapsuleController::new(Vec3::new(6.0, 0.0, 1.6)));
+    for _ in 0..45 {
+        let rep = phys
+            .step_lawful(
+                1.0 / 30.0,
+                CharacterMoveIntent {
+                    planar_wish_dir: Vec3::new(0.0, 0.0, -1.0),
+                    speed_scale: 1.0,
+                    jump_requested: false,
+                },
+                &bvh,
+            )
+            .expect("lawful stair climb");
+        assert!(rep.clearance_verified);
+    }
+    let pos_stairs = phys.player_capsule.as_ref().unwrap().foot_position;
+    assert!(
+        pos_stairs.y >= 0.45 && pos_stairs.z < -1.1,
+        "capsule auto-stepped onto upper stair tread: pos={pos_stairs:?}"
+    );
+}
+
+/// `VE-26`: `LawfulCameraRig` near-frustum guard-sphere sweep preventing wall/floor peeking and `CameraRigError` refusals.
+#[test]
+fn engine_ve_26() {
+    use verdant_core::camera::{CameraMode, CameraRigConfig, LawfulCameraRig};
+    use verdant_core::ecs::{EntityRole, SceneWorld, Transform, TwoLevelBvh};
+    use verdant_core::error::CameraRigError;
+    use verdant_core::geometry::ProceduralMesh;
+
+    // Build an enclosed room box (`X in [-3.0, 3.0], Z in [-3.0, 3.0], Y in [0.0, 4.0]`) from 4 solid walls + ceiling:
+    let mut room = ProceduralMesh {
+        name: "EnclosedWalledRoom".to_string(),
+        positions: Vec::new(),
+        normals: Vec::new(),
+        uvs: Vec::new(),
+        colors: Vec::new(),
+        indices: Vec::new(),
+        morph_targets: Vec::new(),
+    };
+    append_test_box_to_mesh(
+        &mut room,
+        Vec3::new(-3.2, 0.0, 2.8),
+        Vec3::new(3.2, 4.0, 3.2),
+    ); // +Z wall (`z = 2.8` inner face)
+    append_test_box_to_mesh(
+        &mut room,
+        Vec3::new(-3.2, 0.0, -3.2),
+        Vec3::new(3.2, 4.0, -2.8),
+    ); // -Z wall
+    append_test_box_to_mesh(
+        &mut room,
+        Vec3::new(2.8, 0.0, -3.2),
+        Vec3::new(3.2, 4.0, 3.2),
+    ); // +X wall
+    append_test_box_to_mesh(
+        &mut room,
+        Vec3::new(-3.2, 0.0, -3.2),
+        Vec3::new(-2.8, 4.0, 3.2),
+    ); // -X wall
+    append_test_box_to_mesh(
+        &mut room,
+        Vec3::new(-3.2, 3.8, -3.2),
+        Vec3::new(3.2, 4.2, 3.2),
+    ); // ceiling (`y = 3.8` inner face)
+    room.validate().expect("valid room mesh");
+
+    let meshes = vec![room];
+    let mut scene = SceneWorld::new();
+    let e_room = scene.spawn(
+        "room",
+        EntityRole::StaticArchitecture,
+        None,
+        Transform::default(),
+        meshes[0].bounds(),
+        (1.0, "test"),
+    );
+    scene.attach_renderable(e_room, 0, 0);
+    let bvh = TwoLevelBvh::build_solid(&scene, &meshes).expect("room TwoLevelBvh");
+
+    let cfg = CameraRigConfig::default();
+    let mut rig = LawfulCameraRig::new(cfg, CameraMode::ThirdPersonSpringArm, 0.0, 0.35, 9.0)
+        .expect("valid camera rig");
+
+    // Anchor inside the room at `(0, 1.6, 0)` while requesting a 9m orbit (well outside the 2.8m walls!):
+    let anchor = Vec3::new(0.0, 1.6, 0.0);
+    for step in 0..36 {
+        rig.yaw_radians = (step as f64) * (std::f64::consts::TAU / 36.0);
+        rig.pitch_radians = if step % 2 == 0 { 0.65 } else { -0.45 };
+        let frame = rig
+            .solve_frame(1.0 / 60.0, anchor, &bvh, |_, _| 0.0)
+            .expect("lawful camera frame");
+        assert!(
+            frame.near_sphere_guarded,
+            "Lean near-sphere guard must hold"
+        );
+        assert!(
+            frame.obstructed,
+            "9m spring arm inside 2.8m room must detect wall"
+        );
+        let max_allowed = 2.8 - frame.guard_radius_meters + 1e-3;
+        assert!(
+            frame.eye.x.abs() <= max_allowed && frame.eye.z.abs() <= max_allowed,
+            "camera eye never peeks through room walls: eye={:?}, max_allowed={max_allowed}",
+            frame.eye
+        );
+        assert!(
+            frame.eye.y >= frame.guard_radius_meters - 1e-3
+                && frame.eye.y <= 3.8 - frame.guard_radius_meters + 1e-3,
+            "camera eye stays strictly between floor and ceiling: y={}",
+            frame.eye.y
+        );
+    }
+
+    // First-person eye mode pressed right up against the `+X` inner wall (`x = 2.79`):
+    rig.mode = CameraMode::FirstPersonEye;
+    let fp_frame = rig
+        .solve_frame(1.0 / 60.0, Vec3::new(2.79, 1.6, 0.0), &bvh, |_, _| 0.0)
+        .expect("first-person wall-guarded frame");
+    assert!(fp_frame.near_sphere_guarded);
+    assert!(
+        fp_frame.eye.x <= 2.8 - fp_frame.guard_radius_meters + 1e-3,
+        "first-person eye pushed safely back from wall by guard radius: x={}",
+        fp_frame.eye.x
+    );
+
+    // Negative refusals (`CameraRigError`):
+    let mut bad_cfg = cfg;
+    bad_cfg.z_near_meters = 0.0;
+    assert!(matches!(
+        LawfulCameraRig::new(bad_cfg, CameraMode::FirstPersonEye, 0.0, 0.0, 0.0),
+        Err(CameraRigError::InvalidOpticalFrustum { .. })
+    ));
+
+    let mut inverted_cfg = cfg;
+    inverted_cfg.z_far_meters = inverted_cfg.z_near_meters;
+    assert!(matches!(
+        LawfulCameraRig::new(inverted_cfg, CameraMode::FirstPersonEye, 0.0, 0.0, 0.0),
+        Err(CameraRigError::InvalidOpticalFrustum { .. })
+    ));
+
+    assert!(matches!(
+        LawfulCameraRig::new(cfg, CameraMode::ThirdPersonSpringArm, 0.0, 0.0, 9999.0),
+        Err(CameraRigError::InvalidSpringArmDistance { .. })
+    ));
+}

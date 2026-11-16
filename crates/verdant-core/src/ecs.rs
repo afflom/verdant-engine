@@ -4,8 +4,12 @@ use std::collections::BTreeMap;
 
 use serde::{Deserialize, Serialize};
 
-use crate::error::TensorComputeError;
-use crate::math::{pow10_u64, three_u32, Aabb, Frustum, Mat4, Quat, Ray, Vec3, DIM_PLANAR};
+use crate::collision::{BlasTriangleHit, MeshBlas, SweptSphereHit};
+use crate::error::{CollisionError, TensorComputeError};
+use crate::geometry::ProceduralMesh;
+use crate::math::{
+    geometric_epsilon, pow10_u64, three_u32, Aabb, Frustum, Mat4, Quat, Ray, Vec3, DIM_PLANAR,
+};
 
 /// Stable, deterministic identifier of a scene entity.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
@@ -520,5 +524,399 @@ impl SceneWorld {
             .filter_map(|&id| Some((id, self.world_bounds(id)?)))
             .collect();
         BoundingVolumeHierarchy::build(items)
+    }
+
+    /// Builds an exact two-level BVH (`Entity TLAS` + triangle `MeshBlas`) over solid scene entities.
+    pub fn build_two_level_bvh(
+        &self,
+        meshes: &[ProceduralMesh],
+    ) -> Result<TwoLevelBvh, CollisionError> {
+        TwoLevelBvh::build_solid(self, meshes)
+    }
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+struct TwoLevelInstance {
+    entity: EntityId,
+    role: EntityRole,
+    world_bounds: Aabb,
+    local_to_world: Mat4,
+    world_to_local: Mat4,
+    uniform_scale: f64,
+    blas_slot: usize,
+}
+
+/// Exact Two-Level Bounding Volume Hierarchy (`TLAS` over scene entities + `MeshBlas` over surface
+/// triangles) enabling hollow doorways, vaulted interiors, arch bridges, and zero-penetration sweeps.
+#[derive(Clone, Debug)]
+pub struct TwoLevelBvh {
+    instances: Vec<TwoLevelInstance>,
+    blas_pool: Vec<MeshBlas>,
+    tlas: BoundingVolumeHierarchy,
+}
+
+impl TwoLevelBvh {
+    /// Returns whether `role` represents solid physical geometry for movement and camera occlusion.
+    #[must_use]
+    pub const fn is_solid_role(role: EntityRole) -> bool {
+        matches!(
+            role,
+            EntityRole::TerrainPatch
+                | EntityRole::StaticArchitecture
+                | EntityRole::ArticulatedRig
+                | EntityRole::KinematicMover
+                | EntityRole::AutonomousAgent
+        )
+    }
+
+    /// Builds a `TwoLevelBvh` indexing all solid renderable entities in `scene`.
+    pub fn build_solid(
+        scene: &SceneWorld,
+        meshes: &[ProceduralMesh],
+    ) -> Result<Self, CollisionError> {
+        Self::build_filtered(scene, meshes, Self::is_solid_role)
+    }
+
+    /// Builds a `TwoLevelBvh` indexing entities whose `EntityRole` satisfies `include_role`.
+    pub fn build_filtered<F>(
+        scene: &SceneWorld,
+        meshes: &[ProceduralMesh],
+        include_role: F,
+    ) -> Result<Self, CollisionError>
+    where
+        F: Fn(EntityRole) -> bool,
+    {
+        let mut shared_mesh_slot: Vec<Option<usize>> = vec![None; meshes.len()];
+        let mut blas_pool: Vec<MeshBlas> = Vec::new();
+        let mut instances: Vec<TwoLevelInstance> = Vec::new();
+        let mut tlas_items: Vec<(EntityId, Aabb)> = Vec::new();
+
+        let eps = geometric_epsilon();
+        let scale_tol = 1.0 / (pow10_u64(three_u32()) as f64);
+        let i2 = 1usize + 1usize;
+
+        for entity in scene.entities() {
+            if !include_role(entity.role) {
+                continue;
+            }
+            let Some(mesh_idx) = entity.mesh_index else {
+                continue;
+            };
+            let Some(mesh) = meshes.get(mesh_idx) else {
+                continue;
+            };
+            let Some(world_mat) = scene.world_matrix(entity.id) else {
+                continue;
+            };
+
+            let c0 = Vec3::new(
+                world_mat.cols[0][0],
+                world_mat.cols[0][1],
+                world_mat.cols[0][i2],
+            );
+            let c1 = Vec3::new(
+                world_mat.cols[1][0],
+                world_mat.cols[1][1],
+                world_mat.cols[1][i2],
+            );
+            let c2 = Vec3::new(
+                world_mat.cols[i2][0],
+                world_mat.cols[i2][1],
+                world_mat.cols[i2][i2],
+            );
+            let sx = c0.length();
+            let sy = c1.length();
+            let sz = c2.length();
+            if sx <= eps || sy <= eps || sz <= eps {
+                continue;
+            }
+            let uniform = (sx - sy).abs() <= scale_tol * sx.max(1.0)
+                && (sy - sz).abs() <= scale_tol * sy.max(1.0)
+                && c0.normalized().dot(c1.normalized()).abs() <= scale_tol
+                && c1.normalized().dot(c2.normalized()).abs() <= scale_tol
+                && c0.normalized().dot(c2.normalized()).abs() <= scale_tol;
+
+            if uniform {
+                let Some(inv_mat) = world_mat.inverse_affine() else {
+                    continue;
+                };
+                let slot = if let Some(existing) = shared_mesh_slot[mesh_idx] {
+                    existing
+                } else {
+                    let blas = MeshBlas::from_mesh(mesh)?;
+                    let idx = blas_pool.len();
+                    blas_pool.push(blas);
+                    shared_mesh_slot[mesh_idx] = Some(idx);
+                    idx
+                };
+                let world_bounds = mesh.bounds().transformed(world_mat);
+                tlas_items.push((entity.id, world_bounds));
+                instances.push(TwoLevelInstance {
+                    entity: entity.id,
+                    role: entity.role,
+                    world_bounds,
+                    local_to_world: world_mat,
+                    world_to_local: inv_mat,
+                    uniform_scale: sx,
+                    blas_slot: slot,
+                });
+            } else {
+                // Non-uniformly scaled or sheared entity: bake world-space positions into an exact metric BLAS:
+                let mut world_positions = Vec::with_capacity(mesh.positions.len());
+                let mut world_normals = Vec::with_capacity(mesh.normals.len());
+                let origin_w = world_mat.transform_point3(Vec3::ZERO);
+                for (&pos, &nrm) in mesh.positions.iter().zip(mesh.normals.iter()) {
+                    let pw = world_mat.transform_point3(Vec3::new(
+                        f64::from(pos[0]),
+                        f64::from(pos[1]),
+                        f64::from(pos[i2]),
+                    ));
+                    world_positions.push(pw.to_f32_array());
+                    let nw = (world_mat.transform_point3(Vec3::new(
+                        f64::from(nrm[0]),
+                        f64::from(nrm[1]),
+                        f64::from(nrm[i2]),
+                    )) - origin_w)
+                        .normalized();
+                    world_normals.push(nw.to_f32_array());
+                }
+                let baked_mesh = ProceduralMesh {
+                    name: format!("{}_world_blas", entity.name),
+                    positions: world_positions,
+                    normals: world_normals,
+                    uvs: mesh.uvs.clone(),
+                    colors: mesh.colors.clone(),
+                    indices: mesh.indices.clone(),
+                    morph_targets: Vec::new(),
+                };
+                let world_bounds = baked_mesh.bounds();
+                let Ok(blas) = MeshBlas::from_mesh(&baked_mesh) else {
+                    continue;
+                };
+                let slot = blas_pool.len();
+                blas_pool.push(blas);
+                tlas_items.push((entity.id, world_bounds));
+                instances.push(TwoLevelInstance {
+                    entity: entity.id,
+                    role: entity.role,
+                    world_bounds,
+                    local_to_world: Mat4::IDENTITY,
+                    world_to_local: Mat4::IDENTITY,
+                    uniform_scale: 1.0,
+                    blas_slot: slot,
+                });
+            }
+        }
+
+        let tlas = BoundingVolumeHierarchy::build(tlas_items);
+        Ok(Self {
+            instances,
+            blas_pool,
+            tlas,
+        })
+    }
+
+    /// Number of solid entity instances indexed in the TLAS.
+    #[must_use]
+    pub fn instance_count(&self) -> usize {
+        self.instances.len()
+    }
+
+    /// Total surface triangles across all indexed instances.
+    #[must_use]
+    pub fn total_surface_triangles(&self) -> usize {
+        self.instances
+            .iter()
+            .map(|inst| self.blas_pool[inst.blas_slot].triangle_count())
+            .sum()
+    }
+
+    /// Underlying entity-level TLAS.
+    #[must_use]
+    pub const fn tlas(&self) -> &BoundingVolumeHierarchy {
+        &self.tlas
+    }
+
+    /// Exact two-level world-space raycast against surface triangles (`TLAS -> MeshBlas`).
+    #[must_use]
+    pub fn raycast_exact(
+        &self,
+        world_ray: Ray,
+        max_distance: f64,
+    ) -> Option<(EntityId, BlasTriangleHit)> {
+        let eps = geometric_epsilon();
+        let mut best: Option<(EntityId, BlasTriangleHit)> = None;
+        let mut limit = max_distance;
+
+        for inst in &self.instances {
+            if world_ray
+                .intersect_aabb(inst.world_bounds)
+                .is_none_or(|t_box| t_box > limit)
+            {
+                continue;
+            }
+            let local_origin = inst.world_to_local.transform_point3(world_ray.origin);
+            let local_dir_raw = inst.world_to_local.transform_vector3(world_ray.direction);
+            let dir_scale = local_dir_raw.length();
+            if dir_scale <= eps {
+                continue;
+            }
+            let local_ray = Ray {
+                origin: local_origin,
+                direction: local_dir_raw.scale(1.0 / dir_scale),
+            };
+            let local_max = limit * dir_scale;
+            if let Some(local_hit) =
+                self.blas_pool[inst.blas_slot].raycast_exact(local_ray, local_max)
+            {
+                let world_point = inst.local_to_world.transform_point3(local_hit.point);
+                let world_dist = world_point.distance(world_ray.origin);
+                if world_dist <= limit {
+                    limit = world_dist;
+                    let geom_n = inst
+                        .local_to_world
+                        .transform_vector3(local_hit.geometric_normal)
+                        .normalized();
+                    let shade_n = inst
+                        .local_to_world
+                        .transform_vector3(local_hit.shading_normal)
+                        .normalized();
+                    best = Some((
+                        inst.entity,
+                        BlasTriangleHit {
+                            triangle_index: local_hit.triangle_index,
+                            distance_meters: world_dist,
+                            point: world_point,
+                            geometric_normal: geom_n,
+                            shading_normal: shade_n,
+                            barycentrics: local_hit.barycentrics,
+                        },
+                    ));
+                }
+            }
+        }
+        best
+    }
+
+    /// Exact continuous world-space swept-sphere query (`t in [0.0, 1.0]`) pruned via tropical
+    /// `kernel12TropicalBlasSweep` over the entity TLAS and solved against triangle `MeshBlas` leaves.
+    #[must_use]
+    pub fn sweep_sphere(
+        &self,
+        world_origin: Vec3,
+        world_radius: f64,
+        world_delta: Vec3,
+    ) -> Option<(EntityId, SweptSphereHit)> {
+        if self.instances.is_empty() {
+            return None;
+        }
+        let r = world_radius.max(0.0);
+        let scale = pow10_u64(three_u32()) as f64;
+        let pad_milli = 1_i32 + 1_i32;
+        let origin_milli = [
+            (world_origin.x * scale).round() as i32,
+            (world_origin.y * scale).round() as i32,
+            (world_origin.z * scale).round() as i32,
+        ];
+        let radius_milli = ((r * scale).ceil() as i32).saturating_add(pad_milli);
+        let delta_milli = [
+            (world_delta.x * scale).round() as i32,
+            (world_delta.y * scale).round() as i32,
+            (world_delta.z * scale).round() as i32,
+        ];
+
+        let mut mins_milli = Vec::with_capacity(self.instances.len());
+        let mut maxs_milli = Vec::with_capacity(self.instances.len());
+        for inst in &self.instances {
+            mins_milli.push([
+                (inst.world_bounds.min.x * scale).floor() as i32,
+                (inst.world_bounds.min.y * scale).floor() as i32,
+                (inst.world_bounds.min.z * scale).floor() as i32,
+            ]);
+            maxs_milli.push([
+                (inst.world_bounds.max.x * scale).ceil() as i32,
+                (inst.world_bounds.max.y * scale).ceil() as i32,
+                (inst.world_bounds.max.z * scale).ceil() as i32,
+            ]);
+        }
+
+        let pruned = verdant_tensor::tropical_swept_aabb_toi_bounds(
+            origin_milli,
+            radius_milli,
+            delta_milli,
+            &mins_milli,
+            &maxs_milli,
+        )
+        .ok();
+
+        let mut best: Option<(EntityId, SweptSphereHit)> = None;
+        for (idx, inst) in self.instances.iter().enumerate() {
+            if let Some(ref intervals) = pruned {
+                if intervals[idx].is_none() {
+                    continue;
+                }
+            }
+            let local_origin = inst.world_to_local.transform_point3(world_origin);
+            let local_delta = inst.world_to_local.transform_vector3(world_delta);
+            let local_radius = r / inst.uniform_scale;
+
+            if let Some(local_hit) =
+                self.blas_pool[inst.blas_slot].sweep_sphere(local_origin, local_radius, local_delta)
+            {
+                if best.is_none_or(|(_, prev)| local_hit.toi < prev.toi) {
+                    let world_contact = inst
+                        .local_to_world
+                        .transform_point3(local_hit.contact_point);
+                    let world_normal = inst
+                        .local_to_world
+                        .transform_vector3(local_hit.contact_normal)
+                        .normalized();
+                    best = Some((
+                        inst.entity,
+                        SweptSphereHit {
+                            toi: local_hit.toi,
+                            contact_point: world_contact,
+                            contact_normal: world_normal,
+                            triangle_index: local_hit.triangle_index,
+                        },
+                    ));
+                }
+            }
+        }
+        best
+    }
+
+    /// Evaluates the minimum Euclidean surface clearance around `world_point` within `search_radius`,
+    /// returning `(entity, closest_world_point, outward_world_normal, world_distance)`.
+    #[must_use]
+    pub fn min_surface_clearance(
+        &self,
+        world_point: Vec3,
+        search_radius: f64,
+    ) -> Option<(EntityId, Vec3, Vec3, f64)> {
+        let mut best_dist = search_radius.max(0.0);
+        let mut best: Option<(EntityId, Vec3, Vec3, f64)> = None;
+        let query_box =
+            Aabb::from_center_half_extents(world_point, Vec3::new(best_dist, best_dist, best_dist));
+
+        for inst in &self.instances {
+            if !inst.world_bounds.intersects(query_box) {
+                continue;
+            }
+            let local_pt = inst.world_to_local.transform_point3(world_point);
+            let local_r = best_dist / inst.uniform_scale;
+            if let Some((cp_local, n_local, d_local)) =
+                self.blas_pool[inst.blas_slot].closest_point(local_pt, local_r)
+            {
+                let d_world = d_local * inst.uniform_scale;
+                if d_world <= best_dist {
+                    best_dist = d_world;
+                    let cp_world = inst.local_to_world.transform_point3(cp_local);
+                    let n_world = inst.local_to_world.transform_vector3(n_local).normalized();
+                    best = Some((inst.entity, cp_world, n_world, d_world));
+                }
+            }
+        }
+        best
     }
 }

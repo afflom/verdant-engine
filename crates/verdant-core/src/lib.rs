@@ -39,6 +39,7 @@
 
 pub mod animation;
 pub mod audio;
+pub mod camera;
 pub mod collision;
 pub mod cybernetics;
 pub mod ecs;

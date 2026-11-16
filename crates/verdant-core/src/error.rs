@@ -691,3 +691,51 @@ impl fmt::Display for StitchCustodyError {
 }
 
 impl std::error::Error for StitchCustodyError {}
+
+/// Refusal returned when a lawful camera rig receives invalid optical frustum parameters.
+#[derive(Clone, Debug, PartialEq)]
+pub enum CameraRigError {
+    /// Vertical field-of-view, aspect ratio, or clip plane distances are non-finite or out of bounds.
+    InvalidOpticalFrustum {
+        /// Vertical FOV in radians.
+        fov_y_radians: f64,
+        /// Viewport aspect ratio (`width / height`).
+        aspect_ratio: f64,
+        /// Near clip plane in meters.
+        z_near_meters: f64,
+        /// Far clip plane in meters.
+        z_far_meters: f64,
+    },
+    /// Desired spring-arm orbit distance is negative, non-finite, or exceeds `max_orbit_distance_meters`.
+    InvalidSpringArmDistance {
+        /// Requested orbit distance in meters.
+        requested_meters: f64,
+        /// Maximum admissible orbit distance in meters.
+        max_meters: f64,
+    },
+}
+
+impl fmt::Display for CameraRigError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::InvalidOpticalFrustum {
+                fov_y_radians,
+                aspect_ratio,
+                z_near_meters,
+                z_far_meters,
+            } => write!(
+                f,
+                "invalid camera optical frustum: fov={fov_y_radians}, aspect={aspect_ratio}, near={z_near_meters}, far={z_far_meters}"
+            ),
+            Self::InvalidSpringArmDistance {
+                requested_meters,
+                max_meters,
+            } => write!(
+                f,
+                "spring-arm distance must lie in [0, {max_meters}] m, got {requested_meters}"
+            ),
+        }
+    }
+}
+
+impl std::error::Error for CameraRigError {}

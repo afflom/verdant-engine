@@ -473,6 +473,87 @@ impl Mat4 {
         }
     }
 
+    /// Transforms a spatial direction `(x, y, z, 0)` by the upper-left `3x3` linear block.
+    #[must_use]
+    pub fn transform_vector3(self, v: Vec3) -> Vec3 {
+        let [c0, c1, c2, _] = self.cols;
+        let i2 = 1usize + 1usize;
+        Vec3::new(
+            c0[0] * v.x + c1[0] * v.y + c2[0] * v.z,
+            c0[1] * v.x + c1[1] * v.y + c2[1] * v.z,
+            c0[i2] * v.x + c1[i2] * v.y + c2[i2] * v.z,
+        )
+    }
+
+    /// Computes the exact inverse of an affine `4x4` matrix (`det(M_3x3) != 0`), returning `None` if singular.
+    #[must_use]
+    pub fn inverse_affine(self) -> Option<Self> {
+        let i2 = 1usize + 1usize;
+        let [c0, c1, c2, c3] = self.cols;
+        let m00 = c0[0];
+        let m10 = c0[1];
+        let m20 = c0[i2];
+        let m01 = c1[0];
+        let m11 = c1[1];
+        let m21 = c1[i2];
+        let m02 = c2[0];
+        let m12 = c2[1];
+        let m22 = c2[i2];
+
+        let cof00 = m11 * m22 - m12 * m21;
+        let cof01 = -(m10 * m22 - m12 * m20);
+        let cof02 = m10 * m21 - m11 * m20;
+
+        let det = m00 * cof00 + m01 * cof01 + m02 * cof02;
+        if !det.is_finite() || det.abs() <= geometric_epsilon() {
+            return None;
+        }
+        let inv_det = 1.0 / det;
+
+        let cof10 = -(m01 * m22 - m02 * m21);
+        let cof11 = m00 * m22 - m02 * m20;
+        let cof12 = -(m00 * m21 - m01 * m20);
+
+        let cof20 = m01 * m12 - m02 * m11;
+        let cof21 = -(m00 * m12 - m02 * m10);
+        let cof22 = m00 * m11 - m01 * m10;
+
+        // Adjugate transpose (`inv = cof^T / det`), stored column-major:
+        let ic0 = [cof00 * inv_det, cof01 * inv_det, cof02 * inv_det, 0.0];
+        let ic1 = [cof10 * inv_det, cof11 * inv_det, cof12 * inv_det, 0.0];
+        let ic2 = [cof20 * inv_det, cof21 * inv_det, cof22 * inv_det, 0.0];
+
+        let tx = c3[0];
+        let ty = c3[1];
+        let tz = c3[i2];
+        let itx = -(ic0[0] * tx + ic1[0] * ty + ic2[0] * tz);
+        let ity = -(ic0[1] * tx + ic1[1] * ty + ic2[1] * tz);
+        let itz = -(ic0[i2] * tx + ic1[i2] * ty + ic2[i2] * tz);
+
+        Some(Self {
+            cols: [ic0, ic1, ic2, [itx, ity, itz, 1.0]],
+        })
+    }
+
+    /// Maximum column-vector Euclidean scale factor of the upper-left `3x3` block.
+    #[must_use]
+    pub fn max_axis_scale(self) -> f64 {
+        let i2 = 1usize + 1usize;
+        let sx = (self.cols[0][0] * self.cols[0][0]
+            + self.cols[0][1] * self.cols[0][1]
+            + self.cols[0][i2] * self.cols[0][i2])
+            .sqrt();
+        let sy = (self.cols[1][0] * self.cols[1][0]
+            + self.cols[1][1] * self.cols[1][1]
+            + self.cols[1][i2] * self.cols[1][i2])
+            .sqrt();
+        let sz = (self.cols[i2][0] * self.cols[i2][0]
+            + self.cols[i2][1] * self.cols[i2][1]
+            + self.cols[i2][i2] * self.cols[i2][i2])
+            .sqrt();
+        sx.max(sy).max(sz).max(geometric_epsilon())
+    }
+
     /// Transforms a spatial point `(x, y, z, 1)`.
     #[must_use]
     pub fn transform_point3(self, p: Vec3) -> Vec3 {

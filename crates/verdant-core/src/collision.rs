@@ -6,7 +6,8 @@
 use serde::{Deserialize, Serialize};
 
 use crate::error::CollisionError;
-use crate::math::{geometric_epsilon, half_f64, Aabb, Vec3};
+use crate::geometry::ProceduralMesh;
+use crate::math::{geometric_epsilon, half_f64, two_f64, Aabb, Ray, Vec3, DIM_SPATIAL};
 
 /// Convex polyhedral collider defined by a finite cloud of local-space vertices.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -442,4 +443,667 @@ pub fn solve_contact_impulse(
         tangent_impulse_ns: (clamped_tangent_milli as f64) / scale,
         friction_cone_valid: cone_ok,
     })
+}
+
+/// Exact triangle surface intersection returned by [`MeshBlas::raycast_exact`].
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+pub struct BlasTriangleHit {
+    /// Index of the intersected triangle (`0..triangle_count`).
+    pub triangle_index: usize,
+    /// Ray distance `t >= 0` in space units.
+    pub distance_meters: f64,
+    /// Hit point `ray.origin + t * ray.direction`.
+    pub point: Vec3,
+    /// Outward-oriented geometric face normal opposing `ray.direction`.
+    pub geometric_normal: Vec3,
+    /// Barycentrically interpolated unit shading normal.
+    pub shading_normal: Vec3,
+    /// Barycentric weights `[w0, w1, w2]` summing to `1.0`.
+    pub barycentrics: [f64; DIM_SPATIAL],
+}
+
+/// Exact continuous time-of-impact (`TOI`) hit returned by [`MeshBlas::sweep_sphere`].
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+pub struct SweptSphereHit {
+    /// Normalized time-of-impact `t` in `[0.0, 1.0]`.
+    pub toi: f64,
+    /// Surface contact point touched at `origin + toi * delta`.
+    pub contact_point: Vec3,
+    /// Unit outward contact normal pointing from the triangle surface toward the sphere center.
+    pub contact_normal: Vec3,
+    /// Index of the intersected triangle (`0..triangle_count`).
+    pub triangle_index: usize,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+struct BlasTriangle {
+    v0: Vec3,
+    v1: Vec3,
+    v2: Vec3,
+    n0: Vec3,
+    n1: Vec3,
+    n2: Vec3,
+    face_normal: Vec3,
+    bounds: Aabb,
+    tri_index: usize,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+enum BlasNode {
+    Leaf {
+        bounds: Aabb,
+        triangles: Vec<usize>,
+    },
+    Internal {
+        bounds: Aabb,
+        left: Box<Self>,
+        right: Box<Self>,
+    },
+}
+
+/// Bottom-Level Acceleration Structure (`BLAS`) indexing a mesh's exact triangles for
+/// Möller–Trumbore raycasts, continuous swept-sphere `TOI` collision, and closest-point queries.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct MeshBlas {
+    triangles: Vec<BlasTriangle>,
+    root: Option<BlasNode>,
+}
+
+fn closest_point_on_triangle(p: Vec3, a: Vec3, b: Vec3, c: Vec3) -> Vec3 {
+    let ab = b - a;
+    let ac = c - a;
+    let ap = p - a;
+    let d1 = ab.dot(ap);
+    let d2 = ac.dot(ap);
+    if d1 <= 0.0 && d2 <= 0.0 {
+        return a;
+    }
+
+    let bp = p - b;
+    let d3 = ab.dot(bp);
+    let d4 = ac.dot(bp);
+    if d3 >= 0.0 && d4 <= d3 {
+        return b;
+    }
+
+    let vc = d1 * d4 - d3 * d2;
+    if vc <= 0.0 && d1 >= 0.0 && d3 <= 0.0 {
+        let denom = (d1 - d3).max(geometric_epsilon());
+        return a + ab.scale(d1 / denom);
+    }
+
+    let cp = p - c;
+    let d5 = ab.dot(cp);
+    let d6 = ac.dot(cp);
+    if d6 >= 0.0 && d5 <= d6 {
+        return c;
+    }
+
+    let vb = d5 * d2 - d1 * d6;
+    if vb <= 0.0 && d2 >= 0.0 && d6 <= 0.0 {
+        let denom = (d2 - d6).max(geometric_epsilon());
+        return a + ac.scale(d2 / denom);
+    }
+
+    let va = d3 * d6 - d5 * d4;
+    if va <= 0.0 && (d4 - d3) >= 0.0 && (d5 - d6) >= 0.0 {
+        let denom = ((d4 - d3) + (d5 - d6)).max(geometric_epsilon());
+        return b + (c - b).scale((d4 - d3) / denom);
+    }
+
+    let denom = (va + vb + vc).max(geometric_epsilon());
+    let v = vb / denom;
+    let w = vc / denom;
+    a + ab.scale(v) + ac.scale(w)
+}
+
+fn point_in_triangle_barycentric(p: Vec3, a: Vec3, b: Vec3, c: Vec3) -> bool {
+    let eps = geometric_epsilon();
+    let v0 = b - a;
+    let v1 = c - a;
+    let v2 = p - a;
+    let d00 = v0.dot(v0);
+    let d01 = v0.dot(v1);
+    let d11 = v1.dot(v1);
+    let d20 = v2.dot(v0);
+    let d21 = v2.dot(v1);
+    let denom = d00 * d11 - d01 * d01;
+    if denom.abs() <= eps {
+        return false;
+    }
+    let inv = 1.0 / denom;
+    let v = (d11 * d20 - d01 * d21) * inv;
+    let w = (d00 * d21 - d01 * d20) * inv;
+    let u = 1.0 - v - w;
+    u >= -eps && v >= -eps && w >= -eps
+}
+
+fn smallest_unit_quadratic_root(a_coef: f64, b_coef: f64, c_coef: f64) -> Option<f64> {
+    let eps = geometric_epsilon();
+    let two = two_f64();
+    let four = two * two;
+    if a_coef <= eps {
+        return None;
+    }
+    let disc = b_coef * b_coef - four * a_coef * c_coef;
+    if disc < 0.0 {
+        return None;
+    }
+    let sqrt_disc = disc.sqrt();
+    let inv_2a = 1.0 / (two * a_coef);
+    let r0 = (-b_coef - sqrt_disc) * inv_2a;
+    if (0.0..=1.0).contains(&r0) {
+        return Some(r0);
+    }
+    let r1 = (-b_coef + sqrt_disc) * inv_2a;
+    if (0.0..=1.0).contains(&r1) {
+        return Some(r1);
+    }
+    None
+}
+
+fn sweep_sphere_against_triangle(
+    origin: Vec3,
+    radius: f64,
+    delta: Vec3,
+    tri: &BlasTriangle,
+) -> Option<SweptSphereHit> {
+    let eps = geometric_epsilon();
+    let two = two_f64();
+
+    // 1. Check initial contact or penetration if moving toward the triangle:
+    let cp0 = closest_point_on_triangle(origin, tri.v0, tri.v1, tri.v2);
+    let diff0 = origin - cp0;
+    let dist0_sq = diff0.length_squared();
+    if dist0_sq <= radius * radius {
+        let normal0 = if dist0_sq > eps * eps {
+            diff0.scale(1.0 / dist0_sq.sqrt())
+        } else if (origin - tri.v0).dot(tri.face_normal) >= 0.0 {
+            tri.face_normal
+        } else {
+            Vec3::ZERO - tri.face_normal
+        };
+        if delta.dot(normal0) < -eps {
+            return Some(SweptSphereHit {
+                toi: 0.0,
+                contact_point: cp0,
+                contact_normal: normal0,
+                triangle_index: tri.tri_index,
+            });
+        }
+    }
+
+    let mut best: Option<SweptSphereHit> = None;
+    let mut consider = |toi: f64, contact_point: Vec3, contact_normal: Vec3| {
+        if !(0.0..=1.0).contains(&toi) || delta.dot(contact_normal) >= -eps {
+            return;
+        }
+        if best.is_none_or(|prev| toi < prev.toi) {
+            best = Some(SweptSphereHit {
+                toi,
+                contact_point,
+                contact_normal,
+                triangle_index: tri.tri_index,
+            });
+        }
+    };
+
+    // 2. Interior plane sweep:
+    let n_side = if (origin - tri.v0).dot(tri.face_normal) >= 0.0 {
+        tri.face_normal
+    } else {
+        Vec3::ZERO - tri.face_normal
+    };
+    let d0 = (origin - tri.v0).dot(n_side);
+    let dn = delta.dot(n_side);
+    if dn < -eps && d0 >= radius {
+        let t_plane = (radius - d0) / dn;
+        if (0.0..=1.0).contains(&t_plane) {
+            let p_plane = origin + delta.scale(t_plane) - n_side.scale(radius);
+            if point_in_triangle_barycentric(p_plane, tri.v0, tri.v1, tri.v2) {
+                consider(t_plane, p_plane, n_side);
+            }
+        }
+    }
+
+    // 3. Edge cylinder sweeps:
+    let edges = [(tri.v0, tri.v1), (tri.v1, tri.v2), (tri.v2, tri.v0)];
+    for (p, q) in edges {
+        let e = q - p;
+        let ee = e.dot(e);
+        if ee <= eps {
+            continue;
+        }
+        let m = origin - p;
+        let m_perp = m - e.scale(m.dot(e) / ee);
+        let d_perp = delta - e.scale(delta.dot(e) / ee);
+        let a_c = d_perp.length_squared();
+        let b_c = two * m_perp.dot(d_perp);
+        let c_c = m_perp.length_squared() - radius * radius;
+        if b_c < 0.0 {
+            if let Some(t_edge) = smallest_unit_quadratic_root(a_c, b_c, c_c) {
+                let s = (m + delta.scale(t_edge)).dot(e) / ee;
+                if (0.0..=1.0).contains(&s) {
+                    let cp = p + e.scale(s);
+                    let center_at_t = origin + delta.scale(t_edge);
+                    let n_edge = (center_at_t - cp).normalized();
+                    consider(t_edge, cp, n_edge);
+                }
+            }
+        }
+    }
+
+    // 4. Vertex sphere sweeps:
+    let a_v = delta.length_squared();
+    for v in [tri.v0, tri.v1, tri.v2] {
+        let m = origin - v;
+        let b_v = two * m.dot(delta);
+        let c_v = m.length_squared() - radius * radius;
+        if b_v < 0.0 {
+            if let Some(t_vert) = smallest_unit_quadratic_root(a_v, b_v, c_v) {
+                let center_at_t = origin + delta.scale(t_vert);
+                let n_vert = (center_at_t - v).normalized();
+                consider(t_vert, v, n_vert);
+            }
+        }
+    }
+
+    best
+}
+
+fn segment_hits_expanded_aabb(origin: Vec3, delta: Vec3, bounds: Aabb, radius: f64) -> bool {
+    let eps = geometric_epsilon();
+    let orig = [origin.x, origin.y, origin.z];
+    let dir = [delta.x, delta.y, delta.z];
+    let bmin = [
+        bounds.min.x - radius,
+        bounds.min.y - radius,
+        bounds.min.z - radius,
+    ];
+    let bmax = [
+        bounds.max.x + radius,
+        bounds.max.y + radius,
+        bounds.max.z + radius,
+    ];
+
+    let mut tmin = 0.0_f64;
+    let mut tmax = 1.0_f64;
+    for axis in 0..DIM_SPATIAL {
+        if dir[axis].abs() <= eps {
+            if orig[axis] < bmin[axis] || orig[axis] > bmax[axis] {
+                return false;
+            }
+        } else {
+            let inv = 1.0 / dir[axis];
+            let mut t1 = (bmin[axis] - orig[axis]) * inv;
+            let mut t2 = (bmax[axis] - orig[axis]) * inv;
+            if t1 > t2 {
+                std::mem::swap(&mut t1, &mut t2);
+            }
+            tmin = tmin.max(t1);
+            tmax = tmax.min(t2);
+            if tmin > tmax {
+                return false;
+            }
+        }
+    }
+    true
+}
+
+impl MeshBlas {
+    /// Builds a surface-area-ordered binary triangle BVH from `mesh`.
+    pub fn from_mesh(mesh: &ProceduralMesh) -> Result<Self, CollisionError> {
+        if mesh.positions.is_empty() || mesh.indices.len() < DIM_SPATIAL {
+            return Err(CollisionError::EmptyOrDegenerateHull {
+                vertex_count: mesh.positions.len(),
+            });
+        }
+        let i2 = 1usize + 1usize;
+        let eps = geometric_epsilon();
+        let mut triangles = Vec::with_capacity(mesh.indices.len() / DIM_SPATIAL);
+
+        for (tri_idx, tri) in mesh.indices.chunks_exact(DIM_SPATIAL).enumerate() {
+            let ia = tri[0] as usize;
+            let ib = tri[1] as usize;
+            let ic = tri[i2] as usize;
+            if ia >= mesh.positions.len()
+                || ib >= mesh.positions.len()
+                || ic >= mesh.positions.len()
+            {
+                return Err(CollisionError::EmptyOrDegenerateHull {
+                    vertex_count: mesh.positions.len(),
+                });
+            }
+            let to_v = |p: [f32; DIM_SPATIAL]| {
+                Vec3::new(f64::from(p[0]), f64::from(p[1]), f64::from(p[i2]))
+            };
+            let v0 = to_v(mesh.positions[ia]);
+            let v1 = to_v(mesh.positions[ib]);
+            let v2 = to_v(mesh.positions[ic]);
+            let raw_n = (v1 - v0).cross(v2 - v0);
+            if raw_n.length_squared() <= eps * eps {
+                continue;
+            }
+            let face_normal = raw_n.normalized();
+            let n0 = mesh
+                .normals
+                .get(ia)
+                .copied()
+                .map_or(face_normal, |n| to_v(n).normalized());
+            let n1 = mesh
+                .normals
+                .get(ib)
+                .copied()
+                .map_or(face_normal, |n| to_v(n).normalized());
+            let n2 = mesh
+                .normals
+                .get(ic)
+                .copied()
+                .map_or(face_normal, |n| to_v(n).normalized());
+            let min = Vec3::new(
+                v0.x.min(v1.x).min(v2.x),
+                v0.y.min(v1.y).min(v2.y),
+                v0.z.min(v1.z).min(v2.z),
+            );
+            let max = Vec3::new(
+                v0.x.max(v1.x).max(v2.x),
+                v0.y.max(v1.y).max(v2.y),
+                v0.z.max(v1.z).max(v2.z),
+            );
+            triangles.push(BlasTriangle {
+                v0,
+                v1,
+                v2,
+                n0,
+                n1,
+                n2,
+                face_normal,
+                bounds: Aabb::new(min, max),
+                tri_index: tri_idx,
+            });
+        }
+
+        if triangles.is_empty() {
+            return Err(CollisionError::EmptyOrDegenerateHull { vertex_count: 0 });
+        }
+
+        let indices: Vec<usize> = (0..triangles.len()).collect();
+        let root = Some(Self::build_node(&triangles, indices));
+        Ok(Self { triangles, root })
+    }
+
+    fn build_node(triangles: &[BlasTriangle], mut indices: Vec<usize>) -> BlasNode {
+        let mut total = triangles[indices[0]].bounds;
+        for &idx in &indices[1..] {
+            total = total.union(triangles[idx].bounds);
+        }
+
+        let leaf_cap = 1usize << (1usize + 1usize);
+        if indices.len() <= leaf_cap {
+            return BlasNode::Leaf {
+                bounds: total,
+                triangles: indices,
+            };
+        }
+
+        let span = total.max - total.min;
+        let axis = if span.x >= span.y && span.x >= span.z {
+            0usize
+        } else if span.y >= span.z {
+            1usize
+        } else {
+            1usize + 1usize
+        };
+
+        indices.sort_by(|&a, &b| {
+            let ca = triangles[a].bounds.center();
+            let cb = triangles[b].bounds.center();
+            let va = match axis {
+                0 => ca.x,
+                1 => ca.y,
+                _ => ca.z,
+            };
+            let vb = match axis {
+                0 => cb.x,
+                1 => cb.y,
+                _ => cb.z,
+            };
+            va.total_cmp(&vb)
+        });
+
+        let mid = indices.len() / (1usize + 1usize);
+        let right_indices = indices.split_off(mid);
+        let left = Self::build_node(triangles, indices);
+        let right = Self::build_node(triangles, right_indices);
+        BlasNode::Internal {
+            bounds: total,
+            left: Box::new(left),
+            right: Box::new(right),
+        }
+    }
+
+    /// Number of non-degenerate triangles indexed in this BLAS.
+    #[must_use]
+    pub fn triangle_count(&self) -> usize {
+        self.triangles.len()
+    }
+
+    /// Exact Möller–Trumbore raycast returning the nearest triangle surface hit within `max_distance`.
+    #[must_use]
+    pub fn raycast_exact(&self, ray: Ray, max_distance: f64) -> Option<BlasTriangleHit> {
+        let root = self.root.as_ref()?;
+        let mut best: Option<BlasTriangleHit> = None;
+        let mut limit = max_distance;
+        self.raycast_node(root, ray, &mut limit, &mut best);
+        best
+    }
+
+    fn raycast_node(
+        &self,
+        node: &BlasNode,
+        ray: Ray,
+        max_distance: &mut f64,
+        best: &mut Option<BlasTriangleHit>,
+    ) {
+        let eps = geometric_epsilon();
+        match node {
+            BlasNode::Leaf { bounds, triangles } => {
+                if ray
+                    .intersect_aabb(*bounds)
+                    .is_none_or(|t| t > *max_distance)
+                {
+                    return;
+                }
+                for &ti in triangles {
+                    let tri = &self.triangles[ti];
+                    let e1 = tri.v1 - tri.v0;
+                    let e2 = tri.v2 - tri.v0;
+                    let pvec = ray.direction.cross(e2);
+                    let det = e1.dot(pvec);
+                    if det.abs() <= eps {
+                        continue;
+                    }
+                    let inv_det = 1.0 / det;
+                    let tvec = ray.origin - tri.v0;
+                    let u = tvec.dot(pvec) * inv_det;
+                    if !(0.0..=1.0).contains(&u) {
+                        continue;
+                    }
+                    let qvec = tvec.cross(e1);
+                    let v = ray.direction.dot(qvec) * inv_det;
+                    if v < 0.0 || u + v > 1.0 {
+                        continue;
+                    }
+                    let t = e2.dot(qvec) * inv_det;
+                    if t >= 0.0 && t <= *max_distance {
+                        *max_distance = t;
+                        let w0 = 1.0 - u - v;
+                        let geom_n = if ray.direction.dot(tri.face_normal) <= 0.0 {
+                            tri.face_normal
+                        } else {
+                            Vec3::ZERO - tri.face_normal
+                        };
+                        let raw_shade = tri.n0.scale(w0) + tri.n1.scale(u) + tri.n2.scale(v);
+                        let shade_n = if raw_shade.dot(geom_n) >= 0.0 {
+                            raw_shade.normalized()
+                        } else {
+                            (Vec3::ZERO - raw_shade).normalized()
+                        };
+                        *best = Some(BlasTriangleHit {
+                            triangle_index: tri.tri_index,
+                            distance_meters: t,
+                            point: ray.origin + ray.direction.scale(t),
+                            geometric_normal: geom_n,
+                            shading_normal: shade_n,
+                            barycentrics: [w0, u, v],
+                        });
+                    }
+                }
+            }
+            BlasNode::Internal {
+                bounds,
+                left,
+                right,
+            } => {
+                if ray
+                    .intersect_aabb(*bounds)
+                    .is_none_or(|t| t > *max_distance)
+                {
+                    return;
+                }
+                let tl = ray.intersect_aabb(Self::node_bounds(left));
+                let tr = ray.intersect_aabb(Self::node_bounds(right));
+                match (tl, tr) {
+                    (Some(dl), Some(dr)) if dl <= dr => {
+                        if dl <= *max_distance {
+                            self.raycast_node(left, ray, max_distance, best);
+                        }
+                        if dr <= *max_distance {
+                            self.raycast_node(right, ray, max_distance, best);
+                        }
+                    }
+                    (Some(dl), Some(dr)) => {
+                        if dr <= *max_distance {
+                            self.raycast_node(right, ray, max_distance, best);
+                        }
+                        if dl <= *max_distance {
+                            self.raycast_node(left, ray, max_distance, best);
+                        }
+                    }
+                    (Some(dl), None) if dl <= *max_distance => {
+                        self.raycast_node(left, ray, max_distance, best);
+                    }
+                    (None, Some(dr)) if dr <= *max_distance => {
+                        self.raycast_node(right, ray, max_distance, best);
+                    }
+                    _ => {}
+                }
+            }
+        }
+    }
+
+    fn node_bounds(node: &BlasNode) -> Aabb {
+        match node {
+            BlasNode::Leaf { bounds, .. } | BlasNode::Internal { bounds, .. } => *bounds,
+        }
+    }
+
+    /// Continuous swept-sphere query returning the earliest surface `TOI` in `[0.0, 1.0]`.
+    #[must_use]
+    pub fn sweep_sphere(&self, origin: Vec3, radius: f64, delta: Vec3) -> Option<SweptSphereHit> {
+        let root = self.root.as_ref()?;
+        let r = radius.max(0.0);
+        let mut best: Option<SweptSphereHit> = None;
+        self.sweep_node(root, origin, r, delta, &mut best);
+        best
+    }
+
+    fn sweep_node(
+        &self,
+        node: &BlasNode,
+        origin: Vec3,
+        radius: f64,
+        delta: Vec3,
+        best: &mut Option<SweptSphereHit>,
+    ) {
+        let max_t = best.map_or(1.0, |h| h.toi);
+        let clipped_delta = delta.scale(max_t);
+        if !segment_hits_expanded_aabb(origin, clipped_delta, Self::node_bounds(node), radius) {
+            return;
+        }
+        match node {
+            BlasNode::Leaf { triangles, .. } => {
+                for &ti in triangles {
+                    let tri = &self.triangles[ti];
+                    let cur_t = best.map_or(1.0, |h| h.toi);
+                    if !segment_hits_expanded_aabb(origin, delta.scale(cur_t), tri.bounds, radius) {
+                        continue;
+                    }
+                    if let Some(hit) = sweep_sphere_against_triangle(origin, radius, delta, tri) {
+                        if best.is_none_or(|prev| hit.toi < prev.toi) {
+                            *best = Some(hit);
+                        }
+                    }
+                }
+            }
+            BlasNode::Internal { left, right, .. } => {
+                self.sweep_node(left, origin, radius, delta, best);
+                self.sweep_node(right, origin, radius, delta, best);
+            }
+        }
+    }
+
+    /// Queries the closest surface point within `max_radius`, returning `(closest_point, outward_normal, distance)`.
+    #[must_use]
+    pub fn closest_point(&self, point: Vec3, max_radius: f64) -> Option<(Vec3, Vec3, f64)> {
+        let root = self.root.as_ref()?;
+        let mut best_dist_sq = max_radius.max(0.0) * max_radius.max(0.0);
+        let mut best: Option<(Vec3, Vec3, f64)> = None;
+        self.closest_node(root, point, &mut best_dist_sq, &mut best);
+        best
+    }
+
+    fn closest_node(
+        &self,
+        node: &BlasNode,
+        point: Vec3,
+        best_dist_sq: &mut f64,
+        best: &mut Option<(Vec3, Vec3, f64)>,
+    ) {
+        let bounds = Self::node_bounds(node);
+        let cx = point.x.clamp(bounds.min.x, bounds.max.x);
+        let cy = point.y.clamp(bounds.min.y, bounds.max.y);
+        let cz = point.z.clamp(bounds.min.z, bounds.max.z);
+        let box_dist_sq = Vec3::new(cx, cy, cz).distance(point).powi(1 + 1);
+        if box_dist_sq > *best_dist_sq {
+            return;
+        }
+        let eps = geometric_epsilon();
+        match node {
+            BlasNode::Leaf { triangles, .. } => {
+                for &ti in triangles {
+                    let tri = &self.triangles[ti];
+                    let cp = closest_point_on_triangle(point, tri.v0, tri.v1, tri.v2);
+                    let diff = point - cp;
+                    let d_sq = diff.length_squared();
+                    if d_sq <= *best_dist_sq {
+                        *best_dist_sq = d_sq;
+                        let dist = d_sq.sqrt();
+                        let normal = if dist > eps {
+                            diff.scale(1.0 / dist)
+                        } else if (point - tri.v0).dot(tri.face_normal) >= 0.0 {
+                            tri.face_normal
+                        } else {
+                            Vec3::ZERO - tri.face_normal
+                        };
+                        *best = Some((cp, normal, dist));
+                    }
+                }
+            }
+            BlasNode::Internal { left, right, .. } => {
+                self.closest_node(left, point, best_dist_sq, best);
+                self.closest_node(right, point, best_dist_sq, best);
+            }
+        }
+    }
 }

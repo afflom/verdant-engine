@@ -184,6 +184,20 @@ negative = "VE-24"
 statement = "Prism ID signed input journal batches, 2-of-3 SHA-256 XOR Stitch erasure fragments, and survival-entropy peer trackers recover exact UORC world state and refuse tampered shards, duplicate indices, or forged signatures"
 
 [[id]]
+id = "VE-25"
+level = "build"
+suite = "engine"
+statement = "Two-level entity TLAS and triangle MeshBlas acceleration structures execute continuous swept-capsule collide-and-slide, stair auto-stepping, and acute two-plane crease projection with zero wall penetration"
+
+[[id]]
+id = "VE-26"
+level = "build"
+suite = "engine"
+failure = "CameraRigError"
+negative = "VE-26"
+statement = "Lawful spring-arm and first-person camera rigs sweep an exact near-frustum diagonal guard sphere against TwoLevelBvh and terrain so the near clip plane never slices through walls or floors and refuse invalid frusta"
+
+[[id]]
 id = "FR-01"
 level = "build"
 suite = "frame"

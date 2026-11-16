@@ -46,6 +46,8 @@ model does not sanction.
 | `VE-22` | `build` | Second-order cybernetic LIF state-space observers, embedded coded_gemm SLM intent routers, and denial-wins browser container capability gates execute deterministically and refuse denied organs or invalid prompts |
 | `VE-23` | `build` | World-space SceneWorld hierarchies and imported Khronos GLB assets pack directly into zero-copy WebAssembly vertex, normal, color, and index buffers shared across WebGL2 and 16x16 software tile rasterization |
 | `VE-24` | `build` | Prism ID signed input journal batches, 2-of-3 SHA-256 XOR Stitch erasure fragments, and survival-entropy peer trackers recover exact UORC world state and refuse tampered shards, duplicate indices, or forged signatures |
+| `VE-25` | `build` | Two-level entity TLAS and triangle MeshBlas acceleration structures execute continuous swept-capsule collide-and-slide, stair auto-stepping, and acute two-plane crease projection with zero wall penetration |
+| `VE-26` | `build` | Lawful spring-arm and first-person camera rigs sweep an exact near-frustum diagonal guard sphere against TwoLevelBvh and terrain so the near clip plane never slices through walls or floors and refuse invalid frusta |
 
 ## fidelity
 
