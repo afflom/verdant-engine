@@ -905,6 +905,54 @@ fn engine_ve_16() {
     let bench_out = run_cli(&["benchmark".to_string(), "12".to_string()]).expect("benchmark");
     assert!(bench_out.contains("BENCHMARK OK: frames=12"));
 
+    let ui_out = run_cli(&[
+        "verify-ui".to_string(),
+        "1280".to_string(),
+        "900".to_string(),
+    ])
+    .expect("verify-ui succeeds");
+    assert!(ui_out.contains("UI OK: viewport=1280x900"));
+
+    let intent_out = run_cli(&[
+        "route-intent".to_string(),
+        "switch".to_string(),
+        "to".to_string(),
+        "software".to_string(),
+        "16x16".to_string(),
+        "tile".to_string(),
+        "raster".to_string(),
+    ])
+    .expect("route-intent succeeds");
+    assert!(intent_out.contains("INTENT OK: slug=render-tile-wasm"));
+
+    let shards_dir = tmp_dir.join("shards");
+    let shard_out = run_cli(&[
+        "stitch-shard".to_string(),
+        uorc_path.to_string_lossy().into_owned(),
+        shards_dir.to_string_lossy().into_owned(),
+    ])
+    .expect("stitch-shard succeeds");
+    assert!(shard_out.contains("STITCH SHARD OK:"));
+    let recovered_uorc = tmp_dir.join("recovered.uorc");
+    let rec_out = run_cli(&[
+        "stitch-recover".to_string(),
+        shards_dir
+            .join("shard_0.stch")
+            .to_string_lossy()
+            .into_owned(),
+        shards_dir
+            .join("shard_2.stch")
+            .to_string_lossy()
+            .into_owned(),
+        recovered_uorc.to_string_lossy().into_owned(),
+    ])
+    .expect("stitch-recover succeeds");
+    assert!(rec_out.contains("STITCH RECOVER OK: pair=(0,2)"));
+    assert_eq!(
+        std::fs::read(&recovered_uorc).expect("read recovered"),
+        std::fs::read(&uorc_path).expect("read original uorc")
+    );
+
     // Negative refusal 1: unknown subcommand:
     let unknown_err =
         run_cli(&["nonexistent-cmd".to_string()]).expect_err("unknown command must fail");
@@ -1319,4 +1367,325 @@ fn engine_ve_20() {
         window_err,
         SnapshotCodecError::MalformedStatePayload { .. }
     ));
+}
+
+/// `VE-21`: Formal 2D/3D `UiTree` semiring layout, diegetic BVH picking, WCAG/48px compliance, and `UiComplianceError` refusals.
+#[test]
+fn engine_ve_21() {
+    use verdant_core::error::UiComplianceError;
+    use verdant_core::math::Ray;
+    use verdant_core::ui::UiTree;
+
+    let world = StandardSceneState::synthesize_at_lod(7, 3).expect("LOD3 world");
+    let first_id = world.scene.entities().next().map(|e| e.id);
+    let tree = UiTree::canonical_studio_ui_tree(first_id);
+    let solved = tree
+        .solve_and_verify(1280, 900, Some(&world.scene))
+        .expect("canonical studio UI tree is compliant");
+    assert_eq!(solved.len(), tree.widgets.len());
+    for rect in &solved {
+        if tree.widgets[rect.widget_index].interactive {
+            assert!(rect.width_px >= 48);
+            assert!(rect.height_px >= 48);
+        }
+    }
+
+    let diegetic_bvh = UiTree::build_diegetic_bvh(&solved);
+    assert_eq!(diegetic_bvh.len(), 1);
+    let base_pos = solved[1].diegetic_bounds.expect("diegetic bounds").center();
+    let hit = diegetic_bvh.raycast(
+        Ray::new(
+            base_pos + Vec3::new(0.0, 0.0, 5.0),
+            Vec3::new(0.0, 0.0, -1.0),
+        ),
+        20.0,
+    );
+    assert!(hit.is_some());
+
+    // Negative refusal 1: interactive widget below 48px touch target:
+    let mut small_tree = tree.clone();
+    small_tree.widgets[4].min_width_px = 32;
+    small_tree.widgets[4].min_height_px = 32;
+    small_tree.widgets[5].min_height_px = 32;
+    small_tree.widgets[2].min_height_px = 32;
+    let target_err = small_tree
+        .solve_and_verify(360, 200, None)
+        .expect_err("32px interactive height must fail");
+    assert!(matches!(
+        target_err,
+        UiComplianceError::SubMinimumTouchTarget { .. }
+    ));
+
+    // Negative refusal 2: low WCAG contrast ratio refused:
+    let mut low_contrast = tree.clone();
+    low_contrast.widgets[4].contrast_milli = 2_100;
+    let contrast_err = low_contrast
+        .solve_and_verify(1280, 900, None)
+        .expect_err("2.1:1 text contrast must fail");
+    assert!(matches!(
+        contrast_err,
+        UiComplianceError::InsufficientContrastRatio { .. }
+    ));
+
+    // Negative refusal 3: disconnected interactive focus node refused:
+    let mut disconnected = tree;
+    disconnected.widgets[8].focus_neighbors.clear();
+    disconnected.widgets[7].focus_neighbors.clear();
+    let focus_err = disconnected
+        .solve_and_verify(1280, 900, None)
+        .expect_err("unreachable focus widget must fail");
+    assert!(matches!(
+        focus_err,
+        UiComplianceError::UnreachableFocusWidget { .. }
+    ));
+}
+
+/// `VE-22`: Second-order cybernetic LIF/SSM observer loop, `coded_gemm` SLM intent director, denial-wins grants, and `CyberneticError` refusals.
+#[test]
+fn engine_ve_22() {
+    use verdant_core::cybernetics::{
+        CodedSlmDirector, ContainerGrantMatrix, ContainerOrgan, CyberneticObserverLoop,
+        EngineIntentKind, PlayerObserverSample,
+    };
+    use verdant_core::error::CyberneticError;
+
+    // 1. Bit-identical second-order cybernetic observer recurrence:
+    let mut loop_a = CyberneticObserverLoop::new(7).expect("observer loop A");
+    let mut loop_b = CyberneticObserverLoop::new(7).expect("observer loop B");
+    let sample = PlayerObserverSample {
+        gazed_entity_slot: 3,
+        gaze_dwell_millis: 1_400,
+        camera_angular_speed_milli: 120,
+        locomotion_speed_milli: 800,
+        cadence_focus_milli: 750,
+        audio_alignment_milli: 400,
+        ui_focus_slot: 0,
+        frame_dt_millis: 16,
+    };
+    let dir_a = loop_a.step_observation(sample, 520).expect("step A");
+    let dir_b = loop_b.step_observation(sample, 520).expect("step B");
+    assert_eq!(dir_a, dir_b);
+    assert_eq!(dir_a.attended_entity_slot, 3);
+    assert_eq!(dir_a.foveated_lod_rank, 3);
+    assert_eq!(dir_a.observer_gimbal_yaw_milli, -520);
+
+    // 2. Embedded zero-decode `coded_gemm` SLM proposal routing:
+    let director = CodedSlmDirector::new();
+    let mut grants = ContainerGrantMatrix::default();
+    assert!(grants.is_allowed(ContainerOrgan::WebAssemblyCore));
+    assert!(!grants.is_allowed(ContainerOrgan::WebRtcStitchMesh));
+    grants.grant(ContainerOrgan::WebRtcStitchMesh);
+    assert!(grants.is_allowed(ContainerOrgan::WebRtcStitchMesh));
+
+    let veh_prop = director
+        .route_prompt(
+            "drive the 4-wheel suspension vehicle",
+            Some(&sample),
+            &grants,
+        )
+        .expect("route vehicle prompt");
+    assert_eq!(veh_prop.intent, EngineIntentKind::DriveSuspensionVehicle);
+    assert!(veh_prop.score_milli >= 100);
+
+    let tile_prop = director
+        .route_prompt("switch to software 16x16 tile raster", None, &grants)
+        .expect("route tile raster prompt");
+    assert_eq!(tile_prop.intent, EngineIntentKind::SwitchTileRasterizer);
+
+    // Negative refusal 1: denial always wins over grant (`FK-07`):
+    grants.deny(ContainerOrgan::WebRtcStitchMesh);
+    let deny_err = grants
+        .require_organ(ContainerOrgan::WebRtcStitchMesh)
+        .expect_err("denied organ must fail");
+    assert_eq!(
+        deny_err,
+        CyberneticError::ContainerOrganDenied {
+            organ_name: "webrtc-stitch-mesh"
+        }
+    );
+
+    // Negative refusal 2: empty prompt rejected:
+    let empty_err = director
+        .route_prompt("   ", None, &grants)
+        .expect_err("empty prompt must reject");
+    assert!(matches!(
+        empty_err,
+        CyberneticError::ProposalRejected { .. }
+    ));
+}
+
+/// `VE-23`: Zero-copy world-space `PackedSceneRenderBuffers` from `SceneWorld` and imported `.glb`, shared across WebGL2 and `16x16` tile rasterization.
+#[test]
+fn engine_ve_23() {
+    use verdant_core::gltf_io::{export_scene_to_glb, import_glb_to_scene};
+    use verdant_core::render::{canonical_pbr_material_library, pack_world_meshes_to_buffers};
+    use verdant_core::tensor::render_triangles_tile_framebuffer;
+
+    let world = StandardSceneState::synthesize_at_lod(7, 3).expect("LOD3 world");
+    let meshes = canonical_scene_mesh_library(world.seed);
+    let materials = canonical_pbr_material_library();
+
+    let packed =
+        pack_world_meshes_to_buffers(&world.scene, &meshes, &materials).expect("pack world meshes");
+    assert!(packed.vertex_count() > 500);
+    assert!(packed.triangle_count() > 500);
+    assert_eq!(packed.positions_xyz.len(), packed.normals_xyz.len());
+    assert_eq!(packed.positions_xyz.len(), packed.colors_rgb.len());
+    assert_eq!(packed.tile_triangles.len(), packed.triangle_count());
+
+    // Round-trip through binary `.glb` -> `import_glb_to_scene` -> `pack_world_meshes_to_buffers`:
+    let glb_bytes = export_scene_to_glb(&world.scene, &meshes, &materials).expect("export glb");
+    let imported = import_glb_to_scene(&glb_bytes).expect("import glb");
+    let imported_packed =
+        pack_world_meshes_to_buffers(&imported.scene, &imported.meshes, &imported.materials)
+            .expect("pack imported glb scene");
+    assert_eq!(imported_packed.triangle_count(), packed.triangle_count());
+
+    // Render those exact packed triangles through the pure Wasm/CPU `16x16` software tile PBR rasterizer:
+    let vp = Mat4::perspective(1.0, 1.0, 0.2, 180.0)
+        * Mat4::look_at(Vec3::new(0.0, 14.0, 28.0), Vec3::ZERO, Vec3::UP);
+    let fb = render_triangles_tile_framebuffer(
+        64,
+        64,
+        &vp,
+        Vec3::new(0.4, 0.8, 0.3),
+        3,
+        &imported_packed.tile_triangles[..64.min(imported_packed.tile_triangles.len())],
+    )
+    .expect("tile rasterize packed world");
+    assert!(fb.rasterized_triangles > 0);
+
+    // Negative refusal: empty mesh library rejected:
+    let empty_err = pack_world_meshes_to_buffers(&world.scene, &[], &materials)
+        .expect_err("empty mesh library must refuse");
+    assert!(matches!(
+        empty_err,
+        TensorComputeError::ZeroOrMismatchedExtents { .. }
+    ));
+}
+
+/// `VE-24`: `PrismIdSessionEnvelope` signed journals, `afflom/stitch` 2-of-3 `(A, B, A ⊕ B)` parity recovery, survival-entropy tracking, and `StitchCustodyError` refusals.
+#[test]
+fn engine_ve_24() {
+    use verdant_core::error::StitchCustodyError;
+    use verdant_core::network::{
+        recover_bytes_from_stitch_pair, shard_bytes_to_stitch_fragments, PeerObservationRecord,
+        SignedJournalBatch, SurvivalEntropyTracker,
+    };
+    use verdant_core::runtime::FrameInputCommand;
+
+    // 1. Prism ID signed input journal verification:
+    let cmds = vec![
+        FrameInputCommand {
+            frame_index: 0,
+            player_slot: 0,
+            move_fwd_milli: 1_000,
+            move_strafe_milli: 0,
+            yaw_milli: 150,
+            action_mask: 1,
+        },
+        FrameInputCommand {
+            frame_index: 1,
+            player_slot: 0,
+            move_fwd_milli: 800,
+            move_strafe_milli: -200,
+            yaw_milli: 160,
+            action_mask: 0,
+        },
+    ];
+    let origin = "https://afflom.github.io";
+    let signed = SignedJournalBatch::sign_commands(
+        cmds,
+        "prism:citizen-alpha",
+        b"ephemeral-nonextractable-device-seed",
+        origin,
+        1_700_000_000,
+        1_700_600_000,
+    )
+    .expect("sign journal batch");
+    signed
+        .verify_admission(origin, 1_700_000_500)
+        .expect("valid Prism ID journal admitted");
+
+    // 2. Stitch 2-of-3 `(A, B, A ⊕ B)` erasure sharding & recovery across odd-length payload:
+    let payload = b"UORC-VERDANT-WORLD-STREAM-ODD-LENGTH-777!";
+    let [frag_a, frag_b, frag_p] =
+        shard_bytes_to_stitch_fragments(payload).expect("3 Stitch shards");
+    assert_eq!(
+        recover_bytes_from_stitch_pair(&frag_a, &frag_b).expect("(A, B)"),
+        payload
+    );
+    assert_eq!(
+        recover_bytes_from_stitch_pair(&frag_a, &frag_p).expect("(A, Parity)"),
+        payload
+    );
+    assert_eq!(
+        recover_bytes_from_stitch_pair(&frag_b, &frag_p).expect("(B, Parity)"),
+        payload
+    );
+
+    // 3. Survival-entropy peer tracker:
+    let mut tracker = SurvivalEntropyTracker::default();
+    for (peer_id, shard_idx) in [(1, 0), (2, 1), (3, 2)] {
+        tracker
+            .record_observation(
+                PeerObservationRecord {
+                    peer_id,
+                    sequence: 1,
+                    observed_at_sec: 100,
+                    expires_at_sec: 200,
+                    held_fragment_index: shard_idx,
+                    authenticated: true,
+                },
+                120,
+            )
+            .expect("fresh peer");
+    }
+    assert_eq!(tracker.refresh_urgency_permille(120), 0);
+
+    // Negative refusal 1: duplicate fragment index `(1, 1)` refused (`duplicateIndexCannotRecover`):
+    let dup_err = recover_bytes_from_stitch_pair(&frag_b, &frag_b)
+        .expect_err("duplicate fragment index must fail");
+    assert!(matches!(
+        dup_err,
+        StitchCustodyError::IncompatibleFragmentPair { .. }
+    ));
+
+    // Negative refusal 2: tampered parity byte refused via SHA-256 commitment:
+    let mut corrupt_p = frag_p;
+    corrupt_p.payload[0] ^= 0xFF;
+    let tamper_err = recover_bytes_from_stitch_pair(&frag_a, &corrupt_p)
+        .expect_err("corrupted parity shard must fail");
+    assert!(matches!(
+        tamper_err,
+        StitchCustodyError::PayloadDigestMismatch { .. }
+    ));
+
+    // Negative refusal 3: forged signature or wrong audience refused:
+    let aud_err = signed
+        .verify_admission("https://evil.example", 1_700_000_500)
+        .expect_err("wrong origin audience must fail");
+    assert!(matches!(
+        aud_err,
+        StitchCustodyError::InvalidJournalSignature { .. }
+    ));
+
+    // Negative refusal 4: expired or unauthenticated peer observation refused:
+    let stale_err = tracker
+        .record_observation(
+            PeerObservationRecord {
+                peer_id: 9,
+                sequence: 1,
+                observed_at_sec: 100,
+                expires_at_sec: 110,
+                held_fragment_index: 0,
+                authenticated: true,
+            },
+            120,
+        )
+        .expect_err("expired observation must fail");
+    assert_eq!(
+        stale_err,
+        StitchCustodyError::StalePeerObservation { peer_id: 9 }
+    );
 }

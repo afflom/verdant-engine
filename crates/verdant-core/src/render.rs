@@ -8,10 +8,13 @@
 use naga::valid::{Capabilities, ValidationFlags, Validator};
 use serde::{Deserialize, Serialize};
 
-use crate::error::{RenderGraphError, ShaderValidationError};
+use crate::ecs::SceneWorld;
+use crate::error::{RenderGraphError, ShaderValidationError, TensorComputeError};
+use crate::geometry::ProceduralMesh;
 use crate::math::{
-    golden_ratio, half_f64, nth_prime_u64, three_u32, two_f64, DIM_HOMOGENEOUS, DIM_SPATIAL,
+    golden_ratio, half_f64, nth_prime_u64, three_u32, two_f64, Vec3, DIM_HOMOGENEOUS, DIM_SPATIAL,
 };
+use crate::tensor::RasterTriangle;
 
 /// Metallic-roughness + thin-film PBR surface material compatible with Khronos glTF 2.0 and portable shaders.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -527,4 +530,154 @@ pub fn canonical_pbr_material_library() -> Vec<PbrMaterial> {
             double_sided: false,
         },
     ]
+}
+
+/// Zero-copy world-space render buffers synthesized directly from `SceneWorld` + `ProceduralMesh`
+/// assets so both `OffscreenCanvas` WebGL2 and the `16x16` software tile PBR rasterizer consume
+/// identical engine-owned geometry with zero JavaScript mesh synthesis.
+#[derive(Clone, Debug, Default, PartialEq)]
+pub struct PackedSceneRenderBuffers {
+    /// Flat `[x, y, z, ...]` world-space vertex positions (`len == vertex_count * 3`).
+    pub positions_xyz: Vec<f32>,
+    /// Flat `[nx, ny, nz, ...]` world-space unit vertex normals (`len == vertex_count * 3`).
+    pub normals_xyz: Vec<f32>,
+    /// Flat `[r, g, b, ...]` PBR-tinted vertex colors (`len == vertex_count * 3`).
+    pub colors_rgb: Vec<f32>,
+    /// Triangle index list (`len == triangle_count * 3`).
+    pub indices: Vec<u32>,
+    /// World-space triangles ready for `render_triangles_tile_framebuffer` (`16x16` software PBR).
+    pub tile_triangles: Vec<RasterTriangle>,
+}
+
+impl PackedSceneRenderBuffers {
+    /// Total packed vertex count (`positions_xyz.len() / 3`).
+    #[must_use]
+    pub fn vertex_count(&self) -> usize {
+        self.positions_xyz.len() / DIM_SPATIAL
+    }
+
+    /// Total packed triangle count (`indices.len() / 3`).
+    #[must_use]
+    pub fn triangle_count(&self) -> usize {
+        self.indices.len() / DIM_SPATIAL
+    }
+}
+
+/// Propagates `SceneWorld` hierarchy matrices via exact `verdant-tensor` contractions and packs
+/// all visible entity meshes into flat zero-copy vertex/index buffers and `16x16` tile triangles.
+pub fn pack_world_meshes_to_buffers(
+    scene: &SceneWorld,
+    meshes: &[ProceduralMesh],
+    materials: &[PbrMaterial],
+) -> Result<PackedSceneRenderBuffers, TensorComputeError> {
+    if meshes.is_empty() {
+        return Err(TensorComputeError::ZeroOrMismatchedExtents {
+            detail: "pack_world_meshes_to_buffers requires non-empty mesh library".to_string(),
+        });
+    }
+
+    let world_mats: std::collections::BTreeMap<_, _> =
+        scene.propagate_all_world_matrices()?.into_iter().collect();
+    let mut out = PackedSceneRenderBuffers::default();
+    let i2 = 1usize + 1usize;
+
+    for entity in scene.entities() {
+        let Some(mesh_idx) = entity.mesh_index else {
+            continue;
+        };
+        let Some(mesh) = meshes.get(mesh_idx) else {
+            continue;
+        };
+        let Some(world_mat) = world_mats.get(&entity.id) else {
+            continue;
+        };
+        let mat_tint = entity
+            .material_index
+            .and_then(|mi| materials.get(mi))
+            .map_or([1.0_f32, 1.0, 1.0], |m| {
+                [
+                    m.base_color_factor[0] + m.emissive_factor[0],
+                    m.base_color_factor[1] + m.emissive_factor[1],
+                    m.base_color_factor[i2] + m.emissive_factor[i2],
+                ]
+            });
+
+        let base_vertex = (out.positions_xyz.len() / DIM_SPATIAL) as u32;
+        let transformed =
+            verdant_tensor::batch_transform_positions_exact(&mesh.positions, &world_mat.cols)?;
+
+        for (v_idx, wp) in transformed.iter().enumerate() {
+            out.positions_xyz.push(wp[0]);
+            out.positions_xyz.push(wp[1]);
+            out.positions_xyz.push(wp[i2]);
+
+            let n_local = mesh.normals[v_idx];
+            let origin_w = world_mat.transform_point3(Vec3::ZERO);
+            let nw = (world_mat.transform_point3(Vec3::new(
+                f64::from(n_local[0]),
+                f64::from(n_local[1]),
+                f64::from(n_local[i2]),
+            )) - origin_w)
+                .normalized();
+            out.normals_xyz.push(nw.x as f32);
+            out.normals_xyz.push(nw.y as f32);
+            out.normals_xyz.push(nw.z as f32);
+
+            let vc = mesh.colors[v_idx];
+            out.colors_rgb.push((vc[0] * mat_tint[0]).clamp(0.0, 1.0));
+            out.colors_rgb.push((vc[1] * mat_tint[1]).clamp(0.0, 1.0));
+            out.colors_rgb.push((vc[i2] * mat_tint[i2]).clamp(0.0, 1.0));
+        }
+
+        for tri in mesh.indices.chunks_exact(DIM_SPATIAL) {
+            let a = base_vertex + tri[0];
+            let b = base_vertex + tri[1];
+            let c = base_vertex + tri[i2];
+            out.indices.push(a);
+            out.indices.push(b);
+            out.indices.push(c);
+
+            let pa = (a as usize) * DIM_SPATIAL;
+            let pb = (b as usize) * DIM_SPATIAL;
+            let pc = (c as usize) * DIM_SPATIAL;
+            let third = 1.0_f32 / ((1 + 1 + 1) as f32);
+            out.tile_triangles.push(RasterTriangle {
+                positions: [
+                    [
+                        out.positions_xyz[pa],
+                        out.positions_xyz[pa + 1],
+                        out.positions_xyz[pa + i2],
+                    ],
+                    [
+                        out.positions_xyz[pb],
+                        out.positions_xyz[pb + 1],
+                        out.positions_xyz[pb + i2],
+                    ],
+                    [
+                        out.positions_xyz[pc],
+                        out.positions_xyz[pc + 1],
+                        out.positions_xyz[pc + i2],
+                    ],
+                ],
+                normal: [
+                    (out.normals_xyz[pa] + out.normals_xyz[pb] + out.normals_xyz[pc]) * third,
+                    (out.normals_xyz[pa + 1] + out.normals_xyz[pb + 1] + out.normals_xyz[pc + 1])
+                        * third,
+                    (out.normals_xyz[pa + i2]
+                        + out.normals_xyz[pb + i2]
+                        + out.normals_xyz[pc + i2])
+                        * third,
+                ],
+                base_color: [
+                    (out.colors_rgb[pa] + out.colors_rgb[pb] + out.colors_rgb[pc]) * third,
+                    (out.colors_rgb[pa + 1] + out.colors_rgb[pb + 1] + out.colors_rgb[pc + 1])
+                        * third,
+                    (out.colors_rgb[pa + i2] + out.colors_rgb[pb + i2] + out.colors_rgb[pc + i2])
+                        * third,
+                ],
+            });
+        }
+    }
+
+    Ok(out)
 }

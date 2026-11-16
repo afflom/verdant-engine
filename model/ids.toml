@@ -154,6 +154,36 @@ suite = "engine"
 statement = "SHA-256-chained deterministic input journals, bounded 64-frame rollback resimulation sessions, and stateless XOR-residual delta UORC snapshots synchronize game state bit-identically and refuse regressive or out-of-window frames"
 
 [[id]]
+id = "VE-21"
+level = "build"
+suite = "engine"
+failure = "UiComplianceError"
+negative = "VE-21"
+statement = "Formal 2D and diegetic 3D UI trees solve via tropical and linear semiring contractions with proved 48px touch targets, WCAG 2.2 AA contrast, and focus reachability while refusing non-compliant widgets"
+
+[[id]]
+id = "VE-22"
+level = "build"
+suite = "engine"
+failure = "CyberneticError"
+negative = "VE-22"
+statement = "Second-order cybernetic LIF state-space observers, embedded coded_gemm SLM intent routers, and denial-wins browser container capability gates execute deterministically and refuse denied organs or invalid prompts"
+
+[[id]]
+id = "VE-23"
+level = "build"
+suite = "engine"
+statement = "World-space SceneWorld hierarchies and imported Khronos GLB assets pack directly into zero-copy WebAssembly vertex, normal, color, and index buffers shared across WebGL2 and 16x16 software tile rasterization"
+
+[[id]]
+id = "VE-24"
+level = "build"
+suite = "engine"
+failure = "StitchCustodyError"
+negative = "VE-24"
+statement = "Prism ID signed input journal batches, 2-of-3 SHA-256 XOR Stitch erasure fragments, and survival-entropy peer trackers recover exact UORC world state and refuse tampered shards, duplicate indices, or forged signatures"
+
+[[id]]
 id = "FR-01"
 level = "build"
 suite = "frame"

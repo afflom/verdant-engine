@@ -40,12 +40,14 @@
 pub mod animation;
 pub mod audio;
 pub mod collision;
+pub mod cybernetics;
 pub mod ecs;
 pub mod error;
 pub mod geometry;
 pub mod gltf_io;
 pub mod math;
 pub mod navmesh;
+pub mod network;
 pub mod physics;
 pub use verdant_tensor;
 #[doc(hidden)]
@@ -54,6 +56,7 @@ pub mod render;
 pub mod runtime;
 pub mod streaming;
 pub mod tensor;
+pub mod ui;
 
 #[cfg(test)]
 mod tests {

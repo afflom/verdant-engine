@@ -143,3 +143,31 @@ Feature: engine
     When frame inputs advance, historical inputs are corrected within the 64-frame window, and delta UORC snapshots round-trip
     Then resimulated physics trajectories and decoded delta snapshots match fresh execution bit-identically
     And regressive input frames or out-of-window rollback targets return SnapshotCodecError
+
+  @VE-21 @build
+  Scenario: Formal 2D and diegetic 3D UI trees solve via tropical and linear semiring contractions with proved 48px touch targets, WCAG 2.2 AA contrast, and focus reachability while refusing non-compliant widgets
+    Given the canonical Verdant Studio 2D and diegetic 3D UiTree
+    When tropical_ui_box_extents, tropical_min_plus_all_pairs_closure, and uiWidgetCompliant solve and verify the layout
+    Then all widgets resolve without overlap, meet 48px target and WCAG 2.2 AA contrast bounds, and index into a diegetic BVH
+    And sub-48px targets, low-contrast widgets, or unreachable focus nodes return UiComplianceError
+
+  @VE-22 @build
+  Scenario: Second-order cybernetic LIF state-space observers, embedded coded_gemm SLM intent routers, and denial-wins browser container capability gates execute deterministically and refuse denied organs or invalid prompts
+    Given a CyberneticObserverLoop, CodedSlmDirector, and ContainerGrantMatrix
+    When player gaze and cadence observations step LIF state-space recurrence and natural-language prompts route through coded_gemm
+    Then mutual-attention salience, gimbal orientation, and admitted EngineProposal intents reproduce bit-identically
+    And explicitly denied container organs or empty prompts return CyberneticError
+
+  @VE-23 @build
+  Scenario: World-space SceneWorld hierarchies and imported Khronos GLB assets pack directly into zero-copy WebAssembly vertex, normal, color, and index buffers shared across WebGL2 and 16x16 software tile rasterization
+    Given a multi-entity SceneWorld and an imported Khronos GLB scene
+    When pack_world_meshes_to_buffers propagates exact world matrices and packs vertex, normal, color, and index buffers
+    Then both hardware WebGL2 buffers and 16x16 software tile PBR rasterization render non-empty world-space geometry
+    And empty mesh libraries return TensorComputeError
+
+  @VE-24 @build
+  Scenario: Prism ID signed input journal batches, 2-of-3 SHA-256 XOR Stitch erasure fragments, and survival-entropy peer trackers recover exact UORC world state and refuse tampered shards, duplicate indices, or forged signatures
+    Given a PrismIdSessionEnvelope signed input journal and a UORC world stream split into three Stitch fragments
+    When any two distinct fragments reconstruct the stream and peer liveness observations update SurvivalEntropyTracker
+    Then all three 2-of-3 pairs recover bit-identical SHA-256 verified bytes and refresh urgency tracks live replica count
+    And duplicate fragment indices, corrupted parity bytes, expired observations, or forged signatures return StitchCustodyError

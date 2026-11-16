@@ -506,3 +506,188 @@ impl fmt::Display for NavigationError {
 }
 
 impl std::error::Error for NavigationError {}
+
+/// Refusal returned when a 2D or diegetic 3D UI tree violates layout, focus reachability,
+/// coarse touch-target (`>= 48px`), or WCAG 2.2 AA contrast bounds.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum UiComplianceError {
+    /// UI tree is empty or references an invalid child/parent widget index.
+    InvalidUiHierarchy {
+        /// Diagnostic description.
+        detail: String,
+    },
+    /// Interactive widget resolved below `prism_kernel::uiMinTouchTargetCssPx()` (`48x48` CSS px).
+    SubMinimumTouchTarget {
+        /// Offending widget label.
+        widget_label: String,
+        /// Observed width in CSS pixels.
+        width_px: u32,
+        /// Observed height in CSS pixels.
+        height_px: u32,
+        /// Required minimum edge in CSS pixels.
+        min_edge_px: u32,
+    },
+    /// Foreground/background contrast fell below WCAG 2.2 AA (`4500` text or `3000` non-text milli).
+    InsufficientContrastRatio {
+        /// Offending widget label.
+        widget_label: String,
+        /// Observed contrast ratio in milli-units.
+        observed_milli: u64,
+        /// Required contrast ratio in milli-units.
+        required_milli: u64,
+    },
+    /// Two sibling widgets in the same container produced overlapping bounding rectangles.
+    SiblingBoxOverlap {
+        /// First widget label.
+        widget_a: String,
+        /// Second widget label.
+        widget_b: String,
+    },
+    /// Interactive widget cannot be reached from the root focus widget via keyboard/gamepad traversal.
+    UnreachableFocusWidget {
+        /// Unreachable widget label.
+        widget_label: String,
+    },
+}
+
+impl fmt::Display for UiComplianceError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::InvalidUiHierarchy { detail } => {
+                write!(f, "invalid UI widget hierarchy: {detail}")
+            }
+            Self::SubMinimumTouchTarget {
+                widget_label,
+                width_px,
+                height_px,
+                min_edge_px,
+            } => write!(
+                f,
+                "interactive UI widget `{widget_label}` ({width_px}x{height_px}px) is smaller than {min_edge_px}px target"
+            ),
+            Self::InsufficientContrastRatio {
+                widget_label,
+                observed_milli,
+                required_milli,
+            } => write!(
+                f,
+                "UI widget `{widget_label}` contrast {observed_milli}/1000 is below required {required_milli}/1000"
+            ),
+            Self::SiblingBoxOverlap { widget_a, widget_b } => write!(
+                f,
+                "sibling UI widgets `{widget_a}` and `{widget_b}` overlap"
+            ),
+            Self::UnreachableFocusWidget { widget_label } => write!(
+                f,
+                "interactive UI widget `{widget_label}` is unreachable in the focus graph"
+            ),
+        }
+    }
+}
+
+impl std::error::Error for UiComplianceError {}
+
+/// Refusal returned when a browser container organ lacks an explicit capability grant or an
+/// embedded neural/SLM proposal fails Prism admission invariants.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum CyberneticError {
+    /// Browser container API organ is ungranted or explicitly denied (`denial wins`).
+    ContainerOrganDenied {
+        /// Organ identifier.
+        organ_name: &'static str,
+    },
+    /// Embedded `coded_gemm` SLM proposal fell below the confidence threshold or violated invariants.
+    ProposalRejected {
+        /// Prompt or intent summary.
+        summary: String,
+        /// Observed confidence score in milli-units.
+        score_milli: u64,
+    },
+    /// Observer salience vector or neuromorphic state dimensions are invalid.
+    InvalidObserverDimensions {
+        /// Diagnostic detail.
+        detail: String,
+    },
+}
+
+impl fmt::Display for CyberneticError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::ContainerOrganDenied { organ_name } => write!(
+                f,
+                "container organ `{organ_name}` refused by capability-grant lattice"
+            ),
+            Self::ProposalRejected {
+                summary,
+                score_milli,
+            } => write!(
+                f,
+                "cybernetic proposal `{summary}` rejected at score {score_milli}/1000"
+            ),
+            Self::InvalidObserverDimensions { detail } => {
+                write!(f, "invalid cybernetic observer dimensions: {detail}")
+            }
+        }
+    }
+}
+
+impl std::error::Error for CyberneticError {}
+
+/// Refusal returned when a `Prism id` signed journal envelope, peer observation, or `afflom/stitch`
+/// 2-of-3 parity fragment recovery fails verification.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum StitchCustodyError {
+    /// Fragment indices are out of `0..3`, identical (`duplicateIndexCannotRecover`), or have mismatched manifests/lengths.
+    IncompatibleFragmentPair {
+        /// Left fragment index.
+        left_index: u8,
+        /// Right fragment index.
+        right_index: u8,
+        /// Diagnostic detail.
+        detail: String,
+    },
+    /// Fragment payload digest or reconstructed object SHA-256 root did not match commitment.
+    PayloadDigestMismatch {
+        /// Diagnostic detail.
+        detail: String,
+    },
+    /// `Prism id` (`prism/identity/4`) session signature envelope is missing, expired, or forged.
+    InvalidJournalSignature {
+        /// Diagnostic detail.
+        detail: String,
+    },
+    /// Peer observation is unauthenticated, non-monotonic in sequence, or expired.
+    StalePeerObservation {
+        /// Peer slot identifier.
+        peer_id: u64,
+    },
+}
+
+impl fmt::Display for StitchCustodyError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::IncompatibleFragmentPair {
+                left_index,
+                right_index,
+                detail,
+            } => write!(
+                f,
+                "Stitch fragment pair ({left_index}, {right_index}) incompatible: {detail}"
+            ),
+            Self::PayloadDigestMismatch { detail } => {
+                write!(f, "Stitch SHA-256 commitment mismatch: {detail}")
+            }
+            Self::InvalidJournalSignature { detail } => {
+                write!(f, "Prism ID journal signature refused: {detail}")
+            }
+            Self::StalePeerObservation { peer_id } => {
+                write!(
+                    f,
+                    "stale or unauthenticated peer observation for peer {peer_id}"
+                )
+            }
+        }
+    }
+}
+
+impl std::error::Error for StitchCustodyError {}

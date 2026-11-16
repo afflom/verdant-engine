@@ -8,12 +8,16 @@ use std::path::Path;
 use std::time::Instant;
 
 use verdant_core::collision::{gjk_intersect_and_manifold, ConvexHullCollider};
+use verdant_core::cybernetics::{CodedSlmDirector, ContainerGrantMatrix};
 use verdant_core::geometry::canonical_scene_mesh_library;
 use verdant_core::gltf_io::{
     export_scene_to_glb, import_glb_to_scene, transcode_glb_to_progressive_uorc, validate_glb_bytes,
 };
 use verdant_core::math::Vec3;
 use verdant_core::navmesh::NavMesh;
+use verdant_core::network::{
+    recover_bytes_from_stitch_pair, shard_bytes_to_stitch_fragments, StitchFragment,
+};
 use verdant_core::physics::{
     CapsuleController, KinematicSplineBody, PhysicsWorld, PhysicsWorldConfig,
 };
@@ -28,6 +32,7 @@ use verdant_core::streaming::{
     pack_progressive_uorc_stream, split_self_delimiting_uorc_archives,
     verify_progressive_uorc_stream, StandardSceneState,
 };
+use verdant_core::ui::UiTree;
 
 /// Refusal returned when a `verdant` CLI subcommand receives invalid arguments, unreadable paths,
 /// or a non-conformant asset/shader/snapshot/UORC payload.
@@ -81,6 +86,10 @@ verdant <subcommand> [options]
   verify-uorc <file.uorc>                     Verify UORC-SHA256-CHAIN-v1 multi-LOD stream
   verify-portable-uorc <file.uorc> [lod_rank] Verify portable .uorc stream via uorc_decompress::run
   snapshot-verify <file.vdnt>                 Verify VDNT + SHA-256 snapshot and Prism envelope
+  verify-ui [width] [height]                  Solve and verify formal 2D/3D UI & WCAG compliance
+  route-intent <prompt>                       Route natural-language intent via embedded coded_gemm SLM
+  stitch-shard <in.uorc> <out_dir>            Split object into 3 Stitch (A, B, parity) SHA-256 shards
+  stitch-recover <frag1.stch> <frag2.stch> <out> Recover exact object from any 2 distinct Stitch shards
   benchmark [frames]                          Run headless 60fps physics + BVH + GJK + NavMesh benchmark";
 
 fn pk(command: &str, res: Result<u64, prism_kernel::ComputeError>) -> Result<u64, CliCommandError> {
@@ -555,6 +564,143 @@ pub fn run_cli(args: &[String]) -> Result<String, CliCommandError> {
                 shaders.len(),
                 csm.len(),
                 nav.polygons.len()
+            ))
+        }
+        "verify-ui" => {
+            let two_idx = prism_kernel::sTwo() as usize;
+            let default_w = (pk("verify-ui", prism_kernel::sTwelve())?
+                * pk("verify-ui", prism_kernel::sHundred())?) as u32;
+            let default_h = (pk("verify-ui", prism_kernel::sNine())?
+                * pk("verify-ui", prism_kernel::sHundred())?) as u32;
+            let w = match args.get(1) {
+                Some(raw) => raw
+                    .parse::<u32>()
+                    .map_err(|_| CliCommandError::InvalidUsage {
+                        usage: "width must be u32".to_string(),
+                    })?,
+                None => default_w,
+            };
+            let h = match args.get(two_idx) {
+                Some(raw) => raw
+                    .parse::<u32>()
+                    .map_err(|_| CliCommandError::InvalidUsage {
+                        usage: "height must be u32".to_string(),
+                    })?,
+                None => default_h,
+            };
+            let ui = UiTree::canonical_studio_ui_tree(None);
+            let solved = ui.solve_and_verify(w, h, None).map_err(|e| {
+                CliCommandError::ValidationRejected {
+                    command: "verify-ui".to_string(),
+                    diagnostic: e.to_string(),
+                }
+            })?;
+            let diegetic = UiTree::build_diegetic_bvh(&solved);
+            Ok(format!(
+                "UI OK: viewport={w}x{h} widgets={} diegetic_bvh_leaves={}",
+                solved.len(),
+                diegetic.len()
+            ))
+        }
+        "route-intent" => {
+            let prompt = args.get(1..).map_or_else(String::new, |s| s.join(" "));
+            let director = CodedSlmDirector::new();
+            let grants = ContainerGrantMatrix::default();
+            let proposal = director.route_prompt(&prompt, None, &grants).map_err(|e| {
+                CliCommandError::ValidationRejected {
+                    command: "route-intent".to_string(),
+                    diagnostic: e.to_string(),
+                }
+            })?;
+            Ok(format!(
+                "INTENT OK: slug={} score_milli={} raw_logit={}",
+                proposal.intent.slug(),
+                proposal.score_milli,
+                proposal.raw_logit
+            ))
+        }
+        "stitch-shard" => {
+            let dir_idx = prism_kernel::sTwo() as usize;
+            let (Some(in_path), Some(out_dir)) = (args.get(1), args.get(dir_idx)) else {
+                return Err(CliCommandError::InvalidUsage {
+                    usage: "verdant stitch-shard <in_file> <out_dir>".to_string(),
+                });
+            };
+            let bytes = std::fs::read(in_path).map_err(|e| CliCommandError::IoFailure {
+                path: in_path.clone(),
+                reason: e.to_string(),
+            })?;
+            let frags = shard_bytes_to_stitch_fragments(&bytes).map_err(|e| {
+                CliCommandError::ValidationRejected {
+                    command: "stitch-shard".to_string(),
+                    diagnostic: e.to_string(),
+                }
+            })?;
+            std::fs::create_dir_all(out_dir).map_err(|e| CliCommandError::IoFailure {
+                path: out_dir.clone(),
+                reason: e.to_string(),
+            })?;
+            for frag in &frags {
+                let fp = Path::new(out_dir).join(format!("shard_{}.stch", frag.index));
+                let wire = frag.encode_wire();
+                std::fs::write(&fp, wire).map_err(|e| CliCommandError::IoFailure {
+                    path: fp.to_string_lossy().into_owned(),
+                    reason: e.to_string(),
+                })?;
+            }
+            Ok(format!(
+                "STITCH SHARD OK: bytes={} shards={} shard_bytes={}",
+                bytes.len(),
+                frags.len(),
+                frags[0].payload.len()
+            ))
+        }
+        "stitch-recover" => {
+            let idx2 = prism_kernel::sTwo() as usize;
+            let idx3 = prism_kernel::sThree() as usize;
+            let (Some(f1_path), Some(f2_path), Some(out_path)) =
+                (args.get(1), args.get(idx2), args.get(idx3))
+            else {
+                return Err(CliCommandError::InvalidUsage {
+                    usage: "verdant stitch-recover <frag1.stch> <frag2.stch> <out_file>"
+                        .to_string(),
+                });
+            };
+            let raw1 = std::fs::read(f1_path).map_err(|e| CliCommandError::IoFailure {
+                path: f1_path.clone(),
+                reason: e.to_string(),
+            })?;
+            let raw2 = std::fs::read(f2_path).map_err(|e| CliCommandError::IoFailure {
+                path: f2_path.clone(),
+                reason: e.to_string(),
+            })?;
+            let frag1 = StitchFragment::decode_wire(&raw1).map_err(|e| {
+                CliCommandError::ValidationRejected {
+                    command: "stitch-recover".to_string(),
+                    diagnostic: e.to_string(),
+                }
+            })?;
+            let frag2 = StitchFragment::decode_wire(&raw2).map_err(|e| {
+                CliCommandError::ValidationRejected {
+                    command: "stitch-recover".to_string(),
+                    diagnostic: e.to_string(),
+                }
+            })?;
+            let recovered = recover_bytes_from_stitch_pair(&frag1, &frag2).map_err(|e| {
+                CliCommandError::ValidationRejected {
+                    command: "stitch-recover".to_string(),
+                    diagnostic: e.to_string(),
+                }
+            })?;
+            std::fs::write(out_path, &recovered).map_err(|e| CliCommandError::IoFailure {
+                path: out_path.clone(),
+                reason: e.to_string(),
+            })?;
+            Ok(format!(
+                "STITCH RECOVER OK: pair=({},{}) bytes={}",
+                frag1.index,
+                frag2.index,
+                recovered.len()
             ))
         }
         other => Err(CliCommandError::InvalidUsage {
