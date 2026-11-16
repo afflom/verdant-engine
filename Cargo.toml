@@ -40,6 +40,12 @@ codegen-units = 1
 strip = "symbols"
 panic = "abort"
 
+[profile.release.package.uorc]
+opt-level = 3
+
+[profile.release.package.uorc_compress]
+opt-level = 3
+
 [profile.release.package.uorc_decompress]
 opt-level = 3
 
@@ -48,6 +54,12 @@ opt-level = 2
 
 [profile.test.package.uorc]
 opt-level = 2
+
+[profile.dev.package.uorc_compress]
+opt-level = 1
+
+[profile.test.package.uorc_compress]
+opt-level = 1
 
 [profile.dev.package.uorc_decompress]
 opt-level = 1

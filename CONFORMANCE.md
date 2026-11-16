@@ -57,6 +57,7 @@ model does not sanction.
 | `VE-33` | `build` | Hoisted Stratum-0 Prism constants, 256-entry CodebookProductLut contractions, 64-bit word-packed SoaSceneTable sweeps, contiguous 32-byte SAH FlatBvh traversal, epoch-split static and dynamic WebGL2 VAOs without gl.finish stalls, and hardware drawElementsInstanced batching scale deterministically to arbitrary 10k-entity and 50k-triangle workloads |
 | `VE-34` | `build` | Prism algebraic monoid command canonicalization, eight-column 64-bit bit-plane archetype matrices, in-place tropical min-plus closure with next-hop paths, O(P) hash-indexed NavMesh extraction, sparse two-body XPBD Delassus solves, stride-8 rollback checkpointing, and content-addressed kappa transition memoization scale deterministically and refuse invalid coded or cyclic inputs |
 | `VE-35` | `build` | Flat CSR prefix-sum software tile rasterization, spatial-grid multi-body broadphase collisions, multi-primitive Khronos GLB ingestion, WebGL2 context-loss recovery, deadlock-free worker frame-ack and RPC watchdogs, and 52-bit floating-origin horizon guards execute with zero steady-state inner heap allocations and refuse astronomical or degenerate inputs |
+| `VE-36` | `build` | Every post-boot engine boundary—world snapshots, #uorc= shareable URLs, OPFS GLB transcoding, Stitch 2-of-3 parity custody, rollback checkpoints, CLI archives, and zero-decode CodedMatrix bundles—operates exclusively over SHA-256-sealed UORC archives across native Rust and WebAssembly while refusing unsealed or tampered payloads |
 
 ## fidelity
 

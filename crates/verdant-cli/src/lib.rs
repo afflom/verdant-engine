@@ -34,9 +34,10 @@ use verdant_core::runtime::{
     WorldSnapshot,
 };
 use verdant_core::streaming::{
-    decode_portable_uorc_stream_up_to_lod, pack_portable_progressive_uorc_stream,
-    pack_progressive_uorc_stream, split_self_delimiting_uorc_archives,
-    verify_progressive_uorc_stream, StandardSceneState, TerrainReliefParams,
+    compress_uorc_portable, decode_portable_uorc_stream_up_to_lod, decompress_uorc_portable,
+    is_uorc_archive, pack_portable_progressive_uorc_stream, pack_progressive_uorc_stream,
+    split_self_delimiting_uorc_archives, verify_progressive_uorc_stream, StandardSceneState,
+    TerrainReliefParams,
 };
 use verdant_core::ui::UiTree;
 use verdant_core::universe::UniverseManager;
@@ -90,6 +91,8 @@ verdant <subcommand> [options]
   validate-wgsl <file.wgsl> [entry...]        Verify W3C WGSL shader module via naga
   pack-scene <out.glb> [seed] [lod_rank]      Pack progressive .uorc + .glb + .vdnt scene bundle
   pack-portable-uorc <out.uorc> [seed]        Pack stateless Wasm-portable LOD0..LOD3 .uorc stream
+  compress-uorc <in_file> <out.uorc>          Compress arbitrary bytes into a stateless UORC archive
+  decompress-uorc <in.uorc> <out_file>        Verify and decompress a stateless UORC archive
   verify-uorc <file.uorc>                     Verify UORC-SHA256-CHAIN-v1 multi-LOD stream
   verify-portable-uorc <file.uorc> [lod_rank] Verify portable .uorc stream via uorc_decompress::run
   snapshot-verify <file.vdnt>                 Verify VDNT + SHA-256 snapshot and Prism envelope
@@ -287,11 +290,12 @@ pub fn run_cli(args: &[String]) -> Result<String, CliCommandError> {
                         diagnostic: e.to_string(),
                     }
                 })?;
-            let snap_bytes =
-                WorldSnapshot::encode(&world).map_err(|e| CliCommandError::ValidationRejected {
+            let snap_bytes = WorldSnapshot::encode_uorc(&world).map_err(|e| {
+                CliCommandError::ValidationRejected {
                     command: "pack-scene".to_string(),
                     diagnostic: e.to_string(),
-                })?;
+                }
+            })?;
             let uorc_bytes = pack_progressive_uorc_stream(seed).map_err(|e| {
                 CliCommandError::ValidationRejected {
                     command: "pack-scene".to_string(),
@@ -453,13 +457,63 @@ pub fn run_cli(args: &[String]) -> Result<String, CliCommandError> {
                     diagnostic: e.to_string(),
                 })?;
             Ok(format!(
-                "VDNT OK: path={path} bytes={} seed={} lod={} scale={:.3} nodes={} url_bridge_ready={}",
+                "VDNT OK: path={path} bytes={} uorc_wire={} seed={} lod={} scale={:.3} nodes={} url_bridge_ready={}",
                 wire.len(),
+                is_uorc_archive(&wire),
                 world.seed,
                 world.active_lod.rank(),
                 world.resolution_scale,
                 world.scene_nodes.len(),
                 url_safe
+            ))
+        }
+        "compress-uorc" => {
+            let out_idx = prism_kernel::sTwo() as usize;
+            let (Some(in_path), Some(out_path)) = (args.get(1), args.get(out_idx)) else {
+                return Err(CliCommandError::InvalidUsage {
+                    usage: "verdant compress-uorc <in_file> <out.uorc>".to_string(),
+                });
+            };
+            let raw = std::fs::read(in_path).map_err(|e| CliCommandError::IoFailure {
+                path: in_path.clone(),
+                reason: e.to_string(),
+            })?;
+            let archive = compress_uorc_portable(&raw);
+            std::fs::write(out_path, &archive).map_err(|e| CliCommandError::IoFailure {
+                path: out_path.clone(),
+                reason: e.to_string(),
+            })?;
+            Ok(format!(
+                "UORC COMPRESSED OK: in={in_path} ({}B) out={out_path} ({}B)",
+                raw.len(),
+                archive.len()
+            ))
+        }
+        "decompress-uorc" => {
+            let out_idx = prism_kernel::sTwo() as usize;
+            let (Some(in_path), Some(out_path)) = (args.get(1), args.get(out_idx)) else {
+                return Err(CliCommandError::InvalidUsage {
+                    usage: "verdant decompress-uorc <in.uorc> <out_file>".to_string(),
+                });
+            };
+            let archive = std::fs::read(in_path).map_err(|e| CliCommandError::IoFailure {
+                path: in_path.clone(),
+                reason: e.to_string(),
+            })?;
+            let plain = decompress_uorc_portable(&archive).map_err(|e| {
+                CliCommandError::ValidationRejected {
+                    command: "decompress-uorc".to_string(),
+                    diagnostic: e.to_string(),
+                }
+            })?;
+            std::fs::write(out_path, &plain).map_err(|e| CliCommandError::IoFailure {
+                path: out_path.clone(),
+                reason: e.to_string(),
+            })?;
+            Ok(format!(
+                "UORC DECOMPRESSED OK: in={in_path} ({}B) out={out_path} ({}B)",
+                archive.len(),
+                plain.len()
             ))
         }
         "benchmark" => {

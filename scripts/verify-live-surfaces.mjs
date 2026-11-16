@@ -167,6 +167,16 @@ try {
     if (!stabLogText.includes("csr_tile_bins=true") || !stabLogText.includes("steady_alloc_growth=0 B")) {
       failures.push(`Stability & 512-body broadphase audit did not report conformant scene:stability: ${stabLogText}`);
     }
+    await page.click('[data-uorc-audit="1"]');
+    await page.waitForFunction(
+      () => (document.getElementById("ve-perf-log")?.textContent || "").includes("UORC-Exclusive Engine Wire Audit"),
+      null,
+      { timeout: 15000 },
+    );
+    const uorcLogText = (await page.textContent("#ve-perf-log")) || "";
+    if (!uorcLogText.includes("uorc_exclusive=true") || !uorcLogText.includes("magic=1, tamper_refused=1")) {
+      failures.push(`UORC-exclusive wire & zero-decode audit did not report conformant scene:uorc-exclusive: ${uorcLogText}`);
+    }
     await page.click('[data-inst-preset="0"]');
 
     // Close Studio Workbench and open Stitch Mesh modal (`#ve-mesh-btn`):

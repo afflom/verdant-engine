@@ -122,8 +122,8 @@ function drawShardsCanvas(canvas, shards, droppedIdx, recoveredBytes) {
   ctx.font = `600 12px ${pal.fontMono}`;
   ctx.fillText(
     recoveredBytes
-      ? `2-OF-3 RECOVERY PROVEN IN WASM: ${recoveredBytes} BYTES BIT-IDENTICAL TO SOURCE VDNT`
-      : "Click any 'Drop Shard & Recover' button below to prove 2-of-3 reconstruction in Wasm.",
+      ? `2-OF-3 RECOVERY PROVEN IN WASM: ${recoveredBytes} BYTES BIT-IDENTICAL TO SOURCE UORC`
+      : "Click any 'Drop Shard & Recover' button below to prove 2-of-3 UORC reconstruction in Wasm.",
     14,
     148,
   );
@@ -213,7 +213,7 @@ function buildMeshDialog({ callWorker, onRestoreSnapshot }) {
       `Local Citizen Peer: ${localPeerShort} (tabs linked: ${peerCount})\n` +
       `Identity Signer: ${sig.mode}\n` +
       `Commitment Prefix: ${sig.signatureHex}…\n` +
-      `Source VDNT Snapshot: ${shardReply.sourceBytes} bytes -> 3 STCH shards (${lastShards[0].byteLength}B each)`;
+      `Source UORC Snapshot: ${shardReply.sourceBytes} bytes -> 3 STCH shards (${lastShards[0].byteLength}B each)`;
   };
   btnShard.addEventListener("click", runShard);
   row.append(btnShard);

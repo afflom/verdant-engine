@@ -3598,3 +3598,159 @@ fn engine_ve_35() {
     let aux_len = verdant_wasm::verdant_wasm_stability_audit_aux(512);
     assert!(aux_len > 40);
 }
+
+/// `VE-36`: Exclusive post-boot `UORC` wire unification across `WorldSnapshot::encode_uorc`,
+/// `#uorc=` Studio URLs, Wasm `snapshot_encode`, GLB-to-UORC transcoding, Stitch `2-of-3` parity
+/// custody, stride-8 rollback checkpoints, zero-decode `CodedLodFrameBundle` UORC archives, and CLI.
+#[test]
+fn engine_ve_36() {
+    use std::path::Path;
+    use verdant_core::error::{SnapshotCodecError, StitchCustodyError};
+    use verdant_core::geometry::generate_faceted_prism_mesh;
+    use verdant_core::gltf_io::{pack_multi_primitive_glb, transcode_glb_to_progressive_uorc};
+    use verdant_core::network::{recover_uorc_from_stitch_pair, shard_uorc_to_stitch_fragments};
+    use verdant_core::render::canonical_pbr_material_library;
+    use verdant_core::runtime::{CheckpointedRollbackJournal, WorldSnapshot};
+    use verdant_core::streaming::{
+        compress_uorc_portable, decompress_uorc_portable, is_uorc_archive, CodedLodFrameBundle,
+        StandardSceneState,
+    };
+
+    // 1. Core-Wasm `scene:uorc-exclusive` verdict & Lean-proved `universalUorcRuntimeDirect`:
+    assert_eq!(
+        verdant_core::prism_kernel::universalUorcRuntimeDirect(),
+        Ok(true)
+    );
+    let verdict = verdant_core::prism_kernel::dispatch(b"scene:uorc-exclusive".to_vec())
+        .expect("dispatch scene:uorc-exclusive");
+    assert_eq!(
+        std::str::from_utf8(&verdict).expect("utf8 verdict"),
+        "conformant:uorc_exclusive=true,cold_boot_exempt=true,wasm_uorc_encode=true,zero_decode_coded=true,url_hash=uorc"
+    );
+
+    // 2. `WorldSnapshot::encode_uorc` compression & transparent `WorldSnapshot::decode` + tamper refusal:
+    let world = StandardSceneState::synthesize_at_lod(7, 3).expect("LOD3 world");
+    let raw_vdnt = WorldSnapshot::encode(&world).expect("inner VDNT wire");
+    let uorc_snap = WorldSnapshot::encode_uorc(&world).expect("UORC snapshot archive");
+    assert!(is_uorc_archive(&uorc_snap));
+    assert!(
+        uorc_snap.len() * 2 < raw_vdnt.len(),
+        "UORC snapshot ({}) must significantly compress raw VDNT ({})",
+        uorc_snap.len(),
+        raw_vdnt.len()
+    );
+    let restored = WorldSnapshot::decode(&uorc_snap).expect("decode UORC snapshot");
+    assert_eq!(restored, world);
+
+    let mut tampered_uorc = uorc_snap.clone();
+    let last_idx = tampered_uorc.len() - 1;
+    tampered_uorc[last_idx] ^= 0x5A;
+    let tamper_err =
+        WorldSnapshot::decode(&tampered_uorc).expect_err("tampered UORC seal must be refused");
+    assert!(matches!(
+        tamper_err,
+        SnapshotCodecError::IntegrityDigestMismatch { .. }
+    ));
+
+    // 3. Zero-decode `CodedLodFrameBundle` UORC archive (`pack_to_uorc` -> `unpack_from_uorc` -> `contract_zero_decode`):
+    let bundle = CodedLodFrameBundle::synthesize(7, 3).expect("LOD3 coded bundle");
+    let cdmx_uorc = bundle.pack_to_uorc();
+    assert!(is_uorc_archive(&cdmx_uorc));
+    let unpacked_bundle =
+        CodedLodFrameBundle::unpack_from_uorc(&cdmx_uorc).expect("unpack CDMX from UORC");
+    let q_weights = vec![3_i32; bundle.inner_k];
+    let exact_ref = bundle
+        .contract_zero_decode(&q_weights, &q_weights, &q_weights)
+        .expect("reference zero-decode contraction");
+    let exact_unpacked = unpacked_bundle
+        .contract_zero_decode(&q_weights, &q_weights, &q_weights)
+        .expect("unpacked UORC zero-decode contraction");
+    assert_eq!(exact_unpacked, exact_ref);
+
+    // 4. Pure-UORC `Stitch` 2-of-3 parity sharding & recovery + tampered inner UORC seal refusal:
+    let frags = shard_uorc_to_stitch_fragments(&raw_vdnt).expect("auto-UORC Stitch sharding");
+    assert!(frags[0].payload.len() < raw_vdnt.len() / 3);
+    let (rec_uorc, rec_plain) =
+        recover_uorc_from_stitch_pair(&frags[0], &frags[2]).expect("2-of-3 UORC recovery");
+    assert!(is_uorc_archive(&rec_uorc));
+    assert_eq!(rec_plain, raw_vdnt);
+
+    let mut bad_plain_uorc = compress_uorc_portable(b"valid-uorc-frame");
+    let b_last = bad_plain_uorc.len() - 1;
+    bad_plain_uorc[b_last] ^= 0x01;
+    let bad_frags =
+        verdant_core::network::shard_bytes_to_stitch_fragments(&bad_plain_uorc).expect("shard raw");
+    let bad_rec = recover_uorc_from_stitch_pair(&bad_frags[0], &bad_frags[1])
+        .expect_err("corrupted inner UORC seal must fail Stitch UORC recovery");
+    assert!(matches!(
+        bad_rec,
+        StitchCustodyError::PayloadDigestMismatch { .. }
+    ));
+
+    // 5. UORC-compressed stride-8 `CheckpointedRollbackJournal`:
+    let mut rj = CheckpointedRollbackJournal::new_uorc(&raw_vdnt, b"uorc-genesis");
+    for step in 1..=12_u8 {
+        let mut next_bytes = raw_vdnt.clone();
+        next_bytes[0] = next_bytes[0].wrapping_add(step);
+        rj.record_uorc_step(1_u8, &[step], &next_bytes);
+    }
+    assert!(rj.total_checkpoint_uorc_bytes() < raw_vdnt.len());
+    let (reconstructed_11, replay_steps, _) = rj
+        .reconstruct_uorc_frame(11, |prev, delta| {
+            let mut out = prev.to_vec();
+            out[0] = out[0].wrapping_add(*delta);
+            out
+        })
+        .expect("reconstruct UORC frame 11");
+    assert_eq!(replay_steps, 3);
+    assert_eq!(reconstructed_11[0], raw_vdnt[0].wrapping_add(11));
+
+    // 6. CLI `compress-uorc` / `decompress-uorc` + Wasm `snapshot_encode` (`b"UORC"`) & Studio `#uorc=` wiring:
+    let tmp = std::env::temp_dir().join("verdant_ve36_uorc_cli");
+    let _ = std::fs::create_dir_all(&tmp);
+    let raw_path = tmp.join("sample.bin");
+    let uorc_path = tmp.join("sample.uorc");
+    let out_path = tmp.join("sample.out");
+    std::fs::write(&raw_path, &raw_vdnt).expect("write raw sample");
+    let comp_out = verdant_cli::run_cli(&[
+        "compress-uorc".to_string(),
+        raw_path.to_string_lossy().into_owned(),
+        uorc_path.to_string_lossy().into_owned(),
+    ])
+    .expect("CLI compress-uorc");
+    assert!(comp_out.contains("UORC COMPRESSED OK"));
+    let decomp_out = verdant_cli::run_cli(&[
+        "decompress-uorc".to_string(),
+        uorc_path.to_string_lossy().into_owned(),
+        out_path.to_string_lossy().into_owned(),
+    ])
+    .expect("CLI decompress-uorc");
+    assert!(decomp_out.contains("UORC DECOMPRESSED OK"));
+    assert_eq!(std::fs::read(&out_path).expect("read out"), raw_vdnt);
+    let _ = decompress_uorc_portable(&std::fs::read(&uorc_path).expect("read uorc"))
+        .expect("portable decompress");
+    let _ = std::fs::remove_dir_all(&tmp);
+
+    let mats = canonical_pbr_material_library();
+    let pm = generate_faceted_prism_mesh(0.5, 1.0);
+    let glb = pack_multi_primitive_glb("UorcGlb", &[(&pm, 0)], &mats).expect("pack glb");
+    let glb_uorc = transcode_glb_to_progressive_uorc(&glb, 7).expect("transcode glb to uorc");
+    assert!(is_uorc_archive(&glb_uorc));
+
+    assert_eq!(verdant_wasm::verdant_wasm_init(7), 1);
+    let wasm_snap_len = verdant_wasm::verdant_wasm_snapshot_encode();
+    assert!(wasm_snap_len > 36 && (wasm_snap_len as usize) < raw_vdnt.len() / 2);
+    assert_eq!(verdant_wasm::verdant_wasm_io_get_byte(0), u32::from(b'U'));
+    assert_eq!(verdant_wasm::verdant_wasm_io_get_byte(1), u32::from(b'O'));
+    assert_eq!(verdant_wasm::verdant_wasm_io_get_byte(2), u32::from(b'R'));
+    assert_eq!(verdant_wasm::verdant_wasm_io_get_byte(3), u32::from(b'C'));
+    assert_eq!(verdant_wasm::verdant_wasm_snapshot_decode_and_restore(), 1);
+    assert!(verdant_wasm::verdant_wasm_uorc_exclusive_audit_aux() > 40);
+
+    let repo_root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+    let studio_mjs =
+        std::fs::read_to_string(repo_root.join("site/studio.mjs")).expect("site/studio.mjs");
+    assert!(studio_mjs.contains("#uorc="));
+    let card_mjs = std::fs::read_to_string(repo_root.join("site/card.mjs")).expect("site/card.mjs");
+    assert!(card_mjs.contains(".uorc"));
+}

@@ -580,15 +580,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let gov = OntologicalRuntimeGovernor::new(cfg, caps);
     let telos = gov.evaluate_frame_telos(0, true, 1, 1, 0, 0, 0);
 
-    // 4. Export Khronos binary glTF 2.0 (.glb) & SHA-256 authenticated VDNT world snapshot:
+    // 4. Export Khronos binary glTF 2.0 (.glb) & SHA-256-sealed UORC world snapshot:
     let glb = export_scene_to_glb(&sector.scene, &sector.meshes, &canonical_pbr_material_library())?;
     std::fs::write("${cleanSlug}.glb", &glb)?;
     let max_snap_lod = prism_kernel::wasmMaxLodRank().unwrap_or(1) as u8;
-    let snap = WorldSnapshot::encode(&StandardSceneState::synthesize_at_lod(seed, (lod_rank as u8).min(max_snap_lod))?)?;
-    std::fs::write("${cleanSlug}.vdnt", &snap)?;
+    let snap = WorldSnapshot::encode_uorc(&StandardSceneState::synthesize_at_lod(seed, u64::from((lod_rank as u8).min(max_snap_lod)))?)?;
+    std::fs::write("${cleanSlug}.uorc", &snap)?;
 
     println!(
-        "${cleanSlug} OK: lod={} entities={} ui_widgets={} cell=({},{},{}) supply={} w5h_ok={} glb={}B vdnt={}B",
+        "${cleanSlug} OK: lod={} entities={} ui_widgets={} cell=({},{},{}) supply={} w5h_ok={} glb={}B uorc={}B",
         lod_rank,
         sector.scene.entity_count(),
         solved_ui.len(),
@@ -1274,7 +1274,25 @@ function buildStudioDialog() {
         `  Core-Wasm scene:stability -> ${vStab || "conformant"}`;
     }
   });
-  perfRow.append(btnAqmBench, btnStability);
+  const btnUorcAudit = document.createElement("button");
+  btnUorcAudit.type = "button";
+  btnUorcAudit.className = "ve-m-btn";
+  btnUorcAudit.dataset.uorcAudit = "1";
+  btnUorcAudit.textContent = "UORC-Exclusive Wire & Zero-Decode Audit";
+  btnUorcAudit.addEventListener("click", async () => {
+    const r = await studioCtx?.callWorker?.("uorc-exclusive-audit");
+    const vUorc = await studioCtx?.queryVerifier?.("scene:uorc-exclusive");
+    if (r?.ok) {
+      const m = r.metrics || {};
+      perfLog.textContent =
+        `UORC-Exclusive Engine Wire Audit (${r.elapsedMs.toFixed(2)} ms in Wasm):\n` +
+        `  WorldSnapshot Wire: ${m.raw_vdnt_bytes} B raw -> ${m.uorc_snap_bytes} B UORC (magic=${m.snap_uorc_magic}, tamper_refused=${m.tamper_refused})\n` +
+        `  Zero-Decode CodedMatrix: ${m.coded_uorc_bytes} B UORC CDMX | exact_contraction=${m.zero_decode_ok}\n` +
+        `  Stitch 2-of-3 & Stride-8 Checkpoints: ${m.stitch_shard_bytes} B/shard | ${m.ckpt_uorc_bytes} B UORC journal\n` +
+        `  Core-Wasm scene:uorc-exclusive -> ${vUorc || "conformant"}`;
+    }
+  });
+  perfRow.append(btnAqmBench, btnStability, btnUorcAudit);
   cPerf.append(hPerf, pPerfDesc, perfRow, perfLog);
   pPhysics.append(cPhysics, cPerf);
 
@@ -1552,11 +1570,11 @@ export async function shareVdntSnapshot(callWorker, chip, statusEl) {
     return;
   }
   const bytes = r.bytes instanceof Uint8Array ? r.bytes : new Uint8Array(r.bytes);
-  history.replaceState(null, "", `${location.pathname}${location.search}#vdnt=${bytesToBase64Url(bytes)}`);
+  history.replaceState(null, "", `${location.pathname}${location.search}#uorc=${bytesToBase64Url(bytes)}`);
   try {
     await navigator.clipboard?.writeText(location.href);
   } catch {}
-  chip(statusEl, `VDNT · ${bytes.byteLength}B SHA-256 (#vdnt=)`, "good");
+  chip(statusEl, `UORC · ${bytes.byteLength}B SHA-256 (#uorc=)`, "good");
 }
 
 let audioState = { ctx: null, worklet: null, timer: 0, on: false, strikeIdx: 0 };

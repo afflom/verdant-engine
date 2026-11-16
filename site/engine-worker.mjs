@@ -650,7 +650,7 @@ self.onmessage = async ({ data: msg }) => {
         return;
       }
       customGlbActive = true;
-      const vdntSnap = readAuxBytes(uorcWasm);
+      const uorcStream = readAuxBytes(uorcWasm);
       const cam = readSolvedCamera(simHost());
       drawScene(cam.eye, cam.lookTarget, currentLod || { sky: [0.18, 0.30, 0.38], fog: [0.30, 0.40, 0.44] }, 0, false);
       self.postMessage(
@@ -660,9 +660,10 @@ self.onmessage = async ({ data: msg }) => {
           ok: true,
           tris,
           verts: uorcWasm.verdant_wasm_scene_vert_count() >>> 0,
-          vdntBytes: vdntSnap,
+          uorcBytes: uorcStream,
+          vdntBytes: uorcStream,
         },
-        [vdntSnap.buffer],
+        [uorcStream.buffer],
       );
       return;
     }
@@ -846,6 +847,24 @@ self.onmessage = async ({ data: msg }) => {
         if (eq > 0) kvMap[part.slice(0, eq)] = part.slice(eq + 1);
       }
       self.postMessage({ kind: "stability-audit", id: msg.id, ok: true, elapsedMs, metrics: kvMap });
+      return;
+    }
+
+    if (msg.kind === "uorc-exclusive-audit") {
+      uorcWasm ??= await getUorcWasm();
+      const t0 = performance.now();
+      const len = uorcWasm.verdant_wasm_uorc_exclusive_audit_aux() >>> 0;
+      const elapsedMs = performance.now() - t0;
+      if (len === 0) {
+        self.postMessage({ kind: "uorc-exclusive-audit", id: msg.id, ok: false });
+        return;
+      }
+      const kvMap = {};
+      for (const part of new TextDecoder().decode(readAuxBytes(uorcWasm)).split("|")) {
+        const eq = part.indexOf("=");
+        if (eq > 0) kvMap[part.slice(0, eq)] = part.slice(eq + 1);
+      }
+      self.postMessage({ kind: "uorc-exclusive-audit", id: msg.id, ok: true, elapsedMs, metrics: kvMap });
       return;
     }
 

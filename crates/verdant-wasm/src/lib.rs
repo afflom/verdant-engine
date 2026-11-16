@@ -27,7 +27,10 @@ use verdant_core::ecs::{BoundingVolumeHierarchy, SceneWorld};
 #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
 use verdant_core::geometry::{generate_faceted_prism_mesh, ProceduralMesh};
 #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
-use verdant_core::gltf_io::{export_scene_to_glb, import_glb_to_scene, pack_multi_primitive_glb};
+use verdant_core::gltf_io::{
+    export_scene_to_glb, import_glb_to_scene, pack_multi_primitive_glb,
+    transcode_glb_to_progressive_uorc,
+};
 use verdant_core::hd_world::{hd_terrain_height, synthesize_hd_citadel_sector, HdSectorBundle};
 #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
 use verdant_core::math::Mat4;
@@ -37,7 +40,7 @@ use verdant_core::narrative::{canonical_citadel_chronicle_automaton, StoryAutoma
 use verdant_core::navmesh::NavMesh;
 #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
 use verdant_core::network::{
-    recover_bytes_from_stitch_pair, shard_bytes_to_stitch_fragments, StitchFragment,
+    recover_uorc_from_stitch_pair, shard_uorc_to_stitch_fragments, StitchFragment,
 };
 use verdant_core::physics::{
     CapsuleController, CharacterMoveIntent, JointKind, KinematicSplineBody, PhysicsWorld,
@@ -57,7 +60,7 @@ use verdant_core::runtime::{
 };
 #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
 use verdant_core::streaming::{
-    decode_portable_uorc_single_frame, CodedLodFrameBundle, StandardSceneState,
+    decode_portable_uorc_single_frame, is_uorc_archive, CodedLodFrameBundle, StandardSceneState,
 };
 #[cfg(not(target_arch = "wasm32"))]
 use verdant_core::streaming::{decode_uorc_stream_up_to_lod, pack_progressive_uorc_stream};
@@ -1399,6 +1402,31 @@ impl WasmRuntimeBridge {
         Ok(bytes)
     }
 
+    /// Encodes the active `StandardSceneState` into a SHA-256-sealed `UORC` snapshot archive (`b"UORC"`)
+    /// verified by `prism_kernel::wasmBridgeEnvelopeValid`.
+    #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+    pub fn encode_uorc_snapshot(&self) -> Result<Vec<u8>, WasmBridgeError> {
+        let bytes = WorldSnapshot::encode_uorc(&self.world).map_err(|e| {
+            WasmBridgeError::InvalidSnapshotEnvelope {
+                byte_len: 0,
+                reason: bridge_reason(e),
+            }
+        })?;
+        let quantum = prism_kernel::audioWorkletQuantumFrames()
+            .expect("verified Prism audioWorkletQuantumFrames");
+        let channels = prism_kernel::audioStereoChannels();
+        let envelope_ok =
+            prism_kernel::wasmBridgeEnvelopeValid(quantum, channels, bytes.len() as u64)
+                .unwrap_or(false);
+        if !envelope_ok {
+            return Err(WasmBridgeError::InvalidSnapshotEnvelope {
+                byte_len: bytes.len(),
+                reason: "UORC snapshot exceeds Prism URL bridge envelope".to_string(),
+            });
+        }
+        Ok(bytes)
+    }
+
     /// Verifies SHA-256 digest and Prism bridge envelope, then restores `StandardSceneState`.
     #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
     pub fn decode_and_restore_snapshot(&mut self, wire: &[u8]) -> Result<(), WasmBridgeError> {
@@ -2729,7 +2757,7 @@ pub extern "C" fn verdant_wasm_io_get_byte(index: u32) -> u32 {
         .unwrap_or(0)
 }
 
-/// Encodes an authenticated `VDNT` + SHA-256 `WorldSnapshot` into the staging buffer and returns length.
+/// Encodes an authenticated SHA-256-sealed `UORC` `WorldSnapshot` (`b"UORC"`) into the staging buffer and returns length.
 #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
 #[no_mangle]
 pub extern "C" fn verdant_wasm_snapshot_encode() -> u32 {
@@ -2739,7 +2767,7 @@ pub extern "C" fn verdant_wasm_snapshot_encode() -> u32 {
     let Some(bridge) = guard.as_mut() else {
         return 0;
     };
-    match bridge.encode_snapshot() {
+    match bridge.encode_uorc_snapshot() {
         Ok(bytes) => {
             let len = bytes.len() as u32;
             bridge.io_buffer = bytes;
@@ -3090,7 +3118,9 @@ pub extern "C" fn verdant_wasm_glb_import_io() -> u32 {
     bridge.custom_glb_scene = Some((imported.scene, imported.meshes, imported.materials));
     bridge.static_dirty = true;
     let tris = bridge.rebuild_scene_buffers(0.0).unwrap_or(0);
-    if let Ok(snap) = WorldSnapshot::encode(&bridge.world) {
+    if let Ok(uorc_stream) = transcode_glb_to_progressive_uorc(&bridge.io_buffer, bridge.seed_val) {
+        bridge.aux_buffer = uorc_stream;
+    } else if let Ok(snap) = WorldSnapshot::encode_uorc(&bridge.world) {
         bridge.aux_buffer = snap;
     }
     tris as u32
@@ -3149,7 +3179,7 @@ pub extern "C" fn verdant_wasm_stitch_shard_io(shard_index: u32) -> u32 {
     let Some(bridge) = guard.as_mut() else {
         return 0;
     };
-    let Ok(frags) = shard_bytes_to_stitch_fragments(&bridge.io_buffer) else {
+    let Ok(frags) = shard_uorc_to_stitch_fragments(&bridge.io_buffer) else {
         return 0;
     };
     let Some(frag) = frags.get(shard_index as usize) else {
@@ -3180,7 +3210,7 @@ pub extern "C" fn verdant_wasm_stitch_recover_io(split_offset: u32) -> u32 {
     let Ok(frag_b) = StitchFragment::decode_wire(&bridge.io_buffer[split..]) else {
         return 0;
     };
-    let Ok(recovered) = recover_bytes_from_stitch_pair(&frag_a, &frag_b) else {
+    let Ok((recovered, _plain)) = recover_uorc_from_stitch_pair(&frag_a, &frag_b) else {
         return 0;
     };
     bridge.aux_buffer = recovered;
@@ -3866,6 +3896,78 @@ pub extern "C" fn verdant_wasm_stability_audit_aux(body_count: u32) -> u32 {
     let summary = format!(
         "csr_tiles={csr_tiles}|csr_tris={csr_tris}|csr_alloc_growth={csr_alloc_growth}|bodies={}|contacts={contacts}|nan_safe={nan_safe}|horizon_refused={horizon_refused}|glb_tris={glb_tris}",
         pw.bodies.len(),
+    );
+    bridge.aux_buffer = summary.into_bytes();
+    bridge.aux_buffer.len() as u32
+}
+
+/// Executes a live end-to-end audit of Verdant Engine's exclusive `UORC` wire runtime (`VE-36`)
+/// inside WebAssembly:
+/// 1. `WorldSnapshot::encode_uorc` vs raw `VDNT` byte compression ratio + `b"UORC"` seal check,
+/// 2. `CodedLodFrameBundle::pack_to_uorc` + `unpack_from_uorc` + zero-decode `coded_gemm` contraction,
+/// 3. `shard_uorc_to_stitch_fragments` + `recover_uorc_from_stitch_pair` `2-of-3` parity recovery,
+/// 4. `CheckpointedRollbackJournal::new_uorc` stride-8 `UORC` checkpoint memory compression.
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+#[no_mangle]
+pub extern "C" fn verdant_wasm_uorc_exclusive_audit_aux() -> u32 {
+    let mut guard = global_bridge()
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
+    let Some(bridge) = guard.as_mut() else {
+        return 0;
+    };
+
+    let raw_vdnt = WorldSnapshot::encode(&bridge.world).unwrap_or_default();
+    let uorc_snap = WorldSnapshot::encode_uorc(&bridge.world).unwrap_or_default();
+    let snap_magic_ok = u32::from(is_uorc_archive(&uorc_snap));
+
+    let mut tampered = uorc_snap.clone();
+    if let Some(last) = tampered.last_mut() {
+        *last ^= 1_u8;
+    }
+    let tamper_refused = u32::from(WorldSnapshot::decode(&tampered).is_err());
+
+    let max_lod = prism_kernel::wasmMaxLodRank();
+    let coded_bundle = CodedLodFrameBundle::synthesize(bridge.seed_val, max_lod).ok();
+    let (coded_uorc_bytes, zero_decode_ok) = if let Some(bundle) = coded_bundle {
+        let uorc_cdmx = bundle.pack_to_uorc();
+        let len = uorc_cdmx.len();
+        let unpacked = CodedLodFrameBundle::unpack_from_uorc(&uorc_cdmx).ok();
+        let q_vec = vec![1_i32; bundle.inner_k];
+        let ref_sum = bundle.contract_zero_decode(&q_vec, &q_vec, &q_vec).ok();
+        let unp_sum = unpacked.and_then(|u| u.contract_zero_decode(&q_vec, &q_vec, &q_vec).ok());
+        (
+            len,
+            u32::from(is_uorc_archive(&uorc_cdmx) && ref_sum.is_some() && ref_sum == unp_sum),
+        )
+    } else {
+        (0usize, 0_u32)
+    };
+
+    let stitch_shard_bytes = shard_uorc_to_stitch_fragments(&uorc_snap)
+        .ok()
+        .and_then(|frags| {
+            let two = 1usize + 1usize;
+            recover_uorc_from_stitch_pair(&frags[0], &frags[two])
+                .ok()
+                .filter(|(rec_uorc, _)| rec_uorc == &uorc_snap)
+                .map(|_| frags[0].payload.len())
+        })
+        .unwrap_or(0);
+
+    let mut uorc_journal =
+        CheckpointedRollbackJournal::new_uorc(&raw_vdnt, &bridge.seed_val.to_le_bytes());
+    let stride = uorc_journal.checkpoint_stride();
+    for step_idx in 0..stride {
+        let b = (step_idx + 1) as u8;
+        uorc_journal.record_uorc_step(b, &[b], &raw_vdnt);
+    }
+    let ckpt_uorc_bytes = uorc_journal.total_checkpoint_uorc_bytes();
+
+    let summary = format!(
+        "raw_vdnt_bytes={}|uorc_snap_bytes={}|snap_uorc_magic={snap_magic_ok}|tamper_refused={tamper_refused}|coded_uorc_bytes={coded_uorc_bytes}|zero_decode_ok={zero_decode_ok}|stitch_shard_bytes={stitch_shard_bytes}|ckpt_uorc_bytes={ckpt_uorc_bytes}",
+        raw_vdnt.len(),
+        uorc_snap.len(),
     );
     bridge.aux_buffer = summary.into_bytes();
     bridge.aux_buffer.len() as u32

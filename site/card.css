@@ -1,115 +1,24 @@
-.stage .board-fit > .ve-viewport {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  max-width: none;
-  max-height: 100%;
-  min-width: 0;
-  min-height: 0;
-  border-radius: var(--radius);
-  border: var(--border-width) solid var(--border-strong);
-  background: var(--card);
-  overflow: hidden;
-}
-.ve-viewport.drag-over {
-  outline: var(--ring-width) solid var(--success);
-  outline-offset: calc(var(--ring-width) * -1);
-}
-#ve-canvas { display: block; width: 100%; height: 100%; touch-action: none; cursor: grab; }
-#ve-canvas:active { cursor: grabbing; }
-.ve-hud {
-  position: absolute;
-  top: var(--space-2);
-  left: var(--space-2);
-  right: var(--space-2);
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: var(--space-1);
-  pointer-events: none;
-}
-.ve-pill {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.1875rem var(--space-2);
-  border-radius: var(--radius-control);
-  border: var(--border-width) solid var(--border-strong);
-  background: var(--card);
-  color: var(--card-foreground);
-  font-family: var(--font-mono);
-  font-size: var(--text-14);
-  line-height: 1.25;
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.ve-prompt-bar {
-  position: absolute;
-  left: var(--space-2);
-  right: var(--space-2);
-  bottom: var(--space-2);
-  display: flex;
-  align-items: center;
-  gap: var(--space-1);
-  padding: 0.25rem;
-  border-radius: var(--radius-control);
-  border: var(--border-width) solid var(--border-strong);
-  background: var(--card);
-}
-html.immersive .ve-pill,
-html.immersive .ve-prompt-bar {
-  background: color-mix(in oklab, var(--card) 84%, transparent);
-  -webkit-backdrop-filter: blur(14px) saturate(1.15);
-  backdrop-filter: blur(14px) saturate(1.15);
-}
-#ve-prompt-input {
-  flex: 1;
-  min-width: 0;
-  min-height: 2.5rem;
-  padding: 0 var(--space-2);
-  border: 0;
-  outline: 0;
-  background: transparent;
-  color: var(--card-foreground);
-  font-family: var(--font-mono);
-  font-size: var(--text-14);
-}
-#ve-prompt-input::placeholder { color: var(--muted-foreground); }
-#ve-prompt-btn {
-  flex: none;
-  min-height: 2.5rem;
-  min-width: 3.5rem;
-  padding: 0 var(--space-3);
-  border-radius: var(--radius-control);
-  border: var(--border-width) solid var(--primary);
-  background: var(--primary);
-  color: var(--primary-foreground);
-  font-weight: 600;
-}
-#ve-prompt-btn:hover { background: var(--primary-hover); }
-aside.spec { transition-duration: 90ms !important; }
-.rail .controls { gap: var(--space-1); }
-.rail .controls button, .rail .controls a.ghost { min-width: 3rem; justify-content: center; padding: 0 var(--space-2); white-space: nowrap; }
-.rail .controls a.ghost { border-color: var(--border); color: var(--secondary-foreground); background: var(--secondary); }
-.rail .controls a.ghost:hover { background: var(--accent); color: var(--foreground); }
-#ve-telemetry button.again { gap: var(--space-2); }
-#ve-telemetry button.again > span:first-child { min-width: 0; word-break: normal; overflow-wrap: break-word; }
-#ve-telemetry button.again > .tag { flex-shrink: 0; }
-@media (pointer: coarse) {
-  #ve-prompt-input, #ve-prompt-btn { min-height: var(--touch); }
-  #ve-prompt-btn { min-width: var(--touch); }
-  aside.spec summary, aside.spec .links a, aside.spec button.term, aside.spec button.more, aside.spec button.copy, aside.spec button.check { min-height: 3.0625rem; min-width: 3.0625rem; }
-}
-@media (max-width: 839px) {
-  .rail { gap: var(--space-2); padding-top: var(--space-2); padding-bottom: calc(var(--space-2) + var(--safe-bottom)); }
-  .result, .has-card .result { min-height: 1.75rem; }
-  .rail .controls { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; gap: var(--space-1); }
-  .rail .controls::-webkit-scrollbar { display: none; }
-  .rail .controls button, .rail .controls a.ghost { flex: none; padding: 0 var(--space-2); }
-}
-@media (max-height: 520px) { .ve-prompt-bar { display: none; } }
-@media (max-height: 480px) {
-  .ve-hud, .result, .has-card .result { display: none; }
-  .rail { padding-top: var(--space-1); padding-bottom: var(--space-1); }
-}
+.stage .board-fit>.ve-viewport{position:relative;width:100%;height:100%;max-width:none;max-height:100%;min-width:0;min-height:0;border-radius:var(--radius);border:var(--border-width) solid var(--border-strong);background:var(--card);overflow:hidden}
+.ve-viewport.drag-over{outline:var(--ring-width) solid var(--success);outline-offset:calc(var(--ring-width)*-1)}
+#ve-canvas{display:block;width:100%;height:100%;touch-action:none;cursor:grab}
+#ve-canvas:active{cursor:grabbing}
+.ve-hud{position:absolute;top:var(--space-2);left:var(--space-2);right:var(--space-2);display:flex;flex-wrap:wrap;justify-content:space-between;gap:var(--space-1);pointer-events:none}
+.ve-pill{display:inline-flex;align-items:center;padding:.1875rem var(--space-2);border-radius:var(--radius-control);border:var(--border-width) solid var(--border-strong);background:var(--card);color:var(--card-foreground);font-family:var(--font-mono);font-size:var(--text-14);line-height:1.25;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ve-prompt-bar{position:absolute;left:var(--space-2);right:var(--space-2);bottom:var(--space-2);display:flex;align-items:center;gap:var(--space-1);padding:.25rem;border-radius:var(--radius-control);border:var(--border-width) solid var(--border-strong);background:var(--card)}
+html.immersive .ve-pill,html.immersive .ve-prompt-bar{background:color-mix(in oklab,var(--card) 84%,transparent);-webkit-backdrop-filter:blur(14px) saturate(1.15);backdrop-filter:blur(14px) saturate(1.15)}
+#ve-prompt-input{flex:1;min-width:0;min-height:2.5rem;padding:0 var(--space-2);border:0;outline:0;background:transparent;color:var(--card-foreground);font-family:var(--font-mono);font-size:var(--text-14)}
+#ve-prompt-input::placeholder{color:var(--muted-foreground)}
+#ve-prompt-btn{flex:none;min-height:2.5rem;min-width:3.5rem;padding:0 var(--space-3);border-radius:var(--radius-control);border:var(--border-width) solid var(--primary);background:var(--primary);color:var(--primary-foreground);font-weight:600}
+#ve-prompt-btn:hover{background:var(--primary-hover)}
+aside.spec{transition-duration:90ms!important}
+.rail .controls{gap:var(--space-1)}
+.rail .controls button,.rail .controls a.ghost{min-width:3rem;justify-content:center;padding:0 var(--space-2);white-space:nowrap}
+.rail .controls a.ghost{border-color:var(--border);color:var(--secondary-foreground);background:var(--secondary)}
+.rail .controls a.ghost:hover{background:var(--accent);color:var(--foreground)}
+#ve-telemetry button.again{gap:var(--space-2)}
+#ve-telemetry button.again>span:first-child{min-width:0;word-break:normal;overflow-wrap:break-word}
+#ve-telemetry button.again>.tag{flex-shrink:0}
+@media(pointer:coarse){#ve-prompt-input,#ve-prompt-btn{min-height:var(--touch)}#ve-prompt-btn{min-width:var(--touch)}aside.spec summary,aside.spec .links a,aside.spec button.term,aside.spec button.more,aside.spec button.copy,aside.spec button.check{min-height:3.0625rem;min-width:3.0625rem}}
+@media(max-width:839px){.rail{gap:var(--space-2);padding-top:var(--space-2);padding-bottom:calc(var(--space-2) + var(--safe-bottom))}.result,.has-card .result{min-height:1.75rem}.rail .controls{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;gap:var(--space-1)}.rail .controls::-webkit-scrollbar{display:none}.rail .controls button,.rail .controls a.ghost{flex:none;padding:0 var(--space-2)}}
+@media(max-height:520px){.ve-prompt-bar{display:none}}
+@media(max-height:480px){.ve-hud,.result,.has-card .result{display:none}.rail{padding-top:var(--space-1);padding-bottom:var(--space-1)}}

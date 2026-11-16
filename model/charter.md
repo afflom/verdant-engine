@@ -213,6 +213,7 @@ Verdant Engine is a universal commercial 3D browser, WebAssembly, and native gam
 - PerfTierHardwareInstancedCrowdAndLatticeBatches: Hardware drawElementsInstanced batch buffers, lazy software 16x16 tile screen-space binning, and OntologicalRuntimeGovernor render-scale adaptation supporting tens of thousands of active instances.
 - PerfTierAqmMonoidBitPlanesAndKappaCache: Algebraic monoid command canonicalization, eight-column 64-bit bit-plane archetype matrices, in-place tropical closure with next-hop paths, sparse two-body XPBD Delassus solves, and content-addressed kappa transition memoization.
 - PerfTierRockSolidStabilityCsrRasterAndBroadphase: Flat CSR prefix-sum software tile binning, spatial-grid multi-body broadphase collisions, multi-primitive GLB merging, WebGL2 context-loss recovery, and deadlock-free worker watchdog guards.
+- PerfTierUniversalUorcExclusiveRuntime: Exclusive post-boot UORC wire, OPFS, URL, Stitch custody, GLB transcoding, rollback checkpoint, and zero-decode CodedMatrix streaming across native Rust and WebAssembly.
 
 ## Developer Relations, Documentation, SDK Artifacts, and Studio Controls
 

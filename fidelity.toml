@@ -4400,6 +4400,11 @@ record = "Engine::vectors#42"
 axis = "derived"
 
 [[closed]]
+kappa = "95ba8af49c6ac65b29878a2a447f1fa901f3ee799213fa18f87834b6c157a91e"
+record = "Engine::vectors#42"
+axis = "derived"
+
+[[closed]]
 kappa = "d5bcf8df6dc326d76348962f2c009bd3b89e0a1011813e384dd61cfcf62bbb62"
 record = "Engine::vectors#42"
 axis = "derived"
@@ -4408,6 +4413,11 @@ axis = "derived"
 kappa = "de3fc23147ff31e5a2189a77229966fb8f20f546038a7396f93d654317d3b391"
 record = "Engine::vectors#42"
 axis = "derived"
+
+[[closed]]
+kappa = "02108d2a9f92ff27b70292a85590ef834a2085a92d97b8ba225eb71588f0406c"
+record = "Engine::vectors#42"
+axis = "meant"
 
 [[closed]]
 kappa = "03952ba35ac35fa9c14dbea465e826e41db0f598d8d5048ea236a90ff588709a"
@@ -4435,7 +4445,17 @@ record = "Engine::vectors#43"
 axis = "derived"
 
 [[closed]]
+kappa = "e0a675bee745b2a9df9266f4dc820f24dcac0883d55233dd38e969cb26f1dcad"
+record = "Engine::vectors#43"
+axis = "derived"
+
+[[closed]]
 kappa = "47815dc0a7f5fb3502bb4abe57073b0c47b10901913c10d792957fcc6a9b032a"
+record = "Engine::vectors#43"
+axis = "meant"
+
+[[closed]]
+kappa = "e5e32f49f8da8d1f29acac46b950e37229e343f72d7a63b01d1287ffe9013422"
 record = "Engine::vectors#43"
 axis = "meant"
 
@@ -4445,6 +4465,11 @@ record = "Engine::vectors#43"
 axis = "meant"
 
 [[closed]]
+kappa = "0b6d98364ca582329e0fbc9e1e51e13b3f667be2393d36215ceb85871c328785"
+record = "Engine::vectors#44"
+axis = "derived"
+
+[[closed]]
 kappa = "d4500e565c8de3eb2eca50710e528f74fb1ea7d552a894d599acff6bcce47cee"
 record = "Engine::vectors#44"
 axis = "derived"
@@ -4452,6 +4477,21 @@ axis = "derived"
 [[closed]]
 kappa = "5eacaedf8e5c4150f858810685db966b90a5daf2bd5d8401fb5930585aea9e8a"
 record = "Engine::vectors#44"
+axis = "meant"
+
+[[closed]]
+kappa = "d6991d6e72048971234ca715ce05cca0248439ac3fac5d071aede6e095f3ef7c"
+record = "Engine::vectors#44"
+axis = "meant"
+
+[[closed]]
+kappa = "b9ffedd63578d5d3dc3712662cf30626ac2424851910999aa145a62234e661e0"
+record = "Engine::vectors#45"
+axis = "derived"
+
+[[closed]]
+kappa = "31240eec6eeff5cf5fae30f83b2f31ac010872af93ad02894cf6f44f0507f614"
+record = "Engine::vectors#45"
 axis = "meant"
 
 [[closed]]
@@ -7527,6 +7567,16 @@ axis = "derived"
 [[closed]]
 kappa = "d503fbf4738772d1b4f820ab42837a37d1ab8bf9fe2b5fbd86ccf07b402ab321"
 record = "Subsystems::perfTier6RockSolidStabilityAndBroadphase"
+axis = "meant"
+
+[[closed]]
+kappa = "c74dc9274a5b656940ba5f28235696a9eb69c55d7d406ab8773f5eae54723656"
+record = "Subsystems::perfTier7UniversalUorcRuntime"
+axis = "derived"
+
+[[closed]]
+kappa = "51311d28d4f8b250d64275c3405dcec48e19e4f66ad822f54b5ed4434e72b6d9"
+record = "Subsystems::perfTier7UniversalUorcRuntime"
 axis = "meant"
 
 [[closed]]

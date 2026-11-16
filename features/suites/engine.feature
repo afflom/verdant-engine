@@ -240,3 +240,9 @@ Feature: engine
     Given the Core-Wasm scene:stability query, a reusable TileRasterScratch CSR tile bin table, a 512-body PhysicsWorld spatial broadphase, a multi-primitive Khronos GLB asset, and the WebGL2 worker surface
     When CSR tile rendering runs across normal and near-clip geometry, 512 dynamic rigid spheres collide, multi-primitive GLB meshes import, and non-finite or beyond-52-bit sector coordinates are tested
     Then Core-Wasm scene:stability answers conformant, CSR tile capacities stabilize without per-frame inner Vec allocations, colliding spheres separate cleanly, all GLB primitives preserve geometry, WebGL2 context recovery and worker watchdogs are wired, and astronomical cell shifts return NarrativeLawError
+
+  @VE-36 @build
+  Scenario: Every post-boot engine boundary—world snapshots, #uorc= shareable URLs, OPFS GLB transcoding, Stitch 2-of-3 parity custody, rollback checkpoints, CLI archives, and zero-decode CodedMatrix bundles—operates exclusively over SHA-256-sealed UORC archives across native Rust and WebAssembly while refusing unsealed or tampered payloads
+    Given the Core-Wasm scene:uorc-exclusive query, the portable UORC object codec in native Rust and WebAssembly, a LOD3 StandardSceneState, an external GLB asset, a Stitch 2-of-3 shard set, a CheckpointedRollbackJournal, and a CodedLodFrameBundle
+    When WorldSnapshot::encode_uorc, Wasm snapshot_encode, GLB-to-UORC transcoding, Stitch UORC sharding, rollback checkpoint compression, zero-decode CodedMatrix UORC contraction, and verdant compress-uorc execute
+    Then Core-Wasm scene:uorc-exclusive answers conformant, every post-boot wire payload carries the UORC magic header at a fraction of raw byte size, zero-decode contractions match exact accumulators without float expansion, Studio emits #uorc= URLs and .uorc OPFS caches, and tampered UORC seals are refused

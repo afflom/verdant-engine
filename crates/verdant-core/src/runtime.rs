@@ -794,8 +794,40 @@ impl WorldSnapshot {
         Ok(wire)
     }
 
-    /// Verifies the `VDNT\x01` header and SHA-256 integrity digest before deserializing `StandardSceneState`.
+    /// Encodes `world` into a SHA-256-sealed `UORC` archive (`b"UORC"` magic + stateless NCM coding
+    /// over the inner `VDNT` binary payload), shrinking snapshot wire size by `~8x-10x`.
+    #[cfg(feature = "uorc-streaming")]
+    pub fn encode_uorc(world: &StandardSceneState) -> Result<Vec<u8>, SnapshotCodecError> {
+        let vdnt_wire = Self::encode(world)?;
+        Ok(crate::streaming::compress_uorc_portable(&vdnt_wire))
+    }
+
+    /// Verifies either a SHA-256-sealed `UORC` snapshot archive (`b"UORC"`, decompressed via
+    /// `uorc_decompress::run`) or an inner `VDNT\x01` binary envelope before deserializing `StandardSceneState`.
     pub fn decode(bytes: &[u8]) -> Result<StandardSceneState, SnapshotCodecError> {
+        #[cfg(feature = "uorc-wasm-decode")]
+        if crate::streaming::is_uorc_archive(bytes) {
+            let min_uorc = prism_kernel::snapshotSha256Bytes()
+                .expect("verified Prism kernel snapshotSha256Bytes")
+                as usize
+                + SNAPSHOT_MAGIC.len();
+            if bytes.len() < min_uorc {
+                return Err(SnapshotCodecError::TruncatedSnapshot {
+                    byte_len: bytes.len(),
+                });
+            }
+            let inner = crate::streaming::decompress_uorc_portable(bytes).map_err(|e| {
+                SnapshotCodecError::IntegrityDigestMismatch {
+                    expected_hex: "UORC-SHA256-SEAL".to_string(),
+                    observed_hex: e.to_string(),
+                }
+            })?;
+            return Self::decode_vdnt_wire(&inner);
+        }
+        Self::decode_vdnt_wire(bytes)
+    }
+
+    fn decode_vdnt_wire(bytes: &[u8]) -> Result<StandardSceneState, SnapshotCodecError> {
         let header_len = prism_kernel::snapshotHeaderBytes()
             .expect("verified Prism kernel snapshotHeaderBytes") as usize;
         let digest_len = prism_kernel::snapshotSha256Bytes()
@@ -1859,6 +1891,80 @@ impl<S: Clone, I: Clone> CheckpointedRollbackJournal<S, I> {
                 detail: "missing genesis rollback checkpoint".to_string(),
             })?;
         let mut cur = ckpt_state.clone();
+        let mut steps = 0usize;
+        for inp in &self.inputs[ckpt_frame..target_frame] {
+            cur = step_fn(&cur, inp);
+            steps += 1;
+        }
+        Ok((cur, steps, self.chain_digests[target_frame]))
+    }
+}
+
+impl<I: Clone> CheckpointedRollbackJournal<Vec<u8>, I> {
+    /// Initializes a UORC-compressed stride-8 rollback journal by compressing `genesis_raw_bytes`
+    /// into a stateless `UORC` archive at `frame 0`.
+    #[cfg(feature = "uorc-streaming")]
+    #[must_use]
+    pub fn new_uorc(genesis_raw_bytes: &[u8], genesis_seed_bytes: &[u8]) -> Self {
+        Self::new(
+            crate::streaming::compress_uorc_portable(genesis_raw_bytes),
+            genesis_seed_bytes,
+        )
+    }
+
+    /// Records frame `t + 1`, compressing `post_state_raw` into a `UORC` archive only on stride-8 boundaries.
+    #[cfg(feature = "uorc-streaming")]
+    pub fn record_uorc_step(
+        &mut self,
+        input: I,
+        input_wire_bytes: &[u8],
+        post_state_raw: &[u8],
+    ) -> usize {
+        let next_idx = self.inputs.len() + 1;
+        if next_idx.is_multiple_of(self.stride) {
+            let compressed = crate::streaming::compress_uorc_portable(post_state_raw);
+            self.record_step(input, input_wire_bytes, &compressed)
+        } else {
+            let empty = Vec::new();
+            self.record_step(input, input_wire_bytes, &empty)
+        }
+    }
+
+    /// Total compressed byte footprint across all stored UORC checkpoints in the journal.
+    #[must_use]
+    pub fn total_checkpoint_uorc_bytes(&self) -> usize {
+        self.checkpoints.values().map(Vec::len).sum()
+    }
+
+    /// Decompresses the nearest preceding stride-8 `UORC` checkpoint via `uorc_decompress::run` and
+    /// replays at most `<= 7` deterministic step transitions to reconstruct exact raw state bytes.
+    #[cfg(feature = "uorc-wasm-decode")]
+    pub fn reconstruct_uorc_frame<F>(
+        &self,
+        target_frame: usize,
+        mut step_fn: F,
+    ) -> Result<(Vec<u8>, usize, KappaDigest), SnapshotCodecError>
+    where
+        F: FnMut(&[u8], &I) -> Vec<u8>,
+    {
+        if target_frame > self.inputs.len() {
+            return Err(SnapshotCodecError::MalformedStatePayload {
+                detail: "target rollback frame exceeds recorded UORC journal horizon".to_string(),
+            });
+        }
+        let (&ckpt_frame, ckpt_uorc) = self
+            .checkpoints
+            .range(..=target_frame)
+            .next_back()
+            .ok_or_else(|| SnapshotCodecError::MalformedStatePayload {
+                detail: "missing genesis UORC rollback checkpoint".to_string(),
+            })?;
+        let mut cur = crate::streaming::decompress_uorc_portable(ckpt_uorc).map_err(|e| {
+            SnapshotCodecError::IntegrityDigestMismatch {
+                expected_hex: "UORC-CHECKPOINT-SEAL".to_string(),
+                observed_hex: e.to_string(),
+            }
+        })?;
         let mut steps = 0usize;
         for inp in &self.inputs[ckpt_frame..target_frame] {
             cur = step_fn(&cur, inp);

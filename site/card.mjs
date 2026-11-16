@@ -50,23 +50,18 @@ try {
 
 export default async function start({ app, reason, $, chip, show, parse }) {
   const canvas = $("ve-canvas"), viewportEl = canvas?.parentElement, statusEl = $("ve-status");
-  const lodBtn = $("ve-lod-btn"), uorcBtn = $("ve-uorc-btn"), renderBtn = $("ve-render-btn");
-  const importBtn = $("ve-import-btn"), glbFileInput = $("ve-glb-file"), studioBtn = $("ve-studio-btn");
-  const meshBtn = $("ve-mesh-btn"), simBtn = $("ve-sim-btn"), camBtn = $("ve-cam-btn");
-  const audioBtn = $("ve-audio-btn"), glbBtn = $("ve-glb-btn"), snapBtn = $("ve-snap-btn");
-  const promptForm = $("ve-prompt-form"), promptInput = $("ve-prompt-input");
-  const hudLod = $("ve-hud-lod"), hudStats = $("ve-hud-stats"), telemetryList = $("ve-telemetry");
+  const [lodBtn, uorcBtn, renderBtn, importBtn, glbFileInput, studioBtn, meshBtn, simBtn, camBtn, audioBtn, glbBtn, snapBtn, promptForm, promptInput, hudLod, hudStats, telemetryList] =
+    ["lod-btn", "uorc-btn", "render-btn", "import-btn", "glb-file", "studio-btn", "mesh-btn", "sim-btn", "cam-btn", "audio-btn", "glb-btn", "snap-btn", "prompt-form", "prompt-input", "hud-lod", "hud-stats", "telemetry"].map((k) => $(`ve-${k}`));
 
   let lodIdx = 2, simLive = false, camPreset = "landmark", renderMode = "webgl2", followMover = false;
-  let activeNodeSlot = 0, gazeDwellMs = 300;
-  let pendingYaw = 0, pendingPitch = 0, pendingDist = 0, jumpQueued = false;
-  let solvedEye = [10.2, 8.5, 25.3], solvedTarget = [2.2, 3.8, 9.2], universeCell = [0, 0, 0];
-  let dragging = false, rafId = 0;
-  let lastTris = 0, lastBvhVis = 24, lastKernelCount = 15;
-  let workerBackend = "webgl2", isSoftwareGpu = false, offscreenActive = false, nextReqId = 1, workerFramesInFlight = 0, lastFrameSentAt = 0;
-  let fallbackRenderer = null, fallbackMod = null, studioMod = null;
-  const keys = new Set(), pendingCalls = new Map();
-  const getStudio = async () => (studioMod ??= await import("./studio.mjs"));
+  let activeNodeSlot = 0, gazeDwellMs = 300, pendingYaw = 0, pendingPitch = 0, pendingDist = 0, jumpQueued = false;
+  let solvedEye = [10.2, 8.5, 25.3], solvedTarget = [2.2, 3.8, 9.2], universeCell = [0, 0, 0], dragging = false, rafId = 0;
+  let lastTris = 0, lastBvhVis = 24, lastKernelCount = 15, workerBackend = "webgl2", isSoftwareGpu = false, offscreenActive = false;
+  let nextReqId = 1, workerFramesInFlight = 0, lastFrameSentAt = 0, fallbackRenderer = null, fallbackMod = null, studioMod = null;
+  const keys = new Set(), pendingCalls = new Map(), getStudio = async () => (studioMod ??= await import("./studio.mjs"));
+  const MOVE_KEYS = ["KeyW", "KeyA", "KeyS", "KeyD", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Space"];
+  const hasMoveKeys = () => MOVE_KEYS.some((k) => keys.has(k));
+  const isAnimating = () => simLive || dragging || followMover || hasMoveKeys();
 
   function measureCanvasPixels() {
     if (!canvas) return { w: 1, h: 1 };
@@ -75,38 +70,26 @@ export default async function start({ app, reason, $, chip, show, parse }) {
   }
 
   function readMoveIntent(dt) {
-    const pad = navigator.getGamepads?.()?.[0];
-    const dz = (v) => (Math.abs(v) > 0.16 ? v : 0);
+    const pad = navigator.getGamepads?.()?.[0], dz = (v) => (Math.abs(v) > 0.16 ? v : 0);
     const gx = pad ? dz(pad.axes[0] || 0) : 0, gy = pad ? -dz(pad.axes[1] || 0) : 0;
     const rx = pad ? dz(pad.axes[2] || 0) : 0, ry = pad ? dz(pad.axes[3] || 0) : 0;
     const kf = (keys.has("KeyW") || keys.has("ArrowUp") ? 1 : 0) - (keys.has("KeyS") || keys.has("ArrowDown") ? 1 : 0);
     const ks = (keys.has("KeyD") || keys.has("ArrowRight") ? 1 : 0) - (keys.has("KeyA") || keys.has("ArrowLeft") ? 1 : 0);
-    const fwd = Math.max(-1, Math.min(1, kf + gy));
-    const strafe = Math.max(-1, Math.min(1, ks + gx));
-    const sprint = keys.has("ShiftLeft") || keys.has("ShiftRight") ? 1.65 : 1.0;
+    const fwd = Math.max(-1, Math.min(1, kf + gy)), strafe = Math.max(-1, Math.min(1, ks + gx));
+    const speedScale = keys.has("ShiftLeft") || keys.has("ShiftRight") ? 1.65 : 1.0;
     const jump = jumpQueued || keys.has("Space") || Boolean(pad?.buttons?.[0]?.pressed);
     jumpQueued = false;
-    let dYaw = pendingYaw - rx * dt * 1.6;
-    let dPitch = pendingPitch + ry * dt * 1.1;
-    if (simLive && !dragging && !followMover && camPreset === "landmark" && fwd === 0 && strafe === 0) {
-      dYaw += dt * 0.14;
-    }
+    let dYaw = pendingYaw - rx * dt * 1.6, dPitch = pendingPitch + ry * dt * 1.1;
+    if (simLive && !dragging && !followMover && camPreset === "landmark" && !fwd && !strafe) dYaw += dt * 0.14;
     const dDist = pendingDist;
-    pendingYaw = 0; pendingPitch = 0; pendingDist = 0;
-    return { fwd, strafe, speedScale: sprint, jump, dYaw, dPitch, dDist, moving: fwd !== 0 || strafe !== 0 || jump };
+    pendingYaw = pendingPitch = pendingDist = 0;
+    return { fwd, strafe, speedScale, jump, dYaw, dPitch, dDist, moving: Boolean(fwd || strafe || jump) };
   }
 
   const formatHudStats = (fps) => {
     const b = renderMode === "tile" ? "TILE 16x16" : workerBackend.toUpperCase();
-    const sec = `S(${universeCell[0]},${universeCell[2]})`;
-    return `${fps ? `${fps} · ${b}` : b} · ${lastTris} tris · ${lastBvhVis} vis · ${sec}`;
+    return `${fps ? `${fps} · ${b}` : b} · ${lastTris} tris · ${lastBvhVis} vis · S(${universeCell[0]},${universeCell[2]})`;
   };
-
-  const hasMoveKeys = () =>
-    keys.has("KeyW") || keys.has("KeyA") || keys.has("KeyS") || keys.has("KeyD") ||
-    keys.has("ArrowUp") || keys.has("ArrowDown") || keys.has("ArrowLeft") || keys.has("ArrowRight") || keys.has("Space");
-
-  const isAnimating = () => simLive || dragging || followMover || hasMoveKeys();
 
   let engineWorker = null;
   if (typeof Worker === "function" && canvas) {
@@ -115,37 +98,21 @@ export default async function start({ app, reason, $, chip, show, parse }) {
       prewarmedWorker = null;
       engineWorker.onmessage = ({ data: msg }) => {
         if (!msg) return;
-        if (msg.id && pendingCalls.has(msg.id)) {
-          const r = pendingCalls.get(msg.id);
-          pendingCalls.delete(msg.id);
-          r(msg);
-          return;
-        }
-        if (msg.kind === "frame-dropped") {
-          workerFramesInFlight = Math.max(0, workerFramesInFlight - 1);
-          return;
-        }
+        if (msg.id && pendingCalls.has(msg.id)) { const r = pendingCalls.get(msg.id); pendingCalls.delete(msg.id); r(msg); return; }
+        if (msg.kind === "frame-dropped") { workerFramesInFlight = Math.max(0, workerFramesInFlight - 1); return; }
         if (msg.kind === "telemetry") {
           workerFramesInFlight = Math.max(0, workerFramesInFlight - 1);
-          lastTris = msg.tris || lastTris;
-          lastBvhVis = msg.bvhVisible ?? lastBvhVis;
+          lastTris = msg.tris || lastTris; lastBvhVis = msg.bvhVisible ?? lastBvhVis;
           if (Array.isArray(msg.eye)) solvedEye = msg.eye;
           if (Array.isArray(msg.lookTarget)) solvedTarget = msg.lookTarget;
           if (Array.isArray(msg.universeCell)) universeCell = msg.universeCell;
-          studioMod?.pushStudioTelemetry(msg);
-          studioMod?.syncModalAudioSpatial(msg.binauralPan, msg.binauralGain);
+          studioMod?.pushStudioTelemetry(msg); studioMod?.syncModalAudioSpatial(msg.binauralPan, msg.binauralGain);
           if (!isAnimating() && hudStats) hudStats.textContent = formatHudStats("");
-          if ((pendingYaw !== 0 || pendingPitch !== 0 || pendingDist !== 0 || jumpQueued) && rafId === 0) requestRender();
+          if ((pendingYaw || pendingPitch || pendingDist || jumpQueued) && rafId === 0) requestRender();
         }
       };
-      engineWorker.onerror = () => {
-        workerFramesInFlight = 0;
-        for (const r of pendingCalls.values()) r(null);
-        pendingCalls.clear();
-      };
-    } catch {
-      engineWorker = null;
-    }
+      engineWorker.onerror = () => { workerFramesInFlight = 0; for (const r of pendingCalls.values()) r(null); pendingCalls.clear(); };
+    } catch { engineWorker = null; }
   }
 
   const callWorker = (kind, payload = {}, transfer = []) =>
@@ -174,42 +141,25 @@ export default async function start({ app, reason, $, chip, show, parse }) {
 
   async function cycleCameraMode(forcePreset = null) {
     const order = ["landmark", "third", "first"];
-    camPreset = forcePreset || order[(order.indexOf(camPreset) + 1) % order.length];
-    followMover = false;
-    if (camPreset === "landmark") {
-      if (camBtn) camBtn.textContent = "Cam: Orbit";
-      applyCamReply(await callWorker("camera-focus-landmark", { target: [2.2, 3.8, 9.2], dist: 18.5, yawMilli: 460, pitchMilli: 260 }));
-      chip(statusEl, "Lawful Orbit · Near-Sphere Guarded", "good");
-    } else if (camPreset === "third") {
-      if (camBtn) camBtn.textContent = "Cam: 3rd IK";
-      applyCamReply(await callWorker("camera-set-mode", { mode: 0, simClockSec }));
-      chip(statusEl, "3rd-Person Explorer · WASD + Foot IK", "good");
-    } else {
-      if (camBtn) camBtn.textContent = "Cam: 1st Eye";
-      applyCamReply(await callWorker("camera-set-mode", { mode: 1, simClockSec }));
-      chip(statusEl, "1st-Person Possessed · Head Masked", "good");
-    }
-    await syncFallbackBuffers();
-    requestRender();
+    camPreset = forcePreset || order[(order.indexOf(camPreset) + 1) % 3]; followMover = false;
+    const spec = camPreset === "landmark"
+      ? ["Cam: Orbit", "camera-focus-landmark", { target: [2.2, 3.8, 9.2], dist: 18.5, yawMilli: 460, pitchMilli: 260 }, "Lawful Orbit · Near-Sphere Guarded"]
+      : camPreset === "third"
+        ? ["Cam: 3rd IK", "camera-set-mode", { mode: 0, simClockSec }, "3rd-Person Explorer · WASD + Foot IK"]
+        : ["Cam: 1st Eye", "camera-set-mode", { mode: 1, simClockSec }, "1st-Person Possessed · Head Masked"];
+    if (camBtn) camBtn.textContent = spec[0];
+    applyCamReply(await callWorker(spec[1], spec[2])); chip(statusEl, spec[3], "good");
+    await syncFallbackBuffers(); requestRender();
   }
 
   async function interactChronicle() {
     const r = await callWorker("story-interact");
     if (!r?.ok) return null;
-    chip(
-      statusEl,
-      r.advanced
-        ? `Chronicle -> ${r.title} · Supply ${r.supply}`
-        : `${r.title} · ${r.objective}`,
-      r.advanced ? "good" : "wait",
-    );
+    chip(statusEl, r.advanced ? `Chronicle -> ${r.title} · Supply ${r.supply}` : `${r.title} · ${r.objective}`, r.advanced ? "good" : "wait");
     return r;
   }
 
-  const queryVerifier = async (q) => {
-    if (!app) return null;
-    try { return show(await app.dispatch(parse(q))); } catch { return null; }
-  };
+  const queryVerifier = async (q) => { try { return app ? show(await app.dispatch(parse(q))) : null; } catch { return null; } };
 
   async function syncVerifierBanner(query = STREAMING_LODS[lodIdx].key) {
     if (!app) { chip(statusEl, reason ? "Verifier unavailable" : "Engine offline", "bad"); return; }
@@ -218,18 +168,13 @@ export default async function start({ app, reason, $, chip, show, parse }) {
     if (res.startsWith("conformant:")) {
       const lod = STREAMING_LODS[lodIdx];
       chip(statusEl, `${lod.short} · ${lod.lossless ? `${lastKernelCount}/15 Kernels` : "UORC Stream OK"}`, "good");
-    } else if (res.startsWith("refused:")) chip(statusEl, res.replace("refused:", "Refused: "), "warn");
-    else chip(statusEl, res, "bad");
+    } else chip(statusEl, res.startsWith("refused:") ? res.replace("refused:", "Refused: ") : res, res.startsWith("refused:") ? "warn" : "bad");
   }
 
   async function syncFallbackBuffers() {
     if (offscreenActive || !fallbackRenderer || !engineWorker) return;
     const r = await callWorker("get-packed-buffers", { simClockSec });
-    if (r?.ok) {
-      fallbackRenderer.uploadPackedBuffers(r.pos, r.norm, r.col, r.idx);
-      lastTris = r.tris || 0;
-      if (r.camera) { solvedEye = r.camera.eye; solvedTarget = r.camera.lookTarget; }
-    }
+    if (r?.ok) { fallbackRenderer.uploadPackedBuffers(r.pos, r.norm, r.col, r.idx); lastTris = r.tris || 0; applyCamReply(r); }
   }
 
   async function toggleRenderBackend(force = null) {
@@ -248,10 +193,10 @@ export default async function start({ app, reason, $, chip, show, parse }) {
     if (!r?.ok) { chip(statusEl, `Refused invalid .glb (${fileName})`, "warn"); return; }
     lastTris = r.tris || lastTris;
     const mod = await getStudio();
-    if (r.vdntBytes?.byteLength) await mod.cacheBytesInOpfs(`${fileName}.vdnt`, r.vdntBytes);
+    if (r.uorcBytes?.byteLength) await mod.cacheBytesInOpfs(`${fileName}.uorc`, r.uorcBytes);
     await syncFallbackBuffers();
     if (hudLod) hudLod.textContent = `GLB · ${fileName} (${r.tris} tris)`;
-    chip(statusEl, `Imported ${fileName} · ${r.tris} tris · OPFS cached`, "good");
+    chip(statusEl, `Imported ${fileName} · ${r.tris} tris · .uorc cached`, "good");
     requestRender();
   }
 
@@ -378,18 +323,18 @@ export default async function start({ app, reason, $, chip, show, parse }) {
   }
 
   async function restoreHashSnapshotIfPresent() {
-    if (!location.hash.startsWith("#vdnt=")) return false;
-    const mod = await getStudio();
-    const bytes = mod.base64UrlToBytes(location.hash.slice(6).trim());
-    if (!bytes?.byteLength) { chip(statusEl, "Refused malformed VDNT snapshot", "warn"); return true; }
-    await restoreRawSnapshot(bytes, "VDNT");
+    const m = /^#(uorc|vdnt)=(.+)$/.exec(location.hash);
+    if (!m) return false;
+    const bytes = (await getStudio()).base64UrlToBytes(m[2].trim());
+    if (!bytes?.byteLength) { chip(statusEl, "Refused malformed UORC snapshot", "warn"); return true; }
+    await restoreRawSnapshot(bytes, "UORC");
     return true;
   }
 
   snapBtn?.addEventListener("click", async () => (await getStudio()).shareVdntSnapshot(callWorker, chip, statusEl));
 
   addEventListener("hashchange", () => {
-    if (location.hash.startsWith("#vdnt=")) restoreHashSnapshotIfPresent();
+    if (/^#(uorc|vdnt)=/.test(location.hash)) restoreHashSnapshotIfPresent();
     else if (location.hash.startsWith("#studio=")) launchStudioModal(location.hash.slice(8).trim());
   });
 
@@ -490,9 +435,10 @@ export default async function start({ app, reason, $, chip, show, parse }) {
     if (Array.isArray(r.universeCell)) universeCell = r.universeCell;
   };
   const initialDims = measureCanvasPixels();
+  let canvasTransferred = false;
   if (engineWorker && canvas && typeof canvas.transferControlToOffscreen === "function") {
     try {
-      const offscreen = canvas.transferControlToOffscreen();
+      const offscreen = canvas.transferControlToOffscreen(); canvasTransferred = true;
       const r = await callWorker("init", { canvas: offscreen, width: initialDims.w, height: initialDims.h, lod: STREAMING_LODS[lodIdx] }, [offscreen]);
       if (r?.kind === "ready") {
         offscreenActive = true; workerBackend = r.backend || "webgl2"; isSoftwareGpu = Boolean(r.isSoftware);
@@ -501,7 +447,7 @@ export default async function start({ app, reason, $, chip, show, parse }) {
     } catch { offscreenActive = false; }
   }
 
-  if (!offscreenActive && canvas) {
+  if (!offscreenActive && !canvasTransferred && canvas) {
     fallbackMod = await import("./scene-renderer.mjs");
     fallbackRenderer = await fallbackMod.createBestRenderer(canvas);
     workerBackend = fallbackRenderer?.backend || "webgl2";

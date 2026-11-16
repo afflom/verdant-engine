@@ -16,7 +16,7 @@ crate-type = ["cdylib", "rlib"]
 
 [features]
 default = []
-uorc-decoder = ["verdant-core/uorc-wasm-decode"]
+uorc-decoder = ["verdant-core/uorc-streaming", "verdant-core/uorc-wasm-decode"]
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 verdant-core.workspace = true

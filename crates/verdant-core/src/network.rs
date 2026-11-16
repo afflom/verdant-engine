@@ -316,6 +316,44 @@ impl StitchFragment {
     }
 }
 
+/// Enforces `UORC` wire framing before splitting into `3` `afflom/stitch` `(A, B, A ⊕ B)` parity
+/// fragments: if `object_bytes` is not already a `b"UORC"` archive, compresses it via
+/// [`crate::streaming::compress_uorc_portable`] first.
+#[cfg(feature = "uorc-streaming")]
+pub fn shard_uorc_to_stitch_fragments(
+    object_bytes: &[u8],
+) -> Result<[StitchFragment; 1 + 1 + 1], StitchCustodyError> {
+    if object_bytes.is_empty() {
+        return Err(StitchCustodyError::IncompatibleFragmentPair {
+            left_index: 0,
+            right_index: 0,
+            detail: "cannot shard empty UORC payload".to_string(),
+        });
+    }
+    if crate::streaming::is_uorc_archive(object_bytes) {
+        shard_bytes_to_stitch_fragments(object_bytes)
+    } else {
+        let uorc_archive = crate::streaming::compress_uorc_portable(object_bytes);
+        shard_bytes_to_stitch_fragments(&uorc_archive)
+    }
+}
+
+/// Reconstructs a `UORC` archive from any two distinct `StitchFragment`s and verifies both the
+/// outer `STCH` SHA-256 manifest root and the inner `UORC` SHA-256 chain seal via `uorc_decompress::run`.
+#[cfg(feature = "uorc-wasm-decode")]
+pub fn recover_uorc_from_stitch_pair(
+    left: &StitchFragment,
+    right: &StitchFragment,
+) -> Result<(Vec<u8>, Vec<u8>), StitchCustodyError> {
+    let uorc_bytes = recover_bytes_from_stitch_pair(left, right)?;
+    let plain_bytes = crate::streaming::decompress_uorc_portable(&uorc_bytes).map_err(|e| {
+        StitchCustodyError::PayloadDigestMismatch {
+            detail: e.to_string(),
+        }
+    })?;
+    Ok((uorc_bytes, plain_bytes))
+}
+
 /// Splits `object_bytes` into `[fragment_a, fragment_b, fragment_parity]` with SHA-256 commitments.
 pub fn shard_bytes_to_stitch_fragments(
     object_bytes: &[u8],

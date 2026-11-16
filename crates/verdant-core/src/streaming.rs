@@ -1290,3 +1290,208 @@ pub fn decode_portable_uorc_single_frame(
     }
     Ok(decoded_state)
 }
+
+/// Returns `true` when `bytes` begins with the canonical 4-byte `UORC` archive magic (`0x55 0x4F 0x52 0x43`).
+#[must_use]
+pub fn is_uorc_archive(bytes: &[u8]) -> bool {
+    let magic_len = 1usize << (1usize + 1usize);
+    bytes.len() >= magic_len && &bytes[..magic_len] == b"UORC"
+}
+
+/// Compresses any arbitrary byte slice into a self-delimiting, SHA-256-sealed stateless `UORC`
+/// archive (`state == 0 && !x86` NCM portfolio strategies) executable identically in native Rust
+/// and `wasm32-unknown-unknown` page workers.
+#[cfg(feature = "uorc-streaming")]
+#[must_use]
+pub fn compress_uorc_portable(payload: &[u8]) -> Vec<u8> {
+    let max_strats = if cfg!(target_arch = "wasm32") || cfg!(debug_assertions) {
+        1usize
+    } else {
+        (1usize + 1usize) * (1usize + 1usize)
+    };
+    let mut strategies = Vec::with_capacity(max_strats);
+    for pair in &uorc::portfolio::V04_PAIR {
+        for strat in pair {
+            if strat.state == 0
+                && !strat.x86
+                && strategies.len() < max_strats
+                && !strategies.contains(&Some(*strat))
+            {
+                strategies.push(Some(*strat));
+            }
+        }
+    }
+    uorc::compress_with_strategies(payload, &[payload.len() as u64], &[], &strategies)
+}
+
+/// Verifies the self-delimiting `UORC` header and 32-byte SHA-256 seal via `uorc_decompress::run`
+/// and returns the exact reconstructed payload bytes.
+#[cfg(feature = "uorc-wasm-decode")]
+pub fn decompress_uorc_portable(archive: &[u8]) -> Result<Vec<u8>, StreamingError> {
+    if !is_uorc_archive(archive) {
+        return Err(StreamingError::UorcArchiveRejected {
+            detail: "missing UORC magic header on portable archive".to_string(),
+        });
+    }
+    let frames = split_self_delimiting_uorc_archives(archive)?;
+    if frames.len() != 1 {
+        return Err(StreamingError::UorcArchiveRejected {
+            detail: "expected single self-delimiting UORC archive frame".to_string(),
+        });
+    }
+    match uorc_decompress::run(
+        uorc_decompress::Bytes::lit(frames[0]),
+        uorc_decompress::List::nil(),
+        uorc_decompress::List::nil(),
+        uorc_work_budget(),
+    ) {
+        Ok(Some(out)) => Ok(out.octets().to_vec()),
+        Ok(None) => Err(StreamingError::UorcArchiveRejected {
+            detail: "uorc_decompress::run rejected archive SHA-256 seal or work budget".to_string(),
+        }),
+        Err(_) => Err(StreamingError::UorcArchiveRejected {
+            detail: "uorc_decompress::run arithmetic overflow on archive".to_string(),
+        }),
+    }
+}
+
+impl CodedLodFrameBundle {
+    /// Packs this zero-decode `CodedMatrix` (`Grid`, `Packed`, `Runs`) bundle directly into a
+    /// SHA-256-sealed stateless `UORC` archive with zero float expansion.
+    #[cfg(feature = "uorc-streaming")]
+    #[must_use]
+    pub fn pack_to_uorc(&self) -> Vec<u8> {
+        let mut raw = Vec::new();
+        raw.extend_from_slice(b"CDMX");
+        raw.extend_from_slice(&self.lod_rank.to_le_bytes());
+        raw.extend_from_slice(&(self.inner_k as u64).to_le_bytes());
+        raw.extend_from_slice(&(self.cols as u64).to_le_bytes());
+        for &entry in &self.grid_codebook {
+            raw.extend_from_slice(&entry.to_le_bytes());
+        }
+        raw.extend_from_slice(&(self.geometry_grid_codes.len() as u64).to_le_bytes());
+        for &gcode in &self.geometry_grid_codes {
+            raw.extend_from_slice(&gcode.to_le_bytes());
+        }
+        raw.extend_from_slice(&(self.animation_packed_nibbles.len() as u64).to_le_bytes());
+        raw.extend_from_slice(&self.animation_packed_nibbles);
+        raw.extend_from_slice(&(self.ibl_run_dictionary.len() as u64).to_le_bytes());
+        for &(rlen, rcode) in &self.ibl_run_dictionary {
+            raw.extend_from_slice(&rlen.to_le_bytes());
+            raw.extend_from_slice(&rcode.to_le_bytes());
+        }
+        raw.extend_from_slice(&(self.ibl_run_indices.len() as u64).to_le_bytes());
+        for &ridx in &self.ibl_run_indices {
+            raw.extend_from_slice(&ridx.to_le_bytes());
+        }
+        compress_uorc_portable(&raw)
+    }
+
+    /// Unpacks a `UORC`-sealed [`CodedLodFrameBundle`] via `uorc_decompress::run` ready for direct
+    /// `uor_matmul::coded_gemm` contraction without intermediate float decoding.
+    #[cfg(feature = "uorc-wasm-decode")]
+    pub fn unpack_from_uorc(uorc_bytes: &[u8]) -> Result<Self, StreamingError> {
+        let raw = decompress_uorc_portable(uorc_bytes)?;
+        let b4 = 1usize << (1usize + 1usize);
+        let b8 = b4 * (1usize + 1usize);
+        let b2 = 1usize + 1usize;
+        if raw.len() < b4 + b8 * (1 + b2) || &raw[..b4] != b"CDMX" {
+            return Err(StreamingError::LodPayloadMismatch {
+                detail: "invalid CDMX coded matrix header inside UORC archive".to_string(),
+            });
+        }
+        let mut cur = b4;
+        let read_u64 = |buf: &[u8], c: &mut usize| -> Result<u64, StreamingError> {
+            let end = *c + b8;
+            let slice = buf
+                .get(*c..end)
+                .ok_or_else(|| StreamingError::LodPayloadMismatch {
+                    detail: "truncated u64 in CDMX bundle".to_string(),
+                })?;
+            *c = end;
+            Ok(u64::from_le_bytes(core::array::from_fn(|i| slice[i])))
+        };
+        let read_i32 = |buf: &[u8], c: &mut usize| -> Result<i32, StreamingError> {
+            let end = *c + b4;
+            let slice = buf
+                .get(*c..end)
+                .ok_or_else(|| StreamingError::LodPayloadMismatch {
+                    detail: "truncated i32 in CDMX bundle".to_string(),
+                })?;
+            *c = end;
+            Ok(i32::from_le_bytes(core::array::from_fn(|i| slice[i])))
+        };
+
+        let lod_rank = read_u64(&raw, &mut cur)?;
+        let inner_k = read_u64(&raw, &mut cur)? as usize;
+        let cols = read_u64(&raw, &mut cur)? as usize;
+        let mut grid_codebook = [0_i32; verdant_tensor::CODED_TABLE_LEN];
+        for slot in &mut grid_codebook {
+            *slot = read_i32(&raw, &mut cur)?;
+        }
+        let geom_len = read_u64(&raw, &mut cur)? as usize;
+        let mut geometry_grid_codes = Vec::with_capacity(geom_len.min(raw.len()));
+        for _ in 0..geom_len {
+            let gc_s =
+                raw.get(cur..cur + b2)
+                    .ok_or_else(|| StreamingError::LodPayloadMismatch {
+                        detail: "truncated geometry_grid_codes in CDMX bundle".to_string(),
+                    })?;
+            cur += b2;
+            geometry_grid_codes.push(u16::from_le_bytes(core::array::from_fn(|i| gc_s[i])));
+        }
+
+        let anim_len = read_u64(&raw, &mut cur)? as usize;
+        let anim_end = cur.saturating_add(anim_len);
+        let animation_packed_nibbles = raw
+            .get(cur..anim_end)
+            .ok_or_else(|| StreamingError::LodPayloadMismatch {
+                detail: "truncated animation_packed_nibbles in CDMX bundle".to_string(),
+            })?
+            .to_vec();
+        cur = anim_end;
+
+        let dict_len = read_u64(&raw, &mut cur)? as usize;
+        let mut ibl_run_dictionary = Vec::with_capacity(dict_len.min(raw.len()));
+        for _ in 0..dict_len {
+            let rl_s =
+                raw.get(cur..cur + b4)
+                    .ok_or_else(|| StreamingError::LodPayloadMismatch {
+                        detail: "truncated run_len in CDMX bundle".to_string(),
+                    })?;
+            cur += b4;
+            let rc_s =
+                raw.get(cur..cur + b2)
+                    .ok_or_else(|| StreamingError::LodPayloadMismatch {
+                        detail: "truncated run_code in CDMX bundle".to_string(),
+                    })?;
+            cur += b2;
+            let rlen = u32::from_le_bytes(core::array::from_fn(|i| rl_s[i]));
+            let rcode = u16::from_le_bytes(core::array::from_fn(|i| rc_s[i]));
+            ibl_run_dictionary.push((rlen, rcode));
+        }
+
+        let idx_len = read_u64(&raw, &mut cur)? as usize;
+        let mut ibl_run_indices = Vec::with_capacity(idx_len.min(raw.len()));
+        for _ in 0..idx_len {
+            let ri_s =
+                raw.get(cur..cur + b4)
+                    .ok_or_else(|| StreamingError::LodPayloadMismatch {
+                        detail: "truncated run_idx in CDMX bundle".to_string(),
+                    })?;
+            cur += b4;
+            ibl_run_indices.push(u32::from_le_bytes(core::array::from_fn(|i| ri_s[i])));
+        }
+
+        Ok(Self {
+            lod_rank,
+            grid_codebook,
+            geometry_grid_codes,
+            animation_packed_nibbles,
+            ibl_run_dictionary,
+            ibl_run_indices,
+            inner_k,
+            cols,
+        })
+    }
+}

@@ -312,7 +312,7 @@ function renderSnapshotEnvelopeCold(ex, fig, canvas) {
     ctx,
     canvas.width,
     canvas.height,
-    `LIVE SHA-256 VDNT SNAPSHOT ENVELOPE · READY (STREAMING FULL CODEC…)`,
+    `LIVE SHA-256 UORC SNAPSHOT ENVELOPE · READY (STREAMING FULL CODEC…)`,
     `Min Wire: ${minBytes} B · Max Budget: ${maxBytes} B · Worker Ring: ${ringCap} cmds`,
   );
   ctx.fillStyle = pal.accentSoft;
@@ -320,7 +320,7 @@ function renderSnapshotEnvelopeCold(ex, fig, canvas) {
   ctx.fillRect(16, 70, 544, 128);
   ctx.strokeRect(16, 70, 544, 128);
   ctx.fillStyle = pal.fg;
-  ctx.fillText(`Header Magic: VDNT (0x56 0x44 0x4E 0x54) + 32-byte SHA-256 trailer`, 30, 102);
+  ctx.fillText(`Header Magic: UORC (0x55 0x4F 0x52 0x43) + 32-byte SHA-256 chain seal`, 30, 102);
   ctx.fillText(`Cold-boot envelope verified in verdant-wasm; streaming SHA-256 codec…`, 30, 134);
   ctx.fillText(`NavMesh Walkable Polygons Verified: ${polys}`, 30, 166);
   fig.dataset.veReady = "true";
@@ -344,15 +344,15 @@ async function renderSnapshotGuard(exCold, fig, canvas, tamper) {
     ctx,
     canvas.width,
     canvas.height,
-    `LIVE SHA-256 VDNT SNAPSHOT GUARD · ${ok ? "ADMITTED (VERIFIED)" : "REFUSED (TAMPER DETECTED)"}`,
-    `Wire Length: ${len} B · Max Budget: ${uex.verdant_wasm_snapshot_max_bytes()} B · Ring Cap: ${uex.verdant_wasm_worker_ring_capacity()} cmds`,
+    `LIVE SHA-256 UORC SNAPSHOT GUARD · ${ok ? "ADMITTED (VERIFIED)" : "REFUSED (TAMPER DETECTED)"}`,
+    `UORC Wire Length: ${len} B · Max Budget: ${uex.verdant_wasm_snapshot_max_bytes()} B · Ring Cap: ${uex.verdant_wasm_worker_ring_capacity()} cmds`,
   );
   ctx.fillStyle = ok ? pal.accentSoft : pal.dangerSoft;
   ctx.strokeStyle = ok ? pal.accent : pal.danger;
   ctx.fillRect(16, 70, 544, 128);
   ctx.strokeRect(16, 70, 544, 128);
   ctx.fillStyle = pal.fg;
-  ctx.fillText(`Header Magic: VDNT (0x56 0x44 0x4E 0x54) + 32-byte SHA-256 digest`, 30, 102);
+  ctx.fillText(`Header Magic: UORC (0x55 0x4F 0x52 0x43) + 32-byte SHA-256 chain seal`, 30, 102);
   ctx.fillText(
     tamper
       ? "Injected 1-bit flip at tail byte -> WorldSnapshot::decode rejected payload!"

@@ -1524,10 +1524,31 @@ definition{
 }
 
 definition{
+  name: uorcTransportMandatory,
+  parameters: [isColdBootHttp : Bool, payloadIsUorc : Bool, sealVerified : Bool],
+  result: Bool,
+  body: (if isColdBootHttp then true else (payloadIsUorc && sealVerified))
+}
+
+definition{
+  name: uorcCompressionGainValid,
+  parameters: [uorcBytes : Nat, rawBytes : Nat, lossless : Bool],
+  result: Bool,
+  body: (lossless && ((uorcBytes <=? rawBytes) && (0 <? uorcBytes)))
+}
+
+definition{
+  name: universalUorcRuntimeDirect,
+  parameters: [],
+  result: Bool,
+  body: (((uorcTransportMandatory true false false) && ((uorcTransportMandatory false true true) && ((not (uorcTransportMandatory false false true)) && (not (uorcTransportMandatory false true false))))) && ((uorcCompressionGainValid (sTwo) (sTwenty) true) && ((not (uorcCompressionGainValid (sThirty) (sTwenty) true)) && ((not (uorcCompressionGainValid 0 (sTwenty) true)) && (not (uorcCompressionGainValid (sTwo) (sTwenty) false))))))
+}
+
+definition{
   name: workloadPerformanceDirect,
   parameters: [],
   result: Bool,
-  body: (if ((((wordBitWidth) =? (Foundation.Ontology.V1.Model::pow2Constructive (sSix))) && (((wordCountForEntities 0) =? 0) && (((wordCountForEntities 1) =? 1) && (((wordCountForEntities (sSixtyFive)) =? (sTwo)) && ((wordPackedFilterValid (sSixtyFive) (sTwo)) && (not (wordPackedFilterValid (sSixtyFive) 1))))))) && ((((sahBinCount) =? (sEight)) && (((flatBvhLeafMaxPrims) =? (sFour)) && ((flatBvhStackCapacity) =? (Foundation.Ontology.V1.Model::pow2Constructive (sSix))))) && ((flatBvhChildOrderNearFirst (sTen) (sTwenty)) && ((not (flatBvhChildOrderNearFirst (sTwenty) (sTen))) && ((flatBvhNodeBoundsValid 0 1 (sFour)) && ((not (flatBvhNodeBoundsValid (sTwo) 1 (sFour))) && (not (flatBvhNodeBoundsValid 0 (sFour) (sFour))))))))) then ((((((epochElisionAdmissible (sThree) (sThree) false) && ((not (epochElisionAdmissible (sTwo) (sThree) false)) && (not (epochElisionAdmissible (sThree) (sThree) true)))) && (((workerInFlightAdmissible 1) && ((workerInFlightAdmissible (sTwo)) && (not (workerInFlightAdmissible (sThree))))) && ((((governorRecommendedScalePermille (sTen) (sTwenty)) =? (skinWeightScale)) && (((governorRecommendedScalePermille (sThirty) (sTwenty)) =? (prim multiply (sEightyFive) (sTen) : Nat)) && ((governorRecommendedScalePermille (sFifty) (sTwenty)) =? (prim multiply (sSeven) (sHundred) : Nat)))) && ((codebookProductTableSize) =? (Foundation.Ontology.V1.Model::pow2Constructive (sEight)))))) && (aqmWorkloadExtrapolationsDirect)) && (stabilityAndRefinementDirect)) && (runtimeInvariantsDirect)) else false)
+  body: (if ((((wordBitWidth) =? (Foundation.Ontology.V1.Model::pow2Constructive (sSix))) && (((wordCountForEntities 0) =? 0) && (((wordCountForEntities 1) =? 1) && (((wordCountForEntities (sSixtyFive)) =? (sTwo)) && ((wordPackedFilterValid (sSixtyFive) (sTwo)) && (not (wordPackedFilterValid (sSixtyFive) 1))))))) && ((((sahBinCount) =? (sEight)) && (((flatBvhLeafMaxPrims) =? (sFour)) && ((flatBvhStackCapacity) =? (Foundation.Ontology.V1.Model::pow2Constructive (sSix))))) && ((flatBvhChildOrderNearFirst (sTen) (sTwenty)) && ((not (flatBvhChildOrderNearFirst (sTwenty) (sTen))) && ((flatBvhNodeBoundsValid 0 1 (sFour)) && ((not (flatBvhNodeBoundsValid (sTwo) 1 (sFour))) && (not (flatBvhNodeBoundsValid 0 (sFour) (sFour))))))))) then (((((((epochElisionAdmissible (sThree) (sThree) false) && ((not (epochElisionAdmissible (sTwo) (sThree) false)) && (not (epochElisionAdmissible (sThree) (sThree) true)))) && (((workerInFlightAdmissible 1) && ((workerInFlightAdmissible (sTwo)) && (not (workerInFlightAdmissible (sThree))))) && ((((governorRecommendedScalePermille (sTen) (sTwenty)) =? (skinWeightScale)) && (((governorRecommendedScalePermille (sThirty) (sTwenty)) =? (prim multiply (sEightyFive) (sTen) : Nat)) && ((governorRecommendedScalePermille (sFifty) (sTwenty)) =? (prim multiply (sSeven) (sHundred) : Nat)))) && ((codebookProductTableSize) =? (Foundation.Ontology.V1.Model::pow2Constructive (sEight)))))) && (aqmWorkloadExtrapolationsDirect)) && (stabilityAndRefinementDirect)) && (universalUorcRuntimeDirect)) && (runtimeInvariantsDirect)) else false)
 }
 
 definition{
@@ -1580,10 +1601,17 @@ definition{
 }
 
 definition{
+  name: perfTier7UniversalUorcRuntime,
+  parameters: [],
+  result: WorkloadOptimizationSpec,
+  body: (record WorkloadOptimizationSpec {index := (sSeven), stratum := (sFour), zeroPerFrameHeapAllocs := true, epochGuarded := true, name := "PerfTierUniversalUorcExclusiveRuntime", text := "Exclusive post-boot UORC wire, OPFS, URL, Stitch custody, GLB transcoding, rollback checkpoint, and zero-decode CodedMatrix streaming across native Rust and WebAssembly."})
+}
+
+definition{
   name: workloadOptimizations,
   parameters: [],
   result: (List WorkloadOptimizationSpec),
-  body: (cons (perfTier0HoistedStratumConsts) (cons (perfTier1WordPackedSoaEcs) (cons (perfTier2ContiguousSahFlatBvh) (cons (perfTier3EpochSplitAsyncGpu) (cons (perfTier4HardwareInstancedBatches) (cons (perfTier5AqmMonoidBitPlanesKappa) (cons (perfTier6RockSolidStabilityAndBroadphase) (nil WorkloadOptimizationSpec))))))))
+  body: (cons (perfTier0HoistedStratumConsts) (cons (perfTier1WordPackedSoaEcs) (cons (perfTier2ContiguousSahFlatBvh) (cons (perfTier3EpochSplitAsyncGpu) (cons (perfTier4HardwareInstancedBatches) (cons (perfTier5AqmMonoidBitPlanesKappa) (cons (perfTier6RockSolidStabilityAndBroadphase) (cons (perfTier7UniversalUorcRuntime) (nil WorkloadOptimizationSpec)))))))))
 }
 
 definition{
@@ -1599,7 +1627,7 @@ definition{
 theorem{
   name: arbitraryWorkloadOptimizationsVerified,
   parameters: [],
-  statement: ((if ((workloadPerformanceDirect) && (workloadOptimizationsValid 0 (workloadOptimizations))) then (((project (perfTier0HoistedStratumConsts) index) =? 0) && (((project (perfTier1WordPackedSoaEcs) index) =? 1) && (((project (perfTier2ContiguousSahFlatBvh) index) =? (sTwo)) && (((project (perfTier3EpochSplitAsyncGpu) index) =? (sThree)) && (((project (perfTier4HardwareInstancedBatches) index) =? (sFour)) && (((project (perfTier5AqmMonoidBitPlanesKappa) index) =? (sFive)) && ((project (perfTier6RockSolidStabilityAndBroadphase) index) =? (sSix)))))))) else false) = true),
+  statement: ((if ((workloadPerformanceDirect) && (workloadOptimizationsValid 0 (workloadOptimizations))) then (((project (perfTier0HoistedStratumConsts) index) =? 0) && (((project (perfTier1WordPackedSoaEcs) index) =? 1) && (((project (perfTier2ContiguousSahFlatBvh) index) =? (sTwo)) && (((project (perfTier3EpochSplitAsyncGpu) index) =? (sThree)) && (((project (perfTier4HardwareInstancedBatches) index) =? (sFour)) && (((project (perfTier5AqmMonoidBitPlanesKappa) index) =? (sFive)) && (((project (perfTier6RockSolidStabilityAndBroadphase) index) =? (sSix)) && ((project (perfTier7UniversalUorcRuntime) index) =? (sSeven))))))))) else false) = true),
   proof: decide{},
   axioms: []
 }
