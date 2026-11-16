@@ -78,6 +78,7 @@ pub mod prism_kernel;
 pub mod audio_ring;
 pub mod coded;
 pub mod linear;
+pub mod neural;
 pub mod raster;
 pub mod tropical;
 
@@ -265,13 +266,18 @@ pub fn verified_engine_tensor_kernels() -> Result<Vec<VerifiedTensorKernel>, Ten
     specs.iter().map(verify_tensor_kernel_spec).collect()
 }
 
-/// Returns all nine unified Prism-certified semiring tensor kernels (`kernel0`..`kernel8`).
+/// Returns all twelve unified Prism-certified semiring tensor kernels (`kernel0`..`kernel11`).
 pub fn verified_unified_tensor_kernels() -> Result<Vec<VerifiedTensorKernel>, TensorComputeError> {
     let mut kernels = verified_engine_tensor_kernels()?;
     let extra = [
         prism_kernel::kernel7TropicalMinPlusNav()
             .expect("verified Prism kernel7TropicalMinPlusNav"),
         prism_kernel::kernel8CodedStreamGemm().expect("verified Prism kernel8CodedStreamGemm"),
+        prism_kernel::kernel9TropicalUiLayout().expect("verified Prism kernel9TropicalUiLayout"),
+        prism_kernel::kernel10NeuromorphicSalienceSsm()
+            .expect("verified Prism kernel10NeuromorphicSalienceSsm"),
+        prism_kernel::kernel11CodedSlmReasoning()
+            .expect("verified Prism kernel11CodedSlmReasoning"),
     ];
     for spec in &extra {
         kernels.push(verify_tensor_kernel_spec(spec)?);
@@ -322,8 +328,11 @@ pub use linear::{
     batch_transform_positions_exact, delassus_effective_mass_matrix,
     propagate_hierarchy_matrices_exact, skin_vertices_linear_blend_exact,
 };
+pub use neural::{
+    infer_coded_slm_intent_logits, step_neuromorphic_lif_ssm_ring, NeuromorphicStepOutput,
+};
 pub use raster::{render_triangles_tile_framebuffer, RasterTriangle, SoftwareTileFramebuffer};
 pub use tropical::{
     tropical_frustum_distance_bounds, tropical_gjk_support_batch,
-    tropical_min_plus_all_pairs_closure,
+    tropical_min_plus_all_pairs_closure, tropical_ui_box_extents,
 };

@@ -125,6 +125,8 @@ definition{name: sEighteen, parameters: [], result: Nat, body: (prim multiply (s
 
 definition{name: sNineteen, parameters: [], result: Nat, body: ((sEighteen) + 1)}
 
+definition{name: sTwenty, parameters: [], result: Nat, body: (prim multiply (sTwo) (sTen) : Nat)}
+
 definition{
   name: sTwentyTwo,
   parameters: [],
@@ -201,6 +203,13 @@ definition{
 }
 
 definition{name: sFortyFive, parameters: [], result: Nat, body: ((sFortyFour) + 1)}
+
+definition{
+  name: sFortyEight,
+  parameters: [],
+  result: Nat,
+  body: (prim multiply (sThree) (sSixteen) : Nat)
+}
 
 definition{name: sFifty, parameters: [], result: Nat, body: (prim multiply (sFive) (sTen) : Nat)}
 
@@ -819,11 +828,123 @@ definition{
   body: (if isFirst then true else (prevFrame <? nextFrame))
 }
 
+definition{name: uiMinTouchTargetCssPx, parameters: [], result: Nat, body: (sFortyEight)}
+
+definition{
+  name: uiTextContrastMinMilli,
+  parameters: [],
+  result: Nat,
+  body: (prim multiply (sFortyFive) (sHundred) : Nat)
+}
+
+definition{
+  name: uiNonTextContrastMinMilli,
+  parameters: [],
+  result: Nat,
+  body: (prim multiply (sThree) (skinWeightScale) : Nat)
+}
+
+definition{
+  name: uiWidgetCompliant,
+  parameters: [
+    widthPx : Nat,
+    heightPx : Nat,
+    contrastMilli : Nat,
+    isText : Bool,
+    interactive : Bool,
+    reachable : Bool
+  ],
+  result: Bool,
+  body: (let minContrast : Nat := (if isText then (uiTextContrastMinMilli) else (uiNonTextContrastMinMilli)); (let targetOk : Bool := (if interactive then ((((uiMinTouchTargetCssPx) <=? widthPx) && ((uiMinTouchTargetCssPx) <=? heightPx)) && reachable) else true); ((minContrast <=? contrastMilli) && targetOk)))
+}
+
+definition{name: observerSalienceDim, parameters: [], result: Nat, body: (sEight)}
+
+definition{name: lifDecayNumer, parameters: [], result: Nat, body: (sSeven)}
+
+definition{name: lifDecayDenom, parameters: [], result: Nat, body: (sEight)}
+
+definition{
+  name: lifSpikeThresholdMilli,
+  parameters: [],
+  result: Nat,
+  body: (prim multiply (sFive) (sHundred) : Nat)
+}
+
+definition{
+  name: stepLifMembraneMilli,
+  parameters: [prevMembraneMilli : Nat, inputDriveMilli : Nat],
+  result: Nat,
+  body: (let decayed : Nat := (prim quotient (prim multiply prevMembraneMilli (lifDecayNumer) : Nat) (lifDecayDenom) 0 : Nat); (let integrated : Nat := (decayed + inputDriveMilli); (if ((lifSpikeThresholdMilli) <=? integrated) then (prim subtract integrated (lifSpikeThresholdMilli) : Nat) else integrated)))
+}
+
+definition{
+  name: containerOrganAllowed,
+  parameters: [explicitlyDenied : Bool, explicitlyGranted : Bool, alwaysSandboxed : Bool],
+  result: Bool,
+  body: ((not explicitlyDenied) && (alwaysSandboxed || explicitlyGranted))
+}
+
+definition{
+  name: proposalAdmitted,
+  parameters: [
+    scoreMilli : Nat,
+    minThresholdMilli : Nat,
+    invariantsHold : Bool,
+    capabilityGranted : Bool
+  ],
+  result: Bool,
+  body: ((minThresholdMilli <=? scoreMilli) && (invariantsHold && capabilityGranted))
+}
+
+definition{name: stitchFragmentCount, parameters: [], result: Nat, body: (sThree)}
+
+definition{
+  name: stitchXorBit,
+  parameters: [left : Nat, right : Nat],
+  result: Nat,
+  body: (if (left =? right) then 0 else 1)
+}
+
+definition{
+  name: stitchPairRecoverable,
+  parameters: [
+    leftIndex : Nat,
+    rightIndex : Nat,
+    manifestMatches : Bool,
+    leftDigestValid : Bool,
+    rightDigestValid : Bool
+  ],
+  result: Bool,
+  body: ((leftIndex <? (stitchFragmentCount)) && ((rightIndex <? (stitchFragmentCount)) && ((not (leftIndex =? rightIndex)) && (manifestMatches && (leftDigestValid && rightDigestValid)))))
+}
+
+definition{
+  name: peerObservationFresh,
+  parameters: [
+    observedAt : Nat,
+    expires : Nat,
+    now : Nat,
+    prevSeq : Nat,
+    nextSeq : Nat,
+    authenticated : Bool
+  ],
+  result: Bool,
+  body: (authenticated && ((prevSeq <? nextSeq) && ((observedAt <=? now) && (now <? expires))))
+}
+
+definition{
+  name: cyberneticUiAndStitchActive,
+  parameters: [],
+  result: Bool,
+  body: (if ((uiWidgetCompliant (sFortyEight) (sFortyEight) (uiTextContrastMinMilli) true true true) && ((not (uiWidgetCompliant (sFortyFour) (sFortyEight) (uiTextContrastMinMilli) true true true)) && (not (uiWidgetCompliant (sFortyEight) (sFortyEight) (sHundred) true false true)))) then (if ((((observerSalienceDim) =? (sEight)) && ((stepLifMembraneMilli (sFour) (sFive)) <? (lifSpikeThresholdMilli))) && ((containerOrganAllowed false false true) && ((not (containerOrganAllowed true true true)) && (proposalAdmitted (sHundred) (sFifty) true true)))) then (((stitchPairRecoverable 0 (sTwo) true true true) && ((not (stitchPairRecoverable 1 1 true true true)) && (((stitchXorBit 1 (stitchXorBit 1 0)) =? 0) && ((stitchXorBit (stitchXorBit 1 0) 0) =? 1)))) && ((peerObservationFresh (sTen) (sTwenty) (sFifteen) 0 1 true) && (not (peerObservationFresh (sTen) (sFifteen) (sFifteen) 0 1 true)))) else false) else false)
+}
+
 definition{
   name: commercialProgressionActive,
   parameters: [],
   result: Bool,
-  body: (if ((((jointLockedDofs 0) =? (sFive)) && (((jointLockedDofs 1) =? (sThree)) && (((jointLockedDofs (sTwo)) =? (sFive)) && ((jointLockedDofs (sThree)) =? 1)))) && (0 <? (xpbdConstraintImpulseMilli (sHundred) (sTen) (xpbdDefaultCompliancePermille)))) then (if ((((vehicleWheelCount) =? (sFour)) && (0 <? (raycastSuspensionForceMilli (sHundred) (sFifty) (sTen) (sTen)))) && (((sweptCapsuleMaxStepMilli) <? (skinWeightScale)) && ((acousticOccludedGainPermille) <? (skinWeightScale)))) then (((rollbackMaxWindowFrames) =? (Foundation.Ontology.V1.Model::pow2Constructive (sSix))) && ((rollbackFrameWithinWindow (sForty) (sTen)) && ((not (rollbackFrameWithinWindow (sHundred) 0)) && ((inputJournalSequenceValid 0 0 true) && (inputJournalSequenceValid (sFour) (sFive) false))))) else false) else false)
+  body: (if ((((jointLockedDofs 0) =? (sFive)) && (((jointLockedDofs 1) =? (sThree)) && (((jointLockedDofs (sTwo)) =? (sFive)) && ((jointLockedDofs (sThree)) =? 1)))) && (0 <? (xpbdConstraintImpulseMilli (sHundred) (sTen) (xpbdDefaultCompliancePermille)))) then (if ((((vehicleWheelCount) =? (sFour)) && (0 <? (raycastSuspensionForceMilli (sHundred) (sFifty) (sTen) (sTen)))) && (((sweptCapsuleMaxStepMilli) <? (skinWeightScale)) && ((acousticOccludedGainPermille) <? (skinWeightScale)))) then ((((rollbackMaxWindowFrames) =? (Foundation.Ontology.V1.Model::pow2Constructive (sSix))) && ((rollbackFrameWithinWindow (sForty) (sTen)) && ((not (rollbackFrameWithinWindow (sHundred) 0)) && ((inputJournalSequenceValid 0 0 true) && (inputJournalSequenceValid (sFour) (sFive) false))))) && (cyberneticUiAndStitchActive)) else false) else false)
 }
 
 definition{
@@ -981,10 +1102,31 @@ definition{
 }
 
 definition{
+  name: subsystemFormalUiCompliance,
+  parameters: [],
+  result: SubsystemSpec,
+  body: (record SubsystemSpec {index := (sEighteen), stratum := (sSix), name := "FormalUiAndWcagCompliance", text := "Tropical and exact linear 2D and 3D UI layout solver, diegetic BVH hit-testing, focus reachability closure, and WCAG 2.2 and 48px target compliance oracle."})
+}
+
+definition{
+  name: subsystemNeuromorphicCybernetics,
+  parameters: [],
+  result: SubsystemSpec,
+  body: (record SubsystemSpec {index := (sNineteen), stratum := 1, name := "NeuromorphicObserverAndCodedSlm", text := "Second-order cybernetic mutual-attention LIF and SSM state loop, zero-decode coded_gemm intent reasoning head, and capability-gated W3C container organs."})
+}
+
+definition{
+  name: subsystemPrismIdStitchMesh,
+  parameters: [],
+  result: SubsystemSpec,
+  body: (record SubsystemSpec {index := (sTwenty), stratum := (sFour), name := "PrismIdAndStitchMultiplayerMesh", text := "Zero-signin WebCrypto Prism ID journal signing, 2-of-3 SHA-256 XOR Stitch erasure fragment recovery, and peer-to-peer WebRTC and BroadcastChannel rollback sync."})
+}
+
+definition{
   name: subsystems,
   parameters: [],
   result: (List SubsystemSpec),
-  body: (cons (subsystemMath) (cons (subsystemEcsBvh) (cons (subsystemTensorUorc) (cons (subsystemGeometry) (cons (subsystemRenderWgsl) (cons (subsystemGltfExport) (cons (subsystemPhysicsSpline) (cons (subsystemModalAudio) (cons (subsystemJobSnapshots) (cons (subsystemSkeletalAnimation) (cons (subsystemPbrRenderGraph) (cons (subsystemConvexCollision) (cons (subsystemNavMeshPathfinding) (cons (subsystemWasmWorkerBridge) (cons (subsystemCliAssetPacker) (cons (subsystemGlbSceneImporter) (cons (subsystemArticulatedJointsAndVehicles) (cons (subsystemDeterministicRollback) (nil SubsystemSpec)))))))))))))))))))
+  body: (cons (subsystemMath) (cons (subsystemEcsBvh) (cons (subsystemTensorUorc) (cons (subsystemGeometry) (cons (subsystemRenderWgsl) (cons (subsystemGltfExport) (cons (subsystemPhysicsSpline) (cons (subsystemModalAudio) (cons (subsystemJobSnapshots) (cons (subsystemSkeletalAnimation) (cons (subsystemPbrRenderGraph) (cons (subsystemConvexCollision) (cons (subsystemNavMeshPathfinding) (cons (subsystemWasmWorkerBridge) (cons (subsystemCliAssetPacker) (cons (subsystemGlbSceneImporter) (cons (subsystemArticulatedJointsAndVehicles) (cons (subsystemDeterministicRollback) (cons (subsystemFormalUiCompliance) (cons (subsystemNeuromorphicCybernetics) (cons (subsystemPrismIdStitchMesh) (nil SubsystemSpec))))))))))))))))))))))
 }
 
 definition{
@@ -1008,7 +1150,7 @@ theorem{
 theorem{
   name: engineSubsystemsVerified,
   parameters: [],
-  statement: ((if ((runtimeInvariantsDirect) && (subsystemsNumbered 0 (subsystems))) then (if (((project (subsystemMath) index) =? 0) && (((project (subsystemEcsBvh) index) =? 1) && (((project (subsystemTensorUorc) index) =? (sTwo)) && ((project (subsystemGeometry) index) =? (sThree))))) then (if (((project (subsystemRenderWgsl) index) =? (sFour)) && (((project (subsystemGltfExport) index) =? (sFive)) && (((project (subsystemPhysicsSpline) index) =? (sSix)) && ((project (subsystemModalAudio) index) =? (sSeven))))) then (((project (subsystemJobSnapshots) index) =? (sEight)) && (((project (subsystemSkeletalAnimation) index) =? (sNine)) && (((project (subsystemPbrRenderGraph) index) =? (sTen)) && (((project (subsystemConvexCollision) index) =? (sEleven)) && (((project (subsystemNavMeshPathfinding) index) =? (sTwelve)) && (((project (subsystemWasmWorkerBridge) index) =? (sThirteen)) && (((project (subsystemCliAssetPacker) index) =? (sFourteen)) && (((project (subsystemGlbSceneImporter) index) =? (sFifteen)) && (((project (subsystemArticulatedJointsAndVehicles) index) =? (sSixteen)) && (((project (subsystemDeterministicRollback) index) =? (sSeventeen)) && ((glbAlignedByteLength (sFive)) =? (sEight)))))))))))) else false) else false) else false) = true),
+  statement: ((if ((runtimeInvariantsDirect) && (subsystemsNumbered 0 (subsystems))) then (if (((project (subsystemMath) index) =? 0) && (((project (subsystemEcsBvh) index) =? 1) && (((project (subsystemTensorUorc) index) =? (sTwo)) && ((project (subsystemGeometry) index) =? (sThree))))) then (if (((project (subsystemRenderWgsl) index) =? (sFour)) && (((project (subsystemGltfExport) index) =? (sFive)) && (((project (subsystemPhysicsSpline) index) =? (sSix)) && ((project (subsystemModalAudio) index) =? (sSeven))))) then (((project (subsystemJobSnapshots) index) =? (sEight)) && (((project (subsystemSkeletalAnimation) index) =? (sNine)) && (((project (subsystemPbrRenderGraph) index) =? (sTen)) && (((project (subsystemConvexCollision) index) =? (sEleven)) && (((project (subsystemNavMeshPathfinding) index) =? (sTwelve)) && (((project (subsystemWasmWorkerBridge) index) =? (sThirteen)) && (((project (subsystemCliAssetPacker) index) =? (sFourteen)) && (((project (subsystemGlbSceneImporter) index) =? (sFifteen)) && (((project (subsystemArticulatedJointsAndVehicles) index) =? (sSixteen)) && (((project (subsystemDeterministicRollback) index) =? (sSeventeen)) && (((project (subsystemFormalUiCompliance) index) =? (sEighteen)) && (((project (subsystemNeuromorphicCybernetics) index) =? (sNineteen)) && (((project (subsystemPrismIdStitchMesh) index) =? (sTwenty)) && ((glbAlignedByteLength (sFive)) =? (sEight))))))))))))))) else false) else false) else false) = true),
   proof: decide{},
   axioms: []
 }

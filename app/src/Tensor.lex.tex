@@ -107,12 +107,16 @@ definition{
   body: (Foundation.Ontology.V1.Model::pow2Constructive (natThree))
 }
 
+definition{name: natNine, parameters: [], result: Nat, body: ((natEight) + 1)}
+
 definition{
   name: natTen,
   parameters: [],
   result: Nat,
   body: (prim multiply (natTwo) (natFive) : Nat)
 }
+
+definition{name: natEleven, parameters: [], result: Nat, body: ((natTen) + 1)}
 
 definition{
   name: natSixteen,
@@ -269,6 +273,27 @@ definition{
 }
 
 definition{
+  name: kernel9TropicalUiLayout,
+  parameters: [],
+  result: TensorKernelSpec,
+  body: (record TensorKernelSpec {index := (natNine), semiring := (ctor TensorSemiring.tropicalMinPlus), lhsCols := (natEight), accumBits := (natSixtyFour), minAccumBits := (natThirtyTwo), tileAligned := true, autonomousKinematic := false, name := "TropicalUiConstraintLayout", text := "Tropical min-plus and exact linear box-tree constraint contraction solving responsive 2D panels, focus reachability, and diegetic 3D anchors."})
+}
+
+definition{
+  name: kernel10NeuromorphicSalienceSsm,
+  parameters: [],
+  result: TensorKernelSpec,
+  body: (record TensorKernelSpec {index := (natTen), semiring := (ctor TensorSemiring.modularAudioRing), lhsCols := (natEight), accumBits := (natSixtyFour), minAccumBits := (natThirtyTwo), tileAligned := true, autonomousKinematic := true, name := "NeuromorphicSalienceStateSpace", text := "Exact Q15 leaky-integrate-and-fire state-space recurrence coupling player gaze, locomotion cadence, and world mutual-attention salience."})
+}
+
+definition{
+  name: kernel11CodedSlmReasoning,
+  parameters: [],
+  result: TensorKernelSpec,
+  body: (record TensorKernelSpec {index := (natEleven), semiring := (ctor TensorSemiring.codedZeroDecode), lhsCols := (natSixteen), accumBits := (natOneTwentyEight), minAccumBits := (natSixtyFour), tileAligned := true, autonomousKinematic := true, name := "CodedSlmProposalRouter", text := "Zero-decode Packed<Grid<16>, 2> and Runs<Grid<16>, 16> embedded language and intent reasoning contraction routing verified world proposals."})
+}
+
+definition{
   name: tensorKernels,
   parameters: [],
   result: (List TensorKernelSpec),
@@ -279,7 +304,7 @@ definition{
   name: unifiedTensorKernels,
   parameters: [],
   result: (List TensorKernelSpec),
-  body: (cons (kernel0StaticMesh) (cons (kernel1LinearSkinning) (cons (kernel2TropicalBvhCull) (cons (kernel3TileRasterizer) (cons (kernel4ShadowCascade) (cons (kernel5ModalAudioMix) (cons (kernel6KinematicSpline) (cons (kernel7TropicalMinPlusNav) (cons (kernel8CodedStreamGemm) (nil TensorKernelSpec))))))))))
+  body: (cons (kernel0StaticMesh) (cons (kernel1LinearSkinning) (cons (kernel2TropicalBvhCull) (cons (kernel3TileRasterizer) (cons (kernel4ShadowCascade) (cons (kernel5ModalAudioMix) (cons (kernel6KinematicSpline) (cons (kernel7TropicalMinPlusNav) (cons (kernel8CodedStreamGemm) (cons (kernel9TropicalUiLayout) (cons (kernel10NeuromorphicSalienceSsm) (cons (kernel11CodedSlmReasoning) (nil TensorKernelSpec)))))))))))))
 }
 
 definition{
@@ -398,7 +423,7 @@ definition{
   name: unifiedTensorKernelsDirect,
   parameters: [],
   result: Bool,
-  body: (if (sevenTensorKernelsDirect) then (if (((project (kernel7TropicalMinPlusNav) index) =? (natSeven)) && (tensorKernelValid (kernel7TropicalMinPlusNav))) then (if (((project (kernel8CodedStreamGemm) index) =? (natEight)) && (tensorKernelValid (kernel8CodedStreamGemm))) then (codedTiersDirect) else false) else false) else false),
+  body: (if (sevenTensorKernelsDirect) then (if (((project (kernel7TropicalMinPlusNav) index) =? (natSeven)) && (tensorKernelValid (kernel7TropicalMinPlusNav))) then (if (((project (kernel8CodedStreamGemm) index) =? (natEight)) && (tensorKernelValid (kernel8CodedStreamGemm))) then (if (((project (kernel9TropicalUiLayout) index) =? (natNine)) && (tensorKernelValid (kernel9TropicalUiLayout))) then (if (((project (kernel10NeuromorphicSalienceSsm) index) =? (natTen)) && (tensorKernelValid (kernel10NeuromorphicSalienceSsm))) then (if (((project (kernel11CodedSlmReasoning) index) =? (natEleven)) && (tensorKernelValid (kernel11CodedSlmReasoning))) then (codedTiersDirect) else false) else false) else false) else false) else false) else false),
   axioms: []
 }
 
@@ -457,7 +482,7 @@ theorem{
 theorem{
   name: unifiedTensorAndCodedTiersVerified,
   parameters: [],
-  statement: (((((allTensorKernelsValid 0 (unifiedTensorKernels)) && (allCodedTiersValid 0 (codedTiers))) && ((tensorKernelValid (kernel7TropicalMinPlusNav)) && (tensorKernelValid (kernel8CodedStreamGemm)))) && (((codedTierValid (codedTier0GridGeometry)) && (codedTierValid (codedTier1PackedAnimation))) && ((codedTierValid (codedTier2RunsIblProbes)) && ((unifiedTensorKernelsDirect) && (not (codedTierValid (invalidCodedTierSample))))))) = true),
+  statement: (((((allTensorKernelsValid 0 (unifiedTensorKernels)) && (allCodedTiersValid 0 (codedTiers))) && (((tensorKernelValid (kernel7TropicalMinPlusNav)) && (tensorKernelValid (kernel8CodedStreamGemm))) && ((tensorKernelValid (kernel9TropicalUiLayout)) && ((tensorKernelValid (kernel10NeuromorphicSalienceSsm)) && (tensorKernelValid (kernel11CodedSlmReasoning)))))) && (((codedTierValid (codedTier0GridGeometry)) && (codedTierValid (codedTier1PackedAnimation))) && ((codedTierValid (codedTier2RunsIblProbes)) && ((unifiedTensorKernelsDirect) && (not (codedTierValid (invalidCodedTierSample))))))) = true),
   proof: decide{},
   axioms: []
 }

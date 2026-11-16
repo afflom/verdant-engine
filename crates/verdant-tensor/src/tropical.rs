@@ -12,7 +12,7 @@ use uor_matmul::{as_alphabet_tropical, dot_tropical_ref};
 #[cfg(not(target_arch = "wasm32"))]
 use uor_matmul::{as_alphabet_tropical, MatView, MatViewMut, Triple};
 
-use crate::{TensorComputeError, DIM_SPATIAL};
+use crate::{TensorComputeError, DIM_PLANAR, DIM_SPATIAL};
 
 fn contract_tropical_max_plus(
     a_trop: &[Trop<i32>],
@@ -238,4 +238,56 @@ pub fn tropical_min_plus_all_pairs_closure(
         .into_iter()
         .map(|entry| entry.get().map(|neg_cost| (-neg_cost).max(0) as u64))
         .collect())
+}
+
+/// Computes exact intrinsic `[width_px, height_px]` bounds of a responsive 2D/3D UI container
+/// from `child_extents_px` (`N x 2`) and `gap_px` by contracting cross-axis maxima in the
+/// tropical `(max, +)` semiring (`contract_tropical_max_plus`) and main-axis sums via exact
+/// `uor_matmul::dot_ref` accumulation (`kernel9TropicalUiLayout`).
+pub fn tropical_ui_box_extents(
+    child_extents_px: &[[i32; DIM_PLANAR]],
+    gap_px: i32,
+    horizontal: bool,
+) -> Result<[i64; DIM_PLANAR], TensorComputeError> {
+    if child_extents_px.is_empty() {
+        return Err(TensorComputeError::ZeroOrMismatchedExtents {
+            detail: "UI container tropical box contraction requires at least one child".to_string(),
+        });
+    }
+    if child_extents_px.iter().any(|ext| ext[0] < 0 || ext[1] < 0) || gap_px < 0 {
+        return Err(TensorComputeError::ZeroOrMismatchedExtents {
+            detail: "UI child extents and gap must be non-negative".to_string(),
+        });
+    }
+
+    let n = child_extents_px.len();
+    let main_axis = usize::from(!horizontal);
+    let cross_axis = usize::from(horizontal);
+
+    let mut main_vec = Vec::with_capacity(n);
+    let ones = vec![1_i32; n];
+    let mut cross_row = Vec::with_capacity(n);
+    let zero_col = vec![Trop::finite(0_i32); n];
+
+    for child in child_extents_px {
+        main_vec.push(child[main_axis]);
+        cross_row.push(Trop::finite(child[cross_axis]));
+    }
+
+    let main_sum_wide = uor_matmul::dot_ref(
+        uor_matmul::as_alphabet_full(&main_vec),
+        uor_matmul::as_alphabet_full(&ones),
+    );
+    let total_gaps = i64::from(gap_px).saturating_mul((n - 1) as i64);
+    let main_total =
+        (main_sum_wide.max(0).min(i128::from(i64::MAX)) as i64).saturating_add(total_gaps);
+
+    let cross_max_vec = contract_tropical_max_plus(&cross_row, &zero_col, 1, n, 1)?;
+    let cross_max = cross_max_vec[0].get().unwrap_or(0).max(0);
+
+    if horizontal {
+        Ok([main_total, cross_max])
+    } else {
+        Ok([cross_max, main_total])
+    }
 }

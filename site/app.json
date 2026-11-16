@@ -17,8 +17,8 @@
     "refusal": "invalid request"
   },
   "promise": {
-    "headline": "Runs deterministic 60fps 3D worlds in every browser via portable tensor kernels and progressive UORC streaming.",
-    "detail": "Every tensor contraction accumulates without intermediate rounding via uor-matmul and every multi-LOD UORC stream advances monotonically up to SHA-256 chain-verified lossless source fidelity."
+    "headline": "Self-verifying 3D worlds, formal UI, neuromorphic mutual attention, and Stitch multiplayer in every browser.",
+    "detail": "Every pass reduces to exact uor-matmul semiring contractions, zero-decode UORC progressive streams, WCAG-proved UI layout, local coded_gemm reasoning, and 2-of-3 Stitch parity custody."
   },
   "claim": "VE-10: the engine verifier answers conformant only for monotonic progressive UORC streaming LODs and overflow-safe uor-matmul tensor kernels, refuses zero-extent or narrow-accumulator contractions, and answers invalid request for unknown queries.",
   "proposition": {
@@ -42,7 +42,7 @@
     {
       "name": "unifiedTensorAndCodedTiersVerified",
       "statement": "allTensorKernelsValid 0 unifiedTensorKernels = true /\\ allCodedTiersValid 0 codedTiers = true",
-      "how": "Proved by constructive kernel decision over all nine unified semiring kernels (Linear, Tropical max/+, Tropical min/+, Audio Ring, CodedZeroDecode) and all three uor_matmul::codec zero-decode streaming tiers (Grid, Packed, Runs)",
+      "how": "Proved by constructive kernel decision over all twelve unified semiring kernels (Linear, Tropical max/+, Tropical min/+, Audio/Neuromorphic Ring, CodedZeroDecode SLM) and all three uor_matmul::codec zero-decode tiers (Grid, Packed, Runs)",
       "where": "app/src/Tensor.lex.tex"
     },
     {

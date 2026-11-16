@@ -20,6 +20,9 @@ Verdant Engine is a universal commercial 3D browser, WebAssembly, and native gam
 - KinematicSplineController: Arc-length parameterized spline trajectory evaluation, GJK convex contact impulse solve, and A-star navmesh steering.
 - TropicalMinPlusNavClosure: Tropical min-plus semiring matrix squaring for exact all-pairs and corridor shortest-path closure over walkable navmeshes.
 - CodedStreamZeroDecodeGemm: Zero-decode uor_matmul::codec contraction over Grid, Packed, and Runs UORC frames without intermediate float expansion.
+- TropicalUiConstraintLayout: Tropical min-plus and exact linear box-tree constraint contraction solving responsive 2D panels, focus reachability, and diegetic 3D anchors.
+- NeuromorphicSalienceStateSpace: Exact Q15 leaky-integrate-and-fire state-space recurrence coupling player gaze, locomotion cadence, and world mutual-attention salience.
+- CodedSlmProposalRouter: Zero-decode Packed<Grid<16>, 2> and Runs<Grid<16>, 16> embedded language and intent reasoning contraction routing verified world proposals.
 - GridQuantizedGeometry: Fixed-width 16-entry Grid lookup CodedMatrix contracting quantized UORC mesh positions and normals directly into world space.
 - PackedNibbleAnimationTracks: Sub-byte 4-bit Packed<Grid<16>, 2> CodedMatrix streaming two animation curve samples per byte into exact pose accumulators.
 - SparseRunsIblProbes: Variable-length Runs<Grid<16>, 16> CodedMatrix contracting sparse environment irradiance and shadow cascade residuals.
@@ -35,6 +38,8 @@ Verdant Engine is a universal commercial 3D browser, WebAssembly, and native gam
 - Engine systems engineer: Maintains exact uor-matmul tensor kernels, progressive UORC streaming frames, frame-budget job graphs, and zero-constant parametric simulation.
 - Browser player: Explores responsive 60fps 3D scenes in the browser across desktop and mobile viewports with keyboard, pointer, and spatial audio controls.
 - Security auditor: Verifies shader safety, UORC stream and snapshot integrity, strict Content-Security-Policy isolation, and Core-Wasm archive provenance.
+- UI and compliance architect: Models responsive 2D panels, diegetic 3D world-space interfaces, focus graphs, and WCAG 2.2 and ISO 9241 compliance invariants directly in Prism.
+- Multiplayer world citizen: Inhabits persistent peer-to-peer 3D universes authenticated by zero-signin WebCrypto Prism IDs and healed by Stitch erasure fragments.
 
 ### Architectural Concerns
 
@@ -44,6 +49,9 @@ Verdant Engine is a universal commercial 3D browser, WebAssembly, and native gam
 - Commercial developer onboarding: Developers and agents can adopt the engine through runnable examples, a browser starter template, Diataxis documentation, and llms.txt.
 - Accessible and clutter-free studio viewport: The browser Engine Studio keeps the 3D viewport front-and-center while meeting WCAG 2.2 AA contrast and coarse touch-target standards.
 - Sandbox and snapshot integrity: World snapshots and UORC streams carry SHA-256 digests, shaders validate before compilation, and the Wasm verifier runs in an isolated worker.
+- Formal UI layout and accessibility compliance: Screen-space and diegetic 3D interfaces solve via tropical and linear semiring constraints while enforcing coarse touch-target and WCAG contrast bounds.
+- Second-order cybernetic mutual attention: The world observes player gaze, cadence, and focus via exact integer state-space recurrence and embedded coded_gemm reasoning without cloud APIs.
+- Sovereign identity and Stitch peer persistence: Input journals carry non-extractable Prism ID signatures and world snapshots recover from any two of three SHA-256 Stitch parity fragments.
 
 ### System Components
 
@@ -55,6 +63,8 @@ Verdant Engine is a universal commercial 3D browser, WebAssembly, and native gam
 - Browser WebAudio Host: The browser audio graph rendering spatialized modal bar harmonics and room reverberation.
 - GitHub Pages: Publishes the verified Engine Studio, documentation suite, and signed holo archive from CI.
 - Agent Client: An automated coding agent reading llms.txt and Markdown documentation twins to build 3D applications on Verdant Engine.
+- Verdant Tensor Semiring Substrate: crates/verdant-tensor: pure semiring tensor-logic substrate executing linear, tropical, audio and neuromorphic ring, and zero-decode coded_gemm SLM kernels.
+- Prism ID and Stitch Multiplayer Fabric: Client-side WebCrypto Prism ID session signer, 2-of-3 XOR erasure fragment verifier, and BroadcastChannel and WebRTC rollback mesh.
 
 ## Design Views
 
@@ -62,6 +72,8 @@ Verdant Engine is a universal commercial 3D browser, WebAssembly, and native gam
 - Components of Verdant Engine (Architecture::viewpointDeveloperOnboarding).
 - Executing a verified browser frame (Architecture::viewpointSystemsPerformance).
 - States of the engine verifier guest (Architecture::viewpointAuditorIntegrity).
+- Mutual observation between player and neuromorphic world (Architecture::viewpointPlayerCybernetics).
+- Synchronizing signed rollback journals and Stitch parity fragments (Architecture::viewpointCitizenStitchMesh).
 
 ## Features and Stakeholder Journeys
 
@@ -72,7 +84,10 @@ Verdant Engine is a universal commercial 3D browser, WebAssembly, and native gam
 - Symplectic Euler rigid bodies, player capsule controllers, and arc-length kinematic spline movers step deterministically over terrain heightfields. (verdant_core::physics::PhysicsWorld, VE-06)
 - Spatial audio listeners render stereo modal bar harmonics and environmental soundscapes with inverse-distance attenuation and Sabine RT60 reverberation. (verdant_core::audio::AudioScene, VE-07)
 - Systems engineers schedule acyclic worker job graphs within 60fps frame budgets and capture bit-exact IEEE-754 world snapshots with SHA-256 trailers. (verdant_core::runtime::WorldSnapshot, VE-08, VE-09)
-- Developers, players, and coding agents explore the interactive 3D Engine Studio, browser starter template, Diataxis documentation, and llms.txt. (Engine::dispatch, VE-10)
+- Developers, players, and coding agents author, import, and explore live 3D worlds in the self-hosted Verdant Engine Studio, executable Diataxis docs, and llms.txt. (Engine::dispatch, VE-10)
+- UI and compliance architects solve responsive 2D panels and diegetic 3D interfaces via tropical and linear semiring constraints with proved 48px touch targets and WCAG 2.2 AA contrast. (Subsystems::uiWidgetCompliant)
+- Browser players experience second-order cybernetic mutual attention and local zero-decode coded_gemm intent reasoning across capability-gated browser APIs. (Subsystems::cyberneticUiAndStitchActive)
+- Multiplayer world citizens inhabit peer-to-peer rollback universes signed by zero-signin WebCrypto Prism IDs and recovered from 2-of-3 SHA-256 Stitch parity fragments. (Subsystems::stitchPairRecoverable)
 
 ## Product Quality Model (ISO/IEC 25010:2023)
 
@@ -101,29 +116,37 @@ Verdant Engine is a universal commercial 3D browser, WebAssembly, and native gam
 - Security::assetStudioAndDocsPages — Studio and documentation pages: The interactive 3D browser Engine Studio, Diataxis documentation pages, Markdown twins, and llms.txt.
 - Security::assetVerifierGuestArchive — Engine verifier holo: The signed Core-Wasm guest archive verified inside the browser worker before dispatch.
 - Security::assetPublishedPagesArtifact — Published Pages bundle: The static Engine Studio and holo bundle deployed by the GitHub Pages workflow.
+- Security::assetStitchMultiplayerFabric — Prism ID and Stitch peer fabric: The non-extractable WebCrypto Prism ID signer, 2-of-3 Stitch parity shard verifier, and rollback sync channels.
 - Security::threatInvalidShaderCompilation — Invalid or unsafe WGSL shader: A malformed or out-of-bounds portable shader source reaches compilation without front-end type and binding validation.
 - Security::threatSnapshotTampering — Corrupted UORC stream or world snapshot: A truncated or modified UORC multi-LOD stream or binary world snapshot alters simulation state or entity transforms silently.
 - Security::threatMalformedGlbExport — Non-conformant glTF 2.0 buffer layout: A degenerate mesh or misaligned buffer produces a binary glTF asset that downstream DCC tools reject or misread.
 - Security::threatVerifierQueryExhaustion — Oversized verifier query: An unbounded byte payload sent to the Core-Wasm verifier exhausts guest memory or worker CPU budget.
 - Security::threatStudioScriptInjection — Inline style or script injection: Unescaped markup or inline styles bypass Content-Security-Policy hashes in the browser Engine Studio.
 - Security::threatHostSubstitution — Substituted static host: An untrusted server serves modified HTML in place of the repository's GitHub Pages deployment.
+- Security::threatForgedPeerInputEnvelope — Forged multiplayer input journal: An unauthenticated peer injects spoofed rollback input commands to desynchronize or hijack world state.
+- Security::threatCorruptedStitchParityShard — Tampered or duplicate Stitch fragment: A hostile relay or peer supplies duplicate fragment indices or corrupted parity bytes during UORC world recovery.
+- Security::threatUngrantedContainerOrganAccess — Ungranted browser organ invocation: Audio, storage, or peer network organs activate without an explicit capability grant or after visitor denial.
 - Security::controlNagaShaderOracle — W3C naga WGSL validator: Every portable WGSL shader module is parsed and type-checked by naga::valid::Validator before acceptance. (cargo test -p repo-conformance engine_ve_05)
 - Security::controlSnapshotSha256Trailer — Authenticated SHA-256 snapshot and UORC chain verifier: Every WorldSnapshot and progressive UORC frame verifies magic bytes, exact framing, and SHA-256 digests before decoding. (cargo test -p repo-conformance engine_ve_09)
 - Security::controlKhronosGltfOracle — Khronos gltf 2.0 binary validator: Exported GLB payloads refuse empty geometry and pass gltf::Glb and gltf::import buffer validation. (cargo test -p repo-conformance engine_ve_04)
 - Security::controlVerifierRequestCap — Bounded 64-byte Core-Wasm request cap: The Core-Wasm guest enforces requestMaximum := 64 and refuses unknown or empty queries deterministically. (prismpm --project app verify acceptance vectors)
 - Security::controlStrictHashedCsp — Hash-locked Content-Security-Policy and worker verification: bootstrap/page.mjs hashes all styles and scripts into CSP with zero inline style mutations, and guest-worker.mjs verifies app.holo off the main thread. (cargo test -p repo-conformance frame_fr_01)
+- Security::controlPrismIdJournalSignature — Prism ID signed journal envelope verifier: Every multiplayer FrameInputCommand batch verifies its Prism ID session envelope and SHA-256 chain before rollback admission. (cargo test -p repo-conformance engine_ve_24)
+- Security::controlStitchFragmentCommitment — Stitch 2-of-3 SHA-256 fragment commitment verifier: Stitch recovery enforces distinct fragment indices under 3, matching manifest roots, and verified payload digests before accepting reconstructed bytes. (cargo test -p repo-conformance engine_ve_24)
+- Security::controlCapabilityGrantLattice — Denial-wins browser capability grant gate: Every non-sandboxed browser container organ checks containerOrganAllowed so visitor denial always overrides prior grants. (cargo test -p repo-conformance engine_ve_22)
 - Security::threatHostSubstitution rationale: A static browser bundle cannot prevent substitution of its own HTTP origin; the holo archive carries verifiable cryptographic provenance and the repository rebuilds deterministically from source.
 
 ## Compliance Obligations
 
 - ISO/IEC/IEEE 42010:2022 — Architecture description: Stakeholders, concerns, components, edges, viewpoints, and views of Verdant Engine resolve cleanly. (Architecture::architectureDescriptionHolds)
-- ISO/PAS 19450:2015 and OMG UML 2.5.1 — Design views: OPM scene-streaming and UML component, sequence, and state-machine views conform to the architecture model. (Design::viewOpmSceneStreaming, Design::viewUmlComponents, Design::viewUmlFrameSequence, Design::viewUmlVerifierStates)
+- ISO/PAS 19450:2015 and OMG UML 2.5.1 — Design views: OPM scene-streaming and cybernetic views plus UML component, sequence, Stitch rollback, and state-machine views conform to the architecture model. (Design::viewOpmSceneStreaming, Design::viewOpmCyberneticLoop, Design::viewUmlComponents, Design::viewUmlFrameSequence, Design::viewUmlStitchRollback, Design::viewUmlVerifierStates)
 - ISO/IEC 25010:2023 — Product quality: Characteristics, subcharacteristics, requirements, and thresholds are numbered and verified by the Lean kernel. (Quality::qualityModelHolds)
-- ISO/IEC 27034-1:2011 and ISO/IEC 27005:2022 — Application security and risk: Every browser and engine runtime threat maps to an evidenced security control or explicit accepted risk. (Security::controlSet)
-- Khronos glTF 2.0 and W3C WGSL — 3D asset and shader standards: Binary glTF 2.0 exports and portable WGSL shaders are validated mechanically by authoritative gltf and naga crates. (VE-04, VE-05)
-- UORC-SHA256-CHAIN-v1 and IEEE 754-2019 — Progressive UORC streaming and exact tensor contractions: All four progressive UORC LOD frames verify SHA-256 chain integrity and all seven uor-matmul tensor kernels satisfy exact accumulator bounds. (Tensor::streamingLodsStrictlyMonotonic, Tensor::allSevenTensorKernelsValid)
-- WCAG 2.2 AA and W3C DTCG 2025.10 — Accessible studio and design tokens: Design tokens and surface contrast ratios satisfy WCAG 2.2 SC 1.4.3 and SC 1.4.11 and pass mobile Lighthouse checks. (Brand::contrasts, Brand::tokens)
-- ISO 9241-11:2018 and ISO 24495-1:2023 — Context of use and plain-language documentation: User groups, goals, tasks, Diataxis documentation, Markdown twins, and llms.txt pass mechanical content checks. (Users::goals)
+- ISO/IEC 27034-1:2011 and ISO/IEC 27005:2022 — Application security and risk: Every browser, container organ, and peer runtime threat maps to an evidenced security control or explicit accepted risk. (Security::controlSet)
+- Khronos glTF 2.0 and W3C WGSL — 3D asset and shader standards: Binary glTF 2.0 imports and exports plus portable WGSL shaders are validated mechanically by authoritative gltf and naga crates. (VE-04, VE-05, VE-19)
+- UORC-SHA256-CHAIN-v1 and IEEE 754-2019 — Progressive UORC streaming and exact tensor contractions: All four progressive UORC LOD frames verify SHA-256 chain integrity and all twelve unified uor-matmul tensor kernels satisfy exact accumulator bounds. (Tensor::streamingLodsStrictlyMonotonic, Tensor::unifiedTensorAndCodedTiersVerified)
+- WCAG 2.2 AA and W3C DTCG 2025.10 — Accessible studio, formal UI solver, and design tokens: Design tokens, 48px touch targets, and surface contrast ratios satisfy WCAG 2.2 SC 1.4.3 and SC 1.4.11 and pass mobile Lighthouse checks. (Brand::contrasts, Subsystems::uiWidgetCompliant)
+- ISO 9241-11:2018 and ISO 24495-1:2023 — Context of use and plain-language documentation: User groups, goals, tasks, executable Diataxis documentation, Markdown twins, and llms.txt pass mechanical content checks. (Users::goals)
+- prism/identity/4 and Stitch Erasure Custody — Sovereign Prism ID journals and 2-of-3 parity recovery: Peer input journals bind to non-extractable WebCrypto Prism IDs and world snapshots recover exactly from any two distinct Stitch fragments. (Subsystems::stitchPairRecoverable)
 
 ## Core-Wasm Verifier Contract
 
@@ -150,6 +173,9 @@ Verdant Engine is a universal commercial 3D browser, WebAssembly, and native gam
 - GlbIngestionAndUorcTranscoder: Full Khronos binary glTF 2.0 scene hierarchy, skeletal skin, keyframe clip, and PBR material importer transcoding directly into progressive multi-LOD UORC streams.
 - XpbdJointsVehiclesAndOcclusion: Delassus and XPBD hinge, ball-socket, slider, and spring-damper rigid joints, swept capsule and four-wheel raycast vehicle controllers, and BVH acoustic occlusion.
 - DeterministicRollbackAndInputJournal: Frame-indexed SHA-256 input journals, 64-frame ring-buffered rollback resimulation, and UORC-compressed delta world snapshots for lockstep and rollback netcode.
+- FormalUiAndWcagCompliance: Tropical and exact linear 2D and 3D UI layout solver, diegetic BVH hit-testing, focus reachability closure, and WCAG 2.2 and 48px target compliance oracle.
+- NeuromorphicObserverAndCodedSlm: Second-order cybernetic mutual-attention LIF and SSM state loop, zero-decode coded_gemm intent reasoning head, and capability-gated W3C container organs.
+- PrismIdAndStitchMultiplayerMesh: Zero-signin WebCrypto Prism ID journal signing, 2-of-3 SHA-256 XOR Stitch erasure fragment recovery, and peer-to-peer WebRTC and BroadcastChannel rollback sync.
 
 ## Developer Relations, Documentation, SDK Artifacts, and Studio Controls
 
@@ -174,7 +200,10 @@ Verdant Engine is a universal commercial 3D browser, WebAssembly, and native gam
 - ve-snap-btn: Encodes an authenticated SHA-256 VDNT binary world snapshot and copies a shareable #vdnt= studio URL.
 - ve-docs-link: Navigates directly from the Engine Studio bar to the Diataxis documentation suite.
 - ve-uorc-btn: Decodes the progressive multi-LOD UORC scene stream natively in WebAssembly via uorc_decompress and runs zero-decode coded_gemm contractions.
-- ve-viz-btn: Opens the interactive four-tab Engine Architecture, Semiring Matrix, Zero-Decode UORC, and Rollback Visual Inspector modal.
+- ve-studio-btn: Opens the live Verdant Studio inspector for GLB authoring, formal UI proof overlays, cybernetic attention, and Stitch peer custody.
+- ve-render-btn: Switches viewport rendering live between 60fps WebGL2 hardware draw calls and the pure WebAssembly 16x16 software tile PBR rasterizer.
+- ve-import-btn: Imports any external binary glTF 2.0 (.glb) model into SceneWorld and transcodes progressive multi-LOD UORC frames in WebAssembly.
+- ve-mesh-btn: Signs deterministic input journals with the visitor Prism ID, shards snapshots into Stitch parity fragments, and syncs rollback peers.
 
 ## Brand Identity and Context of Use
 

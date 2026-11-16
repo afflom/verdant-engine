@@ -200,6 +200,20 @@ definition{
 }
 
 definition{
+  name: viewOpmCyberneticLoop,
+  parameters: [],
+  result: DiagramView,
+  body: (record DiagramView {title := "Mutual observation between player and neuromorphic world", viewpoint := "Architecture::viewpointPlayerCybernetics", diagram := (ctor DiagramKind.opmObjectProcess)})
+}
+
+definition{
+  name: viewUmlStitchRollback,
+  parameters: [],
+  result: DiagramView,
+  body: (record DiagramView {title := "Synchronizing signed rollback journals and Stitch parity fragments", viewpoint := "Architecture::viewpointCitizenStitchMesh", diagram := (ctor DiagramKind.umlSequence)})
+}
+
+definition{
   name: processBuildSceneWorld,
   parameters: [],
   result: EngineProcess,
@@ -246,6 +260,27 @@ definition{
   parameters: [],
   result: EngineProcess,
   body: (record EngineProcess {owner := "Architecture::componentBrowserCanvasHost"})
+}
+
+definition{
+  name: processSolveUiConstraints,
+  parameters: [],
+  result: EngineProcess,
+  body: (record EngineProcess {owner := "Architecture::componentVerdantCoreCrate"})
+}
+
+definition{
+  name: processStepCyberneticObserver,
+  parameters: [],
+  result: EngineProcess,
+  body: (record EngineProcess {owner := "Architecture::componentVerdantCoreCrate"})
+}
+
+definition{
+  name: processRecoverStitchFragments,
+  parameters: [],
+  result: EngineProcess,
+  body: (record EngineProcess {owner := "Architecture::componentStitchMultiplayerFabric"})
 }
 
 definition{
@@ -557,7 +592,7 @@ theorem{
 theorem{
   name: designViewsAndProcessesNamed,
   parameters: [],
-  statement: ((allStringsPopulated (cons (project (viewOpmSceneStreaming) title) (cons (project (viewUmlComponents) title) (cons (project (viewUmlFrameSequence) title) (cons (project (viewUmlVerifierStates) title) (cons (project (processBuildSceneWorld) owner) (cons (project (processStreamUorcLods) owner) (cons (project (processExecuteTensorKernels) owner) (cons (project (processExportGlbAndShaders) owner) (cons (project (processParseQuery) owner) (cons (project (processVerifyTensorAndLod) owner) (cons (project (processRenderViewportFrame) owner) (cons (project (stateSceneProxyLod) owner) (cons (project (stateSceneLosslessLod) owner) (cons (project (stateVerifierIdle) owner) (cons (project (stateVerifierEvaluating) owner) (nil String))))))))))))))))) = true),
+  statement: ((allStringsPopulated (cons (project (viewOpmSceneStreaming) title) (cons (project (viewUmlComponents) title) (cons (project (viewUmlFrameSequence) title) (cons (project (viewUmlVerifierStates) title) (cons (project (viewOpmCyberneticLoop) title) (cons (project (viewUmlStitchRollback) title) (cons (project (processBuildSceneWorld) owner) (cons (project (processStreamUorcLods) owner) (cons (project (processExecuteTensorKernels) owner) (cons (project (processExportGlbAndShaders) owner) (cons (project (processParseQuery) owner) (cons (project (processVerifyTensorAndLod) owner) (cons (project (processRenderViewportFrame) owner) (cons (project (processSolveUiConstraints) owner) (cons (project (processStepCyberneticObserver) owner) (cons (project (processRecoverStitchFragments) owner) (cons (project (stateSceneProxyLod) owner) (cons (project (stateSceneLosslessLod) owner) (cons (project (stateVerifierIdle) owner) (cons (project (stateVerifierEvaluating) owner) (nil String)))))))))))))))))))))) = true),
   proof: decide{},
   axioms: []
 }

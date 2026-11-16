@@ -63,7 +63,28 @@ definition{
   name: featureStudioAndDocs,
   parameters: [],
   result: Foundation.Arch::Feature,
-  body: (record Foundation.Arch::Feature {statement := "Developers, players, and coding agents explore the interactive 3D Engine Studio, browser starter template, Diataxis documentation, and llms.txt.", calls := (cons "Engine::dispatch" (cons "Design::processRenderViewportFrame" (nil String))), acceptance := (cons "Engine::vectors" (nil String))})
+  body: (record Foundation.Arch::Feature {statement := "Developers, players, and coding agents author, import, and explore live 3D worlds in the self-hosted Verdant Engine Studio, executable Diataxis docs, and llms.txt.", calls := (cons "Engine::dispatch" (cons "Design::processRenderViewportFrame" (nil String))), acceptance := (cons "Engine::vectors" (nil String))})
+}
+
+definition{
+  name: featureFormalUiAndCompliance,
+  parameters: [],
+  result: Foundation.Arch::Feature,
+  body: (record Foundation.Arch::Feature {statement := "UI and compliance architects solve responsive 2D panels and diegetic 3D interfaces via tropical and linear semiring constraints with proved 48px touch targets and WCAG 2.2 AA contrast.", calls := (cons "Tensor::kernel9TropicalUiLayout" (cons "Design::processSolveUiConstraints" (nil String))), acceptance := (cons "Subsystems::uiWidgetCompliant" (nil String))})
+}
+
+definition{
+  name: featureNeuromorphicObserverAndReasoning,
+  parameters: [],
+  result: Foundation.Arch::Feature,
+  body: (record Foundation.Arch::Feature {statement := "Browser players experience second-order cybernetic mutual attention and local zero-decode coded_gemm intent reasoning across capability-gated browser APIs.", calls := (cons "Tensor::kernel10NeuromorphicSalienceSsm" (cons "Tensor::kernel11CodedSlmReasoning" (cons "Design::processStepCyberneticObserver" (nil String)))), acceptance := (cons "Subsystems::cyberneticUiAndStitchActive" (nil String))})
+}
+
+definition{
+  name: featurePrismIdAndStitchUniverses,
+  parameters: [],
+  result: Foundation.Arch::Feature,
+  body: (record Foundation.Arch::Feature {statement := "Multiplayer world citizens inhabit peer-to-peer rollback universes signed by zero-signin WebCrypto Prism IDs and recovered from 2-of-3 SHA-256 Stitch parity fragments.", calls := (cons "Design::processRecoverStitchFragments" (nil String)), acceptance := (cons "Subsystems::stitchPairRecoverable" (nil String))})
 }
 
 definition{
@@ -91,14 +112,28 @@ definition{
   name: journeyBrowserPlayer,
   parameters: [],
   result: Foundation.Arch::Journey,
-  body: (record Foundation.Arch::Journey {actor := "Architecture::stakeholderBrowserPlayer", steps := (cons "Features::featureProgressiveUorcStreaming" (cons "Features::featureSpatialAudio" (cons "Features::featureStudioAndDocs" (nil String))))})
+  body: (record Foundation.Arch::Journey {actor := "Architecture::stakeholderBrowserPlayer", steps := (cons "Features::featureProgressiveUorcStreaming" (cons "Features::featureSpatialAudio" (cons "Features::featureNeuromorphicObserverAndReasoning" (nil String))))})
 }
 
 definition{
   name: journeySecurityAuditor,
   parameters: [],
   result: Foundation.Arch::Journey,
-  body: (record Foundation.Arch::Journey {actor := "Architecture::stakeholderSecurityAuditor", steps := (cons "Features::featureGltfAndWgsl" (cons "Features::featureSnapshotsAndJobGraph" (cons "Features::featureStudioAndDocs" (nil String))))})
+  body: (record Foundation.Arch::Journey {actor := "Architecture::stakeholderSecurityAuditor", steps := (cons "Features::featureGltfAndWgsl" (cons "Features::featureStudioAndDocs" (cons "Features::featureSnapshotsAndJobGraph" (nil String))))})
+}
+
+definition{
+  name: journeyUiComplianceArchitect,
+  parameters: [],
+  result: Foundation.Arch::Journey,
+  body: (record Foundation.Arch::Journey {actor := "Architecture::stakeholderUiComplianceArchitect", steps := (cons "Features::featureEcsAndBvh" (cons "Features::featureStudioAndDocs" (cons "Features::featureFormalUiAndCompliance" (nil String))))})
+}
+
+definition{
+  name: journeyMultiplayerCitizen,
+  parameters: [],
+  result: Foundation.Arch::Journey,
+  body: (record Foundation.Arch::Journey {actor := "Architecture::stakeholderMultiplayerCitizen", steps := (cons "Features::featureProgressiveUorcStreaming" (cons "Features::featureNeuromorphicObserverAndReasoning" (cons "Features::featurePrismIdAndStitchUniverses" (nil String))))})
 }
 
 definition{
@@ -118,7 +153,7 @@ definition{
 theorem{
   name: featuresAndJourneysRealized,
   parameters: [],
-  statement: ((((hasCall (featureProgressiveUorcStreaming)) && ((hasCall (featurePortableTensorKernels)) && ((hasCall (featureEcsAndBvh)) && ((hasCall (featureGltfAndWgsl)) && ((hasCall (featurePhysicsAndSplines)) && ((hasCall (featureSpatialAudio)) && ((hasCall (featureSnapshotsAndJobGraph)) && (hasCall (featureStudioAndDocs))))))))) && (((hasStep (journeyGameDeveloper)) && (hasStep (journeyTechnicalArtist))) && (((hasStep (journeySystemsEngineer)) && (hasStep (journeyBrowserPlayer))) && (hasStep (journeySecurityAuditor))))) = true),
+  statement: ((((hasCall (featureProgressiveUorcStreaming)) && ((hasCall (featurePortableTensorKernels)) && ((hasCall (featureEcsAndBvh)) && ((hasCall (featureGltfAndWgsl)) && ((hasCall (featurePhysicsAndSplines)) && ((hasCall (featureSpatialAudio)) && ((hasCall (featureSnapshotsAndJobGraph)) && ((hasCall (featureStudioAndDocs)) && ((hasCall (featureFormalUiAndCompliance)) && ((hasCall (featureNeuromorphicObserverAndReasoning)) && (hasCall (featurePrismIdAndStitchUniverses)))))))))))) && (((hasStep (journeyGameDeveloper)) && (hasStep (journeyTechnicalArtist))) && (((hasStep (journeySystemsEngineer)) && (hasStep (journeyBrowserPlayer))) && ((hasStep (journeySecurityAuditor)) && ((hasStep (journeyUiComplianceArchitect)) && (hasStep (journeyMultiplayerCitizen))))))) = true),
   proof: decide{}
 }
 \end{semanticmodule}
