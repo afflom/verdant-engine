@@ -111,6 +111,8 @@ let currentLod = null;
 let pendingCommands = 0;
 let emaFrameMicros = 8000;
 let activeInstancedCount = 0;
+const slmKappaCache = new Map();
+let slmKappaHits = 0;
 
 function simHost() {
   return uorcSceneActive && uorcWasm ? uorcWasm : wasm;
@@ -768,6 +770,13 @@ self.onmessage = async ({ data: msg }) => {
     }
 
     if (msg.kind === "route-prompt") {
+      const promptKey = String(msg.prompt || "").trim().toLowerCase();
+      const cached = slmKappaCache.get(promptKey);
+      if (cached) {
+        slmKappaHits++;
+        self.postMessage({ ...cached, id: msg.id, elidedHit: true, slmKappaHits });
+        return;
+      }
       uorcWasm ??= await getUorcWasm();
       const raw = new TextEncoder().encode(String(msg.prompt || ""));
       stageIoBytes(uorcWasm, raw);
@@ -778,14 +787,41 @@ self.onmessage = async ({ data: msg }) => {
       }
       const decoded = new TextDecoder().decode(readAuxBytes(uorcWasm));
       const [slug, scoreStr, logitStr, ...rest] = decoded.split("|");
-      self.postMessage({
+      const reply = {
         kind: "prompt-routed",
-        id: msg.id,
         ok: true,
         slug,
         scoreMilli: Number(scoreStr) || 0,
         rawLogit: Number(logitStr) || 0,
         summary: rest.join("|"),
+      };
+      if (slmKappaCache.size >= 64) slmKappaCache.clear();
+      slmKappaCache.set(promptKey, reply);
+      self.postMessage({ ...reply, id: msg.id, elidedHit: false, slmKappaHits });
+      return;
+    }
+
+    if (msg.kind === "aqm-benchmark") {
+      uorcWasm ??= await getUorcWasm();
+      const t0 = performance.now();
+      const len = uorcWasm.verdant_wasm_aqm_benchmark_aux((msg.entityCount || 16384) >>> 0) >>> 0;
+      const elapsedMs = performance.now() - t0;
+      if (len === 0) {
+        self.postMessage({ kind: "aqm-benchmark", id: msg.id, ok: false });
+        return;
+      }
+      const kvMap = {};
+      for (const part of new TextDecoder().decode(readAuxBytes(uorcWasm)).split("|")) {
+        const eq = part.indexOf("=");
+        if (eq > 0) kvMap[part.slice(0, eq)] = part.slice(eq + 1);
+      }
+      self.postMessage({
+        kind: "aqm-benchmark",
+        id: msg.id,
+        ok: true,
+        elapsedMs,
+        metrics: kvMap,
+        slmKappaHits,
       });
       return;
     }

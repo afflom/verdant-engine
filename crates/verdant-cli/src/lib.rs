@@ -29,7 +29,10 @@ use verdant_core::render::{
     canonical_pbr_material_library, compute_csm_splits, validate_builtin_engine_shaders,
     validate_wgsl_shader, RenderFrameGraph,
 };
-use verdant_core::runtime::WorldSnapshot;
+use verdant_core::runtime::{
+    canonicalize_command_monoid, CanonicalCommandKind, CanonicalCommandOp, KappaTransitionCache,
+    WorldSnapshot,
+};
 use verdant_core::streaming::{
     decode_portable_uorc_stream_up_to_lod, pack_portable_progressive_uorc_stream,
     pack_progressive_uorc_stream, split_self_delimiting_uorc_archives,
@@ -892,8 +895,34 @@ pub fn run_cli(args: &[String]) -> Result<String, CliCommandError> {
             let bvh_us = t_bvh.elapsed().as_micros();
             let avg_visited = total_visited / ray_count.max(1);
 
+            let mut bit_mask = verdant_core::verdant_tensor::WordBitset::with_len(entity_count);
+            let plane_matches =
+                soa.query_capability_planes_into(&[0, 1], &[1 + 1 + 1], &mut bit_mask);
+            let ops = [
+                CanonicalCommandOp {
+                    id: 0,
+                    target_slot: 0,
+                    kind: CanonicalCommandKind::ToggleCameraMode,
+                    depends_on: Vec::new(),
+                },
+                CanonicalCommandOp {
+                    id: 1,
+                    target_slot: 0,
+                    kind: CanonicalCommandKind::ToggleCameraMode,
+                    depends_on: Vec::new(),
+                },
+            ];
+            let fused_ops = canonicalize_command_monoid(&ops)
+                .map(|r| r.fused_count)
+                .unwrap_or(1);
+            let mut kcache: KappaTransitionCache<u64> = KappaTransitionCache::new(1 << (1 + 1 + 1));
+            let k0 = KappaTransitionCache::<u64>::digest_bytes(&seed.to_le_bytes());
+            let _ = kcache.step_or_elide(k0, 1, || (seed + 1, (seed + 1).to_le_bytes().to_vec()));
+            let _ = kcache.step_or_elide(k0, 1, || (seed + 1, (seed + 1).to_le_bytes().to_vec()));
+            let kappa_hits = kcache.elided_step_hits();
+
             Ok(format!(
-                "STRESS BENCHMARK OK: soa_entities={entity_count} word_masks={} dirty_updated={updated_xforms} frustum_visible={visible_count} instanced_compacted={compacted} soa_us={soa_us} hd_tris={} flat_bvh_nodes={} rays={ray_count} ray_hits={hits} avg_visited_nodes={avg_visited} bvh_us={bvh_us}",
+                "STRESS BENCHMARK OK: soa_entities={entity_count} word_masks={} dirty_updated={updated_xforms} frustum_visible={visible_count} instanced_compacted={compacted} bit_plane_matches={plane_matches} monoid_fused_ops={fused_ops} kappa_elided_hits={kappa_hits} soa_us={soa_us} hd_tris={} flat_bvh_nodes={} rays={ray_count} ray_hits={hits} avg_visited_nodes={avg_visited} bvh_us={bvh_us}",
                 soa.visible_mask.words().len(),
                 bvh.total_surface_triangles(),
                 bvh.total_bvh_nodes(),

@@ -3124,3 +3124,280 @@ fn engine_ve_33() {
     assert!(renderer_mjs.contains("blitFramebuffer"));
     assert!(card_mjs.contains("workerFramesInFlight"));
 }
+
+#[test]
+fn engine_ve_34() {
+    use std::path::Path;
+    use verdant_core::ecs::{SceneWorld, TwoLevelBvh};
+    use verdant_core::error::RenderGraphError;
+    use verdant_core::geometry::generate_terrain_patch_mesh;
+    use verdant_core::math::Vec3;
+    use verdant_core::navmesh::NavMesh;
+    use verdant_core::physics::{
+        CharacterMoveIntent, JointKind, PhysicsWorld, PhysicsWorldConfig, RigidBody,
+        RigidJointConstraint,
+    };
+    use verdant_core::runtime::{
+        canonicalize_command_monoid, compute_backward_command_lightcone, CanonicalCommandKind,
+        CanonicalCommandOp, CheckpointedRollbackJournal, KappaTransitionCache,
+    };
+    use verdant_core::verdant_tensor::{
+        contract_packed_nibbles_lut_into, contract_sparse_runs_lut_into,
+        decide_coded_matmul_admission, decide_uorc_challenger_admission, CodebookProductLut,
+        CodedAdmissionVerdict, ColumnBitPlaneTable, SparseCodedRun, UorcChallengerVerdict,
+        WordBitset,
+    };
+
+    // 1. Core-Wasm `scene:aqm` acceptance query & Lean-projected `aqmWorkloadExtrapolationsDirect`:
+    assert_eq!(
+        verdant_core::prism_kernel::aqmWorkloadExtrapolationsDirect(),
+        Ok(true)
+    );
+    let verdict =
+        verdant_core::prism_kernel::dispatch(b"scene:aqm".to_vec()).expect("dispatch scene:aqm");
+    assert_eq!(
+        std::str::from_utf8(&verdict).unwrap(),
+        "conformant:monoid_fusion=true,bit_planes=8,checkpoint_stride=8,kappa_cache=true,coded_admission=true"
+    );
+
+    // 2. Column-transposed 8-plane `ColumnBitPlaneTable` over `16,384` entities (`O(N / 64)`):
+    let n_entities = 16_384usize;
+    let mut planes = ColumnBitPlaneTable::new(8, n_entities);
+    assert_eq!(planes.planes_per_col(), 256);
+    let mut expected_matches = 0usize;
+    for idx in 0..n_entities {
+        let p0 = true;
+        let p1 = idx % 2 == 0;
+        let p2 = idx % 3 != 0;
+        let excl = idx % 8 == 0;
+        planes.set(0, idx, p0);
+        planes.set(1, idx, p1);
+        planes.set(2, idx, p2);
+        planes.set(3, idx, excl);
+        if p0 && p1 && p2 && !excl {
+            expected_matches += 1;
+        }
+    }
+    let mut mask = WordBitset::with_len(n_entities);
+    let matched = planes.query_archetype_into(&[0, 1, 2], &[3], &mut mask);
+    assert_eq!(matched, expected_matches);
+    assert!(planes.popcount_intersection(1, 2) > 5_000);
+    planes.xor_column_into(1, 4);
+    assert_eq!(planes.popcount_intersection(1, 4), n_entities / 2);
+
+    // 3. Prism Algebraic Monoid Command Canonicalizer + Kahn DAG layers + cycle refusal (`R5`):
+    let ops = vec![
+        CanonicalCommandOp {
+            id: 0,
+            target_slot: 0,
+            kind: CanonicalCommandKind::ToggleCameraMode,
+            depends_on: Vec::new(),
+        },
+        CanonicalCommandOp {
+            id: 1,
+            target_slot: 0,
+            kind: CanonicalCommandKind::ToggleCameraMode,
+            depends_on: Vec::new(),
+        },
+        CanonicalCommandOp {
+            id: 2,
+            target_slot: 1,
+            kind: CanonicalCommandKind::YawOctantStep { octants: 3 },
+            depends_on: Vec::new(),
+        },
+        CanonicalCommandOp {
+            id: 3,
+            target_slot: 1,
+            kind: CanonicalCommandKind::YawOctantStep { octants: 5 },
+            depends_on: Vec::new(),
+        },
+        CanonicalCommandOp {
+            id: 4,
+            target_slot: 0,
+            kind: CanonicalCommandKind::CameraOrbitDelta {
+                delta_yaw_milli: 120,
+                delta_pitch_milli: -30,
+                delta_dist_milli: 200,
+            },
+            depends_on: Vec::new(),
+        },
+        CanonicalCommandOp {
+            id: 5,
+            target_slot: 0,
+            kind: CanonicalCommandKind::CameraOrbitDelta {
+                delta_yaw_milli: 80,
+                delta_pitch_milli: 30,
+                delta_dist_milli: -50,
+            },
+            depends_on: Vec::new(),
+        },
+    ];
+    let monoid = canonicalize_command_monoid(&ops).expect("acyclic monoid stream");
+    assert_eq!(monoid.raw_count, 6);
+    assert_eq!(monoid.involution_cancellations, 1);
+    assert_eq!(monoid.additive_merges, 2);
+    assert_eq!(monoid.fused_count, 1);
+    assert_eq!(
+        monoid.fused_ops[0].kind,
+        CanonicalCommandKind::CameraOrbitDelta {
+            delta_yaw_milli: 200,
+            delta_pitch_milli: 0,
+            delta_dist_milli: 150,
+        }
+    );
+    let cone = compute_backward_command_lightcone(&ops, 0, ops.len());
+    assert!(cone.contains(&0) && cone.contains(&5) && !cone.contains(&2));
+
+    let cyclic_ops = vec![
+        CanonicalCommandOp {
+            id: 0,
+            target_slot: 0,
+            kind: CanonicalCommandKind::ToggleCameraMode,
+            depends_on: vec![1],
+        },
+        CanonicalCommandOp {
+            id: 1,
+            target_slot: 1,
+            kind: CanonicalCommandKind::ToggleRenderBackend,
+            depends_on: vec![0],
+        },
+    ];
+    assert!(matches!(
+        canonicalize_command_monoid(&cyclic_ops),
+        Err(RenderGraphError::InvalidPassDependency { .. })
+    ));
+
+    // 4. `O(P)` hash-indexed `NavMesh::from_mesh`, `BinaryHeap` `A*`, & in-place tropical `next_hop` closure:
+    let nav_terrain = generate_terrain_patch_mesh(7, 24.0, 16);
+    let nav = NavMesh::from_mesh(&nav_terrain).expect("O(P) hash-indexed NavMesh");
+    assert!(nav.polygons.len() >= 64);
+    let goal = nav.polygons.len() - 1;
+    let astar = nav.find_path_astar(0, goal).expect("BinaryHeap A*");
+    let (trop_corridor, relaxations) = nav
+        .shortest_corridor_with_path_tropical(0, goal)
+        .expect("in-place tropical next_hop path");
+    assert!(relaxations > 0);
+    assert_eq!(trop_corridor.polygon_indices.first(), Some(&0));
+    assert_eq!(trop_corridor.polygon_indices.last(), Some(&goal));
+    assert!(
+        (trop_corridor.total_cost_meters - astar.total_cost_meters).abs() < 1e-2,
+        "in-place tropical next_hop corridor cost ({}) must match admissible A* ({})",
+        trop_corridor.total_cost_meters,
+        astar.total_cost_meters
+    );
+
+    // 5. Sparse 2-body stack Delassus XPBD solver (`0` dense DOF allocs):
+    let mut pw = PhysicsWorld::new(PhysicsWorldConfig::default());
+    pw.bodies.push(
+        RigidBody::new("b0", Vec3::new(0.0, 6.0, 0.0), 2.0, 0.4, 0.3).expect("rigid body b0"),
+    );
+    pw.bodies.push(
+        RigidBody::new("b1", Vec3::new(0.0, 4.2, 0.0), 1.5, 0.4, 0.3).expect("rigid body b1"),
+    );
+    pw.rigid_joints.push(RigidJointConstraint {
+        label: "ball_j0".to_string(),
+        body_a: 0,
+        body_b: 1,
+        kind: JointKind::BallSocket,
+        target_distance_meters: 1.5,
+        axis_world: Vec3::UP,
+        compliance_permille: 5,
+    });
+    let empty_bvh = TwoLevelBvh::build_solid(&SceneWorld::new(), &[]).expect("empty TwoLevelBvh");
+    pw.step_lawful(1.0 / 60.0, CharacterMoveIntent::default(), &empty_bvh)
+        .expect("sparse XPBD step 1");
+    pw.step_lawful(1.0 / 60.0, CharacterMoveIntent::default(), &empty_bvh)
+        .expect("sparse XPBD step 2");
+    let sep = (pw.bodies[1].position - pw.bodies[0].position).length();
+    assert!(sep > 0.5 && sep < 2.2);
+
+    // 6. Stride-8 `CheckpointedRollbackJournal` & `KappaTransitionCache`:
+    let mut journal: CheckpointedRollbackJournal<i64, i64> =
+        CheckpointedRollbackJournal::new(100, b"genesis-seed-7");
+    assert_eq!(journal.checkpoint_stride(), 8);
+    let mut running = 100_i64;
+    let mut reference_states = vec![running];
+    for f in 1..=32_i64 {
+        running += f * 3;
+        reference_states.push(running);
+        journal.record_step(f * 3, &f.to_le_bytes(), &running);
+    }
+    assert_eq!(journal.stored_checkpoint_count(), 5);
+    let (reconstructed_29, replay_steps, _) = journal
+        .reconstruct_frame(29, |s, delta| s + delta)
+        .expect("reconstruct frame 29");
+    assert_eq!(reconstructed_29, reference_states[29]);
+    assert_eq!(replay_steps, 5);
+    assert!(journal.reconstruct_frame(33, |s, d| s + d).is_err());
+
+    let mut kcache: KappaTransitionCache<u64> = KappaTransitionCache::new(16);
+    let k_init = KappaTransitionCache::<u64>::digest_bytes(b"observer-q-state");
+    let (v1, _, hit1) = kcache.step_or_elide(k_init, 42, || (999_u64, b"next-999".to_vec()));
+    let (v2, _, hit2) = kcache.step_or_elide(k_init, 42, || (0_u64, b"unreachable".to_vec()));
+    assert!(!hit1 && hit2 && v1 == 999 && v2 == 999 && kcache.elided_step_hits() == 1);
+
+    // 7. Sub-byte `Packed<Grid<16>, 2>` nibble LUT, `O(nnz)` `SparseCodedRun`, & Coded/UORC Admission Gates:
+    let mut cb = [0_i32; 16];
+    for (i, slot) in cb.iter_mut().enumerate() {
+        *slot = (i as i32) - 4;
+    }
+    let lut = CodebookProductLut::new(&cb, &cb);
+    let lhs_pack = [0x21_u8, 0x65_u8]; // codes [1, 2, 5, 6] -> [-3, -2, 1, 2]
+    let rhs_pack = [0x43_u8, 0x87_u8]; // codes [3, 4, 7, 8] -> [-1, 0, 3, 4]
+    let mut out_nib = [0_i64; 1];
+    let bytes_read =
+        contract_packed_nibbles_lut_into(&lhs_pack, &rhs_pack, 1, 4, 1, &lut, &mut out_nib)
+            .expect("packed nibble LUT");
+    assert_eq!(bytes_read, 4);
+    assert_eq!(out_nib[0], 14);
+
+    let runs = [
+        SparseCodedRun {
+            col: 1,
+            code_idx: 6,
+        },
+        SparseCodedRun {
+            col: 3,
+            code_idx: 9,
+        },
+    ];
+    let mut out_sparse = [0_i64; 1];
+    let (visited, skipped) =
+        contract_sparse_runs_lut_into(&[0, 2], &runs, &[0, 5, 0, 8], 4, &lut, &mut out_sparse)
+            .expect("sparse runs LUT");
+    assert_eq!(visited, 2);
+    assert_eq!(skipped, 2);
+    assert_eq!(out_sparse[0], 22);
+
+    assert_eq!(
+        decide_coded_matmul_admission(64, 32, false, true),
+        CodedAdmissionVerdict::AdmittedZeroDecode
+    );
+    assert_eq!(
+        decide_coded_matmul_admission(64, 32, true, true),
+        CodedAdmissionVerdict::RefusedFloatDecode
+    );
+    assert_eq!(
+        decide_coded_matmul_admission(16, 32, false, true),
+        CodedAdmissionVerdict::RefusedAccumulatorOverflow
+    );
+    assert_eq!(
+        decide_uorc_challenger_admission(b"VDNT", b"VDNT", true, 120, 96),
+        UorcChallengerVerdict::AdmitChallenger
+    );
+    assert_eq!(
+        decide_uorc_challenger_admission(b"VDNT", b"BAD!", true, 120, 96),
+        UorcChallengerVerdict::RefuseLossyReconstruction
+    );
+    assert_eq!(
+        decide_uorc_challenger_admission(b"VDNT", b"VDNT", true, 96, 120),
+        UorcChallengerVerdict::RefuseSizeRegression
+    );
+
+    // 8. Verify WebGL2 `gl.fenceSync` non-blocking GPU pacing & worker `verdant_wasm_aqm_benchmark_aux`:
+    let repo_root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+    let renderer_mjs = std::fs::read_to_string(repo_root.join("site/scene-renderer.mjs"))
+        .expect("site/scene-renderer.mjs");
+    assert!(renderer_mjs.contains("fenceSync"));
+    assert!(verdant_wasm::verdant_wasm_aqm_benchmark_aux(16_384) > 40);
+}

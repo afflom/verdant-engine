@@ -228,3 +228,9 @@ Feature: engine
     Given hoisted VerifiedKernelConsts, a 256-entry CodebookProductLut, a 10000-entity word-packed SoaSceneTable, a LOD4 45000-triangle FlatBvh TwoLevelBvh, and the WebGL2 worker pipeline
     When Core-Wasm scene:perf dispatches, dirty-transform and frustum bitmasks sweep 10000 entities, 1000 raycasts and 100 sphere sweeps execute, and 10000 hardware instances stage in Wasm
     Then FlatBvhNode is 32 bytes, average BVH node visits stay under 2 percent of total nodes, static epochs remain stable across dynamic steps, gl.finish is absent, and verdant stress-benchmark succeeds
+
+  @VE-34 @build
+  Scenario: Prism algebraic monoid command canonicalization, eight-column 64-bit bit-plane archetype matrices, in-place tropical min-plus closure with next-hop paths, O(P) hash-indexed NavMesh extraction, sparse two-body XPBD Delassus solves, stride-8 rollback checkpointing, and content-addressed kappa transition memoization scale deterministically and refuse invalid coded or cyclic inputs
+    Given the Core-Wasm scene:aqm query, a burst of redundant and self-inverse input commands, a 16384-entity ColumnBitPlaneTable, an HD walkable NavMesh, a multi-body XPBD rig, a stride-8 RollbackSessionJournal, and a KappaTransitionCache
+    When algebraic monoid fusion, Kahn parallel layer scheduling, column bit-plane popcount queries, in-place tropical next-hop closure, sparse XPBD stepping, and coded/UORC admission gates execute
+    Then Core-Wasm scene:aqm answers conformant, self-inverse and modular yaw commands fuse cleanly, 16384-entity bit-plane intersections match exact counts, tropical next-hop paths match A-star corridors, kappa transition hits elide redundant steps, and cyclic DAGs or float-decoded admissions are refused

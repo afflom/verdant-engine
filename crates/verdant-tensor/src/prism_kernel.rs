@@ -1735,48 +1735,65 @@ pub fn answerLawfulHdEngineQuery(
             let _x_3 = true;
             match _x_2 {
                 false => {
-                    let _x_1956 = matchesQuery((request).as_ref(), "scene:character")?;
-                    match _x_1956 {
+                    let _x_2209 = matchesQuery((request).as_ref(), "scene:character")?;
+                    match _x_2209 {
                         false => {
-                            let _x_2071 = matchesQuery((request).as_ref(), "scene:universe")?;
-                            match _x_2071 {
+                            let _x_2331 = matchesQuery((request).as_ref(), "scene:universe")?;
+                            match _x_2331 {
                                 false => {
-                                    let _x_2172 =
+                                    let _x_2439 =
                                         matchesQuery((request).as_ref(), "scene:narrative")?;
-                                    match _x_2172 {
+                                    match _x_2439 {
                                         false => {
-                                            let _x_2259 =
+                                            let _x_2533 =
                                                 matchesQuery((request).as_ref(), "scene:lod:4")?;
-                                            match _x_2259 {
+                                            match _x_2533 {
                                                 false => {
-                                                    let _x_2326 = matchesQuery(
+                                                    let _x_2607 = matchesQuery(
                                                         (request).as_ref(),
                                                         "scene:telos",
                                                     )?;
-                                                    match _x_2326 {
+                                                    match _x_2607 {
                                                         false => {
-                                                            let _x_2376 = matchesQuery(
+                                                            let _x_2664 = matchesQuery(
                                                                 (request).as_ref(),
                                                                 "scene:studio",
                                                             )?;
-                                                            match _x_2376 {
+                                                            match _x_2664 {
                                                                 false => {
-                                                                    let _x_2390 = matchesQuery(
+                                                                    let _x_2685 = matchesQuery(
                                                                         (request).as_ref(),
                                                                         "scene:perf",
                                                                     )?;
-                                                                    match _x_2390 {
+                                                                    match _x_2685 {
+                                                                        false => {
+                                                                            let _x_2699 =
+                                                                                matchesQuery(
+                                                                                    (request)
+                                                                                        .as_ref(),
+                                                                                    "scene:aqm",
+                                                                                )?;
+                                                                            match _x_2699 {
         false => std::string::String::from("invalid request"),
-        true => { let _x_2396 = workloadPerformanceDirect()?; match _x_2396 {
-        false => std::string::String::from("refused:perf-mismatch"),
-        true => std::string::String::from("conformant:word_bits=64,sah_bins=8,bvh_stack=64,codebook_lut=256,epoch_elision=true,max_inflight=2"),
+        true => { let _x_2705 = aqmWorkloadExtrapolationsDirect()?; match _x_2705 {
+        false => std::string::String::from("refused:aqm-mismatch"),
+        true => std::string::String::from("conformant:monoid_fusion=true,bit_planes=8,checkpoint_stride=8,kappa_cache=true,coded_admission=true"),
     } },
     }
+                                                                        }
+                                                                        true => {
+                                                                            let _x_2708 = workloadPerformanceDirect()?;
+                                                                            match _x_2708 {
+        false => std::string::String::from("refused:perf-mismatch"),
+        true => std::string::String::from("conformant:word_bits=64,sah_bins=8,bvh_stack=64,codebook_lut=256,epoch_elision=true,max_inflight=2"),
+    }
+                                                                        }
+                                                                    }
                                                                 }
                                                                 true => {
-                                                                    let _x_2399 =
+                                                                    let _x_2711 =
                                                                         studioSurfaceDirect()?;
-                                                                    match _x_2399 {
+                                                                    match _x_2711 {
         false => std::string::String::from("refused:studio-mismatch"),
         true => std::string::String::from("conformant:themes=3,tabs=6,journeys=7,archetypes=4,doc_embeds=6,controls=13"),
     }
@@ -1784,13 +1801,13 @@ pub fn answerLawfulHdEngineQuery(
                                                             }
                                                         }
                                                         true => {
-                                                            let _x_2402 = (1 << (1 << 1));
+                                                            let _x_2714 = (1 << (1 << 1));
                                                             {
-                                                                let _x_2403 = (1
+                                                                let _x_2715 = (1
                                                                     << ((1 << (1 << 1))
                                                                         + (1 << 1)));
                                                                 {
-                                                                    let _x_2404 = (((((1
+                                                                    let _x_2716 = (((((1
                                                                         << (((1
                                                                             << ((1 << 1)
                                                                                 + 1))
@@ -1803,7 +1820,7 @@ pub fn answerLawfulHdEngineQuery(
                                                                         + (1 << ((1 << 1) + 1)))
                                                                         + (1 << 1));
                                                                     {
-                                                                        let _x_2405 = (((((1
+                                                                        let _x_2717 = (((((1
                                                                             << (((1
                                                                                 << ((1
                                                                                     << 1)
@@ -1821,7 +1838,7 @@ pub fn answerLawfulHdEngineQuery(
                                                                                 << (1 << 1))))
                                                                             + (1 << (1 << 1)));
                                                                         {
-                                                                            let _x_2406 = (((((((1
+                                                                            let _x_2718 = (((((((1
                                                                                 << ((((1
                                                                                     << ((1 << 1)
                                                                                         + 1))
@@ -1861,49 +1878,49 @@ pub fn answerLawfulHdEngineQuery(
                                                                                     + (1 << 1))
                                                                                     + 1)));
                                                                             {
-                                                                                let _x_2407 = (1
+                                                                                let _x_2719 = (1
                                                                                     << (((1
                                                                                         << (1
                                                                                             << 1))
                                                                                         + (1 << 1))
                                                                                         + 1));
                                                                                 {
-                                                                                    let hostSample = self::HostEnvelope { logicalCores: _x_2402, memoryUnits: _x_2403, frameBudgetMicros: _x_2404, observedFrameMicros: _x_2405, audioSampleRateHz: _x_2406, audioQuantumFrames: _x_2407 };
+                                                                                    let hostSample = self::HostEnvelope { logicalCores: _x_2714, memoryUnits: _x_2715, frameBudgetMicros: _x_2716, observedFrameMicros: _x_2717, audioSampleRateHz: _x_2718, audioQuantumFrames: _x_2719 };
                                                                                     {
-                                                                                        let _x_2408 = (1 << ((1 << 1) + 1));
+                                                                                        let _x_2720 = (1 << ((1 << 1) + 1));
                                                                                         {
-                                                                                            let _x_2409 = (((((((1 << ((1 << ((1 << 1) + 1)) + 1)) + (1 << (1 << ((1 << 1) + 1)))) + (1 << (((1 << (1 << 1)) + (1 << 1)) + 1))) + (1 << ((1 << (1 << 1)) + 1))) + (1 << (1 << (1 << 1)))) + (1 << (1 << 1))) + (1 << 1));
+                                                                                            let _x_2721 = (((((((1 << ((1 << ((1 << 1) + 1)) + 1)) + (1 << (1 << ((1 << 1) + 1)))) + (1 << (((1 << (1 << 1)) + (1 << 1)) + 1))) + (1 << ((1 << (1 << 1)) + 1))) + (1 << (1 << (1 << 1)))) + (1 << (1 << 1))) + (1 << 1));
                                                                                             {
-                                                                                                let _x_2410 = (((1 << ((1 << ((1 << 1) + 1)) + 1)) + (1 << (1 << ((1 << 1) + 1)))) + (1 << ((1 << (1 << 1)) + 1)));
+                                                                                                let _x_2722 = (((1 << ((1 << ((1 << 1) + 1)) + 1)) + (1 << (1 << ((1 << 1) + 1)))) + (1 << ((1 << (1 << 1)) + 1)));
                                                                                                 {
-                                                                                                    let _x_2411 = ((((1 << ((1 << ((1 << 1) + 1)) + 1)) + (1 << (1 << ((1 << 1) + 1)))) + (1 << (((1 << (1 << 1)) + (1 << 1)) + 1))) + (1 << (1 << 1)));
+                                                                                                    let _x_2723 = ((((1 << ((1 << ((1 << 1) + 1)) + 1)) + (1 << (1 << ((1 << 1) + 1)))) + (1 << (((1 << (1 << 1)) + (1 << 1)) + 1))) + (1 << (1 << 1)));
                                                                                                     {
-                                                                                                        let witSample = self::WitnessEnvelope { criticalBands: _x_2408, inputPollMillis: _x_2408, cameraStabilityRatio: _x_2409, focusDwellRatio: _x_2410, audioHeadroomRatio: _x_2411, activePresence: _x_3 };
+                                                                                                        let witSample = self::WitnessEnvelope { criticalBands: _x_2720, inputPollMillis: _x_2720, cameraStabilityRatio: _x_2721, focusDwellRatio: _x_2722, audioHeadroomRatio: _x_2723, activePresence: _x_3 };
                                                                                                         {
-                                                                                                            let _x_2412 = 0;
+                                                                                                            let _x_2724 = 0;
                                                                                                             {
-                                                                                                                let eval = evaluateHolonTelosState(hostSample, witSample, _x_2412, _x_2412, _x_2412)?;
+                                                                                                                let eval = evaluateHolonTelosState(hostSample, witSample, _x_2724, _x_2724, _x_2724)?;
                                                                                                                 {
-                                                                                                                    let _x_2413 = (((1 << (1 << 1)) + (1 << 1)) + 1);
+                                                                                                                    let _x_2725 = (((1 << (1 << 1)) + (1 << 1)) + 1);
                                                                                                                     {
-                                                                                                                        let _x_2414 = strataCertifiedUpTo(_x_2413)?;
-                                                                                                                        match _x_2414 {
-        false => { let _y_2416 = _x_2414; match _y_2416 {
+                                                                                                                        let _x_2726 = strataCertifiedUpTo(_x_2725)?;
+                                                                                                                        match _x_2726 {
+        false => { let _y_2728 = _x_2726; match _y_2728 {
         false => std::string::String::from("refused:telos-mismatch"),
-        true => { let _x_2422 = sTwoHundred()?; { let _x_2423 = sweptCapsuleMaxStepMilli()?; { let _x_2424 = citadelPortalWidthMilli()?; { let _x_2425 = (((1 << (1 << ((1 << 1) + 1))) + (1 << (((1 << (1 << 1)) + (1 << 1)) + 1))) + (1 << (1 << (1 << 1)))); { let _x_2426 = citadelSpringHeightMilli()?; { let _x_2427 = ((((1 << ((1 << ((1 << 1) + 1)) + (1 << 1))) + (1 << ((1 << ((1 << 1) + 1)) + 1))) + (1 << (1 << ((1 << 1) + 1)))) + (1 << ((1 << 1) + 1))); { let _x_2428 = architecturalWalkabilityValid(_x_2422, _x_2423, _x_2424, _x_2425, _x_2426, _x_2427)?; match _x_2428 {
+        true => { let _x_2734 = sTwoHundred()?; { let _x_2735 = sweptCapsuleMaxStepMilli()?; { let _x_2736 = citadelPortalWidthMilli()?; { let _x_2737 = (((1 << (1 << ((1 << 1) + 1))) + (1 << (((1 << (1 << 1)) + (1 << 1)) + 1))) + (1 << (1 << (1 << 1)))); { let _x_2738 = citadelSpringHeightMilli()?; { let _x_2739 = ((((1 << ((1 << ((1 << 1) + 1)) + (1 << 1))) + (1 << ((1 << ((1 << 1) + 1)) + 1))) + (1 << (1 << ((1 << 1) + 1)))) + (1 << ((1 << 1) + 1))); { let _x_2740 = architecturalWalkabilityValid(_x_2734, _x_2735, _x_2736, _x_2737, _x_2738, _x_2739)?; match _x_2740 {
         false => std::string::String::from("refused:telos-mismatch"),
         true => std::string::String::from("conformant:w5h_strata=8,telos_loss=0,triadic_active=true,walkable_citadel=true"),
     } } } } } } } },
     } },
-        true => { let _x_2431 = (eval).totalTelosLoss; { let _x_2432 = (_x_2431 == _x_2412); match _x_2432 {
-        false => { let prod_local_0 = _x_2432; match prod_local_0 {
+        true => { let _x_2743 = (eval).totalTelosLoss; { let _x_2744 = (_x_2743 == _x_2724); match _x_2744 {
+        false => { let prod_local_0 = _x_2744; match prod_local_0 {
         false => std::string::String::from("refused:telos-mismatch"),
         true => { let prod_local_2 = sTwoHundred()?; { let prod_local_3 = sweptCapsuleMaxStepMilli()?; { let prod_local_4 = citadelPortalWidthMilli()?; { let prod_local_5 = (((1 << (1 << ((1 << 1) + 1))) + (1 << (((1 << (1 << 1)) + (1 << 1)) + 1))) + (1 << (1 << (1 << 1)))); { let prod_local_6 = citadelSpringHeightMilli()?; { let prod_local_7 = ((((1 << ((1 << ((1 << 1) + 1)) + (1 << 1))) + (1 << ((1 << ((1 << 1) + 1)) + 1))) + (1 << (1 << ((1 << 1) + 1)))) + (1 << ((1 << 1) + 1))); { let prod_local_8 = architecturalWalkabilityValid(prod_local_2, prod_local_3, prod_local_4, prod_local_5, prod_local_6, prod_local_7)?; match prod_local_8 {
         false => std::string::String::from("refused:telos-mismatch"),
         true => std::string::String::from("conformant:w5h_strata=8,telos_loss=0,triadic_active=true,walkable_citadel=true"),
     } } } } } } } },
     } },
-        true => { let _x_2433 = (eval).triadicConnectionActive; { let prod_local_11 = _x_2433; match prod_local_11 {
+        true => { let _x_2745 = (eval).triadicConnectionActive; { let prod_local_11 = _x_2745; match prod_local_11 {
         false => std::string::String::from("refused:telos-mismatch"),
         true => { let prod_local_13 = sTwoHundred()?; { let prod_local_14 = sweptCapsuleMaxStepMilli()?; { let prod_local_15 = citadelPortalWidthMilli()?; { let prod_local_16 = (((1 << (1 << ((1 << 1) + 1))) + (1 << (((1 << (1 << 1)) + (1 << 1)) + 1))) + (1 << (1 << (1 << 1)))); { let prod_local_17 = citadelSpringHeightMilli()?; { let prod_local_18 = ((((1 << ((1 << ((1 << 1) + 1)) + (1 << 1))) + (1 << ((1 << ((1 << 1) + 1)) + 1))) + (1 << (1 << ((1 << 1) + 1)))) + (1 << ((1 << 1) + 1))); { let prod_local_19 = architecturalWalkabilityValid(prod_local_13, prod_local_14, prod_local_15, prod_local_16, prod_local_17, prod_local_18)?; match prod_local_19 {
         false => std::string::String::from("refused:telos-mismatch"),
@@ -1931,27 +1948,27 @@ pub fn answerLawfulHdEngineQuery(
                                                     }
                                                 }
                                                 true => {
-                                                    let _x_2437 = (1 << (1 << 1));
+                                                    let _x_2749 = (1 << (1 << 1));
                                                     {
-                                                        let _x_2438 = lodEnvelopeByRank(_x_2437)?;
+                                                        let _x_2750 = lodEnvelopeByRank(_x_2749)?;
                                                         {
-                                                            let _x_2439 = (_x_2438).losslessActive;
-                                                            match _x_2439 {
+                                                            let _x_2751 = (_x_2750).losslessActive;
+                                                            match _x_2751 {
                                                                 false => std::string::String::from(
                                                                     "refused:lod4-mismatch",
                                                                 ),
                                                                 true => {
-                                                                    let _x_2445 = (1 << (1 << 1));
+                                                                    let _x_2757 = (1 << (1 << 1));
                                                                     {
-                                                                        let _x_2446 =
+                                                                        let _x_2758 =
                                                                             lodEnvelopeByRank(
-                                                                                _x_2445,
+                                                                                _x_2757,
                                                                             )?;
                                                                         {
-                                                                            let _x_2447 = (_x_2446)
+                                                                            let _x_2759 = (_x_2758)
                                                                                 .meshDensityPercent;
                                                                             {
-                                                                                let _x_2448 = (((1
+                                                                                let _x_2760 = (((1
                                                                                     << (((1
                                                                                         << (1
                                                                                             << 1))
@@ -1965,8 +1982,8 @@ pub fn answerLawfulHdEngineQuery(
                                                                                         << 1)
                                                                                         + 1)));
                                                                                 {
-                                                                                    let _x_2449 = (_x_2447 == _x_2448);
-                                                                                    match _x_2449 {
+                                                                                    let _x_2761 = (_x_2759 == _x_2760);
+                                                                                    match _x_2761 {
         false => std::string::String::from("refused:lod4-mismatch"),
         true => std::string::String::from("conformant:rank=4,res=16/8,density=200/100,shadows=1,ibl=1,lossless=1,sky=20/34/44,fog=34/44/48"),
     }
@@ -1982,44 +1999,44 @@ pub fn answerLawfulHdEngineQuery(
                                             }
                                         }
                                         true => {
-                                            let _x_2453 = ((1 << ((1 << 1) + 1)) + (1 << 1));
+                                            let _x_2765 = ((1 << ((1 << 1) + 1)) + (1 << 1));
                                             {
-                                                let _x_2454 = ((1 << (1 << 1)) + 1);
+                                                let _x_2766 = ((1 << (1 << 1)) + 1);
                                                 {
-                                                    let _x_2455 = ((1 << 1) + 1);
+                                                    let _x_2767 = ((1 << 1) + 1);
                                                     {
-                                                        let _x_2456 = ((1 << ((1 << 1) + 1))
+                                                        let _x_2768 = ((1 << ((1 << 1) + 1))
                                                             + (1 << (1 << 1)));
                                                         {
-                                                            let _x_2457 = conservationLawValid(
-                                                                _x_2453, _x_2454, _x_2455, _x_2456,
+                                                            let _x_2769 = conservationLawValid(
+                                                                _x_2765, _x_2766, _x_2767, _x_2768,
                                                             )?;
-                                                            match _x_2457 {
+                                                            match _x_2769 {
                                                                 false => {
-                                                                    let _y_2459 = _x_2457;
-                                                                    match _y_2459 {
+                                                                    let _y_2771 = _x_2769;
+                                                                    match _y_2771 {
         false => std::string::String::from("refused:narrative-mismatch"),
         true => std::string::String::from("conformant:conservation=exact,tropical_reachability=true"),
     }
                                                                 }
                                                                 true => {
-                                                                    let _x_2464 = ((1
+                                                                    let _x_2776 = ((1
                                                                         << ((1 << 1) + 1))
                                                                         + (1 << 1));
                                                                     {
-                                                                        let _x_2465 = 0;
+                                                                        let _x_2777 = 0;
                                                                         {
-                                                                            let _x_2466 = (((1
+                                                                            let _x_2778 = (((1
                                                                                 << ((1 << 1)
                                                                                     + 1))
                                                                                 + (1 << 1))
                                                                                 + 1);
                                                                             {
-                                                                                let _x_2467 = conservationLawValid(_x_2464, _x_2465, _x_2465, _x_2466)?;
-                                                                                match _x_2467 {
+                                                                                let _x_2779 = conservationLawValid(_x_2776, _x_2777, _x_2777, _x_2778)?;
+                                                                                match _x_2779 {
                                                                                     false => {
                                                                                         let prod_local_22 =
-                                                                                            _x_2457;
+                                                                                            _x_2769;
                                                                                         match prod_local_22 {
         false => std::string::String::from("refused:narrative-mismatch"),
         true => std::string::String::from("conformant:conservation=exact,tropical_reachability=true"),
@@ -2027,7 +2044,7 @@ pub fn answerLawfulHdEngineQuery(
                                                                                     }
                                                                                     true => {
                                                                                         let prod_local_25 =
-                                                                                            _x_2071;
+                                                                                            _x_2331;
                                                                                         match prod_local_25 {
         false => std::string::String::from("refused:narrative-mismatch"),
         true => std::string::String::from("conformant:conservation=exact,tropical_reachability=true"),
@@ -2047,21 +2064,21 @@ pub fn answerLawfulHdEngineQuery(
                                     }
                                 }
                                 true => {
-                                    let _x_2469 = universeCellSpanMeters()?;
+                                    let _x_2781 = universeCellSpanMeters()?;
                                     {
-                                        let _x_2470 = (1 << (((1 << (1 << 1)) + (1 << 1)) + 1));
+                                        let _x_2782 = (1 << (((1 << (1 << 1)) + (1 << 1)) + 1));
                                         {
-                                            let _x_2471 = (_x_2469 == _x_2470);
-                                            match _x_2471 {
+                                            let _x_2783 = (_x_2781 == _x_2782);
+                                            match _x_2783 {
                                                 false => {
-                                                    let _y_2473 = _x_2471;
-                                                    match _y_2473 {
+                                                    let _y_2785 = _x_2783;
+                                                    match _y_2785 {
         false => std::string::String::from("refused:universe-mismatch"),
         true => std::string::String::from("conformant:cell_span_m=128,floating_origin=true,portals=true"),
     }
                                                 }
                                                 true => {
-                                                    let _x_2476 = ((((((1
+                                                    let _x_2788 = ((((((1
                                                         << (((1 << ((1 << 1) + 1))
                                                             + (1 << (1 << 1)))
                                                             + (1 << 1)))
@@ -2077,11 +2094,11 @@ pub fn answerLawfulHdEngineQuery(
                                                             + (1 << 1))))
                                                         + (1 << (1 << ((1 << 1) + 1))));
                                                     {
-                                                        let _x_2477 = universeHalfSpanMilli()?;
+                                                        let _x_2789 = universeHalfSpanMilli()?;
                                                         {
-                                                            let _x_2478 = (_x_2476 < _x_2477);
+                                                            let _x_2790 = (_x_2788 < _x_2789);
                                                             {
-                                                                let prod_local_28 = _x_2478;
+                                                                let prod_local_28 = _x_2790;
                                                                 match prod_local_28 {
         false => std::string::String::from("refused:universe-mismatch"),
         true => std::string::String::from("conformant:cell_span_m=128,floating_origin=true,portals=true"),
@@ -2097,26 +2114,26 @@ pub fn answerLawfulHdEngineQuery(
                             }
                         }
                         true => {
-                            let _x_2479 = sTwentyTwo()?;
+                            let _x_2791 = sTwentyTwo()?;
                             {
-                                let _x_2480 =
+                                let _x_2792 =
                                     (((1 << (1 << (1 << 1))) + (1 << (1 << 1))) + (1 << 1));
                                 {
-                                    let _x_2481 = (_x_2479 == _x_2480);
-                                    match _x_2481 {
+                                    let _x_2793 = (_x_2791 == _x_2792);
+                                    match _x_2793 {
                                         false => {
-                                            let _y_2483 = _x_2481;
-                                            match _y_2483 {
+                                            let _y_2795 = _x_2793;
+                                            match _y_2795 {
         false => std::string::String::from("refused:character-mismatch"),
         true => std::string::String::from("conformant:joints=22,two_bone_ik=true,lbs_scale=1000"),
     }
                                         }
                                         true => {
-                                            let _x_2486 = (((1 << (1 << ((1 << 1) + 1)))
+                                            let _x_2798 = (((1 << (1 << ((1 << 1) + 1)))
                                                 + (1 << (((1 << (1 << 1)) + (1 << 1)) + 1)))
                                                 + (1 << (1 << (1 << 1))));
                                             {
-                                                let _x_2487 = ((((((1
+                                                let _x_2799 = ((((((1
                                                     << ((1 << ((1 << 1) + 1)) + 1))
                                                     + (1 << (((1 << (1 << 1)) + (1 << 1))
                                                         + 1)))
@@ -2125,11 +2142,11 @@ pub fn answerLawfulHdEngineQuery(
                                                     + (1 << ((1 << 1) + 1)))
                                                     + (1 << (1 << 1)));
                                                 {
-                                                    let _x_2488 = twoBoneIkReachable(
-                                                        _x_2486, _x_2486, _x_2487,
+                                                    let _x_2800 = twoBoneIkReachable(
+                                                        _x_2798, _x_2798, _x_2799,
                                                     )?;
                                                     {
-                                                        let prod_local_31 = _x_2488;
+                                                        let prod_local_31 = _x_2800;
                                                         match prod_local_31 {
         false => std::string::String::from("refused:character-mismatch"),
         true => std::string::String::from("conformant:joints=22,two_bone_ik=true,lbs_scale=1000"),
@@ -2145,52 +2162,52 @@ pub fn answerLawfulHdEngineQuery(
                     }
                 }
                 true => {
-                    let _x_2489 = sFour()?;
+                    let _x_2801 = sFour()?;
                     {
-                        let _x_2490 = (1 << (1 << 1));
+                        let _x_2802 = (1 << (1 << 1));
                         {
-                            let _x_2491 = (_x_2489 == _x_2490);
-                            match _x_2491 {
+                            let _x_2803 = (_x_2801 == _x_2802);
+                            match _x_2803 {
                                 false => {
-                                    let _y_2493 = _x_2491;
-                                    match _y_2493 {
+                                    let _y_2805 = _x_2803;
+                                    match _y_2805 {
         false => std::string::String::from("refused:lawful-mismatch"),
         true => std::string::String::from("conformant:ccd_slides=4,non_penetrating=true,near_sphere_guard=true"),
     }
                                 }
                                 true => {
-                                    let _x_2498 = (((1 << ((1 << (1 << 1)) + 1))
+                                    let _x_2810 = (((1 << ((1 << (1 << 1)) + 1))
                                         + (1 << (1 << (1 << 1))))
                                         + (1 << 1));
                                     {
-                                        let _x_2499 =
+                                        let _x_2811 =
                                             ((1 << ((1 << (1 << 1)) + 1)) + (1 << (1 << (1 << 1))));
                                         {
-                                            let _x_2500 = (1 << 1);
+                                            let _x_2812 = (1 << 1);
                                             {
-                                                let _x_2501 =
-                                                    sweptClearanceValid(_x_2498, _x_2499, _x_2500)?;
-                                                match _x_2501 {
+                                                let _x_2813 =
+                                                    sweptClearanceValid(_x_2810, _x_2811, _x_2812)?;
+                                                match _x_2813 {
                                                     false => {
-                                                        let prod_local_34 = _x_2501;
+                                                        let prod_local_34 = _x_2813;
                                                         match prod_local_34 {
         false => std::string::String::from("refused:lawful-mismatch"),
         true => std::string::String::from("conformant:ccd_slides=4,non_penetrating=true,near_sphere_guard=true"),
     }
                                                     }
                                                     true => {
-                                                        let _x_2502 = (((1
+                                                        let _x_2814 = (((1
                                                             << (((1 << (1 << 1)) + (1 << 1))
                                                                 + 1))
                                                             + (1 << ((1 << (1 << 1)) + (1 << 1))))
                                                             + (1 << ((1 << 1) + 1)));
                                                         {
-                                                            let _x_2503 = (((1
+                                                            let _x_2815 = (((1
                                                                 << ((1 << (1 << 1)) + (1 << 1)))
                                                                 + (1 << ((1 << (1 << 1)) + 1)))
                                                                 + (1 << (1 << 1)));
                                                             {
-                                                                let _x_2504 = (((((((1
+                                                                let _x_2816 = (((((((1
                                                                     << ((1
                                                                         << ((1 << 1) + 1))
                                                                         + (1 << 1)))
@@ -2206,13 +2223,13 @@ pub fn answerLawfulHdEngineQuery(
                                                                     + (1 << ((1 << 1) + 1)))
                                                                     + (1 << (1 << 1)));
                                                                 {
-                                                                    let _x_2505 =
+                                                                    let _x_2817 =
                                                                         cameraNearSphereGuarded(
-                                                                            _x_2502, _x_2503,
-                                                                            _x_2504,
+                                                                            _x_2814, _x_2815,
+                                                                            _x_2816,
                                                                         )?;
                                                                     {
-                                                                        let prod_local_37 = _x_2505;
+                                                                        let prod_local_37 = _x_2817;
                                                                         match prod_local_37 {
         false => std::string::String::from("refused:lawful-mismatch"),
         true => std::string::String::from("conformant:ccd_slides=4,non_penetrating=true,near_sphere_guard=true"),
@@ -5149,6 +5166,734 @@ pub fn acousticOccludedGainPermille() -> Result<u64, self::ComputeError> {
     })
 }
 
+pub fn aqmWorkloadExtrapolationsDirect() -> Result<bool, self::ComputeError> {
+    Ok({
+        let _x_205 = sEight()?;
+        {
+            let _x_73 = sEight()?;
+            {
+                let _x_74 = (_x_205 == _x_73);
+                match _x_74 {
+                    false => {
+                        let _y_79 = _x_74;
+                        match _y_79 {
+                            false => _y_79,
+                            true => {
+                                let _x_458 = 1;
+                                {
+                                    let _x_459 = sSeven()?;
+                                    {
+                                        let _x_460 = octantMod8Fusion(_x_458, _x_459)?;
+                                        {
+                                            let _x_461 = 0;
+                                            {
+                                                let _x_462 = (_x_460 == _x_461);
+                                                match _x_462 {
+                                                    false => {
+                                                        let _y_84 = _x_462;
+                                                        {
+                                                            let _x_85 = true;
+                                                            match _y_84 {
+                                                                false => _y_84,
+                                                                true => {
+                                                                    let _x_562 = sSix()?;
+                                                                    {
+                                                                        let _x_563 =
+                                                                            pow2Constructive(
+                                                                                _x_562,
+                                                                            )?;
+                                                                        {
+                                                                            let _x_564 =
+                                                                                sThirtyTwo()?;
+                                                                            {
+                                                                                let _x_565 = false;
+                                                                                {
+                                                                                    let _x_566 = codedMatmulAdmissionValid(_x_563, _x_564, _x_565, _x_85);
+                                                                                    match _x_566 {
+                                                                                        false => {
+                                                                                            let _y_568 = _x_566;
+                                                                                            match _y_568 {
+        false => _y_568,
+        true => { let _x_569 = sTen()?; { let _x_570 = sTwenty()?; { let _x_571 = uorcChallengerAdmissionValid(_x_569, _x_570, _x_85, _x_85); match _x_571 {
+        false => _x_571,
+        true => { let _x_572 = sThirty()?; { let _x_573 = sTwenty()?; { let _x_574 = uorcChallengerAdmissionValid(_x_572, _x_573, _x_85, _x_85); match _x_574 {
+        false => { let _x_595 = sTen()?; { let _x_596 = sTwenty()?; { let _x_598 = uorcChallengerAdmissionValid(_x_595, _x_596, _x_574, _x_85); match _x_598 {
+        false => _x_571,
+        true => _x_574,
+    } } } },
+        true => { let _x_581 = false; _x_581 },
+    } } } },
+    } } } },
+    }
+                                                                                        }
+                                                                                        true => {
+                                                                                            let _x_584 = sSix()?;
+                                                                                            {
+                                                                                                let _x_585 = pow2Constructive(_x_584)?;
+                                                                                                {
+                                                                                                    let _x_586 = sThirtyTwo()?;
+                                                                                                    {
+                                                                                                        let _x_587 = codedMatmulAdmissionValid(_x_585, _x_586, _x_85, _x_85);
+                                                                                                        match _x_587 {
+        false => { let _x_600 = sSixteen()?; { let _x_601 = sThirtyTwo()?; { let _x_603 = codedMatmulAdmissionValid(_x_600, _x_601, _x_587, _x_85); match _x_603 {
+        false => { let prod_local_0 = _x_566; match prod_local_0 {
+        false => prod_local_0,
+        true => { let prod_local_1 = sTen()?; { let prod_local_2 = sTwenty()?; { let prod_local_3 = uorcChallengerAdmissionValid(prod_local_1, prod_local_2, _x_85, _x_85); match prod_local_3 {
+        false => prod_local_3,
+        true => { let prod_local_4 = sThirty()?; { let prod_local_5 = sTwenty()?; { let prod_local_6 = uorcChallengerAdmissionValid(prod_local_4, prod_local_5, _x_85, _x_85); match prod_local_6 {
+        false => { let prod_local_7 = sTen()?; { let prod_local_8 = sTwenty()?; { let prod_local_9 = uorcChallengerAdmissionValid(prod_local_7, prod_local_8, prod_local_6, _x_85); match prod_local_9 {
+        false => prod_local_3,
+        true => prod_local_6,
+    } } } },
+        true => { let prod_local_10 = false; prod_local_10 },
+    } } } },
+    } } } },
+    } },
+        true => { let prod_local_11 = _x_587; match prod_local_11 {
+        false => prod_local_11,
+        true => { let prod_local_12 = sTen()?; { let prod_local_13 = sTwenty()?; { let prod_local_14 = uorcChallengerAdmissionValid(prod_local_12, prod_local_13, _x_85, _x_85); match prod_local_14 {
+        false => prod_local_14,
+        true => { let prod_local_15 = sThirty()?; { let prod_local_16 = sTwenty()?; { let prod_local_17 = uorcChallengerAdmissionValid(prod_local_15, prod_local_16, _x_85, _x_85); match prod_local_17 {
+        false => { let prod_local_18 = sTen()?; { let prod_local_19 = sTwenty()?; { let prod_local_20 = uorcChallengerAdmissionValid(prod_local_18, prod_local_19, prod_local_17, _x_85); match prod_local_20 {
+        false => prod_local_14,
+        true => prod_local_17,
+    } } } },
+        true => { let prod_local_21 = false; prod_local_21 },
+    } } } },
+    } } } },
+    } },
+    } } } },
+        true => { let _x_594 = false; _x_594 },
+    }
+                                                                                                    }
+                                                                                                }
+                                                                                            }
+                                                                                        }
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                    true => {
+                                                        let _x_495 = (1 << 1);
+                                                        {
+                                                            let _x_496 =
+                                                                octantMod8Fusion(_x_495, _x_495)?;
+                                                            {
+                                                                let _x_497 = sFour()?;
+                                                                {
+                                                                    let _x_498 = (_x_496 == _x_497);
+                                                                    match _x_498 {
+                                                                        false => {
+                                                                            let prod_local_22 =
+                                                                                _x_498;
+                                                                            {
+                                                                                let prod_local_23 =
+                                                                                    true;
+                                                                                match prod_local_22 {
+        false => prod_local_22,
+        true => { let prod_local_24 = sSix()?; { let prod_local_25 = pow2Constructive(prod_local_24)?; { let prod_local_26 = sThirtyTwo()?; { let prod_local_27 = false; { let prod_local_28 = codedMatmulAdmissionValid(prod_local_25, prod_local_26, prod_local_27, prod_local_23); match prod_local_28 {
+        false => { let prod_local_30 = prod_local_28; match prod_local_30 {
+        false => prod_local_30,
+        true => { let prod_local_31 = sTen()?; { let prod_local_32 = sTwenty()?; { let prod_local_33 = uorcChallengerAdmissionValid(prod_local_31, prod_local_32, prod_local_23, prod_local_23); match prod_local_33 {
+        false => prod_local_33,
+        true => { let prod_local_34 = sThirty()?; { let prod_local_35 = sTwenty()?; { let prod_local_36 = uorcChallengerAdmissionValid(prod_local_34, prod_local_35, prod_local_23, prod_local_23); match prod_local_36 {
+        false => { let prod_local_37 = sTen()?; { let prod_local_38 = sTwenty()?; { let prod_local_39 = uorcChallengerAdmissionValid(prod_local_37, prod_local_38, prod_local_36, prod_local_23); match prod_local_39 {
+        false => prod_local_33,
+        true => prod_local_36,
+    } } } },
+        true => { let prod_local_40 = false; prod_local_40 },
+    } } } },
+    } } } },
+    } },
+        true => { let prod_local_41 = sSix()?; { let prod_local_42 = pow2Constructive(prod_local_41)?; { let prod_local_43 = sThirtyTwo()?; { let prod_local_44 = codedMatmulAdmissionValid(prod_local_42, prod_local_43, prod_local_23, prod_local_23); match prod_local_44 {
+        false => { let prod_local_45 = sSixteen()?; { let prod_local_46 = sThirtyTwo()?; { let prod_local_47 = codedMatmulAdmissionValid(prod_local_45, prod_local_46, prod_local_44, prod_local_23); match prod_local_47 {
+        false => { let prod_local_48 = prod_local_28; match prod_local_48 {
+        false => prod_local_48,
+        true => { let prod_local_49 = sTen()?; { let prod_local_50 = sTwenty()?; { let prod_local_51 = uorcChallengerAdmissionValid(prod_local_49, prod_local_50, prod_local_23, prod_local_23); match prod_local_51 {
+        false => prod_local_51,
+        true => { let prod_local_52 = sThirty()?; { let prod_local_53 = sTwenty()?; { let prod_local_54 = uorcChallengerAdmissionValid(prod_local_52, prod_local_53, prod_local_23, prod_local_23); match prod_local_54 {
+        false => { let prod_local_55 = sTen()?; { let prod_local_56 = sTwenty()?; { let prod_local_57 = uorcChallengerAdmissionValid(prod_local_55, prod_local_56, prod_local_54, prod_local_23); match prod_local_57 {
+        false => prod_local_51,
+        true => prod_local_54,
+    } } } },
+        true => { let prod_local_58 = false; prod_local_58 },
+    } } } },
+    } } } },
+    } },
+        true => { let prod_local_59 = prod_local_44; match prod_local_59 {
+        false => prod_local_59,
+        true => { let prod_local_60 = sTen()?; { let prod_local_61 = sTwenty()?; { let prod_local_62 = uorcChallengerAdmissionValid(prod_local_60, prod_local_61, prod_local_23, prod_local_23); match prod_local_62 {
+        false => prod_local_62,
+        true => { let prod_local_63 = sThirty()?; { let prod_local_64 = sTwenty()?; { let prod_local_65 = uorcChallengerAdmissionValid(prod_local_63, prod_local_64, prod_local_23, prod_local_23); match prod_local_65 {
+        false => { let prod_local_66 = sTen()?; { let prod_local_67 = sTwenty()?; { let prod_local_68 = uorcChallengerAdmissionValid(prod_local_66, prod_local_67, prod_local_65, prod_local_23); match prod_local_68 {
+        false => prod_local_62,
+        true => prod_local_65,
+    } } } },
+        true => { let prod_local_69 = false; prod_local_69 },
+    } } } },
+    } } } },
+    } },
+    } } } },
+        true => { let prod_local_70 = false; prod_local_70 },
+    } } } } },
+    } } } } } },
+    }
+                                                                            }
+                                                                        }
+                                                                        true => {
+                                                                            let _x_524 = (1 << 1);
+                                                                            {
+                                                                                let _x_526 = commandInvolutionCancels(_x_524, _x_524, _x_498, _x_498);
+                                                                                match _x_526 {
+                                                                                    false => {
+                                                                                        let prod_local_71 =
+                                                                                            _x_526;
+                                                                                        {
+                                                                                            let prod_local_72 =
+                                                                                                true;
+                                                                                            match prod_local_71 {
+        false => prod_local_71,
+        true => { let prod_local_73 = sSix()?; { let prod_local_74 = pow2Constructive(prod_local_73)?; { let prod_local_75 = sThirtyTwo()?; { let prod_local_76 = false; { let prod_local_77 = codedMatmulAdmissionValid(prod_local_74, prod_local_75, prod_local_76, prod_local_72); match prod_local_77 {
+        false => { let prod_local_79 = prod_local_77; match prod_local_79 {
+        false => prod_local_79,
+        true => { let prod_local_80 = sTen()?; { let prod_local_81 = sTwenty()?; { let prod_local_82 = uorcChallengerAdmissionValid(prod_local_80, prod_local_81, prod_local_72, prod_local_72); match prod_local_82 {
+        false => prod_local_82,
+        true => { let prod_local_83 = sThirty()?; { let prod_local_84 = sTwenty()?; { let prod_local_85 = uorcChallengerAdmissionValid(prod_local_83, prod_local_84, prod_local_72, prod_local_72); match prod_local_85 {
+        false => { let prod_local_86 = sTen()?; { let prod_local_87 = sTwenty()?; { let prod_local_88 = uorcChallengerAdmissionValid(prod_local_86, prod_local_87, prod_local_85, prod_local_72); match prod_local_88 {
+        false => prod_local_82,
+        true => prod_local_85,
+    } } } },
+        true => { let prod_local_89 = false; prod_local_89 },
+    } } } },
+    } } } },
+    } },
+        true => { let prod_local_90 = sSix()?; { let prod_local_91 = pow2Constructive(prod_local_90)?; { let prod_local_92 = sThirtyTwo()?; { let prod_local_93 = codedMatmulAdmissionValid(prod_local_91, prod_local_92, prod_local_72, prod_local_72); match prod_local_93 {
+        false => { let prod_local_94 = sSixteen()?; { let prod_local_95 = sThirtyTwo()?; { let prod_local_96 = codedMatmulAdmissionValid(prod_local_94, prod_local_95, prod_local_93, prod_local_72); match prod_local_96 {
+        false => { let prod_local_97 = prod_local_77; match prod_local_97 {
+        false => prod_local_97,
+        true => { let prod_local_98 = sTen()?; { let prod_local_99 = sTwenty()?; { let prod_local_100 = uorcChallengerAdmissionValid(prod_local_98, prod_local_99, prod_local_72, prod_local_72); match prod_local_100 {
+        false => prod_local_100,
+        true => { let prod_local_101 = sThirty()?; { let prod_local_102 = sTwenty()?; { let prod_local_103 = uorcChallengerAdmissionValid(prod_local_101, prod_local_102, prod_local_72, prod_local_72); match prod_local_103 {
+        false => { let prod_local_104 = sTen()?; { let prod_local_105 = sTwenty()?; { let prod_local_106 = uorcChallengerAdmissionValid(prod_local_104, prod_local_105, prod_local_103, prod_local_72); match prod_local_106 {
+        false => prod_local_100,
+        true => prod_local_103,
+    } } } },
+        true => { let prod_local_107 = false; prod_local_107 },
+    } } } },
+    } } } },
+    } },
+        true => { let prod_local_108 = prod_local_93; match prod_local_108 {
+        false => prod_local_108,
+        true => { let prod_local_109 = sTen()?; { let prod_local_110 = sTwenty()?; { let prod_local_111 = uorcChallengerAdmissionValid(prod_local_109, prod_local_110, prod_local_72, prod_local_72); match prod_local_111 {
+        false => prod_local_111,
+        true => { let prod_local_112 = sThirty()?; { let prod_local_113 = sTwenty()?; { let prod_local_114 = uorcChallengerAdmissionValid(prod_local_112, prod_local_113, prod_local_72, prod_local_72); match prod_local_114 {
+        false => { let prod_local_115 = sTen()?; { let prod_local_116 = sTwenty()?; { let prod_local_117 = uorcChallengerAdmissionValid(prod_local_115, prod_local_116, prod_local_114, prod_local_72); match prod_local_117 {
+        false => prod_local_111,
+        true => prod_local_114,
+    } } } },
+        true => { let prod_local_118 = false; prod_local_118 },
+    } } } },
+    } } } },
+    } },
+    } } } },
+        true => { let prod_local_119 = false; prod_local_119 },
+    } } } } },
+    } } } } } },
+    }
+                                                                                        }
+                                                                                    }
+                                                                                    true => {
+                                                                                        let _x_537 =
+                                                                                            (1 << 1);
+                                                                                        {
+                                                                                            let _x_538 = false;
+                                                                                            {
+                                                                                                let _x_540 = commandInvolutionCancels(_x_537, _x_537, _x_538, _x_526);
+                                                                                                match _x_540 {
+        false => { let _x_605 = 1; { let _x_606 = (1 << 1); { let _x_607 = commandInvolutionCancels(_x_605, _x_606, _x_526, _x_526); match _x_607 {
+        false => { let prod_local_120 = _x_526; { let prod_local_121 = true; match prod_local_120 {
+        false => prod_local_120,
+        true => { let prod_local_122 = sSix()?; { let prod_local_123 = pow2Constructive(prod_local_122)?; { let prod_local_124 = sThirtyTwo()?; { let prod_local_125 = false; { let prod_local_126 = codedMatmulAdmissionValid(prod_local_123, prod_local_124, prod_local_125, prod_local_121); match prod_local_126 {
+        false => { let prod_local_128 = prod_local_126; match prod_local_128 {
+        false => prod_local_128,
+        true => { let prod_local_129 = sTen()?; { let prod_local_130 = sTwenty()?; { let prod_local_131 = uorcChallengerAdmissionValid(prod_local_129, prod_local_130, prod_local_121, prod_local_121); match prod_local_131 {
+        false => prod_local_131,
+        true => { let prod_local_132 = sThirty()?; { let prod_local_133 = sTwenty()?; { let prod_local_134 = uorcChallengerAdmissionValid(prod_local_132, prod_local_133, prod_local_121, prod_local_121); match prod_local_134 {
+        false => { let prod_local_135 = sTen()?; { let prod_local_136 = sTwenty()?; { let prod_local_137 = uorcChallengerAdmissionValid(prod_local_135, prod_local_136, prod_local_134, prod_local_121); match prod_local_137 {
+        false => prod_local_131,
+        true => prod_local_134,
+    } } } },
+        true => { let prod_local_138 = false; prod_local_138 },
+    } } } },
+    } } } },
+    } },
+        true => { let prod_local_139 = sSix()?; { let prod_local_140 = pow2Constructive(prod_local_139)?; { let prod_local_141 = sThirtyTwo()?; { let prod_local_142 = codedMatmulAdmissionValid(prod_local_140, prod_local_141, prod_local_121, prod_local_121); match prod_local_142 {
+        false => { let prod_local_143 = sSixteen()?; { let prod_local_144 = sThirtyTwo()?; { let prod_local_145 = codedMatmulAdmissionValid(prod_local_143, prod_local_144, prod_local_142, prod_local_121); match prod_local_145 {
+        false => { let prod_local_146 = prod_local_126; match prod_local_146 {
+        false => prod_local_146,
+        true => { let prod_local_147 = sTen()?; { let prod_local_148 = sTwenty()?; { let prod_local_149 = uorcChallengerAdmissionValid(prod_local_147, prod_local_148, prod_local_121, prod_local_121); match prod_local_149 {
+        false => prod_local_149,
+        true => { let prod_local_150 = sThirty()?; { let prod_local_151 = sTwenty()?; { let prod_local_152 = uorcChallengerAdmissionValid(prod_local_150, prod_local_151, prod_local_121, prod_local_121); match prod_local_152 {
+        false => { let prod_local_153 = sTen()?; { let prod_local_154 = sTwenty()?; { let prod_local_155 = uorcChallengerAdmissionValid(prod_local_153, prod_local_154, prod_local_152, prod_local_121); match prod_local_155 {
+        false => prod_local_149,
+        true => prod_local_152,
+    } } } },
+        true => { let prod_local_156 = false; prod_local_156 },
+    } } } },
+    } } } },
+    } },
+        true => { let prod_local_157 = prod_local_142; match prod_local_157 {
+        false => prod_local_157,
+        true => { let prod_local_158 = sTen()?; { let prod_local_159 = sTwenty()?; { let prod_local_160 = uorcChallengerAdmissionValid(prod_local_158, prod_local_159, prod_local_121, prod_local_121); match prod_local_160 {
+        false => prod_local_160,
+        true => { let prod_local_161 = sThirty()?; { let prod_local_162 = sTwenty()?; { let prod_local_163 = uorcChallengerAdmissionValid(prod_local_161, prod_local_162, prod_local_121, prod_local_121); match prod_local_163 {
+        false => { let prod_local_164 = sTen()?; { let prod_local_165 = sTwenty()?; { let prod_local_166 = uorcChallengerAdmissionValid(prod_local_164, prod_local_165, prod_local_163, prod_local_121); match prod_local_166 {
+        false => prod_local_160,
+        true => prod_local_163,
+    } } } },
+        true => { let prod_local_167 = false; prod_local_167 },
+    } } } },
+    } } } },
+    } },
+    } } } },
+        true => { let prod_local_168 = false; prod_local_168 },
+    } } } } },
+    } } } } } },
+    } } },
+        true => { let prod_local_169 = _x_540; { let prod_local_170 = true; match prod_local_169 {
+        false => prod_local_169,
+        true => { let prod_local_171 = sSix()?; { let prod_local_172 = pow2Constructive(prod_local_171)?; { let prod_local_173 = sThirtyTwo()?; { let prod_local_174 = false; { let prod_local_175 = codedMatmulAdmissionValid(prod_local_172, prod_local_173, prod_local_174, prod_local_170); match prod_local_175 {
+        false => { let prod_local_177 = prod_local_175; match prod_local_177 {
+        false => prod_local_177,
+        true => { let prod_local_178 = sTen()?; { let prod_local_179 = sTwenty()?; { let prod_local_180 = uorcChallengerAdmissionValid(prod_local_178, prod_local_179, prod_local_170, prod_local_170); match prod_local_180 {
+        false => prod_local_180,
+        true => { let prod_local_181 = sThirty()?; { let prod_local_182 = sTwenty()?; { let prod_local_183 = uorcChallengerAdmissionValid(prod_local_181, prod_local_182, prod_local_170, prod_local_170); match prod_local_183 {
+        false => { let prod_local_184 = sTen()?; { let prod_local_185 = sTwenty()?; { let prod_local_186 = uorcChallengerAdmissionValid(prod_local_184, prod_local_185, prod_local_183, prod_local_170); match prod_local_186 {
+        false => prod_local_180,
+        true => prod_local_183,
+    } } } },
+        true => { let prod_local_187 = false; prod_local_187 },
+    } } } },
+    } } } },
+    } },
+        true => { let prod_local_188 = sSix()?; { let prod_local_189 = pow2Constructive(prod_local_188)?; { let prod_local_190 = sThirtyTwo()?; { let prod_local_191 = codedMatmulAdmissionValid(prod_local_189, prod_local_190, prod_local_170, prod_local_170); match prod_local_191 {
+        false => { let prod_local_192 = sSixteen()?; { let prod_local_193 = sThirtyTwo()?; { let prod_local_194 = codedMatmulAdmissionValid(prod_local_192, prod_local_193, prod_local_191, prod_local_170); match prod_local_194 {
+        false => { let prod_local_195 = prod_local_175; match prod_local_195 {
+        false => prod_local_195,
+        true => { let prod_local_196 = sTen()?; { let prod_local_197 = sTwenty()?; { let prod_local_198 = uorcChallengerAdmissionValid(prod_local_196, prod_local_197, prod_local_170, prod_local_170); match prod_local_198 {
+        false => prod_local_198,
+        true => { let prod_local_199 = sThirty()?; { let prod_local_200 = sTwenty()?; { let prod_local_201 = uorcChallengerAdmissionValid(prod_local_199, prod_local_200, prod_local_170, prod_local_170); match prod_local_201 {
+        false => { let prod_local_202 = sTen()?; { let prod_local_203 = sTwenty()?; { let prod_local_204 = uorcChallengerAdmissionValid(prod_local_202, prod_local_203, prod_local_201, prod_local_170); match prod_local_204 {
+        false => prod_local_198,
+        true => prod_local_201,
+    } } } },
+        true => { let prod_local_205 = false; prod_local_205 },
+    } } } },
+    } } } },
+    } },
+        true => { let prod_local_206 = prod_local_191; match prod_local_206 {
+        false => prod_local_206,
+        true => { let prod_local_207 = sTen()?; { let prod_local_208 = sTwenty()?; { let prod_local_209 = uorcChallengerAdmissionValid(prod_local_207, prod_local_208, prod_local_170, prod_local_170); match prod_local_209 {
+        false => prod_local_209,
+        true => { let prod_local_210 = sThirty()?; { let prod_local_211 = sTwenty()?; { let prod_local_212 = uorcChallengerAdmissionValid(prod_local_210, prod_local_211, prod_local_170, prod_local_170); match prod_local_212 {
+        false => { let prod_local_213 = sTen()?; { let prod_local_214 = sTwenty()?; { let prod_local_215 = uorcChallengerAdmissionValid(prod_local_213, prod_local_214, prod_local_212, prod_local_170); match prod_local_215 {
+        false => prod_local_209,
+        true => prod_local_212,
+    } } } },
+        true => { let prod_local_216 = false; prod_local_216 },
+    } } } },
+    } } } },
+    } },
+    } } } },
+        true => { let prod_local_217 = false; prod_local_217 },
+    } } } } },
+    } } } } } },
+    } } },
+    } } } },
+        true => { let _x_550 = false; _x_550 },
+    }
+                                                                                            }
+                                                                                        }
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    true => {
+                        let _x_559 = sEight()?;
+                        {
+                            let _x_560 = sEight()?;
+                            {
+                                let _x_561 = (_x_559 == _x_560);
+                                {
+                                    let prod_local_218 = _x_561;
+                                    match prod_local_218 {
+                                        false => prod_local_218,
+                                        true => {
+                                            let prod_local_220 = 1;
+                                            {
+                                                let prod_local_221 = sSeven()?;
+                                                {
+                                                    let prod_local_222 = octantMod8Fusion(
+                                                        prod_local_220,
+                                                        prod_local_221,
+                                                    )?;
+                                                    {
+                                                        let prod_local_223 = 0;
+                                                        {
+                                                            let prod_local_224 =
+                                                                (prod_local_222 == prod_local_223);
+                                                            match prod_local_224 {
+                                                                false => {
+                                                                    let prod_local_225 =
+                                                                        prod_local_224;
+                                                                    {
+                                                                        let prod_local_226 = true;
+                                                                        match prod_local_225 {
+                                                                            false => prod_local_225,
+                                                                            true => {
+                                                                                let prod_local_227 =
+                                                                                    sSix()?;
+                                                                                {
+                                                                                    let prod_local_228 = pow2Constructive(prod_local_227)?;
+                                                                                    {
+                                                                                        let prod_local_229 = sThirtyTwo()?;
+                                                                                        {
+                                                                                            let prod_local_230 = false;
+                                                                                            {
+                                                                                                let prod_local_231 = codedMatmulAdmissionValid(prod_local_228, prod_local_229, prod_local_230, prod_local_226);
+                                                                                                match prod_local_231 {
+        false => { let prod_local_233 = prod_local_231; match prod_local_233 {
+        false => prod_local_233,
+        true => { let prod_local_234 = sTen()?; { let prod_local_235 = sTwenty()?; { let prod_local_236 = uorcChallengerAdmissionValid(prod_local_234, prod_local_235, prod_local_226, prod_local_226); match prod_local_236 {
+        false => prod_local_236,
+        true => { let prod_local_237 = sThirty()?; { let prod_local_238 = sTwenty()?; { let prod_local_239 = uorcChallengerAdmissionValid(prod_local_237, prod_local_238, prod_local_226, prod_local_226); match prod_local_239 {
+        false => { let prod_local_240 = sTen()?; { let prod_local_241 = sTwenty()?; { let prod_local_242 = uorcChallengerAdmissionValid(prod_local_240, prod_local_241, prod_local_239, prod_local_226); match prod_local_242 {
+        false => prod_local_236,
+        true => prod_local_239,
+    } } } },
+        true => { let prod_local_243 = false; prod_local_243 },
+    } } } },
+    } } } },
+    } },
+        true => { let prod_local_244 = sSix()?; { let prod_local_245 = pow2Constructive(prod_local_244)?; { let prod_local_246 = sThirtyTwo()?; { let prod_local_247 = codedMatmulAdmissionValid(prod_local_245, prod_local_246, prod_local_226, prod_local_226); match prod_local_247 {
+        false => { let prod_local_248 = sSixteen()?; { let prod_local_249 = sThirtyTwo()?; { let prod_local_250 = codedMatmulAdmissionValid(prod_local_248, prod_local_249, prod_local_247, prod_local_226); match prod_local_250 {
+        false => { let prod_local_251 = prod_local_231; match prod_local_251 {
+        false => prod_local_251,
+        true => { let prod_local_252 = sTen()?; { let prod_local_253 = sTwenty()?; { let prod_local_254 = uorcChallengerAdmissionValid(prod_local_252, prod_local_253, prod_local_226, prod_local_226); match prod_local_254 {
+        false => prod_local_254,
+        true => { let prod_local_255 = sThirty()?; { let prod_local_256 = sTwenty()?; { let prod_local_257 = uorcChallengerAdmissionValid(prod_local_255, prod_local_256, prod_local_226, prod_local_226); match prod_local_257 {
+        false => { let prod_local_258 = sTen()?; { let prod_local_259 = sTwenty()?; { let prod_local_260 = uorcChallengerAdmissionValid(prod_local_258, prod_local_259, prod_local_257, prod_local_226); match prod_local_260 {
+        false => prod_local_254,
+        true => prod_local_257,
+    } } } },
+        true => { let prod_local_261 = false; prod_local_261 },
+    } } } },
+    } } } },
+    } },
+        true => { let prod_local_262 = prod_local_247; match prod_local_262 {
+        false => prod_local_262,
+        true => { let prod_local_263 = sTen()?; { let prod_local_264 = sTwenty()?; { let prod_local_265 = uorcChallengerAdmissionValid(prod_local_263, prod_local_264, prod_local_226, prod_local_226); match prod_local_265 {
+        false => prod_local_265,
+        true => { let prod_local_266 = sThirty()?; { let prod_local_267 = sTwenty()?; { let prod_local_268 = uorcChallengerAdmissionValid(prod_local_266, prod_local_267, prod_local_226, prod_local_226); match prod_local_268 {
+        false => { let prod_local_269 = sTen()?; { let prod_local_270 = sTwenty()?; { let prod_local_271 = uorcChallengerAdmissionValid(prod_local_269, prod_local_270, prod_local_268, prod_local_226); match prod_local_271 {
+        false => prod_local_265,
+        true => prod_local_268,
+    } } } },
+        true => { let prod_local_272 = false; prod_local_272 },
+    } } } },
+    } } } },
+    } },
+    } } } },
+        true => { let prod_local_273 = false; prod_local_273 },
+    } } } } },
+    }
+                                                                                            }
+                                                                                        }
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                                true => {
+                                                                    let prod_local_274 = (1 << 1);
+                                                                    {
+                                                                        let prod_local_275 =
+                                                                            octantMod8Fusion(
+                                                                                prod_local_274,
+                                                                                prod_local_274,
+                                                                            )?;
+                                                                        {
+                                                                            let prod_local_276 =
+                                                                                sFour()?;
+                                                                            {
+                                                                                let prod_local_277 = (prod_local_275 == prod_local_276);
+                                                                                match prod_local_277
+                                                                                {
+                                                                                    false => {
+                                                                                        let prod_local_278 = prod_local_277;
+                                                                                        {
+                                                                                            let prod_local_279 =
+                                                                                                true;
+                                                                                            match prod_local_278 {
+        false => prod_local_278,
+        true => { let prod_local_280 = sSix()?; { let prod_local_281 = pow2Constructive(prod_local_280)?; { let prod_local_282 = sThirtyTwo()?; { let prod_local_283 = false; { let prod_local_284 = codedMatmulAdmissionValid(prod_local_281, prod_local_282, prod_local_283, prod_local_279); match prod_local_284 {
+        false => { let prod_local_286 = prod_local_284; match prod_local_286 {
+        false => prod_local_286,
+        true => { let prod_local_287 = sTen()?; { let prod_local_288 = sTwenty()?; { let prod_local_289 = uorcChallengerAdmissionValid(prod_local_287, prod_local_288, prod_local_279, prod_local_279); match prod_local_289 {
+        false => prod_local_289,
+        true => { let prod_local_290 = sThirty()?; { let prod_local_291 = sTwenty()?; { let prod_local_292 = uorcChallengerAdmissionValid(prod_local_290, prod_local_291, prod_local_279, prod_local_279); match prod_local_292 {
+        false => { let prod_local_293 = sTen()?; { let prod_local_294 = sTwenty()?; { let prod_local_295 = uorcChallengerAdmissionValid(prod_local_293, prod_local_294, prod_local_292, prod_local_279); match prod_local_295 {
+        false => prod_local_289,
+        true => prod_local_292,
+    } } } },
+        true => { let prod_local_296 = false; prod_local_296 },
+    } } } },
+    } } } },
+    } },
+        true => { let prod_local_297 = sSix()?; { let prod_local_298 = pow2Constructive(prod_local_297)?; { let prod_local_299 = sThirtyTwo()?; { let prod_local_300 = codedMatmulAdmissionValid(prod_local_298, prod_local_299, prod_local_279, prod_local_279); match prod_local_300 {
+        false => { let prod_local_301 = sSixteen()?; { let prod_local_302 = sThirtyTwo()?; { let prod_local_303 = codedMatmulAdmissionValid(prod_local_301, prod_local_302, prod_local_300, prod_local_279); match prod_local_303 {
+        false => { let prod_local_304 = prod_local_284; match prod_local_304 {
+        false => prod_local_304,
+        true => { let prod_local_305 = sTen()?; { let prod_local_306 = sTwenty()?; { let prod_local_307 = uorcChallengerAdmissionValid(prod_local_305, prod_local_306, prod_local_279, prod_local_279); match prod_local_307 {
+        false => prod_local_307,
+        true => { let prod_local_308 = sThirty()?; { let prod_local_309 = sTwenty()?; { let prod_local_310 = uorcChallengerAdmissionValid(prod_local_308, prod_local_309, prod_local_279, prod_local_279); match prod_local_310 {
+        false => { let prod_local_311 = sTen()?; { let prod_local_312 = sTwenty()?; { let prod_local_313 = uorcChallengerAdmissionValid(prod_local_311, prod_local_312, prod_local_310, prod_local_279); match prod_local_313 {
+        false => prod_local_307,
+        true => prod_local_310,
+    } } } },
+        true => { let prod_local_314 = false; prod_local_314 },
+    } } } },
+    } } } },
+    } },
+        true => { let prod_local_315 = prod_local_300; match prod_local_315 {
+        false => prod_local_315,
+        true => { let prod_local_316 = sTen()?; { let prod_local_317 = sTwenty()?; { let prod_local_318 = uorcChallengerAdmissionValid(prod_local_316, prod_local_317, prod_local_279, prod_local_279); match prod_local_318 {
+        false => prod_local_318,
+        true => { let prod_local_319 = sThirty()?; { let prod_local_320 = sTwenty()?; { let prod_local_321 = uorcChallengerAdmissionValid(prod_local_319, prod_local_320, prod_local_279, prod_local_279); match prod_local_321 {
+        false => { let prod_local_322 = sTen()?; { let prod_local_323 = sTwenty()?; { let prod_local_324 = uorcChallengerAdmissionValid(prod_local_322, prod_local_323, prod_local_321, prod_local_279); match prod_local_324 {
+        false => prod_local_318,
+        true => prod_local_321,
+    } } } },
+        true => { let prod_local_325 = false; prod_local_325 },
+    } } } },
+    } } } },
+    } },
+    } } } },
+        true => { let prod_local_326 = false; prod_local_326 },
+    } } } } },
+    } } } } } },
+    }
+                                                                                        }
+                                                                                    }
+                                                                                    true => {
+                                                                                        let prod_local_327 =
+                                                                                            (1 << 1);
+                                                                                        {
+                                                                                            let prod_local_328 = commandInvolutionCancels(prod_local_327, prod_local_327, prod_local_277, prod_local_277);
+                                                                                            match prod_local_328 {
+        false => { let prod_local_329 = prod_local_328; { let prod_local_330 = true; match prod_local_329 {
+        false => prod_local_329,
+        true => { let prod_local_331 = sSix()?; { let prod_local_332 = pow2Constructive(prod_local_331)?; { let prod_local_333 = sThirtyTwo()?; { let prod_local_334 = false; { let prod_local_335 = codedMatmulAdmissionValid(prod_local_332, prod_local_333, prod_local_334, prod_local_330); match prod_local_335 {
+        false => { let prod_local_337 = prod_local_335; match prod_local_337 {
+        false => prod_local_337,
+        true => { let prod_local_338 = sTen()?; { let prod_local_339 = sTwenty()?; { let prod_local_340 = uorcChallengerAdmissionValid(prod_local_338, prod_local_339, prod_local_330, prod_local_330); match prod_local_340 {
+        false => prod_local_340,
+        true => { let prod_local_341 = sThirty()?; { let prod_local_342 = sTwenty()?; { let prod_local_343 = uorcChallengerAdmissionValid(prod_local_341, prod_local_342, prod_local_330, prod_local_330); match prod_local_343 {
+        false => { let prod_local_344 = sTen()?; { let prod_local_345 = sTwenty()?; { let prod_local_346 = uorcChallengerAdmissionValid(prod_local_344, prod_local_345, prod_local_343, prod_local_330); match prod_local_346 {
+        false => prod_local_340,
+        true => prod_local_343,
+    } } } },
+        true => { let prod_local_347 = false; prod_local_347 },
+    } } } },
+    } } } },
+    } },
+        true => { let prod_local_348 = sSix()?; { let prod_local_349 = pow2Constructive(prod_local_348)?; { let prod_local_350 = sThirtyTwo()?; { let prod_local_351 = codedMatmulAdmissionValid(prod_local_349, prod_local_350, prod_local_330, prod_local_330); match prod_local_351 {
+        false => { let prod_local_352 = sSixteen()?; { let prod_local_353 = sThirtyTwo()?; { let prod_local_354 = codedMatmulAdmissionValid(prod_local_352, prod_local_353, prod_local_351, prod_local_330); match prod_local_354 {
+        false => { let prod_local_355 = prod_local_335; match prod_local_355 {
+        false => prod_local_355,
+        true => { let prod_local_356 = sTen()?; { let prod_local_357 = sTwenty()?; { let prod_local_358 = uorcChallengerAdmissionValid(prod_local_356, prod_local_357, prod_local_330, prod_local_330); match prod_local_358 {
+        false => prod_local_358,
+        true => { let prod_local_359 = sThirty()?; { let prod_local_360 = sTwenty()?; { let prod_local_361 = uorcChallengerAdmissionValid(prod_local_359, prod_local_360, prod_local_330, prod_local_330); match prod_local_361 {
+        false => { let prod_local_362 = sTen()?; { let prod_local_363 = sTwenty()?; { let prod_local_364 = uorcChallengerAdmissionValid(prod_local_362, prod_local_363, prod_local_361, prod_local_330); match prod_local_364 {
+        false => prod_local_358,
+        true => prod_local_361,
+    } } } },
+        true => { let prod_local_365 = false; prod_local_365 },
+    } } } },
+    } } } },
+    } },
+        true => { let prod_local_366 = prod_local_351; match prod_local_366 {
+        false => prod_local_366,
+        true => { let prod_local_367 = sTen()?; { let prod_local_368 = sTwenty()?; { let prod_local_369 = uorcChallengerAdmissionValid(prod_local_367, prod_local_368, prod_local_330, prod_local_330); match prod_local_369 {
+        false => prod_local_369,
+        true => { let prod_local_370 = sThirty()?; { let prod_local_371 = sTwenty()?; { let prod_local_372 = uorcChallengerAdmissionValid(prod_local_370, prod_local_371, prod_local_330, prod_local_330); match prod_local_372 {
+        false => { let prod_local_373 = sTen()?; { let prod_local_374 = sTwenty()?; { let prod_local_375 = uorcChallengerAdmissionValid(prod_local_373, prod_local_374, prod_local_372, prod_local_330); match prod_local_375 {
+        false => prod_local_369,
+        true => prod_local_372,
+    } } } },
+        true => { let prod_local_376 = false; prod_local_376 },
+    } } } },
+    } } } },
+    } },
+    } } } },
+        true => { let prod_local_377 = false; prod_local_377 },
+    } } } } },
+    } } } } } },
+    } } },
+        true => { let prod_local_378 = (1 << 1); { let prod_local_379 = false; { let prod_local_380 = commandInvolutionCancels(prod_local_378, prod_local_378, prod_local_379, prod_local_328); match prod_local_380 {
+        false => { let prod_local_381 = 1; { let prod_local_382 = (1 << 1); { let prod_local_383 = commandInvolutionCancels(prod_local_381, prod_local_382, prod_local_328, prod_local_328); match prod_local_383 {
+        false => { let prod_local_384 = prod_local_328; { let prod_local_385 = true; match prod_local_384 {
+        false => prod_local_384,
+        true => { let prod_local_386 = sSix()?; { let prod_local_387 = pow2Constructive(prod_local_386)?; { let prod_local_388 = sThirtyTwo()?; { let prod_local_389 = false; { let prod_local_390 = codedMatmulAdmissionValid(prod_local_387, prod_local_388, prod_local_389, prod_local_385); match prod_local_390 {
+        false => { let prod_local_392 = prod_local_390; match prod_local_392 {
+        false => prod_local_392,
+        true => { let prod_local_393 = sTen()?; { let prod_local_394 = sTwenty()?; { let prod_local_395 = uorcChallengerAdmissionValid(prod_local_393, prod_local_394, prod_local_385, prod_local_385); match prod_local_395 {
+        false => prod_local_395,
+        true => { let prod_local_396 = sThirty()?; { let prod_local_397 = sTwenty()?; { let prod_local_398 = uorcChallengerAdmissionValid(prod_local_396, prod_local_397, prod_local_385, prod_local_385); match prod_local_398 {
+        false => { let prod_local_399 = sTen()?; { let prod_local_400 = sTwenty()?; { let prod_local_401 = uorcChallengerAdmissionValid(prod_local_399, prod_local_400, prod_local_398, prod_local_385); match prod_local_401 {
+        false => prod_local_395,
+        true => prod_local_398,
+    } } } },
+        true => { let prod_local_402 = false; prod_local_402 },
+    } } } },
+    } } } },
+    } },
+        true => { let prod_local_403 = sSix()?; { let prod_local_404 = pow2Constructive(prod_local_403)?; { let prod_local_405 = sThirtyTwo()?; { let prod_local_406 = codedMatmulAdmissionValid(prod_local_404, prod_local_405, prod_local_385, prod_local_385); match prod_local_406 {
+        false => { let prod_local_407 = sSixteen()?; { let prod_local_408 = sThirtyTwo()?; { let prod_local_409 = codedMatmulAdmissionValid(prod_local_407, prod_local_408, prod_local_406, prod_local_385); match prod_local_409 {
+        false => { let prod_local_410 = prod_local_390; match prod_local_410 {
+        false => prod_local_410,
+        true => { let prod_local_411 = sTen()?; { let prod_local_412 = sTwenty()?; { let prod_local_413 = uorcChallengerAdmissionValid(prod_local_411, prod_local_412, prod_local_385, prod_local_385); match prod_local_413 {
+        false => prod_local_413,
+        true => { let prod_local_414 = sThirty()?; { let prod_local_415 = sTwenty()?; { let prod_local_416 = uorcChallengerAdmissionValid(prod_local_414, prod_local_415, prod_local_385, prod_local_385); match prod_local_416 {
+        false => { let prod_local_417 = sTen()?; { let prod_local_418 = sTwenty()?; { let prod_local_419 = uorcChallengerAdmissionValid(prod_local_417, prod_local_418, prod_local_416, prod_local_385); match prod_local_419 {
+        false => prod_local_413,
+        true => prod_local_416,
+    } } } },
+        true => { let prod_local_420 = false; prod_local_420 },
+    } } } },
+    } } } },
+    } },
+        true => { let prod_local_421 = prod_local_406; match prod_local_421 {
+        false => prod_local_421,
+        true => { let prod_local_422 = sTen()?; { let prod_local_423 = sTwenty()?; { let prod_local_424 = uorcChallengerAdmissionValid(prod_local_422, prod_local_423, prod_local_385, prod_local_385); match prod_local_424 {
+        false => prod_local_424,
+        true => { let prod_local_425 = sThirty()?; { let prod_local_426 = sTwenty()?; { let prod_local_427 = uorcChallengerAdmissionValid(prod_local_425, prod_local_426, prod_local_385, prod_local_385); match prod_local_427 {
+        false => { let prod_local_428 = sTen()?; { let prod_local_429 = sTwenty()?; { let prod_local_430 = uorcChallengerAdmissionValid(prod_local_428, prod_local_429, prod_local_427, prod_local_385); match prod_local_430 {
+        false => prod_local_424,
+        true => prod_local_427,
+    } } } },
+        true => { let prod_local_431 = false; prod_local_431 },
+    } } } },
+    } } } },
+    } },
+    } } } },
+        true => { let prod_local_432 = false; prod_local_432 },
+    } } } } },
+    } } } } } },
+    } } },
+        true => { let prod_local_433 = prod_local_380; { let prod_local_434 = true; match prod_local_433 {
+        false => prod_local_433,
+        true => { let prod_local_435 = sSix()?; { let prod_local_436 = pow2Constructive(prod_local_435)?; { let prod_local_437 = sThirtyTwo()?; { let prod_local_438 = false; { let prod_local_439 = codedMatmulAdmissionValid(prod_local_436, prod_local_437, prod_local_438, prod_local_434); match prod_local_439 {
+        false => { let prod_local_441 = prod_local_439; match prod_local_441 {
+        false => prod_local_441,
+        true => { let prod_local_442 = sTen()?; { let prod_local_443 = sTwenty()?; { let prod_local_444 = uorcChallengerAdmissionValid(prod_local_442, prod_local_443, prod_local_434, prod_local_434); match prod_local_444 {
+        false => prod_local_444,
+        true => { let prod_local_445 = sThirty()?; { let prod_local_446 = sTwenty()?; { let prod_local_447 = uorcChallengerAdmissionValid(prod_local_445, prod_local_446, prod_local_434, prod_local_434); match prod_local_447 {
+        false => { let prod_local_448 = sTen()?; { let prod_local_449 = sTwenty()?; { let prod_local_450 = uorcChallengerAdmissionValid(prod_local_448, prod_local_449, prod_local_447, prod_local_434); match prod_local_450 {
+        false => prod_local_444,
+        true => prod_local_447,
+    } } } },
+        true => { let prod_local_451 = false; prod_local_451 },
+    } } } },
+    } } } },
+    } },
+        true => { let prod_local_452 = sSix()?; { let prod_local_453 = pow2Constructive(prod_local_452)?; { let prod_local_454 = sThirtyTwo()?; { let prod_local_455 = codedMatmulAdmissionValid(prod_local_453, prod_local_454, prod_local_434, prod_local_434); match prod_local_455 {
+        false => { let prod_local_456 = sSixteen()?; { let prod_local_457 = sThirtyTwo()?; { let prod_local_458 = codedMatmulAdmissionValid(prod_local_456, prod_local_457, prod_local_455, prod_local_434); match prod_local_458 {
+        false => { let prod_local_459 = prod_local_439; match prod_local_459 {
+        false => prod_local_459,
+        true => { let prod_local_460 = sTen()?; { let prod_local_461 = sTwenty()?; { let prod_local_462 = uorcChallengerAdmissionValid(prod_local_460, prod_local_461, prod_local_434, prod_local_434); match prod_local_462 {
+        false => prod_local_462,
+        true => { let prod_local_463 = sThirty()?; { let prod_local_464 = sTwenty()?; { let prod_local_465 = uorcChallengerAdmissionValid(prod_local_463, prod_local_464, prod_local_434, prod_local_434); match prod_local_465 {
+        false => { let prod_local_466 = sTen()?; { let prod_local_467 = sTwenty()?; { let prod_local_468 = uorcChallengerAdmissionValid(prod_local_466, prod_local_467, prod_local_465, prod_local_434); match prod_local_468 {
+        false => prod_local_462,
+        true => prod_local_465,
+    } } } },
+        true => { let prod_local_469 = false; prod_local_469 },
+    } } } },
+    } } } },
+    } },
+        true => { let prod_local_470 = prod_local_455; match prod_local_470 {
+        false => prod_local_470,
+        true => { let prod_local_471 = sTen()?; { let prod_local_472 = sTwenty()?; { let prod_local_473 = uorcChallengerAdmissionValid(prod_local_471, prod_local_472, prod_local_434, prod_local_434); match prod_local_473 {
+        false => prod_local_473,
+        true => { let prod_local_474 = sThirty()?; { let prod_local_475 = sTwenty()?; { let prod_local_476 = uorcChallengerAdmissionValid(prod_local_474, prod_local_475, prod_local_434, prod_local_434); match prod_local_476 {
+        false => { let prod_local_477 = sTen()?; { let prod_local_478 = sTwenty()?; { let prod_local_479 = uorcChallengerAdmissionValid(prod_local_477, prod_local_478, prod_local_476, prod_local_434); match prod_local_479 {
+        false => prod_local_473,
+        true => prod_local_476,
+    } } } },
+        true => { let prod_local_480 = false; prod_local_480 },
+    } } } },
+    } } } },
+    } },
+    } } } },
+        true => { let prod_local_481 = false; prod_local_481 },
+    } } } } },
+    } } } } } },
+    } } },
+    } } } },
+        true => { let prod_local_482 = false; prod_local_482 },
+    } } } },
+    }
+                                                                                        }
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    })
+}
+
+pub fn archetypeBitPlaneColumns() -> Result<u64, self::ComputeError> {
+    Ok({
+        let _x_1 = sEight()?;
+        _x_1
+    })
+}
+
 pub fn architecturalWalkabilityValid(
     riserMilli: u64,
     maxStepMilli: u64,
@@ -5453,6 +6198,45 @@ pub fn codebookProductTableSize() -> Result<u64, self::ComputeError> {
             _x_2
         }
     })
+}
+
+pub fn codedMatmulAdmissionValid(
+    accumBits: u64,
+    requiredAccumBits: u64,
+    intermediateFloatDecode: bool,
+    exactChecksumMatches: bool,
+) -> bool {
+    match intermediateFloatDecode {
+        false => {
+            let _x_41 = (requiredAccumBits <= accumBits);
+            match _x_41 {
+                false => _x_41,
+                true => exactChecksumMatches,
+            }
+        }
+        true => {
+            let _x_26 = false;
+            _x_26
+        }
+    }
+}
+
+pub fn commandInvolutionCancels(
+    kindA: u64,
+    kindB: u64,
+    isSelfInverse: bool,
+    sameTarget: bool,
+) -> bool {
+    {
+        let _x_14 = (kindA == kindB);
+        match _x_14 {
+            false => _x_14,
+            true => match isSelfInverse {
+                false => isSelfInverse,
+                true => sameTarget,
+            },
+        }
+    }
 }
 
 pub fn commercialProgressionActive() -> Result<bool, self::ComputeError> {
@@ -17621,6 +18405,24 @@ pub fn observerSalienceDim() -> Result<u64, self::ComputeError> {
     })
 }
 
+pub fn octantMod8Fusion(octA: u64, octB: u64) -> Result<u64, self::ComputeError> {
+    Ok({
+        let _x_17 = core::convert::identity::<u64>(octA)
+            .checked_add(octB)
+            .ok_or(self::ComputeError::AddOverflow)?;
+        {
+            let _x_6 = sEight()?;
+            {
+                let _x_7 = 0;
+                {
+                    let _x_10 = if _x_6 == 0 { _x_7 } else { _x_17 % _x_6 };
+                    _x_10
+                }
+            }
+        }
+    })
+}
+
 pub fn peerObservationFresh(
     observedAt: u64,
     expires: u64,
@@ -17733,6 +18535,13 @@ pub fn renderPassDependencyValid(
 pub fn rgbaChannelCount() -> Result<u64, self::ComputeError> {
     Ok({
         let _x_1 = sFour()?;
+        _x_1
+    })
+}
+
+pub fn rollbackCheckpointStrideFrames() -> Result<u64, self::ComputeError> {
+    Ok({
+        let _x_1 = sEight()?;
         _x_1
     })
 }
@@ -20880,6 +21689,24 @@ pub fn universeLocalOffsetBounded(absOffsetMilli: u64, halfSpanMilli: u64) -> bo
     }
 }
 
+pub fn uorcChallengerAdmissionValid(
+    challengerBytes: u64,
+    incumbentBytes: u64,
+    losslessVerified: bool,
+    orderPreserved: bool,
+) -> bool {
+    match losslessVerified {
+        false => losslessVerified,
+        true => match orderPreserved {
+            false => orderPreserved,
+            true => {
+                let _x_30 = (challengerBytes <= incumbentBytes);
+                _x_30
+            }
+        },
+    }
+}
+
 pub fn uorcDefaultCompressSteps() -> Result<u64, self::ComputeError> {
     Ok({
         let _x_1 = sFour()?;
@@ -21134,49 +21961,49 @@ pub fn workloadPerformanceDirect() -> Result<bool, self::ComputeError> {
                         let _y_173 = match _x_168 {
                             false => _x_168,
                             true => {
-                                let _x_1055 = 0;
+                                let _x_1082 = 0;
                                 {
-                                    let _x_1056 = wordCountForEntities(_x_1055)?;
+                                    let _x_1083 = wordCountForEntities(_x_1082)?;
                                     {
-                                        let _x_1057 = (_x_1056 == _x_1055);
-                                        match _x_1057 {
-                                            false => _x_1057,
+                                        let _x_1084 = (_x_1083 == _x_1082);
+                                        match _x_1084 {
+                                            false => _x_1084,
                                             true => {
-                                                let _x_1082 = 1;
+                                                let _x_1109 = 1;
                                                 {
-                                                    let _x_1083 = wordCountForEntities(_x_1082)?;
+                                                    let _x_1110 = wordCountForEntities(_x_1109)?;
                                                     {
-                                                        let _x_1084 = (_x_1083 == _x_1082);
-                                                        match _x_1084 {
-                                                            false => _x_1084,
+                                                        let _x_1111 = (_x_1110 == _x_1109);
+                                                        match _x_1111 {
+                                                            false => _x_1111,
                                                             true => {
-                                                                let _x_1101 = sSixtyFive()?;
+                                                                let _x_1128 = sSixtyFive()?;
                                                                 {
-                                                                    let _x_1102 =
+                                                                    let _x_1129 =
                                                                         wordCountForEntities(
-                                                                            _x_1101,
+                                                                            _x_1128,
                                                                         )?;
                                                                     {
-                                                                        let _x_1103 = (1 << 1);
+                                                                        let _x_1130 = (1 << 1);
                                                                         {
-                                                                            let _x_1104 = (_x_1102
-                                                                                == _x_1103);
-                                                                            match _x_1104 {
-                                                                                false => _x_1104,
+                                                                            let _x_1131 = (_x_1129
+                                                                                == _x_1130);
+                                                                            match _x_1131 {
+                                                                                false => _x_1131,
                                                                                 true => {
-                                                                                    let _x_1114 =
+                                                                                    let _x_1141 =
                                                                                         sSixtyFive(
                                                                                         )?;
                                                                                     {
-                                                                                        let _x_1115 =
+                                                                                        let _x_1142 =
                                                                                             (1 << 1);
                                                                                         {
-                                                                                            let _x_1116 = wordPackedFilterValid(_x_1114, _x_1115)?;
-                                                                                            match _x_1116 {
-        false => _x_1116,
-        true => { let _x_1120 = sSixtyFive()?; { let _x_1121 = 1; { let _x_1122 = wordPackedFilterValid(_x_1120, _x_1121)?; match _x_1122 {
-        false => _x_1116,
-        true => { let _x_1124 = false; _x_1124 },
+                                                                                            let _x_1143 = wordPackedFilterValid(_x_1141, _x_1142)?;
+                                                                                            match _x_1143 {
+        false => _x_1143,
+        true => { let _x_1147 = sSixtyFive()?; { let _x_1148 = 1; { let _x_1149 = wordPackedFilterValid(_x_1147, _x_1148)?; match _x_1149 {
+        false => _x_1143,
+        true => { let _x_1151 = false; _x_1151 },
     } } } },
     }
                                                                                         }
@@ -21199,37 +22026,37 @@ pub fn workloadPerformanceDirect() -> Result<bool, self::ComputeError> {
                         match _y_173 {
                             false => _y_173,
                             true => {
-                                let _x_853 = sEight()?;
+                                let _x_880 = sEight()?;
                                 {
-                                    let _x_854 = sEight()?;
+                                    let _x_881 = sEight()?;
                                     {
-                                        let _x_855 = (_x_853 == _x_854);
+                                        let _x_882 = (_x_880 == _x_881);
                                         {
-                                            let _y_857 = match _x_855 {
-                                                false => _x_855,
+                                            let _y_884 = match _x_882 {
+                                                false => _x_882,
                                                 true => {
-                                                    let _x_1013 = sFour()?;
+                                                    let _x_1040 = sFour()?;
                                                     {
-                                                        let _x_1014 = sFour()?;
+                                                        let _x_1041 = sFour()?;
                                                         {
-                                                            let _x_1015 = (_x_1013 == _x_1014);
-                                                            match _x_1015 {
-                                                                false => _x_1015,
+                                                            let _x_1042 = (_x_1040 == _x_1041);
+                                                            match _x_1042 {
+                                                                false => _x_1042,
                                                                 true => {
-                                                                    let _x_1019 =
+                                                                    let _x_1046 =
                                                                         flatBvhStackCapacity()?;
                                                                     {
-                                                                        let _x_1020 = sSix()?;
+                                                                        let _x_1047 = sSix()?;
                                                                         {
-                                                                            let _x_1021 =
+                                                                            let _x_1048 =
                                                                                 pow2Constructive(
-                                                                                    _x_1020,
+                                                                                    _x_1047,
                                                                                 )?;
                                                                             {
-                                                                                let _x_1022 =
-                                                                                    (_x_1019
-                                                                                        == _x_1021);
-                                                                                _x_1022
+                                                                                let _x_1049 =
+                                                                                    (_x_1046
+                                                                                        == _x_1048);
+                                                                                _x_1049
                                                                             }
                                                                         }
                                                                     }
@@ -21239,51 +22066,54 @@ pub fn workloadPerformanceDirect() -> Result<bool, self::ComputeError> {
                                                     }
                                                 }
                                             };
-                                            match _y_857 {
-                                                false => _y_857,
+                                            match _y_884 {
+                                                false => _y_884,
                                                 true => {
-                                                    let _x_907 = sTen()?;
+                                                    let _x_934 = sTen()?;
                                                     {
-                                                        let _x_908 = sTwenty()?;
+                                                        let _x_935 = sTwenty()?;
                                                         {
-                                                            let _x_909 = (_x_907 <= _x_908);
-                                                            match _x_909 {
+                                                            let _x_936 = (_x_934 <= _x_935);
+                                                            match _x_936 {
                                                                 false => {
-                                                                    let _y_178 = _x_909;
+                                                                    let _y_178 = _x_936;
                                                                     {
                                                                         let _x_179 = true;
                                                                         match _y_178 {
                                                                             false => _y_178,
                                                                             true => {
-                                                                                let _x_1129 =
+                                                                                let _x_1156 =
                                                                                     ((1 << 1) + 1);
                                                                                 {
-                                                                                    let _x_1130 =
+                                                                                    let _x_1157 =
                                                                                         false;
                                                                                     {
-                                                                                        let _x_1131 = epochElisionAdmissible(_x_1129, _x_1129, _x_1130);
-                                                                                        match _x_1131 {
-        false => { let _y_1133 = _x_1131; match _y_1133 {
-        false => _y_1133,
-        true => { let _x_1139 = 1; { let _x_1140 = workerInFlightAdmissible(_x_1139); match _x_1140 {
-        false => { let _y_1142 = _x_1140; match _y_1142 {
-        false => _y_1142,
-        true => { let _x_1143 = sTen()?; { let _x_1144 = sTwenty()?; { let _x_1145 = governorRecommendedScalePermille(_x_1143, _x_1144)?; { let _x_1146 = skinWeightScale()?; { let _x_1147 = (_x_1145 == _x_1146); { let _y_1149 = match _x_1147 {
-        false => _x_1147,
-        true => { let _x_1156 = sThirty()?; { let _x_1157 = sTwenty()?; { let _x_1158 = governorRecommendedScalePermille(_x_1156, _x_1157)?; { let _x_1160 = sEightyFive()?; { let _x_1161 = sTen()?; { let _x_1162 = core::convert::identity::<u64>(_x_1160).checked_mul(_x_1161).ok_or(self::ComputeError::MulOverflow)?; { let _x_1163 = (_x_1158 == _x_1162); match _x_1163 {
-        false => _x_1163,
-        true => { let _x_1164 = sFifty()?; { let _x_1165 = sTwenty()?; { let _x_1166 = governorRecommendedScalePermille(_x_1164, _x_1165)?; { let _x_1168 = sSeven()?; { let _x_1169 = sHundred()?; { let _x_1170 = core::convert::identity::<u64>(_x_1168).checked_mul(_x_1169).ok_or(self::ComputeError::MulOverflow)?; { let _x_1171 = (_x_1166 == _x_1170); _x_1171 } } } } } } },
+                                                                                        let _x_1158 = epochElisionAdmissible(_x_1156, _x_1156, _x_1157);
+                                                                                        match _x_1158 {
+        false => { let _y_1160 = _x_1158; match _y_1160 {
+        false => _y_1160,
+        true => { let _x_1169 = 1; { let _x_1170 = workerInFlightAdmissible(_x_1169); match _x_1170 {
+        false => { let _y_1172 = _x_1170; match _y_1172 {
+        false => _y_1172,
+        true => { let _x_1173 = sTen()?; { let _x_1174 = sTwenty()?; { let _x_1175 = governorRecommendedScalePermille(_x_1173, _x_1174)?; { let _x_1176 = skinWeightScale()?; { let _x_1177 = (_x_1175 == _x_1176); { let _y_1179 = match _x_1177 {
+        false => _x_1177,
+        true => { let _x_1186 = sThirty()?; { let _x_1187 = sTwenty()?; { let _x_1188 = governorRecommendedScalePermille(_x_1186, _x_1187)?; { let _x_1190 = sEightyFive()?; { let _x_1191 = sTen()?; { let _x_1192 = core::convert::identity::<u64>(_x_1190).checked_mul(_x_1191).ok_or(self::ComputeError::MulOverflow)?; { let _x_1193 = (_x_1188 == _x_1192); match _x_1193 {
+        false => _x_1193,
+        true => { let _x_1194 = sFifty()?; { let _x_1195 = sTwenty()?; { let _x_1196 = governorRecommendedScalePermille(_x_1194, _x_1195)?; { let _x_1198 = sSeven()?; { let _x_1199 = sHundred()?; { let _x_1200 = core::convert::identity::<u64>(_x_1198).checked_mul(_x_1199).ok_or(self::ComputeError::MulOverflow)?; { let _x_1201 = (_x_1196 == _x_1200); _x_1201 } } } } } } },
     } } } } } } } },
-    }; match _y_1149 {
-        false => _y_1149,
-        true => { let _x_1150 = codebookProductTableSize()?; { let _x_1151 = sEight()?; { let _x_1152 = pow2Constructive(_x_1151)?; { let _x_1153 = (_x_1150 == _x_1152); match _x_1153 {
-        false => _x_1153,
-        true => { let _x_1190 = runtimeInvariantsDirect()?; _x_1190 },
+    }; match _y_1179 {
+        false => _y_1179,
+        true => { let _x_1180 = codebookProductTableSize()?; { let _x_1181 = sEight()?; { let _x_1182 = pow2Constructive(_x_1181)?; { let _x_1183 = (_x_1180 == _x_1182); match _x_1183 {
+        false => _x_1183,
+        true => { let _x_1252 = aqmWorkloadExtrapolationsDirect()?; match _x_1252 {
+        false => _x_1252,
+        true => { let _x_1253 = runtimeInvariantsDirect()?; _x_1253 },
+    } },
     } } } } },
     } } } } } } },
     } },
-        true => { let _x_1174 = (1 << 1); { let _x_1175 = workerInFlightAdmissible(_x_1174); match _x_1175 {
-        false => { let prod_local_0 = _x_1175; match prod_local_0 {
+        true => { let _x_1204 = (1 << 1); { let _x_1205 = workerInFlightAdmissible(_x_1204); match _x_1205 {
+        false => { let prod_local_0 = _x_1205; match prod_local_0 {
         false => prod_local_0,
         true => { let prod_local_1 = sTen()?; { let prod_local_2 = sTwenty()?; { let prod_local_3 = governorRecommendedScalePermille(prod_local_1, prod_local_2)?; { let prod_local_4 = skinWeightScale()?; { let prod_local_5 = (prod_local_3 == prod_local_4); { let prod_local_21 = match prod_local_5 {
         false => prod_local_5,
@@ -21295,95 +22125,110 @@ pub fn workloadPerformanceDirect() -> Result<bool, self::ComputeError> {
         false => prod_local_21,
         true => { let prod_local_22 = codebookProductTableSize()?; { let prod_local_23 = sEight()?; { let prod_local_24 = pow2Constructive(prod_local_23)?; { let prod_local_25 = (prod_local_22 == prod_local_24); match prod_local_25 {
         false => prod_local_25,
-        true => { let prod_local_26 = runtimeInvariantsDirect()?; prod_local_26 },
+        true => { let prod_local_26 = aqmWorkloadExtrapolationsDirect()?; match prod_local_26 {
+        false => prod_local_26,
+        true => { let prod_local_27 = runtimeInvariantsDirect()?; prod_local_27 },
+    } },
     } } } } },
     } } } } } } },
     } },
-        true => { let _x_1176 = ((1 << 1) + 1); { let _x_1177 = workerInFlightAdmissible(_x_1176); match _x_1177 {
-        false => { let prod_local_27 = _x_1175; match prod_local_27 {
-        false => prod_local_27,
-        true => { let prod_local_28 = sTen()?; { let prod_local_29 = sTwenty()?; { let prod_local_30 = governorRecommendedScalePermille(prod_local_28, prod_local_29)?; { let prod_local_31 = skinWeightScale()?; { let prod_local_32 = (prod_local_30 == prod_local_31); { let prod_local_48 = match prod_local_32 {
-        false => prod_local_32,
-        true => { let prod_local_34 = sThirty()?; { let prod_local_35 = sTwenty()?; { let prod_local_36 = governorRecommendedScalePermille(prod_local_34, prod_local_35)?; { let prod_local_37 = sEightyFive()?; { let prod_local_38 = sTen()?; { let prod_local_39 = core::convert::identity::<u64>(prod_local_37).checked_mul(prod_local_38).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_40 = (prod_local_36 == prod_local_39); match prod_local_40 {
-        false => prod_local_40,
-        true => { let prod_local_41 = sFifty()?; { let prod_local_42 = sTwenty()?; { let prod_local_43 = governorRecommendedScalePermille(prod_local_41, prod_local_42)?; { let prod_local_44 = sSeven()?; { let prod_local_45 = sHundred()?; { let prod_local_46 = core::convert::identity::<u64>(prod_local_44).checked_mul(prod_local_45).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_47 = (prod_local_43 == prod_local_46); prod_local_47 } } } } } } },
+        true => { let _x_1206 = ((1 << 1) + 1); { let _x_1207 = workerInFlightAdmissible(_x_1206); match _x_1207 {
+        false => { let prod_local_28 = _x_1205; match prod_local_28 {
+        false => prod_local_28,
+        true => { let prod_local_29 = sTen()?; { let prod_local_30 = sTwenty()?; { let prod_local_31 = governorRecommendedScalePermille(prod_local_29, prod_local_30)?; { let prod_local_32 = skinWeightScale()?; { let prod_local_33 = (prod_local_31 == prod_local_32); { let prod_local_49 = match prod_local_33 {
+        false => prod_local_33,
+        true => { let prod_local_35 = sThirty()?; { let prod_local_36 = sTwenty()?; { let prod_local_37 = governorRecommendedScalePermille(prod_local_35, prod_local_36)?; { let prod_local_38 = sEightyFive()?; { let prod_local_39 = sTen()?; { let prod_local_40 = core::convert::identity::<u64>(prod_local_38).checked_mul(prod_local_39).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_41 = (prod_local_37 == prod_local_40); match prod_local_41 {
+        false => prod_local_41,
+        true => { let prod_local_42 = sFifty()?; { let prod_local_43 = sTwenty()?; { let prod_local_44 = governorRecommendedScalePermille(prod_local_42, prod_local_43)?; { let prod_local_45 = sSeven()?; { let prod_local_46 = sHundred()?; { let prod_local_47 = core::convert::identity::<u64>(prod_local_45).checked_mul(prod_local_46).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_48 = (prod_local_44 == prod_local_47); prod_local_48 } } } } } } },
     } } } } } } } },
-    }; match prod_local_48 {
-        false => prod_local_48,
-        true => { let prod_local_49 = codebookProductTableSize()?; { let prod_local_50 = sEight()?; { let prod_local_51 = pow2Constructive(prod_local_50)?; { let prod_local_52 = (prod_local_49 == prod_local_51); match prod_local_52 {
-        false => prod_local_52,
-        true => { let prod_local_53 = runtimeInvariantsDirect()?; prod_local_53 },
-    } } } } },
-    } } } } } } },
-    } },
-        true => { let _x_1178 = false; _x_1178 },
-    } } },
-    } } },
-    } } },
-    } },
-        true => { let _x_1181 = (1 << 1); { let _x_1182 = ((1 << 1) + 1); { let _x_1183 = false; { let _x_1184 = epochElisionAdmissible(_x_1181, _x_1182, _x_1183); match _x_1184 {
-        false => { let _x_1191 = ((1 << 1) + 1); { let _x_1192 = epochElisionAdmissible(_x_1191, _x_1191, _x_179); { let prod_local_54 = match _x_1192 {
-        false => _x_1131,
-        true => _x_1184,
-    }; match prod_local_54 {
+    }; match prod_local_49 {
+        false => prod_local_49,
+        true => { let prod_local_50 = codebookProductTableSize()?; { let prod_local_51 = sEight()?; { let prod_local_52 = pow2Constructive(prod_local_51)?; { let prod_local_53 = (prod_local_50 == prod_local_52); match prod_local_53 {
+        false => prod_local_53,
+        true => { let prod_local_54 = aqmWorkloadExtrapolationsDirect()?; match prod_local_54 {
         false => prod_local_54,
-        true => { let prod_local_55 = 1; { let prod_local_56 = workerInFlightAdmissible(prod_local_55); match prod_local_56 {
-        false => { let prod_local_58 = prod_local_56; match prod_local_58 {
-        false => prod_local_58,
-        true => { let prod_local_59 = sTen()?; { let prod_local_60 = sTwenty()?; { let prod_local_61 = governorRecommendedScalePermille(prod_local_59, prod_local_60)?; { let prod_local_62 = skinWeightScale()?; { let prod_local_63 = (prod_local_61 == prod_local_62); { let prod_local_79 = match prod_local_63 {
-        false => prod_local_63,
-        true => { let prod_local_65 = sThirty()?; { let prod_local_66 = sTwenty()?; { let prod_local_67 = governorRecommendedScalePermille(prod_local_65, prod_local_66)?; { let prod_local_68 = sEightyFive()?; { let prod_local_69 = sTen()?; { let prod_local_70 = core::convert::identity::<u64>(prod_local_68).checked_mul(prod_local_69).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_71 = (prod_local_67 == prod_local_70); match prod_local_71 {
-        false => prod_local_71,
-        true => { let prod_local_72 = sFifty()?; { let prod_local_73 = sTwenty()?; { let prod_local_74 = governorRecommendedScalePermille(prod_local_72, prod_local_73)?; { let prod_local_75 = sSeven()?; { let prod_local_76 = sHundred()?; { let prod_local_77 = core::convert::identity::<u64>(prod_local_75).checked_mul(prod_local_76).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_78 = (prod_local_74 == prod_local_77); prod_local_78 } } } } } } },
-    } } } } } } } },
-    }; match prod_local_79 {
-        false => prod_local_79,
-        true => { let prod_local_80 = codebookProductTableSize()?; { let prod_local_81 = sEight()?; { let prod_local_82 = pow2Constructive(prod_local_81)?; { let prod_local_83 = (prod_local_80 == prod_local_82); match prod_local_83 {
-        false => prod_local_83,
-        true => { let prod_local_84 = runtimeInvariantsDirect()?; prod_local_84 },
+        true => { let prod_local_55 = runtimeInvariantsDirect()?; prod_local_55 },
+    } },
     } } } } },
     } } } } } } },
     } },
-        true => { let prod_local_85 = (1 << 1); { let prod_local_86 = workerInFlightAdmissible(prod_local_85); match prod_local_86 {
-        false => { let prod_local_87 = prod_local_86; match prod_local_87 {
-        false => prod_local_87,
-        true => { let prod_local_88 = sTen()?; { let prod_local_89 = sTwenty()?; { let prod_local_90 = governorRecommendedScalePermille(prod_local_88, prod_local_89)?; { let prod_local_91 = skinWeightScale()?; { let prod_local_92 = (prod_local_90 == prod_local_91); { let prod_local_108 = match prod_local_92 {
-        false => prod_local_92,
-        true => { let prod_local_94 = sThirty()?; { let prod_local_95 = sTwenty()?; { let prod_local_96 = governorRecommendedScalePermille(prod_local_94, prod_local_95)?; { let prod_local_97 = sEightyFive()?; { let prod_local_98 = sTen()?; { let prod_local_99 = core::convert::identity::<u64>(prod_local_97).checked_mul(prod_local_98).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_100 = (prod_local_96 == prod_local_99); match prod_local_100 {
-        false => prod_local_100,
-        true => { let prod_local_101 = sFifty()?; { let prod_local_102 = sTwenty()?; { let prod_local_103 = governorRecommendedScalePermille(prod_local_101, prod_local_102)?; { let prod_local_104 = sSeven()?; { let prod_local_105 = sHundred()?; { let prod_local_106 = core::convert::identity::<u64>(prod_local_104).checked_mul(prod_local_105).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_107 = (prod_local_103 == prod_local_106); prod_local_107 } } } } } } },
+        true => { let _x_1208 = false; _x_1208 },
+    } } },
+    } } },
+    } } },
+    } },
+        true => { let _x_1211 = (1 << 1); { let _x_1212 = ((1 << 1) + 1); { let _x_1213 = false; { let _x_1214 = epochElisionAdmissible(_x_1211, _x_1212, _x_1213); match _x_1214 {
+        false => { let _x_1222 = ((1 << 1) + 1); { let _x_1223 = epochElisionAdmissible(_x_1222, _x_1222, _x_179); { let prod_local_56 = match _x_1223 {
+        false => _x_1158,
+        true => _x_1214,
+    }; match prod_local_56 {
+        false => prod_local_56,
+        true => { let prod_local_57 = 1; { let prod_local_58 = workerInFlightAdmissible(prod_local_57); match prod_local_58 {
+        false => { let prod_local_60 = prod_local_58; match prod_local_60 {
+        false => prod_local_60,
+        true => { let prod_local_61 = sTen()?; { let prod_local_62 = sTwenty()?; { let prod_local_63 = governorRecommendedScalePermille(prod_local_61, prod_local_62)?; { let prod_local_64 = skinWeightScale()?; { let prod_local_65 = (prod_local_63 == prod_local_64); { let prod_local_81 = match prod_local_65 {
+        false => prod_local_65,
+        true => { let prod_local_67 = sThirty()?; { let prod_local_68 = sTwenty()?; { let prod_local_69 = governorRecommendedScalePermille(prod_local_67, prod_local_68)?; { let prod_local_70 = sEightyFive()?; { let prod_local_71 = sTen()?; { let prod_local_72 = core::convert::identity::<u64>(prod_local_70).checked_mul(prod_local_71).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_73 = (prod_local_69 == prod_local_72); match prod_local_73 {
+        false => prod_local_73,
+        true => { let prod_local_74 = sFifty()?; { let prod_local_75 = sTwenty()?; { let prod_local_76 = governorRecommendedScalePermille(prod_local_74, prod_local_75)?; { let prod_local_77 = sSeven()?; { let prod_local_78 = sHundred()?; { let prod_local_79 = core::convert::identity::<u64>(prod_local_77).checked_mul(prod_local_78).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_80 = (prod_local_76 == prod_local_79); prod_local_80 } } } } } } },
     } } } } } } } },
-    }; match prod_local_108 {
-        false => prod_local_108,
-        true => { let prod_local_109 = codebookProductTableSize()?; { let prod_local_110 = sEight()?; { let prod_local_111 = pow2Constructive(prod_local_110)?; { let prod_local_112 = (prod_local_109 == prod_local_111); match prod_local_112 {
-        false => prod_local_112,
-        true => { let prod_local_113 = runtimeInvariantsDirect()?; prod_local_113 },
+    }; match prod_local_81 {
+        false => prod_local_81,
+        true => { let prod_local_82 = codebookProductTableSize()?; { let prod_local_83 = sEight()?; { let prod_local_84 = pow2Constructive(prod_local_83)?; { let prod_local_85 = (prod_local_82 == prod_local_84); match prod_local_85 {
+        false => prod_local_85,
+        true => { let prod_local_86 = aqmWorkloadExtrapolationsDirect()?; match prod_local_86 {
+        false => prod_local_86,
+        true => { let prod_local_87 = runtimeInvariantsDirect()?; prod_local_87 },
+    } },
     } } } } },
     } } } } } } },
     } },
-        true => { let prod_local_114 = ((1 << 1) + 1); { let prod_local_115 = workerInFlightAdmissible(prod_local_114); match prod_local_115 {
-        false => { let prod_local_116 = prod_local_86; match prod_local_116 {
+        true => { let prod_local_88 = (1 << 1); { let prod_local_89 = workerInFlightAdmissible(prod_local_88); match prod_local_89 {
+        false => { let prod_local_90 = prod_local_89; match prod_local_90 {
+        false => prod_local_90,
+        true => { let prod_local_91 = sTen()?; { let prod_local_92 = sTwenty()?; { let prod_local_93 = governorRecommendedScalePermille(prod_local_91, prod_local_92)?; { let prod_local_94 = skinWeightScale()?; { let prod_local_95 = (prod_local_93 == prod_local_94); { let prod_local_111 = match prod_local_95 {
+        false => prod_local_95,
+        true => { let prod_local_97 = sThirty()?; { let prod_local_98 = sTwenty()?; { let prod_local_99 = governorRecommendedScalePermille(prod_local_97, prod_local_98)?; { let prod_local_100 = sEightyFive()?; { let prod_local_101 = sTen()?; { let prod_local_102 = core::convert::identity::<u64>(prod_local_100).checked_mul(prod_local_101).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_103 = (prod_local_99 == prod_local_102); match prod_local_103 {
+        false => prod_local_103,
+        true => { let prod_local_104 = sFifty()?; { let prod_local_105 = sTwenty()?; { let prod_local_106 = governorRecommendedScalePermille(prod_local_104, prod_local_105)?; { let prod_local_107 = sSeven()?; { let prod_local_108 = sHundred()?; { let prod_local_109 = core::convert::identity::<u64>(prod_local_107).checked_mul(prod_local_108).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_110 = (prod_local_106 == prod_local_109); prod_local_110 } } } } } } },
+    } } } } } } } },
+    }; match prod_local_111 {
+        false => prod_local_111,
+        true => { let prod_local_112 = codebookProductTableSize()?; { let prod_local_113 = sEight()?; { let prod_local_114 = pow2Constructive(prod_local_113)?; { let prod_local_115 = (prod_local_112 == prod_local_114); match prod_local_115 {
+        false => prod_local_115,
+        true => { let prod_local_116 = aqmWorkloadExtrapolationsDirect()?; match prod_local_116 {
         false => prod_local_116,
-        true => { let prod_local_117 = sTen()?; { let prod_local_118 = sTwenty()?; { let prod_local_119 = governorRecommendedScalePermille(prod_local_117, prod_local_118)?; { let prod_local_120 = skinWeightScale()?; { let prod_local_121 = (prod_local_119 == prod_local_120); { let prod_local_137 = match prod_local_121 {
-        false => prod_local_121,
-        true => { let prod_local_123 = sThirty()?; { let prod_local_124 = sTwenty()?; { let prod_local_125 = governorRecommendedScalePermille(prod_local_123, prod_local_124)?; { let prod_local_126 = sEightyFive()?; { let prod_local_127 = sTen()?; { let prod_local_128 = core::convert::identity::<u64>(prod_local_126).checked_mul(prod_local_127).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_129 = (prod_local_125 == prod_local_128); match prod_local_129 {
-        false => prod_local_129,
-        true => { let prod_local_130 = sFifty()?; { let prod_local_131 = sTwenty()?; { let prod_local_132 = governorRecommendedScalePermille(prod_local_130, prod_local_131)?; { let prod_local_133 = sSeven()?; { let prod_local_134 = sHundred()?; { let prod_local_135 = core::convert::identity::<u64>(prod_local_133).checked_mul(prod_local_134).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_136 = (prod_local_132 == prod_local_135); prod_local_136 } } } } } } },
-    } } } } } } } },
-    }; match prod_local_137 {
-        false => prod_local_137,
-        true => { let prod_local_138 = codebookProductTableSize()?; { let prod_local_139 = sEight()?; { let prod_local_140 = pow2Constructive(prod_local_139)?; { let prod_local_141 = (prod_local_138 == prod_local_140); match prod_local_141 {
-        false => prod_local_141,
-        true => { let prod_local_142 = runtimeInvariantsDirect()?; prod_local_142 },
+        true => { let prod_local_117 = runtimeInvariantsDirect()?; prod_local_117 },
+    } },
     } } } } },
     } } } } } } },
     } },
-        true => { let prod_local_143 = false; prod_local_143 },
+        true => { let prod_local_118 = ((1 << 1) + 1); { let prod_local_119 = workerInFlightAdmissible(prod_local_118); match prod_local_119 {
+        false => { let prod_local_120 = prod_local_89; match prod_local_120 {
+        false => prod_local_120,
+        true => { let prod_local_121 = sTen()?; { let prod_local_122 = sTwenty()?; { let prod_local_123 = governorRecommendedScalePermille(prod_local_121, prod_local_122)?; { let prod_local_124 = skinWeightScale()?; { let prod_local_125 = (prod_local_123 == prod_local_124); { let prod_local_141 = match prod_local_125 {
+        false => prod_local_125,
+        true => { let prod_local_127 = sThirty()?; { let prod_local_128 = sTwenty()?; { let prod_local_129 = governorRecommendedScalePermille(prod_local_127, prod_local_128)?; { let prod_local_130 = sEightyFive()?; { let prod_local_131 = sTen()?; { let prod_local_132 = core::convert::identity::<u64>(prod_local_130).checked_mul(prod_local_131).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_133 = (prod_local_129 == prod_local_132); match prod_local_133 {
+        false => prod_local_133,
+        true => { let prod_local_134 = sFifty()?; { let prod_local_135 = sTwenty()?; { let prod_local_136 = governorRecommendedScalePermille(prod_local_134, prod_local_135)?; { let prod_local_137 = sSeven()?; { let prod_local_138 = sHundred()?; { let prod_local_139 = core::convert::identity::<u64>(prod_local_137).checked_mul(prod_local_138).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_140 = (prod_local_136 == prod_local_139); prod_local_140 } } } } } } },
+    } } } } } } } },
+    }; match prod_local_141 {
+        false => prod_local_141,
+        true => { let prod_local_142 = codebookProductTableSize()?; { let prod_local_143 = sEight()?; { let prod_local_144 = pow2Constructive(prod_local_143)?; { let prod_local_145 = (prod_local_142 == prod_local_144); match prod_local_145 {
+        false => prod_local_145,
+        true => { let prod_local_146 = aqmWorkloadExtrapolationsDirect()?; match prod_local_146 {
+        false => prod_local_146,
+        true => { let prod_local_147 = runtimeInvariantsDirect()?; prod_local_147 },
+    } },
+    } } } } },
+    } } } } } } },
+    } },
+        true => { let prod_local_148 = false; prod_local_148 },
     } } },
     } } },
     } } },
     } } } },
-        true => { let _x_1189 = false; _x_1189 },
+        true => { let _x_1219 = false; _x_1219 },
     } } } } },
     }
                                                                                     }
@@ -21393,159 +22238,177 @@ pub fn workloadPerformanceDirect() -> Result<bool, self::ComputeError> {
                                                                     }
                                                                 }
                                                                 true => {
-                                                                    let _x_942 = sTwenty()?;
+                                                                    let _x_969 = sTwenty()?;
                                                                     {
-                                                                        let _x_943 = sTen()?;
+                                                                        let _x_970 = sTen()?;
                                                                         {
-                                                                            let _x_944 =
-                                                                                (_x_942 <= _x_943);
-                                                                            match _x_944 {
+                                                                            let _x_971 =
+                                                                                (_x_969 <= _x_970);
+                                                                            match _x_971 {
                                                                                 false => {
-                                                                                    let _x_1194 = 0;
+                                                                                    let _x_1225 = 0;
                                                                                     {
-                                                                                        let _x_1195 =
+                                                                                        let _x_1226 =
                                                                                             1;
                                                                                         {
-                                                                                            let _x_1196 = sFour()?;
+                                                                                            let _x_1227 = sFour()?;
                                                                                             {
-                                                                                                let _x_1197 = flatBvhNodeBoundsValid(_x_1194, _x_1195, _x_1196);
+                                                                                                let _x_1228 = flatBvhNodeBoundsValid(_x_1225, _x_1226, _x_1227);
                                                                                                 {
-                                                                                                    let prod_local_144 = match _x_1197 {
-        false => _x_1197,
-        true => { let _x_1198 = (1 << 1); { let _x_1199 = 1; { let _x_1200 = sFour()?; { let _x_1201 = flatBvhNodeBoundsValid(_x_1198, _x_1199, _x_1200); match _x_1201 {
-        false => { let _x_1208 = 0; { let _x_1209 = sFour()?; { let _x_1210 = flatBvhNodeBoundsValid(_x_1208, _x_1209, _x_1209); match _x_1210 {
-        false => _x_1197,
-        true => _x_1201,
+                                                                                                    let prod_local_149 = match _x_1228 {
+        false => _x_1228,
+        true => { let _x_1229 = (1 << 1); { let _x_1230 = 1; { let _x_1231 = sFour()?; { let _x_1232 = flatBvhNodeBoundsValid(_x_1229, _x_1230, _x_1231); match _x_1232 {
+        false => { let _x_1239 = 0; { let _x_1240 = sFour()?; { let _x_1241 = flatBvhNodeBoundsValid(_x_1239, _x_1240, _x_1240); match _x_1241 {
+        false => _x_1228,
+        true => _x_1232,
     } } } },
-        true => _x_944,
+        true => _x_971,
     } } } } },
     };
                                                                                                     {
-                                                                                                        let prod_local_145 = true;
-                                                                                                        match prod_local_144 {
-        false => prod_local_144,
-        true => { let prod_local_146 = ((1 << 1) + 1); { let prod_local_147 = false; { let prod_local_148 = epochElisionAdmissible(prod_local_146, prod_local_146, prod_local_147); match prod_local_148 {
-        false => { let prod_local_150 = prod_local_148; match prod_local_150 {
-        false => prod_local_150,
-        true => { let prod_local_151 = 1; { let prod_local_152 = workerInFlightAdmissible(prod_local_151); match prod_local_152 {
-        false => { let prod_local_154 = prod_local_152; match prod_local_154 {
-        false => prod_local_154,
-        true => { let prod_local_155 = sTen()?; { let prod_local_156 = sTwenty()?; { let prod_local_157 = governorRecommendedScalePermille(prod_local_155, prod_local_156)?; { let prod_local_158 = skinWeightScale()?; { let prod_local_159 = (prod_local_157 == prod_local_158); { let prod_local_175 = match prod_local_159 {
+                                                                                                        let prod_local_150 = true;
+                                                                                                        match prod_local_149 {
+        false => prod_local_149,
+        true => { let prod_local_151 = ((1 << 1) + 1); { let prod_local_152 = false; { let prod_local_153 = epochElisionAdmissible(prod_local_151, prod_local_151, prod_local_152); match prod_local_153 {
+        false => { let prod_local_155 = prod_local_153; match prod_local_155 {
+        false => prod_local_155,
+        true => { let prod_local_156 = 1; { let prod_local_157 = workerInFlightAdmissible(prod_local_156); match prod_local_157 {
+        false => { let prod_local_159 = prod_local_157; match prod_local_159 {
         false => prod_local_159,
-        true => { let prod_local_161 = sThirty()?; { let prod_local_162 = sTwenty()?; { let prod_local_163 = governorRecommendedScalePermille(prod_local_161, prod_local_162)?; { let prod_local_164 = sEightyFive()?; { let prod_local_165 = sTen()?; { let prod_local_166 = core::convert::identity::<u64>(prod_local_164).checked_mul(prod_local_165).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_167 = (prod_local_163 == prod_local_166); match prod_local_167 {
-        false => prod_local_167,
-        true => { let prod_local_168 = sFifty()?; { let prod_local_169 = sTwenty()?; { let prod_local_170 = governorRecommendedScalePermille(prod_local_168, prod_local_169)?; { let prod_local_171 = sSeven()?; { let prod_local_172 = sHundred()?; { let prod_local_173 = core::convert::identity::<u64>(prod_local_171).checked_mul(prod_local_172).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_174 = (prod_local_170 == prod_local_173); prod_local_174 } } } } } } },
+        true => { let prod_local_160 = sTen()?; { let prod_local_161 = sTwenty()?; { let prod_local_162 = governorRecommendedScalePermille(prod_local_160, prod_local_161)?; { let prod_local_163 = skinWeightScale()?; { let prod_local_164 = (prod_local_162 == prod_local_163); { let prod_local_180 = match prod_local_164 {
+        false => prod_local_164,
+        true => { let prod_local_166 = sThirty()?; { let prod_local_167 = sTwenty()?; { let prod_local_168 = governorRecommendedScalePermille(prod_local_166, prod_local_167)?; { let prod_local_169 = sEightyFive()?; { let prod_local_170 = sTen()?; { let prod_local_171 = core::convert::identity::<u64>(prod_local_169).checked_mul(prod_local_170).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_172 = (prod_local_168 == prod_local_171); match prod_local_172 {
+        false => prod_local_172,
+        true => { let prod_local_173 = sFifty()?; { let prod_local_174 = sTwenty()?; { let prod_local_175 = governorRecommendedScalePermille(prod_local_173, prod_local_174)?; { let prod_local_176 = sSeven()?; { let prod_local_177 = sHundred()?; { let prod_local_178 = core::convert::identity::<u64>(prod_local_176).checked_mul(prod_local_177).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_179 = (prod_local_175 == prod_local_178); prod_local_179 } } } } } } },
     } } } } } } } },
-    }; match prod_local_175 {
-        false => prod_local_175,
-        true => { let prod_local_176 = codebookProductTableSize()?; { let prod_local_177 = sEight()?; { let prod_local_178 = pow2Constructive(prod_local_177)?; { let prod_local_179 = (prod_local_176 == prod_local_178); match prod_local_179 {
-        false => prod_local_179,
-        true => { let prod_local_180 = runtimeInvariantsDirect()?; prod_local_180 },
+    }; match prod_local_180 {
+        false => prod_local_180,
+        true => { let prod_local_181 = codebookProductTableSize()?; { let prod_local_182 = sEight()?; { let prod_local_183 = pow2Constructive(prod_local_182)?; { let prod_local_184 = (prod_local_181 == prod_local_183); match prod_local_184 {
+        false => prod_local_184,
+        true => { let prod_local_185 = aqmWorkloadExtrapolationsDirect()?; match prod_local_185 {
+        false => prod_local_185,
+        true => { let prod_local_186 = runtimeInvariantsDirect()?; prod_local_186 },
+    } },
     } } } } },
     } } } } } } },
     } },
-        true => { let prod_local_181 = (1 << 1); { let prod_local_182 = workerInFlightAdmissible(prod_local_181); match prod_local_182 {
-        false => { let prod_local_183 = prod_local_182; match prod_local_183 {
-        false => prod_local_183,
-        true => { let prod_local_184 = sTen()?; { let prod_local_185 = sTwenty()?; { let prod_local_186 = governorRecommendedScalePermille(prod_local_184, prod_local_185)?; { let prod_local_187 = skinWeightScale()?; { let prod_local_188 = (prod_local_186 == prod_local_187); { let prod_local_204 = match prod_local_188 {
-        false => prod_local_188,
-        true => { let prod_local_190 = sThirty()?; { let prod_local_191 = sTwenty()?; { let prod_local_192 = governorRecommendedScalePermille(prod_local_190, prod_local_191)?; { let prod_local_193 = sEightyFive()?; { let prod_local_194 = sTen()?; { let prod_local_195 = core::convert::identity::<u64>(prod_local_193).checked_mul(prod_local_194).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_196 = (prod_local_192 == prod_local_195); match prod_local_196 {
-        false => prod_local_196,
-        true => { let prod_local_197 = sFifty()?; { let prod_local_198 = sTwenty()?; { let prod_local_199 = governorRecommendedScalePermille(prod_local_197, prod_local_198)?; { let prod_local_200 = sSeven()?; { let prod_local_201 = sHundred()?; { let prod_local_202 = core::convert::identity::<u64>(prod_local_200).checked_mul(prod_local_201).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_203 = (prod_local_199 == prod_local_202); prod_local_203 } } } } } } },
+        true => { let prod_local_187 = (1 << 1); { let prod_local_188 = workerInFlightAdmissible(prod_local_187); match prod_local_188 {
+        false => { let prod_local_189 = prod_local_188; match prod_local_189 {
+        false => prod_local_189,
+        true => { let prod_local_190 = sTen()?; { let prod_local_191 = sTwenty()?; { let prod_local_192 = governorRecommendedScalePermille(prod_local_190, prod_local_191)?; { let prod_local_193 = skinWeightScale()?; { let prod_local_194 = (prod_local_192 == prod_local_193); { let prod_local_210 = match prod_local_194 {
+        false => prod_local_194,
+        true => { let prod_local_196 = sThirty()?; { let prod_local_197 = sTwenty()?; { let prod_local_198 = governorRecommendedScalePermille(prod_local_196, prod_local_197)?; { let prod_local_199 = sEightyFive()?; { let prod_local_200 = sTen()?; { let prod_local_201 = core::convert::identity::<u64>(prod_local_199).checked_mul(prod_local_200).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_202 = (prod_local_198 == prod_local_201); match prod_local_202 {
+        false => prod_local_202,
+        true => { let prod_local_203 = sFifty()?; { let prod_local_204 = sTwenty()?; { let prod_local_205 = governorRecommendedScalePermille(prod_local_203, prod_local_204)?; { let prod_local_206 = sSeven()?; { let prod_local_207 = sHundred()?; { let prod_local_208 = core::convert::identity::<u64>(prod_local_206).checked_mul(prod_local_207).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_209 = (prod_local_205 == prod_local_208); prod_local_209 } } } } } } },
     } } } } } } } },
-    }; match prod_local_204 {
-        false => prod_local_204,
-        true => { let prod_local_205 = codebookProductTableSize()?; { let prod_local_206 = sEight()?; { let prod_local_207 = pow2Constructive(prod_local_206)?; { let prod_local_208 = (prod_local_205 == prod_local_207); match prod_local_208 {
-        false => prod_local_208,
-        true => { let prod_local_209 = runtimeInvariantsDirect()?; prod_local_209 },
+    }; match prod_local_210 {
+        false => prod_local_210,
+        true => { let prod_local_211 = codebookProductTableSize()?; { let prod_local_212 = sEight()?; { let prod_local_213 = pow2Constructive(prod_local_212)?; { let prod_local_214 = (prod_local_211 == prod_local_213); match prod_local_214 {
+        false => prod_local_214,
+        true => { let prod_local_215 = aqmWorkloadExtrapolationsDirect()?; match prod_local_215 {
+        false => prod_local_215,
+        true => { let prod_local_216 = runtimeInvariantsDirect()?; prod_local_216 },
+    } },
     } } } } },
     } } } } } } },
     } },
-        true => { let prod_local_210 = ((1 << 1) + 1); { let prod_local_211 = workerInFlightAdmissible(prod_local_210); match prod_local_211 {
-        false => { let prod_local_212 = prod_local_182; match prod_local_212 {
-        false => prod_local_212,
-        true => { let prod_local_213 = sTen()?; { let prod_local_214 = sTwenty()?; { let prod_local_215 = governorRecommendedScalePermille(prod_local_213, prod_local_214)?; { let prod_local_216 = skinWeightScale()?; { let prod_local_217 = (prod_local_215 == prod_local_216); { let prod_local_233 = match prod_local_217 {
-        false => prod_local_217,
-        true => { let prod_local_219 = sThirty()?; { let prod_local_220 = sTwenty()?; { let prod_local_221 = governorRecommendedScalePermille(prod_local_219, prod_local_220)?; { let prod_local_222 = sEightyFive()?; { let prod_local_223 = sTen()?; { let prod_local_224 = core::convert::identity::<u64>(prod_local_222).checked_mul(prod_local_223).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_225 = (prod_local_221 == prod_local_224); match prod_local_225 {
-        false => prod_local_225,
-        true => { let prod_local_226 = sFifty()?; { let prod_local_227 = sTwenty()?; { let prod_local_228 = governorRecommendedScalePermille(prod_local_226, prod_local_227)?; { let prod_local_229 = sSeven()?; { let prod_local_230 = sHundred()?; { let prod_local_231 = core::convert::identity::<u64>(prod_local_229).checked_mul(prod_local_230).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_232 = (prod_local_228 == prod_local_231); prod_local_232 } } } } } } },
+        true => { let prod_local_217 = ((1 << 1) + 1); { let prod_local_218 = workerInFlightAdmissible(prod_local_217); match prod_local_218 {
+        false => { let prod_local_219 = prod_local_188; match prod_local_219 {
+        false => prod_local_219,
+        true => { let prod_local_220 = sTen()?; { let prod_local_221 = sTwenty()?; { let prod_local_222 = governorRecommendedScalePermille(prod_local_220, prod_local_221)?; { let prod_local_223 = skinWeightScale()?; { let prod_local_224 = (prod_local_222 == prod_local_223); { let prod_local_240 = match prod_local_224 {
+        false => prod_local_224,
+        true => { let prod_local_226 = sThirty()?; { let prod_local_227 = sTwenty()?; { let prod_local_228 = governorRecommendedScalePermille(prod_local_226, prod_local_227)?; { let prod_local_229 = sEightyFive()?; { let prod_local_230 = sTen()?; { let prod_local_231 = core::convert::identity::<u64>(prod_local_229).checked_mul(prod_local_230).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_232 = (prod_local_228 == prod_local_231); match prod_local_232 {
+        false => prod_local_232,
+        true => { let prod_local_233 = sFifty()?; { let prod_local_234 = sTwenty()?; { let prod_local_235 = governorRecommendedScalePermille(prod_local_233, prod_local_234)?; { let prod_local_236 = sSeven()?; { let prod_local_237 = sHundred()?; { let prod_local_238 = core::convert::identity::<u64>(prod_local_236).checked_mul(prod_local_237).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_239 = (prod_local_235 == prod_local_238); prod_local_239 } } } } } } },
     } } } } } } } },
-    }; match prod_local_233 {
-        false => prod_local_233,
-        true => { let prod_local_234 = codebookProductTableSize()?; { let prod_local_235 = sEight()?; { let prod_local_236 = pow2Constructive(prod_local_235)?; { let prod_local_237 = (prod_local_234 == prod_local_236); match prod_local_237 {
-        false => prod_local_237,
-        true => { let prod_local_238 = runtimeInvariantsDirect()?; prod_local_238 },
+    }; match prod_local_240 {
+        false => prod_local_240,
+        true => { let prod_local_241 = codebookProductTableSize()?; { let prod_local_242 = sEight()?; { let prod_local_243 = pow2Constructive(prod_local_242)?; { let prod_local_244 = (prod_local_241 == prod_local_243); match prod_local_244 {
+        false => prod_local_244,
+        true => { let prod_local_245 = aqmWorkloadExtrapolationsDirect()?; match prod_local_245 {
+        false => prod_local_245,
+        true => { let prod_local_246 = runtimeInvariantsDirect()?; prod_local_246 },
+    } },
     } } } } },
     } } } } } } },
     } },
-        true => { let prod_local_239 = false; prod_local_239 },
+        true => { let prod_local_247 = false; prod_local_247 },
     } } },
     } } },
     } } },
     } },
-        true => { let prod_local_240 = (1 << 1); { let prod_local_241 = ((1 << 1) + 1); { let prod_local_242 = false; { let prod_local_243 = epochElisionAdmissible(prod_local_240, prod_local_241, prod_local_242); match prod_local_243 {
-        false => { let prod_local_244 = ((1 << 1) + 1); { let prod_local_245 = epochElisionAdmissible(prod_local_244, prod_local_244, prod_local_145); { let prod_local_246 = match prod_local_245 {
-        false => prod_local_148,
-        true => prod_local_243,
-    }; match prod_local_246 {
-        false => prod_local_246,
-        true => { let prod_local_247 = 1; { let prod_local_248 = workerInFlightAdmissible(prod_local_247); match prod_local_248 {
-        false => { let prod_local_250 = prod_local_248; match prod_local_250 {
-        false => prod_local_250,
-        true => { let prod_local_251 = sTen()?; { let prod_local_252 = sTwenty()?; { let prod_local_253 = governorRecommendedScalePermille(prod_local_251, prod_local_252)?; { let prod_local_254 = skinWeightScale()?; { let prod_local_255 = (prod_local_253 == prod_local_254); { let prod_local_271 = match prod_local_255 {
-        false => prod_local_255,
-        true => { let prod_local_257 = sThirty()?; { let prod_local_258 = sTwenty()?; { let prod_local_259 = governorRecommendedScalePermille(prod_local_257, prod_local_258)?; { let prod_local_260 = sEightyFive()?; { let prod_local_261 = sTen()?; { let prod_local_262 = core::convert::identity::<u64>(prod_local_260).checked_mul(prod_local_261).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_263 = (prod_local_259 == prod_local_262); match prod_local_263 {
+        true => { let prod_local_248 = (1 << 1); { let prod_local_249 = ((1 << 1) + 1); { let prod_local_250 = false; { let prod_local_251 = epochElisionAdmissible(prod_local_248, prod_local_249, prod_local_250); match prod_local_251 {
+        false => { let prod_local_252 = ((1 << 1) + 1); { let prod_local_253 = epochElisionAdmissible(prod_local_252, prod_local_252, prod_local_150); { let prod_local_254 = match prod_local_253 {
+        false => prod_local_153,
+        true => prod_local_251,
+    }; match prod_local_254 {
+        false => prod_local_254,
+        true => { let prod_local_255 = 1; { let prod_local_256 = workerInFlightAdmissible(prod_local_255); match prod_local_256 {
+        false => { let prod_local_258 = prod_local_256; match prod_local_258 {
+        false => prod_local_258,
+        true => { let prod_local_259 = sTen()?; { let prod_local_260 = sTwenty()?; { let prod_local_261 = governorRecommendedScalePermille(prod_local_259, prod_local_260)?; { let prod_local_262 = skinWeightScale()?; { let prod_local_263 = (prod_local_261 == prod_local_262); { let prod_local_279 = match prod_local_263 {
         false => prod_local_263,
-        true => { let prod_local_264 = sFifty()?; { let prod_local_265 = sTwenty()?; { let prod_local_266 = governorRecommendedScalePermille(prod_local_264, prod_local_265)?; { let prod_local_267 = sSeven()?; { let prod_local_268 = sHundred()?; { let prod_local_269 = core::convert::identity::<u64>(prod_local_267).checked_mul(prod_local_268).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_270 = (prod_local_266 == prod_local_269); prod_local_270 } } } } } } },
-    } } } } } } } },
-    }; match prod_local_271 {
+        true => { let prod_local_265 = sThirty()?; { let prod_local_266 = sTwenty()?; { let prod_local_267 = governorRecommendedScalePermille(prod_local_265, prod_local_266)?; { let prod_local_268 = sEightyFive()?; { let prod_local_269 = sTen()?; { let prod_local_270 = core::convert::identity::<u64>(prod_local_268).checked_mul(prod_local_269).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_271 = (prod_local_267 == prod_local_270); match prod_local_271 {
         false => prod_local_271,
-        true => { let prod_local_272 = codebookProductTableSize()?; { let prod_local_273 = sEight()?; { let prod_local_274 = pow2Constructive(prod_local_273)?; { let prod_local_275 = (prod_local_272 == prod_local_274); match prod_local_275 {
-        false => prod_local_275,
-        true => { let prod_local_276 = runtimeInvariantsDirect()?; prod_local_276 },
-    } } } } },
-    } } } } } } },
-    } },
-        true => { let prod_local_277 = (1 << 1); { let prod_local_278 = workerInFlightAdmissible(prod_local_277); match prod_local_278 {
-        false => { let prod_local_279 = prod_local_278; match prod_local_279 {
+        true => { let prod_local_272 = sFifty()?; { let prod_local_273 = sTwenty()?; { let prod_local_274 = governorRecommendedScalePermille(prod_local_272, prod_local_273)?; { let prod_local_275 = sSeven()?; { let prod_local_276 = sHundred()?; { let prod_local_277 = core::convert::identity::<u64>(prod_local_275).checked_mul(prod_local_276).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_278 = (prod_local_274 == prod_local_277); prod_local_278 } } } } } } },
+    } } } } } } } },
+    }; match prod_local_279 {
         false => prod_local_279,
-        true => { let prod_local_280 = sTen()?; { let prod_local_281 = sTwenty()?; { let prod_local_282 = governorRecommendedScalePermille(prod_local_280, prod_local_281)?; { let prod_local_283 = skinWeightScale()?; { let prod_local_284 = (prod_local_282 == prod_local_283); { let prod_local_300 = match prod_local_284 {
+        true => { let prod_local_280 = codebookProductTableSize()?; { let prod_local_281 = sEight()?; { let prod_local_282 = pow2Constructive(prod_local_281)?; { let prod_local_283 = (prod_local_280 == prod_local_282); match prod_local_283 {
+        false => prod_local_283,
+        true => { let prod_local_284 = aqmWorkloadExtrapolationsDirect()?; match prod_local_284 {
         false => prod_local_284,
-        true => { let prod_local_286 = sThirty()?; { let prod_local_287 = sTwenty()?; { let prod_local_288 = governorRecommendedScalePermille(prod_local_286, prod_local_287)?; { let prod_local_289 = sEightyFive()?; { let prod_local_290 = sTen()?; { let prod_local_291 = core::convert::identity::<u64>(prod_local_289).checked_mul(prod_local_290).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_292 = (prod_local_288 == prod_local_291); match prod_local_292 {
-        false => prod_local_292,
-        true => { let prod_local_293 = sFifty()?; { let prod_local_294 = sTwenty()?; { let prod_local_295 = governorRecommendedScalePermille(prod_local_293, prod_local_294)?; { let prod_local_296 = sSeven()?; { let prod_local_297 = sHundred()?; { let prod_local_298 = core::convert::identity::<u64>(prod_local_296).checked_mul(prod_local_297).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_299 = (prod_local_295 == prod_local_298); prod_local_299 } } } } } } },
-    } } } } } } } },
-    }; match prod_local_300 {
-        false => prod_local_300,
-        true => { let prod_local_301 = codebookProductTableSize()?; { let prod_local_302 = sEight()?; { let prod_local_303 = pow2Constructive(prod_local_302)?; { let prod_local_304 = (prod_local_301 == prod_local_303); match prod_local_304 {
-        false => prod_local_304,
-        true => { let prod_local_305 = runtimeInvariantsDirect()?; prod_local_305 },
+        true => { let prod_local_285 = runtimeInvariantsDirect()?; prod_local_285 },
+    } },
     } } } } },
     } } } } } } },
     } },
-        true => { let prod_local_306 = ((1 << 1) + 1); { let prod_local_307 = workerInFlightAdmissible(prod_local_306); match prod_local_307 {
-        false => { let prod_local_308 = prod_local_278; match prod_local_308 {
-        false => prod_local_308,
-        true => { let prod_local_309 = sTen()?; { let prod_local_310 = sTwenty()?; { let prod_local_311 = governorRecommendedScalePermille(prod_local_309, prod_local_310)?; { let prod_local_312 = skinWeightScale()?; { let prod_local_313 = (prod_local_311 == prod_local_312); { let prod_local_329 = match prod_local_313 {
+        true => { let prod_local_286 = (1 << 1); { let prod_local_287 = workerInFlightAdmissible(prod_local_286); match prod_local_287 {
+        false => { let prod_local_288 = prod_local_287; match prod_local_288 {
+        false => prod_local_288,
+        true => { let prod_local_289 = sTen()?; { let prod_local_290 = sTwenty()?; { let prod_local_291 = governorRecommendedScalePermille(prod_local_289, prod_local_290)?; { let prod_local_292 = skinWeightScale()?; { let prod_local_293 = (prod_local_291 == prod_local_292); { let prod_local_309 = match prod_local_293 {
+        false => prod_local_293,
+        true => { let prod_local_295 = sThirty()?; { let prod_local_296 = sTwenty()?; { let prod_local_297 = governorRecommendedScalePermille(prod_local_295, prod_local_296)?; { let prod_local_298 = sEightyFive()?; { let prod_local_299 = sTen()?; { let prod_local_300 = core::convert::identity::<u64>(prod_local_298).checked_mul(prod_local_299).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_301 = (prod_local_297 == prod_local_300); match prod_local_301 {
+        false => prod_local_301,
+        true => { let prod_local_302 = sFifty()?; { let prod_local_303 = sTwenty()?; { let prod_local_304 = governorRecommendedScalePermille(prod_local_302, prod_local_303)?; { let prod_local_305 = sSeven()?; { let prod_local_306 = sHundred()?; { let prod_local_307 = core::convert::identity::<u64>(prod_local_305).checked_mul(prod_local_306).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_308 = (prod_local_304 == prod_local_307); prod_local_308 } } } } } } },
+    } } } } } } } },
+    }; match prod_local_309 {
+        false => prod_local_309,
+        true => { let prod_local_310 = codebookProductTableSize()?; { let prod_local_311 = sEight()?; { let prod_local_312 = pow2Constructive(prod_local_311)?; { let prod_local_313 = (prod_local_310 == prod_local_312); match prod_local_313 {
         false => prod_local_313,
-        true => { let prod_local_315 = sThirty()?; { let prod_local_316 = sTwenty()?; { let prod_local_317 = governorRecommendedScalePermille(prod_local_315, prod_local_316)?; { let prod_local_318 = sEightyFive()?; { let prod_local_319 = sTen()?; { let prod_local_320 = core::convert::identity::<u64>(prod_local_318).checked_mul(prod_local_319).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_321 = (prod_local_317 == prod_local_320); match prod_local_321 {
-        false => prod_local_321,
-        true => { let prod_local_322 = sFifty()?; { let prod_local_323 = sTwenty()?; { let prod_local_324 = governorRecommendedScalePermille(prod_local_322, prod_local_323)?; { let prod_local_325 = sSeven()?; { let prod_local_326 = sHundred()?; { let prod_local_327 = core::convert::identity::<u64>(prod_local_325).checked_mul(prod_local_326).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_328 = (prod_local_324 == prod_local_327); prod_local_328 } } } } } } },
-    } } } } } } } },
-    }; match prod_local_329 {
-        false => prod_local_329,
-        true => { let prod_local_330 = codebookProductTableSize()?; { let prod_local_331 = sEight()?; { let prod_local_332 = pow2Constructive(prod_local_331)?; { let prod_local_333 = (prod_local_330 == prod_local_332); match prod_local_333 {
-        false => prod_local_333,
-        true => { let prod_local_334 = runtimeInvariantsDirect()?; prod_local_334 },
+        true => { let prod_local_314 = aqmWorkloadExtrapolationsDirect()?; match prod_local_314 {
+        false => prod_local_314,
+        true => { let prod_local_315 = runtimeInvariantsDirect()?; prod_local_315 },
+    } },
     } } } } },
     } } } } } } },
     } },
-        true => { let prod_local_335 = false; prod_local_335 },
+        true => { let prod_local_316 = ((1 << 1) + 1); { let prod_local_317 = workerInFlightAdmissible(prod_local_316); match prod_local_317 {
+        false => { let prod_local_318 = prod_local_287; match prod_local_318 {
+        false => prod_local_318,
+        true => { let prod_local_319 = sTen()?; { let prod_local_320 = sTwenty()?; { let prod_local_321 = governorRecommendedScalePermille(prod_local_319, prod_local_320)?; { let prod_local_322 = skinWeightScale()?; { let prod_local_323 = (prod_local_321 == prod_local_322); { let prod_local_339 = match prod_local_323 {
+        false => prod_local_323,
+        true => { let prod_local_325 = sThirty()?; { let prod_local_326 = sTwenty()?; { let prod_local_327 = governorRecommendedScalePermille(prod_local_325, prod_local_326)?; { let prod_local_328 = sEightyFive()?; { let prod_local_329 = sTen()?; { let prod_local_330 = core::convert::identity::<u64>(prod_local_328).checked_mul(prod_local_329).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_331 = (prod_local_327 == prod_local_330); match prod_local_331 {
+        false => prod_local_331,
+        true => { let prod_local_332 = sFifty()?; { let prod_local_333 = sTwenty()?; { let prod_local_334 = governorRecommendedScalePermille(prod_local_332, prod_local_333)?; { let prod_local_335 = sSeven()?; { let prod_local_336 = sHundred()?; { let prod_local_337 = core::convert::identity::<u64>(prod_local_335).checked_mul(prod_local_336).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_338 = (prod_local_334 == prod_local_337); prod_local_338 } } } } } } },
+    } } } } } } } },
+    }; match prod_local_339 {
+        false => prod_local_339,
+        true => { let prod_local_340 = codebookProductTableSize()?; { let prod_local_341 = sEight()?; { let prod_local_342 = pow2Constructive(prod_local_341)?; { let prod_local_343 = (prod_local_340 == prod_local_342); match prod_local_343 {
+        false => prod_local_343,
+        true => { let prod_local_344 = aqmWorkloadExtrapolationsDirect()?; match prod_local_344 {
+        false => prod_local_344,
+        true => { let prod_local_345 = runtimeInvariantsDirect()?; prod_local_345 },
+    } },
+    } } } } },
+    } } } } } } },
+    } },
+        true => { let prod_local_346 = false; prod_local_346 },
     } } },
     } } },
     } } },
     } } } },
-        true => { let prod_local_336 = false; prod_local_336 },
+        true => { let prod_local_347 = false; prod_local_347 },
     } } } } },
     } } } },
     }
@@ -21556,9 +22419,9 @@ pub fn workloadPerformanceDirect() -> Result<bool, self::ComputeError> {
                                                                                     }
                                                                                 }
                                                                                 true => {
-                                                                                    let _x_954 =
+                                                                                    let _x_981 =
                                                                                         false;
-                                                                                    _x_954
+                                                                                    _x_981
                                                                                 }
                                                                             }
                                                                         }

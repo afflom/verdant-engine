@@ -4320,6 +4320,11 @@ record = "Engine::vectors#40"
 axis = "derived"
 
 [[closed]]
+kappa = "5967e0cfbc27dd5b78e7fc23b06fd2dc559c1a1fe9d152bb905a5d8e3581cdff"
+record = "Engine::vectors#40"
+axis = "derived"
+
+[[closed]]
 kappa = "722e0fb86bf83f318fad7697e18ecd6605d68b67bb00a13131d451f72bed8710"
 record = "Engine::vectors#40"
 axis = "derived"
@@ -4340,6 +4345,11 @@ record = "Engine::vectors#40"
 axis = "meant"
 
 [[closed]]
+kappa = "905bd1143501467407c8c7e05b3c7e42f466c8c19b2485407e046806cbd4f9e0"
+record = "Engine::vectors#40"
+axis = "meant"
+
+[[closed]]
 kappa = "afa30c647623607fe3a102df5c853f0e0ab203f501e737e0d8c06ce3d72fb996"
 record = "Engine::vectors#40"
 axis = "meant"
@@ -4350,9 +4360,19 @@ record = "Engine::vectors#41"
 axis = "derived"
 
 [[closed]]
+kappa = "65f511a533c3a2640b73e8db04cff05045778ccf00987f819a0d333ef270ffbc"
+record = "Engine::vectors#41"
+axis = "derived"
+
+[[closed]]
 kappa = "6cbcaff9639e35484103a6bd7c5f38996597455555630a391890440729341712"
 record = "Engine::vectors#41"
 axis = "derived"
+
+[[closed]]
+kappa = "9d087c2a0d58305d02082832a81a998e461da2bb11117471e5cbc51dc1095825"
+record = "Engine::vectors#41"
+axis = "meant"
 
 [[closed]]
 kappa = "d836ad7ff9271afe0e33f5e867992c84246515bc21de6e45c99eb2a6e5d64e6a"
@@ -4370,8 +4390,28 @@ record = "Engine::vectors#42"
 axis = "derived"
 
 [[closed]]
+kappa = "d5bcf8df6dc326d76348962f2c009bd3b89e0a1011813e384dd61cfcf62bbb62"
+record = "Engine::vectors#42"
+axis = "derived"
+
+[[closed]]
+kappa = "03952ba35ac35fa9c14dbea465e826e41db0f598d8d5048ea236a90ff588709a"
+record = "Engine::vectors#42"
+axis = "meant"
+
+[[closed]]
 kappa = "cdd5d21680e9e773d79e26e3249237c19f63b409ed8460bebdd1e2021d3e5521"
 record = "Engine::vectors#42"
+axis = "meant"
+
+[[closed]]
+kappa = "ade0675981c6c862e761e880b1b1e0957d2cf73ca12bbc6ae7bc039f9d5cf337"
+record = "Engine::vectors#43"
+axis = "derived"
+
+[[closed]]
+kappa = "47815dc0a7f5fb3502bb4abe57073b0c47b10901913c10d792957fcc6a9b032a"
+record = "Engine::vectors#43"
 axis = "meant"
 
 [[closed]]
@@ -7427,6 +7467,16 @@ axis = "derived"
 [[closed]]
 kappa = "a19357c522b1c256739e109ee29db61fe6753a9f24ef19d3b68a596f96ea3c8e"
 record = "Subsystems::perfTier4HardwareInstancedBatches"
+axis = "meant"
+
+[[closed]]
+kappa = "7fd545acbbbf7d85a7e3a193339e1b599aee28b3c6ff06f4e4f724436f061e66"
+record = "Subsystems::perfTier5AqmMonoidBitPlanesKappa"
+axis = "derived"
+
+[[closed]]
+kappa = "bff2ed48c48da92a1ece19a6ed324fe8ef3668ba7b2f7bd49561536a67822e36"
+record = "Subsystems::perfTier5AqmMonoidBitPlanesKappa"
 axis = "meant"
 
 [[closed]]

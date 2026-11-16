@@ -370,6 +370,172 @@ impl WordBitset {
     }
 }
 
+/// Canonical number of column-transposed archetype capability bit-planes (`8`).
+pub const ARCHETYPE_BIT_PLANES: usize = 1 << (1 + 1 + 1);
+
+/// Column-transposed 64-entity bit-plane matrix extrapolated from `verdant-aqm`'s
+/// `ColumnBitPlaneTableau` (`crates/verdant-aqm/src/lib.rs` & `wasm_symplectic_commute`).
+///
+/// Packs `col_count` boolean component/capability columns across `row_len` entities into
+/// `planes_per_col = ceil(row_len / 64)` contiguous `u64` words per column so multi-component
+/// `include & !exclude` queries, column XOR/swap gates, and hardware `popcnt` inner products
+/// execute across `64` entities per CPU instruction with `0` heap allocations.
+#[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ColumnBitPlaneTable {
+    col_count: usize,
+    row_len: usize,
+    planes_per_col: usize,
+    planes: Vec<u64>,
+}
+
+impl ColumnBitPlaneTable {
+    /// Allocates a cleared `col_count x row_len` column-transposed bit-plane matrix.
+    #[must_use]
+    pub fn new(col_count: usize, row_len: usize) -> Self {
+        let planes_per_col = row_len.div_ceil(WORD_BIT_WIDTH);
+        Self {
+            col_count,
+            row_len,
+            planes_per_col,
+            planes: vec![0_u64; col_count.saturating_mul(planes_per_col)],
+        }
+    }
+
+    /// Number of transposed capability columns.
+    #[must_use]
+    pub const fn col_count(&self) -> usize {
+        self.col_count
+    }
+
+    /// Number of entity rows indexed across each column.
+    #[must_use]
+    pub const fn row_len(&self) -> usize {
+        self.row_len
+    }
+
+    /// Number of `u64` words stored per column (`ceil(row_len / 64)`).
+    #[must_use]
+    pub const fn planes_per_col(&self) -> usize {
+        self.planes_per_col
+    }
+
+    /// Resizes entity row count while preserving existing bit-planes across all columns.
+    pub fn resize_rows(&mut self, new_row_len: usize) {
+        let next_ppc = new_row_len.div_ceil(WORD_BIT_WIDTH);
+        if next_ppc != self.planes_per_col {
+            let mut next_planes = vec![0_u64; self.col_count.saturating_mul(next_ppc)];
+            let copy_w = self.planes_per_col.min(next_ppc);
+            for col in 0..self.col_count {
+                let src_off = col * self.planes_per_col;
+                let dst_off = col * next_ppc;
+                next_planes[dst_off..dst_off + copy_w]
+                    .copy_from_slice(&self.planes[src_off..src_off + copy_w]);
+            }
+            self.planes = next_planes;
+            self.planes_per_col = next_ppc;
+        }
+        self.row_len = new_row_len;
+        let rem = self.row_len % WORD_BIT_WIDTH;
+        if rem != 0 && self.planes_per_col > 0 {
+            let tail_mask = (1_u64 << rem).wrapping_sub(1);
+            for col in 0..self.col_count {
+                let last_idx = col * self.planes_per_col + (self.planes_per_col - 1);
+                self.planes[last_idx] &= tail_mask;
+            }
+        }
+    }
+
+    /// Sets `(col, row)` to `enabled` in `O(1)`.
+    #[inline]
+    pub fn set(&mut self, col: usize, row: usize, enabled: bool) {
+        if col < self.col_count && row < self.row_len {
+            let idx = col * self.planes_per_col + (row / WORD_BIT_WIDTH);
+            let mask = 1_u64 << (row % WORD_BIT_WIDTH);
+            if enabled {
+                self.planes[idx] |= mask;
+            } else {
+                self.planes[idx] &= !mask;
+            }
+        }
+    }
+
+    /// Tests `(col, row)` in `O(1)`.
+    #[inline]
+    #[must_use]
+    pub fn test(&self, col: usize, row: usize) -> bool {
+        if col >= self.col_count || row >= self.row_len {
+            return false;
+        }
+        let idx = col * self.planes_per_col + (row / WORD_BIT_WIDTH);
+        ((self.planes[idx] >> (row % WORD_BIT_WIDTH)) & 1_u64) != 0
+    }
+
+    /// Toggles `col_target ^= col_control` across all rows in `O(N / 64)` (analogous to `ColumnBitPlaneTableau` CNOT).
+    pub fn xor_column_into(&mut self, col_control: usize, col_target: usize) {
+        if col_control < self.col_count && col_target < self.col_count && col_control != col_target
+        {
+            let ppc = self.planes_per_col;
+            for w in 0..ppc {
+                let ctrl = self.planes[col_control * ppc + w];
+                self.planes[col_target * ppc + w] ^= ctrl;
+            }
+        }
+    }
+
+    /// Evaluates `(AND_{c in required_cols} plane[c]) & !(OR_{e in excluded_cols} plane[e])` into
+    /// `out_mask` in `O((|req| + |excl|) * N / 64)` with `0` heap allocations, returning matched count.
+    pub fn query_archetype_into(
+        &self,
+        required_cols: &[usize],
+        excluded_cols: &[usize],
+        out_mask: &mut WordBitset,
+    ) -> usize {
+        if out_mask.len() != self.row_len {
+            out_mask.resize(self.row_len);
+        }
+        if self.row_len == 0 {
+            return 0;
+        }
+        out_mask.fill_ones();
+        let ppc = self.planes_per_col;
+        for &req in required_cols {
+            if req >= self.col_count {
+                out_mask.clear_all();
+                return 0;
+            }
+            let base = req * ppc;
+            for (w, dst) in out_mask.words.iter_mut().enumerate() {
+                *dst &= self.planes[base + w];
+            }
+        }
+        for &excl in excluded_cols {
+            if excl < self.col_count {
+                let base = excl * ppc;
+                for (w, dst) in out_mask.words.iter_mut().enumerate() {
+                    *dst &= !self.planes[base + w];
+                }
+            }
+        }
+        out_mask.count_ones()
+    }
+
+    /// Counts entities shared by both `col_a` and `col_b` via hardware `u64::count_ones` (`O(N / 64)`).
+    #[must_use]
+    pub fn popcount_intersection(&self, col_a: usize, col_b: usize) -> usize {
+        if col_a >= self.col_count || col_b >= self.col_count {
+            return 0;
+        }
+        let ppc = self.planes_per_col;
+        let a_slice = &self.planes[col_a * ppc..(col_a + 1) * ppc];
+        let b_slice = &self.planes[col_b * ppc..(col_b + 1) * ppc];
+        a_slice
+            .iter()
+            .zip(b_slice.iter())
+            .map(|(&wa, &wb)| (wa & wb).count_ones() as usize)
+            .sum()
+    }
+}
+
 #[doc(hidden)]
 #[allow(
     dead_code,
@@ -635,7 +801,9 @@ pub use audio_ring::{
 };
 pub use coded::{
     contract_coded_geometry_grid, contract_coded_pair_lut_into, contract_packed_animation_tracks,
-    contract_runs_ibl_harmonics, prism_coded_tiers_certified, CodebookProductLut,
+    contract_packed_nibbles_lut_into, contract_runs_ibl_harmonics, contract_sparse_runs_lut_into,
+    decide_coded_matmul_admission, decide_uorc_challenger_admission, prism_coded_tiers_certified,
+    CodebookProductLut, CodedAdmissionVerdict, SparseCodedRun, UorcChallengerVerdict,
 };
 pub use linear::{
     batch_transform_positions_exact, batch_transform_positions_into,
@@ -649,6 +817,8 @@ pub use neural::{
 };
 pub use raster::{render_triangles_tile_framebuffer, RasterTriangle, SoftwareTileFramebuffer};
 pub use tropical::{
-    tropical_frustum_distance_bounds, tropical_gjk_support_batch, tropical_gjk_support_single,
-    tropical_min_plus_all_pairs_closure, tropical_swept_aabb_toi_bounds, tropical_ui_box_extents,
+    reconstruct_tropical_next_hop_path, tropical_frustum_distance_bounds,
+    tropical_gjk_support_batch, tropical_gjk_support_single, tropical_inf_sentinel,
+    tropical_min_plus_all_pairs_closure, tropical_min_plus_closure_in_place,
+    tropical_swept_aabb_toi_bounds, tropical_ui_box_extents,
 };

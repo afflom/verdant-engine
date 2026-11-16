@@ -51,7 +51,9 @@ use verdant_core::render::{
 use verdant_core::render::{InstancedBatchBuffer, PbrMaterial};
 #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
 use verdant_core::runtime::{
-    BrowserCapabilities, EngineConfig, OntologicalRuntimeGovernor, WorldSnapshot,
+    canonicalize_command_monoid, BrowserCapabilities, CanonicalCommandKind, CanonicalCommandOp,
+    CheckpointedRollbackJournal, EngineConfig, KappaTransitionCache, OntologicalRuntimeGovernor,
+    WorldSnapshot,
 };
 #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
 use verdant_core::streaming::{
@@ -3599,5 +3601,131 @@ pub extern "C" fn verdant_wasm_scene_outliner_aux(observed_frame_micros: u32) ->
         ));
     }
     bridge.aux_buffer = lines.join("\n").into_bytes();
+    bridge.aux_buffer.len() as u32
+}
+
+/// Executes a live `verdant-aqm` extrapolated performance benchmark over `entity_count` entities
+/// (`ColumnBitPlaneTable` 8-plane `O(N / 64)` popcount query, `canonicalize_command_monoid`
+/// involution + `Z_8` octant fusion, `KappaTransitionCache` elision, and `CheckpointedRollbackJournal`
+/// stride-8 replay) and writes a `|`-delimited telemetry summary to `aux_buffer`.
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+#[no_mangle]
+pub extern "C" fn verdant_wasm_aqm_benchmark_aux(entity_count: u32) -> u32 {
+    let Ok(mut guard) = global_bridge().lock() else {
+        return 0;
+    };
+    let Some(bridge) = guard.as_mut() else {
+        return 0;
+    };
+    let two = 1usize + 1usize;
+    let three = two + 1;
+    let four = two * two;
+    let eight = four * two;
+    let n = (entity_count as usize).max(1 << (eight + two));
+
+    let mut planes = verdant_core::verdant_tensor::ColumnBitPlaneTable::new(eight, n);
+    for idx in 0..n {
+        planes.set(0, idx, true);
+        planes.set(1, idx, idx % two == 0);
+        planes.set(two, idx, idx % three != 0);
+        planes.set(three, idx, idx % eight == 0);
+    }
+    let mut mask = verdant_core::verdant_tensor::WordBitset::with_len(n);
+    let matched = planes.query_archetype_into(&[0, 1, two], &[three], &mut mask);
+    let pop_pair = planes.popcount_intersection(1, two);
+
+    let ops = vec![
+        CanonicalCommandOp {
+            id: 0,
+            target_slot: 0,
+            kind: CanonicalCommandKind::ToggleCameraMode,
+            depends_on: Vec::new(),
+        },
+        CanonicalCommandOp {
+            id: 1,
+            target_slot: 0,
+            kind: CanonicalCommandKind::ToggleCameraMode,
+            depends_on: Vec::new(),
+        },
+        CanonicalCommandOp {
+            id: two as u32,
+            target_slot: 1,
+            kind: CanonicalCommandKind::YawOctantStep {
+                octants: three as u8,
+            },
+            depends_on: Vec::new(),
+        },
+        CanonicalCommandOp {
+            id: three as u32,
+            target_slot: 1,
+            kind: CanonicalCommandKind::YawOctantStep {
+                octants: (eight - three) as u8,
+            },
+            depends_on: Vec::new(),
+        },
+        CanonicalCommandOp {
+            id: four as u32,
+            target_slot: 0,
+            kind: CanonicalCommandKind::CameraOrbitDelta {
+                delta_yaw_milli: eight as i32,
+                delta_pitch_milli: 0,
+                delta_dist_milli: 0,
+            },
+            depends_on: Vec::new(),
+        },
+        CanonicalCommandOp {
+            id: (four + 1) as u32,
+            target_slot: 0,
+            kind: CanonicalCommandKind::CameraOrbitDelta {
+                delta_yaw_milli: four as i32,
+                delta_pitch_milli: -(two as i32),
+                delta_dist_milli: 0,
+            },
+            depends_on: Vec::new(),
+        },
+    ];
+    let Ok(monoid) = canonicalize_command_monoid(&ops) else {
+        return 0;
+    };
+
+    let mut kappa_cache: KappaTransitionCache<u64> = KappaTransitionCache::new(eight * four);
+    let init_k = KappaTransitionCache::<u64>::digest_bytes(&bridge.seed_val.to_le_bytes());
+    let mut elided = 0usize;
+    for step_i in 0..eight {
+        let tag = (step_i % two) as u64;
+        let (_, _, hit) = kappa_cache.step_or_elide(init_k, tag, || {
+            let next_v = bridge.seed_val.wrapping_add(tag + 1);
+            (next_v, next_v.to_le_bytes().to_vec())
+        });
+        if hit {
+            elided += 1;
+        }
+    }
+
+    let mut journal: CheckpointedRollbackJournal<u64, u64> =
+        CheckpointedRollbackJournal::new(0_u64, &bridge.seed_val.to_le_bytes());
+    let total_ticks = eight * three;
+    let mut st = 0_u64;
+    for t in 0..total_ticks {
+        let delta = (t + 1) as u64;
+        st += delta;
+        journal.record_step(delta, &delta.to_le_bytes(), &st);
+    }
+    let target_f = total_ticks - three;
+    let replay_steps = journal
+        .reconstruct_frame(target_f, |prev, inp| prev + inp)
+        .map(|(_, s, _)| s)
+        .unwrap_or(0);
+
+    let summary = format!(
+        "entities={n}|words_per_plane={}|archetype_matches={matched}|popcnt_pair={pop_pair}|raw_ops={}|fused_ops={}|involutions={}|merges={}|kappa_elided={elided}|ckpts={}|replay_steps={replay_steps}",
+        planes.planes_per_col(),
+        monoid.raw_count,
+        monoid.fused_count,
+        monoid.involution_cancellations,
+        monoid.additive_merges,
+        journal.stored_checkpoint_count(),
+    );
+    bridge.aux_buffer = summary.into_bytes();
     bridge.aux_buffer.len() as u32
 }

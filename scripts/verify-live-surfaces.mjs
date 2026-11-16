@@ -147,6 +147,16 @@ try {
     if (!perfLogText.includes("conformant")) {
       failures.push(`10k hardware-instanced stress profiler did not report conformant scene:perf: ${perfLogText}`);
     }
+    await page.click('[data-aqm-bench="16384"]');
+    await page.waitForFunction(
+      () => (document.getElementById("ve-perf-log")?.textContent || "").includes("8-Column Bit-Planes: 16384 entities"),
+      null,
+      { timeout: 10000 },
+    );
+    const aqmLogText = (await page.textContent("#ve-perf-log")) || "";
+    if (!aqmLogText.includes("monoid_fusion=true")) {
+      failures.push(`AQM 16k bit-plane & monoid benchmark did not report conformant scene:aqm: ${aqmLogText}`);
+    }
     await page.click('[data-inst-preset="0"]');
 
     // Close Studio Workbench and open Stitch Mesh modal (`#ve-mesh-btn`):

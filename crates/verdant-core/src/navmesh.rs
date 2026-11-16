@@ -4,7 +4,11 @@
 //! scoring (`astarPriorityMilli`), and search node caps (`navMaxSearchNodes`) execute through
 //! the Lean-verified `crate::prism_kernel` emitted by Prism.
 
+use std::cmp::Reverse;
+use std::collections::{BinaryHeap, HashMap};
+
 use serde::{Deserialize, Serialize};
+use verdant_tensor::WordBitset;
 
 use crate::error::NavigationError;
 use crate::geometry::ProceduralMesh;
@@ -154,24 +158,49 @@ impl NavMesh {
             .collect();
 
         let count = polygons.len();
-        for a in 0..count {
-            for b in (a + 1)..count {
-                let shared = keys[a]
-                    .iter()
-                    .filter(|ka| keys[b].iter().any(|kb| kb == *ka))
-                    .count();
-                if shared >= DIM_PLANAR {
-                    polygons[a].neighbors.push(b);
-                    polygons[b].neighbors.push(a);
+        type QuantKey = (i64, i64, i64);
+        let mut edge_owners: HashMap<(QuantKey, QuantKey), Vec<usize>> =
+            HashMap::with_capacity(count * DIM_SPATIAL);
+        let two_idx = 1usize + 1usize;
+        for (poly_idx, tri_keys) in keys.iter().enumerate() {
+            let pairs = [
+                (tri_keys[0], tri_keys[1]),
+                (tri_keys[1], tri_keys[two_idx]),
+                (tri_keys[two_idx], tri_keys[0]),
+            ];
+            for (k0, k1) in pairs {
+                if k0 == k1 {
+                    continue;
+                }
+                let canonical = if k0 <= k1 { (k0, k1) } else { (k1, k0) };
+                edge_owners.entry(canonical).or_default().push(poly_idx);
+            }
+        }
+        for owners in edge_owners.values() {
+            for i in 0..owners.len() {
+                for j in (i + 1)..owners.len() {
+                    let a = owners[i];
+                    let b = owners[j];
+                    if a != b {
+                        if !polygons[a].neighbors.contains(&b) {
+                            polygons[a].neighbors.push(b);
+                        }
+                        if !polygons[b].neighbors.contains(&a) {
+                            polygons[b].neighbors.push(a);
+                        }
+                    }
                 }
             }
+        }
+        for poly in &mut polygons {
+            poly.neighbors.sort_unstable();
         }
 
         Ok(Self { polygons })
     }
 
     /// Finds the shortest walkable polygon corridor between `start_polygon` and `goal_polygon`
-    /// using admissible Euclidean `A*` bounded by `prism_kernel::navMaxSearchNodes`.
+    /// using `O(E log V)` `BinaryHeap` Euclidean `A*` bounded by `prism_kernel::navMaxSearchNodes`.
     pub fn find_path_astar(
         &self,
         start_polygon: usize,
@@ -200,33 +229,31 @@ impl NavMesh {
             });
         }
 
-        let scale =
-            crate::prism_kernel::skinWeightScale().expect("verified Prism skinWeightScale") as f64;
+        let scale = verdant_tensor::kernel_consts().skin_weight_scale_f64;
         let max_nodes = crate::prism_kernel::navMaxSearchNodes()
             .expect("verified Prism navMaxSearchNodes") as usize;
         let goal_pos = self.polygons[goal_polygon].centroid;
 
         let mut g_milli = vec![u64::MAX; count];
-        let mut f_milli = vec![u64::MAX; count];
         let mut came_from: Vec<Option<usize>> = vec![None; count];
-        let mut closed = vec![false; count];
-        let mut open = vec![start_polygon];
+        let mut closed = WordBitset::with_len(count);
+        let mut open: BinaryHeap<Reverse<(u64, usize)>> = BinaryHeap::new();
 
         g_milli[start_polygon] = 0;
         let h0 =
             ((self.polygons[start_polygon].centroid - goal_pos).length() * scale).round() as u64;
-        f_milli[start_polygon] =
+        let f0 =
             crate::prism_kernel::astarPriorityMilli(0, h0).expect("verified Prism astarPriority");
+        open.push(Reverse((f0, start_polygon)));
 
         let mut expanded = 0usize;
-        while !open.is_empty() && expanded < max_nodes {
-            let mut best_slot = 0usize;
-            for (slot, &node) in open.iter().enumerate().skip(1) {
-                if f_milli[node] < f_milli[open[best_slot]] {
-                    best_slot = slot;
-                }
+        while let Some(Reverse((_, current))) = open.pop() {
+            if expanded >= max_nodes {
+                break;
             }
-            let current = open.swap_remove(best_slot);
+            if closed.test(current) {
+                continue;
+            }
             if current == goal_polygon {
                 let mut poly_path = vec![goal_polygon];
                 let mut cursor = goal_polygon;
@@ -250,15 +277,12 @@ impl NavMesh {
                 });
             }
 
-            if closed[current] {
-                continue;
-            }
-            closed[current] = true;
+            closed.set(current);
             expanded += 1;
 
             let cur_pos = self.polygons[current].centroid;
             for &nbr in &self.polygons[current].neighbors {
-                if closed[nbr] {
+                if closed.test(nbr) {
                     continue;
                 }
                 let step_milli =
@@ -270,11 +294,9 @@ impl NavMesh {
                     g_milli[nbr] = tentative_g;
                     let h =
                         ((self.polygons[nbr].centroid - goal_pos).length() * scale).round() as u64;
-                    f_milli[nbr] = crate::prism_kernel::astarPriorityMilli(tentative_g, h)
+                    let f_score = crate::prism_kernel::astarPriorityMilli(tentative_g, h)
                         .expect("verified Prism astarPriorityMilli");
-                    if !open.contains(&nbr) {
-                        open.push(nbr);
-                    }
+                    open.push(Reverse((f_score, nbr)));
                 }
             }
         }
@@ -341,6 +363,78 @@ impl NavMesh {
             },
         )?;
         Ok((cost_milli as f64) / scale)
+    }
+
+    /// Computes both the exact shortest corridor path and relaxation count via in-place tropical
+    /// `(min, +)` closure with `next_hop` witness recovery (`verdant-aqm` `tropicalMinPlusClosureWithPaths`).
+    pub fn shortest_corridor_with_path_tropical(
+        &self,
+        start_polygon: usize,
+        goal_polygon: usize,
+    ) -> Result<(NavCorridorPath, usize), NavigationError> {
+        let count = self.polygons.len();
+        if start_polygon >= count {
+            return Err(NavigationError::InvalidPolygonIndex {
+                polygon_index: start_polygon,
+                polygon_count: count,
+            });
+        }
+        if goal_polygon >= count {
+            return Err(NavigationError::InvalidPolygonIndex {
+                polygon_index: goal_polygon,
+                polygon_count: count,
+            });
+        }
+        let inf = verdant_tensor::tropical_inf_sentinel();
+        let scale = verdant_tensor::kernel_consts().skin_weight_scale_f64;
+        let mut dist = vec![inf; count * count];
+        let mut next_hop = vec![-1_i32; count * count];
+        for (idx, poly) in self.polygons.iter().enumerate() {
+            dist[idx * count + idx] = 0;
+            next_hop[idx * count + idx] = idx as i32;
+            for &nbr in &poly.neighbors {
+                if nbr < count {
+                    let step_milli = (((self.polygons[nbr].centroid - poly.centroid).length()
+                        * scale)
+                        .round() as i32)
+                        .max(1)
+                        .min(inf - 1);
+                    if step_milli < dist[idx * count + nbr] {
+                        dist[idx * count + nbr] = step_milli;
+                        next_hop[idx * count + nbr] = nbr as i32;
+                    }
+                }
+            }
+        }
+        let relaxations =
+            verdant_tensor::tropical_min_plus_closure_in_place(&mut dist, &mut next_hop, count)
+                .map_err(|_| NavigationError::EmptyWalkableNavMesh)?;
+        let poly_path = verdant_tensor::reconstruct_tropical_next_hop_path(
+            &next_hop,
+            count,
+            start_polygon,
+            goal_polygon,
+        )
+        .ok_or(NavigationError::UnreachableGoal {
+            start_polygon,
+            goal_polygon,
+        })?;
+        let waypoints: Vec<Vec3> = poly_path
+            .iter()
+            .map(|&idx| self.polygons[idx].centroid)
+            .collect();
+        let mut total_cost_meters = 0.0;
+        for pair in waypoints.windows(DIM_PLANAR) {
+            total_cost_meters += (pair[1] - pair[0]).length();
+        }
+        Ok((
+            NavCorridorPath {
+                polygon_indices: poly_path,
+                waypoints,
+                total_cost_meters,
+            },
+            relaxations,
+        ))
     }
 }
 

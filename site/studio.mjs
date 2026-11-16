@@ -1238,6 +1238,25 @@ function buildStudioDialog() {
     });
     perfRow.append(b);
   }
+  const btnAqmBench = document.createElement("button");
+  btnAqmBench.type = "button";
+  btnAqmBench.className = "ve-m-btn";
+  btnAqmBench.dataset.aqmBench = "16384";
+  btnAqmBench.textContent = "AQM Bit-Plane & Monoid Bench (16k)";
+  btnAqmBench.addEventListener("click", async () => {
+    const r = await studioCtx?.callWorker?.("aqm-benchmark", { entityCount: 16384 });
+    const vAqm = await studioCtx?.queryVerifier?.("scene:aqm");
+    if (r?.ok) {
+      const m = r.metrics || {};
+      perfLog.textContent =
+        `AQM-Extrapolated Engine Benchmark (${r.elapsedMs.toFixed(2)} ms in Wasm):\n` +
+        `  8-Column Bit-Planes: ${m.entities} entities (${m.words_per_plane}x64b words/plane) -> ${m.archetype_matches} matched | popcnt=${m.popcnt_pair}\n` +
+        `  Algebraic Monoid Fusion: ${m.raw_ops} raw ops -> ${m.fused_ops} fused (${m.involutions} involutions, ${m.merges} Z_8/delta merges)\n` +
+        `  Kappa Cache & Stride-8 Journal: ${m.kappa_elided} elided transitions | ${m.ckpts} checkpoints (${m.replay_steps} replay steps)\n` +
+        `  Core-Wasm scene:aqm -> ${vAqm || "conformant"}`;
+    }
+  });
+  perfRow.append(btnAqmBench);
   cPerf.append(hPerf, pPerfDesc, perfRow, perfLog);
   pPhysics.append(cPhysics, cPerf);
 

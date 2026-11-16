@@ -177,7 +177,7 @@ o_col=vec4(pow(aces(aa*1.06),vec3(1.0/2.2)),1.0);}`,
     return { tex, fbo };
   };
   const staticShadow = makeShadow(), shadow = makeShadow();
-  let cachedShadowKey = "", hdrW = 0, hdrH = 0, renderScale = 1, lastStaticBytes = 0, lastDynBytes = 0;
+  let cachedShadowKey = "", hdrW = 0, hdrH = 0, renderScale = 1, lastStaticBytes = 0, lastDynBytes = 0, gpuFence = null;
 
   const hdrTex = gl.createTexture(), hdrDepth = gl.createRenderbuffer(), hdrFbo = gl.createFramebuffer();
   const ensureHdrFbo = (w, h) => {
@@ -241,6 +241,10 @@ o_col=vec4(pow(aces(aa*1.06),vec3(1.0/2.2)),1.0);}`,
     render(mvp, eye, lodSpec, timeSec, lookTarget = [0, 1.8, 0], fovRad = Math.PI / 3.4) {
       const w = canvas.width | 0, h = canvas.height | 0;
       if (w <= 0 || h <= 0) return;
+      if (gpuFence) {
+        if (gl.getSyncParameter(gpuFence, gl.SYNC_STATUS) === gl.UNSIGNALED && isSoftware) return;
+        gl.deleteSync(gpuFence); gpuFence = null;
+      }
       const rank = lodSpec?.rank ?? 3, quality = isSoftware ? Math.min(1, rank) : (rank >= 2 ? 2 : 1);
       const sky = lodSpec?.sky ?? [0.18, 0.3, 0.38], fog = lodSpec?.fog ?? [0.3, 0.4, 0.44];
       const totalIdx = staticGpu.count + dynGpu.count + (instGpu.instCount > 0 ? instGpu.count : 0);
@@ -300,6 +304,7 @@ o_col=vec4(pow(aces(aa*1.06),vec3(1.0/2.2)),1.0);}`,
         gl.activeTexture(gl.TEXTURE0); gl.bindTexture(T, hdrTex); gl.uniform1i(uPost.hdr, 0); gl.uniform2f(uPost.invRes, 1 / rw, 1 / rh); drawQuad();
       }
       gl.bindVertexArray(null);
+      if (typeof gl.fenceSync === "function") { gpuFence = gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE, 0); gl.flush(); }
     },
     blitTensorRgba(rgbaBytes, width, height) {
       if (!blitProg || !rgbaBytes || width <= 0 || height <= 0) return;

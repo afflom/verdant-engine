@@ -3,7 +3,7 @@
 use std::collections::BTreeMap;
 
 use serde::{Deserialize, Serialize};
-use verdant_tensor::WordBitset;
+use verdant_tensor::{ColumnBitPlaneTable, WordBitset, ARCHETYPE_BIT_PLANES};
 
 use crate::collision::{
     aabb_point_dist_sq, build_flat_sah_bvh, segment_swept_aabb_toi, BlasTriangleHit, FlatBvhNode,
@@ -452,6 +452,10 @@ pub struct SoaSceneTable {
     pub renderable_mask: WordBitset,
     /// 64-bit word-packed mask of frustum-visible entities.
     pub visible_mask: WordBitset,
+    /// Column-transposed `8 x ceil(N / 64)` capability bit-plane matrix (`0` = Visible, `1` = SolidCollider,
+    /// `2` = ShadowCaster, `3` = DynamicActor, `4` = InstancedMember, `5` = AudioEmitter, `6` = PortalTrigger,
+    /// `7` = InteractiveStory), extrapolated from `verdant-aqm` `ColumnBitPlaneTableau`.
+    pub capability_planes: ColumnBitPlaneTable,
     /// Monotonic epoch incremented whenever static geometry changes.
     pub static_epoch: u64,
 }
@@ -474,8 +478,50 @@ impl SoaSceneTable {
             static_mask: WordBitset::with_len(0),
             renderable_mask: WordBitset::with_len(0),
             visible_mask: WordBitset::with_len(0),
+            capability_planes: ColumnBitPlaneTable::new(ARCHETYPE_BIT_PLANES, 0),
             static_epoch: 1,
         }
+    }
+
+    fn sync_slot_capability_planes(
+        planes: &mut ColumnBitPlaneTable,
+        slot: usize,
+        role: EntityRole,
+        has_mesh: bool,
+    ) {
+        let c_vis = 0usize;
+        let c_solid = 1usize;
+        let c_shadow = 1 + 1;
+        let c_dyn = c_shadow + 1;
+        let c_inst = c_dyn + 1;
+        planes.set(c_vis, slot, has_mesh);
+        planes.set(
+            c_solid,
+            slot,
+            matches!(
+                role,
+                EntityRole::TerrainPatch
+                    | EntityRole::StaticArchitecture
+                    | EntityRole::KinematicMover
+            ),
+        );
+        planes.set(
+            c_shadow,
+            slot,
+            has_mesh && !matches!(role, EntityRole::FluidVolume | EntityRole::DirectionalLight),
+        );
+        planes.set(
+            c_dyn,
+            slot,
+            matches!(
+                role,
+                EntityRole::AutonomousAgent
+                    | EntityRole::ArticulatedRig
+                    | EntityRole::KinematicMover
+                    | EntityRole::PlayerRig
+            ),
+        );
+        planes.set(c_inst, slot, matches!(role, EntityRole::SurfaceFoliage));
     }
 
     /// Compiles a `SceneWorld` into topologically ordered `SoA` columns + `WordBitset` masks in `O(N)`.
@@ -487,6 +533,7 @@ impl SoaSceneTable {
         table.static_mask = WordBitset::with_len(n);
         table.renderable_mask = WordBitset::with_len(n);
         table.visible_mask = WordBitset::all_ones(n);
+        table.capability_planes = ColumnBitPlaneTable::new(ARCHETYPE_BIT_PLANES, n);
 
         let mut id_to_slot: BTreeMap<EntityId, u32> = BTreeMap::new();
         for (slot, &(id, world_mat)) in mats.iter().enumerate() {
@@ -518,6 +565,12 @@ impl SoaSceneTable {
             if rec.mesh_index.is_some() {
                 table.renderable_mask.set(slot);
             }
+            Self::sync_slot_capability_planes(
+                &mut table.capability_planes,
+                slot,
+                rec.role,
+                rec.mesh_index.is_some(),
+            );
         }
         Ok(table)
     }
@@ -571,7 +624,25 @@ impl SoaSceneTable {
         if mesh_index.is_some() {
             self.renderable_mask.set(slot);
         }
+        self.capability_planes.resize_rows(new_len);
+        Self::sync_slot_capability_planes(
+            &mut self.capability_planes,
+            slot,
+            role,
+            mesh_index.is_some(),
+        );
         slot
+    }
+
+    /// Evaluates an `O(N / 64)` multi-capability intersection & exclusion query over `capability_planes`.
+    pub fn query_capability_planes_into(
+        &self,
+        required_cols: &[usize],
+        excluded_cols: &[usize],
+        out_mask: &mut WordBitset,
+    ) -> usize {
+        self.capability_planes
+            .query_archetype_into(required_cols, excluded_cols, out_mask)
     }
 
     /// Total dense entity count.

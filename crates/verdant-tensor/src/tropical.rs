@@ -90,10 +90,11 @@ fn contract_tropical_max_plus(
 
     #[cfg(target_arch = "wasm32")]
     {
-        let mut b_cols = vec![vec![Trop::<i32>::NEG_INF; k]; n];
+        let mut b_transposed = vec![Trop::<i32>::NEG_INF; n * k];
         for r in 0..k {
+            let row_base = r * n;
             for c in 0..n {
-                b_cols[c][r] = b_trop_row_major[r * n + c];
+                b_transposed[c * k + r] = b_trop_row_major[row_base + c];
             }
         }
         let mut out = vec![Trop::<i64>::NEG_INF; m * n];
@@ -101,7 +102,8 @@ fn contract_tropical_max_plus(
             let row_slice = &a_trop[r * k..(r + 1) * k];
             let a_alpha = as_alphabet_tropical(row_slice);
             for c in 0..n {
-                let b_alpha = as_alphabet_tropical(&b_cols[c]);
+                let col_slice = &b_transposed[c * k..(c + 1) * k];
+                let b_alpha = as_alphabet_tropical(col_slice);
                 out[r * n + c] = match dot_tropical_ref(a_alpha, b_alpha).get() {
                     Some(v) => Trop::finite(
                         v.max(i128::from(i64::MIN) + 1).min(i128::from(i64::MAX)) as i64,
@@ -262,6 +264,108 @@ pub fn tropical_min_plus_all_pairs_closure(
         .into_iter()
         .map(|entry| entry.get().map(|neg_cost| (-neg_cost).max(0) as u64))
         .collect())
+}
+
+/// Constructive tropical `(min, +)` infinity sentinel (`2^29`, safely `< i32::MAX / 2` so `dik + dkj` cannot overflow).
+#[must_use]
+pub const fn tropical_inf_sentinel() -> i32 {
+    let two = 1_u32 + 1_u32;
+    let four = two * two;
+    let five = four + 1_u32;
+    1_i32 << (five * five + four)
+}
+
+/// In-place, zero-allocation tropical `(min, +)` all-pairs shortest-path closure with simultaneous
+/// `next_hop` predecessor witness recovery and `dik >= TROPICAL_INF` row-sparsity early-skip
+/// (extrapolated directly from `verdant-aqm` `tropical_min_plus_closure` / `wasm_tropical_minplus_closure`).
+///
+/// Returns the total number of strictly improving edge relaxations performed.
+pub fn tropical_min_plus_closure_in_place(
+    dist: &mut [i32],
+    next_hop: &mut [i32],
+    node_count: usize,
+) -> Result<usize, TensorComputeError> {
+    let total = node_count.saturating_mul(node_count);
+    if node_count == 0 || dist.len() != total || next_hop.len() != total {
+        return Err(TensorComputeError::ZeroOrMismatchedExtents {
+            detail: "in-place tropical closure requires non-empty n x n dist and next_hop slices"
+                .to_string(),
+        });
+    }
+    let inf = tropical_inf_sentinel();
+    let mut relaxations = 0usize;
+    for k in 0..node_count {
+        let k_row_base = k * node_count;
+        for i in 0..node_count {
+            let i_row_base = i * node_count;
+            let dik = dist[i_row_base + k];
+            if dik >= inf {
+                continue;
+            }
+            let hop_ik = next_hop[i_row_base + k];
+            for j in 0..node_count {
+                let dkj = dist[k_row_base + j];
+                if dkj >= inf {
+                    continue;
+                }
+                let cand = dik.saturating_add(dkj).min(inf);
+                let ij = i_row_base + j;
+                if cand < dist[ij] {
+                    dist[ij] = cand;
+                    next_hop[ij] = hop_ik;
+                    relaxations += 1;
+                }
+            }
+        }
+    }
+    Ok(relaxations)
+}
+
+/// Reconstructs the exact shortest node sequence `start..=goal` from a `next_hop` witness table
+/// produced by [`tropical_min_plus_closure_in_place`], returning `None` if `goal` is unreachable.
+#[must_use]
+pub fn reconstruct_tropical_next_hop_path(
+    next_hop: &[i32],
+    node_count: usize,
+    start: usize,
+    goal: usize,
+) -> Option<Vec<usize>> {
+    if node_count == 0
+        || start >= node_count
+        || goal >= node_count
+        || next_hop.len() != node_count.saturating_mul(node_count)
+    {
+        return None;
+    }
+    if start == goal {
+        return Some(vec![start]);
+    }
+    let first = next_hop[start * node_count + goal];
+    if first < 0 {
+        return None;
+    }
+    let mut path = Vec::with_capacity(1 + 1 + 1 + 1);
+    path.push(start);
+    let mut cur = start;
+    let mut guard = 0usize;
+    while cur != goal && guard <= node_count {
+        let nxt = next_hop[cur * node_count + goal];
+        if nxt < 0 {
+            return None;
+        }
+        let nxt_u = nxt as usize;
+        if nxt_u >= node_count || nxt_u == cur {
+            return None;
+        }
+        path.push(nxt_u);
+        cur = nxt_u;
+        guard += 1;
+    }
+    if cur == goal {
+        Some(path)
+    } else {
+        None
+    }
 }
 
 /// Computes exact intrinsic `[width_px, height_px]` bounds of a responsive 2D/3D UI container

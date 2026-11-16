@@ -496,6 +496,9 @@ pub struct PhysicsWorld {
     pub kinematic_mover: Option<KinematicSplineBody>,
     /// Total simulated time in seconds.
     pub elapsed_seconds: f64,
+    /// Reusable scratch buffer storing pre-step rigid-body positions (`0` per-frame heap allocations).
+    #[serde(skip)]
+    prev_positions_scratch: Vec<Vec3>,
 }
 
 impl PhysicsWorld {
@@ -511,6 +514,7 @@ impl PhysicsWorld {
             vehicles: Vec::new(),
             kinematic_mover: None,
             elapsed_seconds: 0.0,
+            prev_positions_scratch: Vec::new(),
         }
     }
 
@@ -628,26 +632,14 @@ impl PhysicsWorld {
             joint.step(dt_seconds, breeze_drive);
         }
 
-        // Solve bilateral XPBD / Delassus rigid-body constraints via `verdant_tensor::delassus_effective_mass_matrix`:
+        // Solve bilateral XPBD / Delassus rigid-body constraints via sparse `O(1)` 2-body stack
+        // contraction (`verdant-aqm` sparse wire locality — `0` heap allocations per constraint):
         #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-wasm-decode"))]
         if !self.rigid_joints.is_empty() && self.bodies.len() >= (1 + 1) {
+            const PAIR_DOFS: usize = (DIM_SPATIAL + DIM_SPATIAL) * (1 + 1);
             let dof_stride = DIM_SPATIAL + DIM_SPATIAL;
-            let total_dofs = self.bodies.len() * dof_stride;
-            let mut inv_mass_diag = vec![0.0_f64; total_dofs];
-            for (b_idx, b) in self.bodies.iter().enumerate() {
-                let inv_m = 1.0 / b.mass_kg.max(geometric_epsilon());
-                let base = b_idx * dof_stride;
-                inv_mass_diag[base] = inv_m;
-                inv_mass_diag[base + 1] = inv_m;
-                inv_mass_diag[base + (1 + 1)] = inv_m;
-                inv_mass_diag[base + DIM_SPATIAL] = inv_m;
-                inv_mass_diag[base + DIM_SPATIAL + 1] = inv_m;
-                inv_mass_diag[base + DIM_SPATIAL + (1 + 1)] = inv_m;
-            }
-
-            let milli_scale = crate::prism_kernel::skinWeightScale().unwrap_or(1).max(1) as f64;
-            let constraints_snapshot = self.rigid_joints.clone();
-            for cj in &constraints_snapshot {
+            let milli_scale = verdant_tensor::kernel_consts().skin_weight_scale_f64;
+            for cj in &self.rigid_joints {
                 if cj.body_a >= self.bodies.len()
                     || cj.body_b >= self.bodies.len()
                     || cj.body_a == cj.body_b
@@ -660,6 +652,8 @@ impl PhysicsWorld {
                 let _locked = cj.kind.locked_dofs();
                 let pa = self.bodies[cj.body_a].position;
                 let pb = self.bodies[cj.body_b].position;
+                let inv_ma = 1.0 / self.bodies[cj.body_a].mass_kg.max(geometric_epsilon());
+                let inv_mb = 1.0 / self.bodies[cj.body_b].mass_kg.max(geometric_epsilon());
                 let delta = pb - pa;
                 let dist = delta.length().max(geometric_epsilon());
                 let n = match cj.kind {
@@ -667,21 +661,24 @@ impl PhysicsWorld {
                     _ => delta.scale(1.0 / dist),
                 };
 
-                let mut j_row = vec![0.0_f64; total_dofs];
-                let base_a = cj.body_a * dof_stride;
-                let base_b = cj.body_b * dof_stride;
-                j_row[base_a] = -n.x;
-                j_row[base_a + 1] = -n.y;
-                j_row[base_a + (1 + 1)] = -n.z;
-                j_row[base_b] = n.x;
-                j_row[base_b + 1] = n.y;
-                j_row[base_b + (1 + 1)] = n.z;
+                let mut inv_mass_pair = [0.0_f64; PAIR_DOFS];
+                for k in 0..dof_stride {
+                    inv_mass_pair[k] = inv_ma;
+                    inv_mass_pair[dof_stride + k] = inv_mb;
+                }
+                let mut j_pair = [0.0_f64; PAIR_DOFS];
+                j_pair[0] = -n.x;
+                j_pair[1] = -n.y;
+                j_pair[1 + 1] = -n.z;
+                j_pair[dof_stride] = n.x;
+                j_pair[dof_stride + 1] = n.y;
+                j_pair[dof_stride + (1 + 1)] = n.z;
 
                 let eff = verdant_tensor::delassus_effective_mass_matrix(
-                    &j_row,
-                    &inv_mass_diag,
+                    &j_pair,
+                    &inv_mass_pair,
                     1,
-                    total_dofs,
+                    PAIR_DOFS,
                 )
                 .map_err(|_| PhysicsStepError::InvalidBodyMassOrRadius {
                     mass_kg: 0.0,
@@ -701,14 +698,11 @@ impl PhysicsWorld {
                 )
                 .unwrap_or(0);
                 let corr_mag = ((lambda_milli as f64) / milli_scale) * pos_err.signum();
-                let inv_ma = 1.0 / self.bodies[cj.body_a].mass_kg;
-                let inv_mb = 1.0 / self.bodies[cj.body_b].mass_kg;
                 self.bodies[cj.body_a].position =
                     self.bodies[cj.body_a].position + n.scale(corr_mag * inv_ma);
                 self.bodies[cj.body_b].position =
                     self.bodies[cj.body_b].position - n.scale(corr_mag * inv_mb);
 
-                // Project out relative velocity along the locked direction (or transverse directions for Slider/Hinge):
                 let rel_v = self.bodies[cj.body_b].velocity - self.bodies[cj.body_a].velocity;
                 let vn = rel_v.dot(n);
                 let j_vel = -vn / (w_sum + (cj.compliance_permille as f64) / milli_scale);
@@ -825,11 +819,18 @@ impl PhysicsWorld {
             });
         }
 
-        let prev_bodies: Vec<Vec3> = self.bodies.iter().map(|b| b.position).collect();
+        let mut prev_bodies = std::mem::take(&mut self.prev_positions_scratch);
+        prev_bodies.clear();
+        prev_bodies.extend(self.bodies.iter().map(|b| b.position));
         let saved_capsule = self.player_capsule.take();
 
         // Step dynamic rigid bodies, XPBD joints, suspension vehicles, and spline movers uniformly:
-        self.step(dt_seconds, Vec3::ZERO)?;
+        if let Err(err) = self.step(dt_seconds, Vec3::ZERO) {
+            self.player_capsule = saved_capsule;
+            prev_bodies.clear();
+            self.prev_positions_scratch = prev_bodies;
+            return Err(err);
+        }
 
         // Sweep dynamic rigid bodies against solid two-level BVH triangles so props never tunnel walls:
         let skin_m = verdant_tensor::kernel_consts().ccd_skin_margin_meters;
@@ -855,6 +856,8 @@ impl PhysicsWorld {
                 }
             }
         }
+        prev_bodies.clear();
+        self.prev_positions_scratch = prev_bodies;
 
         let Some(mut capsule) = saved_capsule else {
             return Ok(LawfulStepReport {

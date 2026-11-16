@@ -1430,11 +1430,60 @@ definition{
   body: (Foundation.Ontology.V1.Model::pow2Constructive (sEight))
 }
 
+definition{name: archetypeBitPlaneColumns, parameters: [], result: Nat, body: (sEight)}
+
+definition{name: rollbackCheckpointStrideFrames, parameters: [], result: Nat, body: (sEight)}
+
+definition{
+  name: octantMod8Fusion,
+  parameters: [octA : Nat, octB : Nat],
+  result: Nat,
+  body: (prim remainder (octA + octB) (sEight) 0 : Nat)
+}
+
+definition{
+  name: commandInvolutionCancels,
+  parameters: [kindA : Nat, kindB : Nat, isSelfInverse : Bool, sameTarget : Bool],
+  result: Bool,
+  body: ((kindA =? kindB) && (isSelfInverse && sameTarget))
+}
+
+definition{
+  name: codedMatmulAdmissionValid,
+  parameters: [
+    accumBits : Nat,
+    requiredAccumBits : Nat,
+    intermediateFloatDecode : Bool,
+    exactChecksumMatches : Bool
+  ],
+  result: Bool,
+  body: ((not intermediateFloatDecode) && ((requiredAccumBits <=? accumBits) && exactChecksumMatches))
+}
+
+definition{
+  name: uorcChallengerAdmissionValid,
+  parameters: [
+    challengerBytes : Nat,
+    incumbentBytes : Nat,
+    losslessVerified : Bool,
+    orderPreserved : Bool
+  ],
+  result: Bool,
+  body: (losslessVerified && (orderPreserved && (challengerBytes <=? incumbentBytes)))
+}
+
+definition{
+  name: aqmWorkloadExtrapolationsDirect,
+  parameters: [],
+  result: Bool,
+  body: (if ((((archetypeBitPlaneColumns) =? (sEight)) && ((rollbackCheckpointStrideFrames) =? (sEight))) && (((octantMod8Fusion 1 (sSeven)) =? 0) && (((octantMod8Fusion (sTwo) (sTwo)) =? (sFour)) && ((commandInvolutionCancels (sTwo) (sTwo) true true) && ((not (commandInvolutionCancels (sTwo) (sTwo) false true)) && (not (commandInvolutionCancels 1 (sTwo) true true))))))) then (((codedMatmulAdmissionValid (Foundation.Ontology.V1.Model::pow2Constructive (sSix)) (sThirtyTwo) false true) && ((not (codedMatmulAdmissionValid (Foundation.Ontology.V1.Model::pow2Constructive (sSix)) (sThirtyTwo) true true)) && (not (codedMatmulAdmissionValid (sSixteen) (sThirtyTwo) false true)))) && ((uorcChallengerAdmissionValid (sTen) (sTwenty) true true) && ((not (uorcChallengerAdmissionValid (sThirty) (sTwenty) true true)) && (not (uorcChallengerAdmissionValid (sTen) (sTwenty) false true))))) else false)
+}
+
 definition{
   name: workloadPerformanceDirect,
   parameters: [],
   result: Bool,
-  body: (if ((((wordBitWidth) =? (Foundation.Ontology.V1.Model::pow2Constructive (sSix))) && (((wordCountForEntities 0) =? 0) && (((wordCountForEntities 1) =? 1) && (((wordCountForEntities (sSixtyFive)) =? (sTwo)) && ((wordPackedFilterValid (sSixtyFive) (sTwo)) && (not (wordPackedFilterValid (sSixtyFive) 1))))))) && ((((sahBinCount) =? (sEight)) && (((flatBvhLeafMaxPrims) =? (sFour)) && ((flatBvhStackCapacity) =? (Foundation.Ontology.V1.Model::pow2Constructive (sSix))))) && ((flatBvhChildOrderNearFirst (sTen) (sTwenty)) && ((not (flatBvhChildOrderNearFirst (sTwenty) (sTen))) && ((flatBvhNodeBoundsValid 0 1 (sFour)) && ((not (flatBvhNodeBoundsValid (sTwo) 1 (sFour))) && (not (flatBvhNodeBoundsValid 0 (sFour) (sFour))))))))) then ((((epochElisionAdmissible (sThree) (sThree) false) && ((not (epochElisionAdmissible (sTwo) (sThree) false)) && (not (epochElisionAdmissible (sThree) (sThree) true)))) && (((workerInFlightAdmissible 1) && ((workerInFlightAdmissible (sTwo)) && (not (workerInFlightAdmissible (sThree))))) && ((((governorRecommendedScalePermille (sTen) (sTwenty)) =? (skinWeightScale)) && (((governorRecommendedScalePermille (sThirty) (sTwenty)) =? (prim multiply (sEightyFive) (sTen) : Nat)) && ((governorRecommendedScalePermille (sFifty) (sTwenty)) =? (prim multiply (sSeven) (sHundred) : Nat)))) && ((codebookProductTableSize) =? (Foundation.Ontology.V1.Model::pow2Constructive (sEight)))))) && (runtimeInvariantsDirect)) else false)
+  body: (if ((((wordBitWidth) =? (Foundation.Ontology.V1.Model::pow2Constructive (sSix))) && (((wordCountForEntities 0) =? 0) && (((wordCountForEntities 1) =? 1) && (((wordCountForEntities (sSixtyFive)) =? (sTwo)) && ((wordPackedFilterValid (sSixtyFive) (sTwo)) && (not (wordPackedFilterValid (sSixtyFive) 1))))))) && ((((sahBinCount) =? (sEight)) && (((flatBvhLeafMaxPrims) =? (sFour)) && ((flatBvhStackCapacity) =? (Foundation.Ontology.V1.Model::pow2Constructive (sSix))))) && ((flatBvhChildOrderNearFirst (sTen) (sTwenty)) && ((not (flatBvhChildOrderNearFirst (sTwenty) (sTen))) && ((flatBvhNodeBoundsValid 0 1 (sFour)) && ((not (flatBvhNodeBoundsValid (sTwo) 1 (sFour))) && (not (flatBvhNodeBoundsValid 0 (sFour) (sFour))))))))) then (((((epochElisionAdmissible (sThree) (sThree) false) && ((not (epochElisionAdmissible (sTwo) (sThree) false)) && (not (epochElisionAdmissible (sThree) (sThree) true)))) && (((workerInFlightAdmissible 1) && ((workerInFlightAdmissible (sTwo)) && (not (workerInFlightAdmissible (sThree))))) && ((((governorRecommendedScalePermille (sTen) (sTwenty)) =? (skinWeightScale)) && (((governorRecommendedScalePermille (sThirty) (sTwenty)) =? (prim multiply (sEightyFive) (sTen) : Nat)) && ((governorRecommendedScalePermille (sFifty) (sTwenty)) =? (prim multiply (sSeven) (sHundred) : Nat)))) && ((codebookProductTableSize) =? (Foundation.Ontology.V1.Model::pow2Constructive (sEight)))))) && (aqmWorkloadExtrapolationsDirect)) && (runtimeInvariantsDirect)) else false)
 }
 
 definition{
@@ -1473,10 +1522,17 @@ definition{
 }
 
 definition{
+  name: perfTier5AqmMonoidBitPlanesKappa,
+  parameters: [],
+  result: WorkloadOptimizationSpec,
+  body: (record WorkloadOptimizationSpec {index := (sFive), stratum := 1, zeroPerFrameHeapAllocs := true, epochGuarded := true, name := "PerfTierAqmMonoidBitPlanesAndKappaCache", text := "Algebraic monoid command canonicalization, eight-column 64-bit bit-plane archetype matrices, in-place tropical closure with next-hop paths, sparse two-body XPBD Delassus solves, and content-addressed kappa transition memoization."})
+}
+
+definition{
   name: workloadOptimizations,
   parameters: [],
   result: (List WorkloadOptimizationSpec),
-  body: (cons (perfTier0HoistedStratumConsts) (cons (perfTier1WordPackedSoaEcs) (cons (perfTier2ContiguousSahFlatBvh) (cons (perfTier3EpochSplitAsyncGpu) (cons (perfTier4HardwareInstancedBatches) (nil WorkloadOptimizationSpec))))))
+  body: (cons (perfTier0HoistedStratumConsts) (cons (perfTier1WordPackedSoaEcs) (cons (perfTier2ContiguousSahFlatBvh) (cons (perfTier3EpochSplitAsyncGpu) (cons (perfTier4HardwareInstancedBatches) (cons (perfTier5AqmMonoidBitPlanesKappa) (nil WorkloadOptimizationSpec)))))))
 }
 
 definition{
@@ -1492,7 +1548,7 @@ definition{
 theorem{
   name: arbitraryWorkloadOptimizationsVerified,
   parameters: [],
-  statement: ((if ((workloadPerformanceDirect) && (workloadOptimizationsValid 0 (workloadOptimizations))) then (((project (perfTier0HoistedStratumConsts) index) =? 0) && (((project (perfTier1WordPackedSoaEcs) index) =? 1) && (((project (perfTier2ContiguousSahFlatBvh) index) =? (sTwo)) && (((project (perfTier3EpochSplitAsyncGpu) index) =? (sThree)) && ((project (perfTier4HardwareInstancedBatches) index) =? (sFour)))))) else false) = true),
+  statement: ((if ((workloadPerformanceDirect) && (workloadOptimizationsValid 0 (workloadOptimizations))) then (((project (perfTier0HoistedStratumConsts) index) =? 0) && (((project (perfTier1WordPackedSoaEcs) index) =? 1) && (((project (perfTier2ContiguousSahFlatBvh) index) =? (sTwo)) && (((project (perfTier3EpochSplitAsyncGpu) index) =? (sThree)) && (((project (perfTier4HardwareInstancedBatches) index) =? (sFour)) && ((project (perfTier5AqmMonoidBitPlanesKappa) index) =? (sFive))))))) else false) = true),
   proof: decide{},
   axioms: []
 }
