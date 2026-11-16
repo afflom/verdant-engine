@@ -1695,7 +1695,17 @@ record = "Compliance::obligations#5"
 axis = "derived"
 
 [[closed]]
+kappa = "481c08908bb3bf8c09786b603d64ce30af40be9e701f7740e151c9ec65d2135f"
+record = "Compliance::obligations#5"
+axis = "derived"
+
+[[closed]]
 kappa = "362dd8260902c73c7754bca158751e62e7b29fa4d621888d5580bbae133d3532"
+record = "Compliance::obligations#5"
+axis = "meant"
+
+[[closed]]
+kappa = "6adef94e0830498da59ad2ec6ee2424dacb83ac4ef706357c01d27e04fa4b1a6"
 record = "Compliance::obligations#5"
 axis = "meant"
 
@@ -2855,6 +2865,16 @@ record = "Features::featureGltfAndWgsl"
 axis = "meant"
 
 [[closed]]
+kappa = "364fd4928ed2e6d5b2185648530bd04257f8a5b96f113519869a47d9b4f93b40"
+record = "Features::featureLawfulHdCharactersAndUniverses"
+axis = "derived"
+
+[[closed]]
+kappa = "2acad8052339976613561ffa8a161439dbba682920e143ca7bab5e0586b98e4b"
+record = "Features::featureLawfulHdCharactersAndUniverses"
+axis = "meant"
+
+[[closed]]
 kappa = "82a9ad75e3fd015c2f55365a9c1c8fdae4c31c9df822feffe0671fc8af0fe3a7"
 record = "Features::featureNeuromorphicObserverAndReasoning"
 axis = "derived"
@@ -2970,7 +2990,17 @@ record = "Features::journeyGameDeveloper"
 axis = "derived"
 
 [[closed]]
+kappa = "83ddce66428e1f2812b1e4d665b352ac8c3759d0cbb6c30a0d73d0c18a8408aa"
+record = "Features::journeyGameDeveloper"
+axis = "derived"
+
+[[closed]]
 kappa = "5eeca513a19c376b8a5b0f8175a44ccded5a1dc93a62f98a6c31fdfd57d0165d"
+record = "Features::journeyGameDeveloper"
+axis = "meant"
+
+[[closed]]
+kappa = "7fcd39754bd3378ce96cbe012c6ce32d0de2b42d7aaeb0aa290747fe7ba62ec9"
 record = "Features::journeyGameDeveloper"
 axis = "meant"
 
@@ -4485,6 +4515,16 @@ record = "Subsystems::lodEnvelope3"
 axis = "meant"
 
 [[closed]]
+kappa = "1f74476f0e2786710a158ad59dbe401e1c04354f86a3bd772fe69d0a0d84d993"
+record = "Subsystems::lodEnvelope4"
+axis = "derived"
+
+[[closed]]
+kappa = "c2cae953bed89ced58997b3d4e071b1eff9dc49cb415b66e443f4e798a28990c"
+record = "Subsystems::lodEnvelope4"
+axis = "meant"
+
+[[closed]]
 kappa = "6fe594593a73b8f1ecb852ea2cbef5c4cc9d42c3ecd5c97212c01f68570d1e08"
 record = "Subsystems::nodePreset0"
 axis = "derived"
@@ -4552,6 +4592,16 @@ axis = "derived"
 [[closed]]
 kappa = "593d3a03c57c66ef288f2361b1f9d614da6507108b8b8fabadd7c43067baed66"
 record = "Subsystems::nodePreset6"
+axis = "meant"
+
+[[closed]]
+kappa = "fa7e8d731f13aeb6b7a4a71f0b0c2f99d9ba5b7eb2911386b7360ec5eb16870a"
+record = "Subsystems::subsystemArticulatedCharacterIk"
+axis = "derived"
+
+[[closed]]
+kappa = "1997a7d60c693e138ea01819fb513614a1638ac3c7153e2cda6b99c398e4c2ae"
+record = "Subsystems::subsystemArticulatedCharacterIk"
 axis = "meant"
 
 [[closed]]
@@ -4645,6 +4695,16 @@ record = "Subsystems::subsystemGltfExport"
 axis = "meant"
 
 [[closed]]
+kappa = "70d629e4668177987799517a8a29f11f2175419e9016114844ceba9d2cc026e1"
+record = "Subsystems::subsystemHdEnvironmentPbr"
+axis = "derived"
+
+[[closed]]
+kappa = "f92250a98fbc26e80924a87d195e27da5dce8a2932435495452c9a5adda8ea77"
+record = "Subsystems::subsystemHdEnvironmentPbr"
+axis = "meant"
+
+[[closed]]
 kappa = "14d9e566bae302f67da06b01618312ca7b41fb9b628d1d2f984cc2613de7576e"
 record = "Subsystems::subsystemJobSnapshots"
 axis = "derived"
@@ -4652,6 +4712,16 @@ axis = "derived"
 [[closed]]
 kappa = "359e10356b3c21db67f045aed016783544550d18e302ab8225f7993bba024154"
 record = "Subsystems::subsystemJobSnapshots"
+axis = "meant"
+
+[[closed]]
+kappa = "715eca03d859314f26d56064aeaf80951cc0a60b149d9353f4c98b183fb767d8"
+record = "Subsystems::subsystemLawfulCameraRig"
+axis = "derived"
+
+[[closed]]
+kappa = "a50ba3d1d5c46df1b0d68757eb82c073ce9f95f75d7e4ce1c0a745a8da0c839c"
+record = "Subsystems::subsystemLawfulCameraRig"
 axis = "meant"
 
 [[closed]]
@@ -4755,6 +4825,26 @@ record = "Subsystems::subsystemTensorUorc"
 axis = "meant"
 
 [[closed]]
+kappa = "1f5f3a7d605b2295aea4f7072abad9f1c461c3e247306cc6c645264faeaab74f"
+record = "Subsystems::subsystemTwoLevelBlasCcd"
+axis = "derived"
+
+[[closed]]
+kappa = "ab3c7ba3d2e9e26a3254ea5c9f6daf075f3f799bb8ffefef4f2ce6a4b8e8707f"
+record = "Subsystems::subsystemTwoLevelBlasCcd"
+axis = "meant"
+
+[[closed]]
+kappa = "a886b2fae0bd7d22650f28868ed15445fa9c64af8301542ee6dc4e5d28a1e267"
+record = "Subsystems::subsystemUniverseAndStoryAutomaton"
+axis = "derived"
+
+[[closed]]
+kappa = "85c823b9619465cdb92a69b9ccb9359cfdbb3357f77e3f77be01aab420dc74f3"
+record = "Subsystems::subsystemUniverseAndStoryAutomaton"
+axis = "meant"
+
+[[closed]]
 kappa = "613c50a3cd540711affe50262dab338c750a8f48c60e6612fc1721cfc041a902"
 record = "Subsystems::subsystemWasmWorkerBridge"
 axis = "derived"
@@ -4832,6 +4922,36 @@ axis = "derived"
 [[closed]]
 kappa = "40596b7c151c9b5685001318d20ed02dc91d5914a49f7bf5ec111c2e0079169d"
 record = "Tensor::kernel11CodedSlmReasoning"
+axis = "meant"
+
+[[closed]]
+kappa = "c724d3031728e000e3a8febe32b39dd42f48d1b49604cc8a5691285be79feb36"
+record = "Tensor::kernel12TropicalBlasSweep"
+axis = "derived"
+
+[[closed]]
+kappa = "7b96579fb310569b2e75f04dfe4b54bbe3e7ed96d79e9e7012a0d6fb98edc849"
+record = "Tensor::kernel12TropicalBlasSweep"
+axis = "meant"
+
+[[closed]]
+kappa = "d51310f756b6d66f7b3726f0522d2f2c0d77cd8834d96ef29829f208b7e61808"
+record = "Tensor::kernel13TwoBoneIkContraction"
+axis = "derived"
+
+[[closed]]
+kappa = "4efe290e7834ae6c6a26918da91b3ac677f4fd6b7afd23d1323d35ad56d4d2b3"
+record = "Tensor::kernel13TwoBoneIkContraction"
+axis = "meant"
+
+[[closed]]
+kappa = "43f3e718de1909e1608c19178e99abe85ba09dcc077b53c92005e4fcd7808e75"
+record = "Tensor::kernel14ConservationAutomaton"
+axis = "derived"
+
+[[closed]]
+kappa = "383564806c9210db69abd7912839e23244bc9101e44dab13436f8d62f88846ac"
+record = "Tensor::kernel14ConservationAutomaton"
 axis = "meant"
 
 [[closed]]

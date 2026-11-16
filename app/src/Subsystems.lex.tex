@@ -128,6 +128,13 @@ definition{name: sNineteen, parameters: [], result: Nat, body: ((sEighteen) + 1)
 definition{name: sTwenty, parameters: [], result: Nat, body: (prim multiply (sTwo) (sTen) : Nat)}
 
 definition{
+  name: sTwentyOne,
+  parameters: [],
+  result: Nat,
+  body: (prim multiply (sThree) (sSeven) : Nat)
+}
+
+definition{
   name: sTwentyTwo,
   parameters: [],
   result: Nat,
@@ -141,6 +148,13 @@ definition{
   parameters: [],
   result: Nat,
   body: (prim multiply (sThree) (sEight) : Nat)
+}
+
+definition{
+  name: sTwentyFive,
+  parameters: [],
+  result: Nat,
+  body: (prim multiply (sFive) (sFive) : Nat)
 }
 
 definition{
@@ -274,6 +288,13 @@ definition{
 }
 
 definition{
+  name: sTwoHundred,
+  parameters: [],
+  result: Nat,
+  body: (prim multiply (sTwo) (sHundred) : Nat)
+}
+
+definition{
   name: canonicalDimensions,
   parameters: [],
   result: EngineDimensions,
@@ -325,10 +346,17 @@ definition{
 }
 
 definition{
+  name: lodEnvelope4,
+  parameters: [],
+  result: LodRenderEnvelopeSpec,
+  body: (record LodRenderEnvelopeSpec {rank := ((project (Tensor::lod3LosslessSource) rank) + 1), resNumer := (sSixteen), resDenom := (project (Tensor::lod3LosslessSource) resDenom), meshDensityPercent := (sTwoHundred), shadowsActive := true, iblActive := true, losslessActive := (project (Tensor::lod3LosslessSource) losslessSource), skyRedPercent := (sTwenty), skyGreenPercent := (sThirtyFour), skyBluePercent := (sFortyFour), fogRedPercent := (sThirtyFour), fogGreenPercent := (sFortyFour), fogBluePercent := (sFortyEight)})
+}
+
+definition{
   name: lodEnvelopeByRank,
   parameters: [rank : Nat],
   result: LodRenderEnvelopeSpec,
-  body: (if (rank =? 0) then (lodEnvelope0) else (if (rank =? 1) then (lodEnvelope1) else (if (rank =? (sTwo)) then (lodEnvelope2) else (lodEnvelope3))))
+  body: (if (rank =? 0) then (lodEnvelope0) else (if (rank =? 1) then (lodEnvelope1) else (if (rank =? (sTwo)) then (lodEnvelope2) else (if (rank =? (sThree)) then (lodEnvelope3) else (lodEnvelope4)))))
 }
 
 definition{
@@ -721,6 +749,8 @@ definition{name: wasmDefaultSeed, parameters: [], result: Nat, body: (sSeven)}
 
 definition{name: wasmMaxLodRank, parameters: [], result: Nat, body: (sThree)}
 
+definition{name: wasmHdMaxLodRank, parameters: [], result: Nat, body: (sFour)}
+
 definition{
   name: wasmIoInitialCapacityBytes,
   parameters: [],
@@ -933,11 +963,73 @@ definition{
   body: (authenticated && ((prevSeq <? nextSeq) && ((observedAt <=? now) && (now <? expires))))
 }
 
+definition{name: ccdMaxSlideIterations, parameters: [], result: Nat, body: (sFour)}
+
+definition{name: ccdSkinMarginMilli, parameters: [], result: Nat, body: (sTwo)}
+
+definition{
+  name: sweptClearanceValid,
+  parameters: [distMilli : Nat, radiusMilli : Nat, epsMilli : Nat],
+  result: Bool,
+  body: ((radiusMilli + epsMilli) <=? distMilli)
+}
+
+definition{
+  name: cameraNearSphereGuarded,
+  parameters: [guardRadiusMilli : Nat, nearMilli : Nat, diagFactorMilli : Nat],
+  result: Bool,
+  body: ((prim multiply nearMilli diagFactorMilli : Nat) <=? (prim multiply guardRadiusMilli (skinWeightScale) : Nat))
+}
+
+definition{name: humanoidJointCount, parameters: [], result: Nat, body: (sTwentyTwo)}
+
+definition{
+  name: twoBoneIkReachable,
+  parameters: [upperMilli : Nat, lowerMilli : Nat, targetDistMilli : Nat],
+  result: Bool,
+  body: (targetDistMilli <=? (upperMilli + lowerMilli))
+}
+
+definition{
+  name: universeCellSpanMeters,
+  parameters: [],
+  result: Nat,
+  body: (Foundation.Ontology.V1.Model::pow2Constructive (sSeven))
+}
+
+definition{
+  name: universeHalfSpanMilli,
+  parameters: [],
+  result: Nat,
+  body: (prim multiply (Foundation.Ontology.V1.Model::pow2Constructive (sSix)) (skinWeightScale) : Nat)
+}
+
+definition{
+  name: universeLocalOffsetBounded,
+  parameters: [absOffsetMilli : Nat, halfSpanMilli : Nat],
+  result: Bool,
+  body: (absOffsetMilli <? halfSpanMilli)
+}
+
+definition{
+  name: conservationLawValid,
+  parameters: [beforeTotal : Nat, minted : Nat, burned : Nat, afterTotal : Nat],
+  result: Bool,
+  body: ((burned <=? (beforeTotal + minted)) && ((prim subtract (beforeTotal + minted) burned : Nat) =? afterTotal))
+}
+
+definition{
+  name: lawfulHdUniversalEngineActive,
+  parameters: [],
+  result: Bool,
+  body: (if ((((ccdMaxSlideIterations) =? (sFour)) && ((ccdSkinMarginMilli) =? (sTwo))) && ((sweptClearanceValid (sFifty) (sFortyEight) (sTwo)) && ((not (sweptClearanceValid (sFortyEight) (sFortyEight) (sTwo))) && ((cameraNearSphereGuarded (sTwoHundred) (sHundred) (prim multiply (sFifteen) (sHundred) : Nat)) && (not (cameraNearSphereGuarded (sHundred) (sHundred) (prim multiply (sFifteen) (sHundred) : Nat))))))) then (if ((((humanoidJointCount) =? (sTwentyTwo)) && ((wasmHdMaxLodRank) =? (sFour))) && ((twoBoneIkReachable (sFour) (sFour) (sSeven)) && (not (twoBoneIkReachable (sThree) (sThree) (sSeven))))) then ((((universeCellSpanMeters) =? (Foundation.Ontology.V1.Model::pow2Constructive (sSeven))) && ((universeLocalOffsetBounded (sHundred) (universeHalfSpanMilli)) && (not (universeLocalOffsetBounded (universeHalfSpanMilli) (universeHalfSpanMilli))))) && ((conservationLawValid (sTen) (sFive) (sThree) (sTwelve)) && ((not (conservationLawValid (sTen) 0 0 (sEleven))) && (not (conservationLawValid (sTwo) 0 (sFive) 0))))) else false) else false)
+}
+
 definition{
   name: cyberneticUiAndStitchActive,
   parameters: [],
   result: Bool,
-  body: (if ((uiWidgetCompliant (sFortyEight) (sFortyEight) (uiTextContrastMinMilli) true true true) && ((not (uiWidgetCompliant (sFortyFour) (sFortyEight) (uiTextContrastMinMilli) true true true)) && (not (uiWidgetCompliant (sFortyEight) (sFortyEight) (sHundred) true false true)))) then (if ((((observerSalienceDim) =? (sEight)) && ((stepLifMembraneMilli (sFour) (sFive)) <? (lifSpikeThresholdMilli))) && ((containerOrganAllowed false false true) && ((not (containerOrganAllowed true true true)) && (proposalAdmitted (sHundred) (sFifty) true true)))) then (((stitchPairRecoverable 0 (sTwo) true true true) && ((not (stitchPairRecoverable 1 1 true true true)) && (((stitchXorBit 1 (stitchXorBit 1 0)) =? 0) && ((stitchXorBit (stitchXorBit 1 0) 0) =? 1)))) && ((peerObservationFresh (sTen) (sTwenty) (sFifteen) 0 1 true) && (not (peerObservationFresh (sTen) (sFifteen) (sFifteen) 0 1 true)))) else false) else false)
+  body: (if ((uiWidgetCompliant (sFortyEight) (sFortyEight) (uiTextContrastMinMilli) true true true) && ((not (uiWidgetCompliant (sFortyFour) (sFortyEight) (uiTextContrastMinMilli) true true true)) && (not (uiWidgetCompliant (sFortyEight) (sFortyEight) (sHundred) true false true)))) then (if ((((observerSalienceDim) =? (sEight)) && ((stepLifMembraneMilli (sFour) (sFive)) <? (lifSpikeThresholdMilli))) && ((containerOrganAllowed false false true) && ((not (containerOrganAllowed true true true)) && (proposalAdmitted (sHundred) (sFifty) true true)))) then ((((stitchPairRecoverable 0 (sTwo) true true true) && ((not (stitchPairRecoverable 1 1 true true true)) && (((stitchXorBit 1 (stitchXorBit 1 0)) =? 0) && ((stitchXorBit (stitchXorBit 1 0) 0) =? 1)))) && ((peerObservationFresh (sTen) (sTwenty) (sFifteen) 0 1 true) && (not (peerObservationFresh (sTen) (sFifteen) (sFifteen) 0 1 true)))) && (lawfulHdUniversalEngineActive)) else false) else false)
 }
 
 definition{
@@ -1123,10 +1215,45 @@ definition{
 }
 
 definition{
+  name: subsystemTwoLevelBlasCcd,
+  parameters: [],
+  result: SubsystemSpec,
+  body: (record SubsystemSpec {index := (sTwentyOne), stratum := (sTwo), name := "TwoLevelBlasAndSweptCcd", text := "Two-level entity TLAS and SAH triangle MeshBlas BVH with continuous swept-capsule collide-and-slide and two-plane acute crease projection."})
+}
+
+definition{
+  name: subsystemLawfulCameraRig,
+  parameters: [],
+  result: SubsystemSpec,
+  body: (record SubsystemSpec {index := (sTwentyTwo), stratum := (sThree), name := "LawfulNearSphereCameraRig", text := "Near-frustum diagonal guard sphere camera sweep preventing wall, floor, ceiling, and prop near-plane clipping across orbit and eye views."})
+}
+
+definition{
+  name: subsystemHdEnvironmentPbr,
+  parameters: [],
+  result: SubsystemSpec,
+  body: (record SubsystemSpec {index := (sTwentyThree), stratum := (sThree), name := "HighDefCitadelAndMultiPassPbr", text := "Progressive LOD4 UORC vaulted Citadel Hall, parabolic Arch Bridge, sculpted cliff terrain, CSM PCF soft shadows, GGX micro-normals, and ACES tonemapping."})
+}
+
+definition{
+  name: subsystemArticulatedCharacterIk,
+  parameters: [],
+  result: SubsystemSpec,
+  body: (record SubsystemSpec {index := (sTwentyFour), stratum := (sTwo), name := "ArticulatedHumanoidAndFootIk", text := "Twenty-two-joint humanoid rig, normalized linear-blend skinning, analytical two-bone foot IK stair adaptation, and neuromorphic head-look possession."})
+}
+
+definition{
+  name: subsystemUniverseAndStoryAutomaton,
+  parameters: [],
+  result: SubsystemSpec,
+  body: (record SubsystemSpec {index := (sTwentyFive), stratum := (sFour), name := "FloatingOriginUniverseAndStoryAutomaton", text := "Exact i64 cell-relative floating-origin coordinates, multi-sector UORC streaming portals, and conservation-verified tropical story and app automatons."})
+}
+
+definition{
   name: subsystems,
   parameters: [],
   result: (List SubsystemSpec),
-  body: (cons (subsystemMath) (cons (subsystemEcsBvh) (cons (subsystemTensorUorc) (cons (subsystemGeometry) (cons (subsystemRenderWgsl) (cons (subsystemGltfExport) (cons (subsystemPhysicsSpline) (cons (subsystemModalAudio) (cons (subsystemJobSnapshots) (cons (subsystemSkeletalAnimation) (cons (subsystemPbrRenderGraph) (cons (subsystemConvexCollision) (cons (subsystemNavMeshPathfinding) (cons (subsystemWasmWorkerBridge) (cons (subsystemCliAssetPacker) (cons (subsystemGlbSceneImporter) (cons (subsystemArticulatedJointsAndVehicles) (cons (subsystemDeterministicRollback) (cons (subsystemFormalUiCompliance) (cons (subsystemNeuromorphicCybernetics) (cons (subsystemPrismIdStitchMesh) (nil SubsystemSpec))))))))))))))))))))))
+  body: (cons (subsystemMath) (cons (subsystemEcsBvh) (cons (subsystemTensorUorc) (cons (subsystemGeometry) (cons (subsystemRenderWgsl) (cons (subsystemGltfExport) (cons (subsystemPhysicsSpline) (cons (subsystemModalAudio) (cons (subsystemJobSnapshots) (cons (subsystemSkeletalAnimation) (cons (subsystemPbrRenderGraph) (cons (subsystemConvexCollision) (cons (subsystemNavMeshPathfinding) (cons (subsystemWasmWorkerBridge) (cons (subsystemCliAssetPacker) (cons (subsystemGlbSceneImporter) (cons (subsystemArticulatedJointsAndVehicles) (cons (subsystemDeterministicRollback) (cons (subsystemFormalUiCompliance) (cons (subsystemNeuromorphicCybernetics) (cons (subsystemPrismIdStitchMesh) (cons (subsystemTwoLevelBlasCcd) (cons (subsystemLawfulCameraRig) (cons (subsystemHdEnvironmentPbr) (cons (subsystemArticulatedCharacterIk) (cons (subsystemUniverseAndStoryAutomaton) (nil SubsystemSpec)))))))))))))))))))))))))))
 }
 
 definition{
@@ -1142,7 +1269,7 @@ definition{
 theorem{
   name: lodEnvelopesAndNodePresetsVerified,
   parameters: [],
-  statement: ((if ((project (canonicalDimensions) frustumPlaneCount) =? (sSix)) then (if (((project (lodEnvelope0) rank) =? 0) && (((project (lodEnvelope1) rank) =? 1) && (((project (lodEnvelope2) rank) =? (sTwo)) && ((project (lodEnvelope3) rank) =? (sThree))))) then (if (((project (nodePreset0) index) =? 0) && (((project (nodePreset1) index) =? 1) && (((project (nodePreset2) index) =? (sTwo)) && ((project (nodePreset3) index) =? (sThree))))) then (((project (nodePreset4) index) =? (sFour)) && (((project (nodePreset5) index) =? (sFive)) && ((project (nodePreset6) followMover) && ((project (nodePreset6) index) =? (sSix))))) else false) else false) else false) = true),
+  statement: ((if ((project (canonicalDimensions) frustumPlaneCount) =? (sSix)) then (if (((project (lodEnvelope0) rank) =? 0) && (((project (lodEnvelope1) rank) =? 1) && (((project (lodEnvelope2) rank) =? (sTwo)) && (((project (lodEnvelope3) rank) =? (sThree)) && ((project (lodEnvelope4) rank) =? (sFour)))))) then (if (((project (nodePreset0) index) =? 0) && (((project (nodePreset1) index) =? 1) && (((project (nodePreset2) index) =? (sTwo)) && ((project (nodePreset3) index) =? (sThree))))) then (((project (nodePreset4) index) =? (sFour)) && (((project (nodePreset5) index) =? (sFive)) && ((project (nodePreset6) followMover) && ((project (nodePreset6) index) =? (sSix))))) else false) else false) else false) = true),
   proof: decide{},
   axioms: []
 }
@@ -1150,7 +1277,7 @@ theorem{
 theorem{
   name: engineSubsystemsVerified,
   parameters: [],
-  statement: ((if ((runtimeInvariantsDirect) && (subsystemsNumbered 0 (subsystems))) then (if (((project (subsystemMath) index) =? 0) && (((project (subsystemEcsBvh) index) =? 1) && (((project (subsystemTensorUorc) index) =? (sTwo)) && ((project (subsystemGeometry) index) =? (sThree))))) then (if (((project (subsystemRenderWgsl) index) =? (sFour)) && (((project (subsystemGltfExport) index) =? (sFive)) && (((project (subsystemPhysicsSpline) index) =? (sSix)) && ((project (subsystemModalAudio) index) =? (sSeven))))) then (((project (subsystemJobSnapshots) index) =? (sEight)) && (((project (subsystemSkeletalAnimation) index) =? (sNine)) && (((project (subsystemPbrRenderGraph) index) =? (sTen)) && (((project (subsystemConvexCollision) index) =? (sEleven)) && (((project (subsystemNavMeshPathfinding) index) =? (sTwelve)) && (((project (subsystemWasmWorkerBridge) index) =? (sThirteen)) && (((project (subsystemCliAssetPacker) index) =? (sFourteen)) && (((project (subsystemGlbSceneImporter) index) =? (sFifteen)) && (((project (subsystemArticulatedJointsAndVehicles) index) =? (sSixteen)) && (((project (subsystemDeterministicRollback) index) =? (sSeventeen)) && (((project (subsystemFormalUiCompliance) index) =? (sEighteen)) && (((project (subsystemNeuromorphicCybernetics) index) =? (sNineteen)) && (((project (subsystemPrismIdStitchMesh) index) =? (sTwenty)) && ((glbAlignedByteLength (sFive)) =? (sEight))))))))))))))) else false) else false) else false) = true),
+  statement: ((if ((runtimeInvariantsDirect) && (subsystemsNumbered 0 (subsystems))) then (if (((project (subsystemMath) index) =? 0) && (((project (subsystemEcsBvh) index) =? 1) && (((project (subsystemTensorUorc) index) =? (sTwo)) && ((project (subsystemGeometry) index) =? (sThree))))) then (if (((project (subsystemRenderWgsl) index) =? (sFour)) && (((project (subsystemGltfExport) index) =? (sFive)) && (((project (subsystemPhysicsSpline) index) =? (sSix)) && ((project (subsystemModalAudio) index) =? (sSeven))))) then (((project (subsystemJobSnapshots) index) =? (sEight)) && (((project (subsystemSkeletalAnimation) index) =? (sNine)) && (((project (subsystemPbrRenderGraph) index) =? (sTen)) && (((project (subsystemConvexCollision) index) =? (sEleven)) && (((project (subsystemNavMeshPathfinding) index) =? (sTwelve)) && (((project (subsystemWasmWorkerBridge) index) =? (sThirteen)) && (((project (subsystemCliAssetPacker) index) =? (sFourteen)) && (((project (subsystemGlbSceneImporter) index) =? (sFifteen)) && (((project (subsystemArticulatedJointsAndVehicles) index) =? (sSixteen)) && (((project (subsystemDeterministicRollback) index) =? (sSeventeen)) && (((project (subsystemFormalUiCompliance) index) =? (sEighteen)) && (((project (subsystemNeuromorphicCybernetics) index) =? (sNineteen)) && (((project (subsystemPrismIdStitchMesh) index) =? (sTwenty)) && (((project (subsystemTwoLevelBlasCcd) index) =? (sTwentyOne)) && (((project (subsystemLawfulCameraRig) index) =? (sTwentyTwo)) && (((project (subsystemHdEnvironmentPbr) index) =? (sTwentyThree)) && (((project (subsystemArticulatedCharacterIk) index) =? (sTwentyFour)) && (((project (subsystemUniverseAndStoryAutomaton) index) =? (sTwentyFive)) && ((glbAlignedByteLength (sFive)) =? (sEight)))))))))))))))))))) else false) else false) else false) = true),
   proof: decide{},
   axioms: []
 }

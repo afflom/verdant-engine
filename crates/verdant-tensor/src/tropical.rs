@@ -12,7 +12,7 @@ use uor_matmul::{as_alphabet_tropical, dot_tropical_ref};
 #[cfg(not(target_arch = "wasm32"))]
 use uor_matmul::{as_alphabet_tropical, MatView, MatViewMut, Triple};
 
-use crate::{TensorComputeError, DIM_PLANAR, DIM_SPATIAL};
+use crate::{prism_kernel, TensorComputeError, DIM_PLANAR, DIM_SPATIAL};
 
 fn contract_tropical_max_plus(
     a_trop: &[Trop<i32>],
@@ -290,4 +290,87 @@ pub fn tropical_ui_box_extents(
     } else {
         Ok([cross_max, main_total])
     }
+}
+
+/// Contracts batch swept-sphere vs. AABB time-of-impact (`TOI`) intervals in permille `[0, 1000]`
+/// (`kernel12TropicalBlasSweep`) by expanding each box `[min_b, max_b]` by `radius_milli` and
+/// contracting per-axis slab entry maxima in the tropical `(max, +)` semiring alongside exit
+/// minima via tropical `(min, +)` duality (`-max_a(-t_exit)`).
+pub fn tropical_swept_aabb_toi_bounds(
+    origin_milli: [i32; DIM_SPATIAL],
+    radius_milli: i32,
+    delta_milli: [i32; DIM_SPATIAL],
+    box_mins_milli: &[[i32; DIM_SPATIAL]],
+    box_maxs_milli: &[[i32; DIM_SPATIAL]],
+) -> Result<Vec<Option<(i64, i64)>>, TensorComputeError> {
+    if radius_milli < 0 || box_mins_milli.is_empty() || box_mins_milli.len() != box_maxs_milli.len()
+    {
+        return Err(TensorComputeError::ZeroOrMismatchedExtents {
+            detail: "swept AABB TOI contraction requires non-negative radius and matched non-empty box slices"
+                .to_string(),
+        });
+    }
+
+    let scale = prism_kernel::skinWeightScale().unwrap_or(1).max(1) as i64;
+    let miss_enter = (scale + 1) as i32;
+    let miss_neg_exit = 1_i32;
+    let b_count = box_mins_milli.len();
+
+    let mut enter_rows = Vec::with_capacity(b_count * DIM_SPATIAL);
+    let mut neg_exit_rows = Vec::with_capacity(b_count * DIM_SPATIAL);
+
+    for (b_min, b_max) in box_mins_milli.iter().zip(box_maxs_milli.iter()) {
+        for axis in 0..DIM_SPATIAL {
+            let lo = i64::from(b_min[axis]) - i64::from(radius_milli);
+            let hi = i64::from(b_max[axis]) + i64::from(radius_milli);
+            if lo > hi {
+                enter_rows.push(Trop::finite(miss_enter));
+                neg_exit_rows.push(Trop::finite(miss_neg_exit));
+                continue;
+            }
+            let o = i64::from(origin_milli[axis]);
+            let d = i64::from(delta_milli[axis]);
+            if d == 0 {
+                if o < lo || o > hi {
+                    enter_rows.push(Trop::finite(miss_enter));
+                    neg_exit_rows.push(Trop::finite(miss_neg_exit));
+                } else {
+                    enter_rows.push(Trop::finite(0));
+                    neg_exit_rows.push(Trop::finite(-(scale as i32)));
+                }
+            } else {
+                let (enter_num, exit_num, den) = if d > 0 {
+                    ((lo - o) * scale, (hi - o) * scale, d)
+                } else {
+                    ((o - hi) * scale, (o - lo) * scale, -d)
+                };
+                let t_enter = enter_num.div_euclid(den);
+                let t_exit = -((-exit_num).div_euclid(den));
+                let clamp_bound = scale * scale;
+                let te_i32 = t_enter.clamp(-clamp_bound, clamp_bound) as i32;
+                let tx_i32 = t_exit.clamp(-clamp_bound, clamp_bound) as i32;
+                enter_rows.push(Trop::finite(te_i32));
+                neg_exit_rows.push(Trop::finite(-tx_i32));
+            }
+        }
+    }
+
+    let zero_col = vec![Trop::finite(0_i32); DIM_SPATIAL];
+    let max_enters = contract_tropical_max_plus(&enter_rows, &zero_col, b_count, DIM_SPATIAL, 1)?;
+    let max_neg_exits =
+        contract_tropical_max_plus(&neg_exit_rows, &zero_col, b_count, DIM_SPATIAL, 1)?;
+
+    let mut intervals = Vec::with_capacity(b_count);
+    for (enter_trop, neg_exit_trop) in max_enters.into_iter().zip(max_neg_exits) {
+        let raw_enter = enter_trop.get().unwrap_or(scale + 1);
+        let raw_exit = -neg_exit_trop.get().unwrap_or(1);
+        let clamped_enter = raw_enter.max(0);
+        let clamped_exit = raw_exit.min(scale);
+        if raw_enter <= scale && raw_exit >= 0 && clamped_enter <= clamped_exit {
+            intervals.push(Some((clamped_enter, clamped_exit)));
+        } else {
+            intervals.push(None);
+        }
+    }
+    Ok(intervals)
 }

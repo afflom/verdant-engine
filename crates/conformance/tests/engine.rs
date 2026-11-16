@@ -996,8 +996,8 @@ fn engine_ve_17() {
         verified_unified_tensor_kernels,
     };
 
-    let kernels = verified_unified_tensor_kernels().expect("12 unified semiring kernels");
-    assert_eq!(kernels.len(), 12);
+    let kernels = verified_unified_tensor_kernels().expect("15 unified semiring kernels");
+    assert_eq!(kernels.len(), 15);
     let tiers = verified_coded_matrix_tiers().expect("3 zero-decode coded matrix tiers");
     assert_eq!(tiers.len(), 3);
     assert!(tiers.iter().all(|t| t.zero_scratch));

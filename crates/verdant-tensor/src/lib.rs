@@ -266,7 +266,7 @@ pub fn verified_engine_tensor_kernels() -> Result<Vec<VerifiedTensorKernel>, Ten
     specs.iter().map(verify_tensor_kernel_spec).collect()
 }
 
-/// Returns all twelve unified Prism-certified semiring tensor kernels (`kernel0`..`kernel11`).
+/// Returns all fifteen unified Prism-certified semiring tensor kernels (`kernel0`..`kernel14`).
 pub fn verified_unified_tensor_kernels() -> Result<Vec<VerifiedTensorKernel>, TensorComputeError> {
     let mut kernels = verified_engine_tensor_kernels()?;
     let extra = [
@@ -278,6 +278,12 @@ pub fn verified_unified_tensor_kernels() -> Result<Vec<VerifiedTensorKernel>, Te
             .expect("verified Prism kernel10NeuromorphicSalienceSsm"),
         prism_kernel::kernel11CodedSlmReasoning()
             .expect("verified Prism kernel11CodedSlmReasoning"),
+        prism_kernel::kernel12TropicalBlasSweep()
+            .expect("verified Prism kernel12TropicalBlasSweep"),
+        prism_kernel::kernel13TwoBoneIkContraction()
+            .expect("verified Prism kernel13TwoBoneIkContraction"),
+        prism_kernel::kernel14ConservationAutomaton()
+            .expect("verified Prism kernel14ConservationAutomaton"),
     ];
     for spec in &extra {
         kernels.push(verify_tensor_kernel_spec(spec)?);
@@ -326,13 +332,15 @@ pub use coded::{
 };
 pub use linear::{
     batch_transform_positions_exact, delassus_effective_mass_matrix,
-    propagate_hierarchy_matrices_exact, skin_vertices_linear_blend_exact,
+    propagate_hierarchy_matrices_exact, skin_vertices_linear_blend_exact, solve_two_bone_ik_exact,
+    TwoBoneIkSolution,
 };
 pub use neural::{
-    infer_coded_slm_intent_logits, step_neuromorphic_lif_ssm_ring, NeuromorphicStepOutput,
+    infer_coded_slm_intent_logits, step_neuromorphic_lif_ssm_ring,
+    verify_conservation_and_reachability, ConservationAuditReport, NeuromorphicStepOutput,
 };
 pub use raster::{render_triangles_tile_framebuffer, RasterTriangle, SoftwareTileFramebuffer};
 pub use tropical::{
     tropical_frustum_distance_bounds, tropical_gjk_support_batch,
-    tropical_min_plus_all_pairs_closure, tropical_ui_box_extents,
+    tropical_min_plus_all_pairs_closure, tropical_swept_aabb_toi_bounds, tropical_ui_box_extents,
 };

@@ -23,6 +23,9 @@ Verdant Engine is a universal commercial 3D browser, WebAssembly, and native gam
 - TropicalUiConstraintLayout: Tropical min-plus and exact linear box-tree constraint contraction solving responsive 2D panels, focus reachability, and diegetic 3D anchors.
 - NeuromorphicSalienceStateSpace: Exact Q15 leaky-integrate-and-fire state-space recurrence coupling player gaze, locomotion cadence, and world mutual-attention salience.
 - CodedSlmProposalRouter: Zero-decode Packed<Grid<16>, 2> and Runs<Grid<16>, 16> embedded language and intent reasoning contraction routing verified world proposals.
+- TropicalBlasSweptToi: Tropical min-plus and max-plus triangle BLAS pruning and continuous swept-sphere time-of-impact bound contraction.
+- TwoBoneIkJointSolver: Exact linear cosine-law and pole-plane matrix contraction solving analytical two-bone foot and hand inverse kinematics.
+- ConservationStoryAutomaton: Exact integer resource conservation balance and tropical min-plus reachability closure verifying deadlock-free narrative and app graphs.
 - GridQuantizedGeometry: Fixed-width 16-entry Grid lookup CodedMatrix contracting quantized UORC mesh positions and normals directly into world space.
 - PackedNibbleAnimationTracks: Sub-byte 4-bit Packed<Grid<16>, 2> CodedMatrix streaming two animation curve samples per byte into exact pose accumulators.
 - SparseRunsIblProbes: Variable-length Runs<Grid<16>, 16> CodedMatrix contracting sparse environment irradiance and shadow cascade residuals.
@@ -88,6 +91,7 @@ Verdant Engine is a universal commercial 3D browser, WebAssembly, and native gam
 - UI and compliance architects solve responsive 2D panels and diegetic 3D interfaces via tropical and linear semiring constraints with proved 48px touch targets and WCAG 2.2 AA contrast. (Subsystems::uiWidgetCompliant)
 - Browser players experience second-order cybernetic mutual attention and local zero-decode coded_gemm intent reasoning across capability-gated browser APIs. (Subsystems::cyberneticUiAndStitchActive)
 - Multiplayer world citizens inhabit peer-to-peer rollback universes signed by zero-signin WebCrypto Prism IDs and recovered from 2-of-3 SHA-256 Stitch parity fragments. (Subsystems::stitchPairRecoverable)
+- Players and developers inhabit high-definition vaulted worlds and 22-joint IK characters governed by non-penetrating swept physics, wall-guarded cameras, floating-origin cells, and conservation-verified story automatons. (Subsystems::lawfulHdUniversalEngineActive)
 
 ## Product Quality Model (ISO/IEC 25010:2023)
 
@@ -143,7 +147,7 @@ Verdant Engine is a universal commercial 3D browser, WebAssembly, and native gam
 - ISO/IEC 25010:2023 — Product quality: Characteristics, subcharacteristics, requirements, and thresholds are numbered and verified by the Lean kernel. (Quality::qualityModelHolds)
 - ISO/IEC 27034-1:2011 and ISO/IEC 27005:2022 — Application security and risk: Every browser, container organ, and peer runtime threat maps to an evidenced security control or explicit accepted risk. (Security::controlSet)
 - Khronos glTF 2.0 and W3C WGSL — 3D asset and shader standards: Binary glTF 2.0 imports and exports plus portable WGSL shaders are validated mechanically by authoritative gltf and naga crates. (VE-04, VE-05, VE-19)
-- UORC-SHA256-CHAIN-v1 and IEEE 754-2019 — Progressive UORC streaming and exact tensor contractions: All four progressive UORC LOD frames verify SHA-256 chain integrity and all twelve unified uor-matmul tensor kernels satisfy exact accumulator bounds. (Tensor::streamingLodsStrictlyMonotonic, Tensor::unifiedTensorAndCodedTiersVerified)
+- UORC-SHA256-CHAIN-v1 and IEEE 754-2019 — Progressive UORC streaming and exact tensor contractions: All four progressive UORC LOD frames verify SHA-256 chain integrity and all fifteen unified uor-matmul tensor kernels satisfy exact accumulator bounds. (Tensor::streamingLodsStrictlyMonotonic, Tensor::unifiedTensorAndCodedTiersVerified)
 - WCAG 2.2 AA and W3C DTCG 2025.10 — Accessible studio, formal UI solver, and design tokens: Design tokens, 48px touch targets, and surface contrast ratios satisfy WCAG 2.2 SC 1.4.3 and SC 1.4.11 and pass mobile Lighthouse checks. (Brand::contrasts, Subsystems::uiWidgetCompliant)
 - ISO 9241-11:2018 and ISO 24495-1:2023 — Context of use and plain-language documentation: User groups, goals, tasks, executable Diataxis documentation, Markdown twins, and llms.txt pass mechanical content checks. (Users::goals)
 - prism/identity/4 and Stitch Erasure Custody — Sovereign Prism ID journals and 2-of-3 parity recovery: Peer input journals bind to non-extractable WebCrypto Prism IDs and world snapshots recover exactly from any two distinct Stitch fragments. (Subsystems::stitchPairRecoverable)
@@ -176,6 +180,11 @@ Verdant Engine is a universal commercial 3D browser, WebAssembly, and native gam
 - FormalUiAndWcagCompliance: Tropical and exact linear 2D and 3D UI layout solver, diegetic BVH hit-testing, focus reachability closure, and WCAG 2.2 and 48px target compliance oracle.
 - NeuromorphicObserverAndCodedSlm: Second-order cybernetic mutual-attention LIF and SSM state loop, zero-decode coded_gemm intent reasoning head, and capability-gated W3C container organs.
 - PrismIdAndStitchMultiplayerMesh: Zero-signin WebCrypto Prism ID journal signing, 2-of-3 SHA-256 XOR Stitch erasure fragment recovery, and peer-to-peer WebRTC and BroadcastChannel rollback sync.
+- TwoLevelBlasAndSweptCcd: Two-level entity TLAS and SAH triangle MeshBlas BVH with continuous swept-capsule collide-and-slide and two-plane acute crease projection.
+- LawfulNearSphereCameraRig: Near-frustum diagonal guard sphere camera sweep preventing wall, floor, ceiling, and prop near-plane clipping across orbit and eye views.
+- HighDefCitadelAndMultiPassPbr: Progressive LOD4 UORC vaulted Citadel Hall, parabolic Arch Bridge, sculpted cliff terrain, CSM PCF soft shadows, GGX micro-normals, and ACES tonemapping.
+- ArticulatedHumanoidAndFootIk: Twenty-two-joint humanoid rig, normalized linear-blend skinning, analytical two-bone foot IK stair adaptation, and neuromorphic head-look possession.
+- FloatingOriginUniverseAndStoryAutomaton: Exact i64 cell-relative floating-origin coordinates, multi-sector UORC streaming portals, and conservation-verified tropical story and app automatons.
 
 ## Developer Relations, Documentation, SDK Artifacts, and Studio Controls
 

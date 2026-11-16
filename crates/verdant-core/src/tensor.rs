@@ -8,13 +8,14 @@
 pub use verdant_tensor::{
     contract_coded_geometry_grid, contract_packed_animation_tracks, contract_runs_ibl_harmonics,
     convolve_modal_fir_exact, delassus_effective_mass_matrix, mix_spatial_audio_channels_exact,
-    propagate_hierarchy_matrices_exact, skin_vertices_linear_blend_exact,
+    propagate_hierarchy_matrices_exact, skin_vertices_linear_blend_exact, solve_two_bone_ik_exact,
     step_sabine_fdn_reverb_ring, tropical_frustum_distance_bounds, tropical_gjk_support_batch,
-    tropical_min_plus_all_pairs_closure, verified_coded_matrix_tiers,
-    verified_engine_tensor_kernels, verified_unified_tensor_kernels, verify_coded_tier_spec,
-    verify_tensor_kernel_spec, CodedMatrixTierKind, RasterTriangle, SoftwareTileFramebuffer,
-    TensorSemiringKind, VerifiedCodedTier, VerifiedTensorKernel, CODED_TABLE_LEN,
-    PACKED_NIBBLE_BLOCK,
+    tropical_min_plus_all_pairs_closure, tropical_swept_aabb_toi_bounds,
+    verified_coded_matrix_tiers, verified_engine_tensor_kernels, verified_unified_tensor_kernels,
+    verify_coded_tier_spec, verify_conservation_and_reachability, verify_tensor_kernel_spec,
+    CodedMatrixTierKind, ConservationAuditReport, RasterTriangle, SoftwareTileFramebuffer,
+    TensorSemiringKind, TwoBoneIkSolution, VerifiedCodedTier, VerifiedTensorKernel,
+    CODED_TABLE_LEN, PACKED_NIBBLE_BLOCK,
 };
 
 use crate::error::TensorComputeError;

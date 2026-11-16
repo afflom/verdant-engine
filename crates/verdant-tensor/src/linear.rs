@@ -9,7 +9,9 @@ use uor_matmul::slice;
 
 #[cfg(target_arch = "wasm32")]
 use crate::pow2_u64;
-use crate::{geometric_epsilon, prism_kernel, TensorComputeError, DIM_HOMOGENEOUS, DIM_SPATIAL};
+use crate::{
+    geometric_epsilon, prism_kernel, two_f64, TensorComputeError, DIM_HOMOGENEOUS, DIM_SPATIAL,
+};
 
 /// Contracts two column-major `4x4` homogeneous matrices `lhs * rhs` via `uor-matmul`.
 pub fn multiply_mat4_cols_exact(
@@ -165,6 +167,147 @@ pub fn batch_transform_positions_exact(
     }
 
     Ok(out)
+}
+
+/// Solved world-space mid-joint (knee/elbow) and end-effector (ankle/wrist) pose produced by
+/// [`solve_two_bone_ik_exact`] (`kernel13TwoBoneIkContraction`).
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct TwoBoneIkSolution {
+    /// Solved world-space mid-joint position (`knee` or `elbow`).
+    pub mid_joint_pos: [f64; DIM_SPATIAL],
+    /// Clamped world-space end-effector position (`ankle` or `wrist`).
+    pub end_effector_pos: [f64; DIM_SPATIAL],
+    /// Flexion angle at the mid-joint in radians (`0.0` when fully extended).
+    pub knee_bend_radians: f64,
+    /// Proof witness from `prism_kernel::twoBoneIkReachable` indicating unstretched reachability.
+    pub target_within_reach: bool,
+}
+
+/// Solves analytical two-bone inverse kinematics (`kernel13TwoBoneIkContraction`) using exact
+/// cosine-law flexion and `uor-matmul` `4x4` pole-plane frame matrix contraction.
+pub fn solve_two_bone_ik_exact(
+    root_pos: [f64; DIM_SPATIAL],
+    target_pos: [f64; DIM_SPATIAL],
+    pole_dir: [f64; DIM_SPATIAL],
+    upper_len: f64,
+    lower_len: f64,
+) -> Result<TwoBoneIkSolution, TensorComputeError> {
+    if !root_pos.iter().all(|v| v.is_finite())
+        || !target_pos.iter().all(|v| v.is_finite())
+        || !pole_dir.iter().all(|v| v.is_finite())
+    {
+        return Err(TensorComputeError::NonFiniteTensorEntry {
+            operand: "two_bone_ik",
+        });
+    }
+    let eps = geometric_epsilon();
+    if upper_len <= eps || lower_len <= eps {
+        return Err(TensorComputeError::ZeroOrMismatchedExtents {
+            detail: "two-bone IK limb lengths must be strictly positive".to_string(),
+        });
+    }
+
+    let i2 = 1usize + 1usize;
+    let i3 = i2 + 1usize;
+    let dx = target_pos[0] - root_pos[0];
+    let dy = target_pos[1] - root_pos[1];
+    let dz = target_pos[i2] - root_pos[i2];
+    let raw_dist = (dx * dx + dy * dy + dz * dz).sqrt();
+
+    let scale_milli = prism_kernel::skinWeightScale().unwrap_or(1).max(1) as f64;
+    let upper_milli = (upper_len * scale_milli).round().max(1.0) as u64;
+    let lower_milli = (lower_len * scale_milli).round().max(1.0) as u64;
+    let dist_milli = (raw_dist * scale_milli).round().max(0.0) as u64;
+    let target_within_reach =
+        prism_kernel::twoBoneIkReachable(upper_milli, lower_milli, dist_milli).unwrap_or(false);
+
+    let min_reach = (upper_len - lower_len).abs() + eps;
+    let max_reach = (upper_len + lower_len - eps).max(min_reach);
+    let clamped_dist = raw_dist.clamp(min_reach, max_reach);
+
+    let fwd = if raw_dist > eps {
+        [dx / raw_dist, dy / raw_dist, dz / raw_dist]
+    } else {
+        [0.0, -1.0, 0.0]
+    };
+
+    let pole_dot = pole_dir[0] * fwd[0] + pole_dir[1] * fwd[1] + pole_dir[i2] * fwd[i2];
+    let mut proj_pole = [
+        pole_dir[0] - fwd[0] * pole_dot,
+        pole_dir[1] - fwd[1] * pole_dot,
+        pole_dir[i2] - fwd[i2] * pole_dot,
+    ];
+    let mut proj_len =
+        (proj_pole[0] * proj_pole[0] + proj_pole[1] * proj_pole[1] + proj_pole[i2] * proj_pole[i2])
+            .sqrt();
+    if proj_len <= eps {
+        let fallback = if fwd[i2].abs() < (1.0 / two_f64()) {
+            [0.0, 0.0, 1.0]
+        } else {
+            [1.0, 0.0, 0.0]
+        };
+        let fb_dot = fallback[0] * fwd[0] + fallback[1] * fwd[1] + fallback[i2] * fwd[i2];
+        proj_pole = [
+            fallback[0] - fwd[0] * fb_dot,
+            fallback[1] - fwd[1] * fb_dot,
+            fallback[i2] - fwd[i2] * fb_dot,
+        ];
+        proj_len = (proj_pole[0] * proj_pole[0]
+            + proj_pole[1] * proj_pole[1]
+            + proj_pole[i2] * proj_pole[i2])
+            .sqrt()
+            .max(eps);
+    }
+    let bend_dir = [
+        proj_pole[0] / proj_len,
+        proj_pole[1] / proj_len,
+        proj_pole[i2] / proj_len,
+    ];
+    let side = [
+        fwd[1] * bend_dir[i2] - fwd[i2] * bend_dir[1],
+        fwd[i2] * bend_dir[0] - fwd[0] * bend_dir[i2],
+        fwd[0] * bend_dir[1] - fwd[1] * bend_dir[0],
+    ];
+
+    let two = two_f64();
+    let cos_alpha = ((upper_len * upper_len + clamped_dist * clamped_dist - lower_len * lower_len)
+        / (two * upper_len * clamped_dist))
+        .clamp(-1.0, 1.0);
+    let sin_alpha = (1.0 - cos_alpha * cos_alpha).max(0.0).sqrt();
+    let cos_interior = ((upper_len * upper_len + lower_len * lower_len
+        - clamped_dist * clamped_dist)
+        / (two * upper_len * lower_len))
+        .clamp(-1.0, 1.0);
+    let knee_bend_radians = (-cos_interior).clamp(-1.0, 1.0).acos();
+
+    let basis_cols = [
+        [fwd[0], fwd[1], fwd[i2], 0.0],
+        [bend_dir[0], bend_dir[1], bend_dir[i2], 0.0],
+        [side[0], side[1], side[i2], 0.0],
+        [root_pos[0], root_pos[1], root_pos[i2], 1.0],
+    ];
+    let local_joint_cols = [
+        [upper_len * cos_alpha, upper_len * sin_alpha, 0.0, 1.0],
+        [clamped_dist, 0.0, 0.0, 1.0],
+        [0.0, 0.0, 0.0, 1.0],
+        [0.0, 0.0, 0.0, 1.0],
+    ];
+    let world_joint_cols = multiply_mat4_cols_exact(&basis_cols, &local_joint_cols)?;
+
+    Ok(TwoBoneIkSolution {
+        mid_joint_pos: [
+            world_joint_cols[0][0],
+            world_joint_cols[0][1],
+            world_joint_cols[0][i2],
+        ],
+        end_effector_pos: [
+            world_joint_cols[1][0],
+            world_joint_cols[1][1],
+            world_joint_cols[1][i2],
+        ],
+        knee_bend_radians,
+        target_within_reach: target_within_reach && world_joint_cols[0][i3].is_finite(),
+    })
 }
 
 /// Propagates local `4x4` transforms across an acyclic scene or skeletal hierarchy (`parent < idx`)

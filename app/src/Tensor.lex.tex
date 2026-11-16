@@ -119,6 +119,22 @@ definition{
 definition{name: natEleven, parameters: [], result: Nat, body: ((natTen) + 1)}
 
 definition{
+  name: natTwelve,
+  parameters: [],
+  result: Nat,
+  body: (prim multiply (natThree) (natFour) : Nat)
+}
+
+definition{name: natThirteen, parameters: [], result: Nat, body: ((natTwelve) + 1)}
+
+definition{
+  name: natFourteen,
+  parameters: [],
+  result: Nat,
+  body: (prim multiply (natTwo) (natSeven) : Nat)
+}
+
+definition{
   name: natSixteen,
   parameters: [],
   result: Nat,
@@ -294,6 +310,27 @@ definition{
 }
 
 definition{
+  name: kernel12TropicalBlasSweep,
+  parameters: [],
+  result: TensorKernelSpec,
+  body: (record TensorKernelSpec {index := (natTwelve), semiring := (ctor TensorSemiring.tropicalMinPlus), lhsCols := (natSix), accumBits := (natSixtyFour), minAccumBits := (natThirtyTwo), tileAligned := true, autonomousKinematic := false, name := "TropicalBlasSweptToi", text := "Tropical min-plus and max-plus triangle BLAS pruning and continuous swept-sphere time-of-impact bound contraction."})
+}
+
+definition{
+  name: kernel13TwoBoneIkContraction,
+  parameters: [],
+  result: TensorKernelSpec,
+  body: (record TensorKernelSpec {index := (natThirteen), semiring := (ctor TensorSemiring.linearExact), lhsCols := (natFour), accumBits := (natNinetySix), minAccumBits := (natSixtyFour), tileAligned := true, autonomousKinematic := true, name := "TwoBoneIkJointSolver", text := "Exact linear cosine-law and pole-plane matrix contraction solving analytical two-bone foot and hand inverse kinematics."})
+}
+
+definition{
+  name: kernel14ConservationAutomaton,
+  parameters: [],
+  result: TensorKernelSpec,
+  body: (record TensorKernelSpec {index := (natFourteen), semiring := (ctor TensorSemiring.tropicalMinPlus), lhsCols := (natSixteen), accumBits := (natSixtyFour), minAccumBits := (natThirtyTwo), tileAligned := true, autonomousKinematic := true, name := "ConservationStoryAutomaton", text := "Exact integer resource conservation balance and tropical min-plus reachability closure verifying deadlock-free narrative and app graphs."})
+}
+
+definition{
   name: tensorKernels,
   parameters: [],
   result: (List TensorKernelSpec),
@@ -304,7 +341,7 @@ definition{
   name: unifiedTensorKernels,
   parameters: [],
   result: (List TensorKernelSpec),
-  body: (cons (kernel0StaticMesh) (cons (kernel1LinearSkinning) (cons (kernel2TropicalBvhCull) (cons (kernel3TileRasterizer) (cons (kernel4ShadowCascade) (cons (kernel5ModalAudioMix) (cons (kernel6KinematicSpline) (cons (kernel7TropicalMinPlusNav) (cons (kernel8CodedStreamGemm) (cons (kernel9TropicalUiLayout) (cons (kernel10NeuromorphicSalienceSsm) (cons (kernel11CodedSlmReasoning) (nil TensorKernelSpec)))))))))))))
+  body: (cons (kernel0StaticMesh) (cons (kernel1LinearSkinning) (cons (kernel2TropicalBvhCull) (cons (kernel3TileRasterizer) (cons (kernel4ShadowCascade) (cons (kernel5ModalAudioMix) (cons (kernel6KinematicSpline) (cons (kernel7TropicalMinPlusNav) (cons (kernel8CodedStreamGemm) (cons (kernel9TropicalUiLayout) (cons (kernel10NeuromorphicSalienceSsm) (cons (kernel11CodedSlmReasoning) (cons (kernel12TropicalBlasSweep) (cons (kernel13TwoBoneIkContraction) (cons (kernel14ConservationAutomaton) (nil TensorKernelSpec))))))))))))))))
 }
 
 definition{
@@ -423,7 +460,7 @@ definition{
   name: unifiedTensorKernelsDirect,
   parameters: [],
   result: Bool,
-  body: (if (sevenTensorKernelsDirect) then (if (((project (kernel7TropicalMinPlusNav) index) =? (natSeven)) && (tensorKernelValid (kernel7TropicalMinPlusNav))) then (if (((project (kernel8CodedStreamGemm) index) =? (natEight)) && (tensorKernelValid (kernel8CodedStreamGemm))) then (if (((project (kernel9TropicalUiLayout) index) =? (natNine)) && (tensorKernelValid (kernel9TropicalUiLayout))) then (if (((project (kernel10NeuromorphicSalienceSsm) index) =? (natTen)) && (tensorKernelValid (kernel10NeuromorphicSalienceSsm))) then (if (((project (kernel11CodedSlmReasoning) index) =? (natEleven)) && (tensorKernelValid (kernel11CodedSlmReasoning))) then (codedTiersDirect) else false) else false) else false) else false) else false) else false),
+  body: (if (sevenTensorKernelsDirect) then (if (((project (kernel7TropicalMinPlusNav) index) =? (natSeven)) && (tensorKernelValid (kernel7TropicalMinPlusNav))) then (if (((project (kernel8CodedStreamGemm) index) =? (natEight)) && (tensorKernelValid (kernel8CodedStreamGemm))) then (if (((project (kernel9TropicalUiLayout) index) =? (natNine)) && (tensorKernelValid (kernel9TropicalUiLayout))) then (if (((project (kernel10NeuromorphicSalienceSsm) index) =? (natTen)) && (tensorKernelValid (kernel10NeuromorphicSalienceSsm))) then (if (((project (kernel11CodedSlmReasoning) index) =? (natEleven)) && (tensorKernelValid (kernel11CodedSlmReasoning))) then (if (((project (kernel12TropicalBlasSweep) index) =? (natTwelve)) && (tensorKernelValid (kernel12TropicalBlasSweep))) then (if (((project (kernel13TwoBoneIkContraction) index) =? (natThirteen)) && (tensorKernelValid (kernel13TwoBoneIkContraction))) then (if (((project (kernel14ConservationAutomaton) index) =? (natFourteen)) && (tensorKernelValid (kernel14ConservationAutomaton))) then (codedTiersDirect) else false) else false) else false) else false) else false) else false) else false) else false) else false),
   axioms: []
 }
 
@@ -482,7 +519,7 @@ theorem{
 theorem{
   name: unifiedTensorAndCodedTiersVerified,
   parameters: [],
-  statement: (((((allTensorKernelsValid 0 (unifiedTensorKernels)) && (allCodedTiersValid 0 (codedTiers))) && (((tensorKernelValid (kernel7TropicalMinPlusNav)) && (tensorKernelValid (kernel8CodedStreamGemm))) && ((tensorKernelValid (kernel9TropicalUiLayout)) && ((tensorKernelValid (kernel10NeuromorphicSalienceSsm)) && (tensorKernelValid (kernel11CodedSlmReasoning)))))) && (((codedTierValid (codedTier0GridGeometry)) && (codedTierValid (codedTier1PackedAnimation))) && ((codedTierValid (codedTier2RunsIblProbes)) && ((unifiedTensorKernelsDirect) && (not (codedTierValid (invalidCodedTierSample))))))) = true),
+  statement: (((((allTensorKernelsValid 0 (unifiedTensorKernels)) && (allCodedTiersValid 0 (codedTiers))) && ((((tensorKernelValid (kernel7TropicalMinPlusNav)) && (tensorKernelValid (kernel8CodedStreamGemm))) && ((tensorKernelValid (kernel9TropicalUiLayout)) && ((tensorKernelValid (kernel10NeuromorphicSalienceSsm)) && (tensorKernelValid (kernel11CodedSlmReasoning))))) && ((tensorKernelValid (kernel12TropicalBlasSweep)) && ((tensorKernelValid (kernel13TwoBoneIkContraction)) && (tensorKernelValid (kernel14ConservationAutomaton)))))) && (((codedTierValid (codedTier0GridGeometry)) && (codedTierValid (codedTier1PackedAnimation))) && ((codedTierValid (codedTier2RunsIblProbes)) && ((unifiedTensorKernelsDirect) && (not (codedTierValid (invalidCodedTierSample))))))) = true),
   proof: decide{},
   axioms: []
 }

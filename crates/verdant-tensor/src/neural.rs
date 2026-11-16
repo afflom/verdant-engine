@@ -8,6 +8,7 @@
 use uor_matmul::{as_alphabet_full, dot_ref};
 
 use crate::coded::{contract_coded_geometry_grid, contract_packed_animation_tracks};
+use crate::tropical::tropical_min_plus_all_pairs_closure;
 use crate::{prism_kernel, TensorComputeError, CODED_TABLE_LEN, PACKED_NIBBLE_BLOCK};
 
 /// Output of a single deterministic neuromorphic Leaky-Integrate-and-Fire (`LIF`) state-space tick.
@@ -163,4 +164,90 @@ pub fn infer_coded_slm_intent_logits(
         codebook,
         w2_grid_codes,
     )
+}
+
+/// Verified reachability and exact resource-conservation certificate emitted by
+/// [`verify_conservation_and_reachability`] (`kernel14ConservationAutomaton`).
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct ConservationAuditReport {
+    /// Minimum tropical `(min, +)` transition cost from `initial_state` to a valid goal/milestone.
+    pub min_cost_to_goal_milli: u64,
+    /// Total reachable live states verified free of traps/deadlocks.
+    pub reachable_live_states: usize,
+    /// Net conserved balance across audited ledger transitions.
+    pub net_flow_delta: i128,
+}
+
+/// Verifies that a story, quest, or interactive app state graph (`kernel14ConservationAutomaton`)
+/// is deadlock-free under tropical `(min, +)` closure (`uor-matmul`) and satisfies exact integer
+/// conservation (`before + minted - burned == after`) across all `ledger_deltas`.
+pub fn verify_conservation_and_reachability(
+    edge_costs_milli: &[Option<u32>],
+    state_count: usize,
+    initial_state: usize,
+    terminal_states: &[usize],
+    ledger_deltas: &[(u64, u64, u64, u64)],
+) -> Result<ConservationAuditReport, TensorComputeError> {
+    if state_count == 0
+        || initial_state >= state_count
+        || terminal_states.is_empty()
+        || terminal_states.iter().any(|&t| t >= state_count)
+    {
+        return Err(TensorComputeError::ZeroOrMismatchedExtents {
+            detail: "story automaton requires valid initial_state and non-empty terminal_states"
+                .to_string(),
+        });
+    }
+
+    let closure = tropical_min_plus_all_pairs_closure(edge_costs_milli, state_count)?;
+
+    let min_cost_to_goal_milli = terminal_states
+        .iter()
+        .filter_map(|&goal| closure[initial_state * state_count + goal])
+        .min()
+        .ok_or_else(|| TensorComputeError::InvalidKernelSpecification {
+            kernel_name: "ConservationStoryAutomaton:unreachable_goal".to_string(),
+        })?;
+
+    let mut reachable_live_states = 0usize;
+    for s in 0..state_count {
+        if closure[initial_state * state_count + s].is_some() {
+            let can_finish = terminal_states
+                .iter()
+                .any(|&goal| closure[s * state_count + goal].is_some());
+            if !can_finish {
+                return Err(TensorComputeError::InvalidKernelSpecification {
+                    kernel_name: "ConservationStoryAutomaton:deadlock_state".to_string(),
+                });
+            }
+            reachable_live_states += 1;
+        }
+    }
+
+    let mut net_deltas_i32 = Vec::with_capacity(ledger_deltas.len().max(1));
+    for &(before_total, minted, burned, after_total) in ledger_deltas {
+        let valid = prism_kernel::conservationLawValid(before_total, minted, burned, after_total)
+            .unwrap_or(false);
+        if !valid {
+            return Err(TensorComputeError::InvalidKernelSpecification {
+                kernel_name: "ConservationStoryAutomaton:conservation_violated".to_string(),
+            });
+        }
+        let step_net = (i128::from(minted) - i128::from(burned))
+            .clamp(i128::from(i32::MIN) + 1, i128::from(i32::MAX)) as i32;
+        net_deltas_i32.push(step_net);
+    }
+
+    let net_flow_delta = if net_deltas_i32.is_empty() {
+        0_i128
+    } else {
+        let ones = vec![1_i32; net_deltas_i32.len()];
+        dot_ref(as_alphabet_full(&net_deltas_i32), as_alphabet_full(&ones))
+    };
+
+    Ok(ConservationAuditReport {
+        min_cost_to_goal_milli,
+        reachable_live_states,
+        net_flow_delta,
+    })
 }

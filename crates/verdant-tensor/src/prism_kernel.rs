@@ -550,7 +550,10 @@ pub fn answerCyberneticAndStitchQuery(
                         false => {
                             let _x_972 = matchesQuery((request).as_ref(), "scene:stitch")?;
                             match _x_972 {
-                                false => std::string::String::from("invalid request"),
+                                false => {
+                                    let _x_996 = answerLawfulHdEngineQuery(request.clone())?;
+                                    _x_996
+                                }
                                 true => {
                                     let _x_997 = ((1 << 1) + 1);
                                     {
@@ -1272,122 +1275,455 @@ pub fn answerDeepSubsystemQuery(
     })
 }
 
+pub fn answerLawfulHdEngineQuery(
+    request: std::vec::Vec<u8>,
+) -> Result<std::string::String, self::ComputeError> {
+    Ok({
+        let _x_2 = matchesQuery((request).as_ref(), "scene:lawful")?;
+        match _x_2 {
+            false => {
+                let _x_993 = matchesQuery((request).as_ref(), "scene:character")?;
+                match _x_993 {
+                    false => {
+                        let _x_1058 = matchesQuery((request).as_ref(), "scene:universe")?;
+                        match _x_1058 {
+                            false => {
+                                let _x_1109 = matchesQuery((request).as_ref(), "scene:narrative")?;
+                                match _x_1109 {
+                                    false => {
+                                        let _x_1146 =
+                                            matchesQuery((request).as_ref(), "scene:lod:4")?;
+                                        match _x_1146 {
+                                            false => std::string::String::from("invalid request"),
+                                            true => {
+                                                let _x_1162 = (1 << (1 << 1));
+                                                {
+                                                    let _x_1163 = lodEnvelopeByRank(_x_1162)?;
+                                                    {
+                                                        let _x_1164 = (_x_1163).losslessActive;
+                                                        match _x_1164 {
+                                                            false => std::string::String::from(
+                                                                "refused:lod4-mismatch",
+                                                            ),
+                                                            true => {
+                                                                let _x_1170 = (1 << (1 << 1));
+                                                                {
+                                                                    let _x_1171 =
+                                                                        lodEnvelopeByRank(_x_1170)?;
+                                                                    {
+                                                                        let _x_1172 = (_x_1171)
+                                                                            .meshDensityPercent;
+                                                                        {
+                                                                            let _x_1173 =
+                                                                                (((1 << (((1
+                                                                                    << (1 << 1))
+                                                                                    + (1 << 1))
+                                                                                    + 1))
+                                                                                    + (1 << ((1
+                                                                                        << (1 << 1))
+                                                                                        + (1
+                                                                                            << 1))))
+                                                                                    + (1 << ((1
+                                                                                        << 1)
+                                                                                        + 1)));
+                                                                            {
+                                                                                let _x_1174 =
+                                                                                    (_x_1172
+                                                                                        == _x_1173);
+                                                                                match _x_1174 {
+        false => std::string::String::from("refused:lod4-mismatch"),
+        true => std::string::String::from("conformant:rank=4,res=16/8,density=200/100,shadows=1,ibl=1,lossless=1"),
+    }
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                    true => {
+                                        let _x_1178 = ((1 << ((1 << 1) + 1)) + (1 << 1));
+                                        {
+                                            let _x_1179 = ((1 << (1 << 1)) + 1);
+                                            {
+                                                let _x_1180 = ((1 << 1) + 1);
+                                                {
+                                                    let _x_1181 =
+                                                        ((1 << ((1 << 1) + 1)) + (1 << (1 << 1)));
+                                                    {
+                                                        let _x_1182 = conservationLawValid(
+                                                            _x_1178, _x_1179, _x_1180, _x_1181,
+                                                        )?;
+                                                        match _x_1182 {
+                                                            false => {
+                                                                let _y_1184 = _x_1182;
+                                                                match _y_1184 {
+        false => std::string::String::from("refused:narrative-mismatch"),
+        true => std::string::String::from("conformant:conservation=exact,tropical_reachability=true"),
+    }
+                                                            }
+                                                            true => {
+                                                                let _x_1189 = ((1
+                                                                    << ((1 << 1) + 1))
+                                                                    + (1 << 1));
+                                                                {
+                                                                    let _x_1190 = 0;
+                                                                    {
+                                                                        let _x_1191 = (((1
+                                                                            << ((1 << 1) + 1))
+                                                                            + (1 << 1))
+                                                                            + 1);
+                                                                        {
+                                                                            let _x_1192 = conservationLawValid(_x_1189, _x_1190, _x_1190, _x_1191)?;
+                                                                            match _x_1192 {
+                                                                                false => {
+                                                                                    let prod_local_0 =
+                                                                                        _x_1182;
+                                                                                    match prod_local_0 {
+        false => std::string::String::from("refused:narrative-mismatch"),
+        true => std::string::String::from("conformant:conservation=exact,tropical_reachability=true"),
+    }
+                                                                                }
+                                                                                true => {
+                                                                                    let prod_local_3 =
+                                                                                        _x_1058;
+                                                                                    match prod_local_3 {
+        false => std::string::String::from("refused:narrative-mismatch"),
+        true => std::string::String::from("conformant:conservation=exact,tropical_reachability=true"),
+    }
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            true => {
+                                let _x_1194 = universeCellSpanMeters()?;
+                                {
+                                    let _x_1195 = (1 << (((1 << (1 << 1)) + (1 << 1)) + 1));
+                                    {
+                                        let _x_1196 = (_x_1194 == _x_1195);
+                                        match _x_1196 {
+                                            false => {
+                                                let _y_1198 = _x_1196;
+                                                match _y_1198 {
+        false => std::string::String::from("refused:universe-mismatch"),
+        true => std::string::String::from("conformant:cell_span_m=128,floating_origin=true,portals=true"),
+    }
+                                            }
+                                            true => {
+                                                let _x_1201 = ((((((1
+                                                    << (((1 << ((1 << 1) + 1))
+                                                        + (1 << (1 << 1)))
+                                                        + (1 << 1)))
+                                                    + (1 << (((1 << ((1 << 1) + 1))
+                                                        + (1 << (1 << 1)))
+                                                        + 1)))
+                                                    + (1 << ((1 << ((1 << 1) + 1))
+                                                        + (1 << (1 << 1)))))
+                                                    + (1 << (((1 << ((1 << 1) + 1))
+                                                        + (1 << 1))
+                                                        + 1)))
+                                                    + (1 << ((1 << ((1 << 1) + 1)) + (1 << 1))))
+                                                    + (1 << (1 << ((1 << 1) + 1))));
+                                                {
+                                                    let _x_1202 = universeHalfSpanMilli()?;
+                                                    {
+                                                        let _x_1203 = (_x_1201 < _x_1202);
+                                                        {
+                                                            let prod_local_6 = _x_1203;
+                                                            match prod_local_6 {
+        false => std::string::String::from("refused:universe-mismatch"),
+        true => std::string::String::from("conformant:cell_span_m=128,floating_origin=true,portals=true"),
+    }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    true => {
+                        let _x_1204 = sTwentyTwo()?;
+                        {
+                            let _x_1205 = (((1 << (1 << (1 << 1))) + (1 << (1 << 1))) + (1 << 1));
+                            {
+                                let _x_1206 = (_x_1204 == _x_1205);
+                                match _x_1206 {
+                                    false => {
+                                        let _y_1208 = _x_1206;
+                                        match _y_1208 {
+        false => std::string::String::from("refused:character-mismatch"),
+        true => std::string::String::from("conformant:joints=22,two_bone_ik=true,lbs_scale=1000"),
+    }
+                                    }
+                                    true => {
+                                        let _x_1211 = (((1 << (1 << ((1 << 1) + 1)))
+                                            + (1 << (((1 << (1 << 1)) + (1 << 1)) + 1)))
+                                            + (1 << (1 << (1 << 1))));
+                                        {
+                                            let _x_1212 = ((((((1
+                                                << ((1 << ((1 << 1) + 1)) + 1))
+                                                + (1 << (((1 << (1 << 1)) + (1 << 1)) + 1)))
+                                                + (1 << ((1 << (1 << 1)) + 1)))
+                                                + (1 << (1 << (1 << 1))))
+                                                + (1 << ((1 << 1) + 1)))
+                                                + (1 << (1 << 1)));
+                                            {
+                                                let _x_1213 =
+                                                    twoBoneIkReachable(_x_1211, _x_1211, _x_1212)?;
+                                                {
+                                                    let prod_local_9 = _x_1213;
+                                                    match prod_local_9 {
+        false => std::string::String::from("refused:character-mismatch"),
+        true => std::string::String::from("conformant:joints=22,two_bone_ik=true,lbs_scale=1000"),
+    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            true => {
+                let _x_1214 = sFour()?;
+                {
+                    let _x_1215 = (1 << (1 << 1));
+                    {
+                        let _x_1216 = (_x_1214 == _x_1215);
+                        match _x_1216 {
+                            false => {
+                                let _y_1218 = _x_1216;
+                                match _y_1218 {
+        false => std::string::String::from("refused:lawful-mismatch"),
+        true => std::string::String::from("conformant:ccd_slides=4,non_penetrating=true,near_sphere_guard=true"),
+    }
+                            }
+                            true => {
+                                let _x_1223 = (((1 << ((1 << (1 << 1)) + 1))
+                                    + (1 << (1 << (1 << 1))))
+                                    + (1 << 1));
+                                {
+                                    let _x_1224 =
+                                        ((1 << ((1 << (1 << 1)) + 1)) + (1 << (1 << (1 << 1))));
+                                    {
+                                        let _x_1225 = (1 << 1);
+                                        {
+                                            let _x_1226 =
+                                                sweptClearanceValid(_x_1223, _x_1224, _x_1225)?;
+                                            match _x_1226 {
+                                                false => {
+                                                    let prod_local_12 = _x_1226;
+                                                    match prod_local_12 {
+        false => std::string::String::from("refused:lawful-mismatch"),
+        true => std::string::String::from("conformant:ccd_slides=4,non_penetrating=true,near_sphere_guard=true"),
+    }
+                                                }
+                                                true => {
+                                                    let _x_1227 = (((1
+                                                        << (((1 << (1 << 1)) + (1 << 1)) + 1))
+                                                        + (1 << ((1 << (1 << 1)) + (1 << 1))))
+                                                        + (1 << ((1 << 1) + 1)));
+                                                    {
+                                                        let _x_1228 = (((1
+                                                            << ((1 << (1 << 1)) + (1 << 1)))
+                                                            + (1 << ((1 << (1 << 1)) + 1)))
+                                                            + (1 << (1 << 1)));
+                                                        {
+                                                            let _x_1229 = (((((((1
+                                                                << ((1 << ((1 << 1) + 1))
+                                                                    + (1 << 1)))
+                                                                + (1 << (1
+                                                                    << ((1 << 1) + 1))))
+                                                                + (1 << (((1 << (1 << 1))
+                                                                    + (1 << 1))
+                                                                    + 1)))
+                                                                + (1 << ((1 << (1 << 1))
+                                                                    + (1 << 1))))
+                                                                + (1 << (1 << (1 << 1))))
+                                                                + (1 << ((1 << 1) + 1)))
+                                                                + (1 << (1 << 1)));
+                                                            {
+                                                                let _x_1230 =
+                                                                    cameraNearSphereGuarded(
+                                                                        _x_1227, _x_1228, _x_1229,
+                                                                    )?;
+                                                                {
+                                                                    let prod_local_15 = _x_1230;
+                                                                    match prod_local_15 {
+        false => std::string::String::from("refused:lawful-mismatch"),
+        true => std::string::String::from("conformant:ccd_slides=4,non_penetrating=true,near_sphere_guard=true"),
+    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    })
+}
+
 pub fn answerQuery(request: std::vec::Vec<u8>) -> Result<std::string::String, self::ComputeError> {
     Ok({
-        let _x_306 = (request).len() as u64;
+        let _x_348 = (request).len() as u64;
         {
             let _x_2 = 0;
             {
-                let _x_5 = (_x_306 == _x_2);
+                let _x_5 = (_x_348 == _x_2);
                 match _x_5 {
                     false => {
-                        let _x_7625 = matchesQuery((request).as_ref(), "summary")?;
-                        match _x_7625 {
+                        let _x_9662 = matchesQuery((request).as_ref(), "summary")?;
+                        match _x_9662 {
                             false => {
-                                let _x_7790 = matchesQuery((request).as_ref(), "lod:0")?;
-                                match _x_7790 {
-        false => { let _x_7942 = matchesQuery((request).as_ref(), "lod:1")?; match _x_7942 {
-        false => { let _x_8090 = matchesQuery((request).as_ref(), "lod:2")?; match _x_8090 {
-        false => { let _x_8234 = matchesQuery((request).as_ref(), "lod:3")?; match _x_8234 {
-        false => { let _x_8374 = matchesQuery((request).as_ref(), "kernel:0")?; match _x_8374 {
-        false => { let _x_8510 = matchesQuery((request).as_ref(), "kernel:1")?; match _x_8510 {
-        false => { let _x_8638 = matchesQuery((request).as_ref(), "kernel:2")?; match _x_8638 {
-        false => { let _x_8758 = matchesQuery((request).as_ref(), "kernel:3")?; match _x_8758 {
-        false => { let _x_8870 = matchesQuery((request).as_ref(), "kernel:4")?; match _x_8870 {
-        false => { let _x_8974 = matchesQuery((request).as_ref(), "kernel:5")?; match _x_8974 {
-        false => { let _x_9070 = matchesQuery((request).as_ref(), "kernel:6")?; match _x_9070 {
-        false => { let _x_9158 = matchesQuery((request).as_ref(), "kernel:7")?; match _x_9158 {
-        false => { let _x_9238 = matchesQuery((request).as_ref(), "kernel:8")?; match _x_9238 {
-        false => { let _x_9310 = matchesQuery((request).as_ref(), "kernel:9")?; match _x_9310 {
-        false => { let _x_9374 = matchesQuery((request).as_ref(), "kernel:10")?; match _x_9374 {
-        false => { let _x_9430 = matchesQuery((request).as_ref(), "kernel:11")?; match _x_9430 {
-        false => { let _x_9478 = matchesQuery((request).as_ref(), "coded:0")?; match _x_9478 {
-        false => { let _x_9518 = matchesQuery((request).as_ref(), "coded:1")?; match _x_9518 {
-        false => { let _x_9550 = matchesQuery((request).as_ref(), "coded:2")?; match _x_9550 {
-        false => { let _x_9574 = matchesQuery((request).as_ref(), "kernel:zerodim")?; match _x_9574 {
-        false => { let _x_9590 = matchesQuery((request).as_ref(), "kernel:underflow")?; match _x_9590 {
-        false => { let _x_9596 = answerSceneQuery(request.clone())?; _x_9596 },
-        true => { let _x_9597 = underflowAccumKernelSample()?; { let _x_9598 = tensorKernelValid(&(_x_9597)); match _x_9598 {
+                                let _x_9851 = matchesQuery((request).as_ref(), "lod:0")?;
+                                match _x_9851 {
+        false => { let _x_10027 = matchesQuery((request).as_ref(), "lod:1")?; match _x_10027 {
+        false => { let _x_10199 = matchesQuery((request).as_ref(), "lod:2")?; match _x_10199 {
+        false => { let _x_10367 = matchesQuery((request).as_ref(), "lod:3")?; match _x_10367 {
+        false => { let _x_10531 = matchesQuery((request).as_ref(), "kernel:0")?; match _x_10531 {
+        false => { let _x_10691 = matchesQuery((request).as_ref(), "kernel:1")?; match _x_10691 {
+        false => { let _x_10843 = matchesQuery((request).as_ref(), "kernel:2")?; match _x_10843 {
+        false => { let _x_10987 = matchesQuery((request).as_ref(), "kernel:3")?; match _x_10987 {
+        false => { let _x_11123 = matchesQuery((request).as_ref(), "kernel:4")?; match _x_11123 {
+        false => { let _x_11251 = matchesQuery((request).as_ref(), "kernel:5")?; match _x_11251 {
+        false => { let _x_11371 = matchesQuery((request).as_ref(), "kernel:6")?; match _x_11371 {
+        false => { let _x_11483 = matchesQuery((request).as_ref(), "kernel:7")?; match _x_11483 {
+        false => { let _x_11587 = matchesQuery((request).as_ref(), "kernel:8")?; match _x_11587 {
+        false => { let _x_11683 = matchesQuery((request).as_ref(), "kernel:9")?; match _x_11683 {
+        false => { let _x_11771 = matchesQuery((request).as_ref(), "kernel:10")?; match _x_11771 {
+        false => { let _x_11851 = matchesQuery((request).as_ref(), "kernel:11")?; match _x_11851 {
+        false => { let _x_11923 = matchesQuery((request).as_ref(), "kernel:12")?; match _x_11923 {
+        false => { let _x_11987 = matchesQuery((request).as_ref(), "kernel:13")?; match _x_11987 {
+        false => { let _x_12043 = matchesQuery((request).as_ref(), "kernel:14")?; match _x_12043 {
+        false => { let _x_12091 = matchesQuery((request).as_ref(), "coded:0")?; match _x_12091 {
+        false => { let _x_12131 = matchesQuery((request).as_ref(), "coded:1")?; match _x_12131 {
+        false => { let _x_12163 = matchesQuery((request).as_ref(), "coded:2")?; match _x_12163 {
+        false => { let _x_12187 = matchesQuery((request).as_ref(), "kernel:zerodim")?; match _x_12187 {
+        false => { let _x_12203 = matchesQuery((request).as_ref(), "kernel:underflow")?; match _x_12203 {
+        false => { let _x_12209 = answerSceneQuery(request.clone())?; _x_12209 },
+        true => { let _x_12210 = underflowAccumKernelSample()?; { let _x_12211 = tensorKernelValid(&(_x_12210)); match _x_12211 {
         false => std::string::String::from("refused:accumulator-below-laurent-bound"),
         true => std::string::String::from("conformant:unexpected"),
     } } },
     } },
-        true => { let _x_9601 = zeroDimKernelSample()?; { let _x_9602 = tensorKernelValid(&(_x_9601)); match _x_9602 {
+        true => { let _x_12214 = zeroDimKernelSample()?; { let _x_12215 = tensorKernelValid(&(_x_12214)); match _x_12215 {
         false => std::string::String::from("refused:zero-extent-contraction"),
         true => std::string::String::from("conformant:unexpected"),
     } } },
     } },
-        true => { let _x_9605 = codedTier2RunsIblProbes()?; { let _x_9606 = codedTierValid(&(_x_9605))?; match _x_9606 {
+        true => { let _x_12218 = codedTier2RunsIblProbes()?; { let _x_12219 = codedTierValid(&(_x_12218))?; match _x_12219 {
         false => std::string::String::from("refused:invalid-coded-tier"),
         true => std::string::String::from("conformant:tier=SparseRunsIblProbes,code_bits=32,block=16,table=16,zero_scratch=true"),
     } } },
     } },
-        true => { let _x_9609 = codedTier1PackedAnimation()?; { let _x_9610 = codedTierValid(&(_x_9609))?; match _x_9610 {
+        true => { let _x_12222 = codedTier1PackedAnimation()?; { let _x_12223 = codedTierValid(&(_x_12222))?; match _x_12223 {
         false => std::string::String::from("refused:invalid-coded-tier"),
         true => std::string::String::from("conformant:tier=PackedNibbleAnimationTracks,code_bits=8,block=2,table=16,zero_scratch=true"),
     } } },
     } },
-        true => { let _x_9613 = codedTier0GridGeometry()?; { let _x_9614 = codedTierValid(&(_x_9613))?; match _x_9614 {
+        true => { let _x_12226 = codedTier0GridGeometry()?; { let _x_12227 = codedTierValid(&(_x_12226))?; match _x_12227 {
         false => std::string::String::from("refused:invalid-coded-tier"),
         true => std::string::String::from("conformant:tier=GridQuantizedGeometry,code_bits=16,block=1,table=16,zero_scratch=true"),
     } } },
     } },
-        true => { let _x_9617 = kernel11CodedSlmReasoning()?; { let _x_9618 = tensorKernelValid(&(_x_9617)); match _x_9618 {
+        true => { let _x_12230 = kernel14ConservationAutomaton()?; { let _x_12231 = tensorKernelValid(&(_x_12230)); match _x_12231 {
+        false => std::string::String::from("refused:invalid-kernel"),
+        true => std::string::String::from("conformant:kernel=ConservationStoryAutomaton,semiring=TropicalMinPlus,cols=16,bits=64,autonomous=true"),
+    } } },
+    } },
+        true => { let _x_12234 = kernel13TwoBoneIkContraction()?; { let _x_12235 = tensorKernelValid(&(_x_12234)); match _x_12235 {
+        false => std::string::String::from("refused:invalid-kernel"),
+        true => std::string::String::from("conformant:kernel=TwoBoneIkJointSolver,semiring=LinearExact,cols=4,bits=96,autonomous=true"),
+    } } },
+    } },
+        true => { let _x_12238 = kernel12TropicalBlasSweep()?; { let _x_12239 = tensorKernelValid(&(_x_12238)); match _x_12239 {
+        false => std::string::String::from("refused:invalid-kernel"),
+        true => std::string::String::from("conformant:kernel=TropicalBlasSweptToi,semiring=TropicalMinPlus,cols=6,bits=64"),
+    } } },
+    } },
+        true => { let _x_12242 = kernel11CodedSlmReasoning()?; { let _x_12243 = tensorKernelValid(&(_x_12242)); match _x_12243 {
         false => std::string::String::from("refused:invalid-kernel"),
         true => std::string::String::from("conformant:kernel=CodedSlmProposalRouter,semiring=CodedZeroDecode,cols=16,bits=128,autonomous=true"),
     } } },
     } },
-        true => { let _x_9621 = kernel10NeuromorphicSalienceSsm()?; { let _x_9622 = tensorKernelValid(&(_x_9621)); match _x_9622 {
+        true => { let _x_12246 = kernel10NeuromorphicSalienceSsm()?; { let _x_12247 = tensorKernelValid(&(_x_12246)); match _x_12247 {
         false => std::string::String::from("refused:invalid-kernel"),
         true => std::string::String::from("conformant:kernel=NeuromorphicSalienceStateSpace,semiring=ModularAudioRing,cols=8,bits=64,autonomous=true"),
     } } },
     } },
-        true => { let _x_9625 = kernel9TropicalUiLayout()?; { let _x_9626 = tensorKernelValid(&(_x_9625)); match _x_9626 {
+        true => { let _x_12250 = kernel9TropicalUiLayout()?; { let _x_12251 = tensorKernelValid(&(_x_12250)); match _x_12251 {
         false => std::string::String::from("refused:invalid-kernel"),
         true => std::string::String::from("conformant:kernel=TropicalUiConstraintLayout,semiring=TropicalMinPlus,cols=8,bits=64"),
     } } },
     } },
-        true => { let _x_9629 = kernel8CodedStreamGemm()?; { let _x_9630 = tensorKernelValid(&(_x_9629)); match _x_9630 {
+        true => { let _x_12254 = kernel8CodedStreamGemm()?; { let _x_12255 = tensorKernelValid(&(_x_12254)); match _x_12255 {
         false => std::string::String::from("refused:invalid-kernel"),
         true => std::string::String::from("conformant:kernel=CodedStreamZeroDecodeGemm,semiring=CodedZeroDecode,cols=16,bits=96"),
     } } },
     } },
-        true => { let _x_9633 = kernel7TropicalMinPlusNav()?; { let _x_9634 = tensorKernelValid(&(_x_9633)); match _x_9634 {
+        true => { let _x_12258 = kernel7TropicalMinPlusNav()?; { let _x_12259 = tensorKernelValid(&(_x_12258)); match _x_12259 {
         false => std::string::String::from("refused:invalid-kernel"),
         true => std::string::String::from("conformant:kernel=TropicalMinPlusNavClosure,semiring=TropicalMinPlus,cols=16,bits=64"),
     } } },
     } },
-        true => { let _x_9637 = kernel6KinematicSpline()?; { let _x_9638 = tensorKernelValid(&(_x_9637)); match _x_9638 {
+        true => { let _x_12262 = kernel6KinematicSpline()?; { let _x_12263 = tensorKernelValid(&(_x_12262)); match _x_12263 {
         false => std::string::String::from("refused:invalid-kernel"),
         true => std::string::String::from("conformant:kernel=KinematicSplineController,semiring=LinearExact,cols=4,bits=96,autonomous=true"),
     } } },
     } },
-        true => { let _x_9641 = kernel5ModalAudioMix()?; { let _x_9642 = tensorKernelValid(&(_x_9641)); match _x_9642 {
+        true => { let _x_12266 = kernel5ModalAudioMix()?; { let _x_12267 = tensorKernelValid(&(_x_12266)); match _x_12267 {
         false => std::string::String::from("refused:invalid-kernel"),
         true => std::string::String::from("conformant:kernel=ModalAudioMixMatrix,semiring=ModularAudioRing,cols=8,bits=128"),
     } } },
     } },
-        true => { let _x_9645 = kernel4ShadowCascade()?; { let _x_9646 = tensorKernelValid(&(_x_9645)); match _x_9646 {
+        true => { let _x_12270 = kernel4ShadowCascade()?; { let _x_12271 = tensorKernelValid(&(_x_12270)); match _x_12271 {
         false => std::string::String::from("refused:invalid-kernel"),
         true => std::string::String::from("conformant:kernel=ShadowCascadeProjector,semiring=LinearExact,cols=4,bits=96"),
     } } },
     } },
-        true => { let _x_9649 = kernel3TileRasterizer()?; { let _x_9650 = tensorKernelValid(&(_x_9649)); match _x_9650 {
+        true => { let _x_12274 = kernel3TileRasterizer()?; { let _x_12275 = tensorKernelValid(&(_x_12274)); match _x_12275 {
         false => std::string::String::from("refused:invalid-kernel"),
         true => std::string::String::from("conformant:kernel=TileFramebufferRasterizer,semiring=LinearExact,cols=16,bits=128"),
     } } },
     } },
-        true => { let _x_9653 = kernel2TropicalBvhCull()?; { let _x_9654 = tensorKernelValid(&(_x_9653)); match _x_9654 {
+        true => { let _x_12278 = kernel2TropicalBvhCull()?; { let _x_12279 = tensorKernelValid(&(_x_12278)); match _x_12279 {
         false => std::string::String::from("refused:invalid-kernel"),
         true => std::string::String::from("conformant:kernel=TropicalBvhVisibilityCull,semiring=TropicalMaxPlus,cols=6,bits=64"),
     } } },
     } },
-        true => { let _x_9657 = kernel1LinearSkinning()?; { let _x_9658 = tensorKernelValid(&(_x_9657)); match _x_9658 {
+        true => { let _x_12282 = kernel1LinearSkinning()?; { let _x_12283 = tensorKernelValid(&(_x_12282)); match _x_12283 {
         false => std::string::String::from("refused:invalid-kernel"),
         true => std::string::String::from("conformant:kernel=LinearBlendSkinningBatch,semiring=LinearExact,cols=4,bits=128"),
     } } },
     } },
-        true => { let _x_9661 = kernel0StaticMesh()?; { let _x_9662 = tensorKernelValid(&(_x_9661)); match _x_9662 {
+        true => { let _x_12286 = kernel0StaticMesh()?; { let _x_12287 = tensorKernelValid(&(_x_12286)); match _x_12287 {
         false => std::string::String::from("refused:invalid-kernel"),
         true => std::string::String::from("conformant:kernel=StaticMeshTransformBatch,semiring=LinearExact,cols=4,bits=96"),
     } } },
@@ -1402,20 +1738,20 @@ pub fn answerQuery(request: std::vec::Vec<u8>) -> Result<std::string::String, se
     }
                             }
                             true => {
-                                let _x_9665 = lodChainDirect()?;
-                                match _x_9665 {
+                                let _x_12290 = lodChainDirect()?;
+                                match _x_12290 {
                                     false => {
                                         std::string::String::from("refused:model-invariant-broken")
                                     }
                                     true => {
-                                        let _x_9674 = sevenTensorKernelsDirect()?;
-                                        match _x_9674 {
+                                        let _x_12299 = sevenTensorKernelsDirect()?;
+                                        match _x_12299 {
                                             false => std::string::String::from(
                                                 "refused:model-invariant-broken",
                                             ),
                                             true => {
-                                                let _x_9680 = runtimeInvariantsDirect()?;
-                                                match _x_9680 {
+                                                let _x_12305 = runtimeInvariantsDirect()?;
+                                                match _x_12305 {
         false => std::string::String::from("refused:subsystem-invariant-broken"),
         true => std::string::String::from("conformant:lods=4,kernels=7,lossless=1.0,zero-constants=true"),
     }
@@ -2234,6 +2570,30 @@ pub fn baumgarteBetaNumer() -> u64 {
     }
 }
 
+pub fn cameraNearSphereGuarded(
+    guardRadiusMilli: u64,
+    nearMilli: u64,
+    diagFactorMilli: u64,
+) -> Result<bool, self::ComputeError> {
+    Ok({
+        let _x_2 = core::convert::identity::<u64>(nearMilli)
+            .checked_mul(diagFactorMilli)
+            .ok_or(self::ComputeError::MulOverflow)?;
+        {
+            let _x_3 = skinWeightScale()?;
+            {
+                let _x_4 = core::convert::identity::<u64>(guardRadiusMilli)
+                    .checked_mul(_x_3)
+                    .ok_or(self::ComputeError::MulOverflow)?;
+                {
+                    let _x_5 = (_x_2 <= _x_4);
+                    _x_5
+                }
+            }
+        }
+    })
+}
+
 pub fn canonicalDimensions() -> Result<self::EngineDimensions, self::ComputeError> {
     Ok({
         let _x_4 = lod0CoarseProxy()?;
@@ -2326,6 +2686,20 @@ pub fn canonicalPipelineMakespan(
             }
         }
     })
+}
+
+pub fn ccdMaxSlideIterations() -> Result<u64, self::ComputeError> {
+    Ok({
+        let _x_1 = sFour()?;
+        _x_1
+    })
+}
+
+pub fn ccdSkinMarginMilli() -> u64 {
+    {
+        let _x_2 = (1 << 1);
+        _x_2
+    }
 }
 
 pub fn clampCoulombFrictionMilli(
@@ -3090,6 +3464,37 @@ pub fn commercialProgressionActive() -> Result<bool, self::ComputeError> {
     })
 }
 
+pub fn conservationLawValid(
+    beforeTotal: u64,
+    minted: u64,
+    burned: u64,
+    afterTotal: u64,
+) -> Result<bool, self::ComputeError> {
+    Ok({
+        let _x_37 = core::convert::identity::<u64>(beforeTotal)
+            .checked_add(minted)
+            .ok_or(self::ComputeError::AddOverflow)?;
+        {
+            let _x_17 = (burned <= _x_37);
+            match _x_17 {
+                false => _x_17,
+                true => {
+                    let _x_44 = core::convert::identity::<u64>(beforeTotal)
+                        .checked_add(minted)
+                        .ok_or(self::ComputeError::AddOverflow)?;
+                    {
+                        let _x_45 = core::convert::identity::<u64>(_x_44).saturating_sub(burned);
+                        {
+                            let _x_46 = (_x_45 == afterTotal);
+                            _x_46
+                        }
+                    }
+                }
+            }
+        }
+    })
+}
+
 pub fn containerOrganAllowed(
     explicitlyDenied: bool,
     explicitlyGranted: bool,
@@ -3224,69 +3629,87 @@ pub fn cyberneticUiAndStitchActive() -> Result<bool, self::ComputeError> {
                             match _y_34 {
                                 false => _y_34,
                                 true => {
-                                    let _x_637 = sEight()?;
+                                    let _x_682 = sEight()?;
                                     {
-                                        let _x_638 = sEight()?;
+                                        let _x_683 = sEight()?;
                                         {
-                                            let _x_639 = (_x_637 == _x_638);
-                                            match _x_639 {
+                                            let _x_684 = (_x_682 == _x_683);
+                                            match _x_684 {
                                                 false => {
-                                                    let _y_641 = _x_639;
-                                                    match _y_641 {
-                                                        false => _y_641,
+                                                    let _y_686 = _x_684;
+                                                    match _y_686 {
+                                                        false => _y_686,
                                                         true => {
-                                                            let _x_680 = false;
+                                                            let _x_730 = false;
                                                             {
-                                                                let _x_681 = containerOrganAllowed(
-                                                                    _x_680, _x_680, _x_28,
+                                                                let _x_731 = containerOrganAllowed(
+                                                                    _x_730, _x_730, _x_28,
                                                                 );
-                                                                match _x_681 {
+                                                                match _x_731 {
                                                                     false => {
-                                                                        let _y_643 = _x_681;
-                                                                        match _y_643 {
-                                                                            false => _y_643,
+                                                                        let _y_688 = _x_731;
+                                                                        match _y_688 {
+                                                                            false => _y_688,
                                                                             true => {
-                                                                                let _x_693 = 0;
+                                                                                let _x_743 = 0;
                                                                                 {
-                                                                                    let _x_694 =
+                                                                                    let _x_744 =
                                                                                         (1 << 1);
                                                                                     {
-                                                                                        let _x_695 = stitchPairRecoverable(_x_693, _x_694, _x_28, _x_28, _x_28);
-                                                                                        match _x_695 {
-        false => { let _y_697 = _x_695; match _y_697 {
-        false => _y_697,
-        true => { let _x_698 = sTen()?; { let _x_699 = sTwenty()?; { let _x_700 = sFifteen()?; { let _x_701 = 0; { let _x_702 = 1; { let _x_703 = peerObservationFresh(_x_698, _x_699, _x_700, _x_701, _x_702, _x_28); match _x_703 {
-        false => _x_703,
-        true => { let _x_704 = sTen()?; { let _x_705 = sFifteen()?; { let _x_706 = 0; { let _x_707 = 1; { let _x_708 = peerObservationFresh(_x_704, _x_705, _x_705, _x_706, _x_707, _x_28); match _x_708 {
-        false => _x_703,
-        true => { let _x_709 = false; _x_709 },
-    } } } } } },
-    } } } } } } },
+                                                                                        let _x_745 = stitchPairRecoverable(_x_743, _x_744, _x_28, _x_28, _x_28);
+                                                                                        match _x_745 {
+        false => { let _y_747 = _x_745; match _y_747 {
+        false => _y_747,
+        true => { let _x_753 = sTen()?; { let _x_754 = sTwenty()?; { let _x_755 = sFifteen()?; { let _x_756 = 0; { let _x_757 = 1; { let _x_758 = peerObservationFresh(_x_753, _x_754, _x_755, _x_756, _x_757, _x_28); match _x_758 {
+        false => { let _y_751 = _x_758; match _y_751 {
+        false => _y_751,
+        true => { let _x_752 = lawfulHdUniversalEngineActive()?; _x_752 },
     } },
-        true => { let _x_712 = 1; { let _x_713 = stitchPairRecoverable(_x_712, _x_712, _x_28, _x_28, _x_28); match _x_713 {
-        false => { let _x_726 = 1; { let _x_727 = 0; { let _x_728 = stitchXorBit(_x_726, _x_727); { let _x_729 = stitchXorBit(_x_726, _x_728); { let _x_730 = (_x_729 == _x_727); match _x_730 {
-        false => { let prod_local_0 = _x_730; match prod_local_0 {
+        true => { let _x_759 = sTen()?; { let _x_760 = sFifteen()?; { let _x_761 = 0; { let _x_762 = 1; { let _x_763 = peerObservationFresh(_x_759, _x_760, _x_760, _x_761, _x_762, _x_28); match _x_763 {
+        false => { let prod_local_0 = _x_758; match prod_local_0 {
         false => prod_local_0,
-        true => { let prod_local_1 = sTen()?; { let prod_local_2 = sTwenty()?; { let prod_local_3 = sFifteen()?; { let prod_local_4 = 0; { let prod_local_5 = 1; { let prod_local_6 = peerObservationFresh(prod_local_1, prod_local_2, prod_local_3, prod_local_4, prod_local_5, _x_28); match prod_local_6 {
-        false => prod_local_6,
-        true => { let prod_local_7 = sTen()?; { let prod_local_8 = sFifteen()?; { let prod_local_9 = 0; { let prod_local_10 = 1; { let prod_local_11 = peerObservationFresh(prod_local_7, prod_local_8, prod_local_8, prod_local_9, prod_local_10, _x_28); match prod_local_11 {
-        false => prod_local_6,
-        true => { let prod_local_12 = false; prod_local_12 },
+        true => { let prod_local_1 = lawfulHdUniversalEngineActive()?; prod_local_1 },
+    } },
+        true => { let _x_764 = false; _x_764 },
     } } } } } },
     } } } } } } },
     } },
-        true => { let _x_731 = 1; { let _x_732 = 0; { let _x_733 = stitchXorBit(_x_731, _x_732); { let _x_734 = stitchXorBit(_x_733, _x_732); { let _x_735 = (_x_734 == _x_731); { let prod_local_13 = _x_735; match prod_local_13 {
-        false => prod_local_13,
-        true => { let prod_local_14 = sTen()?; { let prod_local_15 = sTwenty()?; { let prod_local_16 = sFifteen()?; { let prod_local_17 = 0; { let prod_local_18 = 1; { let prod_local_19 = peerObservationFresh(prod_local_14, prod_local_15, prod_local_16, prod_local_17, prod_local_18, _x_28); match prod_local_19 {
-        false => prod_local_19,
-        true => { let prod_local_20 = sTen()?; { let prod_local_21 = sFifteen()?; { let prod_local_22 = 0; { let prod_local_23 = 1; { let prod_local_24 = peerObservationFresh(prod_local_20, prod_local_21, prod_local_21, prod_local_22, prod_local_23, _x_28); match prod_local_24 {
-        false => prod_local_19,
-        true => { let prod_local_25 = false; prod_local_25 },
+        true => { let _x_767 = 1; { let _x_768 = stitchPairRecoverable(_x_767, _x_767, _x_28, _x_28, _x_28); match _x_768 {
+        false => { let _x_781 = 1; { let _x_782 = 0; { let _x_783 = stitchXorBit(_x_781, _x_782); { let _x_784 = stitchXorBit(_x_781, _x_783); { let _x_785 = (_x_784 == _x_782); match _x_785 {
+        false => { let prod_local_2 = _x_785; match prod_local_2 {
+        false => prod_local_2,
+        true => { let prod_local_4 = sTen()?; { let prod_local_5 = sTwenty()?; { let prod_local_6 = sFifteen()?; { let prod_local_7 = 0; { let prod_local_8 = 1; { let prod_local_9 = peerObservationFresh(prod_local_4, prod_local_5, prod_local_6, prod_local_7, prod_local_8, _x_28); match prod_local_9 {
+        false => { let prod_local_10 = prod_local_9; match prod_local_10 {
+        false => prod_local_10,
+        true => { let prod_local_11 = lawfulHdUniversalEngineActive()?; prod_local_11 },
+    } },
+        true => { let prod_local_12 = sTen()?; { let prod_local_13 = sFifteen()?; { let prod_local_14 = 0; { let prod_local_15 = 1; { let prod_local_16 = peerObservationFresh(prod_local_12, prod_local_13, prod_local_13, prod_local_14, prod_local_15, _x_28); match prod_local_16 {
+        false => { let prod_local_17 = prod_local_9; match prod_local_17 {
+        false => prod_local_17,
+        true => { let prod_local_18 = lawfulHdUniversalEngineActive()?; prod_local_18 },
+    } },
+        true => { let prod_local_19 = false; prod_local_19 },
+    } } } } } },
+    } } } } } } },
+    } },
+        true => { let _x_786 = 1; { let _x_787 = 0; { let _x_788 = stitchXorBit(_x_786, _x_787); { let _x_789 = stitchXorBit(_x_788, _x_787); { let _x_790 = (_x_789 == _x_786); { let prod_local_20 = _x_790; match prod_local_20 {
+        false => prod_local_20,
+        true => { let prod_local_22 = sTen()?; { let prod_local_23 = sTwenty()?; { let prod_local_24 = sFifteen()?; { let prod_local_25 = 0; { let prod_local_26 = 1; { let prod_local_27 = peerObservationFresh(prod_local_22, prod_local_23, prod_local_24, prod_local_25, prod_local_26, _x_28); match prod_local_27 {
+        false => { let prod_local_28 = prod_local_27; match prod_local_28 {
+        false => prod_local_28,
+        true => { let prod_local_29 = lawfulHdUniversalEngineActive()?; prod_local_29 },
+    } },
+        true => { let prod_local_30 = sTen()?; { let prod_local_31 = sFifteen()?; { let prod_local_32 = 0; { let prod_local_33 = 1; { let prod_local_34 = peerObservationFresh(prod_local_30, prod_local_31, prod_local_31, prod_local_32, prod_local_33, _x_28); match prod_local_34 {
+        false => { let prod_local_35 = prod_local_27; match prod_local_35 {
+        false => prod_local_35,
+        true => { let prod_local_36 = lawfulHdUniversalEngineActive()?; prod_local_36 },
+    } },
+        true => { let prod_local_37 = false; prod_local_37 },
     } } } } } },
     } } } } } } },
     } } } } } } },
     } } } } } },
-        true => { let _x_725 = false; _x_725 },
+        true => { let _x_780 = false; _x_780 },
     } } },
     }
                                                                                     }
@@ -3295,58 +3718,76 @@ pub fn cyberneticUiAndStitchActive() -> Result<bool, self::ComputeError> {
                                                                         }
                                                                     }
                                                                     true => {
-                                                                        let _x_682 =
+                                                                        let _x_732 =
                                                                             containerOrganAllowed(
                                                                                 _x_28, _x_28, _x_28,
                                                                             );
-                                                                        match _x_682 {
+                                                                        match _x_732 {
                                                                             false => {
-                                                                                let _x_736 =
+                                                                                let _x_791 =
                                                                                     sHundred()?;
                                                                                 {
-                                                                                    let _x_737 =
+                                                                                    let _x_792 =
                                                                                         sFifty()?;
                                                                                     {
-                                                                                        let _x_738 = proposalAdmitted(_x_736, _x_737, _x_28, _x_28);
+                                                                                        let _x_793 = proposalAdmitted(_x_791, _x_792, _x_28, _x_28);
                                                                                         {
-                                                                                            let prod_local_26 = _x_738;
-                                                                                            match prod_local_26 {
-        false => prod_local_26,
-        true => { let prod_local_27 = 0; { let prod_local_28 = (1 << 1); { let prod_local_29 = stitchPairRecoverable(prod_local_27, prod_local_28, _x_28, _x_28, _x_28); match prod_local_29 {
-        false => { let prod_local_31 = prod_local_29; match prod_local_31 {
-        false => prod_local_31,
-        true => { let prod_local_32 = sTen()?; { let prod_local_33 = sTwenty()?; { let prod_local_34 = sFifteen()?; { let prod_local_35 = 0; { let prod_local_36 = 1; { let prod_local_37 = peerObservationFresh(prod_local_32, prod_local_33, prod_local_34, prod_local_35, prod_local_36, _x_28); match prod_local_37 {
-        false => prod_local_37,
-        true => { let prod_local_38 = sTen()?; { let prod_local_39 = sFifteen()?; { let prod_local_40 = 0; { let prod_local_41 = 1; { let prod_local_42 = peerObservationFresh(prod_local_38, prod_local_39, prod_local_39, prod_local_40, prod_local_41, _x_28); match prod_local_42 {
-        false => prod_local_37,
-        true => { let prod_local_43 = false; prod_local_43 },
-    } } } } } },
-    } } } } } } },
-    } },
-        true => { let prod_local_44 = 1; { let prod_local_45 = stitchPairRecoverable(prod_local_44, prod_local_44, _x_28, _x_28, _x_28); match prod_local_45 {
-        false => { let prod_local_46 = 1; { let prod_local_47 = 0; { let prod_local_48 = stitchXorBit(prod_local_46, prod_local_47); { let prod_local_49 = stitchXorBit(prod_local_46, prod_local_48); { let prod_local_50 = (prod_local_49 == prod_local_47); match prod_local_50 {
+                                                                                            let prod_local_38 = _x_793;
+                                                                                            match prod_local_38 {
+        false => prod_local_38,
+        true => { let prod_local_39 = 0; { let prod_local_40 = (1 << 1); { let prod_local_41 = stitchPairRecoverable(prod_local_39, prod_local_40, _x_28, _x_28, _x_28); match prod_local_41 {
+        false => { let prod_local_43 = prod_local_41; match prod_local_43 {
+        false => prod_local_43,
+        true => { let prod_local_45 = sTen()?; { let prod_local_46 = sTwenty()?; { let prod_local_47 = sFifteen()?; { let prod_local_48 = 0; { let prod_local_49 = 1; { let prod_local_50 = peerObservationFresh(prod_local_45, prod_local_46, prod_local_47, prod_local_48, prod_local_49, _x_28); match prod_local_50 {
         false => { let prod_local_51 = prod_local_50; match prod_local_51 {
         false => prod_local_51,
-        true => { let prod_local_52 = sTen()?; { let prod_local_53 = sTwenty()?; { let prod_local_54 = sFifteen()?; { let prod_local_55 = 0; { let prod_local_56 = 1; { let prod_local_57 = peerObservationFresh(prod_local_52, prod_local_53, prod_local_54, prod_local_55, prod_local_56, _x_28); match prod_local_57 {
-        false => prod_local_57,
-        true => { let prod_local_58 = sTen()?; { let prod_local_59 = sFifteen()?; { let prod_local_60 = 0; { let prod_local_61 = 1; { let prod_local_62 = peerObservationFresh(prod_local_58, prod_local_59, prod_local_59, prod_local_60, prod_local_61, _x_28); match prod_local_62 {
-        false => prod_local_57,
-        true => { let prod_local_63 = false; prod_local_63 },
+        true => { let prod_local_52 = lawfulHdUniversalEngineActive()?; prod_local_52 },
+    } },
+        true => { let prod_local_53 = sTen()?; { let prod_local_54 = sFifteen()?; { let prod_local_55 = 0; { let prod_local_56 = 1; { let prod_local_57 = peerObservationFresh(prod_local_53, prod_local_54, prod_local_54, prod_local_55, prod_local_56, _x_28); match prod_local_57 {
+        false => { let prod_local_58 = prod_local_50; match prod_local_58 {
+        false => prod_local_58,
+        true => { let prod_local_59 = lawfulHdUniversalEngineActive()?; prod_local_59 },
+    } },
+        true => { let prod_local_60 = false; prod_local_60 },
     } } } } } },
     } } } } } } },
     } },
-        true => { let prod_local_64 = 1; { let prod_local_65 = 0; { let prod_local_66 = stitchXorBit(prod_local_64, prod_local_65); { let prod_local_67 = stitchXorBit(prod_local_66, prod_local_65); { let prod_local_68 = (prod_local_67 == prod_local_64); { let prod_local_69 = prod_local_68; match prod_local_69 {
-        false => prod_local_69,
+        true => { let prod_local_61 = 1; { let prod_local_62 = stitchPairRecoverable(prod_local_61, prod_local_61, _x_28, _x_28, _x_28); match prod_local_62 {
+        false => { let prod_local_63 = 1; { let prod_local_64 = 0; { let prod_local_65 = stitchXorBit(prod_local_63, prod_local_64); { let prod_local_66 = stitchXorBit(prod_local_63, prod_local_65); { let prod_local_67 = (prod_local_66 == prod_local_64); match prod_local_67 {
+        false => { let prod_local_68 = prod_local_67; match prod_local_68 {
+        false => prod_local_68,
         true => { let prod_local_70 = sTen()?; { let prod_local_71 = sTwenty()?; { let prod_local_72 = sFifteen()?; { let prod_local_73 = 0; { let prod_local_74 = 1; { let prod_local_75 = peerObservationFresh(prod_local_70, prod_local_71, prod_local_72, prod_local_73, prod_local_74, _x_28); match prod_local_75 {
-        false => prod_local_75,
-        true => { let prod_local_76 = sTen()?; { let prod_local_77 = sFifteen()?; { let prod_local_78 = 0; { let prod_local_79 = 1; { let prod_local_80 = peerObservationFresh(prod_local_76, prod_local_77, prod_local_77, prod_local_78, prod_local_79, _x_28); match prod_local_80 {
-        false => prod_local_75,
-        true => { let prod_local_81 = false; prod_local_81 },
+        false => { let prod_local_76 = prod_local_75; match prod_local_76 {
+        false => prod_local_76,
+        true => { let prod_local_77 = lawfulHdUniversalEngineActive()?; prod_local_77 },
+    } },
+        true => { let prod_local_78 = sTen()?; { let prod_local_79 = sFifteen()?; { let prod_local_80 = 0; { let prod_local_81 = 1; { let prod_local_82 = peerObservationFresh(prod_local_78, prod_local_79, prod_local_79, prod_local_80, prod_local_81, _x_28); match prod_local_82 {
+        false => { let prod_local_83 = prod_local_75; match prod_local_83 {
+        false => prod_local_83,
+        true => { let prod_local_84 = lawfulHdUniversalEngineActive()?; prod_local_84 },
+    } },
+        true => { let prod_local_85 = false; prod_local_85 },
+    } } } } } },
+    } } } } } } },
+    } },
+        true => { let prod_local_86 = 1; { let prod_local_87 = 0; { let prod_local_88 = stitchXorBit(prod_local_86, prod_local_87); { let prod_local_89 = stitchXorBit(prod_local_88, prod_local_87); { let prod_local_90 = (prod_local_89 == prod_local_86); { let prod_local_91 = prod_local_90; match prod_local_91 {
+        false => prod_local_91,
+        true => { let prod_local_93 = sTen()?; { let prod_local_94 = sTwenty()?; { let prod_local_95 = sFifteen()?; { let prod_local_96 = 0; { let prod_local_97 = 1; { let prod_local_98 = peerObservationFresh(prod_local_93, prod_local_94, prod_local_95, prod_local_96, prod_local_97, _x_28); match prod_local_98 {
+        false => { let prod_local_99 = prod_local_98; match prod_local_99 {
+        false => prod_local_99,
+        true => { let prod_local_100 = lawfulHdUniversalEngineActive()?; prod_local_100 },
+    } },
+        true => { let prod_local_101 = sTen()?; { let prod_local_102 = sFifteen()?; { let prod_local_103 = 0; { let prod_local_104 = 1; { let prod_local_105 = peerObservationFresh(prod_local_101, prod_local_102, prod_local_102, prod_local_103, prod_local_104, _x_28); match prod_local_105 {
+        false => { let prod_local_106 = prod_local_98; match prod_local_106 {
+        false => prod_local_106,
+        true => { let prod_local_107 = lawfulHdUniversalEngineActive()?; prod_local_107 },
+    } },
+        true => { let prod_local_108 = false; prod_local_108 },
     } } } } } },
     } } } } } } },
     } } } } } } },
     } } } } } },
-        true => { let prod_local_82 = false; prod_local_82 },
+        true => { let prod_local_109 = false; prod_local_109 },
     } } },
     } } } },
     }
@@ -3355,8 +3796,8 @@ pub fn cyberneticUiAndStitchActive() -> Result<bool, self::ComputeError> {
                                                                                 }
                                                                             }
                                                                             true => {
-                                                                                let _x_687 = false;
-                                                                                _x_687
+                                                                                let _x_737 = false;
+                                                                                _x_737
                                                                             }
                                                                         }
                                                                     }
@@ -3366,110 +3807,146 @@ pub fn cyberneticUiAndStitchActive() -> Result<bool, self::ComputeError> {
                                                     }
                                                 }
                                                 true => {
-                                                    let _x_688 = sFour()?;
+                                                    let _x_738 = sFour()?;
                                                     {
-                                                        let _x_689 = sFive()?;
+                                                        let _x_739 = sFive()?;
                                                         {
-                                                            let _x_690 = stepLifMembraneMilli(
-                                                                _x_688, _x_689,
+                                                            let _x_740 = stepLifMembraneMilli(
+                                                                _x_738, _x_739,
                                                             )?;
                                                             {
-                                                                let _x_691 =
+                                                                let _x_741 =
                                                                     lifSpikeThresholdMilli()?;
                                                                 {
-                                                                    let _x_692 = (_x_690 < _x_691);
+                                                                    let _x_742 = (_x_740 < _x_741);
                                                                     {
-                                                                        let prod_local_83 = _x_692;
-                                                                        match prod_local_83 {
-                                                                            false => prod_local_83,
+                                                                        let prod_local_110 = _x_742;
+                                                                        match prod_local_110 {
+                                                                            false => prod_local_110,
                                                                             true => {
-                                                                                let prod_local_85 =
+                                                                                let prod_local_112 =
                                                                                     false;
                                                                                 {
-                                                                                    let prod_local_86 = containerOrganAllowed(prod_local_85, prod_local_85, _x_28);
-                                                                                    match prod_local_86 {
-        false => { let prod_local_87 = prod_local_86; match prod_local_87 {
-        false => prod_local_87,
-        true => { let prod_local_88 = 0; { let prod_local_89 = (1 << 1); { let prod_local_90 = stitchPairRecoverable(prod_local_88, prod_local_89, _x_28, _x_28, _x_28); match prod_local_90 {
-        false => { let prod_local_92 = prod_local_90; match prod_local_92 {
-        false => prod_local_92,
-        true => { let prod_local_93 = sTen()?; { let prod_local_94 = sTwenty()?; { let prod_local_95 = sFifteen()?; { let prod_local_96 = 0; { let prod_local_97 = 1; { let prod_local_98 = peerObservationFresh(prod_local_93, prod_local_94, prod_local_95, prod_local_96, prod_local_97, _x_28); match prod_local_98 {
-        false => prod_local_98,
-        true => { let prod_local_99 = sTen()?; { let prod_local_100 = sFifteen()?; { let prod_local_101 = 0; { let prod_local_102 = 1; { let prod_local_103 = peerObservationFresh(prod_local_99, prod_local_100, prod_local_100, prod_local_101, prod_local_102, _x_28); match prod_local_103 {
-        false => prod_local_98,
-        true => { let prod_local_104 = false; prod_local_104 },
+                                                                                    let prod_local_113 = containerOrganAllowed(prod_local_112, prod_local_112, _x_28);
+                                                                                    match prod_local_113 {
+        false => { let prod_local_114 = prod_local_113; match prod_local_114 {
+        false => prod_local_114,
+        true => { let prod_local_115 = 0; { let prod_local_116 = (1 << 1); { let prod_local_117 = stitchPairRecoverable(prod_local_115, prod_local_116, _x_28, _x_28, _x_28); match prod_local_117 {
+        false => { let prod_local_119 = prod_local_117; match prod_local_119 {
+        false => prod_local_119,
+        true => { let prod_local_121 = sTen()?; { let prod_local_122 = sTwenty()?; { let prod_local_123 = sFifteen()?; { let prod_local_124 = 0; { let prod_local_125 = 1; { let prod_local_126 = peerObservationFresh(prod_local_121, prod_local_122, prod_local_123, prod_local_124, prod_local_125, _x_28); match prod_local_126 {
+        false => { let prod_local_127 = prod_local_126; match prod_local_127 {
+        false => prod_local_127,
+        true => { let prod_local_128 = lawfulHdUniversalEngineActive()?; prod_local_128 },
+    } },
+        true => { let prod_local_129 = sTen()?; { let prod_local_130 = sFifteen()?; { let prod_local_131 = 0; { let prod_local_132 = 1; { let prod_local_133 = peerObservationFresh(prod_local_129, prod_local_130, prod_local_130, prod_local_131, prod_local_132, _x_28); match prod_local_133 {
+        false => { let prod_local_134 = prod_local_126; match prod_local_134 {
+        false => prod_local_134,
+        true => { let prod_local_135 = lawfulHdUniversalEngineActive()?; prod_local_135 },
+    } },
+        true => { let prod_local_136 = false; prod_local_136 },
     } } } } } },
     } } } } } } },
     } },
-        true => { let prod_local_105 = 1; { let prod_local_106 = stitchPairRecoverable(prod_local_105, prod_local_105, _x_28, _x_28, _x_28); match prod_local_106 {
-        false => { let prod_local_107 = 1; { let prod_local_108 = 0; { let prod_local_109 = stitchXorBit(prod_local_107, prod_local_108); { let prod_local_110 = stitchXorBit(prod_local_107, prod_local_109); { let prod_local_111 = (prod_local_110 == prod_local_108); match prod_local_111 {
-        false => { let prod_local_112 = prod_local_111; match prod_local_112 {
-        false => prod_local_112,
-        true => { let prod_local_113 = sTen()?; { let prod_local_114 = sTwenty()?; { let prod_local_115 = sFifteen()?; { let prod_local_116 = 0; { let prod_local_117 = 1; { let prod_local_118 = peerObservationFresh(prod_local_113, prod_local_114, prod_local_115, prod_local_116, prod_local_117, _x_28); match prod_local_118 {
-        false => prod_local_118,
-        true => { let prod_local_119 = sTen()?; { let prod_local_120 = sFifteen()?; { let prod_local_121 = 0; { let prod_local_122 = 1; { let prod_local_123 = peerObservationFresh(prod_local_119, prod_local_120, prod_local_120, prod_local_121, prod_local_122, _x_28); match prod_local_123 {
-        false => prod_local_118,
-        true => { let prod_local_124 = false; prod_local_124 },
+        true => { let prod_local_137 = 1; { let prod_local_138 = stitchPairRecoverable(prod_local_137, prod_local_137, _x_28, _x_28, _x_28); match prod_local_138 {
+        false => { let prod_local_139 = 1; { let prod_local_140 = 0; { let prod_local_141 = stitchXorBit(prod_local_139, prod_local_140); { let prod_local_142 = stitchXorBit(prod_local_139, prod_local_141); { let prod_local_143 = (prod_local_142 == prod_local_140); match prod_local_143 {
+        false => { let prod_local_144 = prod_local_143; match prod_local_144 {
+        false => prod_local_144,
+        true => { let prod_local_146 = sTen()?; { let prod_local_147 = sTwenty()?; { let prod_local_148 = sFifteen()?; { let prod_local_149 = 0; { let prod_local_150 = 1; { let prod_local_151 = peerObservationFresh(prod_local_146, prod_local_147, prod_local_148, prod_local_149, prod_local_150, _x_28); match prod_local_151 {
+        false => { let prod_local_152 = prod_local_151; match prod_local_152 {
+        false => prod_local_152,
+        true => { let prod_local_153 = lawfulHdUniversalEngineActive()?; prod_local_153 },
+    } },
+        true => { let prod_local_154 = sTen()?; { let prod_local_155 = sFifteen()?; { let prod_local_156 = 0; { let prod_local_157 = 1; { let prod_local_158 = peerObservationFresh(prod_local_154, prod_local_155, prod_local_155, prod_local_156, prod_local_157, _x_28); match prod_local_158 {
+        false => { let prod_local_159 = prod_local_151; match prod_local_159 {
+        false => prod_local_159,
+        true => { let prod_local_160 = lawfulHdUniversalEngineActive()?; prod_local_160 },
+    } },
+        true => { let prod_local_161 = false; prod_local_161 },
     } } } } } },
     } } } } } } },
     } },
-        true => { let prod_local_125 = 1; { let prod_local_126 = 0; { let prod_local_127 = stitchXorBit(prod_local_125, prod_local_126); { let prod_local_128 = stitchXorBit(prod_local_127, prod_local_126); { let prod_local_129 = (prod_local_128 == prod_local_125); { let prod_local_130 = prod_local_129; match prod_local_130 {
-        false => prod_local_130,
-        true => { let prod_local_131 = sTen()?; { let prod_local_132 = sTwenty()?; { let prod_local_133 = sFifteen()?; { let prod_local_134 = 0; { let prod_local_135 = 1; { let prod_local_136 = peerObservationFresh(prod_local_131, prod_local_132, prod_local_133, prod_local_134, prod_local_135, _x_28); match prod_local_136 {
-        false => prod_local_136,
-        true => { let prod_local_137 = sTen()?; { let prod_local_138 = sFifteen()?; { let prod_local_139 = 0; { let prod_local_140 = 1; { let prod_local_141 = peerObservationFresh(prod_local_137, prod_local_138, prod_local_138, prod_local_139, prod_local_140, _x_28); match prod_local_141 {
-        false => prod_local_136,
-        true => { let prod_local_142 = false; prod_local_142 },
+        true => { let prod_local_162 = 1; { let prod_local_163 = 0; { let prod_local_164 = stitchXorBit(prod_local_162, prod_local_163); { let prod_local_165 = stitchXorBit(prod_local_164, prod_local_163); { let prod_local_166 = (prod_local_165 == prod_local_162); { let prod_local_167 = prod_local_166; match prod_local_167 {
+        false => prod_local_167,
+        true => { let prod_local_169 = sTen()?; { let prod_local_170 = sTwenty()?; { let prod_local_171 = sFifteen()?; { let prod_local_172 = 0; { let prod_local_173 = 1; { let prod_local_174 = peerObservationFresh(prod_local_169, prod_local_170, prod_local_171, prod_local_172, prod_local_173, _x_28); match prod_local_174 {
+        false => { let prod_local_175 = prod_local_174; match prod_local_175 {
+        false => prod_local_175,
+        true => { let prod_local_176 = lawfulHdUniversalEngineActive()?; prod_local_176 },
+    } },
+        true => { let prod_local_177 = sTen()?; { let prod_local_178 = sFifteen()?; { let prod_local_179 = 0; { let prod_local_180 = 1; { let prod_local_181 = peerObservationFresh(prod_local_177, prod_local_178, prod_local_178, prod_local_179, prod_local_180, _x_28); match prod_local_181 {
+        false => { let prod_local_182 = prod_local_174; match prod_local_182 {
+        false => prod_local_182,
+        true => { let prod_local_183 = lawfulHdUniversalEngineActive()?; prod_local_183 },
+    } },
+        true => { let prod_local_184 = false; prod_local_184 },
     } } } } } },
     } } } } } } },
     } } } } } } },
     } } } } } },
-        true => { let prod_local_143 = false; prod_local_143 },
+        true => { let prod_local_185 = false; prod_local_185 },
     } } },
     } } } },
     } },
-        true => { let prod_local_144 = containerOrganAllowed(_x_28, _x_28, _x_28); match prod_local_144 {
-        false => { let prod_local_145 = sHundred()?; { let prod_local_146 = sFifty()?; { let prod_local_147 = proposalAdmitted(prod_local_145, prod_local_146, _x_28, _x_28); { let prod_local_148 = prod_local_147; match prod_local_148 {
-        false => prod_local_148,
-        true => { let prod_local_149 = 0; { let prod_local_150 = (1 << 1); { let prod_local_151 = stitchPairRecoverable(prod_local_149, prod_local_150, _x_28, _x_28, _x_28); match prod_local_151 {
-        false => { let prod_local_153 = prod_local_151; match prod_local_153 {
-        false => prod_local_153,
-        true => { let prod_local_154 = sTen()?; { let prod_local_155 = sTwenty()?; { let prod_local_156 = sFifteen()?; { let prod_local_157 = 0; { let prod_local_158 = 1; { let prod_local_159 = peerObservationFresh(prod_local_154, prod_local_155, prod_local_156, prod_local_157, prod_local_158, _x_28); match prod_local_159 {
-        false => prod_local_159,
-        true => { let prod_local_160 = sTen()?; { let prod_local_161 = sFifteen()?; { let prod_local_162 = 0; { let prod_local_163 = 1; { let prod_local_164 = peerObservationFresh(prod_local_160, prod_local_161, prod_local_161, prod_local_162, prod_local_163, _x_28); match prod_local_164 {
-        false => prod_local_159,
-        true => { let prod_local_165 = false; prod_local_165 },
+        true => { let prod_local_186 = containerOrganAllowed(_x_28, _x_28, _x_28); match prod_local_186 {
+        false => { let prod_local_187 = sHundred()?; { let prod_local_188 = sFifty()?; { let prod_local_189 = proposalAdmitted(prod_local_187, prod_local_188, _x_28, _x_28); { let prod_local_190 = prod_local_189; match prod_local_190 {
+        false => prod_local_190,
+        true => { let prod_local_191 = 0; { let prod_local_192 = (1 << 1); { let prod_local_193 = stitchPairRecoverable(prod_local_191, prod_local_192, _x_28, _x_28, _x_28); match prod_local_193 {
+        false => { let prod_local_195 = prod_local_193; match prod_local_195 {
+        false => prod_local_195,
+        true => { let prod_local_197 = sTen()?; { let prod_local_198 = sTwenty()?; { let prod_local_199 = sFifteen()?; { let prod_local_200 = 0; { let prod_local_201 = 1; { let prod_local_202 = peerObservationFresh(prod_local_197, prod_local_198, prod_local_199, prod_local_200, prod_local_201, _x_28); match prod_local_202 {
+        false => { let prod_local_203 = prod_local_202; match prod_local_203 {
+        false => prod_local_203,
+        true => { let prod_local_204 = lawfulHdUniversalEngineActive()?; prod_local_204 },
+    } },
+        true => { let prod_local_205 = sTen()?; { let prod_local_206 = sFifteen()?; { let prod_local_207 = 0; { let prod_local_208 = 1; { let prod_local_209 = peerObservationFresh(prod_local_205, prod_local_206, prod_local_206, prod_local_207, prod_local_208, _x_28); match prod_local_209 {
+        false => { let prod_local_210 = prod_local_202; match prod_local_210 {
+        false => prod_local_210,
+        true => { let prod_local_211 = lawfulHdUniversalEngineActive()?; prod_local_211 },
+    } },
+        true => { let prod_local_212 = false; prod_local_212 },
     } } } } } },
     } } } } } } },
     } },
-        true => { let prod_local_166 = 1; { let prod_local_167 = stitchPairRecoverable(prod_local_166, prod_local_166, _x_28, _x_28, _x_28); match prod_local_167 {
-        false => { let prod_local_168 = 1; { let prod_local_169 = 0; { let prod_local_170 = stitchXorBit(prod_local_168, prod_local_169); { let prod_local_171 = stitchXorBit(prod_local_168, prod_local_170); { let prod_local_172 = (prod_local_171 == prod_local_169); match prod_local_172 {
-        false => { let prod_local_173 = prod_local_172; match prod_local_173 {
-        false => prod_local_173,
-        true => { let prod_local_174 = sTen()?; { let prod_local_175 = sTwenty()?; { let prod_local_176 = sFifteen()?; { let prod_local_177 = 0; { let prod_local_178 = 1; { let prod_local_179 = peerObservationFresh(prod_local_174, prod_local_175, prod_local_176, prod_local_177, prod_local_178, _x_28); match prod_local_179 {
-        false => prod_local_179,
-        true => { let prod_local_180 = sTen()?; { let prod_local_181 = sFifteen()?; { let prod_local_182 = 0; { let prod_local_183 = 1; { let prod_local_184 = peerObservationFresh(prod_local_180, prod_local_181, prod_local_181, prod_local_182, prod_local_183, _x_28); match prod_local_184 {
-        false => prod_local_179,
-        true => { let prod_local_185 = false; prod_local_185 },
+        true => { let prod_local_213 = 1; { let prod_local_214 = stitchPairRecoverable(prod_local_213, prod_local_213, _x_28, _x_28, _x_28); match prod_local_214 {
+        false => { let prod_local_215 = 1; { let prod_local_216 = 0; { let prod_local_217 = stitchXorBit(prod_local_215, prod_local_216); { let prod_local_218 = stitchXorBit(prod_local_215, prod_local_217); { let prod_local_219 = (prod_local_218 == prod_local_216); match prod_local_219 {
+        false => { let prod_local_220 = prod_local_219; match prod_local_220 {
+        false => prod_local_220,
+        true => { let prod_local_222 = sTen()?; { let prod_local_223 = sTwenty()?; { let prod_local_224 = sFifteen()?; { let prod_local_225 = 0; { let prod_local_226 = 1; { let prod_local_227 = peerObservationFresh(prod_local_222, prod_local_223, prod_local_224, prod_local_225, prod_local_226, _x_28); match prod_local_227 {
+        false => { let prod_local_228 = prod_local_227; match prod_local_228 {
+        false => prod_local_228,
+        true => { let prod_local_229 = lawfulHdUniversalEngineActive()?; prod_local_229 },
+    } },
+        true => { let prod_local_230 = sTen()?; { let prod_local_231 = sFifteen()?; { let prod_local_232 = 0; { let prod_local_233 = 1; { let prod_local_234 = peerObservationFresh(prod_local_230, prod_local_231, prod_local_231, prod_local_232, prod_local_233, _x_28); match prod_local_234 {
+        false => { let prod_local_235 = prod_local_227; match prod_local_235 {
+        false => prod_local_235,
+        true => { let prod_local_236 = lawfulHdUniversalEngineActive()?; prod_local_236 },
+    } },
+        true => { let prod_local_237 = false; prod_local_237 },
     } } } } } },
     } } } } } } },
     } },
-        true => { let prod_local_186 = 1; { let prod_local_187 = 0; { let prod_local_188 = stitchXorBit(prod_local_186, prod_local_187); { let prod_local_189 = stitchXorBit(prod_local_188, prod_local_187); { let prod_local_190 = (prod_local_189 == prod_local_186); { let prod_local_191 = prod_local_190; match prod_local_191 {
-        false => prod_local_191,
-        true => { let prod_local_192 = sTen()?; { let prod_local_193 = sTwenty()?; { let prod_local_194 = sFifteen()?; { let prod_local_195 = 0; { let prod_local_196 = 1; { let prod_local_197 = peerObservationFresh(prod_local_192, prod_local_193, prod_local_194, prod_local_195, prod_local_196, _x_28); match prod_local_197 {
-        false => prod_local_197,
-        true => { let prod_local_198 = sTen()?; { let prod_local_199 = sFifteen()?; { let prod_local_200 = 0; { let prod_local_201 = 1; { let prod_local_202 = peerObservationFresh(prod_local_198, prod_local_199, prod_local_199, prod_local_200, prod_local_201, _x_28); match prod_local_202 {
-        false => prod_local_197,
-        true => { let prod_local_203 = false; prod_local_203 },
+        true => { let prod_local_238 = 1; { let prod_local_239 = 0; { let prod_local_240 = stitchXorBit(prod_local_238, prod_local_239); { let prod_local_241 = stitchXorBit(prod_local_240, prod_local_239); { let prod_local_242 = (prod_local_241 == prod_local_238); { let prod_local_243 = prod_local_242; match prod_local_243 {
+        false => prod_local_243,
+        true => { let prod_local_245 = sTen()?; { let prod_local_246 = sTwenty()?; { let prod_local_247 = sFifteen()?; { let prod_local_248 = 0; { let prod_local_249 = 1; { let prod_local_250 = peerObservationFresh(prod_local_245, prod_local_246, prod_local_247, prod_local_248, prod_local_249, _x_28); match prod_local_250 {
+        false => { let prod_local_251 = prod_local_250; match prod_local_251 {
+        false => prod_local_251,
+        true => { let prod_local_252 = lawfulHdUniversalEngineActive()?; prod_local_252 },
+    } },
+        true => { let prod_local_253 = sTen()?; { let prod_local_254 = sFifteen()?; { let prod_local_255 = 0; { let prod_local_256 = 1; { let prod_local_257 = peerObservationFresh(prod_local_253, prod_local_254, prod_local_254, prod_local_255, prod_local_256, _x_28); match prod_local_257 {
+        false => { let prod_local_258 = prod_local_250; match prod_local_258 {
+        false => prod_local_258,
+        true => { let prod_local_259 = lawfulHdUniversalEngineActive()?; prod_local_259 },
+    } },
+        true => { let prod_local_260 = false; prod_local_260 },
     } } } } } },
     } } } } } } },
     } } } } } } },
     } } } } } },
-        true => { let prod_local_204 = false; prod_local_204 },
+        true => { let prod_local_261 = false; prod_local_261 },
     } } },
     } } } },
     } } } } },
-        true => { let prod_local_205 = false; prod_local_205 },
+        true => { let prod_local_262 = false; prod_local_262 },
     } },
     }
                                                                                 }
@@ -3488,229 +3965,301 @@ pub fn cyberneticUiAndStitchActive() -> Result<bool, self::ComputeError> {
                             }
                         }
                         true => {
-                            let _x_613 = sFortyFour()?;
+                            let _x_656 = sFortyFour()?;
                             {
-                                let _x_614 = sFortyEight()?;
+                                let _x_657 = sFortyEight()?;
                                 {
-                                    let _x_615 = uiTextContrastMinMilli()?;
+                                    let _x_658 = uiTextContrastMinMilli()?;
                                     {
-                                        let _x_617 = uiWidgetCompliant(
-                                            _x_613, _x_614, _x_615, _x_29, _x_29, _x_29,
+                                        let _x_660 = uiWidgetCompliant(
+                                            _x_656, _x_657, _x_658, _x_29, _x_29, _x_29,
                                         )?;
-                                        match _x_617 {
+                                        match _x_660 {
                                             false => {
-                                                let _x_739 = sFortyEight()?;
+                                                let _x_794 = sFortyEight()?;
                                                 {
-                                                    let _x_740 = sHundred()?;
+                                                    let _x_795 = sHundred()?;
                                                     {
-                                                        let _x_742 = uiWidgetCompliant(
-                                                            _x_739, _x_739, _x_740, _x_29, _x_617,
+                                                        let _x_797 = uiWidgetCompliant(
+                                                            _x_794, _x_794, _x_795, _x_29, _x_660,
                                                             _x_29,
                                                         )?;
-                                                        match _x_742 {
+                                                        match _x_797 {
                                                             false => {
-                                                                let prod_local_206 = _x_29;
-                                                                match prod_local_206 {
-                                                                    false => prod_local_206,
+                                                                let prod_local_263 = _x_29;
+                                                                match prod_local_263 {
+                                                                    false => prod_local_263,
                                                                     true => {
-                                                                        let prod_local_207 =
+                                                                        let prod_local_264 =
                                                                             sEight()?;
                                                                         {
-                                                                            let prod_local_208 =
+                                                                            let prod_local_265 =
                                                                                 sEight()?;
                                                                             {
-                                                                                let prod_local_209 = (prod_local_207 == prod_local_208);
-                                                                                match prod_local_209
+                                                                                let prod_local_266 = (prod_local_264 == prod_local_265);
+                                                                                match prod_local_266
                                                                                 {
                                                                                     false => {
-                                                                                        let prod_local_211 = prod_local_209;
-                                                                                        match prod_local_211 {
-        false => prod_local_211,
-        true => { let prod_local_213 = false; { let prod_local_214 = containerOrganAllowed(prod_local_213, prod_local_213, _x_28); match prod_local_214 {
-        false => { let prod_local_215 = prod_local_214; match prod_local_215 {
-        false => prod_local_215,
-        true => { let prod_local_216 = 0; { let prod_local_217 = (1 << 1); { let prod_local_218 = stitchPairRecoverable(prod_local_216, prod_local_217, _x_28, _x_28, _x_28); match prod_local_218 {
-        false => { let prod_local_220 = prod_local_218; match prod_local_220 {
-        false => prod_local_220,
-        true => { let prod_local_221 = sTen()?; { let prod_local_222 = sTwenty()?; { let prod_local_223 = sFifteen()?; { let prod_local_224 = 0; { let prod_local_225 = 1; { let prod_local_226 = peerObservationFresh(prod_local_221, prod_local_222, prod_local_223, prod_local_224, prod_local_225, _x_28); match prod_local_226 {
-        false => prod_local_226,
-        true => { let prod_local_227 = sTen()?; { let prod_local_228 = sFifteen()?; { let prod_local_229 = 0; { let prod_local_230 = 1; { let prod_local_231 = peerObservationFresh(prod_local_227, prod_local_228, prod_local_228, prod_local_229, prod_local_230, _x_28); match prod_local_231 {
-        false => prod_local_226,
-        true => { let prod_local_232 = false; prod_local_232 },
+                                                                                        let prod_local_268 = prod_local_266;
+                                                                                        match prod_local_268 {
+        false => prod_local_268,
+        true => { let prod_local_270 = false; { let prod_local_271 = containerOrganAllowed(prod_local_270, prod_local_270, _x_28); match prod_local_271 {
+        false => { let prod_local_272 = prod_local_271; match prod_local_272 {
+        false => prod_local_272,
+        true => { let prod_local_273 = 0; { let prod_local_274 = (1 << 1); { let prod_local_275 = stitchPairRecoverable(prod_local_273, prod_local_274, _x_28, _x_28, _x_28); match prod_local_275 {
+        false => { let prod_local_277 = prod_local_275; match prod_local_277 {
+        false => prod_local_277,
+        true => { let prod_local_279 = sTen()?; { let prod_local_280 = sTwenty()?; { let prod_local_281 = sFifteen()?; { let prod_local_282 = 0; { let prod_local_283 = 1; { let prod_local_284 = peerObservationFresh(prod_local_279, prod_local_280, prod_local_281, prod_local_282, prod_local_283, _x_28); match prod_local_284 {
+        false => { let prod_local_285 = prod_local_284; match prod_local_285 {
+        false => prod_local_285,
+        true => { let prod_local_286 = lawfulHdUniversalEngineActive()?; prod_local_286 },
+    } },
+        true => { let prod_local_287 = sTen()?; { let prod_local_288 = sFifteen()?; { let prod_local_289 = 0; { let prod_local_290 = 1; { let prod_local_291 = peerObservationFresh(prod_local_287, prod_local_288, prod_local_288, prod_local_289, prod_local_290, _x_28); match prod_local_291 {
+        false => { let prod_local_292 = prod_local_284; match prod_local_292 {
+        false => prod_local_292,
+        true => { let prod_local_293 = lawfulHdUniversalEngineActive()?; prod_local_293 },
+    } },
+        true => { let prod_local_294 = false; prod_local_294 },
     } } } } } },
     } } } } } } },
     } },
-        true => { let prod_local_233 = 1; { let prod_local_234 = stitchPairRecoverable(prod_local_233, prod_local_233, _x_28, _x_28, _x_28); match prod_local_234 {
-        false => { let prod_local_235 = 1; { let prod_local_236 = 0; { let prod_local_237 = stitchXorBit(prod_local_235, prod_local_236); { let prod_local_238 = stitchXorBit(prod_local_235, prod_local_237); { let prod_local_239 = (prod_local_238 == prod_local_236); match prod_local_239 {
-        false => { let prod_local_240 = prod_local_239; match prod_local_240 {
-        false => prod_local_240,
-        true => { let prod_local_241 = sTen()?; { let prod_local_242 = sTwenty()?; { let prod_local_243 = sFifteen()?; { let prod_local_244 = 0; { let prod_local_245 = 1; { let prod_local_246 = peerObservationFresh(prod_local_241, prod_local_242, prod_local_243, prod_local_244, prod_local_245, _x_28); match prod_local_246 {
-        false => prod_local_246,
-        true => { let prod_local_247 = sTen()?; { let prod_local_248 = sFifteen()?; { let prod_local_249 = 0; { let prod_local_250 = 1; { let prod_local_251 = peerObservationFresh(prod_local_247, prod_local_248, prod_local_248, prod_local_249, prod_local_250, _x_28); match prod_local_251 {
-        false => prod_local_246,
-        true => { let prod_local_252 = false; prod_local_252 },
+        true => { let prod_local_295 = 1; { let prod_local_296 = stitchPairRecoverable(prod_local_295, prod_local_295, _x_28, _x_28, _x_28); match prod_local_296 {
+        false => { let prod_local_297 = 1; { let prod_local_298 = 0; { let prod_local_299 = stitchXorBit(prod_local_297, prod_local_298); { let prod_local_300 = stitchXorBit(prod_local_297, prod_local_299); { let prod_local_301 = (prod_local_300 == prod_local_298); match prod_local_301 {
+        false => { let prod_local_302 = prod_local_301; match prod_local_302 {
+        false => prod_local_302,
+        true => { let prod_local_304 = sTen()?; { let prod_local_305 = sTwenty()?; { let prod_local_306 = sFifteen()?; { let prod_local_307 = 0; { let prod_local_308 = 1; { let prod_local_309 = peerObservationFresh(prod_local_304, prod_local_305, prod_local_306, prod_local_307, prod_local_308, _x_28); match prod_local_309 {
+        false => { let prod_local_310 = prod_local_309; match prod_local_310 {
+        false => prod_local_310,
+        true => { let prod_local_311 = lawfulHdUniversalEngineActive()?; prod_local_311 },
+    } },
+        true => { let prod_local_312 = sTen()?; { let prod_local_313 = sFifteen()?; { let prod_local_314 = 0; { let prod_local_315 = 1; { let prod_local_316 = peerObservationFresh(prod_local_312, prod_local_313, prod_local_313, prod_local_314, prod_local_315, _x_28); match prod_local_316 {
+        false => { let prod_local_317 = prod_local_309; match prod_local_317 {
+        false => prod_local_317,
+        true => { let prod_local_318 = lawfulHdUniversalEngineActive()?; prod_local_318 },
+    } },
+        true => { let prod_local_319 = false; prod_local_319 },
     } } } } } },
     } } } } } } },
     } },
-        true => { let prod_local_253 = 1; { let prod_local_254 = 0; { let prod_local_255 = stitchXorBit(prod_local_253, prod_local_254); { let prod_local_256 = stitchXorBit(prod_local_255, prod_local_254); { let prod_local_257 = (prod_local_256 == prod_local_253); { let prod_local_258 = prod_local_257; match prod_local_258 {
-        false => prod_local_258,
-        true => { let prod_local_259 = sTen()?; { let prod_local_260 = sTwenty()?; { let prod_local_261 = sFifteen()?; { let prod_local_262 = 0; { let prod_local_263 = 1; { let prod_local_264 = peerObservationFresh(prod_local_259, prod_local_260, prod_local_261, prod_local_262, prod_local_263, _x_28); match prod_local_264 {
-        false => prod_local_264,
-        true => { let prod_local_265 = sTen()?; { let prod_local_266 = sFifteen()?; { let prod_local_267 = 0; { let prod_local_268 = 1; { let prod_local_269 = peerObservationFresh(prod_local_265, prod_local_266, prod_local_266, prod_local_267, prod_local_268, _x_28); match prod_local_269 {
-        false => prod_local_264,
-        true => { let prod_local_270 = false; prod_local_270 },
+        true => { let prod_local_320 = 1; { let prod_local_321 = 0; { let prod_local_322 = stitchXorBit(prod_local_320, prod_local_321); { let prod_local_323 = stitchXorBit(prod_local_322, prod_local_321); { let prod_local_324 = (prod_local_323 == prod_local_320); { let prod_local_325 = prod_local_324; match prod_local_325 {
+        false => prod_local_325,
+        true => { let prod_local_327 = sTen()?; { let prod_local_328 = sTwenty()?; { let prod_local_329 = sFifteen()?; { let prod_local_330 = 0; { let prod_local_331 = 1; { let prod_local_332 = peerObservationFresh(prod_local_327, prod_local_328, prod_local_329, prod_local_330, prod_local_331, _x_28); match prod_local_332 {
+        false => { let prod_local_333 = prod_local_332; match prod_local_333 {
+        false => prod_local_333,
+        true => { let prod_local_334 = lawfulHdUniversalEngineActive()?; prod_local_334 },
+    } },
+        true => { let prod_local_335 = sTen()?; { let prod_local_336 = sFifteen()?; { let prod_local_337 = 0; { let prod_local_338 = 1; { let prod_local_339 = peerObservationFresh(prod_local_335, prod_local_336, prod_local_336, prod_local_337, prod_local_338, _x_28); match prod_local_339 {
+        false => { let prod_local_340 = prod_local_332; match prod_local_340 {
+        false => prod_local_340,
+        true => { let prod_local_341 = lawfulHdUniversalEngineActive()?; prod_local_341 },
+    } },
+        true => { let prod_local_342 = false; prod_local_342 },
     } } } } } },
     } } } } } } },
     } } } } } } },
     } } } } } },
-        true => { let prod_local_271 = false; prod_local_271 },
+        true => { let prod_local_343 = false; prod_local_343 },
     } } },
     } } } },
     } },
-        true => { let prod_local_272 = containerOrganAllowed(_x_28, _x_28, _x_28); match prod_local_272 {
-        false => { let prod_local_273 = sHundred()?; { let prod_local_274 = sFifty()?; { let prod_local_275 = proposalAdmitted(prod_local_273, prod_local_274, _x_28, _x_28); { let prod_local_276 = prod_local_275; match prod_local_276 {
-        false => prod_local_276,
-        true => { let prod_local_277 = 0; { let prod_local_278 = (1 << 1); { let prod_local_279 = stitchPairRecoverable(prod_local_277, prod_local_278, _x_28, _x_28, _x_28); match prod_local_279 {
-        false => { let prod_local_281 = prod_local_279; match prod_local_281 {
-        false => prod_local_281,
-        true => { let prod_local_282 = sTen()?; { let prod_local_283 = sTwenty()?; { let prod_local_284 = sFifteen()?; { let prod_local_285 = 0; { let prod_local_286 = 1; { let prod_local_287 = peerObservationFresh(prod_local_282, prod_local_283, prod_local_284, prod_local_285, prod_local_286, _x_28); match prod_local_287 {
-        false => prod_local_287,
-        true => { let prod_local_288 = sTen()?; { let prod_local_289 = sFifteen()?; { let prod_local_290 = 0; { let prod_local_291 = 1; { let prod_local_292 = peerObservationFresh(prod_local_288, prod_local_289, prod_local_289, prod_local_290, prod_local_291, _x_28); match prod_local_292 {
-        false => prod_local_287,
-        true => { let prod_local_293 = false; prod_local_293 },
+        true => { let prod_local_344 = containerOrganAllowed(_x_28, _x_28, _x_28); match prod_local_344 {
+        false => { let prod_local_345 = sHundred()?; { let prod_local_346 = sFifty()?; { let prod_local_347 = proposalAdmitted(prod_local_345, prod_local_346, _x_28, _x_28); { let prod_local_348 = prod_local_347; match prod_local_348 {
+        false => prod_local_348,
+        true => { let prod_local_349 = 0; { let prod_local_350 = (1 << 1); { let prod_local_351 = stitchPairRecoverable(prod_local_349, prod_local_350, _x_28, _x_28, _x_28); match prod_local_351 {
+        false => { let prod_local_353 = prod_local_351; match prod_local_353 {
+        false => prod_local_353,
+        true => { let prod_local_355 = sTen()?; { let prod_local_356 = sTwenty()?; { let prod_local_357 = sFifteen()?; { let prod_local_358 = 0; { let prod_local_359 = 1; { let prod_local_360 = peerObservationFresh(prod_local_355, prod_local_356, prod_local_357, prod_local_358, prod_local_359, _x_28); match prod_local_360 {
+        false => { let prod_local_361 = prod_local_360; match prod_local_361 {
+        false => prod_local_361,
+        true => { let prod_local_362 = lawfulHdUniversalEngineActive()?; prod_local_362 },
+    } },
+        true => { let prod_local_363 = sTen()?; { let prod_local_364 = sFifteen()?; { let prod_local_365 = 0; { let prod_local_366 = 1; { let prod_local_367 = peerObservationFresh(prod_local_363, prod_local_364, prod_local_364, prod_local_365, prod_local_366, _x_28); match prod_local_367 {
+        false => { let prod_local_368 = prod_local_360; match prod_local_368 {
+        false => prod_local_368,
+        true => { let prod_local_369 = lawfulHdUniversalEngineActive()?; prod_local_369 },
+    } },
+        true => { let prod_local_370 = false; prod_local_370 },
     } } } } } },
     } } } } } } },
     } },
-        true => { let prod_local_294 = 1; { let prod_local_295 = stitchPairRecoverable(prod_local_294, prod_local_294, _x_28, _x_28, _x_28); match prod_local_295 {
-        false => { let prod_local_296 = 1; { let prod_local_297 = 0; { let prod_local_298 = stitchXorBit(prod_local_296, prod_local_297); { let prod_local_299 = stitchXorBit(prod_local_296, prod_local_298); { let prod_local_300 = (prod_local_299 == prod_local_297); match prod_local_300 {
-        false => { let prod_local_301 = prod_local_300; match prod_local_301 {
-        false => prod_local_301,
-        true => { let prod_local_302 = sTen()?; { let prod_local_303 = sTwenty()?; { let prod_local_304 = sFifteen()?; { let prod_local_305 = 0; { let prod_local_306 = 1; { let prod_local_307 = peerObservationFresh(prod_local_302, prod_local_303, prod_local_304, prod_local_305, prod_local_306, _x_28); match prod_local_307 {
-        false => prod_local_307,
-        true => { let prod_local_308 = sTen()?; { let prod_local_309 = sFifteen()?; { let prod_local_310 = 0; { let prod_local_311 = 1; { let prod_local_312 = peerObservationFresh(prod_local_308, prod_local_309, prod_local_309, prod_local_310, prod_local_311, _x_28); match prod_local_312 {
-        false => prod_local_307,
-        true => { let prod_local_313 = false; prod_local_313 },
+        true => { let prod_local_371 = 1; { let prod_local_372 = stitchPairRecoverable(prod_local_371, prod_local_371, _x_28, _x_28, _x_28); match prod_local_372 {
+        false => { let prod_local_373 = 1; { let prod_local_374 = 0; { let prod_local_375 = stitchXorBit(prod_local_373, prod_local_374); { let prod_local_376 = stitchXorBit(prod_local_373, prod_local_375); { let prod_local_377 = (prod_local_376 == prod_local_374); match prod_local_377 {
+        false => { let prod_local_378 = prod_local_377; match prod_local_378 {
+        false => prod_local_378,
+        true => { let prod_local_380 = sTen()?; { let prod_local_381 = sTwenty()?; { let prod_local_382 = sFifteen()?; { let prod_local_383 = 0; { let prod_local_384 = 1; { let prod_local_385 = peerObservationFresh(prod_local_380, prod_local_381, prod_local_382, prod_local_383, prod_local_384, _x_28); match prod_local_385 {
+        false => { let prod_local_386 = prod_local_385; match prod_local_386 {
+        false => prod_local_386,
+        true => { let prod_local_387 = lawfulHdUniversalEngineActive()?; prod_local_387 },
+    } },
+        true => { let prod_local_388 = sTen()?; { let prod_local_389 = sFifteen()?; { let prod_local_390 = 0; { let prod_local_391 = 1; { let prod_local_392 = peerObservationFresh(prod_local_388, prod_local_389, prod_local_389, prod_local_390, prod_local_391, _x_28); match prod_local_392 {
+        false => { let prod_local_393 = prod_local_385; match prod_local_393 {
+        false => prod_local_393,
+        true => { let prod_local_394 = lawfulHdUniversalEngineActive()?; prod_local_394 },
+    } },
+        true => { let prod_local_395 = false; prod_local_395 },
     } } } } } },
     } } } } } } },
     } },
-        true => { let prod_local_314 = 1; { let prod_local_315 = 0; { let prod_local_316 = stitchXorBit(prod_local_314, prod_local_315); { let prod_local_317 = stitchXorBit(prod_local_316, prod_local_315); { let prod_local_318 = (prod_local_317 == prod_local_314); { let prod_local_319 = prod_local_318; match prod_local_319 {
-        false => prod_local_319,
-        true => { let prod_local_320 = sTen()?; { let prod_local_321 = sTwenty()?; { let prod_local_322 = sFifteen()?; { let prod_local_323 = 0; { let prod_local_324 = 1; { let prod_local_325 = peerObservationFresh(prod_local_320, prod_local_321, prod_local_322, prod_local_323, prod_local_324, _x_28); match prod_local_325 {
-        false => prod_local_325,
-        true => { let prod_local_326 = sTen()?; { let prod_local_327 = sFifteen()?; { let prod_local_328 = 0; { let prod_local_329 = 1; { let prod_local_330 = peerObservationFresh(prod_local_326, prod_local_327, prod_local_327, prod_local_328, prod_local_329, _x_28); match prod_local_330 {
-        false => prod_local_325,
-        true => { let prod_local_331 = false; prod_local_331 },
+        true => { let prod_local_396 = 1; { let prod_local_397 = 0; { let prod_local_398 = stitchXorBit(prod_local_396, prod_local_397); { let prod_local_399 = stitchXorBit(prod_local_398, prod_local_397); { let prod_local_400 = (prod_local_399 == prod_local_396); { let prod_local_401 = prod_local_400; match prod_local_401 {
+        false => prod_local_401,
+        true => { let prod_local_403 = sTen()?; { let prod_local_404 = sTwenty()?; { let prod_local_405 = sFifteen()?; { let prod_local_406 = 0; { let prod_local_407 = 1; { let prod_local_408 = peerObservationFresh(prod_local_403, prod_local_404, prod_local_405, prod_local_406, prod_local_407, _x_28); match prod_local_408 {
+        false => { let prod_local_409 = prod_local_408; match prod_local_409 {
+        false => prod_local_409,
+        true => { let prod_local_410 = lawfulHdUniversalEngineActive()?; prod_local_410 },
+    } },
+        true => { let prod_local_411 = sTen()?; { let prod_local_412 = sFifteen()?; { let prod_local_413 = 0; { let prod_local_414 = 1; { let prod_local_415 = peerObservationFresh(prod_local_411, prod_local_412, prod_local_412, prod_local_413, prod_local_414, _x_28); match prod_local_415 {
+        false => { let prod_local_416 = prod_local_408; match prod_local_416 {
+        false => prod_local_416,
+        true => { let prod_local_417 = lawfulHdUniversalEngineActive()?; prod_local_417 },
+    } },
+        true => { let prod_local_418 = false; prod_local_418 },
     } } } } } },
     } } } } } } },
     } } } } } } },
     } } } } } },
-        true => { let prod_local_332 = false; prod_local_332 },
+        true => { let prod_local_419 = false; prod_local_419 },
     } } },
     } } } },
     } } } } },
-        true => { let prod_local_333 = false; prod_local_333 },
+        true => { let prod_local_420 = false; prod_local_420 },
     } },
     } } },
     }
                                                                                     }
                                                                                     true => {
-                                                                                        let prod_local_334 =
+                                                                                        let prod_local_421 =
                                                                                             sFour()?;
                                                                                         {
-                                                                                            let prod_local_335 = sFive()?;
+                                                                                            let prod_local_422 = sFive()?;
                                                                                             {
-                                                                                                let prod_local_336 = stepLifMembraneMilli(prod_local_334, prod_local_335)?;
+                                                                                                let prod_local_423 = stepLifMembraneMilli(prod_local_421, prod_local_422)?;
                                                                                                 {
-                                                                                                    let prod_local_337 = lifSpikeThresholdMilli()?;
+                                                                                                    let prod_local_424 = lifSpikeThresholdMilli()?;
                                                                                                     {
-                                                                                                        let prod_local_338 = (prod_local_336 < prod_local_337);
+                                                                                                        let prod_local_425 = (prod_local_423 < prod_local_424);
                                                                                                         {
-                                                                                                            let prod_local_339 = prod_local_338;
-                                                                                                            match prod_local_339 {
-        false => prod_local_339,
-        true => { let prod_local_341 = false; { let prod_local_342 = containerOrganAllowed(prod_local_341, prod_local_341, _x_28); match prod_local_342 {
-        false => { let prod_local_343 = prod_local_342; match prod_local_343 {
-        false => prod_local_343,
-        true => { let prod_local_344 = 0; { let prod_local_345 = (1 << 1); { let prod_local_346 = stitchPairRecoverable(prod_local_344, prod_local_345, _x_28, _x_28, _x_28); match prod_local_346 {
-        false => { let prod_local_348 = prod_local_346; match prod_local_348 {
-        false => prod_local_348,
-        true => { let prod_local_349 = sTen()?; { let prod_local_350 = sTwenty()?; { let prod_local_351 = sFifteen()?; { let prod_local_352 = 0; { let prod_local_353 = 1; { let prod_local_354 = peerObservationFresh(prod_local_349, prod_local_350, prod_local_351, prod_local_352, prod_local_353, _x_28); match prod_local_354 {
-        false => prod_local_354,
-        true => { let prod_local_355 = sTen()?; { let prod_local_356 = sFifteen()?; { let prod_local_357 = 0; { let prod_local_358 = 1; { let prod_local_359 = peerObservationFresh(prod_local_355, prod_local_356, prod_local_356, prod_local_357, prod_local_358, _x_28); match prod_local_359 {
-        false => prod_local_354,
-        true => { let prod_local_360 = false; prod_local_360 },
+                                                                                                            let prod_local_426 = prod_local_425;
+                                                                                                            match prod_local_426 {
+        false => prod_local_426,
+        true => { let prod_local_428 = false; { let prod_local_429 = containerOrganAllowed(prod_local_428, prod_local_428, _x_28); match prod_local_429 {
+        false => { let prod_local_430 = prod_local_429; match prod_local_430 {
+        false => prod_local_430,
+        true => { let prod_local_431 = 0; { let prod_local_432 = (1 << 1); { let prod_local_433 = stitchPairRecoverable(prod_local_431, prod_local_432, _x_28, _x_28, _x_28); match prod_local_433 {
+        false => { let prod_local_435 = prod_local_433; match prod_local_435 {
+        false => prod_local_435,
+        true => { let prod_local_437 = sTen()?; { let prod_local_438 = sTwenty()?; { let prod_local_439 = sFifteen()?; { let prod_local_440 = 0; { let prod_local_441 = 1; { let prod_local_442 = peerObservationFresh(prod_local_437, prod_local_438, prod_local_439, prod_local_440, prod_local_441, _x_28); match prod_local_442 {
+        false => { let prod_local_443 = prod_local_442; match prod_local_443 {
+        false => prod_local_443,
+        true => { let prod_local_444 = lawfulHdUniversalEngineActive()?; prod_local_444 },
+    } },
+        true => { let prod_local_445 = sTen()?; { let prod_local_446 = sFifteen()?; { let prod_local_447 = 0; { let prod_local_448 = 1; { let prod_local_449 = peerObservationFresh(prod_local_445, prod_local_446, prod_local_446, prod_local_447, prod_local_448, _x_28); match prod_local_449 {
+        false => { let prod_local_450 = prod_local_442; match prod_local_450 {
+        false => prod_local_450,
+        true => { let prod_local_451 = lawfulHdUniversalEngineActive()?; prod_local_451 },
+    } },
+        true => { let prod_local_452 = false; prod_local_452 },
     } } } } } },
     } } } } } } },
     } },
-        true => { let prod_local_361 = 1; { let prod_local_362 = stitchPairRecoverable(prod_local_361, prod_local_361, _x_28, _x_28, _x_28); match prod_local_362 {
-        false => { let prod_local_363 = 1; { let prod_local_364 = 0; { let prod_local_365 = stitchXorBit(prod_local_363, prod_local_364); { let prod_local_366 = stitchXorBit(prod_local_363, prod_local_365); { let prod_local_367 = (prod_local_366 == prod_local_364); match prod_local_367 {
-        false => { let prod_local_368 = prod_local_367; match prod_local_368 {
-        false => prod_local_368,
-        true => { let prod_local_369 = sTen()?; { let prod_local_370 = sTwenty()?; { let prod_local_371 = sFifteen()?; { let prod_local_372 = 0; { let prod_local_373 = 1; { let prod_local_374 = peerObservationFresh(prod_local_369, prod_local_370, prod_local_371, prod_local_372, prod_local_373, _x_28); match prod_local_374 {
-        false => prod_local_374,
-        true => { let prod_local_375 = sTen()?; { let prod_local_376 = sFifteen()?; { let prod_local_377 = 0; { let prod_local_378 = 1; { let prod_local_379 = peerObservationFresh(prod_local_375, prod_local_376, prod_local_376, prod_local_377, prod_local_378, _x_28); match prod_local_379 {
-        false => prod_local_374,
-        true => { let prod_local_380 = false; prod_local_380 },
+        true => { let prod_local_453 = 1; { let prod_local_454 = stitchPairRecoverable(prod_local_453, prod_local_453, _x_28, _x_28, _x_28); match prod_local_454 {
+        false => { let prod_local_455 = 1; { let prod_local_456 = 0; { let prod_local_457 = stitchXorBit(prod_local_455, prod_local_456); { let prod_local_458 = stitchXorBit(prod_local_455, prod_local_457); { let prod_local_459 = (prod_local_458 == prod_local_456); match prod_local_459 {
+        false => { let prod_local_460 = prod_local_459; match prod_local_460 {
+        false => prod_local_460,
+        true => { let prod_local_462 = sTen()?; { let prod_local_463 = sTwenty()?; { let prod_local_464 = sFifteen()?; { let prod_local_465 = 0; { let prod_local_466 = 1; { let prod_local_467 = peerObservationFresh(prod_local_462, prod_local_463, prod_local_464, prod_local_465, prod_local_466, _x_28); match prod_local_467 {
+        false => { let prod_local_468 = prod_local_467; match prod_local_468 {
+        false => prod_local_468,
+        true => { let prod_local_469 = lawfulHdUniversalEngineActive()?; prod_local_469 },
+    } },
+        true => { let prod_local_470 = sTen()?; { let prod_local_471 = sFifteen()?; { let prod_local_472 = 0; { let prod_local_473 = 1; { let prod_local_474 = peerObservationFresh(prod_local_470, prod_local_471, prod_local_471, prod_local_472, prod_local_473, _x_28); match prod_local_474 {
+        false => { let prod_local_475 = prod_local_467; match prod_local_475 {
+        false => prod_local_475,
+        true => { let prod_local_476 = lawfulHdUniversalEngineActive()?; prod_local_476 },
+    } },
+        true => { let prod_local_477 = false; prod_local_477 },
     } } } } } },
     } } } } } } },
     } },
-        true => { let prod_local_381 = 1; { let prod_local_382 = 0; { let prod_local_383 = stitchXorBit(prod_local_381, prod_local_382); { let prod_local_384 = stitchXorBit(prod_local_383, prod_local_382); { let prod_local_385 = (prod_local_384 == prod_local_381); { let prod_local_386 = prod_local_385; match prod_local_386 {
-        false => prod_local_386,
-        true => { let prod_local_387 = sTen()?; { let prod_local_388 = sTwenty()?; { let prod_local_389 = sFifteen()?; { let prod_local_390 = 0; { let prod_local_391 = 1; { let prod_local_392 = peerObservationFresh(prod_local_387, prod_local_388, prod_local_389, prod_local_390, prod_local_391, _x_28); match prod_local_392 {
-        false => prod_local_392,
-        true => { let prod_local_393 = sTen()?; { let prod_local_394 = sFifteen()?; { let prod_local_395 = 0; { let prod_local_396 = 1; { let prod_local_397 = peerObservationFresh(prod_local_393, prod_local_394, prod_local_394, prod_local_395, prod_local_396, _x_28); match prod_local_397 {
-        false => prod_local_392,
-        true => { let prod_local_398 = false; prod_local_398 },
+        true => { let prod_local_478 = 1; { let prod_local_479 = 0; { let prod_local_480 = stitchXorBit(prod_local_478, prod_local_479); { let prod_local_481 = stitchXorBit(prod_local_480, prod_local_479); { let prod_local_482 = (prod_local_481 == prod_local_478); { let prod_local_483 = prod_local_482; match prod_local_483 {
+        false => prod_local_483,
+        true => { let prod_local_485 = sTen()?; { let prod_local_486 = sTwenty()?; { let prod_local_487 = sFifteen()?; { let prod_local_488 = 0; { let prod_local_489 = 1; { let prod_local_490 = peerObservationFresh(prod_local_485, prod_local_486, prod_local_487, prod_local_488, prod_local_489, _x_28); match prod_local_490 {
+        false => { let prod_local_491 = prod_local_490; match prod_local_491 {
+        false => prod_local_491,
+        true => { let prod_local_492 = lawfulHdUniversalEngineActive()?; prod_local_492 },
+    } },
+        true => { let prod_local_493 = sTen()?; { let prod_local_494 = sFifteen()?; { let prod_local_495 = 0; { let prod_local_496 = 1; { let prod_local_497 = peerObservationFresh(prod_local_493, prod_local_494, prod_local_494, prod_local_495, prod_local_496, _x_28); match prod_local_497 {
+        false => { let prod_local_498 = prod_local_490; match prod_local_498 {
+        false => prod_local_498,
+        true => { let prod_local_499 = lawfulHdUniversalEngineActive()?; prod_local_499 },
+    } },
+        true => { let prod_local_500 = false; prod_local_500 },
     } } } } } },
     } } } } } } },
     } } } } } } },
     } } } } } },
-        true => { let prod_local_399 = false; prod_local_399 },
+        true => { let prod_local_501 = false; prod_local_501 },
     } } },
     } } } },
     } },
-        true => { let prod_local_400 = containerOrganAllowed(_x_28, _x_28, _x_28); match prod_local_400 {
-        false => { let prod_local_401 = sHundred()?; { let prod_local_402 = sFifty()?; { let prod_local_403 = proposalAdmitted(prod_local_401, prod_local_402, _x_28, _x_28); { let prod_local_404 = prod_local_403; match prod_local_404 {
-        false => prod_local_404,
-        true => { let prod_local_405 = 0; { let prod_local_406 = (1 << 1); { let prod_local_407 = stitchPairRecoverable(prod_local_405, prod_local_406, _x_28, _x_28, _x_28); match prod_local_407 {
-        false => { let prod_local_409 = prod_local_407; match prod_local_409 {
-        false => prod_local_409,
-        true => { let prod_local_410 = sTen()?; { let prod_local_411 = sTwenty()?; { let prod_local_412 = sFifteen()?; { let prod_local_413 = 0; { let prod_local_414 = 1; { let prod_local_415 = peerObservationFresh(prod_local_410, prod_local_411, prod_local_412, prod_local_413, prod_local_414, _x_28); match prod_local_415 {
-        false => prod_local_415,
-        true => { let prod_local_416 = sTen()?; { let prod_local_417 = sFifteen()?; { let prod_local_418 = 0; { let prod_local_419 = 1; { let prod_local_420 = peerObservationFresh(prod_local_416, prod_local_417, prod_local_417, prod_local_418, prod_local_419, _x_28); match prod_local_420 {
-        false => prod_local_415,
-        true => { let prod_local_421 = false; prod_local_421 },
+        true => { let prod_local_502 = containerOrganAllowed(_x_28, _x_28, _x_28); match prod_local_502 {
+        false => { let prod_local_503 = sHundred()?; { let prod_local_504 = sFifty()?; { let prod_local_505 = proposalAdmitted(prod_local_503, prod_local_504, _x_28, _x_28); { let prod_local_506 = prod_local_505; match prod_local_506 {
+        false => prod_local_506,
+        true => { let prod_local_507 = 0; { let prod_local_508 = (1 << 1); { let prod_local_509 = stitchPairRecoverable(prod_local_507, prod_local_508, _x_28, _x_28, _x_28); match prod_local_509 {
+        false => { let prod_local_511 = prod_local_509; match prod_local_511 {
+        false => prod_local_511,
+        true => { let prod_local_513 = sTen()?; { let prod_local_514 = sTwenty()?; { let prod_local_515 = sFifteen()?; { let prod_local_516 = 0; { let prod_local_517 = 1; { let prod_local_518 = peerObservationFresh(prod_local_513, prod_local_514, prod_local_515, prod_local_516, prod_local_517, _x_28); match prod_local_518 {
+        false => { let prod_local_519 = prod_local_518; match prod_local_519 {
+        false => prod_local_519,
+        true => { let prod_local_520 = lawfulHdUniversalEngineActive()?; prod_local_520 },
+    } },
+        true => { let prod_local_521 = sTen()?; { let prod_local_522 = sFifteen()?; { let prod_local_523 = 0; { let prod_local_524 = 1; { let prod_local_525 = peerObservationFresh(prod_local_521, prod_local_522, prod_local_522, prod_local_523, prod_local_524, _x_28); match prod_local_525 {
+        false => { let prod_local_526 = prod_local_518; match prod_local_526 {
+        false => prod_local_526,
+        true => { let prod_local_527 = lawfulHdUniversalEngineActive()?; prod_local_527 },
+    } },
+        true => { let prod_local_528 = false; prod_local_528 },
     } } } } } },
     } } } } } } },
     } },
-        true => { let prod_local_422 = 1; { let prod_local_423 = stitchPairRecoverable(prod_local_422, prod_local_422, _x_28, _x_28, _x_28); match prod_local_423 {
-        false => { let prod_local_424 = 1; { let prod_local_425 = 0; { let prod_local_426 = stitchXorBit(prod_local_424, prod_local_425); { let prod_local_427 = stitchXorBit(prod_local_424, prod_local_426); { let prod_local_428 = (prod_local_427 == prod_local_425); match prod_local_428 {
-        false => { let prod_local_429 = prod_local_428; match prod_local_429 {
-        false => prod_local_429,
-        true => { let prod_local_430 = sTen()?; { let prod_local_431 = sTwenty()?; { let prod_local_432 = sFifteen()?; { let prod_local_433 = 0; { let prod_local_434 = 1; { let prod_local_435 = peerObservationFresh(prod_local_430, prod_local_431, prod_local_432, prod_local_433, prod_local_434, _x_28); match prod_local_435 {
-        false => prod_local_435,
-        true => { let prod_local_436 = sTen()?; { let prod_local_437 = sFifteen()?; { let prod_local_438 = 0; { let prod_local_439 = 1; { let prod_local_440 = peerObservationFresh(prod_local_436, prod_local_437, prod_local_437, prod_local_438, prod_local_439, _x_28); match prod_local_440 {
-        false => prod_local_435,
-        true => { let prod_local_441 = false; prod_local_441 },
+        true => { let prod_local_529 = 1; { let prod_local_530 = stitchPairRecoverable(prod_local_529, prod_local_529, _x_28, _x_28, _x_28); match prod_local_530 {
+        false => { let prod_local_531 = 1; { let prod_local_532 = 0; { let prod_local_533 = stitchXorBit(prod_local_531, prod_local_532); { let prod_local_534 = stitchXorBit(prod_local_531, prod_local_533); { let prod_local_535 = (prod_local_534 == prod_local_532); match prod_local_535 {
+        false => { let prod_local_536 = prod_local_535; match prod_local_536 {
+        false => prod_local_536,
+        true => { let prod_local_538 = sTen()?; { let prod_local_539 = sTwenty()?; { let prod_local_540 = sFifteen()?; { let prod_local_541 = 0; { let prod_local_542 = 1; { let prod_local_543 = peerObservationFresh(prod_local_538, prod_local_539, prod_local_540, prod_local_541, prod_local_542, _x_28); match prod_local_543 {
+        false => { let prod_local_544 = prod_local_543; match prod_local_544 {
+        false => prod_local_544,
+        true => { let prod_local_545 = lawfulHdUniversalEngineActive()?; prod_local_545 },
+    } },
+        true => { let prod_local_546 = sTen()?; { let prod_local_547 = sFifteen()?; { let prod_local_548 = 0; { let prod_local_549 = 1; { let prod_local_550 = peerObservationFresh(prod_local_546, prod_local_547, prod_local_547, prod_local_548, prod_local_549, _x_28); match prod_local_550 {
+        false => { let prod_local_551 = prod_local_543; match prod_local_551 {
+        false => prod_local_551,
+        true => { let prod_local_552 = lawfulHdUniversalEngineActive()?; prod_local_552 },
+    } },
+        true => { let prod_local_553 = false; prod_local_553 },
     } } } } } },
     } } } } } } },
     } },
-        true => { let prod_local_442 = 1; { let prod_local_443 = 0; { let prod_local_444 = stitchXorBit(prod_local_442, prod_local_443); { let prod_local_445 = stitchXorBit(prod_local_444, prod_local_443); { let prod_local_446 = (prod_local_445 == prod_local_442); { let prod_local_447 = prod_local_446; match prod_local_447 {
-        false => prod_local_447,
-        true => { let prod_local_448 = sTen()?; { let prod_local_449 = sTwenty()?; { let prod_local_450 = sFifteen()?; { let prod_local_451 = 0; { let prod_local_452 = 1; { let prod_local_453 = peerObservationFresh(prod_local_448, prod_local_449, prod_local_450, prod_local_451, prod_local_452, _x_28); match prod_local_453 {
-        false => prod_local_453,
-        true => { let prod_local_454 = sTen()?; { let prod_local_455 = sFifteen()?; { let prod_local_456 = 0; { let prod_local_457 = 1; { let prod_local_458 = peerObservationFresh(prod_local_454, prod_local_455, prod_local_455, prod_local_456, prod_local_457, _x_28); match prod_local_458 {
-        false => prod_local_453,
-        true => { let prod_local_459 = false; prod_local_459 },
+        true => { let prod_local_554 = 1; { let prod_local_555 = 0; { let prod_local_556 = stitchXorBit(prod_local_554, prod_local_555); { let prod_local_557 = stitchXorBit(prod_local_556, prod_local_555); { let prod_local_558 = (prod_local_557 == prod_local_554); { let prod_local_559 = prod_local_558; match prod_local_559 {
+        false => prod_local_559,
+        true => { let prod_local_561 = sTen()?; { let prod_local_562 = sTwenty()?; { let prod_local_563 = sFifteen()?; { let prod_local_564 = 0; { let prod_local_565 = 1; { let prod_local_566 = peerObservationFresh(prod_local_561, prod_local_562, prod_local_563, prod_local_564, prod_local_565, _x_28); match prod_local_566 {
+        false => { let prod_local_567 = prod_local_566; match prod_local_567 {
+        false => prod_local_567,
+        true => { let prod_local_568 = lawfulHdUniversalEngineActive()?; prod_local_568 },
+    } },
+        true => { let prod_local_569 = sTen()?; { let prod_local_570 = sFifteen()?; { let prod_local_571 = 0; { let prod_local_572 = 1; { let prod_local_573 = peerObservationFresh(prod_local_569, prod_local_570, prod_local_570, prod_local_571, prod_local_572, _x_28); match prod_local_573 {
+        false => { let prod_local_574 = prod_local_566; match prod_local_574 {
+        false => prod_local_574,
+        true => { let prod_local_575 = lawfulHdUniversalEngineActive()?; prod_local_575 },
+    } },
+        true => { let prod_local_576 = false; prod_local_576 },
     } } } } } },
     } } } } } } },
     } } } } } } },
     } } } } } },
-        true => { let prod_local_460 = false; prod_local_460 },
+        true => { let prod_local_577 = false; prod_local_577 },
     } } },
     } } } },
     } } } } },
-        true => { let prod_local_461 = false; prod_local_461 },
+        true => { let prod_local_578 = false; prod_local_578 },
     } },
     } } },
     }
@@ -3727,208 +4276,280 @@ pub fn cyberneticUiAndStitchActive() -> Result<bool, self::ComputeError> {
                                                                 }
                                                             }
                                                             true => {
-                                                                let prod_local_462 = _x_617;
-                                                                match prod_local_462 {
-                                                                    false => prod_local_462,
+                                                                let prod_local_579 = _x_660;
+                                                                match prod_local_579 {
+                                                                    false => prod_local_579,
                                                                     true => {
-                                                                        let prod_local_463 =
+                                                                        let prod_local_580 =
                                                                             sEight()?;
                                                                         {
-                                                                            let prod_local_464 =
+                                                                            let prod_local_581 =
                                                                                 sEight()?;
                                                                             {
-                                                                                let prod_local_465 = (prod_local_463 == prod_local_464);
-                                                                                match prod_local_465
+                                                                                let prod_local_582 = (prod_local_580 == prod_local_581);
+                                                                                match prod_local_582
                                                                                 {
                                                                                     false => {
-                                                                                        let prod_local_467 = prod_local_465;
-                                                                                        match prod_local_467 {
-        false => prod_local_467,
-        true => { let prod_local_469 = false; { let prod_local_470 = containerOrganAllowed(prod_local_469, prod_local_469, _x_28); match prod_local_470 {
-        false => { let prod_local_471 = prod_local_470; match prod_local_471 {
-        false => prod_local_471,
-        true => { let prod_local_472 = 0; { let prod_local_473 = (1 << 1); { let prod_local_474 = stitchPairRecoverable(prod_local_472, prod_local_473, _x_28, _x_28, _x_28); match prod_local_474 {
-        false => { let prod_local_476 = prod_local_474; match prod_local_476 {
-        false => prod_local_476,
-        true => { let prod_local_477 = sTen()?; { let prod_local_478 = sTwenty()?; { let prod_local_479 = sFifteen()?; { let prod_local_480 = 0; { let prod_local_481 = 1; { let prod_local_482 = peerObservationFresh(prod_local_477, prod_local_478, prod_local_479, prod_local_480, prod_local_481, _x_28); match prod_local_482 {
-        false => prod_local_482,
-        true => { let prod_local_483 = sTen()?; { let prod_local_484 = sFifteen()?; { let prod_local_485 = 0; { let prod_local_486 = 1; { let prod_local_487 = peerObservationFresh(prod_local_483, prod_local_484, prod_local_484, prod_local_485, prod_local_486, _x_28); match prod_local_487 {
-        false => prod_local_482,
-        true => { let prod_local_488 = false; prod_local_488 },
+                                                                                        let prod_local_584 = prod_local_582;
+                                                                                        match prod_local_584 {
+        false => prod_local_584,
+        true => { let prod_local_586 = false; { let prod_local_587 = containerOrganAllowed(prod_local_586, prod_local_586, _x_28); match prod_local_587 {
+        false => { let prod_local_588 = prod_local_587; match prod_local_588 {
+        false => prod_local_588,
+        true => { let prod_local_589 = 0; { let prod_local_590 = (1 << 1); { let prod_local_591 = stitchPairRecoverable(prod_local_589, prod_local_590, _x_28, _x_28, _x_28); match prod_local_591 {
+        false => { let prod_local_593 = prod_local_591; match prod_local_593 {
+        false => prod_local_593,
+        true => { let prod_local_595 = sTen()?; { let prod_local_596 = sTwenty()?; { let prod_local_597 = sFifteen()?; { let prod_local_598 = 0; { let prod_local_599 = 1; { let prod_local_600 = peerObservationFresh(prod_local_595, prod_local_596, prod_local_597, prod_local_598, prod_local_599, _x_28); match prod_local_600 {
+        false => { let prod_local_601 = prod_local_600; match prod_local_601 {
+        false => prod_local_601,
+        true => { let prod_local_602 = lawfulHdUniversalEngineActive()?; prod_local_602 },
+    } },
+        true => { let prod_local_603 = sTen()?; { let prod_local_604 = sFifteen()?; { let prod_local_605 = 0; { let prod_local_606 = 1; { let prod_local_607 = peerObservationFresh(prod_local_603, prod_local_604, prod_local_604, prod_local_605, prod_local_606, _x_28); match prod_local_607 {
+        false => { let prod_local_608 = prod_local_600; match prod_local_608 {
+        false => prod_local_608,
+        true => { let prod_local_609 = lawfulHdUniversalEngineActive()?; prod_local_609 },
+    } },
+        true => { let prod_local_610 = false; prod_local_610 },
     } } } } } },
     } } } } } } },
     } },
-        true => { let prod_local_489 = 1; { let prod_local_490 = stitchPairRecoverable(prod_local_489, prod_local_489, _x_28, _x_28, _x_28); match prod_local_490 {
-        false => { let prod_local_491 = 1; { let prod_local_492 = 0; { let prod_local_493 = stitchXorBit(prod_local_491, prod_local_492); { let prod_local_494 = stitchXorBit(prod_local_491, prod_local_493); { let prod_local_495 = (prod_local_494 == prod_local_492); match prod_local_495 {
-        false => { let prod_local_496 = prod_local_495; match prod_local_496 {
-        false => prod_local_496,
-        true => { let prod_local_497 = sTen()?; { let prod_local_498 = sTwenty()?; { let prod_local_499 = sFifteen()?; { let prod_local_500 = 0; { let prod_local_501 = 1; { let prod_local_502 = peerObservationFresh(prod_local_497, prod_local_498, prod_local_499, prod_local_500, prod_local_501, _x_28); match prod_local_502 {
-        false => prod_local_502,
-        true => { let prod_local_503 = sTen()?; { let prod_local_504 = sFifteen()?; { let prod_local_505 = 0; { let prod_local_506 = 1; { let prod_local_507 = peerObservationFresh(prod_local_503, prod_local_504, prod_local_504, prod_local_505, prod_local_506, _x_28); match prod_local_507 {
-        false => prod_local_502,
-        true => { let prod_local_508 = false; prod_local_508 },
+        true => { let prod_local_611 = 1; { let prod_local_612 = stitchPairRecoverable(prod_local_611, prod_local_611, _x_28, _x_28, _x_28); match prod_local_612 {
+        false => { let prod_local_613 = 1; { let prod_local_614 = 0; { let prod_local_615 = stitchXorBit(prod_local_613, prod_local_614); { let prod_local_616 = stitchXorBit(prod_local_613, prod_local_615); { let prod_local_617 = (prod_local_616 == prod_local_614); match prod_local_617 {
+        false => { let prod_local_618 = prod_local_617; match prod_local_618 {
+        false => prod_local_618,
+        true => { let prod_local_620 = sTen()?; { let prod_local_621 = sTwenty()?; { let prod_local_622 = sFifteen()?; { let prod_local_623 = 0; { let prod_local_624 = 1; { let prod_local_625 = peerObservationFresh(prod_local_620, prod_local_621, prod_local_622, prod_local_623, prod_local_624, _x_28); match prod_local_625 {
+        false => { let prod_local_626 = prod_local_625; match prod_local_626 {
+        false => prod_local_626,
+        true => { let prod_local_627 = lawfulHdUniversalEngineActive()?; prod_local_627 },
+    } },
+        true => { let prod_local_628 = sTen()?; { let prod_local_629 = sFifteen()?; { let prod_local_630 = 0; { let prod_local_631 = 1; { let prod_local_632 = peerObservationFresh(prod_local_628, prod_local_629, prod_local_629, prod_local_630, prod_local_631, _x_28); match prod_local_632 {
+        false => { let prod_local_633 = prod_local_625; match prod_local_633 {
+        false => prod_local_633,
+        true => { let prod_local_634 = lawfulHdUniversalEngineActive()?; prod_local_634 },
+    } },
+        true => { let prod_local_635 = false; prod_local_635 },
     } } } } } },
     } } } } } } },
     } },
-        true => { let prod_local_509 = 1; { let prod_local_510 = 0; { let prod_local_511 = stitchXorBit(prod_local_509, prod_local_510); { let prod_local_512 = stitchXorBit(prod_local_511, prod_local_510); { let prod_local_513 = (prod_local_512 == prod_local_509); { let prod_local_514 = prod_local_513; match prod_local_514 {
-        false => prod_local_514,
-        true => { let prod_local_515 = sTen()?; { let prod_local_516 = sTwenty()?; { let prod_local_517 = sFifteen()?; { let prod_local_518 = 0; { let prod_local_519 = 1; { let prod_local_520 = peerObservationFresh(prod_local_515, prod_local_516, prod_local_517, prod_local_518, prod_local_519, _x_28); match prod_local_520 {
-        false => prod_local_520,
-        true => { let prod_local_521 = sTen()?; { let prod_local_522 = sFifteen()?; { let prod_local_523 = 0; { let prod_local_524 = 1; { let prod_local_525 = peerObservationFresh(prod_local_521, prod_local_522, prod_local_522, prod_local_523, prod_local_524, _x_28); match prod_local_525 {
-        false => prod_local_520,
-        true => { let prod_local_526 = false; prod_local_526 },
+        true => { let prod_local_636 = 1; { let prod_local_637 = 0; { let prod_local_638 = stitchXorBit(prod_local_636, prod_local_637); { let prod_local_639 = stitchXorBit(prod_local_638, prod_local_637); { let prod_local_640 = (prod_local_639 == prod_local_636); { let prod_local_641 = prod_local_640; match prod_local_641 {
+        false => prod_local_641,
+        true => { let prod_local_643 = sTen()?; { let prod_local_644 = sTwenty()?; { let prod_local_645 = sFifteen()?; { let prod_local_646 = 0; { let prod_local_647 = 1; { let prod_local_648 = peerObservationFresh(prod_local_643, prod_local_644, prod_local_645, prod_local_646, prod_local_647, _x_28); match prod_local_648 {
+        false => { let prod_local_649 = prod_local_648; match prod_local_649 {
+        false => prod_local_649,
+        true => { let prod_local_650 = lawfulHdUniversalEngineActive()?; prod_local_650 },
+    } },
+        true => { let prod_local_651 = sTen()?; { let prod_local_652 = sFifteen()?; { let prod_local_653 = 0; { let prod_local_654 = 1; { let prod_local_655 = peerObservationFresh(prod_local_651, prod_local_652, prod_local_652, prod_local_653, prod_local_654, _x_28); match prod_local_655 {
+        false => { let prod_local_656 = prod_local_648; match prod_local_656 {
+        false => prod_local_656,
+        true => { let prod_local_657 = lawfulHdUniversalEngineActive()?; prod_local_657 },
+    } },
+        true => { let prod_local_658 = false; prod_local_658 },
     } } } } } },
     } } } } } } },
     } } } } } } },
     } } } } } },
-        true => { let prod_local_527 = false; prod_local_527 },
+        true => { let prod_local_659 = false; prod_local_659 },
     } } },
     } } } },
     } },
-        true => { let prod_local_528 = containerOrganAllowed(_x_28, _x_28, _x_28); match prod_local_528 {
-        false => { let prod_local_529 = sHundred()?; { let prod_local_530 = sFifty()?; { let prod_local_531 = proposalAdmitted(prod_local_529, prod_local_530, _x_28, _x_28); { let prod_local_532 = prod_local_531; match prod_local_532 {
-        false => prod_local_532,
-        true => { let prod_local_533 = 0; { let prod_local_534 = (1 << 1); { let prod_local_535 = stitchPairRecoverable(prod_local_533, prod_local_534, _x_28, _x_28, _x_28); match prod_local_535 {
-        false => { let prod_local_537 = prod_local_535; match prod_local_537 {
-        false => prod_local_537,
-        true => { let prod_local_538 = sTen()?; { let prod_local_539 = sTwenty()?; { let prod_local_540 = sFifteen()?; { let prod_local_541 = 0; { let prod_local_542 = 1; { let prod_local_543 = peerObservationFresh(prod_local_538, prod_local_539, prod_local_540, prod_local_541, prod_local_542, _x_28); match prod_local_543 {
-        false => prod_local_543,
-        true => { let prod_local_544 = sTen()?; { let prod_local_545 = sFifteen()?; { let prod_local_546 = 0; { let prod_local_547 = 1; { let prod_local_548 = peerObservationFresh(prod_local_544, prod_local_545, prod_local_545, prod_local_546, prod_local_547, _x_28); match prod_local_548 {
-        false => prod_local_543,
-        true => { let prod_local_549 = false; prod_local_549 },
+        true => { let prod_local_660 = containerOrganAllowed(_x_28, _x_28, _x_28); match prod_local_660 {
+        false => { let prod_local_661 = sHundred()?; { let prod_local_662 = sFifty()?; { let prod_local_663 = proposalAdmitted(prod_local_661, prod_local_662, _x_28, _x_28); { let prod_local_664 = prod_local_663; match prod_local_664 {
+        false => prod_local_664,
+        true => { let prod_local_665 = 0; { let prod_local_666 = (1 << 1); { let prod_local_667 = stitchPairRecoverable(prod_local_665, prod_local_666, _x_28, _x_28, _x_28); match prod_local_667 {
+        false => { let prod_local_669 = prod_local_667; match prod_local_669 {
+        false => prod_local_669,
+        true => { let prod_local_671 = sTen()?; { let prod_local_672 = sTwenty()?; { let prod_local_673 = sFifteen()?; { let prod_local_674 = 0; { let prod_local_675 = 1; { let prod_local_676 = peerObservationFresh(prod_local_671, prod_local_672, prod_local_673, prod_local_674, prod_local_675, _x_28); match prod_local_676 {
+        false => { let prod_local_677 = prod_local_676; match prod_local_677 {
+        false => prod_local_677,
+        true => { let prod_local_678 = lawfulHdUniversalEngineActive()?; prod_local_678 },
+    } },
+        true => { let prod_local_679 = sTen()?; { let prod_local_680 = sFifteen()?; { let prod_local_681 = 0; { let prod_local_682 = 1; { let prod_local_683 = peerObservationFresh(prod_local_679, prod_local_680, prod_local_680, prod_local_681, prod_local_682, _x_28); match prod_local_683 {
+        false => { let prod_local_684 = prod_local_676; match prod_local_684 {
+        false => prod_local_684,
+        true => { let prod_local_685 = lawfulHdUniversalEngineActive()?; prod_local_685 },
+    } },
+        true => { let prod_local_686 = false; prod_local_686 },
     } } } } } },
     } } } } } } },
     } },
-        true => { let prod_local_550 = 1; { let prod_local_551 = stitchPairRecoverable(prod_local_550, prod_local_550, _x_28, _x_28, _x_28); match prod_local_551 {
-        false => { let prod_local_552 = 1; { let prod_local_553 = 0; { let prod_local_554 = stitchXorBit(prod_local_552, prod_local_553); { let prod_local_555 = stitchXorBit(prod_local_552, prod_local_554); { let prod_local_556 = (prod_local_555 == prod_local_553); match prod_local_556 {
-        false => { let prod_local_557 = prod_local_556; match prod_local_557 {
-        false => prod_local_557,
-        true => { let prod_local_558 = sTen()?; { let prod_local_559 = sTwenty()?; { let prod_local_560 = sFifteen()?; { let prod_local_561 = 0; { let prod_local_562 = 1; { let prod_local_563 = peerObservationFresh(prod_local_558, prod_local_559, prod_local_560, prod_local_561, prod_local_562, _x_28); match prod_local_563 {
-        false => prod_local_563,
-        true => { let prod_local_564 = sTen()?; { let prod_local_565 = sFifteen()?; { let prod_local_566 = 0; { let prod_local_567 = 1; { let prod_local_568 = peerObservationFresh(prod_local_564, prod_local_565, prod_local_565, prod_local_566, prod_local_567, _x_28); match prod_local_568 {
-        false => prod_local_563,
-        true => { let prod_local_569 = false; prod_local_569 },
+        true => { let prod_local_687 = 1; { let prod_local_688 = stitchPairRecoverable(prod_local_687, prod_local_687, _x_28, _x_28, _x_28); match prod_local_688 {
+        false => { let prod_local_689 = 1; { let prod_local_690 = 0; { let prod_local_691 = stitchXorBit(prod_local_689, prod_local_690); { let prod_local_692 = stitchXorBit(prod_local_689, prod_local_691); { let prod_local_693 = (prod_local_692 == prod_local_690); match prod_local_693 {
+        false => { let prod_local_694 = prod_local_693; match prod_local_694 {
+        false => prod_local_694,
+        true => { let prod_local_696 = sTen()?; { let prod_local_697 = sTwenty()?; { let prod_local_698 = sFifteen()?; { let prod_local_699 = 0; { let prod_local_700 = 1; { let prod_local_701 = peerObservationFresh(prod_local_696, prod_local_697, prod_local_698, prod_local_699, prod_local_700, _x_28); match prod_local_701 {
+        false => { let prod_local_702 = prod_local_701; match prod_local_702 {
+        false => prod_local_702,
+        true => { let prod_local_703 = lawfulHdUniversalEngineActive()?; prod_local_703 },
+    } },
+        true => { let prod_local_704 = sTen()?; { let prod_local_705 = sFifteen()?; { let prod_local_706 = 0; { let prod_local_707 = 1; { let prod_local_708 = peerObservationFresh(prod_local_704, prod_local_705, prod_local_705, prod_local_706, prod_local_707, _x_28); match prod_local_708 {
+        false => { let prod_local_709 = prod_local_701; match prod_local_709 {
+        false => prod_local_709,
+        true => { let prod_local_710 = lawfulHdUniversalEngineActive()?; prod_local_710 },
+    } },
+        true => { let prod_local_711 = false; prod_local_711 },
     } } } } } },
     } } } } } } },
     } },
-        true => { let prod_local_570 = 1; { let prod_local_571 = 0; { let prod_local_572 = stitchXorBit(prod_local_570, prod_local_571); { let prod_local_573 = stitchXorBit(prod_local_572, prod_local_571); { let prod_local_574 = (prod_local_573 == prod_local_570); { let prod_local_575 = prod_local_574; match prod_local_575 {
-        false => prod_local_575,
-        true => { let prod_local_576 = sTen()?; { let prod_local_577 = sTwenty()?; { let prod_local_578 = sFifteen()?; { let prod_local_579 = 0; { let prod_local_580 = 1; { let prod_local_581 = peerObservationFresh(prod_local_576, prod_local_577, prod_local_578, prod_local_579, prod_local_580, _x_28); match prod_local_581 {
-        false => prod_local_581,
-        true => { let prod_local_582 = sTen()?; { let prod_local_583 = sFifteen()?; { let prod_local_584 = 0; { let prod_local_585 = 1; { let prod_local_586 = peerObservationFresh(prod_local_582, prod_local_583, prod_local_583, prod_local_584, prod_local_585, _x_28); match prod_local_586 {
-        false => prod_local_581,
-        true => { let prod_local_587 = false; prod_local_587 },
+        true => { let prod_local_712 = 1; { let prod_local_713 = 0; { let prod_local_714 = stitchXorBit(prod_local_712, prod_local_713); { let prod_local_715 = stitchXorBit(prod_local_714, prod_local_713); { let prod_local_716 = (prod_local_715 == prod_local_712); { let prod_local_717 = prod_local_716; match prod_local_717 {
+        false => prod_local_717,
+        true => { let prod_local_719 = sTen()?; { let prod_local_720 = sTwenty()?; { let prod_local_721 = sFifteen()?; { let prod_local_722 = 0; { let prod_local_723 = 1; { let prod_local_724 = peerObservationFresh(prod_local_719, prod_local_720, prod_local_721, prod_local_722, prod_local_723, _x_28); match prod_local_724 {
+        false => { let prod_local_725 = prod_local_724; match prod_local_725 {
+        false => prod_local_725,
+        true => { let prod_local_726 = lawfulHdUniversalEngineActive()?; prod_local_726 },
+    } },
+        true => { let prod_local_727 = sTen()?; { let prod_local_728 = sFifteen()?; { let prod_local_729 = 0; { let prod_local_730 = 1; { let prod_local_731 = peerObservationFresh(prod_local_727, prod_local_728, prod_local_728, prod_local_729, prod_local_730, _x_28); match prod_local_731 {
+        false => { let prod_local_732 = prod_local_724; match prod_local_732 {
+        false => prod_local_732,
+        true => { let prod_local_733 = lawfulHdUniversalEngineActive()?; prod_local_733 },
+    } },
+        true => { let prod_local_734 = false; prod_local_734 },
     } } } } } },
     } } } } } } },
     } } } } } } },
     } } } } } },
-        true => { let prod_local_588 = false; prod_local_588 },
+        true => { let prod_local_735 = false; prod_local_735 },
     } } },
     } } } },
     } } } } },
-        true => { let prod_local_589 = false; prod_local_589 },
+        true => { let prod_local_736 = false; prod_local_736 },
     } },
     } } },
     }
                                                                                     }
                                                                                     true => {
-                                                                                        let prod_local_590 =
+                                                                                        let prod_local_737 =
                                                                                             sFour()?;
                                                                                         {
-                                                                                            let prod_local_591 = sFive()?;
+                                                                                            let prod_local_738 = sFive()?;
                                                                                             {
-                                                                                                let prod_local_592 = stepLifMembraneMilli(prod_local_590, prod_local_591)?;
+                                                                                                let prod_local_739 = stepLifMembraneMilli(prod_local_737, prod_local_738)?;
                                                                                                 {
-                                                                                                    let prod_local_593 = lifSpikeThresholdMilli()?;
+                                                                                                    let prod_local_740 = lifSpikeThresholdMilli()?;
                                                                                                     {
-                                                                                                        let prod_local_594 = (prod_local_592 < prod_local_593);
+                                                                                                        let prod_local_741 = (prod_local_739 < prod_local_740);
                                                                                                         {
-                                                                                                            let prod_local_595 = prod_local_594;
-                                                                                                            match prod_local_595 {
-        false => prod_local_595,
-        true => { let prod_local_597 = false; { let prod_local_598 = containerOrganAllowed(prod_local_597, prod_local_597, _x_28); match prod_local_598 {
-        false => { let prod_local_599 = prod_local_598; match prod_local_599 {
-        false => prod_local_599,
-        true => { let prod_local_600 = 0; { let prod_local_601 = (1 << 1); { let prod_local_602 = stitchPairRecoverable(prod_local_600, prod_local_601, _x_28, _x_28, _x_28); match prod_local_602 {
-        false => { let prod_local_604 = prod_local_602; match prod_local_604 {
-        false => prod_local_604,
-        true => { let prod_local_605 = sTen()?; { let prod_local_606 = sTwenty()?; { let prod_local_607 = sFifteen()?; { let prod_local_608 = 0; { let prod_local_609 = 1; { let prod_local_610 = peerObservationFresh(prod_local_605, prod_local_606, prod_local_607, prod_local_608, prod_local_609, _x_28); match prod_local_610 {
-        false => prod_local_610,
-        true => { let prod_local_611 = sTen()?; { let prod_local_612 = sFifteen()?; { let prod_local_613 = 0; { let prod_local_614 = 1; { let prod_local_615 = peerObservationFresh(prod_local_611, prod_local_612, prod_local_612, prod_local_613, prod_local_614, _x_28); match prod_local_615 {
-        false => prod_local_610,
-        true => { let prod_local_616 = false; prod_local_616 },
+                                                                                                            let prod_local_742 = prod_local_741;
+                                                                                                            match prod_local_742 {
+        false => prod_local_742,
+        true => { let prod_local_744 = false; { let prod_local_745 = containerOrganAllowed(prod_local_744, prod_local_744, _x_28); match prod_local_745 {
+        false => { let prod_local_746 = prod_local_745; match prod_local_746 {
+        false => prod_local_746,
+        true => { let prod_local_747 = 0; { let prod_local_748 = (1 << 1); { let prod_local_749 = stitchPairRecoverable(prod_local_747, prod_local_748, _x_28, _x_28, _x_28); match prod_local_749 {
+        false => { let prod_local_751 = prod_local_749; match prod_local_751 {
+        false => prod_local_751,
+        true => { let prod_local_753 = sTen()?; { let prod_local_754 = sTwenty()?; { let prod_local_755 = sFifteen()?; { let prod_local_756 = 0; { let prod_local_757 = 1; { let prod_local_758 = peerObservationFresh(prod_local_753, prod_local_754, prod_local_755, prod_local_756, prod_local_757, _x_28); match prod_local_758 {
+        false => { let prod_local_759 = prod_local_758; match prod_local_759 {
+        false => prod_local_759,
+        true => { let prod_local_760 = lawfulHdUniversalEngineActive()?; prod_local_760 },
+    } },
+        true => { let prod_local_761 = sTen()?; { let prod_local_762 = sFifteen()?; { let prod_local_763 = 0; { let prod_local_764 = 1; { let prod_local_765 = peerObservationFresh(prod_local_761, prod_local_762, prod_local_762, prod_local_763, prod_local_764, _x_28); match prod_local_765 {
+        false => { let prod_local_766 = prod_local_758; match prod_local_766 {
+        false => prod_local_766,
+        true => { let prod_local_767 = lawfulHdUniversalEngineActive()?; prod_local_767 },
+    } },
+        true => { let prod_local_768 = false; prod_local_768 },
     } } } } } },
     } } } } } } },
     } },
-        true => { let prod_local_617 = 1; { let prod_local_618 = stitchPairRecoverable(prod_local_617, prod_local_617, _x_28, _x_28, _x_28); match prod_local_618 {
-        false => { let prod_local_619 = 1; { let prod_local_620 = 0; { let prod_local_621 = stitchXorBit(prod_local_619, prod_local_620); { let prod_local_622 = stitchXorBit(prod_local_619, prod_local_621); { let prod_local_623 = (prod_local_622 == prod_local_620); match prod_local_623 {
-        false => { let prod_local_624 = prod_local_623; match prod_local_624 {
-        false => prod_local_624,
-        true => { let prod_local_625 = sTen()?; { let prod_local_626 = sTwenty()?; { let prod_local_627 = sFifteen()?; { let prod_local_628 = 0; { let prod_local_629 = 1; { let prod_local_630 = peerObservationFresh(prod_local_625, prod_local_626, prod_local_627, prod_local_628, prod_local_629, _x_28); match prod_local_630 {
-        false => prod_local_630,
-        true => { let prod_local_631 = sTen()?; { let prod_local_632 = sFifteen()?; { let prod_local_633 = 0; { let prod_local_634 = 1; { let prod_local_635 = peerObservationFresh(prod_local_631, prod_local_632, prod_local_632, prod_local_633, prod_local_634, _x_28); match prod_local_635 {
-        false => prod_local_630,
-        true => { let prod_local_636 = false; prod_local_636 },
+        true => { let prod_local_769 = 1; { let prod_local_770 = stitchPairRecoverable(prod_local_769, prod_local_769, _x_28, _x_28, _x_28); match prod_local_770 {
+        false => { let prod_local_771 = 1; { let prod_local_772 = 0; { let prod_local_773 = stitchXorBit(prod_local_771, prod_local_772); { let prod_local_774 = stitchXorBit(prod_local_771, prod_local_773); { let prod_local_775 = (prod_local_774 == prod_local_772); match prod_local_775 {
+        false => { let prod_local_776 = prod_local_775; match prod_local_776 {
+        false => prod_local_776,
+        true => { let prod_local_778 = sTen()?; { let prod_local_779 = sTwenty()?; { let prod_local_780 = sFifteen()?; { let prod_local_781 = 0; { let prod_local_782 = 1; { let prod_local_783 = peerObservationFresh(prod_local_778, prod_local_779, prod_local_780, prod_local_781, prod_local_782, _x_28); match prod_local_783 {
+        false => { let prod_local_784 = prod_local_783; match prod_local_784 {
+        false => prod_local_784,
+        true => { let prod_local_785 = lawfulHdUniversalEngineActive()?; prod_local_785 },
+    } },
+        true => { let prod_local_786 = sTen()?; { let prod_local_787 = sFifteen()?; { let prod_local_788 = 0; { let prod_local_789 = 1; { let prod_local_790 = peerObservationFresh(prod_local_786, prod_local_787, prod_local_787, prod_local_788, prod_local_789, _x_28); match prod_local_790 {
+        false => { let prod_local_791 = prod_local_783; match prod_local_791 {
+        false => prod_local_791,
+        true => { let prod_local_792 = lawfulHdUniversalEngineActive()?; prod_local_792 },
+    } },
+        true => { let prod_local_793 = false; prod_local_793 },
     } } } } } },
     } } } } } } },
     } },
-        true => { let prod_local_637 = 1; { let prod_local_638 = 0; { let prod_local_639 = stitchXorBit(prod_local_637, prod_local_638); { let prod_local_640 = stitchXorBit(prod_local_639, prod_local_638); { let prod_local_641 = (prod_local_640 == prod_local_637); { let prod_local_642 = prod_local_641; match prod_local_642 {
-        false => prod_local_642,
-        true => { let prod_local_643 = sTen()?; { let prod_local_644 = sTwenty()?; { let prod_local_645 = sFifteen()?; { let prod_local_646 = 0; { let prod_local_647 = 1; { let prod_local_648 = peerObservationFresh(prod_local_643, prod_local_644, prod_local_645, prod_local_646, prod_local_647, _x_28); match prod_local_648 {
-        false => prod_local_648,
-        true => { let prod_local_649 = sTen()?; { let prod_local_650 = sFifteen()?; { let prod_local_651 = 0; { let prod_local_652 = 1; { let prod_local_653 = peerObservationFresh(prod_local_649, prod_local_650, prod_local_650, prod_local_651, prod_local_652, _x_28); match prod_local_653 {
-        false => prod_local_648,
-        true => { let prod_local_654 = false; prod_local_654 },
+        true => { let prod_local_794 = 1; { let prod_local_795 = 0; { let prod_local_796 = stitchXorBit(prod_local_794, prod_local_795); { let prod_local_797 = stitchXorBit(prod_local_796, prod_local_795); { let prod_local_798 = (prod_local_797 == prod_local_794); { let prod_local_799 = prod_local_798; match prod_local_799 {
+        false => prod_local_799,
+        true => { let prod_local_801 = sTen()?; { let prod_local_802 = sTwenty()?; { let prod_local_803 = sFifteen()?; { let prod_local_804 = 0; { let prod_local_805 = 1; { let prod_local_806 = peerObservationFresh(prod_local_801, prod_local_802, prod_local_803, prod_local_804, prod_local_805, _x_28); match prod_local_806 {
+        false => { let prod_local_807 = prod_local_806; match prod_local_807 {
+        false => prod_local_807,
+        true => { let prod_local_808 = lawfulHdUniversalEngineActive()?; prod_local_808 },
+    } },
+        true => { let prod_local_809 = sTen()?; { let prod_local_810 = sFifteen()?; { let prod_local_811 = 0; { let prod_local_812 = 1; { let prod_local_813 = peerObservationFresh(prod_local_809, prod_local_810, prod_local_810, prod_local_811, prod_local_812, _x_28); match prod_local_813 {
+        false => { let prod_local_814 = prod_local_806; match prod_local_814 {
+        false => prod_local_814,
+        true => { let prod_local_815 = lawfulHdUniversalEngineActive()?; prod_local_815 },
+    } },
+        true => { let prod_local_816 = false; prod_local_816 },
     } } } } } },
     } } } } } } },
     } } } } } } },
     } } } } } },
-        true => { let prod_local_655 = false; prod_local_655 },
+        true => { let prod_local_817 = false; prod_local_817 },
     } } },
     } } } },
     } },
-        true => { let prod_local_656 = containerOrganAllowed(_x_28, _x_28, _x_28); match prod_local_656 {
-        false => { let prod_local_657 = sHundred()?; { let prod_local_658 = sFifty()?; { let prod_local_659 = proposalAdmitted(prod_local_657, prod_local_658, _x_28, _x_28); { let prod_local_660 = prod_local_659; match prod_local_660 {
-        false => prod_local_660,
-        true => { let prod_local_661 = 0; { let prod_local_662 = (1 << 1); { let prod_local_663 = stitchPairRecoverable(prod_local_661, prod_local_662, _x_28, _x_28, _x_28); match prod_local_663 {
-        false => { let prod_local_665 = prod_local_663; match prod_local_665 {
-        false => prod_local_665,
-        true => { let prod_local_666 = sTen()?; { let prod_local_667 = sTwenty()?; { let prod_local_668 = sFifteen()?; { let prod_local_669 = 0; { let prod_local_670 = 1; { let prod_local_671 = peerObservationFresh(prod_local_666, prod_local_667, prod_local_668, prod_local_669, prod_local_670, _x_28); match prod_local_671 {
-        false => prod_local_671,
-        true => { let prod_local_672 = sTen()?; { let prod_local_673 = sFifteen()?; { let prod_local_674 = 0; { let prod_local_675 = 1; { let prod_local_676 = peerObservationFresh(prod_local_672, prod_local_673, prod_local_673, prod_local_674, prod_local_675, _x_28); match prod_local_676 {
-        false => prod_local_671,
-        true => { let prod_local_677 = false; prod_local_677 },
+        true => { let prod_local_818 = containerOrganAllowed(_x_28, _x_28, _x_28); match prod_local_818 {
+        false => { let prod_local_819 = sHundred()?; { let prod_local_820 = sFifty()?; { let prod_local_821 = proposalAdmitted(prod_local_819, prod_local_820, _x_28, _x_28); { let prod_local_822 = prod_local_821; match prod_local_822 {
+        false => prod_local_822,
+        true => { let prod_local_823 = 0; { let prod_local_824 = (1 << 1); { let prod_local_825 = stitchPairRecoverable(prod_local_823, prod_local_824, _x_28, _x_28, _x_28); match prod_local_825 {
+        false => { let prod_local_827 = prod_local_825; match prod_local_827 {
+        false => prod_local_827,
+        true => { let prod_local_829 = sTen()?; { let prod_local_830 = sTwenty()?; { let prod_local_831 = sFifteen()?; { let prod_local_832 = 0; { let prod_local_833 = 1; { let prod_local_834 = peerObservationFresh(prod_local_829, prod_local_830, prod_local_831, prod_local_832, prod_local_833, _x_28); match prod_local_834 {
+        false => { let prod_local_835 = prod_local_834; match prod_local_835 {
+        false => prod_local_835,
+        true => { let prod_local_836 = lawfulHdUniversalEngineActive()?; prod_local_836 },
+    } },
+        true => { let prod_local_837 = sTen()?; { let prod_local_838 = sFifteen()?; { let prod_local_839 = 0; { let prod_local_840 = 1; { let prod_local_841 = peerObservationFresh(prod_local_837, prod_local_838, prod_local_838, prod_local_839, prod_local_840, _x_28); match prod_local_841 {
+        false => { let prod_local_842 = prod_local_834; match prod_local_842 {
+        false => prod_local_842,
+        true => { let prod_local_843 = lawfulHdUniversalEngineActive()?; prod_local_843 },
+    } },
+        true => { let prod_local_844 = false; prod_local_844 },
     } } } } } },
     } } } } } } },
     } },
-        true => { let prod_local_678 = 1; { let prod_local_679 = stitchPairRecoverable(prod_local_678, prod_local_678, _x_28, _x_28, _x_28); match prod_local_679 {
-        false => { let prod_local_680 = 1; { let prod_local_681 = 0; { let prod_local_682 = stitchXorBit(prod_local_680, prod_local_681); { let prod_local_683 = stitchXorBit(prod_local_680, prod_local_682); { let prod_local_684 = (prod_local_683 == prod_local_681); match prod_local_684 {
-        false => { let prod_local_685 = prod_local_684; match prod_local_685 {
-        false => prod_local_685,
-        true => { let prod_local_686 = sTen()?; { let prod_local_687 = sTwenty()?; { let prod_local_688 = sFifteen()?; { let prod_local_689 = 0; { let prod_local_690 = 1; { let prod_local_691 = peerObservationFresh(prod_local_686, prod_local_687, prod_local_688, prod_local_689, prod_local_690, _x_28); match prod_local_691 {
-        false => prod_local_691,
-        true => { let prod_local_692 = sTen()?; { let prod_local_693 = sFifteen()?; { let prod_local_694 = 0; { let prod_local_695 = 1; { let prod_local_696 = peerObservationFresh(prod_local_692, prod_local_693, prod_local_693, prod_local_694, prod_local_695, _x_28); match prod_local_696 {
-        false => prod_local_691,
-        true => { let prod_local_697 = false; prod_local_697 },
+        true => { let prod_local_845 = 1; { let prod_local_846 = stitchPairRecoverable(prod_local_845, prod_local_845, _x_28, _x_28, _x_28); match prod_local_846 {
+        false => { let prod_local_847 = 1; { let prod_local_848 = 0; { let prod_local_849 = stitchXorBit(prod_local_847, prod_local_848); { let prod_local_850 = stitchXorBit(prod_local_847, prod_local_849); { let prod_local_851 = (prod_local_850 == prod_local_848); match prod_local_851 {
+        false => { let prod_local_852 = prod_local_851; match prod_local_852 {
+        false => prod_local_852,
+        true => { let prod_local_854 = sTen()?; { let prod_local_855 = sTwenty()?; { let prod_local_856 = sFifteen()?; { let prod_local_857 = 0; { let prod_local_858 = 1; { let prod_local_859 = peerObservationFresh(prod_local_854, prod_local_855, prod_local_856, prod_local_857, prod_local_858, _x_28); match prod_local_859 {
+        false => { let prod_local_860 = prod_local_859; match prod_local_860 {
+        false => prod_local_860,
+        true => { let prod_local_861 = lawfulHdUniversalEngineActive()?; prod_local_861 },
+    } },
+        true => { let prod_local_862 = sTen()?; { let prod_local_863 = sFifteen()?; { let prod_local_864 = 0; { let prod_local_865 = 1; { let prod_local_866 = peerObservationFresh(prod_local_862, prod_local_863, prod_local_863, prod_local_864, prod_local_865, _x_28); match prod_local_866 {
+        false => { let prod_local_867 = prod_local_859; match prod_local_867 {
+        false => prod_local_867,
+        true => { let prod_local_868 = lawfulHdUniversalEngineActive()?; prod_local_868 },
+    } },
+        true => { let prod_local_869 = false; prod_local_869 },
     } } } } } },
     } } } } } } },
     } },
-        true => { let prod_local_698 = 1; { let prod_local_699 = 0; { let prod_local_700 = stitchXorBit(prod_local_698, prod_local_699); { let prod_local_701 = stitchXorBit(prod_local_700, prod_local_699); { let prod_local_702 = (prod_local_701 == prod_local_698); { let prod_local_703 = prod_local_702; match prod_local_703 {
-        false => prod_local_703,
-        true => { let prod_local_704 = sTen()?; { let prod_local_705 = sTwenty()?; { let prod_local_706 = sFifteen()?; { let prod_local_707 = 0; { let prod_local_708 = 1; { let prod_local_709 = peerObservationFresh(prod_local_704, prod_local_705, prod_local_706, prod_local_707, prod_local_708, _x_28); match prod_local_709 {
-        false => prod_local_709,
-        true => { let prod_local_710 = sTen()?; { let prod_local_711 = sFifteen()?; { let prod_local_712 = 0; { let prod_local_713 = 1; { let prod_local_714 = peerObservationFresh(prod_local_710, prod_local_711, prod_local_711, prod_local_712, prod_local_713, _x_28); match prod_local_714 {
-        false => prod_local_709,
-        true => { let prod_local_715 = false; prod_local_715 },
+        true => { let prod_local_870 = 1; { let prod_local_871 = 0; { let prod_local_872 = stitchXorBit(prod_local_870, prod_local_871); { let prod_local_873 = stitchXorBit(prod_local_872, prod_local_871); { let prod_local_874 = (prod_local_873 == prod_local_870); { let prod_local_875 = prod_local_874; match prod_local_875 {
+        false => prod_local_875,
+        true => { let prod_local_877 = sTen()?; { let prod_local_878 = sTwenty()?; { let prod_local_879 = sFifteen()?; { let prod_local_880 = 0; { let prod_local_881 = 1; { let prod_local_882 = peerObservationFresh(prod_local_877, prod_local_878, prod_local_879, prod_local_880, prod_local_881, _x_28); match prod_local_882 {
+        false => { let prod_local_883 = prod_local_882; match prod_local_883 {
+        false => prod_local_883,
+        true => { let prod_local_884 = lawfulHdUniversalEngineActive()?; prod_local_884 },
+    } },
+        true => { let prod_local_885 = sTen()?; { let prod_local_886 = sFifteen()?; { let prod_local_887 = 0; { let prod_local_888 = 1; { let prod_local_889 = peerObservationFresh(prod_local_885, prod_local_886, prod_local_886, prod_local_887, prod_local_888, _x_28); match prod_local_889 {
+        false => { let prod_local_890 = prod_local_882; match prod_local_890 {
+        false => prod_local_890,
+        true => { let prod_local_891 = lawfulHdUniversalEngineActive()?; prod_local_891 },
+    } },
+        true => { let prod_local_892 = false; prod_local_892 },
     } } } } } },
     } } } } } } },
     } } } } } } },
     } } } } } },
-        true => { let prod_local_716 = false; prod_local_716 },
+        true => { let prod_local_893 = false; prod_local_893 },
     } } },
     } } } },
     } } } } },
-        true => { let prod_local_717 = false; prod_local_717 },
+        true => { let prod_local_894 = false; prod_local_894 },
     } },
     } } },
     }
@@ -3949,8 +4570,8 @@ pub fn cyberneticUiAndStitchActive() -> Result<bool, self::ComputeError> {
                                                 }
                                             }
                                             true => {
-                                                let _x_627 = false;
-                                                _x_627
+                                                let _x_670 = false;
+                                                _x_670
                                             }
                                         }
                                     }
@@ -8676,6 +9297,13 @@ pub fn glbContainerByteLength(
     })
 }
 
+pub fn humanoidJointCount() -> Result<u64, self::ComputeError> {
+    Ok({
+        let _x_1 = sTwentyTwo()?;
+        _x_1
+    })
+}
+
 pub fn iblMipLevelCount(baseResolution: u64) -> Result<u64, self::ComputeError> {
     Ok({
         let _x_1 = sThirtyTwo()?;
@@ -9406,6 +10034,1966 @@ pub fn keyframeAlphaPermille(
     })
 }
 
+pub fn lawfulHdUniversalEngineActive() -> Result<bool, self::ComputeError> {
+    Ok({
+        let _x_238 = sFour()?;
+        {
+            let _x_57 = sFour()?;
+            {
+                let _x_58 = (_x_238 == _x_57);
+                match _x_58 {
+                    false => {
+                        let _y_63 = _x_58;
+                        match _y_63 {
+                            false => _y_63,
+                            true => {
+                                let _x_611 = sFifty()?;
+                                {
+                                    let _x_612 = sFortyEight()?;
+                                    {
+                                        let _x_613 = (1 << 1);
+                                        {
+                                            let _x_614 =
+                                                sweptClearanceValid(_x_611, _x_612, _x_613)?;
+                                            match _x_614 {
+                                                false => {
+                                                    let _y_68 = _x_614;
+                                                    match _y_68 {
+                                                        false => _y_68,
+                                                        true => {
+                                                            let _x_678 = sTwentyTwo()?;
+                                                            {
+                                                                let _x_679 = sTwentyTwo()?;
+                                                                {
+                                                                    let _x_680 = (_x_678 == _x_679);
+                                                                    match _x_680 {
+                                                                        false => {
+                                                                            let _y_682 = _x_680;
+                                                                            match _y_682 {
+                                                                                false => _y_682,
+                                                                                true => {
+                                                                                    let _x_718 =
+                                                                                        sSeven()?;
+                                                                                    {
+                                                                                        let _x_719 = twoBoneIkReachable(_x_57, _x_57, _x_718)?;
+                                                                                        match _x_719 {
+        false => { let _y_684 = _x_719; match _y_684 {
+        false => _y_684,
+        true => { let _x_726 = universeCellSpanMeters()?; { let _x_727 = sSeven()?; { let _x_728 = pow2Constructive(_x_727)?; { let _x_729 = (_x_726 == _x_728); match _x_729 {
+        false => { let _y_731 = _x_729; match _y_731 {
+        false => _y_731,
+        true => { let _x_732 = sTen()?; { let _x_733 = sFive()?; { let _x_734 = ((1 << 1) + 1); { let _x_735 = sTwelve()?; { let _x_736 = conservationLawValid(_x_732, _x_733, _x_734, _x_735)?; match _x_736 {
+        false => _x_736,
+        true => { let _x_737 = sTen()?; { let _x_738 = 0; { let _x_739 = sEleven()?; { let _x_740 = conservationLawValid(_x_737, _x_738, _x_738, _x_739)?; match _x_740 {
+        false => { let _x_756 = (1 << 1); { let _x_757 = 0; { let _x_758 = sFive()?; { let _x_759 = conservationLawValid(_x_756, _x_757, _x_758, _x_757)?; match _x_759 {
+        false => _x_736,
+        true => _x_740,
+    } } } } },
+        true => { let _x_747 = false; _x_747 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let _x_750 = sHundred()?; { let _x_751 = universeHalfSpanMilli()?; { let _x_752 = (_x_750 < _x_751); match _x_752 {
+        false => { let prod_local_0 = _x_752; match prod_local_0 {
+        false => prod_local_0,
+        true => { let prod_local_1 = sTen()?; { let prod_local_2 = sFive()?; { let prod_local_3 = ((1 << 1) + 1); { let prod_local_4 = sTwelve()?; { let prod_local_5 = conservationLawValid(prod_local_1, prod_local_2, prod_local_3, prod_local_4)?; match prod_local_5 {
+        false => prod_local_5,
+        true => { let prod_local_6 = sTen()?; { let prod_local_7 = 0; { let prod_local_8 = sEleven()?; { let prod_local_9 = conservationLawValid(prod_local_6, prod_local_7, prod_local_7, prod_local_8)?; match prod_local_9 {
+        false => { let prod_local_10 = (1 << 1); { let prod_local_11 = 0; { let prod_local_12 = sFive()?; { let prod_local_13 = conservationLawValid(prod_local_10, prod_local_11, prod_local_12, prod_local_11)?; match prod_local_13 {
+        false => prod_local_5,
+        true => prod_local_9,
+    } } } } },
+        true => { let prod_local_14 = false; prod_local_14 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let _x_753 = universeHalfSpanMilli()?; { let _x_754 = (_x_753 < _x_753); match _x_754 {
+        false => { let prod_local_15 = _x_752; match prod_local_15 {
+        false => prod_local_15,
+        true => { let prod_local_16 = sTen()?; { let prod_local_17 = sFive()?; { let prod_local_18 = ((1 << 1) + 1); { let prod_local_19 = sTwelve()?; { let prod_local_20 = conservationLawValid(prod_local_16, prod_local_17, prod_local_18, prod_local_19)?; match prod_local_20 {
+        false => prod_local_20,
+        true => { let prod_local_21 = sTen()?; { let prod_local_22 = 0; { let prod_local_23 = sEleven()?; { let prod_local_24 = conservationLawValid(prod_local_21, prod_local_22, prod_local_22, prod_local_23)?; match prod_local_24 {
+        false => { let prod_local_25 = (1 << 1); { let prod_local_26 = 0; { let prod_local_27 = sFive()?; { let prod_local_28 = conservationLawValid(prod_local_25, prod_local_26, prod_local_27, prod_local_26)?; match prod_local_28 {
+        false => prod_local_20,
+        true => prod_local_24,
+    } } } } },
+        true => { let prod_local_29 = false; prod_local_29 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let _x_755 = false; _x_755 },
+    } } },
+    } } } },
+    } } } } },
+    } },
+        true => { let _x_720 = ((1 << 1) + 1); { let _x_721 = sSeven()?; { let _x_722 = twoBoneIkReachable(_x_720, _x_720, _x_721)?; match _x_722 {
+        false => { let prod_local_30 = _x_719; match prod_local_30 {
+        false => prod_local_30,
+        true => { let prod_local_31 = universeCellSpanMeters()?; { let prod_local_32 = sSeven()?; { let prod_local_33 = pow2Constructive(prod_local_32)?; { let prod_local_34 = (prod_local_31 == prod_local_33); match prod_local_34 {
+        false => { let prod_local_36 = prod_local_34; match prod_local_36 {
+        false => prod_local_36,
+        true => { let prod_local_37 = sTen()?; { let prod_local_38 = sFive()?; { let prod_local_39 = ((1 << 1) + 1); { let prod_local_40 = sTwelve()?; { let prod_local_41 = conservationLawValid(prod_local_37, prod_local_38, prod_local_39, prod_local_40)?; match prod_local_41 {
+        false => prod_local_41,
+        true => { let prod_local_42 = sTen()?; { let prod_local_43 = 0; { let prod_local_44 = sEleven()?; { let prod_local_45 = conservationLawValid(prod_local_42, prod_local_43, prod_local_43, prod_local_44)?; match prod_local_45 {
+        false => { let prod_local_46 = (1 << 1); { let prod_local_47 = 0; { let prod_local_48 = sFive()?; { let prod_local_49 = conservationLawValid(prod_local_46, prod_local_47, prod_local_48, prod_local_47)?; match prod_local_49 {
+        false => prod_local_41,
+        true => prod_local_45,
+    } } } } },
+        true => { let prod_local_50 = false; prod_local_50 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_51 = sHundred()?; { let prod_local_52 = universeHalfSpanMilli()?; { let prod_local_53 = (prod_local_51 < prod_local_52); match prod_local_53 {
+        false => { let prod_local_54 = prod_local_53; match prod_local_54 {
+        false => prod_local_54,
+        true => { let prod_local_55 = sTen()?; { let prod_local_56 = sFive()?; { let prod_local_57 = ((1 << 1) + 1); { let prod_local_58 = sTwelve()?; { let prod_local_59 = conservationLawValid(prod_local_55, prod_local_56, prod_local_57, prod_local_58)?; match prod_local_59 {
+        false => prod_local_59,
+        true => { let prod_local_60 = sTen()?; { let prod_local_61 = 0; { let prod_local_62 = sEleven()?; { let prod_local_63 = conservationLawValid(prod_local_60, prod_local_61, prod_local_61, prod_local_62)?; match prod_local_63 {
+        false => { let prod_local_64 = (1 << 1); { let prod_local_65 = 0; { let prod_local_66 = sFive()?; { let prod_local_67 = conservationLawValid(prod_local_64, prod_local_65, prod_local_66, prod_local_65)?; match prod_local_67 {
+        false => prod_local_59,
+        true => prod_local_63,
+    } } } } },
+        true => { let prod_local_68 = false; prod_local_68 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_69 = universeHalfSpanMilli()?; { let prod_local_70 = (prod_local_69 < prod_local_69); match prod_local_70 {
+        false => { let prod_local_71 = prod_local_53; match prod_local_71 {
+        false => prod_local_71,
+        true => { let prod_local_72 = sTen()?; { let prod_local_73 = sFive()?; { let prod_local_74 = ((1 << 1) + 1); { let prod_local_75 = sTwelve()?; { let prod_local_76 = conservationLawValid(prod_local_72, prod_local_73, prod_local_74, prod_local_75)?; match prod_local_76 {
+        false => prod_local_76,
+        true => { let prod_local_77 = sTen()?; { let prod_local_78 = 0; { let prod_local_79 = sEleven()?; { let prod_local_80 = conservationLawValid(prod_local_77, prod_local_78, prod_local_78, prod_local_79)?; match prod_local_80 {
+        false => { let prod_local_81 = (1 << 1); { let prod_local_82 = 0; { let prod_local_83 = sFive()?; { let prod_local_84 = conservationLawValid(prod_local_81, prod_local_82, prod_local_83, prod_local_82)?; match prod_local_84 {
+        false => prod_local_76,
+        true => prod_local_80,
+    } } } } },
+        true => { let prod_local_85 = false; prod_local_85 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_86 = false; prod_local_86 },
+    } } },
+    } } } },
+    } } } } },
+    } },
+        true => { let _x_723 = false; _x_723 },
+    } } } },
+    }
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                        true => {
+                                                                            let _x_724 = sFour()?;
+                                                                            {
+                                                                                let _x_725 = (_x_724
+                                                                                    == _x_57);
+                                                                                {
+                                                                                    let prod_local_87 =
+                                                                                        _x_725;
+                                                                                    match prod_local_87 {
+        false => prod_local_87,
+        true => { let prod_local_89 = sSeven()?; { let prod_local_90 = twoBoneIkReachable(_x_57, _x_57, prod_local_89)?; match prod_local_90 {
+        false => { let prod_local_91 = prod_local_90; match prod_local_91 {
+        false => prod_local_91,
+        true => { let prod_local_92 = universeCellSpanMeters()?; { let prod_local_93 = sSeven()?; { let prod_local_94 = pow2Constructive(prod_local_93)?; { let prod_local_95 = (prod_local_92 == prod_local_94); match prod_local_95 {
+        false => { let prod_local_97 = prod_local_95; match prod_local_97 {
+        false => prod_local_97,
+        true => { let prod_local_98 = sTen()?; { let prod_local_99 = sFive()?; { let prod_local_100 = ((1 << 1) + 1); { let prod_local_101 = sTwelve()?; { let prod_local_102 = conservationLawValid(prod_local_98, prod_local_99, prod_local_100, prod_local_101)?; match prod_local_102 {
+        false => prod_local_102,
+        true => { let prod_local_103 = sTen()?; { let prod_local_104 = 0; { let prod_local_105 = sEleven()?; { let prod_local_106 = conservationLawValid(prod_local_103, prod_local_104, prod_local_104, prod_local_105)?; match prod_local_106 {
+        false => { let prod_local_107 = (1 << 1); { let prod_local_108 = 0; { let prod_local_109 = sFive()?; { let prod_local_110 = conservationLawValid(prod_local_107, prod_local_108, prod_local_109, prod_local_108)?; match prod_local_110 {
+        false => prod_local_102,
+        true => prod_local_106,
+    } } } } },
+        true => { let prod_local_111 = false; prod_local_111 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_112 = sHundred()?; { let prod_local_113 = universeHalfSpanMilli()?; { let prod_local_114 = (prod_local_112 < prod_local_113); match prod_local_114 {
+        false => { let prod_local_115 = prod_local_114; match prod_local_115 {
+        false => prod_local_115,
+        true => { let prod_local_116 = sTen()?; { let prod_local_117 = sFive()?; { let prod_local_118 = ((1 << 1) + 1); { let prod_local_119 = sTwelve()?; { let prod_local_120 = conservationLawValid(prod_local_116, prod_local_117, prod_local_118, prod_local_119)?; match prod_local_120 {
+        false => prod_local_120,
+        true => { let prod_local_121 = sTen()?; { let prod_local_122 = 0; { let prod_local_123 = sEleven()?; { let prod_local_124 = conservationLawValid(prod_local_121, prod_local_122, prod_local_122, prod_local_123)?; match prod_local_124 {
+        false => { let prod_local_125 = (1 << 1); { let prod_local_126 = 0; { let prod_local_127 = sFive()?; { let prod_local_128 = conservationLawValid(prod_local_125, prod_local_126, prod_local_127, prod_local_126)?; match prod_local_128 {
+        false => prod_local_120,
+        true => prod_local_124,
+    } } } } },
+        true => { let prod_local_129 = false; prod_local_129 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_130 = universeHalfSpanMilli()?; { let prod_local_131 = (prod_local_130 < prod_local_130); match prod_local_131 {
+        false => { let prod_local_132 = prod_local_114; match prod_local_132 {
+        false => prod_local_132,
+        true => { let prod_local_133 = sTen()?; { let prod_local_134 = sFive()?; { let prod_local_135 = ((1 << 1) + 1); { let prod_local_136 = sTwelve()?; { let prod_local_137 = conservationLawValid(prod_local_133, prod_local_134, prod_local_135, prod_local_136)?; match prod_local_137 {
+        false => prod_local_137,
+        true => { let prod_local_138 = sTen()?; { let prod_local_139 = 0; { let prod_local_140 = sEleven()?; { let prod_local_141 = conservationLawValid(prod_local_138, prod_local_139, prod_local_139, prod_local_140)?; match prod_local_141 {
+        false => { let prod_local_142 = (1 << 1); { let prod_local_143 = 0; { let prod_local_144 = sFive()?; { let prod_local_145 = conservationLawValid(prod_local_142, prod_local_143, prod_local_144, prod_local_143)?; match prod_local_145 {
+        false => prod_local_137,
+        true => prod_local_141,
+    } } } } },
+        true => { let prod_local_146 = false; prod_local_146 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_147 = false; prod_local_147 },
+    } } },
+    } } } },
+    } } } } },
+    } },
+        true => { let prod_local_148 = ((1 << 1) + 1); { let prod_local_149 = sSeven()?; { let prod_local_150 = twoBoneIkReachable(prod_local_148, prod_local_148, prod_local_149)?; match prod_local_150 {
+        false => { let prod_local_151 = prod_local_90; match prod_local_151 {
+        false => prod_local_151,
+        true => { let prod_local_152 = universeCellSpanMeters()?; { let prod_local_153 = sSeven()?; { let prod_local_154 = pow2Constructive(prod_local_153)?; { let prod_local_155 = (prod_local_152 == prod_local_154); match prod_local_155 {
+        false => { let prod_local_157 = prod_local_155; match prod_local_157 {
+        false => prod_local_157,
+        true => { let prod_local_158 = sTen()?; { let prod_local_159 = sFive()?; { let prod_local_160 = ((1 << 1) + 1); { let prod_local_161 = sTwelve()?; { let prod_local_162 = conservationLawValid(prod_local_158, prod_local_159, prod_local_160, prod_local_161)?; match prod_local_162 {
+        false => prod_local_162,
+        true => { let prod_local_163 = sTen()?; { let prod_local_164 = 0; { let prod_local_165 = sEleven()?; { let prod_local_166 = conservationLawValid(prod_local_163, prod_local_164, prod_local_164, prod_local_165)?; match prod_local_166 {
+        false => { let prod_local_167 = (1 << 1); { let prod_local_168 = 0; { let prod_local_169 = sFive()?; { let prod_local_170 = conservationLawValid(prod_local_167, prod_local_168, prod_local_169, prod_local_168)?; match prod_local_170 {
+        false => prod_local_162,
+        true => prod_local_166,
+    } } } } },
+        true => { let prod_local_171 = false; prod_local_171 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_172 = sHundred()?; { let prod_local_173 = universeHalfSpanMilli()?; { let prod_local_174 = (prod_local_172 < prod_local_173); match prod_local_174 {
+        false => { let prod_local_175 = prod_local_174; match prod_local_175 {
+        false => prod_local_175,
+        true => { let prod_local_176 = sTen()?; { let prod_local_177 = sFive()?; { let prod_local_178 = ((1 << 1) + 1); { let prod_local_179 = sTwelve()?; { let prod_local_180 = conservationLawValid(prod_local_176, prod_local_177, prod_local_178, prod_local_179)?; match prod_local_180 {
+        false => prod_local_180,
+        true => { let prod_local_181 = sTen()?; { let prod_local_182 = 0; { let prod_local_183 = sEleven()?; { let prod_local_184 = conservationLawValid(prod_local_181, prod_local_182, prod_local_182, prod_local_183)?; match prod_local_184 {
+        false => { let prod_local_185 = (1 << 1); { let prod_local_186 = 0; { let prod_local_187 = sFive()?; { let prod_local_188 = conservationLawValid(prod_local_185, prod_local_186, prod_local_187, prod_local_186)?; match prod_local_188 {
+        false => prod_local_180,
+        true => prod_local_184,
+    } } } } },
+        true => { let prod_local_189 = false; prod_local_189 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_190 = universeHalfSpanMilli()?; { let prod_local_191 = (prod_local_190 < prod_local_190); match prod_local_191 {
+        false => { let prod_local_192 = prod_local_174; match prod_local_192 {
+        false => prod_local_192,
+        true => { let prod_local_193 = sTen()?; { let prod_local_194 = sFive()?; { let prod_local_195 = ((1 << 1) + 1); { let prod_local_196 = sTwelve()?; { let prod_local_197 = conservationLawValid(prod_local_193, prod_local_194, prod_local_195, prod_local_196)?; match prod_local_197 {
+        false => prod_local_197,
+        true => { let prod_local_198 = sTen()?; { let prod_local_199 = 0; { let prod_local_200 = sEleven()?; { let prod_local_201 = conservationLawValid(prod_local_198, prod_local_199, prod_local_199, prod_local_200)?; match prod_local_201 {
+        false => { let prod_local_202 = (1 << 1); { let prod_local_203 = 0; { let prod_local_204 = sFive()?; { let prod_local_205 = conservationLawValid(prod_local_202, prod_local_203, prod_local_204, prod_local_203)?; match prod_local_205 {
+        false => prod_local_197,
+        true => prod_local_201,
+    } } } } },
+        true => { let prod_local_206 = false; prod_local_206 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_207 = false; prod_local_207 },
+    } } },
+    } } } },
+    } } } } },
+    } },
+        true => { let prod_local_208 = false; prod_local_208 },
+    } } } },
+    } } },
+    }
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                                true => {
+                                                    let _x_636 = sFortyEight()?;
+                                                    {
+                                                        let _x_637 = (1 << 1);
+                                                        {
+                                                            let _x_638 = sweptClearanceValid(
+                                                                _x_636, _x_636, _x_637,
+                                                            )?;
+                                                            match _x_638 {
+                                                                false => {
+                                                                    let _x_761 = sTwoHundred()?;
+                                                                    {
+                                                                        let _x_762 = sHundred()?;
+                                                                        {
+                                                                            let _x_764 =
+                                                                                sFifteen()?;
+                                                                            {
+                                                                                let _x_765 = core::convert::identity::<u64>(_x_764).checked_mul(_x_762).ok_or(self::ComputeError::MulOverflow)?;
+                                                                                {
+                                                                                    let _x_766 = cameraNearSphereGuarded(_x_761, _x_762, _x_765)?;
+                                                                                    match _x_766 {
+                                                                                        false => {
+                                                                                            let prod_local_209 = _x_766;
+                                                                                            match prod_local_209 {
+        false => prod_local_209,
+        true => { let prod_local_210 = sTwentyTwo()?; { let prod_local_211 = sTwentyTwo()?; { let prod_local_212 = (prod_local_210 == prod_local_211); match prod_local_212 {
+        false => { let prod_local_214 = prod_local_212; match prod_local_214 {
+        false => prod_local_214,
+        true => { let prod_local_216 = sSeven()?; { let prod_local_217 = twoBoneIkReachable(_x_57, _x_57, prod_local_216)?; match prod_local_217 {
+        false => { let prod_local_218 = prod_local_217; match prod_local_218 {
+        false => prod_local_218,
+        true => { let prod_local_219 = universeCellSpanMeters()?; { let prod_local_220 = sSeven()?; { let prod_local_221 = pow2Constructive(prod_local_220)?; { let prod_local_222 = (prod_local_219 == prod_local_221); match prod_local_222 {
+        false => { let prod_local_224 = prod_local_222; match prod_local_224 {
+        false => prod_local_224,
+        true => { let prod_local_225 = sTen()?; { let prod_local_226 = sFive()?; { let prod_local_227 = ((1 << 1) + 1); { let prod_local_228 = sTwelve()?; { let prod_local_229 = conservationLawValid(prod_local_225, prod_local_226, prod_local_227, prod_local_228)?; match prod_local_229 {
+        false => prod_local_229,
+        true => { let prod_local_230 = sTen()?; { let prod_local_231 = 0; { let prod_local_232 = sEleven()?; { let prod_local_233 = conservationLawValid(prod_local_230, prod_local_231, prod_local_231, prod_local_232)?; match prod_local_233 {
+        false => { let prod_local_234 = (1 << 1); { let prod_local_235 = 0; { let prod_local_236 = sFive()?; { let prod_local_237 = conservationLawValid(prod_local_234, prod_local_235, prod_local_236, prod_local_235)?; match prod_local_237 {
+        false => prod_local_229,
+        true => prod_local_233,
+    } } } } },
+        true => { let prod_local_238 = false; prod_local_238 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_239 = sHundred()?; { let prod_local_240 = universeHalfSpanMilli()?; { let prod_local_241 = (prod_local_239 < prod_local_240); match prod_local_241 {
+        false => { let prod_local_242 = prod_local_241; match prod_local_242 {
+        false => prod_local_242,
+        true => { let prod_local_243 = sTen()?; { let prod_local_244 = sFive()?; { let prod_local_245 = ((1 << 1) + 1); { let prod_local_246 = sTwelve()?; { let prod_local_247 = conservationLawValid(prod_local_243, prod_local_244, prod_local_245, prod_local_246)?; match prod_local_247 {
+        false => prod_local_247,
+        true => { let prod_local_248 = sTen()?; { let prod_local_249 = 0; { let prod_local_250 = sEleven()?; { let prod_local_251 = conservationLawValid(prod_local_248, prod_local_249, prod_local_249, prod_local_250)?; match prod_local_251 {
+        false => { let prod_local_252 = (1 << 1); { let prod_local_253 = 0; { let prod_local_254 = sFive()?; { let prod_local_255 = conservationLawValid(prod_local_252, prod_local_253, prod_local_254, prod_local_253)?; match prod_local_255 {
+        false => prod_local_247,
+        true => prod_local_251,
+    } } } } },
+        true => { let prod_local_256 = false; prod_local_256 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_257 = universeHalfSpanMilli()?; { let prod_local_258 = (prod_local_257 < prod_local_257); match prod_local_258 {
+        false => { let prod_local_259 = prod_local_241; match prod_local_259 {
+        false => prod_local_259,
+        true => { let prod_local_260 = sTen()?; { let prod_local_261 = sFive()?; { let prod_local_262 = ((1 << 1) + 1); { let prod_local_263 = sTwelve()?; { let prod_local_264 = conservationLawValid(prod_local_260, prod_local_261, prod_local_262, prod_local_263)?; match prod_local_264 {
+        false => prod_local_264,
+        true => { let prod_local_265 = sTen()?; { let prod_local_266 = 0; { let prod_local_267 = sEleven()?; { let prod_local_268 = conservationLawValid(prod_local_265, prod_local_266, prod_local_266, prod_local_267)?; match prod_local_268 {
+        false => { let prod_local_269 = (1 << 1); { let prod_local_270 = 0; { let prod_local_271 = sFive()?; { let prod_local_272 = conservationLawValid(prod_local_269, prod_local_270, prod_local_271, prod_local_270)?; match prod_local_272 {
+        false => prod_local_264,
+        true => prod_local_268,
+    } } } } },
+        true => { let prod_local_273 = false; prod_local_273 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_274 = false; prod_local_274 },
+    } } },
+    } } } },
+    } } } } },
+    } },
+        true => { let prod_local_275 = ((1 << 1) + 1); { let prod_local_276 = sSeven()?; { let prod_local_277 = twoBoneIkReachable(prod_local_275, prod_local_275, prod_local_276)?; match prod_local_277 {
+        false => { let prod_local_278 = prod_local_217; match prod_local_278 {
+        false => prod_local_278,
+        true => { let prod_local_279 = universeCellSpanMeters()?; { let prod_local_280 = sSeven()?; { let prod_local_281 = pow2Constructive(prod_local_280)?; { let prod_local_282 = (prod_local_279 == prod_local_281); match prod_local_282 {
+        false => { let prod_local_284 = prod_local_282; match prod_local_284 {
+        false => prod_local_284,
+        true => { let prod_local_285 = sTen()?; { let prod_local_286 = sFive()?; { let prod_local_287 = ((1 << 1) + 1); { let prod_local_288 = sTwelve()?; { let prod_local_289 = conservationLawValid(prod_local_285, prod_local_286, prod_local_287, prod_local_288)?; match prod_local_289 {
+        false => prod_local_289,
+        true => { let prod_local_290 = sTen()?; { let prod_local_291 = 0; { let prod_local_292 = sEleven()?; { let prod_local_293 = conservationLawValid(prod_local_290, prod_local_291, prod_local_291, prod_local_292)?; match prod_local_293 {
+        false => { let prod_local_294 = (1 << 1); { let prod_local_295 = 0; { let prod_local_296 = sFive()?; { let prod_local_297 = conservationLawValid(prod_local_294, prod_local_295, prod_local_296, prod_local_295)?; match prod_local_297 {
+        false => prod_local_289,
+        true => prod_local_293,
+    } } } } },
+        true => { let prod_local_298 = false; prod_local_298 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_299 = sHundred()?; { let prod_local_300 = universeHalfSpanMilli()?; { let prod_local_301 = (prod_local_299 < prod_local_300); match prod_local_301 {
+        false => { let prod_local_302 = prod_local_301; match prod_local_302 {
+        false => prod_local_302,
+        true => { let prod_local_303 = sTen()?; { let prod_local_304 = sFive()?; { let prod_local_305 = ((1 << 1) + 1); { let prod_local_306 = sTwelve()?; { let prod_local_307 = conservationLawValid(prod_local_303, prod_local_304, prod_local_305, prod_local_306)?; match prod_local_307 {
+        false => prod_local_307,
+        true => { let prod_local_308 = sTen()?; { let prod_local_309 = 0; { let prod_local_310 = sEleven()?; { let prod_local_311 = conservationLawValid(prod_local_308, prod_local_309, prod_local_309, prod_local_310)?; match prod_local_311 {
+        false => { let prod_local_312 = (1 << 1); { let prod_local_313 = 0; { let prod_local_314 = sFive()?; { let prod_local_315 = conservationLawValid(prod_local_312, prod_local_313, prod_local_314, prod_local_313)?; match prod_local_315 {
+        false => prod_local_307,
+        true => prod_local_311,
+    } } } } },
+        true => { let prod_local_316 = false; prod_local_316 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_317 = universeHalfSpanMilli()?; { let prod_local_318 = (prod_local_317 < prod_local_317); match prod_local_318 {
+        false => { let prod_local_319 = prod_local_301; match prod_local_319 {
+        false => prod_local_319,
+        true => { let prod_local_320 = sTen()?; { let prod_local_321 = sFive()?; { let prod_local_322 = ((1 << 1) + 1); { let prod_local_323 = sTwelve()?; { let prod_local_324 = conservationLawValid(prod_local_320, prod_local_321, prod_local_322, prod_local_323)?; match prod_local_324 {
+        false => prod_local_324,
+        true => { let prod_local_325 = sTen()?; { let prod_local_326 = 0; { let prod_local_327 = sEleven()?; { let prod_local_328 = conservationLawValid(prod_local_325, prod_local_326, prod_local_326, prod_local_327)?; match prod_local_328 {
+        false => { let prod_local_329 = (1 << 1); { let prod_local_330 = 0; { let prod_local_331 = sFive()?; { let prod_local_332 = conservationLawValid(prod_local_329, prod_local_330, prod_local_331, prod_local_330)?; match prod_local_332 {
+        false => prod_local_324,
+        true => prod_local_328,
+    } } } } },
+        true => { let prod_local_333 = false; prod_local_333 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_334 = false; prod_local_334 },
+    } } },
+    } } } },
+    } } } } },
+    } },
+        true => { let prod_local_335 = false; prod_local_335 },
+    } } } },
+    } } },
+    } },
+        true => { let prod_local_336 = sFour()?; { let prod_local_337 = (prod_local_336 == _x_57); { let prod_local_338 = prod_local_337; match prod_local_338 {
+        false => prod_local_338,
+        true => { let prod_local_340 = sSeven()?; { let prod_local_341 = twoBoneIkReachable(_x_57, _x_57, prod_local_340)?; match prod_local_341 {
+        false => { let prod_local_342 = prod_local_341; match prod_local_342 {
+        false => prod_local_342,
+        true => { let prod_local_343 = universeCellSpanMeters()?; { let prod_local_344 = sSeven()?; { let prod_local_345 = pow2Constructive(prod_local_344)?; { let prod_local_346 = (prod_local_343 == prod_local_345); match prod_local_346 {
+        false => { let prod_local_348 = prod_local_346; match prod_local_348 {
+        false => prod_local_348,
+        true => { let prod_local_349 = sTen()?; { let prod_local_350 = sFive()?; { let prod_local_351 = ((1 << 1) + 1); { let prod_local_352 = sTwelve()?; { let prod_local_353 = conservationLawValid(prod_local_349, prod_local_350, prod_local_351, prod_local_352)?; match prod_local_353 {
+        false => prod_local_353,
+        true => { let prod_local_354 = sTen()?; { let prod_local_355 = 0; { let prod_local_356 = sEleven()?; { let prod_local_357 = conservationLawValid(prod_local_354, prod_local_355, prod_local_355, prod_local_356)?; match prod_local_357 {
+        false => { let prod_local_358 = (1 << 1); { let prod_local_359 = 0; { let prod_local_360 = sFive()?; { let prod_local_361 = conservationLawValid(prod_local_358, prod_local_359, prod_local_360, prod_local_359)?; match prod_local_361 {
+        false => prod_local_353,
+        true => prod_local_357,
+    } } } } },
+        true => { let prod_local_362 = false; prod_local_362 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_363 = sHundred()?; { let prod_local_364 = universeHalfSpanMilli()?; { let prod_local_365 = (prod_local_363 < prod_local_364); match prod_local_365 {
+        false => { let prod_local_366 = prod_local_365; match prod_local_366 {
+        false => prod_local_366,
+        true => { let prod_local_367 = sTen()?; { let prod_local_368 = sFive()?; { let prod_local_369 = ((1 << 1) + 1); { let prod_local_370 = sTwelve()?; { let prod_local_371 = conservationLawValid(prod_local_367, prod_local_368, prod_local_369, prod_local_370)?; match prod_local_371 {
+        false => prod_local_371,
+        true => { let prod_local_372 = sTen()?; { let prod_local_373 = 0; { let prod_local_374 = sEleven()?; { let prod_local_375 = conservationLawValid(prod_local_372, prod_local_373, prod_local_373, prod_local_374)?; match prod_local_375 {
+        false => { let prod_local_376 = (1 << 1); { let prod_local_377 = 0; { let prod_local_378 = sFive()?; { let prod_local_379 = conservationLawValid(prod_local_376, prod_local_377, prod_local_378, prod_local_377)?; match prod_local_379 {
+        false => prod_local_371,
+        true => prod_local_375,
+    } } } } },
+        true => { let prod_local_380 = false; prod_local_380 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_381 = universeHalfSpanMilli()?; { let prod_local_382 = (prod_local_381 < prod_local_381); match prod_local_382 {
+        false => { let prod_local_383 = prod_local_365; match prod_local_383 {
+        false => prod_local_383,
+        true => { let prod_local_384 = sTen()?; { let prod_local_385 = sFive()?; { let prod_local_386 = ((1 << 1) + 1); { let prod_local_387 = sTwelve()?; { let prod_local_388 = conservationLawValid(prod_local_384, prod_local_385, prod_local_386, prod_local_387)?; match prod_local_388 {
+        false => prod_local_388,
+        true => { let prod_local_389 = sTen()?; { let prod_local_390 = 0; { let prod_local_391 = sEleven()?; { let prod_local_392 = conservationLawValid(prod_local_389, prod_local_390, prod_local_390, prod_local_391)?; match prod_local_392 {
+        false => { let prod_local_393 = (1 << 1); { let prod_local_394 = 0; { let prod_local_395 = sFive()?; { let prod_local_396 = conservationLawValid(prod_local_393, prod_local_394, prod_local_395, prod_local_394)?; match prod_local_396 {
+        false => prod_local_388,
+        true => prod_local_392,
+    } } } } },
+        true => { let prod_local_397 = false; prod_local_397 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_398 = false; prod_local_398 },
+    } } },
+    } } } },
+    } } } } },
+    } },
+        true => { let prod_local_399 = ((1 << 1) + 1); { let prod_local_400 = sSeven()?; { let prod_local_401 = twoBoneIkReachable(prod_local_399, prod_local_399, prod_local_400)?; match prod_local_401 {
+        false => { let prod_local_402 = prod_local_341; match prod_local_402 {
+        false => prod_local_402,
+        true => { let prod_local_403 = universeCellSpanMeters()?; { let prod_local_404 = sSeven()?; { let prod_local_405 = pow2Constructive(prod_local_404)?; { let prod_local_406 = (prod_local_403 == prod_local_405); match prod_local_406 {
+        false => { let prod_local_408 = prod_local_406; match prod_local_408 {
+        false => prod_local_408,
+        true => { let prod_local_409 = sTen()?; { let prod_local_410 = sFive()?; { let prod_local_411 = ((1 << 1) + 1); { let prod_local_412 = sTwelve()?; { let prod_local_413 = conservationLawValid(prod_local_409, prod_local_410, prod_local_411, prod_local_412)?; match prod_local_413 {
+        false => prod_local_413,
+        true => { let prod_local_414 = sTen()?; { let prod_local_415 = 0; { let prod_local_416 = sEleven()?; { let prod_local_417 = conservationLawValid(prod_local_414, prod_local_415, prod_local_415, prod_local_416)?; match prod_local_417 {
+        false => { let prod_local_418 = (1 << 1); { let prod_local_419 = 0; { let prod_local_420 = sFive()?; { let prod_local_421 = conservationLawValid(prod_local_418, prod_local_419, prod_local_420, prod_local_419)?; match prod_local_421 {
+        false => prod_local_413,
+        true => prod_local_417,
+    } } } } },
+        true => { let prod_local_422 = false; prod_local_422 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_423 = sHundred()?; { let prod_local_424 = universeHalfSpanMilli()?; { let prod_local_425 = (prod_local_423 < prod_local_424); match prod_local_425 {
+        false => { let prod_local_426 = prod_local_425; match prod_local_426 {
+        false => prod_local_426,
+        true => { let prod_local_427 = sTen()?; { let prod_local_428 = sFive()?; { let prod_local_429 = ((1 << 1) + 1); { let prod_local_430 = sTwelve()?; { let prod_local_431 = conservationLawValid(prod_local_427, prod_local_428, prod_local_429, prod_local_430)?; match prod_local_431 {
+        false => prod_local_431,
+        true => { let prod_local_432 = sTen()?; { let prod_local_433 = 0; { let prod_local_434 = sEleven()?; { let prod_local_435 = conservationLawValid(prod_local_432, prod_local_433, prod_local_433, prod_local_434)?; match prod_local_435 {
+        false => { let prod_local_436 = (1 << 1); { let prod_local_437 = 0; { let prod_local_438 = sFive()?; { let prod_local_439 = conservationLawValid(prod_local_436, prod_local_437, prod_local_438, prod_local_437)?; match prod_local_439 {
+        false => prod_local_431,
+        true => prod_local_435,
+    } } } } },
+        true => { let prod_local_440 = false; prod_local_440 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_441 = universeHalfSpanMilli()?; { let prod_local_442 = (prod_local_441 < prod_local_441); match prod_local_442 {
+        false => { let prod_local_443 = prod_local_425; match prod_local_443 {
+        false => prod_local_443,
+        true => { let prod_local_444 = sTen()?; { let prod_local_445 = sFive()?; { let prod_local_446 = ((1 << 1) + 1); { let prod_local_447 = sTwelve()?; { let prod_local_448 = conservationLawValid(prod_local_444, prod_local_445, prod_local_446, prod_local_447)?; match prod_local_448 {
+        false => prod_local_448,
+        true => { let prod_local_449 = sTen()?; { let prod_local_450 = 0; { let prod_local_451 = sEleven()?; { let prod_local_452 = conservationLawValid(prod_local_449, prod_local_450, prod_local_450, prod_local_451)?; match prod_local_452 {
+        false => { let prod_local_453 = (1 << 1); { let prod_local_454 = 0; { let prod_local_455 = sFive()?; { let prod_local_456 = conservationLawValid(prod_local_453, prod_local_454, prod_local_455, prod_local_454)?; match prod_local_456 {
+        false => prod_local_448,
+        true => prod_local_452,
+    } } } } },
+        true => { let prod_local_457 = false; prod_local_457 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_458 = false; prod_local_458 },
+    } } },
+    } } } },
+    } } } } },
+    } },
+        true => { let prod_local_459 = false; prod_local_459 },
+    } } } },
+    } } },
+    } } } },
+    } } } },
+    }
+                                                                                        }
+                                                                                        true => {
+                                                                                            let _x_767 = sHundred()?;
+                                                                                            {
+                                                                                                let _x_769 = sFifteen()?;
+                                                                                                {
+                                                                                                    let _x_770 = core::convert::identity::<u64>(_x_769).checked_mul(_x_767).ok_or(self::ComputeError::MulOverflow)?;
+                                                                                                    {
+                                                                                                        let _x_771 = cameraNearSphereGuarded(_x_767, _x_767, _x_770)?;
+                                                                                                        match _x_771 {
+        false => { let prod_local_460 = _x_766; match prod_local_460 {
+        false => prod_local_460,
+        true => { let prod_local_461 = sTwentyTwo()?; { let prod_local_462 = sTwentyTwo()?; { let prod_local_463 = (prod_local_461 == prod_local_462); match prod_local_463 {
+        false => { let prod_local_465 = prod_local_463; match prod_local_465 {
+        false => prod_local_465,
+        true => { let prod_local_467 = sSeven()?; { let prod_local_468 = twoBoneIkReachable(_x_57, _x_57, prod_local_467)?; match prod_local_468 {
+        false => { let prod_local_469 = prod_local_468; match prod_local_469 {
+        false => prod_local_469,
+        true => { let prod_local_470 = universeCellSpanMeters()?; { let prod_local_471 = sSeven()?; { let prod_local_472 = pow2Constructive(prod_local_471)?; { let prod_local_473 = (prod_local_470 == prod_local_472); match prod_local_473 {
+        false => { let prod_local_475 = prod_local_473; match prod_local_475 {
+        false => prod_local_475,
+        true => { let prod_local_476 = sTen()?; { let prod_local_477 = sFive()?; { let prod_local_478 = ((1 << 1) + 1); { let prod_local_479 = sTwelve()?; { let prod_local_480 = conservationLawValid(prod_local_476, prod_local_477, prod_local_478, prod_local_479)?; match prod_local_480 {
+        false => prod_local_480,
+        true => { let prod_local_481 = sTen()?; { let prod_local_482 = 0; { let prod_local_483 = sEleven()?; { let prod_local_484 = conservationLawValid(prod_local_481, prod_local_482, prod_local_482, prod_local_483)?; match prod_local_484 {
+        false => { let prod_local_485 = (1 << 1); { let prod_local_486 = 0; { let prod_local_487 = sFive()?; { let prod_local_488 = conservationLawValid(prod_local_485, prod_local_486, prod_local_487, prod_local_486)?; match prod_local_488 {
+        false => prod_local_480,
+        true => prod_local_484,
+    } } } } },
+        true => { let prod_local_489 = false; prod_local_489 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_490 = sHundred()?; { let prod_local_491 = universeHalfSpanMilli()?; { let prod_local_492 = (prod_local_490 < prod_local_491); match prod_local_492 {
+        false => { let prod_local_493 = prod_local_492; match prod_local_493 {
+        false => prod_local_493,
+        true => { let prod_local_494 = sTen()?; { let prod_local_495 = sFive()?; { let prod_local_496 = ((1 << 1) + 1); { let prod_local_497 = sTwelve()?; { let prod_local_498 = conservationLawValid(prod_local_494, prod_local_495, prod_local_496, prod_local_497)?; match prod_local_498 {
+        false => prod_local_498,
+        true => { let prod_local_499 = sTen()?; { let prod_local_500 = 0; { let prod_local_501 = sEleven()?; { let prod_local_502 = conservationLawValid(prod_local_499, prod_local_500, prod_local_500, prod_local_501)?; match prod_local_502 {
+        false => { let prod_local_503 = (1 << 1); { let prod_local_504 = 0; { let prod_local_505 = sFive()?; { let prod_local_506 = conservationLawValid(prod_local_503, prod_local_504, prod_local_505, prod_local_504)?; match prod_local_506 {
+        false => prod_local_498,
+        true => prod_local_502,
+    } } } } },
+        true => { let prod_local_507 = false; prod_local_507 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_508 = universeHalfSpanMilli()?; { let prod_local_509 = (prod_local_508 < prod_local_508); match prod_local_509 {
+        false => { let prod_local_510 = prod_local_492; match prod_local_510 {
+        false => prod_local_510,
+        true => { let prod_local_511 = sTen()?; { let prod_local_512 = sFive()?; { let prod_local_513 = ((1 << 1) + 1); { let prod_local_514 = sTwelve()?; { let prod_local_515 = conservationLawValid(prod_local_511, prod_local_512, prod_local_513, prod_local_514)?; match prod_local_515 {
+        false => prod_local_515,
+        true => { let prod_local_516 = sTen()?; { let prod_local_517 = 0; { let prod_local_518 = sEleven()?; { let prod_local_519 = conservationLawValid(prod_local_516, prod_local_517, prod_local_517, prod_local_518)?; match prod_local_519 {
+        false => { let prod_local_520 = (1 << 1); { let prod_local_521 = 0; { let prod_local_522 = sFive()?; { let prod_local_523 = conservationLawValid(prod_local_520, prod_local_521, prod_local_522, prod_local_521)?; match prod_local_523 {
+        false => prod_local_515,
+        true => prod_local_519,
+    } } } } },
+        true => { let prod_local_524 = false; prod_local_524 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_525 = false; prod_local_525 },
+    } } },
+    } } } },
+    } } } } },
+    } },
+        true => { let prod_local_526 = ((1 << 1) + 1); { let prod_local_527 = sSeven()?; { let prod_local_528 = twoBoneIkReachable(prod_local_526, prod_local_526, prod_local_527)?; match prod_local_528 {
+        false => { let prod_local_529 = prod_local_468; match prod_local_529 {
+        false => prod_local_529,
+        true => { let prod_local_530 = universeCellSpanMeters()?; { let prod_local_531 = sSeven()?; { let prod_local_532 = pow2Constructive(prod_local_531)?; { let prod_local_533 = (prod_local_530 == prod_local_532); match prod_local_533 {
+        false => { let prod_local_535 = prod_local_533; match prod_local_535 {
+        false => prod_local_535,
+        true => { let prod_local_536 = sTen()?; { let prod_local_537 = sFive()?; { let prod_local_538 = ((1 << 1) + 1); { let prod_local_539 = sTwelve()?; { let prod_local_540 = conservationLawValid(prod_local_536, prod_local_537, prod_local_538, prod_local_539)?; match prod_local_540 {
+        false => prod_local_540,
+        true => { let prod_local_541 = sTen()?; { let prod_local_542 = 0; { let prod_local_543 = sEleven()?; { let prod_local_544 = conservationLawValid(prod_local_541, prod_local_542, prod_local_542, prod_local_543)?; match prod_local_544 {
+        false => { let prod_local_545 = (1 << 1); { let prod_local_546 = 0; { let prod_local_547 = sFive()?; { let prod_local_548 = conservationLawValid(prod_local_545, prod_local_546, prod_local_547, prod_local_546)?; match prod_local_548 {
+        false => prod_local_540,
+        true => prod_local_544,
+    } } } } },
+        true => { let prod_local_549 = false; prod_local_549 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_550 = sHundred()?; { let prod_local_551 = universeHalfSpanMilli()?; { let prod_local_552 = (prod_local_550 < prod_local_551); match prod_local_552 {
+        false => { let prod_local_553 = prod_local_552; match prod_local_553 {
+        false => prod_local_553,
+        true => { let prod_local_554 = sTen()?; { let prod_local_555 = sFive()?; { let prod_local_556 = ((1 << 1) + 1); { let prod_local_557 = sTwelve()?; { let prod_local_558 = conservationLawValid(prod_local_554, prod_local_555, prod_local_556, prod_local_557)?; match prod_local_558 {
+        false => prod_local_558,
+        true => { let prod_local_559 = sTen()?; { let prod_local_560 = 0; { let prod_local_561 = sEleven()?; { let prod_local_562 = conservationLawValid(prod_local_559, prod_local_560, prod_local_560, prod_local_561)?; match prod_local_562 {
+        false => { let prod_local_563 = (1 << 1); { let prod_local_564 = 0; { let prod_local_565 = sFive()?; { let prod_local_566 = conservationLawValid(prod_local_563, prod_local_564, prod_local_565, prod_local_564)?; match prod_local_566 {
+        false => prod_local_558,
+        true => prod_local_562,
+    } } } } },
+        true => { let prod_local_567 = false; prod_local_567 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_568 = universeHalfSpanMilli()?; { let prod_local_569 = (prod_local_568 < prod_local_568); match prod_local_569 {
+        false => { let prod_local_570 = prod_local_552; match prod_local_570 {
+        false => prod_local_570,
+        true => { let prod_local_571 = sTen()?; { let prod_local_572 = sFive()?; { let prod_local_573 = ((1 << 1) + 1); { let prod_local_574 = sTwelve()?; { let prod_local_575 = conservationLawValid(prod_local_571, prod_local_572, prod_local_573, prod_local_574)?; match prod_local_575 {
+        false => prod_local_575,
+        true => { let prod_local_576 = sTen()?; { let prod_local_577 = 0; { let prod_local_578 = sEleven()?; { let prod_local_579 = conservationLawValid(prod_local_576, prod_local_577, prod_local_577, prod_local_578)?; match prod_local_579 {
+        false => { let prod_local_580 = (1 << 1); { let prod_local_581 = 0; { let prod_local_582 = sFive()?; { let prod_local_583 = conservationLawValid(prod_local_580, prod_local_581, prod_local_582, prod_local_581)?; match prod_local_583 {
+        false => prod_local_575,
+        true => prod_local_579,
+    } } } } },
+        true => { let prod_local_584 = false; prod_local_584 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_585 = false; prod_local_585 },
+    } } },
+    } } } },
+    } } } } },
+    } },
+        true => { let prod_local_586 = false; prod_local_586 },
+    } } } },
+    } } },
+    } },
+        true => { let prod_local_587 = sFour()?; { let prod_local_588 = (prod_local_587 == _x_57); { let prod_local_589 = prod_local_588; match prod_local_589 {
+        false => prod_local_589,
+        true => { let prod_local_591 = sSeven()?; { let prod_local_592 = twoBoneIkReachable(_x_57, _x_57, prod_local_591)?; match prod_local_592 {
+        false => { let prod_local_593 = prod_local_592; match prod_local_593 {
+        false => prod_local_593,
+        true => { let prod_local_594 = universeCellSpanMeters()?; { let prod_local_595 = sSeven()?; { let prod_local_596 = pow2Constructive(prod_local_595)?; { let prod_local_597 = (prod_local_594 == prod_local_596); match prod_local_597 {
+        false => { let prod_local_599 = prod_local_597; match prod_local_599 {
+        false => prod_local_599,
+        true => { let prod_local_600 = sTen()?; { let prod_local_601 = sFive()?; { let prod_local_602 = ((1 << 1) + 1); { let prod_local_603 = sTwelve()?; { let prod_local_604 = conservationLawValid(prod_local_600, prod_local_601, prod_local_602, prod_local_603)?; match prod_local_604 {
+        false => prod_local_604,
+        true => { let prod_local_605 = sTen()?; { let prod_local_606 = 0; { let prod_local_607 = sEleven()?; { let prod_local_608 = conservationLawValid(prod_local_605, prod_local_606, prod_local_606, prod_local_607)?; match prod_local_608 {
+        false => { let prod_local_609 = (1 << 1); { let prod_local_610 = 0; { let prod_local_611 = sFive()?; { let prod_local_612 = conservationLawValid(prod_local_609, prod_local_610, prod_local_611, prod_local_610)?; match prod_local_612 {
+        false => prod_local_604,
+        true => prod_local_608,
+    } } } } },
+        true => { let prod_local_613 = false; prod_local_613 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_614 = sHundred()?; { let prod_local_615 = universeHalfSpanMilli()?; { let prod_local_616 = (prod_local_614 < prod_local_615); match prod_local_616 {
+        false => { let prod_local_617 = prod_local_616; match prod_local_617 {
+        false => prod_local_617,
+        true => { let prod_local_618 = sTen()?; { let prod_local_619 = sFive()?; { let prod_local_620 = ((1 << 1) + 1); { let prod_local_621 = sTwelve()?; { let prod_local_622 = conservationLawValid(prod_local_618, prod_local_619, prod_local_620, prod_local_621)?; match prod_local_622 {
+        false => prod_local_622,
+        true => { let prod_local_623 = sTen()?; { let prod_local_624 = 0; { let prod_local_625 = sEleven()?; { let prod_local_626 = conservationLawValid(prod_local_623, prod_local_624, prod_local_624, prod_local_625)?; match prod_local_626 {
+        false => { let prod_local_627 = (1 << 1); { let prod_local_628 = 0; { let prod_local_629 = sFive()?; { let prod_local_630 = conservationLawValid(prod_local_627, prod_local_628, prod_local_629, prod_local_628)?; match prod_local_630 {
+        false => prod_local_622,
+        true => prod_local_626,
+    } } } } },
+        true => { let prod_local_631 = false; prod_local_631 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_632 = universeHalfSpanMilli()?; { let prod_local_633 = (prod_local_632 < prod_local_632); match prod_local_633 {
+        false => { let prod_local_634 = prod_local_616; match prod_local_634 {
+        false => prod_local_634,
+        true => { let prod_local_635 = sTen()?; { let prod_local_636 = sFive()?; { let prod_local_637 = ((1 << 1) + 1); { let prod_local_638 = sTwelve()?; { let prod_local_639 = conservationLawValid(prod_local_635, prod_local_636, prod_local_637, prod_local_638)?; match prod_local_639 {
+        false => prod_local_639,
+        true => { let prod_local_640 = sTen()?; { let prod_local_641 = 0; { let prod_local_642 = sEleven()?; { let prod_local_643 = conservationLawValid(prod_local_640, prod_local_641, prod_local_641, prod_local_642)?; match prod_local_643 {
+        false => { let prod_local_644 = (1 << 1); { let prod_local_645 = 0; { let prod_local_646 = sFive()?; { let prod_local_647 = conservationLawValid(prod_local_644, prod_local_645, prod_local_646, prod_local_645)?; match prod_local_647 {
+        false => prod_local_639,
+        true => prod_local_643,
+    } } } } },
+        true => { let prod_local_648 = false; prod_local_648 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_649 = false; prod_local_649 },
+    } } },
+    } } } },
+    } } } } },
+    } },
+        true => { let prod_local_650 = ((1 << 1) + 1); { let prod_local_651 = sSeven()?; { let prod_local_652 = twoBoneIkReachable(prod_local_650, prod_local_650, prod_local_651)?; match prod_local_652 {
+        false => { let prod_local_653 = prod_local_592; match prod_local_653 {
+        false => prod_local_653,
+        true => { let prod_local_654 = universeCellSpanMeters()?; { let prod_local_655 = sSeven()?; { let prod_local_656 = pow2Constructive(prod_local_655)?; { let prod_local_657 = (prod_local_654 == prod_local_656); match prod_local_657 {
+        false => { let prod_local_659 = prod_local_657; match prod_local_659 {
+        false => prod_local_659,
+        true => { let prod_local_660 = sTen()?; { let prod_local_661 = sFive()?; { let prod_local_662 = ((1 << 1) + 1); { let prod_local_663 = sTwelve()?; { let prod_local_664 = conservationLawValid(prod_local_660, prod_local_661, prod_local_662, prod_local_663)?; match prod_local_664 {
+        false => prod_local_664,
+        true => { let prod_local_665 = sTen()?; { let prod_local_666 = 0; { let prod_local_667 = sEleven()?; { let prod_local_668 = conservationLawValid(prod_local_665, prod_local_666, prod_local_666, prod_local_667)?; match prod_local_668 {
+        false => { let prod_local_669 = (1 << 1); { let prod_local_670 = 0; { let prod_local_671 = sFive()?; { let prod_local_672 = conservationLawValid(prod_local_669, prod_local_670, prod_local_671, prod_local_670)?; match prod_local_672 {
+        false => prod_local_664,
+        true => prod_local_668,
+    } } } } },
+        true => { let prod_local_673 = false; prod_local_673 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_674 = sHundred()?; { let prod_local_675 = universeHalfSpanMilli()?; { let prod_local_676 = (prod_local_674 < prod_local_675); match prod_local_676 {
+        false => { let prod_local_677 = prod_local_676; match prod_local_677 {
+        false => prod_local_677,
+        true => { let prod_local_678 = sTen()?; { let prod_local_679 = sFive()?; { let prod_local_680 = ((1 << 1) + 1); { let prod_local_681 = sTwelve()?; { let prod_local_682 = conservationLawValid(prod_local_678, prod_local_679, prod_local_680, prod_local_681)?; match prod_local_682 {
+        false => prod_local_682,
+        true => { let prod_local_683 = sTen()?; { let prod_local_684 = 0; { let prod_local_685 = sEleven()?; { let prod_local_686 = conservationLawValid(prod_local_683, prod_local_684, prod_local_684, prod_local_685)?; match prod_local_686 {
+        false => { let prod_local_687 = (1 << 1); { let prod_local_688 = 0; { let prod_local_689 = sFive()?; { let prod_local_690 = conservationLawValid(prod_local_687, prod_local_688, prod_local_689, prod_local_688)?; match prod_local_690 {
+        false => prod_local_682,
+        true => prod_local_686,
+    } } } } },
+        true => { let prod_local_691 = false; prod_local_691 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_692 = universeHalfSpanMilli()?; { let prod_local_693 = (prod_local_692 < prod_local_692); match prod_local_693 {
+        false => { let prod_local_694 = prod_local_676; match prod_local_694 {
+        false => prod_local_694,
+        true => { let prod_local_695 = sTen()?; { let prod_local_696 = sFive()?; { let prod_local_697 = ((1 << 1) + 1); { let prod_local_698 = sTwelve()?; { let prod_local_699 = conservationLawValid(prod_local_695, prod_local_696, prod_local_697, prod_local_698)?; match prod_local_699 {
+        false => prod_local_699,
+        true => { let prod_local_700 = sTen()?; { let prod_local_701 = 0; { let prod_local_702 = sEleven()?; { let prod_local_703 = conservationLawValid(prod_local_700, prod_local_701, prod_local_701, prod_local_702)?; match prod_local_703 {
+        false => { let prod_local_704 = (1 << 1); { let prod_local_705 = 0; { let prod_local_706 = sFive()?; { let prod_local_707 = conservationLawValid(prod_local_704, prod_local_705, prod_local_706, prod_local_705)?; match prod_local_707 {
+        false => prod_local_699,
+        true => prod_local_703,
+    } } } } },
+        true => { let prod_local_708 = false; prod_local_708 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_709 = false; prod_local_709 },
+    } } },
+    } } } },
+    } } } } },
+    } },
+        true => { let prod_local_710 = false; prod_local_710 },
+    } } } },
+    } } },
+    } } } },
+    } } } },
+    } },
+        true => { let prod_local_711 = _x_638; match prod_local_711 {
+        false => prod_local_711,
+        true => { let prod_local_712 = sTwentyTwo()?; { let prod_local_713 = sTwentyTwo()?; { let prod_local_714 = (prod_local_712 == prod_local_713); match prod_local_714 {
+        false => { let prod_local_716 = prod_local_714; match prod_local_716 {
+        false => prod_local_716,
+        true => { let prod_local_718 = sSeven()?; { let prod_local_719 = twoBoneIkReachable(_x_57, _x_57, prod_local_718)?; match prod_local_719 {
+        false => { let prod_local_720 = prod_local_719; match prod_local_720 {
+        false => prod_local_720,
+        true => { let prod_local_721 = universeCellSpanMeters()?; { let prod_local_722 = sSeven()?; { let prod_local_723 = pow2Constructive(prod_local_722)?; { let prod_local_724 = (prod_local_721 == prod_local_723); match prod_local_724 {
+        false => { let prod_local_726 = prod_local_724; match prod_local_726 {
+        false => prod_local_726,
+        true => { let prod_local_727 = sTen()?; { let prod_local_728 = sFive()?; { let prod_local_729 = ((1 << 1) + 1); { let prod_local_730 = sTwelve()?; { let prod_local_731 = conservationLawValid(prod_local_727, prod_local_728, prod_local_729, prod_local_730)?; match prod_local_731 {
+        false => prod_local_731,
+        true => { let prod_local_732 = sTen()?; { let prod_local_733 = 0; { let prod_local_734 = sEleven()?; { let prod_local_735 = conservationLawValid(prod_local_732, prod_local_733, prod_local_733, prod_local_734)?; match prod_local_735 {
+        false => { let prod_local_736 = (1 << 1); { let prod_local_737 = 0; { let prod_local_738 = sFive()?; { let prod_local_739 = conservationLawValid(prod_local_736, prod_local_737, prod_local_738, prod_local_737)?; match prod_local_739 {
+        false => prod_local_731,
+        true => prod_local_735,
+    } } } } },
+        true => { let prod_local_740 = false; prod_local_740 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_741 = sHundred()?; { let prod_local_742 = universeHalfSpanMilli()?; { let prod_local_743 = (prod_local_741 < prod_local_742); match prod_local_743 {
+        false => { let prod_local_744 = prod_local_743; match prod_local_744 {
+        false => prod_local_744,
+        true => { let prod_local_745 = sTen()?; { let prod_local_746 = sFive()?; { let prod_local_747 = ((1 << 1) + 1); { let prod_local_748 = sTwelve()?; { let prod_local_749 = conservationLawValid(prod_local_745, prod_local_746, prod_local_747, prod_local_748)?; match prod_local_749 {
+        false => prod_local_749,
+        true => { let prod_local_750 = sTen()?; { let prod_local_751 = 0; { let prod_local_752 = sEleven()?; { let prod_local_753 = conservationLawValid(prod_local_750, prod_local_751, prod_local_751, prod_local_752)?; match prod_local_753 {
+        false => { let prod_local_754 = (1 << 1); { let prod_local_755 = 0; { let prod_local_756 = sFive()?; { let prod_local_757 = conservationLawValid(prod_local_754, prod_local_755, prod_local_756, prod_local_755)?; match prod_local_757 {
+        false => prod_local_749,
+        true => prod_local_753,
+    } } } } },
+        true => { let prod_local_758 = false; prod_local_758 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_759 = universeHalfSpanMilli()?; { let prod_local_760 = (prod_local_759 < prod_local_759); match prod_local_760 {
+        false => { let prod_local_761 = prod_local_743; match prod_local_761 {
+        false => prod_local_761,
+        true => { let prod_local_762 = sTen()?; { let prod_local_763 = sFive()?; { let prod_local_764 = ((1 << 1) + 1); { let prod_local_765 = sTwelve()?; { let prod_local_766 = conservationLawValid(prod_local_762, prod_local_763, prod_local_764, prod_local_765)?; match prod_local_766 {
+        false => prod_local_766,
+        true => { let prod_local_767 = sTen()?; { let prod_local_768 = 0; { let prod_local_769 = sEleven()?; { let prod_local_770 = conservationLawValid(prod_local_767, prod_local_768, prod_local_768, prod_local_769)?; match prod_local_770 {
+        false => { let prod_local_771 = (1 << 1); { let prod_local_772 = 0; { let prod_local_773 = sFive()?; { let prod_local_774 = conservationLawValid(prod_local_771, prod_local_772, prod_local_773, prod_local_772)?; match prod_local_774 {
+        false => prod_local_766,
+        true => prod_local_770,
+    } } } } },
+        true => { let prod_local_775 = false; prod_local_775 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_776 = false; prod_local_776 },
+    } } },
+    } } } },
+    } } } } },
+    } },
+        true => { let prod_local_777 = ((1 << 1) + 1); { let prod_local_778 = sSeven()?; { let prod_local_779 = twoBoneIkReachable(prod_local_777, prod_local_777, prod_local_778)?; match prod_local_779 {
+        false => { let prod_local_780 = prod_local_719; match prod_local_780 {
+        false => prod_local_780,
+        true => { let prod_local_781 = universeCellSpanMeters()?; { let prod_local_782 = sSeven()?; { let prod_local_783 = pow2Constructive(prod_local_782)?; { let prod_local_784 = (prod_local_781 == prod_local_783); match prod_local_784 {
+        false => { let prod_local_786 = prod_local_784; match prod_local_786 {
+        false => prod_local_786,
+        true => { let prod_local_787 = sTen()?; { let prod_local_788 = sFive()?; { let prod_local_789 = ((1 << 1) + 1); { let prod_local_790 = sTwelve()?; { let prod_local_791 = conservationLawValid(prod_local_787, prod_local_788, prod_local_789, prod_local_790)?; match prod_local_791 {
+        false => prod_local_791,
+        true => { let prod_local_792 = sTen()?; { let prod_local_793 = 0; { let prod_local_794 = sEleven()?; { let prod_local_795 = conservationLawValid(prod_local_792, prod_local_793, prod_local_793, prod_local_794)?; match prod_local_795 {
+        false => { let prod_local_796 = (1 << 1); { let prod_local_797 = 0; { let prod_local_798 = sFive()?; { let prod_local_799 = conservationLawValid(prod_local_796, prod_local_797, prod_local_798, prod_local_797)?; match prod_local_799 {
+        false => prod_local_791,
+        true => prod_local_795,
+    } } } } },
+        true => { let prod_local_800 = false; prod_local_800 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_801 = sHundred()?; { let prod_local_802 = universeHalfSpanMilli()?; { let prod_local_803 = (prod_local_801 < prod_local_802); match prod_local_803 {
+        false => { let prod_local_804 = prod_local_803; match prod_local_804 {
+        false => prod_local_804,
+        true => { let prod_local_805 = sTen()?; { let prod_local_806 = sFive()?; { let prod_local_807 = ((1 << 1) + 1); { let prod_local_808 = sTwelve()?; { let prod_local_809 = conservationLawValid(prod_local_805, prod_local_806, prod_local_807, prod_local_808)?; match prod_local_809 {
+        false => prod_local_809,
+        true => { let prod_local_810 = sTen()?; { let prod_local_811 = 0; { let prod_local_812 = sEleven()?; { let prod_local_813 = conservationLawValid(prod_local_810, prod_local_811, prod_local_811, prod_local_812)?; match prod_local_813 {
+        false => { let prod_local_814 = (1 << 1); { let prod_local_815 = 0; { let prod_local_816 = sFive()?; { let prod_local_817 = conservationLawValid(prod_local_814, prod_local_815, prod_local_816, prod_local_815)?; match prod_local_817 {
+        false => prod_local_809,
+        true => prod_local_813,
+    } } } } },
+        true => { let prod_local_818 = false; prod_local_818 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_819 = universeHalfSpanMilli()?; { let prod_local_820 = (prod_local_819 < prod_local_819); match prod_local_820 {
+        false => { let prod_local_821 = prod_local_803; match prod_local_821 {
+        false => prod_local_821,
+        true => { let prod_local_822 = sTen()?; { let prod_local_823 = sFive()?; { let prod_local_824 = ((1 << 1) + 1); { let prod_local_825 = sTwelve()?; { let prod_local_826 = conservationLawValid(prod_local_822, prod_local_823, prod_local_824, prod_local_825)?; match prod_local_826 {
+        false => prod_local_826,
+        true => { let prod_local_827 = sTen()?; { let prod_local_828 = 0; { let prod_local_829 = sEleven()?; { let prod_local_830 = conservationLawValid(prod_local_827, prod_local_828, prod_local_828, prod_local_829)?; match prod_local_830 {
+        false => { let prod_local_831 = (1 << 1); { let prod_local_832 = 0; { let prod_local_833 = sFive()?; { let prod_local_834 = conservationLawValid(prod_local_831, prod_local_832, prod_local_833, prod_local_832)?; match prod_local_834 {
+        false => prod_local_826,
+        true => prod_local_830,
+    } } } } },
+        true => { let prod_local_835 = false; prod_local_835 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_836 = false; prod_local_836 },
+    } } },
+    } } } },
+    } } } } },
+    } },
+        true => { let prod_local_837 = false; prod_local_837 },
+    } } } },
+    } } },
+    } },
+        true => { let prod_local_838 = sFour()?; { let prod_local_839 = (prod_local_838 == _x_57); { let prod_local_840 = prod_local_839; match prod_local_840 {
+        false => prod_local_840,
+        true => { let prod_local_842 = sSeven()?; { let prod_local_843 = twoBoneIkReachable(_x_57, _x_57, prod_local_842)?; match prod_local_843 {
+        false => { let prod_local_844 = prod_local_843; match prod_local_844 {
+        false => prod_local_844,
+        true => { let prod_local_845 = universeCellSpanMeters()?; { let prod_local_846 = sSeven()?; { let prod_local_847 = pow2Constructive(prod_local_846)?; { let prod_local_848 = (prod_local_845 == prod_local_847); match prod_local_848 {
+        false => { let prod_local_850 = prod_local_848; match prod_local_850 {
+        false => prod_local_850,
+        true => { let prod_local_851 = sTen()?; { let prod_local_852 = sFive()?; { let prod_local_853 = ((1 << 1) + 1); { let prod_local_854 = sTwelve()?; { let prod_local_855 = conservationLawValid(prod_local_851, prod_local_852, prod_local_853, prod_local_854)?; match prod_local_855 {
+        false => prod_local_855,
+        true => { let prod_local_856 = sTen()?; { let prod_local_857 = 0; { let prod_local_858 = sEleven()?; { let prod_local_859 = conservationLawValid(prod_local_856, prod_local_857, prod_local_857, prod_local_858)?; match prod_local_859 {
+        false => { let prod_local_860 = (1 << 1); { let prod_local_861 = 0; { let prod_local_862 = sFive()?; { let prod_local_863 = conservationLawValid(prod_local_860, prod_local_861, prod_local_862, prod_local_861)?; match prod_local_863 {
+        false => prod_local_855,
+        true => prod_local_859,
+    } } } } },
+        true => { let prod_local_864 = false; prod_local_864 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_865 = sHundred()?; { let prod_local_866 = universeHalfSpanMilli()?; { let prod_local_867 = (prod_local_865 < prod_local_866); match prod_local_867 {
+        false => { let prod_local_868 = prod_local_867; match prod_local_868 {
+        false => prod_local_868,
+        true => { let prod_local_869 = sTen()?; { let prod_local_870 = sFive()?; { let prod_local_871 = ((1 << 1) + 1); { let prod_local_872 = sTwelve()?; { let prod_local_873 = conservationLawValid(prod_local_869, prod_local_870, prod_local_871, prod_local_872)?; match prod_local_873 {
+        false => prod_local_873,
+        true => { let prod_local_874 = sTen()?; { let prod_local_875 = 0; { let prod_local_876 = sEleven()?; { let prod_local_877 = conservationLawValid(prod_local_874, prod_local_875, prod_local_875, prod_local_876)?; match prod_local_877 {
+        false => { let prod_local_878 = (1 << 1); { let prod_local_879 = 0; { let prod_local_880 = sFive()?; { let prod_local_881 = conservationLawValid(prod_local_878, prod_local_879, prod_local_880, prod_local_879)?; match prod_local_881 {
+        false => prod_local_873,
+        true => prod_local_877,
+    } } } } },
+        true => { let prod_local_882 = false; prod_local_882 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_883 = universeHalfSpanMilli()?; { let prod_local_884 = (prod_local_883 < prod_local_883); match prod_local_884 {
+        false => { let prod_local_885 = prod_local_867; match prod_local_885 {
+        false => prod_local_885,
+        true => { let prod_local_886 = sTen()?; { let prod_local_887 = sFive()?; { let prod_local_888 = ((1 << 1) + 1); { let prod_local_889 = sTwelve()?; { let prod_local_890 = conservationLawValid(prod_local_886, prod_local_887, prod_local_888, prod_local_889)?; match prod_local_890 {
+        false => prod_local_890,
+        true => { let prod_local_891 = sTen()?; { let prod_local_892 = 0; { let prod_local_893 = sEleven()?; { let prod_local_894 = conservationLawValid(prod_local_891, prod_local_892, prod_local_892, prod_local_893)?; match prod_local_894 {
+        false => { let prod_local_895 = (1 << 1); { let prod_local_896 = 0; { let prod_local_897 = sFive()?; { let prod_local_898 = conservationLawValid(prod_local_895, prod_local_896, prod_local_897, prod_local_896)?; match prod_local_898 {
+        false => prod_local_890,
+        true => prod_local_894,
+    } } } } },
+        true => { let prod_local_899 = false; prod_local_899 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_900 = false; prod_local_900 },
+    } } },
+    } } } },
+    } } } } },
+    } },
+        true => { let prod_local_901 = ((1 << 1) + 1); { let prod_local_902 = sSeven()?; { let prod_local_903 = twoBoneIkReachable(prod_local_901, prod_local_901, prod_local_902)?; match prod_local_903 {
+        false => { let prod_local_904 = prod_local_843; match prod_local_904 {
+        false => prod_local_904,
+        true => { let prod_local_905 = universeCellSpanMeters()?; { let prod_local_906 = sSeven()?; { let prod_local_907 = pow2Constructive(prod_local_906)?; { let prod_local_908 = (prod_local_905 == prod_local_907); match prod_local_908 {
+        false => { let prod_local_910 = prod_local_908; match prod_local_910 {
+        false => prod_local_910,
+        true => { let prod_local_911 = sTen()?; { let prod_local_912 = sFive()?; { let prod_local_913 = ((1 << 1) + 1); { let prod_local_914 = sTwelve()?; { let prod_local_915 = conservationLawValid(prod_local_911, prod_local_912, prod_local_913, prod_local_914)?; match prod_local_915 {
+        false => prod_local_915,
+        true => { let prod_local_916 = sTen()?; { let prod_local_917 = 0; { let prod_local_918 = sEleven()?; { let prod_local_919 = conservationLawValid(prod_local_916, prod_local_917, prod_local_917, prod_local_918)?; match prod_local_919 {
+        false => { let prod_local_920 = (1 << 1); { let prod_local_921 = 0; { let prod_local_922 = sFive()?; { let prod_local_923 = conservationLawValid(prod_local_920, prod_local_921, prod_local_922, prod_local_921)?; match prod_local_923 {
+        false => prod_local_915,
+        true => prod_local_919,
+    } } } } },
+        true => { let prod_local_924 = false; prod_local_924 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_925 = sHundred()?; { let prod_local_926 = universeHalfSpanMilli()?; { let prod_local_927 = (prod_local_925 < prod_local_926); match prod_local_927 {
+        false => { let prod_local_928 = prod_local_927; match prod_local_928 {
+        false => prod_local_928,
+        true => { let prod_local_929 = sTen()?; { let prod_local_930 = sFive()?; { let prod_local_931 = ((1 << 1) + 1); { let prod_local_932 = sTwelve()?; { let prod_local_933 = conservationLawValid(prod_local_929, prod_local_930, prod_local_931, prod_local_932)?; match prod_local_933 {
+        false => prod_local_933,
+        true => { let prod_local_934 = sTen()?; { let prod_local_935 = 0; { let prod_local_936 = sEleven()?; { let prod_local_937 = conservationLawValid(prod_local_934, prod_local_935, prod_local_935, prod_local_936)?; match prod_local_937 {
+        false => { let prod_local_938 = (1 << 1); { let prod_local_939 = 0; { let prod_local_940 = sFive()?; { let prod_local_941 = conservationLawValid(prod_local_938, prod_local_939, prod_local_940, prod_local_939)?; match prod_local_941 {
+        false => prod_local_933,
+        true => prod_local_937,
+    } } } } },
+        true => { let prod_local_942 = false; prod_local_942 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_943 = universeHalfSpanMilli()?; { let prod_local_944 = (prod_local_943 < prod_local_943); match prod_local_944 {
+        false => { let prod_local_945 = prod_local_927; match prod_local_945 {
+        false => prod_local_945,
+        true => { let prod_local_946 = sTen()?; { let prod_local_947 = sFive()?; { let prod_local_948 = ((1 << 1) + 1); { let prod_local_949 = sTwelve()?; { let prod_local_950 = conservationLawValid(prod_local_946, prod_local_947, prod_local_948, prod_local_949)?; match prod_local_950 {
+        false => prod_local_950,
+        true => { let prod_local_951 = sTen()?; { let prod_local_952 = 0; { let prod_local_953 = sEleven()?; { let prod_local_954 = conservationLawValid(prod_local_951, prod_local_952, prod_local_952, prod_local_953)?; match prod_local_954 {
+        false => { let prod_local_955 = (1 << 1); { let prod_local_956 = 0; { let prod_local_957 = sFive()?; { let prod_local_958 = conservationLawValid(prod_local_955, prod_local_956, prod_local_957, prod_local_956)?; match prod_local_958 {
+        false => prod_local_950,
+        true => prod_local_954,
+    } } } } },
+        true => { let prod_local_959 = false; prod_local_959 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_960 = false; prod_local_960 },
+    } } },
+    } } } },
+    } } } } },
+    } },
+        true => { let prod_local_961 = false; prod_local_961 },
+    } } } },
+    } } },
+    } } } },
+    } } } },
+    } },
+    }
+                                                                                                    }
+                                                                                                }
+                                                                                            }
+                                                                                        }
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                                true => {
+                                                                    let _x_648 = false;
+                                                                    _x_648
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    true => {
+                        let _x_675 = (1 << 1);
+                        {
+                            let _x_676 = (1 << 1);
+                            {
+                                let _x_677 = (_x_675 == _x_676);
+                                {
+                                    let prod_local_962 = _x_677;
+                                    match prod_local_962 {
+                                        false => prod_local_962,
+                                        true => {
+                                            let prod_local_964 = sFifty()?;
+                                            {
+                                                let prod_local_965 = sFortyEight()?;
+                                                {
+                                                    let prod_local_966 = (1 << 1);
+                                                    {
+                                                        let prod_local_967 = sweptClearanceValid(
+                                                            prod_local_964,
+                                                            prod_local_965,
+                                                            prod_local_966,
+                                                        )?;
+                                                        match prod_local_967 {
+                                                            false => {
+                                                                let prod_local_968 = prod_local_967;
+                                                                match prod_local_968 {
+                                                                    false => prod_local_968,
+                                                                    true => {
+                                                                        let prod_local_969 =
+                                                                            sTwentyTwo()?;
+                                                                        {
+                                                                            let prod_local_970 =
+                                                                                sTwentyTwo()?;
+                                                                            {
+                                                                                let prod_local_971 = (prod_local_969 == prod_local_970);
+                                                                                match prod_local_971
+                                                                                {
+                                                                                    false => {
+                                                                                        let prod_local_973 = prod_local_971;
+                                                                                        match prod_local_973 {
+        false => prod_local_973,
+        true => { let prod_local_975 = sSeven()?; { let prod_local_976 = twoBoneIkReachable(_x_57, _x_57, prod_local_975)?; match prod_local_976 {
+        false => { let prod_local_977 = prod_local_976; match prod_local_977 {
+        false => prod_local_977,
+        true => { let prod_local_978 = universeCellSpanMeters()?; { let prod_local_979 = sSeven()?; { let prod_local_980 = pow2Constructive(prod_local_979)?; { let prod_local_981 = (prod_local_978 == prod_local_980); match prod_local_981 {
+        false => { let prod_local_983 = prod_local_981; match prod_local_983 {
+        false => prod_local_983,
+        true => { let prod_local_984 = sTen()?; { let prod_local_985 = sFive()?; { let prod_local_986 = ((1 << 1) + 1); { let prod_local_987 = sTwelve()?; { let prod_local_988 = conservationLawValid(prod_local_984, prod_local_985, prod_local_986, prod_local_987)?; match prod_local_988 {
+        false => prod_local_988,
+        true => { let prod_local_989 = sTen()?; { let prod_local_990 = 0; { let prod_local_991 = sEleven()?; { let prod_local_992 = conservationLawValid(prod_local_989, prod_local_990, prod_local_990, prod_local_991)?; match prod_local_992 {
+        false => { let prod_local_993 = (1 << 1); { let prod_local_994 = 0; { let prod_local_995 = sFive()?; { let prod_local_996 = conservationLawValid(prod_local_993, prod_local_994, prod_local_995, prod_local_994)?; match prod_local_996 {
+        false => prod_local_988,
+        true => prod_local_992,
+    } } } } },
+        true => { let prod_local_997 = false; prod_local_997 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_998 = sHundred()?; { let prod_local_999 = universeHalfSpanMilli()?; { let prod_local_1000 = (prod_local_998 < prod_local_999); match prod_local_1000 {
+        false => { let prod_local_1001 = prod_local_1000; match prod_local_1001 {
+        false => prod_local_1001,
+        true => { let prod_local_1002 = sTen()?; { let prod_local_1003 = sFive()?; { let prod_local_1004 = ((1 << 1) + 1); { let prod_local_1005 = sTwelve()?; { let prod_local_1006 = conservationLawValid(prod_local_1002, prod_local_1003, prod_local_1004, prod_local_1005)?; match prod_local_1006 {
+        false => prod_local_1006,
+        true => { let prod_local_1007 = sTen()?; { let prod_local_1008 = 0; { let prod_local_1009 = sEleven()?; { let prod_local_1010 = conservationLawValid(prod_local_1007, prod_local_1008, prod_local_1008, prod_local_1009)?; match prod_local_1010 {
+        false => { let prod_local_1011 = (1 << 1); { let prod_local_1012 = 0; { let prod_local_1013 = sFive()?; { let prod_local_1014 = conservationLawValid(prod_local_1011, prod_local_1012, prod_local_1013, prod_local_1012)?; match prod_local_1014 {
+        false => prod_local_1006,
+        true => prod_local_1010,
+    } } } } },
+        true => { let prod_local_1015 = false; prod_local_1015 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_1016 = universeHalfSpanMilli()?; { let prod_local_1017 = (prod_local_1016 < prod_local_1016); match prod_local_1017 {
+        false => { let prod_local_1018 = prod_local_1000; match prod_local_1018 {
+        false => prod_local_1018,
+        true => { let prod_local_1019 = sTen()?; { let prod_local_1020 = sFive()?; { let prod_local_1021 = ((1 << 1) + 1); { let prod_local_1022 = sTwelve()?; { let prod_local_1023 = conservationLawValid(prod_local_1019, prod_local_1020, prod_local_1021, prod_local_1022)?; match prod_local_1023 {
+        false => prod_local_1023,
+        true => { let prod_local_1024 = sTen()?; { let prod_local_1025 = 0; { let prod_local_1026 = sEleven()?; { let prod_local_1027 = conservationLawValid(prod_local_1024, prod_local_1025, prod_local_1025, prod_local_1026)?; match prod_local_1027 {
+        false => { let prod_local_1028 = (1 << 1); { let prod_local_1029 = 0; { let prod_local_1030 = sFive()?; { let prod_local_1031 = conservationLawValid(prod_local_1028, prod_local_1029, prod_local_1030, prod_local_1029)?; match prod_local_1031 {
+        false => prod_local_1023,
+        true => prod_local_1027,
+    } } } } },
+        true => { let prod_local_1032 = false; prod_local_1032 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_1033 = false; prod_local_1033 },
+    } } },
+    } } } },
+    } } } } },
+    } },
+        true => { let prod_local_1034 = ((1 << 1) + 1); { let prod_local_1035 = sSeven()?; { let prod_local_1036 = twoBoneIkReachable(prod_local_1034, prod_local_1034, prod_local_1035)?; match prod_local_1036 {
+        false => { let prod_local_1037 = prod_local_976; match prod_local_1037 {
+        false => prod_local_1037,
+        true => { let prod_local_1038 = universeCellSpanMeters()?; { let prod_local_1039 = sSeven()?; { let prod_local_1040 = pow2Constructive(prod_local_1039)?; { let prod_local_1041 = (prod_local_1038 == prod_local_1040); match prod_local_1041 {
+        false => { let prod_local_1043 = prod_local_1041; match prod_local_1043 {
+        false => prod_local_1043,
+        true => { let prod_local_1044 = sTen()?; { let prod_local_1045 = sFive()?; { let prod_local_1046 = ((1 << 1) + 1); { let prod_local_1047 = sTwelve()?; { let prod_local_1048 = conservationLawValid(prod_local_1044, prod_local_1045, prod_local_1046, prod_local_1047)?; match prod_local_1048 {
+        false => prod_local_1048,
+        true => { let prod_local_1049 = sTen()?; { let prod_local_1050 = 0; { let prod_local_1051 = sEleven()?; { let prod_local_1052 = conservationLawValid(prod_local_1049, prod_local_1050, prod_local_1050, prod_local_1051)?; match prod_local_1052 {
+        false => { let prod_local_1053 = (1 << 1); { let prod_local_1054 = 0; { let prod_local_1055 = sFive()?; { let prod_local_1056 = conservationLawValid(prod_local_1053, prod_local_1054, prod_local_1055, prod_local_1054)?; match prod_local_1056 {
+        false => prod_local_1048,
+        true => prod_local_1052,
+    } } } } },
+        true => { let prod_local_1057 = false; prod_local_1057 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_1058 = sHundred()?; { let prod_local_1059 = universeHalfSpanMilli()?; { let prod_local_1060 = (prod_local_1058 < prod_local_1059); match prod_local_1060 {
+        false => { let prod_local_1061 = prod_local_1060; match prod_local_1061 {
+        false => prod_local_1061,
+        true => { let prod_local_1062 = sTen()?; { let prod_local_1063 = sFive()?; { let prod_local_1064 = ((1 << 1) + 1); { let prod_local_1065 = sTwelve()?; { let prod_local_1066 = conservationLawValid(prod_local_1062, prod_local_1063, prod_local_1064, prod_local_1065)?; match prod_local_1066 {
+        false => prod_local_1066,
+        true => { let prod_local_1067 = sTen()?; { let prod_local_1068 = 0; { let prod_local_1069 = sEleven()?; { let prod_local_1070 = conservationLawValid(prod_local_1067, prod_local_1068, prod_local_1068, prod_local_1069)?; match prod_local_1070 {
+        false => { let prod_local_1071 = (1 << 1); { let prod_local_1072 = 0; { let prod_local_1073 = sFive()?; { let prod_local_1074 = conservationLawValid(prod_local_1071, prod_local_1072, prod_local_1073, prod_local_1072)?; match prod_local_1074 {
+        false => prod_local_1066,
+        true => prod_local_1070,
+    } } } } },
+        true => { let prod_local_1075 = false; prod_local_1075 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_1076 = universeHalfSpanMilli()?; { let prod_local_1077 = (prod_local_1076 < prod_local_1076); match prod_local_1077 {
+        false => { let prod_local_1078 = prod_local_1060; match prod_local_1078 {
+        false => prod_local_1078,
+        true => { let prod_local_1079 = sTen()?; { let prod_local_1080 = sFive()?; { let prod_local_1081 = ((1 << 1) + 1); { let prod_local_1082 = sTwelve()?; { let prod_local_1083 = conservationLawValid(prod_local_1079, prod_local_1080, prod_local_1081, prod_local_1082)?; match prod_local_1083 {
+        false => prod_local_1083,
+        true => { let prod_local_1084 = sTen()?; { let prod_local_1085 = 0; { let prod_local_1086 = sEleven()?; { let prod_local_1087 = conservationLawValid(prod_local_1084, prod_local_1085, prod_local_1085, prod_local_1086)?; match prod_local_1087 {
+        false => { let prod_local_1088 = (1 << 1); { let prod_local_1089 = 0; { let prod_local_1090 = sFive()?; { let prod_local_1091 = conservationLawValid(prod_local_1088, prod_local_1089, prod_local_1090, prod_local_1089)?; match prod_local_1091 {
+        false => prod_local_1083,
+        true => prod_local_1087,
+    } } } } },
+        true => { let prod_local_1092 = false; prod_local_1092 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_1093 = false; prod_local_1093 },
+    } } },
+    } } } },
+    } } } } },
+    } },
+        true => { let prod_local_1094 = false; prod_local_1094 },
+    } } } },
+    } } },
+    }
+                                                                                    }
+                                                                                    true => {
+                                                                                        let prod_local_1095 =
+                                                                                            sFour()?;
+                                                                                        {
+                                                                                            let prod_local_1096 = (prod_local_1095 == _x_57);
+                                                                                            {
+                                                                                                let prod_local_1097 = prod_local_1096;
+                                                                                                match prod_local_1097 {
+        false => prod_local_1097,
+        true => { let prod_local_1099 = sSeven()?; { let prod_local_1100 = twoBoneIkReachable(_x_57, _x_57, prod_local_1099)?; match prod_local_1100 {
+        false => { let prod_local_1101 = prod_local_1100; match prod_local_1101 {
+        false => prod_local_1101,
+        true => { let prod_local_1102 = universeCellSpanMeters()?; { let prod_local_1103 = sSeven()?; { let prod_local_1104 = pow2Constructive(prod_local_1103)?; { let prod_local_1105 = (prod_local_1102 == prod_local_1104); match prod_local_1105 {
+        false => { let prod_local_1107 = prod_local_1105; match prod_local_1107 {
+        false => prod_local_1107,
+        true => { let prod_local_1108 = sTen()?; { let prod_local_1109 = sFive()?; { let prod_local_1110 = ((1 << 1) + 1); { let prod_local_1111 = sTwelve()?; { let prod_local_1112 = conservationLawValid(prod_local_1108, prod_local_1109, prod_local_1110, prod_local_1111)?; match prod_local_1112 {
+        false => prod_local_1112,
+        true => { let prod_local_1113 = sTen()?; { let prod_local_1114 = 0; { let prod_local_1115 = sEleven()?; { let prod_local_1116 = conservationLawValid(prod_local_1113, prod_local_1114, prod_local_1114, prod_local_1115)?; match prod_local_1116 {
+        false => { let prod_local_1117 = (1 << 1); { let prod_local_1118 = 0; { let prod_local_1119 = sFive()?; { let prod_local_1120 = conservationLawValid(prod_local_1117, prod_local_1118, prod_local_1119, prod_local_1118)?; match prod_local_1120 {
+        false => prod_local_1112,
+        true => prod_local_1116,
+    } } } } },
+        true => { let prod_local_1121 = false; prod_local_1121 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_1122 = sHundred()?; { let prod_local_1123 = universeHalfSpanMilli()?; { let prod_local_1124 = (prod_local_1122 < prod_local_1123); match prod_local_1124 {
+        false => { let prod_local_1125 = prod_local_1124; match prod_local_1125 {
+        false => prod_local_1125,
+        true => { let prod_local_1126 = sTen()?; { let prod_local_1127 = sFive()?; { let prod_local_1128 = ((1 << 1) + 1); { let prod_local_1129 = sTwelve()?; { let prod_local_1130 = conservationLawValid(prod_local_1126, prod_local_1127, prod_local_1128, prod_local_1129)?; match prod_local_1130 {
+        false => prod_local_1130,
+        true => { let prod_local_1131 = sTen()?; { let prod_local_1132 = 0; { let prod_local_1133 = sEleven()?; { let prod_local_1134 = conservationLawValid(prod_local_1131, prod_local_1132, prod_local_1132, prod_local_1133)?; match prod_local_1134 {
+        false => { let prod_local_1135 = (1 << 1); { let prod_local_1136 = 0; { let prod_local_1137 = sFive()?; { let prod_local_1138 = conservationLawValid(prod_local_1135, prod_local_1136, prod_local_1137, prod_local_1136)?; match prod_local_1138 {
+        false => prod_local_1130,
+        true => prod_local_1134,
+    } } } } },
+        true => { let prod_local_1139 = false; prod_local_1139 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_1140 = universeHalfSpanMilli()?; { let prod_local_1141 = (prod_local_1140 < prod_local_1140); match prod_local_1141 {
+        false => { let prod_local_1142 = prod_local_1124; match prod_local_1142 {
+        false => prod_local_1142,
+        true => { let prod_local_1143 = sTen()?; { let prod_local_1144 = sFive()?; { let prod_local_1145 = ((1 << 1) + 1); { let prod_local_1146 = sTwelve()?; { let prod_local_1147 = conservationLawValid(prod_local_1143, prod_local_1144, prod_local_1145, prod_local_1146)?; match prod_local_1147 {
+        false => prod_local_1147,
+        true => { let prod_local_1148 = sTen()?; { let prod_local_1149 = 0; { let prod_local_1150 = sEleven()?; { let prod_local_1151 = conservationLawValid(prod_local_1148, prod_local_1149, prod_local_1149, prod_local_1150)?; match prod_local_1151 {
+        false => { let prod_local_1152 = (1 << 1); { let prod_local_1153 = 0; { let prod_local_1154 = sFive()?; { let prod_local_1155 = conservationLawValid(prod_local_1152, prod_local_1153, prod_local_1154, prod_local_1153)?; match prod_local_1155 {
+        false => prod_local_1147,
+        true => prod_local_1151,
+    } } } } },
+        true => { let prod_local_1156 = false; prod_local_1156 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_1157 = false; prod_local_1157 },
+    } } },
+    } } } },
+    } } } } },
+    } },
+        true => { let prod_local_1158 = ((1 << 1) + 1); { let prod_local_1159 = sSeven()?; { let prod_local_1160 = twoBoneIkReachable(prod_local_1158, prod_local_1158, prod_local_1159)?; match prod_local_1160 {
+        false => { let prod_local_1161 = prod_local_1100; match prod_local_1161 {
+        false => prod_local_1161,
+        true => { let prod_local_1162 = universeCellSpanMeters()?; { let prod_local_1163 = sSeven()?; { let prod_local_1164 = pow2Constructive(prod_local_1163)?; { let prod_local_1165 = (prod_local_1162 == prod_local_1164); match prod_local_1165 {
+        false => { let prod_local_1167 = prod_local_1165; match prod_local_1167 {
+        false => prod_local_1167,
+        true => { let prod_local_1168 = sTen()?; { let prod_local_1169 = sFive()?; { let prod_local_1170 = ((1 << 1) + 1); { let prod_local_1171 = sTwelve()?; { let prod_local_1172 = conservationLawValid(prod_local_1168, prod_local_1169, prod_local_1170, prod_local_1171)?; match prod_local_1172 {
+        false => prod_local_1172,
+        true => { let prod_local_1173 = sTen()?; { let prod_local_1174 = 0; { let prod_local_1175 = sEleven()?; { let prod_local_1176 = conservationLawValid(prod_local_1173, prod_local_1174, prod_local_1174, prod_local_1175)?; match prod_local_1176 {
+        false => { let prod_local_1177 = (1 << 1); { let prod_local_1178 = 0; { let prod_local_1179 = sFive()?; { let prod_local_1180 = conservationLawValid(prod_local_1177, prod_local_1178, prod_local_1179, prod_local_1178)?; match prod_local_1180 {
+        false => prod_local_1172,
+        true => prod_local_1176,
+    } } } } },
+        true => { let prod_local_1181 = false; prod_local_1181 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_1182 = sHundred()?; { let prod_local_1183 = universeHalfSpanMilli()?; { let prod_local_1184 = (prod_local_1182 < prod_local_1183); match prod_local_1184 {
+        false => { let prod_local_1185 = prod_local_1184; match prod_local_1185 {
+        false => prod_local_1185,
+        true => { let prod_local_1186 = sTen()?; { let prod_local_1187 = sFive()?; { let prod_local_1188 = ((1 << 1) + 1); { let prod_local_1189 = sTwelve()?; { let prod_local_1190 = conservationLawValid(prod_local_1186, prod_local_1187, prod_local_1188, prod_local_1189)?; match prod_local_1190 {
+        false => prod_local_1190,
+        true => { let prod_local_1191 = sTen()?; { let prod_local_1192 = 0; { let prod_local_1193 = sEleven()?; { let prod_local_1194 = conservationLawValid(prod_local_1191, prod_local_1192, prod_local_1192, prod_local_1193)?; match prod_local_1194 {
+        false => { let prod_local_1195 = (1 << 1); { let prod_local_1196 = 0; { let prod_local_1197 = sFive()?; { let prod_local_1198 = conservationLawValid(prod_local_1195, prod_local_1196, prod_local_1197, prod_local_1196)?; match prod_local_1198 {
+        false => prod_local_1190,
+        true => prod_local_1194,
+    } } } } },
+        true => { let prod_local_1199 = false; prod_local_1199 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_1200 = universeHalfSpanMilli()?; { let prod_local_1201 = (prod_local_1200 < prod_local_1200); match prod_local_1201 {
+        false => { let prod_local_1202 = prod_local_1184; match prod_local_1202 {
+        false => prod_local_1202,
+        true => { let prod_local_1203 = sTen()?; { let prod_local_1204 = sFive()?; { let prod_local_1205 = ((1 << 1) + 1); { let prod_local_1206 = sTwelve()?; { let prod_local_1207 = conservationLawValid(prod_local_1203, prod_local_1204, prod_local_1205, prod_local_1206)?; match prod_local_1207 {
+        false => prod_local_1207,
+        true => { let prod_local_1208 = sTen()?; { let prod_local_1209 = 0; { let prod_local_1210 = sEleven()?; { let prod_local_1211 = conservationLawValid(prod_local_1208, prod_local_1209, prod_local_1209, prod_local_1210)?; match prod_local_1211 {
+        false => { let prod_local_1212 = (1 << 1); { let prod_local_1213 = 0; { let prod_local_1214 = sFive()?; { let prod_local_1215 = conservationLawValid(prod_local_1212, prod_local_1213, prod_local_1214, prod_local_1213)?; match prod_local_1215 {
+        false => prod_local_1207,
+        true => prod_local_1211,
+    } } } } },
+        true => { let prod_local_1216 = false; prod_local_1216 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_1217 = false; prod_local_1217 },
+    } } },
+    } } } },
+    } } } } },
+    } },
+        true => { let prod_local_1218 = false; prod_local_1218 },
+    } } } },
+    } } },
+    }
+                                                                                            }
+                                                                                        }
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                            true => {
+                                                                let prod_local_1219 =
+                                                                    sFortyEight()?;
+                                                                {
+                                                                    let prod_local_1220 = (1 << 1);
+                                                                    {
+                                                                        let prod_local_1221 =
+                                                                            sweptClearanceValid(
+                                                                                prod_local_1219,
+                                                                                prod_local_1219,
+                                                                                prod_local_1220,
+                                                                            )?;
+                                                                        match prod_local_1221 {
+                                                                            false => {
+                                                                                let prod_local_1222 =
+                                                                                    sTwoHundred()?;
+                                                                                {
+                                                                                    let prod_local_1223 =
+                                                                                        sHundred()?;
+                                                                                    {
+                                                                                        let prod_local_1224 = sFifteen()?;
+                                                                                        {
+                                                                                            let prod_local_1225 = core::convert::identity::<u64>(prod_local_1224).checked_mul(prod_local_1223).ok_or(self::ComputeError::MulOverflow)?;
+                                                                                            {
+                                                                                                let prod_local_1226 = cameraNearSphereGuarded(prod_local_1222, prod_local_1223, prod_local_1225)?;
+                                                                                                match prod_local_1226 {
+        false => { let prod_local_1227 = prod_local_1226; match prod_local_1227 {
+        false => prod_local_1227,
+        true => { let prod_local_1228 = sTwentyTwo()?; { let prod_local_1229 = sTwentyTwo()?; { let prod_local_1230 = (prod_local_1228 == prod_local_1229); match prod_local_1230 {
+        false => { let prod_local_1232 = prod_local_1230; match prod_local_1232 {
+        false => prod_local_1232,
+        true => { let prod_local_1234 = sSeven()?; { let prod_local_1235 = twoBoneIkReachable(_x_57, _x_57, prod_local_1234)?; match prod_local_1235 {
+        false => { let prod_local_1236 = prod_local_1235; match prod_local_1236 {
+        false => prod_local_1236,
+        true => { let prod_local_1237 = universeCellSpanMeters()?; { let prod_local_1238 = sSeven()?; { let prod_local_1239 = pow2Constructive(prod_local_1238)?; { let prod_local_1240 = (prod_local_1237 == prod_local_1239); match prod_local_1240 {
+        false => { let prod_local_1242 = prod_local_1240; match prod_local_1242 {
+        false => prod_local_1242,
+        true => { let prod_local_1243 = sTen()?; { let prod_local_1244 = sFive()?; { let prod_local_1245 = ((1 << 1) + 1); { let prod_local_1246 = sTwelve()?; { let prod_local_1247 = conservationLawValid(prod_local_1243, prod_local_1244, prod_local_1245, prod_local_1246)?; match prod_local_1247 {
+        false => prod_local_1247,
+        true => { let prod_local_1248 = sTen()?; { let prod_local_1249 = 0; { let prod_local_1250 = sEleven()?; { let prod_local_1251 = conservationLawValid(prod_local_1248, prod_local_1249, prod_local_1249, prod_local_1250)?; match prod_local_1251 {
+        false => { let prod_local_1252 = (1 << 1); { let prod_local_1253 = 0; { let prod_local_1254 = sFive()?; { let prod_local_1255 = conservationLawValid(prod_local_1252, prod_local_1253, prod_local_1254, prod_local_1253)?; match prod_local_1255 {
+        false => prod_local_1247,
+        true => prod_local_1251,
+    } } } } },
+        true => { let prod_local_1256 = false; prod_local_1256 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_1257 = sHundred()?; { let prod_local_1258 = universeHalfSpanMilli()?; { let prod_local_1259 = (prod_local_1257 < prod_local_1258); match prod_local_1259 {
+        false => { let prod_local_1260 = prod_local_1259; match prod_local_1260 {
+        false => prod_local_1260,
+        true => { let prod_local_1261 = sTen()?; { let prod_local_1262 = sFive()?; { let prod_local_1263 = ((1 << 1) + 1); { let prod_local_1264 = sTwelve()?; { let prod_local_1265 = conservationLawValid(prod_local_1261, prod_local_1262, prod_local_1263, prod_local_1264)?; match prod_local_1265 {
+        false => prod_local_1265,
+        true => { let prod_local_1266 = sTen()?; { let prod_local_1267 = 0; { let prod_local_1268 = sEleven()?; { let prod_local_1269 = conservationLawValid(prod_local_1266, prod_local_1267, prod_local_1267, prod_local_1268)?; match prod_local_1269 {
+        false => { let prod_local_1270 = (1 << 1); { let prod_local_1271 = 0; { let prod_local_1272 = sFive()?; { let prod_local_1273 = conservationLawValid(prod_local_1270, prod_local_1271, prod_local_1272, prod_local_1271)?; match prod_local_1273 {
+        false => prod_local_1265,
+        true => prod_local_1269,
+    } } } } },
+        true => { let prod_local_1274 = false; prod_local_1274 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_1275 = universeHalfSpanMilli()?; { let prod_local_1276 = (prod_local_1275 < prod_local_1275); match prod_local_1276 {
+        false => { let prod_local_1277 = prod_local_1259; match prod_local_1277 {
+        false => prod_local_1277,
+        true => { let prod_local_1278 = sTen()?; { let prod_local_1279 = sFive()?; { let prod_local_1280 = ((1 << 1) + 1); { let prod_local_1281 = sTwelve()?; { let prod_local_1282 = conservationLawValid(prod_local_1278, prod_local_1279, prod_local_1280, prod_local_1281)?; match prod_local_1282 {
+        false => prod_local_1282,
+        true => { let prod_local_1283 = sTen()?; { let prod_local_1284 = 0; { let prod_local_1285 = sEleven()?; { let prod_local_1286 = conservationLawValid(prod_local_1283, prod_local_1284, prod_local_1284, prod_local_1285)?; match prod_local_1286 {
+        false => { let prod_local_1287 = (1 << 1); { let prod_local_1288 = 0; { let prod_local_1289 = sFive()?; { let prod_local_1290 = conservationLawValid(prod_local_1287, prod_local_1288, prod_local_1289, prod_local_1288)?; match prod_local_1290 {
+        false => prod_local_1282,
+        true => prod_local_1286,
+    } } } } },
+        true => { let prod_local_1291 = false; prod_local_1291 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_1292 = false; prod_local_1292 },
+    } } },
+    } } } },
+    } } } } },
+    } },
+        true => { let prod_local_1293 = ((1 << 1) + 1); { let prod_local_1294 = sSeven()?; { let prod_local_1295 = twoBoneIkReachable(prod_local_1293, prod_local_1293, prod_local_1294)?; match prod_local_1295 {
+        false => { let prod_local_1296 = prod_local_1235; match prod_local_1296 {
+        false => prod_local_1296,
+        true => { let prod_local_1297 = universeCellSpanMeters()?; { let prod_local_1298 = sSeven()?; { let prod_local_1299 = pow2Constructive(prod_local_1298)?; { let prod_local_1300 = (prod_local_1297 == prod_local_1299); match prod_local_1300 {
+        false => { let prod_local_1302 = prod_local_1300; match prod_local_1302 {
+        false => prod_local_1302,
+        true => { let prod_local_1303 = sTen()?; { let prod_local_1304 = sFive()?; { let prod_local_1305 = ((1 << 1) + 1); { let prod_local_1306 = sTwelve()?; { let prod_local_1307 = conservationLawValid(prod_local_1303, prod_local_1304, prod_local_1305, prod_local_1306)?; match prod_local_1307 {
+        false => prod_local_1307,
+        true => { let prod_local_1308 = sTen()?; { let prod_local_1309 = 0; { let prod_local_1310 = sEleven()?; { let prod_local_1311 = conservationLawValid(prod_local_1308, prod_local_1309, prod_local_1309, prod_local_1310)?; match prod_local_1311 {
+        false => { let prod_local_1312 = (1 << 1); { let prod_local_1313 = 0; { let prod_local_1314 = sFive()?; { let prod_local_1315 = conservationLawValid(prod_local_1312, prod_local_1313, prod_local_1314, prod_local_1313)?; match prod_local_1315 {
+        false => prod_local_1307,
+        true => prod_local_1311,
+    } } } } },
+        true => { let prod_local_1316 = false; prod_local_1316 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_1317 = sHundred()?; { let prod_local_1318 = universeHalfSpanMilli()?; { let prod_local_1319 = (prod_local_1317 < prod_local_1318); match prod_local_1319 {
+        false => { let prod_local_1320 = prod_local_1319; match prod_local_1320 {
+        false => prod_local_1320,
+        true => { let prod_local_1321 = sTen()?; { let prod_local_1322 = sFive()?; { let prod_local_1323 = ((1 << 1) + 1); { let prod_local_1324 = sTwelve()?; { let prod_local_1325 = conservationLawValid(prod_local_1321, prod_local_1322, prod_local_1323, prod_local_1324)?; match prod_local_1325 {
+        false => prod_local_1325,
+        true => { let prod_local_1326 = sTen()?; { let prod_local_1327 = 0; { let prod_local_1328 = sEleven()?; { let prod_local_1329 = conservationLawValid(prod_local_1326, prod_local_1327, prod_local_1327, prod_local_1328)?; match prod_local_1329 {
+        false => { let prod_local_1330 = (1 << 1); { let prod_local_1331 = 0; { let prod_local_1332 = sFive()?; { let prod_local_1333 = conservationLawValid(prod_local_1330, prod_local_1331, prod_local_1332, prod_local_1331)?; match prod_local_1333 {
+        false => prod_local_1325,
+        true => prod_local_1329,
+    } } } } },
+        true => { let prod_local_1334 = false; prod_local_1334 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_1335 = universeHalfSpanMilli()?; { let prod_local_1336 = (prod_local_1335 < prod_local_1335); match prod_local_1336 {
+        false => { let prod_local_1337 = prod_local_1319; match prod_local_1337 {
+        false => prod_local_1337,
+        true => { let prod_local_1338 = sTen()?; { let prod_local_1339 = sFive()?; { let prod_local_1340 = ((1 << 1) + 1); { let prod_local_1341 = sTwelve()?; { let prod_local_1342 = conservationLawValid(prod_local_1338, prod_local_1339, prod_local_1340, prod_local_1341)?; match prod_local_1342 {
+        false => prod_local_1342,
+        true => { let prod_local_1343 = sTen()?; { let prod_local_1344 = 0; { let prod_local_1345 = sEleven()?; { let prod_local_1346 = conservationLawValid(prod_local_1343, prod_local_1344, prod_local_1344, prod_local_1345)?; match prod_local_1346 {
+        false => { let prod_local_1347 = (1 << 1); { let prod_local_1348 = 0; { let prod_local_1349 = sFive()?; { let prod_local_1350 = conservationLawValid(prod_local_1347, prod_local_1348, prod_local_1349, prod_local_1348)?; match prod_local_1350 {
+        false => prod_local_1342,
+        true => prod_local_1346,
+    } } } } },
+        true => { let prod_local_1351 = false; prod_local_1351 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_1352 = false; prod_local_1352 },
+    } } },
+    } } } },
+    } } } } },
+    } },
+        true => { let prod_local_1353 = false; prod_local_1353 },
+    } } } },
+    } } },
+    } },
+        true => { let prod_local_1354 = sFour()?; { let prod_local_1355 = (prod_local_1354 == _x_57); { let prod_local_1356 = prod_local_1355; match prod_local_1356 {
+        false => prod_local_1356,
+        true => { let prod_local_1358 = sSeven()?; { let prod_local_1359 = twoBoneIkReachable(_x_57, _x_57, prod_local_1358)?; match prod_local_1359 {
+        false => { let prod_local_1360 = prod_local_1359; match prod_local_1360 {
+        false => prod_local_1360,
+        true => { let prod_local_1361 = universeCellSpanMeters()?; { let prod_local_1362 = sSeven()?; { let prod_local_1363 = pow2Constructive(prod_local_1362)?; { let prod_local_1364 = (prod_local_1361 == prod_local_1363); match prod_local_1364 {
+        false => { let prod_local_1366 = prod_local_1364; match prod_local_1366 {
+        false => prod_local_1366,
+        true => { let prod_local_1367 = sTen()?; { let prod_local_1368 = sFive()?; { let prod_local_1369 = ((1 << 1) + 1); { let prod_local_1370 = sTwelve()?; { let prod_local_1371 = conservationLawValid(prod_local_1367, prod_local_1368, prod_local_1369, prod_local_1370)?; match prod_local_1371 {
+        false => prod_local_1371,
+        true => { let prod_local_1372 = sTen()?; { let prod_local_1373 = 0; { let prod_local_1374 = sEleven()?; { let prod_local_1375 = conservationLawValid(prod_local_1372, prod_local_1373, prod_local_1373, prod_local_1374)?; match prod_local_1375 {
+        false => { let prod_local_1376 = (1 << 1); { let prod_local_1377 = 0; { let prod_local_1378 = sFive()?; { let prod_local_1379 = conservationLawValid(prod_local_1376, prod_local_1377, prod_local_1378, prod_local_1377)?; match prod_local_1379 {
+        false => prod_local_1371,
+        true => prod_local_1375,
+    } } } } },
+        true => { let prod_local_1380 = false; prod_local_1380 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_1381 = sHundred()?; { let prod_local_1382 = universeHalfSpanMilli()?; { let prod_local_1383 = (prod_local_1381 < prod_local_1382); match prod_local_1383 {
+        false => { let prod_local_1384 = prod_local_1383; match prod_local_1384 {
+        false => prod_local_1384,
+        true => { let prod_local_1385 = sTen()?; { let prod_local_1386 = sFive()?; { let prod_local_1387 = ((1 << 1) + 1); { let prod_local_1388 = sTwelve()?; { let prod_local_1389 = conservationLawValid(prod_local_1385, prod_local_1386, prod_local_1387, prod_local_1388)?; match prod_local_1389 {
+        false => prod_local_1389,
+        true => { let prod_local_1390 = sTen()?; { let prod_local_1391 = 0; { let prod_local_1392 = sEleven()?; { let prod_local_1393 = conservationLawValid(prod_local_1390, prod_local_1391, prod_local_1391, prod_local_1392)?; match prod_local_1393 {
+        false => { let prod_local_1394 = (1 << 1); { let prod_local_1395 = 0; { let prod_local_1396 = sFive()?; { let prod_local_1397 = conservationLawValid(prod_local_1394, prod_local_1395, prod_local_1396, prod_local_1395)?; match prod_local_1397 {
+        false => prod_local_1389,
+        true => prod_local_1393,
+    } } } } },
+        true => { let prod_local_1398 = false; prod_local_1398 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_1399 = universeHalfSpanMilli()?; { let prod_local_1400 = (prod_local_1399 < prod_local_1399); match prod_local_1400 {
+        false => { let prod_local_1401 = prod_local_1383; match prod_local_1401 {
+        false => prod_local_1401,
+        true => { let prod_local_1402 = sTen()?; { let prod_local_1403 = sFive()?; { let prod_local_1404 = ((1 << 1) + 1); { let prod_local_1405 = sTwelve()?; { let prod_local_1406 = conservationLawValid(prod_local_1402, prod_local_1403, prod_local_1404, prod_local_1405)?; match prod_local_1406 {
+        false => prod_local_1406,
+        true => { let prod_local_1407 = sTen()?; { let prod_local_1408 = 0; { let prod_local_1409 = sEleven()?; { let prod_local_1410 = conservationLawValid(prod_local_1407, prod_local_1408, prod_local_1408, prod_local_1409)?; match prod_local_1410 {
+        false => { let prod_local_1411 = (1 << 1); { let prod_local_1412 = 0; { let prod_local_1413 = sFive()?; { let prod_local_1414 = conservationLawValid(prod_local_1411, prod_local_1412, prod_local_1413, prod_local_1412)?; match prod_local_1414 {
+        false => prod_local_1406,
+        true => prod_local_1410,
+    } } } } },
+        true => { let prod_local_1415 = false; prod_local_1415 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_1416 = false; prod_local_1416 },
+    } } },
+    } } } },
+    } } } } },
+    } },
+        true => { let prod_local_1417 = ((1 << 1) + 1); { let prod_local_1418 = sSeven()?; { let prod_local_1419 = twoBoneIkReachable(prod_local_1417, prod_local_1417, prod_local_1418)?; match prod_local_1419 {
+        false => { let prod_local_1420 = prod_local_1359; match prod_local_1420 {
+        false => prod_local_1420,
+        true => { let prod_local_1421 = universeCellSpanMeters()?; { let prod_local_1422 = sSeven()?; { let prod_local_1423 = pow2Constructive(prod_local_1422)?; { let prod_local_1424 = (prod_local_1421 == prod_local_1423); match prod_local_1424 {
+        false => { let prod_local_1426 = prod_local_1424; match prod_local_1426 {
+        false => prod_local_1426,
+        true => { let prod_local_1427 = sTen()?; { let prod_local_1428 = sFive()?; { let prod_local_1429 = ((1 << 1) + 1); { let prod_local_1430 = sTwelve()?; { let prod_local_1431 = conservationLawValid(prod_local_1427, prod_local_1428, prod_local_1429, prod_local_1430)?; match prod_local_1431 {
+        false => prod_local_1431,
+        true => { let prod_local_1432 = sTen()?; { let prod_local_1433 = 0; { let prod_local_1434 = sEleven()?; { let prod_local_1435 = conservationLawValid(prod_local_1432, prod_local_1433, prod_local_1433, prod_local_1434)?; match prod_local_1435 {
+        false => { let prod_local_1436 = (1 << 1); { let prod_local_1437 = 0; { let prod_local_1438 = sFive()?; { let prod_local_1439 = conservationLawValid(prod_local_1436, prod_local_1437, prod_local_1438, prod_local_1437)?; match prod_local_1439 {
+        false => prod_local_1431,
+        true => prod_local_1435,
+    } } } } },
+        true => { let prod_local_1440 = false; prod_local_1440 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_1441 = sHundred()?; { let prod_local_1442 = universeHalfSpanMilli()?; { let prod_local_1443 = (prod_local_1441 < prod_local_1442); match prod_local_1443 {
+        false => { let prod_local_1444 = prod_local_1443; match prod_local_1444 {
+        false => prod_local_1444,
+        true => { let prod_local_1445 = sTen()?; { let prod_local_1446 = sFive()?; { let prod_local_1447 = ((1 << 1) + 1); { let prod_local_1448 = sTwelve()?; { let prod_local_1449 = conservationLawValid(prod_local_1445, prod_local_1446, prod_local_1447, prod_local_1448)?; match prod_local_1449 {
+        false => prod_local_1449,
+        true => { let prod_local_1450 = sTen()?; { let prod_local_1451 = 0; { let prod_local_1452 = sEleven()?; { let prod_local_1453 = conservationLawValid(prod_local_1450, prod_local_1451, prod_local_1451, prod_local_1452)?; match prod_local_1453 {
+        false => { let prod_local_1454 = (1 << 1); { let prod_local_1455 = 0; { let prod_local_1456 = sFive()?; { let prod_local_1457 = conservationLawValid(prod_local_1454, prod_local_1455, prod_local_1456, prod_local_1455)?; match prod_local_1457 {
+        false => prod_local_1449,
+        true => prod_local_1453,
+    } } } } },
+        true => { let prod_local_1458 = false; prod_local_1458 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_1459 = universeHalfSpanMilli()?; { let prod_local_1460 = (prod_local_1459 < prod_local_1459); match prod_local_1460 {
+        false => { let prod_local_1461 = prod_local_1443; match prod_local_1461 {
+        false => prod_local_1461,
+        true => { let prod_local_1462 = sTen()?; { let prod_local_1463 = sFive()?; { let prod_local_1464 = ((1 << 1) + 1); { let prod_local_1465 = sTwelve()?; { let prod_local_1466 = conservationLawValid(prod_local_1462, prod_local_1463, prod_local_1464, prod_local_1465)?; match prod_local_1466 {
+        false => prod_local_1466,
+        true => { let prod_local_1467 = sTen()?; { let prod_local_1468 = 0; { let prod_local_1469 = sEleven()?; { let prod_local_1470 = conservationLawValid(prod_local_1467, prod_local_1468, prod_local_1468, prod_local_1469)?; match prod_local_1470 {
+        false => { let prod_local_1471 = (1 << 1); { let prod_local_1472 = 0; { let prod_local_1473 = sFive()?; { let prod_local_1474 = conservationLawValid(prod_local_1471, prod_local_1472, prod_local_1473, prod_local_1472)?; match prod_local_1474 {
+        false => prod_local_1466,
+        true => prod_local_1470,
+    } } } } },
+        true => { let prod_local_1475 = false; prod_local_1475 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_1476 = false; prod_local_1476 },
+    } } },
+    } } } },
+    } } } } },
+    } },
+        true => { let prod_local_1477 = false; prod_local_1477 },
+    } } } },
+    } } },
+    } } } },
+    } } } },
+    } },
+        true => { let prod_local_1478 = sHundred()?; { let prod_local_1479 = sFifteen()?; { let prod_local_1480 = core::convert::identity::<u64>(prod_local_1479).checked_mul(prod_local_1478).ok_or(self::ComputeError::MulOverflow)?; { let prod_local_1481 = cameraNearSphereGuarded(prod_local_1478, prod_local_1478, prod_local_1480)?; match prod_local_1481 {
+        false => { let prod_local_1482 = prod_local_1226; match prod_local_1482 {
+        false => prod_local_1482,
+        true => { let prod_local_1483 = sTwentyTwo()?; { let prod_local_1484 = sTwentyTwo()?; { let prod_local_1485 = (prod_local_1483 == prod_local_1484); match prod_local_1485 {
+        false => { let prod_local_1487 = prod_local_1485; match prod_local_1487 {
+        false => prod_local_1487,
+        true => { let prod_local_1489 = sSeven()?; { let prod_local_1490 = twoBoneIkReachable(_x_57, _x_57, prod_local_1489)?; match prod_local_1490 {
+        false => { let prod_local_1491 = prod_local_1490; match prod_local_1491 {
+        false => prod_local_1491,
+        true => { let prod_local_1492 = universeCellSpanMeters()?; { let prod_local_1493 = sSeven()?; { let prod_local_1494 = pow2Constructive(prod_local_1493)?; { let prod_local_1495 = (prod_local_1492 == prod_local_1494); match prod_local_1495 {
+        false => { let prod_local_1497 = prod_local_1495; match prod_local_1497 {
+        false => prod_local_1497,
+        true => { let prod_local_1498 = sTen()?; { let prod_local_1499 = sFive()?; { let prod_local_1500 = ((1 << 1) + 1); { let prod_local_1501 = sTwelve()?; { let prod_local_1502 = conservationLawValid(prod_local_1498, prod_local_1499, prod_local_1500, prod_local_1501)?; match prod_local_1502 {
+        false => prod_local_1502,
+        true => { let prod_local_1503 = sTen()?; { let prod_local_1504 = 0; { let prod_local_1505 = sEleven()?; { let prod_local_1506 = conservationLawValid(prod_local_1503, prod_local_1504, prod_local_1504, prod_local_1505)?; match prod_local_1506 {
+        false => { let prod_local_1507 = (1 << 1); { let prod_local_1508 = 0; { let prod_local_1509 = sFive()?; { let prod_local_1510 = conservationLawValid(prod_local_1507, prod_local_1508, prod_local_1509, prod_local_1508)?; match prod_local_1510 {
+        false => prod_local_1502,
+        true => prod_local_1506,
+    } } } } },
+        true => { let prod_local_1511 = false; prod_local_1511 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_1512 = sHundred()?; { let prod_local_1513 = universeHalfSpanMilli()?; { let prod_local_1514 = (prod_local_1512 < prod_local_1513); match prod_local_1514 {
+        false => { let prod_local_1515 = prod_local_1514; match prod_local_1515 {
+        false => prod_local_1515,
+        true => { let prod_local_1516 = sTen()?; { let prod_local_1517 = sFive()?; { let prod_local_1518 = ((1 << 1) + 1); { let prod_local_1519 = sTwelve()?; { let prod_local_1520 = conservationLawValid(prod_local_1516, prod_local_1517, prod_local_1518, prod_local_1519)?; match prod_local_1520 {
+        false => prod_local_1520,
+        true => { let prod_local_1521 = sTen()?; { let prod_local_1522 = 0; { let prod_local_1523 = sEleven()?; { let prod_local_1524 = conservationLawValid(prod_local_1521, prod_local_1522, prod_local_1522, prod_local_1523)?; match prod_local_1524 {
+        false => { let prod_local_1525 = (1 << 1); { let prod_local_1526 = 0; { let prod_local_1527 = sFive()?; { let prod_local_1528 = conservationLawValid(prod_local_1525, prod_local_1526, prod_local_1527, prod_local_1526)?; match prod_local_1528 {
+        false => prod_local_1520,
+        true => prod_local_1524,
+    } } } } },
+        true => { let prod_local_1529 = false; prod_local_1529 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_1530 = universeHalfSpanMilli()?; { let prod_local_1531 = (prod_local_1530 < prod_local_1530); match prod_local_1531 {
+        false => { let prod_local_1532 = prod_local_1514; match prod_local_1532 {
+        false => prod_local_1532,
+        true => { let prod_local_1533 = sTen()?; { let prod_local_1534 = sFive()?; { let prod_local_1535 = ((1 << 1) + 1); { let prod_local_1536 = sTwelve()?; { let prod_local_1537 = conservationLawValid(prod_local_1533, prod_local_1534, prod_local_1535, prod_local_1536)?; match prod_local_1537 {
+        false => prod_local_1537,
+        true => { let prod_local_1538 = sTen()?; { let prod_local_1539 = 0; { let prod_local_1540 = sEleven()?; { let prod_local_1541 = conservationLawValid(prod_local_1538, prod_local_1539, prod_local_1539, prod_local_1540)?; match prod_local_1541 {
+        false => { let prod_local_1542 = (1 << 1); { let prod_local_1543 = 0; { let prod_local_1544 = sFive()?; { let prod_local_1545 = conservationLawValid(prod_local_1542, prod_local_1543, prod_local_1544, prod_local_1543)?; match prod_local_1545 {
+        false => prod_local_1537,
+        true => prod_local_1541,
+    } } } } },
+        true => { let prod_local_1546 = false; prod_local_1546 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_1547 = false; prod_local_1547 },
+    } } },
+    } } } },
+    } } } } },
+    } },
+        true => { let prod_local_1548 = ((1 << 1) + 1); { let prod_local_1549 = sSeven()?; { let prod_local_1550 = twoBoneIkReachable(prod_local_1548, prod_local_1548, prod_local_1549)?; match prod_local_1550 {
+        false => { let prod_local_1551 = prod_local_1490; match prod_local_1551 {
+        false => prod_local_1551,
+        true => { let prod_local_1552 = universeCellSpanMeters()?; { let prod_local_1553 = sSeven()?; { let prod_local_1554 = pow2Constructive(prod_local_1553)?; { let prod_local_1555 = (prod_local_1552 == prod_local_1554); match prod_local_1555 {
+        false => { let prod_local_1557 = prod_local_1555; match prod_local_1557 {
+        false => prod_local_1557,
+        true => { let prod_local_1558 = sTen()?; { let prod_local_1559 = sFive()?; { let prod_local_1560 = ((1 << 1) + 1); { let prod_local_1561 = sTwelve()?; { let prod_local_1562 = conservationLawValid(prod_local_1558, prod_local_1559, prod_local_1560, prod_local_1561)?; match prod_local_1562 {
+        false => prod_local_1562,
+        true => { let prod_local_1563 = sTen()?; { let prod_local_1564 = 0; { let prod_local_1565 = sEleven()?; { let prod_local_1566 = conservationLawValid(prod_local_1563, prod_local_1564, prod_local_1564, prod_local_1565)?; match prod_local_1566 {
+        false => { let prod_local_1567 = (1 << 1); { let prod_local_1568 = 0; { let prod_local_1569 = sFive()?; { let prod_local_1570 = conservationLawValid(prod_local_1567, prod_local_1568, prod_local_1569, prod_local_1568)?; match prod_local_1570 {
+        false => prod_local_1562,
+        true => prod_local_1566,
+    } } } } },
+        true => { let prod_local_1571 = false; prod_local_1571 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_1572 = sHundred()?; { let prod_local_1573 = universeHalfSpanMilli()?; { let prod_local_1574 = (prod_local_1572 < prod_local_1573); match prod_local_1574 {
+        false => { let prod_local_1575 = prod_local_1574; match prod_local_1575 {
+        false => prod_local_1575,
+        true => { let prod_local_1576 = sTen()?; { let prod_local_1577 = sFive()?; { let prod_local_1578 = ((1 << 1) + 1); { let prod_local_1579 = sTwelve()?; { let prod_local_1580 = conservationLawValid(prod_local_1576, prod_local_1577, prod_local_1578, prod_local_1579)?; match prod_local_1580 {
+        false => prod_local_1580,
+        true => { let prod_local_1581 = sTen()?; { let prod_local_1582 = 0; { let prod_local_1583 = sEleven()?; { let prod_local_1584 = conservationLawValid(prod_local_1581, prod_local_1582, prod_local_1582, prod_local_1583)?; match prod_local_1584 {
+        false => { let prod_local_1585 = (1 << 1); { let prod_local_1586 = 0; { let prod_local_1587 = sFive()?; { let prod_local_1588 = conservationLawValid(prod_local_1585, prod_local_1586, prod_local_1587, prod_local_1586)?; match prod_local_1588 {
+        false => prod_local_1580,
+        true => prod_local_1584,
+    } } } } },
+        true => { let prod_local_1589 = false; prod_local_1589 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_1590 = universeHalfSpanMilli()?; { let prod_local_1591 = (prod_local_1590 < prod_local_1590); match prod_local_1591 {
+        false => { let prod_local_1592 = prod_local_1574; match prod_local_1592 {
+        false => prod_local_1592,
+        true => { let prod_local_1593 = sTen()?; { let prod_local_1594 = sFive()?; { let prod_local_1595 = ((1 << 1) + 1); { let prod_local_1596 = sTwelve()?; { let prod_local_1597 = conservationLawValid(prod_local_1593, prod_local_1594, prod_local_1595, prod_local_1596)?; match prod_local_1597 {
+        false => prod_local_1597,
+        true => { let prod_local_1598 = sTen()?; { let prod_local_1599 = 0; { let prod_local_1600 = sEleven()?; { let prod_local_1601 = conservationLawValid(prod_local_1598, prod_local_1599, prod_local_1599, prod_local_1600)?; match prod_local_1601 {
+        false => { let prod_local_1602 = (1 << 1); { let prod_local_1603 = 0; { let prod_local_1604 = sFive()?; { let prod_local_1605 = conservationLawValid(prod_local_1602, prod_local_1603, prod_local_1604, prod_local_1603)?; match prod_local_1605 {
+        false => prod_local_1597,
+        true => prod_local_1601,
+    } } } } },
+        true => { let prod_local_1606 = false; prod_local_1606 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_1607 = false; prod_local_1607 },
+    } } },
+    } } } },
+    } } } } },
+    } },
+        true => { let prod_local_1608 = false; prod_local_1608 },
+    } } } },
+    } } },
+    } },
+        true => { let prod_local_1609 = sFour()?; { let prod_local_1610 = (prod_local_1609 == _x_57); { let prod_local_1611 = prod_local_1610; match prod_local_1611 {
+        false => prod_local_1611,
+        true => { let prod_local_1613 = sSeven()?; { let prod_local_1614 = twoBoneIkReachable(_x_57, _x_57, prod_local_1613)?; match prod_local_1614 {
+        false => { let prod_local_1615 = prod_local_1614; match prod_local_1615 {
+        false => prod_local_1615,
+        true => { let prod_local_1616 = universeCellSpanMeters()?; { let prod_local_1617 = sSeven()?; { let prod_local_1618 = pow2Constructive(prod_local_1617)?; { let prod_local_1619 = (prod_local_1616 == prod_local_1618); match prod_local_1619 {
+        false => { let prod_local_1621 = prod_local_1619; match prod_local_1621 {
+        false => prod_local_1621,
+        true => { let prod_local_1622 = sTen()?; { let prod_local_1623 = sFive()?; { let prod_local_1624 = ((1 << 1) + 1); { let prod_local_1625 = sTwelve()?; { let prod_local_1626 = conservationLawValid(prod_local_1622, prod_local_1623, prod_local_1624, prod_local_1625)?; match prod_local_1626 {
+        false => prod_local_1626,
+        true => { let prod_local_1627 = sTen()?; { let prod_local_1628 = 0; { let prod_local_1629 = sEleven()?; { let prod_local_1630 = conservationLawValid(prod_local_1627, prod_local_1628, prod_local_1628, prod_local_1629)?; match prod_local_1630 {
+        false => { let prod_local_1631 = (1 << 1); { let prod_local_1632 = 0; { let prod_local_1633 = sFive()?; { let prod_local_1634 = conservationLawValid(prod_local_1631, prod_local_1632, prod_local_1633, prod_local_1632)?; match prod_local_1634 {
+        false => prod_local_1626,
+        true => prod_local_1630,
+    } } } } },
+        true => { let prod_local_1635 = false; prod_local_1635 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_1636 = sHundred()?; { let prod_local_1637 = universeHalfSpanMilli()?; { let prod_local_1638 = (prod_local_1636 < prod_local_1637); match prod_local_1638 {
+        false => { let prod_local_1639 = prod_local_1638; match prod_local_1639 {
+        false => prod_local_1639,
+        true => { let prod_local_1640 = sTen()?; { let prod_local_1641 = sFive()?; { let prod_local_1642 = ((1 << 1) + 1); { let prod_local_1643 = sTwelve()?; { let prod_local_1644 = conservationLawValid(prod_local_1640, prod_local_1641, prod_local_1642, prod_local_1643)?; match prod_local_1644 {
+        false => prod_local_1644,
+        true => { let prod_local_1645 = sTen()?; { let prod_local_1646 = 0; { let prod_local_1647 = sEleven()?; { let prod_local_1648 = conservationLawValid(prod_local_1645, prod_local_1646, prod_local_1646, prod_local_1647)?; match prod_local_1648 {
+        false => { let prod_local_1649 = (1 << 1); { let prod_local_1650 = 0; { let prod_local_1651 = sFive()?; { let prod_local_1652 = conservationLawValid(prod_local_1649, prod_local_1650, prod_local_1651, prod_local_1650)?; match prod_local_1652 {
+        false => prod_local_1644,
+        true => prod_local_1648,
+    } } } } },
+        true => { let prod_local_1653 = false; prod_local_1653 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_1654 = universeHalfSpanMilli()?; { let prod_local_1655 = (prod_local_1654 < prod_local_1654); match prod_local_1655 {
+        false => { let prod_local_1656 = prod_local_1638; match prod_local_1656 {
+        false => prod_local_1656,
+        true => { let prod_local_1657 = sTen()?; { let prod_local_1658 = sFive()?; { let prod_local_1659 = ((1 << 1) + 1); { let prod_local_1660 = sTwelve()?; { let prod_local_1661 = conservationLawValid(prod_local_1657, prod_local_1658, prod_local_1659, prod_local_1660)?; match prod_local_1661 {
+        false => prod_local_1661,
+        true => { let prod_local_1662 = sTen()?; { let prod_local_1663 = 0; { let prod_local_1664 = sEleven()?; { let prod_local_1665 = conservationLawValid(prod_local_1662, prod_local_1663, prod_local_1663, prod_local_1664)?; match prod_local_1665 {
+        false => { let prod_local_1666 = (1 << 1); { let prod_local_1667 = 0; { let prod_local_1668 = sFive()?; { let prod_local_1669 = conservationLawValid(prod_local_1666, prod_local_1667, prod_local_1668, prod_local_1667)?; match prod_local_1669 {
+        false => prod_local_1661,
+        true => prod_local_1665,
+    } } } } },
+        true => { let prod_local_1670 = false; prod_local_1670 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_1671 = false; prod_local_1671 },
+    } } },
+    } } } },
+    } } } } },
+    } },
+        true => { let prod_local_1672 = ((1 << 1) + 1); { let prod_local_1673 = sSeven()?; { let prod_local_1674 = twoBoneIkReachable(prod_local_1672, prod_local_1672, prod_local_1673)?; match prod_local_1674 {
+        false => { let prod_local_1675 = prod_local_1614; match prod_local_1675 {
+        false => prod_local_1675,
+        true => { let prod_local_1676 = universeCellSpanMeters()?; { let prod_local_1677 = sSeven()?; { let prod_local_1678 = pow2Constructive(prod_local_1677)?; { let prod_local_1679 = (prod_local_1676 == prod_local_1678); match prod_local_1679 {
+        false => { let prod_local_1681 = prod_local_1679; match prod_local_1681 {
+        false => prod_local_1681,
+        true => { let prod_local_1682 = sTen()?; { let prod_local_1683 = sFive()?; { let prod_local_1684 = ((1 << 1) + 1); { let prod_local_1685 = sTwelve()?; { let prod_local_1686 = conservationLawValid(prod_local_1682, prod_local_1683, prod_local_1684, prod_local_1685)?; match prod_local_1686 {
+        false => prod_local_1686,
+        true => { let prod_local_1687 = sTen()?; { let prod_local_1688 = 0; { let prod_local_1689 = sEleven()?; { let prod_local_1690 = conservationLawValid(prod_local_1687, prod_local_1688, prod_local_1688, prod_local_1689)?; match prod_local_1690 {
+        false => { let prod_local_1691 = (1 << 1); { let prod_local_1692 = 0; { let prod_local_1693 = sFive()?; { let prod_local_1694 = conservationLawValid(prod_local_1691, prod_local_1692, prod_local_1693, prod_local_1692)?; match prod_local_1694 {
+        false => prod_local_1686,
+        true => prod_local_1690,
+    } } } } },
+        true => { let prod_local_1695 = false; prod_local_1695 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_1696 = sHundred()?; { let prod_local_1697 = universeHalfSpanMilli()?; { let prod_local_1698 = (prod_local_1696 < prod_local_1697); match prod_local_1698 {
+        false => { let prod_local_1699 = prod_local_1698; match prod_local_1699 {
+        false => prod_local_1699,
+        true => { let prod_local_1700 = sTen()?; { let prod_local_1701 = sFive()?; { let prod_local_1702 = ((1 << 1) + 1); { let prod_local_1703 = sTwelve()?; { let prod_local_1704 = conservationLawValid(prod_local_1700, prod_local_1701, prod_local_1702, prod_local_1703)?; match prod_local_1704 {
+        false => prod_local_1704,
+        true => { let prod_local_1705 = sTen()?; { let prod_local_1706 = 0; { let prod_local_1707 = sEleven()?; { let prod_local_1708 = conservationLawValid(prod_local_1705, prod_local_1706, prod_local_1706, prod_local_1707)?; match prod_local_1708 {
+        false => { let prod_local_1709 = (1 << 1); { let prod_local_1710 = 0; { let prod_local_1711 = sFive()?; { let prod_local_1712 = conservationLawValid(prod_local_1709, prod_local_1710, prod_local_1711, prod_local_1710)?; match prod_local_1712 {
+        false => prod_local_1704,
+        true => prod_local_1708,
+    } } } } },
+        true => { let prod_local_1713 = false; prod_local_1713 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_1714 = universeHalfSpanMilli()?; { let prod_local_1715 = (prod_local_1714 < prod_local_1714); match prod_local_1715 {
+        false => { let prod_local_1716 = prod_local_1698; match prod_local_1716 {
+        false => prod_local_1716,
+        true => { let prod_local_1717 = sTen()?; { let prod_local_1718 = sFive()?; { let prod_local_1719 = ((1 << 1) + 1); { let prod_local_1720 = sTwelve()?; { let prod_local_1721 = conservationLawValid(prod_local_1717, prod_local_1718, prod_local_1719, prod_local_1720)?; match prod_local_1721 {
+        false => prod_local_1721,
+        true => { let prod_local_1722 = sTen()?; { let prod_local_1723 = 0; { let prod_local_1724 = sEleven()?; { let prod_local_1725 = conservationLawValid(prod_local_1722, prod_local_1723, prod_local_1723, prod_local_1724)?; match prod_local_1725 {
+        false => { let prod_local_1726 = (1 << 1); { let prod_local_1727 = 0; { let prod_local_1728 = sFive()?; { let prod_local_1729 = conservationLawValid(prod_local_1726, prod_local_1727, prod_local_1728, prod_local_1727)?; match prod_local_1729 {
+        false => prod_local_1721,
+        true => prod_local_1725,
+    } } } } },
+        true => { let prod_local_1730 = false; prod_local_1730 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_1731 = false; prod_local_1731 },
+    } } },
+    } } } },
+    } } } } },
+    } },
+        true => { let prod_local_1732 = false; prod_local_1732 },
+    } } } },
+    } } },
+    } } } },
+    } } } },
+    } },
+        true => { let prod_local_1733 = prod_local_1221; match prod_local_1733 {
+        false => prod_local_1733,
+        true => { let prod_local_1734 = sTwentyTwo()?; { let prod_local_1735 = sTwentyTwo()?; { let prod_local_1736 = (prod_local_1734 == prod_local_1735); match prod_local_1736 {
+        false => { let prod_local_1738 = prod_local_1736; match prod_local_1738 {
+        false => prod_local_1738,
+        true => { let prod_local_1740 = sSeven()?; { let prod_local_1741 = twoBoneIkReachable(_x_57, _x_57, prod_local_1740)?; match prod_local_1741 {
+        false => { let prod_local_1742 = prod_local_1741; match prod_local_1742 {
+        false => prod_local_1742,
+        true => { let prod_local_1743 = universeCellSpanMeters()?; { let prod_local_1744 = sSeven()?; { let prod_local_1745 = pow2Constructive(prod_local_1744)?; { let prod_local_1746 = (prod_local_1743 == prod_local_1745); match prod_local_1746 {
+        false => { let prod_local_1748 = prod_local_1746; match prod_local_1748 {
+        false => prod_local_1748,
+        true => { let prod_local_1749 = sTen()?; { let prod_local_1750 = sFive()?; { let prod_local_1751 = ((1 << 1) + 1); { let prod_local_1752 = sTwelve()?; { let prod_local_1753 = conservationLawValid(prod_local_1749, prod_local_1750, prod_local_1751, prod_local_1752)?; match prod_local_1753 {
+        false => prod_local_1753,
+        true => { let prod_local_1754 = sTen()?; { let prod_local_1755 = 0; { let prod_local_1756 = sEleven()?; { let prod_local_1757 = conservationLawValid(prod_local_1754, prod_local_1755, prod_local_1755, prod_local_1756)?; match prod_local_1757 {
+        false => { let prod_local_1758 = (1 << 1); { let prod_local_1759 = 0; { let prod_local_1760 = sFive()?; { let prod_local_1761 = conservationLawValid(prod_local_1758, prod_local_1759, prod_local_1760, prod_local_1759)?; match prod_local_1761 {
+        false => prod_local_1753,
+        true => prod_local_1757,
+    } } } } },
+        true => { let prod_local_1762 = false; prod_local_1762 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_1763 = sHundred()?; { let prod_local_1764 = universeHalfSpanMilli()?; { let prod_local_1765 = (prod_local_1763 < prod_local_1764); match prod_local_1765 {
+        false => { let prod_local_1766 = prod_local_1765; match prod_local_1766 {
+        false => prod_local_1766,
+        true => { let prod_local_1767 = sTen()?; { let prod_local_1768 = sFive()?; { let prod_local_1769 = ((1 << 1) + 1); { let prod_local_1770 = sTwelve()?; { let prod_local_1771 = conservationLawValid(prod_local_1767, prod_local_1768, prod_local_1769, prod_local_1770)?; match prod_local_1771 {
+        false => prod_local_1771,
+        true => { let prod_local_1772 = sTen()?; { let prod_local_1773 = 0; { let prod_local_1774 = sEleven()?; { let prod_local_1775 = conservationLawValid(prod_local_1772, prod_local_1773, prod_local_1773, prod_local_1774)?; match prod_local_1775 {
+        false => { let prod_local_1776 = (1 << 1); { let prod_local_1777 = 0; { let prod_local_1778 = sFive()?; { let prod_local_1779 = conservationLawValid(prod_local_1776, prod_local_1777, prod_local_1778, prod_local_1777)?; match prod_local_1779 {
+        false => prod_local_1771,
+        true => prod_local_1775,
+    } } } } },
+        true => { let prod_local_1780 = false; prod_local_1780 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_1781 = universeHalfSpanMilli()?; { let prod_local_1782 = (prod_local_1781 < prod_local_1781); match prod_local_1782 {
+        false => { let prod_local_1783 = prod_local_1765; match prod_local_1783 {
+        false => prod_local_1783,
+        true => { let prod_local_1784 = sTen()?; { let prod_local_1785 = sFive()?; { let prod_local_1786 = ((1 << 1) + 1); { let prod_local_1787 = sTwelve()?; { let prod_local_1788 = conservationLawValid(prod_local_1784, prod_local_1785, prod_local_1786, prod_local_1787)?; match prod_local_1788 {
+        false => prod_local_1788,
+        true => { let prod_local_1789 = sTen()?; { let prod_local_1790 = 0; { let prod_local_1791 = sEleven()?; { let prod_local_1792 = conservationLawValid(prod_local_1789, prod_local_1790, prod_local_1790, prod_local_1791)?; match prod_local_1792 {
+        false => { let prod_local_1793 = (1 << 1); { let prod_local_1794 = 0; { let prod_local_1795 = sFive()?; { let prod_local_1796 = conservationLawValid(prod_local_1793, prod_local_1794, prod_local_1795, prod_local_1794)?; match prod_local_1796 {
+        false => prod_local_1788,
+        true => prod_local_1792,
+    } } } } },
+        true => { let prod_local_1797 = false; prod_local_1797 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_1798 = false; prod_local_1798 },
+    } } },
+    } } } },
+    } } } } },
+    } },
+        true => { let prod_local_1799 = ((1 << 1) + 1); { let prod_local_1800 = sSeven()?; { let prod_local_1801 = twoBoneIkReachable(prod_local_1799, prod_local_1799, prod_local_1800)?; match prod_local_1801 {
+        false => { let prod_local_1802 = prod_local_1741; match prod_local_1802 {
+        false => prod_local_1802,
+        true => { let prod_local_1803 = universeCellSpanMeters()?; { let prod_local_1804 = sSeven()?; { let prod_local_1805 = pow2Constructive(prod_local_1804)?; { let prod_local_1806 = (prod_local_1803 == prod_local_1805); match prod_local_1806 {
+        false => { let prod_local_1808 = prod_local_1806; match prod_local_1808 {
+        false => prod_local_1808,
+        true => { let prod_local_1809 = sTen()?; { let prod_local_1810 = sFive()?; { let prod_local_1811 = ((1 << 1) + 1); { let prod_local_1812 = sTwelve()?; { let prod_local_1813 = conservationLawValid(prod_local_1809, prod_local_1810, prod_local_1811, prod_local_1812)?; match prod_local_1813 {
+        false => prod_local_1813,
+        true => { let prod_local_1814 = sTen()?; { let prod_local_1815 = 0; { let prod_local_1816 = sEleven()?; { let prod_local_1817 = conservationLawValid(prod_local_1814, prod_local_1815, prod_local_1815, prod_local_1816)?; match prod_local_1817 {
+        false => { let prod_local_1818 = (1 << 1); { let prod_local_1819 = 0; { let prod_local_1820 = sFive()?; { let prod_local_1821 = conservationLawValid(prod_local_1818, prod_local_1819, prod_local_1820, prod_local_1819)?; match prod_local_1821 {
+        false => prod_local_1813,
+        true => prod_local_1817,
+    } } } } },
+        true => { let prod_local_1822 = false; prod_local_1822 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_1823 = sHundred()?; { let prod_local_1824 = universeHalfSpanMilli()?; { let prod_local_1825 = (prod_local_1823 < prod_local_1824); match prod_local_1825 {
+        false => { let prod_local_1826 = prod_local_1825; match prod_local_1826 {
+        false => prod_local_1826,
+        true => { let prod_local_1827 = sTen()?; { let prod_local_1828 = sFive()?; { let prod_local_1829 = ((1 << 1) + 1); { let prod_local_1830 = sTwelve()?; { let prod_local_1831 = conservationLawValid(prod_local_1827, prod_local_1828, prod_local_1829, prod_local_1830)?; match prod_local_1831 {
+        false => prod_local_1831,
+        true => { let prod_local_1832 = sTen()?; { let prod_local_1833 = 0; { let prod_local_1834 = sEleven()?; { let prod_local_1835 = conservationLawValid(prod_local_1832, prod_local_1833, prod_local_1833, prod_local_1834)?; match prod_local_1835 {
+        false => { let prod_local_1836 = (1 << 1); { let prod_local_1837 = 0; { let prod_local_1838 = sFive()?; { let prod_local_1839 = conservationLawValid(prod_local_1836, prod_local_1837, prod_local_1838, prod_local_1837)?; match prod_local_1839 {
+        false => prod_local_1831,
+        true => prod_local_1835,
+    } } } } },
+        true => { let prod_local_1840 = false; prod_local_1840 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_1841 = universeHalfSpanMilli()?; { let prod_local_1842 = (prod_local_1841 < prod_local_1841); match prod_local_1842 {
+        false => { let prod_local_1843 = prod_local_1825; match prod_local_1843 {
+        false => prod_local_1843,
+        true => { let prod_local_1844 = sTen()?; { let prod_local_1845 = sFive()?; { let prod_local_1846 = ((1 << 1) + 1); { let prod_local_1847 = sTwelve()?; { let prod_local_1848 = conservationLawValid(prod_local_1844, prod_local_1845, prod_local_1846, prod_local_1847)?; match prod_local_1848 {
+        false => prod_local_1848,
+        true => { let prod_local_1849 = sTen()?; { let prod_local_1850 = 0; { let prod_local_1851 = sEleven()?; { let prod_local_1852 = conservationLawValid(prod_local_1849, prod_local_1850, prod_local_1850, prod_local_1851)?; match prod_local_1852 {
+        false => { let prod_local_1853 = (1 << 1); { let prod_local_1854 = 0; { let prod_local_1855 = sFive()?; { let prod_local_1856 = conservationLawValid(prod_local_1853, prod_local_1854, prod_local_1855, prod_local_1854)?; match prod_local_1856 {
+        false => prod_local_1848,
+        true => prod_local_1852,
+    } } } } },
+        true => { let prod_local_1857 = false; prod_local_1857 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_1858 = false; prod_local_1858 },
+    } } },
+    } } } },
+    } } } } },
+    } },
+        true => { let prod_local_1859 = false; prod_local_1859 },
+    } } } },
+    } } },
+    } },
+        true => { let prod_local_1860 = sFour()?; { let prod_local_1861 = (prod_local_1860 == _x_57); { let prod_local_1862 = prod_local_1861; match prod_local_1862 {
+        false => prod_local_1862,
+        true => { let prod_local_1864 = sSeven()?; { let prod_local_1865 = twoBoneIkReachable(_x_57, _x_57, prod_local_1864)?; match prod_local_1865 {
+        false => { let prod_local_1866 = prod_local_1865; match prod_local_1866 {
+        false => prod_local_1866,
+        true => { let prod_local_1867 = universeCellSpanMeters()?; { let prod_local_1868 = sSeven()?; { let prod_local_1869 = pow2Constructive(prod_local_1868)?; { let prod_local_1870 = (prod_local_1867 == prod_local_1869); match prod_local_1870 {
+        false => { let prod_local_1872 = prod_local_1870; match prod_local_1872 {
+        false => prod_local_1872,
+        true => { let prod_local_1873 = sTen()?; { let prod_local_1874 = sFive()?; { let prod_local_1875 = ((1 << 1) + 1); { let prod_local_1876 = sTwelve()?; { let prod_local_1877 = conservationLawValid(prod_local_1873, prod_local_1874, prod_local_1875, prod_local_1876)?; match prod_local_1877 {
+        false => prod_local_1877,
+        true => { let prod_local_1878 = sTen()?; { let prod_local_1879 = 0; { let prod_local_1880 = sEleven()?; { let prod_local_1881 = conservationLawValid(prod_local_1878, prod_local_1879, prod_local_1879, prod_local_1880)?; match prod_local_1881 {
+        false => { let prod_local_1882 = (1 << 1); { let prod_local_1883 = 0; { let prod_local_1884 = sFive()?; { let prod_local_1885 = conservationLawValid(prod_local_1882, prod_local_1883, prod_local_1884, prod_local_1883)?; match prod_local_1885 {
+        false => prod_local_1877,
+        true => prod_local_1881,
+    } } } } },
+        true => { let prod_local_1886 = false; prod_local_1886 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_1887 = sHundred()?; { let prod_local_1888 = universeHalfSpanMilli()?; { let prod_local_1889 = (prod_local_1887 < prod_local_1888); match prod_local_1889 {
+        false => { let prod_local_1890 = prod_local_1889; match prod_local_1890 {
+        false => prod_local_1890,
+        true => { let prod_local_1891 = sTen()?; { let prod_local_1892 = sFive()?; { let prod_local_1893 = ((1 << 1) + 1); { let prod_local_1894 = sTwelve()?; { let prod_local_1895 = conservationLawValid(prod_local_1891, prod_local_1892, prod_local_1893, prod_local_1894)?; match prod_local_1895 {
+        false => prod_local_1895,
+        true => { let prod_local_1896 = sTen()?; { let prod_local_1897 = 0; { let prod_local_1898 = sEleven()?; { let prod_local_1899 = conservationLawValid(prod_local_1896, prod_local_1897, prod_local_1897, prod_local_1898)?; match prod_local_1899 {
+        false => { let prod_local_1900 = (1 << 1); { let prod_local_1901 = 0; { let prod_local_1902 = sFive()?; { let prod_local_1903 = conservationLawValid(prod_local_1900, prod_local_1901, prod_local_1902, prod_local_1901)?; match prod_local_1903 {
+        false => prod_local_1895,
+        true => prod_local_1899,
+    } } } } },
+        true => { let prod_local_1904 = false; prod_local_1904 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_1905 = universeHalfSpanMilli()?; { let prod_local_1906 = (prod_local_1905 < prod_local_1905); match prod_local_1906 {
+        false => { let prod_local_1907 = prod_local_1889; match prod_local_1907 {
+        false => prod_local_1907,
+        true => { let prod_local_1908 = sTen()?; { let prod_local_1909 = sFive()?; { let prod_local_1910 = ((1 << 1) + 1); { let prod_local_1911 = sTwelve()?; { let prod_local_1912 = conservationLawValid(prod_local_1908, prod_local_1909, prod_local_1910, prod_local_1911)?; match prod_local_1912 {
+        false => prod_local_1912,
+        true => { let prod_local_1913 = sTen()?; { let prod_local_1914 = 0; { let prod_local_1915 = sEleven()?; { let prod_local_1916 = conservationLawValid(prod_local_1913, prod_local_1914, prod_local_1914, prod_local_1915)?; match prod_local_1916 {
+        false => { let prod_local_1917 = (1 << 1); { let prod_local_1918 = 0; { let prod_local_1919 = sFive()?; { let prod_local_1920 = conservationLawValid(prod_local_1917, prod_local_1918, prod_local_1919, prod_local_1918)?; match prod_local_1920 {
+        false => prod_local_1912,
+        true => prod_local_1916,
+    } } } } },
+        true => { let prod_local_1921 = false; prod_local_1921 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_1922 = false; prod_local_1922 },
+    } } },
+    } } } },
+    } } } } },
+    } },
+        true => { let prod_local_1923 = ((1 << 1) + 1); { let prod_local_1924 = sSeven()?; { let prod_local_1925 = twoBoneIkReachable(prod_local_1923, prod_local_1923, prod_local_1924)?; match prod_local_1925 {
+        false => { let prod_local_1926 = prod_local_1865; match prod_local_1926 {
+        false => prod_local_1926,
+        true => { let prod_local_1927 = universeCellSpanMeters()?; { let prod_local_1928 = sSeven()?; { let prod_local_1929 = pow2Constructive(prod_local_1928)?; { let prod_local_1930 = (prod_local_1927 == prod_local_1929); match prod_local_1930 {
+        false => { let prod_local_1932 = prod_local_1930; match prod_local_1932 {
+        false => prod_local_1932,
+        true => { let prod_local_1933 = sTen()?; { let prod_local_1934 = sFive()?; { let prod_local_1935 = ((1 << 1) + 1); { let prod_local_1936 = sTwelve()?; { let prod_local_1937 = conservationLawValid(prod_local_1933, prod_local_1934, prod_local_1935, prod_local_1936)?; match prod_local_1937 {
+        false => prod_local_1937,
+        true => { let prod_local_1938 = sTen()?; { let prod_local_1939 = 0; { let prod_local_1940 = sEleven()?; { let prod_local_1941 = conservationLawValid(prod_local_1938, prod_local_1939, prod_local_1939, prod_local_1940)?; match prod_local_1941 {
+        false => { let prod_local_1942 = (1 << 1); { let prod_local_1943 = 0; { let prod_local_1944 = sFive()?; { let prod_local_1945 = conservationLawValid(prod_local_1942, prod_local_1943, prod_local_1944, prod_local_1943)?; match prod_local_1945 {
+        false => prod_local_1937,
+        true => prod_local_1941,
+    } } } } },
+        true => { let prod_local_1946 = false; prod_local_1946 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_1947 = sHundred()?; { let prod_local_1948 = universeHalfSpanMilli()?; { let prod_local_1949 = (prod_local_1947 < prod_local_1948); match prod_local_1949 {
+        false => { let prod_local_1950 = prod_local_1949; match prod_local_1950 {
+        false => prod_local_1950,
+        true => { let prod_local_1951 = sTen()?; { let prod_local_1952 = sFive()?; { let prod_local_1953 = ((1 << 1) + 1); { let prod_local_1954 = sTwelve()?; { let prod_local_1955 = conservationLawValid(prod_local_1951, prod_local_1952, prod_local_1953, prod_local_1954)?; match prod_local_1955 {
+        false => prod_local_1955,
+        true => { let prod_local_1956 = sTen()?; { let prod_local_1957 = 0; { let prod_local_1958 = sEleven()?; { let prod_local_1959 = conservationLawValid(prod_local_1956, prod_local_1957, prod_local_1957, prod_local_1958)?; match prod_local_1959 {
+        false => { let prod_local_1960 = (1 << 1); { let prod_local_1961 = 0; { let prod_local_1962 = sFive()?; { let prod_local_1963 = conservationLawValid(prod_local_1960, prod_local_1961, prod_local_1962, prod_local_1961)?; match prod_local_1963 {
+        false => prod_local_1955,
+        true => prod_local_1959,
+    } } } } },
+        true => { let prod_local_1964 = false; prod_local_1964 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_1965 = universeHalfSpanMilli()?; { let prod_local_1966 = (prod_local_1965 < prod_local_1965); match prod_local_1966 {
+        false => { let prod_local_1967 = prod_local_1949; match prod_local_1967 {
+        false => prod_local_1967,
+        true => { let prod_local_1968 = sTen()?; { let prod_local_1969 = sFive()?; { let prod_local_1970 = ((1 << 1) + 1); { let prod_local_1971 = sTwelve()?; { let prod_local_1972 = conservationLawValid(prod_local_1968, prod_local_1969, prod_local_1970, prod_local_1971)?; match prod_local_1972 {
+        false => prod_local_1972,
+        true => { let prod_local_1973 = sTen()?; { let prod_local_1974 = 0; { let prod_local_1975 = sEleven()?; { let prod_local_1976 = conservationLawValid(prod_local_1973, prod_local_1974, prod_local_1974, prod_local_1975)?; match prod_local_1976 {
+        false => { let prod_local_1977 = (1 << 1); { let prod_local_1978 = 0; { let prod_local_1979 = sFive()?; { let prod_local_1980 = conservationLawValid(prod_local_1977, prod_local_1978, prod_local_1979, prod_local_1978)?; match prod_local_1980 {
+        false => prod_local_1972,
+        true => prod_local_1976,
+    } } } } },
+        true => { let prod_local_1981 = false; prod_local_1981 },
+    } } } } },
+    } } } } } },
+    } },
+        true => { let prod_local_1982 = false; prod_local_1982 },
+    } } },
+    } } } },
+    } } } } },
+    } },
+        true => { let prod_local_1983 = false; prod_local_1983 },
+    } } } },
+    } } },
+    } } } },
+    } } } },
+    } },
+    } } } } },
+    }
+                                                                                            }
+                                                                                        }
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                            true => {
+                                                                                let prod_local_1984 =
+                                                                                    false;
+                                                                                prod_local_1984
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    })
+}
+
 pub fn lerpPermille(
     fromVal: u64,
     toVal: u64,
@@ -9987,6 +12575,69 @@ pub fn lodEnvelope3() -> Result<self::LodRenderEnvelopeSpec, self::ComputeError>
     })
 }
 
+pub fn lodEnvelope4() -> Result<self::LodRenderEnvelopeSpec, self::ComputeError> {
+    Ok({
+        let _x_4 = lod3LosslessSource()?;
+        {
+            let _x_5 = (_x_4).rank;
+            {
+                let _x_6 = 1;
+                {
+                    let _x_26 = core::convert::identity::<u64>(_x_5)
+                        .checked_add(_x_6)
+                        .ok_or(self::ComputeError::AddOverflow)?;
+                    {
+                        let _x_10 = sSixteen()?;
+                        {
+                            let _x_11 = (_x_4).resDenom;
+                            {
+                                let _x_12 = sTwoHundred()?;
+                                {
+                                    let _x_13 = true;
+                                    {
+                                        let _x_14 = (_x_4).losslessSource;
+                                        {
+                                            let _x_15 = sTwenty()?;
+                                            {
+                                                let _x_16 = sThirtyFour()?;
+                                                {
+                                                    let _x_17 = sFortyFour()?;
+                                                    {
+                                                        let _x_18 = sFortyEight()?;
+                                                        {
+                                                            let _x_19 =
+                                                                self::LodRenderEnvelopeSpec {
+                                                                    rank: _x_26,
+                                                                    resNumer: _x_10,
+                                                                    resDenom: _x_11,
+                                                                    meshDensityPercent: _x_12,
+                                                                    shadowsActive: _x_13,
+                                                                    iblActive: _x_13,
+                                                                    losslessActive: _x_14,
+                                                                    skyRedPercent: _x_15,
+                                                                    skyGreenPercent: _x_16,
+                                                                    skyBluePercent: _x_17,
+                                                                    fogRedPercent: _x_16,
+                                                                    fogGreenPercent: _x_17,
+                                                                    fogBluePercent: _x_18,
+                                                                };
+                                                            _x_19
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    })
+}
+
 pub fn lodEnvelopeByRank(rank: u64) -> Result<self::LodRenderEnvelopeSpec, self::ComputeError> {
     Ok({
         let _x_1 = 0;
@@ -9994,36 +12645,48 @@ pub fn lodEnvelopeByRank(rank: u64) -> Result<self::LodRenderEnvelopeSpec, self:
             let _x_4 = (rank == _x_1);
             match _x_4 {
                 false => {
-                    let _x_115 = 1;
+                    let _x_176 = 1;
                     {
-                        let _x_116 = (rank == _x_115);
-                        match _x_116 {
+                        let _x_177 = (rank == _x_176);
+                        match _x_177 {
                             false => {
-                                let _x_123 = (1 << 1);
+                                let _x_188 = (1 << 1);
                                 {
-                                    let _x_124 = (rank == _x_123);
-                                    match _x_124 {
+                                    let _x_189 = (rank == _x_188);
+                                    match _x_189 {
                                         false => {
-                                            let _x_125 = lodEnvelope3()?;
-                                            _x_125
+                                            let _x_196 = ((1 << 1) + 1);
+                                            {
+                                                let _x_197 = (rank == _x_196);
+                                                match _x_197 {
+                                                    false => {
+                                                        let _x_198 = lodEnvelope4()?;
+                                                        _x_198
+                                                    }
+                                                    true => {
+                                                        let _x_199 = lodEnvelope3()?;
+                                                        _x_199
+                                                    }
+                                                }
+                                            }
                                         }
                                         true => {
-                                            let _x_126 = lodEnvelope2()?;
-                                            _x_126
+                                            let _x_195 = lodEnvelope2()?;
+                                            _x_195
                                         }
                                     }
                                 }
                             }
                             true => {
-                                let _x_122 = lodEnvelope1()?;
-                                _x_122
+                                let _x_187 = lodEnvelope1()?;
+                                _x_187
                             }
                         }
                     }
                 }
                 true => {
-                    let _x_114 = lodEnvelope0()?;
-                    _x_114
+                    let _x_175 = lodEnvelope0()?;
+                    _x_175
                 }
             }
         }
@@ -12209,6 +14872,21 @@ pub fn sTwo() -> u64 {
     }
 }
 
+pub fn sTwoHundred() -> Result<u64, self::ComputeError> {
+    Ok({
+        let _x_5 = (1 << 1);
+        {
+            let _x_3 = sHundred()?;
+            {
+                let _x_4 = core::convert::identity::<u64>(_x_5)
+                    .checked_mul(_x_3)
+                    .ok_or(self::ComputeError::MulOverflow)?;
+                _x_4
+            }
+        }
+    })
+}
+
 pub fn sabinePrefactorDenom() -> Result<u64, self::ComputeError> {
     Ok({
         let _x_2 = sTen()?;
@@ -12711,6 +15389,22 @@ pub fn sweptCapsuleMaxStepMilli() -> Result<u64, self::ComputeError> {
     })
 }
 
+pub fn sweptClearanceValid(
+    distMilli: u64,
+    radiusMilli: u64,
+    epsMilli: u64,
+) -> Result<bool, self::ComputeError> {
+    Ok({
+        let _x_12 = core::convert::identity::<u64>(radiusMilli)
+            .checked_add(epsMilli)
+            .ok_or(self::ComputeError::AddOverflow)?;
+        {
+            let _x_5 = (_x_12 <= distMilli);
+            _x_5
+        }
+    })
+}
+
 pub fn terrainIndexCount(segs: u64) -> Result<u64, self::ComputeError> {
     Ok({
         let _x_2 = sSix()?;
@@ -12749,6 +15443,22 @@ pub fn tileEdgePixels() -> Result<u64, self::ComputeError> {
     Ok({
         let _x_1 = sSixteen()?;
         _x_1
+    })
+}
+
+pub fn twoBoneIkReachable(
+    upperMilli: u64,
+    lowerMilli: u64,
+    targetDistMilli: u64,
+) -> Result<bool, self::ComputeError> {
+    Ok({
+        let _x_12 = core::convert::identity::<u64>(upperMilli)
+            .checked_add(lowerMilli)
+            .ok_or(self::ComputeError::AddOverflow)?;
+        {
+            let _x_5 = (targetDistMilli <= _x_12);
+            _x_5
+        }
     })
 }
 
@@ -13611,6 +16321,41 @@ pub fn uiWidgetCompliant(
     })
 }
 
+pub fn universeCellSpanMeters() -> Result<u64, self::ComputeError> {
+    Ok({
+        let _x_1 = sSeven()?;
+        {
+            let _x_2 = pow2Constructive(_x_1)?;
+            _x_2
+        }
+    })
+}
+
+pub fn universeHalfSpanMilli() -> Result<u64, self::ComputeError> {
+    Ok({
+        let _x_2 = sSix()?;
+        {
+            let _x_3 = pow2Constructive(_x_2)?;
+            {
+                let _x_4 = skinWeightScale()?;
+                {
+                    let _x_5 = core::convert::identity::<u64>(_x_3)
+                        .checked_mul(_x_4)
+                        .ok_or(self::ComputeError::MulOverflow)?;
+                    _x_5
+                }
+            }
+        }
+    })
+}
+
+pub fn universeLocalOffsetBounded(absOffsetMilli: u64, halfSpanMilli: u64) -> bool {
+    {
+        let _x_1 = (absOffsetMilli < halfSpanMilli);
+        _x_1
+    }
+}
+
 pub fn uorcDefaultCompressSteps() -> Result<u64, self::ComputeError> {
     Ok({
         let _x_1 = sFour()?;
@@ -13732,6 +16477,13 @@ pub fn wasmFrustumFarMeters() -> Result<u64, self::ComputeError> {
                 _x_4
             }
         }
+    })
+}
+
+pub fn wasmHdMaxLodRank() -> Result<u64, self::ComputeError> {
+    Ok({
+        let _x_1 = sFour()?;
+        _x_1
     })
 }
 
@@ -14089,6 +16841,84 @@ pub fn kernel11CodedSlmReasoning() -> Result<self::TensorKernelSpec, self::Compu
                             let _x_6 = true;
                             {
                                 let _x_9 = self::TensorKernelSpec { index: _x_1, semiring: _x_2, lhsCols: _x_3, accumBits: _x_4, minAccumBits: _x_5, tileAligned: _x_6, autonomousKinematic: _x_6, name: std::string::String::from("CodedSlmProposalRouter"), text: std::string::String::from("Zero-decode Packed<Grid<16>, 2> and Runs<Grid<16>, 16> embedded language and intent reasoning contraction routing verified world proposals.") };
+                                _x_9
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    })
+}
+
+pub fn kernel12TropicalBlasSweep() -> Result<self::TensorKernelSpec, self::ComputeError> {
+    Ok({
+        let _x_1 = natTwelve()?;
+        {
+            let _x_2 = self::TensorSemiring::tropicalMinPlus;
+            {
+                let _x_3 = natSix()?;
+                {
+                    let _x_4 = natSixtyFour()?;
+                    {
+                        let _x_5 = natThirtyTwo()?;
+                        {
+                            let _x_6 = true;
+                            {
+                                let _x_7 = false;
+                                {
+                                    let _x_10 = self::TensorKernelSpec { index: _x_1, semiring: _x_2, lhsCols: _x_3, accumBits: _x_4, minAccumBits: _x_5, tileAligned: _x_6, autonomousKinematic: _x_7, name: std::string::String::from("TropicalBlasSweptToi"), text: std::string::String::from("Tropical min-plus and max-plus triangle BLAS pruning and continuous swept-sphere time-of-impact bound contraction.") };
+                                    _x_10
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    })
+}
+
+pub fn kernel13TwoBoneIkContraction() -> Result<self::TensorKernelSpec, self::ComputeError> {
+    Ok({
+        let _x_1 = natThirteen()?;
+        {
+            let _x_2 = self::TensorSemiring::linearExact;
+            {
+                let _x_3 = natFour()?;
+                {
+                    let _x_4 = natNinetySix()?;
+                    {
+                        let _x_5 = natSixtyFour()?;
+                        {
+                            let _x_6 = true;
+                            {
+                                let _x_9 = self::TensorKernelSpec { index: _x_1, semiring: _x_2, lhsCols: _x_3, accumBits: _x_4, minAccumBits: _x_5, tileAligned: _x_6, autonomousKinematic: _x_6, name: std::string::String::from("TwoBoneIkJointSolver"), text: std::string::String::from("Exact linear cosine-law and pole-plane matrix contraction solving analytical two-bone foot and hand inverse kinematics.") };
+                                _x_9
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    })
+}
+
+pub fn kernel14ConservationAutomaton() -> Result<self::TensorKernelSpec, self::ComputeError> {
+    Ok({
+        let _x_1 = natFourteen()?;
+        {
+            let _x_2 = self::TensorSemiring::tropicalMinPlus;
+            {
+                let _x_3 = natSixteen()?;
+                {
+                    let _x_4 = natSixtyFour()?;
+                    {
+                        let _x_5 = natThirtyTwo()?;
+                        {
+                            let _x_6 = true;
+                            {
+                                let _x_9 = self::TensorKernelSpec { index: _x_1, semiring: _x_2, lhsCols: _x_3, accumBits: _x_4, minAccumBits: _x_5, tileAligned: _x_6, autonomousKinematic: _x_6, name: std::string::String::from("ConservationStoryAutomaton"), text: std::string::String::from("Exact integer resource conservation balance and tropical min-plus reachability closure verifying deadlock-free narrative and app graphs.") };
                                 _x_9
                             }
                         }
@@ -14638,6 +17468,21 @@ pub fn natFour() -> Result<u64, self::ComputeError> {
     })
 }
 
+pub fn natFourteen() -> Result<u64, self::ComputeError> {
+    Ok({
+        let _x_5 = (1 << 1);
+        {
+            let _x_3 = natSeven()?;
+            {
+                let _x_4 = core::convert::identity::<u64>(_x_5)
+                    .checked_mul(_x_3)
+                    .ok_or(self::ComputeError::MulOverflow)?;
+                _x_4
+            }
+        }
+    })
+}
+
 pub fn natNine() -> Result<u64, self::ComputeError> {
     Ok({
         let _x_4 = natEight()?;
@@ -14743,6 +17588,21 @@ pub fn natTen() -> Result<u64, self::ComputeError> {
     })
 }
 
+pub fn natThirteen() -> Result<u64, self::ComputeError> {
+    Ok({
+        let _x_4 = natTwelve()?;
+        {
+            let _x_5 = 1;
+            {
+                let _x_15 = core::convert::identity::<u64>(_x_4)
+                    .checked_add(_x_5)
+                    .ok_or(self::ComputeError::AddOverflow)?;
+                _x_15
+            }
+        }
+    })
+}
+
 pub fn natThirty() -> Result<u64, self::ComputeError> {
     Ok({
         let _x_5 = ((1 << 1) + 1);
@@ -14773,6 +17633,21 @@ pub fn natThree() -> u64 {
         let _x_19 = ((1 << 1) + 1);
         _x_19
     }
+}
+
+pub fn natTwelve() -> Result<u64, self::ComputeError> {
+    Ok({
+        let _x_5 = ((1 << 1) + 1);
+        {
+            let _x_3 = natFour()?;
+            {
+                let _x_4 = core::convert::identity::<u64>(_x_5)
+                    .checked_mul(_x_3)
+                    .ok_or(self::ComputeError::MulOverflow)?;
+                _x_4
+            }
+        }
+    })
 }
 
 pub fn natTwenty() -> Result<u64, self::ComputeError> {
