@@ -120,9 +120,6 @@ const codedTierCount = ex.verdant_wasm_coded_tier_count() >>> 0;
 const maxLodRank = ex.verdant_wasm_max_lod_rank() >>> 0;
 const hdMaxLodRank = ex.verdant_wasm_hd_max_lod_rank() >>> 0;
 const tileEdgePixels = ex.verdant_wasm_tile_edge_pixels() >>> 0;
-const csmSplits = [0, 1, 2, 3].map((i) =>
-  Number(ex.verdant_wasm_csm_split_meters(0.25, 140.0, i).toFixed(4)),
-);
 const ringCapacity = ex.verdant_wasm_worker_ring_capacity() >>> 0;
 const snapshotMaxBytes = ex.verdant_wasm_snapshot_max_bytes() >>> 0;
 const snapshotMinWireBytes = ex.verdant_wasm_snapshot_min_wire_bytes() >>> 0;
@@ -134,6 +131,9 @@ if (uex.verdant_wasm_init(defaultSeed) !== 1) {
   console.error("sync-prism-wasm: verdant-uorc.wasm init failed");
   process.exit(1);
 }
+const csmSplits = [0, 1, 2, 3].map((i) =>
+  Number(uex.verdant_wasm_csm_split_meters(0.25, 140.0, i).toFixed(4)),
+);
 const codedZeroDecodeChecksum = Number(uex.verdant_wasm_coded_zero_decode_checksum(maxLodRank));
 uex.verdant_wasm_io_clear();
 for (let i = 0; i < uorcStreamBytes.length; i++) {

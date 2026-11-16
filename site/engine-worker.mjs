@@ -118,6 +118,27 @@ function activeSceneHost() {
   return (customGlbActive || uorcSceneActive) && uorcWasm ? uorcWasm : wasm;
 }
 
+async function ensureUorcSceneHost() {
+  uorcWasm ??= await getUorcWasm();
+  if (!uorcSceneActive) {
+    uorcWasm.verdant_wasm_set_lod_rank(wasm.verdant_wasm_active_lod_rank() >>> 0);
+    if (lastAnchorActive) {
+      uorcWasm.verdant_wasm_camera_set_anchor(1, lastAnchor[0], lastAnchor[1], lastAnchor[2]);
+    } else {
+      uorcWasm.verdant_wasm_camera_set_mode(wasm.verdant_wasm_camera_mode() >>> 0);
+    }
+    uorcWasm.verdant_wasm_camera_set_pose_intent(
+      lastPose.yaw,
+      lastPose.pitch,
+      lastPose.distMm,
+      lastPose.aspectMilli,
+    );
+    uorcWasm.verdant_wasm_scene_rebuild_buffers(0);
+    uorcSceneActive = true;
+  }
+  return uorcWasm;
+}
+
 function readSolvedCamera(host) {
   return {
     eye: [
@@ -197,7 +218,7 @@ function drawScene(eye, lookTarget, lodSpec, simClockSec, rebuildDynamic = false
   }
   const aspect = Math.max(0.2, canvas.width / canvas.height);
 
-  if ((forceTileMode || renderer.backend === "tensor-2d") && host.memory) {
+  if ((forceTileMode || renderer.backend === "tensor-2d") && host.memory && typeof host.verdant_wasm_render_tensor_rgba === "function") {
     const scaleDiv = canvas.width > 480 ? 2 : 1;
     const w = Math.max(tileEdgePx, Math.floor(canvas.width / scaleDiv / tileEdgePx) * tileEdgePx);
     const h = Math.max(tileEdgePx, Math.floor(canvas.height / scaleDiv / tileEdgePx) * tileEdgePx);
@@ -252,7 +273,11 @@ self.onmessage = async ({ data: msg }) => {
       wasm.verdant_wasm_camera_set_anchor(1, 2.2, 3.8, 9.2);
       wasm.verdant_wasm_camera_set_pose_intent(460, 260, 18500, aspectMilli);
       wasm.verdant_wasm_scene_rebuild_buffers(0);
-      const cam = readSolvedCamera(wasm);
+      if (renderer?.backend === "tensor-2d") {
+        await ensureUorcSceneHost();
+      }
+      const shInit = simHost();
+      const cam = readSolvedCamera(shInit);
       const stats = drawScene(cam.eye, cam.lookTarget, currentLod, 0, false, w, h);
       const idx0 = cam.lookTarget[0] - cam.eye[0], idy0 = cam.lookTarget[1] - cam.eye[1], idz0 = cam.lookTarget[2] - cam.eye[2];
       const idl0 = Math.hypot(idx0, idy0, idz0) || 1;
@@ -339,6 +364,9 @@ self.onmessage = async ({ data: msg }) => {
 
     if (msg.kind === "set-render-mode") {
       forceTileMode = msg.mode === "tile";
+      if (forceTileMode) {
+        await ensureUorcSceneHost();
+      }
       const sh = simHost();
       const cam = readSolvedCamera(sh);
       const stats = drawScene(cam.eye, cam.lookTarget, currentLod, msg.simClockSec || 0, false);

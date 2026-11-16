@@ -29,7 +29,9 @@ use verdant_core::geometry::ProceduralMesh;
 #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
 use verdant_core::gltf_io::{export_scene_to_glb, import_glb_to_scene};
 use verdant_core::hd_world::{hd_terrain_height, synthesize_hd_citadel_sector, HdSectorBundle};
-use verdant_core::math::{Frustum, Mat4, Vec3};
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+use verdant_core::math::Mat4;
+use verdant_core::math::{Frustum, Vec3};
 #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
 use verdant_core::narrative::{canonical_citadel_chronicle_automaton, StoryAutomaton};
 use verdant_core::navmesh::NavMesh;
@@ -42,12 +44,11 @@ use verdant_core::physics::{
     PhysicsWorldConfig, RigidBody, RigidJointConstraint,
 };
 use verdant_core::prism_kernel;
-#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
-use verdant_core::render::PbrMaterial;
 use verdant_core::render::{
-    canonical_pbr_material_library, compute_csm_splits, pack_world_meshes_to_buffers,
-    PackedSceneRenderBuffers,
+    canonical_pbr_material_library, pack_world_meshes_to_buffers, PackedSceneRenderBuffers,
 };
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+use verdant_core::render::{compute_csm_splits, PbrMaterial};
 #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
 use verdant_core::runtime::WorldSnapshot;
 #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
@@ -59,6 +60,7 @@ use verdant_core::streaming::{decode_uorc_stream_up_to_lod, pack_progressive_uor
 use verdant_core::streaming::{
     terrain_height_with_params, PhysicalEnvironment, TerrainReliefParams,
 };
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
 use verdant_core::tensor::render_triangles_tile_framebuffer;
 #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
 use verdant_core::ui::UiTree;
@@ -140,6 +142,7 @@ pub struct WasmRuntimeBridge {
     /// Auxiliary output buffer for non-destructive Stitch shard, recovery, and UI reports.
     pub aux_buffer: Vec<u8>,
     /// Portable `16x16` tile-shaded `RGBA8` framebuffer rendered by `uor-matmul` tensor kernels.
+    #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
     pub framebuffer_rgba: Vec<u8>,
     /// Zero-copy world-space vertex, normal, color, index, and `16x16` tile triangle buffers.
     pub scene_buffers: PackedSceneRenderBuffers,
@@ -413,6 +416,7 @@ impl WasmRuntimeBridge {
                 pk_u64(prism_kernel::wasmIoInitialCapacityBytes()) as usize
             ),
             aux_buffer: Vec::new(),
+            #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
             framebuffer_rgba: Vec::new(),
             scene_buffers: PackedSceneRenderBuffers::default(),
             observer_loop,
@@ -1087,6 +1091,7 @@ impl WasmRuntimeBridge {
     }
 
     /// Advances physics, XPBD joints, 4-wheel suspension vehicle, capsule movement, spline mover, and GJK contact.
+    #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
     pub fn step_frame(
         &mut self,
         dt_seconds: f64,
@@ -1106,6 +1111,7 @@ impl WasmRuntimeBridge {
 
     /// Renders the active Rust-owned 3D scene into `self.framebuffer_rgba` via Prism + `uor-matmul`
     /// `16x16` tile rasterization (`kernel3`).
+    #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
     pub fn render_tensor_framebuffer(
         &mut self,
         width: u32,
@@ -1580,6 +1586,7 @@ pub extern "C" fn verdant_wasm_scene_idx_count() -> u32 {
 }
 
 /// Advances simulation by `dt_micros` with player milli-inputs (`1` = success, `0` = refusal).
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
 #[no_mangle]
 pub extern "C" fn verdant_wasm_step(
     dt_micros: u32,
@@ -2108,6 +2115,7 @@ pub extern "C" fn verdant_wasm_binaural_itd_micros() -> f64 {
 }
 
 /// Returns the far split distance in meters for cascade `cascade_idx` (`0..4`).
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
 #[no_mangle]
 pub extern "C" fn verdant_wasm_csm_split_meters(
     near_meters: f64,
@@ -2121,6 +2129,7 @@ pub extern "C" fn verdant_wasm_csm_split_meters(
 }
 
 /// Renders the active scene into the portable `uor-matmul` `16x16` tile `RGBA8` framebuffer and returns byte length.
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
 #[allow(clippy::too_many_arguments)]
 #[no_mangle]
 pub extern "C" fn verdant_wasm_render_tensor_rgba(
@@ -2150,6 +2159,7 @@ pub extern "C" fn verdant_wasm_render_tensor_rgba(
 }
 
 /// Linear-memory offset of the latest `RGBA8` tensor framebuffer for zero-copy `Canvas2D`/`WebGL2` upload.
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
 #[no_mangle]
 pub extern "C" fn verdant_wasm_fb_ptr() -> u32 {
     global_bridge()
@@ -2160,6 +2170,7 @@ pub extern "C" fn verdant_wasm_fb_ptr() -> u32 {
 }
 
 /// Byte length of the latest `RGBA8` tensor framebuffer.
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
 #[no_mangle]
 pub extern "C" fn verdant_wasm_fb_len() -> u32 {
     global_bridge()
