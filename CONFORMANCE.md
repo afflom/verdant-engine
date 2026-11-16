@@ -48,6 +48,8 @@ model does not sanction.
 | `VE-24` | `build` | Prism ID signed input journal batches, 2-of-3 SHA-256 XOR Stitch erasure fragments, and survival-entropy peer trackers recover exact UORC world state and refuse tampered shards, duplicate indices, or forged signatures |
 | `VE-25` | `build` | Two-level entity TLAS and triangle MeshBlas acceleration structures execute continuous swept-capsule collide-and-slide, stair auto-stepping, and acute two-plane crease projection with zero wall penetration |
 | `VE-26` | `build` | Lawful spring-arm and first-person camera rigs sweep an exact near-frustum diagonal guard sphere against TwoLevelBvh and terrain so the near clip plane never slices through walls or floors and refuse invalid frusta |
+| `VE-27` | `build` | High-definition vaulted Citadel halls, parabolic stone arch bridges, sculpted multi-octave terrain, and canopy clusters scale monotonically from LOD0 to LOD4, pass Khronos glTF 2.0 validation, and admit lawful portal and stair traversal |
+| `VE-28` | `build` | Twenty-two-joint articulated humanoid characters deform via normalized four-joint linear-blend skinning and morph targets, adapt to stairs via analytical two-bone Foot IK, mask head geometry in first-person possession, and bind external GLB meshes |
 
 ## fidelity
 

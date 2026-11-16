@@ -161,9 +161,10 @@ function drawScene(eye, lookTarget, lodSpec, simClockSec, rebuildDynamic = false
     }
   } else if (views) {
     renderer.uploadPackedBuffers(views.pos, views.norm, views.col, views.idx);
-    const proj = mat4Perspective(Math.PI / 3.4, aspect, 0.25, 160.0);
+    const fovRad = Math.PI / 3.4;
+    const proj = mat4Perspective(fovRad, aspect, 0.25, 160.0);
     const view = mat4LookAt(eye, lookTarget, [0, 1, 0]);
-    renderer.render(mat4Mul(proj, view), eye, lodSpec, simClockSec || 0);
+    renderer.render(mat4Mul(proj, view), eye, lodSpec, simClockSec || 0, lookTarget, fovRad);
   }
 
   return { tris: views?.tris ?? 0, aspect };

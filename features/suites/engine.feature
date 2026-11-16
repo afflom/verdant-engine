@@ -185,3 +185,15 @@ Feature: engine
     When solve_frame sweeps the near-frustum diagonal guard sphere across 360-degree yaw and steep pitch angles
     Then cameraNearSphereGuarded holds and the camera eye never crosses a wall or dips within guard_radius_meters of any solid surface
     And non-positive clip planes, out-of-range fields of view, or excessive spring-arm distances return CameraRigError
+
+  @VE-27 @build
+  Scenario: High-definition vaulted Citadel halls, parabolic stone arch bridges, sculpted multi-octave terrain, and canopy clusters scale monotonically from LOD0 to LOD4, pass Khronos glTF 2.0 validation, and admit lawful portal and stair traversal
+    Given constructive HdSectorBundle scenes synthesized from LOD0 through ultra-high-definition LOD4
+    When meshes validate, export to Khronos binary glTF 2.0, and PhysicsWorld::step_lawful traverses the Citadel stairs and arched portal
+    Then triangle counts scale strictly monotonically above 45,000 triangles at LOD4, GLB export passes the Khronos oracle, and the capsule walks cleanly into the vaulted hall
+
+  @VE-28 @build
+  Scenario: Twenty-two-joint articulated humanoid characters deform via normalized four-joint linear-blend skinning and morph targets, adapt to stairs via analytical two-bone Foot IK, mask head geometry in first-person possession, and bind external GLB meshes
+    Given a 22-joint ArticulatedCharacter with normalized LBS weights and three morph target channels
+    When step_and_solve_ik rays feet onto asymmetric stair risers, skin_mesh_linear_blend deforms the mesh, and first-person vs third-person buffers pack
+    Then knee flexion adapts asymmetrically, skinned normals remain unit-length, first-person mode hides head triangles, and empty external meshes return AnimationError

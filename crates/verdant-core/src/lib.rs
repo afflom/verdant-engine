@@ -40,12 +40,14 @@
 pub mod animation;
 pub mod audio;
 pub mod camera;
+pub mod character;
 pub mod collision;
 pub mod cybernetics;
 pub mod ecs;
 pub mod error;
 pub mod geometry;
 pub mod gltf_io;
+pub mod hd_world;
 pub mod math;
 pub mod navmesh;
 pub mod network;

@@ -2126,3 +2126,216 @@ fn engine_ve_26() {
         Err(CameraRigError::InvalidSpringArmDistance { .. })
     ));
 }
+
+/// `VE-27`: High-definition `hd_world.rs` Citadel Hall, Parabolic Arch Bridge, sculpted terrain (`LOD0..LOD4`), Khronos `.glb` oracle, and walkable arched portal traversal.
+#[test]
+fn engine_ve_27() {
+    use verdant_core::ecs::TwoLevelBvh;
+    use verdant_core::gltf_io::{export_scene_to_glb, validate_glb_bytes};
+    use verdant_core::hd_world::{hd_terrain_height, synthesize_hd_citadel_sector};
+    use verdant_core::physics::{
+        CapsuleController, CharacterMoveIntent, PhysicsWorld, PhysicsWorldConfig,
+    };
+    use verdant_core::render::canonical_pbr_material_library;
+    use verdant_core::streaming::{PhysicalEnvironment, TerrainReliefParams};
+
+    let relief = TerrainReliefParams::standard_basin_valley();
+    let env = PhysicalEnvironment::temperate_terrestrial();
+
+    let mut prev_tris = 0usize;
+    for rank in 0..=4 {
+        let sector = synthesize_hd_citadel_sector(7, &relief, env.water_level_meters, rank);
+        for mesh in &sector.meshes {
+            mesh.validate()
+                .unwrap_or_else(|e| panic!("LOD{rank} mesh `{}` invalid: {e}", mesh.name));
+        }
+        let bvh = TwoLevelBvh::build_solid(&sector.scene, &sector.meshes)
+            .expect("solid TwoLevelBvh for HD sector");
+        let total_tris = bvh.total_surface_triangles();
+        assert!(
+            total_tris > prev_tris,
+            "LOD{rank} surface triangles ({total_tris}) must exceed previous ({prev_tris})"
+        );
+        prev_tris = total_tris;
+        if rank == 4 {
+            assert!(
+                total_tris >= 45_000,
+                "LOD4 ultra-high-definition sector must exceed 45k solid triangles, got {total_tris}"
+            );
+        }
+    }
+
+    // Export HD Citadel + Arch Bridge sector to binary glTF 2.0 and validate with Khronos `gltf`:
+    let sector_lod2 = synthesize_hd_citadel_sector(7, &relief, env.water_level_meters, 2);
+    let materials = canonical_pbr_material_library();
+    let glb = export_scene_to_glb(&sector_lod2.scene, &sector_lod2.meshes, &materials)
+        .expect("export HD Citadel sector GLB");
+    let summary = validate_glb_bytes(&glb).expect("Khronos glTF 2.0 validation of HD Citadel");
+    assert!(summary.mesh_count >= 4);
+
+    // Traverse South Citadel staircase (`Z = +9.2 -> 0.0`, `X = 0.0`) right through the arched portal into the vaulted hall!
+    let bvh = TwoLevelBvh::build_solid(&sector_lod2.scene, &sector_lod2.meshes)
+        .expect("LOD2 Citadel TwoLevelBvh");
+    let mut cfg = PhysicsWorldConfig {
+        terrain_seed: 7,
+        environment: env,
+        terrain_relief: relief,
+        platform_deck: None,
+        ..Default::default()
+    };
+    cfg.environment.water_level_meters = -10.0;
+    let mut phys = PhysicsWorld::new(cfg);
+    let start_y = hd_terrain_height(7, &relief, 0.0, 9.2);
+    phys.player_capsule = Some(CapsuleController::new(Vec3::new(0.0, start_y, 9.2)));
+
+    for _ in 0..85 {
+        let rep = phys
+            .step_lawful(
+                1.0 / 30.0,
+                CharacterMoveIntent {
+                    planar_wish_dir: Vec3::new(0.0, 0.0, -1.0),
+                    speed_scale: 1.0,
+                    jump_requested: false,
+                },
+                &bvh,
+            )
+            .expect("lawful climb up Citadel stairs and through arched portal");
+        assert!(rep.clearance_verified);
+    }
+    let inside_pos = phys.player_capsule.as_ref().unwrap().foot_position;
+    let podium_y = hd_terrain_height(7, &relief, 0.0, 0.0) + 0.60;
+    assert!(
+        inside_pos.z < 2.0 && (inside_pos.y - podium_y).abs() < 0.12,
+        "player climbed Citadel stairs and entered vaulted hall interior: pos={inside_pos:?}, expected_y={podium_y}"
+    );
+}
+
+/// `VE-28`: 22-joint `ArticulatedCharacter`, normalized LBS skinning, 3 morph targets, analytical Two-Bone Foot IK on stairs, 1st-person head masking, and `.glb` binding.
+#[test]
+fn engine_ve_28() {
+    use verdant_core::character::{ArticulatedCharacter, CharacterArchetype};
+    use verdant_core::ecs::{EntityRole, SceneWorld, Transform, TwoLevelBvh};
+    use verdant_core::error::AnimationError;
+    use verdant_core::geometry::ProceduralMesh;
+    use verdant_core::render::PackedSceneRenderBuffers;
+
+    let mut explorer =
+        ArticulatedCharacter::new_humanoid("Explorer", CharacterArchetype::Explorer, Vec3::ZERO, 4)
+            .expect("22-joint Explorer at LOD4");
+    assert_eq!(explorer.skeleton.joints.len(), 22);
+    assert_eq!(explorer.bind_mesh.morph_targets.len(), 3);
+    assert!(
+        explorer.bind_mesh.triangle_count() >= 3_500,
+        "LOD4 humanoid must have >= 3,500 smooth triangles, got {}",
+        explorer.bind_mesh.triangle_count()
+    );
+    explorer
+        .bind_mesh
+        .validate()
+        .expect("LOD4 humanoid bind mesh valid");
+
+    // Place left foot (`x < 0`) over a `0.26m` stair block while right foot (`x > 0`) stands at `y = 0.0`:
+    let mut step_block = ProceduralMesh {
+        name: "AsymmetricStep".to_string(),
+        positions: Vec::new(),
+        normals: Vec::new(),
+        uvs: Vec::new(),
+        colors: Vec::new(),
+        indices: Vec::new(),
+        morph_targets: Vec::new(),
+    };
+    append_test_box_to_mesh(
+        &mut step_block,
+        Vec3::new(-1.0, 0.0, -1.0),
+        Vec3::new(-0.02, 0.26, 1.0),
+    );
+    let meshes = vec![step_block];
+    let mut scene = SceneWorld::new();
+    let e_step = scene.spawn(
+        "left_step",
+        EntityRole::StaticArchitecture,
+        None,
+        Transform::default(),
+        meshes[0].bounds(),
+        (1.0, "test"),
+    );
+    scene.attach_renderable(e_step, 0, 0);
+    let bvh = TwoLevelBvh::build_solid(&scene, &meshes).expect("step TwoLevelBvh");
+
+    let mut ik = explorer.last_ik;
+    for frame in 0..10 {
+        ik = explorer
+            .step_and_solve_ik(
+                1.0 / 30.0,
+                Vec3::new(0.0, 0.26, 0.0),
+                Vec3::ZERO,
+                true,
+                (frame as f64) * (1.0 / 30.0),
+                Some(Vec3::new(2.0, 1.8, 3.0)),
+                &bvh,
+                |_, _| 0.0,
+            )
+            .expect("step_and_solve_ik");
+    }
+    assert!(ik.left_planted);
+    assert!(
+        ik.pelvis_sink_meters < -0.05,
+        "pelvis sank smoothly toward lower right foot: {}",
+        ik.pelvis_sink_meters
+    );
+    assert!(
+        ik.left_knee_bend_radians > ik.right_knee_bend_radians + 0.15,
+        "raised left leg bent more than extended right leg: L={}, R={}",
+        ik.left_knee_bend_radians,
+        ik.right_knee_bend_radians
+    );
+
+    let skinned = explorer
+        .evaluate_skinned_mesh()
+        .expect("uor-matmul LBS skinned humanoid");
+    skinned
+        .validate()
+        .expect("skinned humanoid preserves unit normals and topology");
+
+    let mut tp_buf = PackedSceneRenderBuffers::default();
+    let mut fp_buf = PackedSceneRenderBuffers::default();
+    let tp_tris = explorer
+        .append_skinned_to_buffers(&mut tp_buf, false)
+        .expect("3rd-person character buffers");
+    let fp_tris = explorer
+        .append_skinned_to_buffers(&mut fp_buf, true)
+        .expect("1st-person head-masked character buffers");
+    assert!(
+        fp_tris < tp_tris && fp_tris > 0,
+        "1st-person head masking hides helmet/visor triangles: fp={fp_tris} < tp={tp_tris}"
+    );
+
+    // Bind external mesh + negative refusal for empty mesh:
+    let bound = ArticulatedCharacter::bind_external_mesh(
+        "ImportedHero",
+        CharacterArchetype::Archivist,
+        Vec3::ZERO,
+        meshes[0].clone(),
+    )
+    .expect("bound external GLB mesh");
+    assert_eq!(bound.skeleton.joints.len(), 22);
+
+    let empty = ProceduralMesh {
+        name: "Empty".to_string(),
+        positions: Vec::new(),
+        normals: Vec::new(),
+        uvs: Vec::new(),
+        colors: Vec::new(),
+        indices: Vec::new(),
+        morph_targets: Vec::new(),
+    };
+    assert!(matches!(
+        ArticulatedCharacter::bind_external_mesh(
+            "BadImport",
+            CharacterArchetype::Explorer,
+            Vec3::ZERO,
+            empty
+        ),
+        Err(AnimationError::InvalidClipChannel { .. })
+    ));
+}

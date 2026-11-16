@@ -198,6 +198,18 @@ negative = "VE-26"
 statement = "Lawful spring-arm and first-person camera rigs sweep an exact near-frustum diagonal guard sphere against TwoLevelBvh and terrain so the near clip plane never slices through walls or floors and refuse invalid frusta"
 
 [[id]]
+id = "VE-27"
+level = "build"
+suite = "engine"
+statement = "High-definition vaulted Citadel halls, parabolic stone arch bridges, sculpted multi-octave terrain, and canopy clusters scale monotonically from LOD0 to LOD4, pass Khronos glTF 2.0 validation, and admit lawful portal and stair traversal"
+
+[[id]]
+id = "VE-28"
+level = "build"
+suite = "engine"
+statement = "Twenty-two-joint articulated humanoid characters deform via normalized four-joint linear-blend skinning and morph targets, adapt to stairs via analytical two-bone Foot IK, mask head geometry in first-person possession, and bind external GLB meshes"
+
+[[id]]
 id = "FR-01"
 level = "build"
 suite = "frame"
