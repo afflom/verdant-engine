@@ -533,11 +533,79 @@ pub fn canonical_pbr_material_library() -> Vec<PbrMaterial> {
     ]
 }
 
+/// Explicit GPU surface class carried with every packed vertex so the WebGL2 shader never
+/// infers a material from albedo hue (which misclassified slate armour as water and gold
+/// trims as polished metal).
+///
+/// Wire encoding: the class index occupies the integer part of the red channel and the
+/// albedo red occupies the fractional part (`r_gpu = class + r`, `r < 1`). The shader reads
+/// it as a `flat` varying, so a triangle can never blend two classes.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub enum GpuSurfaceClass {
+    /// Opaque dielectric (terrain, masonry, foliage, armour, skin).
+    #[default]
+    OpaqueDielectric,
+    /// Transmissive fluid surface (Fresnel sky reflection and animated ripples).
+    Fluid,
+    /// Conductor (`metallic >= 1/2`).
+    Metal,
+    /// Self-lit glass (visors, crystals, diegetic UI panels).
+    EmissiveGlass,
+}
+
+impl GpuSurfaceClass {
+    /// Derives the class from a material's physical properties (never from its colour):
+    /// conductors first, then glossy translucent fluids, then emissive dielectrics.
+    #[must_use]
+    pub fn from_material(m: &PbrMaterial) -> Self {
+        let half = half_f64() as f32;
+        let sixteenth = half * half * half * half;
+        let alpha = m.base_color_factor[DIM_SPATIAL];
+        let emissive = m.emissive_factor.iter().copied().fold(0.0_f32, f32::max);
+        if m.metallic_factor >= half {
+            Self::Metal
+        } else if alpha < 1.0 && m.roughness_factor <= sixteenth {
+            Self::Fluid
+        } else if emissive >= sixteenth {
+            Self::EmissiveGlass
+        } else {
+            Self::OpaqueDielectric
+        }
+    }
+
+    /// Packs `rgb` (each channel clamped into `[0, 1)`) with this class into the GPU colour wire.
+    #[must_use]
+    #[inline(never)]
+    #[allow(clippy::manual_clamp)]
+    pub fn encode(self, rgb: [f32; DIM_SPATIAL]) -> [f32; DIM_SPATIAL] {
+        let half = half_f64() as f32;
+        let q = half * half;
+        let below_one = 1.0 - q * q * q * q;
+        [
+            (self as u32) as f32 + rgb[0].max(0.0).min(below_one),
+            rgb[1].max(0.0).min(1.0),
+            rgb[DIM_SPATIAL - 1].max(0.0).min(1.0),
+        ]
+    }
+
+    /// Splits a packed GPU red channel into `(class index, albedo red)`.
+    #[must_use]
+    pub fn split_red(r_gpu: f32) -> (u32, f32) {
+        let class = r_gpu.max(0.0).floor();
+        (class as u32, r_gpu - class)
+    }
+}
+
 /// Zero-copy world-space render buffers synthesized directly from `SceneWorld` + `ProceduralMesh`
 /// assets so both `OffscreenCanvas` WebGL2 and the `16x16` software tile PBR rasterizer consume
 /// identical engine-owned geometry with zero JavaScript mesh synthesis.
+///
+/// `colors_rgb` uses the [`GpuSurfaceClass`] wire encoding; `surface_class` is the class stamped
+/// onto every vertex the `append_*` builders emit until the caller changes it.
 #[derive(Clone, Debug, Default, PartialEq)]
 pub struct PackedSceneRenderBuffers {
+    /// Surface class applied by `append_quad*` / `append_oriented_box*` (default opaque dielectric).
+    pub surface_class: GpuSurfaceClass,
     /// Flat `[x, y, z, ...]` world-space vertex positions (`len == vertex_count * 3`).
     pub positions_xyz: Vec<f32>,
     /// Flat `[nx, ny, nz, ...]` world-space unit vertex normals (`len == vertex_count * 3`).
@@ -577,11 +645,12 @@ impl PackedSceneRenderBuffers {
         let normal = (p1 - p0).cross(p2 - p0).normalized();
         let n_arr = normal.to_f32_array();
         let base = (self.positions_xyz.len() / DIM_SPATIAL) as u32;
+        let gpu_rgb = self.surface_class.encode(color_rgb);
         for p in [p0, p1, p2, p3] {
             let pa = p.to_f32_array();
             self.positions_xyz.extend_from_slice(&pa);
             self.normals_xyz.extend_from_slice(&n_arr);
-            self.colors_rgb.extend_from_slice(&color_rgb);
+            self.colors_rgb.extend_from_slice(&gpu_rgb);
         }
         let b1 = base + 1;
         let b2 = base + (i2 as u32);
@@ -657,11 +726,12 @@ impl PackedSceneRenderBuffers {
         let normal = (p1 - p0).cross(p2 - p0).normalized();
         let n_arr = normal.to_f32_array();
         let base = (self.positions_xyz.len() / DIM_SPATIAL) as u32;
+        let gpu_rgb = self.surface_class.encode(color_rgb);
         for p in [p0, p1, p2, p3] {
             let pa = p.to_f32_array();
             self.positions_xyz.extend_from_slice(&pa);
             self.normals_xyz.extend_from_slice(&n_arr);
-            self.colors_rgb.extend_from_slice(&color_rgb);
+            self.colors_rgb.extend_from_slice(&gpu_rgb);
         }
         let b1 = base + 1;
         let b2 = base + (i2 as u32);
@@ -758,7 +828,12 @@ impl PackedSceneRenderBuffers {
                         * third,
                 ],
                 base_color: [
-                    (self.colors_rgb[pa] + self.colors_rgb[pb] + self.colors_rgb[pc]) * third,
+                    // All three vertices share one surface class, so the class is the integer
+                    // part of the mean and the albedo red is its fraction:
+                    GpuSurfaceClass::split_red(
+                        (self.colors_rgb[pa] + self.colors_rgb[pb] + self.colors_rgb[pc]) * third,
+                    )
+                    .1,
                     (self.colors_rgb[pa + 1] + self.colors_rgb[pb + 1] + self.colors_rgb[pc + 1])
                         * third,
                     (self.colors_rgb[pa + i2]
@@ -791,9 +866,15 @@ pub struct InstancedBatchBuffer {
 }
 
 impl InstancedBatchBuffer {
-    /// Initializes an instanced batch buffer from `mesh`.
+    /// Initializes an instanced batch buffer from `mesh` (opaque dielectric surface class).
     #[must_use]
     pub fn from_mesh(mesh: &ProceduralMesh) -> Self {
+        Self::from_mesh_with_class(mesh, GpuSurfaceClass::OpaqueDielectric)
+    }
+
+    /// Initializes an instanced batch buffer from `mesh`, stamping `class` onto every base vertex.
+    #[must_use]
+    pub fn from_mesh_with_class(mesh: &ProceduralMesh, class: GpuSurfaceClass) -> Self {
         let i2 = 1usize + 1usize;
         let v_len = mesh.positions.len();
         let mut mesh_positions_xyz = Vec::with_capacity(v_len * DIM_SPATIAL);
@@ -803,7 +884,7 @@ impl InstancedBatchBuffer {
             mesh_positions_xyz.extend_from_slice(&mesh.positions[idx]);
             mesh_normals_xyz.extend_from_slice(&mesh.normals[idx]);
             let c = mesh.colors[idx];
-            mesh_colors_rgb.extend_from_slice(&[c[0], c[1], c[i2]]);
+            mesh_colors_rgb.extend_from_slice(&class.encode([c[0], c[1], c[i2]]));
         }
         Self {
             mesh_positions_xyz,
@@ -891,16 +972,17 @@ pub fn pack_world_meshes_to_buffers_opts(
         let Some(mesh) = meshes.get(mesh_idx) else {
             continue;
         };
-        let mat_tint = entity
-            .material_index
-            .and_then(|mi| materials.get(mi))
-            .map_or([1.0_f32, 1.0, 1.0], |m| {
-                [
-                    m.base_color_factor[0] + m.emissive_factor[0],
-                    m.base_color_factor[1] + m.emissive_factor[1],
-                    m.base_color_factor[i2] + m.emissive_factor[i2],
-                ]
-            });
+        let entity_mat = entity.material_index.and_then(|mi| materials.get(mi));
+        let surface = entity_mat.map_or(GpuSurfaceClass::OpaqueDielectric, |m| {
+            GpuSurfaceClass::from_material(m)
+        });
+        let mat_tint = entity_mat.map_or([1.0_f32, 1.0, 1.0], |m| {
+            [
+                m.base_color_factor[0] + m.emissive_factor[0],
+                m.base_color_factor[1] + m.emissive_factor[1],
+                m.base_color_factor[i2] + m.emissive_factor[i2],
+            ]
+        });
 
         let v_len = mesh.positions.len();
         let base_vertex = (out.positions_xyz.len() / DIM_SPATIAL) as u32;
@@ -940,9 +1022,11 @@ pub fn pack_world_meshes_to_buffers_opts(
             out.normals_xyz.push(nw.z as f32);
 
             let vc = mesh.colors[v_idx];
-            out.colors_rgb.push((vc[0] * mat_tint[0]).clamp(0.0, 1.0));
-            out.colors_rgb.push((vc[1] * mat_tint[1]).clamp(0.0, 1.0));
-            out.colors_rgb.push((vc[i2] * mat_tint[i2]).clamp(0.0, 1.0));
+            out.colors_rgb.extend_from_slice(&surface.encode([
+                vc[0] * mat_tint[0],
+                vc[1] * mat_tint[1],
+                vc[i2] * mat_tint[i2],
+            ]));
         }
 
         for tri in mesh.indices.chunks_exact(DIM_SPATIAL) {

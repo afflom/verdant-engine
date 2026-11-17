@@ -246,3 +246,9 @@ Feature: engine
     Given the Core-Wasm scene:uorc-exclusive query, the portable UORC object codec in native Rust and WebAssembly, a LOD3 StandardSceneState, an external GLB asset, a Stitch 2-of-3 shard set, a CheckpointedRollbackJournal, and a CodedLodFrameBundle
     When WorldSnapshot::encode_uorc, Wasm snapshot_encode, GLB-to-UORC transcoding, Stitch UORC sharding, rollback checkpoint compression, zero-decode CodedMatrix UORC contraction, and verdant compress-uorc execute
     Then Core-Wasm scene:uorc-exclusive answers conformant, every post-boot wire payload carries the UORC magic header at a fraction of raw byte size, zero-decode contractions match exact accumulators without float expansion, Studio emits #uorc= URLs and .uorc OPFS caches, and tampered UORC seals are refused
+
+  @VE-37 @build
+  Scenario: Every packed vertex carries an explicit surface class derived from its PBR material rather than inferred from hue, dynamic actors stream positions, normals, and colours with per-attribute GPU capacity, and shading derivatives run in uniform control flow with a continuous detail fade, so characters render with their own colours, water, metal, and emissive glass stay distinct, and no seam line crosses the terrain
+    Given the canonical PBR material library, a LOD2 HD Citadel sector, the four character archetypes, a live WasmRuntimeBridge, and site/scene-renderer.mjs
+    When the sector, every archetype, and the bridge's dynamic actors are packed into GPU vertex streams and the WebGL2 PBR shader decodes them
+    Then only the basin water is fluid, armour is opaque and visors are emissive glass, gold accents are metal, every class round-trips through the packed red channel, tile triangles decode plain albedo, the shader reads a flat class varying with uniform-flow derivatives and a 22-30 m detail fade, and the dynamic VAO keeps separate position, normal, colour, and index capacities

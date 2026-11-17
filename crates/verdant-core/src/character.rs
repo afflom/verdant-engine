@@ -15,7 +15,7 @@ use crate::math::{
     four_u32, geometric_epsilon, half_f64, pow10_u64, three_u32, two_f64, two_u32, Quat, Ray, Vec3,
     DIM_HOMOGENEOUS, DIM_PLANAR, DIM_SPATIAL,
 };
-use crate::render::PackedSceneRenderBuffers;
+use crate::render::{GpuSurfaceClass, PackedSceneRenderBuffers};
 
 /// Canonical 22-joint humanoid hierarchy indices (`0..22`).
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -1308,12 +1308,21 @@ impl ArticulatedCharacter {
         out.normals_xyz.reserve(skinned.normals.len() * DIM_SPATIAL);
         out.colors_rgb.reserve(skinned.colors.len() * DIM_SPATIAL);
 
+        // Differentiate the self-lit visor from armour/skin by palette identity (never by hue):
+        let (_, _, visor, _) = archetype_palette(self.archetype);
+        let body_class = out.surface_class;
         for v_idx in 0..skinned.positions.len() {
             out.positions_xyz
                 .extend_from_slice(&skinned.positions[v_idx]);
             out.normals_xyz.extend_from_slice(&skinned.normals[v_idx]);
             let c = skinned.colors[v_idx];
-            out.colors_rgb.extend_from_slice(&[c[0], c[1], c[i2]]);
+            let rgb = [c[0], c[1], c[i2]];
+            let class = if rgb == [visor[0], visor[1], visor[i2]] {
+                GpuSurfaceClass::EmissiveGlass
+            } else {
+                body_class
+            };
+            out.colors_rgb.extend_from_slice(&class.encode(rgb));
         }
 
         let mut added_tris = 0usize;

@@ -3754,3 +3754,140 @@ fn engine_ve_36() {
     let card_mjs = std::fs::read_to_string(repo_root.join("site/card.mjs")).expect("site/card.mjs");
     assert!(card_mjs.contains(".uorc"));
 }
+
+/// Counts packed vertices per `GpuSurfaceClass` index (`[opaque, fluid, metal, emissive, invalid]`).
+fn surface_class_histogram(colors_rgb: &[f32]) -> [usize; 5] {
+    use verdant_core::render::GpuSurfaceClass;
+    let mut hist = [0usize; 5];
+    for rgb in colors_rgb.chunks_exact(3) {
+        let (class, albedo_r) = GpuSurfaceClass::split_red(rgb[0]);
+        assert!(
+            (0.0..1.0).contains(&albedo_r),
+            "albedo red must decode into [0, 1)"
+        );
+        assert!((0.0..=1.0).contains(&rgb[1]) && (0.0..=1.0).contains(&rgb[2]));
+        hist[(class as usize).min(4)] += 1;
+    }
+    hist
+}
+
+/// `VE-37`: Explicit surface differentiation and artifact-free shading. Every packed vertex
+/// carries a material-derived `GpuSurfaceClass` (never inferred from hue); dynamic actors keep
+/// per-attribute GPU stream capacity so characters render with their own colours; and
+/// screen-space derivatives run in uniform control flow with a continuous detail fade so no
+/// seam line appears across the terrain.
+#[test]
+fn engine_ve_37() {
+    use std::path::Path;
+    use verdant_core::character::{ArticulatedCharacter, CharacterArchetype};
+    use verdant_core::hd_world::synthesize_hd_citadel_sector;
+    use verdant_core::render::{
+        canonical_pbr_material_library, pack_world_meshes_to_buffers_opts, GpuSurfaceClass,
+        PackedSceneRenderBuffers,
+    };
+    use verdant_core::streaming::TerrainReliefParams;
+    use verdant_wasm::WasmRuntimeBridge;
+
+    // 1. Classes come from physical material properties, not colour:
+    let lib = canonical_pbr_material_library();
+    let classes: Vec<_> = lib.iter().map(GpuSurfaceClass::from_material).collect();
+    assert_eq!(
+        classes,
+        vec![
+            GpuSurfaceClass::OpaqueDielectric, // TerrainAggregate
+            GpuSurfaceClass::Fluid,            // DielectricFluid
+            GpuSurfaceClass::EmissiveGlass,    // CrystallineDielectric
+            GpuSurfaceClass::OpaqueDielectric, // SubsurfaceCanopy
+            GpuSurfaceClass::OpaqueDielectric, // ArchitecturalStone
+        ]
+    );
+    let mut gold = lib[4].clone();
+    gold.metallic_factor = 1.0;
+    assert_eq!(
+        GpuSurfaceClass::from_material(&gold),
+        GpuSurfaceClass::Metal
+    );
+
+    // 2. Wire encoding round-trips every class, including saturated albedo:
+    for class in [
+        GpuSurfaceClass::OpaqueDielectric,
+        GpuSurfaceClass::Fluid,
+        GpuSurfaceClass::Metal,
+        GpuSurfaceClass::EmissiveGlass,
+    ] {
+        for r in [0.0_f32, 0.5, 1.0] {
+            let enc = class.encode([r, 0.25, 1.0]);
+            let (idx, albedo_r) = GpuSurfaceClass::split_red(enc[0]);
+            assert_eq!(idx, class as u32);
+            assert!(albedo_r < 1.0 && (albedo_r - r).abs() < 0.01);
+        }
+    }
+
+    // 3. Static HD sector: only the basin water is fluid; terrain/stone/foliage stay opaque:
+    let sector =
+        synthesize_hd_citadel_sector(7, &TerrainReliefParams::standard_basin_valley(), -1.35, 2);
+    let packed = pack_world_meshes_to_buffers_opts(&sector.scene, &sector.meshes, &lib, false)
+        .expect("pack HD sector");
+    let hist = surface_class_histogram(&packed.colors_rgb);
+    assert_eq!(hist[1], 4, "exactly the four water-quad vertices are fluid");
+    assert_eq!(hist[2] + hist[3] + hist[4], 0);
+    assert!(hist[0] > 1000);
+
+    // 4. Characters: armour is opaque (never water), the visor is emissive glass:
+    for archetype in [
+        CharacterArchetype::Explorer,
+        CharacterArchetype::Archivist,
+        CharacterArchetype::BridgeEngineer,
+        CharacterArchetype::ObservatoryKeeper,
+    ] {
+        let ch = ArticulatedCharacter::new_humanoid("probe", archetype, Vec3::ZERO, 2)
+            .expect("humanoid");
+        let mut out = PackedSceneRenderBuffers::default();
+        ch.append_skinned_to_buffers_opts(&mut out, false, false)
+            .expect("skin");
+        let h = surface_class_histogram(&out.colors_rgb);
+        assert_eq!(
+            h[1] + h[2] + h[4],
+            0,
+            "{archetype:?} has no fluid/metal/invalid"
+        );
+        assert!(h[3] > 0, "{archetype:?} visor is emissive glass");
+        assert!(h[0] > h[3], "{archetype:?} body is opaque dielectric");
+    }
+
+    // 5. Live bridge: dynamic actors are differentiated and mirrored consistently:
+    let mut bridge = WasmRuntimeBridge::new(7).expect("bridge");
+    bridge.set_lod_rank(2).expect("lod2");
+    bridge.rebuild_scene_buffers(0.0).expect("rebuild");
+    let dyn_hist = surface_class_histogram(&bridge.dynamic_buffers.colors_rgb);
+    assert_eq!(
+        dyn_hist[1] + dyn_hist[4],
+        0,
+        "no dynamic actor renders as water"
+    );
+    assert!(dyn_hist[0] > 0 && dyn_hist[2] > 0 && dyn_hist[3] > 0);
+    let scene_hist = surface_class_histogram(&bridge.scene_buffers.colors_rgb);
+    assert_eq!(scene_hist[1], 4);
+    bridge.scene_buffers.ensure_tile_triangles_built();
+    assert!(bridge
+        .scene_buffers
+        .tile_triangles
+        .iter()
+        .all(|t| t.base_color.iter().all(|c| (0.0..=1.0).contains(c))));
+
+    // 6. WebGL2 shader + stream contracts:
+    let repo_root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+    let renderer = std::fs::read_to_string(repo_root.join("site/scene-renderer.mjs"))
+        .expect("site/scene-renderer.mjs");
+    assert!(renderer.contains("flat out float v_m") && renderer.contains("flat in float v_m"));
+    assert!(renderer.contains("v_m==1.0") && renderer.contains("v_m==2.0"));
+    assert!(!renderer.contains("v_col.r*1.35"), "no hue-inferred water");
+    assert!(
+        !renderer.contains("d<30.0"),
+        "no per-pixel branch around derivatives"
+    );
+    assert!(renderer.contains("smoothstep(22.0,30.0,d)"));
+    for cap in ["\"capPos\"", "\"capNorm\"", "\"capCol\"", "\"capIdx\""] {
+        assert!(renderer.contains(cap), "dynamic stream capacity {cap}");
+    }
+}

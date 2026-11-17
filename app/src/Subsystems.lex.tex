@@ -1544,11 +1544,48 @@ definition{
   body: (((uorcTransportMandatory true false false) && ((uorcTransportMandatory false true true) && ((not (uorcTransportMandatory false false true)) && (not (uorcTransportMandatory false true false))))) && ((uorcCompressionGainValid (sTwo) (sTwenty) true) && ((not (uorcCompressionGainValid (sThirty) (sTwenty) true)) && ((not (uorcCompressionGainValid 0 (sTwenty) true)) && (not (uorcCompressionGainValid (sTwo) (sTwenty) false))))))
 }
 
+definition{name: gpuSurfaceClassCount, parameters: [], result: Nat, body: (sFour)}
+
+definition{
+  name: surfaceClassFromMaterial,
+  parameters: [metallicMilli : Nat, alphaMilli : Nat, roughMilli : Nat, emissiveMilli : Nat],
+  result: Nat,
+  body: (if ((skinWeightScale) <=? (prim multiply metallicMilli (sTwo) : Nat)) then (sTwo) else (if ((alphaMilli <? (skinWeightScale)) && ((prim multiply roughMilli (sSixteen) : Nat) <=? (skinWeightScale))) then 1 else (if ((skinWeightScale) <=? (prim multiply emissiveMilli (sSixteen) : Nat)) then (sThree) else 0)))
+}
+
+definition{
+  name: dynamicStreamCapacityValid,
+  parameters: [
+    posCap : Nat,
+    normCap : Nat,
+    colCap : Nat,
+    idxCap : Nat,
+    vertBytes : Nat,
+    idxBytes : Nat
+  ],
+  result: Bool,
+  body: ((vertBytes <=? posCap) && ((vertBytes <=? normCap) && ((vertBytes <=? colCap) && (idxBytes <=? idxCap))))
+}
+
+definition{
+  name: shadingDetailFadeContinuous,
+  parameters: [fadeStartMeters : Nat, fadeEndMeters : Nat, derivativesUniform : Bool],
+  result: Bool,
+  body: (derivativesUniform && (fadeStartMeters <? fadeEndMeters))
+}
+
+definition{
+  name: surfaceDifferentiationDirect,
+  parameters: [],
+  result: Bool,
+  body: ((((gpuSurfaceClassCount) =? (sFour)) && (((surfaceClassFromMaterial 0 (skinWeightScale) (prim multiply (sThirtyFive) (sTwentyFive) : Nat) 0) =? 0) && (((surfaceClassFromMaterial (sThirtyOne) (prim multiply (sThirtyFive) (sTwentyFive) : Nat) (prim multiply (sThirtyOne) (sTwo) : Nat) (prim multiply (sThirtyOne) (sTwo) : Nat)) =? 1) && (((surfaceClassFromMaterial (prim multiply (sThirtyOne) (sTwo) : Nat) (prim multiply (sNinety) (sTen) : Nat) (prim multiply (sFive) (sTwentyFive) : Nat) (prim multiply (sFive) (sTwentyFive) : Nat)) =? (sThree)) && (((surfaceClassFromMaterial (skinWeightScale) (skinWeightScale) (prim multiply (sThirty) (sTen) : Nat) 0) =? (sTwo)) && ((surfaceClassFromMaterial (sThirtyOne) (skinWeightScale) (prim multiply (sFive) (sHundred) : Nat) 0) =? 0)))))) && (((dynamicStreamCapacityValid (sSixteen) (sSixteen) (sSixteen) (sEight) (sTwelve) (sSix)) && (not (dynamicStreamCapacityValid (sSixteen) 0 0 (sEight) (sTwelve) (sSix)))) && ((shadingDetailFadeContinuous (sTwentyTwo) (sThirty) true) && ((not (shadingDetailFadeContinuous (sThirty) (sThirty) true)) && (not (shadingDetailFadeContinuous (sTwentyTwo) (sThirty) false))))))
+}
+
 definition{
   name: workloadPerformanceDirect,
   parameters: [],
   result: Bool,
-  body: (if ((((wordBitWidth) =? (Foundation.Ontology.V1.Model::pow2Constructive (sSix))) && (((wordCountForEntities 0) =? 0) && (((wordCountForEntities 1) =? 1) && (((wordCountForEntities (sSixtyFive)) =? (sTwo)) && ((wordPackedFilterValid (sSixtyFive) (sTwo)) && (not (wordPackedFilterValid (sSixtyFive) 1))))))) && ((((sahBinCount) =? (sEight)) && (((flatBvhLeafMaxPrims) =? (sFour)) && ((flatBvhStackCapacity) =? (Foundation.Ontology.V1.Model::pow2Constructive (sSix))))) && ((flatBvhChildOrderNearFirst (sTen) (sTwenty)) && ((not (flatBvhChildOrderNearFirst (sTwenty) (sTen))) && ((flatBvhNodeBoundsValid 0 1 (sFour)) && ((not (flatBvhNodeBoundsValid (sTwo) 1 (sFour))) && (not (flatBvhNodeBoundsValid 0 (sFour) (sFour))))))))) then (((((((epochElisionAdmissible (sThree) (sThree) false) && ((not (epochElisionAdmissible (sTwo) (sThree) false)) && (not (epochElisionAdmissible (sThree) (sThree) true)))) && (((workerInFlightAdmissible 1) && ((workerInFlightAdmissible (sTwo)) && (not (workerInFlightAdmissible (sThree))))) && ((((governorRecommendedScalePermille (sTen) (sTwenty)) =? (skinWeightScale)) && (((governorRecommendedScalePermille (sThirty) (sTwenty)) =? (prim multiply (sEightyFive) (sTen) : Nat)) && ((governorRecommendedScalePermille (sFifty) (sTwenty)) =? (prim multiply (sSeven) (sHundred) : Nat)))) && ((codebookProductTableSize) =? (Foundation.Ontology.V1.Model::pow2Constructive (sEight)))))) && (aqmWorkloadExtrapolationsDirect)) && (stabilityAndRefinementDirect)) && (universalUorcRuntimeDirect)) && (runtimeInvariantsDirect)) else false)
+  body: (if ((((wordBitWidth) =? (Foundation.Ontology.V1.Model::pow2Constructive (sSix))) && (((wordCountForEntities 0) =? 0) && (((wordCountForEntities 1) =? 1) && (((wordCountForEntities (sSixtyFive)) =? (sTwo)) && ((wordPackedFilterValid (sSixtyFive) (sTwo)) && (not (wordPackedFilterValid (sSixtyFive) 1))))))) && ((((sahBinCount) =? (sEight)) && (((flatBvhLeafMaxPrims) =? (sFour)) && ((flatBvhStackCapacity) =? (Foundation.Ontology.V1.Model::pow2Constructive (sSix))))) && ((flatBvhChildOrderNearFirst (sTen) (sTwenty)) && ((not (flatBvhChildOrderNearFirst (sTwenty) (sTen))) && ((flatBvhNodeBoundsValid 0 1 (sFour)) && ((not (flatBvhNodeBoundsValid (sTwo) 1 (sFour))) && (not (flatBvhNodeBoundsValid 0 (sFour) (sFour))))))))) then ((((((((epochElisionAdmissible (sThree) (sThree) false) && ((not (epochElisionAdmissible (sTwo) (sThree) false)) && (not (epochElisionAdmissible (sThree) (sThree) true)))) && (((workerInFlightAdmissible 1) && ((workerInFlightAdmissible (sTwo)) && (not (workerInFlightAdmissible (sThree))))) && ((((governorRecommendedScalePermille (sTen) (sTwenty)) =? (skinWeightScale)) && (((governorRecommendedScalePermille (sThirty) (sTwenty)) =? (prim multiply (sEightyFive) (sTen) : Nat)) && ((governorRecommendedScalePermille (sFifty) (sTwenty)) =? (prim multiply (sSeven) (sHundred) : Nat)))) && ((codebookProductTableSize) =? (Foundation.Ontology.V1.Model::pow2Constructive (sEight)))))) && (aqmWorkloadExtrapolationsDirect)) && (stabilityAndRefinementDirect)) && (universalUorcRuntimeDirect)) && (surfaceDifferentiationDirect)) && (runtimeInvariantsDirect)) else false)
 }
 
 definition{

@@ -48,7 +48,8 @@ use verdant_core::physics::{
 };
 use verdant_core::prism_kernel;
 use verdant_core::render::{
-    canonical_pbr_material_library, pack_world_meshes_to_buffers_opts, PackedSceneRenderBuffers,
+    canonical_pbr_material_library, pack_world_meshes_to_buffers_opts, GpuSurfaceClass,
+    PackedSceneRenderBuffers,
 };
 #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
 use verdant_core::render::{InstancedBatchBuffer, PbrMaterial};
@@ -683,16 +684,17 @@ impl WasmRuntimeBridge {
                 .map_or(sim_time_sec * half, |d| {
                     (d.observer_gimbal_yaw_milli as f64) / milli
                 });
-            let obs_core_col = if self
+            let spiking = self
                 .last_directive
                 .as_ref()
-                .is_some_and(|d| d.spike_mask != 0)
-            {
-                cyan
+                .is_some_and(|d| d.spike_mask != 0);
+            let (obs_core_col, obs_core_class) = if spiking {
+                (cyan, GpuSurfaceClass::EmissiveGlass)
             } else {
-                gold
+                (gold, GpuSurfaceClass::Metal)
             };
             let core_center = Vec3::new(0.0, y0 + three + quarter, 0.0);
+            self.dynamic_buffers.surface_class = GpuSurfaceClass::Metal;
             self.dynamic_buffers.append_oriented_box_gpu_only(
                 core_center,
                 Vec3::new(
@@ -704,6 +706,7 @@ impl WasmRuntimeBridge {
                 quarter,
                 gold,
             );
+            self.dynamic_buffers.surface_class = obs_core_class;
             self.dynamic_buffers.append_oriented_box_gpu_only(
                 core_center,
                 Vec3::new(quarter, quarter, quarter),
@@ -719,6 +722,7 @@ impl WasmRuntimeBridge {
             if let (Some(anchor), Some(bob)) =
                 (self.physics.bodies.get(1), self.physics.bodies.get(i2_idx))
             {
+                self.dynamic_buffers.surface_class = GpuSurfaceClass::OpaqueDielectric;
                 self.dynamic_buffers.append_oriented_box_gpu_only(
                     anchor.position,
                     Vec3::new(1.0 + half, quarter * half, quarter),
@@ -734,6 +738,7 @@ impl WasmRuntimeBridge {
                 let link_vec = bob.position - anchor.position;
                 let link_len = (link_vec.length() * half).max(quarter);
                 let swing_angle = link_vec.x.atan2((-link_vec.y).max(quarter * quarter));
+                self.dynamic_buffers.surface_class = GpuSurfaceClass::OpaqueDielectric;
                 self.dynamic_buffers.append_oriented_box_gpu_only(
                     mid,
                     Vec3::new(quarter * quarter, link_len, quarter * quarter),
@@ -741,6 +746,7 @@ impl WasmRuntimeBridge {
                     swing_angle,
                     stone,
                 );
+                self.dynamic_buffers.surface_class = GpuSurfaceClass::EmissiveGlass;
                 self.dynamic_buffers.append_oriented_box_gpu_only(
                     bob.position,
                     Vec3::new(quarter + quarter * half, quarter + quarter * half, quarter),
@@ -767,6 +773,7 @@ impl WasmRuntimeBridge {
             } else {
                 (sixteen, 1.0, 0.0, 0.0)
             };
+            self.dynamic_buffers.surface_class = GpuSurfaceClass::Metal;
             self.dynamic_buffers.append_oriented_box_gpu_only(
                 Vec3::new(vx, vy, vz),
                 Vec3::new(half, quarter * half, 1.0 - quarter * half),
@@ -774,6 +781,7 @@ impl WasmRuntimeBridge {
                 0.0,
                 gold,
             );
+            self.dynamic_buffers.surface_class = GpuSurfaceClass::EmissiveGlass;
             self.dynamic_buffers.append_oriented_box_gpu_only(
                 Vec3::new(vx, vy + quarter, vz),
                 Vec3::new(quarter + quarter * quarter, quarter * half, half),
@@ -794,6 +802,7 @@ impl WasmRuntimeBridge {
                 let px = vx + sx * cy - sz * sy;
                 let pz = vz + sx * sy + sz * cy;
                 let gy = hd_terrain_height(self.seed_val, &self.terrain_params, px, pz) + quarter;
+                self.dynamic_buffers.surface_class = GpuSurfaceClass::OpaqueDielectric;
                 self.dynamic_buffers.append_oriented_box_gpu_only(
                     Vec3::new(px, gy, pz),
                     Vec3::new(quarter * half, quarter, quarter),
@@ -805,6 +814,7 @@ impl WasmRuntimeBridge {
 
             // Diegetic 3D UI Compliance Card anchored on the Citadel south terrace:
             let card_y = hd_terrain_height(self.seed_val, &self.terrain_params, six, eight) + two;
+            self.dynamic_buffers.surface_class = GpuSurfaceClass::EmissiveGlass;
             self.dynamic_buffers.append_oriented_box_gpu_only(
                 Vec3::new(six, card_y, eight),
                 Vec3::new(1.0 + quarter, half + quarter, quarter * quarter),
@@ -813,6 +823,8 @@ impl WasmRuntimeBridge {
                 cyan,
             );
         }
+
+        self.dynamic_buffers.surface_class = GpuSurfaceClass::OpaqueDielectric;
 
         let hide_head = self.camera_rig.mode == CameraMode::FirstPersonEye
             && self.camera_anchor_override.is_none();
@@ -929,10 +941,11 @@ impl WasmRuntimeBridge {
             let mut mp = Vec::with_capacity(positions.len() * (1 + 1 + 1));
             let mut mn = Vec::with_capacity(normals.len() * (1 + 1 + 1));
             let mut mc = Vec::with_capacity(positions.len() * (1 + 1 + 1));
+            let crystal_rgb = GpuSurfaceClass::EmissiveGlass.encode([1.0_f32, 1.0, 1.0]);
             for (p, n) in positions.iter().zip(normals.iter()) {
                 mp.extend_from_slice(p);
                 mn.extend_from_slice(n);
-                mc.extend_from_slice(&[1.0_f32, 1.0, 1.0]);
+                mc.extend_from_slice(&crystal_rgb);
             }
             let two = (1 + 1) as u32;
             let three = two + 1;
@@ -1690,6 +1703,7 @@ fn append_cold_boot_humanoid(
         );
         let vx = sy * (tenth + tenth * half);
         let vz = cy * (tenth + tenth * half);
+        buffers.surface_class = GpuSurfaceClass::EmissiveGlass;
         buffers.append_oriented_box_gpu_only(
             Vec3::new(foot.x + vx, foot.y + 1.0 + half + tenth * half, foot.z + vz),
             Vec3::new(tenth, tenth * half, tenth / five),
@@ -1697,6 +1711,7 @@ fn append_cold_boot_humanoid(
             0.0,
             visor_rgb,
         );
+        buffers.surface_class = GpuSurfaceClass::OpaqueDielectric;
     }
 }
 
