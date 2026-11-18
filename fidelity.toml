@@ -4625,12 +4625,22 @@ record = "Features::featureGltfAndWgsl"
 axis = "meant"
 
 [[closed]]
+kappa = "18c4f1e5a57d55abfc13b09f806a5d8ac514efa81db7b0ad897cbec53e720f5e"
+record = "Features::featureLawfulHdCharactersAndUniverses"
+axis = "derived"
+
+[[closed]]
 kappa = "364fd4928ed2e6d5b2185648530bd04257f8a5b96f113519869a47d9b4f93b40"
 record = "Features::featureLawfulHdCharactersAndUniverses"
 axis = "derived"
 
 [[closed]]
 kappa = "2acad8052339976613561ffa8a161439dbba682920e143ca7bab5e0586b98e4b"
+record = "Features::featureLawfulHdCharactersAndUniverses"
+axis = "meant"
+
+[[closed]]
+kappa = "6e733f1955e22eaaf4621b3588b73a440de5947981d4f89637c868b6f4d73296"
 record = "Features::featureLawfulHdCharactersAndUniverses"
 axis = "meant"
 
@@ -8180,6 +8190,11 @@ record = "Users::environments#5"
 axis = "meant"
 
 [[closed]]
+kappa = "048324cc2552e593a575ca5b078c49d59940307ae595054e4c76237b1d72ad7c"
+record = "Users::goals#0"
+axis = "derived"
+
+[[closed]]
 kappa = "5a12d93ff8ddddd12715c3b297f6810831083078341837cab7b3dc8a5346de4d"
 record = "Users::goals#0"
 axis = "derived"
@@ -8193,6 +8208,11 @@ axis = "derived"
 kappa = "ce9977e5eea39f803121ff20bf6caa26b9494bbeaaeb8b65d93e79db403c5896"
 record = "Users::goals#0"
 axis = "derived"
+
+[[closed]]
+kappa = "89febb9a76032972a9f40fd7b6faa11a4ac03eb977a5f21edc13b56338df4af1"
+record = "Users::goals#0"
+axis = "meant"
 
 [[closed]]
 kappa = "8bd5b79b0568ecf5b9574269cefde167b1be5c26475f9cc2df6bbe974562ab3b"

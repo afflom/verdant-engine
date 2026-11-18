@@ -258,110 +258,146 @@ pub fn render_triangles_tile_framebuffer_with_scratch(
         let c0 = scratch.clip_verts[base_v];
         let c1 = scratch.clip_verts[base_v + 1];
         let c2 = scratch.clip_verts[base_v + i2];
-        if c0[i3] <= eps || c1[i3] <= eps || c2[i3] <= eps {
-            continue;
-        }
-
-        let to_screen = |c: [f32; DIM_HOMOGENEOUS]| -> (f32, f32, f32) {
-            let inv_w = 1.0 / c[i3];
-            let ndc_x = c[0] * inv_w;
-            let ndc_y = c[1] * inv_w;
-            let ndc_z = (c[i2] * inv_w * half + half).clamp(0.0, 1.0);
-            let sx = (ndc_x * half + half) * w_f;
-            let sy = (1.0 - (ndc_y * half + half)) * h_f;
-            (sx, sy, ndc_z)
-        };
-
-        let (sx0, sy0, z0) = to_screen(c0);
-        let (sx1, sy1, z1) = to_screen(c1);
-        let (sx2, sy2, z2) = to_screen(c2);
-        if !(sx0.is_finite()
-            && sy0.is_finite()
-            && z0.is_finite()
-            && sx1.is_finite()
-            && sy1.is_finite()
-            && z1.is_finite()
-            && sx2.is_finite()
-            && sy2.is_finite()
-            && z2.is_finite())
-        {
-            continue;
-        }
-        let area = edge_fn(sx0, sy0, sx1, sy1, sx2, sy2);
-        if !area.is_finite() || area.abs() <= eps {
-            continue;
-        }
-        let lo_x = sx0.min(sx1).min(sx2);
-        let hi_x = sx0.max(sx1).max(sx2);
-        let lo_y = sy0.min(sy1).min(sy2);
-        let hi_y = sy0.max(sy1).max(sy2);
-        if hi_x < 0.0 || lo_x >= w_f || hi_y < 0.0 || lo_y >= h_f {
-            continue;
-        }
-        let min_x = lo_x.floor().max(0.0).min(max_w_px) as u32;
-        let max_x = hi_x.ceil().max(0.0).min(max_w_px) as u32;
-        let min_y = lo_y.floor().max(0.0).min(max_h_px) as u32;
-        let max_y = hi_y.ceil().max(0.0).min(max_h_px) as u32;
-        if min_x > max_x || min_y > max_y {
-            continue;
-        }
-        let inv_area = 1.0 / area;
-
-        rasterized_triangles += 1;
-        let nrm = normalize3([
-            f64::from(tri.normal[0]),
-            f64::from(tri.normal[1]),
-            f64::from(tri.normal[i2]),
-        ]);
-        let ndotl = ((nrm[0] * sun[0] + nrm[1] * sun[1] + nrm[i2] * sun[i2]).max(0.0)) as f32;
-        let hemi = (nrm[1] * f64::from(half) + f64::from(half)).clamp(0.0, 1.0) as f32;
-        let ambient = (half * half + half * half * hemi) * ibl_boost;
-        let shade = (ambient + (1.0 - half * half) * ndotl * shadow_boost).min(two);
-
-        let cr = tri.base_color[0].clamp(0.0, 1.0);
-        let cg = tri.base_color[1].clamp(0.0, 1.0);
-        let cb = tri.base_color[i2].clamp(0.0, 1.0);
-        let lit_r = ((cr * shade) / (1.0 + cr * shade) * two).clamp(0.0, 1.0);
-        let lit_g = ((cg * shade) / (1.0 + cg * shade) * two).clamp(0.0, 1.0);
-        let lit_b = ((cb * shade) / (1.0 + cb * shade) * two).clamp(0.0, 1.0);
-
-        let tile_x0 = min_x / tile_edge;
-        let tile_x1 = max_x / tile_edge;
-        let tile_y0 = min_y / tile_edge;
-        let tile_y1 = max_y / tile_edge;
-        for ty in tile_y0..=tile_y1 {
-            let row_off = (ty * tiles_x) as usize;
-            for tx in tile_x0..=tile_x1 {
-                scratch.tile_counts[row_off + (tx as usize)] += 1;
+        // Clip before perspective division. Dropping a face with one corner
+        // behind the eye opens a hole in a wall as the observer approaches.
+        let mut polygon = [[0.0; DIM_HOMOGENEOUS]; DIM_SPATIAL + 1 + 1];
+        polygon[..DIM_SPATIAL].copy_from_slice(&[c0, c1, c2]);
+        let mut count = DIM_SPATIAL;
+        for sign in [1.0, -1.0] {
+            let distance = |v: [f32; DIM_HOMOGENEOUS]| v[i3] + sign * v[i2];
+            if polygon[..count].iter().copied().all(|v| distance(v) >= 0.0) {
+                continue;
+            }
+            let input = polygon;
+            let input_count = count;
+            count = 0;
+            let mut prev = input[input_count - 1];
+            let mut dp = distance(prev);
+            for &next in &input[..input_count] {
+                let dn = distance(next);
+                if (dp < 0.0 && dn > 0.0) || (dp > 0.0 && dn < 0.0) {
+                    let alpha = dp / (dp - dn);
+                    polygon[count] =
+                        core::array::from_fn(|k| prev[k] + alpha * (next[k] - prev[k]));
+                    count += 1;
+                }
+                if dn >= 0.0 {
+                    polygon[count] = next;
+                    count += 1;
+                }
+                prev = next;
+                dp = dn;
+            }
+            if count < DIM_SPATIAL {
+                break;
             }
         }
+        for edge in 1..count.saturating_sub(1) {
+            let (c0, c1, c2) = (polygon[0], polygon[edge], polygon[edge + 1]);
+            if c0[i3] <= 0.0 || c1[i3] <= 0.0 || c2[i3] <= 0.0 {
+                continue;
+            }
+            let to_screen = |c: [f32; DIM_HOMOGENEOUS]| -> (f32, f32, f32) {
+                let inv_w = 1.0 / c[i3];
+                let ndc_x = c[0] * inv_w;
+                let ndc_y = c[1] * inv_w;
+                let ndc_z = (c[i2] * inv_w * half + half).clamp(0.0, 1.0);
+                let sx = (ndc_x * half + half) * w_f;
+                let sy = (1.0 - (ndc_y * half + half)) * h_f;
+                (sx, sy, ndc_z)
+            };
 
-        scratch.binned_tris.push(BinnedRasterTri {
-            sx0,
-            sy0,
-            z0,
-            sx1,
-            sy1,
-            z1,
-            sx2,
-            sy2,
-            z2,
-            inv_area,
-            min_x,
-            max_x,
-            min_y,
-            max_y,
-            tile_x0,
-            tile_x1,
-            tile_y0,
-            tile_y1,
-            rgba: [
-                (lit_r * byte_max).round() as u8,
-                (lit_g * byte_max).round() as u8,
-                (lit_b * byte_max).round() as u8,
-                byte_max as u8,
-            ],
-        });
+            let (sx0, sy0, z0) = to_screen(c0);
+            let (sx1, sy1, z1) = to_screen(c1);
+            let (sx2, sy2, z2) = to_screen(c2);
+            if !(sx0.is_finite()
+                && sy0.is_finite()
+                && z0.is_finite()
+                && sx1.is_finite()
+                && sy1.is_finite()
+                && z1.is_finite()
+                && sx2.is_finite()
+                && sy2.is_finite()
+                && z2.is_finite())
+            {
+                continue;
+            }
+            let area = edge_fn(sx0, sy0, sx1, sy1, sx2, sy2);
+            if !area.is_finite() || area.abs() <= eps {
+                continue;
+            }
+            let lo_x = sx0.min(sx1).min(sx2);
+            let hi_x = sx0.max(sx1).max(sx2);
+            let lo_y = sy0.min(sy1).min(sy2);
+            let hi_y = sy0.max(sy1).max(sy2);
+            if hi_x < 0.0 || lo_x >= w_f || hi_y < 0.0 || lo_y >= h_f {
+                continue;
+            }
+            let min_x = lo_x.floor().max(0.0).min(max_w_px) as u32;
+            let max_x = hi_x.ceil().max(0.0).min(max_w_px) as u32;
+            let min_y = lo_y.floor().max(0.0).min(max_h_px) as u32;
+            let max_y = hi_y.ceil().max(0.0).min(max_h_px) as u32;
+            if min_x > max_x || min_y > max_y {
+                continue;
+            }
+            let inv_area = 1.0 / area;
+
+            rasterized_triangles += 1;
+            let nrm = normalize3([
+                f64::from(tri.normal[0]),
+                f64::from(tri.normal[1]),
+                f64::from(tri.normal[i2]),
+            ]);
+            let ndotl = ((nrm[0] * sun[0] + nrm[1] * sun[1] + nrm[i2] * sun[i2]).max(0.0)) as f32;
+            let hemi = (nrm[1] * f64::from(half) + f64::from(half)).clamp(0.0, 1.0) as f32;
+            let ambient = (half * half + half * half * hemi) * ibl_boost;
+            let shade = (ambient + (1.0 - half * half) * ndotl * shadow_boost).min(two);
+
+            let cr = tri.base_color[0].clamp(0.0, 1.0);
+            let cg = tri.base_color[1].clamp(0.0, 1.0);
+            let cb = tri.base_color[i2].clamp(0.0, 1.0);
+            let lit_r = ((cr * shade) / (1.0 + cr * shade) * two).clamp(0.0, 1.0);
+            let lit_g = ((cg * shade) / (1.0 + cg * shade) * two).clamp(0.0, 1.0);
+            let lit_b = ((cb * shade) / (1.0 + cb * shade) * two).clamp(0.0, 1.0);
+
+            let tile_x0 = min_x / tile_edge;
+            let tile_x1 = max_x / tile_edge;
+            let tile_y0 = min_y / tile_edge;
+            let tile_y1 = max_y / tile_edge;
+            for ty in tile_y0..=tile_y1 {
+                let row_off = (ty * tiles_x) as usize;
+                for tx in tile_x0..=tile_x1 {
+                    scratch.tile_counts[row_off + (tx as usize)] += 1;
+                }
+            }
+
+            scratch.binned_tris.push(BinnedRasterTri {
+                sx0,
+                sy0,
+                z0,
+                sx1,
+                sy1,
+                z1,
+                sx2,
+                sy2,
+                z2,
+                inv_area,
+                min_x,
+                max_x,
+                min_y,
+                max_y,
+                tile_x0,
+                tile_x1,
+                tile_y0,
+                tile_y1,
+                rgba: [
+                    (lit_r * byte_max).round() as u8,
+                    (lit_g * byte_max).round() as u8,
+                    (lit_b * byte_max).round() as u8,
+                    byte_max as u8,
+                ],
+            });
+        }
     }
 
     // Prefix-sum offsets + flat index scatter:

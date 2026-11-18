@@ -177,6 +177,7 @@ Feature: engine
     Given a SceneWorld with a hollow doorway mesh, an acute two-wall corner, and stepped stair risers indexed in TwoLevelBvh
     When PhysicsWorld::step_lawful sweeps a CapsuleController through the open doorway, into the acute corner, and up the stairs
     Then the capsule passes cleanly through the hollow opening, slides or halts without penetrating solid walls, and climbs walkable risers
+    And a narrow rail between the capsule end caps still blocks motion
     And post-step sweptClearanceValid holds across every frame
 
   @VE-26 @build
@@ -184,6 +185,7 @@ Feature: engine
     Given a LawfulCameraRig orbiting an anchor inside a walled room and over uneven terrain
     When solve_frame sweeps the near-frustum diagonal guard sphere across 360-degree yaw and steep pitch angles
     Then cameraNearSphereGuarded holds and the camera eye never crosses a wall or dips within guard_radius_meters of any solid surface
+    And an imported solid mesh blocks the camera until cleared, while the same mesh declared as a fluid permits passage
     And non-positive clip planes, out-of-range fields of view, or excessive spring-arm distances return CameraRigError
 
   @VE-27 @build

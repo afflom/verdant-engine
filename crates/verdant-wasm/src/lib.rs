@@ -1078,7 +1078,9 @@ impl WasmRuntimeBridge {
                     reason: bridge_reason(e),
                 }
             })?;
-            self.bvh = fresh.scene.build_bvh();
+            if self.custom_glb_scene.is_none() {
+                self.bvh = fresh.scene.build_bvh();
+            }
             self.world = fresh;
         }
 
@@ -1088,14 +1090,18 @@ impl WasmRuntimeBridge {
             self.env_params.water_level_meters,
             u64::from(rank),
         );
-        let two_level_bvh =
-            TwoLevelBvh::build_solid(&hd_sector.scene, &hd_sector.meshes).map_err(|e| {
-                WasmBridgeError::InvalidSnapshotEnvelope {
+        // Imported triangles and their transforms are independent of procedural LOD.
+        #[cfg(all(target_arch = "wasm32", not(feature = "uorc-decoder")))]
+        let rebuild_boundaries = true;
+        #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+        let rebuild_boundaries = self.custom_glb_scene.is_none();
+        if rebuild_boundaries {
+            self.two_level_bvh = TwoLevelBvh::build_solid(&hd_sector.scene, &hd_sector.meshes)
+                .map_err(|e| WasmBridgeError::InvalidSnapshotEnvelope {
                     byte_len: 0,
                     reason: bridge_reason(e),
-                }
-            })?;
-
+                })?;
+        }
         #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
         {
             let prev_foot = self.explorer.foot_position;
@@ -1119,7 +1125,7 @@ impl WasmRuntimeBridge {
                     true,
                     prev_yaw,
                     None,
-                    &two_level_bvh,
+                    &self.two_level_bvh,
                     |x, z| hd_terrain_height(seed_copy, &relief_copy, x, z),
                 );
                 self.explorer = rebuilt_exp;
@@ -1127,7 +1133,6 @@ impl WasmRuntimeBridge {
         }
 
         self.hd_sector = hd_sector;
-        self.two_level_bvh = two_level_bvh;
         self.lod_rank = rank;
         self.static_dirty = true;
         let _ = self.solve_active_camera(0.0);
@@ -1344,44 +1349,17 @@ impl WasmRuntimeBridge {
             pk_f64(prism_kernel::wasmFrustumFarMeters()),
         ) * Mat4::look_at(eye, target, Vec3::UP);
 
-        // Keep interactive software tile rasterization responsive on mobile budgets by preserving
-        // dynamic tail actors and striding dense static meshes when triangle count exceeds 1,000:
-        let max_tris = pk_u64(prism_kernel::skinWeightScale()) as usize;
-        let all_tris = &self.scene_buffers.tile_triangles;
         let sun = Vec3::new(1.0 / two_f, 1.0, 1.0 / four);
         core::mem::swap(&mut self.tile_scratch.rgba8, &mut self.framebuffer_rgba);
-        let res = if all_tris.len() <= max_tris {
-            render_triangles_tile_framebuffer_with_scratch(
-                aligned_w,
-                aligned_h,
-                &vp,
-                sun,
-                u64::from(self.lod_rank),
-                all_tris,
-                &mut self.tile_scratch,
-            )
-        } else {
-            let tail_keep = (pk_u64(prism_kernel::sHundred()) * prism_kernel::sThree()) as usize;
-            let tail_start = all_tris.len().saturating_sub(tail_keep);
-            let head_budget = max_tris.saturating_sub(all_tris.len() - tail_start).max(1);
-            let stride = (tail_start / head_budget).max(1);
-            let mut sampled = Vec::with_capacity(max_tris);
-            let mut idx = 0usize;
-            while idx < tail_start && sampled.len() < head_budget {
-                sampled.push(all_tris[idx]);
-                idx += stride;
-            }
-            sampled.extend_from_slice(&all_tris[tail_start..]);
-            render_triangles_tile_framebuffer_with_scratch(
-                aligned_w,
-                aligned_h,
-                &vp,
-                sun,
-                u64::from(self.lod_rank),
-                &sampled,
-                &mut self.tile_scratch,
-            )
-        };
+        let res = render_triangles_tile_framebuffer_with_scratch(
+            aligned_w,
+            aligned_h,
+            &vp,
+            sun,
+            u64::from(self.lod_rank),
+            &self.scene_buffers.tile_triangles,
+            &mut self.tile_scratch,
+        );
         core::mem::swap(&mut self.tile_scratch.rgba8, &mut self.framebuffer_rgba);
         res.map_err(|e| WasmBridgeError::InvalidSnapshotEnvelope {
             byte_len: 0,
@@ -1484,6 +1462,8 @@ impl WasmRuntimeBridge {
             self.two_level_bvh = tl;
         }
         self.world = restored;
+        self.custom_glb_scene = None;
+        let _ = self.solve_active_camera(0.0);
         self.static_dirty = true;
         let _ = self.rebuild_scene_buffers(0.0);
         Ok(())
@@ -1544,6 +1524,8 @@ impl WasmRuntimeBridge {
             self.two_level_bvh = tl;
         }
         self.world = restored;
+        self.custom_glb_scene = None;
+        let _ = self.solve_active_camera(0.0);
         self.static_dirty = true;
         let _ = self.rebuild_scene_buffers(0.0);
         Ok(())
@@ -1596,6 +1578,7 @@ impl WasmRuntimeBridge {
         }
         self.world = restored;
         self.custom_glb_scene = None;
+        let _ = self.solve_active_camera(0.0);
         self.static_dirty = true;
         let _ = self.rebuild_scene_buffers(0.0);
         self.io_buffer = snap;
@@ -3129,9 +3112,14 @@ pub extern "C" fn verdant_wasm_glb_import_io() -> u32 {
     let Ok(imported) = import_glb_to_scene(&bridge.io_buffer) else {
         return 0;
     };
+    let Ok(boundaries) = TwoLevelBvh::build_solid(&imported.scene, &imported.meshes) else {
+        return 0;
+    };
+    bridge.two_level_bvh = boundaries;
     bridge.bvh = imported.scene.build_bvh();
     bridge.custom_glb_scene = Some((imported.scene, imported.meshes, imported.materials));
     bridge.static_dirty = true;
+    let _ = bridge.solve_active_camera(0.0);
     let tris = bridge.rebuild_scene_buffers(0.0).unwrap_or(0);
     if let Ok(uorc_stream) = transcode_glb_to_progressive_uorc(&bridge.io_buffer, bridge.seed_val) {
         bridge.aux_buffer = uorc_stream;
@@ -3177,9 +3165,16 @@ pub extern "C" fn verdant_wasm_clear_imported_glb() -> u32 {
     let Some(bridge) = guard.as_mut() else {
         return 0;
     };
+    let Ok(boundaries) =
+        TwoLevelBvh::build_solid(&bridge.hd_sector.scene, &bridge.hd_sector.meshes)
+    else {
+        return 0;
+    };
+    bridge.two_level_bvh = boundaries;
     bridge.custom_glb_scene = None;
     bridge.static_dirty = true;
     bridge.bvh = bridge.world.scene.build_bvh();
+    let _ = bridge.solve_active_camera(0.0);
     bridge.rebuild_scene_buffers(0.0).unwrap_or(0) as u32
 }
 

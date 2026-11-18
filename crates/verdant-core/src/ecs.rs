@@ -1025,8 +1025,6 @@ impl TwoLevelBvh {
         let mut instances: Vec<TwoLevelInstance> = Vec::new();
         let mut tlas_items: Vec<(EntityId, Aabb)> = Vec::new();
 
-        let eps = geometric_epsilon();
-        let scale_tol = 1.0 / (pow10_u64(three_u32()) as f64);
         let i2 = 1usize + 1usize;
 
         for entity in scene.entities() {
@@ -1061,19 +1059,9 @@ impl TwoLevelBvh {
             let sx = c0.length();
             let sy = c1.length();
             let sz = c2.length();
-            if sx <= eps || sy <= eps || sz <= eps {
-                continue;
-            }
-            let uniform = (sx - sy).abs() <= scale_tol * sx.max(1.0)
-                && (sy - sz).abs() <= scale_tol * sy.max(1.0)
-                && c0.normalized().dot(c1.normalized()).abs() <= scale_tol
-                && c1.normalized().dot(c2.normalized()).abs() <= scale_tol
-                && c0.normalized().dot(c2.normalized()).abs() <= scale_tol;
-
-            if uniform {
-                let Some(inv_mat) = world_mat.inverse_affine() else {
-                    continue;
-                };
+            let uniform =
+                sx == sy && sy == sz && c0.dot(c1) == 0.0 && c1.dot(c2) == 0.0 && c0.dot(c2) == 0.0;
+            if let Some(inv_mat) = world_mat.inverse_affine().filter(|_| uniform) {
                 let slot = if let Some(existing) = shared_mesh_slot[mesh_idx] {
                     existing
                 } else {
@@ -1096,37 +1084,8 @@ impl TwoLevelBvh {
                 });
             } else {
                 // Non-uniformly scaled or sheared entity: bake world-space positions into an exact metric BLAS:
-                let mut world_positions = Vec::with_capacity(mesh.positions.len());
-                let mut world_normals = Vec::with_capacity(mesh.normals.len());
-                let origin_w = world_mat.transform_point3(Vec3::ZERO);
-                for (&pos, &nrm) in mesh.positions.iter().zip(mesh.normals.iter()) {
-                    let pw = world_mat.transform_point3(Vec3::new(
-                        f64::from(pos[0]),
-                        f64::from(pos[1]),
-                        f64::from(pos[i2]),
-                    ));
-                    world_positions.push(pw.to_f32_array());
-                    let nw = (world_mat.transform_point3(Vec3::new(
-                        f64::from(nrm[0]),
-                        f64::from(nrm[1]),
-                        f64::from(nrm[i2]),
-                    )) - origin_w)
-                        .normalized();
-                    world_normals.push(nw.to_f32_array());
-                }
-                let baked_mesh = ProceduralMesh {
-                    name: "world_blas".to_string(),
-                    positions: world_positions,
-                    normals: world_normals,
-                    uvs: mesh.uvs.clone(),
-                    colors: mesh.colors.clone(),
-                    indices: mesh.indices.clone(),
-                    morph_targets: Vec::new(),
-                };
-                let world_bounds = baked_mesh.bounds();
-                let Ok(blas) = MeshBlas::from_mesh(&baked_mesh) else {
-                    continue;
-                };
+                let world_bounds = mesh.bounds().transformed(world_mat);
+                let blas = MeshBlas::from_transformed_mesh(mesh, world_mat)?;
                 let slot = blas_pool.len();
                 blas_pool.push(blas);
                 tlas_items.push((entity.id, world_bounds));
@@ -1341,17 +1300,35 @@ impl TwoLevelBvh {
         world_radius: f64,
         world_delta: Vec3,
     ) -> (Option<(EntityId, SweptSphereHit)>, usize) {
+        self.sweep_capsule_counted(world_origin, Vec3::ZERO, world_radius, world_delta)
+    }
+
+    /// Sweep the complete capsule (the segment from origin to origin + axis, inflated by radius).
+    #[must_use]
+    pub fn sweep_capsule_counted(
+        &self,
+        world_origin: Vec3,
+        axis: Vec3,
+        world_radius: f64,
+        world_delta: Vec3,
+    ) -> (Option<(EntityId, SweptSphereHit)>, usize) {
         if self.tlas.nodes.is_empty() {
             return (None, 0);
         }
         let r = world_radius.max(0.0);
+        let bound = r + axis.length();
         let mut best: Option<(EntityId, SweptSphereHit)> = None;
         let mut visited_nodes = 0usize;
         let mut stack = [0_u32; verdant_tensor::FLAT_BVH_STACK_CAP];
         let mut sp = 0usize;
 
-        if segment_swept_aabb_toi(world_origin, world_delta, self.tlas.nodes[0].bounds(), r)
-            .is_some()
+        if segment_swept_aabb_toi(
+            world_origin,
+            world_delta,
+            self.tlas.nodes[0].bounds(),
+            bound,
+        )
+        .is_some()
         {
             stack[0] = 0;
             sp = 1;
@@ -1363,7 +1340,7 @@ impl TwoLevelBvh {
             let node = &self.tlas.nodes[idx];
             visited_nodes += 1;
             let max_t = best.map_or(1.0, |(_, h)| h.toi);
-            if segment_swept_aabb_toi(world_origin, world_delta, node.bounds(), r)
+            if segment_swept_aabb_toi(world_origin, world_delta, node.bounds(), bound)
                 .is_none_or(|t| t > max_t)
             {
                 continue;
@@ -1375,7 +1352,7 @@ impl TwoLevelBvh {
                 for &pi in &self.tlas.prim_indices[start..end] {
                     let inst = &self.instances[pi as usize];
                     let cur_t = best.map_or(1.0, |(_, h)| h.toi);
-                    if segment_swept_aabb_toi(world_origin, world_delta, inst.world_bounds, r)
+                    if segment_swept_aabb_toi(world_origin, world_delta, inst.world_bounds, bound)
                         .is_none_or(|t| t > cur_t)
                     {
                         continue;
@@ -1384,7 +1361,12 @@ impl TwoLevelBvh {
                     let local_delta = inst.world_to_local.transform_vector3(world_delta);
                     let local_radius = r / inst.uniform_scale;
                     let (local_hit_opt, blas_visited) = self.blas_pool[inst.blas_slot]
-                        .sweep_sphere_counted(local_origin, local_radius, local_delta);
+                        .sweep_capsule_counted(
+                            local_origin,
+                            inst.world_to_local.transform_vector3(axis),
+                            local_radius,
+                            local_delta,
+                        );
                     visited_nodes += blas_visited;
 
                     if let Some(local_hit) = local_hit_opt {
@@ -1416,14 +1398,14 @@ impl TwoLevelBvh {
                     world_origin,
                     world_delta,
                     self.tlas.nodes[left_idx as usize].bounds(),
-                    r,
+                    bound,
                 )
                 .filter(|&t| t <= cur_t);
                 let tr = segment_swept_aabb_toi(
                     world_origin,
                     world_delta,
                     self.tlas.nodes[right_idx as usize].bounds(),
-                    r,
+                    bound,
                 )
                 .filter(|&t| t <= cur_t);
                 match (tl, tr) {

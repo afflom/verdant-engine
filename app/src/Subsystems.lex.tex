@@ -982,6 +982,13 @@ definition{name: ccdMaxSlideIterations, parameters: [], result: Nat, body: (sFou
 definition{name: ccdSkinMarginMilli, parameters: [], result: Nat, body: (sTwo)}
 
 definition{
+  name: shapeBoundaryValid,
+  parameters: [sourceFaces : Nat, submittedFaces : Nat, solid : Bool, crossed : Bool],
+  result: Bool,
+  body: ((sourceFaces =? submittedFaces) && (not (solid && crossed)))
+}
+
+definition{
   name: sweptClearanceValid,
   parameters: [distMilli : Nat, radiusMilli : Nat, epsMilli : Nat],
   result: Bool,
