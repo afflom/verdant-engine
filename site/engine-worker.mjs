@@ -1011,7 +1011,7 @@ self.onmessage = async ({ data: msg }) => {
 
     if (msg.kind === "scene-outliner") {
       uorcWasm ??= await getUorcWasm();
-      if (!customGlbActive) {
+      if (!customGlbActive && !uorcSceneActive) {
         uorcWasm.verdant_wasm_set_lod_rank(simHost().verdant_wasm_active_lod_rank() >>> 0);
       }
       const len = uorcWasm.verdant_wasm_scene_outliner_aux((msg.observedFrameMicros || 8200) >>> 0) >>> 0;
@@ -1097,6 +1097,120 @@ self.onmessage = async ({ data: msg }) => {
         absorptionMilliM2: absMilli,
         rt60Ms,
       });
+      return;
+    }
+
+    if (msg.kind === "load-domain-pack") {
+      const domainIdx = Math.max(0, Math.min(3, msg.domainIdx | 0)) >>> 0;
+      await ensureUorcSceneHost();
+      const len = uorcWasm.verdant_wasm_load_domain_pack(domainIdx) >>> 0;
+      if (len === 0) {
+        self.postMessage({ kind: "domain-pack-loaded", id: msg.id, ok: false });
+        return;
+      }
+      const observer = JSON.parse(new TextDecoder().decode(readAuxBytes(uorcWasm)));
+      customGlbActive = false;
+      uorcSceneActive = true;
+      walkJournal.length = 0;
+      activeSeed = BigInt(uorcWasm.verdant_wasm_active_seed());
+      const sh = simHost();
+      const cam = readSolvedCamera(sh);
+      const stats = drawScene(cam.eye, cam.lookTarget, currentLod, msg.simClockSec || 0, false);
+      self.postMessage({
+        kind: "domain-pack-loaded",
+        id: msg.id,
+        ok: true,
+        domainIdx,
+        seed: Number(activeSeed),
+        tris: stats.tris,
+        walkablePolys: sh.verdant_wasm_navmesh_polygon_count() >>> 0,
+        camera: cam,
+        observer,
+      });
+      return;
+    }
+
+    if (msg.kind === "set-npc-directive") {
+      const npcIdx = Math.max(0, msg.npcIdx | 0) >>> 0;
+      const directiveIdx = Math.max(0, msg.directiveIdx | 0) >>> 0;
+      await ensureUorcSceneHost();
+      const len = uorcWasm.verdant_wasm_set_npc_directive(npcIdx, directiveIdx) >>> 0;
+      if (len === 0) {
+        self.postMessage({ kind: "npc-directive-updated", id: msg.id, ok: false });
+        return;
+      }
+      const [characterId, directiveLabel, wpStr] = new TextDecoder().decode(readAuxBytes(uorcWasm)).split("|");
+      const sh = simHost();
+      sh.verdant_wasm_scene_rebuild_buffers(msg.simClockSec || 0);
+      const cam = readSolvedCamera(sh);
+      const stats = drawScene(cam.eye, cam.lookTarget, currentLod, msg.simClockSec || 0, false);
+      self.postMessage({
+        kind: "npc-directive-updated",
+        id: msg.id,
+        ok: true,
+        npcIdx,
+        directiveIdx,
+        characterId: characterId || "",
+        directiveLabel: directiveLabel || "",
+        waypointCount: Number(wpStr) || 0,
+        tris: stats.tris,
+      });
+      return;
+    }
+
+    if (msg.kind === "npc-dialogue") {
+      if (organModes[0] === 2) {
+        self.postMessage({ kind: "npc-dialogue-reply", id: msg.id, ok: false, organDenied: "wasm-core" });
+        return;
+      }
+      if (organModes[7] === 2) {
+        self.postMessage({ kind: "npc-dialogue-reply", id: msg.id, ok: false, organDenied: "webcrypto-prism-id" });
+        return;
+      }
+      const npcIdx = Math.max(0, msg.npcIdx | 0) >>> 0;
+      const utterance = String(msg.utterance || "").trim();
+      if (!utterance) {
+        self.postMessage({ kind: "npc-dialogue-reply", id: msg.id, ok: false });
+        return;
+      }
+      await ensureUorcSceneHost();
+      stageIoBytes(uorcWasm, new TextEncoder().encode(utterance));
+      const len = uorcWasm.verdant_wasm_dialogue_turn_io(npcIdx) >>> 0;
+      if (len === 0) {
+        self.postMessage({ kind: "npc-dialogue-reply", id: msg.id, ok: false });
+        return;
+      }
+      const turn = JSON.parse(new TextDecoder().decode(readAuxBytes(uorcWasm)));
+      const sh = simHost();
+      if (turn.mutatedDirectiveIndex != null && turn.mutatedDirectiveIndex >= 0) {
+        sh.verdant_wasm_scene_rebuild_buffers(msg.simClockSec || 0);
+        const cam = readSolvedCamera(sh);
+        drawScene(cam.eye, cam.lookTarget, currentLod, msg.simClockSec || 0, false);
+      }
+      self.postMessage({ kind: "npc-dialogue-reply", id: msg.id, ok: true, turn });
+      return;
+    }
+
+    if (msg.kind === "observer-status") {
+      await ensureUorcSceneHost();
+      const len = uorcWasm.verdant_wasm_observer_status_aux() >>> 0;
+      if (len === 0) {
+        self.postMessage({ kind: "observer-status", id: msg.id, ok: false });
+        return;
+      }
+      const observer = JSON.parse(new TextDecoder().decode(readAuxBytes(uorcWasm)));
+      self.postMessage({ kind: "observer-status", id: msg.id, ok: true, observer });
+      return;
+    }
+
+    if (msg.kind === "observe-comm") {
+      const channelCode = Math.max(0, Math.min(4, msg.channelCode | 0)) >>> 0;
+      const wire = `${msg.sender || "urn:verdant:organ:engine"}|${msg.recipient || "urn:verdant:organ:studio"}|${msg.message || ""}`;
+      await ensureUorcSceneHost();
+      stageIoBytes(uorcWasm, new TextEncoder().encode(wire));
+      const len = uorcWasm.verdant_wasm_observe_comm_io(channelCode) >>> 0;
+      const kappaHex = len > 0 ? new TextDecoder().decode(readAuxBytes(uorcWasm)) : "";
+      self.postMessage({ kind: "comm-observed", id: msg.id, ok: len > 0, kappaHex });
       return;
     }
   } catch (err) {

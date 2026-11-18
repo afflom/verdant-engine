@@ -434,6 +434,30 @@ export async function verifyWasmBinaryContract(coreWasmBytes, uorcWasmBytes, met
     throw new Error("Stitch Wasm recovery failed to refuse duplicate STCH shard pair (1, 1)");
   }
 
+  // Verify Wasm catalog domain pack switching, NavMesh NPC directives, & ISO 24617-2 dialogue + abstention (VE-39/VE-40):
+  if ((uorc.verdant_wasm_load_domain_pack(1) >>> 0) === 0) {
+    throw new Error("verdant_wasm_load_domain_pack(1) failed to instantiate meridian-observatory");
+  }
+  const meridianObs = JSON.parse(new TextDecoder().decode(readUorcAux()));
+  if (meridianObs.activeDomain?.slug !== "meridian-observatory" || !meridianObs.observerKappa) {
+    throw new Error("meridian-observatory status JSON missing activeDomain slug or observerKappa");
+  }
+  if ((uorc.verdant_wasm_load_domain_pack(99) >>> 0) !== 0) {
+    throw new Error("verdant_wasm_load_domain_pack(99) must refuse out-of-bounds domain index");
+  }
+  if ((uorc.verdant_wasm_set_npc_directive(0, 1) >>> 0) === 0) {
+    throw new Error("verdant_wasm_set_npc_directive(0, 1) failed to plan A* NavMesh corridor");
+  }
+  stageUorcIo(new TextEncoder().encode("What is the secret Mars pizza topping?"));
+  if ((uorc.verdant_wasm_dialogue_turn_io(0) >>> 0) === 0) {
+    throw new Error("verdant_wasm_dialogue_turn_io(0) failed to evaluate unstated question");
+  }
+  const abstainTurn = JSON.parse(new TextDecoder().decode(readUorcAux()));
+  if (!abstainTurn.abstainedUnknown || abstainTurn.replyText !== "Unknown") {
+    throw new Error(`Expected Unknown abstention for unstated NPC question, got: ${JSON.stringify(abstainTurn)}`);
+  }
+  uorc.verdant_wasm_load_domain_pack(0);
+
   return { defaultSeed, snapLen, shardLen: shards[0].byteLength };
 }
 
@@ -460,6 +484,9 @@ export function verifyZeroSlmBypassContract(studioSource) {
   }
   if (!fnBody.includes("PRISM_MAX_LOD_RANK")) {
     throw new Error("routeStudioPrompt must stream base UORC intent using PRISM_MAX_LOD_RANK");
+  }
+  if (/effectiveSlug\s*=/.test(fnBody) || /if\s*\(\s*\/\\b\(/.test(fnBody)) {
+    throw new Error("Bypass detected: routeStudioPrompt overrides Wasm CodedSlmDirector slug via handwritten JS regexes");
   }
 }
 
@@ -705,6 +732,13 @@ export function verifyStarterAndScaffolderContract({ starterHtml, starterGameSou
   }
   if (seenMainRs.size !== 4) {
     throw new Error(`All 4 Studio Scaffolder archetypes must generate distinct Rust implementations (found ${seenMainRs.size})`);
+  }
+  const expectedDomainSlugs = ["sunspire-regatta", "meridian-observatory", "glasshouse-chronicle", "starfall-bastion"];
+  for (let archetypeIdx = 0; archetypeIdx < 4; archetypeIdx++) {
+    const { "src/main.rs": mainRs } = generateStarterProjectFiles({ slug: `arch-${archetypeIdx}`, archetypeIdx, seed: 7, lodRank: 3, cameraMode: "third" });
+    if (!mainRs.includes("ObserverPrismHolon") || !mainRs.includes(expectedDomainSlugs[archetypeIdx])) {
+      throw new Error(`Scaffolder archetype ${archetypeIdx} must instantiate catalog pack "${expectedDomainSlugs[archetypeIdx]}" via ObserverPrismHolon`);
+    }
   }
 }
 
@@ -1177,18 +1211,26 @@ export async function runAllPrismContractChecks(rootDir = ROOT_DIR) {
   });
   verifyExternalOraclesAndRuntimeExclusivityContract({ rootDir });
 
-  // Audit all shipped Rust crate sources (`FI-08` zero magic constants, excluding generated prism_kernel.rs):
+  // Audit all shipped Rust crate sources, starter template, and examples (`FI-08` zero magic constants):
   for (const relDir of [
     "crates/verdant-core/src",
+    "crates/verdant-core/examples",
     "crates/verdant-tensor/src",
     "crates/verdant-wasm/src",
     "crates/verdant-cli/src",
+    "templates/browser-3d-starter/src",
   ]) {
     const absDir = join(rootDir, relDir);
     for (const entry of readdirSync(absDir, { withFileTypes: true })) {
       if (!entry.isFile() || !entry.name.endsWith(".rs") || entry.name === "prism_kernel.rs") continue;
       const relPath = `${relDir}/${entry.name}`;
-      verifyRustZeroMagicConstants(readFileSync(join(absDir, entry.name), "utf8"), relPath);
+      const src = readFileSync(join(absDir, entry.name), "utf8");
+      verifyRustZeroMagicConstants(src, relPath);
+      if (relDir.endsWith("examples") || relDir.startsWith("templates/")) {
+        if (!src.includes("ObserverPrismHolon") && !src.includes("CatalogBundleRegistry")) {
+          throw new Error(`${relPath} must instantiate imported catalogs via ObserverPrismHolon or CatalogBundleRegistry`);
+        }
+      }
     }
   }
 

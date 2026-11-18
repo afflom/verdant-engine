@@ -1757,6 +1757,8 @@ impl ObserverPrismHolon {
                 "id": self.active_domain.spec.id,
                 "slug": self.active_domain.spec.slug,
                 "title": self.active_domain.spec.title,
+                "schemaOrgType": self.active_domain.spec.schema_type,
+                "kappa": compute_kappa(&self.active_domain.spec.id, self.active_domain.spec.slug.as_bytes()).1,
                 "seed": self.active_domain.spec.seed,
                 "defaultLodRank": self.active_domain.spec.default_lod_rank,
                 "cameraMode": self.active_domain.spec.camera_mode,
@@ -1764,6 +1766,7 @@ impl ObserverPrismHolon {
                 "navPolygons": self.active_navmesh.polygons.len()
             },
             "organs": organs_json,
+            "roleCount": self.stakeholders.len(),
             "stakeholders": stakeholders_json,
             "npcs": npcs_json,
             "admittedModelCount": self.admitted_model_kappas.len(),

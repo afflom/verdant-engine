@@ -235,6 +235,7 @@ function resetArenaRun(enterPlaying = true) {
   if (!wasm) return;
   wasm.verdant_wasm_init(BigInt(PRISM_DEFAULT_WORLD_SEED));
   wasm.verdant_wasm_set_lod_rank(PRISM_MAX_LOD_RANK);
+  wasm.verdant_wasm_load_domain_pack?.(0);
   readChronicleStatus();
   beaconWorldPositions = BEACON_COORDS.map(([bx, bz]) => [
     bx,

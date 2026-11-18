@@ -346,3 +346,9 @@ suite = "engine"
 statement = "The second-order Observer Prism holon composes strong kappa identities for itself, its five differentiated platform organs, its seven stakeholder Prism models, arbitrary Verdant model envelopes, native uor-matmul 16-route intent and ISO 24617-2 passage-grounded NPC dialogue with Unknown abstention, live NavMesh NPC directives, and five W3C SOSA/PROV-O observed communication channels across native Rust and WebAssembly"
 failure = "ObserverModelError"
 negative = "VE-39"
+
+[[id]]
+id = "VE-40"
+level = "build"
+suite = "engine"
+statement = "Every Verdant surface—Verdant Studio, Verdant Catalogs, Verdant Engine Demo, the browser and Rust starter template, all four Studio Scaffolder archetypes, and every crate example—instantiates differentiated SHA-256-locked catalog world packs, Schema.org JSON-LD couplings, live Wasm NPC directives and ISO 24617-2 dialogue, and zero-bypass Wasm CodedSlmDirector routing with zero magic constants"

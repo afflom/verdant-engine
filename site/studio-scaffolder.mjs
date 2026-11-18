@@ -93,69 +93,96 @@ publish = false
 verdant-core = { git = "https://github.com/afflom/verdant-engine.git" }
 `;
 
+  const domainSlug =
+    arch.idx === 1
+      ? "meridian-observatory"
+      : arch.idx === 2
+        ? "glasshouse-chronicle"
+        : arch.idx === 3
+          ? "starfall-bastion"
+          : "sunspire-regatta";
+
   let extraImports = "";
   let archetypeSection = "";
   let printSummary = "";
 
   if (arch.idx === 0) {
-    extraImports = `use verdant_core::character::{ArticulatedCharacter, CharacterArchetype};
-use verdant_core::gltf_io::export_scene_to_glb;
-use verdant_core::render::canonical_pbr_material_library;`;
-    archetypeSection = `    // Sunspire Harbor Regatta: 22-Joint Mariner + Dock Engineer Foot IK patrol & GLB export
-    let mut mariner = ArticulatedCharacter::new_humanoid("Mariner", CharacterArchetype::Explorer, spawn, 1)?;
-    let npc_pos = Vec3::new(prism_kernel::sSix().unwrap_or(1) as f64, 1.0 + 1.0, 0.0);
-    let mut engineer = ArticulatedCharacter::new_humanoid("BridgeEngineer", CharacterArchetype::BridgeEngineer, npc_pos, 1)?;
-    let walk_intent = CharacterMoveIntent { forward: 1.0, strafe: 0.0, walk_yaw_radians: 0.0, speed_scale: 1.0, jump: false };
+    extraImports = `use verdant_core::gltf_io::{export_hd_scene_to_glb, export_skinned_character_to_glb};`;
+    archetypeSection = `    // Sunspire Harbor Regatta: cataloged 22-joint Foot IK patrol, NavMesh directive, & HD PBR/Skinned GLB export
+    let nav_state = holon.set_npc_directive(0, 1)?;
+    let walk_intent = CharacterMoveIntent {
+        planar_wish_dir: Vec3::new(0.0, 0.0, -1.0),
+        speed_scale: 1.0,
+        jump_requested: false,
+    };
     physics.step_lawful(dt, walk_intent, &bvh)?;
-    mariner.step_and_solve_ik(dt, spawn, Vec3::new(0.0, 0.0, -1.0), true, 0.0, Some(engineer.head_anchor_world()), &bvh, |x, z| hd_terrain_height(seed, &relief, x, z))?;
-    engineer.step_and_solve_ik(dt, npc_pos, Vec3::ZERO, true, 0.0, Some(mariner.head_anchor_world()), &bvh, |x, z| hd_terrain_height(seed, &relief, x, z))?;
-    let cam_frame = camera.solve_frame(dt, mariner.head_anchor_world(), &bvh, |x, z| hd_terrain_height(seed, &relief, x, z))?;
+    holon.step_npc_patrols(dt, 0.0, spawn, &bvh);
+    let captain_head = holon.active_domain.characters[0].head_anchor_world();
+    let cam_frame = camera.solve_frame(dt, captain_head, &bvh, |x, z| hd_terrain_height(seed, &relief, x, z))?;
     assert!(cam_frame.near_sphere_guarded);
-    let glb = export_scene_to_glb(&sector.scene, &sector.meshes, &canonical_pbr_material_library())?;
+    let glb = export_hd_scene_to_glb(&holon.active_domain.sector.scene, &holon.active_domain.sector.meshes, &holon.active_domain.hd_materials)?;
+    let skin_glb = export_skinned_character_to_glb(&holon.active_domain.characters[0], &holon.active_domain.hd_materials[0])?;
     std::fs::write("${cleanSlug}.glb", &glb)?;`;
-    printSummary = `    println!("${cleanSlug} [Sunspire Harbor Regatta] OK: lod={} entities={} joints={} w5h={} glb={}B", lod_rank, sector.scene.entity_count(), mariner.skeleton.joint_count(), telos.all_eight_strata_certified, glb.len());`;
+    printSummary = `    println!("${cleanSlug} [Sunspire Harbor Regatta] OK: lod={} entities={} waypoints={} skin_glb={}B w5h={} glb={}B", lod_rank, holon.active_domain.sector.scene.entity_count(), nav_state.corridor_waypoints.len(), skin_glb.len(), telos.all_eight_strata_certified, glb.len());`;
   } else if (arch.idx === 1) {
-    extraImports = `use verdant_core::audio::{evaluate_binaural_cue, sabine_rt60_seconds};
-use verdant_core::render::compute_csm_splits;`;
-    archetypeSection = `    // Meridian Celestial Observatory: First-Person HD Dome Walkthrough, 4-Cascade CSM, & Sabine Acoustics
+    extraImports = `use verdant_core::audio::{evaluate_binaural_cue, AcousticEnvironment, ListenerPose, SpatialAudioSource};
+use verdant_core::render::{compute_csm_splits, transpile_builtin_engine_shaders_webgl2};`;
+    archetypeSection = `    // Meridian Celestial Observatory: cataloged first-person HD dome, WebGL2 shaders, 4-Cascade CSM, & Sabine acoustics
     let eye_anchor = Vec3::new(1.0 + 1.0, prism_kernel::sFour().unwrap_or(1) as f64, prism_kernel::sNine().unwrap_or(1) as f64);
     let cam_frame = camera.solve_frame(dt, eye_anchor, &bvh, |x, z| hd_terrain_height(seed, &relief, x, z))?;
     assert!(cam_frame.near_sphere_guarded);
     let z_near = 1.0 / (prism_kernel::sFour().unwrap_or(1) as f64);
     let z_far = (prism_kernel::sFourteen().unwrap_or(1) * prism_kernel::sTen().unwrap_or(1)) as f64;
-    let csm_splits = compute_csm_splits(z_near, z_far);
-    let emitter = Vec3::new(-(prism_kernel::sNine().unwrap_or(1) as f64), 1.0 + 1.0, -(prism_kernel::sFour().unwrap_or(1) as f64));
-    let binaural = evaluate_binaural_cue(emitter, cam_frame.eye_world, Vec3::new(0.0, 0.0, -1.0));
-    let volume_m3 = (prism_kernel::sTwelve().unwrap_or(1) * prism_kernel::sHundred().unwrap_or(1)) as f64;
-    let absorption_m2 = (prism_kernel::sSix().unwrap_or(1) * prism_kernel::sTen().unwrap_or(1)) as f64;
-    let rt60_sec = sabine_rt60_seconds(volume_m3, absorption_m2);`;
-    printSummary = `    println!("${cleanSlug} [Meridian Celestial Observatory] OK: lod={} csm_cascades={} rt60={:.2}s pan={:.3} w5h={}", lod_rank, csm_splits.len(), rt60_sec, binaural.pan, telos.all_eight_strata_certified);`;
+    let csm_splits = compute_csm_splits(z_near, z_far)?;
+    let webgl2_shaders = transpile_builtin_engine_shaders_webgl2()?;
+    let fund_hz = prism_kernel::wasmBinauralFundamentalHz().unwrap_or(1) as f64;
+    let binaural = evaluate_binaural_cue(
+        &SpatialAudioSource {
+            label: "CelestialArmillary".to_string(),
+            position: Vec3::new(-(prism_kernel::sNine().unwrap_or(1) as f64), 1.0 + 1.0, -(prism_kernel::sFour().unwrap_or(1) as f64)),
+            fundamental_hz: fund_hz,
+            reference_gain: 1.0,
+        },
+        &ListenerPose { position: cam_frame.eye, forward: Vec3::new(0.0, 0.0, -1.0), up: Vec3::UP },
+        &AcousticEnvironment::reflective_chamber(holon.active_domain.physical_environment.sound_speed_mps),
+    );
+    let rt60_sec = AcousticEnvironment::reflective_chamber(holon.active_domain.physical_environment.sound_speed_mps).sabine_rt60_seconds()?;`;
+    printSummary = `    println!("${cleanSlug} [Meridian Celestial Observatory] OK: lod={} csm_cascades={} webgl2={} rt60={:.2}s gain={:.3} w5h={}", lod_rank, csm_splits.len(), webgl2_shaders.len(), rt60_sec, binaural.direct_gain, telos.all_eight_strata_certified);`;
   } else if (arch.idx === 2) {
-    extraImports = `use verdant_core::narrative::canonical_citadel_chronicle_automaton;
+    extraImports = `use verdant_core::network::PrismIdSessionEnvelope;
+use verdant_core::observer::sha256_payload_digest;
 use verdant_core::streaming::StandardSceneState;
 use verdant_core::universe::{UniverseCellCoord, UniverseManager, UniversePosition};`;
-    archetypeSection = `    // Glasshouse Botanical Chronicle: Tropical StoryAutomaton, Seed-Bank Conservation, & 128m Portals
+    archetypeSection = `    // Glasshouse Botanical Chronicle: cataloged StoryAutomaton, grounded ISO 24617-2 dialogue, & 128m portals
     let cam_frame = camera.solve_frame(dt, spawn, &bvh, |x, z| hd_terrain_height(seed, &relief, x, z))?;
     assert!(cam_frame.near_sphere_guarded);
-    let (mut chronicle, podiums) = canonical_citadel_chronicle_automaton(seed)?;
-    for podium in &podiums {
-        let _ = chronicle.interact_nearest(podium.world_position);
-    }
-    let universe = UniverseManager::canonical_three_sector_ring(seed)?;
+    let origin = "https://afflom.github.io";
+    let issued = prism_kernel::skinWeightScale().unwrap_or(1);
+    let question = "What glasshouse botanical seed vault is conserved here?";
+    let sig = PrismIdSessionEnvelope::sign_deterministic(
+        "prism:chronicle-player",
+        &seed.to_le_bytes(),
+        origin,
+        issued,
+        issued + issued,
+        &sha256_payload_digest(question.as_bytes()),
+    );
+    let turn = holon.converse_player_with_npc("urn:verdant:player:local", (&sig, origin, issued + 1), 0, question)?;
+    let universe = UniverseManager::canonical_citadel_universe(seed)?;
     let world_pos = UniversePosition::new_canonical(UniverseCellCoord::ORIGIN, spawn)?;
-    let max_snap_lod = prism_kernel::wasmMaxLodRank().unwrap_or(1) as u8;
-    let snap = WorldSnapshot::encode_uorc(&StandardSceneState::synthesize_at_lod(seed, u64::from((lod_rank as u8).min(max_snap_lod)))?)?;
+    let max_snap_lod = prism_kernel::wasmMaxLodRank();
+    let snap = WorldSnapshot::encode_uorc(&StandardSceneState::synthesize_at_lod(seed, u64::from(lod_rank).min(max_snap_lod))?)?;
     std::fs::write("${cleanSlug}.uorc", &snap)?;`;
-    printSummary = `    println!("${cleanSlug} [Glasshouse Botanical Chronicle] OK: state={} conserved_supply={} portals={} cell=({},{},{}) uorc={}B w5h={}", chronicle.active_state, chronicle.ledger.total_supply(), universe.portal_graph.portal_count(), world_pos.cell.cx, world_pos.cell.cy, world_pos.cell.cz, snap.len(), telos.all_eight_strata_certified);`;
+    printSummary = `    println!("${cleanSlug} [Glasshouse Botanical Chronicle] OK: evidence={} supply={} portals={} cell=({},{},{}) uorc={}B w5h={}", turn.matched_evidence_facts, holon.active_domain.item_ledger.total_supply(), universe.portal_graph.portals.len(), world_pos.cell.cx, world_pos.cell.cy, world_pos.cell.cz, snap.len(), telos.all_eight_strata_certified);`;
   } else {
     extraImports = `use verdant_core::cybernetics::{CodedSlmDirector, ContainerGrantMatrix, ContainerOrgan};
 use verdant_core::ui::UiTree;`;
-    archetypeSection = `    // Starfall Bastion Arena: Tactical Spatial Interface, FK-07 Capability Custody, & Local Director
+    archetypeSection = `    // Starfall Bastion Arena: cataloged low-G arena, Spatial UI solver, FK-07 custody, & 16-route Director
     let cam_frame = camera.solve_frame(dt, spawn, &bvh, |x, z| hd_terrain_height(seed, &relief, x, z))?;
     assert!(cam_frame.near_sphere_guarded);
-    let first_entity = sector.scene.entities().next().map(|e| e.id);
+    let first_entity = holon.active_domain.sector.scene.entities().next().map(|e| e.id);
     let solved_ui = UiTree::canonical_studio_ui_tree(first_entity)
-        .solve_and_verify(ui_width, ui_height, Some(&sector.scene))?;
+        .solve_and_verify(ui_width, ui_height, Some(&holon.active_domain.sector.scene))?;
     let diegetic_cards = UiTree::build_diegetic_bvh(&solved_ui);
     let mut grants = ContainerGrantMatrix::default();
     grants.grant(ContainerOrgan::AudioWorkletSynth);
@@ -164,30 +191,38 @@ use verdant_core::ui::UiTree;`;
     printSummary = `    println!("${cleanSlug} [Starfall Bastion Arena] OK: widgets={} diegetic_cards={} slm={} score={} w5h={}", solved_ui.len(), diegetic_cards.len(), proposal.intent.slug(), proposal.score_milli, telos.all_eight_strata_certified);`;
   }
 
-  const mainRs = `//! ${arch.title} — scaffolded project source.
+  const mainRs = `//! ${arch.title} — scaffolded project source instantiated from catalog pack "${domainSlug}".
 //! Zero unexplained magic constants (FI-08 compliant): all scalars derive from {0, 1} or prism_kernel.
 
 use verdant_core::camera::{CameraMode, CameraRigConfig, LawfulCameraRig};
 use verdant_core::ecs::TwoLevelBvh;
-use verdant_core::hd_world::{hd_terrain_height, synthesize_hd_citadel_sector};
+use verdant_core::hd_world::hd_terrain_height;
 use verdant_core::math::Vec3;
+use verdant_core::observer::ObserverPrismHolon;
 use verdant_core::physics::{CapsuleController, CharacterMoveIntent, PhysicsWorld, PhysicsWorldConfig};
 use verdant_core::prism_kernel;
 use verdant_core::runtime::{BrowserCapabilities, EngineConfig, OntologicalRuntimeGovernor, WorldSnapshot};
-use verdant_core::streaming::TerrainReliefParams;
 ${extraImports}
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let seed: u64 = ${seedExpr};
+    let user_seed: u64 = ${seedExpr};
     let lod_rank: u32 = ${lodExpr};
-    let relief = TerrainReliefParams::standard_basin_valley();
 
-    // 1. Synthesize lawful HD sector & build Two-Level BVH (Entity TLAS + Triangle MeshBlas):
-    let sector = synthesize_hd_citadel_sector(seed, &relief, -1.0, lod_rank);
-    let bvh = TwoLevelBvh::build_solid(&sector.scene, &sector.meshes)?;
+    // 1. Instantiate imported catalog world pack inside ObserverPrismHolon & build solid Two-Level BVH:
+    let mut holon = ObserverPrismHolon::new("${domainSlug}")?;
+    holon.switch_domain_pack("${domainSlug}", Some(u64::from(lod_rank)))?;
+    let seed = holon.active_domain.spec.seed.max(user_seed.min(1));
+    let relief = holon.active_domain.terrain_relief;
+    let bvh = TwoLevelBvh::build_solid(&holon.active_domain.sector.scene, &holon.active_domain.sector.meshes)?;
 
     // 2. Configure swept-capsule physics, wall-guarded LawfulCameraRig, & OntologicalRuntimeGovernor:
-    let mut physics = PhysicsWorld::new(PhysicsWorldConfig::default());
+    let mut physics = PhysicsWorld::new(PhysicsWorldConfig {
+        terrain_seed: seed,
+        environment: holon.active_domain.physical_environment,
+        terrain_relief: relief,
+        platform_deck: None,
+        ..Default::default()
+    });
     let spawn = Vec3::new(0.0, 1.0 + 1.0, (1 << (1 + 1 + 1)) as f64);
     physics.player_capsule = Some(CapsuleController::new(spawn));
     let dt = 1.0 / (prism_kernel::sSix().unwrap_or(1) * prism_kernel::sTen().unwrap_or(1)) as f64;
@@ -211,7 +246,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     };
     let gov = OntologicalRuntimeGovernor::new(cfg, caps);
     let telos = gov.evaluate_frame_telos(0, true, 1, 1, 0, 0, 0);
-    let _ = WorldSnapshot::default_max_wire_bytes;
+    let _ = WorldSnapshot::encode_uorc;
 
 ${archetypeSection}
 ${printSummary}

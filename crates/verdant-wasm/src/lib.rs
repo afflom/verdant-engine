@@ -1139,6 +1139,35 @@ impl WasmRuntimeBridge {
             self.world = fresh;
         }
 
+        #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+        let hd_sector = if self.npc_patrol_active {
+            let active_slug = self.observer_holon.active_domain.spec.slug.clone();
+            if self
+                .observer_holon
+                .switch_domain_pack(&active_slug, Some(u64::from(rank)))
+                .is_ok()
+            {
+                self.walkable_polygons = self.observer_holon.active_navmesh.polygons.len();
+                self.npcs
+                    .clone_from(&self.observer_holon.active_domain.characters);
+                self.observer_holon.active_domain.sector.clone()
+            } else {
+                synthesize_hd_citadel_sector(
+                    self.seed_val,
+                    &self.terrain_params,
+                    self.env_params.water_level_meters,
+                    u64::from(rank),
+                )
+            }
+        } else {
+            synthesize_hd_citadel_sector(
+                self.seed_val,
+                &self.terrain_params,
+                self.env_params.water_level_meters,
+                u64::from(rank),
+            )
+        };
+        #[cfg(all(target_arch = "wasm32", not(feature = "uorc-decoder")))]
         let hd_sector = synthesize_hd_citadel_sector(
             self.seed_val,
             &self.terrain_params,

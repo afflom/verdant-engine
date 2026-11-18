@@ -4540,3 +4540,159 @@ fn engine_ve_39() {
         Err(ObserverModelError::UnknownDomainOrCharacter { .. })
     ));
 }
+
+#[test]
+fn engine_ve_40() {
+    use verdant_core::error::ObserverModelError;
+    use verdant_core::observer::ObserverPrismHolon;
+    use verdant_core::standards::CatalogBundleRegistry;
+    use verdant_wasm::{
+        verdant_wasm_active_lod_rank, verdant_wasm_active_seed, verdant_wasm_aux_len,
+        verdant_wasm_aux_ptr, verdant_wasm_dialogue_turn_io, verdant_wasm_init,
+        verdant_wasm_io_clear, verdant_wasm_io_push_byte, verdant_wasm_load_domain_pack,
+        verdant_wasm_observer_status_aux, verdant_wasm_set_lod_rank,
+        verdant_wasm_set_npc_directive,
+    };
+
+    let root = repo_root();
+
+    // 1. Verify `site/studio.mjs` has zero JS regex prompt overrides (`effectiveSlug =`) and wires live Wasm NPC/domain/dialogue RPCs:
+    let studio_js =
+        std::fs::read_to_string(root.join("site/studio.mjs")).expect("read site/studio.mjs");
+    assert!(
+        !studio_js.contains("effectiveSlug"),
+        "routeStudioPrompt must dispatch purely on Wasm CodedSlmDirector slug without JS regex overrides"
+    );
+    for required_rpc in [
+        "load-domain-pack",
+        "set-npc-directive",
+        "npc-dialogue",
+        "observer-status",
+    ] {
+        assert!(
+            studio_js.contains(required_rpc),
+            "site/studio.mjs missing live Wasm Observer/Catalog RPC {required_rpc}"
+        );
+    }
+
+    // 2. Verify `site/engine-worker.mjs` wires all 5 Observer/Catalog Wasm C-ABI calls:
+    let worker_js = std::fs::read_to_string(root.join("site/engine-worker.mjs"))
+        .expect("read site/engine-worker.mjs");
+    for required_sym in [
+        "verdant_wasm_load_domain_pack",
+        "verdant_wasm_set_npc_directive",
+        "verdant_wasm_dialogue_turn_io",
+        "verdant_wasm_observer_status_aux",
+        "verdant_wasm_observe_comm_io",
+    ] {
+        assert!(
+            worker_js.contains(required_sym),
+            "site/engine-worker.mjs missing Wasm export call {required_sym}"
+        );
+    }
+
+    // 3. Verify Schema.org JSON-LD metadata on `/studio/`, `/catalogs/`, and `/demo/` against `CatalogBundleRegistry`:
+    let registry = CatalogBundleRegistry::embedded().expect("load embedded catalogs");
+    for page_rel in [
+        "site/studio/index.html",
+        "site/catalogs/index.html",
+        "site/demo/index.html",
+    ] {
+        let html = std::fs::read_to_string(root.join(page_rel)).expect("read surface html");
+        let tag = "<script type=\"application/ld+json\">";
+        let start = html.find(tag).expect("missing ld+json script tag") + tag.len();
+        let end = html[start..].find("</script>").expect("closing script") + start;
+        let parsed: serde_json::Value =
+            serde_json::from_str(html[start..end].trim()).expect("valid JSON-LD");
+        registry
+            .schema_org
+            .validate_schema_org_jsonld(&parsed)
+            .unwrap_or_else(|e| panic!("{page_rel} JSON-LD failed Schema.org oracle: {e}"));
+    }
+
+    // 4. Verify `site/prism-catalogs.mjs` registers `Observer.lex.tex` and all 4 new Holo routes:
+    let catalogs_js = std::fs::read_to_string(root.join("site/prism-catalogs.mjs"))
+        .expect("read site/prism-catalogs.mjs");
+    for token in [
+        "app/src/Observer.lex.tex",
+        "scene:observer",
+        "scene:stakeholders",
+        "scene:language",
+        "scene:channels",
+        "STD-OBSERVER-HOLON",
+    ] {
+        assert!(
+            catalogs_js.contains(token),
+            "site/prism-catalogs.mjs missing Observer catalog token {token}"
+        );
+    }
+
+    // 5. Verify starter template, Studio Scaffolder, and all 3 examples instantiate imported catalogs:
+    for rust_rel in [
+        "templates/browser-3d-starter/src/main.rs",
+        "crates/verdant-core/examples/tensor_uorc_showcase.rs",
+        "crates/verdant-core/examples/custom_game_arena.rs",
+        "crates/verdant-core/examples/headless_benchmark.rs",
+    ] {
+        let src = std::fs::read_to_string(root.join(rust_rel)).expect("read rust source");
+        assert!(
+            src.contains("ObserverPrismHolon") || src.contains("CatalogBundleRegistry"),
+            "{rust_rel} must instantiate imported catalogs via ObserverPrismHolon or CatalogBundleRegistry"
+        );
+    }
+    let scaffolder_js = std::fs::read_to_string(root.join("site/studio-scaffolder.mjs"))
+        .expect("read site/studio-scaffolder.mjs");
+    for slug in [
+        "sunspire-regatta",
+        "meridian-observatory",
+        "glasshouse-chronicle",
+        "starfall-bastion",
+    ] {
+        assert!(
+            scaffolder_js.contains(slug) && scaffolder_js.contains("ObserverPrismHolon"),
+            "site/studio-scaffolder.mjs missing catalog domain pack {slug}"
+        );
+    }
+
+    // 6. Verify `verdant-wasm` C-ABI preserves active catalog domain pack across LOD transitions:
+    let _abi_guard = wasm_abi_lock();
+    assert_eq!(verdant_wasm_init(7), 1);
+    assert!(
+        verdant_wasm_load_domain_pack(2) > 0,
+        "load glasshouse-chronicle"
+    );
+    let glass_seed = verdant_wasm_active_seed();
+    assert_eq!(glass_seed, 108);
+    assert_eq!(
+        verdant_wasm_set_lod_rank(4),
+        1,
+        "upgrade glasshouse-chronicle to LOD4"
+    );
+    assert_eq!(verdant_wasm_active_lod_rank(), 4);
+    assert_eq!(
+        verdant_wasm_active_seed(),
+        108,
+        "LOD transition must preserve active catalog domain"
+    );
+    assert!(verdant_wasm_set_npc_directive(0, 1) > 0);
+    verdant_wasm_io_clear();
+    for &b in b"What botanical seed vault is conserved here?" {
+        verdant_wasm_io_push_byte(u32::from(b));
+    }
+    assert!(verdant_wasm_dialogue_turn_io(0) > 0);
+    let obs_len = verdant_wasm_observer_status_aux() as usize;
+    let obs_ptr = verdant_wasm_aux_ptr() as usize as *const u8;
+    assert!(obs_len > 0 && verdant_wasm_aux_len() as usize == obs_len && !obs_ptr.is_null());
+
+    // 7. Negative refusals (`ObserverModelError`): out-of-bounds NPC index & invalid domain pack:
+    let mut holon = ObserverPrismHolon::new("sunspire-regatta").expect("holon");
+    assert!(matches!(
+        holon.set_npc_directive(99, 0),
+        Err(ObserverModelError::UnknownDomainOrCharacter { .. })
+    ));
+    assert_eq!(
+        verdant_wasm_load_domain_pack(99),
+        0,
+        "Wasm C-ABI must refuse out-of-bounds domain pack index"
+    );
+}

@@ -10,6 +10,17 @@
   <link rel="stylesheet" href="/brand/fonts.css">
   <link rel="stylesheet" href="/brand/hologram-warm.css">
   <link rel="stylesheet" href="/prism-page.css">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "identifier": "urn:verdant:organ:demo",
+    "name": "Verdant Engine Demo",
+    "applicationCategory": "MultimediaApplication",
+    "operatingSystem": "WebAssembly",
+    "url": "https://afflom.github.io/verdant-engine/demo/"
+  }
+  </script>
   <style>
     *, *::before, *::after { box-sizing: border-box; }
     html, body {
@@ -444,6 +455,12 @@
             <button type="button" class="demo-btn active" id="btn-mode-webgl2" data-render-mode="webgl2">WebGL2 3-Pass PBR</button>
             <button type="button" class="demo-btn" id="btn-mode-tile" data-render-mode="tile">Wasm 16×16 Tile PBR</button>
             <button type="button" class="demo-btn" id="btn-spin-toggle" aria-pressed="true">Turntable: On</button>
+          </div>
+          <div class="demo-toolbar" role="group" aria-label="Imported catalog world packs">
+            <button type="button" class="demo-btn active" data-domain-pack="0">Sunspire Harbor</button>
+            <button type="button" class="demo-btn" data-domain-pack="1">Meridian Observatory</button>
+            <button type="button" class="demo-btn" data-domain-pack="2">Glasshouse Chronicle</button>
+            <button type="button" class="demo-btn" data-domain-pack="3">Starfall Bastion</button>
           </div>
           <div class="demo-toolbar" role="group" aria-label="Hardware instancing stress presets">
             <button type="button" class="demo-btn active" data-inst-count="0">0 Instances</button>

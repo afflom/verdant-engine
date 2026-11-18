@@ -1367,7 +1367,69 @@ function buildStudioDialog({ inline = false } = {}) {
   npcLog.id = "ve-npc-log";
   npcLog.textContent = "Select an NPC directive or click 'Frame NPC' to inspect live 22-joint IK & NavMesh behavior.";
 
-  NPC_ROSTER.forEach((npc) => {
+  const domainRow = document.createElement("div");
+  domainRow.className = "ve-m-row";
+  const domainSelect = document.createElement("select");
+  domainSelect.className = "ve-m-select";
+  domainSelect.id = "ve-domain-pack-select";
+  domainSelect.setAttribute("aria-label", "Imported catalog world pack");
+  [
+    "0 · Sunspire Harbor Regatta (Maritime)",
+    "1 · Meridian Celestial Observatory (Astronomical)",
+    "2 · Glasshouse Botanical Chronicle (Botanical)",
+    "3 · Starfall Bastion Arena (Low-G Basalt)",
+  ].forEach((label, idx) => {
+    const opt = document.createElement("option");
+    opt.value = String(idx);
+    opt.textContent = label;
+    domainSelect.append(opt);
+  });
+  const btnLoadDomain = document.createElement("button");
+  btnLoadDomain.type = "button";
+  btnLoadDomain.className = "ve-m-btn brand";
+  btnLoadDomain.id = "ve-load-domain-btn";
+  btnLoadDomain.textContent = "Load Catalog World Pack";
+  btnLoadDomain.addEventListener("click", async () => {
+    const domainIdx = Number(domainSelect.value) || 0;
+    const [res, vObs] = await Promise.all([
+      studioCtx?.callWorker?.("load-domain-pack", { domainIdx }),
+      studioCtx?.queryVerifier?.("scene:observer"),
+    ]);
+    if (res?.ok && res.observer) {
+      const dom = res.observer.activeDomain || {};
+      studioCtx?.onProjectChange?.(dom.title || "Sunspire Harbor Regatta");
+      studioCtx?.onSetSimLive?.(true);
+      npcLog.textContent =
+        `Loaded Catalog World Pack "${dom.title}" (${dom.slug} · ${dom.schemaOrgType})\n` +
+        `  Domain κ=${String(dom.kappa || "").slice(0, 24)}… · Observer κ=${String(res.observer.observerKappa || "").slice(0, 24)}…\n` +
+        `  Seed=${res.seed} · Tris=${res.tris} · Walkable Polys=${res.walkablePolys} · Holo=${vObs || "conformant"}`;
+    }
+  });
+  const btnInspectBus = document.createElement("button");
+  btnInspectBus.type = "button";
+  btnInspectBus.className = "ve-m-btn";
+  btnInspectBus.id = "ve-observer-bus-btn";
+  btnInspectBus.textContent = "Inspect Observer & 5-Channel Bus";
+  btnInspectBus.addEventListener("click", async () => {
+    const [res, vObs, vChan] = await Promise.all([
+      studioCtx?.callWorker?.("observer-status"),
+      studioCtx?.queryVerifier?.("scene:observer"),
+      studioCtx?.queryVerifier?.("scene:channels"),
+    ]);
+    if (res?.ok && res.observer) {
+      const obs = res.observer;
+      const comms = (obs.recentCommunications || [])
+        .map((c) => `  [${c.channel}] ${c.sender} -> ${c.recipient} (act=${c.act}, κ=${String(c.kappa || "").slice(0, 16)}…)`)
+        .join("\n");
+      npcLog.textContent =
+        `Observer Holon κ=${obs.observerKappa}\n` +
+        `  Organs=${(obs.organs || []).length} · Role Models=${obs.roleCount ?? 7} · Comms=${obs.communicationCount}\n` +
+        `  Holo: ${vObs || "conformant"} | ${vChan || "conformant"}\n${comms}`;
+    }
+  });
+  domainRow.append(domainSelect, btnLoadDomain, btnInspectBus);
+
+  NPC_ROSTER.forEach((npc, npcIdx) => {
     const row = document.createElement("div");
     row.className = "ve-step-item";
     const copy = document.createElement("div");
@@ -1393,10 +1455,17 @@ function buildStudioDialog({ inline = false } = {}) {
     });
     dirSelect.addEventListener("change", async () => {
       npc.activeDirective = Number(dirSelect.value) || 0;
-      const vNav = await studioCtx?.queryVerifier?.("scene:navmesh");
+      const [wRes, vNav] = await Promise.all([
+        studioCtx?.callWorker?.("set-npc-directive", { npcIdx, directiveIdx: npc.activeDirective }),
+        studioCtx?.queryVerifier?.("scene:navmesh"),
+      ]);
+      studioCtx?.onSetSimLive?.(true);
+      const wpCount = wRes?.waypointCount ?? 0;
+      const charId = wRes?.characterId || npc.id;
+      const dirLabel = wRes?.directiveLabel || npc.directives[npc.activeDirective];
       npcLog.textContent =
-        `${npc.name} Directive Updated -> "${npc.directives[npc.activeDirective]}"\n` +
-        `  Anchor (${npc.coords.join(", ")}) m · A* NavMesh (${PRISM_TERRAIN_WALKABLE_POLYGONS} walkable polys) -> ${vNav || "conformant"}`;
+        `${charId} Wasm Directive -> "${dirLabel}" (${wpCount} A* corridor waypoints)\n` +
+        `  Anchor (${npc.coords.join(", ")}) m · NavMesh (${PRISM_TERRAIN_WALKABLE_POLYGONS} walkable polys) -> ${vNav || "conformant"}`;
     });
 
     const btnFrameNpc = document.createElement("button");
@@ -1415,6 +1484,51 @@ function buildStudioDialog({ inline = false } = {}) {
     row.append(copy, controls);
     npcList.append(row);
   });
+
+  const dlgRow = document.createElement("div");
+  dlgRow.className = "ve-m-row";
+  const dlgNpcSelect = document.createElement("select");
+  dlgNpcSelect.className = "ve-m-select";
+  dlgNpcSelect.id = "ve-npc-dialogue-target";
+  dlgNpcSelect.setAttribute("aria-label", "NPC dialogue recipient");
+  ["NPC 0 · Primary Guide", "NPC 1 · Specialist Engineer", "NPC 2 · Domain Keeper"].forEach((lbl, idx) => {
+    const opt = document.createElement("option");
+    opt.value = String(idx);
+    opt.textContent = lbl;
+    dlgNpcSelect.append(opt);
+  });
+  const dlgInput = document.createElement("input");
+  dlgInput.type = "text";
+  dlgInput.className = "ve-m-input";
+  dlgInput.id = "ve-npc-dialogue-input";
+  dlgInput.value = "What beacon or instrument governs this domain?";
+  dlgInput.placeholder = "Ask grounded question or issue directive (ISO 24617-2)…";
+  dlgInput.setAttribute("aria-label", "Grounded NPC utterance");
+  const btnAskNpc = document.createElement("button");
+  btnAskNpc.type = "button";
+  btnAskNpc.className = "ve-m-btn primary";
+  btnAskNpc.id = "ve-npc-dialogue-btn";
+  btnAskNpc.textContent = "Converse (ISO 24617-2)";
+  btnAskNpc.addEventListener("click", async () => {
+    const npcIdx = Number(dlgNpcSelect.value) || 0;
+    const utterance = dlgInput.value.trim();
+    const [reply, vLang] = await Promise.all([
+      studioCtx?.callWorker?.("npc-dialogue", { npcIdx, utterance }),
+      studioCtx?.queryVerifier?.("scene:language"),
+    ]);
+    if (!reply?.ok) {
+      npcLog.textContent = reply?.organDenied
+        ? `Refused: ContainerOrganDenied(${reply.organDenied})`
+        : "Refused empty or invalid dialogue turn.";
+      return;
+    }
+    const t = reply.turn;
+    npcLog.textContent =
+      `[${t.responseActId} · ${t.detectedLanguage} · evidence=${t.matchedEvidenceFacts} · abstained=${t.abstainedUnknown}]\n` +
+      `  ${t.characterName} (${t.characterId}): "${t.replyText}"\n` +
+      `  Evidence Facts=[${(t.citedFactIds || []).join(", ")}] · Comm κ=${String(t.commKappa || "").slice(0, 24)}… · ${vLang || "conformant"}`;
+  });
+  dlgRow.append(dlgNpcSelect, dlgInput, btnAskNpc);
 
   const neuroCanvas = document.createElement("canvas");
   neuroCanvas.className = "ve-m-canvas";
@@ -1446,7 +1560,7 @@ function buildStudioDialog({ inline = false } = {}) {
   btnShareSnap.addEventListener("click", () => studioCtx?.onShareSnapshot?.());
 
   mpRow.append(btnPossessPlayer, btnOpenStitch, btnShareSnap);
-  cNpcs.append(hNpcs, pNpcsDesc, npcList, neuroCanvas, mpRow, npcLog);
+  cNpcs.append(hNpcs, pNpcsDesc, domainRow, npcList, dlgRow, neuroCanvas, mpRow, npcLog);
   pGameplay.append(cModes, cNpcs);
 
   // ==================== 7 ROLE TABS WIRING ====================
@@ -1798,78 +1912,61 @@ export async function routeStudioPrompt(text, ctx) {
     return r;
   }
 
-  const lower = prompt.toLowerCase();
-  let effectiveSlug = r.slug;
-  let effectiveSummary = r.summary;
-
-  if (/\b(create|scaffold|new\s+project|code)\b/.test(lower)) {
-    await ctx.launchStudioModal("code");
-    effectiveSlug = "open-role-code";
-    effectiveSummary = "Opened Code role workspace & New Project Scaffolder";
-  } else if (/\b(dashboard|producer|requirements)\b/.test(lower)) {
-    await ctx.launchStudioModal("dashboard");
-    effectiveSlug = "open-role-dashboard";
-    effectiveSummary = "Opened Producer Dashboard & Traceability Matrix";
-  } else if (/\b(design|outliner|hierarchy|brand)\b/.test(lower)) {
-    await ctx.launchStudioModal("design");
-    effectiveSlug = "open-role-design";
-    effectiveSummary = "Opened Design role workspace & Entity Outliner";
-  } else if (/\b(audio|sabine|reverb|binaural|room)\b/.test(lower)) {
-    await ctx.launchStudioModal("audio");
-    effectiveSlug = "open-role-audio";
-    effectiveSummary = "Opened Audio role workspace & Sabine Room Modeler";
-  } else if (/\b(director|cinematography|choreography|shot)\b/.test(lower)) {
-    await ctx.launchStudioModal("director");
-    effectiveSlug = "open-role-director";
-    effectiveSummary = "Opened Director cinematography & camera sequencer";
-  } else if (/\b(gameplay|campaign|tournament|npc)\b/.test(lower)) {
-    await ctx.launchStudioModal("gameplay");
-    effectiveSlug = "open-role-gameplay";
-    effectiveSummary = "Opened Gameplay modes, NPC directives & multiplayer";
-  } else if (/\b(1st|first\s+person)\b/.test(lower)) {
-    await ctx.cycleCameraMode("first");
-    effectiveSlug = "camera-first-person";
-    effectiveSummary = "Switched to 1st-person head-masked camera rig";
-  } else if (/\b(3rd|third\s+person|explorer)\b/.test(lower)) {
-    await ctx.cycleCameraMode("third");
-    effectiveSlug = "camera-third-person";
-    effectiveSummary = "Possessed 22-joint character in 3rd-person Foot IK rig";
-  } else if (/\b(interact|chronicle|archivist|narrative)\b/.test(lower)) {
-    await ctx.interactChronicle();
-    effectiveSlug = "narrative-interact";
-    effectiveSummary = "Stepped StoryAutomaton & ConservationLedger";
-  } else if (effectiveSlug === "focus-observer") {
-    await ctx.focusNodePreset(0);
-    ctx.setSimLive(true);
-  } else if (effectiveSlug === "drive-vehicle") {
-    await ctx.focusNodePreset(6);
-    ctx.setSimLive(true);
-  } else if (effectiveSlug === "render-tile-wasm") {
-    await ctx.toggleRenderBackend("tile");
-  } else if (effectiveSlug === "render-webgl2") {
-    await ctx.toggleRenderBackend("webgl2");
-  } else if (effectiveSlug === "stream-uorc-lod3") {
-    const wantsHd = /\blod\s*4\b|\bultra\s*hd\b/.test(lower);
-    const targetRank = wantsHd ? PRISM_HD_MAX_LOD_RANK : PRISM_MAX_LOD_RANK;
-    await ctx.streamUorcToRank(targetRank);
-    if (wantsHd) {
-      effectiveSlug = "stream-uorc-lod4";
-      effectiveSummary = "Streamed world to LOD4 Ultra HD";
-    }
-  } else if (effectiveSlug === "stitch-shard-sync") {
-    if (ctx.openStitchModal) await ctx.openStitchModal();
-    else (await import("./stitch-mesh.mjs")).openStitchMeshModal({ callWorker: ctx.callWorker, onRestoreSnapshot: ctx.restoreRawSnapshot });
-  } else if (effectiveSlug === "inspect-formal-ui") {
-    await ctx.launchStudioModal("design");
-  } else if (effectiveSlug === "step-xpbd-physics") {
-    await ctx.focusNodePreset(3);
-    ctx.setSimLive(true);
+  switch (r.slug) {
+    case "open-role-code":
+      await ctx.launchStudioModal("code");
+      break;
+    case "open-role-dashboard":
+      await ctx.launchStudioModal("dashboard");
+      break;
+    case "open-role-design":
+    case "inspect-formal-ui":
+      await ctx.launchStudioModal("design");
+      break;
+    case "open-role-audio":
+      await ctx.launchStudioModal("audio");
+      break;
+    case "open-role-director":
+      await ctx.launchStudioModal("director");
+      break;
+    case "open-role-gameplay":
+      await ctx.launchStudioModal("gameplay");
+      break;
+    case "narrative-interact":
+      await ctx.interactChronicle();
+      break;
+    case "focus-observer":
+      await ctx.focusNodePreset(0);
+      ctx.setSimLive(true);
+      break;
+    case "drive-vehicle":
+      await ctx.focusNodePreset(6);
+      ctx.setSimLive(true);
+      break;
+    case "render-tile-wasm":
+      await ctx.toggleRenderBackend("tile");
+      break;
+    case "render-webgl2":
+      await ctx.toggleRenderBackend("webgl2");
+      break;
+    case "stream-uorc-lod3":
+      await ctx.streamUorcToRank(PRISM_MAX_LOD_RANK);
+      break;
+    case "stream-uorc-lod4":
+      await ctx.streamUorcToRank(PRISM_HD_MAX_LOD_RANK);
+      break;
+    case "stitch-shard-sync":
+      if (ctx.openStitchModal) await ctx.openStitchModal();
+      else (await import("./stitch-mesh.mjs")).openStitchMeshModal({ callWorker: ctx.callWorker, onRestoreSnapshot: ctx.restoreRawSnapshot });
+      break;
+    case "step-xpbd-physics":
+      await ctx.focusNodePreset(3);
+      ctx.setSimLive(true);
+      break;
+    default:
+      break;
   }
 
-  ctx.chip?.(ctx.statusEl, `Director -> ${effectiveSlug} (${(r.scoreMilli / 10).toFixed(0)}% coded_gemm)`, "good");
-  return {
-    ...r,
-    slug: effectiveSlug,
-    summary: effectiveSummary,
-  };
+  ctx.chip?.(ctx.statusEl, `Director -> ${r.slug} (${(r.scoreMilli / 10).toFixed(0)}% coded_gemm)`, "good");
+  return r;
 }

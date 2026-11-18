@@ -686,6 +686,25 @@ function bindControls() {
     }
   });
 
+  document.querySelectorAll("[data-domain-pack]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      if (!wasm || typeof wasm.verdant_wasm_load_domain_pack !== "function") return;
+      const idx = Math.max(0, Math.min(3, Number(btn.dataset.domainPack) || 0));
+      const len = wasm.verdant_wasm_load_domain_pack(idx >>> 0) >>> 0;
+      document.querySelectorAll("[data-domain-pack]").forEach((b) => b.classList.toggle("active", b === btn));
+      if (len > 0) {
+        try {
+          const obs = JSON.parse(readAuxString(wasm));
+          const dom = obs.activeDomain || {};
+          $("kpi-navmesh").textContent = (wasm.verdant_wasm_navmesh_polygon_count() >>> 0).toLocaleString();
+          $("demo-boot-status").textContent =
+            `World Pack: ${dom.title || btn.textContent} (${dom.schemaOrgType || "VideoGame"}) · κ=${String(dom.kappa || "").slice(0, 16)}… · Seed ${dom.seed || 7}`;
+        } catch {}
+      }
+      renderOnce(performance.now());
+    });
+  });
+
   document.querySelectorAll("[data-inst-count]").forEach((btn) => {
     btn.addEventListener("click", () => {
       if (!wasm) return;

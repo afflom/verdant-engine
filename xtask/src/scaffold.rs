@@ -228,20 +228,26 @@ mod tests {
         values.iter().map(|v| (*v).to_string()).collect()
     }
 
-    /// A scratch repository with an empty register and this one's authorities and ledger.
+    /// A scratch repository with an empty register, authorities, and ledger.
     fn scratch(name: &str) -> PathBuf {
         let root = std::env::temp_dir().join(format!(
             "xtask-new-capability-{name}-{}",
             std::process::id()
         ));
         let _ = std::fs::remove_dir_all(&root);
-        let real = repo_model::repo_root();
         for dir in ["model", "features/suites", "crates/conformance/tests"] {
             std::fs::create_dir_all(root.join(dir)).unwrap();
         }
-        for file in ["authorities.toml", "ledger.toml"] {
-            std::fs::copy(real.join("model").join(file), root.join("model").join(file)).unwrap();
-        }
+        std::fs::write(
+            root.join("model/authorities.toml"),
+            "spec = \"template/1\"\n\nauthority = []\n",
+        )
+        .unwrap();
+        std::fs::write(
+            root.join("model/ledger.toml"),
+            "spec = \"template/1\"\n\nclaim = []\n",
+        )
+        .unwrap();
         // An empty register, as a freshly instantiated repository has; this
         // repository's own rows are not the scratch repository's.
         std::fs::write(
