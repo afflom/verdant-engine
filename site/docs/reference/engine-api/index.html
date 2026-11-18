@@ -295,14 +295,14 @@
       
 <figure class="cs-figure ve-live-fig" id="fig-live-snapshot" data-ve-live="snapshot">
   <div class="cs-canvas">
-    <canvas class="ve-live-canvas" width="576" height="224" role="img" aria-label="Live WebAssembly SHA-256 snapshot verifier and tamper refusal test"></canvas>
-    <div class="ve-live-controls" data-prose="data"><button type="button" data-ve-act="valid">Encode &amp; Verify Clean Snapshot</button><button type="button" data-ve-act="tamper">Tamper 1 Byte &amp; Test Refusal</button></div>
+    <canvas class="ve-live-canvas" width="576" height="224" role="img" aria-label="Live WebAssembly VDNT SHA-256 snapshot verifier and tamper refusal test"></canvas>
+    <div class="ve-live-controls" data-prose="data"><button type="button" data-ve-act="valid">Encode &amp; Verify Clean VDNT</button><button type="button" data-ve-act="tamper">Tamper 1 Byte &amp; Test Refusal</button></div>
   </div>
   <figcaption>Live <a class="cs-term" href="#term-world-snapshot" title="A deterministic binary save of tick count, streaming LOD rank, and entity transforms protected by a 32-byte SHA-256 digest.">WorldSnapshot</a> SHA-256 round-trip and single-bit tamper refusal executed in verdant-wasm.</figcaption>
   <details class="cs-data"><summary>Rollback and snapshot bounds</summary>
     <table>
       <thead><tr><th>Component</th><th>Bound or format</th><th>Verification predicate</th></tr></thead>
-      <tbody><tr><td><code>WorldSnapshot</code></td><td><code>UORC</code> + 32B SHA-256 (max 32,768 B)</td><td><code>wasmBridgeEnvelopeValid</code></td></tr><tr><td><code>RollbackSession</code></td><td>64-frame <code>PhysicsWorld</code> ring</td><td><code>rollbackFrameWithinWindow</code></td></tr><tr><td><code>StitchFragment</code></td><td><code>STCH</code> binary 2-of-3 parity</td><td><code>stitchPairRecoverable</code></td></tr></tbody>
+      <tbody><tr><td><code>WorldSnapshot</code></td><td><code>VDNT</code> + 32B SHA-256 (max 32,768 B)</td><td><code>wasmBridgeEnvelopeValid</code></td></tr><tr><td><code>RollbackSession</code></td><td>64-frame <code>PhysicsWorld</code> ring</td><td><code>rollbackFrameWithinWindow</code></td></tr><tr><td><code>StitchFragment</code></td><td><code>STCH</code> binary 2-of-3 parity</td><td><code>stitchPairRecoverable</code></td></tr></tbody>
     </table>
   </details>
 </figure>

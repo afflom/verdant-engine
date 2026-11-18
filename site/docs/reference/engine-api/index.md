@@ -51,7 +51,7 @@ Click Tamper 1 Byte below to watch verdant_wasm_snapshot_decode_and_restore refu
 
   
     
-    Encode & Verify Clean SnapshotTamper 1 Byte & Test Refusal
+    Encode & Verify Clean VDNTTamper 1 Byte & Test Refusal
   
   Live WorldSnapshot SHA-256 round-trip and single-bit tamper refusal executed in verdant-wasm.
   Rollback and snapshot bounds
@@ -59,7 +59,7 @@ Click Tamper 1 Byte below to watch verdant_wasm_snapshot_decode_and_restore refu
       
 | Component | Bound or format | Verification predicate |
       
-| WorldSnapshot | UORC + 32B SHA-256 (max 32,768 B) | wasmBridgeEnvelopeValid |
+| WorldSnapshot | VDNT + 32B SHA-256 (max 32,768 B) | wasmBridgeEnvelopeValid |
 | --- | --- | --- |
 | RollbackSession | 64-frame PhysicsWorld ring | rollbackFrameWithinWindow |
 | StitchFragment | STCH binary 2-of-3 parity | stitchPairRecoverable |

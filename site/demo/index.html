@@ -12,7 +12,13 @@
   <link rel="stylesheet" href="/prism-page.css">
   <style>
     *, *::before, *::after { box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
+    html, body {
+      height: auto;
+      min-height: 100%;
+      overflow-x: hidden;
+      overflow-y: auto;
+      scroll-behavior: smooth;
+    }
     body {
       margin: 0;
       background: var(--background);
@@ -363,14 +369,15 @@
 <body>
   <header class="demo-header">
     <a href="/demo/" class="demo-brand">Verdant Engine Demo</a>
-    <nav class="demo-nav" aria-label="Engine showcase sections">
+    <nav class="demo-nav" aria-label="Verdant platform and benchmark sections">
+      <a href="/">Verdant Engine</a>
+      <a href="/studio/">Verdant Studio</a>
+      <a href="/catalogs/">Model Catalogs</a>
       <a href="#rendering">Rendering</a>
       <a href="#streaming">Streaming</a>
-      <a href="#benchmarks">Benchmarks</a>
-      <a href="#kernels">Kernels</a>
-      <a href="/starter/">Starter Game</a>
+      <a href="#kernels">Semirings</a>
     </nav>
-    <a href="/" class="demo-cta">Open Verdant Studio</a>
+    <a href="/studio/" class="demo-cta">Open Verdant Studio</a>
   </header>
 
   <main class="demo-main">
@@ -378,13 +385,15 @@
       <div class="demo-meta-line" id="demo-boot-status">Verifying Prism app.holo &amp; verdant-uorc.wasm…</div>
       <h1 class="demo-h1" id="demo-hero-title">Comparative Engine Characteristics &amp; Live WebAssembly Proofs</h1>
       <p class="demo-lead">
-        Isolated from the authoring workspace in Verdant Studio, this standalone benchmark harness measures Verdant Engine directly in your browser: 3-pass WebGL2 PBR versus pure WebAssembly 16×16 software tile rasterization, progressive UORC streaming, hardware-instanced throughput, AQM bit-plane monoid fusion, and 15 unified semiring kernels.
+        Differentiated from the runtime stage on Verdant Engine and the 7-role authoring atelier in Verdant Studio, this standalone benchmark observatory measures hardware 3-pass WebGL2 PBR against pure WebAssembly 16×16 software tile rasterization, progressive UORC streaming, hardware-instanced throughput, AQM bit-plane monoid fusion, and 15 unified semiring kernels.
       </p>
       <div class="demo-toolbar">
         <button type="button" class="demo-btn primary" id="demo-run-all-btn">Run All Live Benchmarks</button>
         <button type="button" class="demo-btn" id="demo-theme-btn">Theme: Dark</button>
+        <a class="demo-btn" href="/">Engine Runtime Stage</a>
+        <a class="demo-btn" href="/catalogs/">Model Catalogs</a>
         <a class="demo-btn" href="/starter/">Play Sunspire Beacon Trials</a>
-        <a class="demo-btn" href="/docs/">Read Engine Reference</a>
+        <a class="demo-btn" href="/docs/">Documentation</a>
       </div>
     </section>
 
@@ -546,8 +555,8 @@
   </main>
 
   <footer class="demo-footer">
-    <span>Verdant Engine Demo · Standalone Comparative Benchmark Suite</span>
-    <span><a href="/">Verdant Studio</a> · <a href="/starter/">Sunspire Beacon Trials</a> · <a href="/docs/">Documentation</a></span>
+    <span>Verdant Engine Demo · Comparative Benchmark Observatory</span>
+    <span><a href="/">Verdant Engine</a> · <a href="/studio/">Verdant Studio</a> · <a href="/catalogs/">Model Catalogs</a> · <a href="/starter/">Sunspire Beacon Trials</a> · <a href="/docs/">Documentation</a></span>
   </footer>
 
   <script type="module" src="./demo.mjs"></script>

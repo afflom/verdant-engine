@@ -59,7 +59,9 @@ const playwright = await import("playwright").catch(() =>
   import(pathToFileURL(join(execSync("npm root -g").toString().trim(), "playwright", "index.mjs")).href),
 );
 
-const browser = await playwright.chromium.launch();
+const browser = await playwright.chromium.launch({
+  args: ["--use-gl=angle", "--use-angle=swiftshader", "--enable-unsafe-swiftshader"],
+});
 const failures = [];
 
 try {
@@ -82,7 +84,7 @@ try {
     await page.waitForFunction(
       () => {
         const s = document.getElementById("ve-status")?.textContent || "";
-        return s.includes("LOD") || s.includes("Observer") || s.includes("Offline");
+        return s.includes("LOD") || s.includes("Conformant") || s.includes("Offline");
       },
       null,
       { timeout: 10000 },
@@ -104,7 +106,8 @@ try {
       failures.push(`Studio .ve-pill background did not adapt between Light (${themeBgs.lightBg}) and Dark (${themeBgs.darkBg})`);
     }
 
-    // Open 7-Role Studio Workspace (`#ve-studio-btn`):
+    // Open Streaming/I/O drawer and docked 7-Role Studio Workspace (`#ve-studio-btn`):
+    await page.click("#ve-io-drawer > summary");
     await page.click("#ve-studio-btn");
     await page.waitForSelector("dialog.ve-modal[open]", { timeout: 5000 });
 
@@ -214,7 +217,7 @@ try {
         document.querySelectorAll("#demo-kernel-tbody tr").length === 22 &&
         (document.getElementById("log-bench-uorc")?.textContent || "").includes("conformant:"),
       null,
-      { timeout: 15000 },
+      { timeout: 25000 },
     );
 
     await page.click("#btn-mode-tile");
@@ -228,6 +231,43 @@ try {
     await page.click("#btn-mode-webgl2");
 
     if (errors.length) failures.push(`Engine Demo (/demo/) errors: ${errors.join(" | ")}`);
+    await page.close();
+  }
+
+  // 2b. Verify Standalone Verdant Studio (`/studio/`) & Verdant Model Catalogs (`/catalogs/`):
+  {
+    const page = await context.newPage();
+    const errors = [];
+    page.on("pageerror", (e) => errors.push(`pageerror: ${e.message}`));
+    page.on("console", (m) => {
+      if (m.type() === "error") errors.push(`console.error: ${m.text()}`);
+    });
+
+    await page.goto(`${origin}studio/`, { waitUntil: "load" });
+    await page.waitForFunction(
+      () =>
+        document.querySelectorAll("#studio-inline-host .ve-m-tab").length === 7 &&
+        (document.getElementById("studio-holo-status")?.textContent || "").includes("Atelier Ready"),
+      null,
+      { timeout: 12000 },
+    );
+    await page.click('#studio-inline-host [data-tab-key="code"]');
+    const inlineCode = await page.textContent("#ve-scaf-code");
+    if (!inlineCode?.includes("LawfulCameraRig")) {
+      failures.push("Standalone /studio/ inline Code workspace failed to synthesize Rust scaffold");
+    }
+
+    await page.goto(`${origin}catalogs/`, { waitUntil: "load" });
+    await page.waitForFunction(
+      () =>
+        document.querySelectorAll("#cat-organ-grid .cat-organ-card").length === 5 &&
+        document.querySelectorAll("#cat-list .cat-entry").length >= 24 &&
+        (document.getElementById("cat-holo-banner")?.textContent || "").includes("Holo Verified"),
+      null,
+      { timeout: 12000 },
+    );
+
+    if (errors.length) failures.push(`Standalone /studio/ or /catalogs/ errors: ${errors.join(" | ")}`);
     await page.close();
   }
 

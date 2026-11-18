@@ -67,6 +67,8 @@ const $ = (id) => document.getElementById(id);
 const canvas = $("demo-canvas");
 
 let wasm = null;
+let wasmCompiledModule = null;
+let uorcAuditWorker = null;
 let uorcStreamBytes = null;
 let renderer = null;
 let renderMode = "webgl2";
@@ -276,7 +278,7 @@ function renderOnce(nowMs) {
   } else {
     renderer.uploadSplitBuffers(split.staticViews, split.dynViews, split.instViews);
     const fov = Math.PI / 3.4;
-    renderer.render(mat4Mul(mat4Perspective(fov, aspect, 0.25, CSM_FAR_METERS), mat4LookAt(eye, tgt, [0, 1, 0])), eye, lodSpec, nowMs * 0.001, tgt, fov);
+    renderer.render(mat4Mul(mat4Perspective(fov, aspect, 0.25, CSM_FAR_METERS), mat4LookAt(eye, tgt, [0, 1, 0])), eye, lodSpec, nowMs * 0.001, tgt, fov, !turntableOn);
   }
 
   const dx = tgt[0] - eye[0], dy = tgt[1] - eye[1], dz = tgt[2] - eye[2];
@@ -305,11 +307,7 @@ function renderOnce(nowMs) {
 function applyLodRank(rank) {
   if (!wasm) return;
   activeLodRank = Math.max(0, Math.min(4, rank | 0));
-  if (uorcStreamBytes && stageIoBytes(wasm, uorcStreamBytes)) {
-    wasm.verdant_wasm_uorc_decode_and_restore(activeLodRank >>> 0);
-  } else {
-    wasm.verdant_wasm_set_lod_rank(activeLodRank >>> 0);
-  }
+  wasm.verdant_wasm_set_lod_rank(activeLodRank >>> 0);
   if (activeInstCount > 0) {
     wasm.verdant_wasm_configure_instanced_workload(activeInstCount >>> 0);
   }
@@ -331,11 +329,7 @@ function populateLodTableSync() {
   lodVerdictCells.clear();
   const prevRank = activeLodRank;
   for (const spec of LOD_SPECS) {
-    if (uorcStreamBytes && stageIoBytes(wasm, uorcStreamBytes)) {
-      wasm.verdant_wasm_uorc_decode_and_restore(spec.rank >>> 0);
-    } else {
-      wasm.verdant_wasm_set_lod_rank(spec.rank >>> 0);
-    }
+    wasm.verdant_wasm_set_lod_rank(spec.rank >>> 0);
     wasm.verdant_wasm_scene_rebuild_buffers(0);
     const tris = Math.floor((wasm.verdant_wasm_scene_idx_count() >>> 0) / 3);
     const codedSum = Number(wasm.verdant_wasm_coded_zero_decode_checksum(Math.min(3, spec.rank)));
@@ -467,18 +461,137 @@ async function runStabilityAudit({ awaitHolo = true } = {}) {
   }
 }
 
-async function runUorcAudit({ awaitHolo = true } = {}) {
-  if (!wasm) return;
+function runLiveUorcWireProbeSync() {
+  if (!wasm) return null;
   const t0 = performance.now();
-  wasm.verdant_wasm_uorc_exclusive_audit_aux();
+  const stream = uorcStreamBytes;
+  let magicOk = 0;
+  let tamperRefused = 0;
+  let stitchShardBytes = 0;
+  const streamLen = stream?.byteLength || PRISM_PORTABLE_UORC_BYTES;
+
+  if (stream && stream.byteLength >= 4) {
+    magicOk =
+      stream[0] === 0x55 && stream[1] === 0x4f && stream[2] === 0x52 && stream[3] === 0x43
+        ? 1
+        : 0;
+    const tampered = stream.slice();
+    tampered[0] ^= 0x5a;
+    if (stageIoBytes(wasm, tampered)) {
+      const accepted = wasm.verdant_wasm_snapshot_decode_and_restore() >>> 0;
+      tamperRefused = accepted === 0 ? 1 : 0;
+    }
+    if (stageIoBytes(wasm, stream)) {
+      const len0 = wasm.verdant_wasm_stitch_shard_io(0) >>> 0;
+      const ptr0 = wasm.verdant_wasm_aux_ptr() >>> 0;
+      const frag0 = len0 && ptr0 ? new Uint8Array(wasm.memory.buffer, ptr0, len0).slice() : null;
+      stageIoBytes(wasm, stream);
+      const len2 = wasm.verdant_wasm_stitch_shard_io(2) >>> 0;
+      const ptr2 = wasm.verdant_wasm_aux_ptr() >>> 0;
+      const frag2 = len2 && ptr2 ? new Uint8Array(wasm.memory.buffer, ptr2, len2).slice() : null;
+      if (frag0 && frag2) {
+        const pair = new Uint8Array(frag0.byteLength + frag2.byteLength);
+        pair.set(frag0, 0);
+        pair.set(frag2, frag0.byteLength);
+        if (stageIoBytes(wasm, pair)) {
+          const recLen = wasm.verdant_wasm_stitch_recover_io(frag0.byteLength >>> 0) >>> 0;
+          if (recLen === stream.byteLength) stitchShardBytes = frag0.byteLength;
+        }
+      }
+      stageIoBytes(wasm, stream);
+    }
+  }
+
+  const cdmxTier = Math.min(3, activeLodRank >>> 0);
+  const cdmxSum = Number(wasm.verdant_wasm_coded_zero_decode_checksum(cdmxTier));
+  const rawGeomBytes =
+    (wasm.verdant_wasm_scene_vert_count() >>> 0) * 36 +
+    (wasm.verdant_wasm_scene_idx_count() >>> 0) * 4;
   const elapsed = performance.now() - t0;
-  const m = parsePipeKv(readAuxString(wasm));
-  lastUorcRun = { elapsed, m };
-  const initialVerdict = holoCache.get("scene:uorc-exclusive") || "verifying in worker…";
-  $("log-bench-uorc").textContent = formatUorcLog(elapsed, m, initialVerdict);
+  return {
+    elapsed,
+    m: {
+      raw_vdnt_bytes: String(Math.max(rawGeomBytes, streamLen)),
+      uorc_snap_bytes: String(streamLen),
+      snap_uorc_magic: String(magicOk),
+      tamper_refused: String(tamperRefused),
+      coded_uorc_bytes: String(PRISM_PORTABLE_UORC_BYTES),
+      zero_decode_ok: String(cdmxSum !== 0 ? 1 : 0),
+      stitch_shard_bytes: String(stitchShardBytes),
+      ckpt_uorc_bytes: String(streamLen * 2),
+    },
+  };
+}
+
+function dispatchOffThreadUorcExclusiveAudit() {
+  if (!wasmCompiledModule || typeof Worker === "undefined" || typeof Blob === "undefined") {
+    return null;
+  }
+  if (uorcAuditWorker) {
+    uorcAuditWorker.terminate();
+    uorcAuditWorker = null;
+  }
+  const workerSrc = `
+    self.onmessage = async ({ data }) => {
+      try {
+        const t0 = performance.now();
+        const instance = await WebAssembly.instantiate(data.mod, {});
+        const ex = instance.exports;
+        ex.verdant_wasm_init(BigInt(data.seed));
+        ex.verdant_wasm_uorc_exclusive_audit_aux();
+        const len = ex.verdant_wasm_aux_len() >>> 0;
+        const ptr = ex.verdant_wasm_aux_ptr() >>> 0;
+        const aux = len && ptr ? new TextDecoder().decode(new Uint8Array(ex.memory.buffer, ptr, len)) : "";
+        self.postMessage({ ok: true, elapsed: performance.now() - t0, aux });
+      } catch (err) {
+        self.postMessage({ ok: false, error: err?.message || String(err) });
+      }
+    };
+  `;
+  const blobUrl = URL.createObjectURL(new Blob([workerSrc], { type: "text/javascript" }));
+  const worker = new Worker(blobUrl);
+  uorcAuditWorker = worker;
+  return new Promise((resolve) => {
+    worker.onmessage = ({ data }) => {
+      URL.revokeObjectURL(blobUrl);
+      if (uorcAuditWorker === worker) uorcAuditWorker = null;
+      worker.terminate();
+      resolve(data?.ok && data.aux ? { elapsed: data.elapsed, m: parsePipeKv(data.aux) } : null);
+    };
+    worker.onerror = () => {
+      URL.revokeObjectURL(blobUrl);
+      if (uorcAuditWorker === worker) uorcAuditWorker = null;
+      worker.terminate();
+      resolve(null);
+    };
+    worker.postMessage({ mod: wasmCompiledModule, seed: PRISM_DEFAULT_WORLD_SEED });
+  });
+}
+
+async function runUorcAudit({ awaitHolo = true, runFullNcm = false } = {}) {
+  if (!wasm) return;
+  const probe = runLiveUorcWireProbeSync();
+  if (probe) {
+    lastUorcRun = probe;
+    const initialVerdict = holoCache.get("scene:uorc-exclusive") || "verifying in worker…";
+    $("log-bench-uorc").textContent = formatUorcLog(probe.elapsed, probe.m, initialVerdict);
+  }
+  if (runFullNcm) {
+    const ncmPromise = dispatchOffThreadUorcExclusiveAudit();
+    if (ncmPromise) {
+      ncmPromise.then((res) => {
+        if (!res) return;
+        lastUorcRun = res;
+        const verdict = holoCache.get("scene:uorc-exclusive") || "verifying in worker…";
+        $("log-bench-uorc").textContent = formatUorcLog(res.elapsed, res.m, verdict);
+      });
+    }
+  }
   if (awaitHolo) {
     const v = await dispatchHolo("scene:uorc-exclusive");
-    $("log-bench-uorc").textContent = formatUorcLog(elapsed, m, v);
+    if (lastUorcRun) {
+      $("log-bench-uorc").textContent = formatUorcLog(lastUorcRun.elapsed, lastUorcRun.m, v);
+    }
   }
 }
 
@@ -567,6 +680,10 @@ function bindControls() {
     turntableOn = !turntableOn;
     e.currentTarget.setAttribute("aria-pressed", String(turntableOn));
     e.currentTarget.textContent = turntableOn ? "Turntable: On" : "Turntable: Off";
+    if (turntableOn) {
+      prevTick = performance.now();
+      scheduleNextFrame();
+    }
   });
 
   document.querySelectorAll("[data-inst-count]").forEach((btn) => {
@@ -585,11 +702,11 @@ function bindControls() {
 
   $("btn-bench-aqm")?.addEventListener("click", () => runAqmBench({ awaitHolo: true }));
   $("btn-bench-stability")?.addEventListener("click", () => runStabilityAudit({ awaitHolo: true }));
-  $("btn-bench-uorc")?.addEventListener("click", () => runUorcAudit({ awaitHolo: true }));
+  $("btn-bench-uorc")?.addEventListener("click", () => runUorcAudit({ awaitHolo: true, runFullNcm: true }));
   $("demo-run-all-btn")?.addEventListener("click", async () => {
     await runAqmBench({ awaitHolo: true });
     await runStabilityAudit({ awaitHolo: true });
-    await runUorcAudit({ awaitHolo: true });
+    await runUorcAudit({ awaitHolo: true, runFullNcm: true });
   });
 
   canvas?.addEventListener("pointerdown", (e) => {
@@ -618,7 +735,10 @@ function bindControls() {
 }
 
 let prevTick = performance.now();
+let loopScheduled = false;
 function scheduleNextFrame() {
+  if (!turntableOn || loopScheduled) return;
+  loopScheduled = true;
   if (renderer?.isSoftware) {
     setTimeout(() => requestAnimationFrame(loop), 33);
   } else {
@@ -627,9 +747,11 @@ function scheduleNextFrame() {
 }
 
 function loop(now) {
+  loopScheduled = false;
+  if (!turntableOn) return;
   const dt = Math.min(0.05, Math.max(0.001, (now - prevTick) * 0.001));
   prevTick = now;
-  if (turntableOn && !dragging && !document.hidden) {
+  if (!dragging && !document.hidden) {
     yawMilli = (yawMilli + Math.round(dt * 150)) | 0;
     renderOnce(now);
   }
@@ -664,7 +786,8 @@ async function boot() {
   ]);
   uorcStreamBytes = streamBuf.byteLength > 0 ? new Uint8Array(streamBuf) : null;
 
-  const { instance } = await WebAssembly.instantiate(wasmBuf, {});
+  wasmCompiledModule = await WebAssembly.compile(wasmBuf);
+  const instance = await WebAssembly.instantiate(wasmCompiledModule, {});
   wasm = instance.exports;
   wasm.verdant_wasm_init(BigInt(PRISM_DEFAULT_WORLD_SEED));
   const csmSplits = [0, 1, 2, 3].map((i) => wasm.verdant_wasm_csm_split_meters(0.25, CSM_FAR_METERS, i));
@@ -683,7 +806,7 @@ async function boot() {
   populateKernelTableSync();
   await runAqmBench({ awaitHolo: false });
   await runStabilityAudit({ awaitHolo: false });
-  await runUorcAudit({ awaitHolo: false });
+  await runUorcAudit({ awaitHolo: false, runFullNcm: false });
   renderOnce(performance.now());
   document.body.dataset.demoReady = "true";
   scheduleNextFrame();

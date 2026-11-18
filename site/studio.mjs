@@ -34,6 +34,7 @@ import {
   generateStarterProjectFiles,
   zeroOneExpr,
 } from "./studio-scaffolder.mjs";
+import { catalogModelsForRole } from "./prism-catalogs.mjs";
 
 export {
   CONTAINER_ORGANS,
@@ -159,9 +160,11 @@ let audioDrawHook = null;
 let uiDrawHook = null;
 let sequenceTimer = 0;
 
+let studioHostRoot = null;
+
 export function pushStudioTelemetry(telemetry) {
   latestObserverTelemetry = telemetry;
-  if (studioDialog?.open) {
+  if (studioDialog?.open || studioHostRoot?.isConnected) {
     observerDrawHook?.(telemetry);
     audioDrawHook?.(telemetry);
   }
@@ -171,7 +174,7 @@ export function openStudioModal(ctx) {
   ensureModalStyles();
   studioCtx = ctx;
   if (!studioDialog) {
-    studioDialog = buildStudioDialog();
+    studioDialog = buildStudioDialog({ inline: false });
     document.body.append(studioDialog);
   }
   if (!studioDialog.open) {
@@ -181,6 +184,23 @@ export function openStudioModal(ctx) {
     selectStudioTab(ctx.initialTab);
   }
   studioDialog.dispatchEvent(new CustomEvent("ve-refresh"));
+}
+
+export function mountInlineStudio(targetEl, ctx) {
+  ensureModalStyles();
+  studioCtx = ctx;
+  targetEl.classList.add("ve-inline-studio");
+  const host = buildStudioDialog({ inline: true });
+  studioHostRoot = host;
+  targetEl.replaceChildren(host);
+  if (ctx?.initialTab && selectStudioTab) {
+    selectStudioTab(ctx.initialTab);
+  }
+  host.dispatchEvent(new CustomEvent("ve-refresh"));
+  return {
+    selectTab: (tabKey) => selectStudioTab?.(tabKey),
+    refresh: () => host.dispatchEvent(new CustomEvent("ve-refresh")),
+  };
 }
 
 function drawObserverCanvas(canvas, tel) {
@@ -333,10 +353,12 @@ function downloadTextOrBytes(filename, content, mime = "text/plain;charset=utf-8
   setTimeout(() => URL.revokeObjectURL(url), 1500);
 }
 
-function buildStudioDialog() {
-  const dlg = document.createElement("dialog");
-  dlg.className = "ve-modal";
-  dlg.setAttribute("aria-label", "Verdant Studio Role Workspaces");
+function buildStudioDialog({ inline = false } = {}) {
+  const dlg = inline ? document.createElement("div") : document.createElement("dialog");
+  if (!inline) {
+    dlg.className = "ve-modal";
+    dlg.setAttribute("aria-label", "Verdant Studio Role Workspaces");
+  }
 
   const shell = document.createElement("div");
   shell.className = "ve-m-shell";
@@ -346,30 +368,41 @@ function buildStudioDialog() {
   const titleWrap = document.createElement("div");
   const h2 = document.createElement("h2");
   h2.className = "ve-m-title";
-  h2.textContent = "Verdant Studio";
+  h2.textContent = inline ? "Lifecycle Role Workspaces" : "Verdant Studio";
   const sub = document.createElement("p");
   sub.className = "ve-m-sub";
   sub.id = "ve-studio-sub";
-  sub.textContent = "Observer-Coherent 3D Application Design Studio · 7 Lifecycle Roles";
+  sub.textContent = "Requirements-Driven 3D Application Atelier · 7 Functional Roles";
   titleWrap.append(h2, sub);
 
   const headRight = document.createElement("div");
   headRight.className = "ve-m-row";
+  const catalogsLink = document.createElement("a");
+  catalogsLink.className = "ve-m-btn";
+  catalogsLink.href = "/catalogs/";
+  catalogsLink.textContent = "Model Catalogs";
   const demoLink = document.createElement("a");
   demoLink.className = "ve-m-btn";
-  demoLink.href = "./demo/";
+  demoLink.href = "/demo/";
   demoLink.textContent = "Engine Demo";
-  const closeBtn = document.createElement("button");
-  closeBtn.type = "button";
-  closeBtn.className = "ve-m-btn";
-  closeBtn.id = "ve-studio-close-btn";
-  closeBtn.setAttribute("aria-label", "Close Verdant Studio workspace");
-  closeBtn.textContent = "Close";
-  closeBtn.addEventListener("click", () => {
-    if (sequenceTimer) { clearInterval(sequenceTimer); sequenceTimer = 0; }
-    dlg.close();
-  });
-  headRight.append(demoLink, closeBtn);
+  headRight.append(catalogsLink, demoLink);
+  if (!inline) {
+    const fullStudioLink = document.createElement("a");
+    fullStudioLink.className = "ve-m-btn brand";
+    fullStudioLink.href = "/studio/";
+    fullStudioLink.textContent = "Full Studio";
+    const closeBtn = document.createElement("button");
+    closeBtn.type = "button";
+    closeBtn.className = "ve-m-btn";
+    closeBtn.id = "ve-studio-close-btn";
+    closeBtn.setAttribute("aria-label", "Close Verdant Studio workspace");
+    closeBtn.textContent = "Close";
+    closeBtn.addEventListener("click", () => {
+      if (sequenceTimer) { clearInterval(sequenceTimer); sequenceTimer = 0; }
+      dlg.close();
+    });
+    headRight.append(fullStudioLink, closeBtn);
+  }
   head.append(titleWrap, headRight);
 
   const obsBar = document.createElement("div");
@@ -1209,7 +1242,7 @@ function buildStudioDialog() {
     studioCtx?.onSetSimLive?.(true);
     activateShot((activeShotIdx + 1) % customShots.length);
     sequenceTimer = window.setInterval(() => {
-      if (!dlg.open) {
+      if (!inline && !dlg.open) {
         clearInterval(sequenceTimer);
         sequenceTimer = 0;
         return;
@@ -1314,7 +1347,7 @@ function buildStudioDialog() {
 
   const starterPlayLink = document.createElement("a");
   starterPlayLink.className = "ve-m-btn brand";
-  starterPlayLink.href = "./starter/";
+  starterPlayLink.href = "/starter/";
   starterPlayLink.textContent = "Play Sunspire Beacon Trials";
   modeBtnRow.append(starterPlayLink);
   cModes.append(hModes, pModesDesc, modeBtnRow, modeLog);
@@ -1428,6 +1461,22 @@ function buildStudioDialog() {
   ];
 
   const tabBtns = panels.map((p, idx) => {
+    const roleModels = catalogModelsForRole(p.key);
+    if (roleModels.length > 0) {
+      const stdBanner = document.createElement("div");
+      stdBanner.className = "ve-role-standards";
+      stdBanner.append("Governing Catalog Models: ");
+      roleModels.slice(0, 5).forEach((rm, rIdx) => {
+        if (rIdx > 0) stdBanner.append(" · ");
+        const link = document.createElement("a");
+        link.href = `/catalogs/#${rm.id}`;
+        link.textContent = `${rm.authority.split("·")[0].trim()}`;
+        link.title = `${rm.title} (${rm.lexModule})`;
+        stdBanner.append(link);
+      });
+      p.el.prepend(stdBanner);
+    }
+
     const panelId = `ve-panel-${p.key}`;
     const tabId = `ve-tab-${p.key}`;
     const b = document.createElement("button");
@@ -1450,18 +1499,20 @@ function buildStudioDialog() {
     return b;
   });
 
-  const peekBtn = document.createElement("button");
-  peekBtn.type = "button";
-  peekBtn.className = "ve-m-peek";
-  peekBtn.id = "ve-dock-btn";
-  peekBtn.setAttribute("aria-pressed", "false");
-  peekBtn.textContent = "Dock Right";
-  peekBtn.addEventListener("click", () => {
-    const docked = dlg.classList.toggle("ve-docked");
-    peekBtn.setAttribute("aria-pressed", String(docked));
-    peekBtn.textContent = docked ? "Expand Studio" : "Dock Right";
-  });
-  tabBar.append(peekBtn);
+  if (!inline) {
+    const peekBtn = document.createElement("button");
+    peekBtn.type = "button";
+    peekBtn.className = "ve-m-peek";
+    peekBtn.id = "ve-dock-btn";
+    peekBtn.setAttribute("aria-pressed", "false");
+    peekBtn.textContent = "Dock Right";
+    peekBtn.addEventListener("click", () => {
+      const docked = dlg.classList.toggle("ve-docked");
+      peekBtn.setAttribute("aria-pressed", String(docked));
+      peekBtn.textContent = docked ? "Expand Studio" : "Dock Right";
+    });
+    tabBar.append(peekBtn);
+  }
 
   selectStudioTab = (keyOrIdx) => {
     const targetIdx =
@@ -1477,7 +1528,7 @@ function buildStudioDialog() {
   };
 
   subscribeThemeChanges(() => {
-    if (!dlg.open) return;
+    if (!inline && !dlg.open) return;
     drawObserverCanvas(neuroCanvas, latestObserverTelemetry);
     drawAudioSpectrumCanvas(audioCanvas, activeFundHz, activeRt60Ms, latestObserverTelemetry);
     uiDrawHook?.();
@@ -1586,12 +1637,14 @@ function buildStudioDialog() {
     }
   });
 
-  dlg.addEventListener("click", (e) => {
-    if (e.target === dlg) {
-      if (sequenceTimer) { clearInterval(sequenceTimer); sequenceTimer = 0; }
-      dlg.close();
-    }
-  });
+  if (!inline) {
+    dlg.addEventListener("click", (e) => {
+      if (e.target === dlg) {
+        if (sequenceTimer) { clearInterval(sequenceTimer); sequenceTimer = 0; }
+        dlg.close();
+      }
+    });
+  }
 
   shell.append(head, obsBar, tabBar, body);
   dlg.append(shell);
@@ -1662,7 +1715,7 @@ export function suspendModalAudio(audioBtn) {
   audioState.ctx?.suspend?.();
   if (audioBtn) {
     audioBtn.setAttribute("aria-pressed", "false");
-    audioBtn.textContent = "Audio";
+    audioBtn.textContent = "Audio: Off";
   }
 }
 
@@ -1672,7 +1725,7 @@ export async function toggleModalAudio(audioBtn, acousticSpec, getSolvedEye) {
   audioState.on = !audioState.on;
   if (audioBtn) {
     audioBtn.setAttribute("aria-pressed", String(audioState.on));
-    audioBtn.textContent = audioState.on ? "Audio: On" : "Audio";
+    audioBtn.textContent = audioState.on ? "Audio: On" : "Audio: Off";
   }
   const strike = () => {
     if (!audioState.ctx || !audioState.on) return;
@@ -1702,7 +1755,7 @@ export async function toggleModalAudio(audioBtn, acousticSpec, getSolvedEye) {
     await audioState.ctx.resume?.();
     if (!audioState.worklet && audioState.ctx.audioWorklet && typeof AudioWorkletNode === "function") {
       try {
-        await audioState.ctx.audioWorklet.addModule("./audio-worklet.mjs");
+        await audioState.ctx.audioWorklet.addModule(new URL("./audio-worklet.mjs", import.meta.url).href);
         audioState.worklet = new AudioWorkletNode(audioState.ctx, "verdant-modal-processor", {
           numberOfOutputs: 1,
           outputChannelCount: [acousticSpec.stereoChannels],

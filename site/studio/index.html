@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Verdant Studio · 7-Role 3D Application Design Atelier</title>
+  <meta name="description" content="Immersive requirements-driven 3D application design studio powered by Verdant Engine and UOR Prism across Dashboard, Code, Design, Audio, Narrative, Director, and Gameplay roles.">
+  <meta property="og:title" content="Verdant Studio · 7-Role 3D Application Design Atelier">
+  <meta property="og:description" content="Immersive requirements-driven 3D application design studio powered by Verdant Engine and UOR Prism across Dashboard, Code, Design, Audio, Narrative, Director, and Gameplay roles.">
+  <link rel="stylesheet" href="/brand/fonts.css">
+  <link rel="stylesheet" href="/brand/hologram-warm.css">
+  <link rel="stylesheet" href="/prism-page.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body {
+      height: auto;
+      min-height: 100%;
+      overflow-x: hidden;
+      overflow-y: auto;
+      scroll-behavior: smooth;
+    }
+    body {
+      margin: 0;
+      background: var(--background);
+      color: var(--foreground);
+      font-family: var(--font-sans);
+      line-height: 1.55;
+    }
+    .st-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 2rem;
+      padding: var(--space-3) clamp(1rem, 3.5vw, 2.5rem);
+      border-bottom: var(--border-width) solid var(--border);
+      background: var(--background);
+    }
+    .st-brand {
+      display: inline-flex;
+      align-items: baseline;
+      gap: var(--space-2);
+      font-family: var(--font-display);
+      font-size: var(--text-18);
+      font-weight: 700;
+      letter-spacing: var(--tracking-display);
+      color: var(--foreground);
+      text-decoration: none;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .st-brand-mark {
+      font-family: var(--font-mono);
+      font-size: var(--text-14);
+      font-weight: 500;
+      color: var(--brand);
+    }
+    .st-nav {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .st-nav::-webkit-scrollbar { display: none; }
+    .st-nav a {
+      color: var(--muted-foreground);
+      text-decoration: none;
+      font-size: var(--text-14);
+      font-weight: 500;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .st-nav a:hover {
+      color: var(--foreground);
+      text-decoration: underline;
+      text-underline-offset: 0.25rem;
+    }
+    .st-cta {
+      min-height: var(--touch);
+      padding: 0 var(--space-4);
+      border-radius: var(--radius-control);
+      border: var(--border-width) solid var(--brand);
+      background: var(--brand);
+      color: var(--brand-foreground);
+      font-family: var(--font-sans);
+      font-size: var(--text-14);
+      font-weight: 600;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      white-space: nowrap;
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+
+    .st-main {
+      max-width: 92rem;
+      margin: 0 auto;
+      padding: clamp(1.25rem, 3vw, 2.25rem) clamp(1rem, 3.5vw, 2.5rem) 4rem;
+      display: grid;
+      gap: var(--space-6);
+    }
+    .st-hero {
+      display: grid;
+      gap: var(--space-2);
+      padding-bottom: var(--space-4);
+      border-bottom: var(--border-width) solid var(--border);
+    }
+    .st-meta {
+      font-family: var(--font-mono);
+      font-size: var(--text-14);
+      color: var(--brand);
+      font-variant-numeric: tabular-nums;
+    }
+    .st-h1 {
+      margin: 0;
+      max-width: 54rem;
+      font-family: var(--font-display);
+      font-size: clamp(1.85rem, 3.2vw, 2.65rem);
+      font-weight: 700;
+      letter-spacing: var(--tracking-display);
+      line-height: 1.12;
+      text-wrap: balance;
+    }
+    .st-lead {
+      margin: 0;
+      max-width: 74ch;
+      font-size: var(--text-16);
+      color: var(--muted-foreground);
+    }
+
+    .st-workbench {
+      display: grid;
+      grid-template-columns: minmax(0, 1.02fr) minmax(0, 1.38fr);
+      gap: var(--space-6);
+      align-items: start;
+    }
+    @media (max-width: 1100px) {
+      .st-workbench { grid-template-columns: 1fr; }
+      .st-nav { display: none; }
+    }
+    .st-stage-col {
+      position: sticky;
+      top: var(--space-4);
+      display: grid;
+      gap: var(--space-3);
+    }
+    @media (max-width: 1100px) {
+      .st-stage-col { position: static; }
+    }
+    .st-viewport-card {
+      border: var(--border-width) solid var(--border-strong);
+      border-radius: var(--radius);
+      background: var(--card);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .st-viewport-head {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-2);
+      padding: var(--space-2) var(--space-3);
+      border-bottom: var(--border-width) solid var(--border);
+      background: var(--sidebar);
+      font-family: var(--font-mono);
+      font-size: var(--text-14);
+      font-variant-numeric: tabular-nums;
+    }
+    #studio-canvas {
+      display: block;
+      width: 100%;
+      aspect-ratio: 16 / 10;
+      min-height: 19rem;
+      background: var(--muted);
+      touch-action: none;
+      cursor: grab;
+    }
+    #studio-canvas:active { cursor: grabbing; }
+    .st-transport {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+      padding: var(--space-3);
+      border-top: var(--border-width) solid var(--border);
+      background: var(--card);
+    }
+    .st-btn {
+      min-height: var(--touch);
+      padding: 0 var(--space-3);
+      border-radius: var(--radius-control);
+      border: var(--border-width) solid var(--border-strong);
+      background: var(--secondary);
+      color: var(--secondary-foreground);
+      font-family: var(--font-sans);
+      font-size: var(--text-14);
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+    .st-btn:hover { background: var(--accent); color: var(--accent-foreground); }
+    .st-btn.primary {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: var(--primary-foreground);
+      font-weight: 600;
+    }
+    .st-prompt {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: var(--space-2);
+      border-top: var(--border-width) solid var(--border);
+      background: var(--muted);
+    }
+    .st-prompt input {
+      flex: 1;
+      min-width: 0;
+      min-height: var(--touch);
+      padding: 0 var(--space-3);
+      border-radius: var(--radius-control);
+      border: var(--border-width) solid var(--border-strong);
+      background: var(--card);
+      color: var(--card-foreground);
+      font-family: var(--font-mono);
+      font-size: var(--text-14);
+    }
+    .st-verdict-bar {
+      padding: var(--space-2) var(--space-3);
+      border: var(--border-width) solid var(--border);
+      border-radius: var(--radius-control);
+      background: var(--card);
+      font-family: var(--font-mono);
+      font-size: var(--text-14);
+      font-variant-numeric: tabular-nums;
+      color: var(--foreground);
+    }
+    .st-footer {
+      border-top: var(--border-width) solid var(--border);
+      padding: var(--space-4) clamp(1rem, 3.5vw, 2.5rem);
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: var(--space-2);
+      font-size: var(--text-14);
+      color: var(--muted-foreground);
+    }
+    .st-footer a {
+      color: var(--foreground);
+      text-decoration: underline;
+      text-underline-offset: 0.2rem;
+    }
+  </style>
+</head>
+<body>
+  <header class="st-header">
+    <a href="/studio/" class="st-brand">Verdant Studio</a>
+    <nav class="st-nav" aria-label="Verdant platform navigation">
+      <a href="/">Verdant Engine</a>
+      <a href="/catalogs/">Model Catalogs</a>
+      <a href="/demo/">Engine Demo</a>
+      <a href="/starter/">Starter Trial</a>
+      <a href="/docs/">Documentation</a>
+    </nav>
+    <button type="button" class="st-cta" id="studio-export-tar-btn">Export Project (.tar)</button>
+  </header>
+
+  <main class="st-main">
+    <section class="st-hero" aria-labelledby="studio-h1">
+      <div class="st-meta" id="studio-holo-status">Atelier Boot · Verifying Prism app.holo &amp; 7 Role Contracts…</div>
+      <h1 class="st-h1" id="studio-h1">Immersive 3D Application Design Studio</h1>
+      <p class="st-lead">
+        Verdant Studio is a dedicated production atelier built on Verdant Engine and UOR Prism. Author non-self-referential 3D games and spatial applications across seven functional lifecycle roles — <strong>Dashboard</strong>, <strong>Code</strong>, <strong>Design</strong>, <strong>Audio</strong>, <strong>Narrative</strong>, <strong>Director</strong>, and <strong>Gameplay</strong> — governed directly by imported ISO, W3C, Khronos, and UOR specifications.
+      </p>
+    </section>
+
+    <section class="st-workbench" aria-label="Live authoring viewport and 7-role studio workspace">
+      <div class="st-stage-col">
+        <div class="st-viewport-card">
+          <div class="st-viewport-head">
+            <span id="studio-hud-project">Sunspire Harbor Regatta · Director</span>
+            <span id="studio-hud-metrics">LOD3 Lossless · Clear 290mm</span>
+          </div>
+          <canvas id="studio-canvas" width="960" height="600" aria-label="Verdant Studio live 3D project authoring stage"></canvas>
+          <div class="st-transport" role="group" aria-label="Authoring stage controls">
+            <button type="button" class="st-btn primary" id="studio-sim-btn" aria-pressed="false">Step Physics</button>
+            <button type="button" class="st-btn" id="studio-cam-btn">Camera: Orbit</button>
+            <button type="button" class="st-btn" id="studio-lod-btn">Fidelity: LOD3</button>
+            <button type="button" class="st-btn" id="studio-audio-btn" aria-pressed="false">Audio: Off</button>
+            <button type="button" class="st-btn" id="studio-import-btn">Import .glb</button>
+            <button type="button" class="st-btn" id="studio-stitch-btn">Stitch 2-of-3</button>
+          </div>
+          <form class="st-prompt" id="studio-prompt-form" autocomplete="off">
+            <input id="studio-prompt-input" type="text" aria-label="Direct active project via local CodedSlmDirector" placeholder="Direct project (cut to stone arch, 3rd person, audio room, tournament)…" />
+            <button type="submit" class="st-btn primary" id="studio-prompt-btn">Direct</button>
+          </form>
+          <input id="studio-glb-file" type="file" accept=".glb,model/gltf-binary" hidden />
+        </div>
+        <div class="st-verdict-bar" id="studio-status" aria-live="polite">
+          Initializing WebAssembly authoring kernel…
+        </div>
+      </div>
+
+      <div id="studio-inline-host"></div>
+    </section>
+  </main>
+
+  <footer class="st-footer">
+    <span>Verdant Studio · Requirements-Driven 7-Role Application Design Atelier</span>
+    <span><a href="/">Verdant Engine</a> · <a href="/catalogs/">Model Catalogs</a> · <a href="/demo/">Engine Demo</a> · <a href="/starter/">Sunspire Beacon Trials</a> · <a href="/docs/">Documentation</a></span>
+  </footer>
+
+  <script type="module" src="./studio-page.mjs"></script>
+</body>
+</html>

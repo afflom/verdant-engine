@@ -174,12 +174,12 @@ export async function createGlRenderer(canvas) {
       });
       sGpu.count = idxU32.length; sGpu.epoch = (sGpu.epoch + 1) >>> 0; dGpu.count = 0; cKey = "";
     },
-    render(mvp, eye, lodSpec, timeSec, lTgt = [0, 1.8, 0], fovRad = Math.PI / 3.4) {
+    render(mvp, eye, lodSpec, timeSec, lTgt = [0, 1.8, 0], fovRad = Math.PI / 3.4, forceSync = false) {
       const w = canvas.width | 0, h = canvas.height | 0;
       if (ctxLost || w <= 0 || h <= 0 || gl.isContextLost()) return;
       const resized = w !== lastDrawnW || h !== lastDrawnH;
       if (fence) {
-        if (!resized && gl.getSyncParameter(fence, gl.SYNC_STATUS) === gl.UNSIGNALED && isSoftware) return;
+        if (!forceSync && !resized && gl.getSyncParameter(fence, gl.SYNC_STATUS) === gl.UNSIGNALED && isSoftware) return;
         gl.deleteSync(fence); fence = null;
       }
       lastDrawnW = w; lastDrawnH = h;

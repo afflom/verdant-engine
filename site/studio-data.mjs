@@ -54,6 +54,29 @@ dialog.ve-modal.ve-docked::backdrop {
 dialog.ve-modal.ve-docked .ve-m-shell {
   max-height: min(82dvh, 48rem);
 }
+.ve-inline-studio .ve-m-shell {
+  max-height: none;
+  border: var(--border-width) solid var(--border-strong);
+  border-radius: var(--radius);
+  background: var(--card);
+  overflow: hidden;
+}
+.ve-inline-studio .ve-m-body {
+  overflow-y: visible;
+}
+.ve-role-standards {
+  padding-bottom: var(--space-2);
+  border-bottom: var(--border-width) solid var(--border);
+  font-family: var(--font-mono);
+  font-size: var(--text-14);
+  color: var(--muted-foreground);
+  line-height: 1.45;
+}
+.ve-role-standards a {
+  color: var(--foreground);
+  text-decoration: underline;
+  text-underline-offset: 0.2rem;
+}
 .ve-m-head {
   display: flex;
   flex-wrap: wrap;

@@ -3,6 +3,7 @@
   "shortName": "Verdant",
   "live": "https://afflom.github.io/verdant-engine/",
   "purpose": "Universal 3D browser and WebAssembly game engine mechanized with Prism, exact uor-matmul tensor contractions, progressive UORC streaming, glTF 2.0, portable WGSL, rigid-body physics, and spatial audio.",
+  "tagline": "Prism Model-Centric Runtime — universal 3D, semiring, and cybernetic model execution powered by UOR Prism.",
   "inputLabel": "Engine verification query",
   "placeholder": "summary:hd or lod:4 or scene:telos",
   "submitLabel": "Verify",

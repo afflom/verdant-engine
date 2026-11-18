@@ -1,10 +1,10 @@
       <div class="ve-viewport" data-slot="surface">
-        <canvas id="ve-canvas" aria-label="Verdant Studio 3D authoring viewport"></canvas>
+        <canvas id="ve-canvas" aria-label="Verdant Engine 3D runtime stage — drag to orbit, scroll to zoom"></canvas>
         <div class="ve-hud" aria-hidden="true">
-          <span id="ve-hud-lod" class="ve-pill">Sunspire Regatta · Director · LOD2</span>
-          <span id="ve-hud-stats" class="ve-pill">Observer Coherent · W5H 8/8 · Clear 290mm</span>
+          <span id="ve-hud-lod" class="ve-pill">Verdant Engine · WebGL2 PBR · LOD2 High</span>
+          <span id="ve-hud-stats" class="ve-pill">Holo Verified · 15 Semirings · Clear 290mm</span>
         </div>
-        <div id="ve-touch-pad" class="ve-touch-pad" role="group" aria-label="Character locomotion and scene actions">
+        <div id="ve-touch-pad" class="ve-touch-pad" role="group" aria-label="Character locomotion and narrative interaction">
           <button type="button" data-move="KeyW" aria-label="Move forward">W</button>
           <button type="button" data-move="KeyA" aria-label="Strafe left">A</button>
           <button type="button" data-move="KeyS" aria-label="Move backward">S</button>
@@ -13,27 +13,51 @@
           <button type="button" id="ve-lock-btn" aria-label="Toggle mouse look pointer lock">Look</button>
         </div>
         <form id="ve-prompt-form" class="ve-prompt-bar" autocomplete="off">
-          <input id="ve-prompt-input" type="text" aria-label="Direct Verdant Studio via local coded_gemm director" placeholder="Direct studio (frame arch bridge, 3rd person, new project, audio room, gameplay)…" />
-          <button id="ve-prompt-btn" type="submit">Direct</button>
+          <span class="ve-prompt-tag" aria-hidden="true">CodedSLM</span>
+          <input id="ve-prompt-input" type="text" aria-label="Route runtime intent via local zero-decode CodedSlmDirector" placeholder="Route intent (inspect stone arch, stream LOD4, possess 22-joint rig)…" />
+          <button id="ve-prompt-btn" type="submit" title="Classify and route runtime intent locally via kernel:11 zero-decode contraction">Route</button>
         </form>
         <input id="ve-glb-file" type="file" accept=".glb,model/gltf-binary" hidden />
       </div>
       <div class="result" id="game-status" data-slot="result" aria-live="polite">
-        <span id="ve-status" class="chip chip-wait">Verifying Observer model…</span>
+        <span id="ve-status" class="chip chip-wait">Verifying Prism runtime…</span>
       </div>
-      <div class="controls" data-slot="actions" data-label="Studio Transport &amp; I/O">
-        <button id="ve-studio-btn" class="primary" type="button" title="Open Role Workspaces (Dashboard, Code, Design, Audio, Narrative, Director, Gameplay)">Studio Workspace</button>
-        <button id="ve-sim-btn" type="button" aria-pressed="false" title="Toggle live 60fps simulation">Play</button>
-        <button id="ve-cam-btn" type="button" title="Cycle Orbit, 3rd-Person Foot IK, and 1st-Person Eye rigs">Rig: Orbit</button>
-        <button id="ve-lod-btn" type="button" title="Cycle progressive LOD0..LOD4">LOD2</button>
-        <button id="ve-uorc-btn" type="button" title="Stream progressive .uorc geometry">Stream UORC</button>
-        <button id="ve-render-btn" type="button" title="Switch WebGL2 PBR or reference 16x16 software tile view">View: PBR</button>
-        <button id="ve-import-btn" type="button" title="Import Khronos .glb asset">Import .glb</button>
-        <button id="ve-glb-btn" type="button" title="Export active scene as .glb">Export .glb</button>
-        <button id="ve-snap-btn" type="button" title="Save and copy SHA-256 #uorc= world snapshot">Save .uorc</button>
-        <button id="ve-audio-btn" type="button" aria-pressed="false" title="Toggle spatial modal audio">Audio</button>
-        <button id="ve-mesh-btn" type="button" title="Multiplayer session signing &amp; 2-of-3 Stitch custody">Multiplayer</button>
-        <a id="ve-demo-link" class="ghost" href="./demo/">Engine Demo</a>
-        <a id="ve-docs-link" class="ghost" href="./docs/">Docs</a>
+      <div class="controls" data-slot="actions" data-label="Platform &amp; Runtime Controls">
+        <nav class="ve-pillar-grid" aria-label="Verdant platform organs">
+          <a id="ve-studio-link" class="ghost ve-pillar ve-pillar-studio" href="./studio/" title="Open Verdant Studio — 7-role application design atelier">
+            <span class="ve-pillar-name">Verdant Studio</span>
+            <span class="ve-pillar-sub">7-Role Atelier</span>
+          </a>
+          <a id="ve-catalogs-link" class="ghost ve-pillar ve-pillar-catalogs" href="./catalogs/" title="Open Verdant Catalogs — imported ISO, W3C, Khronos &amp; UOR standards">
+            <span class="ve-pillar-name">Model Catalogs</span>
+            <span class="ve-pillar-sub">28 Standards</span>
+          </a>
+          <a id="ve-demo-link" class="ghost ve-pillar ve-pillar-demo" href="./demo/" title="Open Verdant Engine Demo — WebGL2 PBR vs Wasm tile &amp; semiring benchmarks">
+            <span class="ve-pillar-name">Engine Demo</span>
+            <span class="ve-pillar-sub">Benchmarks</span>
+          </a>
+          <a id="ve-docs-link" class="ghost ve-pillar ve-pillar-docs" href="./docs/" title="Open Verdant Reference — Diataxis tutorials, guides &amp; API reference">
+            <span class="ve-pillar-name">Reference</span>
+            <span class="ve-pillar-sub">Diataxis Docs</span>
+          </a>
+        </nav>
+        <div class="ve-runtime-grid" role="group" aria-label="Live runtime controls">
+          <button id="ve-sim-btn" class="primary" type="button" aria-pressed="false" title="Start or pause 60 Hz swept-BVH physics and XPBD simulation">Step Physics</button>
+          <button id="ve-cam-btn" type="button" title="Switch between Guarded Orbit, 3rd-Person Foot IK, and 1st-Person Eye cameras">Camera: Orbit</button>
+          <button id="ve-lod-btn" type="button" title="Cycle progressive UORC fidelity tiers LOD0 through LOD4">Fidelity: LOD2</button>
+          <button id="ve-audio-btn" type="button" aria-pressed="false" title="Toggle 5-mode Euler-Bernoulli + Sabine RT60 spatial AudioWorklet">Audio: Off</button>
+        </div>
+        <details id="ve-io-drawer" class="ve-io-drawer">
+          <summary class="ve-io-summary">Streaming, .glb I/O &amp; Stitch Custody</summary>
+          <div class="ve-io-tray">
+            <button id="ve-uorc-btn" type="button" title="Decode and stream LOD4 Ultra-HD progressive UORC geometry">Stream LOD4 HD</button>
+            <button id="ve-render-btn" type="button" title="Switch hardware WebGL2 3-pass PBR or Wasm 16x16 software tile rasterizer">Raster: WebGL2</button>
+            <button id="ve-import-btn" type="button" title="Import binary Khronos glTF 2.0 (.glb) model">Import .glb</button>
+            <button id="ve-glb-btn" type="button" title="Export active 3D scene as binary Khronos .glb">Export .glb</button>
+            <button id="ve-snap-btn" type="button" title="Encode SHA-256 self-verifying #uorc= snapshot URL">Copy #uorc URL</button>
+            <button id="ve-mesh-btn" type="button" title="Multiplayer signing &amp; 2-of-3 Stitch parity custody">Stitch Custody</button>
+            <button id="ve-studio-btn" type="button" title="Open docked 7-role Studio inspector over this runtime stage">Dock Studio</button>
+          </div>
+        </details>
       </div>
-      <ol id="ve-telemetry" data-slot="history" data-label="Studio Roles"></ol>
+      <ol id="ve-telemetry" data-slot="history" data-label="Modeled Runtime Strata"></ol>

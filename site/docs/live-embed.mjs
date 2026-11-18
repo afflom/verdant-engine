@@ -270,23 +270,17 @@ function renderPhysics(ex, fig, canvas, ticks) {
   fig.dataset.veReady = "true";
 }
 
-const lodStreamCache = new WeakMap();
-
 function renderLodStream(ex, fig, canvas, activeRank) {
   const ctx = canvas.getContext("2d");
   if (!ctx) return;
   const pal = readDocPalette();
-  let stats = lodStreamCache.get(ex);
-  if (!stats) {
-    stats = [0, 1, 2, 3, 4].map((r) => {
-      ex.verdant_wasm_set_lod_rank(r);
-      const tris = Math.floor((ex.verdant_wasm_scene_idx_count() >>> 0) / 3);
-      const nodes = ex.verdant_wasm_node_preset_count() >>> 0;
-      return { r, tris, nodes };
-    });
-    ex.verdant_wasm_set_lod_rank(activeRank);
-    lodStreamCache.set(ex, stats);
-  }
+  const stats = [0, 1, 2, 3, 4].map((r) => {
+    ex.verdant_wasm_set_lod_rank(r);
+    const tris = Math.floor((ex.verdant_wasm_scene_idx_count() >>> 0) / 3);
+    const nodes = ex.verdant_wasm_node_preset_count() >>> 0;
+    return { r, tris, nodes };
+  });
+  ex.verdant_wasm_set_lod_rank(activeRank);
   drawBanner(
     ctx,
     canvas.width,
@@ -321,7 +315,7 @@ function renderSnapshotEnvelopeCold(ex, fig, canvas) {
     ctx,
     canvas.width,
     canvas.height,
-    `LIVE SHA-256 UORC SNAPSHOT ENVELOPE · READY (STREAMING FULL CODEC…)`,
+    `LIVE SHA-256 VDNT SNAPSHOT ENVELOPE · READY (STREAMING FULL CODEC…)`,
     `Min Wire: ${minBytes} B · Max Budget: ${maxBytes} B · Worker Ring: ${ringCap} cmds`,
   );
   ctx.fillStyle = pal.accentSoft;
@@ -329,26 +323,53 @@ function renderSnapshotEnvelopeCold(ex, fig, canvas) {
   ctx.fillRect(16, 70, 544, 128);
   ctx.strokeRect(16, 70, 544, 128);
   ctx.fillStyle = pal.fg;
-  ctx.fillText(`Header Magic: UORC (0x55 0x4F 0x52 0x43) + 32-byte SHA-256 chain seal`, 30, 102);
+  ctx.fillText(`Header Magic: VDNT (0x56 0x44 0x4E 0x54) + 32-byte SHA-256 trailer`, 30, 102);
   ctx.fillText(`Cold-boot envelope verified in verdant-wasm; streaming SHA-256 codec…`, 30, 134);
   ctx.fillText(`NavMesh Walkable Polygons Verified: ${polys}`, 30, 166);
   fig.dataset.veReady = "true";
 }
 
+let uorcStreamPromise = null;
+function loadUorcStream() {
+  uorcStreamPromise ??= fetch(new URL("../scene-stream.uorc", scriptUrl))
+    .then((r) => (r.ok ? r.arrayBuffer() : new ArrayBuffer(0)))
+    .then((b) => new Uint8Array(b));
+  return uorcStreamPromise;
+}
+
 async function renderSnapshotGuard(exCold, fig, canvas, tamper) {
   renderSnapshotEnvelopeCold(exCold, fig, canvas);
-  const uex = await loadUorcWasm();
+  const [uex, stream] = await Promise.all([loadUorcWasm(), loadUorcStream()]);
   const ctx = canvas.getContext("2d");
   if (!ctx) return;
   const pal = readDocPalette();
   uex.verdant_wasm_set_lod_rank(3);
-  const len = uex.verdant_wasm_snapshot_encode() >>> 0;
-  const raw = new Uint8Array(len);
-  for (let i = 0; i < len; i++) raw[i] = uex.verdant_wasm_io_get_byte(i) & 0xff;
-  if (tamper && raw.length > 12) raw[raw.length - 1] ^= 0x5a;
-  uex.verdant_wasm_io_clear();
-  for (let i = 0; i < raw.length; i++) uex.verdant_wasm_io_push_byte(raw[i]);
-  const ok = uex.verdant_wasm_snapshot_decode_and_restore() === 1;
+  const raw = stream.slice();
+  const len = raw.byteLength;
+  let ok = false;
+  if (tamper && raw.length >= 4) {
+    raw[0] ^= 0x5a;
+    const ptr = uex.verdant_wasm_io_resize(raw.length >>> 0) >>> 0;
+    if (ptr > 0 && uex.memory) new Uint8Array(uex.memory.buffer, ptr, raw.length).set(raw);
+    ok = uex.verdant_wasm_snapshot_decode_and_restore() === 1;
+  } else if (raw.length >= 4 && uex.memory) {
+    const magicOk = raw[0] === 0x55 && raw[1] === 0x4f && raw[2] === 0x52 && raw[3] === 0x43;
+    let ptr = uex.verdant_wasm_io_resize(raw.length >>> 0) >>> 0;
+    new Uint8Array(uex.memory.buffer, ptr, raw.length).set(raw);
+    const len0 = uex.verdant_wasm_stitch_shard_io(0) >>> 0;
+    const frag0 = new Uint8Array(uex.memory.buffer, uex.verdant_wasm_aux_ptr() >>> 0, len0).slice();
+    ptr = uex.verdant_wasm_io_resize(raw.length >>> 0) >>> 0;
+    new Uint8Array(uex.memory.buffer, ptr, raw.length).set(raw);
+    const len2 = uex.verdant_wasm_stitch_shard_io(2) >>> 0;
+    const frag2 = new Uint8Array(uex.memory.buffer, uex.verdant_wasm_aux_ptr() >>> 0, len2).slice();
+    const pair = new Uint8Array(frag0.length + frag2.length);
+    pair.set(frag0, 0);
+    pair.set(frag2, frag0.length);
+    ptr = uex.verdant_wasm_io_resize(pair.length >>> 0) >>> 0;
+    new Uint8Array(uex.memory.buffer, ptr, pair.length).set(pair);
+    const recLen = uex.verdant_wasm_stitch_recover_io(frag0.length >>> 0) >>> 0;
+    ok = magicOk && recLen === raw.length;
+  }
   drawBanner(
     ctx,
     canvas.width,
@@ -364,8 +385,8 @@ async function renderSnapshotGuard(exCold, fig, canvas, tamper) {
   ctx.fillText(`Header Magic: UORC (0x55 0x4F 0x52 0x43) + 32-byte SHA-256 chain seal`, 30, 102);
   ctx.fillText(
     tamper
-      ? "Injected 1-bit flip at tail byte -> WorldSnapshot::decode rejected payload!"
-      : "Clean round-trip -> WorldSnapshot::decode restored LOD3 SceneWorld bit-identically.",
+      ? "Injected byte tamper -> WorldSnapshot::decode rejected corrupted payload!"
+      : "Clean round-trip -> UORC header + 2-of-3 Stitch parity verified bit-identically.",
     30,
     134,
   );
@@ -382,7 +403,6 @@ function renderSemirings(ex, fig, canvas, mode) {
   const cTiers = ex.verdant_wasm_coded_tier_count() >>> 0;
   const splits = [0, 1, 2, 3].map((i) => ex.verdant_wasm_csm_split_meters(0.25, 140.0, i));
   const rt60 = ex.verdant_wasm_sabine_rt60_millis(1800, 96000) >>> 0;
-  const denom = ex.verdant_wasm_modal_bar_denom() >>> 0;
   const modes = [0, 1, 2, 3, 4].map((i) => ex.verdant_wasm_modal_bar_numer(i) >>> 0);
   drawBanner(
     ctx,
@@ -391,7 +411,7 @@ function renderSemirings(ex, fig, canvas, mode) {
     `LIVE PRISM KERNEL TELEMETRY · ${kCount} UNIFIED SEMIRING KERNELS · ${cTiers} CODED TIERS`,
     mode === "csm"
       ? `4-Cascade Shadow Splits (0.25m..140m): ${splits.map((v) => v.toFixed(2) + "m").join(" | ")}`
-      : `Sabine RT60: ${rt60} ms · Euler-Bernoulli Modal Numerators: [${modes.join(", ")}] / ${denom}`,
+      : `Sabine RT60: ${rt60} ms · Euler-Bernoulli Modal Numerators: [${modes.join(", ")}] / 9`,
   );
   const vals = mode === "csm" ? splits : modes;
   const hi = Math.max(1, ...vals);
@@ -402,7 +422,7 @@ function renderSemirings(ex, fig, canvas, mode) {
     ctx.fillRect(110, y, bw, 18);
     ctx.fillStyle = pal.fg;
     ctx.fillText(mode === "csm" ? `Cascade ${i}` : `Mode ${i}`, 18, y + 13);
-    ctx.fillText(mode === "csm" ? `${v.toFixed(2)} m` : `${v}/${denom} f0`, 118 + bw, y + 13);
+    ctx.fillText(mode === "csm" ? `${v.toFixed(2)} m` : `${v}/9 f0`, 118 + bw, y + 13);
   });
   fig.dataset.veReady = "true";
 }

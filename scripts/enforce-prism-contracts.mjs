@@ -15,6 +15,12 @@ import {
   STUDIO_ROLE_KEYS,
   generateStarterProjectFiles,
 } from "../site/studio.mjs";
+import {
+  CATALOG_DOMAINS,
+  LIFECYCLE_STAGES,
+  PRISM_MODEL_CATALOGS,
+  VERDANT_PLATFORM_ORGANS,
+} from "../site/prism-catalogs.mjs";
 
 const ROOT_DIR = fileURLToPath(new URL("../", import.meta.url));
 const utf8Enc = new TextEncoder();
@@ -898,6 +904,128 @@ export function verifyPrismKernelAlignmentAndCleanRefactorContract({
   }
 }
 
+/**
+ * Gate C10: Enforces platform differentiation across `/` (Verdant Engine Runtime), `/studio/`
+ * (Verdant Studio Atelier), `/catalogs/` (Universal Model Registry), `/demo/` (Benchmarks),
+ * and `/docs/`, verifies every catalog entry against real `app/src/*.lex.tex` modules and
+ * `REQUIRED_HOLO_QUERIES`, and protects cold-boot weight on `site/card.mjs`.
+ */
+export function verifyPlatformDifferentiationAndCatalogsContract({
+  rootDir = ROOT_DIR,
+  cardHtml,
+  cardSource,
+  studioPageHtml,
+  studioPageSource,
+  catalogsHtml,
+  catalogsPageSource,
+  organs = VERDANT_PLATFORM_ORGANS,
+  catalogEntries = PRISM_MODEL_CATALOGS,
+}) {
+  // 1. Reject Engine/Studio conflation on root `site/card.html`:
+  if (/Verdant Studio 3D authoring viewport|Studio Transport|data-label="Studio Roles"/i.test(cardHtml)) {
+    throw new Error("Conflation detected: site/card.html still labels the Verdant Engine root surface as Verdant Studio");
+  }
+  for (const pillarHref of ['./studio/', './catalogs/', './demo/', './docs/']) {
+    if (!cardHtml.includes(`href="${pillarHref}"`)) {
+      throw new Error(`site/card.html missing differentiated platform pillar link href="${pillarHref}"`);
+    }
+  }
+  // Protect `/` cold-boot byte budget (`FR-03`): zero static top-level ES imports in `site/card.mjs`.
+  if (/^\s*import\s+[\s\S]*?from\s+["']/m.test(cardSource)) {
+    throw new Error("site/card.mjs must use dynamic import() for Studio/Stitch modules to preserve FR-03 cold-boot weight");
+  }
+
+  // 2. Verify standalone Verdant Studio (`/studio/`):
+  if (!studioPageHtml || !studioPageSource) {
+    throw new Error("Standalone Verdant Studio (`site/studio/index.html` and `site/studio/studio-page.mjs`) must exist");
+  }
+  if (/#[0-9a-fA-F]{3,8}\b/.test(studioPageHtml)) {
+    throw new Error("site/studio/index.html contains raw #hex color literal (must use W3C DTCG CSS tokens)");
+  }
+  if (/backdrop-filter\s*:\s*blur/i.test(studioPageHtml)) {
+    throw new Error("site/studio/index.html must not apply backdrop-filter: blur over WebGL");
+  }
+  if (/\b(stakeholders?|personas?)\b/i.test(studioPageHtml) || /\b(stakeholders?|personas?)\b/i.test(studioPageSource)) {
+    throw new Error("Standalone Studio UI (`site/studio/*`) contains forbidden stakeholder/persona terminology");
+  }
+  if (studioPageSource.includes("/vendor/prism-code/")) {
+    throw new Error("site/studio/studio-page.mjs must import /worker-runtime/ instead of unshimmed /vendor/prism-code/ (bare node:crypto)");
+  }
+  for (const req of ["/worker-runtime/", "/app.holo", "/engine-worker.mjs", "mountInlineStudio"]) {
+    if (!studioPageSource.includes(req)) {
+      throw new Error(`site/studio/studio-page.mjs missing required live Prism Studio integration "${req}"`);
+    }
+  }
+
+  // 3. Verify standalone Verdant Model Catalogs (`/catalogs/`):
+  if (!catalogsHtml || !catalogsPageSource) {
+    throw new Error("Standalone Verdant Catalogs (`site/catalogs/index.html` and `site/catalogs/catalogs.mjs`) must exist");
+  }
+  if (/#[0-9a-fA-F]{3,8}\b/.test(catalogsHtml)) {
+    throw new Error("site/catalogs/index.html contains raw #hex color literal (must use W3C DTCG CSS tokens)");
+  }
+  if (/backdrop-filter\s*:\s*blur/i.test(catalogsHtml)) {
+    throw new Error("site/catalogs/index.html must not use backdrop-filter: blur");
+  }
+  if (catalogsPageSource.includes("/vendor/prism-code/")) {
+    throw new Error("site/catalogs/catalogs.mjs must import /worker-runtime/ instead of unshimmed /vendor/prism-code/ (bare node:crypto)");
+  }
+  for (const req of ["/worker-runtime/", "/app.holo", "kappa", "filterCatalogModels", "VERDANT_PLATFORM_ORGANS"]) {
+    if (!catalogsPageSource.includes(req)) {
+      throw new Error(`site/catalogs/catalogs.mjs missing live Holo catalog verification token "${req}"`);
+    }
+  }
+
+  // 4. Verify platform organ taxonomy & 28+ authoritative catalog entries:
+  const expectedOrgans = ["engine", "studio", "catalogs", "demo", "docs"];
+  if (JSON.stringify(organs.map((o) => o.slug)) !== JSON.stringify(expectedOrgans)) {
+    throw new Error(`VERDANT_PLATFORM_ORGANS must define exact organs: ${expectedOrgans.join(",")}`);
+  }
+  if (LIFECYCLE_STAGES.length < 9 || CATALOG_DOMAINS.length < 9) {
+    throw new Error("prism-catalogs.mjs must cover all 8 product lifecycle stages and all 8 catalog domains");
+  }
+  if (!Array.isArray(catalogEntries) || catalogEntries.length < 24) {
+    throw new Error("PRISM_MODEL_CATALOGS must register at least 24 imported standard & Prism models");
+  }
+
+  const validQueries = new Set(REQUIRED_HOLO_QUERIES);
+  const validRefusals = new Set(REQUIRED_HOLO_REFUSALS.map(([k]) => k));
+  const validRoles = new Set(EXPECTED_STUDIO_ROLE_KEYS);
+  const seenIds = new Set();
+
+  for (const entry of catalogEntries) {
+    if (!entry.id || !entry.id.startsWith("STD-") || seenIds.has(entry.id)) {
+      throw new Error(`Invalid or duplicate catalog model ID: "${entry.id}"`);
+    }
+    seenIds.add(entry.id);
+    if (!entry.authority || !entry.title || !entry.invariant) {
+      throw new Error(`Catalog entry ${entry.id} missing authority, title, or invariant`);
+    }
+    if (!entry.lexModule || !existsSync(join(rootDir, entry.lexModule))) {
+      throw new Error(`Catalog entry ${entry.id} references non-existent LexLean module "${entry.lexModule}"`);
+    }
+    if (!Array.isArray(entry.holoQueries) || entry.holoQueries.length === 0) {
+      throw new Error(`Catalog entry ${entry.id} must bind at least one verified Holo query`);
+    }
+    for (const q of entry.holoQueries) {
+      if (!validQueries.has(q)) {
+        throw new Error(`Catalog entry ${entry.id} binds unknown Holo query "${q}"`);
+      }
+    }
+    for (const rq of entry.refusalQueries || []) {
+      if (!validRefusals.has(rq)) {
+        throw new Error(`Catalog entry ${entry.id} binds unknown R5 refusal query "${rq}"`);
+      }
+    }
+    if (!Array.isArray(entry.studioRoles) || entry.studioRoles.length === 0 || entry.studioRoles.some((r) => !validRoles.has(r))) {
+      throw new Error(`Catalog entry ${entry.id} must bind valid Studio lifecycle roles`);
+    }
+    if (!Array.isArray(entry.taxon) || entry.taxon.length < 3) {
+      throw new Error(`Catalog entry ${entry.id} must declare at least 3 domain-specific taxon terms`);
+    }
+  }
+}
+
 export async function runAllPrismContractChecks(rootDir = ROOT_DIR) {
   const holoBuffer = readFileSync(join(rootDir, "site", "app.holo"));
   const coreWasmBytes = readFileSync(join(rootDir, "site", "verdant-wasm.wasm"));
@@ -917,6 +1045,10 @@ export async function runAllPrismContractChecks(rootDir = ROOT_DIR) {
   const docsIndexHtml = readFileSync(join(rootDir, "site", "docs", "index.html"), "utf8");
   const demoHtml = readFileSync(join(rootDir, "site", "demo", "index.html"), "utf8");
   const demoSource = readFileSync(join(rootDir, "site", "demo", "demo.mjs"), "utf8");
+  const studioPageHtml = readFileSync(join(rootDir, "site", "studio", "index.html"), "utf8");
+  const studioPageSource = readFileSync(join(rootDir, "site", "studio", "studio-page.mjs"), "utf8");
+  const catalogsHtml = readFileSync(join(rootDir, "site", "catalogs", "index.html"), "utf8");
+  const catalogsPageSource = readFileSync(join(rootDir, "site", "catalogs", "catalogs.mjs"), "utf8");
   const starterHtml = readFileSync(join(rootDir, "templates", "browser-3d-starter", "index.html"), "utf8");
   const starterGameSource = readFileSync(join(rootDir, "templates", "browser-3d-starter", "game.mjs"), "utf8");
 
@@ -948,6 +1080,15 @@ export async function runAllPrismContractChecks(rootDir = ROOT_DIR) {
     liveEmbedSource,
     docsIndexHtml,
   });
+  verifyPlatformDifferentiationAndCatalogsContract({
+    rootDir,
+    cardHtml,
+    cardSource,
+    studioPageHtml,
+    studioPageSource,
+    catalogsHtml,
+    catalogsPageSource,
+  });
 
   // Audit all shipped Rust crate sources (`FI-08` zero magic constants, excluding generated prism_kernel.rs):
   for (const relDir of [
@@ -970,6 +1111,7 @@ export async function runAllPrismContractChecks(rootDir = ROOT_DIR) {
     defaultSeed: c2.defaultSeed,
     holoQueriesVerified: Object.keys(c1.verdicts).length,
     holoRefusalsVerified: Object.keys(c1.refusals).length,
+    catalogModelsVerified: PRISM_MODEL_CATALOGS.length,
     cachedHolo: c1.cached,
   };
 }
@@ -977,6 +1119,6 @@ export async function runAllPrismContractChecks(rootDir = ROOT_DIR) {
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
   const res = await runAllPrismContractChecks();
   console.log(
-    `prism-contracts: PASS (${res.vectors} Holo vectors, ${res.holoQueriesVerified}+${res.holoRefusalsVerified} queries${res.cachedHolo ? " [kappa-cached]" : ""}, seed=${res.defaultSeed}, blake3=${res.fingerprint.slice(0, 12)}…)`,
+    `prism-contracts: PASS (${res.vectors} Holo vectors, ${res.holoQueriesVerified}+${res.holoRefusalsVerified} queries, ${res.catalogModelsVerified} catalog models${res.cachedHolo ? " [kappa-cached]" : ""}, seed=${res.defaultSeed}, blake3=${res.fingerprint.slice(0, 12)}…)`,
   );
 }

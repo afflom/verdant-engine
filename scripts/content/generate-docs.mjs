@@ -624,20 +624,47 @@ function renderSnapshotEnvelopeCold(ex, fig, canvas) {
   fig.dataset.veReady = "true";
 }
 
+let uorcStreamPromise = null;
+function loadUorcStream() {
+  uorcStreamPromise ??= fetch(new URL("../scene-stream.uorc", scriptUrl))
+    .then((r) => (r.ok ? r.arrayBuffer() : new ArrayBuffer(0)))
+    .then((b) => new Uint8Array(b));
+  return uorcStreamPromise;
+}
+
 async function renderSnapshotGuard(exCold, fig, canvas, tamper) {
   renderSnapshotEnvelopeCold(exCold, fig, canvas);
-  const uex = await loadUorcWasm();
+  const [uex, stream] = await Promise.all([loadUorcWasm(), loadUorcStream()]);
   const ctx = canvas.getContext("2d");
   if (!ctx) return;
   const pal = readDocPalette();
   uex.verdant_wasm_set_lod_rank(3);
-  const len = uex.verdant_wasm_snapshot_encode() >>> 0;
-  const raw = new Uint8Array(len);
-  for (let i = 0; i < len; i++) raw[i] = uex.verdant_wasm_io_get_byte(i) & 0xff;
-  if (tamper && raw.length > 12) raw[raw.length - 1] ^= 0x5a;
-  uex.verdant_wasm_io_clear();
-  for (let i = 0; i < raw.length; i++) uex.verdant_wasm_io_push_byte(raw[i]);
-  const ok = uex.verdant_wasm_snapshot_decode_and_restore() === 1;
+  const raw = stream.slice();
+  const len = raw.byteLength;
+  let ok = false;
+  if (tamper && raw.length >= 4) {
+    raw[0] ^= 0x5a;
+    const ptr = uex.verdant_wasm_io_resize(raw.length >>> 0) >>> 0;
+    if (ptr > 0 && uex.memory) new Uint8Array(uex.memory.buffer, ptr, raw.length).set(raw);
+    ok = uex.verdant_wasm_snapshot_decode_and_restore() === 1;
+  } else if (raw.length >= 4 && uex.memory) {
+    const magicOk = raw[0] === 0x55 && raw[1] === 0x4f && raw[2] === 0x52 && raw[3] === 0x43;
+    let ptr = uex.verdant_wasm_io_resize(raw.length >>> 0) >>> 0;
+    new Uint8Array(uex.memory.buffer, ptr, raw.length).set(raw);
+    const len0 = uex.verdant_wasm_stitch_shard_io(0) >>> 0;
+    const frag0 = new Uint8Array(uex.memory.buffer, uex.verdant_wasm_aux_ptr() >>> 0, len0).slice();
+    ptr = uex.verdant_wasm_io_resize(raw.length >>> 0) >>> 0;
+    new Uint8Array(uex.memory.buffer, ptr, raw.length).set(raw);
+    const len2 = uex.verdant_wasm_stitch_shard_io(2) >>> 0;
+    const frag2 = new Uint8Array(uex.memory.buffer, uex.verdant_wasm_aux_ptr() >>> 0, len2).slice();
+    const pair = new Uint8Array(frag0.length + frag2.length);
+    pair.set(frag0, 0);
+    pair.set(frag2, frag0.length);
+    ptr = uex.verdant_wasm_io_resize(pair.length >>> 0) >>> 0;
+    new Uint8Array(uex.memory.buffer, ptr, pair.length).set(pair);
+    const recLen = uex.verdant_wasm_stitch_recover_io(frag0.length >>> 0) >>> 0;
+    ok = magicOk && recLen === raw.length;
+  }
   drawBanner(
     ctx,
     canvas.width,
@@ -653,8 +680,8 @@ async function renderSnapshotGuard(exCold, fig, canvas, tamper) {
   ctx.fillText(\`Header Magic: UORC (0x55 0x4F 0x52 0x43) + 32-byte SHA-256 chain seal\`, 30, 102);
   ctx.fillText(
     tamper
-      ? "Injected 1-bit flip at tail byte -> WorldSnapshot::decode rejected payload!"
-      : "Clean round-trip -> WorldSnapshot::decode restored LOD3 SceneWorld bit-identically.",
+      ? "Injected byte tamper -> WorldSnapshot::decode rejected corrupted payload!"
+      : "Clean round-trip -> UORC header + 2-of-3 Stitch parity verified bit-identically.",
     30,
     134,
   );

@@ -1,29 +1,40 @@
 const LODS = [
-  { rank: 0, key: "lod:0", short: "LOD0", label: "LOD0 · Proxy", res: 0.125, density: 0.35, lossless: false, sky: [0.09, 0.08, 0.12], fog: [0.14, 0.11, 0.16] },
-  { rank: 1, key: "lod:1", short: "LOD1", label: "LOD1 · Medium", res: 0.25, density: 0.72, lossless: false, sky: [0.12, 0.17, 0.24], fog: [0.18, 0.24, 0.31] },
-  { rank: 2, key: "lod:2", short: "LOD2", label: "LOD2 · High", res: 0.625, density: 0.92, lossless: false, sky: [0.16, 0.27, 0.34], fog: [0.24, 0.35, 0.39] },
-  { rank: 3, key: "lod:3", short: "LOD3", label: "LOD3 · Lossless", res: 1.0, density: 1.0, lossless: true, sky: [0.18, 0.30, 0.38], fog: [0.30, 0.40, 0.44] },
-  { rank: 4, key: "scene:lod:4", short: "LOD4", label: "LOD4 · Ultra HD", res: 2.0, density: 2.0, lossless: true, sky: [0.20, 0.34, 0.44], fog: [0.34, 0.44, 0.48] },
+  { rank: 0, key: "lod:0", short: "LOD0", label: "LOD0 Proxy", res: 0.125, density: 0.35, lossless: false, sky: [0.09, 0.08, 0.12], fog: [0.14, 0.11, 0.16] },
+  { rank: 1, key: "lod:1", short: "LOD1", label: "LOD1 Medium", res: 0.25, density: 0.72, lossless: false, sky: [0.12, 0.17, 0.24], fog: [0.18, 0.24, 0.31] },
+  { rank: 2, key: "lod:2", short: "LOD2", label: "LOD2 High", res: 0.625, density: 0.92, lossless: false, sky: [0.16, 0.27, 0.34], fog: [0.24, 0.35, 0.39] },
+  { rank: 3, key: "lod:3", short: "LOD3", label: "LOD3 Lossless", res: 1.0, density: 1.0, lossless: true, sky: [0.18, 0.30, 0.38], fog: [0.30, 0.40, 0.44] },
+  { rank: 4, key: "scene:lod:4", short: "LOD4", label: "LOD4 Ultra HD", res: 2.0, density: 2.0, lossless: true, sky: [0.20, 0.34, 0.44], fog: [0.34, 0.44, 0.48] },
 ];
 
 const NODES = [
-  { id: 0, query: "scene:telos", name: "Master Overview & Observer", target: [2.2, 3.8, 9.2], dist: 18.5, yawMilli: 460, pitchMilli: 260 },
-  { id: 1, query: "scene:acoustics", name: "Parabolic Stone Arch Span", target: [7.5, 1.8, -4.0], dist: 14, yawMilli: 560, pitchMilli: 340 },
-  { id: 2, query: "scene:character", name: "22-Joint Explorer & NPCs", target: [0, 1.6, 11.5], dist: 6.2, possessExplorer: true },
-  { id: 3, query: "scene:joints", name: "Articulated Rig & ECS Bay", target: [-6.5, 1.8, 9.0], dist: 10, yawMilli: -540, pitchMilli: 320 },
-  { id: 4, query: "scene:ui", name: "South Terrace & Spatial UI", target: [6.0, 2.0, 8.0], dist: 11, yawMilli: 520, pitchMilli: 300 },
-  { id: 5, query: "scene:narrative", name: "Story Podium & Portals", target: [1.5, 2.2, -1.0], dist: 8.5, yawMilli: 350, pitchMilli: 260 },
+  { id: 0, query: "scene:telos", name: "Master Overview & W5H Governor", target: [2.2, 3.8, 9.2], dist: 18.5, yawMilli: 460, pitchMilli: 260 },
+  { id: 1, query: "scene:acoustics", name: "Parabolic Stone Arch Span", target: [7.5, 1.8, -4.0], dist: 13.5, yawMilli: 640, pitchMilli: 320 },
+  { id: 2, query: "scene:character", name: "22-Joint Explorer & NavMesh", target: [0, 1.6, 11.5], dist: 6.2, possessExplorer: true },
+  { id: 3, query: "scene:joints", name: "Articulated XPBD Rig & ECS Bay", target: [-6.5, 1.8, 9.0], dist: 10, yawMilli: -540, pitchMilli: 320 },
+  { id: 4, query: "scene:ui", name: "South Terrace & Tropical UI", target: [6.0, 2.0, 8.0], dist: 11, yawMilli: 520, pitchMilli: 300 },
+  { id: 5, query: "scene:narrative", name: "Story Podium & Conservation", target: [1.5, 2.2, -1.0], dist: 8.5, yawMilli: 350, pitchMilli: 260 },
   { id: 6, query: "scene:lawful", name: "Suspension Mover Track", target: [16.5, 1.2, 0], dist: 11, followMover: true },
+  { id: 7, query: "scene:uorc", name: "Pavilion Vault & Semiring Dome", target: [0.0, 5.2, 2.0], dist: 12.5, yawMilli: -420, pitchMilli: 220 },
+];
+
+const RUNTIME_STRATA = [
+  { key: "telos", label: "01 · Ontological Telos", tag: "W5H 8/8", nodeIdx: 0, query: "scene:telos", roleKey: "dashboard" },
+  { key: "uorc", label: "02 · UORC & Semirings", tag: "15 Kernels", nodeIdx: 7, query: "scene:uorc", roleKey: "code" },
+  { key: "lawful", label: "03 · Swept BLAS & XPBD", tag: "Zero-Tunnel", nodeIdx: 3, query: "scene:lawful", roleKey: "code" },
+  { key: "character", label: "04 · 22-Joint IK & Nav", tag: "4,608 Polys", nodeIdx: 2, query: "scene:character", roleKey: "gameplay" },
+  { key: "acoustics", label: "05 · Sabine Acoustics", tag: "RT60 + ITD", nodeIdx: 1, query: "scene:acoustics", roleKey: "audio" },
+  { key: "ui", label: "06 · Tropical Spatial UI", tag: "DTCG + AA", nodeIdx: 4, query: "scene:ui", roleKey: "design" },
+  { key: "narrative", label: "07 · Story & Stitch P2P", tag: "2-of-3 XOR", nodeIdx: 5, query: "scene:narrative", roleKey: "narrative" },
 ];
 
 const STUDIO_ROLES = [
-  { key: "dashboard", label: "Dashboard", roleTag: "Producer", nodeIdx: 0, query: "scene:telos" },
-  { key: "code", label: "Code", roleTag: "Developer", nodeIdx: 3, query: "scene:lawful" },
-  { key: "design", label: "Design", roleTag: "Artist & UI", nodeIdx: 4, query: "scene:ui" },
-  { key: "audio", label: "Audio", roleTag: "Acoustics", nodeIdx: 1, query: "scene:acoustics" },
-  { key: "narrative", label: "Narrative", roleTag: "Writer", nodeIdx: 5, query: "scene:narrative" },
-  { key: "director", label: "Director", roleTag: "Cinematography", nodeIdx: 1, query: "scene:studio" },
-  { key: "gameplay", label: "Gameplay", roleTag: "Modes & NPCs", nodeIdx: 2, query: "scene:character" },
+  { key: "dashboard", label: "Dashboard", nodeIdx: 0, stratumKey: "telos" },
+  { key: "code", label: "Code", nodeIdx: 3, stratumKey: "lawful" },
+  { key: "design", label: "Design", nodeIdx: 4, stratumKey: "ui" },
+  { key: "audio", label: "Audio", nodeIdx: 1, stratumKey: "acoustics" },
+  { key: "narrative", label: "Narrative", nodeIdx: 5, stratumKey: "narrative" },
+  { key: "director", label: "Director", nodeIdx: 1, stratumKey: "telos" },
+  { key: "gameplay", label: "Gameplay", nodeIdx: 2, stratumKey: "character" },
 ];
 
 const ORGAN_SLUGS = [
@@ -78,13 +89,13 @@ export default async function start({ app, reason, $, chip, show, parse }) {
     ["lod-btn", "uorc-btn", "render-btn", "import-btn", "glb-file", "studio-btn", "mesh-btn", "sim-btn", "cam-btn", "audio-btn", "glb-btn", "snap-btn", "prompt-form", "prompt-input", "hud-lod", "hud-stats", "telemetry", "touch-pad", "interact-btn", "lock-btn"].map((k) => $(`ve-${k}`));
 
   let lodIdx = 2, simLive = false, camPreset = "landmark", renderMode = "webgl2", fMov = false;
-  let activeProject = "Sunspire Regatta", activeRoleKey = "director", activeRoleLabel = "Director";
+  let activeProject = "Sunspire Harbor Regatta", activeStratumKey = "telos", activeRoleKey = "director";
   let aSlot = 0, gazeMs = 300, pYaw = 0, pPit = 0, pDst = 0, jumpQueued = false;
   let sEye = [10.2, 8.5, 25.3], sTgt = [2.2, 3.8, 9.2], dragging = false, rafId = 0;
   let lTris = 0, lVis = 24, lClr = 290, isSw = false, offOk = false;
   let nextReqId = 1, workerFramesInFlight = 0, lSent = 0, lSentW = 0, lSentH = 0, fbR = null, fbM = null, stM = null;
   const organModes = new Uint8Array(11);
-  const roleButtons = new Map();
+  const stratumButtons = new Map();
 
   const isOrganAllowed = (idx, allowGesture = false) =>
     organModes[idx] === 2 ? false : Boolean(organModes[idx] === 1 || ORGAN_DEFAULTS[idx] === 1 || allowGesture);
@@ -96,19 +107,24 @@ export default async function start({ app, reason, $, chip, show, parse }) {
   };
   const syncHudTitle = (customSuffix = null) => {
     if (!hudLod) return;
+    const backendName = renderMode === "tile" ? "Wasm 16x16 Tile" : "WebGL2 PBR";
     hudLod.textContent = customSuffix
-      ? `${activeProject} · ${customSuffix}`
-      : `${activeProject} · ${activeRoleLabel} · ${LODS[lodIdx].short}`;
+      ? `Verdant Engine · ${customSuffix}`
+      : `Verdant Engine · ${backendName} · ${LODS[lodIdx].label}`;
+  };
+  const syncStratumHighlight = (stratumKey) => {
+    if (RUNTIME_STRATA.some((s) => s.key === stratumKey)) {
+      activeStratumKey = stratumKey;
+    }
+    for (const [k, btn] of stratumButtons.entries()) {
+      btn.setAttribute("aria-current", k === activeStratumKey ? "true" : "false");
+    }
   };
   const syncRoleHighlight = (roleKey) => {
     const found = STUDIO_ROLES.find((r) => r.key === roleKey);
     if (found) {
       activeRoleKey = found.key;
-      activeRoleLabel = found.label;
-      syncHudTitle();
-    }
-    for (const [k, btn] of roleButtons.entries()) {
-      btn.setAttribute("aria-current", k === activeRoleKey ? "true" : "false");
+      syncStratumHighlight(found.stratumKey);
     }
   };
 
@@ -142,8 +158,8 @@ export default async function start({ app, reason, $, chip, show, parse }) {
   }
 
   const hudStr = (fps) => {
-    const viewTag = renderMode === "tile" ? "Ref Tile · " : "";
-    return `${fps ? `${fps} · ` : ""}${viewTag}Observer Coherent · W5H 8/8 · ${lTris} tris · Clear ${lClr}mm`;
+    const triTag = lTris > 0 ? `${lTris.toLocaleString()} tris · ` : "";
+    return `${fps ? `${fps} · ` : ""}Holo Verified · 15 Semirings · ${triTag}Clear ${lClr}mm`;
   };
 
   let eW = null;
@@ -191,7 +207,10 @@ export default async function start({ app, reason, $, chip, show, parse }) {
 
   function setSim(next) {
     simLive = Boolean(next);
-    if (simBtn) { simBtn.setAttribute("aria-pressed", String(simLive)); simBtn.textContent = simLive ? "Playing" : "Play"; }
+    if (simBtn) {
+      simBtn.setAttribute("aria-pressed", String(simLive));
+      simBtn.textContent = simLive ? "Pause Physics" : "Step Physics";
+    }
     reqR();
   }
 
@@ -205,10 +224,10 @@ export default async function start({ app, reason, $, chip, show, parse }) {
     camPreset = forcePreset || order[(order.indexOf(camPreset) + 1) % 3]; fMov = false;
     syncPossessedUi();
     const spec = camPreset === "landmark"
-      ? ["Rig: Orbit", "camera-focus-landmark", { target: [2.2, 3.8, 9.2], dist: 18.5, yawMilli: 460, pitchMilli: 260 }, "Orbit Rig · Near-Sphere Guarded"]
+      ? ["Camera: Orbit", "camera-focus-landmark", { target: [2.2, 3.8, 9.2], dist: 18.5, yawMilli: 460, pitchMilli: 260 }, "Orbit Camera · Near-Sphere Guarded (>=290mm)"]
       : camPreset === "third"
-        ? ["Rig: 3rd IK", "camera-set-mode", { mode: 0, simClockSec: sClk }, "3rd-Person Character Rig · WASD + Foot IK"]
-        : ["Rig: 1st Eye", "camera-set-mode", { mode: 1, simClockSec: sClk }, "1st-Person Camera · Head Masked"];
+        ? ["Camera: 3rd IK", "camera-set-mode", { mode: 0, simClockSec: sClk }, "3rd-Person Character Rig · WASD + Foot IK"]
+        : ["Camera: 1st Eye", "camera-set-mode", { mode: 1, simClockSec: sClk }, "1st-Person Eye Camera · Head Masked"];
     if (camBtn) camBtn.textContent = spec[0];
     apCam(await cW(spec[1], spec[2])); chip(statusEl, spec[3], "good");
     await syncFb(); reqR();
@@ -217,19 +236,19 @@ export default async function start({ app, reason, $, chip, show, parse }) {
   async function doStory() {
     const r = await cW("story-interact");
     if (!r?.ok) return null;
-    chip(statusEl, r.advanced ? `Narrative -> ${r.title} · Conserved ${r.supply}` : `${r.title} · ${r.objective}`, r.advanced ? "good" : "wait");
+    chip(statusEl, r.advanced ? `StoryAutomaton -> ${r.title} · Conserved ${r.supply}` : `${r.title} · ${r.objective}`, r.advanced ? "good" : "wait");
     return r;
   }
 
   const qVer = async (q) => { try { return app ? show(await app.dispatch(parse(q))) : null; } catch { return null; } };
 
-  async function syncB(query = LODS[lodIdx].key) {
-    if (!app) { chip(statusEl, reason ? "Verifier unavailable" : "Studio offline", "bad"); return; }
+  async function syncB(query = LODS[lodIdx].key, customPrefix = null) {
+    if (!app) { chip(statusEl, reason ? "Verifier unavailable" : "Runtime offline", "bad"); return; }
     const res = await qVer(query);
     if (!res) return;
     if (res.startsWith("conformant:")) {
       const lod = LODS[lodIdx];
-      chip(statusEl, `Observer Coherent · ${activeRoleLabel} · ${lod.short}`, "good");
+      chip(statusEl, customPrefix ? `${customPrefix} · ${query} Conformant` : `Runtime Conformant · ${lod.label} · 15 Semirings`, "good");
     } else chip(statusEl, res.startsWith("refused:") ? res.replace("refused:", "Refused: ") : res, res.startsWith("refused:") ? "warn" : "bad");
   }
 
@@ -241,10 +260,11 @@ export default async function start({ app, reason, $, chip, show, parse }) {
 
   async function togRnd(force = null) {
     renderMode = force || (renderMode === "webgl2" ? "tile" : "webgl2");
-    if (renderBtn) renderBtn.textContent = renderMode === "tile" ? "View: Ref Tile" : "View: PBR";
+    if (renderBtn) renderBtn.textContent = renderMode === "tile" ? "Raster: Wasm Tile" : "Raster: WebGL2";
     const r = await cW("set-render-mode", { mode: renderMode, simClockSec: sClk });
+    syncHudTitle();
     if (hudStats) hudStats.textContent = hudStr("");
-    chip(statusEl, renderMode === "tile" ? `Reference 16x16 Software Tile (${r?.tris ?? lTris} tris)` : `Hardware PBR View (${r?.tris ?? lTris} tris)`, "good");
+    chip(statusEl, renderMode === "tile" ? `Wasm 16x16 Software Tile (${r?.tris ?? lTris} tris)` : `WebGL2 3-Pass PBR (${r?.tris ?? lTris} tris)`, "good");
     reqR();
   }
 
@@ -262,7 +282,7 @@ export default async function start({ app, reason, $, chip, show, parse }) {
     }
     await syncFb();
     syncHudTitle(`Asset ${fileName} (${r.tris} tris)`);
-    chip(statusEl, `Imported ${fileName} · ${r.tris} tris${opfsSaved ? " · cached in OPFS" : ""}`, "good");
+    chip(statusEl, `Imported ${fileName} · ${r.tris} tris${opfsSaved ? " · OPFS cached" : ""}`, "good");
     reqR();
   }
 
@@ -273,7 +293,7 @@ export default async function start({ app, reason, $, chip, show, parse }) {
     const r = await cW("stream-uorc", { targetRank, customStream: bytes, lod, simClockSec: sClk });
     if (r?.ok) {
       lodIdx = targetRank;
-      if (lodBtn) lodBtn.textContent = lod.short;
+      if (lodBtn) lodBtn.textContent = `Fidelity: ${lod.short}`;
       syncHudTitle(`OPFS ${name} (${r.tris} tris)`);
       lTris = r.tris || lTris;
       await syncFb(); reqR();
@@ -316,7 +336,7 @@ export default async function start({ app, reason, $, chip, show, parse }) {
 
   async function focPt(target, dist = 12, label = "Entity", yawMilli = 520, pitchMilli = 300) {
     camPreset = "landmark"; fMov = false; syncPossessedUi();
-    if (camBtn) camBtn.textContent = "Rig: Orbit";
+    if (camBtn) camBtn.textContent = "Camera: Orbit";
     apCam(await cW("camera-focus-landmark", { target, dist, yawMilli, pitchMilli, simClockSec: sClk }));
     await syncFb(); reqR();
     chip(statusEl, `Framed ${label} · Guarded Rig`, "good");
@@ -326,7 +346,7 @@ export default async function start({ app, reason, $, chip, show, parse }) {
     const r = await cW("set-seed", { seed });
     if (r?.ok) {
       apCam(r); await syncFb(); reqR();
-      chip(statusEl, `${activeProject} · Seed ${r.seed} · ${LODS[lodIdx].short}`, "good");
+      chip(statusEl, `Runtime Seed ${r.seed} · ${LODS[lodIdx].label}`, "good");
     }
     return r;
   }
@@ -367,44 +387,51 @@ export default async function start({ app, reason, $, chip, show, parse }) {
   async function setLod(nextIdx, updateBanner = true) {
     lodIdx = ((nextIdx % LODS.length) + LODS.length) % LODS.length;
     const lod = LODS[lodIdx];
-    if (lodBtn) lodBtn.textContent = lod.short;
+    if (lodBtn) lodBtn.textContent = `Fidelity: ${lod.short}`;
     syncHudTitle();
     if (lod.rank < 2) fMov = false;
     if (eW) { eW.postMessage({ kind: "set-lod", lod, simClockSec: sClk }); await syncFb(); }
     reqR(); if (updateBanner) syncB(lod.key);
   }
 
-  async function focNd(idx) {
+  async function focNd(idx, customTitle = null, customQuery = null) {
     const node = NODES[idx];
     if (!node) return;
-    aSlot = node.id; gazeMs = 1400;
-    if (lodIdx < 3) await setLod(3, false);
+    aSlot = Math.min(6, node.id); gazeMs = 1400;
+    if (lodIdx < 3) {
+      lodIdx = 3;
+      if (lodBtn) lodBtn.textContent = `Fidelity: ${LODS[lodIdx].short}`;
+      syncHudTitle();
+    }
     fMov = Boolean(node.followMover);
     if (fMov || node.id === 3) setSim(true);
     camPreset = node.possessExplorer ? "third" : "landmark";
     syncPossessedUi();
-    if (camBtn) camBtn.textContent = node.possessExplorer ? "Rig: 3rd IK" : "Rig: Orbit";
+    if (camBtn) camBtn.textContent = node.possessExplorer ? "Camera: 3rd IK" : "Camera: Orbit";
     apCam(await cW("camera-focus-landmark", {
       possessExplorer: Boolean(node.possessExplorer), target: node.target, dist: node.dist,
-      yawMilli: node.yawMilli ?? 620, pitchMilli: node.pitchMilli ?? 350, simClockSec: sClk,
+      yawMilli: node.yawMilli ?? 620, pitchMilli: node.pitchMilli ?? 350, lod: LODS[lodIdx], simClockSec: sClk,
     }));
-    await syncFb(); reqR(); await syncB(node.query);
+    if (hudStats) hudStats.textContent = hudStr("");
+    await syncFb(); if (isAnim() || !offOk) reqR();
+    await syncB(customQuery || node.query, customTitle || node.name);
   }
 
   async function strUorc(targetRank) {
     const clamped = Math.max(0, Math.min(LODS.length - 1, targetRank | 0));
     lodIdx = clamped;
     const lod = LODS[lodIdx];
-    if (lodBtn) lodBtn.textContent = lod.short;
+    if (lodBtn) lodBtn.textContent = `Fidelity: ${lod.short}`;
+    if (uorcBtn) uorcBtn.textContent = clamped >= 4 ? "Stream LOD0 Proxy" : "Stream LOD4 HD";
     syncHudTitle();
     if (lod.rank < 2) fMov = false;
-    chip(statusEl, `Streaming .uorc -> ${lod.short}…`, "wait");
+    chip(statusEl, `Streaming .uorc -> ${lod.label}…`, "wait");
     if (eW) {
       const r = await cW("stream-uorc", { targetRank: clamped, lod, simClockSec: sClk });
       if (r?.tris) lTris = r.tris;
       await syncFb();
       reqR();
-      if (r?.ok) { chip(statusEl, `Streamed ${lod.short} (${lTris} tris · Σ=${r.codedChecksum})`, "good"); return r; }
+      if (r?.ok) { chip(statusEl, `Streamed ${lod.label} (${lTris} tris · Σ=${r.codedChecksum})`, "good"); return r; }
     }
     await setLod(clamped, true);
     return null;
@@ -455,7 +482,7 @@ export default async function start({ app, reason, $, chip, show, parse }) {
 
   async function rstSnap(bytes, label = "UORC") {
     const r = await cW("restore-snapshot", { bytes });
-    if (r?.ok) { await setLod(r.lodRank ?? 3, false); chip(statusEl, `Restored ${label} · ${LODS[lodIdx].short} (${r.byteLen}B)`, "good"); return true; }
+    if (r?.ok) { await setLod(r.lodRank ?? 3, false); chip(statusEl, `Restored ${label} · ${LODS[lodIdx].label} (${r.byteLen}B)`, "good"); return true; }
     chip(statusEl, `Refused tampered ${label} snapshot`, "warn");
     return false;
   }
@@ -553,26 +580,27 @@ export default async function start({ app, reason, $, chip, show, parse }) {
     if (isAnim()) rafId = requestAnimationFrame(frame);
   }
 
-  const roleBadges = [];
+  const stratumBadges = [];
   const el = (t, c, x) => { const n = document.createElement(t); if (c) n.className = c; if (x) n.textContent = x; return n; };
   if (tele) {
     tele.replaceChildren();
-    for (const role of STUDIO_ROLES) {
-      const li = el("li"), b = el("button", "again"), bg = el("span", "ve-role-sub", role.roleTag);
+    for (const stratum of RUNTIME_STRATA) {
+      const li = el("li"), b = el("button", "again"), bg = el("span", "ve-stratum-sub", stratum.tag);
       b.type = "button";
-      b.id = `ve-role-${role.key}-btn`;
-      b.dataset.roleKey = role.key;
-      b.setAttribute("aria-current", role.key === activeRoleKey ? "true" : "false");
-      b.append(el("span", 0, role.label), bg);
+      b.id = `ve-stratum-${stratum.key}-btn`;
+      b.dataset.stratumKey = stratum.key;
+      b.setAttribute("aria-current", stratum.key === activeStratumKey ? "true" : "false");
+      b.title = `Frame ${stratum.label} in the 3D stage and verify ${stratum.query}`;
+      b.append(el("span", 0, stratum.label), bg);
       b.onclick = async () => {
-        syncRoleHighlight(role.key);
-        await focNd(role.nodeIdx);
-        await openSt(role.key);
+        syncStratumHighlight(stratum.key);
+        activeRoleKey = stratum.roleKey;
+        await focNd(stratum.nodeIdx, stratum.label, stratum.query);
       };
       li.append(b);
       tele.append(li);
-      roleButtons.set(role.key, b);
-      roleBadges.push({ role, badge: bg, btn: b });
+      stratumButtons.set(stratum.key, b);
+      stratumBadges.push({ stratum, badge: bg, btn: b });
     }
   }
 
@@ -601,10 +629,10 @@ export default async function start({ app, reason, $, chip, show, parse }) {
   syncHudTitle();
   const bootSnap = await rstHash();
   if (location.hash.startsWith("#studio=")) openSt(location.hash.slice(8).trim());
-  if (!bootSnap) chip(statusEl, `Observer Coherent · ${activeRoleLabel} · ${LODS[lodIdx].short}`, "good");
+  if (!bootSnap) chip(statusEl, `Runtime Conformant · ${LODS[lodIdx].label} · 15 Semirings`, "good");
   reqR();
   (async () => {
-    if (!app) { if (!bootSnap) chip(statusEl, reason ? "Verifier unavailable" : "Studio offline", "bad"); return; }
+    if (!app) { if (!bootSnap) chip(statusEl, reason ? "Verifier unavailable" : "Runtime offline", "bad"); return; }
     for (let w = 0; w < 40; w++) {
       const ex = document.getElementById("frame")?.getAttribute("examples") || "";
       if (/^\d+\/\d+$/.test(ex)) break;
@@ -619,14 +647,14 @@ export default async function start({ app, reason, $, chip, show, parse }) {
       lod.res = pRat(f.res, lod.res); lod.density = pRat(f.density, lod.density);
       lod.lossless = f.lossless === "1"; lod.sky = pTri(f.sky, 100, lod.sky); lod.fog = pTri(f.fog, 100, lod.fog);
     }
-    for (const { role, badge, btn } of roleBadges) {
+    for (const { stratum, badge, btn } of stratumBadges) {
       await yieldTask();
-      const rf = pConf(await qVer(role.query));
-      if (!rf) continue;
-      badge.className = "ve-role-sub";
-      badge.textContent = role.roleTag;
+      const sf = pConf(await qVer(stratum.query));
+      if (!sf) continue;
+      badge.className = "ve-stratum-sub";
+      badge.textContent = stratum.tag;
       btn.dataset.holoConformant = "true";
-      btn.title = `${role.label} (${role.roleTag}) — ${role.query} verified`;
+      btn.title = `${stratum.label} (${stratum.tag}) — ${stratum.query} verified`;
     }
     await yieldTask();
     const af = pConf(await qVer("scene:acoustics"));

@@ -300,7 +300,7 @@ function readSplitMeshViews(host) {
   return { staticViews, dynViews, instViews, tris };
 }
 
-function drawScene(eye, lookTarget, lodSpec, simClockSec, rebuildDynamic = false, targetW = 0, targetH = 0) {
+function drawScene(eye, lookTarget, lodSpec, simClockSec, rebuildDynamic = false, targetW = 0, targetH = 0, forceSync = true) {
   const host = activeSceneHost();
   if (!host) return { tris: 0, aspect: 1.6 };
   if (rebuildDynamic && !customGlbActive) {
@@ -342,7 +342,7 @@ function drawScene(eye, lookTarget, lodSpec, simClockSec, rebuildDynamic = false
     const fovRad = Math.PI / 3.4;
     const proj = mat4Perspective(fovRad, aspect, 0.25, CSM_FAR_METERS);
     const view = mat4LookAt(eye, lookTarget, [0, 1, 0]);
-    renderer.render(mat4Mul(proj, view), eye, lodSpec, simClockSec || 0, lookTarget, fovRad);
+    renderer.render(mat4Mul(proj, view), eye, lodSpec, simClockSec || 0, lookTarget, fovRad, forceSync);
   }
 
   return { tris: split?.tris ?? 0, aspect };
@@ -448,6 +448,14 @@ self.onmessage = async ({ data: msg }) => {
     if (msg.kind === "camera-focus-landmark") {
       if (msg.possessExplorer && !customGlbActive) await ensureUorcSceneHost();
       const sh = simHost();
+      if (msg.lod) {
+        currentLod = msg.lod;
+        customGlbActive = false;
+        const reqRank = (currentLod?.rank ?? 3) >>> 0;
+        if ((sh.verdant_wasm_active_lod_rank() >>> 0) !== reqRank) {
+          sh.verdant_wasm_set_lod_rank(reqRank);
+        }
+      }
       const aspectMilli = canvas && canvas.height > 0 ? Math.round((canvas.width / canvas.height) * 1000) >>> 0 : 1600;
       if (msg.possessExplorer) {
         lastAnchorActive = false;
@@ -468,7 +476,7 @@ self.onmessage = async ({ data: msg }) => {
       }
       if (!customGlbActive) sh.verdant_wasm_scene_rebuild_buffers(msg.simClockSec || 0);
       const cam = readSolvedCamera(sh);
-      const stats = drawScene(cam.eye, cam.lookTarget, currentLod, msg.simClockSec || 0, false);
+      const stats = drawScene(cam.eye, cam.lookTarget, currentLod, msg.simClockSec || 0, false, 0, 0, true);
       self.postMessage({ kind: "camera-updated", id: msg.id, camera: cam, tris: stats.tris });
       return;
     }
@@ -574,7 +582,7 @@ self.onmessage = async ({ data: msg }) => {
         Math.round(cam.yawRad * 1000) | 0,
       );
 
-      const stats = drawScene(cam.eye, cam.lookTarget, lod, msg.simClockSec || 0, Boolean(msg.stepPhysics), targetW, targetH);
+      const stats = drawScene(cam.eye, cam.lookTarget, lod, msg.simClockSec || 0, Boolean(msg.stepPhysics), targetW, targetH, false);
       const dx = cam.lookTarget[0] - cam.eye[0];
       const dy = cam.lookTarget[1] - cam.eye[1];
       const dz = cam.lookTarget[2] - cam.eye[2];

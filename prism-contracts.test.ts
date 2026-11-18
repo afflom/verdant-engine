@@ -5,6 +5,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
   runAllPrismContractChecks,
+  verifyPlatformDifferentiationAndCatalogsContract,
   verifyPrismHoloContract,
   verifyPrismKernelAlignmentAndCleanRefactorContract,
   verifyRoleDrivenStudioAndDemoSeparationContract,
@@ -14,6 +15,14 @@ import {
   verifyUnifiedHostAndAudioContract,
   verifyZeroSlmBypassContract,
 } from "./scripts/enforce-prism-contracts.mjs";
+import {
+  PRISM_MODEL_CATALOGS,
+  VERDANT_PLATFORM_ORGANS,
+  catalogModelsForRole,
+  filterCatalogModels,
+  parseConformantKeyValues,
+  summarizeCatalogCoverage,
+} from "./site/prism-catalogs.mjs";
 import {
   STARTER_ARCHETYPES,
   STUDIO_ROLE_KEYS,
@@ -33,11 +42,12 @@ import {
 
 const ROOT = fileURLToPath(new URL("./", import.meta.url));
 
-test("C1-C9: all repository Prism component contracts pass end-to-end", async () => {
+test("C1-C10: all repository Prism component contracts pass end-to-end", async () => {
   const summary = await runAllPrismContractChecks(ROOT);
   assert.ok(summary.vectors >= 42, `expected >=42 Holo acceptance vectors, got ${summary.vectors}`);
   assert.equal(summary.holoQueriesVerified, 61);
   assert.equal(summary.holoRefusalsVerified, 4);
+  assert.ok(summary.catalogModelsVerified >= 28);
   assert.equal(summary.defaultSeed, 7);
 });
 
@@ -287,4 +297,88 @@ test("Decoupled studio-data and studio-scaffolder modules preserve FI-08 {0, 1} 
   assert.ok(!/[+/=]/.test(encoded));
   assert.deepEqual(base64UrlToBytes(encoded), payload);
   assert.equal(base64UrlToBytes("invalid$$$"), null);
+});
+
+test("Prism Catalogs pure module filters lifecycle stages, domains, roles, and parses Holo verdicts", () => {
+  const cov = summarizeCatalogCoverage();
+  assert.equal(cov.organCount, 5);
+  assert.equal(cov.domainCount, 8);
+  assert.equal(cov.lifecycleCount, 8);
+  assert.ok(cov.totalModels >= 28);
+
+  const policyModels = filterCatalogModels({ domain: "CAT-POLICY" });
+  assert.ok(policyModels.some((m) => m.id === "STD-FK07-PRIVACY-ORGANS"));
+
+  for (const rk of STUDIO_ROLE_KEYS) {
+    assert.ok(catalogModelsForRole(rk).length >= 3, `expected >=3 governing models for role ${rk}`);
+  }
+
+  assert.deepEqual(parseConformantKeyValues("conformant:lod=3,lossless=1"), { lod: "3", lossless: "1" });
+  assert.equal(parseConformantKeyValues("refused:zero-extent"), null);
+});
+
+test("Planted Defect Gate C10: rejects Engine/Studio conflation, cold-boot static imports, and unmodeled catalog entries", () => {
+  const validC10 = {
+    rootDir: ROOT,
+    cardHtml: readFileSync(join(ROOT, "site", "card.html"), "utf8"),
+    cardSource: readFileSync(join(ROOT, "site", "card.mjs"), "utf8"),
+    studioPageHtml: readFileSync(join(ROOT, "site", "studio", "index.html"), "utf8"),
+    studioPageSource: readFileSync(join(ROOT, "site", "studio", "studio-page.mjs"), "utf8"),
+    catalogsHtml: readFileSync(join(ROOT, "site", "catalogs", "index.html"), "utf8"),
+    catalogsPageSource: readFileSync(join(ROOT, "site", "catalogs", "catalogs.mjs"), "utf8"),
+    organs: VERDANT_PLATFORM_ORGANS,
+    catalogEntries: PRISM_MODEL_CATALOGS,
+  };
+
+  assert.throws(
+    () =>
+      verifyPlatformDifferentiationAndCatalogsContract({
+        ...validC10,
+        cardHtml: validC10.cardHtml.replace("Verdant Engine 3D runtime stage", "Verdant Studio 3D authoring viewport"),
+      }),
+    /Conflation detected/,
+  );
+
+  assert.throws(
+    () =>
+      verifyPlatformDifferentiationAndCatalogsContract({
+        ...validC10,
+        cardSource: `import { openStudioModal } from "./studio.mjs";\n${validC10.cardSource}`,
+      }),
+    /must use dynamic import\(\)/,
+  );
+
+  assert.throws(
+    () =>
+      verifyPlatformDifferentiationAndCatalogsContract({
+        ...validC10,
+        studioPageSource: validC10.studioPageSource.replace("/worker-runtime/index.mjs", "/vendor/prism-code/src/index.mjs"),
+      }),
+    /unshimmed \/vendor\/prism-code\//,
+  );
+
+  assert.throws(
+    () =>
+      verifyPlatformDifferentiationAndCatalogsContract({
+        ...validC10,
+        catalogEntries: [
+          ...PRISM_MODEL_CATALOGS,
+          {
+            id: "STD-FAKE-UNMODELED",
+            title: "Handwritten Spec",
+            authority: "None",
+            claimLevel: "Ad-hoc",
+            domain: "CAT-ARCH",
+            lifecycle: "architect",
+            lexModule: "app/src/NonExistent.lex.tex",
+            holoQueries: ["summary"],
+            refusalQueries: [],
+            studioRoles: ["code"],
+            taxon: ["A", "B", "C"],
+            invariant: "Unmodeled",
+          },
+        ],
+      }),
+    /non-existent LexLean module/,
+  );
 });
