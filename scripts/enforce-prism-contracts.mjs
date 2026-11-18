@@ -1026,6 +1026,83 @@ export function verifyPlatformDifferentiationAndCatalogsContract({
   }
 }
 
+export function verifyExternalOraclesAndRuntimeExclusivityContract({
+  rootDir = ROOT_DIR,
+  authoritiesToml = readFileSync(join(rootDir, "model", "authorities.toml"), "utf8"),
+  extraSources = [],
+} = {}) {
+  // 1. Parse SHA-256 file locks from `model/authorities.toml` and verify every `catalogs/**` corpus:
+  const locks = [];
+  let cur = null;
+  for (const rawLine of authoritiesToml.split(/\r?\n/)) {
+    const line = rawLine.trim();
+    if (line === "[[authority]]") {
+      if (cur && cur.id && cur.path && cur.sha256) locks.push(cur);
+      cur = {};
+      continue;
+    }
+    if (!cur || !line || line.startsWith("#")) continue;
+    const eq = line.indexOf("=");
+    if (eq === -1) continue;
+    const key = line.slice(0, eq).trim();
+    const val = line.slice(eq + 1).trim().replace(/^"|"$/g, "");
+    if (key === "id") cur.id = val;
+    if (key === "artifact" || key === "path") cur.path = val;
+    if ((key === "checksum" || key === "sha256") && val !== "none") cur.sha256 = val;
+  }
+  if (cur && cur.id && cur.path && cur.sha256) locks.push(cur);
+
+  if (locks.length < 5) {
+    throw new Error(`Expected >= 5 SHA-256-locked external authority catalogs in model/authorities.toml, found ${locks.length}`);
+  }
+  for (const lock of locks) {
+    const abs = join(rootDir, lock.path);
+    if (!existsSync(abs)) {
+      throw new Error(`Missing locked authority catalog file "${lock.path}" (${lock.id})`);
+    }
+    const bytes = readFileSync(abs);
+    const sha = createHash("sha256").update(bytes).digest("hex");
+    if (sha !== lock.sha256) {
+      throw new Error(`Authority catalog SHA-256 mismatch for ${lock.id} (${lock.path}): expected ${lock.sha256}, observed ${sha}`);
+    }
+  }
+
+  // 2. Enforce strict Verdant Engine runtime exclusivity across manifests and live surfaces:
+  const dmnCatalog = JSON.parse(readFileSync(join(rootDir, "catalogs", "language", "iso24617-dmn-dialogue.json"), "utf8"));
+  const prohibited = dmnCatalog.prohibitedExternalRuntimes || [];
+  if (prohibited.length < 10) {
+    throw new Error("AUTH-ISO-24617-DMN must enumerate prohibited external model runtimes");
+  }
+
+  const scanTargets = [
+    ["package.json", readFileSync(join(rootDir, "package.json"), "utf8")],
+    ["Cargo.toml", readFileSync(join(rootDir, "Cargo.toml"), "utf8")],
+    ["crates/verdant-core/Cargo.toml", readFileSync(join(rootDir, "crates", "verdant-core", "Cargo.toml"), "utf8")],
+    ["crates/verdant-wasm/Cargo.toml", readFileSync(join(rootDir, "crates", "verdant-wasm", "Cargo.toml"), "utf8")],
+    ["site/card.mjs", readFileSync(join(rootDir, "site", "card.mjs"), "utf8")],
+    ["site/studio.mjs", readFileSync(join(rootDir, "site", "studio.mjs"), "utf8")],
+    ["site/engine-worker.mjs", readFileSync(join(rootDir, "site", "engine-worker.mjs"), "utf8")],
+    ["site/demo/demo.mjs", readFileSync(join(rootDir, "site", "demo", "demo.mjs"), "utf8")],
+    ["templates/browser-3d-starter/Cargo.toml", readFileSync(join(rootDir, "templates", "browser-3d-starter", "Cargo.toml"), "utf8")],
+    ["templates/browser-3d-starter/game.mjs", readFileSync(join(rootDir, "templates", "browser-3d-starter", "game.mjs"), "utf8")],
+    ...extraSources,
+  ];
+
+  for (const [label, text] of scanTargets) {
+    for (const pkg of prohibited) {
+      if (
+        text.includes(`"${pkg}"`) ||
+        text.includes(`'${pkg}'`) ||
+        text.includes(`"${pkg}/`) ||
+        text.includes(`'${pkg}/`) ||
+        text.includes(`${pkg} =`)
+      ) {
+        throw new Error(`Prohibited external model runtime "${pkg}" detected in ${label} (Verdant Engine is the sole permitted model runtime)`);
+      }
+    }
+  }
+}
+
 export async function runAllPrismContractChecks(rootDir = ROOT_DIR) {
   const holoBuffer = readFileSync(join(rootDir, "site", "app.holo"));
   const coreWasmBytes = readFileSync(join(rootDir, "site", "verdant-wasm.wasm"));
@@ -1089,6 +1166,7 @@ export async function runAllPrismContractChecks(rootDir = ROOT_DIR) {
     catalogsHtml,
     catalogsPageSource,
   });
+  verifyExternalOraclesAndRuntimeExclusivityContract({ rootDir });
 
   // Audit all shipped Rust crate sources (`FI-08` zero magic constants, excluding generated prism_kernel.rs):
   for (const relDir of [

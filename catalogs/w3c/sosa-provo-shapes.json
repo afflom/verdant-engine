@@ -1,0 +1,64 @@
+{
+  "spec": "verdant/imported-authority-catalog/1",
+  "authorityId": "AUTH-W3C-SOSA-PROVO",
+  "standard": "W3C SOSA/SSN (TR/vocab-ssn-20171019) & W3C PROV-O (TR/prov-o-20130430)",
+  "license": "W3C-20150513",
+  "prefixes": {
+    "sosa": "http://www.w3.org/ns/sosa/",
+    "prov": "http://www.w3.org/ns/prov#",
+    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+    "xsd": "http://www.w3.org/2001/XMLSchema#",
+    "schema": "https://schema.org/"
+  },
+  "classes": [
+    "sosa:Observation",
+    "sosa:Actuation",
+    "sosa:Sensor",
+    "sosa:Actuator",
+    "sosa:FeatureOfInterest",
+    "sosa:ObservableProperty",
+    "sosa:Result",
+    "prov:Entity",
+    "prov:Activity",
+    "prov:Agent",
+    "prov:Person",
+    "prov:SoftwareAgent"
+  ],
+  "subClassOf": {
+    "prov:Person": "prov:Agent",
+    "prov:SoftwareAgent": "prov:Agent"
+  },
+  "shapes": {
+    "sosa:Observation": {
+      "requiredPredicates": ["sosa:madeBySensor", "sosa:hasFeatureOfInterest"],
+      "atLeastOneOf": ["sosa:hasSimpleResult", "sosa:hasResult"],
+      "iriPredicates": ["sosa:madeBySensor", "sosa:hasFeatureOfInterest", "sosa:observedProperty", "sosa:hasResult"],
+      "literalPredicates": ["sosa:hasSimpleResult", "sosa:resultTime"]
+    },
+    "sosa:Actuation": {
+      "requiredPredicates": ["sosa:madeByActuator", "sosa:hasFeatureOfInterest"],
+      "atLeastOneOf": ["sosa:hasSimpleResult", "sosa:hasResult"],
+      "iriPredicates": ["sosa:madeByActuator", "sosa:hasFeatureOfInterest", "sosa:hasResult"],
+      "literalPredicates": ["sosa:hasSimpleResult", "sosa:resultTime"]
+    },
+    "prov:Entity": {
+      "requiredPredicates": [],
+      "atLeastOneOf": ["prov:wasDerivedFrom", "prov:wasGeneratedBy", "prov:wasAttributedTo"],
+      "iriPredicates": ["prov:wasDerivedFrom", "prov:wasGeneratedBy", "prov:wasAttributedTo"],
+      "literalPredicates": ["prov:value", "prov:generatedAtTime"],
+      "acyclicPredicate": "prov:wasDerivedFrom"
+    },
+    "prov:Activity": {
+      "requiredPredicates": ["prov:wasAssociatedWith"],
+      "atLeastOneOf": [],
+      "iriPredicates": ["prov:wasAssociatedWith", "prov:used"],
+      "literalPredicates": ["prov:startedAtTime", "prov:endedAtTime"]
+    },
+    "prov:Agent": {
+      "requiredPredicates": [],
+      "atLeastOneOf": [],
+      "iriPredicates": ["prov:actedOnBehalfOf"],
+      "literalPredicates": ["schema:name"]
+    }
+  }
+}

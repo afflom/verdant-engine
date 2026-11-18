@@ -3962,3 +3962,240 @@ fn engine_ve_37() {
         assert!(renderer.contains(cap), "dynamic stream capacity {cap}");
     }
 }
+
+/// `VE-38`: Imported Schema.org, W3C SOSA and PROV-O, Khronos glTF 2.0 HD PBR and skeletal skinning, W3C naga WebGL2 GLSL ES 3.00 transpilation, OMG DMN 1.5 model admission, and multi-domain world catalogs validate against SHA-256-locked external authority oracles while prohibiting external model runtimes outside Verdant Engine
+#[test]
+fn engine_ve_38() {
+    use std::collections::{BTreeMap, BTreeSet};
+    use std::path::Path;
+    use verdant_core::error::OracleValidationError;
+    use verdant_core::gltf_io::{
+        export_hd_scene_to_glb, export_skinned_character_to_glb, import_glb_to_scene,
+        validate_glb_bytes,
+    };
+    use verdant_core::render::{
+        transpile_builtin_engine_shaders_webgl2, transpile_wgsl_to_webgl2_glsl, ShaderStageKind,
+        WGSL_PBR_SURFACE_SHADER,
+    };
+    use verdant_core::standards::{CatalogBundleRegistry, DmnAdmissionInput};
+
+    let repo_root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+    let registry = CatalogBundleRegistry::load_from_repo_dir(&repo_root)
+        .expect("all 5 SHA-256-locked authority catalogs load and cross-validate");
+    assert_eq!(registry.file_locks.len(), 5);
+    assert_eq!(registry.domain_packs.domains.len(), 4);
+    assert_eq!(registry.khronos_hd.materials.len(), 8);
+    assert_eq!(registry.khronos_hd.rigs.len(), 4);
+    assert_eq!(registry.language_dmn.intent_routes.len(), 16);
+
+    // Embedded compile-time registry matches disk registry:
+    let embedded = CatalogBundleRegistry::embedded().expect("embedded Wasm-ready catalog registry");
+    assert_eq!(embedded.file_locks, registry.file_locks);
+
+    // 1. Instantiate all 4 differentiated domain packs (`Sunspire`, `Meridian`, `Glasshouse`, `Starfall`)
+    // and verify distinct seeds, distinct Sabine acoustics, distinct conserved items, and live Schema.org + SOSA/PROV-O validity:
+    let mut seeds = BTreeSet::new();
+    let mut rt60_buckets = BTreeSet::new();
+    for slug in [
+        "sunspire-regatta",
+        "meridian-observatory",
+        "glasshouse-chronicle",
+        "starfall-bastion",
+    ] {
+        let pack = registry
+            .instantiate_domain_pack(slug, Some(2))
+            .unwrap_or_else(|e| panic!("failed to instantiate domain `{slug}`: {e}"));
+        assert!(
+            seeds.insert(pack.spec.seed),
+            "each domain pack must have a distinct seed"
+        );
+        let rt60_ms = (pack.acoustic_environment.sabine_rt60_seconds() * 1000.0).round() as i64;
+        rt60_buckets.insert(rt60_ms);
+        assert!(!pack.characters.is_empty());
+        assert!(pack.item_ledger.total_supply() > 0);
+
+        let schema_rep = registry
+            .schema_org
+            .validate_schema_org_jsonld(&pack.schema_org_jsonld)
+            .expect("domain Schema.org JSON-LD graph conforms");
+        assert!(schema_rep.entity_count >= 5);
+
+        let sosa_rep = registry
+            .sosa_provo
+            .validate_sosa_provo_turtle(&pack.sosa_provo_turtle)
+            .expect("domain W3C SOSA/PROV-O Turtle graph conforms");
+        assert_eq!(sosa_rep.status, "conforms");
+        assert_eq!(sosa_rep.observation_count, 1);
+        assert_eq!(sosa_rep.provenance_entity_count, 2);
+
+        // Export HD domain scene with ratified `KHR_materials_*` extensions and verify via Khronos `gltf`:
+        let scene_glb =
+            export_hd_scene_to_glb(&pack.sector.scene, &pack.sector.meshes, &pack.hd_materials)
+                .expect("export HD scene GLB with Khronos PBR extensions");
+        let glb_summary = validate_glb_bytes(&scene_glb).expect("Khronos glTF 2.0 oracle");
+        assert!(glb_summary.mesh_count >= 8);
+    }
+    assert_eq!(
+        rt60_buckets.len(),
+        4,
+        "all 4 domains must exhibit distinct Sabine acoustic reverberation profiles"
+    );
+
+    // 2. Export 22-joint Skinned Character to `.glb` (`skins`, `inverseBindMatrices`, `JOINTS_0`, `WEIGHTS_0`, `COLOR_0`)
+    // and round-trip through `import_glb_to_scene` (`gltf::import_slice` oracle):
+    let meridian = registry
+        .instantiate_domain_pack("meridian-observatory", Some(2))
+        .expect("meridian pack");
+    let lyra = &meridian.characters[0];
+    let skinned_glb = export_skinned_character_to_glb(lyra, &meridian.hd_materials[2])
+        .expect("export 22-joint skinned character GLB");
+    let reimported = import_glb_to_scene(&skinned_glb).expect("reimport skinned character GLB");
+    assert_eq!(reimported.skeletons.len(), 1);
+    assert_eq!(reimported.skeletons[0].joints.len(), 22);
+    assert_eq!(
+        reimported.skin_weights[0].len(),
+        lyra.bind_mesh.vertex_count(),
+        "every vertex round-tripped normalized 4-joint LBS weights"
+    );
+
+    // 3. Authoritative W3C `naga` WGSL -> WebGL2 GLSL ES 3.00 (`#version 300 es`) transpilation:
+    let transpiled =
+        transpile_builtin_engine_shaders_webgl2().expect("transpile all 4 WGSL shaders to WebGL2");
+    assert_eq!(transpiled.len(), 8);
+    for shader in &transpiled {
+        assert!(
+            shader.glsl_source.starts_with("#version 300 es"),
+            "shader `{}` ({:?}) must emit WebGL2 `#version 300 es`",
+            shader.shader_label,
+            shader.stage
+        );
+        assert!(shader.glsl_source.contains("void main()"));
+    }
+
+    // 4. OMG DMN 1.5 `FIRST`-hit model admission & full-repo Verdant runtime exclusivity audit:
+    let admitted = registry
+        .language_dmn
+        .evaluate_dmn_admission(&DmnAdmissionInput {
+            model_format: "verdant-uorc".to_string(),
+            observer_halted: false,
+            source_locked: true,
+            route_granted: true,
+            runtime_state: "match".to_string(),
+            weights_state: "match".to_string(),
+        })
+        .expect("admitted Verdant UORC model");
+    assert_eq!(admitted.rule_id, "R8-ADMIT-VERDANT");
+    assert_eq!(admitted.outcome, "run");
+
+    let ask_route = registry
+        .language_dmn
+        .evaluate_dmn_admission(&DmnAdmissionInput {
+            model_format: "verdant-coded-matrix".to_string(),
+            observer_halted: false,
+            source_locked: true,
+            route_granted: false,
+            runtime_state: "match".to_string(),
+            weights_state: "match".to_string(),
+        })
+        .expect("ungranted route asks FK-07 consent");
+    assert_eq!(ask_route.outcome, "ask");
+
+    for rel_manifest in [
+        "package.json",
+        "Cargo.toml",
+        "crates/verdant-core/Cargo.toml",
+        "crates/verdant-wasm/Cargo.toml",
+        "site/card.mjs",
+        "site/studio.mjs",
+        "site/engine-worker.mjs",
+        "templates/browser-3d-starter/Cargo.toml",
+        "templates/browser-3d-starter/game.mjs",
+    ] {
+        let text = std::fs::read_to_string(repo_root.join(rel_manifest)).expect(rel_manifest);
+        registry
+            .language_dmn
+            .verify_verdant_runtime_exclusivity(rel_manifest, &text)
+            .unwrap_or_else(|e| panic!("runtime exclusivity failed on `{rel_manifest}`: {e}"));
+    }
+
+    // --- R5 Negative Refusal Assertions (`OracleValidationError`) ---
+
+    // Negative 1: Tampered catalog bytes rejected by SHA-256 lock (`CatalogIntegrityMismatch`):
+    let auth_toml = std::fs::read_to_string(repo_root.join("model/authorities.toml"))
+        .expect("authorities.toml");
+    let mut bad_files: BTreeMap<&str, &[u8]> = BTreeMap::new();
+    bad_files.insert(
+        "catalogs/schema-org/vocabulary.json",
+        b"{\"tampered\":true}",
+    );
+    assert!(matches!(
+        CatalogBundleRegistry::from_locked_bytes(&auth_toml, &bad_files),
+        Err(OracleValidationError::CatalogIntegrityMismatch { .. })
+    ));
+
+    // Negative 2: Invalid Schema.org property domain (`gameItem` on `Person`) refused (`SchemaOrgInvalid`):
+    let bad_schema = serde_json::json!({
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "InvalidPerson",
+        "gameItem": "Sextant"
+    });
+    assert!(matches!(
+        registry.schema_org.validate_schema_org_jsonld(&bad_schema),
+        Err(OracleValidationError::SchemaOrgInvalid { .. })
+    ));
+
+    // Negative 3: W3C SOSA Observation missing `sosa:madeBySensor` refused (`SosaProvoConstraintViolated`):
+    let missing_sensor_ttl = "@prefix sosa: <http://www.w3.org/ns/sosa/> .\n\
+        <urn:obs:1> a sosa:Observation ; sosa:hasFeatureOfInterest <urn:place:1> ; sosa:hasSimpleResult \"42\" .";
+    assert!(matches!(
+        registry
+            .sosa_provo
+            .validate_sosa_provo_turtle(missing_sensor_ttl),
+        Err(OracleValidationError::SosaProvoConstraintViolated { .. })
+    ));
+
+    // Negative 4: Cyclic W3C PROV-O `prov:wasDerivedFrom` chain (`A -> B -> A`) refused (`SosaProvoConstraintViolated`):
+    let cyclic_prov_ttl = "@prefix prov: <http://www.w3.org/ns/prov#> .\n\
+        <urn:ent:a> a prov:Entity ; prov:wasDerivedFrom <urn:ent:b> .\n\
+        <urn:ent:b> a prov:Entity ; prov:wasDerivedFrom <urn:ent:a> .";
+    assert!(matches!(
+        registry
+            .sosa_provo
+            .validate_sosa_provo_turtle(cyclic_prov_ttl),
+        Err(OracleValidationError::SosaProvoConstraintViolated { .. })
+    ));
+
+    // Negative 5: Unknown shader entry point refused by `naga` WebGL2 transpiler (`GlslTranspilationFailed`):
+    assert!(matches!(
+        transpile_wgsl_to_webgl2_glsl(
+            "pbr_surface.wgsl",
+            WGSL_PBR_SURFACE_SHADER,
+            "nonexistent_entry",
+            ShaderStageKind::Vertex
+        ),
+        Err(OracleValidationError::GlslTranspilationFailed { .. })
+    ));
+
+    // Negative 6: Prohibited external ONNX / Transformers runtime refused by DMN & manifest scanner (`ProhibitedExternalModelRuntime`):
+    assert!(matches!(
+        registry
+            .language_dmn
+            .evaluate_dmn_admission(&DmnAdmissionInput {
+                model_format: "onnx".to_string(),
+                observer_halted: false,
+                source_locked: true,
+                route_granted: true,
+                runtime_state: "match".to_string(),
+                weights_state: "match".to_string(),
+            }),
+        Err(OracleValidationError::ProhibitedExternalModelRuntime { .. })
+    ));
+    assert!(matches!(
+        registry.language_dmn.verify_verdant_runtime_exclusivity(
+            "planted-bypass.mjs",
+            "import { pipeline } from '@huggingface/transformers';"
+        ),
+        Err(OracleValidationError::ProhibitedExternalModelRuntime { .. })
+    ));
+}

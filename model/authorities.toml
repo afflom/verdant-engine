@@ -25,4 +25,47 @@
 
 spec = "template/1"
 
-authority = []
+[[authority]]
+id = "AUTH-SCHEMA-ORG"
+name = "Schema.org Vocabulary v28.1"
+citation = "Schema.org Community Group, Schema.org Vocabulary v28.1 (CC-BY-SA-3.0), https://schema.org/version/latest/"
+artifact = "catalogs/schema-org/vocabulary.json"
+checksum = "7392c00803e1d61c42a76315bd9ad37220ec15b7c1c6fa236da9ecf338a0961f"
+statement = "Schema.org defines the class hierarchy (Thing, CreativeWork, 3DModel, VideoGame, SoftwareApplication, Person, Place, IndividualProduct, Action, CommunicateAction) and property domainIncludes/rangeIncludes rules coupling typed entities."
+realized_by = ["VE-38"]
+
+[[authority]]
+id = "AUTH-W3C-SOSA-PROVO"
+name = "W3C SOSA/SSN & W3C PROV-O Ontologies"
+citation = "W3C Recommendation, Semantic Sensor Network Ontology (https://www.w3.org/TR/vocab-ssn/) and PROV-O: The PROV Ontology (https://www.w3.org/TR/prov-o/)"
+artifact = "catalogs/w3c/sosa-provo-shapes.json"
+checksum = "7d4e3c36e438491a505a85d5044e36074c67ce7948ea9cbf0d4480ec37d91df8"
+statement = "W3C SOSA and PROV-O define Observation, Actuation, Sensor, FeatureOfInterest, Entity, Activity, Agent, and acyclic wasDerivedFrom lineage constraints."
+realized_by = ["VE-38", "FI-01", "FI-06"]
+
+[[authority]]
+id = "AUTH-KHRONOS-GLTF2"
+name = "Khronos glTF 2.0 & Ratified PBR Material Extensions"
+citation = "Khronos Group / ISO/IEC 12113:2022 glTF 2.0 Specification and ratified KHR_materials_{ior,specular,transmission,clearcoat,emissive_strength} extensions, https://registry.khronos.org/glTF/"
+artifact = "catalogs/khronos/gltf-hd-materials-rigs.json"
+checksum = "99432a0820b00a3480b1bbe0850ac327bfe6699531aed370e15aff16552bda70"
+statement = "Khronos glTF 2.0 and its ratified PBR extensions define binary GLB chunk framing, skeletal skinning (JOINTS_0, WEIGHTS_0, inverseBindMatrices), and physically based dielectric/metallic/transmissive surface descriptors."
+realized_by = ["VE-04", "VE-19", "VE-38"]
+
+[[authority]]
+id = "AUTH-ISO-24617-DMN"
+name = "ISO 24617-2 Dialogue Acts & OMG DMN 1.5 FIRST-Hit Model Admission"
+citation = "ISO 24617-2:2020 Language resource management — Semantic annotation framework Part 2: Dialogue acts; OMG Decision Model and Notation (DMN) 1.5"
+artifact = "catalogs/language/iso24617-dmn-dialogue.json"
+checksum = "9e4a2ffb231260e60e5aa23683777bb6c2bba76b4243334fb92535ee91c4c321"
+statement = "ISO 24617-2 classifies communicative dialogue acts and epistemic abstention, and OMG DMN 1.5 FIRST-hit decision tables govern locked Verdant-only model admission."
+realized_by = ["VE-22", "VE-38"]
+
+[[authority]]
+id = "AUTH-DOMAIN-PACKS"
+name = "Verdant Imported Multi-Domain World, Character, Item & Automation Catalog"
+citation = "Verdant Platform Imported Domain Catalogs (Sunspire Harbor, Meridian Observatory, Glasshouse Chronicle, Starfall Bastion)"
+artifact = "catalogs/domains/world-packs.json"
+checksum = "9126c51aaf92eff57190870c1f909978b08d83b91ea064a2a9cd9c72d1d4009c"
+statement = "Cataloged multi-domain packs supply differentiated environments, acoustic rooms, HD 3D models, conserved items, and 22-joint character profiles coupled via Schema.org."
+realized_by = ["VE-32", "VE-38"]

@@ -15,4 +15,32 @@
 
 spec = "template/1"
 
-claim = []
+[[claim]]
+id = "AUTH-CL-01"
+level = "some-true"
+authority = "AUTH-SCHEMA-ORG"
+statement = "Schema.org class subsumption and domainIncludes/rangeIncludes rules couple 3DModel, VideoGame, SoftwareApplication, Person, Place, IndividualProduct, and CommunicateAction graphs"
+
+[[claim]]
+id = "AUTH-CL-02"
+level = "some-true"
+authority = "AUTH-W3C-SOSA-PROVO"
+statement = "W3C SOSA Observations require madeBySensor, hasFeatureOfInterest, and a result literal or IRI, and W3C PROV-O Entity derivations form an acyclic graph"
+
+[[claim]]
+id = "AUTH-CL-03"
+level = "some-true"
+authority = "AUTH-KHRONOS-GLTF2"
+statement = "Khronos glTF 2.0 binary containers align JSON and BIN chunks to 4 bytes and bind skeletal skins via JOINTS_0, WEIGHTS_0, and MAT4 inverseBindMatrices alongside ratified PBR extensions"
+
+[[claim]]
+id = "AUTH-CL-04"
+level = "some-true"
+authority = "AUTH-ISO-24617-DMN"
+statement = "ISO 24617-2 dialogue acts separate read-only epistemic inform/question/abstain turns from world-mutating requests and offers under OMG DMN 1.5 FIRST-hit model admission"
+
+[[claim]]
+id = "AUTH-CL-05"
+level = "some-true"
+authority = "AUTH-DOMAIN-PACKS"
+statement = "Imported domain packs differentiate coastal, observatory, botanical, and arena worlds across terrain relief, Sabine acoustics, HD models, items, and character profiles"

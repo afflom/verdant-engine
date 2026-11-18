@@ -1,0 +1,68 @@
+{
+  "spec": "verdant/imported-authority-catalog/1",
+  "authorityId": "AUTH-ISO-24617-DMN",
+  "standard": "ISO 24617-2:2020 Dialogue Act Taxonomy & OMG DMN 1.5 FIRST-Hit Model Admission",
+  "license": "CC-BY-4.0",
+  "prohibitedExternalRuntimes": [
+    "@huggingface/transformers",
+    "onnxruntime-node",
+    "onnxruntime-web",
+    "onnxruntime",
+    "@tensorflow/tfjs",
+    "tensorflow",
+    "three",
+    "@babylonjs/core",
+    "babylonjs",
+    "@mlc-ai/web-llm",
+    "node-llama-cpp",
+    "openai",
+    "@anthropic-ai/sdk"
+  ],
+  "allowedVerdantFormats": ["verdant-uorc", "verdant-coded-matrix", "verdant-holo"],
+  "dmnHitPolicy": "FIRST",
+  "dmnRules": [
+    { "id": "R1-HALTED", "halted": "yes", "outcome": "refuse", "reason": "observer-halted" },
+    { "id": "R2-UNLOCKED", "source": "unlocked", "outcome": "refuse", "reason": "unlocked-model-source" },
+    { "id": "R3-EXTERNAL-FORMAT", "formatNotInAllowed": true, "outcome": "refuse", "reason": "prohibited-external-runtime-format" },
+    { "id": "R4-UNGRANTED-ROUTE", "route": "ungranted", "outcome": "ask", "reason": "fk07-route-ungranted" },
+    { "id": "R5-RUNTIME-MISMATCH", "runtime": "mismatch", "outcome": "refuse", "reason": "verdant-runtime-digest-mismatch" },
+    { "id": "R6-WEIGHTS-MISMATCH", "weights": "mismatch", "outcome": "refuse", "reason": "uorc-weights-digest-mismatch" },
+    { "id": "R7-MISSING-BUNDLE", "missingRuntimeOrWeights": true, "outcome": "fetch", "reason": "stream-uorc-bundle-required" },
+    { "id": "R8-ADMIT-VERDANT", "source": "locked", "runtime": "match", "weights": "match", "route": "granted", "halted": "no", "outcome": "run", "reason": "admitted-verdant-engine-runtime" }
+  ],
+  "dialogueActs": [
+    { "code": 0, "id": "inform", "isoDimension": "autoFeedback", "mutatesWorld": false },
+    { "code": 1, "id": "whQuestion", "isoDimension": "task", "mutatesWorld": false },
+    { "code": 2, "id": "ynQuestion", "isoDimension": "task", "mutatesWorld": false },
+    { "code": 3, "id": "request", "isoDimension": "task", "mutatesWorld": true },
+    { "code": 4, "id": "offer", "isoDimension": "task", "mutatesWorld": true },
+    { "code": 5, "id": "confirm", "isoDimension": "autoFeedback", "mutatesWorld": false },
+    { "code": 6, "id": "disconfirm", "isoDimension": "autoFeedback", "mutatesWorld": false },
+    { "code": 7, "id": "abstain", "isoDimension": "epistemicSafety", "mutatesWorld": false }
+  ],
+  "abstentionToken": "Unknown",
+  "languages": [
+    { "bcp47": "en", "name": "English", "questionStarters": ["what", "where", "who", "how", "which", "when", "why"], "ynStarters": ["is", "are", "can", "does", "do", "has", "have", "did"] },
+    { "bcp47": "es", "name": "Spanish", "questionStarters": ["que", "donde", "quien", "como", "cual", "cuando"], "ynStarters": ["es", "esta", "puede", "hay"] },
+    { "bcp47": "fr", "name": "French", "questionStarters": ["quel", "quelle", "ou", "qui", "comment", "quand"], "ynStarters": ["est", "peut", "avez"] },
+    { "bcp47": "ja", "name": "Japanese", "questionStarters": ["nani", "doko", "dare", "itsu"], "ynStarters": ["desuka", "masuka"] }
+  ],
+  "intentRoutes": [
+    { "index": 0, "slug": "focus-observer", "organ": "wasm-core", "keywords": ["observer", "focus", "gaze", "attention", "core", "gimbal", "holon", "duck", "portrait"] },
+    { "index": 1, "slug": "drive-vehicle", "organ": "wasm-core", "keywords": ["vehicle", "car", "drive", "wheel", "suspension", "chassis", "rover"] },
+    { "index": 2, "slug": "render-tile-wasm", "organ": "wasm-core", "keywords": ["tile", "software", "raster", "cpu", "16x16", "fallback"] },
+    { "index": 3, "slug": "render-webgl2", "organ": "offscreen-canvas", "keywords": ["webgl", "webgl2", "hardware", "gpu", "shader", "pbr"] },
+    { "index": 4, "slug": "stream-uorc-lod3", "organ": "wasm-core", "keywords": ["uorc", "stream", "lod3", "lossless", "decode", "glb", "import"] },
+    { "index": 5, "slug": "stream-uorc-lod4", "organ": "wasm-core", "keywords": ["lod4", "ultra", "uhd", "subdivide", "masonry"] },
+    { "index": 6, "slug": "stitch-shard-sync", "organ": "broadcast-channel", "keywords": ["stitch", "shard", "parity", "peer", "multiplayer", "sync", "prism"] },
+    { "index": 7, "slug": "inspect-formal-ui", "organ": "wasm-core", "keywords": ["ui", "wcag", "contrast", "layout", "diegetic", "compliance", "touch"] },
+    { "index": 8, "slug": "step-xpbd-physics", "organ": "wasm-core", "keywords": ["physics", "joint", "hinge", "impulse", "pendulum", "xpbd"] },
+    { "index": 9, "slug": "open-role-dashboard", "organ": "wasm-core", "keywords": ["dashboard", "producer", "requirements", "traceability", "telos"] },
+    { "index": 10, "slug": "open-role-code", "organ": "wasm-core", "keywords": ["create", "scaffold", "new project", "code", "rust", "tar"] },
+    { "index": 11, "slug": "open-role-design", "organ": "wasm-core", "keywords": ["design", "outliner", "hierarchy", "brand", "tokens"] },
+    { "index": 12, "slug": "open-role-audio", "organ": "audio-worklet", "keywords": ["audio", "sabine", "reverb", "binaural", "room", "modal", "acoustics"] },
+    { "index": 13, "slug": "open-role-director", "organ": "wasm-core", "keywords": ["director", "cinematography", "choreography", "shot", "cut"] },
+    { "index": 14, "slug": "open-role-gameplay", "organ": "wasm-core", "keywords": ["gameplay", "campaign", "tournament", "npc", "directive", "arena"] },
+    { "index": 15, "slug": "narrative-interact", "organ": "wasm-core", "keywords": ["interact", "chronicle", "archivist", "narrative", "quest", "keystone", "podium", "camera", "1st", "first person", "3rd", "third person", "explorer"] }
+  ]
+}

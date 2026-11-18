@@ -5,6 +5,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
   runAllPrismContractChecks,
+  verifyExternalOraclesAndRuntimeExclusivityContract,
   verifyPlatformDifferentiationAndCatalogsContract,
   verifyPrismHoloContract,
   verifyPrismKernelAlignmentAndCleanRefactorContract,
@@ -380,5 +381,29 @@ test("Planted Defect Gate C10: rejects Engine/Studio conflation, cold-boot stati
         ],
       }),
     /non-existent LexLean module/,
+  );
+});
+
+test("Planted Defect Gate C11: rejects tampered authority catalog SHA-256 and prohibited external model runtimes", () => {
+  assert.throws(
+    () =>
+      verifyExternalOraclesAndRuntimeExclusivityContract({
+        rootDir: ROOT,
+        extraSources: [["planted-onnx.mjs", 'import { pipeline } from "@huggingface/transformers";']],
+      }),
+    /Prohibited external model runtime/,
+  );
+
+  const tamperedToml = readFileSync(join(ROOT, "model", "authorities.toml"), "utf8").replace(
+    /[0-9a-f]{64}/,
+    "0".repeat(64),
+  );
+  assert.throws(
+    () =>
+      verifyExternalOraclesAndRuntimeExclusivityContract({
+        rootDir: ROOT,
+        authoritiesToml: tamperedToml,
+      }),
+    /SHA-256 mismatch/,
   );
 });

@@ -800,3 +800,79 @@ impl fmt::Display for NarrativeLawError {
 }
 
 impl std::error::Error for NarrativeLawError {}
+
+/// Refusal returned when an external standard oracle (`Schema.org`, `W3C SOSA/PROV-O`,
+/// `Khronos glTF 2.0`, `W3C naga GLSL ES 3.00`, `OMG DMN 1.5`) or runtime-exclusivity gate fails.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum OracleValidationError {
+    /// Imported catalog file is missing, malformed, or does not match `model/authorities.toml` SHA-256.
+    CatalogIntegrityMismatch {
+        /// Authority identifier (`AUTH-*`).
+        authority_id: String,
+        /// Diagnostic description.
+        detail: String,
+    },
+    /// Schema.org JSON-LD graph violated `@context`, class membership, or property `domainIncludes`/`rangeIncludes`.
+    SchemaOrgInvalid {
+        /// Node `@id` or path.
+        subject: String,
+        /// Diagnostic description.
+        detail: String,
+    },
+    /// W3C SOSA observation/actuation or W3C PROV-O graph violated required predicates, range types, or `wasDerivedFrom` acyclicity.
+    SosaProvoConstraintViolated {
+        /// Subject IRI or blank node.
+        subject: String,
+        /// Violated shape or predicate rule.
+        detail: String,
+    },
+    /// OMG DMN 1.5 model admission or manifest scan detected a prohibited external model runtime outside Verdant Engine.
+    ProhibitedExternalModelRuntime {
+        /// Offending runtime package, format, or rule identifier.
+        runtime_id: String,
+        /// Diagnostic reason.
+        detail: String,
+    },
+    /// Authoritative `naga` WGSL-to-WebGL2 GLSL ES `300 es` transpiler rejected the shader or entry point.
+    GlslTranspilationFailed {
+        /// Shader module label.
+        shader_label: String,
+        /// Diagnostic emitted by `naga`.
+        diagnostic: String,
+    },
+}
+
+impl fmt::Display for OracleValidationError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::CatalogIntegrityMismatch {
+                authority_id,
+                detail,
+            } => write!(
+                f,
+                "authority catalog `{authority_id}` integrity error: {detail}"
+            ),
+            Self::SchemaOrgInvalid { subject, detail } => {
+                write!(f, "Schema.org oracle refusal at `{subject}`: {detail}")
+            }
+            Self::SosaProvoConstraintViolated { subject, detail } => {
+                write!(f, "W3C SOSA/PROV-O shape refusal at `{subject}`: {detail}")
+            }
+            Self::ProhibitedExternalModelRuntime { runtime_id, detail } => {
+                write!(
+                    f,
+                    "prohibited external model runtime `{runtime_id}` refused: {detail}"
+                )
+            }
+            Self::GlslTranspilationFailed {
+                shader_label,
+                diagnostic,
+            } => write!(
+                f,
+                "WebGL2 GLSL ES transpilation failed for `{shader_label}`: {diagnostic}"
+            ),
+        }
+    }
+}
+
+impl std::error::Error for OracleValidationError {}

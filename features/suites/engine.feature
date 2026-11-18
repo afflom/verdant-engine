@@ -254,3 +254,9 @@ Feature: engine
     Given the canonical PBR material library, a LOD2 HD Citadel sector, the four character archetypes, a live WasmRuntimeBridge, and site/scene-renderer.mjs
     When the sector, every archetype, and the bridge's dynamic actors are packed into GPU vertex streams and the WebGL2 PBR shader decodes them
     Then only the basin water is fluid, armour is opaque and visors are emissive glass, gold accents are metal, every class round-trips through the packed red channel, tile triangles decode plain albedo, the shader reads a flat class varying with uniform-flow derivatives and a 22-30 m detail fade, and the dynamic VAO keeps separate position, normal, colour, and index capacities
+
+  @VE-38 @build
+  Scenario: Imported Schema.org, W3C SOSA and PROV-O, Khronos glTF 2.0 HD PBR and skeletal skinning, W3C naga WebGL2 GLSL ES 3.00 transpilation, OMG DMN 1.5 model admission, and multi-domain world catalogs validate against SHA-256-locked external authority oracles while prohibiting external model runtimes outside Verdant Engine
+    Given the five SHA-256-locked catalog corpora in catalogs/, the Khronos gltf and W3C naga external crates, a 22-joint ArticulatedCharacter, and the repository manifests
+    When CatalogBundleRegistry loads and cross-validates every domain pack, Schema.org JSON-LD and W3C SOSA/PROV-O graphs are verified, skinned characters and HD PBR materials export to GLB, portable WGSL shaders transpile to WebGL2 GLSL ES 3.00, and OMG DMN 1.5 model admission and runtime exclusivity execute
+    Then every catalog and domain pack passes its external validation oracle, skinned GLB exports preserve all 22 joints and KHR_materials extensions, naga emits valid GLSL ES 3.00, zero external model runtimes exist in Verdant, and malformed graphs, cyclic PROV-O lineage, or external ONNX/Transformers runtimes return OracleValidationError

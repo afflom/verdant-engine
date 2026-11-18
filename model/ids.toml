@@ -330,3 +330,11 @@ id = "VE-37"
 level = "build"
 suite = "engine"
 statement = "Every packed vertex carries an explicit surface class derived from its PBR material rather than inferred from hue, dynamic actors stream positions, normals, and colours with per-attribute GPU capacity, and shading derivatives run in uniform control flow with a continuous detail fade, so characters render with their own colours, water, metal, and emissive glass stay distinct, and no seam line crosses the terrain"
+
+[[id]]
+id = "VE-38"
+level = "build"
+suite = "engine"
+statement = "Imported Schema.org, W3C SOSA and PROV-O, Khronos glTF 2.0 HD PBR and skeletal skinning, W3C naga WebGL2 GLSL ES 3.00 transpilation, OMG DMN 1.5 model admission, and multi-domain world catalogs validate against SHA-256-locked external authority oracles while prohibiting external model runtimes outside Verdant Engine"
+failure = "OracleValidationError"
+negative = "VE-38"

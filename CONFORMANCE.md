@@ -59,6 +59,7 @@ model does not sanction.
 | `VE-35` | `build` | Flat CSR prefix-sum software tile rasterization, spatial-grid multi-body broadphase collisions, multi-primitive Khronos GLB ingestion, WebGL2 context-loss recovery, deadlock-free worker frame-ack and RPC watchdogs, and 52-bit floating-origin horizon guards execute with zero steady-state inner heap allocations and refuse astronomical or degenerate inputs |
 | `VE-36` | `build` | Every post-boot engine boundary—world snapshots, #uorc= shareable URLs, OPFS GLB transcoding, Stitch 2-of-3 parity custody, rollback checkpoints, CLI archives, and zero-decode CodedMatrix bundles—operates exclusively over SHA-256-sealed UORC archives across native Rust and WebAssembly while refusing unsealed or tampered payloads |
 | `VE-37` | `build` | Every packed vertex carries an explicit surface class derived from its PBR material rather than inferred from hue, dynamic actors stream positions, normals, and colours with per-attribute GPU capacity, and shading derivatives run in uniform control flow with a continuous detail fade, so characters render with their own colours, water, metal, and emissive glass stay distinct, and no seam line crosses the terrain |
+| `VE-38` | `build` | Imported Schema.org, W3C SOSA and PROV-O, Khronos glTF 2.0 HD PBR and skeletal skinning, W3C naga WebGL2 GLSL ES 3.00 transpilation, OMG DMN 1.5 model admission, and multi-domain world catalogs validate against SHA-256-locked external authority oracles while prohibiting external model runtimes outside Verdant Engine |
 
 ## fidelity
 
@@ -87,8 +88,18 @@ An authority is cited, never re-derived, and never gated on: what it states is n
 
 | Authority | Citation | Evidence here |
 | --- | --- | --- |
+| `AUTH-SCHEMA-ORG` | Schema.org Community Group, Schema.org Vocabulary v28.1 (CC-BY-SA-3.0), https://schema.org/version/latest/ | `VE-38` |
+| `AUTH-W3C-SOSA-PROVO` | W3C Recommendation, Semantic Sensor Network Ontology (https://www.w3.org/TR/vocab-ssn/) and PROV-O: The PROV Ontology (https://www.w3.org/TR/prov-o/) | `VE-38`, `FI-01`, `FI-06` |
+| `AUTH-KHRONOS-GLTF2` | Khronos Group / ISO/IEC 12113:2022 glTF 2.0 Specification and ratified KHR_materials_{ior,specular,transmission,clearcoat,emissive_strength} extensions, https://registry.khronos.org/glTF/ | `VE-04`, `VE-19`, `VE-38` |
+| `AUTH-ISO-24617-DMN` | ISO 24617-2:2020 Language resource management — Semantic annotation framework Part 2: Dialogue acts; OMG Decision Model and Notation (DMN) 1.5 | `VE-22`, `VE-38` |
+| `AUTH-DOMAIN-PACKS` | Verdant Platform Imported Domain Catalogs (Sunspire Harbor, Meridian Observatory, Glasshouse Chronicle, Starfall Bastion) | `VE-32`, `VE-38` |
 
 ## Claims that are not conformance IDs
 
 | ID | Level | Claim |
 | --- | --- | --- |
+| `AUTH-CL-01` | `some-true` | Schema.org class subsumption and domainIncludes/rangeIncludes rules couple 3DModel, VideoGame, SoftwareApplication, Person, Place, IndividualProduct, and CommunicateAction graphs |
+| `AUTH-CL-02` | `some-true` | W3C SOSA Observations require madeBySensor, hasFeatureOfInterest, and a result literal or IRI, and W3C PROV-O Entity derivations form an acyclic graph |
+| `AUTH-CL-03` | `some-true` | Khronos glTF 2.0 binary containers align JSON and BIN chunks to 4 bytes and bind skeletal skins via JOINTS_0, WEIGHTS_0, and MAT4 inverseBindMatrices alongside ratified PBR extensions |
+| `AUTH-CL-04` | `some-true` | ISO 24617-2 dialogue acts separate read-only epistemic inform/question/abstain turns from world-mutating requests and offers under OMG DMN 1.5 FIRST-hit model admission |
+| `AUTH-CL-05` | `some-true` | Imported domain packs differentiate coastal, observatory, botanical, and arena worlds across terrain relief, Sabine acoustics, HD models, items, and character profiles |

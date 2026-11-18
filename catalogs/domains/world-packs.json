@@ -1,0 +1,205 @@
+{
+  "spec": "verdant/imported-authority-catalog/1",
+  "authorityId": "AUTH-DOMAIN-PACKS",
+  "standard": "Verdant Multi-Domain World, Character, Item & Automation Catalog",
+  "license": "Apache-2.0",
+  "domains": [
+    {
+      "id": "DOM-SUNSPIRE-HARBOR",
+      "slug": "sunspire-regatta",
+      "title": "Sunspire Harbor Regatta",
+      "schemaType": "VideoGame",
+      "seed": 7,
+      "defaultLodRank": 3,
+      "cameraMode": "third",
+      "environment": {
+        "name": "Sunspire Pelagic Basin",
+        "schemaType": "BodyOfWater",
+        "waterLevelMetersMilli": -950,
+        "ridgeAmplitudePermille": 1150,
+        "basinDepthPermille": 1350,
+        "skyRgbPercent": [18, 34, 48],
+        "fogRgbPercent": [32, 46, 54],
+        "acousticVolumeM3": 4200,
+        "acousticAbsorptionMilliM2": 310000
+      },
+      "models": [
+        { "id": "MDL-HARBOR-LIGHTHOUSE", "name": "SunspireBeaconSpire", "primitive": "fluted_column", "materialId": "MAT-TRAVERTINE-LIMESTONE", "scalePermille": [1200, 1800, 1200], "offsetDecimeters": [0, 0, -60] },
+        { "id": "MDL-REGATTA-BUOY-RING", "name": "BrassRegattaGate", "primitive": "faceted_prism", "materialId": "MAT-ASTROLABE-BRASS", "scalePermille": [900, 1400, 900], "offsetDecimeters": [55, 0, 35] },
+        { "id": "MDL-PELAGIC-LENS", "name": "FresnelHarborLens", "primitive": "faceted_prism", "materialId": "MAT-PRISM-QUARTZ", "scalePermille": [650, 1100, 650], "offsetDecimeters": [-55, 18, 35] }
+      ],
+      "items": [
+        { "id": "ITEM-SEXTANT-KEY", "name": "Brass Tidal Sextant", "materialId": "MAT-ASTROLABE-BRASS", "initialSupply": 3 },
+        { "id": "ITEM-HARBOR-CHARTER", "name": "Sealed Regatta Manifest", "materialId": "MAT-TRAVERTINE-LIMESTONE", "initialSupply": 1 }
+      ],
+      "characters": [
+        {
+          "id": "CHAR-MARINER-CAPTAIN",
+          "name": "Captain Soren",
+          "role": "Harbor Master",
+          "rigId": "RIG-HUMANOID-22-MARINER",
+          "materialId": "MAT-FORGED-STEEL",
+          "spawnDecimeters": [15, 20, -10],
+          "patrolRadiusDecimeters": 85,
+          "directives": ["Patrol Tidal Quay", "Calibrate Fresnel Beacon", "Inspect Buoy Moorings", "Greet Regatta Crew"],
+          "knowledgeFacts": [
+            "The Sunspire Regatta crosses three tidal gates between the North Quay and the Parabolic Sea Arch.",
+            "Captain Soren holds three Brass Tidal Sextants in the Harbor Vault, and every sextant is conserved.",
+            "Tidal current speed peaks at four knots beneath the main stone span."
+          ]
+        },
+        {
+          "id": "CHAR-DOCK-ENGINEER",
+          "name": "Engineer Talia",
+          "role": "Structural Shipwright",
+          "rigId": "RIG-HUMANOID-22-ENGINEER",
+          "materialId": "MAT-TERRACOTTA-CLAY",
+          "spawnDecimeters": [75, 18, -40],
+          "patrolRadiusDecimeters": 110,
+          "directives": ["Survey Arch Abutment", "Measure Hull Clearance", "Escort Mariner Across Span", "Audit Crane Winch"],
+          "knowledgeFacts": [
+            "Engineer Talia maintains the suspension crane and the parabolic sea arch masonry.",
+            "Deliver one Brass Tidal Sextant to Engineer Talia at the East Abutment to unlock the outer breakwater."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "DOM-MERIDIAN-OBSERVATORY",
+      "slug": "meridian-observatory",
+      "title": "Meridian Celestial Observatory",
+      "schemaType": "SoftwareApplication",
+      "seed": 256,
+      "defaultLodRank": 4,
+      "cameraMode": "first",
+      "environment": {
+        "name": "Meridian High Ridge",
+        "schemaType": "Landform",
+        "waterLevelMetersMilli": -2600,
+        "ridgeAmplitudePermille": 1650,
+        "basinDepthPermille": 750,
+        "skyRgbPercent": [10, 16, 32],
+        "fogRgbPercent": [18, 24, 38],
+        "acousticVolumeM3": 1800,
+        "acousticAbsorptionMilliM2": 96000
+      },
+      "models": [
+        { "id": "MDL-ARMILLARY-PIER", "name": "MeridianTransitPier", "primitive": "fluted_column", "materialId": "MAT-OBSIDIAN-BASALT", "scalePermille": [1100, 2100, 1100], "offsetDecimeters": [0, 10, -45] },
+        { "id": "MDL-EQUATORIAL-RING", "name": "BrassEquatorialRing", "primitive": "faceted_prism", "materialId": "MAT-ASTROLABE-BRASS", "scalePermille": [1350, 950, 1350], "offsetDecimeters": [0, 32, -45] },
+        { "id": "MDL-ZENITH-OCULUS", "name": "CrownGlassOculus", "primitive": "faceted_prism", "materialId": "MAT-BOTANICAL-GLASS", "scalePermille": [1500, 550, 1500], "offsetDecimeters": [0, 52, 0] }
+      ],
+      "items": [
+        { "id": "ITEM-EPHEMERIS-PLATE", "name": "Engraved Brass Ephemeris", "materialId": "MAT-ASTROLABE-BRASS", "initialSupply": 2 },
+        { "id": "ITEM-QUARTZ-RETICLE", "name": "Zenith Quartz Reticle", "materialId": "MAT-PRISM-QUARTZ", "initialSupply": 2 }
+      ],
+      "characters": [
+        {
+          "id": "CHAR-CHIEF-ASTRONOMER",
+          "name": "Astronomer Lyra",
+          "role": "Celestial Observer",
+          "rigId": "RIG-HUMANOID-22-ASTRONOMER",
+          "materialId": "MAT-BOTANICAL-GLASS",
+          "spawnDecimeters": [-60, 22, -35],
+          "patrolRadiusDecimeters": 70,
+          "directives": ["Align Meridian Transit", "Record Sabine Echoes", "Track Solstice Azimuth", "Guard Ephemeris Vault"],
+          "knowledgeFacts": [
+            "Astronomer Lyra calibrates the Meridian Transit Pier at ultra-high-definition LOD4 masonry resolution.",
+            "The Vaulted Stone Rotunda exhibits a Sabine reverberation time of 3000 milliseconds across five modal bar harmonics.",
+            "Two Zenith Quartz Reticles are stored in the Observatory Cupola."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "DOM-GLASSHOUSE-CHRONICLE",
+      "slug": "glasshouse-chronicle",
+      "title": "Glasshouse Botanical Chronicle",
+      "schemaType": "VideoGame",
+      "seed": 108,
+      "defaultLodRank": 3,
+      "cameraMode": "third",
+      "environment": {
+        "name": "Conservatory Terraced Valley",
+        "schemaType": "CivicStructure",
+        "waterLevelMetersMilli": -1150,
+        "ridgeAmplitudePermille": 920,
+        "basinDepthPermille": 1100,
+        "skyRgbPercent": [22, 38, 36],
+        "fogRgbPercent": [34, 48, 44],
+        "acousticVolumeM3": 950,
+        "acousticAbsorptionMilliM2": 68000
+      },
+      "models": [
+        { "id": "MDL-ATRIUM-GLASSHOUSE", "name": "BotanicalCrownVault", "primitive": "faceted_prism", "materialId": "MAT-BOTANICAL-GLASS", "scalePermille": [1650, 1450, 1650], "offsetDecimeters": [20, 0, -25] },
+        { "id": "MDL-TERRACOTTA-PLANTER", "name": "SeedBankPedestal", "primitive": "fluted_column", "materialId": "MAT-TERRACOTTA-CLAY", "scalePermille": [850, 1100, 850], "offsetDecimeters": [-40, 0, 25] },
+        { "id": "MDL-IRRIGATION-WEIR", "name": "LimestoneAqueductWeir", "primitive": "fluted_column", "materialId": "MAT-TRAVERTINE-LIMESTONE", "scalePermille": [950, 1250, 950], "offsetDecimeters": [50, 0, 40] }
+      ],
+      "items": [
+        { "id": "ITEM-HEIRLOOM-SPORE", "name": "Cryo-Sealed Heirloom Seed Vial", "materialId": "MAT-BOTANICAL-GLASS", "initialSupply": 6 },
+        { "id": "ITEM-AMBER-POLLEN", "name": "Conserved Amber Specimen", "materialId": "MAT-PRISM-QUARTZ", "initialSupply": 6 }
+      ],
+      "characters": [
+        {
+          "id": "CHAR-HEAD-BOTANIST",
+          "name": "Archivist Rowan",
+          "role": "Seed Bank Curator",
+          "rigId": "RIG-HUMANOID-22-ARCHIVIST",
+          "materialId": "MAT-TERRACOTTA-CLAY",
+          "spawnDecimeters": [18, 20, -15],
+          "patrolRadiusDecimeters": 95,
+          "directives": ["Audit Seed Ledger", "Inspect Crown Glass Humidity", "Guide Visitor to West Portal", "Tend Terracotta Beds"],
+          "knowledgeFacts": [
+            "Archivist Rowan stewards twelve conserved botanical specimens across the three-sector Glasshouse ring.",
+            "Every transfer in the Seed Bank ConservationLedger satisfies exact integer supply balance with zero deadlocked quests.",
+            "The West Portal connects Cell (0,0,0) to the Alpine Herbarium at Cell (-1,0,0)."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "DOM-STARFALL-BASTION",
+      "slug": "starfall-bastion",
+      "title": "Starfall Bastion Arena",
+      "schemaType": "VideoGame",
+      "seed": 42,
+      "defaultLodRank": 3,
+      "cameraMode": "orbit",
+      "environment": {
+        "name": "Starfall Basalt Caldera",
+        "schemaType": "CivicStructure",
+        "waterLevelMetersMilli": -1800,
+        "ridgeAmplitudePermille": 1480,
+        "basinDepthPermille": 1250,
+        "skyRgbPercent": [14, 20, 30],
+        "fogRgbPercent": [24, 30, 40],
+        "acousticVolumeM3": 6800,
+        "acousticAbsorptionMilliM2": 820000
+      },
+      "models": [
+        { "id": "MDL-BASTION-PYLON", "name": "ObsidianRelayPylon", "primitive": "fluted_column", "materialId": "MAT-OBSIDIAN-BASALT", "scalePermille": [1250, 1950, 1250], "offsetDecimeters": [0, 0, -70] },
+        { "id": "MDL-TOURNAMENT-AEGIS", "name": "SteelTacticalBarricade", "primitive": "faceted_prism", "materialId": "MAT-FORGED-STEEL", "scalePermille": [1400, 900, 700], "offsetDecimeters": [65, 0, 20] },
+        { "id": "MDL-SCORE-HOLOLITH", "name": "DiegeticTournamentPillar", "primitive": "faceted_prism", "materialId": "MAT-PRISM-QUARTZ", "scalePermille": [800, 1600, 800], "offsetDecimeters": [-65, 0, 20] }
+      ],
+      "items": [
+        { "id": "ITEM-BASTION-SIGIL", "name": "Signed Tournament Crest", "materialId": "MAT-FORGED-STEEL", "initialSupply": 8 }
+      ],
+      "characters": [
+        {
+          "id": "CHAR-ARENA-MARSHAL",
+          "name": "Marshal Vesper",
+          "role": "Tournament Arbiter",
+          "rigId": "RIG-HUMANOID-22-MARINER",
+          "materialId": "MAT-OBSIDIAN-BASALT",
+          "spawnDecimeters": [0, 22, 10],
+          "patrolRadiusDecimeters": 120,
+          "directives": ["Verify Rollback Parity", "Monitor Diegetic Scoreboard", "Patrol Basalt Ring", "Seal Stitch Replay"],
+          "knowledgeFacts": [
+            "Marshal Vesper arbitrates deterministic 64-frame rollback matches signed by non-extractable WebCrypto Prism IDs.",
+            "Every tactical HUD panel in Starfall Bastion clears 48 pixel touch bounds over the tropical max-plus layout semiring.",
+            "Match replays recover bit-identically from any two of three Stitch parity fragments."
+          ]
+        }
+      ]
+    }
+  ]
+}

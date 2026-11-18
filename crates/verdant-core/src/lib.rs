@@ -58,6 +58,7 @@ pub use verdant_tensor;
 pub use verdant_tensor::prism_kernel;
 pub mod render;
 pub mod runtime;
+pub mod standards;
 pub mod streaming;
 pub mod tensor;
 pub mod ui;
