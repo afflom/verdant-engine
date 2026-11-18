@@ -1,0 +1,13 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Verdant Language</title>
+<style>body{font:1.1rem/1.55 system-ui;max-width:42rem;margin:6vh auto;padding:1rem;background:#f5f6ed;color:#173925}label,textarea{display:block}textarea{width:96%;font:inherit;padding:.5rem}button{font:inherit;margin:1rem .4rem 1rem 0}output{white-space:pre-wrap}h1{font:2.8rem Georgia,serif}</style>
+<h1>Verdant Language</h1><p id="objective"></p><button id="enable">Load local language model</button><button disabled id="disable">Disconnect</button>
+<form><label for="content">Text visible to the player (optional)</label><textarea id="content" rows="2"></textarea><label for="prompt">Ask the Observer</label><textarea id="prompt" rows="3" required></textarea><button disabled id="ask">Ask</button></form><output aria-live="polite"></output>
+<script type="module">
+import {openInstance} from './instance.mjs';
+const el=id=>document.getElementById(id), out=document.querySelector('output');
+let instance;
+try{instance=await openInstance();el('objective').textContent=instance.observe().objective;}catch(e){out.textContent=e.message;el('enable').disabled=true;}
+el('enable').onclick=async()=>{el('enable').disabled=true;out.textContent='Loading verified model…';try{await instance.enable();el('ask').disabled=false;el('disable').disabled=false;out.textContent='Ready';}catch(e){out.textContent=e.message;el('enable').disabled=false;}};
+el('disable').onclick=()=>{instance.disable();el('enable').disabled=false;el('ask').disabled=true;el('disable').disabled=true;out.textContent='Disconnected';};
+document.querySelector('form').onsubmit=async e=>{e.preventDefault();el('ask').disabled=true;el('disable').disabled=true;out.textContent='Generating…';try{const turn=await instance.ask(el('prompt').value,el('content').value);out.textContent=turn.answer;}catch(e){out.textContent=e.message;}finally{el('ask').disabled=false;el('disable').disabled=false;}};
+</script></html>
