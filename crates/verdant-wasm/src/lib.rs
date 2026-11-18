@@ -1349,6 +1349,7 @@ impl WasmRuntimeBridge {
             pk_f64(prism_kernel::wasmFrustumFarMeters()),
         ) * Mat4::look_at(eye, target, Vec3::UP);
 
+        let sun = Vec3::new(1.0 / two_f, 1.0, 1.0 / four);
         core::mem::swap(&mut self.tile_scratch.rgba8, &mut self.framebuffer_rgba);
         let res = render_triangles_tile_framebuffer_with_scratch(
             aligned_w,
