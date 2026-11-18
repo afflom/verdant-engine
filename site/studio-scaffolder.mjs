@@ -1,0 +1,328 @@
+// Verdant Studio — Zero-Constants Rust/Wasm Project Scaffolder, POSIX ustar Archiver & URL Codec.
+// Generates complete, FI-08 compliant (`{0, 1}` + `prism_kernel`) external game and simulation
+// workspaces aligned with Prism's authoritative 140m 4-cascade CSM horizon.
+
+import { PRISM_CSM_SPLIT_METERS } from "./prism-bridge-meta.mjs";
+import { STARTER_ARCHETYPES } from "./studio-data.mjs";
+
+export function zeroOneExpr(n) {
+  const v = Math.max(0, Math.floor(Number(n) || 0));
+  if (v === 0) return "0";
+  if (v === 1) return "1";
+  const parts = [];
+  let bit = 0;
+  let rem = v;
+  while (rem > 0) {
+    if ((rem & 1) === 1) {
+      parts.push(bit === 0 ? "1" : bit === 1 ? "(1 << 1)" : `(1 << ${zeroOneExpr(bit)})`);
+    }
+    rem >>= 1;
+    bit += 1;
+  }
+  return parts.reverse().join(" + ");
+}
+
+export function buildPosixTarArchive(rootSlug, filesMap) {
+  const cleanRoot = String(rootSlug || "sunspire-regatta").toLowerCase().replace(/[^a-z0-9_-]/g, "-") || "sunspire-regatta";
+  const enc = new TextEncoder();
+  const blocks = [];
+  const writeAscii = (buf, offset, maxLen, str) => {
+    const bytes = enc.encode(str);
+    buf.set(bytes.subarray(0, maxLen), offset);
+  };
+  const writeOctal = (buf, offset, len, val) => {
+    const oct = Math.max(0, Math.floor(val)).toString(8).padStart(len - 1, "0");
+    writeAscii(buf, offset, len - 1, oct);
+    buf[offset + len - 1] = 0;
+  };
+  const nowSec = Math.floor(Date.now() / 1000);
+  for (const [relPath, content] of Object.entries(filesMap || {})) {
+    const body = content instanceof Uint8Array ? content : enc.encode(String(content));
+    const header = new Uint8Array(512);
+    const fullName = `${cleanRoot}/${String(relPath).replace(/^\/+/, "")}`;
+    writeAscii(header, 0, 100, fullName);
+    writeOctal(header, 100, 8, 0o644);
+    writeOctal(header, 108, 8, 0);
+    writeOctal(header, 116, 8, 0);
+    writeOctal(header, 124, 12, body.byteLength);
+    writeOctal(header, 136, 12, nowSec);
+    header.fill(0x20, 148, 156);
+    header[156] = 0x30;
+    writeAscii(header, 257, 6, "ustar\0");
+    writeAscii(header, 263, 2, "00");
+    let sum = 0;
+    for (let i = 0; i < 512; i++) sum += header[i];
+    const chk = sum.toString(8).padStart(6, "0");
+    writeAscii(header, 148, 6, chk);
+    header[154] = 0;
+    header[155] = 0x20;
+    blocks.push(header);
+    const paddedLen = Math.ceil(body.byteLength / 512) * 512;
+    if (paddedLen > 0) {
+      const dataBlock = new Uint8Array(paddedLen);
+      dataBlock.set(body, 0);
+      blocks.push(dataBlock);
+    }
+  }
+  blocks.push(new Uint8Array(1024));
+  const total = blocks.reduce((acc, b) => acc + b.byteLength, 0);
+  const out = new Uint8Array(total);
+  let pos = 0;
+  for (const b of blocks) {
+    out.set(b, pos);
+    pos += b.byteLength;
+  }
+  return out;
+}
+
+export function generateStarterProjectFiles({ slug, archetypeIdx, seed, lodRank, cameraMode }) {
+  const arch = STARTER_ARCHETYPES[archetypeIdx] || STARTER_ARCHETYPES[0];
+  const cleanSlug = String(slug || arch.slug).toLowerCase().replace(/[^a-z0-9_-]/g, "-") || "sunspire-regatta";
+  const seedExpr = zeroOneExpr(seed || arch.seed || 7);
+  const lodExpr = zeroOneExpr(lodRank ?? arch.defaultLod);
+  const camVariant = cameraMode === "first" ? "CameraMode::FirstPersonEye" : "CameraMode::ThirdPersonSpringArm";
+  const csmFarMeters = PRISM_CSM_SPLIT_METERS[3];
+
+  const cargoToml = `[package]
+name = "${cleanSlug}"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+verdant-core = { git = "https://github.com/afflom/verdant-engine.git" }
+`;
+
+  let extraImports = "";
+  let archetypeSection = "";
+  let printSummary = "";
+
+  if (arch.idx === 0) {
+    extraImports = `use verdant_core::character::{ArticulatedCharacter, CharacterArchetype};
+use verdant_core::gltf_io::export_scene_to_glb;
+use verdant_core::render::canonical_pbr_material_library;`;
+    archetypeSection = `    // Sunspire Harbor Regatta: 22-Joint Mariner + Dock Engineer Foot IK patrol & GLB export
+    let mut mariner = ArticulatedCharacter::new_humanoid("Mariner", CharacterArchetype::Explorer, spawn, 1)?;
+    let npc_pos = Vec3::new(prism_kernel::sSix().unwrap_or(1) as f64, 1.0 + 1.0, 0.0);
+    let mut engineer = ArticulatedCharacter::new_humanoid("BridgeEngineer", CharacterArchetype::BridgeEngineer, npc_pos, 1)?;
+    let walk_intent = CharacterMoveIntent { forward: 1.0, strafe: 0.0, walk_yaw_radians: 0.0, speed_scale: 1.0, jump: false };
+    physics.step_lawful(dt, walk_intent, &bvh)?;
+    mariner.step_and_solve_ik(dt, spawn, Vec3::new(0.0, 0.0, -1.0), true, 0.0, Some(engineer.head_anchor_world()), &bvh, |x, z| hd_terrain_height(seed, &relief, x, z))?;
+    engineer.step_and_solve_ik(dt, npc_pos, Vec3::ZERO, true, 0.0, Some(mariner.head_anchor_world()), &bvh, |x, z| hd_terrain_height(seed, &relief, x, z))?;
+    let cam_frame = camera.solve_frame(dt, mariner.head_anchor_world(), &bvh, |x, z| hd_terrain_height(seed, &relief, x, z))?;
+    assert!(cam_frame.near_sphere_guarded);
+    let glb = export_scene_to_glb(&sector.scene, &sector.meshes, &canonical_pbr_material_library())?;
+    std::fs::write("${cleanSlug}.glb", &glb)?;`;
+    printSummary = `    println!("${cleanSlug} [Sunspire Harbor Regatta] OK: lod={} entities={} joints={} w5h={} glb={}B", lod_rank, sector.scene.entity_count(), mariner.skeleton.joint_count(), telos.all_eight_strata_certified, glb.len());`;
+  } else if (arch.idx === 1) {
+    extraImports = `use verdant_core::audio::{evaluate_binaural_cue, sabine_rt60_seconds};
+use verdant_core::render::compute_csm_splits;`;
+    archetypeSection = `    // Meridian Celestial Observatory: First-Person HD Dome Walkthrough, 4-Cascade CSM, & Sabine Acoustics
+    let eye_anchor = Vec3::new(1.0 + 1.0, prism_kernel::sFour().unwrap_or(1) as f64, prism_kernel::sNine().unwrap_or(1) as f64);
+    let cam_frame = camera.solve_frame(dt, eye_anchor, &bvh, |x, z| hd_terrain_height(seed, &relief, x, z))?;
+    assert!(cam_frame.near_sphere_guarded);
+    let z_near = 1.0 / (prism_kernel::sFour().unwrap_or(1) as f64);
+    let z_far = (prism_kernel::sFourteen().unwrap_or(1) * prism_kernel::sTen().unwrap_or(1)) as f64;
+    let csm_splits = compute_csm_splits(z_near, z_far);
+    let emitter = Vec3::new(-(prism_kernel::sNine().unwrap_or(1) as f64), 1.0 + 1.0, -(prism_kernel::sFour().unwrap_or(1) as f64));
+    let binaural = evaluate_binaural_cue(emitter, cam_frame.eye_world, Vec3::new(0.0, 0.0, -1.0));
+    let volume_m3 = (prism_kernel::sTwelve().unwrap_or(1) * prism_kernel::sHundred().unwrap_or(1)) as f64;
+    let absorption_m2 = (prism_kernel::sSix().unwrap_or(1) * prism_kernel::sTen().unwrap_or(1)) as f64;
+    let rt60_sec = sabine_rt60_seconds(volume_m3, absorption_m2);`;
+    printSummary = `    println!("${cleanSlug} [Meridian Celestial Observatory] OK: lod={} csm_cascades={} rt60={:.2}s pan={:.3} w5h={}", lod_rank, csm_splits.len(), rt60_sec, binaural.pan, telos.all_eight_strata_certified);`;
+  } else if (arch.idx === 2) {
+    extraImports = `use verdant_core::narrative::canonical_citadel_chronicle_automaton;
+use verdant_core::streaming::StandardSceneState;
+use verdant_core::universe::{UniverseCellCoord, UniverseManager, UniversePosition};`;
+    archetypeSection = `    // Glasshouse Botanical Chronicle: Tropical StoryAutomaton, Seed-Bank Conservation, & 128m Portals
+    let cam_frame = camera.solve_frame(dt, spawn, &bvh, |x, z| hd_terrain_height(seed, &relief, x, z))?;
+    assert!(cam_frame.near_sphere_guarded);
+    let (mut chronicle, podiums) = canonical_citadel_chronicle_automaton(seed)?;
+    for podium in &podiums {
+        let _ = chronicle.interact_nearest(podium.world_position);
+    }
+    let universe = UniverseManager::canonical_three_sector_ring(seed)?;
+    let world_pos = UniversePosition::new_canonical(UniverseCellCoord::ORIGIN, spawn)?;
+    let max_snap_lod = prism_kernel::wasmMaxLodRank().unwrap_or(1) as u8;
+    let snap = WorldSnapshot::encode_uorc(&StandardSceneState::synthesize_at_lod(seed, u64::from((lod_rank as u8).min(max_snap_lod)))?)?;
+    std::fs::write("${cleanSlug}.uorc", &snap)?;`;
+    printSummary = `    println!("${cleanSlug} [Glasshouse Botanical Chronicle] OK: state={} conserved_supply={} portals={} cell=({},{},{}) uorc={}B w5h={}", chronicle.active_state, chronicle.ledger.total_supply(), universe.portal_graph.portal_count(), world_pos.cell.cx, world_pos.cell.cy, world_pos.cell.cz, snap.len(), telos.all_eight_strata_certified);`;
+  } else {
+    extraImports = `use verdant_core::cybernetics::{CodedSlmDirector, ContainerGrantMatrix, ContainerOrgan};
+use verdant_core::ui::UiTree;`;
+    archetypeSection = `    // Starfall Bastion Arena: Tactical Spatial Interface, FK-07 Capability Custody, & Local Director
+    let cam_frame = camera.solve_frame(dt, spawn, &bvh, |x, z| hd_terrain_height(seed, &relief, x, z))?;
+    assert!(cam_frame.near_sphere_guarded);
+    let first_entity = sector.scene.entities().next().map(|e| e.id);
+    let solved_ui = UiTree::canonical_studio_ui_tree(first_entity)
+        .solve_and_verify(ui_width, ui_height, Some(&sector.scene))?;
+    let diegetic_cards = UiTree::build_diegetic_bvh(&solved_ui);
+    let mut grants = ContainerGrantMatrix::default();
+    grants.grant(ContainerOrgan::AudioWorkletSynth);
+    let slm = CodedSlmDirector::new();
+    let proposal = slm.route_prompt("inspect formal ui compliance", None, &grants)?;`;
+    printSummary = `    println!("${cleanSlug} [Starfall Bastion Arena] OK: widgets={} diegetic_cards={} slm={} score={} w5h={}", solved_ui.len(), diegetic_cards.len(), proposal.intent.slug(), proposal.score_milli, telos.all_eight_strata_certified);`;
+  }
+
+  const mainRs = `//! ${arch.title} — scaffolded project source.
+//! Zero unexplained magic constants (FI-08 compliant): all scalars derive from {0, 1} or prism_kernel.
+
+use verdant_core::camera::{CameraMode, CameraRigConfig, LawfulCameraRig};
+use verdant_core::ecs::TwoLevelBvh;
+use verdant_core::hd_world::{hd_terrain_height, synthesize_hd_citadel_sector};
+use verdant_core::math::Vec3;
+use verdant_core::physics::{CapsuleController, CharacterMoveIntent, PhysicsWorld, PhysicsWorldConfig};
+use verdant_core::prism_kernel;
+use verdant_core::runtime::{BrowserCapabilities, EngineConfig, OntologicalRuntimeGovernor, WorldSnapshot};
+use verdant_core::streaming::TerrainReliefParams;
+${extraImports}
+
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let seed: u64 = ${seedExpr};
+    let lod_rank: u32 = ${lodExpr};
+    let relief = TerrainReliefParams::standard_basin_valley();
+
+    // 1. Synthesize lawful HD sector & build Two-Level BVH (Entity TLAS + Triangle MeshBlas):
+    let sector = synthesize_hd_citadel_sector(seed, &relief, -1.0, lod_rank);
+    let bvh = TwoLevelBvh::build_solid(&sector.scene, &sector.meshes)?;
+
+    // 2. Configure swept-capsule physics, wall-guarded LawfulCameraRig, & OntologicalRuntimeGovernor:
+    let mut physics = PhysicsWorld::new(PhysicsWorldConfig::default());
+    let spawn = Vec3::new(0.0, 1.0 + 1.0, (1 << (1 + 1 + 1)) as f64);
+    physics.player_capsule = Some(CapsuleController::new(spawn));
+    let dt = 1.0 / (prism_kernel::sSix().unwrap_or(1) * prism_kernel::sTen().unwrap_or(1)) as f64;
+    physics.step_lawful(dt, CharacterMoveIntent::default(), &bvh)?;
+
+    let arm_dist = prism_kernel::sSix().unwrap_or(1) as f64;
+    let mut camera = LawfulCameraRig::new(CameraRigConfig::default(), ${camVariant}, 0.0, 0.0, arm_dist)?;
+
+    let ui_width = (prism_kernel::sTwelve().unwrap_or(1) * prism_kernel::sHundred().unwrap_or(1)) as u32;
+    let ui_height = (prism_kernel::sNine().unwrap_or(1) * prism_kernel::sHundred().unwrap_or(1)) as u32;
+    let hz = (prism_kernel::sSix().unwrap_or(1) * prism_kernel::sTen().unwrap_or(1)) as u32;
+    let cores = prism_kernel::sFour().unwrap_or(1) as u32;
+    let cfg = EngineConfig::from_refresh_rate(ui_width, ui_height, hz, hz, cores)?;
+    let caps = BrowserCapabilities {
+        wasm_simd_available: true,
+        webgl2_available: true,
+        hardware_concurrency: cores,
+        shared_array_buffer: false,
+        audio_worklet: true,
+        offscreen_canvas: true,
+    };
+    let gov = OntologicalRuntimeGovernor::new(cfg, caps);
+    let telos = gov.evaluate_frame_telos(0, true, 1, 1, 0, 0, 0);
+    let _ = WorldSnapshot::default_max_wire_bytes;
+
+${archetypeSection}
+${printSummary}
+    Ok(())
+}
+`;
+
+  const indexHtml = `<!doctype html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>${arch.title}</title>
+  <link rel="stylesheet" href="/brand/fonts.css">
+  <link rel="stylesheet" href="/brand/hologram-warm.css">
+  <link rel="stylesheet" href="/prism-page.css">
+  <style>
+    html, body { margin: 0; height: 100%; background: var(--background); color: var(--foreground); font-family: var(--font-sans); overflow: hidden; }
+    #game-viewport { display: block; width: 100vw; height: 100dvh; touch-action: none; }
+    .hud { position: fixed; top: var(--space-3); left: var(--space-3); padding: var(--space-2) var(--space-3); border-radius: var(--radius-control); border: var(--border-width) solid var(--border-strong); background: var(--card); font-family: var(--font-mono); font-size: var(--text-14); font-variant-numeric: tabular-nums; }
+  </style>
+</head>
+<body>
+  <canvas id="game-viewport" width="1280" height="720" aria-label="${arch.title} 3D viewport"></canvas>
+  <div class="hud" id="hud-status">Loading ${arch.title}…</div>
+  <script type="module" src="./main.mjs"></script>
+</body>
+</html>
+`;
+
+  const mainMjs = `// WebAssembly + WebGL2 runtime bootstrap for ${arch.title} (${cleanSlug})
+import { createBestRenderer, mat4LookAt, mat4Mul, mat4Perspective } from "./scene-renderer.mjs";
+import { load } from "./worker-runtime/index.mjs";
+
+const canvas = document.getElementById("game-viewport");
+const statusEl = document.getElementById("hud-status");
+const [holoResp, wasmResp] = await Promise.all([fetch("./app.holo"), fetch("./verdant-wasm.wasm")]);
+const holoApp = await load(new Uint8Array(await holoResp.arrayBuffer()));
+const verdict = new TextDecoder().decode(await holoApp.dispatch(new TextEncoder().encode("summary")));
+if (!verdict.startsWith("conformant:")) throw new Error("Holo verification refused: " + verdict);
+
+const { instance } = await WebAssembly.instantiate(await wasmResp.arrayBuffer(), {});
+const ex = instance.exports;
+ex.verdant_wasm_init(${Number(seed || arch.seed || 7)}n);
+ex.verdant_wasm_set_lod_rank(${Number(lodRank ?? arch.defaultLod)});
+ex.verdant_wasm_camera_set_mode(${cameraMode === "first" ? 1 : 0});
+ex.verdant_wasm_scene_rebuild_buffers(0);
+
+const zFar = ${csmFarMeters.toFixed(1)};
+const renderer = await createBestRenderer(canvas);
+const csmSplits = [0, 1, 2, 3].map((i) => ex.verdant_wasm_csm_split_meters(0.25, zFar, i));
+renderer?.setCsmSplits?.(csmSplits);
+
+const keys = new Set();
+addEventListener("keydown", (e) => keys.add(e.code));
+addEventListener("keyup", (e) => keys.delete(e.code));
+
+let prev = performance.now();
+function tick(now) {
+  const dt = Math.min(0.05, Math.max(0.001, (now - prev) * 0.001));
+  prev = now;
+  const dpr = Math.min(devicePixelRatio || 1, renderer?.isSoftware ? 1 : 2);
+  const w = Math.max(1, Math.floor(canvas.clientWidth * dpr));
+  const h = Math.max(1, Math.floor(canvas.clientHeight * dpr));
+  if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
+  const fwd = (keys.has("KeyW") || keys.has("ArrowUp") ? 1 : 0) - (keys.has("KeyS") || keys.has("ArrowDown") ? 1 : 0);
+  const strafe = (keys.has("KeyD") || keys.has("ArrowRight") ? 1 : 0) - (keys.has("KeyA") || keys.has("ArrowLeft") ? 1 : 0);
+  const dtUs = Math.round(dt * 1_000_000) >>> 0;
+  ex.verdant_wasm_camera_intent(0, 0, 0, Math.round((w / h) * 1000) >>> 0, dtUs);
+  if (fwd || strafe || keys.has("Space")) {
+    ex.verdant_wasm_step_lawful(dtUs, fwd * 1000, strafe * 1000, ex.verdant_wasm_camera_yaw_milli() | 0, 1000, keys.has("Space") ? 1 : 0);
+    ex.verdant_wasm_scene_rebuild_buffers(now * 0.001);
+  }
+  const vCount = ex.verdant_wasm_scene_vert_count() >>> 0, iCount = ex.verdant_wasm_scene_idx_count() >>> 0;
+  const buf = ex.memory.buffer;
+  renderer?.uploadPackedBuffers(
+    new Float32Array(buf, ex.verdant_wasm_scene_pos_ptr() >>> 0, vCount * 3),
+    new Float32Array(buf, ex.verdant_wasm_scene_norm_ptr() >>> 0, vCount * 3),
+    new Float32Array(buf, ex.verdant_wasm_scene_col_ptr() >>> 0, vCount * 3),
+    new Uint32Array(buf, ex.verdant_wasm_scene_idx_ptr() >>> 0, iCount),
+  );
+  const eye = [ex.verdant_wasm_camera_eye_x(), ex.verdant_wasm_camera_eye_y(), ex.verdant_wasm_camera_eye_z()];
+  const tgt = [ex.verdant_wasm_camera_target_x(), ex.verdant_wasm_camera_target_y(), ex.verdant_wasm_camera_target_z()];
+  const fov = Math.PI / 3.4;
+  renderer?.render(mat4Mul(mat4Perspective(fov, w / h, 0.25, zFar), mat4LookAt(eye, tgt, [0, 1, 0])), eye, { rank: ${Number(lodRank ?? arch.defaultLod)} }, now * 0.001, tgt, fov);
+  if (statusEl) statusEl.textContent = \`${arch.title} · \${Math.floor(iCount / 3)} tris\`;
+  requestAnimationFrame(tick);
+}
+requestAnimationFrame(tick);
+`;
+
+  return {
+    "Cargo.toml": cargoToml,
+    "src/main.rs": mainRs,
+    "web/index.html": indexHtml,
+    "web/main.mjs": mainMjs,
+  };
+}
+
+export function bytesToBase64Url(bytes) {
+  let bin = "";
+  for (let i = 0; i < bytes.byteLength; i++) bin += String.fromCharCode(bytes[i]);
+  return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+}
+
+export function base64UrlToBytes(raw) {
+  if (!raw || /[^A-Za-z0-9\-_]/.test(raw)) return null;
+  try {
+    const bin = atob(raw.replace(/-/g, "+").replace(/_/g, "/") + "===".slice((raw.length + 3) % 4));
+    return Uint8Array.from(bin, (c) => c.charCodeAt(0));
+  } catch {
+    return null;
+  }
+}

@@ -54,7 +54,7 @@ Every page in these docs runs site/verdant-wasm.wasm live so you can test the en
       
 | Layer | Crate or path | Core responsibilities |
       
-| 4 · Browser Studio | site/, crates/verdant-wasm | 6-tab Workbench, Guided Journeys, Game Scaffolder, 3-pass WebGL2, and 16x16 tile PBR |
+| 4 · Browser Studio | site/, crates/verdant-wasm | 7-role Studio, Standalone Engine Demo, Project Scaffolder, 3-pass WebGL2, and 16x16 tile PBR |
 | --- | --- | --- |
 | 3 · Engine Core | crates/verdant-core, crates/verdant-cli | TwoLevelBvh CCD, LawfulCameraRig, 22-joint IK, UniversePosition, and StoryAutomaton |
 | 2 · Tensor Substrate | crates/verdant-tensor | Fifteen unified semiring kernels and three zero-decode codec tiers |

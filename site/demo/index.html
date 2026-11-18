@@ -1,0 +1,555 @@
+<!doctype html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Verdant Engine Demo · Rendering, UORC Streaming &amp; Semiring Benchmarks</title>
+  <meta name="description" content="Interactive comparative showcase of Verdant Engine characteristics: 3-pass WebGL2 PBR vs Wasm 16x16 software tile rasterization, progressive UORC streaming, hardware instancing, AQM bit-planes, and 15 semiring kernels.">
+  <meta property="og:title" content="Verdant Engine Demo · Rendering, UORC Streaming &amp; Semiring Benchmarks">
+  <meta property="og:description" content="Interactive comparative showcase of Verdant Engine characteristics: 3-pass WebGL2 PBR vs Wasm 16x16 software tile rasterization, progressive UORC streaming, hardware instancing, AQM bit-planes, and 15 semiring kernels.">
+  <link rel="stylesheet" href="/brand/fonts.css">
+  <link rel="stylesheet" href="/brand/hologram-warm.css">
+  <link rel="stylesheet" href="/prism-page.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: var(--background);
+      color: var(--foreground);
+      font-family: var(--font-sans);
+      line-height: 1.55;
+    }
+    .demo-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 2rem;
+      padding: var(--space-3) clamp(1rem, 4vw, 2.5rem);
+      border-bottom: var(--border-width) solid var(--border);
+      background: var(--background);
+    }
+    .demo-brand {
+      font-family: var(--font-display);
+      font-size: var(--text-18);
+      font-weight: 700;
+      letter-spacing: var(--tracking-display);
+      color: var(--foreground);
+      text-decoration: none;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .demo-nav {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .demo-nav::-webkit-scrollbar { display: none; }
+    .demo-nav a {
+      color: var(--muted-foreground);
+      text-decoration: none;
+      font-size: var(--text-14);
+      font-weight: 500;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .demo-nav a:hover {
+      color: var(--foreground);
+      text-decoration: underline;
+      text-underline-offset: 0.25rem;
+    }
+    .demo-cta {
+      min-height: var(--touch);
+      padding: 0 var(--space-4);
+      border-radius: var(--radius-control);
+      border: var(--border-width) solid var(--primary);
+      background: var(--primary);
+      color: var(--primary-foreground);
+      font-family: var(--font-sans);
+      font-size: var(--text-14);
+      font-weight: 600;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .demo-cta:hover { background: var(--primary-hover); }
+
+    .demo-main {
+      max-width: 78rem;
+      margin: 0 auto;
+      padding: clamp(1.5rem, 4vw, 2.75rem) clamp(1rem, 4vw, 2.5rem) 4rem;
+      display: grid;
+      gap: clamp(2.25rem, 4vw, 3.25rem);
+    }
+    .demo-hero {
+      display: grid;
+      gap: var(--space-3);
+      padding-bottom: var(--space-4);
+      border-bottom: var(--border-width) solid var(--border);
+    }
+    .demo-meta-line {
+      font-family: var(--font-mono);
+      font-size: var(--text-14);
+      color: var(--muted-foreground);
+      font-variant-numeric: tabular-nums;
+    }
+    .demo-h1 {
+      margin: 0;
+      max-width: 48rem;
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 3.6vw, 3rem);
+      font-weight: 700;
+      letter-spacing: var(--tracking-display);
+      line-height: 1.1;
+      text-wrap: balance;
+      color: var(--foreground);
+    }
+    .demo-lead {
+      margin: 0;
+      max-width: 66ch;
+      font-size: var(--text-16);
+      color: var(--muted-foreground);
+    }
+    .demo-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--space-2);
+    }
+    .demo-btn {
+      min-height: var(--touch);
+      padding: 0 var(--space-3);
+      border-radius: var(--radius-control);
+      border: var(--border-width) solid var(--border-strong);
+      background: var(--card);
+      color: var(--card-foreground);
+      font-family: var(--font-sans);
+      font-size: var(--text-14);
+      font-weight: 500;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+    .demo-btn:hover { background: var(--accent); color: var(--accent-foreground); }
+    .demo-btn.active,
+    .demo-btn.primary {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: var(--primary-foreground);
+      font-weight: 600;
+    }
+    .demo-btn.brand {
+      background: var(--brand);
+      border-color: var(--brand);
+      color: var(--brand-foreground);
+      font-weight: 600;
+    }
+
+    .demo-section {
+      display: grid;
+      gap: var(--space-4);
+    }
+    .demo-sec-head {
+      display: grid;
+      gap: var(--space-1);
+    }
+    .demo-h2 {
+      margin: 0;
+      font-family: var(--font-display);
+      font-size: clamp(1.35rem, 2.2vw, 1.75rem);
+      font-weight: 600;
+      letter-spacing: var(--tracking-display);
+      text-wrap: balance;
+    }
+    .demo-sec-sub {
+      margin: 0;
+      max-width: 72ch;
+      font-size: var(--text-14);
+      color: var(--muted-foreground);
+    }
+
+    .demo-render-split {
+      display: grid;
+      grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
+      gap: var(--space-4);
+      align-items: stretch;
+    }
+    @media (max-width: 960px) {
+      .demo-render-split { grid-template-columns: 1fr; }
+      .demo-nav { display: none; }
+    }
+    .demo-stage {
+      position: relative;
+      min-height: 25rem;
+      border-radius: var(--radius);
+      border: var(--border-width) solid var(--border-strong);
+      background: var(--card);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    #demo-canvas {
+      display: block;
+      width: 100%;
+      flex: 1 1 auto;
+      min-height: 22rem;
+      touch-action: none;
+      cursor: grab;
+    }
+    #demo-canvas:active { cursor: grabbing; }
+    .demo-stage-bar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: var(--space-2);
+      padding: var(--space-2) var(--space-3);
+      border-top: var(--border-width) solid var(--border);
+      background: var(--muted);
+      font-family: var(--font-mono);
+      font-size: var(--text-14);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .demo-panel {
+      border: var(--border-width) solid var(--border);
+      border-radius: var(--radius);
+      background: var(--card);
+      padding: var(--space-4);
+      display: grid;
+      align-content: start;
+      gap: var(--space-3);
+    }
+    .demo-panel h3 {
+      margin: 0;
+      font-family: var(--font-display);
+      font-size: var(--text-16);
+      font-weight: 600;
+    }
+    .demo-panel p {
+      margin: 0;
+      font-size: var(--text-14);
+      color: var(--muted-foreground);
+    }
+    .demo-kv-list {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      border-top: var(--border-width) solid var(--border);
+    }
+    .demo-kv-list li {
+      display: flex;
+      justify-content: space-between;
+      gap: var(--space-3);
+      padding: var(--space-2) 0;
+      border-bottom: var(--border-width) solid var(--border);
+      font-size: var(--text-14);
+      font-variant-numeric: tabular-nums;
+    }
+    .demo-kv-list li span:first-child { color: var(--muted-foreground); }
+    .demo-kv-list li strong {
+      font-family: var(--font-mono);
+      font-weight: 600;
+      text-align: right;
+    }
+
+    .demo-kpi-strip {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+      gap: var(--space-3);
+    }
+    .demo-kpi {
+      border: var(--border-width) solid var(--border);
+      border-radius: var(--radius);
+      background: var(--card);
+      padding: var(--space-3) var(--space-4);
+      display: grid;
+      gap: 0.25rem;
+    }
+    .demo-kpi-label {
+      font-size: var(--text-14);
+      color: var(--muted-foreground);
+    }
+    .demo-kpi-val {
+      font-family: var(--font-mono);
+      font-size: clamp(1.25rem, 2vw, 1.55rem);
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      color: var(--foreground);
+    }
+    .demo-kpi-note {
+      font-family: var(--font-mono);
+      font-size: var(--text-14);
+      color: var(--muted-foreground);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .demo-table-wrap {
+      overflow-x: auto;
+      border: var(--border-width) solid var(--border);
+      border-radius: var(--radius);
+      background: var(--card);
+    }
+    .demo-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: var(--text-14);
+      font-variant-numeric: tabular-nums;
+    }
+    .demo-table th,
+    .demo-table td {
+      padding: var(--space-2) var(--space-3);
+      border-bottom: var(--border-width) solid var(--border);
+      text-align: left;
+    }
+    .demo-table th.num,
+    .demo-table td.num {
+      text-align: right;
+      font-family: var(--font-mono);
+    }
+    .demo-table th {
+      font-family: var(--font-mono);
+      color: var(--muted-foreground);
+      background: var(--muted);
+      white-space: nowrap;
+    }
+    .demo-table tbody tr:last-child td { border-bottom: 0; }
+    .demo-table tbody tr:hover { background: var(--muted); }
+
+    .demo-bench-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(19rem, 1fr));
+      gap: var(--space-4);
+    }
+    .demo-log {
+      margin: 0;
+      padding: var(--space-3) 0 0;
+      border: 0;
+      border-top: var(--border-width) solid var(--border);
+      background: transparent;
+      color: var(--foreground);
+      font-family: var(--font-mono);
+      font-size: var(--text-14);
+      line-height: 1.45;
+      font-variant-numeric: tabular-nums;
+      white-space: pre-wrap;
+      overflow-x: auto;
+    }
+
+    .demo-footer {
+      border-top: var(--border-width) solid var(--border);
+      padding: var(--space-4) clamp(1rem, 4vw, 2.5rem);
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: var(--space-2);
+      font-size: var(--text-14);
+      color: var(--muted-foreground);
+    }
+    .demo-footer a {
+      color: var(--foreground);
+      text-decoration: underline;
+      text-underline-offset: 0.2rem;
+    }
+  </style>
+</head>
+<body>
+  <header class="demo-header">
+    <a href="/demo/" class="demo-brand">Verdant Engine Demo</a>
+    <nav class="demo-nav" aria-label="Engine showcase sections">
+      <a href="#rendering">Rendering</a>
+      <a href="#streaming">Streaming</a>
+      <a href="#benchmarks">Benchmarks</a>
+      <a href="#kernels">Kernels</a>
+      <a href="/starter/">Starter Game</a>
+    </nav>
+    <a href="/" class="demo-cta">Open Verdant Studio</a>
+  </header>
+
+  <main class="demo-main">
+    <section class="demo-hero" aria-labelledby="demo-hero-title">
+      <div class="demo-meta-line" id="demo-boot-status">Verifying Prism app.holo &amp; verdant-uorc.wasm…</div>
+      <h1 class="demo-h1" id="demo-hero-title">Comparative Engine Characteristics &amp; Live WebAssembly Proofs</h1>
+      <p class="demo-lead">
+        Isolated from the authoring workspace in Verdant Studio, this standalone benchmark harness measures Verdant Engine directly in your browser: 3-pass WebGL2 PBR versus pure WebAssembly 16×16 software tile rasterization, progressive UORC streaming, hardware-instanced throughput, AQM bit-plane monoid fusion, and 15 unified semiring kernels.
+      </p>
+      <div class="demo-toolbar">
+        <button type="button" class="demo-btn primary" id="demo-run-all-btn">Run All Live Benchmarks</button>
+        <button type="button" class="demo-btn" id="demo-theme-btn">Theme: Dark</button>
+        <a class="demo-btn" href="/starter/">Play Sunspire Beacon Trials</a>
+        <a class="demo-btn" href="/docs/">Read Engine Reference</a>
+      </div>
+    </section>
+
+    <section class="demo-kpi-strip" aria-label="Verified engine invariants">
+      <div class="demo-kpi">
+        <span class="demo-kpi-label">Holo Acceptance Vectors</span>
+        <span class="demo-kpi-val" id="kpi-vectors">—</span>
+        <span class="demo-kpi-note" id="kpi-holo-note">app.holo BLAKE3 verified</span>
+      </div>
+      <div class="demo-kpi">
+        <span class="demo-kpi-label">Unified Semiring Kernels</span>
+        <span class="demo-kpi-val" id="kpi-kernels">15</span>
+        <span class="demo-kpi-note">LinearExact · Tropical · ModularRing · Coded</span>
+      </div>
+      <div class="demo-kpi">
+        <span class="demo-kpi-label">Walkable NavMesh Polygons</span>
+        <span class="demo-kpi-val" id="kpi-navmesh">8,192</span>
+        <span class="demo-kpi-note" id="kpi-navmesh-note">HD TwoLevelBvh + A* (4,608 cold LOD3)</span>
+      </div>
+      <div class="demo-kpi">
+        <span class="demo-kpi-label">Camera Guard Clearance</span>
+        <span class="demo-kpi-val" id="kpi-clearance">290 mm</span>
+        <span class="demo-kpi-note">4-cascade CSM: 9.6 / 28.2 / 65.5 / 140m</span>
+      </div>
+    </section>
+
+    <section class="demo-section" id="rendering" aria-labelledby="sec-render-h2">
+      <div class="demo-sec-head">
+        <h2 class="demo-h2" id="sec-render-h2">01. Rendering Pipeline &amp; Hardware Instancing Comparison</h2>
+        <p class="demo-sec-sub">
+          Compare the 3-pass WebGL2 hardware pipeline (4-cascade light-space texel-snapped shadows + hemisphere IBL + ACES filmic tone mapping) against the deterministic pure-Wasm 16×16 CSR software tile rasterizer, and scale single-call instanced workloads up to 25,000 monuments while static world VBOs remain epoch-cached at 0 B/frame.
+        </p>
+      </div>
+
+      <div class="demo-render-split">
+        <div class="demo-stage">
+          <canvas id="demo-canvas" width="960" height="540" aria-label="Verdant Engine comparative 3D benchmark viewport"></canvas>
+          <div class="demo-stage-bar">
+            <span id="demo-stage-left">Backend: WebGL2 3-Pass PBR · LOD3</span>
+            <span id="demo-stage-right">Static VBO: 0 B/frame · Drag to orbit</span>
+          </div>
+        </div>
+
+        <div class="demo-panel">
+          <h3>Interactive Raster &amp; Instancing Controls</h3>
+          <p>Switch rasterizers or inject hardware-instanced geometry batches on the live scene.</p>
+          <div class="demo-toolbar">
+            <button type="button" class="demo-btn active" id="btn-mode-webgl2" data-render-mode="webgl2">WebGL2 3-Pass PBR</button>
+            <button type="button" class="demo-btn" id="btn-mode-tile" data-render-mode="tile">Wasm 16×16 Tile PBR</button>
+            <button type="button" class="demo-btn" id="btn-spin-toggle" aria-pressed="true">Turntable: On</button>
+          </div>
+          <div class="demo-toolbar" role="group" aria-label="Hardware instancing stress presets">
+            <button type="button" class="demo-btn active" data-inst-count="0">0 Instances</button>
+            <button type="button" class="demo-btn" data-inst-count="2500">2,500 (20k tris)</button>
+            <button type="button" class="demo-btn" data-inst-count="10000">10,000 (80k tris)</button>
+            <button type="button" class="demo-btn" data-inst-count="25000">25,000 (200k tris)</button>
+          </div>
+          <ul class="demo-kv-list">
+            <li><span>Active Raster Backend</span><strong id="stat-backend">WebGL2 3-Pass</strong></li>
+            <li><span>Total Scene Triangles</span><strong id="stat-tris">—</strong></li>
+            <li><span>Visible BVH Leaves</span><strong id="stat-bvh">—</strong></li>
+            <li><span>Instanced Batch Count</span><strong id="stat-inst">0 (1 draw call)</strong></li>
+            <li><span>Epoch Static VBO Upload</span><strong id="stat-static-vbo">0 B</strong></li>
+            <li><span>Dynamic Skinned VBO Stream</span><strong id="stat-dyn-vbo">0 B</strong></li>
+            <li><span>Governor Render Scale</span><strong id="stat-gov-scale">100.0%</strong></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="demo-section" id="streaming" aria-labelledby="sec-stream-h2">
+      <div class="demo-sec-head">
+        <h2 class="demo-h2" id="sec-stream-h2">02. Progressive UORC Streaming &amp; Monotonicity Ladder (LOD0 – LOD4)</h2>
+        <p class="demo-sec-sub">
+          Click any tier to decode progressive UORC chunks inside WebAssembly (`verdant_wasm_uorc_decode_and_restore`) and verify monotone resolution, geometry density, and zero-decode `coded_gemm` checksums against `app.holo`.
+        </p>
+      </div>
+
+      <div class="demo-toolbar" id="demo-lod-buttons" role="group" aria-label="Progressive LOD tiers">
+        <button type="button" class="demo-btn" data-lod-rank="0">Stream LOD0</button>
+        <button type="button" class="demo-btn" data-lod-rank="1">Stream LOD1</button>
+        <button type="button" class="demo-btn" data-lod-rank="2">Stream LOD2</button>
+        <button type="button" class="demo-btn active" data-lod-rank="3">Stream LOD3 (Lossless)</button>
+        <button type="button" class="demo-btn" data-lod-rank="4">Stream LOD4 (Ultra HD)</button>
+      </div>
+
+      <div class="demo-table-wrap">
+        <table class="demo-table" aria-label="Progressive UORC streaming comparison table">
+          <thead>
+            <tr>
+              <th>Tier</th>
+              <th class="num">Resolution Scale</th>
+              <th class="num">Geometry Density</th>
+              <th class="num">Decoded Triangles</th>
+              <th class="num">Portable .uorc Wire</th>
+              <th class="num">Zero-Decode Σ</th>
+              <th>Holo Verdict</th>
+            </tr>
+          </thead>
+          <tbody id="demo-lod-tbody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="demo-section" id="benchmarks" aria-labelledby="sec-bench-h2">
+      <div class="demo-sec-head">
+        <h2 class="demo-h2" id="sec-bench-h2">03. Live WebAssembly Subsystem Benchmarks</h2>
+        <p class="demo-sec-sub">
+          Every measurement below executes live in `verdant-uorc.wasm` linear memory with zero pre-baked numbers. Run individual subsystem audits to compare raw versus coded representations and zero-allocation broadphase bounds.
+        </p>
+      </div>
+
+      <div class="demo-bench-grid">
+        <article class="demo-panel">
+          <h3>AQM Bit-Plane ECS &amp; Monoid Fusion (16,384 Entities)</h3>
+          <p>Evaluates 8-column 64-bit word bit-planes (`popcnt` archetype intersection), algebraic monoid command fusion, and stride-8 rollback checkpoints.</p>
+          <button type="button" class="demo-btn primary" id="btn-bench-aqm">Run 16,384-Entity AQM Bench</button>
+          <pre class="demo-log" id="log-bench-aqm">Ready — click above to execute verdant_wasm_aqm_benchmark_aux(16384).</pre>
+        </article>
+
+        <article class="demo-panel">
+          <h3>512-Body Broadphase &amp; CSR Tile Stability Audit</h3>
+          <p>Verifies 0 B steady-state CSR tile bin heap growth, 512-sphere spatial hash contact resolution, NaN sanitization, and 52-bit astronomical horizon refusal.</p>
+          <button type="button" class="demo-btn primary" id="btn-bench-stability">Run 512-Body Stability Audit</button>
+          <pre class="demo-log" id="log-bench-stability">Ready — click above to execute verdant_wasm_stability_audit_aux(512).</pre>
+        </article>
+
+        <article class="demo-panel">
+          <h3>UORC Wire Compression &amp; Zero-Decode Contraction</h3>
+          <p>Compares raw `VDNT` snapshot bytes against self-verifying SHA-256 `UORC` wire framing, 1-bit tamper refusal, `CDMX` zero-decode matmul, and 2-of-3 `STCH` parity shards.</p>
+          <button type="button" class="demo-btn primary" id="btn-bench-uorc">Run UORC Wire &amp; CDMX Audit</button>
+          <pre class="demo-log" id="log-bench-uorc">Ready — click above to execute verdant_wasm_uorc_exclusive_audit_aux().</pre>
+        </article>
+      </div>
+    </section>
+
+    <section class="demo-section" id="kernels" aria-labelledby="sec-kernels-h2">
+      <div class="demo-sec-head">
+        <h2 class="demo-h2" id="sec-kernels-h2">04. 15 Semiring Kernels, 3 Zero-Decode Coded Tiers &amp; 4 Modeled Refusal Proofs</h2>
+        <p class="demo-sec-sub">
+          Dispatched live against <code>/app.holo</code> (<code>kernel:0</code> .. <code>kernel:14</code>, <code>coded:0</code> .. <code>coded:2</code>, and the 4 modeled negative refusal vectors enforcing Rule R5). Subsystem and semiring columns populate directly from the verified Holo response fields.
+        </p>
+      </div>
+
+      <div class="demo-table-wrap">
+        <table class="demo-table" aria-label="15 unified semiring kernels, 3 coded tiers, and 4 refusal vectors">
+          <thead>
+            <tr>
+              <th>Query</th>
+              <th>Engine Subsystem</th>
+              <th>Algebraic Semiring</th>
+              <th>Live Core-Wasm Verdict</th>
+            </tr>
+          </thead>
+          <tbody id="demo-kernel-tbody"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <footer class="demo-footer">
+    <span>Verdant Engine Demo · Standalone Comparative Benchmark Suite</span>
+    <span><a href="/">Verdant Studio</a> · <a href="/starter/">Sunspire Beacon Trials</a> · <a href="/docs/">Documentation</a></span>
+  </footer>
+
+  <script type="module" src="./demo.mjs"></script>
+</body>
+</html>

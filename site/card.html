@@ -1,30 +1,39 @@
       <div class="ve-viewport" data-slot="surface">
-        <canvas id="ve-canvas" aria-label="Verdant Engine 3D studio viewport"></canvas>
+        <canvas id="ve-canvas" aria-label="Verdant Studio 3D authoring viewport"></canvas>
         <div class="ve-hud" aria-hidden="true">
-          <span id="ve-hud-lod" class="ve-pill">LOD2 · High Detail (0.625)</span>
-          <span id="ve-hud-stats" class="ve-pill">WebGL2 · 15 kernels · CCD + IK</span>
+          <span id="ve-hud-lod" class="ve-pill">Sunspire Regatta · Director · LOD2</span>
+          <span id="ve-hud-stats" class="ve-pill">Observer Coherent · W5H 8/8 · Clear 290mm</span>
+        </div>
+        <div id="ve-touch-pad" class="ve-touch-pad" role="group" aria-label="Character locomotion and scene actions">
+          <button type="button" data-move="KeyW" aria-label="Move forward">W</button>
+          <button type="button" data-move="KeyA" aria-label="Strafe left">A</button>
+          <button type="button" data-move="KeyS" aria-label="Move backward">S</button>
+          <button type="button" data-move="KeyD" aria-label="Strafe right">D</button>
+          <button type="button" id="ve-interact-btn" aria-label="Advance narrative beat">[E]</button>
+          <button type="button" id="ve-lock-btn" aria-label="Toggle mouse look pointer lock">Look</button>
         </div>
         <form id="ve-prompt-form" class="ve-prompt-bar" autocomplete="off">
-          <input id="ve-prompt-input" type="text" aria-label="Direct engine via coded_gemm model" placeholder="Direct engine (lod4 hd, 1st person, create game, tile 16x16)…" />
+          <input id="ve-prompt-input" type="text" aria-label="Direct Verdant Studio via local coded_gemm director" placeholder="Direct studio (frame arch bridge, 3rd person, new project, audio room, gameplay)…" />
           <button id="ve-prompt-btn" type="submit">Direct</button>
         </form>
         <input id="ve-glb-file" type="file" accept=".glb,model/gltf-binary" hidden />
       </div>
       <div class="result" id="game-status" data-slot="result" aria-live="polite">
-        <span id="ve-status" class="chip chip-wait">Verifying engine…</span>
+        <span id="ve-status" class="chip chip-wait">Verifying Observer model…</span>
       </div>
-      <div class="controls" data-slot="actions" data-label="Verdant Studio">
-        <button id="ve-studio-btn" class="primary" type="button" title="Journeys, Outliner &amp; Game Scaffolder">Workbench</button>
-        <button id="ve-sim-btn" type="button" aria-pressed="false" title="Toggle 60fps simulation">Sim: Step</button>
-        <button id="ve-cam-btn" type="button" title="Cycle Orbit, 3rd IK, 1st Eye">Cam: Orbit</button>
-        <button id="ve-lod-btn" type="button" title="Cycle LOD0..LOD4">LOD2</button>
-        <button id="ve-uorc-btn" type="button" title="Stream .uorc in Wasm">Stream HD</button>
-        <button id="ve-render-btn" type="button" title="WebGL2 or 16x16 tile PBR">WebGL2</button>
-        <button id="ve-import-btn" type="button" title="Import .glb">+GLB</button>
-        <button id="ve-glb-btn" type="button" title="Export .glb">Export .glb</button>
-        <button id="ve-snap-btn" type="button" title="Share #uorc= snapshot">Share .uorc</button>
-        <button id="ve-audio-btn" type="button" aria-pressed="false" title="Modal spatial audio">Audio</button>
-        <button id="ve-mesh-btn" type="button" title="Prism ID &amp; Stitch shards">Stitch ID</button>
+      <div class="controls" data-slot="actions" data-label="Studio Transport &amp; I/O">
+        <button id="ve-studio-btn" class="primary" type="button" title="Open Role Workspaces (Dashboard, Code, Design, Audio, Narrative, Director, Gameplay)">Studio Workspace</button>
+        <button id="ve-sim-btn" type="button" aria-pressed="false" title="Toggle live 60fps simulation">Play</button>
+        <button id="ve-cam-btn" type="button" title="Cycle Orbit, 3rd-Person Foot IK, and 1st-Person Eye rigs">Rig: Orbit</button>
+        <button id="ve-lod-btn" type="button" title="Cycle progressive LOD0..LOD4">LOD2</button>
+        <button id="ve-uorc-btn" type="button" title="Stream progressive .uorc geometry">Stream UORC</button>
+        <button id="ve-render-btn" type="button" title="Switch WebGL2 PBR or reference 16x16 software tile view">View: PBR</button>
+        <button id="ve-import-btn" type="button" title="Import Khronos .glb asset">Import .glb</button>
+        <button id="ve-glb-btn" type="button" title="Export active scene as .glb">Export .glb</button>
+        <button id="ve-snap-btn" type="button" title="Save and copy SHA-256 #uorc= world snapshot">Save .uorc</button>
+        <button id="ve-audio-btn" type="button" aria-pressed="false" title="Toggle spatial modal audio">Audio</button>
+        <button id="ve-mesh-btn" type="button" title="Multiplayer session signing &amp; 2-of-3 Stitch custody">Multiplayer</button>
+        <a id="ve-demo-link" class="ghost" href="./demo/">Engine Demo</a>
         <a id="ve-docs-link" class="ghost" href="./docs/">Docs</a>
       </div>
-      <ol id="ve-telemetry" data-slot="history" data-label="Guided Journeys &amp; Landmarks"></ol>
+      <ol id="ve-telemetry" data-slot="history" data-label="Studio Roles"></ol>

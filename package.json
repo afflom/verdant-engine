@@ -3,6 +3,11 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "dev": "node server.ts",
+    "build": "node scripts/build-site.mjs",
+    "start": "node server.ts",
+    "lint": "node --check server.ts && node --check scripts/build-site.mjs && node --check server-routes.mjs && node scripts/enforce-prism-contracts.mjs",
+    "test:contracts": "npx --yes tsx --test prism-contracts.test.ts",
     "test:try": "node --test try/test.mjs",
     "test:identity": "node identity/stitch-sync.mjs --check && node --test identity/test.mjs"
   },

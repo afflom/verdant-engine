@@ -43,35 +43,36 @@ document.querySelector("[data-ve-theme-toggle]")?.addEventListener("click", () =
   syncPrismDocTheme(next);
 });
 
+if (typeof MutationObserver !== "undefined") {
+  new MutationObserver(() => {
+    const btn = document.querySelector("[data-ve-theme-toggle]");
+    if (btn) btn.textContent = document.documentElement.classList.contains("light") ? "Theme: Light" : "Theme: Dark";
+    for (const fn of redrawHooks) fn();
+  }).observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+}
+
 function readDocPalette() {
-  const isLight = document.documentElement.classList.contains("light");
-  return isLight
-    ? {
-        bg: "#e9e8df",
-        card: "#ffffff",
-        fg: "#302b28",
-        muted: "#6b6660",
-        accent: "#1f7a4d",
-        accentSoft: "rgba(31, 122, 77, 0.14)",
-        secondary: "#bb370b",
-        secondarySoft: "rgba(187, 55, 11, 0.14)",
-        danger: "#c91c22",
-        dangerSoft: "rgba(201, 28, 34, 0.12)",
-        line: "#c7c5b8",
-      }
-    : {
-        bg: "#1b1918",
-        card: "#262321",
-        fg: "#f6f5f4",
-        muted: "#b5b2ae",
-        accent: "#5fd18b",
-        accentSoft: "rgba(95, 209, 139, 0.16)",
-        secondary: "#ec6032",
-        secondarySoft: "rgba(236, 96, 50, 0.18)",
-        danger: "#ff6467",
-        dangerSoft: "rgba(255, 100, 103, 0.18)",
-        line: "#433f3d",
-      };
+  const cs = getComputedStyle(document.documentElement);
+  const dtcg = (name) => cs.getPropertyValue(name).trim();
+  const fd = (name, alpha = null) => {
+    const raw = cs.getPropertyValue(name).trim();
+    if (!raw) return "";
+    return alpha === null ? `hsl(${raw})` : `hsl(${raw} / ${alpha})`;
+  };
+  return {
+    bg: dtcg("--muted") || fd("--fd-bg") || "Canvas",
+    card: dtcg("--card") || fd("--fd-panel") || "Canvas",
+    fg: dtcg("--foreground") || fd("--fd-fg") || "CanvasText",
+    muted: dtcg("--muted-foreground") || fd("--fd-dim") || "GrayText",
+    accent: dtcg("--success") || fd("--fd-accent") || "Highlight",
+    accentSoft: dtcg("--success-subtle") || fd("--fd-accent", "0.16") || "Canvas",
+    secondary: dtcg("--brand") || fd("--fd-brand") || "Highlight",
+    secondarySoft: dtcg("--accent") || fd("--fd-brand", "0.16") || "Canvas",
+    danger: dtcg("--destructive") || fd("--fd-brand") || "Mark",
+    dangerSoft: dtcg("--destructive-subtle") || fd("--fd-brand", "0.14") || "Canvas",
+    line: dtcg("--border-strong") || fd("--fd-line") || "GrayText",
+    fontMono: dtcg("--font-mono") || "ui-monospace, monospace",
+  };
 }
 
 function drawBanner(ctx, w, h, title, subtitle) {
@@ -79,10 +80,10 @@ function drawBanner(ctx, w, h, title, subtitle) {
   ctx.fillStyle = pal.bg;
   ctx.fillRect(0, 0, w, h);
   ctx.fillStyle = pal.accent;
-  ctx.font = "600 13px 'Geist Mono', monospace";
+  ctx.font = `600 13px ${pal.fontMono}`;
   ctx.fillText(title, 16, 26);
   ctx.fillStyle = pal.muted;
-  ctx.font = "12px 'Geist Mono', monospace";
+  ctx.font = `12px ${pal.fontMono}`;
   ctx.fillText(subtitle, 16, 48);
 }
 
@@ -135,6 +136,8 @@ const LOD_ENVELOPES = [
 
 async function initInteractive3DViewport(ex, fig, canvas) {
   const renderer = await createBestRenderer(canvas);
+  const csmSplits = [0, 1, 2, 3].map((i) => ex.verdant_wasm_csm_split_meters(0.25, 140.0, i));
+  renderer?.setCsmSplits?.(csmSplits);
   let yawMilli = 460;
   let lodRank = 3;
   let thirdPerson = false;
@@ -173,7 +176,7 @@ async function initInteractive3DViewport(ex, fig, canvas) {
       const idx = new Uint32Array(buf, ex.verdant_wasm_scene_idx_ptr() >>> 0, iCount);
       renderer.uploadPackedBuffers(pos, norm, col, idx);
       const fov = Math.PI / 3.4;
-      const proj = mat4Perspective(fov, canvas.width / Math.max(1, canvas.height), 0.25, 160.0);
+      const proj = mat4Perspective(fov, canvas.width / Math.max(1, canvas.height), 0.25, 140.0);
       const view = mat4LookAt(eye, target, [0, 1, 0]);
       renderer.render(mat4Mul(proj, view), eye, LOD_ENVELOPES[lodRank] || LOD_ENVELOPES[3], 0, target, fov);
     }
@@ -267,17 +270,23 @@ function renderPhysics(ex, fig, canvas, ticks) {
   fig.dataset.veReady = "true";
 }
 
+const lodStreamCache = new WeakMap();
+
 function renderLodStream(ex, fig, canvas, activeRank) {
   const ctx = canvas.getContext("2d");
   if (!ctx) return;
   const pal = readDocPalette();
-  const stats = [0, 1, 2, 3, 4].map((r) => {
-    ex.verdant_wasm_set_lod_rank(r);
-    const tris = Math.floor((ex.verdant_wasm_scene_idx_count() >>> 0) / 3);
-    const nodes = ex.verdant_wasm_node_preset_count() >>> 0;
-    return { r, tris, nodes };
-  });
-  ex.verdant_wasm_set_lod_rank(activeRank);
+  let stats = lodStreamCache.get(ex);
+  if (!stats) {
+    stats = [0, 1, 2, 3, 4].map((r) => {
+      ex.verdant_wasm_set_lod_rank(r);
+      const tris = Math.floor((ex.verdant_wasm_scene_idx_count() >>> 0) / 3);
+      const nodes = ex.verdant_wasm_node_preset_count() >>> 0;
+      return { r, tris, nodes };
+    });
+    ex.verdant_wasm_set_lod_rank(activeRank);
+    lodStreamCache.set(ex, stats);
+  }
   drawBanner(
     ctx,
     canvas.width,
@@ -373,6 +382,7 @@ function renderSemirings(ex, fig, canvas, mode) {
   const cTiers = ex.verdant_wasm_coded_tier_count() >>> 0;
   const splits = [0, 1, 2, 3].map((i) => ex.verdant_wasm_csm_split_meters(0.25, 140.0, i));
   const rt60 = ex.verdant_wasm_sabine_rt60_millis(1800, 96000) >>> 0;
+  const denom = ex.verdant_wasm_modal_bar_denom() >>> 0;
   const modes = [0, 1, 2, 3, 4].map((i) => ex.verdant_wasm_modal_bar_numer(i) >>> 0);
   drawBanner(
     ctx,
@@ -381,7 +391,7 @@ function renderSemirings(ex, fig, canvas, mode) {
     `LIVE PRISM KERNEL TELEMETRY · ${kCount} UNIFIED SEMIRING KERNELS · ${cTiers} CODED TIERS`,
     mode === "csm"
       ? `4-Cascade Shadow Splits (0.25m..140m): ${splits.map((v) => v.toFixed(2) + "m").join(" | ")}`
-      : `Sabine RT60: ${rt60} ms · Euler-Bernoulli Modal Numerators: [${modes.join(", ")}] / 9`,
+      : `Sabine RT60: ${rt60} ms · Euler-Bernoulli Modal Numerators: [${modes.join(", ")}] / ${denom}`,
   );
   const vals = mode === "csm" ? splits : modes;
   const hi = Math.max(1, ...vals);
@@ -392,7 +402,7 @@ function renderSemirings(ex, fig, canvas, mode) {
     ctx.fillRect(110, y, bw, 18);
     ctx.fillStyle = pal.fg;
     ctx.fillText(mode === "csm" ? `Cascade ${i}` : `Mode ${i}`, 18, y + 13);
-    ctx.fillText(mode === "csm" ? `${v.toFixed(2)} m` : `${v}/9 f0`, 118 + bw, y + 13);
+    ctx.fillText(mode === "csm" ? `${v.toFixed(2)} m` : `${v}/${denom} f0`, 118 + bw, y + 13);
   });
   fig.dataset.veReady = "true";
 }

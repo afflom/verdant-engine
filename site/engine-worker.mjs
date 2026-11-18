@@ -37,10 +37,12 @@ async function instantiateWasmModule(targetUrl) {
 let ringCapacity = 64;
 let snapshotMaxBytes = 32768;
 let tileEdgePx = 16;
+let activeSeed = 7n;
 
 const initCoreSceneWasm = () =>
   instantiateWasmModule(wasmUrl).then((ex) => {
     const seed = ex.verdant_wasm_default_seed();
+    activeSeed = BigInt(seed);
     ex.verdant_wasm_init(seed);
     ringCapacity = ex.verdant_wasm_worker_ring_capacity() >>> 0;
     snapshotMaxBytes = ex.verdant_wasm_snapshot_max_bytes() >>> 0;
@@ -52,7 +54,8 @@ let wasmPromise = initCoreSceneWasm();
 let uorcModPromise = null;
 function getUorcWasm() {
   uorcModPromise ??= instantiateWasmModule(uorcWasmUrl).then((ex) => {
-    ex.verdant_wasm_init(ex.verdant_wasm_default_seed());
+    ex.verdant_wasm_init(activeSeed);
+    syncOrgansToWasm(ex);
     return ex;
   });
   return uorcModPromise;
@@ -99,6 +102,17 @@ function readAuxBytes(ex) {
   return new Uint8Array(ex.memory.buffer, ptr, len).slice();
 }
 
+function parsePipeKv(raw) {
+  const kv = {};
+  for (const part of raw.split("|")) {
+    const eq = part.indexOf("=");
+    if (eq > 0) kv[part.slice(0, eq)] = part.slice(eq + 1);
+  }
+  return kv;
+}
+
+const CSM_FAR_METERS = 140.0;
+
 let wasm = null;
 let uorcWasm = null;
 let customGlbActive = false;
@@ -115,6 +129,18 @@ let emaFrameMicros = 8000;
 let activeInstancedCount = 0;
 const slmKappaCache = new Map();
 let slmKappaHits = 0;
+const walkJournal = [];
+const organModes = new Uint8Array(11);
+
+function syncOrgansToWasm(uex, queryIdx = 0) {
+  if (!uex || typeof uex.verdant_wasm_set_organ_grant !== "function") return true;
+  uex.verdant_wasm_set_organ_grant(0, 0);
+  for (let i = 0; i < organModes.length; i++) {
+    const m = organModes[i];
+    if (m === 1 || m === 2) uex.verdant_wasm_set_organ_grant(i, m);
+  }
+  return uex.verdant_wasm_set_organ_grant(queryIdx >>> 0, 99) === 1;
+}
 
 function simHost() {
   return activeSceneHost();
@@ -124,21 +150,31 @@ function activeSceneHost() {
   return (customGlbActive || uorcSceneActive) && uorcWasm ? uorcWasm : wasm;
 }
 
+function syncCoreStateToUorc(uex) {
+  for (const step of walkJournal) {
+    uex.verdant_wasm_step_lawful(step.dtMicros, step.fwdM, step.strafeM, step.yawM, step.speedM, step.jump);
+  }
+  const liveYaw = wasm.verdant_wasm_camera_yaw_milli() | 0;
+  if (lastAnchorActive) {
+    uex.verdant_wasm_camera_set_anchor(1, lastAnchor[0], lastAnchor[1], lastAnchor[2]);
+  } else {
+    uex.verdant_wasm_camera_set_mode(wasm.verdant_wasm_camera_mode() >>> 0);
+  }
+  uex.verdant_wasm_camera_set_pose_intent(
+    liveYaw || lastPose.yaw,
+    lastPose.pitch,
+    lastPose.distMm,
+    lastPose.aspectMilli,
+  );
+  syncOrgansToWasm(uex);
+}
+
 async function ensureUorcSceneHost() {
   uorcWasm ??= await getUorcWasm();
   if (!uorcSceneActive) {
+    uorcWasm.verdant_wasm_init(activeSeed);
     uorcWasm.verdant_wasm_set_lod_rank(wasm.verdant_wasm_active_lod_rank() >>> 0);
-    if (lastAnchorActive) {
-      uorcWasm.verdant_wasm_camera_set_anchor(1, lastAnchor[0], lastAnchor[1], lastAnchor[2]);
-    } else {
-      uorcWasm.verdant_wasm_camera_set_mode(wasm.verdant_wasm_camera_mode() >>> 0);
-    }
-    uorcWasm.verdant_wasm_camera_set_pose_intent(
-      lastPose.yaw,
-      lastPose.pitch,
-      lastPose.distMm,
-      lastPose.aspectMilli,
-    );
+    syncCoreStateToUorc(uorcWasm);
     uorcWasm.verdant_wasm_scene_rebuild_buffers(0);
     uorcSceneActive = true;
   }
@@ -304,7 +340,7 @@ function drawScene(eye, lookTarget, lodSpec, simClockSec, rebuildDynamic = false
   } else if (split) {
     renderer.uploadSplitBuffers(split.staticViews, split.dynViews, split.instViews);
     const fovRad = Math.PI / 3.4;
-    const proj = mat4Perspective(fovRad, aspect, 0.25, 160.0);
+    const proj = mat4Perspective(fovRad, aspect, 0.25, CSM_FAR_METERS);
     const view = mat4LookAt(eye, lookTarget, [0, 1, 0]);
     renderer.render(mat4Mul(proj, view), eye, lodSpec, simClockSec || 0, lookTarget, fovRad);
   }
@@ -332,6 +368,8 @@ self.onmessage = async ({ data: msg }) => {
         canvas.height = h;
         renderer = await createBestRenderer(canvas);
       }
+      const csmSplits = [0, 1, 2, 3].map((i) => wasm.verdant_wasm_csm_split_meters(0.25, CSM_FAR_METERS, i));
+      renderer?.setCsmSplits?.(csmSplits);
       const aspectMilli = Math.max(200, Math.round((w / h) * 1000)) >>> 0;
       lastPose.aspectMilli = aspectMilli;
       const reqRank = (currentLod?.rank ?? 2) >>> 0;
@@ -363,6 +401,7 @@ self.onmessage = async ({ data: msg }) => {
         tensorKernels: wasm.verdant_wasm_unified_tensor_kernel_count() >>> 0,
         codedTiers: wasm.verdant_wasm_coded_tier_count() >>> 0,
         hdMaxLodRank: wasm.verdant_wasm_hd_max_lod_rank() >>> 0,
+        csmSplits,
         tris: stats.tris,
         bvhVisible: initVis,
         camera: cam,
@@ -388,13 +427,16 @@ self.onmessage = async ({ data: msg }) => {
     }
 
     if (msg.kind === "camera-set-mode") {
+      if (!customGlbActive) await ensureUorcSceneHost();
       const sh = simHost();
+      const wasAnchor = lastAnchorActive;
       lastAnchorActive = false;
       sh.verdant_wasm_camera_set_mode((msg.mode ?? 0) >>> 0);
       if (msg.mode === 0) {
         const aspectMilli = canvas && canvas.height > 0 ? Math.round((canvas.width / canvas.height) * 1000) >>> 0 : 1600;
-        lastPose = { yaw: sh.verdant_wasm_camera_yaw_milli() | 0, pitch: 280, distMm: 6200, aspectMilli };
-        sh.verdant_wasm_camera_set_pose_intent(lastPose.yaw, 280, 6200, aspectMilli);
+        const nextYaw = wasAnchor ? -580 : (sh.verdant_wasm_camera_yaw_milli() | 0);
+        lastPose = { yaw: nextYaw, pitch: 280, distMm: 6200, aspectMilli };
+        sh.verdant_wasm_camera_set_pose_intent(nextYaw, 280, 6200, aspectMilli);
       }
       if (!customGlbActive) sh.verdant_wasm_scene_rebuild_buffers(msg.simClockSec || 0);
       const cam = readSolvedCamera(sh);
@@ -404,13 +446,14 @@ self.onmessage = async ({ data: msg }) => {
     }
 
     if (msg.kind === "camera-focus-landmark") {
+      if (msg.possessExplorer && !customGlbActive) await ensureUorcSceneHost();
       const sh = simHost();
       const aspectMilli = canvas && canvas.height > 0 ? Math.round((canvas.width / canvas.height) * 1000) >>> 0 : 1600;
       if (msg.possessExplorer) {
         lastAnchorActive = false;
         sh.verdant_wasm_camera_set_mode(0);
-        lastPose = { yaw: 420, pitch: 280, distMm: Math.round((msg.dist || 6.2) * 1000) >>> 0, aspectMilli };
-        sh.verdant_wasm_camera_set_pose_intent(420, 280, lastPose.distMm, aspectMilli);
+        lastPose = { yaw: -580, pitch: 280, distMm: Math.round((msg.dist || 6.2) * 1000) >>> 0, aspectMilli };
+        sh.verdant_wasm_camera_set_pose_intent(-580, 280, lastPose.distMm, aspectMilli);
       } else {
         lastAnchor = [msg.target[0], msg.target[1], msg.target[2]];
         lastAnchorActive = true;
@@ -510,14 +553,16 @@ self.onmessage = async ({ data: msg }) => {
         const dx = cam.lookTarget[0] - cam.eye[0];
         const dz = cam.lookTarget[2] - cam.eye[2];
         const lookAzimuth = Math.atan2(dx, dz);
-        sh.verdant_wasm_step_lawful(
-          dtMicros,
-          Math.round((msg.fwd || 0) * 1000) | 0,
-          Math.round((msg.strafe || 0) * 1000) | 0,
-          Math.round(lookAzimuth * 1000) | 0,
-          Math.round((msg.speedScale || 1.0) * 1000) >>> 0,
-          msg.jump ? 1 : 0,
-        );
+        const fwdM = Math.round((msg.fwd || 0) * 1000) | 0;
+        const strafeM = Math.round((msg.strafe || 0) * 1000) | 0;
+        const yawM = Math.round(lookAzimuth * 1000) | 0;
+        const speedM = Math.round((msg.speedScale || 1.0) * 1000) >>> 0;
+        const jumpBit = msg.jump ? 1 : 0;
+        sh.verdant_wasm_step_lawful(dtMicros, fwdM, strafeM, yawM, speedM, jumpBit);
+        if (!uorcSceneActive && (fwdM || strafeM || jumpBit)) {
+          if (walkJournal.length >= 256) walkJournal.shift();
+          walkJournal.push({ dtMicros, fwdM, strafeM, yawM, speedM, jump: jumpBit });
+        }
         cam = readSolvedCamera(sh);
       }
 
@@ -547,6 +592,7 @@ self.onmessage = async ({ data: msg }) => {
         fx, fy, fz,
       );
       const gain = sh.verdant_wasm_binaural_gain();
+      const binauralItdMicros = sh.verdant_wasm_binaural_itd_micros();
       const scale = 16.5 / 26.0;
       const mx = sh.verdant_wasm_mover_x() * scale;
       const mz = sh.verdant_wasm_mover_z() * scale;
@@ -575,6 +621,7 @@ self.onmessage = async ({ data: msg }) => {
         pavilionContact: sh.verdant_wasm_pavilion_contact() === 1,
         binauralPan: pan,
         binauralGain: gain,
+        binauralItdMicros,
         attendedSlot: sh.verdant_wasm_observer_attended_slot() >>> 0,
         foveatedLod: sh.verdant_wasm_observer_foveated_lod() >>> 0,
         gimbalYawMilli: sh.verdant_wasm_observer_gimbal_yaw_milli() | 0,
@@ -661,7 +708,6 @@ self.onmessage = async ({ data: msg }) => {
           tris,
           verts: uorcWasm.verdant_wasm_scene_vert_count() >>> 0,
           uorcBytes: uorcStream,
-          vdntBytes: uorcStream,
         },
         [uorcStream.buffer],
       );
@@ -710,7 +756,13 @@ self.onmessage = async ({ data: msg }) => {
         return;
       }
       const ok = uorcWasm.verdant_wasm_snapshot_decode_and_restore() === 1;
-      if (ok) { customGlbActive = false; uorcSceneActive = true; }
+      if (ok) {
+        customGlbActive = false;
+        uorcSceneActive = true;
+        walkJournal.length = 0;
+        activeSeed = BigInt(uorcWasm.verdant_wasm_active_seed());
+        syncOrgansToWasm(uorcWasm);
+      }
       const lodRank = uorcWasm.verdant_wasm_active_lod_rank() >>> 0;
       if (ok) wasm.verdant_wasm_set_lod_rank(lodRank);
       const sh = simHost();
@@ -743,18 +795,11 @@ self.onmessage = async ({ data: msg }) => {
       }
       const vdntBytes = readIoBytes(uorcWasm);
       if (!uorcSceneActive) {
-        if (lastAnchorActive) {
-          uorcWasm.verdant_wasm_camera_set_anchor(1, lastAnchor[0], lastAnchor[1], lastAnchor[2]);
-        } else {
-          uorcWasm.verdant_wasm_camera_set_mode(wasm.verdant_wasm_camera_mode() >>> 0);
-        }
-        uorcWasm.verdant_wasm_camera_set_pose_intent(
-          lastPose.yaw,
-          lastPose.pitch,
-          lastPose.distMm,
-          lastPose.aspectMilli,
-        );
+        syncCoreStateToUorc(uorcWasm);
+      } else {
+        syncOrgansToWasm(uorcWasm);
       }
+      walkJournal.length = 0;
       uorcSceneActive = true;
       customGlbActive = false;
       const sh = simHost();
@@ -776,6 +821,10 @@ self.onmessage = async ({ data: msg }) => {
     }
 
     if (msg.kind === "route-prompt") {
+      if (organModes[0] === 2) {
+        self.postMessage({ kind: "prompt-routed", id: msg.id, ok: false, organDenied: "wasm-core" });
+        return;
+      }
       const promptKey = String(msg.prompt || "").trim().toLowerCase();
       const cached = slmKappaCache.get(promptKey);
       if (cached) {
@@ -784,11 +833,13 @@ self.onmessage = async ({ data: msg }) => {
         return;
       }
       uorcWasm ??= await getUorcWasm();
+      syncOrgansToWasm(uorcWasm);
       const raw = new TextEncoder().encode(String(msg.prompt || ""));
       stageIoBytes(uorcWasm, raw);
       const auxLen = uorcWasm.verdant_wasm_route_prompt_io() >>> 0;
       if (auxLen === 0) {
-        self.postMessage({ kind: "prompt-routed", id: msg.id, ok: false });
+        const organDenied = organModes[8] === 2 ? "broadcast-channel" : null;
+        self.postMessage({ kind: "prompt-routed", id: msg.id, ok: false, organDenied });
         return;
       }
       const decoded = new TextDecoder().decode(readAuxBytes(uorcWasm));
@@ -816,11 +867,7 @@ self.onmessage = async ({ data: msg }) => {
         self.postMessage({ kind: "aqm-benchmark", id: msg.id, ok: false });
         return;
       }
-      const kvMap = {};
-      for (const part of new TextDecoder().decode(readAuxBytes(uorcWasm)).split("|")) {
-        const eq = part.indexOf("=");
-        if (eq > 0) kvMap[part.slice(0, eq)] = part.slice(eq + 1);
-      }
+      const kvMap = parsePipeKv(new TextDecoder().decode(readAuxBytes(uorcWasm)));
       self.postMessage({
         kind: "aqm-benchmark",
         id: msg.id,
@@ -841,11 +888,7 @@ self.onmessage = async ({ data: msg }) => {
         self.postMessage({ kind: "stability-audit", id: msg.id, ok: false });
         return;
       }
-      const kvMap = {};
-      for (const part of new TextDecoder().decode(readAuxBytes(uorcWasm)).split("|")) {
-        const eq = part.indexOf("=");
-        if (eq > 0) kvMap[part.slice(0, eq)] = part.slice(eq + 1);
-      }
+      const kvMap = parsePipeKv(new TextDecoder().decode(readAuxBytes(uorcWasm)));
       self.postMessage({ kind: "stability-audit", id: msg.id, ok: true, elapsedMs, metrics: kvMap });
       return;
     }
@@ -859,11 +902,7 @@ self.onmessage = async ({ data: msg }) => {
         self.postMessage({ kind: "uorc-exclusive-audit", id: msg.id, ok: false });
         return;
       }
-      const kvMap = {};
-      for (const part of new TextDecoder().decode(readAuxBytes(uorcWasm)).split("|")) {
-        const eq = part.indexOf("=");
-        if (eq > 0) kvMap[part.slice(0, eq)] = part.slice(eq + 1);
-      }
+      const kvMap = parsePipeKv(new TextDecoder().decode(readAuxBytes(uorcWasm)));
       self.postMessage({ kind: "uorc-exclusive-audit", id: msg.id, ok: true, elapsedMs, metrics: kvMap });
       return;
     }
@@ -884,8 +923,25 @@ self.onmessage = async ({ data: msg }) => {
 
     if (msg.kind === "set-organ-grant") {
       uorcWasm ??= await getUorcWasm();
-      const allowed = uorcWasm.verdant_wasm_set_organ_grant(msg.organIdx >>> 0, msg.mode >>> 0) === 1;
-      self.postMessage({ kind: "organ-grant-updated", id: msg.id, ok: true, allowed });
+      const idx = Math.max(0, Math.min(10, msg.organIdx >>> 0));
+      const reqMode = msg.mode >>> 0;
+      if (reqMode === 0) {
+        organModes[idx] = 0;
+      } else if (reqMode === 2) {
+        organModes[idx] = 2;
+      } else if (reqMode === 1 && organModes[idx] !== 2) {
+        organModes[idx] = 1;
+      }
+      slmKappaCache.clear();
+      const allowed = syncOrgansToWasm(uorcWasm, idx);
+      self.postMessage({
+        kind: "organ-grant-updated",
+        id: msg.id,
+        ok: true,
+        organIdx: idx,
+        mode: organModes[idx],
+        allowed,
+      });
       return;
     }
 
@@ -893,7 +949,7 @@ self.onmessage = async ({ data: msg }) => {
       uorcWasm ??= await getUorcWasm();
       let source = msg.bytes instanceof Uint8Array ? msg.bytes : null;
       if (!source || !source.byteLength) {
-        uorcWasm.verdant_wasm_set_lod_rank(Math.min(3, wasm.verdant_wasm_active_lod_rank() >>> 0));
+        uorcWasm.verdant_wasm_set_lod_rank(Math.min(3, simHost().verdant_wasm_active_lod_rank() >>> 0));
         const snapLen = uorcWasm.verdant_wasm_snapshot_encode() >>> 0;
         if (snapLen === 0) {
           self.postMessage({ kind: "stitch-sharded", id: msg.id, ok: false });
@@ -956,11 +1012,7 @@ self.onmessage = async ({ data: msg }) => {
         return;
       }
       const lines = new TextDecoder().decode(readAuxBytes(uorcWasm)).split("\n");
-      const header = {};
-      for (const kv of (lines[0] || "").split("|")) {
-        const eq = kv.indexOf("=");
-        if (eq > 0) header[kv.slice(0, eq)] = kv.slice(eq + 1);
-      }
+      const header = parsePipeKv(lines[0] || "");
       const entities = lines.slice(1).filter(Boolean).map((line) => {
         const [id, name, role, tris, coords, minLodScale] = line.split("|");
         const [cx, cy, cz] = (coords || "0,0,0").split(",").map(Number);
@@ -988,17 +1040,22 @@ self.onmessage = async ({ data: msg }) => {
 
     if (msg.kind === "set-seed") {
       const nextSeed = BigInt(Math.max(1, Number(msg.seed) || 7));
-      const rank = wasm.verdant_wasm_active_lod_rank() >>> 0;
+      activeSeed = nextSeed;
+      walkJournal.length = 0;
+      const rank = simHost().verdant_wasm_active_lod_rank() >>> 0;
       wasm.verdant_wasm_init(nextSeed);
       wasm.verdant_wasm_set_lod_rank(rank);
       if (uorcWasm) {
         uorcWasm.verdant_wasm_init(nextSeed);
         uorcWasm.verdant_wasm_set_lod_rank(rank);
+        syncOrgansToWasm(uorcWasm);
       }
       customGlbActive = false;
       const sh = simHost();
       if (lastAnchorActive) {
         sh.verdant_wasm_camera_set_anchor(1, lastAnchor[0], lastAnchor[1], lastAnchor[2]);
+      } else {
+        sh.verdant_wasm_camera_set_mode(wasm.verdant_wasm_camera_mode() >>> 0);
       }
       sh.verdant_wasm_camera_set_pose_intent(
         lastPose.yaw,
@@ -1016,6 +1073,21 @@ self.onmessage = async ({ data: msg }) => {
         seed: Number(nextSeed),
         tris: stats.tris,
         camera: cam,
+      });
+      return;
+    }
+
+    if (msg.kind === "sabine-rt60") {
+      const vol = Math.max(10, Math.round(Number(msg.volumeM3) || 1800)) >>> 0;
+      const absMilli = Math.max(100, Math.round(Number(msg.absorptionMilliM2) || 96000)) >>> 0;
+      const rt60Ms = wasm.verdant_wasm_sabine_rt60_millis(vol, absMilli) >>> 0;
+      self.postMessage({
+        kind: "sabine-rt60",
+        id: msg.id,
+        ok: true,
+        volumeM3: vol,
+        absorptionMilliM2: absMilli,
+        rt60Ms,
       });
       return;
     }

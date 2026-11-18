@@ -1,96 +1,285 @@
 <!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Orbital Beacon Arena — Verdant Engine Starter</title>
-    <style>
-      :root {
-        --bg: #111618;
-        --panel: rgba(17, 22, 24, 0.86);
-        --border: rgba(238, 244, 242, 0.16);
-        --fg: #eef4f2;
-        --muted: #a6b7b2;
-        --accent: #6ec49c;
-      }
-      * { box-sizing: border-box; }
-      html, body {
-        margin: 0;
-        height: 100%;
-        background: var(--bg);
-        color: var(--fg);
-        font-family: system-ui, -apple-system, sans-serif;
-        overflow: hidden;
-      }
-      #arena {
-        display: block;
-        width: 100vw;
-        height: 100vh;
-        touch-action: none;
-      }
-      .hud {
-        position: fixed;
-        top: 0.875rem;
-        left: 0.875rem;
-        right: 0.875rem;
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        justify-content: space-between;
-        gap: 0.625rem;
-        pointer-events: none;
-      }
-      .card {
-        pointer-events: auto;
-        padding: 0.625rem 0.875rem;
-        border-radius: 0.75rem;
-        background: var(--panel);
-        border: 1px solid var(--border);
-        backdrop-filter: blur(10px);
-      }
-      .title {
-        font-weight: 650;
-        font-size: 0.9375rem;
-      }
-      .sub {
-        font-size: 0.8125rem;
-        color: var(--muted);
-        margin-top: 0.15rem;
-      }
-      .actions {
-        display: flex;
-        gap: 0.5rem;
-      }
-      button {
-        min-width: 2.75rem;
-        min-height: 2.75rem;
-        padding: 0.5rem 0.875rem;
-        border-radius: 0.625rem;
-        border: 1px solid var(--border);
-        background: rgba(110, 196, 156, 0.14);
-        color: var(--fg);
-        font: inherit;
-        font-size: 0.875rem;
-        cursor: pointer;
-      }
-      button:hover, button:focus-visible {
-        border-color: var(--accent);
-        outline: none;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="hud">
-      <div class="card" role="status" aria-live="polite">
-        <div class="title" id="hud-score">Beacons Activated: 0 / 3</div>
-        <div class="sub" id="hud-hint">Move with WASD or Arrow keys (drag to orbit camera) to activate all three relay beacons.</div>
-      </div>
-      <div class="card actions">
-        <button type="button" id="audio-btn" aria-pressed="false">Audio: Off</button>
-        <button type="button" id="reset-btn">Reset Arena</button>
+<html lang="en" class="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sunspire Beacon Trials · 3D Coastal Action Trial</title>
+  <meta name="description" content="Harmonize three coastal beacons across the Sunspire stone arch basin while evading patrol hull deflections.">
+  <link rel="stylesheet" href="/brand/fonts.css">
+  <link rel="stylesheet" href="/brand/hologram-warm.css">
+  <link rel="stylesheet" href="/prism-page.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: var(--background);
+      color: var(--foreground);
+      font-family: var(--font-sans);
+      user-select: none;
+    }
+    #game-canvas {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100dvh;
+      display: block;
+      touch-action: none;
+      cursor: grab;
+    }
+    #game-canvas:active { cursor: grabbing; }
+
+    /* Title Screen Overlay — Live 3D World Camera Tour Behind Focal Column */
+    .title-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: clamp(1.5rem, 5vh, 3.5rem) var(--space-4);
+      pointer-events: none;
+      background: radial-gradient(circle at 50% 44%, transparent 18%, color-mix(in oklab, var(--background) 64%, transparent) 100%);
+      z-index: 4;
+    }
+    body[data-state="title"] .title-overlay { display: flex; }
+
+    .title-focal {
+      margin: auto 0;
+      max-width: 32rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: var(--space-3);
+      pointer-events: auto;
+    }
+    .crest-svg {
+      width: 3.75rem;
+      height: 3.75rem;
+      color: var(--primary);
+    }
+    .title-h1 {
+      margin: 0;
+      font-family: var(--font-display);
+      font-size: clamp(2.15rem, 5vw, 3.35rem);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.05;
+      text-wrap: balance;
+      color: var(--foreground);
+      text-shadow: 0 2px 18px var(--background);
+    }
+    .title-sub {
+      margin: 0;
+      font-size: var(--text-16);
+      color: var(--foreground);
+      text-shadow: 0 1px 12px var(--background);
+    }
+    .cta-btn {
+      min-height: 3.25rem;
+      min-width: 14rem;
+      padding: 0 var(--space-5, 1.5rem);
+      border-radius: var(--radius-control);
+      border: var(--border-width) solid var(--primary);
+      background: var(--primary);
+      color: var(--primary-foreground);
+      font-family: var(--font-display);
+      font-size: var(--text-16);
+      font-weight: 600;
+      letter-spacing: 0.01em;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+    .cta-btn:hover { background: var(--primary-hover); }
+    .title-foot {
+      font-family: var(--font-mono);
+      font-size: var(--text-14);
+      color: var(--foreground);
+      text-shadow: 0 1px 10px var(--background);
+      text-align: center;
+    }
+
+    /* Playing Perimeter HUD — 2 Corner Clusters, >= 88% Open Viewport */
+    .hud-layer {
+      position: fixed;
+      inset: 0;
+      display: none;
+      pointer-events: none;
+      z-index: 3;
+    }
+    body[data-state="playing"] .hud-layer { display: block; }
+
+    .hud-tl {
+      position: absolute;
+      top: var(--space-3);
+      left: var(--space-3);
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: var(--space-2) var(--space-3);
+      border-radius: var(--radius-control);
+      border: var(--border-width) solid var(--border-strong);
+      background: color-mix(in oklab, var(--card) 92%, transparent);
+      font-family: var(--font-mono);
+      font-size: var(--text-14);
+      font-variant-numeric: tabular-nums;
+    }
+    .hud-metric strong { color: var(--primary); font-weight: 700; }
+    .hud-sep { color: var(--muted-foreground); }
+
+    .hud-tr {
+      position: absolute;
+      top: var(--space-3);
+      right: var(--space-3);
+      display: flex;
+      gap: var(--space-1);
+      pointer-events: auto;
+    }
+    .hud-btn {
+      min-width: var(--touch);
+      min-height: var(--touch);
+      padding: 0 var(--space-3);
+      border-radius: var(--radius-control);
+      border: var(--border-width) solid var(--border-strong);
+      background: color-mix(in oklab, var(--card) 92%, transparent);
+      color: var(--card-foreground);
+      font-family: var(--font-mono);
+      font-size: var(--text-14);
+      font-weight: 600;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+    .hud-btn:hover,
+    .hud-btn[aria-pressed="true"] {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: var(--primary-foreground);
+    }
+
+    .touch-dpad {
+      position: absolute;
+      left: var(--space-3);
+      bottom: var(--space-3);
+      display: none;
+      gap: var(--space-1);
+      pointer-events: auto;
+    }
+    @media (pointer: coarse) {
+      .touch-dpad { display: flex; }
+    }
+
+    /* Pause / Stage Clear (gameover) Modal */
+    .state-modal-wrap {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: var(--space-4);
+      background: var(--scrim);
+      z-index: 5;
+    }
+    body[data-state="paused"] .state-modal-wrap,
+    body[data-state="gameover"] .state-modal-wrap,
+    body[data-state="victory"] .state-modal-wrap {
+      display: flex;
+    }
+    .state-card {
+      width: min(92vw, 26rem);
+      padding: var(--space-4);
+      border-radius: var(--radius);
+      border: var(--border-width) solid var(--border-strong);
+      background: var(--card);
+      color: var(--card-foreground);
+      box-shadow: var(--shadow-overlay);
+      display: grid;
+      gap: var(--space-3);
+      text-align: center;
+    }
+    .state-card h2 {
+      margin: 0;
+      font-family: var(--font-display);
+      font-size: var(--text-24, 1.5rem);
+    }
+    .state-stats {
+      margin: 0;
+      font-family: var(--font-mono);
+      font-size: var(--text-14);
+      color: var(--muted-foreground);
+      font-variant-numeric: tabular-nums;
+      white-space: pre-line;
+    }
+    .state-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: var(--space-2);
+    }
+  </style>
+</head>
+<body data-state="title">
+  <canvas id="game-canvas" aria-label="Sunspire Beacon Trials 3D viewport"></canvas>
+
+  <section class="title-overlay" id="title-screen" aria-label="Game Title">
+    <div></div>
+    <div class="title-focal">
+      <svg class="crest-svg" viewBox="0 0 64 64" fill="none" aria-hidden="true">
+        <polygon points="32,4 56,24 32,60 8,24" stroke="currentColor" stroke-width="2.5"/>
+        <polygon points="32,14 46,26 32,48 18,26" stroke="var(--brand)" stroke-width="2"/>
+        <circle cx="32" cy="27" r="4.5" fill="currentColor"/>
+      </svg>
+      <h1 class="title-h1">Sunspire Beacon Trials</h1>
+      <p class="title-sub" id="holo-badge">Preparing Sunspire Basin…</p>
+      <button type="button" class="cta-btn" id="start-btn" data-start="true">Enter Sunspire Trials</button>
+    </div>
+    <div class="title-foot">WASD / Arrows Move · Space Jump · E Chronicle · Drag Orbit · C Camera · P Pause</div>
+  </section>
+
+  <section class="hud-layer" id="hud-playing" aria-label="Active Game HUD">
+    <div class="hud-tl">
+      <span class="hud-metric">Beacons <strong id="hud-beacons">0 / 3</strong></span>
+      <span class="hud-sep">·</span>
+      <span class="hud-metric">Chronicle <strong id="hud-chronicle">Arrival (12)</strong></span>
+      <span class="hud-sep">·</span>
+      <span class="hud-metric">Time <strong id="hud-time">0s</strong></span>
+      <span class="hud-sep">·</span>
+      <span class="hud-metric" id="hud-sub">View: 3rd Person</span>
+    </div>
+    <div class="hud-tr">
+      <button type="button" class="hud-btn" id="btn-chronicle" tabindex="-1" aria-label="Interact with Sunspire Chronicle">[E] Chronicle</button>
+      <button type="button" class="hud-btn" id="btn-audio" tabindex="-1" aria-pressed="false" aria-label="Toggle chime audio">Audio</button>
+      <button type="button" class="hud-btn" id="btn-cam" tabindex="-1" aria-label="Switch 3rd or 1st person view">3rd View</button>
+      <button type="button" class="hud-btn" id="btn-pause" tabindex="-1" aria-label="Pause trials">Pause</button>
+      <a class="hud-btn" href="/" tabindex="-1" aria-label="Return to Verdant Studio">Studio</a>
+    </div>
+    <div class="touch-dpad" id="starter-touch-pad" role="group" aria-label="Touch movement">
+      <button type="button" class="hud-btn" data-move="KeyW">W</button>
+      <button type="button" class="hud-btn" data-move="KeyA">A</button>
+      <button type="button" class="hud-btn" data-move="KeyS">S</button>
+      <button type="button" class="hud-btn" data-move="KeyD">D</button>
+      <button type="button" class="hud-btn" data-move="Space">Jump</button>
+    </div>
+  </section>
+
+  <section class="state-modal-wrap" id="state-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="state-card">
+      <h2 id="modal-title">Trials Paused</h2>
+      <p class="state-stats" id="modal-stats">Beacons Harmonized: 0 / 3 · Elapsed: 0s</p>
+      <div class="state-actions">
+        <button type="button" class="cta-btn" id="btn-resume" data-start="true">Resume</button>
+        <button type="button" class="hud-btn" id="btn-restart">Restart</button>
+        <button type="button" class="hud-btn" id="btn-title">Title</button>
       </div>
     </div>
-    <canvas id="arena" aria-label="Orbital Beacon Arena 3D viewport"></canvas>
-    <script type="module" src="./game.mjs"></script>
-  </body>
+  </section>
+
+  <script type="module" src="./game.mjs"></script>
+</body>
 </html>

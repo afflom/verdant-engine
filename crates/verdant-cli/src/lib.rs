@@ -102,7 +102,8 @@ verdant <subcommand> [options]
   stitch-recover <frag1.stch> <frag2.stch> <out> Recover exact object from any 2 distinct Stitch shards
   verify-story [seed]                         Verify StoryAutomaton tropical reachability & conservation
   pack-universe <out_dir> [seed]              Pack 3-sector floating-origin universe & Stitch shards
-  benchmark [frames]                          Run headless 60fps physics + BVH + GJK + NavMesh benchmark";
+  benchmark [frames]                          Run headless 60fps physics + BVH + GJK + NavMesh benchmark
+  stress-benchmark [entities]                 Run 10k+ SoA bit-plane, TwoLevelBvh & monoid stress benchmark";
 
 fn pk(command: &str, res: Result<u64, prism_kernel::ComputeError>) -> Result<u64, CliCommandError> {
     res.map_err(|e| CliCommandError::ValidationRejected {

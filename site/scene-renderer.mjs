@@ -51,7 +51,7 @@ export async function createGlRenderer(canvas) {
   const iPos = `vec3 wp=u_inst>0.5?(i_c0.xyz*a_pos.x+i_c1.xyz*a_pos.y+i_c2.xyz*a_pos.z+i_c3.xyz):a_pos;`;
   const B = gl.ARRAY_BUFFER, E = gl.ELEMENT_ARRAY_BUFFER, T = gl.TEXTURE_2D, F = gl.FRAMEBUFFER, R = gl.RENDERBUFFER;
   let sPrg, kPrg, pPrg, oPrg, bPrg, sGpu, dGpu, iGpu, qVao, sShd, shd, hTex, hDep, hFbo, bTex, uSh, uSk, uPb, uPo;
-  let ctxLost = false, cKey = "", hdrW = 0, hdrH = 0, rScale = 1, lSB = 0, lDB = 0, fence = null;
+  let ctxLost = false, cKey = "", hdrW = 0, hdrH = 0, lastDrawnW = 0, lastDrawnH = 0, rScale = 1, lSB = 0, lDB = 0, fence = null;
   const bPrgAll = () => {
     sPrg = link(
       `#version 300 es\nlayout(location=0) in vec3 a_pos;${iDcl}uniform mat4 u_lmvp;void main(){${iPos}gl_Position=u_lmvp*vec4(wp,1.0);}`,
@@ -110,7 +110,7 @@ export async function createGlRenderer(canvas) {
     uSk = uLocs(kPrg, ["fwd", "right", "up", "sky", "fog", "sun", "aspect", "th"]);
     uPb = uLocs(pPrg, ["mvp", "lmvp", "eye", "fog", "sky", "sun", "time", "sh", "is", "smap", "inst", "q"]);
     uPo = uLocs(oPrg, ["hdr", "ir"]);
-    hdrW = hdrH = 0; cKey = ""; fence = null;
+    hdrW = hdrH = lastDrawnW = lastDrawnH = 0; cKey = ""; fence = null;
     return true;
   };
   if (!bGpu()) return null;
@@ -125,7 +125,11 @@ export async function createGlRenderer(canvas) {
     gl.bindFramebuffer(F, hFbo); gl.framebufferTexture2D(F, gl.COLOR_ATTACHMENT0, T, hTex, 0); gl.framebufferRenderbuffer(F, gl.DEPTH_ATTACHMENT, R, hDep);
     const ok = gl.checkFramebufferStatus(F) === gl.FRAMEBUFFER_COMPLETE; gl.bindFramebuffer(F, null); return ok;
   };
-  const lOrt = mat4Ortho(-34, 34, -34, 34, -48, 64);
+  const lUp = [0, 1, 0];
+  let lRx = lUp[1] * SUN_DIR[2] - lUp[2] * SUN_DIR[1], lRy = lUp[2] * SUN_DIR[0] - lUp[0] * SUN_DIR[2], lRz = lUp[0] * SUN_DIR[1] - lUp[1] * SUN_DIR[0];
+  const lRl = Math.hypot(lRx, lRy, lRz) || 1; lRx /= lRl; lRy /= lRl; lRz /= lRl;
+  const lUx = SUN_DIR[1] * lRz - SUN_DIR[2] * lRy, lUy = SUN_DIR[2] * lRx - SUN_DIR[0] * lRz, lUz = SUN_DIR[0] * lRy - SUN_DIR[1] * lRx;
+  let csmFar = 28.2;
   const sUp = (t, b, v, k) => {
     gl.bindBuffer(t, b);
     if (v.byteLength > dGpu[k]) { dGpu[k] = Math.max(v.byteLength * 2, 16384); gl.bufferData(t, dGpu[k], gl.STREAM_DRAW); }
@@ -136,6 +140,10 @@ export async function createGlRenderer(canvas) {
     backend: "webgl2",
     isSoftware,
     setRenderScale(pm) { rScale = Math.max(0.65, Math.min(1, (pm || 1000) / 1000)); },
+    setCsmSplits(splits) {
+      const s1 = Number(splits?.[1]);
+      if (Number.isFinite(s1) && s1 > 8) { csmFar = Math.max(22, Math.min(48, s1)); cKey = ""; }
+    },
     getUploadTelemetry() { return { staticBytes: lSB, dynBytes: lDB, staticEpoch: sGpu.epoch, instCount: iGpu.instCount, ctxLost }; },
     uploadSplitBuffers(sv, dv, iv = null) {
       if (ctxLost || gl.isContextLost()) return;
@@ -169,20 +177,30 @@ export async function createGlRenderer(canvas) {
     render(mvp, eye, lodSpec, timeSec, lTgt = [0, 1.8, 0], fovRad = Math.PI / 3.4) {
       const w = canvas.width | 0, h = canvas.height | 0;
       if (ctxLost || w <= 0 || h <= 0 || gl.isContextLost()) return;
+      const resized = w !== lastDrawnW || h !== lastDrawnH;
       if (fence) {
-        if (gl.getSyncParameter(fence, gl.SYNC_STATUS) === gl.UNSIGNALED && isSoftware) return;
+        if (!resized && gl.getSyncParameter(fence, gl.SYNC_STATUS) === gl.UNSIGNALED && isSoftware) return;
         gl.deleteSync(fence); fence = null;
       }
+      lastDrawnW = w; lastDrawnH = h;
       const rank = lodSpec?.rank ?? 3, quality = isSoftware ? Math.min(1, rank) : (rank >= 2 ? 2 : 1);
       const sky = lodSpec?.sky ?? [0.18, 0.3, 0.38], fog = lodSpec?.fog ?? [0.3, 0.4, 0.44];
       const tIdx = sGpu.count + dGpu.count + (iGpu.instCount > 0 ? iGpu.count : 0);
       const shOn = rank >= 1 && tIdx > 0 ? 1 : 0;
       const fx = lTgt[0] ?? 0, fy = lTgt[1] ?? 1.5, fz = lTgt[2] ?? 0;
-      const sfx = Math.round(fx * 0.5) * 2, sfy = Math.round(fy * 0.5) * 2, sfz = Math.round(fz * 0.5) * 2;
+      const texel = (2 * csmFar) / sSz;
+      const tu = Math.round((fx * lRx + fy * lRy + fz * lRz) / texel);
+      const tv = Math.round((fx * lUx + fy * lUy + fz * lUz) / texel);
+      const tw = Math.round((fx * SUN_DIR[0] + fy * SUN_DIR[1] + fz * SUN_DIR[2]) * 0.5) * 2;
+      const su = tu * texel, sv = tv * texel;
+      const sfx = su * lRx + sv * lUx + tw * SUN_DIR[0];
+      const sfy = su * lRy + sv * lUy + tw * SUN_DIR[1];
+      const sfz = su * lRz + sv * lUz + tw * SUN_DIR[2];
+      const lOrt = mat4Ortho(-csmFar, csmFar, -csmFar, csmFar, -48, 64);
       const lmvp = mat4Mul(lOrt, mat4LookAt([sfx + SUN_DIR[0] * 14, sfy + SUN_DIR[1] * 14, sfz + SUN_DIR[2] * 14], [sfx, sfy, sfz], [0, 1, 0]));
 
       if (shOn) {
-        const key = `${sGpu.epoch}:${sfx},${sfy},${sfz}`;
+        const key = `${sGpu.epoch}:${tu},${tv},${tw}:${csmFar}`;
         gl.colorMask(false, false, false, false); gl.enable(gl.DEPTH_TEST); gl.depthMask(true);
         gl.enable(gl.POLYGON_OFFSET_FILL); gl.polygonOffset(1.8, 3);
         gl.useProgram(sPrg); gl.uniformMatrix4fv(uSh.lmvp, false, lmvp);
@@ -247,7 +265,7 @@ export function createCanvas2dTensorRenderer(cv) {
   if (!cx) return null;
   const noop = () => {};
   return {
-    backend: "tensor-2d", isSoftware: true, setRenderScale: noop, uploadSplitBuffers: noop, uploadPackedBuffers: noop,
+    backend: "tensor-2d", isSoftware: true, setRenderScale: noop, setCsmSplits: noop, uploadSplitBuffers: noop, uploadPackedBuffers: noop,
     getUploadTelemetry() { return { staticBytes: 0, dynBytes: 0, staticEpoch: 0, instCount: 0 }; },
     render(_m, _e, ls) {
       if (cv.width <= 0 || cv.height <= 0) return;

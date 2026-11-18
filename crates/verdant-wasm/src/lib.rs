@@ -217,6 +217,9 @@ pub struct WasmRuntimeBridge {
     /// Optional user-imported `.glb` scene overriding the procedural world meshes.
     #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
     pub custom_glb_scene: Option<(SceneWorld, Vec<ProceduralMesh>, Vec<PbrMaterial>)>,
+    /// Retained skin and animation clip counts from the active user-imported `.glb` bundle.
+    #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+    pub imported_glb_skin_clip_counts: (usize, usize),
 }
 
 fn pk_u64(res: Result<u64, prism_kernel::ComputeError>) -> u64 {
@@ -480,6 +483,8 @@ impl WasmRuntimeBridge {
             grants: ContainerGrantMatrix::default(),
             #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
             custom_glb_scene: None,
+            #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+            imported_glb_skin_clip_counts: (0, 0),
         };
         if let Some(cap) = &mut bridge.physics.player_capsule {
             cap.foot_position = exp_start;
@@ -576,6 +581,14 @@ impl WasmRuntimeBridge {
         }
         physics.kinematic_mover = Some(KinematicSplineBody::new(waypoints, r_spline / ten));
         physics
+    }
+
+    /// Rebuilds dynamic actor buffers without repacking static world geometry when `!self.static_dirty`.
+    pub fn rebuild_dynamic_buffers_only(
+        &mut self,
+        sim_time_sec: f64,
+    ) -> Result<usize, WasmBridgeError> {
+        self.rebuild_scene_buffers(sim_time_sec)
     }
 
     /// Rebuilds `self.scene_buffers` from the cached static `HdSectorBundle` (`VaultedCitadelHall`,
@@ -2233,7 +2246,19 @@ pub extern "C" fn verdant_wasm_set_organ_grant(organ_idx: u32, mode: u32) -> u32
     };
     let deny_mode = prism_kernel::sTwo() as u32;
     if mode == 0 {
-        bridge.grants = ContainerGrantMatrix::default();
+        let mut rebuilt = ContainerGrantMatrix::default();
+        for &other in &organs {
+            if other == organ {
+                continue;
+            }
+            let currently_allowed = bridge.grants.is_allowed(other);
+            if other.is_always_sandboxed() && !currently_allowed {
+                rebuilt.deny(other);
+            } else if !other.is_always_sandboxed() && currently_allowed {
+                rebuilt.grant(other);
+            }
+        }
+        bridge.grants = rebuilt;
     } else if mode == 1 {
         bridge.grants.grant(organ);
     } else if mode == deny_mode {
@@ -3117,6 +3142,7 @@ pub extern "C" fn verdant_wasm_glb_import_io() -> u32 {
     };
     bridge.two_level_bvh = boundaries;
     bridge.bvh = imported.scene.build_bvh();
+    bridge.imported_glb_skin_clip_counts = (imported.skeletons.len(), imported.clips.len());
     bridge.custom_glb_scene = Some((imported.scene, imported.meshes, imported.materials));
     bridge.static_dirty = true;
     let _ = bridge.solve_active_camera(0.0);
@@ -3172,6 +3198,7 @@ pub extern "C" fn verdant_wasm_clear_imported_glb() -> u32 {
     };
     bridge.two_level_bvh = boundaries;
     bridge.custom_glb_scene = None;
+    bridge.imported_glb_skin_clip_counts = (0, 0);
     bridge.static_dirty = true;
     bridge.bvh = bridge.world.scene.build_bvh();
     let _ = bridge.solve_active_camera(0.0);

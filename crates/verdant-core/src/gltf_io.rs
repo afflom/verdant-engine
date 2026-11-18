@@ -255,12 +255,39 @@ pub fn export_scene_to_glb(
         gltf_nodes.push(node_obj);
     }
 
-    for ent in &entity_list {
-        if let (Some(m_idx), Some(mat_idx)) = (ent.mesh_index, ent.material_index) {
-            if m_idx < gltf_meshes.len() && mat_idx < gltf_materials.len() {
-                gltf_meshes[m_idx]["primitives"][0]["material"] = json!(mat_idx);
-            }
+    let base_mesh_count = gltf_meshes.len();
+    let mut bound_mesh_materials: std::collections::BTreeMap<(usize, usize), usize> =
+        std::collections::BTreeMap::new();
+    let mut assigned_primary_mat: Vec<Option<usize>> = vec![None; base_mesh_count];
+
+    for (node_pos, ent) in entity_list.iter().enumerate() {
+        let Some(m_idx) = ent.mesh_index else {
+            continue;
+        };
+        if m_idx >= base_mesh_count {
+            continue;
         }
+        let valid_mat = ent.material_index.filter(|&mi| mi < gltf_materials.len());
+        let resolved_mesh_idx = if let Some(mat_idx) = valid_mat {
+            if let Some(&existing) = bound_mesh_materials.get(&(m_idx, mat_idx)) {
+                existing
+            } else if assigned_primary_mat[m_idx].is_none() {
+                gltf_meshes[m_idx]["primitives"][0]["material"] = json!(mat_idx);
+                assigned_primary_mat[m_idx] = Some(mat_idx);
+                bound_mesh_materials.insert((m_idx, mat_idx), m_idx);
+                m_idx
+            } else {
+                let mut cloned_mesh = gltf_meshes[m_idx].clone();
+                cloned_mesh["primitives"][0]["material"] = json!(mat_idx);
+                let next_idx = gltf_meshes.len();
+                gltf_meshes.push(cloned_mesh);
+                bound_mesh_materials.insert((m_idx, mat_idx), next_idx);
+                next_idx
+            }
+        } else {
+            m_idx
+        };
+        gltf_nodes[node_pos]["mesh"] = json!(resolved_mesh_idx);
     }
 
     let gltf_version_str = format!("{}.{}", two_u32(), 0_u32);

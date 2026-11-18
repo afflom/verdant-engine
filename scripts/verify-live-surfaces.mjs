@@ -3,11 +3,11 @@
  * End-to-end headless Chromium verifier for Verdant Studio and all 6 Diataxis
  * documentation pages (`site/`). Verifies:
  *   1. Zero uncaught pageerror or console.error events across every route.
- *   2. Root Studio (`/`) across Light, Dark, and Immersive theme classes,
- *      all 13 DevRel controls, 6-tab Workbench (`Journeys`, `Scene & Assets`,
- *      `Create Project`, `Physics & Story`, `UI & Neural`, `Mesh & Trust`),
- *      live executable Journey step execution, live SceneWorld Entity Outliner,
- *      zero-constants Rust/Wasm Project Scaffolder, and Stitch 2-of-3 Custody modal.
+ *   2. Root Verdant Studio (`/`) across Light, Dark, and Immersive theme classes,
+ *      all DevRel controls, 7-role Studio (`Dashboard`, `Code`, `Design`, `Audio`,
+ *      `Narrative`, `Director`, `Gameplay`), Standalone Engine Demo (`/demo/`),
+ *      live SceneWorld Entity Outliner, zero-constants Rust/Wasm Project Scaffolder,
+ *      and Stitch 2-of-3 Custody modal.
  *   3. All 6 `/docs/*` pages reach `data-ve-ready="true"` on every live Wasm
  *      figure (never stuck on "Initializing WebAssembly runtime…"), respond to
  *      interactive button clicks (including SHA-256 tamper refusal), and switch
@@ -69,7 +69,7 @@ try {
   });
   await context.route(/^https?:\/\/(?!127\.0\.0\.1|uor-foundation\.github\.io\/template\/frame\/)/, (route) => route.abort());
 
-  // 1. Verify Root Verdant Studio (`/`) + Themes + Workbench + Journeys + Outliner + Scaffolder + Mesh:
+  // 1. Verify Root Verdant Studio (`/`) + 3 Themes + All 7 Role Workspaces + Multiplayer Stitch:
   {
     const page = await context.newPage();
     const errors = [];
@@ -82,7 +82,7 @@ try {
     await page.waitForFunction(
       () => {
         const s = document.getElementById("ve-status")?.textContent || "";
-        return s.includes("LOD") || s.includes("Kernels") || s.includes("Offline") || s.includes("Verifier");
+        return s.includes("LOD") || s.includes("Observer") || s.includes("Offline");
       },
       null,
       { timeout: 10000 },
@@ -104,83 +104,89 @@ try {
       failures.push(`Studio .ve-pill background did not adapt between Light (${themeBgs.lightBg}) and Dark (${themeBgs.darkBg})`);
     }
 
-    // Open 6-Tab Studio Workbench (`#ve-studio-btn`):
+    // Open 7-Role Studio Workspace (`#ve-studio-btn`):
     await page.click("#ve-studio-btn");
     await page.waitForSelector("dialog.ve-modal[open]", { timeout: 5000 });
 
     const tabKeys = await page.$$eval("dialog.ve-modal .ve-m-tab", (els) =>
       els.map((e) => e.dataset.tabKey),
     );
-    if (tabKeys.join(",") !== "journeys,outliner,create,physics,ui,mesh") {
-      failures.push(`Unexpected Workbench tabs: ${tabKeys.join(",")}`);
+    if (tabKeys.join(",") !== "dashboard,code,design,audio,narrative,director,gameplay") {
+      failures.push(`Unexpected Studio role tabs: ${tabKeys.join(",")}`);
     }
 
-    // Run executable Journey step (`kai-0`) in Tab 0:
-    await page.click('[data-journey-step="kai-0"]');
-    await page.waitForSelector("dialog.ve-modal .ve-badge", { timeout: 5000 });
-
-    // Switch to Tab 1 (`outliner`) and verify live Wasm SceneWorld entities populated:
-    await page.click('[data-tab-key="outliner"]');
+    // Role 0 (`dashboard`): Verify all 7 role requirement contracts against app.holo:
+    await page.click('[data-tab-key="dashboard"]');
+    await page.click("#ve-verify-roles-btn");
     await page.waitForFunction(
-      () => document.querySelectorAll("dialog.ve-modal .ve-table tbody tr").length >= 5,
+      () =>
+        [...document.querySelectorAll("dialog.ve-modal section:not([hidden]) .ve-table tbody tr")].every((tr) =>
+          (tr.textContent || "").includes("Conformant"),
+        ),
+      null,
+      { timeout: 8000 },
+    );
+
+    // Role 1 (`code`): Switch project template and verify zero-constants Rust generation:
+    await page.click('[data-tab-key="code"]');
+    await page.selectOption("#ve-scaf-arch", "2");
+    const generatedCode = await page.textContent("#ve-scaf-code");
+    if (!generatedCode?.includes("LawfulCameraRig") || !generatedCode?.includes("Glasshouse Botanical Chronicle")) {
+      failures.push("Code role Project Scaffolder failed to synthesize expected non-self-referential Rust code");
+    }
+
+    // Role 2 (`design`): Verify live Wasm SceneWorld Entity Outliner & tropical UI compliance:
+    await page.click('[data-tab-key="design"]');
+    await page.waitForFunction(
+      () => document.querySelectorAll("dialog.ve-modal section:not([hidden]) .ve-table tbody tr").length >= 5,
       null,
       { timeout: 5000 },
     );
 
-    // Switch to Tab 2 (`create`) and verify starter archetype project generation:
-    await page.click('[data-tab-key="create"]');
-    await page.selectOption("#ve-scaf-arch", "2");
-    const generatedCode = await page.textContent("#ve-scaf-code");
-    if (!generatedCode?.includes("LawfulCameraRig") || !generatedCode?.includes("OntologicalRuntimeGovernor")) {
-      failures.push("Project Scaffolder failed to synthesize expected Rust code");
-    }
+    // Role 3 (`audio`): Switch Sabine acoustic room preset (`harbor-amphitheater`) via Wasm:
+    await page.click('[data-tab-key="audio"]');
+    await page.click('[data-acoustic-room="harbor-amphitheater"]');
+    await page.waitForFunction(
+      () => (document.getElementById("ve-audio-log")?.textContent || "").includes("Wasm Sabine RT60:"),
+      null,
+      { timeout: 8000 },
+    );
 
-    // Switch to Tab 3 (`physics`) and trigger 10,000-instance hardware stress batch + scene:perf verification:
-    await page.click('[data-tab-key="physics"]');
-    await page.click('[data-inst-preset="10000"]');
+    // Role 4 (`narrative`): Advance StoryAutomaton beat and verify integer ConservationLedger:
+    await page.click('[data-tab-key="narrative"]');
+    await page.click("#ve-narrative-step-btn");
     await page.waitForFunction(
-      () => (document.getElementById("ve-perf-log")?.textContent || "").includes("Active Instances: 10000"),
+      () => (document.getElementById("ve-story-log")?.textContent || "").includes("ConservationLedger Total Supply:"),
       null,
-      { timeout: 10000 },
+      { timeout: 8000 },
     );
-    const perfLogText = (await page.textContent("#ve-perf-log")) || "";
-    if (!perfLogText.includes("conformant")) {
-      failures.push(`10k hardware-instanced stress profiler did not report conformant scene:perf: ${perfLogText}`);
-    }
-    await page.click('[data-aqm-bench="16384"]');
-    await page.waitForFunction(
-      () => (document.getElementById("ve-perf-log")?.textContent || "").includes("8-Column Bit-Planes: 16384 entities"),
-      null,
-      { timeout: 10000 },
-    );
-    const aqmLogText = (await page.textContent("#ve-perf-log")) || "";
-    if (!aqmLogText.includes("monoid_fusion=true")) {
-      failures.push(`AQM 16k bit-plane & monoid benchmark did not report conformant scene:aqm: ${aqmLogText}`);
-    }
-    await page.click('[data-stability-audit="512"]');
-    await page.waitForFunction(
-      () => (document.getElementById("ve-perf-log")?.textContent || "").includes("CSR Flat Tile Bins:"),
-      null,
-      { timeout: 10000 },
-    );
-    const stabLogText = (await page.textContent("#ve-perf-log")) || "";
-    if (!stabLogText.includes("csr_tile_bins=true") || !stabLogText.includes("steady_alloc_growth=0 B")) {
-      failures.push(`Stability & 512-body broadphase audit did not report conformant scene:stability: ${stabLogText}`);
-    }
-    await page.click('[data-uorc-audit="1"]');
-    await page.waitForFunction(
-      () => (document.getElementById("ve-perf-log")?.textContent || "").includes("UORC-Exclusive Engine Wire Audit"),
-      null,
-      { timeout: 15000 },
-    );
-    const uorcLogText = (await page.textContent("#ve-perf-log")) || "";
-    if (!uorcLogText.includes("uorc_exclusive=true") || !uorcLogText.includes("magic=1, tamper_refused=1")) {
-      failures.push(`UORC-exclusive wire & zero-decode audit did not report conformant scene:uorc-exclusive: ${uorcLogText}`);
-    }
-    await page.click('[data-inst-preset="0"]');
 
-    // Close Studio Workbench and open Stitch Mesh modal (`#ve-mesh-btn`):
-    await page.click("dialog.ve-modal .ve-m-head .ve-m-btn");
+    // Role 5 (`director`): Cut to camera shot 2 (`shot-1`) and verify CSM / frustum guard readout:
+    await page.click('[data-tab-key="director"]');
+    await page.click('[data-shot-id="shot-1"]');
+    await page.waitForFunction(
+      () => (document.getElementById("ve-director-log")?.textContent || "").includes("02. Parabolic Arch Low-Angle"),
+      null,
+      { timeout: 8000 },
+    );
+
+    // Role 6 (`gameplay`): Switch to Tournament ruleset and frame 22-joint BridgeEngineer NPC:
+    await page.click('[data-tab-key="gameplay"]');
+    await page.click('[data-game-mode="tournament"]');
+    await page.waitForFunction(
+      () => (document.getElementById("ve-gameplay-mode-log")?.textContent || "").includes("Active Game Mode: Tournament"),
+      null,
+      { timeout: 8000 },
+    );
+    await page.click('[data-npc-frame="bridge-engineer"]');
+    await page.waitForFunction(
+      () => (document.getElementById("ve-npc-log")?.textContent || "").includes("Framed Dock Engineer"),
+      null,
+      { timeout: 8000 },
+    );
+
+    // Close Studio Workspace and open Multiplayer Stitch Custody modal (`#ve-mesh-btn`):
+    await page.click('dialog.ve-modal .ve-m-head button[aria-label="Close Verdant Studio workspace"]');
     await page.click("#ve-mesh-btn");
     await page.waitForFunction(
       () => document.querySelectorAll("dialog.ve-modal[open]").length === 1,
@@ -192,7 +198,40 @@ try {
     await page.close();
   }
 
-  // 2. Verify all 6 Diataxis documentation routes + Live Wasm figures + interactive buttons + theme toggle:
+  // 2. Verify Standalone Verdant Engine Demo (`/demo/`) — Raster Comparison, UORC Ladder, Benchmarks & Kernels:
+  {
+    const page = await context.newPage();
+    const errors = [];
+    page.on("pageerror", (e) => errors.push(`pageerror: ${e.message}`));
+    page.on("console", (m) => {
+      if (m.type() === "error") errors.push(`console.error: ${m.text()}`);
+    });
+
+    await page.goto(`${origin}demo/`, { waitUntil: "load" });
+    await page.waitForFunction(
+      () =>
+        document.querySelectorAll("#demo-lod-tbody tr").length === 5 &&
+        document.querySelectorAll("#demo-kernel-tbody tr").length === 22 &&
+        (document.getElementById("log-bench-uorc")?.textContent || "").includes("conformant:"),
+      null,
+      { timeout: 15000 },
+    );
+
+    await page.click("#btn-mode-tile");
+    await page.click('[data-inst-count="10000"]');
+    await page.waitForFunction(
+      () => (document.getElementById("stat-inst")?.textContent || "").includes("10,000"),
+      null,
+      { timeout: 8000 },
+    );
+    await page.click('[data-inst-count="0"]');
+    await page.click("#btn-mode-webgl2");
+
+    if (errors.length) failures.push(`Engine Demo (/demo/) errors: ${errors.join(" | ")}`);
+    await page.close();
+  }
+
+  // 3. Verify all 6 Diataxis documentation routes + Live Wasm figures + interactive buttons + theme toggle:
   const docRoutes = [
     { path: "docs/", act: "lod" },
     { path: "docs/getting-started/", act: "slot-2" },
@@ -260,4 +299,4 @@ if (failures.length > 0) {
   for (const f of failures) console.error(`  - ${f}`);
   process.exit(1);
 }
-console.log("verify-live-surfaces: Root Verdant Studio (3 themes, 6 Workbench tabs, Journeys, Outliner, Scaffolder, Stitch Mesh) and all 6 live Wasm documentation pages verified with 0 errors.");
+console.log("verify-live-surfaces: Root Verdant Studio (7 Role Workspaces, 3 Themes, Stitch Custody), Standalone Engine Demo (/demo/), and all 6 live Wasm documentation pages verified with 0 errors.");

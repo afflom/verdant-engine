@@ -1,0 +1,5 @@
+{
+  "name": "Verdant Engine",
+  "description": "Universal 3D browser and WebAssembly game engine mechanized with Prism, exact uor-matmul tensor contractions, progressive UORC streaming, glTF 2.0, portable WGSL, rigid-body physics, and spatial audio.",
+  "requestFramePermissions": []
+}

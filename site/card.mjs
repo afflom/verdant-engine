@@ -1,22 +1,46 @@
 const LODS = [
-  { rank: 0, key: "lod:0", short: "LOD0", label: "LOD0 · Coarse Proxy (0.125)", res: 0.125, density: 0.35, lossless: false, sky: [0.09, 0.08, 0.12], fog: [0.14, 0.11, 0.16] },
-  { rank: 1, key: "lod:1", short: "LOD1", label: "LOD1 · Medium Detail (0.25)", res: 0.25, density: 0.72, lossless: false, sky: [0.12, 0.17, 0.24], fog: [0.18, 0.24, 0.31] },
-  { rank: 2, key: "lod:2", short: "LOD2", label: "LOD2 · High Detail (0.625)", res: 0.625, density: 0.92, lossless: false, sky: [0.16, 0.27, 0.34], fog: [0.24, 0.35, 0.39] },
-  { rank: 3, key: "lod:3", short: "LOD3", label: "LOD3 · Lossless UORC (1.00)", res: 1.0, density: 1.0, lossless: true, sky: [0.18, 0.30, 0.38], fog: [0.30, 0.40, 0.44] },
-  { rank: 4, key: "scene:lod:4", short: "LOD4", label: "LOD4 · Ultra HD Citadel (2.00)", res: 2.0, density: 2.0, lossless: true, sky: [0.19, 0.33, 0.43], fog: [0.32, 0.43, 0.48] },
+  { rank: 0, key: "lod:0", short: "LOD0", label: "LOD0 · Proxy", res: 0.125, density: 0.35, lossless: false, sky: [0.09, 0.08, 0.12], fog: [0.14, 0.11, 0.16] },
+  { rank: 1, key: "lod:1", short: "LOD1", label: "LOD1 · Medium", res: 0.25, density: 0.72, lossless: false, sky: [0.12, 0.17, 0.24], fog: [0.18, 0.24, 0.31] },
+  { rank: 2, key: "lod:2", short: "LOD2", label: "LOD2 · High", res: 0.625, density: 0.92, lossless: false, sky: [0.16, 0.27, 0.34], fog: [0.24, 0.35, 0.39] },
+  { rank: 3, key: "lod:3", short: "LOD3", label: "LOD3 · Lossless", res: 1.0, density: 1.0, lossless: true, sky: [0.18, 0.30, 0.38], fog: [0.30, 0.40, 0.44] },
+  { rank: 4, key: "scene:lod:4", short: "LOD4", label: "LOD4 · Ultra HD", res: 2.0, density: 2.0, lossless: true, sky: [0.20, 0.34, 0.44], fog: [0.34, 0.44, 0.48] },
 ];
 
 const NODES = [
-  { id: 0, query: "kernel:0", name: "Vaulted Citadel & Observer", semiring: "LinearExact", target: [2.2, 3.8, 9.2], dist: 18.5, yawMilli: 460, pitchMilli: 260 },
-  { id: 1, query: "kernel:12", name: "Parabolic Stone Arch Bridge", semiring: "TropicalMinPlus", target: [7.5, 1.8, -4.0], dist: 14, yawMilli: 560, pitchMilli: 340 },
-  { id: 2, query: "kernel:13", name: "22-Joint Explorer & Foot IK", semiring: "LinearExact", target: [0, 1.6, 11.5], dist: 6.2, possessExplorer: true },
-  { id: 3, query: "kernel:6", name: "XPBD Articulated Rig Bay", semiring: "LinearExact", target: [-6.5, 1.8, 9.0], dist: 10, yawMilli: -540, pitchMilli: 320 },
-  { id: 4, query: "kernel:9", name: "Diegetic UI & South Terrace", semiring: "TropicalMinPlus", target: [6.0, 2.0, 8.0], dist: 11, yawMilli: 520, pitchMilli: 300 },
-  { id: 5, query: "kernel:14", name: "Citadel Chronicle", semiring: "TropicalMinPlus", target: [1.5, 2.2, -1.0], dist: 8.5, yawMilli: 350, pitchMilli: 260 },
-  { id: 6, query: "kernel:3", name: "4-Wheel Suspension Vehicle", semiring: "LinearExact", target: [16.5, 1.2, 0], dist: 11, followMover: true },
+  { id: 0, query: "scene:telos", name: "Master Overview & Observer", target: [2.2, 3.8, 9.2], dist: 18.5, yawMilli: 460, pitchMilli: 260 },
+  { id: 1, query: "scene:acoustics", name: "Parabolic Stone Arch Span", target: [7.5, 1.8, -4.0], dist: 14, yawMilli: 560, pitchMilli: 340 },
+  { id: 2, query: "scene:character", name: "22-Joint Explorer & NPCs", target: [0, 1.6, 11.5], dist: 6.2, possessExplorer: true },
+  { id: 3, query: "scene:joints", name: "Articulated Rig & ECS Bay", target: [-6.5, 1.8, 9.0], dist: 10, yawMilli: -540, pitchMilli: 320 },
+  { id: 4, query: "scene:ui", name: "South Terrace & Spatial UI", target: [6.0, 2.0, 8.0], dist: 11, yawMilli: 520, pitchMilli: 300 },
+  { id: 5, query: "scene:narrative", name: "Story Podium & Portals", target: [1.5, 2.2, -1.0], dist: 8.5, yawMilli: 350, pitchMilli: 260 },
+  { id: 6, query: "scene:lawful", name: "Suspension Mover Track", target: [16.5, 1.2, 0], dist: 11, followMover: true },
 ];
 
-const ACOUST = { quantumFrames: 128, stereoChannels: 2, fundamentalHz: 110.0, modeNumers: [9, 25, 49, 81, 121], modeDenom: 9, rt60Ms: 3019 };
+const STUDIO_ROLES = [
+  { key: "dashboard", label: "Dashboard", roleTag: "Producer", nodeIdx: 0, query: "scene:telos" },
+  { key: "code", label: "Code", roleTag: "Developer", nodeIdx: 3, query: "scene:lawful" },
+  { key: "design", label: "Design", roleTag: "Artist & UI", nodeIdx: 4, query: "scene:ui" },
+  { key: "audio", label: "Audio", roleTag: "Acoustics", nodeIdx: 1, query: "scene:acoustics" },
+  { key: "narrative", label: "Narrative", roleTag: "Writer", nodeIdx: 5, query: "scene:narrative" },
+  { key: "director", label: "Director", roleTag: "Cinematography", nodeIdx: 1, query: "scene:studio" },
+  { key: "gameplay", label: "Gameplay", roleTag: "Modes & NPCs", nodeIdx: 2, query: "scene:character" },
+];
+
+const ORGAN_SLUGS = [
+  "wasm-core",
+  "offscreen-canvas",
+  "service-worker",
+  "audio-worklet",
+  "opfs-storage",
+  "gamepad-hid",
+  "device-orientation",
+  "webcrypto-prism-id",
+  "broadcast-channel",
+  "webrtc-stitch-mesh",
+  "webnn-local",
+];
+const ORGAN_DEFAULTS = [1, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0];
+const ACOUST = { quantumFrames: 128, stereoChannels: 2, fundamentalHz: 110.0, modeNumers: [9, 25, 49, 81, 121], modeDenom: 9, rt60Ms: 3000 };
 
 function pConf(line) {
   if (!line?.startsWith("conformant:")) return null;
@@ -50,14 +74,44 @@ try {
 
 export default async function start({ app, reason, $, chip, show, parse }) {
   const canvas = $("ve-canvas"), vpEl = canvas?.parentElement, statusEl = $("ve-status");
-  const [lodBtn, uorcBtn, renderBtn, importBtn, glbIn, studioBtn, meshBtn, simBtn, camBtn, audioBtn, glbBtn, snapBtn, promptForm, promptInput, hudLod, hudStats, tele] =
-    ["lod-btn", "uorc-btn", "render-btn", "import-btn", "glb-file", "studio-btn", "mesh-btn", "sim-btn", "cam-btn", "audio-btn", "glb-btn", "snap-btn", "prompt-form", "prompt-input", "hud-lod", "hud-stats", "telemetry"].map((k) => $(`ve-${k}`));
+  const [lodBtn, uorcBtn, renderBtn, importBtn, glbIn, studioBtn, meshBtn, simBtn, camBtn, audioBtn, glbBtn, snapBtn, promptForm, promptInput, hudLod, hudStats, tele, touchPad, interactBtn, lockBtn] =
+    ["lod-btn", "uorc-btn", "render-btn", "import-btn", "glb-file", "studio-btn", "mesh-btn", "sim-btn", "cam-btn", "audio-btn", "glb-btn", "snap-btn", "prompt-form", "prompt-input", "hud-lod", "hud-stats", "telemetry", "touch-pad", "interact-btn", "lock-btn"].map((k) => $(`ve-${k}`));
 
   let lodIdx = 2, simLive = false, camPreset = "landmark", renderMode = "webgl2", fMov = false;
+  let activeProject = "Sunspire Regatta", activeRoleKey = "director", activeRoleLabel = "Director";
   let aSlot = 0, gazeMs = 300, pYaw = 0, pPit = 0, pDst = 0, jumpQueued = false;
-  let sEye = [10.2, 8.5, 25.3], sTgt = [2.2, 3.8, 9.2], uCell = [0, 0, 0], dragging = false, rafId = 0;
-  let lTris = 0, lVis = 24, lKern = 15, wBk = "webgl2", isSw = false, offOk = false;
-  let nextReqId = 1, workerFramesInFlight = 0, lSent = 0, fbR = null, fbM = null, stM = null;
+  let sEye = [10.2, 8.5, 25.3], sTgt = [2.2, 3.8, 9.2], dragging = false, rafId = 0;
+  let lTris = 0, lVis = 24, lClr = 290, isSw = false, offOk = false;
+  let nextReqId = 1, workerFramesInFlight = 0, lSent = 0, lSentW = 0, lSentH = 0, fbR = null, fbM = null, stM = null;
+  const organModes = new Uint8Array(11);
+  const roleButtons = new Map();
+
+  const isOrganAllowed = (idx, allowGesture = false) =>
+    organModes[idx] === 2 ? false : Boolean(organModes[idx] === 1 || ORGAN_DEFAULTS[idx] === 1 || allowGesture);
+  const refuseOrgan = (idx) => {
+    chip(statusEl, `Refused: ContainerOrganDenied(${ORGAN_SLUGS[idx] || idx})`, "warn");
+  };
+  const syncPossessedUi = () => {
+    vpEl?.classList.toggle("possessed", camPreset !== "landmark");
+  };
+  const syncHudTitle = (customSuffix = null) => {
+    if (!hudLod) return;
+    hudLod.textContent = customSuffix
+      ? `${activeProject} · ${customSuffix}`
+      : `${activeProject} · ${activeRoleLabel} · ${LODS[lodIdx].short}`;
+  };
+  const syncRoleHighlight = (roleKey) => {
+    const found = STUDIO_ROLES.find((r) => r.key === roleKey);
+    if (found) {
+      activeRoleKey = found.key;
+      activeRoleLabel = found.label;
+      syncHudTitle();
+    }
+    for (const [k, btn] of roleButtons.entries()) {
+      btn.setAttribute("aria-current", k === activeRoleKey ? "true" : "false");
+    }
+  };
+
   const keys = new Set(), pCalls = new Map(), getStudio = async () => (stM ??= await import("./studio.mjs"));
   const hK = (...a) => a.some((k) => keys.has(k));
   const hasMv = () => hK("KeyW", "KeyA", "KeyS", "KeyD", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Space");
@@ -70,7 +124,8 @@ export default async function start({ app, reason, $, chip, show, parse }) {
   }
 
   function mvInt(dt) {
-    const pad = navigator.getGamepads?.()?.[0], dz = (v) => (Math.abs(v) > 0.16 ? v : 0);
+    const pad = isOrganAllowed(5) ? navigator.getGamepads?.()?.[0] : null;
+    const dz = (v) => (Math.abs(v) > 0.16 ? v : 0);
     const gx = pad ? dz(pad.axes[0] || 0) : 0, gy = pad ? -dz(pad.axes[1] || 0) : 0;
     const rx = pad ? dz(pad.axes[2] || 0) : 0, ry = pad ? dz(pad.axes[3] || 0) : 0;
     const kf = (hK("KeyW", "ArrowUp") ? 1 : 0) - (hK("KeyS", "ArrowDown") ? 1 : 0);
@@ -87,8 +142,8 @@ export default async function start({ app, reason, $, chip, show, parse }) {
   }
 
   const hudStr = (fps) => {
-    const b = renderMode === "tile" ? "TILE 16x16" : wBk.toUpperCase();
-    return `${fps ? `${fps} · ${b}` : b} · ${lTris} tris · ${lVis} vis · S(${uCell[0]},${uCell[2]})`;
+    const viewTag = renderMode === "tile" ? "Ref Tile · " : "";
+    return `${fps ? `${fps} · ` : ""}${viewTag}Observer Coherent · W5H 8/8 · ${lTris} tris · Clear ${lClr}mm`;
   };
 
   let eW = null;
@@ -99,16 +154,22 @@ export default async function start({ app, reason, $, chip, show, parse }) {
       eW.onmessage = ({ data: msg }) => {
         if (!msg) return;
         if (msg.id && pCalls.has(msg.id)) { const r = pCalls.get(msg.id); pCalls.delete(msg.id); r(msg); return; }
-        if (msg.kind === "frame-dropped") { workerFramesInFlight = Math.max(0, workerFramesInFlight - 1); return; }
+        if (msg.kind === "frame-dropped") {
+          workerFramesInFlight = Math.max(0, workerFramesInFlight - 1);
+          const d = pxDims();
+          if ((d.w !== lSentW || d.h !== lSentH) && rafId === 0) reqR();
+          return;
+        }
         if (msg.kind === "telemetry") {
           workerFramesInFlight = Math.max(0, workerFramesInFlight - 1);
-          lTris = msg.tris || lTris; lVis = msg.bvhVisible ?? lVis;
+          lTris = msg.tris || lTris; lVis = msg.bvhVisible ?? lVis; lClr = msg.camClearanceMm ?? lClr;
           if (Array.isArray(msg.eye)) sEye = msg.eye;
           if (Array.isArray(msg.lookTarget)) sTgt = msg.lookTarget;
-          if (Array.isArray(msg.universeCell)) uCell = msg.universeCell;
-          stM?.pushStudioTelemetry(msg); stM?.syncModalAudioSpatial(msg.binauralPan, msg.binauralGain);
+          stM?.pushStudioTelemetry(msg);
+          stM?.syncModalAudioSpatial(msg.binauralPan, msg.binauralGain, msg.binauralItdMicros, msg.pavilionContact, msg.attendedSlot);
           if (!isAnim() && hudStats) hudStats.textContent = hudStr("");
-          if ((pYaw || pPit || pDst || jumpQueued) && rafId === 0) reqR();
+          const d = pxDims();
+          if ((pYaw || pPit || pDst || jumpQueued || d.w !== lSentW || d.h !== lSentH) && rafId === 0) reqR();
         }
       };
       eW.onerror = () => { workerFramesInFlight = 0; for (const r of pCalls.values()) r(null); pCalls.clear(); };
@@ -130,23 +191,24 @@ export default async function start({ app, reason, $, chip, show, parse }) {
 
   function setSim(next) {
     simLive = Boolean(next);
-    if (simBtn) { simBtn.setAttribute("aria-pressed", String(simLive)); simBtn.textContent = simLive ? "Sim: Live" : "Sim: Step"; }
+    if (simBtn) { simBtn.setAttribute("aria-pressed", String(simLive)); simBtn.textContent = simLive ? "Playing" : "Play"; }
     reqR();
   }
 
   const apCam = (r) => {
-    if (r?.camera) { sEye = r.camera.eye; sTgt = r.camera.lookTarget; }
+    if (r?.camera) { sEye = r.camera.eye; sTgt = r.camera.lookTarget; lClr = r.camera.clearanceMm ?? lClr; }
     if (r?.tris) lTris = r.tris;
   };
 
   async function cycCam(forcePreset = null) {
     const order = ["landmark", "third", "first"];
     camPreset = forcePreset || order[(order.indexOf(camPreset) + 1) % 3]; fMov = false;
+    syncPossessedUi();
     const spec = camPreset === "landmark"
-      ? ["Cam: Orbit", "camera-focus-landmark", { target: [2.2, 3.8, 9.2], dist: 18.5, yawMilli: 460, pitchMilli: 260 }, "Lawful Orbit · Near-Sphere Guarded"]
+      ? ["Rig: Orbit", "camera-focus-landmark", { target: [2.2, 3.8, 9.2], dist: 18.5, yawMilli: 460, pitchMilli: 260 }, "Orbit Rig · Near-Sphere Guarded"]
       : camPreset === "third"
-        ? ["Cam: 3rd IK", "camera-set-mode", { mode: 0, simClockSec: sClk }, "3rd-Person Explorer · WASD + Foot IK"]
-        : ["Cam: 1st Eye", "camera-set-mode", { mode: 1, simClockSec: sClk }, "1st-Person Possessed · Head Masked"];
+        ? ["Rig: 3rd IK", "camera-set-mode", { mode: 0, simClockSec: sClk }, "3rd-Person Character Rig · WASD + Foot IK"]
+        : ["Rig: 1st Eye", "camera-set-mode", { mode: 1, simClockSec: sClk }, "1st-Person Camera · Head Masked"];
     if (camBtn) camBtn.textContent = spec[0];
     apCam(await cW(spec[1], spec[2])); chip(statusEl, spec[3], "good");
     await syncFb(); reqR();
@@ -155,19 +217,19 @@ export default async function start({ app, reason, $, chip, show, parse }) {
   async function doStory() {
     const r = await cW("story-interact");
     if (!r?.ok) return null;
-    chip(statusEl, r.advanced ? `Chronicle -> ${r.title} · Supply ${r.supply}` : `${r.title} · ${r.objective}`, r.advanced ? "good" : "wait");
+    chip(statusEl, r.advanced ? `Narrative -> ${r.title} · Conserved ${r.supply}` : `${r.title} · ${r.objective}`, r.advanced ? "good" : "wait");
     return r;
   }
 
   const qVer = async (q) => { try { return app ? show(await app.dispatch(parse(q))) : null; } catch { return null; } };
 
   async function syncB(query = LODS[lodIdx].key) {
-    if (!app) { chip(statusEl, reason ? "Verifier unavailable" : "Engine offline", "bad"); return; }
+    if (!app) { chip(statusEl, reason ? "Verifier unavailable" : "Studio offline", "bad"); return; }
     const res = await qVer(query);
     if (!res) return;
     if (res.startsWith("conformant:")) {
       const lod = LODS[lodIdx];
-      chip(statusEl, `${lod.short} · ${lod.lossless ? `${lKern}/15 Kernels` : "UORC Stream OK"}`, "good");
+      chip(statusEl, `Observer Coherent · ${activeRoleLabel} · ${lod.short}`, "good");
     } else chip(statusEl, res.startsWith("refused:") ? res.replace("refused:", "Refused: ") : res, res.startsWith("refused:") ? "warn" : "bad");
   }
 
@@ -179,10 +241,10 @@ export default async function start({ app, reason, $, chip, show, parse }) {
 
   async function togRnd(force = null) {
     renderMode = force || (renderMode === "webgl2" ? "tile" : "webgl2");
-    if (renderBtn) renderBtn.textContent = renderMode === "tile" ? "Tile 16x16" : "WebGL2";
+    if (renderBtn) renderBtn.textContent = renderMode === "tile" ? "View: Ref Tile" : "View: PBR";
     const r = await cW("set-render-mode", { mode: renderMode, simClockSec: sClk });
     if (hudStats) hudStats.textContent = hudStr("");
-    chip(statusEl, renderMode === "tile" ? `Wasm 16x16 Tile PBR (${r?.tris ?? lTris} tris)` : `3-Pass WebGL2 HD (${r?.tris ?? lTris} tris)`, "good");
+    chip(statusEl, renderMode === "tile" ? `Reference 16x16 Software Tile (${r?.tris ?? lTris} tris)` : `Hardware PBR View (${r?.tris ?? lTris} tris)`, "good");
     reqR();
   }
 
@@ -193,59 +255,111 @@ export default async function start({ app, reason, $, chip, show, parse }) {
     if (!r?.ok) { chip(statusEl, `Refused invalid .glb (${fileName})`, "warn"); return; }
     lTris = r.tris || lTris;
     const mod = await getStudio();
-    if (r.uorcBytes?.byteLength) await mod.cacheBytesInOpfs(`${fileName}.uorc`, r.uorcBytes);
+    let opfsSaved = false;
+    if (r.uorcBytes?.byteLength && isOrganAllowed(4, true)) {
+      const cRes = await mod.cacheBytesInOpfs(`${fileName}.uorc`, r.uorcBytes);
+      opfsSaved = Boolean(cRes?.cached);
+    }
     await syncFb();
-    if (hudLod) hudLod.textContent = `GLB · ${fileName} (${r.tris} tris)`;
-    chip(statusEl, `Imported ${fileName} · ${r.tris} tris · .uorc cached`, "good");
+    syncHudTitle(`Asset ${fileName} (${r.tris} tris)`);
+    chip(statusEl, `Imported ${fileName} · ${r.tris} tris${opfsSaved ? " · cached in OPFS" : ""}`, "good");
     reqR();
+  }
+
+  async function mountOpfsUorc(name, bytes) {
+    if (!isOrganAllowed(4, true)) { refuseOrgan(4); return false; }
+    const targetRank = Math.min(3, Math.max(2, lodIdx));
+    const lod = LODS[targetRank];
+    const r = await cW("stream-uorc", { targetRank, customStream: bytes, lod, simClockSec: sClk });
+    if (r?.ok) {
+      lodIdx = targetRank;
+      if (lodBtn) lodBtn.textContent = lod.short;
+      syncHudTitle(`OPFS ${name} (${r.tris} tris)`);
+      lTris = r.tris || lTris;
+      await syncFb(); reqR();
+      chip(statusEl, `Mounted OPFS ${name} · ${r.tris} tris`, "good");
+      return true;
+    }
+    chip(statusEl, `Refused invalid .uorc (${name})`, "warn");
+    return false;
   }
 
   async function rstGlb() {
     const r = await cW("reset-glb");
     if (r?.tris) lTris = r.tris;
-    if (hudLod) hudLod.textContent = LODS[lodIdx].label;
+    syncHudTitle();
     await syncFb();
     await syncB("summary");
     reqR();
   }
 
-  const execP = async (text) =>
-    (await getStudio()).routeStudioPrompt(text, {
-      callWorker: cW, chip, statusEl, streamUorcToRank: strUorc, cycleCameraMode: cycCam,
-      interactChronicle: doStory, focusNodePreset: focNd, setSimLive: setSim, toggleRenderBackend: togRnd,
-      restoreRawSnapshot: rstSnap, launchStudioModal: openSt,
+  const toggleGuardedAudio = async () => {
+    if (!isOrganAllowed(3, true)) { refuseOrgan(3); return; }
+    await (await getStudio()).toggleModalAudio(audioBtn, ACOUST, () => sEye);
+  };
+
+  const openStitchGuarded = async () =>
+    (await import("./stitch-mesh.mjs")).openStitchMeshModal({
+      callWorker: cW,
+      queryVerifier: qVer,
+      isOrganAllowed,
+      onRefuseOrgan: refuseOrgan,
+      onRestoreSnapshot: rstSnap,
     });
 
-  async function focPt(target, dist = 12, label = "Entity") {
-    camPreset = "landmark"; fMov = false;
-    if (camBtn) camBtn.textContent = "Cam: Orbit";
-    apCam(await cW("camera-focus-landmark", { target, dist, yawMilli: 520, pitchMilli: 300, simClockSec: sClk }));
+  const execP = async (text) =>
+    (await getStudio()).routeStudioPrompt(text, {
+      callWorker: cW, queryVerifier: qVer, chip, statusEl, streamUorcToRank: strUorc, cycleCameraMode: cycCam,
+      interactChronicle: doStory, focusNodePreset: focNd, setSimLive: setSim, toggleRenderBackend: togRnd,
+      restoreRawSnapshot: rstSnap, launchStudioModal: openSt, openStitchModal: openStitchGuarded,
+    });
+
+  async function focPt(target, dist = 12, label = "Entity", yawMilli = 520, pitchMilli = 300) {
+    camPreset = "landmark"; fMov = false; syncPossessedUi();
+    if (camBtn) camBtn.textContent = "Rig: Orbit";
+    apCam(await cW("camera-focus-landmark", { target, dist, yawMilli, pitchMilli, simClockSec: sClk }));
     await syncFb(); reqR();
-    chip(statusEl, `Framed ${label} · Guarded Orbit`, "good");
+    chip(statusEl, `Framed ${label} · Guarded Rig`, "good");
   }
 
   async function setWorldSeed(seed) {
     const r = await cW("set-seed", { seed });
     if (r?.ok) {
       apCam(r); await syncFb(); reqR();
-      chip(statusEl, `Seed ${r.seed} · ${LODS[lodIdx].short} (${lTris} tris)`, "good");
+      chip(statusEl, `${activeProject} · Seed ${r.seed} · ${LODS[lodIdx].short}`, "good");
     }
     return r;
   }
 
   async function openSt(initialTab = null) {
+    if (typeof initialTab === "string") syncRoleHighlight(initialTab);
     const mod = await getStudio();
     mod.openStudioModal({
-      initialTab: typeof initialTab === "string" ? initialTab : null, callWorker: cW, queryVerifier: qVer,
+      initialTab: typeof initialTab === "string" ? initialTab : activeRoleKey,
+      callWorker: cW, queryVerifier: qVer,
       onPickGlb: () => glbIn?.click(), onResetGlb: rstGlb,
       onExportGlb: () => mod.exportGlbDownload(cW, LODS[lodIdx].short),
-      onShareSnapshot: () => mod.shareVdntSnapshot(cW, chip, statusEl),
+      onShareSnapshot: () => mod.shareUorcSnapshot(cW, chip, statusEl),
       onToggleRenderMode: togRnd, onSetLod: strUorc,
       onSetCameraMode: cycCam, onSetSimLive: setSim,
-      onToggleAudio: () => mod.toggleModalAudio(audioBtn, ACOUST, () => sEye),
+      onToggleAudio: toggleGuardedAudio,
       onFocusPoint: focPt, onFocusPreset: focNd, onSetSeed: setWorldSeed,
-      onOpenStitchMesh: async () => (await import("./stitch-mesh.mjs")).openStitchMeshModal({ callWorker: cW, onRestoreSnapshot: rstSnap }),
+      onOpenStitchMesh: openStitchGuarded,
       onRoutePrompt: execP, onInteractStory: doStory,
+      onMountOpfsUorc: mountOpfsUorc,
+      onRoleChange: (rk) => syncRoleHighlight(rk),
+      onProjectChange: (projTitle) => {
+        if (projTitle) { activeProject = projTitle; syncHudTitle(); }
+      },
+      getActiveProject: () => activeProject,
+      getAcousticSpec: () => ACOUST,
+      isOrganAllowed,
+      getOrganMode: (idx) => organModes[idx] ?? 0,
+      onOrganGrantChange: (idx, nextMode) => {
+        organModes[idx] = nextMode;
+        if (idx === 3 && nextMode === 2) stM?.suspendModalAudio?.(audioBtn);
+      },
+      onRefuseOrgan: refuseOrgan,
       getRenderMode: () => renderMode, getLodRank: () => lodIdx,
     });
   }
@@ -254,7 +368,7 @@ export default async function start({ app, reason, $, chip, show, parse }) {
     lodIdx = ((nextIdx % LODS.length) + LODS.length) % LODS.length;
     const lod = LODS[lodIdx];
     if (lodBtn) lodBtn.textContent = lod.short;
-    if (hudLod) hudLod.textContent = lod.label;
+    syncHudTitle();
     if (lod.rank < 2) fMov = false;
     if (eW) { eW.postMessage({ kind: "set-lod", lod, simClockSec: sClk }); await syncFb(); }
     reqR(); if (updateBanner) syncB(lod.key);
@@ -268,10 +382,11 @@ export default async function start({ app, reason, $, chip, show, parse }) {
     fMov = Boolean(node.followMover);
     if (fMov || node.id === 3) setSim(true);
     camPreset = node.possessExplorer ? "third" : "landmark";
-    if (camBtn) camBtn.textContent = node.possessExplorer ? "Cam: 3rd IK" : "Cam: Orbit";
+    syncPossessedUi();
+    if (camBtn) camBtn.textContent = node.possessExplorer ? "Rig: 3rd IK" : "Rig: Orbit";
     apCam(await cW("camera-focus-landmark", {
       possessExplorer: Boolean(node.possessExplorer), target: node.target, dist: node.dist,
-      yawMilli: node.yawMilli ?? 620, pitchMilli: node.pitchMilli ?? 350, sClk,
+      yawMilli: node.yawMilli ?? 620, pitchMilli: node.pitchMilli ?? 350, simClockSec: sClk,
     }));
     await syncFb(); reqR(); await syncB(node.query);
   }
@@ -281,7 +396,7 @@ export default async function start({ app, reason, $, chip, show, parse }) {
     lodIdx = clamped;
     const lod = LODS[lodIdx];
     if (lodBtn) lodBtn.textContent = lod.short;
-    if (hudLod) hudLod.textContent = lod.label;
+    syncHudTitle();
     if (lod.rank < 2) fMov = false;
     chip(statusEl, `Streaming .uorc -> ${lod.short}…`, "wait");
     if (eW) {
@@ -289,7 +404,7 @@ export default async function start({ app, reason, $, chip, show, parse }) {
       if (r?.tris) lTris = r.tris;
       await syncFb();
       reqR();
-      if (r?.ok) { chip(statusEl, `UORC Wasm · ${lod.short} (${lTris} tris · Σ=${r.codedChecksum})`, "good"); return r; }
+      if (r?.ok) { chip(statusEl, `Streamed ${lod.short} (${lTris} tris · Σ=${r.codedChecksum})`, "good"); return r; }
     }
     await setLod(clamped, true);
     return null;
@@ -302,18 +417,43 @@ export default async function start({ app, reason, $, chip, show, parse }) {
   onClick(importBtn, () => glbIn?.click());
   glbIn?.addEventListener("change", async () => { const f = glbIn.files?.[0]; if (f) { await impGlb(f.name, await f.arrayBuffer()); glbIn.value = ""; } });
   onClick(studioBtn, () => openSt());
-  onClick(meshBtn, async () => (await import("./stitch-mesh.mjs")).openStitchMeshModal({ callWorker: cW, onRestoreSnapshot: rstSnap }));
+  onClick(meshBtn, openStitchGuarded);
   onClick(simBtn, () => setSim(!simLive));
   onClick(camBtn, () => cycCam());
   promptForm?.addEventListener("submit", async (e) => { e.preventDefault(); await execP(promptInput?.value); if (promptInput) promptInput.value = ""; });
   vpEl?.addEventListener("dragover", (e) => { e.preventDefault(); vpEl.classList.add("drag-over"); });
   vpEl?.addEventListener("dragleave", () => vpEl.classList.remove("drag-over"));
   vpEl?.addEventListener("drop", async (e) => { e.preventDefault(); vpEl.classList.remove("drag-over"); const f = e.dataTransfer?.files?.[0]; if (f) await impGlb(f.name, await f.arrayBuffer()); });
-  onClick(audioBtn, async () => (await getStudio()).toggleModalAudio(audioBtn, ACOUST, () => sEye));
+  onClick(audioBtn, toggleGuardedAudio);
   onClick(glbBtn, async () => (await getStudio()).exportGlbDownload(cW, LODS[lodIdx].short));
-  onClick(snapBtn, async () => (await getStudio()).shareVdntSnapshot(cW, chip, statusEl));
+  onClick(snapBtn, async () => (await getStudio()).shareUorcSnapshot(cW, chip, statusEl));
+  onClick(interactBtn, () => doStory());
+  onClick(lockBtn, () => {
+    if (document.pointerLockElement === canvas) document.exitPointerLock?.();
+    else canvas?.requestPointerLock?.();
+  });
+  document.addEventListener("pointerlockchange", () => {
+    const locked = document.pointerLockElement === canvas;
+    lockBtn?.classList.toggle("active", locked);
+    if (lockBtn) lockBtn.textContent = locked ? "Unlock" : "Look";
+  });
+  touchPad?.querySelectorAll("button[data-move]").forEach((btn) => {
+    const code = btn.dataset.move;
+    const press = (e) => {
+      e.preventDefault();
+      keys.add(code);
+      btn.classList.add("active");
+      if (camPreset === "landmark") cycCam("third");
+      else reqR();
+    };
+    const release = () => { keys.delete(code); btn.classList.remove("active"); };
+    btn.addEventListener("pointerdown", press);
+    btn.addEventListener("pointerup", release);
+    btn.addEventListener("pointercancel", release);
+    btn.addEventListener("pointerleave", release);
+  });
 
-  async function rstSnap(bytes, label = "VDNT") {
+  async function rstSnap(bytes, label = "UORC") {
     const r = await cW("restore-snapshot", { bytes });
     if (r?.ok) { await setLod(r.lodRank ?? 3, false); chip(statusEl, `Restored ${label} · ${LODS[lodIdx].short} (${r.byteLen}B)`, "good"); return true; }
     chip(statusEl, `Refused tampered ${label} snapshot`, "warn");
@@ -338,30 +478,40 @@ export default async function start({ app, reason, $, chip, show, parse }) {
   const onC = (ev, fn, opt) => canvas?.addEventListener(ev, fn, opt);
   onC("pointerdown", (e) => { dragging = true; lx = e.clientX; ly = e.clientY; canvas.setPointerCapture?.(e.pointerId); reqR(); });
   onC("pointermove", (e) => {
-    if (!dragging) return;
-    const dx = e.clientX - lx, dy = e.clientY - ly;
+    const locked = document.pointerLockElement === canvas;
+    if (!dragging && !locked) return;
+    const dx = locked ? (e.movementX || 0) : e.clientX - lx;
+    const dy = locked ? (e.movementY || 0) : e.clientY - ly;
     lx = e.clientX; ly = e.clientY; gazeMs = Math.max(80, gazeMs - 40);
     pYaw -= dx * 0.007; pPit += camPreset === "first" ? -dy * 0.0055 : dy * 0.006; reqR();
   });
   onC("pointerup", () => { dragging = false; });
   onC("pointercancel", () => { dragging = false; });
   onC("wheel", (e) => { e.preventDefault(); pDst += e.deltaY * 0.018; reqR(); }, { passive: false });
+  addEventListener("deviceorientation", (e) => {
+    if (!isOrganAllowed(6) || e.gamma == null || e.beta == null) return;
+    pYaw -= Math.max(-1, Math.min(1, e.gamma / 45)) * 0.012;
+    reqR();
+  });
   addEventListener("keydown", (e) => {
     if (/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName ?? "")) return;
     if (e.code === "KeyE" && !e.repeat) { doStory(); return; }
-    if (e.code === "KeyG" && !e.repeat) { openSt("create"); return; }
+    if (e.code === "KeyG" && !e.repeat) { openSt("code"); return; }
     if (e.code === "Space") jumpQueued = true;
     keys.add(e.code);
     if (hasMv() && camPreset === "landmark") {
-      camPreset = "third";
-      fMov = false;
-      if (camBtn) camBtn.textContent = "Cam: 3rd IK";
+      cycCam("third");
+      return;
     }
     reqR();
   });
   addEventListener("keyup", (e) => keys.delete(e.code));
+  addEventListener("blur", () => keys.clear());
   addEventListener("resize", reqR);
-  document.addEventListener("visibilitychange", () => { if (!document.hidden) { prevNow = performance.now(); reqR(); } });
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) keys.clear();
+    else { prevNow = performance.now(); reqR(); }
+  });
   if (typeof ResizeObserver !== "undefined" && vpEl) new ResizeObserver(reqR).observe(vpEl);
 
   function frame(now) {
@@ -380,7 +530,7 @@ export default async function start({ app, reason, $, chip, show, parse }) {
     const lod = LODS[lodIdx], { w, h } = pxDims();
 
     if (offOk && eW) {
-      workerFramesInFlight++; lSent = now;
+      workerFramesInFlight++; lSent = now; lSentW = w; lSentH = h;
       eW.postMessage({
         kind: "frame", width: w, height: h, dt, stepPhysics: stepping, followMover: fMov,
         fwd: intent.fwd, strafe: intent.strafe, speedScale: intent.speedScale, jump: intent.jump,
@@ -389,7 +539,7 @@ export default async function start({ app, reason, $, chip, show, parse }) {
       });
     } else if (fbR && fbM && canvas) {
       if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
-      const proj = fbM.mat4Perspective(Math.PI / 3.4, Math.max(0.2, w / h), 0.25, 160.0);
+      const proj = fbM.mat4Perspective(Math.PI / 3.4, Math.max(0.2, w / h), 0.25, 140.0);
       fbR.render(fbM.mat4Mul(proj, fbM.mat4LookAt(sEye, sTgt, [0, 1, 0])), sEye, lod, sClk, sTgt, Math.PI / 3.4);
     }
 
@@ -403,44 +553,58 @@ export default async function start({ app, reason, $, chip, show, parse }) {
     if (isAnim()) rafId = requestAnimationFrame(frame);
   }
 
-  const fmtS = (s) => s.replace(/([a-z])([A-Z])/g, "$1 $2"), badges = [];
+  const roleBadges = [];
   const el = (t, c, x) => { const n = document.createElement(t); if (c) n.className = c; if (x) n.textContent = x; return n; };
-  const mkRow = (l, t, fn, id) => {
-    const li = el("li"), b = el("button", "again"), bg = el("span", "tag good", t);
-    b.type = "button"; if (id) b.id = id; b.append(el("span", 0, l), bg); b.onclick = fn; li.append(b); tele.append(li); return bg;
-  };
   if (tele) {
     tele.replaceChildren();
-    mkRow("Guided Journeys & Create Game", "7 Personas", () => openSt("journeys"), "ve-journeys-rail-btn");
-    for (const node of NODES) badges.push({ node, badge: mkRow(node.name, fmtS(node.semiring), () => focNd(node.id)) });
+    for (const role of STUDIO_ROLES) {
+      const li = el("li"), b = el("button", "again"), bg = el("span", "ve-role-sub", role.roleTag);
+      b.type = "button";
+      b.id = `ve-role-${role.key}-btn`;
+      b.dataset.roleKey = role.key;
+      b.setAttribute("aria-current", role.key === activeRoleKey ? "true" : "false");
+      b.append(el("span", 0, role.label), bg);
+      b.onclick = async () => {
+        syncRoleHighlight(role.key);
+        await focNd(role.nodeIdx);
+        await openSt(role.key);
+      };
+      li.append(b);
+      tele.append(li);
+      roleButtons.set(role.key, b);
+      roleBadges.push({ role, badge: bg, btn: b });
+    }
   }
+
   const apInit = (r) => {
     if (!r) return;
     apCam(r);
     if (r.audioSpec) Object.assign(ACOUST, r.audioSpec);
-    if (r.tensorKernels) lKern = r.tensorKernels;
-    if (Array.isArray(r.universeCell)) uCell = r.universeCell;
   };
   const iD = pxDims(); let cXfer = false;
   if (eW && canvas && typeof canvas.transferControlToOffscreen === "function") {
     try {
       const oc = canvas.transferControlToOffscreen(); cXfer = true;
       const r = await cW("init", { canvas: oc, width: iD.w, height: iD.h, lod: LODS[lodIdx] }, [oc]);
-      if (r?.kind === "ready") { offOk = true; wBk = r.backend || "webgl2"; isSw = Boolean(r.isSoftware); apInit(r); if (hudStats) hudStats.textContent = hudStr(""); }
+      if (r?.kind === "ready") { offOk = true; lSentW = iD.w; lSentH = iD.h; isSw = Boolean(r.isSoftware); apInit(r); if (hudStats) hudStats.textContent = hudStr(""); }
     } catch { offOk = false; }
   }
   if (!offOk && !cXfer && canvas) {
     fbM = await import("./scene-renderer.mjs"); fbR = await fbM.createBestRenderer(canvas);
-    wBk = fbR?.backend || "webgl2"; isSw = Boolean(fbR?.isSoftware);
-    if (eW) { apInit(await cW("init", { canvas: null, width: iD.w, height: iD.h, lod: LODS[lodIdx] })); await syncFb(); }
+    isSw = Boolean(fbR?.isSoftware);
+    if (eW) {
+      apInit(await cW("init", { canvas: null, width: iD.w, height: iD.h, lod: LODS[lodIdx] }));
+      await syncFb();
+    }
   }
 
+  syncHudTitle();
   const bootSnap = await rstHash();
   if (location.hash.startsWith("#studio=")) openSt(location.hash.slice(8).trim());
-  if (!bootSnap) chip(statusEl, `${LODS[lodIdx].short} · ${lKern}/15 Kernels · Lawful CCD`, "good");
+  if (!bootSnap) chip(statusEl, `Observer Coherent · ${activeRoleLabel} · ${LODS[lodIdx].short}`, "good");
   reqR();
   (async () => {
-    if (!app) { if (!bootSnap) chip(statusEl, reason ? "Verifier unavailable" : "Engine offline", "bad"); return; }
+    if (!app) { if (!bootSnap) chip(statusEl, reason ? "Verifier unavailable" : "Studio offline", "bad"); return; }
     for (let w = 0; w < 40; w++) {
       const ex = document.getElementById("frame")?.getAttribute("examples") || "";
       if (/^\d+\/\d+$/.test(ex)) break;
@@ -455,13 +619,14 @@ export default async function start({ app, reason, $, chip, show, parse }) {
       lod.res = pRat(f.res, lod.res); lod.density = pRat(f.density, lod.density);
       lod.lossless = f.lossless === "1"; lod.sky = pTri(f.sky, 100, lod.sky); lod.fog = pTri(f.fog, 100, lod.fog);
     }
-    for (const { node, badge } of badges) {
+    for (const { role, badge, btn } of roleBadges) {
       await yieldTask();
-      const kf = pConf(await qVer(node.query));
-      if (!kf) continue;
-      if (kf.semiring) node.semiring = kf.semiring;
-      badge.className = "tag good";
-      badge.textContent = fmtS(node.semiring);
+      const rf = pConf(await qVer(role.query));
+      if (!rf) continue;
+      badge.className = "ve-role-sub";
+      badge.textContent = role.roleTag;
+      btn.dataset.holoConformant = "true";
+      btn.title = `${role.label} (${role.roleTag}) — ${role.query} verified`;
     }
     await yieldTask();
     const af = pConf(await qVer("scene:acoustics"));

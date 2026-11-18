@@ -1,402 +1,592 @@
-/**
- * Orbital Beacon Arena — Playable 3D WebGL2 Starter Game on Verdant Engine.
- *
- * Move the Kinetic Sphere with WASD / Arrow keys across the procedural basin heightfield
- * to activate all three Crystalline Relay Beacons while the autonomous Patrol Drone orbits the
- * arena perimeter. Drag horizontally to orbit the camera.
- */
+// Sunspire Beacon Trials — Standalone Playable 3D Coastal Action-Adventure Trial.
+// Powered 100% by Prism-verified `/app.holo`, `/verdant-uorc.wasm` (22-joint LBS + Foot IK),
+// `/scene-renderer.mjs`, and `/prism-bridge-meta.mjs` (zero handwritten JS terrain or physics bypasses).
 
-const canvas = document.getElementById("arena");
-const scoreEl = document.getElementById("hud-score");
-const hintEl = document.getElementById("hud-hint");
-const audioBtn = document.getElementById("audio-btn");
-const resetBtn = document.getElementById("reset-btn");
+import {
+  PRISM_CHAMBER_SABINE_RT60_MS,
+  PRISM_CSM_SPLIT_METERS,
+  PRISM_DEFAULT_WORLD_SEED,
+  PRISM_MAX_LOD_RANK,
+  PRISM_MODAL_BAR_DENOM,
+  PRISM_MODAL_BAR_NUMERS,
+} from "/prism-bridge-meta.mjs";
+import {
+  createBestRenderer,
+  mat4LookAt,
+  mat4Mul,
+  mat4Perspective,
+} from "/scene-renderer.mjs";
+import { load } from "/worker-runtime/index.mjs";
 
-const BEACONS = [
-  { name: "North Spire", x: 0.0, z: -6.5, baseColor: [0.92, 0.66, 0.28], freq: 220, active: false },
-  { name: "East Spire", x: 6.0, z: 3.4, baseColor: [0.34, 0.76, 0.92], freq: 275, active: false },
-  { name: "West Spire", x: -6.0, z: 3.4, baseColor: [0.78, 0.52, 0.94], freq: 330, active: false },
+const CSM_FAR_METERS = PRISM_CSM_SPLIT_METERS[3];
+
+const LOD3_SPEC = {
+  rank: PRISM_MAX_LOD_RANK,
+  sky: [0.18, 0.30, 0.38],
+  fog: [0.30, 0.40, 0.44],
+};
+
+// 3 Relay Beacons placed across Citadel courtyard, Stone Arch Bridge, and North Terrace:
+const BEACON_COORDS = [
+  [-5.5, 4.5],
+  [7.5, -4.0],
+  [3.0, -7.5],
 ];
 
-const MODAL_BAR_RATIOS = [9 / 9, 25 / 9, 49 / 9, 81 / 9];
-
-function terrainHeight(x, z) {
-  const r2 = x * x + z * z;
-  const bowl = Math.min(2.6, r2 * 0.012);
-  const ripple = 0.22 * Math.sin(x * 0.35) * Math.cos(z * 0.35);
-  return bowl + ripple - 0.5;
+// Unit crystalline octahedron mesh for hardware-instanced Relay Beacons:
+const OCTA_POS = new Float32Array([
+  0, 1.35, 0,  0.65, 0, 0,  0, 0, 0.65,
+  0, 1.35, 0,  0, 0, 0.65, -0.65, 0, 0,
+  0, 1.35, 0, -0.65, 0, 0,  0, 0, -0.65,
+  0, 1.35, 0,  0, 0, -0.65, 0.65, 0, 0,
+  0, -0.95, 0, 0, 0, 0.65,  0.65, 0, 0,
+  0, -0.95, 0, -0.65, 0, 0, 0, 0, 0.65,
+  0, -0.95, 0, 0, 0, -0.65, -0.65, 0, 0,
+  0, -0.95, 0, 0.65, 0, 0,  0, 0, -0.65,
+]);
+const OCTA_NORM = new Float32Array(OCTA_POS.length);
+const OCTA_COL = new Float32Array(OCTA_POS.length);
+const OCTA_IDX = new Uint32Array(24);
+for (let t = 0; t < 8; t++) {
+  const b = t * 9;
+  const ux = OCTA_POS[b + 3] - OCTA_POS[b], uy = OCTA_POS[b + 4] - OCTA_POS[b + 1], uz = OCTA_POS[b + 5] - OCTA_POS[b + 2];
+  const vx = OCTA_POS[b + 6] - OCTA_POS[b], vy = OCTA_POS[b + 7] - OCTA_POS[b + 1], vz = OCTA_POS[b + 8] - OCTA_POS[b + 2];
+  let nx = uy * vz - uz * vy, ny = uz * vx - ux * vz, nz = ux * vy - uy * vx;
+  const nl = Math.hypot(nx, ny, nz) || 1;
+  nx /= nl; ny /= nl; nz /= nl;
+  for (let k = 0; k < 3; k++) {
+    OCTA_NORM[b + k * 3] = nx;
+    OCTA_NORM[b + k * 3 + 1] = ny;
+    OCTA_NORM[b + k * 3 + 2] = nz;
+    // Material class 2.0 (metallic emissive crystal) encoded in integer part of R channel:
+    OCTA_COL[b + k * 3] = 2.92;
+    OCTA_COL[b + k * 3 + 1] = 0.88;
+    OCTA_COL[b + k * 3 + 2] = 0.72;
+    OCTA_IDX[t * 3 + k] = t * 3 + k;
+  }
 }
 
-let audioCtx = null;
+const canvas = document.getElementById("game-canvas");
+const holoBadge = document.getElementById("holo-badge");
+const hudBeacons = document.getElementById("hud-beacons");
+const hudChronicle = document.getElementById("hud-chronicle");
+const hudTime = document.getElementById("hud-time");
+const hudSub = document.getElementById("hud-sub");
+const btnStart = document.getElementById("start-btn");
+const btnChronicle = document.getElementById("btn-chronicle");
+const btnAudio = document.getElementById("btn-audio");
+const btnCam = document.getElementById("btn-cam");
+const btnPause = document.getElementById("btn-pause");
+const btnResume = document.getElementById("btn-resume");
+const btnRestart = document.getElementById("btn-restart");
+const btnTitle = document.getElementById("btn-title");
+const modalTitle = document.getElementById("modal-title");
+const modalStats = document.getElementById("modal-stats");
+const touchPad = document.getElementById("starter-touch-pad");
+
+let wasm = null;
+let renderer = null;
+let gameState = "title";
+let firstPerson = false;
 let audioEnabled = false;
-
-function playBeaconChord(baseHz, panValue) {
-  if (!audioEnabled) return;
-  if (!audioCtx) {
-    const Ctx = window.AudioContext || window.webkitAudioContext;
-    if (!Ctx) return;
-    audioCtx = new Ctx();
-  }
-  if (audioCtx.state === "suspended") audioCtx.resume();
-  const now = audioCtx.currentTime;
-  const panner = audioCtx.createStereoPanner ? audioCtx.createStereoPanner() : null;
-  if (panner) {
-    panner.pan.setValueAtTime(Math.max(-1, Math.min(1, panValue)), now);
-    panner.connect(audioCtx.destination);
-  }
-  MODAL_BAR_RATIOS.forEach((ratio, idx) => {
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.type = "sine";
-    osc.frequency.setValueAtTime(baseHz * Math.sqrt(ratio), now);
-    const peak = 0.09 / (idx + 1);
-    gain.gain.setValueAtTime(0.0001, now);
-    gain.gain.exponentialRampToValueAtTime(peak, now + 0.02);
-    gain.gain.exponentialRampToValueAtTime(0.0001, now + 1.4 - idx * 0.18);
-    osc.connect(gain);
-    gain.connect(panner || audioCtx.destination);
-    osc.start(now);
-    osc.stop(now + 1.45);
-  });
-}
-
-audioBtn?.addEventListener("click", () => {
-  audioEnabled = !audioEnabled;
-  audioBtn.setAttribute("aria-pressed", String(audioEnabled));
-  audioBtn.textContent = audioEnabled ? "Audio: On" : "Audio: Off";
-  if (audioEnabled) playBeaconChord(264, 0);
-});
-
-const player = { x: 0, z: 7.5, vx: 0, vz: 0 };
-const drone = { angle: 0, radius: 9.8 };
-let camYaw = 0.0;
-const keys = new Set();
-
-function updateHud(droneBump = false) {
-  const count = BEACONS.filter((b) => b.active).length;
-  if (scoreEl) {
-    scoreEl.textContent =
-      count === BEACONS.length
-        ? `Beacons Activated: ${count} / ${BEACONS.length} · Arena Complete!`
-        : `Beacons Activated: ${count} / ${BEACONS.length}`;
-  }
-  if (hintEl) {
-    if (droneBump) {
-      hintEl.textContent = "Patrol Drone deflected your sphere! Steer clear of its orbit track.";
-    } else if (count === BEACONS.length) {
-      hintEl.textContent = "All three relay beacons are active. Press Reset Arena to play again.";
-    }
-  }
-}
-
-resetBtn?.addEventListener("click", () => {
-  player.x = 0;
-  player.z = 7.5;
-  player.vx = 0;
-  player.vz = 0;
-  BEACONS.forEach((b) => { b.active = false; });
-  if (hintEl) {
-    hintEl.textContent = "Move with WASD or Arrow keys (drag to orbit camera) to activate all three relay beacons.";
-  }
-  updateHud();
-});
-
-window.addEventListener("keydown", (e) => keys.add(e.code));
-window.addEventListener("keyup", (e) => keys.delete(e.code));
-
+let audioCtx = null;
+let beaconsHarmonized = [false, false, false];
+let beaconWorldPositions = [];
+let beaconEpoch = 1;
+let runSeconds = 0;
+let droneDeflections = 0;
+let chronicleSupply = 12;
+let chronicleTitle = "Arrival";
+let emaFrameMicros = 8000;
+let dragYaw = 0;
+let dragPitch = 0;
 let dragging = false;
 let lastX = 0;
+let lastY = 0;
+let jumpQueued = false;
+const keys = new Set();
+
+function setGameState(next) {
+  gameState = next;
+  document.body.dataset.state = next;
+}
+
+function playModalChime(modeIdx, pan = 0) {
+  if (!audioEnabled) return;
+  const Ctx = window.AudioContext || window.webkitAudioContext;
+  if (!Ctx) return;
+  audioCtx ??= new Ctx();
+  audioCtx.resume?.();
+  const numer = PRISM_MODAL_BAR_NUMERS[Math.abs(modeIdx) % PRISM_MODAL_BAR_NUMERS.length];
+  const freq = Math.min(1560, (132 * numer) / PRISM_MODAL_BAR_DENOM);
+  const rtSec = Math.max(0.5, PRISM_CHAMBER_SABINE_RT60_MS / 1600);
+  const now = audioCtx.currentTime;
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.type = "sine";
+  osc.frequency.setValueAtTime(freq, now);
+  gain.gain.setValueAtTime(0.0001, now);
+  gain.gain.exponentialRampToValueAtTime(0.11, now + 0.018);
+  gain.gain.exponentialRampToValueAtTime(0.0001, now + rtSec);
+  if (typeof audioCtx.createStereoPanner === "function") {
+    const panner = audioCtx.createStereoPanner();
+    panner.pan.setValueAtTime(Math.max(-1, Math.min(1, pan)), now);
+    osc.connect(gain).connect(panner).connect(audioCtx.destination);
+  } else {
+    osc.connect(gain).connect(audioCtx.destination);
+  }
+  osc.start(now);
+  osc.stop(now + rtSec + 0.04);
+}
+
+function computeBeaconInstanceViews(spinRad) {
+  const data = new Float32Array(BEACON_COORDS.length * 16);
+  const c = Math.cos(spinRad), s = Math.sin(spinRad);
+  for (let i = 0; i < BEACON_COORDS.length; i++) {
+    const [bx, bz] = BEACON_COORDS[i];
+    const by = beaconWorldPositions[i]?.[1] ?? 2.2;
+    const bob = Math.sin(spinRad * 1.7 + i * 2.1) * 0.18;
+    const lit = beaconsHarmonized[i];
+    const cr = lit ? 0.32 : 0.98;
+    const cg = lit ? 0.96 : 0.62;
+    const cb = lit ? 0.66 : 0.22;
+    const o = i * 16;
+    data[o] = c;      data[o + 1] = 0; data[o + 2] = -s; data[o + 3] = cr;
+    data[o + 4] = 0;  data[o + 5] = 1; data[o + 6] = 0;  data[o + 7] = cg;
+    data[o + 8] = s;  data[o + 9] = 0; data[o + 10] = c; data[o + 11] = cb;
+    data[o + 12] = bx; data[o + 13] = by + bob; data[o + 14] = bz; data[o + 15] = 1;
+  }
+  beaconEpoch = (beaconEpoch + 1) >>> 0;
+  return {
+    epoch: beaconEpoch,
+    instCount: BEACON_COORDS.length,
+    pos: OCTA_POS,
+    norm: OCTA_NORM,
+    col: OCTA_COL,
+    idx: OCTA_IDX,
+    data,
+  };
+}
+
+function readWasmSplitViews() {
+  const buf = wasm.memory.buffer;
+  const sVerts = wasm.verdant_wasm_static_vert_count() >>> 0;
+  const sIdx = wasm.verdant_wasm_static_idx_count() >>> 0;
+  const staticViews = sVerts > 0 && sIdx > 0 ? {
+    epoch: wasm.verdant_wasm_static_epoch() >>> 0,
+    pos: new Float32Array(buf, wasm.verdant_wasm_scene_pos_ptr() >>> 0, sVerts * 3),
+    norm: new Float32Array(buf, wasm.verdant_wasm_scene_norm_ptr() >>> 0, sVerts * 3),
+    col: new Float32Array(buf, wasm.verdant_wasm_scene_col_ptr() >>> 0, sVerts * 3),
+    idx: new Uint32Array(buf, wasm.verdant_wasm_scene_idx_ptr() >>> 0, sIdx),
+  } : null;
+
+  const dVerts = wasm.verdant_wasm_dyn_vert_count() >>> 0;
+  const dIdx = wasm.verdant_wasm_dyn_idx_count() >>> 0;
+  const dynViews = dVerts > 0 && dIdx > 0 ? {
+    pos: new Float32Array(buf, wasm.verdant_wasm_dyn_pos_ptr() >>> 0, dVerts * 3),
+    norm: new Float32Array(buf, wasm.verdant_wasm_dyn_norm_ptr() >>> 0, dVerts * 3),
+    col: new Float32Array(buf, wasm.verdant_wasm_dyn_col_ptr() >>> 0, dVerts * 3),
+    idx: new Uint32Array(buf, wasm.verdant_wasm_dyn_idx_ptr() >>> 0, dIdx),
+  } : null;
+
+  return { staticViews, dynViews };
+}
+
+function readChronicleStatus() {
+  if (!wasm || typeof wasm.verdant_wasm_story_status_aux !== "function") return;
+  const len = wasm.verdant_wasm_story_status_aux() >>> 0;
+  const ptr = wasm.verdant_wasm_aux_ptr() >>> 0;
+  if (len === 0 || ptr === 0) return;
+  const raw = new TextDecoder().decode(new Uint8Array(wasm.memory.buffer, ptr, len));
+  const [, title, supplyStr] = raw.split("|");
+  if (title) chronicleTitle = title;
+  const parsedSupply = Number(supplyStr);
+  if (Number.isFinite(parsedSupply) && parsedSupply > 0) chronicleSupply = parsedSupply;
+}
+
+function stepChronicleAtPlayer() {
+  if (!wasm || typeof wasm.verdant_wasm_story_interact_at !== "function") return;
+  const px = wasm.verdant_wasm_player_x();
+  const py = wasm.verdant_wasm_player_y() - 1.55;
+  const pz = wasm.verdant_wasm_player_z();
+  const advanced = wasm.verdant_wasm_story_interact_at(px, py, pz) === 1;
+  readChronicleStatus();
+  if (advanced) playModalChime(3, 0);
+  syncHud();
+}
+
+function syncHud() {
+  const litCount = beaconsHarmonized.filter(Boolean).length;
+  if (hudBeacons) hudBeacons.textContent = `${litCount} / ${BEACON_COORDS.length}`;
+  if (hudChronicle) hudChronicle.textContent = `${chronicleTitle} (${chronicleSupply})`;
+  if (hudTime) hudTime.textContent = `${Math.floor(runSeconds)}s`;
+  const clr = wasm ? (wasm.verdant_wasm_camera_clearance_milli() >>> 0) : 290;
+  if (hudSub) hudSub.textContent = `View: ${firstPerson ? "1st Eye" : "3rd Person"} · ${clr}mm`;
+  if (btnCam) btnCam.textContent = firstPerson ? "1st View" : "3rd View";
+}
+
+function resetArenaRun(enterPlaying = true) {
+  if (enterPlaying) {
+    document.activeElement?.blur?.();
+    keys.clear();
+    dragging = false;
+    setGameState("playing");
+  }
+  if (!wasm) return;
+  wasm.verdant_wasm_init(BigInt(PRISM_DEFAULT_WORLD_SEED));
+  wasm.verdant_wasm_set_lod_rank(PRISM_MAX_LOD_RANK);
+  readChronicleStatus();
+  beaconWorldPositions = BEACON_COORDS.map(([bx, bz]) => [
+    bx,
+    wasm.verdant_wasm_terrain_height(bx, bz, 1.0) + 1.65,
+    bz,
+  ]);
+  beaconsHarmonized = [false, false, false];
+  runSeconds = 0;
+  droneDeflections = 0;
+  keys.clear();
+
+  const aspectMilli = Math.max(400, Math.round((canvas.width / Math.max(1, canvas.height)) * 1000)) >>> 0;
+  if (enterPlaying) {
+    wasm.verdant_wasm_camera_set_mode(firstPerson ? 1 : 0);
+    wasm.verdant_wasm_camera_set_pose_intent(-580, 280, 6200, aspectMilli);
+    wasm.verdant_wasm_scene_rebuild_buffers(0);
+    setGameState("playing");
+    playModalChime(0, 0);
+  } else {
+    document.exitPointerLock?.();
+    wasm.verdant_wasm_camera_set_anchor(1, 2.2, 3.8, 9.2);
+    wasm.verdant_wasm_camera_set_pose_intent(460, 260, 18500, aspectMilli);
+    wasm.verdant_wasm_scene_rebuild_buffers(0);
+    setGameState("title");
+  }
+  syncHud();
+}
+
+function startOrResume() {
+  document.activeElement?.blur?.();
+  if (gameState === "paused") {
+    if (btnResume) btnResume.textContent = "Resume";
+    keys.clear();
+    setGameState("playing");
+    return;
+  }
+  resetArenaRun(true);
+}
+
+function togglePause() {
+  if (gameState === "playing") {
+    document.exitPointerLock?.();
+    if (modalTitle) modalTitle.textContent = "Trials Paused";
+    if (modalStats) {
+      const lit = beaconsHarmonized.filter(Boolean).length;
+      modalStats.textContent =
+        `Beacons Harmonized: ${lit} / ${BEACON_COORDS.length} · Chronicle: ${chronicleTitle} (${chronicleSupply} relics)\n` +
+        `Elapsed: ${Math.floor(runSeconds)}s · Patrol Deflections: ${droneDeflections}`;
+    }
+    if (btnResume) btnResume.textContent = "Resume";
+    keys.clear();
+    dragging = false;
+    setGameState("paused");
+  } else if (gameState === "paused") {
+    document.activeElement?.blur?.();
+    setGameState("playing");
+  }
+}
+
+btnStart?.addEventListener("click", (e) => {
+  e.currentTarget.blur?.();
+  startOrResume();
+});
+btnChronicle?.addEventListener("click", (e) => {
+  e.currentTarget.blur?.();
+  stepChronicleAtPlayer();
+});
+btnResume?.addEventListener("click", (e) => {
+  e.currentTarget.blur?.();
+  startOrResume();
+});
+btnRestart?.addEventListener("click", () => resetArenaRun(true));
+btnTitle?.addEventListener("click", () => resetArenaRun(false));
+btnPause?.addEventListener("click", (e) => {
+  e.currentTarget.blur?.();
+  togglePause();
+});
+btnCam?.addEventListener("click", (e) => {
+  e.currentTarget.blur?.();
+  if (!wasm) return;
+  firstPerson = !firstPerson;
+  wasm.verdant_wasm_camera_set_mode(firstPerson ? 1 : 0);
+  syncHud();
+});
+btnAudio?.addEventListener("click", (e) => {
+  e.currentTarget.blur?.();
+  audioEnabled = !audioEnabled;
+  btnAudio.setAttribute("aria-pressed", String(audioEnabled));
+  btnAudio.textContent = audioEnabled ? "Audio: On" : "Audio";
+  if (audioEnabled) playModalChime(2, 0);
+});
+
+touchPad?.querySelectorAll("button[data-move]").forEach((b) => {
+  const code = b.dataset.move;
+  const down = (e) => {
+    e.preventDefault();
+    if (code === "Space") jumpQueued = true;
+    keys.add(code);
+  };
+  const up = () => keys.delete(code);
+  b.addEventListener("pointerdown", down);
+  b.addEventListener("pointerup", up);
+  b.addEventListener("pointercancel", up);
+  b.addEventListener("pointerleave", up);
+});
+
 canvas?.addEventListener("pointerdown", (e) => {
   dragging = true;
   lastX = e.clientX;
+  lastY = e.clientY;
+  canvas.setPointerCapture?.(e.pointerId);
 });
-window.addEventListener("pointerup", () => { dragging = false; });
-window.addEventListener("pointermove", (e) => {
-  if (dragging) {
-    camYaw += (e.clientX - lastX) * 0.007;
-    lastX = e.clientX;
+canvas?.addEventListener("pointermove", (e) => {
+  if (!dragging) return;
+  const dx = e.clientX - lastX;
+  const dy = e.clientY - lastY;
+  lastX = e.clientX;
+  lastY = e.clientY;
+  dragYaw -= dx * 0.0065;
+  dragPitch += firstPerson ? -dy * 0.005 : dy * 0.0055;
+});
+canvas?.addEventListener("pointerup", () => { dragging = false; });
+canvas?.addEventListener("pointercancel", () => { dragging = false; });
+
+addEventListener("keydown", (e) => {
+  if (gameState === "title" && (e.code === "Enter" || e.code === "Space")) {
+    e.preventDefault();
+    startOrResume();
+    return;
+  }
+  if ((e.code === "KeyP" || e.code === "Escape") && !e.repeat) {
+    if (gameState === "playing" || gameState === "paused") {
+      e.preventDefault();
+      togglePause();
+      return;
+    }
+  }
+  if (e.code === "KeyR" && !e.repeat && gameState !== "title") {
+    resetArenaRun(true);
+    return;
+  }
+  if (e.code === "KeyC" && !e.repeat && gameState === "playing" && wasm) {
+    firstPerson = !firstPerson;
+    wasm.verdant_wasm_camera_set_mode(firstPerson ? 1 : 0);
+    syncHud();
+    return;
+  }
+  if (e.code === "KeyE" && !e.repeat && gameState === "playing") {
+    stepChronicleAtPlayer();
+    return;
+  }
+  if (e.code === "KeyM" && !e.repeat) {
+    btnAudio?.click();
+    return;
+  }
+  if (e.code === "Space") jumpQueued = true;
+  keys.add(e.code);
+});
+addEventListener("keyup", (e) => keys.delete(e.code));
+addEventListener("blur", () => keys.clear());
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) keys.clear();
+});
+canvas?.addEventListener("webglcontextlost", (e) => e.preventDefault());
+canvas?.addEventListener("webglcontextrestored", async () => {
+  renderer = await createBestRenderer(canvas);
+  if (wasm) {
+    const csmSplits = [0, 1, 2, 3].map((i) => wasm.verdant_wasm_csm_split_meters(0.25, CSM_FAR_METERS, i));
+    renderer?.setCsmSplits?.(csmSplits);
   }
 });
 
-// Build procedural meshes (interleaved pos[3], normal[3], color[3]):
-function pushTri(out, a, b, c, col) {
-  const ux = b[0] - a[0], uy = b[1] - a[1], uz = b[2] - a[2];
-  const vx = c[0] - a[0], vy = c[1] - a[1], vz = c[2] - a[2];
-  let nx = uy * vz - uz * vy;
-  let ny = uz * vx - ux * vz;
-  let nz = ux * vy - uy * vx;
-  const len = Math.hypot(nx, ny, nz) || 1;
-  nx /= len; ny /= len; nz /= len;
-  for (const p of [a, b, c]) {
-    out.push(p[0], p[1], p[2], nx, ny, nz, col[0], col[1], col[2]);
+let prevNow = performance.now();
+function scheduleNextFrame() {
+  if (renderer?.isSoftware) {
+    setTimeout(() => requestAnimationFrame(loop), 24);
+  } else {
+    requestAnimationFrame(loop);
   }
 }
 
-function buildTerrainVerts() {
-  const out = [];
-  const N = 24;
-  const half = 14;
-  for (let iz = 0; iz < N; iz++) {
-    for (let ix = 0; ix < N; ix++) {
-      const x0 = -half + (ix / N) * half * 2;
-      const x1 = -half + ((ix + 1) / N) * half * 2;
-      const z0 = -half + (iz / N) * half * 2;
-      const z1 = -half + ((iz + 1) / N) * half * 2;
-      const y00 = terrainHeight(x0, z0);
-      const y10 = terrainHeight(x1, z0);
-      const y01 = terrainHeight(x0, z1);
-      const y11 = terrainHeight(x1, z1);
-      const hAvg = (y00 + y11) * 0.5;
-      const col = hAvg < -0.22
-        ? [0.16, 0.42, 0.48]
-        : [0.22 + hAvg * 0.08, 0.36 + hAvg * 0.06, 0.27 + hAvg * 0.04];
-      pushTri(out, [x0, y00, z0], [x0, y01, z1], [x1, y10, z0], col);
-      pushTri(out, [x1, y10, z0], [x0, y01, z1], [x1, y11, z1], col);
-    }
+function loop(now) {
+  if (!wasm || !renderer || document.hidden) {
+    scheduleNextFrame();
+    return;
   }
-  return new Float32Array(out);
-}
+  const dt = Math.min(0.05, Math.max(0.001, (now - prevNow) * 0.001));
+  prevNow = now;
 
-function buildOctahedronVerts(radius, heightScale, col) {
-  const out = [];
-  const top = [0, radius * heightScale, 0];
-  const bot = [0, -radius * heightScale, 0];
-  const ring = [
-    [radius, 0, 0],
-    [0, 0, radius],
-    [-radius, 0, 0],
-    [0, 0, -radius],
-  ];
-  for (let i = 0; i < 4; i++) {
-    const a = ring[i];
-    const b = ring[(i + 1) % 4];
-    pushTri(out, top, b, a, col);
-    pushTri(out, bot, a, b, col);
+  const dpr = Math.min(window.devicePixelRatio || 1, renderer.isSoftware ? 1 : 2);
+  const w = Math.max(1, Math.floor(canvas.clientWidth * dpr));
+  const h = Math.max(1, Math.floor(canvas.clientHeight * dpr));
+  if (canvas.width !== w || canvas.height !== h) {
+    canvas.width = w;
+    canvas.height = h;
   }
-  return new Float32Array(out);
-}
+  const aspect = Math.max(0.2, w / h);
+  const aspectMilli = Math.round(aspect * 1000) >>> 0;
+  const dtMicros = Math.round(dt * 1_000_000) >>> 0;
 
-function mat4Perspective(fovRad, aspect, near, far) {
-  const f = 1 / Math.tan(fovRad * 0.5);
-  const nf = 1 / (near - far);
-  return new Float32Array([
-    f / aspect, 0, 0, 0,
-    0, f, 0, 0,
-    0, 0, (far + near) * nf, -1,
-    0, 0, 2 * far * near * nf, 0,
-  ]);
-}
-
-function mat4LookAt(eye, target, up) {
-  let zx = eye[0] - target[0], zy = eye[1] - target[1], zz = eye[2] - target[2];
-  let zl = Math.hypot(zx, zy, zz) || 1;
-  zx /= zl; zy /= zl; zz /= zl;
-  let xx = up[1] * zz - up[2] * zy;
-  let xy = up[2] * zx - up[0] * zz;
-  let xz = up[0] * zy - up[1] * zx;
-  let xl = Math.hypot(xx, xy, xz) || 1;
-  xx /= xl; xy /= xl; xz /= xl;
-  const yx = zy * xz - zz * xy;
-  const yy = zz * xx - zx * xz;
-  const yz = zx * xy - zy * xx;
-  return new Float32Array([
-    xx, yx, zx, 0,
-    xy, yy, zy, 0,
-    xz, yz, zz, 0,
-    -(xx * eye[0] + xy * eye[1] + xz * eye[2]),
-    -(yx * eye[0] + yy * eye[1] + yz * eye[2]),
-    -(zx * eye[0] + zy * eye[1] + zz * eye[2]),
-    1,
-  ]);
-}
-
-function mat4Mul(a, b) {
-  const out = new Float32Array(16);
-  for (let c = 0; c < 4; c++) {
-    for (let r = 0; r < 4; r++) {
-      out[c * 4 + r] =
-        a[0 * 4 + r] * b[c * 4 + 0] +
-        a[1 * 4 + r] * b[c * 4 + 1] +
-        a[2 * 4 + r] * b[c * 4 + 2] +
-        a[3 * 4 + r] * b[c * 4 + 3];
-    }
-  }
-  return out;
-}
-
-const gl = canvas?.getContext("webgl2", { antialias: true, depth: true });
-if (gl) {
-  const vs = gl.createShader(gl.VERTEX_SHADER);
-  gl.shaderSource(vs, `#version 300 es
-    layout(location=0) in vec3 a_pos;
-    layout(location=1) in vec3 a_nrm;
-    layout(location=2) in vec3 a_col;
-    uniform mat4 u_vp;
-    uniform vec3 u_offset;
-    uniform float u_spin;
-    uniform vec3 u_tint;
-    out vec3 v_col;
-    void main() {
-      float c = cos(u_spin), s = sin(u_spin);
-      vec3 p = vec3(a_pos.x * c - a_pos.z * s, a_pos.y, a_pos.x * s + a_pos.z * c) + u_offset;
-      vec3 n = vec3(a_nrm.x * c - a_nrm.z * s, a_nrm.y, a_nrm.x * s + a_nrm.z * c);
-      vec3 lightDir = normalize(vec3(0.45, 0.82, 0.35));
-      float diff = max(dot(normalize(n), lightDir), 0.0);
-      v_col = (a_col * u_tint) * (0.34 + 0.72 * diff);
-      gl_Position = u_vp * vec4(p, 1.0);
-    }`);
-  gl.compileShader(vs);
-
-  const fs = gl.createShader(gl.FRAGMENT_SHADER);
-  gl.shaderSource(fs, `#version 300 es
-    precision highp float;
-    in vec3 v_col;
-    out vec4 o_col;
-    void main() {
-      o_col = vec4(pow(max(v_col, vec3(0.0)), vec3(1.0 / 2.2)), 1.0);
-    }`);
-  gl.compileShader(fs);
-
-  const prog = gl.createProgram();
-  gl.attachShader(prog, vs);
-  gl.attachShader(prog, fs);
-  gl.linkProgram(prog);
-
-  function uploadMesh(verts) {
-    const vao = gl.createVertexArray();
-    gl.bindVertexArray(vao);
-    const buf = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, buf);
-    gl.bufferData(gl.ARRAY_BUFFER, verts, gl.STATIC_DRAW);
-    gl.enableVertexAttribArray(0);
-    gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 36, 0);
-    gl.enableVertexAttribArray(1);
-    gl.vertexAttribPointer(1, 3, gl.FLOAT, false, 36, 12);
-    gl.enableVertexAttribArray(2);
-    gl.vertexAttribPointer(2, 3, gl.FLOAT, false, 36, 24);
-    return { vao, count: verts.length / 9 };
-  }
-
-  const terrainGpu = uploadMesh(buildTerrainVerts());
-  const crystalGpu = uploadMesh(buildOctahedronVerts(0.65, 2.1, [1, 1, 1]));
-  const orbGpu = uploadMesh(buildOctahedronVerts(0.55, 1.15, [0.95, 0.88, 0.62]));
-  const droneGpu = uploadMesh(buildOctahedronVerts(0.75, 0.7, [0.92, 0.38, 0.32]));
-
-  const uVp = gl.getUniformLocation(prog, "u_vp");
-  const uOffset = gl.getUniformLocation(prog, "u_offset");
-  const uSpin = gl.getUniformLocation(prog, "u_spin");
-  const uTint = gl.getUniformLocation(prog, "u_tint");
-
-  let lastTime = performance.now();
-
-  function frame(now) {
-    const dt = Math.min(0.05, (now - lastTime) * 0.001);
-    lastTime = now;
-
-    // Step player movement relative to camera yaw:
-    let ix = 0, iz = 0;
-    if (keys.has("KeyW") || keys.has("ArrowUp")) iz -= 1;
-    if (keys.has("KeyS") || keys.has("ArrowDown")) iz += 1;
-    if (keys.has("KeyA") || keys.has("ArrowLeft")) ix -= 1;
-    if (keys.has("KeyD") || keys.has("ArrowRight")) ix += 1;
-    const il = Math.hypot(ix, iz);
-    if (il > 0) {
-      ix /= il; iz /= il;
-      const cy = Math.cos(camYaw), sy = Math.sin(camYaw);
-      const wx = ix * cy + iz * sy;
-      const wz = -ix * sy + iz * cy;
-      player.vx += wx * 18 * dt;
-      player.vz += wz * 18 * dt;
-    }
-    player.vx *= Math.pow(0.08, dt);
-    player.vz *= Math.pow(0.08, dt);
-    player.x = Math.max(-12.5, Math.min(12.5, player.x + player.vx * dt));
-    player.z = Math.max(-12.5, Math.min(12.5, player.z + player.vz * dt));
-
-    // Step autonomous Patrol Drone along perimeter circle:
-    drone.angle += dt * 0.65;
-    const dx = Math.cos(drone.angle) * drone.radius;
-    const dz = Math.sin(drone.angle) * drone.radius;
-    const distDrone = Math.hypot(player.x - dx, player.z - dz);
-    if (distDrone < 1.35) {
-      const nx = (player.x - dx) / (distDrone || 1);
-      const nz = (player.z - dz) / (distDrone || 1);
-      player.vx = nx * 9;
-      player.vz = nz * 9;
-      playBeaconChord(146.8, nx);
-      updateHud(true);
-    }
-
-    // Check GJK-style proximity activation with each Relay Beacon:
-    for (const b of BEACONS) {
-      if (!b.active && Math.hypot(player.x - b.x, player.z - b.z) < 1.45) {
-        b.active = true;
-        playBeaconChord(b.freq, Math.max(-1, Math.min(1, (b.x - player.x) * 0.25)));
-        updateHud(false);
-      }
-    }
-
-    const dpr = Math.min(2, window.devicePixelRatio || 1);
-    const w = Math.max(1, Math.floor(canvas.clientWidth * dpr));
-    const h = Math.max(1, Math.floor(canvas.clientHeight * dpr));
-    if (canvas.width !== w || canvas.height !== h) {
-      canvas.width = w;
-      canvas.height = h;
-    }
-
-    gl.viewport(0, 0, w, h);
-    gl.clearColor(0.06, 0.08, 0.1, 1);
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-    gl.enable(gl.DEPTH_TEST);
-
-    const camDist = 16.5;
-    const eye = [
-      player.x * 0.35 + Math.sin(camYaw) * camDist,
-      9.2,
-      player.z * 0.35 + Math.cos(camYaw) * camDist,
-    ];
-    const vp = mat4Mul(
-      mat4Perspective(Math.PI / 3.6, w / h, 0.2, 80.0),
-      mat4LookAt(eye, [player.x * 0.35, 0.8, player.z * 0.35], [0, 1, 0]),
+  if (gameState === "title") {
+    wasm.verdant_wasm_camera_intent(
+      Math.round((dragYaw + dt * 0.22) * 1000) | 0,
+      Math.round(dragPitch * 1000) | 0,
+      0,
+      aspectMilli,
+      dtMicros,
     );
+    dragYaw = 0;
+    dragPitch = 0;
+  } else if (gameState === "playing") {
+    runSeconds += dt;
+    wasm.verdant_wasm_camera_intent(
+      Math.round(dragYaw * 1000) | 0,
+      Math.round(dragPitch * 1000) | 0,
+      0,
+      aspectMilli,
+      dtMicros,
+    );
+    dragYaw = 0;
+    dragPitch = 0;
 
-    gl.useProgram(prog);
-    gl.uniformMatrix4fv(uVp, false, vp);
+    const fwd = (keys.has("KeyW") || keys.has("ArrowUp") ? 1 : 0) - (keys.has("KeyS") || keys.has("ArrowDown") ? 1 : 0);
+    const strafe = (keys.has("KeyD") || keys.has("ArrowRight") ? 1 : 0) - (keys.has("KeyA") || keys.has("ArrowLeft") ? 1 : 0);
+    const speedScale = keys.has("ShiftLeft") || keys.has("ShiftRight") ? 1550 : 1000;
+    const jump = jumpQueued || keys.has("Space") ? 1 : 0;
+    jumpQueued = false;
 
-    // Draw valley terrain:
-    gl.bindVertexArray(terrainGpu.vao);
-    gl.uniform3f(uOffset, 0, 0, 0);
-    gl.uniform1f(uSpin, 0);
-    gl.uniform3f(uTint, 1, 1, 1);
-    gl.drawArrays(gl.TRIANGLES, 0, terrainGpu.count);
+    const ex0 = wasm.verdant_wasm_camera_eye_x(), ez0 = wasm.verdant_wasm_camera_eye_z();
+    const tx0 = wasm.verdant_wasm_camera_target_x(), tz0 = wasm.verdant_wasm_camera_target_z();
+    const lookAz = Math.atan2(tx0 - ex0, tz0 - ez0);
 
-    // Draw 3 Crystalline Relay Beacons:
-    gl.bindVertexArray(crystalGpu.vao);
-    const tSec = now * 0.001;
-    BEACONS.forEach((b, idx) => {
-      const ry = terrainHeight(b.x, b.z) + 1.55 + Math.sin(tSec * 2.2 + idx) * 0.18;
-      gl.uniform3f(uOffset, b.x, ry, b.z);
-      gl.uniform1f(uSpin, tSec * (b.active ? 2.4 : 0.7) + idx);
-      const col = b.active ? [0.42, 0.96, 0.72] : b.baseColor;
-      gl.uniform3f(uTint, col[0], col[1], col[2]);
-      gl.drawArrays(gl.TRIANGLES, 0, crystalGpu.count);
-    });
+    wasm.verdant_wasm_step_lawful(
+      dtMicros,
+      fwd * 1000,
+      strafe * 1000,
+      Math.round(lookAz * 1000) | 0,
+      speedScale,
+      jump,
+    );
+    wasm.verdant_wasm_scene_rebuild_buffers(runSeconds);
 
-    // Draw player Kinetic Sphere:
-    gl.bindVertexArray(orbGpu.vao);
-    gl.uniform3f(uOffset, player.x, terrainHeight(player.x, player.z) + 0.7, player.z);
-    gl.uniform1f(uSpin, tSec * 1.8);
-    gl.uniform3f(uTint, 1, 1, 1);
-    gl.drawArrays(gl.TRIANGLES, 0, orbGpu.count);
+    const px = wasm.verdant_wasm_player_x();
+    const py = wasm.verdant_wasm_player_y() - 1.55;
+    const pz = wasm.verdant_wasm_player_z();
 
-    // Draw patrolling Drone:
-    gl.bindVertexArray(droneGpu.vao);
-    gl.uniform3f(uOffset, dx, terrainHeight(dx, dz) + 1.15, dz);
-    gl.uniform1f(uSpin, -tSec * 3.0);
-    gl.uniform3f(uTint, 1, 1, 1);
-    gl.drawArrays(gl.TRIANGLES, 0, droneGpu.count);
+    // Check Patrol Mover proximity repulsion:
+    const moverScale = 16.5 / 26.0;
+    const mx = wasm.verdant_wasm_mover_x() * moverScale;
+    const mz = wasm.verdant_wasm_mover_z() * moverScale;
+    if (Math.hypot(px - mx, pz - mz) < 2.2) {
+      droneDeflections += 1;
+      const pushAz = Math.atan2(px - mx, pz - mz);
+      wasm.verdant_wasm_step_lawful(45000, 1000, 0, Math.round(pushAz * 1000) | 0, 1800, 1);
+      playModalChime(4, -0.4);
+    }
 
-    requestAnimationFrame(frame);
+    // Check Relay Beacon harmonization:
+    const fdx = tx0 - ex0, fdz = tz0 - ez0, fl = Math.hypot(fdx, fdz) || 1;
+    for (let i = 0; i < beaconWorldPositions.length; i++) {
+      if (beaconsHarmonized[i]) continue;
+      const [bx, by, bz] = beaconWorldPositions[i];
+      if (Math.hypot(px - bx, pz - bz) < 3.4 && Math.abs(py - by) < 3.6) {
+        beaconsHarmonized[i] = true;
+        const pan = wasm.verdant_wasm_binaural_pan(bx, by, bz, ex0, wasm.verdant_wasm_camera_eye_y(), ez0, fdx / fl, 0, fdz / fl);
+        playModalChime(i + 1, pan);
+      }
+      if (beaconsHarmonized[i] && i === 0) stepChronicleAtPlayer();
+    }
+
+    syncHud();
+    if (beaconsHarmonized.every(Boolean)) {
+      document.exitPointerLock?.();
+      if (modalTitle) modalTitle.textContent = "All Sunspire Beacons Harmonized";
+      if (modalStats) {
+        modalStats.textContent =
+          `Clear Time: ${Math.round(runSeconds)}s · Beacons: ${BEACON_COORDS.length} / ${BEACON_COORDS.length}\n` +
+          `Chronicle: ${chronicleTitle} (${chronicleSupply} relics) · Patrol Deflections: ${droneDeflections}`;
+      }
+      if (btnResume) btnResume.textContent = "Play Again";
+      keys.clear();
+      dragging = false;
+      setGameState("gameover");
+    }
   }
-  requestAnimationFrame(frame);
+
+  const tRender0 = performance.now();
+  const eye = [wasm.verdant_wasm_camera_eye_x(), wasm.verdant_wasm_camera_eye_y(), wasm.verdant_wasm_camera_eye_z()];
+  const target = [wasm.verdant_wasm_camera_target_x(), wasm.verdant_wasm_camera_target_y(), wasm.verdant_wasm_camera_target_z()];
+  const { staticViews, dynViews } = readWasmSplitViews();
+  const instViews = computeBeaconInstanceViews(now * 0.0014);
+  renderer.uploadSplitBuffers(staticViews, dynViews, instViews);
+
+  const fov = Math.PI / 3.4;
+  const proj = mat4Perspective(fov, aspect, 0.25, CSM_FAR_METERS);
+  const view = mat4LookAt(eye, target, [0, 1, 0]);
+  renderer.render(mat4Mul(proj, view), eye, LOD3_SPEC, now * 0.001, target, fov);
+  const frameMicros = Math.max(50, Math.round((performance.now() - tRender0) * 1000));
+  emaFrameMicros = Math.round(emaFrameMicros * 0.85 + frameMicros * 0.15);
+  const scalePermille = wasm.verdant_wasm_governor_scale_permille(emaFrameMicros >>> 0) >>> 0;
+  renderer.setRenderScale?.(scalePermille);
+  scheduleNextFrame();
 }
+
+async function boot() {
+  renderer = await createBestRenderer(canvas);
+  const [holoResp, wasmResp] = await Promise.all([
+    fetch("/app.holo"),
+    fetch("/verdant-uorc.wasm"),
+  ]);
+  if (!holoResp.ok || !wasmResp.ok) {
+    throw new Error(`Asset fetch failed: holo=${holoResp.status} wasm=${wasmResp.status}`);
+  }
+  const [holoBuf, wasmBuf] = await Promise.all([
+    holoResp.arrayBuffer(),
+    wasmResp.arrayBuffer(),
+  ]);
+
+  const holoApp = await load(new Uint8Array(holoBuf));
+  const utf8Enc = new TextEncoder();
+  const utf8Dec = new TextDecoder();
+  const summaryVerdict = utf8Dec.decode(await holoApp.dispatch(utf8Enc.encode("summary")));
+  const lawfulVerdict = utf8Dec.decode(await holoApp.dispatch(utf8Enc.encode("scene:lawful")));
+  const lod3Verdict = utf8Dec.decode(await holoApp.dispatch(utf8Enc.encode(`scene:lod:${PRISM_MAX_LOD_RANK}`)));
+  if (!summaryVerdict.startsWith("conformant:") || !lawfulVerdict.startsWith("conformant:") || !lod3Verdict.startsWith("conformant:")) {
+    throw new Error(`Prism Holo refused: ${summaryVerdict} | ${lawfulVerdict} | ${lod3Verdict}`);
+  }
+  for (const part of lod3Verdict.slice(11).split(",")) {
+    const [k, v] = part.split("=");
+    if ((k === "sky" || k === "fog") && v) {
+      const rgb = v.split("/").map(Number);
+      if (rgb.length === 3 && rgb.every(Number.isFinite)) LOD3_SPEC[k] = rgb.map((n) => n / 100);
+    }
+  }
+
+  const { instance } = await WebAssembly.instantiate(wasmBuf, {});
+  wasm = instance.exports;
+  const csmSplits = [0, 1, 2, 3].map((i) => wasm.verdant_wasm_csm_split_meters(0.25, CSM_FAR_METERS, i));
+  renderer?.setCsmSplits?.(csmSplits);
+
+  const autostart = new URLSearchParams(location.search).get("autostart") === "1";
+  resetArenaRun(autostart);
+
+  if (holoBadge) {
+    holoBadge.textContent = `Harmonize ${BEACON_COORDS.length} Coastal Beacons Across the Stone Arch Basin`;
+  }
+
+  prevNow = performance.now();
+  requestAnimationFrame(loop);
+}
+
+boot().catch((err) => {
+  if (holoBadge) holoBadge.textContent = `Basin unavailable: ${err?.message || err}`;
+  console.error("Sunspire Beacon Trials boot error:", err);
+});
