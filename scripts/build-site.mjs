@@ -10,11 +10,11 @@
 //   4. Runs `bootstrap/precache.mjs site` to generate `site/precache.json`.
 
 import { execFileSync } from "node:child_process";
-import { cp, readdir, readFile, rm, writeFile } from "node:fs/promises";
+import { cp, readdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { verify } from "../ci/kappa-cache.mjs";
-import { kappa } from "../try/vendor/prism-code/src/index.mjs";
+import { verifyPrismHoloContract } from "./enforce-prism-contracts.mjs";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
 const siteDir = join(root, "site");
@@ -22,16 +22,11 @@ const vendorSrc = join(root, "try", "vendor");
 const vendorDest = join(siteDir, "vendor");
 const holoDest = join(siteDir, "app.holo");
 
-function hasValidHoloFingerprint(buf) {
-  if (!buf || buf.length < 64) return null;
-  const fpHex = buf.subarray(buf.length - 32).toString("hex");
-  return kappa(buf.subarray(0, buf.length - 32)) === `blake3:${fpHex}` ? fpHex : null;
-}
-
 async function tryVerifyBuffer(buf) {
+  if (!buf || buf.length < 64) return null;
   try {
-    const info = await verify(buf);
-    return info;
+    await verify(buf);
+    return await verifyPrismHoloContract(buf, { useCache: true, rootDir: root });
   } catch {
     return null;
   }
@@ -40,26 +35,32 @@ async function tryVerifyBuffer(buf) {
 async function findLocalBuildHolo() {
   const buildRoot = join(root, "app", ".prism", "build");
   const subdirs = await readdir(buildRoot, { withFileTypes: true }).catch(() => []);
+  const candidates = [];
   for (const entry of subdirs) {
     if (!entry.isDirectory()) continue;
     const dirPath = join(buildRoot, entry.name);
     const files = await readdir(dirPath).catch(() => []);
     for (const f of files) {
       if (f.endsWith(".holo")) {
-        const bytes = await readFile(join(dirPath, f)).catch(() => null);
-        if (bytes && (await tryVerifyBuffer(bytes))) return bytes;
+        const holoPath = join(dirPath, f);
+        const st = await stat(holoPath).catch(() => null);
+        if (st) candidates.push({ holoPath, mtimeMs: st.mtimeMs });
       }
     }
+  }
+  candidates.sort((a, b) => b.mtimeMs - a.mtimeMs);
+  for (const { holoPath } of candidates) {
+    const bytes = await readFile(holoPath).catch(() => null);
+    if (bytes && (await tryVerifyBuffer(bytes))) return bytes;
   }
   return null;
 }
 
 async function ensureVerifiedHolo() {
   const existing = await readFile(holoDest).catch(() => null);
-  const fpHex = hasValidHoloFingerprint(existing);
-  if (fpHex) {
-    // Full 46-vector acceptance + subsystem conformance runs in `enforce-prism-contracts.mjs` below.
-    console.log(`build-site: present site/app.holo (${fpHex.slice(0, 12)}…)`);
+  const existingOk = await tryVerifyBuffer(existing);
+  if (existingOk) {
+    console.log(`build-site: present site/app.holo (${existingOk.fingerprint.slice(0, 12)}…)`);
     return;
   }
 

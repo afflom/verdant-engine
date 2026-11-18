@@ -48,6 +48,12 @@ fn repo_root() -> PathBuf {
         .to_path_buf()
 }
 
+/// Serializes C-ABI singleton tests calling `verdant_wasm::verdant_wasm_*` across parallel test threads.
+fn wasm_abi_lock() -> std::sync::MutexGuard<'static, ()> {
+    static LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
+    LOCK.lock().unwrap_or_else(|e| e.into_inner())
+}
+
 /// `VE-01`: Monotonic multi-LOD `UORC` (`UORC-SHA256-CHAIN-v1`) streaming and `StreamingError` refusals.
 #[test]
 fn engine_ve_01() {
@@ -2827,19 +2833,26 @@ fn engine_ve_32() {
     ));
 
     // 2. Verify live C-ABI `verdant_wasm_csm_split_meters` & `verdant_wasm_scene_outliner_aux`:
-    assert_eq!(verdant_wasm::verdant_wasm_init(7), 1);
-    let c0 = verdant_wasm::verdant_wasm_csm_split_meters(0.25, 140.0, 0);
-    let c3 = verdant_wasm::verdant_wasm_csm_split_meters(0.25, 140.0, 3);
-    assert!(c0 > 0.25 && c3 > c0 && (c3 - 140.0).abs() < 1e-4);
-    let out_len = verdant_wasm::verdant_wasm_scene_outliner_aux(8_200);
-    assert!(out_len > 64, "scene_outliner_aux must stage entity table");
+    {
+        let _abi_guard = wasm_abi_lock();
+        assert_eq!(verdant_wasm::verdant_wasm_init(7), 1);
+        let c0 = verdant_wasm::verdant_wasm_csm_split_meters(0.25, 140.0, 0);
+        let c3 = verdant_wasm::verdant_wasm_csm_split_meters(0.25, 140.0, 3);
+        assert!(c0 > 0.25 && c3 > c0 && (c3 - 140.0).abs() < 1e-4);
+        let out_len = verdant_wasm::verdant_wasm_scene_outliner_aux(8_200);
+        assert!(out_len > 64, "scene_outliner_aux must stage entity table");
+    }
 
-    // 3. Audit Studio token purity, 13 DevRel controls, 6 Workbench tabs, 7 Journeys, 4 Archetypes, & C-ABI parity:
+    // 3. Audit Studio token purity, 13 DevRel controls, 7 functional Studio role workspaces, 4 external starter archetypes, 5 platform organs, & C-ABI parity:
     let repo_root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
     let card_html = std::fs::read_to_string(repo_root.join("site/card.html")).expect("card.html");
     let card_css = std::fs::read_to_string(repo_root.join("site/card.css")).expect("card.css");
+    let studio_data_mjs =
+        std::fs::read_to_string(repo_root.join("site/studio-data.mjs")).expect("studio-data.mjs");
     let studio_mjs =
         std::fs::read_to_string(repo_root.join("site/studio.mjs")).expect("studio.mjs");
+    let catalogs_mjs = std::fs::read_to_string(repo_root.join("site/prism-catalogs.mjs"))
+        .expect("prism-catalogs.mjs");
     let stitch_mjs =
         std::fs::read_to_string(repo_root.join("site/stitch-mesh.mjs")).expect("stitch-mesh.mjs");
     let worker_mjs = std::fs::read_to_string(repo_root.join("site/engine-worker.mjs"))
@@ -2851,6 +2864,11 @@ fn engine_ve_32() {
         contains_hex_color(&card_css),
         None,
         "site/card.css must use 100% W3C DTCG variables with zero raw hex colors"
+    );
+    assert_eq!(
+        contains_hex_color(&studio_data_mjs),
+        None,
+        "site/studio-data.mjs must use 100% W3C DTCG variables with zero raw hex colors"
     );
     assert_eq!(
         contains_hex_color(&studio_mjs),
@@ -2888,27 +2906,36 @@ fn engine_ve_32() {
         );
     }
 
-    for tab_key in ["journeys", "outliner", "create", "physics", "ui", "mesh"] {
+    for role_key in [
+        "dashboard",
+        "code",
+        "design",
+        "audio",
+        "narrative",
+        "director",
+        "gameplay",
+    ] {
         assert!(
-            studio_mjs.contains(&format!("key: \"{tab_key}\"")),
-            "site/studio.mjs missing Workbench tab '{tab_key}'"
+            studio_data_mjs.contains(&format!("roleKey: \"{role_key}\""))
+                && studio_mjs.contains(&format!("key: \"{role_key}\"")),
+            "Verdant Studio missing functional role workspace '{role_key}'"
         );
     }
-    for persona_id in ["kai", "iris", "otto", "wren", "vera", "mira", "sol"] {
+    for organ_slug in ["engine", "studio", "catalogs", "demo", "docs"] {
         assert!(
-            studio_mjs.contains(&format!("id: \"{persona_id}\"")),
-            "site/studio.mjs missing executable stakeholder journey '{persona_id}'"
+            catalogs_mjs.contains(&format!("slug: \"{organ_slug}\"")),
+            "site/prism-catalogs.mjs missing differentiated platform organ '{organ_slug}'"
         );
     }
     for arch_slug in [
-        "citadel-explorer",
-        "architectural-walkthrough",
-        "conservation-chronicle-rpg",
-        "compliant-diegetic-app",
+        "sunspire-regatta",
+        "meridian-observatory",
+        "glasshouse-chronicle",
+        "starfall-bastion",
     ] {
         assert!(
-            studio_mjs.contains(&format!("slug: \"{arch_slug}\"")),
-            "site/studio.mjs missing starter archetype '{arch_slug}'"
+            studio_data_mjs.contains(&format!("slug: \"{arch_slug}\"")),
+            "site/studio-data.mjs missing external starter archetype '{arch_slug}'"
         );
     }
 
@@ -3111,28 +3138,31 @@ fn engine_ve_33() {
     );
 
     // 5. Wasm epoch-split static/dynamic buffers, 10k hardware instancing, & CLI `stress-benchmark`:
-    assert_eq!(verdant_wasm::verdant_wasm_init(7), 1);
-    let ep0 = verdant_wasm::verdant_wasm_static_epoch();
-    let s_verts = verdant_wasm::verdant_wasm_static_vert_count();
-    let d_verts = verdant_wasm::verdant_wasm_dyn_vert_count();
-    assert!(ep0 >= 1 && s_verts > 1_000 && d_verts > 20);
-    assert_eq!(
-        verdant_wasm::verdant_wasm_step_lawful(16_000, 800, 0, 0, 1_000, 0),
-        1
-    );
-    verdant_wasm::verdant_wasm_scene_rebuild_buffers(0.1);
-    let ep1 = verdant_wasm::verdant_wasm_static_epoch();
-    assert_eq!(
-        ep0, ep1,
-        "static_epoch must remain unchanged across dynamic character/physics frames (0B static VBO re-upload)"
-    );
-    let inst_tris = verdant_wasm::verdant_wasm_configure_instanced_workload(10_000);
-    assert_eq!(verdant_wasm::verdant_wasm_inst_count(), 10_000);
-    assert_eq!(inst_tris, 80_000);
-    assert_eq!(
-        verdant_wasm::verdant_wasm_configure_instanced_workload(0),
-        0
-    );
+    {
+        let _abi_guard = wasm_abi_lock();
+        assert_eq!(verdant_wasm::verdant_wasm_init(7), 1);
+        let ep0 = verdant_wasm::verdant_wasm_static_epoch();
+        let s_verts = verdant_wasm::verdant_wasm_static_vert_count();
+        let d_verts = verdant_wasm::verdant_wasm_dyn_vert_count();
+        assert!(ep0 >= 1 && s_verts > 1_000 && d_verts > 20);
+        assert_eq!(
+            verdant_wasm::verdant_wasm_step_lawful(16_000, 800, 0, 0, 1_000, 0),
+            1
+        );
+        verdant_wasm::verdant_wasm_scene_rebuild_buffers(0.1);
+        let ep1 = verdant_wasm::verdant_wasm_static_epoch();
+        assert_eq!(
+            ep0, ep1,
+            "static_epoch must remain unchanged across dynamic character/physics frames (0B static VBO re-upload)"
+        );
+        let inst_tris = verdant_wasm::verdant_wasm_configure_instanced_workload(10_000);
+        assert_eq!(verdant_wasm::verdant_wasm_inst_count(), 10_000);
+        assert_eq!(inst_tris, 80_000);
+        assert_eq!(
+            verdant_wasm::verdant_wasm_configure_instanced_workload(0),
+            0
+        );
+    }
 
     let cli_out = verdant_cli::run_cli(&["stress-benchmark".to_string(), "10000".to_string()])
         .expect("verdant stress-benchmark 10000");
@@ -3431,8 +3461,11 @@ fn engine_ve_34() {
     let renderer_mjs = std::fs::read_to_string(repo_root.join("site/scene-renderer.mjs"))
         .expect("site/scene-renderer.mjs");
     assert!(renderer_mjs.contains("fenceSync"));
-    assert!(verdant_wasm::verdant_wasm_init(7) == 1);
-    assert!(verdant_wasm::verdant_wasm_aqm_benchmark_aux(16_384) > 40);
+    {
+        let _abi_guard = wasm_abi_lock();
+        assert!(verdant_wasm::verdant_wasm_init(7) == 1);
+        assert!(verdant_wasm::verdant_wasm_aqm_benchmark_aux(16_384) > 40);
+    }
 }
 
 /// `VE-35`: Flat CSR software tile rasterizer, 512-body spatial broadphase, multi-primitive GLB
@@ -3626,9 +3659,12 @@ fn engine_ve_35() {
     assert!(card_mjs.contains("frame-dropped"));
     assert!(card_mjs.contains("15000"));
 
-    assert_eq!(verdant_wasm::verdant_wasm_init(7), 1);
-    let aux_len = verdant_wasm::verdant_wasm_stability_audit_aux(512);
-    assert!(aux_len > 40);
+    {
+        let _abi_guard = wasm_abi_lock();
+        assert_eq!(verdant_wasm::verdant_wasm_init(7), 1);
+        let aux_len = verdant_wasm::verdant_wasm_stability_audit_aux(512);
+        assert!(aux_len > 40);
+    }
 }
 
 /// `VE-36`: Exclusive post-boot `UORC` wire unification across `WorldSnapshot::encode_uorc`,
@@ -3769,15 +3805,18 @@ fn engine_ve_36() {
     let glb_uorc = transcode_glb_to_progressive_uorc(&glb, 7).expect("transcode glb to uorc");
     assert!(is_uorc_archive(&glb_uorc));
 
-    assert_eq!(verdant_wasm::verdant_wasm_init(7), 1);
-    let wasm_snap_len = verdant_wasm::verdant_wasm_snapshot_encode();
-    assert!(wasm_snap_len > 36 && (wasm_snap_len as usize) < raw_vdnt.len() / 2);
-    assert_eq!(verdant_wasm::verdant_wasm_io_get_byte(0), u32::from(b'U'));
-    assert_eq!(verdant_wasm::verdant_wasm_io_get_byte(1), u32::from(b'O'));
-    assert_eq!(verdant_wasm::verdant_wasm_io_get_byte(2), u32::from(b'R'));
-    assert_eq!(verdant_wasm::verdant_wasm_io_get_byte(3), u32::from(b'C'));
-    assert_eq!(verdant_wasm::verdant_wasm_snapshot_decode_and_restore(), 1);
-    assert!(verdant_wasm::verdant_wasm_uorc_exclusive_audit_aux() > 40);
+    {
+        let _abi_guard = wasm_abi_lock();
+        assert_eq!(verdant_wasm::verdant_wasm_init(7), 1);
+        let wasm_snap_len = verdant_wasm::verdant_wasm_snapshot_encode();
+        assert!(wasm_snap_len > 36 && (wasm_snap_len as usize) < raw_vdnt.len() / 2);
+        assert_eq!(verdant_wasm::verdant_wasm_io_get_byte(0), u32::from(b'U'));
+        assert_eq!(verdant_wasm::verdant_wasm_io_get_byte(1), u32::from(b'O'));
+        assert_eq!(verdant_wasm::verdant_wasm_io_get_byte(2), u32::from(b'R'));
+        assert_eq!(verdant_wasm::verdant_wasm_io_get_byte(3), u32::from(b'C'));
+        assert_eq!(verdant_wasm::verdant_wasm_snapshot_decode_and_restore(), 1);
+        assert!(verdant_wasm::verdant_wasm_uorc_exclusive_audit_aux() > 40);
+    }
 
     let repo_root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
     let studio_mjs =
