@@ -22,16 +22,20 @@ function camera(x){
   assert.equal(h.verdant_wasm_camera_set_pose_intent(0,0,6000,1000),1);
   return h.verdant_wasm_camera_eye_z();
 }
+assert.equal(camera(0),6);
 const glb=wall();
 h.verdant_wasm_io_resize(glb.length);
 new Uint8Array(h.memory.buffer,h.verdant_wasm_io_ptr(),glb.length).set(glb);
 assert.equal(h.verdant_wasm_glb_import_io(),4);
-const solid=camera(0), fluid=camera(20), gap=camera(10);
+const solid=h.verdant_wasm_camera_eye_z();
+assert.equal(camera(0),solid);
+const fluid=camera(20), gap=camera(10);
 assert.ok(solid>0 && solid<2,`solid wall at z=2, eye reached ${solid}`);
 assert.equal(fluid,6);
 assert.equal(gap,6);
 assert.equal(h.verdant_wasm_set_lod_rank(1),1);
 assert.equal(camera(0),solid);
 h.verdant_wasm_clear_imported_glb();
+assert.equal(h.verdant_wasm_camera_obstructed(),0);
 assert.equal(camera(0),6);
 console.log(JSON.stringify({solid,fluid,gap,afterClear:camera(0)}));

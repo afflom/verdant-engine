@@ -1463,6 +1463,7 @@ impl WasmRuntimeBridge {
         }
         self.world = restored;
         self.custom_glb_scene = None;
+        let _ = self.solve_active_camera(0.0);
         self.static_dirty = true;
         let _ = self.rebuild_scene_buffers(0.0);
         Ok(())
@@ -1524,6 +1525,7 @@ impl WasmRuntimeBridge {
         }
         self.world = restored;
         self.custom_glb_scene = None;
+        let _ = self.solve_active_camera(0.0);
         self.static_dirty = true;
         let _ = self.rebuild_scene_buffers(0.0);
         Ok(())
@@ -1576,6 +1578,7 @@ impl WasmRuntimeBridge {
         }
         self.world = restored;
         self.custom_glb_scene = None;
+        let _ = self.solve_active_camera(0.0);
         self.static_dirty = true;
         let _ = self.rebuild_scene_buffers(0.0);
         self.io_buffer = snap;
@@ -3116,6 +3119,7 @@ pub extern "C" fn verdant_wasm_glb_import_io() -> u32 {
     bridge.bvh = imported.scene.build_bvh();
     bridge.custom_glb_scene = Some((imported.scene, imported.meshes, imported.materials));
     bridge.static_dirty = true;
+    let _ = bridge.solve_active_camera(0.0);
     let tris = bridge.rebuild_scene_buffers(0.0).unwrap_or(0);
     if let Ok(uorc_stream) = transcode_glb_to_progressive_uorc(&bridge.io_buffer, bridge.seed_val) {
         bridge.aux_buffer = uorc_stream;
@@ -3170,6 +3174,7 @@ pub extern "C" fn verdant_wasm_clear_imported_glb() -> u32 {
     bridge.custom_glb_scene = None;
     bridge.static_dirty = true;
     bridge.bvh = bridge.world.scene.build_bvh();
+    let _ = bridge.solve_active_camera(0.0);
     bridge.rebuild_scene_buffers(0.0).unwrap_or(0) as u32
 }
 
