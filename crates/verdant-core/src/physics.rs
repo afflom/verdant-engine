@@ -589,6 +589,84 @@ fn resolve_sphere_pair(
     true
 }
 
+/// First inward crossing under relative linear motion during this step.
+fn sphere_pair_toi(offset: Vec3, travel: Vec3, radius: f64) -> Option<f64> {
+    let approach = -offset.dot(travel);
+    if approach <= 0.0 {
+        return None;
+    }
+    let separation = offset.length_squared() - radius * radius;
+    if separation <= 0.0 {
+        return Some(0.0);
+    }
+    let discriminant = approach * approach - travel.length_squared() * separation;
+    if discriminant <= 0.0 {
+        return None;
+    }
+    let toi = separation / (approach + discriminant.sqrt());
+    (toi <= 1.0).then_some(toi)
+}
+
+// Proposed endpoints include world contacts and joint corrections. Stop each
+// colliding pair at first contact and retest remaining travel against them.
+// At least one moving body stops per event, including simultaneous contacts.
+fn constrain_sphere_paths(bodies: &mut [RigidBody], positions: &mut [Vec3]) {
+    if bodies.len() < 1 + 1 {
+        return;
+    }
+    let mut travel: Vec<_> = bodies
+        .iter()
+        .zip(positions.iter())
+        .map(|(body, start)| body.position - *start)
+        .collect();
+    let mut order: Vec<_> = (0..bodies.len()).collect();
+    loop {
+        let xmin = |i: usize| positions[i].x + travel[i].x.min(0.0) - bodies[i].radius_meters;
+        order.sort_unstable_by(|&a, &b| xmin(a).total_cmp(&xmin(b)).then(a.cmp(&b)));
+        let mut first: Option<(f64, usize, usize)> = None;
+        for (k, &a) in order.iter().enumerate() {
+            let xmax = positions[a].x + travel[a].x.max(0.0) + bodies[a].radius_meters;
+            for &b in &order[k + 1..] {
+                if xmin(b) > xmax {
+                    break;
+                }
+                if let Some(t) = sphere_pair_toi(
+                    positions[b] - positions[a],
+                    travel[b] - travel[a],
+                    bodies[a].radius_meters + bodies[b].radius_meters,
+                ) {
+                    if first.is_none_or(|(best, _, _)| t < best) {
+                        first = Some((t, a, b));
+                    }
+                }
+            }
+        }
+        let Some((t, a, b)) = first else {
+            break;
+        };
+        for (pos, delta) in positions.iter_mut().zip(&mut travel) {
+            *pos = *pos + delta.scale(t);
+            *delta = delta.scale(1.0 - t);
+        }
+        travel[a] = Vec3::ZERO;
+        travel[b] = Vec3::ZERO;
+        let normal = (positions[b] - positions[a]).normalized();
+        let speed = (bodies[b].velocity - bodies[a].velocity).dot(normal);
+        if speed < 0.0 {
+            let wa = 1.0 / bodies[a].mass_kg;
+            let wb = 1.0 / bodies[b].mass_kg;
+            let restitution =
+                ((bodies[a].restitution + bodies[b].restitution) * half_f64()).clamp(0.0, 1.0);
+            let j = -(1.0 + restitution) * speed / (wa + wb);
+            bodies[a].velocity = bodies[a].velocity - normal.scale(j * wa);
+            bodies[b].velocity = bodies[b].velocity + normal.scale(j * wb);
+        }
+    }
+    for ((body, pos), delta) in bodies.iter_mut().zip(positions).zip(travel) {
+        body.position = *pos + delta;
+    }
+}
+
 impl PhysicsWorld {
     /// Creates a new deterministic physics world from `config`.
     #[must_use]
@@ -1093,6 +1171,7 @@ impl PhysicsWorld {
                 }
             }
         }
+        constrain_sphere_paths(&mut self.bodies, &mut prev_bodies);
         prev_bodies.clear();
         self.prev_positions_scratch = prev_bodies;
 
@@ -1187,25 +1266,12 @@ fn sweep_capsule_stack(
     let upper_y = (eye_height - radius * half_f64()).max(radius);
     let upper_center = Vec3::new(foot.x, foot.y + upper_y, foot.z);
 
-    let hit_lo = bvh
-        .sweep_sphere(lower_center, radius, delta)
-        .map(|(_, h)| h);
-    let hit_hi = bvh
-        .sweep_sphere(upper_center, radius, delta)
-        .map(|(_, h)| h);
-
-    match (hit_lo, hit_hi) {
-        (Some(lo), Some(hi)) => {
-            if lo.toi <= hi.toi {
-                Some((lo, true))
-            } else {
-                Some((hi, false))
-            }
-        }
-        (Some(lo), None) => Some((lo, true)),
-        (None, Some(hi)) => Some((hi, false)),
-        (None, None) => None,
-    }
+    let (_, hit) = bvh
+        .sweep_capsule_counted(lower_center, upper_center - lower_center, radius, delta)
+        .0?;
+    let lower_at_contact = lower_center + delta.scale(hit.toi);
+    let is_lower = hit.contact_point.y <= lower_at_contact.y + geometric_epsilon();
+    Some((hit, is_lower))
 }
 
 fn depenetrate_capsule_stack(

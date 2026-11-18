@@ -4625,12 +4625,22 @@ record = "Features::featureGltfAndWgsl"
 axis = "meant"
 
 [[closed]]
+kappa = "18c4f1e5a57d55abfc13b09f806a5d8ac514efa81db7b0ad897cbec53e720f5e"
+record = "Features::featureLawfulHdCharactersAndUniverses"
+axis = "derived"
+
+[[closed]]
 kappa = "364fd4928ed2e6d5b2185648530bd04257f8a5b96f113519869a47d9b4f93b40"
 record = "Features::featureLawfulHdCharactersAndUniverses"
 axis = "derived"
 
 [[closed]]
 kappa = "2acad8052339976613561ffa8a161439dbba682920e143ca7bab5e0586b98e4b"
+record = "Features::featureLawfulHdCharactersAndUniverses"
+axis = "meant"
+
+[[closed]]
+kappa = "6e733f1955e22eaaf4621b3588b73a440de5947981d4f89637c868b6f4d73296"
 record = "Features::featureLawfulHdCharactersAndUniverses"
 axis = "meant"
 

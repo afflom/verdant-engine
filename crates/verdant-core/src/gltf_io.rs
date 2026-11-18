@@ -436,11 +436,18 @@ fn import_gltf_node_recursive(
         },
         |idx| meshes[idx].bounds(),
     );
-    let role = if node.skin().is_some() {
-        EntityRole::ArticulatedRig
-    } else {
-        EntityRole::StaticArchitecture
-    };
+    // The exporter records EntityRole per node. Unknown third-party extras
+    // keep the physical default, even when multiple nodes instance one mesh.
+    let role = node
+        .extras()
+        .as_ref()
+        .and_then(|raw| serde_json::from_str::<serde_json::Value>(raw.get()).ok())
+        .and_then(|extras| serde_json::from_value::<EntityRole>(extras.get("role")?.clone()).ok())
+        .unwrap_or(if node.skin().is_some() {
+            EntityRole::ArticulatedRig
+        } else {
+            EntityRole::StaticArchitecture
+        });
     let name = node
         .name()
         .map(ToOwned::to_owned)

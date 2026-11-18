@@ -96,7 +96,7 @@ Verdant Engine is a universal commercial 3D browser, WebAssembly, and native gam
 - UI and compliance architects solve responsive 2D panels and diegetic 3D interfaces via tropical and linear semiring constraints with proved 48px touch targets and WCAG 2.2 AA contrast. (Subsystems::uiWidgetCompliant)
 - Browser players experience second-order cybernetic mutual attention and local zero-decode coded_gemm intent reasoning across capability-gated browser APIs. (Subsystems::cyberneticUiAndStitchActive)
 - Multiplayer world citizens inhabit peer-to-peer rollback universes signed by zero-signin WebCrypto Prism IDs and recovered from 2-of-3 SHA-256 Stitch parity fragments. (Subsystems::stitchPairRecoverable)
-- Players and developers inhabit high-definition vaulted worlds and 22-joint IK characters governed by non-penetrating swept physics, wall-guarded cameras, floating-origin cells, and conservation-verified story automatons. (Subsystems::lawfulHdUniversalEngineActive)
+- Players and developers inhabit high-definition vaulted worlds and 22-joint IK characters governed by non-penetrating swept physics, wall-guarded cameras, floating-origin cells, and conservation-verified story automatons. A rendered GLB node retains its physical role and transformed triangle boundary in camera and movement queries. The full player capsule sweeps that boundary; modeled non-solid roles allow passage. (Subsystems::lawfulHdUniversalEngineActive)
 
 ## Product Quality Model (ISO/IEC 25010:2023)
 

@@ -117,7 +117,7 @@ const slmKappaCache = new Map();
 let slmKappaHits = 0;
 
 function simHost() {
-  return uorcSceneActive && uorcWasm ? uorcWasm : wasm;
+  return activeSceneHost();
 }
 
 function activeSceneHost() {
@@ -710,7 +710,7 @@ self.onmessage = async ({ data: msg }) => {
         return;
       }
       const ok = uorcWasm.verdant_wasm_snapshot_decode_and_restore() === 1;
-      customGlbActive = false;
+      if (ok) { customGlbActive = false; uorcSceneActive = true; }
       const lodRank = uorcWasm.verdant_wasm_active_lod_rank() >>> 0;
       if (ok) wasm.verdant_wasm_set_lod_rank(lodRank);
       const sh = simHost();

@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::error::CollisionError;
 use crate::geometry::ProceduralMesh;
-use crate::math::{geometric_epsilon, half_f64, two_f64, Aabb, Ray, Vec3, DIM_SPATIAL};
+use crate::math::{geometric_epsilon, half_f64, two_f64, Aabb, Mat4, Ray, Vec3, DIM_SPATIAL};
 
 /// Convex polyhedral collider defined by a finite cloud of local-space vertices.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -505,20 +505,9 @@ impl FlatBvhNode {
     #[inline]
     #[must_use]
     pub fn pack_bounds(bounds: Aabb) -> ([f32; DIM_SPATIAL], [f32; DIM_SPATIAL]) {
-        let pad = 1.0_f32
-            / ((1_u32 << ((1_u32 + 1_u32 + 1_u32 + 1_u32) * (1_u32 + 1_u32 + 1_u32 + 1_u32)))
-                as f32);
         (
-            [
-                (bounds.min.x as f32) - pad,
-                (bounds.min.y as f32) - pad,
-                (bounds.min.z as f32) - pad,
-            ],
-            [
-                (bounds.max.x as f32) + pad,
-                (bounds.max.y as f32) + pad,
-                (bounds.max.z as f32) + pad,
-            ],
+            bounds.min.to_f32_array().map(f32::next_down),
+            bounds.max.to_f32_array().map(f32::next_up),
         )
     }
 
@@ -753,6 +742,55 @@ fn sweep_sphere_against_triangle(
     best
 }
 
+// Sweeping a segment plus a ball against a face is equivalent to sweeping
+// its lower ball against the triangle extruded by the negative segment.
+fn sweep_capsule_against_triangle(
+    origin: Vec3,
+    axis: Vec3,
+    radius: f64,
+    delta: Vec3,
+    tri: &BlasTriangle,
+) -> Option<SweptSphereHit> {
+    let mut best = sweep_sphere_against_triangle(origin, radius, delta, tri);
+    if axis == Vec3::ZERO {
+        return best;
+    }
+    let mut retain = |hit: SweptSphereHit| {
+        if best.is_none_or(|prev| hit.toi < prev.toi) {
+            best = Some(hit);
+        }
+    };
+    if let Some(hit) = sweep_sphere_against_triangle(origin + axis, radius, delta, tri) {
+        retain(hit);
+    }
+    for (a, b) in [(tri.v0, tri.v1), (tri.v1, tri.v2), (tri.v2, tri.v0)] {
+        let edge = b - a;
+        let cross = edge.cross(axis);
+        if cross.length_squared() <= geometric_epsilon().powi(1 + 1) {
+            continue;
+        }
+        let normal = (Vec3::ZERO - cross).normalized();
+        let across = axis.cross(cross);
+        for (v0, v1, v2) in [(a, b, b - axis), (a, b - axis, a - axis)] {
+            let side = BlasTriangle {
+                v0,
+                v1,
+                v2,
+                face_normal: normal,
+                ..*tri
+            };
+            if let Some(mut hit) = sweep_sphere_against_triangle(origin, radius, delta, &side) {
+                // Lift the witness on the extruded quad back to its source edge.
+                let along =
+                    ((hit.contact_point - a).dot(across) / edge.dot(across)).clamp(0.0, 1.0);
+                hit.contact_point = a + edge.scale(along);
+                retain(hit);
+            }
+        }
+    }
+    best
+}
+
 pub(crate) fn segment_swept_aabb_toi(
     origin: Vec3,
     delta: Vec3,
@@ -982,6 +1020,14 @@ pub(crate) fn build_flat_sah_bvh(
 impl MeshBlas {
     /// Builds a surface-area-ordered binary triangle BVH from `mesh`.
     pub fn from_mesh(mesh: &ProceduralMesh) -> Result<Self, CollisionError> {
+        Self::from_transformed_mesh(mesh, Mat4::IDENTITY)
+    }
+
+    pub(crate) fn from_transformed_mesh(
+        mesh: &ProceduralMesh,
+        transform: Mat4,
+    ) -> Result<Self, CollisionError> {
+        let inverse = transform.inverse_affine();
         if mesh.positions.is_empty() || mesh.indices.len() < DIM_SPATIAL {
             return Err(CollisionError::EmptyOrDegenerateHull {
                 vertex_count: mesh.positions.len(),
@@ -1006,29 +1052,25 @@ impl MeshBlas {
             let to_v = |p: [f32; DIM_SPATIAL]| {
                 Vec3::new(f64::from(p[0]), f64::from(p[1]), f64::from(p[i2]))
             };
-            let v0 = to_v(mesh.positions[ia]);
-            let v1 = to_v(mesh.positions[ib]);
-            let v2 = to_v(mesh.positions[ic]);
+            let v0 = transform.transform_point3(to_v(mesh.positions[ia]));
+            let v1 = transform.transform_point3(to_v(mesh.positions[ib]));
+            let v2 = transform.transform_point3(to_v(mesh.positions[ic]));
             let raw_n = (v1 - v0).cross(v2 - v0);
             if raw_n.length_squared() <= eps * eps {
                 continue;
             }
             let face_normal = raw_n.normalized();
-            let n0 = mesh
-                .normals
-                .get(ia)
-                .copied()
-                .map_or(face_normal, |n| to_v(n).normalized());
-            let n1 = mesh
-                .normals
-                .get(ib)
-                .copied()
-                .map_or(face_normal, |n| to_v(n).normalized());
-            let n2 = mesh
-                .normals
-                .get(ic)
-                .copied()
-                .map_or(face_normal, |n| to_v(n).normalized());
+            let shading_normal = |index: usize| {
+                let Some((normal, inv)) = mesh.normals.get(index).zip(inverse) else {
+                    return face_normal;
+                };
+                let n = to_v(*normal);
+                let cols = inv.cols;
+                let component =
+                    |c: [f64; crate::math::DIM_HOMOGENEOUS]| n.dot(Vec3::new(c[0], c[1], c[i2]));
+                Vec3::new(component(cols[0]), component(cols[1]), component(cols[i2])).normalized()
+            };
+            let (n0, n1, n2) = (shading_normal(ia), shading_normal(ib), shading_normal(ic));
             let min = Vec3::new(
                 v0.x.min(v1.x).min(v2.x),
                 v0.y.min(v1.y).min(v2.y),
@@ -1231,16 +1273,27 @@ impl MeshBlas {
         radius: f64,
         delta: Vec3,
     ) -> (Option<SweptSphereHit>, usize) {
+        self.sweep_capsule_counted(origin, Vec3::ZERO, radius, delta)
+    }
+
+    pub(crate) fn sweep_capsule_counted(
+        &self,
+        origin: Vec3,
+        axis: Vec3,
+        radius: f64,
+        delta: Vec3,
+    ) -> (Option<SweptSphereHit>, usize) {
         if self.nodes.is_empty() {
             return (None, 0);
         }
         let r = radius.max(0.0);
+        let bound = r + axis.length();
         let mut best: Option<SweptSphereHit> = None;
         let mut visited = 0usize;
         let mut stack = [0_u32; verdant_tensor::FLAT_BVH_STACK_CAP];
         let mut sp = 0usize;
 
-        if segment_swept_aabb_toi(origin, delta, self.nodes[0].bounds(), r).is_some() {
+        if segment_swept_aabb_toi(origin, delta, self.nodes[0].bounds(), bound).is_some() {
             stack[0] = 0;
             sp = 1;
         }
@@ -1251,7 +1304,8 @@ impl MeshBlas {
             let node = &self.nodes[idx];
             visited += 1;
             let max_t = best.map_or(1.0, |h| h.toi);
-            if segment_swept_aabb_toi(origin, delta, node.bounds(), r).is_none_or(|t| t > max_t) {
+            if segment_swept_aabb_toi(origin, delta, node.bounds(), bound).is_none_or(|t| t > max_t)
+            {
                 continue;
             }
 
@@ -1261,12 +1315,12 @@ impl MeshBlas {
                 for &ti_u32 in &self.prim_indices[start..end] {
                     let tri = &self.triangles[ti_u32 as usize];
                     let cur_t = best.map_or(1.0, |h| h.toi);
-                    if segment_swept_aabb_toi(origin, delta, tri.bounds, r)
+                    if segment_swept_aabb_toi(origin, delta, tri.bounds, bound)
                         .is_none_or(|t| t > cur_t)
                     {
                         continue;
                     }
-                    if let Some(hit) = sweep_sphere_against_triangle(origin, r, delta, tri) {
+                    if let Some(hit) = sweep_capsule_against_triangle(origin, axis, r, delta, tri) {
                         if best.is_none_or(|prev| hit.toi < prev.toi) {
                             best = Some(hit);
                         }
@@ -1280,14 +1334,14 @@ impl MeshBlas {
                     origin,
                     delta,
                     self.nodes[left_idx as usize].bounds(),
-                    r,
+                    bound,
                 )
                 .filter(|&t| t <= cur_t);
                 let tr = segment_swept_aabb_toi(
                     origin,
                     delta,
                     self.nodes[right_idx as usize].bounds(),
-                    r,
+                    bound,
                 )
                 .filter(|&t| t <= cur_t);
                 match (tl, tr) {

@@ -1835,6 +1835,13 @@ fn engine_ve_25() {
         Vec3::new(7.0, 0.48, -1.0),
     );
 
+    // A thin rail in a separate lane intersects only the middle of an upright capsule.
+    append_test_box_to_mesh(
+        &mut doorway,
+        Vec3::new(9.0, 0.8, -0.05),
+        Vec3::new(11.0, 0.9, 0.05),
+    );
+
     doorway.validate().expect("valid doorway mesh");
     wall_slab.validate().expect("valid wall slab");
     stairs.validate().expect("valid stairs mesh");
@@ -1892,6 +1899,19 @@ fn engine_ve_25() {
     let bvh = TwoLevelBvh::build_solid(&scene, &meshes).expect("TwoLevelBvh built");
     assert_eq!(bvh.instance_count(), 4);
 
+    let lower = Vec3::new(10.0, 0.2, 3.0);
+    let axis = Vec3::new(0.0, 1.4, 0.0);
+    let crossing = Vec3::new(0.0, 0.0, -6.0);
+    assert!(bvh.sweep_sphere(lower, 0.2, crossing).is_none());
+    assert!(bvh.sweep_sphere(lower + axis, 0.2, crossing).is_none());
+    let (rail, hit) = bvh
+        .sweep_capsule_counted(lower, axis, 0.2, crossing)
+        .0
+        .expect("side of capsule hits rail");
+    assert_eq!(rail, e_door);
+    assert!((hit.toi - (3.0 - 0.25) / 6.0).abs() < 1.0e-6);
+    assert!((0.79..0.91).contains(&hit.contact_point.y));
+
     // 1. Walk straight through the hollow doorway opening (`X = 0`, `Z: +2.0 -> -2.0`):
     let mut cfg = PhysicsWorldConfig::default();
     cfg.terrain_relief.basin_depth_meters = 0.0;
@@ -1901,6 +1921,18 @@ fn engine_ve_25() {
     cfg.environment.water_level_meters = -10.0;
 
     let mut phys = PhysicsWorld::new(cfg);
+    // Disjoint endpoints across the step still collide between the endpoints.
+    for (x, vx) in [(-0.3, 16.0), (0.3, -16.0)] {
+        let mut body =
+            verdant_core::physics::RigidBody::new("probe", Vec3::new(x, 20.0, 0.0), 1.0, 0.1, 0.0)
+                .unwrap();
+        body.velocity.x = vx;
+        phys.bodies.push(body);
+    }
+    phys.step_lawful(1.0 / 30.0, CharacterMoveIntent::default(), &bvh)
+        .unwrap();
+    assert!(phys.bodies[1].position.x - phys.bodies[0].position.x >= 0.2 - 1.0e-9);
+    phys.bodies.clear();
     phys.player_capsule = Some(CapsuleController::new(Vec3::new(0.0, 0.0, 2.0)));
     for _ in 0..40 {
         let rep = phys
