@@ -1038,9 +1038,12 @@ pub fn pack_world_meshes_to_buffers_opts(
         }
     }
 
+    #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-wasm-decode"))]
     if build_software_tiles {
         out.ensure_tile_triangles_built();
     }
+    #[cfg(all(target_arch = "wasm32", not(feature = "uorc-wasm-decode")))]
+    let _ = build_software_tiles;
     Ok(out)
 }
 

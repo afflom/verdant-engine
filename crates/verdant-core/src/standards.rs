@@ -23,7 +23,7 @@ use crate::math::{
     four_u32, half_f64, pow10_u64, three_u32, two_u32, Quat, Vec3, DIM_HOMOGENEOUS, DIM_SPATIAL,
 };
 use crate::narrative::ConservationLedger;
-use crate::render::HdPbrDescriptor;
+use crate::render::{canonical_pbr_material_library, HdPbrDescriptor};
 use crate::streaming::{PhysicalEnvironment, TerrainReliefParams};
 
 const EMBEDDED_AUTHORITIES_TOML: &str = include_str!("../../../model/authorities.toml");
@@ -1786,18 +1786,40 @@ impl CatalogBundleRegistry {
             mean_absorption_coeff: 1.0 / four_f,
         };
 
-        let hd_materials: Vec<HdPbrDescriptor> = self
-            .khronos_hd
-            .materials
-            .iter()
-            .map(CatalogHdMaterial::to_hd_descriptor)
+        let base_canon = canonical_pbr_material_library();
+        let base_offset = base_canon.len();
+        let mut hd_materials: Vec<HdPbrDescriptor> = base_canon
+            .into_iter()
+            .enumerate()
+            .map(|(idx, m)| HdPbrDescriptor {
+                id: format!("MAT-CANONICAL-{idx}"),
+                name: m.name,
+                base_color_factor: m.base_color_factor,
+                metallic_factor: m.metallic_factor,
+                roughness_factor: m.roughness_factor,
+                emissive_factor: m.emissive_factor,
+                emissive_strength: 1.0,
+                ior: m.ior,
+                specular_factor: half_f64() as f32,
+                transmission_factor: if m.base_color_factor[DIM_SPATIAL] < 1.0 {
+                    half_f64() as f32
+                } else {
+                    0.0
+                },
+                clearcoat_factor: 0.0,
+                clearcoat_roughness_factor: 0.0,
+                double_sided: m.double_sided,
+            })
             .collect();
+        for cat_mat in &self.khronos_hd.materials {
+            hd_materials.push(cat_mat.to_hd_descriptor());
+        }
         let mat_index_by_id: BTreeMap<&str, usize> = self
             .khronos_hd
             .materials
             .iter()
             .enumerate()
-            .map(|(idx, m)| (m.id.as_str(), idx))
+            .map(|(idx, m)| (m.id.as_str(), base_offset + idx))
             .collect();
 
         let mut sector = synthesize_hd_citadel_sector(

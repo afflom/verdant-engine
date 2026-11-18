@@ -52,6 +52,7 @@ pub mod math;
 pub mod narrative;
 pub mod navmesh;
 pub mod network;
+pub mod observer;
 pub mod physics;
 pub use verdant_tensor;
 #[doc(hidden)]

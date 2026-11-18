@@ -88,6 +88,10 @@ export const REQUIRED_HOLO_QUERIES = Object.freeze([
   "scene:aqm",
   "scene:stability",
   "scene:uorc-exclusive",
+  "scene:observer",
+  "scene:stakeholders",
+  "scene:language",
+  "scene:channels",
 ]);
 
 export const REQUIRED_HOLO_REFUSALS = Object.freeze([
@@ -148,6 +152,11 @@ export const REQUIRED_UORC_WASM_EXPORTS = Object.freeze([
   "verdant_wasm_stability_audit_aux",
   "verdant_wasm_uorc_exclusive_audit_aux",
   "verdant_wasm_scene_outliner_aux",
+  "verdant_wasm_load_domain_pack",
+  "verdant_wasm_set_npc_directive",
+  "verdant_wasm_dialogue_turn_io",
+  "verdant_wasm_observe_comm_io",
+  "verdant_wasm_observer_status_aux",
 ]);
 
 export const CANONICAL_ORGAN_SLUGS = Object.freeze([

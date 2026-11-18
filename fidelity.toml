@@ -4450,7 +4450,17 @@ record = "Engine::vectors#43"
 axis = "derived"
 
 [[closed]]
+kappa = "eef4dd126bc4aaa74a0d1f2d3b4cb611106f1a2e3d4f551d4d7af7d9b7f56af6"
+record = "Engine::vectors#43"
+axis = "derived"
+
+[[closed]]
 kappa = "47815dc0a7f5fb3502bb4abe57073b0c47b10901913c10d792957fcc6a9b032a"
+record = "Engine::vectors#43"
+axis = "meant"
+
+[[closed]]
+kappa = "a289275047ce5061a361643821e9244ee86e186897310ffcf47a45f99fee934f"
 record = "Engine::vectors#43"
 axis = "meant"
 
@@ -4470,12 +4480,22 @@ record = "Engine::vectors#44"
 axis = "derived"
 
 [[closed]]
+kappa = "bf348a03ee8ee013e6d1523a41507aa9af96aa3e5e449c183a09be0d7f0691c5"
+record = "Engine::vectors#44"
+axis = "derived"
+
+[[closed]]
 kappa = "d4500e565c8de3eb2eca50710e528f74fb1ea7d552a894d599acff6bcce47cee"
 record = "Engine::vectors#44"
 axis = "derived"
 
 [[closed]]
 kappa = "5eacaedf8e5c4150f858810685db966b90a5daf2bd5d8401fb5930585aea9e8a"
+record = "Engine::vectors#44"
+axis = "meant"
+
+[[closed]]
+kappa = "a6aeb48323bd88343cb75299c18c8991b3a561b5d0bc1c35e6e3ce28022fbefb"
 record = "Engine::vectors#44"
 axis = "meant"
 
@@ -4490,8 +4510,58 @@ record = "Engine::vectors#45"
 axis = "derived"
 
 [[closed]]
+kappa = "ba0e4bf8ca2c0e71b23c200446288935dbcebccc02c2de38de63f0f0e01df794"
+record = "Engine::vectors#45"
+axis = "derived"
+
+[[closed]]
 kappa = "31240eec6eeff5cf5fae30f83b2f31ac010872af93ad02894cf6f44f0507f614"
 record = "Engine::vectors#45"
+axis = "meant"
+
+[[closed]]
+kappa = "36811aab3880dba25d0052f1242c1cd390ccb0082da60a3efbb82e962ac86124"
+record = "Engine::vectors#45"
+axis = "meant"
+
+[[closed]]
+kappa = "4cbfe738eb6337330d420fc90d10654ad3de722c25e17dc7e4ad2a28a51c90c1"
+record = "Engine::vectors#46"
+axis = "derived"
+
+[[closed]]
+kappa = "c5fe93620540ae4e12ebbdbdc0c58574bb3d9349d2535caf466cb78311eccdeb"
+record = "Engine::vectors#46"
+axis = "meant"
+
+[[closed]]
+kappa = "503bb72a5999c6712939589c64372598a12918496abfb8bdb5d92a07ec8418e8"
+record = "Engine::vectors#47"
+axis = "derived"
+
+[[closed]]
+kappa = "316723a3337724613d63b35016aeef2124c00fdb100058a87383e14c375867a5"
+record = "Engine::vectors#47"
+axis = "meant"
+
+[[closed]]
+kappa = "001907bba3fa8c495291fbf0d577a81b69004a74964459c4027ae27e4e6d70bd"
+record = "Engine::vectors#48"
+axis = "derived"
+
+[[closed]]
+kappa = "85f3f14f951e674724a3cb887f32f297e9c65ecad711476bb7d65c2569b89019"
+record = "Engine::vectors#48"
+axis = "meant"
+
+[[closed]]
+kappa = "0bf2f8aed5fe84bd4348d9de2b3fd3671ad3e7e99a109c9b541c53f3fc7c9a65"
+record = "Engine::vectors#49"
+axis = "derived"
+
+[[closed]]
+kappa = "958cb960ced01e63c7590885f16d46c4b9ec93ecc2492b028ec828504bb31308"
+record = "Engine::vectors#49"
 axis = "meant"
 
 [[closed]]
@@ -4832,6 +4902,186 @@ axis = "derived"
 [[closed]]
 kappa = "2675ce9e83968aa1cd8738c92eeccf90965ca5fc127947bc66acce98d63b1fa3"
 record = "Features::journeyUiComplianceArchitect"
+axis = "meant"
+
+[[closed]]
+kappa = "720c6bc6e8574194bde172a72c90c6ffdcba7e9dcc1077c070633327204e0795"
+record = "Observer::channelAgentToAgent"
+axis = "derived"
+
+[[closed]]
+kappa = "091de48cb03cba0c97132f3d6df5f5b5f50afd5bd3340819f26d52784f1feab1"
+record = "Observer::channelAgentToAgent"
+axis = "meant"
+
+[[closed]]
+kappa = "98b9893d913cd083aec0d9ddd9e70db38e332712afb5803c683e1601e3c0e053"
+record = "Observer::channelAgentToPlayer"
+axis = "derived"
+
+[[closed]]
+kappa = "0d250eae0412fe108c8f6d2013cf9cfc3bba8f91c6b875aef6c5d064c9733b3f"
+record = "Observer::channelAgentToPlayer"
+axis = "meant"
+
+[[closed]]
+kappa = "d9dc419fa1624296c77ae941fbd0ee4d95e9df5e426c84a006f5ceaeab16d169"
+record = "Observer::channelOrganToOrgan"
+axis = "derived"
+
+[[closed]]
+kappa = "593b0672b54b4d9de87e1bfc0084b0a66c9b2ea642975817de47ce393fb898ab"
+record = "Observer::channelOrganToOrgan"
+axis = "meant"
+
+[[closed]]
+kappa = "6c8443856fc95351031876eaab0cbcfa7a9a93c5e54c4ac6096da836113b4c99"
+record = "Observer::channelPlayerToAgent"
+axis = "derived"
+
+[[closed]]
+kappa = "b609bd4b22730072f003fbd69c517a631eb1e927db20d39657a5b239e750c419"
+record = "Observer::channelPlayerToAgent"
+axis = "meant"
+
+[[closed]]
+kappa = "c8c4952a2632678b1b1efd2d5b13b469d6ec1c46e937a111a37f8b5322ffa4d8"
+record = "Observer::channelPlayerToPlayer"
+axis = "derived"
+
+[[closed]]
+kappa = "a16579a4d4ec44a099e1e9df128d9ed9d313ba388c4852337180090a6bc9cd5d"
+record = "Observer::channelPlayerToPlayer"
+axis = "meant"
+
+[[closed]]
+kappa = "cc61dbfbb1940ebebd589fa2704b6617c13ef71896ccb9b178faa47787f484fd"
+record = "Observer::observerOrganCatalogs"
+axis = "derived"
+
+[[closed]]
+kappa = "9f10ab333333ac22e1ebbc54993a77544803051a63e149c37f69168582d57790"
+record = "Observer::observerOrganCatalogs"
+axis = "meant"
+
+[[closed]]
+kappa = "5fde18027fba291711be6f11192d41d7c54ebc0aee8076a1be7a652b17d554da"
+record = "Observer::observerOrganDemo"
+axis = "derived"
+
+[[closed]]
+kappa = "e7c265cc930f83de3ec86f7171888e9c09ff5c0cf07807e08f7aa9740d0185d0"
+record = "Observer::observerOrganDemo"
+axis = "meant"
+
+[[closed]]
+kappa = "1a76b544b6ac34d94efead776d30347fc4d93263c00f6199d7ce200ea717e80c"
+record = "Observer::observerOrganEngine"
+axis = "derived"
+
+[[closed]]
+kappa = "39d26d25f20823fcdf3068a0692ae5c618d7cfe0089c9dbf83224ad5779ce05a"
+record = "Observer::observerOrganEngine"
+axis = "meant"
+
+[[closed]]
+kappa = "26f9422ec201f1c0307345ae13fecfa9bb06a6fe19d44ee72de508f157512d99"
+record = "Observer::observerOrganReference"
+axis = "derived"
+
+[[closed]]
+kappa = "306174c6445a1dd6c26c78c337b8af399abcebda0b83d4b5f67e7c83e09e142e"
+record = "Observer::observerOrganReference"
+axis = "meant"
+
+[[closed]]
+kappa = "39240dae7cefbe654b4f5511e4681be27b63d9c7294869b8a14d37bbdbf71fc6"
+record = "Observer::observerOrganStudio"
+axis = "derived"
+
+[[closed]]
+kappa = "a1618ddaae53fe75243d95f97b16b7c85cfec8d94681ba511f69927d261f03b9"
+record = "Observer::observerOrganStudio"
+axis = "meant"
+
+[[closed]]
+kappa = "96fdebdca658821218de7716d92c4d6935524b08cf61f504ae6eae39f4edd588"
+record = "Observer::observerRootHolon"
+axis = "derived"
+
+[[closed]]
+kappa = "ce5f5162829dd7ab9cca3df3e94e8dba487237333b5971784d1cbd301ec0320a"
+record = "Observer::observerRootHolon"
+axis = "meant"
+
+[[closed]]
+kappa = "f73a07449a70253dd3372187f85bfa6c76dfe5210acf53c938f9e57638522592"
+record = "Observer::stakeholderModelBrowserPlayer"
+axis = "derived"
+
+[[closed]]
+kappa = "8adb747d25f6f6133239ab8651c1d838774e1d890051107093239f442a958877"
+record = "Observer::stakeholderModelBrowserPlayer"
+axis = "meant"
+
+[[closed]]
+kappa = "023e6d5606553642783fa983471d7609f27a045232ec3de01665b0d7105d5b3a"
+record = "Observer::stakeholderModelGameDeveloper"
+axis = "derived"
+
+[[closed]]
+kappa = "3126e85a93f60c0e301a02ac43661cbc54370216f9604695c2dc26e84789d7d8"
+record = "Observer::stakeholderModelGameDeveloper"
+axis = "meant"
+
+[[closed]]
+kappa = "e5754ec17b19aef9f4d33975568837546b1a69a94121e50e5f9e3059b300224c"
+record = "Observer::stakeholderModelMultiplayerCitizen"
+axis = "derived"
+
+[[closed]]
+kappa = "434d1d486b3fdd086672199636720b04af0e4e8b07147c67fe99577482adeaa3"
+record = "Observer::stakeholderModelMultiplayerCitizen"
+axis = "meant"
+
+[[closed]]
+kappa = "9fde5c51ea1fdbb24d613f3409a69d5c804990d43bc73d8ba6819b831ee6adbf"
+record = "Observer::stakeholderModelSecurityAuditor"
+axis = "derived"
+
+[[closed]]
+kappa = "2a89731df38c7639098b145c2932824f0b68aae6a6dd10742e8c35344b3a3833"
+record = "Observer::stakeholderModelSecurityAuditor"
+axis = "meant"
+
+[[closed]]
+kappa = "7da21bad40350a40764651e19be5dde39b703d39de87a31261ea42de6a84eda4"
+record = "Observer::stakeholderModelSystemsEngineer"
+axis = "derived"
+
+[[closed]]
+kappa = "d957a3e0156ca695d64f09633d7a9e1c869b2e3da525272f1381acb88fd7f868"
+record = "Observer::stakeholderModelSystemsEngineer"
+axis = "meant"
+
+[[closed]]
+kappa = "17a6d1dbffc4c036946296eb157d2653a38593d0c88ce332c37ba7ce2e58f1dd"
+record = "Observer::stakeholderModelTechnicalArtist"
+axis = "derived"
+
+[[closed]]
+kappa = "e0f114c98959ac1aeb9aac9f134902dc53e6b2b3ea6507e1a7ef4b7115d93204"
+record = "Observer::stakeholderModelTechnicalArtist"
+axis = "meant"
+
+[[closed]]
+kappa = "387d650067cc8cfac886837866447551e6ca7ec42bf01632f0b7841de210746f"
+record = "Observer::stakeholderModelUiComplianceArchitect"
+axis = "derived"
+
+[[closed]]
+kappa = "31108d0f60aeb28f9186761465c934bb751a05d57b096a6c3bae82a8573928e6"
+record = "Observer::stakeholderModelUiComplianceArchitect"
 axis = "meant"
 
 [[closed]]

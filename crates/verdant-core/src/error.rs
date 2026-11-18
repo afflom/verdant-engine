@@ -876,3 +876,77 @@ impl fmt::Display for OracleValidationError {
 }
 
 impl std::error::Error for OracleValidationError {}
+
+/// Refusal returned when the Observer Prism holon, stakeholder model registry, arbitrary Prism
+/// model admission gate, native ISO 24617-2 language engine, or observed communication bus rejects an operation.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum ObserverModelError {
+    /// Arbitrary Prism model envelope failed strong `kappa` identity, Schema.org, `FK-07`, or Verdant-only runtime checks.
+    InvalidPrismModelEnvelope {
+        /// Model identifier.
+        model_id: String,
+        /// Diagnostic reason.
+        detail: String,
+    },
+    /// Dialogue turn attempted an ungrounded factual assertion without evidence or world mutation on a read-only act.
+    EpistemicHallucinationRefused {
+        /// Character or agent identifier.
+        agent_id: String,
+        /// Diagnostic reason.
+        detail: String,
+    },
+    /// Observed communication message failed `Prism id` authentication, channel bounds, or SOSA/PROV-O validation.
+    CommunicationEnvelopeRejected {
+        /// Channel identifier.
+        channel: String,
+        /// Diagnostic reason.
+        detail: String,
+    },
+    /// Requested cataloged domain pack or NPC character profile does not exist.
+    UnknownDomainOrCharacter {
+        /// Requested identifier.
+        identifier: String,
+    },
+    /// Requested NPC directive index is out of bounds for the character's cataloged directives.
+    DirectiveOutOfBounds {
+        /// Character identifier.
+        character_id: String,
+        /// Requested directive slot.
+        directive_index: usize,
+        /// Available directive count.
+        directive_count: usize,
+    },
+}
+
+impl fmt::Display for ObserverModelError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::InvalidPrismModelEnvelope { model_id, detail } => write!(
+                f,
+                "invalid Prism model envelope `{model_id}`: {detail}"
+            ),
+            Self::EpistemicHallucinationRefused { agent_id, detail } => write!(
+                f,
+                "epistemic safety refusal for `{agent_id}`: {detail}"
+            ),
+            Self::CommunicationEnvelopeRejected { channel, detail } => write!(
+                f,
+                "observed communication rejected on `{channel}`: {detail}"
+            ),
+            Self::UnknownDomainOrCharacter { identifier } => write!(
+                f,
+                "unknown cataloged domain or character `{identifier}`"
+            ),
+            Self::DirectiveOutOfBounds {
+                character_id,
+                directive_index,
+                directive_count,
+            } => write!(
+                f,
+                "directive index {directive_index} out of bounds for `{character_id}` (count {directive_count})"
+            ),
+        }
+    }
+}
+
+impl std::error::Error for ObserverModelError {}

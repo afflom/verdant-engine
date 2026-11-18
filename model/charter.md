@@ -281,3 +281,24 @@ Verdant Engine is a universal commercial 3D browser, WebAssembly, and native gam
 - Usability effectiveness method: acceptance rows of the goal's tasks: each is a test that the task's feature completes.
 - Usability efficiency method: tasks the goal takes, from its journey's steps.
 - Usability satisfaction method: open: no instrument in the model measures it.
+
+## Observer Holon, Stakeholder Prism Models, and Observed Communications
+
+- ObserverRootHolon: Self-observing second-order Prism holon composing its five platform organs, seven stakeholder Prism models, character profiles, and observed communication channels.
+- ObserverOrganEngine: Dedicated WebAssembly and Rust 3D model runtime hosting uor-matmul tensor contractions, UORC streaming, swept collision, and native language reasoning.
+- ObserverOrganStudio: Seven-workspace browser authoring workbench coupling role-specific inspectors, catalog domain switching, and live Observer communication telemetry.
+- ObserverOrganCatalogs: SHA-256-locked registry of Schema.org, W3C SOSA and PROV-O, Khronos glTF 2.0, ISO 24617-2, OMG DMN 1.5, and multi-domain world packs.
+- ObserverOrganDemo: Catalog-instantiated multi-domain showcase worlds featuring possessed 22-joint characters, Sabine acoustics, and conserved item quests.
+- ObserverOrganReference: Executable Diataxis tutorials, how-to guides, architecture explanations, API references, and live cold-boot WebAssembly embeds.
+- StakeholderModelGameDeveloper: Full Prism model of the game developer authoring Rust and WebAssembly 3D worlds, scaffolding cataloged starter domains, and verifying deterministic physics.
+- StakeholderModelTechnicalArtist: Full Prism model of the technical artist curating Khronos glTF 2.0 HD PBR materials, 22-joint humanoid rigs, WebGL2 shaders, and progressive UORC streams.
+- StakeholderModelSystemsEngineer: Full Prism model of the engine systems engineer governing uor-matmul semiring kernels, W5H telos frame budgets, CSR tile rasterization, and zero-constant code.
+- StakeholderModelBrowserPlayer: Full Prism model of the browser player inhabiting possessed characters, conversing with grounded NPCs, and steering mutual-attention world salience.
+- StakeholderModelSecurityAuditor: Full Prism model of the security auditor enforcing OMG DMN 1.5 Verdant-only runtime admission, FK-07 denial-wins grants, and SHA-256 authority locks.
+- StakeholderModelUiComplianceArchitect: Full Prism model of the UI and compliance architect proving tropical max-plus widget layouts, 48px touch targets, W3C DTCG tokens, and WCAG 2.2 AA contrast.
+- StakeholderModelMultiplayerCitizen: Full Prism model of the multiplayer citizen exchanging Prism ID signed peer messages, spatial audio cues, and 2-of-3 Stitch parity world shards.
+- ChannelOrganToOrgan: Observed inter-organ message channel coupling Engine, Studio, Catalogs, Demo, and Reference states under W3C SOSA and PROV-O lineage.
+- ChannelPlayerToPlayer: Prism ID signed peer-to-peer communication channel between human players and citizens synchronized over BroadcastChannel and Stitch rollback journals.
+- ChannelPlayerToAgent: Prism ID signed ISO 24617-2 dialogue channel from a human player to a cataloged NPC or coding agent evaluated natively in Verdant Engine.
+- ChannelAgentToPlayer: Passage-grounded response channel from an NPC or agent to a player returning cited world facts or deterministic Unknown abstention.
+- ChannelAgentToAgent: Observed multi-agent coordination channel between cataloged NPCs steering A-star NavMesh patrols and conserved item handoffs.

@@ -589,6 +589,7 @@ fn resolve_sphere_pair(
     true
 }
 
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-wasm-decode"))]
 /// First inward crossing under relative linear motion during this step.
 fn sphere_pair_toi(offset: Vec3, travel: Vec3, radius: f64) -> Option<f64> {
     let approach = -offset.dot(travel);
@@ -607,6 +608,7 @@ fn sphere_pair_toi(offset: Vec3, travel: Vec3, radius: f64) -> Option<f64> {
     (toi <= 1.0).then_some(toi)
 }
 
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-wasm-decode"))]
 // Proposed endpoints include world contacts and joint corrections. Stop each
 // colliding pair at first contact and retest remaining travel against them.
 // At least one moving body stops per event, including simultaneous contacts.
@@ -1134,46 +1136,60 @@ impl PhysicsWorld {
             });
         }
 
-        let mut prev_bodies = std::mem::take(&mut self.prev_positions_scratch);
-        prev_bodies.clear();
-        prev_bodies.extend(self.bodies.iter().map(|b| b.position));
         let saved_capsule = self.player_capsule.take();
 
-        // Step dynamic rigid bodies, XPBD joints, suspension vehicles, and spline movers uniformly:
-        if let Err(err) = self.step(dt_seconds, Vec3::ZERO) {
-            self.player_capsule = saved_capsule;
+        #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-wasm-decode"))]
+        let skin_m = {
+            let mut prev_bodies = std::mem::take(&mut self.prev_positions_scratch);
             prev_bodies.clear();
-            self.prev_positions_scratch = prev_bodies;
-            return Err(err);
-        }
+            prev_bodies.extend(self.bodies.iter().map(|b| b.position));
 
-        // Sweep dynamic rigid bodies against solid two-level BVH triangles so props never tunnel walls:
-        let skin_m = verdant_tensor::kernel_consts().ccd_skin_margin_meters;
-        for (idx, body) in self.bodies.iter_mut().enumerate() {
-            if let Some(&start_pos) = prev_bodies.get(idx) {
-                let delta = body.position - start_pos;
-                if delta.length_squared() > geometric_epsilon() {
-                    if let Some((_, hit)) =
-                        two_level_bvh.sweep_sphere(start_pos, body.radius_meters, delta)
-                    {
-                        let d_len = delta.length();
-                        let safe_d = (hit.toi * d_len - skin_m).max(0.0);
-                        body.position = start_pos + delta.scale(safe_d / d_len);
-                        let vn = body.velocity.dot(hit.contact_normal);
-                        if vn < 0.0 {
-                            body.velocity = body.velocity
-                                - hit.contact_normal.scale((1.0 + body.restitution) * vn);
-                        }
-                        if hit.contact_normal.y > half_f64() {
-                            body.grounded = true;
+            // Step dynamic rigid bodies, XPBD joints, suspension vehicles, and spline movers uniformly:
+            if let Err(err) = self.step(dt_seconds, Vec3::ZERO) {
+                self.player_capsule = saved_capsule;
+                prev_bodies.clear();
+                self.prev_positions_scratch = prev_bodies;
+                return Err(err);
+            }
+
+            // Sweep dynamic rigid bodies against solid two-level BVH triangles so props never tunnel walls:
+            let skin_m = verdant_tensor::kernel_consts().ccd_skin_margin_meters;
+            for (idx, body) in self.bodies.iter_mut().enumerate() {
+                if let Some(&start_pos) = prev_bodies.get(idx) {
+                    let delta = body.position - start_pos;
+                    if delta.length_squared() > geometric_epsilon() {
+                        if let Some((_, hit)) =
+                            two_level_bvh.sweep_sphere(start_pos, body.radius_meters, delta)
+                        {
+                            let d_len = delta.length();
+                            let safe_d = (hit.toi * d_len - skin_m).max(0.0);
+                            body.position = start_pos + delta.scale(safe_d / d_len);
+                            let vn = body.velocity.dot(hit.contact_normal);
+                            if vn < 0.0 {
+                                body.velocity = body.velocity
+                                    - hit.contact_normal.scale((1.0 + body.restitution) * vn);
+                            }
+                            if hit.contact_normal.y > half_f64() {
+                                body.grounded = true;
+                            }
                         }
                     }
                 }
             }
+            constrain_sphere_paths(&mut self.bodies, &mut prev_bodies);
+            prev_bodies.clear();
+            self.prev_positions_scratch = prev_bodies;
+            skin_m
+        };
+
+        #[cfg(all(target_arch = "wasm32", not(feature = "uorc-wasm-decode")))]
+        {
+            let _ = &self.prev_positions_scratch;
+            if let Some(mover) = &mut self.kinematic_mover {
+                mover.step(dt_seconds);
+            }
+            self.elapsed_seconds += dt_seconds;
         }
-        constrain_sphere_paths(&mut self.bodies, &mut prev_bodies);
-        prev_bodies.clear();
-        self.prev_positions_scratch = prev_bodies;
 
         let Some(mut capsule) = saved_capsule else {
             return Ok(LawfulStepReport {
@@ -1192,26 +1208,29 @@ impl PhysicsWorld {
             })?;
 
         // Mutual non-penetration between capsule and dynamic rigid spheres:
-        let cap_center = Vec3::new(
-            capsule.foot_position.x,
-            capsule.foot_position.y + capsule.radius_meters,
-            capsule.foot_position.z,
-        );
-        for body in &mut self.bodies {
-            let diff = body.position - cap_center;
-            let min_sep = capsule.radius_meters + body.radius_meters + skin_m;
-            let dist = diff.length();
-            if dist < min_sep {
-                let push_dir = if dist > geometric_epsilon() {
-                    diff.scale(1.0 / dist)
-                } else {
-                    Vec3::new(1.0, 0.0, 0.0)
-                };
-                body.position = cap_center + push_dir.scale(min_sep);
-                let vn = body.velocity.dot(push_dir);
-                let cap_vn = capsule.velocity.dot(push_dir);
-                if vn < cap_vn {
-                    body.velocity = body.velocity + push_dir.scale(cap_vn - vn);
+        #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-wasm-decode"))]
+        {
+            let cap_center = Vec3::new(
+                capsule.foot_position.x,
+                capsule.foot_position.y + capsule.radius_meters,
+                capsule.foot_position.z,
+            );
+            for body in &mut self.bodies {
+                let diff = body.position - cap_center;
+                let min_sep = capsule.radius_meters + body.radius_meters + skin_m;
+                let dist = diff.length();
+                if dist < min_sep {
+                    let push_dir = if dist > geometric_epsilon() {
+                        diff.scale(1.0 / dist)
+                    } else {
+                        Vec3::new(1.0, 0.0, 0.0)
+                    };
+                    body.position = cap_center + push_dir.scale(min_sep);
+                    let vn = body.velocity.dot(push_dir);
+                    let cap_vn = capsule.velocity.dot(push_dir);
+                    if vn < cap_vn {
+                        body.velocity = body.velocity + push_dir.scale(cap_vn - vn);
+                    }
                 }
             }
         }

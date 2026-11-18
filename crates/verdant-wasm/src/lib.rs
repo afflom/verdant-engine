@@ -40,12 +40,16 @@ use verdant_core::narrative::{canonical_citadel_chronicle_automaton, StoryAutoma
 use verdant_core::navmesh::NavMesh;
 #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
 use verdant_core::network::{
-    recover_uorc_from_stitch_pair, shard_uorc_to_stitch_fragments, StitchFragment,
+    recover_uorc_from_stitch_pair, shard_uorc_to_stitch_fragments, PrismIdSessionEnvelope,
+    StitchFragment,
 };
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+use verdant_core::observer::{sha256_payload_digest, CommunicationChannelKind, ObserverPrismHolon};
 use verdant_core::physics::{
-    CapsuleController, CharacterMoveIntent, JointKind, KinematicSplineBody, PhysicsWorld,
-    PhysicsWorldConfig, RigidBody, RigidJointConstraint,
+    CapsuleController, CharacterMoveIntent, KinematicSplineBody, PhysicsWorld, PhysicsWorldConfig,
 };
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+use verdant_core::physics::{JointKind, RigidBody, RigidJointConstraint};
 use verdant_core::prism_kernel;
 use verdant_core::render::{
     canonical_pbr_material_library, pack_world_meshes_to_buffers_opts, GpuSurfaceClass,
@@ -60,21 +64,21 @@ use verdant_core::runtime::{
     WorldSnapshot,
 };
 #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+use verdant_core::streaming::terrain_height_with_params;
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
 use verdant_core::streaming::{
     decode_portable_uorc_single_frame, is_uorc_archive, CodedLodFrameBundle, StandardSceneState,
 };
 #[cfg(not(target_arch = "wasm32"))]
 use verdant_core::streaming::{decode_uorc_stream_up_to_lod, pack_progressive_uorc_stream};
-use verdant_core::streaming::{
-    terrain_height_with_params, PhysicalEnvironment, TerrainReliefParams,
-};
+use verdant_core::streaming::{PhysicalEnvironment, TerrainReliefParams};
 #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
 use verdant_core::tensor::{render_triangles_tile_framebuffer_with_scratch, TileRasterScratch};
 #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
 use verdant_core::ui::UiTree;
 #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
-use verdant_core::universe::UniverseCellCoord;
-use verdant_core::universe::{UniverseManager, UniversePosition};
+use verdant_core::universe::UniverseManager;
+use verdant_core::universe::{UniverseCellCoord, UniversePosition};
 
 /// Refusal returned when a browser worker command, LOD rank, or snapshot/UORC envelope is invalid.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -186,7 +190,11 @@ pub struct WasmRuntimeBridge {
     #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
     pub npcs: Vec<ArticulatedCharacter>,
     /// Floating-origin universe manager (`UniversePosition` + `PortalGraph`).
+    #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
     pub universe: UniverseManager,
+    /// Active floating-origin universe cell coordinate on lean cold-boot `wasm32`.
+    #[cfg(all(target_arch = "wasm32", not(feature = "uorc-decoder")))]
+    pub active_cell: UniverseCellCoord,
     /// Conservation-verified Chronicle automaton (`kernel14ConservationAutomaton`).
     #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
     pub story: StoryAutomaton,
@@ -220,6 +228,12 @@ pub struct WasmRuntimeBridge {
     /// Retained skin and animation clip counts from the active user-imported `.glb` bundle.
     #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
     pub imported_glb_skin_clip_counts: (usize, usize),
+    /// Second-order Observer Prism holon hosting organs, stakeholders, catalogs, NPC patrols, and grounded language.
+    #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+    pub observer_holon: ObserverPrismHolon,
+    /// Whether live A* `NavMesh` NPC corridor locomotion is active.
+    #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+    pub npc_patrol_active: bool,
 }
 
 fn pk_u64(res: Result<u64, prism_kernel::ComputeError>) -> u64 {
@@ -411,6 +425,7 @@ impl WasmRuntimeBridge {
                 reason: bridge_reason(e),
             })?;
 
+        #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
         let universe = UniverseManager::canonical_citadel_universe(clean_seed).map_err(|e| {
             WasmBridgeError::InvalidSnapshotEnvelope {
                 byte_len: 0,
@@ -464,7 +479,10 @@ impl WasmRuntimeBridge {
             explorer,
             #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
             npcs,
+            #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
             universe,
+            #[cfg(all(target_arch = "wasm32", not(feature = "uorc-decoder")))]
+            active_cell: UniverseCellCoord::ORIGIN,
             #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
             story,
             static_pos_len: 0,
@@ -485,6 +503,15 @@ impl WasmRuntimeBridge {
             custom_glb_scene: None,
             #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
             imported_glb_skin_clip_counts: (0, 0),
+            #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+            observer_holon: ObserverPrismHolon::new("sunspire-regatta").map_err(|e| {
+                WasmBridgeError::InvalidSnapshotEnvelope {
+                    byte_len: 0,
+                    reason: bridge_reason(e),
+                }
+            })?,
+            #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+            npc_patrol_active: false,
         };
         if let Some(cap) = &mut bridge.physics.player_capsule {
             cap.foot_position = exp_start;
@@ -505,62 +532,66 @@ impl WasmRuntimeBridge {
             platform_deck: None,
             ..Default::default()
         };
-        let two = prism_kernel::sTwo() as f64;
-        let three = prism_kernel::sThree() as f64;
-        let four = pk_f64(prism_kernel::sFour());
-        let five = pk_f64(prism_kernel::sFive());
-        let nine = pk_f64(prism_kernel::sNine());
         let ten = pk_f64(prism_kernel::sTen());
-        let twelve = pk_f64(prism_kernel::sTwelve());
-        let hundred = pk_f64(prism_kernel::sHundred());
         let mut physics = PhysicsWorld::new(cfg);
 
-        if let Ok(buoy) = RigidBody::new(
-            "FluidBuoyBody",
-            Vec3::new(
-                pk_f64(prism_kernel::sFiftyFive()) / ten,
-                two / ten,
-                pk_f64(prism_kernel::sEightyFive()) / ten,
-            ),
-            twelve,
-            (pk_f64(prism_kernel::sForty()) + five) / hundred,
-            pk_f64(prism_kernel::sThirtyFive()) / hundred,
-        ) {
-            physics.bodies.push(buoy);
-        }
+        #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+        {
+            let two = prism_kernel::sTwo() as f64;
+            let three = prism_kernel::sThree() as f64;
+            let four = pk_f64(prism_kernel::sFour());
+            let five = pk_f64(prism_kernel::sFive());
+            let nine = pk_f64(prism_kernel::sNine());
+            let twelve = pk_f64(prism_kernel::sTwelve());
+            let hundred = pk_f64(prism_kernel::sHundred());
 
-        let rig_x = -(pk_f64(prism_kernel::sSixty()) + five) / ten;
-        let rig_z = nine;
-        let rig_y = terrain_height_with_params(seed, &terrain_relief, rig_x, rig_z);
-        if let (Ok(anchor), Ok(bob)) = (
-            RigidBody::new(
-                "XpbdRigAnchor",
-                Vec3::new(rig_x, rig_y + three, rig_z),
-                hundred * hundred * ten,
-                three / ten,
-                two / ten,
-            ),
-            RigidBody::new(
-                "XpbdRigPendulumBob",
-                Vec3::new(rig_x + (twelve / ten), rig_y + two, rig_z),
-                five,
-                three / ten,
-                two / ten,
-            ),
-        ) {
-            let anchor_idx = physics.bodies.len();
-            physics.bodies.push(anchor);
-            let bob_idx = physics.bodies.len();
-            physics.bodies.push(bob);
-            physics.rigid_joints.push(RigidJointConstraint {
-                label: "ArticulatedBayHinge".to_string(),
-                body_a: anchor_idx,
-                body_b: bob_idx,
-                kind: JointKind::Hinge,
-                axis_world: Vec3::new(0.0, 0.0, 1.0),
-                target_distance_meters: (ten + four) / ten,
-                compliance_permille: 1,
-            });
+            if let Ok(buoy) = RigidBody::new(
+                "FluidBuoyBody",
+                Vec3::new(
+                    pk_f64(prism_kernel::sFiftyFive()) / ten,
+                    two / ten,
+                    pk_f64(prism_kernel::sEightyFive()) / ten,
+                ),
+                twelve,
+                (pk_f64(prism_kernel::sForty()) + five) / hundred,
+                pk_f64(prism_kernel::sThirtyFive()) / hundred,
+            ) {
+                physics.bodies.push(buoy);
+            }
+
+            let rig_x = -(pk_f64(prism_kernel::sSixty()) + five) / ten;
+            let rig_z = nine;
+            let rig_y = terrain_height_with_params(seed, &terrain_relief, rig_x, rig_z);
+            if let (Ok(anchor), Ok(bob)) = (
+                RigidBody::new(
+                    "XpbdRigAnchor",
+                    Vec3::new(rig_x, rig_y + three, rig_z),
+                    hundred * hundred * ten,
+                    three / ten,
+                    two / ten,
+                ),
+                RigidBody::new(
+                    "XpbdRigPendulumBob",
+                    Vec3::new(rig_x + (twelve / ten), rig_y + two, rig_z),
+                    five,
+                    three / ten,
+                    two / ten,
+                ),
+            ) {
+                let anchor_idx = physics.bodies.len();
+                physics.bodies.push(anchor);
+                let bob_idx = physics.bodies.len();
+                physics.bodies.push(bob);
+                physics.rigid_joints.push(RigidJointConstraint {
+                    label: "ArticulatedBayHinge".to_string(),
+                    body_a: anchor_idx,
+                    body_b: bob_idx,
+                    kind: JointKind::Hinge,
+                    axis_world: Vec3::new(0.0, 0.0, 1.0),
+                    target_distance_meters: (ten + four) / ten,
+                    compliance_permille: 1,
+                });
+            }
         }
 
         physics.player_capsule = Some(CapsuleController::new(Vec3::new(
@@ -620,7 +651,18 @@ impl WasmRuntimeBridge {
         }
 
         if self.static_dirty || self.static_idx_len == 0 {
-            let materials = canonical_pbr_material_library();
+            #[allow(unused_mut)]
+            let mut materials = canonical_pbr_material_library();
+            #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+            if self.npc_patrol_active {
+                materials = self
+                    .observer_holon
+                    .active_domain
+                    .hd_materials
+                    .iter()
+                    .map(verdant_core::render::HdPbrDescriptor::to_pbr_material)
+                    .collect();
+            }
             let base = pack_world_meshes_to_buffers_opts(
                 &self.hd_sector.scene,
                 &self.hd_sector.meshes,
@@ -1210,6 +1252,7 @@ impl WasmRuntimeBridge {
                 cap_grounded = capsule.grounded;
             }
 
+            #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
             if let Ok(next_u) =
                 UniversePosition::new_canonical(self.universe.active_position.cell, cap_pos)
             {
@@ -1229,6 +1272,13 @@ impl WasmRuntimeBridge {
                 } else {
                     self.universe.active_position = next_u;
                 }
+            }
+
+            #[cfg(all(target_arch = "wasm32", not(feature = "uorc-decoder")))]
+            if let Ok(next_u) = UniversePosition::new_canonical(self.active_cell, cap_pos) {
+                self.active_cell = next_u.cell;
+                capsule.foot_position = next_u.local;
+                cap_pos = next_u.local;
             }
 
             let six = pk_f64(prism_kernel::sSix());
@@ -1285,26 +1335,37 @@ impl WasmRuntimeBridge {
             );
 
             let player_head = self.explorer.head_anchor_world();
-            let half = 1.0 / two;
-            let gaze_thresh_sq = (half * half * half) * (half * half * half);
-            let player_shifted =
-                (cap_pos - self.last_npc_ik_player_pos).length_squared() > gaze_thresh_sq;
-            if player_shifted {
-                self.last_npc_ik_player_pos = cap_pos;
-                let max_npc_gaze_sq = (two * two * (two + 1.0)) * (two * two * (two + 1.0));
-                for npc in &mut self.npcs {
-                    let p = npc.foot_position;
-                    if (p - cap_pos).length_squared() <= max_npc_gaze_sq {
-                        let _ = npc.step_and_solve_ik(
-                            clamped_dt,
-                            p,
-                            Vec3::ZERO,
-                            true,
-                            npc.body_yaw_radians,
-                            Some(player_head),
-                            &self.two_level_bvh,
-                            |x, z| hd_terrain_height(seed_copy, &relief_copy, x, z),
-                        );
+            if self.npc_patrol_active {
+                self.observer_holon.step_npc_patrols(
+                    clamped_dt,
+                    walk_yaw_rad,
+                    player_head,
+                    &self.two_level_bvh,
+                );
+                self.npcs
+                    .clone_from(&self.observer_holon.active_domain.characters);
+            } else {
+                let half = 1.0 / two;
+                let gaze_thresh_sq = (half * half * half) * (half * half * half);
+                let player_shifted =
+                    (cap_pos - self.last_npc_ik_player_pos).length_squared() > gaze_thresh_sq;
+                if player_shifted {
+                    self.last_npc_ik_player_pos = cap_pos;
+                    let max_npc_gaze_sq = (two * two * (two + 1.0)) * (two * two * (two + 1.0));
+                    for npc in &mut self.npcs {
+                        let p = npc.foot_position;
+                        if (p - cap_pos).length_squared() <= max_npc_gaze_sq {
+                            let _ = npc.step_and_solve_ik(
+                                clamped_dt,
+                                p,
+                                Vec3::ZERO,
+                                true,
+                                npc.body_yaw_radians,
+                                Some(player_head),
+                                &self.two_level_bvh,
+                                |x, z| hd_terrain_height(seed_copy, &relief_copy, x, z),
+                            );
+                        }
                     }
                 }
             }
@@ -2320,9 +2381,16 @@ pub extern "C" fn verdant_wasm_mover_x() -> f64 {
                 .map(|m| m.position.x)
         })
         .unwrap_or_else(|| {
-            prism_kernel::nodePreset6()
-                .map(|p| (p.xTenths as f64) / pk_f64(prism_kernel::sTen()))
-                .unwrap_or(1.0)
+            #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+            {
+                prism_kernel::nodePreset6()
+                    .map(|p| (p.xTenths as f64) / pk_f64(prism_kernel::sTen()))
+                    .unwrap_or(1.0)
+            }
+            #[cfg(all(target_arch = "wasm32", not(feature = "uorc-decoder")))]
+            {
+                pk_f64(prism_kernel::sSixteen()) + (prism_kernel::sTwo() as f64)
+            }
         })
 }
 
@@ -3516,7 +3584,17 @@ pub extern "C" fn verdant_wasm_universe_cell_x() -> i64 {
     global_bridge()
         .lock()
         .ok()
-        .and_then(|g| Some(g.as_ref()?.universe.active_position.cell.cx))
+        .and_then(|g| {
+            let b = g.as_ref()?;
+            #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+            {
+                Some(b.universe.active_position.cell.cx)
+            }
+            #[cfg(all(target_arch = "wasm32", not(feature = "uorc-decoder")))]
+            {
+                Some(b.active_cell.cx)
+            }
+        })
         .unwrap_or(0)
 }
 
@@ -3526,7 +3604,17 @@ pub extern "C" fn verdant_wasm_universe_cell_y() -> i64 {
     global_bridge()
         .lock()
         .ok()
-        .and_then(|g| Some(g.as_ref()?.universe.active_position.cell.cy))
+        .and_then(|g| {
+            let b = g.as_ref()?;
+            #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+            {
+                Some(b.universe.active_position.cell.cy)
+            }
+            #[cfg(all(target_arch = "wasm32", not(feature = "uorc-decoder")))]
+            {
+                Some(b.active_cell.cy)
+            }
+        })
         .unwrap_or(0)
 }
 
@@ -3536,7 +3624,17 @@ pub extern "C" fn verdant_wasm_universe_cell_z() -> i64 {
     global_bridge()
         .lock()
         .ok()
-        .and_then(|g| Some(g.as_ref()?.universe.active_position.cell.cz))
+        .and_then(|g| {
+            let b = g.as_ref()?;
+            #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+            {
+                Some(b.universe.active_position.cell.cz)
+            }
+            #[cfg(all(target_arch = "wasm32", not(feature = "uorc-decoder")))]
+            {
+                Some(b.active_cell.cz)
+            }
+        })
         .unwrap_or(0)
 }
 
@@ -4007,5 +4105,251 @@ pub extern "C" fn verdant_wasm_uorc_exclusive_audit_aux() -> u32 {
         uorc_snap.len(),
     );
     bridge.aux_buffer = summary.into_bytes();
+    bridge.aux_buffer.len() as u32
+}
+
+/// Switches `WasmRuntimeBridge` live to one of the 4 SHA-256-locked cataloged domain packs
+/// (`0 = sunspire-regatta`, `1 = meridian-observatory`, `2 = glasshouse-chronicle`,
+/// `3 = starfall-bastion`), rebuilding terrain, HD landmarks, `TwoLevelBvh`, walkable `NavMesh`,
+/// and differentiated 22-joint NPCs, and writing the Observer status JSON into `aux_buffer`.
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+#[no_mangle]
+pub extern "C" fn verdant_wasm_load_domain_pack(domain_idx: u32) -> u32 {
+    let mut guard = global_bridge()
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
+    let Some(bridge) = guard.as_mut() else {
+        return 0;
+    };
+
+    let two = 1_u32 + 1_u32;
+    let three = two + 1_u32;
+    let slug = if domain_idx == 0 {
+        "sunspire-regatta"
+    } else if domain_idx == 1 {
+        "meridian-observatory"
+    } else if domain_idx == two {
+        "glasshouse-chronicle"
+    } else if domain_idx == three {
+        "starfall-bastion"
+    } else {
+        return 0;
+    };
+
+    let lod = u64::from(bridge.lod_rank);
+    if bridge
+        .observer_holon
+        .switch_domain_pack(slug, Some(lod))
+        .is_err()
+    {
+        return 0;
+    }
+
+    let dom = &bridge.observer_holon.active_domain;
+    bridge.seed_val = dom.spec.seed;
+    bridge.terrain_params = dom.terrain_relief;
+    bridge.env_params = dom.physical_environment;
+    bridge.physics.config.terrain_seed = dom.spec.seed;
+    bridge.physics.config.terrain_relief = dom.terrain_relief;
+    bridge.physics.config.environment = dom.physical_environment;
+    bridge.hd_sector = dom.sector.clone();
+    if let Ok(bvh) = TwoLevelBvh::build_solid(&bridge.hd_sector.scene, &bridge.hd_sector.meshes) {
+        bridge.two_level_bvh = bvh;
+    }
+    bridge.walkable_polygons = bridge.observer_holon.active_navmesh.polygons.len();
+    bridge.npcs = dom.characters.clone();
+    bridge.custom_glb_scene = None;
+    bridge.npc_patrol_active = true;
+    bridge.static_dirty = true;
+    let _ = bridge.rebuild_scene_buffers(0.0);
+
+    bridge.aux_buffer = bridge.observer_holon.to_status_json_bytes();
+    bridge.aux_buffer.len() as u32
+}
+
+/// Assigns `directive_idx` to cataloged `npc_idx`, replans its admissible `NavMesh` A* corridor,
+/// activates live NPC patrol locomotion, records an `AgentToAgent` event on the Observer bus,
+/// and writes `"<character_id>|<directive_label>|<waypoint_count>"` into `aux_buffer`.
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+#[no_mangle]
+pub extern "C" fn verdant_wasm_set_npc_directive(npc_idx: u32, directive_idx: u32) -> u32 {
+    let mut guard = global_bridge()
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
+    let Some(bridge) = guard.as_mut() else {
+        return 0;
+    };
+
+    let Ok(state) = bridge
+        .observer_holon
+        .set_npc_directive(npc_idx as usize, directive_idx as usize)
+    else {
+        return 0;
+    };
+    bridge.npc_patrol_active = true;
+    bridge
+        .npcs
+        .clone_from(&bridge.observer_holon.active_domain.characters);
+    let summary = format!(
+        "{}|{}|{}",
+        state.character_id,
+        state.active_directive_label,
+        state.corridor_waypoints.len()
+    );
+    bridge.aux_buffer = summary.into_bytes();
+    bridge.aux_buffer.len() as u32
+}
+
+/// Evaluates a native `VerdantLanguageEngine` ISO 24617-2 player-to-NPC dialogue turn from
+/// `io_buffer` (UTF-8 utterance), signing an origin-scoped `PrismIdSessionEnvelope`, logging both
+/// `PlayerToAgent` and `AgentToPlayer` communications under W3C SOSA/PROV-O, and writing the
+/// grounded reply or `"Unknown"` abstention JSON into `aux_buffer`.
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+#[no_mangle]
+pub extern "C" fn verdant_wasm_dialogue_turn_io(npc_idx: u32) -> u32 {
+    let mut guard = global_bridge()
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
+    let Some(bridge) = guard.as_mut() else {
+        return 0;
+    };
+    let Ok(utterance) = std::str::from_utf8(&bridge.io_buffer) else {
+        return 0;
+    };
+    let trimmed = utterance.trim().to_string();
+    if trimmed.is_empty() {
+        return 0;
+    }
+
+    let origin = "https://afflom.github.io";
+    let issued_sec = prism_kernel::skinWeightScale().unwrap_or(1);
+    let expires_sec = issued_sec + prism_kernel::skinWeightScale().unwrap_or(1);
+    let digest = sha256_payload_digest(trimmed.as_bytes());
+    let session = PrismIdSessionEnvelope::sign_deterministic(
+        "prism:studio-player",
+        &bridge.seed_val.to_le_bytes(),
+        origin,
+        issued_sec,
+        expires_sec,
+        &digest,
+    );
+
+    let Ok(turn) = bridge.observer_holon.converse_player_with_npc(
+        "urn:verdant:player:local",
+        (&session, origin, issued_sec + 1),
+        npc_idx as usize,
+        &trimmed,
+    ) else {
+        return 0;
+    };
+
+    if turn.mutated_directive_index.is_some() {
+        bridge.npc_patrol_active = true;
+        bridge
+            .npcs
+            .clone_from(&bridge.observer_holon.active_domain.characters);
+    }
+    let comm_kappa = bridge
+        .observer_holon
+        .communications
+        .last()
+        .map_or("", |c| c.kappa_hex.as_str())
+        .to_string();
+    bridge.aux_buffer = turn.to_json_bytes(&comm_kappa);
+    bridge.aux_buffer.len() as u32
+}
+
+/// Records an explicit communication (`channel_code`: `0=OrganToOrgan`, `1=PlayerToPlayer`,
+/// `2=PlayerToAgent`, `3=AgentToPlayer`, `4=AgentToAgent`) formatted as `"sender|recipient|message"`
+/// in `io_buffer` into the Observer holon's W3C SOSA/PROV-O bus, writing `kappa_hex` into `aux_buffer`.
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+#[no_mangle]
+pub extern "C" fn verdant_wasm_observe_comm_io(channel_code: u32) -> u32 {
+    let mut guard = global_bridge()
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
+    let Some(bridge) = guard.as_mut() else {
+        return 0;
+    };
+    let Ok(raw) = std::str::from_utf8(&bridge.io_buffer) else {
+        return 0;
+    };
+    let mut parts = raw.splitn(1 + 1 + 1, '|');
+    let Some(sender) = parts.next() else {
+        return 0;
+    };
+    let Some(recipient) = parts.next() else {
+        return 0;
+    };
+    let Some(msg) = parts.next() else {
+        return 0;
+    };
+    let sender_s = sender.trim().to_string();
+    let recipient_s = recipient.trim().to_string();
+    let msg_s = msg.trim().to_string();
+
+    let two = 1_u32 + 1_u32;
+    let three = two + 1_u32;
+    let four = two * two;
+    let channel = if channel_code == 0 {
+        CommunicationChannelKind::OrganToOrgan
+    } else if channel_code == 1 {
+        CommunicationChannelKind::PlayerToPlayer
+    } else if channel_code == two {
+        CommunicationChannelKind::PlayerToAgent
+    } else if channel_code == three {
+        CommunicationChannelKind::AgentToPlayer
+    } else if channel_code == four {
+        CommunicationChannelKind::AgentToAgent
+    } else {
+        return 0;
+    };
+
+    let origin = "https://afflom.github.io";
+    let issued_sec = prism_kernel::skinWeightScale().unwrap_or(1);
+    let expires_sec = issued_sec + prism_kernel::skinWeightScale().unwrap_or(1);
+    let digest = sha256_payload_digest(msg_s.as_bytes());
+    let session = PrismIdSessionEnvelope::sign_deterministic(
+        "prism:peer-citizen",
+        &bridge.seed_val.to_le_bytes(),
+        origin,
+        issued_sec,
+        expires_sec,
+        &digest,
+    );
+    let opt_session = if channel.requires_prism_signature() {
+        Some((&session, origin, issued_sec + 1))
+    } else {
+        None
+    };
+
+    let Ok(rec) = bridge.observer_holon.observe_communication(
+        channel,
+        &sender_s,
+        &recipient_s,
+        "en",
+        0,
+        &msg_s,
+        opt_session,
+        0,
+    ) else {
+        return 0;
+    };
+    bridge.aux_buffer = rec.kappa_hex.into_bytes();
+    bridge.aux_buffer.len() as u32
+}
+
+/// Writes the live Observer Prism holon JSON snapshot (`observerKappa`, `organs`, `stakeholders`,
+/// `activeDomain`, `npcs`, and `recentCommunications`) into `aux_buffer`, returning byte length.
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+#[no_mangle]
+pub extern "C" fn verdant_wasm_observer_status_aux() -> u32 {
+    let mut guard = global_bridge()
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
+    let Some(bridge) = guard.as_mut() else {
+        return 0;
+    };
+    bridge.aux_buffer = bridge.observer_holon.to_status_json_bytes();
     bridge.aux_buffer.len() as u32
 }

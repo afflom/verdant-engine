@@ -333,25 +333,41 @@ impl CyberneticObserverLoop {
     }
 }
 
-/// Verified engine intent categories emitted by the embedded `coded_gemm` SLM router.
+/// Verified engine and Studio intent categories emitted by the embedded `coded_gemm` SLM router (`0..16`).
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub enum EngineIntentKind {
-    /// Orient camera and neuromorphic Observer Core for mutual inspection.
+    /// Orient camera and neuromorphic Observer Core for mutual inspection (`0`).
     FocusObserverCore,
-    /// Engage the 4-wheel raycast suspension vehicle controller.
+    /// Engage the 4-wheel raycast suspension vehicle controller (`1`).
     DriveSuspensionVehicle,
-    /// Switch viewport to the pure WebAssembly `16x16` software tile PBR rasterizer.
+    /// Switch viewport to the pure WebAssembly `16x16` software tile PBR rasterizer (`2`).
     SwitchTileRasterizer,
-    /// Switch viewport to hardware `OffscreenCanvas` WebGL2 PBR rendering.
+    /// Switch viewport to hardware `OffscreenCanvas` WebGL2 PBR rendering (`3`).
     SwitchWebGl2Hardware,
-    /// Stream progressive `.uorc` frames to lossless `LOD3` via `uorc_decompress` + `coded_gemm`.
+    /// Stream progressive `.uorc` frames to lossless `LOD3` via `uorc_decompress` + `coded_gemm` (`4`).
     StreamLosslessUorc,
-    /// Fragment active world state into 2-of-3 `afflom/stitch` parity shards and sync peers.
+    /// Elevate world geometry synthesis to ultra-high-definition `LOD4` (`5`).
+    StreamUltraHdLod4,
+    /// Fragment active world state into 2-of-3 `afflom/stitch` parity shards and sync peers (`6`).
     ShardWorldToStitch,
-    /// Solve and overlay the formal 2D/3D UI & WCAG compliance bounds.
+    /// Solve and overlay the formal 2D/3D UI & WCAG compliance bounds (`7`).
     InspectUiCompliance,
-    /// Apply a deterministic XPBD physics impulse to articulated joints and rigid bodies.
+    /// Apply a deterministic XPBD physics impulse to articulated joints and rigid bodies (`8`).
     StepPhysicsImpulse,
+    /// Open the Producer / Systems Dashboard workspace (`9`).
+    OpenRoleDashboard,
+    /// Open the Code & Project Scaffolder workspace (`10`).
+    OpenRoleCode,
+    /// Open the Design, Outliner & Brand Tokens workspace (`11`).
+    OpenRoleDesign,
+    /// Open the Spatial & Sabine Modal Audio workspace (`12`).
+    OpenRoleAudio,
+    /// Open the Cinematography & Camera Choreography Director workspace (`13`).
+    OpenRoleDirector,
+    /// Open the Gameplay, NPC Directives & Tournament workspace (`14`).
+    OpenRoleGameplay,
+    /// Advance Chronicle narrative interaction or toggle possessed Explorer camera (`15`).
+    NarrativeInteract,
 }
 
 impl EngineIntentKind {
@@ -364,9 +380,17 @@ impl EngineIntentKind {
             Self::SwitchTileRasterizer => "render-tile-wasm",
             Self::SwitchWebGl2Hardware => "render-webgl2",
             Self::StreamLosslessUorc => "stream-uorc-lod3",
+            Self::StreamUltraHdLod4 => "stream-uorc-lod4",
             Self::ShardWorldToStitch => "stitch-shard-sync",
             Self::InspectUiCompliance => "inspect-formal-ui",
             Self::StepPhysicsImpulse => "step-xpbd-physics",
+            Self::OpenRoleDashboard => "open-role-dashboard",
+            Self::OpenRoleCode => "open-role-code",
+            Self::OpenRoleDesign => "open-role-design",
+            Self::OpenRoleAudio => "open-role-audio",
+            Self::OpenRoleDirector => "open-role-director",
+            Self::OpenRoleGameplay => "open-role-gameplay",
+            Self::NarrativeInteract => "narrative-interact",
         }
     }
 
@@ -376,6 +400,14 @@ impl EngineIntentKind {
         let i4 = prism_kernel::sFour().unwrap_or(1) as usize;
         let i5 = prism_kernel::sFive().unwrap_or(1) as usize;
         let i6 = prism_kernel::sSix().unwrap_or(1) as usize;
+        let i7 = prism_kernel::sSeven().unwrap_or(1) as usize;
+        let i8 = prism_kernel::sEight().unwrap_or(1) as usize;
+        let i9 = prism_kernel::sNine().unwrap_or(1) as usize;
+        let i10 = prism_kernel::sTen().unwrap_or(1) as usize;
+        let i11 = prism_kernel::sEleven().unwrap_or(1) as usize;
+        let i12 = prism_kernel::sTwelve().unwrap_or(1) as usize;
+        let i13 = i12 + 1;
+        let i14 = prism_kernel::sFourteen().unwrap_or(1) as usize;
         if idx == 0 {
             Self::FocusObserverCore
         } else if idx == 1 {
@@ -387,11 +419,27 @@ impl EngineIntentKind {
         } else if idx == i4 {
             Self::StreamLosslessUorc
         } else if idx == i5 {
-            Self::ShardWorldToStitch
+            Self::StreamUltraHdLod4
         } else if idx == i6 {
+            Self::ShardWorldToStitch
+        } else if idx == i7 {
             Self::InspectUiCompliance
-        } else {
+        } else if idx == i8 {
             Self::StepPhysicsImpulse
+        } else if idx == i9 {
+            Self::OpenRoleDashboard
+        } else if idx == i10 {
+            Self::OpenRoleCode
+        } else if idx == i11 {
+            Self::OpenRoleDesign
+        } else if idx == i12 {
+            Self::OpenRoleAudio
+        } else if idx == i13 {
+            Self::OpenRoleDirector
+        } else if idx == i14 {
+            Self::OpenRoleGameplay
+        } else {
+            Self::NarrativeInteract
         }
     }
 }
@@ -427,12 +475,12 @@ impl Default for CodedSlmDirector {
 }
 
 impl CodedSlmDirector {
-    /// Constructs the deterministic `Packed<Grid<16>, 2>` + `Grid<16>` intent model from `{0, 1}`.
+    /// Constructs the deterministic 16-route `Packed<Grid<16>, 2>` + `Grid<16>` intent model from `{0, 1}`.
     #[must_use]
     pub fn new() -> Self {
-        let intent_count = prism_kernel::observerSalienceDim().unwrap_or(1) as usize;
-        let embed_dim = CODED_TABLE_LEN;
-        let hidden_dim = CODED_TABLE_LEN;
+        let intent_count = CODED_TABLE_LEN;
+        let embed_dim = CODED_TABLE_LEN * (1 + 1);
+        let hidden_dim = CODED_TABLE_LEN * (1 + 1);
         let mid = (CODED_TABLE_LEN / (1 + 1)) as i32;
         let step = prism_kernel::sSixteen().unwrap_or(1) as i32;
         let codebook: [i32; CODED_TABLE_LEN] = core::array::from_fn(|i| ((i as i32) - mid) * step);
@@ -443,7 +491,7 @@ impl CodedSlmDirector {
         let nibble_shift = prism_kernel::sFour().unwrap_or(1) as u8;
 
         // Layer 1 (`embed_dim x hidden_dim`, packed 2 nibbles per byte):
-        // Routes concept channel `r` strongly into hidden neuron `r` and context channel `r + 8` mildly.
+        // Routes lexical concept channel `r` (`0..16`) strongly into hidden neuron `r` and subword context channel `r + 16` mildly.
         let half_cols = hidden_dim / (1 + 1);
         let mut w1_packed_nibbles = vec![0_u8; embed_dim * half_cols];
         for r in 0..embed_dim {
@@ -500,14 +548,36 @@ impl CodedSlmDirector {
             (prism_kernel::sSixteen().unwrap_or(1) * prism_kernel::sSixteen().unwrap_or(1)) as i32;
         let mut feats = vec![0_i32; self.embed_dim];
 
-        let concept_keywords: [&[&str]; 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1] = [
-            &["observer", "focus", "gaze", "attention", "core", "look"],
-            &["vehicle", "car", "drive", "wheel", "suspension", "chassis"],
-            &["tile", "software", "raster", "cpu", "16x16", "fallback"],
-            &["webgl", "hardware", "gpu", "shader", "fast"],
+        let concept_keywords: [&[&str]; CODED_TABLE_LEN] = [
             &[
-                "uorc", "stream", "lod", "lossless", "decode", "glb", "import",
+                "observer",
+                "focus",
+                "gaze",
+                "attention",
+                "core",
+                "look",
+                "gimbal",
+                "holon",
+                "duck",
+                "portrait",
             ],
+            &[
+                "vehicle",
+                "car",
+                "drive",
+                "wheel",
+                "suspension",
+                "chassis",
+                "rover",
+            ],
+            &["tile", "software", "raster", "cpu", "16x16", "fallback"],
+            &[
+                "webgl", "webgl2", "hardware", "gpu", "shader", "fast", "pbr",
+            ],
+            &[
+                "uorc", "stream", "lod3", "lossless", "decode", "glb", "import", "asset",
+            ],
+            &["lod4", "ultra", "uhd", "subdivide", "masonry", "vault"],
             &[
                 "stitch",
                 "shard",
@@ -517,9 +587,77 @@ impl CodedSlmDirector {
                 "sync",
                 "prism",
             ],
-            &["ui", "wcag", "contrast", "layout", "diegetic", "compliance"],
             &[
-                "physics", "joint", "hinge", "impulse", "pendulum", "step", "sim",
+                "ui",
+                "wcag",
+                "contrast",
+                "layout",
+                "diegetic",
+                "compliance",
+                "touch",
+            ],
+            &[
+                "physics", "joint", "hinge", "impulse", "pendulum", "step", "sim", "xpbd",
+            ],
+            &[
+                "dashboard",
+                "producer",
+                "requirements",
+                "traceability",
+                "telos",
+                "kpi",
+            ],
+            &[
+                "create",
+                "scaffold",
+                "new project",
+                "code",
+                "rust",
+                "tar",
+                "starter",
+            ],
+            &["design", "outliner", "hierarchy", "brand", "tokens"],
+            &[
+                "audio",
+                "sabine",
+                "reverb",
+                "binaural",
+                "room",
+                "modal",
+                "acoustics",
+                "sound",
+            ],
+            &[
+                "director",
+                "cinematography",
+                "choreography",
+                "shot",
+                "cut",
+                "orbit",
+            ],
+            &[
+                "gameplay",
+                "campaign",
+                "tournament",
+                "npc",
+                "directive",
+                "arena",
+                "patrol",
+            ],
+            &[
+                "interact",
+                "chronicle",
+                "archivist",
+                "narrative",
+                "quest",
+                "keystone",
+                "podium",
+                "camera",
+                "1st",
+                "first person",
+                "3rd",
+                "third person",
+                "explorer",
             ],
         ];
 
@@ -531,7 +669,7 @@ impl CodedSlmDirector {
             }
         }
 
-        // Subword / character n-gram hash fallback into upper channels (`8..16`) so novel phrasings still project deterministically:
+        // Subword / character n-gram hash fallback into upper channels (`16..32`) so novel phrasings still project deterministically:
         let offset_base = self.intent_count;
         for (idx, byte) in lower.bytes().enumerate() {
             if byte.is_ascii_alphanumeric() {
@@ -608,11 +746,12 @@ impl CodedSlmDirector {
 
         let intent = EngineIntentKind::from_index(best_idx);
         let required_organ = match intent {
+            EngineIntentKind::SwitchWebGl2Hardware => ContainerOrgan::OffscreenCanvasViewport,
             EngineIntentKind::ShardWorldToStitch => ContainerOrgan::BroadcastChannelTabs,
             _ => ContainerOrgan::WebAssemblyCore,
         };
         let organ_ok = grants.is_allowed(required_organ);
-        let min_threshold = prism_kernel::sHundred().unwrap_or(1);
+        let min_threshold = prism_kernel::sFifty().unwrap_or(1);
         let invariants_hold = best_logit > 0;
 
         let admitted =

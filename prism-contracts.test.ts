@@ -45,8 +45,8 @@ const ROOT = fileURLToPath(new URL("./", import.meta.url));
 
 test("C1-C10: all repository Prism component contracts pass end-to-end", async () => {
   const summary = await runAllPrismContractChecks(ROOT);
-  assert.ok(summary.vectors >= 42, `expected >=42 Holo acceptance vectors, got ${summary.vectors}`);
-  assert.equal(summary.holoQueriesVerified, 61);
+  assert.ok(summary.vectors >= 46, `expected >=46 Holo acceptance vectors, got ${summary.vectors}`);
+  assert.equal(summary.holoQueriesVerified, 65);
   assert.equal(summary.holoRefusalsVerified, 4);
   assert.ok(summary.catalogModelsVerified >= 28);
   assert.equal(summary.defaultSeed, 7);

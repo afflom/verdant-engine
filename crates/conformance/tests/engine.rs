@@ -4199,3 +4199,344 @@ fn engine_ve_38() {
         Err(OracleValidationError::ProhibitedExternalModelRuntime { .. })
     ));
 }
+
+/// `VE-39`: Second-order Observer Prism holon, five platform organs, seven stakeholder Prism models, arbitrary Verdant model envelopes, native 16-route intent & ISO 24617-2 passage-grounded NPC dialogue with Unknown abstention, live NavMesh NPC directives, and five W3C SOSA/PROV-O observed communication channels
+#[test]
+fn engine_ve_39() {
+    use std::collections::BTreeSet;
+    use verdant_core::cybernetics::{CodedSlmDirector, ContainerGrantMatrix, ContainerOrgan};
+    use verdant_core::ecs::TwoLevelBvh;
+    use verdant_core::error::ObserverModelError;
+    use verdant_core::network::PrismIdSessionEnvelope;
+    use verdant_core::observer::{
+        sha256_payload_digest, ArbitraryModelDomainKind, CommunicationChannelKind,
+        ObserverOrganKind, ObserverPrismHolon, VerdantLanguageEngine, VerdantModelEnvelope,
+    };
+    use verdant_core::prism_kernel;
+
+    // 1. Verify Prism kernel Observer theorems & basis-prime product (`2*3*5*7*11 = 2310`):
+    assert_eq!(prism_kernel::observerOrganBasisProduct(), Ok(2310));
+    assert!(prism_kernel::dmnModelRouteAdmitted(
+        true, true, true, true, true, true
+    ));
+    assert!(!prism_kernel::dmnModelRouteAdmitted(
+        true, true, false, true, true, true
+    ));
+
+    // 2. Construct ObserverPrismHolon and verify strong distinct 32-byte `kappa` across Observer + 5 Organs + 7 Stakeholders:
+    let mut holon = ObserverPrismHolon::new("sunspire-regatta").expect("ObserverPrismHolon init");
+    assert_eq!(holon.organ_basis_product, 2310);
+    assert_eq!(holon.organs.len(), 5);
+    assert_eq!(holon.stakeholders.len(), 7);
+
+    let mut distinct_kappas = BTreeSet::new();
+    assert!(distinct_kappas.insert(holon.observer_kappa_hex.clone()));
+    for organ in &holon.organs {
+        assert!(
+            distinct_kappas.insert(organ.kappa_hex.clone()),
+            "every platform organ must have a distinct kappa identity"
+        );
+    }
+    let mut workspace_bijection = BTreeSet::new();
+    for sh in &holon.stakeholders {
+        assert!(
+            distinct_kappas.insert(sh.kappa_hex.clone()),
+            "every stakeholder Prism model must have a distinct kappa identity"
+        );
+        assert!(
+            workspace_bijection.insert(sh.workspace_index),
+            "stakeholder models must map bijectively onto the 7 Studio workspaces"
+        );
+    }
+    assert_eq!(workspace_bijection.len(), 7);
+    assert_eq!(distinct_kappas.len(), 1 + 5 + 7);
+
+    // 3. Extrapolate to arbitrary Verdant Prism model envelopes across all 7 domain families:
+    let mut grants = ContainerGrantMatrix::default();
+    grants.grant(ContainerOrgan::AudioWorkletSynth);
+    for (idx, (fam, fmt)) in [
+        (ArbitraryModelDomainKind::Geometry3D, "verdant-uorc"),
+        (
+            ArbitraryModelDomainKind::CodedLanguage,
+            "verdant-coded-matrix",
+        ),
+        (
+            ArbitraryModelDomainKind::NeuromorphicSsm,
+            "verdant-coded-matrix",
+        ),
+        (
+            ArbitraryModelDomainKind::ConservationAutomaton,
+            "verdant-holo",
+        ),
+        (ArbitraryModelDomainKind::SpatialAcoustics, "verdant-uorc"),
+        (ArbitraryModelDomainKind::TropicalUi, "verdant-holo"),
+        (ArbitraryModelDomainKind::RigidBodyPhysics, "verdant-uorc"),
+    ]
+    .into_iter()
+    .enumerate()
+    {
+        let env = VerdantModelEnvelope::new_sealed(
+            format!("PRISM-ARB-{idx}"),
+            fam,
+            ObserverOrganKind::Engine,
+            ContainerOrgan::WebAssemblyCore,
+            fmt,
+            format!("canonical-verdant-model-payload-{idx}").into_bytes(),
+            serde_json::json!({
+                "@context": "https://schema.org",
+                "@id": format!("urn:verdant:arb:{idx}"),
+                "@type": "CreativeWork",
+                "name": format!("ArbitraryVerdantModel_{idx}"),
+                "encodingFormat": fmt
+            }),
+        );
+        let k_hex = holon
+            .admit_arbitrary_prism_model(&env, &grants)
+            .expect("admit arbitrary Verdant Prism model");
+        assert!(distinct_kappas.insert(k_hex));
+    }
+    assert_eq!(holon.admitted_model_kappas.len(), 7);
+
+    // 4. Native 16-route `CodedSlmDirector` (`uor-matmul` `Packed<Grid<16>, 2>`):
+    let slm = CodedSlmDirector::new();
+    for (prompt, expected_slug) in [
+        ("focus observer core gimbal", "focus-observer"),
+        ("drive 4-wheel suspension rover", "drive-vehicle"),
+        ("switch to 16x16 software tile raster", "render-tile-wasm"),
+        ("enable webgl2 hardware pbr shader", "render-webgl2"),
+        ("stream lossless uorc lod3", "stream-uorc-lod3"),
+        ("subdivide ultra lod4 masonry", "stream-uorc-lod4"),
+        ("sync stitch parity shards", "stitch-shard-sync"),
+        ("inspect wcag ui contrast layout", "inspect-formal-ui"),
+        ("step xpbd pendulum physics impulse", "step-xpbd-physics"),
+        (
+            "open producer dashboard traceability",
+            "open-role-dashboard",
+        ),
+        ("scaffold new rust starter code tar", "open-role-code"),
+        ("open scene outliner brand tokens", "open-role-design"),
+        ("inspect sabine reverb room acoustics", "open-role-audio"),
+        ("open cinematography camera director", "open-role-director"),
+        ("open gameplay tournament npc patrol", "open-role-gameplay"),
+        ("interact chronicle archivist quest", "narrative-interact"),
+    ] {
+        let prop = slm
+            .route_prompt(prompt, None, &grants)
+            .unwrap_or_else(|e| panic!("failed routing `{prompt}`: {e}"));
+        assert_eq!(prop.intent.slug(), expected_slug, "prompt `{prompt}`");
+    }
+
+    // 5. Passage-grounded NPC Q&A, `"Unknown"` abstention, live NavMesh A* patrol, & 5-channel communications:
+    let origin = "https://afflom.github.io";
+    let q_grounded = "How many Brass Tidal Sextants does Captain Soren hold in the Harbor Vault?";
+    let q_digest = sha256_payload_digest(q_grounded.as_bytes());
+    let q_sess = PrismIdSessionEnvelope::sign_deterministic(
+        "prism:player-alpha",
+        b"device-secret-alpha",
+        origin,
+        1_000,
+        2_000,
+        &q_digest,
+    );
+    let grounded_turn = holon
+        .converse_player_with_npc(
+            "urn:verdant:player:alpha",
+            (&q_sess, origin, 1_100),
+            0,
+            q_grounded,
+        )
+        .expect("grounded NPC question");
+    assert!(!grounded_turn.abstained_unknown);
+    assert!(grounded_turn.matched_evidence_facts >= 1);
+    assert!(grounded_turn
+        .reply_text
+        .contains("three Brass Tidal Sextants"));
+    assert!(!grounded_turn.cited_fact_ids.is_empty());
+
+    // Unstated fact MUST deterministically abstain with `"Unknown"` (zero hallucination):
+    let q_unstated = "What is Captain Soren's favorite pizza topping on Mars?";
+    let u_digest = sha256_payload_digest(q_unstated.as_bytes());
+    let u_sess = PrismIdSessionEnvelope::sign_deterministic(
+        "prism:player-alpha",
+        b"device-secret-alpha",
+        origin,
+        1_000,
+        2_000,
+        &u_digest,
+    );
+    let abstained_turn = holon
+        .converse_player_with_npc(
+            "urn:verdant:player:alpha",
+            (&u_sess, origin, 1_100),
+            0,
+            q_unstated,
+        )
+        .expect("unstated question abstains cleanly");
+    assert!(abstained_turn.abstained_unknown);
+    assert_eq!(abstained_turn.response_act_code, 7);
+    assert_eq!(abstained_turn.reply_text, "Unknown");
+    assert!(abstained_turn.cited_fact_ids.is_empty());
+
+    // Actionable directive request + live A* NavMesh corridor locomotion:
+    let req_dir = "Calibrate Fresnel Beacon";
+    let r_digest = sha256_payload_digest(req_dir.as_bytes());
+    let r_sess = PrismIdSessionEnvelope::sign_deterministic(
+        "prism:player-alpha",
+        b"device-secret-alpha",
+        origin,
+        1_000,
+        2_000,
+        &r_digest,
+    );
+    let dir_turn = holon
+        .converse_player_with_npc(
+            "urn:verdant:player:alpha",
+            (&r_sess, origin, 1_100),
+            0,
+            req_dir,
+        )
+        .expect("directive request");
+    assert!(dir_turn.world_mutated);
+    assert_eq!(dir_turn.mutated_directive_index, Some(1));
+
+    let bvh = TwoLevelBvh::build_solid(
+        &holon.active_domain.sector.scene,
+        &holon.active_domain.sector.meshes,
+    )
+    .expect("domain TwoLevelBvh");
+    for step in 0..30 {
+        holon.step_npc_patrols(1.0 / 30.0, f64::from(step) / 30.0, Vec3::ZERO, &bvh);
+    }
+    assert!(
+        holon.npc_agents[0].distance_walked_meters > 0.5,
+        "NPC walked along its A* NavMesh corridor: {}m",
+        holon.npc_agents[0].distance_walked_meters
+    );
+
+    // Player <-> Player signed communication channel:
+    let peer_msg = "Meet at the East Arch Abutment before high tide";
+    let peer_digest = sha256_payload_digest(peer_msg.as_bytes());
+    let peer_sess = PrismIdSessionEnvelope::sign_deterministic(
+        "prism:player-alpha",
+        b"device-secret-alpha",
+        origin,
+        1_000,
+        2_000,
+        &peer_digest,
+    );
+    let peer_rec = holon
+        .observe_communication(
+            CommunicationChannelKind::PlayerToPlayer,
+            "urn:verdant:player:alpha",
+            "urn:verdant:player:beta",
+            "en",
+            0,
+            peer_msg,
+            Some((&peer_sess, origin, 1_200)),
+            1,
+        )
+        .expect("PlayerToPlayer signed channel");
+    assert!(peer_rec.prism_signed);
+
+    // Verify all 5 communication channel kinds were experienced & recorded by the Observer:
+    let observed_kinds: BTreeSet<CommunicationChannelKind> =
+        holon.communications.iter().map(|c| c.channel).collect();
+    assert_eq!(observed_kinds.len(), 5);
+
+    // 6. Verify C-ABI exports on `verdant_wasm` (`load_domain_pack`, `set_npc_directive`, `dialogue_turn_io`, `observer_status_aux`):
+    {
+        let _wasm_guard = wasm_abi_lock();
+        assert_eq!(verdant_wasm::verdant_wasm_init(7), 1);
+        let status_len = verdant_wasm::verdant_wasm_load_domain_pack(1);
+        assert!(status_len > 100);
+        let dir_len = verdant_wasm::verdant_wasm_set_npc_directive(0, 1);
+        assert!(dir_len > 10);
+        verdant_wasm::verdant_wasm_io_clear();
+        for &b in b"What is the Sabine reverberation time of the Vaulted Stone Rotunda?" {
+            verdant_wasm::verdant_wasm_io_push_byte(u32::from(b));
+        }
+        let reply_len = verdant_wasm::verdant_wasm_dialogue_turn_io(0);
+        assert!(reply_len > 40);
+        assert!(verdant_wasm::verdant_wasm_observer_status_aux() > 100);
+    }
+
+    // --- R5 Negative Refusal Assertions (`ObserverModelError`) ---
+
+    // Negative 1: Non-Verdant external `onnx` model envelope refused (`InvalidPrismModelEnvelope`):
+    let bad_onnx_env = VerdantModelEnvelope::new_sealed(
+        "EXT-ONNX-BYPASS",
+        ArbitraryModelDomainKind::CodedLanguage,
+        ObserverOrganKind::Engine,
+        ContainerOrgan::WebAssemblyCore,
+        "onnx",
+        b"external-onnx-weights".to_vec(),
+        serde_json::json!({
+            "@context": "https://schema.org",
+            "@type": "CreativeWork",
+            "name": "ExternalOnnxModel"
+        }),
+    );
+    assert!(matches!(
+        holon.admit_arbitrary_prism_model(&bad_onnx_env, &grants),
+        Err(ObserverModelError::InvalidPrismModelEnvelope { .. })
+    ));
+
+    // Negative 2: Forged `kappa` digest refused (`InvalidPrismModelEnvelope`):
+    let mut forged_env = VerdantModelEnvelope::new_sealed(
+        "FORGED-KAPPA",
+        ArbitraryModelDomainKind::Geometry3D,
+        ObserverOrganKind::Engine,
+        ContainerOrgan::WebAssemblyCore,
+        "verdant-uorc",
+        b"authentic-payload".to_vec(),
+        serde_json::json!({
+            "@context": "https://schema.org",
+            "@type": "CreativeWork",
+            "name": "ForgedModel"
+        }),
+    );
+    forged_env.kappa[0] ^= 0xFF;
+    assert!(matches!(
+        holon.admit_arbitrary_prism_model(&forged_env, &grants),
+        Err(ObserverModelError::InvalidPrismModelEnvelope { .. })
+    ));
+
+    // Negative 3: Ungrounded factual assertion (`matched == 0 && !abstained`) refused (`EpistemicHallucinationRefused`):
+    assert!(matches!(
+        VerdantLanguageEngine::verify_dialogue_turn_claim(
+            "CHAR-MARINER-CAPTAIN",
+            0,
+            0,
+            false,
+            false
+        ),
+        Err(ObserverModelError::EpistemicHallucinationRefused { .. })
+    ));
+
+    // Negative 4: Unsigned `PlayerToPlayer` message refused (`CommunicationEnvelopeRejected`):
+    assert!(matches!(
+        holon.observe_communication(
+            CommunicationChannelKind::PlayerToPlayer,
+            "urn:verdant:player:alpha",
+            "urn:verdant:player:beta",
+            "en",
+            0,
+            "Unsigned spoofed peer message",
+            None,
+            0,
+        ),
+        Err(ObserverModelError::CommunicationEnvelopeRejected { .. })
+    ));
+
+    // Negative 5: Out-of-bounds NPC directive refused (`DirectiveOutOfBounds`):
+    assert!(matches!(
+        holon.set_npc_directive(0, 99),
+        Err(ObserverModelError::DirectiveOutOfBounds { .. })
+    ));
+
+    // Negative 6: Unknown domain pack slug refused (`UnknownDomainOrCharacter`):
+    assert!(matches!(
+        holon.switch_domain_pack("nonexistent-universe-999", None),
+        Err(ObserverModelError::UnknownDomainOrCharacter { .. })
+    ));
+}
