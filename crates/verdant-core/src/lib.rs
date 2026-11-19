@@ -62,6 +62,7 @@ pub mod runtime;
 pub mod standards;
 pub mod streaming;
 pub mod tensor;
+pub mod uhd;
 pub mod ui;
 pub mod universe;
 

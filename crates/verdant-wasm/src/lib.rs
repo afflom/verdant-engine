@@ -79,6 +79,11 @@ use verdant_core::streaming::{PhysicalEnvironment, TerrainReliefParams};
 #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
 use verdant_core::tensor::{render_triangles_tile_framebuffer_with_scratch, TileRasterScratch};
 #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+use verdant_core::uhd::{
+    build_meshlet_graph, evaluate_meshlet_visibility, evaluate_uhd_display_profile, MeshletGraph,
+    UhdVisibilityTelemetry,
+};
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
 use verdant_core::ui::UiTree;
 #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
 use verdant_core::universe::UniverseManager;
@@ -263,6 +268,21 @@ pub struct WasmRuntimeBridge {
     /// Optional imported glTF skeletal rigs, keyframe clips, and per-mesh LBS weights for live playback.
     #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
     pub custom_glb_rig: Option<ImportedGlbRigBundle>,
+    /// Per-mesh atlas-remapped UVs (`[-2.0, -2.0]` sentinel for untextured primitives).
+    #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+    pub custom_glb_mesh_atlas_uvs: Vec<Vec<[f32; 1 + 1]>>,
+    /// Number of distinct material textures packed into the active `.glb` PBR atlas (`1..=16`).
+    #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+    pub custom_glb_atlas_tile_count: usize,
+    /// Deterministic 64-triangle GPU meshlet partition covering the active static scene.
+    #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+    pub uhd_meshlet_graph: MeshletGraph,
+    /// Scratch buffer holding surviving indices after per-frame UHD frustum/cone/SSE culling.
+    #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+    pub uhd_visible_indices: Vec<u32>,
+    /// Most recent UHD meshlet visibility & culling telemetry.
+    #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+    pub uhd_last_visibility: Option<UhdVisibilityTelemetry>,
     /// Retained skin and animation clip counts from the active user-imported `.glb` bundle.
     #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
     pub imported_glb_skin_clip_counts: (usize, usize),
@@ -560,6 +580,16 @@ impl WasmRuntimeBridge {
             #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
             custom_glb_rig: None,
             #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+            custom_glb_mesh_atlas_uvs: Vec::new(),
+            #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+            custom_glb_atlas_tile_count: 0,
+            #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+            uhd_meshlet_graph: MeshletGraph::default(),
+            #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+            uhd_visible_indices: Vec::new(),
+            #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+            uhd_last_visibility: None,
+            #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
             imported_glb_skin_clip_counts: (0, 0),
             #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
             observer_holon: ObserverPrismHolon::new("sunspire-regatta").map_err(|e| {
@@ -756,6 +786,7 @@ impl WasmRuntimeBridge {
                     let Some(mesh) = meshes_ref.get(mesh_idx) else {
                         continue;
                     };
+                    let atlas_uvs = self.custom_glb_mesh_atlas_uvs.get(mesh_idx);
                     let uses_tex = has_tex
                         && self
                             .custom_glb_primary_tex_mask
@@ -764,7 +795,10 @@ impl WasmRuntimeBridge {
                             .unwrap_or(false);
                     for vi in 0..mesh.positions.len() {
                         if uses_tex {
-                            let uv = mesh.uvs.get(vi).copied().unwrap_or([0.0, 0.0]);
+                            let uv = atlas_uvs
+                                .and_then(|v| v.get(vi).copied())
+                                .or_else(|| mesh.uvs.get(vi).copied())
+                                .unwrap_or([0.0, 0.0]);
                             self.custom_glb_uvs_xy.push(uv[0]);
                             self.custom_glb_uvs_xy.push(uv[1]);
                         } else {
@@ -773,6 +807,10 @@ impl WasmRuntimeBridge {
                         }
                     }
                 }
+                self.uhd_meshlet_graph = build_meshlet_graph(
+                    &self.scene_buffers.positions_xyz,
+                    &self.scene_buffers.indices,
+                );
                 self.dynamic_buffers.positions_xyz.clear();
                 self.dynamic_buffers.normals_xyz.clear();
                 self.dynamic_buffers.colors_rgb.clear();
@@ -3421,6 +3459,8 @@ pub extern "C" fn verdant_wasm_glb_import_io() -> u32 {
     } else {
         None
     };
+    bridge.custom_glb_atlas_tile_count = imported.atlas_tile_count;
+    bridge.custom_glb_mesh_atlas_uvs = imported.mesh_atlas_uvs;
     bridge.custom_glb_primary_tex_mask = imported.primary_tex_mesh_mask;
     bridge.custom_glb_scene = Some((imported.scene, imported.meshes, imported.materials));
     bridge.static_dirty = true;
@@ -4465,6 +4505,8 @@ pub extern "C" fn verdant_wasm_load_domain_pack(domain_idx: u32) -> u32 {
     bridge.custom_glb_normal_tex = None;
     bridge.custom_glb_emissive_tex = None;
     bridge.custom_glb_rig = None;
+    bridge.custom_glb_mesh_atlas_uvs.clear();
+    bridge.custom_glb_atlas_tile_count = 0;
     bridge.npc_patrol_active = true;
     bridge.static_dirty = true;
     let _ = bridge.rebuild_scene_buffers(0.0);
@@ -5322,5 +5364,164 @@ pub extern "C" fn verdant_wasm_update_host_envelope_uhd(
         viewport_height_px,
     );
     bridge.aux_buffer = bridge.observer_holon.cognitive_resolution_json_bytes();
+    bridge.aux_buffer.len() as u32
+}
+
+/// Returns the number of distinct material textures packed into the active `.glb` PBR atlas (`0..=16`).
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+#[no_mangle]
+pub extern "C" fn verdant_wasm_glb_atlas_tile_count() -> u32 {
+    let Ok(guard) = global_bridge().lock() else {
+        return 0;
+    };
+    guard
+        .as_ref()
+        .map_or(0, |b| b.custom_glb_atlas_tile_count as u32)
+}
+
+/// Evaluates real-time UHD Frustum + O(1) Backface Normal-Cone + Screen-Space Error culling over
+/// the active scene's 64-triangle [`MeshletGraph`] and writes JSON telemetry into `aux_buffer`.
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+#[no_mangle]
+#[allow(clippy::too_many_arguments)]
+pub extern "C" fn verdant_wasm_uhd_cull_meshlets(
+    eye_x: f64,
+    eye_y: f64,
+    eye_z: f64,
+    target_x: f64,
+    target_y: f64,
+    target_z: f64,
+    aspect: f64,
+    viewport_h_px: u32,
+    min_sse_tenths_px: u32,
+) -> u32 {
+    let mut guard = global_bridge()
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
+    let Some(bridge) = guard.as_mut() else {
+        return 0;
+    };
+    if bridge.uhd_meshlet_graph.clusters.is_empty() && !bridge.scene_buffers.indices.is_empty() {
+        bridge.uhd_meshlet_graph = build_meshlet_graph(
+            &bridge.scene_buffers.positions_xyz,
+            &bridge.scene_buffers.indices,
+        );
+    }
+    let eye = Vec3::new(eye_x, eye_y, eye_z);
+    let target = Vec3::new(target_x, target_y, target_z);
+    let dist = (target - eye).length().max(1.0);
+    let two = 1.0 + 1.0;
+    let three = two + 1.0;
+    let fov_rad = std::f64::consts::PI / (three + (1.0 / (two * two + 1.0)) * two);
+    let near = (dist / ((1u32 << (1 + 1 + 1 + 1 + 1 + 1 + 1 + 1)) as f64))
+        .max(1.0 / ((1u32 << (1 + 1 + 1 + 1)) as f64));
+    let far =
+        (dist * ((1u32 << (1 + 1 + 1)) as f64)).max((1u32 << (1 + 1 + 1 + 1 + 1 + 1 + 1)) as f64);
+    let frustum = Frustum::from_perspective(
+        eye,
+        (target - eye).normalized(),
+        Vec3::new(0.0, 1.0, 0.0),
+        fov_rad,
+        aspect.max(1.0 / (two * two)),
+        near,
+        far,
+    );
+    let ten = two * (two + two + 1.0);
+    let min_px = f64::from(min_sse_tenths_px.max(1)) / ten;
+    let tan_half_fov = (fov_rad / two).tan();
+
+    let tel = evaluate_meshlet_visibility(
+        &bridge.uhd_meshlet_graph,
+        &bridge.scene_buffers.indices,
+        &frustum,
+        eye,
+        viewport_h_px,
+        tan_half_fov,
+        min_px,
+        &mut bridge.uhd_visible_indices,
+    );
+    let json_str = format!(
+        "{{\"totalMeshlets\":{},\"visibleMeshlets\":{},\"culledFrustum\":{},\"culledBackfaceCone\":{},\"culledSubpixel\":{},\"totalTriangles\":{},\"visibleTriangles\":{},\"cullRatioPermille\":{},\"atlasTileCount\":{}}}",
+        tel.total_meshlets,
+        tel.visible_meshlets,
+        tel.culled_frustum,
+        tel.culled_backface_cone,
+        tel.culled_subpixel,
+        tel.total_triangles,
+        tel.visible_triangles,
+        tel.cull_ratio_permille,
+        bridge.custom_glb_atlas_tile_count,
+    );
+    bridge.uhd_last_visibility = Some(tel);
+    bridge.aux_buffer = json_str.into_bytes();
+    bridge.aux_buffer.len() as u32
+}
+
+/// Zero-copy pointer to the last frame's culled visible triangle index buffer (`u32` stream).
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+#[no_mangle]
+pub extern "C" fn verdant_wasm_uhd_visible_idx_ptr() -> u32 {
+    let guard = global_bridge()
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
+    let Some(bridge) = guard.as_ref() else {
+        return 0;
+    };
+    if bridge.uhd_visible_indices.is_empty() {
+        0
+    } else {
+        bridge.uhd_visible_indices.as_ptr() as usize as u32
+    }
+}
+
+/// Element count of the last frame's culled visible triangle index buffer.
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+#[no_mangle]
+pub extern "C" fn verdant_wasm_uhd_visible_idx_count() -> u32 {
+    let guard = global_bridge()
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
+    guard
+        .as_ref()
+        .map(|b| b.uhd_visible_indices.len() as u32)
+        .unwrap_or(0)
+}
+
+/// Evaluates a lawful UHD-and-beyond (`1080p` -> `4K` -> `5K` -> `8K`) display fillrate profile
+/// and writes its JSON into `aux_buffer`.
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+#[no_mangle]
+pub extern "C" fn verdant_wasm_uhd_profile_aux(
+    width_px: u32,
+    height_px: u32,
+    is_software_gpu: u32,
+    webgpu_available: u32,
+    ema_frame_micros: u32,
+) -> u32 {
+    let mut guard = global_bridge()
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
+    let Some(bridge) = guard.as_mut() else {
+        return 0;
+    };
+    let p = evaluate_uhd_display_profile(
+        width_px,
+        height_px,
+        is_software_gpu != 0,
+        webgpu_available != 0,
+        ema_frame_micros,
+    );
+    let json_str = format!(
+        "{{\"displayClass\":\"{}\",\"widthPx\":{},\"heightPx\":{},\"megapixelsX100\":{},\"drsScalePermille\":{},\"casSharpnessPermille\":{},\"meshletSseTenthsPx\":{},\"preferredBackend\":\"{}\"}}",
+        p.display_class,
+        p.width_px,
+        p.height_px,
+        p.megapixels_x100,
+        p.drs_scale_permille,
+        p.cas_sharpness_permille,
+        p.meshlet_sse_tenths_px,
+        p.preferred_backend,
+    );
+    bridge.aux_buffer = json_str.into_bytes();
     bridge.aux_buffer.len() as u32
 }

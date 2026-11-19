@@ -360,6 +360,29 @@ function drawScene(eye, lookTarget, lodSpec, simClockSec, rebuildDynamic = false
       renderer.setTex?.(1, null, 0, 0, 0);
     }
     renderer.uploadSplitBuffers(split.staticViews, split.dynViews, split.instViews);
+    if (
+      customGlbActive &&
+      split.staticViews &&
+      split.staticViews.idx.length > 24576 &&
+      typeof renderer.updateStaticIndices === "function" &&
+      typeof host.verdant_wasm_uhd_cull_meshlets === "function" &&
+      typeof host.verdant_wasm_uhd_visible_idx_ptr === "function"
+    ) {
+      const ck = `${split.staticViews.epoch}:${Math.round(eye[0] * 10)},${Math.round(eye[1] * 10)},${Math.round(eye[2] * 10)}:${canvas.height}`;
+      if (ck !== renderer._lastCullKey) {
+        renderer._lastCullKey = ck;
+        host.verdant_wasm_uhd_cull_meshlets(
+          eye[0], eye[1], eye[2],
+          lookTarget[0], lookTarget[1], lookTarget[2],
+          aspect, canvas.height >>> 0, 6,
+        );
+        const vPtr = host.verdant_wasm_uhd_visible_idx_ptr() >>> 0;
+        const vCnt = host.verdant_wasm_uhd_visible_idx_count() >>> 0;
+        if (vPtr > 0 && vCnt > 0 && vCnt <= split.staticViews.idx.length) {
+          renderer.updateStaticIndices(new Uint32Array(host.memory.buffer, vPtr, vCnt));
+        }
+      }
+    }
     const fovRad = Math.PI / 3.4;
     const camDist = Math.hypot(eye[0] - lookTarget[0], eye[1] - lookTarget[1], eye[2] - lookTarget[2]) || 4;
     const nearPlane = customGlbActive ? Math.max(0.05, camDist * 0.004) : 0.25;
@@ -750,13 +773,24 @@ self.onmessage = async ({ data: msg }) => {
         aspectMilli: lastPose?.aspectMilli || 1600,
       };
       drawScene(cam.eye, cam.lookTarget, currentLod || { sky: [0.18, 0.30, 0.38], fog: [0.30, 0.40, 0.44] }, 0, false, 0, 0, true);
-      const pbrChannels = {
+        const pbrChannels = {
         albedo: (uorcWasm.verdant_wasm_scene_pbr_tex_width?.(0) >>> 0) > 0,
         metallicRoughness: (uorcWasm.verdant_wasm_scene_pbr_tex_width?.(1) >>> 0) > 0,
         normal: (uorcWasm.verdant_wasm_scene_pbr_tex_width?.(2) >>> 0) > 0,
         emissive: (uorcWasm.verdant_wasm_scene_pbr_tex_width?.(3) >>> 0) > 0,
         hasAnimation: uorcWasm.verdant_wasm_glb_has_animation?.() === 1,
+        atlasTileCount: uorcWasm.verdant_wasm_glb_atlas_tile_count?.() >>> 0,
       };
+      let meshletTelemetry = null;
+      if (typeof uorcWasm.verdant_wasm_uhd_cull_meshlets === "function") {
+        const aspect = canvas && canvas.height > 0 ? canvas.width / canvas.height : 1.6;
+        const mLen = uorcWasm.verdant_wasm_uhd_cull_meshlets(
+          cam.eye[0], cam.eye[1], cam.eye[2],
+          cam.lookTarget[0], cam.lookTarget[1], cam.lookTarget[2],
+          aspect, (canvas?.height || 1080) >>> 0, 10,
+        ) >>> 0;
+        if (mLen) meshletTelemetry = JSON.parse(new TextDecoder().decode(readAuxBytes(uorcWasm)));
+      }
       self.postMessage(
         {
           kind: "glb-imported",
@@ -766,6 +800,7 @@ self.onmessage = async ({ data: msg }) => {
           verts: uorcWasm.verdant_wasm_scene_vert_count() >>> 0,
           camera: cam,
           pbrChannels,
+          meshletTelemetry,
           uorcBytes: uorcStream,
         },
         [uorcStream.buffer],
@@ -1403,6 +1438,52 @@ self.onmessage = async ({ data: msg }) => {
         renderer?.setRenderScale?.(cognition.hostEnvelope.recommendedRenderScalePermille);
       }
       self.postMessage({ kind: "cognitive-resolution", id: msg.id, ok: Boolean(cognition), cognition });
+      return;
+    }
+
+    if (msg.kind === "uhd-profile") {
+      await ensureUorcSceneHost();
+      let webgpuHardware = null;
+      if (typeof navigator !== "undefined" && navigator.gpu && !renderer?.isSoftware) {
+        try {
+          const wgpu = await import("./scene-webgpu-renderer.mjs");
+          webgpuHardware = await wgpu.probeWebGpuHardware();
+        } catch {}
+      }
+      const webgpuAvail = Boolean(webgpuHardware);
+      const pLen = typeof uorcWasm.verdant_wasm_uhd_profile_aux === "function"
+        ? (uorcWasm.verdant_wasm_uhd_profile_aux(
+            (msg.widthPx || 3840) >>> 0,
+            (msg.heightPx || 2160) >>> 0,
+            renderer?.isSoftware ? 1 : 0,
+            webgpuAvail ? 1 : 0,
+            (msg.frameMicros || emaFrameMicros || 7500) >>> 0,
+          ) >>> 0)
+        : 0;
+      const profile = pLen ? JSON.parse(new TextDecoder().decode(readAuxBytes(uorcWasm))) : null;
+      const sh = simHost();
+      const cam = readSolvedCamera(sh);
+      let meshlets = null;
+      if (typeof uorcWasm.verdant_wasm_uhd_cull_meshlets === "function") {
+        const aspect = (msg.widthPx || 3840) / Math.max(1, msg.heightPx || 2160);
+        const mLen = uorcWasm.verdant_wasm_uhd_cull_meshlets(
+          cam.eye[0], cam.eye[1], cam.eye[2],
+          cam.lookTarget[0], cam.lookTarget[1], cam.lookTarget[2],
+          aspect, (msg.heightPx || 2160) >>> 0, (profile?.meshletSseTenthsPx || 10) >>> 0,
+        ) >>> 0;
+        if (mLen) meshlets = JSON.parse(new TextDecoder().decode(readAuxBytes(uorcWasm)));
+      }
+      self.postMessage({
+        kind: "uhd-profile-ready",
+        id: msg.id,
+        ok: Boolean(profile),
+        profile,
+        meshlets,
+        webgpuAvail,
+        webgpuLimits: webgpuHardware
+          ? { maxTextureDimension2D: webgpuHardware.maxTextureDimension2D, maxStorageBufferBindingSize: webgpuHardware.maxStorageBufferBindingSize }
+          : null,
+      });
       return;
     }
 

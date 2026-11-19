@@ -725,17 +725,21 @@ async function loadRemoteGlbIntoStage(glbUrl, label) {
       await syncFallbackBuffers();
       const ch = r.pbrChannels || {};
       const activeMaps = [
-        ch.albedo ? "Albedo" : null,
+        ch.albedo ? (ch.atlasTileCount > 1 ? `${ch.atlasTileCount}-Tile Atlas` : "Albedo") : null,
         ch.metallicRoughness ? "MR" : null,
         ch.normal ? "Normal" : null,
         ch.emissive ? "Emissive" : null,
       ].filter(Boolean);
       const mapLabel = activeMaps.length ? activeMaps.join("+") : "Vertex PBR";
       const animLabel = ch.hasAnimation ? " · Live LBS Rig" : "";
+      const mt = r.meshletTelemetry;
+      const cullLabel = mt?.totalMeshlets
+        ? ` · ${mt.visibleMeshlets}/${mt.totalMeshlets} meshlets (${(mt.cullRatioPermille / 10).toFixed(0)}% culled)`
+        : "";
       if (ch.hasAnimation && !simLive) setSimLive(true);
       if (hudProjectEl) hudProjectEl.textContent = `HD Stream Stage · ${label}`;
       if (hudMetricsEl) hudMetricsEl.textContent = `glTF 2.0 (${mapLabel}${animLabel}) · ${lTris.toLocaleString()} tris`;
-      chip(statusEl, `Mounted live Khronos .glb "${label}" (${lTris.toLocaleString()} tris · ${mapLabel}${animLabel})`);
+      chip(statusEl, `Mounted live Khronos .glb "${label}" (${lTris.toLocaleString()} tris · ${mapLabel}${animLabel}${cullLabel})`);
       refreshObserverCognition();
       requestRender();
       return true;
@@ -970,20 +974,33 @@ async function autoRefineObserverFromStreams() {
 
 cogRefineBtn?.addEventListener("click", () => autoRefineObserverFromStreams());
 cogUhdBtn?.addEventListener("click", async () => {
-  const cog = await refreshObserverCognition({
-    maxTex: lastCognition?.hostEnvelope?.maxTextureEdgePx || 8192,
-    threads: navigator.hardwareConcurrency || 8,
-    frameMicros: 7500,
-    viewportWidth: 3840,
-    viewportHeight: 2160,
-  });
+  const [cog, p4k, p8k] = await Promise.all([
+    refreshObserverCognition({
+      maxTex: lastCognition?.hostEnvelope?.maxTextureEdgePx || 8192,
+      threads: navigator.hardwareConcurrency || 8,
+      frameMicros: 7500,
+      viewportWidth: 3840,
+      viewportHeight: 2160,
+    }),
+    callWorker("uhd-profile", { widthPx: 3840, heightPx: 2160, frameMicros: 7500 }),
+    callWorker("uhd-profile", { widthPx: 7680, heightPx: 4320, frameMicros: 9000 }),
+  ]);
   if (cog?.hostEnvelope && cogLogEl) {
     const he = cog.hostEnvelope;
+    const m = p4k?.meshlets;
+    const mLine = m
+      ? `Meshlet Graph: ${m.visibleMeshlets}/${m.totalMeshlets} visible (${m.culledFrustum} frustum, ${m.culledBackfaceCone} backface-cone, ${m.culledSubpixel} sub-px -> ${(m.cullRatioPermille / 10).toFixed(1)}% culled)`
+      : "Meshlet Graph: Ready";
+    const p8 = p8k?.profile;
+    const line8k = p8
+      ? `8K Beyond (${p8.widthPx}×${p8.heightPx} · ${(p8.megapixelsX100 / 100).toFixed(2)} MP): DRS ${Math.round(p8.drsScalePermille / 10)}% + CAS ${Math.round(p8.casSharpnessPermille / 10)}% · SSE ${(p8.meshletSseTenthsPx / 10).toFixed(1)}px · ${p8.preferredBackend}`
+      : "";
     cogLogEl.textContent =
       `UHD 4K (3840×2160) Gameplay Envelope Verified:\n` +
       `Tier: ${he.uhdTierLabel} · DRS ${Math.round(he.recommendedRenderScalePermille / 10)}% + 5-Tap CAS Sharpener\n` +
-      `Texture Cap: ${he.recommendedTextureCapPx}px · Shadow Map: ${he.recommendedShadowMapPx}px · Anisotropy: ×${he.recommendedAnisotropy} · Max GLB: ${Math.round(he.recommendedGlbMaxBytes / 1048576)}MB`;
-    chip(statusEl, `UHD 4K Envelope Verified: ${he.uhdTierLabel} (DRS ${Math.round(he.recommendedRenderScalePermille / 10)}% + CAS)`);
+      `Texture Cap: ${he.recommendedTextureCapPx}px · Shadow Map: ${he.recommendedShadowMapPx}px · Anisotropy: ×${he.recommendedAnisotropy} · Max GLB: ${Math.round(he.recommendedGlbMaxBytes / 1048576)}MB\n` +
+      `${mLine}\n${line8k}`;
+    chip(statusEl, `UHD 4K & 8K Envelope Verified: ${he.uhdTierLabel} (${m?.totalMeshlets || 0} meshlets · WebGPU/WebGL2 ladder)`);
   }
 });
 cogClearSkyBtn?.addEventListener("click", () => applyRemoteEnvSky(null, "Reset"));

@@ -416,6 +416,10 @@ pub struct ImportedGlbScene {
     pub primary_normal_texture: Option<DecodedRgbaTexture>,
     /// Primary embedded `emissiveTexture` clamped to host budget.
     pub primary_emissive_texture: Option<DecodedRgbaTexture>,
+    /// Number of distinct material textures packed into `primary_albedo_texture` (`1..=16`).
+    pub atlas_tile_count: usize,
+    /// Per-mesh atlas-remapped UVs (`[-2.0, -2.0]` sentinel for untextured primitives).
+    pub mesh_atlas_uvs: Vec<Vec<[f32; DIM_PLANAR]>>,
     /// Per-mesh flag indicating whether the mesh samples `primary_albedo_texture` via `TEXCOORD_0`.
     pub primary_tex_mesh_mask: Vec<bool>,
 }
@@ -739,22 +743,92 @@ pub fn import_glb_to_scene_bounded(
             }
         }
     }
-    let primary_tex_src_idx = tex_usage
-        .into_iter()
-        .max_by_key(|&(_, count)| count)
-        .map(|(idx, _)| idx);
-    let primary_albedo_texture = primary_tex_src_idx
-        .and_then(|idx| images.get(idx))
-        .and_then(|img| decode_rgba_bounded(img, max_tex_edge_px));
-    let primary_mr_texture = mr_src_idx
-        .and_then(|idx| images.get(idx))
-        .and_then(|img| decode_rgba_bounded(img, max_tex_edge_px));
-    let primary_normal_texture = norm_src_idx
-        .and_then(|idx| images.get(idx))
-        .and_then(|img| decode_rgba_bounded(img, max_tex_edge_px));
-    let primary_emissive_texture = emis_src_idx
-        .and_then(|idx| images.get(idx))
-        .and_then(|img| decode_rgba_bounded(img, max_tex_edge_px));
+    let mut ranked_tex: Vec<(usize, usize)> = tex_usage.into_iter().collect();
+    ranked_tex.sort_by(|a, b| b.1.cmp(&a.1).then_with(|| a.0.cmp(&b.0)));
+    ranked_tex.truncate(crate::uhd::MAX_ATLAS_TILES);
+    let primary_tex_src_idx = ranked_tex.first().map(|&(idx, _)| idx);
+
+    let mut atlas_src_to_tile: std::collections::BTreeMap<usize, usize> =
+        std::collections::BTreeMap::new();
+    let mut atlas_tile_transforms: Vec<crate::uhd::AtlasUvTransform> = Vec::new();
+    let mut atlas_tile_count = 0usize;
+    let primary_albedo_texture = if ranked_tex.len() <= 1 {
+        if let Some(idx) = primary_tex_src_idx {
+            atlas_src_to_tile.insert(idx, 0);
+            atlas_tile_transforms.push(crate::uhd::AtlasUvTransform {
+                u_offset: 0.0,
+                v_offset: 0.0,
+                u_scale: 1.0,
+                v_scale: 1.0,
+            });
+            atlas_tile_count = 1;
+            images
+                .get(idx)
+                .and_then(|img| decode_rgba_bounded(img, max_tex_edge_px))
+        } else {
+            None
+        }
+    } else {
+        let two_u = 1u32 + 1;
+        let three_u = two_u + 1;
+        let four_u = two_u * two_u;
+        let grid_dim = if ranked_tex.len() <= (four_u as usize) {
+            two_u
+        } else if ranked_tex.len() <= ((three_u * three_u) as usize) {
+            three_u
+        } else {
+            four_u
+        };
+        let per_tile_cap = (max_tex_edge_px / grid_dim).max(1);
+        let mut decoded_tiles: Vec<(usize, DecodedRgbaTexture)> = Vec::new();
+        for &(src_idx, _) in &ranked_tex {
+            if let Some(tex) = images
+                .get(src_idx)
+                .and_then(|img| decode_rgba_bounded(img, per_tile_cap))
+            {
+                decoded_tiles.push((src_idx, tex));
+            }
+        }
+        let slice_refs: Vec<(u32, u32, &[u8])> = decoded_tiles
+            .iter()
+            .map(|(_, t)| (t.width, t.height, t.rgba.as_slice()))
+            .collect();
+        if let Some(atlas) = crate::uhd::pack_rgba_texture_atlas(&slice_refs, max_tex_edge_px) {
+            for (slot, (src_idx, _)) in decoded_tiles.iter().enumerate() {
+                atlas_src_to_tile.insert(*src_idx, slot);
+            }
+            atlas_tile_count = atlas.tile_count;
+            atlas_tile_transforms = atlas.tile_transforms;
+            Some(DecodedRgbaTexture {
+                width: atlas.width,
+                height: atlas.height,
+                rgba: atlas.rgba,
+            })
+        } else {
+            None
+        }
+    };
+    let primary_mr_texture = if atlas_tile_count <= 1 {
+        mr_src_idx
+            .and_then(|idx| images.get(idx))
+            .and_then(|img| decode_rgba_bounded(img, max_tex_edge_px))
+    } else {
+        None
+    };
+    let primary_normal_texture = if atlas_tile_count <= 1 {
+        norm_src_idx
+            .and_then(|idx| images.get(idx))
+            .and_then(|img| decode_rgba_bounded(img, max_tex_edge_px))
+    } else {
+        None
+    };
+    let primary_emissive_texture = if atlas_tile_count <= 1 {
+        emis_src_idx
+            .and_then(|idx| images.get(idx))
+            .and_then(|img| decode_rgba_bounded(img, max_tex_edge_px))
+    } else {
+        None
+    };
 
     let default_ior = (four_u32() as f32) / (three_u32() as f32);
     let mut materials = Vec::new();
@@ -788,6 +862,7 @@ pub fn import_glb_to_scene_bounded(
     let mut meshes = Vec::new();
     let mut mesh_first_prim_mat = Vec::new();
     let mut skin_weights = Vec::new();
+    let mut mesh_atlas_uvs = Vec::new();
     let mut primary_tex_mesh_mask = Vec::new();
     let i2 = 1usize + 1usize;
 
@@ -812,11 +887,13 @@ pub fn import_glb_to_scene_bounded(
         let mut positions: Vec<[f32; DIM_SPATIAL]> = Vec::new();
         let mut normals: Vec<[f32; DIM_SPATIAL]> = Vec::new();
         let mut uvs: Vec<[f32; DIM_PLANAR]> = Vec::new();
+        let mut atlas_uvs: Vec<[f32; DIM_PLANAR]> = Vec::new();
         let mut colors: Vec<[f32; DIM_HOMOGENEOUS]> = Vec::new();
         let mut indices: Vec<u32> = Vec::new();
         let mut prim_weights: Vec<SkinWeights4> = Vec::new();
         let mut all_prims_skinned = true;
-        let mut all_prims_primary_tex = primary_tex_src_idx.is_some();
+        let mut any_prim_in_atlas = false;
+        let uv_sentinel = -(1.0_f32 + 1.0_f32);
 
         for prim in &tri_prims {
             let prim_tex_src = prim
@@ -824,8 +901,11 @@ pub fn import_glb_to_scene_bounded(
                 .pbr_metallic_roughness()
                 .base_color_texture()
                 .map(|info| info.texture().source().index());
-            if prim_tex_src != primary_tex_src_idx {
-                all_prims_primary_tex = false;
+            let prim_atlas_xform = prim_tex_src
+                .and_then(|si| atlas_src_to_tile.get(&si).copied())
+                .and_then(|slot| atlas_tile_transforms.get(slot).copied());
+            if prim_atlas_xform.is_some() {
+                any_prim_in_atlas = true;
             }
             let reader = prim.reader(|buffer| buffers.get(buffer.index()).map(|d| d.0.as_slice()));
             let prim_pos: Vec<[f32; DIM_SPATIAL]> = reader
@@ -893,6 +973,18 @@ pub fn import_glb_to_scene_bounded(
                 .base_color_texture()
                 .and_then(|info| images.get(info.texture().source().index()));
             let uv_start = uvs.len().saturating_sub(v_count);
+            for local_i in 0..v_count {
+                if let Some(xf) = prim_atlas_xform {
+                    let uv = uvs.get(uv_start + local_i).copied().unwrap_or([0.0, 0.0]);
+                    atlas_uvs.push(if atlas_tile_count <= 1 {
+                        uv
+                    } else {
+                        xf.apply(uv[0], uv[1])
+                    });
+                } else {
+                    atlas_uvs.push([uv_sentinel, uv_sentinel]);
+                }
+            }
             match reader.read_colors(0) {
                 Some(col) => {
                     for (local_i, c) in col.into_rgba_f32().enumerate() {
@@ -984,7 +1076,8 @@ pub fn import_glb_to_scene_bounded(
         mesh_first_prim_mat.push(first_prim.material().index());
         meshes.push(pm);
         skin_weights.push(prim_weights);
-        primary_tex_mesh_mask.push(all_prims_primary_tex);
+        mesh_atlas_uvs.push(atlas_uvs);
+        primary_tex_mesh_mask.push(any_prim_in_atlas);
     }
 
     // Extract acyclic Skeletons from glTF Skins:
@@ -1189,6 +1282,8 @@ pub fn import_glb_to_scene_bounded(
         primary_mr_texture,
         primary_normal_texture,
         primary_emissive_texture,
+        atlas_tile_count,
+        mesh_atlas_uvs,
         primary_tex_mesh_mask,
     })
 }

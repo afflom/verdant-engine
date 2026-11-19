@@ -1300,6 +1300,34 @@ pub fn run_cli(args: &[String]) -> Result<String, CliCommandError> {
                     diagnostic: format!("wgsl: {e}"),
                 }
             })?;
+            let uhd_shaders = verdant_core::uhd::validate_uhd_shaders().map_err(|e| {
+                CliCommandError::ValidationRejected {
+                    command: "automate-check".to_string(),
+                    diagnostic: format!("uhd-wgsl: {e}"),
+                }
+            })?;
+            let uhd_8k = verdant_core::uhd::evaluate_uhd_display_profile(
+                uhd_w << 1,
+                uhd_h << 1,
+                false,
+                true,
+                fast_us,
+            );
+            if uhd_8k.display_class != "UHD 8K 4320p" {
+                return Err(CliCommandError::ValidationRejected {
+                    command: "automate-check".to_string(),
+                    diagnostic: format!("unexpected 8K UHD profile: {}", uhd_8k.display_class),
+                });
+            }
+            let sample_meshlets = verdant_core::uhd::build_meshlet_graph_from_mesh(
+                &holon.active_domain.sector.meshes[0],
+            );
+            if sample_meshlets.clusters.is_empty() {
+                return Err(CliCommandError::ValidationRejected {
+                    command: "automate-check".to_string(),
+                    diagnostic: "meshlet graph produced zero clusters".to_string(),
+                });
+            }
 
             let seed = pk("automate-check", prism_kernel::wasmDefaultSeed())?;
             let std_state = StandardSceneState::synthesize_at_lod(seed, max_lod).map_err(|e| {
@@ -1342,11 +1370,14 @@ pub fn run_cli(args: &[String]) -> Result<String, CliCommandError> {
 
             let elapsed_ms = t0.elapsed().as_millis();
             Ok(format!(
-                "AUTOMATE CHECK OK: domains={verified_domains} streams={} uhd={} entities={total_entities} ui_widgets={} wgsl_shaders={} uorc_bytes={} stitch_parity=2of3 elapsed_ms={elapsed_ms}",
+                "AUTOMATE CHECK OK: domains={verified_domains} streams={} uhd={} uhd8k={} meshlets={} entities={total_entities} ui_widgets={} wgsl_shaders={}+{} uorc_bytes={} stitch_parity=2of3 elapsed_ms={elapsed_ms}",
                 holon.sensory_streams.len(),
                 holon.host_envelope.uhd_tier_label,
+                uhd_8k.display_class,
+                sample_meshlets.clusters.len(),
                 solved_ui.len(),
                 shaders.len(),
+                uhd_shaders.len(),
                 uorc_snap.len(),
             ))
         }

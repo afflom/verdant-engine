@@ -213,6 +213,12 @@ export async function createGlRenderer(canvas) {
       uBs([[B, sGpu.pos, p], [B, sGpu.norm, n], [B, sGpu.col, c], [E, sGpu.idx, ix]]);
       sGpu.count = ix.length; sGpu.epoch = (sGpu.epoch + 1) >>> 0; dGpu.count = 0; cKey = "";
     },
+    updateStaticIndices(ix) {
+      if (!okGl() || !ix || ix.length === 0) return;
+      gl.bindBuffer(E, sGpu.idx);
+      gl.bufferData(E, ix, gl.DYNAMIC_DRAW);
+      sGpu.count = ix.length;
+    },
     render(mvp, eye, lodSpec, timeSec, lTgt = [0, 1.8, 0], fovRad = Math.PI / 3.4, forceSync = false) {
       const w = canvas.width | 0, h = canvas.height | 0;
       if (ctxLost || w <= 0 || h <= 0 || gl.isContextLost()) return;

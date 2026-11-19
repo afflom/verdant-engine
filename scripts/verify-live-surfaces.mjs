@@ -454,7 +454,14 @@ try {
     );
     await page.click("#cog-uhd-btn");
     await page.waitForFunction(
-      () => (document.getElementById("cog-log")?.textContent || "").includes("UHD 4K (3840×2160) Gameplay Envelope Verified:"),
+      () => {
+        const txt = document.getElementById("cog-log")?.textContent || "";
+        return (
+          txt.includes("UHD 4K (3840×2160) Gameplay Envelope Verified:") &&
+          txt.includes("Meshlet Graph:") &&
+          txt.includes("8K Beyond (7680×4320")
+        );
+      },
       null,
       { timeout: 10000 },
     );
