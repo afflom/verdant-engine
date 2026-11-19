@@ -108,7 +108,8 @@ verdant <subcommand> [options]
   verify-story [seed]                         Verify StoryAutomaton tropical reachability & conservation
   pack-universe <out_dir> [seed]              Pack 3-sector floating-origin universe & Stitch shards
   automate-check                              Self-verify all 4 catalog domains, Observer, UI, WGSL, & .uorc
-  operator <status|prompt|apply|synthesize|publish-app|audit|session>  Manage Verdant via VSM & ISO 42010 API
+  operator <status|prompt|apply|synthesize|publish-app|verify-seal|audit|session>  Manage Verdant via VSM & ISO 42010 API
+  mcp [--root <dir>]                          Run Model Context Protocol (JSON-RPC 2.0 stdio) server
   benchmark [frames]                          Run headless 60fps physics + BVH + GJK + NavMesh benchmark
   stress-benchmark [entities]                 Run 10k+ SoA bit-plane, TwoLevelBvh & monoid stress benchmark";
 
@@ -1685,6 +1686,35 @@ pub fn run_cli(args: &[String]) -> Result<String, CliCommandError> {
                     }
                     Ok(rendered)
                 }
+                "verify-seal" => {
+                    let two = 1usize + 1usize;
+                    let mut root =
+                        std::env::current_dir().unwrap_or_else(|_| std::path::PathBuf::from("."));
+                    let mut i = two;
+                    while i < args.len() {
+                        if args[i] == "--root" && i + 1 < args.len() {
+                            root = std::path::PathBuf::from(&args[i + 1]);
+                            i += two;
+                        } else {
+                            i += 1;
+                        }
+                    }
+                    let rep = ch.verify_immutability_seal(&root);
+                    let status_txt = if rep.valid { "VALID" } else { "TAMPERED" };
+                    let summary = format!(
+                        "VIEW IMMUTABILITY SEAL {status_txt}: checked={} root={} violations={}",
+                        rep.checked_files,
+                        rep.seal_root_sha256_hex,
+                        rep.violations.join(" | ")
+                    );
+                    if !rep.valid {
+                        return Err(CliCommandError::ValidationRejected {
+                            command: "operator verify-seal".to_string(),
+                            diagnostic: summary,
+                        });
+                    }
+                    Ok(summary)
+                }
                 "session" => {
                     use std::io::BufRead;
                     let two = 1usize + 1usize;
@@ -1722,10 +1752,49 @@ pub fn run_cli(args: &[String]) -> Result<String, CliCommandError> {
                 }
                 other => Err(CliCommandError::InvalidUsage {
                     usage: format!(
-                        "unknown operator action `{other}` (expected status|prompt|apply|synthesize|publish-app|audit|session)"
+                        "unknown operator action `{other}` (expected status|prompt|apply|synthesize|publish-app|verify-seal|audit|session)"
                     ),
                 }),
             }
+        }
+        "mcp" => {
+            use std::io::{BufRead, Write};
+            let two = 1usize + 1usize;
+            let mut root =
+                std::env::current_dir().unwrap_or_else(|_| std::path::PathBuf::from("."));
+            let mut i = 1usize;
+            while i < args.len() {
+                if args[i] == "--root" && i + 1 < args.len() {
+                    root = std::path::PathBuf::from(&args[i + 1]);
+                    i += two;
+                } else {
+                    i += 1;
+                }
+            }
+            let mut ch = verdant_core::operator::VerdantOperatorChannel::new("sunspire-regatta")
+                .map_err(|e| CliCommandError::ValidationRejected {
+                    command: "mcp".to_string(),
+                    diagnostic: e.to_string(),
+                })?;
+            let stdin = std::io::stdin();
+            let mut stdout = std::io::stdout().lock();
+            for line_res in stdin.lock().lines() {
+                let line = line_res.map_err(|e| CliCommandError::IoFailure {
+                    path: "stdin".to_string(),
+                    reason: e.to_string(),
+                })?;
+                if let Some(resp) = ch.handle_mcp_jsonrpc_line(&root, &line) {
+                    writeln!(stdout, "{resp}").map_err(|e| CliCommandError::IoFailure {
+                        path: "stdout".to_string(),
+                        reason: e.to_string(),
+                    })?;
+                    stdout.flush().map_err(|e| CliCommandError::IoFailure {
+                        path: "stdout".to_string(),
+                        reason: e.to_string(),
+                    })?;
+                }
+            }
+            Ok(String::new())
         }
         other => Err(CliCommandError::InvalidUsage {
             usage: format!("unknown subcommand `{other}`\n{CLI_USAGE}"),

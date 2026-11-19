@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "verdant": {
+      "command": "cargo",
+      "args": [
+        "run",
+        "--locked",
+        "-q",
+        "-p",
+        "verdant-cli",
+        "--",
+        "mcp"
+      ]
+    }
+  }
+}

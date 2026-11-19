@@ -39,7 +39,8 @@
       "ownedFiles": [
         "crates/verdant-core/src/observer.rs",
         "crates/verdant-core/src/operator.rs",
-        "site/generated/viewpoint-contracts.json"
+        "site/generated/viewpoint-contracts.json",
+        "site/generated/immutability-seal.json"
       ],
       "ownedCrates": [],
       "ownedObserverParts": [],

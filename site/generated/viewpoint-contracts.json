@@ -2,7 +2,7 @@
   "managers": [
     {
       "basisPrime": 59,
-      "kappaHex": "a38b49a877d3df222a2961865c2cac92ddd86831553caa60010c2f3879274259",
+      "kappaHex": "687b748fe4f5946da06fe73c6fc532de1fb57ffa7e51b7d28dbdb559ec8468f1",
       "spec": {
         "almPhases": [
           "governance",
@@ -31,7 +31,8 @@
         "ownedFiles": [
           "crates/verdant-core/src/observer.rs",
           "crates/verdant-core/src/operator.rs",
-          "site/generated/viewpoint-contracts.json"
+          "site/generated/viewpoint-contracts.json",
+          "site/generated/immutability-seal.json"
         ],
         "ownedObserverParts": [],
         "ownedStreams": [],

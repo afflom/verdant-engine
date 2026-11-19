@@ -5180,6 +5180,88 @@ fn engine_ve_42() {
     assert!(stitch_catalog_json.contains("\"appCount\": 4"));
     assert!(stitch_catalog_json.contains("Parity (A ^ B)"));
 
+    // 7c. Model Context Protocol (MCP JSON-RPC 2.0) server & View Immutability Seal falsifiability:
+    let init_resp = ch
+        .handle_mcp_jsonrpc_line(
+            &root,
+            r#"{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}"#,
+        )
+        .expect("mcp initialize response");
+    assert!(init_resp.contains("\"protocolVersion\":\"2024-11-05\""));
+    assert!(init_resp.contains("verdant-engine-mcp"));
+
+    let tools_resp = ch
+        .handle_mcp_jsonrpc_line(
+            &root,
+            r#"{"jsonrpc":"2.0","id":2,"method":"tools/list","params":{}}"#,
+        )
+        .expect("mcp tools/list response");
+    assert!(tools_resp.contains("verdant_mutate_view"));
+    assert!(tools_resp.contains("verdant_verify_immutability"));
+
+    let imm_resp = ch
+        .handle_mcp_jsonrpc_line(
+            &root,
+            r#"{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"verdant_verify_immutability","arguments":{}}}"#,
+        )
+        .expect("mcp verify immutability");
+    assert!(imm_resp.contains("\"isError\":false"));
+
+    let res_list = ch
+        .handle_mcp_jsonrpc_line(
+            &root,
+            r#"{"jsonrpc":"2.0","id":4,"method":"resources/list","params":{}}"#,
+        )
+        .expect("mcp resources/list");
+    assert!(res_list.contains("verdant://generated/immutability-seal"));
+
+    // Negative test: cross-manager / ungrounded mutation MUST be refused with 0 bytes written:
+    let bad_mut = ch
+        .mutate_owned_file(
+            &root,
+            &verdant_core::operator::OwnedFileMutationRequest {
+                viewpoint: "creator-studio".to_string(),
+                directive: "Edit catalog html from studio manager".to_string(),
+                cited_authority: "AUTH-ISO-42010-VIEWPOINTS".to_string(),
+                path: "site/catalogs/index.html".to_string(),
+                mode: "replace_exact".to_string(),
+                target: Some("Verdant Catalogs".to_string()),
+                replacement: Some("Hijacked".to_string()),
+                content: None,
+                operator_prism_id: "prism:operator-ci".to_string(),
+            },
+        )
+        .expect("refused cross-manager mutation");
+    assert!(!bad_mut.mutated);
+    assert!(bad_mut.diagnostic.contains("not owned by"));
+
+    // Negative immutability falsifiability test: out-of-band 1-byte tamper in temp mirror MUST fail!
+    let tmp_dir = std::env::temp_dir().join("verdant_ve42_immutability_test");
+    let _ = std::fs::remove_dir_all(&tmp_dir);
+    for &rel in verdant_core::operator::SEALED_IMMUTABLE_VIEW_FILES {
+        let dst = tmp_dir.join(rel);
+        if let Some(p) = dst.parent() {
+            std::fs::create_dir_all(p).expect("mkdir");
+        }
+        std::fs::copy(root.join(rel), &dst).expect("copy sealed file");
+    }
+    ch.seal_repository_views(&tmp_dir, "test-seal-kappa")
+        .expect("seal temp mirror");
+    assert!(ch.verify_immutability_seal(&tmp_dir).valid);
+    // Simulate unauthorized manual out-of-band edit to site/studio/index.html:
+    let tampered_path = tmp_dir.join("site/studio/index.html");
+    let mut tampered = std::fs::read_to_string(&tampered_path).expect("read studio");
+    tampered.push_str("\n<!-- unauthorized manual edit -->");
+    std::fs::write(&tampered_path, tampered).expect("write tamper");
+    let after_tamper = ch.verify_immutability_seal(&tmp_dir);
+    assert!(!after_tamper.valid);
+    assert!(after_tamper
+        .violations
+        .iter()
+        .any(|v| v.contains("out-of-band manual edit detected")
+            && v.contains("site/studio/index.html")));
+    let _ = std::fs::remove_dir_all(&tmp_dir);
+
     // 8. WebAssembly C-ABI mirror (`verdant_wasm_operator_status_aux` + `verdant_wasm_operator_prompt_io`):
     let _abi_guard = wasm_abi_lock();
     assert_eq!(verdant_wasm_init(7), 1);

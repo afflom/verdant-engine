@@ -1250,6 +1250,31 @@ export function verifyContextPurityAndIntentionalInterfaceContract({
       throw new Error("Gate C13 (mgr-design-coordinator): site/generated/studio-experience.css must not use backdrop-filter blur");
     }
   }
+  const sealPath = join(rootDir, "site", "generated", "immutability-seal.json");
+  if (existsSync(sealPath)) {
+    const seal = JSON.parse(readFileSync(sealPath, "utf8"));
+    if (seal.spec !== "verdant/view-immutability-seal/1" || !Array.isArray(seal.files) || seal.files.length < 11) {
+      throw new Error("Gate C13 (mgr-observer-executive): site/generated/immutability-seal.json malformed or incomplete");
+    }
+    const sorted = [...seal.files].sort((a, b) => a.path.localeCompare(b.path));
+    const rootInput = sorted.map((f) => `${f.path}|${f.owningManagerId}|${f.managerKappaHex}|${f.sha256Hex}\n`).join("");
+    const computedRoot = createHash("sha256").update(rootInput).digest("hex");
+    if (computedRoot !== seal.sealRootSha256Hex) {
+      throw new Error(`Gate C13 (mgr-observer-executive): immutability seal root tamper detected (expected ${computedRoot}, found ${seal.sealRootSha256Hex})`);
+    }
+    for (const f of seal.files) {
+      const abs = join(rootDir, f.path);
+      if (!existsSync(abs)) {
+        throw new Error(`Gate C13 (immutability-seal): missing sealed view "${f.path}"`);
+      }
+      const obsSha = createHash("sha256").update(readFileSync(abs)).digest("hex");
+      if (obsSha !== f.sha256Hex) {
+        throw new Error(
+          `Gate C13 (immutability-seal): out-of-band manual edit detected on immutable view "${f.path}" (owner ${f.owningManagerId}) — modify only via Verdant API/MCP`,
+        );
+      }
+    }
+  }
   const htmlByViewpoint = {
     "runtime-stage": ["site/card.html", cardHtml],
     "creator-studio": ["site/studio/index.html", studioPageHtml],

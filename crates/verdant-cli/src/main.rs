@@ -8,7 +8,9 @@ fn main() -> ExitCode {
     let args: Vec<String> = std::env::args().skip(1).collect();
     match verdant_cli::run_cli(&args) {
         Ok(report) => {
-            println!("{report}");
+            if !report.is_empty() {
+                println!("{report}");
+            }
             ExitCode::SUCCESS
         }
         Err(err) => {
