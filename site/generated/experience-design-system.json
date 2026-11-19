@@ -1,0 +1,95 @@
+{
+  "brand": {
+    "catalogHeadline": "Playable Apps, 3D Assets & Starting Worlds",
+    "catalogSubhead": "Launch community games, browse free 3D models and sky domes, or open any starting world directly in Verdant Studio.",
+    "catalogsName": "Verdant Catalogs",
+    "name": "Verdant",
+    "studioHeadline": "Start building your 3D world",
+    "studioName": "Verdant Studio",
+    "studioSubhead": "Pick a starter world, customize it with free 3D assets, playtest live, and share your finished app to the Verdant App Catalog.",
+    "tagline": "Create, play, and share 3D games and worlds right in your browser."
+  },
+  "governingStandards": [
+    "ISO 9241-210:2019 Human-Centred Design",
+    "W3C DTCG 2025.10 Design Tokens",
+    "WCAG 2.2 Level AA",
+    "ISO/IEC/IEEE 42010:2022 Architecture Viewpoints"
+  ],
+  "managerKappaHex": "208e552600e43ed6df759810cea9c4e094533ff71062eb75017b1475e96c718b",
+  "owningManager": "mgr-design-coordinator",
+  "plainLanguage": {
+    "cameraPrefix": "View",
+    "detailPrefix": "Detail",
+    "directPlaceholder": "Try \"focus stone arch\", \"3rd person\", or \"ultra detail\"…",
+    "pausePreview": "Pause Preview",
+    "playPreview": "Play Preview",
+    "readyBanner": "Ready — pick a world, browse 3D assets below, or click Play Preview.",
+    "slotLabels": {
+      "audio:soundscape": "Soundscape",
+      "code:shader": "Shader & Code",
+      "design:3d-model": "3D Model",
+      "design:character": "Character Rig",
+      "design:material": "Material & Sky",
+      "design:theme": "Theme & Style",
+      "design:typography": "Typography",
+      "narrative:lore": "World Lore",
+      "studio:any": "Studio Asset",
+      "world:pack": "Starting World"
+    },
+    "soundOff": "Sound: Off",
+    "soundOn": "Sound: On",
+    "uploadModel": "Upload 3D (.glb)",
+    "worldCards": {
+      "glasshouse-chronicle": {
+        "badge": "Indie Side-Scroller",
+        "blurb": "Lush sunlit botanical sanctuary & terraced canopy"
+      },
+      "meridian-observatory": {
+        "badge": "MMO Universe",
+        "blurb": "Twilight celestial observatory & starlight dome"
+      },
+      "starfall-bastion": {
+        "badge": "Arena FPS",
+        "blurb": "Volcanic dusk bastion built for fast 3D combat"
+      },
+      "sunspire-regatta": {
+        "badge": "Coastal Adventure",
+        "blurb": "Sunlit stone arch basin & coastal beacon trials"
+      }
+    }
+  },
+  "spec": "verdant/experience-design-system/1",
+  "studioJourney": {
+    "defaultStep": "world",
+    "steps": [
+      {
+        "actionLabel": "Focus Worlds",
+        "id": "world",
+        "nextLabel": "Next: Add 3D Assets",
+        "nextStep": "build",
+        "number": "01",
+        "summary": "Pick one of the four ready-made 3D worlds on the left and drag on the stage to explore it live.",
+        "title": "Choose a World"
+      },
+      {
+        "actionLabel": "Browse Assets",
+        "id": "build",
+        "nextLabel": "Next: Play & Share",
+        "nextStep": "publish",
+        "number": "02",
+        "summary": "Search free 3D models, characters, skies, and materials below. Preview anything or click + Add to bring it into your project.",
+        "title": "Add Assets & Customize"
+      },
+      {
+        "actionLabel": "Publish & Export",
+        "id": "publish",
+        "nextLabel": "Back to Step 1",
+        "nextStep": "world",
+        "number": "03",
+        "summary": "Name your creation, choose a game genre, run a quick check, and publish to the Stitch App Catalog or export a .uorc file.",
+        "title": "Playtest & Share"
+      }
+    ]
+  },
+  "vsmSystem": "VSM-S2"
+}

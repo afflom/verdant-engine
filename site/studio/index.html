@@ -841,8 +841,9 @@
       text-underline-offset: 0.2rem;
     }
   </style>
+  <link rel="stylesheet" href="../generated/studio-experience.css">
 </head>
-<body>
+<body data-studio-focus="world">
   <header class="ide-topbar">
     <a href="./" class="ide-brand"><span class="ide-brand-dot" aria-hidden="true"></span>Verdant Studio</a>
     <nav class="ide-nav" aria-label="Verdant platform navigation">
@@ -859,6 +860,16 @@
   </header>
 
   <main class="ide-main">
+    <section id="studio-journey-host" class="vx-journey-banner" aria-label="Getting Started in Verdant Studio">
+      <div class="vx-journey-head">
+        <div class="vx-journey-copy">
+          <span class="vx-journey-kicker">Start Here · Verdant Studio</span>
+          <h1 class="vx-journey-title">Start building your 3D world</h1>
+          <p class="vx-journey-sub">Pick a starter world, customize it with free 3D assets, playtest live, and share your finished app to the Verdant App Catalog.</p>
+        </div>
+      </div>
+    </section>
+
     <div class="ide-context-banner" id="studio-catalog-banner" data-active="false">
       <span id="studio-catalog-banner-text"></span>
       <a class="st-btn sm" href="../catalogs/">Browse Catalogs</a>
@@ -867,10 +878,10 @@
     <div class="ide-grid">
       <!-- LEFT RAIL: World Environments, Project Assets, and Publish & Export -->
       <aside class="ide-left-col" aria-label="Project Explorer, Imported Assets, and Publish">
-        <section class="ide-pane">
+        <section class="ide-pane" id="studio-worlds-pane">
           <div class="ide-pane-head">
-            <h2>World Environments</h2>
-            <span class="ide-pane-sub">4 Presets</span>
+            <h2>1. Choose a World</h2>
+            <span class="ide-pane-sub">4 Worlds</span>
           </div>
           <div class="ide-pane-body">
             <div class="proj-domain-list" id="wiz-domain-grid"></div>
@@ -893,7 +904,7 @@
 
         <section class="ide-pane" id="studio-publish-pane">
           <div class="ide-pane-head">
-            <h2>Publish &amp; Export</h2>
+            <h2>3. Publish &amp; Export</h2>
             <span class="ide-pane-sub">Stitch · .uorc</span>
           </div>
           <div class="ide-pane-body">
@@ -937,38 +948,38 @@
 
       <!-- CENTER COLUMN: Live 3D Stage + Unified Asset Discovery -->
       <section class="ide-center-col" aria-label="Live 3D Stage and Asset Discovery">
-        <article class="ide-pane">
+        <article class="ide-pane" id="studio-stage-pane">
           <div class="ide-pane-head">
             <h2 id="studio-hud-project">Sunspire Harbor Regatta</h2>
-            <span class="ide-pane-sub" id="studio-hud-metrics">LOD3 · Clear 290mm</span>
+            <span class="ide-pane-sub" id="studio-hud-metrics">High Detail · Ready</span>
           </div>
           <div class="wf-stage-bar" id="studio-stage-showcase" role="group" aria-label="Active 3D Stage Subject">
-            <span style="color:var(--muted-foreground);">Stage:</span>
+            <span style="color:var(--muted-foreground);">Preview:</span>
             <button type="button" class="wf-stage-chip" id="stage-mode-domain" aria-pressed="true">World Scene</button>
             <span id="stage-featured-glbs" style="display:inline-flex;flex-wrap:wrap;gap:var(--space-1);"></span>
           </div>
           <canvas id="studio-canvas" width="960" height="540" aria-label="Verdant Studio live 3D authoring stage"></canvas>
           <div class="st-transport" role="group" aria-label="3D viewport controls">
-            <button type="button" class="st-btn primary sm" id="studio-sim-btn" aria-pressed="false">Step Physics</button>
-            <button type="button" class="st-btn sm" id="studio-cam-btn">Camera: Orbit</button>
-            <button type="button" class="st-btn sm" id="studio-lod-btn">Fidelity: LOD3</button>
-            <button type="button" class="st-btn sm" id="studio-audio-btn" aria-pressed="false">Audio: Off</button>
-            <button type="button" class="st-btn sm" id="studio-import-btn">Upload .glb</button>
+            <button type="button" class="st-btn primary sm" id="studio-sim-btn" aria-pressed="false">Play Preview</button>
+            <button type="button" class="st-btn sm" id="studio-cam-btn">View: Orbit</button>
+            <button type="button" class="st-btn sm" id="studio-lod-btn">Detail: High</button>
+            <button type="button" class="st-btn sm" id="studio-audio-btn" aria-pressed="false">Sound: Off</button>
+            <button type="button" class="st-btn sm" id="studio-import-btn">Upload 3D (.glb)</button>
           </div>
           <form class="st-prompt" id="studio-prompt-form" autocomplete="off">
-            <input id="studio-prompt-input" class="st-input" type="text" aria-label="Direct the active 3D scene" placeholder="Direct scene (stone arch, 3rd person, LOD4, audio)…" />
-            <button type="submit" class="st-btn primary sm" id="studio-prompt-btn">Direct</button>
+            <input id="studio-prompt-input" class="st-input" type="text" aria-label="Direct the active 3D scene" placeholder="Try &quot;focus stone arch&quot;, &quot;3rd person&quot;, or &quot;ultra detail&quot;…" />
+            <button type="submit" class="st-btn primary sm" id="studio-prompt-btn">Apply</button>
           </form>
           <input id="studio-glb-file" type="file" accept=".glb,model/gltf-binary" hidden />
           <div class="st-verdict-bar" id="studio-status" aria-live="polite">
-            Starting 3D studio workspace…
+            Loading your 3D studio workspace…
           </div>
         </article>
 
         <!-- UNIFIED ASSET DISCOVERY (SINGLE SEARCH INTERFACE) -->
         <section class="ide-pane" id="studio-discovery" aria-labelledby="disc-heading">
           <div class="ide-pane-head">
-            <h2 id="disc-heading">Asset Discovery · Live 3D, Materials, Audio &amp; World Libraries</h2>
+            <h2 id="disc-heading">2. Add 3D Assets, Skies &amp; Audio</h2>
             <span class="ide-pane-sub" id="disc-count-badge">Loading…</span>
           </div>
           <div class="ide-pane-body">
@@ -1022,7 +1033,7 @@
 
       <!-- RIGHT RAIL: Inspector | Scene | Sources | Workspaces -->
       <aside class="ide-right-col" aria-label="Asset Inspector, Scene Authoring, Sources, and Workspaces">
-        <section class="ide-pane">
+        <section class="ide-pane" id="studio-right-pane">
           <div class="right-tabs" role="tablist" aria-label="Studio panel modes">
             <button type="button" class="right-tab-btn" role="tab" id="right-tab-inspector" data-right-tab="inspector" aria-selected="true">Inspector</button>
             <button type="button" class="right-tab-btn" role="tab" id="right-tab-compose" data-right-tab="compose" aria-selected="false">Scene</button>

@@ -1675,8 +1675,454 @@ impl VerdantOperatorChannel {
         })
     }
 
+    /// Synthesizes the canonical `mgr-design-coordinator` brand, communications, onboarding, and
+    /// plain-language experience manifest (`site/generated/experience-design-system.json`) under
+    /// ISO 9241-210:2019 (Human-Centred Design), W3C DTCG 2025.10, and WCAG 2.2 AA.
+    #[must_use]
+    pub fn synthesize_experience_design_system_json(&self) -> String {
+        let manager_kappa = self
+            .managers
+            .iter()
+            .find(|m| m.spec.manager_id == "mgr-design-coordinator")
+            .map(|m| m.kappa_hex.as_str())
+            .unwrap_or("");
+        serde_json::to_string_pretty(&serde_json::json!({
+            "spec": "verdant/experience-design-system/1",
+            "owningManager": "mgr-design-coordinator",
+            "vsmSystem": "VSM-S2",
+            "managerKappaHex": manager_kappa,
+            "governingStandards": [
+                "ISO 9241-210:2019 Human-Centred Design",
+                "W3C DTCG 2025.10 Design Tokens",
+                "WCAG 2.2 Level AA",
+                "ISO/IEC/IEEE 42010:2022 Architecture Viewpoints"
+            ],
+            "brand": {
+                "name": "Verdant",
+                "studioName": "Verdant Studio",
+                "catalogsName": "Verdant Catalogs",
+                "tagline": "Create, play, and share 3D games and worlds right in your browser.",
+                "studioHeadline": "Start building your 3D world",
+                "studioSubhead": "Pick a starter world, customize it with free 3D assets, playtest live, and share your finished app to the Verdant App Catalog.",
+                "catalogHeadline": "Playable Apps, 3D Assets & Starting Worlds",
+                "catalogSubhead": "Launch community games, browse free 3D models and sky domes, or open any starting world directly in Verdant Studio."
+            },
+            "studioJourney": {
+                "defaultStep": "world",
+                "steps": [
+                    {
+                        "id": "world",
+                        "number": "01",
+                        "title": "Choose a World",
+                        "summary": "Pick one of the four ready-made 3D worlds on the left and drag on the stage to explore it live.",
+                        "actionLabel": "Focus Worlds",
+                        "nextStep": "build",
+                        "nextLabel": "Next: Add 3D Assets"
+                    },
+                    {
+                        "id": "build",
+                        "number": "02",
+                        "title": "Add Assets & Customize",
+                        "summary": "Search free 3D models, characters, skies, and materials below. Preview anything or click + Add to bring it into your project.",
+                        "actionLabel": "Browse Assets",
+                        "nextStep": "publish",
+                        "nextLabel": "Next: Play & Share"
+                    },
+                    {
+                        "id": "publish",
+                        "number": "03",
+                        "title": "Playtest & Share",
+                        "summary": "Name your creation, choose a game genre, run a quick check, and publish to the Stitch App Catalog or export a .uorc file.",
+                        "actionLabel": "Publish & Export",
+                        "nextStep": "world",
+                        "nextLabel": "Back to Step 1"
+                    }
+                ]
+            },
+            "plainLanguage": {
+                "playPreview": "Play Preview",
+                "pausePreview": "Pause Preview",
+                "cameraPrefix": "View",
+                "detailPrefix": "Detail",
+                "soundOn": "Sound: On",
+                "soundOff": "Sound: Off",
+                "uploadModel": "Upload 3D (.glb)",
+                "directPlaceholder": "Try \"focus stone arch\", \"3rd person\", or \"ultra detail\"…",
+                "readyBanner": "Ready — pick a world, browse 3D assets below, or click Play Preview.",
+                "worldCards": {
+                    "sunspire-regatta": {
+                        "badge": "Coastal Adventure",
+                        "blurb": "Sunlit stone arch basin & coastal beacon trials"
+                    },
+                    "meridian-observatory": {
+                        "badge": "MMO Universe",
+                        "blurb": "Twilight celestial observatory & starlight dome"
+                    },
+                    "glasshouse-chronicle": {
+                        "badge": "Indie Side-Scroller",
+                        "blurb": "Lush sunlit botanical sanctuary & terraced canopy"
+                    },
+                    "starfall-bastion": {
+                        "badge": "Arena FPS",
+                        "blurb": "Volcanic dusk bastion built for fast 3D combat"
+                    }
+                },
+                "slotLabels": {
+                    "design:3d-model": "3D Model",
+                    "design:character": "Character Rig",
+                    "design:material": "Material & Sky",
+                    "design:theme": "Theme & Style",
+                    "design:typography": "Typography",
+                    "audio:soundscape": "Soundscape",
+                    "narrative:lore": "World Lore",
+                    "code:shader": "Shader & Code",
+                    "world:pack": "Starting World",
+                    "studio:any": "Studio Asset"
+                }
+            }
+        }))
+        .unwrap_or_else(|_| "{}".to_string())
+    }
+
+    /// Synthesizes the canonical `mgr-design-coordinator` visual refinement & guided-workflow
+    /// stylesheet (`site/generated/studio-experience.css`) strictly using W3C DTCG CSS variables
+    /// (`var(--...)`) with zero raw `#hex` literals and zero `backdrop-filter: blur`.
+    #[must_use]
+    pub fn synthesize_studio_experience_css(&self) -> String {
+        r#"/* GENERATED by mgr-design-coordinator via `verdant operator synthesize`.
+ * Governed by ISO 9241-210:2019 (Human-Centred Design), W3C DTCG 2025.10, and WCAG 2.2 AA.
+ * Strictly uses DTCG custom properties (zero raw hex colors, zero backdrop-filter blur). */
+
+/* ==================== TOP NAVIGATION & BRAND CLARITY ==================== */
+.ide-topbar {
+  min-height: 3.75rem;
+  padding: var(--space-2) clamp(1rem, 2.5vw, 2rem);
+  box-shadow: 0 1px 0 var(--border);
+}
+.ide-brand {
+  font-size: var(--text-18);
+  letter-spacing: -0.025em;
+}
+.ide-brand-dot {
+  width: 0.65rem;
+  height: 0.65rem;
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--brand) 22%, transparent);
+}
+.ide-nav a {
+  padding: 0.35rem 0.65rem;
+  border-radius: var(--radius-control);
+  transition: background var(--duration) var(--ease), color var(--duration) var(--ease);
+}
+.ide-nav a:hover {
+  background: var(--secondary);
+  text-decoration: none;
+}
+
+/* ==================== START-HERE 3-STEP GUIDED STUDIO BANNER ==================== */
+.vx-journey-banner {
+  margin: clamp(0.65rem, 1.4vw, 1rem) clamp(0.75rem, 2vw, 1.5rem) 0;
+  padding: clamp(0.85rem, 1.8vw, 1.2rem);
+  border: var(--border-width) solid var(--border-strong);
+  border-radius: calc(var(--radius) + 0.25rem);
+  background: linear-gradient(
+    135deg,
+    color-mix(in oklab, var(--brand) 7%, var(--card)) 0%,
+    var(--card) 52%,
+    color-mix(in oklab, var(--success) 5%, var(--card)) 100%
+  );
+  display: grid;
+  gap: 0.75rem;
+}
+.vx-journey-banner[data-collapsed="true"] .vx-step-rail,
+.vx-journey-banner[data-collapsed="true"] .vx-journey-sub {
+  display: none;
+}
+.vx-journey-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+.vx-journey-copy {
+  display: grid;
+  gap: 0.3rem;
+  max-width: 48rem;
+}
+.vx-journey-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--brand);
+}
+.vx-journey-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.35rem, 2.4vw, 1.85rem);
+  font-weight: 700;
+  letter-spacing: var(--tracking-display);
+  line-height: 1.15;
+  color: var(--foreground);
+}
+.vx-journey-sub {
+  margin: 0;
+  font-size: var(--text-15, 0.95rem);
+  color: var(--muted-foreground);
+  line-height: 1.5;
+}
+.vx-journey-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+.vx-step-rail {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+@media (max-width: 880px) {
+  .vx-step-rail {
+    grid-template-columns: 1fr;
+  }
+}
+.vx-step-card {
+  position: relative;
+  text-align: left;
+  padding: var(--space-3);
+  border-radius: var(--radius);
+  border: var(--border-width) solid var(--border);
+  background: var(--background);
+  color: var(--foreground);
+  display: grid;
+  gap: 0.45rem;
+  align-content: start;
+  cursor: pointer;
+  transition: border-color var(--duration) var(--ease), background var(--duration) var(--ease), transform var(--duration) var(--ease);
+}
+.vx-step-card:hover {
+  border-color: var(--border-strong);
+  background: var(--card);
+  transform: translateY(-1px);
+}
+.vx-step-card[aria-current="step"] {
+  border-color: var(--brand);
+  background: color-mix(in oklab, var(--brand) 8%, var(--card));
+  box-shadow: inset 0 2px 0 var(--brand);
+}
+.vx-step-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+.vx-step-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2rem;
+  height: 1.6rem;
+  padding: 0 0.45rem;
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 700;
+  background: var(--secondary);
+  color: var(--foreground);
+}
+.vx-step-card[aria-current="step"] .vx-step-num {
+  background: var(--brand);
+  color: var(--brand-foreground);
+}
+.vx-step-active-pill {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--brand);
+  font-weight: 600;
+}
+.vx-step-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--text-16);
+  font-weight: 600;
+  color: var(--foreground);
+}
+.vx-step-desc {
+  margin: 0;
+  font-size: var(--text-14);
+  color: var(--muted-foreground);
+  line-height: 1.45;
+}
+
+/* ==================== CALM EDITORIAL WORKSPACE HIERARCHY ==================== */
+.ide-grid {
+  padding: clamp(0.85rem, 2vw, 1.5rem);
+  gap: clamp(0.9rem, 1.8vw, 1.35rem);
+}
+.ide-left-col,
+.ide-center-col,
+.ide-right-col {
+  gap: clamp(0.9rem, 1.6vw, 1.25rem);
+}
+.ide-pane {
+  border-radius: calc(var(--radius) + 0.15rem);
+  border-color: var(--border);
+  transition: border-color var(--duration) var(--ease), box-shadow var(--duration) var(--ease);
+}
+.ide-pane-head {
+  padding: 0.7rem 0.95rem;
+  background: color-mix(in oklab, var(--sidebar) 88%, var(--card));
+}
+.ide-pane-head h2 {
+  font-family: var(--font-display);
+  font-size: var(--text-15, 0.95rem);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+.ide-pane-sub {
+  white-space: nowrap;
+}
+.right-tab-btn {
+  padding: 0.65rem 0.25rem;
+  font-size: 0.84rem;
+  white-space: nowrap;
+}
+.cat-cta {
+  text-decoration: none;
+}
+.ide-pane-body {
+  padding: 1rem;
+  gap: 0.85rem;
+}
+
+/* Progressive focus highlighting tied to active guided step */
+body[data-studio-focus="world"] #studio-worlds-pane,
+body[data-studio-focus="world"] #studio-stage-pane,
+body[data-studio-focus="build"] #studio-discovery,
+body[data-studio-focus="build"] #studio-right-pane,
+body[data-studio-focus="publish"] #studio-publish-pane {
+  border-color: color-mix(in oklab, var(--brand) 55%, var(--border-strong));
+  box-shadow: inset 0 2px 0 var(--brand);
+}
+
+/* Refined World Environment Selector Cards */
+.proj-domain-btn {
+  padding: 0.75rem 0.85rem;
+  border-radius: var(--radius);
+  border: var(--border-width) solid var(--border);
+  background: var(--background);
+  display: grid;
+  gap: 0.25rem;
+  text-align: left;
+  transition: border-color var(--duration) var(--ease), background var(--duration) var(--ease);
+}
+.proj-domain-btn:hover {
+  border-color: var(--border-strong);
+  background: var(--secondary);
+}
+.proj-domain-btn[aria-pressed="true"] {
+  border-color: var(--brand);
+  background: color-mix(in oklab, var(--brand) 10%, var(--card));
+}
+.proj-domain-btn strong {
+  font-family: var(--font-display);
+  font-size: var(--text-15, 0.94rem);
+  color: var(--foreground);
+}
+.proj-domain-btn small {
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+  color: var(--muted-foreground);
+  line-height: 1.35;
+}
+.proj-domain-badge {
+  display: inline-block;
+  width: fit-content;
+  margin-bottom: 0.15rem;
+  padding: 0.12rem 0.48rem;
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 600;
+  background: var(--secondary);
+  color: var(--foreground);
+}
+.proj-domain-btn[aria-pressed="true"] .proj-domain-badge {
+  background: var(--brand);
+  color: var(--brand-foreground);
+}
+
+/* Calm readable status panels instead of raw terminal dumps */
+.wiz-log {
+  padding: 0.7rem 0.85rem;
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius-control);
+  background: var(--background);
+  font-family: var(--font-sans);
+  font-size: 0.84rem;
+  line-height: 1.5;
+  color: var(--muted-foreground);
+}
+.st-verdict-bar {
+  padding: 0.65rem 1rem;
+  font-family: var(--font-sans);
+  font-size: var(--text-14);
+  color: var(--foreground);
+  background: color-mix(in oklab, var(--sidebar) 75%, var(--background));
+}
+
+/* Cleaner Asset Discovery & Catalog Cards */
+.disc-card {
+  border-radius: var(--radius);
+  transition: border-color var(--duration) var(--ease), transform var(--duration) var(--ease);
+}
+.disc-card:hover {
+  border-color: var(--border-strong);
+  transform: translateY(-1px);
+}
+.disc-card-slot {
+  display: inline-block;
+  width: fit-content;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  background: var(--secondary);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  font-weight: 500;
+}
+.cat-organ-card,
+.cat-gallery-card {
+  border-radius: calc(var(--radius) + 0.15rem);
+  transition: border-color var(--duration) var(--ease), transform var(--duration) var(--ease);
+}
+.cat-organ-card:hover,
+.cat-gallery-card:hover {
+  border-color: var(--border-strong);
+  transform: translateY(-1px);
+}
+
+/* Crisp focus visibility (WCAG 2.2 AA) */
+.vx-step-card:focus-visible,
+.proj-domain-btn:focus-visible,
+.st-btn:focus-visible,
+.cat-btn:focus-visible,
+.right-tab-btn:focus-visible {
+  outline: var(--ring-width) solid var(--brand);
+  outline-offset: var(--ring-offset);
+}
+"#
+        .to_string()
+    }
+
     /// Materializes Manager-synthesized declarative artifacts strictly within each Manager's
-    /// owned files (`site/generated/*.json`), records PROV-O lineage, and closes via VSM S3* audit.
+    /// owned files (`site/generated/*`), records PROV-O lineage, and closes via VSM S3* audit.
     #[cfg(not(target_arch = "wasm32"))]
     pub fn materialize_manager_artifacts(
         &mut self,
@@ -1699,6 +2145,25 @@ impl VerdantOperatorChannel {
                 "mgr-observer-executive",
                 "site/generated/viewpoint-contracts.json",
                 &json,
+            )?);
+        }
+        if want("design-system", "mgr-design-coordinator")
+            || want("creator-studio", "mgr-studio-alm")
+            || want("asset-catalogs", "mgr-catalog-curator")
+        {
+            let exp_json = self.synthesize_experience_design_system_json();
+            written.push(Self::write_manager_file(
+                repo_root,
+                "mgr-design-coordinator",
+                "site/generated/experience-design-system.json",
+                &exp_json,
+            )?);
+            let exp_css = self.synthesize_studio_experience_css();
+            written.push(Self::write_manager_file(
+                repo_root,
+                "mgr-design-coordinator",
+                "site/generated/studio-experience.css",
+                &exp_css,
             )?);
         }
         if want("playable-world", "mgr-playable-world")

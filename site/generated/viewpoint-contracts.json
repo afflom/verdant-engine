@@ -45,7 +45,7 @@
     },
     {
       "basisPrime": 61,
-      "kappaHex": "fc6c3eabc1ab5eb2c876679a9f4cd48317c7f5e6a2eb2b26be4ed98bb7e79825",
+      "kappaHex": "208e552600e43ed6df759810cea9c4e094533ff71062eb75017b1475e96c718b",
       "spec": {
         "almPhases": [
           "design",
@@ -74,7 +74,9 @@
           "site/brand/hologram-warm.css",
           "site/brand/fonts.css",
           "site/prism-page.css",
-          "site/theme.js"
+          "site/theme.js",
+          "site/generated/experience-design-system.json",
+          "site/generated/studio-experience.css"
         ],
         "ownedObserverParts": [
           "visual-identity"
@@ -158,7 +160,7 @@
     },
     {
       "basisPrime": 71,
-      "kappaHex": "586f81c5b124a7c377d07859f69d61c6da584fb345dafaf664251385ab179284",
+      "kappaHex": "7025771b8894829155a461818b0920a893336a287257dd0252e3f5301cb1bd24",
       "spec": {
         "almPhases": [
           "conception",
@@ -211,6 +213,7 @@
         ],
         "ownedStreams": [],
         "requiredElements": [
+          "id=\"studio-journey-host\"",
           "id=\"studio-canvas\"",
           "id=\"studio-export-uorc-btn\"",
           "id=\"stitch-publish-btn\"",

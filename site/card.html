@@ -42,13 +42,13 @@
           </a>
         </nav>
         <div class="ve-runtime-grid" role="group" aria-label="Live runtime controls">
-          <button id="ve-sim-btn" class="primary" type="button" aria-pressed="false" title="Start or pause 60 Hz swept-BVH physics and XPBD simulation">Step Physics</button>
-          <button id="ve-cam-btn" type="button" title="Switch between Guarded Orbit, 3rd-Person Foot IK, and 1st-Person Eye cameras">Camera: Orbit</button>
-          <button id="ve-lod-btn" type="button" title="Cycle progressive UORC fidelity tiers LOD0 through LOD4">Fidelity: LOD2</button>
-          <button id="ve-audio-btn" type="button" aria-pressed="false" title="Toggle 5-mode Euler-Bernoulli + Sabine RT60 spatial AudioWorklet">Audio: Off</button>
+          <button id="ve-sim-btn" class="primary" type="button" aria-pressed="false" title="Start or pause live 3D simulation">Play Preview</button>
+          <button id="ve-cam-btn" type="button" title="Switch between Orbit, 3rd-Person, and 1st-Person cameras">View: Orbit</button>
+          <button id="ve-lod-btn" type="button" title="Cycle progressive visual detail tiers">Detail: High</button>
+          <button id="ve-audio-btn" type="button" aria-pressed="false" title="Toggle spatial soundscape">Sound: Off</button>
         </div>
         <details id="ve-io-drawer" class="ve-io-drawer">
-          <summary class="ve-io-summary">Streaming, .glb I/O &amp; Stitch Custody</summary>
+          <summary class="ve-io-summary">Import, Export &amp; Share</summary>
           <div class="ve-io-tray">
             <button id="ve-uorc-btn" type="button" title="Decode and stream LOD4 Ultra-HD progressive UORC geometry">Stream LOD4 HD</button>
             <button id="ve-render-btn" type="button" title="Switch hardware WebGL2 3-pass PBR or Wasm 16x16 software tile rasterizer">Raster: WebGL2</button>

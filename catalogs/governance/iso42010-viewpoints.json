@@ -75,7 +75,9 @@
         "site/brand/hologram-warm.css",
         "site/brand/fonts.css",
         "site/prism-page.css",
-        "site/theme.js"
+        "site/theme.js",
+        "site/generated/experience-design-system.json",
+        "site/generated/studio-experience.css"
       ],
       "ownedCrates": [],
       "ownedObserverParts": [
@@ -188,6 +190,7 @@
         "AUTH-ISO-24617-DMN"
       ],
       "requiredElements": [
+        "id=\"studio-journey-host\"",
         "id=\"studio-canvas\"",
         "id=\"studio-export-uorc-btn\"",
         "id=\"stitch-publish-btn\"",

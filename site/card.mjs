@@ -209,7 +209,7 @@ export default async function start({ app, reason, $, chip, show, parse }) {
     simLive = Boolean(next);
     if (simBtn) {
       simBtn.setAttribute("aria-pressed", String(simLive));
-      simBtn.textContent = simLive ? "Pause Physics" : "Step Physics";
+      simBtn.textContent = simLive ? "Pause Preview" : "Play Preview";
     }
     reqR();
   }

@@ -84,6 +84,130 @@ const stitchBtn = $("studio-stitch-btn");
 const stitchPublishBtn = $("stitch-publish-btn");
 const stitchAppTitleInput = $("stitch-app-title");
 const stitchAppGenreSelect = $("stitch-app-genre");
+const journeyHost = $("studio-journey-host");
+
+let experienceDesign = null;
+let activeJourneyStep = "world";
+let journeyCollapsed = false;
+
+function friendlySlotLabel(rawSlot) {
+  const map = experienceDesign?.plainLanguage?.slotLabels || {};
+  return map[rawSlot] || String(rawSlot || "Studio Asset").replace(/^[^:]+:/, "");
+}
+
+function setStudioFocusStep(stepId, { scroll = false } = {}) {
+  activeJourneyStep = stepId || "world";
+  document.body.dataset.studioFocus = activeJourneyStep;
+  renderStudioJourneyBanner();
+  if (!scroll) return;
+  if (activeJourneyStep === "world") {
+    $("studio-stage-pane")?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  } else if (activeJourneyStep === "build") {
+    $("studio-discovery")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  } else if (activeJourneyStep === "publish") {
+    $("studio-publish-pane")?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }
+}
+
+function renderStudioJourneyBanner() {
+  if (!journeyHost || !experienceDesign?.studioJourney) return;
+  journeyHost.dataset.collapsed = journeyCollapsed ? "true" : "false";
+  const brand = experienceDesign.brand || {};
+  const steps = experienceDesign.studioJourney.steps || [];
+  const activeSpec = steps.find((s) => s.id === activeJourneyStep) || steps[0];
+
+  journeyHost.replaceChildren();
+  const head = document.createElement("div");
+  head.className = "vx-journey-head";
+
+  const copy = document.createElement("div");
+  copy.className = "vx-journey-copy";
+  const kicker = document.createElement("span");
+  kicker.className = "vx-journey-kicker";
+  kicker.textContent = `Start Here · ${brand.studioName || "Verdant Studio"}`;
+  const h1 = document.createElement("h1");
+  h1.className = "vx-journey-title";
+  h1.textContent = brand.studioHeadline || "Start building your 3D world";
+  const sub = document.createElement("p");
+  sub.className = "vx-journey-sub";
+  sub.textContent = brand.studioSubhead || "";
+  copy.append(kicker, h1, sub);
+
+  const actions = document.createElement("div");
+  actions.className = "vx-journey-actions";
+  if (activeSpec?.nextStep && !journeyCollapsed) {
+    const nextBtn = document.createElement("button");
+    nextBtn.type = "button";
+    nextBtn.className = "st-btn brand sm";
+    nextBtn.id = "vx-journey-next-btn";
+    nextBtn.textContent = activeSpec.nextLabel || "Next Step";
+    nextBtn.addEventListener("click", () => setStudioFocusStep(activeSpec.nextStep, { scroll: true }));
+    actions.append(nextBtn);
+  }
+  const toggleBtn = document.createElement("button");
+  toggleBtn.type = "button";
+  toggleBtn.className = "st-btn sm";
+  toggleBtn.id = "vx-journey-toggle-btn";
+  toggleBtn.textContent = journeyCollapsed ? "Show Guide" : "Hide Guide";
+  toggleBtn.addEventListener("click", () => {
+    journeyCollapsed = !journeyCollapsed;
+    renderStudioJourneyBanner();
+  });
+  actions.append(toggleBtn);
+
+  head.append(copy, actions);
+  journeyHost.append(head);
+
+  const rail = document.createElement("div");
+  rail.className = "vx-step-rail";
+  for (const st of steps) {
+    const isActive = st.id === activeJourneyStep;
+    const card = document.createElement("button");
+    card.type = "button";
+    card.className = "vx-step-card";
+    card.dataset.journeyStep = st.id;
+    if (isActive) card.setAttribute("aria-current", "step");
+
+    const top = document.createElement("div");
+    top.className = "vx-step-top";
+    const num = document.createElement("span");
+    num.className = "vx-step-num";
+    num.textContent = st.number;
+    top.append(num);
+    if (isActive) {
+      const pill = document.createElement("span");
+      pill.className = "vx-step-active-pill";
+      pill.textContent = "Current Step";
+      top.append(pill);
+    }
+    const title = document.createElement("h2");
+    title.className = "vx-step-title";
+    title.textContent = st.title;
+    const desc = document.createElement("p");
+    desc.className = "vx-step-desc";
+    desc.textContent = st.summary;
+
+    card.append(top, title, desc);
+    card.addEventListener("click", () => setStudioFocusStep(st.id, { scroll: true }));
+    rail.append(card);
+  }
+  journeyHost.append(rail);
+}
+
+async function hydrateExperienceDesignSystem() {
+  try {
+    const res = await fetch(new URL("../generated/experience-design-system.json", import.meta.url));
+    if (res.ok) {
+      experienceDesign = await res.json();
+      activeJourneyStep = experienceDesign?.studioJourney?.defaultStep || "world";
+      document.body.dataset.studioFocus = activeJourneyStep;
+      renderStudioJourneyBanner();
+      if (domainPacks.length) renderDomainPackCards();
+    }
+  } catch {
+    // Graceful fallback to inline HTML defaults.
+  }
+}
 const exportUorcBtn = $("studio-export-uorc-btn");
 const themeBtn = $("studio-theme-btn");
 const glbFileIn = $("studio-glb-file");
@@ -382,10 +506,11 @@ function currentLodSpec() {
 }
 
 function syncHud() {
-  if (hudProjectEl) hudProjectEl.textContent = `${activeProject} · Studio`;
+  if (hudProjectEl) hudProjectEl.textContent = activeProject;
   if (hudMetricsEl) {
-    const triStr = lTris > 0 ? `${lTris.toLocaleString()} tris · ` : "";
-    hudMetricsEl.textContent = `${LODS[lodIdx].label} · ${triStr}Clear ${lClr}mm`;
+    const detailNames = ["Draft", "Medium", "High", "Studio HD", "Ultra 4K"];
+    const triStr = lTris > 0 ? ` · ${lTris.toLocaleString()} tris` : "";
+    hudMetricsEl.textContent = `${detailNames[lodIdx] || LODS[lodIdx].short}${triStr}`;
   }
   if (manAcousticsEl) manAcousticsEl.textContent = `RT60 ${lastRt60Ms}ms · Clear ${lClr}mm`;
   const pack = domainPacks[activeDomainIdx];
@@ -531,7 +656,9 @@ function setSimLive(next) {
   simLive = Boolean(next);
   if (simBtn) {
     simBtn.setAttribute("aria-pressed", String(simLive));
-    simBtn.textContent = simLive ? "Pause Physics" : "Step Physics";
+    simBtn.textContent = simLive
+      ? (experienceDesign?.plainLanguage?.pausePreview || "Pause Preview")
+      : (experienceDesign?.plainLanguage?.playPreview || "Play Preview");
   }
   requestRender();
 }
@@ -566,7 +693,10 @@ async function streamLod(targetRank) {
   const clamped = Math.max(0, Math.min(LODS.length - 1, targetRank | 0));
   lodIdx = clamped;
   const lod = currentLodSpec();
-  if (lodBtn) lodBtn.textContent = `Fidelity: ${lod.short}`;
+  if (lodBtn) {
+    const detailNames = ["Draft", "Medium", "High", "Studio HD", "Ultra 4K"];
+    lodBtn.textContent = `Detail: ${detailNames[lod.rank] || lod.short}`;
+  }
   document.querySelectorAll("[data-wiz-lod]").forEach((b) => {
     b.classList.toggle("primary", Number(b.dataset.wizLod) === clamped);
   });
@@ -1496,7 +1626,7 @@ function renderDiscoveryResults(res) {
     desc.textContent = item.description;
     const slot = document.createElement("div");
     slot.className = "disc-card-slot";
-    slot.textContent = `Auto-Slot -> ${item.targetSlot}`;
+    slot.textContent = friendlySlotLabel(item.targetSlot);
     body.append(tags, h3, desc, slot);
 
     const foot = document.createElement("div");
@@ -1729,10 +1859,17 @@ function renderDomainPackCards() {
     btn.dataset.wizDomainSlug = pack.slug;
     btn.setAttribute("aria-pressed", idx === activeDomainIdx ? "true" : "false");
 
+    const worldCopy = experienceDesign?.plainLanguage?.worldCards?.[pack.slug];
+    if (worldCopy?.badge) {
+      const badgeEl = document.createElement("span");
+      badgeEl.className = "proj-domain-badge";
+      badgeEl.textContent = worldCopy.badge;
+      btn.append(badgeEl);
+    }
     const titleEl = document.createElement("strong");
     titleEl.textContent = pack.title;
     const subEl = document.createElement("small");
-    subEl.textContent = `${pack.id} · Seed ${pack.seed} · LOD${pack.defaultLodRank}`;
+    subEl.textContent = worldCopy?.blurb || `${pack.environment?.name || "3D World"}`;
     btn.append(titleEl, subEl);
     btn.addEventListener("click", () => loadCatalogDomainPack(idx, { userInitiated: true }));
     wizDomainGrid.append(btn);
@@ -2180,7 +2317,12 @@ renderContentTypePills();
     }
   }
 
+  await hydrateExperienceDesignSystem();
   syncHud();
-  chip(statusEl, `Atelier Ready · ${activeProject} · Live Discovery & Model Versioning Active`);
+  chip(
+    statusEl,
+    experienceDesign?.plainLanguage?.readyBanner ||
+      `Ready · ${activeProject} — pick a world, browse 3D assets below, or click Play Preview.`,
+  );
   requestRender();
 })();

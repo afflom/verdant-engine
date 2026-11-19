@@ -694,6 +694,16 @@ function renderStitchAppCatalog(apps = loadStitchAppCatalog()) {
 renderStitchGenrePills();
 renderStitchAppCatalog();
 hydrateStitchAppCatalog().then((apps) => renderStitchAppCatalog(apps));
+fetch(new URL("../generated/experience-design-system.json", import.meta.url))
+  .then((r) => (r.ok ? r.json() : null))
+  .then((exp) => {
+    if (!exp?.brand) return;
+    const h1 = $("cat-h1");
+    const lead = document.querySelector(".cat-lead");
+    if (h1 && exp.brand.catalogHeadline) h1.textContent = exp.brand.catalogHeadline;
+    if (lead && exp.brand.catalogSubhead) lead.textContent = exp.brand.catalogSubhead;
+  })
+  .catch(() => {});
 subscribeStitchAppCatalog((nextApps) => renderStitchAppCatalog(nextApps));
 renderPlatformOrgans();
 renderCatalogList();

@@ -1228,6 +1228,28 @@ export function verifyContextPurityAndIntentionalInterfaceContract({
       throw new Error("Gate C13 (mgr-catalog-curator): site/generated/stitch-app-catalog.json must publish >= 4 Stitch 2-of-3 Verdant Apps");
     }
   }
+  const expJsonPath = join(rootDir, "site", "generated", "experience-design-system.json");
+  if (existsSync(expJsonPath)) {
+    const exp = JSON.parse(readFileSync(expJsonPath, "utf8"));
+    if (
+      exp.spec !== "verdant/experience-design-system/1" ||
+      exp.owningManager !== "mgr-design-coordinator" ||
+      !Array.isArray(exp.studioJourney?.steps) ||
+      exp.studioJourney.steps.length !== 3
+    ) {
+      throw new Error("Gate C13 (mgr-design-coordinator): site/generated/experience-design-system.json must define the 3-step guided Studio journey");
+    }
+  }
+  const expCssPath = join(rootDir, "site", "generated", "studio-experience.css");
+  if (existsSync(expCssPath)) {
+    const expCss = readFileSync(expCssPath, "utf8");
+    if (/#[0-9a-fA-F]{3,8}\b/.test(expCss)) {
+      throw new Error("Gate C13 (mgr-design-coordinator): site/generated/studio-experience.css must use DTCG var(--...) tokens (zero raw #hex)");
+    }
+    if (/backdrop-filter\s*:\s*blur/i.test(expCss)) {
+      throw new Error("Gate C13 (mgr-design-coordinator): site/generated/studio-experience.css must not use backdrop-filter blur");
+    }
+  }
   const htmlByViewpoint = {
     "runtime-stage": ["site/card.html", cardHtml],
     "creator-studio": ["site/studio/index.html", studioPageHtml],
