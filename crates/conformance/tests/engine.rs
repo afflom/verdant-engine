@@ -3981,8 +3981,8 @@ fn engine_ve_38() {
 
     let repo_root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
     let registry = CatalogBundleRegistry::load_from_repo_dir(&repo_root)
-        .expect("all 5 SHA-256-locked authority catalogs load and cross-validate");
-    assert_eq!(registry.file_locks.len(), 5);
+        .expect("all 7 SHA-256-locked authority catalogs load and cross-validate");
+    assert_eq!(registry.file_locks.len(), 7);
     assert_eq!(registry.domain_packs.domains.len(), 4);
     assert_eq!(registry.khronos_hd.materials.len(), 8);
     assert_eq!(registry.khronos_hd.rigs.len(), 4);
@@ -4993,4 +4993,169 @@ fn engine_ve_41() {
             && wgpu_js.contains("u_env_tex"),
         "scene-webgpu-renderer.mjs must maintain full 4-ch PBR + HDRI IBL + compute cull + CAS parity"
     );
+}
+
+/// `VE-42`: SHA-256-locked Stafford Beer VSM (S1-S5 + S3*) and ISO/IEC/IEEE 42010:2022 Viewpoint +
+/// ISO/IEC/IEEE 12207 ALM Managers enforce Total Ownership ("no part without a manager"), disallow
+/// contrived ungrounded or cross-contaminated prompts, synthesize declarative Viewpoint & Stitch
+/// App Catalog manifests, and expose a signed bidirectional Operator Communications Channel across
+/// native Rust CLI and WebAssembly.
+#[test]
+fn engine_ve_42() {
+    use std::collections::BTreeSet;
+    use verdant_cli::run_cli;
+    use verdant_core::operator::{
+        audit_total_ownership, load_locked_iso42010_catalog, load_locked_vsm_catalog,
+        OperatorPromptRequest, VerdantOperatorChannel, REQUIRED_LOCKED_AUTHORITIES,
+        REQUIRED_SHIPPED_CRATES,
+    };
+    use verdant_wasm::{
+        verdant_wasm_aux_len, verdant_wasm_aux_ptr, verdant_wasm_init, verdant_wasm_io_clear,
+        verdant_wasm_io_push_byte, verdant_wasm_operator_prompt_io,
+        verdant_wasm_operator_status_aux,
+    };
+
+    // 1. Validate embedded SHA-256-locked VSM & ISO 42010 catalogs:
+    let vsm = load_locked_vsm_catalog().expect("AUTH-VSM-CYBERNETICS loads cleanly");
+    let vp = load_locked_iso42010_catalog().expect("AUTH-ISO-42010-VIEWPOINTS loads cleanly");
+    assert_eq!(vsm.systems.len(), 6);
+    assert_eq!(vp.managers.len(), 8);
+    assert_eq!(vp.stitch_app_catalog_protocol.archive_format, ".uorc");
+
+    // 2. Instantiate Operator Channel & verify Total Ownership ("no part without a manager"):
+    let mut ch = VerdantOperatorChannel::new("sunspire-regatta").expect("operator channel");
+    let own = ch.check_total_ownership();
+    assert!(own.complete, "Total Ownership failed: {own:?}");
+    assert!(own.orphans.is_empty());
+    assert!(own.duplicate_owners.is_empty());
+
+    // Every Manager has a unique orthogonal prime & strong 32-byte kappa:
+    let primes: BTreeSet<u64> = ch.managers.iter().map(|m| m.basis_prime).collect();
+    let kappas: BTreeSet<&str> = ch.managers.iter().map(|m| m.kappa_hex.as_str()).collect();
+    assert_eq!(primes.len(), ch.managers.len());
+    assert_eq!(kappas.len(), ch.managers.len());
+
+    // 3. Negative Total Ownership test: planted unmanaged orphan route MUST fail!
+    let orphan_rep = audit_total_ownership(
+        &ch.viewpoints,
+        &["/", "/unmanaged-orphan/"],
+        REQUIRED_SHIPPED_CRATES,
+        &[],
+        &[],
+        REQUIRED_LOCKED_AUTHORITIES,
+    );
+    assert!(!orphan_rep.complete);
+    assert!(orphan_rep
+        .orphans
+        .iter()
+        .any(|o| o.contains("/unmanaged-orphan/")));
+
+    // 4. Positive signed Operator prompt -> admitted ISO 24617-2 Inform with PROV-O kappa:
+    let pos = ch
+        .submit_directive(&OperatorPromptRequest {
+            viewpoint: "creator-studio".to_string(),
+            directive: "Package and share a sealed .uorc MMO universe on the Stitch App Catalog under ISO 12207".to_string(),
+            cited_authority: Some("AUTH-ISO-42010-VIEWPOINTS".to_string()),
+            operator_prism_id: "prism:operator-ci".to_string(),
+        })
+        .expect("positive prompt");
+    assert!(pos.admitted);
+    assert_eq!(pos.dialogue_act, "Inform");
+    assert_eq!(pos.manager_id, "mgr-studio-alm");
+    assert!(!pos.comm_kappa_hex.is_empty());
+
+    // 5. Negative refusals: cross-contaminated Viewpoint leak & contrived ungrounded prompt:
+    let cross_studio = ch
+        .submit_directive(&OperatorPromptRequest {
+            viewpoint: "creator-studio".to_string(),
+            directive: "Add a Verify UHD 4K Envelope button to Verdant Studio".to_string(),
+            cited_authority: None,
+            operator_prism_id: "prism:operator-ci".to_string(),
+        })
+        .expect("cross-studio refusal");
+    assert!(!cross_studio.admitted);
+    assert_eq!(cross_studio.dialogue_act, "Refusal");
+    assert_eq!(
+        cross_studio.recommended_viewpoint.as_deref(),
+        Some("verification-observatory")
+    );
+
+    let cross_starter = ch
+        .submit_directive(&OperatorPromptRequest {
+            viewpoint: "playable-world".to_string(),
+            directive: "Add an IDE Inspector panel to the playable starter game".to_string(),
+            cited_authority: None,
+            operator_prism_id: "prism:operator-ci".to_string(),
+        })
+        .expect("cross-starter refusal");
+    assert!(!cross_starter.admitted);
+    assert_eq!(cross_starter.dialogue_act, "Refusal");
+
+    let contrived = ch
+        .submit_directive(&OperatorPromptRequest {
+            viewpoint: "asset-catalogs".to_string(),
+            directive: "Invent random ungrounded buttons with sparkles".to_string(),
+            cited_authority: None,
+            operator_prism_id: "prism:operator-ci".to_string(),
+        })
+        .expect("contrived refusal");
+    assert!(!contrived.admitted);
+    assert_eq!(contrived.dialogue_act, "Refusal");
+
+    // 6. Stitch 2-of-3 Verdant App Catalog publishing for arbitrary game archetypes:
+    let snap_world = StandardSceneState::synthesize_at_lod(7, 2).expect("world");
+    let uorc = WorldSnapshot::encode_uorc(&snap_world).expect("uorc");
+    let app_entry = ch
+        .publish_stitch_app_catalog_entry(
+            "Starfall Vanguard FPS",
+            "first-person-shooter",
+            "Arena shooter published to Stitch Verdant App Catalog",
+            "prism:operator-ci",
+            &uorc,
+        )
+        .expect("publish stitch app");
+    assert_eq!(app_entry.stitch_fragments.len(), 3);
+    assert_eq!(app_entry.schema_org_type, "VideoGame");
+
+    // 7. VSM S3* live repository audit via both Rust API and `verdant operator audit` CLI:
+    let root = repo_root();
+    let audit = ch.audit_repository(&root, None);
+    assert!(
+        audit.passed,
+        "VSM S3* Manager repository audit failed: {audit:?}"
+    );
+    assert_eq!(audit.differentiated_worlds, 4);
+
+    let cli_audit = run_cli(&[
+        "operator".to_string(),
+        "audit".to_string(),
+        "--root".to_string(),
+        root.to_string_lossy().to_string(),
+    ])
+    .expect("verdant operator audit CLI must pass");
+    assert!(cli_audit.contains("\"passed\": true"));
+
+    let cli_prompt = run_cli(&[
+        "operator".to_string(),
+        "prompt".to_string(),
+        "--viewpoint".to_string(),
+        "playable-world".to_string(),
+        "--directive".to_string(),
+        "Differentiate all 4 world packs using Khronos glTF 2.0 and HDRI skies".to_string(),
+    ])
+    .expect("verdant operator prompt CLI");
+    assert!(cli_prompt.contains("\"admitted\": true"));
+
+    // 8. WebAssembly C-ABI mirror (`verdant_wasm_operator_status_aux` + `verdant_wasm_operator_prompt_io`):
+    let _abi_guard = wasm_abi_lock();
+    assert_eq!(verdant_wasm_init(7), 1);
+    let st_len = verdant_wasm_operator_status_aux() as usize;
+    assert!(st_len > 0 && verdant_wasm_aux_len() as usize == st_len && verdant_wasm_aux_ptr() != 0);
+    verdant_wasm_io_clear();
+    let prompt_json = br#"{"viewpoint":"creator-studio","directive":"Manage .uorc app lifecycle under ISO 12207"}"#;
+    for &b in prompt_json {
+        verdant_wasm_io_push_byte(u32::from(b));
+    }
+    let pr_len = verdant_wasm_operator_prompt_io() as usize;
+    assert!(pr_len > 0 && verdant_wasm_aux_len() as usize == pr_len);
 }

@@ -1541,6 +1541,14 @@ impl CatalogBundleRegistry {
             "catalogs/domains/world-packs.json",
             EMBEDDED_DOMAIN_PACKS_JSON.as_bytes(),
         );
+        raw_files.insert(
+            "catalogs/governance/vsm-viable-system.json",
+            crate::operator::LOCKED_VSM_CATALOG_JSON.as_bytes(),
+        );
+        raw_files.insert(
+            "catalogs/governance/iso42010-viewpoints.json",
+            crate::operator::LOCKED_ISO42010_VIEWPOINTS_JSON.as_bytes(),
+        );
         Self::from_locked_bytes(EMBEDDED_AUTHORITIES_TOML, &raw_files)
     }
 

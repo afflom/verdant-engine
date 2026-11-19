@@ -1184,72 +1184,66 @@ export function verifySubpathAndUorcOnlyDeploymentContract({
 }
 
 /**
- * Gate C13: Enforces stakeholder context purity & intentional non-self-referential UI across all
- * Verdant surfaces — preventing engine test-harness buttons, internal ontology diagnostics,
- * compiler jargon, and duplicate controls from creeping into creator or catalog interfaces.
+ * Gate C13: Enforces stakeholder context purity & Total Ownership directly from Verdant's
+ * SHA-256-locked ISO/IEC/IEEE 42010:2022 Viewpoints & VSM Manager model
+ * (`catalogs/governance/iso42010-viewpoints.json` + `vsm-viable-system.json`), preventing
+ * self-referential engine diagnostics, compiler jargon, or duplicate controls from creeping
+ * into creator, catalog, or player interfaces.
  */
 export function verifyContextPurityAndIntentionalInterfaceContract({
+  rootDir = ROOT_DIR,
   cardHtml,
   studioPageHtml,
   catalogsHtml,
   demoHtml,
   demoSource,
 }) {
-  const forbiddenInStudio = [
-    "Verify UHD 4K Envelope",
-    "Test Abstention",
-    "Record SOSA Envelope",
-    "Observer Telemetry",
-    "Auto-Refine Observer from Streams",
-    "8 Observer Parts",
-    "Atelier Boot",
-    "DOM-SUNSPIRE-HARBOR",
-    "CodedSlmDirector",
-  ];
-  for (const term of forbiddenInStudio) {
-    if (studioPageHtml.includes(term)) {
-      throw new Error(
-        `Context purity violation (Gate C13): site/studio/index.html contains self-referential/diagnostic UI "${term}" (belongs in Engine Demo or internal tests, not the creator IDE)`,
-      );
+  const vsmCat = JSON.parse(
+    readFileSync(join(rootDir, "catalogs", "governance", "vsm-viable-system.json"), "utf8"),
+  );
+  const vpCat = JSON.parse(
+    readFileSync(join(rootDir, "catalogs", "governance", "iso42010-viewpoints.json"), "utf8"),
+  );
+  if (!vsmCat?.antiContrivanceRule?.requireManagerOwnership || !Array.isArray(vpCat?.managers)) {
+    throw new Error("Gate C13: locked VSM / ISO 42010 governance catalogs missing or malformed");
+  }
+  const htmlByViewpoint = {
+    "runtime-stage": ["site/card.html", cardHtml],
+    "creator-studio": ["site/studio/index.html", studioPageHtml],
+    "asset-catalogs": ["site/catalogs/index.html", catalogsHtml],
+    "verification-observatory": ["site/demo/index.html", demoHtml],
+  };
+  for (const mgr of vpCat.managers) {
+    const entry = htmlByViewpoint[mgr.viewpointId];
+    if (!entry) continue;
+    const [label, html] = entry;
+    for (const req of mgr.requiredElements || []) {
+      if (!html.includes(req)) {
+        throw new Error(
+          `Gate C13 (${mgr.managerId}): ${label} missing required Viewpoint element "${req}"`,
+        );
+      }
+    }
+    for (const term of mgr.forbiddenCrossContamination || []) {
+      if (html.includes(term)) {
+        throw new Error(
+          `Gate C13 (${mgr.managerId}): ${label} contains forbidden cross-contamination "${term}"`,
+        );
+      }
     }
   }
   const studioSearchInputs = (studioPageHtml.match(/type\s*=\s*["']search["']/gi) || []).length;
   if (studioSearchInputs !== 1) {
     throw new Error(
-      `Context purity violation (Gate C13): site/studio/index.html must expose exactly 1 unified search input (found ${studioSearchInputs})`,
+      `Gate C13 (mgr-studio-alm): site/studio/index.html must expose exactly 1 unified search input (found ${studioSearchInputs})`,
     );
   }
-
-  const forbiddenInCatalogs = [
-    "Verify All Holo Proofs",
-    "Authoritative LexLean Modules",
-    "orthogonal Prism basis prime",
-    "Differentiated Verdant Platform Cognitive Architecture",
-  ];
-  for (const term of forbiddenInCatalogs) {
-    if (catalogsHtml.includes(term)) {
-      throw new Error(
-        `Context purity violation (Gate C13): site/catalogs/index.html contains self-referential/internal UI "${term}"`,
-      );
-    }
-  }
-
-  const forbiddenInCard = ["CodedSLM", "7-Role Atelier"];
-  for (const term of forbiddenInCard) {
-    if (cardHtml.includes(term)) {
-      throw new Error(
-        `Context purity violation (Gate C13): site/card.html contains internal jargon "${term}"`,
-      );
-    }
-  }
-
   if (
-    !demoHtml.includes('id="btn-bench-uhd"') ||
     !demoSource.includes("verdant_wasm_uhd_cull_meshlets") ||
     !demoSource.includes("verdant_wasm_frame_stability_aux")
   ) {
     throw new Error(
-      "Context purity violation (Gate C13): UHD 4K/8K, Morton meshlet, LOD pyramid & Frame Stability Oracle benchmark must live in site/demo/",
+      "Gate C13 (mgr-verification-observatory): UHD 4K/8K, Morton meshlet, LOD pyramid & Frame Stability Oracle benchmark must live in site/demo/demo.mjs",
     );
   }
 }
@@ -1346,6 +1340,7 @@ export async function runAllPrismContractChecks(rootDir = ROOT_DIR) {
     ],
   });
   verifyContextPurityAndIntentionalInterfaceContract({
+    rootDir,
     cardHtml,
     studioPageHtml,
     catalogsHtml,

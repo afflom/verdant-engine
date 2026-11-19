@@ -63,6 +63,7 @@ model does not sanction.
 | `VE-39` | `build` | The second-order Observer Prism holon composes strong kappa identities for itself, its five differentiated platform organs, its seven stakeholder Prism models, arbitrary Verdant model envelopes, native uor-matmul 16-route intent and ISO 24617-2 passage-grounded NPC dialogue with Unknown abstention, live NavMesh NPC directives, and five W3C SOSA/PROV-O observed communication channels across native Rust and WebAssembly |
 | `VE-40` | `build` | Every Verdant surface—Verdant Studio, Verdant Catalogs, Verdant Engine Demo, the browser and Rust starter template, all four Studio Scaffolder archetypes, and every crate example—instantiates differentiated SHA-256-locked catalog world packs, Schema.org JSON-LD couplings, live Wasm NPC directives and ISO 24617-2 dialogue, and zero-bypass Wasm CodedSlmDirector routing with zero magic constants |
 | `VE-41` | `build` | UHD 4K-to-8K scaling, 30-bit Morton spatially-clustered 64-triangle GPU meshlet culling with zero steady-state heap reallocations, 2x2 box-filtered multi-material PBR texture atlas packing, naga-verified WGSL compute culling and PBR shaders, zero-reallocation GPU index streaming, and the 64-frame hysteresis FrameBudgetOracle execute deterministically across native Rust, WebAssembly, and arbitrary 45,000-triangle LOD4 workloads |
+| `VE-42` | `build` | SHA-256-locked Stafford Beer VSM (S1-S5 + S3*) and ISO/IEC/IEEE 42010:2022 Viewpoint + ISO/IEC/IEEE 12207 ALM Managers enforce Total Ownership across every Verdant route, shipped crate, Observer part, catalog stream, and authority corpus, disallow contrived ungrounded or cross-contaminated directives, synthesize declarative Stitch App Catalog and Viewpoint contracts, and expose a signed bidirectional Operator Communications Channel across native Rust CLI and WebAssembly |
 
 ## fidelity
 
@@ -96,6 +97,8 @@ An authority is cited, never re-derived, and never gated on: what it states is n
 | `AUTH-KHRONOS-GLTF2` | Khronos Group / ISO/IEC 12113:2022 glTF 2.0 Specification and ratified KHR_materials_{ior,specular,transmission,clearcoat,emissive_strength} extensions, https://registry.khronos.org/glTF/ | `VE-04`, `VE-19`, `VE-38` |
 | `AUTH-ISO-24617-DMN` | ISO 24617-2:2020 Language resource management — Semantic annotation framework Part 2: Dialogue acts; OMG Decision Model and Notation (DMN) 1.5 | `VE-22`, `VE-38` |
 | `AUTH-DOMAIN-PACKS` | Verdant Platform Imported Domain Catalogs (Sunspire Harbor, Meridian Observatory, Glasshouse Chronicle, Starfall Bastion) | `VE-32`, `VE-38` |
+| `AUTH-VSM-CYBERNETICS` | Stafford Beer, Brain of the Firm (2nd ed., Wiley, 1981) & Diagnosing the System for Organizations (Wiley, 1985); ISO/IEC/IEEE 15288:2023 | `VE-42` |
+| `AUTH-ISO-42010-VIEWPOINTS` | ISO/IEC/IEEE 42010:2022 Software, systems and enterprise — Architecture description; ISO/IEC/IEEE 12207:2017 Software life cycle processes; ISO 9241-210:2019; W3C DTCG 2025.10; WCAG 2.2 AA; afflom/stitch | `VE-42` |
 
 ## Claims that are not conformance IDs
 
@@ -106,3 +109,5 @@ An authority is cited, never re-derived, and never gated on: what it states is n
 | `AUTH-CL-03` | `some-true` | Khronos glTF 2.0 binary containers align JSON and BIN chunks to 4 bytes and bind skeletal skins via JOINTS_0, WEIGHTS_0, and MAT4 inverseBindMatrices alongside ratified PBR extensions |
 | `AUTH-CL-04` | `some-true` | ISO 24617-2 dialogue acts separate read-only epistemic inform/question/abstain turns from world-mutating requests and offers under OMG DMN 1.5 FIRST-hit model admission |
 | `AUTH-CL-05` | `some-true` | Imported domain packs differentiate coastal, observatory, botanical, and arena worlds across terrain relief, Sabine acoustics, HD models, items, and character profiles |
+| `AUTH-CL-06` | `some-true` | Stafford Beer's Viable System Model structures executive S5 policy, S4 stream intelligence, S3 resource governance, S3* independent audit, S2 anti-oscillation coordination, and autonomous S1 Domain Managers with total ownership and standards-only anti-contrivance rules |
+| `AUTH-CL-07` | `some-true` | ISO/IEC/IEEE 42010:2022 Viewpoints and ISO/IEC/IEEE 12207:2017 ALM assign every Verdant route, shipped crate, Observer part, catalog stream, and Stitch App Catalog package to one accountable Manager with correspondence and non-contamination rules |

@@ -69,3 +69,21 @@ artifact = "catalogs/domains/world-packs.json"
 checksum = "9126c51aaf92eff57190870c1f909978b08d83b91ea064a2a9cd9c72d1d4009c"
 statement = "Cataloged multi-domain packs supply differentiated environments, acoustic rooms, HD 3D models, conserved items, and 22-joint character profiles coupled via Schema.org."
 realized_by = ["VE-32", "VE-38"]
+
+[[authority]]
+id = "AUTH-VSM-CYBERNETICS"
+name = "Stafford Beer Viable System Model (VSM S1-S5 + S3*)"
+citation = "Stafford Beer, Brain of the Firm (2nd ed., Wiley, 1981) & Diagnosing the System for Organizations (Wiley, 1985); ISO/IEC/IEEE 15288:2023"
+artifact = "catalogs/governance/vsm-viable-system.json"
+checksum = "629f96d9d1d8e1467b625f95a38642edb6a8e974a3cfb69cc9dd67e35b881921"
+statement = "Stafford Beer's Viable System Model defines recursive S1 operational managers, S2 coordination, S3 control, S3* independent audit, S4 environmental intelligence, and S5 executive policy with total ownership and standards-only anti-contrivance governance."
+realized_by = ["VE-42"]
+
+[[authority]]
+id = "AUTH-ISO-42010-VIEWPOINTS"
+name = "ISO/IEC/IEEE 42010:2022 Architecture Viewpoints, ISO/IEC/IEEE 12207:2017 ALM & Stitch App Catalog"
+citation = "ISO/IEC/IEEE 42010:2022 Software, systems and enterprise — Architecture description; ISO/IEC/IEEE 12207:2017 Software life cycle processes; ISO 9241-210:2019; W3C DTCG 2025.10; WCAG 2.2 AA; afflom/stitch"
+artifact = "catalogs/governance/iso42010-viewpoints.json"
+checksum = "34cc6881c512eb91841e1780af23139b1829b372c0fc44fdbc88297cff6e6746"
+statement = "ISO/IEC/IEEE 42010:2022 binds every Verdant surface, crate, Observer part, stream, and Stitch App Catalog archetype to an accountable Manager with explicit required elements, forbidden cross-contamination, and correspondence rules."
+realized_by = ["VE-42"]

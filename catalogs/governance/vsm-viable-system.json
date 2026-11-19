@@ -1,0 +1,84 @@
+{
+  "spec": "verdant/imported-authority-catalog/1",
+  "authorityId": "AUTH-VSM-CYBERNETICS",
+  "standard": "Stafford Beer Viable System Model (VSM S1-S5 + S3*)",
+  "citation": "Stafford Beer, Brain of the Firm (2nd ed., Wiley, 1981) & Diagnosing the System for Organizations (Wiley, 1985); ISO/IEC/IEEE 15288:2023 System Life Cycle Processes",
+  "license": "Apache-2.0",
+  "systems": [
+    {
+      "id": "VSM-S1",
+      "code": "S1",
+      "name": "Operational Domain Managers",
+      "role": "Autonomous operational units that implement, render, and verify authoritative domain models as concrete Verdant applications and parts.",
+      "invariants": [
+        "Every shipped route, crate, ObserverPartSlot, stream, template, and authority catalog belongs to an accountable Manager.",
+        "Every S1 feature or UI element must bind to an imported authoritative standard; contrived ungrounded features are refused.",
+        "Each S1 Manager operates autonomously within its ISO 42010 Viewpoint without leaking executive internals into stakeholder surfaces."
+      ]
+    },
+    {
+      "id": "VSM-S2",
+      "code": "S2",
+      "name": "Anti-Oscillation Design & Coordination",
+      "role": "Coordinates shared standards across all S1 units so views never clash, oscillate, or duplicate controls.",
+      "invariants": [
+        "All surfaces share W3C DTCG 2025.10 tokens with zero raw #hex overrides and zero backdrop-filter: blur.",
+        "All URLs resolve strictly within the declared subpath base and all packaged archives use exclusive .uorc framing.",
+        "Frame-rate scaling obeys hysteresis DRS and FR-03 cold-boot ceilings across every host."
+      ]
+    },
+    {
+      "id": "VSM-S3",
+      "code": "S3",
+      "name": "Control & Resource Governance",
+      "role": "Allocates host compute, memory, texture, and cold-boot byte envelopes across operational units.",
+      "invariants": [
+        "HostCapabilityEnvelope bounds GPU texture dimensions, shadow maps, and GLB byte caps to host container limits.",
+        "No S1 operational unit may exceed FR-03 cold-boot limits on `/` or introduce external 3D/ML runtimes."
+      ]
+    },
+    {
+      "id": "VSM-S3-STAR",
+      "code": "S3*",
+      "name": "Independent Conformance Audit Oracle",
+      "role": "Directly inspects concrete repository artifacts, live rendered surfaces, and Wasm/Rust invariants bypassing self-report.",
+      "invariants": [
+        "Verifies Total Ownership (zero unmanaged orphan parts across routes, crates, Observer parts, streams, and catalogs).",
+        "Verifies every S1 Viewpoint's requiredElements, forbiddenCrossContamination, and differentiationRequirements."
+      ]
+    },
+    {
+      "id": "VSM-S4",
+      "code": "S4",
+      "name": "Environmental Intelligence & Stream Adaptation",
+      "role": "Scans external internet streams, authoritative standards, and Operator directives to discover models and standards for S1 Managers.",
+      "invariants": [
+        "Discovers external models and standards through CORS-verified HTTPS streams rather than hand-coding contrived content.",
+        "Routes incoming Operator prompts through OMG DMN 1.5 admission and ISO 24617-2 dialogue classification."
+      ]
+    },
+    {
+      "id": "VSM-S5",
+      "code": "S5",
+      "name": "Observer Executive Policy & Identity",
+      "role": "Holds Verdant's sovereign Prism identity, mediates S3 stability vs S4 adaptation, and enforces standards-only integrity.",
+      "invariants": [
+        "The Observer encompasses all of Verdant including its Managers and Streams under one cryptographic kappa boundary.",
+        "Executive internals never bleed into stakeholder views; all mutations flow through signed Operator communications."
+      ]
+    }
+  ],
+  "channels": [
+    { "id": "CH-S5-S4", "from": "VSM-S5", "to": "VSM-S4", "purpose": "Policy framing for stream discovery and Operator prompt intake" },
+    { "id": "CH-S5-S3", "from": "VSM-S5", "to": "VSM-S3", "purpose": "Identity and budget invariants for operational resource allocation" },
+    { "id": "CH-S4-S3", "from": "VSM-S4", "to": "VSM-S3", "purpose": "Adaptation proposals reconciled against host capabilities and stability budgets" },
+    { "id": "CH-S3-S1", "from": "VSM-S3", "to": "VSM-S1", "purpose": "Resource grants and signed directives dispatched to accountable S1 Domain Managers" },
+    { "id": "CH-S2-S1", "from": "VSM-S2", "to": "VSM-S1", "purpose": "Shared DTCG themes, WCAG 2.2 accessibility, subpath rules, and anti-oscillation standards" },
+    { "id": "CH-S3STAR-S1", "from": "VSM-S3-STAR", "to": "VSM-S1", "purpose": "Independent direct inspection of S1 surface files, crates, and live behavior" }
+  ],
+  "antiContrivanceRule": {
+    "requireAuthoritativeStandard": true,
+    "requireManagerOwnership": true,
+    "disallowHandCodedUngroundedFeatures": true
+  }
+}

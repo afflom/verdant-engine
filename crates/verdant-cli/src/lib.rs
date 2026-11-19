@@ -108,6 +108,7 @@ verdant <subcommand> [options]
   verify-story [seed]                         Verify StoryAutomaton tropical reachability & conservation
   pack-universe <out_dir> [seed]              Pack 3-sector floating-origin universe & Stitch shards
   automate-check                              Self-verify all 4 catalog domains, Observer, UI, WGSL, & .uorc
+  operator <status|prompt|synthesize|audit|session>  Communicate with Verdant's VSM & ISO 42010 Managers
   benchmark [frames]                          Run headless 60fps physics + BVH + GJK + NavMesh benchmark
   stress-benchmark [entities]                 Run 10k+ SoA bit-plane, TwoLevelBvh & monoid stress benchmark";
 
@@ -1385,9 +1386,28 @@ pub fn run_cli(args: &[String]) -> Result<String, CliCommandError> {
                 });
             }
 
+            let op_channel = verdant_core::operator::VerdantOperatorChannel::new(
+                "sunspire-regatta",
+            )
+            .map_err(|e| CliCommandError::ValidationRejected {
+                command: "automate-check".to_string(),
+                diagnostic: format!("operator channel: {e}"),
+            })?;
+            let own_rep = op_channel.check_total_ownership();
+            if !own_rep.complete {
+                return Err(CliCommandError::ValidationRejected {
+                    command: "automate-check".to_string(),
+                    diagnostic: format!(
+                        "Total Ownership violation (unmanaged parts): orphans={:?} duplicates={:?}",
+                        own_rep.orphans, own_rep.duplicate_owners
+                    ),
+                });
+            }
+
             let elapsed_ms = t0.elapsed().as_millis();
             Ok(format!(
-                "AUTOMATE CHECK OK: domains={verified_domains} streams={} uhd={} uhd8k={} meshlets={} p95_us={} entities={total_entities} ui_widgets={} wgsl_shaders={}+{} uorc_bytes={} stitch_parity=2of3 elapsed_ms={elapsed_ms}",
+                "AUTOMATE CHECK OK: domains={verified_domains} managers={} streams={} uhd={} uhd8k={} meshlets={} p95_us={} entities={total_entities} ui_widgets={} wgsl_shaders={}+{} uorc_bytes={} stitch_parity=2of3 elapsed_ms={elapsed_ms}",
+                own_rep.managers_checked,
                 holon.sensory_streams.len(),
                 holon.host_envelope.uhd_tier_label,
                 uhd_8k.display_class,
@@ -1398,6 +1418,166 @@ pub fn run_cli(args: &[String]) -> Result<String, CliCommandError> {
                 uhd_shaders.len(),
                 uorc_snap.len(),
             ))
+        }
+        "operator" => {
+            let sub = args.get(1).map(String::as_str).unwrap_or("status");
+            let mut ch = verdant_core::operator::VerdantOperatorChannel::new("sunspire-regatta")
+                .map_err(|e| CliCommandError::ValidationRejected {
+                    command: "operator".to_string(),
+                    diagnostic: e.to_string(),
+                })?;
+            match sub {
+                "status" => Ok(ch.status_json()),
+                "prompt" => {
+                    let two = 1usize + 1usize;
+                    let mut viewpoint = "auto".to_string();
+                    let mut directive = String::new();
+                    let mut cited_authority: Option<String> = None;
+                    let mut actor = "prism:verdant-operator".to_string();
+                    let mut i = two;
+                    while i < args.len() {
+                        match args[i].as_str() {
+                            "--viewpoint" if i + 1 < args.len() => {
+                                viewpoint = args[i + 1].clone();
+                                i += two;
+                            }
+                            "--directive" if i + 1 < args.len() => {
+                                directive = args[i + 1].clone();
+                                i += two;
+                            }
+                            "--authority" if i + 1 < args.len() => {
+                                cited_authority = Some(args[i + 1].clone());
+                                i += two;
+                            }
+                            "--actor" if i + 1 < args.len() => {
+                                actor = args[i + 1].clone();
+                                i += two;
+                            }
+                            other => {
+                                if directive.is_empty() {
+                                    directive = other.to_string();
+                                } else {
+                                    directive.push(' ');
+                                    directive.push_str(other);
+                                }
+                                i += 1;
+                            }
+                        }
+                    }
+                    let resp = ch
+                        .submit_directive(&verdant_core::operator::OperatorPromptRequest {
+                            viewpoint,
+                            directive,
+                            cited_authority,
+                            operator_prism_id: actor,
+                        })
+                        .map_err(|e| CliCommandError::ValidationRejected {
+                            command: "operator prompt".to_string(),
+                            diagnostic: e.to_string(),
+                        })?;
+                    verdant_core::operator::VerdantOperatorChannel::serialize_response_pretty(&resp)
+                        .map_err(|e| CliCommandError::ValidationRejected {
+                            command: "operator prompt".to_string(),
+                            diagnostic: e.to_string(),
+                        })
+                }
+                "synthesize" => {
+                    let two = 1usize + 1usize;
+                    let mut out_path: Option<String> = None;
+                    let mut i = two;
+                    while i < args.len() {
+                        if args[i] == "--out" && i + 1 < args.len() {
+                            out_path = Some(args[i + 1].clone());
+                            i += two;
+                        } else {
+                            i += 1;
+                        }
+                    }
+                    let json = ch.synthesize_viewpoint_contracts_json();
+                    if let Some(ref p) = out_path {
+                        if let Some(parent) = Path::new(p).parent() {
+                            if !parent.as_os_str().is_empty() {
+                                std::fs::create_dir_all(parent).map_err(|e| {
+                                    CliCommandError::IoFailure {
+                                        path: p.clone(),
+                                        reason: e.to_string(),
+                                    }
+                                })?;
+                            }
+                        }
+                        std::fs::write(p, json.as_bytes()).map_err(|e| {
+                            CliCommandError::IoFailure {
+                                path: p.clone(),
+                                reason: e.to_string(),
+                            }
+                        })?;
+                        Ok(format!(
+                            "OPERATOR SYNTHESIZE OK: wrote {p} ({} bytes, {} managers)",
+                            json.len(),
+                            ch.managers.len()
+                        ))
+                    } else {
+                        Ok(json)
+                    }
+                }
+                "audit" => {
+                    let two = 1usize + 1usize;
+                    let mut root =
+                        std::env::current_dir().unwrap_or_else(|_| std::path::PathBuf::from("."));
+                    let mut vp_filter: Option<String> = None;
+                    let mut i = two;
+                    while i < args.len() {
+                        match args[i].as_str() {
+                            "--root" if i + 1 < args.len() => {
+                                root = std::path::PathBuf::from(&args[i + 1]);
+                                i += two;
+                            }
+                            "--viewpoint" if i + 1 < args.len() => {
+                                vp_filter = Some(args[i + 1].clone());
+                                i += two;
+                            }
+                            _ => i += 1,
+                        }
+                    }
+                    let (passed, rendered) = ch.audit_repository_json(&root, vp_filter.as_deref());
+                    if !passed {
+                        return Err(CliCommandError::ValidationRejected {
+                            command: "operator audit".to_string(),
+                            diagnostic: rendered,
+                        });
+                    }
+                    Ok(rendered)
+                }
+                "session" => {
+                    use std::io::BufRead;
+                    let stdin = std::io::stdin();
+                    let mut responses = Vec::new();
+                    for line_res in stdin.lock().lines() {
+                        let line = line_res.map_err(|e| CliCommandError::IoFailure {
+                            path: "stdin".to_string(),
+                            reason: e.to_string(),
+                        })?;
+                        let trimmed = line.trim();
+                        if trimmed.is_empty() {
+                            continue;
+                        }
+                        let serialized =
+                            ch.submit_raw_directive_json(trimmed, false).map_err(|e| {
+                                CliCommandError::ValidationRejected {
+                                    command: "operator session".to_string(),
+                                    diagnostic: e.to_string(),
+                                }
+                            })?;
+                        responses.push(serialized);
+                    }
+                    Ok(responses.join("\n"))
+                }
+                other => Err(CliCommandError::InvalidUsage {
+                    usage: format!(
+                        "unknown operator action `{other}` (expected status|prompt|synthesize|audit|session)"
+                    ),
+                }),
+            }
         }
         other => Err(CliCommandError::InvalidUsage {
             usage: format!("unknown subcommand `{other}`\n{CLI_USAGE}"),

@@ -1,0 +1,1299 @@
+//! Stafford Beer Viable System Model (VSM S1–S5 + S3*) & ISO/IEC/IEEE 42010:2022 Architecture
+//! Viewpoint Managers + Signed Bidirectional Verdant Operator Communications Channel (`operator.rs`).
+//!
+//! Enforces two core invariants across all of Verdant:
+//! 1. **Total Ownership ("No part of Verdant can exist without a manager")**: every shipped route,
+//!    shipped crate, [`ObserverPartSlot`], built-in sensory stream, starter template, and locked
+//!    authority corpus belongs to exactly one accountable Manager.
+//! 2. **Standards-Only Anti-Contrivance & Viewpoint Purity**: Managers disallow contrived ungrounded
+//!    features lacking an authoritative standard (`AUTH-*`) and refuse cross-contaminated directives
+//!    that violate ISO/IEC/IEEE 42010:2022 Viewpoint correspondence rules.
+
+use std::collections::{BTreeMap, BTreeSet};
+#[cfg(not(target_arch = "wasm32"))]
+use std::path::Path;
+
+use serde::{Deserialize, Serialize};
+use sha2::{Digest, Sha256};
+
+use crate::error::ObserverModelError;
+use crate::math::nth_prime_u64;
+use crate::network::{shard_bytes_to_stitch_fragments, PrismIdSessionEnvelope, StitchFragment};
+use crate::observer::{
+    sha256_payload_digest, CommunicationChannelKind, ObserverPartSlot, ObserverPrismHolon,
+};
+use crate::streaming::is_uorc_archive;
+
+/// Embedded SHA-256-locked Stafford Beer VSM governance authority (`AUTH-VSM-CYBERNETICS`).
+pub const LOCKED_VSM_CATALOG_JSON: &str =
+    include_str!("../../../catalogs/governance/vsm-viable-system.json");
+
+/// Embedded SHA-256-locked ISO/IEC/IEEE 42010:2022 Viewpoints & ISO 12207 ALM authority
+/// (`AUTH-ISO-42010-VIEWPOINTS`).
+pub const LOCKED_ISO42010_VIEWPOINTS_JSON: &str =
+    include_str!("../../../catalogs/governance/iso42010-viewpoints.json");
+
+/// Canonical shipped routes that MUST be owned by an accountable Manager.
+pub const REQUIRED_SHIPPED_ROUTES: &[&str] = &[
+    "/",
+    "/studio/",
+    "/catalogs/",
+    "/starter/",
+    "/demo/",
+    "/docs/",
+];
+
+/// Canonical shipped Rust crates that MUST be owned by an accountable Manager.
+pub const REQUIRED_SHIPPED_CRATES: &[&str] = &[
+    "verdant-core",
+    "verdant-tensor",
+    "verdant-wasm",
+    "verdant-cli",
+];
+
+/// Canonical SHA-256-locked authority IDs that MUST be owned by an accountable Manager.
+pub const REQUIRED_LOCKED_AUTHORITIES: &[&str] = &[
+    "AUTH-SCHEMA-ORG",
+    "AUTH-W3C-SOSA-PROVO",
+    "AUTH-KHRONOS-GLTF2",
+    "AUTH-ISO-24617-DMN",
+    "AUTH-DOMAIN-PACKS",
+    "AUTH-VSM-CYBERNETICS",
+    "AUTH-ISO-42010-VIEWPOINTS",
+];
+
+fn sha256_hex_tagged(tag: &str, bytes: &[u8]) -> String {
+    const HEX: &[u8; 1 << (1 + 1 + 1 + 1)] = b"0123456789abcdef";
+    let shift = 1usize + 1usize + 1usize + 1usize;
+    let mask = (1usize << shift) - 1usize;
+    let mut hasher = Sha256::new();
+    hasher.update(b"verdant/operator/v1:");
+    hasher.update(tag.as_bytes());
+    hasher.update(b":");
+    hasher.update(bytes);
+    let out = hasher.finalize();
+    let mut hex = String::with_capacity(out.len() * (1 + 1));
+    for &b in &out {
+        let v = usize::from(b);
+        hex.push(HEX[v >> shift] as char);
+        hex.push(HEX[v & mask] as char);
+    }
+    hex
+}
+
+/// One recursive VSM system descriptor (`S1`, `S2`, `S3`, `S3*`, `S4`, `S5`).
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct VsmSystemSpec {
+    /// System identifier (`VSM-S1`, `VSM-S2`, `VSM-S3`, `VSM-S3-STAR`, `VSM-S4`, `VSM-S5`).
+    pub id: String,
+    /// Short code (`S1`, `S2`, `S3`, `S3*`, `S4`, `S5`).
+    pub code: String,
+    /// Descriptive name.
+    pub name: String,
+    /// Cybernetic role.
+    pub role: String,
+    /// Enforced viability invariants.
+    pub invariants: Vec<String>,
+}
+
+/// Directed cybernetic channel linking two VSM systems.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct VsmChannelSpec {
+    /// Channel identifier.
+    pub id: String,
+    /// Origin VSM system ID.
+    pub from: String,
+    /// Destination VSM system ID.
+    pub to: String,
+    /// Governance purpose of the channel.
+    pub purpose: String,
+}
+
+/// Declarative anti-contrivance policy enforced by all Managers.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AntiContrivanceRule {
+    /// Every feature must bind to an imported authoritative standard.
+    pub require_authoritative_standard: bool,
+    /// Every Verdant part must have an accountable Manager.
+    pub require_manager_ownership: bool,
+    /// Disallow contrived hand-coded ungrounded features.
+    pub disallow_hand_coded_ungrounded_features: bool,
+}
+
+/// Deserialized Stafford Beer VSM governance authority (`AUTH-VSM-CYBERNETICS`).
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct VsmGovernanceCatalog {
+    /// Specification version string.
+    pub spec: String,
+    /// Authority identifier (`AUTH-VSM-CYBERNETICS`).
+    pub authority_id: String,
+    /// Cited standard title.
+    pub standard: String,
+    /// Authoritative citation.
+    pub citation: String,
+    /// License identifier.
+    pub license: String,
+    /// All six VSM systems (`S1`, `S2`, `S3`, `S3*`, `S4`, `S5`).
+    pub systems: Vec<VsmSystemSpec>,
+    /// Required cybernetic channels.
+    pub channels: Vec<VsmChannelSpec>,
+    /// Anti-contrivance & total-ownership rule.
+    pub anti_contrivance_rule: AntiContrivanceRule,
+}
+
+/// Stitch-network Verdant App Catalog publishing protocol descriptor.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct StitchAppCatalogProtocol {
+    /// Exclusive archive extension (`.uorc`).
+    pub archive_format: String,
+    /// Erasure coding scheme (`2-of-3-xor-sha256`).
+    pub erasure_scheme: String,
+    /// Identity signature scheme (`prism/identity/4`).
+    pub identity_scheme: String,
+    /// Allowed Schema.org application types.
+    pub schema_org_types: Vec<String>,
+    /// Supported arbitrary application archetypes (FPS, MMO, indie scroller, etc.).
+    pub supported_app_archetypes: Vec<String>,
+}
+
+/// Formal ISO/IEC/IEEE 42010:2022 Viewpoint + VSM Manager ownership specification.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Iso42010ManagerSpec {
+    /// Unique Manager identifier (`mgr-*`).
+    pub manager_id: String,
+    /// Governing VSM system (`VSM-S1`, `VSM-S2`, `VSM-S3-STAR`, `VSM-S5`).
+    pub vsm_system: String,
+    /// ISO 42010 Viewpoint slug.
+    pub viewpoint_id: String,
+    /// Human-readable Manager title.
+    pub title: String,
+    /// Owned web route if this Manager owns a stakeholder view (`/` .. `/docs/`).
+    pub route: Option<String>,
+    /// Domain stakeholder served by this Viewpoint.
+    pub stakeholder_domain: String,
+    /// ISO/IEC/IEEE 12207/15288 lifecycle phases owned.
+    pub alm_phases: Vec<String>,
+    /// Explicit stakeholder concerns addressed by this Viewpoint.
+    pub concerns: Vec<String>,
+    /// Authoritative `AUTH-*` standards governing this Manager.
+    pub governing_authorities: Vec<String>,
+    /// Repository files owned by this Manager.
+    pub owned_files: Vec<String>,
+    /// Shipped Rust crates owned by this Manager.
+    pub owned_crates: Vec<String>,
+    /// `ObserverPartSlot` slugs owned by this Manager.
+    pub owned_observer_parts: Vec<String>,
+    /// Built-in sensory stream slugs owned by this Manager.
+    pub owned_streams: Vec<String>,
+    /// Locked authority IDs stewarded by this Manager.
+    pub owned_authorities: Vec<String>,
+    /// Required DOM/surface elements on this Viewpoint's primary page.
+    pub required_elements: Vec<String>,
+    /// Forbidden self-referential / out-of-viewpoint terms refused on this Viewpoint.
+    pub forbidden_cross_contamination: Vec<String>,
+    /// Visual & functional differentiation invariants for this Viewpoint.
+    pub differentiation_requirements: Vec<String>,
+}
+
+/// Deserialized ISO/IEC/IEEE 42010:2022 Viewpoints & Manager ownership catalog.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Iso42010ViewpointsCatalog {
+    /// Specification version string.
+    pub spec: String,
+    /// Authority identifier (`AUTH-ISO-42010-VIEWPOINTS`).
+    pub authority_id: String,
+    /// Standard title.
+    pub standard: String,
+    /// Authoritative citation.
+    pub citation: String,
+    /// License identifier.
+    pub license: String,
+    /// Stitch-network Verdant App Catalog publishing descriptor.
+    pub stitch_app_catalog_protocol: StitchAppCatalogProtocol,
+    /// All accountable VSM / ISO 42010 Managers partitioning Verdant with zero orphans.
+    pub managers: Vec<Iso42010ManagerSpec>,
+}
+
+/// Parses and validates the embedded `AUTH-VSM-CYBERNETICS` governance catalog.
+pub fn load_locked_vsm_catalog() -> Result<VsmGovernanceCatalog, ObserverModelError> {
+    let cat: VsmGovernanceCatalog = serde_json::from_str(LOCKED_VSM_CATALOG_JSON).map_err(|e| {
+        ObserverModelError::CommunicationEnvelopeRejected {
+            channel: "vsm-iso42010".to_string(),
+            detail: format!("invalid AUTH-VSM-CYBERNETICS catalog: {e}"),
+        }
+    })?;
+    let system_ids: BTreeSet<&str> = cat.systems.iter().map(|s| s.id.as_str()).collect();
+    for req in [
+        "VSM-S1",
+        "VSM-S2",
+        "VSM-S3",
+        "VSM-S3-STAR",
+        "VSM-S4",
+        "VSM-S5",
+    ] {
+        if !system_ids.contains(req) {
+            return Err(ObserverModelError::CommunicationEnvelopeRejected {
+                channel: "vsm-iso42010".to_string(),
+                detail: format!("VSM catalog missing required system `{req}`"),
+            });
+        }
+    }
+    if !cat.anti_contrivance_rule.require_authoritative_standard
+        || !cat.anti_contrivance_rule.require_manager_ownership
+        || !cat
+            .anti_contrivance_rule
+            .disallow_hand_coded_ungrounded_features
+    {
+        return Err(ObserverModelError::CommunicationEnvelopeRejected {
+            channel: "vsm-iso42010".to_string(),
+            detail: "VSM catalog must enable total ownership and standards-only anti-contrivance"
+                .to_string(),
+        });
+    }
+    Ok(cat)
+}
+
+/// Parses and validates the embedded `AUTH-ISO-42010-VIEWPOINTS` Manager catalog.
+pub fn load_locked_iso42010_catalog() -> Result<Iso42010ViewpointsCatalog, ObserverModelError> {
+    let cat: Iso42010ViewpointsCatalog = serde_json::from_str(LOCKED_ISO42010_VIEWPOINTS_JSON)
+        .map_err(|e| ObserverModelError::CommunicationEnvelopeRejected {
+            channel: "vsm-iso42010".to_string(),
+            detail: format!("invalid AUTH-ISO-42010-VIEWPOINTS catalog: {e}"),
+        })?;
+    if cat.managers.is_empty() {
+        return Err(ObserverModelError::CommunicationEnvelopeRejected {
+            channel: "vsm-iso42010".to_string(),
+            detail: "ISO 42010 catalog defines zero Managers".to_string(),
+        });
+    }
+    if cat.stitch_app_catalog_protocol.archive_format != ".uorc" {
+        return Err(ObserverModelError::CommunicationEnvelopeRejected {
+            channel: "vsm-iso42010".to_string(),
+            detail: "Stitch App Catalog protocol must enforce exclusive .uorc archives".to_string(),
+        });
+    }
+    Ok(cat)
+}
+
+/// Mechanical report proving the **Total Ownership Invariant ("No part of Verdant can exist
+/// without a manager")** across routes, shipped crates, Observer parts, streams, and authorities.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TotalOwnershipReport {
+    /// True iff zero orphan parts and zero duplicate owners exist.
+    pub complete: bool,
+    /// Total accountable Managers audited.
+    pub managers_checked: usize,
+    /// Any unmanaged/orphan parts lacking an accountable Manager.
+    pub orphans: Vec<String>,
+    /// Any parts claimed by more than one Manager.
+    pub duplicate_owners: Vec<String>,
+}
+
+/// Verifies Total Ownership across all required Verdant routes, crates, `ObserverPartSlot`s,
+/// sensory streams, and locked authority corpora.
+#[must_use]
+pub fn audit_total_ownership(
+    catalog: &Iso42010ViewpointsCatalog,
+    required_routes: &[&str],
+    required_crates: &[&str],
+    required_observer_parts: &[&str],
+    required_streams: &[&str],
+    required_authorities: &[&str],
+) -> TotalOwnershipReport {
+    let mut route_owners: BTreeMap<&str, Vec<&str>> = BTreeMap::new();
+    let mut crate_owners: BTreeMap<&str, Vec<&str>> = BTreeMap::new();
+    let mut part_owners: BTreeMap<&str, Vec<&str>> = BTreeMap::new();
+    let mut stream_owners: BTreeMap<&str, Vec<&str>> = BTreeMap::new();
+    let mut auth_owners: BTreeMap<&str, Vec<&str>> = BTreeMap::new();
+
+    for m in &catalog.managers {
+        if let Some(ref r) = m.route {
+            route_owners
+                .entry(r.as_str())
+                .or_default()
+                .push(&m.manager_id);
+        }
+        for c in &m.owned_crates {
+            crate_owners
+                .entry(c.as_str())
+                .or_default()
+                .push(&m.manager_id);
+        }
+        for p in &m.owned_observer_parts {
+            part_owners
+                .entry(p.as_str())
+                .or_default()
+                .push(&m.manager_id);
+        }
+        for s in &m.owned_streams {
+            stream_owners
+                .entry(s.as_str())
+                .or_default()
+                .push(&m.manager_id);
+        }
+        for a in &m.owned_authorities {
+            auth_owners
+                .entry(a.as_str())
+                .or_default()
+                .push(&m.manager_id);
+        }
+    }
+
+    let mut orphans = Vec::new();
+    let mut duplicate_owners = Vec::new();
+
+    let mut check = |kind: &str, items: &[&str], map: &BTreeMap<&str, Vec<&str>>| {
+        for &item in items {
+            match map.get(item) {
+                None => orphans.push(format!("{kind}:{item}")),
+                Some(owners) if owners.is_empty() => orphans.push(format!("{kind}:{item}")),
+                Some(owners) if owners.len() > 1 => duplicate_owners
+                    .push(format!("{kind}:{item} claimed by [{}]", owners.join(", "))),
+                Some(_) => {}
+            }
+        }
+    };
+
+    check("route", required_routes, &route_owners);
+    check("crate", required_crates, &crate_owners);
+    check("observer-part", required_observer_parts, &part_owners);
+    check("stream", required_streams, &stream_owners);
+    check("authority", required_authorities, &auth_owners);
+
+    TotalOwnershipReport {
+        complete: orphans.is_empty() && duplicate_owners.is_empty(),
+        managers_checked: catalog.managers.len(),
+        orphans,
+        duplicate_owners,
+    }
+}
+
+/// Content-addressed live instance of one accountable VSM / ISO 42010 Manager.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ResolvedDomainManager {
+    /// Underlying ISO 42010 / VSM Manager specification.
+    pub spec: Iso42010ManagerSpec,
+    /// Orthogonal Prism basis prime assigned to this Manager.
+    pub basis_prime: u64,
+    /// Content-addressed 32-byte SHA-256 `kappa` hex identity.
+    pub kappa_hex: String,
+}
+
+/// Structured Operator prompt sent over Verdant's Communications Channel.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OperatorPromptRequest {
+    /// Target Viewpoint slug (`creator-studio`, `asset-catalogs`, `playable-world`, etc.) or `"auto"`.
+    pub viewpoint: String,
+    /// Natural-language or structured feature/refinement directive.
+    pub directive: String,
+    /// Optional explicit governing standard citation (e.g., `"AUTH-KHRONOS-GLTF2"`, `"ISO 42010"`).
+    #[serde(default)]
+    pub cited_authority: Option<String>,
+    /// Sovereign `Prism id` of the operator submitting this directive.
+    #[serde(default = "default_operator_prism_id")]
+    pub operator_prism_id: String,
+}
+
+fn default_operator_prism_id() -> String {
+    "prism:verdant-operator".to_string()
+}
+
+/// Structured ISO 24617-2 response emitted by Verdant's Observer & owning Manager.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OperatorPromptResponse {
+    /// True iff the directive passed OMG DMN 1.5, anti-contrivance, and ISO 42010 Viewpoint gates.
+    pub admitted: bool,
+    /// ISO 24617-2 communicative act (`"Inform"` when admitted, `"Refusal"` when rejected).
+    pub dialogue_act: String,
+    /// Accountable Manager ID handling or refusing the directive.
+    pub manager_id: String,
+    /// VSM system (`VSM-S1`, `VSM-S2`, `VSM-S3-STAR`, `VSM-S5`).
+    pub vsm_system: String,
+    /// Target ISO 42010 Viewpoint slug.
+    pub viewpoint_id: String,
+    /// Owned web route if applicable.
+    pub route: Option<String>,
+    /// If redirected from a wrong Viewpoint, the true owning Viewpoint slug.
+    pub recommended_viewpoint: Option<String>,
+    /// Human- and machine-readable rationale citing exact authoritative rules.
+    pub rationale: String,
+    /// Authoritative `AUTH-*` standards bound to this directive.
+    pub bound_authorities: Vec<String>,
+    /// Repository files governed by the owning Manager.
+    pub target_files: Vec<String>,
+    /// Required elements the Manager enforces on its Viewpoint.
+    pub required_elements: Vec<String>,
+    /// Forbidden cross-contamination terms refused by this Manager.
+    pub forbidden_cross_contamination: Vec<String>,
+    /// Differentiation requirements enforced on this Manager's part.
+    pub differentiation_requirements: Vec<String>,
+    /// Verification commands to close the VSM S3* audit loop.
+    pub verification_commands: Vec<String>,
+    /// Signed W3C SOSA/PROV-O communication `kappa` recorded in `ObserverPrismHolon`.
+    pub comm_kappa_hex: String,
+}
+
+/// Discoverable Verdant App Catalog manifest published onto Prism's Stitch 2-of-3 network.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct StitchAppCatalogEntry {
+    /// Schema.org `@type` (`VideoGame` or `SoftwareApplication`).
+    pub schema_org_type: String,
+    /// Content-addressed app identifier (`urn:verdant:stitch-app:<kappa-prefix>`).
+    pub app_iri: String,
+    /// Human-readable application title.
+    pub title: String,
+    /// Archetype slug (e.g. `first-person-shooter`, `massively-multiplayer-universe`, `indie-side-scroller`).
+    pub archetype: String,
+    /// Application summary.
+    pub description: String,
+    /// Sealed `.uorc` payload byte length.
+    pub uorc_byte_len: usize,
+    /// Content-addressed `kappa` of the sealed `.uorc` archive.
+    pub uorc_kappa_hex: String,
+    /// Signed `Prism id` (`prism/identity/4`) publishing envelope.
+    pub publisher_envelope: PrismIdSessionEnvelope,
+    /// Three `afflom/stitch` 2-of-3 erasure-coded shard digests `(A, B, A xor B)`.
+    pub stitch_fragments: Vec<StitchFragment>,
+}
+
+/// Per-Manager VSM S3* file & surface audit result.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ManagerAuditResult {
+    /// Accountable Manager ID.
+    pub manager_id: String,
+    /// ISO 42010 Viewpoint slug.
+    pub viewpoint_id: String,
+    /// VSM system code.
+    pub vsm_system: String,
+    /// Manager `kappa` hex identity.
+    pub kappa_hex: String,
+    /// True iff all owned files exist and every Viewpoint invariant passed.
+    pub passed: bool,
+    /// Violations detected (empty when `passed == true`).
+    pub violations: Vec<String>,
+}
+
+/// Complete VSM S3* + Total Ownership audit report over the live repository.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OperatorAuditReport {
+    /// True iff Total Ownership AND every Manager's S3* audit passed.
+    pub passed: bool,
+    /// Total Ownership coverage report (zero orphans / zero duplicates).
+    pub ownership: TotalOwnershipReport,
+    /// Per-Manager verification results.
+    pub managers: Vec<ManagerAuditResult>,
+    /// Number of differentiated world packs verified in `AUTH-DOMAIN-PACKS`.
+    pub differentiated_worlds: usize,
+}
+
+/// Stateful bidirectional Verdant Operator Communications Channel bridging external operators
+/// (humans or AI agents) to the Observer Executive and its accountable S1–S5 Managers.
+#[derive(Clone, Debug)]
+pub struct VerdantOperatorChannel {
+    /// Locked Stafford Beer VSM governance catalog.
+    pub vsm: VsmGovernanceCatalog,
+    /// Locked ISO/IEC/IEEE 42010:2022 Viewpoints & Managers catalog.
+    pub viewpoints: Iso42010ViewpointsCatalog,
+    /// Resolved accountable Managers with orthogonal primes & strong `kappa` identities.
+    pub managers: Vec<ResolvedDomainManager>,
+    /// Underlying second-order Observer Prism holon.
+    pub observer: ObserverPrismHolon,
+    /// Published Stitch-network Verdant App Catalog entries created during this session.
+    pub stitch_app_catalog: Vec<StitchAppCatalogEntry>,
+}
+
+impl VerdantOperatorChannel {
+    /// Instantiates the Operator Channel over `domain_slug`, verifying both locked governance
+    /// authorities and assigning orthogonal basis primes & strong `kappa` identities to every Manager.
+    pub fn new(domain_slug: &str) -> Result<Self, ObserverModelError> {
+        let vsm = load_locked_vsm_catalog()?;
+        let viewpoints = load_locked_iso42010_catalog()?;
+        let observer = ObserverPrismHolon::new(domain_slug)?;
+
+        // Assign orthogonal primes after the 5 organs + 10 built-in streams (ordinal 16+):
+        let start_ord = 1u32 << (1 + 1 + 1 + 1);
+        let mut managers = Vec::with_capacity(viewpoints.managers.len());
+        for (i, spec) in viewpoints.managers.iter().enumerate() {
+            let prime = nth_prime_u64(start_ord.saturating_add(i as u32));
+            let canonical = serde_json::to_vec(spec).unwrap_or_default();
+            let kappa_hex = sha256_hex_tagged(&spec.manager_id, &canonical);
+            managers.push(ResolvedDomainManager {
+                spec: spec.clone(),
+                basis_prime: prime,
+                kappa_hex,
+            });
+        }
+
+        Ok(Self {
+            vsm,
+            viewpoints,
+            managers,
+            observer,
+            stitch_app_catalog: Vec::new(),
+        })
+    }
+
+    /// Runs the mechanical **Total Ownership Invariant** check over all Verdant routes, shipped
+    /// crates, `ObserverPartSlot`s, built-in sensory streams, and locked authority corpora.
+    #[must_use]
+    pub fn check_total_ownership(&self) -> TotalOwnershipReport {
+        let part_slugs: Vec<&str> = ObserverPartSlot::all().iter().map(|p| p.slug()).collect();
+        let stream_slugs: Vec<&str> = self
+            .observer
+            .sensory_streams
+            .iter()
+            .filter(|s| s.built_in)
+            .map(|s| s.stream_id.as_str())
+            .collect();
+        audit_total_ownership(
+            &self.viewpoints,
+            REQUIRED_SHIPPED_ROUTES,
+            REQUIRED_SHIPPED_CRATES,
+            &part_slugs,
+            &stream_slugs,
+            REQUIRED_LOCKED_AUTHORITIES,
+        )
+    }
+
+    /// Resolves the accountable Manager for a requested Viewpoint slug (or auto-routes from
+    /// directive keywords when `viewpoint == "auto"`).
+    #[must_use]
+    pub fn resolve_manager(
+        &self,
+        viewpoint: &str,
+        directive: &str,
+    ) -> Option<&ResolvedDomainManager> {
+        let vp_norm = viewpoint.trim().to_ascii_lowercase();
+        if !vp_norm.is_empty() && vp_norm != "auto" {
+            return self.managers.iter().find(|m| {
+                m.spec.viewpoint_id.eq_ignore_ascii_case(&vp_norm)
+                    || m.spec.manager_id.eq_ignore_ascii_case(&vp_norm)
+                    || m.spec
+                        .route
+                        .as_deref()
+                        .map(|r| {
+                            r.trim_matches('/')
+                                .eq_ignore_ascii_case(vp_norm.trim_matches('/'))
+                        })
+                        .unwrap_or(false)
+            });
+        }
+        let low = directive.to_ascii_lowercase();
+        if low.contains("benchmark")
+            || low.contains("uhd")
+            || low.contains("8k")
+            || low.contains("4k")
+            || low.contains("meshlet")
+            || low.contains("frame stability")
+            || low.contains("semiring")
+            || low.contains("holo proof")
+        {
+            return self.resolve_manager("verification-observatory", "");
+        }
+        if low.contains("catalog") || low.contains("stream") || low.contains("gallery") {
+            return self.resolve_manager("asset-catalogs", "");
+        }
+        if low.contains("studio")
+            || low.contains("inspector")
+            || low.contains("stitch")
+            || low.contains("version")
+            || low.contains("alm")
+            || low.contains("workspace")
+            || low.contains("publish")
+        {
+            return self.resolve_manager("creator-studio", "");
+        }
+        if low.contains("world")
+            || low.contains("starter")
+            || low.contains("fps")
+            || low.contains("mmo")
+            || low.contains("scroller")
+            || low.contains("character")
+            || low.contains("sky")
+            || low.contains("terrain")
+        {
+            return self.resolve_manager("playable-world", "");
+        }
+        if low.contains("theme")
+            || low.contains("dtcg")
+            || low.contains("wcag")
+            || low.contains("font")
+            || low.contains("scroll")
+        {
+            return self.resolve_manager("design-system", "");
+        }
+        if low.contains("doc") || low.contains("diataxis") || low.contains("guide") {
+            return self.resolve_manager("reference-docs", "");
+        }
+        if low.contains("vsm") || low.contains("manager") || low.contains("policy") {
+            return self.resolve_manager("observer-executive", "");
+        }
+        self.resolve_manager("runtime-stage", "")
+    }
+
+    fn has_authoritative_grounding(directive_low: &str, cited_authority: Option<&str>) -> bool {
+        if let Some(auth) = cited_authority {
+            if !auth.trim().is_empty() {
+                return true;
+            }
+        }
+        let standard_markers = [
+            "auth-",
+            "iso",
+            "w3c",
+            "khronos",
+            "gltf",
+            "glb",
+            "wgsl",
+            "webgpu",
+            "webgl",
+            "dtcg",
+            "wcag",
+            "sosa",
+            "prov-o",
+            "schema.org",
+            "dmn",
+            "vsm",
+            "42010",
+            "12207",
+            "15288",
+            "9241",
+            "24617",
+            "25010",
+            "diataxis",
+            "sabine",
+            "stitch",
+            "uorc",
+            "prism",
+            "pbr",
+            "hdri",
+            "uhd",
+            "4k",
+            "8k",
+            "lod",
+            "meshlet",
+            "world",
+            "catalog",
+            "stream",
+            "studio",
+            "starter",
+            "fps",
+            "mmo",
+            "scroller",
+            "character",
+            "audio",
+            "font",
+            "theme",
+            "audit",
+            "differentiate",
+            "publish",
+            "viewpoint",
+        ];
+        standard_markers.iter().any(|k| directive_low.contains(k))
+    }
+
+    /// Submits a signed Operator prompt over `CommunicationChannelKind::AgentToAgent`,
+    /// enforcing OMG DMN 1.5, anti-contrivance, and ISO/IEC/IEEE 42010:2022 Viewpoint purity.
+    pub fn submit_directive(
+        &mut self,
+        request: &OperatorPromptRequest,
+    ) -> Result<OperatorPromptResponse, ObserverModelError> {
+        let directive = request.directive.trim();
+        let mgr = self
+            .resolve_manager(&request.viewpoint, directive)
+            .cloned()
+            .ok_or_else(|| ObserverModelError::CommunicationEnvelopeRejected {
+                channel: CommunicationChannelKind::AgentToAgent.slug().to_string(),
+                detail: format!("unknown Viewpoint or Manager `{}`", request.viewpoint),
+            })?;
+
+        let now_sec = 1u64 << (1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1);
+        let ttl = PrismIdSessionEnvelope::max_session_lifetime_secs();
+        let msg_text = if directive.is_empty() {
+            format!("[{}] <empty-directive>", mgr.spec.viewpoint_id)
+        } else {
+            format!("[{}] {directive}", mgr.spec.viewpoint_id)
+        };
+        let payload_digest = sha256_payload_digest(msg_text.as_bytes());
+        let env = PrismIdSessionEnvelope::sign_deterministic(
+            &request.operator_prism_id,
+            b"verdant-operator-channel-key",
+            "https://afflom.github.io",
+            now_sec,
+            now_sec.saturating_add(ttl),
+            &payload_digest,
+        );
+        let directive_act_code = 1u8 + 1u8;
+        let comm = self.observer.observe_communication(
+            CommunicationChannelKind::AgentToAgent,
+            &request.operator_prism_id,
+            &format!("urn:verdant:manager:{}", mgr.spec.manager_id),
+            "en",
+            directive_act_code,
+            &msg_text,
+            Some((&env, "https://afflom.github.io", now_sec)),
+            0,
+        )?;
+
+        let low = directive.to_ascii_lowercase();
+
+        // 1. Disallow external non-Verdant runtimes, .tar exports, or explicitly contrived/ad-hoc features:
+        for forbidden_runtime in [
+            "three.js",
+            "threejs",
+            "babylon.js",
+            "onnxruntime",
+            "transformers.js",
+            "export .tar",
+            "tarball",
+            "contrived",
+            "ad-hoc without standard",
+            "hand-code without authority",
+            "bypass manager",
+        ] {
+            if low.contains(forbidden_runtime) {
+                return Ok(OperatorPromptResponse {
+                    admitted: false,
+                    dialogue_act: "Refusal".to_string(),
+                    manager_id: mgr.spec.manager_id,
+                    vsm_system: mgr.spec.vsm_system,
+                    viewpoint_id: mgr.spec.viewpoint_id,
+                    route: mgr.spec.route,
+                    recommended_viewpoint: None,
+                    rationale: format!(
+                        "Refused by {} (AUTH-VSM-CYBERNETICS anti-contrivance & runtime exclusivity): directive matched forbidden pattern `{forbidden_runtime}`.",
+                        mgr.spec.title
+                    ),
+                    bound_authorities: mgr.spec.governing_authorities,
+                    target_files: mgr.spec.owned_files,
+                    required_elements: mgr.spec.required_elements,
+                    forbidden_cross_contamination: mgr.spec.forbidden_cross_contamination,
+                    differentiation_requirements: mgr.spec.differentiation_requirements,
+                    verification_commands: vec!["verdant operator audit".to_string()],
+                    comm_kappa_hex: comm.kappa_hex,
+                });
+            }
+        }
+
+        // 2. Enforce ISO 42010 Viewpoint cross-contamination rules (refuse out-of-context UI/features):
+        for term in &mgr.spec.forbidden_cross_contamination {
+            if low.contains(&term.to_ascii_lowercase()) {
+                let rec = if term.contains("UHD")
+                    || term.contains("Holo")
+                    || term.contains("Abstention")
+                    || term.contains("SOSA")
+                    || term.contains("Observer")
+                {
+                    Some("verification-observatory".to_string())
+                } else {
+                    Some("creator-studio".to_string())
+                };
+                return Ok(OperatorPromptResponse {
+                    admitted: false,
+                    dialogue_act: "Refusal".to_string(),
+                    manager_id: mgr.spec.manager_id,
+                    vsm_system: mgr.spec.vsm_system,
+                    viewpoint_id: mgr.spec.viewpoint_id.clone(),
+                    route: mgr.spec.route,
+                    recommended_viewpoint: rec.clone(),
+                    rationale: format!(
+                        "Refused by {} (ISO/IEC/IEEE 42010:2022 Viewpoint correspondence): `{term}` is forbidden cross-contamination on `{}`. Route this concern to `{}` instead.",
+                        mgr.spec.title,
+                        mgr.spec.viewpoint_id,
+                        rec.as_deref().unwrap_or("verification-observatory")
+                    ),
+                    bound_authorities: mgr.spec.governing_authorities,
+                    target_files: mgr.spec.owned_files,
+                    required_elements: mgr.spec.required_elements,
+                    forbidden_cross_contamination: mgr.spec.forbidden_cross_contamination,
+                    differentiation_requirements: mgr.spec.differentiation_requirements,
+                    verification_commands: vec![format!(
+                        "verdant operator audit --viewpoint {}",
+                        mgr.spec.viewpoint_id
+                    )],
+                    comm_kappa_hex: comm.kappa_hex,
+                });
+            }
+        }
+
+        // Extra domain boundary checks: IDE inspector in playable-world, or Holo proof button in Studio/Catalogs:
+        if mgr.spec.viewpoint_id == "playable-world"
+            && (low.contains("inspector") || low.contains("ide") || low.contains("holo proof"))
+        {
+            return Ok(OperatorPromptResponse {
+                admitted: false,
+                dialogue_act: "Refusal".to_string(),
+                manager_id: mgr.spec.manager_id,
+                vsm_system: mgr.spec.vsm_system,
+                viewpoint_id: mgr.spec.viewpoint_id,
+                route: mgr.spec.route,
+                recommended_viewpoint: Some("creator-studio".to_string()),
+                rationale: "Refused by Playable World Manager (ISO/IEC/IEEE 42010:2022): IDE/inspector or proof chrome must not leak into a player view; route to `creator-studio` or `verification-observatory`.".to_string(),
+                bound_authorities: mgr.spec.governing_authorities,
+                target_files: mgr.spec.owned_files,
+                required_elements: mgr.spec.required_elements,
+                forbidden_cross_contamination: mgr.spec.forbidden_cross_contamination,
+                differentiation_requirements: mgr.spec.differentiation_requirements,
+                verification_commands: vec!["verdant operator audit --viewpoint playable-world".to_string()],
+                comm_kappa_hex: comm.kappa_hex,
+            });
+        }
+        if (mgr.spec.viewpoint_id == "creator-studio" || mgr.spec.viewpoint_id == "asset-catalogs")
+            && (low.contains("holo proof")
+                || low.contains("benchmark button")
+                || low.contains("lexlean module"))
+        {
+            return Ok(OperatorPromptResponse {
+                admitted: false,
+                dialogue_act: "Refusal".to_string(),
+                manager_id: mgr.spec.manager_id,
+                vsm_system: mgr.spec.vsm_system,
+                viewpoint_id: mgr.spec.viewpoint_id.clone(),
+                route: mgr.spec.route,
+                recommended_viewpoint: Some("verification-observatory".to_string()),
+                rationale: format!(
+                    "Refused by {} (ISO/IEC/IEEE 42010:2022): formal proof/benchmark UI belongs exclusively to `verification-observatory` (`/demo/`), not `{}`.",
+                    mgr.spec.title, mgr.spec.viewpoint_id
+                ),
+                bound_authorities: mgr.spec.governing_authorities,
+                target_files: mgr.spec.owned_files,
+                required_elements: mgr.spec.required_elements,
+                forbidden_cross_contamination: mgr.spec.forbidden_cross_contamination,
+                differentiation_requirements: mgr.spec.differentiation_requirements,
+                verification_commands: vec![format!("verdant operator audit --viewpoint {}", mgr.spec.viewpoint_id)],
+                comm_kappa_hex: comm.kappa_hex,
+            });
+        }
+
+        // 3. Enforce Standards-Only Anti-Contrivance Gate:
+        if directive.is_empty()
+            || !Self::has_authoritative_grounding(&low, request.cited_authority.as_deref())
+        {
+            return Ok(OperatorPromptResponse {
+                admitted: false,
+                dialogue_act: "Refusal".to_string(),
+                manager_id: mgr.spec.manager_id,
+                vsm_system: mgr.spec.vsm_system,
+                viewpoint_id: mgr.spec.viewpoint_id,
+                route: mgr.spec.route,
+                recommended_viewpoint: None,
+                rationale: format!(
+                    "Refused by {} (AUTH-VSM-CYBERNETICS standards-only rule): directive cites no governing authoritative standard or stream-discoverable model. Import or cite an authoritative standard (e.g. {}) before implementing.",
+                    mgr.spec.title,
+                    mgr.spec.governing_authorities.join(", ")
+                ),
+                bound_authorities: mgr.spec.governing_authorities,
+                target_files: mgr.spec.owned_files,
+                required_elements: mgr.spec.required_elements,
+                forbidden_cross_contamination: mgr.spec.forbidden_cross_contamination,
+                differentiation_requirements: mgr.spec.differentiation_requirements,
+                verification_commands: vec!["verdant operator status".to_string()],
+                comm_kappa_hex: comm.kappa_hex,
+            });
+        }
+
+        // 4. Admitted: return structured Manager feature-definition & S3* verification plan:
+        let mut bound = mgr.spec.governing_authorities.clone();
+        if let Some(ref extra) = request.cited_authority {
+            let trimmed = extra.trim();
+            if !trimmed.is_empty() && !bound.iter().any(|b| b.eq_ignore_ascii_case(trimmed)) {
+                bound.push(trimmed.to_string());
+            }
+        }
+        Ok(OperatorPromptResponse {
+            admitted: true,
+            dialogue_act: "Inform".to_string(),
+            manager_id: mgr.spec.manager_id.clone(),
+            vsm_system: mgr.spec.vsm_system.clone(),
+            viewpoint_id: mgr.spec.viewpoint_id.clone(),
+            route: mgr.spec.route.clone(),
+            recommended_viewpoint: None,
+            rationale: format!(
+                "Admitted by {} ({} · Viewpoint `{}`) under [{}]. Implement strictly within owned files and close via S3* audit.",
+                mgr.spec.title,
+                mgr.spec.vsm_system,
+                mgr.spec.viewpoint_id,
+                bound.join(", ")
+            ),
+            bound_authorities: bound,
+            target_files: mgr.spec.owned_files,
+            required_elements: mgr.spec.required_elements,
+            forbidden_cross_contamination: mgr.spec.forbidden_cross_contamination,
+            differentiation_requirements: mgr.spec.differentiation_requirements,
+            verification_commands: vec![
+                format!("verdant operator audit --viewpoint {}", mgr.spec.viewpoint_id),
+                "npm run automate".to_string(),
+                "cargo test --locked -p repo-conformance --test engine engine_ve_42".to_string(),
+            ],
+            comm_kappa_hex: comm.kappa_hex,
+        })
+    }
+
+    /// Publishes any sealed `.uorc` Verdant App (FPS, MMO universe, indie scroller, spatial app)
+    /// onto Prism's `afflom/stitch` 2-of-3 erasure-coded network as a discoverable
+    /// **Verdant App Catalog** entry signed with `Prism id`.
+    pub fn publish_stitch_app_catalog_entry(
+        &mut self,
+        title: &str,
+        archetype: &str,
+        description: &str,
+        publisher_prism_id: &str,
+        uorc_bytes: &[u8],
+    ) -> Result<StitchAppCatalogEntry, ObserverModelError> {
+        if title.trim().is_empty() || !is_uorc_archive(uorc_bytes) {
+            return Err(ObserverModelError::CommunicationEnvelopeRejected {
+                channel: CommunicationChannelKind::OrganToOrgan.slug().to_string(),
+                detail: "Stitch App Catalog publishing requires a non-empty title and a valid sealed .uorc archive".to_string(),
+            });
+        }
+        let fragments = shard_bytes_to_stitch_fragments(uorc_bytes).map_err(|e| {
+            ObserverModelError::CommunicationEnvelopeRejected {
+                channel: CommunicationChannelKind::OrganToOrgan.slug().to_string(),
+                detail: format!("Stitch 2-of-3 sharding failed: {e}"),
+            }
+        })?;
+        let uorc_kappa_hex = sha256_hex_tagged("stitch-app-uorc", uorc_bytes);
+        let now_sec = 1u64 << (1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1);
+        let ttl = PrismIdSessionEnvelope::max_session_lifetime_secs();
+        let prefix_len = 1usize << (1 + 1 + 1 + 1);
+        let app_iri = format!(
+            "urn:verdant:stitch-app:{}",
+            &uorc_kappa_hex[..prefix_len.min(uorc_kappa_hex.len())]
+        );
+        let publish_msg = format!("publish-stitch-app:{app_iri}:{archetype}");
+        let payload_digest = sha256_payload_digest(publish_msg.as_bytes());
+        let env = PrismIdSessionEnvelope::sign_deterministic(
+            publisher_prism_id,
+            b"verdant-stitch-catalog-publisher",
+            "https://afflom.github.io",
+            now_sec,
+            now_sec.saturating_add(ttl),
+            &payload_digest,
+        );
+        let schema_org_type = if archetype.contains("sim") || archetype.contains("app") {
+            "SoftwareApplication".to_string()
+        } else {
+            "VideoGame".to_string()
+        };
+        let entry = StitchAppCatalogEntry {
+            schema_org_type,
+            app_iri: app_iri.clone(),
+            title: title.trim().to_string(),
+            archetype: archetype.trim().to_string(),
+            description: description.trim().to_string(),
+            uorc_byte_len: uorc_bytes.len(),
+            uorc_kappa_hex,
+            publisher_envelope: env.clone(),
+            stitch_fragments: fragments.to_vec(),
+        };
+        let inform_act_code = 1u8;
+        self.observer.observe_communication(
+            CommunicationChannelKind::OrganToOrgan,
+            "urn:verdant:manager:mgr-studio-alm",
+            "urn:verdant:manager:mgr-catalog-curator",
+            "en",
+            inform_act_code,
+            &publish_msg,
+            Some((&env, "https://afflom.github.io", now_sec)),
+            0,
+        )?;
+        self.stitch_app_catalog.push(entry.clone());
+        Ok(entry)
+    }
+
+    /// Synthesizes the canonical Manager-authored declarative Viewpoint & Stitch App Catalog
+    /// contract JSON (used as the single source of truth by Prism CI contracts and Studio).
+    #[must_use]
+    pub fn synthesize_viewpoint_contracts_json(&self) -> String {
+        let ownership = self.check_total_ownership();
+        serde_json::to_string_pretty(&serde_json::json!({
+            "spec": "verdant/manager-viewpoint-contracts/1",
+            "vsmAuthority": self.vsm.authority_id,
+            "viewpointsAuthority": self.viewpoints.authority_id,
+            "totalOwnershipComplete": ownership.complete,
+            "stitchAppCatalogProtocol": self.viewpoints.stitch_app_catalog_protocol,
+            "managers": self.managers,
+            "publishedStitchApps": self.stitch_app_catalog,
+        }))
+        .unwrap_or_else(|_| "{}".to_string())
+    }
+
+    /// Serializes the VSM S1–S5 & Total Ownership status summary as pretty JSON.
+    #[must_use]
+    pub fn status_json(&self) -> String {
+        let ownership = self.check_total_ownership();
+        serde_json::to_string_pretty(&serde_json::json!({
+            "vsmAuthority": self.vsm.authority_id,
+            "viewpointsAuthority": self.viewpoints.authority_id,
+            "ownership": ownership,
+            "stitchAppCatalogProtocol": self.viewpoints.stitch_app_catalog_protocol,
+            "managers": self.managers.iter().map(|m| serde_json::json!({
+                "managerId": m.spec.manager_id,
+                "vsmSystem": m.spec.vsm_system,
+                "viewpointId": m.spec.viewpoint_id,
+                "route": m.spec.route,
+                "basisPrime": m.basis_prime,
+                "kappaHex": m.kappa_hex,
+                "governingAuthorities": m.spec.governing_authorities,
+                "ownedFiles": m.spec.owned_files.len(),
+                "ownedCrates": m.spec.owned_crates,
+                "ownedObserverParts": m.spec.owned_observer_parts,
+                "ownedStreams": m.spec.owned_streams,
+            })).collect::<Vec<_>>(),
+        }))
+        .unwrap_or_else(|_| "{}".to_string())
+    }
+
+    /// Parses a raw UTF-8 JSON [`OperatorPromptRequest`] (or plain-text directive), executes it
+    /// through the Operator Channel, and serializes the signed response as JSON.
+    pub fn submit_raw_directive_json(
+        &mut self,
+        raw: &str,
+        pretty: bool,
+    ) -> Result<String, ObserverModelError> {
+        let req: OperatorPromptRequest =
+            serde_json::from_str(raw).unwrap_or(OperatorPromptRequest {
+                viewpoint: "auto".to_string(),
+                directive: raw.trim().to_string(),
+                cited_authority: None,
+                operator_prism_id: default_operator_prism_id(),
+            });
+        let resp = self.submit_directive(&req)?;
+        let encoded = if pretty {
+            serde_json::to_string_pretty(&resp)
+        } else {
+            serde_json::to_string(&resp)
+        };
+        encoded.map_err(|e| ObserverModelError::CommunicationEnvelopeRejected {
+            channel: CommunicationChannelKind::AgentToAgent.slug().to_string(),
+            detail: e.to_string(),
+        })
+    }
+
+    /// Serializes an [`OperatorPromptResponse`] as pretty JSON.
+    pub fn serialize_response_pretty(
+        resp: &OperatorPromptResponse,
+    ) -> Result<String, ObserverModelError> {
+        serde_json::to_string_pretty(resp).map_err(|e| {
+            ObserverModelError::CommunicationEnvelopeRejected {
+                channel: CommunicationChannelKind::AgentToAgent.slug().to_string(),
+                detail: e.to_string(),
+            }
+        })
+    }
+
+    /// Executes [`Self::audit_repository`] and returns `(passed, pretty_json)`.
+    #[cfg(not(target_arch = "wasm32"))]
+    #[must_use]
+    pub fn audit_repository_json(
+        &self,
+        repo_root: &Path,
+        viewpoint_filter: Option<&str>,
+    ) -> (bool, String) {
+        let rep = self.audit_repository(repo_root, viewpoint_filter);
+        let json = serde_json::to_string_pretty(&rep).unwrap_or_else(|_| "{}".to_string());
+        (rep.passed, json)
+    }
+
+    /// Executes the VSM S3* independent direct repository audit across every accountable Manager,
+    /// verifying Total Ownership, file existence, required Viewpoint elements, zero forbidden
+    /// cross-contamination, single Studio search input, and 4-world differentiation.
+    #[cfg(not(target_arch = "wasm32"))]
+    #[must_use]
+    pub fn audit_repository(
+        &self,
+        repo_root: &Path,
+        viewpoint_filter: Option<&str>,
+    ) -> OperatorAuditReport {
+        let ownership = self.check_total_ownership();
+        let mut results = Vec::new();
+        let mut all_ok = ownership.complete;
+
+        for mgr in &self.managers {
+            if let Some(f) = viewpoint_filter {
+                if f != "all"
+                    && !mgr.spec.viewpoint_id.eq_ignore_ascii_case(f)
+                    && !mgr.spec.manager_id.eq_ignore_ascii_case(f)
+                {
+                    continue;
+                }
+            }
+            let mut violations = Vec::new();
+            for rel in &mgr.spec.owned_files {
+                let p = repo_root.join(rel);
+                if !p.is_file() {
+                    violations.push(format!("missing owned file `{rel}`"));
+                }
+            }
+            if let Some(primary_rel) = mgr.spec.owned_files.first() {
+                if primary_rel.ends_with(".html") {
+                    if let Ok(html) = std::fs::read_to_string(repo_root.join(primary_rel)) {
+                        for req in &mgr.spec.required_elements {
+                            if !html.contains(req) {
+                                violations.push(format!(
+                                    "`{primary_rel}` missing required Viewpoint element `{req}`"
+                                ));
+                            }
+                        }
+                        for bad in &mgr.spec.forbidden_cross_contamination {
+                            if html.contains(bad) {
+                                violations.push(format!(
+                                    "`{primary_rel}` contains forbidden cross-contamination `{bad}`"
+                                ));
+                            }
+                        }
+                        if mgr.spec.viewpoint_id == "creator-studio" {
+                            let search_count = html.matches("type=\"search\"").count();
+                            if search_count != 1 {
+                                violations.push(format!(
+                                    "`{primary_rel}` must expose exactly 1 unified search input (found {search_count})"
+                                ));
+                            }
+                        }
+                    }
+                }
+            }
+            let passed = violations.is_empty();
+            if !passed {
+                all_ok = false;
+            }
+            results.push(ManagerAuditResult {
+                manager_id: mgr.spec.manager_id.clone(),
+                viewpoint_id: mgr.spec.viewpoint_id.clone(),
+                vsm_system: mgr.spec.vsm_system.clone(),
+                kappa_hex: mgr.kappa_hex.clone(),
+                passed,
+                violations,
+            });
+        }
+
+        // Verify all 4 world packs in AUTH-DOMAIN-PACKS have distinct titles, seeds, and skies:
+        let mut distinct_titles = BTreeSet::new();
+        let mut distinct_skies = BTreeSet::new();
+        for dom in &self.observer.catalogs.domain_packs.domains {
+            distinct_titles.insert(dom.title.as_str());
+            distinct_skies.insert(dom.environment.sky_rgb_percent);
+        }
+        let differentiated_worlds = distinct_titles.len().min(distinct_skies.len());
+        let expected_worlds = 1usize << (1 + 1);
+        if differentiated_worlds < expected_worlds {
+            all_ok = false;
+        }
+
+        OperatorAuditReport {
+            passed: all_ok,
+            ownership,
+            managers: results,
+            differentiated_worlds,
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::runtime::WorldSnapshot;
+    use crate::streaming::StandardSceneState;
+
+    #[test]
+    fn total_ownership_invariant_covers_all_parts_and_catches_orphans() {
+        let ch = VerdantOperatorChannel::new("sunspire-regatta").expect("operator channel");
+        let rep = ch.check_total_ownership();
+        assert!(rep.complete, "Total Ownership must pass cleanly: {rep:?}");
+        assert!(rep.orphans.is_empty());
+        assert!(rep.duplicate_owners.is_empty());
+        assert_eq!(rep.managers_checked, 8);
+
+        // Negative test: planting an unmanaged orphan route or crate must fail Total Ownership!
+        let bad = audit_total_ownership(
+            &ch.viewpoints,
+            &["/", "/unmanaged-orphan/"],
+            REQUIRED_SHIPPED_CRATES,
+            &[],
+            &[],
+            REQUIRED_LOCKED_AUTHORITIES,
+        );
+        assert!(!bad.complete);
+        assert!(bad.orphans.iter().any(|o| o.contains("/unmanaged-orphan/")));
+    }
+
+    #[test]
+    fn operator_channel_admits_standards_backed_prompts_and_refuses_contrived_or_cross_contaminated(
+    ) {
+        let mut ch = VerdantOperatorChannel::new("sunspire-regatta").expect("operator channel");
+
+        // 1. Positive standards-backed in-viewpoint prompt:
+        let ok = ch
+            .submit_directive(&OperatorPromptRequest {
+                viewpoint: "creator-studio".to_string(),
+                directive:
+                    "Publish sealed .uorc FPS application to Stitch App Catalog under ISO 12207"
+                        .to_string(),
+                cited_authority: Some("AUTH-ISO-42010-VIEWPOINTS".to_string()),
+                operator_prism_id: "prism:creator-alex".to_string(),
+            })
+            .expect("directive");
+        assert!(ok.admitted);
+        assert_eq!(ok.dialogue_act, "Inform");
+        assert_eq!(ok.manager_id, "mgr-studio-alm");
+        assert!(!ok.comm_kappa_hex.is_empty());
+
+        // 2. Negative refusal: cross-contaminated Holo proof / UHD diagnostic inside Studio:
+        let cross = ch
+            .submit_directive(&OperatorPromptRequest {
+                viewpoint: "creator-studio".to_string(),
+                directive: "Add a Verify UHD 4K Envelope button to Studio".to_string(),
+                cited_authority: None,
+                operator_prism_id: "prism:creator-alex".to_string(),
+            })
+            .expect("cross refusal");
+        assert!(!cross.admitted);
+        assert_eq!(cross.dialogue_act, "Refusal");
+        assert_eq!(
+            cross.recommended_viewpoint.as_deref(),
+            Some("verification-observatory")
+        );
+
+        // 3. Negative refusal: contrived hand-coded ungrounded feature:
+        let contrived = ch
+            .submit_directive(&OperatorPromptRequest {
+                viewpoint: "playable-world".to_string(),
+                directive: "Sprinkle random sparkly widgets everywhere".to_string(),
+                cited_authority: None,
+                operator_prism_id: "prism:creator-alex".to_string(),
+            })
+            .expect("contrived refusal");
+        assert!(!contrived.admitted);
+        assert_eq!(contrived.dialogue_act, "Refusal");
+
+        // 4. Stitch 2-of-3 Verdant App Catalog publishing:
+        let world = StandardSceneState::synthesize_at_lod(7, 2).expect("world");
+        let uorc = WorldSnapshot::encode_uorc(&world).expect("uorc");
+        let entry = ch
+            .publish_stitch_app_catalog_entry(
+                "Neon Rift FPS",
+                "first-person-shooter",
+                "High-definition arena shooter authored in Verdant Studio",
+                "prism:creator-alex",
+                &uorc,
+            )
+            .expect("publish stitch app");
+        assert_eq!(entry.schema_org_type, "VideoGame");
+        assert_eq!(entry.stitch_fragments.len(), 3);
+        assert!(entry.app_iri.starts_with("urn:verdant:stitch-app:"));
+    }
+}

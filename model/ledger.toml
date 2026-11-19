@@ -44,3 +44,15 @@ id = "AUTH-CL-05"
 level = "some-true"
 authority = "AUTH-DOMAIN-PACKS"
 statement = "Imported domain packs differentiate coastal, observatory, botanical, and arena worlds across terrain relief, Sabine acoustics, HD models, items, and character profiles"
+
+[[claim]]
+id = "AUTH-CL-06"
+level = "some-true"
+authority = "AUTH-VSM-CYBERNETICS"
+statement = "Stafford Beer's Viable System Model structures executive S5 policy, S4 stream intelligence, S3 resource governance, S3* independent audit, S2 anti-oscillation coordination, and autonomous S1 Domain Managers with total ownership and standards-only anti-contrivance rules"
+
+[[claim]]
+id = "AUTH-CL-07"
+level = "some-true"
+authority = "AUTH-ISO-42010-VIEWPOINTS"
+statement = "ISO/IEC/IEEE 42010:2022 Viewpoints and ISO/IEC/IEEE 12207:2017 ALM assign every Verdant route, shipped crate, Observer part, catalog stream, and Stitch App Catalog package to one accountable Manager with correspondence and non-contamination rules"

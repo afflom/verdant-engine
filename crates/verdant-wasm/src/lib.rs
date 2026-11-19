@@ -5612,3 +5612,51 @@ pub extern "C" fn verdant_wasm_uhd_lod_pyramid_aux() -> u32 {
     bridge.aux_buffer = json_str.into_bytes();
     bridge.aux_buffer.len() as u32
 }
+
+/// Serializes the VSM S1–S5 & ISO/IEC/IEEE 42010:2022 Manager Total Ownership matrix and
+/// Viewpoint contracts into `aux_buffer`.
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+#[no_mangle]
+pub extern "C" fn verdant_wasm_operator_status_aux() -> u32 {
+    let mut guard = global_bridge()
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
+    let Some(bridge) = guard.as_mut() else {
+        return 0;
+    };
+    let Ok(ch) = verdant_core::operator::VerdantOperatorChannel::new(
+        &bridge.observer_holon.active_domain.spec.slug,
+    ) else {
+        return 0;
+    };
+    let json_str = ch.synthesize_viewpoint_contracts_json();
+    bridge.aux_buffer = json_str.into_bytes();
+    bridge.aux_buffer.len() as u32
+}
+
+/// Processes a UTF-8 JSON [`verdant_core::operator::OperatorPromptRequest`] staged in `io_buffer`
+/// through Verdant's Observer Executive & owning S1 Manager, writing the signed ISO 24617-2
+/// `Inform`/`Refusal` JSON response into `aux_buffer`.
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+#[no_mangle]
+pub extern "C" fn verdant_wasm_operator_prompt_io() -> u32 {
+    let mut guard = global_bridge()
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
+    let Some(bridge) = guard.as_mut() else {
+        return 0;
+    };
+    let Ok(raw) = std::str::from_utf8(&bridge.io_buffer) else {
+        return 0;
+    };
+    let Ok(mut ch) = verdant_core::operator::VerdantOperatorChannel::new(
+        &bridge.observer_holon.active_domain.spec.slug,
+    ) else {
+        return 0;
+    };
+    let Ok(json_str) = ch.submit_raw_directive_json(raw, false) else {
+        return 0;
+    };
+    bridge.aux_buffer = json_str.into_bytes();
+    bridge.aux_buffer.len() as u32
+}
