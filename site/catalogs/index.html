@@ -539,164 +539,154 @@
   <header class="cat-header">
     <a href="./" class="cat-brand">Verdant Catalogs</a>
     <nav class="cat-nav" aria-label="Verdant platform navigation">
-      <a href="../">Verdant Engine</a>
-      <a href="../studio/">Verdant Studio</a>
-      <a href="../demo/">Engine Demo</a>
-      <a href="../starter/">Starter Trial</a>
-      <a href="../docs/">Documentation</a>
+      <a href="../">Engine</a>
+      <a href="../studio/">Studio</a>
+      <a href="../demo/">Demo</a>
+      <a href="../starter/">Starter</a>
+      <a href="../docs/">Docs</a>
     </nav>
-    <button type="button" class="cat-cta" id="cat-verify-all-btn">Verify All Holo Proofs</button>
+    <a class="cat-cta" href="../studio/">Open Verdant Studio</a>
   </header>
 
   <main class="cat-main">
     <section class="cat-hero" aria-labelledby="cat-h1">
-      <div class="cat-meta" id="cat-holo-banner">Registry Boot · Loading app.holo BLAKE3 Self-Fingerprint…</div>
-      <h1 class="cat-h1" id="cat-h1">Universal Registry of Imported Standards &amp; Prism Models</h1>
+      <div class="cat-meta" id="cat-holo-banner">Live Catalog Streams · Ready</div>
+      <h1 class="cat-h1" id="cat-h1">Live 3D Assets, Worlds &amp; Open Model Catalogs</h1>
       <p class="cat-lead">
-        Verdant is a Prism Model-Centric Runtime: instead of hand-inventing ad-hoc subsystems, the Observer imports governing mathematical, architectural, design, character, narrative, reasoning, quality, and privacy standards as verified Prism models across the complete product lifecycle.
+        Discover and stream 3D models, rigged characters, panoramic sky domes, PBR materials, open typography, audio soundscapes, and ready-to-compose world environments directly into Verdant Studio.
       </p>
       <div class="cat-actions">
         <button type="button" class="cat-btn" id="cat-theme-btn">Theme: Dark</button>
-        <a class="cat-btn" href="../studio/">Author with Catalogs in Studio</a>
-        <a class="cat-btn" href="../">Open Engine Runtime Stage</a>
+        <a class="cat-btn primary" href="../studio/">Compose in Studio</a>
+        <a class="cat-btn" href="#cat-sources-h2">Manage Sources</a>
       </div>
     </section>
 
-    <section class="cat-kpi-strip" aria-label="Catalog coverage metrics">
+    <section class="cat-kpi-strip" aria-label="Catalog inventory summary">
       <div class="cat-kpi">
-        <span>Imported Standard &amp; Built Models</span>
+        <span>Connected Asset Sources</span>
+        <strong id="cat-kpi-sources">10</strong>
+      </div>
+      <div class="cat-kpi">
+        <span>World Domain Packs</span>
+        <strong id="cat-kpi-worlds">4</strong>
+      </div>
+      <div class="cat-kpi">
+        <span>Reference Standards</span>
         <strong id="cat-kpi-models">36</strong>
       </div>
       <div class="cat-kpi">
-        <span>Authoritative LexLean Modules</span>
-        <strong id="cat-kpi-lex">12</strong>
-      </div>
-      <div class="cat-kpi">
-        <span>Lifecycle Phases Covered</span>
-        <strong id="cat-kpi-phases">8 / 8</strong>
-      </div>
-      <div class="cat-kpi">
-        <span>Live Holo Proofs Replayed</span>
-        <strong id="cat-kpi-proofs">—</strong>
+        <span>Catalog Verification</span>
+        <strong id="cat-kpi-proofs">Active</strong>
       </div>
     </section>
 
-    <section class="cat-section" aria-labelledby="cat-sensory-h2">
+    <section class="cat-section" aria-labelledby="cat-gallery-h2">
       <div>
-        <h2 class="cat-h2" id="cat-sensory-h2">01. Observer Sensory Streams · Differentiated Catalog Organs</h2>
+        <h2 class="cat-h2" id="cat-gallery-h2">01. Featured Asset Gallery</h2>
+        <p class="cat-sec-sub" id="cat-gallery-summary">
+          Browse rigged characters, 3D props, panoramic sky domes, PBR textures, open fonts, audio, and shaders from connected public libraries. Select any asset to open and compose it in Verdant Studio.
+        </p>
+      </div>
+      <form class="cat-gallery-bar" id="cat-gallery-form" autocomplete="off">
+        <input id="cat-gallery-search" class="cat-input" type="search" aria-label="Search live asset gallery" placeholder="Search apollo, soldier, fox, helmet, sky, chair, forest, mono, wgsl…" />
+        <select id="cat-gallery-stream" class="cat-select" aria-label="Filter asset source">
+          <option value="all">All Connected Sources</option>
+          <option value="khronos-gltf">Khronos glTF 2.0 (.glb)</option>
+          <option value="nasa-3d">NASA 3D Resources (.glb)</option>
+          <option value="threejs-gltf">Rigged Characters (.glb)</option>
+          <option value="babylon-assets">Open 3D Props (.glb)</option>
+          <option value="polyhaven">Poly Haven CC0 (Skies, 3D &amp; PBR)</option>
+          <option value="fontsource">Fontsource Open Fonts</option>
+          <option value="openverse">Openverse CC (Audio &amp; Art)</option>
+          <option value="wikidata">Wikidata + Wikipedia Knowledge</option>
+          <option value="github">GitHub OSS Registry</option>
+          <option value="verdant-prism">Built-In World Packs</option>
+        </select>
+        <button type="submit" class="cat-btn primary" id="cat-gallery-btn">Search Gallery</button>
+      </form>
+      <div class="cat-gallery-pills" id="cat-gallery-pills" role="group" aria-label="Filter gallery by asset category"></div>
+      <div class="cat-gallery-grid" id="cat-live-gallery"></div>
+    </section>
+
+    <section class="cat-section" aria-labelledby="cat-domains-h2">
+      <div>
+        <h2 class="cat-h2" id="cat-domains-h2">02. Ready-to-Compose World Packs</h2>
         <p class="cat-sec-sub">
-          Every external and local catalog stream is a differentiated sensory input organ of the Verdant Observer, assigned an orthogonal Prism basis prime (<code>13..47+</code>), connected Observer parts, authoritative Schema.org <code>@type</code>, and IANA media types. Enable, disable, or register new streams below — changes sync straight into Verdant Studio's <code>ObserverPrismHolon</code>.
+          Complete starting environments with terrain, PBR materials, characters, items, room acoustics, and world facts ready to customize in Verdant Studio.
+        </p>
+      </div>
+      <div class="cat-organ-grid" id="cat-domain-grid"></div>
+    </section>
+
+    <section class="cat-section" aria-labelledby="cat-sources-h2">
+      <div>
+        <h2 class="cat-h2" id="cat-sources-h2">03. Connected Asset Sources</h2>
+        <p class="cat-sec-sub">
+          Enable, disable, or connect custom external asset feeds below. Source preferences sync automatically with Verdant Studio's Asset Discovery library.
         </p>
       </div>
       <div class="cat-sensory-grid" id="cat-sensory-grid"></div>
       <form class="cat-filters" id="cat-add-stream-form" autocomplete="off">
         <div class="cat-field">
-          <label for="cat-new-stream-id">New Stream Slug</label>
+          <label for="cat-new-stream-id">Source Slug</label>
           <input id="cat-new-stream-id" class="cat-input" type="text" placeholder="e.g. my-characters" required />
         </div>
         <div class="cat-field">
-          <label for="cat-new-stream-label">Stream Label</label>
-          <input id="cat-new-stream-label" class="cat-input" type="text" placeholder="Custom glTF / Schema.org Feed" required />
+          <label for="cat-new-stream-label">Source Name</label>
+          <input id="cat-new-stream-label" class="cat-input" type="text" placeholder="Custom glTF / Asset Feed" required />
         </div>
         <div class="cat-field">
           <label for="cat-new-stream-url">HTTPS Endpoint URL</label>
           <input id="cat-new-stream-url" class="cat-input" type="url" placeholder="https://…/model-index.json" required />
         </div>
         <div class="cat-field">
-          <label for="cat-new-stream-adapter">Protocol Adapter</label>
+          <label for="cat-new-stream-adapter">Feed Format</label>
           <select id="cat-new-stream-adapter" class="cat-select">
             <option value="khronos-index">Khronos model-index.json</option>
-            <option value="github-glb-tree">GitHub GLB Repository Tree</option>
+            <option value="github-glb-tree">GitHub GLB Repository</option>
             <option value="schema-org-catalog">Schema.org DataCatalog JSON-LD</option>
           </select>
         </div>
         <div class="cat-field" style="align-self:end;">
-          <button type="submit" class="cat-btn primary" id="cat-add-stream-btn">+ Connect Stream</button>
+          <button type="submit" class="cat-btn primary" id="cat-add-stream-btn">+ Connect Source</button>
         </div>
       </form>
-    </section>
-
-    <section class="cat-section" aria-labelledby="cat-gallery-h2">
-      <div>
-        <h2 class="cat-h2" id="cat-gallery-h2">02. High-Resolution Live Catalog Gallery · Featured Content</h2>
-        <p class="cat-sec-sub" id="cat-gallery-summary">
-          Streaming featured rigged characters, NASA 3D spacecraft, Poly Haven panoramic sky domes &amp; 4K PBR materials, open typography, audio soundscapes, ontologies, and shaders live from authoritative public catalogs. Click any asset to open and compose it directly in Verdant Studio.
-        </p>
-      </div>
-      <form class="cat-gallery-bar" id="cat-gallery-form" autocomplete="off">
-        <input id="cat-gallery-search" class="cat-input" type="search" aria-label="Search live catalog gallery" placeholder="Search apollo, soldier, fox, helmet, sky, chair, forest, mono, wgsl…" />
-        <select id="cat-gallery-stream" class="cat-select" aria-label="Filter gallery stream">
-          <option value="all">All 10 Sensory Streams</option>
-          <option value="khronos-gltf">Khronos glTF 2.0 (.glb)</option>
-          <option value="nasa-3d">NASA 3D Resources (257+ .glb)</option>
-          <option value="threejs-gltf">Three.js Rigged Characters (.glb)</option>
-          <option value="babylon-assets">BabylonJS Open 3D Assets (.glb)</option>
-          <option value="polyhaven">Poly Haven CC0 (Sky Domes, 3D &amp; PBR)</option>
-          <option value="fontsource">Fontsource Open Fonts</option>
-          <option value="openverse">Openverse CC (Audio &amp; Art)</option>
-          <option value="wikidata">Wikidata + Wikipedia Knowledge</option>
-          <option value="github">GitHub OSS Registry</option>
-          <option value="verdant-prism">Verdant Locked Prism</option>
-        </select>
-        <button type="submit" class="cat-btn primary" id="cat-gallery-btn">Stream Live</button>
-      </form>
-      <div class="cat-gallery-pills" id="cat-gallery-pills" role="group" aria-label="Filter gallery by authoritative Schema.org content type"></div>
-      <div class="cat-gallery-grid" id="cat-live-gallery"></div>
-    </section>
-
-    <section class="cat-section" aria-labelledby="cat-domains-h2">
-      <div>
-        <h2 class="cat-h2" id="cat-domains-h2">03. Imported High-Definition Domain Packs · Compose in Studio</h2>
-        <p class="cat-sec-sub">
-          Hydrated directly from SHA-256-locked <code>AUTH-DOMAIN-PACKS</code> (<code>world-packs.json</code>): each pack imports Khronos glTF HD materials, 22-joint character rigs, conserved item ledgers, Sabine acoustics, and ISO 24617-2 dialogue facts straight into Verdant Studio.
-        </p>
-      </div>
-      <div class="cat-organ-grid" id="cat-domain-grid"></div>
-    </section>
-
-    <section class="cat-section" aria-labelledby="cat-organs-h2">
-      <div>
-        <h2 class="cat-h2" id="cat-organs-h2">04. Differentiated Verdant Platform Cognitive Architecture</h2>
-        <p class="cat-sec-sub">
-          Each organ of Verdant carries its own cognitive role, domain-specific lexicon, and governing authorities while sharing one immutable Prism proof boundary.
-        </p>
-      </div>
-      <div class="cat-organ-grid" id="cat-organ-grid"></div>
     </section>
 
     <section class="cat-section" aria-labelledby="cat-registry-h2">
       <div>
-        <h2 class="cat-h2" id="cat-registry-h2">05. Imported Standards, Frameworks, Harnesses &amp; Policy Catalogs</h2>
+        <h2 class="cat-h2" id="cat-registry-h2">04. Reference Standards &amp; Specification Library</h2>
         <p class="cat-sec-sub" id="cat-count-label">
-          Filter models by product lifecycle stage, domain taxonomy, or functional Studio role, and execute live Core-Wasm verification against <code>/app.holo</code>.
+          Browse and filter the underlying ISO, W3C, Khronos, and IEEE standards governing rendering, physics, audio, accessibility, and packaging.
         </p>
       </div>
 
-      <div class="cat-filters" role="search" aria-label="Filter imported model catalogs">
+      <div class="cat-filters" role="search" aria-label="Filter reference standards">
         <div class="cat-field">
-          <label for="cat-filter-lifecycle">Product Lifecycle Phase</label>
+          <label for="cat-filter-lifecycle">Lifecycle Phase</label>
           <select id="cat-filter-lifecycle" class="cat-select"></select>
         </div>
         <div class="cat-field">
-          <label for="cat-filter-domain">Catalog Domain</label>
+          <label for="cat-filter-domain">Domain</label>
           <select id="cat-filter-domain" class="cat-select"></select>
         </div>
         <div class="cat-field">
-          <label for="cat-filter-role">Studio Lifecycle Role</label>
+          <label for="cat-filter-role">Studio Workspace</label>
           <select id="cat-filter-role" class="cat-select">
-            <option value="all">All 7 Studio Roles</option>
-            <option value="dashboard">Dashboard (Producer)</option>
+            <option value="all">All 7 Workspaces</option>
+            <option value="dashboard">Overview (Producer)</option>
             <option value="code">Code (Developer)</option>
             <option value="design">Design (Artist &amp; UI)</option>
             <option value="audio">Audio (Acoustics)</option>
             <option value="narrative">Narrative (Writer)</option>
             <option value="director">Director (Cinematography)</option>
-            <option value="gameplay">Gameplay (Modes &amp; NPCs)</option>
+            <option value="gameplay">Gameplay (Modes &amp; Characters)</option>
           </select>
         </div>
         <div class="cat-field">
-          <label for="cat-filter-search">Search Authority, Taxon, or ID</label>
-          <input id="cat-filter-search" class="cat-input" type="search" placeholder="ISO 42010, DTCG, glTF, Sabine, FK-07…" />
+          <label for="cat-filter-search">Search Standards</label>
+          <input id="cat-filter-search" class="cat-input" type="search" placeholder="ISO 42010, DTCG, glTF, Sabine…" />
         </div>
       </div>
 
@@ -705,8 +695,8 @@
   </main>
 
   <footer class="cat-footer">
-    <span>Verdant Catalogs · Prism Model-Centric Runtime Registry</span>
-    <span><a href="../">Verdant Engine</a> · <a href="../studio/">Verdant Studio</a> · <a href="../demo/">Engine Demo</a> · <a href="../starter/">Sunspire Beacon Trials</a> · <a href="../docs/">Documentation</a></span>
+    <span>Verdant Catalogs · Live 3D Assets, Worlds &amp; Reference Standards</span>
+    <span><a href="../">Engine</a> · <a href="../studio/">Studio</a> · <a href="../demo/">Demo</a> · <a href="../starter/">Sunspire Beacon Trials</a> · <a href="../docs/">Docs</a></span>
   </footer>
 
   <script type="module" src="./catalogs.mjs"></script>

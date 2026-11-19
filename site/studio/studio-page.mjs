@@ -972,52 +972,13 @@ async function autoRefineObserverFromStreams() {
   chip(statusEl, `Observer refined to ${pct}% precision from connected streams (within host envelope)`);
 }
 
-cogRefineBtn?.addEventListener("click", () => autoRefineObserverFromStreams());
-cogUhdBtn?.addEventListener("click", async () => {
-  const [cog, p4k, p8k] = await Promise.all([
-    refreshObserverCognition({
-      maxTex: lastCognition?.hostEnvelope?.maxTextureEdgePx || 8192,
-      threads: navigator.hardwareConcurrency || 8,
-      frameMicros: 7500,
-      viewportWidth: 3840,
-      viewportHeight: 2160,
-    }),
-    callWorker("uhd-profile", { widthPx: 3840, heightPx: 2160, frameMicros: 7500, includeLodPyramid: true }),
-    callWorker("uhd-profile", { widthPx: 7680, heightPx: 4320, frameMicros: 9000 }),
-  ]);
-  if (cog?.hostEnvelope && cogLogEl) {
-    const he = cog.hostEnvelope;
-    const m = p4k?.meshlets;
-    const mLine = m
-      ? `Meshlet Graph: ${m.visibleMeshlets}/${m.totalMeshlets} visible (${m.culledFrustum} frustum, ${m.culledBackfaceCone} backface-cone, ${m.culledSubpixel} sub-px -> ${(m.cullRatioPermille / 10).toFixed(1)}% culled)`
-      : "Meshlet Graph: Ready";
-    const p8 = p8k?.profile;
-    const line8k = p8
-      ? `8K Beyond (${p8.widthPx}×${p8.heightPx} · ${(p8.megapixelsX100 / 100).toFixed(2)} MP): DRS ${Math.round(p8.drsScalePermille / 10)}% + CAS ${Math.round(p8.casSharpnessPermille / 10)}% · SSE ${(p8.meshletSseTenthsPx / 10).toFixed(1)}px · ${p8.preferredBackend}`
-      : "";
-    const lp = p4k?.lodPyramid;
-    const lineLod = lp
-      ? `Hierarchical LOD Pyramid: LOD0 ${lp.lod0Triangles.toLocaleString()} -> LOD1 ${lp.lod1Triangles.toLocaleString()} -> LOD2 ${lp.lod2Triangles.toLocaleString()} tris (${(lp.lod2ReductionPermille / 10).toFixed(1)}% reduction)`
-      : "";
-    const st = p4k?.stability;
-    const lineSt = st
-      ? `Frame Stability Oracle (${st.sampleCount}f window): P50 ${(st.p50Us / 1000).toFixed(2)}ms · P95 ${(st.p95Us / 1000).toFixed(2)}ms · P99 ${(st.p99Us / 1000).toFixed(2)}ms · Jitter ${(st.jitterUs / 1000).toFixed(2)}ms · DRS ${Math.round(st.drsScalePermille / 10)}% (${st.drsTransitions} transitions · ${st.stable ? "STABLE" : "BOUNDED"})`
-      : "";
-    cogLogEl.textContent =
-      `UHD 4K (3840×2160) Gameplay Envelope Verified:\n` +
-      `Tier: ${he.uhdTierLabel} · DRS ${Math.round(he.recommendedRenderScalePermille / 10)}% + 5-Tap CAS Sharpener\n` +
-      `Texture Cap: ${he.recommendedTextureCapPx}px · Shadow Map: ${he.recommendedShadowMapPx}px · Anisotropy: ×${he.recommendedAnisotropy} · Max GLB: ${Math.round(he.recommendedGlbMaxBytes / 1048576)}MB\n` +
-      `${mLine}\n${line8k}${lineLod ? `\n${lineLod}` : ""}${lineSt ? `\n${lineSt}` : ""}`;
-    chip(statusEl, `UHD 4K & 8K Envelope Verified: ${he.uhdTierLabel} (${m?.totalMeshlets || 0} meshlets · WebGPU/WebGL2 ladder)`);
-  }
-});
 cogClearSkyBtn?.addEventListener("click", () => applyRemoteEnvSky(null, "Reset"));
 cogAddStreamForm?.addEventListener("submit", async (e) => {
   e.preventDefault();
   const request = {
     streamId: cogStreamIdInput?.value?.trim() || "",
     label: cogStreamLabelInput?.value?.trim() || "",
-    authority: "User / Observer Custom Stream",
+    authority: "Custom Asset Source",
     adapterKind: cogStreamAdapterSel?.value || "schema-org-catalog",
     endpointUrl: cogStreamUrlInput?.value?.trim() || "",
     targetParts: [cogStreamPartSel?.value || "hero-props"],
@@ -1026,12 +987,12 @@ cogAddStreamForm?.addEventListener("submit", async (e) => {
   if (r?.ok && r.cognition) {
     renderObserverCognition(r.cognition);
     if (cogLogEl) {
-      cogLogEl.textContent = `Admitted custom stream "${r.result?.streamId}" (prime=${r.result?.basisPrime}, kappa=${String(r.result?.kappaHex || "").slice(0, 12)}…) into ObserverPrismHolon.`;
+      cogLogEl.textContent = `Connected custom source "${r.result?.streamId}" (${request.endpointUrl}).`;
     }
     cogAddStreamForm.reset();
     runUnifiedDiscovery();
   } else if (cogLogEl) {
-    cogLogEl.textContent = "Stream admission refused by Schema.org / OMG DMN 1.5 oracle (requires valid https:// endpoint and unique slug).";
+    cogLogEl.textContent = "Source rejected — please provide a valid https:// endpoint and unique slug.";
   }
 });
 
@@ -1848,27 +1809,6 @@ wizDlgForm?.addEventListener("submit", async (e) => {
   e.preventDefault();
   await runNpcDialogue(wizDlgInput?.value);
   if (wizDlgInput) wizDlgInput.value = "";
-});
-wizDlgAbstainBtn?.addEventListener("click", () =>
-  runNpcDialogue("What is the unmodeled quantum cryptocurrency exchange rate on Neptune?"),
-);
-wizCommBtn?.addEventListener("click", async () => {
-  const pack = domainPacks[activeDomainIdx];
-  const r = await callWorker("observe-comm", {
-    channelCode: 1,
-    sender: "urn:verdant:organ:studio",
-    recipient: "urn:verdant:organ:engine",
-    message: `compose:${pack?.slug || "sunspire-regatta"}:lod${lodIdx}`,
-  });
-  if (wizDlgLog) {
-    wizDlgLog.textContent = r?.ok
-      ? `SOSA/PROV-O Envelope Recorded\nBLAKE3 kappa: ${r.kappaHex}`
-      : "Failed to record envelope.";
-  }
-});
-wizObserverBtn?.addEventListener("click", async () => {
-  const r = await callWorker("observer-status");
-  if (wizDlgLog && r?.ok) wizDlgLog.textContent = JSON.stringify(r.observer, null, 2);
 });
 wizAuditBtn?.addEventListener("click", runFullPrismQualityGate);
 wizSealUorcBtn?.addEventListener("click", exportActiveUorcArchive);

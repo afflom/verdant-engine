@@ -1183,6 +1183,77 @@ export function verifySubpathAndUorcOnlyDeploymentContract({
   }
 }
 
+/**
+ * Gate C13: Enforces stakeholder context purity & intentional non-self-referential UI across all
+ * Verdant surfaces — preventing engine test-harness buttons, internal ontology diagnostics,
+ * compiler jargon, and duplicate controls from creeping into creator or catalog interfaces.
+ */
+export function verifyContextPurityAndIntentionalInterfaceContract({
+  cardHtml,
+  studioPageHtml,
+  catalogsHtml,
+  demoHtml,
+  demoSource,
+}) {
+  const forbiddenInStudio = [
+    "Verify UHD 4K Envelope",
+    "Test Abstention",
+    "Record SOSA Envelope",
+    "Observer Telemetry",
+    "Auto-Refine Observer from Streams",
+    "8 Observer Parts",
+    "Atelier Boot",
+    "DOM-SUNSPIRE-HARBOR",
+    "CodedSlmDirector",
+  ];
+  for (const term of forbiddenInStudio) {
+    if (studioPageHtml.includes(term)) {
+      throw new Error(
+        `Context purity violation (Gate C13): site/studio/index.html contains self-referential/diagnostic UI "${term}" (belongs in Engine Demo or internal tests, not the creator IDE)`,
+      );
+    }
+  }
+  const studioSearchInputs = (studioPageHtml.match(/type\s*=\s*["']search["']/gi) || []).length;
+  if (studioSearchInputs !== 1) {
+    throw new Error(
+      `Context purity violation (Gate C13): site/studio/index.html must expose exactly 1 unified search input (found ${studioSearchInputs})`,
+    );
+  }
+
+  const forbiddenInCatalogs = [
+    "Verify All Holo Proofs",
+    "Authoritative LexLean Modules",
+    "orthogonal Prism basis prime",
+    "Differentiated Verdant Platform Cognitive Architecture",
+  ];
+  for (const term of forbiddenInCatalogs) {
+    if (catalogsHtml.includes(term)) {
+      throw new Error(
+        `Context purity violation (Gate C13): site/catalogs/index.html contains self-referential/internal UI "${term}"`,
+      );
+    }
+  }
+
+  const forbiddenInCard = ["CodedSLM", "7-Role Atelier"];
+  for (const term of forbiddenInCard) {
+    if (cardHtml.includes(term)) {
+      throw new Error(
+        `Context purity violation (Gate C13): site/card.html contains internal jargon "${term}"`,
+      );
+    }
+  }
+
+  if (
+    !demoHtml.includes('id="btn-bench-uhd"') ||
+    !demoSource.includes("verdant_wasm_uhd_cull_meshlets") ||
+    !demoSource.includes("verdant_wasm_frame_stability_aux")
+  ) {
+    throw new Error(
+      "Context purity violation (Gate C13): UHD 4K/8K, Morton meshlet, LOD pyramid & Frame Stability Oracle benchmark must live in site/demo/",
+    );
+  }
+}
+
 export async function runAllPrismContractChecks(rootDir = ROOT_DIR) {
   const holoBuffer = readFileSync(join(rootDir, "site", "app.holo"));
   const coreWasmBytes = readFileSync(join(rootDir, "site", "verdant-wasm.wasm"));
@@ -1273,6 +1344,13 @@ export async function runAllPrismContractChecks(rootDir = ROOT_DIR) {
       ["site/studio-scaffolder.mjs", studioScaffolderSource],
       ["site/studio-data.mjs", studioDataSource],
     ],
+  });
+  verifyContextPurityAndIntentionalInterfaceContract({
+    cardHtml,
+    studioPageHtml,
+    catalogsHtml,
+    demoHtml,
+    demoSource,
   });
 
   // Audit all shipped Rust crate sources, starter template, and examples (`FI-08` zero magic constants):

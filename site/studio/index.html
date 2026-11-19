@@ -845,9 +845,6 @@
 <body>
   <header class="ide-topbar">
     <a href="./" class="ide-brand"><span class="ide-brand-dot" aria-hidden="true"></span>Verdant Studio</a>
-    <form class="ide-top-search" id="topbar-search-form" autocomplete="off">
-      <input id="topbar-search-input" type="search" aria-label="Discover models from live internet catalogs" placeholder="Discover 3D, PBR, fonts, audio, worlds, ontologies, code…" />
-    </form>
     <nav class="ide-nav" aria-label="Verdant platform navigation">
       <a href="../">Engine</a>
       <a href="../catalogs/">Catalogs</a>
@@ -857,41 +854,23 @@
     </nav>
     <div class="ide-top-actions">
       <button type="button" class="st-btn sm" id="studio-theme-btn">Theme: Dark</button>
-      <button type="button" class="st-btn brand sm" id="studio-export-uorc-btn">Seal .uorc</button>
+      <button type="button" class="st-btn brand sm" id="studio-export-uorc-btn">Export .uorc</button>
     </div>
   </header>
 
   <main class="ide-main">
-    <div class="ide-status-strip">
-      <span class="ide-holo-badge" id="studio-holo-status">Atelier Boot · Verifying Prism app.holo &amp; Live Catalog Streams…</span>
-      <span id="st-man-domain">DOM-SUNSPIRE-HARBOR</span>
-      <span id="st-man-models">3 HD models · 0 imported</span>
-      <span id="st-man-acoustics">Sabine Ready · ≥290mm</span>
-    </div>
-
-    <nav class="wf-bar" id="studio-workflow-bar" aria-label="Verdant App Creation Workflow">
-      <div class="wf-steps">
-        <button type="button" class="wf-step" data-wf-step="1" aria-current="step">1 · Brief &amp; World</button>
-        <button type="button" class="wf-step" data-wf-step="2">2 · Discover &amp; Import</button>
-        <button type="button" class="wf-step" data-wf-step="3">3 · Author &amp; Version</button>
-        <button type="button" class="wf-step" data-wf-step="4">4 · Prism Quality Gate</button>
-        <button type="button" class="wf-step" data-wf-step="5">5 · Seal &amp; Ship .uorc</button>
-      </div>
-      <button type="button" class="st-btn primary sm" id="wf-next-action">Next: Discover &amp; Import Model →</button>
-    </nav>
-
     <div class="ide-context-banner" id="studio-catalog-banner" data-active="false">
       <span id="studio-catalog-banner-text"></span>
-      <a class="st-btn sm" href="../catalogs/">All 36 Prism Catalogs</a>
+      <a class="st-btn sm" href="../catalogs/">Browse Catalogs</a>
     </div>
 
     <div class="ide-grid">
-      <!-- LEFT RAIL: Project Explorer & Imported Model Tree -->
-      <aside class="ide-left-col" aria-label="Project Explorer and Imported Models">
+      <!-- LEFT RAIL: World Environments, Project Assets, and Publish & Export -->
+      <aside class="ide-left-col" aria-label="Project Explorer, Imported Assets, and Publish">
         <section class="ide-pane">
           <div class="ide-pane-head">
-            <h2>World Domains</h2>
-            <span class="ide-pane-sub">4 Packs</span>
+            <h2>World Environments</h2>
+            <span class="ide-pane-sub">4 Presets</span>
           </div>
           <div class="ide-pane-body">
             <div class="proj-domain-list" id="wiz-domain-grid"></div>
@@ -900,82 +879,106 @@
 
         <section class="ide-pane">
           <div class="ide-pane-head">
-            <h2>Project Models</h2>
+            <h2>Project Assets</h2>
             <span class="ide-pane-sub" id="proj-model-count">0 Imported</span>
           </div>
           <div class="ide-pane-body">
             <div class="proj-tree" id="studio-project-tree">
               <div class="proj-empty">
-                No external catalog models imported yet. Search live streams in the center Discovery panel and click <strong>+ Add</strong> to admit, edit, and version models inside Verdant Engine.
+                No external assets imported yet. Search <strong>Asset Discovery</strong> and click <strong>+ Add</strong> to import, edit, and version models in your project.
               </div>
             </div>
           </div>
         </section>
+
+        <section class="ide-pane" id="studio-publish-pane">
+          <div class="ide-pane-head">
+            <h2>Publish &amp; Export</h2>
+            <span class="ide-pane-sub">.uorc</span>
+          </div>
+          <div class="ide-pane-body">
+            <div class="wiz-scorecard">
+              <div class="wiz-check"><span>UI &amp; Accessibility</span><strong id="wiz-chk-ui">Ready</strong></div>
+              <div class="wiz-check"><span>Archive Integrity</span><strong id="wiz-chk-uorc">Ready</strong></div>
+              <div class="wiz-check"><span>Runtime Proof</span><strong id="wiz-chk-holo">Ready</strong></div>
+              <div class="wiz-check"><span>World State</span><strong id="wiz-chk-obs">Ready</strong></div>
+            </div>
+            <div class="insp-row">
+              <button type="button" class="st-btn primary sm" id="wiz-audit-btn">Check Readiness</button>
+              <button type="button" class="st-btn brand sm" id="wiz-seal-uorc-btn">Export .uorc</button>
+            </div>
+            <div class="insp-row">
+              <button type="button" class="st-btn sm" id="wiz-share-uorc-btn">Copy Share Link</button>
+              <button type="button" class="st-btn sm" id="studio-stitch-btn">2-of-3 Shards</button>
+              <a class="st-btn sm" href="../starter/">Play Starter</a>
+            </div>
+            <pre class="wiz-log" id="wiz-audit-log">Ready to validate and package your project as a sealed .uorc archive.</pre>
+          </div>
+        </section>
       </aside>
 
-      <!-- CENTER COLUMN: Live HD 3D Viewport + Unified Live Internet Discovery -->
-      <section class="ide-center-col" aria-label="Live 3D Stage and Unified Catalog Discovery">
+      <!-- CENTER COLUMN: Live 3D Stage + Unified Asset Discovery -->
+      <section class="ide-center-col" aria-label="Live 3D Stage and Asset Discovery">
         <article class="ide-pane">
           <div class="ide-pane-head">
-            <h2 id="studio-hud-project">Sunspire Harbor Regatta · Studio</h2>
-            <span class="ide-pane-sub" id="studio-hud-metrics">LOD3 Lossless · Clear 290mm</span>
+            <h2 id="studio-hud-project">Sunspire Harbor Regatta</h2>
+            <span class="ide-pane-sub" id="studio-hud-metrics">LOD3 · Clear 290mm</span>
           </div>
-          <div class="wf-stage-bar" id="studio-stage-showcase" role="group" aria-label="Live 3D Stage Subject">
-            <span style="color:var(--muted-foreground);">Live Stage:</span>
-            <button type="button" class="wf-stage-chip" id="stage-mode-domain" aria-pressed="true">Active World Domain</button>
+          <div class="wf-stage-bar" id="studio-stage-showcase" role="group" aria-label="Active 3D Stage Subject">
+            <span style="color:var(--muted-foreground);">Stage:</span>
+            <button type="button" class="wf-stage-chip" id="stage-mode-domain" aria-pressed="true">World Scene</button>
             <span id="stage-featured-glbs" style="display:inline-flex;flex-wrap:wrap;gap:var(--space-1);"></span>
           </div>
-          <canvas id="studio-canvas" width="960" height="540" aria-label="Verdant Studio live 3D project authoring stage"></canvas>
-          <div class="st-transport" role="group" aria-label="Authoring stage controls">
+          <canvas id="studio-canvas" width="960" height="540" aria-label="Verdant Studio live 3D authoring stage"></canvas>
+          <div class="st-transport" role="group" aria-label="3D viewport controls">
             <button type="button" class="st-btn primary sm" id="studio-sim-btn" aria-pressed="false">Step Physics</button>
             <button type="button" class="st-btn sm" id="studio-cam-btn">Camera: Orbit</button>
             <button type="button" class="st-btn sm" id="studio-lod-btn">Fidelity: LOD3</button>
             <button type="button" class="st-btn sm" id="studio-audio-btn" aria-pressed="false">Audio: Off</button>
             <button type="button" class="st-btn sm" id="studio-import-btn">Upload .glb</button>
-            <button type="button" class="st-btn sm" id="studio-stitch-btn">Stitch 2-of-3</button>
           </div>
           <form class="st-prompt" id="studio-prompt-form" autocomplete="off">
-            <input id="studio-prompt-input" class="st-input" type="text" aria-label="Direct active project via local CodedSlmDirector" placeholder="Direct stage via CodedSlmDirector (cut to stone arch, 3rd person, LOD4, audio)…" />
+            <input id="studio-prompt-input" class="st-input" type="text" aria-label="Direct the active 3D scene" placeholder="Direct scene (stone arch, 3rd person, LOD4, audio)…" />
             <button type="submit" class="st-btn primary sm" id="studio-prompt-btn">Direct</button>
           </form>
           <input id="studio-glb-file" type="file" accept=".glb,model/gltf-binary" hidden />
           <div class="st-verdict-bar" id="studio-status" aria-live="polite">
-            Initializing WebAssembly authoring kernel…
+            Starting 3D studio workspace…
           </div>
         </article>
 
-        <!-- UNIFIED LIVE INTERNET CATALOG DISCOVERY -->
+        <!-- UNIFIED ASSET DISCOVERY (SINGLE SEARCH INTERFACE) -->
         <section class="ide-pane" id="studio-discovery" aria-labelledby="disc-heading">
           <div class="ide-pane-head">
-            <h2 id="disc-heading">Live Catalog Discovery · Search Internet &amp; Prism Streams</h2>
-            <span class="ide-pane-sub" id="disc-count-badge">Streaming…</span>
+            <h2 id="disc-heading">Asset Discovery · Live 3D, Materials, Audio &amp; World Libraries</h2>
+            <span class="ide-pane-sub" id="disc-count-badge">Loading…</span>
           </div>
           <div class="ide-pane-body">
             <form class="disc-toolbar" id="disc-search-form" autocomplete="off">
-              <input id="disc-search-input" class="st-input" type="search" aria-label="Search arbitrary models across live internet catalogs" placeholder="Search lantern, chair, forest, mono, dungeon, lighthouse, wgsl, theme…" />
-              <select id="disc-stream-select" class="st-select" aria-label="Filter catalog stream">
-                <option value="all">All 10 Live Streams</option>
+              <input id="disc-search-input" class="st-input" type="search" aria-label="Search assets across connected libraries" placeholder="Search lantern, helmet, sky, character, forest, font, audio, shader…" />
+              <select id="disc-stream-select" class="st-select" aria-label="Filter asset source">
+                <option value="all">All Connected Sources</option>
                 <option value="khronos-gltf">Khronos glTF 2.0 (.glb)</option>
-                <option value="nasa-3d">NASA 3D Resources (257+ .glb)</option>
-                <option value="threejs-gltf">Three.js Rigged Characters (.glb)</option>
-                <option value="babylon-assets">BabylonJS Open 3D Assets (.glb)</option>
-                <option value="polyhaven">Poly Haven CC0 (Sky Domes, 3D &amp; PBR)</option>
+                <option value="nasa-3d">NASA 3D Resources (.glb)</option>
+                <option value="threejs-gltf">Rigged Characters (.glb)</option>
+                <option value="babylon-assets">Open 3D Props (.glb)</option>
+                <option value="polyhaven">Poly Haven CC0 (Skies, 3D &amp; PBR)</option>
                 <option value="fontsource">Fontsource (Open Fonts)</option>
                 <option value="openverse">Openverse CC (Audio &amp; Art)</option>
                 <option value="wikidata">Wikidata + Wikipedia (Knowledge)</option>
                 <option value="github">GitHub OSS (Code &amp; Themes)</option>
-                <option value="verdant-prism">Verdant Locked Prism</option>
+                <option value="verdant-prism">Built-In World Packs</option>
               </select>
-              <button type="submit" class="st-btn primary" id="disc-search-btn">Discover</button>
+              <button type="submit" class="st-btn primary" id="disc-search-btn">Search</button>
             </form>
 
-            <div class="disc-pills" id="disc-type-pills" role="group" aria-label="Authoritative Schema.org and IANA content types"></div>
+            <div class="disc-pills" id="disc-type-pills" role="group" aria-label="Filter by asset category"></div>
             <div class="disc-streams-bar" id="disc-stream-status"></div>
 
-            <!-- Inline Live Preview Dock -->
+            <!-- Inline Asset Preview Dock -->
             <div class="disc-preview-dock" id="disc-preview-dock" data-open="false" aria-live="polite">
               <div class="insp-rev-top">
-                <strong id="disc-prev-title">Model Preview</strong>
+                <strong id="disc-prev-title">Asset Preview</strong>
                 <button type="button" class="st-btn sm" id="disc-prev-close">Close Preview</button>
               </div>
               <div class="disc-preview-grid">
@@ -985,10 +988,10 @@
                   <div id="disc-prev-audio-host"></div>
                   <div class="insp-row">
                     <button type="button" class="st-btn brand sm" id="disc-prev-import-btn">+ Add to Project (v1)</button>
-                    <button type="button" class="st-btn primary sm" id="disc-prev-live-btn" hidden>Load Live on 3D Stage</button>
+                    <button type="button" class="st-btn primary sm" id="disc-prev-live-btn" hidden>Load on 3D Stage</button>
                     <button type="button" class="st-btn sm" id="disc-prev-compose-btn" hidden>+ Compose Beside</button>
                     <button type="button" class="st-btn primary sm" id="disc-prev-sky-btn" hidden>Apply Sky Dome</button>
-                    <a class="st-btn sm" id="disc-prev-source-link" href="../catalogs/" target="_blank" rel="noopener noreferrer">Source URI</a>
+                    <a class="st-btn sm" id="disc-prev-source-link" href="../catalogs/" target="_blank" rel="noopener noreferrer">Source</a>
                   </div>
                 </div>
               </div>
@@ -999,38 +1002,38 @@
         </section>
       </section>
 
-      <!-- RIGHT RAIL: Contextual Inspector & Versions | Compose Wizard | 7 Lifecycle Roles -->
-      <aside class="ide-right-col" aria-label="Model Inspector, Composition Wizard, and Lifecycle Roles">
+      <!-- RIGHT RAIL: Inspector | Scene | Sources | Workspaces -->
+      <aside class="ide-right-col" aria-label="Asset Inspector, Scene Authoring, Sources, and Workspaces">
         <section class="ide-pane">
-          <div class="right-tabs" role="tablist" aria-label="Studio right rail modes">
+          <div class="right-tabs" role="tablist" aria-label="Studio panel modes">
             <button type="button" class="right-tab-btn" role="tab" id="right-tab-inspector" data-right-tab="inspector" aria-selected="true">Inspector</button>
-            <button type="button" class="right-tab-btn" role="tab" id="right-tab-cognition" data-right-tab="cognition" aria-selected="false">Observer</button>
-            <button type="button" class="right-tab-btn" role="tab" id="right-tab-compose" data-right-tab="compose" aria-selected="false">Compose</button>
-            <button type="button" class="right-tab-btn" role="tab" id="right-tab-roles" data-right-tab="roles" aria-selected="false">7 Roles</button>
+            <button type="button" class="right-tab-btn" role="tab" id="right-tab-compose" data-right-tab="compose" aria-selected="false">Scene</button>
+            <button type="button" class="right-tab-btn" role="tab" id="right-tab-cognition" data-right-tab="cognition" aria-selected="false">Sources</button>
+            <button type="button" class="right-tab-btn" role="tab" id="right-tab-roles" data-right-tab="roles" aria-selected="false">Workspaces</button>
           </div>
 
-          <!-- TAB 1: MODEL INSPECTOR, LIVE EDITOR & VERSIONING -->
+          <!-- TAB 1: ASSET INSPECTOR & VERSION HISTORY -->
           <div class="right-pane-panel" id="pane-inspector" data-right-panel="inspector">
             <div id="insp-empty-state" class="proj-empty">
-              Select any model from <strong>Live Catalog Discovery</strong> and click <strong>+ Add</strong> to admit it into Verdant Engine's <code>ObserverPrismHolon</code>, edit its properties, commit cryptographically chained versions (<code>v1 → v2 → …</code>), revert non-destructively, or remove it cleanly.
+              Select any asset from <strong>Asset Discovery</strong> and click <strong>+ Add</strong> to edit its properties, commit versioned revisions (<code>v1 → v2</code>), revert changes, or stage it in your scene.
             </div>
             <div id="insp-editor" class="insp-editor-grid" hidden>
               <div class="insp-meta-box" id="insp-meta"></div>
               <div class="insp-field">
-                <label for="insp-title">Model Title</label>
+                <label for="insp-title">Asset Title</label>
                 <input id="insp-title" class="st-input" type="text" />
               </div>
               <div class="insp-field">
-                <label for="insp-tags">Auto-Tags (comma-separated)</label>
+                <label for="insp-tags">Tags (comma-separated)</label>
                 <input id="insp-tags" class="st-input" type="text" />
               </div>
               <div class="insp-field">
-                <label for="insp-props">Editable Model Properties (JSON)</label>
+                <label for="insp-props">Asset Properties (JSON)</label>
                 <textarea id="insp-props" class="st-textarea"></textarea>
               </div>
               <div class="insp-field">
-                <label for="insp-note">Version Commit Note</label>
-                <input id="insp-note" class="st-input" type="text" placeholder="Describe your edit for PROV-O revision history…" />
+                <label for="insp-note">Revision Note</label>
+                <input id="insp-note" class="st-input" type="text" placeholder="Describe this edit for revision history…" />
               </div>
               <div class="insp-row">
                 <button type="button" class="st-btn primary sm" id="insp-save-btn">Save Version</button>
@@ -1038,110 +1041,75 @@
                 <button type="button" class="st-btn danger sm" id="insp-remove-btn">Remove</button>
               </div>
               <div>
-                <div class="ide-pane-sub" style="margin-bottom:var(--space-2);">Immutable PROV-O Version History</div>
+                <div class="ide-pane-sub" style="margin-bottom:var(--space-2);">Revision History</div>
                 <div class="insp-rev-list" id="insp-revisions"></div>
               </div>
             </div>
           </div>
 
-          <!-- TAB 2: OBSERVER COGNITION, HOST ENVELOPE & DYNAMIC STREAM MANAGER -->
-          <div class="right-pane-panel" id="pane-cognition" data-right-panel="cognition" hidden>
-            <div class="insp-meta-box" id="cog-host-envelope">Probing host GPU &amp; Observer cognitive resolution…</div>
+          <!-- TAB 2: SCENE AUTHORING (FIDELITY, CAMERA, CHARACTERS, ACOUSTICS, DIALOGUE) -->
+          <div class="right-pane-panel" id="pane-compose" data-right-panel="compose" hidden>
+            <div class="ide-pane-sub">Active World Environment</div>
+            <pre class="wiz-log" id="wiz-domain-log">Loading world environment…</pre>
+
+            <div class="ide-pane-sub">Fidelity &amp; Camera Mode</div>
             <div class="insp-row">
-              <button type="button" class="st-btn brand sm" id="cog-refine-btn">Auto-Refine Observer from Streams</button>
-              <button type="button" class="st-btn primary sm" id="cog-uhd-btn">Verify UHD 4K Envelope</button>
+              <button type="button" class="st-btn sm" data-wiz-lod="2">LOD2</button>
+              <button type="button" class="st-btn primary sm" data-wiz-lod="3">LOD3</button>
+              <button type="button" class="st-btn sm" data-wiz-lod="4">LOD4</button>
+              <button type="button" class="st-btn primary sm" data-wiz-cam="landmark">Orbit</button>
+              <button type="button" class="st-btn sm" data-wiz-cam="third">3rd Person</button>
+              <button type="button" class="st-btn sm" data-wiz-cam="first">1st Person</button>
+            </div>
+
+            <div class="ide-pane-sub">Characters &amp; Room Acoustics</div>
+            <select id="wiz-npc-select" class="st-select" aria-label="Select world character"></select>
+            <div class="insp-row" id="wiz-directives-row"></div>
+            <button type="button" class="st-btn sm" id="wiz-sabine-btn">Calibrate Room Acoustics</button>
+            <pre class="wiz-log" id="wiz-compose-log">Select a character behavior or calibrate acoustics for the active environment.</pre>
+
+            <div class="ide-pane-sub">Character Dialogue</div>
+            <div class="insp-row" id="wiz-prompt-chips"></div>
+            <form class="insp-row" id="wiz-dlg-form" autocomplete="off">
+              <input id="wiz-dlg-input" class="st-input" type="text" aria-label="Ask the selected character" placeholder="Ask the character about this world…" />
+              <button type="submit" class="st-btn primary sm" id="wiz-dlg-send">Ask</button>
+            </form>
+            <pre class="wiz-log" id="wiz-dlg-log">Ask the active character about world landmarks, items, or history.</pre>
+          </div>
+
+          <!-- TAB 3: CONNECTED CATALOG SOURCES & ENVIRONMENT SKY -->
+          <div class="right-pane-panel" id="pane-cognition" data-right-panel="cognition" hidden>
+            <div class="insp-row">
+              <span class="ide-pane-sub">Connected Asset Sources</span>
               <button type="button" class="st-btn sm" id="cog-clear-sky-btn">Reset Sky</button>
             </div>
-            <div class="ide-pane-sub">8 Observer Parts · Stream Resolution (R1 → R4)</div>
-            <div class="wiz-scorecard" id="cog-parts-list"></div>
-            <div class="ide-pane-sub">Connected Observer Sensory Streams (Add / Toggle / Remove)</div>
             <div class="insp-rev-list" id="cog-streams-list"></div>
             <form id="cog-add-stream-form" class="insp-editor-grid" autocomplete="off">
-              <div class="ide-pane-sub">+ Connect New Stream to Observer</div>
-              <input id="cog-stream-id" class="st-input" type="text" placeholder="stream-slug (e.g. my-gltf-pack)" required />
-              <input id="cog-stream-label" class="st-input" type="text" placeholder="Stream Display Title" required />
+              <div class="ide-pane-sub">+ Connect Custom Asset Source</div>
+              <input id="cog-stream-id" class="st-input" type="text" placeholder="source-slug (e.g. my-gltf-pack)" required />
+              <input id="cog-stream-label" class="st-input" type="text" placeholder="Source Display Title" required />
               <input id="cog-stream-url" class="st-input" type="url" placeholder="https://…/model-index.json or GitHub contents API" required />
               <div class="insp-row">
-                <select id="cog-stream-adapter" class="st-select" aria-label="Stream protocol adapter">
+                <select id="cog-stream-adapter" class="st-select" aria-label="Source feed format">
                   <option value="khronos-index">Khronos model-index.json</option>
-                  <option value="github-glb-tree">GitHub GLB Repository Tree</option>
+                  <option value="github-glb-tree">GitHub GLB Repository</option>
                   <option value="schema-org-catalog">Schema.org DataCatalog JSON-LD</option>
                 </select>
-                <select id="cog-stream-part" class="st-select" aria-label="Target Observer part">
+                <select id="cog-stream-part" class="st-select" aria-label="Primary asset category">
                   <option value="character-rigs">Characters &amp; Rigs</option>
-                  <option value="hero-props">Hero 3D Props</option>
-                  <option value="stage-environment">Stage &amp; Sky Environment</option>
+                  <option value="hero-props">3D Props &amp; Models</option>
+                  <option value="stage-environment">Skies &amp; Environments</option>
                   <option value="surface-materials">PBR Materials</option>
-                  <option value="cognitive-language">Language &amp; Ontologies</option>
-                  <option value="runtime-frameworks">Shaders &amp; Frameworks</option>
+                  <option value="cognitive-language">Knowledge &amp; Lore</option>
+                  <option value="runtime-frameworks">Shaders &amp; Code</option>
                 </select>
               </div>
-              <button type="submit" class="st-btn primary sm" id="cog-stream-add-btn">Admit Stream into Observer</button>
+              <button type="submit" class="st-btn primary sm" id="cog-stream-add-btn">Connect Source</button>
             </form>
-            <pre class="wiz-log" id="cog-log">Observer connected to live streams. Click 'Auto-Refine Observer from Streams' to autonomously elevate graphics &amp; natural-language cognition within host limits.</pre>
+            <pre class="wiz-log" id="cog-log">Toggle or connect external asset sources to expand your project library.</pre>
           </div>
 
-          <!-- TAB 3: 4-STAGE PRISM COMPOSITION WIZARD & QUALITY GATE -->
-          <div class="right-pane-panel" id="pane-compose" data-right-panel="compose" hidden>
-            <div class="wiz-stepper" role="tablist" aria-label="Composition wizard stages">
-              <button type="button" class="wiz-step-btn" role="tab" data-wiz-step="1" aria-selected="true">01 · Domain</button>
-              <button type="button" class="wiz-step-btn" role="tab" data-wiz-step="2" aria-selected="false">02 · Fidelity &amp; Rigs</button>
-              <button type="button" class="wiz-step-btn" role="tab" data-wiz-step="3" aria-selected="false">03 · ISO Dialogue</button>
-              <button type="button" class="wiz-step-btn" role="tab" data-wiz-step="4" aria-selected="false">04 · Prism Gate</button>
-            </div>
-
-            <div class="wiz-panel" id="wiz-panel-1" data-wiz-panel="1">
-              <div class="ide-pane-sub">Active Domain Pack Summary</div>
-              <pre class="wiz-log" id="wiz-domain-log">Loading SHA-256-locked domain catalog…</pre>
-            </div>
-
-            <div class="wiz-panel" id="wiz-panel-2" data-wiz-panel="2" hidden>
-              <div class="insp-row">
-                <button type="button" class="st-btn sm" data-wiz-lod="2">LOD2</button>
-                <button type="button" class="st-btn primary sm" data-wiz-lod="3">LOD3</button>
-                <button type="button" class="st-btn sm" data-wiz-lod="4">LOD4</button>
-                <button type="button" class="st-btn primary sm" data-wiz-cam="landmark">Orbit</button>
-                <button type="button" class="st-btn sm" data-wiz-cam="third">3rd IK</button>
-                <button type="button" class="st-btn sm" data-wiz-cam="first">1st Eye</button>
-              </div>
-              <select id="wiz-npc-select" class="st-select" aria-label="Active 22-joint NPC rig"></select>
-              <div class="insp-row" id="wiz-directives-row"></div>
-              <button type="button" class="st-btn sm" id="wiz-sabine-btn">Calibrate Domain Sabine RT60</button>
-              <pre class="wiz-log" id="wiz-compose-log">Ready to tune HD geometry, NPC directives, and Sabine acoustics.</pre>
-            </div>
-
-            <div class="wiz-panel" id="wiz-panel-3" data-wiz-panel="3" hidden>
-              <div class="insp-row" id="wiz-prompt-chips"></div>
-              <form class="insp-row" id="wiz-dlg-form" autocomplete="off">
-                <input id="wiz-dlg-input" class="st-input" type="text" aria-label="Speak to active domain NPC" placeholder="Ask grounded fact or test abstention…" />
-                <button type="submit" class="st-btn primary sm" id="wiz-dlg-send">Speak</button>
-                <button type="button" class="st-btn sm" id="wiz-dlg-abstain">Test Abstention</button>
-              </form>
-              <div class="insp-row">
-                <button type="button" class="st-btn sm" id="wiz-comm-btn">Record SOSA Envelope</button>
-                <button type="button" class="st-btn sm" id="wiz-observer-btn">Observer Telemetry</button>
-              </div>
-              <pre class="wiz-log" id="wiz-dlg-log">Run a grounded query or click 'Test Abstention' to verify ISO 24617-2.</pre>
-            </div>
-
-            <div class="wiz-panel" id="wiz-panel-4" data-wiz-panel="4" hidden>
-              <div class="wiz-scorecard">
-                <div class="wiz-check"><span>Spatial UI + WCAG</span><strong id="wiz-chk-ui">Pending</strong></div>
-                <div class="wiz-check"><span>Exclusive .uorc</span><strong id="wiz-chk-uorc">Pending</strong></div>
-                <div class="wiz-check"><span>Prism app.holo</span><strong id="wiz-chk-holo">Pending</strong></div>
-                <div class="wiz-check"><span>Observer Holon</span><strong id="wiz-chk-obs">Pending</strong></div>
-              </div>
-              <div class="insp-row">
-                <button type="button" class="st-btn primary sm" id="wiz-audit-btn">Run Full Prism Quality Gate</button>
-                <button type="button" class="st-btn brand sm" id="wiz-seal-uorc-btn">Seal .uorc</button>
-                <button type="button" class="st-btn sm" id="wiz-share-uorc-btn">Copy #uorc=</button>
-                <a class="st-btn sm" href="../starter/">Starter Trial</a>
-              </div>
-              <pre class="wiz-log" id="wiz-audit-log">Click 'Run Full Prism Quality Gate' to certify all 4 Prism gates.</pre>
-            </div>
-          </div>
-
-          <!-- TAB 3: 7 LIFECYCLE ROLE WORKSPACES -->
+          <!-- TAB 4: 7 DISCIPLINE WORKSPACES -->
           <div class="right-pane-panel" id="pane-roles" data-right-panel="roles" hidden>
             <div id="studio-inline-host"></div>
           </div>
@@ -1151,8 +1119,8 @@
   </main>
 
   <footer class="st-footer">
-    <span>Verdant Studio · Model-Centric Live Discovery, Cryptographic Versioning &amp; 3D App Composition IDE</span>
-    <span><a href="../">Verdant Engine</a> · <a href="../catalogs/">Model Catalogs</a> · <a href="../demo/">Engine Demo</a> · <a href="../starter/">Sunspire Beacon Trials</a> · <a href="../docs/">Documentation</a></span>
+    <span>Verdant Studio · 3D Game &amp; Spatial Application IDE</span>
+    <span><a href="../">Engine</a> · <a href="../catalogs/">Catalogs</a> · <a href="../demo/">Demo</a> · <a href="../starter/">Sunspire Beacon Trials</a> · <a href="../docs/">Docs</a></span>
   </footer>
 
   <script type="module" src="./studio-page.mjs"></script>

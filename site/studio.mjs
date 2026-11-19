@@ -373,7 +373,7 @@ function buildStudioDialog({ inline = false } = {}) {
   const sub = document.createElement("p");
   sub.className = "ve-m-sub";
   sub.id = "ve-studio-sub";
-  sub.textContent = "Requirements-Driven 3D Application Atelier · 7 Functional Roles";
+  sub.textContent = "3D Application Authoring · 7 Functional Workspaces";
   titleWrap.append(h2, sub);
 
   const headRight = document.createElement("div");
@@ -427,7 +427,7 @@ function buildStudioDialog({ inline = false } = {}) {
   const obsReadout = document.createElement("span");
   obsReadout.className = "ve-m-observer-meta";
   obsReadout.id = "ve-observer-readout";
-  obsReadout.textContent = "Observer Coherent · W5H 8/8 · Telos Loss 0 · Holo Verified";
+  obsReadout.textContent = "Runtime Ready · 60 Hz · Hardware Accelerated";
 
   if (!inline) {
     const themeGroup = document.createElement("div");
@@ -1425,7 +1425,7 @@ function buildStudioDialog({ inline = false } = {}) {
   btnInspectBus.type = "button";
   btnInspectBus.className = "ve-m-btn";
   btnInspectBus.id = "ve-observer-bus-btn";
-  btnInspectBus.textContent = "Inspect Observer & 5-Channel Bus";
+  btnInspectBus.textContent = "Inspect Character Event Log";
   btnInspectBus.addEventListener("click", async () => {
     const [res, vObs, vChan] = await Promise.all([
       studioCtx?.callWorker?.("observer-status"),

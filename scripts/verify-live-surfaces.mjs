@@ -366,9 +366,8 @@ try {
       () =>
         document.querySelectorAll("#studio-inline-host .ve-m-tab").length === 7 &&
         document.querySelectorAll("#wiz-domain-grid .proj-domain-btn").length === 4 &&
-        document.querySelectorAll("#studio-workflow-bar .wf-step").length === 5 &&
-        document.querySelectorAll("#disc-results-grid .disc-card").length >= 6 &&
-        (document.getElementById("studio-holo-status")?.textContent || "").includes("Atelier Ready"),
+        document.querySelectorAll('input[type="search"]').length === 1 &&
+        document.querySelectorAll("#disc-results-grid .disc-card").length >= 6,
       null,
       { timeout: 15000 },
     );
@@ -381,7 +380,7 @@ try {
       failures.push("Standalone /studio/ must expose #studio-export-uorc-btn and zero .tar buttons");
     }
 
-    // Exercise Live Discovery -> Preview -> Import v1 -> Edit v2 -> Revert v3 -> Remove in Wasm ObserverPrismHolon:
+    // Exercise Live Discovery -> Preview -> Import v1 -> Edit v2 -> Revert v3 -> Remove:
     await page.locator("#disc-results-grid .disc-card button[data-preview-model]").first().click();
     await page.waitForFunction(
       () => document.getElementById("disc-preview-dock")?.dataset.open === "true",
@@ -419,22 +418,21 @@ try {
       { timeout: 10000 },
     );
 
-    // Exercise Compose Tab (Domain swap + ISO 24617-2 Abstention + 4/4 Prism Quality Gate):
+    // Exercise Scene Tab (World switch + natural character dialogue + Publish Readiness):
     await page.click("#right-tab-compose");
     await page.click('[data-wiz-domain-slug="meridian-observatory"]');
     await page.waitForFunction(
-      () => (document.getElementById("st-man-domain")?.textContent || "").includes("DOM-MERIDIAN-OBSERVATORY"),
+      () => (document.getElementById("studio-hud-project")?.textContent || "").includes("Meridian"),
       null,
       { timeout: 10000 },
     );
-    await page.click('[data-wiz-step="3"]');
-    await page.click("#wiz-dlg-abstain");
+    await page.fill("#wiz-dlg-input", "What is the unmodeled quantum cryptocurrency exchange rate on Neptune?");
+    await page.click("#wiz-dlg-send");
     await page.waitForFunction(
       () => (document.getElementById("wiz-dlg-log")?.textContent || "").includes("ABSTAINED (Unknown"),
       null,
       { timeout: 10000 },
     );
-    await page.click('[data-wiz-step="4"]');
     await page.click("#wiz-audit-btn");
     await page.waitForFunction(
       () => (document.getElementById("wiz-audit-log")?.textContent || "").includes("CONFORMANT (4/4 GATES PASSED)"),
@@ -442,39 +440,21 @@ try {
       { timeout: 10000 },
     );
 
-    // Exercise Observer Cognition Tab (Host Envelope, 8 Observer Parts, Dynamic Stream Add/Remove):
+    // Exercise Sources Tab (Connected Asset Sources Add/Remove):
     await page.click("#right-tab-cognition");
     await page.waitForFunction(
-      () =>
-        document.querySelectorAll("#cog-parts-list [data-observer-part]").length === 8 &&
-        document.querySelectorAll("#cog-streams-list [data-observer-stream-id]").length >= 10 &&
-        (document.getElementById("cog-host-envelope")?.textContent || "").includes("UHD Tier:"),
-      null,
-      { timeout: 10000 },
-    );
-    await page.click("#cog-uhd-btn");
-    await page.waitForFunction(
-      () => {
-        const txt = document.getElementById("cog-log")?.textContent || "";
-        return (
-          txt.includes("UHD 4K (3840×2160) Gameplay Envelope Verified:") &&
-          txt.includes("Meshlet Graph:") &&
-          txt.includes("8K Beyond (7680×4320") &&
-          txt.includes("Hierarchical LOD Pyramid:") &&
-          txt.includes("Frame Stability Oracle (")
-        );
-      },
+      () => document.querySelectorAll("#cog-streams-list [data-observer-stream-id]").length >= 10,
       null,
       { timeout: 10000 },
     );
     await page.fill("#cog-stream-id", "ci-test-stream");
-    await page.fill("#cog-stream-label", "CI Verified Test Stream");
+    await page.fill("#cog-stream-label", "CI Verified Test Source");
     await page.fill("#cog-stream-url", "https://example.org/catalog.json");
     await page.click("#cog-stream-add-btn");
     await page.waitForFunction(
       () =>
         document.querySelector('#cog-streams-list [data-observer-stream-id="ci-test-stream"]') !== null &&
-        (document.getElementById("cog-log")?.textContent || "").includes('Admitted custom stream "ci-test-stream"'),
+        (document.getElementById("cog-log")?.textContent || "").includes('Connected custom source "ci-test-stream"'),
       null,
       { timeout: 10000 },
     );
@@ -485,7 +465,7 @@ try {
       { timeout: 10000 },
     );
 
-    // Exercise 7 Roles Tab:
+    // Exercise Workspaces Tab (7 Disciplines):
     await page.click("#right-tab-roles");
     await page.click('#studio-inline-host [data-tab-key="code"]');
     const inlineCode = await page.textContent("#ve-scaf-code");
@@ -497,7 +477,7 @@ try {
     await page.close();
   };
 
-  // 3. Standalone Verdant Model Catalogs (`/catalogs/` — scrolling + 5 organs + 4 domain packs + 36 models):
+  // 3. Standalone Verdant Model Catalogs (`/catalogs/` — scrolling + gallery first + 4 world packs + 10 sources + 36 standards):
   const verifyCatalogs = async () => {
     const page = await context.newPage();
     const errors = attachTelemetry(page);
@@ -505,10 +485,9 @@ try {
     await page.goto(`${origin}catalogs/`, { waitUntil: "load" });
     await page.waitForFunction(
       () =>
-        document.querySelectorAll("#cat-sensory-grid .cat-sensory-card").length === 10 &&
         document.querySelectorAll("#cat-live-gallery .cat-gallery-card").length >= 6 &&
-        document.querySelectorAll("#cat-organ-grid .cat-organ-card").length === 5 &&
         document.querySelectorAll("#cat-domain-grid .cat-organ-card").length === 4 &&
+        document.querySelectorAll("#cat-sensory-grid .cat-sensory-card").length === 10 &&
         document.querySelectorAll("#cat-list .cat-entry").length >= 36 &&
         (document.getElementById("cat-holo-banner")?.textContent || "").includes("Holo Verified"),
       null,
@@ -522,7 +501,7 @@ try {
     await page.close();
   };
 
-  // 4. Standalone Engine Demo (`/demo/` — scrolling + 3D canvas + benchmarks):
+  // 4. Standalone Engine Demo (`/demo/` — scrolling + 3D canvas + benchmarks + UHD 4K/8K & Stability Oracle):
   const verifyDemo = async () => {
     const page = await context.newPage();
     const errors = attachTelemetry(page);
@@ -532,7 +511,9 @@ try {
       () =>
         document.querySelectorAll("#demo-lod-tbody tr").length === 5 &&
         document.querySelectorAll("#demo-kernel-tbody tr").length === 22 &&
-        (document.getElementById("log-bench-uorc")?.textContent || "").includes("conformant:"),
+        (document.getElementById("log-bench-uorc")?.textContent || "").includes("conformant:") &&
+        (document.getElementById("log-bench-uhd")?.textContent || "").includes("Hierarchical LOD Pyramid:") &&
+        (document.getElementById("log-bench-uhd")?.textContent || "").includes("Frame Stability Oracle ("),
       null,
       { timeout: 25000 },
     );

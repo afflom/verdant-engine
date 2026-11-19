@@ -2,7 +2,7 @@
         <canvas id="ve-canvas" aria-label="Verdant Engine 3D runtime stage — drag to orbit, scroll to zoom"></canvas>
         <div class="ve-hud" aria-hidden="true">
           <span id="ve-hud-lod" class="ve-pill">Verdant Engine · WebGL2 PBR · LOD2 High</span>
-          <span id="ve-hud-stats" class="ve-pill">Holo Verified · 15 Semirings · Clear 290mm</span>
+          <span id="ve-hud-stats" class="ve-pill">WebGL2 PBR · 60 Hz · Clear 290mm</span>
         </div>
         <div id="ve-touch-pad" class="ve-touch-pad" role="group" aria-label="Character locomotion and narrative interaction">
           <button type="button" data-move="KeyW" aria-label="W: Move forward">W</button>
@@ -13,32 +13,32 @@
           <button type="button" id="ve-lock-btn" title="Toggle mouse look pointer lock">Look</button>
         </div>
         <form id="ve-prompt-form" class="ve-prompt-bar" autocomplete="off">
-          <span class="ve-prompt-tag" aria-hidden="true">CodedSLM</span>
-          <input id="ve-prompt-input" type="text" aria-label="Route runtime intent via local zero-decode CodedSlmDirector" placeholder="Route intent (inspect stone arch, stream LOD4, possess 22-joint rig)…" />
-          <button id="ve-prompt-btn" type="submit" title="Classify and route runtime intent locally via kernel:11 zero-decode contraction">Route</button>
+          <span class="ve-prompt-tag" aria-hidden="true">Direct</span>
+          <input id="ve-prompt-input" type="text" aria-label="Direct the live 3D scene" placeholder="Direct scene (stone arch, 3rd person, LOD4, audio)…" />
+          <button id="ve-prompt-btn" type="submit" title="Apply natural-language stage direction locally">Go</button>
         </form>
         <input id="ve-glb-file" type="file" accept=".glb,model/gltf-binary" hidden />
       </div>
       <div class="result" id="game-status" data-slot="result" aria-live="polite">
-        <span id="ve-status" class="chip chip-wait">Verifying Prism runtime…</span>
+        <span id="ve-status" class="chip chip-wait">Starting 3D engine…</span>
       </div>
       <div class="controls" data-slot="actions" data-label="Platform &amp; Runtime Controls">
-        <nav class="ve-pillar-grid" aria-label="Verdant platform organs">
-          <a id="ve-studio-link" class="ghost ve-pillar ve-pillar-studio" href="./studio/" title="Open Verdant Studio — 7-role application design atelier">
+        <nav class="ve-pillar-grid" aria-label="Verdant platform workspaces">
+          <a id="ve-studio-link" class="ghost ve-pillar ve-pillar-studio" href="./studio/" title="Open Verdant Studio — 3D game and spatial app IDE">
             <span class="ve-pillar-name">Verdant Studio</span>
-            <span class="ve-pillar-sub">7-Role Atelier</span>
+            <span class="ve-pillar-sub">3D App IDE</span>
           </a>
-          <a id="ve-catalogs-link" class="ghost ve-pillar ve-pillar-catalogs" href="./catalogs/" title="Open Verdant Catalogs — imported ISO, W3C, Khronos &amp; UOR standards">
+          <a id="ve-catalogs-link" class="ghost ve-pillar ve-pillar-catalogs" href="./catalogs/" title="Open Verdant Catalogs — live 3D assets, worlds, and open standards">
             <span class="ve-pillar-name">Model Catalogs</span>
-            <span class="ve-pillar-sub">36 Standards</span>
+            <span class="ve-pillar-sub">Assets &amp; Worlds</span>
           </a>
-          <a id="ve-demo-link" class="ghost ve-pillar ve-pillar-demo" href="./demo/" title="Open Verdant Engine Demo — WebGL2 PBR vs Wasm tile &amp; semiring benchmarks">
+          <a id="ve-demo-link" class="ghost ve-pillar ve-pillar-demo" href="./demo/" title="Open Verdant Engine Demo — UHD 4K/8K, rendering, and WebAssembly benchmarks">
             <span class="ve-pillar-name">Engine Demo</span>
-            <span class="ve-pillar-sub">Benchmarks</span>
+            <span class="ve-pillar-sub">UHD &amp; Benchmarks</span>
           </a>
-          <a id="ve-docs-link" class="ghost ve-pillar ve-pillar-docs" href="./docs/" title="Open Verdant Reference — Diataxis tutorials, guides &amp; API reference">
-            <span class="ve-pillar-name">Reference</span>
-            <span class="ve-pillar-sub">Diataxis Docs</span>
+          <a id="ve-docs-link" class="ghost ve-pillar ve-pillar-docs" href="./docs/" title="Open Verdant Documentation — guides, tutorials, and API reference">
+            <span class="ve-pillar-name">Documentation</span>
+            <span class="ve-pillar-sub">Guides &amp; API</span>
           </a>
         </nav>
         <div class="ve-runtime-grid" role="group" aria-label="Live runtime controls">
