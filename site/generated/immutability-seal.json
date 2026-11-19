@@ -1,8 +1,8 @@
 {
   "spec": "verdant/view-immutability-seal/1",
   "owningManager": "mgr-observer-executive",
-  "managerKappaHex": "ef1646434dac8d5d4e9ab75a0149799640fe03a071f0badc3c26b4888ad336d7",
-  "sealRootSha256Hex": "f6b9c57e3a7d0842b26bea7f2ddee8951efc0339ee14f94aa5c4dda1ca253e22",
+  "managerKappaHex": "a76306e32aaf59fb0870f57d09045752808b4613ea9e646145c32c626a58a078",
+  "sealRootSha256Hex": "19750a5ab684f0a36ca0ffdd13fb41473b34bce581e60dacf9d341d780573e10",
   "files": [
     {
       "path": "site/card.html",
@@ -87,15 +87,15 @@
     {
       "path": "site/generated/viewpoint-contracts.json",
       "owningManagerId": "mgr-observer-executive",
-      "managerKappaHex": "ef1646434dac8d5d4e9ab75a0149799640fe03a071f0badc3c26b4888ad336d7",
+      "managerKappaHex": "a76306e32aaf59fb0870f57d09045752808b4613ea9e646145c32c626a58a078",
       "governingAuthorities": [
         "AUTH-VSM-CYBERNETICS",
         "AUTH-ISO-42010-VIEWPOINTS",
         "AUTH-W3C-SOSA-PROVO",
         "AUTH-STITCH-SELF-HOSTING"
       ],
-      "bytes": 16652,
-      "sha256Hex": "dfc0c8924239831aff21d181115e20dbecad86cc9806559306f9b5cb56fc3a6a",
+      "bytes": 16801,
+      "sha256Hex": "78a0844af52647d51244020b43f7c43f867a7b3ee3871003457ccb69de211314",
       "lastDirectiveKappaHex": "746f0512bc1fff651ebdcb34f294d9fa346925e50bf3bb6332f78a8a31dfa9e9"
     },
     {

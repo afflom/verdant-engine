@@ -109,6 +109,7 @@ verdant <subcommand> [options]
   pack-universe <out_dir> [seed]              Pack 3-sector floating-origin universe & Stitch shards
   automate-check                              Self-verify all 4 catalog domains, Observer, UI, WGSL, & .uorc
   operator <status|prompt|apply|synthesize|publish-app|verify-seal|audit|session>  Manage Verdant via VSM & ISO 42010 API
+  release <pack|verify> [options]             Pack or 4-of-8 verify a self-hosted .holo Stitch release
   mcp [--root <dir>]                          Run Model Context Protocol (JSON-RPC 2.0 stdio) server
   benchmark [frames]                          Run headless 60fps physics + BVH + GJK + NavMesh benchmark
   stress-benchmark [entities]                 Run 10k+ SoA bit-plane, TwoLevelBvh & monoid stress benchmark";
@@ -1754,6 +1755,92 @@ pub fn run_cli(args: &[String]) -> Result<String, CliCommandError> {
                     usage: format!(
                         "unknown operator action `{other}` (expected status|prompt|apply|synthesize|publish-app|verify-seal|audit|session)"
                     ),
+                }),
+            }
+        }
+        "release" => {
+            let Some(action) = args.get(1).map(String::as_str) else {
+                return Err(CliCommandError::InvalidUsage {
+                    usage: "verdant release <pack|verify> [--root <dir>] [--version <v>] [--epoch <n>] [--out <dir>] [--relay <url>] [--pin <stitch://...>]".to_string(),
+                });
+            };
+            let ch = verdant_core::operator::VerdantOperatorChannel::new("sunspire-regatta")
+                .map_err(|e| CliCommandError::ValidationRejected {
+                    command: "release".to_string(),
+                    diagnostic: e.to_string(),
+                })?;
+            let two = 1usize + 1usize;
+            let mut root =
+                std::env::current_dir().unwrap_or_else(|_| std::path::PathBuf::from("."));
+            let mut version = "0.1.0".to_string();
+            let mut epoch = 1u64;
+            let mut out_dir = std::path::PathBuf::from("dist/stitch-release");
+            let mut default_uri = "stitch://verdant/studio".to_string();
+            let mut relays: Vec<String> = Vec::new();
+            let mut i = two;
+            while i < args.len() {
+                match args[i].as_str() {
+                    "--root" if i + 1 < args.len() => {
+                        root = std::path::PathBuf::from(&args[i + 1]);
+                        i += two;
+                    }
+                    "--version" if i + 1 < args.len() => {
+                        version = args[i + 1].clone();
+                        i += two;
+                    }
+                    "--epoch" if i + 1 < args.len() => {
+                        epoch = args[i + 1].parse().unwrap_or(1);
+                        i += two;
+                    }
+                    "--out" | "--dir" if i + 1 < args.len() => {
+                        out_dir = std::path::PathBuf::from(&args[i + 1]);
+                        i += two;
+                    }
+                    "--relay" if i + 1 < args.len() => {
+                        relays.push(args[i + 1].clone());
+                        i += two;
+                    }
+                    "--pin" if i + 1 < args.len() => {
+                        default_uri = args[i + 1].clone();
+                        i += two;
+                    }
+                    _ => i += 1,
+                }
+            }
+            match action {
+                "pack" => {
+                    let pin = ch
+                        .pack_repo_release_capsule(
+                            &root,
+                            &version,
+                            epoch,
+                            &out_dir,
+                            relays,
+                            &default_uri,
+                        )
+                        .map_err(|e| CliCommandError::ValidationRejected {
+                            command: "release pack".to_string(),
+                            diagnostic: e.to_string(),
+                        })?;
+                    Ok(format!(
+                        "RELEASE PACKED: version={} epoch={} bytes={} shards={}of{} kappa={} vcs={}",
+                        pin.release_version,
+                        pin.release_epoch,
+                        pin.capsule_byte_len,
+                        pin.data_shards_k,
+                        pin.total_shards_n,
+                        pin.release_kappa_hex,
+                        pin.vcs_commit_kappa
+                    ))
+                }
+                "verify" => ch.verify_release_dir(&out_dir).map_err(|e| {
+                    CliCommandError::ValidationRejected {
+                        command: "release verify".to_string(),
+                        diagnostic: e.to_string(),
+                    }
+                }),
+                other => Err(CliCommandError::InvalidUsage {
+                    usage: format!("unknown release action `{other}` (expected pack|verify)"),
                 }),
             }
         }

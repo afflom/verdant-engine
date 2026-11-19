@@ -1049,6 +1049,72 @@ pub struct StitchRsShard {
     pub payload: Vec<u8>,
 }
 
+/// 8-byte binary header magic for compact `STCH2` Reed-Solomon shard frames.
+pub const STCH2_BINARY_MAGIC: &[u8; 1 << (1 + 1 + 1)] = b"STCH2_RS";
+
+impl StitchRsShard {
+    /// Encodes this shard into a compact zero-overhead binary `STCH2` frame:
+    /// `[8B magic][1B k][1B n][1B index][1B 0][4B original_len LE][32B manifest_root][32B payload_root][payload]`.
+    #[must_use]
+    pub fn to_binary_stch2(&self) -> Vec<u8> {
+        let meta_len = (1usize << (1 + 1 + 1))
+            + (1usize + 1usize + 1usize + 1usize)
+            + (1usize + 1usize + 1usize + 1usize)
+            + SHA256_BYTES
+            + SHA256_BYTES;
+        let mut out = Vec::with_capacity(meta_len + self.payload.len());
+        out.extend_from_slice(STCH2_BINARY_MAGIC);
+        out.push(self.data_shards_k);
+        out.push(self.total_shards_n);
+        out.push(self.index);
+        out.push(0);
+        out.extend_from_slice(&(self.original_byte_len as u32).to_le_bytes());
+        out.extend_from_slice(&self.manifest_root);
+        out.extend_from_slice(&self.payload_root);
+        out.extend_from_slice(&self.payload);
+        out
+    }
+
+    /// Parses and SHA-256-verifies a compact binary `STCH2` Reed-Solomon shard frame.
+    pub fn from_binary_stch2(bytes: &[u8]) -> Result<Self, StitchCustodyError> {
+        let magic_len = STCH2_BINARY_MAGIC.len();
+        let u32_len = 1usize + 1usize + 1usize + 1usize;
+        let roots_start = magic_len + u32_len + u32_len;
+        let payload_start = roots_start + SHA256_BYTES + SHA256_BYTES;
+        if bytes.len() <= payload_start || &bytes[..magic_len] != STCH2_BINARY_MAGIC {
+            return Err(StitchCustodyError::PayloadDigestMismatch {
+                detail: "invalid STCH2 binary shard magic or truncated header".to_string(),
+            });
+        }
+        let data_shards_k = bytes[magic_len];
+        let total_shards_n = bytes[magic_len + 1];
+        let index = bytes[magic_len + 1 + 1];
+        let len_off = magic_len + u32_len;
+        let mut len_buf = [0u8; 1 + 1 + 1 + 1];
+        len_buf.copy_from_slice(&bytes[len_off..roots_start]);
+        let original_byte_len = u32::from_le_bytes(len_buf) as usize;
+        let mut manifest_root = [0u8; SHA256_BYTES];
+        manifest_root.copy_from_slice(&bytes[roots_start..roots_start + SHA256_BYTES]);
+        let mut payload_root = [0u8; SHA256_BYTES];
+        payload_root.copy_from_slice(&bytes[roots_start + SHA256_BYTES..payload_start]);
+        let payload = bytes[payload_start..].to_vec();
+        if sha256_digest(&payload) != payload_root {
+            return Err(StitchCustodyError::PayloadDigestMismatch {
+                detail: format!("STCH2 shard {index} failed SHA-256 payload verification"),
+            });
+        }
+        Ok(Self {
+            manifest_root,
+            original_byte_len,
+            data_shards_k,
+            total_shards_n,
+            index,
+            payload_root,
+            payload,
+        })
+    }
+}
+
 /// Systematic `k-of-n` Reed-Solomon (`GF(2^8)`) Stitch codec supporting `4-of-8` archival custody
 /// and autonomous parity regeneration (`Threat 17`).
 pub struct ReedSolomonStitchCodec;

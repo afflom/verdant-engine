@@ -8,6 +8,8 @@
     "start": "node server.ts",
     "lint": "node --check server.ts && node --check scripts/build-site.mjs && node --check server-routes.mjs && node scripts/enforce-prism-contracts.mjs",
     "automate": "node scripts/verdant-automate.mjs",
+    "verify:stitch": "node scripts/verify-stitch-release.mjs",
+    "package:crates": "node scripts/package-rust-crates.mjs",
     "test:contracts": "npx --yes tsx --test prism-contracts.test.ts",
     "test:try": "node --test try/test.mjs",
     "test:identity": "node identity/stitch-sync.mjs --check && node --test identity/test.mjs"

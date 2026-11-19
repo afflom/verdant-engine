@@ -5565,3 +5565,154 @@ fn engine_ve_43() {
         .expect("checkout verified tree");
     assert_eq!(checked_out, tree2);
 }
+
+#[test]
+fn engine_ve_44() {
+    use std::collections::{BTreeMap, BTreeSet};
+    use std::path::Path;
+    use verdant_core::network::StitchRsShard;
+    use verdant_core::vcs::{
+        default_release_rs_geometry, parse_stitch_deep_link_uri, VerdantReleaseCapsule,
+        MAX_BLANK_FRAME_BYTES,
+    };
+
+    // 1. Verify the frozen Composable Blank Frame in `site/frame/` stays <= 30 KiB and contains
+    // ZERO loose Verdant UI/Studio/Wasm files (`Threat 15` / `Threat 19`):
+    let repo_root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+    let frame_dir = repo_root.join("site/frame");
+    let allowed: BTreeSet<&str> = [
+        "index.html",
+        "frame-boot.mjs",
+        "frame-sw.js",
+        "frame-pin.json",
+    ]
+    .into_iter()
+    .collect();
+    let mut total_frame_bytes = 0usize;
+    let mut seen = BTreeSet::new();
+    for entry in std::fs::read_dir(&frame_dir).expect("read site/frame") {
+        let entry = entry.expect("dir entry");
+        let fname = entry.file_name().to_string_lossy().to_string();
+        assert!(
+            allowed.contains(fname.as_str()),
+            "Blank Frame must contain zero loose UI files, found `{fname}`"
+        );
+        total_frame_bytes += entry.metadata().expect("meta").len() as usize;
+        seen.insert(fname);
+    }
+    assert_eq!(seen.len(), allowed.len(), "all 4 Blank Frame files exist");
+    assert!(
+        total_frame_bytes <= MAX_BLANK_FRAME_BYTES,
+        "Blank Frame footprint {total_frame_bytes} B exceeds 30 KiB ({MAX_BLANK_FRAME_BYTES} B)"
+    );
+
+    // 2. Pack a self-verifying portable `.holo` Release Capsule, shard 4-of-8 into compact
+    // binary `STCH2` frames, deliberately drop 4 shards, and prove exact bit-for-bit recovery:
+    let mut lifted = BTreeMap::new();
+    lifted.insert(
+        "studio/index.html".to_string(),
+        b"<!doctype html><title>Lifted Verdant Studio</title><canvas></canvas>".to_vec(),
+    );
+    lifted.insert(
+        "generated/viewpoint-contracts.json".to_string(),
+        br#"{"spec":"verdant/manager-viewpoint-contracts/1","totalOwnershipComplete":true}"#
+            .to_vec(),
+    );
+    lifted.insert(
+        "verdant-wasm.wasm".to_string(),
+        vec![0x00, 0x61, 0x73, 0x6d, 1, 0, 0, 0],
+    );
+    let capsule = VerdantReleaseCapsule::pack_from_files(
+        "0.1.0",
+        1,
+        "a".repeat(64).as_str(),
+        "b".repeat(64).as_str(),
+        "studio/index.html",
+        &lifted,
+    )
+    .expect("pack release capsule");
+    let unpacked =
+        VerdantReleaseCapsule::verify_and_unpack(&capsule.holo_bytes).expect("verify & unpack");
+    assert_eq!(unpacked.payloads, lifted);
+    assert_eq!(unpacked.capsule_sha256_hex, capsule.capsule_sha256_hex);
+
+    // Negative check (`Threat 15`): tampering a single byte inside `.holo` MUST be refused!
+    let mut tampered = capsule.holo_bytes.clone();
+    let last = tampered.len() - 1;
+    tampered[last] ^= 0x01;
+    assert!(VerdantReleaseCapsule::verify_and_unpack(&tampered).is_err());
+
+    // 4-of-8 STCH2 binary roundtrip + 4-shard-loss recovery + anti-rollback enforcement:
+    let (k, n) = default_release_rs_geometry();
+    assert_eq!((k, n), (4, 8));
+    let (shards, pin) = capsule
+        .shard_for_stitch(
+            k,
+            n,
+            "genesis",
+            &[
+                ("prism:verdant-observer-executive", b"exec-secret"),
+                ("prism:verdant-release-bot", b"bot-secret"),
+            ],
+            2,
+            "stitch://verdant/studio",
+            vec!["https://afflom.github.io/verdant-engine/stitch/v0.1.0/shards".to_string()],
+        )
+        .expect("shard release 4-of-8");
+    assert_eq!(shards.len(), 8);
+
+    // Roundtrip 4 surviving odd-indexed shards (1, 3, 5, 7) through compact binary STCH2 framing:
+    let mut surviving = Vec::new();
+    for idx in [1usize, 3, 5, 7] {
+        let bin = shards[idx].to_binary_stch2();
+        let parsed = StitchRsShard::from_binary_stch2(&bin).expect("parse STCH2 binary shard");
+        surviving.push(parsed);
+    }
+    let mut trusted = BTreeMap::new();
+    trusted.insert(
+        "prism:verdant-observer-executive".to_string(),
+        b"exec-secret".to_vec(),
+    );
+    trusted.insert(
+        "prism:verdant-release-bot".to_string(),
+        b"bot-secret".to_vec(),
+    );
+    let recovered =
+        VerdantReleaseCapsule::recover_from_stitch(&surviving, &pin, 0, Some("genesis"), &trusted)
+            .expect("recover 4-of-8 release capsule");
+    assert_eq!(recovered.payloads, lifted);
+
+    // Negative check (`Threat 14`): rollback to persisted_epoch >= release_epoch MUST be refused!
+    assert!(VerdantReleaseCapsule::recover_from_stitch(
+        &surviving,
+        &pin,
+        1,
+        Some("genesis"),
+        &trusted,
+    )
+    .is_err());
+
+    // 3. Composable deep-link sanitization (`Threat 18`): valid stitch:// normalizes cleanly;
+    // hostile schemes & path traversal MUST be refused!
+    let studio = parse_stitch_deep_link_uri("stitch://verdant/studio").expect("studio deep link");
+    assert_eq!(studio.virtual_route, "studio/index.html");
+    let catalogs =
+        parse_stitch_deep_link_uri("stitch://verdant/catalogs").expect("catalogs deep link");
+    assert_eq!(catalogs.virtual_route, "catalogs/index.html");
+    let third_party = parse_stitch_deep_link_uri(&format!("stitch://{}/demo", "c".repeat(64)))
+        .expect("third-party kappa deep link");
+    assert_eq!(third_party.virtual_route, "demo/index.html");
+    for hostile in [
+        "javascript:alert(1)",
+        "data:text/html,<script>alert(1)</script>",
+        "https://evil.example/studio",
+        "stitch://verdant/../../etc/passwd",
+        "stitch://verdant/<script>",
+        "stitch://not-a-valid-kappa/studio",
+    ] {
+        assert!(
+            parse_stitch_deep_link_uri(hostile).is_err(),
+            "hostile deep link MUST be refused: {hostile}"
+        );
+    }
+}

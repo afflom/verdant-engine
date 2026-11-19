@@ -372,3 +372,9 @@ suite = "engine"
 statement = "Zero-account Prism-ID Encrypt-then-MAC boundary privacy with revocation epoch rotation, k-of-n systematic Reed-Solomon GF(2^8) erasure coding and autonomous parity repair, monotonic quorum release pointers, budgeted reciprocal Stitch shard admission, and in-Verdant W3C PROV-O Merkle revision control (VerdantVcs) uphold complete CIA and STRIDE security invariants across native Rust, WebAssembly, and Verdant MCP while refusing unauthorized decryption, revoked-epoch replay, pointer rollback, and over-budget floods"
 failure = "StitchBoundaryIntegrityError"
 negative = "VE-43"
+
+[[id]]
+id = "VE-44"
+level = "build"
+suite = "engine"
+statement = "Self-contained Verdant Release .holo capsules lift all verified Viewpoints, DTCG assets, Manager manifests, and WebAssembly runtimes into 4-of-8 STCH2 Reed-Solomon shards bound by quorum-signed monotonic FramePinManifest pointers, and the immutable <= 30 KiB Composable Blank Frame recovers and mounts them via ServiceWorker Virtual FS with zero loose UI files while refusing tampered capsules, pointer rollbacks, and unsafe deep-link URIs"

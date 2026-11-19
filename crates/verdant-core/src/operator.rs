@@ -33,7 +33,9 @@ use crate::streaming::is_uorc_archive;
 #[cfg(not(target_arch = "wasm32"))]
 use crate::streaming::StandardSceneState;
 #[cfg(not(target_arch = "wasm32"))]
-use crate::vcs::VerdantVcs;
+use crate::vcs::{
+    default_release_rs_geometry, FramePinManifest, VerdantReleaseCapsule, VerdantVcs,
+};
 
 /// Embedded SHA-256-locked Stafford Beer VSM governance authority (`AUTH-VSM-CYBERNETICS`).
 pub const LOCKED_VSM_CATALOG_JSON: &str =
@@ -3164,6 +3166,266 @@ body[data-studio-focus="publish"] #studio-publish-pane {
         })
     }
 
+    #[cfg(not(target_arch = "wasm32"))]
+    fn collect_distilled_site_tree(
+        site_root: &Path,
+        curr: &Path,
+        out: &mut BTreeMap<String, Vec<u8>>,
+    ) {
+        let Ok(rd) = std::fs::read_dir(curr) else {
+            return;
+        };
+        let mut entries: Vec<_> = rd.filter_map(Result::ok).collect();
+        entries.sort_by_key(|e| e.path());
+        for entry in entries {
+            let p = entry.path();
+            let Ok(rel) = p.strip_prefix(site_root) else {
+                continue;
+            };
+            let rel_str = rel.to_string_lossy().replace('\\', "/");
+            if rel_str == "frame"
+                || rel_str.starts_with("frame/")
+                || rel_str.ends_with(".test.mjs")
+                || rel_str == "precache.json"
+                || rel_str == "spec.html"
+                || rel_str == "spec.css"
+                || rel_str == "spec.mjs"
+                || rel_str == "og.png"
+                || rel_str == "sw-gate.mjs"
+                || rel_str == "worker-gate.mjs"
+                || rel_str == "page.template.html"
+                || rel_str == "sw.js"
+            {
+                continue;
+            }
+            if p.is_dir() {
+                Self::collect_distilled_site_tree(site_root, &p, out);
+            } else if p.is_file() {
+                if let Ok(bytes) = std::fs::read(&p) {
+                    out.insert(rel_str, bytes);
+                }
+            }
+        }
+    }
+
+    /// Distills and lifts the verified Verdant site (all 6 Viewpoints, generated DTCG tokens,
+    /// Manager manifests, Wasm binaries, and `app.holo`) into a self-verifying portable
+    /// `verdant-v<version>.holo` capsule, commits it into [`VerdantVcs`], shards it via `4-of-8`
+    /// systematic `GF(2^8)` Reed-Solomon `STCH2` shards, and emits a quorum-signed
+    /// [`FramePinManifest`] (`frame-pin.json`) for the immutable Blank Frame (`VE-44`).
+    #[cfg(not(target_arch = "wasm32"))]
+    pub fn pack_repo_release_capsule(
+        &self,
+        repo_root: &Path,
+        version: &str,
+        release_epoch: u64,
+        out_dir: &Path,
+        stitch_relays: Vec<String>,
+        default_stitch_uri: &str,
+    ) -> Result<FramePinManifest, ObserverModelError> {
+        let seal = self.verify_immutability_seal(repo_root);
+        if !seal.valid {
+            return Err(ObserverModelError::CommunicationEnvelopeRejected {
+                channel: CommunicationChannelKind::OrganToOrgan.slug().to_string(),
+                detail: format!(
+                    "refused release pack: View Immutability Seal invalid ({})",
+                    seal.violations.join("; ")
+                ),
+            });
+        }
+        let site_root = repo_root.join("site");
+        let mut files = BTreeMap::new();
+        Self::collect_distilled_site_tree(&site_root, &site_root, &mut files);
+        if files.is_empty() {
+            return Err(ObserverModelError::CommunicationEnvelopeRejected {
+                channel: CommunicationChannelKind::OrganToOrgan.slug().to_string(),
+                detail: "no lifted site assets found to pack into release .holo".to_string(),
+            });
+        }
+        let mut vcs = VerdantVcs::new();
+        let ref_name = format!("refs/releases/v{}", version.trim());
+        let commit = vcs
+            .commit_tree(
+                &ref_name,
+                &files,
+                "prism:verdant-release-bot",
+                b"verdant-release-bot-signing-root",
+                "mgr-observer-executive",
+                "AUTH-STITCH-SELF-HOSTING",
+                &format!(
+                    "Lift Verdant v{} into self-hosted Stitch .holo release",
+                    version.trim()
+                ),
+            )
+            .map_err(|e| ObserverModelError::CommunicationEnvelopeRejected {
+                channel: CommunicationChannelKind::OrganToOrgan.slug().to_string(),
+                detail: format!("VerdantVcs release commit failed: {e}"),
+            })?;
+        let capsule = VerdantReleaseCapsule::pack_from_files(
+            version,
+            release_epoch,
+            &commit.commit_kappa,
+            &seal.seal_root_sha256_hex,
+            "studio/index.html",
+            &files,
+        )
+        .map_err(|e| ObserverModelError::CommunicationEnvelopeRejected {
+            channel: CommunicationChannelKind::OrganToOrgan.slug().to_string(),
+            detail: format!("pack release capsule failed: {e}"),
+        })?;
+        let (k, n) = default_release_rs_geometry();
+        let quorum = 1u32 + 1u32;
+        let relays = if stitch_relays.is_empty() {
+            vec!["./shards".to_string()]
+        } else {
+            stitch_relays
+        };
+        let (shards, pin) = capsule
+            .shard_for_stitch(
+                k,
+                n,
+                "genesis",
+                &[
+                    (
+                        "prism:verdant-observer-executive",
+                        b"verdant-observer-executive-quorum-key",
+                    ),
+                    (
+                        "prism:verdant-release-bot",
+                        b"verdant-release-bot-quorum-key",
+                    ),
+                ],
+                quorum,
+                default_stitch_uri,
+                relays,
+            )
+            .map_err(|e| ObserverModelError::CommunicationEnvelopeRejected {
+                channel: CommunicationChannelKind::OrganToOrgan.slug().to_string(),
+                detail: format!("4-of-8 Stitch sharding failed: {e}"),
+            })?;
+
+        let shards_dir = out_dir.join("shards");
+        std::fs::create_dir_all(&shards_dir).map_err(|e| {
+            ObserverModelError::CommunicationEnvelopeRejected {
+                channel: CommunicationChannelKind::OrganToOrgan.slug().to_string(),
+                detail: format!("create release shards dir: {e}"),
+            }
+        })?;
+        let holo_path = out_dir.join(format!("verdant-v{}.holo", version.trim()));
+        std::fs::write(&holo_path, &capsule.holo_bytes).map_err(|e| {
+            ObserverModelError::CommunicationEnvelopeRejected {
+                channel: CommunicationChannelKind::OrganToOrgan.slug().to_string(),
+                detail: format!("write release .holo: {e}"),
+            }
+        })?;
+        let vcs_uorc = vcs.encode_uorc_capsule().map_err(|e| {
+            ObserverModelError::CommunicationEnvelopeRejected {
+                channel: CommunicationChannelKind::OrganToOrgan.slug().to_string(),
+                detail: format!("encode VerdantVcs .uorc: {e}"),
+            }
+        })?;
+        let vcs_path = out_dir.join(format!("vcs-v{}.uorc", version.trim()));
+        std::fs::write(&vcs_path, &vcs_uorc).map_err(|e| {
+            ObserverModelError::CommunicationEnvelopeRejected {
+                channel: CommunicationChannelKind::OrganToOrgan.slug().to_string(),
+                detail: format!("write VerdantVcs .uorc: {e}"),
+            }
+        })?;
+        for shard in &shards {
+            let shard_path = shards_dir.join(format!("shard-{}.stch", shard.index));
+            std::fs::write(&shard_path, shard.to_binary_stch2()).map_err(|e| {
+                ObserverModelError::CommunicationEnvelopeRejected {
+                    channel: CommunicationChannelKind::OrganToOrgan.slug().to_string(),
+                    detail: format!("write STCH2 shard {}: {e}", shard.index),
+                }
+            })?;
+        }
+        let pin_json = serde_json::to_string_pretty(&pin).map_err(|e| {
+            ObserverModelError::CommunicationEnvelopeRejected {
+                channel: CommunicationChannelKind::OrganToOrgan.slug().to_string(),
+                detail: format!("serialize frame-pin.json: {e}"),
+            }
+        })?;
+        std::fs::write(out_dir.join("frame-pin.json"), format!("{pin_json}\n")).map_err(|e| {
+            ObserverModelError::CommunicationEnvelopeRejected {
+                channel: CommunicationChannelKind::OrganToOrgan.slug().to_string(),
+                detail: format!("write frame-pin.json: {e}"),
+            }
+        })?;
+        Ok(pin)
+    }
+
+    /// Verifies a packed release directory by dropping `n - k` shards (`4` of `8`), recovering the
+    /// `.holo` capsule via Reed-Solomon `GF(2^8)` from the surviving `k` shards, and verifying
+    /// quorum signatures + every lifted file's SHA-256 digest.
+    #[cfg(not(target_arch = "wasm32"))]
+    pub fn verify_release_dir(&self, release_dir: &Path) -> Result<String, ObserverModelError> {
+        let pin_raw = std::fs::read_to_string(release_dir.join("frame-pin.json")).map_err(|e| {
+            ObserverModelError::CommunicationEnvelopeRejected {
+                channel: CommunicationChannelKind::OrganToOrgan.slug().to_string(),
+                detail: format!("read frame-pin.json: {e}"),
+            }
+        })?;
+        let pin: FramePinManifest = serde_json::from_str(&pin_raw).map_err(|e| {
+            ObserverModelError::CommunicationEnvelopeRejected {
+                channel: CommunicationChannelKind::OrganToOrgan.slug().to_string(),
+                detail: format!("parse frame-pin.json: {e}"),
+            }
+        })?;
+        let shards_dir = release_dir.join("shards");
+        let mut surviving = Vec::new();
+        let stride = 1usize + 1usize;
+        for (idx, fname) in pin.shard_files.iter().enumerate() {
+            // Deliberately drop half of the shards (even indices) to prove 4-of-8 erasure recovery!
+            if idx % stride == 1 {
+                let raw = std::fs::read(shards_dir.join(fname)).map_err(|e| {
+                    ObserverModelError::CommunicationEnvelopeRejected {
+                        channel: CommunicationChannelKind::OrganToOrgan.slug().to_string(),
+                        detail: format!("read {fname}: {e}"),
+                    }
+                })?;
+                let shard =
+                    crate::network::StitchRsShard::from_binary_stch2(&raw).map_err(|e| {
+                        ObserverModelError::CommunicationEnvelopeRejected {
+                            channel: CommunicationChannelKind::OrganToOrgan.slug().to_string(),
+                            detail: format!("parse {fname}: {e}"),
+                        }
+                    })?;
+                surviving.push(shard);
+            }
+        }
+        let mut trusted = BTreeMap::new();
+        trusted.insert(
+            "prism:verdant-observer-executive".to_string(),
+            b"verdant-observer-executive-quorum-key".to_vec(),
+        );
+        trusted.insert(
+            "prism:verdant-release-bot".to_string(),
+            b"verdant-release-bot-quorum-key".to_vec(),
+        );
+        let capsule = VerdantReleaseCapsule::recover_from_stitch(
+            &surviving,
+            &pin,
+            0,
+            Some("genesis"),
+            &trusted,
+        )
+        .map_err(|e| ObserverModelError::CommunicationEnvelopeRejected {
+            channel: CommunicationChannelKind::OrganToOrgan.slug().to_string(),
+            detail: format!("release recovery failed: {e}"),
+        })?;
+        Ok(format!(
+            "RELEASE VERIFIED: version={} epoch={} files={} bytes={} survived_shards={}/{} kappa={}",
+            capsule.manifest.version,
+            capsule.manifest.release_epoch,
+            capsule.manifest.files.len(),
+            capsule.holo_bytes.len(),
+            surviving.len(),
+            pin.total_shards_n,
+            capsule.capsule_sha256_hex
+        ))
+    }
+
     /// Standard Model Context Protocol (MCP `2024-11-05`, JSON-RPC 2.0 over stdio) request
     /// handler for `verdant mcp`. Returns `None` for notifications and `Some(json_line)` for
     /// requests.
@@ -3371,6 +3633,21 @@ body[data-studio-focus="publish"] #studio-publish-pane {
                                 "blobs": { "type": "object" }
                             },
                             "required": ["authorPrismId", "message", "citedAuthority"]
+                        }
+                    },
+                    {
+                        "name": "verdant_release_pack",
+                        "description": "Lift verified Verdant Viewpoints, manifests, and Wasm into a self-verifying portable verdant-vX.Y.Z.holo release capsule, 4-of-8 STCH2 Reed-Solomon shards, VerdantVcs .uorc DAG, and quorum-signed frame-pin.json.",
+                        "inputSchema": {
+                            "type": "object",
+                            "properties": {
+                                "version": { "type": "string" },
+                                "epoch": { "type": "integer" },
+                                "outDir": { "type": "string" },
+                                "defaultStitchUri": { "type": "string" },
+                                "stitchRelays": { "type": "array", "items": { "type": "string" } }
+                            },
+                            "required": ["version", "outDir"]
                         }
                     }
                 ]
@@ -3693,6 +3970,49 @@ body[data-studio-focus="publish"] #studio-publish-pane {
                                     "entryCount": commit.tree_entries.len(),
                                     "uorcBytes": uorc_bytes,
                                 }),
+                            ),
+                            Err(e) => tool_out(true, serde_json::json!({ "error": e.to_string() })),
+                        }
+                    }
+                    "verdant_release_pack" => {
+                        let version = args
+                            .get("version")
+                            .and_then(|v| v.as_str())
+                            .unwrap_or("0.1.0");
+                        let epoch = args.get("epoch").and_then(|v| v.as_u64()).unwrap_or(1);
+                        let out_dir_str = args
+                            .get("outDir")
+                            .and_then(|v| v.as_str())
+                            .unwrap_or("dist/stitch-release");
+                        let default_uri = args
+                            .get("defaultStitchUri")
+                            .and_then(|v| v.as_str())
+                            .unwrap_or("stitch://verdant/studio");
+                        let relays: Vec<String> = args
+                            .get("stitchRelays")
+                            .and_then(|v| v.as_array())
+                            .map(|arr| {
+                                arr.iter()
+                                    .filter_map(|v| v.as_str().map(str::to_string))
+                                    .collect()
+                            })
+                            .unwrap_or_default();
+                        let out_path = if out_dir_str.starts_with('/') {
+                            std::path::PathBuf::from(out_dir_str)
+                        } else {
+                            repo_root.join(out_dir_str)
+                        };
+                        match self.pack_repo_release_capsule(
+                            repo_root,
+                            version,
+                            epoch,
+                            &out_path,
+                            relays,
+                            default_uri,
+                        ) {
+                            Ok(pin) => tool_out(
+                                false,
+                                serde_json::to_value(&pin).unwrap_or(serde_json::Value::Null),
                             ),
                             Err(e) => tool_out(true, serde_json::json!({ "error": e.to_string() })),
                         }

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Verdant — Stitch Blank Frame</title>
+  <meta name="description" content="Immutable composable Blank Frame that pulls, verifies, and boots Verdant from the Stitch network or an offline .holo capsule.">
+  <style>
+    :root {
+      --bg: oklch(14% 0.015 220);
+      --surface: oklch(19% 0.018 220);
+      --border: oklch(30% 0.02 220);
+      --ink: oklch(95% 0.01 210);
+      --muted: oklch(74% 0.02 215);
+      --accent: oklch(72% 0.14 155);
+      --accent-ink: oklch(14% 0.02 155);
+      color-scheme: dark;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; height: 100%; background: var(--bg); color: var(--ink); }
+    body { display: flex; flex-direction: column; min-height: 100vh; }
+    #frame-shell {
+      display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem 1rem;
+      padding: 0.75rem 1rem; background: var(--surface); border-bottom: 1px solid var(--border);
+    }
+    #frame-shell.compact .frame-extras { display: none; }
+    .frame-brand { display: flex; align-items: center; gap: 0.5rem; font-weight: 700; letter-spacing: 0.02em; }
+    .frame-dot { width: 0.65rem; height: 0.65rem; border-radius: 999px; background: var(--accent); display: inline-block; }
+    .frame-status-wrap { flex: 1 1 16rem; min-width: 14rem; }
+    #frame-status { font-size: 0.92rem; font-weight: 600; }
+    #frame-detail { font-size: 0.78rem; color: var(--muted); word-break: break-all; }
+    #pin-form { display: flex; gap: 0.4rem; align-items: center; flex: 1 1 18rem; }
+    input[type="text"] {
+      flex: 1; min-width: 10rem; padding: 0.42rem 0.6rem; border-radius: 0.4rem;
+      border: 1px solid var(--border); background: var(--bg); color: var(--ink); font-size: 0.85rem;
+    }
+    button, .file-btn {
+      padding: 0.44rem 0.75rem; border-radius: 0.4rem; border: 1px solid var(--border);
+      background: var(--accent); color: var(--accent-ink); font-weight: 600; font-size: 0.82rem;
+      cursor: pointer; white-space: nowrap;
+    }
+    .file-btn { background: var(--bg); color: var(--ink); }
+    .file-btn input { display: none; }
+    .frame-extras {
+      width: 100%; display: grid; grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
+      gap: 0.75rem; padding-top: 0.5rem; border-top: 1px solid var(--border);
+    }
+    .card {
+      padding: 0.75rem; border-radius: 0.5rem; background: var(--bg); border: 1px solid var(--border);
+      font-size: 0.84rem;
+    }
+    .card h2 { margin: 0 0 0.35rem; font-size: 0.9rem; }
+    .card p { margin: 0 0 0.5rem; color: var(--muted); line-height: 1.4; }
+    .vault-row { display: flex; gap: 0.4rem; align-items: center; }
+    #vault-output { margin-top: 0.45rem; font-size: 0.78rem; color: var(--accent); word-break: break-word; }
+    #frame-mount { flex: 1 1 auto; width: 100%; display: flex; }
+    #frame-mount[hidden] { display: none; }
+    #verdant-lifted-frame { flex: 1; width: 100%; height: 100%; border: 0; background: var(--bg); }
+  </style>
+</head>
+<body>
+  <header id="frame-shell">
+    <div class="frame-brand"><span class="frame-dot" aria-hidden="true"></span><span>Verdant Blank Frame</span></div>
+    <div class="frame-status-wrap">
+      <div id="frame-status">Initializing Stitch Blank Frame…</div>
+      <div id="frame-detail">Zero local UI assets — awaiting cryptographically verified .holo pull-through.</div>
+    </div>
+    <form id="pin-form" aria-label="Composable Stitch deep-link pin">
+      <input id="pin-uri-input" type="text" value="stitch://verdant/studio" aria-label="Stitch URI">
+      <button type="submit">Pin URI</button>
+    </form>
+    <label class="file-btn">Boot Offline .holo<input id="holo-file-input" type="file" accept=".holo"></label>
+    <section class="frame-extras" aria-label="Zero-account local private storage">
+      <div class="card">
+        <h2>Zero-Account Private Boundary</h2>
+        <p>Local Prism ID: <strong id="prism-id-badge">generating…</strong>. Encrypts client-side and shards 4-of-8 locally without any GitHub or cloud account.</p>
+        <div class="vault-row">
+          <input id="vault-note-input" type="text" value="Sovereign private project note" aria-label="Private boundary note">
+          <button id="vault-test-btn" type="button">Seal &amp; Recover 4-of-8</button>
+        </div>
+        <div id="vault-output"></div>
+      </div>
+      <div class="card">
+        <h2>Composable Deep Linking</h2>
+        <p>Any page can copy this Blank Frame (&le; 30 KB) and set <code>?pin=stitch://verdant/studio</code>, <code>stitch://verdant/catalogs</code>, or <code>stitch://&lt;kappa&gt;</code> to mount verified Stitch content directly.</p>
+      </div>
+    </section>
+  </header>
+  <main id="frame-mount" hidden></main>
+  <script type="module" src="./frame-boot.mjs"></script>
+</body>
+</html>

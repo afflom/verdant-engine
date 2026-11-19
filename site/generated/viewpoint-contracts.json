@@ -2,7 +2,7 @@
   "managers": [
     {
       "basisPrime": 59,
-      "kappaHex": "ef1646434dac8d5d4e9ab75a0149799640fe03a071f0badc3c26b4888ad336d7",
+      "kappaHex": "a76306e32aaf59fb0870f57d09045752808b4613ea9e646145c32c626a58a078",
       "spec": {
         "almPhases": [
           "governance",
@@ -34,6 +34,10 @@
           "crates/verdant-core/src/observer.rs",
           "crates/verdant-core/src/operator.rs",
           "crates/verdant-core/src/vcs.rs",
+          "site/frame/index.html",
+          "site/frame/frame-boot.mjs",
+          "site/frame/frame-sw.js",
+          "site/frame/frame-pin.json",
           "site/generated/viewpoint-contracts.json",
           "site/generated/immutability-seal.json"
         ],

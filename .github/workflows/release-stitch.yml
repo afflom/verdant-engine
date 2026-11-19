@@ -1,0 +1,118 @@
+# Verdant Self-Hosted Stitch Release & Optional GitHub Packages Distribution (`VE-44`).
+# Packs verdant-vX.Y.Z.holo + 4-of-8 STCH2 shards, gates EVERY release on live headless Chromium
+# pull-through verification through the immutable <= 30 KiB Blank Frame with 4 of 8 shards withheld,
+# packages optional Rust library .crate files + RFC 2789 sparse index, pushes to GitHub Packages
+# (ghcr.io), and publishes a GitHub Release (automatically triggering Zenodo DOI archival).
+name: stitch-release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Semantic version without leading v (e.g. 0.1.0)"
+        required: false
+        default: "0.1.0"
+      epoch:
+        description: "Strictly monotonic Stitch release epoch (>= 1)"
+        required: false
+        default: "1"
+
+permissions:
+  contents: write
+  packages: write
+  id-token: write
+
+jobs:
+  pack-verify-and-publish:
+    name: Pack, Chromium Pull-Through Gate & Publish (.holo + Rust Crates)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Check out exact revision
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Resolve release version and epoch
+        id: meta
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "${GITHUB_REF_TYPE:-}" == "tag" ]]; then
+            ver="${GITHUB_REF_NAME#v}"
+          else
+            ver="${{ github.event.inputs.version || '0.1.0' }}"
+          fi
+          epoch="${{ github.event.inputs.epoch || '1' }}"
+          printf 'version=%s\nepoch=%s\n' "$ver" "$epoch" >> "$GITHUB_OUTPUT"
+
+      - name: Build verdant CLI & pack self-verifying .holo + 4-of-8 STCH2 shards
+        shell: bash
+        run: |
+          set -euo pipefail
+          cargo build --locked -p verdant-cli --bin verdant
+          ./target/debug/verdant release pack \
+            --root . \
+            --version "${{ steps.meta.outputs.version }}" \
+            --epoch "${{ steps.meta.outputs.epoch }}" \
+            --out dist/stitch-release \
+            --relay "https://${{ github.repository_owner }}.github.io/verdant-engine/stitch/v${{ steps.meta.outputs.version }}/shards" \
+            --pin "stitch://verdant/studio"
+          ./target/debug/verdant release verify --dir dist/stitch-release
+
+      - name: Mandatory Chromium Pull-Through Blank Frame Verification Gate (4 of 8 shards withheld)
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm ci --ignore-scripts
+          npx playwright install chromium
+          node scripts/verify-stitch-release.mjs --dir dist/stitch-release
+
+      - name: Package Rust library .crate files & RFC 2789 Cargo sparse index
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/package-rust-crates.mjs \
+            --out dist/crates \
+            --dl "https://github.com/${{ github.repository }}/releases/download/v{version}/{crate}-{version}.crate"
+
+      - name: Publish .holo release capsule & Rust crates to GitHub Packages (ghcr.io) and GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          OWNER_LOWER: ${{ github.repository_owner }}
+          VER: ${{ steps.meta.outputs.version }}
+        run: |
+          set -euo pipefail
+          OWNER_LC=$(printf '%s' "$OWNER_LOWER" | tr '[:upper:]' '[:lower:]')
+          # Publish GitHub Release with portable .holo capsule, VerdantVcs .uorc, frame-pin.json & .crate archives
+          # (Creating a GitHub Release automatically triggers Zenodo DOI archival with zero Verdant config.)
+          gh release create "v${VER}" \
+            "dist/stitch-release/verdant-v${VER}.holo" \
+            "dist/stitch-release/vcs-v${VER}.uorc" \
+            "dist/stitch-release/frame-pin.json" \
+            dist/stitch-release/shards/*.stch \
+            dist/crates/crates/*.crate \
+            dist/crates/crates-manifest.json \
+            --title "Verdant Engine v${VER} (Self-Hosted Stitch .holo + Rust Crates)" \
+            --notes "Verified via mandatory Chromium Pull-Through Blank Frame Gate (4-of-8 GF(2^8) Reed-Solomon recovery with 4 shards withheld, 0 loose UI files). Includes portable verdant-v${VER}.holo capsule, 8 STCH2 shards, VerdantVcs .uorc DAG, and Rust .crate packages." \
+            || gh release upload "v${VER}" \
+              "dist/stitch-release/verdant-v${VER}.holo" \
+              "dist/stitch-release/vcs-v${VER}.uorc" \
+              "dist/stitch-release/frame-pin.json" \
+              dist/stitch-release/shards/*.stch \
+              dist/crates/crates/*.crate \
+              dist/crates/crates-manifest.json \
+              --clobber
+
+          # Push OCI release bundle (.holo + shards + Rust crates) to GitHub Packages (ghcr.io) via Docker buildx/registry
+          if command -v oras >/dev/null 2>&1; then
+            echo "$GH_TOKEN" | oras login ghcr.io -u "$OWNER_LC" --password-stdin
+            oras push "ghcr.io/${OWNER_LC}/verdant-engine/verdant-release:v${VER}" \
+              "dist/stitch-release/verdant-v${VER}.holo:application/vnd.verdant.holo.v1" \
+              "dist/stitch-release/frame-pin.json:application/vnd.verdant.frame-pin.v1+json"
+          fi
