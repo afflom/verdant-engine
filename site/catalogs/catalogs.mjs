@@ -6,7 +6,10 @@ import { kappa, load } from "../worker-runtime/index.mjs";
 import {
   AUTHORITATIVE_CONTENT_TYPES,
   LIVE_CATALOG_STREAMS,
+  STITCH_APP_GENRES,
+  loadStitchAppCatalog,
   searchLiveCatalogStreams,
+  subscribeStitchAppCatalog,
 } from "../catalog-streams.mjs";
 import {
   CATALOG_DOMAINS,
@@ -21,6 +24,9 @@ const utf8Dec = new TextDecoder();
 
 const $ = (id) => document.getElementById(id);
 const holoBanner = $("cat-holo-banner");
+const kpiApps = $("cat-kpi-apps");
+const appsPills = $("cat-apps-pills");
+const appsGrid = $("cat-apps-grid");
 const kpiModels = $("cat-kpi-models");
 const kpiLex = $("cat-kpi-lex");
 const kpiPhases = $("cat-kpi-phases");
@@ -599,6 +605,91 @@ async function renderImportedDomainPacks() {
   }
 }
 
+let activeAppGenre = "all";
+
+function renderStitchGenrePills() {
+  if (!appsPills) return;
+  appsPills.replaceChildren();
+  const options = [{ id: "all", label: "All Genres" }, ...STITCH_APP_GENRES];
+  for (const g of options) {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "cat-pill";
+    btn.setAttribute("aria-pressed", g.id === activeAppGenre ? "true" : "false");
+    btn.textContent = g.label;
+    btn.addEventListener("click", () => {
+      activeAppGenre = g.id;
+      renderStitchGenrePills();
+      renderStitchAppCatalog();
+    });
+    appsPills.append(btn);
+  }
+}
+
+function renderStitchAppCatalog(apps = loadStitchAppCatalog()) {
+  if (kpiApps) kpiApps.textContent = String(apps.length);
+  if (!appsGrid) return;
+  const visible = activeAppGenre === "all" ? apps : apps.filter((a) => a.genre === activeAppGenre);
+  appsGrid.replaceChildren();
+  if (!visible.length) {
+    const empty = document.createElement("p");
+    empty.className = "cat-sec-sub";
+    empty.textContent = "No published Verdant Apps in this genre yet. Open Verdant Studio to package and publish one to Stitch.";
+    appsGrid.append(empty);
+    return;
+  }
+  for (const app of visible) {
+    const card = document.createElement("article");
+    card.className = "cat-organ-card";
+    card.dataset.stitchAppId = app.appId;
+
+    const top = document.createElement("div");
+    const h3 = document.createElement("h3");
+    h3.textContent = app.title;
+    const mon = document.createElement("p");
+    mon.className = "cat-organ-moniker";
+    mon.textContent = `${app.genreLabel} · ${app.schemaType} · ${app.archiveFormat} (${app.uorcBytes} B)`;
+    const desc = document.createElement("p");
+    desc.className = "cat-organ-desc";
+    desc.style.marginTop = "var(--space-2)";
+    desc.textContent = app.summary;
+    top.append(h3, mon, desc);
+
+    const bottom = document.createElement("div");
+    bottom.style.display = "grid";
+    bottom.style.gap = "var(--space-2)";
+    const shardsMeta = document.createElement("p");
+    shardsMeta.className = "cat-organ-lex";
+    const shardCount = Array.isArray(app.stitchShards) ? app.stitchShards.length : 3;
+    shardsMeta.textContent = `Stitch 2-of-${shardCount} STCH · World: ${app.worldTitle} · sha256:${String(app.payloadSha256 || "").slice(0, 10)}…`;
+    const row = document.createElement("div");
+    row.style.display = "flex";
+    row.style.flexWrap = "wrap";
+    row.style.gap = "var(--space-2)";
+
+    const studioLink = document.createElement("a");
+    studioLink.className = "cat-btn primary";
+    studioLink.href = new URL(
+      `../studio/?domain=${encodeURIComponent(app.domainSlug)}&app=${encodeURIComponent(app.appId)}`,
+      import.meta.url,
+    ).href;
+    studioLink.textContent = "Open in Studio";
+
+    const engineLink = document.createElement("a");
+    engineLink.className = "cat-btn";
+    engineLink.href = new URL("../", import.meta.url).href;
+    engineLink.textContent = "Launch Runtime";
+
+    row.append(studioLink, engineLink);
+    bottom.append(shardsMeta, row);
+    card.append(top, bottom);
+    appsGrid.append(card);
+  }
+}
+
+renderStitchGenrePills();
+renderStitchAppCatalog();
+subscribeStitchAppCatalog((nextApps) => renderStitchAppCatalog(nextApps));
 renderPlatformOrgans();
 renderCatalogList();
 renderSensoryStreams();

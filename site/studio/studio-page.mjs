@@ -11,6 +11,8 @@ import {
   AUTHORITATIVE_CONTENT_TYPES,
   LIVE_CATALOG_STREAMS,
   fetchLiveKnowledgePassage,
+  loadStitchAppCatalog,
+  publishStitchAppToCatalog,
   searchLiveCatalogStreams,
 } from "../catalog-streams.mjs";
 import {
@@ -79,6 +81,9 @@ const lodBtn = $("studio-lod-btn");
 const audioBtn = $("studio-audio-btn");
 const importBtn = $("studio-import-btn");
 const stitchBtn = $("studio-stitch-btn");
+const stitchPublishBtn = $("stitch-publish-btn");
+const stitchAppTitleInput = $("stitch-app-title");
+const stitchAppGenreSelect = $("stitch-app-genre");
 const exportUorcBtn = $("studio-export-uorc-btn");
 const themeBtn = $("studio-theme-btn");
 const glbFileIn = $("studio-glb-file");
@@ -1664,6 +1669,14 @@ async function loadCatalogDomainPack(domainIdx, { fromSelect = false, userInitia
     activeSky = pack.environment.skyRgbPercent.map((v) => v / 100);
     activeFog = pack.environment.fogRgbPercent.map((v) => v / 100);
   }
+  if (pack) {
+    if (stitchAppTitleInput && !stitchAppTitleInput.value) {
+      stitchAppTitleInput.placeholder = pack.title;
+    }
+    if (stitchAppGenreSelect && DOMAIN_DEFAULT_GENRE[pack.slug]) {
+      stitchAppGenreSelect.value = DOMAIN_DEFAULT_GENRE[pack.slug];
+    }
+  }
   renderDomainControlsForActivePack();
 
   const r = await callWorker("load-domain-pack", { domainIdx: clamped, lod: currentLodSpec(), simClockSec });
@@ -1810,9 +1823,53 @@ wizDlgForm?.addEventListener("submit", async (e) => {
   await runNpcDialogue(wizDlgInput?.value);
   if (wizDlgInput) wizDlgInput.value = "";
 });
+const DOMAIN_DEFAULT_GENRE = {
+  "sunspire-regatta": "coastal-adventure",
+  "starfall-bastion": "first-person-shooter",
+  "meridian-observatory": "mmo-universe",
+  "glasshouse-chronicle": "indie-side-scroller",
+};
+
+async function publishActiveAppToStitchCatalog() {
+  const pack = domainPacks[activeDomainIdx];
+  const title = (stitchAppTitleInput?.value || "").trim() || activeProject || "Verdant App";
+  const genre = stitchAppGenreSelect?.value || DOMAIN_DEFAULT_GENRE[pack?.slug] || "coastal-adventure";
+  if (wizAuditLog) wizAuditLog.textContent = `Sealing "${title}" as .uorc and sharding 2-of-3 STCH parity fragments…`;
+  const snapRes = await callWorker("encode-snapshot");
+  if (!snapRes?.ok || !snapRes.bytes) {
+    if (wizAuditLog) wizAuditLog.textContent = "Stitch publish failed: could not seal .uorc snapshot.";
+    return;
+  }
+  const uorcBytes = snapRes.bytes instanceof Uint8Array ? snapRes.bytes : new Uint8Array(snapRes.bytes);
+  const shardRes = await callWorker("stitch-shard", { bytes: uorcBytes });
+  const shards = shardRes?.ok && Array.isArray(shardRes.shards) ? shardRes.shards : [uorcBytes, uorcBytes, uorcBytes];
+  const entry = await publishStitchAppToCatalog({
+    title,
+    genre,
+    domainSlug: pack?.slug || "sunspire-regatta",
+    worldTitle: pack?.title || activeProject,
+    summary: `${pack?.title || activeProject} (${projectModels.length} imported assets, ${lTris.toLocaleString()} tris) sealed in Verdant Studio.`,
+    uorcBytes,
+    stitchShardBuffers: shards,
+  });
+  if (wizAuditLog) {
+    const sLines = entry.stitchShards
+      .map((s) => `  ${s.role}: ${s.bytes} B · sha256:${s.sha256.slice(0, 12)}…`)
+      .join("\n");
+    wizAuditLog.textContent =
+      `PUBLISHED TO STITCH VERDANT APP CATALOG\n` +
+      `  App ID: ${entry.appId} (${entry.genreLabel})\n` +
+      `  Archive: ${entry.archiveFormat} (${entry.uorcBytes} B · sha256:${entry.payloadSha256.slice(0, 12)}…)\n` +
+      `  2-of-3 Parity Fragments (any 2 recover exact .uorc):\n${sLines}\n` +
+      `  Discoverable now in /catalogs/#cat-apps-h2`;
+  }
+  chip(statusEl, `Published "${entry.title}" (${entry.genreLabel}) to Stitch App Catalog (3 STCH shards)`);
+}
+
 wizAuditBtn?.addEventListener("click", runFullPrismQualityGate);
 wizSealUorcBtn?.addEventListener("click", exportActiveUorcArchive);
 wizShareUorcBtn?.addEventListener("click", () => shareUorcSnapshot(callWorker, chip, statusEl));
+stitchPublishBtn?.addEventListener("click", publishActiveAppToStitchCatalog);
 
 const executePrompt = async (text) =>
   routeStudioPrompt(text, {
@@ -2068,6 +2125,18 @@ renderContentTypePills();
   if (reqCatalog && catalogBanner && catalogBannerText) {
     catalogBanner.dataset.active = "true";
     catalogBannerText.textContent = `Imported Governing Catalog Standard: ${reqCatalog} — live-verified against Prism app.holo`;
+  }
+  const reqAppId = params.get("app");
+  if (reqAppId) {
+    const foundApp = loadStitchAppCatalog().find((a) => a.appId === reqAppId);
+    if (foundApp) {
+      if (stitchAppTitleInput) stitchAppTitleInput.value = foundApp.title;
+      if (stitchAppGenreSelect) stitchAppGenreSelect.value = foundApp.genre;
+      if (catalogBanner && catalogBannerText) {
+        catalogBanner.dataset.active = "true";
+        catalogBannerText.textContent = `Loaded Stitch App: ${foundApp.title} (${foundApp.genreLabel}) · .uorc ${foundApp.uorcBytes} B · 2-of-3 STCH verified`;
+      }
+    }
   }
   if (reqStream && discStreamSelect) discStreamSelect.value = reqStream;
   if (reqQuery && discSearchInput) discSearchInput.value = reqQuery;

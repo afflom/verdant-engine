@@ -894,9 +894,23 @@
         <section class="ide-pane" id="studio-publish-pane">
           <div class="ide-pane-head">
             <h2>Publish &amp; Export</h2>
-            <span class="ide-pane-sub">.uorc</span>
+            <span class="ide-pane-sub">Stitch · .uorc</span>
           </div>
           <div class="ide-pane-body">
+            <div class="insp-field">
+              <label for="stitch-app-title">App Title</label>
+              <input id="stitch-app-title" class="st-input" type="text" placeholder="e.g. Starfall Vanguard FPS" />
+            </div>
+            <div class="insp-field">
+              <label for="stitch-app-genre">App Archetype</label>
+              <select id="stitch-app-genre" class="st-select" aria-label="Select Verdant App genre">
+                <option value="first-person-shooter">First-Person Shooter (FPS)</option>
+                <option value="mmo-universe">MMO Universe</option>
+                <option value="indie-side-scroller">Indie Side-Scroller</option>
+                <option value="coastal-adventure" selected>3D Coastal Adventure</option>
+                <option value="spatial-simulation">Spatial Simulation</option>
+              </select>
+            </div>
             <div class="wiz-scorecard">
               <div class="wiz-check"><span>UI &amp; Accessibility</span><strong id="wiz-chk-ui">Ready</strong></div>
               <div class="wiz-check"><span>Archive Integrity</span><strong id="wiz-chk-uorc">Ready</strong></div>
@@ -904,15 +918,19 @@
               <div class="wiz-check"><span>World State</span><strong id="wiz-chk-obs">Ready</strong></div>
             </div>
             <div class="insp-row">
+              <button type="button" class="st-btn brand sm" id="stitch-publish-btn">Publish to Stitch</button>
               <button type="button" class="st-btn primary sm" id="wiz-audit-btn">Check Readiness</button>
-              <button type="button" class="st-btn brand sm" id="wiz-seal-uorc-btn">Export .uorc</button>
             </div>
             <div class="insp-row">
-              <button type="button" class="st-btn sm" id="wiz-share-uorc-btn">Copy Share Link</button>
+              <button type="button" class="st-btn sm" id="wiz-seal-uorc-btn">Export .uorc</button>
+              <button type="button" class="st-btn sm" id="wiz-share-uorc-btn">Copy Link</button>
               <button type="button" class="st-btn sm" id="studio-stitch-btn">2-of-3 Shards</button>
+            </div>
+            <div class="insp-row">
+              <a class="st-btn sm" href="../catalogs/#cat-apps-h2">App Catalog</a>
               <a class="st-btn sm" href="../starter/">Play Starter</a>
             </div>
-            <pre class="wiz-log" id="wiz-audit-log">Ready to validate and package your project as a sealed .uorc archive.</pre>
+            <pre class="wiz-log" id="wiz-audit-log">Ready to validate, package as .uorc, and publish to Prism's Stitch App Catalog.</pre>
           </div>
         </section>
       </aside>

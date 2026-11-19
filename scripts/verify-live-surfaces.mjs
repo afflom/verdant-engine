@@ -473,11 +473,24 @@ try {
       failures.push("Standalone /studio/ inline Code workspace failed to synthesize Rust scaffold");
     }
 
+    // Publish an FPS Verdant App to Prism's Stitch 2-of-3 App Catalog and verify live 3-shard output:
+    await page.fill("#stitch-app-title", "Orbital Rift FPS");
+    await page.selectOption("#stitch-app-genre", "first-person-shooter");
+    await page.click("#stitch-publish-btn");
+    await page.waitForFunction(
+      () =>
+        (document.getElementById("wiz-audit-log")?.textContent || "").includes(
+          "PUBLISHED TO STITCH VERDANT APP CATALOG",
+        ),
+      null,
+      { timeout: 10000 },
+    );
+
     if (errors.length) failures.push(`Standalone /studio/ errors: ${errors.join(" | ")}`);
     await page.close();
   };
 
-  // 3. Standalone Verdant Model Catalogs (`/catalogs/` — scrolling + gallery first + 4 world packs + 10 sources + 36 standards):
+  // 3. Standalone Verdant Model Catalogs (`/catalogs/` — scrolling + Stitch App Catalog + gallery + 4 world packs + 10 sources + 36 standards):
   const verifyCatalogs = async () => {
     const page = await context.newPage();
     const errors = attachTelemetry(page);
@@ -485,6 +498,8 @@ try {
     await page.goto(`${origin}catalogs/`, { waitUntil: "load" });
     await page.waitForFunction(
       () =>
+        document.querySelectorAll("#cat-apps-grid .cat-organ-card").length >= 5 &&
+        (document.getElementById("cat-apps-grid")?.textContent || "").includes("Orbital Rift FPS") &&
         document.querySelectorAll("#cat-live-gallery .cat-gallery-card").length >= 6 &&
         document.querySelectorAll("#cat-domain-grid .cat-organ-card").length === 4 &&
         document.querySelectorAll("#cat-sensory-grid .cat-sensory-card").length === 10 &&
@@ -613,9 +628,9 @@ try {
     await page.close();
   };
 
-  // Run root + standalone apps in parallel batches to keep SwiftShader GPU responsive while slashing total wall time:
-  await Promise.all([verifyRoot(), verifyCatalogs(), verifyStarter()]);
+  // Run standalone Studio first so its live Stitch App Catalog publish is verified in /catalogs/ in batch 2:
   await Promise.all([verifyStudio(), verifyDemo()]);
+  await Promise.all([verifyRoot(), verifyCatalogs(), verifyStarter()]);
   await Promise.all(docRoutes.map((r) => verifyDocRoute(r)));
 } finally {
   await browser.close();
