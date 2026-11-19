@@ -803,6 +803,104 @@ impl VerdantLanguageEngine {
     }
 }
 
+/// Request payload to admit and auto-tag an external or local catalog model into the active project.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ProjectModelImportRequest {
+    /// Stable model identifier (e.g. `khronos:DamagedHelmet` or `fontsource:inter`).
+    pub model_id: String,
+    /// Human-readable display title.
+    pub title: String,
+    /// Authoritative Schema.org `@type` (e.g. `3DModel`, `PBRMaterial`, `Font`, `AudioObject`, `Dataset`).
+    pub schema_type: String,
+    /// Authoritative IANA media type (e.g. `model/gltf-binary`, `font/woff2`, `audio/mpeg`).
+    pub media_type: String,
+    /// Automatic Studio target binding slot (e.g. `design:3d-model`, `design:typography`, `audio:soundscape`).
+    pub target_slot: String,
+    /// Origin catalog stream identifier (e.g. `khronos-gltf`, `polyhaven`, `fontsource`, `openverse`, `wikidata`, `github`, `verdant-prism`).
+    pub source_stream: String,
+    /// Authoritative upstream source URI.
+    pub source_uri: String,
+    /// SPDX license identifier (e.g. `CC0-1.0`, `OFL-1.1`, `MIT`).
+    pub license_spdx: String,
+    /// Pre-tagged semantic and catalog taxonomy tags.
+    pub tags: Vec<String>,
+    /// Canonical editable JSON properties payload.
+    pub properties_json: String,
+    /// Optional commit message for initial import revision.
+    #[serde(default)]
+    pub commit_note: String,
+}
+
+/// Request payload to edit an imported project model into a new cryptographically chained version.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ProjectModelEditRequest {
+    /// Target model identifier in `ObserverPrismHolon::project_models`.
+    pub model_id: String,
+    /// Updated display title.
+    pub title: String,
+    /// Updated semantic/taxonomy tags.
+    pub tags: Vec<String>,
+    /// Updated canonical JSON properties string.
+    pub properties_json: String,
+    /// Commit note describing the edit.
+    pub commit_note: String,
+}
+
+/// Single immutable version entry in an imported project model's PROV-O revision chain.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ModelRevisionRecord {
+    /// 1-based monotonic revision number (`v1`, `v2`, …).
+    pub version: u32,
+    /// SHA-256 `kappa` digest of this revision's canonical payload.
+    pub kappa_hex: String,
+    /// Parent revision's `kappa_hex` (`None` on `v1`).
+    pub parent_kappa_hex: Option<String>,
+    /// Title snapshot at this revision.
+    pub title: String,
+    /// Tag snapshot at this revision.
+    pub tags: Vec<String>,
+    /// Editable JSON properties snapshot at this revision.
+    pub properties_json: String,
+    /// Human-readable commit/provenance note.
+    pub commit_note: String,
+}
+
+/// Live project-imported arbitrary model admitted, auto-tagged, editable, versioned, and removable
+/// inside `ObserverPrismHolon`.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ProjectImportedModelRecord {
+    /// Stable model identifier.
+    pub model_id: String,
+    /// Current display title.
+    pub title: String,
+    /// Authoritative Schema.org `@type`.
+    pub schema_type: String,
+    /// Authoritative IANA media type.
+    pub media_type: String,
+    /// Automatic Studio target binding slot.
+    pub target_slot: String,
+    /// Origin catalog stream identifier.
+    pub source_stream: String,
+    /// Authoritative upstream URI.
+    pub source_uri: String,
+    /// SPDX license identifier.
+    pub license_spdx: String,
+    /// Active monotonic version (`1..=N`).
+    pub active_version: u32,
+    /// SHA-256 `kappa` hex of the active version.
+    pub current_kappa_hex: String,
+    /// Current semantic tags.
+    pub tags: Vec<String>,
+    /// Current editable JSON properties string.
+    pub properties_json: String,
+    /// Complete immutable revision history (`v1..=vN`).
+    pub revisions: Vec<ModelRevisionRecord>,
+}
+
 /// Self-observing second-order Observer Prism holon (`ObserverRootHolon`) composing:
 /// - Its own strong `kappa` identity (`2*3*5*7*11 = 2310` organ basis product),
 /// - All `5` differentiated Platform Organ Prism models,
@@ -839,6 +937,8 @@ pub struct ObserverPrismHolon {
     pub attention_loop: CyberneticObserverLoop,
     /// Admitted arbitrary Prism model `kappa` hex digests.
     pub admitted_model_kappas: Vec<(String, String)>,
+    /// Dynamically imported, editable, versioned project models admitted from live or locked catalogs.
+    pub project_models: Vec<ProjectImportedModelRecord>,
     /// Chronological communication log across all 5 channels (`Organ`, `Player<->Player`, `Player<->Agent`, `Agent<->Agent`).
     pub communications: Vec<ObservedCommunicationRecord>,
 }
@@ -1098,6 +1198,7 @@ impl ObserverPrismHolon {
             language_engine: VerdantLanguageEngine::new(),
             attention_loop,
             admitted_model_kappas: Vec::new(),
+            project_models: Vec::new(),
             communications: Vec::new(),
         };
 
@@ -1770,9 +1871,405 @@ impl ObserverPrismHolon {
             "stakeholders": stakeholders_json,
             "npcs": npcs_json,
             "admittedModelCount": self.admitted_model_kappas.len(),
+            "importedProjectModelCount": self.project_models.len(),
             "communicationCount": self.communications.len(),
             "recentCommunications": recent_comms
         });
         serde_json::to_vec(&doc).unwrap_or_default()
+    }
+
+    /// Admits and auto-tags an external or local catalog model into the active project via
+    /// OMG DMN 1.5 + `prism_kernel::dmnModelRouteAdmitted` + `VerdantModelEnvelope`, creating
+    /// immutable `v1` (or appending `vN+1` if re-imported) and recording a SOSA/PROV-O envelope.
+    pub fn import_project_model(
+        &mut self,
+        req: ProjectModelImportRequest,
+        grants: &ContainerGrantMatrix,
+    ) -> Result<ProjectImportedModelRecord, ObserverModelError> {
+        let model_id = req.model_id.trim().to_string();
+        let title = req.title.trim().to_string();
+        let schema_type = req.schema_type.trim().to_string();
+        let media_type = req.media_type.trim().to_string();
+        let target_slot = req.target_slot.trim().to_string();
+        if model_id.is_empty()
+            || title.is_empty()
+            || schema_type.is_empty()
+            || media_type.is_empty()
+            || target_slot.is_empty()
+        {
+            return Err(ObserverModelError::InvalidPrismModelEnvelope {
+                model_id,
+                detail: "model_id, title, schema_type, media_type, and target_slot are required"
+                    .to_string(),
+            });
+        }
+
+        let clean_tags: Vec<String> = req
+            .tags
+            .into_iter()
+            .map(|t| t.trim().to_string())
+            .filter(|t| !t.is_empty())
+            .collect();
+        let props = if req.properties_json.trim().is_empty() {
+            "{}".to_string()
+        } else {
+            req.properties_json.trim().to_string()
+        };
+        let commit_note = if req.commit_note.trim().is_empty() {
+            format!("Imported from {} ({})", req.source_stream, schema_type)
+        } else {
+            req.commit_note.trim().to_string()
+        };
+
+        let canonical_payload = json!({
+            "modelId": model_id,
+            "title": title,
+            "schemaType": schema_type,
+            "mediaType": media_type,
+            "targetSlot": target_slot,
+            "sourceStream": req.source_stream,
+            "sourceUri": req.source_uri,
+            "licenseSpdx": req.license_spdx,
+            "tags": clean_tags,
+            "properties": props,
+        })
+        .to_string()
+        .into_bytes();
+
+        let owner_organ = if target_slot.starts_with("code:") {
+            ObserverOrganKind::Engine
+        } else if target_slot.starts_with("narrative:") || target_slot.starts_with("gameplay:") {
+            ObserverOrganKind::Demo
+        } else {
+            ObserverOrganKind::Studio
+        };
+
+        let domain_kind = if target_slot.starts_with("audio:") {
+            ArbitraryModelDomainKind::SpatialAcoustics
+        } else if target_slot.starts_with("design:theme")
+            || target_slot.starts_with("design:typography")
+        {
+            ArbitraryModelDomainKind::TropicalUi
+        } else if target_slot.starts_with("narrative:") {
+            ArbitraryModelDomainKind::ConservationAutomaton
+        } else if target_slot.starts_with("gameplay:") {
+            ArbitraryModelDomainKind::RigidBodyPhysics
+        } else {
+            ArbitraryModelDomainKind::NeuromorphicSsm
+        };
+        let oracle_class = if self.catalogs.schema_org.classes.contains_key(&schema_type) {
+            schema_type.as_str()
+        } else {
+            "CreativeWork"
+        };
+        let is_creative = self
+            .catalogs
+            .schema_org
+            .is_subclass_of(oracle_class, "CreativeWork");
+        let schema_jsonld = if is_creative {
+            json!({
+                "@context": "https://schema.org",
+                "@type": oracle_class,
+                "identifier": model_id,
+                "name": title,
+                "additionalType": schema_type,
+                "encodingFormat": media_type,
+                "url": req.source_uri,
+                "description": commit_note,
+            })
+        } else {
+            json!({
+                "@context": "https://schema.org",
+                "@type": oracle_class,
+                "identifier": model_id,
+                "name": title,
+                "additionalType": schema_type,
+                "url": req.source_uri,
+                "description": commit_note,
+            })
+        };
+
+        let envelope = VerdantModelEnvelope::new_sealed(
+            &model_id,
+            domain_kind,
+            owner_organ,
+            ContainerOrgan::WebAssemblyCore,
+            "verdant-uorc",
+            canonical_payload,
+            schema_jsonld,
+        );
+        let admitted_kappa_hex = self.admit_arbitrary_prism_model(&envelope, grants)?;
+
+        let record = if let Some(existing) = self
+            .project_models
+            .iter_mut()
+            .find(|m| m.model_id == model_id)
+        {
+            let next_ver = existing.active_version.saturating_add(1);
+            let parent = Some(existing.current_kappa_hex.clone());
+            let rev_payload = format!("{model_id}|v{next_ver}|{admitted_kappa_hex}|{title}");
+            let (_, rev_kappa_hex) = compute_kappa(&model_id, rev_payload.as_bytes());
+            existing.title = title.clone();
+            existing.tags = clean_tags.clone();
+            existing.properties_json = props.clone();
+            existing.active_version = next_ver;
+            existing.current_kappa_hex = rev_kappa_hex.clone();
+            existing.revisions.push(ModelRevisionRecord {
+                version: next_ver,
+                kappa_hex: rev_kappa_hex,
+                parent_kappa_hex: parent,
+                title,
+                tags: clean_tags,
+                properties_json: props,
+                commit_note,
+            });
+            existing.clone()
+        } else {
+            let rev = ModelRevisionRecord {
+                version: 1,
+                kappa_hex: admitted_kappa_hex.clone(),
+                parent_kappa_hex: None,
+                title: title.clone(),
+                tags: clean_tags.clone(),
+                properties_json: props.clone(),
+                commit_note,
+            };
+            let rec = ProjectImportedModelRecord {
+                model_id: model_id.clone(),
+                title,
+                schema_type,
+                media_type,
+                target_slot: target_slot.clone(),
+                source_stream: req.source_stream,
+                source_uri: req.source_uri,
+                license_spdx: req.license_spdx,
+                active_version: 1,
+                current_kappa_hex: admitted_kappa_hex,
+                tags: clean_tags,
+                properties_json: props,
+                revisions: vec![rev],
+            };
+            self.project_models.push(rec.clone());
+            rec
+        };
+
+        let obs_msg = format!(
+            "Imported model `{}` v{} -> {} (kappa={})",
+            record.model_id, record.active_version, record.target_slot, record.current_kappa_hex
+        );
+        let _ = self.observe_communication(
+            CommunicationChannelKind::OrganToOrgan,
+            "urn:verdant:organ:catalogs",
+            "urn:verdant:organ:studio",
+            "en",
+            0,
+            &obs_msg,
+            None,
+            0,
+        )?;
+        Ok(record)
+    }
+
+    /// Edits an imported project model in place, creating a new cryptographically parent-linked
+    /// version (`vN+1`) and logging a PROV-O observation envelope.
+    pub fn edit_project_model(
+        &mut self,
+        req: ProjectModelEditRequest,
+    ) -> Result<ProjectImportedModelRecord, ObserverModelError> {
+        let model_id = req.model_id.trim();
+        let new_title = req.title.trim().to_string();
+        if model_id.is_empty() || new_title.is_empty() {
+            return Err(ObserverModelError::InvalidPrismModelEnvelope {
+                model_id: model_id.to_string(),
+                detail: "edit requires non-empty model_id and title".to_string(),
+            });
+        }
+        let clean_tags: Vec<String> = req
+            .tags
+            .into_iter()
+            .map(|t| t.trim().to_string())
+            .filter(|t| !t.is_empty())
+            .collect();
+        let props = if req.properties_json.trim().is_empty() {
+            "{}".to_string()
+        } else {
+            req.properties_json.trim().to_string()
+        };
+        let commit_note = if req.commit_note.trim().is_empty() {
+            "Edited model properties".to_string()
+        } else {
+            req.commit_note.trim().to_string()
+        };
+
+        let Some(existing) = self
+            .project_models
+            .iter_mut()
+            .find(|m| m.model_id == model_id)
+        else {
+            return Err(ObserverModelError::UnknownDomainOrCharacter {
+                identifier: format!("project_model:{model_id}"),
+            });
+        };
+
+        let next_ver = existing.active_version.saturating_add(1);
+        let parent_kappa = existing.current_kappa_hex.clone();
+        let canonical = json!({
+            "modelId": model_id,
+            "version": next_ver,
+            "parentKappa": parent_kappa,
+            "title": new_title,
+            "tags": clean_tags,
+            "properties": props,
+            "commitNote": commit_note,
+        })
+        .to_string();
+        let (_, new_kappa_hex) = compute_kappa(model_id, canonical.as_bytes());
+
+        existing.title = new_title.clone();
+        existing.tags = clean_tags.clone();
+        existing.properties_json = props.clone();
+        existing.active_version = next_ver;
+        existing.current_kappa_hex = new_kappa_hex.clone();
+        existing.revisions.push(ModelRevisionRecord {
+            version: next_ver,
+            kappa_hex: new_kappa_hex.clone(),
+            parent_kappa_hex: Some(parent_kappa),
+            title: new_title,
+            tags: clean_tags,
+            properties_json: props,
+            commit_note,
+        });
+        let snapshot = existing.clone();
+
+        let obs_msg = format!(
+            "Edited model `{}` -> v{} (kappa={})",
+            snapshot.model_id, snapshot.active_version, new_kappa_hex
+        );
+        let _ = self.observe_communication(
+            CommunicationChannelKind::OrganToOrgan,
+            "urn:verdant:organ:studio",
+            "urn:verdant:organ:engine",
+            "en",
+            0,
+            &obs_msg,
+            None,
+            0,
+        )?;
+        Ok(snapshot)
+    }
+
+    /// Reverts an imported project model to an earlier immutable version (`target_version`),
+    /// appending a new non-destructive audited revision `v(N+1)`.
+    pub fn revert_project_model(
+        &mut self,
+        model_id: &str,
+        target_version: u32,
+    ) -> Result<ProjectImportedModelRecord, ObserverModelError> {
+        let Some(existing) = self
+            .project_models
+            .iter()
+            .find(|m| m.model_id == model_id.trim())
+        else {
+            return Err(ObserverModelError::UnknownDomainOrCharacter {
+                identifier: format!("project_model:{model_id}"),
+            });
+        };
+        let Some(target) = existing
+            .revisions
+            .iter()
+            .find(|r| r.version == target_version)
+            .cloned()
+        else {
+            return Err(ObserverModelError::InvalidPrismModelEnvelope {
+                model_id: model_id.to_string(),
+                detail: format!("version v{target_version} not found"),
+            });
+        };
+        self.edit_project_model(ProjectModelEditRequest {
+            model_id: model_id.trim().to_string(),
+            title: target.title,
+            tags: target.tags,
+            properties_json: target.properties_json,
+            commit_note: format!("Reverted to v{target_version} ({})", target.kappa_hex),
+        })
+    }
+
+    /// Removes an imported model from the active project and logs a PROV-O removal observation.
+    pub fn remove_project_model(&mut self, model_id: &str) -> Result<String, ObserverModelError> {
+        let clean = model_id.trim();
+        let Some(pos) = self.project_models.iter().position(|m| m.model_id == clean) else {
+            return Err(ObserverModelError::UnknownDomainOrCharacter {
+                identifier: format!("project_model:{clean}"),
+            });
+        };
+        let removed = self.project_models.remove(pos);
+        self.admitted_model_kappas.retain(|(id, _)| id != clean);
+        let obs_msg = format!(
+            "Removed model `{}` (last kappa={})",
+            removed.model_id, removed.current_kappa_hex
+        );
+        let _ = self.observe_communication(
+            CommunicationChannelKind::OrganToOrgan,
+            "urn:verdant:organ:studio",
+            "urn:verdant:organ:engine",
+            "en",
+            0,
+            &obs_msg,
+            None,
+            0,
+        )?;
+        Ok(removed.current_kappa_hex)
+    }
+
+    /// Serializes all currently imported project models and their immutable version histories.
+    #[must_use]
+    pub fn project_models_json_bytes(&self) -> Vec<u8> {
+        let doc = json!({
+            "count": self.project_models.len(),
+            "activeDomainSlug": self.active_domain.spec.slug,
+            "models": self.project_models,
+        });
+        serde_json::to_vec(&doc).unwrap_or_default()
+    }
+
+    /// Parses a JSON [`ProjectModelImportRequest`], admits the model, and returns serialized JSON.
+    pub fn import_project_model_json(
+        &mut self,
+        json_bytes: &[u8],
+        grants: &ContainerGrantMatrix,
+    ) -> Result<Vec<u8>, ObserverModelError> {
+        let req: ProjectModelImportRequest = serde_json::from_slice(json_bytes).map_err(|err| {
+            ObserverModelError::InvalidPrismModelEnvelope {
+                model_id: "import_json".to_string(),
+                detail: err.to_string(),
+            }
+        })?;
+        let rec = self.import_project_model(req, grants)?;
+        Ok(serde_json::to_vec(&rec).unwrap_or_default())
+    }
+
+    /// Parses a JSON [`ProjectModelEditRequest`], commits version `vN+1`, and returns serialized JSON.
+    pub fn edit_project_model_json(
+        &mut self,
+        json_bytes: &[u8],
+    ) -> Result<Vec<u8>, ObserverModelError> {
+        let req: ProjectModelEditRequest = serde_json::from_slice(json_bytes).map_err(|err| {
+            ObserverModelError::InvalidPrismModelEnvelope {
+                model_id: "edit_json".to_string(),
+                detail: err.to_string(),
+            }
+        })?;
+        let rec = self.edit_project_model(req)?;
+        Ok(serde_json::to_vec(&rec).unwrap_or_default())
+    }
+
+    /// Reverts an imported model to `target_version` and returns serialized JSON of the updated record.
+    pub fn revert_project_model_json(
+        &mut self,
+        model_id: &str,
+        target_version: u32,
+    ) -> Result<Vec<u8>, ObserverModelError> {
+        let rec = self.revert_project_model(model_id, target_version)?;
+        Ok(serde_json::to_vec(&rec).unwrap_or_default())
     }
 }

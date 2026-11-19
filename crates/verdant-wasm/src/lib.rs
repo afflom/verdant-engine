@@ -4382,3 +4382,105 @@ pub extern "C" fn verdant_wasm_observer_status_aux() -> u32 {
     bridge.aux_buffer = bridge.observer_holon.to_status_json_bytes();
     bridge.aux_buffer.len() as u32
 }
+
+/// Admits and auto-tags an external/local catalog model JSON staged in `io_buffer` into
+/// `ObserverPrismHolon::project_models`, writing the versioned record JSON into `aux_buffer`.
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+#[no_mangle]
+pub extern "C" fn verdant_wasm_import_project_model_io() -> u32 {
+    let mut guard = global_bridge()
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
+    let Some(bridge) = guard.as_mut() else {
+        return 0;
+    };
+    let req_bytes = bridge.io_buffer.clone();
+    let grants = bridge.grants.clone();
+    let Ok(out) = bridge
+        .observer_holon
+        .import_project_model_json(&req_bytes, &grants)
+    else {
+        return 0;
+    };
+    bridge.aux_buffer = out;
+    bridge.aux_buffer.len() as u32
+}
+
+/// Edits an imported project model JSON staged in `io_buffer`, committing immutable `vN+1`
+/// and writing the updated record JSON into `aux_buffer`.
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+#[no_mangle]
+pub extern "C" fn verdant_wasm_edit_project_model_io() -> u32 {
+    let mut guard = global_bridge()
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
+    let Some(bridge) = guard.as_mut() else {
+        return 0;
+    };
+    let req_bytes = bridge.io_buffer.clone();
+    let Ok(out) = bridge.observer_holon.edit_project_model_json(&req_bytes) else {
+        return 0;
+    };
+    bridge.aux_buffer = out;
+    bridge.aux_buffer.len() as u32
+}
+
+/// Reverts the imported model whose UTF-8 `model_id` is staged in `io_buffer` back to
+/// `target_version`, writing the new non-destructive revision JSON into `aux_buffer`.
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+#[no_mangle]
+pub extern "C" fn verdant_wasm_revert_project_model_io(target_version: u32) -> u32 {
+    let mut guard = global_bridge()
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
+    let Some(bridge) = guard.as_mut() else {
+        return 0;
+    };
+    let Ok(model_id) = std::str::from_utf8(&bridge.io_buffer).map(str::to_string) else {
+        return 0;
+    };
+    let Ok(out) = bridge
+        .observer_holon
+        .revert_project_model_json(&model_id, target_version)
+    else {
+        return 0;
+    };
+    bridge.aux_buffer = out;
+    bridge.aux_buffer.len() as u32
+}
+
+/// Removes the imported model whose UTF-8 `model_id` is staged in `io_buffer`, writing the
+/// removed revision's `kappa` hex into `aux_buffer`.
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+#[no_mangle]
+pub extern "C" fn verdant_wasm_remove_project_model_io() -> u32 {
+    let mut guard = global_bridge()
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
+    let Some(bridge) = guard.as_mut() else {
+        return 0;
+    };
+    let Ok(model_id) = std::str::from_utf8(&bridge.io_buffer).map(str::to_string) else {
+        return 0;
+    };
+    let Ok(kappa_hex) = bridge.observer_holon.remove_project_model(&model_id) else {
+        return 0;
+    };
+    bridge.aux_buffer = kappa_hex.into_bytes();
+    bridge.aux_buffer.len() as u32
+}
+
+/// Writes the JSON list of all currently imported project models and their version histories
+/// into `aux_buffer`.
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+#[no_mangle]
+pub extern "C" fn verdant_wasm_list_project_models_aux() -> u32 {
+    let mut guard = global_bridge()
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
+    let Some(bridge) = guard.as_mut() else {
+        return 0;
+    };
+    bridge.aux_buffer = bridge.observer_holon.project_models_json_bytes();
+    bridge.aux_buffer.len() as u32
+}

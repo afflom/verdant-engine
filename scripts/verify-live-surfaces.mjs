@@ -85,12 +85,19 @@ const browser = await playwright.chromium.launch({
   args: ["--use-gl=angle", "--use-angle=swiftshader", "--enable-unsafe-swiftshader"],
 });
 const failures = [];
+const abortedExternalUrls = new Set();
 
 function attachTelemetry(page) {
   const errors = [];
   page.on("pageerror", (e) => errors.push(`pageerror: ${e.message}`));
   page.on("console", (m) => {
-    if (m.type() === "error") errors.push(`console.error: ${m.text()}`);
+    if (m.type() === "error") {
+      const locUrl = m.location()?.url || "";
+      if (m.text().includes("net::ERR_FAILED") && locUrl && abortedExternalUrls.has(locUrl)) {
+        return;
+      }
+      errors.push(`console.error: ${m.text()}`);
+    }
   });
   page.on("requestfailed", (req) => {
     const url = req.url();
@@ -179,8 +186,8 @@ async function verifyScrollableUnclipped(page, routeLabel) {
     return;
   }
   await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
-  // Move cursor to right-side content column (avoiding any canvas wheel capture) and scroll with real wheel input:
-  await page.mouse.move(960, 420);
+  // Move cursor to right rail / non-canvas margin so wheel events scroll the document rather than zooming WebGL:
+  await page.mouse.move(1180, 420);
   await page.mouse.wheel(0, 700);
   await page.waitForFunction(() => window.scrollY >= 250, null, { timeout: 3000 }).catch(() => {});
   const scrolledY = await page.evaluate(() => window.scrollY);
@@ -227,7 +234,10 @@ try {
     viewport: { width: 1280, height: 840 },
     serviceWorkers: "block",
   });
-  await context.route(/^https?:\/\/(?!127\.0\.0\.1|uor-foundation\.github\.io\/template\/frame\/)/, (route) => route.abort());
+  await context.route(/^https?:\/\/(?!127\.0\.0\.1|uor-foundation\.github\.io\/template\/frame\/)/, (route) => {
+    abortedExternalUrls.add(route.request().url());
+    return route.abort();
+  });
 
   // 1. Root Engine Stage (`/`):
   const verifyRoot = async () => {
@@ -346,7 +356,7 @@ try {
     await page.close();
   };
 
-  // 2. Standalone Verdant Studio (`/studio/` — scrolling + 4-stage Catalog Composition Wizard + 7 inline roles):
+  // 2. Standalone Verdant Studio IDE (`/studio/` — scrolling, Live Discovery -> Preview -> Import v1 -> Edit v2 -> Revert v3 -> Remove, Compose Wizard, 7 Roles):
   const verifyStudio = async () => {
     const page = await context.newPage();
     const errors = attachTelemetry(page);
@@ -355,7 +365,8 @@ try {
     await page.waitForFunction(
       () =>
         document.querySelectorAll("#studio-inline-host .ve-m-tab").length === 7 &&
-        document.querySelectorAll("#wiz-domain-grid .wiz-domain-card").length === 4 &&
+        document.querySelectorAll("#wiz-domain-grid .proj-domain-btn").length === 4 &&
+        document.querySelectorAll("#disc-results-grid .disc-card").length >= 6 &&
         (document.getElementById("studio-holo-status")?.textContent || "").includes("Atelier Ready"),
       null,
       { timeout: 15000 },
@@ -369,7 +380,46 @@ try {
       failures.push("Standalone /studio/ must expose #studio-export-uorc-btn and zero .tar buttons");
     }
 
-    // Exercise 4-Stage Catalog Composition Wizard end-to-end:
+    // Exercise Live Discovery -> Preview -> Import v1 -> Edit v2 -> Revert v3 -> Remove in Wasm ObserverPrismHolon:
+    await page.locator("#disc-results-grid .disc-card button[data-preview-model]").first().click();
+    await page.waitForFunction(
+      () => document.getElementById("disc-preview-dock")?.dataset.open === "true",
+      null,
+      { timeout: 5000 },
+    );
+    await page.click("#disc-prev-import-btn");
+    await page.waitForFunction(
+      () => (document.getElementById("proj-model-count")?.textContent || "").includes("1 Imported") &&
+        (document.getElementById("insp-meta")?.textContent || "").includes("Active: v1"),
+      null,
+      { timeout: 10000 },
+    );
+
+    await page.fill("#insp-title", "Custom Tuned Studio Model");
+    await page.fill("#insp-note", "Tuned properties in live Studio IDE");
+    await page.click("#insp-save-btn");
+    await page.waitForFunction(
+      () => (document.getElementById("insp-meta")?.textContent || "").includes("Active: v2"),
+      null,
+      { timeout: 10000 },
+    );
+
+    await page.click('[data-revert-version="1"]');
+    await page.waitForFunction(
+      () => (document.getElementById("insp-meta")?.textContent || "").includes("Active: v3"),
+      null,
+      { timeout: 10000 },
+    );
+
+    await page.click("#insp-remove-btn");
+    await page.waitForFunction(
+      () => (document.getElementById("proj-model-count")?.textContent || "").includes("0 Imported"),
+      null,
+      { timeout: 10000 },
+    );
+
+    // Exercise Compose Tab (Domain swap + ISO 24617-2 Abstention + 4/4 Prism Quality Gate):
+    await page.click("#right-tab-compose");
     await page.click('[data-wiz-domain-slug="meridian-observatory"]');
     await page.waitForFunction(
       () => (document.getElementById("st-man-domain")?.textContent || "").includes("DOM-MERIDIAN-OBSERVATORY"),
@@ -391,6 +441,8 @@ try {
       { timeout: 10000 },
     );
 
+    // Exercise 7 Roles Tab:
+    await page.click("#right-tab-roles");
     await page.click('#studio-inline-host [data-tab-key="code"]');
     const inlineCode = await page.textContent("#ve-scaf-code");
     if (!inlineCode?.includes("LawfulCameraRig")) {

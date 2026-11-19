@@ -1,9 +1,17 @@
-// Standalone Verdant Studio Atelier Controller (`site/studio/studio-page.mjs`).
-// Connects a dedicated live 3D authoring viewport (`../engine-worker.mjs`), `../app.holo`,
-// SHA-256-locked `../catalogs/world-packs.json`, the 4-stage Catalog-to-App Composition Wizard,
-// and `mountInlineStudio` (`../studio.mjs`) across all 7 functional lifecycle roles.
+// Standalone Verdant Studio IDE Controller (`site/studio/studio-page.mjs`).
+// Unifies:
+//   1. Live HD 3D WebGL2/Wasm stage (`../engine-worker.mjs`) + `../app.holo`
+//   2. Unified Multi-Stream Live Internet Catalog Discovery (`../catalog-streams.mjs`)
+//   3. Wasm `ObserverPrismHolon` Dynamic Model Admission, Editing, Immutable `kappa`
+//      Versioning (`v1 -> v2 -> ...`), Non-Destructive Revert, & Removal
+//   4. 4-Stage Prism Composition & Quality Gate + 7 Lifecycle Role Workspaces (`../studio.mjs`)
 
 import { load } from "../worker-runtime/index.mjs";
+import {
+  AUTHORITATIVE_CONTENT_TYPES,
+  LIVE_CATALOG_STREAMS,
+  searchLiveCatalogStreams,
+} from "../catalog-streams.mjs";
 import {
   STARTER_ARCHETYPES,
   STUDIO_ROLE_KEYS,
@@ -75,15 +83,47 @@ const themeBtn = $("studio-theme-btn");
 const glbFileIn = $("studio-glb-file");
 const promptForm = $("studio-prompt-form");
 const promptInput = $("studio-prompt-input");
+const topbarSearchForm = $("topbar-search-form");
+const topbarSearchInput = $("topbar-search-input");
 
 const catalogBanner = $("studio-catalog-banner");
 const catalogBannerText = $("studio-catalog-banner-text");
 const manDomainEl = $("st-man-domain");
 const manModelsEl = $("st-man-models");
-const manNpcsEl = $("st-man-npcs");
 const manAcousticsEl = $("st-man-acoustics");
 
-const wizProgressEl = $("wiz-progress");
+const projectTreeEl = $("studio-project-tree");
+const projModelCountEl = $("proj-model-count");
+
+const discSearchForm = $("disc-search-form");
+const discSearchInput = $("disc-search-input");
+const discStreamSelect = $("disc-stream-select");
+const discTypePills = $("disc-type-pills");
+const discStreamStatus = $("disc-stream-status");
+const discCountBadge = $("disc-count-badge");
+const discResultsGrid = $("disc-results-grid");
+const discPreviewDock = $("disc-preview-dock");
+const discPrevTitle = $("disc-prev-title");
+const discPrevMedia = $("disc-prev-media");
+const discPrevMeta = $("disc-prev-meta");
+const discPrevAudioHost = $("disc-prev-audio-host");
+const discPrevImportBtn = $("disc-prev-import-btn");
+const discPrevLiveBtn = $("disc-prev-live-btn");
+const discPrevSourceLink = $("disc-prev-source-link");
+const discPrevCloseBtn = $("disc-prev-close");
+
+const inspEmptyState = $("insp-empty-state");
+const inspEditor = $("insp-editor");
+const inspMetaEl = $("insp-meta");
+const inspTitleEl = $("insp-title");
+const inspTagsEl = $("insp-tags");
+const inspPropsEl = $("insp-props");
+const inspNoteEl = $("insp-note");
+const inspSaveBtn = $("insp-save-btn");
+const inspApplyBtn = $("insp-apply-btn");
+const inspRemoveBtn = $("insp-remove-btn");
+const inspRevisionsEl = $("insp-revisions");
+
 const wizDomainGrid = $("wiz-domain-grid");
 const wizDomainLog = $("wiz-domain-log");
 const wizNpcSelect = $("wiz-npc-select");
@@ -101,8 +141,6 @@ const wizAuditBtn = $("wiz-audit-btn");
 const wizSealUorcBtn = $("wiz-seal-uorc-btn");
 const wizShareUorcBtn = $("wiz-share-uorc-btn");
 const wizAuditLog = $("wiz-audit-log");
-const wizPrevBtn = $("wiz-prev-btn");
-const wizNextBtn = $("wiz-next-btn");
 const wizChkUi = $("wiz-chk-ui");
 const wizChkUorc = $("wiz-chk-uorc");
 const wizChkHolo = $("wiz-chk-holo");
@@ -124,7 +162,6 @@ let userSelectedDomain = false;
 let domainLoadSeq = 0;
 let activeProject = STARTER_ARCHETYPES[0].title;
 let activeRoleKey = "dashboard";
-let activeWizStep = 1;
 let domainPacks = [];
 let activeSky = null;
 let activeFog = null;
@@ -147,6 +184,14 @@ const organModes = new Uint8Array(11);
 const pendingCalls = new Map();
 let nextReqId = 1;
 let workerFramesInFlight = 0;
+
+// Dynamic Discovery + Project Model Registry state
+let activeContentType = "all";
+let lastDiscoveryItems = [];
+let previewedItem = null;
+let projectModels = [];
+let selectedProjectModelId = null;
+const loadedFontUrls = new Set();
 
 // Theme switcher in sticky header
 const THEMES = [
@@ -180,14 +225,15 @@ function currentLodSpec() {
 }
 
 function syncHud() {
-  const roleLabel = activeRoleKey.charAt(0).toUpperCase() + activeRoleKey.slice(1);
-  if (hudProjectEl) hudProjectEl.textContent = `${activeProject} · ${roleLabel}`;
+  if (hudProjectEl) hudProjectEl.textContent = `${activeProject} · Studio`;
   if (hudMetricsEl) {
     const triStr = lTris > 0 ? `${lTris.toLocaleString()} tris · ` : "";
     hudMetricsEl.textContent = `${LODS[lodIdx].label} · ${triStr}Clear ${lClr}mm`;
   }
-  if (manAcousticsEl) {
-    manAcousticsEl.textContent = `RT60 ${lastRt60Ms}ms · Clear ${lClr}mm`;
+  if (manAcousticsEl) manAcousticsEl.textContent = `RT60 ${lastRt60Ms}ms · Clear ${lClr}mm`;
+  const pack = domainPacks[activeDomainIdx];
+  if (manModelsEl) {
+    manModelsEl.textContent = `${(pack?.models || []).length} domain · ${projectModels.length} imported`;
   }
 }
 
@@ -248,11 +294,11 @@ const callWorker = (kind, payload = {}, transfer = []) =>
       });
 
 function pxDims() {
-  if (!canvas) return { w: 640, h: 400 };
+  if (!canvas) return { w: 640, h: 360 };
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
   return {
     w: Math.max(1, Math.floor((canvas.clientWidth || 640) * dpr)),
-    h: Math.max(1, Math.floor((canvas.clientHeight || 400) * dpr)),
+    h: Math.max(1, Math.floor((canvas.clientHeight || 360) * dpr)),
   };
 }
 
@@ -485,36 +531,584 @@ async function exportActiveUorcArchive() {
   return bytes;
 }
 
-// ==================== 4-STAGE CATALOG COMPOSITION WIZARD ====================
+// ==================== RIGHT RAIL TABS ====================
+
+function setRightRailTab(tabKey) {
+  document.querySelectorAll("[data-right-tab]").forEach((btn) => {
+    btn.setAttribute("aria-selected", btn.dataset.rightTab === tabKey ? "true" : "false");
+  });
+  document.querySelectorAll("[data-right-panel]").forEach((panel) => {
+    panel.hidden = panel.dataset.rightPanel !== tabKey;
+  });
+}
+document.querySelectorAll("[data-right-tab]").forEach((btn) => {
+  btn.addEventListener("click", () => setRightRailTab(btn.dataset.rightTab));
+});
+
+// ==================== LIVE EXTERNAL STREAM APPLY HELPERS ====================
+
+async function loadRemoteGlbIntoStage(glbUrl, label) {
+  if (!glbUrl) return false;
+  chip(statusEl, `Streaming live .glb (${label}) -> Verdant Wasm UORC transcoder…`);
+  try {
+    const res = await fetch(glbUrl, { signal: AbortSignal.timeout(12000) });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const bytes = new Uint8Array(await res.arrayBuffer());
+    const r = await callWorker("import-glb", { bytes }, [bytes.buffer]);
+    if (r?.ok) {
+      lTris = r.tris || lTris;
+      await syncFallbackBuffers();
+      syncHud();
+      chip(statusEl, `Mounted live Khronos .glb "${label}" (${lTris.toLocaleString()} tris · UORC transcoded)`);
+      requestRender();
+      return true;
+    }
+    chip(statusEl, `Stage transcoder declined ${label} (unsupported extension or size)`);
+    return false;
+  } catch (err) {
+    chip(statusEl, `Live .glb stream offline (${label}): ${err?.message || "network unavailable"}`);
+    return false;
+  }
+}
+
+function ensureRemoteFontLoaded(stylesheetUrl, fontFamily) {
+  if (stylesheetUrl && !loadedFontUrls.has(stylesheetUrl)) {
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = stylesheetUrl;
+    document.head.append(link);
+    loadedFontUrls.add(stylesheetUrl);
+  }
+  if (fontFamily) {
+    document.documentElement.style.setProperty("--font-display", `"${fontFamily}", var(--font-sans)`);
+  }
+}
+
+async function applyProjectModelLive(model) {
+  if (!model) return;
+  let props = {};
+  try {
+    props = JSON.parse(model.propertiesJson || "{}");
+  } catch {
+    props = {};
+  }
+
+  if (props.glbStreamUrl) {
+    await loadRemoteGlbIntoStage(props.glbStreamUrl, model.title);
+    return;
+  }
+  if (props.domainSlug) {
+    const idx = domainPacks.findIndex((d) => d.slug === props.domainSlug);
+    if (idx >= 0) {
+      await loadCatalogDomainPack(idx, { userInitiated: true });
+      return;
+    }
+  }
+  if (model.targetSlot === "design:theme" && typeof props.themeClass === "string") {
+    document.documentElement.className = props.themeClass;
+    chip(statusEl, `Applied live W3C DTCG theme "${model.title}" (v${model.activeVersion})`);
+    return;
+  }
+  if (model.targetSlot === "design:typography" && (props.stylesheetUrl || props.fontFamily)) {
+    ensureRemoteFontLoaded(props.stylesheetUrl, props.fontFamily);
+    chip(statusEl, `Applied live typography "${props.fontFamily || model.title}" (v${model.activeVersion})`);
+    return;
+  }
+  if (model.targetSlot === "audio:soundscape" && props.volumeM3 && props.absorptionMilliM2) {
+    const ac = await callWorker("sabine-rt60", {
+      volumeM3: Number(props.volumeM3),
+      absorptionMilliM2: Number(props.absorptionMilliM2),
+    });
+    if (ac?.ok) {
+      lastRt60Ms = ac.rt60Ms;
+      ACOUST.rt60Ms = ac.rt60Ms;
+      syncHud();
+      chip(statusEl, `Applied Sabine acoustic room "${model.title}" -> RT60 ${ac.rt60Ms}ms`);
+    }
+    return;
+  }
+  if (model.targetSlot === "narrative:ontology" && props.groundedFact) {
+    await callWorker("observe-comm", {
+      channelCode: 0,
+      sender: "urn:verdant:organ:catalogs",
+      recipient: "urn:verdant:organ:studio",
+      message: `ontology:${model.modelId}:${props.groundedFact.slice(0, 80)}`,
+    });
+    chip(statusEl, `Bound ontology "${model.title}" into Observer SOSA/PROV-O graph (v${model.activeVersion})`);
+    return;
+  }
+  chip(statusEl, `Active model "${model.title}" bound to ${model.targetSlot} (v${model.activeVersion} · kappa ${model.currentKappaHex.slice(0, 10)}…)`);
+}
+
+// ==================== PROJECT MODEL TREE + INSPECTOR / VERSIONING ====================
+
+function renderProjectTree() {
+  if (!projectTreeEl) return;
+  if (projModelCountEl) projModelCountEl.textContent = `${projectModels.length} Imported`;
+  syncHud();
+
+  if (projectModels.length === 0) {
+    projectTreeEl.innerHTML =
+      `<div class="proj-empty">No external catalog models imported yet. Search live streams in the center Discovery panel and click <strong>+ Add</strong> to admit, edit, and version models inside Verdant Engine.</div>`;
+    return;
+  }
+
+  const bySlot = new Map();
+  for (const m of projectModels) {
+    if (!bySlot.has(m.targetSlot)) bySlot.set(m.targetSlot, []);
+    bySlot.get(m.targetSlot).push(m);
+  }
+
+  projectTreeEl.replaceChildren();
+  for (const [slot, list] of bySlot.entries()) {
+    const group = document.createElement("div");
+    group.className = "proj-slot-group";
+    const head = document.createElement("div");
+    head.className = "proj-slot-heading";
+    head.textContent = `${slot} (${list.length})`;
+    group.append(head);
+
+    for (const m of list) {
+      const row = document.createElement("div");
+      row.className = "proj-model-row";
+      row.dataset.projectModelId = m.modelId;
+      row.dataset.selected = m.modelId === selectedProjectModelId ? "true" : "false";
+
+      const pick = document.createElement("button");
+      pick.type = "button";
+      pick.className = "proj-model-pick";
+      const nm = document.createElement("strong");
+      nm.textContent = m.title;
+      const meta = document.createElement("small");
+      meta.textContent = `v${m.activeVersion} · ${m.schemaType} · ${m.currentKappaHex.slice(0, 8)}`;
+      pick.append(nm, meta);
+      pick.addEventListener("click", () => selectProjectModel(m.modelId));
+
+      const rm = document.createElement("button");
+      rm.type = "button";
+      rm.className = "st-btn danger sm";
+      rm.setAttribute("aria-label", `Remove ${m.title}`);
+      rm.textContent = "×";
+      rm.addEventListener("click", () => removeProjectModel(m.modelId));
+
+      row.append(pick, rm);
+      group.append(row);
+    }
+    projectTreeEl.append(group);
+  }
+}
+
+function renderInspector() {
+  const model = projectModels.find((m) => m.modelId === selectedProjectModelId) || null;
+  if (!model) {
+    if (inspEmptyState) inspEmptyState.hidden = false;
+    if (inspEditor) inspEditor.hidden = true;
+    return;
+  }
+  if (inspEmptyState) inspEmptyState.hidden = true;
+  if (inspEditor) inspEditor.hidden = false;
+
+  if (inspMetaEl) {
+    inspMetaEl.textContent =
+      `ID: ${model.modelId}\n` +
+      `Type: Schema.org/${model.schemaType} · ${model.mediaType}\n` +
+      `Auto-Slot: ${model.targetSlot} · Stream: ${model.sourceStream}\n` +
+      `License: ${model.licenseSpdx} · Active: v${model.activeVersion} (${model.currentKappaHex.slice(0, 14)}…)`;
+  }
+  if (inspTitleEl) inspTitleEl.value = model.title;
+  if (inspTagsEl) inspTagsEl.value = (model.tags || []).join(", ");
+  if (inspPropsEl) {
+    try {
+      inspPropsEl.value = JSON.stringify(JSON.parse(model.propertiesJson || "{}"), null, 2);
+    } catch {
+      inspPropsEl.value = model.propertiesJson || "{}";
+    }
+  }
+  if (inspNoteEl) inspNoteEl.value = "";
+  if (inspSaveBtn) inspSaveBtn.textContent = `Save Version (v${model.activeVersion + 1})`;
+
+  if (inspRevisionsEl) {
+    inspRevisionsEl.replaceChildren();
+    const revs = [...(model.revisions || [])].reverse();
+    for (const rev of revs) {
+      const card = document.createElement("div");
+      card.className = "insp-rev-item";
+      card.dataset.revVersion = String(rev.version);
+
+      const top = document.createElement("div");
+      top.className = "insp-rev-top";
+      const badge = document.createElement("strong");
+      badge.textContent = `v${rev.version} · ${rev.kappaHex.slice(0, 12)}…`;
+      top.append(badge);
+
+      if (rev.version !== model.activeVersion) {
+        const restoreBtn = document.createElement("button");
+        restoreBtn.type = "button";
+        restoreBtn.className = "st-btn sm";
+        restoreBtn.dataset.revertVersion = String(rev.version);
+        restoreBtn.textContent = `Restore v${rev.version}`;
+        restoreBtn.addEventListener("click", () => revertProjectModel(model.modelId, rev.version));
+        top.append(restoreBtn);
+      } else {
+        const cur = document.createElement("span");
+        cur.style.color = "var(--success)";
+        cur.textContent = "Active";
+        top.append(cur);
+      }
+
+      const note = document.createElement("span");
+      note.style.color = "var(--muted-foreground)";
+      note.textContent = rev.commitNote || rev.title;
+      card.append(top, note);
+      inspRevisionsEl.append(card);
+    }
+  }
+}
+
+function selectProjectModel(modelId) {
+  selectedProjectModelId = modelId;
+  setRightRailTab("inspector");
+  renderProjectTree();
+  renderInspector();
+}
+
+async function refreshProjectModelsFromWasm() {
+  const r = await callWorker("list-project-models");
+  if (r?.ok && Array.isArray(r.models)) {
+    projectModels = r.models;
+    if (selectedProjectModelId && !projectModels.some((m) => m.modelId === selectedProjectModelId)) {
+      selectedProjectModelId = projectModels[0]?.modelId || null;
+    }
+    renderProjectTree();
+    renderInspector();
+  }
+}
+
+async function importCatalogItemToProject(item) {
+  if (!item) return null;
+  const request = {
+    modelId: item.id,
+    title: item.title,
+    schemaType: item.schemaType,
+    mediaType: item.mediaType,
+    targetSlot: item.targetSlot,
+    sourceStream: item.streamId,
+    sourceUri: item.sourceUri || `urn:verdant:catalog:${item.id}`,
+    licenseSpdx: item.licenseSpdx || "Apache-2.0",
+    tags: item.tags || [],
+    propertiesJson: JSON.stringify(item.properties || {}),
+    commitNote: `Imported from ${item.streamLabel} (${item.schemaType} -> ${item.targetSlot})`,
+  };
+  const r = await callWorker("import-project-model", { request });
+  if (!r?.ok || !r.model) {
+    chip(statusEl, `Refused model import (${item.title}) — Schema.org / DMN gate`);
+    return null;
+  }
+  await refreshProjectModelsFromWasm();
+  selectProjectModel(r.model.modelId);
+  await applyProjectModelLive(r.model);
+  chip(
+    statusEl,
+    `Admitted "${r.model.title}" v${r.model.activeVersion} -> ${r.model.targetSlot} (kappa ${r.model.currentKappaHex.slice(0, 10)}…)`,
+  );
+  return r.model;
+}
+
+async function saveEditedProjectModel() {
+  const model = projectModels.find((m) => m.modelId === selectedProjectModelId);
+  if (!model) return;
+  const newTitle = (inspTitleEl?.value || "").trim() || model.title;
+  const newTags = (inspTagsEl?.value || "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  let normalizedProps = (inspPropsEl?.value || "{}").trim();
+  try {
+    normalizedProps = JSON.stringify(JSON.parse(normalizedProps));
+  } catch {
+    chip(statusEl, "Invalid JSON in properties editor — fix JSON syntax before committing version");
+    return;
+  }
+  const commitNote = (inspNoteEl?.value || "").trim() || `Edited properties for v${model.activeVersion + 1}`;
+  const r = await callWorker("edit-project-model", {
+    request: {
+      modelId: model.modelId,
+      title: newTitle,
+      tags: newTags,
+      propertiesJson: normalizedProps,
+      commitNote,
+    },
+  });
+  if (!r?.ok || !r.model) {
+    chip(statusEl, "Failed to commit edited model version in Wasm");
+    return;
+  }
+  await refreshProjectModelsFromWasm();
+  selectProjectModel(r.model.modelId);
+  chip(statusEl, `Committed "${r.model.title}" v${r.model.activeVersion} (kappa ${r.model.currentKappaHex.slice(0, 10)}…)`);
+}
+
+async function revertProjectModel(modelId, targetVersion) {
+  const r = await callWorker("revert-project-model", { modelId, targetVersion });
+  if (!r?.ok || !r.model) {
+    chip(statusEl, `Failed to restore v${targetVersion}`);
+    return;
+  }
+  await refreshProjectModelsFromWasm();
+  selectProjectModel(r.model.modelId);
+  await applyProjectModelLive(r.model);
+  chip(statusEl, `Restored v${targetVersion} as new audited revision v${r.model.activeVersion}`);
+}
+
+async function removeProjectModel(modelId) {
+  const r = await callWorker("remove-project-model", { modelId });
+  if (!r?.ok) {
+    chip(statusEl, `Could not remove ${modelId}`);
+    return;
+  }
+  await refreshProjectModelsFromWasm();
+  chip(statusEl, `Removed model ${modelId} from project (PROV-O logged)`);
+}
+
+inspSaveBtn?.addEventListener("click", saveEditedProjectModel);
+inspApplyBtn?.addEventListener("click", () => {
+  const m = projectModels.find((x) => x.modelId === selectedProjectModelId);
+  if (m) applyProjectModelLive(m);
+});
+inspRemoveBtn?.addEventListener("click", () => {
+  if (selectedProjectModelId) removeProjectModel(selectedProjectModelId);
+});
+
+// ==================== UNIFIED LIVE INTERNET CATALOG DISCOVERY ====================
+
+function renderContentTypePills() {
+  if (!discTypePills) return;
+  discTypePills.replaceChildren();
+  for (const ct of AUTHORITATIVE_CONTENT_TYPES) {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "disc-pill";
+    b.dataset.contentType = ct.key;
+    b.title = `${ct.standard} -> ${ct.targetSlot}`;
+    b.setAttribute("aria-pressed", ct.key === activeContentType ? "true" : "false");
+    b.textContent = ct.label;
+    b.addEventListener("click", () => {
+      activeContentType = ct.key;
+      discTypePills.querySelectorAll(".disc-pill").forEach((el) => {
+        el.setAttribute("aria-pressed", el.dataset.contentType === activeContentType ? "true" : "false");
+      });
+      runUnifiedDiscovery();
+    });
+    discTypePills.append(b);
+  }
+}
+
+function openPreviewDock(item) {
+  previewedItem = item;
+  if (!discPreviewDock) return;
+  discPreviewDock.dataset.open = "true";
+  if (discPrevTitle) discPrevTitle.textContent = `${item.title} · ${item.streamLabel}`;
+  if (discPrevMeta) {
+    discPrevMeta.textContent =
+      `Schema.org/@type: ${item.schemaType}  |  IANA: ${item.mediaType}\n` +
+      `Auto-Target Slot: ${item.targetSlot}  |  License: ${item.licenseSpdx}\n` +
+      `Tags: ${(item.tags || []).join(", ")}\n` +
+      `${item.description}`;
+  }
+  if (discPrevSourceLink) {
+    if (item.sourceUri?.startsWith("http")) {
+      discPrevSourceLink.href = item.sourceUri;
+      discPrevSourceLink.hidden = false;
+    } else {
+      discPrevSourceLink.hidden = true;
+    }
+  }
+  if (discPrevLiveBtn) {
+    discPrevLiveBtn.hidden = !item.glbUrl;
+  }
+
+  if (discPrevMedia) {
+    discPrevMedia.replaceChildren();
+    if (item.previewUrl && /\.(png|jpe?g|webp|svg)(\?|$)/i.test(item.previewUrl) || item.streamId === "polyhaven" || (item.streamId === "khronos-gltf" && item.previewUrl)) {
+      const img = document.createElement("img");
+      img.src = item.previewUrl;
+      img.alt = item.title;
+      img.loading = "lazy";
+      discPrevMedia.append(img);
+    } else if (item.contentTypeKey === "Font") {
+      if (item.previewUrl) ensureRemoteFontLoaded(item.previewUrl, null);
+      const spec = document.createElement("div");
+      spec.style.fontFamily = `"${item.properties?.fontFamily || "sans-serif"}", var(--font-sans)`;
+      spec.style.fontSize = "1.35rem";
+      spec.style.lineHeight = "1.2";
+      spec.textContent = "Aa Bb Cc\nVerdant 0123";
+      discPrevMedia.append(spec);
+    } else {
+      const badge = document.createElement("span");
+      badge.textContent = `${item.schemaType}\n${item.mediaType}\n-> ${item.targetSlot}`;
+      discPrevMedia.append(badge);
+    }
+  }
+
+  if (discPrevAudioHost) {
+    discPrevAudioHost.replaceChildren();
+    if (item.contentTypeKey === "AudioObject" && item.previewUrl) {
+      const aud = document.createElement("audio");
+      aud.controls = true;
+      aud.src = item.previewUrl;
+      aud.style.width = "100%";
+      discPrevAudioHost.append(aud);
+    }
+  }
+}
+
+discPrevCloseBtn?.addEventListener("click", () => {
+  if (discPreviewDock) discPreviewDock.dataset.open = "false";
+});
+discPrevImportBtn?.addEventListener("click", () => {
+  if (previewedItem) importCatalogItemToProject(previewedItem);
+});
+discPrevLiveBtn?.addEventListener("click", () => {
+  if (previewedItem?.glbUrl) loadRemoteGlbIntoStage(previewedItem.glbUrl, previewedItem.title);
+});
+
+function renderDiscoveryResults(res) {
+  lastDiscoveryItems = res.items || [];
+  if (discCountBadge) {
+    discCountBadge.textContent = `${res.totalCount} models (${res.liveRemoteCount} live internet · ${res.localLockedCount} Prism locked)`;
+  }
+
+  if (discStreamStatus) {
+    discStreamStatus.replaceChildren();
+    for (const s of LIVE_CATALOG_STREAMS) {
+      const st = res.streamStatus?.[s.id];
+      if (!st) continue;
+      const chipEl = document.createElement("span");
+      chipEl.className = "disc-stream-chip";
+      chipEl.dataset.status = st.status;
+      chipEl.textContent = `${s.label}: ${st.status === "live" ? st.count : "offline"}`;
+      discStreamStatus.append(chipEl);
+    }
+  }
+
+  if (!discResultsGrid) return;
+  discResultsGrid.replaceChildren();
+  if (lastDiscoveryItems.length === 0) {
+    const empty = document.createElement("div");
+    empty.className = "proj-empty";
+    empty.textContent = "No catalog models matched your query. Try clearing the search box or switching to All Types.";
+    discResultsGrid.append(empty);
+    return;
+  }
+
+  for (const item of lastDiscoveryItems.slice(0, 24)) {
+    const card = document.createElement("article");
+    card.className = "disc-card";
+    card.dataset.discModelId = item.id;
+
+    const thumb = document.createElement("div");
+    thumb.className = "disc-thumb";
+    if (item.previewUrl && (item.streamId === "khronos-gltf" || item.streamId === "polyhaven" || (item.streamId === "openverse" && item.contentTypeKey === "PBRMaterial"))) {
+      const img = document.createElement("img");
+      img.src = item.previewUrl;
+      img.alt = item.title;
+      img.loading = "lazy";
+      thumb.append(img);
+    } else if (item.contentTypeKey === "Font") {
+      const sp = document.createElement("span");
+      sp.style.fontSize = "1.45rem";
+      sp.style.fontWeight = "600";
+      sp.textContent = `Aa · ${item.properties?.fontFamily || item.title}`;
+      thumb.append(sp);
+    } else {
+      const b = document.createElement("span");
+      b.className = "disc-thumb-badge";
+      b.textContent = `${item.schemaType} · ${item.streamLabel}\n${item.mediaType}`;
+      thumb.append(b);
+    }
+
+    const body = document.createElement("div");
+    body.className = "disc-card-body";
+    const tags = document.createElement("div");
+    tags.className = "disc-card-tags";
+    tags.textContent = `${item.schemaType} · ${item.streamLabel} · ${item.licenseSpdx}`;
+    const h3 = document.createElement("h3");
+    h3.className = "disc-card-title";
+    h3.textContent = item.title;
+    const desc = document.createElement("p");
+    desc.className = "disc-card-desc";
+    desc.textContent = item.description;
+    const slot = document.createElement("div");
+    slot.className = "disc-card-slot";
+    slot.textContent = `Auto-Slot -> ${item.targetSlot}`;
+    body.append(tags, h3, desc, slot);
+
+    const foot = document.createElement("div");
+    foot.className = "disc-card-foot";
+    const prevBtn = document.createElement("button");
+    prevBtn.type = "button";
+    prevBtn.className = "st-btn sm";
+    prevBtn.dataset.previewModel = item.id;
+    prevBtn.textContent = "Preview";
+    prevBtn.addEventListener("click", () => openPreviewDock(item));
+
+    const addBtn = document.createElement("button");
+    addBtn.type = "button";
+    addBtn.className = "st-btn primary sm";
+    addBtn.dataset.importModel = item.id;
+    addBtn.textContent = "+ Add";
+    addBtn.addEventListener("click", () => importCatalogItemToProject(item));
+
+    foot.append(prevBtn, addBtn);
+    card.append(thumb, body, foot);
+    discResultsGrid.append(card);
+  }
+}
+
+let discSeq = 0;
+async function runUnifiedDiscovery() {
+  const seq = ++discSeq;
+  if (discCountBadge) discCountBadge.textContent = "Searching live streams…";
+  const res = await searchLiveCatalogStreams({
+    query: discSearchInput?.value || "",
+    contentType: activeContentType,
+    streamId: discStreamSelect?.value || "all",
+    localWorldPacks: domainPacks,
+  });
+  if (seq !== discSeq) return;
+  renderDiscoveryResults(res);
+}
+
+discSearchForm?.addEventListener("submit", (e) => {
+  e.preventDefault();
+  runUnifiedDiscovery();
+});
+discStreamSelect?.addEventListener("change", runUnifiedDiscovery);
+topbarSearchForm?.addEventListener("submit", (e) => {
+  e.preventDefault();
+  if (discSearchInput && topbarSearchInput) {
+    discSearchInput.value = topbarSearchInput.value;
+  }
+  runUnifiedDiscovery();
+  $("studio-discovery")?.scrollIntoView({ behavior: "smooth", block: "start" });
+});
+
+// ==================== 4-STAGE PRISM COMPOSITION WIZARD ====================
 
 function setWizardStep(step) {
-  activeWizStep = Math.max(1, Math.min(4, step | 0));
-  if (wizProgressEl) wizProgressEl.textContent = `Stage ${activeWizStep} of 4`;
+  const activeStep = Math.max(1, Math.min(4, step | 0));
   document.querySelectorAll("[data-wiz-step]").forEach((btn) => {
-    const n = Number(btn.dataset.wizStep);
-    btn.setAttribute("aria-selected", n === activeWizStep ? "true" : "false");
-    if (n < activeWizStep) btn.dataset.done = "true";
+    btn.setAttribute("aria-selected", Number(btn.dataset.wizStep) === activeStep ? "true" : "false");
   });
   document.querySelectorAll("[data-wiz-panel]").forEach((panel) => {
-    panel.hidden = Number(panel.dataset.wizPanel) !== activeWizStep;
+    panel.hidden = Number(panel.dataset.wizPanel) !== activeStep;
   });
-  if (wizPrevBtn) wizPrevBtn.disabled = activeWizStep <= 1;
-  if (wizNextBtn) {
-    wizNextBtn.textContent = activeWizStep >= 4 ? "Run Prism Quality Gate" : "Next Stage";
-  }
 }
 
 function renderDomainControlsForActivePack() {
   const pack = domainPacks[activeDomainIdx];
   if (!pack) return;
-
   if (manDomainEl) manDomainEl.textContent = pack.id;
-  if (manModelsEl) {
-    manModelsEl.textContent = `${(pack.models || []).length} models · ${(pack.items || []).length} items`;
-  }
-  if (manNpcsEl) {
-    manNpcsEl.textContent = (pack.characters || []).map((c) => c.name).join(", ") || "—";
-  }
 
   document.querySelectorAll("[data-wiz-domain-idx]").forEach((card) => {
     card.setAttribute("aria-pressed", Number(card.dataset.wizDomainIdx) === activeDomainIdx ? "true" : "false");
@@ -539,14 +1133,10 @@ function renderNpcDirectivesAndPrompts(npcIdx) {
 
   if (wizDirectivesRow) {
     wizDirectivesRow.replaceChildren();
-    const lbl = document.createElement("span");
-    lbl.className = "wiz-label";
-    lbl.textContent = "Dispatch Directive:";
-    wizDirectivesRow.append(lbl);
     (ch.directives || []).forEach((dirLabel, dirIdx) => {
       const btn = document.createElement("button");
       btn.type = "button";
-      btn.className = "st-btn";
+      btn.className = "st-btn sm";
       btn.textContent = dirLabel;
       btn.addEventListener("click", async () => {
         const r = await callWorker("set-npc-directive", { npcIdx, directiveIdx: dirIdx, simClockSec });
@@ -555,7 +1145,7 @@ function renderNpcDirectivesAndPrompts(npcIdx) {
           await syncFallbackBuffers();
           syncHud();
           if (wizComposeLog) {
-            wizComposeLog.textContent = `Dispatched Wasm NPC Directive -> ${ch.name} (${r.characterId}): "${r.directiveLabel}" · ${r.waypointCount} NavMesh waypoints · ${lTris.toLocaleString()} tris`;
+            wizComposeLog.textContent = `NPC Directive -> ${ch.name}: "${r.directiveLabel}" · ${r.waypointCount} NavMesh waypoints`;
           }
           requestRender();
         }
@@ -566,16 +1156,12 @@ function renderNpcDirectivesAndPrompts(npcIdx) {
 
   if (wizPromptChips) {
     wizPromptChips.replaceChildren();
-    const lbl = document.createElement("span");
-    lbl.className = "wiz-label";
-    lbl.textContent = "Grounded Catalog Queries:";
-    wizPromptChips.append(lbl);
     (ch.knowledgeFacts || []).slice(0, 2).forEach((fact, idx) => {
-      const words = fact.split(/\s+/).slice(0, 6).join(" ");
+      const words = fact.split(/\s+/).slice(0, 5).join(" ");
       const b = document.createElement("button");
       b.type = "button";
-      b.className = "st-btn";
-      b.textContent = `Ask Fact ${idx + 1}: ${words}…`;
+      b.className = "st-btn sm";
+      b.textContent = `Fact ${idx + 1}: ${words}…`;
       b.addEventListener("click", () => runNpcDialogue(fact));
       wizPromptChips.append(b);
     });
@@ -588,7 +1174,7 @@ async function runNpcDialogue(utterance) {
   const npcIdx = Number(wizNpcSelect?.value) || 0;
   const r = await callWorker("npc-dialogue", { npcIdx, utterance: clean, simClockSec });
   if (!r?.ok || !r.turn) {
-    if (wizDlgLog) wizDlgLog.textContent = `Dialogue refused or unavailable (${r?.organDenied || "wasm busy"}).`;
+    if (wizDlgLog) wizDlgLog.textContent = `Dialogue unavailable (${r?.organDenied || "wasm busy"}).`;
     return;
   }
   const t = r.turn;
@@ -596,8 +1182,8 @@ async function runNpcDialogue(utterance) {
   if (wizDlgLog) {
     wizDlgLog.textContent =
       `ISO 24617-2 Act: ${t.act} · ${stateLabel} · Mutated: ${Boolean(t.worldMutated)}\n` +
-      `Speaker: ${t.characterName || t.characterId} -> "${t.reply}"\n` +
-      `SOSA/PROV-O Envelope kappa: ${t.envelopeKappaHex || "verified"}`;
+      `${t.characterName || t.characterId}: "${t.reply}"\n` +
+      `SOSA/PROV-O kappa: ${t.envelopeKappaHex || "verified"}`;
   }
   chip(statusEl, `ISO 24617-2 · ${t.act} · ${stateLabel}`);
 }
@@ -646,12 +1232,10 @@ async function loadCatalogDomainPack(domainIdx, { fromSelect = false, userInitia
 
   if (wizDomainLog && pack) {
     const models = (pack.models || []).map((m) => `${m.name} (${m.materialId})`).join(", ");
-    const items = (pack.items || []).map((i) => `${i.name} ×${i.initialSupply}`).join(", ");
     wizDomainLog.textContent =
       `Loaded Catalog Pack: ${pack.id} · ${pack.title} (Seed ${r?.seed ?? pack.seed})\n` +
-      `Environment: ${pack.environment?.name} · ${lTris.toLocaleString()} tris · ${r?.walkablePolys ?? 4608} NavMesh polys · Sabine RT60 ${lastRt60Ms}ms\n` +
-      `Imported HD Models: ${models}\n` +
-      `Conserved Items: ${items}`;
+      `Environment: ${pack.environment?.name} · ${lTris.toLocaleString()} tris · RT60 ${lastRt60Ms}ms\n` +
+      `HD Models: ${models}`;
   }
   chip(statusEl, `Composed ${activeProject} (${pack?.id || clamped}) · ${lTris.toLocaleString()} tris · Clear ${lClr}mm`);
   requestRender();
@@ -664,22 +1248,16 @@ function renderDomainPackCards() {
   domainPacks.forEach((pack, idx) => {
     const btn = document.createElement("button");
     btn.type = "button";
-    btn.className = "wiz-domain-card";
+    btn.className = "proj-domain-btn";
     btn.dataset.wizDomainIdx = String(idx);
     btn.dataset.wizDomainSlug = pack.slug;
     btn.setAttribute("aria-pressed", idx === activeDomainIdx ? "true" : "false");
 
-    const idEl = document.createElement("span");
-    idEl.className = "wiz-domain-id";
-    idEl.textContent = `${pack.id} · Seed ${pack.seed} · LOD${pack.defaultLodRank}`;
-    const titleEl = document.createElement("span");
-    titleEl.className = "wiz-domain-title";
+    const titleEl = document.createElement("strong");
     titleEl.textContent = pack.title;
-    const metaEl = document.createElement("span");
-    metaEl.className = "wiz-domain-meta";
-    metaEl.textContent =
-      `${pack.environment?.name || "—"} · ${(pack.models || []).length} HD models · ${(pack.characters || []).length} NPC rig(s)`;
-    btn.append(idEl, titleEl, metaEl);
+    const subEl = document.createElement("small");
+    subEl.textContent = `${pack.id} · Seed ${pack.seed} · LOD${pack.defaultLodRank}`;
+    btn.append(titleEl, subEl);
     btn.addEventListener("click", () => loadCatalogDomainPack(idx, { userInitiated: true }));
     wizDomainGrid.append(btn);
   });
@@ -704,72 +1282,49 @@ async function runFullPrismQualityGate() {
   const snapBytes = snapRes?.ok && snapRes.bytes
     ? (snapRes.bytes instanceof Uint8Array ? snapRes.bytes : new Uint8Array(snapRes.bytes))
     : null;
-  const uorcMagicOk = Boolean(
+  const uorcOk = Boolean(
     snapBytes && snapBytes.byteLength >= 4 &&
     snapBytes[0] === 0x55 && snapBytes[1] === 0x4f && snapBytes[2] === 0x52 && snapBytes[3] === 0x43,
   );
   const uiOk = Boolean(uiRes?.ok);
-  const uorcOk = uorcMagicOk;
   const holoOk = Boolean(holoVerdict?.startsWith("conformant:") || holoSummary.passed > 0);
   const obs = obsRes?.observer;
   const obsOk = Boolean(obsRes?.ok && obs?.observerKappa && obs.emergencyHalted === false);
 
-  setCheck(wizChkUi, uiOk, uiOk ? `Conformant (${uiRes.widgetCount} widgets · WCAG AA)` : "Unavailable");
-  setCheck(wizChkUorc, uorcOk, uorcOk ? `Conformant (.uorc magic · ${snapBytes.byteLength}B)` : "Unavailable");
-  setCheck(
-    wizChkHolo,
-    holoOk,
-    holoSummary.total > 0 ? `Conformant (${holoSummary.passed}/${holoSummary.total} vectors)` : (holoVerdict || "Conformant"),
-  );
-  setCheck(
-    wizChkObs,
-    obsOk,
-    obsOk ? `Conformant (${obs.activeDomain?.slug || "active"} · ${obs.communicationCount ?? 0} bus events)` : "Unavailable",
-  );
+  setCheck(wizChkUi, uiOk, uiOk ? `Conformant (${uiRes.widgetCount})` : "Fail");
+  setCheck(wizChkUorc, uorcOk, uorcOk ? `Conformant (${snapBytes.byteLength}B)` : "Fail");
+  setCheck(wizChkHolo, holoOk, holoSummary.total > 0 ? `${holoSummary.passed}/${holoSummary.total} OK` : "Conformant");
+  setCheck(wizChkObs, obsOk, obsOk ? `${obs.importedProjectModelCount ?? 0} models · OK` : "Fail");
 
   if (wizAuditLog) {
     wizAuditLog.textContent =
       `PRISM QUALITY GATE VERDICT: ${uiOk && uorcOk && holoOk && obsOk ? "CONFORMANT (4/4 GATES PASSED)" : "CHECK REQUIRED"}\n` +
       `  1. Tropical Spatial UI + WCAG AA: ${uiOk ? `${uiRes.widgetCount} widgets · 0 overlaps` : "pending"}\n` +
-      `  2. Exclusive .uorc Archive Policy: ${uorcOk ? `verified (UORC header · ${snapBytes.byteLength}B SHA-256 sealed)` : "pending"}\n` +
+      `  2. Exclusive .uorc Archive Policy: ${uorcOk ? `verified (UORC header · ${snapBytes.byteLength}B)` : "pending"}\n` +
       `  3. Prism app.holo Proof Boundary: ${holoVerdict || `${holoSummary.passed}/${holoSummary.total} vectors`}\n` +
-      `  4. Observer Holon Exclusivity: ${obsOk ? `domain=${obs.activeDomain?.slug} · basis=${obs.organBasisProduct} · kappa=${String(obs.observerKappa).slice(0, 12)}…` : "pending"}`;
+      `  4. Observer Holon Exclusivity: ${obsOk ? `domain=${obs.activeDomain?.slug} · imported=${obs.importedProjectModelCount ?? 0}` : "pending"}`;
   }
   chip(statusEl, "Prism Quality Gate: 4/4 Conformant — Ready to Seal .uorc Archive");
 }
 
-// Wire Wizard navigation & actions
+// Wire Wizard controls
 document.querySelectorAll("[data-wiz-step]").forEach((btn) => {
   btn.addEventListener("click", () => setWizardStep(Number(btn.dataset.wizStep)));
-});
-wizPrevBtn?.addEventListener("click", () => setWizardStep(activeWizStep - 1));
-wizNextBtn?.addEventListener("click", async () => {
-  if (activeWizStep >= 4) {
-    await runFullPrismQualityGate();
-  } else {
-    setWizardStep(activeWizStep + 1);
-  }
 });
 document.querySelectorAll("[data-wiz-lod]").forEach((btn) => {
   btn.addEventListener("click", async () => {
     const rank = Number(btn.dataset.wizLod);
     await streamLod(rank);
-    if (wizComposeLog) {
-      wizComposeLog.textContent = `Streamed UORC ${LODS[rank].label} · ${lTris.toLocaleString()} tris · Guard Clearance ${lClr}mm`;
-    }
+    if (wizComposeLog) wizComposeLog.textContent = `Streamed ${LODS[rank].label} · ${lTris.toLocaleString()} tris`;
   });
 });
 document.querySelectorAll("[data-wiz-cam]").forEach((btn) => {
   btn.addEventListener("click", async () => {
     await cycleCameraMode(btn.dataset.wizCam);
-    if (wizComposeLog) {
-      wizComposeLog.textContent = `Switched Camera Rig -> ${camPreset} · Guard Clearance ${lClr}mm`;
-    }
+    if (wizComposeLog) wizComposeLog.textContent = `Camera Rig -> ${camPreset} · Clear ${lClr}mm`;
   });
 });
-wizNpcSelect?.addEventListener("change", () => {
-  renderNpcDirectivesAndPrompts(Number(wizNpcSelect.value) || 0);
-});
+wizNpcSelect?.addEventListener("change", () => renderNpcDirectivesAndPrompts(Number(wizNpcSelect.value) || 0));
 wizSabineBtn?.addEventListener("click", async () => {
   const env = domainPacks[activeDomainIdx]?.environment;
   const vol = env?.acousticVolumeM3 || 4200;
@@ -779,9 +1334,7 @@ wizSabineBtn?.addEventListener("click", async () => {
     lastRt60Ms = r.rt60Ms;
     ACOUST.rt60Ms = r.rt60Ms;
     syncHud();
-    if (wizComposeLog) {
-      wizComposeLog.textContent = `Calibrated Sabine Acoustics (${env?.name || activeProject}): Volume ${vol} m³ · Absorption ${(absMilli / 1000).toFixed(1)} m² · RT60 = ${r.rt60Ms} ms`;
-    }
+    if (wizComposeLog) wizComposeLog.textContent = `Sabine RT60 (${env?.name || activeProject}): ${r.rt60Ms} ms`;
   }
 });
 wizDlgForm?.addEventListener("submit", async (e) => {
@@ -802,15 +1355,13 @@ wizCommBtn?.addEventListener("click", async () => {
   });
   if (wizDlgLog) {
     wizDlgLog.textContent = r?.ok
-      ? `Recorded Prism-Signed SOSA/PROV-O Envelope (Channel 1: Studio -> Engine)\nPayload: compose:${pack?.slug || "sunspire-regatta"}:lod${lodIdx}\nBLAKE3 kappa: ${r.kappaHex}`
-      : "Failed to record SOSA/PROV-O communication envelope.";
+      ? `SOSA/PROV-O Envelope Recorded\nBLAKE3 kappa: ${r.kappaHex}`
+      : "Failed to record envelope.";
   }
 });
 wizObserverBtn?.addEventListener("click", async () => {
   const r = await callWorker("observer-status");
-  if (wizDlgLog && r?.ok) {
-    wizDlgLog.textContent = `ObserverPrismHolon Live Telemetry:\n${JSON.stringify(r.observer, null, 2)}`;
-  }
+  if (wizDlgLog && r?.ok) wizDlgLog.textContent = JSON.stringify(r.observer, null, 2);
 });
 wizAuditBtn?.addEventListener("click", runFullPrismQualityGate);
 wizSealUorcBtn?.addEventListener("click", exportActiveUorcArchive);
@@ -829,11 +1380,14 @@ const executePrompt = async (text) =>
     setSimLive,
     toggleRenderBackend,
     restoreRawSnapshot: async (bytes) => callWorker("restore-snapshot", { bytes }),
-    launchStudioModal: async (rk) => studioHandle?.selectTab(rk),
+    launchStudioModal: async (rk) => {
+      setRightRailTab("roles");
+      studioHandle?.selectTab(rk);
+    },
     openStitchModal: openStitchGuarded,
   });
 
-// Wire viewport interactions
+// Wire viewport pointer interactions
 let lx = 0;
 let ly = 0;
 canvas?.addEventListener("pointerdown", (e) => {
@@ -897,10 +1451,15 @@ promptForm?.addEventListener("submit", async (e) => {
 
 addEventListener("hashchange", () => {
   const rk = resolveInitialRole();
-  if (rk) studioHandle?.selectTab(rk);
+  if (STUDIO_ROLE_KEYS.includes(rk) && location.hash !== "#compose") {
+    setRightRailTab("roles");
+    studioHandle?.selectTab(rk);
+  }
 });
 
-// Boot Holo + Domain Catalog + Worker + Inline 7-Role Atelier
+// Boot Holo + Domain Packs + Discovery Pills + Worker + Inline 7-Role Atelier
+renderContentTypePills();
+
 (async () => {
   const [holoResult, packsResult] = await Promise.allSettled([
     fetch(new URL("../app.holo", import.meta.url)).then(async (res) => {
@@ -908,7 +1467,7 @@ addEventListener("hashchange", () => {
       holoApp = await load(new Uint8Array(await res.arrayBuffer()));
       holoSummary = await holoApp.acceptance();
       if (holoStatusEl) {
-        holoStatusEl.textContent = `Atelier Ready · Prism Holo Verified (${holoSummary.passed}/${holoSummary.total} vectors) · 4 Catalog Domains · 7 Lifecycle Roles`;
+        holoStatusEl.textContent = `Atelier Ready · Prism Holo Verified (${holoSummary.passed}/${holoSummary.total} vectors) · 7 Live Streams · 7 Lifecycle Roles`;
       }
     }),
     fetch(new URL("../catalogs/world-packs.json", import.meta.url)).then(async (res) => {
@@ -924,6 +1483,9 @@ addEventListener("hashchange", () => {
   if (packsResult.status === "rejected" && wizDomainLog) {
     wizDomainLog.textContent = "Catalog manifest unavailable — using embedded Wasm domain defaults.";
   }
+
+  // Launch initial unified live catalog discovery immediately in parallel with Wasm init:
+  runUnifiedDiscovery();
 
   const { w, h } = pxDims();
   if (worker && canvas && typeof canvas.transferControlToOffscreen === "function") {
@@ -995,9 +1557,6 @@ addEventListener("hashchange", () => {
       onRoleChange: (rk) => {
         activeRoleKey = rk;
         syncHud();
-        if (location.hash !== `#${rk}` && location.hash !== "#compose") {
-          history.replaceState(null, "", `#${rk}`);
-        }
       },
       onProjectChange: (projTitle) => {
         if (projTitle) {
@@ -1019,11 +1578,10 @@ addEventListener("hashchange", () => {
     });
   }
 
-  // Honor deep-links from /catalogs/: ?domain=<slug>&catalog=<STD-ID>&step=<1..4>
+  // Deep-links from /catalogs/: ?domain=<slug>&catalog=<STD-ID>
   const params = new URLSearchParams(location.search);
   const reqDomain = params.get("domain");
   const reqCatalog = params.get("catalog");
-  const reqStep = Number(params.get("step"));
   if (reqCatalog && catalogBanner && catalogBannerText) {
     catalogBanner.dataset.active = "true";
     catalogBannerText.textContent = `Imported Governing Catalog Standard: ${reqCatalog} — live-verified against Prism app.holo`;
@@ -1034,13 +1592,14 @@ addEventListener("hashchange", () => {
   if (!userSelectedDomain && domainPacks.length > 0) {
     await loadCatalogDomainPack(initialDomainIdx);
   }
-  if (reqStep >= 1 && reqStep <= 4) {
-    setWizardStep(reqStep);
-  } else {
-    setWizardStep(1);
+  await refreshProjectModelsFromWasm();
+
+  if (location.hash === "#compose") {
+    setRightRailTab("compose");
+  } else if (STUDIO_ROLE_KEYS.includes(location.hash.slice(1))) {
+    setRightRailTab("roles");
   }
 
-  // Restore `#uorc=` if shared directly to `/studio/#uorc=...`:
   const snapMatch = /^#uorc=(.+)$/.exec(location.hash);
   if (snapMatch) {
     const bytes = base64UrlToBytes(snapMatch[1].trim());
@@ -1051,6 +1610,6 @@ addEventListener("hashchange", () => {
   }
 
   syncHud();
-  chip(statusEl, `Atelier Ready · ${activeProject} · ${LODS[lodIdx].label} · 4-Stage Catalog Wizard Active`);
+  chip(statusEl, `Atelier Ready · ${activeProject} · Live Discovery & Model Versioning Active`);
   requestRender();
 })();

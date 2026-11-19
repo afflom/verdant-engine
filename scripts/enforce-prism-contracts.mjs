@@ -1206,6 +1206,7 @@ export async function runAllPrismContractChecks(rootDir = ROOT_DIR) {
   const studioPageSource = readFileSync(join(rootDir, "site", "studio", "studio-page.mjs"), "utf8");
   const catalogsHtml = readFileSync(join(rootDir, "site", "catalogs", "index.html"), "utf8");
   const catalogsPageSource = readFileSync(join(rootDir, "site", "catalogs", "catalogs.mjs"), "utf8");
+  const catalogStreamsSource = readFileSync(join(rootDir, "site", "catalog-streams.mjs"), "utf8");
   const starterHtml = readFileSync(join(rootDir, "templates", "browser-3d-starter", "index.html"), "utf8");
   const starterGameSource = readFileSync(join(rootDir, "templates", "browser-3d-starter", "game.mjs"), "utf8");
 
@@ -1255,6 +1256,7 @@ export async function runAllPrismContractChecks(rootDir = ROOT_DIR) {
       ["site/studio/studio-page.mjs", studioPageSource],
       ["site/catalogs/index.html", catalogsHtml],
       ["site/catalogs/catalogs.mjs", catalogsPageSource],
+      ["site/catalog-streams.mjs", catalogStreamsSource],
       ["site/demo/index.html", demoHtml],
       ["site/demo/demo.mjs", demoSource],
       ["site/studio.mjs", studioSource],

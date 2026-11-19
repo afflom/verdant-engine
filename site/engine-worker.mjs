@@ -1213,6 +1213,69 @@ self.onmessage = async ({ data: msg }) => {
       self.postMessage({ kind: "comm-observed", id: msg.id, ok: len > 0, kappaHex });
       return;
     }
+
+    if (msg.kind === "import-project-model") {
+      await ensureUorcSceneHost();
+      const jsonBytes = new TextEncoder().encode(JSON.stringify(msg.request || {}));
+      stageIoBytes(uorcWasm, jsonBytes);
+      const len = uorcWasm.verdant_wasm_import_project_model_io() >>> 0;
+      if (len === 0) {
+        self.postMessage({ kind: "project-model-imported", id: msg.id, ok: false });
+        return;
+      }
+      const model = JSON.parse(new TextDecoder().decode(readAuxBytes(uorcWasm)));
+      self.postMessage({ kind: "project-model-imported", id: msg.id, ok: true, model });
+      return;
+    }
+
+    if (msg.kind === "edit-project-model") {
+      await ensureUorcSceneHost();
+      const jsonBytes = new TextEncoder().encode(JSON.stringify(msg.request || {}));
+      stageIoBytes(uorcWasm, jsonBytes);
+      const len = uorcWasm.verdant_wasm_edit_project_model_io() >>> 0;
+      if (len === 0) {
+        self.postMessage({ kind: "project-model-edited", id: msg.id, ok: false });
+        return;
+      }
+      const model = JSON.parse(new TextDecoder().decode(readAuxBytes(uorcWasm)));
+      self.postMessage({ kind: "project-model-edited", id: msg.id, ok: true, model });
+      return;
+    }
+
+    if (msg.kind === "revert-project-model") {
+      await ensureUorcSceneHost();
+      stageIoBytes(uorcWasm, new TextEncoder().encode(String(msg.modelId || "")));
+      const targetVer = Math.max(1, msg.targetVersion | 0) >>> 0;
+      const len = uorcWasm.verdant_wasm_revert_project_model_io(targetVer) >>> 0;
+      if (len === 0) {
+        self.postMessage({ kind: "project-model-reverted", id: msg.id, ok: false });
+        return;
+      }
+      const model = JSON.parse(new TextDecoder().decode(readAuxBytes(uorcWasm)));
+      self.postMessage({ kind: "project-model-reverted", id: msg.id, ok: true, model });
+      return;
+    }
+
+    if (msg.kind === "remove-project-model") {
+      await ensureUorcSceneHost();
+      stageIoBytes(uorcWasm, new TextEncoder().encode(String(msg.modelId || "")));
+      const len = uorcWasm.verdant_wasm_remove_project_model_io() >>> 0;
+      const kappaHex = len > 0 ? new TextDecoder().decode(readAuxBytes(uorcWasm)) : "";
+      self.postMessage({ kind: "project-model-removed", id: msg.id, ok: len > 0, kappaHex });
+      return;
+    }
+
+    if (msg.kind === "list-project-models") {
+      await ensureUorcSceneHost();
+      const len = uorcWasm.verdant_wasm_list_project_models_aux() >>> 0;
+      if (len === 0) {
+        self.postMessage({ kind: "project-models-listed", id: msg.id, ok: false, models: [] });
+        return;
+      }
+      const payload = JSON.parse(new TextDecoder().decode(readAuxBytes(uorcWasm)));
+      self.postMessage({ kind: "project-models-listed", id: msg.id, ok: true, ...payload });
+      return;
+    }
   } catch (err) {
     if (typeof WebAssembly !== "undefined" && err instanceof WebAssembly.RuntimeError) {
       wasm = null; uorcWasm = null; uorcModPromise = null; wasmPromise = initCoreSceneWasm();

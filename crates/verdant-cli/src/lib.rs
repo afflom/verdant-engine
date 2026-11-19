@@ -22,7 +22,10 @@ use verdant_core::network::{
     recover_bytes_from_stitch_pair, shard_bytes_to_stitch_fragments, PrismIdSessionEnvelope,
     StitchFragment,
 };
-use verdant_core::observer::{sha256_payload_digest, CommunicationChannelKind, ObserverPrismHolon};
+use verdant_core::observer::{
+    sha256_payload_digest, CommunicationChannelKind, ObserverPrismHolon, ProjectModelEditRequest,
+    ProjectModelImportRequest,
+};
 use verdant_core::physics::{
     CapsuleController, KinematicSplineBody, PhysicsWorld, PhysicsWorldConfig,
 };
@@ -1093,6 +1096,63 @@ pub fn run_cli(args: &[String]) -> Result<String, CliCommandError> {
                     command: "automate-check".to_string(),
                     diagnostic: format!("observe_communication: {e}"),
                 })?;
+
+            // Verify dynamic arbitrary model admission, versioning (v1 -> v2 -> revert v3), & removal:
+            let grants = ContainerGrantMatrix::default();
+            let imp = holon
+                .import_project_model(
+                    ProjectModelImportRequest {
+                        model_id: "khronos:DamagedHelmet".to_string(),
+                        title: "Damaged Helmet (Khronos glTF 2.0)".to_string(),
+                        schema_type: "3DModel".to_string(),
+                        media_type: "model/gltf-binary".to_string(),
+                        target_slot: "design:3d-model".to_string(),
+                        source_stream: "khronos-gltf".to_string(),
+                        source_uri: "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/DamagedHelmet/glTF-Binary/DamagedHelmet.glb".to_string(),
+                        license_spdx: "CC-BY-4.0".to_string(),
+                        tags: vec!["3d".to_string(), "pbr".to_string(), "gltf".to_string()],
+                        properties_json: "{\"scale\":1}".to_string(),
+                        commit_note: "Initial catalog import".to_string(),
+                    },
+                    &grants,
+                )
+                .map_err(|e| CliCommandError::ValidationRejected {
+                    command: "automate-check".to_string(),
+                    diagnostic: format!("import_project_model: {e}"),
+                })?;
+            let edited = holon
+                .edit_project_model(ProjectModelEditRequest {
+                    model_id: imp.model_id.clone(),
+                    title: "Damaged Helmet · Tuned Metallic".to_string(),
+                    tags: vec!["3d".to_string(), "pbr".to_string(), "hero".to_string()],
+                    properties_json: "{\"scale\":1,\"metallic\":1}".to_string(),
+                    commit_note: "Tuned PBR metallic factor".to_string(),
+                })
+                .map_err(|e| CliCommandError::ValidationRejected {
+                    command: "automate-check".to_string(),
+                    diagnostic: format!("edit_project_model: {e}"),
+                })?;
+            let reverted = holon.revert_project_model(&imp.model_id, 1).map_err(|e| {
+                CliCommandError::ValidationRejected {
+                    command: "automate-check".to_string(),
+                    diagnostic: format!("revert_project_model: {e}"),
+                }
+            })?;
+            let removed_kappa = holon.remove_project_model(&imp.model_id).map_err(|e| {
+                CliCommandError::ValidationRejected {
+                    command: "automate-check".to_string(),
+                    diagnostic: format!("remove_project_model: {e}"),
+                }
+            })?;
+            if edited.active_version != (1 + 1)
+                || reverted.active_version != (1 + 1 + 1)
+                || reverted.current_kappa_hex != removed_kappa
+            {
+                return Err(CliCommandError::ValidationRejected {
+                    command: "automate-check".to_string(),
+                    diagnostic: "project model version chain mismatch".to_string(),
+                });
+            }
 
             let ui_w = (1u32 << (1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1))
                 + (1u32 << (1 + 1 + 1 + 1 + 1 + 1 + 1 + 1));

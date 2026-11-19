@@ -3,10 +3,10 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Verdant Studio · Catalog-Driven 3D Application Composition Atelier</title>
-  <meta name="description" content="Immersive 3D application design studio powered by Verdant Engine and UOR Prism. Import SHA-256-locked domain, Khronos glTF HD, Sabine acoustic, and ISO 24617-2 catalogs and compose high-definition apps across seven lifecycle roles.">
-  <meta property="og:title" content="Verdant Studio · Catalog-Driven 3D Application Composition Atelier">
-  <meta property="og:description" content="Import SHA-256-locked model catalogs and compose verified high-definition 3D applications live in WebAssembly and WebGL2.">
+  <title>Verdant Studio · Live Model Discovery, Versioning &amp; 3D App Composition IDE</title>
+  <meta name="description" content="Immersive 3D game and spatial application development studio built on Verdant Engine and UOR Prism. Discover, preview, auto-tag, import, edit, version, and compose live internet model catalogs into sealed .uorc applications.">
+  <meta property="og:title" content="Verdant Studio · Live Model Discovery, Versioning &amp; 3D App Composition IDE">
+  <meta property="og:description" content="Discover, preview, import, edit, and version arbitrary models from live internet catalogs directly inside Verdant Engine and Prism.">
   <link rel="stylesheet" href="../brand/fonts.css">
   <link rel="stylesheet" href="../brand/hologram-warm.css">
   <link rel="stylesheet" href="../prism-page.css">
@@ -43,31 +43,33 @@
       background: var(--background);
       color: var(--foreground);
       font-family: var(--font-sans);
-      line-height: 1.55;
+      line-height: 1.5;
     }
     main,
-    main.st-main {
+    main.ide-main {
       display: grid;
       height: auto;
       min-height: 0;
       margin-right: 0;
       overflow: visible;
     }
-    .st-header {
+
+    /* Top Sticky Studio Command Bar */
+    .ide-topbar {
       position: sticky;
       top: 0;
-      z-index: 30;
+      z-index: 40;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 1.5rem;
-      padding: var(--space-3) clamp(1rem, 3.5vw, 2.5rem);
+      gap: var(--space-3);
+      padding: var(--space-2) clamp(0.75rem, 2vw, 1.5rem);
       border-bottom: var(--border-width) solid var(--border);
-      background: var(--background);
+      background: var(--sidebar);
     }
-    .st-brand {
+    .ide-brand {
       display: inline-flex;
-      align-items: baseline;
+      align-items: center;
       gap: var(--space-2);
       font-family: var(--font-display);
       font-size: var(--text-18);
@@ -78,15 +80,40 @@
       white-space: nowrap;
       flex-shrink: 0;
     }
-    .st-nav {
+    .ide-brand-dot {
+      width: 0.6rem;
+      height: 0.6rem;
+      border-radius: 50%;
+      background: var(--brand);
+      display: inline-block;
+    }
+    .ide-top-search {
+      flex: 1 1 16rem;
+      max-width: 28rem;
       display: flex;
       align-items: center;
-      gap: 1.5rem;
+      gap: var(--space-1);
+    }
+    .ide-top-search input {
+      width: 100%;
+      min-height: 2.35rem;
+      padding: 0 var(--space-3);
+      border-radius: var(--radius-control);
+      border: var(--border-width) solid var(--border-strong);
+      background: var(--background);
+      color: var(--foreground);
+      font-family: var(--font-sans);
+      font-size: var(--text-14);
+    }
+    .ide-nav {
+      display: flex;
+      align-items: center;
+      gap: 1.1rem;
       overflow-x: auto;
       scrollbar-width: none;
     }
-    .st-nav::-webkit-scrollbar { display: none; }
-    .st-nav a {
+    .ide-nav::-webkit-scrollbar { display: none; }
+    .ide-nav a {
       color: var(--muted-foreground);
       text-decoration: none;
       font-size: var(--text-14);
@@ -94,152 +121,27 @@
       white-space: nowrap;
       flex-shrink: 0;
     }
-    .st-nav a:hover {
+    .ide-nav a:hover {
       color: var(--foreground);
       text-decoration: underline;
       text-underline-offset: 0.25rem;
     }
-    .st-header-actions {
+    .ide-top-actions {
       display: flex;
       align-items: center;
       gap: var(--space-2);
       flex-shrink: 0;
     }
-    .st-cta {
-      min-height: var(--touch);
-      padding: 0 var(--space-4);
-      border-radius: var(--radius-control);
-      border: var(--border-width) solid var(--brand);
-      background: var(--brand);
-      color: var(--brand-foreground);
-      font-family: var(--font-sans);
-      font-size: var(--text-14);
-      font-weight: 600;
-      text-decoration: none;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      white-space: nowrap;
-      flex-shrink: 0;
-      cursor: pointer;
+    @media (max-width: 1080px) {
+      .ide-nav { display: none; }
+    }
+    @media (max-width: 720px) {
+      .ide-top-search { display: none; }
     }
 
-    .st-main {
-      max-width: 94rem;
-      margin: 0 auto;
-      padding: clamp(1.25rem, 3vw, 2.25rem) clamp(1rem, 3.5vw, 2.5rem) 4rem;
-      gap: var(--space-6);
-    }
-    .st-hero {
-      display: grid;
-      gap: var(--space-2);
-      padding-bottom: var(--space-4);
-      border-bottom: var(--border-width) solid var(--border);
-    }
-    .st-meta {
-      font-family: var(--font-mono);
-      font-size: var(--text-14);
-      color: var(--brand);
-      font-variant-numeric: tabular-nums;
-    }
-    .st-h1 {
-      margin: 0;
-      max-width: 58rem;
-      font-family: var(--font-display);
-      font-size: clamp(1.85rem, 3.2vw, 2.65rem);
-      font-weight: 700;
-      letter-spacing: var(--tracking-display);
-      line-height: 1.12;
-      text-wrap: balance;
-    }
-    .st-lead {
-      margin: 0;
-      max-width: 78ch;
-      font-size: var(--text-16);
-      color: var(--muted-foreground);
-    }
-    .st-context-banner {
-      display: none;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: var(--space-2);
-      padding: var(--space-2) var(--space-3);
-      border: var(--border-width) solid var(--border-strong);
-      border-radius: var(--radius-control);
-      background: var(--sidebar);
-      font-family: var(--font-mono);
-      font-size: var(--text-14);
-      color: var(--foreground);
-    }
-    .st-context-banner[data-active="true"] { display: flex; }
-
-    .st-workbench {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(0, 1.38fr);
-      gap: var(--space-6);
-      align-items: start;
-    }
-    @media (max-width: 1100px) {
-      .st-workbench { grid-template-columns: 1fr; }
-      .st-nav { display: none; }
-    }
-    .st-stage-col {
-      position: sticky;
-      top: 5.25rem;
-      display: grid;
-      gap: var(--space-3);
-    }
-    @media (max-width: 1100px) {
-      .st-stage-col { position: static; }
-    }
-    .st-right-col {
-      display: grid;
-      gap: var(--space-6);
-      min-width: 0;
-    }
-
-    .st-viewport-card {
-      border: var(--border-width) solid var(--border-strong);
-      border-radius: var(--radius);
-      background: var(--card);
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-    }
-    .st-viewport-head {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: space-between;
-      gap: var(--space-2);
-      padding: var(--space-2) var(--space-3);
-      border-bottom: var(--border-width) solid var(--border);
-      background: var(--sidebar);
-      font-family: var(--font-mono);
-      font-size: var(--text-14);
-      font-variant-numeric: tabular-nums;
-    }
-    #studio-canvas {
-      display: block;
-      width: 100%;
-      aspect-ratio: 16 / 10;
-      min-height: 19rem;
-      background: var(--muted);
-      touch-action: none;
-      cursor: grab;
-    }
-    #studio-canvas:active { cursor: grabbing; }
-    .st-transport {
-      display: flex;
-      flex-wrap: wrap;
-      gap: var(--space-2);
-      padding: var(--space-3);
-      border-top: var(--border-width) solid var(--border);
-      background: var(--card);
-    }
+    /* Shared Controls */
     .st-btn {
-      min-height: var(--touch);
+      min-height: 2.35rem;
       padding: 0 var(--space-3);
       border-radius: var(--radius-control);
       border: var(--border-width) solid var(--border-strong);
@@ -252,6 +154,7 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
+      gap: var(--space-1);
       white-space: nowrap;
       cursor: pointer;
     }
@@ -268,29 +171,51 @@
       color: var(--brand-foreground);
       font-weight: 600;
     }
-    .st-prompt {
-      display: flex;
-      align-items: center;
-      gap: var(--space-2);
-      padding: var(--space-2);
-      border-top: var(--border-width) solid var(--border);
-      background: var(--muted);
+    .st-btn.danger {
+      border-color: var(--destructive);
+      color: var(--destructive);
+      background: transparent;
     }
-    .st-prompt input,
-    .wiz-input,
-    .wiz-select {
-      flex: 1;
+    .st-btn.sm {
+      min-height: 2rem;
+      padding: 0 var(--space-2);
+      font-size: var(--text-14);
+    }
+    .st-input,
+    .st-select,
+    .st-textarea {
+      width: 100%;
       min-width: 0;
-      min-height: var(--touch);
+      min-height: 2.35rem;
       padding: 0 var(--space-3);
       border-radius: var(--radius-control);
       border: var(--border-width) solid var(--border-strong);
-      background: var(--card);
-      color: var(--card-foreground);
+      background: var(--background);
+      color: var(--foreground);
       font-family: var(--font-mono);
       font-size: var(--text-14);
     }
-    .st-verdict-bar {
+    .st-textarea {
+      min-height: 6.5rem;
+      padding: var(--space-2) var(--space-3);
+      resize: vertical;
+      line-height: 1.45;
+    }
+
+    /* 3-Pane Studio IDE Shell */
+    .ide-main {
+      max-width: 112rem;
+      width: 100%;
+      margin: 0 auto;
+      padding: var(--space-4) clamp(0.75rem, 2vw, 1.5rem) 4rem;
+      gap: var(--space-4);
+    }
+    .ide-status-strip {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-2);
       padding: var(--space-2) var(--space-3);
       border: var(--border-width) solid var(--border);
       border-radius: var(--radius-control);
@@ -298,82 +223,407 @@
       font-family: var(--font-mono);
       font-size: var(--text-14);
       font-variant-numeric: tabular-nums;
-      color: var(--foreground);
     }
-    .st-manifest-strip {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+    .ide-holo-badge { color: var(--brand); font-weight: 500; }
+    .ide-context-banner {
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
       gap: var(--space-2);
-      padding: var(--space-3);
-      border: var(--border-width) solid var(--border);
-      border-radius: var(--radius);
-      background: var(--card);
-    }
-    .st-manifest-cell {
-      display: grid;
-      gap: 0.125rem;
-      font-variant-numeric: tabular-nums;
-    }
-    .st-manifest-cell span {
-      font-size: var(--text-14);
-      color: var(--muted-foreground);
-    }
-    .st-manifest-cell strong {
+      padding: var(--space-2) var(--space-3);
+      border: var(--border-width) solid var(--brand);
+      border-radius: var(--radius-control);
+      background: var(--sidebar);
       font-family: var(--font-mono);
       font-size: var(--text-14);
-      color: var(--foreground);
+    }
+    .ide-context-banner[data-active="true"] { display: flex; }
+
+    .ide-grid {
+      display: grid;
+      grid-template-columns: 16.5rem minmax(0, 1.35fr) minmax(20rem, 23.5rem);
+      gap: var(--space-4);
+      align-items: start;
+    }
+    @media (max-width: 1160px) {
+      .ide-grid { grid-template-columns: 15.5rem minmax(0, 1fr); }
+      .ide-right-col { grid-column: 1 / -1; }
+    }
+    @media (max-width: 860px) {
+      .ide-grid { grid-template-columns: 1fr; }
     }
 
-    /* 4-Stage Prism Catalog Composition Wizard */
-    .wiz-shell {
+    /* Pane Card */
+    .ide-pane {
       border: var(--border-width) solid var(--border-strong);
       border-radius: var(--radius);
       background: var(--card);
       overflow: hidden;
       display: grid;
     }
-    .wiz-head {
+    .ide-pane-head {
       display: flex;
-      flex-wrap: wrap;
       align-items: center;
       justify-content: space-between;
-      gap: var(--space-3);
-      padding: var(--space-3) var(--space-4);
+      gap: var(--space-2);
+      padding: var(--space-2) var(--space-3);
       border-bottom: var(--border-width) solid var(--border);
       background: var(--sidebar);
     }
-    .wiz-head h2 {
+    .ide-pane-head h2 {
       margin: 0;
       font-family: var(--font-display);
-      font-size: var(--text-18);
+      font-size: var(--text-16);
       font-weight: 600;
       letter-spacing: var(--tracking-display);
     }
-    .wiz-sub {
-      margin: 0.125rem 0 0;
+    .ide-pane-sub {
       font-family: var(--font-mono);
       font-size: var(--text-14);
       color: var(--muted-foreground);
     }
-    .wiz-progress {
-      font-family: var(--font-mono);
+    .ide-pane-body {
+      padding: var(--space-3);
+      display: grid;
+      gap: var(--space-3);
+    }
+
+    /* Left Rail: Project Explorer */
+    .ide-left-col {
+      position: sticky;
+      top: 4.5rem;
+      display: grid;
+      gap: var(--space-4);
+    }
+    @media (max-width: 860px) {
+      .ide-left-col { position: static; }
+    }
+    .proj-domain-list {
+      display: grid;
+      gap: var(--space-1);
+    }
+    .proj-domain-btn {
+      width: 100%;
+      padding: var(--space-2) var(--space-3);
+      border: var(--border-width) solid var(--border);
+      border-radius: var(--radius-control);
+      background: var(--background);
+      color: var(--foreground);
+      text-align: left;
+      display: grid;
+      gap: 0.125rem;
+      cursor: pointer;
+    }
+    .proj-domain-btn:hover { background: var(--accent); }
+    .proj-domain-btn[aria-pressed="true"] {
+      border-color: var(--brand);
+      background: var(--sidebar);
+    }
+    .proj-domain-btn strong {
       font-size: var(--text-14);
       font-weight: 600;
-      color: var(--success);
-      font-variant-numeric: tabular-nums;
     }
-    .wiz-stepper {
+    .proj-domain-btn small {
+      font-family: var(--font-mono);
+      font-size: var(--text-14);
+      color: var(--muted-foreground);
+    }
+
+    .proj-tree {
       display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: var(--space-2);
+    }
+    .proj-slot-group {
+      display: grid;
+      gap: var(--space-1);
+    }
+    .proj-slot-heading {
+      font-family: var(--font-mono);
+      font-size: var(--text-14);
+      color: var(--muted-foreground);
+      padding-top: var(--space-1);
+      border-top: var(--border-width) solid var(--border);
+    }
+    .proj-model-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-1);
+      padding: var(--space-2);
+      border: var(--border-width) solid var(--border);
+      border-radius: var(--radius-control);
+      background: var(--background);
+    }
+    .proj-model-row[data-selected="true"] {
+      border-color: var(--brand);
+      background: var(--sidebar);
+    }
+    .proj-model-pick {
+      flex: 1;
+      min-width: 0;
+      border: 0;
+      background: transparent;
+      color: var(--foreground);
+      text-align: left;
+      display: grid;
+      gap: 0.125rem;
+      cursor: pointer;
+      padding: 0;
+    }
+    .proj-model-pick strong {
+      font-size: var(--text-14);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .proj-model-pick small {
+      font-family: var(--font-mono);
+      font-size: var(--text-14);
+      color: var(--success);
+    }
+    .proj-empty {
+      padding: var(--space-3);
+      border: var(--border-width) dashed var(--border-strong);
+      border-radius: var(--radius-control);
+      font-size: var(--text-14);
+      color: var(--muted-foreground);
+      line-height: 1.45;
+    }
+
+    /* Center Column: 3D Stage + Unified Live Discovery */
+    .ide-center-col {
+      display: grid;
+      gap: var(--space-4);
+      min-width: 0;
+    }
+    #studio-canvas {
+      display: block;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      min-height: 20rem;
+      background: var(--muted);
+      touch-action: none;
+      cursor: grab;
+    }
+    #studio-canvas:active { cursor: grabbing; }
+    .st-transport {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+      padding: var(--space-2) var(--space-3);
+      border-top: var(--border-width) solid var(--border);
+      background: var(--card);
+    }
+    .st-prompt {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: var(--space-2) var(--space-3);
+      border-top: var(--border-width) solid var(--border);
+      background: var(--muted);
+    }
+    .st-verdict-bar {
+      padding: var(--space-2) var(--space-3);
+      border-top: var(--border-width) solid var(--border);
+      background: var(--sidebar);
+      font-family: var(--font-mono);
+      font-size: var(--text-14);
+      color: var(--foreground);
+    }
+
+    /* Unified Live Catalog Discovery Browser */
+    .disc-toolbar {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 13rem auto;
+      gap: var(--space-2);
+    }
+    @media (max-width: 720px) {
+      .disc-toolbar { grid-template-columns: 1fr; }
+    }
+    .disc-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-1);
+    }
+    .disc-pill {
+      min-height: 2rem;
+      padding: 0 var(--space-2);
+      border-radius: var(--radius-control);
+      border: var(--border-width) solid var(--border);
+      background: var(--background);
+      color: var(--muted-foreground);
+      font-family: var(--font-mono);
+      font-size: var(--text-14);
+      cursor: pointer;
+    }
+    .disc-pill:hover { color: var(--foreground); border-color: var(--border-strong); }
+    .disc-pill[aria-pressed="true"] {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: var(--primary-foreground);
+      font-weight: 600;
+    }
+    .disc-streams-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+      font-family: var(--font-mono);
+      font-size: var(--text-14);
+      color: var(--muted-foreground);
+    }
+    .disc-stream-chip {
+      padding: 0.125rem var(--space-2);
+      border-radius: var(--radius-control);
+      border: var(--border-width) solid var(--border);
+      background: var(--background);
+    }
+    .disc-stream-chip[data-status="live"] { color: var(--success); border-color: var(--border-strong); }
+
+    .disc-preview-dock {
+      display: none;
+      gap: var(--space-3);
+      padding: var(--space-3);
+      border: var(--border-width) solid var(--brand);
+      border-radius: var(--radius-control);
+      background: var(--sidebar);
+    }
+    .disc-preview-dock[data-open="true"] { display: grid; }
+    .disc-preview-grid {
+      display: grid;
+      grid-template-columns: 12rem minmax(0, 1fr);
+      gap: var(--space-3);
+      align-items: start;
+    }
+    @media (max-width: 640px) {
+      .disc-preview-grid { grid-template-columns: 1fr; }
+    }
+    .disc-preview-media {
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      border-radius: var(--radius-control);
+      border: var(--border-width) solid var(--border-strong);
+      background: var(--muted);
+      overflow: hidden;
+      display: grid;
+      place-items: center;
+      padding: var(--space-2);
+      text-align: center;
+      font-family: var(--font-mono);
+      font-size: var(--text-14);
+    }
+    .disc-preview-media img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .disc-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(15.5rem, 1fr));
+      gap: var(--space-3);
+    }
+    .disc-card {
+      border: var(--border-width) solid var(--border);
+      border-radius: var(--radius-control);
+      background: var(--background);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .disc-card:hover { border-color: var(--border-strong); }
+    .disc-thumb {
+      height: 8.5rem;
+      background: var(--muted);
+      border-bottom: var(--border-width) solid var(--border);
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      padding: var(--space-2);
+      text-align: center;
+    }
+    .disc-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .disc-thumb-badge {
+      font-family: var(--font-mono);
+      font-size: var(--text-14);
+      color: var(--muted-foreground);
+    }
+    .disc-card-body {
+      padding: var(--space-3);
+      display: grid;
+      gap: var(--space-1);
+      flex: 1;
+    }
+    .disc-card-tags {
+      font-family: var(--font-mono);
+      font-size: var(--text-14);
+      color: var(--brand);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .disc-card-title {
+      margin: 0;
+      font-family: var(--font-display);
+      font-size: var(--text-16);
+      font-weight: 600;
+      line-height: 1.25;
+    }
+    .disc-card-desc {
+      margin: 0;
+      font-size: var(--text-14);
+      color: var(--muted-foreground);
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .disc-card-slot {
+      font-family: var(--font-mono);
+      font-size: var(--text-14);
+      color: var(--muted-foreground);
+    }
+    .disc-card-foot {
+      display: flex;
+      gap: var(--space-2);
+      padding: var(--space-2) var(--space-3);
+      border-top: var(--border-width) solid var(--border);
+      background: var(--sidebar);
+    }
+    .disc-card-foot .st-btn { flex: 1; }
+
+    /* Right Contextual Rail */
+    .ide-right-col {
+      position: sticky;
+      top: 4.5rem;
+      max-height: calc(100dvh - 5.25rem);
+      overflow-y: auto;
+      display: grid;
+      gap: var(--space-4);
+      min-width: 0;
+    }
+    @media (max-width: 1160px) {
+      .ide-right-col {
+        position: static;
+        max-height: none;
+        overflow-y: visible;
+      }
+    }
+    .right-tabs {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
       border-bottom: var(--border-width) solid var(--border);
       background: var(--muted);
     }
-    @media (max-width: 720px) {
-      .wiz-stepper { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    }
-    .wiz-step-btn {
-      min-height: var(--touch);
-      padding: var(--space-2) var(--space-3);
+    .right-tab-btn {
+      min-height: 2.65rem;
       border: 0;
       border-right: var(--border-width) solid var(--border);
       background: transparent;
@@ -381,126 +631,125 @@
       font-family: var(--font-sans);
       font-size: var(--text-14);
       font-weight: 500;
-      text-align: left;
-      display: grid;
-      gap: 0.125rem;
       cursor: pointer;
     }
-    .wiz-step-btn:last-child { border-right: 0; }
-    .wiz-step-btn small {
-      font-family: var(--font-mono);
-      font-size: var(--text-14);
-      opacity: 0.85;
-    }
-    .wiz-step-btn[aria-selected="true"] {
+    .right-tab-btn:last-child { border-right: 0; }
+    .right-tab-btn[aria-selected="true"] {
       background: var(--card);
       color: var(--foreground);
       font-weight: 600;
       box-shadow: inset 0 -2px 0 var(--brand);
     }
-    .wiz-step-btn[data-done="true"] small { color: var(--success); }
-    .wiz-body {
-      padding: var(--space-4);
-      display: grid;
-      gap: var(--space-4);
-    }
-    .wiz-panel {
-      display: grid;
-      gap: var(--space-3);
-    }
-    .wiz-panel[hidden] { display: none; }
-    .wiz-domain-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
-      gap: var(--space-3);
-    }
-    .wiz-domain-card {
+    .right-pane-panel {
       padding: var(--space-3);
+      display: grid;
+      gap: var(--space-3);
+    }
+    .right-pane-panel[hidden] { display: none; }
+
+    .insp-field {
+      display: grid;
+      gap: 0.25rem;
+    }
+    .insp-field label {
+      font-family: var(--font-mono);
+      font-size: var(--text-14);
+      color: var(--muted-foreground);
+    }
+    .insp-meta-box {
+      padding: var(--space-2) var(--space-3);
       border: var(--border-width) solid var(--border);
       border-radius: var(--radius-control);
       background: var(--background);
-      color: var(--foreground);
-      text-align: left;
-      display: grid;
-      gap: var(--space-2);
-      cursor: pointer;
-    }
-    .wiz-domain-card:hover {
-      border-color: var(--border-strong);
-      background: var(--accent);
-    }
-    .wiz-domain-card[aria-pressed="true"] {
-      border-color: var(--brand);
-      background: var(--sidebar);
-    }
-    .wiz-domain-title {
-      font-family: var(--font-display);
-      font-size: var(--text-16);
-      font-weight: 600;
-    }
-    .wiz-domain-id {
       font-family: var(--font-mono);
       font-size: var(--text-14);
-      color: var(--brand);
+      line-height: 1.5;
+      overflow-wrap: anywhere;
     }
-    .wiz-domain-meta {
+    .insp-rev-list {
+      display: grid;
+      gap: var(--space-2);
+    }
+    .insp-rev-item {
+      padding: var(--space-2);
+      border: var(--border-width) solid var(--border);
+      border-radius: var(--radius-control);
+      background: var(--background);
+      display: grid;
+      gap: 0.25rem;
+      font-family: var(--font-mono);
       font-size: var(--text-14);
-      color: var(--muted-foreground);
-      line-height: 1.45;
     }
-    .wiz-row {
+    .insp-rev-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-2);
+    }
+    .insp-row {
       display: flex;
       flex-wrap: wrap;
       gap: var(--space-2);
       align-items: center;
     }
-    .wiz-label {
+
+    /* Compact 4-Stage Prism Composition Wizard */
+    .wiz-stepper {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: var(--space-1);
+    }
+    .wiz-step-btn {
+      min-height: 2.35rem;
+      padding: var(--space-1) var(--space-2);
+      border: var(--border-width) solid var(--border);
+      border-radius: var(--radius-control);
+      background: var(--background);
+      color: var(--muted-foreground);
       font-family: var(--font-mono);
       font-size: var(--text-14);
-      color: var(--muted-foreground);
+      text-align: left;
+      cursor: pointer;
     }
+    .wiz-step-btn[aria-selected="true"] {
+      border-color: var(--brand);
+      background: var(--sidebar);
+      color: var(--foreground);
+      font-weight: 600;
+    }
+    .wiz-panel { display: grid; gap: var(--space-2); }
+    .wiz-panel[hidden] { display: none; }
     .wiz-log {
       margin: 0;
-      padding: var(--space-3) 0 0;
+      padding: var(--space-2) 0 0;
       border-top: var(--border-width) solid var(--border);
       font-family: var(--font-mono);
       font-size: var(--text-14);
-      line-height: 1.5;
+      line-height: 1.45;
       white-space: pre-wrap;
       overflow-x: auto;
       color: var(--foreground);
     }
     .wiz-scorecard {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
       gap: var(--space-2);
     }
     .wiz-check {
-      padding: var(--space-2) var(--space-3);
+      padding: var(--space-2);
       border: var(--border-width) solid var(--border);
       border-radius: var(--radius-control);
       background: var(--background);
-      display: grid;
-      gap: 0.125rem;
+      display: flex;
+      justify-content: space-between;
+      gap: var(--space-2);
       font-family: var(--font-mono);
       font-size: var(--text-14);
     }
-    .wiz-check span { color: var(--muted-foreground); }
     .wiz-check strong[data-state="pass"] { color: var(--success); }
-    .wiz-foot {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: space-between;
-      gap: var(--space-2);
-      padding: var(--space-3) var(--space-4);
-      border-top: var(--border-width) solid var(--border);
-      background: var(--sidebar);
-    }
 
     .st-footer {
       border-top: var(--border-width) solid var(--border);
-      padding: var(--space-4) clamp(1rem, 3.5vw, 2.5rem);
+      padding: var(--space-4) clamp(0.75rem, 2vw, 1.5rem);
       display: flex;
       flex-wrap: wrap;
       justify-content: space-between;
@@ -516,211 +765,256 @@
   </style>
 </head>
 <body>
-  <header class="st-header">
-    <a href="./" class="st-brand">Verdant Studio</a>
-    <nav class="st-nav" aria-label="Verdant platform navigation">
-      <a href="../">Verdant Engine</a>
-      <a href="../catalogs/">Model Catalogs</a>
-      <a href="../demo/">Engine Demo</a>
-      <a href="../starter/">Starter Trial</a>
-      <a href="../docs/">Documentation</a>
+  <header class="ide-topbar">
+    <a href="./" class="ide-brand"><span class="ide-brand-dot" aria-hidden="true"></span>Verdant Studio</a>
+    <form class="ide-top-search" id="topbar-search-form" autocomplete="off">
+      <input id="topbar-search-input" type="search" aria-label="Discover models from live internet catalogs" placeholder="Discover 3D, PBR, fonts, audio, worlds, ontologies, code…" />
+    </form>
+    <nav class="ide-nav" aria-label="Verdant platform navigation">
+      <a href="../">Engine</a>
+      <a href="../catalogs/">Catalogs</a>
+      <a href="../demo/">Demo</a>
+      <a href="../starter/">Starter</a>
+      <a href="../docs/">Docs</a>
     </nav>
-    <div class="st-header-actions">
-      <button type="button" class="st-btn" id="studio-theme-btn">Theme: Dark</button>
-      <button type="button" class="st-cta" id="studio-export-uorc-btn">Export Project (.uorc)</button>
+    <div class="ide-top-actions">
+      <button type="button" class="st-btn sm" id="studio-theme-btn">Theme: Dark</button>
+      <button type="button" class="st-btn brand sm" id="studio-export-uorc-btn">Seal .uorc</button>
     </div>
   </header>
 
-  <main class="st-main">
-    <section class="st-hero" aria-labelledby="studio-h1">
-      <div class="st-meta" id="studio-holo-status">Atelier Boot · Verifying Prism app.holo &amp; 7 Role Contracts…</div>
-      <h1 class="st-h1" id="studio-h1">Immersive 3D Application Composition Studio</h1>
-      <p class="st-lead">
-        Import verified models from SHA-256-locked catalogs — world domains, Khronos glTF HD materials, 22-joint character rigs, Sabine acoustics, and ISO 24617-2 dialogue — and compose high-definition 3D apps live in Verdant Engine with continuous Prism quality enforcement.
-      </p>
-      <div class="st-context-banner" id="studio-catalog-banner" data-active="false">
-        <span id="studio-catalog-banner-text"></span>
-        <a class="st-btn" href="../catalogs/">Browse All 36 Catalog Models</a>
-      </div>
-    </section>
+  <main class="ide-main">
+    <div class="ide-status-strip">
+      <span class="ide-holo-badge" id="studio-holo-status">Atelier Boot · Verifying Prism app.holo &amp; Live Catalog Streams…</span>
+      <span id="st-man-domain">DOM-SUNSPIRE-HARBOR</span>
+      <span id="st-man-models">3 HD models · 0 imported</span>
+      <span id="st-man-acoustics">Sabine Ready · ≥290mm</span>
+    </div>
 
-    <section class="st-workbench" aria-label="Live authoring viewport, Catalog Composition Wizard, and 7-role studio workspace">
-      <div class="st-stage-col">
-        <div class="st-viewport-card">
-          <div class="st-viewport-head">
-            <span id="studio-hud-project">Sunspire Harbor Regatta · Compose</span>
-            <span id="studio-hud-metrics">LOD3 Lossless · Clear 290mm</span>
+    <div class="ide-context-banner" id="studio-catalog-banner" data-active="false">
+      <span id="studio-catalog-banner-text"></span>
+      <a class="st-btn sm" href="../catalogs/">All 36 Prism Catalogs</a>
+    </div>
+
+    <div class="ide-grid">
+      <!-- LEFT RAIL: Project Explorer & Imported Model Tree -->
+      <aside class="ide-left-col" aria-label="Project Explorer and Imported Models">
+        <section class="ide-pane">
+          <div class="ide-pane-head">
+            <h2>World Domains</h2>
+            <span class="ide-pane-sub">4 Packs</span>
           </div>
-          <canvas id="studio-canvas" width="960" height="600" aria-label="Verdant Studio live 3D project authoring stage"></canvas>
+          <div class="ide-pane-body">
+            <div class="proj-domain-list" id="wiz-domain-grid"></div>
+          </div>
+        </section>
+
+        <section class="ide-pane">
+          <div class="ide-pane-head">
+            <h2>Project Models</h2>
+            <span class="ide-pane-sub" id="proj-model-count">0 Imported</span>
+          </div>
+          <div class="ide-pane-body">
+            <div class="proj-tree" id="studio-project-tree">
+              <div class="proj-empty">
+                No external catalog models imported yet. Search live streams in the center Discovery panel and click <strong>+ Add</strong> to admit, edit, and version models inside Verdant Engine.
+              </div>
+            </div>
+          </div>
+        </section>
+      </aside>
+
+      <!-- CENTER COLUMN: Live HD 3D Viewport + Unified Live Internet Discovery -->
+      <section class="ide-center-col" aria-label="Live 3D Stage and Unified Catalog Discovery">
+        <article class="ide-pane">
+          <div class="ide-pane-head">
+            <h2 id="studio-hud-project">Sunspire Harbor Regatta · Studio</h2>
+            <span class="ide-pane-sub" id="studio-hud-metrics">LOD3 Lossless · Clear 290mm</span>
+          </div>
+          <canvas id="studio-canvas" width="960" height="540" aria-label="Verdant Studio live 3D project authoring stage"></canvas>
           <div class="st-transport" role="group" aria-label="Authoring stage controls">
-            <button type="button" class="st-btn primary" id="studio-sim-btn" aria-pressed="false">Step Physics</button>
-            <button type="button" class="st-btn" id="studio-cam-btn">Camera: Orbit</button>
-            <button type="button" class="st-btn" id="studio-lod-btn">Fidelity: LOD3</button>
-            <button type="button" class="st-btn" id="studio-audio-btn" aria-pressed="false">Audio: Off</button>
-            <button type="button" class="st-btn" id="studio-import-btn">Import .glb</button>
-            <button type="button" class="st-btn" id="studio-stitch-btn">Stitch 2-of-3</button>
+            <button type="button" class="st-btn primary sm" id="studio-sim-btn" aria-pressed="false">Step Physics</button>
+            <button type="button" class="st-btn sm" id="studio-cam-btn">Camera: Orbit</button>
+            <button type="button" class="st-btn sm" id="studio-lod-btn">Fidelity: LOD3</button>
+            <button type="button" class="st-btn sm" id="studio-audio-btn" aria-pressed="false">Audio: Off</button>
+            <button type="button" class="st-btn sm" id="studio-import-btn">Upload .glb</button>
+            <button type="button" class="st-btn sm" id="studio-stitch-btn">Stitch 2-of-3</button>
           </div>
           <form class="st-prompt" id="studio-prompt-form" autocomplete="off">
-            <input id="studio-prompt-input" type="text" aria-label="Direct active project via local CodedSlmDirector" placeholder="Direct project (cut to stone arch, 3rd person, audio room, tournament)…" />
-            <button type="submit" class="st-btn primary" id="studio-prompt-btn">Direct</button>
+            <input id="studio-prompt-input" class="st-input" type="text" aria-label="Direct active project via local CodedSlmDirector" placeholder="Direct stage via CodedSlmDirector (cut to stone arch, 3rd person, LOD4, audio)…" />
+            <button type="submit" class="st-btn primary sm" id="studio-prompt-btn">Direct</button>
           </form>
           <input id="studio-glb-file" type="file" accept=".glb,model/gltf-binary" hidden />
-        </div>
-
-        <div class="st-manifest-strip" aria-label="Active composed catalog manifest">
-          <div class="st-manifest-cell">
-            <span>Active Catalog Domain</span>
-            <strong id="st-man-domain">DOM-SUNSPIRE-HARBOR</strong>
+          <div class="st-verdict-bar" id="studio-status" aria-live="polite">
+            Initializing WebAssembly authoring kernel…
           </div>
-          <div class="st-manifest-cell">
-            <span>Imported HD Models</span>
-            <strong id="st-man-models">3 models · 2 items</strong>
-          </div>
-          <div class="st-manifest-cell">
-            <span>22-Joint NPC Rigs</span>
-            <strong id="st-man-npcs">Captain Soren, Engineer Talia</strong>
-          </div>
-          <div class="st-manifest-cell">
-            <span>Acoustic RT60 &amp; Guard</span>
-            <strong id="st-man-acoustics">Sabine Ready · ≥290mm</strong>
-          </div>
-        </div>
+        </article>
 
-        <div class="st-verdict-bar" id="studio-status" aria-live="polite">
-          Initializing WebAssembly authoring kernel…
-        </div>
-      </div>
-
-      <div class="st-right-col">
-        <section class="wiz-shell" id="studio-composer-wizard" aria-labelledby="wiz-title">
-          <header class="wiz-head">
-            <div>
-              <h2 id="wiz-title">Catalog-to-App Composition Wizard</h2>
-              <p class="wiz-sub">4-Stage Live Composition · Verdant Wasm Runtime + Prism Proof Enforcement</p>
-            </div>
-            <span class="wiz-progress" id="wiz-progress">Stage 1 of 4</span>
-          </header>
-
-          <div class="wiz-stepper" role="tablist" aria-label="Composition wizard stages">
-            <button type="button" class="wiz-step-btn" role="tab" data-wiz-step="1" aria-selected="true">
-              <small>01 · Catalog</small>
-              <span>Import Domain</span>
-            </button>
-            <button type="button" class="wiz-step-btn" role="tab" data-wiz-step="2" aria-selected="false">
-              <small>02 · Fidelity</small>
-              <span>Models &amp; Rigs</span>
-            </button>
-            <button type="button" class="wiz-step-btn" role="tab" data-wiz-step="3" aria-selected="false">
-              <small>03 · Agents</small>
-              <span>Dialogue &amp; Bus</span>
-            </button>
-            <button type="button" class="wiz-step-btn" role="tab" data-wiz-step="4" aria-selected="false">
-              <small>04 · Release</small>
-              <span>Verify &amp; Seal</span>
-            </button>
+        <!-- UNIFIED LIVE INTERNET CATALOG DISCOVERY -->
+        <section class="ide-pane" id="studio-discovery" aria-labelledby="disc-heading">
+          <div class="ide-pane-head">
+            <h2 id="disc-heading">Live Catalog Discovery · Search Internet &amp; Prism Streams</h2>
+            <span class="ide-pane-sub" id="disc-count-badge">Streaming…</span>
           </div>
+          <div class="ide-pane-body">
+            <form class="disc-toolbar" id="disc-search-form" autocomplete="off">
+              <input id="disc-search-input" class="st-input" type="search" aria-label="Search arbitrary models across live internet catalogs" placeholder="Search lantern, chair, forest, mono, dungeon, lighthouse, wgsl, theme…" />
+              <select id="disc-stream-select" class="st-select" aria-label="Filter catalog stream">
+                <option value="all">All 7 Live Streams</option>
+                <option value="khronos-gltf">Khronos glTF 2.0 (.glb)</option>
+                <option value="polyhaven">Poly Haven CC0 (3D &amp; PBR)</option>
+                <option value="fontsource">Fontsource (Open Fonts)</option>
+                <option value="openverse">Openverse CC (Audio &amp; Art)</option>
+                <option value="wikidata">Wikidata (Ontologies)</option>
+                <option value="github">GitHub OSS (Code &amp; Themes)</option>
+                <option value="verdant-prism">Verdant Locked Prism</option>
+              </select>
+              <button type="submit" class="st-btn primary" id="disc-search-btn">Discover</button>
+            </form>
 
-          <div class="wiz-body">
-            <!-- Stage 1: Import Domain Pack from SHA-256-locked catalog -->
-            <div class="wiz-panel" id="wiz-panel-1" data-wiz-panel="1">
-              <div class="wiz-label">
-                Select an imported catalog domain from <code>AUTH-DOMAIN-PACKS</code> (<code>world-packs.json</code>). Verdant Wasm hot-swaps terrain relief, architectural meshes, Khronos PBR materials, conserved item ledgers, and 22-joint character rigs live on the stage.
+            <div class="disc-pills" id="disc-type-pills" role="group" aria-label="Authoritative Schema.org and IANA content types"></div>
+            <div class="disc-streams-bar" id="disc-stream-status"></div>
+
+            <!-- Inline Live Preview Dock -->
+            <div class="disc-preview-dock" id="disc-preview-dock" data-open="false" aria-live="polite">
+              <div class="insp-rev-top">
+                <strong id="disc-prev-title">Model Preview</strong>
+                <button type="button" class="st-btn sm" id="disc-prev-close">Close Preview</button>
               </div>
-              <div class="wiz-domain-grid" id="wiz-domain-grid"></div>
+              <div class="disc-preview-grid">
+                <div class="disc-preview-media" id="disc-prev-media"></div>
+                <div style="display:grid;gap:var(--space-2);">
+                  <div class="insp-meta-box" id="disc-prev-meta"></div>
+                  <div id="disc-prev-audio-host"></div>
+                  <div class="insp-row">
+                    <button type="button" class="st-btn brand sm" id="disc-prev-import-btn">+ Add to Project (v1)</button>
+                    <button type="button" class="st-btn primary sm" id="disc-prev-live-btn" hidden>Load Live on 3D Stage</button>
+                    <a class="st-btn sm" id="disc-prev-source-link" href="../catalogs/" target="_blank" rel="noopener noreferrer">Source URI</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="disc-grid" id="disc-results-grid"></div>
+          </div>
+        </section>
+      </section>
+
+      <!-- RIGHT RAIL: Contextual Inspector & Versions | Compose Wizard | 7 Lifecycle Roles -->
+      <aside class="ide-right-col" aria-label="Model Inspector, Composition Wizard, and Lifecycle Roles">
+        <section class="ide-pane">
+          <div class="right-tabs" role="tablist" aria-label="Studio right rail modes">
+            <button type="button" class="right-tab-btn" role="tab" id="right-tab-inspector" data-right-tab="inspector" aria-selected="true">Inspector</button>
+            <button type="button" class="right-tab-btn" role="tab" id="right-tab-compose" data-right-tab="compose" aria-selected="false">Compose</button>
+            <button type="button" class="right-tab-btn" role="tab" id="right-tab-roles" data-right-tab="roles" aria-selected="false">7 Roles</button>
+          </div>
+
+          <!-- TAB 1: MODEL INSPECTOR, LIVE EDITOR & VERSIONING -->
+          <div class="right-pane-panel" id="pane-inspector" data-right-panel="inspector">
+            <div id="insp-empty-state" class="proj-empty">
+              Select any model from <strong>Live Catalog Discovery</strong> and click <strong>+ Add</strong> to admit it into Verdant Engine's <code>ObserverPrismHolon</code>, edit its properties, commit cryptographically chained versions (<code>v1 → v2 → …</code>), revert non-destructively, or remove it cleanly.
+            </div>
+            <div id="insp-editor" hidden style="display:grid;gap:var(--space-3);">
+              <div class="insp-meta-box" id="insp-meta"></div>
+              <div class="insp-field">
+                <label for="insp-title">Model Title</label>
+                <input id="insp-title" class="st-input" type="text" />
+              </div>
+              <div class="insp-field">
+                <label for="insp-tags">Auto-Tags (comma-separated)</label>
+                <input id="insp-tags" class="st-input" type="text" />
+              </div>
+              <div class="insp-field">
+                <label for="insp-props">Editable Model Properties (JSON)</label>
+                <textarea id="insp-props" class="st-textarea"></textarea>
+              </div>
+              <div class="insp-field">
+                <label for="insp-note">Version Commit Note</label>
+                <input id="insp-note" class="st-input" type="text" placeholder="Describe your edit for PROV-O revision history…" />
+              </div>
+              <div class="insp-row">
+                <button type="button" class="st-btn primary sm" id="insp-save-btn">Save Version</button>
+                <button type="button" class="st-btn sm" id="insp-apply-btn">Apply Live</button>
+                <button type="button" class="st-btn danger sm" id="insp-remove-btn">Remove</button>
+              </div>
+              <div>
+                <div class="ide-pane-sub" style="margin-bottom:var(--space-2);">Immutable PROV-O Version History</div>
+                <div class="insp-rev-list" id="insp-revisions"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB 2: 4-STAGE PRISM COMPOSITION WIZARD & QUALITY GATE -->
+          <div class="right-pane-panel" id="pane-compose" data-right-panel="compose" hidden>
+            <div class="wiz-stepper" role="tablist" aria-label="Composition wizard stages">
+              <button type="button" class="wiz-step-btn" role="tab" data-wiz-step="1" aria-selected="true">01 · Domain</button>
+              <button type="button" class="wiz-step-btn" role="tab" data-wiz-step="2" aria-selected="false">02 · Fidelity &amp; Rigs</button>
+              <button type="button" class="wiz-step-btn" role="tab" data-wiz-step="3" aria-selected="false">03 · ISO Dialogue</button>
+              <button type="button" class="wiz-step-btn" role="tab" data-wiz-step="4" aria-selected="false">04 · Prism Gate</button>
+            </div>
+
+            <div class="wiz-panel" id="wiz-panel-1" data-wiz-panel="1">
+              <div class="ide-pane-sub">Active Domain Pack Summary</div>
               <pre class="wiz-log" id="wiz-domain-log">Loading SHA-256-locked domain catalog…</pre>
             </div>
 
-            <!-- Stage 2: Compose HD Fidelity, Character Rig Directives & Sabine Room -->
             <div class="wiz-panel" id="wiz-panel-2" data-wiz-panel="2" hidden>
-              <div class="wiz-label">
-                Configure progressive UORC geometry fidelity, camera rig, imported 22-joint NPC directive, and Sabine reverberation acoustics directly in WebAssembly.
+              <div class="insp-row">
+                <button type="button" class="st-btn sm" data-wiz-lod="2">LOD2</button>
+                <button type="button" class="st-btn primary sm" data-wiz-lod="3">LOD3</button>
+                <button type="button" class="st-btn sm" data-wiz-lod="4">LOD4</button>
+                <button type="button" class="st-btn primary sm" data-wiz-cam="landmark">Orbit</button>
+                <button type="button" class="st-btn sm" data-wiz-cam="third">3rd IK</button>
+                <button type="button" class="st-btn sm" data-wiz-cam="first">1st Eye</button>
               </div>
-              <div class="wiz-row" role="group" aria-label="UORC Fidelity Ladder">
-                <span class="wiz-label">Fidelity:</span>
-                <button type="button" class="st-btn" data-wiz-lod="2">LOD2 High</button>
-                <button type="button" class="st-btn primary" data-wiz-lod="3">LOD3 Lossless</button>
-                <button type="button" class="st-btn" data-wiz-lod="4">LOD4 Ultra HD</button>
-              </div>
-              <div class="wiz-row" role="group" aria-label="Camera Rig Preset">
-                <span class="wiz-label">Camera Rig:</span>
-                <button type="button" class="st-btn primary" data-wiz-cam="landmark">Orbit Guard</button>
-                <button type="button" class="st-btn" data-wiz-cam="third">3rd-Person IK</button>
-                <button type="button" class="st-btn" data-wiz-cam="first">1st-Person Eye</button>
-              </div>
-              <div class="wiz-row">
-                <label class="wiz-label" for="wiz-npc-select">Active NPC Rig:</label>
-                <select id="wiz-npc-select" class="wiz-select"></select>
-                <button type="button" class="st-btn" id="wiz-sabine-btn">Calibrate Domain Sabine RT60</button>
-              </div>
-              <div class="wiz-row" id="wiz-directives-row" role="group" aria-label="NPC Directives"></div>
-              <pre class="wiz-log" id="wiz-compose-log">Ready to tune HD geometry, NPC rig directives, and Sabine acoustic response.</pre>
+              <select id="wiz-npc-select" class="st-select" aria-label="Active 22-joint NPC rig"></select>
+              <div class="insp-row" id="wiz-directives-row"></div>
+              <button type="button" class="st-btn sm" id="wiz-sabine-btn">Calibrate Domain Sabine RT60</button>
+              <pre class="wiz-log" id="wiz-compose-log">Ready to tune HD geometry, NPC directives, and Sabine acoustics.</pre>
             </div>
 
-            <!-- Stage 3: ISO 24617-2 Dialogue & SOSA/PROV-O Observer Bus -->
             <div class="wiz-panel" id="wiz-panel-3" data-wiz-panel="3" hidden>
-              <div class="wiz-label">
-                Exercise Verdant's native ISO 24617-2 language engine (zero external LLM runtime) and observe Prism-signed SOSA/PROV-O communication envelopes across the active domain's characters.
-              </div>
-              <div class="wiz-row" id="wiz-prompt-chips"></div>
-              <form class="wiz-row" id="wiz-dlg-form" autocomplete="off">
-                <input id="wiz-dlg-input" class="wiz-input" type="text" aria-label="Speak to active domain NPC" placeholder="Ask about conserved items, portals, or test an ungrounded question…" />
-                <button type="submit" class="st-btn primary" id="wiz-dlg-send">Speak (ISO 24617-2)</button>
-                <button type="button" class="st-btn" id="wiz-dlg-abstain">Test Abstention</button>
+              <div class="insp-row" id="wiz-prompt-chips"></div>
+              <form class="insp-row" id="wiz-dlg-form" autocomplete="off">
+                <input id="wiz-dlg-input" class="st-input" type="text" aria-label="Speak to active domain NPC" placeholder="Ask grounded fact or test abstention…" />
+                <button type="submit" class="st-btn primary sm" id="wiz-dlg-send">Speak</button>
+                <button type="button" class="st-btn sm" id="wiz-dlg-abstain">Test Abstention</button>
               </form>
-              <div class="wiz-row">
-                <button type="button" class="st-btn" id="wiz-comm-btn">Record SOSA/PROV-O Envelope</button>
-                <button type="button" class="st-btn" id="wiz-observer-btn">Inspect Observer Holon</button>
+              <div class="insp-row">
+                <button type="button" class="st-btn sm" id="wiz-comm-btn">Record SOSA Envelope</button>
+                <button type="button" class="st-btn sm" id="wiz-observer-btn">Observer Telemetry</button>
               </div>
-              <pre class="wiz-log" id="wiz-dlg-log">Select a grounded prompt or click 'Test Abstention' to verify zero-hallucination ISO 24617-2 reasoning.</pre>
+              <pre class="wiz-log" id="wiz-dlg-log">Run a grounded query or click 'Test Abstention' to verify ISO 24617-2.</pre>
             </div>
 
-            <!-- Stage 4: Prism Quality Compliance & .uorc App Packaging -->
             <div class="wiz-panel" id="wiz-panel-4" data-wiz-panel="4" hidden>
-              <div class="wiz-label">
-                Run live Prism quality compliance gates across the composed world before sealing and exporting your standalone <code>.uorc</code> archive.
-              </div>
               <div class="wiz-scorecard">
-                <div class="wiz-check">
-                  <span>Tropical Spatial UI + WCAG AA</span>
-                  <strong id="wiz-chk-ui">Pending</strong>
-                </div>
-                <div class="wiz-check">
-                  <span>Exclusive .uorc Archive Policy</span>
-                  <strong id="wiz-chk-uorc">Pending</strong>
-                </div>
-                <div class="wiz-check">
-                  <span>Prism app.holo Proof Vectors</span>
-                  <strong id="wiz-chk-holo">Pending</strong>
-                </div>
-                <div class="wiz-check">
-                  <span>Observer Holon Exclusivity</span>
-                  <strong id="wiz-chk-obs">Pending</strong>
-                </div>
+                <div class="wiz-check"><span>Spatial UI + WCAG</span><strong id="wiz-chk-ui">Pending</strong></div>
+                <div class="wiz-check"><span>Exclusive .uorc</span><strong id="wiz-chk-uorc">Pending</strong></div>
+                <div class="wiz-check"><span>Prism app.holo</span><strong id="wiz-chk-holo">Pending</strong></div>
+                <div class="wiz-check"><span>Observer Holon</span><strong id="wiz-chk-obs">Pending</strong></div>
               </div>
-              <div class="wiz-row">
-                <button type="button" class="st-btn primary" id="wiz-audit-btn">Run Full Prism Quality Gate</button>
-                <button type="button" class="st-btn brand" id="wiz-seal-uorc-btn">Seal &amp; Export App (.uorc)</button>
-                <button type="button" class="st-btn" id="wiz-share-uorc-btn">Copy #uorc= Link</button>
-                <a class="st-btn" href="../starter/">Launch Starter Trial</a>
+              <div class="insp-row">
+                <button type="button" class="st-btn primary sm" id="wiz-audit-btn">Run Full Prism Quality Gate</button>
+                <button type="button" class="st-btn brand sm" id="wiz-seal-uorc-btn">Seal .uorc</button>
+                <button type="button" class="st-btn sm" id="wiz-share-uorc-btn">Copy #uorc=</button>
+                <a class="st-btn sm" href="../starter/">Starter Trial</a>
               </div>
-              <pre class="wiz-log" id="wiz-audit-log">Click 'Run Full Prism Quality Gate' to certify UI, UORC exclusivity, Holo vectors, and Observer state.</pre>
+              <pre class="wiz-log" id="wiz-audit-log">Click 'Run Full Prism Quality Gate' to certify all 4 Prism gates.</pre>
             </div>
           </div>
 
-          <footer class="wiz-foot">
-            <button type="button" class="st-btn" id="wiz-prev-btn">Previous Stage</button>
-            <span class="wiz-label" id="wiz-foot-meta">Verdant Engine Exclusive Runtime · .uorc Sealed Packaging</span>
-            <button type="button" class="st-btn primary" id="wiz-next-btn">Next Stage</button>
-          </footer>
+          <!-- TAB 3: 7 LIFECYCLE ROLE WORKSPACES -->
+          <div class="right-pane-panel" id="pane-roles" data-right-panel="roles" hidden>
+            <div id="studio-inline-host"></div>
+          </div>
         </section>
-
-        <div id="studio-inline-host"></div>
-      </div>
-    </section>
+      </aside>
+    </div>
   </main>
 
   <footer class="st-footer">
-    <span>Verdant Studio · Catalog-Driven 3D Composition Atelier &amp; 7-Role Workspaces</span>
+    <span>Verdant Studio · Model-Centric Live Discovery, Cryptographic Versioning &amp; 3D App Composition IDE</span>
     <span><a href="../">Verdant Engine</a> · <a href="../catalogs/">Model Catalogs</a> · <a href="../demo/">Engine Demo</a> · <a href="../starter/">Sunspire Beacon Trials</a> · <a href="../docs/">Documentation</a></span>
   </footer>
 

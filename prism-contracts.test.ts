@@ -25,6 +25,11 @@ import {
   parseConformantKeyValues,
   summarizeCatalogCoverage,
 } from "./site/prism-catalogs.mjs";
+import {
+  AUTHORITATIVE_CONTENT_TYPES,
+  LIVE_CATALOG_STREAMS,
+  searchLiveCatalogStreams,
+} from "./site/catalog-streams.mjs";
 import * as studioModule from "./site/studio.mjs";
 import {
   STARTER_ARCHETYPES,
@@ -467,4 +472,22 @@ test("Planted Defect Gate C12: rejects root-absolute subpath violations and forb
       }),
     /Archive policy violation/,
   );
+});
+
+test("Live Catalog Streams define authoritative Schema.org/IANA types and auto-tag local/remote models cleanly", async () => {
+  assert.ok(AUTHORITATIVE_CONTENT_TYPES.length >= 10, "expected 'all' plus 9 authoritative Schema.org/IANA content types");
+  assert.ok(LIVE_CATALOG_STREAMS.length >= 7, "expected 6 live internet streams plus locked Verdant Prism stream");
+
+  const worldPacks = JSON.parse(readFileSync(join(ROOT, "catalogs", "domains", "world-packs.json"), "utf8")).domains;
+  const res = await searchLiveCatalogStreams({
+    query: "",
+    contentType: "all",
+    streamId: "verdant-prism",
+    localWorldPacks: worldPacks,
+    includeRemote: false,
+  });
+  assert.ok(res.totalCount >= 20, `expected >=20 local auto-tagged catalog models, got ${res.totalCount}`);
+  for (const item of res.items) {
+    assert.ok(item.schemaType && item.mediaType && item.targetSlot, `item ${item.id} missing authoritative auto-tags`);
+  }
 });
