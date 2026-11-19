@@ -585,28 +585,56 @@
       <div>
         <h2 class="cat-h2" id="cat-sensory-h2">01. Observer Sensory Streams · Differentiated Catalog Organs</h2>
         <p class="cat-sec-sub">
-          Every external and local catalog stream is a differentiated sensory input organ of the Verdant Observer, assigned an orthogonal Prism basis prime (<code>13..37</code>), authoritative Schema.org <code>@type</code>, and IANA media types. Select any stream to focus the live gallery below.
+          Every external and local catalog stream is a differentiated sensory input organ of the Verdant Observer, assigned an orthogonal Prism basis prime (<code>13..47+</code>), connected Observer parts, authoritative Schema.org <code>@type</code>, and IANA media types. Enable, disable, or register new streams below — changes sync straight into Verdant Studio's <code>ObserverPrismHolon</code>.
         </p>
       </div>
       <div class="cat-sensory-grid" id="cat-sensory-grid"></div>
+      <form class="cat-filters" id="cat-add-stream-form" autocomplete="off">
+        <div class="cat-field">
+          <label for="cat-new-stream-id">New Stream Slug</label>
+          <input id="cat-new-stream-id" class="cat-input" type="text" placeholder="e.g. my-characters" required />
+        </div>
+        <div class="cat-field">
+          <label for="cat-new-stream-label">Stream Label</label>
+          <input id="cat-new-stream-label" class="cat-input" type="text" placeholder="Custom glTF / Schema.org Feed" required />
+        </div>
+        <div class="cat-field">
+          <label for="cat-new-stream-url">HTTPS Endpoint URL</label>
+          <input id="cat-new-stream-url" class="cat-input" type="url" placeholder="https://…/model-index.json" required />
+        </div>
+        <div class="cat-field">
+          <label for="cat-new-stream-adapter">Protocol Adapter</label>
+          <select id="cat-new-stream-adapter" class="cat-select">
+            <option value="khronos-index">Khronos model-index.json</option>
+            <option value="github-glb-tree">GitHub GLB Repository Tree</option>
+            <option value="schema-org-catalog">Schema.org DataCatalog JSON-LD</option>
+          </select>
+        </div>
+        <div class="cat-field" style="align-self:end;">
+          <button type="submit" class="cat-btn primary" id="cat-add-stream-btn">+ Connect Stream</button>
+        </div>
+      </form>
     </section>
 
     <section class="cat-section" aria-labelledby="cat-gallery-h2">
       <div>
         <h2 class="cat-h2" id="cat-gallery-h2">02. High-Resolution Live Catalog Gallery · Featured Content</h2>
         <p class="cat-sec-sub" id="cat-gallery-summary">
-          Streaming featured 3D models, 4K PBR materials, open typography, audio soundscapes, ontologies, and shaders live from authoritative public catalogs. Click any asset to open and compose it directly in Verdant Studio.
+          Streaming featured rigged characters, NASA 3D spacecraft, Poly Haven panoramic sky domes &amp; 4K PBR materials, open typography, audio soundscapes, ontologies, and shaders live from authoritative public catalogs. Click any asset to open and compose it directly in Verdant Studio.
         </p>
       </div>
       <form class="cat-gallery-bar" id="cat-gallery-form" autocomplete="off">
-        <input id="cat-gallery-search" class="cat-input" type="search" aria-label="Search live catalog gallery" placeholder="Search helmet, lantern, chair, forest, mono, observatory, wgsl…" />
+        <input id="cat-gallery-search" class="cat-input" type="search" aria-label="Search live catalog gallery" placeholder="Search apollo, soldier, fox, helmet, sky, chair, forest, mono, wgsl…" />
         <select id="cat-gallery-stream" class="cat-select" aria-label="Filter gallery stream">
-          <option value="all">All 7 Sensory Streams</option>
+          <option value="all">All 10 Sensory Streams</option>
           <option value="khronos-gltf">Khronos glTF 2.0 (.glb)</option>
-          <option value="polyhaven">Poly Haven CC0 (3D &amp; PBR)</option>
+          <option value="nasa-3d">NASA 3D Resources (257+ .glb)</option>
+          <option value="threejs-gltf">Three.js Rigged Characters (.glb)</option>
+          <option value="babylon-assets">BabylonJS Open 3D Assets (.glb)</option>
+          <option value="polyhaven">Poly Haven CC0 (Sky Domes, 3D &amp; PBR)</option>
           <option value="fontsource">Fontsource Open Fonts</option>
           <option value="openverse">Openverse CC (Audio &amp; Art)</option>
-          <option value="wikidata">Wikidata Knowledge Graph</option>
+          <option value="wikidata">Wikidata + Wikipedia Knowledge</option>
           <option value="github">GitHub OSS Registry</option>
           <option value="verdant-prism">Verdant Locked Prism</option>
         </select>

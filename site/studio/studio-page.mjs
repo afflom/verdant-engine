@@ -10,6 +10,7 @@ import { load } from "../worker-runtime/index.mjs";
 import {
   AUTHORITATIVE_CONTENT_TYPES,
   LIVE_CATALOG_STREAMS,
+  fetchLiveKnowledgePassage,
   searchLiveCatalogStreams,
 } from "../catalog-streams.mjs";
 import {
@@ -109,7 +110,48 @@ const discPrevMeta = $("disc-prev-meta");
 const discPrevAudioHost = $("disc-prev-audio-host");
 const discPrevImportBtn = $("disc-prev-import-btn");
 const discPrevLiveBtn = $("disc-prev-live-btn");
+const discPrevComposeBtn = $("disc-prev-compose-btn");
+const discPrevSkyBtn = $("disc-prev-sky-btn");
 const discPrevSourceLink = $("disc-prev-source-link");
+
+// Observer Cognition, Host Envelope & Dynamic Stream Registry DOM
+const cogHostEnvelopeEl = $("cog-host-envelope");
+const cogPartsListEl = $("cog-parts-list");
+const cogStreamsListEl = $("cog-streams-list");
+const cogRefineBtn = $("cog-refine-btn");
+const cogClearSkyBtn = $("cog-clear-sky-btn");
+const cogAddStreamForm = $("cog-add-stream-form");
+const cogStreamIdInput = $("cog-stream-id");
+const cogStreamLabelInput = $("cog-stream-label");
+const cogStreamUrlInput = $("cog-stream-url");
+const cogStreamAdapterSel = $("cog-stream-adapter");
+const cogStreamPartSel = $("cog-stream-part");
+const cogLogEl = $("cog-log");
+let lastCognition = null;
+const STREAM_PREFS_KEY = "verdant.observer.streams.v1";
+
+function loadStreamPrefs() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(STREAM_PREFS_KEY) || "{}");
+    return {
+      disabled: Array.isArray(raw.disabled) ? raw.disabled : [],
+      custom: Array.isArray(raw.custom) ? raw.custom : [],
+    };
+  } catch {
+    return { disabled: [], custom: [] };
+  }
+}
+
+function saveStreamPrefs(cognition) {
+  if (!cognition?.streams) return;
+  try {
+    const disabled = cognition.streams.filter((s) => !s.enabled).map((s) => s.streamId);
+    const custom = cognition.streams.filter((s) => !s.builtIn);
+    localStorage.setItem(STREAM_PREFS_KEY, JSON.stringify({ disabled, custom }));
+  } catch {
+    // Ignore storage quota / privacy errors
+  }
+}
 const discPrevCloseBtn = $("disc-prev-close");
 
 const inspEmptyState = $("insp-empty-state");
@@ -267,7 +309,20 @@ stageModeDomainBtn?.addEventListener("click", async () => {
 
 function renderFeaturedStageGlbs(items) {
   if (!stageFeaturedGlbsEl) return;
-  const glbs = (items || []).filter((i) => i.glbUrl).slice(0, 5);
+  // Prioritize diverse live streams (Khronos + NASA + Three.js Rigged Characters + BabylonJS):
+  const byStream = new Map();
+  for (const i of items || []) {
+    if (!i.glbUrl) continue;
+    if (!byStream.has(i.streamId)) byStream.set(i.streamId, []);
+    byStream.get(i.streamId).push(i);
+  }
+  const glbs = [];
+  const queues = [...byStream.values()];
+  while (glbs.length < 6 && queues.some((q) => q.length > 0)) {
+    for (const q of queues) {
+      if (q.length > 0 && glbs.length < 6) glbs.push(q.shift());
+    }
+  }
   if (glbs.length === 0) return;
   stageFeaturedGlbsEl.replaceChildren();
   for (const item of glbs) {
@@ -648,11 +703,16 @@ document.querySelectorAll("[data-right-tab]").forEach((btn) => {
 
 async function loadRemoteGlbIntoStage(glbUrl, label) {
   if (!glbUrl) return false;
-  chip(statusEl, `Streaming live .glb (${label}) -> Verdant Wasm UORC transcoder…`);
+  chip(statusEl, `Streaming live .glb (${label}) -> Verdant Wasm HD texture + UORC transcoder…`);
   try {
-    const res = await fetch(glbUrl, { signal: AbortSignal.timeout(12000) });
+    const res = await fetch(glbUrl, { signal: AbortSignal.timeout(14000) });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const bytes = new Uint8Array(await res.arrayBuffer());
+    const maxBytes = lastCognition?.hostEnvelope?.recommendedGlbMaxBytes || 25165824;
+    if (bytes.byteLength > maxBytes) {
+      chip(statusEl, `Host budget guard: "${label}" (${Math.round(bytes.byteLength / 1048576)}MB) exceeds host cap (${Math.round(maxBytes / 1048576)}MB)`);
+      return false;
+    }
     const r = await callWorker("import-glb", { bytes }, [bytes.buffer]);
     if (r?.ok) {
       lTris = r.tris || lTris;
@@ -662,9 +722,10 @@ async function loadRemoteGlbIntoStage(glbUrl, label) {
         lClr = r.camera.clearanceMm ?? lClr;
       }
       await syncFallbackBuffers();
-      if (hudProjectEl) hudProjectEl.textContent = `Imported 3D · ${label}`;
-      if (hudMetricsEl) hudMetricsEl.textContent = `Khronos glTF 2.0 · ${lTris.toLocaleString()} tris · Auto-Framed`;
-      chip(statusEl, `Mounted live Khronos .glb "${label}" (${lTris.toLocaleString()} tris · auto-framed & texture-sampled)`);
+      if (hudProjectEl) hudProjectEl.textContent = `HD Stream Stage · ${label}`;
+      if (hudMetricsEl) hudMetricsEl.textContent = `Khronos glTF 2.0 · ${lTris.toLocaleString()} tris · UV-Textured PBR`;
+      chip(statusEl, `Mounted live Khronos .glb "${label}" (${lTris.toLocaleString()} tris · auto-framed & UV-textured)`);
+      refreshObserverCognition();
       requestRender();
       return true;
     }
@@ -675,6 +736,250 @@ async function loadRemoteGlbIntoStage(glbUrl, label) {
     return false;
   }
 }
+
+async function composeRemoteGlbIntoStage(glbUrl, label) {
+  if (!glbUrl) return false;
+  chip(statusEl, `Composing "${label}" beside active stage geometry…`);
+  try {
+    const res = await fetch(glbUrl, { signal: AbortSignal.timeout(14000) });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const bytes = new Uint8Array(await res.arrayBuffer());
+    const r = await callWorker("compose-glb-append", { bytes }, [bytes.buffer]);
+    if (r?.ok) {
+      lTris = r.tris || lTris;
+      if (r.camera) {
+        sEye = r.camera.eye;
+        sTgt = r.camera.lookTarget;
+        lClr = r.camera.clearanceMm ?? lClr;
+      }
+      if (hudMetricsEl) hudMetricsEl.textContent = `Composed Multi-Asset Stage · ${lTris.toLocaleString()} tris`;
+      chip(statusEl, `Composed "${label}" onto live stage (${lTris.toLocaleString()} total tris)`);
+      refreshObserverCognition();
+      requestRender();
+      return true;
+    }
+    return false;
+  } catch (err) {
+    chip(statusEl, `Compose stream offline (${label}): ${err?.message || "network unavailable"}`);
+    return false;
+  }
+}
+
+async function applyRemoteEnvSky(skyUrl, label) {
+  if (!skyUrl) {
+    await callWorker("set-env-sky", { bitmap: null });
+    chip(statusEl, "Reset WebGL2 sky dome to procedural atmosphere");
+    requestRender();
+    return true;
+  }
+  chip(statusEl, `Streaming Poly Haven panoramic sky dome (${label}) -> WebGL2…`);
+  try {
+    const res = await fetch(skyUrl, { signal: AbortSignal.timeout(12000) });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const blob = await res.blob();
+    const bitmap = await createImageBitmap(blob);
+    const r = await callWorker("set-env-sky", { bitmap, label }, [bitmap]);
+    if (r?.cognition) renderObserverCognition(r.cognition);
+    chip(statusEl, `Applied live Poly Haven HDRI sky dome "${label}"`);
+    requestRender();
+    return true;
+  } catch (err) {
+    chip(statusEl, `Sky dome stream offline (${label}): ${err?.message || "network unavailable"}`);
+    return false;
+  }
+}
+
+function renderObserverCognition(cog) {
+  if (!cog) return;
+  lastCognition = cog;
+  saveStreamPrefs(cog);
+
+  if (cogHostEnvelopeEl && cog.hostEnvelope) {
+    const he = cog.hostEnvelope;
+    const gpuTag = he.isSoftwareGpu ? "Software WebGL2" : "Hardware GPU";
+    cogHostEnvelopeEl.textContent =
+      `Observer Precision: ${(cog.resolutionPermille / 10).toFixed(1)}% · ${cog.enabledStreamCount}/${cog.streamCount} Streams · ${cog.ingestedKnowledgeCount} Knowledge Passages\n` +
+      `Host Container: ${gpuTag} · MaxTex ${he.maxTextureEdgePx}px -> Cap ${he.recommendedTextureCapPx}px · ${he.hardwareThreads} Threads\n` +
+      `Frame Headroom: ${(he.hostHeadroomPermille / 10).toFixed(0)}% (${(he.emaFrameMicros / 1000).toFixed(1)}ms) · Max GLB ${Math.round(he.recommendedGlbMaxBytes / 1048576)}MB`;
+  }
+
+  if (cogPartsListEl && Array.isArray(cog.parts)) {
+    cogPartsListEl.replaceChildren();
+    for (const p of cog.parts) {
+      const row = document.createElement("div");
+      row.className = "wiz-check";
+      row.dataset.observerPart = p.slot;
+      const left = document.createElement("span");
+      left.textContent = `${p.label} (${(p.connectedStreams || []).length} streams)`;
+      const right = document.createElement("strong");
+      right.dataset.state = p.precisionTier >= 3 ? "pass" : "pending";
+      right.textContent = p.precisionLabel;
+      row.append(left, right);
+      cogPartsListEl.append(row);
+    }
+  }
+
+  if (cogStreamsListEl && Array.isArray(cog.streams)) {
+    cogStreamsListEl.replaceChildren();
+    for (const s of cog.streams) {
+      const card = document.createElement("div");
+      card.className = "insp-rev-item";
+      card.dataset.observerStreamId = s.streamId;
+
+      const top = document.createElement("div");
+      top.className = "insp-rev-top";
+      const title = document.createElement("strong");
+      title.textContent = `p=${s.basisPrime} · ${s.label}`;
+      const btns = document.createElement("div");
+      btns.className = "insp-row";
+
+      const tog = document.createElement("button");
+      tog.type = "button";
+      tog.className = s.enabled ? "st-btn primary sm" : "st-btn sm";
+      tog.textContent = s.enabled ? "On" : "Off";
+      tog.addEventListener("click", async () => {
+        const r = await callWorker("toggle-stream", { streamId: s.streamId, enabled: !s.enabled });
+        if (r?.cognition) {
+          renderObserverCognition(r.cognition);
+          runUnifiedDiscovery();
+        }
+      });
+      btns.append(tog);
+
+      const rm = document.createElement("button");
+      rm.type = "button";
+      rm.className = "st-btn danger sm";
+      rm.setAttribute("aria-label", `Remove stream ${s.streamId}`);
+      rm.textContent = "×";
+      rm.addEventListener("click", async () => {
+        const r = await callWorker("remove-stream", { streamId: s.streamId });
+        if (r?.cognition) {
+          renderObserverCognition(r.cognition);
+          runUnifiedDiscovery();
+          if (cogLogEl) cogLogEl.textContent = `Removed sensory stream "${s.streamId}" from ObserverPrismHolon.`;
+        }
+      });
+      btns.append(rm);
+
+      top.append(title, btns);
+      const sub = document.createElement("div");
+      sub.style.color = "var(--muted-foreground)";
+      sub.textContent = `${s.organIri} -> ${(s.targetParts || []).join(", ")}`;
+      card.append(top, sub);
+      cogStreamsListEl.append(card);
+    }
+  }
+
+  if (discStreamSelect && Array.isArray(cog.streams)) {
+    const prevVal = discStreamSelect.value || "all";
+    const enabledCount = cog.streams.filter((s) => s.enabled).length;
+    discStreamSelect.replaceChildren();
+    const allOpt = document.createElement("option");
+    allOpt.value = "all";
+    allOpt.textContent = `All ${enabledCount} Active Streams`;
+    discStreamSelect.append(allOpt);
+    for (const s of cog.streams) {
+      if (!s.enabled) continue;
+      const o = document.createElement("option");
+      o.value = s.streamId;
+      o.textContent = s.label;
+      discStreamSelect.append(o);
+    }
+    discStreamSelect.value = [...discStreamSelect.options].some((o) => o.value === prevVal) ? prevVal : "all";
+  }
+}
+
+async function refreshObserverCognition(gpuInfo = null) {
+  const r = gpuInfo
+    ? await callWorker("update-host-envelope", gpuInfo)
+    : await callWorker("cognitive-resolution");
+  if (r?.ok && r.cognition) renderObserverCognition(r.cognition);
+  return r?.cognition || null;
+}
+
+async function autoRefineObserverFromStreams() {
+  if (cogLogEl) cogLogEl.textContent = "Observer analyzing resolution gaps across 8 parts & querying connected internet streams within host envelope…";
+  chip(statusEl, "Observer self-refining graphics & natural-language cognition from live streams…");
+  const cog = await refreshObserverCognition();
+  const maxBytes = cog?.hostEnvelope?.recommendedGlbMaxBytes || 12582912;
+
+  // 1. Pick highest-definition host-bounded 3D hero (preferring NASA Apollo Lunar Module or Khronos Fox/DamagedHelmet):
+  const candidates = (lastDiscoveryItems || []).filter((i) => i.glbUrl && (!i.sizeBytes || i.sizeBytes <= maxBytes));
+  const hero =
+    candidates.find((i) => /apollo|fox|soldier|damaged/i.test(i.title)) ||
+    candidates[0] || {
+      title: "Fox (Khronos Rigged)",
+      glbUrl: "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/Fox/glTF-Binary/Fox.glb",
+      properties: { wikipediaTopic: "Apollo_Lunar_Module" },
+    };
+  const skyItem = (lastDiscoveryItems || []).find((i) => i.envSkyUrl);
+  const logLines = [];
+
+  if (hero?.glbUrl) {
+    const ok = await loadRemoteGlbIntoStage(hero.glbUrl, hero.title);
+    if (ok) logLines.push(`[R4 3D] Mounted "${hero.title}" within ${Math.round(maxBytes / 1048576)}MB host envelope`);
+  }
+  if (skyItem?.envSkyUrl) {
+    const ok = await applyRemoteEnvSky(skyItem.envSkyUrl, skyItem.title);
+    if (ok) logLines.push(`[R4 Sky] Hydrated Poly Haven panoramic dome "${skyItem.title}"`);
+  }
+  // 2. Hydrate live encyclopedic natural-language passage straight into ISO 24617-2 cognition:
+  const topic =
+    hero?.properties?.wikipediaTopic ||
+    (/apollo/i.test(hero?.title || "")
+      ? "Apollo_Lunar_Module"
+      : /fox/i.test(hero?.title || "")
+        ? "Vulpes"
+        : /helmet|suit|crew/i.test(hero?.title || "")
+          ? "Space_suit"
+          : "Physically_based_rendering");
+  try {
+    const passage = await fetchLiveKnowledgePassage(topic, 5500);
+    if (passage) {
+      const ing = await callWorker("ingest-knowledge", { request: passage });
+      if (ing?.ok) {
+        if (ing.cognition) renderObserverCognition(ing.cognition);
+        logLines.push(`[R4 Language] Ingested live Wikipedia/Wikidata passage "${passage.topic}" into ISO 24617-2 engine (${String(ing.result?.kappaHex || "").slice(0, 10)}…)`);
+      }
+    }
+  } catch {
+    logLines.push("[Language] Offline sandbox — retaining locked Prism catalog facts.");
+  }
+
+  const finalCog = await refreshObserverCognition();
+  const pct = finalCog ? (finalCog.resolutionPermille / 10).toFixed(1) : "50.0";
+  if (cogLogEl) {
+    cogLogEl.textContent =
+      `Observer Self-Refinement Complete · Precision ${pct}%\n` +
+      (logLines.length ? logLines.join("\n") : "No external streams reachable — deterministic Prism geometry preserved.");
+  }
+  chip(statusEl, `Observer refined to ${pct}% precision from connected streams (within host envelope)`);
+}
+
+cogRefineBtn?.addEventListener("click", () => autoRefineObserverFromStreams());
+cogClearSkyBtn?.addEventListener("click", () => applyRemoteEnvSky(null, "Reset"));
+cogAddStreamForm?.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const request = {
+    streamId: cogStreamIdInput?.value?.trim() || "",
+    label: cogStreamLabelInput?.value?.trim() || "",
+    authority: "User / Observer Custom Stream",
+    adapterKind: cogStreamAdapterSel?.value || "schema-org-catalog",
+    endpointUrl: cogStreamUrlInput?.value?.trim() || "",
+    targetParts: [cogStreamPartSel?.value || "hero-props"],
+  };
+  const r = await callWorker("register-stream", { request });
+  if (r?.ok && r.cognition) {
+    renderObserverCognition(r.cognition);
+    if (cogLogEl) {
+      cogLogEl.textContent = `Admitted custom stream "${r.result?.streamId}" (prime=${r.result?.basisPrime}, kappa=${String(r.result?.kappaHex || "").slice(0, 12)}…) into ObserverPrismHolon.`;
+    }
+    cogAddStreamForm.reset();
+    runUnifiedDiscovery();
+  } else if (cogLogEl) {
+    cogLogEl.textContent = "Stream admission refused by Schema.org / OMG DMN 1.5 oracle (requires valid https:// endpoint and unique slug).";
+  }
+});
 
 function ensureRemoteFontLoaded(stylesheetUrl, fontFamily) {
   if (stylesheetUrl && !loadedFontUrls.has(stylesheetUrl)) {
@@ -700,6 +1005,10 @@ async function applyProjectModelLive(model) {
 
   if (props.glbStreamUrl) {
     await loadRemoteGlbIntoStage(props.glbStreamUrl, model.title);
+    return;
+  }
+  if (props.envSkyUrl) {
+    await applyRemoteEnvSky(props.envSkyUrl, model.title);
     return;
   }
   if (props.domainSlug) {
@@ -1040,6 +1349,12 @@ function openPreviewDock(item) {
   if (discPrevLiveBtn) {
     discPrevLiveBtn.hidden = !item.glbUrl;
   }
+  if (discPrevComposeBtn) {
+    discPrevComposeBtn.hidden = !item.glbUrl;
+  }
+  if (discPrevSkyBtn) {
+    discPrevSkyBtn.hidden = !item.envSkyUrl;
+  }
 
   if (discPrevMedia) {
     discPrevMedia.replaceChildren();
@@ -1084,6 +1399,12 @@ discPrevImportBtn?.addEventListener("click", () => {
 });
 discPrevLiveBtn?.addEventListener("click", () => {
   if (previewedItem?.glbUrl) loadRemoteGlbIntoStage(previewedItem.glbUrl, previewedItem.title);
+});
+discPrevComposeBtn?.addEventListener("click", () => {
+  if (previewedItem?.glbUrl) composeRemoteGlbIntoStage(previewedItem.glbUrl, previewedItem.title);
+});
+discPrevSkyBtn?.addEventListener("click", () => {
+  if (previewedItem?.envSkyUrl) applyRemoteEnvSky(previewedItem.envSkyUrl, previewedItem.title);
 });
 
 function renderDiscoveryResults(res) {
@@ -1184,11 +1505,20 @@ let discSeq = 0;
 async function runUnifiedDiscovery() {
   const seq = ++discSeq;
   if (discCountBadge) discCountBadge.textContent = "Searching live streams…";
+  const prefs = loadStreamPrefs();
+  const disabledStreamIds = lastCognition?.streams
+    ? lastCognition.streams.filter((s) => !s.enabled).map((s) => s.streamId)
+    : prefs.disabled;
+  const customStreams = lastCognition?.streams
+    ? lastCognition.streams.filter((s) => !s.builtIn)
+    : prefs.custom;
   const res = await searchLiveCatalogStreams({
     query: discSearchInput?.value || "",
     contentType: activeContentType,
     streamId: discStreamSelect?.value || "all",
     localWorldPacks: domainPacks,
+    disabledStreamIds,
+    customStreams,
   });
   if (seq !== discSeq) return;
   renderDiscoveryResults(res);
@@ -1590,7 +1920,7 @@ renderContentTypePills();
       holoApp = await load(new Uint8Array(await res.arrayBuffer()));
       holoSummary = await holoApp.acceptance();
       if (holoStatusEl) {
-        holoStatusEl.textContent = `Atelier Ready · Prism Holo Verified (${holoSummary.passed}/${holoSummary.total} vectors) · 7 Live Streams · 7 Lifecycle Roles`;
+        holoStatusEl.textContent = `Atelier Ready · Prism Holo Verified (${holoSummary.passed}/${holoSummary.total} vectors) · 10 Live Streams · 7 Lifecycle Roles`;
       }
     }),
     fetch(new URL("../catalogs/world-packs.json", import.meta.url)).then(async (res) => {
@@ -1611,13 +1941,15 @@ renderContentTypePills();
   runUnifiedDiscovery();
 
   const { w, h } = pxDims();
+  let hostMaxTex = 2048;
   if (worker && canvas && typeof canvas.transferControlToOffscreen === "function") {
     try {
       const oc = canvas.transferControlToOffscreen();
-      const r = await callWorker("init", { canvas: oc, width: w, height: h, lod: currentLodSpec() }, [oc]);
+      const r = await callWorker("init", { canvas: oc, width: w, height: h, lod: currentLodSpec(), hdRenderer: true }, [oc]);
       if (r?.kind === "ready") {
         offOk = true;
         lTris = r.tris || lTris;
+        hostMaxTex = r.maxTextureSize || 2048;
         if (r.audioSpec) Object.assign(ACOUST, r.audioSpec);
       }
     } catch {
@@ -1625,14 +1957,40 @@ renderContentTypePills();
     }
   }
   if (!offOk && canvas) {
-    fbM = await import("../scene-renderer.mjs");
+    fbM = await import("../scene-hd-renderer.mjs");
     fbR = await fbM.createBestRenderer(canvas);
+    hostMaxTex = fbR?.maxTextureSize || 2048;
     if (worker) {
-      const r = await callWorker("init", { canvas: null, width: w, height: h, lod: currentLodSpec() });
+      const r = await callWorker("init", { canvas: null, width: w, height: h, lod: currentLodSpec(), hdRenderer: true });
       if (r?.tris) lTris = r.tris;
       await syncFallbackBuffers();
     }
   }
+
+  // Hydrate persisted stream prefs into ObserverPrismHolon and report real host GPU envelope:
+  const savedPrefs = loadStreamPrefs();
+  for (const cs of savedPrefs.custom) {
+    if (cs?.streamId && cs?.endpointUrl) {
+      await callWorker("register-stream", {
+        request: {
+          streamId: cs.streamId,
+          label: cs.label || cs.streamId,
+          authority: cs.authority || "Observer Custom Stream",
+          adapterKind: cs.adapterKind || "schema-org-catalog",
+          endpointUrl: cs.endpointUrl,
+          targetParts: cs.targetParts || ["hero-props"],
+        },
+      });
+    }
+  }
+  for (const disId of savedPrefs.disabled) {
+    await callWorker("toggle-stream", { streamId: disId, enabled: false });
+  }
+  await refreshObserverCognition({
+    maxTex: hostMaxTex,
+    threads: navigator.hardwareConcurrency || 4,
+    frameMicros: 8000,
+  });
 
   if (inlineHost) {
     studioHandle = mountInlineStudio(inlineHost, {
@@ -1709,7 +2067,8 @@ renderContentTypePills();
   const reqQuery = params.get("q");
   const reqType = params.get("type");
   const reqAutoGlb = params.get("autoGlb");
-  const reqAutoTitle = params.get("autoTitle") || "Imported Khronos Model";
+  const reqAutoSky = params.get("autoSky");
+  const reqAutoTitle = params.get("autoTitle") || "Imported Stream Model";
   if (reqCatalog && catalogBanner && catalogBannerText) {
     catalogBanner.dataset.active = "true";
     catalogBannerText.textContent = `Imported Governing Catalog Standard: ${reqCatalog} — live-verified against Prism app.holo`;
@@ -1733,6 +2092,9 @@ renderContentTypePills();
     wfState.activeStageAsset = reqAutoTitle;
     stageModeDomainBtn?.setAttribute("aria-pressed", "false");
     await loadRemoteGlbIntoStage(reqAutoGlb, reqAutoTitle);
+  }
+  if (reqAutoSky && /^https:\/\//.test(reqAutoSky)) {
+    await applyRemoteEnvSky(reqAutoSky, reqAutoTitle);
   }
   await refreshProjectModelsFromWasm();
   syncWorkflowRibbon();

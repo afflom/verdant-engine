@@ -252,11 +252,13 @@ function readSplitMeshViews(host) {
   const cPtr = host.verdant_wasm_scene_col_ptr() >>> 0;
   const iPtr = host.verdant_wasm_scene_idx_ptr() >>> 0;
 
+  const uvPtr = typeof host.verdant_wasm_scene_uv_ptr === "function" ? (host.verdant_wasm_scene_uv_ptr() >>> 0) : 0;
   const staticViews = sVerts > 0 && sIdx > 0 && pPtr && nPtr && cPtr && iPtr ? {
     epoch: sEpoch,
     pos: new Float32Array(buf, pPtr, sVerts * 3),
     norm: new Float32Array(buf, nPtr, sVerts * 3),
     col: new Float32Array(buf, cPtr, sVerts * 3),
+    uv: uvPtr ? new Float32Array(buf, uvPtr, sVerts * 2) : null,
     idx: new Uint32Array(buf, iPtr, sIdx),
   } : null;
 
@@ -338,6 +340,12 @@ function drawScene(eye, lookTarget, lodSpec, simClockSec, rebuildDynamic = false
       renderer.blitTensorRgba(new Uint8Array(host.memory.buffer, ptr, byteLen), w, h);
     }
   } else if (split) {
+    if (customGlbActive && typeof host.verdant_wasm_scene_tex_ptr === "function") {
+      const tp = host.verdant_wasm_scene_tex_ptr() >>> 0, tw = host.verdant_wasm_scene_tex_width() >>> 0, th = host.verdant_wasm_scene_tex_height() >>> 0, te = host.verdant_wasm_scene_tex_epoch() >>> 0;
+      renderer.setTex?.(1, tp && tw && th ? new Uint8Array(host.memory.buffer, tp, tw * th * 4) : null, tw, th, te);
+    } else {
+      renderer.setTex?.(1, null, 0, 0, 0);
+    }
     renderer.uploadSplitBuffers(split.staticViews, split.dynViews, split.instViews);
     const fovRad = Math.PI / 3.4;
     const nearPlane = customGlbActive ? 0.05 : 0.25;
@@ -370,7 +378,8 @@ self.onmessage = async ({ data: msg }) => {
       if (canvas) {
         canvas.width = w;
         canvas.height = h;
-        renderer = await createBestRenderer(canvas);
+        const rMod = msg.hdRenderer ? await import("./scene-hd-renderer.mjs") : null;
+        renderer = rMod ? await rMod.createBestRenderer(canvas) : await createBestRenderer(canvas);
       }
       const csmSplits = [0, 1, 2, 3].map((i) => wasm.verdant_wasm_csm_split_meters(0.25, CSM_FAR_METERS, i));
       renderer?.setCsmSplits?.(csmSplits);
@@ -401,6 +410,7 @@ self.onmessage = async ({ data: msg }) => {
         id: msg.id,
         backend: forceTileMode ? "tile-16x16" : (renderer?.backend ?? "headless"),
         isSoftware: Boolean(renderer?.isSoftware),
+        maxTextureSize: renderer?.maxTextureSize || 2048,
         walkablePolys: wasm.verdant_wasm_navmesh_polygon_count() >>> 0,
         tensorKernels: wasm.verdant_wasm_unified_tensor_kernel_count() >>> 0,
         codedTiers: wasm.verdant_wasm_coded_tier_count() >>> 0,
@@ -1305,6 +1315,86 @@ self.onmessage = async ({ data: msg }) => {
       }
       const payload = JSON.parse(new TextDecoder().decode(readAuxBytes(uorcWasm)));
       self.postMessage({ kind: "project-models-listed", id: msg.id, ok: true, ...payload });
+      return;
+    }
+
+    if (msg.kind === "compose-glb-append") {
+      const raw = msg.bytes instanceof Uint8Array ? msg.bytes : new Uint8Array(msg.bytes || []);
+      uorcWasm ??= await getUorcWasm();
+      if (!raw.byteLength || !stageIoBytes(uorcWasm, raw)) {
+        self.postMessage({ kind: "glb-composed", id: msg.id, ok: false });
+        return;
+      }
+      const tris = uorcWasm.verdant_wasm_glb_compose_append_io() >>> 0;
+      if (!tris) {
+        self.postMessage({ kind: "glb-composed", id: msg.id, ok: false });
+        return;
+      }
+      customGlbActive = true;
+      const cam = readSolvedCamera(simHost());
+      lastAnchor = [...cam.lookTarget]; lastAnchorActive = true;
+      drawScene(cam.eye, cam.lookTarget, currentLod, 0, false, 0, 0, true);
+      self.postMessage({ kind: "glb-composed", id: msg.id, ok: true, tris, camera: cam });
+      return;
+    }
+
+    if (msg.kind === "set-env-sky") {
+      renderer?.setTex?.(2, msg.bitmap || null);
+      const sh = simHost();
+      const cam = readSolvedCamera(sh);
+      drawScene(cam.eye, cam.lookTarget, currentLod, 0, false, 0, 0, true);
+      let cognition = null;
+      if (uorcWasm && typeof uorcWasm.verdant_wasm_record_part_hydration_io === "function") {
+        const wire = msg.bitmap
+          ? `stage-environment|polyhaven|${msg.label || "Poly Haven HDRI Sky Dome"}`
+          : "stage-environment|verdant-prism|Procedural Atmosphere";
+        stageIoBytes(uorcWasm, new TextEncoder().encode(wire));
+        const len = uorcWasm.verdant_wasm_record_part_hydration_io(msg.bitmap ? 4 : 1) >>> 0;
+        if (len) cognition = JSON.parse(new TextDecoder().decode(readAuxBytes(uorcWasm)));
+      }
+      self.postMessage({ kind: "env-sky-set", id: msg.id, ok: true, active: Boolean(msg.bitmap), cognition });
+      return;
+    }
+
+    if (msg.kind === "update-host-envelope") {
+      await ensureUorcSceneHost();
+      const len = uorcWasm.verdant_wasm_update_host_envelope(
+        (msg.maxTex || renderer?.maxTextureSize || 2048) >>> 0,
+        renderer?.isSoftware ? 1 : 0,
+        (msg.threads || 4) >>> 0,
+        (msg.frameMicros || emaFrameMicros || 8000) >>> 0,
+      ) >>> 0;
+      const cognition = len ? JSON.parse(new TextDecoder().decode(readAuxBytes(uorcWasm))) : null;
+      self.postMessage({ kind: "cognitive-resolution", id: msg.id, ok: Boolean(cognition), cognition });
+      return;
+    }
+
+    if (msg.kind === "cognitive-resolution") {
+      await ensureUorcSceneHost();
+      const len = uorcWasm.verdant_wasm_cognitive_resolution_aux() >>> 0;
+      const cognition = len ? JSON.parse(new TextDecoder().decode(readAuxBytes(uorcWasm))) : null;
+      self.postMessage({ kind: "cognitive-resolution", id: msg.id, ok: Boolean(cognition), cognition });
+      return;
+    }
+
+    if (msg.kind === "register-stream" || msg.kind === "remove-stream" || msg.kind === "toggle-stream" || msg.kind === "ingest-knowledge") {
+      await ensureUorcSceneHost();
+      const payloadStr = msg.kind === "remove-stream" || msg.kind === "toggle-stream"
+        ? String(msg.streamId || "")
+        : JSON.stringify(msg.request || {});
+      stageIoBytes(uorcWasm, new TextEncoder().encode(payloadStr));
+      const len = (
+        msg.kind === "register-stream" ? uorcWasm.verdant_wasm_register_stream_io()
+        : msg.kind === "remove-stream" ? uorcWasm.verdant_wasm_remove_stream_io()
+        : msg.kind === "toggle-stream" ? uorcWasm.verdant_wasm_toggle_stream_io(msg.enabled ? 1 : 0)
+        : uorcWasm.verdant_wasm_ingest_knowledge_io()
+      ) >>> 0;
+      const text = len ? new TextDecoder().decode(readAuxBytes(uorcWasm)) : "";
+      let result = text;
+      if (len && msg.kind !== "remove-stream") { try { result = JSON.parse(text); } catch {} }
+      const cLen = uorcWasm.verdant_wasm_cognitive_resolution_aux() >>> 0;
+      const cognition = cLen ? JSON.parse(new TextDecoder().decode(readAuxBytes(uorcWasm))) : null;
+      self.postMessage({ kind: `${msg.kind}-done`, id: msg.id, ok: len > 0, result, cognition });
       return;
     }
   } catch (err) {

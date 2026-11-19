@@ -23,13 +23,13 @@ use verdant_core::cybernetics::{
 };
 use verdant_core::ecs::TwoLevelBvh;
 #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
-use verdant_core::ecs::{BoundingVolumeHierarchy, SceneWorld};
+use verdant_core::ecs::{BoundingVolumeHierarchy, SceneWorld, Transform};
 #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
 use verdant_core::geometry::{generate_faceted_prism_mesh, ProceduralMesh};
 #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
 use verdant_core::gltf_io::{
-    export_scene_to_glb, import_glb_to_scene, pack_multi_primitive_glb,
-    transcode_glb_to_progressive_uorc,
+    export_scene_to_glb, import_glb_to_scene, import_glb_to_scene_bounded,
+    pack_multi_primitive_glb, transcode_glb_to_progressive_uorc,
 };
 use verdant_core::hd_world::{hd_terrain_height, synthesize_hd_citadel_sector, HdSectorBundle};
 #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
@@ -44,7 +44,9 @@ use verdant_core::network::{
     StitchFragment,
 };
 #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
-use verdant_core::observer::{sha256_payload_digest, CommunicationChannelKind, ObserverPrismHolon};
+use verdant_core::observer::{
+    sha256_payload_digest, CommunicationChannelKind, ObserverPartSlot, ObserverPrismHolon,
+};
 use verdant_core::physics::{
     CapsuleController, CharacterMoveIntent, KinematicSplineBody, PhysicsWorld, PhysicsWorldConfig,
 };
@@ -225,6 +227,24 @@ pub struct WasmRuntimeBridge {
     /// Optional user-imported `.glb` scene overriding the procedural world meshes.
     #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
     pub custom_glb_scene: Option<(SceneWorld, Vec<ProceduralMesh>, Vec<PbrMaterial>)>,
+    /// Per-vertex packed UV coordinates (`2 * vertex_count` floats; `[-2.0, -2.0]` = untextured fallback).
+    #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+    pub custom_glb_uvs_xy: Vec<f32>,
+    /// Host-bounded primary `baseColorTexture` RGBA8 pixels for native WebGL2 texture upload.
+    #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+    pub custom_glb_tex_rgba: Vec<u8>,
+    /// Primary GPU albedo texture width in pixels (`0` if untextured).
+    #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+    pub custom_glb_tex_width: u32,
+    /// Primary GPU albedo texture height in pixels (`0` if untextured).
+    #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+    pub custom_glb_tex_height: u32,
+    /// Monotonic epoch bumped whenever `custom_glb_tex_rgba` changes.
+    #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+    pub custom_glb_tex_epoch: u32,
+    /// Per-mesh flag indicating whether the mesh samples `custom_glb_tex_rgba`.
+    #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+    pub custom_glb_primary_tex_mask: Vec<bool>,
     /// Retained skin and animation clip counts from the active user-imported `.glb` bundle.
     #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
     pub imported_glb_skin_clip_counts: (usize, usize),
@@ -502,6 +522,18 @@ impl WasmRuntimeBridge {
             #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
             custom_glb_scene: None,
             #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+            custom_glb_uvs_xy: Vec::new(),
+            #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+            custom_glb_tex_rgba: Vec::new(),
+            #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+            custom_glb_tex_width: 0,
+            #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+            custom_glb_tex_height: 0,
+            #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+            custom_glb_tex_epoch: 0,
+            #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+            custom_glb_primary_tex_mask: Vec::new(),
+            #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
             imported_glb_skin_clip_counts: (0, 0),
             #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
             observer_holon: ObserverPrismHolon::new("sunspire-regatta").map_err(|e| {
@@ -639,6 +671,35 @@ impl WasmRuntimeBridge {
                 self.static_idx_len = packed.indices.len();
                 self.static_tri_len = 0;
                 self.scene_buffers = packed;
+                self.custom_glb_uvs_xy.clear();
+                let uv_sentinel = -(1.0_f32 + 1.0_f32);
+                let has_tex = !self.custom_glb_tex_rgba.is_empty()
+                    && self.custom_glb_tex_width > 0
+                    && self.custom_glb_tex_height > 0;
+                for entity in glb_scene.entities() {
+                    let Some(mesh_idx) = entity.mesh_index else {
+                        continue;
+                    };
+                    let Some(mesh) = glb_meshes.get(mesh_idx) else {
+                        continue;
+                    };
+                    let uses_tex = has_tex
+                        && self
+                            .custom_glb_primary_tex_mask
+                            .get(mesh_idx)
+                            .copied()
+                            .unwrap_or(false);
+                    for vi in 0..mesh.positions.len() {
+                        if uses_tex {
+                            let uv = mesh.uvs.get(vi).copied().unwrap_or([0.0, 0.0]);
+                            self.custom_glb_uvs_xy.push(uv[0]);
+                            self.custom_glb_uvs_xy.push(uv[1]);
+                        } else {
+                            self.custom_glb_uvs_xy.push(uv_sentinel);
+                            self.custom_glb_uvs_xy.push(uv_sentinel);
+                        }
+                    }
+                }
                 self.dynamic_buffers.positions_xyz.clear();
                 self.dynamic_buffers.normals_xyz.clear();
                 self.dynamic_buffers.colors_rgb.clear();
@@ -3254,7 +3315,11 @@ pub extern "C" fn verdant_wasm_glb_import_io() -> u32 {
     let Some(bridge) = guard.as_mut() else {
         return 0;
     };
-    let Ok(imported) = import_glb_to_scene(&bridge.io_buffer) else {
+    let tex_cap = bridge
+        .observer_holon
+        .host_envelope
+        .recommended_texture_cap_px;
+    let Ok(imported) = import_glb_to_scene_bounded(&bridge.io_buffer, tex_cap) else {
         return 0;
     };
     let Ok(boundaries) = TwoLevelBvh::build_solid(&imported.scene, &imported.meshes) else {
@@ -3263,9 +3328,46 @@ pub extern "C" fn verdant_wasm_glb_import_io() -> u32 {
     bridge.two_level_bvh = boundaries;
     bridge.bvh = imported.scene.build_bvh();
     bridge.imported_glb_skin_clip_counts = (imported.skeletons.len(), imported.clips.len());
+    let has_primary_tex = imported.primary_albedo_texture.is_some();
+    if let Some(tex) = imported.primary_albedo_texture {
+        bridge.custom_glb_tex_width = tex.width;
+        bridge.custom_glb_tex_height = tex.height;
+        bridge.custom_glb_tex_rgba = tex.rgba;
+        bridge.custom_glb_tex_epoch = bridge.custom_glb_tex_epoch.wrapping_add(1).max(1);
+    } else {
+        bridge.custom_glb_tex_width = 0;
+        bridge.custom_glb_tex_height = 0;
+        bridge.custom_glb_tex_rgba.clear();
+        bridge.custom_glb_tex_epoch = bridge.custom_glb_tex_epoch.wrapping_add(1).max(1);
+    }
+    bridge.custom_glb_primary_tex_mask = imported.primary_tex_mesh_mask;
     bridge.custom_glb_scene = Some((imported.scene, imported.meshes, imported.materials));
     bridge.static_dirty = true;
     let tris = bridge.rebuild_scene_buffers(0.0).unwrap_or(0);
+
+    // Record high-definition Observer hydration for Characters or Hero Props:
+    let slot = if bridge.imported_glb_skin_clip_counts.0 > 0 {
+        ObserverPartSlot::CharacterRigs
+    } else {
+        ObserverPartSlot::HeroProps
+    };
+    let tier = if has_primary_tex {
+        1u32 + 1 + 1 + 1
+    } else {
+        1u32 + 1 + 1
+    };
+    let glb_digest = sha256_payload_digest(&bridge.io_buffer);
+    let mut hex_k = String::with_capacity(glb_digest.len() * (1 + 1));
+    for b in glb_digest {
+        let _ = std::fmt::Write::write_fmt(&mut hex_k, format_args!("{b:02x}"));
+    }
+    bridge.observer_holon.record_part_hydration(
+        slot,
+        tier,
+        format!("Streamed GLB ({tris} tris)"),
+        "live-3d-stream".to_string(),
+        hex_k,
+    );
 
     // Auto-frame the camera smoothly around the imported .glb's exact world-space bounding sphere:
     let mut min_p = [f64::INFINITY; 1 + 1 + 1];
@@ -4271,6 +4373,11 @@ pub extern "C" fn verdant_wasm_load_domain_pack(domain_idx: u32) -> u32 {
     bridge.walkable_polygons = bridge.observer_holon.active_navmesh.polygons.len();
     bridge.npcs = dom.characters.clone();
     bridge.custom_glb_scene = None;
+    bridge.custom_glb_uvs_xy.clear();
+    bridge.custom_glb_tex_rgba.clear();
+    bridge.custom_glb_tex_width = 0;
+    bridge.custom_glb_tex_height = 0;
+    bridge.custom_glb_primary_tex_mask.clear();
     bridge.npc_patrol_active = true;
     bridge.static_dirty = true;
     let _ = bridge.rebuild_scene_buffers(0.0);
@@ -4579,5 +4686,433 @@ pub extern "C" fn verdant_wasm_list_project_models_aux() -> u32 {
         return 0;
     };
     bridge.aux_buffer = bridge.observer_holon.project_models_json_bytes();
+    bridge.aux_buffer.len() as u32
+}
+
+/// Pointer to packed per-vertex UV coordinates (`2 * static_vert_count` `f32` values) for textured `.glb` rendering.
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+#[no_mangle]
+pub extern "C" fn verdant_wasm_scene_uv_ptr() -> u32 {
+    let Ok(guard) = global_bridge().lock() else {
+        return 0;
+    };
+    guard.as_ref().map_or(0, |b| {
+        if b.custom_glb_uvs_xy.is_empty() {
+            0
+        } else {
+            b.custom_glb_uvs_xy.as_ptr() as u32
+        }
+    })
+}
+
+/// Pointer to host-bounded primary `RGBA8` albedo texture bytes extracted from the active `.glb`.
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+#[no_mangle]
+pub extern "C" fn verdant_wasm_scene_tex_ptr() -> u32 {
+    let Ok(guard) = global_bridge().lock() else {
+        return 0;
+    };
+    guard.as_ref().map_or(0, |b| {
+        if b.custom_glb_tex_rgba.is_empty() {
+            0
+        } else {
+            b.custom_glb_tex_rgba.as_ptr() as u32
+        }
+    })
+}
+
+/// Width in pixels of the active host-bounded GPU albedo texture (`0` when untextured).
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+#[no_mangle]
+pub extern "C" fn verdant_wasm_scene_tex_width() -> u32 {
+    let Ok(guard) = global_bridge().lock() else {
+        return 0;
+    };
+    guard.as_ref().map_or(0, |b| b.custom_glb_tex_width)
+}
+
+/// Height in pixels of the active host-bounded GPU albedo texture (`0` when untextured).
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+#[no_mangle]
+pub extern "C" fn verdant_wasm_scene_tex_height() -> u32 {
+    let Ok(guard) = global_bridge().lock() else {
+        return 0;
+    };
+    guard.as_ref().map_or(0, |b| b.custom_glb_tex_height)
+}
+
+/// Monotonic epoch for the active GPU albedo texture.
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+#[no_mangle]
+pub extern "C" fn verdant_wasm_scene_tex_epoch() -> u32 {
+    let Ok(guard) = global_bridge().lock() else {
+        return 0;
+    };
+    guard.as_ref().map_or(0, |b| b.custom_glb_tex_epoch)
+}
+
+/// Appends a second Khronos `.glb` from `io_buffer` into the active composed stage (or starts a
+/// new composed stage if none is active), auto-placing it cleanly beside existing assets and
+/// re-framing the look-dev orbit camera around the combined multi-asset scene.
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+#[no_mangle]
+pub extern "C" fn verdant_wasm_glb_compose_append_io() -> u32 {
+    let Ok(mut guard) = global_bridge().lock() else {
+        return 0;
+    };
+    let Some(bridge) = guard.as_mut() else {
+        return 0;
+    };
+    if bridge.custom_glb_scene.is_none() {
+        drop(guard);
+        return verdant_wasm_glb_import_io();
+    }
+    let tex_cap = bridge
+        .observer_holon
+        .host_envelope
+        .recommended_texture_cap_px;
+    let Ok(imported) = import_glb_to_scene_bounded(&bridge.io_buffer, tex_cap) else {
+        return 0;
+    };
+
+    // Measure current composed scene X-max so the appended asset sits cleanly beside it:
+    let three = 1usize + 1usize + 1usize;
+    let two = 1usize + 1usize;
+    let mut existing_max_x = f64::NEG_INFINITY;
+    let mut existing_min_y = f64::INFINITY;
+    let mut existing_max_y = f64::NEG_INFINITY;
+    for chunk in bridge.scene_buffers.positions_xyz.chunks_exact(three) {
+        let px = f64::from(chunk[0]);
+        let py = f64::from(chunk[1]);
+        if px.is_finite() && px > existing_max_x {
+            existing_max_x = px;
+        }
+        if py.is_finite() {
+            if py < existing_min_y {
+                existing_min_y = py;
+            }
+            if py > existing_max_y {
+                existing_max_y = py;
+            }
+        }
+    }
+    let half = 1.0 / (prism_kernel::sTwo() as f64);
+    let target_h = if existing_min_y.is_finite() && existing_max_y.is_finite() {
+        (existing_max_y - existing_min_y).max(1.0)
+    } else {
+        1.0 + 1.0
+    };
+
+    // Compute bounds of incoming asset to normalize its scale & ground it cleanly:
+    let mut in_min = [f64::INFINITY; 1 + 1 + 1];
+    let mut in_max = [f64::NEG_INFINITY; 1 + 1 + 1];
+    if let Ok(in_packed) = pack_world_meshes_to_buffers_opts(
+        &imported.scene,
+        &imported.meshes,
+        &imported.materials,
+        false,
+    ) {
+        for chunk in in_packed.positions_xyz.chunks_exact(three) {
+            let px = f64::from(chunk[0]);
+            let py = f64::from(chunk[1]);
+            let pz = f64::from(chunk[two]);
+            if px.is_finite() && py.is_finite() && pz.is_finite() {
+                in_min[0] = in_min[0].min(px);
+                in_min[1] = in_min[1].min(py);
+                in_min[two] = in_min[two].min(pz);
+                in_max[0] = in_max[0].max(px);
+                in_max[1] = in_max[1].max(py);
+                in_max[two] = in_max[two].max(pz);
+            }
+        }
+    }
+    let in_h = if in_min[1].is_finite() && in_max[1].is_finite() {
+        (in_max[1] - in_min[1]).max(half * half)
+    } else {
+        1.0
+    };
+    let in_w = if in_min[0].is_finite() && in_max[0].is_finite() {
+        (in_max[0] - in_min[0]).max(half)
+    } else {
+        1.0
+    };
+    let norm_scale =
+        (target_h / in_h).clamp(half * half * half, (1.0 + 1.0 + 1.0 + 1.0) * (1.0 + 1.0));
+    let offset_x = (if existing_max_x.is_finite() {
+        existing_max_x
+    } else {
+        0.0
+    }) + (in_w * norm_scale * half)
+        + target_h * half * half;
+    let ground_y = if existing_min_y.is_finite() {
+        existing_min_y
+    } else {
+        0.0
+    } - (if in_min[1].is_finite() {
+        in_min[1] * norm_scale
+    } else {
+        0.0
+    });
+    let offset_z = -((if in_min[two].is_finite() && in_max[two].is_finite() {
+        (in_min[two] + in_max[two]) * half
+    } else {
+        0.0
+    }) * norm_scale);
+
+    if let Some((ref mut base_scene, ref mut base_meshes, ref mut base_mats)) =
+        bridge.custom_glb_scene
+    {
+        let mesh_offset = base_meshes.len();
+        let mat_offset = base_mats.len();
+        base_meshes.extend(imported.meshes);
+        base_mats.extend(imported.materials);
+        // Composed companion meshes use their vertex-sampled albedo colors while keeping the hero's primary texture intact:
+        for _ in 0..imported.primary_tex_mesh_mask.len() {
+            bridge.custom_glb_primary_tex_mask.push(false);
+        }
+        let anchor_id = base_scene.spawn(
+            "ComposedStreamAnchor",
+            verdant_core::ecs::EntityRole::StaticArchitecture,
+            None,
+            Transform {
+                translation: Vec3::new(offset_x, ground_y, offset_z),
+                rotation: verdant_core::math::Quat::IDENTITY,
+                scale: Vec3::new(norm_scale, norm_scale, norm_scale),
+            },
+            verdant_core::math::Aabb::new(Vec3::new(0.0, 0.0, 0.0), Vec3::new(1.0, 1.0, 1.0)),
+            (0.0, "stream:composed"),
+        );
+        let mut id_map = std::collections::BTreeMap::new();
+        for ent in imported.scene.entities() {
+            let mapped_parent = ent
+                .parent
+                .and_then(|pid| id_map.get(&pid).copied())
+                .or(Some(anchor_id));
+            let new_id = base_scene.spawn(
+                ent.name.clone(),
+                ent.role,
+                mapped_parent,
+                ent.local_transform,
+                ent.local_bounds,
+                (ent.emerged_at_lod_scale, ent.provenance_tag.clone()),
+            );
+            if let Some(m_idx) = ent.mesh_index {
+                let mat_idx = ent.material_index.map_or(mat_offset, |mi| mat_offset + mi);
+                base_scene.attach_renderable(new_id, mesh_offset + m_idx, mat_idx);
+            }
+            id_map.insert(ent.id, new_id);
+        }
+        if let Ok(bvh) = TwoLevelBvh::build_solid(base_scene, base_meshes) {
+            bridge.two_level_bvh = bvh;
+        }
+        bridge.bvh = base_scene.build_bvh();
+    }
+
+    bridge.static_dirty = true;
+    let tris = bridge.rebuild_scene_buffers(0.0).unwrap_or(0);
+
+    // Re-frame camera cleanly around the full composed multi-asset bounding sphere:
+    let mut min_p = [f64::INFINITY; 1 + 1 + 1];
+    let mut max_p = [f64::NEG_INFINITY; 1 + 1 + 1];
+    for chunk in bridge.scene_buffers.positions_xyz.chunks_exact(three) {
+        let px = f64::from(chunk[0]);
+        let py = f64::from(chunk[1]);
+        let pz = f64::from(chunk[two]);
+        if px.is_finite() && py.is_finite() && pz.is_finite() {
+            min_p[0] = min_p[0].min(px);
+            min_p[1] = min_p[1].min(py);
+            min_p[two] = min_p[two].min(pz);
+            max_p[0] = max_p[0].max(px);
+            max_p[1] = max_p[1].max(py);
+            max_p[two] = max_p[two].max(pz);
+        }
+    }
+    if min_p[0].is_finite() && max_p[0].is_finite() {
+        let cx = (min_p[0] + max_p[0]) * half;
+        let cy = (min_p[1] + max_p[1]) * half;
+        let cz = (min_p[two] + max_p[two]) * half;
+        let dx = (max_p[0] - min_p[0]) * half;
+        let dy = (max_p[1] - min_p[1]) * half;
+        let dz = (max_p[two] - min_p[two]) * half;
+        let radius = (dx * dx + dy * dy + dz * dz).sqrt().max(half * half);
+        let frame_dist = (radius * (1.0 + 1.0 + 1.0 + half))
+            .max(1.0 + 1.0)
+            .min(bridge.camera_rig.config.max_orbit_distance_meters);
+        bridge.camera_anchor_override = Some(Vec3::new(cx, cy, cz));
+        bridge.camera_rig.mode = CameraMode::ThirdPersonSpringArm;
+        bridge.camera_rig.yaw_radians = half * half;
+        bridge.camera_rig.pitch_radians = half * half * half;
+        bridge.camera_rig.desired_distance_meters = frame_dist;
+        bridge.camera_rig.current_distance_meters = frame_dist;
+    }
+    let _ = bridge.solve_active_camera(0.0);
+    tris as u32
+}
+
+/// Feeds live host container GPU/CPU/frame telemetry into `ObserverPrismHolon` and writes
+/// the updated cognitive resolution JSON into `aux_buffer`.
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+#[no_mangle]
+pub extern "C" fn verdant_wasm_update_host_envelope(
+    max_tex_px: u32,
+    is_software_gpu: u32,
+    hardware_threads: u32,
+    ema_frame_micros: u32,
+) -> u32 {
+    let mut guard = global_bridge()
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
+    let Some(bridge) = guard.as_mut() else {
+        return 0;
+    };
+    let tris = bridge.scene_buffers.triangle_count() as u32;
+    bridge.observer_holon.update_host_envelope(
+        max_tex_px,
+        is_software_gpu != 0,
+        hardware_threads,
+        ema_frame_micros,
+        tris,
+    );
+    bridge.aux_buffer = bridge.observer_holon.cognitive_resolution_json_bytes();
+    bridge.aux_buffer.len() as u32
+}
+
+/// Dynamically registers a new sensory catalog stream from JSON in `io_buffer` into
+/// `ObserverPrismHolon`, writing the admitted stream JSON into `aux_buffer`.
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+#[no_mangle]
+pub extern "C" fn verdant_wasm_register_stream_io() -> u32 {
+    let mut guard = global_bridge()
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
+    let Some(bridge) = guard.as_mut() else {
+        return 0;
+    };
+    let req_bytes = bridge.io_buffer.clone();
+    let grants = bridge.grants.clone();
+    let Ok(out) = bridge
+        .observer_holon
+        .register_stream_json(&req_bytes, &grants)
+    else {
+        return 0;
+    };
+    bridge.aux_buffer = out;
+    bridge.aux_buffer.len() as u32
+}
+
+/// Removes a sensory stream whose UTF-8 `stream_id` is staged in `io_buffer`, writing the
+/// removed stream's `kappa` hex into `aux_buffer`.
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+#[no_mangle]
+pub extern "C" fn verdant_wasm_remove_stream_io() -> u32 {
+    let mut guard = global_bridge()
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
+    let Some(bridge) = guard.as_mut() else {
+        return 0;
+    };
+    let Ok(stream_id) = std::str::from_utf8(&bridge.io_buffer).map(str::to_string) else {
+        return 0;
+    };
+    let Ok(kappa_hex) = bridge.observer_holon.remove_stream(&stream_id) else {
+        return 0;
+    };
+    bridge.aux_buffer = kappa_hex.into_bytes();
+    bridge.aux_buffer.len() as u32
+}
+
+/// Enables (`enabled != 0`) or disables (`enabled == 0`) the sensory stream whose UTF-8 `stream_id`
+/// is staged in `io_buffer`, writing the updated stream JSON into `aux_buffer`.
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+#[no_mangle]
+pub extern "C" fn verdant_wasm_toggle_stream_io(enabled: u32) -> u32 {
+    let mut guard = global_bridge()
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
+    let Some(bridge) = guard.as_mut() else {
+        return 0;
+    };
+    let Ok(stream_id) = std::str::from_utf8(&bridge.io_buffer).map(str::to_string) else {
+        return 0;
+    };
+    let Ok(out) = bridge
+        .observer_holon
+        .toggle_stream_json(&stream_id, enabled != 0)
+    else {
+        return 0;
+    };
+    bridge.aux_buffer = out;
+    bridge.aux_buffer.len() as u32
+}
+
+/// Ingests a live natural-language knowledge passage JSON from `io_buffer` directly into the
+/// Observer's native `ISO 24617-2` language engine, writing the audited record JSON into `aux_buffer`.
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+#[no_mangle]
+pub extern "C" fn verdant_wasm_ingest_knowledge_io() -> u32 {
+    let mut guard = global_bridge()
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
+    let Some(bridge) = guard.as_mut() else {
+        return 0;
+    };
+    let req_bytes = bridge.io_buffer.clone();
+    let Ok(out) = bridge
+        .observer_holon
+        .ingest_knowledge_passage_json(&req_bytes)
+    else {
+        return 0;
+    };
+    bridge.aux_buffer = out;
+    bridge.aux_buffer.len() as u32
+}
+
+/// Writes the complete Observer Cognitive Resolution JSON (Host Capability Envelope, all 8 parts,
+/// connected streams, precision tiers, and escalation plan) into `aux_buffer`.
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+#[no_mangle]
+pub extern "C" fn verdant_wasm_cognitive_resolution_aux() -> u32 {
+    let mut guard = global_bridge()
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
+    let Some(bridge) = guard.as_mut() else {
+        return 0;
+    };
+    bridge.aux_buffer = bridge.observer_holon.cognitive_resolution_json_bytes();
+    bridge.aux_buffer.len() as u32
+}
+
+/// Records a stream-hydrated precision tier (`1..=4`) for the Observer part whose UTF-8
+/// `"slot|stream|title"` descriptor is staged in `io_buffer`, writing updated cognition JSON into `aux_buffer`.
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+#[no_mangle]
+pub extern "C" fn verdant_wasm_record_part_hydration_io(precision_tier: u32) -> u32 {
+    let mut guard = global_bridge()
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
+    let Some(bridge) = guard.as_mut() else {
+        return 0;
+    };
+    let Ok(wire) = std::str::from_utf8(&bridge.io_buffer).map(str::to_string) else {
+        return 0;
+    };
+    let mut parts = wire.splitn(1 + 1 + 1, '|');
+    let slot_str = parts.next().unwrap_or("stage-environment");
+    let stream_str = parts.next().unwrap_or("polyhaven");
+    let title_str = parts.next().unwrap_or("Stream Hydrated Asset");
+    let slot = ObserverPartSlot::from_target_slot(slot_str);
+    let digest = sha256_payload_digest(wire.as_bytes());
+    let mut hex_k = String::with_capacity(digest.len() * (1 + 1));
+    for b in digest {
+        let _ = std::fmt::Write::write_fmt(&mut hex_k, format_args!("{b:02x}"));
+    }
+    bridge.observer_holon.record_part_hydration(
+        slot,
+        precision_tier,
+        title_str.to_string(),
+        stream_str.to_string(),
+        hex_k,
+    );
+    bridge.aux_buffer = bridge.observer_holon.cognitive_resolution_json_bytes();
     bridge.aux_buffer.len() as u32
 }

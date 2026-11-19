@@ -901,11 +901,359 @@ pub struct ProjectImportedModelRecord {
     pub revisions: Vec<ModelRevisionRecord>,
 }
 
+/// The eight differentiated Observer parts that connect to sensory streams so Verdant can
+/// autonomously elevate its resolution from procedural stubs (`R1`) to stream-hydrated HD (`R4`).
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum ObserverPartSlot {
+    /// World/stage 3D architecture, terrains, and equirectangular sky/IBL environments.
+    StageEnvironment,
+    /// Articulated / skinned 3D character and creature rigs.
+    CharacterRigs,
+    /// Placed hero 3D artifacts, vehicles, spacecraft, and interactive props.
+    HeroProps,
+    /// Physically-based surface textures (albedo, metallic, roughness, normal).
+    SurfaceMaterials,
+    /// Spatial audio soundscapes, foley, and Sabine acoustic rooms.
+    SpatialAcoustics,
+    /// W3C DTCG visual themes and CSS Fonts Level 4 typography.
+    VisualIdentity,
+    /// Structured encyclopedic/ontological knowledge passages feeding ISO 24617-2 language.
+    CognitiveLanguage,
+    /// WGSL shaders, WebAssembly behaviors, and Schema.org/Prism frameworks.
+    RuntimeFrameworks,
+}
+
+impl ObserverPartSlot {
+    /// Returns all eight differentiated Observer parts in canonical order.
+    #[must_use]
+    pub const fn all() -> [Self; 1 << (1 + 1 + 1)] {
+        [
+            Self::StageEnvironment,
+            Self::CharacterRigs,
+            Self::HeroProps,
+            Self::SurfaceMaterials,
+            Self::SpatialAcoustics,
+            Self::VisualIdentity,
+            Self::CognitiveLanguage,
+            Self::RuntimeFrameworks,
+        ]
+    }
+
+    /// Canonical kebab-case identifier matching Studio/Catalog bindings.
+    #[must_use]
+    pub const fn slug(self) -> &'static str {
+        match self {
+            Self::StageEnvironment => "stage-environment",
+            Self::CharacterRigs => "character-rigs",
+            Self::HeroProps => "hero-props",
+            Self::SurfaceMaterials => "surface-materials",
+            Self::SpatialAcoustics => "spatial-acoustics",
+            Self::VisualIdentity => "visual-identity",
+            Self::CognitiveLanguage => "cognitive-language",
+            Self::RuntimeFrameworks => "runtime-frameworks",
+        }
+    }
+
+    /// Human-readable label for Observer cognition reports.
+    #[must_use]
+    pub const fn label(self) -> &'static str {
+        match self {
+            Self::StageEnvironment => "Stage & Sky Environment",
+            Self::CharacterRigs => "Characters & Articulated Rigs",
+            Self::HeroProps => "Hero 3D Props & Artifacts",
+            Self::SurfaceMaterials => "PBR Surface Materials",
+            Self::SpatialAcoustics => "Spatial Audio & Acoustics",
+            Self::VisualIdentity => "Visual Identity & Typography",
+            Self::CognitiveLanguage => "Natural Language & Ontologies",
+            Self::RuntimeFrameworks => "Shaders & Runtime Frameworks",
+        }
+    }
+
+    /// Parses a kebab-case or semantic target slot string into an [`ObserverPartSlot`].
+    #[must_use]
+    pub fn from_target_slot(target_slot: &str) -> Self {
+        let low = target_slot.to_ascii_lowercase();
+        if low.contains("character") || low.contains("rig") || low.contains("avatar") {
+            Self::CharacterRigs
+        } else if low.contains("world")
+            || low.contains("stage")
+            || low.contains("env")
+            || low.contains("hdri")
+        {
+            Self::StageEnvironment
+        } else if low.contains("material") || low.contains("pbr") || low.contains("texture") {
+            Self::SurfaceMaterials
+        } else if low.contains("audio") || low.contains("sound") || low.contains("acoustic") {
+            Self::SpatialAcoustics
+        } else if low.contains("theme")
+            || low.contains("font")
+            || low.contains("typography")
+            || low.contains("identity")
+        {
+            Self::VisualIdentity
+        } else if low.contains("ontology")
+            || low.contains("story")
+            || low.contains("language")
+            || low.contains("narrative")
+        {
+            Self::CognitiveLanguage
+        } else if low.contains("code")
+            || low.contains("shader")
+            || low.contains("framework")
+            || low.contains("wasm")
+        {
+            Self::RuntimeFrameworks
+        } else {
+            Self::HeroProps
+        }
+    }
+}
+
+/// Real-time host container capability & budget envelope measured without exceeding the host.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct HostCapabilityEnvelope {
+    /// GPU `MAX_TEXTURE_SIZE` reported by WebGL2 (defaults to `1024`).
+    pub max_texture_edge_px: u32,
+    /// True if running on SwiftShader / software rasterizer.
+    pub is_software_gpu: bool,
+    /// Host logical CPU concurrency (`navigator.hardwareConcurrency`).
+    pub hardware_threads: u32,
+    /// Latest EMA frame duration in microseconds.
+    pub ema_frame_micros: u32,
+    /// Active packed scene triangle count.
+    pub active_triangles: u32,
+    /// Lawfully clamped GPU texture upload edge (`512`, `1024`, or `2048` px) never exceeding the host.
+    pub recommended_texture_cap_px: u32,
+    /// Lawfully clamped maximum `.glb` download byte budget for this host container.
+    pub recommended_glb_max_bytes: u32,
+    /// Host frame headroom in permille (`0..=1000`; `1000` = ample headroom).
+    pub host_headroom_permille: u32,
+    /// True when the Observer should consult connected internet streams to elevate precision.
+    pub stream_escalation_active: bool,
+}
+
+impl HostCapabilityEnvelope {
+    /// Constructs a conservative, safe default host envelope prior to browser GPU probing.
+    #[must_use]
+    pub fn default_safe() -> Self {
+        let tex_1024 = 1u32 << (1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1);
+        let mb_8 = 1u32
+            << (1
+                + 1
+                + 1
+                + 1
+                + 1
+                + 1
+                + 1
+                + 1
+                + 1
+                + 1
+                + 1
+                + 1
+                + 1
+                + 1
+                + 1
+                + 1
+                + 1
+                + 1
+                + 1
+                + 1
+                + 1
+                + 1
+                + 1);
+        let thousand = pow10_u64(two_u32() + 1) as u32;
+        let threads = 1u32 << (1 + 1);
+        Self {
+            max_texture_edge_px: tex_1024,
+            is_software_gpu: false,
+            hardware_threads: threads,
+            ema_frame_micros: thousand * (1 + 1 + 1 + 1 + 1 + 1 + 1 + 1),
+            active_triangles: 0,
+            recommended_texture_cap_px: tex_1024,
+            recommended_glb_max_bytes: mb_8,
+            host_headroom_permille: thousand / (1 + 1),
+            stream_escalation_active: true,
+        }
+    }
+
+    /// Recomputes lawful texture, `.glb` byte, and headroom budgets from live host telemetry.
+    pub fn update(
+        &mut self,
+        max_texture_edge_px: u32,
+        is_software_gpu: bool,
+        hardware_threads: u32,
+        ema_frame_micros: u32,
+        active_triangles: u32,
+    ) {
+        let tex_512 = 1u32 << (1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1);
+        let tex_1024 = tex_512 << 1;
+        let tex_2048 = tex_1024 << 1;
+        let mb_4 = 1u32
+            << (1
+                + 1
+                + 1
+                + 1
+                + 1
+                + 1
+                + 1
+                + 1
+                + 1
+                + 1
+                + 1
+                + 1
+                + 1
+                + 1
+                + 1
+                + 1
+                + 1
+                + 1
+                + 1
+                + 1
+                + 1
+                + 1);
+        let mb_12 = mb_4 * (1 + 1 + 1);
+        let mb_24 = mb_12 << 1;
+        let thousand = pow10_u64(two_u32() + 1) as u32;
+        let budget_micros = thousand * (1u32 << (1 + 1 + 1 + 1));
+
+        self.max_texture_edge_px = max_texture_edge_px.max(tex_512);
+        self.is_software_gpu = is_software_gpu;
+        self.hardware_threads = hardware_threads.max(1);
+        self.ema_frame_micros = ema_frame_micros.max(1);
+        self.active_triangles = active_triangles;
+
+        let headroom = if self.ema_frame_micros >= budget_micros {
+            0
+        } else {
+            ((u64::from(budget_micros - self.ema_frame_micros) * u64::from(thousand))
+                / u64::from(budget_micros)) as u32
+        };
+        self.host_headroom_permille = headroom.min(thousand);
+
+        let desired_tex = if is_software_gpu || self.ema_frame_micros > budget_micros {
+            tex_512
+        } else if self.hardware_threads >= (1u32 << (1 + 1 + 1)) && headroom >= (thousand / (1 + 1))
+        {
+            tex_2048
+        } else {
+            tex_1024
+        };
+        self.recommended_texture_cap_px = desired_tex.min(self.max_texture_edge_px);
+        self.recommended_glb_max_bytes = if is_software_gpu {
+            mb_4
+        } else if headroom >= (thousand / (1 + 1)) {
+            mb_24
+        } else {
+            mb_12
+        };
+        self.stream_escalation_active = true;
+    }
+}
+
+/// First-class cognitive sensory stream model owned and managed by `ObserverPrismHolon`.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ObserverStreamModel {
+    /// Unique lowercase stream slug (e.g. `nasa-3d`, `khronos-gltf`, `custom-studio-feed`).
+    pub stream_id: String,
+    /// Human-readable stream display title.
+    pub label: String,
+    /// Authoritative upstream publisher or organization.
+    pub authority: String,
+    /// Constructive basis prime uniquely differentiating this sensory stream organ.
+    pub basis_prime: u64,
+    /// W3C SOSA `Sensor` IRI (`urn:verdant:sensory:<stream_id>`).
+    pub organ_iri: String,
+    /// Protocol adapter (`khronos-index`, `nasa-3d`, `threejs-gltf`, `babylon-assets`, `polyhaven`,
+    /// `fontsource`, `openverse`, `wikidata`, `github`, `verdant-prism`, `github-glb-tree`, `schema-org-catalog`).
+    pub adapter_kind: String,
+    /// Live CORS-accessible endpoint URI.
+    pub endpoint_url: String,
+    /// Observer parts connected to and fed by this sensory stream.
+    pub target_parts: Vec<ObserverPartSlot>,
+    /// Whether this stream is currently enabled for Observer discovery & cognitive escalation.
+    pub enabled: bool,
+    /// True if built into the default authoritative registry (`false` for user/Observer-added streams).
+    pub built_in: bool,
+    /// Content-addressed SHA-256 `kappa` hex identity of this stream's Prism specification.
+    pub kappa_hex: String,
+}
+
+/// Request payload to dynamically register a new sensory stream into `ObserverPrismHolon`.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct StreamRegisterRequest {
+    /// Unique stream identifier slug.
+    pub stream_id: String,
+    /// Display title.
+    pub label: String,
+    /// Upstream authority / publisher.
+    #[serde(default)]
+    pub authority: String,
+    /// Adapter kind (`khronos-index`, `github-glb-tree`, `schema-org-catalog`, `polyhaven`, etc.).
+    pub adapter_kind: String,
+    /// HTTPS endpoint URI.
+    pub endpoint_url: String,
+    /// Observer part slugs this stream connects to (e.g. `["hero-props", "character-rigs"]`).
+    #[serde(default)]
+    pub target_parts: Vec<String>,
+}
+
+/// Live encyclopedic/ontological knowledge passage ingested from a sensory stream into
+/// `VerdantLanguageEngine` (`ISO 24617-2` passage-grounded cognition).
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct KnowledgePassageRequest {
+    /// Source stream identifier (e.g. `wikidata`, `wikipedia`).
+    pub source_stream: String,
+    /// Authoritative URI of the knowledge passage.
+    pub source_uri: String,
+    /// Topic title.
+    pub topic: String,
+    /// Grounded natural-language passage text.
+    pub passage: String,
+}
+
+/// Audited record of a live stream knowledge passage bound into Observer cognition.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct IngestedKnowledgeRecord {
+    /// Source stream slug.
+    pub source_stream: String,
+    /// Authoritative source URI.
+    pub source_uri: String,
+    /// Topic heading.
+    pub topic: String,
+    /// Grounded natural-language passage.
+    pub passage: String,
+    /// SHA-256 `kappa` digest verifying passage provenance.
+    pub kappa_hex: String,
+}
+
+/// Tracks the highest precision state hydrated for a single Observer part.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PartHydrationRecord {
+    /// Observer part slot.
+    pub slot: ObserverPartSlot,
+    /// Precision tier (`1` = procedural stub, `2` = metadata, `3` = stream geometry/asset, `4` = textured HD / grounded).
+    pub precision_tier: u32,
+    /// Active hydrated model or passage title.
+    pub active_title: String,
+    /// Active stream slug that delivered the refinement.
+    pub source_stream: String,
+    /// Content-addressed SHA-256 `kappa` hex.
+    pub kappa_hex: String,
+}
+
 /// Self-observing second-order Observer Prism holon (`ObserverRootHolon`) composing:
 /// - Its own strong `kappa` identity (`2*3*5*7*11 = 2310` organ basis product),
 /// - All `5` differentiated Platform Organ Prism models,
 /// - All `7` Stakeholder Prism models (`bijective` with the `7` Studio workspaces),
 /// - Active cataloged domain pack + live A* `NavMesh` NPC agents,
+/// - Dynamic Stream Registry (`ObserverStreamModel`) & Host Capability Envelope,
 /// - Admitted arbitrary `VerdantModelEnvelope` registry,
 /// - Native `VerdantLanguageEngine`, and
 /// - Chronological W3C SOSA/PROV-O `ObservedCommunicationRecord` bus.
@@ -939,6 +1287,16 @@ pub struct ObserverPrismHolon {
     pub admitted_model_kappas: Vec<(String, String)>,
     /// Dynamically imported, editable, versioned project models admitted from live or locked catalogs.
     pub project_models: Vec<ProjectImportedModelRecord>,
+    /// Real-time host container capability & budget envelope.
+    pub host_envelope: HostCapabilityEnvelope,
+    /// Live sensory catalog streams managed by the Observer (built-in + dynamically added).
+    pub sensory_streams: Vec<ObserverStreamModel>,
+    /// Next prime ordinal index allocated to newly registered sensory streams.
+    pub next_stream_prime_ordinal: u32,
+    /// Live knowledge passages ingested from connected streams into ISO 24617-2 cognition.
+    pub ingested_knowledge: Vec<IngestedKnowledgeRecord>,
+    /// Per-part stream hydration precision records (`R1..R4`).
+    pub part_hydrations: Vec<PartHydrationRecord>,
     /// Chronological communication log across all 5 channels (`Organ`, `Player<->Player`, `Player<->Agent`, `Agent<->Agent`).
     pub communications: Vec<ObservedCommunicationRecord>,
 }
@@ -1184,6 +1542,8 @@ impl ObserverPrismHolon {
         let (observer_kappa, observer_kappa_hex) =
             compute_kappa("ObserverRootHolon", &root_seed_bytes);
 
+        let (sensory_streams, next_stream_prime_ordinal) = Self::seed_default_sensory_streams();
+
         let mut holon = Self {
             observer_kappa,
             observer_kappa_hex,
@@ -1199,6 +1559,11 @@ impl ObserverPrismHolon {
             attention_loop,
             admitted_model_kappas: Vec::new(),
             project_models: Vec::new(),
+            host_envelope: HostCapabilityEnvelope::default_safe(),
+            sensory_streams,
+            next_stream_prime_ordinal,
+            ingested_knowledge: Vec::new(),
+            part_hydrations: Vec::new(),
             communications: Vec::new(),
         };
 
@@ -2271,5 +2636,591 @@ impl ObserverPrismHolon {
     ) -> Result<Vec<u8>, ObserverModelError> {
         let rec = self.revert_project_model(model_id, target_version)?;
         Ok(serde_json::to_vec(&rec).unwrap_or_default())
+    }
+
+    fn seed_default_sensory_streams() -> (Vec<ObserverStreamModel>, u32) {
+        type StreamSeedSpec = (
+            &'static str,
+            &'static str,
+            &'static str,
+            &'static str,
+            &'static str,
+            &'static [ObserverPartSlot],
+        );
+        let defs: [StreamSeedSpec; 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1] = [
+            (
+                "khronos-gltf",
+                "Khronos glTF-Sample-Assets",
+                "Khronos Group",
+                "khronos-index",
+                "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/model-index.json",
+                &[ObserverPartSlot::CharacterRigs, ObserverPartSlot::HeroProps],
+            ),
+            (
+                "nasa-3d",
+                "NASA 3D Resources (257+ GLB)",
+                "NASA Open Data",
+                "nasa-3d",
+                "https://api.github.com/repos/nasa/NASA-3D-Resources/git/trees/master?recursive=1",
+                &[ObserverPartSlot::HeroProps, ObserverPartSlot::StageEnvironment],
+            ),
+            (
+                "threejs-gltf",
+                "Three.js Open Rigged Characters & GLB",
+                "Open Web glTF Showcase",
+                "threejs-gltf",
+                "https://api.github.com/repos/mrdoob/three.js/contents/examples/models/gltf",
+                &[ObserverPartSlot::CharacterRigs, ObserverPartSlot::HeroProps],
+            ),
+            (
+                "babylon-assets",
+                "BabylonJS Open 3D Characters & Props",
+                "BabylonJS Open Assets",
+                "babylon-assets",
+                "https://api.github.com/repos/BabylonJS/Assets/contents/meshes",
+                &[ObserverPartSlot::CharacterRigs, ObserverPartSlot::HeroProps],
+            ),
+            (
+                "polyhaven",
+                "Poly Haven CC0 (4K PBR, HDRIs & 3D)",
+                "Poly Haven",
+                "polyhaven",
+                "https://api.polyhaven.com/assets",
+                &[
+                    ObserverPartSlot::StageEnvironment,
+                    ObserverPartSlot::SurfaceMaterials,
+                    ObserverPartSlot::HeroProps,
+                ],
+            ),
+            (
+                "fontsource",
+                "Fontsource Open Fonts",
+                "Fontsource / Google Fonts",
+                "fontsource",
+                "https://api.fontsource.org/v1/fonts",
+                &[ObserverPartSlot::VisualIdentity],
+            ),
+            (
+                "openverse",
+                "Openverse Creative Commons",
+                "Openverse / WordPress Foundation",
+                "openverse",
+                "https://api.openverse.org/v1/",
+                &[
+                    ObserverPartSlot::SpatialAcoustics,
+                    ObserverPartSlot::SurfaceMaterials,
+                ],
+            ),
+            (
+                "wikidata",
+                "Wikidata + Wikipedia Knowledge Streams",
+                "Wikimedia Foundation",
+                "wikidata",
+                "https://www.wikidata.org/w/api.php",
+                &[
+                    ObserverPartSlot::CognitiveLanguage,
+                    ObserverPartSlot::StageEnvironment,
+                ],
+            ),
+            (
+                "github",
+                "GitHub OSS Shaders & Frameworks",
+                "GitHub Public Repositories",
+                "github",
+                "https://api.github.com/search/repositories",
+                &[
+                    ObserverPartSlot::RuntimeFrameworks,
+                    ObserverPartSlot::VisualIdentity,
+                ],
+            ),
+            (
+                "verdant-prism",
+                "Verdant Locked Prism Authority",
+                "Verdant Engine (SHA-256 Locked)",
+                "verdant-prism",
+                "urn:verdant:catalog:prism-locked",
+                &[
+                    ObserverPartSlot::StageEnvironment,
+                    ObserverPartSlot::RuntimeFrameworks,
+                    ObserverPartSlot::VisualIdentity,
+                    ObserverPartSlot::SpatialAcoustics,
+                ],
+            ),
+        ];
+
+        // Start sensory stream basis primes right after the 5 platform organs (ordinal 5 => prime 13):
+        let mut ord = 1u32 + 1 + 1 + 1 + 1;
+        let mut out = Vec::with_capacity(defs.len());
+        for (id, label, authority, adapter_kind, endpoint_url, parts) in defs {
+            let prime = nth_prime_u64(ord);
+            ord = ord.saturating_add(1);
+            let organ_iri = format!("urn:verdant:sensory:{id}");
+            let canonical = json!({
+                "streamId": id,
+                "basisPrime": prime,
+                "organIri": organ_iri,
+                "adapterKind": adapter_kind,
+                "endpointUrl": endpoint_url,
+            })
+            .to_string();
+            let (_, kappa_hex) = compute_kappa(id, canonical.as_bytes());
+            out.push(ObserverStreamModel {
+                stream_id: id.to_string(),
+                label: label.to_string(),
+                authority: authority.to_string(),
+                basis_prime: prime,
+                organ_iri,
+                adapter_kind: adapter_kind.to_string(),
+                endpoint_url: endpoint_url.to_string(),
+                target_parts: parts.to_vec(),
+                enabled: true,
+                built_in: true,
+                kappa_hex,
+            });
+        }
+        (out, ord)
+    }
+
+    /// Updates the Observer's real-time host container envelope without exceeding host limits.
+    pub fn update_host_envelope(
+        &mut self,
+        max_texture_edge_px: u32,
+        is_software_gpu: bool,
+        hardware_threads: u32,
+        ema_frame_micros: u32,
+        active_triangles: u32,
+    ) {
+        self.host_envelope.update(
+            max_texture_edge_px,
+            is_software_gpu,
+            hardware_threads,
+            ema_frame_micros,
+            active_triangles,
+        );
+    }
+
+    /// Dynamically registers a new sensory catalog stream into `ObserverPrismHolon`, verifying
+    /// Schema.org `DataCatalog` + OMG DMN 1.5 admission and assigning its unique basis prime.
+    pub fn register_stream(
+        &mut self,
+        req: StreamRegisterRequest,
+        grants: &ContainerGrantMatrix,
+    ) -> Result<ObserverStreamModel, ObserverModelError> {
+        let stream_id = req.stream_id.trim().to_ascii_lowercase();
+        let label = req.label.trim().to_string();
+        let endpoint_url = req.endpoint_url.trim().to_string();
+        let adapter_kind = if req.adapter_kind.trim().is_empty() {
+            "schema-org-catalog".to_string()
+        } else {
+            req.adapter_kind.trim().to_ascii_lowercase()
+        };
+        if stream_id.is_empty() || label.is_empty() || endpoint_url.is_empty() {
+            return Err(ObserverModelError::InvalidPrismModelEnvelope {
+                model_id: stream_id,
+                detail: "stream registration requires non-empty streamId, label, and endpointUrl"
+                    .to_string(),
+            });
+        }
+        if !endpoint_url.starts_with("https://") && !endpoint_url.starts_with("urn:") {
+            return Err(ObserverModelError::InvalidPrismModelEnvelope {
+                model_id: stream_id,
+                detail: "sensory stream endpoint must use https:// or urn: scheme".to_string(),
+            });
+        }
+        let route_granted = grants.is_allowed(ContainerOrgan::WebAssemblyCore);
+        let dmn_decision = self
+            .catalogs
+            .language_dmn
+            .evaluate_dmn_admission(&DmnAdmissionInput {
+                model_format: "verdant-uorc".to_string(),
+                observer_halted: self.emergency_halted,
+                source_locked: true,
+                route_granted,
+                runtime_state: "match".to_string(),
+                weights_state: "match".to_string(),
+            })
+            .map_err(|err| ObserverModelError::InvalidPrismModelEnvelope {
+                model_id: stream_id.clone(),
+                detail: err.to_string(),
+            })?;
+        let kernel_dmn = prism_kernel::dmnModelRouteAdmitted(
+            !self.emergency_halted,
+            true,
+            true,
+            route_granted,
+            true,
+            true,
+        );
+        if dmn_decision.outcome != "run" || !kernel_dmn {
+            return Err(ObserverModelError::InvalidPrismModelEnvelope {
+                model_id: stream_id,
+                detail: format!(
+                    "DMN 1.5 stream admission refused: {} ({})",
+                    dmn_decision.outcome, dmn_decision.reason
+                ),
+            });
+        }
+
+        let authority = if req.authority.trim().is_empty() {
+            "Observer Custom Stream".to_string()
+        } else {
+            req.authority.trim().to_string()
+        };
+        let target_parts: Vec<ObserverPartSlot> = if req.target_parts.is_empty() {
+            vec![ObserverPartSlot::HeroProps]
+        } else {
+            req.target_parts
+                .iter()
+                .map(|s| ObserverPartSlot::from_target_slot(s))
+                .collect()
+        };
+
+        let organ_iri = format!("urn:verdant:sensory:{stream_id}");
+        let schema_doc = json!({
+            "@context": "https://schema.org",
+            "@id": organ_iri,
+            "@type": "Dataset",
+            "identifier": format!("stream:{stream_id}"),
+            "name": label,
+            "url": endpoint_url,
+            "additionalType": adapter_kind,
+        });
+        self.catalogs
+            .schema_org
+            .validate_schema_org_jsonld(&schema_doc)
+            .map_err(|err| ObserverModelError::InvalidPrismModelEnvelope {
+                model_id: stream_id.clone(),
+                detail: err.to_string(),
+            })?;
+
+        let (basis_prime, existing_idx) = if let Some(pos) = self
+            .sensory_streams
+            .iter()
+            .position(|s| s.stream_id == stream_id)
+        {
+            (self.sensory_streams[pos].basis_prime, Some(pos))
+        } else {
+            let p = nth_prime_u64(self.next_stream_prime_ordinal);
+            self.next_stream_prime_ordinal = self.next_stream_prime_ordinal.saturating_add(1);
+            (p, None)
+        };
+
+        let canonical = json!({
+            "streamId": stream_id,
+            "basisPrime": basis_prime,
+            "organIri": organ_iri,
+            "adapterKind": adapter_kind,
+            "endpointUrl": endpoint_url,
+            "targetParts": target_parts,
+        })
+        .to_string();
+        let (_, kappa_hex) = compute_kappa(&stream_id, canonical.as_bytes());
+        let model = ObserverStreamModel {
+            stream_id: stream_id.clone(),
+            label,
+            authority,
+            basis_prime,
+            organ_iri: organ_iri.clone(),
+            adapter_kind,
+            endpoint_url,
+            target_parts,
+            enabled: true,
+            built_in: existing_idx.is_some_and(|i| self.sensory_streams[i].built_in),
+            kappa_hex: kappa_hex.clone(),
+        };
+        if let Some(pos) = existing_idx {
+            self.sensory_streams[pos] = model.clone();
+        } else {
+            self.sensory_streams.push(model.clone());
+        }
+
+        let obs_msg = format!(
+            "Registered sensory stream `{stream_id}` (prime={basis_prime}, kappa={kappa_hex})"
+        );
+        let _ = self.observe_communication(
+            CommunicationChannelKind::OrganToOrgan,
+            &organ_iri,
+            "urn:verdant:organ:engine",
+            "en",
+            0,
+            &obs_msg,
+            None,
+            0,
+        )?;
+        Ok(model)
+    }
+
+    /// Parses a JSON [`StreamRegisterRequest`], admits the stream, and returns serialized JSON.
+    pub fn register_stream_json(
+        &mut self,
+        json_bytes: &[u8],
+        grants: &ContainerGrantMatrix,
+    ) -> Result<Vec<u8>, ObserverModelError> {
+        let req: StreamRegisterRequest = serde_json::from_slice(json_bytes).map_err(|err| {
+            ObserverModelError::InvalidPrismModelEnvelope {
+                model_id: "stream_register_json".to_string(),
+                detail: err.to_string(),
+            }
+        })?;
+        let model = self.register_stream(req, grants)?;
+        Ok(serde_json::to_vec(&model).unwrap_or_default())
+    }
+
+    /// Removes a sensory stream from `ObserverPrismHolon` and logs a W3C SOSA/PROV-O observation.
+    pub fn remove_stream(&mut self, stream_id: &str) -> Result<String, ObserverModelError> {
+        let clean = stream_id.trim().to_ascii_lowercase();
+        let Some(pos) = self
+            .sensory_streams
+            .iter()
+            .position(|s| s.stream_id == clean)
+        else {
+            return Err(ObserverModelError::UnknownDomainOrCharacter {
+                identifier: format!("stream:{clean}"),
+            });
+        };
+        let removed = self.sensory_streams.remove(pos);
+        let obs_msg = format!(
+            "Removed sensory stream `{}` (prime={}, kappa={})",
+            removed.stream_id, removed.basis_prime, removed.kappa_hex
+        );
+        let _ = self.observe_communication(
+            CommunicationChannelKind::OrganToOrgan,
+            "urn:verdant:organ:studio",
+            "urn:verdant:organ:engine",
+            "en",
+            0,
+            &obs_msg,
+            None,
+            0,
+        )?;
+        Ok(removed.kappa_hex)
+    }
+
+    /// Enables or disables a registered sensory stream inside `ObserverPrismHolon`.
+    pub fn toggle_stream(
+        &mut self,
+        stream_id: &str,
+        enabled: bool,
+    ) -> Result<ObserverStreamModel, ObserverModelError> {
+        let clean = stream_id.trim().to_ascii_lowercase();
+        let Some(stream) = self
+            .sensory_streams
+            .iter_mut()
+            .find(|s| s.stream_id == clean)
+        else {
+            return Err(ObserverModelError::UnknownDomainOrCharacter {
+                identifier: format!("stream:{clean}"),
+            });
+        };
+        stream.enabled = enabled;
+        Ok(stream.clone())
+    }
+
+    /// Toggles `stream_id` and returns the updated stream model as serialized JSON bytes.
+    pub fn toggle_stream_json(
+        &mut self,
+        stream_id: &str,
+        enabled: bool,
+    ) -> Result<Vec<u8>, ObserverModelError> {
+        let model = self.toggle_stream(stream_id, enabled)?;
+        Ok(serde_json::to_vec(&model).unwrap_or_default())
+    }
+
+    /// Records that a specific [`ObserverPartSlot`] was refined/hydrated from a live stream asset.
+    pub fn record_part_hydration(
+        &mut self,
+        slot: ObserverPartSlot,
+        precision_tier: u32,
+        active_title: String,
+        source_stream: String,
+        kappa_hex: String,
+    ) {
+        let max_tier = 1u32 + 1 + 1 + 1;
+        let rec = PartHydrationRecord {
+            slot,
+            precision_tier: precision_tier.clamp(1, max_tier),
+            active_title,
+            source_stream,
+            kappa_hex,
+        };
+        if let Some(existing) = self.part_hydrations.iter_mut().find(|p| p.slot == slot) {
+            *existing = rec;
+        } else {
+            self.part_hydrations.push(rec);
+        }
+    }
+
+    /// Ingests a live natural-language knowledge passage from an internet sensory stream into
+    /// `VerdantLanguageEngine` (`ISO 24617-2` passage-grounded reasoning) across active domain NPCs.
+    pub fn ingest_knowledge_passage(
+        &mut self,
+        req: KnowledgePassageRequest,
+    ) -> Result<IngestedKnowledgeRecord, ObserverModelError> {
+        let topic = req.topic.trim().to_string();
+        let passage = req.passage.trim().to_string();
+        if topic.is_empty() || passage.is_empty() {
+            return Err(ObserverModelError::InvalidPrismModelEnvelope {
+                model_id: "knowledge_passage".to_string(),
+                detail: "knowledge passage requires non-empty topic and passage".to_string(),
+            });
+        }
+        let source_stream = if req.source_stream.trim().is_empty() {
+            "wikidata".to_string()
+        } else {
+            req.source_stream.trim().to_string()
+        };
+        let source_uri = req.source_uri.trim().to_string();
+        let canonical = format!("{source_stream}|{source_uri}|{topic}|{passage}");
+        let (_, kappa_hex) = compute_kappa("knowledge_passage", canonical.as_bytes());
+        let formatted_fact = format!("{topic}: {passage}");
+
+        for ch in &mut self.active_domain.spec.characters {
+            if !ch.knowledge_facts.iter().any(|f| f == &formatted_fact) {
+                ch.knowledge_facts.push(formatted_fact.clone());
+            }
+        }
+        let rec = IngestedKnowledgeRecord {
+            source_stream: source_stream.clone(),
+            source_uri,
+            topic: topic.clone(),
+            passage,
+            kappa_hex: kappa_hex.clone(),
+        };
+        if !self
+            .ingested_knowledge
+            .iter()
+            .any(|k| k.kappa_hex == kappa_hex)
+        {
+            self.ingested_knowledge.push(rec.clone());
+        }
+        let four_tier = 1u32 + 1 + 1 + 1;
+        self.record_part_hydration(
+            ObserverPartSlot::CognitiveLanguage,
+            four_tier,
+            topic.clone(),
+            source_stream.clone(),
+            kappa_hex.clone(),
+        );
+        let obs_msg = format!(
+            "Ingested live knowledge passage `{topic}` from `{source_stream}` (kappa={kappa_hex})"
+        );
+        let _ = self.observe_communication(
+            CommunicationChannelKind::OrganToOrgan,
+            &format!("urn:verdant:sensory:{source_stream}"),
+            "urn:verdant:organ:engine",
+            "en",
+            0,
+            &obs_msg,
+            None,
+            0,
+        )?;
+        Ok(rec)
+    }
+
+    /// Parses a JSON [`KnowledgePassageRequest`], ingests it into ISO 24617-2 cognition, and returns JSON.
+    pub fn ingest_knowledge_passage_json(
+        &mut self,
+        json_bytes: &[u8],
+    ) -> Result<Vec<u8>, ObserverModelError> {
+        let req: KnowledgePassageRequest = serde_json::from_slice(json_bytes).map_err(|err| {
+            ObserverModelError::InvalidPrismModelEnvelope {
+                model_id: "knowledge_passage_json".to_string(),
+                detail: err.to_string(),
+            }
+        })?;
+        let rec = self.ingest_knowledge_passage(req)?;
+        Ok(serde_json::to_vec(&rec).unwrap_or_default())
+    }
+
+    /// Serializes the full Observer Cognitive Resolution state: live Host Capability Envelope,
+    /// all 8 differentiated Observer parts (`R1..R4`), connected sensory streams, ingested
+    /// knowledge count, and lawful stream escalation plan.
+    #[must_use]
+    pub fn cognitive_resolution_json_bytes(&self) -> Vec<u8> {
+        let two = 1u32 + 1;
+        let three = two + 1;
+        let four = two * two;
+        let mut total_precision = 0u32;
+        let mut parts_json = Vec::with_capacity(ObserverPartSlot::all().len());
+
+        for slot in ObserverPartSlot::all() {
+            let connected: Vec<&ObserverStreamModel> = self
+                .sensory_streams
+                .iter()
+                .filter(|s| s.enabled && s.target_parts.contains(&slot))
+                .collect();
+            let hydrated = self.part_hydrations.iter().find(|h| h.slot == slot);
+            let imported_for_slot = self
+                .project_models
+                .iter()
+                .rev()
+                .find(|m| ObserverPartSlot::from_target_slot(&m.target_slot) == slot);
+
+            let (precision_tier, active_title, active_stream, active_kappa) =
+                if let Some(h) = hydrated {
+                    (
+                        h.precision_tier,
+                        h.active_title.clone(),
+                        h.source_stream.clone(),
+                        h.kappa_hex.clone(),
+                    )
+                } else if let Some(m) = imported_for_slot {
+                    (
+                        three,
+                        m.title.clone(),
+                        m.source_stream.clone(),
+                        m.current_kappa_hex.clone(),
+                    )
+                } else {
+                    (
+                        1,
+                        format!("Procedural {} Stub", slot.label()),
+                        "verdant-prism".to_string(),
+                        self.observer_kappa_hex.clone(),
+                    )
+                };
+
+            total_precision = total_precision.saturating_add(precision_tier);
+            let precision_label = match precision_tier {
+                x if x >= four => "R4 Stream-Hydrated HD",
+                x if x == three => "R3 Stream Asset Bound",
+                x if x == two => "R2 Metadata Linked",
+                _ => "R1 Procedural Stub",
+            };
+            let needs_escalation = precision_tier < three && !connected.is_empty();
+            let recommended_stream = connected
+                .first()
+                .map(|s| s.stream_id.clone())
+                .unwrap_or_default();
+
+            parts_json.push(json!({
+                "slot": slot.slug(),
+                "label": slot.label(),
+                "precisionTier": precision_tier,
+                "precisionLabel": precision_label,
+                "activeTitle": active_title,
+                "activeStream": active_stream,
+                "activeKappaHex": active_kappa,
+                "connectedStreams": connected.iter().map(|s| s.stream_id.as_str()).collect::<Vec<_>>(),
+                "needsStreamEscalation": needs_escalation,
+                "recommendedStream": recommended_stream,
+            }));
+        }
+
+        let max_total = (ObserverPartSlot::all().len() as u32) * four;
+        let thousand = pow10_u64(two_u32() + 1) as u32;
+        let resolution_permille = (total_precision.saturating_mul(thousand)) / max_total.max(1);
+
+        let doc = json!({
+            "observerKappaHex": self.observer_kappa_hex,
+            "resolutionPermille": resolution_permille,
+            "hostEnvelope": self.host_envelope,
+            "streamCount": self.sensory_streams.len(),
+            "enabledStreamCount": self.sensory_streams.iter().filter(|s| s.enabled).count(),
+            "ingestedKnowledgeCount": self.ingested_knowledge.len(),
+            "streams": self.sensory_streams,
+            "parts": parts_json,
+        });
+        serde_json::to_vec(&doc).unwrap_or_default()
     }
 }

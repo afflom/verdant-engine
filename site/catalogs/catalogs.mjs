@@ -257,18 +257,56 @@ verifyAllBtn?.addEventListener("click", async () => {
 let loadedWorldPacks = [];
 let galleryContentType = "all";
 let latestStreamStatus = {};
+const STREAM_PREFS_KEY = "verdant.observer.streams.v1";
+
+function loadStreamPrefs() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(STREAM_PREFS_KEY) || "{}");
+    return {
+      disabled: Array.isArray(raw.disabled) ? raw.disabled : [],
+      custom: Array.isArray(raw.custom) ? raw.custom : [],
+    };
+  } catch {
+    return { disabled: [], custom: [] };
+  }
+}
+
+function saveStreamPrefs(prefs) {
+  try {
+    localStorage.setItem(STREAM_PREFS_KEY, JSON.stringify(prefs));
+  } catch {
+    // Ignore privacy/quota errors
+  }
+}
 
 function renderSensoryStreams() {
   if (!sensoryGrid) return;
   const activeStream = galleryStreamSel?.value || "all";
+  const prefs = loadStreamPrefs();
+  const disabledSet = new Set(prefs.disabled);
+  const allStreams = [
+    ...LIVE_CATALOG_STREAMS,
+    ...prefs.custom.map((cs, i) => ({
+      id: cs.streamId,
+      label: cs.label || cs.streamId,
+      authority: cs.authority || "Observer Custom Stream",
+      basisPrime: 53 + i * 2,
+      organIri: `urn:verdant:sensory:${cs.streamId}`,
+      sensoryModality: `Custom ${cs.adapterKind || "schema-org-catalog"} stream`,
+      mediaTypes: ["model/gltf-binary", "application/ld+json"],
+      targetParts: cs.targetParts || ["hero-props"],
+      custom: true,
+    })),
+  ];
+
   sensoryGrid.replaceChildren();
-  for (const s of LIVE_CATALOG_STREAMS) {
+  for (const s of allStreams) {
+    const isDisabled = disabledSet.has(s.id);
     const st = latestStreamStatus[s.id];
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.className = "cat-sensory-card";
-    btn.dataset.sensoryStream = s.id;
-    btn.setAttribute("aria-pressed", activeStream === s.id ? "true" : "false");
+    const card = document.createElement("article");
+    card.className = "cat-sensory-card";
+    card.dataset.sensoryStream = s.id;
+    card.setAttribute("aria-pressed", activeStream === s.id ? "true" : "false");
 
     const top = document.createElement("div");
     top.className = "cat-sensory-top";
@@ -277,7 +315,10 @@ function renderSensoryStreams() {
     prime.textContent = `Prime ${s.basisPrime} · ${s.authority}`;
     const state = document.createElement("span");
     state.className = "cat-sensory-state";
-    if (st) {
+    if (isDisabled) {
+      state.dataset.status = "offline";
+      state.textContent = "PAUSED";
+    } else if (st) {
       state.dataset.status = st.status;
       state.textContent = st.status === "live"
         ? `LIVE · ${st.count} items${st.latencyMs ? ` · ${st.latencyMs}ms` : ""}`
@@ -301,18 +342,71 @@ function renderSensoryStreams() {
     iri.style.fontFamily = "var(--font-mono)";
     iri.style.fontSize = "var(--text-14)";
     iri.style.color = "var(--muted-foreground)";
-    iri.textContent = `${s.organIri} · ${s.mediaTypes.slice(0, 2).join(", ")}`;
+    iri.textContent = `${s.organIri} -> ${(s.targetParts || []).join(", ")}`;
 
-    btn.append(top, h3, mod, iri);
-    btn.addEventListener("click", () => {
+    const ctrlRow = document.createElement("div");
+    ctrlRow.className = "cat-actions";
+    const focusBtn = document.createElement("button");
+    focusBtn.type = "button";
+    focusBtn.className = activeStream === s.id ? "cat-btn primary" : "cat-btn";
+    focusBtn.textContent = activeStream === s.id ? "Focused" : "Focus Feed";
+    focusBtn.addEventListener("click", () => {
       if (galleryStreamSel) {
         galleryStreamSel.value = galleryStreamSel.value === s.id ? "all" : s.id;
       }
       refreshLiveGallery();
     });
-    sensoryGrid.append(btn);
+    const togBtn = document.createElement("button");
+    togBtn.type = "button";
+    togBtn.className = "cat-btn";
+    togBtn.textContent = isDisabled ? "Enable" : "Pause";
+    togBtn.addEventListener("click", () => {
+      const next = loadStreamPrefs();
+      if (disabledSet.has(s.id)) {
+        next.disabled = next.disabled.filter((x) => x !== s.id);
+      } else {
+        next.disabled = [...new Set([...next.disabled, s.id])];
+      }
+      saveStreamPrefs(next);
+      refreshLiveGallery();
+    });
+    ctrlRow.append(focusBtn, togBtn);
+    if (s.custom) {
+      const rmBtn = document.createElement("button");
+      rmBtn.type = "button";
+      rmBtn.className = "cat-btn";
+      rmBtn.textContent = "Remove";
+      rmBtn.addEventListener("click", () => {
+        const next = loadStreamPrefs();
+        next.custom = next.custom.filter((x) => x.streamId !== s.id);
+        next.disabled = next.disabled.filter((x) => x !== s.id);
+        saveStreamPrefs(next);
+        refreshLiveGallery();
+      });
+      ctrlRow.append(rmBtn);
+    }
+
+    card.append(top, h3, mod, iri, ctrlRow);
+    sensoryGrid.append(card);
   }
 }
+
+$("cat-add-stream-form")?.addEventListener("submit", (e) => {
+  e.preventDefault();
+  const sid = $("cat-new-stream-id")?.value?.trim().toLowerCase().replace(/[^a-z0-9-]+/g, "-") || "";
+  const label = $("cat-new-stream-label")?.value?.trim() || "";
+  const url = $("cat-new-stream-url")?.value?.trim() || "";
+  const adapter = $("cat-new-stream-adapter")?.value || "schema-org-catalog";
+  if (!sid || !label || !/^https:\/\//.test(url)) return;
+  const prefs = loadStreamPrefs();
+  prefs.custom = [
+    ...prefs.custom.filter((x) => x.streamId !== sid),
+    { streamId: sid, label, endpointUrl: url, adapterKind: adapter, targetParts: ["hero-props"], enabled: true },
+  ];
+  saveStreamPrefs(prefs);
+  $("cat-add-stream-form").reset();
+  refreshLiveGallery();
+});
 
 function renderGalleryPills() {
   if (!galleryPills) return;
@@ -344,17 +438,24 @@ function buildStudioDeepLink(item) {
     qs.set("autoGlb", item.glbUrl);
     qs.set("autoTitle", item.title);
   }
+  if (item.envSkyUrl) {
+    qs.set("autoSky", item.envSkyUrl);
+    qs.set("autoTitle", item.title);
+  }
   return new URL(`../studio/?${qs.toString()}`, import.meta.url).href;
 }
 
 let gallerySeq = 0;
 async function refreshLiveGallery() {
   const seq = ++gallerySeq;
+  const prefs = loadStreamPrefs();
   const res = await searchLiveCatalogStreams({
     query: gallerySearch?.value || "",
     contentType: galleryContentType,
     streamId: galleryStreamSel?.value || "all",
     localWorldPacks: loadedWorldPacks,
+    disabledStreamIds: prefs.disabled,
+    customStreams: prefs.custom,
   });
   if (seq !== gallerySeq) return;
   latestStreamStatus = res.streamStatus || {};

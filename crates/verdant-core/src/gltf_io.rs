@@ -382,6 +382,17 @@ pub fn validate_glb_bytes(bytes: &[u8]) -> Result<VerifiedGltfSummary, AssetVali
     })
 }
 
+/// Decoded host-bounded `RGBA8` texture payload extracted from a Khronos `.glb` image buffer.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct DecodedRgbaTexture {
+    /// Width in pixels (`<= host_max_texture_edge_px`).
+    pub width: u32,
+    /// Height in pixels (`<= host_max_texture_edge_px`).
+    pub height: u32,
+    /// Tightly packed `width * height * 4` `RGBA8` bytes.
+    pub rgba: Vec<u8>,
+}
+
 /// Complete scene, mesh, material, skeletal rig, and keyframe clip bundle imported from a Khronos `.glb`.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct ImportedGlbScene {
@@ -397,6 +408,10 @@ pub struct ImportedGlbScene {
     pub clips: Vec<SkeletalClip>,
     /// Per-mesh normalized 4-joint skinning weights (`JOINTS_0` + `WEIGHTS_0`) when present.
     pub skin_weights: Vec<Vec<SkinWeights4>>,
+    /// Primary embedded `baseColorTexture` decoded and clamped to the host GPU budget, if present.
+    pub primary_albedo_texture: Option<DecodedRgbaTexture>,
+    /// Per-mesh flag indicating whether the mesh samples `primary_albedo_texture` via `TEXCOORD_0`.
+    pub primary_tex_mesh_mask: Vec<bool>,
 }
 
 fn normalize_weights_permille(raw: [f32; DIM_HOMOGENEOUS]) -> [u16; DIM_HOMOGENEOUS] {
@@ -582,13 +597,132 @@ fn sample_gltf_base_color(img: &gltf::image::Data, u: f32, v: f32) -> [f32; DIM_
     }
 }
 
+fn decode_rgba_bounded(img: &gltf::image::Data, max_edge_px: u32) -> Option<DecodedRgbaTexture> {
+    if img.width == 0 || img.height == 0 || img.pixels.is_empty() {
+        return None;
+    }
+    let cap = max_edge_px.max(1);
+    let src_w = img.width;
+    let src_h = img.height;
+    let max_dim = src_w.max(src_h);
+    let (dst_w, dst_h) = if max_dim > cap {
+        let scale = f64::from(cap) / f64::from(max_dim);
+        (
+            ((f64::from(src_w) * scale).round() as u32).max(1),
+            ((f64::from(src_h) * scale).round() as u32).max(1),
+        )
+    } else {
+        (src_w, src_h)
+    };
+    let two = 1usize + 1usize;
+    let three = two + 1usize;
+    let four = two * two;
+    let full_alpha = ((1u32 << (four + four)) - 1) as u8;
+    let mut rgba = Vec::with_capacity((dst_w as usize) * (dst_h as usize) * four);
+    let sw_f = f64::from(src_w);
+    let sh_f = f64::from(src_h);
+    let dw_f = f64::from(dst_w);
+    let dh_f = f64::from(dst_h);
+    let half = half_f64();
+
+    for dy in 0..dst_h {
+        let sy = ((((f64::from(dy) + half) * sh_f) / dh_f).floor() as u32).min(src_h - 1) as usize;
+        for dx in 0..dst_w {
+            let sx =
+                ((((f64::from(dx) + half) * sw_f) / dw_f).floor() as u32).min(src_w - 1) as usize;
+            let pix_idx = sy * (src_w as usize) + sx;
+            let px = match img.format {
+                gltf::image::Format::R8G8B8A8 => {
+                    let o = pix_idx * four;
+                    if o + three < img.pixels.len() {
+                        [
+                            img.pixels[o],
+                            img.pixels[o + 1],
+                            img.pixels[o + two],
+                            img.pixels[o + three],
+                        ]
+                    } else {
+                        [full_alpha, full_alpha, full_alpha, full_alpha]
+                    }
+                }
+                gltf::image::Format::R8G8B8 => {
+                    let o = pix_idx * three;
+                    if o + two < img.pixels.len() {
+                        [
+                            img.pixels[o],
+                            img.pixels[o + 1],
+                            img.pixels[o + two],
+                            full_alpha,
+                        ]
+                    } else {
+                        [full_alpha, full_alpha, full_alpha, full_alpha]
+                    }
+                }
+                gltf::image::Format::R8G8 => {
+                    let o = pix_idx * two;
+                    if o + 1 < img.pixels.len() {
+                        let l = img.pixels[o];
+                        [l, l, l, img.pixels[o + 1]]
+                    } else {
+                        [full_alpha, full_alpha, full_alpha, full_alpha]
+                    }
+                }
+                gltf::image::Format::R8 if pix_idx < img.pixels.len() => {
+                    let l = img.pixels[pix_idx];
+                    [l, l, l, full_alpha]
+                }
+                _ => [full_alpha, full_alpha, full_alpha, full_alpha],
+            };
+            rgba.extend_from_slice(&px);
+        }
+    }
+    Some(DecodedRgbaTexture {
+        width: dst_w,
+        height: dst_h,
+        rgba,
+    })
+}
+
 /// Imports a Khronos glTF 2.0 binary (`.glb`) payload into a validated [`ImportedGlbScene`],
-/// sampling embedded `baseColorTexture` images into vertex albedo colors for immediate HD rendering.
+/// sampling embedded `baseColorTexture` images into vertex albedo colors and extracting a
+/// host-bounded primary `RGBA8` texture (`<= 1024px` default) for pixel-accurate WebGL2 rendering.
 pub fn import_glb_to_scene(bytes: &[u8]) -> Result<ImportedGlbScene, AssetValidationError> {
+    let default_cap = 1u32 << (1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1);
+    import_glb_to_scene_bounded(bytes, default_cap)
+}
+
+/// Imports a Khronos glTF 2.0 binary (`.glb`) payload while clamping any extracted GPU albedo
+/// texture strictly to `max_tex_edge_px` so the host container's GPU memory envelope is never exceeded.
+pub fn import_glb_to_scene_bounded(
+    bytes: &[u8],
+    max_tex_edge_px: u32,
+) -> Result<ImportedGlbScene, AssetValidationError> {
     let (document, buffers, images) =
         gltf::import_slice(bytes).map_err(|err| AssetValidationError::GltfOracleRejected {
             oracle_message: err.to_string(),
         })?;
+
+    // Identify the most frequently referenced `baseColorTexture` image source for GPU upload:
+    let mut tex_usage: std::collections::BTreeMap<usize, usize> = std::collections::BTreeMap::new();
+    for mesh in document.meshes() {
+        for prim in mesh.primitives() {
+            if let Some(info) = prim
+                .material()
+                .pbr_metallic_roughness()
+                .base_color_texture()
+            {
+                let src_idx = info.texture().source().index();
+                *tex_usage.entry(src_idx).or_insert(0) += 1;
+            }
+        }
+    }
+    let primary_tex_src_idx = tex_usage
+        .into_iter()
+        .max_by_key(|&(_, count)| count)
+        .map(|(idx, _)| idx);
+    let primary_albedo_texture = primary_tex_src_idx
+        .and_then(|idx| images.get(idx))
+        .and_then(|img| decode_rgba_bounded(img, max_tex_edge_px));
 
     let default_ior = (four_u32() as f32) / (three_u32() as f32);
     let mut materials = Vec::new();
@@ -622,6 +756,7 @@ pub fn import_glb_to_scene(bytes: &[u8]) -> Result<ImportedGlbScene, AssetValida
     let mut meshes = Vec::new();
     let mut mesh_first_prim_mat = Vec::new();
     let mut skin_weights = Vec::new();
+    let mut primary_tex_mesh_mask = Vec::new();
     let i2 = 1usize + 1usize;
 
     let max_skin_joints = document
@@ -649,8 +784,17 @@ pub fn import_glb_to_scene(bytes: &[u8]) -> Result<ImportedGlbScene, AssetValida
         let mut indices: Vec<u32> = Vec::new();
         let mut prim_weights: Vec<SkinWeights4> = Vec::new();
         let mut all_prims_skinned = true;
+        let mut all_prims_primary_tex = primary_tex_src_idx.is_some();
 
         for prim in &tri_prims {
+            let prim_tex_src = prim
+                .material()
+                .pbr_metallic_roughness()
+                .base_color_texture()
+                .map(|info| info.texture().source().index());
+            if prim_tex_src != primary_tex_src_idx {
+                all_prims_primary_tex = false;
+            }
             let reader = prim.reader(|buffer| buffers.get(buffer.index()).map(|d| d.0.as_slice()));
             let prim_pos: Vec<[f32; DIM_SPATIAL]> = reader
                 .read_positions()
@@ -808,6 +952,7 @@ pub fn import_glb_to_scene(bytes: &[u8]) -> Result<ImportedGlbScene, AssetValida
         mesh_first_prim_mat.push(first_prim.material().index());
         meshes.push(pm);
         skin_weights.push(prim_weights);
+        primary_tex_mesh_mask.push(all_prims_primary_tex);
     }
 
     // Extract acyclic Skeletons from glTF Skins:
@@ -1008,6 +1153,8 @@ pub fn import_glb_to_scene(bytes: &[u8]) -> Result<ImportedGlbScene, AssetValida
         skeletons,
         clips,
         skin_weights,
+        primary_albedo_texture,
+        primary_tex_mesh_mask,
     })
 }
 

@@ -442,6 +442,34 @@ try {
       { timeout: 10000 },
     );
 
+    // Exercise Observer Cognition Tab (Host Envelope, 8 Observer Parts, Dynamic Stream Add/Remove):
+    await page.click("#right-tab-cognition");
+    await page.waitForFunction(
+      () =>
+        document.querySelectorAll("#cog-parts-list [data-observer-part]").length === 8 &&
+        document.querySelectorAll("#cog-streams-list [data-observer-stream-id]").length >= 10 &&
+        (document.getElementById("cog-host-envelope")?.textContent || "").includes("Host Container:"),
+      null,
+      { timeout: 10000 },
+    );
+    await page.fill("#cog-stream-id", "ci-test-stream");
+    await page.fill("#cog-stream-label", "CI Verified Test Stream");
+    await page.fill("#cog-stream-url", "https://example.org/catalog.json");
+    await page.click("#cog-stream-add-btn");
+    await page.waitForFunction(
+      () =>
+        document.querySelector('#cog-streams-list [data-observer-stream-id="ci-test-stream"]') !== null &&
+        (document.getElementById("cog-log")?.textContent || "").includes('Admitted custom stream "ci-test-stream"'),
+      null,
+      { timeout: 10000 },
+    );
+    await page.click('#cog-streams-list [data-observer-stream-id="ci-test-stream"] button[aria-label*="Remove"]');
+    await page.waitForFunction(
+      () => document.querySelector('#cog-streams-list [data-observer-stream-id="ci-test-stream"]') === null,
+      null,
+      { timeout: 10000 },
+    );
+
     // Exercise 7 Roles Tab:
     await page.click("#right-tab-roles");
     await page.click('#studio-inline-host [data-tab-key="code"]');
@@ -462,7 +490,7 @@ try {
     await page.goto(`${origin}catalogs/`, { waitUntil: "load" });
     await page.waitForFunction(
       () =>
-        document.querySelectorAll("#cat-sensory-grid .cat-sensory-card").length === 7 &&
+        document.querySelectorAll("#cat-sensory-grid .cat-sensory-card").length === 10 &&
         document.querySelectorAll("#cat-live-gallery .cat-gallery-card").length >= 6 &&
         document.querySelectorAll("#cat-organ-grid .cat-organ-card").length === 5 &&
         document.querySelectorAll("#cat-domain-grid .cat-organ-card").length === 4 &&
