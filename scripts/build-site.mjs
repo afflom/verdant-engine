@@ -101,6 +101,11 @@ async function syncStarter() {
   await mkdir(starterDest, { recursive: true });
   await cp(join(starterSrc, "index.html"), join(starterDest, "index.html"));
   await cp(join(starterSrc, "game.mjs"), join(starterDest, "game.mjs"));
+  // Sync SHA-256-locked multi-domain world catalog so /catalogs/ and /studio/ hydrate directly from source of truth.
+  await cp(
+    join(root, "catalogs", "domains", "world-packs.json"),
+    join(siteDir, "catalogs", "world-packs.json"),
+  );
 }
 
 await ensureVerifiedHolo();

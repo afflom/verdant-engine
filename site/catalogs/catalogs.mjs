@@ -21,6 +21,7 @@ const kpiLex = $("cat-kpi-lex");
 const kpiPhases = $("cat-kpi-phases");
 const kpiProofs = $("cat-kpi-proofs");
 const organGrid = $("cat-organ-grid");
+const domainGrid = $("cat-domain-grid");
 const lifecycleSel = $("cat-filter-lifecycle");
 const domainSel = $("cat-filter-domain");
 const roleSel = $("cat-filter-role");
@@ -214,8 +215,8 @@ function renderCatalogList() {
     for (const rk of entry.studioRoles.slice(0, 2)) {
       const rLink = document.createElement("a");
       rLink.className = "cat-btn";
-      rLink.href = new URL(`../studio/#${rk}`, import.meta.url).href;
-      rLink.textContent = `Studio: ${rk.charAt(0).toUpperCase() + rk.slice(1)}`;
+      rLink.href = new URL(`../studio/?catalog=${encodeURIComponent(entry.id)}#${rk}`, import.meta.url).href;
+      rLink.textContent = `Compose · ${rk.charAt(0).toUpperCase() + rk.slice(1)}`;
       actions.append(rLink);
     }
 
@@ -241,8 +242,57 @@ verifyAllBtn?.addEventListener("click", async () => {
   verifyAllBtn.textContent = "All Displayed Proofs Verified";
 });
 
+async function renderImportedDomainPacks() {
+  if (!domainGrid) return;
+  try {
+    const res = await fetch(new URL("./world-packs.json", import.meta.url));
+    if (!res.ok) return;
+    const data = await res.json();
+    const domains = Array.isArray(data?.domains) ? data.domains : [];
+    domainGrid.replaceChildren();
+    for (const d of domains) {
+      const card = document.createElement("article");
+      card.className = "cat-organ-card";
+      card.dataset.domainSlug = d.slug;
+
+      const top = document.createElement("div");
+      const h3 = document.createElement("h3");
+      h3.textContent = d.title;
+      const mon = document.createElement("p");
+      mon.className = "cat-organ-moniker";
+      mon.textContent = `${d.id} · ${d.schemaType} · Seed ${d.seed} · LOD${d.defaultLodRank}`;
+      const desc = document.createElement("p");
+      desc.className = "cat-organ-desc";
+      desc.style.marginTop = "var(--space-2)";
+      const modelNames = (d.models || []).map((m) => m.name).join(", ");
+      const charNames = (d.characters || []).map((c) => `${c.name} (${c.role})`).join(", ");
+      desc.textContent = `Environment: ${d.environment?.name || "—"} (${d.environment?.acousticVolumeM3 || 0} m³). Models: ${modelNames}. 22-Joint Rigs: ${charNames}.`;
+      top.append(h3, mon, desc);
+
+      const bottom = document.createElement("div");
+      bottom.style.display = "grid";
+      bottom.style.gap = "var(--space-2)";
+      const lex = document.createElement("p");
+      lex.className = "cat-organ-lex";
+      const mats = [...new Set([...(d.models || []).map((m) => m.materialId), ...(d.items || []).map((i) => i.materialId)])];
+      lex.textContent = `Materials: ${mats.slice(0, 3).join(" · ")} · Items: ${(d.items || []).length}`;
+      const link = document.createElement("a");
+      link.className = "cat-btn primary";
+      link.href = new URL(`../studio/?domain=${encodeURIComponent(d.slug)}#compose`, import.meta.url).href;
+      link.textContent = "Import & Compose in Studio";
+      bottom.append(lex, link);
+
+      card.append(top, bottom);
+      domainGrid.append(card);
+    }
+  } catch {
+    // Graceful fallback if catalog JSON is absent during isolated unit test
+  }
+}
+
 renderPlatformOrgans();
 renderCatalogList();
+renderImportedDomainPacks();
 
 // Load `/app.holo`, verify BLAKE3 self-fingerprint, replay acceptance vectors, and verify visible entries:
 (async () => {

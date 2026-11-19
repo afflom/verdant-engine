@@ -3,10 +3,10 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Verdant Studio · 7-Role 3D Application Design Atelier</title>
-  <meta name="description" content="Immersive requirements-driven 3D application design studio powered by Verdant Engine and UOR Prism across Dashboard, Code, Design, Audio, Narrative, Director, and Gameplay roles.">
-  <meta property="og:title" content="Verdant Studio · 7-Role 3D Application Design Atelier">
-  <meta property="og:description" content="Immersive requirements-driven 3D application design studio powered by Verdant Engine and UOR Prism across Dashboard, Code, Design, Audio, Narrative, Director, and Gameplay roles.">
+  <title>Verdant Studio · Catalog-Driven 3D Application Composition Atelier</title>
+  <meta name="description" content="Immersive 3D application design studio powered by Verdant Engine and UOR Prism. Import SHA-256-locked domain, Khronos glTF HD, Sabine acoustic, and ISO 24617-2 catalogs and compose high-definition apps across seven lifecycle roles.">
+  <meta property="og:title" content="Verdant Studio · Catalog-Driven 3D Application Composition Atelier">
+  <meta property="og:description" content="Import SHA-256-locked model catalogs and compose verified high-definition 3D applications live in WebAssembly and WebGL2.">
   <link rel="stylesheet" href="../brand/fonts.css">
   <link rel="stylesheet" href="../brand/hologram-warm.css">
   <link rel="stylesheet" href="../prism-page.css">
@@ -28,25 +28,39 @@
   </script>
   <style>
     *, *::before, *::after { box-sizing: border-box; }
-    html, body {
+    html {
       height: auto;
       min-height: 100%;
-      overflow-x: hidden;
+      overflow-x: clip;
       overflow-y: auto;
       scroll-behavior: smooth;
     }
     body {
+      height: auto;
+      min-height: 100%;
+      overflow: visible;
       margin: 0;
       background: var(--background);
       color: var(--foreground);
       font-family: var(--font-sans);
       line-height: 1.55;
     }
+    main,
+    main.st-main {
+      display: grid;
+      height: auto;
+      min-height: 0;
+      margin-right: 0;
+      overflow: visible;
+    }
     .st-header {
+      position: sticky;
+      top: 0;
+      z-index: 30;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 2rem;
+      gap: 1.5rem;
       padding: var(--space-3) clamp(1rem, 3.5vw, 2.5rem);
       border-bottom: var(--border-width) solid var(--border);
       background: var(--background);
@@ -63,12 +77,6 @@
       text-decoration: none;
       white-space: nowrap;
       flex-shrink: 0;
-    }
-    .st-brand-mark {
-      font-family: var(--font-mono);
-      font-size: var(--text-14);
-      font-weight: 500;
-      color: var(--brand);
     }
     .st-nav {
       display: flex;
@@ -91,6 +99,12 @@
       text-decoration: underline;
       text-underline-offset: 0.25rem;
     }
+    .st-header-actions {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      flex-shrink: 0;
+    }
     .st-cta {
       min-height: var(--touch);
       padding: 0 var(--space-4);
@@ -111,10 +125,9 @@
     }
 
     .st-main {
-      max-width: 92rem;
+      max-width: 94rem;
       margin: 0 auto;
       padding: clamp(1.25rem, 3vw, 2.25rem) clamp(1rem, 3.5vw, 2.5rem) 4rem;
-      display: grid;
       gap: var(--space-6);
     }
     .st-hero {
@@ -131,7 +144,7 @@
     }
     .st-h1 {
       margin: 0;
-      max-width: 54rem;
+      max-width: 58rem;
       font-family: var(--font-display);
       font-size: clamp(1.85rem, 3.2vw, 2.65rem);
       font-weight: 700;
@@ -141,14 +154,29 @@
     }
     .st-lead {
       margin: 0;
-      max-width: 74ch;
+      max-width: 78ch;
       font-size: var(--text-16);
       color: var(--muted-foreground);
     }
+    .st-context-banner {
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+      padding: var(--space-2) var(--space-3);
+      border: var(--border-width) solid var(--border-strong);
+      border-radius: var(--radius-control);
+      background: var(--sidebar);
+      font-family: var(--font-mono);
+      font-size: var(--text-14);
+      color: var(--foreground);
+    }
+    .st-context-banner[data-active="true"] { display: flex; }
 
     .st-workbench {
       display: grid;
-      grid-template-columns: minmax(0, 1.02fr) minmax(0, 1.38fr);
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.38fr);
       gap: var(--space-6);
       align-items: start;
     }
@@ -158,13 +186,19 @@
     }
     .st-stage-col {
       position: sticky;
-      top: var(--space-4);
+      top: 5.25rem;
       display: grid;
       gap: var(--space-3);
     }
     @media (max-width: 1100px) {
       .st-stage-col { position: static; }
     }
+    .st-right-col {
+      display: grid;
+      gap: var(--space-6);
+      min-width: 0;
+    }
+
     .st-viewport-card {
       border: var(--border-width) solid var(--border-strong);
       border-radius: var(--radius);
@@ -214,6 +248,7 @@
       font-family: var(--font-sans);
       font-size: var(--text-14);
       font-weight: 500;
+      text-decoration: none;
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -227,6 +262,12 @@
       color: var(--primary-foreground);
       font-weight: 600;
     }
+    .st-btn.brand {
+      background: var(--brand);
+      border-color: var(--brand);
+      color: var(--brand-foreground);
+      font-weight: 600;
+    }
     .st-prompt {
       display: flex;
       align-items: center;
@@ -235,7 +276,9 @@
       border-top: var(--border-width) solid var(--border);
       background: var(--muted);
     }
-    .st-prompt input {
+    .st-prompt input,
+    .wiz-input,
+    .wiz-select {
       flex: 1;
       min-width: 0;
       min-height: var(--touch);
@@ -257,6 +300,204 @@
       font-variant-numeric: tabular-nums;
       color: var(--foreground);
     }
+    .st-manifest-strip {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+      gap: var(--space-2);
+      padding: var(--space-3);
+      border: var(--border-width) solid var(--border);
+      border-radius: var(--radius);
+      background: var(--card);
+    }
+    .st-manifest-cell {
+      display: grid;
+      gap: 0.125rem;
+      font-variant-numeric: tabular-nums;
+    }
+    .st-manifest-cell span {
+      font-size: var(--text-14);
+      color: var(--muted-foreground);
+    }
+    .st-manifest-cell strong {
+      font-family: var(--font-mono);
+      font-size: var(--text-14);
+      color: var(--foreground);
+    }
+
+    /* 4-Stage Prism Catalog Composition Wizard */
+    .wiz-shell {
+      border: var(--border-width) solid var(--border-strong);
+      border-radius: var(--radius);
+      background: var(--card);
+      overflow: hidden;
+      display: grid;
+    }
+    .wiz-head {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-3);
+      padding: var(--space-3) var(--space-4);
+      border-bottom: var(--border-width) solid var(--border);
+      background: var(--sidebar);
+    }
+    .wiz-head h2 {
+      margin: 0;
+      font-family: var(--font-display);
+      font-size: var(--text-18);
+      font-weight: 600;
+      letter-spacing: var(--tracking-display);
+    }
+    .wiz-sub {
+      margin: 0.125rem 0 0;
+      font-family: var(--font-mono);
+      font-size: var(--text-14);
+      color: var(--muted-foreground);
+    }
+    .wiz-progress {
+      font-family: var(--font-mono);
+      font-size: var(--text-14);
+      font-weight: 600;
+      color: var(--success);
+      font-variant-numeric: tabular-nums;
+    }
+    .wiz-stepper {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      border-bottom: var(--border-width) solid var(--border);
+      background: var(--muted);
+    }
+    @media (max-width: 720px) {
+      .wiz-stepper { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    .wiz-step-btn {
+      min-height: var(--touch);
+      padding: var(--space-2) var(--space-3);
+      border: 0;
+      border-right: var(--border-width) solid var(--border);
+      background: transparent;
+      color: var(--muted-foreground);
+      font-family: var(--font-sans);
+      font-size: var(--text-14);
+      font-weight: 500;
+      text-align: left;
+      display: grid;
+      gap: 0.125rem;
+      cursor: pointer;
+    }
+    .wiz-step-btn:last-child { border-right: 0; }
+    .wiz-step-btn small {
+      font-family: var(--font-mono);
+      font-size: var(--text-14);
+      opacity: 0.85;
+    }
+    .wiz-step-btn[aria-selected="true"] {
+      background: var(--card);
+      color: var(--foreground);
+      font-weight: 600;
+      box-shadow: inset 0 -2px 0 var(--brand);
+    }
+    .wiz-step-btn[data-done="true"] small { color: var(--success); }
+    .wiz-body {
+      padding: var(--space-4);
+      display: grid;
+      gap: var(--space-4);
+    }
+    .wiz-panel {
+      display: grid;
+      gap: var(--space-3);
+    }
+    .wiz-panel[hidden] { display: none; }
+    .wiz-domain-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+      gap: var(--space-3);
+    }
+    .wiz-domain-card {
+      padding: var(--space-3);
+      border: var(--border-width) solid var(--border);
+      border-radius: var(--radius-control);
+      background: var(--background);
+      color: var(--foreground);
+      text-align: left;
+      display: grid;
+      gap: var(--space-2);
+      cursor: pointer;
+    }
+    .wiz-domain-card:hover {
+      border-color: var(--border-strong);
+      background: var(--accent);
+    }
+    .wiz-domain-card[aria-pressed="true"] {
+      border-color: var(--brand);
+      background: var(--sidebar);
+    }
+    .wiz-domain-title {
+      font-family: var(--font-display);
+      font-size: var(--text-16);
+      font-weight: 600;
+    }
+    .wiz-domain-id {
+      font-family: var(--font-mono);
+      font-size: var(--text-14);
+      color: var(--brand);
+    }
+    .wiz-domain-meta {
+      font-size: var(--text-14);
+      color: var(--muted-foreground);
+      line-height: 1.45;
+    }
+    .wiz-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+      align-items: center;
+    }
+    .wiz-label {
+      font-family: var(--font-mono);
+      font-size: var(--text-14);
+      color: var(--muted-foreground);
+    }
+    .wiz-log {
+      margin: 0;
+      padding: var(--space-3) 0 0;
+      border-top: var(--border-width) solid var(--border);
+      font-family: var(--font-mono);
+      font-size: var(--text-14);
+      line-height: 1.5;
+      white-space: pre-wrap;
+      overflow-x: auto;
+      color: var(--foreground);
+    }
+    .wiz-scorecard {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+      gap: var(--space-2);
+    }
+    .wiz-check {
+      padding: var(--space-2) var(--space-3);
+      border: var(--border-width) solid var(--border);
+      border-radius: var(--radius-control);
+      background: var(--background);
+      display: grid;
+      gap: 0.125rem;
+      font-family: var(--font-mono);
+      font-size: var(--text-14);
+    }
+    .wiz-check span { color: var(--muted-foreground); }
+    .wiz-check strong[data-state="pass"] { color: var(--success); }
+    .wiz-foot {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-2);
+      padding: var(--space-3) var(--space-4);
+      border-top: var(--border-width) solid var(--border);
+      background: var(--sidebar);
+    }
+
     .st-footer {
       border-top: var(--border-width) solid var(--border);
       padding: var(--space-4) clamp(1rem, 3.5vw, 2.5rem);
@@ -284,23 +525,30 @@
       <a href="../starter/">Starter Trial</a>
       <a href="../docs/">Documentation</a>
     </nav>
-    <button type="button" class="st-cta" id="studio-export-uorc-btn">Export Project (.uorc)</button>
+    <div class="st-header-actions">
+      <button type="button" class="st-btn" id="studio-theme-btn">Theme: Dark</button>
+      <button type="button" class="st-cta" id="studio-export-uorc-btn">Export Project (.uorc)</button>
+    </div>
   </header>
 
   <main class="st-main">
     <section class="st-hero" aria-labelledby="studio-h1">
       <div class="st-meta" id="studio-holo-status">Atelier Boot · Verifying Prism app.holo &amp; 7 Role Contracts…</div>
-      <h1 class="st-h1" id="studio-h1">Immersive 3D Application Design Studio</h1>
+      <h1 class="st-h1" id="studio-h1">Immersive 3D Application Composition Studio</h1>
       <p class="st-lead">
-        Verdant Studio is a dedicated production atelier built on Verdant Engine and UOR Prism. Author non-self-referential 3D games and spatial applications across seven functional lifecycle roles — <strong>Dashboard</strong>, <strong>Code</strong>, <strong>Design</strong>, <strong>Audio</strong>, <strong>Narrative</strong>, <strong>Director</strong>, and <strong>Gameplay</strong> — governed directly by imported ISO, W3C, Khronos, and UOR specifications.
+        Import verified models from SHA-256-locked catalogs — world domains, Khronos glTF HD materials, 22-joint character rigs, Sabine acoustics, and ISO 24617-2 dialogue — and compose high-definition 3D apps live in Verdant Engine with continuous Prism quality enforcement.
       </p>
+      <div class="st-context-banner" id="studio-catalog-banner" data-active="false">
+        <span id="studio-catalog-banner-text"></span>
+        <a class="st-btn" href="../catalogs/">Browse All 36 Catalog Models</a>
+      </div>
     </section>
 
-    <section class="st-workbench" aria-label="Live authoring viewport and 7-role studio workspace">
+    <section class="st-workbench" aria-label="Live authoring viewport, Catalog Composition Wizard, and 7-role studio workspace">
       <div class="st-stage-col">
         <div class="st-viewport-card">
           <div class="st-viewport-head">
-            <span id="studio-hud-project">Sunspire Harbor Regatta · Director</span>
+            <span id="studio-hud-project">Sunspire Harbor Regatta · Compose</span>
             <span id="studio-hud-metrics">LOD3 Lossless · Clear 290mm</span>
           </div>
           <canvas id="studio-canvas" width="960" height="600" aria-label="Verdant Studio live 3D project authoring stage"></canvas>
@@ -318,17 +566,161 @@
           </form>
           <input id="studio-glb-file" type="file" accept=".glb,model/gltf-binary" hidden />
         </div>
+
+        <div class="st-manifest-strip" aria-label="Active composed catalog manifest">
+          <div class="st-manifest-cell">
+            <span>Active Catalog Domain</span>
+            <strong id="st-man-domain">DOM-SUNSPIRE-HARBOR</strong>
+          </div>
+          <div class="st-manifest-cell">
+            <span>Imported HD Models</span>
+            <strong id="st-man-models">3 models · 2 items</strong>
+          </div>
+          <div class="st-manifest-cell">
+            <span>22-Joint NPC Rigs</span>
+            <strong id="st-man-npcs">Captain Soren, Engineer Talia</strong>
+          </div>
+          <div class="st-manifest-cell">
+            <span>Acoustic RT60 &amp; Guard</span>
+            <strong id="st-man-acoustics">Sabine Ready · ≥290mm</strong>
+          </div>
+        </div>
+
         <div class="st-verdict-bar" id="studio-status" aria-live="polite">
           Initializing WebAssembly authoring kernel…
         </div>
       </div>
 
-      <div id="studio-inline-host"></div>
+      <div class="st-right-col">
+        <section class="wiz-shell" id="studio-composer-wizard" aria-labelledby="wiz-title">
+          <header class="wiz-head">
+            <div>
+              <h2 id="wiz-title">Catalog-to-App Composition Wizard</h2>
+              <p class="wiz-sub">4-Stage Live Composition · Verdant Wasm Runtime + Prism Proof Enforcement</p>
+            </div>
+            <span class="wiz-progress" id="wiz-progress">Stage 1 of 4</span>
+          </header>
+
+          <div class="wiz-stepper" role="tablist" aria-label="Composition wizard stages">
+            <button type="button" class="wiz-step-btn" role="tab" data-wiz-step="1" aria-selected="true">
+              <small>01 · Catalog</small>
+              <span>Import Domain</span>
+            </button>
+            <button type="button" class="wiz-step-btn" role="tab" data-wiz-step="2" aria-selected="false">
+              <small>02 · Fidelity</small>
+              <span>Models &amp; Rigs</span>
+            </button>
+            <button type="button" class="wiz-step-btn" role="tab" data-wiz-step="3" aria-selected="false">
+              <small>03 · Agents</small>
+              <span>Dialogue &amp; Bus</span>
+            </button>
+            <button type="button" class="wiz-step-btn" role="tab" data-wiz-step="4" aria-selected="false">
+              <small>04 · Release</small>
+              <span>Verify &amp; Seal</span>
+            </button>
+          </div>
+
+          <div class="wiz-body">
+            <!-- Stage 1: Import Domain Pack from SHA-256-locked catalog -->
+            <div class="wiz-panel" id="wiz-panel-1" data-wiz-panel="1">
+              <div class="wiz-label">
+                Select an imported catalog domain from <code>AUTH-DOMAIN-PACKS</code> (<code>world-packs.json</code>). Verdant Wasm hot-swaps terrain relief, architectural meshes, Khronos PBR materials, conserved item ledgers, and 22-joint character rigs live on the stage.
+              </div>
+              <div class="wiz-domain-grid" id="wiz-domain-grid"></div>
+              <pre class="wiz-log" id="wiz-domain-log">Loading SHA-256-locked domain catalog…</pre>
+            </div>
+
+            <!-- Stage 2: Compose HD Fidelity, Character Rig Directives & Sabine Room -->
+            <div class="wiz-panel" id="wiz-panel-2" data-wiz-panel="2" hidden>
+              <div class="wiz-label">
+                Configure progressive UORC geometry fidelity, camera rig, imported 22-joint NPC directive, and Sabine reverberation acoustics directly in WebAssembly.
+              </div>
+              <div class="wiz-row" role="group" aria-label="UORC Fidelity Ladder">
+                <span class="wiz-label">Fidelity:</span>
+                <button type="button" class="st-btn" data-wiz-lod="2">LOD2 High</button>
+                <button type="button" class="st-btn primary" data-wiz-lod="3">LOD3 Lossless</button>
+                <button type="button" class="st-btn" data-wiz-lod="4">LOD4 Ultra HD</button>
+              </div>
+              <div class="wiz-row" role="group" aria-label="Camera Rig Preset">
+                <span class="wiz-label">Camera Rig:</span>
+                <button type="button" class="st-btn primary" data-wiz-cam="landmark">Orbit Guard</button>
+                <button type="button" class="st-btn" data-wiz-cam="third">3rd-Person IK</button>
+                <button type="button" class="st-btn" data-wiz-cam="first">1st-Person Eye</button>
+              </div>
+              <div class="wiz-row">
+                <label class="wiz-label" for="wiz-npc-select">Active NPC Rig:</label>
+                <select id="wiz-npc-select" class="wiz-select"></select>
+                <button type="button" class="st-btn" id="wiz-sabine-btn">Calibrate Domain Sabine RT60</button>
+              </div>
+              <div class="wiz-row" id="wiz-directives-row" role="group" aria-label="NPC Directives"></div>
+              <pre class="wiz-log" id="wiz-compose-log">Ready to tune HD geometry, NPC rig directives, and Sabine acoustic response.</pre>
+            </div>
+
+            <!-- Stage 3: ISO 24617-2 Dialogue & SOSA/PROV-O Observer Bus -->
+            <div class="wiz-panel" id="wiz-panel-3" data-wiz-panel="3" hidden>
+              <div class="wiz-label">
+                Exercise Verdant's native ISO 24617-2 language engine (zero external LLM runtime) and observe Prism-signed SOSA/PROV-O communication envelopes across the active domain's characters.
+              </div>
+              <div class="wiz-row" id="wiz-prompt-chips"></div>
+              <form class="wiz-row" id="wiz-dlg-form" autocomplete="off">
+                <input id="wiz-dlg-input" class="wiz-input" type="text" aria-label="Speak to active domain NPC" placeholder="Ask about conserved items, portals, or test an ungrounded question…" />
+                <button type="submit" class="st-btn primary" id="wiz-dlg-send">Speak (ISO 24617-2)</button>
+                <button type="button" class="st-btn" id="wiz-dlg-abstain">Test Abstention</button>
+              </form>
+              <div class="wiz-row">
+                <button type="button" class="st-btn" id="wiz-comm-btn">Record SOSA/PROV-O Envelope</button>
+                <button type="button" class="st-btn" id="wiz-observer-btn">Inspect Observer Holon</button>
+              </div>
+              <pre class="wiz-log" id="wiz-dlg-log">Select a grounded prompt or click 'Test Abstention' to verify zero-hallucination ISO 24617-2 reasoning.</pre>
+            </div>
+
+            <!-- Stage 4: Prism Quality Compliance & .uorc App Packaging -->
+            <div class="wiz-panel" id="wiz-panel-4" data-wiz-panel="4" hidden>
+              <div class="wiz-label">
+                Run live Prism quality compliance gates across the composed world before sealing and exporting your standalone <code>.uorc</code> archive.
+              </div>
+              <div class="wiz-scorecard">
+                <div class="wiz-check">
+                  <span>Tropical Spatial UI + WCAG AA</span>
+                  <strong id="wiz-chk-ui">Pending</strong>
+                </div>
+                <div class="wiz-check">
+                  <span>Exclusive .uorc Archive Policy</span>
+                  <strong id="wiz-chk-uorc">Pending</strong>
+                </div>
+                <div class="wiz-check">
+                  <span>Prism app.holo Proof Vectors</span>
+                  <strong id="wiz-chk-holo">Pending</strong>
+                </div>
+                <div class="wiz-check">
+                  <span>Observer Holon Exclusivity</span>
+                  <strong id="wiz-chk-obs">Pending</strong>
+                </div>
+              </div>
+              <div class="wiz-row">
+                <button type="button" class="st-btn primary" id="wiz-audit-btn">Run Full Prism Quality Gate</button>
+                <button type="button" class="st-btn brand" id="wiz-seal-uorc-btn">Seal &amp; Export App (.uorc)</button>
+                <button type="button" class="st-btn" id="wiz-share-uorc-btn">Copy #uorc= Link</button>
+                <a class="st-btn" href="../starter/">Launch Starter Trial</a>
+              </div>
+              <pre class="wiz-log" id="wiz-audit-log">Click 'Run Full Prism Quality Gate' to certify UI, UORC exclusivity, Holo vectors, and Observer state.</pre>
+            </div>
+          </div>
+
+          <footer class="wiz-foot">
+            <button type="button" class="st-btn" id="wiz-prev-btn">Previous Stage</button>
+            <span class="wiz-label" id="wiz-foot-meta">Verdant Engine Exclusive Runtime · .uorc Sealed Packaging</span>
+            <button type="button" class="st-btn primary" id="wiz-next-btn">Next Stage</button>
+          </footer>
+        </section>
+
+        <div id="studio-inline-host"></div>
+      </div>
     </section>
   </main>
 
   <footer class="st-footer">
-    <span>Verdant Studio · Requirements-Driven 7-Role Application Design Atelier</span>
+    <span>Verdant Studio · Catalog-Driven 3D Composition Atelier &amp; 7-Role Workspaces</span>
     <span><a href="../">Verdant Engine</a> · <a href="../catalogs/">Model Catalogs</a> · <a href="../demo/">Engine Demo</a> · <a href="../starter/">Sunspire Beacon Trials</a> · <a href="../docs/">Documentation</a></span>
   </footer>
 

@@ -23,6 +23,7 @@ playwright-report/
 site/app.holo
 site/vendor/
 site/starter/
+site/catalogs/world-packs.json
 .brand-src/
 site/precache.json
 site/index.html
@@ -35,3 +36,4 @@ screens/
 # The proof `just app` keeps for bootstrap.yml to cache (see Justfile).
 .prism-proof/
 .prism-proof.log
+.verdant-cache/

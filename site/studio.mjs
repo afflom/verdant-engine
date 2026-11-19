@@ -200,6 +200,7 @@ export function mountInlineStudio(targetEl, ctx) {
   return {
     selectTab: (tabKey) => selectStudioTab?.(tabKey),
     refresh: () => host.dispatchEvent(new CustomEvent("ve-refresh")),
+    setProjectIndex: (idx) => host.dispatchEvent(new CustomEvent("ve-sync-project", { detail: { idx } })),
   };
 }
 
@@ -377,16 +378,15 @@ function buildStudioDialog({ inline = false } = {}) {
 
   const headRight = document.createElement("div");
   headRight.className = "ve-m-row";
-  const catalogsLink = document.createElement("a");
-  catalogsLink.className = "ve-m-btn";
-  catalogsLink.href = siteUrl("./catalogs/");
-  catalogsLink.textContent = "Model Catalogs";
-  const demoLink = document.createElement("a");
-  demoLink.className = "ve-m-btn";
-  demoLink.href = siteUrl("./demo/");
-  demoLink.textContent = "Engine Demo";
-  headRight.append(catalogsLink, demoLink);
   if (!inline) {
+    const catalogsLink = document.createElement("a");
+    catalogsLink.className = "ve-m-btn";
+    catalogsLink.href = siteUrl("./catalogs/");
+    catalogsLink.textContent = "Model Catalogs";
+    const demoLink = document.createElement("a");
+    demoLink.className = "ve-m-btn";
+    demoLink.href = siteUrl("./demo/");
+    demoLink.textContent = "Engine Demo";
     const fullStudioLink = document.createElement("a");
     fullStudioLink.className = "ve-m-btn brand";
     fullStudioLink.href = siteUrl("./studio/");
@@ -401,7 +401,7 @@ function buildStudioDialog({ inline = false } = {}) {
       if (sequenceTimer) { clearInterval(sequenceTimer); sequenceTimer = 0; }
       dlg.close();
     });
-    headRight.append(fullStudioLink, closeBtn);
+    headRight.append(catalogsLink, demoLink, fullStudioLink, closeBtn);
   }
   head.append(titleWrap, headRight);
 
@@ -429,24 +429,28 @@ function buildStudioDialog({ inline = false } = {}) {
   obsReadout.id = "ve-observer-readout";
   obsReadout.textContent = "Observer Coherent · W5H 8/8 · Telos Loss 0 · Holo Verified";
 
-  const themeGroup = document.createElement("div");
-  themeGroup.className = "ve-m-row";
-  for (const [modeName, cls] of [
-    ["Light", ""],
-    ["Dark", "dark"],
-    ["Immersive", "dark immersive"],
-  ]) {
-    const tb = document.createElement("button");
-    tb.type = "button";
-    tb.className = "ve-m-btn";
-    tb.dataset.studioTheme = modeName.toLowerCase();
-    tb.textContent = modeName;
-    tb.addEventListener("click", () => {
-      document.documentElement.className = cls;
-    });
-    themeGroup.append(tb);
+  if (!inline) {
+    const themeGroup = document.createElement("div");
+    themeGroup.className = "ve-m-row";
+    for (const [modeName, cls] of [
+      ["Light", ""],
+      ["Dark", "dark"],
+      ["Immersive", "dark immersive"],
+    ]) {
+      const tb = document.createElement("button");
+      tb.type = "button";
+      tb.className = "ve-m-btn";
+      tb.dataset.studioTheme = modeName.toLowerCase();
+      tb.textContent = modeName;
+      tb.addEventListener("click", () => {
+        document.documentElement.className = cls;
+      });
+      themeGroup.append(tb);
+    }
+    obsBar.append(projGroup, obsReadout, themeGroup);
+  } else {
+    obsBar.append(projGroup, obsReadout);
   }
-  obsBar.append(projGroup, obsReadout, themeGroup);
 
   const tabBar = document.createElement("div");
   tabBar.className = "ve-m-tabs";
@@ -472,8 +476,17 @@ function buildStudioDialog({ inline = false } = {}) {
     const arch = STARTER_ARCHETYPES[idx] || STARTER_ARCHETYPES[0];
     studioCtx?.onProjectChange?.(arch.title);
     setArchetypeHook?.(idx);
-    await studioCtx?.onSetSeed?.(arch.seed);
+    if (studioCtx?.onLoadDomainPack) {
+      await studioCtx.onLoadDomainPack(idx, { fromSelect: true });
+    } else {
+      await studioCtx?.onSetSeed?.(arch.seed);
+    }
     dlg.dispatchEvent(new CustomEvent("ve-refresh"));
+  });
+  dlg.addEventListener("ve-sync-project", (e) => {
+    const idx = Math.max(0, Math.min(STARTER_ARCHETYPES.length - 1, Number(e.detail?.idx) || 0));
+    projSelect.value = String(idx);
+    setArchetypeHook?.(idx);
   });
 
   // ==================== ROLE 0: DASHBOARD (PRODUCER) ====================

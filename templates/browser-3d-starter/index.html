@@ -126,6 +126,10 @@
       font-family: var(--font-mono);
       font-size: var(--text-14);
       font-variant-numeric: tabular-nums;
+      max-width: calc(100vw - 32rem);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
     .hud-metric strong { color: var(--primary); font-weight: 700; }
     .hud-sep { color: var(--muted-foreground); }

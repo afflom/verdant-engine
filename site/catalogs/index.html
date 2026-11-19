@@ -27,21 +27,35 @@
   </script>
   <style>
     *, *::before, *::after { box-sizing: border-box; }
-    html, body {
+    html {
       height: auto;
       min-height: 100%;
-      overflow-x: hidden;
+      overflow-x: clip;
       overflow-y: auto;
       scroll-behavior: smooth;
     }
     body {
+      height: auto;
+      min-height: 100%;
+      overflow: visible;
       margin: 0;
       background: var(--background);
       color: var(--foreground);
       font-family: var(--font-sans);
       line-height: 1.55;
     }
+    main,
+    main.cat-main {
+      display: grid;
+      height: auto;
+      min-height: 0;
+      margin-right: 0;
+      overflow: visible;
+    }
     .cat-header {
+      position: sticky;
+      top: 0;
+      z-index: 30;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -445,9 +459,19 @@
       <div class="cat-organ-grid" id="cat-organ-grid"></div>
     </section>
 
+    <section class="cat-section" aria-labelledby="cat-domains-h2">
+      <div>
+        <h2 class="cat-h2" id="cat-domains-h2">02. Imported High-Definition Domain Packs · Compose in Studio</h2>
+        <p class="cat-sec-sub">
+          Hydrated directly from SHA-256-locked <code>AUTH-DOMAIN-PACKS</code> (<code>world-packs.json</code>): each pack imports Khronos glTF HD materials, 22-joint character rigs, conserved item ledgers, Sabine acoustics, and ISO 24617-2 dialogue facts straight into Verdant Studio.
+        </p>
+      </div>
+      <div class="cat-organ-grid" id="cat-domain-grid"></div>
+    </section>
+
     <section class="cat-section" aria-labelledby="cat-registry-h2">
       <div>
-        <h2 class="cat-h2" id="cat-registry-h2">02. Imported Standards, Frameworks, Harnesses &amp; Policy Catalogs</h2>
+        <h2 class="cat-h2" id="cat-registry-h2">03. Imported Standards, Frameworks, Harnesses &amp; Policy Catalogs</h2>
         <p class="cat-sec-sub" id="cat-count-label">
           Filter models by product lifecycle stage, domain taxonomy, or functional Studio role, and execute live Core-Wasm verification against <code>/app.holo</code>.
         </p>

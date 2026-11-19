@@ -159,6 +159,7 @@ jobs:
           mkdir -p site/starter
           cp templates/browser-3d-starter/index.html site/starter/index.html
           cp templates/browser-3d-starter/game.mjs site/starter/game.mjs
+          cp catalogs/domains/world-packs.json site/catalogs/world-packs.json
           # The page says where this holo's provenance is: the signed statement
           # GitHub keeps for the build that made it.
           node -e '
@@ -172,18 +173,39 @@ jobs:
           node bootstrap/page.mjs site
           node bootstrap/precache.mjs site
           node scripts/enforce-prism-contracts.mjs
+      - name: Restore cached Playwright & Lighthouse CI tools
+        id: browser-tools-cache
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        with:
+          path: |
+            ~/.cache/ms-playwright
+            ~/.npm-ci-tools
+          key: pages-browser-tools-${{ runner.os }}-pw1.56.1-lhci0.15.1-v1
       - name: Lighthouse at 100 on mobile, before anything is deployed
         shell: bash
         run: |
           set -euo pipefail
-          npm install --no-audit --no-fund --global @lhci/cli@0.15.1
+          export NPM_CONFIG_PREFIX="$HOME/.npm-ci-tools"
+          export PATH="$HOME/.npm-ci-tools/bin:$PATH"
+          if ! command -v lhci >/dev/null 2>&1; then
+            npm install --no-audit --no-fund --global @lhci/cli@0.15.1
+          fi
           lhci autorun --config=lighthouserc.json
-      - name: Every Material 3 window size class, both themes, and Diataxis docs, before anything is deployed
+      - name: Every Material 3 window size class, both themes, live surfaces, and Diataxis docs, before anything is deployed
         shell: bash
         run: |
           set -euo pipefail
-          npm install --no-audit --no-fund --global playwright@1.56.1
-          playwright install --with-deps chromium
+          export NPM_CONFIG_PREFIX="$HOME/.npm-ci-tools"
+          export PATH="$HOME/.npm-ci-tools/bin:$PATH"
+          export NODE_PATH="$HOME/.npm-ci-tools/lib/node_modules"
+          if [ ! -d "$HOME/.npm-ci-tools/lib/node_modules/playwright" ]; then
+            npm install --no-audit --no-fund --global playwright@1.56.1
+          fi
+          if [ "${{ steps.browser-tools-cache.outputs.cache-hit }}" != "true" ]; then
+            playwright install --with-deps chromium
+          else
+            playwright install-deps chromium
+          fi
           node scripts/content/check.mjs site
           rm -f site/content-report.json site/content-report.md
           node bootstrap/screens.mjs site screens
@@ -192,6 +214,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          export NPM_CONFIG_PREFIX="$HOME/.npm-ci-tools"
+          export PATH="$HOME/.npm-ci-tools/bin:$PATH"
+          export NODE_PATH="$HOME/.npm-ci-tools/lib/node_modules"
           node bootstrap/weight.mjs site
       - name: Keep the screens
         if: always()

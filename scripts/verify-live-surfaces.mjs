@@ -5,25 +5,17 @@
  * (`live`, e.g. `/verdant-engine/`), returning HTTP 404 for ANY request outside
  * that subpath so broken subpath URLs fail the build before Pages deploys.
  *
- * Audits all 11 deployed routes:
- *   1. `/` (`${basePath}`) — Verdant Engine Runtime Stage, 3 Themes, 7-Role Studio
- *      modal, `.uorc`-only archive export (no `.tar`), Stitch Custody, live 3D canvas.
- *   2. `/studio/` — Standalone Verdant Studio Atelier, live Holo verification,
- *      7 inline role tabs, `.uorc`-only export, live 3D canvas.
- *   3. `/catalogs/` — Verdant Model Catalogs, 5 organs, 36+ models, live Holo.
- *   4. `/demo/` — Standalone Engine Demo, 5 LOD rows, 22 kernels, Tile/WebGL2 + 10k
- *      instances, live 3D canvas.
- *   5. `/starter/` — Sunspire Beacon Trials starter world, live 3D canvas.
- *   6. All 6 `/docs/*` Diataxis pages — live Wasm figures (`data-ve-ready="true"`),
- *      interactive controls (including SHA-256 tamper refusal), theme toggle.
- *
- * Every single route MUST satisfy:
- *   - 0 HTTP >= 400 responses from the site origin
- *   - 0 failed requests to the site origin
+ * Runs independent sub-app and documentation checks concurrently inside one shared
+ * Chromium browser to minimize CI latency while enforcing on all 11 routes:
+ *   - 0 HTTP >= 400 responses or failed requests on the site origin
  *   - 0 uncaught `pageerror` or `console.error` events
  *   - Active loaded stylesheets (`cssRules >= 20`, styled background & typography)
  *   - Every internal `<a href>` resolves strictly inside `basePath`
  *   - Every 3D viewport `<canvas>` renders non-blank visual pixels (`uniqColors >= 8`)
+ *   - Native wheel scrollability & unclipped `<main>` on `/studio/`, `/catalogs/`,
+ *     `/demo/`, and `/docs/` (`window.scrollY >= 300`, `main.scrollHeight <= main.clientHeight + 8`)
+ *   - Interactive 4-Stage Catalog Composition Wizard on `/studio/` (`load-domain-pack`,
+ *     ISO 24617-2 `"Unknown"` abstention, 4/4 Prism Quality Gate, `.uorc`-only export)
  */
 
 import { createServer } from "node:http";
@@ -55,7 +47,6 @@ const types = {
 
 const server = createServer(async (req, res) => {
   const reqPath = decodeURIComponent(new URL(req.url, "http://127.0.0.1").pathname);
-  // Strict GitHub Pages subpath enforcement: anything outside `basePath` is HTTP 404.
   if (!reqPath.startsWith(basePath)) {
     res.writeHead(404, { "content-type": "text/plain; charset=utf-8" });
     res.end(`Subpath 404: ${reqPath} escapes ${basePath}`);
@@ -123,7 +114,7 @@ async function verifyStyledAndContained(page, routeLabel) {
       try {
         cssRulesCount += sheet.cssRules.length;
       } catch {
-        // Cross-origin stylesheet (ignored)
+        // Cross-origin stylesheet
       }
     }
     const bodyStyle = getComputedStyle(document.body);
@@ -165,6 +156,40 @@ async function verifyStyledAndContained(page, routeLabel) {
   }
 }
 
+async function verifyScrollableUnclipped(page, routeLabel) {
+  const pre = await page.evaluate(() => {
+    const main = document.querySelector("main");
+    return {
+      docScrollH: document.documentElement.scrollHeight,
+      docClientH: document.documentElement.clientHeight,
+      mainScrollH: main ? main.scrollHeight : 0,
+      mainClientH: main ? main.clientHeight : 0,
+      mainOverflowY: main ? getComputedStyle(main).overflowY : "none",
+    };
+  });
+  if (pre.mainScrollH > pre.mainClientH + 8 && pre.mainOverflowY === "hidden") {
+    failures.push(
+      `${routeLabel}: <main> is vertically clipped by overflow:hidden (scrollH=${pre.mainScrollH} > clientH=${pre.mainClientH})`,
+    );
+  }
+  if (pre.docScrollH <= pre.docClientH + 200) {
+    failures.push(
+      `${routeLabel}: document scrollHeight too small (${pre.docScrollH} vs viewport ${pre.docClientH}) — content likely clipped`,
+    );
+    return;
+  }
+  await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
+  // Move cursor to right-side content column (avoiding any canvas wheel capture) and scroll with real wheel input:
+  await page.mouse.move(960, 420);
+  await page.mouse.wheel(0, 700);
+  await page.waitForFunction(() => window.scrollY >= 250, null, { timeout: 3000 }).catch(() => {});
+  const scrolledY = await page.evaluate(() => window.scrollY);
+  if (scrolledY < 250) {
+    failures.push(`${routeLabel}: page failed real mouse wheel scroll check (scrollY=${scrolledY}, scrollH=${pre.docScrollH})`);
+  }
+  await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
+}
+
 async function verifyCanvasRendered(page, selector, routeLabel) {
   const locator = page.locator(selector).first();
   await locator.waitFor({ state: "visible", timeout: 10000 });
@@ -173,7 +198,6 @@ async function verifyCanvasRendered(page, selector, routeLabel) {
     failures.push(`${routeLabel}: canvas "${selector}" collapsed (${box?.width ?? 0}x${box?.height ?? 0})`);
     return;
   }
-  // Allow 2 animation frames for WebGL2 / 2D compositor presentation before sampling pixels.
   await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
   const pngBuf = await locator.screenshot();
   const stats = await page.evaluate(async (bytes) => {
@@ -205,8 +229,8 @@ try {
   });
   await context.route(/^https?:\/\/(?!127\.0\.0\.1|uor-foundation\.github\.io\/template\/frame\/)/, (route) => route.abort());
 
-  // 1. Verify Root Engine Stage (`/`) + 3 Themes + 7 Role Workspaces + `.uorc`-only export + Stitch Custody:
-  {
+  // 1. Root Engine Stage (`/`):
+  const verifyRoot = async () => {
     const page = await context.newPage();
     const errors = attachTelemetry(page);
 
@@ -223,7 +247,6 @@ try {
     await verifyStyledAndContained(page, basePath);
     await verifyCanvasRendered(page, "#ve-canvas", basePath);
 
-    // Cycle Light -> Dark -> Immersive classes and verify computed background tokens adapt cleanly:
     const themeBgs = await page.evaluate(() => {
       const root = document.documentElement;
       root.className = "";
@@ -239,14 +262,11 @@ try {
       failures.push(`Engine root .ve-pill background did not adapt between Light (${themeBgs.lightBg}) and Dark (${themeBgs.darkBg})`);
     }
 
-    // Open Streaming/I/O drawer and docked 7-Role Studio Workspace (`#ve-studio-btn`):
     await page.click("#ve-io-drawer > summary");
     await page.click("#ve-studio-btn");
     await page.waitForSelector("dialog.ve-modal[open]", { timeout: 5000 });
 
-    const tabKeys = await page.$$eval("dialog.ve-modal .ve-m-tab", (els) =>
-      els.map((e) => e.dataset.tabKey),
-    );
+    const tabKeys = await page.$$eval("dialog.ve-modal .ve-m-tab", (els) => els.map((e) => e.dataset.tabKey));
     if (tabKeys.join(",") !== "dashboard,code,design,audio,narrative,director,gameplay") {
       failures.push(`Unexpected Studio role tabs: ${tabKeys.join(",")}`);
     }
@@ -268,10 +288,8 @@ try {
     if (!generatedCode?.includes("LawfulCameraRig") || !generatedCode?.includes("Glasshouse Botanical Chronicle")) {
       failures.push("Code role Project Scaffolder failed to synthesize expected non-self-referential Rust code");
     }
-    const hasUorcBtn = (await page.locator("#ve-scaf-uorc-btn").count()) === 1;
-    const hasTarBtn = (await page.locator("#ve-scaf-tar-btn").count()) > 0;
-    if (!hasUorcBtn || hasTarBtn) {
-      failures.push(`Studio Code panel must expose #ve-scaf-uorc-btn and zero .tar export buttons (uorc=${hasUorcBtn}, tar=${hasTarBtn})`);
+    if ((await page.locator("#ve-scaf-uorc-btn").count()) !== 1 || (await page.locator("#ve-scaf-tar-btn").count()) > 0) {
+      failures.push("Studio Code panel must expose #ve-scaf-uorc-btn and zero .tar export buttons");
     }
 
     await page.click('[data-tab-key="design"]');
@@ -320,21 +338,16 @@ try {
     );
 
     await verifyStyledAndContained(page, `${basePath} (Studio modal open)`);
-
     await page.click('dialog.ve-modal .ve-m-head button[aria-label="Close Verdant Studio workspace"]');
     await page.click("#ve-mesh-btn");
-    await page.waitForFunction(
-      () => document.querySelectorAll("dialog.ve-modal[open]").length === 1,
-      null,
-      { timeout: 5000 },
-    );
+    await page.waitForFunction(() => document.querySelectorAll("dialog.ve-modal[open]").length === 1, null, { timeout: 5000 });
 
     if (errors.length) failures.push(`Root Engine (${basePath}) errors: ${errors.join(" | ")}`);
     await page.close();
-  }
+  };
 
-  // 2. Verify Standalone Verdant Studio (`/studio/`):
-  {
+  // 2. Standalone Verdant Studio (`/studio/` — scrolling + 4-stage Catalog Composition Wizard + 7 inline roles):
+  const verifyStudio = async () => {
     const page = await context.newPage();
     const errors = attachTelemetry(page);
 
@@ -342,19 +355,41 @@ try {
     await page.waitForFunction(
       () =>
         document.querySelectorAll("#studio-inline-host .ve-m-tab").length === 7 &&
+        document.querySelectorAll("#wiz-domain-grid .wiz-domain-card").length === 4 &&
         (document.getElementById("studio-holo-status")?.textContent || "").includes("Atelier Ready"),
       null,
       { timeout: 15000 },
     );
 
     await verifyStyledAndContained(page, `${basePath}studio/`);
+    await verifyScrollableUnclipped(page, `${basePath}studio/`);
     await verifyCanvasRendered(page, "#studio-canvas", `${basePath}studio/`);
 
-    const hasTopUorc = (await page.locator("#studio-export-uorc-btn").count()) === 1;
-    const hasTopTar = (await page.locator("#studio-export-tar-btn").count()) > 0;
-    if (!hasTopUorc || hasTopTar) {
-      failures.push(`Standalone /studio/ must expose #studio-export-uorc-btn and zero .tar buttons (uorc=${hasTopUorc}, tar=${hasTopTar})`);
+    if ((await page.locator("#studio-export-uorc-btn").count()) !== 1 || (await page.locator("#studio-export-tar-btn").count()) > 0) {
+      failures.push("Standalone /studio/ must expose #studio-export-uorc-btn and zero .tar buttons");
     }
+
+    // Exercise 4-Stage Catalog Composition Wizard end-to-end:
+    await page.click('[data-wiz-domain-slug="meridian-observatory"]');
+    await page.waitForFunction(
+      () => (document.getElementById("st-man-domain")?.textContent || "").includes("DOM-MERIDIAN-OBSERVATORY"),
+      null,
+      { timeout: 10000 },
+    );
+    await page.click('[data-wiz-step="3"]');
+    await page.click("#wiz-dlg-abstain");
+    await page.waitForFunction(
+      () => (document.getElementById("wiz-dlg-log")?.textContent || "").includes("ABSTAINED (Unknown"),
+      null,
+      { timeout: 10000 },
+    );
+    await page.click('[data-wiz-step="4"]');
+    await page.click("#wiz-audit-btn");
+    await page.waitForFunction(
+      () => (document.getElementById("wiz-audit-log")?.textContent || "").includes("CONFORMANT (4/4 GATES PASSED)"),
+      null,
+      { timeout: 10000 },
+    );
 
     await page.click('#studio-inline-host [data-tab-key="code"]');
     const inlineCode = await page.textContent("#ve-scaf-code");
@@ -364,10 +399,10 @@ try {
 
     if (errors.length) failures.push(`Standalone /studio/ errors: ${errors.join(" | ")}`);
     await page.close();
-  }
+  };
 
-  // 3. Verify Standalone Verdant Model Catalogs (`/catalogs/`):
-  {
+  // 3. Standalone Verdant Model Catalogs (`/catalogs/` — scrolling + 5 organs + 4 domain packs + 36 models):
+  const verifyCatalogs = async () => {
     const page = await context.newPage();
     const errors = attachTelemetry(page);
 
@@ -375,6 +410,7 @@ try {
     await page.waitForFunction(
       () =>
         document.querySelectorAll("#cat-organ-grid .cat-organ-card").length === 5 &&
+        document.querySelectorAll("#cat-domain-grid .cat-organ-card").length === 4 &&
         document.querySelectorAll("#cat-list .cat-entry").length >= 36 &&
         (document.getElementById("cat-holo-banner")?.textContent || "").includes("Holo Verified"),
       null,
@@ -382,13 +418,14 @@ try {
     );
 
     await verifyStyledAndContained(page, `${basePath}catalogs/`);
+    await verifyScrollableUnclipped(page, `${basePath}catalogs/`);
 
     if (errors.length) failures.push(`Standalone /catalogs/ errors: ${errors.join(" | ")}`);
     await page.close();
-  }
+  };
 
-  // 4. Verify Standalone Verdant Engine Demo (`/demo/`):
-  {
+  // 4. Standalone Engine Demo (`/demo/` — scrolling + 3D canvas + benchmarks):
+  const verifyDemo = async () => {
     const page = await context.newPage();
     const errors = attachTelemetry(page);
 
@@ -403,6 +440,7 @@ try {
     );
 
     await verifyStyledAndContained(page, `${basePath}demo/`);
+    await verifyScrollableUnclipped(page, `${basePath}demo/`);
     await verifyCanvasRendered(page, "#demo-canvas", `${basePath}demo/`);
 
     await page.click("#btn-mode-tile");
@@ -417,10 +455,10 @@ try {
 
     if (errors.length) failures.push(`Engine Demo (/demo/) errors: ${errors.join(" | ")}`);
     await page.close();
-  }
+  };
 
-  // 5. Verify Standalone Starter Trial (`/starter/` — Sunspire Beacon Trials):
-  {
+  // 5. Standalone Starter Trial (`/starter/`):
+  const verifyStarter = async () => {
     const page = await context.newPage();
     const errors = attachTelemetry(page);
 
@@ -440,19 +478,19 @@ try {
 
     if (errors.length) failures.push(`Starter Trial (/starter/) errors: ${errors.join(" | ")}`);
     await page.close();
-  }
+  };
 
-  // 6. Verify all 6 Diataxis documentation routes + Live Wasm figures + interactive buttons + theme toggle:
+  // 6. All 6 Diataxis documentation routes concurrently:
   const docRoutes = [
-    { path: "docs/", act: "lod" },
-    { path: "docs/getting-started/", act: "slot-2" },
-    { path: "docs/guides/custom-game-world/", act: "step" },
-    { path: "docs/guides/progressive-uorc-streaming/", act: "lod-2" },
-    { path: "docs/reference/engine-api/", act: "tamper" },
-    { path: "docs/explanation/tensor-and-uorc-streaming/", act: "audio" },
+    { path: "docs/", act: "lod", checkScroll: true },
+    { path: "docs/getting-started/", act: "slot-2", checkScroll: false },
+    { path: "docs/guides/custom-game-world/", act: "step", checkScroll: false },
+    { path: "docs/guides/progressive-uorc-streaming/", act: "lod-2", checkScroll: false },
+    { path: "docs/reference/engine-api/", act: "tamper", checkScroll: false },
+    { path: "docs/explanation/tensor-and-uorc-streaming/", act: "audio", checkScroll: false },
   ];
 
-  for (const route of docRoutes) {
+  const verifyDocRoute = async (route) => {
     const page = await context.newPage();
     const errors = attachTelemetry(page);
 
@@ -463,10 +501,11 @@ try {
         return figs.length > 0 && figs.every((f) => f.dataset.veReady === "true" || f.dataset.veReady === "error");
       },
       null,
-      { timeout: 15000 },
+      { timeout: 20000 },
     );
 
     await verifyStyledAndContained(page, `${basePath}${route.path}`);
+    if (route.checkScroll) await verifyScrollableUnclipped(page, `${basePath}${route.path}`);
 
     const state = await page.$eval("figure[data-ve-live]", (f) => ({
       id: f.id,
@@ -491,11 +530,14 @@ try {
     if (afterReady !== "true") {
       failures.push(`${route.path} lost ready state after theme toggle`);
     }
-    if (errors.length) {
-      failures.push(`${route.path} runtime errors: ${errors.join(" | ")}`);
-    }
+    if (errors.length) failures.push(`${route.path} runtime errors: ${errors.join(" | ")}`);
     await page.close();
-  }
+  };
+
+  // Run root + standalone apps in parallel batches to keep SwiftShader GPU responsive while slashing total wall time:
+  await Promise.all([verifyRoot(), verifyCatalogs(), verifyStarter()]);
+  await Promise.all([verifyStudio(), verifyDemo()]);
+  await Promise.all(docRoutes.map((r) => verifyDocRoute(r)));
 } finally {
   await browser.close();
   server.close();
@@ -507,5 +549,5 @@ if (failures.length > 0) {
   process.exit(1);
 }
 console.log(
-  `verify-live-surfaces: PASS under strict subpath "${basePath}" — all 11 routes (Engine, Studio, Catalogs, Demo, Starter, 6 Docs), live 3D canvases, stylesheets, link containment, and .uorc-only export verified with 0 errors.`,
+  `verify-live-surfaces: PASS under strict subpath "${basePath}" — all 11 routes, native wheel scrolling, 4-stage Catalog Composition Wizard, live 3D canvases, stylesheets, link containment, and .uorc-only export verified with 0 errors.`,
 );

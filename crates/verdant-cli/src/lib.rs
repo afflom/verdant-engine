@@ -19,8 +19,10 @@ use verdant_core::math::{Aabb, Frustum, Ray, Vec3};
 use verdant_core::narrative::canonical_citadel_chronicle_automaton;
 use verdant_core::navmesh::NavMesh;
 use verdant_core::network::{
-    recover_bytes_from_stitch_pair, shard_bytes_to_stitch_fragments, StitchFragment,
+    recover_bytes_from_stitch_pair, shard_bytes_to_stitch_fragments, PrismIdSessionEnvelope,
+    StitchFragment,
 };
+use verdant_core::observer::{sha256_payload_digest, CommunicationChannelKind, ObserverPrismHolon};
 use verdant_core::physics::{
     CapsuleController, KinematicSplineBody, PhysicsWorld, PhysicsWorldConfig,
 };
@@ -102,6 +104,7 @@ verdant <subcommand> [options]
   stitch-recover <frag1.stch> <frag2.stch> <out> Recover exact object from any 2 distinct Stitch shards
   verify-story [seed]                         Verify StoryAutomaton tropical reachability & conservation
   pack-universe <out_dir> [seed]              Pack 3-sector floating-origin universe & Stitch shards
+  automate-check                              Self-verify all 4 catalog domains, Observer, UI, WGSL, & .uorc
   benchmark [frames]                          Run headless 60fps physics + BVH + GJK + NavMesh benchmark
   stress-benchmark [entities]                 Run 10k+ SoA bit-plane, TwoLevelBvh & monoid stress benchmark";
 
@@ -981,6 +984,186 @@ pub fn run_cli(args: &[String]) -> Result<String, CliCommandError> {
                 soa.visible_mask.words().len(),
                 bvh.total_surface_triangles(),
                 bvh.total_bvh_nodes(),
+            ))
+        }
+        "automate-check" => {
+            let t0 = Instant::now();
+            let domain_slugs = [
+                "sunspire-regatta",
+                "meridian-observatory",
+                "glasshouse-chronicle",
+                "starfall-bastion",
+            ];
+            let mut holon = ObserverPrismHolon::new(domain_slugs[0]).map_err(|e| {
+                CliCommandError::ValidationRejected {
+                    command: "automate-check".to_string(),
+                    diagnostic: e.to_string(),
+                }
+            })?;
+            let max_lod = prism_kernel::wasmMaxLodRank();
+            let mut verified_domains = 0usize;
+            let mut total_entities = 0usize;
+            let origin = "https://afflom.github.io/verdant-engine/";
+            let now_sec: u64 = 1;
+            let expires_sec: u64 = 1u64 << (1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1);
+            let prism_id = "prism:verdant:automate";
+            let dev_secret = b"verdant-automate-device";
+            for slug in domain_slugs {
+                holon.switch_domain_pack(slug, Some(max_lod)).map_err(|e| {
+                    CliCommandError::ValidationRejected {
+                        command: "automate-check".to_string(),
+                        diagnostic: format!("domain {slug}: {e}"),
+                    }
+                })?;
+                verified_domains += 1;
+                total_entities += holon.active_domain.sector.scene.entity_count();
+
+                // Verify grounded ISO 24617-2 dialogue + zero-hallucination Unknown abstention:
+                let grounded_prompt = holon
+                    .active_domain
+                    .spec
+                    .characters
+                    .first()
+                    .and_then(|c| c.knowledge_facts.first())
+                    .cloned()
+                    .unwrap_or_else(|| "status".to_string());
+                let g_digest = sha256_payload_digest(grounded_prompt.as_bytes());
+                let g_env = PrismIdSessionEnvelope::sign_deterministic(
+                    prism_id,
+                    dev_secret,
+                    origin,
+                    now_sec,
+                    expires_sec,
+                    &g_digest,
+                );
+                let g_turn = holon
+                    .converse_player_with_npc(
+                        prism_id,
+                        (&g_env, origin, now_sec),
+                        0,
+                        &grounded_prompt,
+                    )
+                    .map_err(|e| CliCommandError::ValidationRejected {
+                        command: "automate-check".to_string(),
+                        diagnostic: format!("grounded dialogue {slug}: {e}"),
+                    })?;
+                if g_turn.abstained_unknown || g_turn.matched_evidence_facts == 0 {
+                    return Err(CliCommandError::ValidationRejected {
+                        command: "automate-check".to_string(),
+                        diagnostic: format!("grounded dialogue unexpectedly abstained on {slug}"),
+                    });
+                }
+
+                let ungrounded = "unmodeled quantum neptune exchange rate";
+                let u_digest = sha256_payload_digest(ungrounded.as_bytes());
+                let u_env = PrismIdSessionEnvelope::sign_deterministic(
+                    prism_id,
+                    dev_secret,
+                    origin,
+                    now_sec,
+                    expires_sec,
+                    &u_digest,
+                );
+                let u_turn = holon
+                    .converse_player_with_npc(prism_id, (&u_env, origin, now_sec), 0, ungrounded)
+                    .map_err(|e| CliCommandError::ValidationRejected {
+                        command: "automate-check".to_string(),
+                        diagnostic: format!("abstention dialogue {slug}: {e}"),
+                    })?;
+                if !u_turn.abstained_unknown || u_turn.world_mutated {
+                    return Err(CliCommandError::ValidationRejected {
+                        command: "automate-check".to_string(),
+                        diagnostic: format!("ungrounded dialogue failed abstention on {slug}"),
+                    });
+                }
+            }
+
+            let _ = holon
+                .observe_communication(
+                    CommunicationChannelKind::OrganToOrgan,
+                    "urn:verdant:organ:studio",
+                    "urn:verdant:organ:engine",
+                    "en",
+                    0,
+                    "automate-check:self-verified",
+                    None,
+                    0,
+                )
+                .map_err(|e| CliCommandError::ValidationRejected {
+                    command: "automate-check".to_string(),
+                    diagnostic: format!("observe_communication: {e}"),
+                })?;
+
+            let ui_w = (1u32 << (1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1))
+                + (1u32 << (1 + 1 + 1 + 1 + 1 + 1 + 1 + 1));
+            let ui_h = (1u32 << (1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1))
+                + (1u32 << (1 + 1 + 1 + 1 + 1 + 1 + 1 + 1));
+            let first_ent = holon
+                .active_domain
+                .sector
+                .scene
+                .entities()
+                .next()
+                .map(|e| e.id);
+            let solved_ui = UiTree::canonical_studio_ui_tree(first_ent)
+                .solve_and_verify(ui_w, ui_h, Some(&holon.active_domain.sector.scene))
+                .map_err(|e| CliCommandError::ValidationRejected {
+                    command: "automate-check".to_string(),
+                    diagnostic: format!("verify-ui: {e}"),
+                })?;
+
+            let shaders = validate_builtin_engine_shaders().map_err(|e| {
+                CliCommandError::ValidationRejected {
+                    command: "automate-check".to_string(),
+                    diagnostic: format!("wgsl: {e}"),
+                }
+            })?;
+
+            let seed = pk("automate-check", prism_kernel::wasmDefaultSeed())?;
+            let std_state = StandardSceneState::synthesize_at_lod(seed, max_lod).map_err(|e| {
+                CliCommandError::ValidationRejected {
+                    command: "automate-check".to_string(),
+                    diagnostic: e.to_string(),
+                }
+            })?;
+            let uorc_snap = WorldSnapshot::encode_uorc(&std_state).map_err(|e| {
+                CliCommandError::ValidationRejected {
+                    command: "automate-check".to_string(),
+                    diagnostic: e.to_string(),
+                }
+            })?;
+            if !is_uorc_archive(&uorc_snap) {
+                return Err(CliCommandError::ValidationRejected {
+                    command: "automate-check".to_string(),
+                    diagnostic: "WorldSnapshot::encode_uorc did not emit UORC archive".to_string(),
+                });
+            }
+            let frags = shard_bytes_to_stitch_fragments(&uorc_snap).map_err(|e| {
+                CliCommandError::ValidationRejected {
+                    command: "automate-check".to_string(),
+                    diagnostic: format!("stitch shard: {e}"),
+                }
+            })?;
+            let recovered =
+                recover_bytes_from_stitch_pair(&frags[0], &frags[1 + 1]).map_err(|e| {
+                    CliCommandError::ValidationRejected {
+                        command: "automate-check".to_string(),
+                        diagnostic: format!("stitch recovery: {e}"),
+                    }
+                })?;
+            if recovered != uorc_snap {
+                return Err(CliCommandError::ValidationRejected {
+                    command: "automate-check".to_string(),
+                    diagnostic: "stitch recovered bytes differed from .uorc snapshot".to_string(),
+                });
+            }
+
+            let elapsed_ms = t0.elapsed().as_millis();
+            Ok(format!(
+                "AUTOMATE CHECK OK: domains={verified_domains} entities={total_entities} ui_widgets={} wgsl_shaders={} uorc_bytes={} stitch_parity=2of3 elapsed_ms={elapsed_ms}",
+                solved_ui.len(),
+                shaders.len(),
+                uorc_snap.len(),
             ))
         }
         other => Err(CliCommandError::InvalidUsage {
