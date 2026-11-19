@@ -712,9 +712,18 @@ pub fn import_glb_to_scene_bounded(
             oracle_message: err.to_string(),
         })?;
 
-    // Identify the most frequently referenced Khronos PBR `baseColorTexture` and its companion
-    // `metallicRoughnessTexture`, `normalTexture`, and `emissiveTexture` channels:
+    // Identify the most frequently referenced Khronos PBR `baseColorTexture` images and bind each
+    // material's companion `metallicRoughnessTexture`, `normalTexture`, and `emissiveTexture` so
+    // multi-material `.glb` models pack all 4 PBR channels into synchronized grid atlases:
     let mut tex_usage: std::collections::BTreeMap<usize, usize> = std::collections::BTreeMap::new();
+    #[derive(Default)]
+    struct CompanionPbrChannels {
+        mr: Option<usize>,
+        normal: Option<usize>,
+        emissive: Option<usize>,
+    }
+    let mut companion_pbr: std::collections::BTreeMap<usize, CompanionPbrChannels> =
+        std::collections::BTreeMap::new();
     let mut mr_src_idx: Option<usize> = None;
     let mut norm_src_idx: Option<usize> = None;
     let mut emis_src_idx: Option<usize> = None;
@@ -722,24 +731,37 @@ pub fn import_glb_to_scene_bounded(
         for prim in mesh.primitives() {
             let mat = prim.material();
             let pbr = mat.pbr_metallic_roughness();
+            let mr_i = pbr
+                .metallic_roughness_texture()
+                .map(|info| info.texture().source().index());
+            let nm_i = mat
+                .normal_texture()
+                .map(|info| info.texture().source().index());
+            let em_i = mat
+                .emissive_texture()
+                .map(|info| info.texture().source().index());
             if let Some(info) = pbr.base_color_texture() {
                 let src_idx = info.texture().source().index();
                 *tex_usage.entry(src_idx).or_insert(0) += 1;
+                let entry = companion_pbr.entry(src_idx).or_default();
+                if entry.mr.is_none() {
+                    entry.mr = mr_i;
+                }
+                if entry.normal.is_none() {
+                    entry.normal = nm_i;
+                }
+                if entry.emissive.is_none() {
+                    entry.emissive = em_i;
+                }
             }
             if mr_src_idx.is_none() {
-                if let Some(info) = pbr.metallic_roughness_texture() {
-                    mr_src_idx = Some(info.texture().source().index());
-                }
+                mr_src_idx = mr_i;
             }
             if norm_src_idx.is_none() {
-                if let Some(info) = mat.normal_texture() {
-                    norm_src_idx = Some(info.texture().source().index());
-                }
+                norm_src_idx = nm_i;
             }
             if emis_src_idx.is_none() {
-                if let Some(info) = mat.emissive_texture() {
-                    emis_src_idx = Some(info.texture().source().index());
-                }
+                emis_src_idx = em_i;
             }
         }
     }
@@ -752,9 +774,12 @@ pub fn import_glb_to_scene_bounded(
         std::collections::BTreeMap::new();
     let mut atlas_tile_transforms: Vec<crate::uhd::AtlasUvTransform> = Vec::new();
     let mut atlas_tile_count = 0usize;
+    let mut atlas_ordered_srcs: Vec<usize> = Vec::new();
+    let mut atlas_per_tile_cap = max_tex_edge_px;
     let primary_albedo_texture = if ranked_tex.len() <= 1 {
         if let Some(idx) = primary_tex_src_idx {
             atlas_src_to_tile.insert(idx, 0);
+            atlas_ordered_srcs.push(idx);
             atlas_tile_transforms.push(crate::uhd::AtlasUvTransform {
                 u_offset: 0.0,
                 v_offset: 0.0,
@@ -780,6 +805,7 @@ pub fn import_glb_to_scene_bounded(
             four_u
         };
         let per_tile_cap = (max_tex_edge_px / grid_dim).max(1);
+        atlas_per_tile_cap = per_tile_cap;
         let mut decoded_tiles: Vec<(usize, DecodedRgbaTexture)> = Vec::new();
         for &(src_idx, _) in &ranked_tex {
             if let Some(tex) = images
@@ -796,6 +822,7 @@ pub fn import_glb_to_scene_bounded(
         if let Some(atlas) = crate::uhd::pack_rgba_texture_atlas(&slice_refs, max_tex_edge_px) {
             for (slot, (src_idx, _)) in decoded_tiles.iter().enumerate() {
                 atlas_src_to_tile.insert(*src_idx, slot);
+                atlas_ordered_srcs.push(*src_idx);
             }
             atlas_tile_count = atlas.tile_count;
             atlas_tile_transforms = atlas.tile_transforms;
@@ -808,26 +835,71 @@ pub fn import_glb_to_scene_bounded(
             None
         }
     };
+
+    let pack_companion_channel_atlas = |channel_idx: usize, neutral_px: [u8; 1 + 1 + 1 + 1]| {
+        let mut has_any = false;
+        let mut decoded_ch: Vec<DecodedRgbaTexture> = Vec::with_capacity(atlas_ordered_srcs.len());
+        for &src_idx in &atlas_ordered_srcs {
+            let opt_idx = companion_pbr.get(&src_idx).and_then(|ch| {
+                if channel_idx == 0 {
+                    ch.mr
+                } else if channel_idx == 1 {
+                    ch.normal
+                } else {
+                    ch.emissive
+                }
+            });
+            if let Some(tex) = opt_idx
+                .and_then(|idx| images.get(idx))
+                .and_then(|img| decode_rgba_bounded(img, atlas_per_tile_cap))
+            {
+                has_any = true;
+                decoded_ch.push(tex);
+            } else {
+                decoded_ch.push(DecodedRgbaTexture {
+                    width: 1,
+                    height: 1,
+                    rgba: neutral_px.to_vec(),
+                });
+            }
+        }
+        if !has_any {
+            return None;
+        }
+        let refs: Vec<(u32, u32, &[u8])> = decoded_ch
+            .iter()
+            .map(|t| (t.width, t.height, t.rgba.as_slice()))
+            .collect();
+        crate::uhd::pack_rgba_texture_atlas(&refs, max_tex_edge_px).map(|a| DecodedRgbaTexture {
+            width: a.width,
+            height: a.height,
+            rgba: a.rgba,
+        })
+    };
+
+    let full_byte = ((1u32 << (1 + 1 + 1 + 1 + 1 + 1 + 1 + 1)) - 1) as u8;
+    let half_byte = (1u32 << (1 + 1 + 1 + 1 + 1 + 1 + 1)) as u8;
+    let low_byte = (1u32 << (1 + 1 + 1 + 1)) as u8;
     let primary_mr_texture = if atlas_tile_count <= 1 {
         mr_src_idx
             .and_then(|idx| images.get(idx))
             .and_then(|img| decode_rgba_bounded(img, max_tex_edge_px))
     } else {
-        None
+        pack_companion_channel_atlas(0, [full_byte, half_byte, low_byte, full_byte])
     };
     let primary_normal_texture = if atlas_tile_count <= 1 {
         norm_src_idx
             .and_then(|idx| images.get(idx))
             .and_then(|img| decode_rgba_bounded(img, max_tex_edge_px))
     } else {
-        None
+        pack_companion_channel_atlas(1, [half_byte, half_byte, full_byte, full_byte])
     };
     let primary_emissive_texture = if atlas_tile_count <= 1 {
         emis_src_idx
             .and_then(|idx| images.get(idx))
             .and_then(|img| decode_rgba_bounded(img, max_tex_edge_px))
     } else {
-        None
+        pack_companion_channel_atlas(1 + 1, [0, 0, 0, full_byte])
     };
 
     let default_ior = (four_u32() as f32) / (three_u32() as f32);

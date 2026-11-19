@@ -1482,6 +1482,11 @@ self.onmessage = async ({ data: msg }) => {
         const sLen = uorcWasm.verdant_wasm_frame_stability_aux() >>> 0;
         if (sLen) stability = JSON.parse(new TextDecoder().decode(readAuxBytes(uorcWasm)));
       }
+      let lodPyramid = null;
+      if (msg.includeLodPyramid && typeof uorcWasm.verdant_wasm_uhd_lod_pyramid_aux === "function") {
+        const lLen = uorcWasm.verdant_wasm_uhd_lod_pyramid_aux() >>> 0;
+        if (lLen) lodPyramid = JSON.parse(new TextDecoder().decode(readAuxBytes(uorcWasm)));
+      }
       self.postMessage({
         kind: "uhd-profile-ready",
         id: msg.id,
@@ -1489,6 +1494,7 @@ self.onmessage = async ({ data: msg }) => {
         profile,
         meshlets,
         stability,
+        lodPyramid,
         webgpuAvail,
         webgpuLimits: webgpuHardware
           ? { maxTextureDimension2D: webgpuHardware.maxTextureDimension2D, maxStorageBufferBindingSize: webgpuHardware.maxStorageBufferBindingSize }

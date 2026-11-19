@@ -460,6 +460,7 @@ try {
           txt.includes("UHD 4K (3840×2160) Gameplay Envelope Verified:") &&
           txt.includes("Meshlet Graph:") &&
           txt.includes("8K Beyond (7680×4320") &&
+          txt.includes("Hierarchical LOD Pyramid:") &&
           txt.includes("Frame Stability Oracle (")
         );
       },

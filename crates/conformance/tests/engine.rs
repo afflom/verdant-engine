@@ -4706,22 +4706,24 @@ fn engine_ve_41() {
     use verdant_core::hd_world::synthesize_hd_citadel_sector;
     use verdant_core::streaming::{PhysicalEnvironment, TerrainReliefParams};
     use verdant_core::uhd::{
-        build_meshlet_graph, evaluate_meshlet_visibility, evaluate_uhd_display_profile,
-        pack_rgba_texture_atlas, validate_uhd_shaders, FrameBudgetOracle, MAX_ATLAS_TILES,
-        MAX_MESHLET_TRIANGLES,
+        build_meshlet_graph, evaluate_lod_pyramid_telemetry, evaluate_meshlet_visibility,
+        evaluate_uhd_display_profile, pack_rgba_texture_atlas, validate_uhd_shaders,
+        FrameBudgetOracle, MAX_ATLAS_TILES, MAX_MESHLET_TRIANGLES,
     };
     use verdant_wasm::{
         verdant_wasm_aux_len, verdant_wasm_aux_ptr, verdant_wasm_frame_stability_aux,
         verdant_wasm_init, verdant_wasm_record_frame_time_us, verdant_wasm_scene_rebuild_buffers,
-        verdant_wasm_set_lod_rank, verdant_wasm_uhd_cull_meshlets, verdant_wasm_uhd_profile_aux,
+        verdant_wasm_set_lod_rank, verdant_wasm_uhd_cull_meshlets,
+        verdant_wasm_uhd_lod_pyramid_aux, verdant_wasm_uhd_profile_aux,
         verdant_wasm_uhd_visible_idx_count, verdant_wasm_uhd_visible_idx_ptr,
     };
 
-    // 1. Authoritative W3C `naga` WGSL oracle validates compute meshlet cull & UHD PBR shaders:
+    // 1. Authoritative W3C `naga` WGSL oracle validates compute meshlet cull, 4-channel PBR + HDRI IBL, and 5-tap CAS resolve shaders:
     let uhd_shaders = validate_uhd_shaders().expect("UHD WGSL shaders must validate under naga");
-    assert_eq!(uhd_shaders.len(), 2);
+    assert_eq!(uhd_shaders.len(), 3);
     assert_eq!(uhd_shaders[0].label, "uhd_meshlet_cull.wgsl");
     assert_eq!(uhd_shaders[1].label, "uhd_pbr_cas.wgsl");
+    assert_eq!(uhd_shaders[2].label, "uhd_cas_resolve.wgsl");
 
     // 2. Arbitrary 45,000+ triangle LOD4 Citadel sector -> Morton 64-tri MeshletGraph +
     //    zero-reallocation steady-state visibility culling across 32 camera orbit sweeps:
@@ -4944,11 +4946,34 @@ fn engine_ve_41() {
         stab_len > 0 && verdant_wasm_aux_len() as usize == stab_len && verdant_wasm_aux_ptr() != 0,
         "Wasm C-ABI must publish non-empty stability oracle JSON into aux_buffer"
     );
+    let lod_len = verdant_wasm_uhd_lod_pyramid_aux() as usize;
+    assert!(
+        lod_len > 0 && verdant_wasm_aux_len() as usize == lod_len,
+        "Wasm C-ABI must publish hierarchical LOD pyramid JSON into aux_buffer"
+    );
     let rep_json = serde_json::to_string(&final_rep).expect("serialize FrameStabilityReport");
     assert!(rep_json.contains("\"stable\":true"));
     assert!(rep_json.contains("\"drsTransitions\":"));
 
-    // 8. Verify zero-reallocation GPU index streaming in WebGL2 & WebGPU UHD renderers:
+    // 8. Verify monotonic hierarchical LOD pyramid over the full 45,000+ tri LOD4 Citadel sector:
+    let flat_norm: Vec<f32> = lod4
+        .meshes
+        .iter()
+        .flat_map(|m| m.normals.iter().flat_map(|n| n.iter().copied()))
+        .collect();
+    let flat_col: Vec<f32> = vec![0.6_f32; flat_pos.len()];
+    let lod_pyr = evaluate_lod_pyramid_telemetry(&flat_pos, &flat_norm, &flat_col, &flat_idx);
+    assert_eq!(lod_pyr.lod0_triangles, flat_idx.len() / 3);
+    assert!(
+        lod_pyr.lod1_triangles < lod_pyr.lod0_triangles && lod_pyr.lod1_triangles > 0,
+        "LOD1 must strictly reduce arbitrary 45k+ tri LOD4 geometry"
+    );
+    assert!(
+        lod_pyr.lod2_triangles < lod_pyr.lod1_triangles && lod_pyr.lod2_triangles > 0,
+        "LOD2 must strictly reduce LOD1 geometry"
+    );
+
+    // 9. Verify zero-reallocation GPU index streaming & full WGSL compute/4-ch PBR/CAS parity:
     let root = repo_root();
     let hd_js = std::fs::read_to_string(root.join("site/scene-hd-renderer.mjs"))
         .expect("read site/scene-hd-renderer.mjs");
@@ -4959,7 +4984,13 @@ fn engine_ve_41() {
     let wgpu_js = std::fs::read_to_string(root.join("site/scene-webgpu-renderer.mjs"))
         .expect("read site/scene-webgpu-renderer.mjs");
     assert!(
-        wgpu_js.contains("updateStaticIndices") && wgpu_js.contains("writeOrGrow"),
-        "scene-webgpu-renderer.mjs must stream culled indices via zero-reallocation writeBuffer"
+        wgpu_js.contains("updateStaticIndices")
+            && wgpu_js.contains("writeOrGrow")
+            && wgpu_js.contains("cs_cull_meshlets")
+            && wgpu_js.contains("fs_cas_resolve")
+            && wgpu_js.contains("u_normal_tex")
+            && wgpu_js.contains("u_emissive_tex")
+            && wgpu_js.contains("u_env_tex"),
+        "scene-webgpu-renderer.mjs must maintain full 4-ch PBR + HDRI IBL + compute cull + CAS parity"
     );
 }

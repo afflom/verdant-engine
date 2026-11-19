@@ -80,8 +80,8 @@ use verdant_core::streaming::{PhysicalEnvironment, TerrainReliefParams};
 use verdant_core::tensor::{render_triangles_tile_framebuffer_with_scratch, TileRasterScratch};
 #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
 use verdant_core::uhd::{
-    build_meshlet_graph, evaluate_meshlet_visibility, evaluate_uhd_display_profile,
-    FrameBudgetOracle, MeshletGraph, UhdVisibilityTelemetry,
+    build_meshlet_graph, evaluate_lod_pyramid_telemetry, evaluate_meshlet_visibility,
+    evaluate_uhd_display_profile, FrameBudgetOracle, MeshletGraph, UhdVisibilityTelemetry,
 };
 #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
 use verdant_core::ui::UiTree;
@@ -5580,6 +5580,34 @@ pub extern "C" fn verdant_wasm_frame_stability_aux() -> u32 {
         r.drs_scale_permille,
         r.drs_transitions,
         r.stable,
+    );
+    bridge.aux_buffer = json_str.into_bytes();
+    bridge.aux_buffer.len() as u32
+}
+
+/// Evaluates the monotonic 3-level hierarchical LOD pyramid (`LOD0` -> `LOD1` -> `LOD2`) for
+/// the active static scene or imported `.glb` and writes its JSON into `aux_buffer`.
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+#[no_mangle]
+pub extern "C" fn verdant_wasm_uhd_lod_pyramid_aux() -> u32 {
+    let mut guard = global_bridge()
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
+    let Some(bridge) = guard.as_mut() else {
+        return 0;
+    };
+    let pyr = evaluate_lod_pyramid_telemetry(
+        &bridge.scene_buffers.positions_xyz,
+        &bridge.scene_buffers.normals_xyz,
+        &bridge.scene_buffers.colors_rgb,
+        &bridge.scene_buffers.indices,
+    );
+    let json_str = format!(
+        "{{\"lod0Triangles\":{},\"lod1Triangles\":{},\"lod2Triangles\":{},\"lod2ReductionPermille\":{}}}",
+        pyr.lod0_triangles,
+        pyr.lod1_triangles,
+        pyr.lod2_triangles,
+        pyr.lod2_reduction_permille,
     );
     bridge.aux_buffer = json_str.into_bytes();
     bridge.aux_buffer.len() as u32
