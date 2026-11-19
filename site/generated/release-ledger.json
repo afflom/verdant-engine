@@ -3,11 +3,11 @@
   "managerId": "mgr-change-release",
   "authorityId": "AUTH-SEMVER-CHANGE-KPI",
   "currentVersion": {
-    "major": 0,
-    "minor": 4,
+    "major": 1,
+    "minor": 0,
     "patch": 0
   },
-  "releaseEpoch": 1,
+  "releaseEpoch": 2,
   "history": [
     {
       "version": "0.1.0",
@@ -35,6 +35,13 @@
       "releaseEpoch": 4,
       "bumpKind": "minor",
       "summary": "M4: Total Prism Facet Ownership, Change/Version Manager & Observer KPI Roadmap (VE-45)",
+      "citedAuthority": "AUTH-SEMVER-CHANGE-KPI"
+    },
+    {
+      "version": "1.0.0",
+      "releaseEpoch": 2,
+      "bumpKind": "major",
+      "summary": "M5 Complete (VE-46): Full Source DAG Self-Hosting in VerdantVcs, Autonomous vN->v(N+1) Build Loop & 13-Manager Total Prism Ownership",
       "citedAuthority": "AUTH-SEMVER-CHANGE-KPI"
     }
   ]

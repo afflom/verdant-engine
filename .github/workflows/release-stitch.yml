@@ -36,24 +36,34 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Resolve release version and epoch
+      - name: Resolve release version and epoch from Change Manager ledger
         id: meta
         shell: bash
         run: |
           set -euo pipefail
+          ledger_ver=$(node -e 'const l=JSON.parse(require("fs").readFileSync("site/generated/release-ledger.json","utf8")); console.log(`${l.currentVersion.major}.${l.currentVersion.minor}.${l.currentVersion.patch}`)')
+          ledger_epoch=$(node -e 'const l=JSON.parse(require("fs").readFileSync("site/generated/release-ledger.json","utf8")); console.log(l.releaseEpoch)')
           if [[ "${GITHUB_REF_TYPE:-}" == "tag" ]]; then
             ver="${GITHUB_REF_NAME#v}"
           else
-            ver="${{ github.event.inputs.version || '0.1.0' }}"
+            ver="${{ github.event.inputs.version || '' }}"
+            ver="${ver:-$ledger_ver}"
           fi
-          epoch="${{ github.event.inputs.epoch || '1' }}"
+          epoch="${{ github.event.inputs.epoch || '' }}"
+          epoch="${epoch:-$ledger_epoch}"
           printf 'version=%s\nepoch=%s\n' "$ver" "$epoch" >> "$GITHUB_OUTPUT"
 
-      - name: Build verdant CLI & pack self-verifying .holo + 4-of-8 STCH2 shards
+      - name: Build verdant CLI, lift full Source DAG & pack self-verifying .holo + 4-of-8 STCH2 shards
         shell: bash
         run: |
           set -euo pipefail
           cargo build --locked -p verdant-cli --bin verdant
+          ./target/debug/verdant operator kpis --root .
+          ./target/debug/verdant release self-host \
+            --root . \
+            --version "${{ steps.meta.outputs.version }}" \
+            --epoch "${{ steps.meta.outputs.epoch }}" \
+            --out dist/stitch-release
           ./target/debug/verdant release pack \
             --root . \
             --version "${{ steps.meta.outputs.version }}" \

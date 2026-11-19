@@ -5880,8 +5880,105 @@ fn engine_ve_45() {
         REQUIRED_PRISM_FACETS.len()
     );
     assert_eq!(kpi_rep.minor_progress_pct, 100);
-    assert!(kpi_rep.major_progress_pct >= 50 && kpi_rep.major_progress_pct < 100);
+    assert!(kpi_rep.major_progress_pct >= 50);
     assert_eq!(kpi_rep.kpi_passed_count, kpi_rep.kpi_total_count);
     assert_eq!(kpi_rep.milestones.len(), 5);
     assert_eq!(kpi_rep.observer_parts.len(), 13);
+}
+
+#[test]
+fn engine_ve_46() {
+    use std::path::Path;
+    use verdant_core::governance::ObserverProgressSignals;
+    use verdant_core::operator::VerdantOperatorChannel;
+
+    let repo_root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+    let ch = VerdantOperatorChannel::new("sunspire-regatta").expect("operator channel");
+
+    let base_tmp = std::env::temp_dir().join(format!("verdant-ve46-{}", std::process::id()));
+    let lift_dir = base_tmp.join("vN-lift");
+    let next_dir = base_tmp.join("vNplus1-out");
+    let _ = std::fs::remove_dir_all(&base_tmp);
+
+    // 1. Lift 100% of Verdant's workspace (all 4 shipped Rust crates, all 26 Prism LexLean strata,
+    // all governance/model/feature registers, and all distilled Viewpoints) into a 4-of-8 sharded
+    // VerdantVcs Source DAG on Stitch:
+    let lift = ch
+        .lift_full_workspace_into_vcs(&repo_root, &lift_dir, "1.0.0", 5)
+        .expect("lift full workspace into VerdantVcs");
+    assert_eq!(
+        lift.unlifted_workspace_modules, 0,
+        "M5 ratchet requires 0 unlifted shipped workspace modules"
+    );
+    assert!(
+        lift.lifted_rust_files >= 41,
+        "all shipped Rust files lifted"
+    );
+    assert!(
+        lift.lifted_lex_files >= 29,
+        "all 26 LexLean strata + locks lifted"
+    );
+    assert!(
+        lift.lifted_governance_files >= 10,
+        "governance & model files lifted"
+    );
+    assert!(
+        lift.lifted_site_files >= 90,
+        "distilled Viewpoints & Wasm lifted"
+    );
+    assert_eq!(lift.source_shard_count, 8);
+    assert!(lift.source_uorc_bytes > 10_000);
+
+    // 2. Negative check: unratcheted autonomous vN -> v(N+1) bootstrap MUST be refused by mgr-change-release!
+    let next_signals = ObserverProgressSignals {
+        breaking_contract_change: false,
+        major_milestone_completed: false,
+        minor_capability_added: true,
+        stakeholder_requirement_closed: true,
+        defect_or_security_fix: false,
+        summary: "Autonomous vN -> v(N+1) self-hosted Stitch release".to_string(),
+    };
+    assert!(
+        ch.bootstrap_next_release_from_source_shards(
+            &repo_root,
+            &lift_dir,
+            &next_dir,
+            &lift.source_commit_kappa,
+            false,
+            true,
+            &next_signals,
+        )
+        .is_err(),
+        "unratcheted v(N+1) self-hosted bootstrap MUST be refused"
+    );
+
+    // 3. Positive check: drop 4 of 8 source shards, recover full VerdantVcs from the 4 surviving
+    // STCH2 shards, verify acyclic parent -> child lineage, pack chained v(N+1) .holo + 4-of-8
+    // shards, and verify the resulting release directory!
+    let next_rep = ch
+        .bootstrap_next_release_from_source_shards(
+            &repo_root,
+            &lift_dir,
+            &next_dir,
+            &lift.source_commit_kappa,
+            true,
+            true,
+            &next_signals,
+        )
+        .expect("autonomous vN -> v(N+1) bootstrap from 4 surviving source shards");
+    assert_eq!(next_rep.survived_source_shards, 4);
+    assert_eq!(next_rep.parent_commit_kappa, lift.source_commit_kappa);
+    assert_ne!(next_rep.child_commit_kappa, next_rep.parent_commit_kappa);
+    assert_eq!(next_rep.next_epoch, next_rep.parent_epoch + 1);
+    assert_eq!(next_rep.prev_release_kappa, lift.source_commit_kappa);
+    assert!(next_rep.verified_files_count >= 150);
+
+    // Verify the autonomously produced v(N+1) release directory by dropping 4 of its 8 release shards!
+    let verified = ch
+        .verify_release_dir(&next_dir)
+        .expect("verify chained v(N+1) release directory");
+    assert!(verified.contains("RELEASE VERIFIED:"));
+    assert!(verified.contains(&next_rep.next_release_kappa));
+
+    let _ = std::fs::remove_dir_all(&base_tmp);
 }

@@ -49,6 +49,12 @@ if (totalFrameBytes > MAX_BLANK_FRAME_BYTES) {
 }
 
 // 2. Pack release into isolated temp directory (unless --dir was supplied)
+const ledgerRaw = JSON.parse(
+  await readFile(join(repoRoot, "site", "generated", "release-ledger.json"), "utf8"),
+);
+const activeVersion = `${ledgerRaw.currentVersion.major}.${ledgerRaw.currentVersion.minor}.${ledgerRaw.currentVersion.patch}`;
+const activeEpoch = String(ledgerRaw.releaseEpoch || 1);
+
 const dirArgIdx = process.argv.indexOf("--dir");
 let releaseDir = dirArgIdx !== -1 ? resolve(process.argv[dirArgIdx + 1]) : null;
 let cleanupTmp = false;
@@ -66,9 +72,9 @@ if (!releaseDir) {
         "--root",
         repoRoot,
         "--version",
-        "0.1.0",
+        activeVersion,
         "--epoch",
-        "1",
+        activeEpoch,
         "--out",
         releaseDir,
         "--pin",
@@ -93,9 +99,9 @@ if (!releaseDir) {
         "--root",
         repoRoot,
         "--version",
-        "0.1.0",
+        activeVersion,
         "--epoch",
-        "1",
+        activeEpoch,
         "--out",
         releaseDir,
         "--pin",

@@ -1942,8 +1942,31 @@ pub fn run_cli(args: &[String]) -> Result<String, CliCommandError> {
                         diagnostic: e.to_string(),
                     }
                 }),
+                "self-host" => {
+                    let lift = ch
+                        .lift_full_workspace_into_vcs(&root, &out_dir, &version, epoch)
+                        .map_err(|e| CliCommandError::ValidationRejected {
+                            command: "release self-host".to_string(),
+                            diagnostic: e.to_string(),
+                        })?;
+                    Ok(format!(
+                        "SELF-HOST LIFTED: version={} epoch={} rust={} lex={} gov={} site={} unlifted={} uorc_bytes={} shards={} commit={}",
+                        lift.version,
+                        lift.release_epoch,
+                        lift.lifted_rust_files,
+                        lift.lifted_lex_files,
+                        lift.lifted_governance_files,
+                        lift.lifted_site_files,
+                        lift.unlifted_workspace_modules,
+                        lift.source_uorc_bytes,
+                        lift.source_shard_count,
+                        lift.source_commit_kappa
+                    ))
+                }
                 other => Err(CliCommandError::InvalidUsage {
-                    usage: format!("unknown release action `{other}` (expected pack|verify)"),
+                    usage: format!(
+                        "unknown release action `{other}` (expected pack|verify|self-host)"
+                    ),
                 }),
             }
         }

@@ -440,5 +440,36 @@ theorem{
   proof: decide{},
   axioms: []
 }
+
+definition{
+  name: selfHostedSourceLoopValid,
+  parameters: [
+    unliftedModules : Nat,
+    survivedShards : Nat,
+    minQuorumShards : Nat,
+    parentEpoch : Nat,
+    childEpoch : Nat,
+    prevKappaBound : Bool,
+    ratchetApplied : Bool,
+    gatesPassed : Bool
+  ],
+  result: Bool,
+  body: (((unliftedModules =? 0) && (minQuorumShards <=? survivedShards)) && (((parentEpoch + 1) <=? childEpoch) && (prevKappaBound && (ratchetApplied && gatesPassed))))
+}
+
+definition{
+  name: selfHostedSourceLoopDirect,
+  parameters: [],
+  result: Bool,
+  body: ((selfHostedSourceLoopValid 0 (Subsystems::sFour) (Subsystems::sFour) (Subsystems::sFour) (Subsystems::sFive) true true true) && ((not (selfHostedSourceLoopValid 1 (Subsystems::sFour) (Subsystems::sFour) (Subsystems::sFour) (Subsystems::sFive) true true true)) && ((not (selfHostedSourceLoopValid 0 (Subsystems::sThree) (Subsystems::sFour) (Subsystems::sFour) (Subsystems::sFive) true true true)) && ((not (selfHostedSourceLoopValid 0 (Subsystems::sFour) (Subsystems::sFour) (Subsystems::sFive) (Subsystems::sFive) true true true)) && (not (selfHostedSourceLoopValid 0 (Subsystems::sFour) (Subsystems::sFour) (Subsystems::sFour) (Subsystems::sFive) true false true))))))
+}
+
+theorem{
+  name: selfHostedSourceLoopVerified,
+  parameters: [],
+  statement: ((selfHostedSourceLoopDirect) = true),
+  proof: decide{},
+  axioms: []
+}
 \end{semanticmodule}
 \end{lexlean}

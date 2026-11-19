@@ -287,7 +287,15 @@ export async function bootBlankFrame() {
     $("frame-mount").replaceChildren(iframe);
     $("frame-mount").hidden = false;
     if (params.get("embed") !== "shell") $("frame-shell").classList.add("compact");
-    setStatus(`Mounted Verdant v${capsule.manifest.version} via Stitch Virtual FS`, `${swRes.mountedFiles} verified files · kappa ${capsule.capsuleSha256Hex.slice(0, 16)}… · /${route}`);
+    let govBadge = "";
+    try {
+      const kpiEntry = capsule.files.find((f) => f.path === "generated/roadmap-kpi-report.json");
+      if (kpiEntry) {
+        const kpi = JSON.parse(new TextDecoder().decode(kpiEntry.bytes));
+        govBadge = ` · ${kpi.totalManagers} Managers · ${kpi.kpiPassedCount}/${kpi.kpiTotalCount} KPIs`;
+      }
+    } catch {}
+    setStatus(`Mounted Verdant v${capsule.manifest.version} via Stitch Virtual FS`, `${swRes.mountedFiles} verified files${govBadge} · kappa ${capsule.capsuleSha256Hex.slice(0, 16)}… · /${route}`);
     window.__VERDANT_BLANK_FRAME__ = { ...window.__VERDANT_BLANK_FRAME__, status: "mounted", version: capsule.manifest.version, capsuleSha256Hex: capsule.capsuleSha256Hex, mountedFiles: swRes.mountedFiles, targetRoute: route, ...meta };
   }
 

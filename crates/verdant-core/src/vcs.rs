@@ -280,14 +280,41 @@ impl VerdantVcs {
         Ok(order)
     }
 
-    /// Serializes the entire [`VerdantVcs`] repository into a SHA-256-sealed `.uorc` capsule.
+    /// Serializes the entire [`VerdantVcs`] repository into a compact zero-JSON-bloat binary
+    /// frame wrapped in a SHA-256-sealed `.uorc` capsule.
     #[cfg(feature = "uorc-streaming")]
     pub fn encode_uorc_capsule(&self) -> Result<Vec<u8>, StitchCustodyError> {
-        let json =
-            serde_json::to_vec(self).map_err(|e| StitchCustodyError::PayloadDigestMismatch {
-                detail: format!("serialize VerdantVcs: {e}"),
+        let blob_index: Vec<(&str, usize)> = self
+            .blobs
+            .iter()
+            .map(|(k, b)| (k.as_str(), b.payload.len()))
+            .collect();
+        let meta = serde_json::json!({
+            "commits": self.commits,
+            "refs": self.refs,
+            "blobIndex": blob_index,
+        });
+        let meta_bytes =
+            serde_json::to_vec(&meta).map_err(|e| StitchCustodyError::PayloadDigestMismatch {
+                detail: format!("serialize VerdantVcs metadata: {e}"),
             })?;
-        Ok(crate::streaming::compress_uorc_portable(&json))
+        let meta_len = u32::try_from(meta_bytes.len()).map_err(|_| {
+            StitchCustodyError::PayloadDigestMismatch {
+                detail: "VerdantVcs metadata exceeds u32".to_string(),
+            }
+        })?;
+        let total_blob_bytes: usize = self.blobs.values().map(|b| b.payload.len()).sum();
+        let magic: &[u8; 1 << (1 + 1 + 1 + 1)] = b"VDNT_VCS_BIN_V1\0";
+        let u32_len = 1usize + 1usize + 1usize + 1usize;
+        let mut framed =
+            Vec::with_capacity(magic.len() + u32_len + meta_bytes.len() + total_blob_bytes);
+        framed.extend_from_slice(magic);
+        framed.extend_from_slice(&meta_len.to_le_bytes());
+        framed.extend_from_slice(&meta_bytes);
+        for blob in self.blobs.values() {
+            framed.extend_from_slice(&blob.payload);
+        }
+        Ok(crate::streaming::compress_uorc_portable(&framed))
     }
 
     /// Restores and verifies a [`VerdantVcs`] repository from a `.uorc` capsule.
@@ -298,11 +325,70 @@ impl VerdantVcs {
                 detail: format!("decode VerdantVcs .uorc capsule: {e}"),
             }
         })?;
-        let vcs: Self = serde_json::from_slice(&raw).map_err(|e| {
-            StitchCustodyError::PayloadDigestMismatch {
-                detail: format!("parse VerdantVcs JSON: {e}"),
+        let magic: &[u8; 1 << (1 + 1 + 1 + 1)] = b"VDNT_VCS_BIN_V1\0";
+        let u32_len = 1usize + 1usize + 1usize + 1usize;
+        let header_len = magic.len() + u32_len;
+        let vcs = if raw.len() >= header_len && &raw[..magic.len()] == magic {
+            let mut len_buf = [0u8; 1 + 1 + 1 + 1];
+            len_buf.copy_from_slice(&raw[magic.len()..header_len]);
+            let meta_len = u32::from_le_bytes(len_buf) as usize;
+            let body_start = header_len.saturating_add(meta_len);
+            if body_start > raw.len() {
+                return Err(StitchCustodyError::PayloadDigestMismatch {
+                    detail: "truncated VerdantVcs binary metadata".to_string(),
+                });
             }
-        })?;
+            let meta: serde_json::Value = serde_json::from_slice(&raw[header_len..body_start])
+                .map_err(|e| StitchCustodyError::PayloadDigestMismatch {
+                    detail: format!("parse VerdantVcs metadata JSON: {e}"),
+                })?;
+            let commits: BTreeMap<String, VerdantVcsCommit> = serde_json::from_value(
+                meta.get("commits").cloned().unwrap_or_default(),
+            )
+            .map_err(|e| StitchCustodyError::PayloadDigestMismatch {
+                detail: format!("parse VerdantVcs commits: {e}"),
+            })?;
+            let refs: BTreeMap<String, String> = serde_json::from_value(
+                meta.get("refs").cloned().unwrap_or_default(),
+            )
+            .map_err(|e| StitchCustodyError::PayloadDigestMismatch {
+                detail: format!("parse VerdantVcs refs: {e}"),
+            })?;
+            let blob_index: Vec<(String, usize)> =
+                serde_json::from_value(meta.get("blobIndex").cloned().unwrap_or_default())
+                    .map_err(|e| StitchCustodyError::PayloadDigestMismatch {
+                        detail: format!("parse VerdantVcs blobIndex: {e}"),
+                    })?;
+            let mut blobs = BTreeMap::new();
+            let mut cursor = body_start;
+            for (digest, byte_len) in blob_index {
+                let end = cursor.saturating_add(byte_len);
+                if end > raw.len() {
+                    return Err(StitchCustodyError::PayloadDigestMismatch {
+                        detail: format!("truncated VerdantVcs blob `{digest}`"),
+                    });
+                }
+                let payload = raw[cursor..end].to_vec();
+                cursor = end;
+                blobs.insert(
+                    digest.clone(),
+                    VerdantVcsBlob {
+                        blob_sha256: digest,
+                        byte_len,
+                        payload,
+                    },
+                );
+            }
+            Self {
+                blobs,
+                commits,
+                refs,
+            }
+        } else {
+            serde_json::from_slice(&raw).map_err(|e| StitchCustodyError::PayloadDigestMismatch {
+                detail: format!("parse VerdantVcs JSON: {e}"),
+            })?
+        };
         for head in vcs.refs.values() {
             let _ = vcs.verify_acyclic_history(head)?;
             let _ = vcs.checkout_commit(head)?;
