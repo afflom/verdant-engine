@@ -85,7 +85,8 @@ struct VsOut {
 
 @vertex fn vs_uhd_pbr(in: VsIn) -> VsOut {
   var out: VsOut;
-  out.clip_pos = u_scene.mvp * vec4<f32>(in.pos, 1.0);
+  let clip = u_scene.mvp * vec4<f32>(in.pos, 1.0);
+  out.clip_pos = vec4<f32>(clip.x, clip.y, clip.z * 0.5 + clip.w * 0.5, clip.w);
   out.world_pos = in.pos;
   out.world_norm = normalize(in.norm);
   out.vert_col = in.col;
@@ -301,6 +302,9 @@ export async function createWebGpuRenderer(canvas) {
     const sMesh = makeMeshSlot();
     const dMesh = makeMeshSlot();
     let rScale = 1;
+    let casSharp = 0.42;
+    let deviceLost = false;
+    device.lost?.then?.(() => { deviceLost = true; });
     let depthTex = null, drsColorTex = null, casBindGroup = null, rtW = 0, rtH = 0;
     const ensureTargets = (w, h, needDrs) => {
       if (depthTex && rtW === w && rtH === h && (!needDrs || drsColorTex)) return;
@@ -360,7 +364,12 @@ export async function createWebGpuRenderer(canvas) {
       computeCullReady: Boolean(cullPipeline),
       maxTextureSize: probe.maxTextureDimension2D,
       maxAnisotropy: 8,
-      setRenderScale(pm) { rScale = Math.max(0.65, Math.min(1, (pm || 1000) / 1000)); },
+      setRenderScale(pm, casPm = null) {
+        rScale = Math.max(0.5, Math.min(1, (pm || 1000) / 1000));
+        if (typeof casPm === "number" && Number.isFinite(casPm)) {
+          casSharp = Math.max(0.1, Math.min(0.85, casPm / 1000));
+        }
+      },
       setCsmSplits: noop,
       getUploadTelemetry() {
         return {
@@ -424,6 +433,7 @@ export async function createWebGpuRenderer(canvas) {
       },
       blitTensorRgba: noop,
       render(mvp, eye, lodSpec, timeSec) {
+        if (deviceLost) return;
         const w = canvas.width | 0, h = canvas.height | 0;
         if (w <= 0 || h <= 0 || (!sMesh.idxCount && !dMesh.idxCount)) return;
         const useCas = rScale < 0.99;
@@ -433,7 +443,7 @@ export async function createWebGpuRenderer(canvas) {
         const sky = lodSpec?.sky ?? [0.08, 0.1, 0.14];
         uData.set(mvp, 0);
         uData[16] = eye[0]; uData[17] = eye[1]; uData[18] = eye[2]; uData[19] = timeSec || 0;
-        uData[20] = 0.54; uData[21] = 0.78; uData[22] = 0.31; uData[23] = useCas ? 0.42 : 0.15;
+        uData[20] = 0.54; uData[21] = 0.78; uData[22] = 0.31; uData[23] = useCas ? casSharp : 0.15;
         uData[24] = sky[0]; uData[25] = sky[1]; uData[26] = sky[2]; uData[27] = hasTex;
         uData[28] = hasMr; uData[29] = hasNorm; uData[30] = hasEmis; uData[31] = hasEnv;
         device.queue.writeBuffer(uBuf, 0, uData);
@@ -463,7 +473,7 @@ export async function createWebGpuRenderer(canvas) {
         pass.end();
 
         if (useCas && casBindGroup) {
-          casData[0] = 1 / rw; casData[1] = 1 / rh; casData[2] = 0.5; casData[3] = 0;
+          casData[0] = 1 / rw; casData[1] = 1 / rh; casData[2] = casSharp; casData[3] = 0;
           device.queue.writeBuffer(casUBuf, 0, casData);
           const casPass = enc.beginRenderPass({
             colorAttachments: [{ view: swapView, loadOp: "clear", storeOp: "store" }],

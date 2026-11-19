@@ -95,7 +95,7 @@
     },
     {
       "basisPrime": 67,
-      "kappaHex": "f7a8c0b6772811869a36091f7d309c5522d5993c4a34c0c0056181a25ff004aa",
+      "kappaHex": "66ef28f9fa4045dd4d05b7128732ce3842e4f943ee47a5dc701f675e2e1709ec",
       "spec": {
         "almPhases": [
           "operation",
@@ -117,10 +117,13 @@
         "governingAuthorities": [
           "AUTH-KHRONOS-GLTF2",
           "AUTH-ISO-42010-VIEWPOINTS",
-          "AUTH-VSM-CYBERNETICS"
+          "AUTH-VSM-CYBERNETICS",
+          "AUTH-ISO-25010-TENSOR-SCALING"
         ],
         "managerId": "mgr-runtime-stage",
-        "ownedAuthorities": [],
+        "ownedAuthorities": [
+          "AUTH-ISO-25010-TENSOR-SCALING"
+        ],
         "ownedCrates": [
           "verdant-core",
           "verdant-tensor",
@@ -135,7 +138,8 @@
           "site/scene-webgpu-renderer.mjs",
           "site/engine-worker.mjs",
           "site/audio-worklet.mjs",
-          "site/stitch-mesh.mjs"
+          "site/stitch-mesh.mjs",
+          "site/generated/tensor-scaling-contract.json"
         ],
         "ownedObserverParts": [
           "runtime-frameworks",
@@ -161,7 +165,7 @@
     },
     {
       "basisPrime": 71,
-      "kappaHex": "7025771b8894829155a461818b0920a893336a287257dd0252e3f5301cb1bd24",
+      "kappaHex": "f619a26042a7bb3c7e5c5644fca01aeacd24a38c09224d01d6e70b32807c7251",
       "spec": {
         "almPhases": [
           "conception",
@@ -176,7 +180,7 @@
           "Seal and publish Verdant Apps as .uorc archives on Prism's Stitch network"
         ],
         "differentiationRequirements": [
-          "Single unified search input; focused 3-pane ALM IDE with zero internal engine test-harness chrome."
+          "Single unified search input; focused 3-pane ALM IDE with zero internal engine test-harness chrome and zero manual video-resolution toggles (ISO 25010 DynamicWorkloadGovernor scales automatically)."
         ],
         "forbiddenCrossContamination": [
           "Verify UHD 4K Envelope",
@@ -187,13 +191,16 @@
           "8 Observer Parts",
           "Atelier Boot",
           "DOM-SUNSPIRE-HARBOR",
-          "CodedSlmDirector"
+          "CodedSlmDirector",
+          "id=\"studio-lod-btn\"",
+          "data-wiz-lod"
         ],
         "governingAuthorities": [
           "AUTH-ISO-42010-VIEWPOINTS",
           "AUTH-ISO-24617-DMN",
           "AUTH-W3C-SOSA-PROVO",
-          "AUTH-KHRONOS-GLTF2"
+          "AUTH-KHRONOS-GLTF2",
+          "AUTH-ISO-25010-TENSOR-SCALING"
         ],
         "managerId": "mgr-studio-alm",
         "ownedAuthorities": [
@@ -216,6 +223,7 @@
         "requiredElements": [
           "id=\"studio-journey-host\"",
           "id=\"studio-canvas\"",
+          "id=\"studio-scale-badge\"",
           "id=\"studio-export-uorc-btn\"",
           "id=\"stitch-publish-btn\"",
           "id=\"disc-search-input\"",

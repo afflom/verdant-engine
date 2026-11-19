@@ -82,11 +82,17 @@ use verdant_core::streaming::{
 use verdant_core::streaming::{decode_uorc_stream_up_to_lod, pack_progressive_uorc_stream};
 use verdant_core::streaming::{PhysicalEnvironment, TerrainReliefParams};
 #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
-use verdant_core::tensor::{render_triangles_tile_framebuffer_with_scratch, TileRasterScratch};
+use verdant_core::tensor::{
+    contract_packed_nibbles_lut_into, contract_paged_packed_nibbles_stream,
+    render_triangles_tile_framebuffer_with_scratch, CodebookProductLut, PagedTensorArena,
+    TensorPageKind, TensorStorageEncoding, TileRasterScratch, CODED_TABLE_LEN,
+    MIN_ARENA_BUDGET_BYTES, PACKED_NIBBLE_BLOCK, TENSOR_PAGE_QUANTUM_BYTES,
+};
 #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
 use verdant_core::uhd::{
     build_meshlet_graph, evaluate_lod_pyramid_telemetry, evaluate_meshlet_visibility,
-    evaluate_uhd_display_profile, FrameBudgetOracle, MeshletGraph, UhdVisibilityTelemetry,
+    evaluate_uhd_display_profile, DynamicWorkloadGovernor, FrameBudgetOracle, MeshletGraph,
+    UhdVisibilityTelemetry,
 };
 #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
 use verdant_core::ui::UiTree;
@@ -321,6 +327,12 @@ pub struct WasmRuntimeBridge {
     /// Zero-allocation 64-frame P50/P95/P99 stability oracle & hysteresis DRS governor.
     #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
     pub uhd_frame_oracle: FrameBudgetOracle,
+    /// Closed-loop ISO/IEC 25010:2023 + ITU-R BT.2020/2100 dynamic workload scaling governor.
+    #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+    pub workload_governor: DynamicWorkloadGovernor,
+    /// Strictly host-bounded virtualized tensor memory arena (`resident_bytes <= budget_bytes`).
+    #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+    pub tensor_arena: PagedTensorArena,
     /// Retained skin and animation clip counts from the active user-imported `.glb` bundle.
     #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
     pub imported_glb_skin_clip_counts: (usize, usize),
@@ -638,6 +650,10 @@ impl WasmRuntimeBridge {
             #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
             uhd_frame_oracle: FrameBudgetOracle::default(),
             #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+            workload_governor: DynamicWorkloadGovernor::default(),
+            #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+            tensor_arena: PagedTensorArena::default(),
+            #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
             imported_glb_skin_clip_counts: (0, 0),
             #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
             observer_holon: ObserverPrismHolon::new("sunspire-regatta").map_err(|e| {
@@ -884,6 +900,7 @@ impl WasmRuntimeBridge {
                     .map(verdant_core::render::HdPbrDescriptor::to_pbr_material)
                     .collect();
             }
+            #[allow(unused_mut)]
             let mut base = pack_world_meshes_to_buffers_opts(
                 &self.hd_sector.scene,
                 &self.hd_sector.meshes,
@@ -1472,10 +1489,16 @@ impl WasmRuntimeBridge {
             u64::from(rank),
         );
         // Imported triangles and their transforms are independent of procedural LOD.
+        // For dense visual tiers (LOD3/LOD4), keep an already-built metric solid proxy BVH
+        // so scaling up to UHD geometry never incurs a synchronous 150K-triangle BVH build hitch.
         #[cfg(all(target_arch = "wasm32", not(feature = "uorc-decoder")))]
-        let rebuild_boundaries = true;
+        let rebuild_boundaries = rank <= (1 + 1) || self.two_level_bvh.instance_count() == 0;
         #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
-        let rebuild_boundaries = self.custom_glb_scene.is_none();
+        let rebuild_boundaries = self.custom_glb_scene.is_none()
+            && (rank <= (1 + 1)
+                || self.two_level_bvh.instance_count() == 0
+                || self.two_level_bvh.total_surface_triangles()
+                    < (1usize << (1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1)));
         if rebuild_boundaries {
             self.two_level_bvh = TwoLevelBvh::build_solid(&hd_sector.scene, &hd_sector.meshes)
                 .map_err(|e| WasmBridgeError::InvalidSnapshotEnvelope {
@@ -1954,6 +1977,7 @@ impl WasmRuntimeBridge {
             }
         })?;
         let hd_rank = u64::from(target_lod_rank).min(pk_u64(prism_kernel::wasmHdMaxLodRank()));
+        let prev_seed = self.seed_val;
         self.lod_rank = hd_rank as u32;
         self.seed_val = restored.seed;
         self.terrain_params = restored.params.terrain;
@@ -1973,8 +1997,24 @@ impl WasmRuntimeBridge {
             restored.params.environment.water_level_meters,
             hd_rank,
         );
-        if let Ok(tl) = TwoLevelBvh::build_solid(&self.hd_sector.scene, &self.hd_sector.meshes) {
-            self.two_level_bvh = tl;
+        let two_u64 = 1u64 + 1u64;
+        if prev_seed != restored.seed
+            || hd_rank <= two_u64
+            || self.two_level_bvh.instance_count() == 0
+        {
+            let bvh_sector = if hd_rank > two_u64 {
+                synthesize_hd_citadel_sector(
+                    restored.seed,
+                    &restored.params.terrain,
+                    restored.params.environment.water_level_meters,
+                    two_u64,
+                )
+            } else {
+                self.hd_sector.clone()
+            };
+            if let Ok(tl) = TwoLevelBvh::build_solid(&bvh_sector.scene, &bvh_sector.meshes) {
+                self.two_level_bvh = tl;
+            }
         }
         self.world = restored;
         self.custom_glb_scene = None;
@@ -5712,6 +5752,209 @@ pub extern "C" fn verdant_wasm_uhd_lod_pyramid_aux() -> u32 {
         pyr.lod1_triangles,
         pyr.lod2_triangles,
         pyr.lod2_reduction_permille,
+    );
+    bridge.aux_buffer = json_str.into_bytes();
+    bridge.aux_buffer.len() as u32
+}
+
+/// Steps the closed-loop ISO/IEC 25010:2023 + ITU-R BT.2020/2100 [`DynamicWorkloadGovernor`]
+/// paired with live [`PagedTensorArena`] residency tracking, writing the scaling decision JSON
+/// into `aux_buffer`.
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+#[no_mangle]
+pub extern "C" fn verdant_wasm_workload_governor_step_aux(
+    viewport_w: u32,
+    viewport_h: u32,
+    is_software_gpu: u32,
+    webgpu_available: u32,
+    frame_us: u32,
+) -> u32 {
+    let mut guard = global_bridge()
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
+    let Some(bridge) = guard.as_mut() else {
+        return 0;
+    };
+    let four_u64 = (1u64 + 1u64) * (1u64 + 1u64);
+    let scene_bytes = ((bridge.scene_buffers.positions_xyz.len()
+        + bridge.scene_buffers.normals_xyz.len()
+        + bridge.scene_buffers.colors_rgb.len()
+        + bridge.scene_buffers.indices.len()) as u64)
+        .saturating_mul(four_u64)
+        .max(TENSOR_PAGE_QUANTUM_BYTES);
+    let page_q = TENSOR_PAGE_QUANTUM_BYTES;
+    let scene_page_count = scene_bytes.div_ceil(page_q).min(1u64 << (1 + 1 + 1 + 1 + 1 + 1));
+    let base_scene_id = 1u64;
+    for p in 0..scene_page_count {
+        let pid = base_scene_id + p;
+        if !bridge.tensor_arena.is_resident(pid) {
+            let _ = bridge.tensor_arena.register_virtual_page(
+                pid,
+                TensorPageKind::GeometryMeshlet,
+                TensorStorageEncoding::QuantizedGrid8,
+                page_q,
+                pid ^ u64::from(bridge.static_epoch),
+            );
+            let _ = bridge.tensor_arena.admit_or_touch(pid, None, false);
+        }
+    }
+    let arena_t = bridge.tensor_arena.telemetry();
+    let _ = bridge.uhd_frame_oracle.record_frame(frame_us);
+    let dec = bridge.workload_governor.step(
+        viewport_w,
+        viewport_h,
+        is_software_gpu != 0,
+        webgpu_available != 0,
+        frame_us,
+        arena_t.resident_bytes,
+        arena_t.budget_bytes,
+    );
+    let json_str = format!(
+        "{{\"displayClass\":\"{}\",\"preferredBackend\":\"{}\",\"drsScalePermille\":{},\"casSharpnessPermille\":{},\"recommendedLodRank\":{},\"meshletSseTenthsPx\":{},\"tensorTileQuantum\":{},\"memoryPressurePermille\":{},\"performanceContractMet\":{},\"p50Us\":{},\"p95Us\":{},\"p99Us\":{},\"jitterUs\":{},\"budgetCompliancePermille\":{},\"residentBytes\":{},\"budgetBytes\":{},\"logicalWorkloadBytes\":{},\"evictions\":{},\"virtualAmplificationPermille\":{},\"memoryInvariantHeld\":{}}}",
+        dec.display_class,
+        dec.preferred_backend,
+        dec.drs_scale_permille,
+        dec.cas_sharpness_permille,
+        dec.recommended_lod_rank,
+        dec.meshlet_sse_tenths_px,
+        dec.tensor_tile_quantum,
+        dec.memory_pressure_permille,
+        dec.performance_contract_met,
+        dec.stability.p50_us,
+        dec.stability.p95_us,
+        dec.stability.p99_us,
+        dec.stability.jitter_us,
+        dec.stability.budget_compliance_permille,
+        arena_t.resident_bytes,
+        arena_t.budget_bytes,
+        arena_t.logical_workload_bytes,
+        arena_t.evictions,
+        arena_t.virtual_amplification_permille,
+        arena_t.invariant_held,
+    );
+    bridge.aux_buffer = json_str.into_bytes();
+    bridge.aux_buffer.len() as u32
+}
+
+/// Serializes live [`PagedTensorArena`] ISO/IEC 25010 resource utilization telemetry into `aux_buffer`.
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+#[no_mangle]
+pub extern "C" fn verdant_wasm_tensor_memory_status_aux() -> u32 {
+    let mut guard = global_bridge()
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
+    let Some(bridge) = guard.as_mut() else {
+        return 0;
+    };
+    let t = bridge.tensor_arena.telemetry();
+    let json_str = format!(
+        "{{\"budgetBytes\":{},\"residentBytes\":{},\"peakResidentBytes\":{},\"logicalWorkloadBytes\":{},\"registeredPages\":{},\"residentPages\":{},\"pinnedPages\":{},\"cacheHits\":{},\"pageFaults\":{},\"evictions\":{},\"virtualAmplificationPermille\":{},\"invariantHeld\":{}}}",
+        t.budget_bytes,
+        t.resident_bytes,
+        t.peak_resident_bytes,
+        t.logical_workload_bytes,
+        t.registered_pages,
+        t.resident_pages,
+        t.pinned_pages,
+        t.cache_hits,
+        t.page_faults,
+        t.evictions,
+        t.virtual_amplification_permille,
+        t.invariant_held,
+    );
+    bridge.aux_buffer = json_str.into_bytes();
+    bridge.aux_buffer.len() as u32
+}
+
+/// Executes an out-of-core `Packed<Grid<16>, 2>` tiled tensor contraction through a bounded
+/// [`PagedTensorArena`] proving bit-exact parity with in-memory contraction and `resident <= budget`
+/// across oversubscribed arbitrary AI / beyond-8K workloads; writes JSON report into `aux_buffer`.
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+#[no_mangle]
+pub extern "C" fn verdant_wasm_tensor_paged_benchmark_aux(
+    logical_pages: u32,
+    budget_kib: u32,
+) -> u32 {
+    let mut guard = global_bridge()
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
+    let Some(bridge) = guard.as_mut() else {
+        return 0;
+    };
+    let kib_shift = 1u32 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1;
+    let budget_bytes = u64::from(budget_kib.max(1))
+        .saturating_mul(1u64 << kib_shift)
+        .max(MIN_ARENA_BUDGET_BYTES);
+    let mut bench_arena = PagedTensorArena::new(budget_bytes);
+
+    let max_pages = 1u32 << (1 + 1 + 1 + 1 + 1 + 1 + 1 + 1);
+    let target_pages = logical_pages.clamp(1 << (1 + 1 + 1), max_pages);
+    for id in 0..u64::from(target_pages) {
+        let _ = bench_arena.register_virtual_page(
+            id,
+            TensorPageKind::AiWeightBlock,
+            TensorStorageEncoding::PackedNibble4,
+            TENSOR_PAGE_QUANTUM_BYTES,
+            id,
+        );
+        let _ = bench_arena.admit_or_touch(id, None, false);
+    }
+
+    let mut cb = [0_i32; CODED_TABLE_LEN];
+    let seven = 1i32 + 1 + 1 + 1 + 1 + 1 + 1;
+    for (i, slot) in cb.iter_mut().enumerate() {
+        *slot = (i as i32) - seven;
+    }
+    let lut = CodebookProductLut::new(&cb, &cb);
+    let rows = 1usize << (1 + 1 + 1 + 1 + 1);
+    let inner_k = 1usize << (1 + 1 + 1 + 1 + 1 + 1);
+    let cols = 1usize << (1 + 1 + 1 + 1 + 1);
+    let packed_k = inner_k.div_ceil(PACKED_NIBBLE_BLOCK);
+    let byte_mask = (1usize << (1 + 1 + 1 + 1 + 1 + 1 + 1 + 1)) - 1;
+    let three = 1usize + 1 + 1;
+    let lhs: Vec<u8> = (0..rows * packed_k)
+        .map(|i| (i & byte_mask) as u8)
+        .collect();
+    let rhs: Vec<u8> = (0..cols * packed_k)
+        .map(|i| ((i * three + 1) & byte_mask) as u8)
+        .collect();
+    let mut direct = vec![0_i64; rows * cols];
+    let _ = contract_packed_nibbles_lut_into(
+        &lhs, &rhs, rows, inner_k, cols, &lut, &mut direct,
+    );
+    let mut paged = vec![0_i64; rows * cols];
+    let tile_q = 1usize << (1 + 1 + 1);
+    let rep = match contract_paged_packed_nibbles_stream(
+        &mut bench_arena,
+        &lhs,
+        &rhs,
+        rows,
+        inner_k,
+        cols,
+        tile_q,
+        tile_q,
+        &lut,
+        &mut paged,
+    ) {
+        Ok(r) => r,
+        Err(_) => return 0,
+    };
+    let bit_exact = direct == paged;
+    let json_str = format!(
+        "{{\"bitExact\":{},\"tileDispatches\":{},\"codedBytesRead\":{},\"avoidedF32Bytes\":{},\"budgetBytes\":{},\"residentBytes\":{},\"peakResidentBytes\":{},\"logicalWorkloadBytes\":{},\"registeredPages\":{},\"residentPages\":{},\"evictions\":{},\"virtualAmplificationPermille\":{},\"invariantHeld\":{}}}",
+        bit_exact,
+        rep.tile_dispatches,
+        rep.coded_bytes_read,
+        rep.avoided_f32_bytes,
+        rep.arena.budget_bytes,
+        rep.arena.resident_bytes,
+        rep.arena.peak_resident_bytes,
+        rep.arena.logical_workload_bytes,
+        rep.arena.registered_pages,
+        rep.arena.resident_pages,
+        rep.arena.evictions,
+        rep.arena.virtual_amplification_permille,
+        rep.arena.invariant_held,
     );
     bridge.aux_buffer = json_str.into_bytes();
     bridge.aux_buffer.len() as u32

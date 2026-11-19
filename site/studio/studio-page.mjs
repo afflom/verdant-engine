@@ -77,7 +77,7 @@ const hudProjectEl = $("studio-hud-project");
 const hudMetricsEl = $("studio-hud-metrics");
 const simBtn = $("studio-sim-btn");
 const camBtn = $("studio-cam-btn");
-const lodBtn = $("studio-lod-btn");
+const scaleBadgeEl = $("studio-scale-badge");
 const audioBtn = $("studio-audio-btn");
 const importBtn = $("studio-import-btn");
 const stitchBtn = $("studio-stitch-btn");
@@ -641,12 +641,25 @@ function currentLodSpec() {
   return activeSky && activeFog ? { ...base, sky: activeSky, fog: activeFog } : base;
 }
 
+let lastScalingTelemetry = null;
+let activeRenderBackend = "webgl2";
+
 function syncHud() {
   if (hudProjectEl) hudProjectEl.textContent = activeProject;
+  const sc = lastScalingTelemetry;
+  const drsPct = sc ? Math.round((sc.drsScalePermille || 1000) / 10) : 100;
+  const tier = sc?.displayClass || "Auto-Scale";
+  const resMb = sc ? ((sc.residentBytes || 0) / 1048576).toFixed(1) : null;
+  const capMb = sc ? ((sc.budgetBytes || 0) / 1048576).toFixed(0) : null;
+  if (scaleBadgeEl) {
+    const backendLabel = activeRenderBackend === "webgpu" ? "WebGPU" : activeRenderBackend === "tile-16x16" ? "Tile" : "WebGL2";
+    const memPart = resMb && capMb ? ` · Tensor ${resMb}/${capMb} MB` : "";
+    scaleBadgeEl.textContent = `Auto · ${backendLabel} · DRS ${drsPct}%${memPart}`;
+    scaleBadgeEl.dataset.contract = sc && sc.performanceContractMet === false ? "adapting" : "met";
+  }
   if (hudMetricsEl) {
-    const detailNames = ["Draft", "Medium", "High", "Studio HD", "Ultra 4K"];
     const triStr = lTris > 0 ? ` · ${lTris.toLocaleString()} tris` : "";
-    hudMetricsEl.textContent = `${detailNames[lodIdx] || LODS[lodIdx].short}${triStr}`;
+    hudMetricsEl.textContent = `${tier} · DRS ${drsPct}%${triStr}`;
   }
   if (manAcousticsEl) manAcousticsEl.textContent = `RT60 ${lastRt60Ms}ms · Clear ${lClr}mm`;
   const pack = domainPacks[activeDomainIdx];
@@ -684,6 +697,13 @@ try {
         workerFramesInFlight = Math.max(0, workerFramesInFlight - 1);
         lTris = msg.tris || lTris;
         lClr = msg.camClearanceMm ?? lClr;
+        if (msg.backend) activeRenderBackend = msg.backend;
+        if (msg.workloadScaling) {
+          lastScalingTelemetry = msg.workloadScaling;
+          if (typeof msg.workloadScaling.recommendedLodRank === "number") {
+            lodIdx = Math.max(0, Math.min(LODS.length - 1, msg.workloadScaling.recommendedLodRank | 0));
+          }
+        }
         if (Array.isArray(msg.eye)) sEye = msg.eye;
         if (Array.isArray(msg.lookTarget)) sTgt = msg.lookTarget;
         pushStudioTelemetry(msg);
@@ -713,7 +733,7 @@ const callWorker = (kind, payload = {}, transfer = []) =>
 
 function pxDims() {
   if (!canvas) return { w: 640, h: 360 };
-  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const dpr = Math.min(window.devicePixelRatio || 1, 4);
   return {
     w: Math.max(1, Math.floor((canvas.clientWidth || 640) * dpr)),
     h: Math.max(1, Math.floor((canvas.clientHeight || 360) * dpr)),
@@ -829,18 +849,11 @@ async function streamLod(targetRank) {
   const clamped = Math.max(0, Math.min(LODS.length - 1, targetRank | 0));
   lodIdx = clamped;
   const lod = currentLodSpec();
-  if (lodBtn) {
-    const detailNames = ["Draft", "Medium", "High", "Studio HD", "Ultra 4K"];
-    lodBtn.textContent = `Detail: ${detailNames[lod.rank] || lod.short}`;
-  }
-  document.querySelectorAll("[data-wiz-lod]").forEach((b) => {
-    b.classList.toggle("primary", Number(b.dataset.wizLod) === clamped);
-  });
   const r = await callWorker("stream-uorc", { targetRank: clamped, lod, simClockSec });
   if (r?.tris) lTris = r.tris;
   await syncFallbackBuffers();
   syncHud();
-  chip(statusEl, `Streamed ${lod.label} (${lTris} tris · Σ=${r?.codedChecksum ?? 320})`);
+  chip(statusEl, `Dynamic workload scaled (${lTris.toLocaleString()} tris · Σ=${r?.codedChecksum ?? 320})`);
   requestRender();
   return r;
 }
@@ -2066,13 +2079,6 @@ async function runFullPrismQualityGate() {
 document.querySelectorAll("[data-wiz-step]").forEach((btn) => {
   btn.addEventListener("click", () => setWizardStep(Number(btn.dataset.wizStep)));
 });
-document.querySelectorAll("[data-wiz-lod]").forEach((btn) => {
-  btn.addEventListener("click", async () => {
-    const rank = Number(btn.dataset.wizLod);
-    await streamLod(rank);
-    if (wizComposeLog) wizComposeLog.textContent = `Streamed ${LODS[rank].label} · ${lTris.toLocaleString()} tris`;
-  });
-});
 document.querySelectorAll("[data-wiz-cam]").forEach((btn) => {
   btn.addEventListener("click", async () => {
     await cycleCameraMode(btn.dataset.wizCam);
@@ -2195,7 +2201,6 @@ canvas?.addEventListener("wheel", (e) => {
 
 simBtn?.addEventListener("click", () => setSimLive(!simLive));
 camBtn?.addEventListener("click", () => cycleCameraMode());
-lodBtn?.addEventListener("click", () => streamLod((lodIdx + 1) % LODS.length));
 audioBtn?.addEventListener("click", toggleGuardedAudio);
 importBtn?.addEventListener("click", () => glbFileIn?.click());
 stitchBtn?.addEventListener("click", openStitchGuarded);
@@ -2270,9 +2275,10 @@ renderContentTypePills();
   if (worker && canvas && typeof canvas.transferControlToOffscreen === "function") {
     try {
       const oc = canvas.transferControlToOffscreen();
-      const r = await callWorker("init", { canvas: oc, width: w, height: h, lod: currentLodSpec(), hdRenderer: true }, [oc]);
+      const r = await callWorker("init", { canvas: oc, width: w, height: h, lod: currentLodSpec(), hdRenderer: true, autoScale: true }, [oc]);
       if (r?.kind === "ready") {
         offOk = true;
+        activeRenderBackend = r.backend || "webgl2";
         lTris = r.tris || lTris;
         hostMaxTex = r.maxTextureSize || 2048;
         if (r.audioSpec) Object.assign(ACOUST, r.audioSpec);

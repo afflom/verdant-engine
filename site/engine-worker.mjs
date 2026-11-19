@@ -127,6 +127,9 @@ let currentLod = null;
 let pendingCommands = 0;
 let emaFrameMicros = 8000;
 let activeInstancedCount = 0;
+let autoScaleLodEnabled = false;
+let activeMeshletSseTenths = 10;
+let lastWorkloadScaling = null;
 const slmKappaCache = new Map();
 let slmKappaHits = 0;
 const walkJournal = [];
@@ -361,20 +364,20 @@ function drawScene(eye, lookTarget, lodSpec, simClockSec, rebuildDynamic = false
     }
     renderer.uploadSplitBuffers(split.staticViews, split.dynViews, split.instViews);
     if (
-      customGlbActive &&
       split.staticViews &&
       split.staticViews.idx.length > 24576 &&
       typeof renderer.updateStaticIndices === "function" &&
       typeof host.verdant_wasm_uhd_cull_meshlets === "function" &&
       typeof host.verdant_wasm_uhd_visible_idx_ptr === "function"
     ) {
-      const ck = `${split.staticViews.epoch}:${Math.round(eye[0] * 10)},${Math.round(eye[1] * 10)},${Math.round(eye[2] * 10)}:${canvas.height}`;
+      const sseTenths = customGlbActive ? Math.max(6, activeMeshletSseTenths) : Math.max(8, activeMeshletSseTenths);
+      const ck = `${split.staticViews.epoch}:${Math.round(eye[0] * 10)},${Math.round(eye[1] * 10)},${Math.round(eye[2] * 10)}:${canvas.height}:${sseTenths}`;
       if (ck !== renderer._lastCullKey) {
         renderer._lastCullKey = ck;
         host.verdant_wasm_uhd_cull_meshlets(
           eye[0], eye[1], eye[2],
           lookTarget[0], lookTarget[1], lookTarget[2],
-          aspect, canvas.height >>> 0, 6,
+          aspect, canvas.height >>> 0, sseTenths >>> 0,
         );
         const vPtr = host.verdant_wasm_uhd_visible_idx_ptr() >>> 0;
         const vCnt = host.verdant_wasm_uhd_visible_idx_count() >>> 0;
@@ -411,13 +414,29 @@ self.onmessage = async ({ data: msg }) => {
     if (msg.kind === "init") {
       canvas = msg.canvas || null;
       currentLod = msg.lod;
+      autoScaleLodEnabled = Boolean(msg.autoScale);
       const w = Math.max(1, msg.width | 0);
       const h = Math.max(1, msg.height | 0);
       if (canvas) {
         canvas.width = w;
         canvas.height = h;
-        const rMod = msg.hdRenderer ? await import("./scene-hd-renderer.mjs") : null;
-        renderer = rMod ? await rMod.createBestRenderer(canvas) : await createBestRenderer(canvas);
+        if (msg.hdRenderer) {
+          let wgRenderer = null;
+          try {
+            const wgMod = await import("./scene-webgpu-renderer.mjs");
+            wgRenderer = await wgMod.createWebGpuRenderer(canvas);
+          } catch {
+            wgRenderer = null;
+          }
+          if (wgRenderer) {
+            renderer = wgRenderer;
+          } else {
+            const rMod = await import("./scene-hd-renderer.mjs");
+            renderer = await rMod.createBestRenderer(canvas);
+          }
+        } else {
+          renderer = await createBestRenderer(canvas);
+        }
       }
       const csmSplits = [0, 1, 2, 3].map((i) => wasm.verdant_wasm_csm_split_meters(0.25, CSM_FAR_METERS, i));
       renderer?.setCsmSplits?.(csmSplits);
@@ -662,18 +681,51 @@ self.onmessage = async ({ data: msg }) => {
       const frameMicros = Math.max(50, Math.round((performance.now() - tStart) * 1000));
       emaFrameMicros = Math.round(emaFrameMicros * 0.85 + frameMicros * 0.15);
       const govScale = sh.verdant_wasm_governor_scale_permille(emaFrameMicros >>> 0) >>> 0;
-      const oracleDrs = typeof uorcWasm?.verdant_wasm_record_frame_time_us === "function"
-        ? (uorcWasm.verdant_wasm_record_frame_time_us(frameMicros >>> 0) >>> 0)
-        : 0;
-      const scalePermille = oracleDrs > 0 ? Math.min(govScale, oracleDrs) : govScale;
-      renderer?.setRenderScale?.(scalePermille);
+      let scalePermille = govScale;
+      let casPermille = 350;
+      if (typeof uorcWasm?.verdant_wasm_workload_governor_step_aux === "function") {
+        const vw = (canvas?.width || targetW || 1280) >>> 0;
+        const vh = (canvas?.height || targetH || 720) >>> 0;
+        const isSw = renderer?.isSoftware ? 1 : 0;
+        const isWgpu = renderer?.backend === "webgpu" ? 1 : 0;
+        const gLen = uorcWasm.verdant_wasm_workload_governor_step_aux(
+          vw, vh, isSw, isWgpu, frameMicros >>> 0,
+        ) >>> 0;
+        if (gLen > 0) {
+          try {
+            const dec = JSON.parse(new TextDecoder().decode(readAuxBytes(uorcWasm)));
+            lastWorkloadScaling = dec;
+            scalePermille = Math.min(govScale, dec.drsScalePermille || govScale);
+            casPermille = dec.casSharpnessPermille || 350;
+            activeMeshletSseTenths = dec.meshletSseTenthsPx || 10;
+            if (
+              autoScaleLodEnabled &&
+              !customGlbActive &&
+              typeof dec.recommendedLodRank === "number" &&
+              dec.recommendedLodRank !== (sh.verdant_wasm_active_lod_rank() >>> 0) &&
+              uorcSceneActive
+            ) {
+              sh.verdant_wasm_set_lod_rank(dec.recommendedLodRank >>> 0);
+            }
+          } catch {
+            // Keep prior decision on parse edge.
+          }
+        }
+      } else if (typeof uorcWasm?.verdant_wasm_record_frame_time_us === "function") {
+        const oracleDrs = uorcWasm.verdant_wasm_record_frame_time_us(frameMicros >>> 0) >>> 0;
+        if (oracleDrs > 0) scalePermille = Math.min(govScale, oracleDrs);
+      }
+      renderer?.setRenderScale?.(scalePermille, casPermille);
       const upload = renderer?.getUploadTelemetry?.() || { staticBytes: 0, dynBytes: 0, instCount: activeInstancedCount };
       self.postMessage({
         kind: "telemetry",
+        backend: forceTileMode ? "tile-16x16" : (renderer?.backend ?? "webgl2"),
         tris: stats.tris,
         bvhVisible,
         frameMicros: emaFrameMicros,
         scalePermille,
+        casPermille,
+        workloadScaling: lastWorkloadScaling,
         upload,
         eye: cam.eye,
         lookTarget: cam.lookTarget,
@@ -1549,6 +1601,23 @@ self.onmessage = async ({ data: msg }) => {
         webgpuLimits: webgpuHardware
           ? { maxTextureDimension2D: webgpuHardware.maxTextureDimension2D, maxStorageBufferBindingSize: webgpuHardware.maxStorageBufferBindingSize }
           : null,
+      });
+      return;
+    }
+
+    if (msg.kind === "tensor-paged-benchmark") {
+      await ensureUorcSceneHost();
+      const pages = Math.max(8, Math.min(256, (msg.logicalPages || 64) | 0)) >>> 0;
+      const budgetKib = Math.max(256, (msg.budgetKib || 512) | 0) >>> 0;
+      const bLen = typeof uorcWasm.verdant_wasm_tensor_paged_benchmark_aux === "function"
+        ? (uorcWasm.verdant_wasm_tensor_paged_benchmark_aux(pages, budgetKib) >>> 0)
+        : 0;
+      const benchmark = bLen ? JSON.parse(new TextDecoder().decode(readAuxBytes(uorcWasm))) : null;
+      self.postMessage({
+        kind: "tensor-paged-benchmark-ready",
+        id: msg.id,
+        ok: Boolean(benchmark),
+        benchmark,
       });
       return;
     }

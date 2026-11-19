@@ -2,34 +2,36 @@
   "spec": "verdant/view-immutability-seal/1",
   "owningManager": "mgr-observer-executive",
   "managerKappaHex": "687b748fe4f5946da06fe73c6fc532de1fb57ffa7e51b7d28dbdb559ec8468f1",
-  "sealRootSha256Hex": "9b8055fd32922d887f8d3842e8a1e1c76d89d2b1b75338780ec97e72150ab1f9",
+  "sealRootSha256Hex": "2f5fab51c1d7f65c2ea14c9bb635b6faf7f54a779ff1fdeea406957f45146c6a",
   "files": [
     {
       "path": "site/card.html",
       "owningManagerId": "mgr-runtime-stage",
-      "managerKappaHex": "f7a8c0b6772811869a36091f7d309c5522d5993c4a34c0c0056181a25ff004aa",
+      "managerKappaHex": "66ef28f9fa4045dd4d05b7128732ce3842e4f943ee47a5dc701f675e2e1709ec",
       "governingAuthorities": [
         "AUTH-KHRONOS-GLTF2",
         "AUTH-ISO-42010-VIEWPOINTS",
-        "AUTH-VSM-CYBERNETICS"
+        "AUTH-VSM-CYBERNETICS",
+        "AUTH-ISO-25010-TENSOR-SCALING"
       ],
       "bytes": 5151,
       "sha256Hex": "aae36c0a4998a0dc299f25c5afb0b805ef826c98e7aaf3d1e3974f3069560da0",
-      "lastDirectiveKappaHex": "6c863c6b722d29697c5880c2d3d324d75d6bb8f7db01c0b52d3ef72f2b624b6e"
+      "lastDirectiveKappaHex": "746f0512bc1fff651ebdcb34f294d9fa346925e50bf3bb6332f78a8a31dfa9e9"
     },
     {
       "path": "site/studio/index.html",
       "owningManagerId": "mgr-studio-alm",
-      "managerKappaHex": "7025771b8894829155a461818b0920a893336a287257dd0252e3f5301cb1bd24",
+      "managerKappaHex": "f619a26042a7bb3c7e5c5644fca01aeacd24a38c09224d01d6e70b32807c7251",
       "governingAuthorities": [
         "AUTH-ISO-42010-VIEWPOINTS",
         "AUTH-ISO-24617-DMN",
         "AUTH-W3C-SOSA-PROVO",
-        "AUTH-KHRONOS-GLTF2"
+        "AUTH-KHRONOS-GLTF2",
+        "AUTH-ISO-25010-TENSOR-SCALING"
       ],
-      "bytes": 48778,
-      "sha256Hex": "f19912112fc8668b38a51519cf4c3842bfa5fd3d42b6c216f06ab2a87124d1d0",
-      "lastDirectiveKappaHex": "6c863c6b722d29697c5880c2d3d324d75d6bb8f7db01c0b52d3ef72f2b624b6e"
+      "bytes": 48559,
+      "sha256Hex": "1ce8983acdd021cc3b8f054b8f7810a5e6c61c6b33a986a05db6520560301cf5",
+      "lastDirectiveKappaHex": "746f0512bc1fff651ebdcb34f294d9fa346925e50bf3bb6332f78a8a31dfa9e9"
     },
     {
       "path": "site/catalogs/index.html",
@@ -43,7 +45,7 @@
       ],
       "bytes": 24632,
       "sha256Hex": "5146f724157b8017cf3c55c80463095ea3d49fd9ef99ed74586968378a61cee2",
-      "lastDirectiveKappaHex": "6c863c6b722d29697c5880c2d3d324d75d6bb8f7db01c0b52d3ef72f2b624b6e"
+      "lastDirectiveKappaHex": "746f0512bc1fff651ebdcb34f294d9fa346925e50bf3bb6332f78a8a31dfa9e9"
     },
     {
       "path": "site/demo/index.html",
@@ -55,7 +57,7 @@
       ],
       "bytes": 23908,
       "sha256Hex": "47f8a3cfad9df9d5ca59ea91555d07c56d17fde9238641d1a99f1e7951fcc2fb",
-      "lastDirectiveKappaHex": "6c863c6b722d29697c5880c2d3d324d75d6bb8f7db01c0b52d3ef72f2b624b6e"
+      "lastDirectiveKappaHex": "746f0512bc1fff651ebdcb34f294d9fa346925e50bf3bb6332f78a8a31dfa9e9"
     },
     {
       "path": "site/docs/index.html",
@@ -67,7 +69,7 @@
       ],
       "bytes": 47904,
       "sha256Hex": "71cf847dbc1007e64953317b295f4ab13bda2a944299ae6fb3197da4f60eb993",
-      "lastDirectiveKappaHex": "6c863c6b722d29697c5880c2d3d324d75d6bb8f7db01c0b52d3ef72f2b624b6e"
+      "lastDirectiveKappaHex": "746f0512bc1fff651ebdcb34f294d9fa346925e50bf3bb6332f78a8a31dfa9e9"
     },
     {
       "path": "templates/browser-3d-starter/index.html",
@@ -80,7 +82,7 @@
       ],
       "bytes": 9867,
       "sha256Hex": "88cc179d3c52e038ecfce5a3d36342b61fb9dd8005bda7b3f80de2da5f4aabd6",
-      "lastDirectiveKappaHex": "6c863c6b722d29697c5880c2d3d324d75d6bb8f7db01c0b52d3ef72f2b624b6e"
+      "lastDirectiveKappaHex": "746f0512bc1fff651ebdcb34f294d9fa346925e50bf3bb6332f78a8a31dfa9e9"
     },
     {
       "path": "site/generated/viewpoint-contracts.json",
@@ -91,9 +93,9 @@
         "AUTH-ISO-42010-VIEWPOINTS",
         "AUTH-W3C-SOSA-PROVO"
       ],
-      "bytes": 16140,
-      "sha256Hex": "43263bd06935bf0242f3aadd4e66006939ca3dc26eb4f8668455d0c10483e531",
-      "lastDirectiveKappaHex": "6c863c6b722d29697c5880c2d3d324d75d6bb8f7db01c0b52d3ef72f2b624b6e"
+      "bytes": 16532,
+      "sha256Hex": "13d52089e77f7eef46c9498c47bb36168cabfa5a7606a07dfedf36823a6c04dd",
+      "lastDirectiveKappaHex": "746f0512bc1fff651ebdcb34f294d9fa346925e50bf3bb6332f78a8a31dfa9e9"
     },
     {
       "path": "site/generated/experience-design-system.json",
@@ -105,7 +107,7 @@
       ],
       "bytes": 3595,
       "sha256Hex": "e8977c7f9d9c94051ffe27eb35473a1d259cfd8eacf2ef3d7d8700578a9c725c",
-      "lastDirectiveKappaHex": "6c863c6b722d29697c5880c2d3d324d75d6bb8f7db01c0b52d3ef72f2b624b6e"
+      "lastDirectiveKappaHex": "746f0512bc1fff651ebdcb34f294d9fa346925e50bf3bb6332f78a8a31dfa9e9"
     },
     {
       "path": "site/generated/studio-experience.css",
@@ -115,9 +117,9 @@
         "AUTH-ISO-42010-VIEWPOINTS",
         "AUTH-SCHEMA-ORG"
       ],
-      "bytes": 9888,
-      "sha256Hex": "d5251ec877ba74262b548b9553ea2545b63fd584aa1f9fe796b5c16c29f5f2f2",
-      "lastDirectiveKappaHex": "6c863c6b722d29697c5880c2d3d324d75d6bb8f7db01c0b52d3ef72f2b624b6e"
+      "bytes": 10344,
+      "sha256Hex": "41753200567bbc6f449dbb755df54d105048ee85d57fb0a32746a6b9bb9c3351",
+      "lastDirectiveKappaHex": "746f0512bc1fff651ebdcb34f294d9fa346925e50bf3bb6332f78a8a31dfa9e9"
     },
     {
       "path": "site/generated/world-differentiation-profiles.json",
@@ -130,7 +132,7 @@
       ],
       "bytes": 4481,
       "sha256Hex": "de8bf9c5c3176a43d54ffcb8e000f20981804a43c08d5af79b47c44771b28f8a",
-      "lastDirectiveKappaHex": "6c863c6b722d29697c5880c2d3d324d75d6bb8f7db01c0b52d3ef72f2b624b6e"
+      "lastDirectiveKappaHex": "746f0512bc1fff651ebdcb34f294d9fa346925e50bf3bb6332f78a8a31dfa9e9"
     },
     {
       "path": "site/generated/stitch-app-catalog.json",
@@ -144,7 +146,21 @@
       ],
       "bytes": 5493,
       "sha256Hex": "7eebe992f3621dcacda0e7763f545d9ecd80c26bde3ea1f90b3db7b941a4bceb",
-      "lastDirectiveKappaHex": "6c863c6b722d29697c5880c2d3d324d75d6bb8f7db01c0b52d3ef72f2b624b6e"
+      "lastDirectiveKappaHex": "746f0512bc1fff651ebdcb34f294d9fa346925e50bf3bb6332f78a8a31dfa9e9"
+    },
+    {
+      "path": "site/generated/tensor-scaling-contract.json",
+      "owningManagerId": "mgr-runtime-stage",
+      "managerKappaHex": "66ef28f9fa4045dd4d05b7128732ce3842e4f943ee47a5dc701f675e2e1709ec",
+      "governingAuthorities": [
+        "AUTH-KHRONOS-GLTF2",
+        "AUTH-ISO-42010-VIEWPOINTS",
+        "AUTH-VSM-CYBERNETICS",
+        "AUTH-ISO-25010-TENSOR-SCALING"
+      ],
+      "bytes": 4118,
+      "sha256Hex": "a174a8f2c1f863a0365753383e088442ecd669bba1f468ed344f4f5b47f9be89",
+      "lastDirectiveKappaHex": "746f0512bc1fff651ebdcb34f294d9fa346925e50bf3bb6332f78a8a31dfa9e9"
     }
   ]
 }

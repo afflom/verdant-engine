@@ -84,6 +84,15 @@ id = "AUTH-ISO-42010-VIEWPOINTS"
 name = "ISO/IEC/IEEE 42010:2022 Architecture Viewpoints, ISO/IEC/IEEE 12207:2017 ALM & Stitch App Catalog"
 citation = "ISO/IEC/IEEE 42010:2022 Software, systems and enterprise — Architecture description; ISO/IEC/IEEE 12207:2017 Software life cycle processes; ISO 9241-210:2019; W3C DTCG 2025.10; WCAG 2.2 AA; afflom/stitch"
 artifact = "catalogs/governance/iso42010-viewpoints.json"
-checksum = "831147ea2b6433cbc56588bf8d47438091bf453743a47e9f8474a3f73ff05604"
+checksum = "312b87f23d7b76cd2d8c7e071c0356f6c9c75b72e0998dff08499f9895e0b9ca"
 statement = "ISO/IEC/IEEE 42010:2022 binds every Verdant surface, crate, Observer part, stream, and Stitch App Catalog archetype to an accountable Manager with explicit required elements, forbidden cross-contamination, and correspondence rules."
 realized_by = ["VE-42"]
+
+[[authority]]
+id = "AUTH-ISO-25010-TENSOR-SCALING"
+name = "ISO/IEC 25010:2023 Performance Efficiency, ITU-R BT.2020/2100 UHDTV, W3C WebGPU/WebNN & Paged Coded Tensor Memory"
+citation = "ISO/IEC 25010:2023 SQuaRE Performance Efficiency; ITU-R BT.2020-2 & BT.2100-2 UHDTV (4K/8K & Beyond); W3C WebGPU & WGSL; W3C WebNN; PagedAttention/FlashAttention Tiled Memory; UOR-Foundation uor-matmul CodedMatrix"
+artifact = "catalogs/governance/iso25010-tensor-scaling.json"
+checksum = "bb3bd31f42e171fe501b852577f9047d77fbbca2a8cd93a939761776bebd43e2"
+statement = "ISO/IEC 25010:2023 and ITU-R BT.2020/2100 govern closed-loop dynamic workload scaling across FHD-to-16K+ displays and arbitrary AI/3D workloads through bounded-RAM PagedTensorArena zero-decode tensor core paging with zero manual Studio resolution toggles."
+realized_by = ["VE-41", "VE-42"]

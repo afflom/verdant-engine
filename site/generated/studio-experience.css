@@ -372,3 +372,23 @@ body[data-studio-focus="publish"] #studio-publish-pane {
   outline: var(--ring-width) solid var(--brand);
   outline-offset: var(--ring-offset);
 }
+
+.vx-scale-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 0.25rem 0.65rem;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border);
+  background: var(--surface-subtle);
+  color: var(--foreground);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+.vx-scale-badge[data-contract="met"] {
+  border-color: var(--brand);
+  color: var(--brand);
+}

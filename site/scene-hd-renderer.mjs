@@ -55,7 +55,7 @@ export async function createGlRenderer(canvas) {
   const iPos = `vec3 wp=u_inst>0.5?(i_c0.xyz*a_pos.x+i_c1.xyz*a_pos.y+i_c2.xyz*a_pos.z+i_c3.xyz):a_pos;`;
   const B = gl.ARRAY_BUFFER, E = gl.ELEMENT_ARRAY_BUFFER, T = gl.TEXTURE_2D, F = gl.FRAMEBUFFER, R = gl.RENDERBUFFER;
   let sPrg, kPrg, pPrg, oPrg, bPrg, sGpu, dGpu, iGpu, qVao, sShd, shd, hTex, hDep, hFbo, bTex, aTex, mrTex, nmTex, emTex, eTex, uSh, uSk, uPb, uPo;
-  let ctxLost = false, cKey = "", hdrW = 0, hdrH = 0, lastDrawnW = 0, lastDrawnH = 0, rScale = 1, lSB = 0, lDB = 0, fence = null, aEp = 0, hTx = 0, hMr = 0, hNm = 0, hEm = 0, hEv = 0;
+  let ctxLost = false, cKey = "", hdrW = 0, hdrH = 0, lastDrawnW = 0, lastDrawnH = 0, rScale = 1, casSharp = 0.42, lSB = 0, lDB = 0, fence = null, aEp = 0, hTx = 0, hMr = 0, hNm = 0, hEm = 0, hEv = 0;
   const bPrgAll = () => {
     sPrg = link(
       `#version 300 es\nlayout(location=0) in vec3 a_pos;${iDcl}uniform mat4 u_lmvp;void main(){${iPos}gl_Position=u_lmvp*vec4(wp,1.0);}`,
@@ -159,7 +159,12 @@ export async function createGlRenderer(canvas) {
   const uBs = (arr, sum) => { for (const [t, b, d] of arr) { gl.bindBuffer(t, b); gl.bufferData(t, d, gl.STATIC_DRAW); if (sum) lSB += d.byteLength; } };
   return {
     backend: "webgl2", isSoftware, maxTextureSize: maxTex, maxAnisotropy: isSoftware ? 1 : maxAniso,
-    setRenderScale(pm) { rScale = Math.max(0.65, Math.min(1, (pm || 1000) / 1000)); },
+    setRenderScale(pm, casPm = null) {
+      rScale = Math.max(0.5, Math.min(1, (pm || 1000) / 1000));
+      if (typeof casPm === "number" && Number.isFinite(casPm)) {
+        casSharp = Math.max(0.14, Math.min(0.75, casPm / 1000));
+      }
+    },
     setCsmSplits(s) { const s1 = Number(s?.[1]); if (Number.isFinite(s1) && s1 > 8) { csmFar = Math.max(22, Math.min(48, s1)); cKey = ""; } },
     getUploadTelemetry() { return { staticBytes: lSB, dynBytes: lDB, staticEpoch: sGpu.epoch, instCount: iGpu.instCount, ctxLost, maxTex, maxAniso: isSoftware ? 1 : maxAniso }; },
     setTex(k, s, w, h, ep) {
@@ -302,7 +307,7 @@ export async function createGlRenderer(canvas) {
       if (useHdr) {
         gl.bindFramebuffer(F, null); gl.viewport(0, 0, w, h); gl.disable(gl.DEPTH_TEST); gl.useProgram(oPrg);
         bU(0, hTex, uPo.hdr); gl.uniform2f(uPo.ir, 1 / rw, 1 / rh);
-        gl.uniform1f(uPo.cas, sc < 0.98 ? 0.42 : 0.14); dQuad();
+        gl.uniform1f(uPo.cas, sc < 0.98 ? casSharp : 0.14); dQuad();
       }
       gl.bindVertexArray(null);
       if (typeof gl.fenceSync === "function") { fence = gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE, 0); gl.flush(); }

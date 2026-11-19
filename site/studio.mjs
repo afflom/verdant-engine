@@ -874,15 +874,6 @@ function buildStudioDialog({ inline = false } = {}) {
   btnExportGlb.textContent = "Export .glb";
   btnExportGlb.addEventListener("click", () => studioCtx?.onExportGlb?.());
 
-  const btnStreamHd = document.createElement("button");
-  btnStreamHd.type = "button";
-  btnStreamHd.className = "ve-m-btn";
-  btnStreamHd.textContent = "Stream LOD4 Ultra HD";
-  btnStreamHd.addEventListener("click", async () => {
-    await studioCtx?.onSetLod?.(PRISM_HD_MAX_LOD_RANK);
-    dlg.dispatchEvent(new CustomEvent("ve-refresh"));
-  });
-
   const btnReset = document.createElement("button");
   btnReset.type = "button";
   btnReset.className = "ve-m-btn";
@@ -892,7 +883,7 @@ function buildStudioDialog({ inline = false } = {}) {
     dlg.dispatchEvent(new CustomEvent("ve-refresh"));
   });
 
-  assetRow.append(btnPick, btnExportGlb, btnStreamHd, btnReset);
+  assetRow.append(btnPick, btnExportGlb, btnReset);
   for (const presetSeed of [7, 42, 108, 256]) {
     const sb = document.createElement("button");
     sb.type = "button";

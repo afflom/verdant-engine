@@ -4713,9 +4713,11 @@ fn engine_ve_41() {
     use verdant_wasm::{
         verdant_wasm_aux_len, verdant_wasm_aux_ptr, verdant_wasm_frame_stability_aux,
         verdant_wasm_init, verdant_wasm_record_frame_time_us, verdant_wasm_scene_rebuild_buffers,
-        verdant_wasm_set_lod_rank, verdant_wasm_uhd_cull_meshlets,
+        verdant_wasm_set_lod_rank, verdant_wasm_tensor_memory_status_aux,
+        verdant_wasm_tensor_paged_benchmark_aux, verdant_wasm_uhd_cull_meshlets,
         verdant_wasm_uhd_lod_pyramid_aux, verdant_wasm_uhd_profile_aux,
         verdant_wasm_uhd_visible_idx_count, verdant_wasm_uhd_visible_idx_ptr,
+        verdant_wasm_workload_governor_step_aux,
     };
 
     // 1. Authoritative W3C `naga` WGSL oracle validates compute meshlet cull, 4-channel PBR + HDRI IBL, and 5-tap CAS resolve shaders:
@@ -4992,6 +4994,23 @@ fn engine_ve_41() {
             && wgpu_js.contains("u_emissive_tex")
             && wgpu_js.contains("u_env_tex"),
         "scene-webgpu-renderer.mjs must maintain full 4-ch PBR + HDRI IBL + compute cull + CAS parity"
+    );
+
+    // 10. ISO/IEC 25010:2023 + ITU-R BT.2020/2100 DynamicWorkloadGovernor & PagedTensorArena
+    //     beyond-8K (16K+) + arbitrary AI workload scaling with zero manual Studio resolution toggles:
+    let gov_len = verdant_wasm_workload_governor_step_aux(15360, 8640, 0, 1, 6_500) as usize;
+    assert!(gov_len > 0 && verdant_wasm_aux_len() as usize == gov_len);
+    let mem_len = verdant_wasm_tensor_memory_status_aux() as usize;
+    assert!(mem_len > 0 && verdant_wasm_aux_len() as usize == mem_len);
+    let bench_len = verdant_wasm_tensor_paged_benchmark_aux(64, 512) as usize;
+    assert!(bench_len > 0 && verdant_wasm_aux_len() as usize == bench_len);
+    let studio_html = std::fs::read_to_string(root.join("site/studio/index.html"))
+        .expect("read site/studio/index.html");
+    assert!(
+        !studio_html.contains("id=\"studio-lod-btn\"")
+            && !studio_html.contains("data-wiz-lod")
+            && studio_html.contains("id=\"studio-scale-badge\""),
+        "Verdant Studio must scale dynamically without superfluous manual video-resolution toggles"
     );
 }
 

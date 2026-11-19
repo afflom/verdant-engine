@@ -1,0 +1,92 @@
+{
+  "spec": "verdant/imported-authority-catalog/1",
+  "authorityId": "AUTH-ISO-25010-TENSOR-SCALING",
+  "standard": "ISO/IEC 25010:2023 Performance Efficiency + ITU-R BT.2020/BT.2100 UHDTV + W3C WebGPU/WebNN + Paged Coded Tensor Memory",
+  "citation": "ISO/IEC 25010:2023 Systems and software Quality Requirements and Evaluation (SQuaRE) — Performance Efficiency (Time Behaviour, Resource Utilization, Capacity); ITU-R BT.2020-2 & BT.2100-2 UHDTV (4K/8K & Beyond); W3C WebGPU (https://www.w3.org/TR/webgpu/) & WGSL (https://www.w3.org/TR/WGSL/); W3C WebNN (https://www.w3.org/TR/webnn/); Kwon et al. PagedAttention / Dao et al. FlashAttention Tiled Memory Hierarchy; UOR-Foundation uor-matmul CodedMatrix",
+  "license": "Apache-2.0",
+  "ownerManagerId": "mgr-runtime-stage",
+  "performanceContract": {
+    "targetFrameBudgetUs": 16667,
+    "p95CeilingUs": 16667,
+    "maxJitterRatioPermille": 500,
+    "maxSingleDecodeHitchUs": 8000,
+    "zeroManualResolutionTogglesInStudio": true,
+    "drsLadderPermille": [500, 625, 750, 850, 925, 1000],
+    "hysteresisDownStreakFrames": 4,
+    "hysteresisUpStreakFrames": 16
+  },
+  "uhdDisplayTiers": [
+    {
+      "id": "fhd-1080p",
+      "label": "FHD 1080p",
+      "standard": "ITU-R BT.709",
+      "widthPx": 1920,
+      "heightPx": 1080,
+      "megapixelsX100": 207,
+      "tiledVirtualFramebuffer": false
+    },
+    {
+      "id": "qhd-1440p",
+      "label": "QHD 1440p",
+      "standard": "VESA DMT / QHD",
+      "widthPx": 2560,
+      "heightPx": 1440,
+      "megapixelsX100": 368,
+      "tiledVirtualFramebuffer": false
+    },
+    {
+      "id": "uhd-4k-2160p",
+      "label": "UHD 4K 2160p",
+      "standard": "ITU-R BT.2020-2",
+      "widthPx": 3840,
+      "heightPx": 2160,
+      "megapixelsX100": 829,
+      "tiledVirtualFramebuffer": false
+    },
+    {
+      "id": "uhd-5k-2880p",
+      "label": "UHD 5K 2880p",
+      "standard": "ITU-R BT.2020-2 Extended",
+      "widthPx": 5120,
+      "heightPx": 2880,
+      "megapixelsX100": 1474,
+      "tiledVirtualFramebuffer": false
+    },
+    {
+      "id": "uhd-8k-4320p",
+      "label": "UHD 8K 4320p",
+      "standard": "ITU-R BT.2020-2 / BT.2100-2",
+      "widthPx": 7680,
+      "heightPx": 4320,
+      "megapixelsX100": 3318,
+      "tiledVirtualFramebuffer": true
+    },
+    {
+      "id": "beyond-8k-16k-tiled",
+      "label": "Beyond-8K 16K+ Tiled",
+      "standard": "ITU-R BT.2100-2 / Paged Tensor Virtual Framebuffer",
+      "widthPx": 15360,
+      "heightPx": 8640,
+      "megapixelsX100": 13271,
+      "tiledVirtualFramebuffer": true
+    }
+  ],
+  "pagedTensorMemoryStandard": {
+    "pageQuantumBytes": 65536,
+    "evictionPolicy": "deterministic-clock-second-chance",
+    "invariants": [
+      "residentBytes <= budgetBytes at every allocation, contraction, and streaming step",
+      "zero-decode Packed<Grid<16>, 2> 4-bit nibble residency delivers 8x logical-to-physical compression vs f32",
+      "out-of-core tiled contraction over PagedTensorArena matches full in-memory contraction bit-for-bit",
+      "pinned active working-set pages are never evicted mid-contraction and unpin deterministically"
+    ],
+    "workloadDomains": [
+      "uhd-8k-16k-tiled-rasterization",
+      "meshlet-cluster-streaming",
+      "pbr-texture-atlas-virtual-pages",
+      "ai-model-weight-blocks",
+      "ai-transformer-kv-cache-pages",
+      "uorc-coded-scene-streams"
+    ]
+  }
+}

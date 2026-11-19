@@ -1551,6 +1551,10 @@ impl CatalogBundleRegistry {
             "catalogs/governance/iso42010-viewpoints.json",
             crate::operator::LOCKED_ISO42010_VIEWPOINTS_JSON.as_bytes(),
         );
+        raw_files.insert(
+            "catalogs/governance/iso25010-tensor-scaling.json",
+            crate::operator::LOCKED_ISO25010_TENSOR_SCALING_JSON.as_bytes(),
+        );
         Self::from_locked_bytes(EMBEDDED_AUTHORITIES_TOML, &raw_files)
     }
 

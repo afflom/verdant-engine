@@ -99,6 +99,7 @@ An authority is cited, never re-derived, and never gated on: what it states is n
 | `AUTH-DOMAIN-PACKS` | Verdant Platform Imported Domain Catalogs (Sunspire Harbor, Meridian Observatory, Glasshouse Chronicle, Starfall Bastion) | `VE-32`, `VE-38` |
 | `AUTH-VSM-CYBERNETICS` | Stafford Beer, Brain of the Firm (2nd ed., Wiley, 1981) & Diagnosing the System for Organizations (Wiley, 1985); ISO/IEC/IEEE 15288:2023 | `VE-42` |
 | `AUTH-ISO-42010-VIEWPOINTS` | ISO/IEC/IEEE 42010:2022 Software, systems and enterprise — Architecture description; ISO/IEC/IEEE 12207:2017 Software life cycle processes; ISO 9241-210:2019; W3C DTCG 2025.10; WCAG 2.2 AA; afflom/stitch | `VE-42` |
+| `AUTH-ISO-25010-TENSOR-SCALING` | ISO/IEC 25010:2023 SQuaRE Performance Efficiency; ITU-R BT.2020-2 & BT.2100-2 UHDTV (4K/8K & Beyond); W3C WebGPU & WGSL; W3C WebNN; PagedAttention/FlashAttention Tiled Memory; UOR-Foundation uor-matmul CodedMatrix | `VE-41`, `VE-42` |
 
 ## Claims that are not conformance IDs
 

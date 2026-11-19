@@ -37,6 +37,11 @@ pub const LOCKED_VSM_CATALOG_JSON: &str =
 pub const LOCKED_ISO42010_VIEWPOINTS_JSON: &str =
     include_str!("../../../catalogs/governance/iso42010-viewpoints.json");
 
+/// Embedded SHA-256-locked ISO/IEC 25010:2023 + ITU-R BT.2020/2100 + Paged Coded Tensor Memory
+/// scaling authority (`AUTH-ISO-25010-TENSOR-SCALING`).
+pub const LOCKED_ISO25010_TENSOR_SCALING_JSON: &str =
+    include_str!("../../../catalogs/governance/iso25010-tensor-scaling.json");
+
 /// Canonical shipped routes that MUST be owned by an accountable Manager.
 pub const REQUIRED_SHIPPED_ROUTES: &[&str] = &[
     "/",
@@ -64,6 +69,7 @@ pub const REQUIRED_LOCKED_AUTHORITIES: &[&str] = &[
     "AUTH-DOMAIN-PACKS",
     "AUTH-VSM-CYBERNETICS",
     "AUTH-ISO-42010-VIEWPOINTS",
+    "AUTH-ISO-25010-TENSOR-SCALING",
 ];
 
 /// Canonical shipped Verdant views & Manager-synthesized declarative artifacts protected by
@@ -81,9 +87,11 @@ pub const SEALED_IMMUTABLE_VIEW_FILES: &[&str] = &[
     "site/generated/studio-experience.css",
     "site/generated/world-differentiation-profiles.json",
     "site/generated/stitch-app-catalog.json",
+    "site/generated/tensor-scaling-contract.json",
 ];
 
 /// Files that are byte-locked trust roots and may never be mutated via `verdant_mutate_view`.
+#[cfg(not(target_arch = "wasm32"))]
 const BYTE_LOCKED_TRUST_ROOTS: &[&str] = &[
     "template.lock",
     "frame.lock",
@@ -92,6 +100,7 @@ const BYTE_LOCKED_TRUST_ROOTS: &[&str] = &[
     "Cargo.lock",
 ];
 
+#[cfg(not(target_arch = "wasm32"))]
 fn sha256_hex_raw(bytes: &[u8]) -> String {
     const HEX: &[u8; 1 << (1 + 1 + 1 + 1)] = b"0123456789abcdef";
     let shift = 1usize + 1usize + 1usize + 1usize;
@@ -2310,8 +2319,59 @@ body[data-studio-focus="publish"] #studio-publish-pane {
   outline: var(--ring-width) solid var(--brand);
   outline-offset: var(--ring-offset);
 }
+
+.vx-scale-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 0.25rem 0.65rem;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border);
+  background: var(--surface-subtle);
+  color: var(--foreground);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+.vx-scale-badge[data-contract="met"] {
+  border-color: var(--brand);
+  color: var(--brand);
+}
 "#
         .to_string()
+    }
+
+    /// Synthesizes `site/generated/tensor-scaling-contract.json` from `mgr-runtime-stage` and
+    /// `AUTH-ISO-25010-TENSOR-SCALING` (ISO/IEC 25010:2023 + ITU-R BT.2020/2100 + PagedTensorArena).
+    #[must_use]
+    pub fn synthesize_tensor_scaling_contract_json(&self) -> String {
+        let runtime_kappa = self
+            .managers
+            .iter()
+            .find(|m| m.spec.manager_id == "mgr-runtime-stage")
+            .map_or("", |m| m.kappa_hex.as_str());
+        let standard_doc: serde_json::Value =
+            serde_json::from_str(LOCKED_ISO25010_TENSOR_SCALING_JSON)
+                .unwrap_or_else(|_| serde_json::json!({}));
+        let payload = serde_json::json!({
+            "spec": "verdant/tensor-scaling-contract/1",
+            "generatedBy": "verdant-operator-api",
+            "ownerManagerId": "mgr-runtime-stage",
+            "ownerManagerKappaHex": runtime_kappa,
+            "governingAuthorities": [
+                "AUTH-ISO-25010-TENSOR-SCALING",
+                "AUTH-ISO-42010-VIEWPOINTS",
+                "AUTH-VSM-CYBERNETICS"
+            ],
+            "pageQuantumBytes": crate::tensor::TENSOR_PAGE_QUANTUM_BYTES,
+            "minArenaBudgetBytes": crate::tensor::MIN_ARENA_BUDGET_BYTES,
+            "packedNibbleCompressionFactor": crate::tensor::TensorStorageEncoding::PackedNibble4.compression_factor(),
+            "sparseRunsCompressionFactor": crate::tensor::TensorStorageEncoding::SparseRuns16.compression_factor(),
+            "authority": standard_doc
+        });
+        serde_json::to_string_pretty(&payload).unwrap_or_else(|_| "{}".to_string())
     }
 
     /// Materializes Manager-synthesized declarative artifacts strictly within each Manager's
@@ -2368,6 +2428,13 @@ body[data-studio-focus="publish"] #studio-publish-pane {
                 "mgr-playable-world",
                 "site/generated/world-differentiation-profiles.json",
                 &json,
+            )?);
+            let scaling_json = self.synthesize_tensor_scaling_contract_json();
+            written.push(Self::write_manager_file(
+                repo_root,
+                "mgr-runtime-stage",
+                "site/generated/tensor-scaling-contract.json",
+                &scaling_json,
             )?);
         }
         if want("asset-catalogs", "mgr-catalog-curator") || want("creator-studio", "mgr-studio-alm")
@@ -3380,9 +3447,11 @@ body[data-studio-focus="publish"] #studio-publish-pane {
                 "resources": [
                     { "uri": "verdant://governance/vsm", "name": "VSM Cybernetics Authority (AUTH-VSM-CYBERNETICS)", "mimeType": "application/json" },
                     { "uri": "verdant://governance/viewpoints", "name": "ISO 42010 Viewpoints & Managers (AUTH-ISO-42010-VIEWPOINTS)", "mimeType": "application/json" },
+                    { "uri": "verdant://governance/tensor-scaling", "name": "ISO 25010 & ITU-R BT.2020/2100 Tensor Scaling Authority (AUTH-ISO-25010-TENSOR-SCALING)", "mimeType": "application/json" },
                     { "uri": "verdant://generated/viewpoint-contracts", "name": "Manager Viewpoint Contracts", "mimeType": "application/json" },
                     { "uri": "verdant://generated/experience-design-system", "name": "Design System & Communications Spec", "mimeType": "application/json" },
                     { "uri": "verdant://generated/world-differentiation-profiles", "name": "4-World Differentiation Profiles", "mimeType": "application/json" },
+                    { "uri": "verdant://generated/tensor-scaling-contract", "name": "ISO 25010 Tensor Scaling & Paged Memory Contract", "mimeType": "application/json" },
                     { "uri": "verdant://generated/stitch-app-catalog", "name": "Stitch 2-of-3 Verdant App Catalog", "mimeType": "application/json" },
                     { "uri": "verdant://generated/immutability-seal", "name": "Cryptographic View Immutability Seal", "mimeType": "application/json" }
                 ]
@@ -3396,6 +3465,9 @@ body[data-studio-focus="publish"] #studio-publish-pane {
                     "verdant://governance/viewpoints" => {
                         Some("catalogs/governance/iso42010-viewpoints.json")
                     }
+                    "verdant://governance/tensor-scaling" => {
+                        Some("catalogs/governance/iso25010-tensor-scaling.json")
+                    }
                     "verdant://generated/viewpoint-contracts" => {
                         Some("site/generated/viewpoint-contracts.json")
                     }
@@ -3404,6 +3476,9 @@ body[data-studio-focus="publish"] #studio-publish-pane {
                     }
                     "verdant://generated/world-differentiation-profiles" => {
                         Some("site/generated/world-differentiation-profiles.json")
+                    }
+                    "verdant://generated/tensor-scaling-contract" => {
+                        Some("site/generated/tensor-scaling-contract.json")
                     }
                     "verdant://generated/stitch-app-catalog" => {
                         Some("site/generated/stitch-app-catalog.json")

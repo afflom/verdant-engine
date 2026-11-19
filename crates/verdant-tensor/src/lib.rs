@@ -575,6 +575,7 @@ pub mod prism_kernel;
 pub mod audio_ring;
 pub mod coded;
 pub mod linear;
+pub mod memory;
 pub mod neural;
 pub mod raster;
 pub mod tropical;
@@ -835,6 +836,11 @@ pub use linear::{
     delassus_effective_mass_matrix, propagate_hierarchy_matrices_exact,
     skin_vertices_linear_blend_exact, skin_vertices_linear_blend_into, solve_two_bone_ik_exact,
     TwoBoneIkSolution,
+};
+pub use memory::{
+    contract_paged_packed_nibbles_stream, PagedArenaTelemetry, PagedContractionReport,
+    PagedTensorArena, TensorPageDescriptor, TensorPageKind, TensorStorageEncoding,
+    MIN_ARENA_BUDGET_BYTES, TENSOR_PAGE_QUANTUM_BYTES,
 };
 pub use neural::{
     infer_coded_slm_intent_logits, step_neuromorphic_lif_ssm_ring,

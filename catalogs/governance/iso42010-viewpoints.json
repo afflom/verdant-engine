@@ -112,7 +112,8 @@
       "governingAuthorities": [
         "AUTH-KHRONOS-GLTF2",
         "AUTH-ISO-42010-VIEWPOINTS",
-        "AUTH-VSM-CYBERNETICS"
+        "AUTH-VSM-CYBERNETICS",
+        "AUTH-ISO-25010-TENSOR-SCALING"
       ],
       "ownedFiles": [
         "site/card.html",
@@ -123,7 +124,8 @@
         "site/scene-webgpu-renderer.mjs",
         "site/engine-worker.mjs",
         "site/audio-worklet.mjs",
-        "site/stitch-mesh.mjs"
+        "site/stitch-mesh.mjs",
+        "site/generated/tensor-scaling-contract.json"
       ],
       "ownedCrates": [
         "verdant-core",
@@ -138,7 +140,9 @@
         "github",
         "openverse"
       ],
-      "ownedAuthorities": [],
+      "ownedAuthorities": [
+        "AUTH-ISO-25010-TENSOR-SCALING"
+      ],
       "requiredElements": [
         "id=\"ve-canvas\"",
         "id=\"ve-studio-link\"",
@@ -171,7 +175,8 @@
         "AUTH-ISO-42010-VIEWPOINTS",
         "AUTH-ISO-24617-DMN",
         "AUTH-W3C-SOSA-PROVO",
-        "AUTH-KHRONOS-GLTF2"
+        "AUTH-KHRONOS-GLTF2",
+        "AUTH-ISO-25010-TENSOR-SCALING"
       ],
       "ownedFiles": [
         "site/studio/index.html",
@@ -193,6 +198,7 @@
       "requiredElements": [
         "id=\"studio-journey-host\"",
         "id=\"studio-canvas\"",
+        "id=\"studio-scale-badge\"",
         "id=\"studio-export-uorc-btn\"",
         "id=\"stitch-publish-btn\"",
         "id=\"disc-search-input\"",
@@ -210,10 +216,12 @@
         "8 Observer Parts",
         "Atelier Boot",
         "DOM-SUNSPIRE-HARBOR",
-        "CodedSlmDirector"
+        "CodedSlmDirector",
+        "id=\"studio-lod-btn\"",
+        "data-wiz-lod"
       ],
       "differentiationRequirements": [
-        "Single unified search input; focused 3-pane ALM IDE with zero internal engine test-harness chrome."
+        "Single unified search input; focused 3-pane ALM IDE with zero internal engine test-harness chrome and zero manual video-resolution toggles (ISO 25010 DynamicWorkloadGovernor scales automatically)."
       ]
     },
     {

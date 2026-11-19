@@ -1218,8 +1218,52 @@ pub fn decode_portable_uorc_stream_up_to_lod(
     })
 }
 
+/// Decodes and SHA-256-verifies a single self-delimiting `UORC-SHA256-CHAIN-v1` frame archive.
+/// Uses the native compiled `uorc::decompress_objects` fast path (< 1 ms in native & `wasm32`)
+/// when `uorc-streaming` is enabled, and falls back to the Lean-exported `uorc_decompress::run`
+/// kernel otherwise.
+#[cfg(feature = "uorc-wasm-decode")]
+fn decode_single_uorc_frame_bytes(
+    frame_archive: &[u8],
+    frame_idx: usize,
+) -> Result<Vec<u8>, StreamingError> {
+    #[cfg(feature = "uorc-streaming")]
+    {
+        let objects = uorc::decompress_objects(frame_archive, uorc_work_budget()).map_err(|err| {
+            StreamingError::UorcArchiveRejected {
+                detail: format!("uorc::decompress_objects rejected frame {frame_idx}: {err}"),
+            }
+        })?;
+        objects
+            .into_iter()
+            .next()
+            .ok_or_else(|| StreamingError::UorcArchiveRejected {
+                detail: format!("UORC frame {frame_idx} contained zero decoded objects"),
+            })
+    }
+    #[cfg(not(feature = "uorc-streaming"))]
+    {
+        match uorc_decompress::run(
+            uorc_decompress::Bytes::lit(frame_archive),
+            uorc_decompress::List::nil(),
+            uorc_decompress::List::nil(),
+            uorc_work_budget(),
+        ) {
+            Ok(Some(out)) => Ok(out.octets().to_vec()),
+            Ok(None) => Err(StreamingError::UorcArchiveRejected {
+                detail: format!(
+                    "uorc_decompress::run rejected seal or exceeded work budget at frame {frame_idx}"
+                ),
+            }),
+            Err(_) => Err(StreamingError::UorcArchiveRejected {
+                detail: format!("uorc_decompress::run overflow at frame {frame_idx}"),
+            }),
+        }
+    }
+}
+
 /// Validates self-delimiting framing across an entire portable `.uorc` progressive stream and
-/// decodes the single stateless frame at `target_lod_rank` (`0..=3`) via `uorc_decompress::run`,
+/// decodes the single stateless frame at `target_lod_rank` (`0..=3`),
 /// enforcing `prism_kernel::lodStepValid` from `LOD0` without redundantly decompressing earlier frames.
 #[cfg(feature = "uorc-wasm-decode")]
 pub fn decode_portable_uorc_single_frame(
@@ -1238,26 +1282,7 @@ pub fn decode_portable_uorc_single_frame(
             ),
         })?;
 
-    let plain_bytes = match uorc_decompress::run(
-        uorc_decompress::Bytes::lit(frame_archive),
-        uorc_decompress::List::nil(),
-        uorc_decompress::List::nil(),
-        uorc_work_budget(),
-    ) {
-        Ok(Some(out)) => out.octets().to_vec(),
-        Ok(None) => {
-            return Err(StreamingError::UorcArchiveRejected {
-                detail: format!(
-                    "uorc_decompress::run rejected seal or exceeded work budget at frame {idx}"
-                ),
-            });
-        }
-        Err(_) => {
-            return Err(StreamingError::UorcArchiveRejected {
-                detail: format!("uorc_decompress::run overflow at frame {idx}"),
-            });
-        }
-    };
+    let plain_bytes = decode_single_uorc_frame_bytes(frame_archive, idx)?;
 
     let decoded_state =
         WorldSnapshot::decode(&plain_bytes).map_err(|err| StreamingError::LodPayloadMismatch {
@@ -1324,8 +1349,8 @@ pub fn compress_uorc_portable(payload: &[u8]) -> Vec<u8> {
     uorc::compress_with_strategies(payload, &[payload.len() as u64], &[], &strategies)
 }
 
-/// Verifies the self-delimiting `UORC` header and 32-byte SHA-256 seal via `uorc_decompress::run`
-/// and returns the exact reconstructed payload bytes.
+/// Verifies the self-delimiting `UORC` header and 32-byte SHA-256 seal and returns the exact
+/// reconstructed payload bytes.
 #[cfg(feature = "uorc-wasm-decode")]
 pub fn decompress_uorc_portable(archive: &[u8]) -> Result<Vec<u8>, StreamingError> {
     if !is_uorc_archive(archive) {
@@ -1339,20 +1364,7 @@ pub fn decompress_uorc_portable(archive: &[u8]) -> Result<Vec<u8>, StreamingErro
             detail: "expected single self-delimiting UORC archive frame".to_string(),
         });
     }
-    match uorc_decompress::run(
-        uorc_decompress::Bytes::lit(frames[0]),
-        uorc_decompress::List::nil(),
-        uorc_decompress::List::nil(),
-        uorc_work_budget(),
-    ) {
-        Ok(Some(out)) => Ok(out.octets().to_vec()),
-        Ok(None) => Err(StreamingError::UorcArchiveRejected {
-            detail: "uorc_decompress::run rejected archive SHA-256 seal or work budget".to_string(),
-        }),
-        Err(_) => Err(StreamingError::UorcArchiveRejected {
-            detail: "uorc_decompress::run arithmetic overflow on archive".to_string(),
-        }),
-    }
+    decode_single_uorc_frame_bytes(frames[0], 0)
 }
 
 impl CodedLodFrameBundle {

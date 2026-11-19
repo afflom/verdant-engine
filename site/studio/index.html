@@ -991,12 +991,12 @@
           <div class="st-transport" role="group" aria-label="3D viewport controls">
             <button type="button" class="st-btn primary sm" id="studio-sim-btn" aria-pressed="false">Play Preview</button>
             <button type="button" class="st-btn sm" id="studio-cam-btn">View: Orbit</button>
-            <button type="button" class="st-btn sm" id="studio-lod-btn">Detail: High</button>
+            <span class="vx-scale-badge" id="studio-scale-badge" data-contract="met" aria-live="polite">Auto · 60 Hz · DRS 100%</span>
             <button type="button" class="st-btn sm" id="studio-audio-btn" aria-pressed="false">Sound: Off</button>
             <button type="button" class="st-btn sm" id="studio-import-btn">Upload 3D (.glb)</button>
           </div>
           <form class="st-prompt" id="studio-prompt-form" autocomplete="off">
-            <input id="studio-prompt-input" class="st-input" type="text" aria-label="Direct the active 3D scene" placeholder="Try &quot;focus stone arch&quot;, &quot;3rd person&quot;, or &quot;ultra detail&quot;…" />
+            <input id="studio-prompt-input" class="st-input" type="text" aria-label="Direct the active 3D scene" placeholder="Try &quot;focus stone arch&quot;, &quot;3rd person&quot;, or &quot;orbit&quot;…" />
             <button type="submit" class="st-btn primary sm" id="studio-prompt-btn">Apply</button>
           </form>
           <input id="studio-glb-file" type="file" accept=".glb,model/gltf-binary" hidden />
@@ -1156,11 +1156,8 @@
             <div class="ide-pane-sub">Active World Environment</div>
             <pre class="wiz-log" id="wiz-domain-log">Loading world environment…</pre>
 
-            <div class="ide-pane-sub">Fidelity &amp; Camera Mode</div>
+            <div class="ide-pane-sub">Camera Mode (Auto-Scaled Fidelity)</div>
             <div class="insp-row">
-              <button type="button" class="st-btn sm" data-wiz-lod="2">LOD2</button>
-              <button type="button" class="st-btn primary sm" data-wiz-lod="3">LOD3</button>
-              <button type="button" class="st-btn sm" data-wiz-lod="4">LOD4</button>
               <button type="button" class="st-btn primary sm" data-wiz-cam="landmark">Orbit</button>
               <button type="button" class="st-btn sm" data-wiz-cam="third">3rd Person</button>
               <button type="button" class="st-btn sm" data-wiz-cam="first">1st Person</button>
