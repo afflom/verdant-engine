@@ -1829,6 +1829,58 @@ impl CatalogBundleRegistry {
             lod_rank,
         );
 
+        // Visually differentiate each imported catalog domain's biome & architectural palette
+        // from its locked `dom.environment` + Khronos PBR materials so every domain looks distinct:
+        let pct_denom = (pow10_u64(two_u32()) as f32).max(1.0);
+        let sky_tint = [
+            (dom.environment.sky_rgb_percent[0] as f32) / pct_denom,
+            (dom.environment.sky_rgb_percent[1] as f32) / pct_denom,
+            (dom.environment.sky_rgb_percent[i2] as f32) / pct_denom,
+        ];
+        let primary_mat_col = dom
+            .models
+            .first()
+            .and_then(|m| mat_index_by_id.get(m.material_id.as_str()).copied())
+            .map_or([1.0, 1.0, 1.0, 1.0], |idx| {
+                hd_materials[idx].base_color_factor
+            });
+        let accent_mat_col = dom
+            .models
+            .get(1)
+            .and_then(|m| mat_index_by_id.get(m.material_id.as_str()).copied())
+            .map_or(primary_mat_col, |idx| hd_materials[idx].base_color_factor);
+        let half_f = half_f64() as f32;
+        let qtr_f = half_f * half_f;
+        let three_qtr_f = half_f + qtr_f;
+
+        if dom.slug != "sunspire-regatta" {
+            for (mesh_i, mesh) in sector.meshes.iter_mut().enumerate() {
+                if mesh_i == 0 {
+                    // Sculpt terrain biome coloration toward domain sky + primary stone/basalt/emerald tone:
+                    for c in &mut mesh.colors {
+                        c[0] = (c[0] * half_f + primary_mat_col[0] * qtr_f + sky_tint[0] * qtr_f)
+                            .clamp(0.0, 1.0);
+                        c[1] = (c[1] * half_f + primary_mat_col[1] * qtr_f + sky_tint[1] * qtr_f)
+                            .clamp(0.0, 1.0);
+                        c[i2] =
+                            (c[i2] * half_f + primary_mat_col[i2] * qtr_f + sky_tint[i2] * qtr_f)
+                                .clamp(0.0, 1.0);
+                    }
+                } else {
+                    let target_col = if mesh_i % (1 + 1) == 0 {
+                        primary_mat_col
+                    } else {
+                        accent_mat_col
+                    };
+                    for c in &mut mesh.colors {
+                        c[0] = (c[0] * qtr_f + target_col[0] * three_qtr_f).clamp(0.0, 1.0);
+                        c[1] = (c[1] * qtr_f + target_col[1] * three_qtr_f).clamp(0.0, 1.0);
+                        c[i2] = (c[i2] * qtr_f + target_col[i2] * three_qtr_f).clamp(0.0, 1.0);
+                    }
+                }
+            }
+        }
+
         // Spawn cataloged domain-specific HD landmark models onto the terrain:
         let half = half_f64();
         let col_segs = (four_u32() * four_u32()) as usize;

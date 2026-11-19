@@ -104,6 +104,11 @@ export const LIVE_CATALOG_STREAMS = Object.freeze([
     id: "khronos-gltf",
     label: "Khronos glTF-Sample-Assets",
     authority: "Khronos Group",
+    basisPrime: 13,
+    organIri: "urn:verdant:sensory:khronos-gltf",
+    sensoryModality: "Spatial 3D Geometry, PBR & Articulated Rigs",
+    schemaTypes: ["3DModel"],
+    mediaTypes: ["model/gltf-binary"],
     endpoint: "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/model-index.json",
     contentTypes: ["3DModel"],
   },
@@ -111,6 +116,11 @@ export const LIVE_CATALOG_STREAMS = Object.freeze([
     id: "polyhaven",
     label: "Poly Haven CC0",
     authority: "Poly Haven",
+    basisPrime: 17,
+    organIri: "urn:verdant:sensory:polyhaven",
+    sensoryModality: "Photorealistic 4K PBR Materials, HDRIs & Props",
+    schemaTypes: ["3DModel", "CreativeWork"],
+    mediaTypes: ["model/gltf+json", "image/png"],
     endpoint: "https://api.polyhaven.com/assets",
     contentTypes: ["3DModel", "PBRMaterial"],
   },
@@ -118,6 +128,11 @@ export const LIVE_CATALOG_STREAMS = Object.freeze([
     id: "fontsource",
     label: "Fontsource Open Fonts",
     authority: "Fontsource / Google Fonts",
+    basisPrime: 19,
+    organIri: "urn:verdant:sensory:fontsource",
+    sensoryModality: "W3C CSS Fonts Level 4 Typography & Legibility",
+    schemaTypes: ["CreativeWork"],
+    mediaTypes: ["font/woff2"],
     endpoint: "https://api.fontsource.org/v1/fonts",
     contentTypes: ["Font"],
   },
@@ -125,6 +140,11 @@ export const LIVE_CATALOG_STREAMS = Object.freeze([
     id: "openverse",
     label: "Openverse Creative Commons",
     authority: "Openverse / WordPress Foundation",
+    basisPrime: 23,
+    organIri: "urn:verdant:sensory:openverse",
+    sensoryModality: "Spatial Audio Soundscapes, Foley & Visual Artwork",
+    schemaTypes: ["AudioObject", "CreativeWork"],
+    mediaTypes: ["audio/mpeg", "audio/ogg", "image/jpeg"],
     endpoint: "https://api.openverse.org/v1/",
     contentTypes: ["AudioObject", "PBRMaterial"],
   },
@@ -132,6 +152,11 @@ export const LIVE_CATALOG_STREAMS = Object.freeze([
     id: "wikidata",
     label: "Wikidata Knowledge Graph",
     authority: "Wikimedia Foundation",
+    basisPrime: 29,
+    organIri: "urn:verdant:sensory:wikidata",
+    sensoryModality: "Structured World & Epistemic Ontologies (ISO 24617-2)",
+    schemaTypes: ["Dataset", "Place"],
+    mediaTypes: ["application/ld+json"],
     endpoint: "https://www.wikidata.org/w/api.php",
     contentTypes: ["Dataset", "Place", "Story"],
   },
@@ -139,6 +164,11 @@ export const LIVE_CATALOG_STREAMS = Object.freeze([
     id: "github",
     label: "GitHub Open Source Registry",
     authority: "GitHub Public Index",
+    basisPrime: 31,
+    organIri: "urn:verdant:sensory:github",
+    sensoryModality: "Executable Engines, WGSL Shaders, Maps & DTCG Themes",
+    schemaTypes: ["SoftwareSourceCode", "DefinedTermSet", "Place"],
+    mediaTypes: ["application/wasm", "application/tokens+json", "application/geo+json"],
     endpoint: "https://api.github.com/search/repositories",
     contentTypes: ["SoftwareSourceCode", "DefinedTermSet", "Place"],
   },
@@ -146,10 +176,30 @@ export const LIVE_CATALOG_STREAMS = Object.freeze([
     id: "verdant-prism",
     label: "Verdant Locked Prism Catalogs",
     authority: "UOR Foundation · SHA-256 Locked",
+    basisPrime: 37,
+    organIri: "urn:verdant:sensory:verdant-prism",
+    sensoryModality: "SHA-256-Locked World Packs, Standards & Proof Boundary",
+    schemaTypes: ["3DModel", "DefinedTermSet", "AudioObject", "Place", "Dataset", "SoftwareSourceCode"],
+    mediaTypes: ["application/octet-stream", "application/ld+json"],
     endpoint: "../catalogs/world-packs.json",
     contentTypes: ["3DModel", "PBRMaterial", "DefinedTermSet", "Font", "AudioObject", "Place", "Dataset", "Story", "SoftwareSourceCode"],
   },
 ]);
+
+const FEATURED_KHRONOS_ORDER = [
+  "DamagedHelmet",
+  "Lantern",
+  "AntiqueCamera",
+  "BoomBox",
+  "WaterBottle",
+  "Fox",
+  "Avocado",
+  "Duck",
+  "ToyCar",
+  "FlightHelmet",
+  "ABeautifulGame",
+  "CesiumMan",
+];
 
 const KHRONOS_BASE = "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/";
 
@@ -183,7 +233,13 @@ async function queryKhronosGltf(tokens, limit, timeoutMs) {
       "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/model-index.json",
       timeoutMs,
     );
-    indexCache.khronos = Array.isArray(raw) ? raw : [];
+    const list = Array.isArray(raw) ? raw : [];
+    const rank = (name) => {
+      const i = FEATURED_KHRONOS_ORDER.indexOf(name);
+      return i === -1 ? 999 : i;
+    };
+    list.sort((a, b) => rank(a?.name) - rank(b?.name));
+    indexCache.khronos = list;
   }
   const out = [];
   for (const m of indexCache.khronos) {
@@ -691,14 +747,17 @@ export async function searchLiveCatalogStreams({
   streamStatus["verdant-prism"] = { status: "live", count: localItems.length };
 
   const addRemoteTask = (id, fn) => {
+    const t0 = typeof performance !== "undefined" ? performance.now() : Date.now();
     tasks.push(
       fn()
         .then((res) => {
-          streamStatus[id] = { status: "live", count: res.length };
+          const ms = Math.max(1, Math.round((typeof performance !== "undefined" ? performance.now() : Date.now()) - t0));
+          streamStatus[id] = { status: "live", count: res.length, latencyMs: ms };
           return res;
         })
         .catch(() => {
-          streamStatus[id] = { status: "offline", count: 0 };
+          const ms = Math.max(1, Math.round((typeof performance !== "undefined" ? performance.now() : Date.now()) - t0));
+          streamStatus[id] = { status: "offline", count: 0, latencyMs: ms };
           return [];
         }),
     );

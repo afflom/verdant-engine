@@ -513,8 +513,79 @@ fn import_gltf_node_recursive(
 /// Imports an external Khronos `.glb` or `.gltf` container into a live [`ImportedGlbScene`]
 /// (`SceneWorld` hierarchy, `ProceduralMesh` geometry, `PbrMaterial` descriptors, `Skeleton` skins,
 /// and `SkeletalClip` keyframe animations).
+fn sample_gltf_base_color(img: &gltf::image::Data, u: f32, v: f32) -> [f32; DIM_HOMOGENEOUS] {
+    if img.width == 0 || img.height == 0 || img.pixels.is_empty() {
+        return [1.0, 1.0, 1.0, 1.0];
+    }
+    let uf = if u.is_finite() {
+        u.rem_euclid(1.0)
+    } else {
+        0.0
+    };
+    let vf = if v.is_finite() {
+        v.rem_euclid(1.0)
+    } else {
+        0.0
+    };
+    let max_x = img.width.saturating_sub(1);
+    let max_y = img.height.saturating_sub(1);
+    let px = ((uf * (max_x as f32)).round() as u32).min(max_x) as usize;
+    let py = ((vf * (max_y as f32)).round() as u32).min(max_y) as usize;
+    let pix_idx = py * (img.width as usize) + px;
+    let denom = ((1u32 << (1 + 1 + 1 + 1 + 1 + 1 + 1 + 1)) - 1) as f32;
+    let two = 1usize + 1usize;
+    let three = two + 1usize;
+    let four = two * two;
+
+    match img.format {
+        gltf::image::Format::R8G8B8A8 => {
+            let o = pix_idx * four;
+            if o + three < img.pixels.len() {
+                [
+                    f32::from(img.pixels[o]) / denom,
+                    f32::from(img.pixels[o + 1]) / denom,
+                    f32::from(img.pixels[o + two]) / denom,
+                    f32::from(img.pixels[o + three]) / denom,
+                ]
+            } else {
+                [1.0, 1.0, 1.0, 1.0]
+            }
+        }
+        gltf::image::Format::R8G8B8 => {
+            let o = pix_idx * three;
+            if o + two < img.pixels.len() {
+                [
+                    f32::from(img.pixels[o]) / denom,
+                    f32::from(img.pixels[o + 1]) / denom,
+                    f32::from(img.pixels[o + two]) / denom,
+                    1.0,
+                ]
+            } else {
+                [1.0, 1.0, 1.0, 1.0]
+            }
+        }
+        gltf::image::Format::R8G8 => {
+            let o = pix_idx * two;
+            if o + 1 < img.pixels.len() {
+                let l = f32::from(img.pixels[o]) / denom;
+                let a = f32::from(img.pixels[o + 1]) / denom;
+                [l, l, l, a]
+            } else {
+                [1.0, 1.0, 1.0, 1.0]
+            }
+        }
+        gltf::image::Format::R8 if pix_idx < img.pixels.len() => {
+            let l = f32::from(img.pixels[pix_idx]) / denom;
+            [l, l, l, 1.0]
+        }
+        _ => [1.0, 1.0, 1.0, 1.0],
+    }
+}
+
+/// Imports a Khronos glTF 2.0 binary (`.glb`) payload into a validated [`ImportedGlbScene`],
+/// sampling embedded `baseColorTexture` images into vertex albedo colors for immediate HD rendering.
 pub fn import_glb_to_scene(bytes: &[u8]) -> Result<ImportedGlbScene, AssetValidationError> {
-    let (document, buffers, _images) =
+    let (document, buffers, images) =
         gltf::import_slice(bytes).map_err(|err| AssetValidationError::GltfOracleRejected {
             oracle_message: err.to_string(),
         })?;
@@ -640,21 +711,46 @@ pub fn import_glb_to_scene(bytes: &[u8]) -> Result<ImportedGlbScene, AssetValida
             } else {
                 [1.0, 1.0, 1.0, 1.0]
             };
+            let base_tex_img = prim
+                .material()
+                .pbr_metallic_roughness()
+                .base_color_texture()
+                .and_then(|info| images.get(info.texture().source().index()));
+            let uv_start = uvs.len().saturating_sub(v_count);
             match reader.read_colors(0) {
                 Some(col) => {
-                    for c in col.into_rgba_f32() {
+                    for (local_i, c) in col.into_rgba_f32().enumerate() {
+                        let tex = base_tex_img.map_or([1.0, 1.0, 1.0, 1.0], |img| {
+                            let uv = uvs.get(uv_start + local_i).copied().unwrap_or([0.0, 0.0]);
+                            sample_gltf_base_color(img, uv[0], uv[1])
+                        });
                         colors.push([
-                            (c[0] * mat_tint[0]).clamp(0.0, 1.0),
-                            (c[1] * mat_tint[1]).clamp(0.0, 1.0),
-                            (c[i2] * mat_tint[i2]).clamp(0.0, 1.0),
-                            (c[i3] * mat_tint[i3]).clamp(0.0, 1.0),
+                            (c[0] * mat_tint[0] * tex[0]).clamp(0.0, 1.0),
+                            (c[1] * mat_tint[1] * tex[1]).clamp(0.0, 1.0),
+                            (c[i2] * mat_tint[i2] * tex[i2]).clamp(0.0, 1.0),
+                            (c[i3] * mat_tint[i3] * tex[i3]).clamp(0.0, 1.0),
                         ]);
                     }
                     if colors.len() < positions.len() {
                         colors.resize(positions.len(), mat_tint);
                     }
                 }
-                None => colors.resize(positions.len(), mat_tint),
+                None => {
+                    if let Some(img) = base_tex_img {
+                        for local_i in 0..v_count {
+                            let uv = uvs.get(uv_start + local_i).copied().unwrap_or([0.0, 0.0]);
+                            let tex = sample_gltf_base_color(img, uv[0], uv[1]);
+                            colors.push([
+                                (mat_tint[0] * tex[0]).clamp(0.0, 1.0),
+                                (mat_tint[1] * tex[1]).clamp(0.0, 1.0),
+                                (mat_tint[i2] * tex[i2]).clamp(0.0, 1.0),
+                                (mat_tint[i3] * tex[i3]).clamp(0.0, 1.0),
+                            ]);
+                        }
+                    } else {
+                        colors.resize(positions.len(), mat_tint);
+                    }
+                }
             }
 
             match reader.read_indices() {

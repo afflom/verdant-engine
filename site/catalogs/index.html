@@ -383,6 +383,138 @@
       color: var(--muted-foreground);
     }
 
+    /* Observer Sensory Streams & High-Resolution Live Gallery */
+    .cat-sensory-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(17.5rem, 1fr));
+      gap: var(--space-3);
+    }
+    .cat-sensory-card {
+      padding: var(--space-3);
+      border: var(--border-width) solid var(--border);
+      border-radius: var(--radius);
+      background: var(--card);
+      display: grid;
+      gap: var(--space-2);
+      cursor: pointer;
+      text-align: left;
+      color: var(--foreground);
+    }
+    .cat-sensory-card:hover { border-color: var(--border-strong); background: var(--sidebar); }
+    .cat-sensory-card[aria-pressed="true"] { border-color: var(--brand); background: var(--sidebar); }
+    .cat-sensory-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-2);
+    }
+    .cat-sensory-prime {
+      font-family: var(--font-mono);
+      font-size: var(--text-14);
+      color: var(--brand);
+      font-weight: 600;
+    }
+    .cat-sensory-state {
+      font-family: var(--font-mono);
+      font-size: var(--text-14);
+      color: var(--muted-foreground);
+    }
+    .cat-sensory-state[data-status="live"] { color: var(--success); }
+
+    .cat-gallery-bar {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 15rem auto;
+      gap: var(--space-2);
+    }
+    @media (max-width: 760px) {
+      .cat-gallery-bar { grid-template-columns: 1fr; }
+    }
+    .cat-gallery-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-1);
+    }
+    .cat-pill {
+      min-height: 2.25rem;
+      padding: 0 var(--space-3);
+      border-radius: var(--radius-control);
+      border: var(--border-width) solid var(--border);
+      background: var(--card);
+      color: var(--muted-foreground);
+      font-family: var(--font-mono);
+      font-size: var(--text-14);
+      cursor: pointer;
+    }
+    .cat-pill:hover { color: var(--foreground); border-color: var(--border-strong); }
+    .cat-pill[aria-pressed="true"] {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: var(--primary-foreground);
+      font-weight: 600;
+    }
+    .cat-gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(19rem, 1fr));
+      gap: var(--space-4);
+    }
+    .cat-gallery-card {
+      border: var(--border-width) solid var(--border-strong);
+      border-radius: var(--radius);
+      background: var(--card);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .cat-gallery-media {
+      aspect-ratio: 16 / 10;
+      background: var(--muted);
+      border-bottom: var(--border-width) solid var(--border);
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      padding: var(--space-3);
+      text-align: center;
+    }
+    .cat-gallery-media img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .cat-gallery-body {
+      padding: var(--space-3) var(--space-4);
+      display: grid;
+      gap: var(--space-1);
+      flex: 1;
+    }
+    .cat-gallery-meta {
+      font-family: var(--font-mono);
+      font-size: var(--text-14);
+      color: var(--brand);
+    }
+    .cat-gallery-body h3 {
+      margin: 0;
+      font-family: var(--font-display);
+      font-size: var(--text-18);
+      font-weight: 600;
+    }
+    .cat-gallery-body p {
+      margin: 0;
+      font-size: var(--text-14);
+      color: var(--muted-foreground);
+      line-height: 1.45;
+    }
+    .cat-gallery-foot {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+      padding: var(--space-3) var(--space-4);
+      border-top: var(--border-width) solid var(--border);
+      background: var(--sidebar);
+    }
+    .cat-gallery-foot .cat-btn { flex: 1; }
+
     .cat-footer {
       border-top: var(--border-width) solid var(--border);
       padding: var(--space-4) clamp(1rem, 4vw, 2.5rem);
@@ -449,19 +581,44 @@
       </div>
     </section>
 
-    <section class="cat-section" aria-labelledby="cat-organs-h2">
+    <section class="cat-section" aria-labelledby="cat-sensory-h2">
       <div>
-        <h2 class="cat-h2" id="cat-organs-h2">01. Differentiated Verdant Platform Cognitive Architecture</h2>
+        <h2 class="cat-h2" id="cat-sensory-h2">01. Observer Sensory Streams · Differentiated Catalog Organs</h2>
         <p class="cat-sec-sub">
-          Each organ of Verdant carries its own cognitive role, domain-specific lexicon, and governing authorities while sharing one immutable Prism proof boundary.
+          Every external and local catalog stream is a differentiated sensory input organ of the Verdant Observer, assigned an orthogonal Prism basis prime (<code>13..37</code>), authoritative Schema.org <code>@type</code>, and IANA media types. Select any stream to focus the live gallery below.
         </p>
       </div>
-      <div class="cat-organ-grid" id="cat-organ-grid"></div>
+      <div class="cat-sensory-grid" id="cat-sensory-grid"></div>
+    </section>
+
+    <section class="cat-section" aria-labelledby="cat-gallery-h2">
+      <div>
+        <h2 class="cat-h2" id="cat-gallery-h2">02. High-Resolution Live Catalog Gallery · Featured Content</h2>
+        <p class="cat-sec-sub" id="cat-gallery-summary">
+          Streaming featured 3D models, 4K PBR materials, open typography, audio soundscapes, ontologies, and shaders live from authoritative public catalogs. Click any asset to open and compose it directly in Verdant Studio.
+        </p>
+      </div>
+      <form class="cat-gallery-bar" id="cat-gallery-form" autocomplete="off">
+        <input id="cat-gallery-search" class="cat-input" type="search" aria-label="Search live catalog gallery" placeholder="Search helmet, lantern, chair, forest, mono, observatory, wgsl…" />
+        <select id="cat-gallery-stream" class="cat-select" aria-label="Filter gallery stream">
+          <option value="all">All 7 Sensory Streams</option>
+          <option value="khronos-gltf">Khronos glTF 2.0 (.glb)</option>
+          <option value="polyhaven">Poly Haven CC0 (3D &amp; PBR)</option>
+          <option value="fontsource">Fontsource Open Fonts</option>
+          <option value="openverse">Openverse CC (Audio &amp; Art)</option>
+          <option value="wikidata">Wikidata Knowledge Graph</option>
+          <option value="github">GitHub OSS Registry</option>
+          <option value="verdant-prism">Verdant Locked Prism</option>
+        </select>
+        <button type="submit" class="cat-btn primary" id="cat-gallery-btn">Stream Live</button>
+      </form>
+      <div class="cat-gallery-pills" id="cat-gallery-pills" role="group" aria-label="Filter gallery by authoritative Schema.org content type"></div>
+      <div class="cat-gallery-grid" id="cat-live-gallery"></div>
     </section>
 
     <section class="cat-section" aria-labelledby="cat-domains-h2">
       <div>
-        <h2 class="cat-h2" id="cat-domains-h2">02. Imported High-Definition Domain Packs · Compose in Studio</h2>
+        <h2 class="cat-h2" id="cat-domains-h2">03. Imported High-Definition Domain Packs · Compose in Studio</h2>
         <p class="cat-sec-sub">
           Hydrated directly from SHA-256-locked <code>AUTH-DOMAIN-PACKS</code> (<code>world-packs.json</code>): each pack imports Khronos glTF HD materials, 22-joint character rigs, conserved item ledgers, Sabine acoustics, and ISO 24617-2 dialogue facts straight into Verdant Studio.
         </p>
@@ -469,9 +626,19 @@
       <div class="cat-organ-grid" id="cat-domain-grid"></div>
     </section>
 
+    <section class="cat-section" aria-labelledby="cat-organs-h2">
+      <div>
+        <h2 class="cat-h2" id="cat-organs-h2">04. Differentiated Verdant Platform Cognitive Architecture</h2>
+        <p class="cat-sec-sub">
+          Each organ of Verdant carries its own cognitive role, domain-specific lexicon, and governing authorities while sharing one immutable Prism proof boundary.
+        </p>
+      </div>
+      <div class="cat-organ-grid" id="cat-organ-grid"></div>
+    </section>
+
     <section class="cat-section" aria-labelledby="cat-registry-h2">
       <div>
-        <h2 class="cat-h2" id="cat-registry-h2">03. Imported Standards, Frameworks, Harnesses &amp; Policy Catalogs</h2>
+        <h2 class="cat-h2" id="cat-registry-h2">05. Imported Standards, Frameworks, Harnesses &amp; Policy Catalogs</h2>
         <p class="cat-sec-sub" id="cat-count-label">
           Filter models by product lifecycle stage, domain taxonomy, or functional Studio role, and execute live Core-Wasm verification against <code>/app.holo</code>.
         </p>

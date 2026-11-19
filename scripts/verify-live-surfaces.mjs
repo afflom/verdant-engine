@@ -366,6 +366,7 @@ try {
       () =>
         document.querySelectorAll("#studio-inline-host .ve-m-tab").length === 7 &&
         document.querySelectorAll("#wiz-domain-grid .proj-domain-btn").length === 4 &&
+        document.querySelectorAll("#studio-workflow-bar .wf-step").length === 5 &&
         document.querySelectorAll("#disc-results-grid .disc-card").length >= 6 &&
         (document.getElementById("studio-holo-status")?.textContent || "").includes("Atelier Ready"),
       null,
@@ -461,6 +462,8 @@ try {
     await page.goto(`${origin}catalogs/`, { waitUntil: "load" });
     await page.waitForFunction(
       () =>
+        document.querySelectorAll("#cat-sensory-grid .cat-sensory-card").length === 7 &&
+        document.querySelectorAll("#cat-live-gallery .cat-gallery-card").length >= 6 &&
         document.querySelectorAll("#cat-organ-grid .cat-organ-card").length === 5 &&
         document.querySelectorAll("#cat-domain-grid .cat-organ-card").length === 4 &&
         document.querySelectorAll("#cat-list .cat-entry").length >= 36 &&

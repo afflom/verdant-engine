@@ -340,9 +340,13 @@ function drawScene(eye, lookTarget, lodSpec, simClockSec, rebuildDynamic = false
   } else if (split) {
     renderer.uploadSplitBuffers(split.staticViews, split.dynViews, split.instViews);
     const fovRad = Math.PI / 3.4;
-    const proj = mat4Perspective(fovRad, aspect, 0.25, CSM_FAR_METERS);
+    const nearPlane = customGlbActive ? 0.05 : 0.25;
+    const proj = mat4Perspective(fovRad, aspect, nearPlane, CSM_FAR_METERS);
     const view = mat4LookAt(eye, lookTarget, [0, 1, 0]);
-    renderer.render(mat4Mul(proj, view), eye, lodSpec, simClockSec || 0, lookTarget, fovRad, forceSync);
+    const effectiveLod = customGlbActive
+      ? { ...(lodSpec || {}), rank: 3, sky: [0.06, 0.07, 0.09], fog: [0.06, 0.07, 0.09] }
+      : lodSpec;
+    renderer.render(mat4Mul(proj, view), eye, effectiveLod, simClockSec || 0, lookTarget, fovRad, forceSync);
   }
 
   return { tris: split?.tris ?? 0, aspect };
@@ -486,9 +490,10 @@ self.onmessage = async ({ data: msg }) => {
       if (forceTileMode) {
         await ensureUorcSceneHost();
       }
+      if (msg.lod) currentLod = msg.lod;
       const sh = simHost();
       const cam = readSolvedCamera(sh);
-      const stats = drawScene(cam.eye, cam.lookTarget, currentLod, msg.simClockSec || 0, false);
+      const stats = drawScene(cam.eye, cam.lookTarget, currentLod, msg.simClockSec || 0, false, 0, 0, true);
       self.postMessage({
         kind: "render-mode-set",
         id: msg.id,
@@ -707,7 +712,19 @@ self.onmessage = async ({ data: msg }) => {
       customGlbActive = true;
       const uorcStream = readAuxBytes(uorcWasm);
       const cam = readSolvedCamera(simHost());
-      drawScene(cam.eye, cam.lookTarget, currentLod || { sky: [0.18, 0.30, 0.38], fog: [0.30, 0.40, 0.44] }, 0, false);
+      lastAnchor = [cam.lookTarget[0], cam.lookTarget[1], cam.lookTarget[2]];
+      lastAnchorActive = true;
+      const dx = cam.eye[0] - cam.lookTarget[0];
+      const dy = cam.eye[1] - cam.lookTarget[1];
+      const dz = cam.eye[2] - cam.lookTarget[2];
+      const distM = Math.max(0.5, Math.hypot(dx, dy, dz));
+      lastPose = {
+        yaw: Math.round(Math.atan2(dx, dz) * 1000),
+        pitch: Math.round(Math.asin(Math.max(-0.95, Math.min(0.95, dy / distM))) * 1000),
+        distMm: Math.round(distM * 1000) >>> 0,
+        aspectMilli: lastPose?.aspectMilli || 1600,
+      };
+      drawScene(cam.eye, cam.lookTarget, currentLod || { sky: [0.18, 0.30, 0.38], fog: [0.30, 0.40, 0.44] }, 0, false, 0, 0, true);
       self.postMessage(
         {
           kind: "glb-imported",
@@ -715,6 +732,7 @@ self.onmessage = async ({ data: msg }) => {
           ok: true,
           tris,
           verts: uorcWasm.verdant_wasm_scene_vert_count() >>> 0,
+          camera: cam,
           uorcBytes: uorcStream,
         },
         [uorcStream.buffer],
@@ -1113,9 +1131,22 @@ self.onmessage = async ({ data: msg }) => {
       uorcSceneActive = true;
       walkJournal.length = 0;
       activeSeed = BigInt(uorcWasm.verdant_wasm_active_seed());
+      if (msg.lod) currentLod = msg.lod;
       const sh = simHost();
       const cam = readSolvedCamera(sh);
-      const stats = drawScene(cam.eye, cam.lookTarget, currentLod, msg.simClockSec || 0, false);
+      lastAnchor = [cam.lookTarget[0], cam.lookTarget[1], cam.lookTarget[2]];
+      lastAnchorActive = true;
+      const dx = cam.eye[0] - cam.lookTarget[0];
+      const dy = cam.eye[1] - cam.lookTarget[1];
+      const dz = cam.eye[2] - cam.lookTarget[2];
+      const distM = Math.max(1.0, Math.hypot(dx, dy, dz));
+      lastPose = {
+        yaw: Math.round(Math.atan2(dx, dz) * 1000),
+        pitch: Math.round(Math.asin(Math.max(-0.95, Math.min(0.95, dy / distM))) * 1000),
+        distMm: Math.round(distM * 1000) >>> 0,
+        aspectMilli: lastPose?.aspectMilli || 1600,
+      };
+      const stats = drawScene(cam.eye, cam.lookTarget, currentLod, msg.simClockSec || 0, false, 0, 0, true);
       self.postMessage({
         kind: "domain-pack-loaded",
         id: msg.id,

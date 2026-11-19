@@ -1082,6 +1082,29 @@ impl WasmRuntimeBridge {
         let anchor = self.camera_anchor_override.unwrap_or(default_head);
         let seed_copy = self.seed_val;
         let relief_copy = self.terrain_params;
+        #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+        let solved = if self.custom_glb_scene.is_some() {
+            let empty_bvh = TwoLevelBvh::build_solid(&SceneWorld::new(), &[])
+                .unwrap_or_else(|_| self.two_level_bvh.clone());
+            let five = (prism_kernel::sTwo() + prism_kernel::sThree()) as f64;
+            let floor_y = anchor.y - five * five;
+            self.camera_rig
+                .solve_frame(dt_seconds, anchor, &empty_bvh, |_, _| floor_y)
+                .map_err(|e| WasmBridgeError::InvalidSnapshotEnvelope {
+                    byte_len: 0,
+                    reason: bridge_reason(e),
+                })?
+        } else {
+            self.camera_rig
+                .solve_frame(dt_seconds, anchor, &self.two_level_bvh, |x, z| {
+                    hd_terrain_height(seed_copy, &relief_copy, x, z)
+                })
+                .map_err(|e| WasmBridgeError::InvalidSnapshotEnvelope {
+                    byte_len: 0,
+                    reason: bridge_reason(e),
+                })?
+        };
+        #[cfg(all(target_arch = "wasm32", not(feature = "uorc-decoder")))]
         let solved = self
             .camera_rig
             .solve_frame(dt_seconds, anchor, &self.two_level_bvh, |x, z| {
@@ -3242,10 +3265,70 @@ pub extern "C" fn verdant_wasm_glb_import_io() -> u32 {
     bridge.imported_glb_skin_clip_counts = (imported.skeletons.len(), imported.clips.len());
     bridge.custom_glb_scene = Some((imported.scene, imported.meshes, imported.materials));
     bridge.static_dirty = true;
-    let _ = bridge.solve_active_camera(0.0);
     let tris = bridge.rebuild_scene_buffers(0.0).unwrap_or(0);
-    if let Ok(uorc_stream) = transcode_glb_to_progressive_uorc(&bridge.io_buffer, bridge.seed_val) {
-        bridge.aux_buffer = uorc_stream;
+
+    // Auto-frame the camera smoothly around the imported .glb's exact world-space bounding sphere:
+    let mut min_p = [f64::INFINITY; 1 + 1 + 1];
+    let mut max_p = [f64::NEG_INFINITY; 1 + 1 + 1];
+    let three = 1usize + 1usize + 1usize;
+    let two = 1usize + 1usize;
+    for chunk in bridge.scene_buffers.positions_xyz.chunks_exact(three) {
+        let px = f64::from(chunk[0]);
+        let py = f64::from(chunk[1]);
+        let pz = f64::from(chunk[two]);
+        if px.is_finite() && py.is_finite() && pz.is_finite() {
+            if px < min_p[0] {
+                min_p[0] = px;
+            }
+            if py < min_p[1] {
+                min_p[1] = py;
+            }
+            if pz < min_p[two] {
+                min_p[two] = pz;
+            }
+            if px > max_p[0] {
+                max_p[0] = px;
+            }
+            if py > max_p[1] {
+                max_p[1] = py;
+            }
+            if pz > max_p[two] {
+                max_p[two] = pz;
+            }
+        }
+    }
+    if min_p[0].is_finite() && max_p[0].is_finite() {
+        let half = 1.0 / (prism_kernel::sTwo() as f64);
+        let cx = (min_p[0] + max_p[0]) * half;
+        let cy = (min_p[1] + max_p[1]) * half;
+        let cz = (min_p[two] + max_p[two]) * half;
+        let dx = (max_p[0] - min_p[0]) * half;
+        let dy = (max_p[1] - min_p[1]) * half;
+        let dz = (max_p[two] - min_p[two]) * half;
+        let radius = (dx * dx + dy * dy + dz * dz).sqrt().max(half * half);
+        let frame_dist = (radius * (1.0 + 1.0 + 1.0 + half))
+            .max(1.0 + 1.0)
+            .min(bridge.camera_rig.config.max_orbit_distance_meters);
+        bridge.camera_anchor_override = Some(Vec3::new(cx, cy, cz));
+        bridge.camera_rig.mode = CameraMode::ThirdPersonSpringArm;
+        bridge.camera_rig.yaw_radians = half * half;
+        bridge.camera_rig.pitch_radians = half * half * half;
+        bridge.camera_rig.desired_distance_meters = frame_dist;
+        bridge.camera_rig.current_distance_meters = frame_dist;
+    }
+    let _ = bridge.solve_active_camera(0.0);
+
+    // Keep fast UORC stream transcoding bounded for multi-MB live internet .glb previews:
+    let fast_uorc_limit =
+        1usize << (1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1);
+    if bridge.io_buffer.len() <= fast_uorc_limit {
+        if let Ok(uorc_stream) =
+            transcode_glb_to_progressive_uorc(&bridge.io_buffer, bridge.seed_val)
+        {
+            bridge.aux_buffer = uorc_stream;
+        } else if let Ok(snap) = WorldSnapshot::encode_uorc(&bridge.world) {
+            bridge.aux_buffer = snap;
+        }
     } else if let Ok(snap) = WorldSnapshot::encode_uorc(&bridge.world) {
         bridge.aux_buffer = snap;
     }
@@ -4191,6 +4274,20 @@ pub extern "C" fn verdant_wasm_load_domain_pack(domain_idx: u32) -> u32 {
     bridge.npc_patrol_active = true;
     bridge.static_dirty = true;
     let _ = bridge.rebuild_scene_buffers(0.0);
+
+    let two_f = prism_kernel::sTwo() as f64;
+    let three_f = prism_kernel::sThree() as f64;
+    let four_f = two_f * two_f;
+    let nine_f = three_f * three_f;
+    let half_f = 1.0 / two_f;
+    let overview_dist = nine_f * two_f;
+    bridge.camera_anchor_override = Some(Vec3::new(two_f, four_f, nine_f));
+    bridge.camera_rig.mode = CameraMode::ThirdPersonSpringArm;
+    bridge.camera_rig.yaw_radians = half_f;
+    bridge.camera_rig.pitch_radians = half_f * half_f;
+    bridge.camera_rig.desired_distance_meters = overview_dist;
+    bridge.camera_rig.current_distance_meters = overview_dist;
+    let _ = bridge.solve_active_camera(0.0);
 
     bridge.aux_buffer = bridge.observer_holon.to_status_json_bytes();
     bridge.aux_buffer.len() as u32

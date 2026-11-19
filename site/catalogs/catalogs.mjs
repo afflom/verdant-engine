@@ -4,6 +4,11 @@
 
 import { kappa, load } from "../worker-runtime/index.mjs";
 import {
+  AUTHORITATIVE_CONTENT_TYPES,
+  LIVE_CATALOG_STREAMS,
+  searchLiveCatalogStreams,
+} from "../catalog-streams.mjs";
+import {
   CATALOG_DOMAINS,
   LIFECYCLE_STAGES,
   VERDANT_PLATFORM_ORGANS,
@@ -22,6 +27,13 @@ const kpiPhases = $("cat-kpi-phases");
 const kpiProofs = $("cat-kpi-proofs");
 const organGrid = $("cat-organ-grid");
 const domainGrid = $("cat-domain-grid");
+const sensoryGrid = $("cat-sensory-grid");
+const galleryForm = $("cat-gallery-form");
+const gallerySearch = $("cat-gallery-search");
+const galleryStreamSel = $("cat-gallery-stream");
+const galleryPills = $("cat-gallery-pills");
+const gallerySummary = $("cat-gallery-summary");
+const galleryGrid = $("cat-live-gallery");
 const lifecycleSel = $("cat-filter-lifecycle");
 const domainSel = $("cat-filter-domain");
 const roleSel = $("cat-filter-role");
@@ -242,6 +254,201 @@ verifyAllBtn?.addEventListener("click", async () => {
   verifyAllBtn.textContent = "All Displayed Proofs Verified";
 });
 
+let loadedWorldPacks = [];
+let galleryContentType = "all";
+let latestStreamStatus = {};
+
+function renderSensoryStreams() {
+  if (!sensoryGrid) return;
+  const activeStream = galleryStreamSel?.value || "all";
+  sensoryGrid.replaceChildren();
+  for (const s of LIVE_CATALOG_STREAMS) {
+    const st = latestStreamStatus[s.id];
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "cat-sensory-card";
+    btn.dataset.sensoryStream = s.id;
+    btn.setAttribute("aria-pressed", activeStream === s.id ? "true" : "false");
+
+    const top = document.createElement("div");
+    top.className = "cat-sensory-top";
+    const prime = document.createElement("span");
+    prime.className = "cat-sensory-prime";
+    prime.textContent = `Prime ${s.basisPrime} · ${s.authority}`;
+    const state = document.createElement("span");
+    state.className = "cat-sensory-state";
+    if (st) {
+      state.dataset.status = st.status;
+      state.textContent = st.status === "live"
+        ? `LIVE · ${st.count} items${st.latencyMs ? ` · ${st.latencyMs}ms` : ""}`
+        : "OFFLINE";
+    } else {
+      state.textContent = "Probing…";
+    }
+    top.append(prime, state);
+
+    const h3 = document.createElement("strong");
+    h3.style.fontFamily = "var(--font-display)";
+    h3.style.fontSize = "var(--text-16)";
+    h3.textContent = s.label;
+
+    const mod = document.createElement("span");
+    mod.style.fontSize = "var(--text-14)";
+    mod.style.color = "var(--muted-foreground)";
+    mod.textContent = s.sensoryModality;
+
+    const iri = document.createElement("span");
+    iri.style.fontFamily = "var(--font-mono)";
+    iri.style.fontSize = "var(--text-14)";
+    iri.style.color = "var(--muted-foreground)";
+    iri.textContent = `${s.organIri} · ${s.mediaTypes.slice(0, 2).join(", ")}`;
+
+    btn.append(top, h3, mod, iri);
+    btn.addEventListener("click", () => {
+      if (galleryStreamSel) {
+        galleryStreamSel.value = galleryStreamSel.value === s.id ? "all" : s.id;
+      }
+      refreshLiveGallery();
+    });
+    sensoryGrid.append(btn);
+  }
+}
+
+function renderGalleryPills() {
+  if (!galleryPills) return;
+  galleryPills.replaceChildren();
+  for (const ct of AUTHORITATIVE_CONTENT_TYPES) {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "cat-pill";
+    b.dataset.galleryType = ct.key;
+    b.setAttribute("aria-pressed", ct.key === galleryContentType ? "true" : "false");
+    b.textContent = ct.label;
+    b.addEventListener("click", () => {
+      galleryContentType = ct.key;
+      galleryPills.querySelectorAll(".cat-pill").forEach((el) => {
+        el.setAttribute("aria-pressed", el.dataset.galleryType === galleryContentType ? "true" : "false");
+      });
+      refreshLiveGallery();
+    });
+    galleryPills.append(b);
+  }
+}
+
+function buildStudioDeepLink(item) {
+  const qs = new URLSearchParams();
+  qs.set("stream", item.streamId);
+  qs.set("type", item.contentTypeKey);
+  qs.set("q", item.title.split("(")[0].trim());
+  if (item.glbUrl) {
+    qs.set("autoGlb", item.glbUrl);
+    qs.set("autoTitle", item.title);
+  }
+  return new URL(`../studio/?${qs.toString()}`, import.meta.url).href;
+}
+
+let gallerySeq = 0;
+async function refreshLiveGallery() {
+  const seq = ++gallerySeq;
+  const res = await searchLiveCatalogStreams({
+    query: gallerySearch?.value || "",
+    contentType: galleryContentType,
+    streamId: galleryStreamSel?.value || "all",
+    localWorldPacks: loadedWorldPacks,
+  });
+  if (seq !== gallerySeq) return;
+  latestStreamStatus = res.streamStatus || {};
+  renderSensoryStreams();
+
+  if (gallerySummary) {
+    gallerySummary.textContent =
+      `Showing ${res.totalCount} featured assets (${res.liveRemoteCount} live internet stream · ${res.localLockedCount} Prism locked) across differentiated Observer sensory organs.`;
+  }
+  if (!galleryGrid) return;
+  galleryGrid.replaceChildren();
+  for (const item of (res.items || []).slice(0, 18)) {
+    const card = document.createElement("article");
+    card.className = "cat-gallery-card";
+    card.dataset.galleryModelId = item.id;
+
+    const media = document.createElement("div");
+    media.className = "cat-gallery-media";
+    if (item.previewUrl && (item.streamId === "khronos-gltf" || item.streamId === "polyhaven" || (item.streamId === "openverse" && item.contentTypeKey === "PBRMaterial"))) {
+      const img = document.createElement("img");
+      img.src = item.previewUrl;
+      img.alt = item.title;
+      img.loading = "lazy";
+      media.append(img);
+    } else if (item.contentTypeKey === "AudioObject" && item.previewUrl) {
+      const wrap = document.createElement("div");
+      wrap.style.width = "100%";
+      wrap.style.display = "grid";
+      wrap.style.gap = "var(--space-2)";
+      const lbl = document.createElement("span");
+      lbl.style.fontFamily = "var(--font-mono)";
+      lbl.style.fontSize = "var(--text-14)";
+      lbl.textContent = `AudioObject · ${item.mediaType}`;
+      const aud = document.createElement("audio");
+      aud.controls = true;
+      aud.src = item.previewUrl;
+      aud.style.width = "100%";
+      wrap.append(lbl, aud);
+      media.append(wrap);
+    } else if (item.contentTypeKey === "Font") {
+      const spec = document.createElement("div");
+      spec.style.fontSize = "1.75rem";
+      spec.style.fontWeight = "600";
+      spec.style.lineHeight = "1.2";
+      spec.textContent = `Aa Bb Cc\n${item.properties?.fontFamily || item.title}`;
+      media.append(spec);
+    } else {
+      const badge = document.createElement("div");
+      badge.style.fontFamily = "var(--font-mono)";
+      badge.style.fontSize = "var(--text-14)";
+      badge.style.color = "var(--muted-foreground)";
+      badge.textContent = `${item.schemaType}\n${item.mediaType}\n-> ${item.targetSlot}`;
+      media.append(badge);
+    }
+
+    const body = document.createElement("div");
+    body.className = "cat-gallery-body";
+    const meta = document.createElement("div");
+    meta.className = "cat-gallery-meta";
+    meta.textContent = `${item.schemaType} · ${item.streamLabel} · ${item.licenseSpdx}`;
+    const h3 = document.createElement("h3");
+    h3.textContent = item.title;
+    const desc = document.createElement("p");
+    desc.textContent = item.description;
+    body.append(meta, h3, desc);
+
+    const foot = document.createElement("div");
+    foot.className = "cat-gallery-foot";
+    const openLink = document.createElement("a");
+    openLink.className = "cat-btn primary";
+    openLink.href = buildStudioDeepLink(item);
+    openLink.textContent = item.glbUrl ? "Load 3D & Compose in Studio" : "Import & Compose in Studio";
+    foot.append(openLink);
+    if (item.sourceUri?.startsWith("http")) {
+      const srcLink = document.createElement("a");
+      srcLink.className = "cat-btn";
+      srcLink.href = item.sourceUri;
+      srcLink.target = "_blank";
+      srcLink.rel = "noopener noreferrer";
+      srcLink.textContent = "Source";
+      foot.append(srcLink);
+    }
+
+    card.append(media, body, foot);
+    galleryGrid.append(card);
+  }
+}
+
+galleryForm?.addEventListener("submit", (e) => {
+  e.preventDefault();
+  refreshLiveGallery();
+});
+galleryStreamSel?.addEventListener("change", refreshLiveGallery);
+
 async function renderImportedDomainPacks() {
   if (!domainGrid) return;
   try {
@@ -249,6 +456,7 @@ async function renderImportedDomainPacks() {
     if (!res.ok) return;
     const data = await res.json();
     const domains = Array.isArray(data?.domains) ? data.domains : [];
+    loadedWorldPacks = domains;
     domainGrid.replaceChildren();
     for (const d of domains) {
       const card = document.createElement("article");
@@ -292,7 +500,9 @@ async function renderImportedDomainPacks() {
 
 renderPlatformOrgans();
 renderCatalogList();
-renderImportedDomainPacks();
+renderSensoryStreams();
+renderGalleryPills();
+renderImportedDomainPacks().then(() => refreshLiveGallery());
 
 // Load `/app.holo`, verify BLAKE3 self-fingerprint, replay acceptance vectors, and verify visible entries:
 (async () => {

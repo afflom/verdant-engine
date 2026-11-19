@@ -193,6 +193,102 @@ let projectModels = [];
 let selectedProjectModelId = null;
 const loadedFontUrls = new Set();
 
+const wfNextActionBtn = $("wf-next-action");
+const stageModeDomainBtn = $("stage-mode-domain");
+const stageFeaturedGlbsEl = $("stage-featured-glbs");
+
+const wfState = {
+  activeStep: 1,
+  done1: true,
+  done2: false,
+  done3: false,
+  done4: false,
+  done5: false,
+  activeStageAsset: null,
+};
+
+function syncWorkflowRibbon() {
+  const flags = [wfState.done1, wfState.done2, wfState.done3, wfState.done4, wfState.done5];
+  document.querySelectorAll("[data-wf-step]").forEach((btn) => {
+    const n = Number(btn.dataset.wfStep);
+    btn.dataset.done = flags[n - 1] ? "true" : "false";
+    if (n === wfState.activeStep) btn.setAttribute("aria-current", "step");
+    else btn.removeAttribute("aria-current");
+  });
+  if (wfNextActionBtn) {
+    if (!wfState.done2) wfNextActionBtn.textContent = "Next: Discover & Import Model →";
+    else if (!wfState.done3) wfNextActionBtn.textContent = "Next: Edit & Commit v2 →";
+    else if (!wfState.done4) wfNextActionBtn.textContent = "Next: Run Prism Quality Gate →";
+    else if (!wfState.done5) wfNextActionBtn.textContent = "Final: Seal & Export .uorc →";
+    else wfNextActionBtn.textContent = "App Certified & Sealed (.uorc) ✓";
+  }
+}
+
+function goToWorkflowStep(step) {
+  wfState.activeStep = Math.max(1, Math.min(5, step | 0));
+  syncWorkflowRibbon();
+  if (wfState.activeStep === 1) {
+    setRightRailTab("compose");
+    setWizardStep(1);
+  } else if (wfState.activeStep === 2) {
+    $("studio-discovery")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    discSearchInput?.focus();
+  } else if (wfState.activeStep === 3) {
+    setRightRailTab("inspector");
+    inspTitleEl?.focus();
+  } else if (wfState.activeStep === 4) {
+    setRightRailTab("compose");
+    setWizardStep(4);
+  } else if (wfState.activeStep === 5) {
+    exportActiveUorcArchive();
+  }
+}
+
+document.querySelectorAll("[data-wf-step]").forEach((btn) => {
+  btn.addEventListener("click", () => goToWorkflowStep(Number(btn.dataset.wfStep)));
+});
+wfNextActionBtn?.addEventListener("click", () => {
+  if (!wfState.done2) goToWorkflowStep(2);
+  else if (!wfState.done3) goToWorkflowStep(3);
+  else if (!wfState.done4) {
+    goToWorkflowStep(4);
+    runFullPrismQualityGate();
+  } else {
+    goToWorkflowStep(5);
+  }
+});
+
+stageModeDomainBtn?.addEventListener("click", async () => {
+  wfState.activeStageAsset = null;
+  stageModeDomainBtn.setAttribute("aria-pressed", "true");
+  document.querySelectorAll("[data-stage-glb-id]").forEach((b) => b.setAttribute("aria-pressed", "false"));
+  await loadCatalogDomainPack(activeDomainIdx, { userInitiated: true });
+});
+
+function renderFeaturedStageGlbs(items) {
+  if (!stageFeaturedGlbsEl) return;
+  const glbs = (items || []).filter((i) => i.glbUrl).slice(0, 5);
+  if (glbs.length === 0) return;
+  stageFeaturedGlbsEl.replaceChildren();
+  for (const item of glbs) {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "wf-stage-chip";
+    b.dataset.stageGlbId = item.id;
+    b.setAttribute("aria-pressed", wfState.activeStageAsset === item.id ? "true" : "false");
+    b.textContent = item.title;
+    b.addEventListener("click", async () => {
+      wfState.activeStageAsset = item.id;
+      stageModeDomainBtn?.setAttribute("aria-pressed", "false");
+      stageFeaturedGlbsEl.querySelectorAll("[data-stage-glb-id]").forEach((el) => {
+        el.setAttribute("aria-pressed", el.dataset.stageGlbId === item.id ? "true" : "false");
+      });
+      await loadRemoteGlbIntoStage(item.glbUrl, item.title);
+    });
+    stageFeaturedGlbsEl.append(b);
+  }
+}
+
 // Theme switcher in sticky header
 const THEMES = [
   { cls: "dark", label: "Theme: Dark" },
@@ -527,6 +623,9 @@ async function exportActiveUorcArchive() {
   a.download = `${arch.slug}.uorc`;
   a.click();
   setTimeout(() => URL.revokeObjectURL(url), 1500);
+  wfState.done5 = true;
+  wfState.activeStep = 5;
+  syncWorkflowRibbon();
   chip(statusEl, `Sealed & exported ${arch.slug}.uorc (${bytes.byteLength}B SHA-256 UORC archive)`);
   return bytes;
 }
@@ -557,9 +656,15 @@ async function loadRemoteGlbIntoStage(glbUrl, label) {
     const r = await callWorker("import-glb", { bytes }, [bytes.buffer]);
     if (r?.ok) {
       lTris = r.tris || lTris;
+      if (r.camera) {
+        sEye = r.camera.eye;
+        sTgt = r.camera.lookTarget;
+        lClr = r.camera.clearanceMm ?? lClr;
+      }
       await syncFallbackBuffers();
-      syncHud();
-      chip(statusEl, `Mounted live Khronos .glb "${label}" (${lTris.toLocaleString()} tris · UORC transcoded)`);
+      if (hudProjectEl) hudProjectEl.textContent = `Imported 3D · ${label}`;
+      if (hudMetricsEl) hudMetricsEl.textContent = `Khronos glTF 2.0 · ${lTris.toLocaleString()} tris · Auto-Framed`;
+      chip(statusEl, `Mounted live Khronos .glb "${label}" (${lTris.toLocaleString()} tris · auto-framed & texture-sampled)`);
       requestRender();
       return true;
     }
@@ -806,6 +911,9 @@ async function importCatalogItemToProject(item) {
   }
   await refreshProjectModelsFromWasm();
   selectProjectModel(r.model.modelId);
+  wfState.done2 = true;
+  wfState.activeStep = 3;
+  syncWorkflowRibbon();
   await applyProjectModelLive(r.model);
   chip(
     statusEl,
@@ -845,6 +953,9 @@ async function saveEditedProjectModel() {
   }
   await refreshProjectModelsFromWasm();
   selectProjectModel(r.model.modelId);
+  wfState.done3 = true;
+  wfState.activeStep = 4;
+  syncWorkflowRibbon();
   chip(statusEl, `Committed "${r.model.title}" v${r.model.activeVersion} (kappa ${r.model.currentKappaHex.slice(0, 10)}…)`);
 }
 
@@ -856,6 +967,9 @@ async function revertProjectModel(modelId, targetVersion) {
   }
   await refreshProjectModelsFromWasm();
   selectProjectModel(r.model.modelId);
+  wfState.done2 = true;
+  wfState.activeStep = 3;
+  syncWorkflowRibbon();
   await applyProjectModelLive(r.model);
   chip(statusEl, `Restored v${targetVersion} as new audited revision v${r.model.activeVersion}`);
 }
@@ -974,6 +1088,7 @@ discPrevLiveBtn?.addEventListener("click", () => {
 
 function renderDiscoveryResults(res) {
   lastDiscoveryItems = res.items || [];
+  renderFeaturedStageGlbs(lastDiscoveryItems);
   if (discCountBadge) {
     discCountBadge.textContent = `${res.totalCount} models (${res.liveRemoteCount} live internet · ${res.localLockedCount} Prism locked)`;
   }
@@ -1190,6 +1305,9 @@ async function runNpcDialogue(utterance) {
 
 async function loadCatalogDomainPack(domainIdx, { fromSelect = false, userInitiated = false } = {}) {
   if (userInitiated || fromSelect) userSelectedDomain = true;
+  wfState.activeStageAsset = null;
+  stageModeDomainBtn?.setAttribute("aria-pressed", "true");
+  document.querySelectorAll("[data-stage-glb-id]").forEach((b) => b.setAttribute("aria-pressed", "false"));
   const seq = ++domainLoadSeq;
   const clamped = Math.max(0, Math.min(3, domainIdx | 0));
   activeDomainIdx = clamped;
@@ -1203,7 +1321,7 @@ async function loadCatalogDomainPack(domainIdx, { fromSelect = false, userInitia
   }
   renderDomainControlsForActivePack();
 
-  const r = await callWorker("load-domain-pack", { domainIdx: clamped, simClockSec });
+  const r = await callWorker("load-domain-pack", { domainIdx: clamped, lod: currentLodSpec(), simClockSec });
   if (seq !== domainLoadSeq) return r;
   if (r?.ok) {
     lTris = r.tris || lTris;
@@ -1303,6 +1421,11 @@ async function runFullPrismQualityGate() {
       `  2. Exclusive .uorc Archive Policy: ${uorcOk ? `verified (UORC header · ${snapBytes.byteLength}B)` : "pending"}\n` +
       `  3. Prism app.holo Proof Boundary: ${holoVerdict || `${holoSummary.passed}/${holoSummary.total} vectors`}\n` +
       `  4. Observer Holon Exclusivity: ${obsOk ? `domain=${obs.activeDomain?.slug} · imported=${obs.importedProjectModelCount ?? 0}` : "pending"}`;
+  }
+  if (uiOk && uorcOk && holoOk && obsOk) {
+    wfState.done4 = true;
+    wfState.activeStep = 5;
+    syncWorkflowRibbon();
   }
   chip(statusEl, "Prism Quality Gate: 4/4 Conformant — Ready to Seal .uorc Archive");
 }
@@ -1578,13 +1701,27 @@ renderContentTypePills();
     });
   }
 
-  // Deep-links from /catalogs/: ?domain=<slug>&catalog=<STD-ID>
+  // Deep-links from /catalogs/: ?domain=<slug>&catalog=<STD-ID>&stream=<id>&q=<term>&type=<ct>&autoGlb=<url>&autoTitle=<title>
   const params = new URLSearchParams(location.search);
   const reqDomain = params.get("domain");
   const reqCatalog = params.get("catalog");
+  const reqStream = params.get("stream");
+  const reqQuery = params.get("q");
+  const reqType = params.get("type");
+  const reqAutoGlb = params.get("autoGlb");
+  const reqAutoTitle = params.get("autoTitle") || "Imported Khronos Model";
   if (reqCatalog && catalogBanner && catalogBannerText) {
     catalogBanner.dataset.active = "true";
     catalogBannerText.textContent = `Imported Governing Catalog Standard: ${reqCatalog} — live-verified against Prism app.holo`;
+  }
+  if (reqStream && discStreamSelect) discStreamSelect.value = reqStream;
+  if (reqQuery && discSearchInput) discSearchInput.value = reqQuery;
+  if (reqType && AUTHORITATIVE_CONTENT_TYPES.some((c) => c.key === reqType)) {
+    activeContentType = reqType;
+    renderContentTypePills();
+  }
+  if (reqStream || reqQuery || reqType) {
+    runUnifiedDiscovery();
   }
   const initialDomainIdx = reqDomain
     ? Math.max(0, domainPacks.findIndex((d) => d.slug === reqDomain || d.id === reqDomain))
@@ -1592,7 +1729,13 @@ renderContentTypePills();
   if (!userSelectedDomain && domainPacks.length > 0) {
     await loadCatalogDomainPack(initialDomainIdx);
   }
+  if (reqAutoGlb && /^https:\/\//.test(reqAutoGlb)) {
+    wfState.activeStageAsset = reqAutoTitle;
+    stageModeDomainBtn?.setAttribute("aria-pressed", "false");
+    await loadRemoteGlbIntoStage(reqAutoGlb, reqAutoTitle);
+  }
   await refreshProjectModelsFromWasm();
+  syncWorkflowRibbon();
 
   if (location.hash === "#compose") {
     setRightRailTab("compose");

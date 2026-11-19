@@ -225,6 +225,79 @@
       font-variant-numeric: tabular-nums;
     }
     .ide-holo-badge { color: var(--brand); font-weight: 500; }
+
+    /* Guided 5-Step Verdant App Creation Workflow Ribbon */
+    .wf-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-2);
+      padding: var(--space-2) var(--space-3);
+      border: var(--border-width) solid var(--border-strong);
+      border-radius: var(--radius);
+      background: var(--sidebar);
+    }
+    .wf-steps {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--space-1);
+    }
+    .wf-step {
+      min-height: 2.15rem;
+      padding: 0 var(--space-3);
+      border-radius: var(--radius-control);
+      border: var(--border-width) solid var(--border);
+      background: var(--background);
+      color: var(--muted-foreground);
+      font-family: var(--font-mono);
+      font-size: var(--text-14);
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-1);
+      cursor: pointer;
+    }
+    .wf-step:hover { color: var(--foreground); border-color: var(--border-strong); }
+    .wf-step[aria-current="step"] {
+      border-color: var(--brand);
+      background: var(--card);
+      color: var(--foreground);
+      font-weight: 600;
+    }
+    .wf-step[data-done="true"] {
+      border-color: var(--success);
+      color: var(--success);
+    }
+    .wf-stage-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--space-1);
+      padding: var(--space-2) var(--space-3);
+      border-bottom: var(--border-width) solid var(--border);
+      background: var(--background);
+      font-family: var(--font-mono);
+      font-size: var(--text-14);
+    }
+    .wf-stage-chip {
+      min-height: 1.9rem;
+      padding: 0 var(--space-2);
+      border-radius: var(--radius-control);
+      border: var(--border-width) solid var(--border);
+      background: var(--card);
+      color: var(--muted-foreground);
+      font-family: var(--font-mono);
+      font-size: var(--text-14);
+      cursor: pointer;
+    }
+    .wf-stage-chip:hover { color: var(--foreground); border-color: var(--border-strong); }
+    .wf-stage-chip[aria-pressed="true"] {
+      border-color: var(--brand);
+      color: var(--foreground);
+      font-weight: 600;
+    }
+
     .ide-context-banner {
       display: none;
       align-items: center;
@@ -646,6 +719,11 @@
       gap: var(--space-3);
     }
     .right-pane-panel[hidden] { display: none; }
+    .insp-editor-grid {
+      display: grid;
+      gap: var(--space-3);
+    }
+    .insp-editor-grid[hidden] { display: none; }
 
     .insp-field {
       display: grid;
@@ -791,6 +869,17 @@
       <span id="st-man-acoustics">Sabine Ready · ≥290mm</span>
     </div>
 
+    <nav class="wf-bar" id="studio-workflow-bar" aria-label="Verdant App Creation Workflow">
+      <div class="wf-steps">
+        <button type="button" class="wf-step" data-wf-step="1" aria-current="step">1 · Brief &amp; World</button>
+        <button type="button" class="wf-step" data-wf-step="2">2 · Discover &amp; Import</button>
+        <button type="button" class="wf-step" data-wf-step="3">3 · Author &amp; Version</button>
+        <button type="button" class="wf-step" data-wf-step="4">4 · Prism Quality Gate</button>
+        <button type="button" class="wf-step" data-wf-step="5">5 · Seal &amp; Ship .uorc</button>
+      </div>
+      <button type="button" class="st-btn primary sm" id="wf-next-action">Next: Discover &amp; Import Model →</button>
+    </nav>
+
     <div class="ide-context-banner" id="studio-catalog-banner" data-active="false">
       <span id="studio-catalog-banner-text"></span>
       <a class="st-btn sm" href="../catalogs/">All 36 Prism Catalogs</a>
@@ -830,6 +919,11 @@
           <div class="ide-pane-head">
             <h2 id="studio-hud-project">Sunspire Harbor Regatta · Studio</h2>
             <span class="ide-pane-sub" id="studio-hud-metrics">LOD3 Lossless · Clear 290mm</span>
+          </div>
+          <div class="wf-stage-bar" id="studio-stage-showcase" role="group" aria-label="Live 3D Stage Subject">
+            <span style="color:var(--muted-foreground);">Live Stage:</span>
+            <button type="button" class="wf-stage-chip" id="stage-mode-domain" aria-pressed="true">Active World Domain</button>
+            <span id="stage-featured-glbs" style="display:inline-flex;flex-wrap:wrap;gap:var(--space-1);"></span>
           </div>
           <canvas id="studio-canvas" width="960" height="540" aria-label="Verdant Studio live 3D project authoring stage"></canvas>
           <div class="st-transport" role="group" aria-label="Authoring stage controls">
@@ -914,7 +1008,7 @@
             <div id="insp-empty-state" class="proj-empty">
               Select any model from <strong>Live Catalog Discovery</strong> and click <strong>+ Add</strong> to admit it into Verdant Engine's <code>ObserverPrismHolon</code>, edit its properties, commit cryptographically chained versions (<code>v1 → v2 → …</code>), revert non-destructively, or remove it cleanly.
             </div>
-            <div id="insp-editor" hidden style="display:grid;gap:var(--space-3);">
+            <div id="insp-editor" class="insp-editor-grid" hidden>
               <div class="insp-meta-box" id="insp-meta"></div>
               <div class="insp-field">
                 <label for="insp-title">Model Title</label>
