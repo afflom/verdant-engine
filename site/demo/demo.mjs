@@ -9,13 +9,13 @@ import {
   PRISM_DEFAULT_WORLD_SEED,
   PRISM_PORTABLE_UORC_BYTES,
   PRISM_TILE_EDGE_PIXELS,
-} from "/prism-bridge-meta.mjs";
+} from "../prism-bridge-meta.mjs";
 import {
   createBestRenderer,
   mat4LookAt,
   mat4Mul,
   mat4Perspective,
-} from "/scene-renderer.mjs";
+} from "../scene-renderer.mjs";
 
 const CSM_FAR_METERS = PRISM_CSM_SPLIT_METERS[3];
 
@@ -105,7 +105,7 @@ function startHoloWorker() {
   if (holoReadyPromise) return holoReadyPromise;
   holoReadyPromise = (async () => {
     if (typeof Worker !== "undefined") {
-      holoWorker = new Worker("/guest-worker.mjs", { type: "module" });
+      holoWorker = new Worker(new URL("../guest-worker.mjs", import.meta.url), { type: "module" });
       holoWorker.onmessage = ({ data }) => {
         const slot = holoPending.get(data?.id);
         if (!slot) return;
@@ -119,11 +119,11 @@ function startHoloWorker() {
         }
         holoPending.clear();
       };
-      const source = new URL("/app.holo", window.location.origin).href;
+      const source = new URL("../app.holo", import.meta.url).href;
       return callHoloWorker("init", { source });
     }
-    const { load } = await import("/worker-runtime/index.mjs");
-    const resp = await fetch("/app.holo");
+    const { load } = await import("../worker-runtime/index.mjs");
+    const resp = await fetch(new URL("../app.holo", import.meta.url));
     if (!resp.ok) throw new Error(`HTTP ${resp.status} loading /app.holo`);
     const fallbackApp = await load(new Uint8Array(await resp.arrayBuffer()));
     holoWorker = {
@@ -793,8 +793,8 @@ async function boot() {
   }
 
   const [wasmResp, streamResp] = await Promise.all([
-    fetch("/verdant-uorc.wasm"),
-    fetch("/scene-stream.uorc"),
+    fetch(new URL("../verdant-uorc.wasm", import.meta.url)),
+    fetch(new URL("../scene-stream.uorc", import.meta.url)),
   ]);
   if (!wasmResp.ok) {
     throw new Error(`Asset HTTP error: verdant-uorc.wasm answered ${wasmResp.status}`);

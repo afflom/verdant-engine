@@ -1,6 +1,6 @@
-// Verdant Studio — Zero-Constants Rust/Wasm Project Scaffolder, POSIX ustar Archiver & URL Codec.
+// Verdant Studio — Zero-Constants Rust/Wasm Project Scaffolder & Base64url UORC Codec.
 // Generates complete, FI-08 compliant (`{0, 1}` + `prism_kernel`) external game and simulation
-// workspaces aligned with Prism's authoritative 140m 4-cascade CSM horizon.
+// workspaces aligned with Prism's authoritative 140m 4-cascade CSM horizon and UORC custody.
 
 import { PRISM_CSM_SPLIT_METERS } from "./prism-bridge-meta.mjs";
 import { STARTER_ARCHETYPES } from "./studio-data.mjs";
@@ -20,59 +20,6 @@ export function zeroOneExpr(n) {
     bit += 1;
   }
   return parts.reverse().join(" + ");
-}
-
-export function buildPosixTarArchive(rootSlug, filesMap) {
-  const cleanRoot = String(rootSlug || "sunspire-regatta").toLowerCase().replace(/[^a-z0-9_-]/g, "-") || "sunspire-regatta";
-  const enc = new TextEncoder();
-  const blocks = [];
-  const writeAscii = (buf, offset, maxLen, str) => {
-    const bytes = enc.encode(str);
-    buf.set(bytes.subarray(0, maxLen), offset);
-  };
-  const writeOctal = (buf, offset, len, val) => {
-    const oct = Math.max(0, Math.floor(val)).toString(8).padStart(len - 1, "0");
-    writeAscii(buf, offset, len - 1, oct);
-    buf[offset + len - 1] = 0;
-  };
-  const nowSec = Math.floor(Date.now() / 1000);
-  for (const [relPath, content] of Object.entries(filesMap || {})) {
-    const body = content instanceof Uint8Array ? content : enc.encode(String(content));
-    const header = new Uint8Array(512);
-    const fullName = `${cleanRoot}/${String(relPath).replace(/^\/+/, "")}`;
-    writeAscii(header, 0, 100, fullName);
-    writeOctal(header, 100, 8, 0o644);
-    writeOctal(header, 108, 8, 0);
-    writeOctal(header, 116, 8, 0);
-    writeOctal(header, 124, 12, body.byteLength);
-    writeOctal(header, 136, 12, nowSec);
-    header.fill(0x20, 148, 156);
-    header[156] = 0x30;
-    writeAscii(header, 257, 6, "ustar\0");
-    writeAscii(header, 263, 2, "00");
-    let sum = 0;
-    for (let i = 0; i < 512; i++) sum += header[i];
-    const chk = sum.toString(8).padStart(6, "0");
-    writeAscii(header, 148, 6, chk);
-    header[154] = 0;
-    header[155] = 0x20;
-    blocks.push(header);
-    const paddedLen = Math.ceil(body.byteLength / 512) * 512;
-    if (paddedLen > 0) {
-      const dataBlock = new Uint8Array(paddedLen);
-      dataBlock.set(body, 0);
-      blocks.push(dataBlock);
-    }
-  }
-  blocks.push(new Uint8Array(1024));
-  const total = blocks.reduce((acc, b) => acc + b.byteLength, 0);
-  const out = new Uint8Array(total);
-  let pos = 0;
-  for (const b of blocks) {
-    out.set(b, pos);
-    pos += b.byteLength;
-  }
-  return out;
 }
 
 export function generateStarterProjectFiles({ slug, archetypeIdx, seed, lodRank, cameraMode }) {
@@ -260,9 +207,9 @@ ${printSummary}
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>${arch.title}</title>
-  <link rel="stylesheet" href="/brand/fonts.css">
-  <link rel="stylesheet" href="/brand/hologram-warm.css">
-  <link rel="stylesheet" href="/prism-page.css">
+  <link rel="stylesheet" href="./brand/fonts.css">
+  <link rel="stylesheet" href="./brand/hologram-warm.css">
+  <link rel="stylesheet" href="./prism-page.css">
   <style>
     html, body { margin: 0; height: 100%; background: var(--background); color: var(--foreground); font-family: var(--font-sans); overflow: hidden; }
     #game-viewport { display: block; width: 100vw; height: 100dvh; touch-action: none; }

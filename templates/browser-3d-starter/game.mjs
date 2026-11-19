@@ -9,14 +9,14 @@ import {
   PRISM_MAX_LOD_RANK,
   PRISM_MODAL_BAR_DENOM,
   PRISM_MODAL_BAR_NUMERS,
-} from "/prism-bridge-meta.mjs";
+} from "../prism-bridge-meta.mjs";
 import {
   createBestRenderer,
   mat4LookAt,
   mat4Mul,
   mat4Perspective,
-} from "/scene-renderer.mjs";
-import { load } from "/worker-runtime/index.mjs";
+} from "../scene-renderer.mjs";
+import { load } from "../worker-runtime/index.mjs";
 
 const CSM_FAR_METERS = PRISM_CSM_SPLIT_METERS[3];
 
@@ -543,8 +543,8 @@ function loop(now) {
 async function boot() {
   renderer = await createBestRenderer(canvas);
   const [holoResp, wasmResp] = await Promise.all([
-    fetch("/app.holo"),
-    fetch("/verdant-uorc.wasm"),
+    fetch(new URL("../app.holo", import.meta.url)),
+    fetch(new URL("../verdant-uorc.wasm", import.meta.url)),
   ]);
   if (!holoResp.ok || !wasmResp.ok) {
     throw new Error(`Asset fetch failed: holo=${holoResp.status} wasm=${wasmResp.status}`);

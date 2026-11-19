@@ -13,6 +13,7 @@ import {
   verifyRustZeroMagicConstants,
   verifyStarterAndScaffolderContract,
   verifyStudioSurfaceAndZeroHexContract,
+  verifySubpathAndUorcOnlyDeploymentContract,
   verifyUnifiedHostAndAudioContract,
   verifyZeroSlmBypassContract,
 } from "./scripts/enforce-prism-contracts.mjs";
@@ -24,10 +25,10 @@ import {
   parseConformantKeyValues,
   summarizeCatalogCoverage,
 } from "./site/prism-catalogs.mjs";
+import * as studioModule from "./site/studio.mjs";
 import {
   STARTER_ARCHETYPES,
   STUDIO_ROLE_KEYS,
-  buildPosixTarArchive,
   generateStarterProjectFiles,
 } from "./site/studio.mjs";
 import {
@@ -152,7 +153,7 @@ test("Planted Defect Gate C7: rejects raw #hex colors, backdrop-filter blur, liv
   );
 });
 
-test("Studio Scaffolder POSIX ustar archive packs all generated project files cleanly", () => {
+test("Studio Scaffolder generates FI-08 zero-constants files cleanly and exposes no .tar archive exporter", () => {
   const files = generateStarterProjectFiles({
     slug: "citadel-quest",
     archetypeIdx: 2,
@@ -160,11 +161,13 @@ test("Studio Scaffolder POSIX ustar archive packs all generated project files cl
     lodRank: 3,
     cameraMode: "third",
   });
-  const tar = buildPosixTarArchive("citadel-quest", files);
-  assert.equal(tar.byteLength % 512, 0);
-  const headerAscii = new TextDecoder().decode(tar.subarray(0, 512));
-  assert.ok(headerAscii.includes("citadel-quest/Cargo.toml"));
-  assert.ok(headerAscii.includes("ustar"));
+  const paths = Object.keys(files);
+  assert.ok(paths.includes("Cargo.toml"));
+  assert.ok(paths.includes("src/main.rs"));
+  assert.ok(paths.includes("web/index.html"));
+  const webHtml = files["web/index.html"] ?? "";
+  assert.ok(!webHtml.includes('href="/'), "Scaffolded web/index.html must not contain root-absolute hrefs");
+  assert.equal("buildPosixTarArchive" in studioModule, false, "Verdant exclusively exports .uorc archives, not .tar");
 });
 
 test("Planted Defect Gate C8: rejects stakeholder/persona UI jargon, demo #hex colors, and self-referential starter names", () => {
@@ -353,9 +356,9 @@ test("Planted Defect Gate C10: rejects Engine/Studio conflation, cold-boot stati
     () =>
       verifyPlatformDifferentiationAndCatalogsContract({
         ...validC10,
-        studioPageSource: validC10.studioPageSource.replace("/worker-runtime/index.mjs", "/vendor/prism-code/src/index.mjs"),
+        studioPageSource: validC10.studioPageSource.replace("../worker-runtime/index.mjs", "../vendor/prism-code/src/index.mjs"),
       }),
-    /unshimmed \/vendor\/prism-code\//,
+    /unshimmed vendor\/prism-code\//,
   );
 
   assert.throws(
@@ -405,5 +408,63 @@ test("Planted Defect Gate C11: rejects tampered authority catalog SHA-256 and pr
         authoritiesToml: tamperedToml,
       }),
     /SHA-256 mismatch/,
+  );
+});
+
+test("Planted Defect Gate C12: rejects root-absolute subpath violations and forbidden .tar project exports", () => {
+  const validStudio = [
+    ["site/studio/index.html", '<button id="studio-export-uorc-btn">Export Project (.uorc)</button>'],
+    ["site/studio.mjs", 'btn.id = "ve-scaf-uorc-btn"; await callWorker("encode-snapshot", {});'],
+  ];
+
+  assert.throws(
+    () =>
+      verifySubpathAndUorcOnlyDeploymentContract({
+        surfaceSources: [["planted-subpage.html", '<link rel="stylesheet" href="/brand/fonts.css">']],
+        studioSources: validStudio,
+      }),
+    /Subpath violation/,
+  );
+
+  assert.throws(
+    () =>
+      verifySubpathAndUorcOnlyDeploymentContract({
+        surfaceSources: [["planted-subpage.mjs", 'const r = await fetch("/app.holo");']],
+        studioSources: validStudio,
+      }),
+    /Subpath violation/,
+  );
+
+  assert.throws(
+    () =>
+      verifySubpathAndUorcOnlyDeploymentContract({
+        surfaceSources: [["planted-subpage.mjs", 'import { x } from "/worker-runtime/index.mjs";']],
+        studioSources: validStudio,
+      }),
+    /Subpath violation/,
+  );
+
+  assert.throws(
+    () =>
+      verifySubpathAndUorcOnlyDeploymentContract({
+        surfaceSources: [],
+        studioSources: [
+          ...validStudio,
+          ["site/studio/index.html", '<button id="studio-export-tar-btn">Export Project (.tar)</button>'],
+        ],
+      }),
+    /Archive policy violation/,
+  );
+
+  assert.throws(
+    () =>
+      verifySubpathAndUorcOnlyDeploymentContract({
+        surfaceSources: [],
+        studioSources: [
+          ...validStudio,
+          ["site/studio-scaffolder.mjs", "export function buildPosixTarArchive() { return new Uint8Array(512); }"],
+        ],
+      }),
+    /Archive policy violation/,
   );
 });

@@ -613,7 +613,7 @@ impl CodedSlmDirector {
                 "new project",
                 "code",
                 "rust",
-                "tar",
+                "crate",
                 "starter",
             ],
             &["design", "outliner", "hierarchy", "brand", "tokens"],

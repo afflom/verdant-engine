@@ -469,7 +469,7 @@ export const ROLE_REQUIREMENTS_TRACE = Object.freeze([
     roleKey: "code",
     roleLabel: "Code (Developer)",
     standard: "FI-08 {0,1} Rust · Swept CCD · XPBD",
-    requirement: "Zero-penetration capsule sweeps, TwoLevelBvh, XPBD joints, POSIX .tar project export",
+    requirement: "Zero-penetration capsule sweeps, TwoLevelBvh, XPBD joints, SHA-256-sealed .uorc project export",
     holoQuery: "scene:lawful",
   },
   {

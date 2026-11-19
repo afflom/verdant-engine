@@ -2,7 +2,7 @@
 // Renders the 5 differentiated Verdant platform organs and 28 imported standard models,
 // and executes live cryptographic BLAKE3 + Core-Wasm conformance checks against `/app.holo`.
 
-import { kappa, load } from "/worker-runtime/index.mjs";
+import { kappa, load } from "../worker-runtime/index.mjs";
 import {
   CATALOG_DOMAINS,
   LIFECYCLE_STAGES,
@@ -100,7 +100,7 @@ function renderPlatformOrgans() {
     lex.textContent = `Lexicon: ${organ.lexicon.join(" · ")}`;
     const link = document.createElement("a");
     link.className = "cat-btn";
-    link.href = organ.route;
+    link.href = new URL(organ.route === "/" ? "../" : `..${organ.route}`, import.meta.url).href;
     link.textContent = `Open ${organ.name}`;
     bottom.append(lex, link);
 
@@ -214,7 +214,7 @@ function renderCatalogList() {
     for (const rk of entry.studioRoles.slice(0, 2)) {
       const rLink = document.createElement("a");
       rLink.className = "cat-btn";
-      rLink.href = `/studio/#${rk}`;
+      rLink.href = new URL(`../studio/#${rk}`, import.meta.url).href;
       rLink.textContent = `Studio: ${rk.charAt(0).toUpperCase() + rk.slice(1)}`;
       actions.append(rLink);
     }
@@ -247,7 +247,7 @@ renderCatalogList();
 // Load `/app.holo`, verify BLAKE3 self-fingerprint, replay acceptance vectors, and verify visible entries:
 (async () => {
   try {
-    const res = await fetch("/app.holo");
+    const res = await fetch(new URL("../app.holo", import.meta.url));
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const bytes = new Uint8Array(await res.arrayBuffer());
     const fpHex = [...bytes.subarray(bytes.length - 32)].map((b) => b.toString(16).padStart(2, "0")).join("");

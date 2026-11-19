@@ -156,6 +156,9 @@ jobs:
           cp "$HOLO" site/app.holo
           cp -r try/vendor site/vendor
           rm -rf site/vendor/prism-code/fixtures
+          mkdir -p site/starter
+          cp templates/browser-3d-starter/index.html site/starter/index.html
+          cp templates/browser-3d-starter/game.mjs site/starter/game.mjs
           # The page says where this holo's provenance is: the signed statement
           # GitHub keeps for the build that made it.
           node -e '
@@ -168,6 +171,7 @@ jobs:
           ' "$FINGERPRINT" "$ATTESTATION_URL"
           node bootstrap/page.mjs site
           node bootstrap/precache.mjs site
+          node scripts/enforce-prism-contracts.mjs
       - name: Lighthouse at 100 on mobile, before anything is deployed
         shell: bash
         run: |
@@ -183,6 +187,7 @@ jobs:
           node scripts/content/check.mjs site
           rm -f site/content-report.json site/content-report.md
           node bootstrap/screens.mjs site screens
+          node scripts/verify-live-surfaces.mjs site
       - name: A first visit's weight, counted once the page has started (FR-03)
         shell: bash
         run: |

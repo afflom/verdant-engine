@@ -29,7 +29,6 @@ import {
 } from "./studio-data.mjs";
 import {
   base64UrlToBytes,
-  buildPosixTarArchive,
   bytesToBase64Url,
   generateStarterProjectFiles,
   zeroOneExpr,
@@ -43,11 +42,12 @@ export {
   STUDIO_CSS,
   STUDIO_ROLE_KEYS,
   base64UrlToBytes,
-  buildPosixTarArchive,
   bytesToBase64Url,
   generateStarterProjectFiles,
   zeroOneExpr,
 };
+
+const siteUrl = (rel) => new URL(rel, import.meta.url).href;
 
 let sheetInstalled = false;
 export function ensureModalStyles() {
@@ -379,17 +379,17 @@ function buildStudioDialog({ inline = false } = {}) {
   headRight.className = "ve-m-row";
   const catalogsLink = document.createElement("a");
   catalogsLink.className = "ve-m-btn";
-  catalogsLink.href = "/catalogs/";
+  catalogsLink.href = siteUrl("./catalogs/");
   catalogsLink.textContent = "Model Catalogs";
   const demoLink = document.createElement("a");
   demoLink.className = "ve-m-btn";
-  demoLink.href = "/demo/";
+  demoLink.href = siteUrl("./demo/");
   demoLink.textContent = "Engine Demo";
   headRight.append(catalogsLink, demoLink);
   if (!inline) {
     const fullStudioLink = document.createElement("a");
     fullStudioLink.className = "ve-m-btn brand";
-    fullStudioLink.href = "/studio/";
+    fullStudioLink.href = siteUrl("./studio/");
     fullStudioLink.textContent = "Full Studio";
     const closeBtn = document.createElement("button");
     closeBtn.type = "button";
@@ -804,15 +804,18 @@ function buildStudioDialog({ inline = false } = {}) {
     downloadTextOrBytes(activeFileKey.replace(/\//g, "-"), generatedFiles[activeFileKey] || "");
   });
 
-  const btnDownloadTar = document.createElement("button");
-  btnDownloadTar.type = "button";
-  btnDownloadTar.className = "ve-m-btn";
-  btnDownloadTar.id = "ve-scaf-tar-btn";
-  btnDownloadTar.textContent = "Download .tar Project";
-  btnDownloadTar.addEventListener("click", () => {
+  const btnDownloadUorc = document.createElement("button");
+  btnDownloadUorc.type = "button";
+  btnDownloadUorc.className = "ve-m-btn";
+  btnDownloadUorc.id = "ve-scaf-uorc-btn";
+  btnDownloadUorc.textContent = "Export .uorc Archive";
+  btnDownloadUorc.addEventListener("click", async () => {
     const clean = String(slugInput.value || "sunspire-regatta").toLowerCase().replace(/[^a-z0-9_-]/g, "-") || "sunspire-regatta";
-    const tar = buildPosixTarArchive(clean, generatedFiles);
-    downloadTextOrBytes(`${clean}.tar`, tar, "application/x-tar");
+    const r = await studioCtx?.callWorker?.("encode-snapshot");
+    if (r?.ok && r.bytes) {
+      const bytes = r.bytes instanceof Uint8Array ? r.bytes : new Uint8Array(r.bytes);
+      downloadTextOrBytes(`${clean}.uorc`, bytes, "application/octet-stream");
+    }
   });
 
   const btnFrameRigBay = document.createElement("button");
@@ -827,7 +830,7 @@ function buildStudioDialog({ inline = false } = {}) {
   btnTrackVehicle.textContent = "Track Suspension Mover";
   btnTrackVehicle.addEventListener("click", () => studioCtx?.onFocusPreset?.(6));
 
-  createActions.append(btnApplyLive, btnCopyCode, btnDownloadFile, btnDownloadTar, btnFrameRigBay, btnTrackVehicle);
+  createActions.append(btnApplyLive, btnCopyCode, btnDownloadFile, btnDownloadUorc, btnFrameRigBay, btnTrackVehicle);
   cCreate.append(hCreate, pCreateDesc, formGrid, archSummary, createActions, fileTabBar, codePreview);
   pCode.append(cCreate);
 
@@ -1347,7 +1350,7 @@ function buildStudioDialog({ inline = false } = {}) {
 
   const starterPlayLink = document.createElement("a");
   starterPlayLink.className = "ve-m-btn brand";
-  starterPlayLink.href = "/starter/";
+  starterPlayLink.href = siteUrl("./starter/");
   starterPlayLink.textContent = "Play Sunspire Beacon Trials";
   modeBtnRow.append(starterPlayLink);
   cModes.append(hModes, pModesDesc, modeBtnRow, modeLog);
@@ -1583,7 +1586,7 @@ function buildStudioDialog({ inline = false } = {}) {
       roleModels.slice(0, 5).forEach((rm, rIdx) => {
         if (rIdx > 0) stdBanner.append(" · ");
         const link = document.createElement("a");
-        link.href = `/catalogs/#${rm.id}`;
+        link.href = siteUrl(`./catalogs/#${rm.id}`);
         link.textContent = `${rm.authority.split("·")[0].trim()}`;
         link.title = `${rm.title} (${rm.lexModule})`;
         stdBanner.append(link);

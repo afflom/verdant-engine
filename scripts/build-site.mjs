@@ -10,7 +10,7 @@
 //   4. Runs `bootstrap/precache.mjs site` to generate `site/precache.json`.
 
 import { execFileSync } from "node:child_process";
-import { cp, readdir, readFile, rm, stat, writeFile } from "node:fs/promises";
+import { cp, mkdir, readdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { verify } from "../ci/kappa-cache.mjs";
@@ -95,8 +95,17 @@ async function syncVendor() {
   await rm(join(vendorDest, "prism-code", "fixtures"), { recursive: true, force: true });
 }
 
+async function syncStarter() {
+  const starterSrc = join(root, "templates", "browser-3d-starter");
+  const starterDest = join(siteDir, "starter");
+  await mkdir(starterDest, { recursive: true });
+  await cp(join(starterSrc, "index.html"), join(starterDest, "index.html"));
+  await cp(join(starterSrc, "game.mjs"), join(starterDest, "game.mjs"));
+}
+
 await ensureVerifiedHolo();
 await syncVendor();
+await syncStarter();
 execFileSync(process.execPath, ["bootstrap/page.mjs", "site"], { cwd: root, stdio: "inherit" });
 execFileSync(process.execPath, ["bootstrap/precache.mjs", "site"], { cwd: root, stdio: "inherit" });
 execFileSync(process.execPath, ["scripts/enforce-prism-contracts.mjs"], { cwd: root, stdio: "inherit" });

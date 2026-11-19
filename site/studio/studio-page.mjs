@@ -2,15 +2,13 @@
 // Connects a dedicated live 3D authoring viewport (`/engine-worker.mjs`) and `/app.holo`
 // directly to `mountInlineStudio` (`site/studio.mjs`) across all 7 functional roles.
 
-import { load } from "/worker-runtime/index.mjs";
+import { load } from "../worker-runtime/index.mjs";
 import {
   STARTER_ARCHETYPES,
   STUDIO_ROLE_KEYS,
   base64UrlToBytes,
-  buildPosixTarArchive,
   cacheBytesInOpfs,
   exportGlbDownload,
-  generateStarterProjectFiles,
   mountInlineStudio,
   pushStudioTelemetry,
   routeStudioPrompt,
@@ -71,7 +69,7 @@ const lodBtn = $("studio-lod-btn");
 const audioBtn = $("studio-audio-btn");
 const importBtn = $("studio-import-btn");
 const stitchBtn = $("studio-stitch-btn");
-const exportTarBtn = $("studio-export-tar-btn");
+const exportUorcBtn = $("studio-export-uorc-btn");
 const glbFileIn = $("studio-glb-file");
 const promptForm = $("studio-prompt-form");
 const promptInput = $("studio-prompt-input");
@@ -141,7 +139,7 @@ const queryVerifier = async (q) => {
 let worker = null;
 try {
   if (typeof Worker === "function") {
-    worker = new Worker("/engine-worker.mjs", { type: "module" });
+    worker = new Worker(new URL("../engine-worker.mjs", import.meta.url), { type: "module" });
     worker.onmessage = ({ data: msg }) => {
       if (!msg) return;
       if (msg.id && pendingCalls.has(msg.id)) {
@@ -477,23 +475,21 @@ promptForm?.addEventListener("submit", async (e) => {
   if (promptInput) promptInput.value = "";
 });
 
-exportTarBtn?.addEventListener("click", () => {
+exportUorcBtn?.addEventListener("click", async () => {
   const arch = STARTER_ARCHETYPES.find((a) => a.title === activeProject) || STARTER_ARCHETYPES[0];
-  const files = generateStarterProjectFiles({
-    slug: arch.slug,
-    archetypeIdx: arch.idx,
-    seed: arch.seed,
-    lodRank: lodIdx,
-    cameraMode: camPreset,
-  });
-  const tar = buildPosixTarArchive(arch.slug, files);
-  const url = URL.createObjectURL(new Blob([tar], { type: "application/x-tar" }));
+  const r = await callWorker("encode-snapshot");
+  if (!r?.ok || !r.bytes) {
+    chip(statusEl, "UORC export unavailable — waiting for Wasm runtime");
+    return;
+  }
+  const bytes = r.bytes instanceof Uint8Array ? r.bytes : new Uint8Array(r.bytes);
+  const url = URL.createObjectURL(new Blob([bytes], { type: "application/octet-stream" }));
   const a = document.createElement("a");
   a.href = url;
-  a.download = `${arch.slug}.tar`;
+  a.download = `${arch.slug}.uorc`;
   a.click();
   setTimeout(() => URL.revokeObjectURL(url), 1500);
-  chip(statusEl, `Exported ${arch.slug}.tar (${tar.byteLength}B POSIX ustar archive)`);
+  chip(statusEl, `Exported ${arch.slug}.uorc (${bytes.byteLength}B SHA-256 UORC archive)`);
 });
 
 addEventListener("hashchange", () => {
@@ -504,7 +500,7 @@ addEventListener("hashchange", () => {
 // Boot Holo + Worker + Inline 7-Role Atelier
 (async () => {
   try {
-    const holoRes = await fetch("/app.holo");
+    const holoRes = await fetch(new URL("../app.holo", import.meta.url));
     if (holoRes.ok) {
       holoApp = await load(new Uint8Array(await holoRes.arrayBuffer()));
       const acc = await holoApp.acceptance();

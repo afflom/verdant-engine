@@ -991,10 +991,10 @@ export function verifyPlatformDifferentiationAndCatalogsContract({
   if (/\b(stakeholders?|personas?)\b/i.test(studioPageHtml) || /\b(stakeholders?|personas?)\b/i.test(studioPageSource)) {
     throw new Error("Standalone Studio UI (`site/studio/*`) contains forbidden stakeholder/persona terminology");
   }
-  if (studioPageSource.includes("/vendor/prism-code/")) {
-    throw new Error("site/studio/studio-page.mjs must import /worker-runtime/ instead of unshimmed /vendor/prism-code/ (bare node:crypto)");
+  if (studioPageSource.includes("vendor/prism-code/")) {
+    throw new Error("site/studio/studio-page.mjs must import ../worker-runtime/ instead of unshimmed vendor/prism-code/ (bare node:crypto)");
   }
-  for (const req of ["/worker-runtime/", "/app.holo", "/engine-worker.mjs", "mountInlineStudio"]) {
+  for (const req of ["worker-runtime/index.mjs", "app.holo", "engine-worker.mjs", "mountInlineStudio"]) {
     if (!studioPageSource.includes(req)) {
       throw new Error(`site/studio/studio-page.mjs missing required live Prism Studio integration "${req}"`);
     }
@@ -1010,10 +1010,10 @@ export function verifyPlatformDifferentiationAndCatalogsContract({
   if (/backdrop-filter\s*:\s*blur/i.test(catalogsHtml)) {
     throw new Error("site/catalogs/index.html must not use backdrop-filter: blur");
   }
-  if (catalogsPageSource.includes("/vendor/prism-code/")) {
-    throw new Error("site/catalogs/catalogs.mjs must import /worker-runtime/ instead of unshimmed /vendor/prism-code/ (bare node:crypto)");
+  if (catalogsPageSource.includes("vendor/prism-code/")) {
+    throw new Error("site/catalogs/catalogs.mjs must import ../worker-runtime/ instead of unshimmed vendor/prism-code/ (bare node:crypto)");
   }
-  for (const req of ["/worker-runtime/", "/app.holo", "kappa", "filterCatalogModels", "VERDANT_PLATFORM_ORGANS"]) {
+  for (const req of ["worker-runtime/index.mjs", "app.holo", "kappa", "filterCatalogModels", "VERDANT_PLATFORM_ORGANS"]) {
     if (!catalogsPageSource.includes(req)) {
       throw new Error(`site/catalogs/catalogs.mjs missing live Holo catalog verification token "${req}"`);
     }
@@ -1146,6 +1146,43 @@ export function verifyExternalOraclesAndRuntimeExclusivityContract({
   }
 }
 
+/**
+ * Gate C12: Enforces GitHub Pages subpath safety (zero root-absolute `/` asset,
+ * link, fetch, worker, or module URLs across shipped site surfaces) and Verdant's
+ * exclusive `.uorc` archive export policy (zero `.tar` project export pathways).
+ */
+export function verifySubpathAndUorcOnlyDeploymentContract({
+  surfaceSources = [],
+  studioSources = [],
+}) {
+  const rootAbsPattern = /(?:href|src)\s*=\s*["']\/(?!\/)|(?:from|import)\s*["']\/(?!\/)|(?:fetch|Worker|URL)\s*\(\s*["']\/(?!\/)/;
+  for (const [label, src] of surfaceSources) {
+    const m = rootAbsPattern.exec(src);
+    if (m) {
+      throw new Error(
+        `Subpath violation in ${label}: root-absolute URL "${m[0]}" breaks GitHub Pages subpath deployment (use relative "./" / "../" or new URL(..., import.meta.url))`,
+      );
+    }
+  }
+
+  const tarForbiddenPattern = /buildPosixTarArchive|application\/x-tar|POSIX[^.\n]{0,20}\.tar|\bExport Project \(\.tar\)|Download \.tar/i;
+  for (const [label, src] of studioSources) {
+    const m = tarForbiddenPattern.exec(src);
+    if (m) {
+      throw new Error(
+        `Archive policy violation in ${label}: forbidden .tar export token "${m[0]}" (Verdant exclusively uses .uorc archives)`,
+      );
+    }
+  }
+
+  const studioJoined = studioSources.map(([, s]) => s).join("\n");
+  for (const req of ["studio-export-uorc-btn", "ve-scaf-uorc-btn", "encode-snapshot"]) {
+    if (!studioJoined.includes(req)) {
+      throw new Error(`Verdant Studio missing required .uorc export integration "${req}"`);
+    }
+  }
+}
+
 export async function runAllPrismContractChecks(rootDir = ROOT_DIR) {
   const holoBuffer = readFileSync(join(rootDir, "site", "app.holo"));
   const coreWasmBytes = readFileSync(join(rootDir, "site", "verdant-wasm.wasm"));
@@ -1210,6 +1247,31 @@ export async function runAllPrismContractChecks(rootDir = ROOT_DIR) {
     catalogsPageSource,
   });
   verifyExternalOraclesAndRuntimeExclusivityContract({ rootDir });
+  verifySubpathAndUorcOnlyDeploymentContract({
+    surfaceSources: [
+      ["site/card.html", cardHtml],
+      ["site/card.mjs", cardSource],
+      ["site/studio/index.html", studioPageHtml],
+      ["site/studio/studio-page.mjs", studioPageSource],
+      ["site/catalogs/index.html", catalogsHtml],
+      ["site/catalogs/catalogs.mjs", catalogsPageSource],
+      ["site/demo/index.html", demoHtml],
+      ["site/demo/demo.mjs", demoSource],
+      ["site/studio.mjs", studioSource],
+      ["site/studio-scaffolder.mjs", studioScaffolderSource],
+      ["site/engine-worker.mjs", workerSource],
+      ["site/docs/live-embed.mjs", liveEmbedSource],
+      ["templates/browser-3d-starter/index.html", starterHtml],
+      ["templates/browser-3d-starter/game.mjs", starterGameSource],
+    ],
+    studioSources: [
+      ["site/studio/index.html", studioPageHtml],
+      ["site/studio/studio-page.mjs", studioPageSource],
+      ["site/studio.mjs", studioSource],
+      ["site/studio-scaffolder.mjs", studioScaffolderSource],
+      ["site/studio-data.mjs", studioDataSource],
+    ],
+  });
 
   // Audit all shipped Rust crate sources, starter template, and examples (`FI-08` zero magic constants):
   for (const relDir of [
