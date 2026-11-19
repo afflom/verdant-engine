@@ -1,8 +1,8 @@
 {
   "spec": "verdant/imported-authority-catalog/1",
   "authorityId": "AUTH-ISO-42010-VIEWPOINTS",
-  "standard": "ISO/IEC/IEEE 42010:2022 Architecture Viewpoints + ISO/IEC/IEEE 12207:2017/15288:2023 ALM + afflom/stitch App Catalog",
-  "citation": "ISO/IEC/IEEE 42010:2022 Software, systems and enterprise — Architecture description; ISO/IEC/IEEE 12207:2017 Software life cycle processes; ISO 9241-210:2019 Human-centred design; W3C DTCG 2025.10; WCAG 2.2 AA; afflom/stitch 2-of-3 parity custody",
+  "standard": "ISO/IEC/IEEE 42010:2022 Architecture Viewpoints + ISO/IEC/IEEE 12207:2017/15288:2023 ALM + SemVer 2.0.0 + ISO/IEC/IEEE 15939:2017 + afflom/stitch App Catalog",
+  "citation": "ISO/IEC/IEEE 42010:2022 Software, systems and enterprise — Architecture description; ISO/IEC/IEEE 12207:2017 Software life cycle processes; ISO/IEC/IEEE 15939:2017 Measurement process; SemVer 2.0.0; ISO 9241-210:2019; W3C DTCG 2025.10; WCAG 2.2 AA; afflom/stitch",
   "license": "Apache-2.0",
   "stitchAppCatalogProtocol": {
     "archiveFormat": ".uorc",
@@ -24,27 +24,22 @@
       "viewpointId": "observer-executive",
       "title": "Observer Executive Policy Manager",
       "route": null,
-      "stakeholderDomain": "Platform Policy & Sovereign Identity",
+      "stakeholderDomain": "Platform Policy, Second-Order Self-Governance & Sovereign Identity",
       "almPhases": ["governance", "architecture-policy"],
       "concerns": [
-        "Hold cryptographic kappa identity across all Managers, organs, and streams",
-        "Mediate VSM S3 stability vs S4 stream adaptation",
-        "Refuse contrived ungrounded directives lacking an authoritative standard"
+        "Hold cryptographic kappa identity across all Managers, organs, Prism facets, and streams",
+        "Mediate VSM S3 stability (Change/Security/Architecture) vs S4 intelligence (Knowledge/Roadmap)",
+        "Use the Change Manager and Observer parts to govern Major/Minor releases and KPIs"
       ],
       "governingAuthorities": [
         "AUTH-VSM-CYBERNETICS",
         "AUTH-ISO-42010-VIEWPOINTS",
-        "AUTH-W3C-SOSA-PROVO",
-        "AUTH-STITCH-SELF-HOSTING"
+        "AUTH-SEMVER-CHANGE-KPI"
       ],
       "ownedFiles": [
+        "app/src/Observer.lex.tex",
         "crates/verdant-core/src/observer.rs",
         "crates/verdant-core/src/operator.rs",
-        "crates/verdant-core/src/vcs.rs",
-        "site/frame/index.html",
-        "site/frame/frame-boot.mjs",
-        "site/frame/frame-sw.js",
-        "site/frame/frame-pin.json",
         "site/generated/viewpoint-contracts.json",
         "site/generated/immutability-seal.json"
       ],
@@ -53,13 +48,214 @@
       "ownedStreams": [],
       "ownedAuthorities": [
         "AUTH-VSM-CYBERNETICS",
-        "AUTH-ISO-42010-VIEWPOINTS",
-        "AUTH-STITCH-SELF-HOSTING"
+        "AUTH-ISO-42010-VIEWPOINTS"
       ],
+      "ownedPrismFacets": [],
       "requiredElements": [],
       "forbiddenCrossContamination": [],
       "differentiationRequirements": [
         "Executive internals never render directly onto creator, catalog, or player views."
+      ]
+    },
+    {
+      "managerId": "mgr-architecture-design",
+      "vsmSystem": "VSM-S3",
+      "viewpointId": "architecture-design",
+      "title": "Prism Architecture & Model Systems Manager",
+      "route": null,
+      "stakeholderDomain": "ISO/IEC/IEEE 42010, OPM ISO 19450 & OMG UML 2.5.1 Formal Model Integrity",
+      "almPhases": ["architecture", "formal-modeling", "design-verification"],
+      "concerns": [
+        "Govern Prism Stratum 2 Architecture, Design, Engine verifier entrypoint, and LexLean canonical lock",
+        "Ensure OPM processes, UML component/sequence/state models, and Core-Wasm contracts stay consistent"
+      ],
+      "governingAuthorities": [
+        "AUTH-ISO-42010-VIEWPOINTS",
+        "AUTH-VSM-CYBERNETICS"
+      ],
+      "ownedFiles": [
+        "app/src/Foundation/Arch.lex.tex",
+        "app/src/Architecture.lex.tex",
+        "app/src/Design.lex.tex",
+        "app/src/Engine.lex.tex",
+        "app/prismpm.toml",
+        "app/lexlean.toml",
+        "app/lexlean.lock"
+      ],
+      "ownedCrates": [],
+      "ownedObserverParts": [],
+      "ownedStreams": [],
+      "ownedAuthorities": [],
+      "ownedPrismFacets": [
+        "stratum-2-architecture-design"
+      ],
+      "requiredElements": [],
+      "forbiddenCrossContamination": [],
+      "differentiationRequirements": [
+        "Architecture and Design strata stay strictly parametric and mechanically locked inside PrismPM."
+      ]
+    },
+    {
+      "managerId": "mgr-knowledge-provenance",
+      "vsmSystem": "VSM-S4",
+      "viewpointId": "knowledge-provenance",
+      "title": "Knowledge, Provenance & Primary-Source Manager",
+      "route": null,
+      "stakeholderDomain": "W3C PROV-O Knowledge Graph, Charter, Citations & Standards Compliance",
+      "almPhases": ["knowledge-management", "provenance", "compliance"],
+      "concerns": [
+        "Govern Prism Stratum 5 Provenance, Compliance, charter, authority checksums, and primary-source citations",
+        "Guarantee every model record cites an authoritative SHA-256-locked source with zero ungrounded claims"
+      ],
+      "governingAuthorities": [
+        "AUTH-W3C-SOSA-PROVO",
+        "AUTH-ISO-42010-VIEWPOINTS"
+      ],
+      "ownedFiles": [
+        "app/src/Foundation/Provenance/V1/Model.lex.tex",
+        "app/src/Provenance.lex.tex",
+        "app/src/Compliance.lex.tex",
+        "model/charter.md",
+        "model/provenance.toml",
+        "model/authorities.toml",
+        "model/ledger.toml"
+      ],
+      "ownedCrates": [],
+      "ownedObserverParts": [],
+      "ownedStreams": [],
+      "ownedAuthorities": [
+        "AUTH-W3C-SOSA-PROVO"
+      ],
+      "ownedPrismFacets": [
+        "stratum-5-knowledge-provenance"
+      ],
+      "requiredElements": [],
+      "forbiddenCrossContamination": [],
+      "differentiationRequirements": [
+        "Knowledge records maintain mechanical W3C PROV-O lineage from primary standards and charter spans."
+      ]
+    },
+    {
+      "managerId": "mgr-change-release",
+      "vsmSystem": "VSM-S3",
+      "viewpointId": "change-version-release",
+      "title": "Change, Version & Release Governance Manager",
+      "route": null,
+      "stakeholderDomain": "SemVer 2.0.0 Versioning, VerdantVcs, Stitch Releases & Composable Blank Frame",
+      "almPhases": ["change-management", "versioning", "release-engineering", "distribution"],
+      "concerns": [
+        "Determine Major, Minor, and Patch release increments exclusively when the Ratchet is applied and all Release Gates pass",
+        "Own VerdantVcs Merkle DAG, self-verifying .holo Release Capsules, <=30KiB Composable Blank Frame, and CI Pull-Through Gate",
+        "Refuse version advancement on any unratcheted change or failed release gate"
+      ],
+      "governingAuthorities": [
+        "AUTH-SEMVER-CHANGE-KPI",
+        "AUTH-STITCH-SELF-HOSTING",
+        "AUTH-ISO-42010-VIEWPOINTS"
+      ],
+      "ownedFiles": [
+        "crates/verdant-core/src/vcs.rs",
+        "crates/verdant-core/src/governance.rs",
+        "catalogs/governance/change-roadmap-kpi.json",
+        "site/frame/index.html",
+        "site/frame/frame-boot.mjs",
+        "site/frame/frame-sw.js",
+        "site/frame/frame-pin.json",
+        "site/generated/release-ledger.json",
+        "scripts/verify-stitch-release.mjs",
+        "scripts/package-rust-crates.mjs",
+        ".github/workflows/release-stitch.yml"
+      ],
+      "ownedCrates": [],
+      "ownedObserverParts": [],
+      "ownedStreams": [],
+      "ownedAuthorities": [
+        "AUTH-SEMVER-CHANGE-KPI"
+      ],
+      "ownedPrismFacets": [
+        "change-version-release"
+      ],
+      "requiredElements": [],
+      "forbiddenCrossContamination": [],
+      "differentiationRequirements": [
+        "Version increments and .holo releases are strictly monotonic and gated on Ratchet + Release Gates."
+      ]
+    },
+    {
+      "managerId": "mgr-security-trust",
+      "vsmSystem": "VSM-S3",
+      "viewpointId": "security-trust",
+      "title": "Security, Privacy & Stitch Custody Manager",
+      "route": null,
+      "stakeholderDomain": "ISO/IEC 27005/27034 STRIDE Threat Model & Zero-Account Sovereign Privacy",
+      "almPhases": ["security", "privacy", "threat-modeling", "cryptographic-custody"],
+      "concerns": [
+        "Govern Prism Stratum 3 Security and STRIDE Threat Model (Assets 0..8, Threats 0..19, Controls 0..18)",
+        "Enforce zero-account Prism ID Encrypt-then-MAC boundary privacy, epoch revocation, and k-of-n Reed-Solomon integrity"
+      ],
+      "governingAuthorities": [
+        "AUTH-STITCH-SELF-HOSTING",
+        "AUTH-VSM-CYBERNETICS"
+      ],
+      "ownedFiles": [
+        "app/src/Foundation/Sec.lex.tex",
+        "app/src/Production/ThreatModel.lex.tex",
+        "app/src/Security.lex.tex",
+        "crates/verdant-core/src/network.rs",
+        "catalogs/governance/stitch-self-hosting.json",
+        "identity/stitch.lock"
+      ],
+      "ownedCrates": [],
+      "ownedObserverParts": [],
+      "ownedStreams": [],
+      "ownedAuthorities": [
+        "AUTH-STITCH-SELF-HOSTING"
+      ],
+      "ownedPrismFacets": [
+        "stratum-3-security-stride"
+      ],
+      "requiredElements": [],
+      "forbiddenCrossContamination": [],
+      "differentiationRequirements": [
+        "Every user boundary encrypts client-side under local Prism ID before sharding with zero external account requirement."
+      ]
+    },
+    {
+      "managerId": "mgr-roadmap-strategy",
+      "vsmSystem": "VSM-S4",
+      "viewpointId": "roadmap-kpi-strategy",
+      "title": "Stakeholder Roadmap & KPI Intelligence Manager",
+      "route": null,
+      "stakeholderDomain": "Stakeholder Requirements, ISO 15939 KPIs & Major/Minor Progress Planning",
+      "almPhases": ["requirements", "roadmap-planning", "kpi-telemetry"],
+      "concerns": [
+        "Govern Prism Stratum 7 Features, ISO 9241-11 Users, capability register, and stakeholder roadmap milestones",
+        "Synthesize Observer KPIs and Major/Minor milestone progress from all Observer parts and stakeholder requirements"
+      ],
+      "governingAuthorities": [
+        "AUTH-SEMVER-CHANGE-KPI",
+        "AUTH-ISO-42010-VIEWPOINTS"
+      ],
+      "ownedFiles": [
+        "app/src/Features.lex.tex",
+        "app/src/Users.lex.tex",
+        "app/src/Foundation/View/Text/V1/Model.lex.tex",
+        "model/ids.toml",
+        "CONFORMANCE.md",
+        "features/suites/engine.feature",
+        "site/generated/roadmap-kpi-report.json"
+      ],
+      "ownedCrates": [],
+      "ownedObserverParts": [],
+      "ownedStreams": [],
+      "ownedAuthorities": [],
+      "ownedPrismFacets": [
+        "stratum-7-features-roadmap-observer"
+      ],
+      "requiredElements": [],
+      "forbiddenCrossContamination": [],
+      "differentiationRequirements": [
+        "Roadmap progress and KPIs derive mechanically from verified conformance IDs, fidelity registers, and Observer parts."
       ]
     },
     {
@@ -68,10 +264,10 @@
       "viewpointId": "design-system",
       "title": "Design System & Experience Coordinator",
       "route": null,
-      "stakeholderDomain": "Cross-Surface Visual System, Themes & Accessibility",
+      "stakeholderDomain": "Cross-Surface Visual System, Brand Stratum, Themes & Accessibility",
       "almPhases": ["design", "usability", "accessibility"],
       "concerns": [
-        "Enforce W3C DTCG 2025.10 tokens across Light, Dark, and Immersive themes",
+        "Govern Prism Stratum 6 Brand & Experience tokens across Light, Dark, and Immersive themes",
         "Guarantee WCAG 2.2 AA contrast, >=48px touch targets, and native wheel scrolling",
         "Prevent duplicate controls, raw #hex literals, and backdrop-filter: blur over WebGL"
       ],
@@ -80,6 +276,9 @@
         "AUTH-SCHEMA-ORG"
       ],
       "ownedFiles": [
+        "app/src/Foundation/Experience/V1/Model.lex.tex",
+        "app/src/Brand.lex.tex",
+        "model/experience.toml",
         "site/brand/hologram-warm.css",
         "site/brand/fonts.css",
         "site/prism-page.css",
@@ -95,6 +294,9 @@
         "fontsource"
       ],
       "ownedAuthorities": [],
+      "ownedPrismFacets": [
+        "stratum-6-brand-experience"
+      ],
       "requiredElements": [],
       "forbiddenCrossContamination": [
         "backdrop-filter: blur"
@@ -107,14 +309,14 @@
       "managerId": "mgr-runtime-stage",
       "vsmSystem": "VSM-S1",
       "viewpointId": "runtime-stage",
-      "title": "Verdant Engine Runtime Manager",
+      "title": "Verdant Engine Runtime & Tensor Core Manager",
       "route": "/",
       "stakeholderDomain": "Model-Centric 3D Application Runtime User & Integrator",
       "almPhases": ["operation", "execution", "performance"],
       "concerns": [
+        "Govern Prism Strata 0-1 Ontology, Tensor kernels, and Subsystems alongside core Rust/Wasm crates",
         "Execute arbitrary 3D, physics, audio, and UHD models within host limits",
-        "Maintain FR-03 cold-boot transfer weight <= 122,880 B and 60/120 Hz stability",
-        "Support WebGPU, WebGL2 HD PBR + CAS, and Wasm software tile fallbacks"
+        "Maintain FR-03 cold-boot transfer weight <= 122,880 B and 60/120 Hz stability"
       ],
       "governingAuthorities": [
         "AUTH-KHRONOS-GLTF2",
@@ -123,6 +325,10 @@
         "AUTH-ISO-25010-TENSOR-SCALING"
       ],
       "ownedFiles": [
+        "app/src/Foundation/Ontology/V1/Model.lex.tex",
+        "app/src/Foundation/Bytes.lex.tex",
+        "app/src/Tensor.lex.tex",
+        "app/src/Subsystems.lex.tex",
         "site/card.html",
         "site/card.mjs",
         "site/card.css",
@@ -149,6 +355,10 @@
       ],
       "ownedAuthorities": [
         "AUTH-ISO-25010-TENSOR-SCALING"
+      ],
+      "ownedPrismFacets": [
+        "stratum-0-ontology-bytes",
+        "stratum-1-tensor-subsystems"
       ],
       "requiredElements": [
         "id=\"ve-canvas\"",
@@ -202,6 +412,7 @@
       "ownedAuthorities": [
         "AUTH-ISO-24617-DMN"
       ],
+      "ownedPrismFacets": [],
       "requiredElements": [
         "id=\"studio-journey-host\"",
         "id=\"studio-canvas\"",
@@ -270,9 +481,9 @@
       ],
       "ownedAuthorities": [
         "AUTH-SCHEMA-ORG",
-        "AUTH-W3C-SOSA-PROVO",
         "AUTH-KHRONOS-GLTF2"
       ],
+      "ownedPrismFacets": [],
       "requiredElements": [
         "id=\"cat-apps-grid\"",
         "id=\"cat-live-gallery\"",
@@ -325,6 +536,7 @@
       "ownedAuthorities": [
         "AUTH-DOMAIN-PACKS"
       ],
+      "ownedPrismFacets": [],
       "requiredElements": [
         "id=\"game-canvas\""
       ],
@@ -342,20 +554,29 @@
       "managerId": "mgr-verification-observatory",
       "vsmSystem": "VSM-S3-STAR",
       "viewpointId": "verification-observatory",
-      "title": "Verification & Benchmark Observatory Manager",
+      "title": "Verification, Quality & Parametric Ratchet Manager",
       "route": "/demo/",
       "stakeholderDomain": "Graphics Engineer, Systems Auditor & Formal Verifier",
-      "almPhases": ["verification", "benchmarking", "conformance"],
+      "almPhases": ["verification", "benchmarking", "conformance", "quality-measurement"],
       "concerns": [
+        "Govern Prism Stratum 4 Quality, ISO 15939 Measures, Fidelity self-measurement, and the FI-08 Parametric Ratchet",
         "Measure WebGL2 3-pass PBR vs Wasm tile rasterization, hardware instancing, UORC compression, and UHD 4K/8K Morton meshlet/LOD/Frame Stability oracles",
-        "Replay formal app.holo semiring and refusal proofs transparently",
-        "Isolate engineering diagnostics here so creative and playable views stay clean"
+        "Replay formal app.holo semiring and refusal proofs transparently"
       ],
       "governingAuthorities": [
         "AUTH-VSM-CYBERNETICS",
-        "AUTH-ISO-42010-VIEWPOINTS"
+        "AUTH-ISO-42010-VIEWPOINTS",
+        "AUTH-SEMVER-CHANGE-KPI"
       ],
       "ownedFiles": [
+        "app/src/Foundation/Qual.lex.tex",
+        "app/src/Foundation/Measurement/V1/Model.lex.tex",
+        "app/src/Quality.lex.tex",
+        "app/src/Measures.lex.tex",
+        "app/src/Fidelity.lex.tex",
+        "model/measures.toml",
+        "model/parametric-ratchet.toml",
+        "fidelity.toml",
         "site/demo/index.html",
         "site/demo/demo.mjs",
         "scripts/enforce-prism-contracts.mjs",
@@ -365,6 +586,9 @@
       "ownedObserverParts": [],
       "ownedStreams": [],
       "ownedAuthorities": [],
+      "ownedPrismFacets": [
+        "stratum-4-quality-measures-fidelity"
+      ],
       "requiredElements": [
         "id=\"demo-canvas\"",
         "id=\"btn-bench-aqm\"",
@@ -381,19 +605,21 @@
       "managerId": "mgr-reference-docs",
       "vsmSystem": "VSM-S1",
       "viewpointId": "reference-docs",
-      "title": "Diataxis Technical Reference Manager",
+      "title": "Diataxis Technical Reference & DevRel Manager",
       "route": "/docs/",
       "stakeholderDomain": "Developer & Architect Learning Verdant",
       "almPhases": ["documentation", "onboarding", "reference"],
       "concerns": [
         "Maintain Diataxis-structured tutorials, how-to guides, API references, and explanations in ISO 24495-1 plain language",
-        "Host interactive live WebAssembly documentation embeds strictly under subpath containment"
+        "Govern DevRel.lex.tex, content.json, and interactive live WebAssembly documentation embeds"
       ],
       "governingAuthorities": [
         "AUTH-ISO-42010-VIEWPOINTS",
         "AUTH-SCHEMA-ORG"
       ],
       "ownedFiles": [
+        "app/src/DevRel.lex.tex",
+        "model/content.json",
         "site/docs/index.html",
         "site/docs/live-embed.mjs",
         "site/llms.txt"
@@ -402,6 +628,7 @@
       "ownedObserverParts": [],
       "ownedStreams": [],
       "ownedAuthorities": [],
+      "ownedPrismFacets": [],
       "requiredElements": [],
       "forbiddenCrossContamination": [],
       "differentiationRequirements": [

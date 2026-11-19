@@ -391,5 +391,54 @@ theorem{
   proof: decide{},
   axioms: []
 }
+
+definition{
+  name: changeReleaseBumpCode,
+  parameters: [
+    ratchetApplied : Bool,
+    gatesPassed : Bool,
+    isMajor : Bool,
+    isMinor : Bool,
+    isPatch : Bool
+  ],
+  result: Nat,
+  body: (if (ratchetApplied && gatesPassed) then (if isMajor then (Subsystems::sThree) else (if isMinor then (Subsystems::sTwo) else (if isPatch then 1 else 0))) else 0)
+}
+
+definition{
+  name: allPrismFacetsManaged,
+  parameters: [
+    ownedFacets : Nat,
+    requiredFacets : Nat,
+    knowledgeManaged : Bool,
+    changeManaged : Bool,
+    securityManaged : Bool,
+    roadmapManaged : Bool
+  ],
+  result: Bool,
+  body: (((requiredFacets <=? ownedFacets) && (1 <=? requiredFacets)) && (knowledgeManaged && (changeManaged && (securityManaged && roadmapManaged))))
+}
+
+definition{
+  name: observerKpiAndRoadmapReady,
+  parameters: [kpisPassed : Nat, kpisTotal : Nat, minorClosed : Bool, gatesPassed : Bool],
+  result: Bool,
+  body: (((kpisTotal <=? kpisPassed) && (1 <=? kpisTotal)) && (minorClosed && gatesPassed))
+}
+
+definition{
+  name: observerChangeAndKpiDirect,
+  parameters: [],
+  result: Bool,
+  body: ((((changeReleaseBumpCode true true true false false) =? (Subsystems::sThree)) && (((changeReleaseBumpCode true true false true false) =? (Subsystems::sTwo)) && (((changeReleaseBumpCode true true false false true) =? 1) && (((changeReleaseBumpCode false true true true true) =? 0) && ((changeReleaseBumpCode true false true true true) =? 0))))) && ((allPrismFacetsManaged (Subsystems::sNine) (Subsystems::sNine) true true true true) && ((not (allPrismFacetsManaged (Subsystems::sEight) (Subsystems::sNine) true true true true)) && ((not (allPrismFacetsManaged (Subsystems::sNine) (Subsystems::sNine) false true true true)) && ((observerKpiAndRoadmapReady (Subsystems::sEight) (Subsystems::sEight) true true) && (not (observerKpiAndRoadmapReady (Subsystems::sSeven) (Subsystems::sEight) true true)))))))
+}
+
+theorem{
+  name: observerChangeAndKpiGovernanceVerified,
+  parameters: [],
+  statement: ((observerChangeAndKpiDirect) = true),
+  proof: decide{},
+  axioms: []
+}
 \end{semanticmodule}
 \end{lexlean}

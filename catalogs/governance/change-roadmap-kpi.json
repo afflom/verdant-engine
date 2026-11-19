@@ -1,0 +1,182 @@
+{
+  "spec": "verdant/imported-authority-catalog/1",
+  "authorityId": "AUTH-SEMVER-CHANGE-KPI",
+  "standard": "SemVer 2.0.0 + ISO/IEC/IEEE 12207:2017 Change & Configuration Management + ISO/IEC/IEEE 15939:2017 Measurement & KPI Process + ISO/IEC 25010:2023",
+  "citation": "Semantic Versioning 2.0.0 (semver.org); ISO/IEC/IEEE 12207:2017 §6.3.5 Configuration Management & §6.3.7 Measurement; ISO/IEC/IEEE 15939:2017 Systems and software engineering — Measurement process; Stafford Beer VSM S3/S4/S5",
+  "license": "Apache-2.0",
+  "initialVersion": {
+    "major": 0,
+    "minor": 4,
+    "patch": 0,
+    "releaseEpoch": 1
+  },
+  "semverPolicy": {
+    "requireRatchetApplied": true,
+    "requireAllReleaseGatesPassed": true,
+    "majorCriteria": [
+      "breaking-contract-or-wire-format-change",
+      "major-stakeholder-roadmap-milestone-completed",
+      "full-self-hosting-ratchet-tier-tightened"
+    ],
+    "minorCriteria": [
+      "backward-compatible-capability-added",
+      "new-vsm-manager-or-prism-facet-lifted",
+      "stakeholder-requirement-id-closed"
+    ],
+    "patchCriteria": [
+      "defect-fix-without-surface-expansion",
+      "security-control-hardening",
+      "fidelity-or-documentation-refinement"
+    ]
+  },
+  "requiredReleaseGates": [
+    "parametric-ratchet-zero-magic-constants",
+    "view-immutability-seal-valid",
+    "total-verdant-and-prism-ownership-complete",
+    "iso-15939-fidelity-and-measures-closed",
+    "chromium-blank-frame-pull-through-verified"
+  ],
+  "requiredPrismFacets": [
+    "stratum-0-ontology-bytes",
+    "stratum-1-tensor-subsystems",
+    "stratum-2-architecture-design",
+    "stratum-3-security-stride",
+    "stratum-4-quality-measures-fidelity",
+    "stratum-5-knowledge-provenance",
+    "stratum-6-brand-experience",
+    "stratum-7-features-roadmap-observer",
+    "change-version-release"
+  ],
+  "stakeholderRoadmap": [
+    {
+      "milestoneId": "M1",
+      "targetVersion": "0.1.0",
+      "tier": "minor",
+      "title": "Verified Core Engine, Progressive UORC & Multi-World Runtime",
+      "stakeholders": ["game-developer", "player", "systems-engineer"],
+      "requiredCapabilities": ["VE-01", "VE-15", "VE-24", "VE-38", "VE-39", "VE-40", "VE-41"],
+      "owningManagers": ["mgr-runtime-stage", "mgr-playable-world", "mgr-catalog-curator"],
+      "ratchetRequirement": "Zero magic constants across Strata 0..7 and shipped Rust crates (FI-08)."
+    },
+    {
+      "milestoneId": "M2",
+      "targetVersion": "0.2.0",
+      "tier": "minor",
+      "title": "VSM S1-S5 Managers, Immutable Views & Dynamic UHD Tensor Core",
+      "stakeholders": ["creator", "architect", "auditor"],
+      "requiredCapabilities": ["VE-42"],
+      "owningManagers": ["mgr-observer-executive", "mgr-studio-alm", "mgr-design-coordinator"],
+      "ratchetRequirement": "Cryptographic View Immutability Seal & PagedTensorArena dynamic workload scaling."
+    },
+    {
+      "milestoneId": "M3",
+      "targetVersion": "0.3.0",
+      "tier": "minor",
+      "title": "Zero-Account Stitch Self-Hosting, .holo Releases & Composable Blank Frame",
+      "stakeholders": ["creator", "player", "auditor"],
+      "requiredCapabilities": ["VE-43", "VE-44"],
+      "owningManagers": ["mgr-security-trust", "mgr-change-release"],
+      "ratchetRequirement": "4-of-8 GF(2^8) Reed-Solomon Stitch recovery + <=30KiB Blank Frame pull-through gate."
+    },
+    {
+      "milestoneId": "M4",
+      "targetVersion": "0.4.0",
+      "tier": "minor",
+      "title": "Total Prism Facet Ownership, Change/Version Manager & Observer KPI Roadmap",
+      "stakeholders": ["architect", "operator", "auditor"],
+      "requiredCapabilities": ["VE-45"],
+      "owningManagers": [
+        "mgr-observer-executive",
+        "mgr-knowledge-provenance",
+        "mgr-change-release",
+        "mgr-roadmap-strategy",
+        "mgr-architecture-design"
+      ],
+      "ratchetRequirement": "100% Prism Strata 0..7 + Knowledge/Change/Security/Roadmap Manager ownership & SemVer gate."
+    },
+    {
+      "milestoneId": "M5",
+      "targetVersion": "1.0.0",
+      "tier": "major",
+      "title": "Autonomous Self-Hosted Blank Repository & vN-to-v(N+1) Stitch Build Loop",
+      "stakeholders": ["creator", "operator", "player", "auditor"],
+      "requiredCapabilities": ["VE-45", "VE-46"],
+      "owningManagers": ["mgr-observer-executive", "mgr-change-release", "mgr-studio-alm"],
+      "ratchetRequirement": "Full Rust & LexLean source DAG lifted into VerdantVcs on Stitch with max_unlifted_workspace_modules = 0."
+    }
+  ],
+  "kpiCatalog": [
+    {
+      "kpiId": "KPI-OWNERSHIP-TOTAL",
+      "name": "Total Verdant & Prism Facet Ownership",
+      "unit": "percent",
+      "direction": "atLeast",
+      "target": 100,
+      "owningManager": "mgr-observer-executive",
+      "authority": "AUTH-VSM-CYBERNETICS"
+    },
+    {
+      "kpiId": "KPI-RATCHET-CLEAN",
+      "name": "Parametric Ratchet Magic Constant Violations",
+      "unit": "count",
+      "direction": "atMost",
+      "target": 0,
+      "owningManager": "mgr-verification-observatory",
+      "authority": "AUTH-ISO-42010-VIEWPOINTS"
+    },
+    {
+      "kpiId": "KPI-FIDELITY-MEASURED",
+      "name": "ISO 15939 Kernel-Measured Fidelity Closure",
+      "unit": "percent",
+      "direction": "atLeast",
+      "target": 100,
+      "owningManager": "mgr-verification-observatory",
+      "authority": "AUTH-SEMVER-CHANGE-KPI"
+    },
+    {
+      "kpiId": "KPI-KNOWLEDGE-CITATIONS",
+      "name": "W3C PROV-O Primary-Source Authority Coverage",
+      "unit": "percent",
+      "direction": "atLeast",
+      "target": 100,
+      "owningManager": "mgr-knowledge-provenance",
+      "authority": "AUTH-W3C-SOSA-PROVO"
+    },
+    {
+      "kpiId": "KPI-STRIDE-MITIGATION",
+      "name": "Modeled STRIDE Threat Mitigation & Control Coverage",
+      "unit": "percent",
+      "direction": "atLeast",
+      "target": 100,
+      "owningManager": "mgr-security-trust",
+      "authority": "AUTH-STITCH-SELF-HOSTING"
+    },
+    {
+      "kpiId": "KPI-BLANK-FRAME-WEIGHT",
+      "name": "Immutable Composable Blank Frame Weight",
+      "unit": "bytes",
+      "direction": "atMost",
+      "target": 30720,
+      "owningManager": "mgr-change-release",
+      "authority": "AUTH-STITCH-SELF-HOSTING"
+    },
+    {
+      "kpiId": "KPI-ROADMAP-MINOR-PROGRESS",
+      "name": "Active Minor Milestone Stakeholder Progress",
+      "unit": "percent",
+      "direction": "atLeast",
+      "target": 100,
+      "owningManager": "mgr-roadmap-strategy",
+      "authority": "AUTH-SEMVER-CHANGE-KPI"
+    },
+    {
+      "kpiId": "KPI-RELEASE-GATES",
+      "name": "Mandatory Release Gate Pass Rate",
+      "unit": "percent",
+      "direction": "atLeast",
+      "target": 100,
+      "owningManager": "mgr-change-release",
+      "authority": "AUTH-SEMVER-CHANGE-KPI"
+    }
+  ]
+}

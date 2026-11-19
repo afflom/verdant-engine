@@ -378,3 +378,9 @@ id = "VE-44"
 level = "build"
 suite = "engine"
 statement = "Self-contained Verdant Release .holo capsules lift all verified Viewpoints, DTCG assets, Manager manifests, and WebAssembly runtimes into 4-of-8 STCH2 Reed-Solomon shards bound by quorum-signed monotonic FramePinManifest pointers, and the immutable <= 30 KiB Composable Blank Frame recovers and mounts them via ServiceWorker Virtual FS with zero loose UI files while refusing tampered capsules, pointer rollbacks, and unsafe deep-link URIs"
+
+[[id]]
+id = "VE-45"
+level = "build"
+suite = "engine"
+statement = "Thirteen accountable VSM Managers enforce Total Ownership across every Verdant surface and every Prism stratum including Knowledge/Provenance, Change/Version, Security, Architecture, and Stakeholder Roadmap/KPI Managers, enabling the Observer to compute live ISO 15939 KPIs and Major/Minor stakeholder roadmap progress from its parts and advance SemVer Major, Minor, or Patch versions exclusively when the Ratchet is applied and all Release Gates pass"

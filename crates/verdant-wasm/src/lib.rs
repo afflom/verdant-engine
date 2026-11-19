@@ -6244,3 +6244,23 @@ pub extern "C" fn verdant_wasm_stitch_boundary_recover_io() -> u32 {
     bridge.aux_buffer = verdant_core::network::stitch_boundary_recover_json(raw).into_bytes();
     bridge.aux_buffer.len() as u32
 }
+
+/// Serializes the Observer's live Stakeholder Roadmap, ISO 15939 KPIs, Knowledge Manager summary,
+/// and Change/Version Manager release readiness into `aux_buffer` (`AUTH-SEMVER-CHANGE-KPI`, `VE-45`).
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+#[no_mangle]
+pub extern "C" fn verdant_wasm_observer_roadmap_kpis_aux() -> u32 {
+    let mut guard = global_bridge()
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
+    let Some(bridge) = guard.as_mut() else {
+        return 0;
+    };
+    let Ok(ch) = verdant_core::operator::VerdantOperatorChannel::new(
+        &bridge.observer_holon.active_domain.spec.slug,
+    ) else {
+        return 0;
+    };
+    bridge.aux_buffer = ch.synthesize_embedded_roadmap_kpis_json().into_bytes();
+    bridge.aux_buffer.len() as u32
+}

@@ -3981,8 +3981,8 @@ fn engine_ve_38() {
 
     let repo_root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
     let registry = CatalogBundleRegistry::load_from_repo_dir(&repo_root)
-        .expect("all 9 SHA-256-locked authority catalogs load and cross-validate");
-    assert_eq!(registry.file_locks.len(), 9);
+        .expect("all 10 SHA-256-locked authority catalogs load and cross-validate");
+    assert_eq!(registry.file_locks.len(), 10);
     assert_eq!(registry.domain_packs.domains.len(), 4);
     assert_eq!(registry.khronos_hd.materials.len(), 8);
     assert_eq!(registry.khronos_hd.rigs.len(), 4);
@@ -5038,7 +5038,7 @@ fn engine_ve_42() {
     let vsm = load_locked_vsm_catalog().expect("AUTH-VSM-CYBERNETICS loads cleanly");
     let vp = load_locked_iso42010_catalog().expect("AUTH-ISO-42010-VIEWPOINTS loads cleanly");
     assert_eq!(vsm.systems.len(), 6);
-    assert_eq!(vp.managers.len(), 8);
+    assert_eq!(vp.managers.len(), 13);
     assert_eq!(vp.stitch_app_catalog_protocol.archive_format, ".uorc");
 
     // 2. Instantiate Operator Channel & verify Total Ownership ("no part without a manager"):
@@ -5715,4 +5715,173 @@ fn engine_ve_44() {
             "hostile deep link MUST be refused: {hostile}"
         );
     }
+}
+
+#[test]
+fn engine_ve_45() {
+    use std::path::Path;
+    use verdant_core::governance::{
+        ChangeVersionManager, KnowledgeProvenanceManager, ObserverProgressSignals, ReleaseBumpKind,
+        ReleaseGateVerdict, SemVer, REQUIRED_PRISM_FACETS,
+    };
+    use verdant_core::operator::{
+        audit_total_ownership_with_prism_facets, VerdantOperatorChannel,
+        REQUIRED_LOCKED_AUTHORITIES, REQUIRED_SHIPPED_CRATES, REQUIRED_SHIPPED_ROUTES,
+    };
+
+    let repo_root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+    let ch = VerdantOperatorChannel::new("sunspire-regatta").expect("operator channel");
+
+    // 1. All 13 accountable VSM Managers must own 100% of Verdant AND all 9 Prism strata/governance
+    // facets (including Knowledge, Change/Version, Security, Architecture & Roadmap/KPI Managers):
+    let own = ch.check_total_ownership();
+    assert!(own.complete, "Total Ownership must be complete: {own:?}");
+    assert_eq!(own.managers_checked, 13);
+    assert!(own.orphans.is_empty());
+    assert!(own.duplicate_owners.is_empty());
+
+    for required_mgr in [
+        "mgr-observer-executive",
+        "mgr-architecture-design",
+        "mgr-knowledge-provenance",
+        "mgr-change-release",
+        "mgr-security-trust",
+        "mgr-roadmap-strategy",
+        "mgr-design-coordinator",
+        "mgr-runtime-stage",
+        "mgr-studio-alm",
+        "mgr-catalog-curator",
+        "mgr-playable-world",
+        "mgr-verification-observatory",
+        "mgr-reference-docs",
+    ] {
+        assert!(
+            ch.managers
+                .iter()
+                .any(|m| m.spec.manager_id == required_mgr),
+            "missing required VSM Manager `{required_mgr}`"
+        );
+    }
+
+    // Negative check: planting an unowned Prism facet MUST fail Total Ownership!
+    let bad_facet = audit_total_ownership_with_prism_facets(
+        &ch.viewpoints,
+        REQUIRED_SHIPPED_ROUTES,
+        REQUIRED_SHIPPED_CRATES,
+        &[],
+        &[],
+        REQUIRED_LOCKED_AUTHORITIES,
+        &["stratum-0-ontology-bytes", "stratum-99-unowned-orphan"],
+    );
+    assert!(!bad_facet.complete);
+    assert!(bad_facet
+        .orphans
+        .iter()
+        .any(|o| o.contains("prism-facet:stratum-99-unowned-orphan")));
+
+    // 2. Knowledge & Provenance Manager inspects locked authorities, charter & strata live:
+    let knowledge = KnowledgeProvenanceManager::inspect_repo(&repo_root);
+    assert_eq!(knowledge.manager_id, "mgr-knowledge-provenance");
+    assert_eq!(knowledge.locked_authorities_count, 10);
+    assert!(knowledge.provenance_sources_count >= 4);
+    assert!(knowledge.charter_bytes > 1024);
+    assert_eq!(knowledge.governed_lex_modules, 26);
+    assert_eq!(knowledge.measured_closed, knowledge.measured_total);
+    assert_eq!(knowledge.authority_coverage_pct, 100);
+
+    // 3. Change & Version Manager (`mgr-change-release`): SemVer Major / Minor / Patch ONLY
+    // advance when Ratchet is applied AND all 5 Release Gates pass!
+    let all_green = ReleaseGateVerdict {
+        ratchet_applied: true,
+        parametric_ratchet_clean: true,
+        immutability_seal_valid: true,
+        total_ownership_complete: true,
+        fidelity_closed: true,
+        pull_through_verified: true,
+    };
+    let v030 = SemVer {
+        major: 0,
+        minor: 3,
+        patch: 0,
+    };
+    let minor_sig = ObserverProgressSignals {
+        breaking_contract_change: false,
+        major_milestone_completed: false,
+        minor_capability_added: true,
+        stakeholder_requirement_closed: true,
+        defect_or_security_fix: false,
+        summary: "Closed M4 Total Prism Facet Ownership & Observer KPIs (VE-45)".to_string(),
+    };
+    let minor_dec = ChangeVersionManager::evaluate_release(v030, 3, all_green, &minor_sig);
+    assert_eq!(minor_dec.recommended_bump, ReleaseBumpKind::Minor);
+    assert!(minor_dec.version_incremented);
+    assert_eq!(minor_dec.next_version.display_string(), "0.4.0");
+    assert_eq!(minor_dec.next_epoch, 4);
+
+    let major_sig = ObserverProgressSignals {
+        breaking_contract_change: false,
+        major_milestone_completed: true,
+        minor_capability_added: true,
+        stakeholder_requirement_closed: true,
+        defect_or_security_fix: false,
+        summary: "Closed M5 Full Self-Hosted Blank Repo Milestone".to_string(),
+    };
+    let major_dec =
+        ChangeVersionManager::evaluate_release(minor_dec.next_version, 4, all_green, &major_sig);
+    assert_eq!(major_dec.recommended_bump, ReleaseBumpKind::Major);
+    assert!(major_dec.version_incremented);
+    assert_eq!(major_dec.next_version.display_string(), "1.0.0");
+    assert_eq!(major_dec.next_epoch, 5);
+
+    let patch_sig = ObserverProgressSignals {
+        breaking_contract_change: false,
+        major_milestone_completed: false,
+        minor_capability_added: false,
+        stakeholder_requirement_closed: false,
+        defect_or_security_fix: true,
+        summary: "Hardened STCH2 shard parser".to_string(),
+    };
+    let patch_dec =
+        ChangeVersionManager::evaluate_release(major_dec.next_version, 5, all_green, &patch_sig);
+    assert_eq!(patch_dec.recommended_bump, ReleaseBumpKind::Patch);
+    assert_eq!(patch_dec.next_version.display_string(), "1.0.1");
+
+    // Negative checks: missing Ratchet OR ANY failed Release Gate MUST HOLD version (no increment)!
+    let mut no_ratchet = all_green;
+    no_ratchet.ratchet_applied = false;
+    let hold_ratchet = ChangeVersionManager::evaluate_release(v030, 3, no_ratchet, &major_sig);
+    assert_eq!(hold_ratchet.recommended_bump, ReleaseBumpKind::Hold);
+    assert!(!hold_ratchet.version_incremented);
+    assert_eq!(hold_ratchet.next_version, v030);
+    assert_eq!(hold_ratchet.next_epoch, 3);
+    assert!(!hold_ratchet.blocking_reasons.is_empty());
+
+    let mut failed_pull_through = all_green;
+    failed_pull_through.pull_through_verified = false;
+    let hold_gate =
+        ChangeVersionManager::evaluate_release(v030, 3, failed_pull_through, &minor_sig);
+    assert_eq!(hold_gate.recommended_bump, ReleaseBumpKind::Hold);
+    assert!(!hold_gate.version_incremented);
+    assert_eq!(hold_gate.next_version, v030);
+
+    let mut ledger = ChangeVersionManager::default_ledger().expect("default ledger");
+    assert!(
+        ChangeVersionManager::apply_decision_to_ledger(&mut ledger, &hold_gate, "refused").is_err()
+    );
+
+    // 4. Observer queries its parts, Knowledge Manager & Roadmap/KPI Manager for live KPIs and
+    // Major/Minor stakeholder roadmap progress:
+    let kpi_rep = ch
+        .evaluate_observer_roadmap_kpis(&repo_root, true, true)
+        .expect("observer roadmap & KPI report");
+    assert_eq!(kpi_rep.total_managers, 13);
+    assert_eq!(
+        kpi_rep.total_prism_facets_owned,
+        REQUIRED_PRISM_FACETS.len()
+    );
+    assert_eq!(kpi_rep.minor_progress_pct, 100);
+    assert!(kpi_rep.major_progress_pct >= 50 && kpi_rep.major_progress_pct < 100);
+    assert_eq!(kpi_rep.kpi_passed_count, kpi_rep.kpi_total_count);
+    assert_eq!(kpi_rep.milestones.len(), 5);
+    assert_eq!(kpi_rep.observer_parts.len(), 13);
 }

@@ -84,9 +84,9 @@ id = "AUTH-ISO-42010-VIEWPOINTS"
 name = "ISO/IEC/IEEE 42010:2022 Architecture Viewpoints, ISO/IEC/IEEE 12207:2017 ALM & Stitch App Catalog"
 citation = "ISO/IEC/IEEE 42010:2022 Software, systems and enterprise — Architecture description; ISO/IEC/IEEE 12207:2017 Software life cycle processes; ISO 9241-210:2019; W3C DTCG 2025.10; WCAG 2.2 AA; afflom/stitch"
 artifact = "catalogs/governance/iso42010-viewpoints.json"
-checksum = "dd20e3464ea33e35b36d5a65cf9da3659f5b69f9aa36b2d07e51ae066e7d558f"
+checksum = "48968c782b1a8b82948c661fce8682f574ecfa87d9f674db8a8f5eb457ac07fb"
 statement = "ISO/IEC/IEEE 42010:2022 binds every Verdant surface, crate, Observer part, stream, and Stitch App Catalog archetype to an accountable Manager with explicit required elements, forbidden cross-contamination, and correspondence rules."
-realized_by = ["VE-42", "VE-44"]
+realized_by = ["VE-42", "VE-44", "VE-45"]
 
 [[authority]]
 id = "AUTH-ISO-25010-TENSOR-SCALING"
@@ -105,3 +105,12 @@ artifact = "catalogs/governance/stitch-self-hosting.json"
 checksum = "4e9e39acc1edc4a3e5a597e2b93ab640e2de11cb5f57cbf8b3afe8f161ec9ef4"
 statement = "Zero-account Prism-ID boundary encryption, k-of-n systematic Reed-Solomon erasure coding, monotonic quorum release pointers, budgeted reciprocal peer admission, and in-Verdant PROV-O Merkle revision control provide uniform CIA guarantees across all Stitch content without requiring external user accounts."
 realized_by = ["VE-43", "VE-44"]
+
+[[authority]]
+id = "AUTH-SEMVER-CHANGE-KPI"
+name = "SemVer 2.0.0 Change/Version Governance, ISO/IEC/IEEE 12207 ALM & ISO/IEC/IEEE 15939 Observer KPIs"
+citation = "Semantic Versioning 2.0.0; ISO/IEC/IEEE 12207:2017 §6.3.5 Configuration Management & §6.3.7 Measurement; ISO/IEC/IEEE 15939:2017 Measurement process; Stafford Beer VSM S3/S4/S5"
+artifact = "catalogs/governance/change-roadmap-kpi.json"
+checksum = "b61336e96cda62d6608d3ee2ba5cd90c99c81f349072873e653a96c109975907"
+statement = "Accountable VSM Managers govern every Verdant and Prism facet including Knowledge, Change/Version, Security, Architecture, and Stakeholder Roadmap/KPIs, advancing SemVer Major/Minor/Patch versions exclusively when the Ratchet is applied and all Release Gates pass."
+realized_by = ["VE-45"]

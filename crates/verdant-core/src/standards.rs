@@ -1559,6 +1559,10 @@ impl CatalogBundleRegistry {
             "catalogs/governance/stitch-self-hosting.json",
             crate::operator::LOCKED_STITCH_SELF_HOSTING_JSON.as_bytes(),
         );
+        raw_files.insert(
+            "catalogs/governance/change-roadmap-kpi.json",
+            crate::governance::LOCKED_CHANGE_ROADMAP_KPI_JSON.as_bytes(),
+        );
         Self::from_locked_bytes(EMBEDDED_AUTHORITIES_TOML, &raw_files)
     }
 

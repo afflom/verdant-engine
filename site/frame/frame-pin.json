@@ -1,28 +1,28 @@
 {
   "spec": "verdant/frame-pin/1",
-  "releaseVersion": "0.1.0",
-  "releaseEpoch": 1,
-  "releaseKappaHex": "fc6e5ad19cd725393a3a594e93e226dc4369ed1dd2a9483f9ac57e06c18b374b",
+  "releaseVersion": "0.4.0",
+  "releaseEpoch": 4,
+  "releaseKappaHex": "701131f98c2bff430400e19eaf97308f083f7f86de54fbee5a110bd1234592b9",
   "prevKappaHex": "genesis",
-  "vcsCommitKappa": "eeb3e6a3a857e9dd0a383b7fba0fcd44670be2c76b8f6f0a0649ff42c44bf66f",
-  "immutabilitySealSha256": "19750a5ab684f0a36ca0ffdd13fb41473b34bce581e60dacf9d341d780573e10",
+  "vcsCommitKappa": "aeaf40aefa7d146804b9799c49d233e0bbb3a29f127813b1255d0d6f4ee1a5f0",
+  "immutabilitySealSha256": "af2e36f85aa8a80bd2e81b0db718f98731ba9be769cb1d83d6e9cbfd245ea5c0",
   "defaultStitchUri": "stitch://verdant/studio",
   "dataShardsK": 4,
   "totalShardsN": 8,
-  "capsuleByteLen": 8020042,
+  "capsuleByteLen": 8104038,
   "pointer": {
     "stitchUri": "stitch://verdant/studio",
-    "releaseEpoch": 1,
+    "releaseEpoch": 4,
     "prevKappaHex": "genesis",
-    "targetKappaHex": "fc6e5ad19cd725393a3a594e93e226dc4369ed1dd2a9483f9ac57e06c18b374b",
+    "targetKappaHex": "701131f98c2bff430400e19eaf97308f083f7f86de54fbee5a110bd1234592b9",
     "minQuorum": 2,
     "quorumSignatures": {
-      "prism:verdant-observer-executive": "979400aca5ee1241c1eab7e2cfbb2a82658a3b92c4e5fdccdc4dc6dc939f82de",
-      "prism:verdant-release-bot": "840acb7008f9f9d2fde9a389fc535fc47a89c1317d0602f30ac7146a9664a37f"
+      "prism:verdant-observer-executive": "2b6640f11773421dac430308c30beb1e68497141ac98701bb93d3cd70fe47eec",
+      "prism:verdant-release-bot": "c758e10c2572694c012f3b4f167f36700a8b390794c1709f99985bb0c716db69"
     }
   },
   "stitchRelays": [
-    "https://afflom.github.io/verdant-engine/stitch/v0.1.0/shards"
+    "https://afflom.github.io/verdant-engine/stitch/v0.4.0/shards"
   ],
   "shardFiles": [
     "shard-0.stch",

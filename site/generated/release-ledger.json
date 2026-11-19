@@ -1,0 +1,41 @@
+{
+  "spec": "verdant/release-ledger/1",
+  "managerId": "mgr-change-release",
+  "authorityId": "AUTH-SEMVER-CHANGE-KPI",
+  "currentVersion": {
+    "major": 0,
+    "minor": 4,
+    "patch": 0
+  },
+  "releaseEpoch": 1,
+  "history": [
+    {
+      "version": "0.1.0",
+      "releaseEpoch": 1,
+      "bumpKind": "minor",
+      "summary": "M1: Verified Core Engine, Progressive UORC & Multi-World Runtime (VE-01..41)",
+      "citedAuthority": "AUTH-SEMVER-CHANGE-KPI"
+    },
+    {
+      "version": "0.2.0",
+      "releaseEpoch": 2,
+      "bumpKind": "minor",
+      "summary": "M2: VSM S1-S5 Managers, Immutable Views & Dynamic UHD Tensor Core (VE-42)",
+      "citedAuthority": "AUTH-SEMVER-CHANGE-KPI"
+    },
+    {
+      "version": "0.3.0",
+      "releaseEpoch": 3,
+      "bumpKind": "minor",
+      "summary": "M3: Zero-Account Stitch Self-Hosting, .holo Releases & <=30KiB Blank Frame (VE-43..44)",
+      "citedAuthority": "AUTH-SEMVER-CHANGE-KPI"
+    },
+    {
+      "version": "0.4.0",
+      "releaseEpoch": 4,
+      "bumpKind": "minor",
+      "summary": "M4: Total Prism Facet Ownership, Change/Version Manager & Observer KPI Roadmap (VE-45)",
+      "citedAuthority": "AUTH-SEMVER-CHANGE-KPI"
+    }
+  ]
+}

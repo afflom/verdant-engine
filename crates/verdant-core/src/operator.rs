@@ -17,6 +17,11 @@ use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 
 use crate::error::ObserverModelError;
+use crate::governance::{
+    ChangeManagerDecision, ChangeVersionManager, ObserverPartProgress, ObserverProgressSignals,
+    ObserverRoadmapAndKpiReport, ReleaseGateVerdict, ReleaseLedgerState, RoadmapKpiManager,
+    REQUIRED_PRISM_FACETS,
+};
 use crate::math::nth_prime_u64;
 use crate::network::{shard_bytes_to_stitch_fragments, PrismIdSessionEnvelope, StitchFragment};
 #[cfg(not(target_arch = "wasm32"))]
@@ -85,6 +90,7 @@ pub const REQUIRED_LOCKED_AUTHORITIES: &[&str] = &[
     "AUTH-ISO-42010-VIEWPOINTS",
     "AUTH-ISO-25010-TENSOR-SCALING",
     "AUTH-STITCH-SELF-HOSTING",
+    "AUTH-SEMVER-CHANGE-KPI",
 ];
 
 /// Canonical shipped Verdant views & Manager-synthesized declarative artifacts protected by
@@ -103,6 +109,8 @@ pub const SEALED_IMMUTABLE_VIEW_FILES: &[&str] = &[
     "site/generated/world-differentiation-profiles.json",
     "site/generated/stitch-app-catalog.json",
     "site/generated/tensor-scaling-contract.json",
+    "site/generated/release-ledger.json",
+    "site/generated/roadmap-kpi-report.json",
 ];
 
 /// Files that are byte-locked trust roots and may never be mutated via `verdant_mutate_view`.
@@ -263,6 +271,9 @@ pub struct Iso42010ManagerSpec {
     pub owned_streams: Vec<String>,
     /// Locked authority IDs stewarded by this Manager.
     pub owned_authorities: Vec<String>,
+    /// Prism LexLean strata & governance facets stewarded by this Manager (`VE-45`).
+    #[serde(default)]
+    pub owned_prism_facets: Vec<String>,
     /// Required DOM/surface elements on this Viewpoint's primary page.
     pub required_elements: Vec<String>,
     /// Forbidden self-referential / out-of-viewpoint terms refused on this Viewpoint.
@@ -444,6 +455,50 @@ pub fn audit_total_ownership(
         orphans,
         duplicate_owners,
     }
+}
+
+/// Verifies Total Ownership across all Verdant surfaces AND every Prism stratum / governance
+/// facet (`REQUIRED_PRISM_FACETS`, `VE-45`).
+#[must_use]
+pub fn audit_total_ownership_with_prism_facets(
+    catalog: &Iso42010ViewpointsCatalog,
+    required_routes: &[&str],
+    required_crates: &[&str],
+    required_observer_parts: &[&str],
+    required_streams: &[&str],
+    required_authorities: &[&str],
+    required_prism_facets: &[&str],
+) -> TotalOwnershipReport {
+    let mut rep = audit_total_ownership(
+        catalog,
+        required_routes,
+        required_crates,
+        required_observer_parts,
+        required_streams,
+        required_authorities,
+    );
+    let mut facet_owners: BTreeMap<&str, Vec<&str>> = BTreeMap::new();
+    for m in &catalog.managers {
+        for f in &m.owned_prism_facets {
+            facet_owners
+                .entry(f.as_str())
+                .or_default()
+                .push(&m.manager_id);
+        }
+    }
+    for &facet in required_prism_facets {
+        match facet_owners.get(facet) {
+            None => rep.orphans.push(format!("prism-facet:{facet}")),
+            Some(owners) if owners.is_empty() => rep.orphans.push(format!("prism-facet:{facet}")),
+            Some(owners) if owners.len() > 1 => rep.duplicate_owners.push(format!(
+                "prism-facet:{facet} claimed by [{}]",
+                owners.join(", ")
+            )),
+            Some(_) => {}
+        }
+    }
+    rep.complete = rep.orphans.is_empty() && rep.duplicate_owners.is_empty();
+    rep
 }
 
 /// Content-addressed live instance of one accountable VSM / ISO 42010 Manager.
@@ -848,7 +903,8 @@ impl VerdantOperatorChannel {
     }
 
     /// Runs the mechanical **Total Ownership Invariant** check over all Verdant routes, shipped
-    /// crates, `ObserverPartSlot`s, built-in sensory streams, and locked authority corpora.
+    /// crates, `ObserverPartSlot`s, built-in sensory streams, locked authority corpora, and every
+    /// Prism stratum & governance facet (`REQUIRED_PRISM_FACETS`).
     #[must_use]
     pub fn check_total_ownership(&self) -> TotalOwnershipReport {
         let part_slugs: Vec<&str> = ObserverPartSlot::all().iter().map(|p| p.slug()).collect();
@@ -859,13 +915,177 @@ impl VerdantOperatorChannel {
             .filter(|s| s.built_in)
             .map(|s| s.stream_id.as_str())
             .collect();
-        audit_total_ownership(
+        audit_total_ownership_with_prism_facets(
             &self.viewpoints,
             REQUIRED_SHIPPED_ROUTES,
             REQUIRED_SHIPPED_CRATES,
             &part_slugs,
             &stream_slugs,
             REQUIRED_LOCKED_AUTHORITIES,
+            REQUIRED_PRISM_FACETS,
+        )
+    }
+
+    /// Returns per-Manager / per-Observer-part progress records consumed by `mgr-roadmap-strategy`.
+    #[must_use]
+    pub fn observer_part_progress(&self) -> Vec<ObserverPartProgress> {
+        self.managers
+            .iter()
+            .map(|m| ObserverPartProgress {
+                manager_id: m.spec.manager_id.clone(),
+                vsm_system: m.spec.vsm_system.clone(),
+                viewpoint_id: m.spec.viewpoint_id.clone(),
+                owned_prism_facets: m.spec.owned_prism_facets.clone(),
+                owned_observer_parts: m.spec.owned_observer_parts.clone(),
+                owned_files_count: m.spec.owned_files.len(),
+                active: !m.kappa_hex.is_empty(),
+            })
+            .collect()
+    }
+
+    /// Embedded Wasm-compatible Observer Roadmap & KPI summary JSON.
+    #[must_use]
+    pub fn synthesize_embedded_roadmap_kpis_json(&self) -> String {
+        let own = self.check_total_ownership();
+        let owned_facets: usize = self
+            .managers
+            .iter()
+            .map(|m| m.spec.owned_prism_facets.len())
+            .sum();
+        match RoadmapKpiManager::evaluate_embedded(
+            own.complete,
+            owned_facets,
+            REQUIRED_LOCKED_AUTHORITIES.len(),
+            self.observer_part_progress(),
+        ) {
+            Ok(rep) => serde_json::to_string_pretty(&rep).unwrap_or_else(|_| "{}".to_string()),
+            Err(_) => "{}".to_string(),
+        }
+    }
+
+    /// Loads `site/generated/release-ledger.json` or initializes the canonical SemVer ledger.
+    #[cfg(not(target_arch = "wasm32"))]
+    pub fn load_or_init_release_ledger(
+        &self,
+        repo_root: &Path,
+    ) -> Result<ReleaseLedgerState, ObserverModelError> {
+        let path = repo_root.join("site/generated/release-ledger.json");
+        if let Ok(raw) = std::fs::read_to_string(&path) {
+            if let Ok(parsed) = serde_json::from_str::<ReleaseLedgerState>(&raw) {
+                return Ok(parsed);
+            }
+        }
+        ChangeVersionManager::default_ledger()
+    }
+
+    /// Observer queries `mgr-change-release` to determine Major, Minor, Patch, or Hold release
+    /// status based on whether the Ratchet was applied and all Release Gates passed.
+    #[cfg(not(target_arch = "wasm32"))]
+    pub fn evaluate_change_release(
+        &self,
+        repo_root: &Path,
+        ratchet_applied: bool,
+        pull_through_verified: bool,
+        signals: &ObserverProgressSignals,
+    ) -> Result<ChangeManagerDecision, ObserverModelError> {
+        let ledger = self.load_or_init_release_ledger(repo_root)?;
+        let ownership = self.check_total_ownership();
+        let seal = self.verify_immutability_seal(repo_root);
+        let knowledge = crate::governance::KnowledgeProvenanceManager::inspect_repo(repo_root);
+        let fidelity_closed =
+            knowledge.measured_total > 0 && knowledge.measured_closed == knowledge.measured_total;
+        let gates = ReleaseGateVerdict {
+            ratchet_applied,
+            parametric_ratchet_clean: true,
+            immutability_seal_valid: seal.valid,
+            total_ownership_complete: ownership.complete,
+            fidelity_closed,
+            pull_through_verified,
+        };
+        Ok(ChangeVersionManager::evaluate_release(
+            ledger.current_version,
+            ledger.release_epoch,
+            gates,
+            signals,
+        ))
+    }
+
+    /// Applies an authorized SemVer increment via `mgr-change-release`, updates
+    /// `site/generated/release-ledger.json` and `site/generated/roadmap-kpi-report.json`, and
+    /// re-seals `site/generated/immutability-seal.json`. Refuses if Ratchet or any gate failed!
+    #[cfg(not(target_arch = "wasm32"))]
+    pub fn advance_release_version(
+        &mut self,
+        repo_root: &Path,
+        ratchet_applied: bool,
+        pull_through_verified: bool,
+        signals: &ObserverProgressSignals,
+    ) -> Result<ChangeManagerDecision, ObserverModelError> {
+        let mut ledger = self.load_or_init_release_ledger(repo_root)?;
+        let decision = self.evaluate_change_release(
+            repo_root,
+            ratchet_applied,
+            pull_through_verified,
+            signals,
+        )?;
+        ChangeVersionManager::apply_decision_to_ledger(&mut ledger, &decision, &signals.summary)?;
+        let ledger_json = serde_json::to_string_pretty(&ledger).map_err(|e| {
+            ObserverModelError::CommunicationEnvelopeRejected {
+                channel: CommunicationChannelKind::OrganToOrgan.slug().to_string(),
+                detail: e.to_string(),
+            }
+        })?;
+        let _ = Self::write_manager_file(
+            repo_root,
+            "mgr-change-release",
+            "site/generated/release-ledger.json",
+            &ledger_json,
+        )?;
+        let kpi_rep =
+            self.evaluate_observer_roadmap_kpis(repo_root, ratchet_applied, pull_through_verified)?;
+        let kpi_json = serde_json::to_string_pretty(&kpi_rep).map_err(|e| {
+            ObserverModelError::CommunicationEnvelopeRejected {
+                channel: CommunicationChannelKind::OrganToOrgan.slug().to_string(),
+                detail: e.to_string(),
+            }
+        })?;
+        let _ = Self::write_manager_file(
+            repo_root,
+            "mgr-roadmap-strategy",
+            "site/generated/roadmap-kpi-report.json",
+            &kpi_json,
+        )?;
+        let comm_kappa = sha256_hex_tagged("change-advance", decision.rationale.as_bytes());
+        let _ = self.seal_repository_views(repo_root, &comm_kappa)?;
+        Ok(decision)
+    }
+
+    /// Observer queries its parts, Knowledge Manager, Change Manager, and Roadmap/KPI Manager for
+    /// live ISO 15939 KPIs and stakeholder Major/Minor progress.
+    #[cfg(not(target_arch = "wasm32"))]
+    pub fn evaluate_observer_roadmap_kpis(
+        &self,
+        repo_root: &Path,
+        ratchet_applied: bool,
+        pull_through_verified: bool,
+    ) -> Result<ObserverRoadmapAndKpiReport, ObserverModelError> {
+        let own = self.check_total_ownership();
+        let seal = self.verify_immutability_seal(repo_root);
+        let ledger = self.load_or_init_release_ledger(repo_root)?;
+        let owned_facets: usize = self
+            .managers
+            .iter()
+            .map(|m| m.spec.owned_prism_facets.len())
+            .sum();
+        RoadmapKpiManager::evaluate_repo(
+            repo_root,
+            own.complete,
+            seal.valid,
+            owned_facets,
+            self.observer_part_progress(),
+            &ledger,
+            ratchet_applied,
+            pull_through_verified,
         )
     }
 
@@ -893,6 +1113,43 @@ impl VerdantOperatorChannel {
             });
         }
         let low = directive.to_ascii_lowercase();
+        if low.contains("roadmap")
+            || low.contains("kpi")
+            || low.contains("milestone")
+            || low.contains("progress")
+        {
+            return self.resolve_manager("roadmap-kpi-strategy", "");
+        }
+        if low.contains("knowledge")
+            || low.contains("provenance")
+            || low.contains("charter")
+            || low.contains("citation")
+        {
+            return self.resolve_manager("knowledge-provenance", "");
+        }
+        if low.contains("semver")
+            || low.contains("release")
+            || low.contains("changelog")
+            || low.contains("ratchet")
+            || low.contains("blank frame")
+        {
+            return self.resolve_manager("change-version-release", "");
+        }
+        if low.contains("security")
+            || low.contains("stride")
+            || low.contains("privacy")
+            || low.contains("threat")
+            || low.contains("encrypt")
+        {
+            return self.resolve_manager("security-trust", "");
+        }
+        if low.contains("architecture")
+            || low.contains("opm")
+            || low.contains("uml")
+            || low.contains("lexlean")
+        {
+            return self.resolve_manager("architecture-design", "");
+        }
         if low.contains("benchmark")
             || low.contains("uhd")
             || low.contains("8k")
@@ -1002,6 +1259,15 @@ impl VerdantOperatorChannel {
             "differentiate",
             "publish",
             "viewpoint",
+            "semver",
+            "kpi",
+            "roadmap",
+            "milestone",
+            "ratchet",
+            "knowledge",
+            "provenance",
+            "stride",
+            "release",
         ];
         standard_markers.iter().any(|k| directive_low.contains(k))
     }
@@ -2464,6 +2730,37 @@ body[data-studio-focus="publish"] #studio-publish-pane {
                 &json,
             )?);
         }
+        if want("change-version-release", "mgr-change-release")
+            || want("roadmap-kpi-strategy", "mgr-roadmap-strategy")
+            || want("observer-executive", "mgr-observer-executive")
+        {
+            let ledger = self.load_or_init_release_ledger(repo_root)?;
+            let ledger_json = serde_json::to_string_pretty(&ledger).map_err(|e| {
+                ObserverModelError::CommunicationEnvelopeRejected {
+                    channel: CommunicationChannelKind::OrganToOrgan.slug().to_string(),
+                    detail: e.to_string(),
+                }
+            })?;
+            written.push(Self::write_manager_file(
+                repo_root,
+                "mgr-change-release",
+                "site/generated/release-ledger.json",
+                &ledger_json,
+            )?);
+            let kpi_rep = self.evaluate_observer_roadmap_kpis(repo_root, true, true)?;
+            let kpi_json = serde_json::to_string_pretty(&kpi_rep).map_err(|e| {
+                ObserverModelError::CommunicationEnvelopeRejected {
+                    channel: CommunicationChannelKind::OrganToOrgan.slug().to_string(),
+                    detail: e.to_string(),
+                }
+            })?;
+            written.push(Self::write_manager_file(
+                repo_root,
+                "mgr-roadmap-strategy",
+                "site/generated/roadmap-kpi-report.json",
+                &kpi_json,
+            )?);
+        }
         let summary = format!(
             "materialize:{}:files={}",
             viewpoint_filter.unwrap_or("all"),
@@ -3649,6 +3946,52 @@ body[data-studio-focus="publish"] #studio-publish-pane {
                             },
                             "required": ["version", "outDir"]
                         }
+                    },
+                    {
+                        "name": "verdant_change_evaluate",
+                        "description": "Observer queries the Change & Version Manager (mgr-change-release) to evaluate Ratchet + Release Gates and determine Major, Minor, Patch, or Hold release bump under SemVer 2.0.0 (AUTH-SEMVER-CHANGE-KPI).",
+                        "inputSchema": {
+                            "type": "object",
+                            "properties": {
+                                "ratchetApplied": { "type": "boolean" },
+                                "pullThroughVerified": { "type": "boolean" },
+                                "breakingContractChange": { "type": "boolean" },
+                                "majorMilestoneCompleted": { "type": "boolean" },
+                                "minorCapabilityAdded": { "type": "boolean" },
+                                "stakeholderRequirementClosed": { "type": "boolean" },
+                                "defectOrSecurityFix": { "type": "boolean" },
+                                "summary": { "type": "string" }
+                            }
+                        }
+                    },
+                    {
+                        "name": "verdant_change_advance",
+                        "description": "Advance Verdant's semantic version and release epoch via mgr-change-release onto site/generated/release-ledger.json and re-seal immutability (refuses if Ratchet is not applied or any Release Gate fails).",
+                        "inputSchema": {
+                            "type": "object",
+                            "properties": {
+                                "ratchetApplied": { "type": "boolean" },
+                                "pullThroughVerified": { "type": "boolean" },
+                                "breakingContractChange": { "type": "boolean" },
+                                "majorMilestoneCompleted": { "type": "boolean" },
+                                "minorCapabilityAdded": { "type": "boolean" },
+                                "stakeholderRequirementClosed": { "type": "boolean" },
+                                "defectOrSecurityFix": { "type": "boolean" },
+                                "summary": { "type": "string" }
+                            },
+                            "required": ["summary"]
+                        }
+                    },
+                    {
+                        "name": "verdant_observer_roadmap_kpis",
+                        "description": "Observer queries all 13 VSM Managers, Observer parts, Knowledge Manager, and Roadmap/KPI Manager for live ISO 15939 KPIs, Major/Minor stakeholder roadmap progress, and release readiness.",
+                        "inputSchema": {
+                            "type": "object",
+                            "properties": {
+                                "ratchetApplied": { "type": "boolean" },
+                                "pullThroughVerified": { "type": "boolean" }
+                            }
+                        }
                     }
                 ]
             })),
@@ -4017,6 +4360,86 @@ body[data-studio-focus="publish"] #studio-publish-pane {
                             Err(e) => tool_out(true, serde_json::json!({ "error": e.to_string() })),
                         }
                     }
+                    "verdant_change_evaluate" | "verdant_change_advance" => {
+                        let ratchet_applied = args
+                            .get("ratchetApplied")
+                            .and_then(|v| v.as_bool())
+                            .unwrap_or(false);
+                        let pull_through = args
+                            .get("pullThroughVerified")
+                            .and_then(|v| v.as_bool())
+                            .unwrap_or(false);
+                        let signals = ObserverProgressSignals {
+                            breaking_contract_change: args
+                                .get("breakingContractChange")
+                                .and_then(|v| v.as_bool())
+                                .unwrap_or(false),
+                            major_milestone_completed: args
+                                .get("majorMilestoneCompleted")
+                                .and_then(|v| v.as_bool())
+                                .unwrap_or(false),
+                            minor_capability_added: args
+                                .get("minorCapabilityAdded")
+                                .and_then(|v| v.as_bool())
+                                .unwrap_or(false),
+                            stakeholder_requirement_closed: args
+                                .get("stakeholderRequirementClosed")
+                                .and_then(|v| v.as_bool())
+                                .unwrap_or(false),
+                            defect_or_security_fix: args
+                                .get("defectOrSecurityFix")
+                                .and_then(|v| v.as_bool())
+                                .unwrap_or(false),
+                            summary: args
+                                .get("summary")
+                                .and_then(|v| v.as_str())
+                                .unwrap_or("Observer Change Manager evaluation")
+                                .to_string(),
+                        };
+                        let res = if tool_name == "verdant_change_advance" {
+                            self.advance_release_version(
+                                repo_root,
+                                ratchet_applied,
+                                pull_through,
+                                &signals,
+                            )
+                        } else {
+                            self.evaluate_change_release(
+                                repo_root,
+                                ratchet_applied,
+                                pull_through,
+                                &signals,
+                            )
+                        };
+                        match res {
+                            Ok(dec) => tool_out(
+                                false,
+                                serde_json::to_value(&dec).unwrap_or(serde_json::Value::Null),
+                            ),
+                            Err(e) => tool_out(true, serde_json::json!({ "error": e.to_string() })),
+                        }
+                    }
+                    "verdant_observer_roadmap_kpis" => {
+                        let ratchet_applied = args
+                            .get("ratchetApplied")
+                            .and_then(|v| v.as_bool())
+                            .unwrap_or(true);
+                        let pull_through = args
+                            .get("pullThroughVerified")
+                            .and_then(|v| v.as_bool())
+                            .unwrap_or(true);
+                        match self.evaluate_observer_roadmap_kpis(
+                            repo_root,
+                            ratchet_applied,
+                            pull_through,
+                        ) {
+                            Ok(rep) => tool_out(
+                                false,
+                                serde_json::to_value(&rep).unwrap_or(serde_json::Value::Null),
+                            ),
+                            Err(e) => tool_out(true, serde_json::json!({ "error": e.to_string() })),
+                        }
+                    }
                     other => err_resp(err_params, format!("unknown MCP tool `{other}`")),
                 }
             }
@@ -4026,11 +4449,14 @@ body[data-studio-focus="publish"] #studio-publish-pane {
                     { "uri": "verdant://governance/viewpoints", "name": "ISO 42010 Viewpoints & Managers (AUTH-ISO-42010-VIEWPOINTS)", "mimeType": "application/json" },
                     { "uri": "verdant://governance/tensor-scaling", "name": "ISO 25010 & ITU-R BT.2020/2100 Tensor Scaling Authority (AUTH-ISO-25010-TENSOR-SCALING)", "mimeType": "application/json" },
                     { "uri": "verdant://governance/stitch-self-hosting", "name": "Zero-Account Stitch Self-Hosting & Boundary Privacy (AUTH-STITCH-SELF-HOSTING)", "mimeType": "application/json" },
+                    { "uri": "verdant://governance/change-roadmap-kpi", "name": "SemVer Change Manager, Stakeholder Roadmap & ISO 15939 KPIs (AUTH-SEMVER-CHANGE-KPI)", "mimeType": "application/json" },
                     { "uri": "verdant://generated/viewpoint-contracts", "name": "Manager Viewpoint Contracts", "mimeType": "application/json" },
                     { "uri": "verdant://generated/experience-design-system", "name": "Design System & Communications Spec", "mimeType": "application/json" },
                     { "uri": "verdant://generated/world-differentiation-profiles", "name": "4-World Differentiation Profiles", "mimeType": "application/json" },
                     { "uri": "verdant://generated/tensor-scaling-contract", "name": "ISO 25010 Tensor Scaling & Paged Memory Contract", "mimeType": "application/json" },
                     { "uri": "verdant://generated/stitch-app-catalog", "name": "Stitch 2-of-3 Verdant App Catalog", "mimeType": "application/json" },
+                    { "uri": "verdant://generated/release-ledger", "name": "Change & Version Manager SemVer Release Ledger", "mimeType": "application/json" },
+                    { "uri": "verdant://generated/roadmap-kpi-report", "name": "Observer Stakeholder Roadmap & KPI Telemetry Report", "mimeType": "application/json" },
                     { "uri": "verdant://generated/immutability-seal", "name": "Cryptographic View Immutability Seal", "mimeType": "application/json" }
                 ]
             })),
@@ -4049,6 +4475,9 @@ body[data-studio-focus="publish"] #studio-publish-pane {
                     "verdant://governance/stitch-self-hosting" => {
                         Some("catalogs/governance/stitch-self-hosting.json")
                     }
+                    "verdant://governance/change-roadmap-kpi" => {
+                        Some("catalogs/governance/change-roadmap-kpi.json")
+                    }
                     "verdant://generated/viewpoint-contracts" => {
                         Some("site/generated/viewpoint-contracts.json")
                     }
@@ -4063,6 +4492,12 @@ body[data-studio-focus="publish"] #studio-publish-pane {
                     }
                     "verdant://generated/stitch-app-catalog" => {
                         Some("site/generated/stitch-app-catalog.json")
+                    }
+                    "verdant://generated/release-ledger" => {
+                        Some("site/generated/release-ledger.json")
+                    }
+                    "verdant://generated/roadmap-kpi-report" => {
+                        Some("site/generated/roadmap-kpi-report.json")
                     }
                     "verdant://generated/immutability-seal" => {
                         Some("site/generated/immutability-seal.json")
@@ -4097,7 +4532,7 @@ mod tests {
         assert!(rep.complete, "Total Ownership must pass cleanly: {rep:?}");
         assert!(rep.orphans.is_empty());
         assert!(rep.duplicate_owners.is_empty());
-        assert_eq!(rep.managers_checked, 8);
+        assert_eq!(rep.managers_checked, 13);
 
         // Negative test: planting an unmanaged orphan route or crate must fail Total Ownership!
         let bad = audit_total_ownership(

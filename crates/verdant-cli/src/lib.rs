@@ -1716,6 +1716,109 @@ pub fn run_cli(args: &[String]) -> Result<String, CliCommandError> {
                     }
                     Ok(summary)
                 }
+                "kpis" => {
+                    let two = 1usize + 1usize;
+                    let mut root =
+                        std::env::current_dir().unwrap_or_else(|_| std::path::PathBuf::from("."));
+                    let mut i = two;
+                    while i < args.len() {
+                        if args[i] == "--root" && i + 1 < args.len() {
+                            root = std::path::PathBuf::from(&args[i + 1]);
+                            i += two;
+                        } else {
+                            i += 1;
+                        }
+                    }
+                    let rep = ch
+                        .evaluate_observer_roadmap_kpis(&root, true, true)
+                        .map_err(|e| CliCommandError::ValidationRejected {
+                            command: "operator kpis".to_string(),
+                            diagnostic: e.to_string(),
+                        })?;
+                    Ok(format!(
+                        "OBSERVER ROADMAP & KPIs: version=v{} epoch={} managers={} prism_facets={}/{} kpis={}/{} minor_progress={}% major_progress={}% knowledge_authorities={} recommended_bump={:?}",
+                        rep.current_version,
+                        rep.release_epoch,
+                        rep.total_managers,
+                        rep.total_prism_facets_owned,
+                        rep.total_prism_facets_required,
+                        rep.kpi_passed_count,
+                        rep.kpi_total_count,
+                        rep.minor_progress_pct,
+                        rep.major_progress_pct,
+                        rep.knowledge.locked_authorities_count,
+                        rep.change_decision.recommended_bump
+                    ))
+                }
+                "change-evaluate" => {
+                    let two = 1usize + 1usize;
+                    let mut root =
+                        std::env::current_dir().unwrap_or_else(|_| std::path::PathBuf::from("."));
+                    let mut ratchet_applied = false;
+                    let mut pull_through = false;
+                    let mut major = false;
+                    let mut minor = false;
+                    let mut patch = false;
+                    let mut summary = "CLI Change Manager evaluation".to_string();
+                    let mut i = two;
+                    while i < args.len() {
+                        match args[i].as_str() {
+                            "--root" if i + 1 < args.len() => {
+                                root = std::path::PathBuf::from(&args[i + 1]);
+                                i += two;
+                            }
+                            "--ratchet-applied" => {
+                                ratchet_applied = true;
+                                i += 1;
+                            }
+                            "--pull-through-verified" => {
+                                pull_through = true;
+                                i += 1;
+                            }
+                            "--major" => {
+                                major = true;
+                                i += 1;
+                            }
+                            "--minor" => {
+                                minor = true;
+                                i += 1;
+                            }
+                            "--patch" => {
+                                patch = true;
+                                i += 1;
+                            }
+                            "--summary" if i + 1 < args.len() => {
+                                summary = args[i + 1].clone();
+                                i += two;
+                            }
+                            _ => i += 1,
+                        }
+                    }
+                    let signals = verdant_core::governance::ObserverProgressSignals {
+                        breaking_contract_change: major,
+                        major_milestone_completed: major,
+                        minor_capability_added: minor,
+                        stakeholder_requirement_closed: minor,
+                        defect_or_security_fix: patch,
+                        summary,
+                    };
+                    let dec = ch
+                        .evaluate_change_release(&root, ratchet_applied, pull_through, &signals)
+                        .map_err(|e| CliCommandError::ValidationRejected {
+                            command: "operator change-evaluate".to_string(),
+                            diagnostic: e.to_string(),
+                        })?;
+                    Ok(format!(
+                        "CHANGE MANAGER DECISION: bump={:?} current=v{} next=v{} epoch={}->{} incremented={} rationale={}",
+                        dec.recommended_bump,
+                        dec.current_version.display_string(),
+                        dec.next_version.display_string(),
+                        dec.current_epoch,
+                        dec.next_epoch,
+                        dec.version_incremented,
+                        dec.rationale
+                    ))
+                }
                 "session" => {
                     use std::io::BufRead;
                     let two = 1usize + 1usize;

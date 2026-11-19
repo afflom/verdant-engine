@@ -47,6 +47,7 @@ pub mod ecs;
 pub mod error;
 pub mod geometry;
 pub mod gltf_io;
+pub mod governance;
 pub mod hd_world;
 pub mod math;
 pub mod narrative;

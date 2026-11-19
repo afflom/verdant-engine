@@ -1,0 +1,442 @@
+{
+  "spec": "verdant/observer-roadmap-kpi-report/1",
+  "managerId": "mgr-roadmap-strategy",
+  "authorityId": "AUTH-SEMVER-CHANGE-KPI",
+  "currentVersion": "0.4.0",
+  "releaseEpoch": 1,
+  "totalManagers": 13,
+  "totalPrismFacetsOwned": 9,
+  "totalPrismFacetsRequired": 9,
+  "declaredCapabilitiesCount": 56,
+  "minorProgressPct": 100,
+  "majorProgressPct": 50,
+  "kpiPassedCount": 8,
+  "kpiTotalCount": 8,
+  "knowledge": {
+    "managerId": "mgr-knowledge-provenance",
+    "lockedAuthoritiesCount": 10,
+    "provenanceSourcesCount": 22,
+    "charterBytes": 51966,
+    "governedLexModules": 26,
+    "measuredClosed": 9,
+    "measuredTotal": 9,
+    "authorityCoveragePct": 100
+  },
+  "kpis": [
+    {
+      "kpiId": "KPI-OWNERSHIP-TOTAL",
+      "name": "Total Verdant & Prism Facet Ownership",
+      "unit": "percent",
+      "direction": "atLeast",
+      "actual": 100,
+      "target": 100,
+      "passed": true,
+      "owningManager": "mgr-observer-executive",
+      "authority": "AUTH-VSM-CYBERNETICS"
+    },
+    {
+      "kpiId": "KPI-RATCHET-CLEAN",
+      "name": "Parametric Ratchet Magic Constant Violations",
+      "unit": "count",
+      "direction": "atMost",
+      "actual": 0,
+      "target": 0,
+      "passed": true,
+      "owningManager": "mgr-verification-observatory",
+      "authority": "AUTH-ISO-42010-VIEWPOINTS"
+    },
+    {
+      "kpiId": "KPI-FIDELITY-MEASURED",
+      "name": "ISO 15939 Kernel-Measured Fidelity Closure",
+      "unit": "percent",
+      "direction": "atLeast",
+      "actual": 100,
+      "target": 100,
+      "passed": true,
+      "owningManager": "mgr-verification-observatory",
+      "authority": "AUTH-SEMVER-CHANGE-KPI"
+    },
+    {
+      "kpiId": "KPI-KNOWLEDGE-CITATIONS",
+      "name": "W3C PROV-O Primary-Source Authority Coverage",
+      "unit": "percent",
+      "direction": "atLeast",
+      "actual": 100,
+      "target": 100,
+      "passed": true,
+      "owningManager": "mgr-knowledge-provenance",
+      "authority": "AUTH-W3C-SOSA-PROVO"
+    },
+    {
+      "kpiId": "KPI-STRIDE-MITIGATION",
+      "name": "Modeled STRIDE Threat Mitigation & Control Coverage",
+      "unit": "percent",
+      "direction": "atLeast",
+      "actual": 100,
+      "target": 100,
+      "passed": true,
+      "owningManager": "mgr-security-trust",
+      "authority": "AUTH-STITCH-SELF-HOSTING"
+    },
+    {
+      "kpiId": "KPI-BLANK-FRAME-WEIGHT",
+      "name": "Immutable Composable Blank Frame Weight",
+      "unit": "bytes",
+      "direction": "atMost",
+      "actual": 26043,
+      "target": 30720,
+      "passed": true,
+      "owningManager": "mgr-change-release",
+      "authority": "AUTH-STITCH-SELF-HOSTING"
+    },
+    {
+      "kpiId": "KPI-ROADMAP-MINOR-PROGRESS",
+      "name": "Active Minor Milestone Stakeholder Progress",
+      "unit": "percent",
+      "direction": "atLeast",
+      "actual": 100,
+      "target": 100,
+      "passed": true,
+      "owningManager": "mgr-roadmap-strategy",
+      "authority": "AUTH-SEMVER-CHANGE-KPI"
+    },
+    {
+      "kpiId": "KPI-RELEASE-GATES",
+      "name": "Mandatory Release Gate Pass Rate",
+      "unit": "percent",
+      "direction": "atLeast",
+      "actual": 100,
+      "target": 100,
+      "passed": true,
+      "owningManager": "mgr-change-release",
+      "authority": "AUTH-SEMVER-CHANGE-KPI"
+    }
+  ],
+  "milestones": [
+    {
+      "milestoneId": "M1",
+      "targetVersion": "0.1.0",
+      "tier": "minor",
+      "title": "Verified Core Engine, Progressive UORC & Multi-World Runtime",
+      "stakeholders": [
+        "game-developer",
+        "player",
+        "systems-engineer"
+      ],
+      "owningManagers": [
+        "mgr-runtime-stage",
+        "mgr-playable-world",
+        "mgr-catalog-curator"
+      ],
+      "requiredCapabilities": [
+        "VE-01",
+        "VE-15",
+        "VE-24",
+        "VE-38",
+        "VE-39",
+        "VE-40",
+        "VE-41"
+      ],
+      "closedCapabilities": [
+        "VE-01",
+        "VE-15",
+        "VE-24",
+        "VE-38",
+        "VE-39",
+        "VE-40",
+        "VE-41"
+      ],
+      "missingCapabilities": [],
+      "progressPct": 100,
+      "completed": true,
+      "ratchetRequirement": "Zero magic constants across Strata 0..7 and shipped Rust crates (FI-08)."
+    },
+    {
+      "milestoneId": "M2",
+      "targetVersion": "0.2.0",
+      "tier": "minor",
+      "title": "VSM S1-S5 Managers, Immutable Views & Dynamic UHD Tensor Core",
+      "stakeholders": [
+        "creator",
+        "architect",
+        "auditor"
+      ],
+      "owningManagers": [
+        "mgr-observer-executive",
+        "mgr-studio-alm",
+        "mgr-design-coordinator"
+      ],
+      "requiredCapabilities": [
+        "VE-42"
+      ],
+      "closedCapabilities": [
+        "VE-42"
+      ],
+      "missingCapabilities": [],
+      "progressPct": 100,
+      "completed": true,
+      "ratchetRequirement": "Cryptographic View Immutability Seal & PagedTensorArena dynamic workload scaling."
+    },
+    {
+      "milestoneId": "M3",
+      "targetVersion": "0.3.0",
+      "tier": "minor",
+      "title": "Zero-Account Stitch Self-Hosting, .holo Releases & Composable Blank Frame",
+      "stakeholders": [
+        "creator",
+        "player",
+        "auditor"
+      ],
+      "owningManagers": [
+        "mgr-security-trust",
+        "mgr-change-release"
+      ],
+      "requiredCapabilities": [
+        "VE-43",
+        "VE-44"
+      ],
+      "closedCapabilities": [
+        "VE-43",
+        "VE-44"
+      ],
+      "missingCapabilities": [],
+      "progressPct": 100,
+      "completed": true,
+      "ratchetRequirement": "4-of-8 GF(2^8) Reed-Solomon Stitch recovery + <=30KiB Blank Frame pull-through gate."
+    },
+    {
+      "milestoneId": "M4",
+      "targetVersion": "0.4.0",
+      "tier": "minor",
+      "title": "Total Prism Facet Ownership, Change/Version Manager & Observer KPI Roadmap",
+      "stakeholders": [
+        "architect",
+        "operator",
+        "auditor"
+      ],
+      "owningManagers": [
+        "mgr-observer-executive",
+        "mgr-knowledge-provenance",
+        "mgr-change-release",
+        "mgr-roadmap-strategy",
+        "mgr-architecture-design"
+      ],
+      "requiredCapabilities": [
+        "VE-45"
+      ],
+      "closedCapabilities": [
+        "VE-45"
+      ],
+      "missingCapabilities": [],
+      "progressPct": 100,
+      "completed": true,
+      "ratchetRequirement": "100% Prism Strata 0..7 + Knowledge/Change/Security/Roadmap Manager ownership & SemVer gate."
+    },
+    {
+      "milestoneId": "M5",
+      "targetVersion": "1.0.0",
+      "tier": "major",
+      "title": "Autonomous Self-Hosted Blank Repository & vN-to-v(N+1) Stitch Build Loop",
+      "stakeholders": [
+        "creator",
+        "operator",
+        "player",
+        "auditor"
+      ],
+      "owningManagers": [
+        "mgr-observer-executive",
+        "mgr-change-release",
+        "mgr-studio-alm"
+      ],
+      "requiredCapabilities": [
+        "VE-45",
+        "VE-46"
+      ],
+      "closedCapabilities": [
+        "VE-45"
+      ],
+      "missingCapabilities": [
+        "VE-46"
+      ],
+      "progressPct": 50,
+      "completed": false,
+      "ratchetRequirement": "Full Rust & LexLean source DAG lifted into VerdantVcs on Stitch with max_unlifted_workspace_modules = 0."
+    }
+  ],
+  "observerParts": [
+    {
+      "managerId": "mgr-observer-executive",
+      "vsmSystem": "VSM-S5",
+      "viewpointId": "observer-executive",
+      "ownedPrismFacets": [],
+      "ownedObserverParts": [],
+      "ownedFilesCount": 5,
+      "active": true
+    },
+    {
+      "managerId": "mgr-architecture-design",
+      "vsmSystem": "VSM-S3",
+      "viewpointId": "architecture-design",
+      "ownedPrismFacets": [
+        "stratum-2-architecture-design"
+      ],
+      "ownedObserverParts": [],
+      "ownedFilesCount": 7,
+      "active": true
+    },
+    {
+      "managerId": "mgr-knowledge-provenance",
+      "vsmSystem": "VSM-S4",
+      "viewpointId": "knowledge-provenance",
+      "ownedPrismFacets": [
+        "stratum-5-knowledge-provenance"
+      ],
+      "ownedObserverParts": [],
+      "ownedFilesCount": 7,
+      "active": true
+    },
+    {
+      "managerId": "mgr-change-release",
+      "vsmSystem": "VSM-S3",
+      "viewpointId": "change-version-release",
+      "ownedPrismFacets": [
+        "change-version-release"
+      ],
+      "ownedObserverParts": [],
+      "ownedFilesCount": 11,
+      "active": true
+    },
+    {
+      "managerId": "mgr-security-trust",
+      "vsmSystem": "VSM-S3",
+      "viewpointId": "security-trust",
+      "ownedPrismFacets": [
+        "stratum-3-security-stride"
+      ],
+      "ownedObserverParts": [],
+      "ownedFilesCount": 6,
+      "active": true
+    },
+    {
+      "managerId": "mgr-roadmap-strategy",
+      "vsmSystem": "VSM-S4",
+      "viewpointId": "roadmap-kpi-strategy",
+      "ownedPrismFacets": [
+        "stratum-7-features-roadmap-observer"
+      ],
+      "ownedObserverParts": [],
+      "ownedFilesCount": 7,
+      "active": true
+    },
+    {
+      "managerId": "mgr-design-coordinator",
+      "vsmSystem": "VSM-S2",
+      "viewpointId": "design-system",
+      "ownedPrismFacets": [
+        "stratum-6-brand-experience"
+      ],
+      "ownedObserverParts": [
+        "visual-identity"
+      ],
+      "ownedFilesCount": 9,
+      "active": true
+    },
+    {
+      "managerId": "mgr-runtime-stage",
+      "vsmSystem": "VSM-S1",
+      "viewpointId": "runtime-stage",
+      "ownedPrismFacets": [
+        "stratum-0-ontology-bytes",
+        "stratum-1-tensor-subsystems"
+      ],
+      "ownedObserverParts": [
+        "runtime-frameworks",
+        "spatial-acoustics"
+      ],
+      "ownedFilesCount": 14,
+      "active": true
+    },
+    {
+      "managerId": "mgr-studio-alm",
+      "vsmSystem": "VSM-S1",
+      "viewpointId": "creator-studio",
+      "ownedPrismFacets": [],
+      "ownedObserverParts": [
+        "cognitive-language"
+      ],
+      "ownedFilesCount": 5,
+      "active": true
+    },
+    {
+      "managerId": "mgr-catalog-curator",
+      "vsmSystem": "VSM-S1",
+      "viewpointId": "asset-catalogs",
+      "ownedPrismFacets": [],
+      "ownedObserverParts": [],
+      "ownedFilesCount": 5,
+      "active": true
+    },
+    {
+      "managerId": "mgr-playable-world",
+      "vsmSystem": "VSM-S1",
+      "viewpointId": "playable-world",
+      "ownedPrismFacets": [],
+      "ownedObserverParts": [
+        "stage-environment",
+        "character-rigs",
+        "hero-props",
+        "surface-materials"
+      ],
+      "ownedFilesCount": 4,
+      "active": true
+    },
+    {
+      "managerId": "mgr-verification-observatory",
+      "vsmSystem": "VSM-S3-STAR",
+      "viewpointId": "verification-observatory",
+      "ownedPrismFacets": [
+        "stratum-4-quality-measures-fidelity"
+      ],
+      "ownedObserverParts": [],
+      "ownedFilesCount": 12,
+      "active": true
+    },
+    {
+      "managerId": "mgr-reference-docs",
+      "vsmSystem": "VSM-S1",
+      "viewpointId": "reference-docs",
+      "ownedPrismFacets": [],
+      "ownedObserverParts": [],
+      "ownedFilesCount": 5,
+      "active": true
+    }
+  ],
+  "changeDecision": {
+    "managerId": "mgr-change-release",
+    "governingAuthority": "AUTH-SEMVER-CHANGE-KPI",
+    "currentVersion": {
+      "major": 0,
+      "minor": 4,
+      "patch": 0
+    },
+    "recommendedBump": "minor",
+    "nextVersion": {
+      "major": 0,
+      "minor": 5,
+      "patch": 0
+    },
+    "currentEpoch": 1,
+    "nextEpoch": 2,
+    "versionIncremented": true,
+    "gates": {
+      "ratchetApplied": true,
+      "parametricRatchetClean": true,
+      "immutabilitySealValid": true,
+      "totalOwnershipComplete": true,
+      "fidelityClosed": true,
+      "pullThroughVerified": true
+    },
+    "blockingReasons": [],
+    "rationale": "Ratchet applied & 5/5 Release Gates passed: advancing v0.4.0 -> v0.5.0 (Minor, epoch 2) — Observer roadmap evaluation: minor=100% major=50% managers=13"
+  }
+}
