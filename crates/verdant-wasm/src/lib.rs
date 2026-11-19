@@ -80,8 +80,8 @@ use verdant_core::streaming::{PhysicalEnvironment, TerrainReliefParams};
 use verdant_core::tensor::{render_triangles_tile_framebuffer_with_scratch, TileRasterScratch};
 #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
 use verdant_core::uhd::{
-    build_meshlet_graph, evaluate_meshlet_visibility, evaluate_uhd_display_profile, MeshletGraph,
-    UhdVisibilityTelemetry,
+    build_meshlet_graph, evaluate_meshlet_visibility, evaluate_uhd_display_profile,
+    FrameBudgetOracle, MeshletGraph, UhdVisibilityTelemetry,
 };
 #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
 use verdant_core::ui::UiTree;
@@ -274,15 +274,21 @@ pub struct WasmRuntimeBridge {
     /// Number of distinct material textures packed into the active `.glb` PBR atlas (`1..=16`).
     #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
     pub custom_glb_atlas_tile_count: usize,
-    /// Deterministic 64-triangle GPU meshlet partition covering the active static scene.
+    /// Deterministic 64-triangle Morton-sorted GPU meshlet partition covering the active static scene.
     #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
     pub uhd_meshlet_graph: MeshletGraph,
+    /// Static epoch for which `uhd_meshlet_graph` was compiled (prevents redundant rebuilds).
+    #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+    pub uhd_meshlet_epoch: u32,
     /// Scratch buffer holding surviving indices after per-frame UHD frustum/cone/SSE culling.
     #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
     pub uhd_visible_indices: Vec<u32>,
     /// Most recent UHD meshlet visibility & culling telemetry.
     #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
     pub uhd_last_visibility: Option<UhdVisibilityTelemetry>,
+    /// Zero-allocation 64-frame P50/P95/P99 stability oracle & hysteresis DRS governor.
+    #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+    pub uhd_frame_oracle: FrameBudgetOracle,
     /// Retained skin and animation clip counts from the active user-imported `.glb` bundle.
     #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
     pub imported_glb_skin_clip_counts: (usize, usize),
@@ -586,9 +592,13 @@ impl WasmRuntimeBridge {
             #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
             uhd_meshlet_graph: MeshletGraph::default(),
             #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+            uhd_meshlet_epoch: 0,
+            #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
             uhd_visible_indices: Vec::new(),
             #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
             uhd_last_visibility: None,
+            #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+            uhd_frame_oracle: FrameBudgetOracle::default(),
             #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
             imported_glb_skin_clip_counts: (0, 0),
             #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
@@ -817,6 +827,7 @@ impl WasmRuntimeBridge {
                 self.dynamic_buffers.indices.clear();
                 self.dynamic_buffers.tile_triangles.clear();
                 self.static_epoch = self.static_epoch.wrapping_add(1).max(1);
+                self.uhd_meshlet_epoch = self.static_epoch;
                 self.static_dirty = false;
             }
             return Ok(self.scene_buffers.triangle_count());
@@ -5401,11 +5412,15 @@ pub extern "C" fn verdant_wasm_uhd_cull_meshlets(
     let Some(bridge) = guard.as_mut() else {
         return 0;
     };
-    if bridge.uhd_meshlet_graph.clusters.is_empty() && !bridge.scene_buffers.indices.is_empty() {
+    if (bridge.uhd_meshlet_epoch != bridge.static_epoch
+        || bridge.uhd_meshlet_graph.clusters.is_empty())
+        && !bridge.scene_buffers.indices.is_empty()
+    {
         bridge.uhd_meshlet_graph = build_meshlet_graph(
             &bridge.scene_buffers.positions_xyz,
             &bridge.scene_buffers.indices,
         );
+        bridge.uhd_meshlet_epoch = bridge.static_epoch;
     }
     let eye = Vec3::new(eye_x, eye_y, eye_z);
     let target = Vec3::new(target_x, target_y, target_z);
@@ -5521,6 +5536,50 @@ pub extern "C" fn verdant_wasm_uhd_profile_aux(
         p.cas_sharpness_permille,
         p.meshlet_sse_tenths_px,
         p.preferred_backend,
+    );
+    bridge.aux_buffer = json_str.into_bytes();
+    bridge.aux_buffer.len() as u32
+}
+
+/// Records one completed frame time in microseconds into the zero-allocation 64-frame
+/// [`FrameBudgetOracle`] and returns the active hysteresis-guarded DRS permille (`650..=1000`).
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+#[no_mangle]
+pub extern "C" fn verdant_wasm_record_frame_time_us(frame_us: u32) -> u32 {
+    let mut guard = global_bridge()
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
+    let Some(bridge) = guard.as_mut() else {
+        return 0;
+    };
+    bridge.uhd_frame_oracle.record_frame(frame_us)
+}
+
+/// Serializes the live 64-frame `P50 / P95 / P99 / Jitter / Hysteresis DRS` stability oracle
+/// report as JSON into `aux_buffer`.
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+#[no_mangle]
+pub extern "C" fn verdant_wasm_frame_stability_aux() -> u32 {
+    let mut guard = global_bridge()
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
+    let Some(bridge) = guard.as_mut() else {
+        return 0;
+    };
+    let r = bridge.uhd_frame_oracle.report();
+    let json_str = format!(
+        "{{\"sampleCount\":{},\"targetBudgetUs\":{},\"p50Us\":{},\"p95Us\":{},\"p99Us\":{},\"maxUs\":{},\"jitterUs\":{},\"budgetCompliancePermille\":{},\"drsScalePermille\":{},\"drsTransitions\":{},\"stable\":{}}}",
+        r.sample_count,
+        r.target_budget_us,
+        r.p50_us,
+        r.p95_us,
+        r.p99_us,
+        r.max_us,
+        r.jitter_us,
+        r.budget_compliance_permille,
+        r.drs_scale_permille,
+        r.drs_transitions,
+        r.stable,
     );
     bridge.aux_buffer = json_str.into_bytes();
     bridge.aux_buffer.len() as u32

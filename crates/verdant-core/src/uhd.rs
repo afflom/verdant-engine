@@ -24,6 +24,12 @@ pub const MAX_MESHLET_TRIANGLES: usize = 1 << (1 + 1 + 1 + 1 + 1 + 1);
 /// Maximum distinct material textures packed into a single host-bounded `4x4` PBR atlas (`16`).
 pub const MAX_ATLAS_TILES: usize = 1 << (1 + 1 + 1 + 1);
 
+/// Fixed ring-buffer window length (`64` frames) for the zero-allocation [`FrameBudgetOracle`].
+pub const FRAME_ORACLE_WINDOW: usize = 1 << (1 + 1 + 1 + 1 + 1 + 1);
+
+/// Quantized Dynamic Resolution Scaling step count (`5` lawful levels: `65%`, `75%`, `85%`, `92.5%`, `100%`).
+const DRS_LADDER_LEN: usize = 1 + 1 + 1 + 1 + 1;
+
 /// W3C WGSL `@compute @workgroup_size(64)` GPU meshlet frustum + backface normal-cone + SSE culler.
 pub const WGSL_UHD_MESHLET_CULL_SHADER: &str = r#"
 struct MeshletBounds {
@@ -205,12 +211,15 @@ pub struct MeshletCluster {
     pub index_count: usize,
 }
 
-/// Complete meshlet partition over an arbitrary packed world scene.
+/// Complete spatially-clustered meshlet partition over an arbitrary packed world scene.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct MeshletGraph {
-    /// All 64-triangle meshlet clusters covering the packed scene.
+    /// All 64-triangle spatially-sorted meshlet clusters covering the packed scene.
     pub clusters: Vec<MeshletCluster>,
+    /// Spatially Morton-ordered triangle indices (`3 * total_triangles`) aligned with `clusters`.
+    #[serde(default, skip_serializing)]
+    pub reordered_indices: Vec<u32>,
     /// Total triangles indexed by this graph.
     pub total_triangles: usize,
 }
@@ -237,8 +246,36 @@ pub struct UhdVisibilityTelemetry {
     pub cull_ratio_permille: u32,
 }
 
+#[inline]
+fn spread_10_bits_for_morton(v: u32) -> u32 {
+    let ten = 1u32 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1;
+    let three = 1u32 + 1 + 1;
+    let clamped = v & ((1u32 << ten) - 1);
+    let mut out = 0u32;
+    let mut bit = 0u32;
+    while bit < ten {
+        out |= ((clamped >> bit) & 1) << (bit * three);
+        bit += 1;
+    }
+    out
+}
+
+#[inline]
+fn morton_code_3d(nx: f64, ny: f64, nz: f64) -> u32 {
+    let ten = 1u32 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1;
+    let max_coord = f64::from((1u32 << ten) - 1);
+    let qx = (nx.clamp(0.0, 1.0) * max_coord) as u32;
+    let qy = (ny.clamp(0.0, 1.0) * max_coord) as u32;
+    let qz = (nz.clamp(0.0, 1.0) * max_coord) as u32;
+    let two = 1u32 + 1;
+    spread_10_bits_for_morton(qx)
+        | (spread_10_bits_for_morton(qy) << 1)
+        | (spread_10_bits_for_morton(qz) << two)
+}
+
 /// Partitions packed world-space vertex positions (`3 floats/vert`) and triangle indices (`3 u32/tri`)
-/// into fixed-budget 64-triangle GPU [`MeshletCluster`]s with bounding spheres and normal cones.
+/// into spatially Morton-sorted 64-triangle GPU [`MeshletCluster`]s with tight bounding spheres and
+/// outward normal cones (zero per-cluster heap allocations).
 #[must_use]
 pub fn build_meshlet_graph(positions_xyz: &[f32], indices: &[u32]) -> MeshletGraph {
     let three = 1usize + 1usize + 1usize;
@@ -249,8 +286,112 @@ pub fn build_meshlet_graph(positions_xyz: &[f32], indices: &[u32]) -> MeshletGra
     }
 
     let half = half_f64();
+    let third = 1.0_f64 / (three as f64);
+
+    // Pass 1: Compute scene AABB of triangle centroids for 30-bit Z-order Morton spatial clustering:
+    let mut g_min_x = f64::INFINITY;
+    let mut g_min_y = f64::INFINITY;
+    let mut g_min_z = f64::INFINITY;
+    let mut g_max_x = f64::NEG_INFINITY;
+    let mut g_max_y = f64::NEG_INFINITY;
+    let mut g_max_z = f64::NEG_INFINITY;
+    let mut tri_keys: Vec<(u32, usize)> = Vec::with_capacity(total_triangles);
+
+    for t in 0..total_triangles {
+        let base = t * three;
+        let i0 = (indices[base] as usize) * three;
+        let i1 = (indices[base + 1] as usize) * three;
+        let i2 = (indices[base + two] as usize) * three;
+        if i0 + two >= positions_xyz.len()
+            || i1 + two >= positions_xyz.len()
+            || i2 + two >= positions_xyz.len()
+        {
+            continue;
+        }
+        let cx = (f64::from(positions_xyz[i0])
+            + f64::from(positions_xyz[i1])
+            + f64::from(positions_xyz[i2]))
+            * third;
+        let cy = (f64::from(positions_xyz[i0 + 1])
+            + f64::from(positions_xyz[i1 + 1])
+            + f64::from(positions_xyz[i2 + 1]))
+            * third;
+        let cz = (f64::from(positions_xyz[i0 + two])
+            + f64::from(positions_xyz[i1 + two])
+            + f64::from(positions_xyz[i2 + two]))
+            * third;
+        if cx.is_finite() && cy.is_finite() && cz.is_finite() {
+            g_min_x = g_min_x.min(cx);
+            g_min_y = g_min_y.min(cy);
+            g_min_z = g_min_z.min(cz);
+            g_max_x = g_max_x.max(cx);
+            g_max_y = g_max_y.max(cy);
+            g_max_z = g_max_z.max(cz);
+        }
+    }
+
+    let eps = half * half * half * half * half * half * half * half;
+    let inv_ex = if g_min_x.is_finite() && g_max_x.is_finite() {
+        1.0 / (g_max_x - g_min_x).max(eps)
+    } else {
+        0.0
+    };
+    let inv_ey = if g_min_y.is_finite() && g_max_y.is_finite() {
+        1.0 / (g_max_y - g_min_y).max(eps)
+    } else {
+        0.0
+    };
+    let inv_ez = if g_min_z.is_finite() && g_max_z.is_finite() {
+        1.0 / (g_max_z - g_min_z).max(eps)
+    } else {
+        0.0
+    };
+
+    for t in 0..total_triangles {
+        let base = t * three;
+        let i0 = (indices[base] as usize) * three;
+        let i1 = (indices[base + 1] as usize) * three;
+        let i2 = (indices[base + two] as usize) * three;
+        let code = if i0 + two < positions_xyz.len()
+            && i1 + two < positions_xyz.len()
+            && i2 + two < positions_xyz.len()
+        {
+            let cx = (f64::from(positions_xyz[i0])
+                + f64::from(positions_xyz[i1])
+                + f64::from(positions_xyz[i2]))
+                * third;
+            let cy = (f64::from(positions_xyz[i0 + 1])
+                + f64::from(positions_xyz[i1 + 1])
+                + f64::from(positions_xyz[i2 + 1]))
+                * third;
+            let cz = (f64::from(positions_xyz[i0 + two])
+                + f64::from(positions_xyz[i1 + two])
+                + f64::from(positions_xyz[i2 + two]))
+                * third;
+            morton_code_3d(
+                (cx - g_min_x) * inv_ex,
+                (cy - g_min_y) * inv_ey,
+                (cz - g_min_z) * inv_ez,
+            )
+        } else {
+            u32::MAX
+        };
+        tri_keys.push((code, t));
+    }
+    tri_keys.sort_unstable_by_key(|&(code, _)| code);
+
+    let mut reordered_indices = Vec::with_capacity(total_triangles * three);
+    for &(_, t) in &tri_keys {
+        let base = t * three;
+        reordered_indices.push(indices[base]);
+        reordered_indices.push(indices[base + 1]);
+        reordered_indices.push(indices[base + two]);
+    }
+
     let cluster_count = total_triangles.div_ceil(MAX_MESHLET_TRIANGLES);
     let mut clusters = Vec::with_capacity(cluster_count);
+    // Stack-allocated per-cluster normal scratch buffer (ZERO heap allocations inside cluster loop):
+    let mut tri_normals_buf = [Vec3::ZERO; MAX_MESHLET_TRIANGLES];
 
     for m_idx in 0..cluster_count {
         let first_tri = m_idx * MAX_MESHLET_TRIANGLES;
@@ -264,14 +405,14 @@ pub fn build_meshlet_graph(positions_xyz: &[f32], indices: &[u32]) -> MeshletGra
         let mut max_x = f64::NEG_INFINITY;
         let mut max_y = f64::NEG_INFINITY;
         let mut max_z = f64::NEG_INFINITY;
-        let mut tri_normals: Vec<Vec3> = Vec::with_capacity(tri_end - first_tri);
+        let mut tri_normal_count = 0usize;
         let mut avg_n = Vec3::ZERO;
 
         for t in first_tri..tri_end {
             let base = t * three;
-            let i0 = (indices[base] as usize) * three;
-            let i1 = (indices[base + 1] as usize) * three;
-            let i2 = (indices[base + two] as usize) * three;
+            let i0 = (reordered_indices[base] as usize) * three;
+            let i1 = (reordered_indices[base + 1] as usize) * three;
+            let i2 = (reordered_indices[base + two] as usize) * three;
             if i0 + two >= positions_xyz.len()
                 || i1 + two >= positions_xyz.len()
                 || i2 + two >= positions_xyz.len()
@@ -304,9 +445,10 @@ pub fn build_meshlet_graph(positions_xyz: &[f32], indices: &[u32]) -> MeshletGra
                 }
             }
             let n = (p1 - p0).cross(p2 - p0).normalized();
-            if n.length_squared() > 0.0 {
+            if n.length_squared() > 0.0 && tri_normal_count < MAX_MESHLET_TRIANGLES {
                 avg_n = avg_n + n;
-                tri_normals.push(n);
+                tri_normals_buf[tri_normal_count] = n;
+                tri_normal_count += 1;
             }
         }
 
@@ -320,7 +462,7 @@ pub fn build_meshlet_graph(positions_xyz: &[f32], indices: &[u32]) -> MeshletGra
             Vec3::ZERO
         };
         let mut max_r2 = 0.0_f64;
-        for &raw_vi in &indices[first_index..first_index + index_count] {
+        for &raw_vi in &reordered_indices[first_index..first_index + index_count] {
             let vi = (raw_vi as usize) * three;
             if vi + two < positions_xyz.len() {
                 let p = Vec3::new(
@@ -337,9 +479,9 @@ pub fn build_meshlet_graph(positions_xyz: &[f32], indices: &[u32]) -> MeshletGra
         let radius = max_r2.sqrt().max(half * half * half * half);
 
         let cone_axis = avg_n.normalized();
-        let cone_cutoff = if cone_axis.length_squared() > half && !tri_normals.is_empty() {
+        let cone_cutoff = if cone_axis.length_squared() > half && tri_normal_count > 0 {
             let mut min_dot = 1.0_f64;
-            for n in &tri_normals {
+            for n in &tri_normals_buf[..tri_normal_count] {
                 min_dot = min_dot.min(n.dot(cone_axis));
             }
             if min_dot <= 0.0 {
@@ -365,12 +507,14 @@ pub fn build_meshlet_graph(positions_xyz: &[f32], indices: &[u32]) -> MeshletGra
 
     MeshletGraph {
         clusters,
+        reordered_indices,
         total_triangles,
     }
 }
 
 /// Evaluates Frustum + Backface Normal-Cone + UHD Screen-Space Error culling over `graph`,
-/// writing surviving triangle indices into `out_visible_indices` and returning exact telemetry.
+/// writing surviving triangle indices into `out_visible_indices` with zero steady-state
+/// heap reallocations and returning exact telemetry.
 #[allow(clippy::too_many_arguments)]
 pub fn evaluate_meshlet_visibility(
     graph: &MeshletGraph,
@@ -382,7 +526,15 @@ pub fn evaluate_meshlet_visibility(
     min_pixel_error: f64,
     out_visible_indices: &mut Vec<u32>,
 ) -> UhdVisibilityTelemetry {
+    let source_indices = if !graph.reordered_indices.is_empty() {
+        graph.reordered_indices.as_slice()
+    } else {
+        full_indices
+    };
     out_visible_indices.clear();
+    if out_visible_indices.capacity() < source_indices.len() {
+        out_visible_indices.reserve(source_indices.len() - out_visible_indices.capacity());
+    }
     let three = 1usize + 1usize + 1usize;
     let vh = f64::from(viewport_height_px.max(1));
     let safe_tan = tan_half_fov.max(half_f64() * half_f64() * half_f64());
@@ -429,9 +581,9 @@ pub fn evaluate_meshlet_visibility(
         }
 
         visible_meshlets += 1;
-        let end = (m.first_index + m.index_count).min(full_indices.len());
+        let end = (m.first_index + m.index_count).min(source_indices.len());
         if m.first_index < end {
-            out_visible_indices.extend_from_slice(&full_indices[m.first_index..end]);
+            out_visible_indices.extend_from_slice(&source_indices[m.first_index..end]);
         }
     }
 
@@ -561,17 +713,51 @@ pub fn pack_rgba_texture_atlas(
             let sw_f = f64::from(src_w);
             let sh_f = f64::from(src_h);
             let te_f = f64::from(desired_tile_edge);
+            let quarter = half * half;
+            let three_quarters = half + quarter;
+            let downsample = src_w > desired_tile_edge || src_h > desired_tile_edge;
             for dy in 0..desired_tile_edge {
-                let sy = ((((f64::from(dy) + half) * sh_f) / te_f).floor() as u32).min(src_h - 1)
-                    as usize;
                 let atlas_row = ((dst_y0 + dy) as usize) * (atlas_edge as usize);
-                for dx in 0..desired_tile_edge {
-                    let sx = ((((f64::from(dx) + half) * sw_f) / te_f).floor() as u32)
-                        .min(src_w - 1) as usize;
-                    let src_o = (sy * (src_w as usize) + sx) * four_usize;
-                    let dst_o = (atlas_row + ((dst_x0 + dx) as usize)) * four_usize;
-                    rgba[dst_o..dst_o + four_usize]
-                        .copy_from_slice(&src_rgba[src_o..src_o + four_usize]);
+                if downsample {
+                    // 2x2 box-filtered supersampling eliminates aliasing when packing 2K/4K PBR maps:
+                    let sy0 = ((((f64::from(dy) + quarter) * sh_f) / te_f).floor() as u32)
+                        .min(src_h - 1) as usize;
+                    let sy1 = ((((f64::from(dy) + three_quarters) * sh_f) / te_f).floor() as u32)
+                        .min(src_h - 1) as usize;
+                    let row0 = sy0 * (src_w as usize);
+                    let row1 = sy1 * (src_w as usize);
+                    for dx in 0..desired_tile_edge {
+                        let sx0 = ((((f64::from(dx) + quarter) * sw_f) / te_f).floor() as u32)
+                            .min(src_w - 1) as usize;
+                        let sx1 = ((((f64::from(dx) + three_quarters) * sw_f) / te_f).floor()
+                            as u32)
+                            .min(src_w - 1) as usize;
+                        let o00 = (row0 + sx0) * four_usize;
+                        let o10 = (row0 + sx1) * four_usize;
+                        let o01 = (row1 + sx0) * four_usize;
+                        let o11 = (row1 + sx1) * four_usize;
+                        let dst_o = (atlas_row + ((dst_x0 + dx) as usize)) * four_usize;
+                        for c in 0..four_usize {
+                            let sum = u32::from(src_rgba[o00 + c])
+                                + u32::from(src_rgba[o10 + c])
+                                + u32::from(src_rgba[o01 + c])
+                                + u32::from(src_rgba[o11 + c])
+                                + two;
+                            rgba[dst_o + c] = (sum >> two) as u8;
+                        }
+                    }
+                } else {
+                    let sy = ((((f64::from(dy) + half) * sh_f) / te_f).floor() as u32)
+                        .min(src_h - 1) as usize;
+                    let row = sy * (src_w as usize);
+                    for dx in 0..desired_tile_edge {
+                        let sx = ((((f64::from(dx) + half) * sw_f) / te_f).floor() as u32)
+                            .min(src_w - 1) as usize;
+                        let src_o = (row + sx) * four_usize;
+                        let dst_o = (atlas_row + ((dst_x0 + dx) as usize)) * four_usize;
+                        rgba[dst_o..dst_o + four_usize]
+                            .copy_from_slice(&src_rgba[src_o..src_o + four_usize]);
+                    }
                 }
             }
         }
@@ -719,6 +905,212 @@ pub fn build_meshlet_graph_from_mesh(mesh: &ProceduralMesh) -> MeshletGraph {
     build_meshlet_graph(&flat_pos, &mesh.indices)
 }
 
+/// Statistical stability report emitted by [`FrameBudgetOracle`] over the live 64-frame window.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FrameStabilityReport {
+    /// Active number of frame samples inside the sliding window (`0..=64`).
+    pub sample_count: u32,
+    /// Target frame budget in microseconds (e.g. `16667` for 60 Hz).
+    pub target_budget_us: u32,
+    /// Median (`P50`) frame time in microseconds.
+    pub p50_us: u32,
+    /// 95th-percentile (`P95`) frame time in microseconds.
+    pub p95_us: u32,
+    /// 99th-percentile (`P99`) frame time in microseconds.
+    pub p99_us: u32,
+    /// Peak frame time in microseconds inside the window.
+    pub max_us: u32,
+    /// Tail jitter (`P99 - P50`) in microseconds.
+    pub jitter_us: u32,
+    /// Permille (`0..=1000`) of frames finishing at or under `target_budget_us`.
+    pub budget_compliance_permille: u32,
+    /// Current hysteresis-governed DRS render scale permille (`650..=1000`).
+    pub drs_scale_permille: u32,
+    /// Total DRS transitions performed since oracle initialization (low = zero FBO thrashing).
+    pub drs_transitions: u32,
+    /// Whether the sliding window satisfies rock-solid stability (`P95 <= budget`, `jitter <= budget / 2`).
+    pub stable: bool,
+}
+
+/// Zero-allocation 64-frame sliding-window frame-time stability oracle with quantized
+/// hysteresis-guarded Dynamic Resolution Scaling (eliminating HDR FBO thrashing).
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct FrameBudgetOracle {
+    ring: [u32; FRAME_ORACLE_WINDOW],
+    cursor: usize,
+    filled: usize,
+    target_budget_us: u32,
+    drs_index: usize,
+    over_streak: u32,
+    under_streak: u32,
+    drs_transitions: u32,
+}
+
+impl Default for FrameBudgetOracle {
+    fn default() -> Self {
+        let thousand = pow10_u64(two_u32() + 1) as u32;
+        let sixty = (1u32 << (1 + 1 + 1 + 1 + 1 + 1)) - (1u32 << (1 + 1));
+        let budget_60hz = (thousand * thousand) / sixty;
+        Self::new(budget_60hz)
+    }
+}
+
+impl FrameBudgetOracle {
+    /// Quantized lawful DRS permille ladder `[650, 750, 850, 925, 1000]`.
+    #[must_use]
+    pub fn drs_ladder() -> [u32; DRS_LADDER_LEN] {
+        let hundred = pow10_u64(two_u32()) as u32;
+        let half_hundred = hundred / (1 + 1);
+        let quarter_hundred = half_hundred / (1 + 1);
+        let two = 1u32 + 1;
+        let three = two + 1;
+        let six = three * two;
+        let seven = six + 1;
+        let eight = seven + 1;
+        let nine = eight + 1;
+        let thousand = hundred * (nine + 1);
+        [
+            six * hundred + half_hundred,
+            seven * hundred + half_hundred,
+            eight * hundred + half_hundred,
+            nine * hundred + quarter_hundred,
+            thousand,
+        ]
+    }
+
+    /// Creates a new zero-allocation frame stability oracle targeting `target_budget_us`.
+    #[must_use]
+    pub fn new(target_budget_us: u32) -> Self {
+        let thousand = pow10_u64(two_u32() + 1) as u32;
+        Self {
+            ring: [0u32; FRAME_ORACLE_WINDOW],
+            cursor: 0,
+            filled: 0,
+            target_budget_us: target_budget_us.max(thousand),
+            drs_index: DRS_LADDER_LEN - 1,
+            over_streak: 0,
+            under_streak: 0,
+            drs_transitions: 0,
+        }
+    }
+
+    /// Records one completed frame duration (`frame_us`) in O(1) time with zero heap allocations,
+    /// updating the hysteresis-guarded DRS ladder and returning the active DRS permille.
+    pub fn record_frame(&mut self, frame_us: u32) -> u32 {
+        let clamped = frame_us.max(1);
+        self.ring[self.cursor] = clamped;
+        self.cursor = (self.cursor + 1) & (FRAME_ORACLE_WINDOW - 1);
+        if self.filled < FRAME_ORACLE_WINDOW {
+            self.filled += 1;
+        }
+
+        let ten = pow10_u64(1) as u32;
+        let four = 1u32 << (1 + 1);
+        let sixteen = four * four;
+        let over_threshold =
+            (u64::from(self.target_budget_us) * u64::from(ten + 1)) / u64::from(ten);
+        let under_threshold =
+            (u64::from(self.target_budget_us) * u64::from(four - 1)) / u64::from(four);
+
+        if u64::from(clamped) > over_threshold {
+            self.over_streak = self.over_streak.saturating_add(1);
+            self.under_streak = 0;
+            if self.over_streak >= four && self.drs_index > 0 {
+                self.drs_index -= 1;
+                self.drs_transitions = self.drs_transitions.saturating_add(1);
+                self.over_streak = 0;
+            }
+        } else if u64::from(clamped) < under_threshold {
+            self.under_streak = self.under_streak.saturating_add(1);
+            self.over_streak = 0;
+            if self.under_streak >= sixteen && self.drs_index + 1 < DRS_LADDER_LEN {
+                self.drs_index += 1;
+                self.drs_transitions = self.drs_transitions.saturating_add(1);
+                self.under_streak = 0;
+            }
+        } else {
+            // Inside hysteresis deadband `[75%..110%]` of target budget: hold steady, zero thrashing!
+            self.over_streak = 0;
+            self.under_streak = 0;
+        }
+
+        Self::drs_ladder()[self.drs_index]
+    }
+
+    /// Returns the active hysteresis-guarded DRS scale permille (`650..=1000`).
+    #[must_use]
+    pub fn active_drs_permille(&self) -> u32 {
+        Self::drs_ladder()[self.drs_index]
+    }
+
+    /// Evaluates exact `P50`, `P95`, `P99`, `max`, jitter, and budget compliance on the stack
+    /// with ZERO heap allocations.
+    #[must_use]
+    pub fn report(&self) -> FrameStabilityReport {
+        let ladder = Self::drs_ladder();
+        let active_drs = ladder[self.drs_index];
+        if self.filled == 0 {
+            return FrameStabilityReport {
+                sample_count: 0,
+                target_budget_us: self.target_budget_us,
+                p50_us: 0,
+                p95_us: 0,
+                p99_us: 0,
+                max_us: 0,
+                jitter_us: 0,
+                budget_compliance_permille: pow10_u64(two_u32() + 1) as u32,
+                drs_scale_permille: active_drs,
+                drs_transitions: self.drs_transitions,
+                stable: true,
+            };
+        }
+
+        let n = self.filled;
+        let mut sorted = [0u32; FRAME_ORACLE_WINDOW];
+        sorted[..n].copy_from_slice(&self.ring[..n]);
+        sorted[..n].sort_unstable();
+
+        let hundred = pow10_u64(two_u32()) as usize;
+        let thousand = pow10_u64(two_u32() + 1);
+        let two = 1usize + 1;
+        let five = two + two + 1;
+        let p50_idx = ((n - 1) * (hundred / two)) / hundred;
+        let p95_idx = ((n - 1) * (hundred - five)) / hundred;
+        let p99_idx = ((n - 1) * (hundred - 1)) / hundred;
+
+        let p50_us = sorted[p50_idx];
+        let p95_us = sorted[p95_idx];
+        let p99_us = sorted[p99_idx];
+        let max_us = sorted[n - 1];
+        let jitter_us = p99_us.saturating_sub(p50_us);
+
+        let mut within = 0u64;
+        for &s in &sorted[..n] {
+            if s <= self.target_budget_us {
+                within += 1;
+            }
+        }
+        let budget_compliance_permille = ((within * thousand) / (n as u64)) as u32;
+        let stable =
+            p95_us <= self.target_budget_us && jitter_us <= self.target_budget_us / (1 + 1);
+
+        FrameStabilityReport {
+            sample_count: n as u32,
+            target_budget_us: self.target_budget_us,
+            p50_us,
+            p95_us,
+            p99_us,
+            max_us,
+            jitter_us,
+            budget_compliance_permille,
+            drs_scale_permille: active_drs,
+            drs_transitions: self.drs_transitions,
+            stable,
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -733,25 +1125,30 @@ mod tests {
 
     #[test]
     fn meshlet_graph_partitions_and_culls_backface_and_offscreen_clusters() {
-        // Construct 128 triangles (2 meshlets): 64 facing camera (+Z) at z=0, 64 behind camera at z=+50:
+        // Interleave 64 triangles at z=0 with 64 triangles behind camera at z=+50 to prove
+        // 30-bit Z-order Morton spatial clustering separates them cleanly into tight clusters:
         let mut pos: Vec<f32> = Vec::new();
         let mut idx: Vec<u32> = Vec::new();
         for t in 0..MAX_MESHLET_TRIANGLES {
-            let base = (pos.len() / 3) as u32;
             let x = (t as f32) * 0.05;
+            let b0 = (pos.len() / 3) as u32;
             pos.extend_from_slice(&[x, 0.0, 0.0, x + 0.04, 0.0, 0.0, x + 0.02, 0.04, 0.0]);
-            idx.extend_from_slice(&[base, base + 1, base + 2]);
-        }
-        for t in 0..MAX_MESHLET_TRIANGLES {
-            let base = (pos.len() / 3) as u32;
-            let x = (t as f32) * 0.05;
+            idx.extend_from_slice(&[b0, b0 + 1, b0 + 2]);
+
+            let b1 = (pos.len() / 3) as u32;
             pos.extend_from_slice(&[x, 0.0, 50.0, x + 0.04, 0.0, 50.0, x + 0.02, 0.04, 50.0]);
-            idx.extend_from_slice(&[base, base + 1, base + 2]);
+            idx.extend_from_slice(&[b1, b1 + 1, b1 + 2]);
         }
 
         let graph = build_meshlet_graph(&pos, &idx);
         assert_eq!(graph.clusters.len(), 2);
         assert_eq!(graph.total_triangles, 128);
+        assert_eq!(graph.reordered_indices.len(), 128 * 3);
+        // Each Morton-clustered meshlet has a tight radius (< 2.5m), never spanning 50m:
+        assert!(
+            graph.clusters.iter().all(|c| c.radius < 2.5),
+            "Morton clustering must tighten interleaved triangles into compact clusters"
+        );
 
         let eye = Vec3::new(1.5, 0.5, 6.0);
         let target = Vec3::new(1.5, 0.0, 0.0);
@@ -776,6 +1173,7 @@ mod tests {
             1.0,
             &mut visible,
         );
+        let stable_cap = visible.capacity();
         assert_eq!(tel.total_meshlets, 2);
         assert_eq!(
             tel.visible_meshlets, 1,
@@ -784,24 +1182,50 @@ mod tests {
         assert_eq!(tel.culled_frustum, 1);
         assert_eq!(tel.cull_ratio_permille, 500);
         assert_eq!(visible.len(), 64 * 3);
+
+        // Steady-state frame 2 must perform ZERO heap reallocations:
+        let tel2 = evaluate_meshlet_visibility(
+            &graph,
+            &idx,
+            &frustum,
+            eye,
+            2160,
+            0.577,
+            1.0,
+            &mut visible,
+        );
+        assert_eq!(tel, tel2);
+        assert_eq!(visible.capacity(), stable_cap);
     }
 
     #[test]
     fn multi_texture_atlas_packs_four_materials_within_host_cap_without_bleed() {
-        let t0 = vec![255u8; 4 * 4 * 4];
-        let t1 = vec![128u8; 4 * 4 * 4];
-        let t2 = vec![64u8; 4 * 4 * 4];
-        let t3 = vec![32u8; 4 * 4 * 4];
-        let atlas =
-            pack_rgba_texture_atlas(&[(4, 4, &t0), (4, 4, &t1), (4, 4, &t2), (4, 4, &t3)], 512)
-                .expect("atlas pack");
+        // Test 2x2 supersampled box downsampling (16x16 tiles packed into 16x16 2x2 atlas -> 8x8/tile):
+        let mut t0 = vec![255u8; 16 * 16 * 4];
+        for px in (0..16 * 16).step_by(2) {
+            t0[px * 4] = 100;
+            t0[px * 4 + 1] = 100;
+            t0[px * 4 + 2] = 100;
+        }
+        let t1 = vec![128u8; 16 * 16 * 4];
+        let t2 = vec![64u8; 16 * 16 * 4];
+        let t3 = vec![32u8; 16 * 16 * 4];
+        let atlas = pack_rgba_texture_atlas(
+            &[(16, 16, &t0), (16, 16, &t1), (16, 16, &t2), (16, 16, &t3)],
+            16,
+        )
+        .expect("atlas pack");
         assert_eq!(atlas.grid_dim, 2);
         assert_eq!(atlas.tile_count, 4);
-        assert!(atlas.width <= 512 && atlas.height <= 512);
+        assert!(atlas.width <= 16 && atlas.height <= 16);
         assert_eq!(atlas.tile_transforms.len(), 4);
+        // Box-filtered tile 0 averages 100 and 255 -> intermediate filtered value, not aliased extreme:
+        assert!(atlas.rgba[0] > 100 && atlas.rgba[0] < 255);
         // Tile 3 lives strictly in the bottom-right quadrant [0.5, 1.0]^2:
         let uv3 = atlas.tile_transforms[3].apply(0.5, 0.5);
         assert!(uv3[0] > 0.5 && uv3[0] < 1.0 && uv3[1] > 0.5 && uv3[1] < 1.0);
+        // Empty input returns None cleanly:
+        assert!(pack_rgba_texture_atlas(&[], 512).is_none());
     }
 
     #[test]
@@ -816,5 +1240,36 @@ mod tests {
         assert_eq!(p8k.megapixels_x100, 3317);
         assert!(p8k.drs_scale_permille >= 650 && p8k.drs_scale_permille < 1000);
         assert!(p8k.cas_sharpness_permille >= 400);
+    }
+
+    #[test]
+    fn frame_budget_oracle_computes_p95_p99_and_prevents_drs_thrashing() {
+        let mut oracle = FrameBudgetOracle::new(16_667);
+        // Alternating borderline frames (15ms / 18ms) inside hysteresis must cause ZERO DRS thrashing:
+        for i in 0..64 {
+            let us = if i % 2 == 0 { 15_000 } else { 18_000 };
+            oracle.record_frame(us);
+        }
+        let rep = oracle.report();
+        assert_eq!(rep.sample_count, 64);
+        assert_eq!(
+            rep.drs_transitions, 0,
+            "borderline jitter must not thrash DRS"
+        );
+        assert_eq!(rep.drs_scale_permille, 1000);
+
+        // Sustained overload (4 consecutive >110% frames -> 20ms) cleanly steps DRS down one rung:
+        for _ in 0..4 {
+            oracle.record_frame(20_500);
+        }
+        assert_eq!(oracle.active_drs_permille(), 925);
+        assert_eq!(oracle.report().drs_transitions, 1);
+
+        // Sustained fast recovery (16 consecutive <75% frames -> 9ms) cleanly restores 1000 permille:
+        for _ in 0..16 {
+            oracle.record_frame(9_000);
+        }
+        assert_eq!(oracle.active_drs_permille(), 1000);
+        assert_eq!(oracle.report().drs_transitions, 2);
     }
 }

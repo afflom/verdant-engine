@@ -995,11 +995,15 @@ cogUhdBtn?.addEventListener("click", async () => {
     const line8k = p8
       ? `8K Beyond (${p8.widthPx}×${p8.heightPx} · ${(p8.megapixelsX100 / 100).toFixed(2)} MP): DRS ${Math.round(p8.drsScalePermille / 10)}% + CAS ${Math.round(p8.casSharpnessPermille / 10)}% · SSE ${(p8.meshletSseTenthsPx / 10).toFixed(1)}px · ${p8.preferredBackend}`
       : "";
+    const st = p4k?.stability;
+    const lineSt = st
+      ? `Frame Stability Oracle (${st.sampleCount}f window): P50 ${(st.p50Us / 1000).toFixed(2)}ms · P95 ${(st.p95Us / 1000).toFixed(2)}ms · P99 ${(st.p99Us / 1000).toFixed(2)}ms · Jitter ${(st.jitterUs / 1000).toFixed(2)}ms · DRS ${Math.round(st.drsScalePermille / 10)}% (${st.drsTransitions} transitions · ${st.stable ? "STABLE" : "BOUNDED"})`
+      : "";
     cogLogEl.textContent =
       `UHD 4K (3840×2160) Gameplay Envelope Verified:\n` +
       `Tier: ${he.uhdTierLabel} · DRS ${Math.round(he.recommendedRenderScalePermille / 10)}% + 5-Tap CAS Sharpener\n` +
       `Texture Cap: ${he.recommendedTextureCapPx}px · Shadow Map: ${he.recommendedShadowMapPx}px · Anisotropy: ×${he.recommendedAnisotropy} · Max GLB: ${Math.round(he.recommendedGlbMaxBytes / 1048576)}MB\n` +
-      `${mLine}\n${line8k}`;
+      `${mLine}\n${line8k}${lineSt ? `\n${lineSt}` : ""}`;
     chip(statusEl, `UHD 4K & 8K Envelope Verified: ${he.uhdTierLabel} (${m?.totalMeshlets || 0} meshlets · WebGPU/WebGL2 ladder)`);
   }
 });

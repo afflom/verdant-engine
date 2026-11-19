@@ -195,7 +195,7 @@ export async function createGlRenderer(canvas) {
         if (sv.uv && sv.uv.length >= (sv.pos.length / 3) * 2) {
           gl.bindBuffer(B, sGpu.uv); gl.bufferData(B, sv.uv, gl.STATIC_DRAW); gl.enableVertexAttribArray(7); gl.vertexAttribPointer(7, 2, gl.FLOAT, false, 0, 0);
         } else { gl.disableVertexAttribArray(7); gl.vertexAttrib2f(7, -2, -2); }
-        gl.bindVertexArray(null); sGpu.count = sv.idx.length; sGpu.epoch = sv.epoch; cKey = "";
+        gl.bindVertexArray(null); sGpu.count = sv.idx.length; sGpu.idxCap = sv.idx.byteLength; sGpu.epoch = sv.epoch; cKey = "";
       }
       if (dv && dv.idx.length > 0) {
         sUp(B, dGpu.pos, dv.pos, "capPos"); sUp(B, dGpu.norm, dv.norm, "capNorm"); sUp(B, dGpu.col, dv.col, "capCol"); sUp(E, dGpu.idx, dv.idx, "capIdx");
@@ -216,7 +216,13 @@ export async function createGlRenderer(canvas) {
     updateStaticIndices(ix) {
       if (!okGl() || !ix || ix.length === 0) return;
       gl.bindBuffer(E, sGpu.idx);
-      gl.bufferData(E, ix, gl.DYNAMIC_DRAW);
+      if (ix.byteLength <= (sGpu.idxCap || 0)) {
+        gl.bufferSubData(E, 0, ix);
+      } else {
+        sGpu.idxCap = Math.max(ix.byteLength, (sGpu.idxCap || 0) * 2);
+        gl.bufferData(E, sGpu.idxCap, gl.DYNAMIC_DRAW);
+        gl.bufferSubData(E, 0, ix);
+      }
       sGpu.count = ix.length;
     },
     render(mvp, eye, lodSpec, timeSec, lTgt = [0, 1.8, 0], fovRad = Math.PI / 3.4, forceSync = false) {
@@ -267,7 +273,9 @@ export async function createGlRenderer(canvas) {
       }
 
       const sc = isSoftware ? Math.min(rScale, 0.85) : rScale;
-      const rw = Math.max(16, Math.round(w * sc)), rh = Math.max(16, Math.round(h * sc)), useHdr = eHdr(rw, rh);
+      const rw = sc >= 0.999 ? w : Math.max(16, Math.round((w * sc) / 16) * 16);
+      const rh = sc >= 0.999 ? h : Math.max(16, Math.round((h * sc) / 16) * 16);
+      const useHdr = eHdr(rw, rh);
       gl.bindFramebuffer(F, useHdr ? hFbo : null); gl.viewport(0, 0, useHdr ? rw : w, useHdr ? rh : h);
       gl.clearColor(sky[0], sky[1], sky[2], 1); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 

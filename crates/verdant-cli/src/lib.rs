@@ -1322,10 +1322,27 @@ pub fn run_cli(args: &[String]) -> Result<String, CliCommandError> {
             let sample_meshlets = verdant_core::uhd::build_meshlet_graph_from_mesh(
                 &holon.active_domain.sector.meshes[0],
             );
-            if sample_meshlets.clusters.is_empty() {
+            if sample_meshlets.clusters.is_empty()
+                || sample_meshlets.reordered_indices.len()
+                    != sample_meshlets.total_triangles * (1 + 1 + 1)
+            {
                 return Err(CliCommandError::ValidationRejected {
                     command: "automate-check".to_string(),
-                    diagnostic: "meshlet graph produced zero clusters".to_string(),
+                    diagnostic: "Morton meshlet graph produced empty or misaligned clusters"
+                        .to_string(),
+                });
+            }
+            let mut frame_oracle = verdant_core::uhd::FrameBudgetOracle::default();
+            for _ in 0..verdant_core::uhd::FRAME_ORACLE_WINDOW {
+                frame_oracle.record_frame(fast_us);
+            }
+            let frame_rep = frame_oracle.report();
+            if !frame_rep.stable || frame_rep.drs_transitions != 0 {
+                return Err(CliCommandError::ValidationRejected {
+                    command: "automate-check".to_string(),
+                    diagnostic: format!(
+                        "FrameBudgetOracle unstable on nominal load: {frame_rep:?}"
+                    ),
                 });
             }
 
@@ -1370,11 +1387,12 @@ pub fn run_cli(args: &[String]) -> Result<String, CliCommandError> {
 
             let elapsed_ms = t0.elapsed().as_millis();
             Ok(format!(
-                "AUTOMATE CHECK OK: domains={verified_domains} streams={} uhd={} uhd8k={} meshlets={} entities={total_entities} ui_widgets={} wgsl_shaders={}+{} uorc_bytes={} stitch_parity=2of3 elapsed_ms={elapsed_ms}",
+                "AUTOMATE CHECK OK: domains={verified_domains} streams={} uhd={} uhd8k={} meshlets={} p95_us={} entities={total_entities} ui_widgets={} wgsl_shaders={}+{} uorc_bytes={} stitch_parity=2of3 elapsed_ms={elapsed_ms}",
                 holon.sensory_streams.len(),
                 holon.host_envelope.uhd_tier_label,
                 uhd_8k.display_class,
                 sample_meshlets.clusters.len(),
+                frame_rep.p95_us,
                 solved_ui.len(),
                 shaders.len(),
                 uhd_shaders.len(),

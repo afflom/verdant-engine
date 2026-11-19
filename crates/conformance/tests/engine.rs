@@ -4696,3 +4696,270 @@ fn engine_ve_40() {
         "Wasm C-ABI must refuse out-of-bounds domain pack index"
     );
 }
+
+/// `VE-41`: UHD 4K-to-8K display scaling, 30-bit Morton spatially-clustered 64-triangle GPU
+/// meshlet culling with zero steady-state heap reallocations, 2x2 box-filtered multi-material PBR
+/// texture atlas packing, `naga`-verified WGSL compute culling & PBR shaders, zero-reallocation
+/// GPU index streaming, and the 64-frame hysteresis `FrameBudgetOracle`.
+#[test]
+fn engine_ve_41() {
+    use verdant_core::hd_world::synthesize_hd_citadel_sector;
+    use verdant_core::streaming::{PhysicalEnvironment, TerrainReliefParams};
+    use verdant_core::uhd::{
+        build_meshlet_graph, evaluate_meshlet_visibility, evaluate_uhd_display_profile,
+        pack_rgba_texture_atlas, validate_uhd_shaders, FrameBudgetOracle, MAX_ATLAS_TILES,
+        MAX_MESHLET_TRIANGLES,
+    };
+    use verdant_wasm::{
+        verdant_wasm_aux_len, verdant_wasm_aux_ptr, verdant_wasm_frame_stability_aux,
+        verdant_wasm_init, verdant_wasm_record_frame_time_us, verdant_wasm_scene_rebuild_buffers,
+        verdant_wasm_set_lod_rank, verdant_wasm_uhd_cull_meshlets, verdant_wasm_uhd_profile_aux,
+        verdant_wasm_uhd_visible_idx_count, verdant_wasm_uhd_visible_idx_ptr,
+    };
+
+    // 1. Authoritative W3C `naga` WGSL oracle validates compute meshlet cull & UHD PBR shaders:
+    let uhd_shaders = validate_uhd_shaders().expect("UHD WGSL shaders must validate under naga");
+    assert_eq!(uhd_shaders.len(), 2);
+    assert_eq!(uhd_shaders[0].label, "uhd_meshlet_cull.wgsl");
+    assert_eq!(uhd_shaders[1].label, "uhd_pbr_cas.wgsl");
+
+    // 2. Arbitrary 45,000+ triangle LOD4 Citadel sector -> Morton 64-tri MeshletGraph +
+    //    zero-reallocation steady-state visibility culling across 32 camera orbit sweeps:
+    let relief = TerrainReliefParams::standard_basin_valley();
+    let env = PhysicalEnvironment::temperate_terrestrial();
+    let lod4 = synthesize_hd_citadel_sector(7, &relief, env.water_level_meters, 4);
+    let mut flat_pos: Vec<f32> = Vec::new();
+    let mut flat_idx: Vec<u32> = Vec::new();
+    for mesh in &lod4.meshes {
+        let base_v = (flat_pos.len() / 3) as u32;
+        for p in &mesh.positions {
+            flat_pos.extend_from_slice(p);
+        }
+        for &i in &mesh.indices {
+            flat_idx.push(base_v + i);
+        }
+    }
+    assert!(
+        flat_idx.len() / 3 >= 45_000,
+        "LOD4 workload must exceed 45,000 triangles"
+    );
+
+    let graph = build_meshlet_graph(&flat_pos, &flat_idx);
+    assert_eq!(graph.total_triangles, flat_idx.len() / 3);
+    assert_eq!(graph.reordered_indices.len(), flat_idx.len());
+    assert!(
+        graph.clusters.len() >= 700,
+        "LOD4 45k+ tri scene must partition into 700+ 64-tri meshlets"
+    );
+
+    let mut visible_indices: Vec<u32> = Vec::new();
+    let mut stable_cap = 0usize;
+    let mut saw_culling = false;
+    let mut first_pose_tel = None;
+    let mut first_pose_indices = Vec::new();
+
+    for step in 0..32 {
+        let yaw = (step as f64) * (std::f64::consts::TAU / 32.0);
+        let eye = Vec3::new(yaw.cos() * 24.0, 9.0, yaw.sin() * 24.0);
+        let target = Vec3::new(yaw.cos() * 14.0, 2.0, yaw.sin() * 14.0);
+        let frustum = Frustum::from_perspective(
+            eye,
+            (target - eye).normalized(),
+            Vec3::new(0.0, 1.0, 0.0),
+            std::f64::consts::FRAC_PI_3,
+            16.0 / 9.0,
+            0.25,
+            120.0,
+        );
+        let tel = evaluate_meshlet_visibility(
+            &graph,
+            &flat_idx,
+            &frustum,
+            eye,
+            2160,
+            (std::f64::consts::FRAC_PI_3 * 0.5).tan(),
+            1.0,
+            &mut visible_indices,
+        );
+        assert_eq!(
+            tel.visible_meshlets
+                + tel.culled_frustum
+                + tel.culled_backface_cone
+                + tel.culled_subpixel,
+            tel.total_meshlets
+        );
+        assert_eq!(visible_indices.len(), tel.visible_triangles * 3);
+        if tel.cull_ratio_permille > 0 {
+            saw_culling = true;
+        }
+        if step == 0 {
+            stable_cap = visible_indices.capacity();
+            first_pose_tel = Some(tel);
+            first_pose_indices = visible_indices.clone();
+        } else {
+            assert_eq!(
+                visible_indices.capacity(),
+                stable_cap,
+                "steady-state meshlet culling must perform ZERO heap reallocations"
+            );
+        }
+    }
+    assert!(
+        saw_culling,
+        "Morton meshlet culling must eliminate offscreen/backface/subpixel clusters on LOD4"
+    );
+    // Exact determinism on re-evaluating pose 0:
+    let eye0 = Vec3::new(24.0, 9.0, 0.0);
+    let target0 = Vec3::new(14.0, 2.0, 0.0);
+    let frustum0 = Frustum::from_perspective(
+        eye0,
+        (target0 - eye0).normalized(),
+        Vec3::new(0.0, 1.0, 0.0),
+        std::f64::consts::FRAC_PI_3,
+        16.0 / 9.0,
+        0.25,
+        120.0,
+    );
+    let replay_tel = evaluate_meshlet_visibility(
+        &graph,
+        &flat_idx,
+        &frustum0,
+        eye0,
+        2160,
+        (std::f64::consts::FRAC_PI_3 * 0.5).tan(),
+        1.0,
+        &mut visible_indices,
+    );
+    assert_eq!(Some(replay_tel), first_pose_tel);
+    assert_eq!(visible_indices, first_pose_indices);
+
+    // 3. Interleaved un-optimized triangle tightening via 30-bit Morton sorting:
+    let mut inter_pos = Vec::new();
+    let mut inter_idx = Vec::new();
+    for t in 0..MAX_MESHLET_TRIANGLES {
+        let x = (t as f32) * 0.05;
+        let b0 = (inter_pos.len() / 3) as u32;
+        inter_pos.extend_from_slice(&[x, 0.0, 0.0, x + 0.04, 0.0, 0.0, x + 0.02, 0.04, 0.0]);
+        inter_idx.extend_from_slice(&[b0, b0 + 1, b0 + 2]);
+        let b1 = (inter_pos.len() / 3) as u32;
+        inter_pos.extend_from_slice(&[x, 0.0, 50.0, x + 0.04, 0.0, 50.0, x + 0.02, 0.04, 50.0]);
+        inter_idx.extend_from_slice(&[b1, b1 + 1, b1 + 2]);
+    }
+    let inter_graph = build_meshlet_graph(&inter_pos, &inter_idx);
+    assert_eq!(inter_graph.clusters.len(), 2);
+    assert!(
+        inter_graph.clusters.iter().all(|c| c.radius < 2.5),
+        "Morton spatial sort must tighten interleaved geometry into compact spheres"
+    );
+
+    // 4. 2x2 Box-filtered multi-material PBR atlas (4 & 16 distinct textures) + safe empty refusal:
+    assert!(pack_rgba_texture_atlas(&[], 512).is_none());
+    let mut checker = vec![240u8; 16 * 16 * 4];
+    for px in (0..16 * 16).step_by(2) {
+        checker[px * 4] = 80;
+        checker[px * 4 + 1] = 80;
+        checker[px * 4 + 2] = 80;
+    }
+    let solid_tiles: Vec<Vec<u8>> = (0..MAX_ATLAS_TILES)
+        .map(|i| vec![((i as u8) * 15).saturating_add(16); 16 * 16 * 4])
+        .collect();
+    let mut refs: Vec<(u32, u32, &[u8])> = vec![(16, 16, &checker)];
+    for tile in solid_tiles.iter().skip(1) {
+        refs.push((16, 16, tile.as_slice()));
+    }
+    let atlas16 = pack_rgba_texture_atlas(&refs, 32).expect("pack 16-material 4x4 atlas");
+    assert_eq!(atlas16.grid_dim, 4);
+    assert_eq!(atlas16.tile_count, 16);
+    assert!(atlas16.width <= 32 && atlas16.height <= 32);
+    assert!(
+        atlas16.rgba[0] > 80 && atlas16.rgba[0] < 240,
+        "2x2 box downsampling must filter checker texels smoothly"
+    );
+    let uv0 = atlas16.tile_transforms[0].apply(0.0, 0.0);
+    let uv0_max = atlas16.tile_transforms[0].apply(0.999, 0.999);
+    assert!(
+        uv0[0] > 0.0 && uv0_max[0] < 0.25,
+        "half-texel bleed guard must keep tile 0 strictly inside [0, 0.25)"
+    );
+    let uv_nan = atlas16.tile_transforms[0].apply(f32::NAN, f32::INFINITY);
+    assert!(uv_nan[0].is_finite() && uv_nan[1].is_finite());
+
+    // 5. UHD 1080p -> 4K -> 5K -> 8K display ladder + zero-dimension viewport guard:
+    let p_zero = evaluate_uhd_display_profile(0, 0, false, false, 6000);
+    assert_eq!(p_zero.width_px, 1);
+    assert_eq!(p_zero.height_px, 1);
+    let p_4k = evaluate_uhd_display_profile(3840, 2160, false, true, 6500);
+    let p_8k = evaluate_uhd_display_profile(7680, 4320, false, true, 9000);
+    let p_sw = evaluate_uhd_display_profile(7680, 4320, true, false, 18000);
+    assert_eq!(p_4k.display_class, "UHD 4K 2160p");
+    assert_eq!(p_8k.display_class, "UHD 8K 4320p");
+    assert_eq!(p_8k.megapixels_x100, 3317);
+    assert_eq!(p_sw.preferred_backend, "webgl2-software-bounded");
+    assert_eq!(p_sw.drs_scale_permille, 650);
+
+    // 6. 1,000-frame zero-allocation `FrameBudgetOracle` stability & anti-thrash hysteresis proof:
+    let mut oracle = FrameBudgetOracle::new(16_667);
+    // 200 frames of borderline jitter around 16.67ms must trigger ZERO DRS thrashing:
+    for i in 0..200 {
+        oracle.record_frame(if i % 2 == 0 { 15_000 } else { 18_000 });
+    }
+    assert_eq!(
+        oracle.report().drs_transitions,
+        0,
+        "hysteresis deadband must eliminate DRS thrashing on borderline frames"
+    );
+    // Sustained 20.5ms overload steps cleanly down through every rung to 650 permille:
+    for _ in 0..20 {
+        oracle.record_frame(20_500);
+    }
+    assert_eq!(oracle.active_drs_permille(), 650);
+    // Sustained 8.5ms fast recovery climbs cleanly back to 1000 permille and stabilizes:
+    for _ in 0..780 {
+        oracle.record_frame(8_500);
+    }
+    let final_rep = oracle.report();
+    assert_eq!(final_rep.sample_count, 64);
+    assert_eq!(final_rep.drs_scale_permille, 1000);
+    assert_eq!(final_rep.p50_us, 8_500);
+    assert_eq!(final_rep.p95_us, 8_500);
+    assert_eq!(final_rep.jitter_us, 0);
+    assert_eq!(final_rep.budget_compliance_permille, 1000);
+    assert!(final_rep.stable);
+
+    // 7. Live Wasm C-ABI parity for UHD meshlets, 8K profile, and FrameBudgetOracle:
+    let _abi_guard = wasm_abi_lock();
+    assert_eq!(verdant_wasm_init(7), 1);
+    assert_eq!(verdant_wasm_set_lod_rank(3), 1);
+    assert!(verdant_wasm_scene_rebuild_buffers(0.0) > 0);
+    let m_len = verdant_wasm_uhd_cull_meshlets(0.0, 6.0, 22.0, 0.0, 2.0, 0.0, 16.0 / 9.0, 2160, 10);
+    assert!(m_len > 0);
+    assert!(verdant_wasm_uhd_visible_idx_count() > 0);
+    assert!(verdant_wasm_uhd_visible_idx_ptr() > 0);
+    assert!(verdant_wasm_uhd_profile_aux(7680, 4320, 0, 1, 8000) > 0);
+    for _ in 0..16 {
+        assert!(verdant_wasm_record_frame_time_us(8_200) >= 650);
+    }
+    let stab_len = verdant_wasm_frame_stability_aux() as usize;
+    assert!(
+        stab_len > 0 && verdant_wasm_aux_len() as usize == stab_len && verdant_wasm_aux_ptr() != 0,
+        "Wasm C-ABI must publish non-empty stability oracle JSON into aux_buffer"
+    );
+    let rep_json = serde_json::to_string(&final_rep).expect("serialize FrameStabilityReport");
+    assert!(rep_json.contains("\"stable\":true"));
+    assert!(rep_json.contains("\"drsTransitions\":"));
+
+    // 8. Verify zero-reallocation GPU index streaming in WebGL2 & WebGPU UHD renderers:
+    let root = repo_root();
+    let hd_js = std::fs::read_to_string(root.join("site/scene-hd-renderer.mjs"))
+        .expect("read site/scene-hd-renderer.mjs");
+    assert!(
+        hd_js.contains("updateStaticIndices") && hd_js.contains("gl.bufferSubData(E, 0, ix)"),
+        "scene-hd-renderer.mjs must stream culled indices via zero-reallocation gl.bufferSubData"
+    );
+    let wgpu_js = std::fs::read_to_string(root.join("site/scene-webgpu-renderer.mjs"))
+        .expect("read site/scene-webgpu-renderer.mjs");
+    assert!(
+        wgpu_js.contains("updateStaticIndices") && wgpu_js.contains("writeOrGrow"),
+        "scene-webgpu-renderer.mjs must stream culled indices via zero-reallocation writeBuffer"
+    );
+}

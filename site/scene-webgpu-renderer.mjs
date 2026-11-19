@@ -155,6 +155,7 @@ export async function createWebGpuRenderer(canvas) {
     rebuildBindGroup();
 
     let posBuf = null, normBuf = null, colBuf = null, uvBuf = null, idxBuf = null;
+    let posCap = 0, normCap = 0, colCap = 0, uvCap = 0, idxCap = 0;
     let idxCount = 0, staticEpoch = 0, depthTex = null, depthW = 0, depthH = 0;
     const ensureDepth = (w, h) => {
       if (depthTex && depthW === w && depthH === h) return;
@@ -162,11 +163,16 @@ export async function createWebGpuRenderer(canvas) {
       depthTex = device.createTexture({ size: [w, h, 1], format: "depth24plus", usage: GPUTextureUsage.RENDER_ATTACHMENT });
       depthW = w; depthH = h;
     };
-    const mkBuf = (data, usage) => {
+    const writeOrGrow = (prevBuf, prevCap, data, usage) => {
       const byteLen = Math.max(16, (data.byteLength + 3) & ~3);
-      const b = device.createBuffer({ size: byteLen, usage: usage | GPUBufferUsage.COPY_DST });
-      device.queue.writeBuffer(b, 0, data.buffer, data.byteOffset, data.byteLength);
-      return b;
+      let buf = prevBuf, cap = prevCap;
+      if (!buf || byteLen > cap) {
+        buf?.destroy?.();
+        cap = Math.max(byteLen, cap * 2);
+        buf = device.createBuffer({ size: cap, usage: usage | GPUBufferUsage.COPY_DST });
+      }
+      device.queue.writeBuffer(buf, 0, data.buffer, data.byteOffset, data.byteLength);
+      return [buf, cap];
     };
     const uData = new Float32Array(28);
     const noop = () => {};
@@ -194,17 +200,21 @@ export async function createWebGpuRenderer(canvas) {
       },
       uploadSplitBuffers(sv) {
         if (!sv || sv.epoch === staticEpoch) return;
-        posBuf?.destroy?.(); normBuf?.destroy?.(); colBuf?.destroy?.(); uvBuf?.destroy?.(); idxBuf?.destroy?.();
-        posBuf = mkBuf(sv.pos, GPUBufferUsage.VERTEX);
-        normBuf = mkBuf(sv.norm, GPUBufferUsage.VERTEX);
-        colBuf = mkBuf(sv.col, GPUBufferUsage.VERTEX);
+        [posBuf, posCap] = writeOrGrow(posBuf, posCap, sv.pos, GPUBufferUsage.VERTEX);
+        [normBuf, normCap] = writeOrGrow(normBuf, normCap, sv.norm, GPUBufferUsage.VERTEX);
+        [colBuf, colCap] = writeOrGrow(colBuf, colCap, sv.col, GPUBufferUsage.VERTEX);
         const uvArr = sv.uv && sv.uv.length >= (sv.pos.length / 3) * 2
           ? sv.uv
           : new Float32Array((sv.pos.length / 3) * 2).fill(-2);
-        uvBuf = mkBuf(uvArr, GPUBufferUsage.VERTEX);
-        idxBuf = mkBuf(sv.idx, GPUBufferUsage.INDEX);
+        [uvBuf, uvCap] = writeOrGrow(uvBuf, uvCap, uvArr, GPUBufferUsage.VERTEX);
+        [idxBuf, idxCap] = writeOrGrow(idxBuf, idxCap, sv.idx, GPUBufferUsage.INDEX);
         idxCount = sv.idx.length;
         staticEpoch = sv.epoch;
+      },
+      updateStaticIndices(ix) {
+        if (!ix || ix.length === 0) return;
+        [idxBuf, idxCap] = writeOrGrow(idxBuf, idxCap, ix, GPUBufferUsage.INDEX);
+        idxCount = ix.length;
       },
       uploadPackedBuffers: noop,
       blitTensorRgba: noop,

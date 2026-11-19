@@ -661,7 +661,11 @@ self.onmessage = async ({ data: msg }) => {
       const salience = [0, 1, 2, 3, 4, 5, 6].map((s) => sh.verdant_wasm_observer_salience_milli(s));
       const frameMicros = Math.max(50, Math.round((performance.now() - tStart) * 1000));
       emaFrameMicros = Math.round(emaFrameMicros * 0.85 + frameMicros * 0.15);
-      const scalePermille = sh.verdant_wasm_governor_scale_permille(emaFrameMicros >>> 0) >>> 0;
+      const govScale = sh.verdant_wasm_governor_scale_permille(emaFrameMicros >>> 0) >>> 0;
+      const oracleDrs = typeof uorcWasm?.verdant_wasm_record_frame_time_us === "function"
+        ? (uorcWasm.verdant_wasm_record_frame_time_us(frameMicros >>> 0) >>> 0)
+        : 0;
+      const scalePermille = oracleDrs > 0 ? Math.min(govScale, oracleDrs) : govScale;
       renderer?.setRenderScale?.(scalePermille);
       const upload = renderer?.getUploadTelemetry?.() || { staticBytes: 0, dynBytes: 0, instCount: activeInstancedCount };
       self.postMessage({
@@ -1473,12 +1477,18 @@ self.onmessage = async ({ data: msg }) => {
         ) >>> 0;
         if (mLen) meshlets = JSON.parse(new TextDecoder().decode(readAuxBytes(uorcWasm)));
       }
+      let stability = null;
+      if (typeof uorcWasm.verdant_wasm_frame_stability_aux === "function") {
+        const sLen = uorcWasm.verdant_wasm_frame_stability_aux() >>> 0;
+        if (sLen) stability = JSON.parse(new TextDecoder().decode(readAuxBytes(uorcWasm)));
+      }
       self.postMessage({
         kind: "uhd-profile-ready",
         id: msg.id,
         ok: Boolean(profile),
         profile,
         meshlets,
+        stability,
         webgpuAvail,
         webgpuLimits: webgpuHardware
           ? { maxTextureDimension2D: webgpuHardware.maxTextureDimension2D, maxStorageBufferBindingSize: webgpuHardware.maxStorageBufferBindingSize }

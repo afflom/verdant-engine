@@ -352,3 +352,9 @@ id = "VE-40"
 level = "build"
 suite = "engine"
 statement = "Every Verdant surface—Verdant Studio, Verdant Catalogs, Verdant Engine Demo, the browser and Rust starter template, all four Studio Scaffolder archetypes, and every crate example—instantiates differentiated SHA-256-locked catalog world packs, Schema.org JSON-LD couplings, live Wasm NPC directives and ISO 24617-2 dialogue, and zero-bypass Wasm CodedSlmDirector routing with zero magic constants"
+
+[[id]]
+id = "VE-41"
+level = "build"
+suite = "engine"
+statement = "UHD 4K-to-8K scaling, 30-bit Morton spatially-clustered 64-triangle GPU meshlet culling with zero steady-state heap reallocations, 2x2 box-filtered multi-material PBR texture atlas packing, naga-verified WGSL compute culling and PBR shaders, zero-reallocation GPU index streaming, and the 64-frame hysteresis FrameBudgetOracle execute deterministically across native Rust, WebAssembly, and arbitrary 45,000-triangle LOD4 workloads"
