@@ -410,6 +410,12 @@ pub struct ImportedGlbScene {
     pub skin_weights: Vec<Vec<SkinWeights4>>,
     /// Primary embedded `baseColorTexture` decoded and clamped to the host GPU budget, if present.
     pub primary_albedo_texture: Option<DecodedRgbaTexture>,
+    /// Primary embedded `metallicRoughnessTexture` (`G=roughness, B=metallic`) clamped to host budget.
+    pub primary_mr_texture: Option<DecodedRgbaTexture>,
+    /// Primary embedded tangent-space `normalTexture` clamped to host budget.
+    pub primary_normal_texture: Option<DecodedRgbaTexture>,
+    /// Primary embedded `emissiveTexture` clamped to host budget.
+    pub primary_emissive_texture: Option<DecodedRgbaTexture>,
     /// Per-mesh flag indicating whether the mesh samples `primary_albedo_texture` via `TEXCOORD_0`.
     pub primary_tex_mesh_mask: Vec<bool>,
 }
@@ -702,17 +708,34 @@ pub fn import_glb_to_scene_bounded(
             oracle_message: err.to_string(),
         })?;
 
-    // Identify the most frequently referenced `baseColorTexture` image source for GPU upload:
+    // Identify the most frequently referenced Khronos PBR `baseColorTexture` and its companion
+    // `metallicRoughnessTexture`, `normalTexture`, and `emissiveTexture` channels:
     let mut tex_usage: std::collections::BTreeMap<usize, usize> = std::collections::BTreeMap::new();
+    let mut mr_src_idx: Option<usize> = None;
+    let mut norm_src_idx: Option<usize> = None;
+    let mut emis_src_idx: Option<usize> = None;
     for mesh in document.meshes() {
         for prim in mesh.primitives() {
-            if let Some(info) = prim
-                .material()
-                .pbr_metallic_roughness()
-                .base_color_texture()
-            {
+            let mat = prim.material();
+            let pbr = mat.pbr_metallic_roughness();
+            if let Some(info) = pbr.base_color_texture() {
                 let src_idx = info.texture().source().index();
                 *tex_usage.entry(src_idx).or_insert(0) += 1;
+            }
+            if mr_src_idx.is_none() {
+                if let Some(info) = pbr.metallic_roughness_texture() {
+                    mr_src_idx = Some(info.texture().source().index());
+                }
+            }
+            if norm_src_idx.is_none() {
+                if let Some(info) = mat.normal_texture() {
+                    norm_src_idx = Some(info.texture().source().index());
+                }
+            }
+            if emis_src_idx.is_none() {
+                if let Some(info) = mat.emissive_texture() {
+                    emis_src_idx = Some(info.texture().source().index());
+                }
             }
         }
     }
@@ -721,6 +744,15 @@ pub fn import_glb_to_scene_bounded(
         .max_by_key(|&(_, count)| count)
         .map(|(idx, _)| idx);
     let primary_albedo_texture = primary_tex_src_idx
+        .and_then(|idx| images.get(idx))
+        .and_then(|img| decode_rgba_bounded(img, max_tex_edge_px));
+    let primary_mr_texture = mr_src_idx
+        .and_then(|idx| images.get(idx))
+        .and_then(|img| decode_rgba_bounded(img, max_tex_edge_px));
+    let primary_normal_texture = norm_src_idx
+        .and_then(|idx| images.get(idx))
+        .and_then(|img| decode_rgba_bounded(img, max_tex_edge_px));
+    let primary_emissive_texture = emis_src_idx
         .and_then(|idx| images.get(idx))
         .and_then(|img| decode_rgba_bounded(img, max_tex_edge_px));
 
@@ -1154,6 +1186,9 @@ pub fn import_glb_to_scene_bounded(
         clips,
         skin_weights,
         primary_albedo_texture,
+        primary_mr_texture,
+        primary_normal_texture,
+        primary_emissive_texture,
         primary_tex_mesh_mask,
     })
 }

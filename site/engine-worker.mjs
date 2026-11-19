@@ -305,7 +305,8 @@ function readSplitMeshViews(host) {
 function drawScene(eye, lookTarget, lodSpec, simClockSec, rebuildDynamic = false, targetW = 0, targetH = 0, forceSync = true) {
   const host = activeSceneHost();
   if (!host) return { tris: 0, aspect: 1.6 };
-  if (rebuildDynamic && !customGlbActive) {
+  const glbAnimated = customGlbActive && typeof host.verdant_wasm_glb_has_animation === "function" && host.verdant_wasm_glb_has_animation() === 1;
+  if (rebuildDynamic && (!customGlbActive || glbAnimated)) {
     host.verdant_wasm_scene_rebuild_buffers(simClockSec || 0);
   }
   const split = readSplitMeshViews(host);
@@ -341,15 +342,29 @@ function drawScene(eye, lookTarget, lodSpec, simClockSec, rebuildDynamic = false
     }
   } else if (split) {
     if (customGlbActive && typeof host.verdant_wasm_scene_tex_ptr === "function") {
-      const tp = host.verdant_wasm_scene_tex_ptr() >>> 0, tw = host.verdant_wasm_scene_tex_width() >>> 0, th = host.verdant_wasm_scene_tex_height() >>> 0, te = host.verdant_wasm_scene_tex_epoch() >>> 0;
+      const te = host.verdant_wasm_scene_tex_epoch() >>> 0;
+      const tp = host.verdant_wasm_scene_tex_ptr() >>> 0, tw = host.verdant_wasm_scene_tex_width() >>> 0, th = host.verdant_wasm_scene_tex_height() >>> 0;
+      const prevEp = renderer._lastPbrEp || 0;
       renderer.setTex?.(1, tp && tw && th ? new Uint8Array(host.memory.buffer, tp, tw * th * 4) : null, tw, th, te);
+      if (te !== prevEp && typeof host.verdant_wasm_scene_pbr_tex_ptr === "function") {
+        renderer._lastPbrEp = te;
+        for (const [ch, slot] of [[1, 3], [2, 4], [3, 5]]) {
+          const p = host.verdant_wasm_scene_pbr_tex_ptr(ch) >>> 0;
+          const pw = host.verdant_wasm_scene_pbr_tex_width(ch) >>> 0;
+          const ph = host.verdant_wasm_scene_pbr_tex_height(ch) >>> 0;
+          renderer.setTex?.(slot, p && pw && ph ? new Uint8Array(host.memory.buffer, p, pw * ph * 4) : null, pw, ph, te);
+        }
+      }
     } else {
+      renderer._lastPbrEp = 0;
       renderer.setTex?.(1, null, 0, 0, 0);
     }
     renderer.uploadSplitBuffers(split.staticViews, split.dynViews, split.instViews);
     const fovRad = Math.PI / 3.4;
-    const nearPlane = customGlbActive ? 0.05 : 0.25;
-    const proj = mat4Perspective(fovRad, aspect, nearPlane, CSM_FAR_METERS);
+    const camDist = Math.hypot(eye[0] - lookTarget[0], eye[1] - lookTarget[1], eye[2] - lookTarget[2]) || 4;
+    const nearPlane = customGlbActive ? Math.max(0.05, camDist * 0.004) : 0.25;
+    const farPlane = customGlbActive ? Math.max(CSM_FAR_METERS, camDist * 8) : CSM_FAR_METERS;
+    const proj = mat4Perspective(fovRad, aspect, nearPlane, farPlane);
     const view = mat4LookAt(eye, lookTarget, [0, 1, 0]);
     const effectiveLod = customGlbActive
       ? { ...(lodSpec || {}), rank: 3, sky: [0.06, 0.07, 0.09], fog: [0.06, 0.07, 0.09] }
@@ -735,6 +750,13 @@ self.onmessage = async ({ data: msg }) => {
         aspectMilli: lastPose?.aspectMilli || 1600,
       };
       drawScene(cam.eye, cam.lookTarget, currentLod || { sky: [0.18, 0.30, 0.38], fog: [0.30, 0.40, 0.44] }, 0, false, 0, 0, true);
+      const pbrChannels = {
+        albedo: (uorcWasm.verdant_wasm_scene_pbr_tex_width?.(0) >>> 0) > 0,
+        metallicRoughness: (uorcWasm.verdant_wasm_scene_pbr_tex_width?.(1) >>> 0) > 0,
+        normal: (uorcWasm.verdant_wasm_scene_pbr_tex_width?.(2) >>> 0) > 0,
+        emissive: (uorcWasm.verdant_wasm_scene_pbr_tex_width?.(3) >>> 0) > 0,
+        hasAnimation: uorcWasm.verdant_wasm_glb_has_animation?.() === 1,
+      };
       self.postMessage(
         {
           kind: "glb-imported",
@@ -743,6 +765,7 @@ self.onmessage = async ({ data: msg }) => {
           tris,
           verts: uorcWasm.verdant_wasm_scene_vert_count() >>> 0,
           camera: cam,
+          pbrChannels,
           uorcBytes: uorcStream,
         },
         [uorcStream.buffer],
@@ -1358,13 +1381,27 @@ self.onmessage = async ({ data: msg }) => {
 
     if (msg.kind === "update-host-envelope") {
       await ensureUorcSceneHost();
-      const len = uorcWasm.verdant_wasm_update_host_envelope(
-        (msg.maxTex || renderer?.maxTextureSize || 2048) >>> 0,
-        renderer?.isSoftware ? 1 : 0,
-        (msg.threads || 4) >>> 0,
-        (msg.frameMicros || emaFrameMicros || 8000) >>> 0,
-      ) >>> 0;
+      const vw = (msg.viewportWidth || canvas?.width || 1920) >>> 0;
+      const vh = (msg.viewportHeight || canvas?.height || 1080) >>> 0;
+      const len = typeof uorcWasm.verdant_wasm_update_host_envelope_uhd === "function"
+        ? (uorcWasm.verdant_wasm_update_host_envelope_uhd(
+            (msg.maxTex || renderer?.maxTextureSize || 2048) >>> 0,
+            renderer?.isSoftware ? 1 : 0,
+            (msg.threads || 4) >>> 0,
+            (msg.frameMicros || emaFrameMicros || 8000) >>> 0,
+            vw,
+            vh,
+          ) >>> 0)
+        : (uorcWasm.verdant_wasm_update_host_envelope(
+            (msg.maxTex || renderer?.maxTextureSize || 2048) >>> 0,
+            renderer?.isSoftware ? 1 : 0,
+            (msg.threads || 4) >>> 0,
+            (msg.frameMicros || emaFrameMicros || 8000) >>> 0,
+          ) >>> 0);
       const cognition = len ? JSON.parse(new TextDecoder().decode(readAuxBytes(uorcWasm))) : null;
+      if (cognition?.hostEnvelope?.recommendedRenderScalePermille) {
+        renderer?.setRenderScale?.(cognition.hostEnvelope.recommendedRenderScalePermille);
+      }
       self.postMessage({ kind: "cognitive-resolution", id: msg.id, ok: Boolean(cognition), cognition });
       return;
     }

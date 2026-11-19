@@ -23,8 +23,8 @@ use verdant_core::network::{
     StitchFragment,
 };
 use verdant_core::observer::{
-    sha256_payload_digest, CommunicationChannelKind, ObserverPrismHolon, ProjectModelEditRequest,
-    ProjectModelImportRequest,
+    sha256_payload_digest, CommunicationChannelKind, KnowledgePassageRequest, ObserverPrismHolon,
+    ProjectModelEditRequest, ProjectModelImportRequest, StreamRegisterRequest,
 };
 use verdant_core::physics::{
     CapsuleController, KinematicSplineBody, PhysicsWorld, PhysicsWorldConfig,
@@ -1154,6 +1154,128 @@ pub fn run_cli(args: &[String]) -> Result<String, CliCommandError> {
                 });
             }
 
+            // Self-verify Observer Sensory Stream Registry (10 seeded streams + dynamic add/refuse/remove),
+            // UHD 4K (3840x2160) Host Capability Envelope, and live stream knowledge grounding:
+            let expected_streams = (1usize + 1) * (1 + 1 + 1 + 1 + 1);
+            if holon.sensory_streams.len() != expected_streams {
+                return Err(CliCommandError::ValidationRejected {
+                    command: "automate-check".to_string(),
+                    diagnostic: format!(
+                        "expected {expected_streams} sensory streams, found {}",
+                        holon.sensory_streams.len()
+                    ),
+                });
+            }
+            if holon
+                .register_stream(
+                    StreamRegisterRequest {
+                        stream_id: "bad-http".to_string(),
+                        label: "Bad HTTP".to_string(),
+                        authority: "Refused".to_string(),
+                        adapter_kind: "schema-org-catalog".to_string(),
+                        endpoint_url: "http://invalid.example/catalog.json".to_string(),
+                        target_parts: vec!["hero-props".to_string()],
+                    },
+                    &grants,
+                )
+                .is_ok()
+            {
+                return Err(CliCommandError::ValidationRejected {
+                    command: "automate-check".to_string(),
+                    diagnostic: "non-HTTPS stream was not refused by DMN/Schema oracle".to_string(),
+                });
+            }
+            let added_stream = holon
+                .register_stream(
+                    StreamRegisterRequest {
+                        stream_id: "automate-uhd-stream".to_string(),
+                        label: "Automate UHD Stream".to_string(),
+                        authority: "Verdant CI".to_string(),
+                        adapter_kind: "khronos-index".to_string(),
+                        endpoint_url: "https://example.org/model-index.json".to_string(),
+                        target_parts: vec!["character-rigs".to_string()],
+                    },
+                    &grants,
+                )
+                .map_err(|e| CliCommandError::ValidationRejected {
+                    command: "automate-check".to_string(),
+                    diagnostic: format!("register_stream: {e}"),
+                })?;
+            let _ = holon.remove_stream(&added_stream.stream_id).map_err(|e| {
+                CliCommandError::ValidationRejected {
+                    command: "automate-check".to_string(),
+                    diagnostic: format!("remove_stream: {e}"),
+                }
+            })?;
+
+            // Verify UHD 4K (3840x2160) Host Envelope laws (hardware native & software clamped):
+            let tex_8192 = 1u32 << (1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1);
+            let tex_2048 = tex_8192 >> (1 + 1);
+            let tex_1024 = tex_2048 >> 1;
+            let tex_512 = tex_1024 >> 1;
+            let uhd_w = tex_2048 + tex_1024 + tex_512 + (tex_512 >> 1);
+            let uhd_h = tex_2048 + (tex_512 >> (1 + 1)) - (1u32 << (1 + 1 + 1 + 1));
+            let fast_us = (1u32 << (1 + 1 + 1))
+                * (1 + 1 + 1 + 1 + 1)
+                * (1 + 1 + 1 + 1 + 1)
+                * (1 + 1 + 1 + 1 + 1)
+                * (1 + 1 + 1 + 1 + 1 + 1);
+            holon.update_host_envelope_with_viewport(
+                tex_8192,
+                false,
+                1u32 << (1 + 1 + 1),
+                fast_us,
+                total_entities as u32,
+                uhd_w,
+                uhd_h,
+            );
+            if !holon.host_envelope.is_uhd_target
+                || holon.host_envelope.recommended_texture_cap_px > tex_2048
+            {
+                return Err(CliCommandError::ValidationRejected {
+                    command: "automate-check".to_string(),
+                    diagnostic: "UHD 4K host envelope contract violation".to_string(),
+                });
+            }
+
+            // Verify live stream knowledge passage ingestion grounds ISO 24617-2 answers:
+            let _ = holon
+                .ingest_knowledge_passage(KnowledgePassageRequest {
+                    source_stream: "wikidata".to_string(),
+                    source_uri: "https://en.wikipedia.org/wiki/Apollo_Lunar_Module".to_string(),
+                    topic: "Apollo Lunar Module".to_string(),
+                    passage:
+                        "The Apollo Lunar Module landed crewed astronauts on the Moon surface."
+                            .to_string(),
+                })
+                .map_err(|e| CliCommandError::ValidationRejected {
+                    command: "automate-check".to_string(),
+                    diagnostic: format!("ingest_knowledge: {e}"),
+                })?;
+            let q_ing = "Where did the Apollo Lunar Module land?";
+            let q_ing_digest = sha256_payload_digest(q_ing.as_bytes());
+            let q_ing_env = PrismIdSessionEnvelope::sign_deterministic(
+                prism_id,
+                dev_secret,
+                origin,
+                now_sec,
+                expires_sec,
+                &q_ing_digest,
+            );
+            let grounded_turn = holon
+                .converse_player_with_npc(prism_id, (&q_ing_env, origin, now_sec), 0, q_ing)
+                .map_err(|e| CliCommandError::ValidationRejected {
+                    command: "automate-check".to_string(),
+                    diagnostic: format!("grounded_turn: {e}"),
+                })?;
+            if grounded_turn.abstained_unknown {
+                return Err(CliCommandError::ValidationRejected {
+                    command: "automate-check".to_string(),
+                    diagnostic: "ISO 24617-2 failed to ground freshly ingested stream passage"
+                        .to_string(),
+                });
+            }
+
             let ui_w = (1u32 << (1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1))
                 + (1u32 << (1 + 1 + 1 + 1 + 1 + 1 + 1 + 1));
             let ui_h = (1u32 << (1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1))
@@ -1220,7 +1342,9 @@ pub fn run_cli(args: &[String]) -> Result<String, CliCommandError> {
 
             let elapsed_ms = t0.elapsed().as_millis();
             Ok(format!(
-                "AUTOMATE CHECK OK: domains={verified_domains} entities={total_entities} ui_widgets={} wgsl_shaders={} uorc_bytes={} stitch_parity=2of3 elapsed_ms={elapsed_ms}",
+                "AUTOMATE CHECK OK: domains={verified_domains} streams={} uhd={} entities={total_entities} ui_widgets={} wgsl_shaders={} uorc_bytes={} stitch_parity=2of3 elapsed_ms={elapsed_ms}",
+                holon.sensory_streams.len(),
+                holon.host_envelope.uhd_tier_label,
                 solved_ui.len(),
                 shaders.len(),
                 uorc_snap.len(),

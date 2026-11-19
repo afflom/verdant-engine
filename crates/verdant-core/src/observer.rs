@@ -1024,10 +1024,24 @@ pub struct HostCapabilityEnvelope {
     pub ema_frame_micros: u32,
     /// Active packed scene triangle count.
     pub active_triangles: u32,
+    /// Physical pixel width of the active render surface (supports up to `3840` UHD 4K+).
+    pub viewport_width_px: u32,
+    /// Physical pixel height of the active render surface (supports up to `2160` UHD 4K+).
+    pub viewport_height_px: u32,
+    /// True when the active render surface targets QHD/UHD (`>= 2560x1440` or `>= 3840x2160`).
+    pub is_uhd_target: bool,
     /// Lawfully clamped GPU texture upload edge (`512`, `1024`, or `2048` px) never exceeding the host.
     pub recommended_texture_cap_px: u32,
     /// Lawfully clamped maximum `.glb` download byte budget for this host container.
     pub recommended_glb_max_bytes: u32,
+    /// Dynamic Resolution Scaling (DRS) permille (`650..=1000`) keeping 60 Hz frame pacing at UHD.
+    pub recommended_render_scale_permille: u32,
+    /// Lawful shadow map edge (`1024`, `2048`, or `4096` px) matched to host GPU & UHD tier.
+    pub recommended_shadow_map_px: u32,
+    /// Lawful `EXT_texture_filter_anisotropic` tap count (`1`, `4`, or `8`).
+    pub recommended_anisotropy: u32,
+    /// Human-readable UHD gameplay performance tier (`UHD 4K Native`, `UHD 4K DRS + CAS`, etc.).
+    pub uhd_tier_label: String,
     /// Host frame headroom in permille (`0..=1000`; `1000` = ample headroom).
     pub host_headroom_permille: u32,
     /// True when the Observer should consult connected internet streams to elevate precision.
@@ -1039,6 +1053,7 @@ impl HostCapabilityEnvelope {
     #[must_use]
     pub fn default_safe() -> Self {
         let tex_1024 = 1u32 << (1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1);
+        let tex_2048 = tex_1024 << 1;
         let mb_8 = 1u32
             << (1
                 + 1
@@ -1065,20 +1080,30 @@ impl HostCapabilityEnvelope {
                 + 1);
         let thousand = pow10_u64(two_u32() + 1) as u32;
         let threads = 1u32 << (1 + 1);
+        let default_w = tex_1024 + (1u32 << (1 + 1 + 1 + 1 + 1 + 1 + 1 + 1));
+        let default_h = (1u32 << (1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1))
+            + (1u32 << (1 + 1 + 1 + 1 + 1 + 1 + 1 + 1));
         Self {
             max_texture_edge_px: tex_1024,
             is_software_gpu: false,
             hardware_threads: threads,
             ema_frame_micros: thousand * (1 + 1 + 1 + 1 + 1 + 1 + 1 + 1),
             active_triangles: 0,
+            viewport_width_px: default_w,
+            viewport_height_px: default_h,
+            is_uhd_target: false,
             recommended_texture_cap_px: tex_1024,
             recommended_glb_max_bytes: mb_8,
+            recommended_render_scale_permille: thousand,
+            recommended_shadow_map_px: tex_2048,
+            recommended_anisotropy: threads,
+            uhd_tier_label: "FHD 1080p Native".to_string(),
             host_headroom_permille: thousand / (1 + 1),
             stream_escalation_active: true,
         }
     }
 
-    /// Recomputes lawful texture, `.glb` byte, and headroom budgets from live host telemetry.
+    /// Recomputes lawful texture, `.glb` byte, DRS, shadow, and anisotropy budgets from live telemetry.
     pub fn update(
         &mut self,
         max_texture_edge_px: u32,
@@ -1087,9 +1112,33 @@ impl HostCapabilityEnvelope {
         ema_frame_micros: u32,
         active_triangles: u32,
     ) {
+        self.update_with_viewport(
+            max_texture_edge_px,
+            is_software_gpu,
+            hardware_threads,
+            ema_frame_micros,
+            active_triangles,
+            self.viewport_width_px,
+            self.viewport_height_px,
+        );
+    }
+
+    /// Recomputes lawful UHD 4K (`3840x2160`) gameplay budgets from live host GPU & viewport telemetry.
+    #[allow(clippy::too_many_arguments)]
+    pub fn update_with_viewport(
+        &mut self,
+        max_texture_edge_px: u32,
+        is_software_gpu: bool,
+        hardware_threads: u32,
+        ema_frame_micros: u32,
+        active_triangles: u32,
+        viewport_width_px: u32,
+        viewport_height_px: u32,
+    ) {
         let tex_512 = 1u32 << (1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1);
         let tex_1024 = tex_512 << 1;
         let tex_2048 = tex_1024 << 1;
+        let tex_4096 = tex_2048 << 1;
         let mb_4 = 1u32
             << (1
                 + 1
@@ -1116,13 +1165,20 @@ impl HostCapabilityEnvelope {
         let mb_12 = mb_4 * (1 + 1 + 1);
         let mb_24 = mb_12 << 1;
         let thousand = pow10_u64(two_u32() + 1) as u32;
+        let hundred = pow10_u64(two_u32()) as u32;
         let budget_micros = thousand * (1u32 << (1 + 1 + 1 + 1));
+        let qhd_pixels = (tex_2048 + tex_512) * (tex_1024 + (tex_512 >> 1));
+        let uhd_4k_pixels = (tex_2048 + tex_1024 + tex_512) * (tex_2048);
 
         self.max_texture_edge_px = max_texture_edge_px.max(tex_512);
         self.is_software_gpu = is_software_gpu;
         self.hardware_threads = hardware_threads.max(1);
         self.ema_frame_micros = ema_frame_micros.max(1);
         self.active_triangles = active_triangles;
+        self.viewport_width_px = viewport_width_px.max(tex_512);
+        self.viewport_height_px = viewport_height_px.max(tex_512 >> 1);
+        let pixel_count = u64::from(self.viewport_width_px) * u64::from(self.viewport_height_px);
+        self.is_uhd_target = pixel_count >= u64::from(qhd_pixels);
 
         let headroom = if self.ema_frame_micros >= budget_micros {
             0
@@ -1132,9 +1188,15 @@ impl HostCapabilityEnvelope {
         };
         self.host_headroom_permille = headroom.min(thousand);
 
+        let half_thousand = thousand / (1 + 1);
+        let quarter_thousand = half_thousand / (1 + 1);
+        let drs_floor = hundred * (1 + 1 + 1 + 1 + 1 + 1) + (hundred / (1 + 1));
+        let drs_mid = hundred * (1 + 1 + 1 + 1 + 1 + 1 + 1 + 1);
+
         let desired_tex = if is_software_gpu || self.ema_frame_micros > budget_micros {
             tex_512
-        } else if self.hardware_threads >= (1u32 << (1 + 1 + 1)) && headroom >= (thousand / (1 + 1))
+        } else if (self.is_uhd_target || self.hardware_threads >= (1u32 << (1 + 1 + 1)))
+            && headroom >= quarter_thousand
         {
             tex_2048
         } else {
@@ -1143,11 +1205,57 @@ impl HostCapabilityEnvelope {
         self.recommended_texture_cap_px = desired_tex.min(self.max_texture_edge_px);
         self.recommended_glb_max_bytes = if is_software_gpu {
             mb_4
-        } else if headroom >= (thousand / (1 + 1)) {
+        } else if headroom >= half_thousand {
             mb_24
         } else {
             mb_12
         };
+
+        // Lawful UHD Dynamic Resolution Scaling (DRS) + CAS sharpener & shadow/anisotropy tiers:
+        if is_software_gpu {
+            self.recommended_render_scale_permille = if self.is_uhd_target {
+                drs_floor
+            } else {
+                drs_mid
+            };
+            self.recommended_shadow_map_px = tex_1024;
+            self.recommended_anisotropy = 1;
+            self.uhd_tier_label = "Host-Bounded Software".to_string();
+        } else if pixel_count >= u64::from(uhd_4k_pixels) {
+            if headroom >= half_thousand {
+                self.recommended_render_scale_permille = thousand;
+                self.recommended_shadow_map_px = tex_4096.min(self.max_texture_edge_px);
+                self.recommended_anisotropy = 1u32 << (1 + 1 + 1);
+                self.uhd_tier_label = "UHD 4K Native".to_string();
+            } else {
+                self.recommended_render_scale_permille = if headroom >= quarter_thousand {
+                    drs_mid
+                } else {
+                    drs_floor
+                };
+                self.recommended_shadow_map_px = tex_2048.min(self.max_texture_edge_px);
+                self.recommended_anisotropy = 1u32 << (1 + 1);
+                self.uhd_tier_label = "UHD 4K DRS + CAS".to_string();
+            }
+        } else if self.is_uhd_target {
+            self.recommended_render_scale_permille = if headroom >= quarter_thousand {
+                thousand
+            } else {
+                drs_mid
+            };
+            self.recommended_shadow_map_px = tex_2048.min(self.max_texture_edge_px);
+            self.recommended_anisotropy = 1u32 << (1 + 1 + 1);
+            self.uhd_tier_label = "QHD 1440p Native".to_string();
+        } else {
+            self.recommended_render_scale_permille = if headroom >= quarter_thousand {
+                thousand
+            } else {
+                drs_mid
+            };
+            self.recommended_shadow_map_px = tex_2048.min(self.max_texture_edge_px);
+            self.recommended_anisotropy = 1u32 << (1 + 1);
+            self.uhd_tier_label = "FHD 1080p Native".to_string();
+        }
         self.stream_escalation_active = true;
     }
 }
@@ -2799,6 +2907,29 @@ impl ObserverPrismHolon {
         );
     }
 
+    /// Updates the Observer's UHD-aware host container envelope including viewport dimensions.
+    #[allow(clippy::too_many_arguments)]
+    pub fn update_host_envelope_with_viewport(
+        &mut self,
+        max_texture_edge_px: u32,
+        is_software_gpu: bool,
+        hardware_threads: u32,
+        ema_frame_micros: u32,
+        active_triangles: u32,
+        viewport_width_px: u32,
+        viewport_height_px: u32,
+    ) {
+        self.host_envelope.update_with_viewport(
+            max_texture_edge_px,
+            is_software_gpu,
+            hardware_threads,
+            ema_frame_micros,
+            active_triangles,
+            viewport_width_px,
+            viewport_height_px,
+        );
+    }
+
     /// Dynamically registers a new sensory catalog stream into `ObserverPrismHolon`, verifying
     /// Schema.org `DataCatalog` + OMG DMN 1.5 admission and assigning its unique basis prime.
     pub fn register_stream(
@@ -3222,5 +3353,171 @@ impl ObserverPrismHolon {
             "parts": parts_json,
         });
         serde_json::to_vec(&doc).unwrap_or_default()
+    }
+}
+
+#[cfg(test)]
+mod observer_cognition_tests {
+    use super::*;
+
+    #[test]
+    fn observer_sensory_streams_have_unique_primes_kappas_and_dmn_lifecycle() {
+        let mut holon = ObserverPrismHolon::new("sunspire-regatta").expect("observer init");
+        assert_eq!(holon.sensory_streams.len(), 10);
+
+        let primes: BTreeSet<u64> = holon
+            .sensory_streams
+            .iter()
+            .map(|s| s.basis_prime)
+            .collect();
+        let kappas: BTreeSet<&str> = holon
+            .sensory_streams
+            .iter()
+            .map(|s| s.kappa_hex.as_str())
+            .collect();
+        assert_eq!(
+            primes.len(),
+            10,
+            "each sensory stream needs a unique basis prime"
+        );
+        assert_eq!(
+            kappas.len(),
+            10,
+            "each sensory stream needs a unique SHA-256 kappa"
+        );
+
+        let grants = ContainerGrantMatrix::default();
+        // Negative DMN / URI scheme validation test: non-HTTPS endpoint must be refused!
+        let bad = holon.register_stream(
+            StreamRegisterRequest {
+                stream_id: "insecure-feed".to_string(),
+                label: "Insecure HTTP Feed".to_string(),
+                authority: "Untrusted".to_string(),
+                adapter_kind: "schema-org-catalog".to_string(),
+                endpoint_url: "http://insecure.example/feed.json".to_string(),
+                target_parts: vec!["hero-props".to_string()],
+            },
+            &grants,
+        );
+        assert!(bad.is_err(), "non-https stream endpoint must be refused");
+
+        // Positive admission + toggle + removal lifecycle:
+        let added = holon
+            .register_stream(
+                StreamRegisterRequest {
+                    stream_id: "test-uhd-stream".to_string(),
+                    label: "Verified UHD glTF Stream".to_string(),
+                    authority: "Open 3D Consortium".to_string(),
+                    adapter_kind: "khronos-index".to_string(),
+                    endpoint_url: "https://example.org/model-index.json".to_string(),
+                    target_parts: vec!["character-rigs".to_string(), "hero-props".to_string()],
+                },
+                &grants,
+            )
+            .expect("valid https stream must be admitted");
+        assert!(added.basis_prime > 47);
+        assert_eq!(holon.sensory_streams.len(), 11);
+
+        let paused = holon
+            .toggle_stream("test-uhd-stream", false)
+            .expect("toggle off");
+        assert!(!paused.enabled);
+
+        let removed_kappa = holon
+            .remove_stream("test-uhd-stream")
+            .expect("remove stream");
+        assert_eq!(removed_kappa, added.kappa_hex);
+        assert_eq!(holon.sensory_streams.len(), 10);
+    }
+
+    #[test]
+    fn live_stream_knowledge_ingestion_grounds_iso_24617_2_and_preserves_abstention() {
+        let mut holon = ObserverPrismHolon::new("sunspire-regatta").expect("observer init");
+        let grants = ContainerGrantMatrix::default();
+
+        let rec = holon
+            .ingest_knowledge_passage(KnowledgePassageRequest {
+                source_stream: "wikidata".to_string(),
+                source_uri: "https://en.wikipedia.org/wiki/Apollo_Lunar_Module".to_string(),
+                topic: "Apollo Lunar Module".to_string(),
+                passage: "The Apollo Lunar Module was the lunar lander spacecraft flown between lunar orbit and the Moon surface during the Apollo program.".to_string(),
+            })
+            .expect("knowledge passage ingestion");
+        assert_eq!(rec.kappa_hex.len(), 64);
+
+        // Grounded query against freshly ingested stream knowledge must answer without hallucinating:
+        let _ = grants;
+        let q1 = "What was the Apollo Lunar Module spacecraft?";
+        let d1 = sha256_payload_digest(q1.as_bytes());
+        let env1 = PrismIdSessionEnvelope::sign_deterministic(
+            "prism:test:observer",
+            b"observer-test-secret",
+            "https://afflom.github.io",
+            100,
+            200,
+            &d1,
+        );
+        let turn = holon
+            .converse_player_with_npc(
+                "prism:test:observer",
+                (&env1, "https://afflom.github.io", 100),
+                0,
+                q1,
+            )
+            .expect("grounded dialogue turn");
+        assert!(
+            !turn.abstained_unknown,
+            "ingested stream passage should ground answer"
+        );
+        assert!(turn.reply_text.contains("Apollo Lunar Module"));
+
+        // Ungrounded query must still abstain with Unknown (zero hallucination law):
+        let q2 = "What is the xylophone price on Neptune?";
+        let d2 = sha256_payload_digest(q2.as_bytes());
+        let env2 = PrismIdSessionEnvelope::sign_deterministic(
+            "prism:test:observer",
+            b"observer-test-secret",
+            "https://afflom.github.io",
+            100,
+            200,
+            &d2,
+        );
+        let unknown = holon
+            .converse_player_with_npc(
+                "prism:test:observer",
+                (&env2, "https://afflom.github.io", 100),
+                0,
+                q2,
+            )
+            .expect("abstention dialogue turn");
+        assert!(unknown.abstained_unknown, "ungrounded query must abstain");
+    }
+
+    #[test]
+    fn host_capability_envelope_enforces_uhd_4k_drs_and_software_clamping() {
+        let mut env = HostCapabilityEnvelope::default_safe();
+
+        // Hardware GPU at UHD 4K (3840x2160) with strong frame headroom (6ms):
+        env.update_with_viewport(8192, false, 12, 6000, 120_000, 3840, 2160);
+        assert!(env.is_uhd_target);
+        assert_eq!(env.uhd_tier_label, "UHD 4K Native");
+        assert_eq!(env.recommended_render_scale_permille, 1000);
+        assert_eq!(env.recommended_shadow_map_px, 4096);
+        assert_eq!(env.recommended_anisotropy, 8);
+        assert_eq!(env.recommended_texture_cap_px, 2048);
+
+        // Hardware GPU at UHD 4K under heavier load (11ms) -> engages DRS + CAS without exceeding host:
+        env.update_with_viewport(8192, false, 8, 11000, 180_000, 3840, 2160);
+        assert_eq!(env.uhd_tier_label, "UHD 4K DRS + CAS");
+        assert!(env.recommended_render_scale_permille < 1000);
+        assert!(env.recommended_render_scale_permille >= 650);
+
+        // Constrained Software WebGL2 at UHD 4K -> strictly clamps texture/shadow/DRS/GLB cap:
+        env.update_with_viewport(8192, true, 12, 14000, 50_000, 3840, 2160);
+        assert_eq!(env.uhd_tier_label, "Host-Bounded Software");
+        assert_eq!(env.recommended_texture_cap_px, 512);
+        assert_eq!(env.recommended_shadow_map_px, 1024);
+        assert_eq!(env.recommended_anisotropy, 1);
+        assert_eq!(env.recommended_render_scale_permille, 650);
     }
 }

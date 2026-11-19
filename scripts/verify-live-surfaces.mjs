@@ -448,7 +448,13 @@ try {
       () =>
         document.querySelectorAll("#cog-parts-list [data-observer-part]").length === 8 &&
         document.querySelectorAll("#cog-streams-list [data-observer-stream-id]").length >= 10 &&
-        (document.getElementById("cog-host-envelope")?.textContent || "").includes("Host Container:"),
+        (document.getElementById("cog-host-envelope")?.textContent || "").includes("UHD Tier:"),
+      null,
+      { timeout: 10000 },
+    );
+    await page.click("#cog-uhd-btn");
+    await page.waitForFunction(
+      () => (document.getElementById("cog-log")?.textContent || "").includes("UHD 4K (3840×2160) Gameplay Envelope Verified:"),
       null,
       { timeout: 10000 },
     );

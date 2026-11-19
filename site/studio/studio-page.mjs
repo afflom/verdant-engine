@@ -119,6 +119,7 @@ const cogHostEnvelopeEl = $("cog-host-envelope");
 const cogPartsListEl = $("cog-parts-list");
 const cogStreamsListEl = $("cog-streams-list");
 const cogRefineBtn = $("cog-refine-btn");
+const cogUhdBtn = $("cog-uhd-btn");
 const cogClearSkyBtn = $("cog-clear-sky-btn");
 const cogAddStreamForm = $("cog-add-stream-form");
 const cogStreamIdInput = $("cog-stream-id");
@@ -722,9 +723,19 @@ async function loadRemoteGlbIntoStage(glbUrl, label) {
         lClr = r.camera.clearanceMm ?? lClr;
       }
       await syncFallbackBuffers();
+      const ch = r.pbrChannels || {};
+      const activeMaps = [
+        ch.albedo ? "Albedo" : null,
+        ch.metallicRoughness ? "MR" : null,
+        ch.normal ? "Normal" : null,
+        ch.emissive ? "Emissive" : null,
+      ].filter(Boolean);
+      const mapLabel = activeMaps.length ? activeMaps.join("+") : "Vertex PBR";
+      const animLabel = ch.hasAnimation ? " · Live LBS Rig" : "";
+      if (ch.hasAnimation && !simLive) setSimLive(true);
       if (hudProjectEl) hudProjectEl.textContent = `HD Stream Stage · ${label}`;
-      if (hudMetricsEl) hudMetricsEl.textContent = `Khronos glTF 2.0 · ${lTris.toLocaleString()} tris · UV-Textured PBR`;
-      chip(statusEl, `Mounted live Khronos .glb "${label}" (${lTris.toLocaleString()} tris · auto-framed & UV-textured)`);
+      if (hudMetricsEl) hudMetricsEl.textContent = `glTF 2.0 (${mapLabel}${animLabel}) · ${lTris.toLocaleString()} tris`;
+      chip(statusEl, `Mounted live Khronos .glb "${label}" (${lTris.toLocaleString()} tris · ${mapLabel}${animLabel})`);
       refreshObserverCognition();
       requestRender();
       return true;
@@ -797,10 +808,11 @@ function renderObserverCognition(cog) {
   if (cogHostEnvelopeEl && cog.hostEnvelope) {
     const he = cog.hostEnvelope;
     const gpuTag = he.isSoftwareGpu ? "Software WebGL2" : "Hardware GPU";
+    const drsPct = Math.round((he.recommendedRenderScalePermille || 1000) / 10);
     cogHostEnvelopeEl.textContent =
       `Observer Precision: ${(cog.resolutionPermille / 10).toFixed(1)}% · ${cog.enabledStreamCount}/${cog.streamCount} Streams · ${cog.ingestedKnowledgeCount} Knowledge Passages\n` +
-      `Host Container: ${gpuTag} · MaxTex ${he.maxTextureEdgePx}px -> Cap ${he.recommendedTextureCapPx}px · ${he.hardwareThreads} Threads\n` +
-      `Frame Headroom: ${(he.hostHeadroomPermille / 10).toFixed(0)}% (${(he.emaFrameMicros / 1000).toFixed(1)}ms) · Max GLB ${Math.round(he.recommendedGlbMaxBytes / 1048576)}MB`;
+      `UHD Tier: ${he.uhdTierLabel || "FHD 1080p"} (${he.viewportWidthPx || 1280}×${he.viewportHeightPx || 720}) · DRS ${drsPct}% + CAS · Aniso ×${he.recommendedAnisotropy || 1}\n` +
+      `Host: ${gpuTag} · TexCap ${he.recommendedTextureCapPx}px · Shadow ${he.recommendedShadowMapPx || 2048}px · Headroom ${(he.hostHeadroomPermille / 10).toFixed(0)}% · Max GLB ${Math.round(he.recommendedGlbMaxBytes / 1048576)}MB`;
   }
 
   if (cogPartsListEl && Array.isArray(cog.parts)) {
@@ -957,6 +969,23 @@ async function autoRefineObserverFromStreams() {
 }
 
 cogRefineBtn?.addEventListener("click", () => autoRefineObserverFromStreams());
+cogUhdBtn?.addEventListener("click", async () => {
+  const cog = await refreshObserverCognition({
+    maxTex: lastCognition?.hostEnvelope?.maxTextureEdgePx || 8192,
+    threads: navigator.hardwareConcurrency || 8,
+    frameMicros: 7500,
+    viewportWidth: 3840,
+    viewportHeight: 2160,
+  });
+  if (cog?.hostEnvelope && cogLogEl) {
+    const he = cog.hostEnvelope;
+    cogLogEl.textContent =
+      `UHD 4K (3840×2160) Gameplay Envelope Verified:\n` +
+      `Tier: ${he.uhdTierLabel} · DRS ${Math.round(he.recommendedRenderScalePermille / 10)}% + 5-Tap CAS Sharpener\n` +
+      `Texture Cap: ${he.recommendedTextureCapPx}px · Shadow Map: ${he.recommendedShadowMapPx}px · Anisotropy: ×${he.recommendedAnisotropy} · Max GLB: ${Math.round(he.recommendedGlbMaxBytes / 1048576)}MB`;
+    chip(statusEl, `UHD 4K Envelope Verified: ${he.uhdTierLabel} (DRS ${Math.round(he.recommendedRenderScalePermille / 10)}% + CAS)`);
+  }
+});
 cogClearSkyBtn?.addEventListener("click", () => applyRemoteEnvSky(null, "Reset"));
 cogAddStreamForm?.addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -1990,6 +2019,8 @@ renderContentTypePills();
     maxTex: hostMaxTex,
     threads: navigator.hardwareConcurrency || 4,
     frameMicros: 8000,
+    viewportWidth: Math.round((window.screen?.width || 1920) * (window.devicePixelRatio || 1)),
+    viewportHeight: Math.round((window.screen?.height || 1080) * (window.devicePixelRatio || 1)),
   });
 
   if (inlineHost) {
