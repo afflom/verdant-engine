@@ -951,11 +951,7 @@ pub fn evaluate_uhd_display_profile(
         } else {
             drs_50
         };
-        (
-            drs,
-            hundred * (1 + 1 + 1 + 1 + 1 + 1),
-            ten * (1 + 1),
-        )
+        (drs, hundred * (1 + 1 + 1 + 1 + 1 + 1), ten * (1 + 1))
     } else if mp_x100 >= eight_k_thresh {
         let drs = if ema_frame_micros <= budget_us / (1 + 1) {
             drs_85
@@ -1611,9 +1607,8 @@ impl DynamicWorkloadGovernor {
         }
 
         // Hysteresis-damped automatic geometry LOD adaptation (never thrashes on single spikes):
-        let over_limit =
-            (u64::from(stability.target_budget_us) * u64::from(two * (four + 1) + 1))
-                / u64::from(two * (four + 1));
+        let over_limit = (u64::from(stability.target_budget_us) * u64::from(two * (four + 1) + 1))
+            / u64::from(two * (four + 1));
         let fast_limit = u64::from(stability.target_budget_us) / u64::from(two);
         if u64::from(frame_us) > over_limit {
             self.lod_down_streak = self.lod_down_streak.saturating_add(1);
@@ -1886,9 +1881,25 @@ mod tests {
         let mut gov = DynamicWorkloadGovernor::default();
         let budget_mem = 64 * 1024 * 1024;
         // 16K tiled display with ample GPU headroom climbs smoothly while keeping CAS + DRS bounded:
-        let mut last = gov.step(15360, 8640, false, true, 6_000, 16 * 1024 * 1024, budget_mem);
+        let mut last = gov.step(
+            15360,
+            8640,
+            false,
+            true,
+            6_000,
+            16 * 1024 * 1024,
+            budget_mem,
+        );
         for _ in 0..36 {
-            last = gov.step(15360, 8640, false, true, 6_000, 16 * 1024 * 1024, budget_mem);
+            last = gov.step(
+                15360,
+                8640,
+                false,
+                true,
+                6_000,
+                16 * 1024 * 1024,
+                budget_mem,
+            );
         }
         assert_eq!(last.display_class, "Beyond-8K 16K+ Tiled");
         assert_eq!(last.preferred_backend, "webgpu-compute-uhd");
@@ -1899,7 +1910,15 @@ mod tests {
 
         // Sustained overload on 4K immediately sheds fillrate, tensor tile quantum, and geometry LOD:
         for _ in 0..10 {
-            last = gov.step(3840, 2160, false, false, 24_000, 60 * 1024 * 1024, budget_mem);
+            last = gov.step(
+                3840,
+                2160,
+                false,
+                false,
+                24_000,
+                60 * 1024 * 1024,
+                budget_mem,
+            );
         }
         assert!(last.drs_scale_permille < 1000);
         assert!(last.recommended_lod_rank < 4);

@@ -1229,11 +1229,12 @@ fn decode_single_uorc_frame_bytes(
 ) -> Result<Vec<u8>, StreamingError> {
     #[cfg(feature = "uorc-streaming")]
     {
-        let objects = uorc::decompress_objects(frame_archive, uorc_work_budget()).map_err(|err| {
-            StreamingError::UorcArchiveRejected {
-                detail: format!("uorc::decompress_objects rejected frame {frame_idx}: {err}"),
-            }
-        })?;
+        let objects =
+            uorc::decompress_objects(frame_archive, uorc_work_budget()).map_err(|err| {
+                StreamingError::UorcArchiveRejected {
+                    detail: format!("uorc::decompress_objects rejected frame {frame_idx}: {err}"),
+                }
+            })?;
         objects
             .into_iter()
             .next()

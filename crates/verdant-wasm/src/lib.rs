@@ -5783,7 +5783,9 @@ pub extern "C" fn verdant_wasm_workload_governor_step_aux(
         .saturating_mul(four_u64)
         .max(TENSOR_PAGE_QUANTUM_BYTES);
     let page_q = TENSOR_PAGE_QUANTUM_BYTES;
-    let scene_page_count = scene_bytes.div_ceil(page_q).min(1u64 << (1 + 1 + 1 + 1 + 1 + 1));
+    let scene_page_count = scene_bytes
+        .div_ceil(page_q)
+        .min(1u64 << (1 + 1 + 1 + 1 + 1 + 1));
     let base_scene_id = 1u64;
     for p in 0..scene_page_count {
         let pid = base_scene_id + p;
@@ -5919,9 +5921,7 @@ pub extern "C" fn verdant_wasm_tensor_paged_benchmark_aux(
         .map(|i| ((i * three + 1) & byte_mask) as u8)
         .collect();
     let mut direct = vec![0_i64; rows * cols];
-    let _ = contract_packed_nibbles_lut_into(
-        &lhs, &rhs, rows, inner_k, cols, &lut, &mut direct,
-    );
+    let _ = contract_packed_nibbles_lut_into(&lhs, &rhs, rows, inner_k, cols, &lut, &mut direct);
     let mut paged = vec![0_i64; rows * cols];
     let tile_q = 1usize << (1 + 1 + 1);
     let rep = match contract_paged_packed_nibbles_stream(

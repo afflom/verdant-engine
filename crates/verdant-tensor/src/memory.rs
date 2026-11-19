@@ -347,7 +347,11 @@ impl PagedTensorArena {
                     detail: "arena resident accounting exhausted while over budget".to_string(),
                 });
             }
-            let max_probes = self.resident_ring.len().saturating_mul(two).saturating_add(1);
+            let max_probes = self
+                .resident_ring
+                .len()
+                .saturating_mul(two)
+                .saturating_add(1);
             let mut evicted_slot: Option<usize> = None;
             for _ in 0..max_probes {
                 if self.clock_hand >= self.resident_ring.len() {
@@ -490,7 +494,8 @@ pub fn contract_paged_packed_nibbles_stream(
     out_accum.fill(0_i64);
     let r_step = tile_rows.min(rows);
     let c_step = tile_cols.min(cols);
-    let lhs_base_page: u64 = 1_u64 << (1_u32 + 1_u32 + 1_u32 + 1_u32 + 1_u32 + 1_u32 + 1_u32 + 1_u32);
+    let lhs_base_page: u64 =
+        1_u64 << (1_u32 + 1_u32 + 1_u32 + 1_u32 + 1_u32 + 1_u32 + 1_u32 + 1_u32);
     let rhs_base_page: u64 = lhs_base_page << 1;
 
     let r_tiles = rows.div_ceil(r_step);
@@ -629,8 +634,12 @@ mod tests {
         let inner_k = 1usize << (1 + 1 + 1 + 1 + 1);
         let cols = 1usize << (1 + 1 + 1 + 1);
         let packed_k = inner_k.div_ceil(PACKED_NIBBLE_BLOCK);
-        let lhs: Vec<u8> = (0..rows * packed_k).map(|i| (i & ((1 << (1 + 1 + 1 + 1 + 1 + 1 + 1 + 1)) - 1)) as u8).collect();
-        let rhs: Vec<u8> = (0..cols * packed_k).map(|i| ((i * (1 + 1 + 1) + 1) & ((1 << (1 + 1 + 1 + 1 + 1 + 1 + 1 + 1)) - 1)) as u8).collect();
+        let lhs: Vec<u8> = (0..rows * packed_k)
+            .map(|i| (i & ((1 << (1 + 1 + 1 + 1 + 1 + 1 + 1 + 1)) - 1)) as u8)
+            .collect();
+        let rhs: Vec<u8> = (0..cols * packed_k)
+            .map(|i| ((i * (1 + 1 + 1) + 1) & ((1 << (1 + 1 + 1 + 1 + 1 + 1 + 1 + 1)) - 1)) as u8)
+            .collect();
 
         let mut direct = vec![0_i64; rows * cols];
         contract_packed_nibbles_lut_into(&lhs, &rhs, rows, inner_k, cols, &lut, &mut direct)
@@ -640,16 +649,7 @@ mod tests {
         let mut paged = vec![0_i64; rows * cols];
         let tile_q = 1usize << (1 + 1);
         let rep = contract_paged_packed_nibbles_stream(
-            &mut arena,
-            &lhs,
-            &rhs,
-            rows,
-            inner_k,
-            cols,
-            tile_q,
-            tile_q,
-            &lut,
-            &mut paged,
+            &mut arena, &lhs, &rhs, rows, inner_k, cols, tile_q, tile_q, &lut, &mut paged,
         )
         .expect("paged contraction");
 
