@@ -302,3 +302,25 @@ Verdant Engine is a universal commercial 3D browser, WebAssembly, and native gam
 - ChannelPlayerToAgent: Prism ID signed ISO 24617-2 dialogue channel from a human player to a cataloged NPC or coding agent evaluated natively in Verdant Engine.
 - ChannelAgentToPlayer: Passage-grounded response channel from an NPC or agent to a player returning cited world facts or deterministic Unknown abstention.
 - ChannelAgentToAgent: Observed multi-agent coordination channel between cataloged NPCs steering A-star NavMesh patrols and conserved item handoffs.
+
+## Self-Hosted Stitch Network, Zero-Account CIA Parity, and Composable Blank Frame
+
+- Immutable Blank Frame: Frozen universal browser shell pinned declaratively via frame-pin.json to Stitch-hosted Verdant releases or third-party deep links, verifying BLAKE3, Prism ID quorum signatures, and acceptance vectors off-thread before mounting via a same-origin ServiceWorker virtual filesystem.
+- Stakeholder Private Boundary: Zero-account stakeholder content encrypted before k-of-n Reed-Solomon sharding under a Prism ID boundary key with revocation epoch rotation, granting identical confidentiality, integrity, and availability without external user accounts.
+- Verdant VCS and Release Capsules: In-Verdant W3C PROV-O content-addressed Merkle revision control, signed monotonic release pointers, self-verifying .holo capsules, and optional GitHub Packages .holo and Rust .crate distribution adapters.
+- Unauthorized private boundary read: An untrusted Stitch relay, peer browser, or public mirror inspects stored k-of-n shards to read a user's private project or world without authorization.
+- Revoked peer retention or replay: A previously shared collaborator whose access was revoked attempts to decrypt new revisions or forge updates using an old boundary key or stale session.
+- Release pointer rollback or equivocation: A hostile relay or compromised mirror serves an older signed release pointer to pin a Blank Frame to a superseded version.
+- Blank Frame hydration injection: An attacker injects unverified markup, script, or Wasm into the Blank Frame or ServiceWorker virtual filesystem before holo verification completes.
+- Stitch storage flood or Sybil exhaustion: A Sybil attacker with zero accounts floods public-benefit Stitch relays or peer browsers with junk shards to exhaust free storage or bandwidth.
+- Shard attrition or cold disappearance: Peer browsers close tabs or a host goes offline, dropping live shards below the k-of-n reconstruction threshold.
+- Deep-link frame phishing or origin confusion: A malicious third-party pinned frame tricks a user into signing a Prism ID action for another origin or leaks a private boundary key across origins.
+- Unverified repo drift or release bypass: Workspace files change out-of-band or a release ships without being published to Stitch and verified through the Blank Frame.
+- Encrypt-before-shard AEAD boundary gate: Mandatory Encrypt-then-MAC AEAD encryption and fixed-block padding under per-boundary Prism ID keys occur before k-of-n Reed-Solomon sharding so untrusted peers hold only authenticated ciphertext.
+- Boundary epoch rotation and revocation gate: Collaborator revocation increments the boundary epoch, rotates keys forward-secretly, binds epoch into AEAD associated data, and refuses stale-epoch writes.
+- Monotonic epoch quorum release pointer gate: The Blank Frame persists the highest verified release epoch in OPFS, requires Prism ID threshold quorum signatures and prevKappa chaining, and refuses any rollback epoch.
+- Zero-trust ServiceWorker virtual filesystem mount: Strict hashed CSP blocks inline scripts and eval while the boot Worker verifies BLAKE3, SHA-256, Prism ID signatures, and acceptance vectors before mounting verified capsule files.
+- Stitch budget and reciprocal custody admission gate: Enforces identity/stitch.lock budget reservation, settlement, per-Prism-ID byte and rate quotas, and bounded reciprocal LRU storage without requiring external accounts.
+- Systematic k-of-n Reed-Solomon custody and autonomous repair: 4-of-8 GF(2^8) Reed-Solomon sharding across local OPFS, WebRTC Stitch swarm, and public relays reconstructs data after losing up to half of all shards and regenerates missing parity autonomously.
+- Origin-scoped Prism ID audience and pin verification: Non-extractable WebCrypto Prism IDs bind audience_origin and display the active pinned Stitch URI so third-party frames cannot forge cross-origin signatures.
+- Self-hosting ratchet and pull-through release gate: Tightens parametric-ratchet ceilings, verifies the cryptographic View Immutability Seal, and requires every release to pull cleanly from k-of-n Stitch shards through the Blank Frame.

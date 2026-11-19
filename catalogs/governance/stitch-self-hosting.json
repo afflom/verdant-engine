@@ -1,0 +1,59 @@
+{
+  "spec": "verdant/imported-authority-catalog/1",
+  "authorityId": "AUTH-STITCH-SELF-HOSTING",
+  "standard": "afflom/stitch Zero-Account Sovereign Custody + RFC 7366/2104 Encrypt-then-MAC Boundary Privacy + Systematic Reed-Solomon GF(2^8) + W3C ServiceWorker/OPFS + OCI & RFC 2789 Distribution",
+  "citation": "afflom/stitch (identity/stitch.lock commit 68a9222a); NIST SP 800-38A/38D & RFC 2104/7366 Encrypt-then-MAC AEAD; Reed-Solomon GF(2^8) k-of-n Erasure Coding; W3C Service Workers & Storage/OPFS; W3C PROV-O; OCI Artifact Distribution Spec; RFC 2789 Cargo Sparse Registry",
+  "license": "Apache-2.0",
+  "ownerManagerId": "mgr-observer-executive",
+  "zeroAccountSovereignGuarantee": {
+    "requiresExternalAccount": false,
+    "identityProtocol": "prism/identity/4",
+    "ciaParityAcrossAllContent": true,
+    "custodyTiers": [
+      "tier-1-local-opfs-and-portable-holo-backup",
+      "tier-2-webrtc-stitch-swarm-reciprocal-budget",
+      "tier-3-public-benefit-prism-relay-budget-capped"
+    ],
+    "optionalDistributionAdapters": [
+      "ghcr-oci-holo-release-archive",
+      "cargo-sparse-registry-rust-crates",
+      "github-release-auto-zenodo-doi"
+    ]
+  },
+  "boundaryPrivacyContract": {
+    "defaultUserVisibility": "private-encrypted",
+    "encryptBeforeShard": true,
+    "cipherSuite": "sha256-ctr-hmac-sha256-etm-v1",
+    "blockPaddingBytes": 256,
+    "revocationRotatesEpoch": true,
+    "stitchLockPredicates": [
+      "Stitch.PrismId.boundaryKeyAdmitted",
+      "Stitch.PrismId.boundaryShared",
+      "Stitch.PrismId.boundaryVisibleTo",
+      "Stitch.PrismId.mayShareBoundary",
+      "Stitch.PrismId.receivesPrivateBoundary",
+      "Stitch.PrismId.hybridWrapRequired",
+      "Stitch.PrismId.hybridSignatureAccepted",
+      "Stitch.PrismId.thresholdMet",
+      "Stitch.PrismId.revocationCounts",
+      "Stitch.Budget.reserveAllowed",
+      "Stitch.Budget.settlementAllowed",
+      "Stitch.Relay.admissionAllowed"
+    ]
+  },
+  "erasureCustodyStandard": {
+    "legacyScheme": "2-of-3-xor-sha256",
+    "releaseScheme": "k-of-n-reed-solomon-gf256",
+    "defaultReleaseK": 4,
+    "defaultReleaseN": 8,
+    "maxSimultaneousHostLoss": 4,
+    "autonomousParityRepair": true
+  },
+  "composableBlankFrameContract": {
+    "pinSpec": "verdant/frame-pin/1",
+    "supportsThirdPartyDeepLinks": true,
+    "monotonicEpochAntiRollback": true,
+    "workerVerificationBeforeSwMount": true,
+    "offlinePortableHoloBoot": true
+  }
+}

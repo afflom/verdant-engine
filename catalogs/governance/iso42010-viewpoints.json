@@ -34,11 +34,13 @@
       "governingAuthorities": [
         "AUTH-VSM-CYBERNETICS",
         "AUTH-ISO-42010-VIEWPOINTS",
-        "AUTH-W3C-SOSA-PROVO"
+        "AUTH-W3C-SOSA-PROVO",
+        "AUTH-STITCH-SELF-HOSTING"
       ],
       "ownedFiles": [
         "crates/verdant-core/src/observer.rs",
         "crates/verdant-core/src/operator.rs",
+        "crates/verdant-core/src/vcs.rs",
         "site/generated/viewpoint-contracts.json",
         "site/generated/immutability-seal.json"
       ],
@@ -47,7 +49,8 @@
       "ownedStreams": [],
       "ownedAuthorities": [
         "AUTH-VSM-CYBERNETICS",
-        "AUTH-ISO-42010-VIEWPOINTS"
+        "AUTH-ISO-42010-VIEWPOINTS",
+        "AUTH-STITCH-SELF-HOSTING"
       ],
       "requiredElements": [],
       "forbiddenCrossContamination": [],

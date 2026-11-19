@@ -66,6 +66,7 @@ pub mod tensor;
 pub mod uhd;
 pub mod ui;
 pub mod universe;
+pub mod vcs;
 
 #[cfg(test)]
 mod tests {

@@ -19,6 +19,11 @@ use sha2::{Digest, Sha256};
 use crate::error::ObserverModelError;
 use crate::math::nth_prime_u64;
 use crate::network::{shard_bytes_to_stitch_fragments, PrismIdSessionEnvelope, StitchFragment};
+#[cfg(not(target_arch = "wasm32"))]
+use crate::network::{
+    BoundaryKeyring, BoundaryVisibility, PrismBoundaryCipher, ReedSolomonStitchCodec,
+    StitchBoundaryEnvelope, StitchRsShard, RELEASE_RS_DATA_SHARDS, RELEASE_RS_TOTAL_SHARDS,
+};
 use crate::observer::{
     sha256_payload_digest, CommunicationChannelKind, ObserverPartSlot, ObserverPrismHolon,
 };
@@ -27,6 +32,8 @@ use crate::runtime::WorldSnapshot;
 use crate::streaming::is_uorc_archive;
 #[cfg(not(target_arch = "wasm32"))]
 use crate::streaming::StandardSceneState;
+#[cfg(not(target_arch = "wasm32"))]
+use crate::vcs::VerdantVcs;
 
 /// Embedded SHA-256-locked Stafford Beer VSM governance authority (`AUTH-VSM-CYBERNETICS`).
 pub const LOCKED_VSM_CATALOG_JSON: &str =
@@ -41,6 +48,11 @@ pub const LOCKED_ISO42010_VIEWPOINTS_JSON: &str =
 /// scaling authority (`AUTH-ISO-25010-TENSOR-SCALING`).
 pub const LOCKED_ISO25010_TENSOR_SCALING_JSON: &str =
     include_str!("../../../catalogs/governance/iso25010-tensor-scaling.json");
+
+/// Embedded SHA-256-locked zero-account Stitch custody, Encrypt-then-MAC boundary privacy,
+/// k-of-n Reed-Solomon, and composable Blank Frame authority (`AUTH-STITCH-SELF-HOSTING`).
+pub const LOCKED_STITCH_SELF_HOSTING_JSON: &str =
+    include_str!("../../../catalogs/governance/stitch-self-hosting.json");
 
 /// Canonical shipped routes that MUST be owned by an accountable Manager.
 pub const REQUIRED_SHIPPED_ROUTES: &[&str] = &[
@@ -70,6 +82,7 @@ pub const REQUIRED_LOCKED_AUTHORITIES: &[&str] = &[
     "AUTH-VSM-CYBERNETICS",
     "AUTH-ISO-42010-VIEWPOINTS",
     "AUTH-ISO-25010-TENSOR-SCALING",
+    "AUTH-STITCH-SELF-HOSTING",
 ];
 
 /// Canonical shipped Verdant views & Manager-synthesized declarative artifacts protected by
@@ -3311,6 +3324,54 @@ body[data-studio-focus="publish"] #studio-publish-pane {
                                 "viewpoint": { "type": "string" }
                             }
                         }
+                    },
+                    {
+                        "name": "verdant_stitch_seal",
+                        "description": "Zero-account Prism-ID Encrypt-then-MAC boundary seal (PrivateEncrypted, SelectiveShare, or Public) + systematic k-of-n Reed-Solomon GF(2^8) Stitch sharding (default 4-of-8) under AUTH-STITCH-SELF-HOSTING.",
+                        "inputSchema": {
+                            "type": "object",
+                            "properties": {
+                                "boundaryId": { "type": "string" },
+                                "ownerPrismId": { "type": "string" },
+                                "visibility": { "type": "string", "enum": ["PrivateEncrypted", "SelectiveShare", "Public"] },
+                                "secretPassphrase": { "type": "string" },
+                                "payloadUtf8": { "type": "string" },
+                                "dataShards": { "type": "integer" },
+                                "totalShards": { "type": "integer" }
+                            },
+                            "required": ["boundaryId", "ownerPrismId", "payloadUtf8"]
+                        }
+                    },
+                    {
+                        "name": "verdant_stitch_recover",
+                        "description": "Recover and authenticate a StitchBoundaryEnvelope from any >= k Reed-Solomon shards, enforcing Encrypt-then-MAC integrity and boundary epoch checks.",
+                        "inputSchema": {
+                            "type": "object",
+                            "properties": {
+                                "boundaryId": { "type": "string" },
+                                "ownerPrismId": { "type": "string" },
+                                "secretPassphrase": { "type": "string" },
+                                "shards": { "type": "array" }
+                            },
+                            "required": ["boundaryId", "ownerPrismId", "shards"]
+                        }
+                    },
+                    {
+                        "name": "verdant_vcs_commit",
+                        "description": "Create an acyclic W3C PROV-O Merkle revision commit inside VerdantVcs from repo-relative files or inline blobs, signed with Prism ID and citing an AUTH-* authority, returning the sealed .uorc VCS capsule summary.",
+                        "inputSchema": {
+                            "type": "object",
+                            "properties": {
+                                "refName": { "type": "string" },
+                                "authorPrismId": { "type": "string" },
+                                "managerId": { "type": "string" },
+                                "message": { "type": "string" },
+                                "citedAuthority": { "type": "string" },
+                                "paths": { "type": "array", "items": { "type": "string" } },
+                                "blobs": { "type": "object" }
+                            },
+                            "required": ["authorPrismId", "message", "citedAuthority"]
+                        }
                     }
                 ]
             })),
@@ -3440,6 +3501,202 @@ body[data-studio-focus="publish"] #studio-publish-pane {
                             serde_json::to_value(&rep).unwrap_or(serde_json::Value::Null),
                         )
                     }
+                    "verdant_stitch_seal" => {
+                        let boundary_id = args
+                            .get("boundaryId")
+                            .and_then(|v| v.as_str())
+                            .unwrap_or("stitch://boundary/default");
+                        let owner = args
+                            .get("ownerPrismId")
+                            .and_then(|v| v.as_str())
+                            .unwrap_or("prism:anonymous-stakeholder");
+                        let visibility = match args
+                            .get("visibility")
+                            .and_then(|v| v.as_str())
+                            .unwrap_or("PrivateEncrypted")
+                        {
+                            "SelectiveShare" => BoundaryVisibility::SelectiveShare,
+                            "Public" => BoundaryVisibility::Public,
+                            _ => BoundaryVisibility::PrivateEncrypted,
+                        };
+                        let passphrase = args
+                            .get("secretPassphrase")
+                            .and_then(|v| v.as_str())
+                            .unwrap_or("prism-zero-account-local-root");
+                        let payload = args
+                            .get("payloadUtf8")
+                            .and_then(|v| v.as_str())
+                            .unwrap_or("");
+                        let k = args
+                            .get("dataShards")
+                            .and_then(|v| v.as_u64())
+                            .and_then(|v| u8::try_from(v).ok())
+                            .unwrap_or(RELEASE_RS_DATA_SHARDS);
+                        let n = args
+                            .get("totalShards")
+                            .and_then(|v| v.as_u64())
+                            .and_then(|v| u8::try_from(v).ok())
+                            .unwrap_or(RELEASE_RS_TOTAL_SHARDS);
+                        let res = BoundaryKeyring::new(boundary_id, owner, passphrase.as_bytes())
+                            .and_then(|keyring| {
+                                PrismBoundaryCipher::seal(
+                                    &keyring,
+                                    owner,
+                                    visibility,
+                                    payload.as_bytes(),
+                                    boundary_id.as_bytes(),
+                                )
+                            })
+                            .and_then(|env| {
+                                let bytes = serde_json::to_vec(&env).unwrap_or_default();
+                                let shards = ReedSolomonStitchCodec::shard_k_of_n(&bytes, k, n)?;
+                                Ok((env, shards))
+                            });
+                        match res {
+                            Ok((env, shards)) => tool_out(
+                                false,
+                                serde_json::json!({
+                                    "boundaryId": env.boundary_id,
+                                    "ownerPrismId": env.owner_prism_id,
+                                    "visibility": env.visibility,
+                                    "boundaryEpoch": env.boundary_epoch,
+                                    "dataShards": k,
+                                    "totalShards": n,
+                                    "shards": shards,
+                                }),
+                            ),
+                            Err(e) => tool_out(true, serde_json::json!({ "error": e.to_string() })),
+                        }
+                    }
+                    "verdant_stitch_recover" => {
+                        let boundary_id = args
+                            .get("boundaryId")
+                            .and_then(|v| v.as_str())
+                            .unwrap_or("stitch://boundary/default");
+                        let owner = args
+                            .get("ownerPrismId")
+                            .and_then(|v| v.as_str())
+                            .unwrap_or("prism:anonymous-stakeholder");
+                        let passphrase = args
+                            .get("secretPassphrase")
+                            .and_then(|v| v.as_str())
+                            .unwrap_or("prism-zero-account-local-root");
+                        let shards: Option<Vec<StitchRsShard>> = args
+                            .get("shards")
+                            .cloned()
+                            .and_then(|v| serde_json::from_value(v).ok());
+                        match shards {
+                            Some(shard_vec) => {
+                                let res = BoundaryKeyring::new(
+                                    boundary_id,
+                                    owner,
+                                    passphrase.as_bytes(),
+                                )
+                                .and_then(|keyring| {
+                                    let raw = ReedSolomonStitchCodec::recover_k_of_n(&shard_vec)?;
+                                    let env: StitchBoundaryEnvelope =
+                                        serde_json::from_slice(&raw).map_err(|e| {
+                                            crate::error::StitchCustodyError::PayloadDigestMismatch {
+                                                detail: e.to_string(),
+                                            }
+                                        })?;
+                                    let plain = PrismBoundaryCipher::open(&keyring, owner, &env)?;
+                                    Ok((env, plain))
+                                });
+                                match res {
+                                    Ok((env, plain)) => tool_out(
+                                        false,
+                                        serde_json::json!({
+                                            "boundaryId": env.boundary_id,
+                                            "ownerPrismId": env.owner_prism_id,
+                                            "visibility": env.visibility,
+                                            "boundaryEpoch": env.boundary_epoch,
+                                            "payloadUtf8": String::from_utf8_lossy(&plain),
+                                            "payloadBytes": plain.len(),
+                                        }),
+                                    ),
+                                    Err(e) => tool_out(
+                                        true,
+                                        serde_json::json!({ "error": e.to_string() }),
+                                    ),
+                                }
+                            }
+                            None => tool_out(
+                                true,
+                                serde_json::json!({ "error": "missing or invalid shards array" }),
+                            ),
+                        }
+                    }
+                    "verdant_vcs_commit" => {
+                        let ref_name = args
+                            .get("refName")
+                            .and_then(|v| v.as_str())
+                            .unwrap_or("refs/heads/main");
+                        let author = args
+                            .get("authorPrismId")
+                            .and_then(|v| v.as_str())
+                            .unwrap_or("prism:verdant-mcp");
+                        let manager_id = args
+                            .get("managerId")
+                            .and_then(|v| v.as_str())
+                            .unwrap_or("mgr-observer-executive");
+                        let message = args
+                            .get("message")
+                            .and_then(|v| v.as_str())
+                            .unwrap_or("VerdantVcs declarative commit");
+                        let auth = args
+                            .get("citedAuthority")
+                            .and_then(|v| v.as_str())
+                            .unwrap_or("AUTH-STITCH-SELF-HOSTING");
+                        let mut vcs = VerdantVcs::new();
+                        let mut entries: BTreeMap<String, Vec<u8>> = BTreeMap::new();
+                        if let Some(paths) = args.get("paths").and_then(|v| v.as_array()) {
+                            for p in paths.iter().filter_map(|v| v.as_str()) {
+                                if !p.contains("..") && !p.starts_with('/') {
+                                    if let Ok(bytes) = std::fs::read(repo_root.join(p)) {
+                                        entries.insert(p.to_string(), bytes);
+                                    }
+                                }
+                            }
+                        }
+                        if let Some(blobs) = args.get("blobs").and_then(|v| v.as_object()) {
+                            for (k, v) in blobs {
+                                if let Some(s) = v.as_str() {
+                                    entries.insert(k.clone(), s.as_bytes().to_vec());
+                                }
+                            }
+                        }
+                        match vcs
+                            .commit_tree(
+                                ref_name,
+                                &entries,
+                                author,
+                                b"verdant-vcs-mcp-signing-root",
+                                manager_id,
+                                auth,
+                                message,
+                            )
+                            .and_then(|commit| {
+                                let uorc = vcs.encode_uorc_capsule()?;
+                                Ok((commit, uorc.len()))
+                            }) {
+                            Ok((commit, uorc_bytes)) => tool_out(
+                                false,
+                                serde_json::json!({
+                                    "commitKappa": commit.commit_kappa,
+                                    "treeRootSha256": commit.tree_root_sha256,
+                                    "epoch": commit.epoch,
+                                    "authorPrismId": commit.author_prism_id,
+                                    "managerId": commit.manager_id,
+                                    "citedAuthority": commit.cited_authority,
+                                    "message": commit.message,
+                                    "entryCount": commit.tree_entries.len(),
+                                    "uorcBytes": uorc_bytes,
+                                }),
+                            ),
+                            Err(e) => tool_out(true, serde_json::json!({ "error": e.to_string() })),
+                        }
+                    }
                     other => err_resp(err_params, format!("unknown MCP tool `{other}`")),
                 }
             }
@@ -3448,6 +3705,7 @@ body[data-studio-focus="publish"] #studio-publish-pane {
                     { "uri": "verdant://governance/vsm", "name": "VSM Cybernetics Authority (AUTH-VSM-CYBERNETICS)", "mimeType": "application/json" },
                     { "uri": "verdant://governance/viewpoints", "name": "ISO 42010 Viewpoints & Managers (AUTH-ISO-42010-VIEWPOINTS)", "mimeType": "application/json" },
                     { "uri": "verdant://governance/tensor-scaling", "name": "ISO 25010 & ITU-R BT.2020/2100 Tensor Scaling Authority (AUTH-ISO-25010-TENSOR-SCALING)", "mimeType": "application/json" },
+                    { "uri": "verdant://governance/stitch-self-hosting", "name": "Zero-Account Stitch Self-Hosting & Boundary Privacy (AUTH-STITCH-SELF-HOSTING)", "mimeType": "application/json" },
                     { "uri": "verdant://generated/viewpoint-contracts", "name": "Manager Viewpoint Contracts", "mimeType": "application/json" },
                     { "uri": "verdant://generated/experience-design-system", "name": "Design System & Communications Spec", "mimeType": "application/json" },
                     { "uri": "verdant://generated/world-differentiation-profiles", "name": "4-World Differentiation Profiles", "mimeType": "application/json" },
@@ -3467,6 +3725,9 @@ body[data-studio-focus="publish"] #studio-publish-pane {
                     }
                     "verdant://governance/tensor-scaling" => {
                         Some("catalogs/governance/iso25010-tensor-scaling.json")
+                    }
+                    "verdant://governance/stitch-self-hosting" => {
+                        Some("catalogs/governance/stitch-self-hosting.json")
                     }
                     "verdant://generated/viewpoint-contracts" => {
                         Some("site/generated/viewpoint-contracts.json")

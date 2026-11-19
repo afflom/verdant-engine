@@ -51,6 +51,27 @@ definition{
 }
 
 definition{
+  name: assetImmutableBlankFrame,
+  parameters: [],
+  result: Foundation.Sec::Asset,
+  body: (record Foundation.Sec::Asset {index := 6, componentIndex := 5})
+}
+
+definition{
+  name: assetStakeholderPrivateBoundary,
+  parameters: [],
+  result: Foundation.Sec::Asset,
+  body: (record Foundation.Sec::Asset {index := 7, componentIndex := 6})
+}
+
+definition{
+  name: assetVerdantVcsAndReleases,
+  parameters: [],
+  result: Foundation.Sec::Asset,
+  body: (record Foundation.Sec::Asset {index := 8, componentIndex := 8})
+}
+
+definition{
   name: threatCorruptedStitchParityShard,
   parameters: [],
   result: Foundation.Sec::Threat,
@@ -132,6 +153,62 @@ definition{
   parameters: [],
   result: Foundation.Sec::Threat,
   body: (record Foundation.Sec::Threat {index := 5})
+}
+
+definition{
+  name: threatUnauthorizedPrivateBoundaryRead,
+  parameters: [],
+  result: Foundation.Sec::Threat,
+  body: (record Foundation.Sec::Threat {index := 12})
+}
+
+definition{
+  name: threatRevokedPeerRetentionOrReplay,
+  parameters: [],
+  result: Foundation.Sec::Threat,
+  body: (record Foundation.Sec::Threat {index := 13})
+}
+
+definition{
+  name: threatReleasePointerRollbackOrEquivocation,
+  parameters: [],
+  result: Foundation.Sec::Threat,
+  body: (record Foundation.Sec::Threat {index := 14})
+}
+
+definition{
+  name: threatBlankFrameHydrationInjection,
+  parameters: [],
+  result: Foundation.Sec::Threat,
+  body: (record Foundation.Sec::Threat {index := 15})
+}
+
+definition{
+  name: threatStitchStorageFloodOrSybilExhaustion,
+  parameters: [],
+  result: Foundation.Sec::Threat,
+  body: (record Foundation.Sec::Threat {index := 16})
+}
+
+definition{
+  name: threatShardAttritionOrColdDisappearance,
+  parameters: [],
+  result: Foundation.Sec::Threat,
+  body: (record Foundation.Sec::Threat {index := 17})
+}
+
+definition{
+  name: threatDeepLinkFramePhishingOrOriginConfusion,
+  parameters: [],
+  result: Foundation.Sec::Threat,
+  body: (record Foundation.Sec::Threat {index := 18})
+}
+
+definition{
+  name: threatUnverifiedRepoDriftOrBypass,
+  parameters: [],
+  result: Foundation.Sec::Threat,
+  body: (record Foundation.Sec::Threat {index := 19})
 }
 
 definition{
@@ -219,6 +296,62 @@ definition{
 }
 
 definition{
+  name: riskUnauthorizedPrivateBoundaryRead,
+  parameters: [],
+  result: Foundation.Sec::Risk,
+  body: (record Foundation.Sec::Risk {index := 12, assetIndex := 7, threatIndex := 12, likelihood := (ctor Foundation.Sec::Likelihood.medium), impact := (ctor Foundation.Sec::Impact.critical)})
+}
+
+definition{
+  name: riskRevokedPeerRetentionOrReplay,
+  parameters: [],
+  result: Foundation.Sec::Risk,
+  body: (record Foundation.Sec::Risk {index := 13, assetIndex := 7, threatIndex := 13, likelihood := (ctor Foundation.Sec::Likelihood.medium), impact := (ctor Foundation.Sec::Impact.major)})
+}
+
+definition{
+  name: riskReleasePointerRollbackOrEquivocation,
+  parameters: [],
+  result: Foundation.Sec::Risk,
+  body: (record Foundation.Sec::Risk {index := 14, assetIndex := 6, threatIndex := 14, likelihood := (ctor Foundation.Sec::Likelihood.low), impact := (ctor Foundation.Sec::Impact.critical)})
+}
+
+definition{
+  name: riskBlankFrameHydrationInjection,
+  parameters: [],
+  result: Foundation.Sec::Risk,
+  body: (record Foundation.Sec::Risk {index := 15, assetIndex := 6, threatIndex := 15, likelihood := (ctor Foundation.Sec::Likelihood.low), impact := (ctor Foundation.Sec::Impact.critical)})
+}
+
+definition{
+  name: riskStitchStorageFloodOrSybilExhaustion,
+  parameters: [],
+  result: Foundation.Sec::Risk,
+  body: (record Foundation.Sec::Risk {index := 16, assetIndex := 7, threatIndex := 16, likelihood := (ctor Foundation.Sec::Likelihood.high), impact := (ctor Foundation.Sec::Impact.major)})
+}
+
+definition{
+  name: riskShardAttritionOrColdDisappearance,
+  parameters: [],
+  result: Foundation.Sec::Risk,
+  body: (record Foundation.Sec::Risk {index := 17, assetIndex := 7, threatIndex := 17, likelihood := (ctor Foundation.Sec::Likelihood.medium), impact := (ctor Foundation.Sec::Impact.major)})
+}
+
+definition{
+  name: riskDeepLinkFramePhishingOrOriginConfusion,
+  parameters: [],
+  result: Foundation.Sec::Risk,
+  body: (record Foundation.Sec::Risk {index := 18, assetIndex := 6, threatIndex := 18, likelihood := (ctor Foundation.Sec::Likelihood.medium), impact := (ctor Foundation.Sec::Impact.major)})
+}
+
+definition{
+  name: riskUnverifiedRepoDriftOrBypass,
+  parameters: [],
+  result: Foundation.Sec::Risk,
+  body: (record Foundation.Sec::Risk {index := 19, assetIndex := 8, threatIndex := 19, likelihood := (ctor Foundation.Sec::Likelihood.low), impact := (ctor Foundation.Sec::Impact.major)})
+}
+
+definition{
   name: controlCapabilityGrantLattice,
   parameters: [],
   result: Foundation.Sec::ApplicationSecurityControl,
@@ -296,6 +429,62 @@ definition{
 }
 
 definition{
+  name: controlEncryptBeforeShardBoundary,
+  parameters: [],
+  result: Foundation.Sec::ApplicationSecurityControl,
+  body: (record Foundation.Sec::ApplicationSecurityControl {index := 11, riskIndex := 12})
+}
+
+definition{
+  name: controlBoundaryEpochRotationAndRevocation,
+  parameters: [],
+  result: Foundation.Sec::ApplicationSecurityControl,
+  body: (record Foundation.Sec::ApplicationSecurityControl {index := 12, riskIndex := 13})
+}
+
+definition{
+  name: controlMonotonicEpochQuorumPointer,
+  parameters: [],
+  result: Foundation.Sec::ApplicationSecurityControl,
+  body: (record Foundation.Sec::ApplicationSecurityControl {index := 13, riskIndex := 14})
+}
+
+definition{
+  name: controlZeroTrustSwVirtualFsMount,
+  parameters: [],
+  result: Foundation.Sec::ApplicationSecurityControl,
+  body: (record Foundation.Sec::ApplicationSecurityControl {index := 14, riskIndex := 15})
+}
+
+definition{
+  name: controlStitchBudgetAndReciprocalAdmission,
+  parameters: [],
+  result: Foundation.Sec::ApplicationSecurityControl,
+  body: (record Foundation.Sec::ApplicationSecurityControl {index := 15, riskIndex := 16})
+}
+
+definition{
+  name: controlKOfNReedSolomonAndAutonomousRepair,
+  parameters: [],
+  result: Foundation.Sec::ApplicationSecurityControl,
+  body: (record Foundation.Sec::ApplicationSecurityControl {index := 16, riskIndex := 17})
+}
+
+definition{
+  name: controlOriginScopedPrismIdAudience,
+  parameters: [],
+  result: Foundation.Sec::ApplicationSecurityControl,
+  body: (record Foundation.Sec::ApplicationSecurityControl {index := 17, riskIndex := 18})
+}
+
+definition{
+  name: controlSelfHostingRatchetAndPullThroughGate,
+  parameters: [],
+  result: Foundation.Sec::ApplicationSecurityControl,
+  body: (record Foundation.Sec::ApplicationSecurityControl {index := 18, riskIndex := 19})
+}
+
+definition{
   name: controlSet,
   parameters: [],
   result: Production.ThreatModel::ControlSet,
@@ -342,6 +531,27 @@ definition{
   parameters: [],
   result: Production.ThreatModel::ModeledAsset,
   body: (record Production.ThreatModel::ModeledAsset {asset := "Security::assetVerdantWasmBridge", name := "Verdant Wasm worker bridge", text := "The WebAssembly C-ABI simulation, lawful camera, and progressive UORC worker runtime in crates/verdant-wasm."})
+}
+
+definition{
+  name: modeledAssetImmutableBlankFrame,
+  parameters: [],
+  result: Production.ThreatModel::ModeledAsset,
+  body: (record Production.ThreatModel::ModeledAsset {asset := "Security::assetImmutableBlankFrame", name := "Immutable Blank Frame", text := "Frozen universal browser shell pinned declaratively via frame-pin.json to Stitch-hosted Verdant releases or third-party deep links, verifying BLAKE3, Prism ID quorum signatures, and acceptance vectors off-thread before mounting via a same-origin ServiceWorker virtual filesystem."})
+}
+
+definition{
+  name: modeledAssetStakeholderPrivateBoundary,
+  parameters: [],
+  result: Production.ThreatModel::ModeledAsset,
+  body: (record Production.ThreatModel::ModeledAsset {asset := "Security::assetStakeholderPrivateBoundary", name := "Stakeholder Private Boundary", text := "Zero-account stakeholder content encrypted before k-of-n Reed-Solomon sharding under a Prism ID boundary key with revocation epoch rotation, granting identical confidentiality, integrity, and availability without external user accounts."})
+}
+
+definition{
+  name: modeledAssetVerdantVcsAndReleases,
+  parameters: [],
+  result: Production.ThreatModel::ModeledAsset,
+  body: (record Production.ThreatModel::ModeledAsset {asset := "Security::assetVerdantVcsAndReleases", name := "Verdant VCS and Release Capsules", text := "In-Verdant W3C PROV-O content-addressed Merkle revision control, signed monotonic release pointers, self-verifying .holo capsules, and optional GitHub Packages .holo and Rust .crate distribution adapters."})
 }
 
 definition{
@@ -429,6 +639,62 @@ definition{
 }
 
 definition{
+  name: modeledThreatUnauthorizedPrivateBoundaryRead,
+  parameters: [],
+  result: Production.ThreatModel::ModeledThreat,
+  body: (record Production.ThreatModel::ModeledThreat {threat := "Security::threatUnauthorizedPrivateBoundaryRead", name := "Unauthorized private boundary read", text := "An untrusted Stitch relay, peer browser, or public mirror inspects stored k-of-n shards to read a user's private project or world without authorization.", category := (ctor Production.ThreatModel::Stride.informationDisclosure)})
+}
+
+definition{
+  name: modeledThreatRevokedPeerRetentionOrReplay,
+  parameters: [],
+  result: Production.ThreatModel::ModeledThreat,
+  body: (record Production.ThreatModel::ModeledThreat {threat := "Security::threatRevokedPeerRetentionOrReplay", name := "Revoked peer retention or replay", text := "A previously shared collaborator whose access was revoked attempts to decrypt new revisions or forge updates using an old boundary key or stale session.", category := (ctor Production.ThreatModel::Stride.elevationOfPrivilege)})
+}
+
+definition{
+  name: modeledThreatReleasePointerRollbackOrEquivocation,
+  parameters: [],
+  result: Production.ThreatModel::ModeledThreat,
+  body: (record Production.ThreatModel::ModeledThreat {threat := "Security::threatReleasePointerRollbackOrEquivocation", name := "Release pointer rollback or equivocation", text := "A hostile relay or compromised mirror serves an older signed release pointer to pin a Blank Frame to a superseded version.", category := (ctor Production.ThreatModel::Stride.tampering)})
+}
+
+definition{
+  name: modeledThreatBlankFrameHydrationInjection,
+  parameters: [],
+  result: Production.ThreatModel::ModeledThreat,
+  body: (record Production.ThreatModel::ModeledThreat {threat := "Security::threatBlankFrameHydrationInjection", name := "Blank Frame hydration injection", text := "An attacker injects unverified markup, script, or Wasm into the Blank Frame or ServiceWorker virtual filesystem before holo verification completes.", category := (ctor Production.ThreatModel::Stride.elevationOfPrivilege)})
+}
+
+definition{
+  name: modeledThreatStitchStorageFloodOrSybilExhaustion,
+  parameters: [],
+  result: Production.ThreatModel::ModeledThreat,
+  body: (record Production.ThreatModel::ModeledThreat {threat := "Security::threatStitchStorageFloodOrSybilExhaustion", name := "Stitch storage flood or Sybil exhaustion", text := "A Sybil attacker with zero accounts floods public-benefit Stitch relays or peer browsers with junk shards to exhaust free storage or bandwidth.", category := (ctor Production.ThreatModel::Stride.denialOfService)})
+}
+
+definition{
+  name: modeledThreatShardAttritionOrColdDisappearance,
+  parameters: [],
+  result: Production.ThreatModel::ModeledThreat,
+  body: (record Production.ThreatModel::ModeledThreat {threat := "Security::threatShardAttritionOrColdDisappearance", name := "Shard attrition or cold disappearance", text := "Peer browsers close tabs or a host goes offline, dropping live shards below the k-of-n reconstruction threshold.", category := (ctor Production.ThreatModel::Stride.denialOfService)})
+}
+
+definition{
+  name: modeledThreatDeepLinkFramePhishingOrOriginConfusion,
+  parameters: [],
+  result: Production.ThreatModel::ModeledThreat,
+  body: (record Production.ThreatModel::ModeledThreat {threat := "Security::threatDeepLinkFramePhishingOrOriginConfusion", name := "Deep-link frame phishing or origin confusion", text := "A malicious third-party pinned frame tricks a user into signing a Prism ID action for another origin or leaks a private boundary key across origins.", category := (ctor Production.ThreatModel::Stride.spoofing)})
+}
+
+definition{
+  name: modeledThreatUnverifiedRepoDriftOrBypass,
+  parameters: [],
+  result: Production.ThreatModel::ModeledThreat,
+  body: (record Production.ThreatModel::ModeledThreat {threat := "Security::threatUnverifiedRepoDriftOrBypass", name := "Unverified repo drift or release bypass", text := "Workspace files change out-of-band or a release ships without being published to Stitch and verified through the Blank Frame.", category := (ctor Production.ThreatModel::Stride.repudiation)})
+}
+
+definition{
   name: modeledControlCapabilityGrantLattice,
   parameters: [],
   result: Production.ThreatModel::ModeledControl,
@@ -503,6 +769,62 @@ definition{
   parameters: [],
   result: Production.ThreatModel::ModeledControl,
   body: (record Production.ThreatModel::ModeledControl {control := "Security::controlConservationAndReachabilityOracle", name := "Story conservation and tropical reachability verifier", text := "StoryAutomaton verifies exact integer supply conservation and tropical min-plus terminal reachability before admitting any narrative graph.", evidence := (cons (record Production.ThreatModel::Evidence {kind := (ctor Production.ThreatModel::EvidenceKind.gate), reference := "cargo test -p repo-conformance engine_ve_30"}) (nil Production.ThreatModel::Evidence))})
+}
+
+definition{
+  name: modeledControlEncryptBeforeShardBoundary,
+  parameters: [],
+  result: Production.ThreatModel::ModeledControl,
+  body: (record Production.ThreatModel::ModeledControl {control := "Security::controlEncryptBeforeShardBoundary", name := "Encrypt-before-shard AEAD boundary gate", text := "Mandatory Encrypt-then-MAC AEAD encryption and fixed-block padding under per-boundary Prism ID keys occur before k-of-n Reed-Solomon sharding so untrusted peers hold only authenticated ciphertext.", evidence := (cons (record Production.ThreatModel::Evidence {kind := (ctor Production.ThreatModel::EvidenceKind.gate), reference := "cargo test -p repo-conformance engine_ve_43"}) (nil Production.ThreatModel::Evidence))})
+}
+
+definition{
+  name: modeledControlBoundaryEpochRotationAndRevocation,
+  parameters: [],
+  result: Production.ThreatModel::ModeledControl,
+  body: (record Production.ThreatModel::ModeledControl {control := "Security::controlBoundaryEpochRotationAndRevocation", name := "Boundary epoch rotation and revocation gate", text := "Collaborator revocation increments the boundary epoch, rotates keys forward-secretly, binds epoch into AEAD associated data, and refuses stale-epoch writes.", evidence := (cons (record Production.ThreatModel::Evidence {kind := (ctor Production.ThreatModel::EvidenceKind.gate), reference := "cargo test -p repo-conformance engine_ve_43"}) (nil Production.ThreatModel::Evidence))})
+}
+
+definition{
+  name: modeledControlMonotonicEpochQuorumPointer,
+  parameters: [],
+  result: Production.ThreatModel::ModeledControl,
+  body: (record Production.ThreatModel::ModeledControl {control := "Security::controlMonotonicEpochQuorumPointer", name := "Monotonic epoch quorum release pointer gate", text := "The Blank Frame persists the highest verified release epoch in OPFS, requires Prism ID threshold quorum signatures and prevKappa chaining, and refuses any rollback epoch.", evidence := (cons (record Production.ThreatModel::Evidence {kind := (ctor Production.ThreatModel::EvidenceKind.gate), reference := "cargo test -p repo-conformance engine_ve_43"}) (nil Production.ThreatModel::Evidence))})
+}
+
+definition{
+  name: modeledControlZeroTrustSwVirtualFsMount,
+  parameters: [],
+  result: Production.ThreatModel::ModeledControl,
+  body: (record Production.ThreatModel::ModeledControl {control := "Security::controlZeroTrustSwVirtualFsMount", name := "Zero-trust ServiceWorker virtual filesystem mount", text := "Strict hashed CSP blocks inline scripts and eval while the boot Worker verifies BLAKE3, SHA-256, Prism ID signatures, and acceptance vectors before mounting verified capsule files.", evidence := (cons (record Production.ThreatModel::Evidence {kind := (ctor Production.ThreatModel::EvidenceKind.gate), reference := "cargo test -p repo-conformance frame_fr_01"}) (nil Production.ThreatModel::Evidence))})
+}
+
+definition{
+  name: modeledControlStitchBudgetAndReciprocalAdmission,
+  parameters: [],
+  result: Production.ThreatModel::ModeledControl,
+  body: (record Production.ThreatModel::ModeledControl {control := "Security::controlStitchBudgetAndReciprocalAdmission", name := "Stitch budget and reciprocal custody admission gate", text := "Enforces identity/stitch.lock budget reservation, settlement, per-Prism-ID byte and rate quotas, and bounded reciprocal LRU storage without requiring external accounts.", evidence := (cons (record Production.ThreatModel::Evidence {kind := (ctor Production.ThreatModel::EvidenceKind.gate), reference := "cargo test -p repo-conformance engine_ve_43"}) (nil Production.ThreatModel::Evidence))})
+}
+
+definition{
+  name: modeledControlKOfNReedSolomonAndAutonomousRepair,
+  parameters: [],
+  result: Production.ThreatModel::ModeledControl,
+  body: (record Production.ThreatModel::ModeledControl {control := "Security::controlKOfNReedSolomonAndAutonomousRepair", name := "Systematic k-of-n Reed-Solomon custody and autonomous repair", text := "4-of-8 GF(2^8) Reed-Solomon sharding across local OPFS, WebRTC Stitch swarm, and public relays reconstructs data after losing up to half of all shards and regenerates missing parity autonomously.", evidence := (cons (record Production.ThreatModel::Evidence {kind := (ctor Production.ThreatModel::EvidenceKind.gate), reference := "cargo test -p repo-conformance engine_ve_43"}) (nil Production.ThreatModel::Evidence))})
+}
+
+definition{
+  name: modeledControlOriginScopedPrismIdAudience,
+  parameters: [],
+  result: Production.ThreatModel::ModeledControl,
+  body: (record Production.ThreatModel::ModeledControl {control := "Security::controlOriginScopedPrismIdAudience", name := "Origin-scoped Prism ID audience and pin verification", text := "Non-extractable WebCrypto Prism IDs bind audience_origin and display the active pinned Stitch URI so third-party frames cannot forge cross-origin signatures.", evidence := (cons (record Production.ThreatModel::Evidence {kind := (ctor Production.ThreatModel::EvidenceKind.gate), reference := "cargo test -p repo-conformance engine_ve_24"}) (nil Production.ThreatModel::Evidence))})
+}
+
+definition{
+  name: modeledControlSelfHostingRatchetAndPullThroughGate,
+  parameters: [],
+  result: Production.ThreatModel::ModeledControl,
+  body: (record Production.ThreatModel::ModeledControl {control := "Security::controlSelfHostingRatchetAndPullThroughGate", name := "Self-hosting ratchet and pull-through release gate", text := "Tightens parametric-ratchet ceilings, verifies the cryptographic View Immutability Seal, and requires every release to pull cleanly from k-of-n Stitch shards through the Blank Frame.", evidence := (cons (record Production.ThreatModel::Evidence {kind := (ctor Production.ThreatModel::EvidenceKind.gate), reference := "cargo test -p repo-conformance engine_ve_42"}) (nil Production.ThreatModel::Evidence))})
 }
 
 definition{
@@ -583,6 +905,62 @@ definition{
 }
 
 definition{
+  name: mappingUnauthorizedPrivateBoundaryRead,
+  parameters: [],
+  result: Production.ThreatModel::ThreatMapping,
+  body: (record Production.ThreatModel::ThreatMapping {threat := "Security::threatUnauthorizedPrivateBoundaryRead", controls := (cons "Security::controlEncryptBeforeShardBoundary" (nil String))})
+}
+
+definition{
+  name: mappingRevokedPeerRetentionOrReplay,
+  parameters: [],
+  result: Production.ThreatModel::ThreatMapping,
+  body: (record Production.ThreatModel::ThreatMapping {threat := "Security::threatRevokedPeerRetentionOrReplay", controls := (cons "Security::controlBoundaryEpochRotationAndRevocation" (nil String))})
+}
+
+definition{
+  name: mappingReleasePointerRollbackOrEquivocation,
+  parameters: [],
+  result: Production.ThreatModel::ThreatMapping,
+  body: (record Production.ThreatModel::ThreatMapping {threat := "Security::threatReleasePointerRollbackOrEquivocation", controls := (cons "Security::controlMonotonicEpochQuorumPointer" (nil String))})
+}
+
+definition{
+  name: mappingBlankFrameHydrationInjection,
+  parameters: [],
+  result: Production.ThreatModel::ThreatMapping,
+  body: (record Production.ThreatModel::ThreatMapping {threat := "Security::threatBlankFrameHydrationInjection", controls := (cons "Security::controlZeroTrustSwVirtualFsMount" (nil String))})
+}
+
+definition{
+  name: mappingStitchStorageFloodOrSybilExhaustion,
+  parameters: [],
+  result: Production.ThreatModel::ThreatMapping,
+  body: (record Production.ThreatModel::ThreatMapping {threat := "Security::threatStitchStorageFloodOrSybilExhaustion", controls := (cons "Security::controlStitchBudgetAndReciprocalAdmission" (nil String))})
+}
+
+definition{
+  name: mappingShardAttritionOrColdDisappearance,
+  parameters: [],
+  result: Production.ThreatModel::ThreatMapping,
+  body: (record Production.ThreatModel::ThreatMapping {threat := "Security::threatShardAttritionOrColdDisappearance", controls := (cons "Security::controlKOfNReedSolomonAndAutonomousRepair" (nil String))})
+}
+
+definition{
+  name: mappingDeepLinkFramePhishingOrOriginConfusion,
+  parameters: [],
+  result: Production.ThreatModel::ThreatMapping,
+  body: (record Production.ThreatModel::ThreatMapping {threat := "Security::threatDeepLinkFramePhishingOrOriginConfusion", controls := (cons "Security::controlOriginScopedPrismIdAudience" (nil String))})
+}
+
+definition{
+  name: mappingUnverifiedRepoDriftOrBypass,
+  parameters: [],
+  result: Production.ThreatModel::ThreatMapping,
+  body: (record Production.ThreatModel::ThreatMapping {threat := "Security::threatUnverifiedRepoDriftOrBypass", controls := (cons "Security::controlSelfHostingRatchetAndPullThroughGate" (nil String))})
+}
+
+definition{
   name: acceptedHostSubstitution,
   parameters: [],
   result: Production.ThreatModel::AcceptedRisk,
@@ -637,6 +1015,28 @@ theorem{
   name: modeledSecurityControlsEvidenced,
   parameters: [],
   statement: (((((nonEmptyString (project (controlSet) title)) && (nonEmptyString (project (acceptedHostSubstitution) rationale))) && (((nonEmptyString (project (modeledAssetPublishedPagesArtifact) name)) && ((nonEmptyString (project (modeledAssetStitchMultiplayerFabric) name)) && ((nonEmptyString (project (modeledAssetStudioAndDocsPages) name)) && ((nonEmptyString (project (modeledAssetVerdantCoreRuntime) name)) && ((nonEmptyString (project (modeledAssetVerifierGuestArchive) name)) && (nonEmptyString (project (modeledAssetVerdantWasmBridge) name))))))) && ((nonEmptyString (project (modeledThreatCorruptedStitchParityShard) name)) && ((nonEmptyString (project (modeledThreatForgedPeerInputEnvelope) name)) && ((nonEmptyString (project (modeledThreatHostSubstitution) name)) && ((nonEmptyString (project (modeledThreatInvalidShaderCompilation) name)) && ((nonEmptyString (project (modeledThreatMalformedGlbExport) name)) && ((nonEmptyString (project (modeledThreatSnapshotTampering) name)) && ((nonEmptyString (project (modeledThreatStudioScriptInjection) name)) && ((nonEmptyString (project (modeledThreatUngrantedContainerOrganAccess) name)) && ((nonEmptyString (project (modeledThreatVerifierQueryExhaustion) name)) && ((nonEmptyString (project (modeledThreatWallClippingOrTunnelingBypass) name)) && ((nonEmptyString (project (modeledThreatUniverseCoordinatePrecisionCollapse) name)) && (nonEmptyString (project (modeledThreatNarrativeSupplyInflationOrDeadlock) name))))))))))))))) && (((hasEvidence (project (modeledControlCapabilityGrantLattice) evidence)) && ((hasEvidence (project (modeledControlKhronosGltfOracle) evidence)) && ((hasEvidence (project (modeledControlNagaShaderOracle) evidence)) && ((hasEvidence (project (modeledControlPrismIdJournalSignature) evidence)) && ((hasEvidence (project (modeledControlSnapshotSha256Trailer) evidence)) && ((hasEvidence (project (modeledControlStitchFragmentCommitment) evidence)) && ((hasEvidence (project (modeledControlStrictHashedCsp) evidence)) && ((hasEvidence (project (modeledControlVerifierRequestCap) evidence)) && ((hasEvidence (project (modeledControlSweptBlasAndCameraGuard) evidence)) && ((hasEvidence (project (modeledControlFloatingOriginCanonicalizer) evidence)) && (hasEvidence (project (modeledControlConservationAndReachabilityOracle) evidence)))))))))))) && ((hasMappedControls (project (mappingCorruptedStitchParityShard) controls)) && ((hasMappedControls (project (mappingForgedPeerInputEnvelope) controls)) && ((hasMappedControls (project (mappingInvalidShaderCompilation) controls)) && ((hasMappedControls (project (mappingMalformedGlbExport) controls)) && ((hasMappedControls (project (mappingSnapshotTampering) controls)) && ((hasMappedControls (project (mappingStudioScriptInjection) controls)) && ((hasMappedControls (project (mappingUngrantedContainerOrganAccess) controls)) && ((hasMappedControls (project (mappingVerifierQueryExhaustion) controls)) && ((hasMappedControls (project (mappingWallClippingOrTunnelingBypass) controls)) && ((hasMappedControls (project (mappingUniverseCoordinatePrecisionCollapse) controls)) && (hasMappedControls (project (mappingNarrativeSupplyInflationOrDeadlock) controls)))))))))))))) = true),
+  proof: decide{},
+  axioms: []
+}
+
+definition{
+  name: selfHostedAssetsAndThreatsValid,
+  parameters: [],
+  result: Bool,
+  body: ((((project (assetImmutableBlankFrame) index) =? 6) && (((project (assetStakeholderPrivateBoundary) index) =? 7) && ((project (assetVerdantVcsAndReleases) index) =? 8))) && (((project (threatUnauthorizedPrivateBoundaryRead) index) =? 12) && (((project (threatRevokedPeerRetentionOrReplay) index) =? 13) && (((project (threatReleasePointerRollbackOrEquivocation) index) =? 14) && (((project (threatBlankFrameHydrationInjection) index) =? 15) && (((project (threatStitchStorageFloodOrSybilExhaustion) index) =? 16) && (((project (threatShardAttritionOrColdDisappearance) index) =? 17) && (((project (threatDeepLinkFramePhishingOrOriginConfusion) index) =? 18) && ((project (threatUnverifiedRepoDriftOrBypass) index) =? 19)))))))))
+}
+
+definition{
+  name: selfHostedControlsAndMappingsValid,
+  parameters: [],
+  result: Bool,
+  body: (((hasEvidence (project (modeledControlEncryptBeforeShardBoundary) evidence)) && ((hasEvidence (project (modeledControlBoundaryEpochRotationAndRevocation) evidence)) && ((hasEvidence (project (modeledControlMonotonicEpochQuorumPointer) evidence)) && ((hasEvidence (project (modeledControlZeroTrustSwVirtualFsMount) evidence)) && ((hasEvidence (project (modeledControlStitchBudgetAndReciprocalAdmission) evidence)) && ((hasEvidence (project (modeledControlKOfNReedSolomonAndAutonomousRepair) evidence)) && ((hasEvidence (project (modeledControlOriginScopedPrismIdAudience) evidence)) && (hasEvidence (project (modeledControlSelfHostingRatchetAndPullThroughGate) evidence))))))))) && ((hasMappedControls (project (mappingUnauthorizedPrivateBoundaryRead) controls)) && ((hasMappedControls (project (mappingRevokedPeerRetentionOrReplay) controls)) && ((hasMappedControls (project (mappingReleasePointerRollbackOrEquivocation) controls)) && ((hasMappedControls (project (mappingBlankFrameHydrationInjection) controls)) && ((hasMappedControls (project (mappingStitchStorageFloodOrSybilExhaustion) controls)) && ((hasMappedControls (project (mappingShardAttritionOrColdDisappearance) controls)) && ((hasMappedControls (project (mappingDeepLinkFramePhishingOrOriginConfusion) controls)) && (hasMappedControls (project (mappingUnverifiedRepoDriftOrBypass) controls))))))))))
+}
+
+theorem{
+  name: selfHostedStitchThreatModelEvidenced,
+  parameters: [],
+  statement: (((selfHostedAssetsAndThreatsValid) && (selfHostedControlsAndMappingsValid)) = true),
   proof: decide{},
   axioms: []
 }

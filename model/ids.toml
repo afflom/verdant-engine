@@ -364,3 +364,11 @@ id = "VE-42"
 level = "build"
 suite = "engine"
 statement = "SHA-256-locked Stafford Beer VSM (S1-S5 + S3*) and ISO/IEC/IEEE 42010:2022 Viewpoint + ISO/IEC/IEEE 12207 ALM Managers enforce Total Ownership across every Verdant route, shipped crate, Observer part, catalog stream, and authority corpus, disallow contrived ungrounded or cross-contaminated directives, synthesize declarative Stitch App Catalog and Viewpoint contracts, and expose a signed bidirectional Operator Communications Channel across native Rust CLI and WebAssembly"
+
+[[id]]
+id = "VE-43"
+level = "build"
+suite = "engine"
+statement = "Zero-account Prism-ID Encrypt-then-MAC boundary privacy with revocation epoch rotation, k-of-n systematic Reed-Solomon GF(2^8) erasure coding and autonomous parity repair, monotonic quorum release pointers, budgeted reciprocal Stitch shard admission, and in-Verdant W3C PROV-O Merkle revision control (VerdantVcs) uphold complete CIA and STRIDE security invariants across native Rust, WebAssembly, and Verdant MCP while refusing unauthorized decryption, revoked-epoch replay, pointer rollback, and over-budget floods"
+failure = "StitchBoundaryIntegrityError"
+negative = "VE-43"

@@ -336,5 +336,60 @@ theorem{
   proof: decide{},
   axioms: []
 }
+
+definition{
+  name: stitchBoundaryEnvelopeValid,
+  parameters: [
+    isPrivate : Bool,
+    aeadWrapped : Bool,
+    keyAdmitted : Bool,
+    revoked : Bool,
+    epochMonotonic : Bool,
+    kShards : Nat,
+    nShards : Nat
+  ],
+  result: Bool,
+  body: (((1 <=? kShards) && (kShards <=? nShards)) && (epochMonotonic && ((not isPrivate) || (aeadWrapped && (keyAdmitted && (not revoked))))))
+}
+
+definition{
+  name: framePinHydrationValid,
+  parameters: [
+    blake3Ok : Bool,
+    prismSigOk : Bool,
+    acceptanceOk : Bool,
+    epochMonotonic : Bool,
+    cspHashed : Bool
+  ],
+  result: Bool,
+  body: (blake3Ok && (prismSigOk && (acceptanceOk && (epochMonotonic && cspHashed))))
+}
+
+definition{
+  name: zeroAccountStakeholderValid,
+  parameters: [
+    requiresExternalAccount : Bool,
+    hasLocalPrismId : Bool,
+    hasLocalOpfsBackup : Bool,
+    kOfNProtected : Bool
+  ],
+  result: Bool,
+  body: ((not requiresExternalAccount) && (hasLocalPrismId && (hasLocalOpfsBackup && kOfNProtected)))
+}
+
+definition{
+  name: stitchSelfHostingDirect,
+  parameters: [],
+  result: Bool,
+  body: (((stitchBoundaryEnvelopeValid true true true false true (Subsystems::sFour) (Subsystems::sEight)) && ((stitchBoundaryEnvelopeValid false false false false true (Subsystems::sTwo) (Subsystems::sThree)) && ((not (stitchBoundaryEnvelopeValid true false true false true (Subsystems::sFour) (Subsystems::sEight))) && ((not (stitchBoundaryEnvelopeValid true true true true true (Subsystems::sFour) (Subsystems::sEight))) && ((not (stitchBoundaryEnvelopeValid true true true false false (Subsystems::sFour) (Subsystems::sEight))) && (not (stitchBoundaryEnvelopeValid true true true false true (Subsystems::sEight) (Subsystems::sFour)))))))) && (((framePinHydrationValid true true true true true) && ((not (framePinHydrationValid false true true true true)) && (not (framePinHydrationValid true true true false true)))) && ((zeroAccountStakeholderValid false true true true) && (not (zeroAccountStakeholderValid true true true true)))))
+}
+
+theorem{
+  name: stitchSelfHostingContractsVerified,
+  parameters: [],
+  statement: ((stitchSelfHostingDirect) = true),
+  proof: decide{},
+  axioms: []
+}
 \end{semanticmodule}
 \end{lexlean}

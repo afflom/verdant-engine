@@ -2,7 +2,7 @@
   "managers": [
     {
       "basisPrime": 59,
-      "kappaHex": "687b748fe4f5946da06fe73c6fc532de1fb57ffa7e51b7d28dbdb559ec8468f1",
+      "kappaHex": "ef1646434dac8d5d4e9ab75a0149799640fe03a071f0badc3c26b4888ad336d7",
       "spec": {
         "almPhases": [
           "governance",
@@ -20,17 +20,20 @@
         "governingAuthorities": [
           "AUTH-VSM-CYBERNETICS",
           "AUTH-ISO-42010-VIEWPOINTS",
-          "AUTH-W3C-SOSA-PROVO"
+          "AUTH-W3C-SOSA-PROVO",
+          "AUTH-STITCH-SELF-HOSTING"
         ],
         "managerId": "mgr-observer-executive",
         "ownedAuthorities": [
           "AUTH-VSM-CYBERNETICS",
-          "AUTH-ISO-42010-VIEWPOINTS"
+          "AUTH-ISO-42010-VIEWPOINTS",
+          "AUTH-STITCH-SELF-HOSTING"
         ],
         "ownedCrates": [],
         "ownedFiles": [
           "crates/verdant-core/src/observer.rs",
           "crates/verdant-core/src/operator.rs",
+          "crates/verdant-core/src/vcs.rs",
           "site/generated/viewpoint-contracts.json",
           "site/generated/immutability-seal.json"
         ],

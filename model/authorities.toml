@@ -84,7 +84,7 @@ id = "AUTH-ISO-42010-VIEWPOINTS"
 name = "ISO/IEC/IEEE 42010:2022 Architecture Viewpoints, ISO/IEC/IEEE 12207:2017 ALM & Stitch App Catalog"
 citation = "ISO/IEC/IEEE 42010:2022 Software, systems and enterprise — Architecture description; ISO/IEC/IEEE 12207:2017 Software life cycle processes; ISO 9241-210:2019; W3C DTCG 2025.10; WCAG 2.2 AA; afflom/stitch"
 artifact = "catalogs/governance/iso42010-viewpoints.json"
-checksum = "312b87f23d7b76cd2d8c7e071c0356f6c9c75b72e0998dff08499f9895e0b9ca"
+checksum = "eca899abd2d256aa504270f50b83d6b614ec2187463931f1dd2a4e7aaf129465"
 statement = "ISO/IEC/IEEE 42010:2022 binds every Verdant surface, crate, Observer part, stream, and Stitch App Catalog archetype to an accountable Manager with explicit required elements, forbidden cross-contamination, and correspondence rules."
 realized_by = ["VE-42"]
 
@@ -96,3 +96,12 @@ artifact = "catalogs/governance/iso25010-tensor-scaling.json"
 checksum = "bb3bd31f42e171fe501b852577f9047d77fbbca2a8cd93a939761776bebd43e2"
 statement = "ISO/IEC 25010:2023 and ITU-R BT.2020/2100 govern closed-loop dynamic workload scaling across FHD-to-16K+ displays and arbitrary AI/3D workloads through bounded-RAM PagedTensorArena zero-decode tensor core paging with zero manual Studio resolution toggles."
 realized_by = ["VE-41", "VE-42"]
+
+[[authority]]
+id = "AUTH-STITCH-SELF-HOSTING"
+name = "afflom/stitch Zero-Account Sovereign Custody, Encrypt-Before-Shard Boundary Privacy & Reed-Solomon GF(2^8) Self-Hosting"
+citation = "afflom/stitch (identity/stitch.lock commit 68a9222a); RFC 2104 HMAC-SHA256 & RFC 7366 Encrypt-then-MAC AEAD; Systematic Reed-Solomon GF(2^8) k-of-n Erasure Coding; W3C Service Workers & OPFS; W3C PROV-O; OCI Artifact Distribution; RFC 2789 Cargo Sparse Registry"
+artifact = "catalogs/governance/stitch-self-hosting.json"
+checksum = "4e9e39acc1edc4a3e5a597e2b93ab640e2de11cb5f57cbf8b3afe8f161ec9ef4"
+statement = "Zero-account Prism-ID boundary encryption, k-of-n systematic Reed-Solomon erasure coding, monotonic quorum release pointers, budgeted reciprocal peer admission, and in-Verdant PROV-O Merkle revision control provide uniform CIA guarantees across all Stitch content without requiring external user accounts."
+realized_by = ["VE-43"]

@@ -56,3 +56,15 @@ id = "AUTH-CL-07"
 level = "some-true"
 authority = "AUTH-ISO-42010-VIEWPOINTS"
 statement = "ISO/IEC/IEEE 42010:2022 Viewpoints and ISO/IEC/IEEE 12207:2017 ALM assign every Verdant route, shipped crate, Observer part, catalog stream, and Stitch App Catalog package to one accountable Manager with correspondence and non-contamination rules"
+
+[[claim]]
+id = "AUTH-CL-08"
+level = "some-true"
+authority = "AUTH-ISO-25010-TENSOR-SCALING"
+statement = "ISO/IEC 25010:2023 Performance Efficiency and ITU-R BT.2020/2100 UHDTV govern closed-loop dynamic workload scaling and bounded-RAM paged coded tensor contractions across 1080p through 16K+ and AI workloads"
+
+[[claim]]
+id = "AUTH-CL-09"
+level = "some-true"
+authority = "AUTH-STITCH-SELF-HOSTING"
+statement = "Zero-account Prism-ID boundary encryption, k-of-n systematic Reed-Solomon erasure coding, monotonic quorum release pointers, budgeted reciprocal peer admission, and in-Verdant PROV-O Merkle revision control provide uniform CIA guarantees across all Stitch content without external user accounts"

@@ -1555,6 +1555,10 @@ impl CatalogBundleRegistry {
             "catalogs/governance/iso25010-tensor-scaling.json",
             crate::operator::LOCKED_ISO25010_TENSOR_SCALING_JSON.as_bytes(),
         );
+        raw_files.insert(
+            "catalogs/governance/stitch-self-hosting.json",
+            crate::operator::LOCKED_STITCH_SELF_HOSTING_JSON.as_bytes(),
+        );
         Self::from_locked_bytes(EMBEDDED_AUTHORITIES_TOML, &raw_files)
     }
 

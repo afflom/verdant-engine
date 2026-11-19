@@ -3981,8 +3981,8 @@ fn engine_ve_38() {
 
     let repo_root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
     let registry = CatalogBundleRegistry::load_from_repo_dir(&repo_root)
-        .expect("all 7 SHA-256-locked authority catalogs load and cross-validate");
-    assert_eq!(registry.file_locks.len(), 7);
+        .expect("all 9 SHA-256-locked authority catalogs load and cross-validate");
+    assert_eq!(registry.file_locks.len(), 9);
     assert_eq!(registry.domain_packs.domains.len(), 4);
     assert_eq!(registry.khronos_hd.materials.len(), 8);
     assert_eq!(registry.khronos_hd.rigs.len(), 4);
@@ -5293,4 +5293,275 @@ fn engine_ve_42() {
     }
     let pr_len = verdant_wasm_operator_prompt_io() as usize;
     assert!(pr_len > 0 && verdant_wasm_aux_len() as usize == pr_len);
+}
+
+/// `VE-43`: Zero-account Prism-ID Encrypt-then-MAC boundary privacy with revocation epoch
+/// rotation, k-of-n systematic Reed-Solomon GF(2^8) erasure coding & autonomous parity repair,
+/// monotonic quorum release pointers, budgeted reciprocal Stitch admission, and in-Verdant
+/// W3C PROV-O Merkle revision control (`VerdantVcs`).
+#[test]
+fn engine_ve_43() {
+    use std::collections::BTreeMap;
+    use verdant_core::network::{
+        BoundaryKeyring, BoundaryVisibility, PrismBoundaryCipher, ReedSolomonStitchCodec,
+        StitchBudgetLedger, StitchMonotonicPointer, BOUNDARY_PADDING_BLOCK_BYTES,
+        RELEASE_RS_DATA_SHARDS, RELEASE_RS_TOTAL_SHARDS,
+    };
+    use verdant_core::vcs::VerdantVcs;
+
+    // 1. Threat 12 & 13: Zero-account Encrypt-Before-Shard Boundary Privacy + Revocation Rotation
+    let mut ring = BoundaryKeyring::new(
+        "stitch://boundary/alice-private-world",
+        "prism:alice-local-device",
+        b"alice-non-extractable-webcrypto-seed",
+    )
+    .expect("create zero-account boundary keyring");
+    ring.admit_member("prism:bob-collaborator")
+        .expect("admit zero-account collaborator");
+    assert!(ring.is_authorized("prism:alice-local-device"));
+    assert!(ring.is_authorized("prism:bob-collaborator"));
+
+    let secret_payload = b"CONFIDENTIAL_STITCH_WORLD_SCENE_VERDANT_ZERO_ACCOUNT_SECRET_PAYLOAD";
+    let env_e1 = PrismBoundaryCipher::seal(
+        &ring,
+        "prism:alice-local-device",
+        BoundaryVisibility::SelectiveShare,
+        secret_payload,
+        b"nonce-epoch-1",
+    )
+    .expect("seal private boundary epoch 1");
+    assert_eq!(env_e1.ciphertext.len() % BOUNDARY_PADDING_BLOCK_BYTES, 0);
+    assert!(
+        !env_e1
+            .ciphertext
+            .windows(b"CONFIDENTIAL".len())
+            .any(|w| w == b"CONFIDENTIAL"),
+        "ciphertext must leak zero plaintext substrings"
+    );
+    let bob_read = PrismBoundaryCipher::open(&ring, "prism:bob-collaborator", &env_e1)
+        .expect("authorized collaborator decrypts epoch 1");
+    assert_eq!(bob_read.as_slice(), secret_payload);
+
+    // Tampered ciphertext MUST be refused by HMAC-SHA256 before decryption:
+    let mut tampered_env = env_e1.clone();
+    tampered_env.ciphertext[0] ^= 0x55;
+    assert!(PrismBoundaryCipher::open(&ring, "prism:alice-local-device", &tampered_env).is_err());
+
+    // Revoking Bob rotates epoch 1 -> 2 with fresh key; Bob is refused on epoch 2 AND stale epoch 1:
+    let old_bob_ring = ring.clone();
+    let e2 = ring
+        .revoke_and_rotate("prism:bob-collaborator", b"revocation-entropy-2")
+        .expect("rotate boundary on revocation");
+    assert_eq!(e2, 2);
+    assert!(!ring.is_authorized("prism:bob-collaborator"));
+    let env_e2 = PrismBoundaryCipher::seal(
+        &ring,
+        "prism:alice-local-device",
+        BoundaryVisibility::PrivateEncrypted,
+        b"EPOCH_2_POST_REVOCATION_SECRET",
+        b"nonce-epoch-2",
+    )
+    .expect("seal epoch 2");
+    assert!(PrismBoundaryCipher::open(&ring, "prism:bob-collaborator", &env_e2).is_err());
+    assert!(PrismBoundaryCipher::open(&old_bob_ring, "prism:bob-collaborator", &env_e2).is_err());
+    assert!(PrismBoundaryCipher::seal(
+        &ring,
+        "prism:bob-collaborator",
+        BoundaryVisibility::PrivateEncrypted,
+        b"forged",
+        b"n",
+    )
+    .is_err());
+
+    // 2. Threat 17: Systematic 4-of-8 GF(2^8) Reed-Solomon Erasure Coding & Autonomous Repair
+    let envelope_bytes = serde_json::to_vec(&env_e2).expect("serialize encrypted envelope");
+    let shards = ReedSolomonStitchCodec::shard_k_of_n(
+        &envelope_bytes,
+        RELEASE_RS_DATA_SHARDS,
+        RELEASE_RS_TOTAL_SHARDS,
+    )
+    .expect("4-of-8 Reed-Solomon sharding");
+    assert_eq!(shards.len(), 8);
+    // Drop ALL 4 systematic data shards (0..4) — keeping ONLY the 4 Cauchy parity shards (4..8)!
+    let parity_only = &shards[4..8];
+    let recovered = ReedSolomonStitchCodec::recover_k_of_n(parity_only)
+        .expect("recover bit-exact payload from 4 parity shards alone");
+    assert_eq!(recovered, envelope_bytes);
+    let recovered_env: verdant_core::network::StitchBoundaryEnvelope =
+        serde_json::from_slice(&recovered).expect("parse recovered envelope");
+    let decrypted = PrismBoundaryCipher::open(&ring, "prism:alice-local-device", &recovered_env)
+        .expect("owner decrypts recovered 4-of-8 boundary");
+    assert_eq!(decrypted.as_slice(), b"EPOCH_2_POST_REVOCATION_SECRET");
+
+    // Autonomous S3* repair restores all 8 exact shards from any 4 survivors:
+    let repaired = ReedSolomonStitchCodec::repair_k_of_n(&[
+        shards[0].clone(),
+        shards[2].clone(),
+        shards[5].clone(),
+        shards[7].clone(),
+    ])
+    .expect("autonomous repair back to 8 shards");
+    assert_eq!(repaired, shards);
+
+    // Negative: fewer than k shards or 1-bit tampered shard MUST fail:
+    assert!(ReedSolomonStitchCodec::recover_k_of_n(&shards[0..3]).is_err());
+    let mut bad_subset = parity_only.to_vec();
+    bad_subset[0].payload[0] ^= 0x01;
+    assert!(ReedSolomonStitchCodec::recover_k_of_n(&bad_subset).is_err());
+
+    // 3. Threat 14: Monotonic Quorum Release / Deep-Link Pointer (Anti-Rollback)
+    let mut quorum_keys = BTreeMap::new();
+    quorum_keys.insert(
+        "prism:release-signer-1".to_string(),
+        b"signer-1-secret".to_vec(),
+    );
+    quorum_keys.insert(
+        "prism:release-signer-2".to_string(),
+        b"signer-2-secret".to_vec(),
+    );
+    let ptr_v1 = StitchMonotonicPointer::sign_quorum(
+        "stitch://verdant/releases/stable",
+        1,
+        "genesis",
+        "kappa-release-v1",
+        2,
+        &[
+            ("prism:release-signer-1", b"signer-1-secret"),
+            ("prism:release-signer-2", b"signer-2-secret"),
+        ],
+    )
+    .expect("sign quorum v1");
+    ptr_v1
+        .verify_advance(0, Some("genesis"), &quorum_keys)
+        .expect("admit epoch 1");
+    let ptr_v2 = StitchMonotonicPointer::sign_quorum(
+        "stitch://verdant/releases/stable",
+        2,
+        "kappa-release-v1",
+        "kappa-release-v2",
+        2,
+        &[
+            ("prism:release-signer-1", b"signer-1-secret"),
+            ("prism:release-signer-2", b"signer-2-secret"),
+        ],
+    )
+    .expect("sign quorum v2");
+    ptr_v2
+        .verify_advance(1, Some("kappa-release-v1"), &quorum_keys)
+        .expect("admit epoch 2");
+    // Rollback to validly-signed v1 MUST be refused when persisted_epoch == 2:
+    assert!(ptr_v1
+        .verify_advance(2, Some("kappa-release-v2"), &quorum_keys)
+        .is_err());
+    // Insufficient 1-of-2 quorum MUST be refused:
+    let under_quorum = StitchMonotonicPointer::sign_quorum(
+        "stitch://verdant/releases/stable",
+        3,
+        "kappa-release-v2",
+        "kappa-release-v3",
+        2,
+        &[("prism:release-signer-1", b"signer-1-secret")],
+    )
+    .expect("sign 1-of-2");
+    assert!(under_quorum
+        .verify_advance(2, Some("kappa-release-v2"), &quorum_keys)
+        .is_err());
+
+    // 4. Threat 16: Zero-Account Budgeted Reciprocal Stitch Admission (Sybil Flood Guard)
+    let mut ledger = StitchBudgetLedger::new(1024, 2048);
+    ledger
+        .admit_shard("prism:peer-a", "shard-a1", 512)
+        .expect("admit within cap");
+    ledger
+        .admit_shard("prism:peer-a", "shard-a2", 512)
+        .expect("admit up to exact per-id cap");
+    // Over-budget Sybil burst from peer-a MUST be refused:
+    assert!(ledger.admit_shard("prism:peer-a", "shard-a3", 64).is_err());
+    // Different zero-account peers can use alien pool while LRU eviction enforces alien_pool_cap_bytes:
+    ledger
+        .admit_shard("prism:peer-b", "shard-b1", 1024)
+        .expect("peer-b fits");
+    ledger
+        .admit_shard("prism:peer-c", "shard-c1", 1024)
+        .expect("peer-c triggers bounded alien LRU eviction");
+    assert!(ledger.alien_resident_bytes <= ledger.alien_pool_cap_bytes);
+    assert!(ledger.alien_evictions > 0);
+
+    // 5. In-Verdant W3C PROV-O Merkle Revision Control (`VerdantVcs`) + `.uorc` Capsule Roundtrip
+    let mut vcs = VerdantVcs::new();
+    let mut tree1 = BTreeMap::new();
+    tree1.insert(
+        "frame-pin.json".to_string(),
+        br#"{"stitchUri":"stitch://verdant/releases/stable"}"#.to_vec(),
+    );
+    tree1.insert(
+        "studio/view.json".to_string(),
+        br#"{"viewpoint":"creator-studio","v":1}"#.to_vec(),
+    );
+    let c1 = vcs
+        .commit_tree(
+            "refs/verdant/heads/main",
+            &tree1,
+            "prism:alice-local-device",
+            b"alice-secret",
+            "mgr-studio-alm",
+            "AUTH-STITCH-SELF-HOSTING",
+            "Lift Studio viewpoint into VerdantVcs",
+        )
+        .expect("commit genesis");
+    let mut tree2 = tree1.clone();
+    tree2.insert(
+        "studio/view.json".to_string(),
+        br#"{"viewpoint":"creator-studio","v":2}"#.to_vec(),
+    );
+    let c2 = vcs
+        .commit_tree(
+            "refs/verdant/heads/main",
+            &tree2,
+            "prism:alice-local-device",
+            b"alice-secret",
+            "mgr-studio-alm",
+            "AUTH-STITCH-SELF-HOSTING",
+            "Refine Studio viewpoint declaratively",
+        )
+        .expect("commit revision 2");
+    assert_eq!(c2.epoch, 2);
+    assert_eq!(c2.parent_kappas, vec![c1.commit_kappa.clone()]);
+    let history = vcs
+        .verify_acyclic_history(&c2.commit_kappa)
+        .expect("acyclic history");
+    assert_eq!(history.len(), 2);
+
+    // Unsigned or ungrounded (non-AUTH-*) commit MUST be refused:
+    assert!(vcs
+        .commit_tree(
+            "refs/verdant/heads/main",
+            &tree2,
+            "anonymous",
+            b"s",
+            "mgr-studio-alm",
+            "AUTH-STITCH-SELF-HOSTING",
+            "bad author",
+        )
+        .is_err());
+    assert!(vcs
+        .commit_tree(
+            "refs/verdant/heads/main",
+            &tree2,
+            "prism:alice-local-device",
+            b"alice-secret",
+            "mgr-studio-alm",
+            "CONTRIVED",
+            "bad authority",
+        )
+        .is_err());
+
+    // Roundtrip entire VerdantVcs through `.uorc` capsule:
+    let capsule = vcs.encode_uorc_capsule().expect("encode VerdantVcs .uorc");
+    let restored_vcs =
+        VerdantVcs::decode_uorc_capsule(&capsule).expect("decode & verify VerdantVcs .uorc");
+    let checked_out = restored_vcs
+        .checkout_commit(&c2.commit_kappa)
+        .expect("checkout verified tree");
+    assert_eq!(checked_out, tree2);
 }
