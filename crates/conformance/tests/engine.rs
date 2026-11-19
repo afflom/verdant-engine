@@ -5146,6 +5146,40 @@ fn engine_ve_42() {
     .expect("verdant operator prompt CLI");
     assert!(cli_prompt.contains("\"admitted\": true"));
 
+    // 7b. Verdant Operator API materialization (`apply` admitted vs refused + multi-turn NDJSON `session`):
+    let apply_refused = ch
+        .apply_directive(
+            &root,
+            &OperatorPromptRequest {
+                viewpoint: "creator-studio".to_string(),
+                directive: "Add Verify UHD 4K Envelope button to Studio".to_string(),
+                cited_authority: None,
+                operator_prism_id: "prism:operator-ci".to_string(),
+            },
+        )
+        .expect("refused apply");
+    assert!(!apply_refused.applied);
+    assert!(apply_refused.written_files.is_empty());
+
+    let (cont1, s1) = ch.handle_session_rpc_line(&root, r#"{"op":"status"}"#);
+    assert!(cont1 && s1.contains("\"ok\":true"));
+    let (cont2, s2) = ch.handle_session_rpc_line(&root, r#"{"op":"audit","viewpoint":"all"}"#);
+    assert!(cont2 && s2.contains("\"ok\":true"));
+    let (cont3, s3) = ch.handle_session_rpc_line(&root, r#"{"op":"history"}"#);
+    assert!(cont3 && s3.contains("\"communicationCount\""));
+    let (cont4, s4) = ch.handle_session_rpc_line(&root, r#"{"op":"quit"}"#);
+    assert!(!cont4 && s4.contains("\"op\":\"quit\""));
+
+    // Verify Manager-synthesized world differentiation profiles & Stitch App Catalog JSON are rich & valid:
+    let world_profiles_json = ch.synthesize_world_differentiation_profiles_json();
+    assert!(world_profiles_json.contains("\"worldCount\": 4"));
+    assert!(world_profiles_json.contains("starfall-bastion"));
+    let stitch_catalog_json = ch
+        .synthesize_stitch_app_catalog_json(None)
+        .expect("stitch catalog json");
+    assert!(stitch_catalog_json.contains("\"appCount\": 4"));
+    assert!(stitch_catalog_json.contains("Parity (A ^ B)"));
+
     // 8. WebAssembly C-ABI mirror (`verdant_wasm_operator_status_aux` + `verdant_wasm_operator_prompt_io`):
     let _abi_guard = wasm_abi_lock();
     assert_eq!(verdant_wasm_init(7), 1);

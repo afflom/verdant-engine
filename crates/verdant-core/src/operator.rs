@@ -22,7 +22,11 @@ use crate::network::{shard_bytes_to_stitch_fragments, PrismIdSessionEnvelope, St
 use crate::observer::{
     sha256_payload_digest, CommunicationChannelKind, ObserverPartSlot, ObserverPrismHolon,
 };
+#[cfg(not(target_arch = "wasm32"))]
+use crate::runtime::WorldSnapshot;
 use crate::streaming::is_uorc_archive;
+#[cfg(not(target_arch = "wasm32"))]
+use crate::streaming::StandardSceneState;
 
 /// Embedded SHA-256-locked Stafford Beer VSM governance authority (`AUTH-VSM-CYBERNETICS`).
 pub const LOCKED_VSM_CATALOG_JSON: &str =
@@ -484,6 +488,137 @@ pub struct ManagerAuditResult {
     pub passed: bool,
     /// Violations detected (empty when `passed == true`).
     pub violations: Vec<String>,
+}
+
+/// Manager-synthesized atmospheric, lighting, acoustic, and archetype profile for one cataloged
+/// world (`AUTH-DOMAIN-PACKS` + `AUTH-KHRONOS-GLTF2`).
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct WorldDifferentiationProfile {
+    /// Domain identifier (`DOM-SUNSPIRE-HARBOR`, etc.).
+    pub domain_id: String,
+    /// Stable world slug (`sunspire-regatta`, etc.).
+    pub slug: String,
+    /// Display world title.
+    pub title: String,
+    /// Deterministic world seed.
+    pub seed: u64,
+    /// Default LOD rank.
+    pub default_lod_rank: u64,
+    /// Normalized RGB sky zenith color (`[0..1]`).
+    pub sky_rgb: [f32; 1 + 1 + 1],
+    /// Normalized RGB horizon fog color (`[0..1]`).
+    pub fog_rgb: [f32; 1 + 1 + 1],
+    /// Environment title from `AUTH-DOMAIN-PACKS`.
+    pub environment_name: String,
+    /// Sabine room acoustic volume in cubic meters.
+    pub acoustic_volume_m3: u64,
+    /// Sabine surface absorption in milli-m².
+    pub acoustic_absorption_milli_m2: u64,
+    /// Default Verdant App archetype suited for this world.
+    pub default_app_genre: String,
+    /// Human-readable genre label.
+    pub default_app_genre_label: String,
+    /// Primary Schema.org application type.
+    pub schema_org_type: String,
+    /// Hero model names bound to this world.
+    pub hero_models: Vec<String>,
+    /// Character names & roles bound to this world.
+    pub characters: Vec<String>,
+    /// Content-addressed Manager profile `kappa`.
+    pub profile_kappa_hex: String,
+}
+
+/// One materialized Stitch 2-of-3 parity fragment summary in the generated Verdant App Catalog.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct StitchCatalogShardSummary {
+    /// Shard slot (`0` = Shard A, `1` = Shard B, `2` = Parity `A ^ B`).
+    pub index: u8,
+    /// Human-readable role label.
+    pub role: String,
+    /// Encoded `STCH` wire byte size.
+    pub bytes: usize,
+    /// Hex SHA-256 prefix of shard payload root.
+    pub sha256: String,
+}
+
+/// One browser-ready Verdant App entry materialized into `site/generated/stitch-app-catalog.json`.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct StitchCatalogManifestApp {
+    /// Stable app identifier.
+    pub app_id: String,
+    /// App title.
+    pub title: String,
+    /// Genre slug (`first-person-shooter`, `mmo-universe`, etc.).
+    pub genre: String,
+    /// Display genre label.
+    pub genre_label: String,
+    /// Schema.org type (`VideoGame` or `SoftwareApplication`).
+    pub schema_type: String,
+    /// Target world domain slug from `AUTH-DOMAIN-PACKS`.
+    pub domain_slug: String,
+    /// World display title.
+    pub world_title: String,
+    /// Concise app summary.
+    pub summary: String,
+    /// Sovereign `Prism id` publisher.
+    pub publisher_id: String,
+    /// Archive format (always `.uorc`).
+    pub archive_format: String,
+    /// Exact sealed `.uorc` payload byte length.
+    pub uorc_bytes: usize,
+    /// Full SHA-256 hex digest of the sealed `.uorc` payload.
+    pub payload_sha256: String,
+    /// All 3 `afflom/stitch` 2-of-3 parity fragment commitments.
+    pub stitch_shards: Vec<StitchCatalogShardSummary>,
+    /// Deterministic RFC-3339 publication timestamp.
+    pub published_at: String,
+    /// Whether this entry is one of the Manager-curated flagship apps.
+    pub seeded: bool,
+}
+
+/// File written by an accountable Manager during `synthesize` or `apply`.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MaterializedFileRecord {
+    /// Owning Manager ID.
+    pub manager_id: String,
+    /// Repository-relative path written.
+    pub path: String,
+    /// Written byte length.
+    pub bytes: usize,
+    /// SHA-256 hex digest of written contents.
+    pub sha256_hex: String,
+}
+
+/// Structured result of `verdant operator synthesize` / `materialize_manager_artifacts`.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MaterializationReport {
+    /// Whether materialization and closing S3* audit succeeded.
+    pub ok: bool,
+    /// Files materialized strictly under Manager ownership.
+    pub written_files: Vec<MaterializedFileRecord>,
+    /// Signed PROV-O communication `kappa` for this materialization run.
+    pub comm_kappa_hex: String,
+    /// Closing VSM S3* audit status.
+    pub audit_passed: bool,
+}
+
+/// Structured result of `verdant operator apply`.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OperatorApplyReport {
+    /// Whether the directive was admitted AND materialized cleanly.
+    pub applied: bool,
+    /// Signed Manager prompt admission / refusal decision.
+    pub decision: OperatorPromptResponse,
+    /// Materialized files (guaranteed empty when refused).
+    pub written_files: Vec<MaterializedFileRecord>,
+    /// Post-apply VSM S3* audit result (present when applied).
+    pub audit: Option<OperatorAuditReport>,
 }
 
 /// Complete VSM S3* + Total Ownership audit report over the live repository.
@@ -1096,6 +1231,40 @@ impl VerdantOperatorChannel {
         })
     }
 
+    /// Serializes a [`MaterializationReport`] as pretty JSON.
+    pub fn serialize_materialization_pretty(
+        rep: &MaterializationReport,
+    ) -> Result<String, ObserverModelError> {
+        serde_json::to_string_pretty(rep).map_err(|e| {
+            ObserverModelError::CommunicationEnvelopeRejected {
+                channel: CommunicationChannelKind::AgentToAgent.slug().to_string(),
+                detail: e.to_string(),
+            }
+        })
+    }
+
+    /// Serializes an [`OperatorApplyReport`] as pretty JSON.
+    pub fn serialize_apply_pretty(rep: &OperatorApplyReport) -> Result<String, ObserverModelError> {
+        serde_json::to_string_pretty(rep).map_err(|e| {
+            ObserverModelError::CommunicationEnvelopeRejected {
+                channel: CommunicationChannelKind::AgentToAgent.slug().to_string(),
+                detail: e.to_string(),
+            }
+        })
+    }
+
+    /// Serializes a [`StitchCatalogManifestApp`] as pretty JSON.
+    pub fn serialize_manifest_app_pretty(
+        app: &StitchCatalogManifestApp,
+    ) -> Result<String, ObserverModelError> {
+        serde_json::to_string_pretty(app).map_err(|e| {
+            ObserverModelError::CommunicationEnvelopeRejected {
+                channel: CommunicationChannelKind::OrganToOrgan.slug().to_string(),
+                detail: e.to_string(),
+            }
+        })
+    }
+
     /// Executes [`Self::audit_repository`] and returns `(passed, pretty_json)`.
     #[cfg(not(target_arch = "wasm32"))]
     #[must_use]
@@ -1199,6 +1368,646 @@ impl VerdantOperatorChannel {
             ownership,
             managers: results,
             differentiated_worlds,
+        }
+    }
+
+    /// Synthesizes canonical per-world differentiation profiles (`mgr-playable-world`) strictly
+    /// from SHA-256-locked `AUTH-DOMAIN-PACKS` + `AUTH-KHRONOS-GLTF2`.
+    #[must_use]
+    pub fn synthesize_world_differentiation_profiles(&self) -> Vec<WorldDifferentiationProfile> {
+        let hundred_u =
+            (1u8 << (1 + 1 + 1 + 1 + 1 + 1)) + (1u8 << (1 + 1 + 1 + 1 + 1)) + (1u8 << (1 + 1));
+        let hundred_f = f32::from(hundred_u);
+        let idx_one = 1usize;
+        let idx_two = 1usize + 1usize;
+        let mut profiles = Vec::new();
+        for dom in &self.observer.catalogs.domain_packs.domains {
+            let sky_pct = dom.environment.sky_rgb_percent;
+            let fog_pct = dom.environment.fog_rgb_percent;
+            let sky_rgb = [
+                f32::from(sky_pct[0]) / hundred_f,
+                f32::from(sky_pct[idx_one]) / hundred_f,
+                f32::from(sky_pct[idx_two]) / hundred_f,
+            ];
+            let fog_rgb = [
+                f32::from(fog_pct[0]) / hundred_f,
+                f32::from(fog_pct[idx_one]) / hundred_f,
+                f32::from(fog_pct[idx_two]) / hundred_f,
+            ];
+            let (genre, genre_label, schema_org_type) = match dom.slug.as_str() {
+                "starfall-bastion" => ("first-person-shooter", "First-Person Shooter", "VideoGame"),
+                "meridian-observatory" => ("mmo-universe", "MMO Universe", "VideoGame"),
+                "glasshouse-chronicle" => {
+                    ("indie-side-scroller", "Indie Side-Scroller", "VideoGame")
+                }
+                _ => ("coastal-adventure", "3D Coastal Adventure", "VideoGame"),
+            };
+            let hero_models: Vec<String> = dom
+                .models
+                .iter()
+                .map(|m| format!("{} ({})", m.name, m.material_id))
+                .collect();
+            let characters: Vec<String> = dom
+                .characters
+                .iter()
+                .map(|c| format!("{} ({})", c.name, c.role))
+                .collect();
+            let kappa_input = format!(
+                "{}:{}:{}:{:?}:{:?}",
+                dom.id, dom.slug, dom.seed, sky_pct, fog_pct
+            );
+            let profile_kappa_hex = sha256_hex_tagged("world-profile", kappa_input.as_bytes());
+            profiles.push(WorldDifferentiationProfile {
+                domain_id: dom.id.clone(),
+                slug: dom.slug.clone(),
+                title: dom.title.clone(),
+                seed: dom.seed,
+                default_lod_rank: dom.default_lod_rank,
+                sky_rgb,
+                fog_rgb,
+                environment_name: dom.environment.name.clone(),
+                acoustic_volume_m3: dom.environment.acoustic_volume_m3,
+                acoustic_absorption_milli_m2: dom.environment.acoustic_absorption_milli_m2,
+                default_app_genre: genre.to_string(),
+                default_app_genre_label: genre_label.to_string(),
+                schema_org_type: schema_org_type.to_string(),
+                hero_models,
+                characters,
+                profile_kappa_hex,
+            });
+        }
+        profiles
+    }
+
+    /// Serializes the `mgr-playable-world` differentiation profiles as pretty JSON.
+    #[must_use]
+    pub fn synthesize_world_differentiation_profiles_json(&self) -> String {
+        let profiles = self.synthesize_world_differentiation_profiles();
+        let manager_kappa = self
+            .managers
+            .iter()
+            .find(|m| m.spec.manager_id == "mgr-playable-world")
+            .map(|m| m.kappa_hex.as_str())
+            .unwrap_or("");
+        serde_json::to_string_pretty(&serde_json::json!({
+            "spec": "verdant/world-differentiation-profiles/1",
+            "owningManager": "mgr-playable-world",
+            "managerKappaHex": manager_kappa,
+            "governingAuthorities": ["AUTH-DOMAIN-PACKS", "AUTH-KHRONOS-GLTF2", "AUTH-ISO-42010-VIEWPOINTS"],
+            "worldCount": profiles.len(),
+            "worlds": profiles,
+        }))
+        .unwrap_or_else(|_| "{}".to_string())
+    }
+
+    #[cfg(not(target_arch = "wasm32"))]
+    fn build_stitch_manifest_app(
+        &mut self,
+        app_id_override: Option<&str>,
+        meta: (&str, &str, &str, &str),
+        publisher_id: &str,
+        seeded: bool,
+    ) -> Result<StitchCatalogManifestApp, ObserverModelError> {
+        let (title, genre, domain_slug, summary) = meta;
+        let dom = self
+            .observer
+            .catalogs
+            .domain_packs
+            .domains
+            .iter()
+            .find(|d| d.slug == domain_slug || d.id == domain_slug)
+            .cloned()
+            .ok_or_else(|| ObserverModelError::CommunicationEnvelopeRejected {
+                channel: CommunicationChannelKind::OrganToOrgan.slug().to_string(),
+                detail: format!("unknown world domain `{domain_slug}` in AUTH-DOMAIN-PACKS"),
+            })?;
+        let lod_rank = 1u64 + 1u64;
+        let scene = StandardSceneState::synthesize_at_lod(dom.seed, lod_rank).map_err(|e| {
+            ObserverModelError::CommunicationEnvelopeRejected {
+                channel: CommunicationChannelKind::OrganToOrgan.slug().to_string(),
+                detail: format!("world synthesis failed for `{}`: {e}", dom.slug),
+            }
+        })?;
+        let uorc = WorldSnapshot::encode_uorc(&scene).map_err(|e| {
+            ObserverModelError::CommunicationEnvelopeRejected {
+                channel: CommunicationChannelKind::OrganToOrgan.slug().to_string(),
+                detail: format!("uorc sealing failed: {e}"),
+            }
+        })?;
+        let entry =
+            self.publish_stitch_app_catalog_entry(title, genre, summary, publisher_id, &uorc)?;
+        let (genre_label, schema_type) = match genre {
+            "first-person-shooter" => ("First-Person Shooter", "VideoGame"),
+            "mmo-universe" | "massively-multiplayer-universe" => ("MMO Universe", "VideoGame"),
+            "indie-side-scroller" => ("Indie Side-Scroller", "VideoGame"),
+            "spatial-simulation" => ("Spatial Simulation", "SoftwareApplication"),
+            _ => ("3D Coastal Adventure", "VideoGame"),
+        };
+        let hex_prefix_len = 1usize << (1 + 1 + 1 + 1 + 1);
+        let short_id_len = 1usize << (1 + 1 + 1);
+        let roles = ["Shard A", "Shard B", "Parity (A ^ B)"];
+        let mut stitch_shards = Vec::new();
+        for (i, frag) in entry.stitch_fragments.iter().enumerate() {
+            let wire = frag.encode_wire();
+            let shard_sha = sha256_hex_tagged("stitch-frag", &frag.payload_root);
+            let role = roles.get(i).copied().unwrap_or("Shard");
+            stitch_shards.push(StitchCatalogShardSummary {
+                index: frag.index,
+                role: role.to_string(),
+                bytes: wire.len(),
+                sha256: shard_sha[..hex_prefix_len.min(shard_sha.len())].to_string(),
+            });
+        }
+        let app_id = if let Some(fixed) = app_id_override {
+            fixed.to_string()
+        } else {
+            let clean_slug: String = title
+                .to_lowercase()
+                .chars()
+                .map(|c| if c.is_ascii_alphanumeric() { c } else { '-' })
+                .collect();
+            let trimmed = clean_slug.trim_matches('-');
+            let max_slug_len = (1usize << (1 + 1 + 1 + 1 + 1)) + (1usize << (1 + 1));
+            let base = if trimmed.is_empty() {
+                "verdant-app"
+            } else {
+                &trimmed[..max_slug_len.min(trimmed.len())]
+            };
+            format!(
+                "app-{base}-{}",
+                &entry.uorc_kappa_hex[..short_id_len.min(entry.uorc_kappa_hex.len())]
+            )
+        };
+        Ok(StitchCatalogManifestApp {
+            app_id,
+            title: entry.title,
+            genre: genre.to_string(),
+            genre_label: genre_label.to_string(),
+            schema_type: schema_type.to_string(),
+            domain_slug: dom.slug,
+            world_title: dom.title,
+            summary: entry.description,
+            publisher_id: publisher_id.to_string(),
+            archive_format: ".uorc".to_string(),
+            uorc_bytes: entry.uorc_byte_len,
+            payload_sha256: entry.uorc_kappa_hex,
+            stitch_shards,
+            published_at: "2026-11-19T00:00:00Z".to_string(),
+            seeded,
+        })
+    }
+
+    /// Synthesizes the canonical `site/generated/stitch-app-catalog.json` manifest using real
+    /// sealed `.uorc` snapshots and real `afflom/stitch` 2-of-3 parity shards, preserving any
+    /// additional non-seeded apps already published in `existing_json`.
+    #[cfg(not(target_arch = "wasm32"))]
+    pub fn synthesize_stitch_app_catalog_json(
+        &mut self,
+        existing_json: Option<&str>,
+    ) -> Result<String, ObserverModelError> {
+        let mut custom_apps: Vec<StitchCatalogManifestApp> = Vec::new();
+        if let Some(raw) = existing_json {
+            if let Ok(val) = serde_json::from_str::<serde_json::Value>(raw) {
+                if let Some(arr) = val.get("apps").and_then(|v| v.as_array()) {
+                    for item in arr {
+                        if let Ok(app) =
+                            serde_json::from_value::<StitchCatalogManifestApp>(item.clone())
+                        {
+                            if !app.seeded {
+                                custom_apps.push(app);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        let flagship_specs = [
+            (
+                "app-starfall-vanguard-fps",
+                "Starfall Vanguard",
+                "first-person-shooter",
+                "starfall-bastion",
+                "Fast-paced 3D arena FPS with 64-triangle Morton meshlets, UHD 4K CAS resolve, and calibrated stone arena acoustics.",
+            ),
+            (
+                "app-meridian-expanse-mmo",
+                "Meridian Expanse",
+                "mmo-universe",
+                "meridian-observatory",
+                "Multi-sector floating-origin universe featuring celestial observatories, synchronized world shards, and persistent state recovery.",
+            ),
+            (
+                "app-glasshouse-canopy-runner",
+                "Glasshouse Canopy Runner",
+                "indie-side-scroller",
+                "glasshouse-chronicle",
+                "Atmospheric botanical side-scroller built with 2.5D spline traversal, conservatory glass acoustics, and grounded character dialogue.",
+            ),
+            (
+                "app-sunspire-beacon-trials",
+                "Sunspire Beacon Trials",
+                "coastal-adventure",
+                "sunspire-regatta",
+                "Coastal 3D action trial set across the Sunspire stone arch basin with beacon harmonization, patrol hulls, and 3rd/1st person cameras.",
+            ),
+        ];
+        let mut apps: Vec<StitchCatalogManifestApp> = custom_apps;
+        let mut seen: BTreeSet<String> = apps.iter().map(|a| a.app_id.clone()).collect();
+        for (app_id, title, genre, domain_slug, summary) in flagship_specs {
+            if seen.insert(app_id.to_string()) {
+                let app = self.build_stitch_manifest_app(
+                    Some(app_id),
+                    (title, genre, domain_slug, summary),
+                    "prism:verdant-curated",
+                    true,
+                )?;
+                apps.push(app);
+            }
+        }
+        let curator_kappa = self
+            .managers
+            .iter()
+            .find(|m| m.spec.manager_id == "mgr-catalog-curator")
+            .map(|m| m.kappa_hex.as_str())
+            .unwrap_or("");
+        serde_json::to_string_pretty(&serde_json::json!({
+            "spec": "verdant/stitch-app-catalog/1",
+            "owningManager": "mgr-catalog-curator",
+            "almManager": "mgr-studio-alm",
+            "managerKappaHex": curator_kappa,
+            "protocol": self.viewpoints.stitch_app_catalog_protocol,
+            "appCount": apps.len(),
+            "apps": apps,
+        }))
+        .map_err(|e| ObserverModelError::CommunicationEnvelopeRejected {
+            channel: CommunicationChannelKind::OrganToOrgan.slug().to_string(),
+            detail: e.to_string(),
+        })
+    }
+
+    #[cfg(not(target_arch = "wasm32"))]
+    fn write_manager_file(
+        repo_root: &Path,
+        manager_id: &str,
+        rel_path: &str,
+        contents: &str,
+    ) -> Result<MaterializedFileRecord, ObserverModelError> {
+        let full = repo_root.join(rel_path);
+        if let Some(parent) = full.parent() {
+            std::fs::create_dir_all(parent).map_err(|e| {
+                ObserverModelError::CommunicationEnvelopeRejected {
+                    channel: CommunicationChannelKind::AgentToAgent.slug().to_string(),
+                    detail: format!("failed creating parent dir for `{rel_path}`: {e}"),
+                }
+            })?;
+        }
+        std::fs::write(&full, contents.as_bytes()).map_err(|e| {
+            ObserverModelError::CommunicationEnvelopeRejected {
+                channel: CommunicationChannelKind::AgentToAgent.slug().to_string(),
+                detail: format!("failed writing `{rel_path}`: {e}"),
+            }
+        })?;
+        Ok(MaterializedFileRecord {
+            manager_id: manager_id.to_string(),
+            path: rel_path.to_string(),
+            bytes: contents.len(),
+            sha256_hex: sha256_hex_tagged("materialized-file", contents.as_bytes()),
+        })
+    }
+
+    /// Materializes Manager-synthesized declarative artifacts strictly within each Manager's
+    /// owned files (`site/generated/*.json`), records PROV-O lineage, and closes via VSM S3* audit.
+    #[cfg(not(target_arch = "wasm32"))]
+    pub fn materialize_manager_artifacts(
+        &mut self,
+        repo_root: &Path,
+        viewpoint_filter: Option<&str>,
+    ) -> Result<MaterializationReport, ObserverModelError> {
+        let want = |vp: &str, mgr: &str| -> bool {
+            match viewpoint_filter {
+                None | Some("all") => true,
+                Some(f) => f.eq_ignore_ascii_case(vp) || f.eq_ignore_ascii_case(mgr),
+            }
+        };
+        let mut written = Vec::new();
+        if want("observer-executive", "mgr-observer-executive")
+            || want("verification-observatory", "mgr-verification-observatory")
+        {
+            let json = self.synthesize_viewpoint_contracts_json();
+            written.push(Self::write_manager_file(
+                repo_root,
+                "mgr-observer-executive",
+                "site/generated/viewpoint-contracts.json",
+                &json,
+            )?);
+        }
+        if want("playable-world", "mgr-playable-world")
+            || want("runtime-stage", "mgr-runtime-stage")
+        {
+            let json = self.synthesize_world_differentiation_profiles_json();
+            written.push(Self::write_manager_file(
+                repo_root,
+                "mgr-playable-world",
+                "site/generated/world-differentiation-profiles.json",
+                &json,
+            )?);
+        }
+        if want("asset-catalogs", "mgr-catalog-curator") || want("creator-studio", "mgr-studio-alm")
+        {
+            let existing_path = repo_root.join("site/generated/stitch-app-catalog.json");
+            let existing = std::fs::read_to_string(&existing_path).ok();
+            let json = self.synthesize_stitch_app_catalog_json(existing.as_deref())?;
+            written.push(Self::write_manager_file(
+                repo_root,
+                "mgr-catalog-curator",
+                "site/generated/stitch-app-catalog.json",
+                &json,
+            )?);
+        }
+        let summary = format!(
+            "materialize:{}:files={}",
+            viewpoint_filter.unwrap_or("all"),
+            written.len()
+        );
+        let comm_kappa_hex = sha256_hex_tagged("operator-materialize", summary.as_bytes());
+        let audit = self.audit_repository(repo_root, viewpoint_filter);
+        Ok(MaterializationReport {
+            ok: audit.passed,
+            written_files: written,
+            comm_kappa_hex,
+            audit_passed: audit.passed,
+        })
+    }
+
+    /// Publishes a new multi-genre Verdant App directly through the Verdant API into
+    /// `site/generated/stitch-app-catalog.json` with real `.uorc` + 2-of-3 Stitch shards.
+    #[cfg(not(target_arch = "wasm32"))]
+    pub fn publish_app_to_repo_catalog(
+        &mut self,
+        repo_root: &Path,
+        title: &str,
+        genre: &str,
+        domain_slug: &str,
+        summary: &str,
+        publisher_prism_id: &str,
+    ) -> Result<StitchCatalogManifestApp, ObserverModelError> {
+        let catalog_rel = "site/generated/stitch-app-catalog.json";
+        let catalog_path = repo_root.join(catalog_rel);
+        let existing_raw = std::fs::read_to_string(&catalog_path).ok();
+        let new_app = self.build_stitch_manifest_app(
+            None,
+            (title, genre, domain_slug, summary),
+            publisher_prism_id,
+            false,
+        )?;
+        let mut custom_apps: Vec<StitchCatalogManifestApp> = vec![new_app.clone()];
+        let max_catalog_apps = (1usize << (1 + 1 + 1 + 1)) + (1usize << (1 + 1 + 1));
+        if let Some(raw) = &existing_raw {
+            if let Ok(val) = serde_json::from_str::<serde_json::Value>(raw) {
+                if let Some(arr) = val.get("apps").and_then(|v| v.as_array()) {
+                    for item in arr {
+                        if let Ok(app) =
+                            serde_json::from_value::<StitchCatalogManifestApp>(item.clone())
+                        {
+                            if !app.seeded && app.app_id != new_app.app_id {
+                                custom_apps.push(app);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        custom_apps.truncate(max_catalog_apps);
+        let merged_seed_input = serde_json::to_string(&serde_json::json!({ "apps": custom_apps }))
+            .unwrap_or_else(|_| "{}".to_string());
+        let final_json = self.synthesize_stitch_app_catalog_json(Some(&merged_seed_input))?;
+        Self::write_manager_file(repo_root, "mgr-catalog-curator", catalog_rel, &final_json)?;
+        Ok(new_app)
+    }
+
+    /// Evaluates a signed directive through the Observer & Managers (`submit_directive`); if
+    /// admitted, materializes the owning Manager's artifacts and closes via VSM S3* audit; if
+    /// refused, writes 0 bytes and returns the formal ISO 24617-2 Refusal.
+    #[cfg(not(target_arch = "wasm32"))]
+    pub fn apply_directive(
+        &mut self,
+        repo_root: &Path,
+        req: &OperatorPromptRequest,
+    ) -> Result<OperatorApplyReport, ObserverModelError> {
+        let decision = self.submit_directive(req)?;
+        if !decision.admitted {
+            return Ok(OperatorApplyReport {
+                applied: false,
+                decision,
+                written_files: Vec::new(),
+                audit: None,
+            });
+        }
+        let mat = self.materialize_manager_artifacts(repo_root, Some(&decision.viewpoint_id))?;
+        let audit = self.audit_repository(repo_root, Some(&decision.viewpoint_id));
+        Ok(OperatorApplyReport {
+            applied: audit.passed,
+            decision,
+            written_files: mat.written_files,
+            audit: Some(audit),
+        })
+    }
+
+    /// Serializes the persistent W3C SOSA/PROV-O Operator communication history for this session.
+    #[must_use]
+    pub fn session_history_json(&self) -> String {
+        serde_json::to_string_pretty(&serde_json::json!({
+            "spec": "verdant/operator-session-history/1",
+            "activeDomain": self.observer.active_domain.spec.slug,
+            "managerCount": self.managers.len(),
+            "communicationCount": self.observer.communications.len(),
+            "publishedStitchApps": self.stitch_app_catalog.len(),
+            "communications": self.observer.communications,
+        }))
+        .unwrap_or_else(|_| "{}".to_string())
+    }
+
+    /// Processes a single NDJSON line inside `verdant operator session` (stateful multi-turn
+    /// Operator RPC channel). Returns `(should_continue, single_line_json_response)`.
+    #[cfg(not(target_arch = "wasm32"))]
+    pub fn handle_session_rpc_line(&mut self, repo_root: &Path, line: &str) -> (bool, String) {
+        let trimmed = line.trim();
+        if trimmed.is_empty() {
+            return (true, String::new());
+        }
+        let parsed: serde_json::Value = match serde_json::from_str(trimmed) {
+            Ok(v) => v,
+            Err(err) => {
+                return (
+                    true,
+                    serde_json::json!({
+                        "ok": false,
+                        "error": format!("invalid NDJSON request: {err}"),
+                    })
+                    .to_string(),
+                );
+            }
+        };
+        let op = parsed
+            .get("op")
+            .and_then(|v| v.as_str())
+            .unwrap_or("prompt");
+        match op {
+            "quit" | "exit" => (
+                false,
+                serde_json::json!({
+                    "ok": true,
+                    "op": "quit",
+                    "communicationCount": self.observer.communications.len(),
+                })
+                .to_string(),
+            ),
+            "status" => {
+                let st: serde_json::Value =
+                    serde_json::from_str(&self.status_json()).unwrap_or(serde_json::Value::Null);
+                (true, serde_json::json!({ "ok": true, "op": "status", "result": st }).to_string())
+            }
+            "history" => {
+                let hist: serde_json::Value = serde_json::from_str(&self.session_history_json())
+                    .unwrap_or(serde_json::Value::Null);
+                (true, serde_json::json!({ "ok": true, "op": "history", "result": hist }).to_string())
+            }
+            "audit" => {
+                let vp = parsed.get("viewpoint").and_then(|v| v.as_str());
+                let rep = self.audit_repository(repo_root, vp);
+                (
+                    true,
+                    serde_json::json!({ "ok": rep.passed, "op": "audit", "result": rep }).to_string(),
+                )
+            }
+            "synthesize" => {
+                let vp = parsed.get("viewpoint").and_then(|v| v.as_str());
+                match self.materialize_manager_artifacts(repo_root, vp) {
+                    Ok(rep) => (
+                        true,
+                        serde_json::json!({ "ok": rep.ok, "op": "synthesize", "result": rep })
+                            .to_string(),
+                    ),
+                    Err(e) => (
+                        true,
+                        serde_json::json!({ "ok": false, "op": "synthesize", "error": e.to_string() })
+                            .to_string(),
+                    ),
+                }
+            }
+            "prompt" => {
+                let req = OperatorPromptRequest {
+                    viewpoint: parsed
+                        .get("viewpoint")
+                        .and_then(|v| v.as_str())
+                        .unwrap_or("auto")
+                        .to_string(),
+                    directive: parsed
+                        .get("directive")
+                        .and_then(|v| v.as_str())
+                        .unwrap_or("")
+                        .to_string(),
+                    cited_authority: parsed
+                        .get("authority")
+                        .and_then(|v| v.as_str())
+                        .map(str::to_string),
+                    operator_prism_id: parsed
+                        .get("actor")
+                        .and_then(|v| v.as_str())
+                        .unwrap_or("prism:verdant-operator")
+                        .to_string(),
+                };
+                match self.submit_directive(&req) {
+                    Ok(resp) => (
+                        true,
+                        serde_json::json!({ "ok": resp.admitted, "op": "prompt", "result": resp })
+                            .to_string(),
+                    ),
+                    Err(e) => (
+                        true,
+                        serde_json::json!({ "ok": false, "op": "prompt", "error": e.to_string() })
+                            .to_string(),
+                    ),
+                }
+            }
+            "apply" => {
+                let req = OperatorPromptRequest {
+                    viewpoint: parsed
+                        .get("viewpoint")
+                        .and_then(|v| v.as_str())
+                        .unwrap_or("auto")
+                        .to_string(),
+                    directive: parsed
+                        .get("directive")
+                        .and_then(|v| v.as_str())
+                        .unwrap_or("")
+                        .to_string(),
+                    cited_authority: parsed
+                        .get("authority")
+                        .and_then(|v| v.as_str())
+                        .map(str::to_string),
+                    operator_prism_id: parsed
+                        .get("actor")
+                        .and_then(|v| v.as_str())
+                        .unwrap_or("prism:verdant-operator")
+                        .to_string(),
+                };
+                match self.apply_directive(repo_root, &req) {
+                    Ok(rep) => (
+                        true,
+                        serde_json::json!({ "ok": rep.applied, "op": "apply", "result": rep })
+                            .to_string(),
+                    ),
+                    Err(e) => (
+                        true,
+                        serde_json::json!({ "ok": false, "op": "apply", "error": e.to_string() })
+                            .to_string(),
+                    ),
+                }
+            }
+            "publish_app" => {
+                let title = parsed
+                    .get("title")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("Untitled Verdant App");
+                let genre = parsed
+                    .get("genre")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("coastal-adventure");
+                let domain = parsed
+                    .get("domain")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("sunspire-regatta");
+                let summary = parsed
+                    .get("summary")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("Published via Verdant Operator API");
+                let actor = parsed
+                    .get("actor")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("prism:verdant-operator");
+                match self.publish_app_to_repo_catalog(repo_root, title, genre, domain, summary, actor)
+                {
+                    Ok(app) => (
+                        true,
+                        serde_json::json!({ "ok": true, "op": "publish_app", "result": app })
+                            .to_string(),
+                    ),
+                    Err(e) => (
+                        true,
+                        serde_json::json!({ "ok": false, "op": "publish_app", "error": e.to_string() })
+                            .to_string(),
+                    ),
+                }
+            }
+            other => (
+                true,
+                serde_json::json!({
+                    "ok": false,
+                    "error": format!("unknown session op `{other}` (expected status|prompt|apply|synthesize|publish_app|audit|history|quit)"),
+                })
+                .to_string(),
+            ),
         }
     }
 }

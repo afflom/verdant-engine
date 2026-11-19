@@ -1,0 +1,464 @@
+{
+  "managers": [
+    {
+      "basisPrime": 59,
+      "kappaHex": "a38b49a877d3df222a2961865c2cac92ddd86831553caa60010c2f3879274259",
+      "spec": {
+        "almPhases": [
+          "governance",
+          "architecture-policy"
+        ],
+        "concerns": [
+          "Hold cryptographic kappa identity across all Managers, organs, and streams",
+          "Mediate VSM S3 stability vs S4 stream adaptation",
+          "Refuse contrived ungrounded directives lacking an authoritative standard"
+        ],
+        "differentiationRequirements": [
+          "Executive internals never render directly onto creator, catalog, or player views."
+        ],
+        "forbiddenCrossContamination": [],
+        "governingAuthorities": [
+          "AUTH-VSM-CYBERNETICS",
+          "AUTH-ISO-42010-VIEWPOINTS",
+          "AUTH-W3C-SOSA-PROVO"
+        ],
+        "managerId": "mgr-observer-executive",
+        "ownedAuthorities": [
+          "AUTH-VSM-CYBERNETICS",
+          "AUTH-ISO-42010-VIEWPOINTS"
+        ],
+        "ownedCrates": [],
+        "ownedFiles": [
+          "crates/verdant-core/src/observer.rs",
+          "crates/verdant-core/src/operator.rs",
+          "site/generated/viewpoint-contracts.json"
+        ],
+        "ownedObserverParts": [],
+        "ownedStreams": [],
+        "requiredElements": [],
+        "route": null,
+        "stakeholderDomain": "Platform Policy & Sovereign Identity",
+        "title": "Observer Executive Policy Manager",
+        "viewpointId": "observer-executive",
+        "vsmSystem": "VSM-S5"
+      }
+    },
+    {
+      "basisPrime": 61,
+      "kappaHex": "fc6c3eabc1ab5eb2c876679a9f4cd48317c7f5e6a2eb2b26be4ed98bb7e79825",
+      "spec": {
+        "almPhases": [
+          "design",
+          "usability",
+          "accessibility"
+        ],
+        "concerns": [
+          "Enforce W3C DTCG 2025.10 tokens across Light, Dark, and Immersive themes",
+          "Guarantee WCAG 2.2 AA contrast, >=48px touch targets, and native wheel scrolling",
+          "Prevent duplicate controls, raw #hex literals, and backdrop-filter: blur over WebGL"
+        ],
+        "differentiationRequirements": [
+          "Shared DTCG token vocabulary unifies all surfaces while each Viewpoint keeps a distinct information architecture."
+        ],
+        "forbiddenCrossContamination": [
+          "backdrop-filter: blur"
+        ],
+        "governingAuthorities": [
+          "AUTH-ISO-42010-VIEWPOINTS",
+          "AUTH-SCHEMA-ORG"
+        ],
+        "managerId": "mgr-design-coordinator",
+        "ownedAuthorities": [],
+        "ownedCrates": [],
+        "ownedFiles": [
+          "site/brand/hologram-warm.css",
+          "site/brand/fonts.css",
+          "site/prism-page.css",
+          "site/theme.js"
+        ],
+        "ownedObserverParts": [
+          "visual-identity"
+        ],
+        "ownedStreams": [
+          "fontsource"
+        ],
+        "requiredElements": [],
+        "route": null,
+        "stakeholderDomain": "Cross-Surface Visual System, Themes & Accessibility",
+        "title": "Design System & Experience Coordinator",
+        "viewpointId": "design-system",
+        "vsmSystem": "VSM-S2"
+      }
+    },
+    {
+      "basisPrime": 67,
+      "kappaHex": "f7a8c0b6772811869a36091f7d309c5522d5993c4a34c0c0056181a25ff004aa",
+      "spec": {
+        "almPhases": [
+          "operation",
+          "execution",
+          "performance"
+        ],
+        "concerns": [
+          "Execute arbitrary 3D, physics, audio, and UHD models within host limits",
+          "Maintain FR-03 cold-boot transfer weight <= 122,880 B and 60/120 Hz stability",
+          "Support WebGPU, WebGL2 HD PBR + CAS, and Wasm software tile fallbacks"
+        ],
+        "differentiationRequirements": [
+          "Landing runtime stage stays lean, interactive, and cold-boot compliant without IDE or benchmark clutter."
+        ],
+        "forbiddenCrossContamination": [
+          "CodedSLM",
+          "7-Role Atelier"
+        ],
+        "governingAuthorities": [
+          "AUTH-KHRONOS-GLTF2",
+          "AUTH-ISO-42010-VIEWPOINTS",
+          "AUTH-VSM-CYBERNETICS"
+        ],
+        "managerId": "mgr-runtime-stage",
+        "ownedAuthorities": [],
+        "ownedCrates": [
+          "verdant-core",
+          "verdant-tensor",
+          "verdant-wasm"
+        ],
+        "ownedFiles": [
+          "site/card.html",
+          "site/card.mjs",
+          "site/card.css",
+          "site/scene-renderer.mjs",
+          "site/scene-hd-renderer.mjs",
+          "site/scene-webgpu-renderer.mjs",
+          "site/engine-worker.mjs",
+          "site/audio-worklet.mjs",
+          "site/stitch-mesh.mjs"
+        ],
+        "ownedObserverParts": [
+          "runtime-frameworks",
+          "spatial-acoustics"
+        ],
+        "ownedStreams": [
+          "github",
+          "openverse"
+        ],
+        "requiredElements": [
+          "id=\"ve-canvas\"",
+          "id=\"ve-studio-link\"",
+          "id=\"ve-catalogs-link\"",
+          "id=\"ve-demo-link\"",
+          "id=\"ve-docs-link\""
+        ],
+        "route": "/",
+        "stakeholderDomain": "Model-Centric 3D Application Runtime User & Integrator",
+        "title": "Verdant Engine Runtime Manager",
+        "viewpointId": "runtime-stage",
+        "vsmSystem": "VSM-S1"
+      }
+    },
+    {
+      "basisPrime": 71,
+      "kappaHex": "586f81c5b124a7c377d07859f69d61c6da584fb345dafaf664251385ab179284",
+      "spec": {
+        "almPhases": [
+          "conception",
+          "authoring",
+          "versioning",
+          "packaging",
+          "stitch-publishing"
+        ],
+        "concerns": [
+          "Manage Verdant application instances across the ISO/IEC/IEEE 12207 lifecycle",
+          "Discover, preview, import, edit, and PROV-O version arbitrary models from live streams",
+          "Seal and publish Verdant Apps as .uorc archives on Prism's Stitch network"
+        ],
+        "differentiationRequirements": [
+          "Single unified search input; focused 3-pane ALM IDE with zero internal engine test-harness chrome."
+        ],
+        "forbiddenCrossContamination": [
+          "Verify UHD 4K Envelope",
+          "Test Abstention",
+          "Record SOSA Envelope",
+          "Observer Telemetry",
+          "Auto-Refine Observer from Streams",
+          "8 Observer Parts",
+          "Atelier Boot",
+          "DOM-SUNSPIRE-HARBOR",
+          "CodedSlmDirector"
+        ],
+        "governingAuthorities": [
+          "AUTH-ISO-42010-VIEWPOINTS",
+          "AUTH-ISO-24617-DMN",
+          "AUTH-W3C-SOSA-PROVO",
+          "AUTH-KHRONOS-GLTF2"
+        ],
+        "managerId": "mgr-studio-alm",
+        "ownedAuthorities": [
+          "AUTH-ISO-24617-DMN"
+        ],
+        "ownedCrates": [
+          "verdant-cli"
+        ],
+        "ownedFiles": [
+          "site/studio/index.html",
+          "site/studio/studio-page.mjs",
+          "site/studio.mjs",
+          "site/studio-data.mjs",
+          "site/studio-scaffolder.mjs"
+        ],
+        "ownedObserverParts": [
+          "cognitive-language"
+        ],
+        "ownedStreams": [],
+        "requiredElements": [
+          "id=\"studio-canvas\"",
+          "id=\"studio-export-uorc-btn\"",
+          "id=\"stitch-publish-btn\"",
+          "id=\"disc-search-input\"",
+          "id=\"right-tab-inspector\"",
+          "id=\"right-tab-compose\"",
+          "id=\"right-tab-cognition\"",
+          "id=\"right-tab-roles\""
+        ],
+        "route": "/studio/",
+        "stakeholderDomain": "Application & Game Creator (FPS, MMO Universe, Indie Scroller, Spatial App)",
+        "title": "Verdant Studio ALM Manager",
+        "viewpointId": "creator-studio",
+        "vsmSystem": "VSM-S1"
+      }
+    },
+    {
+      "basisPrime": 73,
+      "kappaHex": "484dc72aed1a9ac8549459aca1356e5546ba0a192bc74fb465dcdc9899900ae5",
+      "spec": {
+        "almPhases": [
+          "discovery",
+          "curation",
+          "source-governance",
+          "app-sharing"
+        ],
+        "concerns": [
+          "Present a gallery-first high-resolution catalog of live 3D assets, skies, materials, fonts, audio, and shared Stitch Verdant Apps",
+          "Manage external CORS-verified public streams and custom user-connected sources",
+          "Index governing ISO, W3C, Khronos, and IEEE standards without burying visual discovery"
+        ],
+        "differentiationRequirements": [
+          "Visual Featured Asset Gallery leads the page ahead of source management and reference standards."
+        ],
+        "forbiddenCrossContamination": [
+          "Verify All Holo Proofs",
+          "Authoritative LexLean Modules",
+          "orthogonal Prism basis prime",
+          "Differentiated Verdant Platform Cognitive Architecture"
+        ],
+        "governingAuthorities": [
+          "AUTH-SCHEMA-ORG",
+          "AUTH-W3C-SOSA-PROVO",
+          "AUTH-KHRONOS-GLTF2",
+          "AUTH-ISO-42010-VIEWPOINTS"
+        ],
+        "managerId": "mgr-catalog-curator",
+        "ownedAuthorities": [
+          "AUTH-SCHEMA-ORG",
+          "AUTH-W3C-SOSA-PROVO",
+          "AUTH-KHRONOS-GLTF2"
+        ],
+        "ownedCrates": [],
+        "ownedFiles": [
+          "site/catalogs/index.html",
+          "site/catalogs/catalogs.mjs",
+          "site/catalog-streams.mjs",
+          "site/prism-catalogs.mjs",
+          "site/generated/stitch-app-catalog.json"
+        ],
+        "ownedObserverParts": [],
+        "ownedStreams": [
+          "khronos-gltf",
+          "nasa-3d",
+          "threejs-gltf",
+          "babylon-assets",
+          "polyhaven",
+          "wikidata",
+          "verdant-prism"
+        ],
+        "requiredElements": [
+          "id=\"cat-apps-grid\"",
+          "id=\"cat-live-gallery\"",
+          "id=\"cat-domain-grid\"",
+          "id=\"cat-sensory-grid\"",
+          "id=\"cat-list\""
+        ],
+        "route": "/catalogs/",
+        "stakeholderDomain": "Asset, Standard & Stitch Verdant App Catalog Explorer",
+        "title": "Verdant Catalog & Stream Curator Manager",
+        "viewpointId": "asset-catalogs",
+        "vsmSystem": "VSM-S1"
+      }
+    },
+    {
+      "basisPrime": 79,
+      "kappaHex": "1e75ad6be0f521ff9a8d4e3cdaa452ee1362035dc8913dcf0d5e7350f95f2e6b",
+      "spec": {
+        "almPhases": [
+          "delivery",
+          "gameplay",
+          "content-hydration"
+        ],
+        "concerns": [
+          "Deliver distraction-free full-viewport playable applications with zero IDE or engine diagnostics",
+          "Differentiate every world pack across terrain relief, lighting/sky, PBR materials, characters, acoustics, and lore",
+          "Hydrate high-definition world props and skies through connected streams"
+        ],
+        "differentiationRequirements": [
+          "Each of the 4 cataloged worlds carries distinct terrain relief, sky/fog palette, Sabine RT60 acoustics, models, items, and characters."
+        ],
+        "forbiddenCrossContamination": [
+          "Verdant Studio",
+          "Verdant Engine",
+          "Verify UHD 4K Envelope",
+          "Observer Telemetry"
+        ],
+        "governingAuthorities": [
+          "AUTH-DOMAIN-PACKS",
+          "AUTH-KHRONOS-GLTF2",
+          "AUTH-ISO-42010-VIEWPOINTS"
+        ],
+        "managerId": "mgr-playable-world",
+        "ownedAuthorities": [
+          "AUTH-DOMAIN-PACKS"
+        ],
+        "ownedCrates": [],
+        "ownedFiles": [
+          "templates/browser-3d-starter/index.html",
+          "templates/browser-3d-starter/game.mjs",
+          "templates/browser-3d-starter/src/main.rs",
+          "site/generated/world-differentiation-profiles.json"
+        ],
+        "ownedObserverParts": [
+          "stage-environment",
+          "character-rigs",
+          "hero-props",
+          "surface-materials"
+        ],
+        "ownedStreams": [],
+        "requiredElements": [
+          "id=\"game-canvas\""
+        ],
+        "route": "/starter/",
+        "stakeholderDomain": "Player & Interactive 3D World Consumer",
+        "title": "Playable World & Content Manager",
+        "viewpointId": "playable-world",
+        "vsmSystem": "VSM-S1"
+      }
+    },
+    {
+      "basisPrime": 83,
+      "kappaHex": "b26fda16e89dc399e1775268906c35d37f46d8531aea99e3f07ad292de87cb92",
+      "spec": {
+        "almPhases": [
+          "verification",
+          "benchmarking",
+          "conformance"
+        ],
+        "concerns": [
+          "Measure WebGL2 3-pass PBR vs Wasm tile rasterization, hardware instancing, UORC compression, and UHD 4K/8K Morton meshlet/LOD/Frame Stability oracles",
+          "Replay formal app.holo semiring and refusal proofs transparently",
+          "Isolate engineering diagnostics here so creative and playable views stay clean"
+        ],
+        "differentiationRequirements": [
+          "All engine benchmarks, UHD 4K/8K profiles, Frame Stability Oracles, and Holo kernel tables live exclusively in this observatory."
+        ],
+        "forbiddenCrossContamination": [],
+        "governingAuthorities": [
+          "AUTH-VSM-CYBERNETICS",
+          "AUTH-ISO-42010-VIEWPOINTS"
+        ],
+        "managerId": "mgr-verification-observatory",
+        "ownedAuthorities": [],
+        "ownedCrates": [],
+        "ownedFiles": [
+          "site/demo/index.html",
+          "site/demo/demo.mjs",
+          "scripts/enforce-prism-contracts.mjs",
+          "scripts/verify-live-surfaces.mjs"
+        ],
+        "ownedObserverParts": [],
+        "ownedStreams": [],
+        "requiredElements": [
+          "id=\"demo-canvas\"",
+          "id=\"btn-bench-aqm\"",
+          "id=\"btn-bench-stability\"",
+          "id=\"btn-bench-uorc\"",
+          "id=\"btn-bench-uhd\""
+        ],
+        "route": "/demo/",
+        "stakeholderDomain": "Graphics Engineer, Systems Auditor & Formal Verifier",
+        "title": "Verification & Benchmark Observatory Manager",
+        "viewpointId": "verification-observatory",
+        "vsmSystem": "VSM-S3-STAR"
+      }
+    },
+    {
+      "basisPrime": 89,
+      "kappaHex": "8ebb54a4980444a15e1e5fe6f9799419eb5bea9af74bd30a0203248c2570bbca",
+      "spec": {
+        "almPhases": [
+          "documentation",
+          "onboarding",
+          "reference"
+        ],
+        "concerns": [
+          "Maintain Diataxis-structured tutorials, how-to guides, API references, and explanations in ISO 24495-1 plain language",
+          "Host interactive live WebAssembly documentation embeds strictly under subpath containment"
+        ],
+        "differentiationRequirements": [
+          "Docs maintain clear Diataxis quadrant separation and valid Schema.org TechArticle metadata."
+        ],
+        "forbiddenCrossContamination": [],
+        "governingAuthorities": [
+          "AUTH-ISO-42010-VIEWPOINTS",
+          "AUTH-SCHEMA-ORG"
+        ],
+        "managerId": "mgr-reference-docs",
+        "ownedAuthorities": [],
+        "ownedCrates": [],
+        "ownedFiles": [
+          "site/docs/index.html",
+          "site/docs/live-embed.mjs",
+          "site/llms.txt"
+        ],
+        "ownedObserverParts": [],
+        "ownedStreams": [],
+        "requiredElements": [],
+        "route": "/docs/",
+        "stakeholderDomain": "Developer & Architect Learning Verdant",
+        "title": "Diataxis Technical Reference Manager",
+        "viewpointId": "reference-docs",
+        "vsmSystem": "VSM-S1"
+      }
+    }
+  ],
+  "publishedStitchApps": [],
+  "spec": "verdant/manager-viewpoint-contracts/1",
+  "stitchAppCatalogProtocol": {
+    "archiveFormat": ".uorc",
+    "erasureScheme": "2-of-3-xor-sha256",
+    "identityScheme": "prism/identity/4",
+    "schemaOrgTypes": [
+      "SoftwareApplication",
+      "VideoGame",
+      "WebApplication",
+      "3DModel"
+    ],
+    "supportedAppArchetypes": [
+      "first-person-shooter",
+      "massively-multiplayer-universe",
+      "indie-side-scroller",
+      "spatial-simulation",
+      "coastal-adventure-trial"
+    ]
+  },
+  "totalOwnershipComplete": true,
+  "viewpointsAuthority": "AUTH-ISO-42010-VIEWPOINTS",
+  "vsmAuthority": "AUTH-VSM-CYBERNETICS"
+}

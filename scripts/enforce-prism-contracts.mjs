@@ -1197,23 +1197,46 @@ export function verifyContextPurityAndIntentionalInterfaceContract({
   catalogsHtml,
   demoHtml,
   demoSource,
+  starterHtml = "",
 }) {
   const vsmCat = JSON.parse(
     readFileSync(join(rootDir, "catalogs", "governance", "vsm-viable-system.json"), "utf8"),
   );
-  const vpCat = JSON.parse(
-    readFileSync(join(rootDir, "catalogs", "governance", "iso42010-viewpoints.json"), "utf8"),
-  );
+  const vpPath = join(rootDir, "site", "generated", "viewpoint-contracts.json");
+  const vpCat = existsSync(vpPath)
+    ? JSON.parse(readFileSync(vpPath, "utf8"))
+    : JSON.parse(readFileSync(join(rootDir, "catalogs", "governance", "iso42010-viewpoints.json"), "utf8"));
   if (!vsmCat?.antiContrivanceRule?.requireManagerOwnership || !Array.isArray(vpCat?.managers)) {
     throw new Error("Gate C13: locked VSM / ISO 42010 governance catalogs missing or malformed");
+  }
+  if (existsSync(vpPath)) {
+    if (vpCat.spec !== "verdant/manager-viewpoint-contracts/1" || vpCat.totalOwnershipComplete !== true) {
+      throw new Error("Gate C13: site/generated/viewpoint-contracts.json failed Manager ownership contract");
+    }
+  }
+  const worldsPath = join(rootDir, "site", "generated", "world-differentiation-profiles.json");
+  if (existsSync(worldsPath)) {
+    const wp = JSON.parse(readFileSync(worldsPath, "utf8"));
+    if (wp.spec !== "verdant/world-differentiation-profiles/1" || !Array.isArray(wp.worlds) || wp.worlds.length < 4) {
+      throw new Error("Gate C13 (mgr-playable-world): site/generated/world-differentiation-profiles.json must define all 4 differentiated worlds");
+    }
+  }
+  const stitchPath = join(rootDir, "site", "generated", "stitch-app-catalog.json");
+  if (existsSync(stitchPath)) {
+    const sc = JSON.parse(readFileSync(stitchPath, "utf8"));
+    if (sc.spec !== "verdant/stitch-app-catalog/1" || !Array.isArray(sc.apps) || sc.apps.length < 4) {
+      throw new Error("Gate C13 (mgr-catalog-curator): site/generated/stitch-app-catalog.json must publish >= 4 Stitch 2-of-3 Verdant Apps");
+    }
   }
   const htmlByViewpoint = {
     "runtime-stage": ["site/card.html", cardHtml],
     "creator-studio": ["site/studio/index.html", studioPageHtml],
     "asset-catalogs": ["site/catalogs/index.html", catalogsHtml],
     "verification-observatory": ["site/demo/index.html", demoHtml],
+    ...(starterHtml ? { "playable-world": ["templates/browser-3d-starter/index.html", starterHtml] } : {}),
   };
-  for (const mgr of vpCat.managers) {
+  for (const rawMgr of vpCat.managers) {
+    const mgr = rawMgr.spec || rawMgr;
     const entry = htmlByViewpoint[mgr.viewpointId];
     if (!entry) continue;
     const [label, html] = entry;
@@ -1346,6 +1369,7 @@ export async function runAllPrismContractChecks(rootDir = ROOT_DIR) {
     catalogsHtml,
     demoHtml,
     demoSource,
+    starterHtml,
   });
 
   // Audit all shipped Rust crate sources, starter template, and examples (`FI-08` zero magic constants):

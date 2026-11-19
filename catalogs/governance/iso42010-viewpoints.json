@@ -38,7 +38,8 @@
       ],
       "ownedFiles": [
         "crates/verdant-core/src/observer.rs",
-        "crates/verdant-core/src/operator.rs"
+        "crates/verdant-core/src/operator.rs",
+        "site/generated/viewpoint-contracts.json"
       ],
       "ownedCrates": [],
       "ownedObserverParts": [],
@@ -189,6 +190,7 @@
       "requiredElements": [
         "id=\"studio-canvas\"",
         "id=\"studio-export-uorc-btn\"",
+        "id=\"stitch-publish-btn\"",
         "id=\"disc-search-input\"",
         "id=\"right-tab-inspector\"",
         "id=\"right-tab-compose\"",
@@ -233,7 +235,8 @@
         "site/catalogs/index.html",
         "site/catalogs/catalogs.mjs",
         "site/catalog-streams.mjs",
-        "site/prism-catalogs.mjs"
+        "site/prism-catalogs.mjs",
+        "site/generated/stitch-app-catalog.json"
       ],
       "ownedCrates": [],
       "ownedObserverParts": [],
@@ -252,6 +255,7 @@
         "AUTH-KHRONOS-GLTF2"
       ],
       "requiredElements": [
+        "id=\"cat-apps-grid\"",
         "id=\"cat-live-gallery\"",
         "id=\"cat-domain-grid\"",
         "id=\"cat-sensory-grid\"",
@@ -286,10 +290,10 @@
         "AUTH-ISO-42010-VIEWPOINTS"
       ],
       "ownedFiles": [
-        "site/starter/index.html",
         "templates/browser-3d-starter/index.html",
         "templates/browser-3d-starter/game.mjs",
-        "templates/browser-3d-starter/src/main.rs"
+        "templates/browser-3d-starter/src/main.rs",
+        "site/generated/world-differentiation-profiles.json"
       ],
       "ownedCrates": [],
       "ownedObserverParts": [

@@ -1366,10 +1366,30 @@ function readPublishedStitchApps() {
   }
 }
 
+let cachedGeneratedStitchApps = null;
+
 export function loadStitchAppCatalog() {
   const published = readPublishedStitchApps();
+  const base = Array.isArray(cachedGeneratedStitchApps) && cachedGeneratedStitchApps.length > 0
+    ? cachedGeneratedStitchApps
+    : SEEDED_VERDANT_APPS;
   const seen = new Set(published.map((a) => a.appId));
-  return [...published, ...SEEDED_VERDANT_APPS.filter((a) => !seen.has(a.appId))];
+  return [...published, ...base.filter((a) => !seen.has(a.appId))];
+}
+
+export async function hydrateStitchAppCatalog() {
+  try {
+    const res = await fetch(new URL("./generated/stitch-app-catalog.json", import.meta.url));
+    if (res.ok) {
+      const json = await res.json();
+      if (Array.isArray(json?.apps) && json.apps.length > 0) {
+        cachedGeneratedStitchApps = json.apps;
+      }
+    }
+  } catch {
+    // Graceful offline fallback to embedded SEEDED_VERDANT_APPS.
+  }
+  return loadStitchAppCatalog();
 }
 
 export async function publishStitchAppToCatalog({

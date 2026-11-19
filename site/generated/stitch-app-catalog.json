@@ -1,0 +1,171 @@
+{
+  "almManager": "mgr-studio-alm",
+  "appCount": 4,
+  "apps": [
+    {
+      "appId": "app-starfall-vanguard-fps",
+      "archiveFormat": ".uorc",
+      "domainSlug": "starfall-bastion",
+      "genre": "first-person-shooter",
+      "genreLabel": "First-Person Shooter",
+      "payloadSha256": "6426ba62e401fc13f1d8c2fc546cff8e0ac123fc9b0d8b0e2be33d1f40360830",
+      "publishedAt": "2026-11-19T00:00:00Z",
+      "publisherId": "prism:verdant-curated",
+      "schemaType": "VideoGame",
+      "seeded": true,
+      "stitchShards": [
+        {
+          "bytes": 991,
+          "index": 0,
+          "role": "Shard A",
+          "sha256": "0ed6cef7c9c9efd55c98f27f659f7378"
+        },
+        {
+          "bytes": 991,
+          "index": 1,
+          "role": "Shard B",
+          "sha256": "6158ed168c0bb07dab136315666dab5a"
+        },
+        {
+          "bytes": 991,
+          "index": 2,
+          "role": "Parity (A ^ B)",
+          "sha256": "11b18393d3f1bb0f04f3c00ebd4159a5"
+        }
+      ],
+      "summary": "Fast-paced 3D arena FPS with 64-triangle Morton meshlets, UHD 4K CAS resolve, and calibrated stone arena acoustics.",
+      "title": "Starfall Vanguard",
+      "uorcBytes": 1827,
+      "worldTitle": "Starfall Bastion Arena"
+    },
+    {
+      "appId": "app-meridian-expanse-mmo",
+      "archiveFormat": ".uorc",
+      "domainSlug": "meridian-observatory",
+      "genre": "mmo-universe",
+      "genreLabel": "MMO Universe",
+      "payloadSha256": "667dae63b55dd94be390165683cf91f2a0a58056d077bd45397fe2237a517d8f",
+      "publishedAt": "2026-11-19T00:00:00Z",
+      "publisherId": "prism:verdant-curated",
+      "schemaType": "VideoGame",
+      "seeded": true,
+      "stitchShards": [
+        {
+          "bytes": 990,
+          "index": 0,
+          "role": "Shard A",
+          "sha256": "486c14b359e0d2b7ecb4f391544261c1"
+        },
+        {
+          "bytes": 990,
+          "index": 1,
+          "role": "Shard B",
+          "sha256": "8edac1eec49289e30f0155c1e71b2cb6"
+        },
+        {
+          "bytes": 990,
+          "index": 2,
+          "role": "Parity (A ^ B)",
+          "sha256": "6f021d0b941f896c270c1504a71b8e22"
+        }
+      ],
+      "summary": "Multi-sector floating-origin universe featuring celestial observatories, synchronized world shards, and persistent state recovery.",
+      "title": "Meridian Expanse",
+      "uorcBytes": 1825,
+      "worldTitle": "Meridian Celestial Observatory"
+    },
+    {
+      "appId": "app-glasshouse-canopy-runner",
+      "archiveFormat": ".uorc",
+      "domainSlug": "glasshouse-chronicle",
+      "genre": "indie-side-scroller",
+      "genreLabel": "Indie Side-Scroller",
+      "payloadSha256": "02a981312721267324bf6ca4d884084b0cc2117a9d957dad5e52cbb79a3ebef8",
+      "publishedAt": "2026-11-19T00:00:00Z",
+      "publisherId": "prism:verdant-curated",
+      "schemaType": "VideoGame",
+      "seeded": true,
+      "stitchShards": [
+        {
+          "bytes": 993,
+          "index": 0,
+          "role": "Shard A",
+          "sha256": "b1f10bf2cdce87b97287d58c6445751f"
+        },
+        {
+          "bytes": 993,
+          "index": 1,
+          "role": "Shard B",
+          "sha256": "23310d7a8c32ba92cae353cb980da267"
+        },
+        {
+          "bytes": 993,
+          "index": 2,
+          "role": "Parity (A ^ B)",
+          "sha256": "ce3d2d3c5e436ebaccb3b986ad3ed971"
+        }
+      ],
+      "summary": "Atmospheric botanical side-scroller built with 2.5D spline traversal, conservatory glass acoustics, and grounded character dialogue.",
+      "title": "Glasshouse Canopy Runner",
+      "uorcBytes": 1832,
+      "worldTitle": "Glasshouse Botanical Chronicle"
+    },
+    {
+      "appId": "app-sunspire-beacon-trials",
+      "archiveFormat": ".uorc",
+      "domainSlug": "sunspire-regatta",
+      "genre": "coastal-adventure",
+      "genreLabel": "3D Coastal Adventure",
+      "payloadSha256": "952e6ebb765640eb06615c8ef8419f2457232d3a3fcc32468fc20803424da926",
+      "publishedAt": "2026-11-19T00:00:00Z",
+      "publisherId": "prism:verdant-curated",
+      "schemaType": "VideoGame",
+      "seeded": true,
+      "stitchShards": [
+        {
+          "bytes": 991,
+          "index": 0,
+          "role": "Shard A",
+          "sha256": "fdc44096efa0169f207e664f2f7427e6"
+        },
+        {
+          "bytes": 991,
+          "index": 1,
+          "role": "Shard B",
+          "sha256": "0e44ba8802235d031496395194f0836f"
+        },
+        {
+          "bytes": 991,
+          "index": 2,
+          "role": "Parity (A ^ B)",
+          "sha256": "881cde7d7b1e5dff01588e84381f7a9d"
+        }
+      ],
+      "summary": "Coastal 3D action trial set across the Sunspire stone arch basin with beacon harmonization, patrol hulls, and 3rd/1st person cameras.",
+      "title": "Sunspire Beacon Trials",
+      "uorcBytes": 1828,
+      "worldTitle": "Sunspire Harbor Regatta"
+    }
+  ],
+  "managerKappaHex": "484dc72aed1a9ac8549459aca1356e5546ba0a192bc74fb465dcdc9899900ae5",
+  "owningManager": "mgr-catalog-curator",
+  "protocol": {
+    "archiveFormat": ".uorc",
+    "erasureScheme": "2-of-3-xor-sha256",
+    "identityScheme": "prism/identity/4",
+    "schemaOrgTypes": [
+      "SoftwareApplication",
+      "VideoGame",
+      "WebApplication",
+      "3DModel"
+    ],
+    "supportedAppArchetypes": [
+      "first-person-shooter",
+      "massively-multiplayer-universe",
+      "indie-side-scroller",
+      "spatial-simulation",
+      "coastal-adventure-trial"
+    ]
+  },
+  "spec": "verdant/stitch-app-catalog/1"
+}

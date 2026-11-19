@@ -1,0 +1,142 @@
+{
+  "governingAuthorities": [
+    "AUTH-DOMAIN-PACKS",
+    "AUTH-KHRONOS-GLTF2",
+    "AUTH-ISO-42010-VIEWPOINTS"
+  ],
+  "managerKappaHex": "1e75ad6be0f521ff9a8d4e3cdaa452ee1362035dc8913dcf0d5e7350f95f2e6b",
+  "owningManager": "mgr-playable-world",
+  "spec": "verdant/world-differentiation-profiles/1",
+  "worldCount": 4,
+  "worlds": [
+    {
+      "acousticAbsorptionMilliM2": 310000,
+      "acousticVolumeM3": 4200,
+      "characters": [
+        "Captain Soren (Harbor Master)",
+        "Engineer Talia (Structural Shipwright)"
+      ],
+      "defaultAppGenre": "coastal-adventure",
+      "defaultAppGenreLabel": "3D Coastal Adventure",
+      "defaultLodRank": 3,
+      "domainId": "DOM-SUNSPIRE-HARBOR",
+      "environmentName": "Sunspire Pelagic Basin",
+      "fogRgb": [
+        0.3199999928474426,
+        0.46000000834465027,
+        0.5400000214576721
+      ],
+      "heroModels": [
+        "SunspireBeaconSpire (MAT-TRAVERTINE-LIMESTONE)",
+        "BrassRegattaGate (MAT-ASTROLABE-BRASS)",
+        "FresnelHarborLens (MAT-PRISM-QUARTZ)"
+      ],
+      "profileKappaHex": "788914bdd4f7def20e4ce96e7ca7f58ff4a85edda8a4c5c413c3551e830ac30d",
+      "schemaOrgType": "VideoGame",
+      "seed": 7,
+      "skyRgb": [
+        0.18000000715255737,
+        0.3400000035762787,
+        0.47999998927116394
+      ],
+      "slug": "sunspire-regatta",
+      "title": "Sunspire Harbor Regatta"
+    },
+    {
+      "acousticAbsorptionMilliM2": 96000,
+      "acousticVolumeM3": 1800,
+      "characters": [
+        "Astronomer Lyra (Celestial Observer)"
+      ],
+      "defaultAppGenre": "mmo-universe",
+      "defaultAppGenreLabel": "MMO Universe",
+      "defaultLodRank": 4,
+      "domainId": "DOM-MERIDIAN-OBSERVATORY",
+      "environmentName": "Meridian High Ridge",
+      "fogRgb": [
+        0.18000000715255737,
+        0.23999999463558197,
+        0.3799999952316284
+      ],
+      "heroModels": [
+        "MeridianTransitPier (MAT-OBSIDIAN-BASALT)",
+        "BrassEquatorialRing (MAT-ASTROLABE-BRASS)",
+        "CrownGlassOculus (MAT-BOTANICAL-GLASS)"
+      ],
+      "profileKappaHex": "d5f0f6c628b7270fbae6564010104d9999d9fbdf112e190d9d1525d422afbc76",
+      "schemaOrgType": "VideoGame",
+      "seed": 256,
+      "skyRgb": [
+        0.10000000149011612,
+        0.1599999964237213,
+        0.3199999928474426
+      ],
+      "slug": "meridian-observatory",
+      "title": "Meridian Celestial Observatory"
+    },
+    {
+      "acousticAbsorptionMilliM2": 68000,
+      "acousticVolumeM3": 950,
+      "characters": [
+        "Archivist Rowan (Seed Bank Curator)"
+      ],
+      "defaultAppGenre": "indie-side-scroller",
+      "defaultAppGenreLabel": "Indie Side-Scroller",
+      "defaultLodRank": 3,
+      "domainId": "DOM-GLASSHOUSE-CHRONICLE",
+      "environmentName": "Conservatory Terraced Valley",
+      "fogRgb": [
+        0.3400000035762787,
+        0.47999998927116394,
+        0.4399999976158142
+      ],
+      "heroModels": [
+        "BotanicalCrownVault (MAT-BOTANICAL-GLASS)",
+        "SeedBankPedestal (MAT-TERRACOTTA-CLAY)",
+        "LimestoneAqueductWeir (MAT-TRAVERTINE-LIMESTONE)"
+      ],
+      "profileKappaHex": "dfc79c3787fefe3271c27bff1bb6094049da2b00a43ff4926f4640454f876bfd",
+      "schemaOrgType": "VideoGame",
+      "seed": 108,
+      "skyRgb": [
+        0.2199999988079071,
+        0.3799999952316284,
+        0.36000001430511475
+      ],
+      "slug": "glasshouse-chronicle",
+      "title": "Glasshouse Botanical Chronicle"
+    },
+    {
+      "acousticAbsorptionMilliM2": 820000,
+      "acousticVolumeM3": 6800,
+      "characters": [
+        "Marshal Vesper (Tournament Arbiter)"
+      ],
+      "defaultAppGenre": "first-person-shooter",
+      "defaultAppGenreLabel": "First-Person Shooter",
+      "defaultLodRank": 3,
+      "domainId": "DOM-STARFALL-BASTION",
+      "environmentName": "Starfall Basalt Caldera",
+      "fogRgb": [
+        0.23999999463558197,
+        0.30000001192092896,
+        0.4000000059604645
+      ],
+      "heroModels": [
+        "ObsidianRelayPylon (MAT-OBSIDIAN-BASALT)",
+        "SteelTacticalBarricade (MAT-FORGED-STEEL)",
+        "DiegeticTournamentPillar (MAT-PRISM-QUARTZ)"
+      ],
+      "profileKappaHex": "242e488ada96c986dc28bbd787d95ee41ef0e171b4fddcddb1bfb8c904f54915",
+      "schemaOrgType": "VideoGame",
+      "seed": 42,
+      "skyRgb": [
+        0.14000000059604645,
+        0.20000000298023224,
+        0.30000001192092896
+      ],
+      "slug": "starfall-bastion",
+      "title": "Starfall Bastion Arena"
+    }
+  ]
+}

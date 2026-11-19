@@ -84,6 +84,9 @@ const modalTitle = document.getElementById("modal-title");
 const modalStats = document.getElementById("modal-stats");
 const touchPad = document.getElementById("starter-touch-pad");
 
+let activeWorldSeed = PRISM_DEFAULT_WORLD_SEED;
+let activeWorldTitle = "Sunspire Beacon Trials";
+let activeWorldSubtitle = "";
 let wasm = null;
 let renderer = null;
 let gameState = "title";
@@ -233,7 +236,7 @@ function resetArenaRun(enterPlaying = true) {
     setGameState("playing");
   }
   if (!wasm) return;
-  wasm.verdant_wasm_init(BigInt(PRISM_DEFAULT_WORLD_SEED));
+  wasm.verdant_wasm_init(BigInt(activeWorldSeed));
   wasm.verdant_wasm_set_lod_rank(PRISM_MAX_LOD_RANK);
   wasm.verdant_wasm_load_domain_pack?.(0);
   readChronicleStatus();
@@ -576,11 +579,37 @@ async function boot() {
   const csmSplits = [0, 1, 2, 3].map((i) => wasm.verdant_wasm_csm_split_meters(0.25, CSM_FAR_METERS, i));
   renderer?.setCsmSplits?.(csmSplits);
 
-  const autostart = new URLSearchParams(location.search).get("autostart") === "1";
+  const params = new URLSearchParams(location.search);
+  const reqDomain = params.get("domain");
+  if (reqDomain) {
+    try {
+      const wpResp = await fetch(new URL("../generated/world-differentiation-profiles.json", import.meta.url));
+      if (wpResp.ok) {
+        const wpJson = await wpResp.json();
+        const found = (wpJson?.worlds || []).find((w) => w.slug === reqDomain || w.domainId === reqDomain);
+        if (found) {
+          activeWorldSeed = Number(found.seed) || PRISM_DEFAULT_WORLD_SEED;
+          activeWorldTitle = found.title || activeWorldTitle;
+          activeWorldSubtitle = `${found.environmentName} · ${found.defaultAppGenreLabel}`;
+          if (Array.isArray(found.skyRgb) && found.skyRgb.length === 3) LOD3_SPEC.sky = found.skyRgb;
+          if (Array.isArray(found.fogRgb) && found.fogRgb.length === 3) LOD3_SPEC.fog = found.fogRgb;
+          document.title = `${activeWorldTitle} · 3D Playable World`;
+          const h1 = document.querySelector(".title-h1");
+          if (h1) h1.textContent = activeWorldTitle;
+        }
+      }
+    } catch {
+      // Fallback gracefully to default Sunspire Beacon Trials profile.
+    }
+  }
+
+  const autostart = params.get("autostart") === "1";
   resetArenaRun(autostart);
 
   if (holoBadge) {
-    holoBadge.textContent = `Harmonize ${BEACON_COORDS.length} Coastal Beacons Across the Stone Arch Basin`;
+    holoBadge.textContent = activeWorldSubtitle
+      ? `${activeWorldSubtitle} · Harmonize ${BEACON_COORDS.length} Beacons`
+      : `Harmonize ${BEACON_COORDS.length} Coastal Beacons Across the Stone Arch Basin`;
   }
 
   prevNow = performance.now();

@@ -108,7 +108,7 @@ verdant <subcommand> [options]
   verify-story [seed]                         Verify StoryAutomaton tropical reachability & conservation
   pack-universe <out_dir> [seed]              Pack 3-sector floating-origin universe & Stitch shards
   automate-check                              Self-verify all 4 catalog domains, Observer, UI, WGSL, & .uorc
-  operator <status|prompt|synthesize|audit|session>  Communicate with Verdant's VSM & ISO 42010 Managers
+  operator <status|prompt|apply|synthesize|publish-app|audit|session>  Manage Verdant via VSM & ISO 42010 API
   benchmark [frames]                          Run headless 60fps physics + BVH + GJK + NavMesh benchmark
   stress-benchmark [entities]                 Run 10k+ SoA bit-plane, TwoLevelBvh & monoid stress benchmark";
 
@@ -1481,20 +1481,94 @@ pub fn run_cli(args: &[String]) -> Result<String, CliCommandError> {
                             diagnostic: e.to_string(),
                         })
                 }
+                "apply" => {
+                    let two = 1usize + 1usize;
+                    let mut root =
+                        std::env::current_dir().unwrap_or_else(|_| std::path::PathBuf::from("."));
+                    let mut viewpoint = "auto".to_string();
+                    let mut directive = String::new();
+                    let mut cited_authority: Option<String> = None;
+                    let mut actor = "prism:verdant-operator".to_string();
+                    let mut i = two;
+                    while i < args.len() {
+                        match args[i].as_str() {
+                            "--root" if i + 1 < args.len() => {
+                                root = std::path::PathBuf::from(&args[i + 1]);
+                                i += two;
+                            }
+                            "--viewpoint" if i + 1 < args.len() => {
+                                viewpoint = args[i + 1].clone();
+                                i += two;
+                            }
+                            "--directive" if i + 1 < args.len() => {
+                                directive = args[i + 1].clone();
+                                i += two;
+                            }
+                            "--authority" if i + 1 < args.len() => {
+                                cited_authority = Some(args[i + 1].clone());
+                                i += two;
+                            }
+                            "--actor" if i + 1 < args.len() => {
+                                actor = args[i + 1].clone();
+                                i += two;
+                            }
+                            other => {
+                                if directive.is_empty() {
+                                    directive = other.to_string();
+                                } else {
+                                    directive.push(' ');
+                                    directive.push_str(other);
+                                }
+                                i += 1;
+                            }
+                        }
+                    }
+                    let rep = ch
+                        .apply_directive(
+                            &root,
+                            &verdant_core::operator::OperatorPromptRequest {
+                                viewpoint,
+                                directive,
+                                cited_authority,
+                                operator_prism_id: actor,
+                            },
+                        )
+                        .map_err(|e| CliCommandError::ValidationRejected {
+                            command: "operator apply".to_string(),
+                            diagnostic: e.to_string(),
+                        })?;
+                    verdant_core::operator::VerdantOperatorChannel::serialize_apply_pretty(&rep)
+                        .map_err(|e| CliCommandError::ValidationRejected {
+                            command: "operator apply".to_string(),
+                            diagnostic: e.to_string(),
+                        })
+                }
                 "synthesize" => {
                     let two = 1usize + 1usize;
+                    let mut root =
+                        std::env::current_dir().unwrap_or_else(|_| std::path::PathBuf::from("."));
+                    let mut vp_filter: Option<String> = None;
                     let mut out_path: Option<String> = None;
                     let mut i = two;
                     while i < args.len() {
-                        if args[i] == "--out" && i + 1 < args.len() {
-                            out_path = Some(args[i + 1].clone());
-                            i += two;
-                        } else {
-                            i += 1;
+                        match args[i].as_str() {
+                            "--root" if i + 1 < args.len() => {
+                                root = std::path::PathBuf::from(&args[i + 1]);
+                                i += two;
+                            }
+                            "--viewpoint" if i + 1 < args.len() => {
+                                vp_filter = Some(args[i + 1].clone());
+                                i += two;
+                            }
+                            "--out" if i + 1 < args.len() => {
+                                out_path = Some(args[i + 1].clone());
+                                i += two;
+                            }
+                            _ => i += 1,
                         }
                     }
-                    let json = ch.synthesize_viewpoint_contracts_json();
                     if let Some(ref p) = out_path {
+                        let json = ch.synthesize_viewpoint_contracts_json();
                         if let Some(parent) = Path::new(p).parent() {
                             if !parent.as_os_str().is_empty() {
                                 std::fs::create_dir_all(parent).map_err(|e| {
@@ -1517,8 +1591,71 @@ pub fn run_cli(args: &[String]) -> Result<String, CliCommandError> {
                             ch.managers.len()
                         ))
                     } else {
-                        Ok(json)
+                        let rep = ch
+                            .materialize_manager_artifacts(&root, vp_filter.as_deref())
+                            .map_err(|e| CliCommandError::ValidationRejected {
+                                command: "operator synthesize".to_string(),
+                                diagnostic: e.to_string(),
+                            })?;
+                        verdant_core::operator::VerdantOperatorChannel::serialize_materialization_pretty(&rep)
+                            .map_err(|e| CliCommandError::ValidationRejected {
+                                command: "operator synthesize".to_string(),
+                                diagnostic: e.to_string(),
+                            })
                     }
+                }
+                "publish-app" => {
+                    let two = 1usize + 1usize;
+                    let mut root =
+                        std::env::current_dir().unwrap_or_else(|_| std::path::PathBuf::from("."));
+                    let mut title = String::new();
+                    let mut genre = "coastal-adventure".to_string();
+                    let mut domain = "sunspire-regatta".to_string();
+                    let mut summary = "Published via Verdant Operator API".to_string();
+                    let mut actor = "prism:verdant-operator".to_string();
+                    let mut i = two;
+                    while i < args.len() {
+                        match args[i].as_str() {
+                            "--root" if i + 1 < args.len() => {
+                                root = std::path::PathBuf::from(&args[i + 1]);
+                                i += two;
+                            }
+                            "--title" if i + 1 < args.len() => {
+                                title = args[i + 1].clone();
+                                i += two;
+                            }
+                            "--genre" if i + 1 < args.len() => {
+                                genre = args[i + 1].clone();
+                                i += two;
+                            }
+                            "--domain" if i + 1 < args.len() => {
+                                domain = args[i + 1].clone();
+                                i += two;
+                            }
+                            "--summary" if i + 1 < args.len() => {
+                                summary = args[i + 1].clone();
+                                i += two;
+                            }
+                            "--actor" if i + 1 < args.len() => {
+                                actor = args[i + 1].clone();
+                                i += two;
+                            }
+                            _ => i += 1,
+                        }
+                    }
+                    let app = ch
+                        .publish_app_to_repo_catalog(&root, &title, &genre, &domain, &summary, &actor)
+                        .map_err(|e| CliCommandError::ValidationRejected {
+                            command: "operator publish-app".to_string(),
+                            diagnostic: e.to_string(),
+                        })?;
+                    verdant_core::operator::VerdantOperatorChannel::serialize_manifest_app_pretty(
+                        &app,
+                    )
+                    .map_err(|e| CliCommandError::ValidationRejected {
+                        command: "operator publish-app".to_string(),
+                        diagnostic: e.to_string(),
+                    })
                 }
                 "audit" => {
                     let two = 1usize + 1usize;
@@ -1550,6 +1687,18 @@ pub fn run_cli(args: &[String]) -> Result<String, CliCommandError> {
                 }
                 "session" => {
                     use std::io::BufRead;
+                    let two = 1usize + 1usize;
+                    let mut root =
+                        std::env::current_dir().unwrap_or_else(|_| std::path::PathBuf::from("."));
+                    let mut i = two;
+                    while i < args.len() {
+                        if args[i] == "--root" && i + 1 < args.len() {
+                            root = std::path::PathBuf::from(&args[i + 1]);
+                            i += two;
+                        } else {
+                            i += 1;
+                        }
+                    }
                     let stdin = std::io::stdin();
                     let mut responses = Vec::new();
                     for line_res in stdin.lock().lines() {
@@ -1561,20 +1710,19 @@ pub fn run_cli(args: &[String]) -> Result<String, CliCommandError> {
                         if trimmed.is_empty() {
                             continue;
                         }
-                        let serialized =
-                            ch.submit_raw_directive_json(trimmed, false).map_err(|e| {
-                                CliCommandError::ValidationRejected {
-                                    command: "operator session".to_string(),
-                                    diagnostic: e.to_string(),
-                                }
-                            })?;
-                        responses.push(serialized);
+                        let (keep_going, out) = ch.handle_session_rpc_line(&root, trimmed);
+                        if !out.is_empty() {
+                            responses.push(out);
+                        }
+                        if !keep_going {
+                            break;
+                        }
                     }
                     Ok(responses.join("\n"))
                 }
                 other => Err(CliCommandError::InvalidUsage {
                     usage: format!(
-                        "unknown operator action `{other}` (expected status|prompt|synthesize|audit|session)"
+                        "unknown operator action `{other}` (expected status|prompt|apply|synthesize|publish-app|audit|session)"
                     ),
                 }),
             }

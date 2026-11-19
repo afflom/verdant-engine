@@ -11,7 +11,7 @@ import {
   AUTHORITATIVE_CONTENT_TYPES,
   LIVE_CATALOG_STREAMS,
   fetchLiveKnowledgePassage,
-  loadStitchAppCatalog,
+  hydrateStitchAppCatalog,
   publishStitchAppToCatalog,
   searchLiveCatalogStreams,
 } from "../catalog-streams.mjs";
@@ -2128,7 +2128,8 @@ renderContentTypePills();
   }
   const reqAppId = params.get("app");
   if (reqAppId) {
-    const foundApp = loadStitchAppCatalog().find((a) => a.appId === reqAppId);
+    const allApps = await hydrateStitchAppCatalog();
+    const foundApp = allApps.find((a) => a.appId === reqAppId);
     if (foundApp) {
       if (stitchAppTitleInput) stitchAppTitleInput.value = foundApp.title;
       if (stitchAppGenreSelect) stitchAppGenreSelect.value = foundApp.genre;

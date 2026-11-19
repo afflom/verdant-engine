@@ -7,6 +7,7 @@ import {
   AUTHORITATIVE_CONTENT_TYPES,
   LIVE_CATALOG_STREAMS,
   STITCH_APP_GENRES,
+  hydrateStitchAppCatalog,
   loadStitchAppCatalog,
   searchLiveCatalogStreams,
   subscribeStitchAppCatalog,
@@ -677,8 +678,11 @@ function renderStitchAppCatalog(apps = loadStitchAppCatalog()) {
 
     const engineLink = document.createElement("a");
     engineLink.className = "cat-btn";
-    engineLink.href = new URL("../", import.meta.url).href;
-    engineLink.textContent = "Launch Runtime";
+    engineLink.href = new URL(
+      `../starter/?domain=${encodeURIComponent(app.domainSlug)}`,
+      import.meta.url,
+    ).href;
+    engineLink.textContent = "Play World";
 
     row.append(studioLink, engineLink);
     bottom.append(shardsMeta, row);
@@ -689,6 +693,7 @@ function renderStitchAppCatalog(apps = loadStitchAppCatalog()) {
 
 renderStitchGenrePills();
 renderStitchAppCatalog();
+hydrateStitchAppCatalog().then((apps) => renderStitchAppCatalog(apps));
 subscribeStitchAppCatalog((nextApps) => renderStitchAppCatalog(nextApps));
 renderPlatformOrgans();
 renderCatalogList();

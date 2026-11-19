@@ -90,7 +90,12 @@ if (!skipRust && (forceWasm || currentKappa !== cachedKappa || !wasmPresent)) {
   console.log(`[SKIP 0ms] sync-prism-wasm: kappa hit (${currentKappa.slice(0, 12)}…)`);
 }
 
-// 2. Assemble site & run Verdant's native self-audit in parallel:
+// 2. Synthesize Manager-owned manifests via Verdant Operator API before assembling site:
+if (!skipRust) {
+  await runAsync("verdant-cli operator synthesize", "cargo", ["run", "--locked", "-q", "-p", "verdant-cli", "--", "operator", "synthesize"]);
+}
+
+// 3. Assemble site & run Verdant's native self-audit in parallel:
 const stage2 = [runAsync("build-site", process.execPath, ["scripts/build-site.mjs"])];
 if (!skipRust) {
   stage2.push(runAsync("verdant-cli automate-check", "cargo", ["run", "--locked", "-p", "verdant-cli", "--", "automate-check"]));
