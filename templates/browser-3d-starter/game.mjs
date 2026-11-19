@@ -85,6 +85,7 @@ const modalStats = document.getElementById("modal-stats");
 const touchPad = document.getElementById("starter-touch-pad");
 
 let activeWorldSeed = PRISM_DEFAULT_WORLD_SEED;
+let activeWorldDomainIdx = 0;
 let activeWorldTitle = "Sunspire Beacon Trials";
 let activeWorldSubtitle = "";
 let wasm = null;
@@ -238,7 +239,7 @@ function resetArenaRun(enterPlaying = true) {
   if (!wasm) return;
   wasm.verdant_wasm_init(BigInt(activeWorldSeed));
   wasm.verdant_wasm_set_lod_rank(PRISM_MAX_LOD_RANK);
-  wasm.verdant_wasm_load_domain_pack?.(0);
+  wasm.verdant_wasm_load_domain_pack?.(activeWorldDomainIdx);
   readChronicleStatus();
   beaconWorldPositions = BEACON_COORDS.map(([bx, bz]) => [
     bx,
@@ -586,8 +587,11 @@ async function boot() {
       const wpResp = await fetch(new URL("../generated/world-differentiation-profiles.json", import.meta.url));
       if (wpResp.ok) {
         const wpJson = await wpResp.json();
-        const found = (wpJson?.worlds || []).find((w) => w.slug === reqDomain || w.domainId === reqDomain);
+        const worlds = wpJson?.worlds || [];
+        const foundIdx = worlds.findIndex((w) => w.slug === reqDomain || w.domainId === reqDomain);
+        const found = foundIdx >= 0 ? worlds[foundIdx] : null;
         if (found) {
+          activeWorldDomainIdx = foundIdx;
           activeWorldSeed = Number(found.seed) || PRISM_DEFAULT_WORLD_SEED;
           activeWorldTitle = found.title || activeWorldTitle;
           activeWorldSubtitle = `${found.environmentName} · ${found.defaultAppGenreLabel}`;

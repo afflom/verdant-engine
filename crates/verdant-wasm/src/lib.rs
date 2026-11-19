@@ -33,6 +33,11 @@ use verdant_core::gltf_io::{
     export_scene_to_glb, import_glb_to_scene, import_glb_to_scene_bounded,
     pack_multi_primitive_glb, transcode_glb_to_progressive_uorc, DecodedRgbaTexture,
 };
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+use verdant_core::hd_world::{
+    generate_studio_primitive_mesh, synthesize_hd_world_sector_for_kind, AuthorPrimitiveKind,
+    WorldArchitectureKind,
+};
 use verdant_core::hd_world::{hd_terrain_height, synthesize_hd_citadel_sector, HdSectorBundle};
 #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
 use verdant_core::math::Mat4;
@@ -136,6 +141,24 @@ impl std::error::Error for WasmBridgeError {}
 #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
 pub type ImportedGlbRigBundle = (Vec<Skeleton>, Vec<SkeletalClip>, Vec<Vec<SkinWeights4>>);
 
+/// One interactive 3D object authored by a creator inside Verdant Studio.
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+#[derive(Clone, Debug)]
+pub struct StudioAuthoredObject {
+    /// Monotonic object identifier.
+    pub id: u32,
+    /// Primitive geometry shape.
+    pub kind: AuthorPrimitiveKind,
+    /// World position `(x, y, z)` in meters.
+    pub pos: [f32; 1 + 1 + 1],
+    /// Yaw rotation in milliradians.
+    pub yaw_milli: i32,
+    /// Non-uniform scale `(sx, sy, sz)`.
+    pub scale: [f32; 1 + 1 + 1],
+    /// Material-encoded RGB color (`r` integer part selects matte `0`, metallic `2`, emissive `3`).
+    pub color: [f32; 1 + 1 + 1],
+}
+
 /// Live simulation, tensor rasterization, culling, UI, cybernetic, and streaming state inside the Wasm worker.
 pub struct WasmRuntimeBridge {
     /// Deterministic world seed (`u64`).
@@ -238,6 +261,15 @@ pub struct WasmRuntimeBridge {
     /// Optional user-imported `.glb` scene overriding the procedural world meshes.
     #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
     pub custom_glb_scene: Option<(SceneWorld, Vec<ProceduralMesh>, Vec<PbrMaterial>)>,
+    /// True when Verdant Studio is open on a clean Blank Studio Canvas (hides demo props).
+    #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+    pub blank_studio_mode: bool,
+    /// Creator-authored 3D scene objects placed in Verdant Studio.
+    #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+    pub studio_objects: Vec<StudioAuthoredObject>,
+    /// Next monotonic identifier for newly placed Studio objects.
+    #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+    pub next_studio_obj_id: u32,
     /// Per-vertex packed UV coordinates (`2 * vertex_count` floats; `[-2.0, -2.0]` = untextured fallback).
     #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
     pub custom_glb_uvs_xy: Vec<f32>,
@@ -566,6 +598,12 @@ impl WasmRuntimeBridge {
             #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
             custom_glb_scene: None,
             #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+            blank_studio_mode: false,
+            #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+            studio_objects: Vec::new(),
+            #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+            next_studio_obj_id: 1,
+            #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
             custom_glb_uvs_xy: Vec::new(),
             #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
             custom_glb_tex_rgba: Vec::new(),
@@ -846,7 +884,7 @@ impl WasmRuntimeBridge {
                     .map(verdant_core::render::HdPbrDescriptor::to_pbr_material)
                     .collect();
             }
-            let base = pack_world_meshes_to_buffers_opts(
+            let mut base = pack_world_meshes_to_buffers_opts(
                 &self.hd_sector.scene,
                 &self.hd_sector.meshes,
                 &materials,
@@ -856,6 +894,54 @@ impl WasmRuntimeBridge {
                 byte_len: 0,
                 reason: bridge_reason(e),
             })?;
+            #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+            if !self.studio_objects.is_empty() {
+                let idx_two = 1usize + 1usize;
+                let milli_denom = (1u64 << (1 + 1 + 1))
+                    * (1 + 1 + 1 + 1 + 1)
+                    * (1 + 1 + 1 + 1 + 1)
+                    * (1 + 1 + 1 + 1 + 1);
+                let milli_f = milli_denom as f64;
+                for obj in &self.studio_objects {
+                    let mesh = generate_studio_primitive_mesh(
+                        obj.kind,
+                        f64::from(obj.scale[0]),
+                        f64::from(obj.scale[1]),
+                        f64::from(obj.scale[idx_two]),
+                        [obj.color[0], obj.color[1], obj.color[idx_two], 1.0],
+                    );
+                    let yaw_rad = f64::from(obj.yaw_milli) / milli_f;
+                    let (sy, cy) = yaw_rad.sin_cos();
+                    let sy_f = sy as f32;
+                    let cy_f = cy as f32;
+                    let base_v = (base.positions_xyz.len() / (1 + 1 + 1)) as u32;
+                    for (vi, p) in mesh.positions.iter().enumerate() {
+                        let rx = p[0] * cy_f + p[idx_two] * sy_f;
+                        let rz = -p[0] * sy_f + p[idx_two] * cy_f;
+                        base.positions_xyz.push(rx + obj.pos[0]);
+                        base.positions_xyz.push(p[1] + obj.pos[1]);
+                        base.positions_xyz.push(rz + obj.pos[idx_two]);
+                        let n = mesh.normals.get(vi).copied().unwrap_or([0.0, 1.0, 0.0]);
+                        let rnx = n[0] * cy_f + n[idx_two] * sy_f;
+                        let rnz = -n[0] * sy_f + n[idx_two] * cy_f;
+                        base.normals_xyz.push(rnx);
+                        base.normals_xyz.push(n[1]);
+                        base.normals_xyz.push(rnz);
+                        let c = mesh.colors.get(vi).copied().unwrap_or([
+                            obj.color[0],
+                            obj.color[1],
+                            obj.color[idx_two],
+                            1.0,
+                        ]);
+                        base.colors_rgb.push(c[0]);
+                        base.colors_rgb.push(c[1]);
+                        base.colors_rgb.push(c[idx_two]);
+                    }
+                    for &ix in &mesh.indices {
+                        base.indices.push(base_v + ix);
+                    }
+                }
+            }
             self.static_pos_len = base.positions_xyz.len();
             self.static_idx_len = base.indices.len();
             self.static_tri_len = 0;
@@ -879,6 +965,11 @@ impl WasmRuntimeBridge {
         self.dynamic_buffers.colors_rgb.clear();
         self.dynamic_buffers.indices.clear();
         self.dynamic_buffers.tile_triangles.clear();
+
+        #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+        if self.blank_studio_mode {
+            return Ok(self.scene_buffers.triangle_count());
+        }
 
         let kc = verdant_core::verdant_tensor::kernel_consts();
         let two = (1 + 1) as f64;
@@ -4519,6 +4610,7 @@ pub extern "C" fn verdant_wasm_load_domain_pack(domain_idx: u32) -> u32 {
     bridge.custom_glb_mesh_atlas_uvs.clear();
     bridge.custom_glb_atlas_tile_count = 0;
     bridge.npc_patrol_active = true;
+    bridge.blank_studio_mode = false;
     bridge.static_dirty = true;
     let _ = bridge.rebuild_scene_buffers(0.0);
 
@@ -4527,11 +4619,23 @@ pub extern "C" fn verdant_wasm_load_domain_pack(domain_idx: u32) -> u32 {
     let four_f = two_f * two_f;
     let nine_f = three_f * three_f;
     let half_f = 1.0 / two_f;
-    let overview_dist = nine_f * two_f;
-    bridge.camera_anchor_override = Some(Vec3::new(two_f, four_f, nine_f));
+    let overview_dist = if domain_idx == 0 {
+        nine_f * two_f
+    } else {
+        nine_f * two_f + four_f + two_f
+    };
+    bridge.camera_anchor_override = if domain_idx == 0 {
+        Some(Vec3::new(two_f, four_f, nine_f))
+    } else {
+        Some(Vec3::new(0.0, four_f, 0.0))
+    };
     bridge.camera_rig.mode = CameraMode::ThirdPersonSpringArm;
     bridge.camera_rig.yaw_radians = half_f;
-    bridge.camera_rig.pitch_radians = half_f * half_f;
+    bridge.camera_rig.pitch_radians = if domain_idx == 0 {
+        half_f * half_f
+    } else {
+        half_f * (half_f + half_f * half_f)
+    };
     bridge.camera_rig.desired_distance_meters = overview_dist;
     bridge.camera_rig.current_distance_meters = overview_dist;
     let _ = bridge.solve_active_camera(0.0);
@@ -5658,5 +5762,204 @@ pub extern "C" fn verdant_wasm_operator_prompt_io() -> u32 {
         return 0;
     };
     bridge.aux_buffer = json_str.into_bytes();
+    bridge.aux_buffer.len() as u32
+}
+
+/// Switches Verdant Studio to a clean Blank Studio Canvas (16x16 architectural floor grid, zero
+/// hardcoded demo dome/car/NPCs) ready for interactive 3D creation.
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+#[no_mangle]
+pub extern "C" fn verdant_wasm_studio_load_blank_stage() -> u32 {
+    let mut guard = global_bridge()
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
+    let Some(bridge) = guard.as_mut() else {
+        return 0;
+    };
+    let lod = u64::from(bridge.lod_rank);
+    bridge.hd_sector = synthesize_hd_world_sector_for_kind(
+        bridge.seed_val,
+        &bridge.terrain_params,
+        bridge.env_params.water_level_meters,
+        lod,
+        WorldArchitectureKind::BlankStudio,
+    );
+    if let Ok(bvh) = TwoLevelBvh::build_solid(&bridge.hd_sector.scene, &bridge.hd_sector.meshes) {
+        bridge.two_level_bvh = bvh;
+    }
+    bridge.custom_glb_scene = None;
+    bridge.npc_patrol_active = false;
+    bridge.blank_studio_mode = true;
+    bridge.static_dirty = true;
+    let _ = bridge.rebuild_scene_buffers(0.0);
+    let two_f = prism_kernel::sTwo() as f64;
+    let four_f = two_f * two_f;
+    let eight_f = four_f * two_f;
+    let twelve_f = eight_f + four_f;
+    let half_f = 1.0 / two_f;
+    bridge.camera_anchor_override = Some(Vec3::new(0.0, 1.0, 0.0));
+    bridge.camera_rig.mode = CameraMode::ThirdPersonSpringArm;
+    bridge.camera_rig.yaw_radians = half_f + half_f * half_f;
+    bridge.camera_rig.pitch_radians = half_f * (1.0 - half_f * half_f);
+    bridge.camera_rig.desired_distance_meters = twelve_f;
+    bridge.camera_rig.current_distance_meters = twelve_f;
+    let _ = bridge.solve_active_camera(0.0);
+    bridge.scene_buffers.triangle_count() as u32
+}
+
+/// Places a new interactive 3D primitive object (`0=Box, 1=Platform, 2=Pillar, 3=Ramp, 4=Orb`)
+/// into the active Verdant Studio scene and returns its monotonic object ID.
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+#[no_mangle]
+#[allow(clippy::too_many_arguments)]
+pub extern "C" fn verdant_wasm_studio_add_object(
+    prim_kind: u32,
+    x: f32,
+    y: f32,
+    z: f32,
+    sx: f32,
+    sy: f32,
+    sz: f32,
+    r: f32,
+    g: f32,
+    b: f32,
+) -> u32 {
+    let mut guard = global_bridge()
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
+    let Some(bridge) = guard.as_mut() else {
+        return 0;
+    };
+    let id = bridge.next_studio_obj_id;
+    bridge.next_studio_obj_id = bridge.next_studio_obj_id.saturating_add(1);
+    bridge.studio_objects.push(StudioAuthoredObject {
+        id,
+        kind: AuthorPrimitiveKind::from_u32(prim_kind),
+        pos: [x, y, z],
+        yaw_milli: 0,
+        scale: [sx, sy, sz],
+        color: [r, g, b],
+    });
+    bridge.custom_glb_scene = None;
+    bridge.static_dirty = true;
+    let _ = bridge.rebuild_scene_buffers(0.0);
+    id
+}
+
+/// Updates transform and color of an existing Studio-authored 3D object (`1` on success, `0` if missing).
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+#[no_mangle]
+#[allow(clippy::too_many_arguments)]
+pub extern "C" fn verdant_wasm_studio_update_object(
+    obj_id: u32,
+    x: f32,
+    y: f32,
+    z: f32,
+    yaw_milli: i32,
+    sx: f32,
+    sy: f32,
+    sz: f32,
+    r: f32,
+    g: f32,
+    b: f32,
+) -> u32 {
+    let mut guard = global_bridge()
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
+    let Some(bridge) = guard.as_mut() else {
+        return 0;
+    };
+    let Some(obj) = bridge.studio_objects.iter_mut().find(|o| o.id == obj_id) else {
+        return 0;
+    };
+    obj.pos = [x, y, z];
+    obj.yaw_milli = yaw_milli;
+    obj.scale = [sx, sy, sz];
+    obj.color = [r, g, b];
+    bridge.static_dirty = true;
+    let _ = bridge.rebuild_scene_buffers(0.0);
+    1
+}
+
+/// Removes an authored 3D object by ID (`1` if removed, `0` if not found).
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+#[no_mangle]
+pub extern "C" fn verdant_wasm_studio_remove_object(obj_id: u32) -> u32 {
+    let mut guard = global_bridge()
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
+    let Some(bridge) = guard.as_mut() else {
+        return 0;
+    };
+    let before = bridge.studio_objects.len();
+    bridge.studio_objects.retain(|o| o.id != obj_id);
+    if bridge.studio_objects.len() == before {
+        return 0;
+    }
+    bridge.static_dirty = true;
+    let _ = bridge.rebuild_scene_buffers(0.0);
+    1
+}
+
+/// Clears all creator-placed primitive objects from the active Studio scene.
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+#[no_mangle]
+pub extern "C" fn verdant_wasm_studio_clear_objects() -> u32 {
+    let mut guard = global_bridge()
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
+    let Some(bridge) = guard.as_mut() else {
+        return 0;
+    };
+    bridge.studio_objects.clear();
+    bridge.static_dirty = true;
+    let _ = bridge.rebuild_scene_buffers(0.0);
+    1
+}
+
+/// Serializes all creator-authored Studio objects into `aux_buffer` as a JSON array.
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+#[no_mangle]
+pub extern "C" fn verdant_wasm_studio_objects_json_aux() -> u32 {
+    let mut guard = global_bridge()
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
+    let Some(bridge) = guard.as_mut() else {
+        return 0;
+    };
+    let idx_two = 1usize + 1usize;
+    let mut out = String::from("[");
+    for (i, o) in bridge.studio_objects.iter().enumerate() {
+        if i > 0 {
+            out.push(',');
+        }
+        let kind_code: u32 = match o.kind {
+            AuthorPrimitiveKind::Box => 0,
+            AuthorPrimitiveKind::Platform => 1,
+            AuthorPrimitiveKind::Pillar => 1 + 1,
+            AuthorPrimitiveKind::Ramp => 1 + 1 + 1,
+            AuthorPrimitiveKind::Orb => 1 + 1 + 1 + 1,
+        };
+        let entry = format!(
+            "{{\"id\":{},\"kind\":{},\"label\":\"{} #{}\",\"pos\":[{},{},{}],\"yawMilli\":{},\"scale\":[{},{},{}],\"color\":[{},{},{}]}}",
+            o.id,
+            kind_code,
+            o.kind.label(),
+            o.id,
+            o.pos[0],
+            o.pos[1],
+            o.pos[idx_two],
+            o.yaw_milli,
+            o.scale[0],
+            o.scale[1],
+            o.scale[idx_two],
+            o.color[0],
+            o.color[1],
+            o.color[idx_two],
+        );
+        out.push_str(&entry);
+    }
+    out.push(']');
+    bridge.aux_buffer = out.into_bytes();
     bridge.aux_buffer.len() as u32
 }

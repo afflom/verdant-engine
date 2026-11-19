@@ -1233,6 +1233,56 @@ self.onmessage = async ({ data: msg }) => {
       return;
     }
 
+    if (
+      msg.kind === "studio-load-blank" ||
+      msg.kind === "studio-add-object" ||
+      msg.kind === "studio-update-object" ||
+      msg.kind === "studio-remove-object" ||
+      msg.kind === "studio-clear-objects"
+    ) {
+      await ensureUorcSceneHost();
+      let resId = 0;
+      if (msg.kind === "studio-load-blank") {
+        resId = uorcWasm.verdant_wasm_studio_load_blank_stage() >>> 0;
+      } else if (msg.kind === "studio-add-object") {
+        const p = msg.pos || [0, 0, 0];
+        const s = msg.scale || [1.5, 1.5, 1.5];
+        const c = msg.color || [0.82, 0.35, 0.18];
+        resId = uorcWasm.verdant_wasm_studio_add_object(msg.primKind | 0, p[0], p[1], p[2], s[0], s[1], s[2], c[0], c[1], c[2]) >>> 0;
+      } else if (msg.kind === "studio-update-object") {
+        const p = msg.pos || [0, 0, 0];
+        const s = msg.scale || [1.5, 1.5, 1.5];
+        const c = msg.color || [0.82, 0.35, 0.18];
+        resId = uorcWasm.verdant_wasm_studio_update_object(msg.objId >>> 0, p[0], p[1], p[2], msg.yawMilli | 0, s[0], s[1], s[2], c[0], c[1], c[2]) >>> 0;
+      } else if (msg.kind === "studio-remove-object") {
+        resId = uorcWasm.verdant_wasm_studio_remove_object(msg.objId >>> 0) >>> 0;
+      } else {
+        resId = uorcWasm.verdant_wasm_studio_clear_objects() >>> 0;
+      }
+      customGlbActive = false;
+      uorcSceneActive = true;
+      if (msg.lod) currentLod = msg.lod;
+      const sh = simHost();
+      const cam = readSolvedCamera(sh);
+      if (msg.kind === "studio-load-blank") {
+        lastAnchor = [cam.lookTarget[0], cam.lookTarget[1], cam.lookTarget[2]];
+        lastAnchorActive = true;
+        const dx = cam.eye[0] - cam.lookTarget[0], dy = cam.eye[1] - cam.lookTarget[1], dz = cam.eye[2] - cam.lookTarget[2];
+        const distM = Math.max(1.0, Math.hypot(dx, dy, dz));
+        lastPose = {
+          yaw: Math.round(Math.atan2(dx, dz) * 1000),
+          pitch: Math.round(Math.asin(Math.max(-0.95, Math.min(0.95, dy / distM))) * 1000),
+          distMm: Math.round(distM * 1000) >>> 0,
+          aspectMilli: lastPose?.aspectMilli || 1600,
+        };
+      }
+      const stats = drawScene(cam.eye, cam.lookTarget, currentLod, msg.simClockSec || 0, false, 0, 0, true);
+      const oLen = uorcWasm.verdant_wasm_studio_objects_json_aux() >>> 0;
+      const objects = oLen > 0 ? JSON.parse(new TextDecoder().decode(readAuxBytes(uorcWasm))) : [];
+      self.postMessage({ kind: "studio-scene-updated", id: msg.id, ok: resId > 0 || msg.kind === "studio-clear-objects", objId: resId, tris: stats.tris, camera: cam, objects });
+      return;
+    }
+
     if (msg.kind === "set-npc-directive") {
       const npcIdx = Math.max(0, msg.npcIdx | 0) >>> 0;
       const directiveIdx = Math.max(0, msg.directiveIdx | 0) >>> 0;

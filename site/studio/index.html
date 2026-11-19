@@ -860,13 +860,22 @@
   </header>
 
   <main class="ide-main">
-    <section id="studio-journey-host" class="vx-journey-banner" aria-label="Getting Started in Verdant Studio">
-      <div class="vx-journey-head">
-        <div class="vx-journey-copy">
-          <span class="vx-journey-kicker">Start Here · Verdant Studio</span>
-          <h1 class="vx-journey-title">Start building your 3D world</h1>
-          <p class="vx-journey-sub">Pick a starter world, customize it with free 3D assets, playtest live, and share your finished app to the Verdant App Catalog.</p>
-        </div>
+    <section id="studio-journey-host" class="vx-journey-banner" aria-label="Studio Template and Quick-Add Toolbar">
+      <div class="vx-toolbar-group" role="group" aria-label="Stage template">
+        <span class="vx-toolbar-label">Template</span>
+        <button type="button" class="vx-tmpl-pill" id="tmpl-blank-btn" data-studio-template="blank" aria-pressed="true">Blank Canvas</button>
+        <button type="button" class="vx-tmpl-pill" data-studio-template="starfall-bastion" aria-pressed="false">Arena FPS</button>
+        <button type="button" class="vx-tmpl-pill" data-studio-template="meridian-observatory" aria-pressed="false">Astral Observatory</button>
+        <button type="button" class="vx-tmpl-pill" data-studio-template="glasshouse-chronicle" aria-pressed="false">Side-Scroller</button>
+        <button type="button" class="vx-tmpl-pill" data-studio-template="sunspire-regatta" aria-pressed="false">Coastal Basin</button>
+      </div>
+      <div class="vx-toolbar-group" role="group" aria-label="Quick add 3D object">
+        <span class="vx-toolbar-label">Add</span>
+        <button type="button" class="vx-tmpl-pill" data-add-prim="0">+ Box</button>
+        <button type="button" class="vx-tmpl-pill" data-add-prim="1">+ Platform</button>
+        <button type="button" class="vx-tmpl-pill" data-add-prim="2">+ Pillar</button>
+        <button type="button" class="vx-tmpl-pill" data-add-prim="3">+ Ramp</button>
+        <button type="button" class="vx-tmpl-pill" data-add-prim="4">+ Orb</button>
       </div>
     </section>
 
@@ -876,12 +885,32 @@
     </div>
 
     <div class="ide-grid">
-      <!-- LEFT RAIL: World Environments, Project Assets, and Publish & Export -->
-      <aside class="ide-left-col" aria-label="Project Explorer, Imported Assets, and Publish">
+      <!-- LEFT RAIL: Scene Objects, Starter Worlds, Imported Assets, and Publish & Export -->
+      <aside class="ide-left-col" aria-label="Scene Outliner, Templates, Assets, and Publish">
+        <section class="ide-pane" id="studio-outliner-pane">
+          <div class="ide-pane-head">
+            <h2>Scene Outliner</h2>
+            <span class="ide-pane-sub" id="studio-obj-count">0 Objects</span>
+          </div>
+          <div class="ide-pane-body">
+            <div class="vx-add-grid" id="studio-add-grid">
+              <button type="button" class="vx-add-btn" data-add-prim="0">+ Box</button>
+              <button type="button" class="vx-add-btn" data-add-prim="1">+ Platform</button>
+              <button type="button" class="vx-add-btn" data-add-prim="2">+ Pillar</button>
+              <button type="button" class="vx-add-btn" data-add-prim="3">+ Ramp</button>
+              <button type="button" class="vx-add-btn" data-add-prim="4">+ Beacon Orb</button>
+              <button type="button" class="vx-add-btn" id="studio-clear-objs-btn">Clear Objects</button>
+            </div>
+            <div class="vx-outliner-list" id="studio-scene-outliner">
+              <div class="proj-empty">Click <strong>+ Box</strong>, <strong>+ Platform</strong>, or <strong>+ Pillar</strong> to place 3D objects in your scene.</div>
+            </div>
+          </div>
+        </section>
+
         <section class="ide-pane" id="studio-worlds-pane">
           <div class="ide-pane-head">
-            <h2>1. Choose a World</h2>
-            <span class="ide-pane-sub">4 Worlds</span>
+            <h2>Starter Worlds</h2>
+            <span class="ide-pane-sub">4 Templates</span>
           </div>
           <div class="ide-pane-body">
             <div class="proj-domain-list" id="wiz-domain-grid"></div>
@@ -950,10 +979,10 @@
       <section class="ide-center-col" aria-label="Live 3D Stage and Asset Discovery">
         <article class="ide-pane" id="studio-stage-pane">
           <div class="ide-pane-head">
-            <h2 id="studio-hud-project">Sunspire Harbor Regatta</h2>
-            <span class="ide-pane-sub" id="studio-hud-metrics">High Detail · Ready</span>
+            <h2 id="studio-hud-project">Untitled Studio Scene</h2>
+            <span class="ide-pane-sub" id="studio-hud-metrics">Blank Canvas · Ready</span>
           </div>
-          <div class="wf-stage-bar" id="studio-stage-showcase" role="group" aria-label="Active 3D Stage Subject">
+          <div class="wf-stage-bar" id="studio-stage-showcase" role="group" aria-label="Active 3D Stage Subject" hidden>
             <span style="color:var(--muted-foreground);">Preview:</span>
             <button type="button" class="wf-stage-chip" id="stage-mode-domain" aria-pressed="true">World Scene</button>
             <span id="stage-featured-glbs" style="display:inline-flex;flex-wrap:wrap;gap:var(--space-1);"></span>
@@ -979,7 +1008,7 @@
         <!-- UNIFIED ASSET DISCOVERY (SINGLE SEARCH INTERFACE) -->
         <section class="ide-pane" id="studio-discovery" aria-labelledby="disc-heading">
           <div class="ide-pane-head">
-            <h2 id="disc-heading">2. Add 3D Assets, Skies &amp; Audio</h2>
+            <h2 id="disc-heading">Asset Library · 3D Models, Skies, Materials &amp; Audio</h2>
             <span class="ide-pane-sub" id="disc-count-badge">Loading…</span>
           </div>
           <div class="ide-pane-body">
@@ -1041,10 +1070,56 @@
             <button type="button" class="right-tab-btn" role="tab" id="right-tab-roles" data-right-tab="roles" aria-selected="false">Workspaces</button>
           </div>
 
-          <!-- TAB 1: ASSET INSPECTOR & VERSION HISTORY -->
+          <!-- TAB 1: OBJECT TRANSFORM INSPECTOR & IMPORTED ASSET VERSIONING -->
           <div class="right-pane-panel" id="pane-inspector" data-right-panel="inspector">
+            <div id="studio-obj-inspector" class="vx-transform-card" hidden>
+              <div class="insp-rev-top">
+                <strong id="obj-insp-title">Selected Object</strong>
+                <button type="button" class="st-btn danger sm" id="obj-insp-del-btn">Delete</button>
+              </div>
+              <div>
+                <div class="ide-pane-sub" style="margin-bottom:0.25rem;">Position (meters)</div>
+                <div class="vx-vec3-grid">
+                  <div class="vx-vec3-cell"><label for="obj-pos-x">X</label><input id="obj-pos-x" type="number" step="0.5" value="0" /></div>
+                  <div class="vx-vec3-cell"><label for="obj-pos-y">Y</label><input id="obj-pos-y" type="number" step="0.5" value="0" /></div>
+                  <div class="vx-vec3-cell"><label for="obj-pos-z">Z</label><input id="obj-pos-z" type="number" step="0.5" value="0" /></div>
+                </div>
+              </div>
+              <div>
+                <div class="ide-pane-sub" style="margin-bottom:0.25rem;">Scale</div>
+                <div class="vx-vec3-grid">
+                  <div class="vx-vec3-cell"><label for="obj-scl-x">W</label><input id="obj-scl-x" type="number" step="0.25" min="0.25" value="1.5" /></div>
+                  <div class="vx-vec3-cell"><label for="obj-scl-y">H</label><input id="obj-scl-y" type="number" step="0.25" min="0.25" value="1.5" /></div>
+                  <div class="vx-vec3-cell"><label for="obj-scl-z">D</label><input id="obj-scl-z" type="number" step="0.25" min="0.25" value="1.5" /></div>
+                </div>
+              </div>
+              <div class="insp-field">
+                <label for="obj-yaw-deg">Rotation (Yaw °)</label>
+                <input id="obj-yaw-deg" class="st-input" type="range" min="-180" max="180" step="5" value="0" />
+              </div>
+              <div class="insp-field">
+                <label for="obj-mat-surface">Material Surface</label>
+                <select id="obj-mat-surface" class="st-select">
+                  <option value="0">Matte Clay / Stone</option>
+                  <option value="2">Brushed Metal</option>
+                  <option value="3">Glowing Emissive</option>
+                </select>
+              </div>
+              <div class="insp-field">
+                <label>Color Palette</label>
+                <div class="vx-swatch-row" id="obj-color-swatches">
+                  <button type="button" class="vx-swatch-btn" data-swatch="0.86,0.34,0.16" aria-pressed="true">Terracotta</button>
+                  <button type="button" class="vx-swatch-btn" data-swatch="0.84,0.82,0.76" aria-pressed="false">Stone</button>
+                  <button type="button" class="vx-swatch-btn" data-swatch="0.26,0.30,0.36" aria-pressed="false">Basalt</button>
+                  <button type="button" class="vx-swatch-btn" data-swatch="0.20,0.68,0.46" aria-pressed="false">Emerald</button>
+                  <button type="button" class="vx-swatch-btn" data-swatch="0.88,0.68,0.24" aria-pressed="false">Gold</button>
+                  <button type="button" class="vx-swatch-btn" data-swatch="0.24,0.66,0.86" aria-pressed="false">Cobalt</button>
+                </div>
+              </div>
+            </div>
+
             <div id="insp-empty-state" class="proj-empty">
-              Select any asset from <strong>Asset Discovery</strong> and click <strong>+ Add</strong> to edit its properties, commit versioned revisions (<code>v1 → v2</code>), revert changes, or stage it in your scene.
+              Place a 3D object from <strong>Scene Outliner</strong> (or import an asset from <strong>Asset Library</strong>) to edit its position, scale, material, or revision history.
             </div>
             <div id="insp-editor" class="insp-editor-grid" hidden>
               <div class="insp-meta-box" id="insp-meta"></div>

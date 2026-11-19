@@ -27,145 +27,188 @@
   text-decoration: none;
 }
 
-/* ==================== START-HERE 3-STEP GUIDED STUDIO BANNER ==================== */
+/* ==================== COMPACT STUDIO TEMPLATE & WORKSPACE BAR ==================== */
 .vx-journey-banner {
-  margin: clamp(0.65rem, 1.4vw, 1rem) clamp(0.75rem, 2vw, 1.5rem) 0;
-  padding: clamp(0.85rem, 1.8vw, 1.2rem);
-  border: var(--border-width) solid var(--border-strong);
-  border-radius: calc(var(--radius) + 0.25rem);
-  background: linear-gradient(
-    135deg,
-    color-mix(in oklab, var(--brand) 7%, var(--card)) 0%,
-    var(--card) 52%,
-    color-mix(in oklab, var(--success) 5%, var(--card)) 100%
-  );
-  display: grid;
-  gap: 0.75rem;
-}
-.vx-journey-banner[data-collapsed="true"] .vx-step-rail,
-.vx-journey-banner[data-collapsed="true"] .vx-journey-sub {
-  display: none;
-}
-.vx-journey-head {
+  margin: 0;
+  padding: 0.55rem clamp(0.75rem, 2vw, 1.5rem);
+  border-bottom: var(--border-width) solid var(--border);
+  background: var(--card);
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
-  gap: var(--space-3);
+  gap: 0.65rem;
 }
-.vx-journey-copy {
-  display: grid;
-  gap: 0.3rem;
-  max-width: 48rem;
-}
-.vx-journey-kicker {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.45rem;
-  font-family: var(--font-mono);
-  font-size: 0.78rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--brand);
-}
-.vx-journey-title {
-  margin: 0;
-  font-family: var(--font-display);
-  font-size: clamp(1.35rem, 2.4vw, 1.85rem);
-  font-weight: 700;
-  letter-spacing: var(--tracking-display);
-  line-height: 1.15;
-  color: var(--foreground);
-}
-.vx-journey-sub {
-  margin: 0;
-  font-size: var(--text-15, 0.95rem);
-  color: var(--muted-foreground);
-  line-height: 1.5;
-}
-.vx-journey-actions {
+.vx-toolbar-group {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--space-2);
+  gap: 0.4rem;
 }
-.vx-step-rail {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--space-3);
+.vx-toolbar-label {
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted-foreground);
+  margin-right: 0.2rem;
 }
-@media (max-width: 880px) {
-  .vx-step-rail {
-    grid-template-columns: 1fr;
-  }
-}
-.vx-step-card {
-  position: relative;
-  text-align: left;
-  padding: var(--space-3);
-  border-radius: var(--radius);
+.vx-tmpl-pill {
+  min-height: 2.15rem;
+  padding: 0 0.75rem;
+  border-radius: 999px;
   border: var(--border-width) solid var(--border);
   background: var(--background);
   color: var(--foreground);
-  display: grid;
-  gap: 0.45rem;
-  align-content: start;
+  font-family: var(--font-sans);
+  font-size: 0.84rem;
+  font-weight: 500;
   cursor: pointer;
-  transition: border-color var(--duration) var(--ease), background var(--duration) var(--ease), transform var(--duration) var(--ease);
+  white-space: nowrap;
+  transition: border-color var(--duration) var(--ease), background var(--duration) var(--ease), color var(--duration) var(--ease);
 }
-.vx-step-card:hover {
+.vx-tmpl-pill:hover {
   border-color: var(--border-strong);
-  background: var(--card);
-  transform: translateY(-1px);
+  background: var(--secondary);
 }
-.vx-step-card[aria-current="step"] {
+.vx-tmpl-pill[aria-pressed="true"] {
   border-color: var(--brand);
-  background: color-mix(in oklab, var(--brand) 8%, var(--card));
-  box-shadow: inset 0 2px 0 var(--brand);
+  background: var(--brand);
+  color: var(--brand-foreground);
+  font-weight: 600;
 }
-.vx-step-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-2);
+
+/* ==================== LIVE 3D CREATION TOOLS (ADD PRIMITIVES, OUTLINER, TRANSFORM) ==================== */
+.vx-add-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.45rem;
 }
-.vx-step-num {
+.vx-add-btn {
+  min-height: 2.35rem;
+  padding: 0.35rem 0.6rem;
+  border-radius: var(--radius-control);
+  border: var(--border-width) solid var(--border);
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  font-size: 0.84rem;
+  font-weight: 500;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 2rem;
-  height: 1.6rem;
-  padding: 0 0.45rem;
-  border-radius: 999px;
-  font-family: var(--font-mono);
-  font-size: 0.78rem;
-  font-weight: 700;
-  background: var(--secondary);
-  color: var(--foreground);
+  gap: 0.35rem;
+  cursor: pointer;
+  transition: border-color var(--duration) var(--ease), background var(--duration) var(--ease);
 }
-.vx-step-card[aria-current="step"] .vx-step-num {
+.vx-add-btn:hover {
+  border-color: var(--brand);
+  background: color-mix(in oklab, var(--brand) 10%, var(--card));
+}
+.vx-outliner-list {
+  display: grid;
+  gap: 0.35rem;
+  max-height: 13rem;
+  overflow-y: auto;
+}
+.vx-outliner-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.4rem;
+  padding: 0.4rem 0.55rem;
+  border-radius: var(--radius-control);
+  border: var(--border-width) solid var(--border);
+  background: var(--background);
+  font-size: 0.84rem;
+}
+.vx-outliner-row[data-selected="true"] {
+  border-color: var(--brand);
+  background: color-mix(in oklab, var(--brand) 10%, var(--card));
+}
+.vx-outliner-sel {
+  flex: 1;
+  min-height: 1.85rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--foreground);
+  text-align: left;
+  font-family: var(--font-sans);
+  font-size: 0.84rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+.vx-outliner-del {
+  min-height: 1.75rem;
+  min-width: 1.75rem;
+  padding: 0 0.35rem;
+  border-radius: var(--radius-control);
+  border: var(--border-width) solid var(--border);
+  background: var(--secondary);
+  color: var(--muted-foreground);
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+.vx-outliner-del:hover {
+  border-color: var(--destructive);
+  color: var(--destructive);
+}
+.vx-transform-card {
+  padding: 0.85rem;
+  border-radius: var(--radius);
+  border: var(--border-width) solid var(--border-strong);
+  background: var(--background);
+  display: grid;
+  gap: 0.65rem;
+}
+.vx-transform-card[hidden] { display: none; }
+.vx-vec3-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.4rem;
+}
+.vx-vec3-cell {
+  display: grid;
+  gap: 0.2rem;
+}
+.vx-vec3-cell label {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--muted-foreground);
+}
+.vx-vec3-cell input {
+  width: 100%;
+  min-height: 2.1rem;
+  padding: 0 0.45rem;
+  border-radius: var(--radius-control);
+  border: var(--border-width) solid var(--border-strong);
+  background: var(--card);
+  color: var(--foreground);
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+}
+.vx-swatch-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+.vx-swatch-btn {
+  min-height: 2rem;
+  padding: 0 0.6rem;
+  border-radius: 999px;
+  border: var(--border-width) solid var(--border);
+  background: var(--card);
+  color: var(--foreground);
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+.vx-swatch-btn[aria-pressed="true"] {
+  border-color: var(--brand);
   background: var(--brand);
   color: var(--brand-foreground);
-}
-.vx-step-active-pill {
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
-  color: var(--brand);
   font-weight: 600;
-}
-.vx-step-title {
-  margin: 0;
-  font-family: var(--font-display);
-  font-size: var(--text-16);
-  font-weight: 600;
-  color: var(--foreground);
-}
-.vx-step-desc {
-  margin: 0;
-  font-size: var(--text-14);
-  color: var(--muted-foreground);
-  line-height: 1.45;
 }
 
 /* ==================== CALM EDITORIAL WORKSPACE HIERARCHY ==================== */
@@ -204,6 +247,9 @@
 }
 .cat-cta {
   text-decoration: none;
+}
+.wf-stage-bar[hidden] {
+  display: none;
 }
 .ide-pane-body {
   padding: 1rem;

@@ -84,114 +84,223 @@ const stitchBtn = $("studio-stitch-btn");
 const stitchPublishBtn = $("stitch-publish-btn");
 const stitchAppTitleInput = $("stitch-app-title");
 const stitchAppGenreSelect = $("stitch-app-genre");
-const journeyHost = $("studio-journey-host");
+const studioOutlinerEl = $("studio-scene-outliner");
+const studioObjCountEl = $("studio-obj-count");
+const studioClearObjsBtn = $("studio-clear-objs-btn");
+const objInspCard = $("studio-obj-inspector");
+const objInspTitle = $("obj-insp-title");
+const objInspDelBtn = $("obj-insp-del-btn");
+const objPosX = $("obj-pos-x");
+const objPosY = $("obj-pos-y");
+const objPosZ = $("obj-pos-z");
+const objSclX = $("obj-scl-x");
+const objSclY = $("obj-scl-y");
+const objSclZ = $("obj-scl-z");
+const objYawDeg = $("obj-yaw-deg");
+const objMatSurface = $("obj-mat-surface");
+const objSwatches = $("obj-color-swatches");
 
 let experienceDesign = null;
-let activeJourneyStep = "world";
-let journeyCollapsed = false;
+let studioObjects = [];
+let selectedStudioObjId = null;
+let activeTemplateKey = "blank";
 
 function friendlySlotLabel(rawSlot) {
   const map = experienceDesign?.plainLanguage?.slotLabels || {};
   return map[rawSlot] || String(rawSlot || "Studio Asset").replace(/^[^:]+:/, "");
 }
 
-function setStudioFocusStep(stepId, { scroll = false } = {}) {
-  activeJourneyStep = stepId || "world";
-  document.body.dataset.studioFocus = activeJourneyStep;
-  renderStudioJourneyBanner();
-  if (!scroll) return;
-  if (activeJourneyStep === "world") {
-    $("studio-stage-pane")?.scrollIntoView({ behavior: "smooth", block: "nearest" });
-  } else if (activeJourneyStep === "build") {
-    $("studio-discovery")?.scrollIntoView({ behavior: "smooth", block: "start" });
-  } else if (activeJourneyStep === "publish") {
-    $("studio-publish-pane")?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+function syncTemplatePills(key) {
+  activeTemplateKey = key;
+  document.querySelectorAll("[data-studio-template]").forEach((btn) => {
+    btn.setAttribute("aria-pressed", btn.dataset.studioTemplate === key ? "true" : "false");
+  });
+}
+
+function renderStudioOutliner() {
+  if (studioObjCountEl) {
+    studioObjCountEl.textContent = `${studioObjects.length} ${studioObjects.length === 1 ? "Object" : "Objects"}`;
+  }
+  if (!studioOutlinerEl) return;
+  studioOutlinerEl.replaceChildren();
+  if (!studioObjects.length) {
+    const empty = document.createElement("div");
+    empty.className = "proj-empty";
+    empty.innerHTML = "Click <strong>+ Box</strong>, <strong>+ Platform</strong>, or <strong>+ Pillar</strong> to place 3D objects in your scene.";
+    studioOutlinerEl.append(empty);
+    if (objInspCard) objInspCard.hidden = true;
+    return;
+  }
+  for (const o of studioObjects) {
+    const row = document.createElement("div");
+    row.className = "vx-outliner-row";
+    row.dataset.studioObjId = String(o.id);
+    row.dataset.selected = o.id === selectedStudioObjId ? "true" : "false";
+
+    const sel = document.createElement("button");
+    sel.type = "button";
+    sel.className = "vx-outliner-sel";
+    sel.textContent = o.label || `Object #${o.id}`;
+    sel.addEventListener("click", () => selectStudioObject(o.id));
+
+    const del = document.createElement("button");
+    del.type = "button";
+    del.className = "vx-outliner-del";
+    del.setAttribute("aria-label", `Remove ${o.label}`);
+    del.textContent = "×";
+    del.addEventListener("click", () => removeStudioObject(o.id));
+
+    row.append(sel, del);
+    studioOutlinerEl.append(row);
   }
 }
 
-function renderStudioJourneyBanner() {
-  if (!journeyHost || !experienceDesign?.studioJourney) return;
-  journeyHost.dataset.collapsed = journeyCollapsed ? "true" : "false";
-  const brand = experienceDesign.brand || {};
-  const steps = experienceDesign.studioJourney.steps || [];
-  const activeSpec = steps.find((s) => s.id === activeJourneyStep) || steps[0];
-
-  journeyHost.replaceChildren();
-  const head = document.createElement("div");
-  head.className = "vx-journey-head";
-
-  const copy = document.createElement("div");
-  copy.className = "vx-journey-copy";
-  const kicker = document.createElement("span");
-  kicker.className = "vx-journey-kicker";
-  kicker.textContent = `Start Here · ${brand.studioName || "Verdant Studio"}`;
-  const h1 = document.createElement("h1");
-  h1.className = "vx-journey-title";
-  h1.textContent = brand.studioHeadline || "Start building your 3D world";
-  const sub = document.createElement("p");
-  sub.className = "vx-journey-sub";
-  sub.textContent = brand.studioSubhead || "";
-  copy.append(kicker, h1, sub);
-
-  const actions = document.createElement("div");
-  actions.className = "vx-journey-actions";
-  if (activeSpec?.nextStep && !journeyCollapsed) {
-    const nextBtn = document.createElement("button");
-    nextBtn.type = "button";
-    nextBtn.className = "st-btn brand sm";
-    nextBtn.id = "vx-journey-next-btn";
-    nextBtn.textContent = activeSpec.nextLabel || "Next Step";
-    nextBtn.addEventListener("click", () => setStudioFocusStep(activeSpec.nextStep, { scroll: true }));
-    actions.append(nextBtn);
+function selectStudioObject(objId) {
+  selectedStudioObjId = objId;
+  renderStudioOutliner();
+  const obj = studioObjects.find((o) => o.id === objId);
+  if (!obj || !objInspCard) {
+    if (objInspCard) objInspCard.hidden = true;
+    return;
   }
-  const toggleBtn = document.createElement("button");
-  toggleBtn.type = "button";
-  toggleBtn.className = "st-btn sm";
-  toggleBtn.id = "vx-journey-toggle-btn";
-  toggleBtn.textContent = journeyCollapsed ? "Show Guide" : "Hide Guide";
-  toggleBtn.addEventListener("click", () => {
-    journeyCollapsed = !journeyCollapsed;
-    renderStudioJourneyBanner();
+  setRightRailTab("inspector");
+  objInspCard.hidden = false;
+  if (objInspTitle) objInspTitle.textContent = obj.label || `Object #${obj.id}`;
+  if (objPosX) objPosX.value = String(Number(obj.pos[0]).toFixed(2));
+  if (objPosY) objPosY.value = String(Number(obj.pos[1]).toFixed(2));
+  if (objPosZ) objPosZ.value = String(Number(obj.pos[2]).toFixed(2));
+  if (objSclX) objSclX.value = String(Number(obj.scale[0]).toFixed(2));
+  if (objSclY) objSclY.value = String(Number(obj.scale[1]).toFixed(2));
+  if (objSclZ) objSclZ.value = String(Number(obj.scale[2]).toFixed(2));
+  if (objYawDeg) objYawDeg.value = String(Math.round(((obj.yawMilli || 0) / 1000) * (180 / Math.PI)));
+  const matClass = Math.floor(obj.color[0] || 0);
+  if (objMatSurface) objMatSurface.value = String(matClass === 2 || matClass === 3 ? matClass : 0);
+  const baseR = (obj.color[0] || 0) - matClass;
+  const baseG = obj.color[1] || 0;
+  const baseB = obj.color[2] || 0;
+  objSwatches?.querySelectorAll("[data-swatch]").forEach((btn) => {
+    const [sr, sg, sb] = btn.dataset.swatch.split(",").map(Number);
+    const match = Math.abs(sr - baseR) + Math.abs(sg - baseG) + Math.abs(sb - baseB) < 0.12;
+    btn.setAttribute("aria-pressed", match ? "true" : "false");
   });
-  actions.append(toggleBtn);
+}
 
-  head.append(copy, actions);
-  journeyHost.append(head);
-
-  const rail = document.createElement("div");
-  rail.className = "vx-step-rail";
-  for (const st of steps) {
-    const isActive = st.id === activeJourneyStep;
-    const card = document.createElement("button");
-    card.type = "button";
-    card.className = "vx-step-card";
-    card.dataset.journeyStep = st.id;
-    if (isActive) card.setAttribute("aria-current", "step");
-
-    const top = document.createElement("div");
-    top.className = "vx-step-top";
-    const num = document.createElement("span");
-    num.className = "vx-step-num";
-    num.textContent = st.number;
-    top.append(num);
-    if (isActive) {
-      const pill = document.createElement("span");
-      pill.className = "vx-step-active-pill";
-      pill.textContent = "Current Step";
-      top.append(pill);
+async function loadBlankStudioStage() {
+  userSelectedDomain = true;
+  wfState.activeStageAsset = null;
+  activeProject = "Blank Studio Canvas";
+  activeSky = [0.16, 0.17, 0.19];
+  activeFog = [0.22, 0.23, 0.26];
+  syncTemplatePills("blank");
+  document.querySelectorAll("[data-wiz-domain-idx]").forEach((c) => c.setAttribute("aria-pressed", "false"));
+  const r = await callWorker("studio-load-blank", { lod: currentLodSpec(), simClockSec });
+  if (r?.ok) {
+    lTris = r.tris || lTris;
+    if (r.camera) {
+      sEye = r.camera.eye;
+      sTgt = r.camera.lookTarget;
+      lClr = r.camera.clearanceMm ?? lClr;
     }
-    const title = document.createElement("h2");
-    title.className = "vx-step-title";
-    title.textContent = st.title;
-    const desc = document.createElement("p");
-    desc.className = "vx-step-desc";
-    desc.textContent = st.summary;
-
-    card.append(top, title, desc);
-    card.addEventListener("click", () => setStudioFocusStep(st.id, { scroll: true }));
-    rail.append(card);
+    studioObjects = Array.isArray(r.objects) ? r.objects : studioObjects;
+    await syncFallbackBuffers();
   }
-  journeyHost.append(rail);
+  renderStudioOutliner();
+  syncHud();
+  chip(statusEl, "Blank Studio Canvas ready — click + Box, + Platform, or + Pillar to start building.");
+  requestRender();
+}
+
+async function addStudioPrimitive(primKind) {
+  const idx = studioObjects.length;
+  const ring = Math.floor(idx / 6);
+  const angle = (idx % 6) * (Math.PI / 3);
+  const radius = idx === 0 ? 0 : 2.8 + ring * 2.4;
+  const px = Number((Math.cos(angle) * radius).toFixed(2));
+  const pz = Number((Math.sin(angle) * radius).toFixed(2));
+  const defaults = [
+    { scale: [1.6, 1.6, 1.6], color: [0.86, 0.34, 0.16] }, // Box (Terracotta)
+    { scale: [2.2, 1.0, 2.2], color: [0.84, 0.82, 0.76] }, // Platform (Stone)
+    { scale: [1.2, 2.2, 1.2], color: [2.84, 0.82, 0.76] }, // Pillar (Metallic)
+    { scale: [2.0, 1.5, 2.6], color: [0.26, 0.30, 0.36] }, // Ramp (Basalt)
+    { scale: [1.2, 1.2, 1.2], color: [3.24, 0.66, 0.86] }, // Beacon Orb (Emissive Cyan)
+  ][primKind] || { scale: [1.5, 1.5, 1.5], color: [0.86, 0.34, 0.16] };
+  const r = await callWorker("studio-add-object", {
+    primKind,
+    pos: [px, 0, pz],
+    scale: defaults.scale,
+    color: defaults.color,
+    lod: currentLodSpec(),
+    simClockSec,
+  });
+  if (r?.ok) {
+    lTris = r.tris || lTris;
+    studioObjects = Array.isArray(r.objects) ? r.objects : studioObjects;
+    await syncFallbackBuffers();
+    selectStudioObject(r.objId);
+    syncHud();
+    chip(statusEl, `Added object #${r.objId} to your scene (${studioObjects.length} total).`);
+    requestRender();
+  }
+}
+
+async function updateSelectedStudioObject(overrideRgb = null) {
+  if (!selectedStudioObjId) return;
+  const obj = studioObjects.find((o) => o.id === selectedStudioObjId);
+  if (!obj) return;
+  const matClass = Number(objMatSurface?.value || 0);
+  const activeSwatch = objSwatches?.querySelector('[data-swatch][aria-pressed="true"]');
+  const [sr, sg, sb] = overrideRgb || (activeSwatch ? activeSwatch.dataset.swatch.split(",").map(Number) : [0.86, 0.34, 0.16]);
+  const pos = [Number(objPosX?.value) || 0, Number(objPosY?.value) || 0, Number(objPosZ?.value) || 0];
+  const scale = [
+    Math.max(0.25, Number(objSclX?.value) || 1),
+    Math.max(0.25, Number(objSclY?.value) || 1),
+    Math.max(0.25, Number(objSclZ?.value) || 1),
+  ];
+  const yawMilli = Math.round(((Number(objYawDeg?.value) || 0) * Math.PI / 180) * 1000);
+  const color = [matClass + sr, sg, sb];
+  const r = await callWorker("studio-update-object", {
+    objId: selectedStudioObjId,
+    pos,
+    yawMilli,
+    scale,
+    color,
+    lod: currentLodSpec(),
+    simClockSec,
+  });
+  if (r?.ok) {
+    lTris = r.tris || lTris;
+    studioObjects = Array.isArray(r.objects) ? r.objects : studioObjects;
+    await syncFallbackBuffers();
+    syncHud();
+    requestRender();
+  }
+}
+
+async function removeStudioObject(objId) {
+  const r = await callWorker("studio-remove-object", { objId, lod: currentLodSpec(), simClockSec });
+  if (r?.ok) {
+    lTris = r.tris || lTris;
+    studioObjects = Array.isArray(r.objects) ? r.objects : studioObjects;
+    if (selectedStudioObjId === objId) selectedStudioObjId = studioObjects[0]?.id ?? null;
+    await syncFallbackBuffers();
+    renderStudioOutliner();
+    if (selectedStudioObjId) selectStudioObject(selectedStudioObjId);
+    syncHud();
+    requestRender();
+  }
+}
+
+async function clearStudioObjects() {
+  const r = await callWorker("studio-clear-objects", { lod: currentLodSpec(), simClockSec });
+  if (r?.ok) {
+    lTris = r.tris || lTris;
+    studioObjects = [];
+    selectedStudioObjId = null;
+    await syncFallbackBuffers();
+    renderStudioOutliner();
+    syncHud();
+    requestRender();
+  }
 }
 
 async function hydrateExperienceDesignSystem() {
@@ -199,15 +308,42 @@ async function hydrateExperienceDesignSystem() {
     const res = await fetch(new URL("../generated/experience-design-system.json", import.meta.url));
     if (res.ok) {
       experienceDesign = await res.json();
-      activeJourneyStep = experienceDesign?.studioJourney?.defaultStep || "world";
-      document.body.dataset.studioFocus = activeJourneyStep;
-      renderStudioJourneyBanner();
       if (domainPacks.length) renderDomainPackCards();
     }
   } catch {
     // Graceful fallback to inline HTML defaults.
   }
 }
+
+document.querySelectorAll("[data-add-prim]").forEach((btn) => {
+  btn.addEventListener("click", () => addStudioPrimitive(Number(btn.dataset.addPrim)));
+});
+studioClearObjsBtn?.addEventListener("click", clearStudioObjects);
+objInspDelBtn?.addEventListener("click", () => {
+  if (selectedStudioObjId) removeStudioObject(selectedStudioObjId);
+});
+[objPosX, objPosY, objPosZ, objSclX, objSclY, objSclZ, objYawDeg, objMatSurface].forEach((el) => {
+  el?.addEventListener("input", () => updateSelectedStudioObject());
+  el?.addEventListener("change", () => updateSelectedStudioObject());
+});
+objSwatches?.querySelectorAll("[data-swatch]").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    objSwatches.querySelectorAll("[data-swatch]").forEach((b) => b.setAttribute("aria-pressed", "false"));
+    btn.setAttribute("aria-pressed", "true");
+    updateSelectedStudioObject(btn.dataset.swatch.split(",").map(Number));
+  });
+});
+document.querySelectorAll("[data-studio-template]").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    const key = btn.dataset.studioTemplate;
+    if (key === "blank") {
+      loadBlankStudioStage();
+      return;
+    }
+    const idx = domainPacks.findIndex((d) => d.slug === key);
+    if (idx >= 0) loadCatalogDomainPack(idx, { userInitiated: true });
+  });
+});
 const exportUorcBtn = $("studio-export-uorc-btn");
 const themeBtn = $("studio-theme-btn");
 const glbFileIn = $("studio-glb-file");
@@ -1794,6 +1930,7 @@ async function loadCatalogDomainPack(domainIdx, { fromSelect = false, userInitia
   const pack = domainPacks[clamped];
   const arch = STARTER_ARCHETYPES[clamped] || STARTER_ARCHETYPES[0];
   activeProject = pack?.title || arch.title;
+  if (pack?.slug) syncTemplatePills(pack.slug);
 
   if (pack?.environment?.skyRgbPercent && pack?.environment?.fogRgbPercent) {
     activeSky = pack.environment.skyRgbPercent.map((v) => v / 100);
@@ -1843,7 +1980,7 @@ async function loadCatalogDomainPack(domainIdx, { fromSelect = false, userInitia
       `Environment: ${pack.environment?.name} · ${lTris.toLocaleString()} tris · RT60 ${lastRt60Ms}ms\n` +
       `HD Models: ${models}`;
   }
-  chip(statusEl, `Composed ${activeProject} (${pack?.id || clamped}) · ${lTris.toLocaleString()} tris · Clear ${lClr}mm`);
+  chip(statusEl, `Loaded ${activeProject} · ${lTris.toLocaleString()} tris`);
   requestRender();
   return r;
 }
@@ -2285,11 +2422,14 @@ renderContentTypePills();
   if (reqStream || reqQuery || reqType) {
     runUnifiedDiscovery();
   }
-  const initialDomainIdx = reqDomain
-    ? Math.max(0, domainPacks.findIndex((d) => d.slug === reqDomain || d.id === reqDomain))
-    : 0;
-  if (!userSelectedDomain && domainPacks.length > 0) {
+  if (reqDomain && domainPacks.length > 0) {
+    const initialDomainIdx = Math.max(
+      0,
+      domainPacks.findIndex((d) => d.slug === reqDomain || d.id === reqDomain),
+    );
     await loadCatalogDomainPack(initialDomainIdx);
+  } else if (!userSelectedDomain) {
+    await loadBlankStudioStage();
   }
   if (reqAutoGlb && /^https:\/\//.test(reqAutoGlb)) {
     wfState.activeStageAsset = reqAutoTitle;

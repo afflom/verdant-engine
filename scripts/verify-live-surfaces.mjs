@@ -380,6 +380,23 @@ try {
       failures.push("Standalone /studio/ must expose #studio-export-uorc-btn and zero .tar buttons");
     }
 
+    // Exercise real 3D Studio Authoring on Blank Canvas (+ Box, + Pillar, live Transform Inspector, remove):
+    await page.click('#studio-add-grid [data-add-prim="0"]');
+    await page.waitForFunction(
+      () =>
+        (document.getElementById("studio-obj-count")?.textContent || "").includes("1 Object") &&
+        document.getElementById("studio-obj-inspector")?.hidden === false,
+      null,
+      { timeout: 10000 },
+    );
+    await page.fill("#obj-pos-x", "3.5");
+    await page.click('#studio-add-grid [data-add-prim="2"]');
+    await page.waitForFunction(
+      () => (document.getElementById("studio-obj-count")?.textContent || "").includes("2 Objects"),
+      null,
+      { timeout: 10000 },
+    );
+
     // Exercise Live Discovery -> Preview -> Import v1 -> Edit v2 -> Revert v3 -> Remove:
     await page.locator("#disc-results-grid .disc-card button[data-preview-model]").first().click();
     await page.waitForFunction(
