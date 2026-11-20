@@ -110,17 +110,21 @@ try {
       const badgeContract = document.getElementById("studio-scale-badge")?.dataset?.contract || "";
 
       // 2. Zero-account in-browser VerdantVcs e1 -> e2 (with live authored 3D objects) + live Checkout + portable .holo + cross-browser share URL!
-      const waitOutlinerCount = async (target) => {
-        const deadline = performance.now() + 8000;
+      const addPrimAndWait = async (primCode, target) => {
+        const btn = document.querySelector(`[data-add-prim="${primCode}"]`);
+        if (!btn) throw new Error(`Missing [data-add-prim="${primCode}"] button in Studio`);
+        btn.click();
+        const deadline = performance.now() + 25000;
         while (document.querySelectorAll(".vx-outliner-row").length < target && performance.now() < deadline) {
-          await new Promise((r) => setTimeout(r, 30));
+          await new Promise((r) => setTimeout(r, 50));
+        }
+        if (document.querySelectorAll(".vx-outliner-row").length < target) {
+          throw new Error(`Timed out waiting for Studio outliner count >= ${target} after clicking [data-add-prim="${primCode}"]`);
         }
       };
       const c1 = await api.commitAndPackHolo("Initial zero-account 3D scene commit");
-      document.querySelector('[data-add-prim="0"]')?.click();
-      await waitOutlinerCount(1);
-      document.querySelector('[data-add-prim="4"]')?.click();
-      await waitOutlinerCount(2);
+      await addPrimAndWait(0, 1);
+      await addPrimAndWait(4, 2);
       const c2 = await api.commitAndPackHolo("Second revision with 2 authored 3D objects");
       const checkedOut = await api.checkoutVcsCommit(c1.commitKappa);
       const shareUrl = api.buildShareablePinUrl(c2);
