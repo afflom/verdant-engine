@@ -338,3 +338,21 @@ Feature: engine
     Given AUTH-STITCH-SELF-HOSTING, AUTH-SEMVER-CHANGE-KPI, scripts/package-rust-crates.mjs, site/card.html, site/docs/index.html, and RoadmapKpiManager
     When Verdant packages its RFC 2789 Cargo Sparse Registry index, binds Zenodo archival provenance, exposes Blank-Frame-first entry, and evaluates Observer KPIs across Milestones M1-M8
     Then all four shipped Rust crates have valid RFC 2789 sparse index entries, Zenodo DOI archival is locked in authority provenance, frame.lock stays intact, and all ten Observer KPIs pass across M1-M8
+
+  @VE-52 @build
+  Scenario: Constructive Lean 4 modules Cadence.lex.tex and Release.lex.tex prove Verdant's autonomous release cadence and 6-channel distribution matrix with zero Classical.choice, verdant operator ratchet-lift keeps Cargo.toml workspace versions synchronized with release-ledger.json, and scripts/release/qualify-tag.mjs plus release-tag.yml enforce green-bootstrap autonomous tagging
+    Given app/src/Cadence.lex.tex, app/src/Release.lex.tex, Cargo.toml, site/generated/release-ledger.json, scripts/release/qualify-tag.mjs, and .github/workflows/release-tag.yml
+    When Verdant synchronizes workspace crate versions with its Change Manager ledger and runs the tag qualification gate with matching and mismatched versions
+    Then Cadence and Release are grounded constructive LexLean strata, Cargo.toml matches release-ledger.json, qualify-tag passes on synchronized state, and mismatched tag or version attempts fail closed
+
+  @VE-53 @build
+  Scenario: Verdant commits its uorust MIR proof frontier register (frontier.toml) and enforces a shrink-only hand-written Rust surface ratchet inside prism-fidelity alongside prism/parametric-ratchet/2 that fails closed on any lifted-function regression or uncertified-function growth
+    Given frontier.toml, model/parametric-ratchet.toml [frontier_ratchet], and prism-fidelity audit_parametric_ratchet
+    When prism-fidelity audits the live repository frontier register and a synthetic regressed frontier register with an added residue function
+    Then the live repository satisfies the shrink-only MIR proof frontier floors and ceilings and any added residue or lost lifted function fails closed
+
+  @VE-54 @build
+  Scenario: Verdant pins three CORS-verified independent Stitch shard origins (GitHub Pages, jsDelivr, and raw.githubusercontent via orphan stitch-mirror), verifies live RFC 2789 Cargo Sparse Registry client fetches and standalone .crate packaging via scripts/verify-sparse-registry.mjs, and delivers zero-account cross-browser ?pin=stitch://<kappa>/studio#holo=... sharing plus live VerdantVcs checkout
+    Given site/frame/frame-pin.json, site/frame/frame-boot.mjs, site/studio/studio-page.mjs, scripts/verify-sparse-registry.mjs, and .github/workflows/release-stitch.yml
+    When Verdant pins three CORS-verified shard origins, verifies standalone .crate packages over HTTP with real cargo, and hands off a zero-account Studio ?pin=stitch://<kappa>/studio#holo=... link to an isolated browser context
+    Then all three origins are distinct HTTPS CORS-enabled relays, Cargo parses the sparse index cleanly, and the isolated browser verifies kappa and mounts the shared 3D app with zero accounts

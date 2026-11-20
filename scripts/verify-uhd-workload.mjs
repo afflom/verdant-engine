@@ -109,9 +109,11 @@ try {
       const badgeText = document.getElementById("studio-scale-badge")?.textContent || "";
       const badgeContract = document.getElementById("studio-scale-badge")?.dataset?.contract || "";
 
-      // 2. Zero-account in-browser VerdantVcs e1 -> e2 + portable .holo + ?pin=stitch:// deep-link!
+      // 2. Zero-account in-browser VerdantVcs e1 -> e2 + live Checkout + portable .holo + cross-browser share URL!
       const c1 = await api.commitAndPackHolo("Initial zero-account 3D scene commit");
       const c2 = await api.commitAndPackHolo("Second revision with UHD lighting");
+      const checkedOut = await api.checkoutVcsCommit(c1.commitKappa);
+      const shareUrl = api.buildShareablePinUrl(c2);
       const hist = api.getVcsHistory();
       return {
         maxLagMs,
@@ -120,7 +122,9 @@ try {
         badgeText,
         badgeContract,
         c1: { epoch: c1.epoch, kappa: c1.commitKappa, holoBytes: c1.capsuleByteLen, shards: c1.shardCount, magic: c1.holoHex.slice(0, 32), pin: c1.stitchDeepLinkUri },
-        c2: { epoch: c2.epoch, kappa: c2.commitKappa, parent: c2.parentCommitKappa, pin: c2.stitchDeepLinkUri },
+        c2: { epoch: c2.epoch, kappa: c2.commitKappa, parent: c2.parentCommitKappa, capsuleSha: c2.capsuleSha256Hex, pin: c2.stitchDeepLinkUri },
+        checkedOutEpoch: checkedOut.epoch,
+        shareUrl,
         histLen: hist.length,
         prismId: api.getLocalPrismId(),
       };
@@ -151,12 +155,46 @@ try {
   if (stress.c2.parent !== stress.c1.kappa || stress.c2.epoch !== stress.c1.epoch + 1 || !stress.c2.pin.startsWith("stitch://")) {
     throw new Error(`In-browser VerdantVcs lineage or deep-link failed: ${JSON.stringify(stress.c2)}`);
   }
-  if (pageErrors.length > 0) {
-    throw new Error(`Studio pageerror(s): ${pageErrors.join(" | ")}`);
+  if (stress.checkedOutEpoch !== stress.c1.epoch) {
+    throw new Error(`VerdantVcs live checkout did not restore e1: got ${stress.checkedOutEpoch}`);
+  }
+  if (!stress.shareUrl.includes("#holo=")) {
+    throw new Error(`Cross-browser share URL missing #holo payload: ${stress.shareUrl}`);
+  }
+
+  // 3. Cross-browser zero-account handoff: open Alice's `?pin=stitch://<kappa>/studio#holo=...` in a
+  //    brand-new isolated browser context (Bob: zero cookies, zero OPFS, zero external accounts!)
+  const bobCtx = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+  const bobPage = await bobCtx.newPage();
+  const bobErrors = [];
+  bobPage.on("pageerror", (e) => bobErrors.push(String(e)));
+  await bobPage.goto(stress.shareUrl, { waitUntil: "domcontentloaded", timeout: 30000 });
+  await bobPage.waitForFunction(
+    () => window.__VERDANT_BLANK_FRAME__ && window.__VERDANT_BLANK_FRAME__.status !== "booting",
+    { timeout: 30000 },
+  );
+  const bobMount = await bobPage.evaluate(() => ({
+    status: window.__VERDANT_BLANK_FRAME__.status,
+    source: window.__VERDANT_BLANK_FRAME__.source,
+    capsuleSha256Hex: window.__VERDANT_BLANK_FRAME__.capsuleSha256Hex,
+    error: window.__VERDANT_BLANK_FRAME__.error || null,
+  }));
+  if (
+    bobMount.status !== "mounted" ||
+    bobMount.source !== "stitch-user-pin-holo" ||
+    bobMount.capsuleSha256Hex !== stress.c2.capsuleSha
+  ) {
+    throw new Error(`Cross-browser ?pin=stitch://<kappa>/studio handoff failed: ${JSON.stringify(bobMount)}`);
+  }
+  await bobPage.frameLocator("#verdant-lifted-frame").locator("#verdant-scene-data").waitFor({ state: "visible", timeout: 15000 });
+  await bobCtx.close();
+
+  if (pageErrors.length > 0 || bobErrors.length > 0) {
+    throw new Error(`Studio/Handoff pageerror(s): ${[...pageErrors, ...bobErrors].join(" | ")}`);
   }
 
   console.log(
-    `verify-uhd-workload: PASS — 4K (${stress.uhd4k.arena.evictions} evicts) & 8K (${stress.uhd8k.arena.evictions} evicts, peak ${stress.uhd8k.arena.peakResidentBytes}/${stress.uhd8k.arena.budgetBytes} B) upheld contract with maxLag=${stress.maxLagMs.toFixed(1)}ms; zero-account VerdantVcs (${stress.prismId}) committed e1->e2, packed .holo (${stress.c1.holoBytes} B, 8 STCH2 shards), and generated ${stress.c2.pin}.`,
+    `verify-uhd-workload: PASS — 4K (${stress.uhd4k.arena.evictions} evicts) & 8K (${stress.uhd8k.arena.evictions} evicts, peak ${stress.uhd8k.arena.peakResidentBytes}/${stress.uhd8k.arena.budgetBytes} B) upheld contract with maxLag=${stress.maxLagMs.toFixed(1)}ms; zero-account VerdantVcs (${stress.prismId}) committed e1->e2 + live checkout, packed .holo (${stress.c1.holoBytes} B, 8 STCH2 shards), and verified cross-browser ?pin=stitch://<kappa>/studio handoff in isolated Chromium context.`,
   );
 } finally {
   await browser.close();

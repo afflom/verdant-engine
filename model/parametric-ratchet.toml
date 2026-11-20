@@ -16,6 +16,8 @@ pure_zero_one_lex_modules = [
   "app/src/Subsystems.lex.tex",
   "app/src/DevRel.lex.tex",
   "app/src/Observer.lex.tex",
+  "app/src/Cadence.lex.tex",
+  "app/src/Release.lex.tex",
   "app/src/Measures.lex.tex",
   "app/src/Production/ThreatModel.lex.tex",
 ]
@@ -51,6 +53,12 @@ max_unlifted_ui_files = 0
 max_unverified_frame_assets = 0
 max_user_required_external_accounts = 0
 max_unlifted_workspace_modules = 0
+
+[frontier_ratchet]
+frontier_register = "frontier.toml"
+min_lifted_functions = 136
+max_residue_functions = 1225
+max_uncertified_functions = 1370
 
 [[stratum_module]]
 path = "app/src/Foundation/Ontology/V1/Model.lex.tex"
@@ -181,3 +189,13 @@ role = "Diataxis documentation suite, runnable SDK examples, browser starter tem
 path = "app/src/Observer.lex.tex"
 stratum = 7
 role = "Second-order Observer Prism holon, differentiated platform organs, stakeholder Prism models, native language reasoning, and observed communication channels."
+
+[[stratum_module]]
+path = "app/src/Cadence.lex.tex"
+stratum = 7
+role = "Constructive autonomous release cadence state machine proving red-main refusal, ratcheted SemVer advancement, and monotonic release history."
+
+[[stratum_module]]
+path = "app/src/Release.lex.tex"
+stratum = 5
+role = "Constructive multi-channel release distribution matrix covering 3 CORS-verified Stitch shard mirrors, RFC 2789 Cargo Sparse Registry, GHCR OCI, and Zenodo DOI."

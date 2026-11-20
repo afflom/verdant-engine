@@ -4382,15 +4382,89 @@ body[data-studio-focus="publish"] #studio-publish-pane {
         Ok(total_bytes)
     }
 
+    #[cfg(not(target_arch = "wasm32"))]
+    fn sync_workspace_cargo_version(
+        repo_root: &Path,
+        version: &str,
+    ) -> Result<(), ObserverModelError> {
+        let replace_ver_field = |line: &str, ver: &str| -> String {
+            if let Some(prefix_end) = line.find("version = \"") {
+                let val_start = prefix_end + "version = \"".len();
+                if let Some(rel_end) = line[val_start..].find('"') {
+                    let val_end = val_start + rel_end;
+                    return format!("{}{ver}{}", &line[..val_start], &line[val_end..]);
+                }
+            }
+            line.to_string()
+        };
+
+        let root_toml_path = repo_root.join("Cargo.toml");
+        if let Ok(raw) = std::fs::read_to_string(&root_toml_path) {
+            let mut in_ws_pkg = false;
+            let mut in_ws_deps = false;
+            let mut out = String::with_capacity(raw.len());
+            for line in raw.lines() {
+                let trim = line.trim();
+                if trim.starts_with('[') {
+                    in_ws_pkg = trim == "[workspace.package]";
+                    in_ws_deps = trim == "[workspace.dependencies]";
+                }
+                let next = if (in_ws_pkg && trim.starts_with("version = \""))
+                    || (in_ws_deps && line.contains("path = \"crates/"))
+                {
+                    replace_ver_field(line, version)
+                } else {
+                    line.to_string()
+                };
+                out.push_str(&next);
+                out.push('\n');
+            }
+            if out != raw {
+                std::fs::write(&root_toml_path, out.as_bytes()).map_err(|e| {
+                    ObserverModelError::CommunicationEnvelopeRejected {
+                        channel: CommunicationChannelKind::OrganToOrgan.slug().to_string(),
+                        detail: format!("sync Cargo.toml version: {e}"),
+                    }
+                })?;
+            }
+        }
+
+        let wasm_toml_path = repo_root.join("crates/verdant-wasm/Cargo.toml");
+        if let Ok(raw) = std::fs::read_to_string(&wasm_toml_path) {
+            let mut out = String::with_capacity(raw.len());
+            for line in raw.lines() {
+                let next = if line.contains("verdant-core = {")
+                    && line.contains("path = \"../verdant-core\"")
+                {
+                    replace_ver_field(line, version)
+                } else {
+                    line.to_string()
+                };
+                out.push_str(&next);
+                out.push('\n');
+            }
+            if out != raw {
+                std::fs::write(&wasm_toml_path, out.as_bytes()).map_err(|e| {
+                    ObserverModelError::CommunicationEnvelopeRejected {
+                        channel: CommunicationChannelKind::OrganToOrgan.slug().to_string(),
+                        detail: format!("sync crates/verdant-wasm/Cargo.toml version: {e}"),
+                    }
+                })?;
+            }
+        }
+        Ok(())
+    }
+
     /// Executes Verdant's complete autonomous self-lift loop (`verdant operator ratchet-lift` &
     /// MCP `verdant_ratchet_lift`, `VE-47`):
     /// 1. Enforces 13-Manager Total Ownership and `<= 30 KiB` zero-account Blank Frame invariants.
     /// 2. Synthesizes all declarative Manager manifests and seals `immutability-seal.json`.
-    /// 3. Optionally advances SemVer via `mgr-change-release` when Ratchet + Release Gates pass.
-    /// 4. Lifts 100% of shipped Rust crates, all 26 Prism LexLean strata, governance/model
+    /// 3. Optionally advances SemVer via `mgr-change-release` when Ratchet + Release Gates pass,
+    ///    and syncs `Cargo.toml` workspace & internal crate versions to the active SemVer.
+    /// 4. Lifts 100% of shipped Rust crates, all Prism LexLean strata, governance/model
     ///    registers, and distilled Viewpoints into a `4-of-8` sharded `VerdantVcs` Source DAG.
-    /// 5. Packs `verdant-v<ver>.holo` + `4-of-8` `STCH2` shards, verifies recovery with 4 shards
-    ///    dropped, and optionally updates `site/frame/frame-pin.json`.
+    /// 5. Packs `verdant-v<ver>.holo` + `4-of-8` `STCH2` shards across 3 CORS-verified origins,
+    ///    verifies recovery with 4 shards dropped, and optionally updates `site/frame/frame-pin.json`.
     /// 6. Emits canonical `self-host-ratchet-manifest.toml` binding every lifted Rust, LexLean,
     ///    and Viewpoint UI file's live SHA-256 digest to `immutability_seal_root_sha256` and
     ///    `release_capsule_sha256` for mechanical enforcement by `prism-fidelity` (`prism/parametric-ratchet/2`).
@@ -4430,6 +4504,22 @@ body[data-studio-focus="publish"] #studio-publish-pane {
         let version = ledger.current_version.display_string();
         let release_epoch = ledger.release_epoch;
 
+        if opts.write_repo_artifacts {
+            Self::sync_workspace_cargo_version(repo_root, &version)?;
+            // Refresh KPI report now that Cargo.toml is synchronized with release-ledger.json:
+            let kpi_rep = self.evaluate_observer_roadmap_kpis(repo_root, true, true)?;
+            if let Ok(kpi_json) = serde_json::to_string_pretty(&kpi_rep) {
+                let _ = Self::write_manager_file(
+                    repo_root,
+                    "mgr-roadmap-strategy",
+                    "site/generated/roadmap-kpi-report.json",
+                    &kpi_json,
+                )?;
+                let comm_kappa = sha256_hex_tagged("ratchet-lift-sync", version.as_bytes());
+                let _ = self.seal_repository_views(repo_root, &comm_kappa)?;
+            }
+        }
+
         let seal = self.verify_immutability_seal(repo_root);
         if !seal.valid {
             return Err(ObserverModelError::CommunicationEnvelopeRejected {
@@ -4458,10 +4548,11 @@ body[data-studio-focus="publish"] #studio-publish-pane {
         } else if opts.update_frame_pin {
             let defaults = vec![
                 format!("https://afflom.github.io/verdant-engine/stitch/v{version}/shards"),
-                format!("https://github.com/afflom/verdant-engine/releases/download/v{version}"),
+                format!("https://cdn.jsdelivr.net/gh/afflom/verdant-engine@stitch-mirror/v{version}/shards"),
+                format!("https://raw.githubusercontent.com/afflom/verdant-engine/stitch-mirror/v{version}/shards"),
             ];
             let plan =
-                crate::network::MultiOriginRelayPlan::build(defaults, 1 + 1).map_err(|e| {
+                crate::network::MultiOriginRelayPlan::build(defaults, 1 + 1 + 1).map_err(|e| {
                     ObserverModelError::CommunicationEnvelopeRejected {
                         channel: CommunicationChannelKind::OrganToOrgan.slug().to_string(),
                         detail: format!("multi-origin relay validation failed: {e}"),

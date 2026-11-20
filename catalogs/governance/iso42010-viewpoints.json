@@ -154,6 +154,8 @@
         "AUTH-ISO-42010-VIEWPOINTS"
       ],
       "ownedFiles": [
+        "app/src/Cadence.lex.tex",
+        "app/src/Release.lex.tex",
         "crates/verdant-core/src/vcs.rs",
         "crates/verdant-core/src/governance.rs",
         "catalogs/governance/change-roadmap-kpi.json",
@@ -165,7 +167,10 @@
         "site/generated/self-host-ratchet-manifest.toml",
         "scripts/verify-stitch-release.mjs",
         "scripts/package-rust-crates.mjs",
-        ".github/workflows/release-stitch.yml"
+        "scripts/verify-sparse-registry.mjs",
+        "scripts/release/qualify-tag.mjs",
+        ".github/workflows/release-stitch.yml",
+        ".github/workflows/release-tag.yml"
       ],
       "ownedCrates": [],
       "ownedObserverParts": [],
@@ -578,6 +583,7 @@
         "model/measures.toml",
         "model/parametric-ratchet.toml",
         "fidelity.toml",
+        "frontier.toml",
         "site/demo/index.html",
         "site/demo/demo.mjs",
         "scripts/enforce-prism-contracts.mjs",

@@ -420,3 +420,21 @@ id = "VE-51"
 level = "build"
 suite = "engine"
 statement = "Verdant publishes a live RFC 2789 Cargo Sparse Registry endpoint for verdant-tensor, verdant-core, verdant-wasm, and verdant-cli, cites permanent Zenodo DOI archival provenance (https://zenodo.org/records/24383968), promotes Blank-Frame-first entry while preserving byte-locked frame.lock invariants, and tracks Milestones M6 through M8 across ten live ISO 15939 Observer KPIs"
+
+[[id]]
+id = "VE-52"
+level = "build"
+suite = "engine"
+statement = "Constructive Lean 4 modules Cadence.lex.tex and Release.lex.tex prove Verdant's autonomous release cadence and 6-channel distribution matrix with zero Classical.choice, verdant operator ratchet-lift keeps Cargo.toml workspace versions synchronized with release-ledger.json, and scripts/release/qualify-tag.mjs plus release-tag.yml enforce green-bootstrap autonomous tagging"
+
+[[id]]
+id = "VE-53"
+level = "build"
+suite = "engine"
+statement = "Verdant commits its uorust MIR proof frontier register (frontier.toml) and enforces a shrink-only hand-written Rust surface ratchet inside prism-fidelity alongside prism/parametric-ratchet/2 that fails closed on any lifted-function regression or uncertified-function growth"
+
+[[id]]
+id = "VE-54"
+level = "build"
+suite = "engine"
+statement = "Verdant pins three CORS-verified independent Stitch shard origins (GitHub Pages, jsDelivr, and raw.githubusercontent via orphan stitch-mirror), verifies live RFC 2789 Cargo Sparse Registry client fetches and standalone .crate packaging via scripts/verify-sparse-registry.mjs, and delivers zero-account cross-browser ?pin=stitch://<kappa>/studio#holo=... sharing plus live VerdantVcs checkout"

@@ -937,6 +937,42 @@ impl RoadmapKpiManager {
             0
         };
 
+        // Parse uorust MIR proof frontier lifted function count from `frontier.toml`:
+        let mut frontier_lifted_count = 0u64;
+        if let Ok(frontier_raw) = std::fs::read_to_string(repo_root.join("frontier.toml")) {
+            if frontier_raw.contains("spec = \"uorust/register/1\"") {
+                for line in frontier_raw.lines() {
+                    let trimmed = line.trim();
+                    if let Some(rest) = trimmed.strip_prefix("lifted = ") {
+                        if let Ok(v) = rest.trim().parse::<u64>() {
+                            frontier_lifted_count = v;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        // Verify Cargo.toml workspace version matches Change Manager ledger + sparse registry verifier exists:
+        let ledger_ver_str = ledger.current_version.display_string();
+        let cargo_ver_synced = std::fs::read_to_string(repo_root.join("Cargo.toml"))
+            .ok()
+            .is_some_and(|raw| {
+                raw.split("[workspace.package]")
+                    .nth(1)
+                    .is_some_and(|sec| sec.contains(&format!("version = \"{ledger_ver_str}\"")))
+            });
+        let sparse_sync_pct = if cargo_ver_synced
+            && repo_root
+                .join("scripts/verify-sparse-registry.mjs")
+                .is_file()
+            && repo_root.join("scripts/release/qualify-tag.mjs").is_file()
+        {
+            hundred_u64()
+        } else {
+            0
+        };
+
         let mut kpis = Vec::with_capacity(cat.kpi_catalog.len());
         for spec in &cat.kpi_catalog {
             let actual = match spec.kpi_id.as_str() {
@@ -956,6 +992,8 @@ impl RoadmapKpiManager {
                 "KPI-RELEASE-GATES" => gate_pct,
                 "KPI-MULTI-ORIGIN-RESILIENCE" => pinned_relay_origins,
                 "KPI-UHD-WORKLOAD-CONTRACT" => uhd_contract_pct,
+                "KPI-UORUST-LIFT-FRONTIER" => frontier_lifted_count,
+                "KPI-SPARSE-REGISTRY-SYNC" => sparse_sync_pct,
                 _ => 0,
             };
             let passed = if spec.direction == "atMost" {

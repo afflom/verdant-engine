@@ -130,6 +130,8 @@ const stage3 = [
   runAsync("content/check", process.execPath, ["scripts/content/check.mjs", "site"]),
   runAsync("weight (FR-03)", process.execPath, ["bootstrap/weight.mjs", "site"]),
   runAsync("verify-uhd-workload", process.execPath, ["scripts/verify-uhd-workload.mjs", "site"]),
+  runAsync("verify-sparse-registry", process.execPath, ["scripts/verify-sparse-registry.mjs", "--dir", "site/crates"]),
+  runAsync("qualify-tag (offline)", process.execPath, ["scripts/release/qualify-tag.mjs", "--offline"]),
 ];
 if (!skipRust) {
   stage3.push(runAsync("verify-stitch-release", process.execPath, ["scripts/verify-stitch-release.mjs"]));

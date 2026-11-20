@@ -55,8 +55,34 @@ try {
     const crateStage = join(stageRoot, dirName);
     await mkdir(crateStage, { recursive: true });
 
-    // Copy Cargo.toml, src/, and any tests/examples/build.rs belonging to this crate
-    await cp(join(pkgDir, "Cargo.toml"), join(crateStage, "Cargo.toml"));
+    // Materialize a standalone Cargo.toml (resolving workspace inheritance so `.crate` is valid outside the repo):
+    let rawToml = await readFile(join(pkgDir, "Cargo.toml"), "utf8");
+    const wsFields = {
+      version: `"${pkg.version}"`,
+      edition: `"${pkg.edition}"`,
+      "rust-version": `"${pkg.rust_version || "1.89"}"`,
+      license: `"${pkg.license || "MIT OR Apache-2.0"}"`,
+      repository: `"${pkg.repository || "https://github.com/afflom/verdant-engine"}"`,
+      homepage: `"${pkg.homepage || "https://afflom.github.io/verdant-engine/"}"`,
+      authors: JSON.stringify(pkg.authors || ["Alex"]),
+      keywords: JSON.stringify(pkg.keywords || []),
+      categories: JSON.stringify(pkg.categories || []),
+    };
+    for (const [k, v] of Object.entries(wsFields)) {
+      rawToml = rawToml.replace(new RegExp(`^${k}\\.workspace\\s*=\\s*true\\s*$`, "m"), `${k} = ${v}`);
+    }
+    rawToml = rawToml
+      .replace(/^verdant-tensor\.workspace\s*=\s*true\s*$/gm, `verdant-tensor = { version = "${pkg.version}", registry = "verdant" }`)
+      .replace(/^verdant-core\.workspace\s*=\s*true\s*$/gm, `verdant-core = { version = "${pkg.version}", registry = "verdant" }`)
+      .replace(/^verdant-core\s*=\s*\{\s*workspace\s*=\s*true\s*\}\s*$/gm, `verdant-core = { version = "${pkg.version}", registry = "verdant" }`)
+      .replace(/^verdant-core\s*=\s*\{[^}]*path\s*=\s*"\.\.\/verdant-core"([^}]*)\}\s*$/gm, `verdant-core = { version = "${pkg.version}", registry = "verdant"$1 }`)
+      .replace(/^uor-matmul\.workspace\s*=\s*true\s*$/gm, `uor-matmul = { version = "0.1.0", git = "https://github.com/UOR-Foundation/uor-matmul", branch = "main", default-features = false }`)
+      .replace(/^uorc\.workspace\s*=\s*true\s*$/gm, `uorc = { version = "0.6.0", git = "https://github.com/UOR-Foundation/compression", branch = "main" }`)
+      .replace(/^uorc\s*=\s*\{\s*workspace\s*=\s*true\s*,\s*optional\s*=\s*true\s*\}\s*$/gm, `uorc = { version = "0.6.0", git = "https://github.com/UOR-Foundation/compression", branch = "main", optional = true }`)
+      .replace(/^uorc_decompress\.workspace\s*=\s*true\s*$/gm, `uorc_decompress = { version = "0.1.0", git = "https://github.com/UOR-Foundation/compression", branch = "main" }`)
+      .replace(/^uorc_decompress\s*=\s*\{\s*workspace\s*=\s*true\s*,\s*optional\s*=\s*true\s*\}\s*$/gm, `uorc_decompress = { version = "0.1.0", git = "https://github.com/UOR-Foundation/compression", branch = "main", optional = true }`)
+      .replace(/\n*\[lints\]\s*\nworkspace\s*=\s*true\s*/g, "\n");
+    await writeFile(join(crateStage, "Cargo.toml"), `${rawToml.trimEnd()}\n`);
     await cp(join(pkgDir, "src"), join(crateStage, "src"), { recursive: true });
     for (const extra of ["build.rs", "README.md", "examples"]) {
       try {

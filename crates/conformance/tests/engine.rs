@@ -5785,7 +5785,7 @@ fn engine_ve_45() {
     assert_eq!(knowledge.locked_authorities_count, 10);
     assert!(knowledge.provenance_sources_count >= 4);
     assert!(knowledge.charter_bytes > 1024);
-    assert_eq!(knowledge.governed_lex_modules, 26);
+    assert!(knowledge.governed_lex_modules >= 28);
     assert_eq!(knowledge.measured_closed, knowledge.measured_total);
     assert_eq!(knowledge.authority_coverage_pct, 100);
 
@@ -6321,21 +6321,209 @@ fn engine_ve_51() {
     assert!(docs_html.contains("https://zenodo.org/records/24383968"));
     assert!(docs_html.contains("sparse+https://afflom.github.io/verdant-engine/crates/index/"));
 
-    // 3. Verify Observer Roadmap & KPI Manager reports all 8 milestones (M1..M8) and 10/10 passing KPIs:
+    // 3. Verify Observer Roadmap & KPI Manager reports all milestones (M1..M9+) and 100% passing KPIs:
     let ch = VerdantOperatorChannel::new("sunspire-regatta").expect("operator channel");
     let rep = ch
         .evaluate_observer_roadmap_kpis(&repo_root, true, true)
         .expect("observer roadmap & KPI report");
-    assert_eq!(rep.milestones.len(), 8, "expected Milestones M1..M8");
-    assert_eq!(
-        rep.kpi_total_count, 10,
-        "expected 10 ISO 15939 Observer KPIs"
+    assert!(rep.milestones.len() >= 8, "expected Milestones M1..M8+");
+    assert!(
+        rep.kpi_total_count >= 10,
+        "expected >= 10 ISO 15939 Observer KPIs"
     );
     assert_eq!(
         rep.kpi_passed_count, rep.kpi_total_count,
-        "all 10 Observer KPIs must pass (kpis={:?})",
+        "all Observer KPIs must pass (kpis={:?})",
         rep.kpis
     );
     assert_eq!(rep.minor_progress_pct, 100);
     assert_eq!(rep.major_progress_pct, 100);
+}
+
+#[test]
+fn engine_ve_52() {
+    use std::path::Path;
+    use std::process::Command;
+
+    let repo_root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+
+    // 1. Constructive Cadence.lex.tex & Release.lex.tex exist with zero Classical.choice:
+    let cadence = std::fs::read_to_string(repo_root.join("app/src/Cadence.lex.tex"))
+        .expect("read app/src/Cadence.lex.tex");
+    let release = std::fs::read_to_string(repo_root.join("app/src/Release.lex.tex"))
+        .expect("read app/src/Release.lex.tex");
+    assert!(cadence.contains("cadenceGuardsVerified"));
+    assert!(cadence.contains("cadenceReleaseHistoryVerified"));
+    assert!(!cadence.contains("Classical.choice"));
+    assert!(release.contains("releaseChannelsCompleteVerified"));
+    assert!(!release.contains("Classical.choice"));
+
+    // 2. Cargo.toml [workspace.package].version matches site/generated/release-ledger.json:
+    let ledger_raw = std::fs::read_to_string(repo_root.join("site/generated/release-ledger.json"))
+        .expect("read release-ledger.json");
+    let ledger: serde_json::Value = serde_json::from_str(&ledger_raw).expect("parse ledger");
+    let ver = format!(
+        "{}.{}.{}",
+        ledger["currentVersion"]["major"].as_u64().unwrap_or(0),
+        ledger["currentVersion"]["minor"].as_u64().unwrap_or(0),
+        ledger["currentVersion"]["patch"].as_u64().unwrap_or(0)
+    );
+    let cargo_toml =
+        std::fs::read_to_string(repo_root.join("Cargo.toml")).expect("read Cargo.toml");
+    assert!(
+        cargo_toml.contains(&format!("version = \"{ver}\"")),
+        "Cargo.toml must be synced to release-ledger version {ver}"
+    );
+
+    // 3. Autonomous release-tag.yml exists and is SHA-pinned; qualify-tag passes on matching tag and refuses mismatched tag!
+    let rel_tag = std::fs::read_to_string(repo_root.join(".github/workflows/release-tag.yml"))
+        .expect("read release-tag.yml");
+    assert!(rel_tag.contains("workflows: [bootstrap]"));
+    assert!(rel_tag.contains("scripts/release/qualify-tag.mjs"));
+
+    let ok_out = Command::new("node")
+        .args([
+            "scripts/release/qualify-tag.mjs",
+            "--offline",
+            "--tag",
+            &format!("v{ver}"),
+        ])
+        .current_dir(&repo_root)
+        .output()
+        .expect("run qualify-tag.mjs");
+    assert!(
+        ok_out.status.success(),
+        "qualify-tag must pass on synchronized v{ver}: {}",
+        String::from_utf8_lossy(&ok_out.stderr)
+    );
+
+    let bad_out = Command::new("node")
+        .args([
+            "scripts/release/qualify-tag.mjs",
+            "--offline",
+            "--tag",
+            "v99.99.99",
+        ])
+        .current_dir(&repo_root)
+        .output()
+        .expect("run negative qualify-tag.mjs");
+    assert!(
+        !bad_out.status.success(),
+        "qualify-tag MUST fail closed on mismatched tag v99.99.99"
+    );
+}
+
+#[test]
+fn engine_ve_53() {
+    use std::path::Path;
+
+    let repo_root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+    let rep = prism_fidelity::ratchet::audit_parametric_ratchet(
+        &repo_root,
+        Path::new("model/parametric-ratchet.toml"),
+    )
+    .expect("live repo must pass parametric + self-hosting + uorust frontier ratchet");
+    assert!(rep.frontier_total_functions >= 1000);
+    assert!(rep.frontier_lifted_functions >= 136);
+    assert_eq!(
+        rep.frontier_total_functions,
+        rep.frontier_lifted_functions + rep.frontier_uncertified_functions
+    );
+
+    // Negative check: inflating residue count by 1 in frontier.toml MUST fail closed!
+    let tmp = std::env::temp_dir().join(format!("verdant-ve53-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&tmp);
+    std::fs::create_dir_all(&tmp).expect("mkdir tmp");
+    let raw_frontier =
+        std::fs::read_to_string(repo_root.join("frontier.toml")).expect("read frontier.toml");
+    let inflated = raw_frontier
+        .replacen(
+            &format!("functions = {}", rep.frontier_total_functions),
+            &format!("functions = {}", rep.frontier_total_functions + 1),
+            1,
+        )
+        .replacen(
+            &format!("residue = {}", rep.frontier_residue_functions),
+            &format!("residue = {}", rep.frontier_residue_functions + 1),
+            1,
+        )
+        + "\n[[residue]]\nfunction = \"synthetic_regressed_fn\"\ncause = \"form\"\n";
+    let bad_frontier_path = tmp.join("bad-frontier.toml");
+    std::fs::write(&bad_frontier_path, inflated).expect("write bad frontier");
+
+    let cfg_raw = std::fs::read_to_string(repo_root.join("model/parametric-ratchet.toml"))
+        .expect("read ratchet config");
+    let bad_cfg = cfg_raw.replace(
+        "frontier_register = \"frontier.toml\"",
+        &format!(
+            "frontier_register = \"{}\"",
+            bad_frontier_path.to_string_lossy().replace('\\', "/")
+        ),
+    );
+    let bad_cfg_path = tmp.join("bad-ratchet.toml");
+    std::fs::write(&bad_cfg_path, bad_cfg).expect("write bad ratchet config");
+    assert!(
+        prism_fidelity::ratchet::audit_parametric_ratchet(&repo_root, &bad_cfg_path).is_err(),
+        "growing hand-written Rust residue surface MUST fail closed under [frontier_ratchet]"
+    );
+    let _ = std::fs::remove_dir_all(&tmp);
+}
+
+#[test]
+fn engine_ve_54() {
+    use std::path::Path;
+    use verdant_core::network::MultiOriginRelayPlan;
+    use verdant_core::operator::VerdantOperatorChannel;
+
+    let repo_root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+
+    // 1. Verify frame-pin.json pins 3 CORS-verified independent HTTPS shard origins (Pages, jsDelivr, raw.githubusercontent):
+    let pin_raw = std::fs::read_to_string(repo_root.join("site/frame/frame-pin.json"))
+        .expect("read frame-pin.json");
+    let pin: serde_json::Value = serde_json::from_str(&pin_raw).expect("parse frame-pin.json");
+    let relays: Vec<String> = pin["stitchRelays"]
+        .as_array()
+        .expect("stitchRelays array")
+        .iter()
+        .filter_map(|v| v.as_str().map(String::from))
+        .collect();
+    let plan = MultiOriginRelayPlan::build(relays, 3)
+        .expect("frame-pin.json must pin >= 3 independent HTTPS origins");
+    assert!(plan.distinct_origins.len() >= 3);
+    assert!(plan
+        .distinct_origins
+        .iter()
+        .any(|o| o.contains("github.io")));
+    assert!(plan
+        .distinct_origins
+        .iter()
+        .any(|o| o.contains("cdn.jsdelivr.net")));
+    assert!(plan
+        .distinct_origins
+        .iter()
+        .any(|o| o.contains("raw.githubusercontent.com")));
+
+    // 2. Verify Blank Frame supports cross-browser #holo= user app pins and stays <= 30 KiB:
+    let boot_js = std::fs::read_to_string(repo_root.join("site/frame/frame-boot.mjs"))
+        .expect("read frame-boot.mjs");
+    assert!(boot_js.contains("stitch-user-pin-holo"));
+    assert!(repo_root
+        .join("scripts/verify-sparse-registry.mjs")
+        .is_file());
+
+    // 3. Verify Observer Roadmap & KPI Manager reports all 9 milestones (M1..M9) & 12/12 passing KPIs:
+    let ch = VerdantOperatorChannel::new("sunspire-regatta").expect("operator channel");
+    let rep = ch
+        .evaluate_observer_roadmap_kpis(&repo_root, true, true)
+        .expect("observer roadmap & KPI report");
+    assert_eq!(rep.milestones.len(), 9, "expected Milestones M1..M9");
+    assert_eq!(
+        rep.kpi_total_count, 12,
+        "expected 12 ISO 15939 Observer KPIs"
+    );
+    assert_eq!(
+        rep.kpi_passed_count, rep.kpi_total_count,
+        "all 12 Observer KPIs must pass (kpis={:?})",
+        rep.kpis
+    );
 }

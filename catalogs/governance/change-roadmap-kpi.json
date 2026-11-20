@@ -133,6 +133,16 @@
       "requiredCapabilities": ["VE-50", "VE-51"],
       "owningManagers": ["mgr-runtime-stage", "mgr-studio-alm", "mgr-change-release", "mgr-observer-executive"],
       "ratchetRequirement": "Headless Chromium UHD 4K/8K + glTF/CodedMatrix PagedTensorArena stress gate passing with zero lockups and Blank-Frame-first entry."
+    },
+    {
+      "milestoneId": "M9",
+      "targetVersion": "2.1.0",
+      "tier": "minor",
+      "title": "Model-Proved Autonomous Release Cadence, uorust MIR Proof Frontier Ratchet, 3-Origin CORS Mirror & Cross-Browser Pin Sharing",
+      "stakeholders": ["creator", "developer", "operator", "auditor"],
+      "requiredCapabilities": ["VE-52", "VE-53", "VE-54"],
+      "owningManagers": ["mgr-change-release", "mgr-verification-observatory", "mgr-studio-alm", "mgr-security-trust"],
+      "ratchetRequirement": "Constructive Cadence/Release Lean proofs + autonomous green-main release-tag + uorust shrink-only frontier.toml ratchet + 3 CORS-verified shard origins + live Cargo sparse registry & cross-browser ?pin=stitch://<kappa>/studio handoff."
     }
   ],
   "kpiCatalog": [
@@ -210,10 +220,10 @@
     },
     {
       "kpiId": "KPI-MULTI-ORIGIN-RESILIENCE",
-      "name": "Independent Stitch Shard Relay Origins Pinned",
+      "name": "Independent CORS-Verified Stitch Shard Relay Origins Pinned",
       "unit": "origins",
       "direction": "atLeast",
-      "target": 2,
+      "target": 3,
       "owningManager": "mgr-security-trust",
       "authority": "AUTH-STITCH-SELF-HOSTING"
     },
@@ -225,6 +235,24 @@
       "target": 100,
       "owningManager": "mgr-runtime-stage",
       "authority": "AUTH-ISO-25010-TENSOR-SCALING"
+    },
+    {
+      "kpiId": "KPI-UORUST-LIFT-FRONTIER",
+      "name": "uorust MIR-Lifted Rust Functions Floor",
+      "unit": "functions",
+      "direction": "atLeast",
+      "target": 136,
+      "owningManager": "mgr-verification-observatory",
+      "authority": "AUTH-SEMVER-CHANGE-KPI"
+    },
+    {
+      "kpiId": "KPI-SPARSE-REGISTRY-SYNC",
+      "name": "Cargo.toml & RFC 2789 Sparse Registry Release Synchronization",
+      "unit": "percent",
+      "direction": "atLeast",
+      "target": 100,
+      "owningManager": "mgr-change-release",
+      "authority": "AUTH-SEMVER-CHANGE-KPI"
     }
   ]
 }

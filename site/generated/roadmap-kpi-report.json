@@ -2,22 +2,22 @@
   "spec": "verdant/observer-roadmap-kpi-report/1",
   "managerId": "mgr-roadmap-strategy",
   "authorityId": "AUTH-SEMVER-CHANGE-KPI",
-  "currentVersion": "2.0.0",
-  "releaseEpoch": 4,
+  "currentVersion": "2.1.0",
+  "releaseEpoch": 5,
   "totalManagers": 13,
   "totalPrismFacetsOwned": 9,
   "totalPrismFacetsRequired": 9,
-  "declaredCapabilitiesCount": 62,
+  "declaredCapabilitiesCount": 65,
   "minorProgressPct": 100,
   "majorProgressPct": 100,
-  "kpiPassedCount": 10,
-  "kpiTotalCount": 10,
+  "kpiPassedCount": 12,
+  "kpiTotalCount": 12,
   "knowledge": {
     "managerId": "mgr-knowledge-provenance",
     "lockedAuthoritiesCount": 10,
     "provenanceSourcesCount": 22,
     "charterBytes": 51966,
-    "governedLexModules": 26,
+    "governedLexModules": 28,
     "measuredClosed": 9,
     "measuredTotal": 9,
     "authorityCoveragePct": 100
@@ -83,7 +83,7 @@
       "name": "Immutable Composable Blank Frame Weight",
       "unit": "bytes",
       "direction": "atMost",
-      "actual": 29989,
+      "actual": 28014,
       "target": 30720,
       "passed": true,
       "owningManager": "mgr-change-release",
@@ -113,11 +113,11 @@
     },
     {
       "kpiId": "KPI-MULTI-ORIGIN-RESILIENCE",
-      "name": "Independent Stitch Shard Relay Origins Pinned",
+      "name": "Independent CORS-Verified Stitch Shard Relay Origins Pinned",
       "unit": "origins",
       "direction": "atLeast",
-      "actual": 2,
-      "target": 2,
+      "actual": 3,
+      "target": 3,
       "passed": true,
       "owningManager": "mgr-security-trust",
       "authority": "AUTH-STITCH-SELF-HOSTING"
@@ -132,6 +132,28 @@
       "passed": true,
       "owningManager": "mgr-runtime-stage",
       "authority": "AUTH-ISO-25010-TENSOR-SCALING"
+    },
+    {
+      "kpiId": "KPI-UORUST-LIFT-FRONTIER",
+      "name": "uorust MIR-Lifted Rust Functions Floor",
+      "unit": "functions",
+      "direction": "atLeast",
+      "actual": 136,
+      "target": 136,
+      "passed": true,
+      "owningManager": "mgr-verification-observatory",
+      "authority": "AUTH-SEMVER-CHANGE-KPI"
+    },
+    {
+      "kpiId": "KPI-SPARSE-REGISTRY-SYNC",
+      "name": "Cargo.toml & RFC 2789 Sparse Registry Release Synchronization",
+      "unit": "percent",
+      "direction": "atLeast",
+      "actual": 100,
+      "target": 100,
+      "passed": true,
+      "owningManager": "mgr-change-release",
+      "authority": "AUTH-SEMVER-CHANGE-KPI"
     }
   ],
   "milestones": [
@@ -369,6 +391,38 @@
       "progressPct": 100,
       "completed": true,
       "ratchetRequirement": "Headless Chromium UHD 4K/8K + glTF/CodedMatrix PagedTensorArena stress gate passing with zero lockups and Blank-Frame-first entry."
+    },
+    {
+      "milestoneId": "M9",
+      "targetVersion": "2.1.0",
+      "tier": "minor",
+      "title": "Model-Proved Autonomous Release Cadence, uorust MIR Proof Frontier Ratchet, 3-Origin CORS Mirror & Cross-Browser Pin Sharing",
+      "stakeholders": [
+        "creator",
+        "developer",
+        "operator",
+        "auditor"
+      ],
+      "owningManagers": [
+        "mgr-change-release",
+        "mgr-verification-observatory",
+        "mgr-studio-alm",
+        "mgr-security-trust"
+      ],
+      "requiredCapabilities": [
+        "VE-52",
+        "VE-53",
+        "VE-54"
+      ],
+      "closedCapabilities": [
+        "VE-52",
+        "VE-53",
+        "VE-54"
+      ],
+      "missingCapabilities": [],
+      "progressPct": 100,
+      "completed": true,
+      "ratchetRequirement": "Constructive Cadence/Release Lean proofs + autonomous green-main release-tag + uorust shrink-only frontier.toml ratchet + 3 CORS-verified shard origins + live Cargo sparse registry & cross-browser ?pin=stitch://<kappa>/studio handoff."
     }
   ],
   "observerParts": [
@@ -411,7 +465,7 @@
         "change-version-release"
       ],
       "ownedObserverParts": [],
-      "ownedFilesCount": 12,
+      "ownedFilesCount": 17,
       "active": true
     },
     {
@@ -506,7 +560,7 @@
         "stratum-4-quality-measures-fidelity"
       ],
       "ownedObserverParts": [],
-      "ownedFilesCount": 12,
+      "ownedFilesCount": 13,
       "active": true
     },
     {
@@ -524,7 +578,7 @@
     "governingAuthority": "AUTH-SEMVER-CHANGE-KPI",
     "currentVersion": {
       "major": 2,
-      "minor": 0,
+      "minor": 1,
       "patch": 0
     },
     "recommendedBump": "major",
@@ -533,8 +587,8 @@
       "minor": 0,
       "patch": 0
     },
-    "currentEpoch": 4,
-    "nextEpoch": 5,
+    "currentEpoch": 5,
+    "nextEpoch": 6,
     "versionIncremented": true,
     "gates": {
       "ratchetApplied": true,
@@ -545,6 +599,6 @@
       "pullThroughVerified": true
     },
     "blockingReasons": [],
-    "rationale": "Ratchet applied & 5/5 Release Gates passed: advancing v2.0.0 -> v3.0.0 (Major, epoch 5) — Observer roadmap evaluation: minor=100% major=100% managers=13"
+    "rationale": "Ratchet applied & 5/5 Release Gates passed: advancing v2.1.0 -> v3.0.0 (Major, epoch 6) — Observer roadmap evaluation: minor=100% major=100% managers=13"
   }
 }

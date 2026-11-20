@@ -9740,6 +9740,138 @@ record = "Users::tasks#9"
 axis = "meant"
 
 [[residue]]
+kappa = "69b55bec0ce0e5e9233788e34198288a530c968874a031a44eca6ce89ec63590"
+record = "Cadence::releaseV0x4x0"
+axis = "derived"
+reason = "no derivation names it (prov:wasDerivedFrom)"
+
+[[residue]]
+kappa = "08f43b22dea658bf2092a1296955c0c6e224875840a33d2b94a90820c26842fe"
+record = "Cadence::releaseV0x4x0"
+axis = "meant"
+reason = "no theorem states anything about it (ISO/IEC/IEEE 29148 verification)"
+
+[[residue]]
+kappa = "0584e9cd23f0b23dc991e81ef37a1ee4200680a4f451eeb7b38a0b6af592506d"
+record = "Cadence::releaseV1x0x0"
+axis = "derived"
+reason = "no derivation names it (prov:wasDerivedFrom)"
+
+[[residue]]
+kappa = "b6bb39db976b3bb7dad7f1958cc63c57a7f4cd5e2473ce8a7aa009d6159301e2"
+record = "Cadence::releaseV1x0x0"
+axis = "meant"
+reason = "no theorem states anything about it (ISO/IEC/IEEE 29148 verification)"
+
+[[residue]]
+kappa = "2d856444031fb737857464d0a76e853263f524eb414c11bffe1677842eb2256d"
+record = "Cadence::releaseV1x1x0"
+axis = "derived"
+reason = "no derivation names it (prov:wasDerivedFrom)"
+
+[[residue]]
+kappa = "49753cd593e7f15b1b5441506ca9affc2b0d4d47d955faf95bf43654fde4b4f9"
+record = "Cadence::releaseV1x1x0"
+axis = "meant"
+reason = "no theorem states anything about it (ISO/IEC/IEEE 29148 verification)"
+
+[[residue]]
+kappa = "5652c6ab993954046c7814fceffc7de598de4e80e4a904005f3ecf272e786c5e"
+record = "Cadence::releaseV2x0x0"
+axis = "derived"
+reason = "no derivation names it (prov:wasDerivedFrom)"
+
+[[residue]]
+kappa = "06cedcca8e7d5e2e987e6d2865a2d44536cf514950114ff1b38cffb64e817af8"
+record = "Cadence::releaseV2x0x0"
+axis = "meant"
+reason = "no theorem states anything about it (ISO/IEC/IEEE 29148 verification)"
+
+[[residue]]
+kappa = "acb6ce7a91bfdc68d980942ad0b5d66721ce1752880788aa0daa12cc3da8bc66"
+record = "Cadence::releaseV2x1x0"
+axis = "derived"
+reason = "no derivation names it (prov:wasDerivedFrom)"
+
+[[residue]]
+kappa = "6bd42786891b43c38691d3c13ac568d9e35bf7bbb74becc59dcba33e09b227f0"
+record = "Cadence::releaseV2x1x0"
+axis = "meant"
+reason = "no theorem states anything about it (ISO/IEC/IEEE 29148 verification)"
+
+[[residue]]
+kappa = "39cf2ccf5a188913425f9e027f78ac39554080402909022ee72c399ddf42b375"
+record = "Release::channel0PagesShards"
+axis = "derived"
+reason = "no derivation names it (prov:wasDerivedFrom)"
+
+[[residue]]
+kappa = "346d033aaf241de8281adf9ac7eb700ef0d144845a5f45e8d80a130fa6396f6b"
+record = "Release::channel0PagesShards"
+axis = "meant"
+reason = "no theorem states anything about it (ISO/IEC/IEEE 29148 verification)"
+
+[[residue]]
+kappa = "fd0f299e00df48186b5d574ce39a4a641fa517e475d34e027da8e470cacb40c1"
+record = "Release::channel1JsDelivrMirror"
+axis = "derived"
+reason = "no derivation names it (prov:wasDerivedFrom)"
+
+[[residue]]
+kappa = "f9dc7676aa0485a825fd3d3337ad521920233d0f0c627f419de47d4acdf52337"
+record = "Release::channel1JsDelivrMirror"
+axis = "meant"
+reason = "no theorem states anything about it (ISO/IEC/IEEE 29148 verification)"
+
+[[residue]]
+kappa = "7aa6e48d46e85074a762bb2aeaf8a54d536a08c53fddbc206f3e9fcb702e6289"
+record = "Release::channel2RawGitHubMirror"
+axis = "derived"
+reason = "no derivation names it (prov:wasDerivedFrom)"
+
+[[residue]]
+kappa = "25d8e3284f3a5f612301b9bfb27a8a6437576ea19a6c5b5687948d0035992c75"
+record = "Release::channel2RawGitHubMirror"
+axis = "meant"
+reason = "no theorem states anything about it (ISO/IEC/IEEE 29148 verification)"
+
+[[residue]]
+kappa = "2fb42fb71ed4c6a1d5c86c69fb3243c175467fdc36613b0da0018ca55b37ed3a"
+record = "Release::channel3CargoSparseRegistry"
+axis = "derived"
+reason = "no derivation names it (prov:wasDerivedFrom)"
+
+[[residue]]
+kappa = "2134cfbcee8323a61d84356c5723645580408ccece9943a10ab8241307c159a4"
+record = "Release::channel3CargoSparseRegistry"
+axis = "meant"
+reason = "no theorem states anything about it (ISO/IEC/IEEE 29148 verification)"
+
+[[residue]]
+kappa = "8f155cb8cbcc1ab88d152745381b49614b2c0d02d9ae136652a0afc0292851d0"
+record = "Release::channel4GhcrOciBundle"
+axis = "derived"
+reason = "no derivation names it (prov:wasDerivedFrom)"
+
+[[residue]]
+kappa = "c923e4c951cd8cf3c75ee0f41e659b5c69f3e30242f94a43c93a672e493fdba1"
+record = "Release::channel4GhcrOciBundle"
+axis = "meant"
+reason = "no theorem states anything about it (ISO/IEC/IEEE 29148 verification)"
+
+[[residue]]
+kappa = "788d8d5d5c450f11bed55f456fb41f7036545e3822169645829bc8a4313c5d89"
+record = "Release::channel5ZenodoDoiArchive"
+axis = "derived"
+reason = "no derivation names it (prov:wasDerivedFrom)"
+
+[[residue]]
+kappa = "914e658b0acad805e1faba5df5341a7b4d0eea1b7f385f277ed860fd133f2a86"
+record = "Release::channel5ZenodoDoiArchive"
+axis = "meant"
+reason = "no theorem states anything about it (ISO/IEC/IEEE 29148 verification)"
+
+[[residue]]
 kappa = "fd67db9e9f1ab37920d446dd10364a33f128578fe61e3e5ebff924d03bc3926a"
 record = "Security::assetImmutableBlankFrame"
 axis = "meant"

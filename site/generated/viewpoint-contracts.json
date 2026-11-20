@@ -142,7 +142,7 @@
     },
     {
       "basisPrime": 71,
-      "kappaHex": "b1f6d515f560bc026e531b5bf03bbb41403e52de7ac4fa7862d4998547fc4c3f",
+      "kappaHex": "9f6fecdfd266b34b6d0e770fc6b5ba9f17db00b8d46d67e10ee4224cd6960781",
       "spec": {
         "almPhases": [
           "change-management",
@@ -170,6 +170,8 @@
         ],
         "ownedCrates": [],
         "ownedFiles": [
+          "app/src/Cadence.lex.tex",
+          "app/src/Release.lex.tex",
           "crates/verdant-core/src/vcs.rs",
           "crates/verdant-core/src/governance.rs",
           "catalogs/governance/change-roadmap-kpi.json",
@@ -181,7 +183,10 @@
           "site/generated/self-host-ratchet-manifest.toml",
           "scripts/verify-stitch-release.mjs",
           "scripts/package-rust-crates.mjs",
-          ".github/workflows/release-stitch.yml"
+          "scripts/verify-sparse-registry.mjs",
+          "scripts/release/qualify-tag.mjs",
+          ".github/workflows/release-stitch.yml",
+          ".github/workflows/release-tag.yml"
         ],
         "ownedObserverParts": [],
         "ownedPrismFacets": [
@@ -627,7 +632,7 @@
     },
     {
       "basisPrime": 107,
-      "kappaHex": "84998eb4239596ee6462a255716af535d7691b24f4e4f11d685130efed394fad",
+      "kappaHex": "4923b6f90bc433490d48ca830483c6155c877bc0629567e6e83f1491e2f48d0a",
       "spec": {
         "almPhases": [
           "verification",
@@ -661,6 +666,7 @@
           "model/measures.toml",
           "model/parametric-ratchet.toml",
           "fidelity.toml",
+          "frontier.toml",
           "site/demo/index.html",
           "site/demo/demo.mjs",
           "scripts/enforce-prism-contracts.mjs",

@@ -1,0 +1,116 @@
+\begin{lexlean}{Release}
+\useglossary{lexlean.std.bool@1.2.0}
+\useglossary{lexlean.std.nat@1.2.0}
+\useglossary{prism.arch@1.0.0}
+\importmodule{Subsystems}
+\importmodule{Cadence}
+\title{Verdant Engine runtime subsystems}
+\begin{semanticmodule}
+structure{
+  name: ReleaseChannelSpec,
+  type_parameters: [],
+  parameters: [],
+  fields: [
+    {name: index, type: Nat},
+    {name: corsBrowserFetch, type: Bool},
+    {name: zeroAccount, type: Bool},
+    {name: digestVerified, type: Bool},
+    {name: channelId, type: String},
+    {name: endpoint, type: String}
+  ]
+}
+
+definition{
+  name: activeReleaseVersion,
+  parameters: [],
+  result: Cadence::ReleaseVersion,
+  body: (Cadence::releaseV2x1x0)
+}
+
+definition{name: requiredCorsShardOrigins, parameters: [], result: Nat, body: (Subsystems::sThree)}
+
+definition{
+  name: channel0PagesShards,
+  parameters: [],
+  result: ReleaseChannelSpec,
+  body: (record ReleaseChannelSpec {index := 0, corsBrowserFetch := true, zeroAccount := true, digestVerified := true, channelId := "github-pages-stitch-shards", endpoint := "https://afflom.github.io/verdant-engine/stitch/v2.1.0/shards"})
+}
+
+definition{
+  name: channel1JsDelivrMirror,
+  parameters: [],
+  result: ReleaseChannelSpec,
+  body: (record ReleaseChannelSpec {index := 1, corsBrowserFetch := true, zeroAccount := true, digestVerified := true, channelId := "jsdelivr-stitch-mirror", endpoint := "https://cdn.jsdelivr.net/gh/afflom/verdant-engine@stitch-mirror/v2.1.0/shards"})
+}
+
+definition{
+  name: channel2RawGitHubMirror,
+  parameters: [],
+  result: ReleaseChannelSpec,
+  body: (record ReleaseChannelSpec {index := (Subsystems::sTwo), corsBrowserFetch := true, zeroAccount := true, digestVerified := true, channelId := "raw-github-stitch-mirror", endpoint := "https://raw.githubusercontent.com/afflom/verdant-engine/stitch-mirror/v2.1.0/shards"})
+}
+
+definition{
+  name: channel3CargoSparseRegistry,
+  parameters: [],
+  result: ReleaseChannelSpec,
+  body: (record ReleaseChannelSpec {index := (Subsystems::sThree), corsBrowserFetch := true, zeroAccount := true, digestVerified := true, channelId := "cargo-sparse-registry", endpoint := "sparse+https://afflom.github.io/verdant-engine/crates/index/"})
+}
+
+definition{
+  name: channel4GhcrOciBundle,
+  parameters: [],
+  result: ReleaseChannelSpec,
+  body: (record ReleaseChannelSpec {index := (Subsystems::sFour), corsBrowserFetch := false, zeroAccount := true, digestVerified := true, channelId := "ghcr-oci-release-bundle", endpoint := "ghcr.io/afflom/verdant-engine/verdant-release:v2.1.0"})
+}
+
+definition{
+  name: channel5ZenodoDoiArchive,
+  parameters: [],
+  result: ReleaseChannelSpec,
+  body: (record ReleaseChannelSpec {index := (Subsystems::sFive), corsBrowserFetch := true, zeroAccount := true, digestVerified := true, channelId := "zenodo-permanent-doi-archive", endpoint := "https://zenodo.org/records/24383968"})
+}
+
+definition{
+  name: releaseChannels,
+  parameters: [],
+  result: (List ReleaseChannelSpec),
+  body: (cons (channel0PagesShards) (cons (channel1JsDelivrMirror) (cons (channel2RawGitHubMirror) (cons (channel3CargoSparseRegistry) (cons (channel4GhcrOciBundle) (cons (channel5ZenodoDoiArchive) (nil ReleaseChannelSpec)))))))
+}
+
+definition{
+  name: releaseChannelsValid,
+  parameters: [pos : Nat, items : (List ReleaseChannelSpec)],
+  result: Bool,
+  body: (match items
+    | List.nil => true
+    | List.cons item rest => (if (((project item index) =? pos) && ((project item zeroAccount) && (project item digestVerified))) then (releaseChannelsValid (pos + 1) rest) else false)),
+  recursive_argument: items
+}
+
+definition{
+  name: countCorsChannels,
+  parameters: [items : (List ReleaseChannelSpec)],
+  result: Nat,
+  body: (match items
+    | List.nil => 0
+    | List.cons item rest => (if (project item corsBrowserFetch) then (1 + (countCorsChannels rest)) else (countCorsChannels rest))),
+  recursive_argument: items
+}
+
+definition{
+  name: releaseDistributionDirect,
+  parameters: [],
+  result: Bool,
+  body: ((releaseChannelsValid 0 (releaseChannels)) && (((requiredCorsShardOrigins) <=? (countCorsChannels (releaseChannels))) && (Cadence::sameVersion (activeReleaseVersion) (Cadence::releaseV2x1x0))))
+}
+
+theorem{
+  name: releaseChannelsCompleteVerified,
+  parameters: [],
+  statement: ((releaseDistributionDirect) = true),
+  proof: decide{},
+  axioms: []
+}
+\end{semanticmodule}
+\end{lexlean}

@@ -11,13 +11,18 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: "Semantic version without leading v (e.g. 0.1.0)"
+        description: "Semantic version without leading v (e.g. 2.1.0)"
         required: false
-        default: "0.1.0"
+        default: ""
       epoch:
         description: "Strictly monotonic Stitch release epoch (>= 1)"
         required: false
-        default: "1"
+        default: ""
+      publish:
+        description: "Publish GitHub Release, ghcr.io OCI bundle & stitch-mirror branch"
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -53,23 +58,37 @@ jobs:
           epoch="${epoch:-$ledger_epoch}"
           printf 'version=%s\nepoch=%s\n' "$ver" "$epoch" >> "$GITHUB_OUTPUT"
 
+      - name: Qualify release version sync, frontier register & green bootstrap
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          node scripts/release/qualify-tag.mjs --tag "v${{ steps.meta.outputs.version }}" --sha "${GITHUB_SHA}"
+
       - name: Build verdant CLI, lift full Source DAG & pack self-verifying .holo + 4-of-8 STCH2 shards
         shell: bash
         run: |
           set -euo pipefail
+          owner_lc=$(printf '%s' "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          ver="${{ steps.meta.outputs.version }}"
           cargo build --locked -p verdant-cli --bin verdant
           ./target/debug/verdant operator kpis --root .
           ./target/debug/verdant release self-host \
             --root . \
-            --version "${{ steps.meta.outputs.version }}" \
+            --version "$ver" \
             --epoch "${{ steps.meta.outputs.epoch }}" \
             --out dist/stitch-release
           ./target/debug/verdant release pack \
             --root . \
-            --version "${{ steps.meta.outputs.version }}" \
+            --version "$ver" \
             --epoch "${{ steps.meta.outputs.epoch }}" \
             --out dist/stitch-release \
-            --relay "https://${{ github.repository_owner }}.github.io/verdant-engine/stitch/v${{ steps.meta.outputs.version }}/shards" \
+            --relay "https://${owner_lc}.github.io/verdant-engine/stitch/v${ver}/shards" \
+            --relay "https://cdn.jsdelivr.net/gh/${owner_lc}/verdant-engine@stitch-mirror/v${ver}/shards" \
+            --relay "https://raw.githubusercontent.com/${owner_lc}/verdant-engine/stitch-mirror/v${ver}/shards" \
             --pin "stitch://verdant/studio"
           ./target/debug/verdant release verify --dir dist/stitch-release
 
@@ -81,16 +100,45 @@ jobs:
           npx playwright install chromium
           node scripts/verify-stitch-release.mjs --dir dist/stitch-release
 
-      - name: Package Rust library .crate files & RFC 2789 Cargo sparse index
+      - name: Package & verify Rust library .crate files & RFC 2789 Cargo sparse index
         shell: bash
         run: |
           set -euo pipefail
           node scripts/package-rust-crates.mjs \
             --out dist/crates \
             --dl "https://github.com/${{ github.repository }}/releases/download/v{version}/{crate}-{version}.crate"
+          node scripts/verify-sparse-registry.mjs --dir dist/crates
+
+      - name: Publish CORS-verified Stitch shards to orphan stitch-mirror branch (jsDelivr + raw.githubusercontent)
+        if: startsWith(github.ref, 'refs/tags/v') || github.event.inputs.publish == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          VER: ${{ steps.meta.outputs.version }}
+        run: |
+          set -euo pipefail
+          mirror_tmp=$(mktemp -d)
+          trap 'rm -rf "$mirror_tmp"' EXIT
+          remote_url="https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          if git ls-remote --exit-code --heads "$remote_url" stitch-mirror >/dev/null 2>&1; then
+            git clone --depth 1 --branch stitch-mirror "$remote_url" "$mirror_tmp"
+          else
+            git init -b stitch-mirror "$mirror_tmp"
+            git -C "$mirror_tmp" remote add origin "$remote_url"
+          fi
+          mkdir -p "$mirror_tmp/v${VER}/shards"
+          cp dist/stitch-release/shards/*.stch "$mirror_tmp/v${VER}/shards/"
+          cp dist/stitch-release/frame-pin.json "$mirror_tmp/v${VER}/frame-pin.json"
+          git -C "$mirror_tmp" config user.name "verdant-release-bot"
+          git -C "$mirror_tmp" config user.email "verdant-release-bot@users.noreply.github.com"
+          git -C "$mirror_tmp" add "v${VER}"
+          if ! git -C "$mirror_tmp" diff --cached --quiet; then
+            git -C "$mirror_tmp" commit -m "Mirror CORS-verified 4-of-8 STCH2 shards for Verdant v${VER}"
+            git -C "$mirror_tmp" push origin stitch-mirror
+          fi
 
       - name: Publish .holo release capsule & Rust crates to GitHub Packages (ghcr.io) and GitHub Release
-        if: startsWith(github.ref, 'refs/tags/v')
+        if: startsWith(github.ref, 'refs/tags/v') || github.event.inputs.publish == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}

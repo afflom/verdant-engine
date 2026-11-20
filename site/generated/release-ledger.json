@@ -4,10 +4,10 @@
   "authorityId": "AUTH-SEMVER-CHANGE-KPI",
   "currentVersion": {
     "major": 2,
-    "minor": 0,
+    "minor": 1,
     "patch": 0
   },
-  "releaseEpoch": 4,
+  "releaseEpoch": 5,
   "history": [
     {
       "version": "0.1.0",
@@ -56,6 +56,13 @@
       "releaseEpoch": 4,
       "bumpKind": "major",
       "summary": "Close M6-M8 (VE-48..51): Multi-origin Stitch + WebRTC peer seeding, zero-account in-Studio VerdantVcs/.holo, 4K/8K PagedTensorArena gate, live Cargo Sparse Registry & Zenodo DOI",
+      "citedAuthority": "AUTH-SEMVER-CHANGE-KPI"
+    },
+    {
+      "version": "2.1.0",
+      "releaseEpoch": 5,
+      "bumpKind": "minor",
+      "summary": "M9: Model-proved autonomous release cadence (Cadence/Release), uorust shrink-only MIR frontier ratchet, 3 CORS-verified shard origins, live Cargo sparse registry & cross-browser studio pin sharing",
       "citedAuthority": "AUTH-SEMVER-CHANGE-KPI"
     }
   ]

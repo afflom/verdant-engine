@@ -71,19 +71,31 @@ fn main() -> ExitCode {
     if let (Ok(_), Some(ratchet_path)) = (&outcome, &ratchet_cfg) {
         match ratchet::audit_parametric_ratchet(&repo, ratchet_path) {
             Ok(rep) => {
+                let frontier_note = if rep.frontier_total_functions > 0 {
+                    format!(
+                        "; uorust frontier {}/{} lifted ({} residue, {} uncertified)",
+                        rep.frontier_lifted_functions,
+                        rep.frontier_total_functions,
+                        rep.frontier_residue_functions,
+                        rep.frontier_uncertified_functions
+                    )
+                } else {
+                    String::new()
+                };
                 if rep.self_hosted_lifted_module_count > 0 {
                     println!(
-                        "parametric-ratchet: 0 magic constants across {} LexLean strata modules and {} shipped Rust engine files; self-hosting ratchet 0 unlifted across {} lifted modules (blank frame {} B <= {} B)",
+                        "parametric-ratchet: 0 magic constants across {} LexLean strata modules and {} shipped Rust engine files; self-hosting ratchet 0 unlifted across {} lifted modules (blank frame {} B <= {} B){}",
                         rep.grounded_lex_module_count,
                         rep.audited_rust_file_count,
                         rep.self_hosted_lifted_module_count,
                         rep.blank_frame_total_bytes,
-                        rep.blank_frame_max_bytes
+                        rep.blank_frame_max_bytes,
+                        frontier_note
                     );
                 } else {
                     println!(
-                        "parametric-ratchet: 0 magic constants across {} LexLean strata modules and {} shipped Rust engine files",
-                        rep.grounded_lex_module_count, rep.audited_rust_file_count
+                        "parametric-ratchet: 0 magic constants across {} LexLean strata modules and {} shipped Rust engine files{}",
+                        rep.grounded_lex_module_count, rep.audited_rust_file_count, frontier_note
                     );
                 }
             }

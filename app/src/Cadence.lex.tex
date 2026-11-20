@@ -1,0 +1,128 @@
+\begin{lexlean}{Cadence}
+\useglossary{lexlean.std.bool@1.2.0}
+\useglossary{lexlean.std.nat@1.2.0}
+\useglossary{prism.arch@1.0.0}
+\importmodule{Subsystems}
+\title{Verdant Engine runtime subsystems}
+\begin{semanticmodule}
+structure{
+  name: ReleaseVersion,
+  type_parameters: [],
+  parameters: [],
+  fields: [
+    {name: major, type: Nat},
+    {name: minor, type: Nat},
+    {name: patch, type: Nat},
+    {name: epoch, type: Nat}
+  ]
+}
+
+structure{
+  name: ReleaseObservation,
+  type_parameters: [],
+  parameters: [],
+  fields: [
+    {name: mainGreen, type: Bool},
+    {name: ratchetApplied, type: Bool},
+    {name: gatesPassed, type: Bool},
+    {name: majorMilestone, type: Bool},
+    {name: minorGrowth, type: Bool},
+    {name: patchFix, type: Bool},
+    {name: frontierTightened, type: Bool}
+  ]
+}
+
+structure{
+  name: ReleaseDecision,
+  type_parameters: [],
+  parameters: [],
+  fields: [{name: cut, type: Bool}, {name: next, type: ReleaseVersion}, {name: bumpTier, type: Nat}]
+}
+
+definition{
+  name: sameVersion,
+  parameters: [a : ReleaseVersion, b : ReleaseVersion],
+  result: Bool,
+  body: (((project a major) =? (project b major)) && (((project a minor) =? (project b minor)) && (((project a patch) =? (project b patch)) && ((project a epoch) =? (project b epoch)))))
+}
+
+definition{
+  name: versionAtLeast,
+  parameters: [a : ReleaseVersion, b : ReleaseVersion],
+  result: Bool,
+  body: (((project b epoch) <=? (project a epoch)) && (if ((project b major) <? (project a major)) then true else (if ((project a major) =? (project b major)) then (if ((project b minor) <? (project a minor)) then true else (if ((project a minor) =? (project b minor)) then ((project b patch) <=? (project a patch)) else false)) else false)))
+}
+
+definition{
+  name: nextRelease,
+  parameters: [current : ReleaseVersion, obs : ReleaseObservation],
+  result: ReleaseDecision,
+  body: (if ((project obs mainGreen) && ((project obs ratchetApplied) && (project obs gatesPassed))) then (if (project obs majorMilestone) then (record ReleaseDecision {cut := true, next := (record ReleaseVersion {major := ((project current major) + 1), minor := 0, patch := 0, epoch := ((project current epoch) + 1)}), bumpTier := (Subsystems::sThree)}) else (if ((project obs minorGrowth) || (project obs frontierTightened)) then (record ReleaseDecision {cut := true, next := (record ReleaseVersion {major := (project current major), minor := ((project current minor) + 1), patch := 0, epoch := ((project current epoch) + 1)}), bumpTier := (Subsystems::sTwo)}) else (if (project obs patchFix) then (record ReleaseDecision {cut := true, next := (record ReleaseVersion {major := (project current major), minor := (project current minor), patch := ((project current patch) + 1), epoch := ((project current epoch) + 1)}), bumpTier := 1}) else (record ReleaseDecision {cut := false, next := current, bumpTier := 0})))) else (record ReleaseDecision {cut := false, next := current, bumpTier := 0}))
+}
+
+definition{
+  name: releaseV0x4x0,
+  parameters: [],
+  result: ReleaseVersion,
+  body: (record ReleaseVersion {major := 0, minor := (Subsystems::sFour), patch := 0, epoch := 1})
+}
+
+definition{
+  name: releaseV1x0x0,
+  parameters: [],
+  result: ReleaseVersion,
+  body: (record ReleaseVersion {major := 1, minor := 0, patch := 0, epoch := (Subsystems::sTwo)})
+}
+
+definition{
+  name: releaseV1x1x0,
+  parameters: [],
+  result: ReleaseVersion,
+  body: (record ReleaseVersion {major := 1, minor := 1, patch := 0, epoch := (Subsystems::sThree)})
+}
+
+definition{
+  name: releaseV2x0x0,
+  parameters: [],
+  result: ReleaseVersion,
+  body: (record ReleaseVersion {major := (Subsystems::sTwo), minor := 0, patch := 0, epoch := (Subsystems::sFour)})
+}
+
+definition{
+  name: releaseV2x1x0,
+  parameters: [],
+  result: ReleaseVersion,
+  body: (record ReleaseVersion {major := (Subsystems::sTwo), minor := 1, patch := 0, epoch := (Subsystems::sFive)})
+}
+
+definition{
+  name: cadenceGuardsDirect,
+  parameters: [],
+  result: Bool,
+  body: (let redMain : ReleaseDecision := (nextRelease (releaseV2x0x0) (record ReleaseObservation {mainGreen := false, ratchetApplied := true, gatesPassed := true, majorMilestone := true, minorGrowth := true, patchFix := true, frontierTightened := true})); (let unratcheted : ReleaseDecision := (nextRelease (releaseV2x0x0) (record ReleaseObservation {mainGreen := true, ratchetApplied := false, gatesPassed := true, majorMilestone := true, minorGrowth := true, patchFix := true, frontierTightened := true})); (let failedGates : ReleaseDecision := (nextRelease (releaseV2x0x0) (record ReleaseObservation {mainGreen := true, ratchetApplied := true, gatesPassed := false, majorMilestone := true, minorGrowth := true, patchFix := true, frontierTightened := true})); (let noGrowth : ReleaseDecision := (nextRelease (releaseV2x0x0) (record ReleaseObservation {mainGreen := true, ratchetApplied := true, gatesPassed := true, majorMilestone := false, minorGrowth := false, patchFix := false, frontierTightened := false})); ((not (project redMain cut)) && (((project redMain bumpTier) =? 0) && ((not (project unratcheted cut)) && ((not (project failedGates cut)) && ((not (project noGrowth cut)) && (sameVersion (project noGrowth next) (releaseV2x0x0)))))))))))
+}
+
+definition{
+  name: cadenceHistoryDirect,
+  parameters: [],
+  result: Bool,
+  body: (let d100 : ReleaseDecision := (nextRelease (releaseV0x4x0) (record ReleaseObservation {mainGreen := true, ratchetApplied := true, gatesPassed := true, majorMilestone := true, minorGrowth := false, patchFix := false, frontierTightened := false})); (let d110 : ReleaseDecision := (nextRelease (releaseV1x0x0) (record ReleaseObservation {mainGreen := true, ratchetApplied := true, gatesPassed := true, majorMilestone := false, minorGrowth := true, patchFix := false, frontierTightened := false})); (let d200 : ReleaseDecision := (nextRelease (releaseV1x1x0) (record ReleaseObservation {mainGreen := true, ratchetApplied := true, gatesPassed := true, majorMilestone := true, minorGrowth := true, patchFix := false, frontierTightened := false})); (let d210 : ReleaseDecision := (nextRelease (releaseV2x0x0) (record ReleaseObservation {mainGreen := true, ratchetApplied := true, gatesPassed := true, majorMilestone := false, minorGrowth := true, patchFix := false, frontierTightened := true})); (((project d100 cut) && ((sameVersion (project d100 next) (releaseV1x0x0)) && ((project d100 bumpTier) =? (Subsystems::sThree)))) && (((project d110 cut) && ((sameVersion (project d110 next) (releaseV1x1x0)) && ((project d110 bumpTier) =? (Subsystems::sTwo)))) && (((project d200 cut) && ((sameVersion (project d200 next) (releaseV2x0x0)) && ((project d200 bumpTier) =? (Subsystems::sThree)))) && (((project d210 cut) && ((sameVersion (project d210 next) (releaseV2x1x0)) && ((project d210 bumpTier) =? (Subsystems::sTwo)))) && ((versionAtLeast (releaseV2x1x0) (releaseV2x0x0)) && ((versionAtLeast (releaseV2x0x0) (releaseV1x1x0)) && ((versionAtLeast (releaseV1x1x0) (releaseV1x0x0)) && (versionAtLeast (releaseV1x0x0) (releaseV0x4x0)))))))))))))
+}
+
+theorem{
+  name: cadenceGuardsVerified,
+  parameters: [],
+  statement: ((cadenceGuardsDirect) = true),
+  proof: decide{},
+  axioms: []
+}
+
+theorem{
+  name: cadenceReleaseHistoryVerified,
+  parameters: [],
+  statement: ((cadenceHistoryDirect) = true),
+  proof: decide{},
+  axioms: []
+}
+\end{semanticmodule}
+\end{lexlean}

@@ -2,12 +2,12 @@
 # Enforced mechanically by `prism-fidelity` (`prism/parametric-ratchet/2`, VE-47).
 spec = "verdant/self-host-ratchet-manifest/1"
 generator = "verdant-operator-ratchet-lift"
-version = "2.0.0"
-release_epoch = 4
-source_commit_kappa = "dfa250f57e33da957cc1e222003957978675f5c568ca740a6486955f685eb9f1"
-source_tree_root_sha256 = "a06fd19183c96cf24bd12d2857a3e5ec1c3d7243d954cf5ff89eece9c7d43723"
-immutability_seal_root_sha256 = "7ad4418369bd696dc0695691ea64f59dc2a01a8a00bbc135693d3e45f7915d2a"
-release_capsule_sha256 = "3cd3750b4b66e3f9b72f855dbeb0c4a602543541e7530298a34aa7d78b59fe94"
+version = "2.1.0"
+release_epoch = 5
+source_commit_kappa = "a9327552a15b64991483a180eca558cdf4548787c2c66a64c5d0cc49b0a84889"
+source_tree_root_sha256 = "51c8def152f4265d1d37cbeebc1b956db8f93f7b8f7a8ebd4d86dc0b6ecda75d"
+immutability_seal_root_sha256 = "59ae89a3700d1bf44afe250640df084806dc810280ee27a0406c866d4858c314"
+release_capsule_sha256 = "fe151c159a399f539d015e82f27ecf9245f655c577f9eb520efb2c62d1b72b13"
 unlifted_ui_files = 0
 unverified_frame_assets = 0
 user_required_external_accounts = 0
@@ -76,7 +76,7 @@ sha256 = "7dfc21091448ebc4477b6a9b7567a6ae48d8f60ce7847aae9050df6fb32e04f0"
 [[lifted_module]]
 path = "crates/verdant-core/src/governance.rs"
 category = "rust"
-sha256 = "17755b1d5e1b2659e3ddf2abf239b9af6ed631d46c139d8ef54d2e2c7f429c65"
+sha256 = "d00c36aa9af389ffe1e536429d7bd3c060b1cec16fecef5ecc46eb0092be6930"
 
 [[lifted_module]]
 path = "crates/verdant-core/src/hd_world.rs"
@@ -116,7 +116,7 @@ sha256 = "fce5b9b47516e951030799e9de80282f9fc8b5f0e89c53c499124ddc47866fee"
 [[lifted_module]]
 path = "crates/verdant-core/src/operator.rs"
 category = "rust"
-sha256 = "0d7fc7f9d04a0371f565693ec9a12371d0a1853853033647216c8582b2dc758e"
+sha256 = "0065d6d2c3fad1f1c800b08bcc5011e82ce091fb1c9919096e7b9dd0aaf4e637"
 
 [[lifted_module]]
 path = "crates/verdant-core/src/physics.rs"
@@ -229,6 +229,11 @@ category = "lexlean"
 sha256 = "2d0aee3a5ee0f69a3f27d6a02751a209140b5e4b7c48f19dbfd54c84dbfb9565"
 
 [[lifted_module]]
+path = "app/src/Cadence.lex.tex"
+category = "lexlean"
+sha256 = "3a919dd127f1164bea6bbb6c7313231f447fa33942a8ed61bc5897020bc465dc"
+
+[[lifted_module]]
 path = "app/src/Compliance.lex.tex"
 category = "lexlean"
 sha256 = "23dcd62da1b55bb6fc64c674caf454c288e822526d86324618414ee134fdd20c"
@@ -256,7 +261,7 @@ sha256 = "52a31f6736703cc5d7c4d544743ff73ef0d1485c9de90781cf9f639a806aace1"
 [[lifted_module]]
 path = "app/src/Fidelity.lex.tex"
 category = "lexlean"
-sha256 = "d83bda3f4f55a4807fb01ff7253e8d0756c1d783e0305b4838bf01d7ccf3119e"
+sha256 = "7f1b8c3007de78ade725085c66c943818ad9eaadf87410ad504147f8d36a60fc"
 
 [[lifted_module]]
 path = "app/src/Foundation/Arch.lex.tex"
@@ -327,6 +332,11 @@ sha256 = "15bc6cc17fb37822690dfad2a9f91935eed83f2fb231be717a33d5963f09fd5e"
 path = "app/src/Quality.lex.tex"
 category = "lexlean"
 sha256 = "892589008577873bfe818513d5212fde737bd87755fe17bde3a70914639554cf"
+
+[[lifted_module]]
+path = "app/src/Release.lex.tex"
+category = "lexlean"
+sha256 = "08719246fce9feb9dc5d1ed3f07e04aeb38371467647c255260b38f2b02c633a"
 
 [[lifted_module]]
 path = "app/src/Security.lex.tex"

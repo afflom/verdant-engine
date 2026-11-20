@@ -1,0 +1,90 @@
+# Autonomous Release Tagging Workflow (`VE-52`, `app/src/Cadence.lex.tex`).
+# Fires only after `bootstrap` succeeds on `main` (enforcing `Cadence::aRedMainNeverCuts`).
+# Reads the canonical SemVer from `Cargo.toml` + `site/generated/release-ledger.json`, verifies
+# `scripts/release/qualify-tag.mjs`, creates `v<version>` if unreleased, and dispatches
+# `stitch-release` to pack, Chromium-verify, mirror to `stitch-mirror`, and publish.
+name: release-tag
+
+on:
+  workflow_run:
+    workflows: [bootstrap]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: release-tag
+  cancel-in-progress: false
+
+jobs:
+  tag-if-qualified:
+    name: Qualify green main & autonomously cut vX.Y.Z tag
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.head_branch == 'main' &&
+       github.event.workflow_run.event == 'push')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Resolve target commit SHA
+        id: target
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "${{ github.event_name }}" == "workflow_run" ]]; then
+            sha="${{ github.event.workflow_run.head_sha }}"
+          else
+            sha="${{ github.sha }}"
+          fi
+          printf 'sha=%s\n' "$sha" >> "$GITHUB_OUTPUT"
+
+      - name: Check out exact green revision
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ steps.target.outputs.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Qualify version sync, frontier register & green bootstrap
+        id: qualify
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_SHA: ${{ steps.target.outputs.sha }}
+        run: |
+          set -euo pipefail
+          ver=$(node -e 'const s=require("fs").readFileSync("Cargo.toml","utf8").split("[workspace.package]")[1]||""; const m=s.match(/^\s*version\s*=\s*"([^"]+)"/m); if(!m) process.exit(1); console.log(m[1].trim());')
+          epoch=$(node -e 'const l=JSON.parse(require("fs").readFileSync("site/generated/release-ledger.json","utf8")); console.log(l.releaseEpoch);')
+          node scripts/release/qualify-tag.mjs --tag "v${ver}" --sha "${GITHUB_SHA}"
+          printf 'version=%s\nepoch=%s\ntag=v%s\n' "$ver" "$epoch" "$ver" >> "$GITHUB_OUTPUT"
+
+      - name: Create unreleased git tag & dispatch stitch-release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          TARGET_SHA: ${{ steps.target.outputs.sha }}
+          VER: ${{ steps.qualify.outputs.version }}
+          EPOCH: ${{ steps.qualify.outputs.epoch }}
+          TAG: ${{ steps.qualify.outputs.tag }}
+        run: |
+          set -euo pipefail
+          if git rev-parse -q --verify "refs/tags/${TAG}" >/dev/null 2>&1; then
+            echo "release-tag: ${TAG} already exists — nothing to cut."
+            exit 0
+          fi
+          gh api "repos/${GITHUB_REPOSITORY}/git/refs" \
+            -f ref="refs/tags/${TAG}" \
+            -f sha="${TARGET_SHA}"
+          echo "release-tag: created ${TAG} at ${TARGET_SHA}; dispatching stitch-release..."
+          gh workflow run release-stitch.yml \
+            --ref "${TAG}" \
+            -f version="${VER}" \
+            -f epoch="${EPOCH}" \
+            -f publish="true"

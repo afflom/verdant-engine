@@ -2470,6 +2470,13 @@ renderContentTypePills();
   // and live PagedTensorArena dynamic UHD/AI workload governor bridge (VE-50):
   const VCS_STORAGE_KEY = "verdant_studio_vcs_history_v1";
   const PRISM_ID_KEY = "verdant_zero_account_prism_id_v1";
+  const bytesToBase64Url = (u8) => {
+    let bin = "";
+    for (let i = 0; i < u8.length; i++) bin += String.fromCharCode(u8[i]);
+    return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  };
+  const hexToBytes = (hex) =>
+    Uint8Array.from({ length: hex.length / 2 }, (_, i) => parseInt(hex.slice(i * 2, i * 2 + 2), 16));
   const ensureLocalStudioPrismId = () => {
     try {
       const existing = JSON.parse(localStorage.getItem(PRISM_ID_KEY) || "null");
@@ -2488,6 +2495,45 @@ renderContentTypePills();
 
   const vcsMsgEl = $("studio-vcs-msg");
   const vcsHistEl = $("studio-vcs-history");
+
+  const checkoutVcsCommit = async (commitKappa) => {
+    const entry = vcsHistory.find((e) => e.commitKappa === commitKappa);
+    if (!entry) throw new Error(`Unknown VerdantVcs commit ${commitKappa}`);
+    if (entry.sceneJson) {
+      const parsed = JSON.parse(entry.sceneJson);
+      if (parsed.project) activeProject = parsed.project;
+      if (Array.isArray(parsed.objects)) {
+        await clearStudioObjects();
+        for (const obj of parsed.objects) {
+          await callWorker("studio-add-object", {
+            primKind: obj.kind ?? 0,
+            pos: obj.pos || [0, 0, 0],
+            scale: obj.scale || [1.5, 1.5, 1.5],
+            color: obj.color || [0.86, 0.34, 0.16],
+            lod: currentLodSpec(),
+            simClockSec,
+          });
+        }
+        const refreshed = await callWorker("studio-list-objects");
+        if (Array.isArray(refreshed?.objects)) studioObjects = refreshed.objects;
+        await syncFallbackBuffers();
+        renderStudioOutliner();
+        syncHud();
+        requestRender();
+      }
+    }
+    chip(statusEl, `Checked out VerdantVcs e${entry.epoch} (${entry.commitKappa.slice(0, 10)}…) · "${entry.message}"`);
+    return entry;
+  };
+
+  const buildShareablePinUrl = (packed) => {
+    const u = new URL(`../frame/?pin=${encodeURIComponent(packed.stitchDeepLinkUri)}`, location.href);
+    if (packed.holoHex) {
+      u.hash = `holo=${bytesToBase64Url(hexToBytes(packed.holoHex))}`;
+    }
+    return u.href;
+  };
+
   const renderVcsHistory = () => {
     if (!vcsHistEl) return;
     vcsHistEl.replaceChildren();
@@ -2505,7 +2551,15 @@ renderContentTypePills();
       label.style.fontFamily = "var(--font-mono)";
       label.style.fontSize = "var(--text-14)";
       label.textContent = `e${entry.epoch} · ${entry.commitKappa.slice(0, 10)}… · ${entry.message}`;
-      row.append(label);
+      const chkBtn = document.createElement("button");
+      chkBtn.type = "button";
+      chkBtn.className = "ide-btn";
+      chkBtn.textContent = "Checkout";
+      chkBtn.dataset.vcsCheckout = entry.commitKappa;
+      chkBtn.addEventListener("click", () => {
+        checkoutVcsCommit(entry.commitKappa).catch((err) => chip(statusEl, `Checkout error: ${err}`));
+      });
+      row.append(label, chkBtn);
       vcsHistEl.append(row);
     }
   };
@@ -2523,11 +2577,16 @@ renderContentTypePills();
       lodRank: lodIdx,
     });
     const res = await callWorker("vcs-commit-pack-holo", {
-      request: { appTitle, authorPrismId, message, parentCommitKappa, epoch, version: "1.2.0", sceneJson },
+      request: { appTitle, authorPrismId, message, parentCommitKappa, epoch, version: "2.1.0", sceneJson },
     });
     const out = res?.result;
     if (!res?.ok || !out?.ok) throw new Error(out?.error || "VerdantVcs commit failed");
     lastPackedHolo = out;
+    if (out.holoHex) {
+      try {
+        await cacheBytesInOpfs(`verdant-app-${out.capsuleSha256Hex}.holo`, hexToBytes(out.holoHex));
+      } catch {}
+    }
     vcsHistory.unshift({
       epoch: out.epoch,
       commitKappa: out.commitKappa,
@@ -2535,8 +2594,10 @@ renderContentTypePills();
       capsuleSha256Hex: out.capsuleSha256Hex,
       stitchDeepLinkUri: out.stitchDeepLinkUri,
       message: out.message,
+      sceneJson,
+      holoHex: out.holoHex || "",
     });
-    vcsHistory = vcsHistory.slice(0, 16);
+    vcsHistory = vcsHistory.slice(0, 12);
     try { localStorage.setItem(VCS_STORAGE_KEY, JSON.stringify(vcsHistory)); } catch {}
     renderVcsHistory();
     chip(statusEl, `VerdantVcs e${out.epoch} (${out.commitKappa.slice(0, 10)}…) · .holo ${out.capsuleByteLen} B · ${out.shardCount} shards`);
@@ -2562,8 +2623,7 @@ renderContentTypePills();
   $("studio-export-holo-btn")?.addEventListener("click", async () => {
     try {
       const packed = lastPackedHolo || (await commitAndPackHolo("Portable .holo app export"));
-      const hex = packed.holoHex || "";
-      const bytes = Uint8Array.from({ length: hex.length / 2 }, (_, i) => parseInt(hex.slice(i * 2, i * 2 + 2), 16));
+      const bytes = hexToBytes(packed.holoHex || "");
       const slug = String(stitchAppTitleInput?.value || "verdant-app").toLowerCase().replace(/[^a-z0-9]+/g, "-");
       const url = URL.createObjectURL(new Blob([bytes], { type: "application/octet-stream" }));
       const a = document.createElement("a");
@@ -2575,15 +2635,17 @@ renderContentTypePills();
   $("studio-copy-pin-btn")?.addEventListener("click", async () => {
     try {
       const packed = lastPackedHolo || (await commitAndPackHolo("Deep-link pin share"));
-      const frameUrl = new URL(`../frame/?pin=${encodeURIComponent(packed.stitchDeepLinkUri)}`, location.href).href;
+      const frameUrl = buildShareablePinUrl(packed);
       try { await navigator.clipboard.writeText(frameUrl); } catch {}
-      chip(statusEl, `Copied Blank Frame pin: ${packed.stitchDeepLinkUri}`);
+      chip(statusEl, `Copied cross-browser Blank Frame pin: ${packed.stitchDeepLinkUri}`);
     } catch (err) { chip(statusEl, `Pin share error: ${err}`); }
   });
 
   renderVcsHistory();
   window.__VERDANT_STUDIO_API__ = {
     commitAndPackHolo,
+    checkoutVcsCommit,
+    buildShareablePinUrl,
     stepPagedUhdWorkload,
     getVcsHistory: () => vcsHistory.slice(),
     getLocalPrismId: ensureLocalStudioPrismId,
