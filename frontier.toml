@@ -5,13 +5,13 @@
 # stops the functions it counts (the detail their rows state, under its
 # cause), the one that stops the most first: the work queue.
 
-# Honesty report: 136 of 1506 functions of product code are lifted; 1225
-# are residue, 73 foreign and 72 effect rows.
+# Honesty report: 178 of 1537 functions of product code are lifted; 1208
+# are residue, 73 foreign and 78 effect rows.
 # Residue by cause:
-#   arithmetic: 138
-#   call: 209
+#   arithmetic: 70
+#   call: 210
 #   collision: 1
-#   form: 296
+#   form: 346
 #   signature: 68
 #   statements: 32
 #   type: 475
@@ -20,26 +20,21 @@
 spec = "uorust/register/1"
 
 [lift]
-functions = 1506
-lifted = 136
-residue = 1225
+functions = 1537
+lifted = 178
+residue = 1208
 foreign = 73
-effect = 72
+effect = 78
 
 [[construct]]
 construct = "expression form outside the lift: ? below the function's own statements"
 cause = "form"
-functions = 219
+functions = 267
 
 [[construct]]
 construct = "calls global_bridge, which is not lifted"
 cause = "call"
 functions = 124
-
-[[construct]]
-construct = "integer operator << wraps or panics depending on the build profile"
-cause = "arithmetic"
-functions = 81
 
 [[construct]]
 construct = "type outside the lift: f64"
@@ -79,7 +74,7 @@ functions = 22
 [[construct]]
 construct = "Fs effect: std::fs::read_to_string"
 cause = "effect"
-functions = 18
+functions = 21
 
 [[construct]]
 construct = "type outside the lift: WasmRuntimeBridge.terrain_params: TerrainReliefParams"
@@ -117,9 +112,14 @@ cause = "call"
 functions = 14
 
 [[construct]]
+construct = "integer operator << wraps or panics depending on the build profile"
+cause = "arithmetic"
+functions = 13
+
+[[construct]]
 construct = "Fs effect: std::fs::read_dir"
 cause = "effect"
-functions = 12
+functions = 13
 
 [[construct]]
 construct = "signature outside the lift: takes &mut self of BinReader: the lift reads self and &self as the value, and threads no other receiver"
@@ -307,6 +307,11 @@ cause = "call"
 functions = 4
 
 [[construct]]
+construct = "expression form outside the lift: a while loop that does not advance its cursor once per step"
+cause = "form"
+functions = 4
+
+[[construct]]
 construct = "expression form outside the lift: free name Axis::ALL"
 cause = "form"
 functions = 4
@@ -393,16 +398,6 @@ functions = 3
 
 [[construct]]
 construct = "expression form outside the lift: ? outside a let"
-cause = "form"
-functions = 3
-
-[[construct]]
-construct = "expression form outside the lift: a while loop over a cursor of another type"
-cause = "form"
-functions = 3
-
-[[construct]]
-construct = "expression form outside the lift: a while loop that does not advance its cursor once per step"
 cause = "form"
 functions = 3
 
@@ -517,6 +512,11 @@ cause = "form"
 functions = 2
 
 [[construct]]
+construct = "expression form outside the lift: a while loop over a cursor of another type"
+cause = "form"
+functions = 2
+
+[[construct]]
 construct = "expression form outside the lift: free name CODED_TABLE_LEN"
 cause = "form"
 functions = 2
@@ -538,6 +538,11 @@ functions = 2
 
 [[construct]]
 construct = "expression form outside the lift: method call .strip_prefix"
+cause = "form"
+functions = 2
+
+[[construct]]
+construct = "expression form outside the lift: write! into something other than the formatter"
 cause = "form"
 functions = 2
 
@@ -802,6 +807,11 @@ cause = "call"
 functions = 1
 
 [[construct]]
+construct = "calls thirty_two_u8, which is not lifted"
+cause = "call"
+functions = 1
+
+[[construct]]
 construct = "calls to_owned, which is not lifted"
 cause = "call"
 functions = 1
@@ -844,6 +854,11 @@ functions = 1
 [[construct]]
 construct = "another function of the crate is also named cellErr"
 cause = "collision"
+functions = 1
+
+[[construct]]
+construct = "Env effect: std::env::var"
+cause = "effect"
 functions = 1
 
 [[construct]]
@@ -908,6 +923,11 @@ functions = 1
 
 [[construct]]
 construct = "calls verdant_core::operator::VerdantOperatorChannel::load_or_init_release_ledger, which performs a Fs effect: std::fs::read_to_string"
+cause = "effect"
+functions = 1
+
+[[construct]]
+construct = "calls verdant_core::ratchet_sync::walk_suffix, which performs a Fs effect: std::fs::read_dir"
 cause = "effect"
 functions = 1
 
@@ -1067,12 +1087,12 @@ cause = "form"
 functions = 1
 
 [[construct]]
-construct = "expression form outside the lift: unwrap_or_default of a named type"
+construct = "expression form outside the lift: recursion that does not descend on a slice"
 cause = "form"
 functions = 1
 
 [[construct]]
-construct = "expression form outside the lift: write! into something other than the formatter"
+construct = "expression form outside the lift: unwrap_or_default of a named type"
 cause = "form"
 functions = 1
 
@@ -2610,10 +2630,10 @@ reason = "type"
 detail = "type outside the lift: Self"
 
 [[residue]]
-kappa = "815b778011deeff4a5c94db1d8c1bbc8b2a517c22dcb14062be63b1d80c71fb6"
+kappa = "2c1d3e7bd6b56c278ec92c96bd6425a77808e95ec479e601ab069a7e1edbf3f4"
 function = "verdant_core::governance::hundred_u64"
-reason = "arithmetic"
-detail = "integer operator << wraps or panics depending on the build profile"
+reason = "form"
+detail = "expression form outside the lift: recursion that does not descend on a slice"
 
 [[residue]]
 kappa = "029874aaba39e51b193372a67478b9e182de7463cca2fac6f9daa89f90582582"
@@ -3826,6 +3846,12 @@ kappa = "f89c31b6989a5e65f09344fc061ad1bf06865daa7b483d59bbc7e40120e6d28c"
 function = "verdant_core::physics::sweep_capsule_stack"
 reason = "type"
 detail = "type outside the lift: TwoLevelBvh.instances: TwoLevelInstance.world_bounds: Aabb.min: Vec3.x: f64"
+
+[[residue]]
+kappa = "877608c0b821284a055e1474ff75c3d73ab7c7df783a5ef76a177d49af6afdda"
+function = "verdant_core::ratchet_sync::hex_encode_digest"
+reason = "form"
+detail = "expression form outside the lift: write! into something other than the formatter"
 
 [[residue]]
 kappa = "c7ed3e30091b4a454be12e451118e6155bbb8d41ef58fa261bd73129456c6c5f"
@@ -5070,10 +5096,10 @@ reason = "arithmetic"
 detail = "usize + wraps or panics where its value leaves the pointer width: past 2^32 on wasm32-unknown-unknown and thumbv7em-none-eabihf, past 2^64 on x86_64-unknown-linux-gnu and aarch64-unknown-linux-gnu"
 
 [[residue]]
-kappa = "c848230f9f0e0791ae454e5b370c1bf3885412b148209af50640b0e7b8b067cb"
+kappa = "770a007bc163e3d83381e14f012853e4c9bce12358969ab69cbef78bdddc5e44"
 function = "verdant_core::vcs::parse_stitch_deep_link_uri"
-reason = "arithmetic"
-detail = "integer operator << wraps or panics depending on the build profile"
+reason = "call"
+detail = "calls thirty_two_u8, which is not lifted"
 
 [[residue]]
 kappa = "2d6ce95693f3c455219e3de3321201f7c6ba7ef62369554c7b84bdf9761968e2"
@@ -5418,12 +5444,6 @@ reason = "signature"
 detail = "signature outside the lift: takes &mut self of PagedTensorArena: the lift reads self and &self as the value, and threads no other receiver"
 
 [[residue]]
-kappa = "0518b903bc024732b05a182b0a529551551c0314e88370f94687361570cde0b0"
-function = "verdant_tensor::memory::TensorStorageEncoding::compression_factor"
-reason = "arithmetic"
-detail = "integer operator << wraps or panics depending on the build profile"
-
-[[residue]]
 kappa = "c71d1763acd4b40e89bc3b7758e037130722b9a5c021b4b63a5e12ffd86c4c47"
 function = "verdant_tensor::memory::contract_paged_packed_nibbles_stream"
 reason = "type"
@@ -5448,10 +5468,10 @@ reason = "arithmetic"
 detail = "integer operator * wraps or panics depending on the build profile"
 
 [[residue]]
-kappa = "a6b88277f96db29cc1767e652cd12eb045d047bf7c865e6a1c4a1656df713cac"
+kappa = "03c2e38b632afcb6a1e43aa751ffefeb2891d796c0fa6886670066f34f58fcaa"
 function = "verdant_tensor::pow2_u64"
 reason = "form"
-detail = "expression form outside the lift: a while loop over a cursor of another type"
+detail = "expression form outside the lift: a while loop that does not advance its cursor once per step"
 
 [[residue]]
 kappa = "7978044fd27ddb78c897531c33905daab09ae1603dbbb57e11c86c6ca46565ae"
@@ -5472,25 +5492,25 @@ reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
-kappa = "50761634b27cd3f3a9ecf1e2644efed9d3d9cb66378bd04e609e44e81906f82f"
+kappa = "fb07dba9645290c1432baf630b3daeefab1aa0d9b2648e25a5cb33e5c99eea40"
 function = "verdant_tensor::prism_kernel::answerCommercialSubsystemQuery"
 reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
-kappa = "75925e05b74a76fe22f2023c455db0097a46e73c623bb8e0a27ac8fb07a9d8e9"
+kappa = "1d81027ce188cbf3b7f1050e7c02ab25202e257646501763e62a0086a1a0f339"
 function = "verdant_tensor::prism_kernel::answerCyberneticAndStitchQuery"
 reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
-kappa = "2b60f6ff12c4e5670a73c95fe04ee934f70e6943e69ec11f66dcd6b6f2690ce9"
+kappa = "8826f92e0f84bb713421090aeb8be8abbf26f99043db162384272bb7b92be9a9"
 function = "verdant_tensor::prism_kernel::answerDeepSubsystemQuery"
 reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
-kappa = "40b75527b826a01fd4c215604a95eed914ba5c3637980a8a738b301fcbd852fe"
+kappa = "d4000cd7df27b20387ed937cb4a96057468b886066ecc4b640b74cb73067738d"
 function = "verdant_tensor::prism_kernel::answerLawfulHdEngineQuery"
 reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
@@ -5502,13 +5522,13 @@ reason = "call"
 detail = "calls from, which is not lifted"
 
 [[residue]]
-kappa = "eb434f71bfdd99c1c012c36c8a2fb99cbb528a6ba0c5a6be652fdc7b0e3465db"
+kappa = "f409c3a76d0bc7ce38f30a71a6944ff55a94c5af67380c9284e59ed392ce4c73"
 function = "verdant_tensor::prism_kernel::answerSceneQuery"
 reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
-kappa = "0874e89b6ff0cd94a36efe3482f293cd5e682d8540c86785fcebfd2ad980c4bf"
+kappa = "aa8a08db39f02c288762a81f6a5efaa26e80e861b7ea064c14180182951fb780"
 function = "verdant_tensor::prism_kernel::aqmWorkloadExtrapolationsDirect"
 reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
@@ -5526,22 +5546,16 @@ reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
-kappa = "007f47544fdfbbb16e32204feea95f1cd396848992e7fa0f37887fc97a284e59"
+kappa = "6597976b17690ce3d2a7049b8edd41cc6f10684c0ca053a3ae464218f39e14b2"
 function = "verdant_tensor::prism_kernel::architecturalWalkabilityValid"
-reason = "arithmetic"
-detail = "integer operator << wraps or panics depending on the build profile"
+reason = "form"
+detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
 kappa = "c968418f65be99f41a2182ec00eb632f3abab475ec15327067200fc20063cb07"
 function = "verdant_tensor::prism_kernel::astarPriorityMilli"
 reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
-
-[[residue]]
-kappa = "52bd7d69404f6ca14cd386368ad071e4e193a2dff143efdad801f8bedd34819f"
-function = "verdant_tensor::prism_kernel::audioStereoChannels"
-reason = "arithmetic"
-detail = "integer operator << wraps or panics depending on the build profile"
 
 [[residue]]
 kappa = "42b99cb28156475eb75db7ae5379b4693d09c0c346d135dad79b0dcc98c1dced"
@@ -5580,7 +5594,7 @@ reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
-kappa = "7322863c695587fa9bc47cd34d642b046b06ba2a3096caa92ac7571d466414c2"
+kappa = "4dd211bb75d75b20811baf4a65380ea0d517ccb640db223fc0a8dddf4f1864bb"
 function = "verdant_tensor::prism_kernel::canonicalDimensions"
 reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
@@ -5602,12 +5616,6 @@ kappa = "d686099163e334c9d09741155e365a9af33e9216f442858b50a3164b1a320316"
 function = "verdant_tensor::prism_kernel::ccdMaxSlideIterations"
 reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
-
-[[residue]]
-kappa = "68f9e91632520063102d18c29d1afc8a4d76c75efd507fe93fc15e93af6ae674"
-function = "verdant_tensor::prism_kernel::ccdSkinMarginMilli"
-reason = "arithmetic"
-detail = "integer operator << wraps or panics depending on the build profile"
 
 [[residue]]
 kappa = "98bc57f98d5dcc9c6d427b4472b9874fe0c6a501c21bedc07949d58897096299"
@@ -5634,10 +5642,10 @@ reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
-kappa = "14eae9cfc108a53d20ffb6d7c3acfd0a55971cdf7aa2949255ee505ea5808b9c"
+kappa = "cb02df836fb11a277d06418c0cfe75484d330be06f3698206bc558a27409ef9a"
 function = "verdant_tensor::prism_kernel::cliDefaultBenchmarkFrames"
-reason = "arithmetic"
-detail = "integer operator << wraps or panics depending on the build profile"
+reason = "form"
+detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
 kappa = "f00590a0ec3b6641c071d88e09d558ca8606bbc504d177fd49d03cd918b252ef"
@@ -5658,16 +5666,16 @@ reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
-kappa = "df933bd4a4fd3b2cc0954292db0ad47f1100bb1901681d9f612e52039025e95d"
+kappa = "ef44a4e8d1057b0c8ffde51fd0ef444ea641a7f3f166121d18119a464fea2db3"
 function = "verdant_tensor::prism_kernel::codedTier1PackedAnimation"
 reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
-kappa = "b18c4107c5aa2a3ec27afa2108ba662c2aab052c2f153a4252fc51f73f3dbb84"
+kappa = "a07b6125b1af14fd90f07220f0f49f178f216f28719a98dda9cb3c36dba6c946"
 function = "verdant_tensor::prism_kernel::codedTier2RunsIblProbes"
-reason = "arithmetic"
-detail = "integer operator << wraps or panics depending on the build profile"
+reason = "form"
+detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
 kappa = "6e8433a3593a61be4a8936223fe8f431b9e6b2054703369491e43d87ec2c40d5"
@@ -5676,13 +5684,13 @@ reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
-kappa = "0fbe26e25a0c5d5925a6843fa3577f7b229cfcbc21ad1814207b8cba704baf7f"
+kappa = "ce3e488754f069c6ed1209f3549a5f31e9ce1b4a84c2799f193c659d5a39c659"
 function = "verdant_tensor::prism_kernel::codedTiersDirect"
 reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
-kappa = "5d7517fe2cc4cd88bbe9dbec040f554c3b33a77c9076244c11599083d2825210"
+kappa = "cd8216129559b0b377769313ed2754fba5aee4ffeb37a4371fae575632f94f78"
 function = "verdant_tensor::prism_kernel::commercialProgressionActive"
 reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
@@ -5748,22 +5756,16 @@ reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
-kappa = "b01f33f371f99a5c0d4ea5f4b21059c7d8ddc5fc75e7993575466404fe249f1d"
+kappa = "d8947cb197ba8ebdb079ae7c80f9501e61d6394294900f6bf29e88c72074b893"
 function = "verdant_tensor::prism_kernel::cyberneticUiAndStitchActive"
 reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
-kappa = "a038a18ac5243ea74e749b5a40a2c32a7345ca2736d3c77263f592f536e901b5"
-function = "verdant_tensor::prism_kernel::dampedExteriorAbsorptionNumer"
-reason = "arithmetic"
-detail = "integer operator << wraps or panics depending on the build profile"
-
-[[residue]]
-kappa = "858b90b6cafbe5cc63116b55caead09dcadeb4e4746f641569d0e7d5b31e4f64"
+kappa = "447e897f026a12bafca1e7bb5751e1c94b5ba2e87c5e6e4560da87c2417eb2a2"
 function = "verdant_tensor::prism_kernel::deepenedSubsystemsActive"
-reason = "arithmetic"
-detail = "integer operator << wraps or panics depending on the build profile"
+reason = "form"
+detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
 kappa = "8f5a44fc54ba96a677d80f57a910571a5fee56616b64a5543de05506872dc2ec"
@@ -5784,28 +5786,22 @@ reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
-kappa = "ce533d078357fd513e44631b27ea5e59710f80419dbfad7a4da59cb5303cebad"
+kappa = "55ce5d0dfd53d79397f08ef1f991619034f09b6fd949a090c0aec78119dd1cee"
 function = "verdant_tensor::prism_kernel::engineMaxTickRateHz"
-reason = "arithmetic"
-detail = "integer operator << wraps or panics depending on the build profile"
+reason = "form"
+detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
-kappa = "e21c6e2fedffe174629cf2c93cd7d2302b5e5261011606b0b185a35a19b10a30"
+kappa = "2513ea4b9636440f364b6c1cf88ae452c959048ebe84729334fc2cb855f6cd3b"
 function = "verdant_tensor::prism_kernel::epistemicDialogueTurnValid"
 reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
-kappa = "c926801ab7615c2d9c2e57d94115a5701c7d9d99c55eb8db6e10b62f42c64832"
-function = "verdant_tensor::prism_kernel::eulerBernoulliModeDenom"
-reason = "arithmetic"
-detail = "integer operator << wraps or panics depending on the build profile"
-
-[[residue]]
-kappa = "5e711cea8b3c2c277ccfb5591de3d917d4ebc6ed7035d171c8b6ebebb5b3ce9b"
+kappa = "1392ffeedfb3e6401db7c3054fa93335fcd0645b5c93774f60ce7dac5d053fb5"
 function = "verdant_tensor::prism_kernel::eulerBernoulliModeNumer"
-reason = "arithmetic"
-detail = "integer operator << wraps or panics depending on the build profile"
+reason = "form"
+detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
 kappa = "55bce4f70c860818a33dc92de9d44b5b49c07ab499dd6f5d25c45d21051345d6"
@@ -5820,7 +5816,7 @@ reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
-kappa = "e8f54023cede0a15389d40ad072b477288d99c96b480ef0bbc15c385abb925d5"
+kappa = "992db12d15dceec18b933148dc2ba1f250ef5cf09ef50c72174c6cbf964bc1e7"
 function = "verdant_tensor::prism_kernel::f64ExactMantissaBits"
 reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
@@ -5868,7 +5864,7 @@ reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
-kappa = "01f39cbdbe7eb4386d681d9d3305f9169d070cc72978c94ad888c314d2fd11d8"
+kappa = "fec6bbe84f87a4ce164bde8920425cef592f91b3e2cbf924708322859f58efa0"
 function = "verdant_tensor::prism_kernel::governorRecommendedScalePermille"
 reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
@@ -5910,16 +5906,16 @@ reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
-kappa = "ae53e96643c55302749cffc62101824107c40930c85684835336aaca9d51fbd3"
+kappa = "17df655d8d5e3337106e94217ce6da6b9209d13881e0d59d16b35987c922d763"
 function = "verdant_tensor::prism_kernel::iblMipLevelsRec"
-reason = "arithmetic"
-detail = "integer operator << wraps or panics depending on the build profile"
+reason = "form"
+detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
-kappa = "c68a11a20b27bd2322d9378ccdd4d1f781a71b9eca1faef9b3a092baf02f7088"
+kappa = "ae9acb31c5197168edf789d88228a1860fe950fe83bad89d8db8cc2799b12105"
 function = "verdant_tensor::prism_kernel::isPrimeConstructive"
-reason = "arithmetic"
-detail = "integer operator << wraps or panics depending on the build profile"
+reason = "form"
+detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
 kappa = "2f113122a0802840b15a01124fa71feaae29541ee714b65dc464eceb31b716c5"
@@ -5946,13 +5942,7 @@ reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
-kappa = "66e884a0fa942e3cae78e8d9cdbb3b0bbf14d1bf264c0ac9f05e8c5496724aee"
-function = "verdant_tensor::prism_kernel::isoRequestActCode"
-reason = "arithmetic"
-detail = "integer operator << wraps or panics depending on the build profile"
-
-[[residue]]
-kappa = "bce1a6ae92904a0881ce840cafd714f40a530cf0021753ad32dcedc08302961b"
+kappa = "f8d1926aad2b9f930a4811355d5a16093395e7868116e5b8ad6f10a3e47e3a58"
 function = "verdant_tensor::prism_kernel::jointLockedDofs"
 reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
@@ -6000,16 +5990,16 @@ reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
-kappa = "6f3ba71f4d0b55f074d9fb8752190e7736a9a2352cac99dd08e0f10ee94b0ad9"
+kappa = "c87628cc0130c7bb73ff97b8702108c367798d5cdeadb6d80f73f564af4e9145"
 function = "verdant_tensor::prism_kernel::kernel2TropicalBvhCull"
-reason = "arithmetic"
-detail = "integer operator << wraps or panics depending on the build profile"
+reason = "form"
+detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
-kappa = "5e8786d72978cc11e471d7036fc26fac4e5863996359a484ecd2db624e15ab4f"
+kappa = "23f43dcb36345d762fd32320476c1f75fd92633c3defbebf7169ab804dc463c3"
 function = "verdant_tensor::prism_kernel::kernel3TileRasterizer"
-reason = "arithmetic"
-detail = "integer operator << wraps or panics depending on the build profile"
+reason = "form"
+detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
 kappa = "0c896e8237d6dce0f975144185ad5ae172037120d2aebb174f5da57c370e259d"
@@ -6060,7 +6050,7 @@ reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
-kappa = "883d929cb5832b34e76a9c7a96073c685f0d5fcc5b2a2f2fe79b3f39f2b727f3"
+kappa = "b9fa5d15334f00d788b6c5f471e9e5025bdc560cbecee7a7ae74055ecfba98cc"
 function = "verdant_tensor::prism_kernel::lawfulHdUniversalEngineActive"
 reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
@@ -6102,22 +6092,22 @@ reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
-kappa = "63c4f8ce7dcd9056d9c514656f021f0d25fa9a58db8dc8a831bcb5bfa11ff4d2"
+kappa = "afecd1ba99c418e5cae71f6386be5115ff3d096ae577cb4b8f76efcf0de8aee8"
 function = "verdant_tensor::prism_kernel::lod1MediumDetail"
-reason = "arithmetic"
-detail = "integer operator << wraps or panics depending on the build profile"
+reason = "form"
+detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
-kappa = "2aa1ea03ff45b13d336b7483c2bcdd997bbf6f7934418054dc903f063bc029f4"
+kappa = "dfc30f05a665a9ce4b38402b904327481ac1b8e2bf14dfd3ac30882a6b072689"
 function = "verdant_tensor::prism_kernel::lod2HighDetail"
-reason = "arithmetic"
-detail = "integer operator << wraps or panics depending on the build profile"
+reason = "form"
+detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
-kappa = "f519d8979640b7597ae131a85720cba925e53da6ce914d40ead69f0082f8e707"
+kappa = "bae053551b69d7669317706c6120d6489a9f7d5babd1fd5d2d5ecc79d30a6465"
 function = "verdant_tensor::prism_kernel::lod3LosslessSource"
-reason = "arithmetic"
-detail = "integer operator << wraps or panics depending on the build profile"
+reason = "form"
+detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
 kappa = "a3fa9f53c8584259e19526459f4bd071fd5151f8a74ac9cf3a5a122fc5cdb256"
@@ -6126,13 +6116,13 @@ reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
-kappa = "559b9178147e5610f2440d5f0daf7ad22e3a7629058e5a52b3cfeb0a2ea7b401"
+kappa = "a252b52ccd98220612e2839493ac5575ddf2fe9a4f31da48a9745d89c309bfd4"
 function = "verdant_tensor::prism_kernel::lodChainDirect"
 reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
-kappa = "4048d6da21d7c9a63652b9b7e2ca64ecfe518a4a96a1b587fa03b7258d219bd5"
+kappa = "fc755bd564d89d8b4b3d859d2c9b00a77a5ee6c30350c4ce65b3431c72aa2319"
 function = "verdant_tensor::prism_kernel::lodEnvelope0"
 reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
@@ -6162,7 +6152,7 @@ reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
-kappa = "719e52db2d91d3f270fc9722a30e86ba1fdc9b8ffb339b37f1bae20a61220ada"
+kappa = "0d26834b956910a487882cdcaa8655019fbf016c4529dd22307a94b8d435723c"
 function = "verdant_tensor::prism_kernel::lodEnvelopeByRank"
 reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
@@ -6180,22 +6170,16 @@ reason = "call"
 detail = "calls to_owned, which is not lifted"
 
 [[residue]]
-kappa = "0d6f0c17a12e9a9b678568c48c02df01fe9db3034ba926899c7bc3f4628a2e0e"
-function = "verdant_tensor::prism_kernel::meshTopologyValid"
-reason = "arithmetic"
-detail = "integer operator << wraps or panics depending on the build profile"
-
-[[residue]]
 kappa = "ffbe7ca643436da938d307bc4541840de83718a20b09815abf5b12d71f08efef"
 function = "verdant_tensor::prism_kernel::morphTargetCountLimit"
 reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
-kappa = "972d797f7e43d148acfeb6c4dfb2693b3dd8481e9dab37c5c37a2cd57dd94041"
+kappa = "c6d88a4c3123d7b4ff79e82219c800b0b6954945a2df2e48fa06fb8c5cb0c411"
 function = "verdant_tensor::prism_kernel::natEight"
-reason = "arithmetic"
-detail = "integer operator << wraps or panics depending on the build profile"
+reason = "form"
+detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
 kappa = "d84f565298ed3488ea9a264fd72bfdf8320476b288517bfa89e2bf631acbebbb"
@@ -6222,16 +6206,16 @@ reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
-kappa = "1c34aa7dbe83ead0dbacb840aec4c15ae667fef863fed3044525c3af7bd6364f"
+kappa = "96141f106b111a3f4f14e71dd7f93ec73120bc3bd97cf0a2a4e494f1a562a588"
 function = "verdant_tensor::prism_kernel::natFour"
-reason = "arithmetic"
-detail = "integer operator << wraps or panics depending on the build profile"
+reason = "form"
+detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
-kappa = "29dce7b4f209415bbc6809b13159347df31b8a505268bdd6c590a20bbbe6beb5"
+kappa = "c4e5c3ae45dc64c9c9df951833d7a8ba58c5ae7a9d7b5cd2e40618b6b4e2aa89"
 function = "verdant_tensor::prism_kernel::natFourteen"
-reason = "arithmetic"
-detail = "integer operator << wraps or panics depending on the build profile"
+reason = "form"
+detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
 kappa = "55668114a85e88aefc7a446c52eece325e919a6a3a55ccb7e610b0475d88404f"
@@ -6258,10 +6242,10 @@ reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
-kappa = "25f83059eaea4272a32dda3dc1567dded27da04ef72806438b8ff87ae04793f9"
+kappa = "420a6ba5f1d27243e5bbe588d2ca4b7a204d1d62d3abf48a1871a30248f2fa83"
 function = "verdant_tensor::prism_kernel::natSix"
-reason = "arithmetic"
-detail = "integer operator << wraps or panics depending on the build profile"
+reason = "form"
+detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
 kappa = "79f2503f2f9e87ce24b303168ea9664089405449330a1fd4fc57b989094243b9"
@@ -6276,10 +6260,10 @@ reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
-kappa = "592f4855083abcaed8e3a7f13ea523b1c19450f1a9137e35c2f26fdfa9588f1b"
+kappa = "d7c9bcb3a38e511f3ee5cbf11667dd1ee15be92cc9dc9ff86d9e04f18dcd81e8"
 function = "verdant_tensor::prism_kernel::natTen"
-reason = "arithmetic"
-detail = "integer operator << wraps or panics depending on the build profile"
+reason = "form"
+detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
 kappa = "fcc8bda44d56063167c04287a902b7589d60446ba28071d10aceefcab643b859"
@@ -6288,10 +6272,10 @@ reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
-kappa = "1adb291e1795de4b892d3a4bcaaab46c4495bc6fe00dba21b2d69502f274deed"
+kappa = "e276a0826ef53d6101e31c4bf0b8c69960efe580492174a28ca985852eab9c33"
 function = "verdant_tensor::prism_kernel::natThirty"
-reason = "arithmetic"
-detail = "integer operator << wraps or panics depending on the build profile"
+reason = "form"
+detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
 kappa = "6f0f46af1c589e29a61ffa2107f86a08f156a736e0d4b45e76690174c77fc878"
@@ -6300,28 +6284,16 @@ reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
-kappa = "090c60c9f224876430e8231958e00b8361b29020d2e0ee662ec8270b0b585584"
-function = "verdant_tensor::prism_kernel::natThree"
-reason = "arithmetic"
-detail = "integer operator << wraps or panics depending on the build profile"
-
-[[residue]]
-kappa = "4e8d4810acad886039a2e7d98f83ecfda6c21038023033c2d0b9af1be16d196c"
+kappa = "16ffae8afcea9a78a45ec7ffb4b6b833caf84c841d8fe73fb7fc1d378a63a9dd"
 function = "verdant_tensor::prism_kernel::natTwelve"
-reason = "arithmetic"
-detail = "integer operator << wraps or panics depending on the build profile"
+reason = "form"
+detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
-kappa = "ee301fabb0021f4ffc215b09b9a2aa1c447fd221bed2c4a63d4ac45a16d4e2e5"
+kappa = "4d7e6a1de3771d08ee03b8b177ed5b16751cbd91cab9008a179689e9ed12b509"
 function = "verdant_tensor::prism_kernel::natTwenty"
-reason = "arithmetic"
-detail = "integer operator << wraps or panics depending on the build profile"
-
-[[residue]]
-kappa = "cbfd3c5a7771d2107b1f818b611f713792c1e1bfd8a9df43fc11591a02197ac2"
-function = "verdant_tensor::prism_kernel::natTwo"
-reason = "arithmetic"
-detail = "integer operator << wraps or panics depending on the build profile"
+reason = "form"
+detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
 kappa = "835a6508966d5df7f25567d12b97a687a8c64d4f67a3f051a62c2f2d03dadca7"
@@ -6348,7 +6320,7 @@ reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
-kappa = "a173c700a69816de6658596018625d217867cdf2dfeb37fbd67d0065f64a253d"
+kappa = "087e82077cef5ccec1561f1086dd3cc7541182f7b7722a7a9e68c7bd89f29d2f"
 function = "verdant_tensor::prism_kernel::nodePreset1"
 reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
@@ -6384,10 +6356,10 @@ reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
-kappa = "b7aad48e367b156d2411edd771e29e38887e5d7456bbbbbe767d682616460160"
+kappa = "d66db7c3e1e5589e7a8285d58bf9f13a9a892e6e279d22b1854cc558642f5f58"
 function = "verdant_tensor::prism_kernel::nthPrimeConstructive"
-reason = "arithmetic"
-detail = "integer operator << wraps or panics depending on the build profile"
+reason = "form"
+detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
 kappa = "664dc5d9c938dd2d66a57022bea760ae8d7c535dc54f09a44ee479dc3c8bec92"
@@ -6396,22 +6368,22 @@ reason = "form"
 detail = "expression form outside the lift: expr::loop"
 
 [[residue]]
-kappa = "d65c549f4990737101b2b0fd52b3305122920c69c3ca087dc252530b9200c5eb"
+kappa = "35434dbbea869c20819173228c9ee9266c1d02011595794ffbf9a2f117cf9d1d"
 function = "verdant_tensor::prism_kernel::observedChannelEnvelopeValid"
 reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
-kappa = "52f3b0bfdf7c3d28691998d4ca600743e6aa72c3c61b0bf40fabdefea1562a13"
+kappa = "ed79df39e18f02f3dd72e99532fa084cc03724900fbed08c0cf0347bc4a6dedc"
 function = "verdant_tensor::prism_kernel::observerHolonDirect"
 reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
-kappa = "ae0412770c1fea42fa0877ba0c26dc75cf772bfe7a60953c49752d116ec67612"
+kappa = "1bc0a92ccde936a04f1f2a45392198c70dd288b98adc5a6c1721344e65f020a1"
 function = "verdant_tensor::prism_kernel::observerOrganBasisProduct"
-reason = "arithmetic"
-detail = "integer operator << wraps or panics depending on the build profile"
+reason = "form"
+detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
 kappa = "2ddfd550e973c220faee256ac7d860f72f9a12f4d25a4845508afafd3c4f0609"
@@ -6438,13 +6410,13 @@ reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
-kappa = "c22e5683afae435ff4f832480ff25ea95d762c0a2b4d3cc1ff4f74bf3af23706"
+kappa = "75361b0b6e3a0148d456d445683a44152f947dee48c213c897128760b90a84b0"
 function = "verdant_tensor::prism_kernel::physicsMaxSpeedMetersPerSec"
-reason = "arithmetic"
-detail = "integer operator << wraps or panics depending on the build profile"
+reason = "form"
+detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
-kappa = "58f0a1506ddc3a16c7df917007145702b67a510f360e3f67f967d21ba20e1d4b"
+kappa = "04423adaa1882b20a13b1970858669dc8993a03734f31897a677e549f5ce2fa7"
 function = "verdant_tensor::prism_kernel::pow10Constructive"
 reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
@@ -6456,7 +6428,7 @@ reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
-kappa = "f8e51b0f4cc57f09807177b856fad04bdb2b204dabdebc3b93fe9e98196ff2b2"
+kappa = "c877551b44b5cf36e0f5e60301d209ba7827bc9641a9e31ca7aeae712b517af8"
 function = "verdant_tensor::prism_kernel::pow2Step"
 reason = "form"
 detail = "expression form outside the lift: expr::loop"
@@ -6504,7 +6476,7 @@ reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
-kappa = "3f1d46ed33f7c2be5d608181fbfd7d7e7adaaa9f909fbe1fb0c007fa011a33bb"
+kappa = "237fdb6bad5e4c3e0fadf7422535eac2e78c5bae8daaf5da56f3855f46e08c8d"
 function = "verdant_tensor::prism_kernel::runtimeAndToolingEnvelopeActive"
 reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
@@ -6516,16 +6488,16 @@ reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
-kappa = "5c11fbe586e33f6abfab248a37f5ad514fb5c741e348b047467c38bae189098f"
+kappa = "d9bf28322e92cb302f08cceadf24971280a14592e4358f30c257db2b80a31693"
 function = "verdant_tensor::prism_kernel::sEight"
-reason = "arithmetic"
-detail = "integer operator << wraps or panics depending on the build profile"
+reason = "form"
+detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
-kappa = "5cc1ed3b787f474353fd14079f4cc1ec8f2b37367f0bb12f7f742c820f2a9588"
+kappa = "2633d054dcbb7129e4c8bbf095c684b8f0a2f2b68559045fc57bd615c19d1e67"
 function = "verdant_tensor::prism_kernel::sEighteen"
-reason = "arithmetic"
-detail = "integer operator << wraps or panics depending on the build profile"
+reason = "form"
+detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
 kappa = "051843751ade4117e8010b6210078cbeea1f38b59f469027f25807ccab0f1fa3"
@@ -6570,10 +6542,10 @@ reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
-kappa = "4c30d990f66c74af2341116e8f88d72adff54ab99e73bf1205e60e01610c84fd"
+kappa = "bfa675d6d3347481a45d75d68517b9ae2d98a24c3cb6f8089bab9c7309019f27"
 function = "verdant_tensor::prism_kernel::sFortyEight"
-reason = "arithmetic"
-detail = "integer operator << wraps or panics depending on the build profile"
+reason = "form"
+detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
 kappa = "b397bc70fea725d016d1e0b186e4faaa4a432142885bb1b8c3fa278bde5f1eec"
@@ -6594,28 +6566,28 @@ reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
-kappa = "5c69db7226ecbbbe9e18ed55ef3a09fb1016b5c04e97281c9378121bb08a3922"
+kappa = "6fab5c560760b802df45aea90ef6d74702472b45cd3fc1f4b602aeb53aad91a1"
 function = "verdant_tensor::prism_kernel::sFour"
-reason = "arithmetic"
-detail = "integer operator << wraps or panics depending on the build profile"
+reason = "form"
+detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
-kappa = "e654f0dc802ab77e96a9292c26b314d9664bff36602b268621bb6594199fb3d2"
+kappa = "c63ea4fdceece06e5ff69b2df3be3795c80f8ed34bb8f5f6afc3b9d8ab620394"
 function = "verdant_tensor::prism_kernel::sFourteen"
-reason = "arithmetic"
-detail = "integer operator << wraps or panics depending on the build profile"
+reason = "form"
+detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
-kappa = "9913071815e0d4f0aa16006404fa19a68239f9aa3b077ad3fa64c4451e635280"
+kappa = "69a32b260631a9d98e872e680eab6a860e120440688357cd82327e895c79b1ff"
 function = "verdant_tensor::prism_kernel::sHundred"
-reason = "arithmetic"
-detail = "integer operator << wraps or panics depending on the build profile"
+reason = "form"
+detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
-kappa = "3aa0e244c239c93eb2b2e26f066413768d9119f00d472526ae744327411604ca"
+kappa = "928fa0c467ad9c330bfd53168781dab41014da059401803302febc2285363e3e"
 function = "verdant_tensor::prism_kernel::sNine"
-reason = "arithmetic"
-detail = "integer operator << wraps or panics depending on the build profile"
+reason = "form"
+detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
 kappa = "a49cabca5a260ee3f547ffc99f895bc3b359086d4bb900fd7ffedad772af0c89"
@@ -6624,10 +6596,10 @@ reason = "arithmetic"
 detail = "integer operator << wraps or panics depending on the build profile"
 
 [[residue]]
-kappa = "27f1a7f8cd49329933602c6032f37a6c7a28bdddd1e4c5b38a6fdd6800e8e845"
+kappa = "7993e4313917f5ca575bb7c183a7a61acb708e279ebe9571b58e328531a09c2c"
 function = "verdant_tensor::prism_kernel::sNinety"
-reason = "arithmetic"
-detail = "integer operator << wraps or panics depending on the build profile"
+reason = "form"
+detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
 kappa = "a4f6061afc4dfff8d3ae688585a35c55bfaecfe87727aacc19a19b0184cefad3"
@@ -6660,16 +6632,16 @@ reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
-kappa = "239b81ea1b4e2feb70f579a0bec208a432a02ac676de1d04b2c6f9b211e3c94c"
+kappa = "3ce1b076950e62a8ca35fc915016d1a4cf8799729cf831f1606c5d2968eeebbc"
 function = "verdant_tensor::prism_kernel::sSeventyTwo"
 reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
-kappa = "abe0ad2364ae1881bd823e028194044297e7bc44b708582402b2c7cbfcb12550"
+kappa = "9477d5d7ed1077eda776369f0295d5d41e6119a12392cb78178c8f89bfc3bf85"
 function = "verdant_tensor::prism_kernel::sSix"
-reason = "arithmetic"
-detail = "integer operator << wraps or panics depending on the build profile"
+reason = "form"
+detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
 kappa = "2a56958af1eaa1fc1759f71f24bc50a7cf6ce98ba184a8cf733359bdcb484542"
@@ -6690,19 +6662,19 @@ reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
-kappa = "b0c4fce3cbca1458a301759ae522a1af63b9cb7857e0b50832d0e8349c292528"
+kappa = "8fac171ee19a3bfc88182aa87f2edd058ca15387d2cadd89d264a2201f69e5fb"
 function = "verdant_tensor::prism_kernel::sTen"
-reason = "arithmetic"
-detail = "integer operator << wraps or panics depending on the build profile"
+reason = "form"
+detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
-kappa = "650223dc98492facdc766786326ded960fb75186b40167d5013dfcba096dbcd7"
+kappa = "f20fe9e7be67dcf1c3e246d54fc8def66cb8eb3053d5e98fd1e78f271271d828"
 function = "verdant_tensor::prism_kernel::sThirty"
-reason = "arithmetic"
-detail = "integer operator << wraps or panics depending on the build profile"
+reason = "form"
+detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
-kappa = "e63318e27ea6d2871f42adcb3272e18f1647a8d5c1abe7567f9c80448f91d26a"
+kappa = "a02d680c3607f91e7fd358c83e28c7ea4138c570ea558f5374d64f554038737d"
 function = "verdant_tensor::prism_kernel::sThirtyEight"
 reason = "arithmetic"
 detail = "integer operator << wraps or panics depending on the build profile"
@@ -6714,10 +6686,10 @@ reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
-kappa = "25e932d1d907b0e8c6ac25e9c7a691eb1c087c393268d74d1f09344cd3c5cc20"
+kappa = "792bb7185833c7e87c1b05a4d27a44ae033d332c77c24740a7c9d506637a429c"
 function = "verdant_tensor::prism_kernel::sThirtyFour"
-reason = "arithmetic"
-detail = "integer operator << wraps or panics depending on the build profile"
+reason = "form"
+detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
 kappa = "69965c6898430e4172e3a2d0bb9c440760e7c83a76df07760c6018c14918e0fa"
@@ -6738,22 +6710,16 @@ reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
-kappa = "297c55c9a52809da32aa21d99929681e722d4c43643229aed62e646a8be94779"
-function = "verdant_tensor::prism_kernel::sThree"
-reason = "arithmetic"
-detail = "integer operator << wraps or panics depending on the build profile"
-
-[[residue]]
-kappa = "123e463d41be1bc8123fc18f24548f98fecaa0bdbf0cb087a9ea9539bff961dd"
+kappa = "2e47018171f8ae70205a87556dcab063b968f3af0c9fdf1b8dc234d5034ab46e"
 function = "verdant_tensor::prism_kernel::sTwelve"
-reason = "arithmetic"
-detail = "integer operator << wraps or panics depending on the build profile"
+reason = "form"
+detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
-kappa = "bdba74d299309760efebdafadcfae6659652e4c893679aa6946597ea2c1bd6c8"
+kappa = "e3230a277a7535dc59d7533ad2f3ebc26c02fafed9479ea81cf8344257d9dae3"
 function = "verdant_tensor::prism_kernel::sTwenty"
-reason = "arithmetic"
-detail = "integer operator << wraps or panics depending on the build profile"
+reason = "form"
+detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
 kappa = "6fe4f1908f051421c813775e95d758f682814abb499fc180a60f47692cc3336e"
@@ -6762,22 +6728,22 @@ reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
-kappa = "1b7e9ac16c1bd741a1eafeae7cb8b7ab77576dd5443f63f57f5d15bbfbdb082f"
+kappa = "0eccfcff153ca32adffe5a9ebf73e754100706d4ac0f49c9d241f17bbdb50220"
 function = "verdant_tensor::prism_kernel::sTwentyFour"
-reason = "arithmetic"
-detail = "integer operator << wraps or panics depending on the build profile"
+reason = "form"
+detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
-kappa = "b9cc43afcbfca5b2f2bc45c6d281a5368e2590f340ee967ccf1aadaf2d8b9962"
+kappa = "9b4dac5728752547a5fdd6ac045c9ea0101f6bd55f5de5f79749163c39833432"
 function = "verdant_tensor::prism_kernel::sTwentySeven"
-reason = "arithmetic"
-detail = "integer operator << wraps or panics depending on the build profile"
+reason = "form"
+detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
-kappa = "b8e749bc68a993339d56594a71511c3687a83eb3dfee64ac6ecaac8bff1f89aa"
+kappa = "02eaec80b1551a396f459a3a7d643c8530f0cfffd4bac830a75a7bfd1bf34044"
 function = "verdant_tensor::prism_kernel::sTwentySix"
-reason = "arithmetic"
-detail = "integer operator << wraps or panics depending on the build profile"
+reason = "form"
+detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
 kappa = "0c0283119ac53ae92e91d2a217f1dc8558a3f9b7425380e995f8d5fa80bf718c"
@@ -6786,22 +6752,16 @@ reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
-kappa = "89f92f8a1a64ad55d73eecaf98500ee916c1ed3ee19b7bbd1b938f813e1e022b"
+kappa = "52c390a822478541f459a88fb45294c2c455be8d7d26204426ad5a2aeb5e24de"
 function = "verdant_tensor::prism_kernel::sTwentyTwo"
-reason = "arithmetic"
-detail = "integer operator << wraps or panics depending on the build profile"
+reason = "form"
+detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
-kappa = "3c017b07068ee2bb207caed92b08553cc830a80a26674d16b2e9f514f3b3fa4a"
-function = "verdant_tensor::prism_kernel::sTwo"
-reason = "arithmetic"
-detail = "integer operator << wraps or panics depending on the build profile"
-
-[[residue]]
-kappa = "d2cba1b79888feb3c4f52b0f57056f29c477e0e36ea58d0892edac2734b5c0bd"
+kappa = "e7bda88bb51b4c8c4acbb545588c1b992afd03ce4d15a413aa50a0855d075870"
 function = "verdant_tensor::prism_kernel::sTwoHundred"
-reason = "arithmetic"
-detail = "integer operator << wraps or panics depending on the build profile"
+reason = "form"
+detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
 kappa = "338328b51651dbf225714da2cf9645affceded33314193b4dbdcdbb69d47295e"
@@ -6834,13 +6794,13 @@ reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
-kappa = "50b349955ec45035170930d18d56ee001a4075f31d2499cf35ada7d6cd09490d"
+kappa = "0212504948b454e50125c4c4d084f270cf02d548f2a42a65946c4d055ea45811"
 function = "verdant_tensor::prism_kernel::sceneNodePresetByIndex"
 reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
-kappa = "dc868df71c53a2ed05e956f9333f0a79fca0689d964802ad03ce73e5e49cecbe"
+kappa = "7dfebd2eac3fb79c0b51ad9eb18d27320513a76a9e3d2e9728d46e974a3165b8"
 function = "verdant_tensor::prism_kernel::sevenTensorKernelsDirect"
 reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
@@ -6852,10 +6812,10 @@ reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
-kappa = "ff897d3bb2f0533734c5c603788cb26e34af987254b69b8ff7e71b72afc596c3"
+kappa = "b36b3fef94fd60bfa03835ce05e53a1203cd5e224e536ff2fa6c9724b5cd4301"
 function = "verdant_tensor::prism_kernel::skinWeightScale"
-reason = "arithmetic"
-detail = "integer operator << wraps or panics depending on the build profile"
+reason = "form"
+detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
 kappa = "46130e576ad7034e1d85079e758d3e0a96733e8a59961e5ffdfd153df726da7d"
@@ -6924,7 +6884,7 @@ reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
-kappa = "67410f9dddf7b95bc53f79efe580132d6198ae5cd4e889247ecc91a08604af66"
+kappa = "a8764b0210da44103bd0b685d0a2664d8e696ee12a3096f2dd5edc55c983a6d8"
 function = "verdant_tensor::prism_kernel::stabilityAndRefinementDirect"
 reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
@@ -6942,7 +6902,7 @@ reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
-kappa = "280d3d50e3772f099d9492eb3599839efe2e5e26835bc331fce3df6b17ceb268"
+kappa = "c883436613d41fd68f3fbec64527ab91c00e13459b7ef243d11869dad0dff11d"
 function = "verdant_tensor::prism_kernel::starterArchetypeValid"
 reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
@@ -6952,18 +6912,6 @@ kappa = "06f7d7fb6a9790ba381742899dd5b75ea32519bac670c2acc59d119f566ca87b"
 function = "verdant_tensor::prism_kernel::stepLifMembraneMilli"
 reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
-
-[[residue]]
-kappa = "11ee0ae1450044c553ce4dd523548572c282e64d590a334040d97416b12631a4"
-function = "verdant_tensor::prism_kernel::stitchFragmentCount"
-reason = "arithmetic"
-detail = "integer operator << wraps or panics depending on the build profile"
-
-[[residue]]
-kappa = "276d17c645e6f69a414677c0a4d56bf7b78dcc8eb0219a342e91326382a65a9b"
-function = "verdant_tensor::prism_kernel::stitchPairRecoverable"
-reason = "arithmetic"
-detail = "integer operator << wraps or panics depending on the build profile"
 
 [[residue]]
 kappa = "33737fdd9c8dd3724a2375cc30acff0f87491f0604fcb8827cc663efdfb25d0b"
@@ -6990,16 +6938,10 @@ reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
-kappa = "9de14da13f75beee761af21fb40d006fb316b543e96390192762f9edfa01169a"
+kappa = "e21c71d727b3d1fcfd6c91ddb98e618d1e65da125e91d92a9c837075294f840c"
 function = "verdant_tensor::prism_kernel::studioSurfaceDirect"
-reason = "arithmetic"
-detail = "integer operator << wraps or panics depending on the build profile"
-
-[[residue]]
-kappa = "34884dcc909319442c3e7cae9e06b785614bdb89dd66bc13062adb22b73ed048"
-function = "verdant_tensor::prism_kernel::studioThemeCount"
-reason = "arithmetic"
-detail = "integer operator << wraps or panics depending on the build profile"
+reason = "form"
+detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
 kappa = "a4219f045899b4014eb189852b94650def0313a08f204593aafa55201736494b"
@@ -7008,13 +6950,13 @@ reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
-kappa = "4a8d1bc71788c7d57f625bea1592afc5deb304fd1c708593596bf7e94605390e"
+kappa = "99fae16ba95723fea403c20db2309a4bd95678d775ea14bfd601c4c38178340c"
 function = "verdant_tensor::prism_kernel::surfaceClassFromMaterial"
 reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
-kappa = "aede10470690ffdcba67ff40ae9cb54044928863952a575e00c168153a960cc7"
+kappa = "13a70e3ed3cd770bffc1630e0084abfb6b9c7eb173fd9dbbbfd1893880e69ebb"
 function = "verdant_tensor::prism_kernel::surfaceDifferentiationDirect"
 reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
@@ -7050,7 +6992,7 @@ reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
-kappa = "2f0b94efb5d8f9d4ff32d144221e5aa90fb549771d2f6e9d5c56128a4d27e14b"
+kappa = "9da62a724d65c9d8f323a6e07255396b44f18a977a73c21c4d83c49430ea41a5"
 function = "verdant_tensor::prism_kernel::triadicAgencyPrimeProduct"
 reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
@@ -7068,10 +7010,10 @@ reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
-kappa = "515fb0310fa4ec056a54db0877db31a5ccf27d08686d3e7aa75da1ca8d1c452c"
+kappa = "9bd8a7111664da1dfd2acd2aa7a99a00900e8afaec7dba3aa31d51fdba17e643"
 function = "verdant_tensor::prism_kernel::uiNonTextContrastMinMilli"
-reason = "arithmetic"
-detail = "integer operator << wraps or panics depending on the build profile"
+reason = "form"
+detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
 kappa = "60f5c87cdc2efee83acac0bc45daff40310d94c59be9ac7af4f3ebbf9f3e689a"
@@ -7098,10 +7040,10 @@ reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
-kappa = "07419c4e72a23d37c5c6adc4358180d2d9078390a5208aa087626ffc1f3e6eef"
+kappa = "6edc80d2aa1393f10456e1e19f7b30c4051c6212436a83d19bf7a1259cbcef4d"
 function = "verdant_tensor::prism_kernel::universalUorcRuntimeDirect"
-reason = "arithmetic"
-detail = "integer operator << wraps or panics depending on the build profile"
+reason = "form"
+detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
 kappa = "b9306d2ed1038fd97da7c458debb2026ea46c039e2991dfbac7cebce982e4f66"
@@ -7140,10 +7082,10 @@ reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
-kappa = "b56b95c84d8cdc10e32dec8af5ab393c391c0fbf9be7a648a8aa1dab5d02de3d"
+kappa = "5e80f37b3a0b9b01bce603126e3197d3b19f177d0b40e112226f5f25d6271a80"
 function = "verdant_tensor::prism_kernel::verifyW5HCertificateComplete"
-reason = "arithmetic"
-detail = "integer operator << wraps or panics depending on the build profile"
+reason = "form"
+detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
 kappa = "f4e714ac8f95918ee0a78d13f42885ea575a7650cc9c74399542c344fe3b1cb3"
@@ -7152,7 +7094,7 @@ reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
-kappa = "34dea68bfaea7ff3fecc9eed8aed85ebabfbc329d0ac356fd8e143dca3b89207"
+kappa = "d67991fe0cc88ea3f604f0f8de1f65bb321db32f72ffa889e5689f68c3bb450d"
 function = "verdant_tensor::prism_kernel::wasmBridgeEnvelopeValid"
 reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
@@ -7180,12 +7122,6 @@ kappa = "ededda79d0a82c6fe6a158deb0863729cc639fa4cb3d99b9d2d9b02e4d2539fe"
 function = "verdant_tensor::prism_kernel::wasmIoInitialCapacityBytes"
 reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
-
-[[residue]]
-kappa = "3b1b0f0df219d65d856783e856691d9681b1d65f6ce8f06c21d85defe60c9fec"
-function = "verdant_tensor::prism_kernel::wasmMaxLodRank"
-reason = "arithmetic"
-detail = "integer operator << wraps or panics depending on the build profile"
 
 [[residue]]
 kappa = "8c10a659d71c76754d1badd1518b9550567690b725d8e3fd9f91efaf255c1848"
@@ -7218,25 +7154,13 @@ reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
-kappa = "7c678c43ff7263346cecaad15fafffda5610cfffde8d379528e2a413d2a1119f"
-function = "verdant_tensor::prism_kernel::workerInFlightAdmissible"
-reason = "arithmetic"
-detail = "integer operator << wraps or panics depending on the build profile"
-
-[[residue]]
-kappa = "2a9027e5fbc184e8639a4d9c284586fb71b18ce05f611c737ede7694f9a41f75"
-function = "verdant_tensor::prism_kernel::workerMaxInFlightFrames"
-reason = "arithmetic"
-detail = "integer operator << wraps or panics depending on the build profile"
-
-[[residue]]
 kappa = "624ccc4e82e0086cb9b7ccd4191eb205847c5eca9eb13124fe207d18562d1474"
 function = "verdant_tensor::prism_kernel::workerRpcWatchdogMillis"
 reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
-kappa = "1ecc16f933e69fabe3923a9a45da36077d6d493118b04107d48290202a5b854c"
+kappa = "a2a79aa6c9eb0fa27245f810444c7771fec627fb6c040ea8247c7ae1f9882a0d"
 function = "verdant_tensor::prism_kernel::workloadPerformanceDirect"
 reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
@@ -7246,12 +7170,6 @@ kappa = "a91139b89b1f84dadf0a174f70ce211eb225873aa449db97b5a6f417ecdae9b3"
 function = "verdant_tensor::prism_kernel::xpbdConstraintImpulseMilli"
 reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
-
-[[residue]]
-kappa = "fd1e846c64586cc9e0d9df155cedebe294c4c3cd13e724c1ae9bc591afa35a65"
-function = "verdant_tensor::prism_kernel::xpbdDefaultCompliancePermille"
-reason = "arithmetic"
-detail = "integer operator << wraps or panics depending on the build profile"
 
 [[residue]]
 kappa = "e799feb7813c545402b034bcbf0d53066a67ee9cb53b5f7fb797f7845b956509"
@@ -9032,12 +8950,12 @@ function = "prism_fidelity::collect"
 effect = "Fs effect: std::fs::read_dir"
 
 [[effect]]
-kappa = "8d2af84552527a69bc0cda6583629f4ec96075251b15aed6b2ffb8bac46f53a7"
+kappa = "7b2fd880089f80ea80b12207e8aa3ac7ef9c9e2a828005f418902dddbe26c2c6"
 function = "prism_fidelity::main"
 effect = "Env effect: std::env::args"
 
 [[effect]]
-kappa = "aee91c6809ea5f27f24c9e3422d336905b237c258ff68ba2212dd95471b1bee2"
+kappa = "c051114bc949e839324f24aa5bbca6e7284cafb22402decb42ea6f9a33c64338"
 function = "prism_fidelity::ratchet::audit_parametric_ratchet"
 effect = "Fs effect: std::fs::read_to_string"
 
@@ -9122,7 +9040,7 @@ function = "verdant::main"
 effect = "Env effect: std::env::args"
 
 [[effect]]
-kappa = "7194318db1d7c7fbb97cff1c5b669cd10f0f4ca38345178ec930419080156cea"
+kappa = "4937c6ffd0a874a7ea129b7630b5724cbf8de4afbabd19179c704e2320974a35"
 function = "verdant_cli::run_cli"
 effect = "Fs effect: std::fs::read"
 
@@ -9132,7 +9050,7 @@ function = "verdant_core::governance::KnowledgeProvenanceManager::inspect_repo"
 effect = "Fs effect: std::fs::read_to_string"
 
 [[effect]]
-kappa = "f9fc9873a1ea94c1f23443a3398b7a081f9c2c5fe6bcd8377c6f3c46462247b7"
+kappa = "91eab5f3e0a9eba78bcaf753a0ed87fb3cd89c227893f421d0cc8b2135fb9f25"
 function = "verdant_core::governance::RoadmapKpiManager::evaluate_repo"
 effect = "Fs effect: std::fs::read_to_string"
 
@@ -9187,12 +9105,12 @@ function = "verdant_core::operator::VerdantOperatorChannel::evaluate_observer_ro
 effect = "calls verdant_core::governance::RoadmapKpiManager::evaluate_repo, which performs a Fs effect: std::fs::read_to_string"
 
 [[effect]]
-kappa = "a105e50d3831fb277bd23399d29deca15c2c889c74024b946aff6e8deffe6396"
+kappa = "3d655d0886f2c241ba8904e622f1a6167c59bb28ff337398f4f1ff7f55c1b303"
 function = "verdant_core::operator::VerdantOperatorChannel::execute_autonomous_ratchet_lift"
 effect = "Fs effect: std::fs::read"
 
 [[effect]]
-kappa = "6c8a51599b84e70a0fbad426795d8c6b23886ffbd4fa89a4b03e5cefec338bc3"
+kappa = "5a11409a23c2940ebba303db750f740f858dd0f6ff1f0e6052fd05f70933f33e"
 function = "verdant_core::operator::VerdantOperatorChannel::handle_mcp_jsonrpc_line"
 effect = "Fs effect: std::fs::read"
 
@@ -9237,7 +9155,7 @@ function = "verdant_core::operator::VerdantOperatorChannel::seal_repository_view
 effect = "Fs effect: std::fs::read"
 
 [[effect]]
-kappa = "fa313c8b036a14d0fade58cdd817e0af66770bf82d4010c98d60ea5502a2f4e0"
+kappa = "346a93dca3bd455d5e17a2f05e337f0b0564ddcdc19f711183fcedaac685f811"
 function = "verdant_core::operator::VerdantOperatorChannel::sync_workspace_cargo_version"
 effect = "Fs effect: std::fs::read_to_string"
 
@@ -9255,6 +9173,36 @@ effect = "Fs effect: std::fs::read_to_string"
 kappa = "cdc06fc953d121461dc3cfb3c52cd962db8e34ddbe61565d165a1134d3959e77"
 function = "verdant_core::operator::VerdantOperatorChannel::write_manager_file"
 effect = "Fs effect: std::fs::create_dir_all"
+
+[[effect]]
+kappa = "0c3b6a7acbda69893d5404d89fae28f7c3180a7a589e6fcd84d4db84f7550205"
+function = "verdant_core::ratchet_sync::compute_rust_source_tree_sha256"
+effect = "calls verdant_core::ratchet_sync::walk_suffix, which performs a Fs effect: std::fs::read_dir"
+
+[[effect]]
+kappa = "5a16c303c4444367fc850f812fc5a7843208d87a228cc28a2a79605b303ae17c"
+function = "verdant_core::ratchet_sync::find_uorust_binary"
+effect = "Env effect: std::env::var"
+
+[[effect]]
+kappa = "89eadf9dc27476f9ef2737c7fe7d77857cea025a74c3b37b15fbe3fb35ab1c9a"
+function = "verdant_core::ratchet_sync::maybe_refresh_uorust_frontier"
+effect = "Fs effect: std::fs::read_to_string"
+
+[[effect]]
+kappa = "37bf48cfdd68628b75ea2cd87e1d29acb85299283e199205c169549a5823beea"
+function = "verdant_core::ratchet_sync::measure_live_ratchet_metrics"
+effect = "Fs effect: std::fs::read_to_string"
+
+[[effect]]
+kappa = "4fa7b0bb41fe38284532a3a7abf83b407b4e2009d4f4c7a86ba7e28fe3c4dab8"
+function = "verdant_core::ratchet_sync::tighten_parametric_ratchet_config"
+effect = "Fs effect: std::fs::read_to_string"
+
+[[effect]]
+kappa = "ec0a3eb8dcde3fc620aa99fd7e7d2a239d19190dc830ae2fe9a3aa1d6be737ba"
+function = "verdant_core::ratchet_sync::walk_suffix"
+effect = "Fs effect: std::fs::read_dir"
 
 [[effect]]
 kappa = "3ab6d83df436c6f5249b3b668c9f39029b215eeba0abf8520ead61309a1f5faf"
@@ -9657,7 +9605,7 @@ function = "verdant_core::observer::StakeholderRoleKind::workspace_slug"
 definition = "Behavior::stakeholderRoleKindWorkspaceSlug"
 
 [[lifted]]
-kappa = "3589f091180184b51c0523c5fed18df3be0ad97946a1d372070075966339fa99"
+kappa = "786326fbf754447c43222c1ca7c958d83fb4d3e2a1dbc73924b2fc9fa2437383"
 function = "verdant_core::operator::AutonomousRatchetLiftOptions::default"
 definition = "Behavior::autonomousRatchetLiftOptionsDefaultDefault"
 
@@ -9665,6 +9613,21 @@ definition = "Behavior::autonomousRatchetLiftOptionsDefaultDefault"
 kappa = "9d5e44a9e7caefd11bccde33c1e070e627d6f866d9183348d7d0582c1399ae8a"
 function = "verdant_core::operator::default_operator_prism_id"
 definition = "Behavior::defaultOperatorPrismId"
+
+[[lifted]]
+kappa = "ad7445b7e9947f2361ea4923c7cce66021c8c3c71acbd2a559c5cf8bf77c3451"
+function = "verdant_core::operator::default_true_flag"
+definition = "Behavior::defaultTrueFlag"
+
+[[lifted]]
+kappa = "f2e2e443be079e66288169e31a14286ec81bf34ed988185c6186ea7aa4639622"
+function = "verdant_core::ratchet_sync::parse_toml_string"
+definition = "Behavior::parseTomlString"
+
+[[lifted]]
+kappa = "ccfe82c5c0691e32b48ef11cd1dff7632f2324942778d795ef119d87d4738137"
+function = "verdant_core::ratchet_sync::parse_toml_u64"
+definition = "Behavior::parseTomlU64"
 
 [[lifted]]
 kappa = "02264385351ffa85585e5f3f6fa480059809dd5fc8e166621e37d71e300e2b99"
@@ -9807,9 +9770,19 @@ function = "verdant_tensor::memory::PagedTensorArena::resident_payload"
 definition = "Behavior::pagedTensorArenaResidentPayload"
 
 [[lifted]]
+kappa = "7f1252931b8168b3483599c31fe9ed66505e8da059fcfad0d9824bd87e4658dd"
+function = "verdant_tensor::memory::TensorStorageEncoding::compression_factor"
+definition = "Behavior::tensorStorageEncodingCompressionFactor"
+
+[[lifted]]
 kappa = "b2aa4cb865d902a3b2b1abe9ca6b0e9c99a3d5f5511e857c28349d5bda3043ef"
 function = "verdant_tensor::prism_kernel::__prod_borrowed_byteLength"
 definition = "Behavior::prodBorrowedByteLength"
+
+[[lifted]]
+kappa = "797522bed8ff40e08ab0ffdddca053dc90f30080d08364be3da618bd2657aa83"
+function = "verdant_tensor::prism_kernel::audioStereoChannels"
+definition = "Behavior::audioStereoChannels"
 
 [[lifted]]
 kappa = "93e18c71e6ddd42b42134242dc6798be2ff4f5406c7f2e9ee845a0eb02948abb"
@@ -9820,6 +9793,11 @@ definition = "Behavior::baumgarteBetaNumer"
 kappa = "f27b63b13c3fe721c57c3ea7310f313fbf132d454716c989e4aedad62afd89c8"
 function = "verdant_tensor::prism_kernel::byteLength"
 definition = "Behavior::byteLength"
+
+[[lifted]]
+kappa = "198def94189c326becfe1c100766f6d321ad90a608a07debdf836f6619b5f2be"
+function = "verdant_tensor::prism_kernel::ccdSkinMarginMilli"
+definition = "Behavior::ccdSkinMarginMilli"
 
 [[lifted]]
 kappa = "1de4544384309e7441ecd5917e978d96009f2775d77c244aa569d9072618bceb"
@@ -9837,6 +9815,11 @@ function = "verdant_tensor::prism_kernel::containerOrganAllowed"
 definition = "Behavior::containerOrganAllowed"
 
 [[lifted]]
+kappa = "f2bfb9ac7411bcda24e76651ac6a3d880390a97f93bf84f72097b8a4439909b8"
+function = "verdant_tensor::prism_kernel::dampedExteriorAbsorptionNumer"
+definition = "Behavior::dampedExteriorAbsorptionNumer"
+
+[[lifted]]
 kappa = "f47e499711f9739ecbb620d6473fb4e35c0628917a07db43eae0b28d48087282"
 function = "verdant_tensor::prism_kernel::dmnModelRouteAdmitted"
 definition = "Behavior::dmnModelRouteAdmitted"
@@ -9850,6 +9833,11 @@ definition = "Behavior::dynamicStreamCapacityValid"
 kappa = "794d97ec73e66573a1b2262c03ffa1d3db5ab0fcd7bf6014f6c0fa40f38b8dc8"
 function = "verdant_tensor::prism_kernel::epochElisionAdmissible"
 definition = "Behavior::epochElisionAdmissible"
+
+[[lifted]]
+kappa = "2e695dadcdef73217d7871bef19bccf93bd099470d3ac89eebdd8958be6ce944"
+function = "verdant_tensor::prism_kernel::eulerBernoulliModeDenom"
+definition = "Behavior::eulerBernoulliModeDenom"
 
 [[lifted]]
 kappa = "a88a4f35df692f14e9905f1829ac7771ed89d2f85a8dd03dde68b73b73f60617"
@@ -9872,6 +9860,11 @@ function = "verdant_tensor::prism_kernel::inputJournalSequenceValid"
 definition = "Behavior::inputJournalSequenceValid"
 
 [[lifted]]
+kappa = "86c7ad6fdaa0b8039375d7810f4ffdff69acabc604a3d1f94086fab0ef448a1e"
+function = "verdant_tensor::prism_kernel::isoRequestActCode"
+definition = "Behavior::isoRequestActCode"
+
+[[lifted]]
 kappa = "ec629e9e8a172eadb03d5ef3baf5878cbbf1d079f63734678ffc6baf7ca4bd6f"
 function = "verdant_tensor::prism_kernel::jointHierarchyAcyclic"
 definition = "Behavior::jointHierarchyAcyclic"
@@ -9885,6 +9878,21 @@ definition = "Behavior::liveDocEmbedAdmissible"
 kappa = "19a31e4d38d520505a37229e5370f8c68bb1fade66b60d810e20049e8de3014a"
 function = "verdant_tensor::prism_kernel::maxNatPair"
 definition = "Behavior::maxNatPair"
+
+[[lifted]]
+kappa = "da703bc9aff609604ff0d05b735256f30f171cf2d4633d76486d16ac8fa23eec"
+function = "verdant_tensor::prism_kernel::meshTopologyValid"
+definition = "Behavior::meshTopologyValid"
+
+[[lifted]]
+kappa = "9fb5ac3db704de63a1611f9bc6ad3c2144726d8282cca154b46aa20a1dfeb054"
+function = "verdant_tensor::prism_kernel::natThree"
+definition = "Behavior::natThree"
+
+[[lifted]]
+kappa = "09f7844645fec2f9ae8c520085125a4d87b0ae77aff2a05b9a8a1acabccf940a"
+function = "verdant_tensor::prism_kernel::natTwo"
+definition = "Behavior::natTwo"
 
 [[lifted]]
 kappa = "3aefc5b1d1d725cd617f1a3bc66f8167236f8ebfef0198a283fb70ddf9a6333f"
@@ -9902,6 +9910,16 @@ function = "verdant_tensor::prism_kernel::reflectiveRoomAbsorptionNumer"
 definition = "Behavior::reflectiveRoomAbsorptionNumer"
 
 [[lifted]]
+kappa = "d327ca30b623ace082948b6d99d147cf30c9fbeac70ca13e11d515b0a287e0bf"
+function = "verdant_tensor::prism_kernel::sThree"
+definition = "Behavior::sThree"
+
+[[lifted]]
+kappa = "c81183ba1ea5ed3ba417974f442c8c9414096af8c21870791163badf6cc5b0fd"
+function = "verdant_tensor::prism_kernel::sTwo"
+definition = "Behavior::sTwo"
+
+[[lifted]]
 kappa = "f3ab426d3189aea43c12121dff64f0b04f89ab98c84110d8658676c520e025f0"
 function = "verdant_tensor::prism_kernel::shadingDetailFadeContinuous"
 definition = "Behavior::shadingDetailFadeContinuous"
@@ -9917,9 +9935,24 @@ function = "verdant_tensor::prism_kernel::snapshotVersionByte"
 definition = "Behavior::snapshotVersionByte"
 
 [[lifted]]
+kappa = "f97c6bce164a12cbb5f7ac90cc8ea8d74c75b951c50b4c65e84092690e3f8461"
+function = "verdant_tensor::prism_kernel::stitchFragmentCount"
+definition = "Behavior::stitchFragmentCount"
+
+[[lifted]]
+kappa = "3cc010ade91fd4ec44161bdcc794d3ed1de946072a86164217294de0037e22d0"
+function = "verdant_tensor::prism_kernel::stitchPairRecoverable"
+definition = "Behavior::stitchPairRecoverable"
+
+[[lifted]]
 kappa = "01df73149abfc815217ffc6d9b8b49cdddffb01e372236483d27e6372b88fa06"
 function = "verdant_tensor::prism_kernel::stitchXorBit"
 definition = "Behavior::stitchXorBit"
+
+[[lifted]]
+kappa = "edda3da31d7b12f6b88db51be46a57834fac13188e9d413447040514db770e74"
+function = "verdant_tensor::prism_kernel::studioThemeCount"
+definition = "Behavior::studioThemeCount"
 
 [[lifted]]
 kappa = "2f993531619f46fd5fc383904340ce5c3b75c0a88bbf9d1a88879270f036c885"
@@ -9952,9 +9985,134 @@ function = "verdant_tensor::prism_kernel::uorcTransportMandatory"
 definition = "Behavior::uorcTransportMandatory"
 
 [[lifted]]
+kappa = "e0a66d5fd7d386306bddfe2b30c57ff7507ce9587af798ce3c74a44e532d17ca"
+function = "verdant_tensor::prism_kernel::wasmMaxLodRank"
+definition = "Behavior::wasmMaxLodRank"
+
+[[lifted]]
 kappa = "ef090556d6b392992dfacea793376bcba21c3e392b1af8002328bc5ad8cfe531"
 function = "verdant_tensor::prism_kernel::watchdogWithinBound"
 definition = "Behavior::watchdogWithinBound"
+
+[[lifted]]
+kappa = "a8fa806f117a8ada0be2cc7bf2fdb3754c7a2be49132652b1303517f99478b46"
+function = "verdant_tensor::prism_kernel::workerInFlightAdmissible"
+definition = "Behavior::workerInFlightAdmissible"
+
+[[lifted]]
+kappa = "dee79f509892329540aac98f2b7ab66ad283c2df08e0561abd80f0a851ec1781"
+function = "verdant_tensor::prism_kernel::workerMaxInFlightFrames"
+definition = "Behavior::workerMaxInFlightFrames"
+
+[[lifted]]
+kappa = "33440de2dc4d44494c39ab0d1936465ee9999cd6dc788346eb5f04847a8217bc"
+function = "verdant_tensor::prism_kernel::xpbdDefaultCompliancePermille"
+definition = "Behavior::xpbdDefaultCompliancePermille"
+
+[[lifted]]
+kappa = "27726a751ad066199e6e49f842352f330c08d8289e428d5a6d9f775455e4c335"
+function = "verdant_tensor::scalars::eight_u32"
+definition = "Behavior::eightU32"
+
+[[lifted]]
+kappa = "c48dd2d296c3e31f058bf6e08ba0c3167dde790a832994fddb07252ea6f7376a"
+function = "verdant_tensor::scalars::eight_u64"
+definition = "Behavior::eightU64"
+
+[[lifted]]
+kappa = "826067590486deb61b43f379fb2ea63078874c97d508d3731c45662f66c48945"
+function = "verdant_tensor::scalars::eight_u8"
+definition = "Behavior::eightU8"
+
+[[lifted]]
+kappa = "f7cb30396fafe301e4c182278dda4e5daedaae2098692c3ab7dc0243b6a901cc"
+function = "verdant_tensor::scalars::four_u32"
+definition = "Behavior::verdantTensorFourU32"
+
+[[lifted]]
+kappa = "afa6a8ca64446c4225c830181cc261ca36543305af100df5c54e6f7a9759a88b"
+function = "verdant_tensor::scalars::four_u64"
+definition = "Behavior::fourU64"
+
+[[lifted]]
+kappa = "331e21f280ac3543fd3592f75e12ae1fe7c461365f346826c592e6dad272c955"
+function = "verdant_tensor::scalars::four_u8"
+definition = "Behavior::fourU8"
+
+[[lifted]]
+kappa = "c0adeb426cce21b4917cfef4bd0cb503e99248b3dbf978ffe5e7f9b71ce3d419"
+function = "verdant_tensor::scalars::hundred_u64"
+definition = "Behavior::verdantTensorHundredU64"
+
+[[lifted]]
+kappa = "3b27723ca75dd08afa1f01516f6168ff4f5efb247defa0661965dbb43642568e"
+function = "verdant_tensor::scalars::sixteen_u32"
+definition = "Behavior::sixteenU32"
+
+[[lifted]]
+kappa = "bf472770028d274d0c119d92403a58c5ea662f1cc45d4012077cac1e44ead007"
+function = "verdant_tensor::scalars::sixteen_u64"
+definition = "Behavior::sixteenU64"
+
+[[lifted]]
+kappa = "12635563f423f67d3ddf453128df86ad262fdb8e48f1072283b44ff768887084"
+function = "verdant_tensor::scalars::sixteen_u8"
+definition = "Behavior::sixteenU8"
+
+[[lifted]]
+kappa = "b1a94e0adecf3713803e5ee0f842d762bd4c5a0928b2a718e9be1515de5e6338"
+function = "verdant_tensor::scalars::sixty_four_u32"
+definition = "Behavior::sixtyFourU32"
+
+[[lifted]]
+kappa = "7a1733f62d44572b541862bf70a7c854a34d099c692ff092e0af7502995e39ad"
+function = "verdant_tensor::scalars::sixty_four_u64"
+definition = "Behavior::sixtyFourU64"
+
+[[lifted]]
+kappa = "4f102461af72fa4f0964e0c7af2e3631fa14a68f32ab31dba4c4abd4b97c3f13"
+function = "verdant_tensor::scalars::sixty_four_u8"
+definition = "Behavior::sixtyFourU8"
+
+[[lifted]]
+kappa = "ec2960228af2647a7052042bd278139a9cee45c87de240757142aa8530fb1fc5"
+function = "verdant_tensor::scalars::ten_u64"
+definition = "Behavior::tenU64"
+
+[[lifted]]
+kappa = "3e450dd598a374c25fed5189e0a3d0d4cd236d176655c02056e702cbe7e5c4b9"
+function = "verdant_tensor::scalars::thirty_two_u32"
+definition = "Behavior::thirtyTwoU32"
+
+[[lifted]]
+kappa = "ace891d347dd4b80e89354e55212545614b6be676da2dc8ba83b1f9eb509c65f"
+function = "verdant_tensor::scalars::thirty_two_u64"
+definition = "Behavior::thirtyTwoU64"
+
+[[lifted]]
+kappa = "b1a47a4401af2786f8813146251033f9ca88af4e049042bf6d9d776e6a3084a9"
+function = "verdant_tensor::scalars::thirty_two_u8"
+definition = "Behavior::thirtyTwoU8"
+
+[[lifted]]
+kappa = "07e1bef3b19472766b4507829a3d95a3d54a9f2e972375848d8cd2c0e553254a"
+function = "verdant_tensor::scalars::three_u64"
+definition = "Behavior::threeU64"
+
+[[lifted]]
+kappa = "afaab8ad3e085a2363cc1eaac1f04eb113b62dbd9232f3179f7c06436ea12590"
+function = "verdant_tensor::scalars::two_u32"
+definition = "Behavior::verdantTensorTwoU32"
+
+[[lifted]]
+kappa = "8a4986881f20f93c135e9431f9805b9e17054df9f0ad4d38c2c0ec132779b39d"
+function = "verdant_tensor::scalars::two_u64"
+definition = "Behavior::twoU64"
+
+[[lifted]]
+kappa = "d9bb4bbfe406c37b81ed274cbcf2af58811c7bc8485d63d2019d1c4fadbf2ddc"
+function = "verdant_tensor::scalars::two_u8"
+definition = "Behavior::twoU8"
 
 [[lifted]]
 kappa = "36cc52a34b749eea1cb95f88cbf7bde987f8088abdecee896816a0722f08239c"

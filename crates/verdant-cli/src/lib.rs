@@ -1826,6 +1826,7 @@ pub fn run_cli(args: &[String]) -> Result<String, CliCommandError> {
                     let mut out_dir = std::path::PathBuf::from("dist/stitch-release");
                     let mut write_repo_artifacts = true;
                     let mut update_frame_pin = true;
+                    let mut tighten_ratchet = true;
                     let mut stitch_relays: Vec<String> = Vec::new();
                     let mut adv_major = false;
                     let mut adv_minor = false;
@@ -1850,9 +1851,14 @@ pub fn run_cli(args: &[String]) -> Result<String, CliCommandError> {
                                 update_frame_pin = false;
                                 i += 1;
                             }
+                            "--no-tighten" => {
+                                tighten_ratchet = false;
+                                i += 1;
+                            }
                             "--isolated" => {
                                 write_repo_artifacts = false;
                                 update_frame_pin = false;
+                                tighten_ratchet = false;
                                 i += 1;
                             }
                             "--advance-major" => {
@@ -1889,6 +1895,7 @@ pub fn run_cli(args: &[String]) -> Result<String, CliCommandError> {
                     let opts = verdant_core::operator::AutonomousRatchetLiftOptions {
                         write_repo_artifacts,
                         update_frame_pin,
+                        tighten_ratchet,
                         stitch_relays,
                         advance_signals,
                     };
@@ -1899,7 +1906,7 @@ pub fn run_cli(args: &[String]) -> Result<String, CliCommandError> {
                             diagnostic: e.to_string(),
                         })?;
                     Ok(format!(
-                        "AUTONOMOUS RATCHET LIFT OK: version=v{} epoch={} incremented={} lifted_modules={} unlifted_ws={} unlifted_ui={} blank_frame_bytes={} frame_pin_updated={} capsule={} manifest={}",
+                        "AUTONOMOUS RATCHET LIFT OK: version=v{} epoch={} incremented={} lifted_modules={} unlifted_ws={} unlifted_ui={} blank_frame_bytes={} frame_pin_updated={} tightened={} capsule={} manifest={}",
                         rep.version,
                         rep.release_epoch,
                         rep.version_incremented,
@@ -1908,6 +1915,7 @@ pub fn run_cli(args: &[String]) -> Result<String, CliCommandError> {
                         rep.unlifted_ui_files,
                         rep.blank_frame_bytes,
                         rep.frame_pin_updated,
+                        rep.tightened_ratchet_fields.len(),
                         rep.release_capsule_sha256,
                         rep.manifest_path
                     ))

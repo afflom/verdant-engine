@@ -861,6 +861,10 @@ pub struct AutonomousRatchetLiftOptions {
     /// When `true`, atomically updates `site/frame/frame-pin.json` with the newly verified
     /// quorum-signed `FramePinManifest`.
     pub update_frame_pin: bool,
+    /// When `true` (default), one-way auto-tightens `[frontier_ratchet]` & `[surface_ratchet]`
+    /// watermarks and binds `frontier_rust_tree_sha256` in `model/parametric-ratchet.toml` (`VE-55`).
+    #[serde(default = "default_true_flag")]
+    pub tighten_ratchet: bool,
     /// Optional Stitch relay URLs pinned into `FramePinManifest` (defaults to the versioned
     /// GitHub Pages Stitch shard path when `update_frame_pin` is true, or `./shards` otherwise).
     pub stitch_relays: Vec<String>,
@@ -869,11 +873,16 @@ pub struct AutonomousRatchetLiftOptions {
     pub advance_signals: Option<ObserverProgressSignals>,
 }
 
+fn default_true_flag() -> bool {
+    true
+}
+
 impl Default for AutonomousRatchetLiftOptions {
     fn default() -> Self {
         Self {
             write_repo_artifacts: true,
             update_frame_pin: true,
+            tighten_ratchet: true,
             stitch_relays: Vec::new(),
             advance_signals: None,
         }
@@ -917,6 +926,8 @@ pub struct AutonomousRatchetLiftReport {
     pub release_verification_summary: String,
     /// True iff `site/frame/frame-pin.json` was updated.
     pub frame_pin_updated: bool,
+    /// Ratchet watermarks automatically tightened (clicked UP/DOWN) during this self-lift (`VE-55`).
+    pub tightened_ratchet_fields: Vec<String>,
     /// Path where the canonical `self-host-ratchet-manifest.toml` was emitted.
     pub manifest_path: String,
 }
@@ -4589,6 +4600,29 @@ body[data-studio-focus="publish"] #studio-publish-pane {
             )?;
             frame_pin_updated = true;
         }
+        let mut tightened_ratchet_fields = Vec::new();
+        if opts.write_repo_artifacts && opts.tighten_ratchet {
+            let live_metrics =
+                crate::ratchet_sync::measure_live_ratchet_metrics(repo_root, pin.capsule_byte_len)?;
+            tightened_ratchet_fields = crate::ratchet_sync::tighten_parametric_ratchet_config(
+                repo_root,
+                &live_metrics,
+                true,
+            )?;
+            // Refresh KPI report after tightening so KPI-SURFACE-RATCHET-TIGHT & frontier floor reflect live state:
+            let kpi_rep = self.evaluate_observer_roadmap_kpis(repo_root, true, true)?;
+            if let Ok(kpi_json) = serde_json::to_string_pretty(&kpi_rep) {
+                let _ = Self::write_manager_file(
+                    repo_root,
+                    "mgr-roadmap-strategy",
+                    "site/generated/roadmap-kpi-report.json",
+                    &kpi_json,
+                )?;
+                let comm_kappa = sha256_hex_tagged("ratchet-tighten", version.as_bytes());
+                let _ = self.seal_repository_views(repo_root, &comm_kappa)?;
+            }
+        }
+        let seal = self.verify_immutability_seal(repo_root);
         let blank_frame_bytes = Self::audit_blank_frame_invariants(repo_root)?;
 
         // Collect live SHA-256 of EVERY shipped Rust `.rs`, Prism `.lex.tex`, and canonical UI Viewpoint:
@@ -4720,6 +4754,7 @@ body[data-studio-focus="publish"] #studio-publish-pane {
             blank_frame_bytes,
             release_verification_summary: verification_summary,
             frame_pin_updated,
+            tightened_ratchet_fields,
             manifest_path,
         })
     }
@@ -5523,6 +5558,10 @@ body[data-studio-focus="publish"] #studio-publish-pane {
                             .get("updateFramePin")
                             .and_then(|v| v.as_bool())
                             .unwrap_or(true);
+                        let tighten_ratchet = args
+                            .get("tightenRatchet")
+                            .and_then(|v| v.as_bool())
+                            .unwrap_or(write_repo_artifacts);
                         let stitch_relays: Vec<String> = args
                             .get("stitchRelays")
                             .and_then(|v| v.as_array())
@@ -5565,6 +5604,7 @@ body[data-studio-focus="publish"] #studio-publish-pane {
                         let opts = AutonomousRatchetLiftOptions {
                             write_repo_artifacts,
                             update_frame_pin,
+                            tighten_ratchet,
                             stitch_relays,
                             advance_signals,
                         };

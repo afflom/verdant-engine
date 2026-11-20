@@ -23,6 +23,8 @@ use std::sync::OnceLock;
 
 use serde::{Deserialize, Serialize};
 
+pub mod scalars;
+
 /// Planar coordinate dimension (`1 + 1`).
 pub const DIM_PLANAR: usize = 1 + 1;
 /// Spatial coordinate and triangle vertex arity (`1 + 1 + 1`).
@@ -50,8 +52,8 @@ pub const fn pow2_u64(exp: u32) -> u64 {
     let mut acc = 1_u64;
     let mut i = 0_u32;
     while i < exp {
-        acc <<= 1;
-        i += 1;
+        acc = acc.wrapping_add(acc);
+        i = i.wrapping_add(1_u32);
     }
     acc
 }

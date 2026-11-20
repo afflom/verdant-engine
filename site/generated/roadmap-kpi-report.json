@@ -2,16 +2,16 @@
   "spec": "verdant/observer-roadmap-kpi-report/1",
   "managerId": "mgr-roadmap-strategy",
   "authorityId": "AUTH-SEMVER-CHANGE-KPI",
-  "currentVersion": "2.1.0",
-  "releaseEpoch": 5,
+  "currentVersion": "2.2.0",
+  "releaseEpoch": 6,
   "totalManagers": 13,
   "totalPrismFacetsOwned": 9,
   "totalPrismFacetsRequired": 9,
-  "declaredCapabilitiesCount": 65,
+  "declaredCapabilitiesCount": 66,
   "minorProgressPct": 100,
   "majorProgressPct": 100,
-  "kpiPassedCount": 12,
-  "kpiTotalCount": 12,
+  "kpiPassedCount": 13,
+  "kpiTotalCount": 13,
   "knowledge": {
     "managerId": "mgr-knowledge-provenance",
     "lockedAuthoritiesCount": 10,
@@ -138,7 +138,7 @@
       "name": "uorust MIR-Lifted Rust Functions Floor",
       "unit": "functions",
       "direction": "atLeast",
-      "actual": 136,
+      "actual": 178,
       "target": 136,
       "passed": true,
       "owningManager": "mgr-verification-observatory",
@@ -153,6 +153,17 @@
       "target": 100,
       "passed": true,
       "owningManager": "mgr-change-release",
+      "authority": "AUTH-SEMVER-CHANGE-KPI"
+    },
+    {
+      "kpiId": "KPI-SURFACE-RATCHET-TIGHT",
+      "name": "Autonomous Live-Bound Frontier & Surface High-Water-Mark Ratchet",
+      "unit": "percent",
+      "direction": "atLeast",
+      "actual": 100,
+      "target": 100,
+      "passed": true,
+      "owningManager": "mgr-verification-observatory",
       "authority": "AUTH-SEMVER-CHANGE-KPI"
     }
   ],
@@ -423,6 +434,33 @@
       "progressPct": 100,
       "completed": true,
       "ratchetRequirement": "Constructive Cadence/Release Lean proofs + autonomous green-main release-tag + uorust shrink-only frontier.toml ratchet + 3 CORS-verified shard origins + live Cargo sparse registry & cross-browser ?pin=stitch://<kappa>/studio handoff."
+    },
+    {
+      "milestoneId": "M10",
+      "targetVersion": "2.2.0",
+      "tier": "minor",
+      "title": "Self-Tightening Autonomous Ratchet, Live Frontier Source Binding, Surface Weight/LOC Ceilings & FI-08/uorust Scalar Harmony",
+      "stakeholders": [
+        "systems-engineer",
+        "developer",
+        "operator",
+        "auditor"
+      ],
+      "owningManagers": [
+        "mgr-verification-observatory",
+        "mgr-change-release",
+        "mgr-runtime-stage"
+      ],
+      "requiredCapabilities": [
+        "VE-55"
+      ],
+      "closedCapabilities": [
+        "VE-55"
+      ],
+      "missingCapabilities": [],
+      "progressPct": 100,
+      "completed": true,
+      "ratchetRequirement": "frontier_rust_tree_sha256 live binding + one-way auto-tightening --tighten + [surface_ratchet] Wasm/capsule/god-file ceilings + lifted scalars.rs + single-command npm run ratchet."
     }
   ],
   "observerParts": [
@@ -560,7 +598,7 @@
         "stratum-4-quality-measures-fidelity"
       ],
       "ownedObserverParts": [],
-      "ownedFilesCount": 13,
+      "ownedFilesCount": 14,
       "active": true
     },
     {
@@ -578,7 +616,7 @@
     "governingAuthority": "AUTH-SEMVER-CHANGE-KPI",
     "currentVersion": {
       "major": 2,
-      "minor": 1,
+      "minor": 2,
       "patch": 0
     },
     "recommendedBump": "major",
@@ -587,8 +625,8 @@
       "minor": 0,
       "patch": 0
     },
-    "currentEpoch": 5,
-    "nextEpoch": 6,
+    "currentEpoch": 6,
+    "nextEpoch": 7,
     "versionIncremented": true,
     "gates": {
       "ratchetApplied": true,
@@ -599,6 +637,6 @@
       "pullThroughVerified": true
     },
     "blockingReasons": [],
-    "rationale": "Ratchet applied & 5/5 Release Gates passed: advancing v2.1.0 -> v3.0.0 (Major, epoch 6) — Observer roadmap evaluation: minor=100% major=100% managers=13"
+    "rationale": "Ratchet applied & 5/5 Release Gates passed: advancing v2.2.0 -> v3.0.0 (Major, epoch 7) — Observer roadmap evaluation: minor=100% major=100% managers=13"
   }
 }

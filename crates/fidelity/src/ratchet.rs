@@ -60,6 +60,9 @@ pub struct ParametricRatchetConfig {
     /// Shrink-only hand-written Rust surface ratchet backed by `uorust` `frontier.toml` (`VE-53`).
     #[serde(default)]
     pub frontier_ratchet: Option<FrontierRatchetConfig>,
+    /// Monotonic high-water-mark ratchet for Wasm size, `.holo` capsule weight, and max file LOC (`VE-55`).
+    #[serde(default)]
+    pub surface_ratchet: Option<SurfaceRatchetConfig>,
     /// Complete mapping of every `app/src/**/*.lex.tex` module to its causal Stratum `0..=7`.
     #[serde(rename = "stratum_module")]
     pub stratum_modules: Vec<StratumModuleEntry>,
@@ -71,12 +74,46 @@ pub struct ParametricRatchetConfig {
 pub struct FrontierRatchetConfig {
     /// Repository-relative path to the `uorust` lift register (`frontier.toml`).
     pub frontier_register: String,
+    /// Optional deterministic SHA-256 of the shipped Rust source tree binding `frontier.toml` live (`VE-55`).
+    #[serde(default)]
+    pub frontier_rust_tree_sha256: Option<String>,
     /// Floor on MIR-lifted functions (can only stay flat or grow).
     pub min_lifted_functions: usize,
     /// Ceiling on hand-written residue functions (shrink-only).
     pub max_residue_functions: usize,
     /// Ceiling on total uncertified (`residue + foreign + effect`) functions (shrink-only).
     pub max_uncertified_functions: usize,
+}
+
+/// Monotonic high-water-mark ratchet guarding real architectural decay vectors (`VE-55`).
+#[derive(Clone, Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct SurfaceRatchetConfig {
+    /// Relative path to core browser Wasm binary (`site/verdant-wasm.wasm`).
+    pub wasm_core_path: String,
+    /// Maximum allowed byte size of `wasm_core_path`.
+    pub max_wasm_core_bytes: usize,
+    /// Relative path to full UORC Wasm binary (`site/verdant-uorc.wasm`).
+    pub wasm_uorc_path: String,
+    /// Maximum allowed byte size of `wasm_uorc_path`.
+    pub max_wasm_uorc_bytes: usize,
+    /// Relative path to Blank Frame pin manifest (`site/frame/frame-pin.json`) recording `capsuleByteLen`.
+    pub frame_pin_path: String,
+    /// Maximum allowed byte size of the lifted `.holo` release capsule.
+    pub max_release_capsule_bytes: usize,
+    /// Maximum allowed line count of any hand-written shipped `.rs` file.
+    pub max_handwritten_rust_file_lines: usize,
+    /// Generated `.rs` paths excluded from the hand-written Rust file line ceiling.
+    #[serde(default)]
+    pub rust_line_exclude: Vec<String>,
+    /// Relative JS surface roots audited for maximum file line count (`["site"]`).
+    #[serde(default)]
+    pub js_surface_roots: Vec<String>,
+    /// Relative path prefixes excluded from JS line-count checks (`["site/vendor/", "site/crates/"]`).
+    #[serde(default)]
+    pub js_line_exclude_prefixes: Vec<String>,
+    /// Maximum allowed line count of any shipped `.mjs`/`.js` file.
+    pub max_js_file_lines: usize,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -255,6 +292,16 @@ pub struct RatchetReport {
     pub frontier_residue_functions: usize,
     /// Total uncertified (`residue + foreign + effect`) functions in `frontier.toml`.
     pub frontier_uncertified_functions: usize,
+    /// Observed byte weight of `site/verdant-wasm.wasm` (`0` if surface_ratchet unconfigured).
+    pub observed_wasm_core_bytes: usize,
+    /// Observed byte weight of `site/verdant-uorc.wasm`.
+    pub observed_wasm_uorc_bytes: usize,
+    /// Observed byte weight of the lifted `.holo` release capsule in `frame-pin.json`.
+    pub observed_release_capsule_bytes: usize,
+    /// Observed max line count across hand-written shipped `.rs` files.
+    pub observed_max_rust_file_lines: usize,
+    /// Observed max line count across shipped `.mjs`/`.js` files.
+    pub observed_max_js_file_lines: usize,
 }
 
 /// Audits the repository against `config_rel` and fails closed on any violation or weakened ceiling.
@@ -813,6 +860,166 @@ pub fn audit_parametric_ratchet(
                 ),
             });
         }
+        if let Some(expected_tree_sha) = &fr.frontier_rust_tree_sha256 {
+            let trimmed_sha = expected_tree_sha.trim();
+            if !trimmed_sha.is_empty() {
+                let mut tree_hasher = Sha256::new();
+                for full in &rust_files {
+                    let rel = rel_slash(repo, full);
+                    let bytes =
+                        std::fs::read(full).map_err(|e| FidelityError::Io(full.clone(), e))?;
+                    tree_hasher.update(rel.as_bytes());
+                    tree_hasher.update([0_u8]);
+                    tree_hasher.update(&bytes);
+                    tree_hasher.update([0_u8]);
+                }
+                let live_tree_sha =
+                    tree_hasher
+                        .finalize()
+                        .iter()
+                        .fold(String::with_capacity(64), |mut s, b| {
+                            let _ = write!(s, "{b:02x}");
+                            s
+                        });
+                if trimmed_sha != live_tree_sha {
+                    violations.push(RatchetViolation {
+                        path: fr.frontier_register.clone(),
+                        line: 0,
+                        detail: format!(
+                            "frontier.toml is stale against live Rust source tree (recorded {} != live {}; run `npm run ratchet`)",
+                            &trimmed_sha[..16.min(trimmed_sha.len())],
+                            &live_tree_sha[..16]
+                        ),
+                    });
+                }
+            }
+        }
+    }
+
+    // 7. Audit Surface High-Water-Mark Ratchet (`[surface_ratchet]`, VE-55):
+    let mut observed_wasm_core_bytes = 0usize;
+    let mut observed_wasm_uorc_bytes = 0usize;
+    let mut observed_release_capsule_bytes = 0usize;
+    let mut observed_max_rust_file_lines = 0usize;
+    let mut observed_max_js_file_lines = 0usize;
+    if let Some(sr) = &cfg.surface_ratchet {
+        let core_full = repo.join(&sr.wasm_core_path);
+        observed_wasm_core_bytes = std::fs::metadata(&core_full)
+            .map_err(|e| FidelityError::Io(core_full.clone(), e))?
+            .len() as usize;
+        if observed_wasm_core_bytes > sr.max_wasm_core_bytes {
+            violations.push(RatchetViolation {
+                path: sr.wasm_core_path.clone(),
+                line: 0,
+                detail: format!(
+                    "core Wasm grew past ratchet watermark: {} B > {} B",
+                    observed_wasm_core_bytes, sr.max_wasm_core_bytes
+                ),
+            });
+        }
+
+        let uorc_full = repo.join(&sr.wasm_uorc_path);
+        observed_wasm_uorc_bytes = std::fs::metadata(&uorc_full)
+            .map_err(|e| FidelityError::Io(uorc_full.clone(), e))?
+            .len() as usize;
+        if observed_wasm_uorc_bytes > sr.max_wasm_uorc_bytes {
+            violations.push(RatchetViolation {
+                path: sr.wasm_uorc_path.clone(),
+                line: 0,
+                detail: format!(
+                    "UORC Wasm grew past ratchet watermark: {} B > {} B",
+                    observed_wasm_uorc_bytes, sr.max_wasm_uorc_bytes
+                ),
+            });
+        }
+
+        let pin_full = repo.join(&sr.frame_pin_path);
+        let pin_raw = std::fs::read_to_string(&pin_full)
+            .map_err(|e| FidelityError::Io(pin_full.clone(), e))?;
+        for line in pin_raw.lines() {
+            let trimmed = line.trim();
+            if let Some(rest) = trimmed.strip_prefix("\"capsuleByteLen\":") {
+                if let Ok(v) = rest.trim().trim_end_matches(',').parse::<usize>() {
+                    observed_release_capsule_bytes = v;
+                    break;
+                }
+            }
+        }
+        if observed_release_capsule_bytes == 0 {
+            violations.push(RatchetViolation {
+                path: sr.frame_pin_path.clone(),
+                line: 0,
+                detail: "frame-pin.json missing capsuleByteLen".into(),
+            });
+        } else if observed_release_capsule_bytes > sr.max_release_capsule_bytes {
+            violations.push(RatchetViolation {
+                path: sr.frame_pin_path.clone(),
+                line: 0,
+                detail: format!(
+                    "release .holo capsule grew past ratchet watermark: {} B > {} B",
+                    observed_release_capsule_bytes, sr.max_release_capsule_bytes
+                ),
+            });
+        }
+
+        let excl_rs: BTreeSet<String> = sr.rust_line_exclude.iter().cloned().collect();
+        for full in &rust_files {
+            let rel = rel_slash(repo, full);
+            if excl_rs.contains(&rel) {
+                continue;
+            }
+            let text =
+                std::fs::read_to_string(full).map_err(|e| FidelityError::Io(full.clone(), e))?;
+            let lines = text.lines().count();
+            if lines > observed_max_rust_file_lines {
+                observed_max_rust_file_lines = lines;
+            }
+            if lines > sr.max_handwritten_rust_file_lines {
+                violations.push(RatchetViolation {
+                    path: rel,
+                    line: 0,
+                    detail: format!(
+                        "hand-written Rust file grew past god-file ratchet: {lines} lines > {} lines (extract a submodule)",
+                        sr.max_handwritten_rust_file_lines
+                    ),
+                });
+            }
+        }
+
+        let mut js_files = Vec::new();
+        for js_root in &sr.js_surface_roots {
+            let full_root = repo.join(js_root);
+            collect_files_with_suffix(&full_root, ".mjs", &mut js_files)?;
+            collect_files_with_suffix(&full_root, ".js", &mut js_files)?;
+        }
+        js_files.sort();
+        js_files.dedup();
+        for full in &js_files {
+            let rel = rel_slash(repo, full);
+            if sr
+                .js_line_exclude_prefixes
+                .iter()
+                .any(|p| rel.starts_with(p))
+            {
+                continue;
+            }
+            let text =
+                std::fs::read_to_string(full).map_err(|e| FidelityError::Io(full.clone(), e))?;
+            let lines = text.lines().count();
+            if lines > observed_max_js_file_lines {
+                observed_max_js_file_lines = lines;
+            }
+            if lines > sr.max_js_file_lines {
+                violations.push(RatchetViolation {
+                    path: rel,
+                    line: 0,
+                    detail: format!(
+                        "JS file grew past god-file ratchet: {lines} lines > {} lines (extract a module)",
+                        sr.max_js_file_lines
+                    ),
+                });
+            }
+        }
     }
 
     let report = RatchetReport {
@@ -835,6 +1042,11 @@ pub fn audit_parametric_ratchet(
         frontier_lifted_functions,
         frontier_residue_functions,
         frontier_uncertified_functions,
+        observed_wasm_core_bytes,
+        observed_wasm_uorc_bytes,
+        observed_release_capsule_bytes,
+        observed_max_rust_file_lines,
+        observed_max_js_file_lines,
     };
 
     if report.ontology_root_literal_gt_one_count > c.max_ontology_root_literal_gt_one_count

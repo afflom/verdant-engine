@@ -41,7 +41,7 @@ pub const REQUIRED_PRISM_FACETS: &[&str] = &[
 ];
 
 fn hundred_u64() -> u64 {
-    (1u64 << (1 + 1 + 1 + 1 + 1 + 1)) + (1u64 << (1 + 1 + 1 + 1 + 1)) + (1u64 << (1 + 1))
+    verdant_tensor::scalars::hundred_u64()
 }
 
 /// SemVer 2.0.0 version tuple governed by `mgr-change-release`.
@@ -973,6 +973,20 @@ impl RoadmapKpiManager {
             0
         };
 
+        let surface_ratchet_pct =
+            std::fs::read_to_string(repo_root.join("model/parametric-ratchet.toml"))
+                .ok()
+                .is_some_and(|raw| {
+                    raw.contains("[surface_ratchet]")
+                        && raw.contains("frontier_rust_tree_sha256 = \"")
+                        && repo_root.join("scripts/verdant-ratchet.mjs").is_file()
+                });
+        let surface_ratchet_score = if surface_ratchet_pct {
+            hundred_u64()
+        } else {
+            0
+        };
+
         let mut kpis = Vec::with_capacity(cat.kpi_catalog.len());
         for spec in &cat.kpi_catalog {
             let actual = match spec.kpi_id.as_str() {
@@ -994,6 +1008,7 @@ impl RoadmapKpiManager {
                 "KPI-UHD-WORKLOAD-CONTRACT" => uhd_contract_pct,
                 "KPI-UORUST-LIFT-FRONTIER" => frontier_lifted_count,
                 "KPI-SPARSE-REGISTRY-SYNC" => sparse_sync_pct,
+                "KPI-SURFACE-RATCHET-TIGHT" => surface_ratchet_score,
                 _ => 0,
             };
             let passed = if spec.direction == "atMost" {

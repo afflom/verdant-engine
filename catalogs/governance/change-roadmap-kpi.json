@@ -143,6 +143,16 @@
       "requiredCapabilities": ["VE-52", "VE-53", "VE-54"],
       "owningManagers": ["mgr-change-release", "mgr-verification-observatory", "mgr-studio-alm", "mgr-security-trust"],
       "ratchetRequirement": "Constructive Cadence/Release Lean proofs + autonomous green-main release-tag + uorust shrink-only frontier.toml ratchet + 3 CORS-verified shard origins + live Cargo sparse registry & cross-browser ?pin=stitch://<kappa>/studio handoff."
+    },
+    {
+      "milestoneId": "M10",
+      "targetVersion": "2.2.0",
+      "tier": "minor",
+      "title": "Self-Tightening Autonomous Ratchet, Live Frontier Source Binding, Surface Weight/LOC Ceilings & FI-08/uorust Scalar Harmony",
+      "stakeholders": ["systems-engineer", "developer", "operator", "auditor"],
+      "requiredCapabilities": ["VE-55"],
+      "owningManagers": ["mgr-verification-observatory", "mgr-change-release", "mgr-runtime-stage"],
+      "ratchetRequirement": "frontier_rust_tree_sha256 live binding + one-way auto-tightening --tighten + [surface_ratchet] Wasm/capsule/god-file ceilings + lifted scalars.rs + single-command npm run ratchet."
     }
   ],
   "kpiCatalog": [
@@ -252,6 +262,15 @@
       "direction": "atLeast",
       "target": 100,
       "owningManager": "mgr-change-release",
+      "authority": "AUTH-SEMVER-CHANGE-KPI"
+    },
+    {
+      "kpiId": "KPI-SURFACE-RATCHET-TIGHT",
+      "name": "Autonomous Live-Bound Frontier & Surface High-Water-Mark Ratchet",
+      "unit": "percent",
+      "direction": "atLeast",
+      "target": 100,
+      "owningManager": "mgr-verification-observatory",
       "authority": "AUTH-SEMVER-CHANGE-KPI"
     }
   ]

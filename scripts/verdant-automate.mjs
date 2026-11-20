@@ -104,6 +104,7 @@ if (!skipRust) {
     "--out",
     "dist/stitch-release",
     "--no-update-frame-pin",
+    "--no-tighten",
   ]);
 }
 

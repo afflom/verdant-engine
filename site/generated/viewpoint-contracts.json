@@ -632,7 +632,7 @@
     },
     {
       "basisPrime": 107,
-      "kappaHex": "4923b6f90bc433490d48ca830483c6155c877bc0629567e6e83f1491e2f48d0a",
+      "kappaHex": "4295ae27369f150dfadfb66f40b5fd70db8b77455a258e08f939af765cf465d1",
       "spec": {
         "almPhases": [
           "verification",
@@ -669,6 +669,7 @@
           "frontier.toml",
           "site/demo/index.html",
           "site/demo/demo.mjs",
+          "scripts/verdant-ratchet.mjs",
           "scripts/enforce-prism-contracts.mjs",
           "scripts/verify-live-surfaces.mjs"
         ],

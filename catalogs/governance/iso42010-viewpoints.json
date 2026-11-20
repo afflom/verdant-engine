@@ -586,6 +586,7 @@
         "frontier.toml",
         "site/demo/index.html",
         "site/demo/demo.mjs",
+        "scripts/verdant-ratchet.mjs",
         "scripts/enforce-prism-contracts.mjs",
         "scripts/verify-live-surfaces.mjs"
       ],

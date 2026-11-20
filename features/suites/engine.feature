@@ -356,3 +356,9 @@ Feature: engine
     Given site/frame/frame-pin.json, site/frame/frame-boot.mjs, site/studio/studio-page.mjs, scripts/verify-sparse-registry.mjs, and .github/workflows/release-stitch.yml
     When Verdant pins three CORS-verified shard origins, verifies standalone .crate packages over HTTP with real cargo, and hands off a zero-account Studio ?pin=stitch://<kappa>/studio#holo=... link to an isolated browser context
     Then all three origins are distinct HTTPS CORS-enabled relays, Cargo parses the sparse index cleanly, and the isolated browser verifies kappa and mounts the shared 3D app with zero accounts
+
+  @VE-55 @build
+  Scenario: Verdant's ratchet operates autonomously via npm run ratchet and verdant operator ratchet-lift --tighten: binding frontier.toml to live shipped Rust source SHA-256 (frontier_rust_tree_sha256), enforcing monotonic [surface_ratchet] ceilings on Wasm size, .holo capsule weight, and max hand-written Rust/JS file lines, one-way auto-tightening watermarks in model/parametric-ratchet.toml while refusing regressions, and providing lifted wrapping scalar primitives in verdant-tensor::scalars
+    Given model/parametric-ratchet.toml, crates/fidelity/src/ratchet.rs, crates/verdant-core/src/ratchet_sync.rs, crates/verdant-tensor/src/scalars.rs, and scripts/verdant-ratchet.mjs
+    When prism-fidelity audits the live repository, synthetic stale frontier_rust_tree_sha256 or regressed surface watermarks are tested, and verdant operator ratchet-lift runs one-way auto-tightening
+    Then the live repository passes all four ratchet layers with frontier.toml bound to live Rust source SHA-256, lifted scalars satisfy both FI-08 and uorust, and stale frontier hashes or regressed Wasm/capsule/file-line watermarks fail closed

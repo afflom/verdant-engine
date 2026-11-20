@@ -764,7 +764,9 @@ pub fn parse_stitch_deep_link_uri(uri: &str) -> Result<StitchDeepLinkTarget, Sti
         || rest.contains('"')
         || rest.contains('\'')
         || rest.contains('\\')
-        || rest.bytes().any(|b| b < (1u8 << (1 + 1 + 1 + 1 + 1)))
+        || rest
+            .bytes()
+            .any(|b| b < verdant_tensor::scalars::thirty_two_u8())
     {
         return Err(StitchCustodyError::InvalidJournalSignature {
             detail: format!("unsafe characters or traversal in stitch:// URI: `{uri}`"),

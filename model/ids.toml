@@ -438,3 +438,9 @@ id = "VE-54"
 level = "build"
 suite = "engine"
 statement = "Verdant pins three CORS-verified independent Stitch shard origins (GitHub Pages, jsDelivr, and raw.githubusercontent via orphan stitch-mirror), verifies live RFC 2789 Cargo Sparse Registry client fetches and standalone .crate packaging via scripts/verify-sparse-registry.mjs, and delivers zero-account cross-browser ?pin=stitch://<kappa>/studio#holo=... sharing plus live VerdantVcs checkout"
+
+[[id]]
+id = "VE-55"
+level = "build"
+suite = "engine"
+statement = "Verdant's ratchet operates autonomously via npm run ratchet and verdant operator ratchet-lift --tighten: binding frontier.toml to live shipped Rust source SHA-256 (frontier_rust_tree_sha256), enforcing monotonic [surface_ratchet] ceilings on Wasm size, .holo capsule weight, and max hand-written Rust/JS file lines, one-way auto-tightening watermarks in model/parametric-ratchet.toml while refusing regressions, and providing lifted wrapping scalar primitives in verdant-tensor::scalars"

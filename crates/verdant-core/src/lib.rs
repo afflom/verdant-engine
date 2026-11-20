@@ -56,6 +56,7 @@ pub mod network;
 pub mod observer;
 pub mod operator;
 pub mod physics;
+pub mod ratchet_sync;
 pub use verdant_tensor;
 #[doc(hidden)]
 pub use verdant_tensor::prism_kernel;

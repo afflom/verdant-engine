@@ -6511,19 +6511,108 @@ fn engine_ve_54() {
         .join("scripts/verify-sparse-registry.mjs")
         .is_file());
 
-    // 3. Verify Observer Roadmap & KPI Manager reports all 9 milestones (M1..M9) & 12/12 passing KPIs:
+    // 3. Verify Observer Roadmap & KPI Manager reports all milestones (M1..M9+) & 100% passing KPIs:
     let ch = VerdantOperatorChannel::new("sunspire-regatta").expect("operator channel");
     let rep = ch
         .evaluate_observer_roadmap_kpis(&repo_root, true, true)
         .expect("observer roadmap & KPI report");
-    assert_eq!(rep.milestones.len(), 9, "expected Milestones M1..M9");
-    assert_eq!(
-        rep.kpi_total_count, 12,
-        "expected 12 ISO 15939 Observer KPIs"
+    assert!(rep.milestones.len() >= 9, "expected Milestones M1..M9+");
+    assert!(
+        rep.kpi_total_count >= 12,
+        "expected >= 12 ISO 15939 Observer KPIs"
     );
     assert_eq!(
         rep.kpi_passed_count, rep.kpi_total_count,
-        "all 12 Observer KPIs must pass (kpis={:?})",
+        "all Observer KPIs must pass (kpis={:?})",
         rep.kpis
+    );
+}
+
+#[test]
+fn engine_ve_55() {
+    use std::path::Path;
+    use verdant_core::operator::VerdantOperatorChannel;
+    use verdant_core::ratchet_sync::{
+        measure_live_ratchet_metrics, tighten_parametric_ratchet_config,
+    };
+    use verdant_tensor::scalars;
+
+    // 1. Lifted FI-08 + uorust harmonic scalars produce exact values:
+    assert_eq!(scalars::two_u64(), 2);
+    assert_eq!(scalars::four_u64(), 4);
+    assert_eq!(scalars::eight_u64(), 8);
+    assert_eq!(scalars::sixteen_u64(), 16);
+    assert_eq!(scalars::thirty_two_u64(), 32);
+    assert_eq!(scalars::sixty_four_u64(), 64);
+    assert_eq!(scalars::hundred_u64(), 100);
+    assert_eq!(scalars::thirty_two_u8(), 32);
+
+    let repo_root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+
+    // 2. Live repo passes ALL 4 ratchet layers (zero-constants, self-hosting, live-bound frontier, surface watermarks):
+    let rep = prism_fidelity::ratchet::audit_parametric_ratchet(
+        &repo_root,
+        Path::new("model/parametric-ratchet.toml"),
+    )
+    .expect("live repo must pass all 4 ratchet layers");
+    assert!(rep.frontier_lifted_functions >= 150);
+    assert!(rep.observed_wasm_core_bytes > 0);
+    assert!(rep.observed_wasm_uorc_bytes > 0);
+    assert!(rep.observed_release_capsule_bytes > 0);
+    assert!(rep.observed_max_rust_file_lines > 0);
+    assert!(rep.observed_max_js_file_lines > 0);
+
+    // Verify lifted scalars appear in frontier.toml [[lifted]]:
+    let frontier_raw =
+        std::fs::read_to_string(repo_root.join("frontier.toml")).expect("read frontier.toml");
+    assert!(frontier_raw.contains("verdant_tensor::scalars::hundred_u64"));
+    assert!(
+        frontier_raw.contains("verdant_tensor::memory::TensorStorageEncoding::compression_factor")
+    );
+
+    // 3. Negative check 1: stale `frontier_rust_tree_sha256` MUST fail closed!
+    let tmp = std::env::temp_dir().join(format!("verdant-ve55-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&tmp);
+    std::fs::create_dir_all(&tmp).expect("mkdir tmp");
+    let cfg_raw = std::fs::read_to_string(repo_root.join("model/parametric-ratchet.toml"))
+        .expect("read ratchet config");
+    let stale_cfg = cfg_raw.replacen(
+        "frontier_rust_tree_sha256 = \"",
+        "frontier_rust_tree_sha256 = \"0000000000000000000000000000000000000000000000000000000000000000\" # ",
+        1,
+    );
+    let stale_path = tmp.join("stale-frontier-ratchet.toml");
+    std::fs::write(&stale_path, stale_cfg).expect("write stale cfg");
+    assert!(
+        prism_fidelity::ratchet::audit_parametric_ratchet(&repo_root, &stale_path).is_err(),
+        "stale frontier_rust_tree_sha256 MUST fail closed"
+    );
+
+    // 4. Negative check 2: regressed Wasm / surface metric MUST fail closed in one-way tightener!
+    let mut bad_metrics =
+        measure_live_ratchet_metrics(&repo_root, rep.observed_release_capsule_bytes)
+            .expect("measure live metrics");
+    bad_metrics.wasm_uorc_bytes = bad_metrics.wasm_uorc_bytes.saturating_add(1_048_576);
+    assert!(
+        tighten_parametric_ratchet_config(&repo_root, &bad_metrics, false).is_err(),
+        "one-way ratchet tightener MUST refuse regressed Wasm byte weight"
+    );
+    let _ = std::fs::remove_dir_all(&tmp);
+
+    // 5. Observer reports all 10 milestones (M1..M10) and 13/13 passing KPIs:
+    assert!(repo_root.join("scripts/verdant-ratchet.mjs").is_file());
+    let ch = VerdantOperatorChannel::new("sunspire-regatta").expect("operator channel");
+    let kpi_rep = ch
+        .evaluate_observer_roadmap_kpis(&repo_root, true, true)
+        .expect("observer roadmap & KPI report");
+    assert_eq!(kpi_rep.milestones.len(), 10, "expected Milestones M1..M10");
+    assert_eq!(
+        kpi_rep.kpi_total_count, 13,
+        "expected 13 ISO 15939 Observer KPIs"
+    );
+    assert_eq!(
+        kpi_rep.kpi_passed_count, kpi_rep.kpi_total_count,
+        "all 13 Observer KPIs must pass (kpis={:?})",
+        kpi_rep.kpis
     );
 }

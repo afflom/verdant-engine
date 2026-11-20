@@ -75,9 +75,9 @@ impl TensorStorageEncoding {
     pub const fn compression_factor(self) -> u64 {
         match self {
             Self::DenseF32 => 1,
-            Self::QuantizedGrid8 => 1_u64 << (1_u32 + 1_u32),
-            Self::PackedNibble4 => 1_u64 << (1_u32 + 1_u32 + 1_u32),
-            Self::SparseRuns16 => 1_u64 << ((1_u32 + 1_u32) * (1_u32 + 1_u32)),
+            Self::QuantizedGrid8 => crate::scalars::four_u64(),
+            Self::PackedNibble4 => crate::scalars::eight_u64(),
+            Self::SparseRuns16 => crate::scalars::sixteen_u64(),
         }
     }
 }

@@ -28,6 +28,31 @@ function intToZeroOneExpr(n, suffix = "") {
   if (n === 0n) return suffix ? `0_${suffix}` : "0";
   if (n === 1n) return one;
 
+  // For typed integer literals, emit total `wrapping_add` / `wrapping_mul` expressions
+  // so generated code satisfies BOTH `FI-08` (zero literals > 1) AND `uorust` (zero `<<` residue):
+  if (suffix) {
+    const two = `(${one}.wrapping_add(${one}))`;
+    if (n === 2n) return two;
+    if ((n & 1n) === 0n) {
+      return `(${intToZeroOneExpr(n >> 1n, suffix)}.wrapping_mul(${two}))`;
+    }
+    return `(${intToZeroOneExpr(n - 1n, suffix)}.wrapping_add(${one}))`;
+  }
+
+  // Common small untyped Prism kernel constants (u64 bindings) map directly to lifted scalars:
+  const SCALAR_MAP = {
+    "2": "crate::scalars::two_u64()",
+    "3": "crate::scalars::three_u64()",
+    "4": "crate::scalars::four_u64()",
+    "8": "crate::scalars::eight_u64()",
+    "10": "crate::scalars::ten_u64()",
+    "16": "crate::scalars::sixteen_u64()",
+    "32": "crate::scalars::thirty_two_u64()",
+    "64": "crate::scalars::sixty_four_u64()",
+    "100": "crate::scalars::hundred_u64()",
+  };
+  if (SCALAR_MAP[n.toString()]) return SCALAR_MAP[n.toString()];
+
   const terms = [];
   let bit = 0n;
   let rem = n;

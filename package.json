@@ -7,6 +7,7 @@
     "build": "node scripts/build-site.mjs",
     "start": "node server.ts",
     "lint": "node --check server.ts && node --check scripts/build-site.mjs && node --check server-routes.mjs && node scripts/enforce-prism-contracts.mjs",
+    "ratchet": "node scripts/verdant-ratchet.mjs",
     "automate": "node scripts/verdant-automate.mjs",
     "verify:stitch": "node scripts/verify-stitch-release.mjs",
     "package:crates": "node scripts/package-rust-crates.mjs",

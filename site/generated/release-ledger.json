@@ -4,10 +4,10 @@
   "authorityId": "AUTH-SEMVER-CHANGE-KPI",
   "currentVersion": {
     "major": 2,
-    "minor": 1,
+    "minor": 2,
     "patch": 0
   },
-  "releaseEpoch": 5,
+  "releaseEpoch": 6,
   "history": [
     {
       "version": "0.1.0",
@@ -63,6 +63,13 @@
       "releaseEpoch": 5,
       "bumpKind": "minor",
       "summary": "M9: Model-proved autonomous release cadence (Cadence/Release), uorust shrink-only MIR frontier ratchet, 3 CORS-verified shard origins, live Cargo sparse registry & cross-browser studio pin sharing",
+      "citedAuthority": "AUTH-SEMVER-CHANGE-KPI"
+    },
+    {
+      "version": "2.2.0",
+      "releaseEpoch": 6,
+      "bumpKind": "minor",
+      "summary": "M10: Self-tightening autonomous ratchet, live frontier_rust_tree_sha256 binding, surface Wasm/LOC ceilings, FI-08/uorust scalar harmony & npm run ratchet",
       "citedAuthority": "AUTH-SEMVER-CHANGE-KPI"
     }
   ]

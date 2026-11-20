@@ -82,20 +82,33 @@ fn main() -> ExitCode {
                 } else {
                     String::new()
                 };
+                let surface_note = if rep.observed_wasm_uorc_bytes > 0 {
+                    format!(
+                        "; surface wasm={}B/{}B capsule={}B max_rs={}L max_js={}L",
+                        rep.observed_wasm_core_bytes,
+                        rep.observed_wasm_uorc_bytes,
+                        rep.observed_release_capsule_bytes,
+                        rep.observed_max_rust_file_lines,
+                        rep.observed_max_js_file_lines
+                    )
+                } else {
+                    String::new()
+                };
                 if rep.self_hosted_lifted_module_count > 0 {
                     println!(
-                        "parametric-ratchet: 0 magic constants across {} LexLean strata modules and {} shipped Rust engine files; self-hosting ratchet 0 unlifted across {} lifted modules (blank frame {} B <= {} B){}",
+                        "parametric-ratchet: 0 magic constants across {} LexLean strata modules and {} shipped Rust engine files; self-hosting ratchet 0 unlifted across {} lifted modules (blank frame {} B <= {} B){}{}",
                         rep.grounded_lex_module_count,
                         rep.audited_rust_file_count,
                         rep.self_hosted_lifted_module_count,
                         rep.blank_frame_total_bytes,
                         rep.blank_frame_max_bytes,
-                        frontier_note
+                        frontier_note,
+                        surface_note
                     );
                 } else {
                     println!(
-                        "parametric-ratchet: 0 magic constants across {} LexLean strata modules and {} shipped Rust engine files{}",
-                        rep.grounded_lex_module_count, rep.audited_rust_file_count, frontier_note
+                        "parametric-ratchet: 0 magic constants across {} LexLean strata modules and {} shipped Rust engine files{}{}",
+                        rep.grounded_lex_module_count, rep.audited_rust_file_count, frontier_note, surface_note
                     );
                 }
             }
