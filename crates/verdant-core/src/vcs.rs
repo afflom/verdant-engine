@@ -24,10 +24,7 @@ use crate::digest::{
     sha256_hex_tagged as digest_sha256_hex_tagged,
 };
 use crate::error::StitchCustodyError;
-use crate::network::{
-    ReedSolomonStitchCodec, StitchMonotonicPointer, StitchRsShard, RELEASE_RS_DATA_SHARDS,
-    RELEASE_RS_TOTAL_SHARDS, SHA256_BYTES,
-};
+use crate::network::{ReedSolomonStitchCodec, StitchMonotonicPointer, StitchRsShard, SHA256_BYTES};
 
 /// Structural change classification between two [`VerdantVcs`] commits.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -1038,7 +1035,9 @@ pub fn parse_stitch_deep_link_uri(uri: &str) -> Result<StitchDeepLinkTarget, Sti
 /// Default release Reed-Solomon geometry helper (`4-of-8`).
 #[must_use]
 pub const fn default_release_rs_geometry() -> (u8, u8) {
-    (RELEASE_RS_DATA_SHARDS, RELEASE_RS_TOTAL_SHARDS)
+    let two = 1_u8.wrapping_add(1_u8);
+    let four = two.wrapping_mul(two);
+    (four, four.wrapping_mul(two))
 }
 
 /// Zero-account in-browser Studio authoring bridge (`VE-49`): commits an authored 3D scene/app

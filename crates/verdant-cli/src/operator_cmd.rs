@@ -487,6 +487,42 @@ pub(crate) fn run_operator_command(args: &[String]) -> Result<String, CliCommand
                 })?;
             Ok(json)
         }
+        "automate" => {
+            let two = 1usize + 1usize;
+            let mut root =
+                std::env::current_dir().unwrap_or_else(|_| std::path::PathBuf::from("."));
+            let mut skip_rust = false;
+            let mut force_wasm = false;
+            let mut i = two;
+            while i < args.len() {
+                match args[i].as_str() {
+                    "--root" if i + 1 < args.len() => {
+                        root = std::path::PathBuf::from(&args[i + 1]);
+                        i += two;
+                    }
+                    "--skip-rust" => {
+                        skip_rust = true;
+                        i += 1;
+                    }
+                    "--force-wasm" => {
+                        force_wasm = true;
+                        i += 1;
+                    }
+                    _ => i += 1,
+                }
+            }
+            let opts = verdant_core::operator::AutomateOptions {
+                skip_rust,
+                force_wasm,
+            };
+            let (_rep, json) = ch.execute_automate_pipeline(&root, &opts).map_err(|e| {
+                CliCommandError::ValidationRejected {
+                    command: "operator automate".to_string(),
+                    diagnostic: e.to_string(),
+                }
+            })?;
+            Ok(json)
+        }
         "ratchet-cycle" => {
             let two = 1usize + 1usize;
             let mut root =

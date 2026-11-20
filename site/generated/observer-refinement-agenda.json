@@ -7,12 +7,12 @@
   "liveMetrics": {
     "wasmCoreBytes": 159075,
     "wasmUorcBytes": 4664519,
-    "releaseCapsuleBytes": 1709162,
+    "releaseCapsuleBytes": 1709167,
     "blankFrameBytes": 28370,
     "maxHandwrittenRustFileLines": 2184,
     "maxJsFileLines": 1524,
-    "frontierLifted": 246,
-    "frontierResidue": 1179,
+    "frontierLifted": 267,
+    "frontierResidue": 1178,
     "frontierUncertified": 1334,
     "fidelityOpenResidue": 0
   },
@@ -49,7 +49,7 @@
       "vsmSystem": "VSM-S3",
       "viewpointId": "change-version-release",
       "ownedFileCount": 17,
-      "maxFileLines": 1281,
+      "maxFileLines": 1280,
       "heaviestFile": "crates/verdant-core/src/vcs.rs",
       "healthScorePermille": 1000
     },
@@ -121,8 +121,8 @@
       "vsmSystem": "VSM-S3-STAR",
       "viewpointId": "verification-observatory",
       "ownedFileCount": 16,
-      "maxFileLines": 10420,
-      "heaviestFile": "fidelity.toml",
+      "maxFileLines": 10518,
+      "heaviestFile": "frontier.toml",
       "healthScorePermille": 750
     },
     {
@@ -188,14 +188,14 @@
       "citedAuthority": "AUTH-SEMVER-CHANGE-KPI",
       "ratchetLayer": "uorust-frontier",
       "priority": "high",
-      "currentValue": "246 lifted / 1179 residue (1334 uncertified)",
-      "targetValue": ">= 266 lifted functions",
+      "currentValue": "267 lifted / 1178 residue (1334 uncertified)",
+      "targetValue": ">= 287 lifted functions",
       "summary": "Expand constructive MIR proof frontier; top blocker: expression form outside the lift: ? below the function's own statements (269 fns, cause=form).",
       "concreteActions": [
         "Replace remaining raw shift/overflow ops with lifted verdant_tensor::scalars and wrapping ops.",
         "Extract pure decision/calculation helpers out of IO/effectful wrappers so uorust lifts them."
       ],
-      "kappaHex": "99d6fb3c755973545322dc318d7d47b6cebd74a27ebbb13270918411aa681512"
+      "kappaHex": "84d86982fffa720dd42d92a5333703f9157d16133e0a74daa1c732e7a7c1f970"
     },
     {
       "proposalId": "refine-rust-modularity",
@@ -205,14 +205,14 @@
       "citedAuthority": "AUTH-ISO-42010-VIEWPOINTS",
       "ratchetLayer": "surface-loc-rust",
       "priority": "medium",
-      "currentValue": "2184 lines max (crates/verdant-core/src/observer.rs)",
+      "currentValue": "2184 lines max (crates/verdant-core/src/hd_world.rs)",
       "targetValue": "<= 1800 lines max hand-written Rust file",
       "summary": "Keep every hand-written Rust module modular and auto-tighten max_handwritten_rust_file_lines.",
       "concreteActions": [
-        "Extract cohesive sub-traits or geometry tables out of crates/verdant-core/src/observer.rs.",
+        "Extract cohesive sub-traits or geometry tables out of crates/verdant-core/src/hd_world.rs.",
         "Register every extracted module in catalogs/governance/iso42010-viewpoints.json."
       ],
-      "kappaHex": "a02c1de8a3784aaf8320669efb0b5fc030bc00e596e4fcc3e7fb740371f45c2c"
+      "kappaHex": "5a35d789b3b898d01ae45e8cb1468bff84ecba5a6097f0f49ab6103265532f03"
     },
     {
       "proposalId": "refine-wasm-capsule-weight",
@@ -222,15 +222,15 @@
       "citedAuthority": "AUTH-STITCH-SELF-HOSTING",
       "ratchetLayer": "surface-wasm",
       "priority": "medium",
-      "currentValue": "verdant-uorc.wasm 4664519 B · .holo 1709162 B · Blank Frame 28370 B (2350 B headroom)",
+      "currentValue": "verdant-uorc.wasm 4664519 B · .holo 1709167 B · Blank Frame 28370 B (2350 B headroom)",
       "targetValue": "verdant-uorc.wasm <= 4194304 B while preserving gzipped .holo <= 1.72 MiB",
       "summary": "Trim unused codec paths on wasm32 and preserve gzipped STCH2 shard efficiency for cold Blank Frame boots.",
       "concreteActions": [
         "Audit gltf/image feature flags on wasm32 to drop unused color/codec tables.",
         "Maintain Blank Frame strictly under 30720 B with DecompressionStream('gzip')."
       ],
-      "kappaHex": "9a2beadadbbdf368ed2941f7b84243277ef5403894bc180f0e52c49db38629e9"
+      "kappaHex": "be5b40ec71b8a5cc3b7e573b1bf33a1dbecfb30ec79137e460f24b9242540363"
     }
   ],
-  "agendaKappaHex": "8d030c0fdc84f8f787feaf88b139f8ec5eac10e38146fe152308e6a94cc535a9"
+  "agendaKappaHex": "045d4a86404895e6f72995a934a2ed45e7668db7746eabe059d4417f2cfc155b"
 }

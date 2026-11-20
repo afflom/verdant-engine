@@ -347,6 +347,31 @@ impl VerdantOperatorChannel {
                     }
                 }
             }
+            for crate_name in &mgr.spec.owned_crates {
+                let src_dir = repo_root.join("crates").join(crate_name).join("src");
+                if let Ok(rd) = std::fs::read_dir(&src_dir) {
+                    for ent in rd.flatten() {
+                        let p = ent.path();
+                        if !p.is_file() {
+                            continue;
+                        }
+                        let rel = p
+                            .strip_prefix(repo_root)
+                            .unwrap_or(&p)
+                            .to_string_lossy()
+                            .replace('\\', "/");
+                        if rel.ends_with(".rs") && !rel.ends_with("prism_kernel.rs") {
+                            let lines = std::fs::read_to_string(&p)
+                                .map(|s| s.lines().count())
+                                .unwrap_or(0);
+                            if lines > heaviest_rust_lines {
+                                heaviest_rust_lines = lines;
+                                heaviest_rust_file = rel;
+                            }
+                        }
+                    }
+                }
+            }
             let score = part_health_score_permille(max_lines as u32, loc_ideal, loc_ceiling);
             sum_part_health = sum_part_health.saturating_add(u64::from(score));
             part_health.push(ObserverPartHealthSnapshot {

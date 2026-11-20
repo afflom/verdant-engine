@@ -56,9 +56,9 @@ max_unlifted_workspace_modules = 0
 
 [frontier_ratchet]
 frontier_register = "frontier.toml"
-frontier_rust_tree_sha256 = "f26a3312d635a04ccbe77fb252564163cd8f174fef68921be9e60b0e7301ac04"
-min_lifted_functions = 246
-max_residue_functions = 1179
+frontier_rust_tree_sha256 = "ef57e4d510f5921d975c11f2230468e0258bb4833e2d646edccfcf5d9283701e"
+min_lifted_functions = 267
+max_residue_functions = 1178
 max_uncertified_functions = 1334
 
 [surface_ratchet]

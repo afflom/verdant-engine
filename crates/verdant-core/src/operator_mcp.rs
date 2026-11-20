@@ -308,6 +308,17 @@ impl VerdantOperatorChannel {
                         }
                     },
                     {
+                        "name": "verdant_automate",
+                        "description": "Execute Verdant's full lifted self-automation & verification pipeline directly from within Verdant (kappa-memoized Wasm build, in-process ratchet-lift, site assembly, Cargo Sparse Registry packaging, in-process lifecycle-gate, and live browser/contract gates).",
+                        "inputSchema": {
+                            "type": "object",
+                            "properties": {
+                                "skipRust": { "type": "boolean" },
+                                "forceWasm": { "type": "boolean" }
+                            }
+                        }
+                    },
+                    {
                         "name": "verdant_ratchet_cycle",
                         "description": "Execute Verdant's full lifted build/refresh/ratchet-lift/tighten/verify cycle directly from within Verdant (xtask check-model, prism-fidelity, kappa-memoized LexLean/uorust/Wasm, in-process ratchet-lift --tighten, prism-fidelity --check, and optional lifecycle-gate).",
                         "inputSchema": {
@@ -818,6 +829,25 @@ impl VerdantOperatorChannel {
                         {
                             Ok(rep) => tool_out(
                                 false,
+                                serde_json::to_value(&rep).unwrap_or(serde_json::Value::Null),
+                            ),
+                            Err(e) => tool_out(true, serde_json::json!({ "error": e.to_string() })),
+                        }
+                    }
+                    "verdant_automate" => {
+                        let opts = AutomateOptions {
+                            skip_rust: args
+                                .get("skipRust")
+                                .and_then(|v| v.as_bool())
+                                .unwrap_or(false),
+                            force_wasm: args
+                                .get("forceWasm")
+                                .and_then(|v| v.as_bool())
+                                .unwrap_or(false),
+                        };
+                        match self.execute_automate_pipeline(repo_root, &opts) {
+                            Ok((rep, _)) => tool_out(
+                                !rep.all_passed,
                                 serde_json::to_value(&rep).unwrap_or(serde_json::Value::Null),
                             ),
                             Err(e) => tool_out(true, serde_json::json!({ "error": e.to_string() })),

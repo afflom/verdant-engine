@@ -353,3 +353,144 @@ pub const fn uhd_drs_step_up(idx: u32) -> u32 {
 pub const fn uhd_tier_supports_webgpu_cas(tier: u32, webgpu_available: bool) -> bool {
     webgpu_available && tier >= two_u32()
 }
+
+/// Pure MIR-lifted Stitch erasure quorum sufficiency (`data_shards_k > 0 && surviving >= k`).
+#[must_use]
+pub const fn stitch_quorum_sufficient(surviving_shards: u8, data_shards_k: u8) -> bool {
+    data_shards_k > 0 && surviving_shards >= data_shards_k
+}
+
+/// Pure MIR-lifted Stitch maximum tolerable shard losses (`n - k` saturating).
+#[must_use]
+pub const fn stitch_max_tolerable_losses(total_shards_n: u8, data_shards_k: u8) -> u8 {
+    total_shards_n.saturating_sub(data_shards_k)
+}
+
+/// Pure MIR-lifted Stitch `k-of-n` geometry validity (`0 < k <= n`).
+#[must_use]
+pub const fn stitch_geometry_valid(data_shards_k: u8, total_shards_n: u8) -> bool {
+    data_shards_k > 0 && data_shards_k <= total_shards_n
+}
+
+/// Pure MIR-lifted Stitch shard index bounds predicate (`idx < n`).
+#[must_use]
+pub const fn stitch_shard_index_in_range(idx: u8, total_shards_n: u8) -> bool {
+    idx < total_shards_n
+}
+
+/// Pure MIR-lifted Stitch monotonic release epoch advance check (`next > prev`).
+#[must_use]
+pub const fn stitch_epoch_monotonically_advances(prev_epoch: u64, next_epoch: u64) -> bool {
+    next_epoch > prev_epoch
+}
+
+/// Pure MIR-lifted `VerdantVcs` structural diff total changed-file count.
+#[must_use]
+pub const fn vcs_diff_total_changes(added: u32, modified: u32, removed: u32) -> u32 {
+    added.saturating_add(modified).saturating_add(removed)
+}
+
+/// Pure MIR-lifted `VerdantVcs` clean-tree predicate (`added == 0 && modified == 0 && removed == 0`).
+#[must_use]
+pub const fn vcs_diff_is_clean(added: u32, modified: u32, removed: u32) -> bool {
+    vcs_diff_total_changes(added, modified, removed) == 0
+}
+
+/// Pure MIR-lifted `.holo` capsule compression byte savings (`raw - compressed` saturating).
+#[must_use]
+pub const fn capsule_compression_saved_bytes(raw_bytes: u64, compressed_bytes: u64) -> u64 {
+    raw_bytes.saturating_sub(compressed_bytes)
+}
+
+/// Pure MIR-lifted `.holo` capsule compression improvement predicate (`compressed < raw`).
+#[must_use]
+pub const fn capsule_compression_improved(raw_bytes: u64, compressed_bytes: u64) -> bool {
+    compressed_bytes < raw_bytes
+}
+
+/// Pure MIR-lifted `.holo` capsule byte-ceiling compliance predicate (`actual <= max`).
+#[must_use]
+pub const fn capsule_within_byte_ceiling(actual_bytes: u64, max_bytes: u64) -> bool {
+    max_bytes > 0 && actual_bytes <= max_bytes
+}
+
+/// Pure MIR-lifted `.holo` capsule remaining byte headroom (`max - actual` saturating).
+#[must_use]
+pub const fn capsule_headroom_bytes(actual_bytes: u64, max_bytes: u64) -> u64 {
+    max_bytes.saturating_sub(actual_bytes)
+}
+
+/// Pure MIR-lifted Blank Frame compliance predicate (`frame_bytes <= max && loose_files == 0`).
+#[must_use]
+pub const fn blank_frame_compliant(
+    frame_bytes: u32,
+    max_frame_bytes: u32,
+    loose_files: u32,
+) -> bool {
+    frame_bytes > 0 && frame_bytes <= max_frame_bytes && loose_files == 0
+}
+
+/// Pure MIR-lifted automation pipeline pass predicate (`total > 0 && passed + skipped == total`).
+#[must_use]
+pub const fn automate_stage_passed(passed: u32, skipped: u32, total: u32) -> bool {
+    total > 0 && passed.wrapping_add(skipped) == total
+}
+
+/// Pure MIR-lifted automation Wasm build trigger (`!skip_rust && (force_wasm || !cache_hit)`).
+#[must_use]
+pub const fn automate_should_build_wasm(
+    skip_rust: bool,
+    force_wasm: bool,
+    cache_hit: bool,
+) -> bool {
+    !skip_rust && (force_wasm || !cache_hit)
+}
+
+/// Pure MIR-lifted automation Rust gate enablement predicate (`!skip_rust`).
+#[must_use]
+pub const fn automate_should_run_rust_gates(skip_rust: bool) -> bool {
+    !skip_rust
+}
+
+/// Pure MIR-lifted one-way ratchet floor non-regression check (`live >= floor`).
+#[must_use]
+pub const fn ratchet_floor_did_not_regress(live: u32, floor: u32) -> bool {
+    live >= floor
+}
+
+/// Pure MIR-lifted one-way ratchet ceiling non-regression check (`live <= ceiling`).
+#[must_use]
+pub const fn ratchet_ceiling_did_not_regress(live: u32, ceiling: u32) -> bool {
+    live <= ceiling
+}
+
+/// Pure MIR-lifted one-way ratchet floor auto-tighten predicate (`live > floor`).
+#[must_use]
+pub const fn ratchet_floor_can_tighten(live: u32, floor: u32) -> bool {
+    live > floor
+}
+
+/// Pure MIR-lifted one-way ratchet ceiling auto-tighten predicate (`live < ceiling`).
+#[must_use]
+pub const fn ratchet_ceiling_can_tighten(live: u32, ceiling: u32) -> bool {
+    live < ceiling
+}
+
+/// Pure MIR-lifted strict SemVer ordering predicate (`a > b`).
+#[must_use]
+pub const fn semver_is_strictly_higher(
+    a_maj: u32,
+    a_min: u32,
+    a_pat: u32,
+    b_maj: u32,
+    b_min: u32,
+    b_pat: u32,
+) -> bool {
+    if a_maj != b_maj {
+        a_maj > b_maj
+    } else if a_min != b_min {
+        a_min > b_min
+    } else {
+        a_pat > b_pat
+    }
+}

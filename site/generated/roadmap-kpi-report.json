@@ -138,7 +138,7 @@
       "name": "uorust MIR-Lifted Rust Functions Floor",
       "unit": "functions",
       "direction": "atLeast",
-      "actual": 246,
+      "actual": 267,
       "target": 200,
       "passed": true,
       "owningManager": "mgr-verification-observatory",
