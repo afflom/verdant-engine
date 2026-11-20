@@ -1,16 +1,16 @@
 {
   "spec": "verdant/observer-refinement-agenda/1",
-  "releaseVersion": "2.5.0",
-  "releaseEpoch": 9,
+  "releaseVersion": "2.6.0",
+  "releaseEpoch": 10,
   "observerKappaHex": "6cd1e9dc15167b134d9887883bf06a5158c9b132f076e10a30e521ea62e0a17b",
-  "overallRefinementScorePermille": 926,
+  "overallRefinementScorePermille": 934,
   "liveMetrics": {
-    "wasmCoreBytes": 160450,
-    "wasmUorcBytes": 4668937,
-    "releaseCapsuleBytes": 1711719,
-    "blankFrameBytes": 28368,
+    "wasmCoreBytes": 159832,
+    "wasmUorcBytes": 4663194,
+    "releaseCapsuleBytes": 1711612,
+    "blankFrameBytes": 28370,
     "maxHandwrittenRustFileLines": 2188,
-    "maxJsFileLines": 1979,
+    "maxJsFileLines": 1675,
     "frontierLifted": 219,
     "frontierResidue": 1187,
     "frontierUncertified": 1341,
@@ -67,7 +67,7 @@
       "vsmSystem": "VSM-S4",
       "viewpointId": "roadmap-kpi-strategy",
       "ownedFileCount": 7,
-      "maxFileLines": 736,
+      "maxFileLines": 767,
       "heaviestFile": "site/generated/roadmap-kpi-report.json",
       "healthScorePermille": 1000
     },
@@ -93,10 +93,10 @@
       "managerId": "mgr-studio-alm",
       "vsmSystem": "VSM-S1",
       "viewpointId": "creator-studio",
-      "ownedFileCount": 10,
-      "maxFileLines": 1979,
-      "heaviestFile": "site/studio.mjs",
-      "healthScorePermille": 800
+      "ownedFileCount": 12,
+      "maxFileLines": 1670,
+      "heaviestFile": "site/studio/studio-page.mjs",
+      "healthScorePermille": 900
     },
     {
       "managerId": "mgr-catalog-curator",
@@ -171,14 +171,14 @@
       "citedAuthority": "AUTH-ISO-42010-VIEWPOINTS",
       "ratchetLayer": "surface-loc-js",
       "priority": "high",
-      "currentValue": "1979 lines max (site/studio.mjs)",
+      "currentValue": "1675 lines max (site/engine-worker.mjs)",
       "targetValue": "<= 1400 lines max JS file",
       "summary": "Decompose heaviest Studio JS modules into cohesive submodules and expose VerdantVcs diff/branch UI.",
       "concreteActions": [
-        "Split site/studio.mjs and site/studio/studio-page.mjs into focused ES modules.",
+        "Split site/engine-worker.mjs and site/studio/studio-page.mjs into focused ES modules.",
         "Expose VerdantVcs commit diff & branch controls in site/studio/vcs-panel.mjs."
       ],
-      "kappaHex": "49b245211483100cc29b1782f4dc852a50723b885bf3d4654af648ac89827dfd"
+      "kappaHex": "7a947524ef19722d2cc6f9a1c8d8aa0ab611d9999591593dc129b81f511844e0"
     },
     {
       "proposalId": "refine-uorust-frontier",
@@ -222,15 +222,15 @@
       "citedAuthority": "AUTH-STITCH-SELF-HOSTING",
       "ratchetLayer": "surface-wasm",
       "priority": "medium",
-      "currentValue": "verdant-uorc.wasm 4668937 B · .holo 1711719 B · Blank Frame 28368 B (2352 B headroom)",
+      "currentValue": "verdant-uorc.wasm 4663194 B · .holo 1711612 B · Blank Frame 28370 B (2350 B headroom)",
       "targetValue": "verdant-uorc.wasm <= 4194304 B while preserving gzipped .holo <= 1.72 MiB",
       "summary": "Trim unused codec paths on wasm32 and preserve gzipped STCH2 shard efficiency for cold Blank Frame boots.",
       "concreteActions": [
         "Audit gltf/image feature flags on wasm32 to drop unused color/codec tables.",
         "Maintain Blank Frame strictly under 30720 B with DecompressionStream('gzip')."
       ],
-      "kappaHex": "7f3c870931bdb6d74907db07f12df09adf494ce5c6fb3144f8caa208919ab94f"
+      "kappaHex": "7aa4be5104ba96dfd6e621bf895ab9385544ef0aae65dc556501c95021c37b9d"
     }
   ],
-  "agendaKappaHex": "b39960ca4de8916e03569e74555a875e63b7f4ee68940e93042e140a65c2ba9f"
+  "agendaKappaHex": "594b7518aa33955a151b195bcc4ae58525fb1360d9dea27694aa914c05207c91"
 }

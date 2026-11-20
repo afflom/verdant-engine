@@ -480,3 +480,15 @@ id = "VE-61"
 level = "build"
 suite = "engine"
 statement = "Verdant achieves 100% zero-residue formal model fidelity across all 28 canonical LexLean modules (705/705 derived, 705/705 meant, 9/9 measured, 0 open fidelity residue) with version-parametric Release.lex.tex distribution endpoints, and decomposes observer.rs, operator.rs, and conformance integration tests so max_handwritten_rust_file_lines tightens monotonically to <= 2200"
+
+[[id]]
+id = "VE-62"
+level = "build"
+suite = "engine"
+statement = "Verdant's Observer Executive includes a generative self-refinement engine (crates/verdant-core/src/observer_refine.rs, CLI verdant operator refine-plan, MCP verdant_observer_refine_plan, and sealed site/generated/observer-refinement-agenda.json surfaced in Studio's Observer panel) that diagnoses all 13 VSM Managers, owned source file modularity, frontier.toml proof blockers, fidelity closure, and Wasm/capsule/Blank Frame budgets while expanding the shrink-only uorust MIR proof frontier to >= 219 lifted constructive functions"
+
+[[id]]
+id = "VE-63"
+level = "build"
+suite = "engine"
+statement = "Verdant lifts its entire validation, test-execution, and release-qualification lifecycle directly into Verdant (crates/verdant-core/src/lifecycle.rs, CLI verdant operator lifecycle-gate, MCP verdant_lifecycle_gate, sealed site/generated/lifecycle-gate-report.json, and qualify-tag.mjs delegation), lifts all 6 lifecycle categories (rust, verification-test, lexlean, feature-suite, model-governance, viewpoint) into VerdantVcs and self-host-ratchet-manifest.toml, and decomposes site/studio.mjs and site/studio/studio-page.mjs to auto-tighten max_js_file_lines <= 1680 with live Studio VCS commit diffs"

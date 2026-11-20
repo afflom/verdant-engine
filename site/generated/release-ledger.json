@@ -4,10 +4,10 @@
   "authorityId": "AUTH-SEMVER-CHANGE-KPI",
   "currentVersion": {
     "major": 2,
-    "minor": 5,
+    "minor": 6,
     "patch": 0
   },
-  "releaseEpoch": 9,
+  "releaseEpoch": 10,
   "history": [
     {
       "version": "0.1.0",
@@ -91,6 +91,13 @@
       "releaseEpoch": 9,
       "bumpKind": "minor",
       "summary": "M13: Gzip .holo capsules (-73%), 705/705 zero-residue fidelity, unified digest.rs, VerdantVcs diff/branch & <=2200L Rust decomposition",
+      "citedAuthority": "AUTH-SEMVER-CHANGE-KPI"
+    },
+    {
+      "version": "2.6.0",
+      "releaseEpoch": 10,
+      "bumpKind": "minor",
+      "summary": "M14: Verdant implements Verdant — generative Observer self-refinement engine, lifted in-Verdant lifecycle/test gate (136 modules), 219+ MIR-lifted & <=1680L JS",
       "citedAuthority": "AUTH-SEMVER-CHANGE-KPI"
     }
   ]

@@ -439,7 +439,7 @@
     },
     {
       "basisPrime": 97,
-      "kappaHex": "6cdf946931ec0e0c5efc6ac27d0ae43a19cf54dede1efbc11bc3ea7d8b3f940c",
+      "kappaHex": "a4a22a16859e1c22cc4b33259b64d36243de55ed9ba822d70662664e82b9da06",
       "spec": {
         "almPhases": [
           "conception",
@@ -487,11 +487,13 @@
           "crates/verdant-core/src/portable_player.rs",
           "site/studio/index.html",
           "site/studio/studio-page.mjs",
+          "site/studio/discovery-panel.mjs",
           "site/studio/outliner.mjs",
           "site/studio/observer-panel.mjs",
           "site/studio/project-inspector.mjs",
           "site/studio/vcs-panel.mjs",
           "site/studio.mjs",
+          "site/studio-media.mjs",
           "site/studio-data.mjs",
           "site/studio-scaffolder.mjs"
         ],

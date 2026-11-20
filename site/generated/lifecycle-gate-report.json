@@ -1,7 +1,7 @@
 {
   "spec": "verdant/lifecycle-gate-report/1",
-  "releaseVersion": "2.5.0",
-  "releaseEpoch": 9,
+  "releaseVersion": "2.6.0",
+  "releaseEpoch": 10,
   "mode": "in-process",
   "allPassed": true,
   "releaseQualified": true,
@@ -32,7 +32,7 @@
       "owningManagerId": "mgr-observer-executive",
       "category": "in-process",
       "passed": true,
-      "durationMs": 16,
+      "durationMs": 12,
       "detail": "valid=true entries=16 violations=0"
     },
     {
@@ -40,8 +40,8 @@
       "owningManagerId": "mgr-change-release",
       "category": "in-process",
       "passed": true,
-      "durationMs": 1,
-      "detail": "28368 B <= 30720 B"
+      "durationMs": 0,
+      "detail": "28370 B <= 30720 B"
     },
     {
       "checkId": "release-version-sync",
@@ -49,7 +49,7 @@
       "category": "in-process",
       "passed": true,
       "durationMs": 0,
-      "detail": "cargo=v2.5.0 ledger=v2.5.0 manifest=v2.5.0 wasm_synced=true tag_ok=true"
+      "detail": "cargo=v2.6.0 ledger=v2.6.0 manifest=v2.6.0 wasm_synced=true tag_ok=true"
     },
     {
       "checkId": "formal-fidelity-and-frontier",
@@ -68,5 +68,5 @@
       "detail": "total=136 (rust=56, test=24, lex=28, feature=3, model=16, view=9)"
     }
   ],
-  "reportKappaHex": "6a3c54ee3c10159ebc8273f808f365948bc9587e93dec76a8f871847c4a62853"
+  "reportKappaHex": "7137eab386aaa5db9b62f68e16f2c6d5f8f6338eb4417ba08d343bdfdf2462a6"
 }

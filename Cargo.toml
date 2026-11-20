@@ -3,7 +3,7 @@ resolver = "2"
 members = ["crates/*", "xtask"]
 
 [workspace.package]
-version = "2.5.0"
+version = "2.6.0"
 edition = "2021"
 rust-version = "1.89"
 license = "MIT OR Apache-2.0"
@@ -14,16 +14,16 @@ keywords = ["game-engine", "3d", "tensor", "wasm", "gltf"]
 categories = ["game-engines", "graphics", "simulation", "wasm"]
 
 [workspace.dependencies]
-prism-fidelity = { version = "2.5.0", path = "crates/fidelity" }
-repo-model = { version = "2.5.0", path = "crates/model" }
-repo-conformance = { version = "2.5.0", path = "crates/conformance" }
+prism-fidelity = { version = "2.6.0", path = "crates/fidelity" }
+repo-model = { version = "2.6.0", path = "crates/model" }
+repo-conformance = { version = "2.6.0", path = "crates/conformance" }
 uor-matmul = { version = "0.1.0", git = "https://github.com/UOR-Foundation/uor-matmul", branch = "main", default-features = false }
 uorc = { version = "0.6.0", git = "https://github.com/UOR-Foundation/compression", branch = "main" }
 uorc_decompress = { version = "0.1.0", git = "https://github.com/UOR-Foundation/compression", branch = "main" }
-verdant-tensor = { version = "2.5.0", path = "crates/verdant-tensor" }
-verdant-core = { version = "2.5.0", path = "crates/verdant-core" }
-verdant-wasm = { version = "2.5.0", path = "crates/verdant-wasm" }
-verdant-cli = { version = "2.5.0", path = "crates/verdant-cli" }
+verdant-tensor = { version = "2.6.0", path = "crates/verdant-tensor" }
+verdant-core = { version = "2.6.0", path = "crates/verdant-core" }
+verdant-wasm = { version = "2.6.0", path = "crates/verdant-wasm" }
+verdant-cli = { version = "2.6.0", path = "crates/verdant-cli" }
 
 [workspace.lints.rust]
 missing_docs = "deny"

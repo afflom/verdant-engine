@@ -414,11 +414,13 @@
         "crates/verdant-core/src/portable_player.rs",
         "site/studio/index.html",
         "site/studio/studio-page.mjs",
+        "site/studio/discovery-panel.mjs",
         "site/studio/outliner.mjs",
         "site/studio/observer-panel.mjs",
         "site/studio/project-inspector.mjs",
         "site/studio/vcs-panel.mjs",
         "site/studio.mjs",
+        "site/studio-media.mjs",
         "site/studio-data.mjs",
         "site/studio-scaffolder.mjs"
       ],

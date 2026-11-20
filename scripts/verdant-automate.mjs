@@ -121,6 +121,7 @@ const stage2 = [
 ];
 if (!skipRust) {
   stage2.push(runAsync("verdant-cli automate-check", "cargo", ["run", "--locked", "-p", "verdant-cli", "--", "automate-check"]));
+  stage2.push(runAsync("verdant-cli lifecycle-gate", "cargo", ["run", "-q", "--locked", "-p", "verdant-cli", "--", "operator", "lifecycle-gate", "--in-process"]));
 }
 await Promise.all(stage2);
 

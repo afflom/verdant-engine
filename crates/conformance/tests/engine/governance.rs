@@ -2036,3 +2036,146 @@ fn engine_ve_61() {
         kpi_rep.kpis
     );
 }
+
+/// `VE-62`: Generative Observer Self-Refinement Engine (`observer_refine.rs`) synthesizes a
+/// deterministic, cryptographically sealed self-refinement agenda across all 13 accountable VSM
+/// Managers, live `frontier.toml` blockers (`>= 219` MIR-lifted), and surface metrics, wired into
+/// CLI, MCP, and Studio's live Observer Panel.
+#[test]
+fn engine_ve_62() {
+    use std::path::Path;
+    use verdant_core::operator::VerdantOperatorChannel;
+
+    let repo_root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+    let ch = VerdantOperatorChannel::new("sunspire-regatta").expect("operator channel");
+
+    // 1. Deterministic self-refinement agenda synthesis across all 13 Managers:
+    let (agenda_a, json_a) = ch
+        .synthesize_refinement_agenda(&repo_root)
+        .expect("synthesize observer refinement agenda (pass 1)");
+    let (agenda_b, _) = ch
+        .synthesize_refinement_agenda(&repo_root)
+        .expect("synthesize observer refinement agenda (pass 2)");
+    assert_eq!(agenda_a.spec, "verdant/observer-refinement-agenda/1");
+    assert_eq!(agenda_a.agenda_kappa_hex, agenda_b.agenda_kappa_hex);
+    assert_eq!(agenda_a.part_health.len(), 13);
+    assert!(!agenda_a.top_frontier_blockers.is_empty());
+    assert!(!agenda_a.proposals.is_empty());
+    assert!(agenda_a.overall_refinement_score_permille > 0);
+    assert!(agenda_a.live_metrics.frontier_lifted >= 219);
+    assert_eq!(agenda_a.live_metrics.fidelity_open_residue, 0);
+    assert!(json_a.contains("observer-refinement-agenda/1"));
+
+    // 2. Cryptographically sealed in site/generated/observer-refinement-agenda.json & immutability-seal.json:
+    assert!(repo_root
+        .join("site/generated/observer-refinement-agenda.json")
+        .is_file());
+    let seal = std::fs::read_to_string(repo_root.join("site/generated/immutability-seal.json"))
+        .expect("read immutability-seal.json");
+    assert!(seal.contains("generated/observer-refinement-agenda.json"));
+
+    // 3. Studio Observer Panel renders live self-refinement telemetry:
+    let obs_panel = std::fs::read_to_string(repo_root.join("site/studio/observer-panel.mjs"))
+        .expect("read site/studio/observer-panel.mjs");
+    assert!(obs_panel.contains("observer-refinement-agenda.json"));
+}
+
+/// `VE-63`: Verdant implements Verdant — lifted in-Verdant validation, test execution & release
+/// qualification lifecycle (`lifecycle.rs`), 6-category lifted manifest coverage (`>= 130`
+/// modules), Studio VCS commit diffs + JS decomposition (`<= 1,700` lines), and M14 KPIs.
+#[test]
+fn engine_ve_63() {
+    use std::path::Path;
+    use verdant_core::operator::{LifecycleGateOptions, VerdantOperatorChannel};
+
+    let repo_root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+    let ch = VerdantOperatorChannel::new("sunspire-regatta").expect("operator channel");
+
+    // 1. In-process lifted lifecycle gate executes cleanly and certifies release readiness:
+    let (gate, gate_json) = ch
+        .execute_lifecycle_gate(
+            &repo_root,
+            &LifecycleGateOptions {
+                run_workspace_tests: false,
+                run_browser_gates: false,
+                expected_tag: None,
+                write_report: false,
+            },
+        )
+        .expect("execute in-process lifecycle gate");
+    assert_eq!(gate.spec, "verdant/lifecycle-gate-report/1");
+    assert!(
+        gate.all_passed,
+        "in-process lifecycle gate failed: {:?}",
+        gate.checks
+    );
+    assert!(gate.release_qualified);
+    assert!(gate.lifted_coverage.all_categories_lifted);
+    assert!(
+        gate.lifted_coverage.total_lifted_modules >= 130,
+        "expected >= 130 lifted lifecycle modules across all 6 categories, got {}",
+        gate.lifted_coverage.total_lifted_modules
+    );
+    assert!(gate.lifted_coverage.verification_test_modules > 0);
+    assert!(gate.lifted_coverage.feature_suite_modules > 0);
+    assert!(gate.lifted_coverage.model_governance_modules > 0);
+    assert!(gate_json.contains("verdant/lifecycle-gate-report/1"));
+
+    // 2. Fail-closed tag qualification refuses mismatched release tag:
+    let (bad_tag_gate, _) = ch
+        .execute_lifecycle_gate(
+            &repo_root,
+            &LifecycleGateOptions {
+                run_workspace_tests: false,
+                run_browser_gates: false,
+                expected_tag: Some("v0.0.1".to_string()),
+                write_report: false,
+            },
+        )
+        .expect("mismatched tag gate evaluation");
+    assert!(
+        !bad_tag_gate.release_qualified,
+        "lifecycle gate MUST refuse mismatched release tag v0.0.1"
+    );
+
+    // 3. Sealed lifecycle report, qualify-tag delegation, Studio JS decomposition & VCS commit diffs:
+    assert!(repo_root
+        .join("site/generated/lifecycle-gate-report.json")
+        .is_file());
+    let seal = std::fs::read_to_string(repo_root.join("site/generated/immutability-seal.json"))
+        .expect("read immutability-seal.json");
+    assert!(seal.contains("generated/lifecycle-gate-report.json"));
+    let qualify_mjs = std::fs::read_to_string(repo_root.join("scripts/release/qualify-tag.mjs"))
+        .expect("read qualify-tag.mjs");
+    assert!(qualify_mjs.contains("lifecycle-gate"));
+    assert!(repo_root.join("site/studio-media.mjs").is_file());
+    assert!(repo_root.join("site/studio/discovery-panel.mjs").is_file());
+    let vcs_panel = std::fs::read_to_string(repo_root.join("site/studio/vcs-panel.mjs"))
+        .expect("read vcs-panel.mjs");
+    assert!(vcs_panel.contains("computeSceneObjectDiff"));
+
+    let rep = prism_fidelity::ratchet::audit_parametric_ratchet(
+        &repo_root,
+        Path::new("model/parametric-ratchet.toml"),
+    )
+    .expect("live repo must pass all 4 ratchet layers");
+    assert!(
+        rep.observed_max_js_file_lines <= 1_680,
+        "M14 Studio JS decomposition must tighten max_js_file_lines <= 1680, got {}",
+        rep.observed_max_js_file_lines
+    );
+
+    // 4. Observer reports all 14 milestones (M1..M14) and 13/13 passing KPIs:
+    let kpi_rep = ch
+        .evaluate_observer_roadmap_kpis(&repo_root, true, true)
+        .expect("observer roadmap & KPI report");
+    assert!(
+        kpi_rep.milestones.len() >= 14,
+        "expected Milestones M1..M14"
+    );
+    assert_eq!(
+        kpi_rep.kpi_passed_count, kpi_rep.kpi_total_count,
+        "all Observer KPIs must pass (kpis={:?})",
+        kpi_rep.kpis
+    );
+}

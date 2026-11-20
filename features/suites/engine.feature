@@ -398,3 +398,15 @@ Feature: engine
     Given fidelity.toml, app/src/Release.lex.tex, crates/verdant-core/src/observer_language.rs, crates/verdant-core/src/observer_streams.rs, crates/verdant-core/src/operator_synth.rs, and model/parametric-ratchet.toml [surface_ratchet]
     When prism-fidelity scores all 28 canonical LexLean modules and audits [surface_ratchet]
     Then fidelity.toml has zero open residue (705/705 derived, 705/705 meant, 9/9 measured), Release.lex.tex uses version-parametric channel templates, and max_handwritten_rust_file_lines is at most 2200 with all decomposed submodules owned in iso42010-viewpoints.json
+
+  @VE-62 @build
+  Scenario: Verdant's Observer Executive includes a generative self-refinement engine (crates/verdant-core/src/observer_refine.rs, CLI verdant operator refine-plan, MCP verdant_observer_refine_plan, and sealed site/generated/observer-refinement-agenda.json surfaced in Studio's Observer panel) that diagnoses all 13 VSM Managers, owned source file modularity, frontier.toml proof blockers, fidelity closure, and Wasm/capsule/Blank Frame budgets while expanding the shrink-only uorust MIR proof frontier to >= 219 lifted constructive functions
+    Given crates/verdant-core/src/observer_refine.rs, site/generated/observer-refinement-agenda.json, site/studio/observer-panel.mjs, frontier.toml, and VerdantOperatorChannel
+    When Verdant synthesizes its generative refinement agenda via synthesize_refinement_agenda and prism-fidelity audits [frontier_ratchet]
+    Then the agenda deterministically evaluates all 13 VSM Managers, parses top frontier.toml blockers, computes a reproducible agenda_kappa_hex, is sealed in immutability-seal.json, and frontier.toml proves at least 219 lifted constructive functions
+
+  @VE-63 @build
+  Scenario: Verdant lifts its entire validation, test-execution, and release-qualification lifecycle directly into Verdant (crates/verdant-core/src/lifecycle.rs, CLI verdant operator lifecycle-gate, MCP verdant_lifecycle_gate, sealed site/generated/lifecycle-gate-report.json, and qualify-tag.mjs delegation), lifts all 6 lifecycle categories (rust, verification-test, lexlean, feature-suite, model-governance, viewpoint) into VerdantVcs and self-host-ratchet-manifest.toml, and decomposes site/studio.mjs and site/studio/studio-page.mjs to auto-tighten max_js_file_lines <= 1680 with live Studio VCS commit diffs
+    Given crates/verdant-core/src/lifecycle.rs, site/generated/lifecycle-gate-report.json, site/generated/self-host-ratchet-manifest.toml, scripts/release/qualify-tag.mjs, site/studio-media.mjs, site/studio/discovery-panel.mjs, and site/studio/vcs-panel.mjs
+    When Verdant executes its internal lifecycle-gate on the live repository and with a mismatched release tag, and prism-fidelity audits [surface_ratchet]
+    Then the internal lifecycle gate certifies all 6 lifted lifecycle categories (>= 130 lifted modules), refuses mismatched tags closed, is sealed in immutability-seal.json, and max_js_file_lines is tightened monotonically to at most 1680

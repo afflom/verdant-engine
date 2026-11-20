@@ -118,6 +118,23 @@ u.hash = `holo=${bytesToBase64Url(hexToBytes(packed.holoHex))}`;
 }
 return u.href;
 };
+function computeSceneObjectDiff(prevJson, currJson) {
+try {
+const prevObjs = JSON.parse(prevJson || "{}").objects || [];
+const currObjs = JSON.parse(currJson || "{}").objects || [];
+const prevMap = new Map(prevObjs.map((o, i) => [o.id ?? `obj-${i}`, JSON.stringify(o)]));
+const currMap = new Map(currObjs.map((o, i) => [o.id ?? `obj-${i}`, JSON.stringify(o)]));
+let added = 0, modified = 0, removed = 0;
+for (const [k, v] of currMap) {
+if (!prevMap.has(k)) added++;
+else if (prevMap.get(k) !== v) modified++;
+}
+for (const k of prevMap.keys()) if (!currMap.has(k)) removed++;
+return { added, modified, removed, summary: `+${added} ~${modified} -${removed}` };
+} catch {
+return { added: 0, modified: 0, removed: 0, summary: "+0 ~0 -0" };
+}
+}
 const renderVcsHistory = () => {
 if (!vcsHistEl) return;
 vcsHistEl.replaceChildren();
@@ -128,13 +145,18 @@ empty.textContent = `Local Prism ID: ${ensureLocalStudioPrismId()} · 0 commits 
 vcsHistEl.append(empty);
 return;
 }
-for (const entry of vcsHistory.slice(0, 6)) {
+for (let i = 0; i < Math.min(6, vcsHistory.length); i++) {
+const entry = vcsHistory[i];
+const prev = vcsHistory[i + 1];
+const diff = prev ? computeSceneObjectDiff(prev.sceneJson, entry.sceneJson) : null;
 const row = document.createElement("div");
 row.className = "vx-outliner-row";
 const label = document.createElement("span");
 label.style.fontFamily = "var(--font-mono)";
 label.style.fontSize = "var(--text-14)";
-label.textContent = `e${entry.epoch} · ${entry.commitKappa.slice(0, 10)}… · ${entry.message}`;
+const branchTag = entry.branch ? `[${entry.branch}] ` : "";
+const diffTag = diff ? ` (${diff.summary})` : " (genesis)";
+label.textContent = `${branchTag}e${entry.epoch} · ${entry.commitKappa.slice(0, 10)}…${diffTag} · ${entry.message}`;
 const chkBtn = document.createElement("button");
 chkBtn.type = "button";
 chkBtn.className = "ide-btn";
@@ -160,7 +182,7 @@ objects: getStudioObjects(),
 lodRank: getLodIdx(),
 });
 const res = await callWorker("vcs-commit-pack-holo", {
-request: { appTitle, authorPrismId, message, parentCommitKappa, epoch, version: "2.5.0", sceneJson },
+request: { appTitle, authorPrismId, message, parentCommitKappa, epoch, version: "2.6.0", sceneJson },
 });
 const out = res?.result;
 if (!res?.ok || !out?.ok) throw new Error(out?.error || "VerdantVcs commit failed");

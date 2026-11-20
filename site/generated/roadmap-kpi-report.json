@@ -2,12 +2,12 @@
   "spec": "verdant/observer-roadmap-kpi-report/1",
   "managerId": "mgr-roadmap-strategy",
   "authorityId": "AUTH-SEMVER-CHANGE-KPI",
-  "currentVersion": "2.5.0",
-  "releaseEpoch": 9,
+  "currentVersion": "2.6.0",
+  "releaseEpoch": 10,
   "totalManagers": 13,
   "totalPrismFacetsOwned": 9,
   "totalPrismFacetsRequired": 9,
-  "declaredCapabilitiesCount": 72,
+  "declaredCapabilitiesCount": 74,
   "minorProgressPct": 100,
   "majorProgressPct": 100,
   "kpiPassedCount": 13,
@@ -83,7 +83,7 @@
       "name": "Immutable Composable Blank Frame Weight",
       "unit": "bytes",
       "direction": "atMost",
-      "actual": 28368,
+      "actual": 28370,
       "target": 30720,
       "passed": true,
       "owningManager": "mgr-change-release",
@@ -555,6 +555,37 @@
       "progressPct": 100,
       "completed": true,
       "ratchetRequirement": "Cut release .holo capsule weight by >70% via transparent RFC 1952 gzip compression (capsule-gzip + browser DecompressionStream/CompressionStream), unify SHA-256/hex helpers into digest.rs, add VerdantVcs diff_commits/create_branch/list_refs, close 705/705 derived+meant & 9/9 measured fidelity with 0 residue, and decompose observer.rs/operator.rs/conformance tests to tighten max_handwritten_rust_file_lines <= 2200."
+    },
+    {
+      "milestoneId": "M14",
+      "targetVersion": "2.6.0",
+      "tier": "minor",
+      "title": "Verdant Implements Verdant: Generative Observer Self-Refinement Engine, Lifted In-Verdant Lifecycle & Test Gate (136+ Modules) & <=1680L JS Decomposition",
+      "stakeholders": [
+        "creator",
+        "developer",
+        "systems-engineer",
+        "operator",
+        "auditor"
+      ],
+      "owningManagers": [
+        "mgr-observer-executive",
+        "mgr-verification-observatory",
+        "mgr-change-release",
+        "mgr-studio-alm"
+      ],
+      "requiredCapabilities": [
+        "VE-62",
+        "VE-63"
+      ],
+      "closedCapabilities": [
+        "VE-62",
+        "VE-63"
+      ],
+      "missingCapabilities": [],
+      "progressPct": 100,
+      "completed": true,
+      "ratchetRequirement": "Equip the Observer with a generative self-refinement planner (observer_refine.rs + refine-plan + MCP + sealed observer-refinement-agenda.json), lift Verdant's tests/validations/release-gating lifecycle into Verdant (lifecycle.rs + lifecycle-gate + 136+ lifted modules across all 6 lifecycle categories + qualify-tag delegation), expand uorust MIR frontier >= 219 lifted functions, and decompose studio.mjs/studio-page.mjs to tighten max_js_file_lines <= 1680 with live Studio VCS commit diffs."
     }
   ],
   "observerParts": [
@@ -658,7 +689,7 @@
       "ownedObserverParts": [
         "cognitive-language"
       ],
-      "ownedFilesCount": 10,
+      "ownedFilesCount": 12,
       "active": true
     },
     {
@@ -710,7 +741,7 @@
     "governingAuthority": "AUTH-SEMVER-CHANGE-KPI",
     "currentVersion": {
       "major": 2,
-      "minor": 5,
+      "minor": 6,
       "patch": 0
     },
     "recommendedBump": "major",
@@ -719,8 +750,8 @@
       "minor": 0,
       "patch": 0
     },
-    "currentEpoch": 9,
-    "nextEpoch": 10,
+    "currentEpoch": 10,
+    "nextEpoch": 11,
     "versionIncremented": true,
     "gates": {
       "ratchetApplied": true,
@@ -731,6 +762,6 @@
       "pullThroughVerified": true
     },
     "blockingReasons": [],
-    "rationale": "Ratchet applied & 5/5 Release Gates passed: advancing v2.5.0 -> v3.0.0 (Major, epoch 10) — Observer roadmap evaluation: minor=100% major=100% managers=13"
+    "rationale": "Ratchet applied & 5/5 Release Gates passed: advancing v2.6.0 -> v3.0.0 (Major, epoch 11) — Observer roadmap evaluation: minor=100% major=100% managers=13"
   }
 }

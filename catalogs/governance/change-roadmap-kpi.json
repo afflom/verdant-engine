@@ -183,6 +183,16 @@
       "requiredCapabilities": ["VE-60", "VE-61"],
       "owningManagers": ["mgr-change-release", "mgr-security-trust", "mgr-observer-executive", "mgr-knowledge-provenance", "mgr-verification-observatory"],
       "ratchetRequirement": "Cut release .holo capsule weight by >70% via transparent RFC 1952 gzip compression (capsule-gzip + browser DecompressionStream/CompressionStream), unify SHA-256/hex helpers into digest.rs, add VerdantVcs diff_commits/create_branch/list_refs, close 705/705 derived+meant & 9/9 measured fidelity with 0 residue, and decompose observer.rs/operator.rs/conformance tests to tighten max_handwritten_rust_file_lines <= 2200."
+    },
+    {
+      "milestoneId": "M14",
+      "targetVersion": "2.6.0",
+      "tier": "minor",
+      "title": "Verdant Implements Verdant: Generative Observer Self-Refinement Engine, Lifted In-Verdant Lifecycle & Test Gate (136+ Modules) & <=1680L JS Decomposition",
+      "stakeholders": ["creator", "developer", "systems-engineer", "operator", "auditor"],
+      "requiredCapabilities": ["VE-62", "VE-63"],
+      "owningManagers": ["mgr-observer-executive", "mgr-verification-observatory", "mgr-change-release", "mgr-studio-alm"],
+      "ratchetRequirement": "Equip the Observer with a generative self-refinement planner (observer_refine.rs + refine-plan + MCP + sealed observer-refinement-agenda.json), lift Verdant's tests/validations/release-gating lifecycle into Verdant (lifecycle.rs + lifecycle-gate + 136+ lifted modules across all 6 lifecycle categories + qualify-tag delegation), expand uorust MIR frontier >= 219 lifted functions, and decompose studio.mjs/studio-page.mjs to tighten max_js_file_lines <= 1680 with live Studio VCS commit diffs."
     }
   ],
   "kpiCatalog": [
