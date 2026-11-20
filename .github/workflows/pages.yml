@@ -218,6 +218,26 @@ jobs:
           export PATH="$HOME/.npm-ci-tools/bin:$PATH"
           export NODE_PATH="$HOME/.npm-ci-tools/lib/node_modules"
           node bootstrap/weight.mjs site
+      - name: Pack Stitch 4-of-8 shards for live Blank Frame pull-through & run Chromium gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          export NPM_CONFIG_PREFIX="$HOME/.npm-ci-tools"
+          export PATH="$HOME/.npm-ci-tools/bin:$PATH"
+          export NODE_PATH="$HOME/.npm-ci-tools/lib/node_modules"
+          ver=$(node -e 'const l=JSON.parse(require("fs").readFileSync("site/generated/release-ledger.json","utf8")); console.log(`${l.currentVersion.major}.${l.currentVersion.minor}.${l.currentVersion.patch}`)')
+          epoch=$(node -e 'const l=JSON.parse(require("fs").readFileSync("site/generated/release-ledger.json","utf8")); console.log(l.releaseEpoch)')
+          owner_lc=$(printf '%s' "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          cargo build --locked -p verdant-cli --bin verdant
+          ./target/debug/verdant release pack \
+            --root . \
+            --version "$ver" \
+            --epoch "$epoch" \
+            --out "site/stitch/v${ver}" \
+            --relay "https://${owner_lc}.github.io/verdant-engine/stitch/v${ver}/shards" \
+            --pin "stitch://verdant/studio"
+          cp "site/stitch/v${ver}/frame-pin.json" site/frame/frame-pin.json
+          node scripts/verify-stitch-release.mjs --dir "site/stitch/v${ver}"
       - name: Keep the screens
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9

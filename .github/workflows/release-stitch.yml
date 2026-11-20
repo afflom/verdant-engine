@@ -99,30 +99,43 @@ jobs:
         run: |
           set -euo pipefail
           OWNER_LC=$(printf '%s' "$OWNER_LOWER" | tr '[:upper:]' '[:lower:]')
-          # Publish GitHub Release with portable .holo capsule, VerdantVcs .uorc, frame-pin.json & .crate archives
+          # Publish GitHub Release with portable .holo capsule, self-hosted Source DAG .uorc,
+          # frame-pin.json, 4-of-8 STCH2 shards & optional Rust .crate archives.
           # (Creating a GitHub Release automatically triggers Zenodo DOI archival with zero Verdant config.)
-          gh release create "v${VER}" \
-            "dist/stitch-release/verdant-v${VER}.holo" \
-            "dist/stitch-release/vcs-v${VER}.uorc" \
-            "dist/stitch-release/frame-pin.json" \
-            dist/stitch-release/shards/*.stch \
-            dist/crates/crates/*.crate \
-            dist/crates/crates-manifest.json \
+          RELEASE_ASSETS=(
+            "dist/stitch-release/verdant-v${VER}.holo"
+            "dist/stitch-release/verdant-source-v${VER}.uorc"
+            "dist/stitch-release/self-host-lift.json"
+            "dist/stitch-release/vcs-v${VER}.uorc"
+            "dist/stitch-release/frame-pin.json"
+            dist/stitch-release/shards/*.stch
+            dist/stitch-release/source-shards/*.stch
+            dist/crates/crates/*.crate
+            dist/crates/crates-manifest.json
+          )
+          gh release create "v${VER}" "${RELEASE_ASSETS[@]}" \
             --title "Verdant Engine v${VER} (Self-Hosted Stitch .holo + Rust Crates)" \
-            --notes "Verified via mandatory Chromium Pull-Through Blank Frame Gate (4-of-8 GF(2^8) Reed-Solomon recovery with 4 shards withheld, 0 loose UI files). Includes portable verdant-v${VER}.holo capsule, 8 STCH2 shards, VerdantVcs .uorc DAG, and Rust .crate packages." \
-            || gh release upload "v${VER}" \
-              "dist/stitch-release/verdant-v${VER}.holo" \
-              "dist/stitch-release/vcs-v${VER}.uorc" \
-              "dist/stitch-release/frame-pin.json" \
-              dist/stitch-release/shards/*.stch \
-              dist/crates/crates/*.crate \
-              dist/crates/crates-manifest.json \
-              --clobber
+            --notes "Verified via mandatory Chromium Pull-Through Blank Frame Gate (4-of-8 GF(2^8) Reed-Solomon recovery with 4 shards withheld, 0 loose UI files) and 13-Manager Total Ownership (9/9 Prism Facets, 8/8 ISO 15939 KPIs). Includes portable verdant-v${VER}.holo capsule, verdant-source-v${VER}.uorc full Source DAG, 8+8 STCH2 shards, frame-pin.json, and 4 Rust .crate packages." \
+            || gh release upload "v${VER}" "${RELEASE_ASSETS[@]}" --clobber
 
-          # Push OCI release bundle (.holo + shards + Rust crates) to GitHub Packages (ghcr.io) via Docker buildx/registry
-          if command -v oras >/dev/null 2>&1; then
-            echo "$GH_TOKEN" | oras login ghcr.io -u "$OWNER_LC" --password-stdin
-            oras push "ghcr.io/${OWNER_LC}/verdant-engine/verdant-release:v${VER}" \
-              "dist/stitch-release/verdant-v${VER}.holo:application/vnd.verdant.holo.v1" \
-              "dist/stitch-release/frame-pin.json:application/vnd.verdant.frame-pin.v1+json"
-          fi
+          # Push immutable OCI release bundle (.holo + Source DAG + shards + Rust crates & RFC 2789 sparse index)
+          # to GitHub Packages (ghcr.io) via standard Docker build & push.
+          echo "$GH_TOKEN" | docker login ghcr.io -u "$OWNER_LC" --password-stdin
+          mkdir -p dist/oci-bundle
+          cp "dist/stitch-release/verdant-v${VER}.holo" \
+             "dist/stitch-release/verdant-source-v${VER}.uorc" \
+             "dist/stitch-release/frame-pin.json" \
+             "dist/stitch-release/self-host-lift.json" \
+             dist/oci-bundle/
+          cp -r dist/stitch-release/shards dist/oci-bundle/shards
+          cp -r dist/crates dist/oci-bundle/crates
+          printf 'FROM scratch\nCOPY . /verdant/\n' > dist/oci-bundle/Dockerfile
+          docker build \
+            --label "org.opencontainers.image.source=https://github.com/${GITHUB_REPOSITORY}" \
+            --label "org.opencontainers.image.version=${VER}" \
+            --label "org.opencontainers.image.licenses=Apache-2.0" \
+            -t "ghcr.io/${OWNER_LC}/verdant-engine/verdant-release:v${VER}" \
+            -t "ghcr.io/${OWNER_LC}/verdant-engine/verdant-release:latest" \
+            dist/oci-bundle
+          docker push "ghcr.io/${OWNER_LC}/verdant-engine/verdant-release:v${VER}"
+          docker push "ghcr.io/${OWNER_LC}/verdant-engine/verdant-release:latest"
