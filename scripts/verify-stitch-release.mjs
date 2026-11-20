@@ -188,8 +188,10 @@ try {
   const pageErrors = [];
   page.on("pageerror", (err) => pageErrors.push(String(err)));
 
-  // A. Pull-Through Blank Frame boot into lifted Verdant Studio with 4 of 8 shards withheld!
-  const studioUrl = `${frameOrigin}/?relay=${encodeURIComponent(`${relayOrigin}/shards`)}&pin=${encodeURIComponent("stitch://verdant/studio")}`;
+  // A. Multi-Origin Failover + 4-of-8 Pull-Through Blank Frame boot into lifted Verdant Studio!
+  // Primary relay (`/dead-primary-relay`) fails with 404/503; secondary relay (`/shards`) withholds 4 of 8 shards!
+  const multiRelays = `${relayOrigin}/dead-primary-relay,${relayOrigin}/shards`;
+  const studioUrl = `${frameOrigin}/?relay=${encodeURIComponent(multiRelays)}&pin=${encodeURIComponent("stitch://verdant/studio")}`;
   await page.goto(studioUrl, { waitUntil: "domcontentloaded", timeout: 30000 });
   await page.waitForFunction(
     () => window.__VERDANT_BLANK_FRAME__ && window.__VERDANT_BLANK_FRAME__.status !== "booting",
@@ -204,10 +206,16 @@ try {
     targetRoute: window.__VERDANT_BLANK_FRAME__.targetRoute,
     shardsUsed: window.__VERDANT_BLANK_FRAME__.shardsUsed,
     shardsDropped: window.__VERDANT_BLANK_FRAME__.shardsDropped,
+    relayCount: window.__VERDANT_BLANK_FRAME__.relayCount,
+    failedRelays: window.__VERDANT_BLANK_FRAME__.failedRelays,
+    relayHits: window.__VERDANT_BLANK_FRAME__.relayHits,
   }));
 
   if (bootState.status !== "mounted") {
     throw new Error(`Blank Frame Stitch pull-through failed: ${JSON.stringify(bootState)}`);
+  }
+  if (bootState.relayCount < 2 || !bootState.failedRelays[`${relayOrigin}/dead-primary-relay`]) {
+    throw new Error(`Multi-origin relay failover not exercised: ${JSON.stringify(bootState)}`);
   }
   if (bootState.capsuleSha256Hex !== pinJson.releaseKappaHex) {
     throw new Error(`Recovered kappa mismatch: ${bootState.capsuleSha256Hex} != ${pinJson.releaseKappaHex}`);
@@ -253,16 +261,36 @@ try {
     // Drop 4 of 8 shards and recover from surviving parity+data mix!
     const kept = [sealed.shards[1], sealed.shards[3], sealed.shards[5], sealed.shards[7]];
     const recovered = await api.recoverPrivateBoundaryZeroAccount(kept);
+
+    // Zero-account WebRTC DataChannel peer shard exchange + reciprocal budget cap check:
+    const cachedPeer = await api.peerMesh.cacheVerified("prism:peer-alpha", sealed.shards[1]);
+    const served = api.peerMesh.serveToPeer("prism:peer-beta", cachedPeer.key);
+    const webrtcRes = await api.peerMesh.openLoopbackWebRtcDemo(cachedPeer.key);
+    let refusedBadPeer = false;
+    try {
+      api.peerMesh.serveToPeer("github-oauth-only", cachedPeer.key);
+    } catch {
+      refusedBadPeer = true;
+    }
     return {
       refusedJs,
       refusedTraversal,
       ownerPrismId: sealed.ownerPrismId,
       shardCount: sealed.shardCount,
       recoveredMatch: recovered.plaintextUtf8 === secret,
+      peerServedBytes: served.byteLength,
+      webrtcVerified: Boolean(webrtcRes?.verified),
+      refusedBadPeer,
     };
   });
-  if (!securityCheck.refusedJs || !securityCheck.refusedTraversal || !securityCheck.recoveredMatch) {
-    throw new Error(`Blank Frame security/vault check failed: ${JSON.stringify(securityCheck)}`);
+  if (
+    !securityCheck.refusedJs ||
+    !securityCheck.refusedTraversal ||
+    !securityCheck.recoveredMatch ||
+    !securityCheck.webrtcVerified ||
+    !securityCheck.refusedBadPeer
+  ) {
+    throw new Error(`Blank Frame security/vault/WebRTC check failed: ${JSON.stringify(securityCheck)}`);
   }
 
   // C. Composable third-party deep-link pin (`?pin=stitch://verdant/catalogs`)

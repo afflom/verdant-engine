@@ -501,5 +501,64 @@ theorem{
   proof: decide{},
   axioms: []
 }
+
+definition{
+  name: multiOriginResilienceValid,
+  parameters: [
+    independentOrigins : Nat,
+    minRequiredOrigins : Nat,
+    survivingOrigins : Nat,
+    peerCreditShards : Nat,
+    requestedShards : Nat,
+    zeroAccount : Bool
+  ],
+  result: Bool,
+  body: (((minRequiredOrigins <=? independentOrigins) && (1 <=? survivingOrigins)) && ((requestedShards <=? peerCreditShards) && zeroAccount))
+}
+
+definition{
+  name: multiOriginStitchResilienceDirect,
+  parameters: [],
+  result: Bool,
+  body: ((multiOriginResilienceValid (Subsystems::sTwo) (Subsystems::sTwo) 1 (Subsystems::sFour) (Subsystems::sFour) true) && ((not (multiOriginResilienceValid 1 (Subsystems::sTwo) 1 (Subsystems::sFour) (Subsystems::sFour) true)) && ((not (multiOriginResilienceValid (Subsystems::sTwo) (Subsystems::sTwo) 0 (Subsystems::sFour) (Subsystems::sFour) true)) && ((not (multiOriginResilienceValid (Subsystems::sTwo) (Subsystems::sTwo) 1 (Subsystems::sThree) (Subsystems::sFour) true)) && (not (multiOriginResilienceValid (Subsystems::sTwo) (Subsystems::sTwo) 1 (Subsystems::sFour) (Subsystems::sFour) false))))))
+}
+
+theorem{
+  name: multiOriginStitchResilienceVerified,
+  parameters: [],
+  statement: ((multiOriginStitchResilienceDirect) = true),
+  proof: decide{},
+  axioms: []
+}
+
+definition{
+  name: studioVcsAndUhdWorkloadValid,
+  parameters: [
+    vcsAcyclic : Bool,
+    holoVerified : Bool,
+    zeroAccountPin : Bool,
+    peakRamPages : Nat,
+    maxRamPages : Nat,
+    frameUs : Nat,
+    budgetUs : Nat
+  ],
+  result: Bool,
+  body: ((vcsAcyclic && (holoVerified && zeroAccountPin)) && ((peakRamPages <=? maxRamPages) && (frameUs <=? budgetUs)))
+}
+
+definition{
+  name: studioZeroAccountAuthoringAndUhdDirect,
+  parameters: [],
+  result: Bool,
+  body: ((studioVcsAndUhdWorkloadValid true true true (Subsystems::sSix) (Subsystems::sEight) (Subsystems::sEight) (Subsystems::sSixteen)) && ((not (studioVcsAndUhdWorkloadValid false true true (Subsystems::sSix) (Subsystems::sEight) (Subsystems::sEight) (Subsystems::sSixteen))) && ((not (studioVcsAndUhdWorkloadValid true true true (Subsystems::sNine) (Subsystems::sEight) (Subsystems::sEight) (Subsystems::sSixteen))) && (not (studioVcsAndUhdWorkloadValid true true false (Subsystems::sSix) (Subsystems::sEight) (Subsystems::sEight) (Subsystems::sSixteen))))))
+}
+
+theorem{
+  name: studioZeroAccountAuthoringAndUhdVerified,
+  parameters: [],
+  statement: ((studioZeroAccountAuthoringAndUhdDirect) = true),
+  proof: decide{},
+  axioms: []
+}
 \end{semanticmodule}
 \end{lexlean}

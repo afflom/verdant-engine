@@ -18,7 +18,15 @@
       "ghcr-oci-holo-release-archive",
       "cargo-sparse-registry-rust-crates",
       "github-release-auto-zenodo-doi"
-    ]
+    ],
+    "zenodoArchivalRecord": "https://zenodo.org/records/24383968",
+    "cargoSparseRegistryEndpoint": "https://afflom.github.io/verdant-engine/crates/index/"
+  },
+  "multiOriginRelayPolicy": {
+    "minIndependentOrigins": 2,
+    "parallelShardRacing": true,
+    "webrtcReciprocalPeerSeeding": true,
+    "budgetEnforcedBy": "StitchBudgetLedger"
   },
   "boundaryPrivacyContract": {
     "defaultUserVisibility": "private-encrypted",

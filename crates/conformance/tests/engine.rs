@@ -5882,7 +5882,7 @@ fn engine_ve_45() {
     assert_eq!(kpi_rep.minor_progress_pct, 100);
     assert!(kpi_rep.major_progress_pct >= 50);
     assert_eq!(kpi_rep.kpi_passed_count, kpi_rep.kpi_total_count);
-    assert_eq!(kpi_rep.milestones.len(), 5);
+    assert!(kpi_rep.milestones.len() >= 5);
     assert_eq!(kpi_rep.observer_parts.len(), 13);
 }
 
@@ -6076,4 +6076,266 @@ fn engine_ve_47() {
     );
 
     let _ = std::fs::remove_dir_all(&out_dir);
+}
+
+#[test]
+fn engine_ve_48() {
+    use verdant_core::network::{
+        MultiOriginRelayPlan, ReedSolomonStitchCodec, StitchPeerExchangeSession,
+    };
+
+    // 1. MultiOriginRelayPlan enforces >= 2 independent HTTPS origins & survives primary outage:
+    let plan = MultiOriginRelayPlan::build(
+        vec![
+            "https://afflom.github.io/verdant-engine/stitch/v1.2.0/shards".to_string(),
+            "https://github.com/afflom/verdant-engine/releases/download/v1.2.0".to_string(),
+        ],
+        2,
+    )
+    .expect("two independent HTTPS origins must succeed");
+    assert_eq!(plan.distinct_origins.len(), 2);
+    let survivors = plan
+        .surviving_relays(&["afflom.github.io"])
+        .expect("secondary origin must survive primary outage");
+    assert_eq!(survivors.len(), 1);
+    assert!(survivors[0].contains("github.com"));
+
+    // Negative checks: single origin, unsafe http:// external host, or total outage MUST fail closed!
+    assert!(
+        MultiOriginRelayPlan::build(
+            vec!["https://afflom.github.io/verdant-engine/stitch/v1.2.0/shards".to_string()],
+            2
+        )
+        .is_err(),
+        "single-origin downgrade must be refused"
+    );
+    assert!(
+        MultiOriginRelayPlan::build(
+            vec![
+                "http://evil.example/shards".to_string(),
+                "https://github.com/afflom/verdant-engine/releases/download/v1.2.0".to_string(),
+            ],
+            2
+        )
+        .is_err(),
+        "unsafe non-HTTPS external relay must be refused"
+    );
+    assert!(
+        plan.surviving_relays(&["afflom.github.io", "github.com"])
+            .is_err(),
+        "zero surviving relays must fail closed"
+    );
+
+    // 2. Zero-account reciprocal peer shard exchange (WebRTC/BroadcastChannel) governed by StitchBudgetLedger:
+    let payload = b"Verdant Multi-Origin 4-of-8 STCH2 peer shard payload";
+    let shards = ReedSolomonStitchCodec::shard_k_of_n(payload, 4, 8).expect("4-of-8 shard");
+    let raw0 = shards[0].to_binary_stch2();
+    let cap = (raw0.len() as u64) * 2;
+    let mut peer = StitchPeerExchangeSession::new("prism:peer-local", cap, cap * 4)
+        .expect("peer exchange session");
+    let rec = peer
+        .receive_verified_peer_shard("prism:peer-alpha", &raw0)
+        .expect("valid STCH2 shard admitted");
+    let key = format!(
+        "{}:{}",
+        rec.manifest_root
+            .iter()
+            .map(|b| format!("{b:02x}"))
+            .collect::<String>(),
+        rec.index
+    );
+    let served = peer
+        .serve_shard_to_peer("prism:peer-beta", &key)
+        .expect("serve shard within reciprocal budget");
+    assert_eq!(served, raw0);
+    assert_eq!(peer.received_shards, 1);
+    assert_eq!(peer.served_shards, 1);
+
+    // Negative checks: tampered shard, non-prism identity, and over-budget flood MUST be refused!
+    let mut tampered = raw0.clone();
+    let last = tampered.len() - 1;
+    tampered[last] ^= 0xFF;
+    assert!(peer
+        .receive_verified_peer_shard("prism:peer-alpha", &tampered)
+        .is_err());
+    assert!(peer.serve_shard_to_peer("github-oauth-user", &key).is_err());
+    let _ = peer.serve_shard_to_peer("prism:peer-beta", &key);
+    assert!(
+        peer.serve_shard_to_peer("prism:peer-beta", &key).is_err(),
+        "over-budget peer flood must be refused"
+    );
+}
+
+#[test]
+fn engine_ve_49() {
+    use std::path::Path;
+    use verdant_core::vcs::{
+        parse_stitch_deep_link_uri, studio_vcs_commit_and_pack_holo_json, VerdantReleaseCapsule,
+    };
+
+    let req1 = serde_json::json!({
+        "appTitle": "Sunspire Zero-Account App",
+        "authorPrismId": "prism:local-creator-01",
+        "message": "Initial authored 3D scene",
+        "version": "1.2.0",
+        "epoch": 1,
+        "sceneJson": "{\"objects\":[{\"kind\":\"Box\",\"pos\":[0,1,0]}]}"
+    })
+    .to_string();
+    let out1: serde_json::Value =
+        serde_json::from_str(&studio_vcs_commit_and_pack_holo_json(&req1)).expect("parse out1");
+    assert_eq!(out1["ok"], serde_json::Value::Bool(true));
+    assert_eq!(out1["shardCount"], 8);
+    let kappa1 = out1["commitKappa"].as_str().expect("commitKappa");
+    let holo_hex = out1["holoHex"].as_str().expect("holoHex");
+    let holo_bytes: Vec<u8> = (0..holo_hex.len())
+        .step_by(2)
+        .map(|i| u8::from_str_radix(&holo_hex[i..i + 2], 16).expect("hex byte"))
+        .collect();
+    let unpacked = VerdantReleaseCapsule::verify_and_unpack(&holo_bytes)
+        .expect("exported portable .holo must self-verify");
+    assert_eq!(
+        unpacked.capsule_sha256_hex,
+        out1["capsuleSha256Hex"].as_str().unwrap_or("")
+    );
+    let deep_link = parse_stitch_deep_link_uri(out1["stitchDeepLinkUri"].as_str().unwrap_or(""))
+        .expect("generated stitch:// deep-link must parse cleanly");
+    assert_eq!(deep_link.virtual_route, "studio/index.html");
+
+    // Second chained commit e2 referencing e1:
+    let req2 = serde_json::json!({
+        "appTitle": "Sunspire Zero-Account App",
+        "authorPrismId": "prism:local-creator-01",
+        "message": "Added beacon tower",
+        "parentCommitKappa": kappa1,
+        "version": "1.2.0",
+        "epoch": 2,
+        "sceneJson": "{\"objects\":[{\"kind\":\"Box\",\"pos\":[0,1,0]},{\"kind\":\"Pillar\",\"pos\":[4,2,0]}]}"
+    })
+    .to_string();
+    let out2: serde_json::Value =
+        serde_json::from_str(&studio_vcs_commit_and_pack_holo_json(&req2)).expect("parse out2");
+    assert_eq!(out2["ok"], serde_json::Value::Bool(true));
+    assert_eq!(out2["parentCommitKappa"].as_str(), Some(kappa1));
+    assert_ne!(out2["commitKappa"].as_str(), Some(kappa1));
+
+    // Verify Verdant Studio exposes the zero-account VerdantVcs & portable .holo controls:
+    let repo_root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+    let studio_html = std::fs::read_to_string(repo_root.join("site/studio/index.html"))
+        .expect("read site/studio/index.html");
+    for id in [
+        "id=\"studio-vcs-commit-btn\"",
+        "id=\"studio-export-holo-btn\"",
+        "id=\"studio-copy-pin-btn\"",
+    ] {
+        assert!(studio_html.contains(id), "Studio HTML missing {id}");
+    }
+}
+
+#[test]
+fn engine_ve_50() {
+    use std::path::Path;
+    use verdant_core::uhd::paged_workload_step_json;
+
+    // 1. 4K UHD (3840x2160) with 16 MiB virtual glTF + CodedMatrix AI pages inside an 8 MiB arena:
+    let req4k = serde_json::json!({
+        "viewportW": 3840,
+        "viewportH": 2160,
+        "isSoftwareGpu": false,
+        "webgpuAvailable": true,
+        "frameUs": 9200,
+        "budgetMb": 8,
+        "gltfPages": 128,
+        "codedAiPages": 128,
+        "pageKb": 64
+    })
+    .to_string();
+    let res4k: serde_json::Value =
+        serde_json::from_str(&paged_workload_step_json(&req4k)).expect("parse 4K JSON");
+    assert_eq!(res4k["ok"], serde_json::Value::Bool(true));
+    assert_eq!(res4k["contractMet"], serde_json::Value::Bool(true));
+    assert_eq!(
+        res4k["arena"]["invariantHeld"],
+        serde_json::Value::Bool(true)
+    );
+    assert!(res4k["arena"]["evictions"].as_u64().unwrap_or(0) > 0);
+    assert!(
+        res4k["arena"]["peakResidentBytes"]
+            .as_u64()
+            .unwrap_or(u64::MAX)
+            <= res4k["arena"]["budgetBytes"].as_u64().unwrap_or(0)
+    );
+
+    // 2. 8K UHD (7680x4320) with 32 MiB virtual glTF + CodedMatrix AI pages inside an 8 MiB arena:
+    let req8k = serde_json::json!({
+        "viewportW": 7680,
+        "viewportH": 4320,
+        "isSoftwareGpu": false,
+        "webgpuAvailable": true,
+        "frameUs": 11400,
+        "budgetMb": 8,
+        "gltfPages": 256,
+        "codedAiPages": 256,
+        "pageKb": 64
+    })
+    .to_string();
+    let res8k: serde_json::Value =
+        serde_json::from_str(&paged_workload_step_json(&req8k)).expect("parse 8K JSON");
+    assert_eq!(res8k["ok"], serde_json::Value::Bool(true));
+    assert_eq!(res8k["contractMet"], serde_json::Value::Bool(true));
+    assert_eq!(
+        res8k["arena"]["invariantHeld"],
+        serde_json::Value::Bool(true)
+    );
+    assert!(res8k["arena"]["evictions"].as_u64().unwrap_or(0) >= 256);
+
+    let repo_root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+    assert!(
+        repo_root.join("scripts/verify-uhd-workload.mjs").is_file(),
+        "headless Chromium UHD workload gate script must exist"
+    );
+}
+
+#[test]
+fn engine_ve_51() {
+    use std::path::Path;
+    use verdant_core::operator::VerdantOperatorChannel;
+
+    let repo_root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+
+    // 1. Verify Zenodo archival DOI & Cargo Sparse Registry are locked in AUTH-STITCH-SELF-HOSTING:
+    let stitch_auth =
+        std::fs::read_to_string(repo_root.join("catalogs/governance/stitch-self-hosting.json"))
+            .expect("read stitch-self-hosting.json");
+    assert!(stitch_auth.contains("https://zenodo.org/records/24383968"));
+    assert!(stitch_auth.contains("https://afflom.github.io/verdant-engine/crates/index/"));
+
+    // 2. Verify Blank-Frame-first entry on site/card.html and live docs links:
+    let card_html =
+        std::fs::read_to_string(repo_root.join("site/card.html")).expect("read site/card.html");
+    assert!(card_html.contains("id=\"ve-frame-link\""));
+    assert!(card_html.contains("./frame/?pin=stitch://verdant/studio"));
+
+    let docs_html = std::fs::read_to_string(repo_root.join("site/docs/index.html"))
+        .expect("read site/docs/index.html");
+    assert!(docs_html.contains("https://zenodo.org/records/24383968"));
+    assert!(docs_html.contains("sparse+https://afflom.github.io/verdant-engine/crates/index/"));
+
+    // 3. Verify Observer Roadmap & KPI Manager reports all 8 milestones (M1..M8) and 10/10 passing KPIs:
+    let ch = VerdantOperatorChannel::new("sunspire-regatta").expect("operator channel");
+    let rep = ch
+        .evaluate_observer_roadmap_kpis(&repo_root, true, true)
+        .expect("observer roadmap & KPI report");
+    assert_eq!(rep.milestones.len(), 8, "expected Milestones M1..M8");
+    assert_eq!(
+        rep.kpi_total_count, 10,
+        "expected 10 ISO 15939 Observer KPIs"
+    );
+    assert_eq!(
+        rep.kpi_passed_count, rep.kpi_total_count,
+        "all 10 Observer KPIs must pass (kpis={:?})",
+        rep.kpis
+    );
+    assert_eq!(rep.minor_progress_pct, 100);
+    assert_eq!(rep.major_progress_pct, 100);
 }

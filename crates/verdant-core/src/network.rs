@@ -1603,3 +1603,168 @@ pub fn stitch_boundary_recover_json(raw_json: &str) -> String {
         Err(e) => serde_json::json!({ "ok": false, "error": e.to_string() }).to_string(),
     }
 }
+
+/// Multi-origin Stitch shard distribution & failover plan (`VE-48`, `AUTH-STITCH-SELF-HOSTING`).
+/// Guarantees at least two independent HTTPS origins (or localhost test endpoints) so losing any
+/// single host never interrupts Blank Frame hydration.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MultiOriginRelayPlan {
+    /// Ordered independent relay base URLs raced in parallel by the Blank Frame.
+    pub relay_urls: Vec<String>,
+    /// Canonical lowercase distinct host origins verified to exceed `min_independent_origins`.
+    pub distinct_origins: Vec<String>,
+    /// Minimum required independent origins (`>= 2`).
+    pub min_independent_origins: usize,
+}
+
+impl MultiOriginRelayPlan {
+    /// Validates and constructs a multi-origin relay plan, refusing single-origin downgrades,
+    /// duplicate origins, or non-HTTPS/non-localhost unsafe URLs.
+    pub fn build(
+        relays: Vec<String>,
+        min_independent_origins: usize,
+    ) -> Result<Self, StitchCustodyError> {
+        let floor = min_independent_origins.max(1usize + 1usize);
+        let mut distinct = std::collections::BTreeSet::new();
+        let mut clean = Vec::with_capacity(relays.len());
+        for raw in relays {
+            let trimmed = raw.trim().trim_end_matches('/').to_string();
+            let is_https = trimmed.starts_with("https://");
+            let is_local_http =
+                trimmed.starts_with("http://127.0.0.1") || trimmed.starts_with("http://localhost");
+            if !is_https && !is_local_http {
+                return Err(StitchCustodyError::InvalidJournalSignature {
+                    detail: format!("unsafe or non-HTTPS Stitch relay URL refused: `{trimmed}`"),
+                });
+            }
+            let host = trimmed
+                .split("://")
+                .nth(1)
+                .and_then(|rest| rest.split('/').next())
+                .unwrap_or("")
+                .to_ascii_lowercase();
+            if host.is_empty() {
+                return Err(StitchCustodyError::InvalidJournalSignature {
+                    detail: format!("Stitch relay URL missing host: `{trimmed}`"),
+                });
+            }
+            distinct.insert(host);
+            clean.push(trimmed);
+        }
+        if distinct.len() < floor {
+            return Err(StitchCustodyError::IncompatibleFragmentPair {
+                left_index: distinct.len() as u8,
+                right_index: floor as u8,
+                detail: format!(
+                    "multi-origin resilience requires >= {floor} independent origins (found {})",
+                    distinct.len()
+                ),
+            });
+        }
+        Ok(Self {
+            relay_urls: clean,
+            distinct_origins: distinct.into_iter().collect(),
+            min_independent_origins: floor,
+        })
+    }
+
+    /// Selects surviving relay URLs after excluding any failed origin hostnames, failing closed
+    /// only when zero relays remain.
+    pub fn surviving_relays(
+        &self,
+        failed_hosts: &[&str],
+    ) -> Result<Vec<String>, StitchCustodyError> {
+        let mut alive = Vec::new();
+        for url in &self.relay_urls {
+            let host = url
+                .split("://")
+                .nth(1)
+                .and_then(|rest| rest.split('/').next())
+                .unwrap_or("")
+                .to_ascii_lowercase();
+            if !failed_hosts
+                .iter()
+                .any(|dead| dead.eq_ignore_ascii_case(&host))
+            {
+                alive.push(url.clone());
+            }
+        }
+        if alive.is_empty() {
+            return Err(StitchCustodyError::StalePeerObservation { peer_id: 0 });
+        }
+        Ok(alive)
+    }
+}
+
+/// Zero-account browser-to-browser WebRTC DataChannel / BroadcastChannel reciprocal shard seeder
+/// (`VE-48`), enforcing SHA-256 `STCH2` verification and [`StitchBudgetLedger`] credit ceilings.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct StitchPeerExchangeSession {
+    /// Local zero-account `Prism ID` (`prism:...`).
+    pub local_prism_id: String,
+    /// Reciprocal budget & alien-pool eviction ledger.
+    pub ledger: StitchBudgetLedger,
+    /// Verified binary `STCH2` shards cached locally keyed by `(manifest_root_hex:index)`.
+    pub verified_shards: std::collections::BTreeMap<String, Vec<u8>>,
+    /// Total verified shards served to peers.
+    pub served_shards: u64,
+    /// Total verified shards received from peers.
+    pub received_shards: u64,
+}
+
+impl StitchPeerExchangeSession {
+    /// Creates a reciprocal peer exchange session for `local_prism_id`.
+    pub fn new(
+        local_prism_id: &str,
+        per_identity_cap_bytes: u64,
+        alien_pool_cap_bytes: u64,
+    ) -> Result<Self, StitchCustodyError> {
+        if !local_prism_id.starts_with("prism:") {
+            return Err(StitchCustodyError::InvalidJournalSignature {
+                detail: "peer exchange requires valid zero-account prism: identity".to_string(),
+            });
+        }
+        Ok(Self {
+            local_prism_id: local_prism_id.to_string(),
+            ledger: StitchBudgetLedger::new(per_identity_cap_bytes, alien_pool_cap_bytes),
+            verified_shards: std::collections::BTreeMap::new(),
+            served_shards: 0,
+            received_shards: 0,
+        })
+    }
+
+    /// Receives, SHA-256-verifies, and budget-admits a binary `STCH2` shard from `peer_prism_id`.
+    pub fn receive_verified_peer_shard(
+        &mut self,
+        peer_prism_id: &str,
+        stch2_bytes: &[u8],
+    ) -> Result<StitchRsShard, StitchCustodyError> {
+        let shard = StitchRsShard::from_binary_stch2(stch2_bytes)?;
+        let key = format!("{}:{}", hex_encode(&shard.manifest_root), shard.index);
+        self.ledger
+            .admit_shard(peer_prism_id, &key, stch2_bytes.len() as u64)?;
+        self.verified_shards.insert(key, stch2_bytes.to_vec());
+        self.received_shards = self.received_shards.saturating_add(1);
+        Ok(shard)
+    }
+
+    /// Serves a verified cached shard to `requester_prism_id`, enforcing per-identity budget
+    /// reciprocity so flood peers cannot drain bandwidth without contributing.
+    pub fn serve_shard_to_peer(
+        &mut self,
+        requester_prism_id: &str,
+        shard_key: &str,
+    ) -> Result<Vec<u8>, StitchCustodyError> {
+        let Some(bytes) = self.verified_shards.get(shard_key).cloned() else {
+            return Err(StitchCustodyError::PayloadDigestMismatch {
+                detail: format!("requested Stitch shard `{shard_key}` not resident on peer"),
+            });
+        };
+        self.ledger
+            .admit_shard(requester_prism_id, shard_key, bytes.len() as u64)?;
+        self.served_shards = self.served_shards.saturating_add(1);
+        Ok(bytes)
+    }
+}

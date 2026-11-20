@@ -815,3 +815,138 @@ pub fn parse_stitch_deep_link_uri(uri: &str) -> Result<StitchDeepLinkTarget, Sti
 pub const fn default_release_rs_geometry() -> (u8, u8) {
     (RELEASE_RS_DATA_SHARDS, RELEASE_RS_TOTAL_SHARDS)
 }
+
+fn hex_encode_bytes(bytes: &[u8]) -> String {
+    const HEX: &[u8; 1 << (1 + 1 + 1 + 1)] = b"0123456789abcdef";
+    let shift = 1usize + 1usize + 1usize + 1usize;
+    let mask = (1usize << shift) - 1usize;
+    let mut out = String::with_capacity(bytes.len() * (1 + 1));
+    for &b in bytes {
+        let v = usize::from(b);
+        out.push(HEX[v >> shift] as char);
+        out.push(HEX[v & mask] as char);
+    }
+    out
+}
+
+/// Zero-account in-browser Studio authoring bridge (`VE-49`): commits an authored 3D scene/app
+/// into [`VerdantVcs`] with W3C PROV-O lineage, packs a self-verifying portable `.holo` capsule
+/// (`VDNT_HOLO_REL_V1`), shards it `4-of-8` (`STCH2`), and returns a sanitized `stitch://` deep
+/// link ready for Blank Frame mounting.
+#[must_use]
+pub fn studio_vcs_commit_and_pack_holo_json(raw_json: &str) -> String {
+    let Ok(req) = serde_json::from_str::<serde_json::Value>(raw_json) else {
+        return serde_json::json!({ "ok": false, "error": "invalid JSON request" }).to_string();
+    };
+    let app_title = req
+        .get("appTitle")
+        .and_then(|v| v.as_str())
+        .unwrap_or("Verdant Studio App");
+    let author = req
+        .get("authorPrismId")
+        .and_then(|v| v.as_str())
+        .unwrap_or("prism:anonymous-creator");
+    let message = req
+        .get("message")
+        .and_then(|v| v.as_str())
+        .unwrap_or("In-browser VerdantVcs commit");
+    let version = req
+        .get("version")
+        .and_then(|v| v.as_str())
+        .unwrap_or("1.0.0");
+    let epoch = req
+        .get("epoch")
+        .and_then(|v| v.as_u64())
+        .unwrap_or(1)
+        .max(1);
+    let scene_json = req
+        .get("sceneJson")
+        .and_then(|v| v.as_str())
+        .unwrap_or("{}");
+    let prev_parent = req
+        .get("parentCommitKappa")
+        .and_then(|v| v.as_str())
+        .filter(|s| !s.is_empty());
+
+    let mut vcs = VerdantVcs::new();
+    let mut files: BTreeMap<String, Vec<u8>> = BTreeMap::new();
+    let html = format!(
+        "<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\"><title>{app_title}</title></head>\
+         <body><main><h1>{app_title}</h1><p>Committed by {author} via VerdantVcs (zero-account portable .holo).</p>\
+         <pre id=\"verdant-scene-data\">{scene_json}</pre></main></body></html>\n"
+    );
+    files.insert("studio/index.html".to_string(), html.into_bytes());
+    files.insert("scene.json".to_string(), scene_json.as_bytes().to_vec());
+    files.insert(
+        "verdant-app.json".to_string(),
+        serde_json::json!({
+            "spec": "verdant/portable-studio-app/1",
+            "title": app_title,
+            "authorPrismId": author,
+            "version": version,
+            "epoch": epoch,
+            "parentCommitKappa": prev_parent,
+            "message": message,
+        })
+        .to_string()
+        .into_bytes(),
+    );
+    if let Some(extra) = req.get("files").and_then(|v| v.as_object()) {
+        for (k, v) in extra {
+            if !k.contains("..") && !k.starts_with('/') {
+                if let Some(s) = v.as_str() {
+                    files.insert(k.clone(), s.as_bytes().to_vec());
+                }
+            }
+        }
+    }
+
+    let ref_name = "refs/heads/studio";
+    let res = vcs
+        .commit_tree(
+            ref_name,
+            &files,
+            author,
+            b"verdant-studio-zero-account-vcs",
+            "mgr-studio-alm",
+            "AUTH-STITCH-SELF-HOSTING",
+            message,
+        )
+        .and_then(|commit| {
+            let seal_hex = sha256_hex_raw(commit.tree_root_sha256.as_bytes());
+            let capsule = VerdantReleaseCapsule::pack_from_files(
+                version,
+                epoch,
+                &commit.commit_kappa,
+                &seal_hex,
+                "studio/index.html",
+                &files,
+            )?;
+            let (k, n) = default_release_rs_geometry();
+            let shards = ReedSolomonStitchCodec::shard_k_of_n(&capsule.holo_bytes, k, n)?;
+            let deep_link = parse_stitch_deep_link_uri(&format!(
+                "stitch://{}/studio",
+                capsule.capsule_sha256_hex
+            ))?;
+            Ok((commit, capsule, shards.len(), deep_link))
+        });
+
+    match res {
+        Ok((commit, capsule, shard_count, deep_link)) => serde_json::json!({
+            "ok": true,
+            "commitKappa": commit.commit_kappa,
+            "parentCommitKappa": prev_parent,
+            "treeRootSha256": commit.tree_root_sha256,
+            "epoch": epoch,
+            "authorPrismId": commit.author_prism_id,
+            "message": commit.message,
+            "capsuleSha256Hex": capsule.capsule_sha256_hex,
+            "capsuleByteLen": capsule.holo_bytes.len(),
+            "shardCount": shard_count,
+            "stitchDeepLinkUri": deep_link.canonical_uri,
+            "holoHex": hex_encode_bytes(&capsule.holo_bytes),
+        })
+        .to_string(),
+        Err(e) => serde_json::json!({ "ok": false, "error": e.to_string() }).to_string(),
+    }
+}

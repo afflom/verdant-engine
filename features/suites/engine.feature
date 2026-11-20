@@ -314,3 +314,27 @@ Feature: engine
     Given VerdantOperatorChannel, prism-fidelity parametric-ratchet v2, site/frame Blank Frame, and 13 accountable VSM Managers
     When Verdant runs execute_autonomous_ratchet_lift via verdant operator ratchet-lift or MCP verdant_ratchet_lift and prism-fidelity audits model/parametric-ratchet.toml
     Then Verdant produces site/generated/self-host-ratchet-manifest.toml with exact live SHA-256 digests for every shipped Rust, LexLean, and Viewpoint UI file, verifies 4-of-8 .holo recovery, satisfies all 4 zero self-hosting ceilings, and fails closed on any out-of-band source edit or loose Blank Frame asset
+
+  @VE-48 @build
+  Scenario: MultiOriginRelayPlan and StitchPeerExchangeSession enforce at least two independent HTTPS Stitch shard origins with parallel failover racing and StitchBudgetLedger-governed zero-account WebRTC/BroadcastChannel reciprocal peer shard seeding, refusing single-origin downgrade, unsafe schemes, tampered peer shards, and over-budget floods
+    Given MultiOriginRelayPlan, StitchPeerExchangeSession, StitchBudgetLedger, site/frame/frame-boot.mjs, and site/frame/frame-pin.json
+    When a Blank Frame races multiple independent Stitch shard origins with primary relay outage and exchanges verified STCH2 shards across browser peers under reciprocal budget limits
+    Then failover recovers 100 percent of the .holo capsule from surviving origins, peers exchange verified shards strictly within reciprocal credit limits, and single-origin plans, unsafe schemes, tampered shards, and over-budget requests are refused
+
+  @VE-49 @build
+  Scenario: Verdant Studio exposes zero-account in-browser VerdantVcs commits with acyclic parent-to-child revision history, one-click self-verifying portable .holo app export, and encrypted 4-of-8 ?pin=stitch:// deep-link sharing across WebAssembly and Blank Frame without requiring any external user account or CLI
+    Given verdant-wasm VCS/holo exports, Verdant Studio Share panel, local Prism ID key, and Composable Blank Frame
+    When a creator authors a 3D scene in Studio, commits v1 and v2 to VerdantVcs, exports a portable .holo capsule, and generates a ?pin=stitch:// deep-link share URL
+    Then VerdantVcs maintains verified acyclic commit history, the exported .holo capsule passes verifyAndUnpackHoloCapsule with every SHA-256 intact, and the deep link mounts cleanly with zero external accounts
+
+  @VE-50 @build
+  Scenario: Live browser 4K and 8K UHD rendering, multi-MB Khronos glTF 2.0 scenes, and quantized .uorc CodedMatrix AI workloads execute through PagedTensorArena and DynamicWorkloadGovernor in WebAssembly with bounded RAM ceilings, live telemetry in Studio, and zero main-thread lockups verified by an automated headless Chromium UHD workload gate
+    Given PagedTensorArena, DynamicWorkloadGovernor, verdant_wasm_paged_workload_step_aux, Verdant Studio, and scripts/verify-uhd-workload.mjs
+    When 4K (3840x2160) and 8K (7680x4320) 45000-triangle glTF and CodedMatrix AI workloads run through WebAssembly in headless Chromium
+    Then PagedTensorArena enforces its bounded RAM ceiling via page eviction without freezing the browser event loop, Studio displays live dynamic scaling telemetry with zero manual resolution toggles, and the performance contract remains met
+
+  @VE-51 @build
+  Scenario: Verdant publishes a live RFC 2789 Cargo Sparse Registry endpoint for verdant-tensor, verdant-core, verdant-wasm, and verdant-cli, cites permanent Zenodo DOI archival provenance (https://zenodo.org/records/24383968), promotes Blank-Frame-first entry while preserving byte-locked frame.lock invariants, and tracks Milestones M6 through M8 across ten live ISO 15939 Observer KPIs
+    Given AUTH-STITCH-SELF-HOSTING, AUTH-SEMVER-CHANGE-KPI, scripts/package-rust-crates.mjs, site/card.html, site/docs/index.html, and RoadmapKpiManager
+    When Verdant packages its RFC 2789 Cargo Sparse Registry index, binds Zenodo archival provenance, exposes Blank-Frame-first entry, and evaluates Observer KPIs across Milestones M1-M8
+    Then all four shipped Rust crates have valid RFC 2789 sparse index entries, Zenodo DOI archival is locked in authority provenance, frame.lock stays intact, and all ten Observer KPIs pass across M1-M8

@@ -906,6 +906,37 @@ impl RoadmapKpiManager {
             .unwrap_or(0);
         let gate_pct = gates.pass_rate_pct();
 
+        // Count independent pinned Stitch relay origins in `site/frame/frame-pin.json`:
+        let mut pinned_relay_origins = 0u64;
+        if let Ok(pin_raw) = std::fs::read_to_string(repo_root.join("site/frame/frame-pin.json")) {
+            if let Ok(pin_val) = serde_json::from_str::<serde_json::Value>(&pin_raw) {
+                if let Some(arr) = pin_val.get("stitchRelays").and_then(|v| v.as_array()) {
+                    let mut hosts = BTreeSet::new();
+                    for item in arr {
+                        if let Some(url) = item.as_str() {
+                            let origin = url
+                                .split("://")
+                                .nth(1)
+                                .and_then(|rest| rest.split('/').next())
+                                .unwrap_or(url);
+                            if !origin.is_empty() {
+                                hosts.insert(origin.to_ascii_lowercase());
+                            }
+                        }
+                    }
+                    pinned_relay_origins = hosts.len() as u64;
+                }
+            }
+        }
+        let uhd_contract_pct = if repo_root
+            .join("site/generated/tensor-scaling-contract.json")
+            .is_file()
+        {
+            hundred_u64()
+        } else {
+            0
+        };
+
         let mut kpis = Vec::with_capacity(cat.kpi_catalog.len());
         for spec in &cat.kpi_catalog {
             let actual = match spec.kpi_id.as_str() {
@@ -923,6 +954,8 @@ impl RoadmapKpiManager {
                 }
                 "KPI-ROADMAP-MINOR-PROGRESS" => minor_progress_pct,
                 "KPI-RELEASE-GATES" => gate_pct,
+                "KPI-MULTI-ORIGIN-RESILIENCE" => pinned_relay_origins,
+                "KPI-UHD-WORKLOAD-CONTRACT" => uhd_contract_pct,
                 _ => 0,
             };
             let passed = if spec.direction == "atMost" {

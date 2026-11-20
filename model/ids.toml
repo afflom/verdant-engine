@@ -396,3 +396,27 @@ id = "VE-47"
 level = "build"
 suite = "engine"
 statement = "Verdant autonomously lifts itself via verdant operator ratchet-lift and MCP verdant_ratchet_lift—synthesizing all 13 Manager manifests, lifting 100 percent of shipped Rust, Prism LexLean, and Viewpoint UI modules into VerdantVcs, packing and 4-of-8 verifying the .holo release capsule, and emitting site/generated/self-host-ratchet-manifest.toml—so the tightened prism/parametric-ratchet/2 audit enforces zero unlifted UI files, zero loose Blank Frame assets, zero external user accounts, and zero unlifted workspace modules while failing closed on any out-of-band edit"
+
+[[id]]
+id = "VE-48"
+level = "build"
+suite = "engine"
+statement = "MultiOriginRelayPlan and StitchPeerExchangeSession enforce at least two independent HTTPS Stitch shard origins with parallel failover racing and StitchBudgetLedger-governed zero-account WebRTC/BroadcastChannel reciprocal peer shard seeding, refusing single-origin downgrade, unsafe schemes, tampered peer shards, and over-budget floods"
+
+[[id]]
+id = "VE-49"
+level = "build"
+suite = "engine"
+statement = "Verdant Studio exposes zero-account in-browser VerdantVcs commits with acyclic parent-to-child revision history, one-click self-verifying portable .holo app export, and encrypted 4-of-8 ?pin=stitch:// deep-link sharing across WebAssembly and Blank Frame without requiring any external user account or CLI"
+
+[[id]]
+id = "VE-50"
+level = "build"
+suite = "engine"
+statement = "Live browser 4K and 8K UHD rendering, multi-MB Khronos glTF 2.0 scenes, and quantized .uorc CodedMatrix AI workloads execute through PagedTensorArena and DynamicWorkloadGovernor in WebAssembly with bounded RAM ceilings, live telemetry in Studio, and zero main-thread lockups verified by an automated headless Chromium UHD workload gate"
+
+[[id]]
+id = "VE-51"
+level = "build"
+suite = "engine"
+statement = "Verdant publishes a live RFC 2789 Cargo Sparse Registry endpoint for verdant-tensor, verdant-core, verdant-wasm, and verdant-cli, cites permanent Zenodo DOI archival provenance (https://zenodo.org/records/24383968), promotes Blank-Frame-first entry while preserving byte-locked frame.lock invariants, and tracks Milestones M6 through M8 across ten live ISO 15939 Observer KPIs"

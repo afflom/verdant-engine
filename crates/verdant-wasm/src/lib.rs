@@ -6264,3 +6264,41 @@ pub extern "C" fn verdant_wasm_observer_roadmap_kpis_aux() -> u32 {
     bridge.aux_buffer = ch.synthesize_embedded_roadmap_kpis_json().into_bytes();
     bridge.aux_buffer.len() as u32
 }
+
+/// Zero-account in-browser Studio `VerdantVcs` commit + portable `.holo` capsule packer (`VE-49`),
+/// reading JSON from `io_buffer` and writing the signed commit + `.holo` hex + `stitch://` URI
+/// into `aux_buffer`.
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+#[no_mangle]
+pub extern "C" fn verdant_wasm_vcs_commit_and_pack_holo_io() -> u32 {
+    let mut guard = global_bridge()
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
+    let Some(bridge) = guard.as_mut() else {
+        return 0;
+    };
+    let Ok(raw) = std::str::from_utf8(&bridge.io_buffer) else {
+        return 0;
+    };
+    bridge.aux_buffer = verdant_core::vcs::studio_vcs_commit_and_pack_holo_json(raw).into_bytes();
+    bridge.aux_buffer.len() as u32
+}
+
+/// Live dynamic UHD/8K + `PagedTensorArena` workload governor step (`VE-50`), reading JSON
+/// workload dimensions & page counts from `io_buffer` and writing bounded-RAM + DRS/LOD telemetry
+/// JSON into `aux_buffer`.
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+#[no_mangle]
+pub extern "C" fn verdant_wasm_paged_workload_step_io() -> u32 {
+    let mut guard = global_bridge()
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
+    let Some(bridge) = guard.as_mut() else {
+        return 0;
+    };
+    let Ok(raw) = std::str::from_utf8(&bridge.io_buffer) else {
+        return 0;
+    };
+    bridge.aux_buffer = verdant_core::uhd::paged_workload_step_json(raw).into_bytes();
+    bridge.aux_buffer.len() as u32
+}

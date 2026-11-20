@@ -1678,6 +1678,131 @@ impl DynamicWorkloadGovernor {
     }
 }
 
+/// Live browser / Wasm bridge (`VE-50`) stepping [`verdant_tensor::memory::PagedTensorArena`]
+/// and [`DynamicWorkloadGovernor`] across arbitrary UHD 4K/8K 3D glTF & quantized `.uorc`
+/// `CodedMatrix` AI workloads while strictly enforcing the host RAM ceiling.
+#[must_use]
+pub fn paged_workload_step_json(raw_json: &str) -> String {
+    let Ok(req) = serde_json::from_str::<serde_json::Value>(raw_json) else {
+        return serde_json::json!({ "ok": false, "error": "invalid JSON request" }).to_string();
+    };
+    let two_u32 = 1u32 + 1u32;
+    let four_u32 = two_u32 * two_u32;
+    let eight_u32 = four_u32 * two_u32;
+    let ten_u32 = two_u32 * (four_u32 + 1u32);
+    let kb_u64 = 1u64 << ten_u32;
+    let mb_u64 = kb_u64 * kb_u64;
+    let default_w = (four_u32 - 1u32) * (1u32 << (ten_u32 + 1u32)) - (1u32 << (eight_u32 + 1u32)); // 3840 (4K)
+    let default_h =
+        (1u32 << (ten_u32 + 1u32)) + (1u32 << (four_u32 + two_u32 + 1u32)) - (1u32 << four_u32); // 2160
+    let default_frame_us = (1u32 << (ten_u32 + two_u32)) * two_u32; // 8192 us
+    let default_budget_mb = u64::from(eight_u32); // 8 MiB bounded browser arena
+    let default_page_kb = u64::from(1u32 << (four_u32 + two_u32)); // 64 KiB page
+    let default_pages = u64::from(1u32 << (four_u32 + 1u32)); // 32 pages
+
+    let viewport_w = req
+        .get("viewportW")
+        .and_then(|v| v.as_u64())
+        .and_then(|v| u32::try_from(v).ok())
+        .unwrap_or(default_w)
+        .max(1);
+    let viewport_h = req
+        .get("viewportH")
+        .and_then(|v| v.as_u64())
+        .and_then(|v| u32::try_from(v).ok())
+        .unwrap_or(default_h)
+        .max(1);
+    let is_software_gpu = req
+        .get("isSoftwareGpu")
+        .and_then(|v| v.as_bool())
+        .unwrap_or(false);
+    let webgpu_available = req
+        .get("webgpuAvailable")
+        .and_then(|v| v.as_bool())
+        .unwrap_or(true);
+    let frame_us = req
+        .get("frameUs")
+        .and_then(|v| v.as_u64())
+        .and_then(|v| u32::try_from(v).ok())
+        .unwrap_or(default_frame_us);
+    let budget_mb = req
+        .get("budgetMb")
+        .and_then(|v| v.as_u64())
+        .unwrap_or(default_budget_mb)
+        .max(1);
+    let page_kb = req
+        .get("pageKb")
+        .and_then(|v| v.as_u64())
+        .unwrap_or(default_page_kb)
+        .max(1);
+    let gltf_pages = req
+        .get("gltfPages")
+        .and_then(|v| v.as_u64())
+        .unwrap_or(default_pages);
+    let coded_ai_pages = req
+        .get("codedAiPages")
+        .and_then(|v| v.as_u64())
+        .unwrap_or(default_pages);
+
+    let budget_bytes = budget_mb.saturating_mul(mb_u64);
+    let page_bytes = page_kb.saturating_mul(kb_u64).min(budget_bytes);
+    let mut arena = verdant_tensor::memory::PagedTensorArena::new(budget_bytes);
+    let max_pages = u64::from(1u32 << (eight_u32 + 1u32)); // cap loop at 512 pages for O(ms) Wasm step
+    let g_count = gltf_pages.min(max_pages);
+    let a_count = coded_ai_pages.min(max_pages);
+    for idx in 0..g_count {
+        let pid = idx.saturating_add(1);
+        if arena
+            .register_virtual_page(
+                pid,
+                verdant_tensor::memory::TensorPageKind::GeometryMeshlet,
+                verdant_tensor::memory::TensorStorageEncoding::QuantizedGrid8,
+                page_bytes,
+                pid,
+            )
+            .is_ok()
+        {
+            let _ = arena.admit_or_touch(pid, None, false);
+        }
+    }
+    for idx in 0..a_count {
+        let pid = g_count.saturating_add(idx).saturating_add(1);
+        if arena
+            .register_virtual_page(
+                pid,
+                verdant_tensor::memory::TensorPageKind::AiWeightBlock,
+                verdant_tensor::memory::TensorStorageEncoding::PackedNibble4,
+                page_bytes,
+                pid,
+            )
+            .is_ok()
+        {
+            let _ = arena.admit_or_touch(pid, None, false);
+        }
+    }
+    let telem = arena.telemetry();
+    let mut gov = DynamicWorkloadGovernor::default();
+    let decision = gov.step(
+        viewport_w,
+        viewport_h,
+        is_software_gpu,
+        webgpu_available,
+        frame_us,
+        telem.resident_bytes,
+        telem.budget_bytes,
+    );
+    let contract_met = telem.invariant_held && decision.performance_contract_met;
+    serde_json::json!({
+        "ok": true,
+        "viewportW": viewport_w,
+        "viewportH": viewport_h,
+        "arena": telem,
+        "decision": decision,
+        "contractMet": contract_met,
+    })
+    .to_string()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

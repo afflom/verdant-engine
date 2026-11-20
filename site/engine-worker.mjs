@@ -1630,6 +1630,19 @@ self.onmessage = async ({ data: msg }) => {
       return;
     }
 
+    if (msg.kind === "vcs-commit-pack-holo" || msg.kind === "paged-workload-step") {
+      await ensureUorcSceneHost();
+      stageIoBytes(uorcWasm, new TextEncoder().encode(JSON.stringify(msg.request || {})));
+      const fn =
+        msg.kind === "vcs-commit-pack-holo"
+          ? uorcWasm.verdant_wasm_vcs_commit_and_pack_holo_io
+          : uorcWasm.verdant_wasm_paged_workload_step_io;
+      const len = typeof fn === "function" ? fn() >>> 0 : 0;
+      const result = len ? JSON.parse(new TextDecoder().decode(readAuxBytes(uorcWasm))) : { ok: false, error: "export unavailable" };
+      self.postMessage({ kind: `${msg.kind}-done`, id: msg.id, ok: Boolean(result?.ok), result });
+      return;
+    }
+
     if (msg.kind === "register-stream" || msg.kind === "remove-stream" || msg.kind === "toggle-stream" || msg.kind === "ingest-knowledge") {
       await ensureUorcSceneHost();
       const payloadStr = msg.kind === "remove-stream" || msg.kind === "toggle-stream"

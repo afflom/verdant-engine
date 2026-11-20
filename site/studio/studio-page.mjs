@@ -2465,6 +2465,139 @@ renderContentTypePills();
 
   await hydrateExperienceDesignSystem();
   syncHud();
+
+  // Zero-account in-browser VerdantVcs, portable .holo export, ?pin=stitch:// deep-link sharing (VE-49)
+  // and live PagedTensorArena dynamic UHD/AI workload governor bridge (VE-50):
+  const VCS_STORAGE_KEY = "verdant_studio_vcs_history_v1";
+  const PRISM_ID_KEY = "verdant_zero_account_prism_id_v1";
+  const ensureLocalStudioPrismId = () => {
+    try {
+      const existing = JSON.parse(localStorage.getItem(PRISM_ID_KEY) || "null");
+      if (existing?.prismId) return existing.prismId;
+    } catch {}
+    const rnd = crypto.getRandomValues(new Uint8Array(8));
+    const hex = Array.from(rnd, (b) => b.toString(16).padStart(2, "0")).join("");
+    const prismId = `prism:local-${hex}`;
+    try { localStorage.setItem(PRISM_ID_KEY, JSON.stringify({ prismId, secretHex: hex.repeat(4) })); } catch {}
+    return prismId;
+  };
+  let vcsHistory = [];
+  try { vcsHistory = JSON.parse(localStorage.getItem(VCS_STORAGE_KEY) || "[]"); } catch { vcsHistory = []; }
+  if (!Array.isArray(vcsHistory)) vcsHistory = [];
+  let lastPackedHolo = null;
+
+  const vcsMsgEl = $("studio-vcs-msg");
+  const vcsHistEl = $("studio-vcs-history");
+  const renderVcsHistory = () => {
+    if (!vcsHistEl) return;
+    vcsHistEl.replaceChildren();
+    if (!vcsHistory.length) {
+      const empty = document.createElement("div");
+      empty.className = "ide-pane-sub";
+      empty.textContent = `Local Prism ID: ${ensureLocalStudioPrismId()} · 0 commits yet.`;
+      vcsHistEl.append(empty);
+      return;
+    }
+    for (const entry of vcsHistory.slice(0, 6)) {
+      const row = document.createElement("div");
+      row.className = "vx-outliner-row";
+      const label = document.createElement("span");
+      label.style.fontFamily = "var(--font-mono)";
+      label.style.fontSize = "var(--text-14)";
+      label.textContent = `e${entry.epoch} · ${entry.commitKappa.slice(0, 10)}… · ${entry.message}`;
+      row.append(label);
+      vcsHistEl.append(row);
+    }
+  };
+
+  const commitAndPackHolo = async (overrideMsg) => {
+    const authorPrismId = ensureLocalStudioPrismId();
+    const parentCommitKappa = vcsHistory[0]?.commitKappa || "";
+    const epoch = (vcsHistory[0]?.epoch || 0) + 1;
+    const message = String(overrideMsg || vcsMsgEl?.value || "Studio scene revision").trim();
+    const appTitle = String(stitchAppTitleInput?.value || activeProject || "Verdant Studio App").trim();
+    const sceneJson = JSON.stringify({
+      project: appTitle,
+      domain: domainPacks[activeDomainIdx]?.slug || "sunspire-regatta",
+      objects: studioObjects,
+      lodRank: lodIdx,
+    });
+    const res = await callWorker("vcs-commit-pack-holo", {
+      request: { appTitle, authorPrismId, message, parentCommitKappa, epoch, version: "1.2.0", sceneJson },
+    });
+    const out = res?.result;
+    if (!res?.ok || !out?.ok) throw new Error(out?.error || "VerdantVcs commit failed");
+    lastPackedHolo = out;
+    vcsHistory.unshift({
+      epoch: out.epoch,
+      commitKappa: out.commitKappa,
+      parentCommitKappa: out.parentCommitKappa || null,
+      capsuleSha256Hex: out.capsuleSha256Hex,
+      stitchDeepLinkUri: out.stitchDeepLinkUri,
+      message: out.message,
+    });
+    vcsHistory = vcsHistory.slice(0, 16);
+    try { localStorage.setItem(VCS_STORAGE_KEY, JSON.stringify(vcsHistory)); } catch {}
+    renderVcsHistory();
+    chip(statusEl, `VerdantVcs e${out.epoch} (${out.commitKappa.slice(0, 10)}…) · .holo ${out.capsuleByteLen} B · ${out.shardCount} shards`);
+    return out;
+  };
+
+  const stepPagedUhdWorkload = async (workloadReq = {}) => {
+    const res = await callWorker("paged-workload-step", { request: workloadReq });
+    const out = res?.result;
+    if (out?.ok && scaleBadgeEl) {
+      const tier = out.decision?.displayClass || "UHD";
+      const pages = out.arena?.residentPages ?? 0;
+      const evicts = out.arena?.evictions ?? 0;
+      scaleBadgeEl.dataset.contract = out.contractMet ? "met" : "adapting";
+      scaleBadgeEl.textContent = `${tier} · ${pages}p (${evicts} evict) · DRS ${Math.round((out.decision?.drsScalePermille || 1000) / 10)}%`;
+    }
+    return out;
+  };
+
+  $("studio-vcs-commit-btn")?.addEventListener("click", async () => {
+    try { await commitAndPackHolo(); } catch (err) { chip(statusEl, `VerdantVcs error: ${err}`); }
+  });
+  $("studio-export-holo-btn")?.addEventListener("click", async () => {
+    try {
+      const packed = lastPackedHolo || (await commitAndPackHolo("Portable .holo app export"));
+      const hex = packed.holoHex || "";
+      const bytes = Uint8Array.from({ length: hex.length / 2 }, (_, i) => parseInt(hex.slice(i * 2, i * 2 + 2), 16));
+      const slug = String(stitchAppTitleInput?.value || "verdant-app").toLowerCase().replace(/[^a-z0-9]+/g, "-");
+      const url = URL.createObjectURL(new Blob([bytes], { type: "application/octet-stream" }));
+      const a = document.createElement("a");
+      a.href = url; a.download = `${slug}.holo`; a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      chip(statusEl, `Exported portable ${slug}.holo (${bytes.byteLength} B · SHA-256 ${packed.capsuleSha256Hex.slice(0, 12)}…)`);
+    } catch (err) { chip(statusEl, `Export .holo error: ${err}`); }
+  });
+  $("studio-copy-pin-btn")?.addEventListener("click", async () => {
+    try {
+      const packed = lastPackedHolo || (await commitAndPackHolo("Deep-link pin share"));
+      const frameUrl = new URL(`../frame/?pin=${encodeURIComponent(packed.stitchDeepLinkUri)}`, location.href).href;
+      try { await navigator.clipboard.writeText(frameUrl); } catch {}
+      chip(statusEl, `Copied Blank Frame pin: ${packed.stitchDeepLinkUri}`);
+    } catch (err) { chip(statusEl, `Pin share error: ${err}`); }
+  });
+
+  renderVcsHistory();
+  window.__VERDANT_STUDIO_API__ = {
+    commitAndPackHolo,
+    stepPagedUhdWorkload,
+    getVcsHistory: () => vcsHistory.slice(),
+    getLocalPrismId: ensureLocalStudioPrismId,
+  };
+  void stepPagedUhdWorkload({
+    viewportW: Math.round((canvas?.clientWidth || 1920) * (window.devicePixelRatio || 1)),
+    viewportH: Math.round((canvas?.clientHeight || 1080) * (window.devicePixelRatio || 1)),
+    frameUs: 8000,
+    budgetMb: 8,
+    gltfPages: 16,
+    codedAiPages: 16,
+    pageKb: 64,
+  }).catch(() => {});
+
   chip(
     statusEl,
     experienceDesign?.plainLanguage?.readyBanner ||

@@ -242,26 +242,92 @@ async function cacheOpfs(ver, bytes) {
   } catch { return false; }
 }
 
-async function fetchShards(pin, relayOverride) {
-  const relays = relayOverride ? [relayOverride] : (pin.stitchRelays || []);
-  const k = pin.dataShardsK || 4;
-  const collected = [];
-  let dropped = 0;
-  for (const fn of pin.shardFiles || []) {
-    if (collected.length >= k) break;
-    let ok = false;
-    for (const base of relays) {
-      try {
-        const res = await fetch(`${base.replace(/\/+$/, "")}/${fn}`, { cache: "no-store" });
-        if (!res.ok) continue;
-        collected.push(await parseAndVerifyStch2Shard(await res.arrayBuffer()));
-        ok = true;
-        break;
-      } catch {}
+export function createStitchPeerMesh(localId, capBytes = 16777216) {
+  const shardCache = new Map(), usage = new Map();
+  const stats = { servedShards: 0, receivedShards: 0, refusedOverBudget: 0, webrtcChannels: 0 };
+  const bc = typeof BroadcastChannel === "function" ? new BroadcastChannel("verdant-stitch-peers-v1") : null;
+  const admit = (pid, n) => {
+    if (!String(pid || "").startsWith("prism:") || n <= 0) throw new Error("Bad peer id");
+    const next = (usage.get(pid) || 0) + n;
+    if (next > capBytes) { stats.refusedOverBudget++; throw new Error("Over peer budget"); }
+    usage.set(pid, next);
+  };
+  const cacheVerified = async (pid, raw) => {
+    const u8 = raw instanceof Uint8Array ? raw : new Uint8Array(raw);
+    const parsed = await parseAndVerifyStch2Shard(u8);
+    const key = `${toHex(parsed.manifestRoot)}:${parsed.index}`;
+    admit(pid, u8.byteLength);
+    shardCache.set(key, u8);
+    stats.receivedShards++;
+    return { key, parsed };
+  };
+  const serveToPeer = (reqId, key) => {
+    const raw = shardCache.get(key);
+    if (!raw) throw new Error(`No shard ${key}`);
+    admit(reqId, raw.byteLength);
+    stats.servedShards++;
+    return raw;
+  };
+  const openLoopbackWebRtcDemo = async (key) => {
+    if (typeof RTCPeerConnection !== "function") return { supported: false };
+    const raw = shardCache.get(key);
+    if (!raw) return { supported: true, transferred: 0 };
+    const a = new RTCPeerConnection(), b = new RTCPeerConnection();
+    a.onicecandidate = (e) => e.candidate && b.addIceCandidate(e.candidate).catch(() => {});
+    b.onicecandidate = (e) => e.candidate && a.addIceCandidate(e.candidate).catch(() => {});
+    const dc = a.createDataChannel("verdant-stch2-v1");
+    const done = new Promise((res, rej) => {
+      const tm = setTimeout(() => rej(new Error("WebRTC timeout")), 3000);
+      b.ondatachannel = (ev) => {
+        stats.webrtcChannels++;
+        const parts = [];
+        ev.channel.binaryType = "arraybuffer";
+        ev.channel.onmessage = async (m) => {
+          if (m.data === "EOF") {
+            clearTimeout(tm);
+            const tot = parts.reduce((s, c) => s + c.byteLength, 0), buf = new Uint8Array(tot);
+            let o = 0; for (const c of parts) { buf.set(c, o); o += c.byteLength; }
+            try { await parseAndVerifyStch2Shard(buf); res({ supported: true, verified: true, transferred: tot }); } catch (e) { rej(e); }
+          } else parts.push(new Uint8Array(m.data));
+        };
+      };
+      dc.onopen = () => {
+        for (let o = 0; o < raw.byteLength; o += 16384) dc.send(raw.subarray(o, Math.min(o + 16384, raw.byteLength)));
+        dc.send("EOF");
+      };
+    });
+    const offer = await a.createOffer(); await a.setLocalDescription(offer); await b.setRemoteDescription(offer);
+    const ans = await b.createAnswer(); await b.setLocalDescription(ans); await a.setRemoteDescription(ans);
+    try { return await done; } finally { a.close(); b.close(); }
+  };
+  if (bc) bc.onmessage = (e) => {
+    const m = e.data;
+    if (m?.type === "STCH2_WANT" && m.from !== localId && shardCache.has(m.key)) {
+      try { bc.postMessage({ type: "STCH2_HAVE", from: localId, key: m.key, bytes: serveToPeer(m.from, m.key) }); } catch {}
     }
-    if (!ok) dropped++;
+  };
+  return { localPrismId: localId, shardCache, stats, cacheVerified, serveToPeer, openLoopbackWebRtcDemo };
+}
+
+async function fetchShards(pin, relayOverride, mesh) {
+  const relays = relayOverride ? relayOverride.split(",").map((s) => s.trim()).filter(Boolean) : (pin.stitchRelays || []);
+  const k = pin.dataShardsK || 4, collected = [], relayHits = {}, failedRelays = {};
+  let dropped = 0;
+  const raceOne = (fn) => Promise.any(relays.map(async (base) => {
+    const clean = base.replace(/\/+$/, "");
+    const res = await fetch(`${clean}/${fn}`, { cache: "no-store" });
+    if (!res.ok) { failedRelays[clean] = (failedRelays[clean] || 0) + 1; throw new Error(`HTTP ${res.status}`); }
+    const raw = new Uint8Array(await res.arrayBuffer());
+    const shard = await parseAndVerifyStch2Shard(raw);
+    relayHits[clean] = (relayHits[clean] || 0) + 1;
+    if (mesh) try { await mesh.cacheVerified(mesh.localPrismId, raw); } catch {}
+    return shard;
+  }));
+  for (const r of await Promise.allSettled((pin.shardFiles || []).map(raceOne))) {
+    if (r.status === "fulfilled" && collected.length < k) collected.push(r.value);
+    else if (r.status === "rejected") dropped++;
   }
-  return { collected, dropped };
+  return { collected, dropped, relayHits, failedRelays, relayCount: relays.length };
 }
 
 export async function bootBlankFrame() {
@@ -269,10 +335,11 @@ export async function bootBlankFrame() {
   const setStatus = (t, d) => { if ($("frame-status")) $("frame-status").textContent = t; if ($("frame-detail")) $("frame-detail").textContent = d; };
   const id = await getLocalPrismId();
   if ($("prism-id-badge")) $("prism-id-badge").textContent = `${id.prismId} (zero-account local key)`;
+  const peerMesh = createStitchPeerMesh(id.prismId);
 
   window.__VERDANT_BLANK_FRAME__ = {
     status: "booting", sanitizeStitchDeepLink, sealPrivateBoundaryZeroAccount,
-    recoverPrivateBoundaryZeroAccount, verifyAndUnpackHoloCapsule,
+    recoverPrivateBoundaryZeroAccount, verifyAndUnpackHoloCapsule, peerMesh,
   };
   const params = new URLSearchParams(location.search);
 
@@ -334,12 +401,12 @@ export async function bootBlankFrame() {
     if ($("pin-uri-input")) $("pin-uri-input").value = target.canonicalUri;
     const lastEpoch = Number(localStorage.getItem(EPOCH_KEY) || "0");
     if (Number(pin.releaseEpoch) < lastEpoch) throw new Error(`Rollback refused: epoch ${pin.releaseEpoch} < ${lastEpoch}`);
-    const { collected, dropped } = await fetchShards(pin, params.get("relay") || "");
+    const { collected, dropped, relayHits, failedRelays, relayCount } = await fetchShards(pin, params.get("relay") || "", peerMesh);
     if (collected.length < pin.dataShardsK) throw new Error(`Only ${collected.length}/${pin.dataShardsK} shards reachable — drop a portable .holo for offline boot.`);
     const cap = await verifyAndUnpackHoloCapsule(await recoverKofNShards(collected));
     if (cap.capsuleSha256Hex !== pin.releaseKappaHex) throw new Error("Recovered .holo kappa mismatch");
     try { localStorage.setItem(EPOCH_KEY, String(pin.releaseEpoch)); } catch {}
-    await mountAndShow(cap, target.virtualRoute, { source: "stitch-4-of-8-pull-through", shardsUsed: collected.length, shardsDropped: dropped });
+    await mountAndShow(cap, target.virtualRoute, { source: "stitch-4-of-8-pull-through", shardsUsed: collected.length, shardsDropped: dropped, relayHits, failedRelays, relayCount });
   } catch (err) {
     setStatus("Blank Frame ready (awaiting Stitch shards or offline .holo)", String(err));
     window.__VERDANT_BLANK_FRAME__ = { ...window.__VERDANT_BLANK_FRAME__, status: "error", error: String(err) };

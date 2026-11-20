@@ -103,6 +103,36 @@
       "requiredCapabilities": ["VE-45", "VE-46"],
       "owningManagers": ["mgr-observer-executive", "mgr-change-release", "mgr-studio-alm"],
       "ratchetRequirement": "Full Rust & LexLean source DAG lifted into VerdantVcs on Stitch with max_unlifted_workspace_modules = 0."
+    },
+    {
+      "milestoneId": "M6",
+      "targetVersion": "1.2.0",
+      "tier": "minor",
+      "title": "Autonomous Ratchet Self-Lift, Multi-Origin Stitch Resilience, WebRTC Peer Seeding & Live Cargo Sparse Registry",
+      "stakeholders": ["creator", "player", "developer", "auditor"],
+      "requiredCapabilities": ["VE-47", "VE-48", "VE-51"],
+      "owningManagers": ["mgr-security-trust", "mgr-change-release", "mgr-knowledge-provenance"],
+      "ratchetRequirement": ">= 2 independent Stitch shard origins + reciprocal WebRTC peer seeding + live RFC 2789 Cargo Sparse Registry + Zenodo archival DOI."
+    },
+    {
+      "milestoneId": "M7",
+      "targetVersion": "1.3.0",
+      "tier": "minor",
+      "title": "Zero-Account In-Browser Studio Authoring, VerdantVcs & Portable .holo Deep-Link Sharing",
+      "stakeholders": ["creator", "player", "architect"],
+      "requiredCapabilities": ["VE-49"],
+      "owningManagers": ["mgr-studio-alm", "mgr-change-release", "mgr-security-trust"],
+      "ratchetRequirement": "Zero-account in-browser VerdantVcs commits, portable .holo app export, and ?pin=stitch:// deep-link sharing inside Verdant Studio."
+    },
+    {
+      "milestoneId": "M8",
+      "targetVersion": "2.0.0",
+      "tier": "major",
+      "title": "Live Dynamic UHD/8K PagedTensorArena Workload Telemetry & Blank-Frame-First Self-Hosted Entry",
+      "stakeholders": ["creator", "player", "systems-engineer", "auditor"],
+      "requiredCapabilities": ["VE-50", "VE-51"],
+      "owningManagers": ["mgr-runtime-stage", "mgr-studio-alm", "mgr-change-release", "mgr-observer-executive"],
+      "ratchetRequirement": "Headless Chromium UHD 4K/8K + glTF/CodedMatrix PagedTensorArena stress gate passing with zero lockups and Blank-Frame-first entry."
     }
   ],
   "kpiCatalog": [
@@ -177,6 +207,24 @@
       "target": 100,
       "owningManager": "mgr-change-release",
       "authority": "AUTH-SEMVER-CHANGE-KPI"
+    },
+    {
+      "kpiId": "KPI-MULTI-ORIGIN-RESILIENCE",
+      "name": "Independent Stitch Shard Relay Origins Pinned",
+      "unit": "origins",
+      "direction": "atLeast",
+      "target": 2,
+      "owningManager": "mgr-security-trust",
+      "authority": "AUTH-STITCH-SELF-HOSTING"
+    },
+    {
+      "kpiId": "KPI-UHD-WORKLOAD-CONTRACT",
+      "name": "Dynamic UHD/8K PagedTensorArena Workload Contract Compliance",
+      "unit": "percent",
+      "direction": "atLeast",
+      "target": 100,
+      "owningManager": "mgr-runtime-stage",
+      "authority": "AUTH-ISO-25010-TENSOR-SCALING"
     }
   ]
 }

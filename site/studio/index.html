@@ -966,7 +966,18 @@
               <button type="button" class="st-btn sm" id="wiz-share-uorc-btn">Copy Link</button>
               <button type="button" class="st-btn sm" id="studio-stitch-btn">2-of-3 Shards</button>
             </div>
+            <div id="studio-vcs-card" class="insp-editor-grid" style="padding-top:var(--space-2);border-top:var(--border-width) solid var(--border);">
+              <div class="ide-pane-sub">Zero-Account VerdantVcs &amp; Portable .holo</div>
+              <input id="studio-vcs-msg" class="st-input" type="text" value="Snapshot authored scene to VerdantVcs" aria-label="VerdantVcs commit note" />
+              <div class="insp-row">
+                <button type="button" class="st-btn primary sm" id="studio-vcs-commit-btn">Commit Version</button>
+                <button type="button" class="st-btn sm" id="studio-export-holo-btn">Export .holo</button>
+                <button type="button" class="st-btn sm" id="studio-copy-pin-btn">Copy ?pin Link</button>
+              </div>
+              <div class="insp-rev-list" id="studio-vcs-history" aria-live="polite"></div>
+            </div>
             <div class="insp-row">
+              <a class="st-btn sm" href="../frame/?pin=stitch://verdant/studio">Blank Frame</a>
               <a class="st-btn sm" href="../catalogs/#cat-apps-h2">App Catalog</a>
               <a class="st-btn sm" href="../starter/">Play Starter</a>
             </div>

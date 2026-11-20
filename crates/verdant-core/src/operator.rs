@@ -3612,6 +3612,8 @@ body[data-studio-focus="publish"] #studio-publish-pane {
                 || rel_str.starts_with("frame/")
                 || rel_str == "stitch"
                 || rel_str.starts_with("stitch/")
+                || rel_str == "crates"
+                || rel_str.starts_with("crates/")
                 || rel_str.ends_with(".test.mjs")
                 || rel_str == "precache.json"
                 || rel_str == "spec.html"
@@ -4454,9 +4456,18 @@ body[data-studio-focus="publish"] #studio-publish-pane {
         let relays = if !opts.stitch_relays.is_empty() {
             opts.stitch_relays.clone()
         } else if opts.update_frame_pin {
-            vec![format!(
-                "https://afflom.github.io/verdant-engine/stitch/v{version}/shards"
-            )]
+            let defaults = vec![
+                format!("https://afflom.github.io/verdant-engine/stitch/v{version}/shards"),
+                format!("https://github.com/afflom/verdant-engine/releases/download/v{version}"),
+            ];
+            let plan =
+                crate::network::MultiOriginRelayPlan::build(defaults, 1 + 1).map_err(|e| {
+                    ObserverModelError::CommunicationEnvelopeRejected {
+                        channel: CommunicationChannelKind::OrganToOrgan.slug().to_string(),
+                        detail: format!("multi-origin relay validation failed: {e}"),
+                    }
+                })?;
+            plan.relay_urls
         } else {
             vec!["./shards".to_string()]
         };

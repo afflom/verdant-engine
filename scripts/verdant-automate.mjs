@@ -107,19 +107,29 @@ if (!skipRust) {
   ]);
 }
 
-// 3. Assemble site & run Verdant's native self-audit in parallel:
-const stage2 = [runAsync("build-site", process.execPath, ["scripts/build-site.mjs"])];
+// 3. Assemble site, build live RFC 2789 Cargo Sparse Registry, & run Verdant's native self-audit in parallel:
+const stage2 = [
+  runAsync("build-site", process.execPath, ["scripts/build-site.mjs"]),
+  runAsync("package-rust-crates", process.execPath, [
+    "scripts/package-rust-crates.mjs",
+    "--out",
+    "site/crates",
+    "--dl",
+    "https://afflom.github.io/verdant-engine/crates/crates/{crate}-{version}.crate",
+  ]),
+];
 if (!skipRust) {
   stage2.push(runAsync("verdant-cli automate-check", "cargo", ["run", "--locked", "-p", "verdant-cli", "--", "automate-check"]));
 }
 await Promise.all(stage2);
 
-// 4. Execute Prism contract suite, live Stitch Blank Frame Pull-Through Gate & all browser deployment gates in parallel:
+// 4. Execute Prism contract suite, live Stitch Blank Frame Pull-Through Gate, UHD/VCS Gate & all browser deployment gates in parallel:
 const stage3 = [
   runAsync("prism-contracts.test.ts", "npx", ["--yes", "tsx", "--test", "prism-contracts.test.ts"]),
   runAsync("verify-live-surfaces", process.execPath, ["scripts/verify-live-surfaces.mjs", "site"]),
   runAsync("content/check", process.execPath, ["scripts/content/check.mjs", "site"]),
   runAsync("weight (FR-03)", process.execPath, ["bootstrap/weight.mjs", "site"]),
+  runAsync("verify-uhd-workload", process.execPath, ["scripts/verify-uhd-workload.mjs", "site"]),
 ];
 if (!skipRust) {
   stage3.push(runAsync("verify-stitch-release", process.execPath, ["scripts/verify-stitch-release.mjs"]));

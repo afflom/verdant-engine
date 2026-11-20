@@ -172,6 +172,8 @@ jobs:
           ' "$FINGERPRINT" "$ATTESTATION_URL"
           node bootstrap/page.mjs site
           node bootstrap/precache.mjs site
+          owner_lc=$(printf '%s' "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          node scripts/package-rust-crates.mjs --out site/crates --dl "https://${owner_lc}.github.io/verdant-engine/crates/crates/{crate}-{version}.crate"
           node scripts/enforce-prism-contracts.mjs
       - name: Restore cached Playwright & Lighthouse CI tools
         id: browser-tools-cache
@@ -235,9 +237,11 @@ jobs:
             --epoch "$epoch" \
             --out "site/stitch/v${ver}" \
             --relay "https://${owner_lc}.github.io/verdant-engine/stitch/v${ver}/shards" \
+            --relay "https://github.com/${owner_lc}/verdant-engine/releases/download/v${ver}" \
             --pin "stitch://verdant/studio"
           cp "site/stitch/v${ver}/frame-pin.json" site/frame/frame-pin.json
           node scripts/verify-stitch-release.mjs --dir "site/stitch/v${ver}"
+          node scripts/verify-uhd-workload.mjs site
       - name: Keep the screens
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9

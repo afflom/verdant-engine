@@ -37,3 +37,5 @@ screens/
 .prism-proof/
 .prism-proof.log
 .verdant-cache/
+site/crates/
+site/stitch/
