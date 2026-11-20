@@ -337,17 +337,7 @@ impl FrameBudgetProfiler {
 const SNAPSHOT_MAGIC: &[u8; DIM_HOMOGENEOUS] = b"VDNT";
 const SNAPSHOT_VERSION: u8 = 1;
 
-fn bytes_to_hex(bytes: &[u8]) -> String {
-    let hex_chars = b"0123456789abcdef";
-    let shift = (1_u8 + 1_u8) * (1_u8 + 1_u8);
-    let mask = (1_u8 << shift) - 1_u8;
-    let mut out = String::with_capacity(bytes.len() * (prism_kernel::sTwo() as usize));
-    for &b in bytes {
-        out.push(char::from(hex_chars[(b >> shift) as usize]));
-        out.push(char::from(hex_chars[(b & mask) as usize]));
-    }
-    out
-}
+use crate::digest::hex_encode as bytes_to_hex;
 
 const ALL_LOD_LEVELS: &[LodLevel] = &[
     LodLevel::Lod0CoarseProxy,

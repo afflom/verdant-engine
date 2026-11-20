@@ -14,8 +14,6 @@
 #[cfg(not(target_arch = "wasm32"))]
 use std::collections::BTreeMap;
 #[cfg(not(target_arch = "wasm32"))]
-use std::fmt::Write as _;
-#[cfg(not(target_arch = "wasm32"))]
 use std::path::{Path, PathBuf};
 #[cfg(not(target_arch = "wasm32"))]
 use std::process::Command;
@@ -23,6 +21,8 @@ use std::process::Command;
 #[cfg(not(target_arch = "wasm32"))]
 use sha2::{Digest, Sha256};
 
+#[cfg(not(target_arch = "wasm32"))]
+use crate::digest::hex_encode as hex_encode_digest;
 #[cfg(not(target_arch = "wasm32"))]
 use crate::error::ObserverModelError;
 #[cfg(not(target_arch = "wasm32"))]
@@ -36,15 +36,6 @@ macro_rules! ratchet_err {
             detail: $detail,
         }
     };
-}
-
-#[cfg(not(target_arch = "wasm32"))]
-fn hex_encode_digest(bytes: &[u8]) -> String {
-    let mut out = String::new();
-    for b in bytes {
-        let _ = write!(out, "{b:02x}");
-    }
-    out
 }
 
 /// Live measured ratchet watermarks across Rust sources, `frontier.toml`, Wasm binaries,

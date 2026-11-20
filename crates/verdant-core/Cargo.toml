@@ -12,12 +12,14 @@ keywords.workspace = true
 categories.workspace = true
 
 [features]
-default = ["uorc-streaming", "uorc-wasm-decode", "wgsl-oracle"]
+default = ["uorc-streaming", "uorc-wasm-decode", "wgsl-oracle", "capsule-gzip"]
 uorc-streaming = ["dep:uorc", "uorc-wasm-decode"]
 uorc-wasm-decode = ["dep:uorc_decompress"]
 wgsl-oracle = ["dep:naga"]
+capsule-gzip = ["dep:flate2"]
 
 [dependencies]
+flate2 = { version = "1.1.11", default-features = false, features = ["rust_backend"], optional = true }
 gltf = { version = "1.4.1", features = ["extras"] }
 naga = { version = "24.0.0", features = ["wgsl-in", "glsl-out"], optional = true }
 serde = { version = "1.0.219", features = ["derive"] }

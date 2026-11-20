@@ -8,6 +8,7 @@
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 
+use crate::digest::hex_encode;
 use crate::error::StitchCustodyError;
 use crate::prism_kernel;
 use crate::runtime::{DeterministicInputJournal, FrameInputCommand};
@@ -20,19 +21,6 @@ fn sha256_digest(bytes: &[u8]) -> [u8; SHA256_BYTES] {
     hasher.update(bytes);
     let out = hasher.finalize();
     core::array::from_fn(|i| out[i])
-}
-
-fn hex_encode(bytes: &[u8]) -> String {
-    const HEX: &[u8; 1 << (1 + 1 + 1 + 1)] = b"0123456789abcdef";
-    let shift = 1 + 1 + 1 + 1;
-    let mask = (1usize << shift) - 1usize;
-    let mut s = String::with_capacity(bytes.len() * (1 + 1));
-    for &b in bytes {
-        let v = usize::from(b);
-        s.push(HEX[v >> shift] as char);
-        s.push(HEX[v & mask] as char);
-    }
-    s
 }
 
 /// Session signature envelope matching `<prism-frame>` `prism/identity/4` (`UOR-Foundation/foundry`).

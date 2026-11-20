@@ -43,6 +43,7 @@ pub mod camera;
 pub mod character;
 pub mod collision;
 pub mod cybernetics;
+pub mod digest;
 pub mod ecs;
 pub mod error;
 pub mod geometry;

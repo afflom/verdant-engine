@@ -56,10 +56,10 @@ max_unlifted_workspace_modules = 0
 
 [frontier_ratchet]
 frontier_register = "frontier.toml"
-frontier_rust_tree_sha256 = "c53f99a90e7df5714dbcee0819278796a06b6667abf9bd6ef206b7d28e901679"
-min_lifted_functions = 203
-max_residue_functions = 1192
-max_uncertified_functions = 1343
+frontier_rust_tree_sha256 = "0478d7ad2a4d7433bd2baefa1d8a7dcccb66c4f8146dc7af2f81a3895f1fec7b"
+min_lifted_functions = 204
+max_residue_functions = 1190
+max_uncertified_functions = 1341
 
 [surface_ratchet]
 wasm_core_path = "site/verdant-wasm.wasm"
@@ -67,7 +67,7 @@ max_wasm_core_bytes = 163840
 wasm_uorc_path = "site/verdant-uorc.wasm"
 max_wasm_uorc_bytes = 4669440
 frame_pin_path = "site/frame/frame-pin.json"
-max_release_capsule_bytes = 6291456
+max_release_capsule_bytes = 1716224
 max_handwritten_rust_file_lines = 3509
 rust_line_exclude = ["crates/verdant-tensor/src/prism_kernel.rs"]
 js_surface_roots = ["site"]

@@ -6,39 +6,83 @@
 //! Viewpoint, design token, Wasm artifact, and source module inside Verdant itself without
 //! requiring external git hosting for stakeholders.
 
+use std::borrow::Cow;
 use std::collections::{BTreeMap, BTreeSet};
+#[cfg(feature = "capsule-gzip")]
+use std::io::{Cursor, Read, Write};
 
+#[cfg(feature = "capsule-gzip")]
+use flate2::bufread::GzDecoder;
+#[cfg(feature = "capsule-gzip")]
+use flate2::write::GzEncoder;
+#[cfg(feature = "capsule-gzip")]
+use flate2::Compression;
 use serde::{Deserialize, Serialize};
-use sha2::{Digest, Sha256};
 
+use crate::digest::{
+    hex_encode as hex_encode_bytes, sha256_hex as sha256_hex_raw,
+    sha256_hex_tagged as digest_sha256_hex_tagged,
+};
 use crate::error::StitchCustodyError;
 use crate::network::{
     ReedSolomonStitchCodec, StitchMonotonicPointer, StitchRsShard, RELEASE_RS_DATA_SHARDS,
     RELEASE_RS_TOTAL_SHARDS, SHA256_BYTES,
 };
 
-fn sha256_hex_raw(bytes: &[u8]) -> String {
-    const HEX: &[u8; 1 << (1 + 1 + 1 + 1)] = b"0123456789abcdef";
-    let shift = 1usize + 1usize + 1usize + 1usize;
-    let mask = (1usize << shift) - 1usize;
-    let mut hasher = Sha256::new();
-    hasher.update(bytes);
-    let digest = hasher.finalize();
-    let mut out = String::with_capacity(SHA256_BYTES * (1 + 1));
-    for b in digest {
-        let v = usize::from(b);
-        out.push(HEX[v >> shift] as char);
-        out.push(HEX[v & mask] as char);
-    }
-    out
+fn sha256_hex_tagged(tag: &str, bytes: &[u8]) -> String {
+    digest_sha256_hex_tagged("", tag, bytes)
 }
 
-fn sha256_hex_tagged(tag: &str, bytes: &[u8]) -> String {
-    let mut framed = Vec::with_capacity(tag.len() + 1 + bytes.len());
-    framed.extend_from_slice(tag.as_bytes());
-    framed.push(b':');
-    framed.extend_from_slice(bytes);
-    sha256_hex_raw(&framed)
+/// Structural change classification between two [`VerdantVcs`] commits.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum VerdantVcsChangeKind {
+    /// Path exists only in the target commit.
+    Added,
+    /// Path exists in both commits with different content-addressed blob digests.
+    Modified,
+    /// Path exists only in the base commit.
+    Removed,
+}
+
+/// Deterministic per-path entry produced by [`VerdantVcs::diff_commits`].
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct VerdantVcsDiffEntry {
+    /// Workspace-relative canonical path.
+    pub path: String,
+    /// Change classification (`added`, `modified`, or `removed`).
+    pub kind: VerdantVcsChangeKind,
+    /// Blob SHA-256 in the base commit, if present.
+    pub from_blob_sha256: Option<String>,
+    /// Blob SHA-256 in the target commit, if present.
+    pub to_blob_sha256: Option<String>,
+    /// Blob byte length in the base commit, if present.
+    pub from_byte_len: Option<usize>,
+    /// Blob byte length in the target commit, if present.
+    pub to_byte_len: Option<usize>,
+}
+
+/// Deterministic structural diff between two verified [`VerdantVcs`] commits.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct VerdantVcsDiff {
+    /// Base commit `kappa`.
+    pub from_commit_kappa: String,
+    /// Target commit `kappa`.
+    pub to_commit_kappa: String,
+    /// Base commit epoch.
+    pub from_epoch: u64,
+    /// Target commit epoch.
+    pub to_epoch: u64,
+    /// Sorted list of added, modified, and removed paths.
+    pub entries: Vec<VerdantVcsDiffEntry>,
+    /// Total added paths.
+    pub added_count: usize,
+    /// Total modified paths.
+    pub modified_count: usize,
+    /// Total removed paths.
+    pub removed_count: usize,
 }
 
 /// Content-addressed blob stored in [`VerdantVcs`].
@@ -255,6 +299,133 @@ impl VerdantVcs {
         Ok(out)
     }
 
+    /// Computes a deterministic structural diff between `from_kappa` and `to_kappa`.
+    pub fn diff_commits(
+        &self,
+        from_kappa: &str,
+        to_kappa: &str,
+    ) -> Result<VerdantVcsDiff, StitchCustodyError> {
+        let from_commit = self.commits.get(from_kappa).ok_or_else(|| {
+            StitchCustodyError::PayloadDigestMismatch {
+                detail: format!("unknown base VerdantVcs commit `{from_kappa}`"),
+            }
+        })?;
+        let to_commit = self.commits.get(to_kappa).ok_or_else(|| {
+            StitchCustodyError::PayloadDigestMismatch {
+                detail: format!("unknown target VerdantVcs commit `{to_kappa}`"),
+            }
+        })?;
+        let mut all_paths: BTreeSet<&str> = BTreeSet::new();
+        for p in from_commit.tree_entries.keys() {
+            all_paths.insert(p.as_str());
+        }
+        for p in to_commit.tree_entries.keys() {
+            all_paths.insert(p.as_str());
+        }
+        let mut entries = Vec::new();
+        let mut added_count = 0usize;
+        let mut modified_count = 0usize;
+        let mut removed_count = 0usize;
+        for path in all_paths {
+            let from_sha = from_commit.tree_entries.get(path);
+            let to_sha = to_commit.tree_entries.get(path);
+            let from_len = from_sha.and_then(|d| self.blobs.get(d)).map(|b| b.byte_len);
+            let to_len = to_sha.and_then(|d| self.blobs.get(d)).map(|b| b.byte_len);
+            match (from_sha, to_sha) {
+                (None, Some(to_d)) => {
+                    added_count = added_count.saturating_add(1);
+                    entries.push(VerdantVcsDiffEntry {
+                        path: path.to_string(),
+                        kind: VerdantVcsChangeKind::Added,
+                        from_blob_sha256: None,
+                        to_blob_sha256: Some(to_d.clone()),
+                        from_byte_len: None,
+                        to_byte_len: to_len,
+                    });
+                }
+                (Some(from_d), None) => {
+                    removed_count = removed_count.saturating_add(1);
+                    entries.push(VerdantVcsDiffEntry {
+                        path: path.to_string(),
+                        kind: VerdantVcsChangeKind::Removed,
+                        from_blob_sha256: Some(from_d.clone()),
+                        to_blob_sha256: None,
+                        from_byte_len: from_len,
+                        to_byte_len: None,
+                    });
+                }
+                (Some(from_d), Some(to_d)) if from_d != to_d => {
+                    modified_count = modified_count.saturating_add(1);
+                    entries.push(VerdantVcsDiffEntry {
+                        path: path.to_string(),
+                        kind: VerdantVcsChangeKind::Modified,
+                        from_blob_sha256: Some(from_d.clone()),
+                        to_blob_sha256: Some(to_d.clone()),
+                        from_byte_len: from_len,
+                        to_byte_len: to_len,
+                    });
+                }
+                _ => {}
+            }
+        }
+        Ok(VerdantVcsDiff {
+            from_commit_kappa: from_commit.commit_kappa.clone(),
+            to_commit_kappa: to_commit.commit_kappa.clone(),
+            from_epoch: from_commit.epoch,
+            to_epoch: to_commit.epoch,
+            entries,
+            added_count,
+            modified_count,
+            removed_count,
+        })
+    }
+
+    /// Creates or updates a named branch ref pointing at an existing verified commit `target_kappa`.
+    pub fn create_branch(
+        &mut self,
+        branch_name: &str,
+        target_kappa: &str,
+    ) -> Result<String, StitchCustodyError> {
+        let trimmed = branch_name.trim();
+        let valid_chars = trimmed
+            .bytes()
+            .all(|b| b.is_ascii_alphanumeric() || b == b'-' || b == b'_' || b == b'/' || b == b'.');
+        if trimmed.is_empty()
+            || !valid_chars
+            || trimmed.contains("..")
+            || trimmed.starts_with('/')
+            || trimmed.ends_with('/')
+        {
+            return Err(StitchCustodyError::InvalidJournalSignature {
+                detail: format!("invalid VerdantVcs branch name `{branch_name}`"),
+            });
+        }
+        if !self.commits.contains_key(target_kappa) {
+            return Err(StitchCustodyError::PayloadDigestMismatch {
+                detail: format!(
+                    "cannot point branch `{trimmed}` at unknown commit `{target_kappa}`"
+                ),
+            });
+        }
+        let canonical = if trimmed.starts_with("refs/") {
+            trimmed.to_string()
+        } else {
+            format!("refs/verdant/heads/{trimmed}")
+        };
+        self.refs
+            .insert(canonical.clone(), target_kappa.to_string());
+        Ok(canonical)
+    }
+
+    /// Returns all named refs in deterministic lexicographic order as `(ref_name, commit_kappa)`.
+    #[must_use]
+    pub fn list_refs(&self) -> Vec<(String, String)> {
+        self.refs
+            .iter()
+            .map(|(k, v)| (k.clone(), v.clone()))
+            .collect()
+    }
+
     /// Walks the acyclic W3C PROV-O commit ancestry from `head_kappa` back to genesis, refusing cycles.
     pub fn verify_acyclic_history(
         &self,
@@ -462,8 +633,11 @@ pub struct VerdantReleaseManifest {
     pub default_route: String,
     /// Sorted list of every lifted Virtual FS file and its exact SHA-256 digest.
     pub files: Vec<VerdantReleaseFileEntry>,
-    /// Exact sum of all file payload byte lengths.
+    /// Exact sum of all uncompressed file payload byte lengths.
     pub total_payload_bytes: usize,
+    /// Optional RFC 1952 payload body compression (`"gzip"`, or omitted for uncompressed bodies).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub compression: Option<String>,
 }
 
 /// Self-verifying portable Verdant Release `.holo` capsule (`VE-44`).
@@ -517,6 +691,32 @@ impl VerdantReleaseCapsule {
             total_payload_bytes = total_payload_bytes.saturating_add(bytes.len());
             payloads.insert(clean.to_string(), bytes.clone());
         }
+        let mut raw_body = Vec::with_capacity(total_payload_bytes);
+        for entry in &entries {
+            if let Some(bytes) = payloads.get(&entry.path) {
+                raw_body.extend_from_slice(bytes);
+            }
+        }
+        #[cfg(feature = "capsule-gzip")]
+        let (compression, body_bytes) = {
+            let mut gz = GzEncoder::new(Vec::new(), Compression::best());
+            gz.write_all(&raw_body)
+                .map_err(|e| StitchCustodyError::PayloadDigestMismatch {
+                    detail: format!("gzip release capsule body: {e}"),
+                })?;
+            let gz_body = gz
+                .finish()
+                .map_err(|e| StitchCustodyError::PayloadDigestMismatch {
+                    detail: format!("finish gzip release capsule body: {e}"),
+                })?;
+            if gz_body.len() < raw_body.len() {
+                (Some("gzip".to_string()), gz_body)
+            } else {
+                (None, raw_body)
+            }
+        };
+        #[cfg(not(feature = "capsule-gzip"))]
+        let (compression, body_bytes): (Option<String>, Vec<u8>) = (None, raw_body);
         let manifest = VerdantReleaseManifest {
             spec: "verdant/release-capsule/1".to_string(),
             version: version.trim().to_string(),
@@ -526,6 +726,7 @@ impl VerdantReleaseCapsule {
             default_route: default_route.trim().trim_start_matches('/').to_string(),
             files: entries,
             total_payload_bytes,
+            compression,
         };
         let manifest_json = serde_json::to_vec(&manifest).map_err(|e| {
             StitchCustodyError::PayloadDigestMismatch {
@@ -539,16 +740,12 @@ impl VerdantReleaseCapsule {
         })?;
         let header_extra = 1usize + 1usize + 1usize + 1usize;
         let mut holo_bytes = Vec::with_capacity(
-            RELEASE_CAPSULE_MAGIC.len() + header_extra + manifest_json.len() + total_payload_bytes,
+            RELEASE_CAPSULE_MAGIC.len() + header_extra + manifest_json.len() + body_bytes.len(),
         );
         holo_bytes.extend_from_slice(RELEASE_CAPSULE_MAGIC);
         holo_bytes.extend_from_slice(&manifest_len_u32.to_le_bytes());
         holo_bytes.extend_from_slice(&manifest_json);
-        for entry in &manifest.files {
-            if let Some(bytes) = payloads.get(&entry.path) {
-                holo_bytes.extend_from_slice(bytes);
-            }
-        }
+        holo_bytes.extend_from_slice(&body_bytes);
         let capsule_sha256_hex = sha256_hex_raw(&holo_bytes);
         Ok(Self {
             manifest,
@@ -589,7 +786,37 @@ impl VerdantReleaseCapsule {
                 detail: "unsupported release capsule spec or empty file table".to_string(),
             });
         }
-        let mut cursor = body_start;
+        let raw_body = &raw_bytes[body_start..];
+        let body: Cow<'_, [u8]> = match manifest.compression.as_deref() {
+            None => Cow::Borrowed(raw_body),
+            #[cfg(feature = "capsule-gzip")]
+            Some("gzip") => {
+                let mut decoder = GzDecoder::new(Cursor::new(raw_body));
+                let mut inflated = Vec::with_capacity(manifest.total_payload_bytes);
+                let max_read = (manifest.total_payload_bytes as u64).saturating_add(1);
+                decoder
+                    .by_ref()
+                    .take(max_read)
+                    .read_to_end(&mut inflated)
+                    .map_err(|e| StitchCustodyError::PayloadDigestMismatch {
+                        detail: format!("inflate gzip release capsule body: {e}"),
+                    })?;
+                let consumed = decoder.into_inner().position() as usize;
+                if consumed != raw_body.len() || inflated.len() != manifest.total_payload_bytes {
+                    return Err(StitchCustodyError::PayloadDigestMismatch {
+                        detail: "gzip release capsule byte length mismatch or trailing bytes"
+                            .to_string(),
+                    });
+                }
+                Cow::Owned(inflated)
+            }
+            Some(other) => {
+                return Err(StitchCustodyError::PayloadDigestMismatch {
+                    detail: format!("unsupported release capsule compression `{other}`"),
+                });
+            }
+        };
+        let mut cursor = 0usize;
         let mut payloads = BTreeMap::new();
         let mut counted_bytes = 0usize;
         for entry in &manifest.files {
@@ -599,12 +826,12 @@ impl VerdantReleaseCapsule {
                 });
             }
             let end = cursor.saturating_add(entry.byte_len);
-            if end > raw_bytes.len() {
+            if end > body.len() {
                 return Err(StitchCustodyError::PayloadDigestMismatch {
                     detail: format!("truncated payload for `{}`", entry.path),
                 });
             }
-            let slice = &raw_bytes[cursor..end];
+            let slice = &body[cursor..end];
             let actual_sha = sha256_hex_raw(slice);
             if actual_sha != entry.sha256_hex {
                 return Err(StitchCustodyError::PayloadDigestMismatch {
@@ -615,7 +842,7 @@ impl VerdantReleaseCapsule {
             cursor = end;
             counted_bytes = counted_bytes.saturating_add(entry.byte_len);
         }
-        if cursor != raw_bytes.len() || counted_bytes != manifest.total_payload_bytes {
+        if cursor != body.len() || counted_bytes != manifest.total_payload_bytes {
             return Err(StitchCustodyError::PayloadDigestMismatch {
                 detail: "release capsule byte length mismatch or trailing unverified bytes"
                     .to_string(),
@@ -818,19 +1045,6 @@ pub const fn default_release_rs_geometry() -> (u8, u8) {
     (RELEASE_RS_DATA_SHARDS, RELEASE_RS_TOTAL_SHARDS)
 }
 
-fn hex_encode_bytes(bytes: &[u8]) -> String {
-    const HEX: &[u8; 1 << (1 + 1 + 1 + 1)] = b"0123456789abcdef";
-    let shift = 1usize + 1usize + 1usize + 1usize;
-    let mask = (1usize << shift) - 1usize;
-    let mut out = String::with_capacity(bytes.len() * (1 + 1));
-    for &b in bytes {
-        let v = usize::from(b);
-        out.push(HEX[v >> shift] as char);
-        out.push(HEX[v & mask] as char);
-    }
-    out
-}
-
 /// Zero-account in-browser Studio authoring bridge (`VE-49`): commits an authored 3D scene/app
 /// into [`VerdantVcs`] with W3C PROV-O lineage, packs a self-verifying portable `.holo` capsule
 /// (`VDNT_HOLO_REL_V1`), shards it `4-of-8` (`STCH2`), and returns a sanitized `stitch://` deep
@@ -947,5 +1161,125 @@ pub fn studio_vcs_commit_and_pack_holo_json(raw_json: &str) -> String {
         })
         .to_string(),
         Err(e) => serde_json::json!({ "ok": false, "error": e.to_string() }).to_string(),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn gzip_release_capsule_round_trip_and_tamper_refusal() {
+        let mut files = BTreeMap::new();
+        let big_html = "<html><body>Verdant Studio World 3D Mesh</body></html>"
+            .repeat(1 << (1 + 1 + 1 + 1 + 1));
+        files.insert(
+            "studio/index.html".to_string(),
+            big_html.as_bytes().to_vec(),
+        );
+        files.insert("scene.json".to_string(), b"{\"objects\":[]}".to_vec());
+
+        let packed = VerdantReleaseCapsule::pack_from_files(
+            "2.5.0",
+            1,
+            "commit-kappa-test",
+            "seal-sha-test",
+            "studio/index.html",
+            &files,
+        )
+        .expect("pack gzipped capsule");
+        assert_eq!(packed.manifest.compression.as_deref(), Some("gzip"));
+        assert!(packed.holo_bytes.len() < packed.manifest.total_payload_bytes);
+
+        let unpacked = VerdantReleaseCapsule::verify_and_unpack(&packed.holo_bytes)
+            .expect("verify and unpack gzipped capsule");
+        assert_eq!(unpacked.payloads, files);
+        assert_eq!(unpacked.capsule_sha256_hex, packed.capsule_sha256_hex);
+
+        // Trailing unverified byte must fail closed.
+        let mut trailing = packed.holo_bytes.clone();
+        trailing.push(0);
+        assert!(VerdantReleaseCapsule::verify_and_unpack(&trailing).is_err());
+
+        // Flipped byte inside compressed body must fail closed.
+        let mut tampered = packed.holo_bytes.clone();
+        let last = tampered.len() - 1;
+        tampered[last] ^= 1;
+        assert!(VerdantReleaseCapsule::verify_and_unpack(&tampered).is_err());
+
+        // Legacy uncompressed capsule (compression omitted) still unpacks cleanly.
+        let mut tiny = BTreeMap::new();
+        tiny.insert("a.txt".to_string(), b"x".to_vec());
+        let plain = VerdantReleaseCapsule::pack_from_files(
+            "2.5.0",
+            1,
+            "commit-kappa-plain",
+            "seal-sha-plain",
+            "a.txt",
+            &tiny,
+        )
+        .expect("pack tiny uncompressed capsule");
+        assert_eq!(plain.manifest.compression, None);
+        let unpacked_plain = VerdantReleaseCapsule::verify_and_unpack(&plain.holo_bytes)
+            .expect("unpack uncompressed capsule");
+        assert_eq!(unpacked_plain.payloads, tiny);
+    }
+
+    #[test]
+    fn verdant_vcs_diff_commits_and_branch_refs() {
+        let mut vcs = VerdantVcs::new();
+        let mut tree_a = BTreeMap::new();
+        tree_a.insert("a.txt".to_string(), b"alpha".to_vec());
+        tree_a.insert("b.txt".to_string(), b"bravo".to_vec());
+        let c1 = vcs
+            .commit_tree(
+                "refs/verdant/heads/main",
+                &tree_a,
+                "prism:tester",
+                b"secret",
+                "mgr-change-release",
+                "AUTH-STITCH-SELF-HOSTING",
+                "genesis",
+            )
+            .expect("commit c1");
+
+        let mut tree_b = BTreeMap::new();
+        tree_b.insert("a.txt".to_string(), b"alpha-v2".to_vec());
+        tree_b.insert("c.txt".to_string(), b"charlie".to_vec());
+        let c2 = vcs
+            .commit_tree(
+                "refs/verdant/heads/main",
+                &tree_b,
+                "prism:tester",
+                b"secret",
+                "mgr-change-release",
+                "AUTH-STITCH-SELF-HOSTING",
+                "update",
+            )
+            .expect("commit c2");
+
+        let diff = vcs
+            .diff_commits(&c1.commit_kappa, &c2.commit_kappa)
+            .expect("diff commits");
+        assert_eq!(diff.added_count, 1);
+        assert_eq!(diff.modified_count, 1);
+        assert_eq!(diff.removed_count, 1);
+        assert_eq!(diff.entries[0].path, "a.txt");
+        assert_eq!(diff.entries[0].kind, VerdantVcsChangeKind::Modified);
+        assert_eq!(diff.entries[1].path, "b.txt");
+        assert_eq!(diff.entries[1].kind, VerdantVcsChangeKind::Removed);
+        assert_eq!(diff.entries[1 + 1].path, "c.txt");
+        assert_eq!(diff.entries[1 + 1].kind, VerdantVcsChangeKind::Added);
+
+        let branch_ref = vcs
+            .create_branch("release/m13", &c1.commit_kappa)
+            .expect("create branch");
+        assert_eq!(branch_ref, "refs/verdant/heads/release/m13");
+        assert!(vcs.create_branch("../bad", &c1.commit_kappa).is_err());
+        assert!(vcs.create_branch("missing", "unknown-kappa").is_err());
+        let refs = vcs.list_refs();
+        assert_eq!(refs.len(), 1 + 1);
+        assert_eq!(refs[0].0, "refs/verdant/heads/main");
+        assert_eq!(refs[1].0, "refs/verdant/heads/release/m13");
     }
 }

@@ -11,10 +11,10 @@ use std::path::Path;
 
 use serde::{Deserialize, Serialize};
 use serde_json::json;
-use sha2::{Digest, Sha256};
 
 use crate::audio::AcousticEnvironment;
 use crate::character::{ArticulatedCharacter, CharacterArchetype};
+use crate::digest::sha256_hex;
 use crate::ecs::{EntityRole, Transform};
 use crate::error::OracleValidationError;
 use crate::geometry::{generate_faceted_prism_mesh, generate_fluted_column_mesh, ProceduralMesh};
@@ -36,22 +36,6 @@ const EMBEDDED_KHRONOS_JSON: &str =
 const EMBEDDED_ISO_DMN_JSON: &str =
     include_str!("../../../catalogs/language/iso24617-dmn-dialogue.json");
 const EMBEDDED_DOMAIN_PACKS_JSON: &str = include_str!("../../../catalogs/domains/world-packs.json");
-
-fn sha256_hex(bytes: &[u8]) -> String {
-    const HEX: &[u8; 1 << (1 + 1 + 1 + 1)] = b"0123456789abcdef";
-    let shift = 1usize + 1usize + 1usize + 1usize;
-    let mask = (1usize << shift) - 1usize;
-    let mut hasher = Sha256::new();
-    hasher.update(bytes);
-    let digest = hasher.finalize();
-    let mut out = String::with_capacity(digest.len() * (1 + 1));
-    for &b in digest.as_slice() {
-        let v = usize::from(b);
-        out.push(HEX[v >> shift] as char);
-        out.push(HEX[v & mask] as char);
-    }
-    out
-}
 
 /// File-backed external authority record extracted from `model/authorities.toml`.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]

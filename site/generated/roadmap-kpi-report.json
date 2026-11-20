@@ -83,7 +83,7 @@
       "name": "Immutable Composable Blank Frame Weight",
       "unit": "bytes",
       "direction": "atMost",
-      "actual": 28014,
+      "actual": 28368,
       "target": 30720,
       "passed": true,
       "owningManager": "mgr-change-release",
@@ -138,7 +138,7 @@
       "name": "uorust MIR-Lifted Rust Functions Floor",
       "unit": "functions",
       "direction": "atLeast",
-      "actual": 203,
+      "actual": 204,
       "target": 200,
       "passed": true,
       "owningManager": "mgr-verification-observatory",
@@ -576,7 +576,7 @@
         "stratum-3-security-stride"
       ],
       "ownedObserverParts": [],
-      "ownedFilesCount": 6,
+      "ownedFilesCount": 7,
       "active": true
     },
     {

@@ -14,8 +14,9 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::path::Path;
 
 use serde::{Deserialize, Serialize};
-use sha2::{Digest, Sha256};
 
+#[cfg(not(target_arch = "wasm32"))]
+use crate::digest::sha256_hex as sha256_hex_raw;
 use crate::error::ObserverModelError;
 #[cfg(not(target_arch = "wasm32"))]
 use crate::governance::{
@@ -126,40 +127,8 @@ const BYTE_LOCKED_TRUST_ROOTS: &[&str] = &[
     "Cargo.lock",
 ];
 
-#[cfg(not(target_arch = "wasm32"))]
-fn sha256_hex_raw(bytes: &[u8]) -> String {
-    const HEX: &[u8; 1 << (1 + 1 + 1 + 1)] = b"0123456789abcdef";
-    let shift = 1usize + 1usize + 1usize + 1usize;
-    let mask = (1usize << shift) - 1usize;
-    let mut hasher = Sha256::new();
-    hasher.update(bytes);
-    let out = hasher.finalize();
-    let mut hex = String::with_capacity(out.len() * (1 + 1));
-    for &b in &out {
-        let v = usize::from(b);
-        hex.push(HEX[v >> shift] as char);
-        hex.push(HEX[v & mask] as char);
-    }
-    hex
-}
-
 fn sha256_hex_tagged(tag: &str, bytes: &[u8]) -> String {
-    const HEX: &[u8; 1 << (1 + 1 + 1 + 1)] = b"0123456789abcdef";
-    let shift = 1usize + 1usize + 1usize + 1usize;
-    let mask = (1usize << shift) - 1usize;
-    let mut hasher = Sha256::new();
-    hasher.update(b"verdant/operator/v1:");
-    hasher.update(tag.as_bytes());
-    hasher.update(b":");
-    hasher.update(bytes);
-    let out = hasher.finalize();
-    let mut hex = String::with_capacity(out.len() * (1 + 1));
-    for &b in &out {
-        let v = usize::from(b);
-        hex.push(HEX[v >> shift] as char);
-        hex.push(HEX[v & mask] as char);
-    }
-    hex
+    crate::digest::sha256_hex_tagged("verdant/operator/v1:", tag, bytes)
 }
 
 #[path = "operator_mcp.rs"]

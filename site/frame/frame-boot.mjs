@@ -51,17 +51,21 @@ return exact;}
 export async function verifyAndUnpackHoloCapsule(raw){
 const u8=raw instanceof Uint8Array?raw:new Uint8Array(raw);
 if(u8.length<20||td.decode(u8.subarray(0,16))!==HOLO_MAGIC)throw new Error("Bad .holo magic");
-const mLen=new DataView(u8.buffer,u8.byteOffset,u8.byteLength).getUint32(16,true),body=20+mLen;
-if(!mLen||body>u8.length)throw new Error("Truncated .holo manifest");
-const manifest=JSON.parse(td.decode(u8.subarray(20,body)));
+const mLen=new DataView(u8.buffer,u8.byteOffset,u8.byteLength).getUint32(16,true),bodyStart=20+mLen;
+if(!mLen||bodyStart>u8.length)throw new Error("Truncated .holo manifest");
+const manifest=JSON.parse(td.decode(u8.subarray(20,bodyStart)));
 if(manifest.spec!=="verdant/release-capsule/1"||!Array.isArray(manifest.files))throw new Error("Bad manifest");
-let cur=body;const files=[];
+let body=u8.subarray(bodyStart);
+if(manifest.compression==="gzip"){
+body=new Uint8Array(await new Response(new Blob([body]).stream().pipeThrough(new DecompressionStream("gzip"))).arrayBuffer());
+}else if(manifest.compression){throw new Error(`Unsupported .holo compression: ${manifest.compression}`);}
+let cur=0;const files=[];
 for(const e of manifest.files){
-const end=cur+e.byteLen;if(end>u8.length)throw new Error(`Truncated ${e.path}`);
-const bytes=u8.slice(cur,end);if(toHex(await sha256(bytes))!==e.sha256Hex)throw new Error(`SHA-256 mismatch: ${e.path}`);
+const end=cur+e.byteLen;if(end>body.length)throw new Error(`Truncated ${e.path}`);
+const bytes=body.slice(cur,end);if(toHex(await sha256(bytes))!==e.sha256Hex)throw new Error(`SHA-256 mismatch: ${e.path}`);
 files.push({path:e.path,mimeType:e.mimeType,bytes});cur=end;
 }
-if(cur!==u8.length)throw new Error("Trailing unverified .holo bytes");
+if(cur!==body.length||cur!==manifest.totalPayloadBytes)throw new Error("Trailing unverified .holo bytes");
 return{manifest,files,capsuleSha256Hex:toHex(await sha256(u8)),rawBytes:u8};}
 async function getLocalPrismId(){
 let rec=null;try{rec=JSON.parse(localStorage.getItem(PRISM_ID_KEY)||"null");}catch{}

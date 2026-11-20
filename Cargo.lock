@@ -803,6 +803,7 @@ dependencies = [
 name = "verdant-core"
 version = "2.4.0"
 dependencies = [
+ "flate2",
  "gltf",
  "naga",
  "serde",

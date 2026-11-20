@@ -5,24 +5,24 @@
 # stops the functions it counts (the detail their rows state, under its
 # cause), the one that stops the most first: the work queue.
 
-# Honesty report: 203 of 1546 functions of product code are lifted; 1192
+# Honesty report: 204 of 1545 functions of product code are lifted; 1190
 # are residue, 73 foreign and 78 effect rows.
 # Residue by cause:
-#   arithmetic: 39
-#   call: 214
+#   arithmetic: 32
+#   call: 219
 #   collision: 1
 #   form: 357
-#   signature: 68
-#   statements: 32
+#   signature: 69
+#   statements: 31
 #   type: 475
 #   width: 6
 
 spec = "uorust/register/1"
 
 [lift]
-functions = 1546
-lifted = 203
-residue = 1192
+functions = 1545
+lifted = 204
+residue = 1190
 foreign = 73
 effect = 78
 
@@ -49,7 +49,7 @@ functions = 32
 [[construct]]
 construct = "the body has statements other than let"
 cause = "statements"
-functions = 32
+functions = 31
 
 [[construct]]
 construct = "type outside the lift: Vec3.x: f64"
@@ -72,9 +72,9 @@ cause = "effect"
 functions = 21
 
 [[construct]]
-construct = "usize + wraps or panics where its value leaves the pointer width: past 2^32 on wasm32-unknown-unknown and thumbv7em-none-eabihf, past 2^64 on x86_64-unknown-linux-gnu and aarch64-unknown-linux-gnu"
-cause = "arithmetic"
-functions = 19
+construct = "calls new, which is not lifted"
+cause = "call"
+functions = 18
 
 [[construct]]
 construct = "type outside the lift: WasmRuntimeBridge.terrain_params: TerrainReliefParams"
@@ -85,11 +85,6 @@ functions = 18
 construct = "type outside the lift: SceneWorld.entities: EntityRecord.local_transform: Transform.translation: Vec3.x: f64"
 cause = "type"
 functions = 17
-
-[[construct]]
-construct = "calls new, which is not lifted"
-cause = "call"
-functions = 16
 
 [[construct]]
 construct = "type outside the lift: StandardSceneState.params: SceneBuildParams.environment: PhysicalEnvironment.gravity_mps2: f64"
@@ -105,6 +100,11 @@ functions = 16
 construct = "type outside the lift: f32"
 cause = "type"
 functions = 16
+
+[[construct]]
+construct = "usize + wraps or panics where its value leaves the pointer width: past 2^32 on wasm32-unknown-unknown and thumbv7em-none-eabihf, past 2^64 on x86_64-unknown-linux-gnu and aarch64-unknown-linux-gnu"
+cause = "arithmetic"
+functions = 13
 
 [[construct]]
 construct = "Fs effect: std::fs::read_dir"
@@ -242,11 +242,6 @@ cause = "type"
 functions = 6
 
 [[construct]]
-construct = "integer operator * wraps or panics depending on the build profile"
-cause = "arithmetic"
-functions = 5
-
-[[construct]]
 construct = "Fs effect: Path::exists"
 cause = "effect"
 functions = 5
@@ -302,12 +297,22 @@ cause = "width"
 functions = 5
 
 [[construct]]
+construct = "integer operator * wraps or panics depending on the build profile"
+cause = "arithmetic"
+functions = 4
+
+[[construct]]
 construct = "integer operator + wraps or panics depending on the build profile"
 cause = "arithmetic"
 functions = 4
 
 [[construct]]
 construct = "calls identity, which is not lifted"
+cause = "call"
+functions = 4
+
+[[construct]]
+construct = "calls with_capacity, which is not lifted"
 cause = "call"
 functions = 4
 
@@ -377,11 +382,6 @@ cause = "call"
 functions = 3
 
 [[construct]]
-construct = "calls with_capacity, which is not lifted"
-cause = "call"
-functions = 3
-
-[[construct]]
 construct = "Env effect: std::env::args"
 cause = "effect"
 functions = 3
@@ -423,6 +423,11 @@ functions = 3
 
 [[construct]]
 construct = "signature outside the lift: takes &mut self of DeterministicRng: the lift reads self and &self as the value, and threads no other receiver"
+cause = "signature"
+functions = 3
+
+[[construct]]
+construct = "signature outside the lift: takes &mut self of VerdantVcs: the lift reads self and &self as the value, and threads no other receiver"
 cause = "signature"
 functions = 3
 
@@ -537,12 +542,12 @@ cause = "form"
 functions = 2
 
 [[construct]]
-construct = "expression form outside the lift: method call .strip_prefix"
+construct = "expression form outside the lift: method call .ok_or_else"
 cause = "form"
 functions = 2
 
 [[construct]]
-construct = "expression form outside the lift: write! into something other than the formatter"
+construct = "expression form outside the lift: method call .strip_prefix"
 cause = "form"
 functions = 2
 
@@ -578,11 +583,6 @@ functions = 2
 
 [[construct]]
 construct = "signature outside the lift: takes &mut self of StitchPeerExchangeSession: the lift reads self and &self as the value, and threads no other receiver"
-cause = "signature"
-functions = 2
-
-[[construct]]
-construct = "signature outside the lift: takes &mut self of VerdantVcs: the lift reads self and &self as the value, and threads no other receiver"
 cause = "signature"
 functions = 2
 
@@ -707,6 +707,11 @@ cause = "call"
 functions = 1
 
 [[construct]]
+construct = "calls digest_sha256_hex_tagged, which is not lifted"
+cause = "call"
+functions = 1
+
+[[construct]]
 construct = "calls epistemicDialogueTurnValid, which is not lifted"
 cause = "call"
 functions = 1
@@ -783,6 +788,11 @@ functions = 1
 
 [[construct]]
 construct = "calls sabineRt60Millis, which is not lifted"
+cause = "call"
+functions = 1
+
+[[construct]]
+construct = "calls sha256_hex_tagged, which is not lifted"
 cause = "call"
 functions = 1
 
@@ -1087,11 +1097,6 @@ cause = "form"
 functions = 1
 
 [[construct]]
-construct = "expression form outside the lift: method call .ok_or_else"
-cause = "form"
-functions = 1
-
-[[construct]]
 construct = "expression form outside the lift: method call .parse_turtle"
 cause = "form"
 functions = 1
@@ -1123,6 +1128,11 @@ functions = 1
 
 [[construct]]
 construct = "expression form outside the lift: unwrap_or_default of a named type"
+cause = "form"
+functions = 1
+
+[[construct]]
+construct = "expression form outside the lift: write! into something other than the formatter"
 cause = "form"
 functions = 1
 
@@ -2166,6 +2176,24 @@ kappa = "f2ce554bc35237789b4572ee7217a47062a2932f156a06665929e6b5f13960e1"
 function = "verdant_core::cybernetics::PlayerObserverSample::to_drive_vector"
 reason = "call"
 detail = "calls observerSalienceDim, which is not lifted"
+
+[[residue]]
+kappa = "65bfc712c15ad0764ba1d319668e7be7e379a2b5edb27d98ca323c87e623e74e"
+function = "verdant_core::digest::hex_encode"
+reason = "call"
+detail = "calls with_capacity, which is not lifted"
+
+[[residue]]
+kappa = "8067cd075581218393260ee06e2b89da8e388b4f79e2989608c82df5433b129e"
+function = "verdant_core::digest::sha256_hex"
+reason = "call"
+detail = "calls new, which is not lifted"
+
+[[residue]]
+kappa = "e6f7917da691e182578f76c0022c86fa8ac925ae11ff6fd4360d03ad55686931"
+function = "verdant_core::digest::sha256_hex_tagged"
+reason = "call"
+detail = "calls new, which is not lifted"
 
 [[residue]]
 kappa = "5d31ec584bf0d9b09c85e207e31970af7602a9246ede86e666abfcc2acc62c86"
@@ -3482,12 +3510,6 @@ reason = "form"
 detail = "expression form outside the lift: a while loop whose condition is not a cursor below a bound"
 
 [[residue]]
-kappa = "5629f2a1f864c24d80ebb1adc5bb80949e8760d37a2fecd30c40b8a0ddfc7392"
-function = "verdant_core::network::hex_encode"
-reason = "arithmetic"
-detail = "usize + wraps or panics where its value leaves the pointer width: past 2^32 on wasm32-unknown-unknown and thumbv7em-none-eabihf, past 2^64 on x86_64-unknown-linux-gnu and aarch64-unknown-linux-gnu"
-
-[[residue]]
 kappa = "8dde06eb2b9cd309023b848e006e27561ca97c49222f9f1411bf5207e4fe74f9"
 function = "verdant_core::network::hmac_sha256"
 reason = "arithmetic"
@@ -3626,16 +3648,10 @@ reason = "arithmetic"
 detail = "usize + wraps or panics where its value leaves the pointer width: past 2^32 on wasm32-unknown-unknown and thumbv7em-none-eabihf, past 2^64 on x86_64-unknown-linux-gnu and aarch64-unknown-linux-gnu"
 
 [[residue]]
-kappa = "c0fe1de942b9ba00b4387c88de4e1e6adf522ff9785ffde192cc1caa1a06659b"
-function = "verdant_core::operator::sha256_hex_raw"
-reason = "arithmetic"
-detail = "usize + wraps or panics where its value leaves the pointer width: past 2^32 on wasm32-unknown-unknown and thumbv7em-none-eabihf, past 2^64 on x86_64-unknown-linux-gnu and aarch64-unknown-linux-gnu"
-
-[[residue]]
-kappa = "ac250cb658b7f8b516e6f88031fc36e63acddc600e6494362910b966157b23ed"
+kappa = "6931fa4cf63bf52a3081db2c703bbd1f5e2493bac0f021c31873607070aa4f04"
 function = "verdant_core::operator::sha256_hex_tagged"
-reason = "arithmetic"
-detail = "usize + wraps or panics where its value leaves the pointer width: past 2^32 on wasm32-unknown-unknown and thumbv7em-none-eabihf, past 2^64 on x86_64-unknown-linux-gnu and aarch64-unknown-linux-gnu"
+reason = "call"
+detail = "calls sha256_hex_tagged, which is not lifted"
 
 [[residue]]
 kappa = "c4eddcb816517893923fe4c17a38ca147d37eb45e86b0f46137a0763f24b2df8"
@@ -3828,12 +3844,6 @@ kappa = "1ed2792d7d34d6383231b37bedd909431d9d877baf324ba68384ac4fbcff0070"
 function = "verdant_core::portable_player::render_portable_3d_player_html"
 reason = "form"
 detail = "expression form outside the lift: format! text"
-
-[[residue]]
-kappa = "877608c0b821284a055e1474ff75c3d73ab7c7df783a5ef76a177d49af6afdda"
-function = "verdant_core::ratchet_sync::hex_encode_digest"
-reason = "form"
-detail = "expression form outside the lift: write! into something other than the formatter"
 
 [[residue]]
 kappa = "c7ed3e30091b4a454be12e451118e6155bbb8d41ef58fa261bd73129456c6c5f"
@@ -4418,12 +4428,6 @@ reason = "type"
 detail = "type outside the lift: StandardSceneState.params: SceneBuildParams.environment: PhysicalEnvironment.gravity_mps2: f64"
 
 [[residue]]
-kappa = "6f1282b39925fd7bd2101ada226c52ac8efafd0e71e71177359cff70d26a6390"
-function = "verdant_core::runtime::bytes_to_hex"
-reason = "arithmetic"
-detail = "integer operator * wraps or panics depending on the build profile"
-
-[[residue]]
 kappa = "62bf054d9e9f4ae9ba87844508ea64a9af6a5c8bd3a532937e3a600791734621"
 function = "verdant_core::runtime::canonicalize_command_monoid"
 reason = "type"
@@ -4506,12 +4510,6 @@ kappa = "74337b707bdc834b29c3aa3f301cdc2c705b682619c1f9e8b3e0e3de02b2f179"
 function = "verdant_core::standards::parse_authority_file_locks"
 reason = "statements"
 detail = "the body has statements other than let"
-
-[[residue]]
-kappa = "20512118da52f65e7e947bd4aa598e57b3d39d816442661434e3a52e1d4509ad"
-function = "verdant_core::standards::sha256_hex"
-reason = "arithmetic"
-detail = "usize + wraps or panics where its value leaves the pointer width: past 2^32 on wasm32-unknown-unknown and thumbv7em-none-eabihf, past 2^64 on x86_64-unknown-linux-gnu and aarch64-unknown-linux-gnu"
 
 [[residue]]
 kappa = "409867b1b6db3a9fe3ec4866b2790dce8ae46240a470867beff234ce5489d280"
@@ -4964,7 +4962,7 @@ reason = "collision"
 detail = "another function of the crate is also named cellErr"
 
 [[residue]]
-kappa = "699c269a969ea142941394797bdb80dfe1ef535eb149ba8a673135db40551c4a"
+kappa = "be4bd1568aea2fa3efd41b09b7ea5a6578357bf84f571b9ff67246b127d9e96f"
 function = "verdant_core::vcs::VerdantReleaseCapsule::pack_from_files"
 reason = "type"
 detail = "type outside the lift: Self"
@@ -4982,7 +4980,7 @@ reason = "call"
 detail = "calls sign_quorum, which is not lifted"
 
 [[residue]]
-kappa = "312d89559cd30c62805c0b149211bc159f400ede893a6e33eef0bf4acf0af05b"
+kappa = "bd9a820a5f56254646b4decd26d27d955e3d239d7b4fdc4845bd1946cd2a73c4"
 function = "verdant_core::vcs::VerdantReleaseCapsule::verify_and_unpack"
 reason = "type"
 detail = "type outside the lift: Self"
@@ -5006,10 +5004,22 @@ reason = "statements"
 detail = "the body has statements other than let"
 
 [[residue]]
+kappa = "71d7c9837d0381ebe389f1a282665432a052f704e2b4048e1512a7b05615d6d6"
+function = "verdant_core::vcs::VerdantVcs::create_branch"
+reason = "signature"
+detail = "signature outside the lift: takes &mut self of VerdantVcs: the lift reads self and &self as the value, and threads no other receiver"
+
+[[residue]]
 kappa = "d2ae805cb2411eaba0e6d88f8626a8803946b9fc66e459ac3fd362de8badf16b"
 function = "verdant_core::vcs::VerdantVcs::decode_uorc_capsule"
 reason = "type"
 detail = "type outside the lift: Self"
+
+[[residue]]
+kappa = "dc6727b2549bdf555732455c61d95f11745a3436f4041d33b92a8829872d92e1"
+function = "verdant_core::vcs::VerdantVcs::diff_commits"
+reason = "form"
+detail = "expression form outside the lift: method call .ok_or_else"
 
 [[residue]]
 kappa = "b1a49926bbaf650aa3fa6e606ae5f3da733eb52d54a940c228a6aba37fd97ce6"
@@ -5042,28 +5052,16 @@ reason = "form"
 detail = "expression form outside the lift: free name RELEASE_RS_DATA_SHARDS"
 
 [[residue]]
-kappa = "b0b36d4a39305002a4c73ad7b249d8f9825420b1b821ef1126a74978bf523eee"
-function = "verdant_core::vcs::hex_encode_bytes"
-reason = "arithmetic"
-detail = "usize + wraps or panics where its value leaves the pointer width: past 2^32 on wasm32-unknown-unknown and thumbv7em-none-eabihf, past 2^64 on x86_64-unknown-linux-gnu and aarch64-unknown-linux-gnu"
-
-[[residue]]
 kappa = "770a007bc163e3d83381e14f012853e4c9bce12358969ab69cbef78bdddc5e44"
 function = "verdant_core::vcs::parse_stitch_deep_link_uri"
 reason = "call"
 detail = "calls thirty_two_u8, which is not lifted"
 
 [[residue]]
-kappa = "2d6ce95693f3c455219e3de3321201f7c6ba7ef62369554c7b84bdf9761968e2"
-function = "verdant_core::vcs::sha256_hex_raw"
-reason = "arithmetic"
-detail = "usize + wraps or panics where its value leaves the pointer width: past 2^32 on wasm32-unknown-unknown and thumbv7em-none-eabihf, past 2^64 on x86_64-unknown-linux-gnu and aarch64-unknown-linux-gnu"
-
-[[residue]]
-kappa = "ebdf8a3edb19ce000bd12256c8926d0d7fbbd23b977d29c731e5fae78a08fbbc"
+kappa = "ce5c08ee785b82fa28177463fab042e88df25b8af4bc7ca22cfbca82708e567f"
 function = "verdant_core::vcs::sha256_hex_tagged"
-reason = "statements"
-detail = "the body has statements other than let"
+reason = "call"
+detail = "calls digest_sha256_hex_tagged, which is not lifted"
 
 [[residue]]
 kappa = "d3ee2879fa54e9bf311f42a6420034dcc06b11793f207d3f22af26baf1e65a77"
@@ -9752,6 +9750,11 @@ definition = "Behavior::frameBudgetOracleDrsLadder"
 kappa = "70230dc0d144e17934385129993b59d75cad8a928fe03a5b5ef5422575e78890"
 function = "verdant_core::universe::UniverseCellCoord::new"
 definition = "Behavior::universeCellCoordNew"
+
+[[lifted]]
+kappa = "11628ca6b0786afe63e64effe31ee9f166f3ec5a574c1b39b3971a6976437aec"
+function = "verdant_core::vcs::VerdantVcs::list_refs"
+definition = "Behavior::verdantVcsListRefs"
 
 [[lifted]]
 kappa = "65f54434a32c2c1c9289152821033cc1744ac807fb9ec49a876bd83b4ba7e878"

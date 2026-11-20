@@ -9,6 +9,33 @@ return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 function hexToBytes(hex) {
 return Uint8Array.from({ length: hex.length / 2 }, (_, i) => parseInt(hex.slice(i * 2, i * 2 + 2), 16));
 }
+function bytesToHex(u8) {
+return Array.from(u8, (b) => b.toString(16).padStart(2, "0")).join("");
+}
+async function gzipHoloCapsuleIfSmaller(u8) {
+if (typeof CompressionStream !== "function" || u8.length < 24) return null;
+const td = new TextDecoder(), te = new TextEncoder();
+if (td.decode(u8.subarray(0, 16)) !== "VDNT_HOLO_REL_V1") return null;
+const mLen = new DataView(u8.buffer, u8.byteOffset, u8.byteLength).getUint32(16, true);
+const bodyStart = 20 + mLen;
+if (!mLen || bodyStart >= u8.length) return null;
+const manifest = JSON.parse(td.decode(u8.subarray(20, bodyStart)));
+if (manifest.compression) return null;
+const rawBody = u8.subarray(bodyStart);
+const gz = new Uint8Array(
+await new Response(new Blob([rawBody]).stream().pipeThrough(new CompressionStream("gzip"))).arrayBuffer(),
+);
+if (gz.length >= rawBody.length) return null;
+manifest.compression = "gzip";
+const mBytes = te.encode(JSON.stringify(manifest));
+const out = new Uint8Array(20 + mBytes.length + gz.length);
+out.set(u8.subarray(0, 16), 0);
+new DataView(out.buffer).setUint32(16, mBytes.length, true);
+out.set(mBytes, 20);
+out.set(gz, 20 + mBytes.length);
+const sha = bytesToHex(new Uint8Array(await crypto.subtle.digest("SHA-256", out)));
+return { bytes: out, sha };
+}
 export function ensureLocalStudioPrismId() {
 try {
 const existing = JSON.parse(localStorage.getItem(PRISM_ID_KEY) || "null");
@@ -137,6 +164,17 @@ request: { appTitle, authorPrismId, message, parentCommitKappa, epoch, version: 
 });
 const out = res?.result;
 if (!res?.ok || !out?.ok) throw new Error(out?.error || "VerdantVcs commit failed");
+if (out.holoHex) {
+try {
+const gzCap = await gzipHoloCapsuleIfSmaller(hexToBytes(out.holoHex));
+if (gzCap) {
+out.holoHex = bytesToHex(gzCap.bytes);
+out.capsuleByteLen = gzCap.bytes.byteLength;
+out.capsuleSha256Hex = gzCap.sha;
+out.stitchDeepLinkUri = `stitch://${gzCap.sha}/studio/index.html`;
+}
+} catch {}
+}
 lastPackedHolo = out;
 if (out.holoHex) {
 try {
