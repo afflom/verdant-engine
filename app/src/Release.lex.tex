@@ -33,21 +33,21 @@ definition{
   name: channel0PagesShards,
   parameters: [],
   result: ReleaseChannelSpec,
-  body: (record ReleaseChannelSpec {index := 0, corsBrowserFetch := true, zeroAccount := true, digestVerified := true, channelId := "github-pages-stitch-shards", endpoint := "https://afflom.github.io/verdant-engine/stitch/v2.1.0/shards"})
+  body: (record ReleaseChannelSpec {index := 0, corsBrowserFetch := true, zeroAccount := true, digestVerified := true, channelId := "github-pages-stitch-shards", endpoint := "https://afflom.github.io/verdant-engine/stitch/v{version}/shards"})
 }
 
 definition{
   name: channel1JsDelivrMirror,
   parameters: [],
   result: ReleaseChannelSpec,
-  body: (record ReleaseChannelSpec {index := 1, corsBrowserFetch := true, zeroAccount := true, digestVerified := true, channelId := "jsdelivr-stitch-mirror", endpoint := "https://cdn.jsdelivr.net/gh/afflom/verdant-engine@stitch-mirror/v2.1.0/shards"})
+  body: (record ReleaseChannelSpec {index := 1, corsBrowserFetch := true, zeroAccount := true, digestVerified := true, channelId := "jsdelivr-stitch-mirror", endpoint := "https://cdn.jsdelivr.net/gh/afflom/verdant-engine@stitch-mirror/v{version}/shards"})
 }
 
 definition{
   name: channel2RawGitHubMirror,
   parameters: [],
   result: ReleaseChannelSpec,
-  body: (record ReleaseChannelSpec {index := (Subsystems::sTwo), corsBrowserFetch := true, zeroAccount := true, digestVerified := true, channelId := "raw-github-stitch-mirror", endpoint := "https://raw.githubusercontent.com/afflom/verdant-engine/stitch-mirror/v2.1.0/shards"})
+  body: (record ReleaseChannelSpec {index := (Subsystems::sTwo), corsBrowserFetch := true, zeroAccount := true, digestVerified := true, channelId := "raw-github-stitch-mirror", endpoint := "https://raw.githubusercontent.com/afflom/verdant-engine/stitch-mirror/v{version}/shards"})
 }
 
 definition{
@@ -61,7 +61,7 @@ definition{
   name: channel4GhcrOciBundle,
   parameters: [],
   result: ReleaseChannelSpec,
-  body: (record ReleaseChannelSpec {index := (Subsystems::sFour), corsBrowserFetch := false, zeroAccount := true, digestVerified := true, channelId := "ghcr-oci-release-bundle", endpoint := "ghcr.io/afflom/verdant-engine/verdant-release:v2.1.0"})
+  body: (record ReleaseChannelSpec {index := (Subsystems::sFour), corsBrowserFetch := false, zeroAccount := true, digestVerified := true, channelId := "ghcr-oci-release-bundle", endpoint := "ghcr.io/afflom/verdant-engine/verdant-release:v{version}"})
 }
 
 definition{

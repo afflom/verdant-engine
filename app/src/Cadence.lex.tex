@@ -13,7 +13,8 @@ structure{
     {name: major, type: Nat},
     {name: minor, type: Nat},
     {name: patch, type: Nat},
-    {name: epoch, type: Nat}
+    {name: epoch, type: Nat},
+    {name: tag, type: String}
   ]
 }
 
@@ -57,42 +58,42 @@ definition{
   name: nextRelease,
   parameters: [current : ReleaseVersion, obs : ReleaseObservation],
   result: ReleaseDecision,
-  body: (if ((project obs mainGreen) && ((project obs ratchetApplied) && (project obs gatesPassed))) then (if (project obs majorMilestone) then (record ReleaseDecision {cut := true, next := (record ReleaseVersion {major := ((project current major) + 1), minor := 0, patch := 0, epoch := ((project current epoch) + 1)}), bumpTier := (Subsystems::sThree)}) else (if ((project obs minorGrowth) || (project obs frontierTightened)) then (record ReleaseDecision {cut := true, next := (record ReleaseVersion {major := (project current major), minor := ((project current minor) + 1), patch := 0, epoch := ((project current epoch) + 1)}), bumpTier := (Subsystems::sTwo)}) else (if (project obs patchFix) then (record ReleaseDecision {cut := true, next := (record ReleaseVersion {major := (project current major), minor := (project current minor), patch := ((project current patch) + 1), epoch := ((project current epoch) + 1)}), bumpTier := 1}) else (record ReleaseDecision {cut := false, next := current, bumpTier := 0})))) else (record ReleaseDecision {cut := false, next := current, bumpTier := 0}))
+  body: (if ((project obs mainGreen) && ((project obs ratchetApplied) && (project obs gatesPassed))) then (if (project obs majorMilestone) then (record ReleaseDecision {cut := true, next := (record ReleaseVersion {major := ((project current major) + 1), minor := 0, patch := 0, epoch := ((project current epoch) + 1), tag := "next"}), bumpTier := (Subsystems::sThree)}) else (if ((project obs minorGrowth) || (project obs frontierTightened)) then (record ReleaseDecision {cut := true, next := (record ReleaseVersion {major := (project current major), minor := ((project current minor) + 1), patch := 0, epoch := ((project current epoch) + 1), tag := "next"}), bumpTier := (Subsystems::sTwo)}) else (if (project obs patchFix) then (record ReleaseDecision {cut := true, next := (record ReleaseVersion {major := (project current major), minor := (project current minor), patch := ((project current patch) + 1), epoch := ((project current epoch) + 1), tag := "next"}), bumpTier := 1}) else (record ReleaseDecision {cut := false, next := current, bumpTier := 0})))) else (record ReleaseDecision {cut := false, next := current, bumpTier := 0}))
 }
 
 definition{
   name: releaseV0x4x0,
   parameters: [],
   result: ReleaseVersion,
-  body: (record ReleaseVersion {major := 0, minor := (Subsystems::sFour), patch := 0, epoch := 1})
+  body: (record ReleaseVersion {major := 0, minor := (Subsystems::sFour), patch := 0, epoch := 1, tag := "v0.4.0"})
 }
 
 definition{
   name: releaseV1x0x0,
   parameters: [],
   result: ReleaseVersion,
-  body: (record ReleaseVersion {major := 1, minor := 0, patch := 0, epoch := (Subsystems::sTwo)})
+  body: (record ReleaseVersion {major := 1, minor := 0, patch := 0, epoch := (Subsystems::sTwo), tag := "v1.0.0"})
 }
 
 definition{
   name: releaseV1x1x0,
   parameters: [],
   result: ReleaseVersion,
-  body: (record ReleaseVersion {major := 1, minor := 1, patch := 0, epoch := (Subsystems::sThree)})
+  body: (record ReleaseVersion {major := 1, minor := 1, patch := 0, epoch := (Subsystems::sThree), tag := "v1.1.0"})
 }
 
 definition{
   name: releaseV2x0x0,
   parameters: [],
   result: ReleaseVersion,
-  body: (record ReleaseVersion {major := (Subsystems::sTwo), minor := 0, patch := 0, epoch := (Subsystems::sFour)})
+  body: (record ReleaseVersion {major := (Subsystems::sTwo), minor := 0, patch := 0, epoch := (Subsystems::sFour), tag := "v2.0.0"})
 }
 
 definition{
   name: releaseV2x1x0,
   parameters: [],
   result: ReleaseVersion,
-  body: (record ReleaseVersion {major := (Subsystems::sTwo), minor := 1, patch := 0, epoch := (Subsystems::sFive)})
+  body: (record ReleaseVersion {major := (Subsystems::sTwo), minor := 1, patch := 0, epoch := (Subsystems::sFive), tag := "v2.1.0"})
 }
 
 definition{

@@ -4,10 +4,10 @@ spec = "verdant/self-host-ratchet-manifest/1"
 generator = "verdant-operator-ratchet-lift"
 version = "2.4.0"
 release_epoch = 8
-source_commit_kappa = "10ccade47d3f41c380959b7bf353eac56252bf70ceffce7e783b6e3835f08c7d"
-source_tree_root_sha256 = "d0ea057352c31c8209f40ce07a84953da8dfbc47cada5aabfcb9fc615dbfa539"
-immutability_seal_root_sha256 = "ab9715025f776018976e72174fb30c3ec891b4ff38e9a139f7d322676e9f0509"
-release_capsule_sha256 = "d3cb08508156d8bf4c52c882380d51df946e9e095825319f6070080bacc7a71f"
+source_commit_kappa = "d55a002a837e63da83321486231f8e0977f6fe7902b8c62293ac74667a7a0215"
+source_tree_root_sha256 = "14690389b0bbc26757aa9d258d8021a926eb3bad6d8c077ebd8c2ff279f44f59"
+immutability_seal_root_sha256 = "1344b1f13fa1b096ce774f5dd931d6e89d1715524ca0d4bc17c4c2b3ff7bf6c0"
+release_capsule_sha256 = "344a8c43c35e7d124ca9a26dd9bce199e63b755d29aae8087e4e048ed6a13a72"
 unlifted_ui_files = 0
 unverified_frame_assets = 0
 user_required_external_accounts = 0
@@ -276,7 +276,7 @@ sha256 = "2d0aee3a5ee0f69a3f27d6a02751a209140b5e4b7c48f19dbfd54c84dbfb9565"
 [[lifted_module]]
 path = "app/src/Cadence.lex.tex"
 category = "lexlean"
-sha256 = "ab37a9d7e64674e57d0cea21676f16f73df7069dba8cbefed73a71981f8fd028"
+sha256 = "683caec2a5c9293625ca33fb06ded34240fa808650c4895ecc71635cf3749718"
 
 [[lifted_module]]
 path = "app/src/Compliance.lex.tex"
@@ -306,7 +306,7 @@ sha256 = "52a31f6736703cc5d7c4d544743ff73ef0d1485c9de90781cf9f639a806aace1"
 [[lifted_module]]
 path = "app/src/Fidelity.lex.tex"
 category = "lexlean"
-sha256 = "ee696b520fab77b6e052dd53cbfbf72ab8712cd12aa88a8357696c1b430b4d2f"
+sha256 = "175bee76564ad49c32aabd16c168e557846ba7e5f79e213217a1aedf55d82e84"
 
 [[lifted_module]]
 path = "app/src/Foundation/Arch.lex.tex"
@@ -371,7 +371,7 @@ sha256 = "9fede2e970d4c42b7d9d84f0c7bcfc2064e226b660728365de8373f9f4b57abe"
 [[lifted_module]]
 path = "app/src/Provenance.lex.tex"
 category = "lexlean"
-sha256 = "15bc6cc17fb37822690dfad2a9f91935eed83f2fb231be717a33d5963f09fd5e"
+sha256 = "6f85ff86a2299d9805d3a41f77013083a46900d73caca2da8b895f6c42916fa5"
 
 [[lifted_module]]
 path = "app/src/Quality.lex.tex"
@@ -381,7 +381,7 @@ sha256 = "892589008577873bfe818513d5212fde737bd87755fe17bde3a70914639554cf"
 [[lifted_module]]
 path = "app/src/Release.lex.tex"
 category = "lexlean"
-sha256 = "c8019ee8cf48ddae55afb98da2e372ca29eb163b0227e21d7dfbee9a2292c354"
+sha256 = "69861dd2df46c9c8417008cc575953d4bf04cd6c7b764f7910f2424e970a70a1"
 
 [[lifted_module]]
 path = "app/src/Security.lex.tex"

@@ -2,7 +2,7 @@
   "spec": "verdant/view-immutability-seal/1",
   "owningManager": "mgr-observer-executive",
   "managerKappaHex": "8d279d753d585cb8804f7d364818c798f13dfa8138164f820d5cf49ebd3c1dcc",
-  "sealRootSha256Hex": "ab9715025f776018976e72174fb30c3ec891b4ff38e9a139f7d322676e9f0509",
+  "sealRootSha256Hex": "1344b1f13fa1b096ce774f5dd931d6e89d1715524ca0d4bc17c4c2b3ff7bf6c0",
   "files": [
     {
       "path": "site/card.html",
@@ -185,7 +185,7 @@
         "AUTH-ISO-42010-VIEWPOINTS"
       ],
       "bytes": 20216,
-      "sha256Hex": "2aa77842456fa14e734c16216df00e43cf835871a7262ebd1fe2e5f8bf5a5904",
+      "sha256Hex": "2f9244b17e0f88a954dfdd1bef6963c7cb6feb5c74855e9bcccd1f018b823c6e",
       "lastDirectiveKappaHex": "0c170dd04e2f826f0ed537a8de984743d2f753bd2a2df5b4c8a40fdca2e4a559"
     }
   ]
