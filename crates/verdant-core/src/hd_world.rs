@@ -1144,10 +1144,10 @@ impl WorldArchitectureKind {
     /// `3` = Glasshouse, `4` = Starfall).
     #[must_use]
     pub fn from_u32(code: u32) -> Self {
-        let one = 1u32;
-        let two = one + one;
-        let three = two + one;
-        let four = two + two;
+        let one = 1_u32;
+        let two = one.wrapping_add(one);
+        let three = two.wrapping_add(one);
+        let four = two.wrapping_add(two);
         if code == 0 {
             Self::BlankStudio
         } else if code == one {
@@ -1183,10 +1183,10 @@ impl AuthorPrimitiveKind {
     /// Decodes a primitive kind code (`0..=4`).
     #[must_use]
     pub fn from_u32(code: u32) -> Self {
-        let one = 1u32;
-        let two = one + one;
-        let three = two + one;
-        let four = two + two;
+        let one = 1_u32;
+        let two = one.wrapping_add(one);
+        let three = two.wrapping_add(one);
+        let four = two.wrapping_add(two);
         if code == one {
             Self::Platform
         } else if code == two {

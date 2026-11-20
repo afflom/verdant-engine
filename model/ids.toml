@@ -444,3 +444,15 @@ id = "VE-55"
 level = "build"
 suite = "engine"
 statement = "Verdant's ratchet operates autonomously via npm run ratchet and verdant operator ratchet-lift --tighten: binding frontier.toml to live shipped Rust source SHA-256 (frontier_rust_tree_sha256), enforcing monotonic [surface_ratchet] ceilings on Wasm size, .holo capsule weight, and max hand-written Rust/JS file lines, one-way auto-tightening watermarks in model/parametric-ratchet.toml while refusing regressions, and providing lifted wrapping scalar primitives in verdant-tensor::scalars"
+
+[[id]]
+id = "VE-56"
+level = "build"
+suite = "engine"
+statement = "Verdant cuts site/verdant-uorc.wasm and release .holo capsule transfer weight by more than 1.5 MiB via size-optimized UORC profile tuning, expands FR-03 cold-boot headroom cleanly beneath 122880 bytes, lifts additional constructive Rust arithmetic helpers into frontier.toml, and auto-tightens [surface_ratchet] and [frontier_ratchet] watermarks monotonically"
+
+[[id]]
+id = "VE-57"
+level = "build"
+suite = "engine"
+statement = "Portable zero-account .holo user applications exported from Verdant Studio embed a self-contained interactive WebGL2 3D Canvas Player (crates/verdant-core/src/portable_player.rs) that renders the creator's exact authored objects, transforms, domain sky/ground palette, and orbit controls offline with zero external accounts or CDN fetches, verified end-to-end across isolated Chromium browser contexts"

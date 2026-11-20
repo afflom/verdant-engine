@@ -402,6 +402,7 @@
         "AUTH-ISO-25010-TENSOR-SCALING"
       ],
       "ownedFiles": [
+        "crates/verdant-core/src/portable_player.rs",
         "site/studio/index.html",
         "site/studio/studio-page.mjs",
         "site/studio.mjs",

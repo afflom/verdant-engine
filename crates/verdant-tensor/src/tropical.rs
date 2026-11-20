@@ -269,10 +269,14 @@ pub fn tropical_min_plus_all_pairs_closure(
 /// Constructive tropical `(min, +)` infinity sentinel (`2^29`, safely `< i32::MAX / 2` so `dik + dkj` cannot overflow).
 #[must_use]
 pub const fn tropical_inf_sentinel() -> i32 {
-    let two = 1_u32 + 1_u32;
-    let four = two * two;
-    let five = four + 1_u32;
-    1_i32 << (five * five + four)
+    let two = 1_i32.wrapping_add(1_i32);
+    let four = two.wrapping_mul(two);
+    let p4 = four.wrapping_mul(four);
+    let p8 = p4.wrapping_mul(p4);
+    let p16 = p8.wrapping_mul(p8);
+    let p24 = p16.wrapping_mul(p8);
+    let p28 = p24.wrapping_mul(p4);
+    p28.wrapping_mul(two)
 }
 
 /// In-place, zero-allocation tropical `(min, +)` all-pairs shortest-path closure with simultaneous

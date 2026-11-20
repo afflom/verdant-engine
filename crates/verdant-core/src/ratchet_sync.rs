@@ -28,6 +28,7 @@ use crate::error::ObserverModelError;
 #[cfg(not(target_arch = "wasm32"))]
 use crate::observer::CommunicationChannelKind;
 
+#[cfg(not(target_arch = "wasm32"))]
 macro_rules! ratchet_err {
     ($detail:expr) => {
         ObserverModelError::CommunicationEnvelopeRejected {

@@ -4,10 +4,10 @@
   "authorityId": "AUTH-SEMVER-CHANGE-KPI",
   "currentVersion": {
     "major": 2,
-    "minor": 2,
+    "minor": 3,
     "patch": 0
   },
-  "releaseEpoch": 6,
+  "releaseEpoch": 7,
   "history": [
     {
       "version": "0.1.0",
@@ -70,6 +70,13 @@
       "releaseEpoch": 6,
       "bumpKind": "minor",
       "summary": "M10: Self-tightening autonomous ratchet, live frontier_rust_tree_sha256 binding, surface Wasm/LOC ceilings, FI-08/uorust scalar harmony & npm run ratchet",
+      "citedAuthority": "AUTH-SEMVER-CHANGE-KPI"
+    },
+    {
+      "version": "2.3.0",
+      "releaseEpoch": 7,
+      "bumpKind": "minor",
+      "summary": "M11: Wasm/capsule weight diet (-1.88 MiB), FR-03 cold-boot headroom & live interactive WebGL2 3D player in shared portable .holo apps",
       "citedAuthority": "AUTH-SEMVER-CHANGE-KPI"
     }
   ]

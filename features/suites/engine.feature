@@ -362,3 +362,15 @@ Feature: engine
     Given model/parametric-ratchet.toml, crates/fidelity/src/ratchet.rs, crates/verdant-core/src/ratchet_sync.rs, crates/verdant-tensor/src/scalars.rs, and scripts/verdant-ratchet.mjs
     When prism-fidelity audits the live repository, synthetic stale frontier_rust_tree_sha256 or regressed surface watermarks are tested, and verdant operator ratchet-lift runs one-way auto-tightening
     Then the live repository passes all four ratchet layers with frontier.toml bound to live Rust source SHA-256, lifted scalars satisfy both FI-08 and uorust, and stale frontier hashes or regressed Wasm/capsule/file-line watermarks fail closed
+
+  @VE-56 @build
+  Scenario: Verdant cuts site/verdant-uorc.wasm and release .holo capsule transfer weight by more than 1.5 MiB via size-optimized UORC profile tuning, expands FR-03 cold-boot headroom cleanly beneath 122880 bytes, lifts additional constructive Rust arithmetic helpers into frontier.toml, and auto-tightens [surface_ratchet] and [frontier_ratchet] watermarks monotonically
+    Given Cargo.toml release profiles, site/verdant-wasm.wasm, site/verdant-uorc.wasm, frontier.toml, and model/parametric-ratchet.toml [surface_ratchet]
+    When Verdant builds its WebAssembly runtimes, measures FR-03 cold-boot weight, and runs prism-fidelity audit_parametric_ratchet
+    Then site/verdant-uorc.wasm is strictly below 5000000 bytes, [surface_ratchet] ceilings are monotonically tightened, and frontier.toml expands lifted constructive Rust functions while shrinking uncertified residue
+
+  @VE-57 @build
+  Scenario: Portable zero-account .holo user applications exported from Verdant Studio embed a self-contained interactive WebGL2 3D Canvas Player (crates/verdant-core/src/portable_player.rs) that renders the creator's exact authored objects, transforms, domain sky/ground palette, and orbit controls offline with zero external accounts or CDN fetches, verified end-to-end across isolated Chromium browser contexts
+    Given crates/verdant-core/src/portable_player.rs, crates/verdant-core/src/vcs.rs, Verdant Studio, and scripts/verify-uhd-workload.mjs
+    When a creator authors 3D objects in Studio, commits and packs a portable .holo app via studio_vcs_commit_and_pack_holo_json, and opens the ?pin=stitch://<kappa>/studio#holo=... share link in an isolated browser context
+    Then the unpacked studio/index.html embeds the interactive WebGL2 3D player with safe HTML escaping, zero external network dependencies, live rendered frames across all authored 3D objects, and toggleable scene JSON inspection

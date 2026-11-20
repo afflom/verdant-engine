@@ -153,6 +153,16 @@
       "requiredCapabilities": ["VE-55"],
       "owningManagers": ["mgr-verification-observatory", "mgr-change-release", "mgr-runtime-stage"],
       "ratchetRequirement": "frontier_rust_tree_sha256 live binding + one-way auto-tightening --tighten + [surface_ratchet] Wasm/capsule/god-file ceilings + lifted scalars.rs + single-command npm run ratchet."
+    },
+    {
+      "milestoneId": "M11",
+      "targetVersion": "2.3.0",
+      "tier": "minor",
+      "title": "Wasm & Release Capsule Weight Diet, FR-03 Cold-Boot Headroom & Live Interactive WebGL2 3D Player in Shared Portable .holo Apps",
+      "stakeholders": ["creator", "player", "systems-engineer", "auditor"],
+      "requiredCapabilities": ["VE-56", "VE-57"],
+      "owningManagers": ["mgr-runtime-stage", "mgr-studio-alm", "mgr-change-release", "mgr-verification-observatory"],
+      "ratchetRequirement": "Auto-tightened [surface_ratchet] Wasm/capsule ceilings with >= 1.5 MiB verdant-uorc.wasm reduction, FR-03 cold-boot headroom, expanded uorust lifted frontier, and zero-account interactive WebGL2 3D player verified across isolated browsers."
     }
   ],
   "kpiCatalog": [
@@ -251,7 +261,7 @@
       "name": "uorust MIR-Lifted Rust Functions Floor",
       "unit": "functions",
       "direction": "atLeast",
-      "target": 136,
+      "target": 178,
       "owningManager": "mgr-verification-observatory",
       "authority": "AUTH-SEMVER-CHANGE-KPI"
     },

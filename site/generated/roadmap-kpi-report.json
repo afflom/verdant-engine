@@ -2,12 +2,12 @@
   "spec": "verdant/observer-roadmap-kpi-report/1",
   "managerId": "mgr-roadmap-strategy",
   "authorityId": "AUTH-SEMVER-CHANGE-KPI",
-  "currentVersion": "2.2.0",
-  "releaseEpoch": 6,
+  "currentVersion": "2.3.0",
+  "releaseEpoch": 7,
   "totalManagers": 13,
   "totalPrismFacetsOwned": 9,
   "totalPrismFacetsRequired": 9,
-  "declaredCapabilitiesCount": 66,
+  "declaredCapabilitiesCount": 68,
   "minorProgressPct": 100,
   "majorProgressPct": 100,
   "kpiPassedCount": 13,
@@ -138,8 +138,8 @@
       "name": "uorust MIR-Lifted Rust Functions Floor",
       "unit": "functions",
       "direction": "atLeast",
-      "actual": 178,
-      "target": 136,
+      "actual": 183,
+      "target": 178,
       "passed": true,
       "owningManager": "mgr-verification-observatory",
       "authority": "AUTH-SEMVER-CHANGE-KPI"
@@ -461,6 +461,36 @@
       "progressPct": 100,
       "completed": true,
       "ratchetRequirement": "frontier_rust_tree_sha256 live binding + one-way auto-tightening --tighten + [surface_ratchet] Wasm/capsule/god-file ceilings + lifted scalars.rs + single-command npm run ratchet."
+    },
+    {
+      "milestoneId": "M11",
+      "targetVersion": "2.3.0",
+      "tier": "minor",
+      "title": "Wasm & Release Capsule Weight Diet, FR-03 Cold-Boot Headroom & Live Interactive WebGL2 3D Player in Shared Portable .holo Apps",
+      "stakeholders": [
+        "creator",
+        "player",
+        "systems-engineer",
+        "auditor"
+      ],
+      "owningManagers": [
+        "mgr-runtime-stage",
+        "mgr-studio-alm",
+        "mgr-change-release",
+        "mgr-verification-observatory"
+      ],
+      "requiredCapabilities": [
+        "VE-56",
+        "VE-57"
+      ],
+      "closedCapabilities": [
+        "VE-56",
+        "VE-57"
+      ],
+      "missingCapabilities": [],
+      "progressPct": 100,
+      "completed": true,
+      "ratchetRequirement": "Auto-tightened [surface_ratchet] Wasm/capsule ceilings with >= 1.5 MiB verdant-uorc.wasm reduction, FR-03 cold-boot headroom, expanded uorust lifted frontier, and zero-account interactive WebGL2 3D player verified across isolated browsers."
     }
   ],
   "observerParts": [
@@ -564,7 +594,7 @@
       "ownedObserverParts": [
         "cognitive-language"
       ],
-      "ownedFilesCount": 5,
+      "ownedFilesCount": 6,
       "active": true
     },
     {
@@ -616,7 +646,7 @@
     "governingAuthority": "AUTH-SEMVER-CHANGE-KPI",
     "currentVersion": {
       "major": 2,
-      "minor": 2,
+      "minor": 3,
       "patch": 0
     },
     "recommendedBump": "major",
@@ -625,8 +655,8 @@
       "minor": 0,
       "patch": 0
     },
-    "currentEpoch": 6,
-    "nextEpoch": 7,
+    "currentEpoch": 7,
+    "nextEpoch": 8,
     "versionIncremented": true,
     "gates": {
       "ratchetApplied": true,
@@ -637,6 +667,6 @@
       "pullThroughVerified": true
     },
     "blockingReasons": [],
-    "rationale": "Ratchet applied & 5/5 Release Gates passed: advancing v2.2.0 -> v3.0.0 (Major, epoch 7) — Observer roadmap evaluation: minor=100% major=100% managers=13"
+    "rationale": "Ratchet applied & 5/5 Release Gates passed: advancing v2.3.0 -> v3.0.0 (Major, epoch 8) — Observer roadmap evaluation: minor=100% major=100% managers=13"
   }
 }

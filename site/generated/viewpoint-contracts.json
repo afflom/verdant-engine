@@ -430,7 +430,7 @@
     },
     {
       "basisPrime": 97,
-      "kappaHex": "f529862a35edd6caa938b62e9bebdccb2d1ff56713e74e9150e60e85e652b671",
+      "kappaHex": "9e075e2b6e94fac796b2ceaa93f966bb7674b79904c2f4c503b0aa0bbd9100c8",
       "spec": {
         "almPhases": [
           "conception",
@@ -475,6 +475,7 @@
           "verdant-cli"
         ],
         "ownedFiles": [
+          "crates/verdant-core/src/portable_player.rs",
           "site/studio/index.html",
           "site/studio/studio-page.mjs",
           "site/studio.mjs",

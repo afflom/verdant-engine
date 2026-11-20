@@ -5,13 +5,13 @@
 # stops the functions it counts (the detail their rows state, under its
 # cause), the one that stops the most first: the work queue.
 
-# Honesty report: 178 of 1537 functions of product code are lifted; 1208
+# Honesty report: 183 of 1539 functions of product code are lifted; 1205
 # are residue, 73 foreign and 78 effect rows.
 # Residue by cause:
-#   arithmetic: 70
-#   call: 210
+#   arithmetic: 59
+#   call: 211
 #   collision: 1
-#   form: 346
+#   form: 353
 #   signature: 68
 #   statements: 32
 #   type: 475
@@ -20,9 +20,9 @@
 spec = "uorust/register/1"
 
 [lift]
-functions = 1537
-lifted = 178
-residue = 1208
+functions = 1539
+lifted = 183
+residue = 1205
 foreign = 73
 effect = 78
 
@@ -52,14 +52,14 @@ cause = "statements"
 functions = 32
 
 [[construct]]
-construct = "usize + wraps or panics where its value leaves the pointer width: past 2^32 on wasm32-unknown-unknown and thumbv7em-none-eabihf, past 2^64 on x86_64-unknown-linux-gnu and aarch64-unknown-linux-gnu"
-cause = "arithmetic"
-functions = 27
-
-[[construct]]
 construct = "type outside the lift: Vec3.x: f64"
 cause = "type"
 functions = 26
+
+[[construct]]
+construct = "usize + wraps or panics where its value leaves the pointer width: past 2^32 on wasm32-unknown-unknown and thumbv7em-none-eabihf, past 2^64 on x86_64-unknown-linux-gnu and aarch64-unknown-linux-gnu"
+cause = "arithmetic"
+functions = 25
 
 [[construct]]
 construct = "takes or returns VerdantOperatorChannel.observer: ObserverPrismHolon.organs: ObserverOrganModel.schema_org_jsonld: serde_json::Value, a type of the serde_json crate with no LexLean model"
@@ -80,11 +80,6 @@ functions = 21
 construct = "type outside the lift: WasmRuntimeBridge.terrain_params: TerrainReliefParams"
 cause = "type"
 functions = 18
-
-[[construct]]
-construct = "integer operator + wraps or panics depending on the build profile"
-cause = "arithmetic"
-functions = 17
 
 [[construct]]
 construct = "type outside the lift: SceneWorld.entities: EntityRecord.local_transform: Transform.translation: Vec3.x: f64"
@@ -152,6 +147,11 @@ cause = "type"
 functions = 11
 
 [[construct]]
+construct = "integer operator + wraps or panics depending on the build profile"
+cause = "arithmetic"
+functions = 10
+
+[[construct]]
 construct = "type outside the lift: Aabb.min: Vec3.x: f64"
 cause = "type"
 functions = 10
@@ -170,11 +170,6 @@ functions = 9
 construct = "type outside the lift: TerrainReliefParams.basin_depth_meters: f64"
 cause = "type"
 functions = 9
-
-[[construct]]
-construct = "integer operator * wraps or panics depending on the build profile"
-cause = "arithmetic"
-functions = 8
 
 [[construct]]
 construct = "calls from_str, which is not lifted"
@@ -197,6 +192,16 @@ cause = "type"
 functions = 8
 
 [[construct]]
+construct = "expression form outside the lift: a while loop that does not advance its cursor once per step"
+cause = "form"
+functions = 7
+
+[[construct]]
+construct = "expression form outside the lift: expr::loop"
+cause = "form"
+functions = 7
+
+[[construct]]
 construct = "type outside the lift: ConvexHullCollider.vertices: Vec3.x: f64"
 cause = "type"
 functions = 7
@@ -212,8 +217,8 @@ cause = "type"
 functions = 7
 
 [[construct]]
-construct = "expression form outside the lift: expr::loop"
-cause = "form"
+construct = "integer operator * wraps or panics depending on the build profile"
+cause = "arithmetic"
 functions = 6
 
 [[construct]]
@@ -307,11 +312,6 @@ cause = "call"
 functions = 4
 
 [[construct]]
-construct = "expression form outside the lift: a while loop that does not advance its cursor once per step"
-cause = "form"
-functions = 4
-
-[[construct]]
 construct = "expression form outside the lift: free name Axis::ALL"
 cause = "form"
 functions = 4
@@ -378,6 +378,11 @@ functions = 3
 
 [[construct]]
 construct = "calls wasmMaxLodRank, which is not lifted"
+cause = "call"
+functions = 3
+
+[[construct]]
+construct = "calls with_capacity, which is not lifted"
 cause = "call"
 functions = 3
 
@@ -482,11 +487,6 @@ cause = "call"
 functions = 2
 
 [[construct]]
-construct = "calls with_capacity, which is not lifted"
-cause = "call"
-functions = 2
-
-[[construct]]
 construct = "Fs effect: std::fs::create_dir_all"
 cause = "effect"
 functions = 2
@@ -512,12 +512,17 @@ cause = "form"
 functions = 2
 
 [[construct]]
-construct = "expression form outside the lift: a while loop over a cursor of another type"
+construct = "expression form outside the lift: a while loop whose condition is not a cursor below a bound"
 cause = "form"
 functions = 2
 
 [[construct]]
 construct = "expression form outside the lift: free name CODED_TABLE_LEN"
+cause = "form"
+functions = 2
+
+[[construct]]
+construct = "expression form outside the lift: free name Self::BlankStudio"
 cause = "form"
 functions = 2
 
@@ -977,11 +982,6 @@ cause = "foreign"
 functions = 1
 
 [[construct]]
-construct = "expression form outside the lift: a while loop whose condition is not a cursor below a bound"
-cause = "form"
-functions = 1
-
-[[construct]]
 construct = "expression form outside the lift: comparison == of (Result Bool ComputeError)"
 cause = "form"
 functions = 1
@@ -993,6 +993,11 @@ functions = 1
 
 [[construct]]
 construct = "expression form outside the lift: format! hole"
+cause = "form"
+functions = 1
+
+[[construct]]
+construct = "expression form outside the lift: format! text"
 cause = "form"
 functions = 1
 
@@ -1012,12 +1017,12 @@ cause = "form"
 functions = 1
 
 [[construct]]
-construct = "expression form outside the lift: free name Self::BlankStudio"
+construct = "expression form outside the lift: free name Self::CharacterRigs"
 cause = "form"
 functions = 1
 
 [[construct]]
-construct = "expression form outside the lift: free name Self::CharacterRigs"
+construct = "expression form outside the lift: free name Self::Platform"
 cause = "form"
 functions = 1
 
@@ -1078,6 +1083,11 @@ functions = 1
 
 [[construct]]
 construct = "expression form outside the lift: method call .to_uppercase"
+cause = "form"
+functions = 1
+
+[[construct]]
+construct = "expression form outside the lift: method call .wrapping_add"
 cause = "form"
 functions = 1
 
@@ -2642,10 +2652,10 @@ reason = "call"
 detail = "calls from_str, which is not lifted"
 
 [[residue]]
-kappa = "e8ffba883e3f8a9e0912120aab129cfd098972732a58d55c85a99acfdad1edd8"
+kappa = "1ce4ea16c42a302f9b0bf5edc7b308efe72ddb1de999dc53d7fc141aa0477ff1"
 function = "verdant_core::hd_world::AuthorPrimitiveKind::from_u32"
-reason = "arithmetic"
-detail = "integer operator + wraps or panics depending on the build profile"
+reason = "form"
+detail = "expression form outside the lift: free name Self::Platform"
 
 [[residue]]
 kappa = "d4b8f927f02cd39f14ccf5a9ddaf7321b6cdcba5156d8e1468c89dd36050bb28"
@@ -2696,10 +2706,10 @@ reason = "form"
 detail = "expression form outside the lift: free name Self::BlankStudio"
 
 [[residue]]
-kappa = "d4a1336be0811889fd8b5123a2adb2562ddc7edbe3fbc364ba1d8487a047bcbb"
+kappa = "6efc5a3e0f48de40d4672017accad2990ecb820b9ce93926c2ef0f793d933a79"
 function = "verdant_core::hd_world::WorldArchitectureKind::from_u32"
-reason = "arithmetic"
-detail = "integer operator + wraps or panics depending on the build profile"
+reason = "form"
+detail = "expression form outside the lift: free name Self::BlankStudio"
 
 [[residue]]
 kappa = "4f6b50c122e59cf4f2ae4f0e5b19bf60f74d7771d9d9982a4bc6bbd904e29ecb"
@@ -3080,16 +3090,10 @@ reason = "call"
 detail = "calls pow2_u64, which is not lifted"
 
 [[residue]]
-kappa = "3c9dc26338cf7a257090154dda202823cc0288a16ce23e5d00f59b45ed762f76"
+kappa = "0e0e3889c0546ad11d88afa741312b357fc24861af5cd201b4e7d472010e3101"
 function = "verdant_core::math::fibonacci_u64"
 reason = "form"
-detail = "expression form outside the lift: a while loop over a cursor of another type"
-
-[[residue]]
-kappa = "a3b81562e4ca8beeee24a1c99d40b81c00dde3c28216b16b2cc2f1e1f8844ade"
-function = "verdant_core::math::four_u32"
-reason = "arithmetic"
-detail = "integer operator * wraps or panics depending on the build profile"
+detail = "expression form outside the lift: a while loop that does not advance its cursor once per step"
 
 [[residue]]
 kappa = "788af5f08a03c525768198437135d936ef0f2484ec7fb0cf2180e650a10dd32a"
@@ -3116,46 +3120,34 @@ reason = "type"
 detail = "type outside the lift: f64"
 
 [[residue]]
-kappa = "a6780648703a88c6583f49c31f6f274392dfca2887604d2e6539cd47210ba88b"
+kappa = "22d8e400e1eb8cd21a73bac79931b8ed0a8c360066403d8275d151df07134611"
 function = "verdant_core::math::is_prime_u64"
-reason = "arithmetic"
-detail = "integer operator + wraps or panics depending on the build profile"
+reason = "form"
+detail = "expression form outside the lift: a while loop whose condition is not a cursor below a bound"
 
 [[residue]]
-kappa = "256ec682df9221a1f530446871bb6c4287c907915741bd822ca74e3c63960aca"
+kappa = "5539ec8e4aaa0a8c67837a5d6a6081df8207b57ef4dce0d7acca473b49bc8af2"
 function = "verdant_core::math::nth_prime_u64"
-reason = "arithmetic"
-detail = "integer operator + wraps or panics depending on the build profile"
+reason = "form"
+detail = "expression form outside the lift: expr::loop"
 
 [[residue]]
-kappa = "b39f0401df4926a48fbd475ea39c207ff373fcad5a78eaf1134805cf0358e92b"
+kappa = "211e1fb0c15be215f7762b1e609309ad389779a2f0a237185ab6f4ad054292f6"
 function = "verdant_core::math::pow10_u64"
-reason = "arithmetic"
-detail = "integer operator * wraps or panics depending on the build profile"
+reason = "form"
+detail = "expression form outside the lift: a while loop that does not advance its cursor once per step"
 
 [[residue]]
-kappa = "b638a9458b4c5b6a746838e83e6ee048a65cf2c68c8600cde62f9f43e6973c94"
+kappa = "8b17d326067f803f562a3d93a3ef9f416a3de7537a934b1fa2ecfc8c3cc6604f"
 function = "verdant_core::math::pow2_u64"
 reason = "form"
-detail = "expression form outside the lift: a while loop over a cursor of another type"
-
-[[residue]]
-kappa = "35271801f59faa0431c0be07b64a60f5f79f25f99521ed7d99a5ce9d32da487c"
-function = "verdant_core::math::three_u32"
-reason = "arithmetic"
-detail = "usize + wraps or panics where its value leaves the pointer width: past 2^32 on wasm32-unknown-unknown and thumbv7em-none-eabihf, past 2^64 on x86_64-unknown-linux-gnu and aarch64-unknown-linux-gnu"
+detail = "expression form outside the lift: a while loop that does not advance its cursor once per step"
 
 [[residue]]
 kappa = "0298af6c501d0a3d7ff087d82e3ad5671ab972b017a0a327bf6325761c003ca6"
 function = "verdant_core::math::two_f64"
 reason = "type"
 detail = "type outside the lift: f64"
-
-[[residue]]
-kappa = "4c8d25db9746911e8e52ad7dc57c9a31744617a33da62ffc98cd0376adaed825"
-function = "verdant_core::math::two_u32"
-reason = "arithmetic"
-detail = "usize + wraps or panics where its value leaves the pointer width: past 2^32 on wasm32-unknown-unknown and thumbv7em-none-eabihf, past 2^64 on x86_64-unknown-linux-gnu and aarch64-unknown-linux-gnu"
 
 [[residue]]
 kappa = "f00c7788845b2331fe50e1f0154aeedc5c932f18c9370471b41167bd17d717d0"
@@ -3548,12 +3540,6 @@ reason = "call"
 detail = "calls from_str, which is not lifted"
 
 [[residue]]
-kappa = "c4bae28f18b47e2e234cceda748ddb2ecea530f1015b554777761aa4b00e7cdd"
-function = "verdant_core::observer::CommunicationChannelKind::code"
-reason = "arithmetic"
-detail = "integer operator + wraps or panics depending on the build profile"
-
-[[residue]]
 kappa = "c0d5d240846af9e910a3946cf5d27d207bec1a8e56a931109c034654fe39a4c9"
 function = "verdant_core::observer::HostCapabilityEnvelope::default_safe"
 reason = "arithmetic"
@@ -3846,6 +3832,18 @@ kappa = "f89c31b6989a5e65f09344fc061ad1bf06865daa7b483d59bbc7e40120e6d28c"
 function = "verdant_core::physics::sweep_capsule_stack"
 reason = "type"
 detail = "type outside the lift: TwoLevelBvh.instances: TwoLevelInstance.world_bounds: Aabb.min: Vec3.x: f64"
+
+[[residue]]
+kappa = "8ebacd9ebdfc5715c174a9c3f86972d96a4a15d344e90277e7761d2415006652"
+function = "verdant_core::portable_player::escape_html_text"
+reason = "call"
+detail = "calls with_capacity, which is not lifted"
+
+[[residue]]
+kappa = "a309fe2b06b301f96d603775f191e6f94b679b66a35e223483de0a9bafb2bad6"
+function = "verdant_core::portable_player::render_portable_3d_player_html"
+reason = "form"
+detail = "expression form outside the lift: format! text"
 
 [[residue]]
 kappa = "877608c0b821284a055e1474ff75c3d73ab7c7df783a5ef76a177d49af6afdda"
@@ -4176,12 +4174,6 @@ kappa = "0c204fe9336c3d8da8651ab17f4c519fbf4d0f0ab22bfd60c558c53744e3386b"
 function = "verdant_core::runtime::BinWriter::write_vec3"
 reason = "signature"
 detail = "signature outside the lift: takes &mut self of BinWriter: the lift reads self and &self as the value, and threads no other receiver"
-
-[[residue]]
-kappa = "9f4359f1aa8435fe1fd8dbdbb292de1afd7ab255b3f4a127f263ec65f056ff05"
-function = "verdant_core::runtime::CanonicalCommandKind::ordinal"
-reason = "arithmetic"
-detail = "integer operator + wraps or panics depending on the build profile"
 
 [[residue]]
 kappa = "749b11bdaa77d1ade4042d746a13c1bf2b778bcb1d1a5524cbd4cd2a9e4e0a2a"
@@ -5114,7 +5106,7 @@ reason = "statements"
 detail = "the body has statements other than let"
 
 [[residue]]
-kappa = "879c3ad1201bec8151d6612c665c7f5b39bb388a1051f13e327f8cec59708b23"
+kappa = "d3ee2879fa54e9bf311f42a6420034dcc06b11793f207d3f22af26baf1e65a77"
 function = "verdant_core::vcs::studio_vcs_commit_and_pack_holo_json"
 reason = "call"
 detail = "calls from_str, which is not lifted"
@@ -7244,10 +7236,10 @@ reason = "call"
 detail = "calls as_alphabet_full, which is not lifted"
 
 [[residue]]
-kappa = "f4ddfff1960aadb2b105c9d3049b8ae5c2173f9ba89a440486a68e926a683b99"
+kappa = "7075acefd25a0a448ded517a896d444c358a27daac80bc5f080ad183dc25b261"
 function = "verdant_tensor::tropical::tropical_inf_sentinel"
-reason = "arithmetic"
-detail = "integer operator + wraps or panics depending on the build profile"
+reason = "form"
+detail = "expression form outside the lift: method call .wrapping_add"
 
 [[residue]]
 kappa = "bf0020dd0942cd9bcc4fc190940a9ea2f95d2238ae13d762e8d00248a459b6a2"
@@ -9550,6 +9542,21 @@ function = "verdant_core::hd_world::AuthorPrimitiveKind::label"
 definition = "Behavior::authorPrimitiveKindLabel"
 
 [[lifted]]
+kappa = "055b5f37a0ec2905c08da8c021c3af5e61efc899f8611c5a04e30174c7ec4e6a"
+function = "verdant_core::math::four_u32"
+definition = "Behavior::verdantCoreFourU32"
+
+[[lifted]]
+kappa = "b8e2d4b6855959d1bcf30f9132b334fecb94d4efaeaee1842f9e52ef73ff8904"
+function = "verdant_core::math::three_u32"
+definition = "Behavior::threeU32"
+
+[[lifted]]
+kappa = "68fbbf82397cb2844bf552bc0d5795223844aa06facc5277dc4be84d831473a9"
+function = "verdant_core::math::two_u32"
+definition = "Behavior::verdantCoreTwoU32"
+
+[[lifted]]
 kappa = "946b2d729b2a2d9b18830e544573f7b607808daecc414ec3fc93d4cf911155f3"
 function = "verdant_core::narrative::ConservationLedger::balance_of"
 definition = "Behavior::conservationLedgerBalanceOf"
@@ -9573,6 +9580,11 @@ definition = "Behavior::boundaryKeyringIsAuthorized"
 kappa = "6e2fdae451598b2b10a93a1ff6517043f76aa0e90a1bf42df16c4753bcf2a7a6"
 function = "verdant_core::network::MultiOriginRelayPlan::surviving_relays"
 definition = "Behavior::multiOriginRelayPlanSurvivingRelays"
+
+[[lifted]]
+kappa = "f28d8205ac2034f2b72a487ba0da525606d794888047987261275879db066340"
+function = "verdant_core::observer::CommunicationChannelKind::code"
+definition = "Behavior::communicationChannelKindCode"
 
 [[lifted]]
 kappa = "e43687bfb763c214ddcd6f8008834b9e0b638c469687470b21698f4873aeeea6"
@@ -9643,6 +9655,11 @@ definition = "Behavior::binWriterNew"
 kappa = "d35666c0c90f358e6d4653224c2a4afdf51215e7a329b901ff2c17b63b132415"
 function = "verdant_core::runtime::CanonicalCommandKind::is_self_inverse"
 definition = "Behavior::canonicalCommandKindIsSelfInverse"
+
+[[lifted]]
+kappa = "0a7dd82ac391ca38fda8edb0803d28d0098715ebf4b1d69ea875331a629b20bd"
+function = "verdant_core::runtime::CanonicalCommandKind::ordinal"
+definition = "Behavior::canonicalCommandKindOrdinal"
 
 [[lifted]]
 kappa = "ecd50986569b263b8eca9a1806ad0890182b36faa5346d6e719bd3cc512b7543"

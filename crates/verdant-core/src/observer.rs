@@ -238,9 +238,9 @@ impl CommunicationChannelKind {
     /// Zero-based channel code (`0..5`) matching `Observer.lex.tex`.
     #[must_use]
     pub const fn code(self) -> u64 {
-        let two = 1_u64 + 1_u64;
-        let three = two + 1_u64;
-        let four = two * two;
+        let two = 1_u64.wrapping_add(1_u64);
+        let three = two.wrapping_add(1_u64);
+        let four = two.wrapping_mul(two);
         match self {
             Self::OrganToOrgan => 0,
             Self::PlayerToPlayer => 1,

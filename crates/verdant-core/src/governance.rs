@@ -20,6 +20,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::error::ObserverModelError;
 use crate::observer::CommunicationChannelKind;
+#[cfg(not(target_arch = "wasm32"))]
 use crate::vcs::MAX_BLANK_FRAME_BYTES;
 
 /// Embedded SHA-256-locked SemVer 2.0.0 Change, Roadmap & KPI authority (`AUTH-SEMVER-CHANGE-KPI`).
@@ -768,6 +769,7 @@ pub struct ObserverRoadmapAndKpiReport {
 pub struct RoadmapKpiManager;
 
 impl RoadmapKpiManager {
+    #[cfg(not(target_arch = "wasm32"))]
     fn parse_declared_ids(ids_toml: &str) -> BTreeSet<String> {
         let mut out = BTreeSet::new();
         for line in ids_toml.lines() {

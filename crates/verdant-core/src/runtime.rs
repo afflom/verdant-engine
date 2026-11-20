@@ -1447,16 +1447,16 @@ impl CanonicalCommandKind {
     /// Numeric ordinal passed to `prism_kernel::commandInvolutionCancels`.
     #[must_use]
     pub const fn ordinal(self) -> u64 {
-        let two = 1_u64 + 1_u64;
-        let three = two + 1_u64;
-        let four = two * two;
+        let two = 1_u64.wrapping_add(1_u64);
+        let three = two.wrapping_add(1_u64);
+        let four = two.wrapping_mul(two);
         match self {
             Self::ToggleCameraMode => 0,
             Self::ToggleRenderBackend => 1,
             Self::ToggleOrganCapability => two,
             Self::YawOctantStep { .. } => three,
             Self::CameraOrbitDelta { .. } => four,
-            Self::StateBarrier => four + 1_u64,
+            Self::StateBarrier => four.wrapping_add(1_u64),
         }
     }
 }

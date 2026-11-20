@@ -109,9 +109,19 @@ try {
       const badgeText = document.getElementById("studio-scale-badge")?.textContent || "";
       const badgeContract = document.getElementById("studio-scale-badge")?.dataset?.contract || "";
 
-      // 2. Zero-account in-browser VerdantVcs e1 -> e2 + live Checkout + portable .holo + cross-browser share URL!
+      // 2. Zero-account in-browser VerdantVcs e1 -> e2 (with live authored 3D objects) + live Checkout + portable .holo + cross-browser share URL!
+      const waitOutlinerCount = async (target) => {
+        const deadline = performance.now() + 8000;
+        while (document.querySelectorAll(".vx-outliner-row").length < target && performance.now() < deadline) {
+          await new Promise((r) => setTimeout(r, 30));
+        }
+      };
       const c1 = await api.commitAndPackHolo("Initial zero-account 3D scene commit");
-      const c2 = await api.commitAndPackHolo("Second revision with UHD lighting");
+      document.querySelector('[data-add-prim="0"]')?.click();
+      await waitOutlinerCount(1);
+      document.querySelector('[data-add-prim="4"]')?.click();
+      await waitOutlinerCount(2);
+      const c2 = await api.commitAndPackHolo("Second revision with 2 authored 3D objects");
       const checkedOut = await api.checkoutVcsCommit(c1.commitKappa);
       const shareUrl = api.buildShareablePinUrl(c2);
       const hist = api.getVcsHistory();
@@ -186,7 +196,25 @@ try {
   ) {
     throw new Error(`Cross-browser ?pin=stitch://<kappa>/studio handoff failed: ${JSON.stringify(bobMount)}`);
   }
-  await bobPage.frameLocator("#verdant-lifted-frame").locator("#verdant-scene-data").waitFor({ state: "visible", timeout: 15000 });
+  // Verify the shared portable .holo mounts a live interactive WebGL2 3D Canvas Player (VE-57):
+  const bobFrame = bobPage.frameLocator("#verdant-lifted-frame");
+  await bobFrame.locator("#verdant-shared-3d-canvas").waitFor({ state: "visible", timeout: 15000 });
+  const canvasBox = await bobFrame.locator("#verdant-shared-3d-canvas").boundingBox();
+  if (!canvasBox || canvasBox.width < 100 || canvasBox.height < 100) {
+    throw new Error(`Shared 3D player canvas has invalid bounds: ${JSON.stringify(canvasBox)}`);
+  }
+  const frameHandle = await bobPage.locator("#verdant-lifted-frame").elementHandle();
+  const contentFrame = await frameHandle.contentFrame();
+  await contentFrame.waitForFunction(
+    () => Boolean(window.__VERDANT_SHARED_APP__?.ready && window.__VERDANT_SHARED_APP__.renderedFrames >= 1),
+    { timeout: 15000 },
+  );
+  const bobSharedApp = await contentFrame.evaluate(() => ({ ...window.__VERDANT_SHARED_APP__ }));
+  if (bobSharedApp.objectCount < 2 || bobSharedApp.renderedFrames < 1) {
+    throw new Error(`Shared 3D player did not render Alice's authored 3D objects: ${JSON.stringify(bobSharedApp)}`);
+  }
+  await bobFrame.locator("#btn-json").click();
+  await bobFrame.locator("#verdant-scene-data").waitFor({ state: "visible", timeout: 10000 });
   await bobCtx.close();
 
   if (pageErrors.length > 0 || bobErrors.length > 0) {
@@ -194,7 +222,7 @@ try {
   }
 
   console.log(
-    `verify-uhd-workload: PASS — 4K (${stress.uhd4k.arena.evictions} evicts) & 8K (${stress.uhd8k.arena.evictions} evicts, peak ${stress.uhd8k.arena.peakResidentBytes}/${stress.uhd8k.arena.budgetBytes} B) upheld contract with maxLag=${stress.maxLagMs.toFixed(1)}ms; zero-account VerdantVcs (${stress.prismId}) committed e1->e2 + live checkout, packed .holo (${stress.c1.holoBytes} B, 8 STCH2 shards), and verified cross-browser ?pin=stitch://<kappa>/studio handoff in isolated Chromium context.`,
+    `verify-uhd-workload: PASS — 4K (${stress.uhd4k.arena.evictions} evicts) & 8K (${stress.uhd8k.arena.evictions} evicts, peak ${stress.uhd8k.arena.peakResidentBytes}/${stress.uhd8k.arena.budgetBytes} B) upheld contract with maxLag=${stress.maxLagMs.toFixed(1)}ms; zero-account VerdantVcs (${stress.prismId}) committed e1->e2 + live checkout, packed .holo (${stress.c1.holoBytes} B, 8 STCH2 shards), and rendered live ${bobSharedApp.backend.toUpperCase()} 3D player (${bobSharedApp.objectCount} authored objects, ${bobSharedApp.renderedFrames} frames) in isolated Bob Chromium context.`,
   );
 } finally {
   await browser.close();

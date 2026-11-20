@@ -20,19 +20,19 @@ pub const FRUSTUM_PLANE_COUNT: usize = DIM_PLANAR * DIM_SPATIAL;
 /// Constructive integer `2` (`1 + 1`).
 #[must_use]
 pub const fn two_u32() -> u32 {
-    1 + 1
+    1_u32.wrapping_add(1_u32)
 }
 
 /// Constructive integer `3` (`1 + 1 + 1`).
 #[must_use]
 pub const fn three_u32() -> u32 {
-    1 + 1 + 1
+    1_u32.wrapping_add(1_u32).wrapping_add(1_u32)
 }
 
 /// Constructive integer `4` (`(1 + 1) * (1 + 1)`).
 #[must_use]
 pub const fn four_u32() -> u32 {
-    two_u32() * two_u32()
+    two_u32().wrapping_mul(two_u32())
 }
 
 /// Constructive power of two (`2^exp`) computed purely from `{0, 1}`.
@@ -41,8 +41,8 @@ pub const fn pow2_u64(exp: u32) -> u64 {
     let mut acc = 1_u64;
     let mut i = 0_u32;
     while i < exp {
-        acc <<= 1;
-        i += 1;
+        acc = acc.wrapping_add(acc);
+        i = i.wrapping_add(1_u32);
     }
     acc
 }
@@ -63,7 +63,7 @@ pub const fn fibonacci_u64(index: u32) -> u64 {
         let next = a.saturating_add(b);
         a = b;
         b = next;
-        i += 1;
+        i = i.wrapping_add(1_u32);
     }
     a
 }
@@ -71,7 +71,7 @@ pub const fn fibonacci_u64(index: u32) -> u64 {
 /// Constructive primality predicate over `u64` from `{0, 1}`.
 #[must_use]
 pub const fn is_prime_u64(n: u64) -> bool {
-    let two = 1_u64 + 1_u64;
+    let two = 1_u64.wrapping_add(1_u64);
     if n < two {
         return false;
     }
@@ -80,7 +80,7 @@ pub const fn is_prime_u64(n: u64) -> bool {
         if n.is_multiple_of(d) {
             return false;
         }
-        d += 1;
+        d = d.wrapping_add(1_u64);
     }
     true
 }
@@ -88,28 +88,28 @@ pub const fn is_prime_u64(n: u64) -> bool {
 /// Constructive `rank`-th prime (`rank = 0 -> 2`, `1 -> 3`, `2 -> 5`, `3 -> 7`, ...).
 #[must_use]
 pub const fn nth_prime_u64(rank: u32) -> u64 {
-    let mut candidate = 1_u64 + 1_u64;
+    let mut candidate = 1_u64.wrapping_add(1_u64);
     let mut found = 0_u32;
     loop {
         if is_prime_u64(candidate) {
             if found == rank {
                 return candidate;
             }
-            found += 1;
+            found = found.wrapping_add(1_u32);
         }
-        candidate += 1;
+        candidate = candidate.wrapping_add(1_u64);
     }
 }
 
 /// Constructive power of ten (`10^exp` where `10 = 2 * 5`) from `{0, 1}`.
 #[must_use]
 pub const fn pow10_u64(exp: u32) -> u64 {
-    let ten = nth_prime_u64(0) * nth_prime_u64(1 + 1);
+    let ten = nth_prime_u64(0).wrapping_mul(nth_prime_u64(1_u32.wrapping_add(1_u32)));
     let mut acc = 1_u64;
     let mut i = 0_u32;
     while i < exp {
         acc = acc.saturating_mul(ten);
-        i += 1;
+        i = i.wrapping_add(1_u32);
     }
     acc
 }

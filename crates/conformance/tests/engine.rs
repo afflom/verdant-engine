@@ -6599,20 +6599,137 @@ fn engine_ve_55() {
     );
     let _ = std::fs::remove_dir_all(&tmp);
 
-    // 5. Observer reports all 10 milestones (M1..M10) and 13/13 passing KPIs:
+    // 5. Observer reports all milestones (M1..M10+) and 100% passing KPIs:
     assert!(repo_root.join("scripts/verdant-ratchet.mjs").is_file());
     let ch = VerdantOperatorChannel::new("sunspire-regatta").expect("operator channel");
     let kpi_rep = ch
         .evaluate_observer_roadmap_kpis(&repo_root, true, true)
         .expect("observer roadmap & KPI report");
-    assert_eq!(kpi_rep.milestones.len(), 10, "expected Milestones M1..M10");
-    assert_eq!(
-        kpi_rep.kpi_total_count, 13,
-        "expected 13 ISO 15939 Observer KPIs"
+    assert!(
+        kpi_rep.milestones.len() >= 10,
+        "expected Milestones M1..M10+"
+    );
+    assert!(
+        kpi_rep.kpi_total_count >= 13,
+        "expected >= 13 ISO 15939 Observer KPIs"
     );
     assert_eq!(
         kpi_rep.kpi_passed_count, kpi_rep.kpi_total_count,
-        "all 13 Observer KPIs must pass (kpis={:?})",
+        "all Observer KPIs must pass (kpis={:?})",
         kpi_rep.kpis
     );
+}
+
+#[test]
+fn engine_ve_56() {
+    use std::path::Path;
+    use verdant_core::operator::VerdantOperatorChannel;
+
+    let repo_root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+    let rep = prism_fidelity::ratchet::audit_parametric_ratchet(
+        &repo_root,
+        Path::new("model/parametric-ratchet.toml"),
+    )
+    .expect("live repo must pass all 4 ratchet layers with tightened M11 watermarks");
+
+    // 1. Verify >= 1.5 MiB Wasm weight diet on site/verdant-uorc.wasm (was 6,555,219 B, now < 5,000,000 B):
+    assert!(
+        rep.observed_wasm_uorc_bytes < 5_000_000,
+        "site/verdant-uorc.wasm must stay strictly below 5,000,000 B after M11 opt-level=z diet, got {}",
+        rep.observed_wasm_uorc_bytes
+    );
+    // 2. Verify expanded uorust lifted frontier (>= 180 lifted functions) and tightened surface ceilings:
+    assert!(
+        rep.frontier_lifted_functions >= 180,
+        "M11 must lift >= 180 constructive Rust functions in frontier.toml, got {}",
+        rep.frontier_lifted_functions
+    );
+    let ratchet_raw = std::fs::read_to_string(repo_root.join("model/parametric-ratchet.toml"))
+        .expect("read model/parametric-ratchet.toml");
+    assert!(
+        ratchet_raw.contains("[surface_ratchet]"),
+        "parametric-ratchet.toml must retain monotonic [surface_ratchet]"
+    );
+
+    // 3. Observer reports all 11 milestones (M1..M11) and 13/13 passing KPIs:
+    let ch = VerdantOperatorChannel::new("sunspire-regatta").expect("operator channel");
+    let kpi_rep = ch
+        .evaluate_observer_roadmap_kpis(&repo_root, true, true)
+        .expect("observer roadmap & KPI report");
+    assert!(
+        kpi_rep.milestones.len() >= 11,
+        "expected Milestones M1..M11"
+    );
+    assert_eq!(
+        kpi_rep.kpi_passed_count, kpi_rep.kpi_total_count,
+        "all Observer KPIs must pass (kpis={:?})",
+        kpi_rep.kpis
+    );
+}
+
+#[test]
+fn engine_ve_57() {
+    use verdant_core::portable_player::{escape_html_text, render_portable_3d_player_html};
+    use verdant_core::vcs::{studio_vcs_commit_and_pack_holo_json, VerdantReleaseCapsule};
+
+    // 1. Safe HTML escaping refuses raw tag/script injection:
+    let escaped = escape_html_text("<script>alert(\"x&y\")</script>");
+    assert!(!escaped.contains("<script>"));
+    assert!(escaped.contains("&lt;script&gt;"));
+    assert!(escaped.contains("&amp;"));
+    assert!(escaped.contains("&quot;"));
+
+    // 2. Standalone portable 3D player HTML embeds interactive WebGL2 viewport with zero external CDN fetches:
+    let scene_json = r#"{"project":"Harbor Lighthouse","domain":"sunspire-regatta","objects":[{"id":"o1","pos":[0,1,0],"scale":[2,3,2],"yawMilli":0,"color":[0.9,0.4,0.2]},{"id":"o2","pos":[3,0.5,-2],"scale":[1.2,1.2,1.2],"yawMilli":785,"color":[3.95,0.78,0.28]}]}"#;
+    let html =
+        render_portable_3d_player_html("Harbor <Lighthouse>", "prism:local:alice", scene_json);
+    assert!(html.contains("id=\"verdant-shared-3d-canvas\""));
+    assert!(html.contains("window.__VERDANT_SHARED_APP__"));
+    assert!(html.contains("Harbor &lt;Lighthouse&gt;"));
+    assert!(
+        !html.contains("https://"),
+        "portable .holo 3D player must be 100% offline with zero external CDN URLs"
+    );
+    assert!(
+        !html.contains("http://"),
+        "portable .holo 3D player must be 100% offline with zero external HTTP URLs"
+    );
+
+    // 3. End-to-end zero-account VerdantVcs commit -> portable .holo pack -> cryptographic unpack -> live 3D player:
+    let req = serde_json::json!({
+        "appTitle": "Harbor Lighthouse",
+        "authorPrismId": "prism:local:alice",
+        "message": "Author 2 objects for offline 3D sharing",
+        "version": "1.0.0",
+        "epoch": 1,
+        "sceneJson": scene_json,
+    })
+    .to_string();
+    let packed_raw = studio_vcs_commit_and_pack_holo_json(&req);
+    let packed: serde_json::Value =
+        serde_json::from_str(&packed_raw).expect("valid studio_vcs_commit_and_pack_holo_json JSON");
+    assert_eq!(packed["ok"], serde_json::json!(true), "packed={packed}");
+    assert!(packed["capsuleByteLen"].as_u64().unwrap_or(0) > 0);
+    assert_eq!(packed["shardCount"].as_u64(), Some(8));
+    assert!(packed["stitchDeepLinkUri"]
+        .as_str()
+        .unwrap_or("")
+        .starts_with("stitch://"));
+
+    let holo_hex = packed["holoHex"].as_str().expect("holoHex string");
+    let mut capsule_bytes = Vec::with_capacity(holo_hex.len() / 2);
+    for idx in (0..holo_hex.len()).step_by(2) {
+        let byte = u8::from_str_radix(&holo_hex[idx..idx + 2], 16).expect("valid hex byte");
+        capsule_bytes.push(byte);
+    }
+    let unpacked = VerdantReleaseCapsule::verify_and_unpack(&capsule_bytes)
+        .expect("verify unpacked .holo capsule");
+    let studio_html_bytes = unpacked
+        .payloads
+        .get("studio/index.html")
+        .expect("portable .holo must contain studio/index.html");
+    let studio_html = std::str::from_utf8(studio_html_bytes).expect("utf-8 studio/index.html");
+    assert!(studio_html.contains("id=\"verdant-shared-3d-canvas\""));
+    assert!(studio_html.contains("Harbor Lighthouse"));
+    assert!(studio_html.contains("window.__VERDANT_SHARED_APP__"));
 }

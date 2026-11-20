@@ -17,10 +17,13 @@ use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 
 use crate::error::ObserverModelError;
+#[cfg(not(target_arch = "wasm32"))]
 use crate::governance::{
-    ChangeManagerDecision, ChangeVersionManager, ObserverPartProgress, ObserverProgressSignals,
-    ObserverRoadmapAndKpiReport, ReleaseGateVerdict, ReleaseLedgerState, RoadmapKpiManager,
-    REQUIRED_PRISM_FACETS,
+    ChangeManagerDecision, ChangeVersionManager, ObserverRoadmapAndKpiReport, ReleaseGateVerdict,
+    ReleaseLedgerState,
+};
+use crate::governance::{
+    ObserverPartProgress, ObserverProgressSignals, RoadmapKpiManager, REQUIRED_PRISM_FACETS,
 };
 use crate::math::nth_prime_u64;
 use crate::network::{shard_bytes_to_stitch_fragments, PrismIdSessionEnvelope, StitchFragment};

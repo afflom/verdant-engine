@@ -872,11 +872,8 @@ pub fn studio_vcs_commit_and_pack_holo_json(raw_json: &str) -> String {
 
     let mut vcs = VerdantVcs::new();
     let mut files: BTreeMap<String, Vec<u8>> = BTreeMap::new();
-    let html = format!(
-        "<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\"><title>{app_title}</title></head>\
-         <body><main><h1>{app_title}</h1><p>Committed by {author} via VerdantVcs (zero-account portable .holo).</p>\
-         <pre id=\"verdant-scene-data\">{scene_json}</pre></main></body></html>\n"
-    );
+    let html =
+        crate::portable_player::render_portable_3d_player_html(app_title, author, scene_json);
     files.insert("studio/index.html".to_string(), html.into_bytes());
     files.insert("scene.json".to_string(), scene_json.as_bytes().to_vec());
     files.insert(
