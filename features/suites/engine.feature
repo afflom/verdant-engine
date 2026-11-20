@@ -374,3 +374,15 @@ Feature: engine
     Given crates/verdant-core/src/portable_player.rs, crates/verdant-core/src/vcs.rs, Verdant Studio, and scripts/verify-uhd-workload.mjs
     When a creator authors 3D objects in Studio, commits and packs a portable .holo app via studio_vcs_commit_and_pack_holo_json, and opens the ?pin=stitch://<kappa>/studio#holo=... share link in an isolated browser context
     Then the unpacked studio/index.html embeds the interactive WebGL2 3D player with safe HTML escaping, zero external network dependencies, live rendered frames across all authored 3D objects, and toggleable scene JSON inspection
+
+  @VE-58 @build
+  Scenario: Verdant decomposes its three largest monoliths (verdant-wasm/src/lib.rs, verdant-core/src/operator.rs, and site/studio/studio-page.mjs) into focused submodules that auto-tighten max_handwritten_rust_file_lines to <= 3525 and max_js_file_lines to <= 1980, gates naga behind the native wgsl-oracle Cargo feature so wasm32 builds exclude shader transpiler dependencies, syncs site/app.holo 1:1 with CI for widened FR-03 cold-boot headroom, and upgrades portable_player.rs to render all 5 Studio primitive geometries (Box, Platform, Pillar, Ramp, Beacon Orb) with ground grid and WASD/orbit controls offline
+    Given crates/verdant-wasm/src/exports_cold.rs, crates/verdant-wasm/src/exports_uorc.rs, crates/verdant-core/src/operator_types.rs, crates/verdant-core/src/operator_release.rs, crates/verdant-core/src/operator_mcp.rs, site/studio/vcs-panel.mjs, site/studio/outliner.mjs, site/studio/observer-panel.mjs, site/studio/project-inspector.mjs, crates/verdant-core/Cargo.toml, and crates/verdant-core/src/portable_player.rs
+    When prism-fidelity audits [surface_ratchet], verdant-core gates naga behind wgsl-oracle, and portable_player renders a multi-shape scene
+    Then max_handwritten_rust_file_lines is at most 3525, max_js_file_lines is at most 1980, all decomposed submodules are owned in iso42010-viewpoints.json, and the offline WebGL2 player synthesizes all 5 Studio primitive shapes with WASD and drag-orbit navigation
+
+  @VE-59 @build
+  Scenario: Verdant expands its shrink-only uorust MIR proof frontier past 200 lifted constructive Rust functions (auto-tightening min_lifted_functions >= 200 while shrinking arithmetic and total residue) and closes all Cadence, Release, and self-hosted Stitch Security theorem verification records across app/src/{Cadence,Release,Security}.lex.tex and fidelity.toml
+    Given frontier.toml, model/parametric-ratchet.toml [frontier_ratchet], fidelity.toml, app/src/Cadence.lex.tex, app/src/Release.lex.tex, and app/src/Security.lex.tex
+    When prism-fidelity audits [frontier_ratchet] and fidelity.toml across all 28 canonical LexLean modules
+    Then frontier.toml proves at least 200 lifted constructive Rust functions with shrunk residue and fidelity.toml closes all 705 meant verification obligations across Cadence, Release, and Security with zero Classical.choice

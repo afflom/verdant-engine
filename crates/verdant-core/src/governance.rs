@@ -12,6 +12,7 @@
 //!   the Observer's parts, conformance capabilities, and ISO/IEC/IEEE 15939 measures to compute
 //!   live Key Performance Indicators and Major/Minor roadmap progress.
 
+#[cfg(not(target_arch = "wasm32"))]
 use std::collections::BTreeSet;
 #[cfg(not(target_arch = "wasm32"))]
 use std::path::Path;
@@ -171,13 +172,20 @@ impl ReleaseGateVerdict {
     /// Returns percentage (`0..=100`) of the 5 technical release gates currently passing.
     #[must_use]
     pub fn pass_rate_pct(&self) -> u64 {
-        let total = 1u64 + 1u64 + 1u64 + 1u64 + 1u64;
+        let total = 1_u64
+            .wrapping_add(1_u64)
+            .wrapping_add(1_u64)
+            .wrapping_add(1_u64)
+            .wrapping_add(1_u64);
         let passed = u64::from(self.parametric_ratchet_clean)
-            + u64::from(self.immutability_seal_valid)
-            + u64::from(self.total_ownership_complete)
-            + u64::from(self.fidelity_closed)
-            + u64::from(self.pull_through_verified);
-        passed.saturating_mul(hundred_u64()) / total
+            .wrapping_add(u64::from(self.immutability_seal_valid))
+            .wrapping_add(u64::from(self.total_ownership_complete))
+            .wrapping_add(u64::from(self.fidelity_closed))
+            .wrapping_add(u64::from(self.pull_through_verified));
+        passed
+            .saturating_mul(hundred_u64())
+            .checked_div(total)
+            .unwrap_or(0)
     }
 
     /// Collects human-readable blocking reasons whenever a gate or Ratchet check fails.

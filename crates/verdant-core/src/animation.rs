@@ -166,8 +166,7 @@ impl SkinWeights4 {
         joint_count: usize,
     ) -> Result<Self, AnimationError> {
         let [w0, w1, w2, w3] = weights_permille;
-        let expected_scale =
-            crate::prism_kernel::skinWeightScale().expect("verified Prism skinWeightScale");
+        let expected_scale = crate::prism_kernel::skinWeightScale().expect("prism");
         let sum = u64::from(w0) + u64::from(w1) + u64::from(w2) + u64::from(w3);
         let normalized = crate::prism_kernel::skinWeightsNormalized(
             u64::from(w0),
@@ -175,7 +174,7 @@ impl SkinWeights4 {
             u64::from(w2),
             u64::from(w3),
         )
-        .expect("verified Prism skinWeightsNormalized");
+        .expect("prism");
 
         let indices_valid = joints
             .iter()
@@ -235,8 +234,7 @@ fn prism_lerp_signed(a: f64, b: f64, alpha_permille: u64, scale: f64) -> f64 {
     let bias = pow10_u64(three_u32() + three_u32()) as f64;
     let from_u = ((a * scale) + bias).max(0.0).round() as u64;
     let to_u = ((b * scale) + bias).max(0.0).round() as u64;
-    let lerped = crate::prism_kernel::lerpPermille(from_u, to_u, alpha_permille)
-        .expect("verified Prism lerpPermille");
+    let lerped = crate::prism_kernel::lerpPermille(from_u, to_u, alpha_permille).expect("prism");
     ((lerped as f64) - bias) / scale
 }
 
@@ -253,8 +251,7 @@ impl SkeletalClip {
             });
         }
 
-        let morph_limit = crate::prism_kernel::morphTargetCountLimit()
-            .expect("verified Prism morphTargetCountLimit") as usize;
+        let morph_limit = crate::prism_kernel::morphTargetCountLimit().expect("prism") as usize;
         let expected_joints = skeleton.joints.len();
         let expected_morphs = self.keyframes[0].morph_weights_permille.len();
         if expected_morphs > morph_limit {
@@ -291,10 +288,9 @@ impl SkeletalClip {
         let next = &self.keyframes[next_idx];
         let span = next.time_millis.saturating_sub(prev.time_millis);
         let local_elapsed = clamped_time.saturating_sub(prev.time_millis);
-        let alpha_permille = crate::prism_kernel::keyframeAlphaPermille(local_elapsed, span)
-            .expect("verified Prism keyframeAlphaPermille");
-        let scale =
-            crate::prism_kernel::skinWeightScale().expect("verified Prism skinWeightScale") as f64;
+        let alpha_permille =
+            crate::prism_kernel::keyframeAlphaPermille(local_elapsed, span).expect("prism");
+        let scale = crate::prism_kernel::skinWeightScale().expect("prism") as f64;
 
         let mut joint_translations = Vec::with_capacity(expected_joints);
         let mut joint_rotations = Vec::with_capacity(expected_joints);
@@ -336,7 +332,7 @@ impl SkeletalClip {
                 u64::from(next.morph_weights_permille[m]),
                 alpha_permille,
             )
-            .expect("verified Prism lerpPermille") as u16;
+            .expect("prism") as u16;
             morph_weights_permille.push(w);
         }
 
@@ -363,8 +359,7 @@ pub fn skin_mesh_linear_blend(
     }
 
     let palette = skeleton.evaluate_skinning_palette(pose)?;
-    let scale =
-        crate::prism_kernel::skinWeightScale().expect("verified Prism skinWeightScale") as f64;
+    let scale = crate::prism_kernel::skinWeightScale().expect("prism") as f64;
     let i2 = 1usize + 1usize;
 
     let mut morphed_positions = Vec::with_capacity(mesh.positions.len());
@@ -436,8 +431,7 @@ pub fn evaluate_packed_nibble_pose_offsets(
     codebook_milli: &[i32; verdant_tensor::CODED_TABLE_LEN],
     packed_nibbles: &[u8],
 ) -> Result<Vec<f64>, AnimationError> {
-    let scale =
-        crate::prism_kernel::skinWeightScale().expect("verified Prism skinWeightScale") as f64;
+    let scale = crate::prism_kernel::skinWeightScale().expect("prism") as f64;
     let inv_scale_sq = 1.0 / (scale * scale);
     let accum = verdant_tensor::contract_packed_animation_tracks(
         blend_weights_permille,

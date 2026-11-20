@@ -68,7 +68,12 @@ impl Axis {
     }
 
     fn parse(text: &str) -> Option<Axis> {
-        Axis::ALL.into_iter().find(|a| a.name() == text)
+        match text {
+            "derived" => Some(Self::Derived),
+            "meant" => Some(Self::Meant),
+            "measured" => Some(Self::Measured),
+            _ => None,
+        }
     }
 }
 

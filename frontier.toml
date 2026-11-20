@@ -5,13 +5,13 @@
 # stops the functions it counts (the detail their rows state, under its
 # cause), the one that stops the most first: the work queue.
 
-# Honesty report: 183 of 1539 functions of product code are lifted; 1205
+# Honesty report: 203 of 1546 functions of product code are lifted; 1192
 # are residue, 73 foreign and 78 effect rows.
 # Residue by cause:
-#   arithmetic: 59
-#   call: 211
+#   arithmetic: 39
+#   call: 214
 #   collision: 1
-#   form: 353
+#   form: 357
 #   signature: 68
 #   statements: 32
 #   type: 475
@@ -20,16 +20,16 @@
 spec = "uorust/register/1"
 
 [lift]
-functions = 1539
-lifted = 183
-residue = 1205
+functions = 1546
+lifted = 203
+residue = 1192
 foreign = 73
 effect = 78
 
 [[construct]]
 construct = "expression form outside the lift: ? below the function's own statements"
 cause = "form"
-functions = 267
+functions = 269
 
 [[construct]]
 construct = "calls global_bridge, which is not lifted"
@@ -57,11 +57,6 @@ cause = "type"
 functions = 26
 
 [[construct]]
-construct = "usize + wraps or panics where its value leaves the pointer width: past 2^32 on wasm32-unknown-unknown and thumbv7em-none-eabihf, past 2^64 on x86_64-unknown-linux-gnu and aarch64-unknown-linux-gnu"
-cause = "arithmetic"
-functions = 25
-
-[[construct]]
 construct = "takes or returns VerdantOperatorChannel.observer: ObserverPrismHolon.organs: ObserverOrganModel.schema_org_jsonld: serde_json::Value, a type of the serde_json crate with no LexLean model"
 cause = "foreign"
 functions = 25
@@ -77,6 +72,11 @@ cause = "effect"
 functions = 21
 
 [[construct]]
+construct = "usize + wraps or panics where its value leaves the pointer width: past 2^32 on wasm32-unknown-unknown and thumbv7em-none-eabihf, past 2^64 on x86_64-unknown-linux-gnu and aarch64-unknown-linux-gnu"
+cause = "arithmetic"
+functions = 19
+
+[[construct]]
 construct = "type outside the lift: WasmRuntimeBridge.terrain_params: TerrainReliefParams"
 cause = "type"
 functions = 18
@@ -85,6 +85,11 @@ functions = 18
 construct = "type outside the lift: SceneWorld.entities: EntityRecord.local_transform: Transform.translation: Vec3.x: f64"
 cause = "type"
 functions = 17
+
+[[construct]]
+construct = "calls new, which is not lifted"
+cause = "call"
+functions = 16
 
 [[construct]]
 construct = "type outside the lift: StandardSceneState.params: SceneBuildParams.environment: PhysicalEnvironment.gravity_mps2: f64"
@@ -100,16 +105,6 @@ functions = 16
 construct = "type outside the lift: f32"
 cause = "type"
 functions = 16
-
-[[construct]]
-construct = "calls new, which is not lifted"
-cause = "call"
-functions = 14
-
-[[construct]]
-construct = "integer operator << wraps or panics depending on the build profile"
-cause = "arithmetic"
-functions = 13
 
 [[construct]]
 construct = "Fs effect: std::fs::read_dir"
@@ -145,11 +140,6 @@ functions = 11
 construct = "type outside the lift: SoaSceneTable.local_transforms: Transform.translation: Vec3.x: f64"
 cause = "type"
 functions = 11
-
-[[construct]]
-construct = "integer operator + wraps or panics depending on the build profile"
-cause = "arithmetic"
-functions = 10
 
 [[construct]]
 construct = "type outside the lift: Aabb.min: Vec3.x: f64"
@@ -217,8 +207,13 @@ cause = "type"
 functions = 7
 
 [[construct]]
-construct = "integer operator * wraps or panics depending on the build profile"
+construct = "integer operator << wraps or panics depending on the build profile"
 cause = "arithmetic"
+functions = 6
+
+[[construct]]
+construct = "calls from, which is not lifted"
+cause = "call"
 functions = 6
 
 [[construct]]
@@ -247,8 +242,8 @@ cause = "type"
 functions = 6
 
 [[construct]]
-construct = "calls from, which is not lifted"
-cause = "call"
+construct = "integer operator * wraps or panics depending on the build profile"
+cause = "arithmetic"
 functions = 5
 
 [[construct]]
@@ -307,13 +302,13 @@ cause = "width"
 functions = 5
 
 [[construct]]
-construct = "calls identity, which is not lifted"
-cause = "call"
+construct = "integer operator + wraps or panics depending on the build profile"
+cause = "arithmetic"
 functions = 4
 
 [[construct]]
-construct = "expression form outside the lift: free name Axis::ALL"
-cause = "form"
+construct = "calls identity, which is not lifted"
+cause = "call"
 functions = 4
 
 [[construct]]
@@ -372,7 +367,7 @@ cause = "call"
 functions = 3
 
 [[construct]]
-construct = "calls sTwo, which is not lifted"
+construct = "calls pow2_u64, which is not lifted"
 cause = "call"
 functions = 3
 
@@ -403,6 +398,11 @@ functions = 3
 
 [[construct]]
 construct = "expression form outside the lift: ? outside a let"
+cause = "form"
+functions = 3
+
+[[construct]]
+construct = "expression form outside the lift: free name Axis::ALL"
 cause = "form"
 functions = 3
 
@@ -467,17 +467,12 @@ cause = "arithmetic"
 functions = 2
 
 [[construct]]
-construct = "calls is_uorc_archive, which is not lifted"
+construct = "calls default, which is not lifted"
 cause = "call"
 functions = 2
 
 [[construct]]
 construct = "calls parse_str, which is not lifted"
-cause = "call"
-functions = 2
-
-[[construct]]
-construct = "calls sEight, which is not lifted"
 cause = "call"
 functions = 2
 
@@ -712,16 +707,6 @@ cause = "call"
 functions = 1
 
 [[construct]]
-construct = "calls default, which is not lifted"
-cause = "call"
-functions = 1
-
-[[construct]]
-construct = "calls drs_ladder, which is not lifted"
-cause = "call"
-functions = 1
-
-[[construct]]
 construct = "calls epistemicDialogueTurnValid, which is not lifted"
 cause = "call"
 functions = 1
@@ -777,11 +762,6 @@ cause = "call"
 functions = 1
 
 [[construct]]
-construct = "calls pow2_u64, which is not lifted"
-cause = "call"
-functions = 1
-
-[[construct]]
 construct = "calls preimage, which is not lifted"
 cause = "call"
 functions = 1
@@ -792,7 +772,22 @@ cause = "call"
 functions = 1
 
 [[construct]]
+construct = "calls sEight, which is not lifted"
+cause = "call"
+functions = 1
+
+[[construct]]
+construct = "calls sTwo, which is not lifted"
+cause = "call"
+functions = 1
+
+[[construct]]
 construct = "calls sabineRt60Millis, which is not lifted"
+cause = "call"
+functions = 1
+
+[[construct]]
+construct = "calls shard_bytes_to_stitch_fragments, which is not lifted"
 cause = "call"
 functions = 1
 
@@ -808,6 +803,16 @@ functions = 1
 
 [[construct]]
 construct = "calls snapshotSha256Bytes, which is not lifted"
+cause = "call"
+functions = 1
+
+[[construct]]
+construct = "calls split_self_delimiting_uorc_archives, which is not lifted"
+cause = "call"
+functions = 1
+
+[[construct]]
+construct = "calls ten_u64, which is not lifted"
 cause = "call"
 functions = 1
 
@@ -922,12 +927,12 @@ cause = "effect"
 functions = 1
 
 [[construct]]
-construct = "calls verdant_core::operator::VerdantOperatorChannel::collect_tree_matching, which performs a Fs effect: std::fs::read_dir"
+construct = "calls verdant_core::operator::VerdantOperatorChannel::load_or_init_release_ledger, which performs a Fs effect: std::fs::read_to_string"
 cause = "effect"
 functions = 1
 
 [[construct]]
-construct = "calls verdant_core::operator::VerdantOperatorChannel::load_or_init_release_ledger, which performs a Fs effect: std::fs::read_to_string"
+construct = "calls verdant_core::operator_release::VerdantOperatorChannel::collect_tree_matching, which performs a Fs effect: std::fs::read_dir"
 cause = "effect"
 functions = 1
 
@@ -992,6 +997,11 @@ cause = "form"
 functions = 1
 
 [[construct]]
+construct = "expression form outside the lift: expr::repeat"
+cause = "form"
+functions = 1
+
+[[construct]]
 construct = "expression form outside the lift: format! hole"
 cause = "form"
 functions = 1
@@ -1018,6 +1028,16 @@ functions = 1
 
 [[construct]]
 construct = "expression form outside the lift: free name Self::CharacterRigs"
+cause = "form"
+functions = 1
+
+[[construct]]
+construct = "expression form outside the lift: free name Self::Derived"
+cause = "form"
+functions = 1
+
+[[construct]]
+construct = "expression form outside the lift: free name Self::FocusObserverCore"
 cause = "form"
 functions = 1
 
@@ -1332,10 +1352,10 @@ cause = "width"
 functions = 1
 
 [[residue]]
-kappa = "574108f175140a06e44bcc6d747214ff4f7b06ab15d9cce5d74398a3a87711da"
+kappa = "b91ba7183cc896f3c76eae9bfc072182d8a95ce60ffc8ac1094e7ff1f5f0d6fd"
 function = "prism_fidelity::Axis::parse"
 reason = "form"
-detail = "expression form outside the lift: free name Axis::ALL"
+detail = "expression form outside the lift: free name Self::Derived"
 
 [[residue]]
 kappa = "7faf50c2170f08483993f675f119c8f877602be298043934c6332038826ed267"
@@ -1692,7 +1712,7 @@ reason = "type"
 detail = "type outside the lift: prism_kernel::ComputeError"
 
 [[residue]]
-kappa = "0ab2f1c378a7406f81103faeb8a1dd94cb9b7a96ebc78a8186f2f01f214072ef"
+kappa = "6ae1370d58359faa6cdd1a9b44c4bd8137de75512d99d00f2bddb47c532eef32"
 function = "verdant_core::animation::SkeletalClip::sample"
 reason = "type"
 detail = "type outside the lift: SkeletalClip.keyframes: KeyframePose.joint_translations: Vec3.x: f64"
@@ -1710,55 +1730,55 @@ reason = "type"
 detail = "type outside the lift: Skeleton.joints: Joint.rest_translation: Vec3.x: f64"
 
 [[residue]]
-kappa = "32b9ea36ea21402ae2050902d7da9ec9b956f6c3240df4b42c901dc32f4cda07"
+kappa = "0dbf5bbff6f71f1f282535d8bdda103187267c61a588553fae9d8f556466f4c5"
 function = "verdant_core::animation::SkinWeights4::new"
 reason = "type"
 detail = "type outside the lift: Self"
 
 [[residue]]
-kappa = "200127ec76e311ae44d14aeb16bbd7db38a3a6861f1f50cf9818a911904331f1"
+kappa = "7f03d9310d30dc39c9ac7fe4e4964cb1e0e44ffb03661166e64693ce6db76f57"
 function = "verdant_core::animation::evaluate_packed_nibble_pose_offsets"
 reason = "type"
 detail = "type outside the lift: f64"
 
 [[residue]]
-kappa = "d94a4995346a474724a3efdff96018282a44a1f761e32ff41d1c237d7bfabb9f"
+kappa = "e184f9dc43d4e5f23aa694a26c888c5c4431910df4092a3674070c9149b8a412"
 function = "verdant_core::animation::prism_lerp_signed"
 reason = "type"
 detail = "type outside the lift: f64"
 
 [[residue]]
-kappa = "4cefe890edc48c83c545f9e7df5c3f79e7a186b3452628587cc74e441dd25e88"
+kappa = "880faefe1f076434892c802685f4e0d0b9dcecba1f30097bcf7792fe4e61c284"
 function = "verdant_core::animation::skin_mesh_linear_blend"
 reason = "type"
 detail = "type outside the lift: ProceduralMesh.positions: f32"
 
 [[residue]]
-kappa = "9131f5689a05c3221db5cd998aa4db732714e7c238e8a6e290096489dc5876a0"
+kappa = "523b96ca5a16ec9270e0cb125247b388371ae170bd6abe0f7133506df8339814"
 function = "verdant_core::audio::AcousticEnvironment::damped_exterior"
 reason = "type"
 detail = "type outside the lift: AcousticEnvironment.sound_speed_mps: f64"
 
 [[residue]]
-kappa = "8e2ee68683437e3d1cd1b12d482bd0c52be560979b5e33049826ef8c31e0a7cf"
+kappa = "612524463d65cedf0159098011b3ca0a2cdd4160e398311bd2127b275dbe5ce4"
 function = "verdant_core::audio::AcousticEnvironment::eyring_rt60_seconds"
 reason = "type"
 detail = "type outside the lift: AcousticEnvironment.sound_speed_mps: f64"
 
 [[residue]]
-kappa = "f79885de31d8e9488c268b48f4be2aabf14d2e5bbfeddadb95d419f1e6c87a1e"
+kappa = "d837a1f7a3d4ad42274914cfea518d78e359a32a2c4f0c9ea02720b33a4c7549"
 function = "verdant_core::audio::AcousticEnvironment::reflective_chamber"
 reason = "type"
 detail = "type outside the lift: AcousticEnvironment.sound_speed_mps: f64"
 
 [[residue]]
-kappa = "3efaf458dbe96c39efb35eb2dde4bea19f22ffccd472864721e9f46bfb711f68"
+kappa = "adbfde4d8aa809b1453804937994b1ebc10e39b7568eff4a0348e0b0c19c9727"
 function = "verdant_core::audio::AcousticEnvironment::sabine_rt60_prism_millis"
 reason = "type"
 detail = "type outside the lift: AcousticEnvironment.sound_speed_mps: f64"
 
 [[residue]]
-kappa = "4a8ab51f8493cca034eeff87fd0120656671f1a8cad4bbeabf974780aa611e39"
+kappa = "904498019e86bc54273276995a763a1d0b8b4650ed8260c52359f2fdd6bf5365"
 function = "verdant_core::audio::AcousticEnvironment::sabine_rt60_seconds"
 reason = "type"
 detail = "type outside the lift: AcousticEnvironment.sound_speed_mps: f64"
@@ -1788,7 +1808,7 @@ reason = "type"
 detail = "type outside the lift: SpatialAudioSource.position: Vec3.x: f64"
 
 [[residue]]
-kappa = "ad3074016ec0f52a2dfe4f7dadd41244c04547d80db81ea42eb08d23a7a351f4"
+kappa = "f46d10939dc0c46c97907bb4eb8d76c0d8576ffe6d39a18f5825eaaaf35b66c2"
 function = "verdant_core::audio::synthesize_modal_bar_modes"
 reason = "type"
 detail = "type outside the lift: f64"
@@ -1842,7 +1862,7 @@ reason = "type"
 detail = "type outside the lift: ArticulatedCharacter.skeleton: Skeleton.joints: Joint.rest_translation: Vec3.x: f64"
 
 [[residue]]
-kappa = "89f1f5e5f0585ab002fa2302bf86b26ca02e8a0a05e351517cb65cf6ff47d320"
+kappa = "12e2268ece9f04f2fbe7527902a41927a1926399e2ea2c7752d92afe394a2b5a"
 function = "verdant_core::character::ArticulatedCharacter::bind_external_mesh"
 reason = "type"
 detail = "type outside the lift: ArticulatedCharacter.skeleton: Skeleton.joints: Joint.rest_translation: Vec3.x: f64"
@@ -1866,19 +1886,13 @@ reason = "type"
 detail = "type outside the lift: ArticulatedCharacter.skeleton: Skeleton.joints: Joint.rest_translation: Vec3.x: f64"
 
 [[residue]]
-kappa = "62054ecf60e0a1f9fd90f6da462c5bcd72a62b21e5ba30987735dbfa2cf599a1"
+kappa = "a75f5328685b4486990bb9411026ce754a5447cccc3bc046a54d01e77af7e523"
 function = "verdant_core::character::ArticulatedCharacter::step_and_solve_ik"
 reason = "type"
 detail = "type outside the lift: ArticulatedCharacter.skeleton: Skeleton.joints: Joint.rest_translation: Vec3.x: f64"
 
 [[residue]]
-kappa = "2e3c26e13ac3ab0306db8a7ad14bbe019004bbe17b52af0c959b36cca8ff316d"
-function = "verdant_core::character::HumanoidJointId::index"
-reason = "arithmetic"
-detail = "usize + wraps or panics where its value leaves the pointer width: past 2^32 on wasm32-unknown-unknown and thumbv7em-none-eabihf, past 2^64 on x86_64-unknown-linux-gnu and aarch64-unknown-linux-gnu"
-
-[[residue]]
-kappa = "b29489c0024e451656b7dde0b3a5bcc719d2b7f0969ddeca99d86beed9ff3099"
+kappa = "8a3031eb3d450140f9e8281806b2d39e306156c998f3d1c4ab461c3bcc65df90"
 function = "verdant_core::character::append_skinned_limb_tube"
 reason = "type"
 detail = "type outside the lift: &mut Vec<[f32; DIM_SPATIAL]>"
@@ -2022,7 +2036,7 @@ reason = "type"
 detail = "type outside the lift: Vec3.x: f64"
 
 [[residue]]
-kappa = "d039e4de318eca31d27521fb96764b7f331f15af17d773aff7fc66cfc5bde17c"
+kappa = "0d150330de0b6c48fcd4c7a859e848e7dbe8ab325b6d4413ece06e9c39851165"
 function = "verdant_core::collision::gjk_intersect_and_manifold"
 reason = "type"
 detail = "type outside the lift: ConvexHullCollider.vertices: Vec3.x: f64"
@@ -2052,7 +2066,7 @@ reason = "type"
 detail = "type outside the lift: f64"
 
 [[residue]]
-kappa = "8ac64ea51f1656631262775e74958f5554cfeaa3f2f4f3693ed2029df980a5ec"
+kappa = "4a35aa706583e40cee6d9b38f0c3ab5d32e01a3802a3e642cbd264a7dc3388ff"
 function = "verdant_core::collision::solve_contact_impulse"
 reason = "type"
 detail = "type outside the lift: f64"
@@ -2142,10 +2156,10 @@ reason = "signature"
 detail = "signature outside the lift: takes &mut self of CyberneticObserverLoop: the lift reads self and &self as the value, and threads no other receiver"
 
 [[residue]]
-kappa = "15c78250dd9a8799344e4ddb8ffa83e8fa6cd458aa41bade0546442d77568728"
+kappa = "2cffc030a7468afd35f7e648ea4261c779194e4eb211444677c142f5979b0da8"
 function = "verdant_core::cybernetics::EngineIntentKind::from_index"
-reason = "call"
-detail = "calls sTwo, which is not lifted"
+reason = "form"
+detail = "expression form outside the lift: free name Self::FocusObserverCore"
 
 [[residue]]
 kappa = "f2ce554bc35237789b4572ee7217a47062a2932f156a06665929e6b5f13960e1"
@@ -2544,7 +2558,7 @@ reason = "type"
 detail = "type outside the lift: SceneWorld.entities: EntityRecord.local_transform: Transform.translation: Vec3.x: f64"
 
 [[residue]]
-kappa = "fa17675c86e0095960e45ce54e6b612f23852286ab0def89c4b4a58fad24172d"
+kappa = "da9a94f8ba3dcd6c2939f80116db1eb7d5ed0c51b75553cb155d0b1a34f26379"
 function = "verdant_core::gltf_io::export_scene_to_glb"
 reason = "type"
 detail = "type outside the lift: SceneWorld.entities: EntityRecord.local_transform: Transform.translation: Vec3.x: f64"
@@ -2622,10 +2636,10 @@ reason = "arithmetic"
 detail = "integer operator << wraps or panics depending on the build profile"
 
 [[residue]]
-kappa = "abaccf07411681d17929499166fedd274d697d2c6b43bc074bcd4437cc459e8d"
+kappa = "93d6f8de31765c88ce9f3455bb2fd8ba765e65e1ec0fdd933ee5dceacdc4af08"
 function = "verdant_core::governance::ReleaseGateVerdict::pass_rate_pct"
-reason = "arithmetic"
-detail = "integer operator + wraps or panics depending on the build profile"
+reason = "call"
+detail = "calls from, which is not lifted"
 
 [[residue]]
 kappa = "af98364cec7ca86829bc6f0cd6bb7284f3e6ebb648986537aa40c3b01c5f0131"
@@ -2758,12 +2772,6 @@ kappa = "9b04c87caf1a2ae188c7fbf7507f7aeeec3e7dfce3429800c566047c34a5c31e"
 function = "verdant_core::hd_world::hd_terrain_normal"
 reason = "type"
 detail = "type outside the lift: TerrainReliefParams.basin_depth_meters: f64"
-
-[[residue]]
-kappa = "8de837c8509e668a47f68af5d86b8cc421bfd6eb3a8da70564711be60b7b4512"
-function = "verdant_core::hd_world::lod_subdivision_scale"
-reason = "arithmetic"
-detail = "usize + wraps or panics where its value leaves the pointer width: past 2^32 on wasm32-unknown-unknown and thumbv7em-none-eabihf, past 2^64 on x86_64-unknown-linux-gnu and aarch64-unknown-linux-gnu"
 
 [[residue]]
 kappa = "f748b0bac17040dd0cee2fdfffe8253e36c6610a15f1bf9677f99573e2a731a1"
@@ -3216,7 +3224,7 @@ reason = "type"
 detail = "type outside the lift: StoryAutomaton.edges: StoryEdge.world_anchor: Vec3.x: f64"
 
 [[residue]]
-kappa = "2a04b5a697ad213240353813ae11d964af2154269bd394f30dfd6f2a0fac25e3"
+kappa = "6824be1b6294227954f6da438f18b3d5cd99f950da29bf1fb644501ec92f5930"
 function = "verdant_core::navmesh::NavMesh::all_pairs_shortest_paths_tropical"
 reason = "type"
 detail = "type outside the lift: NavMesh.polygons: NavPolygon.vertices: Vec3.x: f64"
@@ -3228,19 +3236,19 @@ reason = "type"
 detail = "type outside the lift: NavMesh.polygons: NavPolygon.vertices: Vec3.x: f64"
 
 [[residue]]
-kappa = "96c9c54022032b30c023785bbd1a556f61b75c31478b5683f3fb84728d8c5d57"
+kappa = "90c0842f1d4fadcf67b6dd59e18f7153a3a006c354fe2ac2518da4550575e57f"
 function = "verdant_core::navmesh::NavMesh::find_path_astar"
 reason = "type"
 detail = "type outside the lift: NavMesh.polygons: NavPolygon.vertices: Vec3.x: f64"
 
 [[residue]]
-kappa = "9c0ab874a45a681d49a91d6a7bf9b9a5f2c9a0614a1391b3e85d91017d951d3e"
+kappa = "89e47e864c94c4372a6d76511f403d8410f3819288cfad07d9adcbc7e4c314e4"
 function = "verdant_core::navmesh::NavMesh::from_mesh"
 reason = "type"
 detail = "type outside the lift: NavMesh.polygons: NavPolygon.vertices: Vec3.x: f64"
 
 [[residue]]
-kappa = "598d9c6e6a3675ca07efdf108845231b03b1b7f941d0bcbedc9cfa046af1a1bb"
+kappa = "63a798f046b2130cf3ce6f02b9243fcae40ec6727fd36800e0bacd0b2c09cdb2"
 function = "verdant_core::navmesh::NavMesh::shortest_corridor_cost_tropical"
 reason = "type"
 detail = "type outside the lift: NavMesh.polygons: NavPolygon.vertices: Vec3.x: f64"
@@ -3316,12 +3324,6 @@ kappa = "cd0c73b067f66eb9b8ba77ec5ea4a25348f2eb4db97a36928e05022747a19253"
 function = "verdant_core::network::PrismBoundaryCipher::seal"
 reason = "statements"
 detail = "the body has statements other than let"
-
-[[residue]]
-kappa = "37f55f00d1cb8dd9fa9a3b2c2a84f02fa5c04ec6fff7ab3fe05b553f08591e3a"
-function = "verdant_core::network::PrismIdSessionEnvelope::max_session_lifetime_secs"
-reason = "call"
-detail = "calls sEight, which is not lifted"
 
 [[residue]]
 kappa = "ed80ec15608d6e4e204a55cb5a6f9bbe3a391565c65543608f20c58265a331d6"
@@ -3462,10 +3464,10 @@ reason = "statements"
 detail = "the body has statements other than let"
 
 [[residue]]
-kappa = "023c9a3e7b69ba3842c3f67bc9bebdb570ff33e4ad19b4905e4e088087cd30ee"
+kappa = "7971a727066129a95448e38b655df0679325c650f69e220445dadcb7d8b47cef"
 function = "verdant_core::network::gf256_inv"
-reason = "arithmetic"
-detail = "integer operator << wraps or panics depending on the build profile"
+reason = "call"
+detail = "calls pow2_u64, which is not lifted"
 
 [[residue]]
 kappa = "e31f40524dc4463159ac9b5b35f9045a594b174e855a19f11b593b88754bd086"
@@ -3525,7 +3527,7 @@ detail = "expression form outside the lift: method call .div_ceil"
 kappa = "4c9602c5c39a28465812108e486a47a8cd7355974baa08269060ec65b1fadf6b"
 function = "verdant_core::network::shard_uorc_to_stitch_fragments"
 reason = "call"
-detail = "calls is_uorc_archive, which is not lifted"
+detail = "calls shard_bytes_to_stitch_fragments, which is not lifted"
 
 [[residue]]
 kappa = "4be5952d24e470e380812cd053d5cdc4381d2359c7b7232a5aacab93485229a0"
@@ -3540,10 +3542,10 @@ reason = "call"
 detail = "calls from_str, which is not lifted"
 
 [[residue]]
-kappa = "c0d5d240846af9e910a3946cf5d27d207bec1a8e56a931109c034654fe39a4c9"
+kappa = "81601f2f845f66b006a5b101eadc9ea73d8217cfba6984398a5f76cd9b825ecb"
 function = "verdant_core::observer::HostCapabilityEnvelope::default_safe"
-reason = "arithmetic"
-detail = "integer operator << wraps or panics depending on the build profile"
+reason = "call"
+detail = "calls ten_u64, which is not lifted"
 
 [[residue]]
 kappa = "0d5b413394421872bd893b0e05f3cfe84704d58a2d570f9ab69a17cf4e11a71b"
@@ -3564,12 +3566,6 @@ reason = "form"
 detail = "expression form outside the lift: expr::macro"
 
 [[residue]]
-kappa = "4ed968861ed601087ab553a870f9c9d0cf951132c036f4eb8c9da56cbf1979fd"
-function = "verdant_core::observer::ObserverOrganKind::index"
-reason = "arithmetic"
-detail = "usize + wraps or panics where its value leaves the pointer width: past 2^32 on wasm32-unknown-unknown and thumbv7em-none-eabihf, past 2^64 on x86_64-unknown-linux-gnu and aarch64-unknown-linux-gnu"
-
-[[residue]]
 kappa = "cb1ba0d4ae58bb95ffc5459e7cbda7dd6bde217612303722fae39ef1073e267d"
 function = "verdant_core::observer::ObserverPartSlot::all"
 reason = "type"
@@ -3580,18 +3576,6 @@ kappa = "d10fb88882ed0786e4176e42da4114784295a50e14b76c5a153bf522f70364a7"
 function = "verdant_core::observer::ObserverPartSlot::from_target_slot"
 reason = "form"
 detail = "expression form outside the lift: free name Self::CharacterRigs"
-
-[[residue]]
-kappa = "a6acb9d4e441ab954e580fda2596831505cceb336420f8ac0720cc6cd49240c5"
-function = "verdant_core::observer::StakeholderRoleKind::index"
-reason = "arithmetic"
-detail = "usize + wraps or panics where its value leaves the pointer width: past 2^32 on wasm32-unknown-unknown and thumbv7em-none-eabihf, past 2^64 on x86_64-unknown-linux-gnu and aarch64-unknown-linux-gnu"
-
-[[residue]]
-kappa = "f6a302b92d67fad28c3077c3890e1008b4c57a9d6ff6cc66beed4b719d22606e"
-function = "verdant_core::observer::StakeholderRoleKind::workspace_index"
-reason = "arithmetic"
-detail = "usize + wraps or panics where its value leaves the pointer width: past 2^32 on wasm32-unknown-unknown and thumbv7em-none-eabihf, past 2^64 on x86_64-unknown-linux-gnu and aarch64-unknown-linux-gnu"
 
 [[residue]]
 kappa = "a0afe5acde6d32b9906f4d04b814fb1f316ae293f2b5487d39bb9ecd2943d721"
@@ -3642,30 +3626,6 @@ reason = "arithmetic"
 detail = "usize + wraps or panics where its value leaves the pointer width: past 2^32 on wasm32-unknown-unknown and thumbv7em-none-eabihf, past 2^64 on x86_64-unknown-linux-gnu and aarch64-unknown-linux-gnu"
 
 [[residue]]
-kappa = "cbaa4b9bfdf83eb25eb9c4d5bf014bfe0e3ef7b459f785a4ee9268dc0cd141c9"
-function = "verdant_core::operator::audit_total_ownership"
-reason = "call"
-detail = "calls new, which is not lifted"
-
-[[residue]]
-kappa = "0ca8794fcbc8586a0ca60cca8d1cc1b2d0de31b709cf6e0e95e026713a0ceedb"
-function = "verdant_core::operator::audit_total_ownership_with_prism_facets"
-reason = "call"
-detail = "calls audit_total_ownership, which is not lifted"
-
-[[residue]]
-kappa = "a9831959f28ddfb0be358fec1ab5f9cbb9c51fe4ce40ae7786ebe03d798235f4"
-function = "verdant_core::operator::load_locked_iso42010_catalog"
-reason = "call"
-detail = "calls from_str, which is not lifted"
-
-[[residue]]
-kappa = "d5910f07a139a3f601d754fa7bc5768e2f18cabae2f2934d2f6070f93f2f66e0"
-function = "verdant_core::operator::load_locked_vsm_catalog"
-reason = "call"
-detail = "calls from_str, which is not lifted"
-
-[[residue]]
 kappa = "c0fe1de942b9ba00b4387c88de4e1e6adf522ff9785ffde192cc1caa1a06659b"
 function = "verdant_core::operator::sha256_hex_raw"
 reason = "arithmetic"
@@ -3676,6 +3636,30 @@ kappa = "ac250cb658b7f8b516e6f88031fc36e63acddc600e6494362910b966157b23ed"
 function = "verdant_core::operator::sha256_hex_tagged"
 reason = "arithmetic"
 detail = "usize + wraps or panics where its value leaves the pointer width: past 2^32 on wasm32-unknown-unknown and thumbv7em-none-eabihf, past 2^64 on x86_64-unknown-linux-gnu and aarch64-unknown-linux-gnu"
+
+[[residue]]
+kappa = "c4eddcb816517893923fe4c17a38ca147d37eb45e86b0f46137a0763f24b2df8"
+function = "verdant_core::operator_types::audit_total_ownership"
+reason = "call"
+detail = "calls new, which is not lifted"
+
+[[residue]]
+kappa = "04100c4a253c70f0f14f89d7454cf4cbf8d6941fc921d8db4e508fc49216d43b"
+function = "verdant_core::operator_types::audit_total_ownership_with_prism_facets"
+reason = "call"
+detail = "calls audit_total_ownership, which is not lifted"
+
+[[residue]]
+kappa = "4cb88ae5bcf35508bf083bd4523187c33bfa47b855cb16b226a052cbff111068"
+function = "verdant_core::operator_types::load_locked_iso42010_catalog"
+reason = "call"
+detail = "calls from_str, which is not lifted"
+
+[[residue]]
+kappa = "16c820bc73808fcff3cc1df04b908d42d543e9230111e938d269b51f0bbb6009"
+function = "verdant_core::operator_types::load_locked_vsm_catalog"
+reason = "call"
+detail = "calls from_str, which is not lifted"
 
 [[residue]]
 kappa = "c6be8138a3620771eb77ae667f7c51b8616bb84155fedcfae6eddf26fe558b6d"
@@ -3840,7 +3824,7 @@ reason = "call"
 detail = "calls with_capacity, which is not lifted"
 
 [[residue]]
-kappa = "a309fe2b06b301f96d603775f191e6f94b679b66a35e223483de0a9bafb2bad6"
+kappa = "1ed2792d7d34d6383231b37bedd909431d9d877baf324ba68384ac4fbcff0070"
 function = "verdant_core::portable_player::render_portable_3d_player_html"
 reason = "form"
 detail = "expression form outside the lift: format! text"
@@ -3882,7 +3866,7 @@ reason = "type"
 detail = "type outside the lift: HdPbrDescriptor.base_color_factor: f32"
 
 [[residue]]
-kappa = "08b8880f8e8cd6a89747dd61e8d97a89de14a23b8b1e09ae184a06c49645e91b"
+kappa = "1f5049bb49e40bc061fe41fae0957700fadaee8ab44a3da80ec1ef9cb19f6c1e"
 function = "verdant_core::render::IblEnvironmentProbe::from_resolution"
 reason = "type"
 detail = "type outside the lift: Self"
@@ -3972,7 +3956,7 @@ reason = "arithmetic"
 detail = "usize + wraps or panics where its value leaves the pointer width: past 2^32 on wasm32-unknown-unknown and thumbv7em-none-eabihf, past 2^64 on x86_64-unknown-linux-gnu and aarch64-unknown-linux-gnu"
 
 [[residue]]
-kappa = "68afcde6f2b445c3c9dd41dbec1d8be6d53286b097cbd53c59224a0728ef43fb"
+kappa = "1482ba8b1b4996226e8262d4f764786b19fb08d72190159f00f1af6469d7870e"
 function = "verdant_core::render::RenderFrameGraph::validate"
 reason = "type"
 detail = "type outside the lift: RenderGraphError::InvalidShadowFrustumBounds.near_meters: f64"
@@ -3984,7 +3968,7 @@ reason = "type"
 detail = "type outside the lift: PbrMaterial.base_color_factor: f32"
 
 [[residue]]
-kappa = "28b95feadb5dfd87512bbb31d99dffd7315db0287de35faaed175876db50d92c"
+kappa = "c100dabf3b0eb251f437211e9584242db70cfd01689b41bc7f78c92bd4205d86"
 function = "verdant_core::render::compute_csm_splits"
 reason = "type"
 detail = "type outside the lift: f64"
@@ -4278,13 +4262,13 @@ reason = "signature"
 detail = "signature outside the lift: takes &mut self of DeterministicInputJournal: the lift reads self and &self as the value, and threads no other receiver"
 
 [[residue]]
-kappa = "53957f5596ade59d1b589daeaa829c32f1ba43ef9bb1bf452e0cfdb1ef5a3158"
+kappa = "ecb73400c8ca92773d6287ad8f5e6674a38b0d864d737ae3106f82a15753f756"
 function = "verdant_core::runtime::EngineConfig::from_refresh_rate"
 reason = "type"
 detail = "type outside the lift: Self"
 
 [[residue]]
-kappa = "64f9d90a9a50a5f0f0f2f7f69f1513f6a8b0e0bd48f827c9471e69126b5c3e52"
+kappa = "5612543f5436464e3afe893cee48745e71c671c828bee94038721b1aa6b31e98"
 function = "verdant_core::runtime::EngineConfig::new"
 reason = "type"
 detail = "type outside the lift: Self"
@@ -4350,7 +4334,7 @@ reason = "call"
 detail = "calls sEight, which is not lifted"
 
 [[residue]]
-kappa = "0d2103e6e94b7bbc2fbb7ba4c46ae5325af0246e87bdc15ebc212f3b3e7f25f4"
+kappa = "b2d6d4a32e44a0b17e88f077380c65d1584e491e8f3751aef659fa7ef288bee6"
 function = "verdant_core::runtime::OntologicalRuntimeGovernor::evaluate_frame_telos"
 reason = "call"
 detail = "calls from, which is not lifted"
@@ -4398,7 +4382,7 @@ reason = "signature"
 detail = "signature outside the lift: takes &mut self of WorkerJobGraph: the lift reads self and &self as the value, and threads no other receiver"
 
 [[residue]]
-kappa = "f19ad20c96ca595971969ad6301f55d982da8500318110d0ba83e046542fc2f3"
+kappa = "6b036336fe1c0c7691029d8f12fe1f5af7438b64c53ccbb4ae9618ad20cc973c"
 function = "verdant_core::runtime::WorkerJobGraph::canonical_frame_pipeline"
 reason = "statements"
 detail = "the body has statements other than let"
@@ -4410,19 +4394,19 @@ reason = "statements"
 detail = "the body has statements other than let"
 
 [[residue]]
-kappa = "3cde484b0ed6dfce1517f7587b2b54638b6e6d79a5b23d851e39bc5ef7897e27"
+kappa = "35a0b05b2a86df4c0cbc112474b8893556f21b9dfb1508c4469ac043c4f30809"
 function = "verdant_core::runtime::WorldSnapshot::decode"
 reason = "type"
 detail = "type outside the lift: StandardSceneState.params: SceneBuildParams.environment: PhysicalEnvironment.gravity_mps2: f64"
 
 [[residue]]
-kappa = "7b47b25292b8f4ab11e0b0922df0a896cffbe4a04c7f69d450bbe0d5b7f88477"
+kappa = "8c4f7d8082b7c481b9edc39745cd9986fc1360d4be1e784e89be5c2d37403176"
 function = "verdant_core::runtime::WorldSnapshot::decode_vdnt_wire"
 reason = "type"
 detail = "type outside the lift: StandardSceneState.params: SceneBuildParams.environment: PhysicalEnvironment.gravity_mps2: f64"
 
 [[residue]]
-kappa = "57e588c0aa5b4664a66d723fbe32e30d0d9e0ae73abd46288adfa7661b1976d3"
+kappa = "d06798074c079487ba2175b6c6a142bed72758ad0497c7bfa2caf1a6e1240f9a"
 function = "verdant_core::runtime::WorldSnapshot::encode"
 reason = "type"
 detail = "type outside the lift: StandardSceneState.params: SceneBuildParams.environment: PhysicalEnvironment.gravity_mps2: f64"
@@ -4566,19 +4550,13 @@ reason = "type"
 detail = "type outside the lift: Self"
 
 [[residue]]
-kappa = "61df85dc71a759ea140921ba1b7d4f686f05a83d20de293b3353acc983e135af"
+kappa = "9e0c0b0047ca6fc7b592edb87d2f336ea1c7d63a13970236e2f44f36f9a67a50"
 function = "verdant_core::streaming::LodLevel::prism_spec"
 reason = "type"
 detail = "type outside the lift: StreamingLodSpec"
 
 [[residue]]
-kappa = "7e63143ed3d9a5ed4ad545ba8384f97ed6511d92857d9f8a6546d1ad6bc8c6bf"
-function = "verdant_core::streaming::LodLevel::rank"
-reason = "call"
-detail = "calls sTwo, which is not lifted"
-
-[[residue]]
-kappa = "ffca2486152f60802f51b007c596cdb3ce47610097e7338af57cfa1ec8352e9f"
+kappa = "d0085458cc72644b9bb65e474c90e644f18548a56cbffd6316056384bcc079d9"
 function = "verdant_core::streaming::LodLevel::render_envelope"
 reason = "type"
 detail = "type outside the lift: LodRenderEnvelopeSpec"
@@ -4590,19 +4568,19 @@ reason = "type"
 detail = "type outside the lift: f64"
 
 [[residue]]
-kappa = "369713a50cbf199e08442d55d2613af1cebc19b36ccd74ef49245b4b11446393"
+kappa = "c91b755f0416f0528665499e980db07934695ad7395db3873722b2ddd6726831"
 function = "verdant_core::streaming::PhysicalEnvironment::temperate_terrestrial"
 reason = "type"
 detail = "type outside the lift: PhysicalEnvironment.gravity_mps2: f64"
 
 [[residue]]
-kappa = "5bdea0a63032093bf60f91d1e9118f2775cd1e2abe2c5af0e849f46d4da48afe"
+kappa = "e90a0ab7804bbff8e375bdabfb1cad68928081c2d77677ece5196368c4d8701b"
 function = "verdant_core::streaming::SceneBuildParams::default"
 reason = "type"
 detail = "type outside the lift: SceneBuildParams.environment: PhysicalEnvironment.gravity_mps2: f64"
 
 [[residue]]
-kappa = "d6791aa3a5c4474a7e6554c2f4e7121260e65b967c816c9964f053dd05f191c4"
+kappa = "0ddabfccab0c672ee2499e025babff269c0877be2f14378266b1e7b527793015"
 function = "verdant_core::streaming::StandardSceneState::advance_to_lod"
 reason = "type"
 detail = "type outside the lift: StandardSceneState.params: SceneBuildParams.environment: PhysicalEnvironment.gravity_mps2: f64"
@@ -4614,7 +4592,7 @@ reason = "type"
 detail = "type outside the lift: StandardSceneState.params: SceneBuildParams.environment: PhysicalEnvironment.gravity_mps2: f64"
 
 [[residue]]
-kappa = "c5f11a01c3afdf7521d8dbace363040ac848977276e2b9f90e901ac193882d31"
+kappa = "261e98ad912b584e93ecf9ab79ec40d8f3a3b70016b05e366a039ea43b24f35d"
 function = "verdant_core::streaming::StandardSceneState::rebuild_for_lod"
 reason = "type"
 detail = "type outside the lift: StandardSceneState.params: SceneBuildParams.environment: PhysicalEnvironment.gravity_mps2: f64"
@@ -4638,7 +4616,7 @@ reason = "type"
 detail = "type outside the lift: TerrainReliefParams.basin_depth_meters: f64"
 
 [[residue]]
-kappa = "d131ecc105af5fc04df14961c12b4b0b453dc13fa05806bfe87bd8c7dbaf9e59"
+kappa = "3ed624f070a760d2565b2690d4bf1b5d32e4e1fda0697d390ea827972323676b"
 function = "verdant_core::streaming::build_scene_nodes"
 reason = "type"
 detail = "type outside the lift: SceneBuildParams.environment: PhysicalEnvironment.gravity_mps2: f64"
@@ -4650,13 +4628,13 @@ reason = "form"
 detail = "expression form outside the lift: expr::macro"
 
 [[residue]]
-kappa = "f5d371088357b39816cf9ef6233782f5b75c982e841a6ac3bd4b3a0de06ccb3b"
+kappa = "c6cad5c73faff5fd2478169c36327bf1d4be7c646a0a056e790054271af72a4b"
 function = "verdant_core::streaming::decode_portable_uorc_single_frame"
 reason = "type"
 detail = "type outside the lift: StandardSceneState.params: SceneBuildParams.environment: PhysicalEnvironment.gravity_mps2: f64"
 
 [[residue]]
-kappa = "821f4f72c4a75e115ab163f3193e15cb2fadd016541e8efcf3fe459c2366356a"
+kappa = "82f329bd04e143f3a510cfa8110ea051d1b088229ed0be060f2e7bfe07943253"
 function = "verdant_core::streaming::decode_portable_uorc_stream_up_to_lod"
 reason = "type"
 detail = "type outside the lift: StandardSceneState.params: SceneBuildParams.environment: PhysicalEnvironment.gravity_mps2: f64"
@@ -4677,13 +4655,7 @@ detail = "type outside the lift: StandardSceneState.params: SceneBuildParams.env
 kappa = "32787a5a9b2ba04d50d7b1bf93d98ec02f296bbd5138e9a7f5e63186d2e90f00"
 function = "verdant_core::streaming::decompress_uorc_portable"
 reason = "call"
-detail = "calls is_uorc_archive, which is not lifted"
-
-[[residue]]
-kappa = "d08002fd4094b02dbdf89690dd6f784b5909a0f4696084abf44bffcce07a7598"
-function = "verdant_core::streaming::is_uorc_archive"
-reason = "arithmetic"
-detail = "integer operator << wraps or panics depending on the build profile"
+detail = "calls split_self_delimiting_uorc_archives, which is not lifted"
 
 [[residue]]
 kappa = "886254cc2f09eab8acb9e2dff25daab4da2585ba4a799c757112357c29508421"
@@ -4692,7 +4664,7 @@ reason = "call"
 detail = "calls wasmMaxLodRank, which is not lifted"
 
 [[residue]]
-kappa = "6a05016b269ab25a6dae57da2ad8aa3b0a96cd6361f18204a93d97471b039189"
+kappa = "29caaf77d5a59a7d5508fdd99c0350a289218d44d30996bac1dc408f9b9977fe"
 function = "verdant_core::streaming::pack_progressive_uorc_stream"
 reason = "call"
 detail = "calls wasmMaxLodRank, which is not lifted"
@@ -4728,13 +4700,13 @@ reason = "type"
 detail = "type outside the lift: TerrainReliefParams.basin_depth_meters: f64"
 
 [[residue]]
-kappa = "dca4284629e1ded8d5bc5cfa78ba2dc13ccebc88051b8147adef764e6eaf80c6"
+kappa = "b1f796df90a6ecb2656ef4a80f6ff80a960d2bbbe04d20e7218230b7050eb7f7"
 function = "verdant_core::streaming::uorc_work_budget"
 reason = "call"
 detail = "calls uorcDefaultDecodeWork, which is not lifted"
 
 [[residue]]
-kappa = "d515685bedde0497af2c80036c1de83dbec2bc0872b36b865e9a5f56dfa6cb7e"
+kappa = "a94bc164ce76db28a3d192ead711ec8f52a0ac389c2741ff519c4cca7e418f16"
 function = "verdant_core::streaming::verify_progressive_uorc_stream"
 reason = "call"
 detail = "calls verify, which is not lifted"
@@ -4770,16 +4742,16 @@ reason = "type"
 detail = "type outside the lift: AtlasUvTransform.u_offset: f32"
 
 [[residue]]
-kappa = "fe8c350bbd2b2485f42bd78ccac7cd6b485b8f58d96f9a9963333f2f2a5a7909"
+kappa = "df1272c4edea3c33574cfd229231764a509ccb774ccc102f7a2bbec487659572"
 function = "verdant_core::uhd::DynamicWorkloadGovernor::default"
-reason = "arithmetic"
-detail = "integer operator + wraps or panics depending on the build profile"
+reason = "call"
+detail = "calls default, which is not lifted"
 
 [[residue]]
-kappa = "c712dd5f93d913bf2e5c4a33992447c89c02a7a9546535ef13dfeeaa79ff45d8"
+kappa = "3ebdcf0d5e66c6067c99df2136bbfc086be101115edf7c019a1acfe827d34874"
 function = "verdant_core::uhd::DynamicWorkloadGovernor::new"
-reason = "arithmetic"
-detail = "integer operator + wraps or panics depending on the build profile"
+reason = "call"
+detail = "calls new, which is not lifted"
 
 [[residue]]
 kappa = "ddb902f1dbe734b3862ea34275e30fdbf91505d12cdbdbf4558183dd6b820189"
@@ -4794,28 +4766,16 @@ reason = "signature"
 detail = "signature outside the lift: takes &mut self of DynamicWorkloadGovernor: the lift reads self and &self as the value, and threads no other receiver"
 
 [[residue]]
-kappa = "52b45be882b0b2b65b28b0f08ddd2786a446cb007ca49084c40af62f485727b0"
-function = "verdant_core::uhd::FrameBudgetOracle::active_drs_permille"
-reason = "call"
-detail = "calls drs_ladder, which is not lifted"
-
-[[residue]]
-kappa = "a844166370c86cabf1ee2b475d04fced5403bd32925ab3a19804fa0ec4af424c"
+kappa = "84f2b4e518a3ee3f83beac5a3c30cb78006ea7e667dc20a2d9c6ba3f73941098"
 function = "verdant_core::uhd::FrameBudgetOracle::default"
-reason = "arithmetic"
-detail = "integer operator + wraps or panics depending on the build profile"
+reason = "call"
+detail = "calls new, which is not lifted"
 
 [[residue]]
-kappa = "0c9e6cd0964693542027682a94716e7a33c2f5104927b2c240dfa7084c492965"
-function = "verdant_core::uhd::FrameBudgetOracle::drs_ladder"
-reason = "arithmetic"
-detail = "usize + wraps or panics where its value leaves the pointer width: past 2^32 on wasm32-unknown-unknown and thumbv7em-none-eabihf, past 2^64 on x86_64-unknown-linux-gnu and aarch64-unknown-linux-gnu"
-
-[[residue]]
-kappa = "46458819f3ebd4b762ce13718ed8cc41aea46128737a27632e3799e0658fb065"
+kappa = "9e970a80a45a9dd97ba8e83072f5e23a2acb8a6a9308067cee084d5836b713af"
 function = "verdant_core::uhd::FrameBudgetOracle::new"
-reason = "arithmetic"
-detail = "integer operator + wraps or panics depending on the build profile"
+reason = "form"
+detail = "expression form outside the lift: expr::repeat"
 
 [[residue]]
 kappa = "29b767906fab3820cd32d2d81934ffd6b5e96281e4906a6cd8a29d654c3fcbe8"
@@ -5394,10 +5354,10 @@ reason = "signature"
 detail = "signature outside the lift: takes &mut self of PagedTensorArena: the lift reads self and &self as the value, and threads no other receiver"
 
 [[residue]]
-kappa = "7fbce12db945ac09ba4b46ea6824e16d4d8189a937558005160cb727c2e9a069"
+kappa = "b9cb9fdda1107f41d75fe2164573aa44cd547ac53885a89a8b498c14d773ee62"
 function = "verdant_tensor::memory::PagedTensorArena::default"
-reason = "arithmetic"
-detail = "integer operator + wraps or panics depending on the build profile"
+reason = "call"
+detail = "calls pow2_u64, which is not lifted"
 
 [[residue]]
 kappa = "7c50570dd28c5a6d54f6bb60b50216d307fffce5407c35e68201f3290e65c363"
@@ -5422,12 +5382,6 @@ kappa = "58e1fd01c3563b445254706bc2036f9f17e8747aaf22d5e6a9dbf43545e116d2"
 function = "verdant_tensor::memory::PagedTensorArena::set_budget_bytes"
 reason = "signature"
 detail = "signature outside the lift: takes &mut self of PagedTensorArena: the lift reads self and &self as the value, and threads no other receiver"
-
-[[residue]]
-kappa = "e57df31147863e7afd76e29df4912e1b99882a399088fb4f138037ea6eef831e"
-function = "verdant_tensor::memory::PagedTensorArena::telemetry"
-reason = "arithmetic"
-detail = "integer operator * wraps or panics depending on the build profile"
 
 [[residue]]
 kappa = "54f0138960e2ca520d39e7dffe1e228fee6001554f8df7fb4e0f67f61f273507"
@@ -6582,12 +6536,6 @@ reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
-kappa = "a49cabca5a260ee3f547ffc99f895bc3b359086d4bb900fd7ffedad772af0c89"
-function = "verdant_tensor::prism_kernel::sNineteen"
-reason = "arithmetic"
-detail = "integer operator << wraps or panics depending on the build profile"
-
-[[residue]]
 kappa = "7993e4313917f5ca575bb7c183a7a61acb708e279ebe9571b58e328531a09c2c"
 function = "verdant_tensor::prism_kernel::sNinety"
 reason = "form"
@@ -6606,10 +6554,10 @@ reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
-kappa = "5dd66fb0fda05030fb6c57178b90f35f936ffedeba83e38e92b02bac41440103"
+kappa = "460bf7e57d0e7ac912af8b8bb8719d4bedcdd1dc88ab13862848aac08eee1bcb"
 function = "verdant_tensor::prism_kernel::sOneEighty"
-reason = "arithmetic"
-detail = "integer operator << wraps or panics depending on the build profile"
+reason = "form"
+detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
 kappa = "294bc9748173c50acdfe47f70d018b4e95af687ab17aafa0578eac854e4c3a1c"
@@ -6666,10 +6614,10 @@ reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
-kappa = "a02d680c3607f91e7fd358c83e28c7ea4138c570ea558f5374d64f554038737d"
+kappa = "000a69e31b9112cbaaaef0f85b78a25a778e5d00ce828f8789c962538d255d66"
 function = "verdant_tensor::prism_kernel::sThirtyEight"
-reason = "arithmetic"
-detail = "integer operator << wraps or panics depending on the build profile"
+reason = "form"
+detail = "expression form outside the lift: ? below the function's own statements"
 
 [[residue]]
 kappa = "cb73f1c185c5a52ad32e16acf13ce17b2af20e558b55cc2c9c77c2a4b82f406c"
@@ -6682,12 +6630,6 @@ kappa = "792bb7185833c7e87c1b05a4d27a44ae033d332c77c24740a7c9d506637a429c"
 function = "verdant_tensor::prism_kernel::sThirtyFour"
 reason = "form"
 detail = "expression form outside the lift: ? below the function's own statements"
-
-[[residue]]
-kappa = "69965c6898430e4172e3a2d0bb9c440760e7c83a76df07760c6018c14918e0fa"
-function = "verdant_tensor::prism_kernel::sThirtyNine"
-reason = "arithmetic"
-detail = "integer operator << wraps or panics depending on the build profile"
 
 [[residue]]
 kappa = "7287ba5daf3b895e17e6faa5fc0f97d9663ce9f910c92f77d23b5867b777d63c"
@@ -7422,6 +7364,1056 @@ reason = "signature"
 detail = "signature outside the lift: generic, async, unsafe or variadic"
 
 [[residue]]
+kappa = "0ec9c21bf36c9e54a2c28b1305b551720d5125c5ef3c5cd0f0b42bb6bea32471"
+function = "verdant_wasm::exports_cold::verdant_wasm_active_lod_rank"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "3a9ef01752802deced97de2b0b1bd593f031a828bb11f7532d6dfe3342119015"
+function = "verdant_wasm::exports_cold::verdant_wasm_active_seed"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "793449df5eb8e3ec1b083b8de4d96c3c967faf98d76eabef0f7c69e8a660b9be"
+function = "verdant_wasm::exports_cold::verdant_wasm_audio_channels"
+reason = "call"
+detail = "calls audioStereoChannels, which is not lifted"
+
+[[residue]]
+kappa = "49e21c37f2b2cffb89210b1d8ccd13935f43931af9f9f75c44ae7216e1af0c0b"
+function = "verdant_wasm::exports_cold::verdant_wasm_audio_quantum_frames"
+reason = "call"
+detail = "calls pk_u64, which is not lifted"
+
+[[residue]]
+kappa = "be868cdbc8fa2b9dcd1caa5e553dbe6ce97d5ffc4c10f246ce2a645e13e3679f"
+function = "verdant_wasm::exports_cold::verdant_wasm_aux_len"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "b6ad867a8f958c2a0e1f65ce039e6902d131f5963bcb0d195740387a3ee30e26"
+function = "verdant_wasm::exports_cold::verdant_wasm_aux_ptr"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "53e9fa7480d18bacb12f7d5be19ab88a10332a0367543d0520e98a8977a0f625"
+function = "verdant_wasm::exports_cold::verdant_wasm_binaural_gain"
+reason = "type"
+detail = "type outside the lift: f64"
+
+[[residue]]
+kappa = "4c1b72707b051ae6a422cba8dbc559c2153834c59aa8bb86d9aedda60dc861b7"
+function = "verdant_wasm::exports_cold::verdant_wasm_binaural_itd_micros"
+reason = "type"
+detail = "type outside the lift: f64"
+
+[[residue]]
+kappa = "159d48c17d16551f8f89aa460221b84e2ea23bde6f922535d5cf8b036f597dd3"
+function = "verdant_wasm::exports_cold::verdant_wasm_binaural_pan"
+reason = "type"
+detail = "type outside the lift: f64"
+
+[[residue]]
+kappa = "427fc33a449a170ff6d27cf440b090c18fca00f353811ceee4d3c5ff88804a8e"
+function = "verdant_wasm::exports_cold::verdant_wasm_bvh_visible_count"
+reason = "type"
+detail = "type outside the lift: f64"
+
+[[residue]]
+kappa = "7450174712dee1694e3a442731a5aee7c3ae91bf6ce9e019c6b1d2f795b099ae"
+function = "verdant_wasm::exports_cold::verdant_wasm_camera_clearance_milli"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "87fc856d830cabfe60e0a15ff6af3a1ed5be3e252ec3c6d3768b15c05492bfd3"
+function = "verdant_wasm::exports_cold::verdant_wasm_camera_eye_x"
+reason = "type"
+detail = "type outside the lift: f64"
+
+[[residue]]
+kappa = "2ceb8627075c92fa77e918ffe4cbbf6880f79626f589486379a30c6de7d8cf0c"
+function = "verdant_wasm::exports_cold::verdant_wasm_camera_eye_y"
+reason = "type"
+detail = "type outside the lift: f64"
+
+[[residue]]
+kappa = "b37841b58ea84a4a528168a8a8b3ca999a86fa32db831825613cea12329b6e14"
+function = "verdant_wasm::exports_cold::verdant_wasm_camera_eye_z"
+reason = "type"
+detail = "type outside the lift: f64"
+
+[[residue]]
+kappa = "77b6834bbad90db505119a70b4d4280cb49afe18364aae05b3197fe688ced35d"
+function = "verdant_wasm::exports_cold::verdant_wasm_camera_intent"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "ef2f5a8b1166371c50cf2712a81a2223e87b8a13daa7edcc93291b4c1ef32023"
+function = "verdant_wasm::exports_cold::verdant_wasm_camera_mode"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "a2315855f3d69ce443031cce20c6f0878434e0a8aa6e1b9df0402f288a3ca1da"
+function = "verdant_wasm::exports_cold::verdant_wasm_camera_obstructed"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "55600f157ca764e8423d89b1bf8a6bb807f414e1d96deb9db4a8a0dd3279fca5"
+function = "verdant_wasm::exports_cold::verdant_wasm_camera_set_anchor"
+reason = "type"
+detail = "type outside the lift: f64"
+
+[[residue]]
+kappa = "c1602bf082786dfea65c8382c0aa6379ec2322947068196123802574c7459720"
+function = "verdant_wasm::exports_cold::verdant_wasm_camera_set_mode"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "723807cd7340c786eb9cf231c763dc6b46fdf9a7aaa4509278b3528cbdb8d78f"
+function = "verdant_wasm::exports_cold::verdant_wasm_camera_set_pose_intent"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "ac3d3ba33cd88ee114115e8bf06aec3d07774a9619395ad64345c874a0c2ce0c"
+function = "verdant_wasm::exports_cold::verdant_wasm_camera_target_x"
+reason = "type"
+detail = "type outside the lift: f64"
+
+[[residue]]
+kappa = "17242fa1fb591a326ae8d4b16333eb6bd752401f5527e60404c7d626ab0407aa"
+function = "verdant_wasm::exports_cold::verdant_wasm_camera_target_y"
+reason = "type"
+detail = "type outside the lift: f64"
+
+[[residue]]
+kappa = "90081dc6f9027a050374b2bf47c72be5b502fac5e76ad6857c9295e9759bbe9c"
+function = "verdant_wasm::exports_cold::verdant_wasm_camera_target_z"
+reason = "type"
+detail = "type outside the lift: f64"
+
+[[residue]]
+kappa = "8ed27f31c4bc3fc02baaff5ce091f6b68b952c1d96d309023b2ebcf5279d9e04"
+function = "verdant_wasm::exports_cold::verdant_wasm_camera_yaw_milli"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "61ac0b10d8c3eebf5eb7f3ec8f47990361dd9447801a49bc30cdf84143a1d27c"
+function = "verdant_wasm::exports_cold::verdant_wasm_clear_imported_glb"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "8ed0f918fa7d364c217c9f6a3ee54572fc41e1f37127e327f181a6176c44a0fa"
+function = "verdant_wasm::exports_cold::verdant_wasm_coded_tier_count"
+reason = "statements"
+detail = "the body has statements other than let"
+
+[[residue]]
+kappa = "b34eda3908cbd4d8892992ba6dd08f9f662bd733e87f3e11d6c71fdcbf5feb0c"
+function = "verdant_wasm::exports_cold::verdant_wasm_coded_zero_decode_checksum"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "ef7ee6a2fe8ced238568be5c65ce264c382fb9452a1f34a116bdc51096ad661d"
+function = "verdant_wasm::exports_cold::verdant_wasm_configure_instanced_workload"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "fd2362d9ca937e0ecec97839582d6e2f2b5b530a53e39d4a6f2afc646c99025e"
+function = "verdant_wasm::exports_cold::verdant_wasm_csm_split_meters"
+reason = "type"
+detail = "type outside the lift: f64"
+
+[[residue]]
+kappa = "b458ead0742ff71053ff1391351222385dca8e38b01beb24aa22ee2d69e7543c"
+function = "verdant_wasm::exports_cold::verdant_wasm_default_seed"
+reason = "call"
+detail = "calls pk_u64, which is not lifted"
+
+[[residue]]
+kappa = "0903e0c9c7a5a1cdcbbf86608454637ff2ad009fe9a8c6c05fd874d83cc77f15"
+function = "verdant_wasm::exports_cold::verdant_wasm_dyn_col_ptr"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "dc110a867416501d685194bf2ef0c43a2cef7f44264d2473aa96d45769f155c8"
+function = "verdant_wasm::exports_cold::verdant_wasm_dyn_idx_count"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "4be4a0cde72907e969d0adcf2f2e7d928991850b792bb56a57be2a62929c6aab"
+function = "verdant_wasm::exports_cold::verdant_wasm_dyn_idx_ptr"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "20782c0eb1b9091845c156f333935015a0d4b2ba564afef7aaae7eafbc104f38"
+function = "verdant_wasm::exports_cold::verdant_wasm_dyn_norm_ptr"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "3c2d1c4023cc7d60c6c70eaaa8ec3d5014d9b0eea3e62300559e12ae63be0cbc"
+function = "verdant_wasm::exports_cold::verdant_wasm_dyn_pos_ptr"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "037be13a26bc78973d9bcb43849355c01c7d18014c5a2efe9fa66f992f73fd13"
+function = "verdant_wasm::exports_cold::verdant_wasm_dyn_vert_count"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "26a7bac5ed256f29ddcdcbbb4a765b3829eb4888266b6b7f2ff146bf03a0a4f4"
+function = "verdant_wasm::exports_cold::verdant_wasm_fb_len"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "9fe0b5152904ebd99e4862487fa3e2835ced0df0aef6966e139f8b35ed96e0b0"
+function = "verdant_wasm::exports_cold::verdant_wasm_fb_ptr"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "f3cb34712993a27aee3ed1d02365bfdb16a1c00c1cbf02afd0eed36ae9cdcc30"
+function = "verdant_wasm::exports_cold::verdant_wasm_glb_export_aux"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "3a54db2d04a5f1e3c7b38c42fa60ecf3dbf95f67d8fce3ba5e7b52af991d13ba"
+function = "verdant_wasm::exports_cold::verdant_wasm_glb_import_io"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "b142f73371b1c42b5bbc4d6a270a5e9dfd2eb85c97c08608b3482ba19273e35e"
+function = "verdant_wasm::exports_cold::verdant_wasm_governor_scale_permille"
+reason = "statements"
+detail = "the body has statements other than let"
+
+[[residue]]
+kappa = "48d5222a508ed4c740a6251252eea89ac2298ae839a3bc6091a80e42ed8098e9"
+function = "verdant_wasm::exports_cold::verdant_wasm_hd_max_lod_rank"
+reason = "call"
+detail = "calls pk_u64, which is not lifted"
+
+[[residue]]
+kappa = "911ee75e6e384cf6f6509e7c6a90f1b4fee57a234b01f6909547fdf76fd1ea8c"
+function = "verdant_wasm::exports_cold::verdant_wasm_init"
+reason = "call"
+detail = "calls new, which is not lifted"
+
+[[residue]]
+kappa = "1eb7c9b7aa4bf2d7df2a1b0e90e1468e6510787861329b5f85bbc2fe1ba2c9cf"
+function = "verdant_wasm::exports_cold::verdant_wasm_inst_count"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "a9843a2760f3076e4a92267ff316da1623ed3383b42a8e750b499a56bd9393aa"
+function = "verdant_wasm::exports_cold::verdant_wasm_inst_data_ptr"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "a1e05e80c750ef538bc859230c7e2244d5d9decc35484049f11dfc3b88c3b2f6"
+function = "verdant_wasm::exports_cold::verdant_wasm_inst_epoch"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "784d52de494aa02be94c5f0ceefcd9bf139afc7ed19a8cf4332fcd226de2113d"
+function = "verdant_wasm::exports_cold::verdant_wasm_inst_mesh_col_ptr"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "74078fd54b858573f2d183a507cc89b84aa22e63af4d4cf532c0a088c79272a6"
+function = "verdant_wasm::exports_cold::verdant_wasm_inst_mesh_idx_count"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "35a8ac7a67b0eb9105f28bd61b5cd4621b6b643585d0bb34d945bc11a56b887a"
+function = "verdant_wasm::exports_cold::verdant_wasm_inst_mesh_idx_ptr"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "24edece1935ac7747abd19d1e46e48aff7a5bde07263b4cd67a63116c70b1ce0"
+function = "verdant_wasm::exports_cold::verdant_wasm_inst_mesh_norm_ptr"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "2ba9293139dd7e034281d87bc601f123c806951f348e5183af12478f2c4b79d7"
+function = "verdant_wasm::exports_cold::verdant_wasm_inst_mesh_pos_ptr"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "f329ec442187226de1cdb5644adec3ea2bea8820ecf8dcc8e0f1710abd32197a"
+function = "verdant_wasm::exports_cold::verdant_wasm_inst_mesh_vert_count"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "d8a7197186823856aed831dd2297600e9d5da24afc25c5c06f90c4840d7f00a7"
+function = "verdant_wasm::exports_cold::verdant_wasm_io_clear"
+reason = "form"
+detail = "expression form outside the lift: if without else"
+
+[[residue]]
+kappa = "11e1ef52ab85b21b1bdcf38e7e0c2f09700bba3d82782604de5d1f3b683a3e88"
+function = "verdant_wasm::exports_cold::verdant_wasm_io_get_byte"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "c105862d94073711ac4a6223f017253bbbc37c2c226d31da0e5041dbe51e407f"
+function = "verdant_wasm::exports_cold::verdant_wasm_io_len"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "7878e8d2dc294aa2caa5ad27338d86bcda1816ed7f89d6a3cc7bc4312ad1d115"
+function = "verdant_wasm::exports_cold::verdant_wasm_io_ptr"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "1d9b4dc3bf0f5fdfdc118aa25ae9a745d1528df3d0a06dd6c0e6c1f5c1194ef1"
+function = "verdant_wasm::exports_cold::verdant_wasm_io_push_byte"
+reason = "form"
+detail = "expression form outside the lift: if without else"
+
+[[residue]]
+kappa = "8842655e4b71dcbf7d19910db9fd6661c1f6e9bdc453e6f40bc3cdf14e8c23aa"
+function = "verdant_wasm::exports_cold::verdant_wasm_io_resize"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "ac66d733fe7e61d9590ad8646a3924d70418efa64a80eb1549ecfe5f3eb4d4f8"
+function = "verdant_wasm::exports_cold::verdant_wasm_max_lod_rank"
+reason = "call"
+detail = "calls wasmMaxLodRank, which is not lifted"
+
+[[residue]]
+kappa = "4c43252ef053ebfb8dc95ff57410c9d3f8e4bf056611e436e366bd0e6a332e2d"
+function = "verdant_wasm::exports_cold::verdant_wasm_modal_bar_denom"
+reason = "call"
+detail = "calls eulerBernoulliModeDenom, which is not lifted"
+
+[[residue]]
+kappa = "b636e886a45260f220a77378d4bafa2a66d56e7b373dc1822da9144c8305f09e"
+function = "verdant_wasm::exports_cold::verdant_wasm_modal_bar_numer"
+reason = "call"
+detail = "calls eulerBernoulliModeNumer, which is not lifted"
+
+[[residue]]
+kappa = "5f800f9ec387ac60aacb5c731432561450f7bd7c38863998afa7c881576011fc"
+function = "verdant_wasm::exports_cold::verdant_wasm_mover_distance"
+reason = "type"
+detail = "type outside the lift: f64"
+
+[[residue]]
+kappa = "8e46e29a50a03f7e73052ba87ad9f14681c5fb2472e8595b88feac27387fd8fb"
+function = "verdant_wasm::exports_cold::verdant_wasm_mover_x"
+reason = "type"
+detail = "type outside the lift: f64"
+
+[[residue]]
+kappa = "a5c97d419df6a5450b9599384f5bfc17c75db6177c550ca2f9292db7f2558841"
+function = "verdant_wasm::exports_cold::verdant_wasm_mover_y"
+reason = "type"
+detail = "type outside the lift: f64"
+
+[[residue]]
+kappa = "ad1513bfda6bda45d5cd7649845f5dfa5a03337a27bfab53cf5b60a769ba6003"
+function = "verdant_wasm::exports_cold::verdant_wasm_mover_yaw"
+reason = "type"
+detail = "type outside the lift: f64"
+
+[[residue]]
+kappa = "7130c076c066e0abaf412b3f22a5d313ae3fc0816c2a38488f21ea6d26c36fa8"
+function = "verdant_wasm::exports_cold::verdant_wasm_mover_z"
+reason = "type"
+detail = "type outside the lift: f64"
+
+[[residue]]
+kappa = "d0b69e14e0aa6a2a1bdf27a0a3a16cc8ea81b5a1f2f2b1532bba5f30f49618e0"
+function = "verdant_wasm::exports_cold::verdant_wasm_navmesh_polygon_count"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "00e42fc3568f1caf8a2f9915053e1d77e01c3f03b9c0f4a57d6fb0b6cefaa589"
+function = "verdant_wasm::exports_cold::verdant_wasm_node_modal_hz"
+reason = "type"
+detail = "type outside the lift: f64"
+
+[[residue]]
+kappa = "60b4174b7d29833846e84810067964334baf42d8b7b6cca78dbca93d521a1b86"
+function = "verdant_wasm::exports_cold::verdant_wasm_node_preset_count"
+reason = "statements"
+detail = "the body has statements other than let"
+
+[[residue]]
+kappa = "c8af0aa9bfb18e3663aeb356c8a8abe406152c01d97dbe4e4aae9a9f8c909ac8"
+function = "verdant_wasm::exports_cold::verdant_wasm_node_x"
+reason = "type"
+detail = "type outside the lift: f64"
+
+[[residue]]
+kappa = "e1d173929c0cc54af341c2a12b5e732691232185cd87bf1150a038b6011b1e4f"
+function = "verdant_wasm::exports_cold::verdant_wasm_node_y"
+reason = "type"
+detail = "type outside the lift: f64"
+
+[[residue]]
+kappa = "7cf691e7330752c8302908968206634fc02892d1c845888a289c8c44be2bc476"
+function = "verdant_wasm::exports_cold::verdant_wasm_node_z"
+reason = "type"
+detail = "type outside the lift: f64"
+
+[[residue]]
+kappa = "37563e2d49bc0891307e36da9371b137c157decf7e58ad1bdb84736116e8113d"
+function = "verdant_wasm::exports_cold::verdant_wasm_observer_attended_slot"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "47e5f1b81eb51f3dcdd9a4ac1fcf05c72e3a7a7a277712c79c1de11c5cefbbb9"
+function = "verdant_wasm::exports_cold::verdant_wasm_observer_foveated_lod"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "2ff860940e75aa8835bb31cd323e1a18aa94f1258b43b3bf1085d186127752b0"
+function = "verdant_wasm::exports_cold::verdant_wasm_observer_gimbal_yaw_milli"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "6fd8462aaafea6ad9553738be3efb365b11c117ecc1241b22b717ae3a3d7c658"
+function = "verdant_wasm::exports_cold::verdant_wasm_observer_salience_milli"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "5ae563776d00e6fbd72c8dc812841165337a0c331a46b69c8ffea975dd5a4810"
+function = "verdant_wasm::exports_cold::verdant_wasm_observer_spike_mask"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "6240f6f1c5e9547329f1d2b0c02891f5f7b8b9d655d9d04bff438e5f25d05032"
+function = "verdant_wasm::exports_cold::verdant_wasm_pavilion_contact"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "1f8f18ed793fbae9252608a3a63ec6800f25f00f4dcc344bb3263c3e9d207f7b"
+function = "verdant_wasm::exports_cold::verdant_wasm_player_x"
+reason = "type"
+detail = "type outside the lift: f64"
+
+[[residue]]
+kappa = "53faf8823a3d508bf05a506015d2ff49c96dae833b66be9c9e21735b9942df6f"
+function = "verdant_wasm::exports_cold::verdant_wasm_player_y"
+reason = "type"
+detail = "type outside the lift: f64"
+
+[[residue]]
+kappa = "8c9d5a346ec1c18ee83e43aac5d308ac2861cbc51eded775c876de61a04682d9"
+function = "verdant_wasm::exports_cold::verdant_wasm_player_z"
+reason = "type"
+detail = "type outside the lift: f64"
+
+[[residue]]
+kappa = "e274551be5705d21c8966bc49969a2d5fc2b706f03814e69e8258de03d01f3cc"
+function = "verdant_wasm::exports_cold::verdant_wasm_render_tensor_rgba"
+reason = "type"
+detail = "type outside the lift: f64"
+
+[[residue]]
+kappa = "20947fa8d237d488553c66f0ac0c11caa22c5476991a1ff23c9c0b175b4dfee9"
+function = "verdant_wasm::exports_cold::verdant_wasm_route_prompt_io"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "fcdecd1c4e400bc5381564547d778aef95510de66d080cda87e6df34e6633e85"
+function = "verdant_wasm::exports_cold::verdant_wasm_sabine_rt60_millis"
+reason = "call"
+detail = "calls sabineRt60Millis, which is not lifted"
+
+[[residue]]
+kappa = "f08eb7daa61560d145a0760c39ad9fa52644471cf77a053c015d6e4d03c9c35f"
+function = "verdant_wasm::exports_cold::verdant_wasm_scene_col_ptr"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "a3918109b613b4854a2fe06c751d1b2519267c03174d9d6e7f45c916f918faf3"
+function = "verdant_wasm::exports_cold::verdant_wasm_scene_idx_count"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "be6d798c0b09acac7654b7b14cc4d76ee4f3b131fa390135b44800230b8fc831"
+function = "verdant_wasm::exports_cold::verdant_wasm_scene_idx_ptr"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "a9601ef6916e61c9f0635ef58fd3e36ae3ccb192ffd3b88a3eafd91271d2daf6"
+function = "verdant_wasm::exports_cold::verdant_wasm_scene_norm_ptr"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "2a9d14f9b79a8927b00353dd07a42c457a5a96652bae35e03f0cfd822b5ebeb2"
+function = "verdant_wasm::exports_cold::verdant_wasm_scene_outliner_aux"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "d2094ef1daffeba1b839abc4d5640167c1ab88792f3b00791ebef85903aff3e2"
+function = "verdant_wasm::exports_cold::verdant_wasm_scene_pos_ptr"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "19a5bf7264a3d8605bde239c2d38da4f773d5ef147647aa81b7672d3c8bbfa73"
+function = "verdant_wasm::exports_cold::verdant_wasm_scene_rebuild_buffers"
+reason = "type"
+detail = "type outside the lift: f64"
+
+[[residue]]
+kappa = "14444f1413035ab82ae182bef725925201654a030cf7fabdc55e8f89bf1191fb"
+function = "verdant_wasm::exports_cold::verdant_wasm_scene_vert_count"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "d83f62d5f823ad8f722ed184e41d9b7aefba7338d7c291d5f5cefce30b7bb635"
+function = "verdant_wasm::exports_cold::verdant_wasm_set_lod_rank"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "f865f25b0229106fd5669fc951befb0b65eea6d0e000815e27b3eef6d88d1522"
+function = "verdant_wasm::exports_cold::verdant_wasm_set_organ_grant"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "678e4fe5fa4316b8b932e6a079f8cc174345d33c5f09773e1a6154d68b58b0fa"
+function = "verdant_wasm::exports_cold::verdant_wasm_snapshot_decode_and_restore"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "c7b06a036e8dc13271ce695f93266447507b8317c627744203ccedaa7d2db17f"
+function = "verdant_wasm::exports_cold::verdant_wasm_snapshot_encode"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "460e207422032a39263e5e4059e1f7757f846735a001dff1b2c8da8993088e60"
+function = "verdant_wasm::exports_cold::verdant_wasm_snapshot_max_bytes"
+reason = "statements"
+detail = "the body has statements other than let"
+
+[[residue]]
+kappa = "7dfe069bef90994c0232063da400c70e8c076a01affbd620c0a1ef315724bf95"
+function = "verdant_wasm::exports_cold::verdant_wasm_snapshot_min_wire_bytes"
+reason = "statements"
+detail = "the body has statements other than let"
+
+[[residue]]
+kappa = "c2bfb325d2a5a65d78b03f5d7b05778fd8f1a97e8798b1efefdf559bc2d49e71"
+function = "verdant_wasm::exports_cold::verdant_wasm_static_epoch"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "f8a435b7d160d573bce92759f4c98b78fbbf03d7868a3a4d9fbbd521b1b0c896"
+function = "verdant_wasm::exports_cold::verdant_wasm_static_idx_count"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "07e7b85c18e6cca06369045fa202ff090192b1b55e3990982e5536d36cba8397"
+function = "verdant_wasm::exports_cold::verdant_wasm_static_vert_count"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "e3fe3219f565d4e2d1f35a5ea96a4e4849ce60bd78abfd89a0e73df54450e3a8"
+function = "verdant_wasm::exports_cold::verdant_wasm_step"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "1f706cff244b5dfc5496ba8fe6639d8d1e2743ce2e10f97d172036ab151e2e9b"
+function = "verdant_wasm::exports_cold::verdant_wasm_step_lawful"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "6e8c87711367b4f907a7de9e435b2faa20b1cb3b5ee23b4c7ee354d6519ded88"
+function = "verdant_wasm::exports_cold::verdant_wasm_step_observer"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "7e976c300996be7d69f0298f02cbbec0d90d0ecd9c9bcfdccda2cee3bb3816ce"
+function = "verdant_wasm::exports_cold::verdant_wasm_stitch_recover_io"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "2a098943575b976bfb7826c486c3d026d63fd50cfb6a1f5603143628a09557c7"
+function = "verdant_wasm::exports_cold::verdant_wasm_stitch_shard_io"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "5659df19825d6b376383ee59660a00686c2c33ab1a4896d440f301e7580980af"
+function = "verdant_wasm::exports_cold::verdant_wasm_story_interact_at"
+reason = "type"
+detail = "type outside the lift: f64"
+
+[[residue]]
+kappa = "f7e3873e5ba109f6fff65d15b6e59321578eed80d6c83b3a0f5b98415b0eb9e9"
+function = "verdant_wasm::exports_cold::verdant_wasm_story_state"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "cd8ef4c64bde66a10edd795e057623b2d90221295d905b346a07eb41da2ed692"
+function = "verdant_wasm::exports_cold::verdant_wasm_story_status_aux"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "1ee3127f9c161505fa331c0d0e657f4622471a752ec96ce70716ebe8f79950c6"
+function = "verdant_wasm::exports_cold::verdant_wasm_story_supply"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "53693b302c26e0301224da2feda4992e80186244834b4d00f352bbe1888345a8"
+function = "verdant_wasm::exports_cold::verdant_wasm_tensor_kernel_count"
+reason = "statements"
+detail = "the body has statements other than let"
+
+[[residue]]
+kappa = "647d50b993b2639328b46681385abdd118d633b84f5b7529c2d8c31ff86ee725"
+function = "verdant_wasm::exports_cold::verdant_wasm_terrain_height"
+reason = "type"
+detail = "type outside the lift: f64"
+
+[[residue]]
+kappa = "b69f23a40376dd2bcfafb0aa3c92ec5ee48b7a444460204aced5e57d907c9269"
+function = "verdant_wasm::exports_cold::verdant_wasm_tile_edge_pixels"
+reason = "statements"
+detail = "the body has statements other than let"
+
+[[residue]]
+kappa = "5db8b50f546107ac70ab5a0e37a0b8de7987093bef7dbd8f8bf6ad08c0d55fec"
+function = "verdant_wasm::exports_cold::verdant_wasm_unified_tensor_kernel_count"
+reason = "statements"
+detail = "the body has statements other than let"
+
+[[residue]]
+kappa = "0f62eebe386442d9f520a6bd2ddff9b373e345e03baeb3e0a92782e11c3da1a2"
+function = "verdant_wasm::exports_cold::verdant_wasm_universe_cell_x"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "22499f1586a3be6edc92804bf701a0d520d983d2e4ad1eec02b0df7e6146e0cc"
+function = "verdant_wasm::exports_cold::verdant_wasm_universe_cell_y"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "4d1646e03d8cc3d33755df016ecf21a83192eab1e4b9ea3f5991559243d834f1"
+function = "verdant_wasm::exports_cold::verdant_wasm_universe_cell_z"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "e8a9668788c97d9fbb3ed1d63d8ff8922b8b3068490f4443072aebe2bcf890fb"
+function = "verdant_wasm::exports_cold::verdant_wasm_uorc_decode_and_restore"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "b5e3507edf1327a3598733aea6b48783ad564f8c7981d348075f3e57fe164c5a"
+function = "verdant_wasm::exports_cold::verdant_wasm_verify_ui"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "8ab1ecc576656c536bde147f1cb9198c3bb549bb93c6d12a20de9f4bffdce3d6"
+function = "verdant_wasm::exports_cold::verdant_wasm_worker_ring_capacity"
+reason = "statements"
+detail = "the body has statements other than let"
+
+[[residue]]
+kappa = "5d8e0fad331eafbd19c352f49361165368166813ee8f8e21d74afd89ac4049df"
+function = "verdant_wasm::exports_uorc::verdant_wasm_aqm_benchmark_aux"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "d2e2a6d9928e05ab43971052c2b780cd4ba9ce1e6e97a9e08a3cf0892e0ad1f8"
+function = "verdant_wasm::exports_uorc::verdant_wasm_cognitive_resolution_aux"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "6b214b963675a7aec00381bfca8e782e55ee204dc392b760bc915f07c847ab05"
+function = "verdant_wasm::exports_uorc::verdant_wasm_dialogue_turn_io"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "dbf64257d8f1103d4a88ca1ff57f8fab66c5bde7217205a067ee0cf5408ba36f"
+function = "verdant_wasm::exports_uorc::verdant_wasm_edit_project_model_io"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "123f85632931589906525502edde545931fd5e7959059d6bc5e35ff7cb1cb78d"
+function = "verdant_wasm::exports_uorc::verdant_wasm_frame_stability_aux"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "f7d6746c6093a7009886b0a7ed18bccec13782be403656e62ec1a2a56fb596c8"
+function = "verdant_wasm::exports_uorc::verdant_wasm_glb_atlas_tile_count"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "7aae1640360d5028cda3b4526dc9fc5d4b25ca7e31bf7d45e27456e1e16d6bd7"
+function = "verdant_wasm::exports_uorc::verdant_wasm_glb_compose_append_io"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "0bd0a7477512930f4fbc8c169f8d4a6bffd73359536af5839416dcb45bf6fce1"
+function = "verdant_wasm::exports_uorc::verdant_wasm_glb_has_animation"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "0269ad5591ee695bff74210e6394d2a74dca44a41bad8e9eeafc6a2ac3e2a162"
+function = "verdant_wasm::exports_uorc::verdant_wasm_import_project_model_io"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "168608c145629a1edd46b8dc241909e5a383f7e653b4531393810f54971a6d07"
+function = "verdant_wasm::exports_uorc::verdant_wasm_ingest_knowledge_io"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "1342184e0dc41e632669840cdcb94ff9707902961615b62034107ef4d6cbc1e8"
+function = "verdant_wasm::exports_uorc::verdant_wasm_list_project_models_aux"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "050ea3330314aaa8d74f9b03865da841624bdc80d4d28075116d376bdb92f880"
+function = "verdant_wasm::exports_uorc::verdant_wasm_load_domain_pack"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "661812d7e61c6ab4f9a017792d7816e0c2e3967cfa9293f96de72843a0ca3d5a"
+function = "verdant_wasm::exports_uorc::verdant_wasm_observe_comm_io"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "0a45a682d6430f376f082447d33164e2f30049d3685bfd68299784e2dc346c2a"
+function = "verdant_wasm::exports_uorc::verdant_wasm_observer_roadmap_kpis_aux"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "fe3ea89acb2ef6a4236b181108a727bee725878fe54539efb9ff5890f30d11cf"
+function = "verdant_wasm::exports_uorc::verdant_wasm_observer_status_aux"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "3b3f80380f41b3e73206e5a05a2f57c25ed1dd3f8a88356d37d9fd15a78e4706"
+function = "verdant_wasm::exports_uorc::verdant_wasm_operator_prompt_io"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "4b1bfce9eebb551ac7b07c2a86ac8385249e72bb5aec171ee0a165fa1c8756b5"
+function = "verdant_wasm::exports_uorc::verdant_wasm_operator_status_aux"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "d67f0dd882a070c0d4d3ecd1b169dd4e2a6be14a878d04d3ec7359af5ce9daea"
+function = "verdant_wasm::exports_uorc::verdant_wasm_paged_workload_step_io"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "d1a7676ac8b05ee744d5a64beac93b4f46f6479a333faef8788e3215df5d8940"
+function = "verdant_wasm::exports_uorc::verdant_wasm_record_frame_time_us"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "23acdd827e178dc1f24d164504835f5ca3b37a7f6fae7ad96d0be1825033915b"
+function = "verdant_wasm::exports_uorc::verdant_wasm_record_part_hydration_io"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "a55279d711c6aa47cd068e21835dd40abe816d51c58c476e835b9e2d3f269fd0"
+function = "verdant_wasm::exports_uorc::verdant_wasm_register_stream_io"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "345e0b388df1d0278ee54476274ff15314c73ad70c033e29d68400ef99d3cf09"
+function = "verdant_wasm::exports_uorc::verdant_wasm_remove_project_model_io"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "96bf0e782a9a4db67825c5d460aeef90d5de5a34a5cafe37ab65ce608a170713"
+function = "verdant_wasm::exports_uorc::verdant_wasm_remove_stream_io"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "a64bdec52b4b4258eb7ea1573e5031128634efed285ddb2ab7edbc13e423e793"
+function = "verdant_wasm::exports_uorc::verdant_wasm_revert_project_model_io"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "7344da4b3f60b06d9e26ade64111cc3f8e9588f17c9f6b908474a8e47b3b4fae"
+function = "verdant_wasm::exports_uorc::verdant_wasm_scene_pbr_tex_height"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "0db477f7a6dd1d25bc9ba5133060e679b9ec43c4c4e1382100b16f9fe4525ded"
+function = "verdant_wasm::exports_uorc::verdant_wasm_scene_pbr_tex_ptr"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "9d89d71907fb2ea5caefa3f32427a56bb42b2ca48a9b4610c1d8b9a7dceb71b0"
+function = "verdant_wasm::exports_uorc::verdant_wasm_scene_pbr_tex_width"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "42674871d2a1730270d1ab5aa500edc5ad87c8f14885f4662fb4579edefe6f18"
+function = "verdant_wasm::exports_uorc::verdant_wasm_scene_tex_epoch"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "f0ea7a089915aeb4789ab8b461439156a14508e4704c56b1e45a05a8fb5c6776"
+function = "verdant_wasm::exports_uorc::verdant_wasm_scene_tex_height"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "572f1f2826fd7492bdb8ed0863b92f35c2366f44bfe30b232f777dfb2ef89344"
+function = "verdant_wasm::exports_uorc::verdant_wasm_scene_tex_ptr"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "8e9e581e21d762d8cfbbba38996bff4d8ba46bbf8d8f98c7427e11d3c23f1abe"
+function = "verdant_wasm::exports_uorc::verdant_wasm_scene_tex_width"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "6d12d6018d7ef58c7ce8e02af7ed2666282639ff428880e7839a7c786a42cfc2"
+function = "verdant_wasm::exports_uorc::verdant_wasm_scene_uv_ptr"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "faa493f43b7a1ddcaec51fa71c463455b583ea9595cf339ea950ecae8c79545b"
+function = "verdant_wasm::exports_uorc::verdant_wasm_set_npc_directive"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "b0f5a2ad1cbec0e873cdebdbcf6fb713a97bd8025c47023cbb6a6c98b350b4bd"
+function = "verdant_wasm::exports_uorc::verdant_wasm_stability_audit_aux"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "aa4345138818fb38abb4f7bdac9a4d0ecccc1ed1a4bb229629e0be775c75b32e"
+function = "verdant_wasm::exports_uorc::verdant_wasm_stitch_boundary_recover_io"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "204af2ed64880b50fe80e717b050bc56bbc3c3ebfcacb772821d6be5d5d41deb"
+function = "verdant_wasm::exports_uorc::verdant_wasm_stitch_boundary_seal_io"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "96fdfc110d4025acca8afd5cccfec3579f5f3231cea98d2c0ca14471bcff89de"
+function = "verdant_wasm::exports_uorc::verdant_wasm_studio_add_object"
+reason = "type"
+detail = "type outside the lift: f32"
+
+[[residue]]
+kappa = "f3c4a70fb3b52f8bd501942e32e85342b4ffd8ea2539105b6905c398e91405e6"
+function = "verdant_wasm::exports_uorc::verdant_wasm_studio_clear_objects"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "1114fa5860faa0d0407084f8d844d78ec29718a2a4c8fdf05ac58695c378914a"
+function = "verdant_wasm::exports_uorc::verdant_wasm_studio_load_blank_stage"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "ef9f49cba756a178376a8788946770abd34afd0f168dc4b59f45ea1c5edd4188"
+function = "verdant_wasm::exports_uorc::verdant_wasm_studio_objects_json_aux"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "b768567cbcbea65c219b46c1036cfdb9499445989c832ccb4e7d4e6a76258a29"
+function = "verdant_wasm::exports_uorc::verdant_wasm_studio_remove_object"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "f316b6f48429f8393e0cba2630b09e203d7d692c79050aea5bcf133f03cb0d93"
+function = "verdant_wasm::exports_uorc::verdant_wasm_studio_update_object"
+reason = "type"
+detail = "type outside the lift: f32"
+
+[[residue]]
+kappa = "6f7eed956851a4f3b71e921e1387cd101ca5dc8c68eec7dc2e8c71d0377d4c92"
+function = "verdant_wasm::exports_uorc::verdant_wasm_tensor_memory_status_aux"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "db34fce03f35f0d5b7f5e2fe132b0a3a94ad7543d5c239e4c0653fafaa044a89"
+function = "verdant_wasm::exports_uorc::verdant_wasm_tensor_paged_benchmark_aux"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "8a75574ce222afbc1af67705dd8bde70f434f2ad82e83596aec7e2dba7a9d8eb"
+function = "verdant_wasm::exports_uorc::verdant_wasm_toggle_stream_io"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "2806a4a1c35c559e38577af0fa24caf54a22f718842d725a84062b475b7086e5"
+function = "verdant_wasm::exports_uorc::verdant_wasm_uhd_cull_meshlets"
+reason = "type"
+detail = "type outside the lift: f64"
+
+[[residue]]
+kappa = "0999f24efc0f9f0dbdb91925e80374536e8a7af3df6844fc8dd3909f89acd291"
+function = "verdant_wasm::exports_uorc::verdant_wasm_uhd_lod_pyramid_aux"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "e6d32811144c1668df36c9730e0e81aecc721bbcac28b748fcfdcbaf0dd83296"
+function = "verdant_wasm::exports_uorc::verdant_wasm_uhd_profile_aux"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "0a75e5774e2afb3340442d197cf46f70de066f8a50dfa18432a377762f0e1055"
+function = "verdant_wasm::exports_uorc::verdant_wasm_uhd_visible_idx_count"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "9071df232b1760a9774488117780022409a61c5768a163b0924ea1ed7c629914"
+function = "verdant_wasm::exports_uorc::verdant_wasm_uhd_visible_idx_ptr"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "42fc2401552b5c5e4a68f299d8ba5d48f5ccfe1752ce4f928a41642c60bc5fe6"
+function = "verdant_wasm::exports_uorc::verdant_wasm_uorc_exclusive_audit_aux"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "9d085c0d7973515d3b71f5c4a63721d67764b592063eaa9706ba397e44ab6d2f"
+function = "verdant_wasm::exports_uorc::verdant_wasm_update_host_envelope"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "92a9b295874f3f64d917e2719b9ff991ce9c68ce182f27d9ffbed9a6eb55293e"
+function = "verdant_wasm::exports_uorc::verdant_wasm_update_host_envelope_uhd"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "59cf61dfe8fc6f0ef161c9af207fae1f2fb712a2181f5543e4d6ede341d3d12c"
+function = "verdant_wasm::exports_uorc::verdant_wasm_vcs_commit_and_pack_holo_io"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
+kappa = "22169935719f9b53f2350ff20b428001d702578b82356145669d734ede91cad6"
+function = "verdant_wasm::exports_uorc::verdant_wasm_workload_governor_step_aux"
+reason = "call"
+detail = "calls global_bridge, which is not lifted"
+
+[[residue]]
 kappa = "6b7bc253238deca16e711af50afc18dfe52ddf4e87360c8b5921e6430b85fb4e"
 function = "verdant_wasm::global_bridge"
 reason = "type"
@@ -7438,1056 +8430,6 @@ kappa = "15977361b68f77dc1677756260741bfd35e1a37a04aa8f1cd8a5878fd49804d1"
 function = "verdant_wasm::pk_u64"
 reason = "type"
 detail = "type outside the lift: prism_kernel::ComputeError"
-
-[[residue]]
-kappa = "949e73f823e50630e652dc607615c0f6b25cff0a52e9c681f44838fd9c8ed0a8"
-function = "verdant_wasm::verdant_wasm_active_lod_rank"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "5d05e04c22129a8a49ac99aaf2a3050ced96d9b7749cb6eb2e25e4402e5a4ebc"
-function = "verdant_wasm::verdant_wasm_active_seed"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "c09cb405e25d330c34b3a89b3248460acedc5ce8b98d67fe132586255b2c65ee"
-function = "verdant_wasm::verdant_wasm_aqm_benchmark_aux"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "c6db514833be6f255749d22e16b46b9619a1a1d6e9dbb97f91918e72b6df57c1"
-function = "verdant_wasm::verdant_wasm_audio_channels"
-reason = "call"
-detail = "calls audioStereoChannels, which is not lifted"
-
-[[residue]]
-kappa = "c22f7af50d598c51b3bb285df22e41946e1b5d8e66ccecb9a01d4f8914da5520"
-function = "verdant_wasm::verdant_wasm_audio_quantum_frames"
-reason = "call"
-detail = "calls pk_u64, which is not lifted"
-
-[[residue]]
-kappa = "4fdc6a897e87395c37b2bba1cf9075e89bebf2af18e3f648342ac889ef09bf93"
-function = "verdant_wasm::verdant_wasm_aux_len"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "f101b34ac420db6e4b4e067b5e1983d97b74160c67bd5b9bf8312751d973c419"
-function = "verdant_wasm::verdant_wasm_aux_ptr"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "796cb90bb1536348583a6e8bf715de46088abc03d75a3dc0b0d0da9bcb1a1b13"
-function = "verdant_wasm::verdant_wasm_binaural_gain"
-reason = "type"
-detail = "type outside the lift: f64"
-
-[[residue]]
-kappa = "5f4f024fa16424f72810fbd80927d55ef55516f27566aa0ed52907f8d61ede3b"
-function = "verdant_wasm::verdant_wasm_binaural_itd_micros"
-reason = "type"
-detail = "type outside the lift: f64"
-
-[[residue]]
-kappa = "f2d41f5a437b24ddc7cf840ff39f3d62272134e2380af887a8dc0f8d21141a1f"
-function = "verdant_wasm::verdant_wasm_binaural_pan"
-reason = "type"
-detail = "type outside the lift: f64"
-
-[[residue]]
-kappa = "765dc16898d07a63bb33cdc52962148b31fa1360eec70c46381b12b6b1baccf6"
-function = "verdant_wasm::verdant_wasm_bvh_visible_count"
-reason = "type"
-detail = "type outside the lift: f64"
-
-[[residue]]
-kappa = "442caeaa5133cf0fc08c9ca2cb9f8a0b06a7a6c3aa34402a0897bd483f287350"
-function = "verdant_wasm::verdant_wasm_camera_clearance_milli"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "4717cbd238cb574a9715b38d035db3c61534929a5811f13490b65d3aad1d709d"
-function = "verdant_wasm::verdant_wasm_camera_eye_x"
-reason = "type"
-detail = "type outside the lift: f64"
-
-[[residue]]
-kappa = "847317317738a5b1d4e0d04a7a99a3d1a2c7e23aa3527a832ed57339f15b002d"
-function = "verdant_wasm::verdant_wasm_camera_eye_y"
-reason = "type"
-detail = "type outside the lift: f64"
-
-[[residue]]
-kappa = "e2ef0175b62806bdcbdcb6777bcd63532956d11f2adb40e5bb3e7188af6cfac4"
-function = "verdant_wasm::verdant_wasm_camera_eye_z"
-reason = "type"
-detail = "type outside the lift: f64"
-
-[[residue]]
-kappa = "b93263e4f4170c875a94bba78c284aa7de73bdb62cc6b14cdc1f86ba97285fc8"
-function = "verdant_wasm::verdant_wasm_camera_intent"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "74a69dbfbf747c475848d601d2760f24cd6091fe09ef7b44248226132a9419be"
-function = "verdant_wasm::verdant_wasm_camera_mode"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "b1a4698c6c6cf568046d724976f87c7b76a5d2e128ba0462d9d424c74c61bed0"
-function = "verdant_wasm::verdant_wasm_camera_obstructed"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "734ccffb3c06ccb7e919289d96dea36dd57aaef8d0f419e2af61923e9ea955f0"
-function = "verdant_wasm::verdant_wasm_camera_set_anchor"
-reason = "type"
-detail = "type outside the lift: f64"
-
-[[residue]]
-kappa = "9eadaa1144fa047662a5c4ecfce10e9a447fd5730c8ea22e4561cded71e1c73c"
-function = "verdant_wasm::verdant_wasm_camera_set_mode"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "f2ad04c0a72f0942a8f7ec72969360fa4e05528c4ab3994c4c28827a2b228e89"
-function = "verdant_wasm::verdant_wasm_camera_set_pose_intent"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "180f4142f9a15e00b045a2c15e4679cf09ca0360b018060fe466313501a09621"
-function = "verdant_wasm::verdant_wasm_camera_target_x"
-reason = "type"
-detail = "type outside the lift: f64"
-
-[[residue]]
-kappa = "91c2e7c69c88e04970af642245f6235cf5e2f10d0fb918cdbdb5d7d58f99f27e"
-function = "verdant_wasm::verdant_wasm_camera_target_y"
-reason = "type"
-detail = "type outside the lift: f64"
-
-[[residue]]
-kappa = "012ebafc9756c25730498df67ae1972ced09279507937a57cfa91d9d634a2f17"
-function = "verdant_wasm::verdant_wasm_camera_target_z"
-reason = "type"
-detail = "type outside the lift: f64"
-
-[[residue]]
-kappa = "3f51cc7cf099f6fee22bd0177476bab7f37ed30bb5345fa58a426a34583282fc"
-function = "verdant_wasm::verdant_wasm_camera_yaw_milli"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "62e8c6047e36efc1ddfd6f6a302fdf5771e129a7f72853389cedb5de95029ec0"
-function = "verdant_wasm::verdant_wasm_clear_imported_glb"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "8ccdba25395ac338ef9998a440a2a53ca9da0cf1d4bad3e33e72d11cdac1a645"
-function = "verdant_wasm::verdant_wasm_coded_tier_count"
-reason = "statements"
-detail = "the body has statements other than let"
-
-[[residue]]
-kappa = "c9869f8a665aa2562b14435e238c35d10de5e94fb077119df47e6f67b1725f9a"
-function = "verdant_wasm::verdant_wasm_coded_zero_decode_checksum"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "3cc1c5120e471331a7e8bd2b2833eee63b8997ce482732a29cf730a0cf281a3f"
-function = "verdant_wasm::verdant_wasm_cognitive_resolution_aux"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "4c489800feea1d2cf1b5102e84d90ee56d7194123a5a2b04fffe1b07db779f2a"
-function = "verdant_wasm::verdant_wasm_configure_instanced_workload"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "dfb81dae19f8c8155b4a0949a8dd45159a692c636e0c68d3aa1de401d5f6ed3a"
-function = "verdant_wasm::verdant_wasm_csm_split_meters"
-reason = "type"
-detail = "type outside the lift: f64"
-
-[[residue]]
-kappa = "aad7b922bb638ec070cff7e80454c41f53a9f43f7ce8667b0d38016371785be2"
-function = "verdant_wasm::verdant_wasm_default_seed"
-reason = "call"
-detail = "calls pk_u64, which is not lifted"
-
-[[residue]]
-kappa = "8fe46e83717013dab349b79a04eb6174c839162f3159cbde4f1696d0e0132ce8"
-function = "verdant_wasm::verdant_wasm_dialogue_turn_io"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "f33ef16e7c3c29e7ce7c0a8f48b80bcb239bef8f66379d0e515c35266010de19"
-function = "verdant_wasm::verdant_wasm_dyn_col_ptr"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "79b4fbbabbfa75d0b784418b82d7b252f376b1e850c63418a16c90424b72e9e7"
-function = "verdant_wasm::verdant_wasm_dyn_idx_count"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "d6f63bb985859368c318ebe199c3c7daf134325ffe23a4e23a9c98bc117ef37c"
-function = "verdant_wasm::verdant_wasm_dyn_idx_ptr"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "a55b56d26b6b371e78a90e59ff885b6656b18851cb52f758ec56958664d41d2c"
-function = "verdant_wasm::verdant_wasm_dyn_norm_ptr"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "eb827706f27142bc5230b8c3c01566f0b0b8bc86c4937dfa57a8fe43f28fadeb"
-function = "verdant_wasm::verdant_wasm_dyn_pos_ptr"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "a861981c85808abcfb41277f8a47fb6534550dd5f8f1aedf54695d57ba8c3c9a"
-function = "verdant_wasm::verdant_wasm_dyn_vert_count"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "bfd50d06c0e877f104609b41b99ca5997f030c4d8dfeeda4bfeda9ce4a8fb89a"
-function = "verdant_wasm::verdant_wasm_edit_project_model_io"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "481c6783963d622d8da8b0f61faa0944ba8ad97e7a6501ebb4c56f3dc3131ca7"
-function = "verdant_wasm::verdant_wasm_fb_len"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "d0ef63be249b36470983b374b5c044f12e0414e7322222e44ce73bcc116a88b8"
-function = "verdant_wasm::verdant_wasm_fb_ptr"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "7c911ff9b494ccde2f72cf80df1c2d52c973de596ea3f6cf06bf81365134a5f1"
-function = "verdant_wasm::verdant_wasm_frame_stability_aux"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "5873d8587f091ef37537ba471e68692630449fc54aac2c2a11b4662a687607c8"
-function = "verdant_wasm::verdant_wasm_glb_atlas_tile_count"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "eca3664f501f96fd52b070d25035da5e1ca7380271c128f0c54ee9dacf67dd8e"
-function = "verdant_wasm::verdant_wasm_glb_compose_append_io"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "a005b31e0c8dd030295e3477a469e9c9c33287182565ce71f31c2ad74a563a28"
-function = "verdant_wasm::verdant_wasm_glb_export_aux"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "b336efa178e92c06e01398d6bb0c9144a98da1d7bf75720820442eb5b2cbcab6"
-function = "verdant_wasm::verdant_wasm_glb_has_animation"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "827b8b273d4d90a8c45c85c9997b695356e1ae035618edd22de0e7b5a0d3d175"
-function = "verdant_wasm::verdant_wasm_glb_import_io"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "fc97b60c5bb763389a0afbbfbadb3b63e8c8c5ec73763476d674a4abff5c3ca6"
-function = "verdant_wasm::verdant_wasm_governor_scale_permille"
-reason = "statements"
-detail = "the body has statements other than let"
-
-[[residue]]
-kappa = "187926c0791d62638060b58c180b8111899a6c95956eff6c54427c1e99290f67"
-function = "verdant_wasm::verdant_wasm_hd_max_lod_rank"
-reason = "call"
-detail = "calls pk_u64, which is not lifted"
-
-[[residue]]
-kappa = "dee1e3069d98ed542a9f7336b2afc09e48e0ee59c8495d45dc2dd4be8f7e78dc"
-function = "verdant_wasm::verdant_wasm_import_project_model_io"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "5573f01a5791d0bd1c865bfecc56b5a696c56d65fd7b0839366281d2b4fd23fd"
-function = "verdant_wasm::verdant_wasm_ingest_knowledge_io"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "a982ea4ee9793820a4f702ad7994623993616574dcf75820872252202c1d7d5a"
-function = "verdant_wasm::verdant_wasm_init"
-reason = "call"
-detail = "calls new, which is not lifted"
-
-[[residue]]
-kappa = "c9296b288dfdf5ba63bde8d6136be30861f9eb46402999ede2196d8fe7cb023e"
-function = "verdant_wasm::verdant_wasm_inst_count"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "50649b1b59a749b79a805e0d6bc45b9078f9c59e14f97099a6335bc72290a167"
-function = "verdant_wasm::verdant_wasm_inst_data_ptr"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "b9fbc5c70f8f0fbcf95398bb822465032741c31b2854ff8f966f0efd1b14045d"
-function = "verdant_wasm::verdant_wasm_inst_epoch"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "ba0fc277f5ac3338e6218955651418f2c2d290d5425e20e1b257b3d846556e4f"
-function = "verdant_wasm::verdant_wasm_inst_mesh_col_ptr"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "ff6723140da91be699e8171a342aae9e5f98cb3da22645a413a695a647177a1e"
-function = "verdant_wasm::verdant_wasm_inst_mesh_idx_count"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "48b0205566d7f140cc854a809b7e29312f56463e11feb77578b291c12f0f7e1c"
-function = "verdant_wasm::verdant_wasm_inst_mesh_idx_ptr"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "055403a94d3209fab685efeb86aaaeb66c8b909ee18edb4eb33efab1f0b9e3dc"
-function = "verdant_wasm::verdant_wasm_inst_mesh_norm_ptr"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "c51d20afc013a3ecd7464ee0e01b0955fa938f6dc542314d63071d865bcfcd8f"
-function = "verdant_wasm::verdant_wasm_inst_mesh_pos_ptr"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "7509882044d04c8693d69bc3635a01d646d680db44715b781a9213715ca05720"
-function = "verdant_wasm::verdant_wasm_inst_mesh_vert_count"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "5f2b91d79aa987f998ee9b85a8b32e1bf42edbe06356396114bdb526e3fad4dd"
-function = "verdant_wasm::verdant_wasm_io_clear"
-reason = "form"
-detail = "expression form outside the lift: if without else"
-
-[[residue]]
-kappa = "1e221fa716924a589ede1a70abdaa40d3d681fc4b2a6863687f1b716c429059d"
-function = "verdant_wasm::verdant_wasm_io_get_byte"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "90da8f982cca1e847f14d6097d9443470f3c086cbb1ad251a11165420a8d0179"
-function = "verdant_wasm::verdant_wasm_io_len"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "e27263fdd0fce9d6112a0d2414926f4d6fd5fa20b88cfd4444df4b76ff1629fd"
-function = "verdant_wasm::verdant_wasm_io_ptr"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "17647244a2905745934375608f552e73d1fe73dbac3a9ef6cf4df5c67637e6b3"
-function = "verdant_wasm::verdant_wasm_io_push_byte"
-reason = "form"
-detail = "expression form outside the lift: if without else"
-
-[[residue]]
-kappa = "3f3f2716a5e31d7ca06e4d1dc3ae33186137c9637c64314091540342ea5f87d1"
-function = "verdant_wasm::verdant_wasm_io_resize"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "5b62b72a59aae737ccecce5120f4248db11a0a37c28c196d329e797cd7055b0a"
-function = "verdant_wasm::verdant_wasm_list_project_models_aux"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "c1e936e1af9c5937e293deeea0cf841281cf1775a318c80a8662501413320600"
-function = "verdant_wasm::verdant_wasm_load_domain_pack"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "9a5df35dff0a010b54591b6eff49a28b7ed9712178d06df19460537460a822d0"
-function = "verdant_wasm::verdant_wasm_max_lod_rank"
-reason = "call"
-detail = "calls wasmMaxLodRank, which is not lifted"
-
-[[residue]]
-kappa = "c674662c2ac1fe54729c27b638b8ced30eccee23ec27895b68914ab72de9b5e7"
-function = "verdant_wasm::verdant_wasm_modal_bar_denom"
-reason = "call"
-detail = "calls eulerBernoulliModeDenom, which is not lifted"
-
-[[residue]]
-kappa = "4824e310e274ba3ea6197263f9e9d3e6d55f544396cd8a4598f84e9e17bcb7fe"
-function = "verdant_wasm::verdant_wasm_modal_bar_numer"
-reason = "call"
-detail = "calls eulerBernoulliModeNumer, which is not lifted"
-
-[[residue]]
-kappa = "18e6f9a50a353e44fa495a53f23d3984834ecdb664acfae13ee787b08ddaa2bf"
-function = "verdant_wasm::verdant_wasm_mover_distance"
-reason = "type"
-detail = "type outside the lift: f64"
-
-[[residue]]
-kappa = "d81866bc2c3dae0dc496e621e9b9e6ee75c30b6f6943a0cfd5b49ebc7b029031"
-function = "verdant_wasm::verdant_wasm_mover_x"
-reason = "type"
-detail = "type outside the lift: f64"
-
-[[residue]]
-kappa = "5fd52ff288c93a9c9556d7aae1c379106e42e5e189cc61d7c73da8ced06e2967"
-function = "verdant_wasm::verdant_wasm_mover_y"
-reason = "type"
-detail = "type outside the lift: f64"
-
-[[residue]]
-kappa = "74b5e610a3185c58a9aeab250b2db93dd5970b1b5ce9d9b11375b4ea61e45f73"
-function = "verdant_wasm::verdant_wasm_mover_yaw"
-reason = "type"
-detail = "type outside the lift: f64"
-
-[[residue]]
-kappa = "45a52415abc3310f1f5db451afa2a031be4ffcd95d3cc3b4dffb7d6c51f14872"
-function = "verdant_wasm::verdant_wasm_mover_z"
-reason = "type"
-detail = "type outside the lift: f64"
-
-[[residue]]
-kappa = "45393bcb869fac7eb765850c821f333ebe315a2c4e1a9c7536ea0b09d677852c"
-function = "verdant_wasm::verdant_wasm_navmesh_polygon_count"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "e39640dd439e102e4616fb755c6ebe722443f16cfc947bac636e0850c4f4d06a"
-function = "verdant_wasm::verdant_wasm_node_modal_hz"
-reason = "type"
-detail = "type outside the lift: f64"
-
-[[residue]]
-kappa = "7f875d22cd88aa56285a77f58c5e0ac5b4c5f1dcba5ae4975514ed682b5d2882"
-function = "verdant_wasm::verdant_wasm_node_preset_count"
-reason = "statements"
-detail = "the body has statements other than let"
-
-[[residue]]
-kappa = "774f740ab83be82006ee2bd76a52b0315df13879a74ff8224e34782e631cb789"
-function = "verdant_wasm::verdant_wasm_node_x"
-reason = "type"
-detail = "type outside the lift: f64"
-
-[[residue]]
-kappa = "303ad5650239977e5370db3a70f86580d994a414da6846d9757a0cec3249ae7a"
-function = "verdant_wasm::verdant_wasm_node_y"
-reason = "type"
-detail = "type outside the lift: f64"
-
-[[residue]]
-kappa = "9ceead26f470207c2ed0cc1ab81dd079cc67cafb47725263840f430c5ad503d7"
-function = "verdant_wasm::verdant_wasm_node_z"
-reason = "type"
-detail = "type outside the lift: f64"
-
-[[residue]]
-kappa = "ba2b147badb37feeddfa46bdf923f5410a7510cfa8b70082f062f3906679b332"
-function = "verdant_wasm::verdant_wasm_observe_comm_io"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "7b61804f63b532f20621137339c4fefd1f01b51dc5feb75e7a9b4d79844fd853"
-function = "verdant_wasm::verdant_wasm_observer_attended_slot"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "2e77253463b993ad043bd53b6ce18af5dc1457d889500e00beae95c51e2d9309"
-function = "verdant_wasm::verdant_wasm_observer_foveated_lod"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "29c32e5d913681c2c6c9e6003d3f39ea5f166867e1151ec19c0e7fb776c95c24"
-function = "verdant_wasm::verdant_wasm_observer_gimbal_yaw_milli"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "80dfd7a3d70e4f098a5a0170fe77ec26bb547ab7b5d1d659a9c996ec2bdcefa1"
-function = "verdant_wasm::verdant_wasm_observer_roadmap_kpis_aux"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "1288042b484592de2b495ade4429033dd366efd620c5daef40beb291c348a849"
-function = "verdant_wasm::verdant_wasm_observer_salience_milli"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "4a47adc12217ae107b7c5ac536486837822d752a7faf782c9dca5773bd18b550"
-function = "verdant_wasm::verdant_wasm_observer_spike_mask"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "f092b55b2c79eb0271802b6dd821b2501ed5a1165ed9e71f60d5b2de9532eb9e"
-function = "verdant_wasm::verdant_wasm_observer_status_aux"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "bb8eae77f5e73f7ec72d6b62838f09f36887145ae566e2872fa8a527cc808676"
-function = "verdant_wasm::verdant_wasm_operator_prompt_io"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "f1d7a6d6c90f518a4d0c505d589cf174e251b976807f7d4d78111bad3d15f960"
-function = "verdant_wasm::verdant_wasm_operator_status_aux"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "fbb44093ab14ddd4d20cf8d7f9f157a268f62d514f4386f33190631921ed87e0"
-function = "verdant_wasm::verdant_wasm_paged_workload_step_io"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "85952f3bf2e879ec5e60e66f943be25cedda2fab23c90b5e88f1be031a956b51"
-function = "verdant_wasm::verdant_wasm_pavilion_contact"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "4eaa66bea9ff85ab720137cd2ad8c5d666eac389d27fb2d55dd6c23b9b8bf436"
-function = "verdant_wasm::verdant_wasm_player_x"
-reason = "type"
-detail = "type outside the lift: f64"
-
-[[residue]]
-kappa = "005a6089bfa57cd8882338c33abaf48413a0534e426385cbdb5dd720910787df"
-function = "verdant_wasm::verdant_wasm_player_y"
-reason = "type"
-detail = "type outside the lift: f64"
-
-[[residue]]
-kappa = "891eec3e691e59019db13739581759929250f832a7afd603d22f01364016cc7b"
-function = "verdant_wasm::verdant_wasm_player_z"
-reason = "type"
-detail = "type outside the lift: f64"
-
-[[residue]]
-kappa = "f636ddf98df731106e6185b7897198cd66141682334f1fdbab5034043ae42806"
-function = "verdant_wasm::verdant_wasm_record_frame_time_us"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "5bc02e82d74d2380f2935aabd89766dcace102f63a6419b0770d16e599ec5877"
-function = "verdant_wasm::verdant_wasm_record_part_hydration_io"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "499c6a361235693eaaa17b8a22f570cebe399eb8ab1dfa90ff9bce5d94b34c06"
-function = "verdant_wasm::verdant_wasm_register_stream_io"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "ec9f2829568a511ce9f7ebee5a05c3cdeab2bc0d7fdc97bfaee73fe236e7da8b"
-function = "verdant_wasm::verdant_wasm_remove_project_model_io"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "bd27bf18a4f2d1c8f03f614d2b9cd0b5ae543b0efbf0e5a301a139cc5a9bd04d"
-function = "verdant_wasm::verdant_wasm_remove_stream_io"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "5ad35a6ac689b2c7edab3fccab992f70b1a3983d42e1809427d4dcfca28a7480"
-function = "verdant_wasm::verdant_wasm_render_tensor_rgba"
-reason = "type"
-detail = "type outside the lift: f64"
-
-[[residue]]
-kappa = "18e601571bb22b87c1b037a5dfde6cebe44e2e0a1390697b1e7d35230d541030"
-function = "verdant_wasm::verdant_wasm_revert_project_model_io"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "1690d0e00da4f118c3f1b4dc4d01dbfe437da9f8c9d1545bd912dfef0b05eb01"
-function = "verdant_wasm::verdant_wasm_route_prompt_io"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "746f214f8844e6bf740a9a5d4524e026133876cabce2f5e6d8cdd4316ac0e144"
-function = "verdant_wasm::verdant_wasm_sabine_rt60_millis"
-reason = "call"
-detail = "calls sabineRt60Millis, which is not lifted"
-
-[[residue]]
-kappa = "2e1caa6c84a7a3a191d929c05389a25618a239b8be170628c43b5ecc344942cc"
-function = "verdant_wasm::verdant_wasm_scene_col_ptr"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "404ac023d22274a8ea297e18bb98901e04e9a30ace8a029e9cd53fdd469ad544"
-function = "verdant_wasm::verdant_wasm_scene_idx_count"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "a59ccafb390f6dac7de5dba73db53fb044fb5c303d732e2d75e6e3025298b69d"
-function = "verdant_wasm::verdant_wasm_scene_idx_ptr"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "59203ed68e25b06e792d590f221be60a1ab58901e271cdef48164b8e7b4da964"
-function = "verdant_wasm::verdant_wasm_scene_norm_ptr"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "92c355c78b96675d47cc6ea37260afd91203802877b92111ed945be8f226668f"
-function = "verdant_wasm::verdant_wasm_scene_outliner_aux"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "8a6eb7f611c72d66ed2f23dc1eae046a56eaa12318f04a464412e2dafd1ce8b4"
-function = "verdant_wasm::verdant_wasm_scene_pbr_tex_height"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "54fb4c67f08b3b80b44de66148e22e468e19f7c6f15bc6eef1998ba2d7a20705"
-function = "verdant_wasm::verdant_wasm_scene_pbr_tex_ptr"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "901e66cb0b0051011d5e10a24306998d48dfb79926aa881aead5eb502f63436d"
-function = "verdant_wasm::verdant_wasm_scene_pbr_tex_width"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "712ba5e9af7cf6b4040c2edd6cc066d758366239cc7990ea9f2595d97526d5f4"
-function = "verdant_wasm::verdant_wasm_scene_pos_ptr"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "794331b86d2aa54219a88928d4e0707c2975ba0409ec2469042e98e1bbfee07f"
-function = "verdant_wasm::verdant_wasm_scene_rebuild_buffers"
-reason = "type"
-detail = "type outside the lift: f64"
-
-[[residue]]
-kappa = "3725c53a5a0e879a1c403a3c5b532c971415e35dca327f6cd938332e8da32eec"
-function = "verdant_wasm::verdant_wasm_scene_tex_epoch"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "a53e36b496f0759c3d11ccd3d5cd351aa352656650b11ca8b1ddcd05cc1935dc"
-function = "verdant_wasm::verdant_wasm_scene_tex_height"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "35fe225660c935d6176b3305b76280312ffd5f91bdd6487e1f77e1a98359ab0a"
-function = "verdant_wasm::verdant_wasm_scene_tex_ptr"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "ef166e89e14e3122180a1251b89d7b45980c8874b41f865609ff5cfc8ba15306"
-function = "verdant_wasm::verdant_wasm_scene_tex_width"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "6573664d611b1c9c59173dcbb4739706c7cbb29f9c38ead526f971b43af5c5cc"
-function = "verdant_wasm::verdant_wasm_scene_uv_ptr"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "0da4a5e2d514ecce3b6dc00be510c770a8e13cf23f9f3f6e4e9ab82bcf76a992"
-function = "verdant_wasm::verdant_wasm_scene_vert_count"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "30521bbef10f7a343752941b43f67e489c8a0f3fa0ff4d1f6192ffbe32fbaa37"
-function = "verdant_wasm::verdant_wasm_set_lod_rank"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "344e07304d05eb8ec235439192e975e9be45f2c7deb1a3f6f917a58536d26e08"
-function = "verdant_wasm::verdant_wasm_set_npc_directive"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "1f44ffa3933bf86ad30cd3f34c4279adac2b7773017775a31206297637623f42"
-function = "verdant_wasm::verdant_wasm_set_organ_grant"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "cb07e8a0d1917e86da8d4f526cdc651c70e9ac6498130136ed31c344bb5c3461"
-function = "verdant_wasm::verdant_wasm_snapshot_decode_and_restore"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "4924ad7ebaf5b38429781ab7e018a96831187779d841a6b09061c43d1a6eb0a7"
-function = "verdant_wasm::verdant_wasm_snapshot_encode"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "3a11ab0f4e33930f526ad81baae9bba09f5999d674406ab43d485b6e00c1c390"
-function = "verdant_wasm::verdant_wasm_snapshot_max_bytes"
-reason = "statements"
-detail = "the body has statements other than let"
-
-[[residue]]
-kappa = "75b587e682b4857cb2ec4885fa4fb78800dc701bb112438e968eaacb9ba09d2b"
-function = "verdant_wasm::verdant_wasm_snapshot_min_wire_bytes"
-reason = "statements"
-detail = "the body has statements other than let"
-
-[[residue]]
-kappa = "6da8aeb0501699a680c955261631a745538c4640bdf42c79e17f11ee8a60e02d"
-function = "verdant_wasm::verdant_wasm_stability_audit_aux"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "440133ce9156306207c6d5cb5346d2f98cdacc2d55a36eec028a02275b775cf6"
-function = "verdant_wasm::verdant_wasm_static_epoch"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "3a61830d455eef91190b9254a9d68abb1a6710d3160c6eb575bebc45d99a35de"
-function = "verdant_wasm::verdant_wasm_static_idx_count"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "e89584f1905b3f9ed9cfaa3dd64c1182f2dc4fa9dd4ee56f142f2e424b91dd2b"
-function = "verdant_wasm::verdant_wasm_static_vert_count"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "09cc0c78a799813ae8200be66eca6db4ab8e5cbc6f9bf1956f8497e5f2bab7ac"
-function = "verdant_wasm::verdant_wasm_step"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "b69f9e1270dc33b9d58e6fff9898d64078cc5316cb5d20acd86ce850f7d45388"
-function = "verdant_wasm::verdant_wasm_step_lawful"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "c7b51ea95e2087e2f86eab33adb8fc73ae3fed5533f0feb3a0198ba38749225f"
-function = "verdant_wasm::verdant_wasm_step_observer"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "579ecc972c1ae93272eac81ef9f1706ad27a103457abf3f39bdeee900a902a2c"
-function = "verdant_wasm::verdant_wasm_stitch_boundary_recover_io"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "0ae816d2856a0b9694a828321235f19c3f1fd27d00a3778dfc603c67ad4996ce"
-function = "verdant_wasm::verdant_wasm_stitch_boundary_seal_io"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "f39fc73ecf30872573313d1a9985a763d084aff962b04c21c312c5fe42384361"
-function = "verdant_wasm::verdant_wasm_stitch_recover_io"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "49af234bf1d6aee618f85060194fa03a963fc23531585d4ad865012ada276468"
-function = "verdant_wasm::verdant_wasm_stitch_shard_io"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "fddde6162109bf96abfc13d0c1e7ccd7bf07606e7a0610e2c8c25f327ebfea27"
-function = "verdant_wasm::verdant_wasm_story_interact_at"
-reason = "type"
-detail = "type outside the lift: f64"
-
-[[residue]]
-kappa = "b19e453033ed7d9e3801557457342337a4d5d24e0589885e6a97994ad15c26f5"
-function = "verdant_wasm::verdant_wasm_story_state"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "a9464f490157ea3f9f1862f2db8f970e64b5a56c29d669c85be71fd1b9a43f92"
-function = "verdant_wasm::verdant_wasm_story_status_aux"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "8a50230dd2c97a7145be1a10d09d6667d7ee3395761beb83a72cb83d78937d12"
-function = "verdant_wasm::verdant_wasm_story_supply"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "8dba6186338b6269fa1a2e2dff6f6ead0c2ac02e64f7eaba05777da216fea134"
-function = "verdant_wasm::verdant_wasm_studio_add_object"
-reason = "type"
-detail = "type outside the lift: f32"
-
-[[residue]]
-kappa = "300493fd200f50cb78ba15d1fcc968e258a1c6b71bec751f3b1673e43ce8d9ad"
-function = "verdant_wasm::verdant_wasm_studio_clear_objects"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "63cb8d30901f8df6eb6768b123fffb089a9b8b11e58dbcca502c640c845d7380"
-function = "verdant_wasm::verdant_wasm_studio_load_blank_stage"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "85123f8a36055d165d2260907e4abad705521e03a12f979152027115ab1251de"
-function = "verdant_wasm::verdant_wasm_studio_objects_json_aux"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "f5aef426ff56b10ed4733a41a4999660f1d46ee90ea5d674ddb3cd54e243c299"
-function = "verdant_wasm::verdant_wasm_studio_remove_object"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "85b78a1e2e37956ef2457875a98d8e3c7f0b78ce91a676ba2f6823263a95c79a"
-function = "verdant_wasm::verdant_wasm_studio_update_object"
-reason = "type"
-detail = "type outside the lift: f32"
-
-[[residue]]
-kappa = "e178857e66e3d6928fda22dcd5786ca8c15e726bb6aaa265d016f8b31608638b"
-function = "verdant_wasm::verdant_wasm_tensor_kernel_count"
-reason = "statements"
-detail = "the body has statements other than let"
-
-[[residue]]
-kappa = "348995e5b8d7a0dcfb53aa1aea92438d0702fe9d3c1e98bef92b3d7aa29b491e"
-function = "verdant_wasm::verdant_wasm_tensor_memory_status_aux"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "66e7da60d5abdd8c7feefaccfe782ba1d40374f205e89ffd612ee60c04312347"
-function = "verdant_wasm::verdant_wasm_tensor_paged_benchmark_aux"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "7d855eb0ee5efb0a1267dcf5bc9521cae29aea477742b34e804a8f4ae3f5a132"
-function = "verdant_wasm::verdant_wasm_terrain_height"
-reason = "type"
-detail = "type outside the lift: f64"
-
-[[residue]]
-kappa = "abafd583c2ef18168e4db0e25ef88f031db3a8f26d00926d02d9be5254e0bdb0"
-function = "verdant_wasm::verdant_wasm_tile_edge_pixels"
-reason = "statements"
-detail = "the body has statements other than let"
-
-[[residue]]
-kappa = "28fae2b205fd8cc1cc14b4be16484fd6577f8a6927eb0e35bdc6646cc060a16f"
-function = "verdant_wasm::verdant_wasm_toggle_stream_io"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "8456db9ae842dd425a06ca0954d4dbbe32357ae4a499326d0372ca4b96751f02"
-function = "verdant_wasm::verdant_wasm_uhd_cull_meshlets"
-reason = "type"
-detail = "type outside the lift: f64"
-
-[[residue]]
-kappa = "878e3b3deed3a9b6eb7a484279701e33cf71b7fcb562558123c42e81ee7ab0fb"
-function = "verdant_wasm::verdant_wasm_uhd_lod_pyramid_aux"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "ec8a2a3fe4d06c92c2a62a6ff8ea5dbe42717f855155d881a41d6917049d5da0"
-function = "verdant_wasm::verdant_wasm_uhd_profile_aux"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "c1770331635e196104fc7ff8fc3f36061785db0ee3c40782cc47e94cf3a7cdf0"
-function = "verdant_wasm::verdant_wasm_uhd_visible_idx_count"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "23f120b112ca16eca3a74d2d2365686bb130045c9d9810451229f7a25dac8bac"
-function = "verdant_wasm::verdant_wasm_uhd_visible_idx_ptr"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "a5cddb8c5ac9dbacd47d3e9697903d3597f3489a74c73a6b76929840b84fd9b7"
-function = "verdant_wasm::verdant_wasm_unified_tensor_kernel_count"
-reason = "statements"
-detail = "the body has statements other than let"
-
-[[residue]]
-kappa = "1fdf9c6688af5e19cca60565ca059e8fde6c5cd4799daf86a0378ebdd0db78f1"
-function = "verdant_wasm::verdant_wasm_universe_cell_x"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "a308306809741f17526ee7c6016ab7feb74b7fa004cb6900da66305de8582eaf"
-function = "verdant_wasm::verdant_wasm_universe_cell_y"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "1f39ea321d9ffe30941008d0a575f77cb8866ab2a2ad4597b408469ce17dbebd"
-function = "verdant_wasm::verdant_wasm_universe_cell_z"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "90465423ff01fa0c8c763b40862b3dc346dffd669f9b6bb43498a46702d44df4"
-function = "verdant_wasm::verdant_wasm_uorc_decode_and_restore"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "6380381944b359f7008798182ba4e3cc1adf84858061bd4267ff18e99191dd15"
-function = "verdant_wasm::verdant_wasm_uorc_exclusive_audit_aux"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "11152d9d0adcae1b85e338afea0e8cf78f602c07ae1f78ee18a248da945ecf05"
-function = "verdant_wasm::verdant_wasm_update_host_envelope"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "24b65617bba4881b5591baee879bb6f673358733a61d24448c737233cfeefa1f"
-function = "verdant_wasm::verdant_wasm_update_host_envelope_uhd"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "60710ee59b8620798fe018b0f4c04abb34e2b13984664bd18252bed5bd4f4b49"
-function = "verdant_wasm::verdant_wasm_vcs_commit_and_pack_holo_io"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "18e89f636abd36db292c5c93b578e77633332954b269c2818906ee879cacf97d"
-function = "verdant_wasm::verdant_wasm_verify_ui"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
-
-[[residue]]
-kappa = "a70bf8d3da01f60f7be2072f5a161cf9a2e0e16c46b772942b2fb9bacdb2f248"
-function = "verdant_wasm::verdant_wasm_worker_ring_capacity"
-reason = "statements"
-detail = "the body has statements other than let"
-
-[[residue]]
-kappa = "08b141aac41bc16d6e0af0a23c5a32b7c480ef56ac05fd1df42782c85ed8c755"
-function = "verdant_wasm::verdant_wasm_workload_governor_step_aux"
-reason = "call"
-detail = "calls global_bridge, which is not lifted"
 
 [[residue]]
 kappa = "144be536cd1b2e3e2af8c52d3ee25bd06ceeedf5752a471e096ebd94ecc76aa6"
@@ -8572,7 +8514,7 @@ function = "verdant_core::gltf_io::import_gltf_node_recursive"
 detail = "takes or returns gltf::Node<'_>, a type of the gltf crate with no LexLean model"
 
 [[foreign]]
-kappa = "f2e70a67e92b23a166fede6908c994368e69bb188a72ee63675a465b3900cfe9"
+kappa = "e926d51c3ebd6cec6667deafc48fe63ed9e59e5f315d2889b62cda2ec74417a2"
 function = "verdant_core::gltf_io::pack_json_and_bin_into_glb"
 detail = "takes or returns serde_json::Value, a type of the serde_json crate with no LexLean model"
 
@@ -8817,7 +8759,7 @@ function = "verdant_core::operator::VerdantOperatorChannel::session_history_json
 detail = "takes or returns VerdantOperatorChannel.observer: ObserverPrismHolon.organs: ObserverOrganModel.schema_org_jsonld: serde_json::Value, a type of the serde_json crate with no LexLean model"
 
 [[foreign]]
-kappa = "bdd3c845dc5cbb09902a30714caf10aaf87ad5efa951cb5accc13ddc1c698660"
+kappa = "49c6fdb9b27a219f1fd3f110defd845d86e689c8172190499c8b281511eed45a"
 function = "verdant_core::operator::VerdantOperatorChannel::status_json"
 detail = "takes or returns VerdantOperatorChannel.observer: ObserverPrismHolon.organs: ObserverOrganModel.schema_org_jsonld: serde_json::Value, a type of the serde_json crate with no LexLean model"
 
@@ -8827,12 +8769,12 @@ function = "verdant_core::operator::VerdantOperatorChannel::submit_directive"
 detail = "takes or returns VerdantOperatorChannel.observer: ObserverPrismHolon.organs: ObserverOrganModel.schema_org_jsonld: serde_json::Value, a type of the serde_json crate with no LexLean model"
 
 [[foreign]]
-kappa = "b9eaabe3c2e06cbca9f6aa36b4e3c5ff5034d86232b0b944e5efd56f75d45999"
+kappa = "dd53db518ae7e0a7eab2c53acb43a2890b4d7d4eec71cd89e78c4f3d288fe08a"
 function = "verdant_core::operator::VerdantOperatorChannel::submit_raw_directive_json"
 detail = "takes or returns VerdantOperatorChannel.observer: ObserverPrismHolon.organs: ObserverOrganModel.schema_org_jsonld: serde_json::Value, a type of the serde_json crate with no LexLean model"
 
 [[foreign]]
-kappa = "fa15daa52f8a714d5f87111d850a698f2b7de83ac4ff6318550164a35930053a"
+kappa = "ec9be2bc9610fc56a736ebe025de89c2074bedd1da744c6ec21dd0db4b7e079e"
 function = "verdant_core::operator::VerdantOperatorChannel::synthesize_embedded_roadmap_kpis_json"
 detail = "takes or returns VerdantOperatorChannel.observer: ObserverPrismHolon.organs: ObserverOrganModel.schema_org_jsonld: serde_json::Value, a type of the serde_json crate with no LexLean model"
 
@@ -9057,11 +8999,6 @@ function = "verdant_core::operator::VerdantOperatorChannel::apply_directive"
 effect = "calls verdant_core::operator::VerdantOperatorChannel::audit_repository, which performs a Fs effect: Path::is_file"
 
 [[effect]]
-kappa = "9ee5f9ace634b808fce33ddbcf556572dec0f6fbc1b06a8135f9f55ef4f6df2f"
-function = "verdant_core::operator::VerdantOperatorChannel::audit_blank_frame_invariants"
-effect = "calls verdant_core::operator::VerdantOperatorChannel::collect_tree_matching, which performs a Fs effect: std::fs::read_dir"
-
-[[effect]]
 kappa = "e32c4ef17f7c4cd835c8a7160d4dfc920ac825b314cc088f6786ac348c4714f5"
 function = "verdant_core::operator::VerdantOperatorChannel::audit_repository"
 effect = "Fs effect: Path::is_file"
@@ -9072,18 +9009,8 @@ function = "verdant_core::operator::VerdantOperatorChannel::audit_repository_jso
 effect = "calls verdant_core::operator::VerdantOperatorChannel::audit_repository, which performs a Fs effect: Path::is_file"
 
 [[effect]]
-kappa = "2b2c48db166037ecfca92748ca880655ebff36b48fd7e052f520095387687b45"
-function = "verdant_core::operator::VerdantOperatorChannel::bootstrap_next_release_from_source_shards"
-effect = "Fs effect: std::fs::read"
-
-[[effect]]
 kappa = "a2f9377f5736fcf85e503f1b0090a528b1e01fd9e30d04711c68618a360c4c78"
 function = "verdant_core::operator::VerdantOperatorChannel::collect_distilled_site_tree"
-effect = "Fs effect: std::fs::read_dir"
-
-[[effect]]
-kappa = "60a26ab7749250a2ba3bf5af289c501b0abed0734f42a3170d1a66e49bf3cd58"
-function = "verdant_core::operator::VerdantOperatorChannel::collect_tree_matching"
 effect = "Fs effect: std::fs::read_dir"
 
 [[effect]]
@@ -9097,24 +9024,9 @@ function = "verdant_core::operator::VerdantOperatorChannel::evaluate_observer_ro
 effect = "calls verdant_core::governance::RoadmapKpiManager::evaluate_repo, which performs a Fs effect: std::fs::read_to_string"
 
 [[effect]]
-kappa = "3d655d0886f2c241ba8904e622f1a6167c59bb28ff337398f4f1ff7f55c1b303"
-function = "verdant_core::operator::VerdantOperatorChannel::execute_autonomous_ratchet_lift"
-effect = "Fs effect: std::fs::read"
-
-[[effect]]
-kappa = "5a11409a23c2940ebba303db750f740f858dd0f6ff1f0e6052fd05f70933f33e"
-function = "verdant_core::operator::VerdantOperatorChannel::handle_mcp_jsonrpc_line"
-effect = "Fs effect: std::fs::read"
-
-[[effect]]
 kappa = "a02f3d0d05e66696f2835220485594b522a41af784d610f9743789363e3a1732"
 function = "verdant_core::operator::VerdantOperatorChannel::handle_session_rpc_line"
 effect = "calls verdant_core::operator::VerdantOperatorChannel::audit_repository, which performs a Fs effect: Path::is_file"
-
-[[effect]]
-kappa = "07772240ef910ff61440d1318c3f012e771df469a8d98d4e5dc3b21cd40b2d70"
-function = "verdant_core::operator::VerdantOperatorChannel::lift_full_workspace_into_vcs"
-effect = "Fs effect: std::fs::read"
 
 [[effect]]
 kappa = "e253c4165ac5260b8810fd243cc12745de2c634131fb6a1a28cd5b7fed9b3bcc"
@@ -9132,11 +9044,6 @@ function = "verdant_core::operator::VerdantOperatorChannel::mutate_owned_file"
 effect = "Fs effect: std::fs::read"
 
 [[effect]]
-kappa = "21c9bce271874ced3d899e689f7d3d0e1434f9af24f25320001cb460f29fe8f8"
-function = "verdant_core::operator::VerdantOperatorChannel::pack_repo_release_capsule"
-effect = "Fs effect: std::fs::create_dir_all"
-
-[[effect]]
 kappa = "698d06c6c05a5da2269ef22858eeb74d3da31720635cbe85fa63ea1d72c449ec"
 function = "verdant_core::operator::VerdantOperatorChannel::publish_app_to_repo_catalog"
 effect = "Fs effect: std::fs::read_to_string"
@@ -9147,24 +9054,59 @@ function = "verdant_core::operator::VerdantOperatorChannel::seal_repository_view
 effect = "Fs effect: std::fs::read"
 
 [[effect]]
-kappa = "346a93dca3bd455d5e17a2f05e337f0b0564ddcdc19f711183fcedaac685f811"
-function = "verdant_core::operator::VerdantOperatorChannel::sync_workspace_cargo_version"
-effect = "Fs effect: std::fs::read_to_string"
-
-[[effect]]
 kappa = "bb1263e9d8d8173516d11e297adba3a2219f7cfb2a29c29c03b07cca65be1ef8"
 function = "verdant_core::operator::VerdantOperatorChannel::verify_immutability_seal"
-effect = "Fs effect: std::fs::read_to_string"
-
-[[effect]]
-kappa = "9a618e925b8f1ceb951761e274e353ef764f87323c81969eeb3e4bf3f304ef1f"
-function = "verdant_core::operator::VerdantOperatorChannel::verify_release_dir"
 effect = "Fs effect: std::fs::read_to_string"
 
 [[effect]]
 kappa = "cdc06fc953d121461dc3cfb3c52cd962db8e34ddbe61565d165a1134d3959e77"
 function = "verdant_core::operator::VerdantOperatorChannel::write_manager_file"
 effect = "Fs effect: std::fs::create_dir_all"
+
+[[effect]]
+kappa = "471b5af28b23f866d8ef55a12b2da0a3907f3156b32b3f150fde8bc5c44b6758"
+function = "verdant_core::operator_mcp::VerdantOperatorChannel::handle_mcp_jsonrpc_line"
+effect = "Fs effect: std::fs::read"
+
+[[effect]]
+kappa = "bd562d31221cb3b7bb9e8b96c726f7f926231e52275ab5ab1a2c0500710c8068"
+function = "verdant_core::operator_release::VerdantOperatorChannel::audit_blank_frame_invariants"
+effect = "calls verdant_core::operator_release::VerdantOperatorChannel::collect_tree_matching, which performs a Fs effect: std::fs::read_dir"
+
+[[effect]]
+kappa = "fa41edc1f4fdb9313749fef16808b1905dcf4002a8b93216b1bbd41a56487885"
+function = "verdant_core::operator_release::VerdantOperatorChannel::bootstrap_next_release_from_source_shards"
+effect = "Fs effect: std::fs::read"
+
+[[effect]]
+kappa = "05b3bbe1cc5aee8603b95a49b109ba309171230d983f6aacdaae68dfbf6d5ce4"
+function = "verdant_core::operator_release::VerdantOperatorChannel::collect_tree_matching"
+effect = "Fs effect: std::fs::read_dir"
+
+[[effect]]
+kappa = "a60ca45e933b8d03548a3d25e90cada0b8011a3386e706ed98caca05aa7fc6e1"
+function = "verdant_core::operator_release::VerdantOperatorChannel::execute_autonomous_ratchet_lift"
+effect = "Fs effect: std::fs::read"
+
+[[effect]]
+kappa = "459294974fb7fc13330afa2793bed76a83a842cc7154b8b7947d40b865598794"
+function = "verdant_core::operator_release::VerdantOperatorChannel::lift_full_workspace_into_vcs"
+effect = "Fs effect: std::fs::read"
+
+[[effect]]
+kappa = "50413291618fdfb441566e250a12a673d3b82d0528455d86134ce23c19bc0b02"
+function = "verdant_core::operator_release::VerdantOperatorChannel::pack_repo_release_capsule"
+effect = "Fs effect: std::fs::create_dir_all"
+
+[[effect]]
+kappa = "5e5e56016eb688f76ec5129f7e9b13bd6a2c5fe7ae611d9cbfa4184dcf138871"
+function = "verdant_core::operator_release::VerdantOperatorChannel::sync_workspace_cargo_version"
+effect = "Fs effect: std::fs::read_to_string"
+
+[[effect]]
+kappa = "64d4f1c07c88dfd041786a30418004aa2a859eb5449128eda2aa47ff3d24056c"
+function = "verdant_core::operator_release::VerdantOperatorChannel::verify_release_dir"
+effect = "Fs effect: std::fs::read_to_string"
 
 [[effect]]
 kappa = "0c3b6a7acbda69893d5404d89fae28f7c3180a7a589e6fcd84d4db84f7550205"
@@ -9432,6 +9374,11 @@ function = "verdant_cli::CliCommandError::fmt"
 definition = "Behavior::cliCommandErrorFmt"
 
 [[lifted]]
+kappa = "3973c201b5c47e74d907e5f40401c859c92e1e13bf7101d76b8fde2a16efb8d1"
+function = "verdant_core::character::HumanoidJointId::index"
+definition = "Behavior::humanoidJointIdIndex"
+
+[[lifted]]
 kappa = "1d9b07734c052819e2260cf6ab4551d7aefcedf152310b609361b142336c30a9"
 function = "verdant_core::cybernetics::ContainerOrgan::as_str"
 definition = "Behavior::containerOrganAsStr"
@@ -9542,9 +9489,49 @@ function = "verdant_core::hd_world::AuthorPrimitiveKind::label"
 definition = "Behavior::authorPrimitiveKindLabel"
 
 [[lifted]]
+kappa = "641d6b3faec7e474063bfc1ed8ce5346f43c7e14cf85a9de1491c04b942ad4e0"
+function = "verdant_core::hd_world::lod_subdivision_scale"
+definition = "Behavior::lodSubdivisionScale"
+
+[[lifted]]
+kappa = "4cd9f67af4aa2c00fddba36002f0afa982d8c68e22b2a6ab2aa22b1fdcc05640"
+function = "verdant_core::math::eight_u32"
+definition = "Behavior::verdantCoreEightU32"
+
+[[lifted]]
+kappa = "e52869441eef828a2246e50bf28734035ab7bd5e92d6767492fbc2b41296a95f"
+function = "verdant_core::math::five_u32"
+definition = "Behavior::fiveU32"
+
+[[lifted]]
 kappa = "055b5f37a0ec2905c08da8c021c3af5e61efc899f8611c5a04e30174c7ec4e6a"
 function = "verdant_core::math::four_u32"
 definition = "Behavior::verdantCoreFourU32"
+
+[[lifted]]
+kappa = "c85f5d5b0b36882edcf592824445e45c1dcda27866436eb319a4a73c29c3186c"
+function = "verdant_core::math::hundred_u32"
+definition = "Behavior::hundredU32"
+
+[[lifted]]
+kappa = "a79568a0433f5d959c8ed781724671dac580f64ad8a10aa7b7e119512c27a26d"
+function = "verdant_core::math::sixteen_u32"
+definition = "Behavior::verdantCoreSixteenU32"
+
+[[lifted]]
+kappa = "931e5a748f05555d4a9497b008c4e7a6aec2ad7273af95f603728c00601b5c23"
+function = "verdant_core::math::sixty_four_u32"
+definition = "Behavior::verdantCoreSixtyFourU32"
+
+[[lifted]]
+kappa = "b767e86768f34eed199833740cafa6d27d241c85c63cb13576a5200067d93fee"
+function = "verdant_core::math::ten_u32"
+definition = "Behavior::tenU32"
+
+[[lifted]]
+kappa = "cc22fa6b9ef285f1774765b2d8ef08598ac6d5365bc7c12a29076cbd5ad981cd"
+function = "verdant_core::math::thousand_u32"
+definition = "Behavior::thousandU32"
 
 [[lifted]]
 kappa = "b8e2d4b6855959d1bcf30f9132b334fecb94d4efaeaee1842f9e52ef73ff8904"
@@ -9582,6 +9569,11 @@ function = "verdant_core::network::MultiOriginRelayPlan::surviving_relays"
 definition = "Behavior::multiOriginRelayPlanSurvivingRelays"
 
 [[lifted]]
+kappa = "17078e03d965415e79f4a34b3a6aeeb971529499ec7e3cafd8399f92339d2b0e"
+function = "verdant_core::network::PrismIdSessionEnvelope::max_session_lifetime_secs"
+definition = "Behavior::prismIdSessionEnvelopeMaxSessionLifetimeSecs"
+
+[[lifted]]
 kappa = "f28d8205ac2034f2b72a487ba0da525606d794888047987261275879db066340"
 function = "verdant_core::observer::CommunicationChannelKind::code"
 definition = "Behavior::communicationChannelKindCode"
@@ -9595,6 +9587,11 @@ definition = "Behavior::communicationChannelKindRequiresPrismSignature"
 kappa = "d66793097b533837d4692b027dff3e6b0df0a766214205a6c5332b8c263a41de"
 function = "verdant_core::observer::CommunicationChannelKind::slug"
 definition = "Behavior::communicationChannelKindSlug"
+
+[[lifted]]
+kappa = "f844c61abfa5dc2ce10d84aeba5872f55b3e3d442392d6d6f99962a4978e917c"
+function = "verdant_core::observer::ObserverOrganKind::index"
+definition = "Behavior::observerOrganKindIndex"
 
 [[lifted]]
 kappa = "23779db2a2b0fef17605c71a11f7a0e6852af82c9c7409ccde0ccacc4e5820a1"
@@ -9612,23 +9609,33 @@ function = "verdant_core::observer::ObserverPartSlot::slug"
 definition = "Behavior::observerPartSlotSlug"
 
 [[lifted]]
+kappa = "171f9c7b87ff414ba6d26d42c3b794841fc0ed980b5fc06bf305c38a46598f51"
+function = "verdant_core::observer::StakeholderRoleKind::index"
+definition = "Behavior::stakeholderRoleKindIndex"
+
+[[lifted]]
+kappa = "a7244816c4b5af640027b54f57e1b686d2ad6e715c97ac52cef197db307b27bf"
+function = "verdant_core::observer::StakeholderRoleKind::workspace_index"
+definition = "Behavior::stakeholderRoleKindWorkspaceIndex"
+
+[[lifted]]
 kappa = "0facca72837351f7a14f738e59f5499346a9a071fe6042b15c32344bd8dfe247"
 function = "verdant_core::observer::StakeholderRoleKind::workspace_slug"
 definition = "Behavior::stakeholderRoleKindWorkspaceSlug"
 
 [[lifted]]
-kappa = "786326fbf754447c43222c1ca7c958d83fb4d3e2a1dbc73924b2fc9fa2437383"
-function = "verdant_core::operator::AutonomousRatchetLiftOptions::default"
+kappa = "9e82655221302531736270e4e3844d679092f4bbc7dfb70f06edf78bfcf8fca6"
+function = "verdant_core::operator_types::AutonomousRatchetLiftOptions::default"
 definition = "Behavior::autonomousRatchetLiftOptionsDefaultDefault"
 
 [[lifted]]
-kappa = "9d5e44a9e7caefd11bccde33c1e070e627d6f866d9183348d7d0582c1399ae8a"
-function = "verdant_core::operator::default_operator_prism_id"
+kappa = "70971ceabf65581ae19fec1d29dceb59954d88220039225419eb4c4f29a3ddff"
+function = "verdant_core::operator_types::default_operator_prism_id"
 definition = "Behavior::defaultOperatorPrismId"
 
 [[lifted]]
-kappa = "ad7445b7e9947f2361ea4923c7cce66021c8c3c71acbd2a559c5cf8bf77c3451"
-function = "verdant_core::operator::default_true_flag"
+kappa = "26350afaf2494cfa6cd8ddbc5b0ef09e7f6b134f92ed13b4339231ff570ede29"
+function = "verdant_core::operator_types::default_true_flag"
 definition = "Behavior::defaultTrueFlag"
 
 [[lifted]]
@@ -9717,9 +9724,29 @@ function = "verdant_core::standards::SosaProvoShapeRule::acyclic_predicate_or_re
 definition = "Behavior::sosaProvoShapeRuleAcyclicPredicateOrRef"
 
 [[lifted]]
+kappa = "39cb8a327b38c33c29bf2fbc44077299b746fd6ffe7aac83fb90761d37d0d0aa"
+function = "verdant_core::streaming::LodLevel::rank"
+definition = "Behavior::lodLevelRank"
+
+[[lifted]]
+kappa = "90fe9a5dc0c388d9e919f1b0d7b9119a43542cf7485a2b0cfc5a7138f332f5f0"
+function = "verdant_core::streaming::is_uorc_archive"
+definition = "Behavior::isUorcArchive"
+
+[[lifted]]
 kappa = "e299345b64c807fa2fcf785e3c5d79843eb40e6509466a63bd6d620fdf4a150e"
 function = "verdant_core::uhd::DynamicWorkloadGovernor::oracle"
 definition = "Behavior::dynamicWorkloadGovernorOracle"
+
+[[lifted]]
+kappa = "52b45be882b0b2b65b28b0f08ddd2786a446cb007ca49084c40af62f485727b0"
+function = "verdant_core::uhd::FrameBudgetOracle::active_drs_permille"
+definition = "Behavior::frameBudgetOracleActiveDrsPermille"
+
+[[lifted]]
+kappa = "e55dbfcb22238484eff0783b960fc167a7cc942ec3d6a74fe2074c3f096e5cd4"
+function = "verdant_core::uhd::FrameBudgetOracle::drs_ladder"
+definition = "Behavior::frameBudgetOracleDrsLadder"
 
 [[lifted]]
 kappa = "70230dc0d144e17934385129993b59d75cad8a928fe03a5b5ef5422575e78890"
@@ -9785,6 +9812,11 @@ definition = "Behavior::pagedTensorArenaIsResident"
 kappa = "dea7c20b58b28557e860aa2996f3757b4fb1df1e7f42fa966be9a7d32588225d"
 function = "verdant_tensor::memory::PagedTensorArena::resident_payload"
 definition = "Behavior::pagedTensorArenaResidentPayload"
+
+[[lifted]]
+kappa = "1da9c61875908e215ea8897bfc29a53be76b4777ff9c47eff760e82545ce4ecd"
+function = "verdant_tensor::memory::PagedTensorArena::telemetry"
+definition = "Behavior::pagedTensorArenaTelemetry"
 
 [[lifted]]
 kappa = "7f1252931b8168b3483599c31fe9ed66505e8da059fcfad0d9824bd87e4658dd"
@@ -9927,6 +9959,16 @@ function = "verdant_tensor::prism_kernel::reflectiveRoomAbsorptionNumer"
 definition = "Behavior::reflectiveRoomAbsorptionNumer"
 
 [[lifted]]
+kappa = "78471947ae68adc00251d4fd0fa30d58c3be64beda2c3b9759361723189e980e"
+function = "verdant_tensor::prism_kernel::sNineteen"
+definition = "Behavior::sNineteen"
+
+[[lifted]]
+kappa = "97c37030043cdee89bf37bdbb1636d277ad320fc4e824ca57ddcc4be21c94de7"
+function = "verdant_tensor::prism_kernel::sThirtyNine"
+definition = "Behavior::sThirtyNine"
+
+[[lifted]]
 kappa = "d327ca30b623ace082948b6d99d147cf30c9fbeac70ca13e11d515b0a287e0bf"
 function = "verdant_tensor::prism_kernel::sThree"
 definition = "Behavior::sThree"
@@ -10029,7 +10071,7 @@ definition = "Behavior::xpbdDefaultCompliancePermille"
 [[lifted]]
 kappa = "27726a751ad066199e6e49f842352f330c08d8289e428d5a6d9f775455e4c335"
 function = "verdant_tensor::scalars::eight_u32"
-definition = "Behavior::eightU32"
+definition = "Behavior::verdantTensorEightU32"
 
 [[lifted]]
 kappa = "c48dd2d296c3e31f058bf6e08ba0c3167dde790a832994fddb07252ea6f7376a"
@@ -10064,7 +10106,7 @@ definition = "Behavior::verdantTensorHundredU64"
 [[lifted]]
 kappa = "3b27723ca75dd08afa1f01516f6168ff4f5efb247defa0661965dbb43642568e"
 function = "verdant_tensor::scalars::sixteen_u32"
-definition = "Behavior::sixteenU32"
+definition = "Behavior::verdantTensorSixteenU32"
 
 [[lifted]]
 kappa = "bf472770028d274d0c119d92403a58c5ea662f1cc45d4012077cac1e44ead007"
@@ -10079,7 +10121,7 @@ definition = "Behavior::sixteenU8"
 [[lifted]]
 kappa = "b1a94e0adecf3713803e5ee0f842d762bd4c5a0928b2a718e9be1515de5e6338"
 function = "verdant_tensor::scalars::sixty_four_u32"
-definition = "Behavior::sixtyFourU32"
+definition = "Behavior::verdantTensorSixtyFourU32"
 
 [[lifted]]
 kappa = "7a1733f62d44572b541862bf70a7c854a34d099c692ff092e0af7502995e39ad"

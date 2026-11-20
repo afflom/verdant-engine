@@ -124,5 +124,13 @@ theorem{
   proof: decide{},
   axioms: []
 }
+
+theorem{
+  name: cadenceMilestonesOrderedVerified,
+  parameters: [],
+  statement: (((versionAtLeast (releaseV2x1x0) (releaseV2x0x0)) && ((versionAtLeast (releaseV2x0x0) (releaseV1x1x0)) && ((versionAtLeast (releaseV1x1x0) (releaseV1x0x0)) && (versionAtLeast (releaseV1x0x0) (releaseV0x4x0))))) = true),
+  proof: decide{},
+  axioms: []
+}
 \end{semanticmodule}
 \end{lexlean}

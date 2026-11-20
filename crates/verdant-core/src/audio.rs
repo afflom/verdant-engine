@@ -35,8 +35,7 @@ impl AcousticEnvironment {
         let ten = pow10_u64(1) as f64;
         let hundred = pow10_u64(1 + 1) as f64;
         let chamber_num = crate::prism_kernel::reflectiveRoomAbsorptionNumer() as f64;
-        let abs_denom = crate::prism_kernel::absorptionDenom()
-            .expect("verified Prism kernel absorptionDenom") as f64;
+        let abs_denom = crate::prism_kernel::absorptionDenom().expect("prism") as f64;
         let head_r = 1.0 / (ten + 1.0); // ~0.0909 m spherical head radius
         Self {
             sound_speed_mps,
@@ -52,8 +51,7 @@ impl AcousticEnvironment {
     pub fn damped_exterior(sound_speed_mps: f64) -> Self {
         let chamber = Self::reflective_chamber(sound_speed_mps);
         let ext_num = crate::prism_kernel::dampedExteriorAbsorptionNumer() as f64;
-        let abs_denom = crate::prism_kernel::absorptionDenom()
-            .expect("verified Prism kernel absorptionDenom") as f64;
+        let abs_denom = crate::prism_kernel::absorptionDenom().expect("prism") as f64;
         Self {
             mean_absorption_coeff: ext_num / abs_denom,
             ..chamber
@@ -64,8 +62,7 @@ impl AcousticEnvironment {
     /// `RT60 = (24 * ln(10) / c) * V / (S * alpha_bar)`.
     #[must_use]
     pub fn sabine_rt60_seconds(&self) -> f64 {
-        let twenty_four = crate::prism_kernel::sabinePrefactorNumer()
-            .expect("verified Prism kernel sabinePrefactorNumer") as f64;
+        let twenty_four = crate::prism_kernel::sabinePrefactorNumer().expect("prism") as f64;
         let ten = pow10_u64(1) as f64;
         let sabine_factor = (twenty_four * ten.ln()) / self.sound_speed_mps.max(1.0);
         let sabins = (self.boundary_surface_area_m2
@@ -78,8 +75,7 @@ impl AcousticEnvironment {
     /// `RT60 = (24 * ln(10) / c) * V / (-S * ln(1 - alpha_bar))`.
     #[must_use]
     pub fn eyring_rt60_seconds(&self) -> f64 {
-        let twenty_four = crate::prism_kernel::sabinePrefactorNumer()
-            .expect("verified Prism kernel sabinePrefactorNumer") as f64;
+        let twenty_four = crate::prism_kernel::sabinePrefactorNumer().expect("prism") as f64;
         let ten = pow10_u64(1) as f64;
         let factor = (twenty_four * ten.ln()) / self.sound_speed_mps.max(1.0);
         let alpha = self
@@ -94,15 +90,13 @@ impl AcousticEnvironment {
     /// `prism_kernel::sabineRt60Millis` for deterministic WebAssembly/AudioWorklet parity.
     #[must_use]
     pub fn sabine_rt60_prism_millis(&self) -> u64 {
-        let scale =
-            crate::prism_kernel::skinWeightScale().expect("verified Prism skinWeightScale") as f64;
+        let scale = crate::prism_kernel::skinWeightScale().expect("prism") as f64;
         let vol_m3 = self.enclosure_volume_m3.max(0.0).round() as u64;
         let absorption_milli = (self.boundary_surface_area_m2
             * self.mean_absorption_coeff.max(geometric_epsilon()).min(1.0)
             * scale)
             .round() as u64;
-        crate::prism_kernel::sabineRt60Millis(vol_m3, absorption_milli)
-            .expect("verified Prism sabineRt60Millis")
+        crate::prism_kernel::sabineRt60Millis(vol_m3, absorption_milli).expect("prism")
     }
 }
 
@@ -226,8 +220,7 @@ pub fn synthesize_modal_bar_modes(fundamental_hz: f64, mode_count: usize) -> Vec
     let base = crate::prism_kernel::eulerBernoulliModeDenom() as f64;
     let mut modes = Vec::with_capacity(mode_count);
     for idx in 0..mode_count {
-        let numer = crate::prism_kernel::eulerBernoulliModeNumer(idx as u64)
-            .expect("verified Prism kernel eulerBernoulliModeNumer") as f64;
+        let numer = crate::prism_kernel::eulerBernoulliModeNumer(idx as u64).expect("prism") as f64;
         modes.push(fundamental_hz * numer / base);
     }
     modes

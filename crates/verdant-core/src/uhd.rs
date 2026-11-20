@@ -13,9 +13,11 @@
 
 use serde::{Deserialize, Serialize};
 
+#[cfg(feature = "wgsl-oracle")]
 use crate::error::ShaderValidationError;
 use crate::geometry::ProceduralMesh;
 use crate::math::{half_f64, pow10_u64, two_u32, Frustum, Vec3};
+#[cfg(feature = "wgsl-oracle")]
 use crate::render::{validate_wgsl_shader, VerifiedShaderModule};
 
 /// Exact triangle capacity per GPU meshlet (`64` triangles, matching `workgroup_size(64)`).
@@ -260,6 +262,7 @@ fn fs_cas_resolve(in: CasVsOut) -> @location(0) vec4<f32> {
 
 /// Validates Verdant's UHD WebGPU WGSL shaders (`cs_cull_meshlets`, `vs_uhd_pbr`, `fs_uhd_pbr`,
 /// `vs_cas_resolve`, `fs_cas_resolve`) through the authoritative `naga` W3C WGSL oracle.
+#[cfg(feature = "wgsl-oracle")]
 pub fn validate_uhd_shaders() -> Result<Vec<VerifiedShaderModule>, ShaderValidationError> {
     Ok(vec![
         validate_wgsl_shader(
@@ -1049,9 +1052,12 @@ pub struct FrameBudgetOracle {
 
 impl Default for FrameBudgetOracle {
     fn default() -> Self {
-        let thousand = pow10_u64(two_u32() + 1) as u32;
-        let sixty = (1u32 << (1 + 1 + 1 + 1 + 1 + 1)) - (1u32 << (1 + 1));
-        let budget_60hz = (thousand * thousand) / sixty;
+        let thousand = crate::math::thousand_u32();
+        let sixty = crate::math::sixty_four_u32().wrapping_sub(crate::math::four_u32());
+        let budget_60hz = thousand
+            .wrapping_mul(thousand)
+            .checked_div(sixty)
+            .unwrap_or(0);
         Self::new(budget_60hz)
     }
 }
@@ -1060,21 +1066,21 @@ impl FrameBudgetOracle {
     /// Quantized lawful DRS permille ladder `[650, 750, 850, 925, 1000]`.
     #[must_use]
     pub fn drs_ladder() -> [u32; DRS_LADDER_LEN] {
-        let hundred = pow10_u64(two_u32()) as u32;
-        let half_hundred = hundred / (1 + 1);
-        let quarter_hundred = half_hundred / (1 + 1);
-        let two = 1u32 + 1;
-        let three = two + 1;
-        let six = three * two;
-        let seven = six + 1;
-        let eight = seven + 1;
-        let nine = eight + 1;
-        let thousand = hundred * (nine + 1);
+        let hundred = crate::math::hundred_u32();
+        let two = crate::math::two_u32();
+        let half_hundred = hundred.checked_div(two).unwrap_or(0);
+        let quarter_hundred = half_hundred.checked_div(two).unwrap_or(0);
+        let three = crate::math::three_u32();
+        let six = three.wrapping_mul(two);
+        let seven = six.wrapping_add(1_u32);
+        let eight = seven.wrapping_add(1_u32);
+        let nine = eight.wrapping_add(1_u32);
+        let thousand = crate::math::thousand_u32();
         [
-            six * hundred + half_hundred,
-            seven * hundred + half_hundred,
-            eight * hundred + half_hundred,
-            nine * hundred + quarter_hundred,
+            six.wrapping_mul(hundred).wrapping_add(half_hundred),
+            seven.wrapping_mul(hundred).wrapping_add(half_hundred),
+            eight.wrapping_mul(hundred).wrapping_add(half_hundred),
+            nine.wrapping_mul(hundred).wrapping_add(quarter_hundred),
             thousand,
         ]
     }
@@ -1082,13 +1088,13 @@ impl FrameBudgetOracle {
     /// Creates a new zero-allocation frame stability oracle targeting `target_budget_us`.
     #[must_use]
     pub fn new(target_budget_us: u32) -> Self {
-        let thousand = pow10_u64(two_u32() + 1) as u32;
+        let thousand = pow10_u64(two_u32().wrapping_add(1_u32)) as u32;
         Self {
             ring: [0u32; FRAME_ORACLE_WINDOW],
             cursor: 0,
             filled: 0,
             target_budget_us: target_budget_us.max(thousand),
-            drs_index: DRS_LADDER_LEN - 1,
+            drs_index: DRS_LADDER_LEN.saturating_sub(1),
             over_streak: 0,
             under_streak: 0,
             drs_transitions: 0,
@@ -1516,9 +1522,9 @@ pub struct DynamicWorkloadGovernor {
 
 impl Default for DynamicWorkloadGovernor {
     fn default() -> Self {
-        let two = 1u32 + 1;
-        let three = two + 1;
-        let sixteen = 1u32 << (two * two);
+        let two = 1_u32.wrapping_add(1_u32);
+        let three = two.wrapping_add(1_u32);
+        let sixteen = crate::math::sixteen_u32();
         Self {
             oracle: FrameBudgetOracle::default(),
             current_lod_rank: three,
@@ -1533,9 +1539,9 @@ impl DynamicWorkloadGovernor {
     /// Creates a new governor targeting `target_budget_us` (default `16667` us = 60 Hz).
     #[must_use]
     pub fn new(target_budget_us: u32) -> Self {
-        let two = 1u32 + 1;
-        let three = two + 1;
-        let sixteen = 1u32 << (two * two);
+        let two = 1_u32.wrapping_add(1_u32);
+        let three = two.wrapping_add(1_u32);
+        let sixteen = crate::math::sixteen_u32();
         Self {
             oracle: FrameBudgetOracle::new(target_budget_us),
             current_lod_rank: three,

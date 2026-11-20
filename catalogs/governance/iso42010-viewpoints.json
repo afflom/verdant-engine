@@ -40,6 +40,9 @@
         "app/src/Observer.lex.tex",
         "crates/verdant-core/src/observer.rs",
         "crates/verdant-core/src/operator.rs",
+        "crates/verdant-core/src/operator_types.rs",
+        "crates/verdant-core/src/operator_release.rs",
+        "crates/verdant-core/src/operator_mcp.rs",
         "site/generated/viewpoint-contracts.json",
         "site/generated/immutability-seal.json"
       ],
@@ -405,6 +408,10 @@
         "crates/verdant-core/src/portable_player.rs",
         "site/studio/index.html",
         "site/studio/studio-page.mjs",
+        "site/studio/outliner.mjs",
+        "site/studio/observer-panel.mjs",
+        "site/studio/project-inspector.mjs",
+        "site/studio/vcs-panel.mjs",
         "site/studio.mjs",
         "site/studio-data.mjs",
         "site/studio-scaffolder.mjs"

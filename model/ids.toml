@@ -456,3 +456,15 @@ id = "VE-57"
 level = "build"
 suite = "engine"
 statement = "Portable zero-account .holo user applications exported from Verdant Studio embed a self-contained interactive WebGL2 3D Canvas Player (crates/verdant-core/src/portable_player.rs) that renders the creator's exact authored objects, transforms, domain sky/ground palette, and orbit controls offline with zero external accounts or CDN fetches, verified end-to-end across isolated Chromium browser contexts"
+
+[[id]]
+id = "VE-58"
+level = "build"
+suite = "engine"
+statement = "Verdant decomposes its three largest monoliths (verdant-wasm/src/lib.rs, verdant-core/src/operator.rs, and site/studio/studio-page.mjs) into focused submodules that auto-tighten max_handwritten_rust_file_lines to <= 3525 and max_js_file_lines to <= 1980, gates naga behind the native wgsl-oracle Cargo feature so wasm32 builds exclude shader transpiler dependencies, syncs site/app.holo 1:1 with CI for widened FR-03 cold-boot headroom, and upgrades portable_player.rs to render all 5 Studio primitive geometries (Box, Platform, Pillar, Ramp, Beacon Orb) with ground grid and WASD/orbit controls offline"
+
+[[id]]
+id = "VE-59"
+level = "build"
+suite = "engine"
+statement = "Verdant expands its shrink-only uorust MIR proof frontier past 200 lifted constructive Rust functions (auto-tightening min_lifted_functions >= 200 while shrinking arithmetic and total residue) and closes all Cadence, Release, and self-hosted Stitch Security theorem verification records across app/src/{Cadence,Release,Security}.lex.tex and fidelity.toml"

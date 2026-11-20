@@ -2155,6 +2155,31 @@ record = "Brand::tokens#9"
 axis = "meant"
 
 [[closed]]
+kappa = "08f43b22dea658bf2092a1296955c0c6e224875840a33d2b94a90820c26842fe"
+record = "Cadence::releaseV0x4x0"
+axis = "meant"
+
+[[closed]]
+kappa = "b6bb39db976b3bb7dad7f1958cc63c57a7f4cd5e2473ce8a7aa009d6159301e2"
+record = "Cadence::releaseV1x0x0"
+axis = "meant"
+
+[[closed]]
+kappa = "49753cd593e7f15b1b5441506ca9affc2b0d4d47d955faf95bf43654fde4b4f9"
+record = "Cadence::releaseV1x1x0"
+axis = "meant"
+
+[[closed]]
+kappa = "06cedcca8e7d5e2e987e6d2865a2d44536cf514950114ff1b38cffb64e817af8"
+record = "Cadence::releaseV2x0x0"
+axis = "meant"
+
+[[closed]]
+kappa = "6bd42786891b43c38691d3c13ac568d9e35bf7bbb74becc59dcba33e09b227f0"
+record = "Cadence::releaseV2x1x0"
+axis = "meant"
+
+[[closed]]
 kappa = "5fa7202e48ccc6b554eaa3d671d0202a867f2fe0d7fe9972d4022f59f5047c65"
 record = "Compliance::obligations#0"
 axis = "derived"
@@ -6230,6 +6255,36 @@ record = "Quality::subcharacteristicTimeBehaviour"
 axis = "meant"
 
 [[closed]]
+kappa = "346d033aaf241de8281adf9ac7eb700ef0d144845a5f45e8d80a130fa6396f6b"
+record = "Release::channel0PagesShards"
+axis = "meant"
+
+[[closed]]
+kappa = "f9dc7676aa0485a825fd3d3337ad521920233d0f0c627f419de47d4acdf52337"
+record = "Release::channel1JsDelivrMirror"
+axis = "meant"
+
+[[closed]]
+kappa = "25d8e3284f3a5f612301b9bfb27a8a6437576ea19a6c5b5687948d0035992c75"
+record = "Release::channel2RawGitHubMirror"
+axis = "meant"
+
+[[closed]]
+kappa = "2134cfbcee8323a61d84356c5723645580408ccece9943a10ab8241307c159a4"
+record = "Release::channel3CargoSparseRegistry"
+axis = "meant"
+
+[[closed]]
+kappa = "c923e4c951cd8cf3c75ee0f41e659b5c69f3e30242f94a43c93a672e493fdba1"
+record = "Release::channel4GhcrOciBundle"
+axis = "meant"
+
+[[closed]]
+kappa = "914e658b0acad805e1faba5df5341a7b4d0eea1b7f385f277ed860fd133f2a86"
+record = "Release::channel5ZenodoDoiArchive"
+axis = "meant"
+
+[[closed]]
 kappa = "53e9cd53fc0ea6fad2ac959196e84cd2e9cf197d723baae825b48ec98dd08338"
 record = "Security::acceptedHostSubstitution"
 axis = "derived"
@@ -6248,6 +6303,11 @@ axis = "derived"
 kappa = "c6b63c7c9e7e67f94623f72e61c39a8bfe361839255d4a7250f5afe268c42793"
 record = "Security::assetImmutableBlankFrame"
 axis = "derived"
+
+[[closed]]
+kappa = "fd67db9e9f1ab37920d446dd10364a33f128578fe61e3e5ebff924d03bc3926a"
+record = "Security::assetImmutableBlankFrame"
+axis = "meant"
 
 [[closed]]
 kappa = "32fe49fdd27fc2ac1fa56770c7356b60c62ba34758875f18435626eb98f0612f"
@@ -6278,6 +6338,11 @@ axis = "derived"
 kappa = "bc873eeff70c4dea5394cc90c83d15e3f99b95cf6807b39d80a9da7f32011657"
 record = "Security::assetStakeholderPrivateBoundary"
 axis = "derived"
+
+[[closed]]
+kappa = "802ae097e541d16ba796168809dccce1430f81b641ceb867b896ef458769f0a5"
+record = "Security::assetStakeholderPrivateBoundary"
+axis = "meant"
 
 [[closed]]
 kappa = "05279ff0f19c2475b437ecc79b067fe74092c55ac5f8e49c209e0e28d8b49b3d"
@@ -6390,6 +6455,11 @@ record = "Security::assetVerdantVcsAndReleases"
 axis = "derived"
 
 [[closed]]
+kappa = "8b6c44f3ed171feb566c3af5d2dac1ec56557198653a1ed2e9f7f4b3041a7ee9"
+record = "Security::assetVerdantVcsAndReleases"
+axis = "meant"
+
+[[closed]]
 kappa = "61ebbcf89779a6bb864520b47fd2106ea420d68ff249e152316c8207a84eeae3"
 record = "Security::assetVerdantWasmBridge"
 axis = "derived"
@@ -6457,6 +6527,11 @@ axis = "meant"
 [[closed]]
 kappa = "ed2b79060907dbbcf6fa71a186cb3d348a019af94a24e9dc3493f056355e5706"
 record = "Security::assetVerifierGuestArchive"
+axis = "meant"
+
+[[closed]]
+kappa = "afaf12799e2d40a9a66be6f5890ef520e32041b4a5c5d5b8e1a831f5183120a9"
+record = "Security::controlBoundaryEpochRotationAndRevocation"
 axis = "meant"
 
 [[closed]]
@@ -6530,6 +6605,11 @@ record = "Security::controlConservationAndReachabilityOracle"
 axis = "meant"
 
 [[closed]]
+kappa = "100632c06707a45c7c1b00fdfd46b948e7647dc369955511f64d2903e3072797"
+record = "Security::controlEncryptBeforeShardBoundary"
+axis = "meant"
+
+[[closed]]
 kappa = "007a818a1eff83bbd099433ef2516a09a9a8c472b3e69319c9d81fe24c6f7a89"
 record = "Security::controlFloatingOriginCanonicalizer"
 axis = "derived"
@@ -6557,6 +6637,11 @@ axis = "meant"
 [[closed]]
 kappa = "bc1e73438b4abee29ef64c95a7da97f3b9d84337ea13af7591b6b974f0d7813d"
 record = "Security::controlFloatingOriginCanonicalizer"
+axis = "meant"
+
+[[closed]]
+kappa = "d87d953fc0628b4704dc66b2cd3243cc5e255cee7c5097ad6ad2f083a2d606fa"
+record = "Security::controlKOfNReedSolomonAndAutonomousRepair"
 axis = "meant"
 
 [[closed]]
@@ -6600,6 +6685,11 @@ record = "Security::controlKhronosGltfOracle"
 axis = "meant"
 
 [[closed]]
+kappa = "9ede44b9f65a01e1061f4cd7c2e0caaa5fe3f0aec57ee366f2ad4b07f32ac723"
+record = "Security::controlMonotonicEpochQuorumPointer"
+axis = "meant"
+
+[[closed]]
 kappa = "333e6c5f8ea881de445f1fa253b5c61b33aec2d231ebde2b9272509ee8392f1a"
 record = "Security::controlNagaShaderOracle"
 axis = "derived"
@@ -6640,6 +6730,11 @@ record = "Security::controlNagaShaderOracle"
 axis = "meant"
 
 [[closed]]
+kappa = "0ff57c31f4c6ebf0c9f50d23480a921b15e469ec062137cde53bdd7c46d46720"
+record = "Security::controlOriginScopedPrismIdAudience"
+axis = "meant"
+
+[[closed]]
 kappa = "164d97c8d5facc32c19f9a79aabc7f5a4ef7b11814f77691d0879acdb17c33af"
 record = "Security::controlPrismIdJournalSignature"
 axis = "derived"
@@ -6677,6 +6772,11 @@ axis = "meant"
 [[closed]]
 kappa = "974f4006931460bb21470ca7064b43c195c225cceee53e25fedf15a99e2135ff"
 record = "Security::controlPrismIdJournalSignature"
+axis = "meant"
+
+[[closed]]
+kappa = "0d9340c530e4824590d704679aa4186cd4ae5dc6c714117c393cd17e2320b645"
+record = "Security::controlSelfHostingRatchetAndPullThroughGate"
 axis = "meant"
 
 [[closed]]
@@ -6727,6 +6827,11 @@ axis = "meant"
 [[closed]]
 kappa = "d857c09a3929b06a3c19237886f16c21730b57899533f276f848b90045be6f28"
 record = "Security::controlSnapshotSha256Trailer"
+axis = "meant"
+
+[[closed]]
+kappa = "2c734a019dec9d239e9ed07d4ef1790af1c0e3f3bf851c3a6dae8d0066924ee4"
+record = "Security::controlStitchBudgetAndReciprocalAdmission"
 axis = "meant"
 
 [[closed]]
@@ -6880,6 +6985,16 @@ record = "Security::controlVerifierRequestCap"
 axis = "meant"
 
 [[closed]]
+kappa = "6ea0497912f24725b39aac9b046415fb699a6486ebc289e19ac058ca3423ee29"
+record = "Security::controlZeroTrustSwVirtualFsMount"
+axis = "meant"
+
+[[closed]]
+kappa = "ffcfb1db2076902885c1d9faa29f9e0bb8e0a1685bbeb697bd5827afb8e377c5"
+record = "Security::mappingBlankFrameHydrationInjection"
+axis = "meant"
+
+[[closed]]
 kappa = "bc37f4563bf6356679c8cd3be59a8cb4bbe2a8bcc64a01f53a3b9ae6bac4abfc"
 record = "Security::mappingCorruptedStitchParityShard"
 axis = "derived"
@@ -6887,6 +7002,11 @@ axis = "derived"
 [[closed]]
 kappa = "ab2061d29cbafab65a1316e2d4e453d89001fc05cb846a26d779017fab983770"
 record = "Security::mappingCorruptedStitchParityShard"
+axis = "meant"
+
+[[closed]]
+kappa = "24282aebbd6a564079476a8e0b9d18e6207aa306da24d902525c9c83dfab0fa0"
+record = "Security::mappingDeepLinkFramePhishingOrOriginConfusion"
 axis = "meant"
 
 [[closed]]
@@ -6930,6 +7050,21 @@ record = "Security::mappingNarrativeSupplyInflationOrDeadlock"
 axis = "meant"
 
 [[closed]]
+kappa = "8b3c35d3ff235d7e204b8e5ad6a33ca4d9df051ef2eb10f4cb6b9367d107843a"
+record = "Security::mappingReleasePointerRollbackOrEquivocation"
+axis = "meant"
+
+[[closed]]
+kappa = "2b2d96859a299b361d3117ca5e53c4aa3054126e9ce4a44bbf234ffef36f5fc5"
+record = "Security::mappingRevokedPeerRetentionOrReplay"
+axis = "meant"
+
+[[closed]]
+kappa = "7ed62deed806b2de562cff7fc74cc02e4350a2bb45f5b8981cc10cd358ec8592"
+record = "Security::mappingShardAttritionOrColdDisappearance"
+axis = "meant"
+
+[[closed]]
 kappa = "5a972e1c9ab8ce24106c54e2b105ecfb201428f82e844f0d99bfaa84a64febdc"
 record = "Security::mappingSnapshotTampering"
 axis = "derived"
@@ -6940,6 +7075,11 @@ record = "Security::mappingSnapshotTampering"
 axis = "meant"
 
 [[closed]]
+kappa = "8576692e70331960b3bb3e3351f0fe6507edda33e65c2fa6ce09cda0f35f14d4"
+record = "Security::mappingStitchStorageFloodOrSybilExhaustion"
+axis = "meant"
+
+[[closed]]
 kappa = "145aaca2a055d9617df1d842f6add6204ae81111871129b6ab531000e546623b"
 record = "Security::mappingStudioScriptInjection"
 axis = "derived"
@@ -6947,6 +7087,11 @@ axis = "derived"
 [[closed]]
 kappa = "a219fc2f5f428f811d460c42b9ceaa3e569d188c5e769aaec5164442f91b42d1"
 record = "Security::mappingStudioScriptInjection"
+axis = "meant"
+
+[[closed]]
+kappa = "ac3839d2a5248e53a489fc0b1e77da16d4c51e74743d0ecbc259e592546aaabe"
+record = "Security::mappingUnauthorizedPrivateBoundaryRead"
 axis = "meant"
 
 [[closed]]
@@ -6970,6 +7115,11 @@ record = "Security::mappingUniverseCoordinatePrecisionCollapse"
 axis = "meant"
 
 [[closed]]
+kappa = "e119b6627f01810c7e8e0201b62e84a7e03098b8aecb7284c060ba2cd7062c38"
+record = "Security::mappingUnverifiedRepoDriftOrBypass"
+axis = "meant"
+
+[[closed]]
 kappa = "ced77baa30977b8f218a6d3fa507fb5f0a4b39eff0291075f37e1a01a119d1eb"
 record = "Security::mappingVerifierQueryExhaustion"
 axis = "derived"
@@ -6990,6 +7140,11 @@ record = "Security::mappingWallClippingOrTunnelingBypass"
 axis = "meant"
 
 [[closed]]
+kappa = "95c1e956663d50761a3762172350e53919ef80f276fbe8f50cf5d4bbb86ef5ea"
+record = "Security::modeledAssetImmutableBlankFrame"
+axis = "meant"
+
+[[closed]]
 kappa = "329729ecc7839bc8e9eca5dfeba9b1a553a47232c7b90dda951d17389ef0405e"
 record = "Security::modeledAssetPublishedPagesArtifact"
 axis = "derived"
@@ -6997,6 +7152,11 @@ axis = "derived"
 [[closed]]
 kappa = "825d9d81b4f5b0115d04451878189881b232e2bcd04421c283550fb0a5ca39e1"
 record = "Security::modeledAssetPublishedPagesArtifact"
+axis = "meant"
+
+[[closed]]
+kappa = "e7caf650e91918797b180b8bd63dcfb27fc86c46e9b6ce136682d205f9e31bd3"
+record = "Security::modeledAssetStakeholderPrivateBoundary"
 axis = "meant"
 
 [[closed]]
@@ -7030,6 +7190,11 @@ record = "Security::modeledAssetVerdantCoreRuntime"
 axis = "meant"
 
 [[closed]]
+kappa = "326cf09c959ec1dd2b6ecae8ab493f0c5016404d675fc6b0ba126ee6a33207e9"
+record = "Security::modeledAssetVerdantVcsAndReleases"
+axis = "meant"
+
+[[closed]]
 kappa = "ed3158e332ba31752da26c709b9c0316be4276144d62b6e883af2c16a0ad68f4"
 record = "Security::modeledAssetVerdantWasmBridge"
 axis = "derived"
@@ -7047,6 +7212,11 @@ axis = "derived"
 [[closed]]
 kappa = "2a3851afc1967e9d399a740ec5eb283add3d5a1eeffafaa2c5796ea3fbca1e30"
 record = "Security::modeledAssetVerifierGuestArchive"
+axis = "meant"
+
+[[closed]]
+kappa = "2b1055a5cee624006ae706ffdaea1d8b99a373387aaaed0be7caafa06f0425a5"
+record = "Security::modeledControlBoundaryEpochRotationAndRevocation"
 axis = "meant"
 
 [[closed]]
@@ -7070,6 +7240,11 @@ record = "Security::modeledControlConservationAndReachabilityOracle"
 axis = "meant"
 
 [[closed]]
+kappa = "3002f1f76cf74dd47dcf4883e8e3227a9a80f6972df924c2fdd4aa58d9e73a70"
+record = "Security::modeledControlEncryptBeforeShardBoundary"
+axis = "meant"
+
+[[closed]]
 kappa = "3ea25794060004133cfe7b7c75edfb5eaf659f3efb01f998a8ef7cec97556872"
 record = "Security::modeledControlFloatingOriginCanonicalizer"
 axis = "derived"
@@ -7077,6 +7252,11 @@ axis = "derived"
 [[closed]]
 kappa = "b06afdb4ad8af41e5b7efb84dc305d94bcd23b332ddfa0a1b142121b56b70fad"
 record = "Security::modeledControlFloatingOriginCanonicalizer"
+axis = "meant"
+
+[[closed]]
+kappa = "2350424bcc2ef60c8f852c8793d13b49d63cf9b7cb92c8a892cc401f4466eef7"
+record = "Security::modeledControlKOfNReedSolomonAndAutonomousRepair"
 axis = "meant"
 
 [[closed]]
@@ -7090,6 +7270,11 @@ record = "Security::modeledControlKhronosGltfOracle"
 axis = "meant"
 
 [[closed]]
+kappa = "f3306d8da50245af53983afd1ca76076f6fd37bdf25a1846826974374bb7abe8"
+record = "Security::modeledControlMonotonicEpochQuorumPointer"
+axis = "meant"
+
+[[closed]]
 kappa = "54a54f033e16e41bddaac25ee37dda5a91aa00a6e89cd737cf61d443ec504310"
 record = "Security::modeledControlNagaShaderOracle"
 axis = "derived"
@@ -7097,6 +7282,11 @@ axis = "derived"
 [[closed]]
 kappa = "3e3312b360cdc50b8c12e83d29af0d22c14a1aca252ddceabf86455898bbb1c0"
 record = "Security::modeledControlNagaShaderOracle"
+axis = "meant"
+
+[[closed]]
+kappa = "94922e9a362e8a76fb4f1d43ac379fae88f7ea9fee3f8de5c81dcab45aaa3d38"
+record = "Security::modeledControlOriginScopedPrismIdAudience"
 axis = "meant"
 
 [[closed]]
@@ -7110,6 +7300,11 @@ record = "Security::modeledControlPrismIdJournalSignature"
 axis = "meant"
 
 [[closed]]
+kappa = "59e9438044b7c5f020e9ca37a7497f14dc196fa306a3c9f6b2c2156e5028548d"
+record = "Security::modeledControlSelfHostingRatchetAndPullThroughGate"
+axis = "meant"
+
+[[closed]]
 kappa = "041c85cd4e2edbed69d8bf071ff789a227920cc70ab09a22bc8bb6fa8c76aa0e"
 record = "Security::modeledControlSnapshotSha256Trailer"
 axis = "derived"
@@ -7117,6 +7312,11 @@ axis = "derived"
 [[closed]]
 kappa = "57eaf9cb7fd51c84e40b65313296a2d6477ee4df1e49f881e45863c6dc54322f"
 record = "Security::modeledControlSnapshotSha256Trailer"
+axis = "meant"
+
+[[closed]]
+kappa = "145957f6a60ee19a17308c72a0ed20cb931d8741d2987708ec5b146e9a65868b"
+record = "Security::modeledControlStitchBudgetAndReciprocalAdmission"
 axis = "meant"
 
 [[closed]]
@@ -7160,6 +7360,16 @@ record = "Security::modeledControlVerifierRequestCap"
 axis = "meant"
 
 [[closed]]
+kappa = "ca0d62a1d9b2343ebb87760eac7d2501ae0719c6d4cd4ad4b041b5c36653f568"
+record = "Security::modeledControlZeroTrustSwVirtualFsMount"
+axis = "meant"
+
+[[closed]]
+kappa = "484d2e6bfdf0e8e40537728e9c4b0af7e9fe644a6de55e91a2f3c3ca9d1d2afe"
+record = "Security::modeledThreatBlankFrameHydrationInjection"
+axis = "meant"
+
+[[closed]]
 kappa = "8cb56a04d2310bda6f43c57c31d2746d6ee6fe79f90e51f34a150a02ea4106bf"
 record = "Security::modeledThreatCorruptedStitchParityShard"
 axis = "derived"
@@ -7167,6 +7377,11 @@ axis = "derived"
 [[closed]]
 kappa = "671f11cee5af2cc118c036b4f3126316b73a9b596462e21f22adb906c058268e"
 record = "Security::modeledThreatCorruptedStitchParityShard"
+axis = "meant"
+
+[[closed]]
+kappa = "cb622ee08e5646b254e40503a0c893a199d7064af22aaf3d7cf5e349398d44d8"
+record = "Security::modeledThreatDeepLinkFramePhishingOrOriginConfusion"
 axis = "meant"
 
 [[closed]]
@@ -7220,6 +7435,21 @@ record = "Security::modeledThreatNarrativeSupplyInflationOrDeadlock"
 axis = "meant"
 
 [[closed]]
+kappa = "c967c182d6ce8d226b1876968aa0f159e7cb188c98825b449b6e05fbc4ae7fc5"
+record = "Security::modeledThreatReleasePointerRollbackOrEquivocation"
+axis = "meant"
+
+[[closed]]
+kappa = "fb623b17f834813683f84210cce3abbc80552b02a801ab7f3546f5abb9ef1aa2"
+record = "Security::modeledThreatRevokedPeerRetentionOrReplay"
+axis = "meant"
+
+[[closed]]
+kappa = "9dc29d72f7797431ab2181f2e2009427747320fbe956be6b6989eaebc53a452a"
+record = "Security::modeledThreatShardAttritionOrColdDisappearance"
+axis = "meant"
+
+[[closed]]
 kappa = "bf6328b097b33d4f9160ebdc9533bba0dcbcca42518f08cc84d0b19923a0a53c"
 record = "Security::modeledThreatSnapshotTampering"
 axis = "derived"
@@ -7230,6 +7460,11 @@ record = "Security::modeledThreatSnapshotTampering"
 axis = "meant"
 
 [[closed]]
+kappa = "3841240c3a1a383c9ce3b67a99a9da93154e3f7548dc4de985ff9fe1ade67714"
+record = "Security::modeledThreatStitchStorageFloodOrSybilExhaustion"
+axis = "meant"
+
+[[closed]]
 kappa = "b6fdf35ddc77c3f9da8b98ffb912b6d902e272abfc5abcf705b7578788155531"
 record = "Security::modeledThreatStudioScriptInjection"
 axis = "derived"
@@ -7237,6 +7472,11 @@ axis = "derived"
 [[closed]]
 kappa = "4e254d35be2ede0ce5156472aa6d3c6472cfb29e974023cb6266c5707fa39fc2"
 record = "Security::modeledThreatStudioScriptInjection"
+axis = "meant"
+
+[[closed]]
+kappa = "9402282b6cf061c09deff2c97ce92295555c13eb56e4ae6882413d53e35d5e8a"
+record = "Security::modeledThreatUnauthorizedPrivateBoundaryRead"
 axis = "meant"
 
 [[closed]]
@@ -7260,6 +7500,11 @@ record = "Security::modeledThreatUniverseCoordinatePrecisionCollapse"
 axis = "meant"
 
 [[closed]]
+kappa = "875d240d06042c8d9ba547bac0dde41b13927fa19c729232118ab3995411c8d2"
+record = "Security::modeledThreatUnverifiedRepoDriftOrBypass"
+axis = "meant"
+
+[[closed]]
 kappa = "7bce3cd92e90795c4027e3dd84e9bde56fd36cba20d2f2fe48cf0d2789ce45da"
 record = "Security::modeledThreatVerifierQueryExhaustion"
 axis = "derived"
@@ -7277,6 +7522,11 @@ axis = "derived"
 [[closed]]
 kappa = "a1bc2fe2465c651e1b37da00c3178da147970f59303134cc039faf73bdc97c9c"
 record = "Security::modeledThreatWallClippingOrTunnelingBypass"
+axis = "meant"
+
+[[closed]]
+kappa = "d0c637b8633bcc78fa52c021fde221b2666accc8714f11a263d1183c83a0287d"
+record = "Security::riskBlankFrameHydrationInjection"
 axis = "meant"
 
 [[closed]]
@@ -7307,6 +7557,11 @@ axis = "meant"
 [[closed]]
 kappa = "ecc6fed43ede3f52e3f7ba7d2ba7e3ad87b2e719bfec69580fee3502f58988ee"
 record = "Security::riskCorruptedStitchParityShard"
+axis = "meant"
+
+[[closed]]
+kappa = "23129db6c63468f89d8e148aefcd8beab51d6f2ec1affe54ad810877cc8cf418"
+record = "Security::riskDeepLinkFramePhishingOrOriginConfusion"
 axis = "meant"
 
 [[closed]]
@@ -7460,6 +7715,21 @@ record = "Security::riskNarrativeSupplyInflationOrDeadlock"
 axis = "meant"
 
 [[closed]]
+kappa = "e55493a142cbe1f4f24e432e991f539f60ee675b59e217785fc50bf8641a8741"
+record = "Security::riskReleasePointerRollbackOrEquivocation"
+axis = "meant"
+
+[[closed]]
+kappa = "d042dc8a8349c045b29090fa69b287bf841b54394c2eb3d0559f18f44a22cacb"
+record = "Security::riskRevokedPeerRetentionOrReplay"
+axis = "meant"
+
+[[closed]]
+kappa = "b7d69f0ce86ba0740a2bd8fcca6f1d8e1f6750de813ccc27f1792828cb76b3f4"
+record = "Security::riskShardAttritionOrColdDisappearance"
+axis = "meant"
+
+[[closed]]
 kappa = "42e1e6f160c091b3ca602f9dc1f5eba4bab21e8a5bbd65c402ee2936faed585f"
 record = "Security::riskSnapshotTampering"
 axis = "derived"
@@ -7500,6 +7770,11 @@ record = "Security::riskSnapshotTampering"
 axis = "meant"
 
 [[closed]]
+kappa = "e2ad01268c2e9f3baa03d1e1303a2a12e72de2fef2e8d62766b8ca980839758a"
+record = "Security::riskStitchStorageFloodOrSybilExhaustion"
+axis = "meant"
+
+[[closed]]
 kappa = "00b35accb1001af4be0bab03d173142810f3b515a69ab959d63b497c21973dba"
 record = "Security::riskStudioScriptInjection"
 axis = "derived"
@@ -7537,6 +7812,11 @@ axis = "meant"
 [[closed]]
 kappa = "baca90d8f4f1e5070579ce42e71ec642bb4afde2fcfa988af7043af965e0bf07"
 record = "Security::riskStudioScriptInjection"
+axis = "meant"
+
+[[closed]]
+kappa = "f17b5406efc2d6827af54e7118e4610904ca5d071fc450c030b351902b0b970b"
+record = "Security::riskUnauthorizedPrivateBoundaryRead"
 axis = "meant"
 
 [[closed]]
@@ -7610,6 +7890,11 @@ record = "Security::riskUniverseCoordinatePrecisionCollapse"
 axis = "meant"
 
 [[closed]]
+kappa = "463ea3b1cf0291d5eac79caff0bc219547a4c5b9532907bdae760ec88273c9c6"
+record = "Security::riskUnverifiedRepoDriftOrBypass"
+axis = "meant"
+
+[[closed]]
 kappa = "23ea1586d85bce94638b340465964fc2ba44914deec35426dddad61502bdd506"
 record = "Security::riskVerifierQueryExhaustion"
 axis = "derived"
@@ -7680,6 +7965,11 @@ record = "Security::riskWallClippingOrTunnelingBypass"
 axis = "meant"
 
 [[closed]]
+kappa = "fc031fe9c06bff91ec2e77cc726db5aa3dca45a3024d98d8da0c099def67c466"
+record = "Security::threatBlankFrameHydrationInjection"
+axis = "meant"
+
+[[closed]]
 kappa = "477be78c550b89a24bb0a0819c03bc708c153aaf2149318741ef54836e4912a6"
 record = "Security::threatCorruptedStitchParityShard"
 axis = "derived"
@@ -7707,6 +7997,11 @@ axis = "meant"
 [[closed]]
 kappa = "f69b504eac79cbea02e7547c75674041429c9f30768c392ff184fbe7d1501bad"
 record = "Security::threatCorruptedStitchParityShard"
+axis = "meant"
+
+[[closed]]
+kappa = "0da6ede0a76386477aef07e9cff98f08d3172e1294bcaa12b0444869f4fd9e0b"
+record = "Security::threatDeepLinkFramePhishingOrOriginConfusion"
 axis = "meant"
 
 [[closed]]
@@ -7860,6 +8155,21 @@ record = "Security::threatNarrativeSupplyInflationOrDeadlock"
 axis = "meant"
 
 [[closed]]
+kappa = "e39e625f8900c22a353a16e4e6e7d30a8efdd8ceb010fa32881eb5fc9e8e23fc"
+record = "Security::threatReleasePointerRollbackOrEquivocation"
+axis = "meant"
+
+[[closed]]
+kappa = "38ee309f37bda798a189952b606b900e3aa2ad3eb2135fa4080ddd4bcaad5b80"
+record = "Security::threatRevokedPeerRetentionOrReplay"
+axis = "meant"
+
+[[closed]]
+kappa = "e5259ea77edbe753fd1346a81feb2cbd14b7810b0592fc59b02b84e2acb34460"
+record = "Security::threatShardAttritionOrColdDisappearance"
+axis = "meant"
+
+[[closed]]
 kappa = "15ed57c81c1a0802d7d32303d35298cc58cad8297f8ae888511158453486554a"
 record = "Security::threatSnapshotTampering"
 axis = "derived"
@@ -7900,6 +8210,11 @@ record = "Security::threatSnapshotTampering"
 axis = "meant"
 
 [[closed]]
+kappa = "ce1eabc450313cdd77689da74a51bd72ee877bba11aa41911657b4ac320d9efe"
+record = "Security::threatStitchStorageFloodOrSybilExhaustion"
+axis = "meant"
+
+[[closed]]
 kappa = "40160bd4d6086217859f68eacd14dca03ad43057d3669b5bcc4eb9c1e3cec8b6"
 record = "Security::threatStudioScriptInjection"
 axis = "derived"
@@ -7937,6 +8252,11 @@ axis = "meant"
 [[closed]]
 kappa = "fec597065e475e52f387d202e2e3662f48d2e48987570c53bedea432aaece262"
 record = "Security::threatStudioScriptInjection"
+axis = "meant"
+
+[[closed]]
+kappa = "cc6a0c8c6a8ecf6fb411b0cccd98befe354a445ef2998547e290c50d97014c96"
+record = "Security::threatUnauthorizedPrivateBoundaryRead"
 axis = "meant"
 
 [[closed]]
@@ -7997,6 +8317,11 @@ axis = "meant"
 [[closed]]
 kappa = "f6b8256b13457c16f694496ad0acf73a6188287cd634dc1f6194e244fca6c1f0"
 record = "Security::threatUniverseCoordinatePrecisionCollapse"
+axis = "meant"
+
+[[closed]]
+kappa = "ca6cbfe2462dc09980f5b18b3430bc4f3af6d6ec1bf24c6f59a0532b6a71a13b"
+record = "Security::threatUnverifiedRepoDriftOrBypass"
 axis = "meant"
 
 [[closed]]
@@ -9746,22 +10071,10 @@ axis = "derived"
 reason = "no derivation names it (prov:wasDerivedFrom)"
 
 [[residue]]
-kappa = "08f43b22dea658bf2092a1296955c0c6e224875840a33d2b94a90820c26842fe"
-record = "Cadence::releaseV0x4x0"
-axis = "meant"
-reason = "no theorem states anything about it (ISO/IEC/IEEE 29148 verification)"
-
-[[residue]]
 kappa = "0584e9cd23f0b23dc991e81ef37a1ee4200680a4f451eeb7b38a0b6af592506d"
 record = "Cadence::releaseV1x0x0"
 axis = "derived"
 reason = "no derivation names it (prov:wasDerivedFrom)"
-
-[[residue]]
-kappa = "b6bb39db976b3bb7dad7f1958cc63c57a7f4cd5e2473ce8a7aa009d6159301e2"
-record = "Cadence::releaseV1x0x0"
-axis = "meant"
-reason = "no theorem states anything about it (ISO/IEC/IEEE 29148 verification)"
 
 [[residue]]
 kappa = "2d856444031fb737857464d0a76e853263f524eb414c11bffe1677842eb2256d"
@@ -9770,22 +10083,10 @@ axis = "derived"
 reason = "no derivation names it (prov:wasDerivedFrom)"
 
 [[residue]]
-kappa = "49753cd593e7f15b1b5441506ca9affc2b0d4d47d955faf95bf43654fde4b4f9"
-record = "Cadence::releaseV1x1x0"
-axis = "meant"
-reason = "no theorem states anything about it (ISO/IEC/IEEE 29148 verification)"
-
-[[residue]]
 kappa = "5652c6ab993954046c7814fceffc7de598de4e80e4a904005f3ecf272e786c5e"
 record = "Cadence::releaseV2x0x0"
 axis = "derived"
 reason = "no derivation names it (prov:wasDerivedFrom)"
-
-[[residue]]
-kappa = "06cedcca8e7d5e2e987e6d2865a2d44536cf514950114ff1b38cffb64e817af8"
-record = "Cadence::releaseV2x0x0"
-axis = "meant"
-reason = "no theorem states anything about it (ISO/IEC/IEEE 29148 verification)"
 
 [[residue]]
 kappa = "acb6ce7a91bfdc68d980942ad0b5d66721ce1752880788aa0daa12cc3da8bc66"
@@ -9794,22 +10095,10 @@ axis = "derived"
 reason = "no derivation names it (prov:wasDerivedFrom)"
 
 [[residue]]
-kappa = "6bd42786891b43c38691d3c13ac568d9e35bf7bbb74becc59dcba33e09b227f0"
-record = "Cadence::releaseV2x1x0"
-axis = "meant"
-reason = "no theorem states anything about it (ISO/IEC/IEEE 29148 verification)"
-
-[[residue]]
 kappa = "39cf2ccf5a188913425f9e027f78ac39554080402909022ee72c399ddf42b375"
 record = "Release::channel0PagesShards"
 axis = "derived"
 reason = "no derivation names it (prov:wasDerivedFrom)"
-
-[[residue]]
-kappa = "346d033aaf241de8281adf9ac7eb700ef0d144845a5f45e8d80a130fa6396f6b"
-record = "Release::channel0PagesShards"
-axis = "meant"
-reason = "no theorem states anything about it (ISO/IEC/IEEE 29148 verification)"
 
 [[residue]]
 kappa = "fd0f299e00df48186b5d574ce39a4a641fa517e475d34e027da8e470cacb40c1"
@@ -9818,22 +10107,10 @@ axis = "derived"
 reason = "no derivation names it (prov:wasDerivedFrom)"
 
 [[residue]]
-kappa = "f9dc7676aa0485a825fd3d3337ad521920233d0f0c627f419de47d4acdf52337"
-record = "Release::channel1JsDelivrMirror"
-axis = "meant"
-reason = "no theorem states anything about it (ISO/IEC/IEEE 29148 verification)"
-
-[[residue]]
 kappa = "7aa6e48d46e85074a762bb2aeaf8a54d536a08c53fddbc206f3e9fcb702e6289"
 record = "Release::channel2RawGitHubMirror"
 axis = "derived"
 reason = "no derivation names it (prov:wasDerivedFrom)"
-
-[[residue]]
-kappa = "25d8e3284f3a5f612301b9bfb27a8a6437576ea19a6c5b5687948d0035992c75"
-record = "Release::channel2RawGitHubMirror"
-axis = "meant"
-reason = "no theorem states anything about it (ISO/IEC/IEEE 29148 verification)"
 
 [[residue]]
 kappa = "2fb42fb71ed4c6a1d5c86c69fb3243c175467fdc36613b0da0018ca55b37ed3a"
@@ -9842,22 +10119,10 @@ axis = "derived"
 reason = "no derivation names it (prov:wasDerivedFrom)"
 
 [[residue]]
-kappa = "2134cfbcee8323a61d84356c5723645580408ccece9943a10ab8241307c159a4"
-record = "Release::channel3CargoSparseRegistry"
-axis = "meant"
-reason = "no theorem states anything about it (ISO/IEC/IEEE 29148 verification)"
-
-[[residue]]
 kappa = "8f155cb8cbcc1ab88d152745381b49614b2c0d02d9ae136652a0afc0292851d0"
 record = "Release::channel4GhcrOciBundle"
 axis = "derived"
 reason = "no derivation names it (prov:wasDerivedFrom)"
-
-[[residue]]
-kappa = "c923e4c951cd8cf3c75ee0f41e659b5c69f3e30242f94a43c93a672e493fdba1"
-record = "Release::channel4GhcrOciBundle"
-axis = "meant"
-reason = "no theorem states anything about it (ISO/IEC/IEEE 29148 verification)"
 
 [[residue]]
 kappa = "788d8d5d5c450f11bed55f456fb41f7036545e3822169645829bc8a4313c5d89"
@@ -9866,40 +10131,10 @@ axis = "derived"
 reason = "no derivation names it (prov:wasDerivedFrom)"
 
 [[residue]]
-kappa = "914e658b0acad805e1faba5df5341a7b4d0eea1b7f385f277ed860fd133f2a86"
-record = "Release::channel5ZenodoDoiArchive"
-axis = "meant"
-reason = "no theorem states anything about it (ISO/IEC/IEEE 29148 verification)"
-
-[[residue]]
-kappa = "fd67db9e9f1ab37920d446dd10364a33f128578fe61e3e5ebff924d03bc3926a"
-record = "Security::assetImmutableBlankFrame"
-axis = "meant"
-reason = "no theorem states anything about it (ISO/IEC/IEEE 29148 verification)"
-
-[[residue]]
-kappa = "802ae097e541d16ba796168809dccce1430f81b641ceb867b896ef458769f0a5"
-record = "Security::assetStakeholderPrivateBoundary"
-axis = "meant"
-reason = "no theorem states anything about it (ISO/IEC/IEEE 29148 verification)"
-
-[[residue]]
-kappa = "8b6c44f3ed171feb566c3af5d2dac1ec56557198653a1ed2e9f7f4b3041a7ee9"
-record = "Security::assetVerdantVcsAndReleases"
-axis = "meant"
-reason = "no theorem states anything about it (ISO/IEC/IEEE 29148 verification)"
-
-[[residue]]
 kappa = "592e5c44129b6b415eea2c722b9fe5212a06485937106a2cb9c79c718644d6d9"
 record = "Security::controlBoundaryEpochRotationAndRevocation"
 axis = "derived"
 reason = "derived from a record that is open on the derived axis: Security::riskRevokedPeerRetentionOrReplay"
-
-[[residue]]
-kappa = "afaf12799e2d40a9a66be6f5890ef520e32041b4a5c5d5b8e1a831f5183120a9"
-record = "Security::controlBoundaryEpochRotationAndRevocation"
-axis = "meant"
-reason = "no theorem states anything about it (ISO/IEC/IEEE 29148 verification)"
 
 [[residue]]
 kappa = "cf232fe711bf407030f2422bba1f6d3ab581dd677f6c777385245be102273dbe"
@@ -9908,22 +10143,10 @@ axis = "derived"
 reason = "derived from a record that is open on the derived axis: Security::riskUnauthorizedPrivateBoundaryRead"
 
 [[residue]]
-kappa = "100632c06707a45c7c1b00fdfd46b948e7647dc369955511f64d2903e3072797"
-record = "Security::controlEncryptBeforeShardBoundary"
-axis = "meant"
-reason = "no theorem states anything about it (ISO/IEC/IEEE 29148 verification)"
-
-[[residue]]
 kappa = "761b526c261c5cb8fb39a9246f701dd58d992b616d183ef62cafe928c24612c7"
 record = "Security::controlKOfNReedSolomonAndAutonomousRepair"
 axis = "derived"
 reason = "derived from a record that is open on the derived axis: Security::riskShardAttritionOrColdDisappearance"
-
-[[residue]]
-kappa = "d87d953fc0628b4704dc66b2cd3243cc5e255cee7c5097ad6ad2f083a2d606fa"
-record = "Security::controlKOfNReedSolomonAndAutonomousRepair"
-axis = "meant"
-reason = "no theorem states anything about it (ISO/IEC/IEEE 29148 verification)"
 
 [[residue]]
 kappa = "c3a26a2af8b2035ec7458b42123c26738e852bc29e2bd17c811d313344087be6"
@@ -9932,22 +10155,10 @@ axis = "derived"
 reason = "derived from a record that is open on the derived axis: Security::riskReleasePointerRollbackOrEquivocation"
 
 [[residue]]
-kappa = "9ede44b9f65a01e1061f4cd7c2e0caaa5fe3f0aec57ee366f2ad4b07f32ac723"
-record = "Security::controlMonotonicEpochQuorumPointer"
-axis = "meant"
-reason = "no theorem states anything about it (ISO/IEC/IEEE 29148 verification)"
-
-[[residue]]
 kappa = "d8d27836a38e979a717b63e2757859d53d5a3a84684255f47791fd449e42ce03"
 record = "Security::controlOriginScopedPrismIdAudience"
 axis = "derived"
 reason = "derived from a record that is open on the derived axis: Security::riskDeepLinkFramePhishingOrOriginConfusion"
-
-[[residue]]
-kappa = "0ff57c31f4c6ebf0c9f50d23480a921b15e469ec062137cde53bdd7c46d46720"
-record = "Security::controlOriginScopedPrismIdAudience"
-axis = "meant"
-reason = "no theorem states anything about it (ISO/IEC/IEEE 29148 verification)"
 
 [[residue]]
 kappa = "31d0bd2b35572f9336d567b1a6c50d5f37b3dcdd98af5e30e5c90f9d18856429"
@@ -9956,22 +10167,10 @@ axis = "derived"
 reason = "derived from a record that is open on the derived axis: Security::riskUnverifiedRepoDriftOrBypass"
 
 [[residue]]
-kappa = "0d9340c530e4824590d704679aa4186cd4ae5dc6c714117c393cd17e2320b645"
-record = "Security::controlSelfHostingRatchetAndPullThroughGate"
-axis = "meant"
-reason = "no theorem states anything about it (ISO/IEC/IEEE 29148 verification)"
-
-[[residue]]
 kappa = "1a33ea1c90a95fc02637d9acf8b5fbaef3b7ef010da7e2c58e3d294c16a78e0a"
 record = "Security::controlStitchBudgetAndReciprocalAdmission"
 axis = "derived"
 reason = "derived from a record that is open on the derived axis: Security::riskStitchStorageFloodOrSybilExhaustion"
-
-[[residue]]
-kappa = "2c734a019dec9d239e9ed07d4ef1790af1c0e3f3bf851c3a6dae8d0066924ee4"
-record = "Security::controlStitchBudgetAndReciprocalAdmission"
-axis = "meant"
-reason = "no theorem states anything about it (ISO/IEC/IEEE 29148 verification)"
 
 [[residue]]
 kappa = "097d3fec80586b35e90b6a078518f41065054d4c8a51383d2935817092994e6e"
@@ -9980,22 +10179,10 @@ axis = "derived"
 reason = "derived from a record that is open on the derived axis: Security::riskBlankFrameHydrationInjection"
 
 [[residue]]
-kappa = "6ea0497912f24725b39aac9b046415fb699a6486ebc289e19ac058ca3423ee29"
-record = "Security::controlZeroTrustSwVirtualFsMount"
-axis = "meant"
-reason = "no theorem states anything about it (ISO/IEC/IEEE 29148 verification)"
-
-[[residue]]
 kappa = "057891b0c1fe57f99e5218367e2044822d329c32ba8e42d5fcfbce01e629468a"
 record = "Security::mappingBlankFrameHydrationInjection"
 axis = "derived"
 reason = "derived from a record that is open on the derived axis: Security::threatBlankFrameHydrationInjection"
-
-[[residue]]
-kappa = "ffcfb1db2076902885c1d9faa29f9e0bb8e0a1685bbeb697bd5827afb8e377c5"
-record = "Security::mappingBlankFrameHydrationInjection"
-axis = "meant"
-reason = "no theorem states anything about it (ISO/IEC/IEEE 29148 verification)"
 
 [[residue]]
 kappa = "5c9b8145101aa7a570ac2f9a47146eeffdffcad8786295458a1f0b07800ac5a7"
@@ -10004,22 +10191,10 @@ axis = "derived"
 reason = "derived from a record that is open on the derived axis: Security::threatDeepLinkFramePhishingOrOriginConfusion"
 
 [[residue]]
-kappa = "24282aebbd6a564079476a8e0b9d18e6207aa306da24d902525c9c83dfab0fa0"
-record = "Security::mappingDeepLinkFramePhishingOrOriginConfusion"
-axis = "meant"
-reason = "no theorem states anything about it (ISO/IEC/IEEE 29148 verification)"
-
-[[residue]]
 kappa = "02ff211867841ffbb6563c1d769601afe146e49086c09f5f35e2651cffa68411"
 record = "Security::mappingReleasePointerRollbackOrEquivocation"
 axis = "derived"
 reason = "derived from a record that is open on the derived axis: Security::threatReleasePointerRollbackOrEquivocation"
-
-[[residue]]
-kappa = "8b3c35d3ff235d7e204b8e5ad6a33ca4d9df051ef2eb10f4cb6b9367d107843a"
-record = "Security::mappingReleasePointerRollbackOrEquivocation"
-axis = "meant"
-reason = "no theorem states anything about it (ISO/IEC/IEEE 29148 verification)"
 
 [[residue]]
 kappa = "ac60619be3c0107c63b29fc38639930afa6d36f7f85ef0f6783db9c2b1af053d"
@@ -10028,22 +10203,10 @@ axis = "derived"
 reason = "derived from a record that is open on the derived axis: Security::threatRevokedPeerRetentionOrReplay"
 
 [[residue]]
-kappa = "2b2d96859a299b361d3117ca5e53c4aa3054126e9ce4a44bbf234ffef36f5fc5"
-record = "Security::mappingRevokedPeerRetentionOrReplay"
-axis = "meant"
-reason = "no theorem states anything about it (ISO/IEC/IEEE 29148 verification)"
-
-[[residue]]
 kappa = "ce49bafdb54229884b7a973ec9097ce540531a321bd1b56dd4c02cc2c2db4388"
 record = "Security::mappingShardAttritionOrColdDisappearance"
 axis = "derived"
 reason = "derived from a record that is open on the derived axis: Security::threatShardAttritionOrColdDisappearance"
-
-[[residue]]
-kappa = "7ed62deed806b2de562cff7fc74cc02e4350a2bb45f5b8981cc10cd358ec8592"
-record = "Security::mappingShardAttritionOrColdDisappearance"
-axis = "meant"
-reason = "no theorem states anything about it (ISO/IEC/IEEE 29148 verification)"
 
 [[residue]]
 kappa = "45b687967828c70261b606f8c8c985b2868743066ab63d326a55718b9a9a1898"
@@ -10052,22 +10215,10 @@ axis = "derived"
 reason = "derived from a record that is open on the derived axis: Security::threatStitchStorageFloodOrSybilExhaustion"
 
 [[residue]]
-kappa = "8576692e70331960b3bb3e3351f0fe6507edda33e65c2fa6ce09cda0f35f14d4"
-record = "Security::mappingStitchStorageFloodOrSybilExhaustion"
-axis = "meant"
-reason = "no theorem states anything about it (ISO/IEC/IEEE 29148 verification)"
-
-[[residue]]
 kappa = "880bdc51c2feb4cde672e1f918bc9dbc2a689ace55475f1de21cfd212d553509"
 record = "Security::mappingUnauthorizedPrivateBoundaryRead"
 axis = "derived"
 reason = "derived from a record that is open on the derived axis: Security::threatUnauthorizedPrivateBoundaryRead"
-
-[[residue]]
-kappa = "ac3839d2a5248e53a489fc0b1e77da16d4c51e74743d0ecbc259e592546aaabe"
-record = "Security::mappingUnauthorizedPrivateBoundaryRead"
-axis = "meant"
-reason = "no theorem states anything about it (ISO/IEC/IEEE 29148 verification)"
 
 [[residue]]
 kappa = "c8b913bb3a9e7b70eb6655747751de5b38aa584b257ee4b6ceffa2584328cc64"
@@ -10076,22 +10227,10 @@ axis = "derived"
 reason = "derived from a record that is open on the derived axis: Security::threatUnverifiedRepoDriftOrBypass"
 
 [[residue]]
-kappa = "e119b6627f01810c7e8e0201b62e84a7e03098b8aecb7284c060ba2cd7062c38"
-record = "Security::mappingUnverifiedRepoDriftOrBypass"
-axis = "meant"
-reason = "no theorem states anything about it (ISO/IEC/IEEE 29148 verification)"
-
-[[residue]]
 kappa = "8de4ff83e8c3c10239ad8f721a38928eed8fd4b7a54f985c0c1ceb754321b0f9"
 record = "Security::modeledAssetImmutableBlankFrame"
 axis = "derived"
 reason = "no derivation names it (prov:wasDerivedFrom)"
-
-[[residue]]
-kappa = "95c1e956663d50761a3762172350e53919ef80f276fbe8f50cf5d4bbb86ef5ea"
-record = "Security::modeledAssetImmutableBlankFrame"
-axis = "meant"
-reason = "no theorem states anything about it (ISO/IEC/IEEE 29148 verification)"
 
 [[residue]]
 kappa = "a7e6c807ad4e1765c3c1d67ce9f98679876ae3c599ffcb27f1f1e405bdec1b87"
@@ -10100,22 +10239,10 @@ axis = "derived"
 reason = "no derivation names it (prov:wasDerivedFrom)"
 
 [[residue]]
-kappa = "e7caf650e91918797b180b8bd63dcfb27fc86c46e9b6ce136682d205f9e31bd3"
-record = "Security::modeledAssetStakeholderPrivateBoundary"
-axis = "meant"
-reason = "no theorem states anything about it (ISO/IEC/IEEE 29148 verification)"
-
-[[residue]]
 kappa = "ceed2742c4faf63630b9d5d752f0b1906f583e8d083be5ced66a267ffdbff7db"
 record = "Security::modeledAssetVerdantVcsAndReleases"
 axis = "derived"
 reason = "no derivation names it (prov:wasDerivedFrom)"
-
-[[residue]]
-kappa = "326cf09c959ec1dd2b6ecae8ab493f0c5016404d675fc6b0ba126ee6a33207e9"
-record = "Security::modeledAssetVerdantVcsAndReleases"
-axis = "meant"
-reason = "no theorem states anything about it (ISO/IEC/IEEE 29148 verification)"
 
 [[residue]]
 kappa = "46f0eb78ea205d029b4b6c50c3254c9644f5b6247178cc03aecacfdb1cdc6561"
@@ -10124,22 +10251,10 @@ axis = "derived"
 reason = "no derivation names it (prov:wasDerivedFrom)"
 
 [[residue]]
-kappa = "2b1055a5cee624006ae706ffdaea1d8b99a373387aaaed0be7caafa06f0425a5"
-record = "Security::modeledControlBoundaryEpochRotationAndRevocation"
-axis = "meant"
-reason = "no theorem states anything about it (ISO/IEC/IEEE 29148 verification)"
-
-[[residue]]
 kappa = "57310eb5803c05bf58dc796cd612e5bc50cb6de1ae8eb92957b33ce9ad2c69fc"
 record = "Security::modeledControlEncryptBeforeShardBoundary"
 axis = "derived"
 reason = "no derivation names it (prov:wasDerivedFrom)"
-
-[[residue]]
-kappa = "3002f1f76cf74dd47dcf4883e8e3227a9a80f6972df924c2fdd4aa58d9e73a70"
-record = "Security::modeledControlEncryptBeforeShardBoundary"
-axis = "meant"
-reason = "no theorem states anything about it (ISO/IEC/IEEE 29148 verification)"
 
 [[residue]]
 kappa = "7af2fa7321c3876e83b58c7d22520722d161a96a9cca92d89e985f80e4d61850"
@@ -10148,22 +10263,10 @@ axis = "derived"
 reason = "no derivation names it (prov:wasDerivedFrom)"
 
 [[residue]]
-kappa = "2350424bcc2ef60c8f852c8793d13b49d63cf9b7cb92c8a892cc401f4466eef7"
-record = "Security::modeledControlKOfNReedSolomonAndAutonomousRepair"
-axis = "meant"
-reason = "no theorem states anything about it (ISO/IEC/IEEE 29148 verification)"
-
-[[residue]]
 kappa = "d7161380cc690c905a80e4e452dc74815e9f0ed7e743d732aa209b3ab35a9e94"
 record = "Security::modeledControlMonotonicEpochQuorumPointer"
 axis = "derived"
 reason = "no derivation names it (prov:wasDerivedFrom)"
-
-[[residue]]
-kappa = "f3306d8da50245af53983afd1ca76076f6fd37bdf25a1846826974374bb7abe8"
-record = "Security::modeledControlMonotonicEpochQuorumPointer"
-axis = "meant"
-reason = "no theorem states anything about it (ISO/IEC/IEEE 29148 verification)"
 
 [[residue]]
 kappa = "e8c83ae29a05cd1f7033948d25bac4bb37371fb435d3603f54b4b7a973db6523"
@@ -10172,22 +10275,10 @@ axis = "derived"
 reason = "no derivation names it (prov:wasDerivedFrom)"
 
 [[residue]]
-kappa = "94922e9a362e8a76fb4f1d43ac379fae88f7ea9fee3f8de5c81dcab45aaa3d38"
-record = "Security::modeledControlOriginScopedPrismIdAudience"
-axis = "meant"
-reason = "no theorem states anything about it (ISO/IEC/IEEE 29148 verification)"
-
-[[residue]]
 kappa = "24a31f43236c2693a7f9f91cffe952f777bd28a7fd2afaad7efe074fe4f8f522"
 record = "Security::modeledControlSelfHostingRatchetAndPullThroughGate"
 axis = "derived"
 reason = "no derivation names it (prov:wasDerivedFrom)"
-
-[[residue]]
-kappa = "59e9438044b7c5f020e9ca37a7497f14dc196fa306a3c9f6b2c2156e5028548d"
-record = "Security::modeledControlSelfHostingRatchetAndPullThroughGate"
-axis = "meant"
-reason = "no theorem states anything about it (ISO/IEC/IEEE 29148 verification)"
 
 [[residue]]
 kappa = "8c3567a8770f5c5474218f3ab0f71d362990f7b007dbdd6d0a2fe4640c3ec60d"
@@ -10196,22 +10287,10 @@ axis = "derived"
 reason = "no derivation names it (prov:wasDerivedFrom)"
 
 [[residue]]
-kappa = "145957f6a60ee19a17308c72a0ed20cb931d8741d2987708ec5b146e9a65868b"
-record = "Security::modeledControlStitchBudgetAndReciprocalAdmission"
-axis = "meant"
-reason = "no theorem states anything about it (ISO/IEC/IEEE 29148 verification)"
-
-[[residue]]
 kappa = "494f54e04665d836d8957cdaa2643d5ff5d9d4f79ded18b7735ec02c6fa51594"
 record = "Security::modeledControlZeroTrustSwVirtualFsMount"
 axis = "derived"
 reason = "no derivation names it (prov:wasDerivedFrom)"
-
-[[residue]]
-kappa = "ca0d62a1d9b2343ebb87760eac7d2501ae0719c6d4cd4ad4b041b5c36653f568"
-record = "Security::modeledControlZeroTrustSwVirtualFsMount"
-axis = "meant"
-reason = "no theorem states anything about it (ISO/IEC/IEEE 29148 verification)"
 
 [[residue]]
 kappa = "6dd0ccb6799cfa04130fd02fa8c0d178b418e68078a8fc96dda01e45624f77f4"
@@ -10220,22 +10299,10 @@ axis = "derived"
 reason = "no derivation names it (prov:wasDerivedFrom)"
 
 [[residue]]
-kappa = "484d2e6bfdf0e8e40537728e9c4b0af7e9fe644a6de55e91a2f3c3ca9d1d2afe"
-record = "Security::modeledThreatBlankFrameHydrationInjection"
-axis = "meant"
-reason = "no theorem states anything about it (ISO/IEC/IEEE 29148 verification)"
-
-[[residue]]
 kappa = "09b6f6c7617817018e14f64fe3b69d42334e6ada1a218e028a31f8d5ec9772f4"
 record = "Security::modeledThreatDeepLinkFramePhishingOrOriginConfusion"
 axis = "derived"
 reason = "no derivation names it (prov:wasDerivedFrom)"
-
-[[residue]]
-kappa = "cb622ee08e5646b254e40503a0c893a199d7064af22aaf3d7cf5e349398d44d8"
-record = "Security::modeledThreatDeepLinkFramePhishingOrOriginConfusion"
-axis = "meant"
-reason = "no theorem states anything about it (ISO/IEC/IEEE 29148 verification)"
 
 [[residue]]
 kappa = "3d23a80c958c5c52836f3b4a32ab883c26e65db0b8a1b64e5b6c300aa06a2d20"
@@ -10244,22 +10311,10 @@ axis = "derived"
 reason = "no derivation names it (prov:wasDerivedFrom)"
 
 [[residue]]
-kappa = "c967c182d6ce8d226b1876968aa0f159e7cb188c98825b449b6e05fbc4ae7fc5"
-record = "Security::modeledThreatReleasePointerRollbackOrEquivocation"
-axis = "meant"
-reason = "no theorem states anything about it (ISO/IEC/IEEE 29148 verification)"
-
-[[residue]]
 kappa = "b7b1c899f0b628d0eafc14ed63598bf55ef1e47443d92dc82c12e2a1878b2523"
 record = "Security::modeledThreatRevokedPeerRetentionOrReplay"
 axis = "derived"
 reason = "no derivation names it (prov:wasDerivedFrom)"
-
-[[residue]]
-kappa = "fb623b17f834813683f84210cce3abbc80552b02a801ab7f3546f5abb9ef1aa2"
-record = "Security::modeledThreatRevokedPeerRetentionOrReplay"
-axis = "meant"
-reason = "no theorem states anything about it (ISO/IEC/IEEE 29148 verification)"
 
 [[residue]]
 kappa = "0613e479c6507c2d4773c4f55ed7d1f31f87d20ca8aa8301e0f1068a8d488658"
@@ -10268,22 +10323,10 @@ axis = "derived"
 reason = "no derivation names it (prov:wasDerivedFrom)"
 
 [[residue]]
-kappa = "9dc29d72f7797431ab2181f2e2009427747320fbe956be6b6989eaebc53a452a"
-record = "Security::modeledThreatShardAttritionOrColdDisappearance"
-axis = "meant"
-reason = "no theorem states anything about it (ISO/IEC/IEEE 29148 verification)"
-
-[[residue]]
 kappa = "6aa67849371896774b7b6858f896325aa0ba27f32bc10b37e34953167923b295"
 record = "Security::modeledThreatStitchStorageFloodOrSybilExhaustion"
 axis = "derived"
 reason = "no derivation names it (prov:wasDerivedFrom)"
-
-[[residue]]
-kappa = "3841240c3a1a383c9ce3b67a99a9da93154e3f7548dc4de985ff9fe1ade67714"
-record = "Security::modeledThreatStitchStorageFloodOrSybilExhaustion"
-axis = "meant"
-reason = "no theorem states anything about it (ISO/IEC/IEEE 29148 verification)"
 
 [[residue]]
 kappa = "35aaef6feba50ad8ef96718134bd271c83b1b952f31229b3c4c1ab0c861604b0"
@@ -10292,22 +10335,10 @@ axis = "derived"
 reason = "no derivation names it (prov:wasDerivedFrom)"
 
 [[residue]]
-kappa = "9402282b6cf061c09deff2c97ce92295555c13eb56e4ae6882413d53e35d5e8a"
-record = "Security::modeledThreatUnauthorizedPrivateBoundaryRead"
-axis = "meant"
-reason = "no theorem states anything about it (ISO/IEC/IEEE 29148 verification)"
-
-[[residue]]
 kappa = "a9de6c4c0f9e72f2863746f2313bea2b5b458815bbf1fb0b040e479345bd484a"
 record = "Security::modeledThreatUnverifiedRepoDriftOrBypass"
 axis = "derived"
 reason = "no derivation names it (prov:wasDerivedFrom)"
-
-[[residue]]
-kappa = "875d240d06042c8d9ba547bac0dde41b13927fa19c729232118ab3995411c8d2"
-record = "Security::modeledThreatUnverifiedRepoDriftOrBypass"
-axis = "meant"
-reason = "no theorem states anything about it (ISO/IEC/IEEE 29148 verification)"
 
 [[residue]]
 kappa = "71e4c98f72aa111f71a53fa2104f53f3caae3992c9217251a325074f71f6183a"
@@ -10316,22 +10347,10 @@ axis = "derived"
 reason = "derived from a record that is open on the derived axis: Security::threatBlankFrameHydrationInjection"
 
 [[residue]]
-kappa = "d0c637b8633bcc78fa52c021fde221b2666accc8714f11a263d1183c83a0287d"
-record = "Security::riskBlankFrameHydrationInjection"
-axis = "meant"
-reason = "no theorem states anything about it (ISO/IEC/IEEE 29148 verification)"
-
-[[residue]]
 kappa = "c32099c77e4dd7e6afd33d4980a92b1259c1e40f2587eff750dcbe84697e1914"
 record = "Security::riskDeepLinkFramePhishingOrOriginConfusion"
 axis = "derived"
 reason = "derived from a record that is open on the derived axis: Security::threatDeepLinkFramePhishingOrOriginConfusion"
-
-[[residue]]
-kappa = "23129db6c63468f89d8e148aefcd8beab51d6f2ec1affe54ad810877cc8cf418"
-record = "Security::riskDeepLinkFramePhishingOrOriginConfusion"
-axis = "meant"
-reason = "no theorem states anything about it (ISO/IEC/IEEE 29148 verification)"
 
 [[residue]]
 kappa = "007b4a61b9cd64f831ec4cfc0d66a97583f6b3b79adde42111e79f0c3605daef"
@@ -10340,22 +10359,10 @@ axis = "derived"
 reason = "derived from a record that is open on the derived axis: Security::threatReleasePointerRollbackOrEquivocation"
 
 [[residue]]
-kappa = "e55493a142cbe1f4f24e432e991f539f60ee675b59e217785fc50bf8641a8741"
-record = "Security::riskReleasePointerRollbackOrEquivocation"
-axis = "meant"
-reason = "no theorem states anything about it (ISO/IEC/IEEE 29148 verification)"
-
-[[residue]]
 kappa = "ce9aee04d5eb3088d85be8ff4b48fd3952f1392bc535e84ed3e4308f8ee814da"
 record = "Security::riskRevokedPeerRetentionOrReplay"
 axis = "derived"
 reason = "derived from a record that is open on the derived axis: Security::threatRevokedPeerRetentionOrReplay"
-
-[[residue]]
-kappa = "d042dc8a8349c045b29090fa69b287bf841b54394c2eb3d0559f18f44a22cacb"
-record = "Security::riskRevokedPeerRetentionOrReplay"
-axis = "meant"
-reason = "no theorem states anything about it (ISO/IEC/IEEE 29148 verification)"
 
 [[residue]]
 kappa = "011d6c4c673f4ca970b4d55dc2504f0f61e644fed4d0155e2dccb1cc088328b6"
@@ -10364,22 +10371,10 @@ axis = "derived"
 reason = "derived from a record that is open on the derived axis: Security::threatShardAttritionOrColdDisappearance"
 
 [[residue]]
-kappa = "b7d69f0ce86ba0740a2bd8fcca6f1d8e1f6750de813ccc27f1792828cb76b3f4"
-record = "Security::riskShardAttritionOrColdDisappearance"
-axis = "meant"
-reason = "no theorem states anything about it (ISO/IEC/IEEE 29148 verification)"
-
-[[residue]]
 kappa = "09c876e9e713598770625999176737578af38e48eae097b0188f56cd91596fbd"
 record = "Security::riskStitchStorageFloodOrSybilExhaustion"
 axis = "derived"
 reason = "derived from a record that is open on the derived axis: Security::threatStitchStorageFloodOrSybilExhaustion"
-
-[[residue]]
-kappa = "e2ad01268c2e9f3baa03d1e1303a2a12e72de2fef2e8d62766b8ca980839758a"
-record = "Security::riskStitchStorageFloodOrSybilExhaustion"
-axis = "meant"
-reason = "no theorem states anything about it (ISO/IEC/IEEE 29148 verification)"
 
 [[residue]]
 kappa = "8a30e5a6fb1a3b8d8f03c4d59b488d402ad93426937965d55445843c5c5600dc"
@@ -10388,22 +10383,10 @@ axis = "derived"
 reason = "derived from a record that is open on the derived axis: Security::threatUnauthorizedPrivateBoundaryRead"
 
 [[residue]]
-kappa = "f17b5406efc2d6827af54e7118e4610904ca5d071fc450c030b351902b0b970b"
-record = "Security::riskUnauthorizedPrivateBoundaryRead"
-axis = "meant"
-reason = "no theorem states anything about it (ISO/IEC/IEEE 29148 verification)"
-
-[[residue]]
 kappa = "fb91d7756c99659f6cec9c0934da521ccb664ba17ff5bb818f0641f3bca70716"
 record = "Security::riskUnverifiedRepoDriftOrBypass"
 axis = "derived"
 reason = "derived from a record that is open on the derived axis: Security::threatUnverifiedRepoDriftOrBypass"
-
-[[residue]]
-kappa = "463ea3b1cf0291d5eac79caff0bc219547a4c5b9532907bdae760ec88273c9c6"
-record = "Security::riskUnverifiedRepoDriftOrBypass"
-axis = "meant"
-reason = "no theorem states anything about it (ISO/IEC/IEEE 29148 verification)"
 
 [[residue]]
 kappa = "3f3816eafb84198c6d4f96338f2e5fbf354bf8856bbf4846ba2e4da857ab887c"
@@ -10412,22 +10395,10 @@ axis = "derived"
 reason = "derived from a record that is open on the derived axis: Security::modeledThreatBlankFrameHydrationInjection"
 
 [[residue]]
-kappa = "fc031fe9c06bff91ec2e77cc726db5aa3dca45a3024d98d8da0c099def67c466"
-record = "Security::threatBlankFrameHydrationInjection"
-axis = "meant"
-reason = "no theorem states anything about it (ISO/IEC/IEEE 29148 verification)"
-
-[[residue]]
 kappa = "e8d6c16bee095f9027849cb30086317ac667e96a702036cc2b3b796967ecb4dc"
 record = "Security::threatDeepLinkFramePhishingOrOriginConfusion"
 axis = "derived"
 reason = "derived from a record that is open on the derived axis: Security::modeledThreatDeepLinkFramePhishingOrOriginConfusion"
-
-[[residue]]
-kappa = "0da6ede0a76386477aef07e9cff98f08d3172e1294bcaa12b0444869f4fd9e0b"
-record = "Security::threatDeepLinkFramePhishingOrOriginConfusion"
-axis = "meant"
-reason = "no theorem states anything about it (ISO/IEC/IEEE 29148 verification)"
 
 [[residue]]
 kappa = "189e7ab88d3fe992913d27800715337caadb6a8ab0643c7248220d603833ccc4"
@@ -10436,22 +10407,10 @@ axis = "derived"
 reason = "derived from a record that is open on the derived axis: Security::modeledThreatReleasePointerRollbackOrEquivocation"
 
 [[residue]]
-kappa = "e39e625f8900c22a353a16e4e6e7d30a8efdd8ceb010fa32881eb5fc9e8e23fc"
-record = "Security::threatReleasePointerRollbackOrEquivocation"
-axis = "meant"
-reason = "no theorem states anything about it (ISO/IEC/IEEE 29148 verification)"
-
-[[residue]]
 kappa = "3de28d9d9251671447d3cdf03b2840b8811941821ac066f4d2f211f9d69d6a5a"
 record = "Security::threatRevokedPeerRetentionOrReplay"
 axis = "derived"
 reason = "derived from a record that is open on the derived axis: Security::modeledThreatRevokedPeerRetentionOrReplay"
-
-[[residue]]
-kappa = "38ee309f37bda798a189952b606b900e3aa2ad3eb2135fa4080ddd4bcaad5b80"
-record = "Security::threatRevokedPeerRetentionOrReplay"
-axis = "meant"
-reason = "no theorem states anything about it (ISO/IEC/IEEE 29148 verification)"
 
 [[residue]]
 kappa = "c205fb691b596a207e9748f053f404dc1bc778e5b43b66e050bf9c581853c30f"
@@ -10460,22 +10419,10 @@ axis = "derived"
 reason = "derived from a record that is open on the derived axis: Security::modeledThreatShardAttritionOrColdDisappearance"
 
 [[residue]]
-kappa = "e5259ea77edbe753fd1346a81feb2cbd14b7810b0592fc59b02b84e2acb34460"
-record = "Security::threatShardAttritionOrColdDisappearance"
-axis = "meant"
-reason = "no theorem states anything about it (ISO/IEC/IEEE 29148 verification)"
-
-[[residue]]
 kappa = "ce191465082ce881ea123e6efd22843fe1fec42d40ed89dd0565ff60475f440e"
 record = "Security::threatStitchStorageFloodOrSybilExhaustion"
 axis = "derived"
 reason = "derived from a record that is open on the derived axis: Security::modeledThreatStitchStorageFloodOrSybilExhaustion"
-
-[[residue]]
-kappa = "ce1eabc450313cdd77689da74a51bd72ee877bba11aa41911657b4ac320d9efe"
-record = "Security::threatStitchStorageFloodOrSybilExhaustion"
-axis = "meant"
-reason = "no theorem states anything about it (ISO/IEC/IEEE 29148 verification)"
 
 [[residue]]
 kappa = "2ce62a5c85d5a2b8386deadc02b046a991b61b8bcc05c0e3b4963d05ed2d769b"
@@ -10484,19 +10431,7 @@ axis = "derived"
 reason = "derived from a record that is open on the derived axis: Security::modeledThreatUnauthorizedPrivateBoundaryRead"
 
 [[residue]]
-kappa = "cc6a0c8c6a8ecf6fb411b0cccd98befe354a445ef2998547e290c50d97014c96"
-record = "Security::threatUnauthorizedPrivateBoundaryRead"
-axis = "meant"
-reason = "no theorem states anything about it (ISO/IEC/IEEE 29148 verification)"
-
-[[residue]]
 kappa = "67c9bf2f79fc7741df84444cea7e84e1fe2600ca474a75f7964332a328b173e4"
 record = "Security::threatUnverifiedRepoDriftOrBypass"
 axis = "derived"
 reason = "derived from a record that is open on the derived axis: Security::modeledThreatUnverifiedRepoDriftOrBypass"
-
-[[residue]]
-kappa = "ca6cbfe2462dc09980f5b18b3430bc4f3af6d6ec1bf24c6f59a0532b6a71a13b"
-record = "Security::threatUnverifiedRepoDriftOrBypass"
-axis = "meant"
-reason = "no theorem states anything about it (ISO/IEC/IEEE 29148 verification)"

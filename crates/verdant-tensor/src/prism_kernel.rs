@@ -24026,7 +24026,7 @@ pub fn sNine() -> Result<u64, self::ComputeError> {
 
 pub fn sNineteen() -> u64 {
     {
-        let _x_16 = (((1 << (1 << (1 << 1))) + (1 << 1)) + 1);
+        let _x_16 = crate::scalars::sixteen_u64().wrapping_add(crate::scalars::three_u64());
         _x_16
     }
 }
@@ -24078,7 +24078,7 @@ pub fn sNinetyTwo() -> Result<u64, self::ComputeError> {
 
 pub fn sOneEighty() -> Result<u64, self::ComputeError> {
     Ok({
-        let _x_5 = ((1 << (1 << (1 << 1))) + (1 << 1));
+        let _x_5 = crate::scalars::sixteen_u64().wrapping_add(crate::scalars::two_u64());
         {
             let _x_3 = sTen()?;
             {
@@ -24228,7 +24228,7 @@ pub fn sThirtyEight() -> Result<u64, self::ComputeError> {
     Ok({
         let _x_5 = crate::scalars::two_u64();
         {
-            let _x_6 = (((1 << (1 << (1 << 1))) + (1 << 1)) + 1);
+            let _x_6 = crate::scalars::sixteen_u64().wrapping_add(crate::scalars::three_u64());
             {
                 let _x_4 = core::convert::identity::<u64>(_x_5)
                     .checked_mul(_x_6)
@@ -24271,7 +24271,9 @@ pub fn sThirtyFour() -> Result<u64, self::ComputeError> {
 
 pub fn sThirtyNine() -> u64 {
     {
-        let _x_16 = ((((1 << ((1 << (1 << 1)) + 1)) + (1 << (1 << 1))) + (1 << 1)) + 1);
+        let _x_16 = crate::scalars::thirty_two_u64()
+            .wrapping_add(crate::scalars::four_u64())
+            .wrapping_add(crate::scalars::three_u64());
         _x_16
     }
 }

@@ -53,28 +53,9 @@ function intToZeroOneExpr(n, suffix = "") {
   };
   if (SCALAR_MAP[n.toString()]) return SCALAR_MAP[n.toString()];
 
-  const terms = [];
-  let bit = 0n;
-  let rem = n;
-  while (rem > 0n) {
-    if ((rem & 1n) === 1n) {
-      if (bit === 0n) {
-        terms.push(one);
-      } else if (bit === 1n) {
-        terms.push(`(${one} << 1)`);
-      } else {
-        terms.push(`(${one} << ${intToZeroOneExpr(bit, "")})`);
-      }
-    }
-    rem >>= 1n;
-    bit += 1n;
-  }
-  terms.reverse();
-  let acc = terms[0];
-  for (let i = 1; i < terms.length; i++) {
-    acc = `(${acc} + ${terms[i]})`;
-  }
-  return acc;
+  // Emit total u64 wrapping expressions for any other untyped Prism constant (> 1)
+  // so generated `sNineteen`, `sThirtyEight`, `sThirtyNine`, `sOneEighty`, etc. satisfy BOTH FI-08 & uorust:
+  return intToZeroOneExpr(n, "u64");
 }
 
 function splitNumericToken(tok) {

@@ -112,5 +112,13 @@ theorem{
   proof: decide{},
   axioms: []
 }
+
+theorem{
+  name: releaseChannelsNamedVerified,
+  parameters: [],
+  statement: (((project (channel0PagesShards) digestVerified) && ((project (channel1JsDelivrMirror) digestVerified) && ((project (channel2RawGitHubMirror) digestVerified) && ((project (channel3CargoSparseRegistry) digestVerified) && ((project (channel4GhcrOciBundle) digestVerified) && (project (channel5ZenodoDoiArchive) digestVerified)))))) = true),
+  proof: decide{},
+  axioms: []
+}
 \end{semanticmodule}
 \end{lexlean}

@@ -56,10 +56,13 @@ impl PrismIdSessionEnvelope {
     /// Maximum allowed session lifetime in seconds (`8` days, matching `prism/identity/4`).
     #[must_use]
     pub fn max_session_lifetime_secs() -> u64 {
-        let eight = prism_kernel::sEight().unwrap_or(1);
-        let sixty = prism_kernel::sSixty().unwrap_or(1);
-        let twenty_four = prism_kernel::sTwentyFour().unwrap_or(1);
-        eight * twenty_four * sixty * sixty
+        let eight = crate::math::eight_u32() as u64;
+        let sixty = crate::math::sixty_four_u32().wrapping_sub(crate::math::four_u32()) as u64;
+        let twenty_four = crate::math::eight_u32().wrapping_mul(crate::math::three_u32()) as u64;
+        eight
+            .wrapping_mul(twenty_four)
+            .wrapping_mul(sixty)
+            .wrapping_mul(sixty)
     }
 
     /// Creates a deterministic signed envelope binding `payload_digest` to `prism_id` and `device_secret`.
@@ -974,7 +977,8 @@ fn gf256_inv(a: u8) -> u8 {
         0
     } else {
         // By Fermat's little theorem in GF(2^8): a^-1 = a^(2^8 - 2) = a^254.
-        let exp = (1u16 << (1 + 1 + 1 + 1 + 1 + 1 + 1 + 1)) - (1u16 + 1u16);
+        let exp = (crate::math::pow2_u64(crate::math::eight_u32()) as u16)
+            .wrapping_sub(1_u16.wrapping_add(1_u16));
         gf256_pow(a, exp)
     }
 }

@@ -79,16 +79,17 @@ impl ObserverOrganKind {
     /// Zero-based organ index (`0..5`).
     #[must_use]
     pub const fn index(self) -> usize {
-        let two = 1usize + 1usize;
-        let three = two + 1usize;
-        let four = two * two;
-        match self {
-            Self::Engine => 0,
-            Self::Studio => 1,
+        let two = 1_u32.wrapping_add(1_u32);
+        let three = two.wrapping_add(1_u32);
+        let four = two.wrapping_mul(two);
+        let idx = match self {
+            Self::Engine => 0_u32,
+            Self::Studio => 1_u32,
             Self::Catalogs => two,
             Self::Demo => three,
             Self::Reference => four,
-        }
+        };
+        idx as usize
     }
 
     /// Canonical slug matching `VERDANT_PLATFORM_ORGANS`.
@@ -146,39 +147,41 @@ impl StakeholderRoleKind {
     /// Zero-based stakeholder index (`0..7`).
     #[must_use]
     pub const fn index(self) -> usize {
-        let two = 1usize + 1usize;
-        let three = two + 1usize;
-        let four = two * two;
-        let five = four + 1usize;
-        let six = three * two;
-        match self {
-            Self::GameDeveloper => 0,
-            Self::TechnicalArtist => 1,
+        let two = 1_u32.wrapping_add(1_u32);
+        let three = two.wrapping_add(1_u32);
+        let four = two.wrapping_mul(two);
+        let five = four.wrapping_add(1_u32);
+        let six = three.wrapping_mul(two);
+        let idx = match self {
+            Self::GameDeveloper => 0_u32,
+            Self::TechnicalArtist => 1_u32,
             Self::SystemsEngineer => two,
             Self::BrowserPlayer => three,
             Self::SecurityAuditor => four,
             Self::UiComplianceArchitect => five,
             Self::MultiplayerCitizen => six,
-        }
+        };
+        idx as usize
     }
 
     /// Bijective Studio functional workspace index (`0..7`: `dashboard, code, design, assets, audio, director, gameplay`).
     #[must_use]
     pub const fn workspace_index(self) -> usize {
-        let two = 1usize + 1usize;
-        let three = two + 1usize;
-        let four = two * two;
-        let five = four + 1usize;
-        let six = three * two;
-        match self {
-            Self::SystemsEngineer => 0,
-            Self::GameDeveloper => 1,
+        let two = 1_u32.wrapping_add(1_u32);
+        let three = two.wrapping_add(1_u32);
+        let four = two.wrapping_mul(two);
+        let five = four.wrapping_add(1_u32);
+        let six = three.wrapping_mul(two);
+        let idx = match self {
+            Self::SystemsEngineer => 0_u32,
+            Self::GameDeveloper => 1_u32,
             Self::UiComplianceArchitect => two,
             Self::TechnicalArtist => three,
             Self::MultiplayerCitizen => four,
             Self::SecurityAuditor => five,
             Self::BrowserPlayer => six,
-        }
+        };
+        idx as usize
     }
 
     /// Functional Studio workspace slug (`dashboard..gameplay`).
@@ -1052,42 +1055,25 @@ impl HostCapabilityEnvelope {
     /// Constructs a conservative, safe default host envelope prior to browser GPU probing.
     #[must_use]
     pub fn default_safe() -> Self {
-        let tex_1024 = 1u32 << (1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1);
-        let tex_2048 = tex_1024 << 1;
-        let mb_8 = 1u32
-            << (1
-                + 1
-                + 1
-                + 1
-                + 1
-                + 1
-                + 1
-                + 1
-                + 1
-                + 1
-                + 1
-                + 1
-                + 1
-                + 1
-                + 1
-                + 1
-                + 1
-                + 1
-                + 1
-                + 1
-                + 1
-                + 1
-                + 1);
-        let thousand = pow10_u64(two_u32() + 1) as u32;
-        let threads = 1u32 << (1 + 1);
-        let default_w = tex_1024 + (1u32 << (1 + 1 + 1 + 1 + 1 + 1 + 1 + 1));
-        let default_h = (1u32 << (1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1))
-            + (1u32 << (1 + 1 + 1 + 1 + 1 + 1 + 1 + 1));
+        let two = 1_u32.wrapping_add(1_u32);
+        let ten = verdant_tensor::scalars::ten_u64() as u32;
+        let eight = verdant_tensor::scalars::eight_u64() as u32;
+        let tex_1024 = crate::math::pow2_u64(ten) as u32;
+        let tex_2048 = tex_1024.wrapping_mul(two);
+        let mb_8 =
+            crate::math::pow2_u64(ten.wrapping_add(ten).wrapping_add(two).wrapping_add(1_u32))
+                as u32;
+        let thousand = pow10_u64(two_u32().wrapping_add(1_u32)) as u32;
+        let threads = verdant_tensor::scalars::four_u64() as u32;
+        let px_256 = crate::math::pow2_u64(eight) as u32;
+        let px_512 = px_256.wrapping_mul(two);
+        let default_w = tex_1024.wrapping_add(px_256);
+        let default_h = px_512.wrapping_add(px_256);
         Self {
             max_texture_edge_px: tex_1024,
             is_software_gpu: false,
             hardware_threads: threads,
-            ema_frame_micros: thousand * (1 + 1 + 1 + 1 + 1 + 1 + 1 + 1),
+            ema_frame_micros: thousand.wrapping_mul(eight),
             active_triangles: 0,
             viewport_width_px: default_w,
             viewport_height_px: default_h,
@@ -1098,7 +1084,7 @@ impl HostCapabilityEnvelope {
             recommended_shadow_map_px: tex_2048,
             recommended_anisotropy: threads,
             uhd_tier_label: "FHD 1080p Native".to_string(),
-            host_headroom_permille: thousand / (1 + 1),
+            host_headroom_permille: thousand.checked_div(two).unwrap_or(0),
             stream_escalation_active: true,
         }
     }

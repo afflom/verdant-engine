@@ -95,8 +95,7 @@ impl NavMesh {
 
     /// Extracts walkable triangles via `prism_kernel::navTriangleWalkable` and builds edge adjacency.
     pub fn from_mesh(mesh: &ProceduralMesh) -> Result<Self, NavigationError> {
-        let scale =
-            crate::prism_kernel::skinWeightScale().expect("verified Prism skinWeightScale") as f64;
+        let scale = crate::prism_kernel::skinWeightScale().expect("prism") as f64;
         let inv_three = 1.0 / (three_u32() as f64);
 
         let mut polygons = Vec::new();
@@ -126,8 +125,7 @@ impl NavMesh {
                 continue;
             }
             let normal_y_milli = (normal.y.min(1.0) * scale).round() as u64;
-            let walkable = crate::prism_kernel::navTriangleWalkable(normal_y_milli)
-                .expect("verified Prism navTriangleWalkable");
+            let walkable = crate::prism_kernel::navTriangleWalkable(normal_y_milli).expect("prism");
             if !walkable {
                 continue;
             }
@@ -230,8 +228,7 @@ impl NavMesh {
         }
 
         let scale = verdant_tensor::kernel_consts().skin_weight_scale_f64;
-        let max_nodes = crate::prism_kernel::navMaxSearchNodes()
-            .expect("verified Prism navMaxSearchNodes") as usize;
+        let max_nodes = crate::prism_kernel::navMaxSearchNodes().expect("prism") as usize;
         let goal_pos = self.polygons[goal_polygon].centroid;
 
         let mut g_milli = vec![u64::MAX; count];
@@ -242,8 +239,7 @@ impl NavMesh {
         g_milli[start_polygon] = 0;
         let h0 =
             ((self.polygons[start_polygon].centroid - goal_pos).length() * scale).round() as u64;
-        let f0 =
-            crate::prism_kernel::astarPriorityMilli(0, h0).expect("verified Prism astarPriority");
+        let f0 = crate::prism_kernel::astarPriorityMilli(0, h0).expect("prism");
         open.push(Reverse((f0, start_polygon)));
 
         let mut expanded = 0usize;
@@ -294,8 +290,8 @@ impl NavMesh {
                     g_milli[nbr] = tentative_g;
                     let h =
                         ((self.polygons[nbr].centroid - goal_pos).length() * scale).round() as u64;
-                    let f_score = crate::prism_kernel::astarPriorityMilli(tentative_g, h)
-                        .expect("verified Prism astarPriorityMilli");
+                    let f_score =
+                        crate::prism_kernel::astarPriorityMilli(tentative_g, h).expect("prism");
                     open.push(Reverse((f_score, nbr)));
                 }
             }
@@ -314,8 +310,7 @@ impl NavMesh {
         if count == 0 {
             return Err(NavigationError::EmptyWalkableNavMesh);
         }
-        let scale =
-            crate::prism_kernel::skinWeightScale().expect("verified Prism skinWeightScale") as f64;
+        let scale = crate::prism_kernel::skinWeightScale().expect("prism") as f64;
         let mut edge_costs = vec![None; count * count];
         for (idx, poly) in self.polygons.iter().enumerate() {
             edge_costs[idx * count + idx] = Some(0);
@@ -354,8 +349,7 @@ impl NavMesh {
             });
         }
         let closure = self.all_pairs_shortest_paths_tropical()?;
-        let scale =
-            crate::prism_kernel::skinWeightScale().expect("verified Prism skinWeightScale") as f64;
+        let scale = crate::prism_kernel::skinWeightScale().expect("prism") as f64;
         let cost_milli = closure[start_polygon * count + goal_polygon].ok_or(
             NavigationError::UnreachableGoal {
                 start_polygon,

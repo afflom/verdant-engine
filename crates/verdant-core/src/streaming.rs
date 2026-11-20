@@ -60,8 +60,8 @@ impl LodLevel {
         match self {
             Self::Lod0CoarseProxy => 0,
             Self::Lod1MediumDetail => 1,
-            Self::Lod2HighDetail => prism_kernel::sTwo(),
-            Self::Lod3LosslessSource => prism_kernel::sThree(),
+            Self::Lod2HighDetail => crate::math::two_u32() as u64,
+            Self::Lod3LosslessSource => crate::math::three_u32() as u64,
         }
     }
 
@@ -69,25 +69,17 @@ impl LodLevel {
     #[must_use]
     pub fn prism_spec(self) -> prism_kernel::StreamingLodSpec {
         match self {
-            Self::Lod0CoarseProxy => {
-                prism_kernel::lod0CoarseProxy().expect("verified Prism lod0CoarseProxy")
-            }
-            Self::Lod1MediumDetail => {
-                prism_kernel::lod1MediumDetail().expect("verified Prism lod1MediumDetail")
-            }
-            Self::Lod2HighDetail => {
-                prism_kernel::lod2HighDetail().expect("verified Prism lod2HighDetail")
-            }
-            Self::Lod3LosslessSource => {
-                prism_kernel::lod3LosslessSource().expect("verified Prism lod3LosslessSource")
-            }
+            Self::Lod0CoarseProxy => prism_kernel::lod0CoarseProxy().expect("prism"),
+            Self::Lod1MediumDetail => prism_kernel::lod1MediumDetail().expect("prism"),
+            Self::Lod2HighDetail => prism_kernel::lod2HighDetail().expect("prism"),
+            Self::Lod3LosslessSource => prism_kernel::lod3LosslessSource().expect("prism"),
         }
     }
 
     /// Corresponding Lean-verified `LodRenderEnvelopeSpec` from `Subsystems.lex.tex`.
     #[must_use]
     pub fn render_envelope(self) -> prism_kernel::LodRenderEnvelopeSpec {
-        prism_kernel::lodEnvelopeByRank(self.rank()).expect("verified Prism lodEnvelopeByRank")
+        prism_kernel::lodEnvelopeByRank(self.rank()).expect("prism")
     }
 
     /// Normalized resolution fraction `resNumer / resDenom` in `(0, 1]`.
@@ -122,8 +114,7 @@ impl PhysicalEnvironment {
         let half = half_f64();
         let ten = pow10_u64(1) as f64;
         let thousand = pow10_u64(three_u32()) as f64;
-        let sound =
-            prism_kernel::wasmSoundSpeedMps().expect("verified Prism wasmSoundSpeedMps") as f64;
+        let sound = prism_kernel::wasmSoundSpeedMps().expect("prism") as f64;
         let five = nth_prime_u64(two_u32()) as f64;
         let seven = nth_prime_u64(three_u32()) as f64;
         Self {
@@ -282,13 +273,11 @@ pub struct SceneBuildParams {
 
 impl Default for SceneBuildParams {
     fn default() -> Self {
-        let wp_count = prism_kernel::splineWaypointCount()
-            .expect("verified Prism splineWaypointCount") as usize;
-        let orbit_r = prism_kernel::splineOrbitRadiusMeters()
-            .expect("verified Prism splineOrbitRadiusMeters") as f64;
-        let sixteen = prism_kernel::sSixteen().expect("verified Prism sSixteen") as usize;
-        let six = prism_kernel::sSix().expect("verified Prism sSix") as usize;
-        let eight = prism_kernel::sEight().expect("verified Prism sEight") as usize;
+        let wp_count = prism_kernel::splineWaypointCount().expect("prism") as usize;
+        let orbit_r = prism_kernel::splineOrbitRadiusMeters().expect("prism") as f64;
+        let sixteen = prism_kernel::sSixteen().expect("prism") as usize;
+        let six = prism_kernel::sSix().expect("prism") as usize;
+        let eight = prism_kernel::sEight().expect("prism") as usize;
         Self {
             environment: PhysicalEnvironment::temperate_terrestrial(),
             terrain: TerrainReliefParams::standard_basin_valley(),
@@ -350,8 +339,7 @@ fn build_scene_nodes(
     let two = two_f64();
     let three = three_u32() as f64;
     let four = four_u32() as f64;
-    let base_hz = prism_kernel::wasmBinauralFundamentalHz()
-        .expect("verified Prism wasmBinauralFundamentalHz") as f64;
+    let base_hz = prism_kernel::wasmBinauralFundamentalHz().expect("prism") as f64;
     let phi = golden_ratio();
 
     let descriptors = [
@@ -392,7 +380,7 @@ fn build_scene_nodes(
             base_hz / two,
         ),
         (
-            prism_kernel::sFour().expect("verified Prism sFour"),
+            prism_kernel::sFour().expect("prism"),
             "elevated-deck-bridge",
             "Elevated Deck Bridge",
             SceneNodeKind::ElevatedDeckBridge,
@@ -401,7 +389,7 @@ fn build_scene_nodes(
             0.0,
         ),
         (
-            prism_kernel::sFive().expect("verified Prism sFive"),
+            prism_kernel::sFive().expect("prism"),
             "navigable-path-grid",
             "Navigable Path Grid",
             SceneNodeKind::NavigablePathGrid,
@@ -410,7 +398,7 @@ fn build_scene_nodes(
             0.0,
         ),
         (
-            prism_kernel::sSix().expect("verified Prism sSix"),
+            prism_kernel::sSix().expect("prism"),
             "kinematic-spline-mover",
             "Kinematic Spline Mover",
             SceneNodeKind::KinematicSplineMover,
@@ -428,8 +416,7 @@ fn build_scene_nodes(
 
     let mut out = Vec::with_capacity(max_presets);
     for &(idx, slug, title, kind, span, height, hz) in descriptors.iter().take(max_presets) {
-        let spec = prism_kernel::sceneNodePresetByIndex(idx)
-            .expect("verified Prism sceneNodePresetByIndex");
+        let spec = prism_kernel::sceneNodePresetByIndex(idx).expect("prism");
         let pos = preset_world_position(seed, &params.terrain, &spec);
         out.push(SceneNodeInstance {
             preset_index: idx,
@@ -495,8 +482,7 @@ impl StandardSceneState {
         while r < target_rank {
             let earlier = LodLevel::from_rank(r)?.prism_spec();
             let later = LodLevel::from_rank(r + 1)?.prism_spec();
-            let valid =
-                prism_kernel::lodStepValid(&earlier, &later).expect("verified Prism lodStepValid");
+            let valid = prism_kernel::lodStepValid(&earlier, &later).expect("prism");
             if !valid {
                 return Err(StreamingError::NonMonotonicLodTransition {
                     current_rank: r,
@@ -527,8 +513,8 @@ impl StandardSceneState {
         self.mover_spline_waypoints = waypoints;
 
         let mut scene = SceneWorld::new();
-        let extent = (prism_kernel::sForty().expect("verified Prism sForty") as f64)
-            + (prism_kernel::sEight().expect("verified Prism sEight") as f64);
+        let extent = (prism_kernel::sForty().expect("prism") as f64)
+            + (prism_kernel::sEight().expect("prism") as f64);
         let two = two_f64();
         let four = four_u32() as f64;
 
@@ -699,8 +685,7 @@ pub struct UorcStreamSummary {
 
 #[cfg(any(feature = "uorc-streaming", feature = "uorc-wasm-decode"))]
 fn uorc_work_budget() -> u64 {
-    let shift =
-        prism_kernel::uorcDefaultDecodeWork().expect("verified Prism uorcDefaultDecodeWork") as u32;
+    let shift = prism_kernel::uorcDefaultDecodeWork().expect("prism") as u32;
     pow2_u64(shift)
 }
 
@@ -723,8 +708,7 @@ pub fn pack_progressive_uorc_stream(seed: u64) -> Result<Vec<u8>, StreamingError
         lod_blobs.push(snap);
     }
 
-    let steps =
-        prism_kernel::uorcDefaultCompressSteps().expect("verified Prism uorcDefaultCompressSteps");
+    let steps = prism_kernel::uorcDefaultCompressSteps().expect("prism");
     let mut encoder = FrameEncoder::objects(&lengths);
     let mut stream = Vec::new();
     for blob in &lod_blobs {
@@ -819,8 +803,7 @@ pub fn verify_progressive_uorc_stream(
         }
         let spec = state.active_lod.prism_spec();
         if let Some(earlier) = &prev_spec {
-            let step_ok =
-                prism_kernel::lodStepValid(earlier, &spec).expect("verified Prism lodStepValid");
+            let step_ok = prism_kernel::lodStepValid(earlier, &spec).expect("prism");
             if !step_ok {
                 return Err(StreamingError::NonMonotonicLodTransition {
                     current_rank: earlier.rank,
@@ -1200,8 +1183,7 @@ pub fn decode_portable_uorc_stream_up_to_lod(
         }
         let spec = decoded_state.active_lod.prism_spec();
         if let Some(earlier) = &prev_spec {
-            let step_ok =
-                prism_kernel::lodStepValid(earlier, &spec).expect("verified Prism lodStepValid");
+            let step_ok = prism_kernel::lodStepValid(earlier, &spec).expect("prism");
             if !step_ok {
                 return Err(StreamingError::NonMonotonicLodTransition {
                     current_rank: earlier.rank,
@@ -1304,8 +1286,7 @@ pub fn decode_portable_uorc_single_frame(
         } else {
             LodLevel::from_rank(step_rank)?.prism_spec()
         };
-        let step_ok = prism_kernel::lodStepValid(&prev_spec, &next_spec)
-            .expect("verified Prism lodStepValid");
+        let step_ok = prism_kernel::lodStepValid(&prev_spec, &next_spec).expect("prism");
         if !step_ok {
             return Err(StreamingError::NonMonotonicLodTransition {
                 current_rank: prev_spec.rank,
@@ -1320,8 +1301,14 @@ pub fn decode_portable_uorc_single_frame(
 /// Returns `true` when `bytes` begins with the canonical 4-byte `UORC` archive magic (`0x55 0x4F 0x52 0x43`).
 #[must_use]
 pub fn is_uorc_archive(bytes: &[u8]) -> bool {
-    let magic_len = 1usize << (1usize + 1usize);
-    bytes.len() >= magic_len && &bytes[..magic_len] == b"UORC"
+    let two = crate::math::two_u32() as usize;
+    let three = crate::math::three_u32() as usize;
+    let magic_len = crate::math::four_u32() as usize;
+    bytes.len() >= magic_len
+        && bytes[0] == b'U'
+        && bytes[1] == b'O'
+        && bytes[two] == b'R'
+        && bytes[three] == b'C'
 }
 
 /// Compresses any arbitrary byte slice into a self-delimiting, SHA-256-sealed stateless `UORC`

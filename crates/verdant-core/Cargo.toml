@@ -12,13 +12,14 @@ keywords.workspace = true
 categories.workspace = true
 
 [features]
-default = ["uorc-streaming", "uorc-wasm-decode"]
+default = ["uorc-streaming", "uorc-wasm-decode", "wgsl-oracle"]
 uorc-streaming = ["dep:uorc", "uorc-wasm-decode"]
 uorc-wasm-decode = ["dep:uorc_decompress"]
+wgsl-oracle = ["dep:naga"]
 
 [dependencies]
 gltf = { version = "1.4.1", features = ["extras"] }
-naga = { version = "24.0.0", features = ["wgsl-in", "glsl-out"] }
+naga = { version = "24.0.0", features = ["wgsl-in", "glsl-out"], optional = true }
 serde = { version = "1.0.219", features = ["derive"] }
 serde_json = "1.0.140"
 sha2 = "0.10.9"

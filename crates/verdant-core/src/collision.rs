@@ -273,10 +273,8 @@ pub fn gjk_intersect_and_manifold(
         return Err(CollisionError::EmptyOrDegenerateHull { vertex_count: 0 });
     }
 
-    let max_iters =
-        crate::prism_kernel::gjkMaxIterations().expect("verified Prism gjkMaxIterations") as u32;
-    let max_simplex = crate::prism_kernel::gjkSimplexMaxVertices()
-        .expect("verified Prism gjkSimplexMaxVertices") as usize;
+    let max_iters = crate::prism_kernel::gjkMaxIterations().expect("prism") as u32;
+    let max_simplex = crate::prism_kernel::gjkSimplexMaxVertices().expect("prism") as usize;
 
     let delta = pos_b - pos_a;
     let mut dir = if delta.length() > geometric_epsilon() {
@@ -396,8 +394,7 @@ pub fn solve_contact_impulse(
         });
     }
 
-    let scale =
-        crate::prism_kernel::skinWeightScale().expect("verified Prism skinWeightScale") as f64;
+    let scale = crate::prism_kernel::skinWeightScale().expect("prism") as f64;
     let closing_milli = (closing_velocity_mps.max(0.0) * scale).round() as u64;
     let rest_permille = (restitution.clamp(0.0, 1.0) * scale).round() as u64;
     let pen_milli = (penetration_meters.max(0.0) * scale).round() as u64;
@@ -411,7 +408,7 @@ pub fn solve_contact_impulse(
         slop_milli,
         dt_millis,
     )
-    .expect("verified Prism solveContactImpulseMilli");
+    .expect("prism");
 
     let normal_impulse_milli = ((delta_vn_milli as f64) * effective_mass_kg).round() as u64;
     let desired_tangent_milli =
@@ -423,14 +420,14 @@ pub fn solve_contact_impulse(
         normal_impulse_milli,
         mu_milli,
     )
-    .expect("verified Prism clampCoulombFrictionMilli");
+    .expect("prism");
 
     let cone_ok = crate::prism_kernel::coulombFrictionConeValid(
         clamped_tangent_milli,
         normal_impulse_milli,
         mu_milli,
     )
-    .expect("verified Prism coulombFrictionConeValid");
+    .expect("prism");
 
     Ok(SolvedContactImpulse {
         normal_impulse_ns: (normal_impulse_milli as f64) / scale,

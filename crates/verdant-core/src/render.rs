@@ -5,18 +5,21 @@
 //! `naga::valid::Validator`). All material parameters are synthesized constructively without
 //! magic float literals.
 
+#[cfg(feature = "wgsl-oracle")]
 use naga::valid::{Capabilities, ValidationFlags, Validator};
 use serde::{Deserialize, Serialize};
 
 use crate::ecs::SceneWorld;
-use crate::error::{
-    OracleValidationError, RenderGraphError, ShaderValidationError, TensorComputeError,
-};
+#[cfg(feature = "wgsl-oracle")]
+use crate::error::{OracleValidationError, ShaderValidationError};
+use crate::error::{RenderGraphError, TensorComputeError};
 use crate::geometry::ProceduralMesh;
 use crate::math::{
-    golden_ratio, half_f64, nth_prime_u64, pow10_u64, three_u32, two_f64, two_u32, Mat4, Vec3,
-    DIM_HOMOGENEOUS, DIM_SPATIAL,
+    golden_ratio, half_f64, nth_prime_u64, three_u32, two_f64, Mat4, Vec3, DIM_HOMOGENEOUS,
+    DIM_SPATIAL,
 };
+#[cfg(feature = "wgsl-oracle")]
+use crate::math::{pow10_u64, two_u32};
 use crate::tensor::RasterTriangle;
 
 /// Metallic-roughness + thin-film PBR surface material compatible with Khronos glTF 2.0 and portable shaders.
@@ -267,6 +270,7 @@ fn fs_main(in: ShadowOut) -> @location(0) vec4<f32> {
 "#;
 
 /// Parses and validates a W3C WGSL shader module using `naga`, enforcing required entry points.
+#[cfg(feature = "wgsl-oracle")]
 pub fn validate_wgsl_shader(
     label: &str,
     wgsl_source: &str,
@@ -311,6 +315,7 @@ pub fn validate_wgsl_shader(
 }
 
 /// Validates all built-in W3C WGSL engine shaders (`PBR`, `FluidSurface`, `SkyScattering`, `SkinnedShadow`).
+#[cfg(feature = "wgsl-oracle")]
 pub fn validate_builtin_engine_shaders() -> Result<Vec<VerifiedShaderModule>, ShaderValidationError>
 {
     Ok(vec![
@@ -364,19 +369,17 @@ pub fn compute_csm_splits(
         });
     }
 
-    let scale =
-        crate::prism_kernel::skinWeightScale().expect("verified Prism skinWeightScale") as f64;
+    let scale = crate::prism_kernel::skinWeightScale().expect("prism") as f64;
     let near_milli = (near_meters * scale).round().max(1.0) as u64;
     let far_milli = (far_meters * scale).round().max((near_milli + 1) as f64) as u64;
-    let count =
-        crate::prism_kernel::csmCascadeCount().expect("verified Prism csmCascadeCount") as usize;
+    let count = crate::prism_kernel::csmCascadeCount().expect("prism") as usize;
 
     let mut slices = Vec::with_capacity(count);
     let mut slice_near_milli = near_milli;
     for idx in 0..count {
         let slice_far_milli =
             crate::prism_kernel::csmSplitDistanceMilli(near_milli, far_milli, idx as u64)
-                .expect("verified Prism csmSplitDistanceMilli");
+                .expect("prism");
         slices.push(ShadowCascadeSlice {
             cascade_index: idx,
             near_meters: (slice_near_milli as f64) / scale,
@@ -403,8 +406,8 @@ impl IblEnvironmentProbe {
         if base_resolution == 0 {
             return Err(RenderGraphError::ZeroProbeResolution);
         }
-        let mips = crate::prism_kernel::iblMipLevelCount(u64::from(base_resolution))
-            .expect("verified Prism iblMipLevelCount") as u32;
+        let mips = crate::prism_kernel::iblMipLevelCount(u64::from(base_resolution)).expect("prism")
+            as u32;
         Ok(Self {
             base_resolution,
             mip_level_count: mips,
@@ -444,8 +447,7 @@ impl RenderFrameGraph {
 
     /// Validates pass count and every `(producer, consumer)` barrier via `prism_kernel::renderPassDependencyValid`.
     pub fn validate(&self) -> Result<usize, RenderGraphError> {
-        let expected_passes = crate::prism_kernel::renderPassCount()
-            .expect("verified Prism renderPassCount") as usize;
+        let expected_passes = crate::prism_kernel::renderPassCount().expect("prism") as usize;
         if self.pass_names.len() != expected_passes {
             return Err(RenderGraphError::InvalidPassDependency {
                 producer_pass: self.pass_names.len(),
@@ -456,7 +458,7 @@ impl RenderFrameGraph {
         for &(producer, consumer) in &self.dependencies {
             let valid =
                 crate::prism_kernel::renderPassDependencyValid(producer as u64, consumer as u64)
-                    .expect("verified Prism renderPassDependencyValid");
+                    .expect("prism");
             if !valid {
                 return Err(RenderGraphError::InvalidPassDependency {
                     producer_pass: producer,
@@ -1153,6 +1155,7 @@ pub struct TranspiledWebGl2Shader {
 
 /// Parses and validates a W3C `WGSL` module via `naga`, then transpiles `entry_point` into
 /// WebGL2-compliant `GLSL ES 3.00` (`#version 300 es`) via `naga::back::glsl::Writer`.
+#[cfg(feature = "wgsl-oracle")]
 pub fn transpile_wgsl_to_webgl2_glsl(
     shader_label: &str,
     wgsl_source: &str,
@@ -1237,6 +1240,7 @@ pub fn transpile_wgsl_to_webgl2_glsl(
 }
 
 /// Transpiles all built-in W3C WGSL engine shaders (`vs_main` and `fs_main`) to WebGL2 `GLSL ES 3.00`.
+#[cfg(feature = "wgsl-oracle")]
 pub fn transpile_builtin_engine_shaders_webgl2(
 ) -> Result<Vec<TranspiledWebGl2Shader>, OracleValidationError> {
     let builtins = [

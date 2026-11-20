@@ -7,10 +7,13 @@
 //   4. 4-Stage Prism Composition & Quality Gate + 7 Lifecycle Role Workspaces (`../studio.mjs`)
 
 import { load } from "../worker-runtime/index.mjs";
+import { initStudioOutliner } from "./outliner.mjs";
+import { initStudioObserverPanel } from "./observer-panel.mjs";
+import { initStudioProjectInspector } from "./project-inspector.mjs";
+import { initStudioVcsPanel } from "./vcs-panel.mjs";
 import {
   AUTHORITATIVE_CONTENT_TYPES,
   LIVE_CATALOG_STREAMS,
-  fetchLiveKnowledgePassage,
   hydrateStitchAppCatalog,
   publishStitchAppToCatalog,
   searchLiveCatalogStreams,
@@ -19,7 +22,6 @@ import {
   STARTER_ARCHETYPES,
   STUDIO_ROLE_KEYS,
   base64UrlToBytes,
-  cacheBytesInOpfs,
   exportGlbDownload,
   mountInlineStudio,
   pushStudioTelemetry,
@@ -117,191 +119,51 @@ function syncTemplatePills(key) {
   });
 }
 
-function renderStudioOutliner() {
-  if (studioObjCountEl) {
-    studioObjCountEl.textContent = `${studioObjects.length} ${studioObjects.length === 1 ? "Object" : "Objects"}`;
-  }
-  if (!studioOutlinerEl) return;
-  studioOutlinerEl.replaceChildren();
-  if (!studioObjects.length) {
-    const empty = document.createElement("div");
-    empty.className = "proj-empty";
-    empty.innerHTML = "Click <strong>+ Box</strong>, <strong>+ Platform</strong>, or <strong>+ Pillar</strong> to place 3D objects in your scene.";
-    studioOutlinerEl.append(empty);
-    if (objInspCard) objInspCard.hidden = true;
-    return;
-  }
-  for (const o of studioObjects) {
-    const row = document.createElement("div");
-    row.className = "vx-outliner-row";
-    row.dataset.studioObjId = String(o.id);
-    row.dataset.selected = o.id === selectedStudioObjId ? "true" : "false";
-
-    const sel = document.createElement("button");
-    sel.type = "button";
-    sel.className = "vx-outliner-sel";
-    sel.textContent = o.label || `Object #${o.id}`;
-    sel.addEventListener("click", () => selectStudioObject(o.id));
-
-    const del = document.createElement("button");
-    del.type = "button";
-    del.className = "vx-outliner-del";
-    del.setAttribute("aria-label", `Remove ${o.label}`);
-    del.textContent = "×";
-    del.addEventListener("click", () => removeStudioObject(o.id));
-
-    row.append(sel, del);
-    studioOutlinerEl.append(row);
-  }
-}
-
-function selectStudioObject(objId) {
-  selectedStudioObjId = objId;
-  renderStudioOutliner();
-  const obj = studioObjects.find((o) => o.id === objId);
-  if (!obj || !objInspCard) {
-    if (objInspCard) objInspCard.hidden = true;
-    return;
-  }
-  setRightRailTab("inspector");
-  objInspCard.hidden = false;
-  if (objInspTitle) objInspTitle.textContent = obj.label || `Object #${obj.id}`;
-  if (objPosX) objPosX.value = String(Number(obj.pos[0]).toFixed(2));
-  if (objPosY) objPosY.value = String(Number(obj.pos[1]).toFixed(2));
-  if (objPosZ) objPosZ.value = String(Number(obj.pos[2]).toFixed(2));
-  if (objSclX) objSclX.value = String(Number(obj.scale[0]).toFixed(2));
-  if (objSclY) objSclY.value = String(Number(obj.scale[1]).toFixed(2));
-  if (objSclZ) objSclZ.value = String(Number(obj.scale[2]).toFixed(2));
-  if (objYawDeg) objYawDeg.value = String(Math.round(((obj.yawMilli || 0) / 1000) * (180 / Math.PI)));
-  const matClass = Math.floor(obj.color[0] || 0);
-  if (objMatSurface) objMatSurface.value = String(matClass === 2 || matClass === 3 ? matClass : 0);
-  const baseR = (obj.color[0] || 0) - matClass;
-  const baseG = obj.color[1] || 0;
-  const baseB = obj.color[2] || 0;
-  objSwatches?.querySelectorAll("[data-swatch]").forEach((btn) => {
-    const [sr, sg, sb] = btn.dataset.swatch.split(",").map(Number);
-    const match = Math.abs(sr - baseR) + Math.abs(sg - baseG) + Math.abs(sb - baseB) < 0.12;
-    btn.setAttribute("aria-pressed", match ? "true" : "false");
-  });
-}
-
-async function loadBlankStudioStage() {
-  userSelectedDomain = true;
-  wfState.activeStageAsset = null;
-  activeProject = "Blank Studio Canvas";
-  activeSky = [0.16, 0.17, 0.19];
-  activeFog = [0.22, 0.23, 0.26];
-  syncTemplatePills("blank");
-  document.querySelectorAll("[data-wiz-domain-idx]").forEach((c) => c.setAttribute("aria-pressed", "false"));
-  const r = await callWorker("studio-load-blank", { lod: currentLodSpec(), simClockSec });
-  if (r?.ok) {
-    lTris = r.tris || lTris;
-    if (r.camera) {
-      sEye = r.camera.eye;
-      sTgt = r.camera.lookTarget;
-      lClr = r.camera.clearanceMm ?? lClr;
-    }
-    studioObjects = Array.isArray(r.objects) ? r.objects : studioObjects;
-    await syncFallbackBuffers();
-  }
-  renderStudioOutliner();
-  syncHud();
-  chip(statusEl, "Blank Studio Canvas ready — click + Box, + Platform, or + Pillar to start building.");
-  requestRender();
-}
-
-async function addStudioPrimitive(primKind) {
-  const idx = studioObjects.length;
-  const ring = Math.floor(idx / 6);
-  const angle = (idx % 6) * (Math.PI / 3);
-  const radius = idx === 0 ? 0 : 2.8 + ring * 2.4;
-  const px = Number((Math.cos(angle) * radius).toFixed(2));
-  const pz = Number((Math.sin(angle) * radius).toFixed(2));
-  const defaults = [
-    { scale: [1.6, 1.6, 1.6], color: [0.86, 0.34, 0.16] }, // Box (Terracotta)
-    { scale: [2.2, 1.0, 2.2], color: [0.84, 0.82, 0.76] }, // Platform (Stone)
-    { scale: [1.2, 2.2, 1.2], color: [2.84, 0.82, 0.76] }, // Pillar (Metallic)
-    { scale: [2.0, 1.5, 2.6], color: [0.26, 0.30, 0.36] }, // Ramp (Basalt)
-    { scale: [1.2, 1.2, 1.2], color: [3.24, 0.66, 0.86] }, // Beacon Orb (Emissive Cyan)
-  ][primKind] || { scale: [1.5, 1.5, 1.5], color: [0.86, 0.34, 0.16] };
-  const r = await callWorker("studio-add-object", {
-    primKind,
-    pos: [px, 0, pz],
-    scale: defaults.scale,
-    color: defaults.color,
-    lod: currentLodSpec(),
-    simClockSec,
-  });
-  if (r?.ok) {
-    lTris = r.tris || lTris;
-    studioObjects = Array.isArray(r.objects) ? r.objects : studioObjects;
-    await syncFallbackBuffers();
-    selectStudioObject(r.objId);
-    syncHud();
-    chip(statusEl, `Added object #${r.objId} to your scene (${studioObjects.length} total).`);
-    requestRender();
-  }
-}
-
-async function updateSelectedStudioObject(overrideRgb = null) {
-  if (!selectedStudioObjId) return;
-  const obj = studioObjects.find((o) => o.id === selectedStudioObjId);
-  if (!obj) return;
-  const matClass = Number(objMatSurface?.value || 0);
-  const activeSwatch = objSwatches?.querySelector('[data-swatch][aria-pressed="true"]');
-  const [sr, sg, sb] = overrideRgb || (activeSwatch ? activeSwatch.dataset.swatch.split(",").map(Number) : [0.86, 0.34, 0.16]);
-  const pos = [Number(objPosX?.value) || 0, Number(objPosY?.value) || 0, Number(objPosZ?.value) || 0];
-  const scale = [
-    Math.max(0.25, Number(objSclX?.value) || 1),
-    Math.max(0.25, Number(objSclY?.value) || 1),
-    Math.max(0.25, Number(objSclZ?.value) || 1),
-  ];
-  const yawMilli = Math.round(((Number(objYawDeg?.value) || 0) * Math.PI / 180) * 1000);
-  const color = [matClass + sr, sg, sb];
-  const r = await callWorker("studio-update-object", {
-    objId: selectedStudioObjId,
-    pos,
-    yawMilli,
-    scale,
-    color,
-    lod: currentLodSpec(),
-    simClockSec,
-  });
-  if (r?.ok) {
-    lTris = r.tris || lTris;
-    studioObjects = Array.isArray(r.objects) ? r.objects : studioObjects;
-    await syncFallbackBuffers();
-    syncHud();
-    requestRender();
-  }
-}
-
-async function removeStudioObject(objId) {
-  const r = await callWorker("studio-remove-object", { objId, lod: currentLodSpec(), simClockSec });
-  if (r?.ok) {
-    lTris = r.tris || lTris;
-    studioObjects = Array.isArray(r.objects) ? r.objects : studioObjects;
-    if (selectedStudioObjId === objId) selectedStudioObjId = studioObjects[0]?.id ?? null;
-    await syncFallbackBuffers();
-    renderStudioOutliner();
-    if (selectedStudioObjId) selectStudioObject(selectedStudioObjId);
-    syncHud();
-    requestRender();
-  }
-}
-
-async function clearStudioObjects() {
-  const r = await callWorker("studio-clear-objects", { lod: currentLodSpec(), simClockSec });
-  if (r?.ok) {
-    lTris = r.tris || lTris;
-    studioObjects = [];
-    selectedStudioObjId = null;
-    await syncFallbackBuffers();
-    renderStudioOutliner();
-    syncHud();
-    requestRender();
-  }
-}
+const {
+  renderStudioOutliner,
+  selectStudioObject,
+  loadBlankStudioStage,
+  addStudioPrimitive,
+  updateSelectedStudioObject,
+  removeStudioObject,
+  clearStudioObjects,
+} = initStudioOutliner({
+  studioObjCountEl,
+  studioOutlinerEl,
+  objInspCard,
+  objInspTitle,
+  objPosX,
+  objPosY,
+  objPosZ,
+  objSclX,
+  objSclY,
+  objSclZ,
+  objYawDeg,
+  objMatSurface,
+  objSwatches,
+  studioClearObjsBtn,
+  objInspDelBtn,
+  statusEl,
+  callWorker: (...args) => callWorker(...args),
+  chip: (...args) => chip(...args),
+  currentLodSpec: () => currentLodSpec(),
+  getSimClockSec: () => simClockSec,
+  getStudioObjects: () => studioObjects,
+  setStudioObjects: (next) => { studioObjects = next; },
+  getSelectedStudioObjId: () => selectedStudioObjId,
+  setSelectedStudioObjId: (next) => { selectedStudioObjId = next; },
+  setRightRailTab: (tab) => setRightRailTab(tab),
+  setUserSelectedDomain: (v) => { userSelectedDomain = v; },
+  setActiveStageAsset: (v) => { wfState.activeStageAsset = v; },
+  setActiveProject: (v) => { activeProject = v; },
+  setActiveSkyFog: (sky, fog) => { activeSky = sky; activeFog = fog; },
+  setTris: (v) => { lTris = v; },
+  setCameraState: (cam) => { sEye = cam.eye; sTgt = cam.lookTarget; lClr = cam.clearanceMm ?? lClr; },
+  syncTemplatePills: (k) => syncTemplatePills(k),
+  syncFallbackBuffers: () => syncFallbackBuffers(),
+  syncHud: () => syncHud(),
+  requestRender: () => requestRender(),
+});
 
 async function hydrateExperienceDesignSystem() {
   try {
@@ -314,25 +176,6 @@ async function hydrateExperienceDesignSystem() {
     // Graceful fallback to inline HTML defaults.
   }
 }
-
-document.querySelectorAll("[data-add-prim]").forEach((btn) => {
-  btn.addEventListener("click", () => addStudioPrimitive(Number(btn.dataset.addPrim)));
-});
-studioClearObjsBtn?.addEventListener("click", clearStudioObjects);
-objInspDelBtn?.addEventListener("click", () => {
-  if (selectedStudioObjId) removeStudioObject(selectedStudioObjId);
-});
-[objPosX, objPosY, objPosZ, objSclX, objSclY, objSclZ, objYawDeg, objMatSurface].forEach((el) => {
-  el?.addEventListener("input", () => updateSelectedStudioObject());
-  el?.addEventListener("change", () => updateSelectedStudioObject());
-});
-objSwatches?.querySelectorAll("[data-swatch]").forEach((btn) => {
-  btn.addEventListener("click", () => {
-    objSwatches.querySelectorAll("[data-swatch]").forEach((b) => b.setAttribute("aria-pressed", "false"));
-    btn.setAttribute("aria-pressed", "true");
-    updateSelectedStudioObject(btn.dataset.swatch.split(",").map(Number));
-  });
-});
 document.querySelectorAll("[data-studio-template]").forEach((btn) => {
   btn.addEventListener("click", () => {
     const key = btn.dataset.studioTemplate;
@@ -1088,196 +931,32 @@ async function applyRemoteEnvSky(skyUrl, label) {
   }
 }
 
-function renderObserverCognition(cog) {
-  if (!cog) return;
-  lastCognition = cog;
-  saveStreamPrefs(cog);
-
-  if (cogHostEnvelopeEl && cog.hostEnvelope) {
-    const he = cog.hostEnvelope;
-    const gpuTag = he.isSoftwareGpu ? "Software WebGL2" : "Hardware GPU";
-    const drsPct = Math.round((he.recommendedRenderScalePermille || 1000) / 10);
-    cogHostEnvelopeEl.textContent =
-      `Observer Precision: ${(cog.resolutionPermille / 10).toFixed(1)}% · ${cog.enabledStreamCount}/${cog.streamCount} Streams · ${cog.ingestedKnowledgeCount} Knowledge Passages\n` +
-      `UHD Tier: ${he.uhdTierLabel || "FHD 1080p"} (${he.viewportWidthPx || 1280}×${he.viewportHeightPx || 720}) · DRS ${drsPct}% + CAS · Aniso ×${he.recommendedAnisotropy || 1}\n` +
-      `Host: ${gpuTag} · TexCap ${he.recommendedTextureCapPx}px · Shadow ${he.recommendedShadowMapPx || 2048}px · Headroom ${(he.hostHeadroomPermille / 10).toFixed(0)}% · Max GLB ${Math.round(he.recommendedGlbMaxBytes / 1048576)}MB`;
-  }
-
-  if (cogPartsListEl && Array.isArray(cog.parts)) {
-    cogPartsListEl.replaceChildren();
-    for (const p of cog.parts) {
-      const row = document.createElement("div");
-      row.className = "wiz-check";
-      row.dataset.observerPart = p.slot;
-      const left = document.createElement("span");
-      left.textContent = `${p.label} (${(p.connectedStreams || []).length} streams)`;
-      const right = document.createElement("strong");
-      right.dataset.state = p.precisionTier >= 3 ? "pass" : "pending";
-      right.textContent = p.precisionLabel;
-      row.append(left, right);
-      cogPartsListEl.append(row);
-    }
-  }
-
-  if (cogStreamsListEl && Array.isArray(cog.streams)) {
-    cogStreamsListEl.replaceChildren();
-    for (const s of cog.streams) {
-      const card = document.createElement("div");
-      card.className = "insp-rev-item";
-      card.dataset.observerStreamId = s.streamId;
-
-      const top = document.createElement("div");
-      top.className = "insp-rev-top";
-      const title = document.createElement("strong");
-      title.textContent = `p=${s.basisPrime} · ${s.label}`;
-      const btns = document.createElement("div");
-      btns.className = "insp-row";
-
-      const tog = document.createElement("button");
-      tog.type = "button";
-      tog.className = s.enabled ? "st-btn primary sm" : "st-btn sm";
-      tog.textContent = s.enabled ? "On" : "Off";
-      tog.addEventListener("click", async () => {
-        const r = await callWorker("toggle-stream", { streamId: s.streamId, enabled: !s.enabled });
-        if (r?.cognition) {
-          renderObserverCognition(r.cognition);
-          runUnifiedDiscovery();
-        }
-      });
-      btns.append(tog);
-
-      const rm = document.createElement("button");
-      rm.type = "button";
-      rm.className = "st-btn danger sm";
-      rm.setAttribute("aria-label", `Remove stream ${s.streamId}`);
-      rm.textContent = "×";
-      rm.addEventListener("click", async () => {
-        const r = await callWorker("remove-stream", { streamId: s.streamId });
-        if (r?.cognition) {
-          renderObserverCognition(r.cognition);
-          runUnifiedDiscovery();
-          if (cogLogEl) cogLogEl.textContent = `Removed sensory stream "${s.streamId}" from ObserverPrismHolon.`;
-        }
-      });
-      btns.append(rm);
-
-      top.append(title, btns);
-      const sub = document.createElement("div");
-      sub.style.color = "var(--muted-foreground)";
-      sub.textContent = `${s.organIri} -> ${(s.targetParts || []).join(", ")}`;
-      card.append(top, sub);
-      cogStreamsListEl.append(card);
-    }
-  }
-
-  if (discStreamSelect && Array.isArray(cog.streams)) {
-    const prevVal = discStreamSelect.value || "all";
-    const enabledCount = cog.streams.filter((s) => s.enabled).length;
-    discStreamSelect.replaceChildren();
-    const allOpt = document.createElement("option");
-    allOpt.value = "all";
-    allOpt.textContent = `All ${enabledCount} Active Streams`;
-    discStreamSelect.append(allOpt);
-    for (const s of cog.streams) {
-      if (!s.enabled) continue;
-      const o = document.createElement("option");
-      o.value = s.streamId;
-      o.textContent = s.label;
-      discStreamSelect.append(o);
-    }
-    discStreamSelect.value = [...discStreamSelect.options].some((o) => o.value === prevVal) ? prevVal : "all";
-  }
-}
-
-async function refreshObserverCognition(gpuInfo = null) {
-  const r = gpuInfo
-    ? await callWorker("update-host-envelope", gpuInfo)
-    : await callWorker("cognitive-resolution");
-  if (r?.ok && r.cognition) renderObserverCognition(r.cognition);
-  return r?.cognition || null;
-}
-
-async function autoRefineObserverFromStreams() {
-  if (cogLogEl) cogLogEl.textContent = "Observer analyzing resolution gaps across 8 parts & querying connected internet streams within host envelope…";
-  chip(statusEl, "Observer self-refining graphics & natural-language cognition from live streams…");
-  const cog = await refreshObserverCognition();
-  const maxBytes = cog?.hostEnvelope?.recommendedGlbMaxBytes || 12582912;
-
-  // 1. Pick highest-definition host-bounded 3D hero (preferring NASA Apollo Lunar Module or Khronos Fox/DamagedHelmet):
-  const candidates = (lastDiscoveryItems || []).filter((i) => i.glbUrl && (!i.sizeBytes || i.sizeBytes <= maxBytes));
-  const hero =
-    candidates.find((i) => /apollo|fox|soldier|damaged/i.test(i.title)) ||
-    candidates[0] || {
-      title: "Fox (Khronos Rigged)",
-      glbUrl: "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/Fox/glTF-Binary/Fox.glb",
-      properties: { wikipediaTopic: "Apollo_Lunar_Module" },
-    };
-  const skyItem = (lastDiscoveryItems || []).find((i) => i.envSkyUrl);
-  const logLines = [];
-
-  if (hero?.glbUrl) {
-    const ok = await loadRemoteGlbIntoStage(hero.glbUrl, hero.title);
-    if (ok) logLines.push(`[R4 3D] Mounted "${hero.title}" within ${Math.round(maxBytes / 1048576)}MB host envelope`);
-  }
-  if (skyItem?.envSkyUrl) {
-    const ok = await applyRemoteEnvSky(skyItem.envSkyUrl, skyItem.title);
-    if (ok) logLines.push(`[R4 Sky] Hydrated Poly Haven panoramic dome "${skyItem.title}"`);
-  }
-  // 2. Hydrate live encyclopedic natural-language passage straight into ISO 24617-2 cognition:
-  const topic =
-    hero?.properties?.wikipediaTopic ||
-    (/apollo/i.test(hero?.title || "")
-      ? "Apollo_Lunar_Module"
-      : /fox/i.test(hero?.title || "")
-        ? "Vulpes"
-        : /helmet|suit|crew/i.test(hero?.title || "")
-          ? "Space_suit"
-          : "Physically_based_rendering");
-  try {
-    const passage = await fetchLiveKnowledgePassage(topic, 5500);
-    if (passage) {
-      const ing = await callWorker("ingest-knowledge", { request: passage });
-      if (ing?.ok) {
-        if (ing.cognition) renderObserverCognition(ing.cognition);
-        logLines.push(`[R4 Language] Ingested live Wikipedia/Wikidata passage "${passage.topic}" into ISO 24617-2 engine (${String(ing.result?.kappaHex || "").slice(0, 10)}…)`);
-      }
-    }
-  } catch {
-    logLines.push("[Language] Offline sandbox — retaining locked Prism catalog facts.");
-  }
-
-  const finalCog = await refreshObserverCognition();
-  const pct = finalCog ? (finalCog.resolutionPermille / 10).toFixed(1) : "50.0";
-  if (cogLogEl) {
-    cogLogEl.textContent =
-      `Observer Self-Refinement Complete · Precision ${pct}%\n` +
-      (logLines.length ? logLines.join("\n") : "No external streams reachable — deterministic Prism geometry preserved.");
-  }
-  chip(statusEl, `Observer refined to ${pct}% precision from connected streams (within host envelope)`);
-}
-
-cogClearSkyBtn?.addEventListener("click", () => applyRemoteEnvSky(null, "Reset"));
-cogAddStreamForm?.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const request = {
-    streamId: cogStreamIdInput?.value?.trim() || "",
-    label: cogStreamLabelInput?.value?.trim() || "",
-    authority: "Custom Asset Source",
-    adapterKind: cogStreamAdapterSel?.value || "schema-org-catalog",
-    endpointUrl: cogStreamUrlInput?.value?.trim() || "",
-    targetParts: [cogStreamPartSel?.value || "hero-props"],
-  };
-  const r = await callWorker("register-stream", { request });
-  if (r?.ok && r.cognition) {
-    renderObserverCognition(r.cognition);
-    if (cogLogEl) {
-      cogLogEl.textContent = `Connected custom source "${r.result?.streamId}" (${request.endpointUrl}).`;
-    }
-    cogAddStreamForm.reset();
-    runUnifiedDiscovery();
-  } else if (cogLogEl) {
-    cogLogEl.textContent = "Source rejected — please provide a valid https:// endpoint and unique slug.";
-  }
+const {
+  renderObserverCognition,
+  refreshObserverCognition,
+  autoRefineObserverFromStreams,
+} = initStudioObserverPanel({
+  cogHostEnvelopeEl,
+  cogPartsListEl,
+  cogStreamsListEl,
+  discStreamSelect,
+  cogLogEl,
+  cogClearSkyBtn,
+  cogAddStreamForm,
+  cogStreamIdInput,
+  cogStreamLabelInput,
+  cogStreamAdapterSel,
+  cogStreamUrlInput,
+  cogStreamPartSel,
+  statusEl,
+  callWorker: (...args) => callWorker(...args),
+  chip: (...args) => chip(...args),
+  saveStreamPrefs: (c) => saveStreamPrefs(c),
+  setLastCognition: (c) => { lastCognition = c; },
+  getLastDiscoveryItems: () => lastDiscoveryItems,
+  runUnifiedDiscovery: () => runUnifiedDiscovery(),
+  loadRemoteGlbIntoStage: (u, l) => loadRemoteGlbIntoStage(u, l),
+  applyRemoteEnvSky: (u, l) => applyRemoteEnvSky(u, l),
 });
 
 function ensureRemoteFontLoaded(stylesheetUrl, fontFamily) {
@@ -1355,250 +1034,41 @@ async function applyProjectModelLive(model) {
 
 // ==================== PROJECT MODEL TREE + INSPECTOR / VERSIONING ====================
 
-function renderProjectTree() {
-  if (!projectTreeEl) return;
-  if (projModelCountEl) projModelCountEl.textContent = `${projectModels.length} Imported`;
-  syncHud();
-
-  if (projectModels.length === 0) {
-    projectTreeEl.innerHTML =
-      `<div class="proj-empty">No external catalog models imported yet. Search live streams in the center Discovery panel and click <strong>+ Add</strong> to admit, edit, and version models inside Verdant Engine.</div>`;
-    return;
-  }
-
-  const bySlot = new Map();
-  for (const m of projectModels) {
-    if (!bySlot.has(m.targetSlot)) bySlot.set(m.targetSlot, []);
-    bySlot.get(m.targetSlot).push(m);
-  }
-
-  projectTreeEl.replaceChildren();
-  for (const [slot, list] of bySlot.entries()) {
-    const group = document.createElement("div");
-    group.className = "proj-slot-group";
-    const head = document.createElement("div");
-    head.className = "proj-slot-heading";
-    head.textContent = `${slot} (${list.length})`;
-    group.append(head);
-
-    for (const m of list) {
-      const row = document.createElement("div");
-      row.className = "proj-model-row";
-      row.dataset.projectModelId = m.modelId;
-      row.dataset.selected = m.modelId === selectedProjectModelId ? "true" : "false";
-
-      const pick = document.createElement("button");
-      pick.type = "button";
-      pick.className = "proj-model-pick";
-      const nm = document.createElement("strong");
-      nm.textContent = m.title;
-      const meta = document.createElement("small");
-      meta.textContent = `v${m.activeVersion} · ${m.schemaType} · ${m.currentKappaHex.slice(0, 8)}`;
-      pick.append(nm, meta);
-      pick.addEventListener("click", () => selectProjectModel(m.modelId));
-
-      const rm = document.createElement("button");
-      rm.type = "button";
-      rm.className = "st-btn danger sm";
-      rm.setAttribute("aria-label", `Remove ${m.title}`);
-      rm.textContent = "×";
-      rm.addEventListener("click", () => removeProjectModel(m.modelId));
-
-      row.append(pick, rm);
-      group.append(row);
-    }
-    projectTreeEl.append(group);
-  }
-}
-
-function renderInspector() {
-  const model = projectModels.find((m) => m.modelId === selectedProjectModelId) || null;
-  if (!model) {
-    if (inspEmptyState) inspEmptyState.hidden = false;
-    if (inspEditor) inspEditor.hidden = true;
-    return;
-  }
-  if (inspEmptyState) inspEmptyState.hidden = true;
-  if (inspEditor) inspEditor.hidden = false;
-
-  if (inspMetaEl) {
-    inspMetaEl.textContent =
-      `ID: ${model.modelId}\n` +
-      `Type: Schema.org/${model.schemaType} · ${model.mediaType}\n` +
-      `Auto-Slot: ${model.targetSlot} · Stream: ${model.sourceStream}\n` +
-      `License: ${model.licenseSpdx} · Active: v${model.activeVersion} (${model.currentKappaHex.slice(0, 14)}…)`;
-  }
-  if (inspTitleEl) inspTitleEl.value = model.title;
-  if (inspTagsEl) inspTagsEl.value = (model.tags || []).join(", ");
-  if (inspPropsEl) {
-    try {
-      inspPropsEl.value = JSON.stringify(JSON.parse(model.propertiesJson || "{}"), null, 2);
-    } catch {
-      inspPropsEl.value = model.propertiesJson || "{}";
-    }
-  }
-  if (inspNoteEl) inspNoteEl.value = "";
-  if (inspSaveBtn) inspSaveBtn.textContent = `Save Version (v${model.activeVersion + 1})`;
-
-  if (inspRevisionsEl) {
-    inspRevisionsEl.replaceChildren();
-    const revs = [...(model.revisions || [])].reverse();
-    for (const rev of revs) {
-      const card = document.createElement("div");
-      card.className = "insp-rev-item";
-      card.dataset.revVersion = String(rev.version);
-
-      const top = document.createElement("div");
-      top.className = "insp-rev-top";
-      const badge = document.createElement("strong");
-      badge.textContent = `v${rev.version} · ${rev.kappaHex.slice(0, 12)}…`;
-      top.append(badge);
-
-      if (rev.version !== model.activeVersion) {
-        const restoreBtn = document.createElement("button");
-        restoreBtn.type = "button";
-        restoreBtn.className = "st-btn sm";
-        restoreBtn.dataset.revertVersion = String(rev.version);
-        restoreBtn.textContent = `Restore v${rev.version}`;
-        restoreBtn.addEventListener("click", () => revertProjectModel(model.modelId, rev.version));
-        top.append(restoreBtn);
-      } else {
-        const cur = document.createElement("span");
-        cur.style.color = "var(--success)";
-        cur.textContent = "Active";
-        top.append(cur);
-      }
-
-      const note = document.createElement("span");
-      note.style.color = "var(--muted-foreground)";
-      note.textContent = rev.commitNote || rev.title;
-      card.append(top, note);
-      inspRevisionsEl.append(card);
-    }
-  }
-}
-
-function selectProjectModel(modelId) {
-  selectedProjectModelId = modelId;
-  setRightRailTab("inspector");
-  renderProjectTree();
-  renderInspector();
-}
-
-async function refreshProjectModelsFromWasm() {
-  const r = await callWorker("list-project-models");
-  if (r?.ok && Array.isArray(r.models)) {
-    projectModels = r.models;
-    if (selectedProjectModelId && !projectModels.some((m) => m.modelId === selectedProjectModelId)) {
-      selectedProjectModelId = projectModels[0]?.modelId || null;
-    }
-    renderProjectTree();
-    renderInspector();
-  }
-}
-
-async function importCatalogItemToProject(item) {
-  if (!item) return null;
-  const request = {
-    modelId: item.id,
-    title: item.title,
-    schemaType: item.schemaType,
-    mediaType: item.mediaType,
-    targetSlot: item.targetSlot,
-    sourceStream: item.streamId,
-    sourceUri: item.sourceUri || `urn:verdant:catalog:${item.id}`,
-    licenseSpdx: item.licenseSpdx || "Apache-2.0",
-    tags: item.tags || [],
-    propertiesJson: JSON.stringify(item.properties || {}),
-    commitNote: `Imported from ${item.streamLabel} (${item.schemaType} -> ${item.targetSlot})`,
-  };
-  const r = await callWorker("import-project-model", { request });
-  if (!r?.ok || !r.model) {
-    chip(statusEl, `Refused model import (${item.title}) — Schema.org / DMN gate`);
-    return null;
-  }
-  await refreshProjectModelsFromWasm();
-  selectProjectModel(r.model.modelId);
-  wfState.done2 = true;
-  wfState.activeStep = 3;
-  syncWorkflowRibbon();
-  await applyProjectModelLive(r.model);
-  chip(
-    statusEl,
-    `Admitted "${r.model.title}" v${r.model.activeVersion} -> ${r.model.targetSlot} (kappa ${r.model.currentKappaHex.slice(0, 10)}…)`,
-  );
-  return r.model;
-}
-
-async function saveEditedProjectModel() {
-  const model = projectModels.find((m) => m.modelId === selectedProjectModelId);
-  if (!model) return;
-  const newTitle = (inspTitleEl?.value || "").trim() || model.title;
-  const newTags = (inspTagsEl?.value || "")
-    .split(",")
-    .map((s) => s.trim())
-    .filter(Boolean);
-  let normalizedProps = (inspPropsEl?.value || "{}").trim();
-  try {
-    normalizedProps = JSON.stringify(JSON.parse(normalizedProps));
-  } catch {
-    chip(statusEl, "Invalid JSON in properties editor — fix JSON syntax before committing version");
-    return;
-  }
-  const commitNote = (inspNoteEl?.value || "").trim() || `Edited properties for v${model.activeVersion + 1}`;
-  const r = await callWorker("edit-project-model", {
-    request: {
-      modelId: model.modelId,
-      title: newTitle,
-      tags: newTags,
-      propertiesJson: normalizedProps,
-      commitNote,
-    },
-  });
-  if (!r?.ok || !r.model) {
-    chip(statusEl, "Failed to commit edited model version in Wasm");
-    return;
-  }
-  await refreshProjectModelsFromWasm();
-  selectProjectModel(r.model.modelId);
-  wfState.done3 = true;
-  wfState.activeStep = 4;
-  syncWorkflowRibbon();
-  chip(statusEl, `Committed "${r.model.title}" v${r.model.activeVersion} (kappa ${r.model.currentKappaHex.slice(0, 10)}…)`);
-}
-
-async function revertProjectModel(modelId, targetVersion) {
-  const r = await callWorker("revert-project-model", { modelId, targetVersion });
-  if (!r?.ok || !r.model) {
-    chip(statusEl, `Failed to restore v${targetVersion}`);
-    return;
-  }
-  await refreshProjectModelsFromWasm();
-  selectProjectModel(r.model.modelId);
-  wfState.done2 = true;
-  wfState.activeStep = 3;
-  syncWorkflowRibbon();
-  await applyProjectModelLive(r.model);
-  chip(statusEl, `Restored v${targetVersion} as new audited revision v${r.model.activeVersion}`);
-}
-
-async function removeProjectModel(modelId) {
-  const r = await callWorker("remove-project-model", { modelId });
-  if (!r?.ok) {
-    chip(statusEl, `Could not remove ${modelId}`);
-    return;
-  }
-  await refreshProjectModelsFromWasm();
-  chip(statusEl, `Removed model ${modelId} from project (PROV-O logged)`);
-}
-
-inspSaveBtn?.addEventListener("click", saveEditedProjectModel);
-inspApplyBtn?.addEventListener("click", () => {
-  const m = projectModels.find((x) => x.modelId === selectedProjectModelId);
-  if (m) applyProjectModelLive(m);
-});
-inspRemoveBtn?.addEventListener("click", () => {
-  if (selectedProjectModelId) removeProjectModel(selectedProjectModelId);
+const {
+  renderProjectTree,
+  renderInspector,
+  selectProjectModel,
+  refreshProjectModelsFromWasm,
+  importCatalogItemToProject,
+  saveEditedProjectModel,
+  revertProjectModel,
+  removeProjectModel,
+} = initStudioProjectInspector({
+  projectTreeEl,
+  projModelCountEl,
+  inspEmptyState,
+  inspEditor,
+  inspMetaEl,
+  inspTitleEl,
+  inspTagsEl,
+  inspPropsEl,
+  inspNoteEl,
+  inspSaveBtn,
+  inspApplyBtn,
+  inspRemoveBtn,
+  inspRevisionsEl,
+  statusEl,
+  callWorker: (...args) => callWorker(...args),
+  chip: (...args) => chip(...args),
+  syncHud: () => syncHud(),
+  setRightRailTab: (tab) => setRightRailTab(tab),
+  getProjectModels: () => projectModels,
+  setProjectModels: (next) => { projectModels = next; },
+  getSelectedProjectModelId: () => selectedProjectModelId,
+  setSelectedProjectModelId: (next) => { selectedProjectModelId = next; },
+  wfState,
+  syncWorkflowRibbon: () => syncWorkflowRibbon(),
+  applyProjectModelLive: (m) => applyProjectModelLive(m),
 });
 
 // ==================== UNIFIED LIVE INTERNET CATALOG DISCOVERY ====================
@@ -2468,197 +1938,28 @@ renderContentTypePills();
 
   // Zero-account in-browser VerdantVcs, portable .holo export, ?pin=stitch:// deep-link sharing (VE-49)
   // and live PagedTensorArena dynamic UHD/AI workload governor bridge (VE-50):
-  const VCS_STORAGE_KEY = "verdant_studio_vcs_history_v1";
-  const PRISM_ID_KEY = "verdant_zero_account_prism_id_v1";
-  const bytesToBase64Url = (u8) => {
-    let bin = "";
-    for (let i = 0; i < u8.length; i++) bin += String.fromCharCode(u8[i]);
-    return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
-  };
-  const hexToBytes = (hex) =>
-    Uint8Array.from({ length: hex.length / 2 }, (_, i) => parseInt(hex.slice(i * 2, i * 2 + 2), 16));
-  const ensureLocalStudioPrismId = () => {
-    try {
-      const existing = JSON.parse(localStorage.getItem(PRISM_ID_KEY) || "null");
-      if (existing?.prismId) return existing.prismId;
-    } catch {}
-    const rnd = crypto.getRandomValues(new Uint8Array(8));
-    const hex = Array.from(rnd, (b) => b.toString(16).padStart(2, "0")).join("");
-    const prismId = `prism:local-${hex}`;
-    try { localStorage.setItem(PRISM_ID_KEY, JSON.stringify({ prismId, secretHex: hex.repeat(4) })); } catch {}
-    return prismId;
-  };
-  let vcsHistory = [];
-  try { vcsHistory = JSON.parse(localStorage.getItem(VCS_STORAGE_KEY) || "[]"); } catch { vcsHistory = []; }
-  if (!Array.isArray(vcsHistory)) vcsHistory = [];
-  let lastPackedHolo = null;
-
-  const vcsMsgEl = $("studio-vcs-msg");
-  const vcsHistEl = $("studio-vcs-history");
-
-  const checkoutVcsCommit = async (commitKappa) => {
-    const entry = vcsHistory.find((e) => e.commitKappa === commitKappa);
-    if (!entry) throw new Error(`Unknown VerdantVcs commit ${commitKappa}`);
-    if (entry.sceneJson) {
-      const parsed = JSON.parse(entry.sceneJson);
-      if (parsed.project) activeProject = parsed.project;
-      if (Array.isArray(parsed.objects)) {
-        await clearStudioObjects();
-        for (const obj of parsed.objects) {
-          await callWorker("studio-add-object", {
-            primKind: obj.kind ?? 0,
-            pos: obj.pos || [0, 0, 0],
-            scale: obj.scale || [1.5, 1.5, 1.5],
-            color: obj.color || [0.86, 0.34, 0.16],
-            lod: currentLodSpec(),
-            simClockSec,
-          });
-        }
-        const refreshed = await callWorker("studio-list-objects");
-        if (Array.isArray(refreshed?.objects)) studioObjects = refreshed.objects;
-        await syncFallbackBuffers();
-        renderStudioOutliner();
-        syncHud();
-        requestRender();
-      }
-    }
-    chip(statusEl, `Checked out VerdantVcs e${entry.epoch} (${entry.commitKappa.slice(0, 10)}…) · "${entry.message}"`);
-    return entry;
-  };
-
-  const buildShareablePinUrl = (packed) => {
-    const u = new URL(`../frame/?pin=${encodeURIComponent(packed.stitchDeepLinkUri)}`, location.href);
-    if (packed.holoHex) {
-      u.hash = `holo=${bytesToBase64Url(hexToBytes(packed.holoHex))}`;
-    }
-    return u.href;
-  };
-
-  const renderVcsHistory = () => {
-    if (!vcsHistEl) return;
-    vcsHistEl.replaceChildren();
-    if (!vcsHistory.length) {
-      const empty = document.createElement("div");
-      empty.className = "ide-pane-sub";
-      empty.textContent = `Local Prism ID: ${ensureLocalStudioPrismId()} · 0 commits yet.`;
-      vcsHistEl.append(empty);
-      return;
-    }
-    for (const entry of vcsHistory.slice(0, 6)) {
-      const row = document.createElement("div");
-      row.className = "vx-outliner-row";
-      const label = document.createElement("span");
-      label.style.fontFamily = "var(--font-mono)";
-      label.style.fontSize = "var(--text-14)";
-      label.textContent = `e${entry.epoch} · ${entry.commitKappa.slice(0, 10)}… · ${entry.message}`;
-      const chkBtn = document.createElement("button");
-      chkBtn.type = "button";
-      chkBtn.className = "ide-btn";
-      chkBtn.textContent = "Checkout";
-      chkBtn.dataset.vcsCheckout = entry.commitKappa;
-      chkBtn.addEventListener("click", () => {
-        checkoutVcsCommit(entry.commitKappa).catch((err) => chip(statusEl, `Checkout error: ${err}`));
-      });
-      row.append(label, chkBtn);
-      vcsHistEl.append(row);
-    }
-  };
-
-  const commitAndPackHolo = async (overrideMsg) => {
-    const authorPrismId = ensureLocalStudioPrismId();
-    const parentCommitKappa = vcsHistory[0]?.commitKappa || "";
-    const epoch = (vcsHistory[0]?.epoch || 0) + 1;
-    const message = String(overrideMsg || vcsMsgEl?.value || "Studio scene revision").trim();
-    const appTitle = String(stitchAppTitleInput?.value || activeProject || "Verdant Studio App").trim();
-    const sceneJson = JSON.stringify({
-      project: appTitle,
-      domain: domainPacks[activeDomainIdx]?.slug || "sunspire-regatta",
-      objects: studioObjects,
-      lodRank: lodIdx,
-    });
-    const res = await callWorker("vcs-commit-pack-holo", {
-      request: { appTitle, authorPrismId, message, parentCommitKappa, epoch, version: "2.1.0", sceneJson },
-    });
-    const out = res?.result;
-    if (!res?.ok || !out?.ok) throw new Error(out?.error || "VerdantVcs commit failed");
-    lastPackedHolo = out;
-    if (out.holoHex) {
-      try {
-        await cacheBytesInOpfs(`verdant-app-${out.capsuleSha256Hex}.holo`, hexToBytes(out.holoHex));
-      } catch {}
-    }
-    vcsHistory.unshift({
-      epoch: out.epoch,
-      commitKappa: out.commitKappa,
-      parentCommitKappa: out.parentCommitKappa || null,
-      capsuleSha256Hex: out.capsuleSha256Hex,
-      stitchDeepLinkUri: out.stitchDeepLinkUri,
-      message: out.message,
-      sceneJson,
-      holoHex: out.holoHex || "",
-    });
-    vcsHistory = vcsHistory.slice(0, 12);
-    try { localStorage.setItem(VCS_STORAGE_KEY, JSON.stringify(vcsHistory)); } catch {}
-    renderVcsHistory();
-    chip(statusEl, `VerdantVcs e${out.epoch} (${out.commitKappa.slice(0, 10)}…) · .holo ${out.capsuleByteLen} B · ${out.shardCount} shards`);
-    return out;
-  };
-
-  const stepPagedUhdWorkload = async (workloadReq = {}) => {
-    const res = await callWorker("paged-workload-step", { request: workloadReq });
-    const out = res?.result;
-    if (out?.ok && scaleBadgeEl) {
-      const tier = out.decision?.displayClass || "UHD";
-      const pages = out.arena?.residentPages ?? 0;
-      const evicts = out.arena?.evictions ?? 0;
-      scaleBadgeEl.dataset.contract = out.contractMet ? "met" : "adapting";
-      scaleBadgeEl.textContent = `${tier} · ${pages}p (${evicts} evict) · DRS ${Math.round((out.decision?.drsScalePermille || 1000) / 10)}%`;
-    }
-    return out;
-  };
-
-  $("studio-vcs-commit-btn")?.addEventListener("click", async () => {
-    try { await commitAndPackHolo(); } catch (err) { chip(statusEl, `VerdantVcs error: ${err}`); }
+  window.__VERDANT_STUDIO_API__ = initStudioVcsPanel({
+    $,
+    canvas,
+    statusEl,
+    scaleBadgeEl,
+    stitchAppTitleInput,
+    callWorker,
+    chip,
+    getActiveProject: () => activeProject,
+    setActiveProject: (v) => { activeProject = v; },
+    getActiveDomainSlug: () => domainPacks[activeDomainIdx]?.slug || "sunspire-regatta",
+    getStudioObjects: () => studioObjects,
+    setStudioObjects: (v) => { studioObjects = v; },
+    getLodIdx: () => lodIdx,
+    getSimClockSec: () => simClockSec,
+    currentLodSpec,
+    clearStudioObjects,
+    syncFallbackBuffers,
+    renderStudioOutliner,
+    syncHud,
+    requestRender,
   });
-  $("studio-export-holo-btn")?.addEventListener("click", async () => {
-    try {
-      const packed = lastPackedHolo || (await commitAndPackHolo("Portable .holo app export"));
-      const bytes = hexToBytes(packed.holoHex || "");
-      const slug = String(stitchAppTitleInput?.value || "verdant-app").toLowerCase().replace(/[^a-z0-9]+/g, "-");
-      const url = URL.createObjectURL(new Blob([bytes], { type: "application/octet-stream" }));
-      const a = document.createElement("a");
-      a.href = url; a.download = `${slug}.holo`; a.click();
-      setTimeout(() => URL.revokeObjectURL(url), 1000);
-      chip(statusEl, `Exported portable ${slug}.holo (${bytes.byteLength} B · SHA-256 ${packed.capsuleSha256Hex.slice(0, 12)}…)`);
-    } catch (err) { chip(statusEl, `Export .holo error: ${err}`); }
-  });
-  $("studio-copy-pin-btn")?.addEventListener("click", async () => {
-    try {
-      const packed = lastPackedHolo || (await commitAndPackHolo("Deep-link pin share"));
-      const frameUrl = buildShareablePinUrl(packed);
-      try { await navigator.clipboard.writeText(frameUrl); } catch {}
-      chip(statusEl, `Copied cross-browser Blank Frame pin: ${packed.stitchDeepLinkUri}`);
-    } catch (err) { chip(statusEl, `Pin share error: ${err}`); }
-  });
-
-  renderVcsHistory();
-  window.__VERDANT_STUDIO_API__ = {
-    commitAndPackHolo,
-    checkoutVcsCommit,
-    buildShareablePinUrl,
-    stepPagedUhdWorkload,
-    getVcsHistory: () => vcsHistory.slice(),
-    getLocalPrismId: ensureLocalStudioPrismId,
-  };
-  void stepPagedUhdWorkload({
-    viewportW: Math.round((canvas?.clientWidth || 1920) * (window.devicePixelRatio || 1)),
-    viewportH: Math.round((canvas?.clientHeight || 1080) * (window.devicePixelRatio || 1)),
-    frameUs: 8000,
-    budgetMb: 8,
-    gltfPages: 16,
-    codedAiPages: 16,
-    pageKb: 64,
-  }).catch(() => {});
 
   chip(
     statusEl,

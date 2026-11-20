@@ -13,6 +13,7 @@ sources = [
   "crates/model/Cargo.toml",
   "crates/conformance/Cargo.toml",
   "model/ids.toml",
+  "catalogs/governance/*.json",
   "features/suites/*.feature",
   ".github/workflows/*.yml",
   "Justfile",

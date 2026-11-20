@@ -115,11 +115,11 @@ try {
         if (!btn) throw new Error(`Missing [data-add-prim="${primCode}"] button in Studio`);
         btn.click();
         const deadline = performance.now() + 25000;
-        while (document.querySelectorAll(".vx-outliner-row").length < target && performance.now() < deadline) {
+        while (document.querySelectorAll("#studio-scene-outliner [data-studio-obj-id]").length < target && performance.now() < deadline) {
           await new Promise((r) => setTimeout(r, 50));
         }
-        if (document.querySelectorAll(".vx-outliner-row").length < target) {
-          throw new Error(`Timed out waiting for Studio outliner count >= ${target} after clicking [data-add-prim="${primCode}"]`);
+        if (document.querySelectorAll("#studio-scene-outliner [data-studio-obj-id]").length < target) {
+          throw new Error(`Timed out waiting for #studio-scene-outliner count >= ${target} after clicking [data-add-prim="${primCode}"]`);
         }
       };
       const c1 = await api.commitAndPackHolo("Initial zero-account 3D scene commit");

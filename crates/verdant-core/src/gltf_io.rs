@@ -322,7 +322,7 @@ pub fn export_scene_to_glb(
     let has_bin = !bin_chunk.is_empty();
     let total_len = if has_bin {
         crate::prism_kernel::glbContainerByteLength(json_bytes.len() as u64, bin_chunk.len() as u64)
-            .expect("verified Prism kernel glbContainerByteLength") as usize
+            .expect("prism") as usize
     } else {
         GLB_FILE_HEADER_BYTES + GLB_CHUNK_HEADER_BYTES + json_bytes.len()
     };
@@ -1585,7 +1585,7 @@ fn pack_json_and_bin_into_glb(
     let has_bin = !bin_chunk.is_empty();
     let total_len = if has_bin {
         crate::prism_kernel::glbContainerByteLength(json_bytes.len() as u64, bin_chunk.len() as u64)
-            .expect("verified Prism kernel glbContainerByteLength") as usize
+            .expect("prism") as usize
     } else {
         GLB_FILE_HEADER_BYTES + GLB_CHUNK_HEADER_BYTES + json_bytes.len()
     };

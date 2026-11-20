@@ -2,12 +2,12 @@
   "spec": "verdant/observer-roadmap-kpi-report/1",
   "managerId": "mgr-roadmap-strategy",
   "authorityId": "AUTH-SEMVER-CHANGE-KPI",
-  "currentVersion": "2.3.0",
-  "releaseEpoch": 7,
+  "currentVersion": "2.4.0",
+  "releaseEpoch": 8,
   "totalManagers": 13,
   "totalPrismFacetsOwned": 9,
   "totalPrismFacetsRequired": 9,
-  "declaredCapabilitiesCount": 68,
+  "declaredCapabilitiesCount": 70,
   "minorProgressPct": 100,
   "majorProgressPct": 100,
   "kpiPassedCount": 13,
@@ -15,7 +15,7 @@
   "knowledge": {
     "managerId": "mgr-knowledge-provenance",
     "lockedAuthoritiesCount": 10,
-    "provenanceSourcesCount": 22,
+    "provenanceSourcesCount": 23,
     "charterBytes": 51966,
     "governedLexModules": 28,
     "measuredClosed": 9,
@@ -138,8 +138,8 @@
       "name": "uorust MIR-Lifted Rust Functions Floor",
       "unit": "functions",
       "direction": "atLeast",
-      "actual": 183,
-      "target": 178,
+      "actual": 203,
+      "target": 200,
       "passed": true,
       "owningManager": "mgr-verification-observatory",
       "authority": "AUTH-SEMVER-CHANGE-KPI"
@@ -491,6 +491,38 @@
       "progressPct": 100,
       "completed": true,
       "ratchetRequirement": "Auto-tightened [surface_ratchet] Wasm/capsule ceilings with >= 1.5 MiB verdant-uorc.wasm reduction, FR-03 cold-boot headroom, expanded uorust lifted frontier, and zero-account interactive WebGL2 3D player verified across isolated browsers."
+    },
+    {
+      "milestoneId": "M12",
+      "targetVersion": "2.4.0",
+      "tier": "minor",
+      "title": "Architectural Refinement: Monolith Decomposition, Wasm32 Naga Gating, 1:1 FR-03 Sync, 5-Shape Faithful Portable 3D Player & 200+ uorust/Fidelity Closure",
+      "stakeholders": [
+        "creator",
+        "player",
+        "systems-engineer",
+        "developer",
+        "auditor"
+      ],
+      "owningManagers": [
+        "mgr-observer-executive",
+        "mgr-runtime-stage",
+        "mgr-studio-alm",
+        "mgr-verification-observatory",
+        "mgr-security-trust"
+      ],
+      "requiredCapabilities": [
+        "VE-58",
+        "VE-59"
+      ],
+      "closedCapabilities": [
+        "VE-58",
+        "VE-59"
+      ],
+      "missingCapabilities": [],
+      "progressPct": 100,
+      "completed": true,
+      "ratchetRequirement": "Decompose verdant-wasm, operator.rs, and studio-page.mjs to tighten max_handwritten_rust_file_lines <= 3525 and max_js_file_lines <= 1980; gate naga behind wgsl-oracle; sync site/app.holo 1:1 with CI; render all 5 Studio shapes offline in portable .holo 3D player; lift >= 200 uorust functions and close Cadence/Release/Security fidelity theorems."
     }
   ],
   "observerParts": [
@@ -500,7 +532,7 @@
       "viewpointId": "observer-executive",
       "ownedPrismFacets": [],
       "ownedObserverParts": [],
-      "ownedFilesCount": 5,
+      "ownedFilesCount": 8,
       "active": true
     },
     {
@@ -594,7 +626,7 @@
       "ownedObserverParts": [
         "cognitive-language"
       ],
-      "ownedFilesCount": 6,
+      "ownedFilesCount": 10,
       "active": true
     },
     {
@@ -646,7 +678,7 @@
     "governingAuthority": "AUTH-SEMVER-CHANGE-KPI",
     "currentVersion": {
       "major": 2,
-      "minor": 3,
+      "minor": 4,
       "patch": 0
     },
     "recommendedBump": "major",
@@ -655,8 +687,8 @@
       "minor": 0,
       "patch": 0
     },
-    "currentEpoch": 7,
-    "nextEpoch": 8,
+    "currentEpoch": 8,
+    "nextEpoch": 9,
     "versionIncremented": true,
     "gates": {
       "ratchetApplied": true,
@@ -667,6 +699,6 @@
       "pullThroughVerified": true
     },
     "blockingReasons": [],
-    "rationale": "Ratchet applied & 5/5 Release Gates passed: advancing v2.3.0 -> v3.0.0 (Major, epoch 8) — Observer roadmap evaluation: minor=100% major=100% managers=13"
+    "rationale": "Ratchet applied & 5/5 Release Gates passed: advancing v2.4.0 -> v3.0.0 (Major, epoch 9) — Observer roadmap evaluation: minor=100% major=100% managers=13"
   }
 }

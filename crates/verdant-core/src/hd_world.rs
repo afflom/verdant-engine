@@ -255,19 +255,20 @@ fn lod_subdivision_scale(lod_rank: u64) -> usize {
     let r2 = two_u32() as u64;
     let r3 = three_u32() as u64;
     let r4 = four_u32() as u64;
-    if lod_rank == 0 {
-        1
+    let scale = if lod_rank == 0 {
+        1_u32
     } else if lod_rank == 1 {
-        1 + 1
+        two_u32()
     } else if lod_rank == r2 {
-        1 + 1 + 1
+        three_u32()
     } else if lod_rank == r3 {
-        (1 + 1) * (1 + 1)
+        four_u32()
     } else if lod_rank >= r4 {
-        (1 + 1) * (1 + 1 + 1 + 1)
+        four_u32().wrapping_mul(two_u32())
     } else {
-        1 + 1
-    }
+        two_u32()
+    };
+    scale as usize
 }
 
 /// Synthesizes the **Groin-Vaulted Citadel Hall** at `(0, base_y, 0)` with:

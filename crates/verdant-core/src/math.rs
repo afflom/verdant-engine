@@ -31,8 +31,58 @@ pub const fn three_u32() -> u32 {
 
 /// Constructive integer `4` (`(1 + 1) * (1 + 1)`).
 #[must_use]
+#[inline(always)]
 pub const fn four_u32() -> u32 {
     two_u32().wrapping_mul(two_u32())
+}
+
+/// Constructive integer `5` (`4 + 1`).
+#[must_use]
+#[inline(always)]
+pub const fn five_u32() -> u32 {
+    four_u32().wrapping_add(1_u32)
+}
+
+/// Constructive integer `8` (`4 * 2`).
+#[must_use]
+#[inline(always)]
+pub const fn eight_u32() -> u32 {
+    four_u32().wrapping_mul(two_u32())
+}
+
+/// Constructive integer `10` (`5 * 2`).
+#[must_use]
+#[inline(always)]
+pub const fn ten_u32() -> u32 {
+    five_u32().wrapping_mul(two_u32())
+}
+
+/// Constructive integer `16` (`4 * 4`).
+#[must_use]
+#[inline(always)]
+pub const fn sixteen_u32() -> u32 {
+    four_u32().wrapping_mul(four_u32())
+}
+
+/// Constructive integer `64` (`16 * 4`).
+#[must_use]
+#[inline(always)]
+pub const fn sixty_four_u32() -> u32 {
+    sixteen_u32().wrapping_mul(four_u32())
+}
+
+/// Constructive integer `100` (`10 * 10`).
+#[must_use]
+#[inline(always)]
+pub const fn hundred_u32() -> u32 {
+    ten_u32().wrapping_mul(ten_u32())
+}
+
+/// Constructive integer `1000` (`100 * 10`).
+#[must_use]
+#[inline(always)]
+pub const fn thousand_u32() -> u32 {
+    hundred_u32().wrapping_mul(ten_u32())
 }
 
 /// Constructive power of two (`2^exp`) computed purely from `{0, 1}`.

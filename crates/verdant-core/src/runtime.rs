@@ -58,7 +58,7 @@ impl EngineConfig {
         worker_threads: u32,
     ) -> Result<Self, EngineConfigError> {
         let budget = crate::prism_kernel::frameBudgetMicrosForHz(u64::from(target_refresh_hz))
-            .expect("verified Prism kernel frameBudgetMicrosForHz");
+            .expect("prism");
         Self::new(
             viewport_width,
             viewport_height,
@@ -82,16 +82,14 @@ impl EngineConfig {
                 height: viewport_height,
             });
         }
-        let max_hz = prism_kernel::engineMaxTickRateHz()
-            .expect("verified Prism kernel engineMaxTickRateHz") as u32;
+        let max_hz = prism_kernel::engineMaxTickRateHz().expect("prism") as u32;
         if tick_rate_hz == 0 || tick_rate_hz > max_hz {
             return Err(EngineConfigError::InvalidTickRateHz {
                 tick_rate_hz,
                 max_hz,
             });
         }
-        let max_micros = prism_kernel::engineMaxFrameBudgetMicros()
-            .expect("verified Prism kernel engineMaxFrameBudgetMicros");
+        let max_micros = prism_kernel::engineMaxFrameBudgetMicros().expect("prism");
         if frame_budget_micros == 0 || frame_budget_micros > max_micros {
             return Err(EngineConfigError::InvalidFrameBudgetMicros {
                 budget_micros: frame_budget_micros,
@@ -196,8 +194,7 @@ impl WorkerJobGraph {
         );
         debug_assert_eq!(
             g.nodes.len() as u64,
-            prism_kernel::canonicalFrameStageCount()
-                .expect("verified Prism kernel canonicalFrameStageCount")
+            prism_kernel::canonicalFrameStageCount().expect("prism")
         );
         g
     }
@@ -773,10 +770,8 @@ impl WorldSnapshot {
     /// Encodes `world` into a self-verifying `VDNT\x01` + length + IEEE-754 binary payload + 32-byte SHA-256 trailer.
     pub fn encode(world: &StandardSceneState) -> Result<Vec<u8>, SnapshotCodecError> {
         let payload = encode_scene_payload(world)?;
-        let header_len = prism_kernel::snapshotHeaderBytes()
-            .expect("verified Prism kernel snapshotHeaderBytes") as usize;
-        let digest_len = prism_kernel::snapshotSha256Bytes()
-            .expect("verified Prism kernel snapshotSha256Bytes") as usize;
+        let header_len = prism_kernel::snapshotHeaderBytes().expect("prism") as usize;
+        let digest_len = prism_kernel::snapshotSha256Bytes().expect("prism") as usize;
         debug_assert_eq!(digest_len, Sha256::output_size());
         let len_bytes = (payload.len() as u32).to_le_bytes();
         let mut wire = Vec::with_capacity(header_len + payload.len() + digest_len);
@@ -807,10 +802,8 @@ impl WorldSnapshot {
     pub fn decode(bytes: &[u8]) -> Result<StandardSceneState, SnapshotCodecError> {
         #[cfg(feature = "uorc-wasm-decode")]
         if crate::streaming::is_uorc_archive(bytes) {
-            let min_uorc = prism_kernel::snapshotSha256Bytes()
-                .expect("verified Prism kernel snapshotSha256Bytes")
-                as usize
-                + SNAPSHOT_MAGIC.len();
+            let min_uorc =
+                prism_kernel::snapshotSha256Bytes().expect("prism") as usize + SNAPSHOT_MAGIC.len();
             if bytes.len() < min_uorc {
                 return Err(SnapshotCodecError::TruncatedSnapshot {
                     byte_len: bytes.len(),
@@ -828,12 +821,9 @@ impl WorldSnapshot {
     }
 
     fn decode_vdnt_wire(bytes: &[u8]) -> Result<StandardSceneState, SnapshotCodecError> {
-        let header_len = prism_kernel::snapshotHeaderBytes()
-            .expect("verified Prism kernel snapshotHeaderBytes") as usize;
-        let digest_len = prism_kernel::snapshotSha256Bytes()
-            .expect("verified Prism kernel snapshotSha256Bytes") as usize;
-        let min_len = prism_kernel::snapshotMinWireBytes()
-            .expect("verified Prism kernel snapshotMinWireBytes") as usize;
+        let header_len = prism_kernel::snapshotHeaderBytes().expect("prism") as usize;
+        let digest_len = prism_kernel::snapshotSha256Bytes().expect("prism") as usize;
+        let min_len = prism_kernel::snapshotMinWireBytes().expect("prism") as usize;
         if bytes.len() < min_len {
             return Err(SnapshotCodecError::TruncatedSnapshot {
                 byte_len: bytes.len(),
@@ -1349,7 +1339,7 @@ impl OntologicalRuntimeGovernor {
             legibility_gap,
             player_dissonance,
         )
-        .expect("verified Prism kernel evaluateHolonTelosState");
+        .expect("prism");
         let max_stratum = prism_kernel::sSeven().unwrap_or(0);
         let all_eight_strata_certified =
             prism_kernel::strataCertifiedUpTo(max_stratum).unwrap_or(false);

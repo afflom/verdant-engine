@@ -70,36 +70,37 @@ impl HumanoidJointId {
     /// Zero-based topological joint index (`0..22`).
     #[must_use]
     pub const fn index(self) -> usize {
-        let two = 1usize + 1usize;
-        let three = two + 1usize;
-        let four = two * two;
-        let five = four + 1usize;
-        let six = three * two;
-        let ten = five * two;
-        match self {
-            Self::Pelvis => 0,
-            Self::Spine1 => 1,
+        let two = 1_u32.wrapping_add(1_u32);
+        let three = two.wrapping_add(1_u32);
+        let four = two.wrapping_mul(two);
+        let five = four.wrapping_add(1_u32);
+        let six = three.wrapping_mul(two);
+        let ten = five.wrapping_mul(two);
+        let idx = match self {
+            Self::Pelvis => 0_u32,
+            Self::Spine1 => 1_u32,
             Self::Spine2 => two,
             Self::Chest => three,
             Self::Neck => four,
             Self::Head => five,
             Self::ClavicleL => six,
-            Self::UpperArmL => six + 1,
-            Self::ForearmL => four * two,
-            Self::HandL => four * two + 1,
+            Self::UpperArmL => six.wrapping_add(1_u32),
+            Self::ForearmL => four.wrapping_mul(two),
+            Self::HandL => four.wrapping_mul(two).wrapping_add(1_u32),
             Self::ClavicleR => ten,
-            Self::UpperArmR => ten + 1,
-            Self::ForearmR => six * two,
-            Self::HandR => six * two + 1,
-            Self::ThighL => ten + four,
-            Self::CalfL => ten + five,
-            Self::FootL => four * four,
-            Self::ToeL => four * four + 1,
-            Self::ThighR => six * three,
-            Self::CalfR => six * three + 1,
-            Self::FootR => ten * two,
-            Self::ToeR => ten * two + 1,
-        }
+            Self::UpperArmR => ten.wrapping_add(1_u32),
+            Self::ForearmR => six.wrapping_mul(two),
+            Self::HandR => six.wrapping_mul(two).wrapping_add(1_u32),
+            Self::ThighL => ten.wrapping_add(four),
+            Self::CalfL => ten.wrapping_add(five),
+            Self::FootL => four.wrapping_mul(four),
+            Self::ToeL => four.wrapping_mul(four).wrapping_add(1_u32),
+            Self::ThighR => six.wrapping_mul(three),
+            Self::CalfR => six.wrapping_mul(three).wrapping_add(1_u32),
+            Self::FootR => ten.wrapping_mul(two),
+            Self::ToeR => ten.wrapping_mul(two).wrapping_add(1_u32),
+        };
+        idx as usize
     }
 }
 
@@ -244,8 +245,7 @@ fn append_skinned_limb_tube(
     let n_u = tangent.cross(ref_up).normalized();
     let n_v = tangent.cross(n_u).normalized();
 
-    let scale_u16 =
-        crate::prism_kernel::skinWeightScale().expect("verified Prism skinWeightScale") as u16;
+    let scale_u16 = crate::prism_kernel::skinWeightScale().expect("prism") as u16;
     let r_segs = radial_segs.max(1 + 1 + 1 + 1 + 1 + 1);
     let a_segs = axial_segs.max(1 + 1);
     let base_v = positions.len() as u32;
@@ -946,8 +946,7 @@ impl ArticulatedCharacter {
             });
         }
         let mut base = Self::new_humanoid(name, archetype, foot_position, 1)?;
-        let scale_u16 =
-            crate::prism_kernel::skinWeightScale().expect("verified Prism skinWeightScale") as u16;
+        let scale_u16 = crate::prism_kernel::skinWeightScale().expect("prism") as u16;
         let j_count = base.skeleton.joints.len();
         let bounds = external_mesh.bounds();
         let span_y = (bounds.max.y - bounds.min.y).max(geometric_epsilon());
@@ -1023,8 +1022,7 @@ impl ArticulatedCharacter {
         let q = half * half;
         let e = q * half;
         let two = two_f64();
-        let scale_u16 =
-            crate::prism_kernel::skinWeightScale().expect("verified Prism skinWeightScale") as f64;
+        let scale_u16 = crate::prism_kernel::skinWeightScale().expect("prism") as f64;
 
         self.foot_position = foot_world;
         let planar_vel = Vec3::new(velocity_world.x, 0.0, velocity_world.z);

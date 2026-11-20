@@ -395,19 +395,19 @@ impl EngineIntentKind {
     }
 
     fn from_index(idx: usize) -> Self {
-        let i2 = prism_kernel::sTwo() as usize;
-        let i3 = prism_kernel::sThree() as usize;
-        let i4 = prism_kernel::sFour().unwrap_or(1) as usize;
-        let i5 = prism_kernel::sFive().unwrap_or(1) as usize;
-        let i6 = prism_kernel::sSix().unwrap_or(1) as usize;
-        let i7 = prism_kernel::sSeven().unwrap_or(1) as usize;
-        let i8 = prism_kernel::sEight().unwrap_or(1) as usize;
-        let i9 = prism_kernel::sNine().unwrap_or(1) as usize;
-        let i10 = prism_kernel::sTen().unwrap_or(1) as usize;
-        let i11 = prism_kernel::sEleven().unwrap_or(1) as usize;
-        let i12 = prism_kernel::sTwelve().unwrap_or(1) as usize;
-        let i13 = i12 + 1;
-        let i14 = prism_kernel::sFourteen().unwrap_or(1) as usize;
+        let i2 = crate::math::two_u32() as usize;
+        let i3 = crate::math::three_u32() as usize;
+        let i4 = crate::math::four_u32() as usize;
+        let i5 = crate::math::five_u32() as usize;
+        let i6 = crate::math::three_u32().wrapping_mul(crate::math::two_u32()) as usize;
+        let i7 = crate::math::eight_u32().wrapping_sub(1_u32) as usize;
+        let i8 = crate::math::eight_u32() as usize;
+        let i9 = crate::math::eight_u32().wrapping_add(1_u32) as usize;
+        let i10 = crate::math::ten_u32() as usize;
+        let i11 = crate::math::ten_u32().wrapping_add(1_u32) as usize;
+        let i12 = crate::math::ten_u32().wrapping_add(crate::math::two_u32()) as usize;
+        let i13 = crate::math::ten_u32().wrapping_add(crate::math::three_u32()) as usize;
+        let i14 = crate::math::ten_u32().wrapping_add(crate::math::four_u32()) as usize;
         if idx == 0 {
             Self::FocusObserverCore
         } else if idx == 1 {

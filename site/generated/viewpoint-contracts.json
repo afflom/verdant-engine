@@ -2,7 +2,7 @@
   "managers": [
     {
       "basisPrime": 59,
-      "kappaHex": "a6c1a98aa8f0a6473ae7df52b2b625c8d00a30f06792dcb24e3d430dd0fe5245",
+      "kappaHex": "8d279d753d585cb8804f7d364818c798f13dfa8138164f820d5cf49ebd3c1dcc",
       "spec": {
         "almPhases": [
           "governance",
@@ -32,6 +32,9 @@
           "app/src/Observer.lex.tex",
           "crates/verdant-core/src/observer.rs",
           "crates/verdant-core/src/operator.rs",
+          "crates/verdant-core/src/operator_types.rs",
+          "crates/verdant-core/src/operator_release.rs",
+          "crates/verdant-core/src/operator_mcp.rs",
           "site/generated/viewpoint-contracts.json",
           "site/generated/immutability-seal.json"
         ],
@@ -430,7 +433,7 @@
     },
     {
       "basisPrime": 97,
-      "kappaHex": "9e075e2b6e94fac796b2ceaa93f966bb7674b79904c2f4c503b0aa0bbd9100c8",
+      "kappaHex": "6cdf946931ec0e0c5efc6ac27d0ae43a19cf54dede1efbc11bc3ea7d8b3f940c",
       "spec": {
         "almPhases": [
           "conception",
@@ -478,6 +481,10 @@
           "crates/verdant-core/src/portable_player.rs",
           "site/studio/index.html",
           "site/studio/studio-page.mjs",
+          "site/studio/outliner.mjs",
+          "site/studio/observer-panel.mjs",
+          "site/studio/project-inspector.mjs",
+          "site/studio/vcs-panel.mjs",
           "site/studio.mjs",
           "site/studio-data.mjs",
           "site/studio-scaffolder.mjs"

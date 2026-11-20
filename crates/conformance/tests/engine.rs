@@ -6733,3 +6733,108 @@ fn engine_ve_57() {
     assert!(studio_html.contains("Harbor Lighthouse"));
     assert!(studio_html.contains("window.__VERDANT_SHARED_APP__"));
 }
+
+#[test]
+fn engine_ve_58() {
+    use std::path::Path;
+    use verdant_core::portable_player::render_portable_3d_player_html;
+
+    let repo_root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+
+    // 1. Verify monolith decomposition submodules exist across Rust & Studio JS:
+    for rel in [
+        "crates/verdant-wasm/src/exports_cold.rs",
+        "crates/verdant-wasm/src/exports_uorc.rs",
+        "crates/verdant-core/src/operator_types.rs",
+        "crates/verdant-core/src/operator_release.rs",
+        "crates/verdant-core/src/operator_mcp.rs",
+        "site/studio/outliner.mjs",
+        "site/studio/observer-panel.mjs",
+        "site/studio/project-inspector.mjs",
+        "site/studio/vcs-panel.mjs",
+    ] {
+        assert!(
+            repo_root.join(rel).is_file(),
+            "decomposed submodule `{rel}` must exist"
+        );
+    }
+
+    // 2. Verify tightened [surface_ratchet] file-line ceilings (max Rust <= 3525, max JS <= 1980):
+    let rep = prism_fidelity::ratchet::audit_parametric_ratchet(
+        &repo_root,
+        Path::new("model/parametric-ratchet.toml"),
+    )
+    .expect("live repo must pass all 4 ratchet layers with tightened M12 ceilings");
+    assert!(
+        rep.observed_max_rust_file_lines <= 3525,
+        "max hand-written Rust file lines must be <= 3525 after decomposition, got {}",
+        rep.observed_max_rust_file_lines
+    );
+    assert!(
+        rep.observed_max_js_file_lines <= 1980,
+        "max JS file lines must be <= 1980 after decomposition, got {}",
+        rep.observed_max_js_file_lines
+    );
+
+    // 3. Verify naga is gated behind optional wgsl-oracle feature in crates/verdant-core/Cargo.toml:
+    let core_toml = std::fs::read_to_string(repo_root.join("crates/verdant-core/Cargo.toml"))
+        .expect("read verdant-core Cargo.toml");
+    assert!(core_toml.contains("wgsl-oracle = [\"dep:naga\"]"));
+    assert!(core_toml.contains("optional = true"));
+
+    // 4. Verify 5-shape faithful offline WebGL2 portable player HTML (Box, Platform, Pillar, Ramp, Beacon Orb):
+    let multi_shape_scene = r#"{"project":"Citadel Courtyard","domain":"meridian-observatory","objects":[{"kind":0,"pos":[0,0,0],"scale":[1.6,1.6,1.6],"yawMilli":0,"color":[0.86,0.34,0.16]},{"kind":1,"pos":[3,0,0],"scale":[2.2,1.0,2.2],"yawMilli":0,"color":[0.84,0.82,0.76]},{"kind":2,"pos":[-3,0,0],"scale":[1.2,2.2,1.2],"yawMilli":0,"color":[2.84,0.82,0.76]},{"kind":3,"pos":[0,0,3],"scale":[2.0,1.5,2.6],"yawMilli":0,"color":[0.26,0.3,0.36]},{"kind":4,"pos":[0,0,-3],"scale":[1.2,1.2,1.2],"yawMilli":0,"color":[3.24,0.66,0.86]}]}"#;
+    let html =
+        render_portable_3d_player_html("Citadel Courtyard", "prism:local:alice", multi_shape_scene);
+    assert!(html.contains("mkBox"));
+    assert!(html.contains("mkCyl"));
+    assert!(html.contains("mkRamp"));
+    assert!(html.contains("mkOrb"));
+    assert!(html.contains("shapeKinds:5"));
+    assert!(html.contains("KeyW"));
+    assert!(!html.contains("https://"));
+    assert!(!html.contains("http://"));
+}
+
+#[test]
+fn engine_ve_59() {
+    use std::path::Path;
+    use verdant_core::operator::VerdantOperatorChannel;
+
+    let repo_root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+    let rep = prism_fidelity::ratchet::audit_parametric_ratchet(
+        &repo_root,
+        Path::new("model/parametric-ratchet.toml"),
+    )
+    .expect("live repo must pass all 4 ratchet layers");
+
+    // 1. Verify uorust MIR proof frontier crossed 200+ lifted functions:
+    assert!(
+        rep.frontier_lifted_functions >= 200,
+        "M12 must lift >= 200 constructive Rust functions in frontier.toml, got {}",
+        rep.frontier_lifted_functions
+    );
+
+    // 2. Verify fidelity.toml closes all meant obligations across Cadence, Release, and Security:
+    let fid_raw =
+        std::fs::read_to_string(repo_root.join("fidelity.toml")).expect("read fidelity.toml");
+    assert!(
+        !fid_raw.contains("axis = \"meant\"\nreason = \"no theorem states anything about it"),
+        "all 705 meant verification obligations across Cadence/Release/Security must be closed in fidelity.toml"
+    );
+
+    // 3. Observer reports all 12 milestones (M1..M12) and 13/13 passing KPIs:
+    let ch = VerdantOperatorChannel::new("sunspire-regatta").expect("operator channel");
+    let kpi_rep = ch
+        .evaluate_observer_roadmap_kpis(&repo_root, true, true)
+        .expect("observer roadmap & KPI report");
+    assert!(
+        kpi_rep.milestones.len() >= 12,
+        "expected Milestones M1..M12"
+    );
+    assert_eq!(
+        kpi_rep.kpi_passed_count, kpi_rep.kpi_total_count,
+        "all Observer KPIs must pass (kpis={:?})",
+        kpi_rep.kpis
+    );
+}

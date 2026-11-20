@@ -159,10 +159,13 @@ pub struct PagedTensorArena {
 impl Default for PagedTensorArena {
     fn default() -> Self {
         // Default 64 MiB resident host envelope (`2^26` bytes = `1024` 64 KiB pages):
-        let two = 1_u32 + 1_u32;
-        let three = two + 1_u32;
-        let four = two * two;
-        let shift_26 = (four * three + 1_u32) * two;
+        let two = 1_u32.wrapping_add(1_u32);
+        let three = two.wrapping_add(1_u32);
+        let four = two.wrapping_mul(two);
+        let shift_26 = four
+            .wrapping_mul(three)
+            .wrapping_add(1_u32)
+            .wrapping_mul(two);
         Self::new(pow2_u64(shift_26))
     }
 }
@@ -402,8 +405,8 @@ impl PagedTensorArena {
     /// Computes live ISO/IEC 25010 Resource Utilization & Capacity telemetry.
     #[must_use]
     pub fn telemetry(&self) -> PagedArenaTelemetry {
-        let ten = (1_u64 + 1_u64) * (1_u64 + 1_u64 + 1_u64 + 1_u64 + 1_u64);
-        let thousand = ten * ten * ten;
+        let ten = crate::scalars::ten_u64();
+        let thousand = ten.wrapping_mul(ten).wrapping_mul(ten);
         let pinned_pages = self
             .pages
             .values()

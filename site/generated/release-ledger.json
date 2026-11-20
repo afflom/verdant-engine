@@ -4,10 +4,10 @@
   "authorityId": "AUTH-SEMVER-CHANGE-KPI",
   "currentVersion": {
     "major": 2,
-    "minor": 3,
+    "minor": 4,
     "patch": 0
   },
-  "releaseEpoch": 7,
+  "releaseEpoch": 8,
   "history": [
     {
       "version": "0.1.0",
@@ -77,6 +77,13 @@
       "releaseEpoch": 7,
       "bumpKind": "minor",
       "summary": "M11: Wasm/capsule weight diet (-1.88 MiB), FR-03 cold-boot headroom & live interactive WebGL2 3D player in shared portable .holo apps",
+      "citedAuthority": "AUTH-SEMVER-CHANGE-KPI"
+    },
+    {
+      "version": "2.4.0",
+      "releaseEpoch": 8,
+      "bumpKind": "minor",
+      "summary": "M12: Monolith decomposition, wasm32 naga gating, 1:1 FR-03 sync, 5-shape portable 3D player & 200+ uorust/fidelity closure",
       "citedAuthority": "AUTH-SEMVER-CHANGE-KPI"
     }
   ]
