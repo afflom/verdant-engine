@@ -365,6 +365,12 @@ impl VerdantOperatorChannel {
             &[".feature"],
             &mut gov_files,
         );
+        Self::collect_tree_matching(
+            repo_root,
+            &repo_root.join("scripts"),
+            &[".mjs"],
+            &mut gov_files,
+        );
 
         let mut site_files = BTreeMap::new();
         let site_root = repo_root.join("site");
@@ -1085,6 +1091,17 @@ impl VerdantOperatorChannel {
         }
         for (path, bytes) in &model_map {
             lifted_records.push((path.clone(), "model-governance", sha256_hex_raw(bytes)));
+        }
+
+        let mut script_map = BTreeMap::new();
+        Self::collect_tree_matching(
+            repo_root,
+            &repo_root.join("scripts"),
+            &[".mjs"],
+            &mut script_map,
+        );
+        for (path, bytes) in &script_map {
+            lifted_records.push((path.clone(), "automation-script", sha256_hex_raw(bytes)));
         }
 
         let viewpoint_ui_files = [

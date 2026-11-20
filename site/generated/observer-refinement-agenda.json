@@ -6,12 +6,12 @@
   "overallRefinementScorePermille": 934,
   "liveMetrics": {
     "wasmCoreBytes": 159832,
-    "wasmUorcBytes": 4663194,
-    "releaseCapsuleBytes": 1711584,
+    "wasmUorcBytes": 4663223,
+    "releaseCapsuleBytes": 1711645,
     "blankFrameBytes": 28370,
     "maxHandwrittenRustFileLines": 2184,
     "maxJsFileLines": 1675,
-    "frontierLifted": 232,
+    "frontierLifted": 246,
     "frontierResidue": 1179,
     "frontierUncertified": 1334,
     "fidelityOpenResidue": 0
@@ -188,14 +188,14 @@
       "citedAuthority": "AUTH-SEMVER-CHANGE-KPI",
       "ratchetLayer": "uorust-frontier",
       "priority": "high",
-      "currentValue": "232 lifted / 1179 residue (1334 uncertified)",
-      "targetValue": ">= 252 lifted functions",
+      "currentValue": "246 lifted / 1179 residue (1334 uncertified)",
+      "targetValue": ">= 266 lifted functions",
       "summary": "Expand constructive MIR proof frontier; top blocker: expression form outside the lift: ? below the function's own statements (269 fns, cause=form).",
       "concreteActions": [
         "Replace remaining raw shift/overflow ops with lifted verdant_tensor::scalars and wrapping ops.",
         "Extract pure decision/calculation helpers out of IO/effectful wrappers so uorust lifts them."
       ],
-      "kappaHex": "a6622726fad96acd9fb120f19aee7e179f651989e72acd6e48484140a1bd9975"
+      "kappaHex": "99d6fb3c755973545322dc318d7d47b6cebd74a27ebbb13270918411aa681512"
     },
     {
       "proposalId": "refine-rust-modularity",
@@ -222,15 +222,15 @@
       "citedAuthority": "AUTH-STITCH-SELF-HOSTING",
       "ratchetLayer": "surface-wasm",
       "priority": "medium",
-      "currentValue": "verdant-uorc.wasm 4663194 B · .holo 1711584 B · Blank Frame 28370 B (2350 B headroom)",
+      "currentValue": "verdant-uorc.wasm 4663223 B · .holo 1711645 B · Blank Frame 28370 B (2350 B headroom)",
       "targetValue": "verdant-uorc.wasm <= 4194304 B while preserving gzipped .holo <= 1.72 MiB",
       "summary": "Trim unused codec paths on wasm32 and preserve gzipped STCH2 shard efficiency for cold Blank Frame boots.",
       "concreteActions": [
         "Audit gltf/image feature flags on wasm32 to drop unused color/codec tables.",
         "Maintain Blank Frame strictly under 30720 B with DecompressionStream('gzip')."
       ],
-      "kappaHex": "f384debb9fe99d267ec59f2d7ee3a6d5c1c3b9babfbcc88ab92b1b6ffc6b25c9"
+      "kappaHex": "2a87a1967a357ced95837293c8704acf80186fd54a9f3d34602911e30345e69f"
     }
   ],
-  "agendaKappaHex": "cd2a7a8d8663edb421c86b3e8e0c443e771dcf07b71e59b357de5a4290e08d7e"
+  "agendaKappaHex": "ac604f94ac0838c94896d370aba048e4eaf2c82bb69a61dbb4323623ba1c6274"
 }

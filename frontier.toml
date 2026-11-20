@@ -5,7 +5,7 @@
 # stops the functions it counts (the detail their rows state, under its
 # cause), the one that stops the most first: the work queue.
 
-# Honesty report: 232 of 1566 functions of product code are lifted; 1179
+# Honesty report: 246 of 1580 functions of product code are lifted; 1179
 # are residue, 74 foreign and 81 effect rows.
 # Residue by cause:
 #   arithmetic: 31
@@ -20,8 +20,8 @@
 spec = "uorust/register/1"
 
 [lift]
-functions = 1566
-lifted = 232
+functions = 1580
+lifted = 246
 residue = 1179
 foreign = 74
 effect = 81
@@ -4697,7 +4697,7 @@ reason = "signature"
 detail = "signature outside the lift: takes &mut self of FrameBudgetOracle: the lift reads self and &self as the value, and threads no other receiver"
 
 [[residue]]
-kappa = "de4002a6095d3973adf11bf5fdec7cdc011957d6004f14644a0fcc6668495a04"
+kappa = "c82db3c2b02d2eda5dd2999e0bccf924919458f752fe7c80b38c7304ce1fe60a"
 function = "verdant_core::uhd::FrameBudgetOracle::report"
 reason = "arithmetic"
 detail = "integer operator + wraps or panics depending on the build profile"
@@ -4733,7 +4733,7 @@ reason = "type"
 detail = "type outside the lift: MeshletGraph.clusters: MeshletCluster.center: Vec3.x: f64"
 
 [[residue]]
-kappa = "19ca12275ca372a42603726ca59b0edb24fce40bd72bf46379525b2c5a415485"
+kappa = "79232c6b07b79eb23be048c040212d6a763581da4adce4b2fec590c9615c1af2"
 function = "verdant_core::uhd::evaluate_uhd_display_profile"
 reason = "arithmetic"
 detail = "integer operator + wraps or panics depending on the build profile"
@@ -8906,7 +8906,7 @@ function = "verdant_core::governance::RoadmapKpiManager::evaluate_repo"
 effect = "Fs effect: std::fs::read_to_string"
 
 [[effect]]
-kappa = "32e7197d1383a177b1949d8e2804ccfbc673b5308a9b7cfab8cc4566e03d9ed2"
+kappa = "47b3fb41c706a71760ade46c46ba3dbbcdb05299de935894f97cc837dc4004f1"
 function = "verdant_core::lifecycle::VerdantOperatorChannel::execute_lifecycle_gate"
 effect = "Fs effect: std::fs::read_to_string"
 
@@ -8996,12 +8996,12 @@ function = "verdant_core::operator_release::VerdantOperatorChannel::collect_tree
 effect = "Fs effect: std::fs::read_dir"
 
 [[effect]]
-kappa = "a2211dc739f03cd9094ebfbbbeb1537068d309839fd051b82661f3337a3543bb"
+kappa = "2224faf0b83f4257d310fa6476a42570e46d75bc62f7151acf8482919cc83705"
 function = "verdant_core::operator_release::VerdantOperatorChannel::execute_autonomous_ratchet_lift"
 effect = "Fs effect: std::fs::read"
 
 [[effect]]
-kappa = "7b03e42abb8f314ae88c22401699227d31efb243479e05d267e1cdb0bd642834"
+kappa = "aaec18eaed233c7bd12fc88238399ae57deb9f14607e797a07a8dd9d30286f5d"
 function = "verdant_core::operator_release::VerdantOperatorChannel::lift_full_workspace_into_vcs"
 effect = "Fs effect: std::fs::read"
 
@@ -9464,6 +9464,16 @@ definition = "Behavior::lifecycleGateCanAdvanceRelease"
 kappa = "710fba2ebbc3eb5fc87f3b482734e298de7421e5de823429d78250f46ce3b080"
 function = "verdant_core::lifecycle::lifecycle_lifted_categories_complete"
 definition = "Behavior::lifecycleLiftedCategoriesComplete"
+
+[[lifted]]
+kappa = "1b7b12e77732bd9354f94590eef6df0edb12f83631f1e94682e2ba1fabc32989"
+function = "verdant_core::lifecycle::lifecycle_lifted_categories_complete_v7"
+definition = "Behavior::lifecycleLiftedCategoriesCompleteV7"
+
+[[lifted]]
+kappa = "5abcd842cb664d44265172a8180235ee06489f50b6f3fba959e0a4ec02c41dd8"
+function = "verdant_core::lifecycle::lifecycle_manifest_total_modules_v7"
+definition = "Behavior::lifecycleManifestTotalModulesV7"
 
 [[lifted]]
 kappa = "993857d149003344a222b4bcaa95adb90b74b8fbb57f5637e31ee2934471bddf"
@@ -10244,6 +10254,66 @@ definition = "Behavior::twoU64"
 kappa = "d9bb4bbfe406c37b81ed274cbcf2af58811c7bc8485d63d2019d1c4fadbf2ddc"
 function = "verdant_tensor::scalars::two_u8"
 definition = "Behavior::twoU8"
+
+[[lifted]]
+kappa = "6a4128d9eab677fa5324afd6f1d075361cb9116a69652c97ab8734b67f1aa27a"
+function = "verdant_tensor::scalars::uhd_budget_half_ok"
+definition = "Behavior::uhdBudgetHalfOk"
+
+[[lifted]]
+kappa = "3c492e15405d607116ae7416549acd282fc02f62c781ff13e1bdf94875d025ee"
+function = "verdant_tensor::scalars::uhd_cas_sharpness_permille"
+definition = "Behavior::uhdCasSharpnessPermille"
+
+[[lifted]]
+kappa = "960fdd57eeff61af08bcb802cee80f63ccd98ffbbe828d89c5c6555b63bfd0af"
+function = "verdant_tensor::scalars::uhd_classify_display_tier"
+definition = "Behavior::uhdClassifyDisplayTier"
+
+[[lifted]]
+kappa = "0c550c86ca72681a2f6c769d0075edc44f9a180947bf5d4bf47a86a99d267cbf"
+function = "verdant_tensor::scalars::uhd_drs_step_down"
+definition = "Behavior::uhdDrsStepDown"
+
+[[lifted]]
+kappa = "7d08281914e8f791a0251dcfc6a0433909b950c1994447b3f34f30785023abcf"
+function = "verdant_tensor::scalars::uhd_drs_step_up"
+definition = "Behavior::uhdDrsStepUp"
+
+[[lifted]]
+kappa = "ee6220a1f9be7a620e6ff405f13792ccb1d46c83fc0905863b147689905e0324"
+function = "verdant_tensor::scalars::uhd_frame_is_stable"
+definition = "Behavior::uhdFrameIsStable"
+
+[[lifted]]
+kappa = "0119f0cef52e7d4808559702e8f32a698d28667d7f306198eb1eb629b3bb629a"
+function = "verdant_tensor::scalars::uhd_jitter_us"
+definition = "Behavior::uhdJitterUs"
+
+[[lifted]]
+kappa = "dbae721d37d72c7ddcdc7866cc56216a97c45d44775519759f6880917897d98d"
+function = "verdant_tensor::scalars::uhd_meshlet_sse_tenths_px"
+definition = "Behavior::uhdMeshletSseTenthsPx"
+
+[[lifted]]
+kappa = "7d27581bd4f8921386e2e73d93a828de56331cb89dd4535aeb39a45653bed558"
+function = "verdant_tensor::scalars::uhd_paged_arena_needs_eviction"
+definition = "Behavior::uhdPagedArenaNeedsEviction"
+
+[[lifted]]
+kappa = "935e67489fe44827c675f12ed2c1311fc2fb0ee8baa2ceb70a522dc1a13277c7"
+function = "verdant_tensor::scalars::uhd_paged_arena_within_budget"
+definition = "Behavior::uhdPagedArenaWithinBudget"
+
+[[lifted]]
+kappa = "68906045480be50d0e65e168b00ed84774909cc69a17735451d53f4523993e80"
+function = "verdant_tensor::scalars::uhd_recommended_drs_permille"
+definition = "Behavior::uhdRecommendedDrsPermille"
+
+[[lifted]]
+kappa = "f93edd270566fe9e08709818da2b328a63387ece00f3f2a7f167e6dd1154adaf"
+function = "verdant_tensor::scalars::uhd_tier_supports_webgpu_cas"
+definition = "Behavior::uhdTierSupportsWebgpuCas"
 
 [[lifted]]
 kappa = "36cc52a34b749eea1cb95f88cbf7bde987f8088abdecee896816a0722f08239c"

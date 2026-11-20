@@ -70,6 +70,8 @@ pub struct LiftedLifecycleCoverage {
     pub feature_suite_modules: u32,
     /// Lifted formal model & governance authority files (`model/*`, `catalogs/**/*.json`).
     pub model_governance_modules: u32,
+    /// Lifted lifecycle automation, build & verification scripts (`scripts/**/*.mjs`).
+    pub automation_script_modules: u32,
     /// Lifted UI Viewpoint & immutable Blank Frame assets.
     pub viewpoint_modules: u32,
     /// Total lifted lifecycle modules tracked in `self-host-ratchet-manifest.toml`.
@@ -157,7 +159,7 @@ pub const fn lifecycle_version_tuple_matches(
     a_maj == b_maj && a_min == b_min && a_pat == b_pat
 }
 
-/// Pure MIR-lifted predicate confirming all 6 Verdant lifecycle artifact categories are lifted.
+/// Pure MIR-lifted predicate confirming all 6 core Verdant lifecycle artifact categories are lifted.
 #[must_use]
 pub const fn lifecycle_lifted_categories_complete(
     rust_n: u32,
@@ -168,6 +170,42 @@ pub const fn lifecycle_lifted_categories_complete(
     view_n: u32,
 ) -> bool {
     rust_n > 0 && test_n > 0 && lex_n > 0 && feature_n > 0 && model_n > 0 && view_n > 0
+}
+
+/// Pure MIR-lifted predicate confirming all 7 Verdant lifecycle artifact categories (including
+/// automation scripts under `scripts/**/*.mjs`) are lifted into Verdant.
+#[must_use]
+pub const fn lifecycle_lifted_categories_complete_v7(
+    rust_n: u32,
+    test_n: u32,
+    lex_n: u32,
+    feature_n: u32,
+    model_n: u32,
+    script_n: u32,
+    view_n: u32,
+) -> bool {
+    lifecycle_lifted_categories_complete(rust_n, test_n, lex_n, feature_n, model_n, view_n)
+        && script_n > 0
+}
+
+/// Pure MIR-lifted total count across all 7 lifted lifecycle categories.
+#[must_use]
+pub const fn lifecycle_manifest_total_modules_v7(
+    rust_n: u32,
+    test_n: u32,
+    lex_n: u32,
+    feature_n: u32,
+    model_n: u32,
+    script_n: u32,
+    view_n: u32,
+) -> u32 {
+    rust_n
+        .saturating_add(test_n)
+        .saturating_add(lex_n)
+        .saturating_add(feature_n)
+        .saturating_add(model_n)
+        .saturating_add(script_n)
+        .saturating_add(view_n)
 }
 
 /// Pure MIR-lifted gate refusing any release advancement without qualification, ratchet, and 0 unlifted.
@@ -335,13 +373,14 @@ impl VerdantOperatorChannel {
             detail: format!("fidelity_open={fidelity_open} frontier_valid={frontier_ok}"),
         });
 
-        // 6. In-process Full Lifted Lifecycle Coverage across all 6 categories:
+        // 6. In-process Full Lifted Lifecycle Coverage across all 7 categories:
         let t5 = Instant::now();
         let mut rust_n = 0u32;
         let mut test_n = 0u32;
         let mut lex_n = 0u32;
         let mut feat_n = 0u32;
         let mut model_n = 0u32;
+        let mut script_n = 0u32;
         let mut view_n = 0u32;
         for line in manifest_raw.lines() {
             let tr = line.trim();
@@ -355,24 +394,25 @@ impl VerdantOperatorChannel {
                 feat_n = feat_n.saturating_add(1);
             } else if tr == "category = \"model-governance\"" {
                 model_n = model_n.saturating_add(1);
+            } else if tr == "category = \"automation-script\"" {
+                script_n = script_n.saturating_add(1);
             } else if tr == "category = \"viewpoint\"" {
                 view_n = view_n.saturating_add(1);
             }
         }
-        let all_cats =
-            lifecycle_lifted_categories_complete(rust_n, test_n, lex_n, feat_n, model_n, view_n);
-        let total_lifted = rust_n
-            .saturating_add(test_n)
-            .saturating_add(lex_n)
-            .saturating_add(feat_n)
-            .saturating_add(model_n)
-            .saturating_add(view_n);
+        let all_cats = lifecycle_lifted_categories_complete_v7(
+            rust_n, test_n, lex_n, feat_n, model_n, script_n, view_n,
+        );
+        let total_lifted = lifecycle_manifest_total_modules_v7(
+            rust_n, test_n, lex_n, feat_n, model_n, script_n, view_n,
+        );
         let lifted_coverage = LiftedLifecycleCoverage {
             rust_modules: rust_n,
             verification_test_modules: test_n,
             lexlean_modules: lex_n,
             feature_suite_modules: feat_n,
             model_governance_modules: model_n,
+            automation_script_modules: script_n,
             viewpoint_modules: view_n,
             total_lifted_modules: total_lifted,
             all_categories_lifted: all_cats,
@@ -384,7 +424,7 @@ impl VerdantOperatorChannel {
             passed: all_cats,
             duration_ms: t5.elapsed().as_millis() as u64,
             detail: format!(
-                "total={total_lifted} (rust={rust_n}, test={test_n}, lex={lex_n}, feature={feat_n}, model={model_n}, view={view_n})"
+                "total={total_lifted} (rust={rust_n}, test={test_n}, lex={lex_n}, feature={feat_n}, model={model_n}, script={script_n}, view={view_n})"
             ),
         });
 

@@ -12,6 +12,13 @@
 //!   and UHD 4-channel PBR + Equirectangular HDRI IBL + Contrast-Adaptive Sharpening (`CAS`).
 
 use serde::{Deserialize, Serialize};
+use verdant_tensor::scalars::four_u32;
+pub use verdant_tensor::scalars::{
+    uhd_budget_half_ok, uhd_cas_sharpness_permille, uhd_classify_display_tier, uhd_drs_step_down,
+    uhd_drs_step_up, uhd_frame_is_stable, uhd_jitter_us, uhd_meshlet_sse_tenths_px,
+    uhd_paged_arena_needs_eviction, uhd_paged_arena_within_budget, uhd_recommended_drs_permille,
+    uhd_tier_supports_webgpu_cas,
+};
 
 #[cfg(feature = "wgsl-oracle")]
 use crate::error::ShaderValidationError;
@@ -912,7 +919,6 @@ pub fn evaluate_uhd_display_profile(
 ) -> UhdDisplayProfile {
     let thousand = pow10_u64(two_u32() + 1) as u32;
     let hundred = pow10_u64(two_u32()) as u32;
-    let ten = pow10_u64(1) as u32;
     let budget_us = thousand * (1u32 << (1 + 1 + 1 + 1));
 
     let w = width_px.max(1);
@@ -921,62 +927,26 @@ pub fn evaluate_uhd_display_profile(
     let mp_x100 =
         ((pixels * u64::from(hundred)) / (u64::from(thousand) * u64::from(thousand))) as u32;
 
-    let sixteen_k_thresh = thousand * ten;
-    let eight_k_thresh = hundred * (1 + 1 + 1) * (1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1);
-    let five_k_thresh = hundred * (1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1);
-    let four_k_thresh = hundred * (1 + 1 + 1 + 1 + 1 + 1 + 1 + 1);
-    let qhd_thresh = hundred * (1 + 1 + 1);
-
-    let display_class = if mp_x100 >= sixteen_k_thresh {
+    let tier = uhd_classify_display_tier(mp_x100);
+    let display_class = if tier >= four_u32().wrapping_add(1_u32) {
         "Beyond-8K 16K+ Tiled"
-    } else if mp_x100 >= eight_k_thresh {
+    } else if tier >= four_u32() {
         "UHD 8K 4320p"
-    } else if mp_x100 >= five_k_thresh {
+    } else if tier >= four_u32().wrapping_sub(1_u32) {
         "UHD 5K 2880p"
-    } else if mp_x100 >= four_k_thresh {
+    } else if tier >= two_u32() {
         "UHD 4K 2160p"
-    } else if mp_x100 >= qhd_thresh {
+    } else if tier >= 1_u32 {
         "QHD 1440p"
     } else {
         "FHD 1080p"
     };
 
-    let drs_50 = hundred * (1 + 1 + 1 + 1 + 1);
-    let drs_65 = hundred * (1 + 1 + 1 + 1 + 1 + 1) + (hundred / (1 + 1));
-    let drs_75 = hundred * (1 + 1 + 1 + 1 + 1 + 1 + 1) + (hundred / (1 + 1));
-    let drs_85 = hundred * (1 + 1 + 1 + 1 + 1 + 1 + 1 + 1) + (hundred / (1 + 1));
-
-    let (drs_scale_permille, cas_sharpness_permille, meshlet_sse_tenths_px) = if is_software_gpu {
-        (drs_65, hundred * (1 + 1 + 1 + 1), ten * (1 + 1))
-    } else if mp_x100 >= sixteen_k_thresh {
-        let drs = if ema_frame_micros <= budget_us / (1 + 1) {
-            drs_65
-        } else {
-            drs_50
-        };
-        (drs, hundred * (1 + 1 + 1 + 1 + 1 + 1), ten * (1 + 1))
-    } else if mp_x100 >= eight_k_thresh {
-        let drs = if ema_frame_micros <= budget_us / (1 + 1) {
-            drs_85
-        } else {
-            drs_75
-        };
-        (drs, hundred * (1 + 1 + 1 + 1 + 1), ten + (ten / (1 + 1)))
-    } else if mp_x100 >= four_k_thresh {
-        let drs = if ema_frame_micros <= budget_us / (1 + 1) {
-            thousand
-        } else {
-            drs_85
-        };
-        let cas = if drs < thousand {
-            hundred * (1 + 1 + 1 + 1)
-        } else {
-            hundred + (hundred / (1 + 1))
-        };
-        (drs, cas, ten)
-    } else {
-        (thousand, hundred + (hundred / (1 + 1)), ten)
-    };
+    let under_half_budget = uhd_budget_half_ok(ema_frame_micros, budget_us);
+    let drs_scale_permille = uhd_recommended_drs_permille(tier, is_software_gpu, under_half_budget);
+    let cas_sharpness_permille =
+        uhd_cas_sharpness_permille(tier, is_software_gpu, drs_scale_permille);
+    let meshlet_sse_tenths_px = uhd_meshlet_sse_tenths_px(tier, is_software_gpu);
 
     let preferred_backend = if is_software_gpu {
         "webgl2-software-bounded"
@@ -1189,7 +1159,7 @@ impl FrameBudgetOracle {
         let p95_us = sorted[p95_idx];
         let p99_us = sorted[p99_idx];
         let max_us = sorted[n - 1];
-        let jitter_us = p99_us.saturating_sub(p50_us);
+        let jitter_us = uhd_jitter_us(p99_us, p50_us);
 
         let mut within = 0u64;
         for &s in &sorted[..n] {
@@ -1198,8 +1168,7 @@ impl FrameBudgetOracle {
             }
         }
         let budget_compliance_permille = ((within * thousand) / (n as u64)) as u32;
-        let stable =
-            p95_us <= self.target_budget_us && jitter_us <= self.target_budget_us / (1 + 1);
+        let stable = uhd_frame_is_stable(p95_us, jitter_us, self.target_budget_us);
 
         FrameStabilityReport {
             sample_count: n as u32,

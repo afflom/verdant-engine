@@ -14,8 +14,9 @@
     "lexleanModules": 28,
     "featureSuiteModules": 3,
     "modelGovernanceModules": 16,
+    "automationScriptModules": 20,
     "viewpointModules": 9,
-    "totalLiftedModules": 136,
+    "totalLiftedModules": 156,
     "allCategoriesLifted": true
   },
   "checks": [
@@ -32,7 +33,7 @@
       "owningManagerId": "mgr-observer-executive",
       "category": "in-process",
       "passed": true,
-      "durationMs": 11,
+      "durationMs": 13,
       "detail": "valid=true entries=16 violations=0"
     },
     {
@@ -65,14 +66,14 @@
       "category": "in-process",
       "passed": true,
       "durationMs": 0,
-      "detail": "total=136 (rust=56, test=24, lex=28, feature=3, model=16, view=9)"
+      "detail": "total=156 (rust=56, test=24, lex=28, feature=3, model=16, script=20, view=9)"
     },
     {
       "checkId": "cargo-fmt-check",
       "owningManagerId": "mgr-verification-observatory",
       "category": "workspace-test",
       "passed": true,
-      "durationMs": 1269,
+      "durationMs": 1318,
       "detail": "OK"
     },
     {
@@ -80,7 +81,7 @@
       "owningManagerId": "mgr-architecture-design",
       "category": "workspace-test",
       "passed": true,
-      "durationMs": 95,
+      "durationMs": 85,
       "detail": "check-model: CONFORMANCE.md equals the model, 74 ids (CM-01)"
     },
     {
@@ -88,7 +89,7 @@
       "owningManagerId": "mgr-architecture-design",
       "category": "workspace-test",
       "passed": true,
-      "durationMs": 267,
+      "durationMs": 311,
       "detail": "audit-limits: every error type a shipped crate names is declared with a negative test (22 declared) (R5)"
     },
     {
@@ -96,7 +97,7 @@
       "owningManagerId": "mgr-architecture-design",
       "category": "workspace-test",
       "passed": true,
-      "durationMs": 310,
+      "durationMs": 312,
       "detail": "audit-deferral: nothing is deferred (R4)"
     },
     {
@@ -104,7 +105,7 @@
       "owningManagerId": "mgr-verification-observatory",
       "category": "workspace-test",
       "passed": true,
-      "durationMs": 1745,
+      "durationMs": 1882,
       "detail": "705 records scored; derived 705/705 closed; meant 705/705 closed; measured 9/9 closed"
     },
     {
@@ -112,7 +113,7 @@
       "owningManagerId": "mgr-verification-observatory",
       "category": "workspace-test",
       "passed": true,
-      "durationMs": 6600,
+      "durationMs": 155,
       "detail": "OK"
     },
     {
@@ -120,17 +121,17 @@
       "owningManagerId": "mgr-verification-observatory",
       "category": "workspace-test",
       "passed": true,
-      "durationMs": 14035,
-      "detail": "test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s"
+      "durationMs": 6058,
+      "detail": "test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s"
     },
     {
       "checkId": "unit-and-fidelity-tests",
       "owningManagerId": "mgr-verification-observatory",
       "category": "workspace-test",
       "passed": true,
-      "durationMs": 13015,
+      "durationMs": 9315,
       "detail": "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
     }
   ],
-  "reportKappaHex": "edd04b926159b63e5e85b4aa86d8fffad6fc5feadf91a348fa37c5afb8f0d240"
+  "reportKappaHex": "88314259f29492e9a9fc14e7b30e149d0318d1eb7add79aa9c8d4d99418133d2"
 }

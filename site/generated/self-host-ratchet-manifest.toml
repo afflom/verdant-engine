@@ -4,10 +4,10 @@ spec = "verdant/self-host-ratchet-manifest/1"
 generator = "verdant-operator-ratchet-lift"
 version = "2.6.0"
 release_epoch = 10
-source_commit_kappa = "eb42fec5ac01953f05aa63671cdf925c2d2473a52b0dbde279eec814885f42c7"
-source_tree_root_sha256 = "06137a8b323212c7191402079451c0ea10c602e24e167a0403e6f81d12e13782"
-immutability_seal_root_sha256 = "cb669f87d98803d012518a75ad5d72ad14839cfca6acd52cefcbeba2a6e0b1e3"
-release_capsule_sha256 = "acd6940940b321e84379b470cd62bb329aeea3c437309c6b10e4954a0deab81c"
+source_commit_kappa = "4f4ddf100d9586aae089cbdded3741b0188c61f78f875fab5cc81a37ff70578f"
+source_tree_root_sha256 = "ccfc71b50838e0b16abc5e1c7b612417940922cc3be403afe710a20482ff8523"
+immutability_seal_root_sha256 = "14b5cac0222ac049f8fbfd029cdbc37139adc62e5d41bd2a2d44cd4a9bceb882"
+release_capsule_sha256 = "708768516a6a10b3cada868d4c12f915e1f9d911518710494fbd159d4b8b4999"
 unlifted_ui_files = 0
 unverified_frame_assets = 0
 user_required_external_accounts = 0
@@ -101,7 +101,7 @@ sha256 = "910c27e10197c178cd8e1c837ed3486adb639e2354b39ebe00c126736e05dfe6"
 [[lifted_module]]
 path = "crates/verdant-core/src/lifecycle.rs"
 category = "rust"
-sha256 = "f3cd6ccaed203865afbfe62ecc67af4c05589e19322287ab46680f23ad459ba2"
+sha256 = "5c1db80458e05e75a8216b63dd15ee0970f267680ccd13d0a0bd430b696d0108"
 
 [[lifted_module]]
 path = "crates/verdant-core/src/math.rs"
@@ -156,7 +156,7 @@ sha256 = "b8b1614cd3edcd96e5004f285b7e772b231335446ffe15f7bd6dbb9ee8367968"
 [[lifted_module]]
 path = "crates/verdant-core/src/operator_release.rs"
 category = "rust"
-sha256 = "cff6d83c2bb9eee0fc6aa1f21c7d0f030e0f2fca81526dc2070931c2d0cd6608"
+sha256 = "a209ee66e83247692d91a24a619a11c291354c084a114e0fe6d62671b09536b8"
 
 [[lifted_module]]
 path = "crates/verdant-core/src/operator_synth.rs"
@@ -211,7 +211,7 @@ sha256 = "fbdf797bf5e880e69e9852c96c123b597f5c3582246c7a7000a0be680a3cac16"
 [[lifted_module]]
 path = "crates/verdant-core/src/uhd.rs"
 category = "rust"
-sha256 = "4588598e5c10e43cd8843586da23f4c1a5b7434599bd6d49b023de99cb350fbe"
+sha256 = "9fb288a9c7388d314403b3a453f86038a74215ca5a06fb79a401a5be0e094c3e"
 
 [[lifted_module]]
 path = "crates/verdant-core/src/ui.rs"
@@ -271,7 +271,7 @@ sha256 = "5118f63e82b33f32df26fd7ad51c9b6bcbce54cd80bc92320be11849df3f2691"
 [[lifted_module]]
 path = "crates/verdant-tensor/src/scalars.rs"
 category = "rust"
-sha256 = "501c8e93dc4511861458b13583524f5fbaad7f998269735369d5f56a7b6e3625"
+sha256 = "c84989c8ab29e9c632ea924f0076ddcd9a2c556170f99a9c5ed948a15791030c"
 
 [[lifted_module]]
 path = "crates/verdant-tensor/src/tropical.rs"
@@ -647,6 +647,106 @@ sha256 = "2a92f585a3e7b2dd61baf76b5809f12ca6a36671ffdb65cd4df5f6de41e96461"
 path = "model/provenance.toml"
 category = "model-governance"
 sha256 = "423097fcc1107b8839fc9b221478f3e3131e29a347668f686c4298ee3d575482"
+
+[[lifted_module]]
+path = "scripts/build-site.mjs"
+category = "automation-script"
+sha256 = "2e32e50b2f80ccf55a7f78948f6001ff6c94464aa3094cf7d35adbcaface7b56"
+
+[[lifted_module]]
+path = "scripts/content/check.mjs"
+category = "automation-script"
+sha256 = "506abf7a9b6178649b848c908862e5838e80fcd00e762c2349e50dc01ef8502d"
+
+[[lifted_module]]
+path = "scripts/content/dom.mjs"
+category = "automation-script"
+sha256 = "4b9bb74dbfbe8084d33c015c5785207b592b5802dfecb6e31fe9784c1cbbb69f"
+
+[[lifted_module]]
+path = "scripts/content/enrich.mjs"
+category = "automation-script"
+sha256 = "cbd7dfa2ba190a1bfc6a7da12374b6d61b180f2fd0fadc8722b3fa34304e5275"
+
+[[lifted_module]]
+path = "scripts/content/figures.mjs"
+category = "automation-script"
+sha256 = "bd24600f7df200568c3da37da25d25ebb91e9e5a56f27043f64c9454b3dd4e28"
+
+[[lifted_module]]
+path = "scripts/content/generate-docs.mjs"
+category = "automation-script"
+sha256 = "1d39482cc63b8b652b8f135e423640aa570d83e7ac7328bf9f92cf06b5d617a6"
+
+[[lifted_module]]
+path = "scripts/content/guides.mjs"
+category = "automation-script"
+sha256 = "40f364acc8b4874367efc017292da8627f5d3d3d3a13a3270d0befd13aa9a7a5"
+
+[[lifted_module]]
+path = "scripts/content/model.mjs"
+category = "automation-script"
+sha256 = "3e2c2efde2e5289826d1cf82f8aee5ecc0338323a778321954a1cd6820759497"
+
+[[lifted_module]]
+path = "scripts/content/text.mjs"
+category = "automation-script"
+sha256 = "769d60a0e9629a3e9dcbd9b8115936419d9a53d7d96ad4adbaf32d92969791da"
+
+[[lifted_module]]
+path = "scripts/enforce-prism-contracts.mjs"
+category = "automation-script"
+sha256 = "874180b0f58c80c92b06efa7c2e3ebc70d40f4de75c274ebecf19f67c196fad2"
+
+[[lifted_module]]
+path = "scripts/package-rust-crates.mjs"
+category = "automation-script"
+sha256 = "3883cacee10d790b1d05ab718f919290507b653f2f96b3b09446aaba76827f9f"
+
+[[lifted_module]]
+path = "scripts/release/qualify-tag.mjs"
+category = "automation-script"
+sha256 = "e50dba527d18c66ceb24f2a2f599b8b29ed75ae44a5486bd79ab2950ffd2a248"
+
+[[lifted_module]]
+path = "scripts/sync-prism-kernel.mjs"
+category = "automation-script"
+sha256 = "c0705a5e1bc993f522db0de8d5e46c1376b49ff1ac7dcf068d975e469e7fd05f"
+
+[[lifted_module]]
+path = "scripts/sync-prism-wasm.mjs"
+category = "automation-script"
+sha256 = "c8fda83d3912972561c89de9f1960c7a54fc1b45db7580f84be9d3dfcef82215"
+
+[[lifted_module]]
+path = "scripts/verdant-automate.mjs"
+category = "automation-script"
+sha256 = "c6a5cbc58ccaa9c24656e3afe3678ee85fcf00d1aade84493f83569f5e4435cc"
+
+[[lifted_module]]
+path = "scripts/verdant-ratchet.mjs"
+category = "automation-script"
+sha256 = "bb0ece20656c43ad2d99b4a3a024591eb84f5571e7df434563d231b5cdd917a5"
+
+[[lifted_module]]
+path = "scripts/verify-live-surfaces.mjs"
+category = "automation-script"
+sha256 = "52b40c9046bab360f447f19deac1e4942f886dd8418e4a8b823e8bf39c2dd9d7"
+
+[[lifted_module]]
+path = "scripts/verify-sparse-registry.mjs"
+category = "automation-script"
+sha256 = "ee7640dc84efb18298637862168b88e5d2634aa74c29ddd8f1dede6c09a44305"
+
+[[lifted_module]]
+path = "scripts/verify-stitch-release.mjs"
+category = "automation-script"
+sha256 = "6179f64aa2a26bfeeda8b6d941feb6545bb36bd10bb246df4c46dc9fc742b1c5"
+
+[[lifted_module]]
+path = "scripts/verify-uhd-workload.mjs"
+category = "automation-script"
+sha256 = "bf58600c612d36376232201d5619a220226a2dd22ed3786b7b73170ba26b06d5"
 
 [[lifted_module]]
 path = "site/card.html"

@@ -188,3 +188,168 @@ pub const fn sixty_four_u8() -> u8 {
     let e = eight_u8();
     e.wrapping_mul(e)
 }
+
+/// Pure MIR-lifted UHD display tier classifier (`0=FHD, 1=QHD, 2=4K, 3=5K, 4=8K, 5=16K+`)
+/// from megapixels x100 (`mp_x100`).
+#[must_use]
+pub const fn uhd_classify_display_tier(mp_x100: u32) -> u32 {
+    let h = hundred_u32();
+    let t = ten_u32();
+    let th = thousand_u32();
+    let three = four_u32().wrapping_sub(1_u32);
+    let five = four_u32().wrapping_add(1_u32);
+    let fourteen = t.wrapping_add(four_u32());
+    let sixteen_k = th.wrapping_mul(t);
+    let eight_k = h.wrapping_mul(three).wrapping_mul(t);
+    let five_k = h.wrapping_mul(fourteen);
+    let four_k = h.wrapping_mul(eight_u32());
+    let qhd = h.wrapping_mul(three);
+    if mp_x100 >= sixteen_k {
+        five
+    } else if mp_x100 >= eight_k {
+        four_u32()
+    } else if mp_x100 >= five_k {
+        three
+    } else if mp_x100 >= four_k {
+        two_u32()
+    } else if mp_x100 >= qhd {
+        1_u32
+    } else {
+        0_u32
+    }
+}
+
+/// Pure MIR-lifted dynamic resolution scale (`permille`) for `(tier, is_software_gpu, under_half_budget)`.
+#[must_use]
+pub const fn uhd_recommended_drs_permille(
+    tier: u32,
+    is_software_gpu: bool,
+    under_half_budget: bool,
+) -> u32 {
+    let h = hundred_u32();
+    let th = thousand_u32();
+    let fifty = ten_u32().wrapping_mul(four_u32().wrapping_add(1_u32));
+    let two = two_u32();
+    let five = four_u32().wrapping_add(1_u32);
+    let six = five.wrapping_add(1_u32);
+    let seven = eight_u32().wrapping_sub(1_u32);
+    let drs_50 = h.wrapping_mul(five);
+    let drs_65 = h.wrapping_mul(six).wrapping_add(fifty);
+    let drs_75 = h.wrapping_mul(seven).wrapping_add(fifty);
+    let drs_85 = h.wrapping_mul(eight_u32()).wrapping_add(fifty);
+    if is_software_gpu {
+        drs_65
+    } else if tier >= five {
+        if under_half_budget {
+            drs_65
+        } else {
+            drs_50
+        }
+    } else if tier >= four_u32() {
+        if under_half_budget {
+            drs_85
+        } else {
+            drs_75
+        }
+    } else if tier >= two {
+        if under_half_budget {
+            th
+        } else {
+            drs_85
+        }
+    } else {
+        th
+    }
+}
+
+/// Pure MIR-lifted Contrast-Adaptive Sharpening strength (`permille`).
+#[must_use]
+pub const fn uhd_cas_sharpness_permille(
+    tier: u32,
+    is_software_gpu: bool,
+    drs_permille: u32,
+) -> u32 {
+    let h = hundred_u32();
+    let th = thousand_u32();
+    let fifty = ten_u32().wrapping_mul(four_u32().wrapping_add(1_u32));
+    let two = two_u32();
+    let five = four_u32().wrapping_add(1_u32);
+    let six = five.wrapping_add(1_u32);
+    if is_software_gpu {
+        h.wrapping_mul(four_u32())
+    } else if tier >= five {
+        h.wrapping_mul(six)
+    } else if tier >= four_u32() {
+        h.wrapping_mul(five)
+    } else if tier >= two && drs_permille < th {
+        h.wrapping_mul(four_u32())
+    } else {
+        h.wrapping_add(fifty)
+    }
+}
+
+/// Pure MIR-lifted meshlet screen-space error threshold (`tenths of a pixel`).
+#[must_use]
+pub const fn uhd_meshlet_sse_tenths_px(tier: u32, is_software_gpu: bool) -> u32 {
+    let t = ten_u32();
+    let five = four_u32().wrapping_add(1_u32);
+    if is_software_gpu || tier >= five {
+        t.wrapping_add(t)
+    } else if tier >= four_u32() {
+        t.wrapping_add(five)
+    } else {
+        t
+    }
+}
+
+/// Pure MIR-lifted frame jitter (`p99 - p50` saturating).
+#[must_use]
+pub const fn uhd_jitter_us(p99_us: u32, p50_us: u32) -> u32 {
+    p99_us.saturating_sub(p50_us)
+}
+
+/// Pure MIR-lifted half-budget headroom predicate (`ema * 2 <= budget`).
+#[must_use]
+pub const fn uhd_budget_half_ok(ema_us: u32, budget_us: u32) -> bool {
+    ema_us.saturating_add(ema_us) <= budget_us
+}
+
+/// Pure MIR-lifted frame stability predicate (`p95 <= budget && jitter * 2 <= budget`).
+#[must_use]
+pub const fn uhd_frame_is_stable(p95_us: u32, jitter_us: u32, target_budget_us: u32) -> bool {
+    p95_us <= target_budget_us && uhd_budget_half_ok(jitter_us, target_budget_us)
+}
+
+/// Pure MIR-lifted bounded-RAM `PagedTensorArena` compliance predicate (`peak <= budget`).
+#[must_use]
+pub const fn uhd_paged_arena_within_budget(peak_bytes: u64, budget_bytes: u64) -> bool {
+    budget_bytes > 0 && peak_bytes <= budget_bytes
+}
+
+/// Pure MIR-lifted `PagedTensorArena` eviction trigger (`live_pages >= max_pages`).
+#[must_use]
+pub const fn uhd_paged_arena_needs_eviction(live_pages: u32, max_pages: u32) -> bool {
+    max_pages > 0 && live_pages >= max_pages
+}
+
+/// Pure MIR-lifted DRS ladder index step-down (`min(idx + 1, max_idx)`).
+#[must_use]
+pub const fn uhd_drs_step_down(idx: u32, max_idx: u32) -> u32 {
+    if idx < max_idx {
+        idx.wrapping_add(1_u32)
+    } else {
+        max_idx
+    }
+}
+
+/// Pure MIR-lifted DRS ladder index step-up (`idx.saturating_sub(1)`).
+#[must_use]
+pub const fn uhd_drs_step_up(idx: u32) -> u32 {
+    idx.saturating_sub(1_u32)
+}
+
+/// Pure MIR-lifted WebGPU compute CAS eligibility (`webgpu_available && tier >= 2`).
+#[must_use]
+pub const fn uhd_tier_supports_webgpu_cas(tier: u32, webgpu_available: bool) -> bool {
+    webgpu_available && tier >= two_u32()
+}
