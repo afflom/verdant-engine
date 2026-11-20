@@ -386,3 +386,15 @@ Feature: engine
     Given frontier.toml, model/parametric-ratchet.toml [frontier_ratchet], fidelity.toml, app/src/Cadence.lex.tex, app/src/Release.lex.tex, and app/src/Security.lex.tex
     When prism-fidelity audits [frontier_ratchet] and fidelity.toml across all 28 canonical LexLean modules
     Then frontier.toml proves at least 200 lifted constructive Rust functions with shrunk residue and fidelity.toml closes all 705 meant verification obligations across Cadence, Release, and Security with zero Classical.choice
+
+  @VE-60 @build
+  Scenario: VerdantReleaseCapsule supports transparent RFC 1952 gzip body compression (native capsule-gzip feature + zero-dependency browser CompressionStream/DecompressionStream in Studio and Blank Frame) cutting release .holo capsule weight below 1800000 bytes with full SHA-256 and zero-trailing-byte enforcement, consolidates duplicate SHA-256/hex helpers into crates/verdant-core/src/digest.rs, and exposes deterministic VerdantVcs structural commit diffs (diff_commits) and branch ref management (create_branch, list_refs)
+    Given crates/verdant-core/src/vcs.rs, crates/verdant-core/src/digest.rs, site/frame/frame-boot.mjs, site/studio/vcs-panel.mjs, and model/parametric-ratchet.toml [surface_ratchet]
+    When VerdantReleaseCapsule packs and verifies gzipped and uncompressed capsules, rejects tampered or trailing bytes, and VerdantVcs diffs commits and creates branch refs
+    Then max_release_capsule_bytes is at most 1800000 bytes, gzipped capsules round-trip bit-exact while rejecting tampering and trailing bytes, digest.rs is owned by mgr-security-trust, and VerdantVcs computes deterministic added/modified/removed commit diffs and branch refs
+
+  @VE-61 @build
+  Scenario: Verdant achieves 100% zero-residue formal model fidelity across all 28 canonical LexLean modules (705/705 derived, 705/705 meant, 9/9 measured, 0 open fidelity residue) with version-parametric Release.lex.tex distribution endpoints, and decomposes observer.rs, operator.rs, and conformance integration tests so max_handwritten_rust_file_lines tightens monotonically to <= 2200
+    Given fidelity.toml, app/src/Release.lex.tex, crates/verdant-core/src/observer_language.rs, crates/verdant-core/src/observer_streams.rs, crates/verdant-core/src/operator_synth.rs, and model/parametric-ratchet.toml [surface_ratchet]
+    When prism-fidelity scores all 28 canonical LexLean modules and audits [surface_ratchet]
+    Then fidelity.toml has zero open residue (705/705 derived, 705/705 meant, 9/9 measured), Release.lex.tex uses version-parametric channel templates, and max_handwritten_rust_file_lines is at most 2200 with all decomposed submodules owned in iso42010-viewpoints.json

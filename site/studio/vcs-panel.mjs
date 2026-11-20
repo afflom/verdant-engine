@@ -160,7 +160,7 @@ objects: getStudioObjects(),
 lodRank: getLodIdx(),
 });
 const res = await callWorker("vcs-commit-pack-holo", {
-request: { appTitle, authorPrismId, message, parentCommitKappa, epoch, version: "2.4.0", sceneJson },
+request: { appTitle, authorPrismId, message, parentCommitKappa, epoch, version: "2.5.0", sceneJson },
 });
 const out = res?.result;
 if (!res?.ok || !out?.ok) throw new Error(out?.error || "VerdantVcs commit failed");

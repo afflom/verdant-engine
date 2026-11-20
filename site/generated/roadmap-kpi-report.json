@@ -2,12 +2,12 @@
   "spec": "verdant/observer-roadmap-kpi-report/1",
   "managerId": "mgr-roadmap-strategy",
   "authorityId": "AUTH-SEMVER-CHANGE-KPI",
-  "currentVersion": "2.4.0",
-  "releaseEpoch": 8,
+  "currentVersion": "2.5.0",
+  "releaseEpoch": 9,
   "totalManagers": 13,
   "totalPrismFacetsOwned": 9,
   "totalPrismFacetsRequired": 9,
-  "declaredCapabilitiesCount": 70,
+  "declaredCapabilitiesCount": 72,
   "minorProgressPct": 100,
   "majorProgressPct": 100,
   "kpiPassedCount": 13,
@@ -523,6 +523,38 @@
       "progressPct": 100,
       "completed": true,
       "ratchetRequirement": "Decompose verdant-wasm, operator.rs, and studio-page.mjs to tighten max_handwritten_rust_file_lines <= 3525 and max_js_file_lines <= 1980; gate naga behind wgsl-oracle; sync site/app.holo 1:1 with CI; render all 5 Studio shapes offline in portable .holo 3D player; lift >= 200 uorust functions and close Cadence/Release/Security fidelity theorems."
+    },
+    {
+      "milestoneId": "M13",
+      "targetVersion": "2.5.0",
+      "tier": "minor",
+      "title": "Deep Refinement: -73% Gzipped .holo Capsules, 705/705 Zero-Residue Formal Fidelity, Unified digest.rs, VerdantVcs Diff/Branch & <=2200L Rust Decomposition",
+      "stakeholders": [
+        "creator",
+        "player",
+        "systems-engineer",
+        "developer",
+        "auditor"
+      ],
+      "owningManagers": [
+        "mgr-change-release",
+        "mgr-security-trust",
+        "mgr-observer-executive",
+        "mgr-knowledge-provenance",
+        "mgr-verification-observatory"
+      ],
+      "requiredCapabilities": [
+        "VE-60",
+        "VE-61"
+      ],
+      "closedCapabilities": [
+        "VE-60",
+        "VE-61"
+      ],
+      "missingCapabilities": [],
+      "progressPct": 100,
+      "completed": true,
+      "ratchetRequirement": "Cut release .holo capsule weight by >70% via transparent RFC 1952 gzip compression (capsule-gzip + browser DecompressionStream/CompressionStream), unify SHA-256/hex helpers into digest.rs, add VerdantVcs diff_commits/create_branch/list_refs, close 705/705 derived+meant & 9/9 measured fidelity with 0 residue, and decompose observer.rs/operator.rs/conformance tests to tighten max_handwritten_rust_file_lines <= 2200."
     }
   ],
   "observerParts": [
@@ -532,7 +564,7 @@
       "viewpointId": "observer-executive",
       "ownedPrismFacets": [],
       "ownedObserverParts": [],
-      "ownedFilesCount": 8,
+      "ownedFilesCount": 11,
       "active": true
     },
     {
@@ -678,7 +710,7 @@
     "governingAuthority": "AUTH-SEMVER-CHANGE-KPI",
     "currentVersion": {
       "major": 2,
-      "minor": 4,
+      "minor": 5,
       "patch": 0
     },
     "recommendedBump": "major",
@@ -687,8 +719,8 @@
       "minor": 0,
       "patch": 0
     },
-    "currentEpoch": 8,
-    "nextEpoch": 9,
+    "currentEpoch": 9,
+    "nextEpoch": 10,
     "versionIncremented": true,
     "gates": {
       "ratchetApplied": true,
@@ -699,6 +731,6 @@
       "pullThroughVerified": true
     },
     "blockingReasons": [],
-    "rationale": "Ratchet applied & 5/5 Release Gates passed: advancing v2.4.0 -> v3.0.0 (Major, epoch 9) — Observer roadmap evaluation: minor=100% major=100% managers=13"
+    "rationale": "Ratchet applied & 5/5 Release Gates passed: advancing v2.5.0 -> v3.0.0 (Major, epoch 10) — Observer roadmap evaluation: minor=100% major=100% managers=13"
   }
 }

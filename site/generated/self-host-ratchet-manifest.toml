@@ -2,12 +2,12 @@
 # Enforced mechanically by `prism-fidelity` (`prism/parametric-ratchet/2`, VE-47).
 spec = "verdant/self-host-ratchet-manifest/1"
 generator = "verdant-operator-ratchet-lift"
-version = "2.4.0"
-release_epoch = 8
-source_commit_kappa = "d55a002a837e63da83321486231f8e0977f6fe7902b8c62293ac74667a7a0215"
-source_tree_root_sha256 = "14690389b0bbc26757aa9d258d8021a926eb3bad6d8c077ebd8c2ff279f44f59"
-immutability_seal_root_sha256 = "1344b1f13fa1b096ce774f5dd931d6e89d1715524ca0d4bc17c4c2b3ff7bf6c0"
-release_capsule_sha256 = "344a8c43c35e7d124ca9a26dd9bce199e63b755d29aae8087e4e048ed6a13a72"
+version = "2.5.0"
+release_epoch = 9
+source_commit_kappa = "cccd4eb3d26abaea3d92d002cf52490d380b7349656ad5d3c74f940457a575a9"
+source_tree_root_sha256 = "10063fec49691c04090c034dcf816e15ad0c90ad87c689b4cbb9728cf9225012"
+immutability_seal_root_sha256 = "1e95cadf5b42665814c8d57ecb8b1c84ee0a6582554b48ae36f41be524a7a0ee"
+release_capsule_sha256 = "f11afff04e0b4b7840a0574dfe4287fabe15ed189e71be135266524e693ce4a7"
 unlifted_ui_files = 0
 unverified_frame_assets = 0
 user_required_external_accounts = 0
@@ -116,12 +116,22 @@ sha256 = "a5dfbc3ef15b7dcf4134de434be61aec761c9c7a4e9eb69e226d280bb15054a6"
 [[lifted_module]]
 path = "crates/verdant-core/src/observer.rs"
 category = "rust"
-sha256 = "26db55a5395683f70c0fc30d89417df9204ce960b09d8bbc930abe42a3e3b55b"
+sha256 = "3f97e6a11e791b730409973eba0d9958090cd94727284ff78a1fc210291d8ab7"
+
+[[lifted_module]]
+path = "crates/verdant-core/src/observer_language.rs"
+category = "rust"
+sha256 = "51ec2bab09eec3bfc3f1653c68ec2218ac4434d424781e2ca1d44159ff210562"
+
+[[lifted_module]]
+path = "crates/verdant-core/src/observer_streams.rs"
+category = "rust"
+sha256 = "daa144371fc760c801e2a7bb4e70d73d5b80ed1195765614af279a6416e1ae90"
 
 [[lifted_module]]
 path = "crates/verdant-core/src/operator.rs"
 category = "rust"
-sha256 = "ae818067846183d91d039938cf045c166fa0b185df1dde98cadc7173f4ddc617"
+sha256 = "b01a787624166d22768173c67f3f7c3d27c94c7686f259fb688ebe574113f964"
 
 [[lifted_module]]
 path = "crates/verdant-core/src/operator_mcp.rs"
@@ -132,6 +142,11 @@ sha256 = "ee964743bd7c4f56a7649b5323a5b50bb98b32950c67b03aa7f5901ad910e552"
 path = "crates/verdant-core/src/operator_release.rs"
 category = "rust"
 sha256 = "f95e01f7f4ed7375f3221f95cc1da0d08ee1e1e320e4d800642382bcf3949850"
+
+[[lifted_module]]
+path = "crates/verdant-core/src/operator_synth.rs"
+category = "rust"
+sha256 = "c17d7f6be790f077bf22f101255df4a779f85d35dc65c7f5a6a4e22c6251004b"
 
 [[lifted_module]]
 path = "crates/verdant-core/src/operator_types.rs"

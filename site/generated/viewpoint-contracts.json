@@ -2,7 +2,7 @@
   "managers": [
     {
       "basisPrime": 59,
-      "kappaHex": "8d279d753d585cb8804f7d364818c798f13dfa8138164f820d5cf49ebd3c1dcc",
+      "kappaHex": "00eef167f750a9bb23d862bbad6a27ac3534b4373f2537f5e59e2d5a7728803b",
       "spec": {
         "almPhases": [
           "governance",
@@ -31,8 +31,11 @@
         "ownedFiles": [
           "app/src/Observer.lex.tex",
           "crates/verdant-core/src/observer.rs",
+          "crates/verdant-core/src/observer_language.rs",
+          "crates/verdant-core/src/observer_streams.rs",
           "crates/verdant-core/src/operator.rs",
           "crates/verdant-core/src/operator_types.rs",
+          "crates/verdant-core/src/operator_synth.rs",
           "crates/verdant-core/src/operator_release.rs",
           "crates/verdant-core/src/operator_mcp.rs",
           "site/generated/viewpoint-contracts.json",

@@ -4,10 +4,10 @@
   "authorityId": "AUTH-SEMVER-CHANGE-KPI",
   "currentVersion": {
     "major": 2,
-    "minor": 4,
+    "minor": 5,
     "patch": 0
   },
-  "releaseEpoch": 8,
+  "releaseEpoch": 9,
   "history": [
     {
       "version": "0.1.0",
@@ -84,6 +84,13 @@
       "releaseEpoch": 8,
       "bumpKind": "minor",
       "summary": "M12: Monolith decomposition, wasm32 naga gating, 1:1 FR-03 sync, 5-shape portable 3D player & 200+ uorust/fidelity closure",
+      "citedAuthority": "AUTH-SEMVER-CHANGE-KPI"
+    },
+    {
+      "version": "2.5.0",
+      "releaseEpoch": 9,
+      "bumpKind": "minor",
+      "summary": "M13: Gzip .holo capsules (-73%), 705/705 zero-residue fidelity, unified digest.rs, VerdantVcs diff/branch & <=2200L Rust decomposition",
       "citedAuthority": "AUTH-SEMVER-CHANGE-KPI"
     }
   ]
