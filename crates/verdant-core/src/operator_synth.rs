@@ -50,7 +50,7 @@ impl VerdantOperatorChannel {
                 "{}:{}:{}:{:?}:{:?}",
                 dom.id, dom.slug, dom.seed, sky_pct, fog_pct
             );
-            let profile_kappa_hex = sha256_hex_tagged("world-profile", kappa_input.as_bytes());
+            let profile_kappa_hex = sha256_hex_tagged!("world-profile", kappa_input.as_bytes());
             profiles.push(WorldDifferentiationProfile {
                 domain_id: dom.id.clone(),
                 slug: dom.slug.clone(),
@@ -143,7 +143,7 @@ impl VerdantOperatorChannel {
         let mut stitch_shards = Vec::new();
         for (i, frag) in entry.stitch_fragments.iter().enumerate() {
             let wire = frag.encode_wire();
-            let shard_sha = sha256_hex_tagged("stitch-frag", &frag.payload_root);
+            let shard_sha = sha256_hex_tagged!("stitch-frag", &frag.payload_root);
             let role = roles.get(i).copied().unwrap_or("Shard");
             stitch_shards.push(StitchCatalogShardSummary {
                 index: frag.index,
@@ -305,7 +305,7 @@ impl VerdantOperatorChannel {
             manager_id: manager_id.to_string(),
             path: rel_path.to_string(),
             bytes: contents.len(),
-            sha256_hex: sha256_hex_tagged("materialized-file", contents.as_bytes()),
+            sha256_hex: sha256_hex_tagged!("materialized-file", contents.as_bytes()),
         })
     }
 
@@ -964,13 +964,28 @@ body[data-studio-focus="publish"] #studio-publish-pane {
                 "site/generated/observer-refinement-agenda.json",
                 &agenda_json,
             )?);
+            let (_gate, gate_json) = self.execute_lifecycle_gate(
+                repo_root,
+                &super::LifecycleGateOptions {
+                    run_workspace_tests: false,
+                    run_browser_gates: false,
+                    expected_tag: None,
+                    write_report: false,
+                },
+            )?;
+            written.push(Self::write_manager_file(
+                repo_root,
+                "mgr-verification-observatory",
+                "site/generated/lifecycle-gate-report.json",
+                &gate_json,
+            )?);
         }
         let summary = format!(
             "materialize:{}:files={}",
             viewpoint_filter.unwrap_or("all"),
             written.len()
         );
-        let comm_kappa_hex = sha256_hex_tagged("operator-materialize", summary.as_bytes());
+        let comm_kappa_hex = sha256_hex_tagged!("operator-materialize", summary.as_bytes());
         let seal_rec = self.seal_repository_views(repo_root, &comm_kappa_hex)?;
         written.push(seal_rec);
         let audit = self.audit_repository(repo_root, viewpoint_filter);

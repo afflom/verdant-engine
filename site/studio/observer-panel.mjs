@@ -24,12 +24,20 @@ loadRemoteGlbIntoStage,
 applyRemoteEnvSky,
 } = ctx;
 let cachedRefineAgenda = null;
+let cachedLifecycleGate = null;
 async function loadObserverRefineAgenda() {
-if (cachedRefineAgenda) return cachedRefineAgenda;
+if (!cachedRefineAgenda) {
 try {
 const res = await fetch("../generated/observer-refinement-agenda.json", { cache: "no-store" });
 if (res.ok) cachedRefineAgenda = await res.json();
 } catch {}
+}
+if (!cachedLifecycleGate) {
+try {
+const res = await fetch("../generated/lifecycle-gate-report.json", { cache: "no-store" });
+if (res.ok) cachedLifecycleGate = await res.json();
+} catch {}
+}
 return cachedRefineAgenda;
 }
 function renderObserverCognition(cog) {
@@ -41,12 +49,15 @@ const he = cog.hostEnvelope;
 const gpuTag = he.isSoftwareGpu ? "Software WebGL2" : "Hardware GPU";
 const drsPct = Math.round((he.recommendedRenderScalePermille || 1000) / 10);
 const agLine = cachedRefineAgenda
-? `\nSelf-Refinement: ${(cachedRefineAgenda.overallRefinementScorePermille / 10).toFixed(1)}% · ${cachedRefineAgenda.liveMetrics?.frontierLifted ?? 0} MIR-lifted · ${cachedRefineAgenda.proposals?.length ?? 0} active proposals (v${cachedRefineAgenda.releaseVersion})`
+? `\nSelf-Refinement: ${(cachedRefineAgenda.overallRefinementScorePermille / 10).toFixed(1)}% · ${cachedRefineAgenda.liveMetrics?.frontierLifted ?? 0} MIR-lifted · ${cachedRefineAgenda.proposals?.length ?? 0} proposals (v${cachedRefineAgenda.releaseVersion})`
+: "";
+const lgLine = cachedLifecycleGate
+? `\nLifecycle Gate: ${cachedLifecycleGate.passedCount}/${cachedLifecycleGate.totalCount} ${cachedLifecycleGate.releaseQualified ? "QUALIFIED" : "OPEN"} · ${cachedLifecycleGate.liftedCoverage?.totalLiftedModules ?? 0} lifted lifecycle modules`
 : "";
 cogHostEnvelopeEl.textContent =
 `Observer Precision: ${(cog.resolutionPermille / 10).toFixed(1)}% · ${cog.enabledStreamCount}/${cog.streamCount} Streams · ${cog.ingestedKnowledgeCount} Knowledge Passages\n` +
 `UHD Tier: ${he.uhdTierLabel || "FHD 1080p"} (${he.viewportWidthPx || 1280}×${he.viewportHeightPx || 720}) · DRS ${drsPct}% + CAS · Aniso ×${he.recommendedAnisotropy || 1}\n` +
-`Host: ${gpuTag} · TexCap ${he.recommendedTextureCapPx}px · Shadow ${he.recommendedShadowMapPx || 2048}px · Headroom ${(he.hostHeadroomPermille / 10).toFixed(0)}% · Max GLB ${Math.round(he.recommendedGlbMaxBytes / 1048576)}MB${agLine}`;
+`Host: ${gpuTag} · TexCap ${he.recommendedTextureCapPx}px · Shadow ${he.recommendedShadowMapPx || 2048}px · Headroom ${(he.hostHeadroomPermille / 10).toFixed(0)}% · Max GLB ${Math.round(he.recommendedGlbMaxBytes / 1048576)}MB${agLine}${lgLine}`;
 }
 if (cogPartsListEl && Array.isArray(cog.parts)) {
 cogPartsListEl.replaceChildren();

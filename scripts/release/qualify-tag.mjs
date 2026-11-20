@@ -13,7 +13,11 @@
  */
 
 import { readFileSync, existsSync } from "node:fs";
+import { spawnSync } from "node:child_process";
 import { join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+
+const scriptRepoRoot = fileURLToPath(new URL("../../", import.meta.url));
 
 const args = process.argv.slice(2);
 const flagVal = (name) => {
@@ -94,6 +98,40 @@ if (expectedTag) {
   }
 }
 
+// 6b. Delegate internal Observer lifecycle qualification directly to Verdant itself when compiled:
+let internalLifecycleDetail = "";
+if (existsSync(join(repoRoot, "site", "generated", "immutability-seal.json"))) {
+  const verdantGateArgs = [
+    "run",
+    "-q",
+    "--locked",
+    "-p",
+    "verdant-cli",
+    "--",
+    "operator",
+    "lifecycle-gate",
+    "--root",
+    repoRoot,
+    "--in-process",
+  ];
+  if (expectedTag) verdantGateArgs.push("--tag", expectedTag);
+  const gateProbe = spawnSync("cargo", verdantGateArgs, {
+    cwd: scriptRepoRoot,
+    encoding: "utf8",
+  });
+  if (gateProbe.status === 0) {
+    try {
+      const rep = JSON.parse(gateProbe.stdout.trim());
+      if (!rep.releaseQualified) {
+        fail(`Verdant internal lifecycle-gate refused release (${rep.passedCount}/${rep.totalCount})`);
+      }
+      internalLifecycleDetail = `, internal lifecycle-gate ${rep.passedCount}/${rep.totalCount} (${rep.liftedCoverage?.totalLiftedModules ?? 0} lifted)`;
+    } catch {}
+  } else if (!gateProbe.error) {
+    fail(`Verdant internal lifecycle-gate rejected release: ${(gateProbe.stderr || gateProbe.stdout).trim()}`);
+  }
+}
+
 // 7. In GitHub Actions CI, confirm bootstrap.yml passed on this exact commit SHA:
 const ghToken = process.env.GH_TOKEN || process.env.GITHUB_TOKEN || "";
 const ghRepo = process.env.GITHUB_REPOSITORY || "";
@@ -125,5 +163,5 @@ if (!offline && ghToken && ghRepo && ghSha) {
 }
 
 console.log(
-  `qualify-tag: PASS — v${cargoVersion} (epoch ${ledger.releaseEpoch}, frontier ${liftedMatch[1]}/${funcsMatch[1]} lifted${bootstrapRunId ? `, bootstrap run #${bootstrapRunId} GREEN` : ", offline mode"})`,
+  `qualify-tag: PASS — v${cargoVersion} (epoch ${ledger.releaseEpoch}, frontier ${liftedMatch[1]}/${funcsMatch[1]} lifted${internalLifecycleDetail}${bootstrapRunId ? `, bootstrap run #${bootstrapRunId} GREEN` : ", offline mode"})`,
 );

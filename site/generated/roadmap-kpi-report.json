@@ -138,7 +138,7 @@
       "name": "uorust MIR-Lifted Rust Functions Floor",
       "unit": "functions",
       "direction": "atLeast",
-      "actual": 213,
+      "actual": 219,
       "target": 200,
       "passed": true,
       "owningManager": "mgr-verification-observatory",
@@ -692,7 +692,7 @@
         "stratum-4-quality-measures-fidelity"
       ],
       "ownedObserverParts": [],
-      "ownedFilesCount": 14,
+      "ownedFilesCount": 16,
       "active": true
     },
     {

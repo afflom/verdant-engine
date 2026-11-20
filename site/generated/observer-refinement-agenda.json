@@ -6,13 +6,13 @@
   "overallRefinementScorePermille": 926,
   "liveMetrics": {
     "wasmCoreBytes": 160450,
-    "wasmUorcBytes": 4669113,
-    "releaseCapsuleBytes": 1715074,
+    "wasmUorcBytes": 4668937,
+    "releaseCapsuleBytes": 1711719,
     "blankFrameBytes": 28368,
     "maxHandwrittenRustFileLines": 2188,
     "maxJsFileLines": 1979,
-    "frontierLifted": 213,
-    "frontierResidue": 1189,
+    "frontierLifted": 219,
+    "frontierResidue": 1187,
     "frontierUncertified": 1341,
     "fidelityOpenResidue": 0
   },
@@ -58,7 +58,7 @@
       "vsmSystem": "VSM-S3",
       "viewpointId": "security-trust",
       "ownedFileCount": 7,
-      "maxFileLines": 1762,
+      "maxFileLines": 1756,
       "heaviestFile": "crates/verdant-core/src/network.rs",
       "healthScorePermille": 900
     },
@@ -120,7 +120,7 @@
       "managerId": "mgr-verification-observatory",
       "vsmSystem": "VSM-S3-STAR",
       "viewpointId": "verification-observatory",
-      "ownedFileCount": 14,
+      "ownedFileCount": 16,
       "maxFileLines": 10420,
       "heaviestFile": "fidelity.toml",
       "healthScorePermille": 750
@@ -159,7 +159,7 @@
     {
       "construct": "the body has statements other than let",
       "cause": "statements",
-      "functions": 30
+      "functions": 28
     }
   ],
   "proposals": [
@@ -188,14 +188,14 @@
       "citedAuthority": "AUTH-SEMVER-CHANGE-KPI",
       "ratchetLayer": "uorust-frontier",
       "priority": "high",
-      "currentValue": "213 lifted / 1189 residue (1341 uncertified)",
-      "targetValue": ">= 233 lifted functions",
+      "currentValue": "219 lifted / 1187 residue (1341 uncertified)",
+      "targetValue": ">= 239 lifted functions",
       "summary": "Expand constructive MIR proof frontier; top blocker: expression form outside the lift: ? below the function's own statements (269 fns, cause=form).",
       "concreteActions": [
         "Replace remaining raw shift/overflow ops with lifted verdant_tensor::scalars and wrapping ops.",
         "Extract pure decision/calculation helpers out of IO/effectful wrappers so uorust lifts them."
       ],
-      "kappaHex": "de42865635d1e7f1d2c5e5579a4bf96a458c86b584921a0cc5f8734ed6ace265"
+      "kappaHex": "cc8497ef827baf91774b10cfc9327372f58f66b3551db3fedcc0e5574688bd87"
     },
     {
       "proposalId": "refine-rust-modularity",
@@ -222,15 +222,15 @@
       "citedAuthority": "AUTH-STITCH-SELF-HOSTING",
       "ratchetLayer": "surface-wasm",
       "priority": "medium",
-      "currentValue": "verdant-uorc.wasm 4669113 B · .holo 1715074 B · Blank Frame 28368 B (2352 B headroom)",
+      "currentValue": "verdant-uorc.wasm 4668937 B · .holo 1711719 B · Blank Frame 28368 B (2352 B headroom)",
       "targetValue": "verdant-uorc.wasm <= 4194304 B while preserving gzipped .holo <= 1.72 MiB",
       "summary": "Trim unused codec paths on wasm32 and preserve gzipped STCH2 shard efficiency for cold Blank Frame boots.",
       "concreteActions": [
         "Audit gltf/image feature flags on wasm32 to drop unused color/codec tables.",
         "Maintain Blank Frame strictly under 30720 B with DecompressionStream('gzip')."
       ],
-      "kappaHex": "cbdcd196f5f10c047a09fb9c43f9a5be95b7ca0fe63f8de4c6d53682f014c3a2"
+      "kappaHex": "7f3c870931bdb6d74907db07f12df09adf494ce5c6fb3144f8caa208919ab94f"
     }
   ],
-  "agendaKappaHex": "e925247ed1b913f459167f8215c3209b2ff2a114e70172ccd92635db0ad52531"
+  "agendaKappaHex": "b39960ca4de8916e03569e74555a875e63b7f4ee68940e93042e140a65c2ba9f"
 }

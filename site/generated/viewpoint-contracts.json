@@ -646,7 +646,7 @@
     },
     {
       "basisPrime": 107,
-      "kappaHex": "4295ae27369f150dfadfb66f40b5fd70db8b77455a258e08f939af765cf465d1",
+      "kappaHex": "2ec267d6cd276537204e43ef9dce9070f2a89f5d67ad40143016c77e4fa1b5fb",
       "spec": {
         "almPhases": [
           "verification",
@@ -677,10 +677,12 @@
           "app/src/Quality.lex.tex",
           "app/src/Measures.lex.tex",
           "app/src/Fidelity.lex.tex",
+          "crates/verdant-core/src/lifecycle.rs",
           "model/measures.toml",
           "model/parametric-ratchet.toml",
           "fidelity.toml",
           "frontier.toml",
+          "site/generated/lifecycle-gate-report.json",
           "site/demo/index.html",
           "site/demo/demo.mjs",
           "scripts/verdant-ratchet.mjs",

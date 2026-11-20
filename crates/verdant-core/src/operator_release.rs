@@ -332,9 +332,24 @@ impl VerdantOperatorChannel {
         }
 
         let mut gov_files = BTreeMap::new();
+        for verify_root in [
+            "crates/fidelity/src",
+            "crates/fidelity/tests",
+            "crates/model/src",
+            "crates/conformance/src",
+            "crates/conformance/tests",
+            "xtask/src",
+        ] {
+            Self::collect_tree_matching(
+                repo_root,
+                &repo_root.join(verify_root),
+                &[".rs"],
+                &mut gov_files,
+            );
+        }
         Self::collect_tree_matching(
             repo_root,
-            &repo_root.join("catalogs/governance"),
+            &repo_root.join("catalogs"),
             &[".json"],
             &mut gov_files,
         );
@@ -883,7 +898,7 @@ impl VerdantOperatorChannel {
                     "site/generated/roadmap-kpi-report.json",
                     &kpi_json,
                 )?;
-                let comm_kappa = sha256_hex_tagged("ratchet-lift-sync", version.as_bytes());
+                let comm_kappa = sha256_hex_tagged!("ratchet-lift-sync", version.as_bytes());
                 let _ = self.seal_repository_views(repo_root, &comm_kappa)?;
             }
         }
@@ -984,13 +999,14 @@ impl VerdantOperatorChannel {
                     &agenda_json,
                 )?;
             }
-            let comm_kappa = sha256_hex_tagged("ratchet-tighten", version.as_bytes());
+            let comm_kappa = sha256_hex_tagged!("ratchet-tighten", version.as_bytes());
             let _ = self.seal_repository_views(repo_root, &comm_kappa)?;
         }
-        let seal = self.verify_immutability_seal(repo_root);
+        let mut seal = self.verify_immutability_seal(repo_root);
         let blank_frame_bytes = Self::audit_blank_frame_invariants(repo_root)?;
 
-        // Collect live SHA-256 of EVERY shipped Rust `.rs`, Prism `.lex.tex`, and canonical UI Viewpoint:
+        // Collect live SHA-256 of EVERY lifecycle category (shipped Rust, verification/test crates,
+        // Prism LexLean strata, BDD Gherkin feature suites, model/governance registers & Viewpoints):
         let mut lifted_records: Vec<(String, &'static str, String)> = Vec::new();
         let mut rust_map = BTreeMap::new();
         for crate_name in REQUIRED_SHIPPED_CRATES {
@@ -1005,6 +1021,26 @@ impl VerdantOperatorChannel {
             lifted_records.push((path.clone(), "rust", sha256_hex_raw(bytes)));
         }
 
+        let mut verify_map = BTreeMap::new();
+        for verify_dir in [
+            "crates/fidelity/src",
+            "crates/fidelity/tests",
+            "crates/model/src",
+            "crates/conformance/src",
+            "crates/conformance/tests",
+            "xtask/src",
+        ] {
+            Self::collect_tree_matching(
+                repo_root,
+                &repo_root.join(verify_dir),
+                &[".rs"],
+                &mut verify_map,
+            );
+        }
+        for (path, bytes) in &verify_map {
+            lifted_records.push((path.clone(), "verification-test", sha256_hex_raw(bytes)));
+        }
+
         let mut lex_map = BTreeMap::new();
         Self::collect_tree_matching(
             repo_root,
@@ -1016,6 +1052,41 @@ impl VerdantOperatorChannel {
             lifted_records.push((path.clone(), "lexlean", sha256_hex_raw(bytes)));
         }
 
+        let mut feat_map = BTreeMap::new();
+        Self::collect_tree_matching(
+            repo_root,
+            &repo_root.join("features/suites"),
+            &[".feature"],
+            &mut feat_map,
+        );
+        for (path, bytes) in &feat_map {
+            lifted_records.push((path.clone(), "feature-suite", sha256_hex_raw(bytes)));
+        }
+
+        let mut model_map = BTreeMap::new();
+        Self::collect_tree_matching(
+            repo_root,
+            &repo_root.join("catalogs"),
+            &[".json"],
+            &mut model_map,
+        );
+        for model_rel in [
+            "model/authorities.toml",
+            "model/charter.md",
+            "model/ids.toml",
+            "model/ledger.toml",
+            "model/limits.toml",
+            "model/measures.toml",
+            "model/provenance.toml",
+        ] {
+            if let Ok(bytes) = std::fs::read(repo_root.join(model_rel)) {
+                model_map.insert(model_rel.to_string(), bytes);
+            }
+        }
+        for (path, bytes) in &model_map {
+            lifted_records.push((path.clone(), "model-governance", sha256_hex_raw(bytes)));
+        }
+
         let viewpoint_ui_files = [
             "site/card.html",
             "site/studio/index.html",
@@ -1023,6 +1094,9 @@ impl VerdantOperatorChannel {
             "site/demo/index.html",
             "site/docs/index.html",
             "templates/browser-3d-starter/index.html",
+            "site/frame/index.html",
+            "site/frame/frame-boot.mjs",
+            "site/frame/frame-sw.js",
         ];
         for vp_rel in viewpoint_ui_files {
             let bytes = std::fs::read(repo_root.join(vp_rel)).map_err(|e| {
@@ -1034,73 +1108,97 @@ impl VerdantOperatorChannel {
             lifted_records.push((vp_rel.to_string(), "viewpoint", sha256_hex_raw(&bytes)));
         }
 
-        let mut toml_buf = String::new();
-        toml_buf.push_str("# Generated exclusively by Verdant (`verdant operator ratchet-lift` / MCP `verdant_ratchet_lift`).\n");
-        toml_buf.push_str(
-            "# Enforced mechanically by `prism-fidelity` (`prism/parametric-ratchet/2`, VE-47).\n",
-        );
-        toml_buf.push_str("spec = \"verdant/self-host-ratchet-manifest/1\"\n");
-        toml_buf.push_str("generator = \"verdant-operator-ratchet-lift\"\n");
-        toml_buf.push_str(&format!("version = \"{version}\"\n"));
-        toml_buf.push_str(&format!("release_epoch = {release_epoch}\n"));
-        toml_buf.push_str(&format!(
-            "source_commit_kappa = \"{}\"\n",
-            lift.source_commit_kappa
-        ));
-        toml_buf.push_str(&format!(
-            "source_tree_root_sha256 = \"{}\"\n",
-            lift.source_tree_root_sha256
-        ));
-        toml_buf.push_str(&format!(
-            "immutability_seal_root_sha256 = \"{}\"\n",
-            seal.seal_root_sha256_hex
-        ));
-        toml_buf.push_str(&format!(
-            "release_capsule_sha256 = \"{}\"\n",
-            pin.release_kappa_hex
-        ));
-        toml_buf.push_str("unlifted_ui_files = 0\n");
-        toml_buf.push_str("unverified_frame_assets = 0\n");
-        toml_buf.push_str("user_required_external_accounts = 0\n");
-        toml_buf.push_str("unlifted_workspace_modules = 0\n");
-        for (path, cat, digest) in &lifted_records {
-            toml_buf.push_str("\n[[lifted_module]]\n");
-            toml_buf.push_str(&format!("path = \"{path}\"\n"));
-            toml_buf.push_str(&format!("category = \"{cat}\"\n"));
-            toml_buf.push_str(&format!("sha256 = \"{digest}\"\n"));
-        }
-
-        std::fs::write(out_dir.join("self-host-ratchet-manifest.toml"), &toml_buf).map_err(
-            |e| ObserverModelError::CommunicationEnvelopeRejected {
-                channel: CommunicationChannelKind::OrganToOrgan.slug().to_string(),
-                detail: format!("write out_dir self-host-ratchet-manifest.toml: {e}"),
-            },
-        )?;
-
-        let manifest_path = if opts.write_repo_artifacts {
-            let rel = "site/generated/self-host-ratchet-manifest.toml";
-            Self::write_manager_file(repo_root, "mgr-change-release", rel, &toml_buf)?;
-            let audit = self.audit_repository(repo_root, None);
-            if !audit.passed {
-                return Err(ObserverModelError::CommunicationEnvelopeRejected {
-                    channel: CommunicationChannelKind::OrganToOrgan.slug().to_string(),
-                    detail: format!(
-                        "post-lift VSM S3* repository audit failed: {:?}",
-                        audit
-                            .managers
-                            .iter()
-                            .filter(|m| !m.passed)
-                            .collect::<Vec<_>>()
-                    ),
-                });
+        let build_manifest_toml = |seal_root: &str| -> String {
+            let mut toml_buf = String::new();
+            toml_buf.push_str("# Generated exclusively by Verdant (`verdant operator ratchet-lift` / MCP `verdant_ratchet_lift`).\n");
+            toml_buf.push_str(
+                "# Enforced mechanically by `prism-fidelity` (`prism/parametric-ratchet/2`, VE-47).\n",
+            );
+            toml_buf.push_str("spec = \"verdant/self-host-ratchet-manifest/1\"\n");
+            toml_buf.push_str("generator = \"verdant-operator-ratchet-lift\"\n");
+            toml_buf.push_str(&format!("version = \"{version}\"\n"));
+            toml_buf.push_str(&format!("release_epoch = {release_epoch}\n"));
+            toml_buf.push_str(&format!(
+                "source_commit_kappa = \"{}\"\n",
+                lift.source_commit_kappa
+            ));
+            toml_buf.push_str(&format!(
+                "source_tree_root_sha256 = \"{}\"\n",
+                lift.source_tree_root_sha256
+            ));
+            toml_buf.push_str(&format!(
+                "immutability_seal_root_sha256 = \"{seal_root}\"\n"
+            ));
+            toml_buf.push_str(&format!(
+                "release_capsule_sha256 = \"{}\"\n",
+                pin.release_kappa_hex
+            ));
+            toml_buf.push_str("unlifted_ui_files = 0\n");
+            toml_buf.push_str("unverified_frame_assets = 0\n");
+            toml_buf.push_str("user_required_external_accounts = 0\n");
+            toml_buf.push_str("unlifted_workspace_modules = 0\n");
+            for (path, cat, digest) in &lifted_records {
+                toml_buf.push_str("\n[[lifted_module]]\n");
+                toml_buf.push_str(&format!("path = \"{path}\"\n"));
+                toml_buf.push_str(&format!("category = \"{cat}\"\n"));
+                toml_buf.push_str(&format!("sha256 = \"{digest}\"\n"));
             }
-            rel.to_string()
-        } else {
-            out_dir
-                .join("self-host-ratchet-manifest.toml")
-                .to_string_lossy()
-                .replace('\\', "/")
+            toml_buf
         };
+
+        let mut toml_buf = build_manifest_toml(&seal.seal_root_sha256_hex);
+
+        let manifest_path =
+            if opts.write_repo_artifacts {
+                let rel = "site/generated/self-host-ratchet-manifest.toml";
+                Self::write_manager_file(repo_root, "mgr-change-release", rel, &toml_buf)?;
+                // Execute Verdant's in-process lifecycle gate, write lifecycle-gate-report.json,
+                // re-seal all immutable views, and bind the final seal root into the manifest:
+                let _ = self.execute_lifecycle_gate(
+                    repo_root,
+                    &super::LifecycleGateOptions {
+                        run_workspace_tests: false,
+                        run_browser_gates: false,
+                        expected_tag: None,
+                        write_report: true,
+                    },
+                )?;
+                let final_kappa = sha256_hex_tagged!("ratchet-lifecycle-seal", version.as_bytes());
+                let _ = self.seal_repository_views(repo_root, &final_kappa)?;
+                seal = self.verify_immutability_seal(repo_root);
+                toml_buf = build_manifest_toml(&seal.seal_root_sha256_hex);
+                Self::write_manager_file(repo_root, "mgr-change-release", rel, &toml_buf)?;
+                std::fs::write(out_dir.join("self-host-ratchet-manifest.toml"), &toml_buf)
+                    .map_err(|e| ObserverModelError::CommunicationEnvelopeRejected {
+                        channel: CommunicationChannelKind::OrganToOrgan.slug().to_string(),
+                        detail: format!("write out_dir self-host-ratchet-manifest.toml: {e}"),
+                    })?;
+                let audit = self.audit_repository(repo_root, None);
+                if !audit.passed {
+                    return Err(ObserverModelError::CommunicationEnvelopeRejected {
+                        channel: CommunicationChannelKind::OrganToOrgan.slug().to_string(),
+                        detail: format!(
+                            "post-lift VSM S3* repository audit failed: {:?}",
+                            audit
+                                .managers
+                                .iter()
+                                .filter(|m| !m.passed)
+                                .collect::<Vec<_>>()
+                        ),
+                    });
+                }
+                rel.to_string()
+            } else {
+                std::fs::write(out_dir.join("self-host-ratchet-manifest.toml"), &toml_buf)
+                    .map_err(|e| ObserverModelError::CommunicationEnvelopeRejected {
+                        channel: CommunicationChannelKind::OrganToOrgan.slug().to_string(),
+                        detail: format!("write out_dir self-host-ratchet-manifest.toml: {e}"),
+                    })?;
+                out_dir
+                    .join("self-host-ratchet-manifest.toml")
+                    .to_string_lossy()
+                    .replace('\\', "/")
+            };
 
         Ok(AutonomousRatchetLiftReport {
             passed: true,

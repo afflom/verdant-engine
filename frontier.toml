@@ -5,26 +5,26 @@
 # stops the functions it counts (the detail their rows state, under its
 # cause), the one that stops the most first: the work queue.
 
-# Honesty report: 213 of 1554 functions of product code are lifted; 1189
-# are residue, 74 foreign and 78 effect rows.
+# Honesty report: 219 of 1560 functions of product code are lifted; 1187
+# are residue, 74 foreign and 80 effect rows.
 # Residue by cause:
 #   arithmetic: 31
-#   call: 220
+#   call: 221
 #   collision: 1
-#   form: 357
+#   form: 356
 #   signature: 69
-#   statements: 30
+#   statements: 28
 #   type: 475
 #   width: 6
 
 spec = "uorust/register/1"
 
 [lift]
-functions = 1554
-lifted = 213
-residue = 1189
+functions = 1560
+lifted = 219
+residue = 1187
 foreign = 74
-effect = 78
+effect = 80
 
 [[construct]]
 construct = "expression form outside the lift: ? below the function's own statements"
@@ -49,7 +49,7 @@ functions = 32
 [[construct]]
 construct = "the body has statements other than let"
 cause = "statements"
-functions = 30
+functions = 28
 
 [[construct]]
 construct = "takes or returns VerdantOperatorChannel.observer: ObserverPrismHolon.organs: ObserverOrganModel.schema_org_jsonld: serde_json::Value, a type of the serde_json crate with no LexLean model"
@@ -64,7 +64,7 @@ functions = 26
 [[construct]]
 construct = "Fs effect: std::fs::read_to_string"
 cause = "effect"
-functions = 22
+functions = 23
 
 [[construct]]
 construct = "type outside the lift: Self"
@@ -317,11 +317,6 @@ cause = "call"
 functions = 4
 
 [[construct]]
-construct = "expression form outside the lift: method call .div_ceil"
-cause = "form"
-functions = 4
-
-[[construct]]
 construct = "signature outside the lift: generic, async, unsafe or variadic"
 cause = "signature"
 functions = 4
@@ -407,6 +402,11 @@ cause = "form"
 functions = 3
 
 [[construct]]
+construct = "expression form outside the lift: method call .div_ceil"
+cause = "form"
+functions = 3
+
+[[construct]]
 construct = "expression form outside the lift: vec! of a repeated value"
 cause = "form"
 functions = 3
@@ -473,6 +473,11 @@ functions = 2
 
 [[construct]]
 construct = "calls parse_str, which is not lifted"
+cause = "call"
+functions = 2
+
+[[construct]]
+construct = "calls sha256_digest, which is not lifted"
 cause = "call"
 functions = 2
 
@@ -787,11 +792,6 @@ cause = "call"
 functions = 1
 
 [[construct]]
-construct = "calls sha256_hex_tagged, which is not lifted"
-cause = "call"
-functions = 1
-
-[[construct]]
 construct = "calls shard_bytes_to_stitch_fragments, which is not lifted"
 cause = "call"
 functions = 1
@@ -869,6 +869,11 @@ functions = 1
 [[construct]]
 construct = "another function of the crate is also named cellErr"
 cause = "collision"
+functions = 1
+
+[[construct]]
+construct = "Env effect: std::env::current_dir"
+cause = "effect"
 functions = 1
 
 [[construct]]
@@ -3351,14 +3356,14 @@ detail = "the body has statements other than let"
 [[residue]]
 kappa = "ed80ec15608d6e4e204a55cb5a6f9bbe3a391565c65543608f20c58265a331d6"
 function = "verdant_core::network::PrismIdSessionEnvelope::sign_deterministic"
-reason = "statements"
-detail = "the body has statements other than let"
+reason = "call"
+detail = "calls sha256_digest, which is not lifted"
 
 [[residue]]
 kappa = "454900da452331bcd01fad8a5e68eb7a8fdec43fe43024fa5c6a5e4c2cca1282"
 function = "verdant_core::network::PrismIdSessionEnvelope::verify"
-reason = "statements"
-detail = "the body has statements other than let"
+reason = "call"
+detail = "calls new, which is not lifted"
 
 [[residue]]
 kappa = "43ebc369bd154e7b339ce19f97d3fa09da637f107ebfe37cc24d7d16774f4796"
@@ -3529,16 +3534,10 @@ reason = "form"
 detail = "expression form outside the lift: method call .to_string"
 
 [[residue]]
-kappa = "5866573d02333ec9d59123445e54aa00b1993e5725307c1212c4eb01111773fc"
-function = "verdant_core::network::sha256_digest"
-reason = "call"
-detail = "calls new, which is not lifted"
-
-[[residue]]
 kappa = "c34b0a8ecb3670992b8f7b885961203a329d12a0673ba3705779fbeab835deeb"
 function = "verdant_core::network::shard_bytes_to_stitch_fragments"
-reason = "form"
-detail = "expression form outside the lift: method call .div_ceil"
+reason = "call"
+detail = "calls sha256_digest, which is not lifted"
 
 [[residue]]
 kappa = "4c9602c5c39a28465812108e486a47a8cd7355974baa08269060ec65b1fadf6b"
@@ -3641,12 +3640,6 @@ kappa = "a3f6b7c9065edb442f021e4163489572a111f749216417c981d4e920059834ea"
 function = "verdant_core::observer_language::tokenize_content_words"
 reason = "arithmetic"
 detail = "usize + wraps or panics where its value leaves the pointer width: past 2^32 on wasm32-unknown-unknown and thumbv7em-none-eabihf, past 2^64 on x86_64-unknown-linux-gnu and aarch64-unknown-linux-gnu"
-
-[[residue]]
-kappa = "6931fa4cf63bf52a3081db2c703bbd1f5e2493bac0f021c31873607070aa4f04"
-function = "verdant_core::operator::sha256_hex_tagged"
-reason = "call"
-detail = "calls sha256_hex_tagged, which is not lifted"
 
 [[residue]]
 kappa = "c4eddcb816517893923fe4c17a38ca147d37eb45e86b0f46137a0763f24b2df8"
@@ -8696,7 +8689,7 @@ function = "verdant_core::operator::VerdantOperatorChannel::has_authoritative_gr
 detail = "takes or returns VerdantOperatorChannel.observer: ObserverPrismHolon.organs: ObserverOrganModel.schema_org_jsonld: serde_json::Value, a type of the serde_json crate with no LexLean model"
 
 [[foreign]]
-kappa = "a7a64850c54f0586ae1f124bcc7b05c6308ec6f3e9351539d14bc97909396cd5"
+kappa = "16fe2bc3a6e369adec73ed71293eb726ccf47e88c6d5febcaf1cf374fefc5d61"
 function = "verdant_core::operator::VerdantOperatorChannel::new"
 detail = "takes or returns VerdantOperatorChannel.observer: ObserverPrismHolon.organs: ObserverOrganModel.schema_org_jsonld: serde_json::Value, a type of the serde_json crate with no LexLean model"
 
@@ -8706,7 +8699,7 @@ function = "verdant_core::operator::VerdantOperatorChannel::observer_part_progre
 detail = "takes or returns VerdantOperatorChannel.observer: ObserverPrismHolon.organs: ObserverOrganModel.schema_org_jsonld: serde_json::Value, a type of the serde_json crate with no LexLean model"
 
 [[foreign]]
-kappa = "a023b4ad328787fccc8e6187078e08a2121975431823cb576bf3ec877333a9b5"
+kappa = "a1cf6acaf06fbe7f70ca9ed91d9369799640dfe86aa5816916f6c33b7ffe8da5"
 function = "verdant_core::operator::VerdantOperatorChannel::publish_stitch_app_catalog_entry"
 detail = "takes or returns VerdantOperatorChannel.observer: ObserverPrismHolon.organs: ObserverOrganModel.schema_org_jsonld: serde_json::Value, a type of the serde_json crate with no LexLean model"
 
@@ -8771,7 +8764,7 @@ function = "verdant_core::operator_synth::VerdantOperatorChannel::apply_directiv
 detail = "takes or returns VerdantOperatorChannel.observer: ObserverPrismHolon.organs: ObserverOrganModel.schema_org_jsonld: serde_json::Value, a type of the serde_json crate with no LexLean model"
 
 [[foreign]]
-kappa = "600142987b0a63ed4b441f9279a22954484aa4f7a5be24eafa8d0aa03fc2b3ce"
+kappa = "7800350cc5a05920ff31e7aeda4c4a66b44907c1b3e5fe43348028bbef5ba653"
 function = "verdant_core::operator_synth::VerdantOperatorChannel::build_stitch_manifest_app"
 detail = "takes or returns VerdantOperatorChannel.observer: ObserverPrismHolon.organs: ObserverOrganModel.schema_org_jsonld: serde_json::Value, a type of the serde_json crate with no LexLean model"
 
@@ -8796,7 +8789,7 @@ function = "verdant_core::operator_synth::VerdantOperatorChannel::synthesize_ten
 detail = "takes or returns VerdantOperatorChannel.observer: ObserverPrismHolon.organs: ObserverOrganModel.schema_org_jsonld: serde_json::Value, a type of the serde_json crate with no LexLean model"
 
 [[foreign]]
-kappa = "679238fe8b2d58efc5e9f3c2726097a19c364ca33f9765893ddaa76d7d3a7b2b"
+kappa = "19ac95dcaf5452bbc659a60e6a14dbc3cfdb79e7fe633fc8f4002ec80c8e7645"
 function = "verdant_core::operator_synth::VerdantOperatorChannel::synthesize_world_differentiation_profiles"
 detail = "takes or returns VerdantOperatorChannel.observer: ObserverPrismHolon.organs: ObserverOrganModel.schema_org_jsonld: serde_json::Value, a type of the serde_json crate with no LexLean model"
 
@@ -8966,7 +8959,12 @@ function = "verdant::main"
 effect = "Env effect: std::env::args"
 
 [[effect]]
-kappa = "9a6edf8b049ec337bffc5160ceca0fb61d92ea7d06a1445bc88697675a6926b5"
+kappa = "2d0c94223b3a51fb9e911e8a18c17361a0c0cf2ed2c37059b3277479fb6f33ef"
+function = "verdant_cli::operator_cmd::run_operator_command"
+effect = "Env effect: std::env::current_dir"
+
+[[effect]]
+kappa = "b16217caba29bda223920d6664d12fc2e4e34662cf9d69646618c76f91fa2ac5"
 function = "verdant_cli::run_cli"
 effect = "Fs effect: std::fs::read"
 
@@ -8981,12 +8979,17 @@ function = "verdant_core::governance::RoadmapKpiManager::evaluate_repo"
 effect = "Fs effect: std::fs::read_to_string"
 
 [[effect]]
+kappa = "32e7197d1383a177b1949d8e2804ccfbc673b5308a9b7cfab8cc4566e03d9ed2"
+function = "verdant_core::lifecycle::VerdantOperatorChannel::execute_lifecycle_gate"
+effect = "Fs effect: std::fs::read_to_string"
+
+[[effect]]
 kappa = "da416a7a12c61b087ea870cab8858c60156bf637838429a238b19edef271479d"
 function = "verdant_core::observer_refine::VerdantOperatorChannel::synthesize_refinement_agenda"
 effect = "Fs effect: std::fs::read_to_string"
 
 [[effect]]
-kappa = "11e3c3a379d4a2593cc24579944f4b572bcd4c277fb7bec18955e13ac677bd4a"
+kappa = "5c0106f83565819f8ac4c2a879a48ec2fa6e5c853b38c664553ce003b0f3628b"
 function = "verdant_core::operator::VerdantOperatorChannel::advance_release_version"
 effect = "calls verdant_core::operator::VerdantOperatorChannel::load_or_init_release_ledger, which performs a Fs effect: std::fs::read_to_string"
 
@@ -9001,7 +9004,7 @@ function = "verdant_core::operator::VerdantOperatorChannel::audit_repository_jso
 effect = "calls verdant_core::operator::VerdantOperatorChannel::audit_repository, which performs a Fs effect: Path::is_file"
 
 [[effect]]
-kappa = "a2f9377f5736fcf85e503f1b0090a528b1e01fd9e30d04711c68618a360c4c78"
+kappa = "95b492a7d88e1b5367a101b792d6994ab8528e958dd74238da9a0858794ed438"
 function = "verdant_core::operator::VerdantOperatorChannel::collect_distilled_site_tree"
 effect = "Fs effect: std::fs::read_dir"
 
@@ -9041,7 +9044,7 @@ function = "verdant_core::operator::VerdantOperatorChannel::verify_immutability_
 effect = "Fs effect: std::fs::read_to_string"
 
 [[effect]]
-kappa = "b3711bfe253f1b101ff763350ca3d914b3e2d41308e2e9e2e44dcd05c67c8192"
+kappa = "36b4f635a7a37aa146222c45fd20f4ebcac95805ebfa473d258c0ac671777bfb"
 function = "verdant_core::operator_mcp::VerdantOperatorChannel::handle_mcp_jsonrpc_line"
 effect = "Fs effect: std::fs::read"
 
@@ -9061,12 +9064,12 @@ function = "verdant_core::operator_release::VerdantOperatorChannel::collect_tree
 effect = "Fs effect: std::fs::read_dir"
 
 [[effect]]
-kappa = "56d23c4cd0b2394ac969f28c74dce5f0ff6f5be7d73d1360c77494723d567107"
+kappa = "a2211dc739f03cd9094ebfbbbeb1537068d309839fd051b82661f3337a3543bb"
 function = "verdant_core::operator_release::VerdantOperatorChannel::execute_autonomous_ratchet_lift"
 effect = "Fs effect: std::fs::read"
 
 [[effect]]
-kappa = "459294974fb7fc13330afa2793bed76a83a842cc7154b8b7947d40b865598794"
+kappa = "7b03e42abb8f314ae88c22401699227d31efb243479e05d267e1cdb0bd642834"
 function = "verdant_core::operator_release::VerdantOperatorChannel::lift_full_workspace_into_vcs"
 effect = "Fs effect: std::fs::read"
 
@@ -9086,7 +9089,7 @@ function = "verdant_core::operator_release::VerdantOperatorChannel::verify_relea
 effect = "Fs effect: std::fs::read_to_string"
 
 [[effect]]
-kappa = "03abd2d2d954fb25903091fcb6dd86354809012216e31ccdc3443ca7c9103fe6"
+kappa = "dabb9aa609995498d9ddf43560dd9b8e2cf1eb8ae78b540461a6019dedb44819"
 function = "verdant_core::operator_synth::VerdantOperatorChannel::materialize_manager_artifacts"
 effect = "Fs effect: std::fs::read_to_string"
 
@@ -9096,7 +9099,7 @@ function = "verdant_core::operator_synth::VerdantOperatorChannel::publish_app_to
 effect = "Fs effect: std::fs::read_to_string"
 
 [[effect]]
-kappa = "df5b3e2953e058cdb606cd9016c751b06bf9e73c67b11a8162ffe07249175bb8"
+kappa = "1e268a9136c8af77dea2b925e634e46693133da279b998d338bf12dc708c427d"
 function = "verdant_core::operator_synth::VerdantOperatorChannel::write_manager_file"
 effect = "Fs effect: std::fs::create_dir_all"
 
@@ -9484,6 +9487,36 @@ definition = "Behavior::authorPrimitiveKindLabel"
 kappa = "641d6b3faec7e474063bfc1ed8ce5346f43c7e14cf85a9de1491c04b942ad4e0"
 function = "verdant_core::hd_world::lod_subdivision_scale"
 definition = "Behavior::lodSubdivisionScale"
+
+[[lifted]]
+kappa = "f6eefb14435d4cdbe408f93ada683cc8aa715ff7a51b4c0f01a18680eb61c74d"
+function = "verdant_core::lifecycle::lifecycle_all_checks_passed"
+definition = "Behavior::lifecycleAllChecksPassed"
+
+[[lifted]]
+kappa = "ef8e6c3bdf37353d8bf4407d161bd01204051d89c59e312bed416ad3a1f50236"
+function = "verdant_core::lifecycle::lifecycle_gate_can_advance_release"
+definition = "Behavior::lifecycleGateCanAdvanceRelease"
+
+[[lifted]]
+kappa = "710fba2ebbc3eb5fc87f3b482734e298de7421e5de823429d78250f46ce3b080"
+function = "verdant_core::lifecycle::lifecycle_lifted_categories_complete"
+definition = "Behavior::lifecycleLiftedCategoriesComplete"
+
+[[lifted]]
+kappa = "993857d149003344a222b4bcaa95adb90b74b8fbb57f5637e31ee2934471bddf"
+function = "verdant_core::lifecycle::lifecycle_pass_rate_permille"
+definition = "Behavior::lifecyclePassRatePermille"
+
+[[lifted]]
+kappa = "d289b9937ddbe16e72af7e8da299dd61d32470daa1cb34433d0c766ea49bc1c2"
+function = "verdant_core::lifecycle::lifecycle_release_qualified"
+definition = "Behavior::lifecycleReleaseQualified"
+
+[[lifted]]
+kappa = "ccaf1f24e2e2bf6ace80a6aa4c21aa7b2e8c5aeec86e188d3e40526653c639fe"
+function = "verdant_core::lifecycle::lifecycle_version_tuple_matches"
+definition = "Behavior::lifecycleVersionTupleMatches"
 
 [[lifted]]
 kappa = "4cd9f67af4aa2c00fddba36002f0afa982d8c68e22b2a6ab2aa22b1fdcc05640"

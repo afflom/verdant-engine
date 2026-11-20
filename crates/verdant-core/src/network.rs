@@ -10,18 +10,12 @@ use sha2::{Digest, Sha256};
 
 use crate::digest::hex_encode;
 use crate::error::StitchCustodyError;
+use crate::observer::sha256_payload_digest as sha256_digest;
 use crate::prism_kernel;
 use crate::runtime::{DeterministicInputJournal, FrameInputCommand};
 
 /// Digest byte width (`32` bytes for SHA-256).
 pub const SHA256_BYTES: usize = 1 << (1 + 1 + 1 + 1 + 1);
-
-fn sha256_digest(bytes: &[u8]) -> [u8; SHA256_BYTES] {
-    let mut hasher = Sha256::new();
-    hasher.update(bytes);
-    let out = hasher.finalize();
-    core::array::from_fn(|i| out[i])
-}
 
 /// Session signature envelope matching `<prism-frame>` `prism/identity/4` (`UOR-Foundation/foundry`).
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]

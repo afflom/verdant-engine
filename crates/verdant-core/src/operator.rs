@@ -116,6 +116,7 @@ pub const SEALED_IMMUTABLE_VIEW_FILES: &[&str] = &[
     "site/generated/release-ledger.json",
     "site/generated/roadmap-kpi-report.json",
     "site/generated/observer-refinement-agenda.json",
+    "site/generated/lifecycle-gate-report.json",
 ];
 
 /// Files that are byte-locked trust roots and may never be mutated via `verdant_mutate_view`.
@@ -128,10 +129,15 @@ const BYTE_LOCKED_TRUST_ROOTS: &[&str] = &[
     "Cargo.lock",
 ];
 
-fn sha256_hex_tagged(tag: &str, bytes: &[u8]) -> String {
-    crate::digest::sha256_hex_tagged("verdant/operator/v1:", tag, bytes)
+macro_rules! sha256_hex_tagged {
+    ($tag:expr, $bytes:expr) => {
+        crate::digest::sha256_hex_tagged("verdant/operator/v1:", $tag, $bytes)
+    };
 }
 
+#[cfg(not(target_arch = "wasm32"))]
+#[path = "lifecycle.rs"]
+mod lifecycle;
 #[cfg(not(target_arch = "wasm32"))]
 #[path = "observer_refine.rs"]
 mod observer_refine;
@@ -144,6 +150,8 @@ mod operator_synth;
 #[path = "operator_types.rs"]
 mod operator_types;
 
+#[cfg(not(target_arch = "wasm32"))]
+pub use lifecycle::*;
 #[cfg(not(target_arch = "wasm32"))]
 pub use observer_refine::*;
 pub use operator_types::*;
@@ -178,7 +186,7 @@ impl VerdantOperatorChannel {
         for (i, spec) in viewpoints.managers.iter().enumerate() {
             let prime = nth_prime_u64(start_ord.saturating_add(i as u32));
             let canonical = serde_json::to_vec(spec).unwrap_or_default();
-            let kappa_hex = sha256_hex_tagged(&spec.manager_id, &canonical);
+            let kappa_hex = sha256_hex_tagged!(&spec.manager_id, &canonical);
             managers.push(ResolvedDomainManager {
                 spec: spec.clone(),
                 basis_prime: prime,
@@ -351,7 +359,7 @@ impl VerdantOperatorChannel {
             "site/generated/roadmap-kpi-report.json",
             &kpi_json,
         )?;
-        let comm_kappa = sha256_hex_tagged("change-advance", decision.rationale.as_bytes());
+        let comm_kappa = sha256_hex_tagged!("change-advance", decision.rationale.as_bytes());
         let _ = self.seal_repository_views(repo_root, &comm_kappa)?;
         Ok(decision)
     }
@@ -828,7 +836,7 @@ impl VerdantOperatorChannel {
                 detail: format!("Stitch 2-of-3 sharding failed: {e}"),
             }
         })?;
-        let uorc_kappa_hex = sha256_hex_tagged("stitch-app-uorc", uorc_bytes);
+        let uorc_kappa_hex = sha256_hex_tagged!("stitch-app-uorc", uorc_bytes);
         let now_sec = 1u64 << (1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1);
         let ttl = PrismIdSessionEnvelope::max_session_lifetime_secs();
         let prefix_len = 1usize << (1 + 1 + 1 + 1);
@@ -1749,6 +1757,7 @@ impl VerdantOperatorChannel {
                 || rel_str.starts_with("crates/")
                 || rel_str.ends_with(".test.mjs")
                 || rel_str == "precache.json"
+                || rel_str == "generated/self-host-ratchet-manifest.toml"
                 || rel_str == "spec.html"
                 || rel_str == "spec.css"
                 || rel_str == "spec.mjs"

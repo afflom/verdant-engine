@@ -287,6 +287,19 @@ impl VerdantOperatorChannel {
                         }
                     },
                     {
+                        "name": "verdant_lifecycle_gate",
+                        "description": "Execute Verdant's lifted self-verification, test-execution, and release-qualification lifecycle directly from within Verdant (mgr-verification-observatory & mgr-change-release), returning LifecycleGateReport JSON.",
+                        "inputSchema": {
+                            "type": "object",
+                            "properties": {
+                                "runWorkspaceTests": { "type": "boolean" },
+                                "runBrowserGates": { "type": "boolean" },
+                                "expectedTag": { "type": "string" },
+                                "writeReport": { "type": "boolean" }
+                            }
+                        }
+                    },
+                    {
                         "name": "verdant_observer_refine_plan",
                         "description": "Generatively diagnose all 13 VSM Managers, owned source files, frontier.toml blockers, fidelity closure, Wasm/capsule weights, and Blank Frame headroom, returning the content-addressed ObserverRefinementAgenda.",
                         "inputSchema": {
@@ -787,6 +800,33 @@ impl VerdantOperatorChannel {
                         {
                             Ok(rep) => tool_out(
                                 false,
+                                serde_json::to_value(&rep).unwrap_or(serde_json::Value::Null),
+                            ),
+                            Err(e) => tool_out(true, serde_json::json!({ "error": e.to_string() })),
+                        }
+                    }
+                    "verdant_lifecycle_gate" => {
+                        let opts = LifecycleGateOptions {
+                            run_workspace_tests: args
+                                .get("runWorkspaceTests")
+                                .and_then(|v| v.as_bool())
+                                .unwrap_or(false),
+                            run_browser_gates: args
+                                .get("runBrowserGates")
+                                .and_then(|v| v.as_bool())
+                                .unwrap_or(false),
+                            expected_tag: args
+                                .get("expectedTag")
+                                .and_then(|v| v.as_str())
+                                .map(str::to_string),
+                            write_report: args
+                                .get("writeReport")
+                                .and_then(|v| v.as_bool())
+                                .unwrap_or(false),
+                        };
+                        match self.execute_lifecycle_gate(repo_root, &opts) {
+                            Ok((rep, _)) => tool_out(
+                                !rep.release_qualified,
                                 serde_json::to_value(&rep).unwrap_or(serde_json::Value::Null),
                             ),
                             Err(e) => tool_out(true, serde_json::json!({ "error": e.to_string() })),
