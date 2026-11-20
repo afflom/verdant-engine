@@ -5,26 +5,26 @@
 # stops the functions it counts (the detail their rows state, under its
 # cause), the one that stops the most first: the work queue.
 
-# Honesty report: 204 of 1545 functions of product code are lifted; 1190
-# are residue, 74 foreign and 77 effect rows.
+# Honesty report: 213 of 1554 functions of product code are lifted; 1189
+# are residue, 74 foreign and 78 effect rows.
 # Residue by cause:
 #   arithmetic: 31
 #   call: 220
 #   collision: 1
 #   form: 357
 #   signature: 69
-#   statements: 31
+#   statements: 30
 #   type: 475
 #   width: 6
 
 spec = "uorust/register/1"
 
 [lift]
-functions = 1545
-lifted = 204
-residue = 1190
+functions = 1554
+lifted = 213
+residue = 1189
 foreign = 74
-effect = 77
+effect = 78
 
 [[construct]]
 construct = "expression form outside the lift: ? below the function's own statements"
@@ -49,7 +49,7 @@ functions = 32
 [[construct]]
 construct = "the body has statements other than let"
 cause = "statements"
-functions = 31
+functions = 30
 
 [[construct]]
 construct = "takes or returns VerdantOperatorChannel.observer: ObserverPrismHolon.organs: ObserverOrganModel.schema_org_jsonld: serde_json::Value, a type of the serde_json crate with no LexLean model"
@@ -62,19 +62,19 @@ cause = "type"
 functions = 26
 
 [[construct]]
+construct = "Fs effect: std::fs::read_to_string"
+cause = "effect"
+functions = 22
+
+[[construct]]
 construct = "type outside the lift: Self"
 cause = "type"
 functions = 22
 
 [[construct]]
-construct = "Fs effect: std::fs::read_to_string"
-cause = "effect"
-functions = 21
-
-[[construct]]
 construct = "calls new, which is not lifted"
 cause = "call"
-functions = 19
+functions = 20
 
 [[construct]]
 construct = "type outside the lift: WasmRuntimeBridge.terrain_params: TerrainReliefParams"
@@ -703,11 +703,6 @@ functions = 1
 
 [[construct]]
 construct = "calls contract_coded_geometry_grid, which is not lifted"
-cause = "call"
-functions = 1
-
-[[construct]]
-construct = "calls digest_sha256_hex_tagged, which is not lifted"
 cause = "call"
 functions = 1
 
@@ -4992,16 +4987,16 @@ reason = "form"
 detail = "expression form outside the lift: method call .ok_or_else"
 
 [[residue]]
-kappa = "6984936afb788b869c2665605159ccbb753546d07dad28794f4ee8ddcf7fe706"
+kappa = "6aa580216de8f5eaad23f6deed8607e1b3b5997cb08d2b2c8280358b3f565789"
 function = "verdant_core::vcs::VerdantVcs::commit_tree"
 reason = "signature"
 detail = "signature outside the lift: takes &mut self of VerdantVcs: the lift reads self and &self as the value, and threads no other receiver"
 
 [[residue]]
-kappa = "63eab7c0491e927abde4a8c058cd72769d3d6dcb59eaf83d56873115a13d6b45"
+kappa = "04c3300ea3df00160e29e00ce83160e2c85b2119000f92af44e408ba58fe056d"
 function = "verdant_core::vcs::VerdantVcs::compute_tree_root"
-reason = "statements"
-detail = "the body has statements other than let"
+reason = "call"
+detail = "calls new, which is not lifted"
 
 [[residue]]
 kappa = "71d7c9837d0381ebe389f1a282665432a052f704e2b4048e1512a7b05615d6d6"
@@ -5056,12 +5051,6 @@ kappa = "770a007bc163e3d83381e14f012853e4c9bce12358969ab69cbef78bdddc5e44"
 function = "verdant_core::vcs::parse_stitch_deep_link_uri"
 reason = "call"
 detail = "calls thirty_two_u8, which is not lifted"
-
-[[residue]]
-kappa = "ce5c08ee785b82fa28177463fab042e88df25b8af4bc7ca22cfbca82708e567f"
-function = "verdant_core::vcs::sha256_hex_tagged"
-reason = "call"
-detail = "calls digest_sha256_hex_tagged, which is not lifted"
 
 [[residue]]
 kappa = "d3ee2879fa54e9bf311f42a6420034dcc06b11793f207d3f22af26baf1e65a77"
@@ -8977,7 +8966,7 @@ function = "verdant::main"
 effect = "Env effect: std::env::args"
 
 [[effect]]
-kappa = "4937c6ffd0a874a7ea129b7630b5724cbf8de4afbabd19179c704e2320974a35"
+kappa = "9a6edf8b049ec337bffc5160ceca0fb61d92ea7d06a1445bc88697675a6926b5"
 function = "verdant_cli::run_cli"
 effect = "Fs effect: std::fs::read"
 
@@ -8989,6 +8978,11 @@ effect = "Fs effect: std::fs::read_to_string"
 [[effect]]
 kappa = "91eab5f3e0a9eba78bcaf753a0ed87fb3cd89c227893f421d0cc8b2135fb9f25"
 function = "verdant_core::governance::RoadmapKpiManager::evaluate_repo"
+effect = "Fs effect: std::fs::read_to_string"
+
+[[effect]]
+kappa = "da416a7a12c61b087ea870cab8858c60156bf637838429a238b19edef271479d"
+function = "verdant_core::observer_refine::VerdantOperatorChannel::synthesize_refinement_agenda"
 effect = "Fs effect: std::fs::read_to_string"
 
 [[effect]]
@@ -9047,12 +9041,12 @@ function = "verdant_core::operator::VerdantOperatorChannel::verify_immutability_
 effect = "Fs effect: std::fs::read_to_string"
 
 [[effect]]
-kappa = "471b5af28b23f866d8ef55a12b2da0a3907f3156b32b3f150fde8bc5c44b6758"
+kappa = "b3711bfe253f1b101ff763350ca3d914b3e2d41308e2e9e2e44dcd05c67c8192"
 function = "verdant_core::operator_mcp::VerdantOperatorChannel::handle_mcp_jsonrpc_line"
 effect = "Fs effect: std::fs::read"
 
 [[effect]]
-kappa = "bd562d31221cb3b7bb9e8b96c726f7f926231e52275ab5ab1a2c0500710c8068"
+kappa = "cad07a1fb6e0e6aa963364e7106f4350444df9bcab0dfd0d2915d71b1bc1e214"
 function = "verdant_core::operator_release::VerdantOperatorChannel::audit_blank_frame_invariants"
 effect = "calls verdant_core::operator_release::VerdantOperatorChannel::collect_tree_matching, which performs a Fs effect: std::fs::read_dir"
 
@@ -9067,7 +9061,7 @@ function = "verdant_core::operator_release::VerdantOperatorChannel::collect_tree
 effect = "Fs effect: std::fs::read_dir"
 
 [[effect]]
-kappa = "a60ca45e933b8d03548a3d25e90cada0b8011a3386e706ed98caca05aa7fc6e1"
+kappa = "56d23c4cd0b2394ac969f28c74dce5f0ff6f5be7d73d1360c77494723d567107"
 function = "verdant_core::operator_release::VerdantOperatorChannel::execute_autonomous_ratchet_lift"
 effect = "Fs effect: std::fs::read"
 
@@ -9092,7 +9086,7 @@ function = "verdant_core::operator_release::VerdantOperatorChannel::verify_relea
 effect = "Fs effect: std::fs::read_to_string"
 
 [[effect]]
-kappa = "3a30186e06c6c45846f6900eadb850d6ce7d48c343237115079d0ccf415b3498"
+kappa = "03abd2d2d954fb25903091fcb6dd86354809012216e31ccdc3443ca7c9103fe6"
 function = "verdant_core::operator_synth::VerdantOperatorChannel::materialize_manager_artifacts"
 effect = "Fs effect: std::fs::read_to_string"
 
@@ -9509,7 +9503,7 @@ definition = "Behavior::verdantCoreFourU32"
 [[lifted]]
 kappa = "c85f5d5b0b36882edcf592824445e45c1dcda27866436eb319a4a73c29c3186c"
 function = "verdant_core::math::hundred_u32"
-definition = "Behavior::hundredU32"
+definition = "Behavior::verdantCoreHundredU32"
 
 [[lifted]]
 kappa = "a79568a0433f5d959c8ed781724671dac580f64ad8a10aa7b7e119512c27a26d"
@@ -9524,17 +9518,17 @@ definition = "Behavior::verdantCoreSixtyFourU32"
 [[lifted]]
 kappa = "b767e86768f34eed199833740cafa6d27d241c85c63cb13576a5200067d93fee"
 function = "verdant_core::math::ten_u32"
-definition = "Behavior::tenU32"
+definition = "Behavior::verdantCoreTenU32"
 
 [[lifted]]
 kappa = "cc22fa6b9ef285f1774765b2d8ef08598ac6d5365bc7c12a29076cbd5ad981cd"
 function = "verdant_core::math::thousand_u32"
-definition = "Behavior::thousandU32"
+definition = "Behavior::verdantCoreThousandU32"
 
 [[lifted]]
 kappa = "b8e2d4b6855959d1bcf30f9132b334fecb94d4efaeaee1842f9e52ef73ff8904"
 function = "verdant_core::math::three_u32"
-definition = "Behavior::threeU32"
+definition = "Behavior::verdantCoreThreeU32"
 
 [[lifted]]
 kappa = "68fbbf82397cb2844bf552bc0d5795223844aa06facc5277dc4be84d831473a9"
@@ -9620,6 +9614,31 @@ definition = "Behavior::stakeholderRoleKindWorkspaceIndex"
 kappa = "0facca72837351f7a14f738e59f5499346a9a071fe6042b15c32344bd8dfe247"
 function = "verdant_core::observer::StakeholderRoleKind::workspace_slug"
 definition = "Behavior::stakeholderRoleKindWorkspaceSlug"
+
+[[lifted]]
+kappa = "068075811964fbf63db532eef5e579a35fd3c1b7ec7537050619ed2a7340d01b"
+function = "verdant_core::observer_refine::aggregate_refinement_score_permille"
+definition = "Behavior::aggregateRefinementScorePermille"
+
+[[lifted]]
+kappa = "f26f52184d1db0515e061a58d62d7589859999c9767750eb01d0888c0a0a59aa"
+function = "verdant_core::observer_refine::blank_frame_headroom_bytes"
+definition = "Behavior::blankFrameHeadroomBytes"
+
+[[lifted]]
+kappa = "74d00d2d1d3fb339c84bacadeb3b7a80ea60b28b68a76ce6bf17853233879fde"
+function = "verdant_core::observer_refine::fidelity_bonus_permille"
+definition = "Behavior::fidelityBonusPermille"
+
+[[lifted]]
+kappa = "50d7f88bbae50628cae9098bcde7b3b5a2b0675441cb4969b8315349d3b9b297"
+function = "verdant_core::observer_refine::part_health_score_permille"
+definition = "Behavior::partHealthScorePermille"
+
+[[lifted]]
+kappa = "67b82c86441cb65fbe3bc355ef2c10fbe6d04576ea7065e1aa5434235c5b4594"
+function = "verdant_core::observer_refine::refinement_priority_for_ceiling"
+definition = "Behavior::refinementPriorityForCeiling"
 
 [[lifted]]
 kappa = "9e82655221302531736270e4e3844d679092f4bbc7dfb70f06edf78bfcf8fca6"
@@ -10102,6 +10121,11 @@ function = "verdant_tensor::scalars::four_u8"
 definition = "Behavior::fourU8"
 
 [[lifted]]
+kappa = "715ac0248c30bb5293e8a65cc6f2fcf4490e8ae169b31305f282ac55d6496675"
+function = "verdant_tensor::scalars::hundred_u32"
+definition = "Behavior::verdantTensorHundredU32"
+
+[[lifted]]
 kappa = "c0adeb426cce21b4917cfef4bd0cb503e99248b3dbf978ffe5e7f9b71ce3d419"
 function = "verdant_tensor::scalars::hundred_u64"
 definition = "Behavior::verdantTensorHundredU64"
@@ -10137,6 +10161,11 @@ function = "verdant_tensor::scalars::sixty_four_u8"
 definition = "Behavior::sixtyFourU8"
 
 [[lifted]]
+kappa = "a4d3c02760692a943737ae8def7c657244e430449a2b7259e2f833bcba10f9b7"
+function = "verdant_tensor::scalars::ten_u32"
+definition = "Behavior::verdantTensorTenU32"
+
+[[lifted]]
 kappa = "ec2960228af2647a7052042bd278139a9cee45c87de240757142aa8530fb1fc5"
 function = "verdant_tensor::scalars::ten_u64"
 definition = "Behavior::tenU64"
@@ -10155,6 +10184,16 @@ definition = "Behavior::thirtyTwoU64"
 kappa = "b1a47a4401af2786f8813146251033f9ca88af4e049042bf6d9d776e6a3084a9"
 function = "verdant_tensor::scalars::thirty_two_u8"
 definition = "Behavior::thirtyTwoU8"
+
+[[lifted]]
+kappa = "c791e8a5d3e5981f7ce8856564eec452ae6f5fb6693795d96c82ae38aed4da56"
+function = "verdant_tensor::scalars::thousand_u32"
+definition = "Behavior::verdantTensorThousandU32"
+
+[[lifted]]
+kappa = "16a09b67e019a88ca3a236a2129708a789ca0dd1c1af40e8cfde91fd19e30c53"
+function = "verdant_tensor::scalars::three_u32"
+definition = "Behavior::verdantTensorThreeU32"
 
 [[lifted]]
 kappa = "07e1bef3b19472766b4507829a3d95a3d54a9f2e972375848d8cd2c0e553254a"

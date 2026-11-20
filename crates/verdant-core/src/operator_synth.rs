@@ -957,6 +957,13 @@ body[data-studio-focus="publish"] #studio-publish-pane {
                 "site/generated/roadmap-kpi-report.json",
                 &kpi_json,
             )?);
+            let (_agenda, agenda_json) = self.synthesize_refinement_agenda(repo_root)?;
+            written.push(Self::write_manager_file(
+                repo_root,
+                "mgr-observer-executive",
+                "site/generated/observer-refinement-agenda.json",
+                &agenda_json,
+            )?);
         }
         let summary = format!(
             "materialize:{}:files={}",

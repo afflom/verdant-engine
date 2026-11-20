@@ -77,6 +77,13 @@ pub const fn two_u32() -> u32 {
     1_u32.wrapping_add(1_u32)
 }
 
+/// Constructive `3_u32` (`2 + 1`) lifted by `uorust`.
+#[inline(always)]
+#[must_use]
+pub const fn three_u32() -> u32 {
+    two_u32().wrapping_add(1_u32)
+}
+
 /// Constructive `4_u32` lifted by `uorust`.
 #[inline(always)]
 #[must_use]
@@ -90,6 +97,28 @@ pub const fn four_u32() -> u32 {
 #[must_use]
 pub const fn eight_u32() -> u32 {
     four_u32().wrapping_mul(two_u32())
+}
+
+/// Constructive `10_u32` (`8 + 2`) lifted by `uorust`.
+#[inline(always)]
+#[must_use]
+pub const fn ten_u32() -> u32 {
+    eight_u32().wrapping_add(two_u32())
+}
+
+/// Constructive `100_u32` (`10 * 10`) lifted by `uorust`.
+#[inline(always)]
+#[must_use]
+pub const fn hundred_u32() -> u32 {
+    let t = ten_u32();
+    t.wrapping_mul(t)
+}
+
+/// Constructive `1000_u32` (`100 * 10`) lifted by `uorust`.
+#[inline(always)]
+#[must_use]
+pub const fn thousand_u32() -> u32 {
+    hundred_u32().wrapping_mul(ten_u32())
 }
 
 /// Constructive `16_u32` lifted by `uorust`.

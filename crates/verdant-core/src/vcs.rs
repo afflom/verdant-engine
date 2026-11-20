@@ -29,10 +29,6 @@ use crate::network::{
     RELEASE_RS_TOTAL_SHARDS, SHA256_BYTES,
 };
 
-fn sha256_hex_tagged(tag: &str, bytes: &[u8]) -> String {
-    digest_sha256_hex_tagged("", tag, bytes)
-}
-
 /// Structural change classification between two [`VerdantVcs`] commits.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -152,7 +148,7 @@ impl VerdantVcs {
             buf.extend_from_slice(digest.as_bytes());
             buf.push(b'\n');
         }
-        sha256_hex_tagged("verdant-vcs-tree", &buf)
+        digest_sha256_hex_tagged("", "verdant-vcs-tree", &buf)
     }
 
     /// Stores a content-addressed blob and returns its `blob_sha256` hex digest.
@@ -238,7 +234,7 @@ impl VerdantVcs {
         commit_preimage.extend_from_slice(manager_id.as_bytes());
         commit_preimage.extend_from_slice(cited_authority.as_bytes());
         commit_preimage.extend_from_slice(message.as_bytes());
-        let commit_kappa = sha256_hex_tagged("verdant-vcs-commit", &commit_preimage);
+        let commit_kappa = digest_sha256_hex_tagged("", "verdant-vcs-commit", &commit_preimage);
 
         let mut sig_msg = Vec::new();
         sig_msg.extend_from_slice(commit_kappa.as_bytes());
@@ -248,7 +244,7 @@ impl VerdantVcs {
         sig_msg.extend_from_slice(&epoch.to_le_bytes());
         sig_msg.push(b':');
         sig_msg.extend_from_slice(device_secret);
-        let signature_hex = sha256_hex_tagged("verdant-vcs-sig", &sig_msg);
+        let signature_hex = digest_sha256_hex_tagged("", "verdant-vcs-sig", &sig_msg);
 
         let commit = VerdantVcsCommit {
             commit_kappa: commit_kappa.clone(),

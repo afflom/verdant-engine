@@ -115,6 +115,7 @@ pub const SEALED_IMMUTABLE_VIEW_FILES: &[&str] = &[
     "site/generated/tensor-scaling-contract.json",
     "site/generated/release-ledger.json",
     "site/generated/roadmap-kpi-report.json",
+    "site/generated/observer-refinement-agenda.json",
 ];
 
 /// Files that are byte-locked trust roots and may never be mutated via `verdant_mutate_view`.
@@ -131,6 +132,9 @@ fn sha256_hex_tagged(tag: &str, bytes: &[u8]) -> String {
     crate::digest::sha256_hex_tagged("verdant/operator/v1:", tag, bytes)
 }
 
+#[cfg(not(target_arch = "wasm32"))]
+#[path = "observer_refine.rs"]
+mod observer_refine;
 #[path = "operator_mcp.rs"]
 mod operator_mcp;
 #[path = "operator_release.rs"]
@@ -140,6 +144,8 @@ mod operator_synth;
 #[path = "operator_types.rs"]
 mod operator_types;
 
+#[cfg(not(target_arch = "wasm32"))]
+pub use observer_refine::*;
 pub use operator_types::*;
 
 /// Stateful bidirectional Verdant Operator Communications Channel bridging external operators

@@ -1819,6 +1819,28 @@ pub fn run_cli(args: &[String]) -> Result<String, CliCommandError> {
                         dec.rationale
                     ))
                 }
+                "refine-plan" => {
+                    let two = 1usize + 1usize;
+                    let mut root =
+                        std::env::current_dir().unwrap_or_else(|_| std::path::PathBuf::from("."));
+                    let mut i = two;
+                    while i < args.len() {
+                        if args[i] == "--root" && i + 1 < args.len() {
+                            root = std::path::PathBuf::from(&args[i + 1]);
+                            i += two;
+                        } else {
+                            i += 1;
+                        }
+                    }
+                    let (_agenda, json) =
+                        ch.synthesize_refinement_agenda(&root).map_err(|e| {
+                            CliCommandError::ValidationRejected {
+                                command: "operator refine-plan".to_string(),
+                                diagnostic: e.to_string(),
+                            }
+                        })?;
+                    Ok(json)
+                }
                 "ratchet-lift" => {
                     let two = 1usize + 1usize;
                     let mut root =

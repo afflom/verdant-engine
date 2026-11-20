@@ -84,7 +84,7 @@ id = "AUTH-ISO-42010-VIEWPOINTS"
 name = "ISO/IEC/IEEE 42010:2022 Architecture Viewpoints, ISO/IEC/IEEE 12207:2017 ALM & Stitch App Catalog"
 citation = "ISO/IEC/IEEE 42010:2022 Software, systems and enterprise — Architecture description; ISO/IEC/IEEE 12207:2017 Software life cycle processes; ISO 9241-210:2019; W3C DTCG 2025.10; WCAG 2.2 AA; afflom/stitch"
 artifact = "catalogs/governance/iso42010-viewpoints.json"
-checksum = "fcf33051b2e1dbd3dbb14dad4c9f826573e3549f411327569048345429505d4e"
+checksum = "47a332be55d4b047c65f758eeec8be7c05b4012b717d44a4af87477cc17f7688"
 statement = "ISO/IEC/IEEE 42010:2022 binds every Verdant surface, crate, Observer part, stream, and Stitch App Catalog archetype to an accountable Manager with explicit required elements, forbidden cross-contamination, and correspondence rules."
 realized_by = ["VE-42", "VE-44", "VE-45", "VE-47", "VE-52", "VE-53", "VE-54", "VE-55", "VE-61"]
 

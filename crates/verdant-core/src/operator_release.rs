@@ -679,7 +679,9 @@ impl VerdantOperatorChannel {
     }
 
     #[cfg(not(target_arch = "wasm32"))]
-    fn audit_blank_frame_invariants(repo_root: &Path) -> Result<usize, ObserverModelError> {
+    pub(super) fn audit_blank_frame_invariants(
+        repo_root: &Path,
+    ) -> Result<usize, ObserverModelError> {
         let two = 1usize + 1usize;
         let ten = two * (two + two + 1);
         let kb = 1usize << ten;
@@ -964,7 +966,7 @@ impl VerdantOperatorChannel {
                 &live_metrics,
                 true,
             )?;
-            // Refresh KPI report after tightening so KPI-SURFACE-RATCHET-TIGHT & frontier floor reflect live state:
+            // Refresh KPI report & Observer self-refinement agenda after tightening:
             let kpi_rep = self.evaluate_observer_roadmap_kpis(repo_root, true, true)?;
             if let Ok(kpi_json) = serde_json::to_string_pretty(&kpi_rep) {
                 let _ = Self::write_manager_file(
@@ -973,9 +975,17 @@ impl VerdantOperatorChannel {
                     "site/generated/roadmap-kpi-report.json",
                     &kpi_json,
                 )?;
-                let comm_kappa = sha256_hex_tagged("ratchet-tighten", version.as_bytes());
-                let _ = self.seal_repository_views(repo_root, &comm_kappa)?;
             }
+            if let Ok((_agenda, agenda_json)) = self.synthesize_refinement_agenda(repo_root) {
+                let _ = Self::write_manager_file(
+                    repo_root,
+                    "mgr-observer-executive",
+                    "site/generated/observer-refinement-agenda.json",
+                    &agenda_json,
+                )?;
+            }
+            let comm_kappa = sha256_hex_tagged("ratchet-tighten", version.as_bytes());
+            let _ = self.seal_repository_views(repo_root, &comm_kappa)?;
         }
         let seal = self.verify_immutability_seal(repo_root);
         let blank_frame_bytes = Self::audit_blank_frame_invariants(repo_root)?;

@@ -287,6 +287,14 @@ impl VerdantOperatorChannel {
                         }
                     },
                     {
+                        "name": "verdant_observer_refine_plan",
+                        "description": "Generatively diagnose all 13 VSM Managers, owned source files, frontier.toml blockers, fidelity closure, Wasm/capsule weights, and Blank Frame headroom, returning the content-addressed ObserverRefinementAgenda.",
+                        "inputSchema": {
+                            "type": "object",
+                            "properties": {}
+                        }
+                    },
+                    {
                         "name": "verdant_ratchet_lift",
                         "description": "Autonomous closed-loop Verdant self-lift (VE-47): verifies 13-Manager Total Ownership & <=30KiB zero-account Blank Frame, synthesizes all Manager manifests, optionally advances SemVer via mgr-change-release, lifts 100% of Rust/LexLean/Viewpoint modules into VerdantVcs, packs & 4-of-8 verifies verdant-vX.Y.Z.holo, pins site/frame/frame-pin.json, and emits site/generated/self-host-ratchet-manifest.toml to satisfy prism/parametric-ratchet/2.",
                         "inputSchema": {
@@ -780,6 +788,15 @@ impl VerdantOperatorChannel {
                             Ok(rep) => tool_out(
                                 false,
                                 serde_json::to_value(&rep).unwrap_or(serde_json::Value::Null),
+                            ),
+                            Err(e) => tool_out(true, serde_json::json!({ "error": e.to_string() })),
+                        }
+                    }
+                    "verdant_observer_refine_plan" => {
+                        match self.synthesize_refinement_agenda(repo_root) {
+                            Ok((agenda, _)) => tool_out(
+                                false,
+                                serde_json::to_value(&agenda).unwrap_or(serde_json::Value::Null),
                             ),
                             Err(e) => tool_out(true, serde_json::json!({ "error": e.to_string() })),
                         }
