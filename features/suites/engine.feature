@@ -308,3 +308,9 @@ Feature: engine
     Given VerdantOperatorChannel, VerdantVcs, VerdantReleaseCapsule, ChangeVersionManager, and Observer.lex.tex
     When Verdant lifts its complete workspace into a 4-of-8 sharded VerdantVcs Source DAG, drops 4 of 8 source shards, recovers and verifies the Source DAG, and bootstraps a chained v(N+1) release through mgr-change-release with and without the Ratchet applied
     Then unlifted workspace modules equal zero, all 26 LexLean strata and shipped Rust crates are Merkle-verified inside VerdantVcs, 4 surviving shards reconstruct the full source DAG and mint a chained acyclic child commit plus v(N+1) .holo release pinned to prev_kappa_hex, and unratcheted v(N+1) bootstrap attempts are strictly refused
+
+  @VE-47 @build
+  Scenario: Verdant autonomously lifts itself via verdant operator ratchet-lift and MCP verdant_ratchet_lift—synthesizing all 13 Manager manifests, lifting 100 percent of shipped Rust, Prism LexLean, and Viewpoint UI modules into VerdantVcs, packing and 4-of-8 verifying the .holo release capsule, and emitting site/generated/self-host-ratchet-manifest.toml—so the tightened prism/parametric-ratchet/2 audit enforces zero unlifted UI files, zero loose Blank Frame assets, zero external user accounts, and zero unlifted workspace modules while failing closed on any out-of-band edit
+    Given VerdantOperatorChannel, prism-fidelity parametric-ratchet v2, site/frame Blank Frame, and 13 accountable VSM Managers
+    When Verdant runs execute_autonomous_ratchet_lift via verdant operator ratchet-lift or MCP verdant_ratchet_lift and prism-fidelity audits model/parametric-ratchet.toml
+    Then Verdant produces site/generated/self-host-ratchet-manifest.toml with exact live SHA-256 digests for every shipped Rust, LexLean, and Viewpoint UI file, verifies 4-of-8 .holo recovery, satisfies all 4 zero self-hosting ceilings, and fails closed on any out-of-band source edit or loose Blank Frame asset

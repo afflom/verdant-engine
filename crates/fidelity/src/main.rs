@@ -71,10 +71,21 @@ fn main() -> ExitCode {
     if let (Ok(_), Some(ratchet_path)) = (&outcome, &ratchet_cfg) {
         match ratchet::audit_parametric_ratchet(&repo, ratchet_path) {
             Ok(rep) => {
-                println!(
-                    "parametric-ratchet: 0 magic constants across {} LexLean strata modules and {} shipped Rust engine files",
-                    rep.grounded_lex_module_count, rep.audited_rust_file_count
-                );
+                if rep.self_hosted_lifted_module_count > 0 {
+                    println!(
+                        "parametric-ratchet: 0 magic constants across {} LexLean strata modules and {} shipped Rust engine files; self-hosting ratchet 0 unlifted across {} lifted modules (blank frame {} B <= {} B)",
+                        rep.grounded_lex_module_count,
+                        rep.audited_rust_file_count,
+                        rep.self_hosted_lifted_module_count,
+                        rep.blank_frame_total_bytes,
+                        rep.blank_frame_max_bytes
+                    );
+                } else {
+                    println!(
+                        "parametric-ratchet: 0 magic constants across {} LexLean strata modules and {} shipped Rust engine files",
+                        rep.grounded_lex_module_count, rep.audited_rust_file_count
+                    );
+                }
             }
             Err(why) => {
                 eprintln!("prism-fidelity: {why}");

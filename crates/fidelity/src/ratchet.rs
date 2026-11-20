@@ -12,14 +12,25 @@
 //!    outside `{0.0, 1.0}` and zero integer literals `> 1`.
 
 use std::collections::{BTreeMap, BTreeSet};
+use std::fmt::Write as _;
 use std::path::{Path, PathBuf};
 
 use serde::Deserialize;
+use sha2::{Digest, Sha256};
 
 use crate::FidelityError;
 
-/// Expected `spec` header in `model/parametric-ratchet.toml`.
+/// Legacy `spec` header in `model/parametric-ratchet.toml`.
 pub const SPEC: &str = "prism/parametric-ratchet/1";
+
+/// Tightened self-hosting `spec` header in `model/parametric-ratchet.toml`.
+pub const SPEC_V2: &str = "prism/parametric-ratchet/2";
+
+/// Expected `spec` header in `site/generated/self-host-ratchet-manifest.toml`.
+pub const SELF_HOST_MANIFEST_SPEC: &str = "verdant/self-host-ratchet-manifest/1";
+
+/// Required generator identity proving the manifest was produced by Verdant itself.
+pub const SELF_HOST_MANIFEST_GENERATOR: &str = "verdant-operator-ratchet-lift";
 
 const MAX_STRATUM_RANK: u8 = 7;
 
@@ -27,7 +38,7 @@ const MAX_STRATUM_RANK: u8 = 7;
 #[derive(Clone, Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct ParametricRatchetConfig {
-    /// Format identifier (`prism/parametric-ratchet/1`).
+    /// Format identifier (`prism/parametric-ratchet/1` or `prism/parametric-ratchet/2`).
     pub spec: String,
     /// Relative path to `Foundation/Ontology/V1/Model.lex.tex`.
     pub ontology_root: String,
@@ -40,9 +51,83 @@ pub struct ParametricRatchetConfig {
     pub pure_zero_one_lex_modules: Vec<String>,
     /// Hard zero ceilings enforced by the ratchet.
     pub ceilings: RatchetCeilings,
+    /// Tightened self-hosting & Stitch-only ratchet configuration (required for `prism/parametric-ratchet/2`).
+    #[serde(default)]
+    pub self_hosting: Option<SelfHostingRatchetConfig>,
     /// Complete mapping of every `app/src/**/*.lex.tex` module to its causal Stratum `0..=7`.
     #[serde(rename = "stratum_module")]
     pub stratum_modules: Vec<StratumModuleEntry>,
+}
+
+/// Hard zero ceilings & cryptographic checks for Verdant self-hosting (`prism/parametric-ratchet/2`).
+#[derive(Clone, Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct SelfHostingRatchetConfig {
+    /// Relative path to the immutable Blank Frame directory (`site/frame`).
+    pub blank_frame_dir: String,
+    /// Maximum allowed total byte weight of all files in `blank_frame_dir` (`30720` = 30 KiB).
+    pub max_blank_frame_bytes: usize,
+    /// Exact allow-list of filenames permitted inside `blank_frame_dir`.
+    pub allowed_blank_frame_files: Vec<String>,
+    /// Relative path to Verdant's self-emitted ratchet manifest (`site/generated/self-host-ratchet-manifest.toml`).
+    pub ratchet_manifest: String,
+    /// Relative path to the cryptographic View Immutability Seal (`site/generated/immutability-seal.json`).
+    pub immutability_seal: String,
+    /// Canonical Viewpoint UI files that must be lifted & SHA-256 verified in `ratchet_manifest`.
+    pub lifted_viewpoint_files: Vec<String>,
+    /// Maximum allowed unlifted or modified UI Viewpoint files (`0`).
+    pub max_unlifted_ui_files: usize,
+    /// Maximum allowed unverified/loose files in `blank_frame_dir` (`0`).
+    pub max_unverified_frame_assets: usize,
+    /// Maximum allowed user-required external accounts / OAuth walls (`0`).
+    pub max_user_required_external_accounts: usize,
+    /// Maximum allowed unlifted or modified workspace Rust/LexLean modules (`0`).
+    pub max_unlifted_workspace_modules: usize,
+}
+
+/// Self-hosting ratchet manifest emitted exclusively by Verdant (`verdant operator ratchet-lift`).
+#[derive(Clone, Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct SelfHostRatchetManifest {
+    /// Must equal [`SELF_HOST_MANIFEST_SPEC`].
+    pub spec: String,
+    /// Must equal [`SELF_HOST_MANIFEST_GENERATOR`].
+    pub generator: String,
+    /// Active SemVer release version from `mgr-change-release`.
+    pub version: String,
+    /// Monotonic release epoch from `mgr-change-release`.
+    pub release_epoch: u64,
+    /// Content-addressed `VerdantVcs` commit `kappa` covering the lifted workspace.
+    pub source_commit_kappa: String,
+    /// Merkle tree root SHA-256 of the lifted `VerdantVcs` tree.
+    pub source_tree_root_sha256: String,
+    /// Cryptographic root SHA-256 matching `site/generated/immutability-seal.json`.
+    pub immutability_seal_root_sha256: String,
+    /// SHA-256 digest of the verified `verdant-v<version>.holo` release capsule.
+    pub release_capsule_sha256: String,
+    /// Self-reported unlifted UI count (must be `0`).
+    pub unlifted_ui_files: usize,
+    /// Self-reported unverified Blank Frame asset count (must be `0`).
+    pub unverified_frame_assets: usize,
+    /// Self-reported external account requirement count (must be `0`).
+    pub user_required_external_accounts: usize,
+    /// Self-reported unlifted workspace module count (must be `0`).
+    pub unlifted_workspace_modules: usize,
+    /// Exact SHA-256 digests of every lifted Rust, LexLean, and Viewpoint UI file.
+    #[serde(rename = "lifted_module")]
+    pub lifted_modules: Vec<LiftedModuleRecord>,
+}
+
+/// Single lifted module digest entry inside `self-host-ratchet-manifest.toml`.
+#[derive(Clone, Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct LiftedModuleRecord {
+    /// Repository-relative POSIX path.
+    pub path: String,
+    /// Module category (`rust`, `lexlean`, or `viewpoint`).
+    pub category: String,
+    /// Lowercase 64-char SHA-256 hex digest of the file bytes at lift time.
+    pub sha256: String,
 }
 
 /// Hard ceilings in `model/parametric-ratchet.toml` (all required to be `0`).
@@ -86,7 +171,7 @@ pub struct RatchetViolation {
     pub detail: String,
 }
 
-/// Complete audit outcome of the Zero-Constants Parametric Ratchet.
+/// Complete audit outcome of the Zero-Constants & Self-Hosting Parametric Ratchet.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct RatchetReport {
     /// Observed literals `> 1` in `ontology_root`.
@@ -105,6 +190,20 @@ pub struct RatchetReport {
     pub grounded_lex_module_count: usize,
     /// Total shipped Rust `.rs` files audited.
     pub audited_rust_file_count: usize,
+    /// Observed unlifted or modified UI Viewpoint files (`0` under `prism/parametric-ratchet/2`).
+    pub unlifted_ui_file_count: usize,
+    /// Observed unverified/loose files in `blank_frame_dir` (`0`).
+    pub unverified_frame_asset_count: usize,
+    /// Observed user-required external account walls in `blank_frame_dir` (`0`).
+    pub user_required_external_account_count: usize,
+    /// Observed unlifted or modified workspace Rust/LexLean modules (`0`).
+    pub unlifted_workspace_module_count: usize,
+    /// Total lifted modules SHA-256-verified against `self-host-ratchet-manifest.toml`.
+    pub self_hosted_lifted_module_count: usize,
+    /// Observed total byte weight of the Blank Frame directory.
+    pub blank_frame_total_bytes: usize,
+    /// Maximum allowed Blank Frame byte budget.
+    pub blank_frame_max_bytes: usize,
 }
 
 /// Audits the repository against `config_rel` and fails closed on any violation or weakened ceiling.
@@ -122,12 +221,20 @@ pub fn audit_parametric_ratchet(
     let cfg: ParametricRatchetConfig = toml::from_str(&raw_cfg)
         .map_err(|e| FidelityError::Register(format!("{}: {e}", config_path.display())))?;
 
-    if cfg.spec != SPEC {
+    if cfg.spec != SPEC && cfg.spec != SPEC_V2 {
         return Err(FidelityError::Register(format!(
-            "{}: unsupported spec {:?}, expected {:?}",
+            "{}: unsupported spec {:?}, expected {:?} or {:?}",
             config_path.display(),
             cfg.spec,
-            SPEC
+            SPEC,
+            SPEC_V2
+        )));
+    }
+    if cfg.spec == SPEC_V2 && cfg.self_hosting.is_none() {
+        return Err(FidelityError::Register(format!(
+            "{}: spec {:?} requires a [self_hosting] ratchet section",
+            config_path.display(),
+            SPEC_V2
         )));
     }
 
@@ -143,6 +250,17 @@ pub fn audit_parametric_ratchet(
         return Err(FidelityError::Register(
             "parametric-ratchet ceilings must all remain strictly 0 (zero-constants policy)".into(),
         ));
+    }
+    if let Some(sh) = &cfg.self_hosting {
+        if sh.max_unlifted_ui_files != 0
+            || sh.max_unverified_frame_assets != 0
+            || sh.max_user_required_external_accounts != 0
+            || sh.max_unlifted_workspace_modules != 0
+        {
+            return Err(FidelityError::Register(
+                "self_hosting ratchet ceilings must all remain strictly 0 (100% self-hosting policy)".into(),
+            ));
+        }
     }
 
     let mut violations: Vec<RatchetViolation> = Vec::new();
@@ -290,6 +408,276 @@ pub fn audit_parametric_ratchet(
         }
     }
 
+    // 5. Audit tightened Self-Hosting Ratchet (`prism/parametric-ratchet/2`):
+    let mut unlifted_ui_file_count = 0usize;
+    let mut unverified_frame_asset_count = 0usize;
+    let mut user_required_external_account_count = 0usize;
+    let mut unlifted_workspace_module_count = 0usize;
+    let mut self_hosted_lifted_module_count = 0usize;
+    let mut blank_frame_total_bytes = 0usize;
+    let mut blank_frame_max_bytes = 0usize;
+
+    if let Some(sh) = &cfg.self_hosting {
+        blank_frame_max_bytes = sh.max_blank_frame_bytes;
+        let frame_dir = repo.join(&sh.blank_frame_dir);
+        let mut frame_files = Vec::new();
+        collect_all_files(&frame_dir, &mut frame_files)?;
+        frame_files.sort();
+        let allowed_frame: BTreeSet<String> =
+            sh.allowed_blank_frame_files.iter().cloned().collect();
+        let mut seen_frame = BTreeSet::new();
+        for full in &frame_files {
+            let rel_in_frame = full
+                .strip_prefix(&frame_dir)
+                .unwrap_or(full)
+                .to_string_lossy()
+                .replace('\\', "/");
+            let bytes = std::fs::read(full).map_err(|e| FidelityError::Io(full.clone(), e))?;
+            blank_frame_total_bytes = blank_frame_total_bytes.saturating_add(bytes.len());
+            if !allowed_frame.contains(&rel_in_frame) {
+                unverified_frame_asset_count += 1;
+                violations.push(RatchetViolation {
+                    path: rel_slash(repo, full),
+                    line: 0,
+                    detail: format!(
+                        "unverified loose asset `{rel_in_frame}` in Blank Frame `{}`",
+                        sh.blank_frame_dir
+                    ),
+                });
+            }
+            seen_frame.insert(rel_in_frame);
+            if let Ok(text) = std::str::from_utf8(&bytes) {
+                let lower = text.to_ascii_lowercase();
+                for forbidden in [
+                    "oauth2/authorize",
+                    "accounts.google.com/o/oauth2",
+                    "github.com/login/oauth",
+                    "sign in with github",
+                ] {
+                    if lower.contains(forbidden) {
+                        user_required_external_account_count += 1;
+                        violations.push(RatchetViolation {
+                            path: rel_slash(repo, full),
+                            line: 0,
+                            detail: format!(
+                                "forbidden external account / OAuth wall `{forbidden}` in Blank Frame"
+                            ),
+                        });
+                    }
+                }
+            }
+        }
+        for req_name in &allowed_frame {
+            if !seen_frame.contains(req_name) {
+                unverified_frame_asset_count += 1;
+                violations.push(RatchetViolation {
+                    path: format!("{}/{req_name}", sh.blank_frame_dir),
+                    line: 0,
+                    detail: "missing required immutable Blank Frame asset".into(),
+                });
+            }
+        }
+        if blank_frame_total_bytes > sh.max_blank_frame_bytes {
+            unverified_frame_asset_count += 1;
+            violations.push(RatchetViolation {
+                path: sh.blank_frame_dir.clone(),
+                line: 0,
+                detail: format!(
+                    "Blank Frame exceeds byte budget: {} B > {} B",
+                    blank_frame_total_bytes, sh.max_blank_frame_bytes
+                ),
+            });
+        }
+
+        // Verify View Immutability Seal exists on disk:
+        let seal_full = repo.join(&sh.immutability_seal);
+        let seal_text = std::fs::read_to_string(&seal_full)
+            .map_err(|e| FidelityError::Io(seal_full.clone(), e))?;
+
+        // Parse Verdant's self-emitted ratchet manifest and cryptographically verify every module:
+        let manifest_full = repo.join(&sh.ratchet_manifest);
+        let manifest_raw = std::fs::read_to_string(&manifest_full)
+            .map_err(|e| FidelityError::Io(manifest_full.clone(), e))?;
+        let manifest: SelfHostRatchetManifest = toml::from_str(&manifest_raw)
+            .map_err(|e| FidelityError::Register(format!("{}: {e}", manifest_full.display())))?;
+
+        if manifest.spec != SELF_HOST_MANIFEST_SPEC {
+            violations.push(RatchetViolation {
+                path: sh.ratchet_manifest.clone(),
+                line: 0,
+                detail: format!(
+                    "unexpected manifest spec {:?}, expected {:?}",
+                    manifest.spec, SELF_HOST_MANIFEST_SPEC
+                ),
+            });
+        }
+        if manifest.generator != SELF_HOST_MANIFEST_GENERATOR {
+            violations.push(RatchetViolation {
+                path: sh.ratchet_manifest.clone(),
+                line: 0,
+                detail: format!(
+                    "manifest must be generated by Verdant ({:?}), found {:?}",
+                    SELF_HOST_MANIFEST_GENERATOR, manifest.generator
+                ),
+            });
+        }
+        if manifest.unlifted_ui_files != 0
+            || manifest.unverified_frame_assets != 0
+            || manifest.user_required_external_accounts != 0
+            || manifest.unlifted_workspace_modules != 0
+        {
+            unlifted_workspace_module_count += manifest.unlifted_workspace_modules;
+            unlifted_ui_file_count += manifest.unlifted_ui_files;
+            unverified_frame_asset_count += manifest.unverified_frame_assets;
+            user_required_external_account_count += manifest.user_required_external_accounts;
+            violations.push(RatchetViolation {
+                path: sh.ratchet_manifest.clone(),
+                line: 0,
+                detail: "self-host ratchet manifest reports non-zero unlifted/unverified counters"
+                    .into(),
+            });
+        }
+        for (label, digest) in [
+            ("source_commit_kappa", &manifest.source_commit_kappa),
+            ("source_tree_root_sha256", &manifest.source_tree_root_sha256),
+            (
+                "immutability_seal_root_sha256",
+                &manifest.immutability_seal_root_sha256,
+            ),
+            ("release_capsule_sha256", &manifest.release_capsule_sha256),
+        ] {
+            if !is_hex_sha256(digest) {
+                violations.push(RatchetViolation {
+                    path: sh.ratchet_manifest.clone(),
+                    line: 0,
+                    detail: format!("invalid 64-char hex SHA-256 for `{label}`"),
+                });
+            }
+        }
+        let expected_seal_needle = format!(
+            "\"sealRootSha256Hex\": \"{}\"",
+            manifest.immutability_seal_root_sha256
+        );
+        if !seal_text.contains(&expected_seal_needle) {
+            unlifted_ui_file_count += 1;
+            violations.push(RatchetViolation {
+                path: sh.immutability_seal.clone(),
+                line: 0,
+                detail: "immutability-seal.json root SHA-256 does not match self-host-ratchet-manifest.toml (re-run `verdant operator ratchet-lift`)".into(),
+            });
+        }
+
+        let mut manifest_map: BTreeMap<String, String> = BTreeMap::new();
+        for rec in &manifest.lifted_modules {
+            if !is_hex_sha256(&rec.sha256) {
+                violations.push(RatchetViolation {
+                    path: rec.path.clone(),
+                    line: 0,
+                    detail: "invalid 64-char SHA-256 digest in self-host-ratchet-manifest.toml"
+                        .into(),
+                });
+            }
+            if manifest_map
+                .insert(rec.path.clone(), rec.sha256.clone())
+                .is_some()
+            {
+                violations.push(RatchetViolation {
+                    path: rec.path.clone(),
+                    line: 0,
+                    detail: "duplicate lifted_module entry in self-host-ratchet-manifest.toml"
+                        .into(),
+                });
+            }
+        }
+
+        // Verify EVERY shipped Rust `.rs` file is lifted into VerdantVcs at its exact live SHA-256:
+        for full in &rust_files {
+            let rel = rel_slash(repo, full);
+            let bytes = std::fs::read(full).map_err(|e| FidelityError::Io(full.clone(), e))?;
+            let live = sha256_hex_bytes(&bytes);
+            match manifest_map.get(&rel) {
+                Some(expected) if expected == &live => {
+                    self_hosted_lifted_module_count += 1;
+                }
+                Some(_) => {
+                    unlifted_workspace_module_count += 1;
+                    violations.push(RatchetViolation {
+                        path: rel,
+                        line: 0,
+                        detail: "Rust module modified outside Verdant ratchet-lift (SHA-256 mismatch; run `verdant operator ratchet-lift`)".into(),
+                    });
+                }
+                None => {
+                    unlifted_workspace_module_count += 1;
+                    violations.push(RatchetViolation {
+                        path: rel,
+                        line: 0,
+                        detail: "Rust module is not lifted in self-host-ratchet-manifest.toml"
+                            .into(),
+                    });
+                }
+            }
+        }
+
+        // Verify EVERY Prism `.lex.tex` stratum is lifted into VerdantVcs at its exact live SHA-256:
+        for full in &lex_files {
+            let rel = rel_slash(repo, full);
+            let bytes = std::fs::read(full).map_err(|e| FidelityError::Io(full.clone(), e))?;
+            let live = sha256_hex_bytes(&bytes);
+            match manifest_map.get(&rel) {
+                Some(expected) if expected == &live => {
+                    self_hosted_lifted_module_count += 1;
+                }
+                Some(_) => {
+                    unlifted_workspace_module_count += 1;
+                    violations.push(RatchetViolation {
+                        path: rel,
+                        line: 0,
+                        detail: "LexLean module modified outside Verdant ratchet-lift (SHA-256 mismatch; run `verdant operator ratchet-lift`)".into(),
+                    });
+                }
+                None => {
+                    unlifted_workspace_module_count += 1;
+                    violations.push(RatchetViolation {
+                        path: rel,
+                        line: 0,
+                        detail: "LexLean module is not lifted in self-host-ratchet-manifest.toml"
+                            .into(),
+                    });
+                }
+            }
+        }
+
+        // Verify EVERY canonical Viewpoint UI HTML file is lifted at its exact live SHA-256:
+        for vp_rel in &sh.lifted_viewpoint_files {
+            let full = repo.join(vp_rel);
+            let bytes = std::fs::read(&full).map_err(|e| FidelityError::Io(full.clone(), e))?;
+            let live = sha256_hex_bytes(&bytes);
+            match manifest_map.get(vp_rel) {
+                Some(expected) if expected == &live => {
+                    self_hosted_lifted_module_count += 1;
+                }
+                Some(_) => {
+                    unlifted_ui_file_count += 1;
+                    violations.push(RatchetViolation {
+                        path: vp_rel.clone(),
+                        line: 0,
+                        detail: "UI Viewpoint modified outside Verdant ratchet-lift (SHA-256 mismatch; run `verdant operator ratchet-lift`)".into(),
+                    });
+                }
+                None => {
+                    unlifted_ui_file_count += 1;
+                    violations.push(RatchetViolation {
+                        path: vp_rel.clone(),
+                        line: 0,
+                        detail: "UI Viewpoint is not lifted in self-host-ratchet-manifest.toml"
+                            .into(),
+                    });
+                }
+            }
+        }
+    }
+
     let report = RatchetReport {
         ontology_root_literal_gt_one_count: ont_lits.len(),
         ontology_root_string_field_count,
@@ -299,6 +687,13 @@ pub fn audit_parametric_ratchet(
         engine_rust_magic_literal_count,
         grounded_lex_module_count: disk_lex_paths.len(),
         audited_rust_file_count: rust_files.len(),
+        unlifted_ui_file_count,
+        unverified_frame_asset_count,
+        user_required_external_account_count,
+        unlifted_workspace_module_count,
+        self_hosted_lifted_module_count,
+        blank_frame_total_bytes,
+        blank_frame_max_bytes,
     };
 
     if report.ontology_root_literal_gt_one_count > c.max_ontology_root_literal_gt_one_count
@@ -307,9 +702,13 @@ pub fn audit_parametric_ratchet(
         || report.ungrounded_lex_module_count > c.max_ungrounded_lex_module_count
         || report.domain_lex_magic_literal_count > c.max_domain_lex_magic_literal_count
         || report.engine_rust_magic_literal_count > c.max_engine_rust_magic_literal_count
+        || report.unlifted_ui_file_count > 0
+        || report.unverified_frame_asset_count > 0
+        || report.user_required_external_account_count > 0
+        || report.unlifted_workspace_module_count > 0
         || !violations.is_empty()
     {
-        let mut msg = String::from("zero-constants parametric ratchet refused:\n");
+        let mut msg = String::from("zero-constants & self-hosting parametric ratchet refused:\n");
         for v in violations.iter().take(16) {
             if v.line > 0 {
                 msg.push_str(&format!("  - {}:{}: {}\n", v.path, v.line, v.detail));
@@ -321,6 +720,32 @@ pub fn audit_parametric_ratchet(
     }
 
     Ok(report)
+}
+
+fn is_hex_sha256(s: &str) -> bool {
+    s.len() == 64 && s.bytes().all(|b| b.is_ascii_hexdigit())
+}
+
+fn sha256_hex_bytes(bytes: &[u8]) -> String {
+    let digest = Sha256::digest(bytes);
+    digest.iter().fold(String::with_capacity(64), |mut s, b| {
+        let _ = write!(s, "{b:02x}");
+        s
+    })
+}
+
+fn collect_all_files(dir: &Path, out: &mut Vec<PathBuf>) -> Result<(), FidelityError> {
+    let entries = std::fs::read_dir(dir).map_err(|e| FidelityError::Io(dir.to_path_buf(), e))?;
+    for entry in entries {
+        let entry = entry.map_err(|e| FidelityError::Io(dir.to_path_buf(), e))?;
+        let path = entry.path();
+        if path.is_dir() {
+            collect_all_files(&path, out)?;
+        } else if path.is_file() {
+            out.push(path);
+        }
+    }
+    Ok(())
 }
 
 fn rel_slash(repo: &Path, full: &Path) -> String {
@@ -810,5 +1235,175 @@ mod tests {
             scan_lex_magic_literals(dirty_lex),
             vec![(8, "42".to_string())]
         );
+    }
+
+    #[test]
+    fn self_hosting_ratchet_v2_enforces_zero_unlifted_and_catches_tampering() {
+        use super::{audit_parametric_ratchet, sha256_hex_bytes};
+        let base = std::env::temp_dir().join(format!(
+            "prism-fidelity-self-host-v2-{}",
+            std::process::id()
+        ));
+        let _ = std::fs::remove_dir_all(&base);
+        std::fs::create_dir_all(base.join("app/src/Foundation/Ontology/V1")).unwrap();
+        std::fs::create_dir_all(base.join("crates/verdant-core/src")).unwrap();
+        std::fs::create_dir_all(base.join("site/frame")).unwrap();
+        std::fs::create_dir_all(base.join("site/generated")).unwrap();
+        std::fs::create_dir_all(base.join("model")).unwrap();
+
+        let lex_src = "\\begin{lexlean}{Model}\n\\begin{semanticmodule}\ndefinition{\n  name: unit,\n  parameters: [],\n  result: Nat,\n  body: (1 + 0)\n}\n\\end{semanticmodule}\n\\end{lexlean}\n";
+        let rs_src = "pub fn ok() -> usize { 1 }\n";
+        let ui_src = "<!doctype html><main>Lifted</main>\n";
+        std::fs::write(
+            base.join("app/src/Foundation/Ontology/V1/Model.lex.tex"),
+            lex_src,
+        )
+        .unwrap();
+        std::fs::write(base.join("crates/verdant-core/src/lib.rs"), rs_src).unwrap();
+        std::fs::write(base.join("site/card.html"), ui_src).unwrap();
+        std::fs::write(
+            base.join("site/frame/index.html"),
+            "<!doctype html><title>Frame</title>",
+        )
+        .unwrap();
+        std::fs::write(
+            base.join("site/frame/frame-boot.mjs"),
+            "export const ok = true;",
+        )
+        .unwrap();
+        std::fs::write(
+            base.join("site/frame/frame-sw.js"),
+            "self.addEventListener('fetch', () => {});",
+        )
+        .unwrap();
+        std::fs::write(
+            base.join("site/frame/frame-pin.json"),
+            "{\"releaseVersion\":\"1.0.0\"}",
+        )
+        .unwrap();
+
+        let seal_root = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+        std::fs::write(
+            base.join("site/generated/immutability-seal.json"),
+            format!("{{\n  \"sealRootSha256Hex\": \"{seal_root}\"\n}}\n"),
+        )
+        .unwrap();
+
+        let manifest = format!(
+            "spec = \"verdant/self-host-ratchet-manifest/1\"\n\
+             generator = \"verdant-operator-ratchet-lift\"\n\
+             version = \"1.1.0\"\n\
+             release_epoch = 3\n\
+             source_commit_kappa = \"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\"\n\
+             source_tree_root_sha256 = \"cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc\"\n\
+             immutability_seal_root_sha256 = \"{seal_root}\"\n\
+             release_capsule_sha256 = \"dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd\"\n\
+             unlifted_ui_files = 0\n\
+             unverified_frame_assets = 0\n\
+             user_required_external_accounts = 0\n\
+             unlifted_workspace_modules = 0\n\n\
+             [[lifted_module]]\n\
+             path = \"crates/verdant-core/src/lib.rs\"\n\
+             category = \"rust\"\n\
+             sha256 = \"{}\"\n\n\
+             [[lifted_module]]\n\
+             path = \"app/src/Foundation/Ontology/V1/Model.lex.tex\"\n\
+             category = \"lexlean\"\n\
+             sha256 = \"{}\"\n\n\
+             [[lifted_module]]\n\
+             path = \"site/card.html\"\n\
+             category = \"viewpoint\"\n\
+             sha256 = \"{}\"\n",
+            sha256_hex_bytes(rs_src.as_bytes()),
+            sha256_hex_bytes(lex_src.as_bytes()),
+            sha256_hex_bytes(ui_src.as_bytes()),
+        );
+        std::fs::write(
+            base.join("site/generated/self-host-ratchet-manifest.toml"),
+            manifest,
+        )
+        .unwrap();
+
+        let cfg = "\
+spec = \"prism/parametric-ratchet/2\"
+ontology_root = \"app/src/Foundation/Ontology/V1/Model.lex.tex\"
+engine_rust_root = \"crates/verdant-core/src\"
+pure_zero_one_lex_modules = [\"app/src/Foundation/Ontology/V1/Model.lex.tex\"]
+
+[ceilings]
+max_ontology_root_literal_gt_one_count = 0
+max_ontology_root_string_field_count = 0
+max_classical_choice_count = 0
+max_ungrounded_lex_module_count = 0
+max_domain_lex_magic_literal_count = 0
+max_engine_rust_magic_literal_count = 0
+
+[self_hosting]
+blank_frame_dir = \"site/frame\"
+max_blank_frame_bytes = 30720
+allowed_blank_frame_files = [\"index.html\", \"frame-boot.mjs\", \"frame-sw.js\", \"frame-pin.json\"]
+ratchet_manifest = \"site/generated/self-host-ratchet-manifest.toml\"
+immutability_seal = \"site/generated/immutability-seal.json\"
+lifted_viewpoint_files = [\"site/card.html\"]
+max_unlifted_ui_files = 0
+max_unverified_frame_assets = 0
+max_user_required_external_accounts = 0
+max_unlifted_workspace_modules = 0
+
+[[stratum_module]]
+path = \"app/src/Foundation/Ontology/V1/Model.lex.tex\"
+stratum = 0
+role = \"Ontology root\"
+";
+        std::fs::write(base.join("model/parametric-ratchet.toml"), cfg).unwrap();
+
+        let rep =
+            audit_parametric_ratchet(&base, std::path::Path::new("model/parametric-ratchet.toml"))
+                .expect("clean v2 self-hosting repo must pass");
+        assert_eq!(rep.unlifted_ui_file_count, 0);
+        assert_eq!(rep.unverified_frame_asset_count, 0);
+        assert_eq!(rep.user_required_external_account_count, 0);
+        assert_eq!(rep.unlifted_workspace_module_count, 0);
+        assert_eq!(rep.self_hosted_lifted_module_count, 3);
+
+        // Negative 1: planting an unverified loose UI file inside Blank Frame fails closed!
+        std::fs::write(
+            base.join("site/frame/loose-studio.js"),
+            "console.log('leak');",
+        )
+        .unwrap();
+        assert!(audit_parametric_ratchet(
+            &base,
+            std::path::Path::new("model/parametric-ratchet.toml")
+        )
+        .is_err());
+        std::fs::remove_file(base.join("site/frame/loose-studio.js")).unwrap();
+
+        // Negative 2: editing a Rust module outside `verdant operator ratchet-lift` fails closed!
+        std::fs::write(
+            base.join("crates/verdant-core/src/lib.rs"),
+            "pub fn ok() -> usize { 0 }\n",
+        )
+        .unwrap();
+        assert!(audit_parametric_ratchet(
+            &base,
+            std::path::Path::new("model/parametric-ratchet.toml")
+        )
+        .is_err());
+        std::fs::write(base.join("crates/verdant-core/src/lib.rs"), rs_src).unwrap();
+
+        // Negative 3: planting an external OAuth wall in Blank Frame fails closed!
+        std::fs::write(
+            base.join("site/frame/index.html"),
+            "<a href='https://github.com/login/oauth'>Sign in</a>",
+        )
+        .unwrap();
+        assert!(audit_parametric_ratchet(
+            &base,
+            std::path::Path::new("model/parametric-ratchet.toml")
+        )
+        .is_err());
+
+        let _ = std::fs::remove_dir_all(&base);
     }
 }

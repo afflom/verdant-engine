@@ -90,9 +90,21 @@ if (!skipRust && (forceWasm || currentKappa !== cachedKappa || !wasmPresent)) {
   console.log(`[SKIP 0ms] sync-prism-wasm: kappa hit (${currentKappa.slice(0, 12)}…)`);
 }
 
-// 2. Synthesize Manager-owned manifests via Verdant Operator API before assembling site:
+// 2. Autonomously lift Verdant through its own Ratchet Self-Lift engine before assembling site:
 if (!skipRust) {
-  await runAsync("verdant-cli operator synthesize", "cargo", ["run", "--locked", "-q", "-p", "verdant-cli", "--", "operator", "synthesize"]);
+  await runAsync("verdant-cli operator ratchet-lift", "cargo", [
+    "run",
+    "--locked",
+    "-q",
+    "-p",
+    "verdant-cli",
+    "--",
+    "operator",
+    "ratchet-lift",
+    "--out",
+    "dist/stitch-release",
+    "--no-update-frame-pin",
+  ]);
 }
 
 // 3. Assemble site & run Verdant's native self-audit in parallel:
@@ -102,13 +114,17 @@ if (!skipRust) {
 }
 await Promise.all(stage2);
 
-// 3. Execute Prism contract suite & all browser deployment gates in parallel:
-await Promise.all([
+// 4. Execute Prism contract suite, live Stitch Blank Frame Pull-Through Gate & all browser deployment gates in parallel:
+const stage3 = [
   runAsync("prism-contracts.test.ts", "npx", ["--yes", "tsx", "--test", "prism-contracts.test.ts"]),
   runAsync("verify-live-surfaces", process.execPath, ["scripts/verify-live-surfaces.mjs", "site"]),
   runAsync("content/check", process.execPath, ["scripts/content/check.mjs", "site"]),
   runAsync("weight (FR-03)", process.execPath, ["bootstrap/weight.mjs", "site"]),
-]);
+];
+if (!skipRust) {
+  stage3.push(runAsync("verify-stitch-release", process.execPath, ["scripts/verify-stitch-release.mjs"]));
+}
+await Promise.all(stage3);
 rmSync(join(root, "site", "content-report.json"), { force: true });
 rmSync(join(root, "site", "content-report.md"), { force: true });
 

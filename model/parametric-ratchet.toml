@@ -1,7 +1,8 @@
-# Permanent Zero-Constants & Purely Parametric Ratchet (FI-08).
-# Every ceiling is permanently locked at 0 from commit 1 so no magic constants,
-# ungrounded LexLean strata, or non-constructive Classical.choice axioms can enter.
-spec = "prism/parametric-ratchet/1"
+# Permanent Zero-Constants & 100% Self-Hosting Parametric Ratchet (FI-08, VE-47).
+# Every ceiling is permanently locked at 0 so no magic constants, ungrounded LexLean
+# strata, non-constructive Classical.choice axioms, unlifted UI/workspace modules,
+# loose Blank Frame files, or user-required external accounts can ever enter.
+spec = "prism/parametric-ratchet/2"
 ontology_root = "app/src/Foundation/Ontology/V1/Model.lex.tex"
 engine_rust_root = "crates/verdant-core/src"
 additional_rust_roots = [
@@ -26,6 +27,30 @@ max_classical_choice_count = 0
 max_ungrounded_lex_module_count = 0
 max_domain_lex_magic_literal_count = 0
 max_engine_rust_magic_literal_count = 0
+
+[self_hosting]
+blank_frame_dir = "site/frame"
+max_blank_frame_bytes = 30720
+allowed_blank_frame_files = [
+  "index.html",
+  "frame-boot.mjs",
+  "frame-sw.js",
+  "frame-pin.json",
+]
+ratchet_manifest = "site/generated/self-host-ratchet-manifest.toml"
+immutability_seal = "site/generated/immutability-seal.json"
+lifted_viewpoint_files = [
+  "site/card.html",
+  "site/studio/index.html",
+  "site/catalogs/index.html",
+  "site/demo/index.html",
+  "site/docs/index.html",
+  "templates/browser-3d-starter/index.html",
+]
+max_unlifted_ui_files = 0
+max_unverified_frame_assets = 0
+max_user_required_external_accounts = 0
+max_unlifted_workspace_modules = 0
 
 [[stratum_module]]
 path = "app/src/Foundation/Ontology/V1/Model.lex.tex"

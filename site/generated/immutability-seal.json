@@ -2,7 +2,7 @@
   "spec": "verdant/view-immutability-seal/1",
   "owningManager": "mgr-observer-executive",
   "managerKappaHex": "a6c1a98aa8f0a6473ae7df52b2b625c8d00a30f06792dcb24e3d430dd0fe5245",
-  "sealRootSha256Hex": "4d009d8cfe31c8d4be10572646482965d4943d4f2d57a890b5d0881811231a8c",
+  "sealRootSha256Hex": "7d4ab60080b1572af08ec1380f0b0bca0d32761811f9f28d0a3fc48681037e2c",
   "files": [
     {
       "path": "site/card.html",
@@ -94,8 +94,8 @@
         "AUTH-ISO-42010-VIEWPOINTS",
         "AUTH-SEMVER-CHANGE-KPI"
       ],
-      "bytes": 27135,
-      "sha256Hex": "58be7ca2acbb0ff74d31bcff923d046488716991538d8766c89577b789f48db7",
+      "bytes": 27195,
+      "sha256Hex": "06a90a586efe4a3c110ac45f9ed579b1f698d53e50fa078c461562b8352a4a15",
       "lastDirectiveKappaHex": "69d2b727369bcec027d535ec5eb72d4232f37641c59cabe96b5ba966e4de3137"
     },
     {
@@ -166,14 +166,14 @@
     {
       "path": "site/generated/release-ledger.json",
       "owningManagerId": "mgr-change-release",
-      "managerKappaHex": "d05b7078c9489fe7f840f7b597d2adbc27956387ca27f07232c7441bca821f3c",
+      "managerKappaHex": "b1f6d515f560bc026e531b5bf03bbb41403e52de7ac4fa7862d4998547fc4c3f",
       "governingAuthorities": [
         "AUTH-SEMVER-CHANGE-KPI",
         "AUTH-STITCH-SELF-HOSTING",
         "AUTH-ISO-42010-VIEWPOINTS"
       ],
-      "bytes": 1492,
-      "sha256Hex": "89f9110cb4c274b0c827cf36985d6532320e7eb524a3055d30a06be30d1913ea",
+      "bytes": 1773,
+      "sha256Hex": "3fb17a6d1fe2e50956c4361e181c54cd941a369567fc47bcb5da3aac41cdae46",
       "lastDirectiveKappaHex": "69d2b727369bcec027d535ec5eb72d4232f37641c59cabe96b5ba966e4de3137"
     },
     {
@@ -185,7 +185,7 @@
         "AUTH-ISO-42010-VIEWPOINTS"
       ],
       "bytes": 11810,
-      "sha256Hex": "f111fe95d768c37e558b752d378a3ec837706f81cd48ae0a41d62bb2525bccd4",
+      "sha256Hex": "b1b196ba5023deb67125c3da38dea140b4e2a3c64349bda5a7aa03198eb1628d",
       "lastDirectiveKappaHex": "69d2b727369bcec027d535ec5eb72d4232f37641c59cabe96b5ba966e4de3137"
     }
   ]

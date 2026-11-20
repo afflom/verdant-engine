@@ -1,0 +1,379 @@
+# Generated exclusively by Verdant (`verdant operator ratchet-lift` / MCP `verdant_ratchet_lift`).
+# Enforced mechanically by `prism-fidelity` (`prism/parametric-ratchet/2`, VE-47).
+spec = "verdant/self-host-ratchet-manifest/1"
+generator = "verdant-operator-ratchet-lift"
+version = "1.1.0"
+release_epoch = 3
+source_commit_kappa = "2ef6c48ae20f9feed0bc2c86341990039afa07c1d52be105715d860487f58587"
+source_tree_root_sha256 = "8e47ea1a566bd1898ec211ef75ca51fd2a68b6e7b9747f7f5fb88905592fd4a7"
+immutability_seal_root_sha256 = "7d4ab60080b1572af08ec1380f0b0bca0d32761811f9f28d0a3fc48681037e2c"
+release_capsule_sha256 = "631f0cc4bad27dc92ea8fdf6b5d96894f1e2e1c2cd1819ffb0901e1240bbbbad"
+unlifted_ui_files = 0
+unverified_frame_assets = 0
+user_required_external_accounts = 0
+unlifted_workspace_modules = 0
+
+[[lifted_module]]
+path = "crates/verdant-cli/src/lib.rs"
+category = "rust"
+sha256 = "70a687fbddbcbe756f852b72cb2ae2db4513f99be327ec9da407ba356151fc69"
+
+[[lifted_module]]
+path = "crates/verdant-cli/src/main.rs"
+category = "rust"
+sha256 = "6b8353982b071bc553f88b8211a2fbe42862330c21e3e3cefbb91cfe442084ae"
+
+[[lifted_module]]
+path = "crates/verdant-core/src/animation.rs"
+category = "rust"
+sha256 = "45be3975e1ed341631e1f87301c512f982b095572e6a14a87bdef96dea352a83"
+
+[[lifted_module]]
+path = "crates/verdant-core/src/audio.rs"
+category = "rust"
+sha256 = "13818ef126c6079584d1d4b3ab3c78799f4aa5a5865077fcfcfd0080067832ca"
+
+[[lifted_module]]
+path = "crates/verdant-core/src/camera.rs"
+category = "rust"
+sha256 = "291babfb4409af8e283c08dd4b799284d7150d0ced71699d66daab3da4251c78"
+
+[[lifted_module]]
+path = "crates/verdant-core/src/character.rs"
+category = "rust"
+sha256 = "4d2d57cf169b406f9798ff102e3ede5e39e54d292f937de9ca7086647a258740"
+
+[[lifted_module]]
+path = "crates/verdant-core/src/collision.rs"
+category = "rust"
+sha256 = "c86b9cb3fd6211b22641d64c326b2f5f8ceab9a9fd4dab81cdd0e5d848956dd8"
+
+[[lifted_module]]
+path = "crates/verdant-core/src/cybernetics.rs"
+category = "rust"
+sha256 = "3287c100cd5f5bd0d74302748036fba65ca382e31756cfb01b20153680ae5efc"
+
+[[lifted_module]]
+path = "crates/verdant-core/src/ecs.rs"
+category = "rust"
+sha256 = "58efecde13c61df1c403333c57df05c03f0c4e1ba353a0217cf9d5d16ce8d85d"
+
+[[lifted_module]]
+path = "crates/verdant-core/src/error.rs"
+category = "rust"
+sha256 = "d296335fcd5a1b5dfc7db5902b911c8c1aa31847b9c32075f8d926b84cacdd4e"
+
+[[lifted_module]]
+path = "crates/verdant-core/src/geometry.rs"
+category = "rust"
+sha256 = "f0166b71ac03f2fc4c62da9168fdf4ae271f8f45fa3b11f06585f0e217df013a"
+
+[[lifted_module]]
+path = "crates/verdant-core/src/gltf_io.rs"
+category = "rust"
+sha256 = "7dfc21091448ebc4477b6a9b7567a6ae48d8f60ce7847aae9050df6fb32e04f0"
+
+[[lifted_module]]
+path = "crates/verdant-core/src/governance.rs"
+category = "rust"
+sha256 = "6c7041f5d7d0338f7f15fa8b7882dfc87c778d28a44c9b2a2a1d81718bed4992"
+
+[[lifted_module]]
+path = "crates/verdant-core/src/hd_world.rs"
+category = "rust"
+sha256 = "5578636195b7ba761ade419caa642b6d0319a48c63d6da3d0f28de7054ce21ec"
+
+[[lifted_module]]
+path = "crates/verdant-core/src/lib.rs"
+category = "rust"
+sha256 = "4dcecf3bb0cacf5e884a92bc55051ff9987ef9af12015b5aa6f02d81ff747377"
+
+[[lifted_module]]
+path = "crates/verdant-core/src/math.rs"
+category = "rust"
+sha256 = "9af3e92bf3f8bb637b22de15920dedfbf5def9215105405ae4071afb4f78a26d"
+
+[[lifted_module]]
+path = "crates/verdant-core/src/narrative.rs"
+category = "rust"
+sha256 = "1dec4ec1c105228bbb6d6d1c8738abc99199920114fd261ee94595c20e451b77"
+
+[[lifted_module]]
+path = "crates/verdant-core/src/navmesh.rs"
+category = "rust"
+sha256 = "bfc5decbd4fce217c0bb1290bbcce4a61ab69529f6dce8f7e9390dfab50b1d08"
+
+[[lifted_module]]
+path = "crates/verdant-core/src/network.rs"
+category = "rust"
+sha256 = "41272346d06a78b6b7684e99103e713bbd72506e19653dc2fb7e175868a03db9"
+
+[[lifted_module]]
+path = "crates/verdant-core/src/observer.rs"
+category = "rust"
+sha256 = "fce5b9b47516e951030799e9de80282f9fc8b5f0e89c53c499124ddc47866fee"
+
+[[lifted_module]]
+path = "crates/verdant-core/src/operator.rs"
+category = "rust"
+sha256 = "85c987de06b104ee4fce405a4b2daf8c1c51dee1ae26aa6765f77ee912d8954f"
+
+[[lifted_module]]
+path = "crates/verdant-core/src/physics.rs"
+category = "rust"
+sha256 = "90244eb57a798c53c6cce07e96723e2676ed7afb5cffa14403d14191deaffbf3"
+
+[[lifted_module]]
+path = "crates/verdant-core/src/render.rs"
+category = "rust"
+sha256 = "6f7e867c0add255c623c551e45356400ada76e9123b8988c143f6a73a866dfd6"
+
+[[lifted_module]]
+path = "crates/verdant-core/src/runtime.rs"
+category = "rust"
+sha256 = "a2e0f8e81a32bf092622a2290de09748a940b1013cc7daa3f7fb75d48846660e"
+
+[[lifted_module]]
+path = "crates/verdant-core/src/standards.rs"
+category = "rust"
+sha256 = "84560fd7e930325d6dcb7ebeac9bb2748336018b9d4dce91905403da5813fc90"
+
+[[lifted_module]]
+path = "crates/verdant-core/src/streaming.rs"
+category = "rust"
+sha256 = "03f52eedc2ed67b1c0b9be3c89a93f1ff330c43ff9f9a0039340ad287eb1c400"
+
+[[lifted_module]]
+path = "crates/verdant-core/src/tensor.rs"
+category = "rust"
+sha256 = "fbdf797bf5e880e69e9852c96c123b597f5c3582246c7a7000a0be680a3cac16"
+
+[[lifted_module]]
+path = "crates/verdant-core/src/uhd.rs"
+category = "rust"
+sha256 = "13ad3b450ede23321a75eb830a1304ff961ce6d79b7f1ea1c3d459f5fe534853"
+
+[[lifted_module]]
+path = "crates/verdant-core/src/ui.rs"
+category = "rust"
+sha256 = "487009fe1e8c79196a030559e265800cb5c56dde70d86cd52d0dbc9c4cfae26b"
+
+[[lifted_module]]
+path = "crates/verdant-core/src/universe.rs"
+category = "rust"
+sha256 = "130d4add81c847d2d093497d7246e54e5a8268c5e7fcf646d1af5ea010cfa7ce"
+
+[[lifted_module]]
+path = "crates/verdant-core/src/vcs.rs"
+category = "rust"
+sha256 = "4c68f1fec70127cb59e3088632d55975ccd222f7285f8e45d6485c9080125e69"
+
+[[lifted_module]]
+path = "crates/verdant-tensor/src/audio_ring.rs"
+category = "rust"
+sha256 = "402f71e525b30f76b0c6086206f604c1f9966a007b63856c4b50b6f8636bfdf1"
+
+[[lifted_module]]
+path = "crates/verdant-tensor/src/coded.rs"
+category = "rust"
+sha256 = "f73883027d935a410699b5d1e3efb54359145d13e306062c518e249ae0c81522"
+
+[[lifted_module]]
+path = "crates/verdant-tensor/src/lib.rs"
+category = "rust"
+sha256 = "240a4113c643aeff4219540ad0887b7aa01b8639c1a42bf71778115b1255d9f2"
+
+[[lifted_module]]
+path = "crates/verdant-tensor/src/linear.rs"
+category = "rust"
+sha256 = "6e9ed52a76db253f14bddba1b941bda1e45bfec4d5c68ec436cfebdb5cae511d"
+
+[[lifted_module]]
+path = "crates/verdant-tensor/src/memory.rs"
+category = "rust"
+sha256 = "dc9ba499f3ec6e8c8833379dbcfa68a1ba7ca2ec8d9fdec9c1482455f21124cd"
+
+[[lifted_module]]
+path = "crates/verdant-tensor/src/neural.rs"
+category = "rust"
+sha256 = "241c04f1f8acf69406e29d7321c50f29626f45a1b84a1cc74e3e856a9f648f60"
+
+[[lifted_module]]
+path = "crates/verdant-tensor/src/prism_kernel.rs"
+category = "rust"
+sha256 = "1274a283c101ef1bfd4fa4dbf0ad7e66f1e5bc5bcd01a0ca735361085bbb688a"
+
+[[lifted_module]]
+path = "crates/verdant-tensor/src/raster.rs"
+category = "rust"
+sha256 = "5118f63e82b33f32df26fd7ad51c9b6bcbce54cd80bc92320be11849df3f2691"
+
+[[lifted_module]]
+path = "crates/verdant-tensor/src/tropical.rs"
+category = "rust"
+sha256 = "98c0581d39f03be7a0b21c902c3ffe4287117e0169160c370e2ad89cea98cef9"
+
+[[lifted_module]]
+path = "crates/verdant-wasm/src/lib.rs"
+category = "rust"
+sha256 = "1731c82ba2316ae42ab659da5b9d21b908d996ecfb0338a9f7574410eb59c082"
+
+[[lifted_module]]
+path = "app/src/Architecture.lex.tex"
+category = "lexlean"
+sha256 = "89428df04022b92633cb6f1e5b89250b6871942d6b8ed4d341e01790828efa57"
+
+[[lifted_module]]
+path = "app/src/Brand.lex.tex"
+category = "lexlean"
+sha256 = "2d0aee3a5ee0f69a3f27d6a02751a209140b5e4b7c48f19dbfd54c84dbfb9565"
+
+[[lifted_module]]
+path = "app/src/Compliance.lex.tex"
+category = "lexlean"
+sha256 = "23dcd62da1b55bb6fc64c674caf454c288e822526d86324618414ee134fdd20c"
+
+[[lifted_module]]
+path = "app/src/Design.lex.tex"
+category = "lexlean"
+sha256 = "05ba4ecf5d2a3ad840933385b271e25c93da1a265f1aa3917acfd5a9ec42e038"
+
+[[lifted_module]]
+path = "app/src/DevRel.lex.tex"
+category = "lexlean"
+sha256 = "b1e8f14a9b443b9f57a7dbc074bb5e16b4b9048359e4457058f75ff001795763"
+
+[[lifted_module]]
+path = "app/src/Engine.lex.tex"
+category = "lexlean"
+sha256 = "9c455d46f372e6d898c231c17ed8cf1f850b33e39a4d1f2e19fd8990ea80551b"
+
+[[lifted_module]]
+path = "app/src/Features.lex.tex"
+category = "lexlean"
+sha256 = "52a31f6736703cc5d7c4d544743ff73ef0d1485c9de90781cf9f639a806aace1"
+
+[[lifted_module]]
+path = "app/src/Fidelity.lex.tex"
+category = "lexlean"
+sha256 = "d83bda3f4f55a4807fb01ff7253e8d0756c1d783e0305b4838bf01d7ccf3119e"
+
+[[lifted_module]]
+path = "app/src/Foundation/Arch.lex.tex"
+category = "lexlean"
+sha256 = "ac98d00c82c37d523361ef2fa01419e796c359b74c4a87ac39d53d4821aa80d8"
+
+[[lifted_module]]
+path = "app/src/Foundation/Bytes.lex.tex"
+category = "lexlean"
+sha256 = "ce16e5b439128db3231979381f4599d3ff0617f62c2bf00c348bba35393abcd6"
+
+[[lifted_module]]
+path = "app/src/Foundation/Experience/V1/Model.lex.tex"
+category = "lexlean"
+sha256 = "ffc17cae13a2796b821d52e231b5f7138721b9091a159558ad58da24bfbcf7b2"
+
+[[lifted_module]]
+path = "app/src/Foundation/Measurement/V1/Model.lex.tex"
+category = "lexlean"
+sha256 = "a4239d3aa0666c11b3491d169d8badc7f6de24111f6e154689bb1e7198414595"
+
+[[lifted_module]]
+path = "app/src/Foundation/Ontology/V1/Model.lex.tex"
+category = "lexlean"
+sha256 = "7313a2166eb8945cd4bbb3fdb21b7bedf3b761b086a2ddf2a5e1596d74ded462"
+
+[[lifted_module]]
+path = "app/src/Foundation/Provenance/V1/Model.lex.tex"
+category = "lexlean"
+sha256 = "e2c2605e354680f996decc54589cc1ea61a499f35b09aee7f04a639db9373eb6"
+
+[[lifted_module]]
+path = "app/src/Foundation/Qual.lex.tex"
+category = "lexlean"
+sha256 = "a50a9591f4227994e44a64f01ba565da7abb87b9c40ddc13b3e69025c9b7ec50"
+
+[[lifted_module]]
+path = "app/src/Foundation/Sec.lex.tex"
+category = "lexlean"
+sha256 = "f49c249319cc411f24a73722998bc6ec93b81851625ce6c5a914f528750214e5"
+
+[[lifted_module]]
+path = "app/src/Foundation/View/Text/V1/Model.lex.tex"
+category = "lexlean"
+sha256 = "db124343ad8fe1295bc8eb305c7f59f83cf6ad76d46a5cabea500fe66f3ad5dc"
+
+[[lifted_module]]
+path = "app/src/Measures.lex.tex"
+category = "lexlean"
+sha256 = "f2fd480adb314b35fb9e99e4fd1d2e808a45f488b504a79ab9f7f153d68db417"
+
+[[lifted_module]]
+path = "app/src/Observer.lex.tex"
+category = "lexlean"
+sha256 = "ed014756d4875213a9bd4cea4b868acaa107d77eda1ba22b5ea88743c050a347"
+
+[[lifted_module]]
+path = "app/src/Production/ThreatModel.lex.tex"
+category = "lexlean"
+sha256 = "9fede2e970d4c42b7d9d84f0c7bcfc2064e226b660728365de8373f9f4b57abe"
+
+[[lifted_module]]
+path = "app/src/Provenance.lex.tex"
+category = "lexlean"
+sha256 = "15bc6cc17fb37822690dfad2a9f91935eed83f2fb231be717a33d5963f09fd5e"
+
+[[lifted_module]]
+path = "app/src/Quality.lex.tex"
+category = "lexlean"
+sha256 = "892589008577873bfe818513d5212fde737bd87755fe17bde3a70914639554cf"
+
+[[lifted_module]]
+path = "app/src/Security.lex.tex"
+category = "lexlean"
+sha256 = "786b66cf051419dae136a38889b91a1f72da3b2ddbdcee29b3896cdcb6465a4e"
+
+[[lifted_module]]
+path = "app/src/Subsystems.lex.tex"
+category = "lexlean"
+sha256 = "c9095191c78ab58fbf2f8d281a29a064674bb8f3a88aa117d89ca62b56ae873b"
+
+[[lifted_module]]
+path = "app/src/Tensor.lex.tex"
+category = "lexlean"
+sha256 = "efcade5df7d805be0cd923aeb658cbe16ae7666519e0f5085a5ca5e01227d7c0"
+
+[[lifted_module]]
+path = "app/src/Users.lex.tex"
+category = "lexlean"
+sha256 = "9d5f9a18ed3577de069c1395ce82295ca1438a8ba1621b357240041347ff93ea"
+
+[[lifted_module]]
+path = "site/card.html"
+category = "viewpoint"
+sha256 = "aae36c0a4998a0dc299f25c5afb0b805ef826c98e7aaf3d1e3974f3069560da0"
+
+[[lifted_module]]
+path = "site/studio/index.html"
+category = "viewpoint"
+sha256 = "1ce8983acdd021cc3b8f054b8f7810a5e6c61c6b33a986a05db6520560301cf5"
+
+[[lifted_module]]
+path = "site/catalogs/index.html"
+category = "viewpoint"
+sha256 = "5146f724157b8017cf3c55c80463095ea3d49fd9ef99ed74586968378a61cee2"
+
+[[lifted_module]]
+path = "site/demo/index.html"
+category = "viewpoint"
+sha256 = "47f8a3cfad9df9d5ca59ea91555d07c56d17fde9238641d1a99f1e7951fcc2fb"
+
+[[lifted_module]]
+path = "site/docs/index.html"
+category = "viewpoint"
+sha256 = "71cf847dbc1007e64953317b295f4ab13bda2a944299ae6fb3197da4f60eb993"
+
+[[lifted_module]]
+path = "templates/browser-3d-starter/index.html"
+category = "viewpoint"
+sha256 = "88cc179d3c52e038ecfce5a3d36342b61fb9dd8005bda7b3f80de2da5f4aabd6"

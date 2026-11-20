@@ -162,6 +162,7 @@
         "site/frame/frame-sw.js",
         "site/frame/frame-pin.json",
         "site/generated/release-ledger.json",
+        "site/generated/self-host-ratchet-manifest.toml",
         "scripts/verify-stitch-release.mjs",
         "scripts/package-rust-crates.mjs",
         ".github/workflows/release-stitch.yml"

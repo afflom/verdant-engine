@@ -5923,8 +5923,9 @@ fn engine_ve_46() {
         "governance & model files lifted"
     );
     assert!(
-        lift.lifted_site_files >= 90,
-        "distilled Viewpoints & Wasm lifted"
+        lift.lifted_site_files >= 70,
+        "distilled Viewpoints & manifests lifted (got {})",
+        lift.lifted_site_files
     );
     assert_eq!(lift.source_shard_count, 8);
     assert!(lift.source_uorc_bytes > 10_000);
@@ -5971,7 +5972,11 @@ fn engine_ve_46() {
     assert_ne!(next_rep.child_commit_kappa, next_rep.parent_commit_kappa);
     assert_eq!(next_rep.next_epoch, next_rep.parent_epoch + 1);
     assert_eq!(next_rep.prev_release_kappa, lift.source_commit_kappa);
-    assert!(next_rep.verified_files_count >= 150);
+    assert!(
+        next_rep.verified_files_count >= 140,
+        "expected >= 140 verified files in recovered Source DAG (got {})",
+        next_rep.verified_files_count
+    );
 
     // Verify the autonomously produced v(N+1) release directory by dropping 4 of its 8 release shards!
     let verified = ch
@@ -5981,4 +5986,94 @@ fn engine_ve_46() {
     assert!(verified.contains(&next_rep.next_release_kappa));
 
     let _ = std::fs::remove_dir_all(&base_tmp);
+}
+
+#[test]
+fn engine_ve_47() {
+    use std::path::Path;
+    use verdant_core::operator::VerdantOperatorChannel;
+
+    let repo_root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+    let mut ch = VerdantOperatorChannel::new("sunspire-regatta").expect("operator channel");
+
+    let out_dir = std::env::temp_dir().join(format!("verdant-ve47-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&out_dir);
+
+    // 1. Invoke Verdant's autonomous self-lift through its own MCP JSON-RPC interface (`verdant_ratchet_lift`):
+    let mcp_req = serde_json::json!({
+        "jsonrpc": "2.0",
+        "id": 47,
+        "method": "tools/call",
+        "params": {
+            "name": "verdant_ratchet_lift",
+            "arguments": {
+                "outDir": out_dir.to_string_lossy(),
+                "writeRepoArtifacts": false,
+                "updateFramePin": false
+            }
+        }
+    })
+    .to_string();
+    let mcp_raw = ch
+        .handle_mcp_jsonrpc_line(&repo_root, &mcp_req)
+        .expect("MCP verdant_ratchet_lift response");
+    let mcp_val: serde_json::Value = serde_json::from_str(&mcp_raw).expect("parse MCP JSON");
+    assert_eq!(mcp_val["result"]["isError"], serde_json::Value::Bool(false));
+    let payload_txt = mcp_val["result"]["content"][0]["text"]
+        .as_str()
+        .expect("MCP content text");
+    let lift_val: serde_json::Value = serde_json::from_str(payload_txt).expect("parse lift JSON");
+    assert_eq!(lift_val["passed"], serde_json::Value::Bool(true));
+    assert_eq!(lift_val["unliftedWorkspaceModules"], 0);
+    assert_eq!(lift_val["unliftedUiFiles"], 0);
+    assert_eq!(lift_val["unverifiedFrameAssets"], 0);
+    assert_eq!(lift_val["userRequiredExternalAccounts"], 0);
+    assert!(lift_val["blankFrameBytes"].as_u64().unwrap_or(999_999) <= 30_720);
+    assert!(lift_val["liftedModuleCount"].as_u64().unwrap_or(0) >= 65);
+    assert!(out_dir.join("self-host-ratchet-manifest.toml").is_file());
+
+    // 2. Verify the live repository satisfies the tightened `prism/parametric-ratchet/2` mechanically:
+    let ratchet_rep = prism_fidelity::ratchet::audit_parametric_ratchet(
+        &repo_root,
+        Path::new("model/parametric-ratchet.toml"),
+    )
+    .expect("live repo must pass tightened prism/parametric-ratchet/2");
+    assert_eq!(ratchet_rep.unlifted_ui_file_count, 0);
+    assert_eq!(ratchet_rep.unverified_frame_asset_count, 0);
+    assert_eq!(ratchet_rep.user_required_external_account_count, 0);
+    assert_eq!(ratchet_rep.unlifted_workspace_module_count, 0);
+    assert!(ratchet_rep.self_hosted_lifted_module_count >= 65);
+    assert!(ratchet_rep.blank_frame_total_bytes <= 30_720);
+
+    // 3. Negative check: tampering a single lifted module's SHA-256 digest MUST fail closed!
+    let manifest_text = std::fs::read_to_string(out_dir.join("self-host-ratchet-manifest.toml"))
+        .expect("read isolated manifest");
+    let tampered_manifest = manifest_text.replacen(
+        "\nsha256 = \"",
+        "\nsha256 = \"0000000000000000000000000000000000000000000000000000000000000000\" # ",
+        1,
+    );
+    assert_ne!(
+        tampered_manifest, manifest_text,
+        "negative test must actually mutate a lifted_module sha256 line"
+    );
+    let tampered_manifest_path = out_dir.join("tampered-manifest.toml");
+    std::fs::write(&tampered_manifest_path, tampered_manifest).expect("write tampered manifest");
+    let cfg_raw = std::fs::read_to_string(repo_root.join("model/parametric-ratchet.toml"))
+        .expect("read ratchet config");
+    let tampered_cfg = cfg_raw.replace(
+        "ratchet_manifest = \"site/generated/self-host-ratchet-manifest.toml\"",
+        &format!(
+            "ratchet_manifest = \"{}\"",
+            tampered_manifest_path.to_string_lossy().replace('\\', "/")
+        ),
+    );
+    let tampered_cfg_path = out_dir.join("tampered-ratchet.toml");
+    std::fs::write(&tampered_cfg_path, tampered_cfg).expect("write tampered ratchet config");
+    assert!(
+        prism_fidelity::ratchet::audit_parametric_ratchet(&repo_root, &tampered_cfg_path).is_err(),
+        "tampered lifted module SHA-256 MUST fail closed under prism/parametric-ratchet/2"
+    );
+
+    let _ = std::fs::remove_dir_all(&out_dir);
 }

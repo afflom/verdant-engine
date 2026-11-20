@@ -471,5 +471,35 @@ theorem{
   proof: decide{},
   axioms: []
 }
+
+definition{
+  name: autonomousRatchetLiftValid,
+  parameters: [
+    unliftedUi : Nat,
+    unverifiedFrame : Nat,
+    externalAccounts : Nat,
+    unliftedWorkspace : Nat,
+    generatedByVerdant : Bool,
+    sealBound : Bool,
+    erasureVerified : Bool
+  ],
+  result: Bool,
+  body: (((unliftedUi =? 0) && ((unverifiedFrame =? 0) && ((externalAccounts =? 0) && (unliftedWorkspace =? 0)))) && (generatedByVerdant && (sealBound && erasureVerified)))
+}
+
+definition{
+  name: autonomousRatchetLiftDirect,
+  parameters: [],
+  result: Bool,
+  body: ((autonomousRatchetLiftValid 0 0 0 0 true true true) && ((not (autonomousRatchetLiftValid 1 0 0 0 true true true)) && ((not (autonomousRatchetLiftValid 0 1 0 0 true true true)) && ((not (autonomousRatchetLiftValid 0 0 1 0 true true true)) && ((not (autonomousRatchetLiftValid 0 0 0 1 true true true)) && (not (autonomousRatchetLiftValid 0 0 0 0 false true true)))))))
+}
+
+theorem{
+  name: autonomousRatchetLiftVerified,
+  parameters: [],
+  statement: ((autonomousRatchetLiftDirect) = true),
+  proof: decide{},
+  axioms: []
+}
 \end{semanticmodule}
 \end{lexlean}

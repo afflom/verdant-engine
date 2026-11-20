@@ -1819,6 +1819,99 @@ pub fn run_cli(args: &[String]) -> Result<String, CliCommandError> {
                         dec.rationale
                     ))
                 }
+                "ratchet-lift" => {
+                    let two = 1usize + 1usize;
+                    let mut root =
+                        std::env::current_dir().unwrap_or_else(|_| std::path::PathBuf::from("."));
+                    let mut out_dir = std::path::PathBuf::from("dist/stitch-release");
+                    let mut write_repo_artifacts = true;
+                    let mut update_frame_pin = true;
+                    let mut stitch_relays: Vec<String> = Vec::new();
+                    let mut adv_major = false;
+                    let mut adv_minor = false;
+                    let mut adv_patch = false;
+                    let mut summary = "Autonomous Verdant ratchet self-lift".to_string();
+                    let mut i = two;
+                    while i < args.len() {
+                        match args[i].as_str() {
+                            "--root" if i + 1 < args.len() => {
+                                root = std::path::PathBuf::from(&args[i + 1]);
+                                i += two;
+                            }
+                            "--out" if i + 1 < args.len() => {
+                                out_dir = std::path::PathBuf::from(&args[i + 1]);
+                                i += two;
+                            }
+                            "--relay" if i + 1 < args.len() => {
+                                stitch_relays.push(args[i + 1].clone());
+                                i += two;
+                            }
+                            "--no-update-frame-pin" => {
+                                update_frame_pin = false;
+                                i += 1;
+                            }
+                            "--isolated" => {
+                                write_repo_artifacts = false;
+                                update_frame_pin = false;
+                                i += 1;
+                            }
+                            "--advance-major" => {
+                                adv_major = true;
+                                i += 1;
+                            }
+                            "--advance-minor" => {
+                                adv_minor = true;
+                                i += 1;
+                            }
+                            "--advance-patch" => {
+                                adv_patch = true;
+                                i += 1;
+                            }
+                            "--summary" if i + 1 < args.len() => {
+                                summary = args[i + 1].clone();
+                                i += two;
+                            }
+                            _ => i += 1,
+                        }
+                    }
+                    let advance_signals = if adv_major || adv_minor || adv_patch {
+                        Some(verdant_core::governance::ObserverProgressSignals {
+                            breaking_contract_change: adv_major,
+                            major_milestone_completed: adv_major,
+                            minor_capability_added: adv_minor,
+                            stakeholder_requirement_closed: adv_minor,
+                            defect_or_security_fix: adv_patch,
+                            summary,
+                        })
+                    } else {
+                        None
+                    };
+                    let opts = verdant_core::operator::AutonomousRatchetLiftOptions {
+                        write_repo_artifacts,
+                        update_frame_pin,
+                        stitch_relays,
+                        advance_signals,
+                    };
+                    let rep = ch
+                        .execute_autonomous_ratchet_lift(&root, &out_dir, &opts)
+                        .map_err(|e| CliCommandError::ValidationRejected {
+                            command: "operator ratchet-lift".to_string(),
+                            diagnostic: e.to_string(),
+                        })?;
+                    Ok(format!(
+                        "AUTONOMOUS RATCHET LIFT OK: version=v{} epoch={} incremented={} lifted_modules={} unlifted_ws={} unlifted_ui={} blank_frame_bytes={} frame_pin_updated={} capsule={} manifest={}",
+                        rep.version,
+                        rep.release_epoch,
+                        rep.version_incremented,
+                        rep.lifted_module_count,
+                        rep.unlifted_workspace_modules,
+                        rep.unlifted_ui_files,
+                        rep.blank_frame_bytes,
+                        rep.frame_pin_updated,
+                        rep.release_capsule_sha256,
+                        rep.manifest_path
+                    ))
+                }
                 "session" => {
                     use std::io::BufRead;
                     let two = 1usize + 1usize;

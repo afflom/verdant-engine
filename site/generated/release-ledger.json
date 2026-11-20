@@ -4,10 +4,10 @@
   "authorityId": "AUTH-SEMVER-CHANGE-KPI",
   "currentVersion": {
     "major": 1,
-    "minor": 0,
+    "minor": 1,
     "patch": 0
   },
-  "releaseEpoch": 2,
+  "releaseEpoch": 3,
   "history": [
     {
       "version": "0.1.0",
@@ -42,6 +42,13 @@
       "releaseEpoch": 2,
       "bumpKind": "major",
       "summary": "M5 Complete (VE-46): Full Source DAG Self-Hosting in VerdantVcs, Autonomous vN->v(N+1) Build Loop & 13-Manager Total Prism Ownership",
+      "citedAuthority": "AUTH-SEMVER-CHANGE-KPI"
+    },
+    {
+      "version": "1.1.0",
+      "releaseEpoch": 3,
+      "bumpKind": "minor",
+      "summary": "Tighten prism/parametric-ratchet/2 with zero self-hosting ceilings and automate closed-loop Verdant ratchet-lift (VE-47)",
       "citedAuthority": "AUTH-SEMVER-CHANGE-KPI"
     }
   ]

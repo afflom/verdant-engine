@@ -390,3 +390,9 @@ id = "VE-46"
 level = "build"
 suite = "engine"
 statement = "Verdant lifts 100 percent of its shipped Rust crates, all 26 Prism LexLean strata, all governance and authority registers, and all distilled Viewpoints into a 4-of-8 STCH2 Reed-Solomon sharded VerdantVcs Source DAG with zero unlifted workspace modules, recovers the full Source DAG from 4 surviving shards, and autonomously bootstraps a chained v(N+1) release through mgr-change-release with acyclic PROV-O lineage and monotonic prev_kappa chaining"
+
+[[id]]
+id = "VE-47"
+level = "build"
+suite = "engine"
+statement = "Verdant autonomously lifts itself via verdant operator ratchet-lift and MCP verdant_ratchet_lift—synthesizing all 13 Manager manifests, lifting 100 percent of shipped Rust, Prism LexLean, and Viewpoint UI modules into VerdantVcs, packing and 4-of-8 verifying the .holo release capsule, and emitting site/generated/self-host-ratchet-manifest.toml—so the tightened prism/parametric-ratchet/2 audit enforces zero unlifted UI files, zero loose Blank Frame assets, zero external user accounts, and zero unlifted workspace modules while failing closed on any out-of-band edit"

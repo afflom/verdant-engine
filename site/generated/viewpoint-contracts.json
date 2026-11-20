@@ -142,7 +142,7 @@
     },
     {
       "basisPrime": 71,
-      "kappaHex": "d05b7078c9489fe7f840f7b597d2adbc27956387ca27f07232c7441bca821f3c",
+      "kappaHex": "b1f6d515f560bc026e531b5bf03bbb41403e52de7ac4fa7862d4998547fc4c3f",
       "spec": {
         "almPhases": [
           "change-management",
@@ -178,6 +178,7 @@
           "site/frame/frame-sw.js",
           "site/frame/frame-pin.json",
           "site/generated/release-ledger.json",
+          "site/generated/self-host-ratchet-manifest.toml",
           "scripts/verify-stitch-release.mjs",
           "scripts/package-rust-crates.mjs",
           ".github/workflows/release-stitch.yml"
