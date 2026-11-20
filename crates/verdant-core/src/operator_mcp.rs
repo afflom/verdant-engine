@@ -308,6 +308,24 @@ impl VerdantOperatorChannel {
                         }
                     },
                     {
+                        "name": "verdant_ratchet_cycle",
+                        "description": "Execute Verdant's full lifted build/refresh/ratchet-lift/tighten/verify cycle directly from within Verdant (xtask check-model, prism-fidelity, kappa-memoized LexLean/uorust/Wasm, in-process ratchet-lift --tighten, prism-fidelity --check, and optional lifecycle-gate).",
+                        "inputSchema": {
+                            "type": "object",
+                            "properties": {
+                                "force": { "type": "boolean" },
+                                "tighten": { "type": "boolean" },
+                                "runSdkDocker": { "type": "boolean" },
+                                "runLifecycleGate": { "type": "boolean" },
+                                "runBrowserGates": { "type": "boolean" },
+                                "advanceMajor": { "type": "boolean" },
+                                "advanceMinor": { "type": "boolean" },
+                                "advancePatch": { "type": "boolean" },
+                                "summary": { "type": "string" }
+                            }
+                        }
+                    },
+                    {
                         "name": "verdant_ratchet_lift",
                         "description": "Autonomous closed-loop Verdant self-lift (VE-47): verifies 13-Manager Total Ownership & <=30KiB zero-account Blank Frame, synthesizes all Manager manifests, optionally advances SemVer via mgr-change-release, lifts 100% of Rust/LexLean/Viewpoint modules into VerdantVcs, packs & 4-of-8 verifies verdant-vX.Y.Z.holo, pins site/frame/frame-pin.json, and emits site/generated/self-host-ratchet-manifest.toml to satisfy prism/parametric-ratchet/2.",
                         "inputSchema": {
@@ -800,6 +818,63 @@ impl VerdantOperatorChannel {
                         {
                             Ok(rep) => tool_out(
                                 false,
+                                serde_json::to_value(&rep).unwrap_or(serde_json::Value::Null),
+                            ),
+                            Err(e) => tool_out(true, serde_json::json!({ "error": e.to_string() })),
+                        }
+                    }
+                    "verdant_ratchet_cycle" => {
+                        let adv_major = args
+                            .get("advanceMajor")
+                            .and_then(|v| v.as_bool())
+                            .unwrap_or(false);
+                        let adv_minor = args
+                            .get("advanceMinor")
+                            .and_then(|v| v.as_bool())
+                            .unwrap_or(false);
+                        let adv_patch = args
+                            .get("advancePatch")
+                            .and_then(|v| v.as_bool())
+                            .unwrap_or(false);
+                        let advance_signals = if adv_major || adv_minor || adv_patch {
+                            Some(ObserverProgressSignals {
+                                breaking_contract_change: adv_major,
+                                major_milestone_completed: adv_major,
+                                minor_capability_added: adv_minor,
+                                stakeholder_requirement_closed: adv_minor,
+                                defect_or_security_fix: adv_patch,
+                                summary: args
+                                    .get("summary")
+                                    .and_then(|v| v.as_str())
+                                    .unwrap_or("MCP lifted ratchet-cycle")
+                                    .to_string(),
+                            })
+                        } else {
+                            None
+                        };
+                        let opts = RatchetCycleOptions {
+                            force: args.get("force").and_then(|v| v.as_bool()).unwrap_or(false),
+                            tighten: args
+                                .get("tighten")
+                                .and_then(|v| v.as_bool())
+                                .unwrap_or(true),
+                            run_sdk_docker: args
+                                .get("runSdkDocker")
+                                .and_then(|v| v.as_bool())
+                                .unwrap_or(true),
+                            run_lifecycle_gate: args
+                                .get("runLifecycleGate")
+                                .and_then(|v| v.as_bool())
+                                .unwrap_or(false),
+                            run_browser_gates: args
+                                .get("runBrowserGates")
+                                .and_then(|v| v.as_bool())
+                                .unwrap_or(false),
+                            advance_signals,
+                        };
+                        match self.execute_ratchet_cycle(repo_root, &opts) {
+                            Ok((rep, _)) => tool_out(
+                                !rep.all_passed,
                                 serde_json::to_value(&rep).unwrap_or(serde_json::Value::Null),
                             ),
                             Err(e) => tool_out(true, serde_json::json!({ "error": e.to_string() })),

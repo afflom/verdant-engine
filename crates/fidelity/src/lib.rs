@@ -69,9 +69,9 @@ impl Axis {
 
     fn parse(text: &str) -> Option<Axis> {
         match text {
-            "derived" => Some(Self::Derived),
-            "meant" => Some(Self::Meant),
-            "measured" => Some(Self::Measured),
+            "derived" => Some(Axis::Derived),
+            "meant" => Some(Axis::Meant),
+            "measured" => Some(Axis::Measured),
             _ => None,
         }
     }

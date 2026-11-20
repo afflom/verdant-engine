@@ -7,13 +7,13 @@
   "liveMetrics": {
     "wasmCoreBytes": 159832,
     "wasmUorcBytes": 4663194,
-    "releaseCapsuleBytes": 1711612,
+    "releaseCapsuleBytes": 1711584,
     "blankFrameBytes": 28370,
-    "maxHandwrittenRustFileLines": 2188,
+    "maxHandwrittenRustFileLines": 2184,
     "maxJsFileLines": 1675,
-    "frontierLifted": 219,
-    "frontierResidue": 1187,
-    "frontierUncertified": 1341,
+    "frontierLifted": 232,
+    "frontierResidue": 1179,
+    "frontierUncertified": 1334,
     "fidelityOpenResidue": 0
   },
   "partHealth": [
@@ -149,7 +149,7 @@
     {
       "construct": "type outside the lift: f64",
       "cause": "type",
-      "functions": 62
+      "functions": 60
     },
     {
       "construct": "takes or returns ObserverPrismHolon.organs: ObserverOrganModel.schema_org_jsonld: serde_json::Value, a type of the serde_json crate with no LexLean model",
@@ -188,14 +188,14 @@
       "citedAuthority": "AUTH-SEMVER-CHANGE-KPI",
       "ratchetLayer": "uorust-frontier",
       "priority": "high",
-      "currentValue": "219 lifted / 1187 residue (1341 uncertified)",
-      "targetValue": ">= 239 lifted functions",
+      "currentValue": "232 lifted / 1179 residue (1334 uncertified)",
+      "targetValue": ">= 252 lifted functions",
       "summary": "Expand constructive MIR proof frontier; top blocker: expression form outside the lift: ? below the function's own statements (269 fns, cause=form).",
       "concreteActions": [
         "Replace remaining raw shift/overflow ops with lifted verdant_tensor::scalars and wrapping ops.",
         "Extract pure decision/calculation helpers out of IO/effectful wrappers so uorust lifts them."
       ],
-      "kappaHex": "cc8497ef827baf91774b10cfc9327372f58f66b3551db3fedcc0e5574688bd87"
+      "kappaHex": "a6622726fad96acd9fb120f19aee7e179f651989e72acd6e48484140a1bd9975"
     },
     {
       "proposalId": "refine-rust-modularity",
@@ -205,14 +205,14 @@
       "citedAuthority": "AUTH-ISO-42010-VIEWPOINTS",
       "ratchetLayer": "surface-loc-rust",
       "priority": "medium",
-      "currentValue": "2188 lines max (crates/verdant-core/src/observer.rs)",
+      "currentValue": "2184 lines max (crates/verdant-core/src/observer.rs)",
       "targetValue": "<= 1800 lines max hand-written Rust file",
       "summary": "Keep every hand-written Rust module modular and auto-tighten max_handwritten_rust_file_lines.",
       "concreteActions": [
         "Extract cohesive sub-traits or geometry tables out of crates/verdant-core/src/observer.rs.",
         "Register every extracted module in catalogs/governance/iso42010-viewpoints.json."
       ],
-      "kappaHex": "1726369e87b91752b72383c690f9dd37a73e58d1540b0ac2fd06681937841ed6"
+      "kappaHex": "a02c1de8a3784aaf8320669efb0b5fc030bc00e596e4fcc3e7fb740371f45c2c"
     },
     {
       "proposalId": "refine-wasm-capsule-weight",
@@ -222,15 +222,15 @@
       "citedAuthority": "AUTH-STITCH-SELF-HOSTING",
       "ratchetLayer": "surface-wasm",
       "priority": "medium",
-      "currentValue": "verdant-uorc.wasm 4663194 B · .holo 1711612 B · Blank Frame 28370 B (2350 B headroom)",
+      "currentValue": "verdant-uorc.wasm 4663194 B · .holo 1711584 B · Blank Frame 28370 B (2350 B headroom)",
       "targetValue": "verdant-uorc.wasm <= 4194304 B while preserving gzipped .holo <= 1.72 MiB",
       "summary": "Trim unused codec paths on wasm32 and preserve gzipped STCH2 shard efficiency for cold Blank Frame boots.",
       "concreteActions": [
         "Audit gltf/image feature flags on wasm32 to drop unused color/codec tables.",
         "Maintain Blank Frame strictly under 30720 B with DecompressionStream('gzip')."
       ],
-      "kappaHex": "7aa4be5104ba96dfd6e621bf895ab9385544ef0aae65dc556501c95021c37b9d"
+      "kappaHex": "f384debb9fe99d267ec59f2d7ee3a6d5c1c3b9babfbcc88ab92b1b6ffc6b25c9"
     }
   ],
-  "agendaKappaHex": "594b7518aa33955a151b195bcc4ae58525fb1360d9dea27694aa914c05207c91"
+  "agendaKappaHex": "cd2a7a8d8663edb421c86b3e8e0c443e771dcf07b71e59b357de5a4290e08d7e"
 }

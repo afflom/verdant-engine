@@ -487,6 +487,94 @@ pub(crate) fn run_operator_command(args: &[String]) -> Result<String, CliCommand
                 })?;
             Ok(json)
         }
+        "ratchet-cycle" => {
+            let two = 1usize + 1usize;
+            let mut root =
+                std::env::current_dir().unwrap_or_else(|_| std::path::PathBuf::from("."));
+            let mut force = false;
+            let mut tighten = true;
+            let mut run_sdk_docker = true;
+            let mut run_lifecycle_gate = false;
+            let mut run_browser_gates = false;
+            let mut adv_major = false;
+            let mut adv_minor = false;
+            let mut adv_patch = false;
+            let mut summary = "Autonomous Verdant lifted ratchet-cycle".to_string();
+            let mut i = two;
+            while i < args.len() {
+                match args[i].as_str() {
+                    "--root" if i + 1 < args.len() => {
+                        root = std::path::PathBuf::from(&args[i + 1]);
+                        i += two;
+                    }
+                    "--force" => {
+                        force = true;
+                        i += 1;
+                    }
+                    "--no-tighten" => {
+                        tighten = false;
+                        i += 1;
+                    }
+                    "--no-docker" => {
+                        run_sdk_docker = false;
+                        i += 1;
+                    }
+                    "--with-gate" => {
+                        run_lifecycle_gate = true;
+                        i += 1;
+                    }
+                    "--with-browser" => {
+                        run_lifecycle_gate = true;
+                        run_browser_gates = true;
+                        i += 1;
+                    }
+                    "--advance-major" => {
+                        adv_major = true;
+                        i += 1;
+                    }
+                    "--advance-minor" => {
+                        adv_minor = true;
+                        i += 1;
+                    }
+                    "--advance-patch" => {
+                        adv_patch = true;
+                        i += 1;
+                    }
+                    "--summary" if i + 1 < args.len() => {
+                        summary = args[i + 1].clone();
+                        i += two;
+                    }
+                    _ => i += 1,
+                }
+            }
+            let advance_signals = if adv_major || adv_minor || adv_patch {
+                Some(verdant_core::governance::ObserverProgressSignals {
+                    breaking_contract_change: adv_major,
+                    major_milestone_completed: adv_major,
+                    minor_capability_added: adv_minor,
+                    stakeholder_requirement_closed: adv_minor,
+                    defect_or_security_fix: adv_patch,
+                    summary,
+                })
+            } else {
+                None
+            };
+            let opts = verdant_core::operator::RatchetCycleOptions {
+                force,
+                tighten,
+                run_sdk_docker,
+                run_lifecycle_gate,
+                run_browser_gates,
+                advance_signals,
+            };
+            let (_rep, json) = ch.execute_ratchet_cycle(&root, &opts).map_err(|e| {
+                CliCommandError::ValidationRejected {
+                    command: "operator ratchet-cycle".to_string(),
+                    diagnostic: e.to_string(),
+                }
+            })?;
+            Ok(json)
+        }
         "ratchet-lift" => {
             let two = 1usize + 1usize;
             let mut root =

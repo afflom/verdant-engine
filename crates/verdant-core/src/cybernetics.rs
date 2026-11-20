@@ -409,37 +409,37 @@ impl EngineIntentKind {
         let i13 = crate::math::ten_u32().wrapping_add(crate::math::three_u32()) as usize;
         let i14 = crate::math::ten_u32().wrapping_add(crate::math::four_u32()) as usize;
         if idx == 0 {
-            Self::FocusObserverCore
+            EngineIntentKind::FocusObserverCore
         } else if idx == 1 {
-            Self::DriveSuspensionVehicle
+            EngineIntentKind::DriveSuspensionVehicle
         } else if idx == i2 {
-            Self::SwitchTileRasterizer
+            EngineIntentKind::SwitchTileRasterizer
         } else if idx == i3 {
-            Self::SwitchWebGl2Hardware
+            EngineIntentKind::SwitchWebGl2Hardware
         } else if idx == i4 {
-            Self::StreamLosslessUorc
+            EngineIntentKind::StreamLosslessUorc
         } else if idx == i5 {
-            Self::StreamUltraHdLod4
+            EngineIntentKind::StreamUltraHdLod4
         } else if idx == i6 {
-            Self::ShardWorldToStitch
+            EngineIntentKind::ShardWorldToStitch
         } else if idx == i7 {
-            Self::InspectUiCompliance
+            EngineIntentKind::InspectUiCompliance
         } else if idx == i8 {
-            Self::StepPhysicsImpulse
+            EngineIntentKind::StepPhysicsImpulse
         } else if idx == i9 {
-            Self::OpenRoleDashboard
+            EngineIntentKind::OpenRoleDashboard
         } else if idx == i10 {
-            Self::OpenRoleCode
+            EngineIntentKind::OpenRoleCode
         } else if idx == i11 {
-            Self::OpenRoleDesign
+            EngineIntentKind::OpenRoleDesign
         } else if idx == i12 {
-            Self::OpenRoleAudio
+            EngineIntentKind::OpenRoleAudio
         } else if idx == i13 {
-            Self::OpenRoleDirector
+            EngineIntentKind::OpenRoleDirector
         } else if idx == i14 {
-            Self::OpenRoleGameplay
+            EngineIntentKind::OpenRoleGameplay
         } else {
-            Self::NarrativeInteract
+            EngineIntentKind::NarrativeInteract
         }
     }
 }

@@ -507,37 +507,37 @@ impl ObserverPartSlot {
     pub fn from_target_slot(target_slot: &str) -> Self {
         let low = target_slot.to_ascii_lowercase();
         if low.contains("character") || low.contains("rig") || low.contains("avatar") {
-            Self::CharacterRigs
+            ObserverPartSlot::CharacterRigs
         } else if low.contains("world")
             || low.contains("stage")
             || low.contains("env")
             || low.contains("hdri")
         {
-            Self::StageEnvironment
+            ObserverPartSlot::StageEnvironment
         } else if low.contains("material") || low.contains("pbr") || low.contains("texture") {
-            Self::SurfaceMaterials
+            ObserverPartSlot::SurfaceMaterials
         } else if low.contains("audio") || low.contains("sound") || low.contains("acoustic") {
-            Self::SpatialAcoustics
+            ObserverPartSlot::SpatialAcoustics
         } else if low.contains("theme")
             || low.contains("font")
             || low.contains("typography")
             || low.contains("identity")
         {
-            Self::VisualIdentity
+            ObserverPartSlot::VisualIdentity
         } else if low.contains("ontology")
             || low.contains("story")
             || low.contains("language")
             || low.contains("narrative")
         {
-            Self::CognitiveLanguage
+            ObserverPartSlot::CognitiveLanguage
         } else if low.contains("code")
             || low.contains("shader")
             || low.contains("framework")
             || low.contains("wasm")
         {
-            Self::RuntimeFrameworks
+            ObserverPartSlot::RuntimeFrameworks
         } else {
-            Self::HeroProps
+            ObserverPartSlot::HeroProps
         }
     }
 }

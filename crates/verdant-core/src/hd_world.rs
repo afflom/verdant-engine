@@ -1076,8 +1076,8 @@ pub fn synthesize_hd_citadel_sector(
         let theta = (i as f64) * golden_ang + 1.0 / phi;
         let tx = r * theta.cos();
         let tz = r * theta.sin();
-        if (tx - relief.basin_center_x).abs() < six_val(two, three)
-            && (tz - relief.basin_center_z).abs() < six_val(two, three)
+        if (tx - relief.basin_center_x).abs() < (two * three)
+            && (tz - relief.basin_center_z).abs() < (two * three)
         {
             continue;
         }
@@ -1133,11 +1133,15 @@ impl WorldArchitectureKind {
     #[must_use]
     pub fn from_domain_slug(slug: &str) -> Self {
         match slug {
-            "blank-studio" | "blank" => Self::BlankStudio,
-            "meridian-observatory" | "DOM-MERIDIAN-OBS" => Self::MeridianObservatory,
-            "glasshouse-chronicle" | "DOM-GLASSHOUSE-BOTANICAL" => Self::GlasshouseConservatory,
-            "starfall-bastion" | "DOM-STARFALL-BASTION" => Self::StarfallArena,
-            _ => Self::SunspireCoastal,
+            "blank-studio" | "blank" => WorldArchitectureKind::BlankStudio,
+            "meridian-observatory" | "DOM-MERIDIAN-OBS" => {
+                WorldArchitectureKind::MeridianObservatory
+            }
+            "glasshouse-chronicle" | "DOM-GLASSHOUSE-BOTANICAL" => {
+                WorldArchitectureKind::GlasshouseConservatory
+            }
+            "starfall-bastion" | "DOM-STARFALL-BASTION" => WorldArchitectureKind::StarfallArena,
+            _ => WorldArchitectureKind::SunspireCoastal,
         }
     }
 
@@ -1150,17 +1154,17 @@ impl WorldArchitectureKind {
         let three = two.wrapping_add(one);
         let four = two.wrapping_add(two);
         if code == 0 {
-            Self::BlankStudio
+            WorldArchitectureKind::BlankStudio
         } else if code == one {
-            Self::SunspireCoastal
+            WorldArchitectureKind::SunspireCoastal
         } else if code == two {
-            Self::MeridianObservatory
+            WorldArchitectureKind::MeridianObservatory
         } else if code == three {
-            Self::GlasshouseConservatory
+            WorldArchitectureKind::GlasshouseConservatory
         } else if code == four {
-            Self::StarfallArena
+            WorldArchitectureKind::StarfallArena
         } else {
-            Self::BlankStudio
+            WorldArchitectureKind::BlankStudio
         }
     }
 }
@@ -1189,15 +1193,15 @@ impl AuthorPrimitiveKind {
         let three = two.wrapping_add(one);
         let four = two.wrapping_add(two);
         if code == one {
-            Self::Platform
+            AuthorPrimitiveKind::Platform
         } else if code == two {
-            Self::Pillar
+            AuthorPrimitiveKind::Pillar
         } else if code == three {
-            Self::Ramp
+            AuthorPrimitiveKind::Ramp
         } else if code == four {
-            Self::Orb
+            AuthorPrimitiveKind::Orb
         } else {
-            Self::Box
+            AuthorPrimitiveKind::Box
         }
     }
 
@@ -1618,8 +1622,8 @@ fn synthesize_starfall_arena_sector(seed: u64, lod_rank: u64) -> HdSectorBundle 
         (0.0, cover_dist),
         (0.0, -cover_dist),
     ] {
-        let wide_x = if cx == 0.0 { three } else { one_f64() };
-        let wide_z = if cz == 0.0 { three } else { one_f64() };
+        let wide_x = if cx == 0.0 { three } else { 1.0 };
+        let wide_z = if cz == 0.0 { three } else { 1.0 };
         cover_acc.append_box(
             Vec3::new(cx - wide_x, 0.0, cz - wide_z),
             Vec3::new(cx + wide_x, three, cz + wide_z),
@@ -1652,7 +1656,7 @@ fn synthesize_starfall_arena_sector(seed: u64, lod_rank: u64) -> HdSectorBundle 
             basalt_mid,
         );
         towers_acc.append_box(
-            Vec3::new(tx - two - quarter, tower_h - one_f64(), tz - two - quarter),
+            Vec3::new(tx - two - quarter, tower_h - 1.0, tz - two - quarter),
             Vec3::new(tx + two + quarter, tower_h - half, tz + two + quarter),
             magma_glow,
         );
@@ -1825,7 +1829,7 @@ fn synthesize_meridian_observatory_sector(seed: u64, lod_rank: u64) -> HdSectorB
     );
     obs_acc.append_box(
         Vec3::new(-four - two, half, -four - two),
-        Vec3::new(four + two, one_f64(), four + two),
+        Vec3::new(four + two, 1.0, four + two),
         brass_col,
     );
     let dais_mesh = obs_acc.into_mesh("MeridianObservatoryDais");
@@ -1847,7 +1851,7 @@ fn synthesize_meridian_observatory_sector(seed: u64, lod_rank: u64) -> HdSectorB
     append_torus_ring(
         &mut rings_acc,
         ring_center,
-        four + one_f64(),
+        four + 1.0,
         quarter,
         -half - quarter,
         half,
@@ -1858,8 +1862,8 @@ fn synthesize_meridian_observatory_sector(seed: u64, lod_rank: u64) -> HdSectorB
     let mut core_acc =
         SmoothMeshAcc::with_capacity(pow2_u64(four_u32()) as usize, pow2_u64(four_u32()) as usize);
     core_acc.append_box(
-        Vec3::new(-one_f64(), eight - one_f64(), -one_f64()),
-        Vec3::new(one_f64(), eight + one_f64(), one_f64()),
+        Vec3::new(-1.0, eight - 1.0, -1.0),
+        Vec3::new(1.0, eight + 1.0, 1.0),
         star_glow,
     );
     let core_mesh = core_acc.into_mesh("MeridianStarlightCore");
@@ -1880,7 +1884,7 @@ fn synthesize_meridian_observatory_sector(seed: u64, lod_rank: u64) -> HdSectorB
         ob_acc.append_lathed_column(
             Vec3::new(ox, 0.0, oz),
             eight + two,
-            one_f64(),
+            1.0,
             (four_u32() + four_u32()) as usize,
             four_u32() as usize,
             slate_b,
@@ -2044,7 +2048,7 @@ fn synthesize_glasshouse_conservatory_sector(seed: u64, lod_rank: u64) -> HdSect
         );
         lantern_acc.append_box(
             Vec3::new(rx - half, rib_h - two, -half),
-            Vec3::new(rx + half, rib_h - one_f64(), half),
+            Vec3::new(rx + half, rib_h - 1.0, half),
             amber_glow,
         );
     }
@@ -2083,7 +2087,7 @@ fn synthesize_glasshouse_conservatory_sector(seed: u64, lod_rank: u64) -> HdSect
         stone_col,
     );
     plat_acc.append_box(
-        Vec3::new(four, two + one_f64(), -two),
+        Vec3::new(four, two + 1.0, -two),
         Vec3::new(four + eight, three + half, two),
         stone_col,
     );
@@ -2154,10 +2158,6 @@ fn synthesize_glasshouse_conservatory_sector(seed: u64, lod_rank: u64) -> HdSect
     }
 }
 
-fn one_f64() -> f64 {
-    1.0
-}
-
 /// Synthesizes a High-Definition 3D sector matching the requested [`WorldArchitectureKind`],
 /// guaranteeing visually unmistakable geometry, materials, and spatial layout across all templates.
 #[must_use]
@@ -2181,8 +2181,4 @@ pub fn synthesize_hd_world_sector_for_kind(
             synthesize_hd_citadel_sector(seed, relief, water_level_meters, lod_rank)
         }
     }
-}
-
-fn six_val(two: f64, three: f64) -> f64 {
-    two * three
 }

@@ -2,23 +2,23 @@
   "spec": "verdant/frame-pin/1",
   "releaseVersion": "2.6.0",
   "releaseEpoch": 10,
-  "releaseKappaHex": "4bf3f9d707f1a4135252ff3e1bd6224174370f7e5806be80c45e22e1448b0b50",
+  "releaseKappaHex": "acd6940940b321e84379b470cd62bb329aeea3c437309c6b10e4954a0deab81c",
   "prevKappaHex": "genesis",
-  "vcsCommitKappa": "e25b30e36df4943bd2dff1f220b5910056608314786521ea22e1a260d3ccf575",
-  "immutabilitySealSha256": "944667f05d5ba664561263e69c7003de9b057dfa3bd6711511713aea18f4e788",
+  "vcsCommitKappa": "7b9a3f8243ec82b0e10a0f4c8a739cddf1e1f91f2486ae545d98d53b5509d919",
+  "immutabilitySealSha256": "d1ff702feea3484772e8a576ae04eef94d4a3b7642b74550126d55f21e1e971d",
   "defaultStitchUri": "stitch://verdant/studio",
   "dataShardsK": 4,
   "totalShardsN": 8,
-  "capsuleByteLen": 1711612,
+  "capsuleByteLen": 1711584,
   "pointer": {
     "stitchUri": "stitch://verdant/studio",
     "releaseEpoch": 10,
     "prevKappaHex": "genesis",
-    "targetKappaHex": "4bf3f9d707f1a4135252ff3e1bd6224174370f7e5806be80c45e22e1448b0b50",
+    "targetKappaHex": "acd6940940b321e84379b470cd62bb329aeea3c437309c6b10e4954a0deab81c",
     "minQuorum": 2,
     "quorumSignatures": {
-      "prism:verdant-observer-executive": "4d10a89f0d0fb39ca667b1e825323ceff6153ddfd2f44befc639c7f10336b3aa",
-      "prism:verdant-release-bot": "e3b9e95aa50608edb8a2648f8839c620c6fb866c52ab85550c53430390fee9bb"
+      "prism:verdant-observer-executive": "cf2873383215f00745a550c36f5e581e24766018ab4b47ed2f4e42302e98a883",
+      "prism:verdant-release-bot": "5826e16740eca59b0db5aae3696736ca2fa499c95c0c658005adb77c721267e3"
     }
   },
   "stitchRelays": [
