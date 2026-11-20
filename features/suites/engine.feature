@@ -410,3 +410,15 @@ Feature: engine
     Given crates/verdant-core/src/lifecycle.rs, site/generated/lifecycle-gate-report.json, site/generated/self-host-ratchet-manifest.toml, scripts/release/qualify-tag.mjs, site/studio-media.mjs, site/studio/discovery-panel.mjs, and site/studio/vcs-panel.mjs
     When Verdant executes its internal lifecycle-gate on the live repository and with a mismatched release tag, and prism-fidelity audits [surface_ratchet]
     Then the internal lifecycle gate certifies all 6 lifted lifecycle categories (>= 130 lifted modules), refuses mismatched tags closed, is sealed in immutability-seal.json, and max_js_file_lines is tightened monotonically to at most 1680
+
+  @VE-64 @build
+  Scenario: Verdant lifts its entire end-to-end ratchet orchestrator directly into Verdant (execute_ratchet_cycle in crates/verdant-core/src/lifecycle.rs, CLI verdant operator ratchet-cycle, MCP verdant_ratchet_cycle, and thin scripts/verdant-ratchet.mjs delegate) and lifts all 7 lifecycle artifact categories including automation-script (scripts/**/*.mjs -> >= 150 total lifted modules) into VerdantVcs and site/generated/self-host-ratchet-manifest.toml
+    Given crates/verdant-core/src/lifecycle.rs, crates/verdant-core/src/operator_mcp.rs, crates/verdant-cli/src/operator_cmd.rs, scripts/verdant-ratchet.mjs, and site/generated/self-host-ratchet-manifest.toml
+    When Verdant verifies its lifted ratchet-cycle predicates, MCP tool surface, and 7-category lifted lifecycle coverage via execute_lifecycle_gate
+    Then scripts/verdant-ratchet.mjs delegates directly to verdant operator ratchet-cycle, all 7 lifecycle categories (including automation-script) are lifted (>= 150 modules), and the MIR-lifted ratchet-cycle decision predicates hold constructively
+
+  @VE-65 @build
+  Scenario: Verdant executes its Observer-generated self-refinement agenda by expanding the shrink-only uorust MIR proof frontier to >= 246 lifted constructive Rust functions (shrinking residue <= 1179 and uncertified <= 1334) and decomposing site/engine-worker.mjs, site/studio/studio-page.mjs, and site/studio.mjs into owned submodules (engine-worker-codec.mjs, studio/stage-assets.mjs, studio-gameplay-panel.mjs) to auto-tighten max_js_file_lines <= 1525
+    Given frontier.toml, model/parametric-ratchet.toml, site/engine-worker-codec.mjs, site/studio/stage-assets.mjs, site/studio-gameplay-panel.mjs, and catalogs/governance/iso42010-viewpoints.json
+    When prism-fidelity audits [frontier_ratchet] and [surface_ratchet] and the Observer evaluates all 15 milestones (M1..M15)
+    Then frontier.toml proves at least 246 lifted constructive functions with shrunk residue <= 1179, max_js_file_lines is tightened monotonically to at most 1525, all decomposed JS submodules are owned in iso42010-viewpoints.json, and all 13 Observer KPIs pass across M1..M15

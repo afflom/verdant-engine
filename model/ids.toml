@@ -492,3 +492,15 @@ id = "VE-63"
 level = "build"
 suite = "engine"
 statement = "Verdant lifts its entire validation, test-execution, and release-qualification lifecycle directly into Verdant (crates/verdant-core/src/lifecycle.rs, CLI verdant operator lifecycle-gate, MCP verdant_lifecycle_gate, sealed site/generated/lifecycle-gate-report.json, and qualify-tag.mjs delegation), lifts all 6 lifecycle categories (rust, verification-test, lexlean, feature-suite, model-governance, viewpoint) into VerdantVcs and self-host-ratchet-manifest.toml, and decomposes site/studio.mjs and site/studio/studio-page.mjs to auto-tighten max_js_file_lines <= 1680 with live Studio VCS commit diffs"
+
+[[id]]
+id = "VE-64"
+suite = "engine"
+level = "build"
+statement = "Verdant lifts its entire end-to-end ratchet orchestrator directly into Verdant (execute_ratchet_cycle in crates/verdant-core/src/lifecycle.rs, CLI verdant operator ratchet-cycle, MCP verdant_ratchet_cycle, and thin scripts/verdant-ratchet.mjs delegate) and lifts all 7 lifecycle artifact categories including automation-script (scripts/**/*.mjs -> >= 150 total lifted modules) into VerdantVcs and site/generated/self-host-ratchet-manifest.toml"
+
+[[id]]
+id = "VE-65"
+suite = "engine"
+level = "build"
+statement = "Verdant executes its Observer-generated self-refinement agenda by expanding the shrink-only uorust MIR proof frontier to >= 246 lifted constructive Rust functions (shrinking residue <= 1179 and uncertified <= 1334) and decomposing site/engine-worker.mjs, site/studio/studio-page.mjs, and site/studio.mjs into owned submodules (engine-worker-codec.mjs, studio/stage-assets.mjs, studio-gameplay-panel.mjs) to auto-tighten max_js_file_lines <= 1525"

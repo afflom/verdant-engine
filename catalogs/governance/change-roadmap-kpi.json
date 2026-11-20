@@ -193,6 +193,16 @@
       "requiredCapabilities": ["VE-62", "VE-63"],
       "owningManagers": ["mgr-observer-executive", "mgr-verification-observatory", "mgr-change-release", "mgr-studio-alm"],
       "ratchetRequirement": "Equip the Observer with a generative self-refinement planner (observer_refine.rs + refine-plan + MCP + sealed observer-refinement-agenda.json), lift Verdant's tests/validations/release-gating lifecycle into Verdant (lifecycle.rs + lifecycle-gate + 136+ lifted modules across all 6 lifecycle categories + qualify-tag delegation), expand uorust MIR frontier >= 219 lifted functions, and decompose studio.mjs/studio-page.mjs to tighten max_js_file_lines <= 1680 with live Studio VCS commit diffs."
+    },
+    {
+      "milestoneId": "M15",
+      "targetVersion": "2.7.0",
+      "tier": "minor",
+      "title": "Complete In-Verdant Ratchet Orchestration (operator ratchet-cycle), 7-Category Lifted Lifecycle (156+ Modules), 246+ MIR-Lifted Functions & <=1525L JS Decomposition",
+      "stakeholders": ["creator", "developer", "systems-engineer", "operator", "auditor"],
+      "requiredCapabilities": ["VE-64", "VE-65"],
+      "owningManagers": ["mgr-change-release", "mgr-verification-observatory", "mgr-runtime-stage", "mgr-studio-alm", "mgr-observer-executive"],
+      "ratchetRequirement": "Lift the entire build/refresh/ratchet-lift/tighten/verify orchestrator into Verdant (execute_ratchet_cycle, verdant operator ratchet-cycle, MCP verdant_ratchet_cycle, thin verdant-ratchet.mjs delegate), lift all 20 automation scripts as the 7th lifecycle category (156+ lifted modules across rust, verification-test, lexlean, feature-suite, model-governance, automation-script, viewpoint), expand uorust MIR proof frontier >= 246 lifted functions, and decompose engine-worker.mjs/studio-page.mjs/studio.mjs to auto-tighten max_js_file_lines <= 1525."
     }
   ],
   "kpiCatalog": [

@@ -361,7 +361,7 @@
     },
     {
       "basisPrime": 89,
-      "kappaHex": "91e4546fbff99b4a1ea48416506c684e4d5a722f9f66a9c41995177397b4437c",
+      "kappaHex": "c6010321d728d3298d036d809d272aef120c8106f17635c9dba725f2e22184c3",
       "spec": {
         "almPhases": [
           "operation",
@@ -407,6 +407,7 @@
           "site/scene-hd-renderer.mjs",
           "site/scene-webgpu-renderer.mjs",
           "site/engine-worker.mjs",
+          "site/engine-worker-codec.mjs",
           "site/audio-worklet.mjs",
           "site/stitch-mesh.mjs",
           "site/generated/tensor-scaling-contract.json"
@@ -439,7 +440,7 @@
     },
     {
       "basisPrime": 97,
-      "kappaHex": "a4a22a16859e1c22cc4b33259b64d36243de55ed9ba822d70662664e82b9da06",
+      "kappaHex": "70e72aa2e454a9130d6f86fc92b9eb9b5971f572975082996e5ee1e1be18d345",
       "spec": {
         "almPhases": [
           "conception",
@@ -491,8 +492,10 @@
           "site/studio/outliner.mjs",
           "site/studio/observer-panel.mjs",
           "site/studio/project-inspector.mjs",
+          "site/studio/stage-assets.mjs",
           "site/studio/vcs-panel.mjs",
           "site/studio.mjs",
+          "site/studio-gameplay-panel.mjs",
           "site/studio-media.mjs",
           "site/studio-data.mjs",
           "site/studio-scaffolder.mjs"

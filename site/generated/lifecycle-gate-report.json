@@ -1,12 +1,12 @@
 {
   "spec": "verdant/lifecycle-gate-report/1",
-  "releaseVersion": "2.6.0",
-  "releaseEpoch": 10,
-  "mode": "full",
+  "releaseVersion": "2.7.0",
+  "releaseEpoch": 11,
+  "mode": "in-process",
   "allPassed": true,
   "releaseQualified": true,
-  "passedCount": 14,
-  "totalCount": 14,
+  "passedCount": 6,
+  "totalCount": 6,
   "passRatePermille": 1000,
   "liftedCoverage": {
     "rustModules": 56,
@@ -50,7 +50,7 @@
       "category": "in-process",
       "passed": true,
       "durationMs": 0,
-      "detail": "cargo=v2.6.0 ledger=v2.6.0 manifest=v2.6.0 wasm_synced=true tag_ok=true"
+      "detail": "cargo=v2.7.0 ledger=v2.7.0 manifest=v2.7.0 wasm_synced=true tag_ok=true"
     },
     {
       "checkId": "formal-fidelity-and-frontier",
@@ -67,71 +67,7 @@
       "passed": true,
       "durationMs": 0,
       "detail": "total=156 (rust=56, test=24, lex=28, feature=3, model=16, script=20, view=9)"
-    },
-    {
-      "checkId": "cargo-fmt-check",
-      "owningManagerId": "mgr-verification-observatory",
-      "category": "workspace-test",
-      "passed": true,
-      "durationMs": 1318,
-      "detail": "OK"
-    },
-    {
-      "checkId": "xtask-check-model",
-      "owningManagerId": "mgr-architecture-design",
-      "category": "workspace-test",
-      "passed": true,
-      "durationMs": 85,
-      "detail": "check-model: CONFORMANCE.md equals the model, 74 ids (CM-01)"
-    },
-    {
-      "checkId": "xtask-audit-limits",
-      "owningManagerId": "mgr-architecture-design",
-      "category": "workspace-test",
-      "passed": true,
-      "durationMs": 311,
-      "detail": "audit-limits: every error type a shipped crate names is declared with a negative test (22 declared) (R5)"
-    },
-    {
-      "checkId": "xtask-audit-deferral",
-      "owningManagerId": "mgr-architecture-design",
-      "category": "workspace-test",
-      "passed": true,
-      "durationMs": 312,
-      "detail": "audit-deferral: nothing is deferred (R4)"
-    },
-    {
-      "checkId": "prism-fidelity-check",
-      "owningManagerId": "mgr-verification-observatory",
-      "category": "workspace-test",
-      "passed": true,
-      "durationMs": 1882,
-      "detail": "705 records scored; derived 705/705 closed; meant 705/705 closed; measured 9/9 closed"
-    },
-    {
-      "checkId": "workspace-clippy",
-      "owningManagerId": "mgr-verification-observatory",
-      "category": "workspace-test",
-      "passed": true,
-      "durationMs": 155,
-      "detail": "OK"
-    },
-    {
-      "checkId": "conformance-bdd",
-      "owningManagerId": "mgr-verification-observatory",
-      "category": "workspace-test",
-      "passed": true,
-      "durationMs": 6058,
-      "detail": "test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s"
-    },
-    {
-      "checkId": "unit-and-fidelity-tests",
-      "owningManagerId": "mgr-verification-observatory",
-      "category": "workspace-test",
-      "passed": true,
-      "durationMs": 9315,
-      "detail": "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
     }
   ],
-  "reportKappaHex": "88314259f29492e9a9fc14e7b30e149d0318d1eb7add79aa9c8d4d99418133d2"
+  "reportKappaHex": "ebe00dd68e17fb3bc5b118dfa5582c6a7542ff98155fefe8b51759d6d8efc881"
 }

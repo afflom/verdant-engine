@@ -1758,6 +1758,9 @@ impl VerdantOperatorChannel {
                 || rel_str.ends_with(".test.mjs")
                 || rel_str == "precache.json"
                 || rel_str == "generated/self-host-ratchet-manifest.toml"
+                || rel_str == "generated/immutability-seal.json"
+                || rel_str == "generated/release-ledger.json"
+                || rel_str == "generated/tensor-scaling-contract.json"
                 || rel_str == "spec.html"
                 || rel_str == "spec.css"
                 || rel_str == "spec.mjs"

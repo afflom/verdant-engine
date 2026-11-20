@@ -4,10 +4,10 @@
   "authorityId": "AUTH-SEMVER-CHANGE-KPI",
   "currentVersion": {
     "major": 2,
-    "minor": 6,
+    "minor": 7,
     "patch": 0
   },
-  "releaseEpoch": 10,
+  "releaseEpoch": 11,
   "history": [
     {
       "version": "0.1.0",
@@ -98,6 +98,13 @@
       "releaseEpoch": 10,
       "bumpKind": "minor",
       "summary": "M14: Verdant implements Verdant — generative Observer self-refinement engine, lifted in-Verdant lifecycle/test gate (136 modules), 219+ MIR-lifted & <=1680L JS",
+      "citedAuthority": "AUTH-SEMVER-CHANGE-KPI"
+    },
+    {
+      "version": "2.7.0",
+      "releaseEpoch": 11,
+      "bumpKind": "minor",
+      "summary": "M15: Full in-Verdant ratchet-cycle orchestrator, 7-category lifted lifecycle (156 modules), 246+ MIR-lifted & <=1525L JS",
       "citedAuthority": "AUTH-SEMVER-CHANGE-KPI"
     }
   ]

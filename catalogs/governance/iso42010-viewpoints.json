@@ -351,6 +351,7 @@
         "site/scene-hd-renderer.mjs",
         "site/scene-webgpu-renderer.mjs",
         "site/engine-worker.mjs",
+        "site/engine-worker-codec.mjs",
         "site/audio-worklet.mjs",
         "site/stitch-mesh.mjs",
         "site/generated/tensor-scaling-contract.json"
@@ -418,8 +419,10 @@
         "site/studio/outliner.mjs",
         "site/studio/observer-panel.mjs",
         "site/studio/project-inspector.mjs",
+        "site/studio/stage-assets.mjs",
         "site/studio/vcs-panel.mjs",
         "site/studio.mjs",
+        "site/studio-gameplay-panel.mjs",
         "site/studio-media.mjs",
         "site/studio-data.mjs",
         "site/studio-scaffolder.mjs"

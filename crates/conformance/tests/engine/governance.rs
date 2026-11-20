@@ -2179,3 +2179,128 @@ fn engine_ve_63() {
         kpi_rep.kpis
     );
 }
+
+/// `VE-64`: Full in-Verdant ratchet orchestrator (`execute_ratchet_cycle`, CLI `operator
+/// ratchet-cycle`, MCP `verdant_ratchet_cycle`, thin `scripts/verdant-ratchet.mjs` delegate)
+/// and 7-category lifted lifecycle coverage (`>= 150` modules including `automation-script`).
+#[test]
+fn engine_ve_64() {
+    use std::path::Path;
+    use verdant_core::operator::{
+        lifecycle_lifted_categories_complete_v7, ratchet_cycle_all_passed,
+        ratchet_cycle_needs_second_pass, ratchet_stage_cache_hit, LifecycleGateOptions,
+        VerdantOperatorChannel,
+    };
+
+    let repo_root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+    let ch = VerdantOperatorChannel::new("sunspire-regatta").expect("operator channel");
+
+    // 1. Pure MIR-lifted ratchet-cycle decision predicates hold constructively:
+    assert!(ratchet_stage_cache_hit(false, true, true));
+    assert!(!ratchet_stage_cache_hit(true, true, true));
+    assert!(ratchet_cycle_all_passed(7, 1, 8));
+    assert!(!ratchet_cycle_all_passed(6, 1, 8));
+    assert!(ratchet_cycle_needs_second_pass(false, true));
+    assert!(!ratchet_cycle_needs_second_pass(false, false));
+
+    // 2. Thin Node.js entry delegates directly into Verdant's lifted `operator ratchet-cycle`:
+    let ratchet_js = std::fs::read_to_string(repo_root.join("scripts/verdant-ratchet.mjs"))
+        .expect("read scripts/verdant-ratchet.mjs");
+    assert!(ratchet_js.contains("ratchet-cycle"));
+    assert!(
+        ratchet_js.lines().count() <= 40,
+        "scripts/verdant-ratchet.mjs must stay a thin delegate into Verdant (got {} lines)",
+        ratchet_js.lines().count()
+    );
+
+    // 3. MCP server advertises `verdant_ratchet_cycle` tool:
+    let mut mcp = VerdantOperatorChannel::new("sunspire-regatta").expect("mcp channel");
+    let list_out = mcp
+        .handle_mcp_jsonrpc_line(
+            &repo_root,
+            r#"{"jsonrpc":"2.0","id":64,"method":"tools/list","params":{}}"#,
+        )
+        .expect("MCP tools/list response");
+    assert!(list_out.contains("verdant_ratchet_cycle"));
+
+    // 4. All 7 lifecycle categories (including 20 automation scripts) are lifted inside Verdant:
+    let (gate, _) = ch
+        .execute_lifecycle_gate(
+            &repo_root,
+            &LifecycleGateOptions {
+                run_workspace_tests: false,
+                run_browser_gates: false,
+                expected_tag: None,
+                write_report: false,
+            },
+        )
+        .expect("in-process lifecycle gate");
+    assert!(gate.all_passed && gate.release_qualified);
+    assert!(gate.lifted_coverage.automation_script_modules >= 15);
+    assert!(gate.lifted_coverage.total_lifted_modules >= 150);
+    assert!(lifecycle_lifted_categories_complete_v7(
+        gate.lifted_coverage.rust_modules,
+        gate.lifted_coverage.verification_test_modules,
+        gate.lifted_coverage.lexlean_modules,
+        gate.lifted_coverage.feature_suite_modules,
+        gate.lifted_coverage.model_governance_modules,
+        gate.lifted_coverage.automation_script_modules,
+        gate.lifted_coverage.viewpoint_modules,
+    ));
+}
+
+/// `VE-65`: Observer-driven MIR proof frontier expansion (`>= 246` lifted functions, residue
+/// `<= 1,179`, uncertified `<= 1,334`) and JS surface decomposition tightening
+/// `max_js_file_lines <= 1,525` across `engine-worker-codec.mjs`, `stage-assets.mjs`, and
+/// `studio-gameplay-panel.mjs`, with all 15 milestones (`M1..M15`) and 13/13 Observer KPIs passing.
+#[test]
+fn engine_ve_65() {
+    use std::path::Path;
+    use verdant_core::operator::VerdantOperatorChannel;
+
+    let repo_root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+    let rep = prism_fidelity::ratchet::audit_parametric_ratchet(
+        &repo_root,
+        Path::new("model/parametric-ratchet.toml"),
+    )
+    .expect("live repo must pass all 4 ratchet layers");
+
+    // 1. Expanded uorust MIR proof frontier >= 246 lifted functions:
+    assert!(
+        rep.frontier_lifted_functions >= 246,
+        "M15 must lift >= 246 constructive Rust functions, got {}",
+        rep.frontier_lifted_functions
+    );
+
+    // 2. Decomposed JS submodules exist and tighten max_js_file_lines <= 1,525:
+    for rel in [
+        "site/engine-worker-codec.mjs",
+        "site/studio/stage-assets.mjs",
+        "site/studio-gameplay-panel.mjs",
+    ] {
+        assert!(
+            repo_root.join(rel).is_file(),
+            "missing decomposed JS submodule `{rel}`"
+        );
+    }
+    assert!(
+        rep.observed_max_js_file_lines <= 1_525,
+        "M15 JS decomposition must tighten max_js_file_lines <= 1525, got {}",
+        rep.observed_max_js_file_lines
+    );
+
+    // 3. Observer reports all 15 milestones (M1..M15) and 13/13 passing KPIs:
+    let ch = VerdantOperatorChannel::new("sunspire-regatta").expect("operator channel");
+    let kpi_rep = ch
+        .evaluate_observer_roadmap_kpis(&repo_root, true, true)
+        .expect("observer roadmap & KPI report");
+    assert!(
+        kpi_rep.milestones.len() >= 15,
+        "expected Milestones M1..M15"
+    );
+    assert_eq!(
+        kpi_rep.kpi_passed_count, kpi_rep.kpi_total_count,
+        "all Observer KPIs must pass (kpis={:?})",
+        kpi_rep.kpis
+    );
+}

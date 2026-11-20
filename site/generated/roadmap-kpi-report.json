@@ -2,12 +2,12 @@
   "spec": "verdant/observer-roadmap-kpi-report/1",
   "managerId": "mgr-roadmap-strategy",
   "authorityId": "AUTH-SEMVER-CHANGE-KPI",
-  "currentVersion": "2.6.0",
-  "releaseEpoch": 10,
+  "currentVersion": "2.7.0",
+  "releaseEpoch": 11,
   "totalManagers": 13,
   "totalPrismFacetsOwned": 9,
   "totalPrismFacetsRequired": 9,
-  "declaredCapabilitiesCount": 74,
+  "declaredCapabilitiesCount": 76,
   "minorProgressPct": 100,
   "majorProgressPct": 100,
   "kpiPassedCount": 13,
@@ -586,6 +586,38 @@
       "progressPct": 100,
       "completed": true,
       "ratchetRequirement": "Equip the Observer with a generative self-refinement planner (observer_refine.rs + refine-plan + MCP + sealed observer-refinement-agenda.json), lift Verdant's tests/validations/release-gating lifecycle into Verdant (lifecycle.rs + lifecycle-gate + 136+ lifted modules across all 6 lifecycle categories + qualify-tag delegation), expand uorust MIR frontier >= 219 lifted functions, and decompose studio.mjs/studio-page.mjs to tighten max_js_file_lines <= 1680 with live Studio VCS commit diffs."
+    },
+    {
+      "milestoneId": "M15",
+      "targetVersion": "2.7.0",
+      "tier": "minor",
+      "title": "Complete In-Verdant Ratchet Orchestration (operator ratchet-cycle), 7-Category Lifted Lifecycle (156+ Modules), 246+ MIR-Lifted Functions & <=1525L JS Decomposition",
+      "stakeholders": [
+        "creator",
+        "developer",
+        "systems-engineer",
+        "operator",
+        "auditor"
+      ],
+      "owningManagers": [
+        "mgr-change-release",
+        "mgr-verification-observatory",
+        "mgr-runtime-stage",
+        "mgr-studio-alm",
+        "mgr-observer-executive"
+      ],
+      "requiredCapabilities": [
+        "VE-64",
+        "VE-65"
+      ],
+      "closedCapabilities": [
+        "VE-64",
+        "VE-65"
+      ],
+      "missingCapabilities": [],
+      "progressPct": 100,
+      "completed": true,
+      "ratchetRequirement": "Lift the entire build/refresh/ratchet-lift/tighten/verify orchestrator into Verdant (execute_ratchet_cycle, verdant operator ratchet-cycle, MCP verdant_ratchet_cycle, thin verdant-ratchet.mjs delegate), lift all 20 automation scripts as the 7th lifecycle category (156+ lifted modules across rust, verification-test, lexlean, feature-suite, model-governance, automation-script, viewpoint), expand uorust MIR proof frontier >= 246 lifted functions, and decompose engine-worker.mjs/studio-page.mjs/studio.mjs to auto-tighten max_js_file_lines <= 1525."
     }
   ],
   "observerParts": [
@@ -678,7 +710,7 @@
         "runtime-frameworks",
         "spatial-acoustics"
       ],
-      "ownedFilesCount": 14,
+      "ownedFilesCount": 15,
       "active": true
     },
     {
@@ -689,7 +721,7 @@
       "ownedObserverParts": [
         "cognitive-language"
       ],
-      "ownedFilesCount": 12,
+      "ownedFilesCount": 14,
       "active": true
     },
     {
@@ -741,7 +773,7 @@
     "governingAuthority": "AUTH-SEMVER-CHANGE-KPI",
     "currentVersion": {
       "major": 2,
-      "minor": 6,
+      "minor": 7,
       "patch": 0
     },
     "recommendedBump": "major",
@@ -750,8 +782,8 @@
       "minor": 0,
       "patch": 0
     },
-    "currentEpoch": 10,
-    "nextEpoch": 11,
+    "currentEpoch": 11,
+    "nextEpoch": 12,
     "versionIncremented": true,
     "gates": {
       "ratchetApplied": true,
@@ -762,6 +794,6 @@
       "pullThroughVerified": true
     },
     "blockingReasons": [],
-    "rationale": "Ratchet applied & 5/5 Release Gates passed: advancing v2.6.0 -> v3.0.0 (Major, epoch 11) — Observer roadmap evaluation: minor=100% major=100% managers=13"
+    "rationale": "Ratchet applied & 5/5 Release Gates passed: advancing v2.7.0 -> v3.0.0 (Major, epoch 12) — Observer roadmap evaluation: minor=100% major=100% managers=13"
   }
 }

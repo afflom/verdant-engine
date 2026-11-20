@@ -877,6 +877,7 @@ impl VerdantOperatorChannel {
 
         let _ = Self::audit_blank_frame_invariants(repo_root)?;
 
+        self.stitch_app_catalog.clear();
         if opts.write_repo_artifacts {
             let _ = self.materialize_manager_artifacts(repo_root, None)?;
         }

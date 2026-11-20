@@ -8936,7 +8936,7 @@ function = "verdant_core::operator::VerdantOperatorChannel::audit_repository_jso
 effect = "calls verdant_core::operator::VerdantOperatorChannel::audit_repository, which performs a Fs effect: Path::is_file"
 
 [[effect]]
-kappa = "95b492a7d88e1b5367a101b792d6994ab8528e958dd74238da9a0858794ed438"
+kappa = "41ec18612c63086e342b0cd461f4314c0516541df293317513801212ccee0098"
 function = "verdant_core::operator::VerdantOperatorChannel::collect_distilled_site_tree"
 effect = "Fs effect: std::fs::read_dir"
 
@@ -8996,7 +8996,7 @@ function = "verdant_core::operator_release::VerdantOperatorChannel::collect_tree
 effect = "Fs effect: std::fs::read_dir"
 
 [[effect]]
-kappa = "2224faf0b83f4257d310fa6476a42570e46d75bc62f7151acf8482919cc83705"
+kappa = "af99e17eece09e9fddd5688d016bea21a4881fa1714550841ba56e415a0a6c71"
 function = "verdant_core::operator_release::VerdantOperatorChannel::execute_autonomous_ratchet_lift"
 effect = "Fs effect: std::fs::read"
 
