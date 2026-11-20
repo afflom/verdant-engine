@@ -6,10 +6,10 @@
   "overallRefinementScorePermille": 934,
   "liveMetrics": {
     "wasmCoreBytes": 159075,
-    "wasmUorcBytes": 4664519,
-    "releaseCapsuleBytes": 1709167,
+    "wasmUorcBytes": 4664695,
+    "releaseCapsuleBytes": 1709021,
     "blankFrameBytes": 28370,
-    "maxHandwrittenRustFileLines": 2184,
+    "maxHandwrittenRustFileLines": 1983,
     "maxJsFileLines": 1524,
     "frontierLifted": 267,
     "frontierResidue": 1178,
@@ -22,8 +22,8 @@
       "vsmSystem": "VSM-S5",
       "viewpointId": "observer-executive",
       "ownedFileCount": 13,
-      "maxFileLines": 2037,
-      "heaviestFile": "crates/verdant-core/src/observer.rs",
+      "maxFileLines": 1879,
+      "heaviestFile": "crates/verdant-core/src/operator.rs",
       "healthScorePermille": 800
     },
     {
@@ -205,14 +205,14 @@
       "citedAuthority": "AUTH-ISO-42010-VIEWPOINTS",
       "ratchetLayer": "surface-loc-rust",
       "priority": "medium",
-      "currentValue": "2184 lines max (crates/verdant-core/src/hd_world.rs)",
+      "currentValue": "1983 lines max (crates/verdant-core/src/gltf_io.rs)",
       "targetValue": "<= 1800 lines max hand-written Rust file",
       "summary": "Keep every hand-written Rust module modular and auto-tighten max_handwritten_rust_file_lines.",
       "concreteActions": [
-        "Extract cohesive sub-traits or geometry tables out of crates/verdant-core/src/hd_world.rs.",
+        "Extract cohesive sub-traits or geometry tables out of crates/verdant-core/src/gltf_io.rs.",
         "Register every extracted module in catalogs/governance/iso42010-viewpoints.json."
       ],
-      "kappaHex": "5a35d789b3b898d01ae45e8cb1468bff84ecba5a6097f0f49ab6103265532f03"
+      "kappaHex": "6523136f5c51ba8da40feaf08292aedb7dde233a28f63a956f29ae7f4739cb1b"
     },
     {
       "proposalId": "refine-wasm-capsule-weight",
@@ -222,15 +222,15 @@
       "citedAuthority": "AUTH-STITCH-SELF-HOSTING",
       "ratchetLayer": "surface-wasm",
       "priority": "medium",
-      "currentValue": "verdant-uorc.wasm 4664519 B · .holo 1709167 B · Blank Frame 28370 B (2350 B headroom)",
+      "currentValue": "verdant-uorc.wasm 4664695 B · .holo 1709021 B · Blank Frame 28370 B (2350 B headroom)",
       "targetValue": "verdant-uorc.wasm <= 4194304 B while preserving gzipped .holo <= 1.72 MiB",
       "summary": "Trim unused codec paths on wasm32 and preserve gzipped STCH2 shard efficiency for cold Blank Frame boots.",
       "concreteActions": [
         "Audit gltf/image feature flags on wasm32 to drop unused color/codec tables.",
         "Maintain Blank Frame strictly under 30720 B with DecompressionStream('gzip')."
       ],
-      "kappaHex": "be5b40ec71b8a5cc3b7e573b1bf33a1dbecfb30ec79137e460f24b9242540363"
+      "kappaHex": "c0436e2f4d71474ebef52032fe7f831b30f219b559c9aff292cd715221f390ef"
     }
   ],
-  "agendaKappaHex": "045d4a86404895e6f72995a934a2ed45e7668db7746eabe059d4417f2cfc155b"
+  "agendaKappaHex": "73de57edfc9aa77dbbe00e9be060193a8b6ab68f112a98bb355d56cd47527b43"
 }
