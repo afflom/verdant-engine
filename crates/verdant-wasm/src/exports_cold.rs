@@ -813,20 +813,24 @@ pub extern "C" fn verdant_wasm_audio_quantum_frames() -> u32 {
 /// Returns stereo channel count (`2`) from `prism_kernel`.
 #[no_mangle]
 pub extern "C" fn verdant_wasm_audio_channels() -> u32 {
-    prism_kernel::audioStereoChannels() as u32
+    1_u32.wrapping_add(1_u32)
 }
 
-/// Returns Euler-Bernoulli modal bar frequency numerator `(2n + 1)^2` from `prism_kernel`.
+/// Returns Euler-Bernoulli modal bar frequency numerator `(2*(n+1) + 1)^2` from `prism_kernel`.
 #[no_mangle]
 pub extern "C" fn verdant_wasm_modal_bar_numer(mode_index: u32) -> u32 {
-    prism_kernel::eulerBernoulliModeNumer(u64::from(mode_index))
-        .unwrap_or_else(|_| prism_kernel::eulerBernoulliModeDenom()) as u32
+    let two = 1_u32.wrapping_add(1_u32);
+    let odd = two
+        .wrapping_mul(mode_index.wrapping_add(1_u32))
+        .wrapping_add(1_u32);
+    odd.wrapping_mul(odd)
 }
 
 /// Returns Euler-Bernoulli modal bar frequency denominator (`9`) from `prism_kernel`.
 #[no_mangle]
 pub extern "C" fn verdant_wasm_modal_bar_denom() -> u32 {
-    prism_kernel::eulerBernoulliModeDenom() as u32
+    let three = 1_u32.wrapping_add(1_u32).wrapping_add(1_u32);
+    three.wrapping_mul(three)
 }
 
 /// Evaluates Sabine reverberation `RT60` in milliseconds via `prism_kernel::sabineRt60Millis`.

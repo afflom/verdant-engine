@@ -4,10 +4,10 @@
   "authorityId": "AUTH-SEMVER-CHANGE-KPI",
   "currentVersion": {
     "major": 2,
-    "minor": 9,
+    "minor": 10,
     "patch": 0
   },
-  "releaseEpoch": 13,
+  "releaseEpoch": 14,
   "history": [
     {
       "version": "0.1.0",
@@ -119,6 +119,13 @@
       "releaseEpoch": 13,
       "bumpKind": "minor",
       "summary": "M17 (v2.9.0): Native in-Verdant Wasm/Registry build_ops.rs (280 MIR-lifted, 164 lifted modules) & -743 KiB sub-1 MiB gzipped verdant-uorc.wasm + sub-1.5 MiB .holo capsule",
+      "citedAuthority": "AUTH-SEMVER-CHANGE-KPI"
+    },
+    {
+      "version": "2.10.0",
+      "releaseEpoch": 14,
+      "bumpKind": "minor",
+      "summary": "M18: GitHub-free Sovereign Governance Prism Model (Governance.lex.tex, 838/838 fidelity, 10/10 measured), SovereignAuthorityLedger runtime (VE-70), 321 MIR-lifted functions, and <1800L Rust modularity",
       "citedAuthority": "AUTH-SEMVER-CHANGE-KPI"
     }
   ]

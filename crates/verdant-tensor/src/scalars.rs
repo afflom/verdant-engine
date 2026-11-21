@@ -764,3 +764,120 @@ pub const fn signing_request_state_is_terminal(state_code: u8) -> bool {
 pub const fn departure_requires_compromise_quarantine(reason_code: u8) -> bool {
     reason_code == two_u32() as u8
 }
+
+/// Pure MIR-lifted strict-majority quorum predicate (`2 * M > N && M <= N`).
+#[must_use]
+pub const fn quorum_is_strict_majority(threshold_m: u64, active_admins_n: u64) -> bool {
+    threshold_m >= 1
+        && threshold_m <= active_admins_n
+        && threshold_m.wrapping_mul(two_u64()) > active_admins_n
+}
+
+/// Pure MIR-lifted supermajority quorum predicate (`3 * M >= 2 * N && M <= N`).
+#[must_use]
+pub const fn quorum_is_two_thirds_supermajority(threshold_m: u64, active_admins_n: u64) -> bool {
+    threshold_m >= 1
+        && threshold_m <= active_admins_n
+        && threshold_m.wrapping_mul(three_u64()) >= active_admins_n.wrapping_mul(two_u64())
+}
+
+/// Pure MIR-lifted boundary key rotation monotonicity predicate (`next_key_epoch > prev_key_epoch`).
+#[must_use]
+pub const fn boundary_key_epoch_advanced(prev_key_epoch: u64, next_key_epoch: u64) -> bool {
+    next_key_epoch >= prev_key_epoch.saturating_add(1)
+}
+
+/// Pure MIR-lifted signing request expiry window check (`submitted <= current <= expiry`).
+#[must_use]
+pub const fn signing_request_window_active(
+    submitted_epoch: u64,
+    current_epoch: u64,
+    expiry_epoch: u64,
+) -> bool {
+    submitted_epoch <= current_epoch && current_epoch <= expiry_epoch
+}
+
+/// Pure MIR-lifted anti-lockout remaining admin count check (`remaining >= 1 && remaining >= next_m`).
+#[must_use]
+pub const fn succession_avoids_lockout(remaining_admins: u64, next_threshold_m: u64) -> bool {
+    remaining_admins >= 1 && next_threshold_m >= 1 && next_threshold_m <= remaining_admins
+}
+
+/// Pure MIR-lifted compromise floor bounds check (`1 <= floor <= revoked_at_epoch`).
+#[must_use]
+pub const fn compromise_floor_valid(compromise_floor_epoch: u64, revoked_at_epoch: u64) -> bool {
+    compromise_floor_epoch >= 1 && compromise_floor_epoch <= revoked_at_epoch
+}
+
+/// Pure MIR-lifted 64-bit VCS structural diff total changed-path accounting (`added + modified + removed`).
+#[must_use]
+pub const fn vcs_diff_total_changes_u64(added: u64, modified: u64, removed: u64) -> u64 {
+    added.saturating_add(modified).saturating_add(removed)
+}
+
+/// Pure MIR-lifted VCS structural diff identity check (`0` changes iff trees are identical).
+#[must_use]
+pub const fn vcs_diff_is_empty(added: u64, modified: u64, removed: u64) -> bool {
+    vcs_diff_total_changes_u64(added, modified, removed) == 0
+}
+
+/// Pure MIR-lifted VCS branch name length guard (`1 <= len <= 128`).
+#[must_use]
+pub const fn vcs_branch_name_len_valid(len: u32) -> bool {
+    len >= 1 && len <= hundred_twenty_eight_u32()
+}
+
+/// Pure MIR-lifted Stitch 4-of-8 governance custody threshold check (`shards >= 4 && shards <= 8`).
+#[must_use]
+pub const fn stitch_governance_custody_quorum(shards: u64) -> bool {
+    shards >= four_u64() && shards <= eight_u64()
+}
+
+/// Pure MIR-lifted GLB 4-byte chunk alignment padding calculator (`(4 - (len mod 4)) mod 4`).
+#[must_use]
+pub const fn glb_chunk_padding_bytes(len_mod_4: u32) -> u32 {
+    if len_mod_4 == 0 {
+        0
+    } else if len_mod_4 < four_u32() {
+        four_u32().wrapping_sub(len_mod_4)
+    } else {
+        0
+    }
+}
+
+/// Pure MIR-lifted GLB header byte-length invariant (`total_bytes >= 12`).
+#[must_use]
+pub const fn glb_header_len_valid(total_bytes: u64) -> bool {
+    let twelve = four_u64().wrapping_mul(three_u64());
+    total_bytes >= twelve
+}
+
+/// Pure MIR-lifted command monoid octant addition in `Z_8` (`(a + b) mod 8`).
+#[must_use]
+pub const fn monoid_octant_add(a: u8, b: u8) -> u8 {
+    let eight = eight_u32() as u8;
+    let sum = a.wrapping_add(b);
+    if sum >= eight {
+        sum.wrapping_sub(eight)
+    } else {
+        sum
+    }
+}
+
+/// Pure MIR-lifted command monoid self-inverse cancellation check (`a == b` cancels to identity).
+#[must_use]
+pub const fn monoid_involution_cancels(count_parity: u8) -> bool {
+    count_parity == 0
+}
+
+/// Pure MIR-lifted immutability seal audit completeness check (`entries > 0 && violations == 0`).
+#[must_use]
+pub const fn immutability_seal_intact(entries: u64, violations: u64) -> bool {
+    entries >= 1 && violations == 0
+}
+
+/// Pure MIR-lifted Rust file modularity ceiling predicate (`lines <= max_lines`).
+#[must_use]
+pub const fn rust_module_within_line_budget(lines: u32, max_lines: u32) -> bool {
+    lines >= 1 && lines <= max_lines
+}

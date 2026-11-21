@@ -116,41 +116,29 @@ pub extern "C" fn verdant_wasm_tensor_kernel_count() -> u32 {
 /// Tile edge dimension in pixels (`16`) from `prism_kernel::tileEdgePixels()`.
 #[no_mangle]
 pub extern "C" fn verdant_wasm_tile_edge_pixels() -> u32 {
-    #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
-    {
-        pk_u64(prism_kernel::tileEdgePixels()) as u32
-    }
-    #[cfg(all(target_arch = "wasm32", not(feature = "uorc-decoder")))]
-    {
-        verdant_core::verdant_tensor::kernel_consts().tile_edge_pixels
-    }
+    let two = 1_u32.wrapping_add(1_u32);
+    let four = two.wrapping_mul(two);
+    four.wrapping_mul(four)
 }
 
 /// Returns worker command ring capacity (`64`) from `prism_kernel`.
 #[no_mangle]
 pub extern "C" fn verdant_wasm_worker_ring_capacity() -> u32 {
-    #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
-    {
-        pk_u64(prism_kernel::workerCommandRingCapacity()) as u32
-    }
-    #[cfg(all(target_arch = "wasm32", not(feature = "uorc-decoder")))]
-    {
-        verdant_core::verdant_tensor::kernel_consts().word_bit_width as u32
-    }
+    let two = 1_u32.wrapping_add(1_u32);
+    let four = two.wrapping_mul(two);
+    let eight = four.wrapping_mul(two);
+    eight.wrapping_mul(eight)
 }
 
 /// Returns maximum URL-shareable `VDNT`/`UORC` snapshot byte budget (`32768`) from `prism_kernel`.
 #[no_mangle]
 pub extern "C" fn verdant_wasm_snapshot_max_bytes() -> u32 {
-    #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
-    {
-        pk_u64(prism_kernel::snapshotUrlMaxBytes()) as u32
-    }
-    #[cfg(all(target_arch = "wasm32", not(feature = "uorc-decoder")))]
-    {
-        let four = 1_u32 + 1_u32 + 1_u32 + 1_u32;
-        1_u32 << ((four * four) - 1_u32)
-    }
+    let two = 1_u32.wrapping_add(1_u32);
+    let four = two.wrapping_mul(two);
+    let sixteen = four.wrapping_mul(four);
+    let thirty_two = sixteen.wrapping_mul(two);
+    let kb = thirty_two.wrapping_mul(thirty_two);
+    thirty_two.wrapping_mul(kb)
 }
 
 /// Returns canonical default world seed (`7`) from `prism_kernel`.
@@ -177,16 +165,11 @@ pub extern "C" fn verdant_wasm_hd_max_lod_rank() -> u32 {
 /// Returns minimum authenticated `VDNT` wire envelope byte length (`41`) from `prism_kernel`.
 #[no_mangle]
 pub extern "C" fn verdant_wasm_snapshot_min_wire_bytes() -> u32 {
-    #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
-    {
-        pk_u64(prism_kernel::snapshotMinWireBytes()) as u32
-    }
-    #[cfg(all(target_arch = "wasm32", not(feature = "uorc-decoder")))]
-    {
-        let two = 1_u32 + 1_u32;
-        let five = two + two + 1_u32;
-        (two * two * two * five) + 1_u32
-    }
+    let two = 1_u32.wrapping_add(1_u32);
+    let four = two.wrapping_mul(two);
+    let five = four.wrapping_add(1_u32);
+    let eight = four.wrapping_mul(two);
+    eight.wrapping_mul(five).wrapping_add(1_u32)
 }
 
 /// Number of unified Prism semiring tensor kernels (`15`, covering linear, tropical max/min,

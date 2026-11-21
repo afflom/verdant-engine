@@ -47,6 +47,7 @@
         "crates/verdant-core/src/operator_types.rs",
         "crates/verdant-core/src/operator_synth.rs",
         "crates/verdant-core/src/operator_release.rs",
+        "crates/verdant-core/src/operator_seal.rs",
         "crates/verdant-core/src/operator_mcp.rs",
         "site/generated/viewpoint-contracts.json",
         "site/generated/observer-refinement-agenda.json",

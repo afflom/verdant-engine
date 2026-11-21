@@ -2,7 +2,7 @@
   "managers": [
     {
       "basisPrime": 59,
-      "kappaHex": "5ddc18b2df519a508614f8afd961bde4d3692dec65de71e4bd80d1045e621c27",
+      "kappaHex": "82ef91d2d281560e8b3da77821fc475372fafc3182032c95d30a87079b0baac9",
       "spec": {
         "almPhases": [
           "governance",
@@ -39,6 +39,7 @@
           "crates/verdant-core/src/operator_types.rs",
           "crates/verdant-core/src/operator_synth.rs",
           "crates/verdant-core/src/operator_release.rs",
+          "crates/verdant-core/src/operator_seal.rs",
           "crates/verdant-core/src/operator_mcp.rs",
           "site/generated/viewpoint-contracts.json",
           "site/generated/observer-refinement-agenda.json",
