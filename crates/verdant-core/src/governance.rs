@@ -172,20 +172,26 @@ impl ReleaseGateVerdict {
     /// Returns percentage (`0..=100`) of the 5 technical release gates currently passing.
     #[must_use]
     pub fn pass_rate_pct(&self) -> u64 {
-        let total = 1_u64
-            .wrapping_add(1_u64)
-            .wrapping_add(1_u64)
-            .wrapping_add(1_u64)
-            .wrapping_add(1_u64);
-        let passed = u64::from(self.parametric_ratchet_clean)
-            .wrapping_add(u64::from(self.immutability_seal_valid))
-            .wrapping_add(u64::from(self.total_ownership_complete))
-            .wrapping_add(u64::from(self.fidelity_closed))
-            .wrapping_add(u64::from(self.pull_through_verified));
-        passed
-            .saturating_mul(hundred_u64())
-            .checked_div(total)
-            .unwrap_or(0)
+        let two = 1_u64.wrapping_add(1_u64);
+        let four = two.wrapping_mul(two);
+        let twenty = four.wrapping_mul(four.wrapping_add(1_u64));
+        let mut pct = 0_u64;
+        if self.parametric_ratchet_clean {
+            pct = pct.wrapping_add(twenty);
+        }
+        if self.immutability_seal_valid {
+            pct = pct.wrapping_add(twenty);
+        }
+        if self.total_ownership_complete {
+            pct = pct.wrapping_add(twenty);
+        }
+        if self.fidelity_closed {
+            pct = pct.wrapping_add(twenty);
+        }
+        if self.pull_through_verified {
+            pct = pct.wrapping_add(twenty);
+        }
+        pct
     }
 
     /// Collects human-readable blocking reasons whenever a gate or Ratchet check fails.

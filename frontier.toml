@@ -5,11 +5,11 @@
 # stops the functions it counts (the detail their rows state, under its
 # cause), the one that stops the most first: the work queue.
 
-# Honesty report: 267 of 1601 functions of product code are lifted; 1178
-# are residue, 74 foreign and 82 effect rows.
+# Honesty report: 280 of 1614 functions of product code are lifted; 1177
+# are residue, 74 foreign and 83 effect rows.
 # Residue by cause:
 #   arithmetic: 31
-#   call: 221
+#   call: 220
 #   collision: 1
 #   form: 349
 #   signature: 69
@@ -20,11 +20,11 @@
 spec = "uorust/register/1"
 
 [lift]
-functions = 1601
-lifted = 267
-residue = 1178
+functions = 1614
+lifted = 280
+residue = 1177
 foreign = 74
-effect = 82
+effect = 83
 
 [[construct]]
 construct = "expression form outside the lift: ? below the function's own statements"
@@ -212,11 +212,6 @@ cause = "arithmetic"
 functions = 6
 
 [[construct]]
-construct = "calls from, which is not lifted"
-cause = "call"
-functions = 6
-
-[[construct]]
 construct = "type outside the lift: CheckpointedRollbackJournal<S, I>, written with arguments, where a method's type is read by its name alone"
 cause = "type"
 functions = 6
@@ -240,6 +235,11 @@ functions = 6
 construct = "type outside the lift: Quat.x: f64"
 cause = "type"
 functions = 6
+
+[[construct]]
+construct = "calls from, which is not lifted"
+cause = "call"
+functions = 5
 
 [[construct]]
 construct = "Fs effect: Path::exists"
@@ -489,6 +489,11 @@ functions = 2
 [[construct]]
 construct = "calls verify_tensor_kernel_spec, which is not lifted"
 cause = "call"
+functions = 2
+
+[[construct]]
+construct = "Process effect: Command::new"
+cause = "effect"
 functions = 2
 
 [[construct]]
@@ -893,11 +898,6 @@ functions = 1
 
 [[construct]]
 construct = "Fs effect: std::fs::write"
-cause = "effect"
-functions = 1
-
-[[construct]]
-construct = "Process effect: Command::new"
 cause = "effect"
 functions = 1
 
@@ -2622,12 +2622,6 @@ reason = "arithmetic"
 detail = "integer operator << wraps or panics depending on the build profile"
 
 [[residue]]
-kappa = "93d6f8de31765c88ce9f3455bb2fd8ba765e65e1ec0fdd933ee5dceacdc4af08"
-function = "verdant_core::governance::ReleaseGateVerdict::pass_rate_pct"
-reason = "call"
-detail = "calls from, which is not lifted"
-
-[[residue]]
 kappa = "af98364cec7ca86829bc6f0cd6bb7284f3e6ebb648986537aa40c3b01c5f0131"
 function = "verdant_core::governance::RoadmapKpiManager::evaluate_embedded"
 reason = "arithmetic"
@@ -2820,7 +2814,7 @@ reason = "type"
 detail = "type outside the lift: Aabb.min: Vec3.x: f64"
 
 [[residue]]
-kappa = "6329348a94a084b5f590d18ed86617e95ef9c6abf53da6777270217d012612e6"
+kappa = "a5747307ac561e359c65375c86ebd97b8c73ed9b16d352b7b7cfb5aa3f5d2fbf"
 function = "verdant_core::math::DeterministicRng::new"
 reason = "arithmetic"
 detail = "integer operator | wraps or panics depending on the build profile"
@@ -8875,7 +8869,7 @@ function = "verdant::main"
 effect = "Env effect: std::env::args"
 
 [[effect]]
-kappa = "622feed2dc08343dfeb64f2fcbf385dfb5c34be758af9df0460dd08a63f186aa"
+kappa = "4e63f731c747e446a23d51e832e095b3e92d4318588828bd38d2c38548dee4b1"
 function = "verdant_cli::operator_cmd::run_operator_command"
 effect = "Env effect: std::env::current_dir"
 
@@ -8883,6 +8877,11 @@ effect = "Env effect: std::env::current_dir"
 kappa = "b16217caba29bda223920d6664d12fc2e4e34662cf9d69646618c76f91fa2ac5"
 function = "verdant_cli::run_cli"
 effect = "Fs effect: std::fs::read"
+
+[[effect]]
+kappa = "e956530d7e6456aa17e642d3861bd55852273d2feeda2b32569f53b2773258ed"
+function = "verdant_core::build_ops::VerdantOperatorChannel::execute_native_build_op"
+effect = "Process effect: Command::new"
 
 [[effect]]
 kappa = "b6513c3118875edc79cd9e357585f8447cf50ea61e871f14aec03ce1354a93b0"
@@ -8895,7 +8894,7 @@ function = "verdant_core::governance::RoadmapKpiManager::evaluate_repo"
 effect = "Fs effect: std::fs::read_to_string"
 
 [[effect]]
-kappa = "02289df03ff6dddd663c5d69772e86ceb5d24c4c45eefa837eaf0781acd86234"
+kappa = "ce59823917e26ec319f86646a4a58ab9caca96f81275910a5a20d5614ceb8f3c"
 function = "verdant_core::lifecycle::VerdantOperatorChannel::execute_automate_pipeline"
 effect = "Fs effect: std::fs::create_dir_all"
 
@@ -8905,7 +8904,7 @@ function = "verdant_core::lifecycle::VerdantOperatorChannel::execute_lifecycle_g
 effect = "Fs effect: std::fs::read_to_string"
 
 [[effect]]
-kappa = "f82fe128b2f96d72189c9b4d508da6ff96be45579ab0e5b62b91192114250899"
+kappa = "bbd4b08d80595b5a7150d58363e05337d785746c2ebf4742777710fc79776949"
 function = "verdant_core::lifecycle::VerdantOperatorChannel::execute_ratchet_cycle"
 effect = "Fs effect: std::fs::create_dir_all"
 
@@ -8970,7 +8969,7 @@ function = "verdant_core::operator::VerdantOperatorChannel::verify_immutability_
 effect = "Fs effect: std::fs::read_to_string"
 
 [[effect]]
-kappa = "45aded0c1ec3a851146dd5008ec72f5ef3ab551e84684118c5214c4137d6068e"
+kappa = "8d10462b58949f860b737e85248e949ae3863464175148898845d6eb1d38ec36"
 function = "verdant_core::operator_mcp::VerdantOperatorChannel::handle_mcp_jsonrpc_line"
 effect = "Fs effect: std::fs::read"
 
@@ -9400,6 +9399,11 @@ function = "verdant_core::governance::ReleaseGateVerdict::blocking_reasons"
 definition = "Behavior::releaseGateVerdictBlockingReasons"
 
 [[lifted]]
+kappa = "416ff9811fe4d187c153939e11cd2a2e13871eac7bbd9b74255e59c1e66f0db5"
+function = "verdant_core::governance::ReleaseGateVerdict::pass_rate_pct"
+definition = "Behavior::releaseGateVerdictPassRatePct"
+
+[[lifted]]
 kappa = "3ac69139d08e4ecac00d461c23812e1775eec8e78f2a51ed093839c513b68e52"
 function = "verdant_core::governance::RoadmapKpiManager::parse_declared_ids"
 definition = "Behavior::roadmapKpiManagerParseDeclaredIds"
@@ -9522,7 +9526,7 @@ definition = "Behavior::verdantCoreEightU32"
 [[lifted]]
 kappa = "e52869441eef828a2246e50bf28734035ab7bd5e92d6767492fbc2b41296a95f"
 function = "verdant_core::math::five_u32"
-definition = "Behavior::fiveU32"
+definition = "Behavior::verdantCoreFiveU32"
 
 [[lifted]]
 kappa = "055b5f37a0ec2905c08da8c021c3af5e61efc899f8611c5a04e30174c7ec4e6a"
@@ -10150,6 +10154,11 @@ function = "verdant_tensor::scalars::blank_frame_compliant"
 definition = "Behavior::blankFrameCompliant"
 
 [[lifted]]
+kappa = "60e6d5f106ca9a2ce8c872aeedd05270ae8c516fa5576e0a2ef765f93ff90481"
+function = "verdant_tensor::scalars::build_op_stages_all_passed"
+definition = "Behavior::buildOpStagesAllPassed"
+
+[[lifted]]
 kappa = "91d2cbf17abda5134573721e91cfe9dc302843ff71478065949eaaba18db90ab"
 function = "verdant_tensor::scalars::capsule_compression_improved"
 definition = "Behavior::capsuleCompressionImproved"
@@ -10170,6 +10179,16 @@ function = "verdant_tensor::scalars::capsule_within_byte_ceiling"
 definition = "Behavior::capsuleWithinByteCeiling"
 
 [[lifted]]
+kappa = "73dc4ca5aaf2d24ad92187cff0eb30a854e1c5251493576cf548c61d0400aeb9"
+function = "verdant_tensor::scalars::crate_tarball_nonempty"
+definition = "Behavior::crateTarballNonempty"
+
+[[lifted]]
+kappa = "1300d7ee9552e8a567d6022dbbe028feb6864fc56ef9d9b8d583714cd084abe6"
+function = "verdant_tensor::scalars::csm_cascade_index_valid"
+definition = "Behavior::csmCascadeIndexValid"
+
+[[lifted]]
 kappa = "27726a751ad066199e6e49f842352f330c08d8289e428d5a6d9f775455e4c335"
 function = "verdant_tensor::scalars::eight_u32"
 definition = "Behavior::verdantTensorEightU32"
@@ -10183,6 +10202,11 @@ definition = "Behavior::eightU64"
 kappa = "826067590486deb61b43f379fb2ea63078874c97d508d3731c45662f66c48945"
 function = "verdant_tensor::scalars::eight_u8"
 definition = "Behavior::eightU8"
+
+[[lifted]]
+kappa = "16d60cd861b8e79054d6fca3b2f3a737e5713316a65fd4e6375770f39a467d8b"
+function = "verdant_tensor::scalars::five_u32"
+definition = "Behavior::verdantTensorFiveU32"
 
 [[lifted]]
 kappa = "f7cb30396fafe301e4c182278dda4e5daedaae2098692c3ab7dc0243b6a901cc"
@@ -10210,6 +10234,11 @@ function = "verdant_tensor::scalars::hundred_u64"
 definition = "Behavior::verdantTensorHundredU64"
 
 [[lifted]]
+kappa = "965b64095f195dc254a8a649312dcd08999c72d9b77ed33605dc9be4f85f5637"
+function = "verdant_tensor::scalars::modal_bar_mode_index_valid"
+definition = "Behavior::modalBarModeIndexValid"
+
+[[lifted]]
 kappa = "aac06ed2d72bb891b6d14815a43dde382ee4258733b5ca0e236766cebf9f5f05"
 function = "verdant_tensor::scalars::ratchet_ceiling_can_tighten"
 definition = "Behavior::ratchetCeilingCanTighten"
@@ -10233,6 +10262,11 @@ definition = "Behavior::ratchetFloorDidNotRegress"
 kappa = "0daf795c9fa82ed7680e0255da6fe06d4385448918f26d34ac815c8088a1594d"
 function = "verdant_tensor::scalars::semver_is_strictly_higher"
 definition = "Behavior::semverIsStrictlyHigher"
+
+[[lifted]]
+kappa = "fe751615fa67f4249f113092c480c2c6c69a4f42b0cd7c2b871670b7744d7f24"
+function = "verdant_tensor::scalars::six_u32"
+definition = "Behavior::sixU32"
 
 [[lifted]]
 kappa = "3b27723ca75dd08afa1f01516f6168ff4f5efb247defa0661965dbb43642568e"
@@ -10263,6 +10297,21 @@ definition = "Behavior::sixtyFourU64"
 kappa = "4f102461af72fa4f0964e0c7af2e3631fa14a68f32ab31dba4c4abd4b97c3f13"
 function = "verdant_tensor::scalars::sixty_four_u8"
 definition = "Behavior::sixtyFourU8"
+
+[[lifted]]
+kappa = "ae995e8d643bc1fb62fa33cfd61a39c49b96084849701108f680ddd4319fc1ce"
+function = "verdant_tensor::scalars::sparse_index_crate_name_valid"
+definition = "Behavior::sparseIndexCrateNameValid"
+
+[[lifted]]
+kappa = "6a847ab845f042fac1ed00bfd7a93a61ad0e3581213c1df595b159e7d9c267bb"
+function = "verdant_tensor::scalars::sparse_registry_crate_count_complete"
+definition = "Behavior::sparseRegistryCrateCountComplete"
+
+[[lifted]]
+kappa = "51875ac6b3650cabdb86d53329689e5880b9ffdd1327a06cfd440956a6896a0d"
+function = "verdant_tensor::scalars::sparse_registry_http_status_ok"
+definition = "Behavior::sparseRegistryHttpStatusOk"
 
 [[lifted]]
 kappa = "85e78f80fc93b1dbabeb9a6d0ea3b95b2c8e4a32f13ab97ef526130d9c399cc1"
@@ -10405,6 +10454,11 @@ function = "verdant_tensor::scalars::uhd_tier_supports_webgpu_cas"
 definition = "Behavior::uhdTierSupportsWebgpuCas"
 
 [[lifted]]
+kappa = "e6b4c7f6323de3ea51ee9bf779e9de3e7418e1a75301a5e28bc158852acd1b7a"
+function = "verdant_tensor::scalars::uorc_stream_nonempty"
+definition = "Behavior::uorcStreamNonempty"
+
+[[lifted]]
 kappa = "95a948d41ea2bd5a4acfc2f5637cd20076938bf33908b1b827a390eaa3ce99fa"
 function = "verdant_tensor::scalars::vcs_diff_is_clean"
 definition = "Behavior::vcsDiffIsClean"
@@ -10413,6 +10467,16 @@ definition = "Behavior::vcsDiffIsClean"
 kappa = "cfb261cb8bf82101e86606f8496c2305ec159722d292c63785c0efa7b079ff02"
 function = "verdant_tensor::scalars::vcs_diff_total_changes"
 definition = "Behavior::vcsDiffTotalChanges"
+
+[[lifted]]
+kappa = "019f887c32ebf877c17dbab04f4c2d7cdc66bcdb617983815db98622bfeb34ee"
+function = "verdant_tensor::scalars::wasm_magic_header_valid"
+definition = "Behavior::wasmMagicHeaderValid"
+
+[[lifted]]
+kappa = "b572b5214819ec31460d31c9e75c4a659405c87dc046ddebe21b78e3e426c7b2"
+function = "verdant_tensor::scalars::wasm_module_within_budget"
+definition = "Behavior::wasmModuleWithinBudget"
 
 [[lifted]]
 kappa = "36cc52a34b749eea1cb95f88cbf7bde987f8088abdecee896816a0722f08239c"

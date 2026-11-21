@@ -167,6 +167,7 @@
         "app/src/Release.lex.tex",
         "crates/verdant-core/src/vcs.rs",
         "crates/verdant-core/src/governance.rs",
+        "crates/verdant-core/src/build_ops.rs",
         "catalogs/governance/change-roadmap-kpi.json",
         "site/frame/index.html",
         "site/frame/frame-boot.mjs",

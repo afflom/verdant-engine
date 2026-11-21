@@ -136,6 +136,9 @@ macro_rules! sha256_hex_tagged {
 }
 
 #[cfg(not(target_arch = "wasm32"))]
+#[path = "build_ops.rs"]
+mod build_ops;
+#[cfg(not(target_arch = "wasm32"))]
 #[path = "lifecycle.rs"]
 mod lifecycle;
 #[cfg(not(target_arch = "wasm32"))]
@@ -150,6 +153,8 @@ mod operator_synth;
 #[path = "operator_types.rs"]
 mod operator_types;
 
+#[cfg(not(target_arch = "wasm32"))]
+pub use build_ops::*;
 #[cfg(not(target_arch = "wasm32"))]
 pub use lifecycle::*;
 #[cfg(not(target_arch = "wasm32"))]

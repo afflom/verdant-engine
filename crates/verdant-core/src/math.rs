@@ -880,7 +880,7 @@ impl DeterministicRng {
     /// Initializes a deterministic generator from a world seed without magic constants.
     #[must_use]
     pub const fn new(seed: u64) -> Self {
-        Self {
+        DeterministicRng {
             state: seed | 1,
             counter: 1,
         }

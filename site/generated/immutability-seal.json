@@ -2,7 +2,7 @@
   "spec": "verdant/view-immutability-seal/1",
   "owningManager": "mgr-observer-executive",
   "managerKappaHex": "5ddc18b2df519a508614f8afd961bde4d3692dec65de71e4bd80d1045e621c27",
-  "sealRootSha256Hex": "847337ae2aae1926134dcf2af12f6f4221ac09a5eccd36457debc60f71c612e0",
+  "sealRootSha256Hex": "68a5d084ac2a426b8e0e9b7bfa077b29b292af613fd3c35d95aeff395a101c5d",
   "files": [
     {
       "path": "site/card.html",
@@ -94,8 +94,8 @@
         "AUTH-ISO-42010-VIEWPOINTS",
         "AUTH-SEMVER-CHANGE-KPI"
       ],
-      "bytes": 28612,
-      "sha256Hex": "ee8de44e38cbf04dfd2e2d3522b4c3740a446c1fd4ff8a636472e689b09f4faa",
+      "bytes": 28662,
+      "sha256Hex": "b1dc6871fb59162269b8786999705517e127d6a25e0dbd5b8b1a1e59a1b3018f",
       "lastDirectiveKappaHex": "97ad589cca01919c3a12ce6411f318852932780e3b42604a24041b1c4b969cd8"
     },
     {
@@ -166,7 +166,7 @@
     {
       "path": "site/generated/release-ledger.json",
       "owningManagerId": "mgr-change-release",
-      "managerKappaHex": "9f6fecdfd266b34b6d0e770fc6b5ba9f17db00b8d46d67e10ee4224cd6960781",
+      "managerKappaHex": "bbc7fbdb4852660827b67873b21dc221b7a2f107d724a11c9e1420cd722a6be0",
       "governingAuthorities": [
         "AUTH-SEMVER-CHANGE-KPI",
         "AUTH-STITCH-SELF-HOSTING",
@@ -185,7 +185,7 @@
         "AUTH-ISO-42010-VIEWPOINTS"
       ],
       "bytes": 25620,
-      "sha256Hex": "c085044a4f7b2d8618347452be0df426a306a44df42d4dd8b18273a945c9c04a",
+      "sha256Hex": "f5d667bbc688dbf710d3e877efa07b11b3511fefe9137113ca7cb5e674940b70",
       "lastDirectiveKappaHex": "97ad589cca01919c3a12ce6411f318852932780e3b42604a24041b1c4b969cd8"
     },
     {
@@ -198,7 +198,7 @@
         "AUTH-SEMVER-CHANGE-KPI"
       ],
       "bytes": 8522,
-      "sha256Hex": "6ac1e917a114c4f4a02013e1b62b7e31aea66e4cf327fad97a18cc759a4fc86a",
+      "sha256Hex": "8711299965b5e3115da143e2f06b9cdac71facdeac7d8d0fefd5be94b91b0181",
       "lastDirectiveKappaHex": "97ad589cca01919c3a12ce6411f318852932780e3b42604a24041b1c4b969cd8"
     },
     {
@@ -211,7 +211,7 @@
         "AUTH-SEMVER-CHANGE-KPI"
       ],
       "bytes": 2104,
-      "sha256Hex": "bb19c8987a64241097f588b0ce645fd7b6b588db6499780c43ae0811bee37153",
+      "sha256Hex": "c8cdf5225c9b4156839c630fd3d6866bce7d480b71f4e04a61c30c25d927234b",
       "lastDirectiveKappaHex": "97ad589cca01919c3a12ce6411f318852932780e3b42604a24041b1c4b969cd8"
     }
   ]

@@ -487,6 +487,106 @@ pub(crate) fn run_operator_command(args: &[String]) -> Result<String, CliCommand
                 })?;
             Ok(json)
         }
+        "sync-wasm" => {
+            let two = 1usize + 1usize;
+            let mut root =
+                std::env::current_dir().unwrap_or_else(|_| std::path::PathBuf::from("."));
+            let mut check_only = false;
+            let mut repack_stream = false;
+            let mut i = two;
+            while i < args.len() {
+                match args[i].as_str() {
+                    "--root" if i + 1 < args.len() => {
+                        root = std::path::PathBuf::from(&args[i + 1]);
+                        i += two;
+                    }
+                    "--check" => {
+                        check_only = true;
+                        i += 1;
+                    }
+                    "--repack" => {
+                        repack_stream = true;
+                        i += 1;
+                    }
+                    _ => i += 1,
+                }
+            }
+            let op = verdant_core::operator::NativeBuildOp::SyncWasm {
+                check_only,
+                repack_stream,
+            };
+            let (rep, _) = ch.execute_native_build_op(&root, &op).map_err(|e| {
+                CliCommandError::ValidationRejected {
+                    command: "operator sync-wasm".to_string(),
+                    diagnostic: e.to_string(),
+                }
+            })?;
+            Ok(rep.summary)
+        }
+        "package-crates" => {
+            let two = 1usize + 1usize;
+            let mut root =
+                std::env::current_dir().unwrap_or_else(|_| std::path::PathBuf::from("."));
+            let mut out_dir = std::path::PathBuf::from("dist/crates");
+            let mut dl_template = "https://github.com/afflom/verdant-engine/releases/download/v{version}/{crate}-{version}.crate".to_string();
+            let mut i = two;
+            while i < args.len() {
+                match args[i].as_str() {
+                    "--root" if i + 1 < args.len() => {
+                        root = std::path::PathBuf::from(&args[i + 1]);
+                        i += two;
+                    }
+                    "--out" if i + 1 < args.len() => {
+                        out_dir = std::path::PathBuf::from(&args[i + 1]);
+                        i += two;
+                    }
+                    "--dl" if i + 1 < args.len() => {
+                        dl_template = args[i + 1].clone();
+                        i += two;
+                    }
+                    _ => i += 1,
+                }
+            }
+            let op = verdant_core::operator::NativeBuildOp::PackageRustCrates {
+                out_dir,
+                dl_template,
+            };
+            let (rep, _) = ch.execute_native_build_op(&root, &op).map_err(|e| {
+                CliCommandError::ValidationRejected {
+                    command: "operator package-crates".to_string(),
+                    diagnostic: e.to_string(),
+                }
+            })?;
+            Ok(rep.summary)
+        }
+        "verify-registry" => {
+            let two = 1usize + 1usize;
+            let mut root =
+                std::env::current_dir().unwrap_or_else(|_| std::path::PathBuf::from("."));
+            let mut crates_root = std::path::PathBuf::from("site/crates");
+            let mut i = two;
+            while i < args.len() {
+                match args[i].as_str() {
+                    "--root" if i + 1 < args.len() => {
+                        root = std::path::PathBuf::from(&args[i + 1]);
+                        i += two;
+                    }
+                    "--dir" if i + 1 < args.len() => {
+                        crates_root = std::path::PathBuf::from(&args[i + 1]);
+                        i += two;
+                    }
+                    _ => i += 1,
+                }
+            }
+            let op = verdant_core::operator::NativeBuildOp::VerifySparseRegistry { crates_root };
+            let (rep, _) = ch.execute_native_build_op(&root, &op).map_err(|e| {
+                CliCommandError::ValidationRejected {
+                    command: "operator verify-registry".to_string(),
+                    diagnostic: e.to_string(),
+                }
+            })?;
+            Ok(rep.summary)
+        }
         "automate" => {
             let two = 1usize + 1usize;
             let mut root =

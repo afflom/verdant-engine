@@ -16,7 +16,7 @@ use verdant_tensor::scalars::{
     ten_u32, thousand_u32, two_u32,
 };
 
-use super::{AutonomousRatchetLiftOptions, VerdantOperatorChannel};
+use super::{AutonomousRatchetLiftOptions, NativeBuildOp, VerdantOperatorChannel};
 use crate::digest::sha256_hex;
 use crate::error::ObserverModelError;
 use crate::governance::ObserverProgressSignals;
@@ -1039,12 +1039,20 @@ impl VerdantOperatorChannel {
         let wasm_present = repo_root.join("site/verdant-wasm.wasm").is_file()
             && repo_root.join("site/verdant-uorc.wasm").is_file();
         if !ratchet_stage_cache_hit(opts.force, wasm_kappa == prev_wasm_kappa, wasm_present) {
-            run_stage_cmd(
-                &mut stages,
-                "sync-prism-wasm",
-                "node",
-                &["scripts/sync-prism-wasm.mjs"],
+            let t_wasm = Instant::now();
+            let (rep, _) = self.execute_native_build_op(
+                repo_root,
+                &NativeBuildOp::SyncWasm {
+                    check_only: false,
+                    repack_stream: false,
+                },
             )?;
+            stages.push(RatchetCycleStageRecord {
+                stage_id: "sync-prism-wasm".to_string(),
+                status: "pass".to_string(),
+                duration_ms: t_wasm.elapsed().as_millis() as u64,
+                detail: rep.summary,
+            });
             let _ = std::fs::write(&wasm_cache_path, format!("{wasm_kappa}\n"));
         } else {
             stages.push(RatchetCycleStageRecord {
@@ -1333,12 +1341,20 @@ impl VerdantOperatorChannel {
             && repo_root.join("site/verdant-uorc.wasm").is_file();
         let cache_hit = wasm_kappa == prev_kappa && wasm_present;
         if automate_should_build_wasm(opts.skip_rust, opts.force_wasm, cache_hit) {
-            run_step(
-                &mut stages,
-                "sync-prism-wasm",
-                "node",
-                &["scripts/sync-prism-wasm.mjs"],
+            let t_wasm = Instant::now();
+            let (rep, _) = self.execute_native_build_op(
+                repo_root,
+                &NativeBuildOp::SyncWasm {
+                    check_only: false,
+                    repack_stream: false,
+                },
             )?;
+            stages.push(RatchetCycleStageRecord {
+                stage_id: "sync-prism-wasm".to_string(),
+                status: "pass".to_string(),
+                duration_ms: t_wasm.elapsed().as_millis() as u64,
+                detail: rep.summary,
+            });
             let _ = std::fs::write(&wasm_cache_path, format!("{wasm_kappa}\n"));
         } else {
             stages.push(RatchetCycleStageRecord {
@@ -1379,25 +1395,31 @@ impl VerdantOperatorChannel {
             });
         }
 
-        // 3. Site assembly, RFC 2789 Cargo Sparse Registry packaging, and in-process lifecycle-gate:
+        // 3. Site assembly, native RFC 2789 Cargo Sparse Registry packaging, and in-process lifecycle-gate:
         run_step(
             &mut stages,
             "build-site",
             "node",
             &["scripts/build-site.mjs"],
         )?;
-        run_step(
-            &mut stages,
-            "package-rust-crates",
-            "node",
-            &[
-                "scripts/package-rust-crates.mjs",
-                "--out",
-                "site/crates",
-                "--dl",
-                "https://afflom.github.io/verdant-engine/crates/crates/{crate}-{version}.crate",
-            ],
-        )?;
+        {
+            let t_pkg = Instant::now();
+            let (pkg_rep, _) = self.execute_native_build_op(
+                repo_root,
+                &NativeBuildOp::PackageRustCrates {
+                    out_dir: repo_root.join("site/crates"),
+                    dl_template:
+                        "https://afflom.github.io/verdant-engine/crates/crates/{crate}-{version}.crate"
+                            .to_string(),
+                },
+            )?;
+            stages.push(RatchetCycleStageRecord {
+                stage_id: "package-rust-crates".to_string(),
+                status: "pass".to_string(),
+                duration_ms: t_pkg.elapsed().as_millis() as u64,
+                detail: pkg_rep.summary,
+            });
+        }
         if run_rust {
             run_step(
                 &mut stages,
@@ -1478,12 +1500,21 @@ impl VerdantOperatorChannel {
             "node",
             &["scripts/verify-uhd-workload.mjs", "site"],
         )?;
-        run_step(
-            &mut stages,
-            "verify-sparse-registry",
-            "node",
-            &["scripts/verify-sparse-registry.mjs", "--dir", "site/crates"],
-        )?;
+        {
+            let t_reg = Instant::now();
+            let (reg_rep, _) = self.execute_native_build_op(
+                repo_root,
+                &NativeBuildOp::VerifySparseRegistry {
+                    crates_root: repo_root.join("site/crates"),
+                },
+            )?;
+            stages.push(RatchetCycleStageRecord {
+                stage_id: "verify-sparse-registry".to_string(),
+                status: "pass".to_string(),
+                duration_ms: t_reg.elapsed().as_millis() as u64,
+                detail: reg_rep.summary,
+            });
+        }
         run_step(
             &mut stages,
             "qualify-tag-offline",

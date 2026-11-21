@@ -151,7 +151,7 @@
     },
     {
       "basisPrime": 71,
-      "kappaHex": "9f6fecdfd266b34b6d0e770fc6b5ba9f17db00b8d46d67e10ee4224cd6960781",
+      "kappaHex": "bbc7fbdb4852660827b67873b21dc221b7a2f107d724a11c9e1420cd722a6be0",
       "spec": {
         "almPhases": [
           "change-management",
@@ -183,6 +183,7 @@
           "app/src/Release.lex.tex",
           "crates/verdant-core/src/vcs.rs",
           "crates/verdant-core/src/governance.rs",
+          "crates/verdant-core/src/build_ops.rs",
           "catalogs/governance/change-roadmap-kpi.json",
           "site/frame/index.html",
           "site/frame/frame-boot.mjs",

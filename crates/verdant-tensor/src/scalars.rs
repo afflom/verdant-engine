@@ -92,6 +92,20 @@ pub const fn four_u32() -> u32 {
     t.wrapping_mul(t)
 }
 
+/// Constructive `5_u32` (`4 + 1`) lifted by `uorust`.
+#[inline(always)]
+#[must_use]
+pub const fn five_u32() -> u32 {
+    four_u32().wrapping_add(1_u32)
+}
+
+/// Constructive `6_u32` (`5 + 1`) lifted by `uorust`.
+#[inline(always)]
+#[must_use]
+pub const fn six_u32() -> u32 {
+    five_u32().wrapping_add(1_u32)
+}
+
 /// Constructive `8_u32` lifted by `uorust`.
 #[inline(always)]
 #[must_use]
@@ -493,4 +507,70 @@ pub const fn semver_is_strictly_higher(
     } else {
         a_pat > b_pat
     }
+}
+
+/// Pure MIR-lifted WebAssembly binary magic header validator (`\0asm` = `[0x00, 0x61, 0x73, 0x6d]`).
+#[must_use]
+pub const fn wasm_magic_header_valid(b0: u8, b1: u8, b2: u8, b3: u8) -> bool {
+    let ninety_seven = hundred_u32().wrapping_sub(three_u32()) as u8; // 0x61 'a'
+    let one_fifteen = hundred_u32()
+        .wrapping_add(ten_u32())
+        .wrapping_add(five_u32()) as u8; // 0x73 's'
+    let one_oh_nine = hundred_u32().wrapping_add(ten_u32()).wrapping_sub(1_u32) as u8; // 0x6d 'm'
+    b0 == 0 && b1 == ninety_seven && b2 == one_fifteen && b3 == one_oh_nine
+}
+
+/// Pure MIR-lifted WebAssembly module byte-budget compliance check (`0 < actual <= budget`).
+#[must_use]
+pub const fn wasm_module_within_budget(actual_bytes: u64, budget_bytes: u64) -> bool {
+    actual_bytes > 0 && actual_bytes <= budget_bytes
+}
+
+/// Pure MIR-lifted RFC 2789 Cargo sparse index 2+2 prefix crate-name length predicate (`len >= 4`).
+#[must_use]
+pub const fn sparse_index_crate_name_valid(len: u32) -> bool {
+    len >= four_u32()
+}
+
+/// Pure MIR-lifted RFC 2789 sparse registry crate-count completeness predicate.
+#[must_use]
+pub const fn sparse_registry_crate_count_complete(packaged: u32, expected: u32) -> bool {
+    expected > 0 && packaged == expected
+}
+
+/// Pure MIR-lifted HTTP 200 OK status predicate for local RFC 2789 sparse registry verification.
+#[must_use]
+pub const fn sparse_registry_http_status_ok(status_code: u16) -> bool {
+    let two_hundred = hundred_u32().wrapping_mul(two_u32()) as u16;
+    status_code == two_hundred
+}
+
+/// Pure MIR-lifted native build-operation stage completion predicate (`total > 0 && passed == total`).
+#[must_use]
+pub const fn build_op_stages_all_passed(passed: u32, total: u32) -> bool {
+    total > 0 && passed == total
+}
+
+/// Pure MIR-lifted Cascaded Shadow Map cascade index bounds predicate (`idx < 4`).
+#[must_use]
+pub const fn csm_cascade_index_valid(idx: u32) -> bool {
+    idx < four_u32()
+}
+
+/// Pure MIR-lifted Euler-Bernoulli modal bar mode index bounds predicate (`idx < 5`).
+#[must_use]
+pub const fn modal_bar_mode_index_valid(idx: u32) -> bool {
+    idx < five_u32()
+}
+
+/// Pure MIR-lifted `.crate` tarball non-empty byte guard.
+#[must_use]
+pub const fn crate_tarball_nonempty(bytes: u64) -> bool {
+    bytes > 0
+}
+
+/// Pure MIR-lifted portable `.uorc` stream non-empty byte guard.
+#[must_use]
+pub const fn uorc_stream_nonempty(bytes: u64) -> bool {
+    bytes > 0
 }
