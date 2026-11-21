@@ -1,0 +1,39 @@
+{
+  "spec": "verdant/frame-pin/1",
+  "releaseVersion": "2.13.0",
+  "releaseEpoch": 17,
+  "releaseKappaHex": "90b42c324883bcb8dca1409c48436385d9f2dbd9f98b32b612638a9902c96f76",
+  "prevKappaHex": "genesis",
+  "vcsCommitKappa": "1aa339d92d166352395ea20492bb9d4104e873362522ca4a67a08ccf1579edf3",
+  "immutabilitySealSha256": "e44537f4b5663a42fb6b541cf54d60922b2d2c6c0c956771e1c95bec58aea759",
+  "defaultStitchUri": "stitch://verdant/studio",
+  "dataShardsK": 4,
+  "totalShardsN": 8,
+  "capsuleByteLen": 1327774,
+  "pointer": {
+    "stitchUri": "stitch://verdant/studio",
+    "releaseEpoch": 17,
+    "prevKappaHex": "genesis",
+    "targetKappaHex": "90b42c324883bcb8dca1409c48436385d9f2dbd9f98b32b612638a9902c96f76",
+    "minQuorum": 2,
+    "quorumSignatures": {
+      "prism:verdant-observer-executive": "c48931bf8768d0815402dddd4825cbd26c72857cdf66b6cdbf9b678b9265838e",
+      "prism:verdant-release-bot": "0b5f171a56e577ca14476d710d46d0b18ef4eae8c69b86138408700c1ab13442"
+    }
+  },
+  "stitchRelays": [
+    "https://afflom.github.io/verdant-engine/stitch/v2.13.0/shards",
+    "https://cdn.jsdelivr.net/gh/afflom/verdant-engine@stitch-mirror/v2.13.0/shards",
+    "https://raw.githubusercontent.com/afflom/verdant-engine/stitch-mirror/v2.13.0/shards"
+  ],
+  "shardFiles": [
+    "shard-0.stch",
+    "shard-1.stch",
+    "shard-2.stch",
+    "shard-3.stch",
+    "shard-4.stch",
+    "shard-5.stch",
+    "shard-6.stch",
+    "shard-7.stch"
+  ]
+}
