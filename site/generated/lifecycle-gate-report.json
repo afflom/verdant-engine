@@ -33,7 +33,7 @@
       "owningManagerId": "mgr-observer-executive",
       "category": "in-process",
       "passed": true,
-      "durationMs": 16,
+      "durationMs": 15,
       "detail": "valid=true entries=16 violations=0"
     },
     {
@@ -57,7 +57,7 @@
       "owningManagerId": "mgr-knowledge-provenance",
       "category": "in-process",
       "passed": true,
-      "durationMs": 1,
+      "durationMs": 0,
       "detail": "fidelity_open=0 frontier_valid=true"
     },
     {
@@ -69,5 +69,5 @@
       "detail": "total=173 (rust=72, test=24, lex=29, feature=3, model=16, script=20, view=9)"
     }
   ],
-  "reportKappaHex": "4514bac32975c6fe1b58b69e0b42a6569acadd47b83b3a2f5f564d0d0f539cfb"
+  "reportKappaHex": "cdb861da6ba18a72a1dbb39aaa44703bd48c4072b129d679af241c4aa3392b0f"
 }

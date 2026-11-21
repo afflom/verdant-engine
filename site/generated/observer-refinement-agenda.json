@@ -7,7 +7,7 @@
   "liveMetrics": {
     "wasmCoreBytes": 155259,
     "wasmUorcBytes": 3919721,
-    "releaseCapsuleBytes": 1472405,
+    "releaseCapsuleBytes": 1472376,
     "blankFrameBytes": 28374,
     "maxHandwrittenRustFileLines": 1646,
     "maxJsFileLines": 1247,
@@ -222,15 +222,15 @@
       "citedAuthority": "AUTH-STITCH-SELF-HOSTING",
       "ratchetLayer": "surface-wasm",
       "priority": "continuous",
-      "currentValue": "verdant-uorc.wasm 3919721 B · .holo 1472405 B · Blank Frame 28374 B (2346 B headroom)",
+      "currentValue": "verdant-uorc.wasm 3919721 B · .holo 1472376 B · Blank Frame 28374 B (2346 B headroom)",
       "targetValue": "verdant-uorc.wasm <= 4194304 B while preserving gzipped .holo <= 1.72 MiB",
       "summary": "Trim unused codec paths on wasm32 and preserve gzipped STCH2 shard efficiency for cold Blank Frame boots.",
       "concreteActions": [
         "Audit gltf/image feature flags on wasm32 to drop unused color/codec tables.",
         "Maintain Blank Frame strictly under 30720 B with DecompressionStream('gzip')."
       ],
-      "kappaHex": "c3d2609687710d2afb5e325e0311fa9c38fa1dead7c26fac681c7917b14a6be2"
+      "kappaHex": "b5ac20da98c7f9f80e3e2aa9f714e22c78d4d85b91127beaa7b4403df55d7de7"
     }
   ],
-  "agendaKappaHex": "e572af68e3f291588bdf88efeb0f81b935377a2e7b97f3303f542d5ec96fce0c"
+  "agendaKappaHex": "384dd3ac1988b0ce7d7a69660fa5019e20ac5aeb8c0a1be6eff4c8a89f003ed5"
 }

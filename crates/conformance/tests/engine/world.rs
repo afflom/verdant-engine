@@ -2832,9 +2832,19 @@ fn engine_ve_40() {
 
     let root = repo_root();
 
-    // 1. Verify `site/studio.mjs` has zero JS regex prompt overrides (`effectiveSlug =`) and wires live Wasm NPC/domain/dialogue RPCs:
-    let studio_js =
-        std::fs::read_to_string(root.join("site/studio.mjs")).expect("read site/studio.mjs");
+    // 1. Verify Studio modules have zero JS regex prompt overrides (`effectiveSlug =`) and wire live Wasm NPC/domain/dialogue RPCs:
+    let mut studio_js = String::new();
+    for rel in [
+        "site/studio.mjs",
+        "site/studio-gameplay-panel.mjs",
+        "site/studio-director-panel.mjs",
+        "site/studio-media.mjs",
+    ] {
+        studio_js.push_str(
+            &std::fs::read_to_string(root.join(rel)).unwrap_or_else(|e| panic!("read {rel}: {e}")),
+        );
+        studio_js.push('\n');
+    }
     assert!(
         !studio_js.contains("effectiveSlug"),
         "routeStudioPrompt must dispatch purely on Wasm CodedSlmDirector slug without JS regex overrides"
@@ -2847,13 +2857,22 @@ fn engine_ve_40() {
     ] {
         assert!(
             studio_js.contains(required_rpc),
-            "site/studio.mjs missing live Wasm Observer/Catalog RPC {required_rpc}"
+            "Studio modules missing live Wasm Observer/Catalog RPC {required_rpc}"
         );
     }
 
-    // 2. Verify `site/engine-worker.mjs` wires all 5 Observer/Catalog Wasm C-ABI calls:
-    let worker_js = std::fs::read_to_string(root.join("site/engine-worker.mjs"))
-        .expect("read site/engine-worker.mjs");
+    // 2. Verify Worker modules wire all 5 Observer/Catalog Wasm C-ABI calls:
+    let mut worker_js = String::new();
+    for rel in [
+        "site/engine-worker.mjs",
+        "site/engine-worker-codec.mjs",
+        "site/engine-worker-extended.mjs",
+    ] {
+        worker_js.push_str(
+            &std::fs::read_to_string(root.join(rel)).unwrap_or_else(|e| panic!("read {rel}: {e}")),
+        );
+        worker_js.push('\n');
+    }
     for required_sym in [
         "verdant_wasm_load_domain_pack",
         "verdant_wasm_set_npc_directive",
@@ -2863,7 +2882,7 @@ fn engine_ve_40() {
     ] {
         assert!(
             worker_js.contains(required_sym),
-            "site/engine-worker.mjs missing Wasm export call {required_sym}"
+            "Worker modules missing Wasm export call {required_sym}"
         );
     }
 
