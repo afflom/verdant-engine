@@ -1165,27 +1165,36 @@ impl DeltaUorcSnapshot {
             return Err(SnapshotCodecError::TruncatedSnapshot { byte_len: 0 });
         }
         let base_wire = WorldSnapshot::encode(base)?;
-        let shift = prism_kernel::uorcDefaultDecodeWork().unwrap_or(1) as u32;
-        let work = 1_u64 << shift;
-        let residual = match uorc_decompress::run(
-            uorc_decompress::Bytes::lit(delta_uorc),
-            uorc_decompress::List::nil(),
-            uorc_decompress::List::nil(),
-            work,
-        ) {
-            Ok(Some(out)) => out.octets().to_vec(),
-            Ok(None) => {
-                return Err(SnapshotCodecError::MalformedStatePayload {
-                    detail: "uorc_decompress::run rejected delta snapshot seal or work budget"
-                        .to_string(),
-                });
-            }
-            Err(_) => {
-                return Err(SnapshotCodecError::MalformedStatePayload {
-                    detail: "uorc_decompress::run overflow on delta snapshot".to_string(),
-                });
+        #[cfg(feature = "uorc-ncm-decode")]
+        let residual = {
+            let shift = prism_kernel::uorcDefaultDecodeWork().unwrap_or(1) as u32;
+            let work = 1_u64 << shift;
+            match uorc_decompress::run(
+                uorc_decompress::Bytes::lit(delta_uorc),
+                uorc_decompress::List::nil(),
+                uorc_decompress::List::nil(),
+                work,
+            ) {
+                Ok(Some(out)) => out.octets().to_vec(),
+                Ok(None) => {
+                    return Err(SnapshotCodecError::MalformedStatePayload {
+                        detail: "uorc_decompress::run rejected delta snapshot seal or work budget"
+                            .to_string(),
+                    });
+                }
+                Err(_) => {
+                    return Err(SnapshotCodecError::MalformedStatePayload {
+                        detail: "uorc_decompress::run overflow on delta snapshot".to_string(),
+                    });
+                }
             }
         };
+        #[cfg(not(feature = "uorc-ncm-decode"))]
+        let residual = crate::streaming::decompress_uorc_portable(delta_uorc).map_err(|e| {
+            SnapshotCodecError::MalformedStatePayload {
+                detail: e.to_string(),
+            }
+        })?;
         let next_wire: Vec<u8> = residual
             .iter()
             .enumerate()

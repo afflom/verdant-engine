@@ -552,3 +552,9 @@ id = "VE-73"
 suite = "engine"
 level = "build"
 statement = "Verdant executes Milestone M21 across its Observer refinement agenda: decomposing streaming.rs, ecs.rs, physics.rs, verdant-cli/src/lib.rs, and authority.rs into cohesive submodules (streaming_uorc.rs, ecs_tlas.rs, physics_controller.rs, automate_cmd.rs, authority_cert.rs -> max_handwritten_rust_file_lines <= 1495, >= 178 lifted lifecycle modules), decomposing catalog-streams.mjs, studio/studio-page.mjs, and engine-worker.mjs (via catalog-streams-local.mjs, studio-viewport.mjs, and engine-worker-extended.mjs -> max_js_file_lines <= 1125), lifting existing residue functions directly in place (PagedTensorArena, ContainerGrantMatrix, KnowledgeProvenanceManager, FrameBudgetProfiler, tropical_inf_sentinel), and expanding the shrink-only uorust MIR proof frontier to >= 420 lifted constructive functions with residue <= 1164 and uncertified <= 1321 across M1..M21"
+
+[[id]]
+id = "VE-74"
+suite = "engine"
+level = "build"
+statement = "Verdant breaks the 2.0 MiB browser Wasm wall in Milestone M22: splitting uorc_decompress behind native-default uorc-ncm-decode while retaining constant-time UORC-SHA256-CHAIN-v1 raw-archive verification and encoding under uorc-wasm-decode on wasm32, slashing site/verdant-uorc.wasm strictly below 2,097,152 bytes (< 570 KiB gzipped; > 70% reduction from 6.56 MB) and tightening max_release_capsule_bytes <= 1,100,000 bytes; wiring --authority-ledger and --approval-cert sovereign ApprovalCertificate custody verification directly into verdant release pack and verdant operator lifecycle-gate with fail-closed tamper/revocation refusal; and expanding the shrink-only uorust MIR proof frontier to >= 450 lifted constructive functions with residue <= 1164 and uncertified <= 1321 across M1..M22"

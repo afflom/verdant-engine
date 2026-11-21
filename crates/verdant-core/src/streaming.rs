@@ -683,7 +683,7 @@ pub struct UorcStreamSummary {
     pub max_lod_rank: u64,
 }
 
-#[cfg(any(feature = "uorc-streaming", feature = "uorc-wasm-decode"))]
+#[cfg(any(feature = "uorc-streaming", feature = "uorc-ncm-decode"))]
 fn uorc_work_budget() -> u64 {
     let shift = prism_kernel::uorcDefaultDecodeWork().expect("prism") as u32;
     pow2_u64(shift)

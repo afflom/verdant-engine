@@ -470,3 +470,9 @@ Feature: engine
     Given crates/verdant-core/src/streaming_uorc.rs, crates/verdant-core/src/ecs_tlas.rs, crates/verdant-core/src/physics_controller.rs, crates/verdant-cli/src/automate_cmd.rs, site/catalog-streams-local.mjs, site/studio/studio-viewport.mjs, and frontier.toml
     When prism-fidelity audits [frontier_ratchet] and [surface_ratchet], Verdant evaluates its MIR-lifted BVH/CCD/UORC/arena scalars, and the Observer evaluates all 21 milestones M1..M21
     Then max_handwritten_rust_file_lines is at most 1495, max_js_file_lines is at most 1125, frontier.toml proves at least 420 lifted functions with residue at most 1164 and uncertified at most 1321, and all Observer KPIs pass across M1..M21
+
+  @VE-74 @build
+  Scenario: Verdant breaks the 2.0 MiB browser Wasm wall in Milestone M22 (splitting uorc_decompress behind native-default uorc-ncm-decode to drop site/verdant-uorc.wasm <= 2097152 B and .holo capsule <= 1100000 B), wires --authority-ledger and --approval-cert ApprovalCertificate custody into verdant release pack and verdant operator lifecycle-gate, and expands frontier.toml to >= 450 lifted functions with residue <= 1164 and uncertified <= 1321 across M1..M22
+    Given crates/verdant-core/Cargo.toml, crates/verdant-core/src/streaming_uorc.rs, crates/verdant-cli/src/lib.rs, crates/verdant-cli/src/operator_cmd.rs, site/verdant-uorc.wasm, and frontier.toml
+    When Verdant runs lifecycle-gate and release pack with valid and tampered ApprovalCertificates, audits [frontier_ratchet] and [surface_ratchet], and evaluates all 22 milestones M1..M22
+    Then site/verdant-uorc.wasm is at most 2097152 bytes, max_release_capsule_bytes is at most 1100000 bytes, CLI refuses tampered certificates, frontier.toml proves at least 450 lifted functions with residue at most 1164, and all Observer KPIs pass across M1..M22

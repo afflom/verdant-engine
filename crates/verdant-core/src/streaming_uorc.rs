@@ -120,11 +120,13 @@ pub fn decode_portable_uorc_stream_up_to_lod(
         });
     }
 
+    #[cfg(feature = "uorc-ncm-decode")]
     let work = uorc_work_budget();
     let mut prev_spec: Option<prism_kernel::StreamingLodSpec> = None;
     let mut latest_state: Option<StandardSceneState> = None;
 
     for (idx, frame_archive) in frames.iter().take(needed).enumerate() {
+        #[cfg(feature = "uorc-ncm-decode")]
         let plain_bytes = match uorc_decompress::run(
             uorc_decompress::Bytes::lit(frame_archive),
             uorc_decompress::List::nil(),
@@ -145,6 +147,8 @@ pub fn decode_portable_uorc_stream_up_to_lod(
                 });
             }
         };
+        #[cfg(not(feature = "uorc-ncm-decode"))]
+        let plain_bytes = decode_single_uorc_frame_bytes(frame_archive, idx)?;
 
         let decoded_state = WorldSnapshot::decode(&plain_bytes).map_err(|err| {
             StreamingError::LodPayloadMismatch {
@@ -304,21 +308,32 @@ fn decode_single_uorc_frame_bytes(
             }
             return Ok(frame_archive[at..at + first_obj_len].to_vec());
         }
-        match uorc_decompress::run(
-            uorc_decompress::Bytes::lit(frame_archive),
-            uorc_decompress::List::nil(),
-            uorc_decompress::List::nil(),
-            uorc_work_budget(),
-        ) {
-            Ok(Some(out)) => Ok(out.octets().to_vec()),
-            Ok(None) => Err(StreamingError::UorcArchiveRejected {
+        #[cfg(feature = "uorc-ncm-decode")]
+        {
+            match uorc_decompress::run(
+                uorc_decompress::Bytes::lit(frame_archive),
+                uorc_decompress::List::nil(),
+                uorc_decompress::List::nil(),
+                uorc_work_budget(),
+            ) {
+                Ok(Some(out)) => Ok(out.octets().to_vec()),
+                Ok(None) => Err(StreamingError::UorcArchiveRejected {
+                    detail: format!(
+                        "uorc_decompress::run rejected seal or exceeded work budget at frame {frame_idx}"
+                    ),
+                }),
+                Err(_) => Err(StreamingError::UorcArchiveRejected {
+                    detail: format!("uorc_decompress::run overflow at frame {frame_idx}"),
+                }),
+            }
+        }
+        #[cfg(not(feature = "uorc-ncm-decode"))]
+        {
+            Err(StreamingError::UorcArchiveRejected {
                 detail: format!(
-                    "uorc_decompress::run rejected seal or exceeded work budget at frame {frame_idx}"
+                    "compressed NCM UORC frame {frame_idx} requires uorc-ncm-decode feature"
                 ),
-            }),
-            Err(_) => Err(StreamingError::UorcArchiveRejected {
-                detail: format!("uorc_decompress::run overflow at frame {frame_idx}"),
-            }),
+            })
         }
     }
 }

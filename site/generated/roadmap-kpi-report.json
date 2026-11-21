@@ -2,12 +2,12 @@
   "spec": "verdant/observer-roadmap-kpi-report/1",
   "managerId": "mgr-roadmap-strategy",
   "authorityId": "AUTH-SEMVER-CHANGE-KPI",
-  "currentVersion": "2.13.0",
-  "releaseEpoch": 17,
+  "currentVersion": "2.14.0",
+  "releaseEpoch": 18,
   "totalManagers": 13,
   "totalPrismFacetsOwned": 9,
   "totalPrismFacetsRequired": 9,
-  "declaredCapabilitiesCount": 84,
+  "declaredCapabilitiesCount": 85,
   "minorProgressPct": 100,
   "majorProgressPct": 100,
   "kpiPassedCount": 13,
@@ -138,7 +138,7 @@
       "name": "uorust MIR-Lifted Rust Functions Floor",
       "unit": "functions",
       "direction": "atLeast",
-      "actual": 421,
+      "actual": 454,
       "target": 200,
       "passed": true,
       "owningManager": "mgr-verification-observatory",
@@ -810,6 +810,38 @@
       "progressPct": 100,
       "completed": true,
       "ratchetRequirement": "Decompose all remaining Rust files >= 1500L (streaming.rs/streaming_uorc.rs, ecs.rs/ecs_tlas.rs, physics.rs/physics_controller.rs, verdant-cli/src/lib.rs/automate_cmd.rs, authority.rs/authority_cert.rs -> max_handwritten_rust_file_lines <= 1495, >= 178 lifted lifecycle modules) and all remaining shipped JS files >= 1125L (catalog-streams.mjs/catalog-streams-local.mjs, studio/studio-page.mjs/studio-viewport.mjs, engine-worker.mjs/engine-worker-extended.mjs -> max_js_file_lines <= 1125 with lower FR-03 weight), eliminate existing uorust residue in place (PagedTensorArena, ContainerGrantMatrix, KnowledgeProvenanceManager, FrameBudgetProfiler, tropical_inf_sentinel) while expanding lifted constructive functions >= 420 and shrinking residue <= 1164 and uncertified <= 1321 across M1..M21."
+    },
+    {
+      "milestoneId": "M22",
+      "targetVersion": "2.14.0",
+      "tier": "minor",
+      "title": "Sub-2.0 MiB Browser verdant-uorc.wasm Breakthrough (-1.84 MB raw / 554 KiB gzipped via uorc-ncm-decode Split), Sub-1.07 MiB .holo Capsule, CLI/Gate ApprovalCertificate Custody & 450+ MIR-Lifted Functions",
+      "stakeholders": [
+        "creator",
+        "developer",
+        "systems-engineer",
+        "operator",
+        "auditor",
+        "admin",
+        "contributor"
+      ],
+      "owningManagers": [
+        "mgr-change-release",
+        "mgr-security-trust",
+        "mgr-runtime-stage",
+        "mgr-verification-observatory",
+        "mgr-observer-executive"
+      ],
+      "requiredCapabilities": [
+        "VE-74"
+      ],
+      "closedCapabilities": [
+        "VE-74"
+      ],
+      "missingCapabilities": [],
+      "progressPct": 100,
+      "completed": true,
+      "ratchetRequirement": "Split uorc_decompress behind native-default uorc-ncm-decode while keeping uorc-wasm-decode on our constant-time UORC-SHA256-CHAIN-v1 raw-archive verifier/encoder on wasm32, slashing site/verdant-uorc.wasm from 3,797,479 B to <= 2,097,152 B (< 2.0 MiB raw, ~554 KiB gzipped; > 70% total reduction from 6.56 MB) and tightening max_release_capsule_bytes <= 1,100,000 B; wire --authority-ledger and --approval-cert directly into verdant release pack and verdant operator lifecycle-gate with fail-closed refusal on tampered/revoked certificates; and expand frontier.toml to >= 450 lifted constructive functions with residue <= 1164 and uncertified <= 1321 across M1..M22."
     }
   ],
   "observerParts": [
@@ -965,7 +997,7 @@
     "governingAuthority": "AUTH-SEMVER-CHANGE-KPI",
     "currentVersion": {
       "major": 2,
-      "minor": 13,
+      "minor": 14,
       "patch": 0
     },
     "recommendedBump": "major",
@@ -974,8 +1006,8 @@
       "minor": 0,
       "patch": 0
     },
-    "currentEpoch": 17,
-    "nextEpoch": 18,
+    "currentEpoch": 18,
+    "nextEpoch": 19,
     "versionIncremented": true,
     "gates": {
       "ratchetApplied": true,
@@ -986,6 +1018,6 @@
       "pullThroughVerified": true
     },
     "blockingReasons": [],
-    "rationale": "Ratchet applied & 5/5 Release Gates passed: advancing v2.13.0 -> v3.0.0 (Major, epoch 18) — Observer roadmap evaluation: minor=100% major=100% managers=13"
+    "rationale": "Ratchet applied & 5/5 Release Gates passed: advancing v2.14.0 -> v3.0.0 (Major, epoch 19) — Observer roadmap evaluation: minor=100% major=100% managers=13"
   }
 }

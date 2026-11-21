@@ -3317,3 +3317,249 @@ fn engine_ve_73() {
         kpi_rep.kpis
     );
 }
+
+#[test]
+fn engine_ve_74() {
+    use std::path::Path;
+    use verdant_core::authority::{
+        AuthorityCommand, ReviewVerdictKind, SigningActionKind, SovereignAuthorityLedger,
+    };
+    use verdant_core::operator::VerdantOperatorChannel;
+    use verdant_tensor::scalars::{
+        browser_e2e_dual_gates_passed, cli_authority_flag_pair_consistent,
+        cli_lifecycle_gate_authority_ok, cli_release_pack_authority_ok,
+        conformance_engine_suite_green, docker_sdk_all_gates_passed, fidelity_zero_residue_closed,
+        holo_capsule_under_budget, immutability_seal_entries_intact, m22_frontier_targets_met,
+        multi_channel_release_published, observer_next_wasm_uorc_target, one_mib_bytes_u64,
+        release_epoch_strictly_advanced, release_minor_version_advanced,
+        release_semver_exact_match, sovereign_departure_complete, sovereign_quarantine_floor_valid,
+        sovereign_work_item_shards_valid, sparse_registry_crate_set_complete, two_mib_bytes_u64,
+        uorc_frame_min_len_met, uorc_ncm_archive_admissible, uorc_raw_archive_header_valid,
+        uorc_seal_diff_zero, vsm_total_ownership_complete, wasm_gzip_three_to_one,
+        wasm_halved_from_baseline, wasm_two_thirds_cut_from_baseline, wasm_uorc_sub_two_mib,
+    };
+
+    let repo_root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+
+    // 1. `uorc-ncm-decode` split keeps `uorc-wasm-decode` zero-dependency on wasm32:
+    let core_toml = std::fs::read_to_string(repo_root.join("crates/verdant-core/Cargo.toml"))
+        .expect("read verdant-core Cargo.toml");
+    assert!(core_toml.contains("uorc-wasm-decode = []"));
+    assert!(core_toml.contains(r#"uorc-ncm-decode = ["dep:uorc_decompress"]"#));
+
+    // 2. CLI `operator lifecycle-gate` enforces `--authority-ledger` + `--approval-cert` custody:
+    let mut ledger =
+        SovereignAuthorityLedger::init_genesis("verdant-engine", "prism:owner-alice", "sec-alice")
+            .expect("genesis");
+    ledger
+        .execute(AuthorityCommand::AddAdmin {
+            candidate_prism_id: "prism:admin-bob".to_string(),
+            candidate_secret: "sec-bob".to_string(),
+            approving_admins: vec![("prism:owner-alice".to_string(), "sec-alice".to_string())],
+            next_quorum_threshold_m: 2,
+        })
+        .expect("add bob");
+    let ch = VerdantOperatorChannel::new("sunspire-regatta").expect("operator channel");
+    let rel_ledger = ch
+        .load_or_init_release_ledger(&repo_root)
+        .expect("load release ledger");
+    let active_tag = format!("v{}", rel_ledger.current_version.display_string());
+    let sub = ledger
+        .execute(AuthorityCommand::SubmitSigningRequest {
+            requester_prism_id: "prism:dev-ezra".to_string(),
+            requester_secret: "sec-ezra".to_string(),
+            action: SigningActionKind::CutRelease,
+            target_ref: format!("refs/tags/{active_tag}"),
+            target_kappa: active_tag.clone(),
+            expiry_epoch: 8,
+        })
+        .expect("submit");
+    let req_k = sub.subject_kappa;
+    for (aid, sec) in [
+        ("prism:owner-alice", "sec-alice"),
+        ("prism:admin-bob", "sec-bob"),
+    ] {
+        ledger
+            .execute(AuthorityCommand::ReviewSigningRequest {
+                request_kappa: req_k.clone(),
+                admin_prism_id: aid.to_string(),
+                admin_secret: sec.to_string(),
+                verdict: ReviewVerdictKind::Approve,
+                rationale: "VE-74 release approval".to_string(),
+            })
+            .expect("approve");
+    }
+    ledger
+        .execute(AuthorityCommand::FinalizeSigningRequest {
+            request_kappa: req_k.clone(),
+        })
+        .expect("finalize");
+    let cert = ledger
+        .execute(AuthorityCommand::IssueApprovalCertificate {
+            request_kappa: req_k,
+        })
+        .expect("issue cert")
+        .certificate
+        .expect("cert");
+
+    let tmp = std::env::temp_dir().join(format!("verdant-ve74-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&tmp);
+    std::fs::create_dir_all(&tmp).expect("mkdir tmp");
+    let ledger_path = tmp.join("authority-ledger.json");
+    let cert_path = tmp.join("approval-cert.json");
+    let bad_cert_path = tmp.join("tampered-cert.json");
+    std::fs::write(&ledger_path, serde_json::to_string_pretty(&ledger).unwrap()).unwrap();
+    std::fs::write(&cert_path, serde_json::to_string_pretty(&cert).unwrap()).unwrap();
+    let mut bad_cert = cert;
+    bad_cert.certificate_kappa = "deadbeef".to_string();
+    std::fs::write(
+        &bad_cert_path,
+        serde_json::to_string_pretty(&bad_cert).unwrap(),
+    )
+    .unwrap();
+
+    // Valid certificate passes CLI `operator lifecycle-gate --in-process --tag <active_tag>`:
+    let ok_args: Vec<String> = [
+        "operator",
+        "lifecycle-gate",
+        "--repo",
+        repo_root.to_str().unwrap(),
+        "--in-process",
+        "--tag",
+        &active_tag,
+        "--authority-ledger",
+        ledger_path.to_str().unwrap(),
+        "--approval-cert",
+        cert_path.to_str().unwrap(),
+    ]
+    .into_iter()
+    .map(String::from)
+    .collect();
+    assert!(
+        verdant_cli::run_cli(&ok_args).is_ok(),
+        "valid ApprovalCertificate must pass CLI operator lifecycle-gate"
+    );
+
+    // Tampered certificate MUST fail closed in BOTH lifecycle-gate and release pack:
+    let bad_gate_args: Vec<String> = [
+        "operator",
+        "lifecycle-gate",
+        "--repo",
+        repo_root.to_str().unwrap(),
+        "--in-process",
+        "--tag",
+        &active_tag,
+        "--authority-ledger",
+        ledger_path.to_str().unwrap(),
+        "--approval-cert",
+        bad_cert_path.to_str().unwrap(),
+    ]
+    .into_iter()
+    .map(String::from)
+    .collect();
+    assert!(
+        verdant_cli::run_cli(&bad_gate_args).is_err(),
+        "tampered ApprovalCertificate MUST fail closed in CLI operator lifecycle-gate"
+    );
+    let bad_pack_args: Vec<String> = [
+        "release",
+        "pack",
+        "--root",
+        repo_root.to_str().unwrap(),
+        "--version",
+        &rel_ledger.current_version.display_string(),
+        "--epoch",
+        &rel_ledger.release_epoch.to_string(),
+        "--out",
+        tmp.join("out").to_str().unwrap(),
+        "--authority-ledger",
+        ledger_path.to_str().unwrap(),
+        "--approval-cert",
+        bad_cert_path.to_str().unwrap(),
+    ]
+    .into_iter()
+    .map(String::from)
+    .collect();
+    assert!(
+        verdant_cli::run_cli(&bad_pack_args).is_err(),
+        "tampered ApprovalCertificate MUST fail closed in CLI release pack"
+    );
+    let _ = std::fs::remove_dir_all(&tmp);
+
+    // 3. MIR-lifted M22 predicates:
+    assert_eq!(one_mib_bytes_u64(), 1_048_576);
+    assert_eq!(two_mib_bytes_u64(), 2_097_152);
+    assert!(wasm_uorc_sub_two_mib(1_957_450));
+    assert!(holo_capsule_under_budget(1_060_000, 1_100_000));
+    assert!(uorc_raw_archive_header_valid(2, 1, 0, 0));
+    assert!(uorc_ncm_archive_admissible(0, false));
+    assert!(!uorc_ncm_archive_admissible(1, false));
+    assert!(uorc_ncm_archive_admissible(1, true));
+    assert!(uorc_frame_min_len_met(64, 8, 32));
+    assert!(uorc_seal_diff_zero(0));
+    assert!(cli_authority_flag_pair_consistent(true, true));
+    assert!(!cli_authority_flag_pair_consistent(true, false));
+    assert!(cli_release_pack_authority_ok(true, true));
+    assert!(cli_lifecycle_gate_authority_ok(true, true));
+    assert!(wasm_halved_from_baseline(6_555_219, 1_957_450));
+    assert!(wasm_two_thirds_cut_from_baseline(6_555_219, 1_957_450));
+    assert!(wasm_gzip_three_to_one(1_957_450, 567_705));
+    assert!(observer_next_wasm_uorc_target(1_957_450) < two_mib_bytes_u64());
+    assert!(release_semver_exact_match(2, 14, 0, 2, 14, 0));
+    assert!(release_epoch_strictly_advanced(17, 18));
+    assert!(release_minor_version_advanced(2, 13, 2, 14, 0));
+    assert!(multi_channel_release_published(true, true, true));
+    assert!(sparse_registry_crate_set_complete(4));
+    assert!(browser_e2e_dual_gates_passed(true, true));
+    assert!(docker_sdk_all_gates_passed(
+        true, true, true, true, true, true
+    ));
+    assert!(fidelity_zero_residue_closed(0, 0, 0));
+    assert!(conformance_engine_suite_green(74, 0, 74));
+    assert!(vsm_total_ownership_complete(13, 0, 0));
+    assert!(immutability_seal_entries_intact(true, 16, 0));
+    assert!(sovereign_departure_complete(true, true, 2));
+    assert!(sovereign_quarantine_floor_valid(3, 4));
+    assert!(sovereign_work_item_shards_valid(4));
+    assert!(m22_frontier_targets_met(452, 1164));
+
+    // 4. Ratchet permanently locks sub-2.0 MiB Wasm, <= 1.10 MiB .holo capsule, >= 450 lifted, M1..M22:
+    let rep = prism_fidelity::ratchet::audit_parametric_ratchet(
+        &repo_root,
+        Path::new("model/parametric-ratchet.toml"),
+    )
+    .expect("live repo must pass all 4 ratchet layers");
+    assert!(
+        rep.observed_wasm_uorc_bytes <= 2_097_152,
+        "M22 must break the 2.0 MiB wall on site/verdant-uorc.wasm, got {}",
+        rep.observed_wasm_uorc_bytes
+    );
+    assert!(
+        rep.observed_release_capsule_bytes <= 1_100_000,
+        "M22 must cut .holo release capsule <= 1,100,000 B, got {}",
+        rep.observed_release_capsule_bytes
+    );
+    assert!(
+        rep.frontier_lifted_functions >= 450,
+        "M22 must lift >= 450 constructive Rust functions, got {}",
+        rep.frontier_lifted_functions
+    );
+    assert!(
+        rep.frontier_residue_functions <= 1_164,
+        "M22 must keep residue <= 1164, got {}",
+        rep.frontier_residue_functions
+    );
+
+    let kpi_rep = ch
+        .evaluate_observer_roadmap_kpis(&repo_root, true, true)
+        .expect("observer roadmap & KPI report");
+    assert!(
+        kpi_rep.milestones.len() >= 22,
+        "expected Milestones M1..M22"
+    );
+    assert_eq!(
+        kpi_rep.kpi_passed_count, kpi_rep.kpi_total_count,
+        "all Observer KPIs must pass (kpis={:?})",
+        kpi_rep.kpis
+    );
+}

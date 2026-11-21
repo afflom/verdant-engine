@@ -2,12 +2,12 @@
 # Enforced mechanically by `prism-fidelity` (`prism/parametric-ratchet/2`, VE-47).
 spec = "verdant/self-host-ratchet-manifest/1"
 generator = "verdant-operator-ratchet-lift"
-version = "2.13.0"
-release_epoch = 17
-source_commit_kappa = "ec30b375ff3a71122e1b72aa0826a695a3da5a7cecbbb1da0b6eb86e9e59b98e"
-source_tree_root_sha256 = "2d8a8db8fc6c85c7d4932e50fbcea4d611bc9f8af75c0feaa35f93407a20140f"
-immutability_seal_root_sha256 = "e44537f4b5663a42fb6b541cf54d60922b2d2c6c0c956771e1c95bec58aea759"
-release_capsule_sha256 = "f2c49e5828a9d462d5cb32f3bdfa66580a5adac9baee5339ea1d0b9fa3347073"
+version = "2.14.0"
+release_epoch = 18
+source_commit_kappa = "09f2b6a9cb8ed1395a1059e2d069daada94711ab2461ca0ad61c49d09b120c59"
+source_tree_root_sha256 = "ccac730511fdde3186554f8530764d5704476655c64eca994b709c3e551da2aa"
+immutability_seal_root_sha256 = "52772eb1afb8fbf6f2e224403acb1b8920c8a0686c133500da3836a4096c393a"
+release_capsule_sha256 = "e72d1769ccc3b28d30106ed9023124a1293bcf1907294861978291ba3980b7ce"
 unlifted_ui_files = 0
 unverified_frame_assets = 0
 user_required_external_accounts = 0
@@ -21,7 +21,7 @@ sha256 = "aca742e3c3a5f615b0e539be65cb0369afd68248ef4ca5345be81b7c822b20c2"
 [[lifted_module]]
 path = "crates/verdant-cli/src/lib.rs"
 category = "rust"
-sha256 = "01d4e731dd8b893313fb367cdb80c9e4d92749ea4837c9e4e6781ef12caabe08"
+sha256 = "09aa904139dec6fe816ac619676dcccc88dbb2c32a8621c066bbaf2791da0a6c"
 
 [[lifted_module]]
 path = "crates/verdant-cli/src/main.rs"
@@ -31,7 +31,7 @@ sha256 = "6b8353982b071bc553f88b8211a2fbe42862330c21e3e3cefbb91cfe442084ae"
 [[lifted_module]]
 path = "crates/verdant-cli/src/operator_cmd.rs"
 category = "rust"
-sha256 = "3254e2bf03a45f852fe3f31b1f007a16232e73fb8fef6c0b2541e9c83706d81c"
+sha256 = "f2cd8a60b44ea282cc61f2e0087f8d5958f9f4a84c7f54bd0cd6fdaa0784e050"
 
 [[lifted_module]]
 path = "crates/verdant-core/src/animation.rs"
@@ -76,7 +76,7 @@ sha256 = "75a64b885f0ef7a7f438c2f1ca22e4bf3e43ea8ed05cb93182642d2559a1e90d"
 [[lifted_module]]
 path = "crates/verdant-core/src/cybernetics.rs"
 category = "rust"
-sha256 = "c049733bfa3f13999243ffbd903ea5dfc81342ab264f56ab81febc6456cd0d8a"
+sha256 = "bc80b53c72a30950eb7793f35dea4066b5a230378ed9eb5fb7c974266718c344"
 
 [[lifted_module]]
 path = "crates/verdant-core/src/digest.rs"
@@ -186,7 +186,7 @@ sha256 = "51ec2bab09eec3bfc3f1653c68ec2218ac4434d424781e2ca1d44159ff210562"
 [[lifted_module]]
 path = "crates/verdant-core/src/observer_refine.rs"
 category = "rust"
-sha256 = "8c74b85756ffc5e3c3e829fe2df188d6beca3b5f328ced92f98f75339ae6e297"
+sha256 = "c6307cfde8068931e77a330153c1af77d3ed2d1dede44a0c3ff0b8988574371d"
 
 [[lifted_module]]
 path = "crates/verdant-core/src/observer_streams.rs"
@@ -256,7 +256,7 @@ sha256 = "a0a81a888aa1e26f661b20870229767c0db9a3cff0a727164bfec4774decd08e"
 [[lifted_module]]
 path = "crates/verdant-core/src/runtime.rs"
 category = "rust"
-sha256 = "f0a9812a4463ad101296efcbdde107b1b6621573d46484773b5c1ef2b0efca89"
+sha256 = "2f65a0e7d1a9da2d60fb40a87b48b22b44ec954b5dcc4d32cf24c7a9b266617f"
 
 [[lifted_module]]
 path = "crates/verdant-core/src/runtime_monoid.rs"
@@ -276,12 +276,12 @@ sha256 = "e6de130957b67af8543b6f2a3a9a6818553128e513a5b5a8ed5e074068ee7193"
 [[lifted_module]]
 path = "crates/verdant-core/src/streaming.rs"
 category = "rust"
-sha256 = "6f657a95f9d51a000845c93c16f8b778d0fc1448aacd7925565f69932cad20d0"
+sha256 = "c923b10705b2f738eee2d8ef0d7bcfdb74f5f5ae0d65ce7c2d52f75a486c4e6f"
 
 [[lifted_module]]
 path = "crates/verdant-core/src/streaming_uorc.rs"
 category = "rust"
-sha256 = "71c13491812c926e0d378350896f22a5f8f45af11e9f734c5b286b5636c384b7"
+sha256 = "faffab8e7a1c3b0671ecd663ab993c42a97b9878853726ac8c50d3f1f68b6bae"
 
 [[lifted_module]]
 path = "crates/verdant-core/src/tensor.rs"
@@ -366,7 +366,7 @@ sha256 = "4884890a6ef9991271ff07d2311c781bb9dbea631590bcb966828c7fdb895a8f"
 [[lifted_module]]
 path = "crates/verdant-tensor/src/scalars_ratchet.rs"
 category = "rust"
-sha256 = "01d43dca36ba341bafed8ac7e8fb1484a2f6bca138dbf3d2ca0d0f896182d8ec"
+sha256 = "d6a20d03bbbb1f402bd330200552eff3c1b48afb09e946ffd1399781387d65be"
 
 [[lifted_module]]
 path = "crates/verdant-tensor/src/tropical.rs"
@@ -431,7 +431,7 @@ sha256 = "151612c25732124f89626c18b88e963727f09ae74c10f4b90bb7a9e874595509"
 [[lifted_module]]
 path = "crates/conformance/tests/engine/governance.rs"
 category = "verification-test"
-sha256 = "9c84d1502c3235598dd55a85858d5b2a70cce7a254c8e33177338e4804ee2052"
+sha256 = "6e87a288392e5d80aca38bbedcfadc67b242b6a15d56f53c8fbf41b19ea13ea8"
 
 [[lifted_module]]
 path = "crates/conformance/tests/engine/main.rs"
@@ -671,7 +671,7 @@ sha256 = "78fac43c46f3cf13ff1ab1a480b47e56637ce88b10db75d1fc286ba4e3145d06"
 [[lifted_module]]
 path = "features/suites/engine.feature"
 category = "feature-suite"
-sha256 = "63f6458ad8c98d2d2418f016219155c074fd819c1f43df098abaee74b805b583"
+sha256 = "2e731db7966e9f8f121420c99ebbeef452a0cdc9061a4047334d2e6c26226144"
 
 [[lifted_module]]
 path = "features/suites/fidelity.feature"
@@ -691,7 +691,7 @@ sha256 = "9126c51aaf92eff57190870c1f909978b08d83b91ea064a2a9cd9c72d1d4009c"
 [[lifted_module]]
 path = "catalogs/governance/change-roadmap-kpi.json"
 category = "model-governance"
-sha256 = "c0be998a5afacc8c891965aab1fe12867de3ccfae8ad3dab24568def0498ff13"
+sha256 = "e153d55b72852a4cb48fb97b3ab6fe70d15048c73f891515de028571bd5c0095"
 
 [[lifted_module]]
 path = "catalogs/governance/iso25010-tensor-scaling.json"
@@ -736,7 +736,7 @@ sha256 = "7d4e3c36e438491a505a85d5044e36074c67ce7948ea9cbf0d4480ec37d91df8"
 [[lifted_module]]
 path = "model/authorities.toml"
 category = "model-governance"
-sha256 = "272d7bbfa7e2d5db56ada0e149305ebf2331f4c959caf0e740854a25f9805312"
+sha256 = "465006dcc364c8f6740e24eefe184ad400ee33e0e06ae353a14ac30f9022a5d3"
 
 [[lifted_module]]
 path = "model/charter.md"
@@ -746,7 +746,7 @@ sha256 = "d38d505ffab24ed60af624bed3ca949fa601688a421a0aee1265f539f71cffb8"
 [[lifted_module]]
 path = "model/ids.toml"
 category = "model-governance"
-sha256 = "71654a0ad599b482697b2a26c5bca7e405d1334c6faf1a11992d68dba052b2a2"
+sha256 = "654002b7af523bb0a71ed3aeee3b8e0bcd0d2666c2994ae22885b4bb5a8db02b"
 
 [[lifted_module]]
 path = "model/ledger.toml"

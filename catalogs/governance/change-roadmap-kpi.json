@@ -263,6 +263,16 @@
       "requiredCapabilities": ["VE-73"],
       "owningManagers": ["mgr-runtime-stage", "mgr-studio-alm", "mgr-catalog-curator", "mgr-verification-observatory", "mgr-observer-executive"],
       "ratchetRequirement": "Decompose all remaining Rust files >= 1500L (streaming.rs/streaming_uorc.rs, ecs.rs/ecs_tlas.rs, physics.rs/physics_controller.rs, verdant-cli/src/lib.rs/automate_cmd.rs, authority.rs/authority_cert.rs -> max_handwritten_rust_file_lines <= 1495, >= 178 lifted lifecycle modules) and all remaining shipped JS files >= 1125L (catalog-streams.mjs/catalog-streams-local.mjs, studio/studio-page.mjs/studio-viewport.mjs, engine-worker.mjs/engine-worker-extended.mjs -> max_js_file_lines <= 1125 with lower FR-03 weight), eliminate existing uorust residue in place (PagedTensorArena, ContainerGrantMatrix, KnowledgeProvenanceManager, FrameBudgetProfiler, tropical_inf_sentinel) while expanding lifted constructive functions >= 420 and shrinking residue <= 1164 and uncertified <= 1321 across M1..M21."
+    },
+    {
+      "milestoneId": "M22",
+      "targetVersion": "2.14.0",
+      "tier": "minor",
+      "title": "Sub-2.0 MiB Browser verdant-uorc.wasm Breakthrough (-1.84 MB raw / 554 KiB gzipped via uorc-ncm-decode Split), Sub-1.07 MiB .holo Capsule, CLI/Gate ApprovalCertificate Custody & 450+ MIR-Lifted Functions",
+      "stakeholders": ["creator", "developer", "systems-engineer", "operator", "auditor", "admin", "contributor"],
+      "requiredCapabilities": ["VE-74"],
+      "owningManagers": ["mgr-change-release", "mgr-security-trust", "mgr-runtime-stage", "mgr-verification-observatory", "mgr-observer-executive"],
+      "ratchetRequirement": "Split uorc_decompress behind native-default uorc-ncm-decode while keeping uorc-wasm-decode on our constant-time UORC-SHA256-CHAIN-v1 raw-archive verifier/encoder on wasm32, slashing site/verdant-uorc.wasm from 3,797,479 B to <= 2,097,152 B (< 2.0 MiB raw, ~554 KiB gzipped; > 70% total reduction from 6.56 MB) and tightening max_release_capsule_bytes <= 1,100,000 B; wire --authority-ledger and --approval-cert directly into verdant release pack and verdant operator lifecycle-gate with fail-closed refusal on tampered/revoked certificates; and expand frontier.toml to >= 450 lifted constructive functions with residue <= 1164 and uncertified <= 1321 across M1..M22."
     }
   ],
   "kpiCatalog": [

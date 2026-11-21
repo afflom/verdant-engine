@@ -550,7 +550,15 @@ impl VerdantOperatorChannel {
 
         let kibi = verdant_tensor::scalars::thirty_two_u32()
             .wrapping_mul(verdant_tensor::scalars::thirty_two_u32());
-        let uorc_target = kibi.wrapping_mul(kibi).wrapping_mul(two_u32());
+        let mib = kibi.wrapping_mul(kibi);
+        let two_mib = mib.wrapping_mul(two_u32());
+        let half_mib =
+            kibi.wrapping_mul(verdant_tensor::scalars::five_u32().wrapping_mul(hundred_u32()));
+        let uorc_target = if (live.wasm_uorc_bytes as u32) <= two_mib {
+            mib.wrapping_add(half_mib)
+        } else {
+            two_mib
+        };
         let headroom =
             blank_frame_headroom_bytes(blank_frame_bytes as u32, MAX_BLANK_FRAME_BYTES as u32);
         push_proposal(
@@ -567,10 +575,10 @@ impl VerdantOperatorChannel {
                 live.wasm_uorc_bytes, live.release_capsule_bytes, blank_frame_bytes
             ),
             format!("verdant-uorc.wasm <= {uorc_target} B and gzipped .holo <= 1.0 MiB"),
-            "Keep browser verdant-uorc.wasm lean (< 2.0 MiB) and preserve gzipped STCH2 shard efficiency for cold Blank Frame boots."
+            "Keep browser verdant-uorc.wasm ultra-lean (< 1.5 MiB) and drive gzipped .holo release capsules below 1.0 MiB for instant Blank Frame cold boots."
                 .to_string(),
             vec![
-                "Split heavy uorc_decompress and gltf-json paths into an on-demand lazy Wasm module so verdant-uorc.wasm drops below 2.0 MiB."
+                "Keep uorc-ncm-decode native-only and audit gltf-json / serde_json monomorphizations inside verdant-uorc.wasm."
                     .to_string(),
                 "Maintain Blank Frame strictly under 30720 B with DecompressionStream('gzip')."
                     .to_string(),

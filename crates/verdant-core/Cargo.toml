@@ -12,9 +12,10 @@ keywords.workspace = true
 categories.workspace = true
 
 [features]
-default = ["uorc-streaming", "uorc-wasm-decode", "wgsl-oracle", "capsule-gzip", "gltf-image-decode"]
-uorc-streaming = ["dep:uorc", "uorc-wasm-decode"]
-uorc-wasm-decode = ["dep:uorc_decompress"]
+default = ["uorc-streaming", "uorc-wasm-decode", "uorc-ncm-decode", "wgsl-oracle", "capsule-gzip", "gltf-image-decode"]
+uorc-streaming = ["dep:uorc", "uorc-wasm-decode", "uorc-ncm-decode"]
+uorc-wasm-decode = []
+uorc-ncm-decode = ["dep:uorc_decompress"]
 wgsl-oracle = ["dep:naga"]
 capsule-gzip = ["dep:flate2"]
 gltf-image-decode = ["gltf/import"]

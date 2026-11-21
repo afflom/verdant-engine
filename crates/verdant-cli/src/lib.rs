@@ -1016,6 +1016,8 @@ pub fn run_cli(args: &[String]) -> Result<String, CliCommandError> {
             let mut out_dir = std::path::PathBuf::from("dist/stitch-release");
             let mut default_uri = "stitch://verdant/studio".to_string();
             let mut relays: Vec<String> = Vec::new();
+            let mut authority_ledger_path: Option<std::path::PathBuf> = None;
+            let mut approval_cert_path: Option<std::path::PathBuf> = None;
             let mut i = two;
             while i < args.len() {
                 match args[i].as_str() {
@@ -1043,11 +1045,56 @@ pub fn run_cli(args: &[String]) -> Result<String, CliCommandError> {
                         default_uri = args[i + 1].clone();
                         i += two;
                     }
+                    "--authority-ledger" if i + 1 < args.len() => {
+                        authority_ledger_path = Some(std::path::PathBuf::from(&args[i + 1]));
+                        i += two;
+                    }
+                    "--approval-cert" if i + 1 < args.len() => {
+                        approval_cert_path = Some(std::path::PathBuf::from(&args[i + 1]));
+                        i += two;
+                    }
                     _ => i += 1,
                 }
             }
             match action {
                 "pack" => {
+                    if authority_ledger_path.is_some() != approval_cert_path.is_some() {
+                        return Err(CliCommandError::InvalidUsage {
+                            usage: "release pack requires both --authority-ledger <path> and --approval-cert <path> together".to_string(),
+                        });
+                    }
+                    if let (Some(ledger_p), Some(cert_p)) =
+                        (authority_ledger_path, approval_cert_path)
+                    {
+                        let ledger_raw = std::fs::read_to_string(&ledger_p).map_err(|e| {
+                            CliCommandError::IoFailure {
+                                path: ledger_p.display().to_string(),
+                                reason: e.to_string(),
+                            }
+                        })?;
+                        let cert_raw = std::fs::read_to_string(&cert_p).map_err(|e| {
+                            CliCommandError::IoFailure {
+                                path: cert_p.display().to_string(),
+                                reason: e.to_string(),
+                            }
+                        })?;
+                        let expected_target =
+                            format!("v{}", version.trim().trim_start_matches('v'));
+                        let req_json = format!(
+                            r#"{{"ledger":{ledger_raw},"command":{{"cmd":"verifyApprovalCertificate","certificate":{cert_raw},"expected_target_kappa":"{}","expected_action":"cutRelease"}}}}"#,
+                            expected_target.replace('\\', "\\\\").replace('"', "\\\"")
+                        );
+                        let resp =
+                            verdant_core::authority::sovereign_authority_exec_json(&req_json);
+                        if !resp.contains("\"ok\":true") {
+                            return Err(CliCommandError::ValidationRejected {
+                                command: "release pack".to_string(),
+                                diagnostic: format!(
+                                    "sovereign approval certificate refused: {resp}"
+                                ),
+                            });
+                        }
+                    }
                     let pin = ch
                         .pack_repo_release_capsule(
                             &root,

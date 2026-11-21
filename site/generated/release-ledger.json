@@ -4,10 +4,10 @@
   "authorityId": "AUTH-SEMVER-CHANGE-KPI",
   "currentVersion": {
     "major": 2,
-    "minor": 13,
+    "minor": 14,
     "patch": 0
   },
-  "releaseEpoch": 17,
+  "releaseEpoch": 18,
   "history": [
     {
       "version": "0.1.0",
@@ -147,6 +147,13 @@
       "releaseEpoch": 17,
       "bumpKind": "minor",
       "summary": "M21: Sub-1500L Rust modularity (179 lifted modules), sub-1125L shipped JS decomposition, wasm32 governance-catalog trim & 421 MIR-lifted functions (1164 residue / 1321 uncertified)",
+      "citedAuthority": "AUTH-SEMVER-CHANGE-KPI"
+    },
+    {
+      "version": "2.14.0",
+      "releaseEpoch": 18,
+      "bumpKind": "minor",
+      "summary": "M22: Sub-2.0 MiB browser verdant-uorc.wasm breakthrough (1.96 MB raw / 554 KiB gz, -70% from 6.56 MB), 1.02 MiB .holo capsule, CLI/lifecycle-gate ApprovalCertificate custody & 454 MIR-lifted functions (1162 residue / 1319 uncertified)",
       "citedAuthority": "AUTH-SEMVER-CHANGE-KPI"
     }
   ]

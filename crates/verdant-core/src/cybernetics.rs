@@ -105,17 +105,10 @@ impl ContainerGrantMatrix {
     /// Evaluates `prism_kernel::containerOrganAllowed` for `organ`.
     #[must_use]
     pub fn is_allowed(&self, organ: ContainerOrgan) -> bool {
+        let always = organ.is_always_sandboxed();
         match self.records.get(&organ) {
-            Some(rec) => verdant_tensor::scalars::container_organ_access_admitted(
-                rec.explicitly_denied,
-                rec.explicitly_granted,
-                organ.is_always_sandboxed(),
-            ),
-            None => verdant_tensor::scalars::container_organ_access_admitted(
-                false,
-                false,
-                organ.is_always_sandboxed(),
-            ),
+            Some(rec) => !rec.explicitly_denied && (rec.explicitly_granted || always),
+            None => always,
         }
     }
 

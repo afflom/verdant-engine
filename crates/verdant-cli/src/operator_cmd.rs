@@ -77,7 +77,7 @@ pub(crate) fn run_operator_command(args: &[String]) -> Result<String, CliCommand
             let mut i = two;
             while i < args.len() {
                 match args[i].as_str() {
-                    "--root" if i + 1 < args.len() => {
+                    "--root" | "--repo" if i + 1 < args.len() => {
                         root = std::path::PathBuf::from(&args[i + 1]);
                         i += two;
                     }
@@ -137,7 +137,7 @@ pub(crate) fn run_operator_command(args: &[String]) -> Result<String, CliCommand
             let mut i = two;
             while i < args.len() {
                 match args[i].as_str() {
-                    "--root" if i + 1 < args.len() => {
+                    "--root" | "--repo" if i + 1 < args.len() => {
                         root = std::path::PathBuf::from(&args[i + 1]);
                         i += two;
                     }
@@ -201,7 +201,7 @@ pub(crate) fn run_operator_command(args: &[String]) -> Result<String, CliCommand
             let mut i = two;
             while i < args.len() {
                 match args[i].as_str() {
-                    "--root" if i + 1 < args.len() => {
+                    "--root" | "--repo" if i + 1 < args.len() => {
                         root = std::path::PathBuf::from(&args[i + 1]);
                         i += two;
                     }
@@ -250,7 +250,7 @@ pub(crate) fn run_operator_command(args: &[String]) -> Result<String, CliCommand
             let mut i = two;
             while i < args.len() {
                 match args[i].as_str() {
-                    "--root" if i + 1 < args.len() => {
+                    "--root" | "--repo" if i + 1 < args.len() => {
                         root = std::path::PathBuf::from(&args[i + 1]);
                         i += two;
                     }
@@ -346,7 +346,7 @@ pub(crate) fn run_operator_command(args: &[String]) -> Result<String, CliCommand
             let mut i = two;
             while i < args.len() {
                 match args[i].as_str() {
-                    "--root" if i + 1 < args.len() => {
+                    "--root" | "--repo" if i + 1 < args.len() => {
                         root = std::path::PathBuf::from(&args[i + 1]);
                         i += two;
                     }
@@ -410,15 +410,25 @@ pub(crate) fn run_operator_command(args: &[String]) -> Result<String, CliCommand
             let mut run_browser_gates = false;
             let mut write_report = false;
             let mut expected_tag: Option<String> = None;
+            let mut authority_ledger_path: Option<std::path::PathBuf> = None;
+            let mut approval_cert_path: Option<std::path::PathBuf> = None;
             let mut i = two;
             while i < args.len() {
                 match args[i].as_str() {
-                    "--root" if i + 1 < args.len() => {
+                    "--root" | "--repo" if i + 1 < args.len() => {
                         root = std::path::PathBuf::from(&args[i + 1]);
                         i += two;
                     }
                     "--tag" if i + 1 < args.len() => {
                         expected_tag = Some(args[i + 1].clone());
+                        i += two;
+                    }
+                    "--authority-ledger" if i + 1 < args.len() => {
+                        authority_ledger_path = Some(std::path::PathBuf::from(&args[i + 1]));
+                        i += two;
+                    }
+                    "--approval-cert" if i + 1 < args.len() => {
+                        approval_cert_path = Some(std::path::PathBuf::from(&args[i + 1]));
                         i += two;
                     }
                     "--full" => {
@@ -440,6 +450,37 @@ pub(crate) fn run_operator_command(args: &[String]) -> Result<String, CliCommand
                         i += 1;
                     }
                     _ => i += 1,
+                }
+            }
+            if authority_ledger_path.is_some() != approval_cert_path.is_some() {
+                return Err(CliCommandError::InvalidUsage {
+                    usage: "operator lifecycle-gate requires both --authority-ledger <path> and --approval-cert <path> together".to_string(),
+                });
+            }
+            if let (Some(ledger_p), Some(cert_p)) = (authority_ledger_path, approval_cert_path) {
+                let ledger_raw = std::fs::read_to_string(&ledger_p).map_err(|e| {
+                    CliCommandError::IoFailure {
+                        path: ledger_p.display().to_string(),
+                        reason: e.to_string(),
+                    }
+                })?;
+                let cert_raw = std::fs::read_to_string(&cert_p).map_err(|e| {
+                    CliCommandError::IoFailure {
+                        path: cert_p.display().to_string(),
+                        reason: e.to_string(),
+                    }
+                })?;
+                let expected_target = expected_tag.clone().unwrap_or_default();
+                let req_json = format!(
+                    r#"{{"ledger":{ledger_raw},"command":{{"cmd":"verifyApprovalCertificate","certificate":{cert_raw},"expected_target_kappa":"{}","expected_action":"cutRelease"}}}}"#,
+                    expected_target.replace('\\', "\\\\").replace('"', "\\\"")
+                );
+                let resp = verdant_core::authority::sovereign_authority_exec_json(&req_json);
+                if !resp.contains("\"ok\":true") {
+                    return Err(CliCommandError::ValidationRejected {
+                        command: "operator lifecycle-gate".to_string(),
+                        diagnostic: format!("sovereign approval certificate refused: {resp}"),
+                    });
                 }
             }
             let opts = verdant_core::operator::LifecycleGateOptions {
@@ -496,7 +537,7 @@ pub(crate) fn run_operator_command(args: &[String]) -> Result<String, CliCommand
             let mut i = two;
             while i < args.len() {
                 match args[i].as_str() {
-                    "--root" if i + 1 < args.len() => {
+                    "--root" | "--repo" if i + 1 < args.len() => {
                         root = std::path::PathBuf::from(&args[i + 1]);
                         i += two;
                     }
@@ -532,7 +573,7 @@ pub(crate) fn run_operator_command(args: &[String]) -> Result<String, CliCommand
             let mut i = two;
             while i < args.len() {
                 match args[i].as_str() {
-                    "--root" if i + 1 < args.len() => {
+                    "--root" | "--repo" if i + 1 < args.len() => {
                         root = std::path::PathBuf::from(&args[i + 1]);
                         i += two;
                     }
@@ -567,7 +608,7 @@ pub(crate) fn run_operator_command(args: &[String]) -> Result<String, CliCommand
             let mut i = two;
             while i < args.len() {
                 match args[i].as_str() {
-                    "--root" if i + 1 < args.len() => {
+                    "--root" | "--repo" if i + 1 < args.len() => {
                         root = std::path::PathBuf::from(&args[i + 1]);
                         i += two;
                     }
@@ -596,7 +637,7 @@ pub(crate) fn run_operator_command(args: &[String]) -> Result<String, CliCommand
             let mut i = two;
             while i < args.len() {
                 match args[i].as_str() {
-                    "--root" if i + 1 < args.len() => {
+                    "--root" | "--repo" if i + 1 < args.len() => {
                         root = std::path::PathBuf::from(&args[i + 1]);
                         i += two;
                     }
@@ -639,7 +680,7 @@ pub(crate) fn run_operator_command(args: &[String]) -> Result<String, CliCommand
             let mut i = two;
             while i < args.len() {
                 match args[i].as_str() {
-                    "--root" if i + 1 < args.len() => {
+                    "--root" | "--repo" if i + 1 < args.len() => {
                         root = std::path::PathBuf::from(&args[i + 1]);
                         i += two;
                     }
@@ -727,7 +768,7 @@ pub(crate) fn run_operator_command(args: &[String]) -> Result<String, CliCommand
             let mut i = two;
             while i < args.len() {
                 match args[i].as_str() {
-                    "--root" if i + 1 < args.len() => {
+                    "--root" | "--repo" if i + 1 < args.len() => {
                         root = std::path::PathBuf::from(&args[i + 1]);
                         i += two;
                     }
@@ -824,7 +865,7 @@ pub(crate) fn run_operator_command(args: &[String]) -> Result<String, CliCommand
             let mut i = two;
             while i < args.len() {
                 match args[i].as_str() {
-                    "--root" if i + 1 < args.len() => {
+                    "--root" | "--repo" if i + 1 < args.len() => {
                         root = std::path::PathBuf::from(&args[i + 1]);
                         i += two;
                     }
