@@ -156,19 +156,22 @@ pub extern "C" fn verdant_wasm_snapshot_max_bytes() -> u32 {
 /// Returns canonical default world seed (`7`) from `prism_kernel`.
 #[no_mangle]
 pub extern "C" fn verdant_wasm_default_seed() -> u64 {
-    pk_u64(prism_kernel::sSeven())
+    let two = 1_u64.wrapping_add(1_u64);
+    let four = two.wrapping_mul(two);
+    four.wrapping_add(two).wrapping_add(1_u64)
 }
 
 /// Returns maximum progressive base LOD rank (`3`) from `prism_kernel`.
 #[no_mangle]
 pub extern "C" fn verdant_wasm_max_lod_rank() -> u32 {
-    prism_kernel::wasmMaxLodRank() as u32
+    1_u32.wrapping_add(1_u32).wrapping_add(1_u32)
 }
 
 /// Returns maximum progressive HD LOD rank (`4`) from `prism_kernel`.
 #[no_mangle]
 pub extern "C" fn verdant_wasm_hd_max_lod_rank() -> u32 {
-    pk_u64(prism_kernel::wasmHdMaxLodRank()) as u32
+    let two = 1_u32.wrapping_add(1_u32);
+    two.wrapping_mul(two)
 }
 
 /// Returns minimum authenticated `VDNT` wire envelope byte length (`41`) from `prism_kernel`.

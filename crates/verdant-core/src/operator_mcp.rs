@@ -369,6 +369,20 @@ impl VerdantOperatorChannel {
                         }
                     },
                     {
+                        "name": "verdant_authority_exec",
+                        "description": "Execute a GitHub-free Sovereign Authority Ledger & Signing Request Gate operation (genesis init, submit signing request, Admin review approve/reject, finalize under M-of-N quorum, add/depart/revoke Admin with immediate approval invalidation, standing grant, PROV-O work item, historical commit or monotonic chain verification — VE-70).",
+                        "inputSchema": {
+                            "type": "object",
+                            "properties": {
+                                "ledgerPath": { "type": "string" },
+                                "initRepoName": { "type": "string" },
+                                "initOwnerPrismId": { "type": "string" },
+                                "initOwnerSecret": { "type": "string" },
+                                "command": { "type": "object" }
+                            }
+                        }
+                    },
+                    {
                         "name": "verdant_ratchet_lift",
                         "description": "Autonomous closed-loop Verdant self-lift (VE-47): verifies 13-Manager Total Ownership & <=30KiB zero-account Blank Frame, synthesizes all Manager manifests, optionally advances SemVer via mgr-change-release, lifts 100% of Rust/LexLean/Viewpoint modules into VerdantVcs, packs & 4-of-8 verifies verdant-vX.Y.Z.holo, pins site/frame/frame-pin.json, and emits site/generated/self-host-ratchet-manifest.toml to satisfy prism/parametric-ratchet/2.",
                         "inputSchema": {
@@ -1111,6 +1125,82 @@ impl VerdantOperatorChannel {
                                 serde_json::to_value(&rep).unwrap_or(serde_json::Value::Null),
                             ),
                             Err(e) => tool_out(true, serde_json::json!({ "error": e.to_string() })),
+                        }
+                    }
+                    "verdant_authority_exec" => {
+                        let rel_ledger = args
+                            .get("ledgerPath")
+                            .and_then(|v| v.as_str())
+                            .unwrap_or(".verdant/authority-ledger.json");
+                        let ledger_path = if Path::new(rel_ledger).is_absolute() {
+                            std::path::PathBuf::from(rel_ledger)
+                        } else {
+                            repo_root.join(rel_ledger)
+                        };
+                        if let Some(owner) = args.get("initOwnerPrismId").and_then(|v| v.as_str()) {
+                            let rname = args
+                                .get("initRepoName")
+                                .and_then(|v| v.as_str())
+                                .unwrap_or("verdant-engine");
+                            let sec = args
+                                .get("initOwnerSecret")
+                                .and_then(|v| v.as_str())
+                                .unwrap_or("");
+                            match crate::authority::SovereignAuthorityLedger::init_genesis(
+                                rname, owner, sec,
+                            ) {
+                                Ok(ledger) => {
+                                    if let Some(parent) = ledger_path.parent() {
+                                        let _ = std::fs::create_dir_all(parent);
+                                    }
+                                    let _ = std::fs::write(
+                                        &ledger_path,
+                                        serde_json::to_string_pretty(&ledger).unwrap_or_default(),
+                                    );
+                                    tool_out(
+                                        false,
+                                        serde_json::to_value(&ledger)
+                                            .unwrap_or(serde_json::Value::Null),
+                                    )
+                                }
+                                Err(e) => {
+                                    tool_out(true, serde_json::json!({ "error": e.to_string() }))
+                                }
+                            }
+                        } else {
+                            let cmd_val = args
+                                .get("command")
+                                .cloned()
+                                .unwrap_or_else(|| serde_json::json!({ "cmd": "verifyChain" }));
+                            let res = std::fs::read_to_string(&ledger_path)
+                                .map_err(|e| {
+                                    format!("read ledger `{}`: {e}", ledger_path.display())
+                                })
+                                .and_then(|raw| {
+                                    serde_json::from_str::<
+                                        crate::authority::SovereignAuthorityLedger,
+                                    >(&raw)
+                                    .map_err(|e| format!("parse ledger: {e}"))
+                                })
+                                .and_then(|mut ledger| {
+                                    let cmd: crate::authority::AuthorityCommand =
+                                        serde_json::from_value(cmd_val)
+                                            .map_err(|e| format!("invalid command: {e}"))?;
+                                    let out = ledger.execute(cmd).map_err(|e| e.to_string())?;
+                                    std::fs::write(
+                                        &ledger_path,
+                                        serde_json::to_string_pretty(&ledger).unwrap_or_default(),
+                                    )
+                                    .map_err(|e| format!("write ledger: {e}"))?;
+                                    Ok(out)
+                                });
+                            match res {
+                                Ok(out) => tool_out(
+                                    false,
+                                    serde_json::to_value(&out).unwrap_or(serde_json::Value::Null),
+                                ),
+                                Err(e) => tool_out(true, serde_json::json!({ "error": e })),
+                            }
                         }
                     }
                     other => err_resp(err_params, format!("unknown MCP tool `{other}`")),

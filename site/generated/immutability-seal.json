@@ -2,7 +2,7 @@
   "spec": "verdant/view-immutability-seal/1",
   "owningManager": "mgr-observer-executive",
   "managerKappaHex": "5ddc18b2df519a508614f8afd961bde4d3692dec65de71e4bd80d1045e621c27",
-  "sealRootSha256Hex": "303559e1e67afcd28fbd7b6c8d98ec6e3ba3c07846e7465540989a7ad27d458f",
+  "sealRootSha256Hex": "21fe6e0923429a6fd573bdb03048799a85c952b59ccb8fd0a3bb8c2306c3adf1",
   "files": [
     {
       "path": "site/card.html",
@@ -94,8 +94,8 @@
         "AUTH-ISO-42010-VIEWPOINTS",
         "AUTH-SEMVER-CHANGE-KPI"
       ],
-      "bytes": 28809,
-      "sha256Hex": "a321021310b053418025f52b0978a00b27a568548a48d9f2c4df67f7f58f1d9e",
+      "bytes": 28859,
+      "sha256Hex": "ce96054e2ae1ae666ce382893178fb1ee7fa58a9e45aea8f5908480d84569f00",
       "lastDirectiveKappaHex": "7447a6ad81b66b8c718a8588087d26ab958893caf47cfeacb6dea8bf262ca8e6"
     },
     {
@@ -184,8 +184,8 @@
         "AUTH-SEMVER-CHANGE-KPI",
         "AUTH-ISO-42010-VIEWPOINTS"
       ],
-      "bytes": 26940,
-      "sha256Hex": "aa4fdce529027651006a21450839cf27cf58e21a5798a612416b7f769582497b",
+      "bytes": 28458,
+      "sha256Hex": "1beb12cdf0afbf503d31bc5e5246f0e3ef4a8c3298a1125955d79d2183c0a1d3",
       "lastDirectiveKappaHex": "7447a6ad81b66b8c718a8588087d26ab958893caf47cfeacb6dea8bf262ca8e6"
     },
     {
@@ -198,7 +198,7 @@
         "AUTH-SEMVER-CHANGE-KPI"
       ],
       "bytes": 8527,
-      "sha256Hex": "9a9fe647419f0980f8b817de157029f109ee1b646c9e094cdf249981cbe05332",
+      "sha256Hex": "fa7c926bdd50bbeaf530f4882d55ce38fb68750089c176389859ad34b845af77",
       "lastDirectiveKappaHex": "7447a6ad81b66b8c718a8588087d26ab958893caf47cfeacb6dea8bf262ca8e6"
     },
     {
@@ -211,7 +211,7 @@
         "AUTH-SEMVER-CHANGE-KPI"
       ],
       "bytes": 2104,
-      "sha256Hex": "6e8ccef7f44b9f12cab821f268f1edcd5dccff89f23ae8cf788132cd7008a402",
+      "sha256Hex": "ae4411c245621b89e20c587145d45d6c69bb6870c6b484ee883cd4273609bd35",
       "lastDirectiveKappaHex": "7447a6ad81b66b8c718a8588087d26ab958893caf47cfeacb6dea8bf262ca8e6"
     }
   ]

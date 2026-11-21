@@ -812,6 +812,75 @@ pub(crate) fn run_operator_command(args: &[String]) -> Result<String, CliCommand
                 rep.manifest_path
             ))
         }
+        "authority" => {
+            let two = 1usize + 1usize;
+            let mut root =
+                std::env::current_dir().unwrap_or_else(|_| std::path::PathBuf::from("."));
+            let mut ledger_path = ".verdant/authority-ledger.json".to_string();
+            let mut init_owner: Option<String> = None;
+            let mut owner_secret = String::new();
+            let mut repo_name = "verdant-engine".to_string();
+            let mut cmd_json = r#"{"cmd":"verifyChain"}"#.to_string();
+            let mut i = two;
+            while i < args.len() {
+                match args[i].as_str() {
+                    "--root" if i + 1 < args.len() => {
+                        root = std::path::PathBuf::from(&args[i + 1]);
+                        i += two;
+                    }
+                    "--ledger" if i + 1 < args.len() => {
+                        ledger_path = args[i + 1].clone();
+                        i += two;
+                    }
+                    "--init-owner" if i + 1 < args.len() => {
+                        init_owner = Some(args[i + 1].clone());
+                        i += two;
+                    }
+                    "--owner-secret" if i + 1 < args.len() => {
+                        owner_secret = args[i + 1].clone();
+                        i += two;
+                    }
+                    "--repo-name" if i + 1 < args.len() => {
+                        repo_name = args[i + 1].clone();
+                        i += two;
+                    }
+                    "--cmd-json" if i + 1 < args.len() => {
+                        cmd_json = args[i + 1].clone();
+                        i += two;
+                    }
+                    _ => i += 1,
+                }
+            }
+            let esc = |s: &str| s.replace('\\', "\\\\").replace('"', "\\\"");
+            let rpc = if let Some(owner) = init_owner {
+                format!(
+                    r#"{{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{{"name":"verdant_authority_exec","arguments":{{"ledgerPath":"{}","initRepoName":"{}","initOwnerPrismId":"{}","initOwnerSecret":"{}"}}}}}}"#,
+                    esc(&ledger_path),
+                    esc(&repo_name),
+                    esc(&owner),
+                    esc(&owner_secret)
+                )
+            } else {
+                format!(
+                    r#"{{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{{"name":"verdant_authority_exec","arguments":{{"ledgerPath":"{}","command":{}}}}}}}"#,
+                    esc(&ledger_path),
+                    cmd_json
+                )
+            };
+            let out = ch.handle_mcp_jsonrpc_line(&root, &rpc).ok_or_else(|| {
+                CliCommandError::ValidationRejected {
+                    command: "operator authority".to_string(),
+                    diagnostic: "empty authority MCP response".to_string(),
+                }
+            })?;
+            if out.contains(r#""isError":true"#) {
+                return Err(CliCommandError::ValidationRejected {
+                    command: "operator authority".to_string(),
+                    diagnostic: out,
+                });
+            }
+            Ok(out)
+        }
         "session" => {
             use std::io::BufRead;
             let two = 1usize + 1usize;

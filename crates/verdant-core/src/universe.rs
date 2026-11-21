@@ -67,14 +67,16 @@ pub fn canonical_cell_span_meters() -> f64 {
         .max(1)) as f64
 }
 
-#[cfg(not(target_arch = "wasm32"))]
 fn cell_err(msg: &'static str) -> String {
-    msg.to_string()
-}
-
-#[cfg(target_arch = "wasm32")]
-fn cell_err(_msg: &'static str) -> String {
-    String::new()
+    #[cfg(not(target_arch = "wasm32"))]
+    {
+        msg.to_string()
+    }
+    #[cfg(target_arch = "wasm32")]
+    {
+        let _ = msg;
+        String::new()
+    }
 }
 
 fn canonicalize_axis(

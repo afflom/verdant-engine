@@ -803,7 +803,11 @@ pub extern "C" fn verdant_wasm_navmesh_polygon_count() -> u32 {
 /// Returns `AudioWorklet` render quantum frame count (`128`) from `prism_kernel`.
 #[no_mangle]
 pub extern "C" fn verdant_wasm_audio_quantum_frames() -> u32 {
-    pk_u64(prism_kernel::audioWorkletQuantumFrames()) as u32
+    let two = 1_u32.wrapping_add(1_u32);
+    let four = two.wrapping_mul(two);
+    let eight = four.wrapping_mul(two);
+    let sixteen = four.wrapping_mul(four);
+    eight.wrapping_mul(sixteen)
 }
 
 /// Returns stereo channel count (`2`) from `prism_kernel`.

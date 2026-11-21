@@ -528,3 +528,9 @@ id = "VE-69"
 suite = "engine"
 level = "build"
 statement = "Verdant decouples browser verdant-uorc.wasm from uorc_compress, uorc_search, and static warm-state blobs onto uorc-wasm-decode with an inline UORC-SHA256-CHAIN-v1 raw-archive verifier/encoder and certified uorc_decompress::run fallback, cutting site/verdant-uorc.wasm by > 700 KiB raw to <= 3950000 bytes (sub-1 MiB gzipped) and tightening max_release_capsule_bytes <= 1550000 bytes across M1..M17"
+
+[[id]]
+id = "VE-70"
+suite = "engine"
+level = "build"
+statement = "Verdant realizes its Lean-proved GitHub-free sovereign governance Prism model (app/src/Governance.lex.tex, 838/838 fidelity, 10/10 ISO 15939 measures, 7 STRIDE threats/controls) in crates/verdant-core/src/authority.rs (CLI verdant operator authority + MCP verdant_authority_exec), enforcing Genesis Owner bootstrap, M-of-N Admin quorum with non-self-approval, monotonic prevEpochKappa chains, immediate revocation of departed Admin pending approvals and sole-attested standing grants, forward-secret boundary rekeying, anti-lockout succession, compromise quarantine, and >= 295 uorust MIR-lifted constructive functions (residue <= 1176)"

@@ -84,7 +84,7 @@ id = "AUTH-ISO-42010-VIEWPOINTS"
 name = "ISO/IEC/IEEE 42010:2022 Architecture Viewpoints, ISO/IEC/IEEE 12207:2017 ALM & Stitch App Catalog"
 citation = "ISO/IEC/IEEE 42010:2022 Software, systems and enterprise — Architecture description; ISO/IEC/IEEE 12207:2017 Software life cycle processes; ISO 9241-210:2019; W3C DTCG 2025.10; WCAG 2.2 AA; afflom/stitch"
 artifact = "catalogs/governance/iso42010-viewpoints.json"
-checksum = "6003269cb61fbe0fa1ee22485d1a2b7592990a8e4042dc5530c23d1c7b2e9cae"
+checksum = "07e16ad2e79dba747681fbb1499d5c4d14433215d9adbd679c59e5ff7b1e6bf8"
 statement = "ISO/IEC/IEEE 42010:2022 binds every Verdant surface, crate, Observer part, stream, and Stitch App Catalog archetype to an accountable Manager with explicit required elements, forbidden cross-contamination, and correspondence rules."
 realized_by = ["VE-42", "VE-44", "VE-45", "VE-47", "VE-52", "VE-53", "VE-54", "VE-55", "VE-61", "VE-63", "VE-65", "VE-67", "VE-68"]
 
@@ -104,13 +104,13 @@ citation = "afflom/stitch (identity/stitch.lock commit 68a9222a); RFC 2104 HMAC-
 artifact = "catalogs/governance/stitch-self-hosting.json"
 checksum = "0fcc72e63232e4208d8f060c1ae143ad312ab1dded678127e645189c26e9888c"
 statement = "Zero-account Prism-ID boundary encryption, k-of-n systematic Reed-Solomon erasure coding across multiple independent origins, reciprocal WebRTC peer seeding, monotonic quorum release pointers, budgeted peer admission, in-Verdant PROV-O Merkle revision control, live RFC 2789 Cargo Sparse Registry, and Zenodo archival provide uniform CIA guarantees without requiring external user accounts."
-realized_by = ["VE-43", "VE-44", "VE-46", "VE-47", "VE-48", "VE-49", "VE-51", "VE-54", "VE-60"]
+realized_by = ["VE-43", "VE-44", "VE-46", "VE-47", "VE-48", "VE-49", "VE-51", "VE-54", "VE-60", "VE-70"]
 
 [[authority]]
 id = "AUTH-SEMVER-CHANGE-KPI"
 name = "SemVer 2.0.0 Change/Version Governance, ISO/IEC/IEEE 12207 ALM & ISO/IEC/IEEE 15939 Observer KPIs"
 citation = "Semantic Versioning 2.0.0; ISO/IEC/IEEE 12207:2017 §6.3.5 Configuration Management & §6.3.7 Measurement; ISO/IEC/IEEE 15939:2017 Measurement process; Stafford Beer VSM S3/S4/S5"
 artifact = "catalogs/governance/change-roadmap-kpi.json"
-checksum = "bcaacd1df7dd13b7c23dbde661c9f907304302326f37760f3cfa97c62d6fbfa6"
-statement = "Accountable VSM Managers govern every Verdant and Prism facet including Knowledge, Change/Version, Security, Architecture, and Stakeholder Roadmap/KPIs across M1-M17, advancing SemVer Major/Minor/Patch versions exclusively when the Ratchet is applied and all Release Gates pass."
-realized_by = ["VE-45", "VE-46", "VE-47", "VE-48", "VE-49", "VE-50", "VE-51", "VE-52", "VE-53", "VE-54", "VE-55", "VE-56", "VE-57", "VE-58", "VE-59", "VE-60", "VE-61", "VE-62", "VE-63", "VE-64", "VE-65", "VE-66", "VE-67", "VE-68", "VE-69"]
+checksum = "ac9463c3c7415be2d4a990880754ffb6d3f9541fc8c116dc246c49f5b0dbd60f"
+statement = "Accountable VSM Managers govern every Verdant and Prism facet including Knowledge, Change/Version, Security, Architecture, and Stakeholder Roadmap/KPIs across M1-M18, advancing SemVer Major/Minor/Patch versions exclusively when the Ratchet is applied and all Release Gates pass."
+realized_by = ["VE-45", "VE-46", "VE-47", "VE-48", "VE-49", "VE-50", "VE-51", "VE-52", "VE-53", "VE-54", "VE-55", "VE-56", "VE-57", "VE-58", "VE-59", "VE-60", "VE-61", "VE-62", "VE-63", "VE-64", "VE-65", "VE-66", "VE-67", "VE-68", "VE-69", "VE-70"]

@@ -223,6 +223,16 @@
       "requiredCapabilities": ["VE-68", "VE-69"],
       "owningManagers": ["mgr-change-release", "mgr-runtime-stage", "mgr-verification-observatory", "mgr-observer-executive"],
       "ratchetRequirement": "Lift sync-prism-wasm, package-rust-crates, and live loopback HTTP verify-sparse-registry natively into verdant-core/src/build_ops.rs (CLI + MCP + thin JS delegates, >= 164 lifted modules, >= 280 MIR-lifted functions), decouple browser verdant-uorc.wasm from uorc_compress/uorc_search/static state blobs onto uorc-wasm-decode + inline UORC-SHA256-CHAIN-v1 verifier/encoder to tighten max_wasm_uorc_bytes <= 3950000 (< 1 MiB gzipped) and max_release_capsule_bytes <= 1550000."
+    },
+    {
+      "milestoneId": "M18",
+      "targetVersion": "2.10.0",
+      "tier": "minor",
+      "title": "GitHub-Free Sovereign Governance Prism Model (Governance.lex.tex, 838/838 Fidelity, 10/10 Measured), SovereignAuthorityLedger & SigningRequestGate Runtime (authority.rs) & 295+ MIR-Lifted Functions",
+      "stakeholders": ["creator", "developer", "systems-engineer", "operator", "auditor", "admin", "contributor"],
+      "requiredCapabilities": ["VE-70"],
+      "owningManagers": ["mgr-security-trust", "mgr-observer-executive", "mgr-architecture-design", "mgr-knowledge-provenance", "mgr-verification-observatory"],
+      "ratchetRequirement": "Complete 100% zero-residue Prism modeling across all 29 LexLean modules (Governance.lex.tex, 9 stakeholders/journeys, 3 OPM/UML views, 7 sovereign governance STRIDE threats/controls, 10/10 ISO 15939 measures), realize SovereignAuthorityLedger & SigningRequestGate in crates/verdant-core/src/authority.rs (CLI verdant operator authority + MCP verdant_authority_exec) with immediate departed-admin pending approval and standing grant revocation, and expand the shrink-only uorust MIR proof frontier >= 295 lifted constructive functions while shrinking residue <= 1176 and uncertified <= 1334."
     }
   ],
   "kpiCatalog": [

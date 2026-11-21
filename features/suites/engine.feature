@@ -446,3 +446,9 @@ Feature: engine
     Given crates/verdant-wasm/Cargo.toml, crates/verdant-core/src/streaming.rs, site/verdant-uorc.wasm, model/parametric-ratchet.toml [surface_ratchet], and catalogs/governance/change-roadmap-kpi.json
     When prism-fidelity audits [surface_ratchet] and the Observer evaluates all 17 milestones (M1..M17)
     Then verdant-wasm uorc-decoder enables only verdant-core/uorc-wasm-decode, site/verdant-uorc.wasm is at most 3950000 bytes, max_release_capsule_bytes is at most 1550000 bytes, and all 13 Observer KPIs pass across M1..M17
+
+  @VE-70 @build
+  Scenario: Verdant realizes its Lean-proved GitHub-free sovereign governance Prism model (app/src/Governance.lex.tex, 838/838 fidelity, 10/10 ISO 15939 measures, 7 STRIDE threats/controls) in crates/verdant-core/src/authority.rs (CLI verdant operator authority + MCP verdant_authority_exec), enforcing Genesis Owner bootstrap, M-of-N Admin quorum with non-self-approval, monotonic prevEpochKappa chains, immediate revocation of departed Admin pending approvals and sole-attested standing grants, forward-secret boundary rekeying, anti-lockout succession, compromise quarantine, and >= 295 uorust MIR-lifted constructive functions (residue <= 1176)
+    Given app/src/Governance.lex.tex, crates/verdant-core/src/authority.rs, crates/verdant-tensor/src/scalars.rs, crates/verdant-core/src/operator_mcp.rs, and frontier.toml
+    When Verdant runs genesis bootstrap, M-of-N signing request review, Admin departure approval revocation, compromise quarantine, anti-lockout refusal, MCP verdant_authority_exec, and audits [frontier_ratchet]
+    Then departed Admin unfinalized approvals and sole-attested standing grants revoke immediately while clean historical commits verify, MCP executes verdant_authority_exec, all 18 milestones M1..M18 pass, and frontier.toml proves >= 295 lifted functions with residue <= 1176

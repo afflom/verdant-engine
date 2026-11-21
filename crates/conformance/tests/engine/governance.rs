@@ -2572,3 +2572,255 @@ fn engine_ve_69() {
         kpi_rep.kpis
     );
 }
+
+/// `VE-70`: GitHub-free sovereign governance Prism model (`app/src/Governance.lex.tex`) realized in
+/// `crates/verdant-core/src/authority.rs` (CLI `verdant operator authority` + MCP
+/// `verdant_authority_exec`), enforcing Genesis Owner bootstrap, M-of-N Admin quorum with
+/// non-self-approval, immediate revocation of departed Admin pending approvals and standing grants,
+/// compromise quarantine vs historical verification, anti-lockout succession, and `>= 295`
+/// MIR-lifted constructive functions (`residue <= 1176`).
+#[test]
+fn engine_ve_70() {
+    use std::path::Path;
+    use verdant_core::authority::{
+        AuthorityCommand, DepartureReason, ReviewVerdictKind, SigningActionKind,
+        SigningRequestState, SovereignAuthorityLedger,
+    };
+    use verdant_core::operator::VerdantOperatorChannel;
+
+    let repo_root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+
+    // 1. Genesis bootstrap refuses GitHub/non-prism identities and anchors epoch 1 to repo owner:
+    assert!(SovereignAuthorityLedger::init_genesis("verdant", "github:owner", "sec").is_err());
+    let mut ledger =
+        SovereignAuthorityLedger::init_genesis("verdant-engine", "prism:owner-nora", "sec-nora")
+            .expect("genesis");
+    assert_eq!(ledger.current_epoch, 1);
+
+    // Anti-lockout refuses last-admin departure:
+    assert!(ledger
+        .execute(AuthorityCommand::DepartOrRevokeAdmin {
+            target_admin_prism_id: "prism:owner-nora".to_string(),
+            reason: DepartureReason::VoluntaryResignation,
+            compromise_floor_epoch: None,
+            approving_admins: vec![("prism:owner-nora".to_string(), "sec-nora".to_string())],
+            next_quorum_threshold_m: 1,
+        })
+        .is_err());
+
+    // Transition monotonically from 1-of-1 Genesis to 2-of-3 multi-admin quorum:
+    ledger
+        .execute(AuthorityCommand::AddAdmin {
+            candidate_prism_id: "prism:admin-kai".to_string(),
+            candidate_secret: "sec-kai".to_string(),
+            approving_admins: vec![("prism:owner-nora".to_string(), "sec-nora".to_string())],
+            next_quorum_threshold_m: 2,
+        })
+        .expect("add kai 2-of-2");
+    ledger
+        .execute(AuthorityCommand::AddAdmin {
+            candidate_prism_id: "prism:admin-vera".to_string(),
+            candidate_secret: "sec-vera".to_string(),
+            approving_admins: vec![
+                ("prism:owner-nora".to_string(), "sec-nora".to_string()),
+                ("prism:admin-kai".to_string(), "sec-kai".to_string()),
+            ],
+            next_quorum_threshold_m: 2,
+        })
+        .expect("add vera 2-of-3");
+
+    // 2. Contributor submits signing request; separation of duties + Admin departure revocation:
+    let sub = ledger
+        .execute(AuthorityCommand::SubmitSigningRequest {
+            requester_prism_id: "prism:contrib-ezra".to_string(),
+            requester_secret: "sec-ezra".to_string(),
+            action: SigningActionKind::CutRelease,
+            target_ref: "refs/tags/v2.10.0".to_string(),
+            target_kappa: "release-kappa-v2x10x0".to_string(),
+            expiry_epoch: 8,
+        })
+        .expect("submit signing request");
+    let req_k = sub.subject_kappa.clone();
+
+    // Kai & Vera approve (2-of-3 QuorumApproved, unfinalized), and Kai issues a sole standing grant:
+    ledger
+        .execute(AuthorityCommand::ReviewSigningRequest {
+            request_kappa: req_k.clone(),
+            admin_prism_id: "prism:admin-kai".to_string(),
+            admin_secret: "sec-kai".to_string(),
+            verdict: ReviewVerdictKind::Approve,
+            rationale: "Reviewed release".to_string(),
+        })
+        .expect("kai approve");
+    ledger
+        .execute(AuthorityCommand::ReviewSigningRequest {
+            request_kappa: req_k.clone(),
+            admin_prism_id: "prism:admin-vera".to_string(),
+            admin_secret: "sec-vera".to_string(),
+            verdict: ReviewVerdictKind::Approve,
+            rationale: "Audit green".to_string(),
+        })
+        .expect("vera approve");
+    let grant = ledger
+        .execute(AuthorityCommand::GrantStandingAccess {
+            grantee_prism_id: "prism:contrib-ezra".to_string(),
+            scope: "branch:release".to_string(),
+            attesting_admins: vec![("prism:admin-kai".to_string(), "sec-kai".to_string())],
+        })
+        .expect("standing grant");
+
+    // Kai leaves via KeyCompromise at epoch 4 (compromise floor epoch 3) -> immediate invalidation!
+    let dep = ledger
+        .execute(AuthorityCommand::DepartOrRevokeAdmin {
+            target_admin_prism_id: "prism:admin-kai".to_string(),
+            reason: DepartureReason::KeyCompromise,
+            compromise_floor_epoch: Some(3),
+            approving_admins: vec![
+                ("prism:owner-nora".to_string(), "sec-nora".to_string()),
+                ("prism:admin-vera".to_string(), "sec-vera".to_string()),
+            ],
+            next_quorum_threshold_m: 2,
+        })
+        .expect("revoke compromised kai");
+    assert_eq!(dep.invalidated_requests, 1);
+    assert_eq!(dep.revoked_grants, 1);
+    assert_eq!(ledger.boundary_key_epoch, 2);
+    assert_eq!(
+        ledger.requests[&req_k].state,
+        SigningRequestState::RevocationInvalidated
+    );
+    assert!(!ledger.standing_grants[&grant.subject_kappa].active);
+
+    // Finalizing before active replacement review MUST fail, and Kai signing again MUST fail:
+    assert!(ledger
+        .execute(AuthorityCommand::FinalizeSigningRequest {
+            request_kappa: req_k.clone(),
+        })
+        .is_err());
+    assert!(ledger
+        .execute(AuthorityCommand::ReviewSigningRequest {
+            request_kappa: req_k.clone(),
+            admin_prism_id: "prism:admin-kai".to_string(),
+            admin_secret: "sec-kai".to_string(),
+            verdict: ReviewVerdictKind::Approve,
+            rationale: "revoked replay".to_string(),
+        })
+        .is_err());
+
+    // Compromise floor quarantines epoch-3 commits signed by Kai, while epoch-2 prior commits stay valid:
+    assert!(ledger
+        .execute(AuthorityCommand::VerifyHistoricalCommit {
+            finalized_epoch: 3,
+            signer_prism_ids: vec![
+                "prism:owner-nora".to_string(),
+                "prism:admin-kai".to_string(),
+            ],
+        })
+        .is_err());
+    ledger
+        .execute(AuthorityCommand::VerifyHistoricalCommit {
+            finalized_epoch: 2,
+            signer_prism_ids: vec![
+                "prism:owner-nora".to_string(),
+                "prism:admin-kai".to_string(),
+            ],
+        })
+        .expect("pre-compromise epoch 2 historical commit stays valid");
+
+    // Nora approves -> Nora+Vera (2-of-2) finalizes cleanly, plus work item & chain verification:
+    ledger
+        .execute(AuthorityCommand::ReviewSigningRequest {
+            request_kappa: req_k.clone(),
+            admin_prism_id: "prism:owner-nora".to_string(),
+            admin_secret: "sec-nora".to_string(),
+            verdict: ReviewVerdictKind::Approve,
+            rationale: "Active quorum replacement approval".to_string(),
+        })
+        .expect("nora approve");
+    ledger
+        .execute(AuthorityCommand::FinalizeSigningRequest {
+            request_kappa: req_k.clone(),
+        })
+        .expect("finalize after active re-approval");
+    ledger
+        .execute(AuthorityCommand::VerifyChain)
+        .expect("monotonic chain valid");
+
+    // 3. MCP advertises and executes `verdant_authority_exec` end-to-end:
+    let mut ch = VerdantOperatorChannel::new("sunspire-regatta").expect("operator channel");
+    let list_out = ch
+        .handle_mcp_jsonrpc_line(
+            &repo_root,
+            r#"{"jsonrpc":"2.0","id":70,"method":"tools/list","params":{}}"#,
+        )
+        .expect("MCP tools/list");
+    assert!(list_out.contains("verdant_authority_exec"));
+    let tmp_ledger = std::env::temp_dir().join("verdant-ve70-authority-ledger.json");
+    let _ = std::fs::remove_file(&tmp_ledger);
+    let init_req = serde_json::json!({
+        "jsonrpc": "2.0",
+        "id": 71,
+        "method": "tools/call",
+        "params": {
+            "name": "verdant_authority_exec",
+            "arguments": {
+                "ledgerPath": tmp_ledger.display().to_string(),
+                "initRepoName": "verdant-engine",
+                "initOwnerPrismId": "prism:owner-nora",
+                "initOwnerSecret": "sec-nora"
+            }
+        }
+    })
+    .to_string();
+    let init_resp = ch
+        .handle_mcp_jsonrpc_line(&repo_root, &init_req)
+        .expect("MCP authority init");
+    assert!(init_resp.contains("verdant/sovereign-authority-ledger/1"));
+    let verify_req = serde_json::json!({
+        "jsonrpc": "2.0",
+        "id": 72,
+        "method": "tools/call",
+        "params": {
+            "name": "verdant_authority_exec",
+            "arguments": {
+                "ledgerPath": tmp_ledger.display().to_string(),
+                "command": { "cmd": "verifyChain" }
+            }
+        }
+    })
+    .to_string();
+    let verify_resp = ch
+        .handle_mcp_jsonrpc_line(&repo_root, &verify_req)
+        .expect("MCP authority verify");
+    assert!(verify_resp.contains("Verified monotonic authority chain"));
+    let _ = std::fs::remove_file(&tmp_ledger);
+
+    // 4. Frontier ratchet >= 295 lifted functions (residue <= 1176) & all 18 milestones M1..M18 pass:
+    let rep = prism_fidelity::ratchet::audit_parametric_ratchet(
+        &repo_root,
+        Path::new("model/parametric-ratchet.toml"),
+    )
+    .expect("live repo must pass all 4 ratchet layers");
+    assert!(
+        rep.frontier_lifted_functions >= 295,
+        "M18 must lift >= 295 constructive Rust functions, got {}",
+        rep.frontier_lifted_functions
+    );
+    assert!(
+        rep.frontier_residue_functions <= 1_176,
+        "M18 must shrink residue <= 1176, got {}",
+        rep.frontier_residue_functions
+    );
+    let kpi_rep = ch
+        .evaluate_observer_roadmap_kpis(&repo_root, true, true)
+        .expect("observer roadmap & KPI report");
+    assert!(
+        kpi_rep.milestones.len() >= 18,
+        "expected Milestones M1..M18"
+    );
+    assert_eq!(
+        kpi_rep.kpi_passed_count, kpi_rep.kpi_total_count,
+        "all Observer KPIs must pass (kpis={:?})",
+        kpi_rep.kpis
+    );
+}

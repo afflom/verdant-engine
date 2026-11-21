@@ -218,6 +218,7 @@
         "app/src/Production/ThreatModel.lex.tex",
         "app/src/Security.lex.tex",
         "app/src/Governance.lex.tex",
+        "crates/verdant-core/src/authority.rs",
         "crates/verdant-core/src/digest.rs",
         "crates/verdant-core/src/network.rs",
         "catalogs/governance/stitch-self-hosting.json",

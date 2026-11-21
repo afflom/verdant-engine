@@ -39,6 +39,7 @@
 
 pub mod animation;
 pub mod audio;
+pub mod authority;
 pub mod camera;
 pub mod character;
 pub mod collision;

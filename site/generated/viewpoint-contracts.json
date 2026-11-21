@@ -213,7 +213,7 @@
     },
     {
       "basisPrime": 73,
-      "kappaHex": "92a07272e164e3ee07ca6f971c1cfa620ce01e24b99bfbefc4ee792ae3c686b6",
+      "kappaHex": "55682c34dffd725d9c591e879c53c9727ae595525f55e04a85030912410f058d",
       "spec": {
         "almPhases": [
           "security",
@@ -243,6 +243,7 @@
           "app/src/Production/ThreatModel.lex.tex",
           "app/src/Security.lex.tex",
           "app/src/Governance.lex.tex",
+          "crates/verdant-core/src/authority.rs",
           "crates/verdant-core/src/digest.rs",
           "crates/verdant-core/src/network.rs",
           "catalogs/governance/stitch-self-hosting.json",

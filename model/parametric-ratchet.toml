@@ -57,10 +57,10 @@ max_unlifted_workspace_modules = 0
 
 [frontier_ratchet]
 frontier_register = "frontier.toml"
-frontier_rust_tree_sha256 = "4a6b46814e4731633f6c3f3b93c4edcefdffb106bdd2be0f27c2ab5ac148cee9"
-min_lifted_functions = 280
-max_residue_functions = 1177
-max_uncertified_functions = 1334
+frontier_rust_tree_sha256 = "bff63238e0cc097b5c6594f1727f2b54f2fce0c58ad3da915f59674f3e8d2349"
+min_lifted_functions = 298
+max_residue_functions = 1175
+max_uncertified_functions = 1332
 
 [surface_ratchet]
 wasm_core_path = "site/verdant-wasm.wasm"

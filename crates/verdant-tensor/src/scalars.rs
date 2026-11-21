@@ -563,6 +563,20 @@ pub const fn modal_bar_mode_index_valid(idx: u32) -> bool {
     idx < five_u32()
 }
 
+/// Constructive `7_u64` (`4 + 3`) lifted by `uorust`.
+#[inline(always)]
+#[must_use]
+pub const fn seven_u64() -> u64 {
+    four_u64().wrapping_add(three_u64())
+}
+
+/// Constructive `128_u32` (`8 * 16`) lifted by `uorust`.
+#[inline(always)]
+#[must_use]
+pub const fn hundred_twenty_eight_u32() -> u32 {
+    eight_u32().wrapping_mul(sixteen_u32())
+}
+
 /// Pure MIR-lifted `.crate` tarball non-empty byte guard.
 #[must_use]
 pub const fn crate_tarball_nonempty(bytes: u64) -> bool {
@@ -573,4 +587,180 @@ pub const fn crate_tarball_nonempty(bytes: u64) -> bool {
 #[must_use]
 pub const fn uorc_stream_nonempty(bytes: u64) -> bool {
     bytes > 0
+}
+
+/// Pure MIR-lifted genesis owner bootstrap predicate (`Governance::genesisBootstrapValid`).
+#[must_use]
+pub const fn genesis_bootstrap_valid(
+    epoch: u64,
+    genesis_owner_is_first_admin: bool,
+    prism_id_non_extractable: bool,
+    requires_github_account: bool,
+) -> bool {
+    epoch == 1
+        && genesis_owner_is_first_admin
+        && prism_id_non_extractable
+        && !requires_github_account
+}
+
+/// Pure MIR-lifted M-of-N Admin quorum threshold predicate (`Governance::quorumThresholdValid`).
+/// Enforces `1 <= M <= N`, and once multi-admin custody is active (`N >= 2`), requires `M >= 2`.
+#[must_use]
+pub const fn quorum_threshold_valid(threshold_m: u64, active_admins_n: u64) -> bool {
+    let two = two_u64();
+    let in_bounds = threshold_m >= 1 && threshold_m <= active_admins_n;
+    let multi_guard = if active_admins_n >= two {
+        threshold_m >= two
+    } else {
+        true
+    };
+    in_bounds && multi_guard
+}
+
+/// Pure MIR-lifted monotonic authority epoch advancement and anti-lockout guard
+/// (`Governance::authorityEpochAdvanceValid`).
+#[must_use]
+pub const fn authority_epoch_advance_valid(
+    prev_epoch: u64,
+    next_epoch: u64,
+    prev_kappa_bound: bool,
+    quorum_met: bool,
+    remaining_admins: u64,
+    next_threshold_m: u64,
+) -> bool {
+    let monotonic = next_epoch >= prev_epoch.saturating_add(1);
+    monotonic
+        && prev_kappa_bound
+        && quorum_met
+        && remaining_admins >= 1
+        && quorum_threshold_valid(next_threshold_m, remaining_admins)
+}
+
+/// Pure MIR-lifted active-epoch Admin signature admission (`Governance::adminSignatureValidAtEpoch`).
+#[must_use]
+pub const fn admin_signature_valid_at_epoch(
+    signer_in_active_set: bool,
+    signer_revoked: bool,
+    signed_epoch: u64,
+    current_epoch: u64,
+) -> bool {
+    signer_in_active_set && !signer_revoked && signed_epoch == current_epoch
+}
+
+/// Pure MIR-lifted pending-request approval survival check across Admin departure and separation
+/// of duties (`Governance::pendingApprovalSurvivesDeparture`).
+#[must_use]
+pub const fn pending_approval_survives_departure(
+    total_approvals: u64,
+    departed_admin_approvals: u64,
+    quorum_threshold_m: u64,
+    author_self_approved: bool,
+    active_admins_n: u64,
+) -> bool {
+    let surviving = total_approvals.saturating_sub(departed_admin_approvals);
+    let independent = if author_self_approved && active_admins_n >= two_u64() {
+        surviving.saturating_sub(1)
+    } else {
+        surviving
+    };
+    quorum_threshold_valid(quorum_threshold_m, active_admins_n) && independent >= quorum_threshold_m
+}
+
+/// Pure MIR-lifted standing access-grant validity after granter departure
+/// (`Governance::standingGrantValidAfterDeparture`).
+#[must_use]
+pub const fn standing_grant_valid_after_departure(
+    granter_revoked: bool,
+    co_signed_by_active_quorum: bool,
+    boundary_keys_rotated: bool,
+) -> bool {
+    if granter_revoked {
+        co_signed_by_active_quorum && boundary_keys_rotated
+    } else {
+        true
+    }
+}
+
+/// Pure MIR-lifted historical commit verification and compromise-floor quarantine predicate
+/// (`Governance::historicalCommitValid`).
+#[must_use]
+pub const fn historical_commit_valid(
+    finalized_epoch: u64,
+    revoked_at_epoch: u64,
+    was_compromise: bool,
+    compromise_floor_epoch: u64,
+    epoch_quorum_valid: bool,
+) -> bool {
+    let clean_prior = epoch_quorum_valid && finalized_epoch < revoked_at_epoch;
+    let compromise_ok = if was_compromise {
+        finalized_epoch < compromise_floor_epoch
+    } else {
+        true
+    };
+    clean_prior && compromise_ok
+}
+
+/// Pure MIR-lifted end-to-end signing request admission predicate
+/// (`Governance::signingRequestAdmissible`).
+#[must_use]
+#[allow(clippy::too_many_arguments)]
+pub const fn signing_request_admissible(
+    requester_signed: bool,
+    explicitly_rejected: bool,
+    current_epoch: u64,
+    expiry_epoch: u64,
+    total_approvals: u64,
+    departed_admin_approvals: u64,
+    quorum_threshold_m: u64,
+    author_self_approved: bool,
+    active_admins_n: u64,
+) -> bool {
+    requester_signed
+        && !explicitly_rejected
+        && current_epoch <= expiry_epoch
+        && pending_approval_survives_departure(
+            total_approvals,
+            departed_admin_approvals,
+            quorum_threshold_m,
+            author_self_approved,
+            active_admins_n,
+        )
+}
+
+/// Pure MIR-lifted GitHub-free PROV-O group coordination envelope predicate
+/// (`Governance::groupCoordinationEnvelopeValid`).
+#[must_use]
+pub const fn group_coordination_envelope_valid(
+    provo_signed: bool,
+    stitch_shards: u64,
+    min_shards: u64,
+    path_owners_verified: bool,
+    requires_external_account: bool,
+) -> bool {
+    provo_signed
+        && stitch_shards >= min_shards
+        && path_owners_verified
+        && !requires_external_account
+}
+
+/// Pure MIR-lifted role review privilege check (`0 = GenesisOwner`, `1 = SovereignAdmin`).
+#[must_use]
+pub const fn authority_role_can_review(role_code: u8) -> bool {
+    role_code <= 1
+}
+
+/// Pure MIR-lifted signing-request terminal state predicate
+/// (`4 = Finalized`, `5 = Rejected`, `7 = Expired`).
+#[must_use]
+pub const fn signing_request_state_is_terminal(state_code: u8) -> bool {
+    let finalized = four_u32() as u8;
+    let rejected = five_u32() as u8;
+    let expired = seven_u64() as u8;
+    state_code == finalized || state_code == rejected || state_code == expired
+}
+
+/// Pure MIR-lifted compromise departure classification (`2 = KeyCompromise`).
+#[must_use]
+pub const fn departure_requires_compromise_quarantine(reason_code: u8) -> bool {
+    reason_code == two_u32() as u8
 }
