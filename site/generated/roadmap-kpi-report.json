@@ -2,12 +2,12 @@
   "spec": "verdant/observer-roadmap-kpi-report/1",
   "managerId": "mgr-roadmap-strategy",
   "authorityId": "AUTH-SEMVER-CHANGE-KPI",
-  "currentVersion": "2.8.0",
-  "releaseEpoch": 12,
+  "currentVersion": "2.9.0",
+  "releaseEpoch": 13,
   "totalManagers": 13,
   "totalPrismFacetsOwned": 9,
   "totalPrismFacetsRequired": 9,
-  "declaredCapabilitiesCount": 78,
+  "declaredCapabilitiesCount": 80,
   "minorProgressPct": 100,
   "majorProgressPct": 100,
   "kpiPassedCount": 13,
@@ -651,6 +651,37 @@
       "progressPct": 100,
       "completed": true,
       "ratchetRequirement": "Lift Verdant's full self-automation pipeline into Verdant (execute_automate_pipeline, verdant operator automate, MCP verdant_automate, thin scripts/verdant-automate.mjs delegate), expand uorust MIR proof frontier >= 267 lifted functions while shrinking residue <= 1178, decompose all 7 Rust files >= 2000L to tighten max_handwritten_rust_file_lines <= 1985 (163+ lifted modules), and decompose engine-worker/studio-page/catalog-streams to tighten max_js_file_lines <= 1400."
+    },
+    {
+      "milestoneId": "M17",
+      "targetVersion": "2.9.0",
+      "tier": "minor",
+      "title": "Native In-Verdant Wasm/Registry Build Pipeline (build_ops.rs), 280+ MIR-Lifted Functions & -743 KiB Browser Wasm / Sub-1 MiB Gzipped verdant-uorc.wasm Breakthrough",
+      "stakeholders": [
+        "creator",
+        "developer",
+        "systems-engineer",
+        "operator",
+        "auditor"
+      ],
+      "owningManagers": [
+        "mgr-change-release",
+        "mgr-runtime-stage",
+        "mgr-verification-observatory",
+        "mgr-observer-executive"
+      ],
+      "requiredCapabilities": [
+        "VE-68",
+        "VE-69"
+      ],
+      "closedCapabilities": [
+        "VE-68",
+        "VE-69"
+      ],
+      "missingCapabilities": [],
+      "progressPct": 100,
+      "completed": true,
+      "ratchetRequirement": "Lift sync-prism-wasm, package-rust-crates, and live loopback HTTP verify-sparse-registry natively into verdant-core/src/build_ops.rs (CLI + MCP + thin JS delegates, >= 164 lifted modules, >= 280 MIR-lifted functions), decouple browser verdant-uorc.wasm from uorc_compress/uorc_search/static state blobs onto uorc-wasm-decode + inline UORC-SHA256-CHAIN-v1 verifier/encoder to tighten max_wasm_uorc_bytes <= 3950000 (< 1 MiB gzipped) and max_release_capsule_bytes <= 1550000."
     }
   ],
   "observerParts": [
@@ -743,7 +774,7 @@
         "runtime-frameworks",
         "spatial-acoustics"
       ],
-      "ownedFilesCount": 15,
+      "ownedFilesCount": 16,
       "active": true
     },
     {
@@ -806,7 +837,7 @@
     "governingAuthority": "AUTH-SEMVER-CHANGE-KPI",
     "currentVersion": {
       "major": 2,
-      "minor": 8,
+      "minor": 9,
       "patch": 0
     },
     "recommendedBump": "major",
@@ -815,8 +846,8 @@
       "minor": 0,
       "patch": 0
     },
-    "currentEpoch": 12,
-    "nextEpoch": 13,
+    "currentEpoch": 13,
+    "nextEpoch": 14,
     "versionIncremented": true,
     "gates": {
       "ratchetApplied": true,
@@ -827,6 +858,6 @@
       "pullThroughVerified": true
     },
     "blockingReasons": [],
-    "rationale": "Ratchet applied & 5/5 Release Gates passed: advancing v2.8.0 -> v3.0.0 (Major, epoch 13) — Observer roadmap evaluation: minor=100% major=100% managers=13"
+    "rationale": "Ratchet applied & 5/5 Release Gates passed: advancing v2.9.0 -> v3.0.0 (Major, epoch 14) — Observer roadmap evaluation: minor=100% major=100% managers=13"
   }
 }

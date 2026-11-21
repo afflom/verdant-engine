@@ -106,7 +106,7 @@
   ],
   "minArenaBudgetBytes": 262144,
   "ownerManagerId": "mgr-runtime-stage",
-  "ownerManagerKappaHex": "c6010321d728d3298d036d809d272aef120c8106f17635c9dba725f2e22184c3",
+  "ownerManagerKappaHex": "f0b1156736e32d54d4f01ad16f3005338ee296ba78f862cc722e48fbcdb00ae5",
   "packedNibbleCompressionFactor": 8,
   "pageQuantumBytes": 65536,
   "sparseRunsCompressionFactor": 16,

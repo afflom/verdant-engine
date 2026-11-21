@@ -16,7 +16,7 @@ use serde_json::json;
 use crate::animation::{Joint, KeyframePose, SkeletalClip, Skeleton, SkinWeights4};
 use crate::ecs::{EntityId, EntityRole, SceneWorld, Transform};
 use crate::error::AssetValidationError;
-#[cfg(feature = "uorc-streaming")]
+#[cfg(any(feature = "uorc-streaming", feature = "uorc-wasm-decode"))]
 use crate::error::StreamingError;
 use crate::geometry::ProceduralMesh;
 use crate::math::{
@@ -24,9 +24,9 @@ use crate::math::{
     DIM_PLANAR, DIM_SPATIAL,
 };
 use crate::render::{HdPbrDescriptor, PbrMaterial};
-#[cfg(feature = "uorc-streaming")]
+#[cfg(any(feature = "uorc-streaming", feature = "uorc-wasm-decode"))]
 use crate::runtime::WorldSnapshot;
-#[cfg(feature = "uorc-streaming")]
+#[cfg(any(feature = "uorc-streaming", feature = "uorc-wasm-decode"))]
 use crate::streaming::StandardSceneState;
 
 /// Byte alignment required by Khronos glTF binary chunks (`4` bytes).
@@ -1362,7 +1362,7 @@ pub fn import_glb_to_scene_bounded(
 
 /// Transcodes a binary Khronos `.glb` scene directly into a portable 4-LOD (`LOD0..=LOD3`)
 /// `UORC-SHA256-CHAIN-v1` progressive stream decodable natively in WebAssembly via `uorc_decompress::run`.
-#[cfg(feature = "uorc-streaming")]
+#[cfg(any(feature = "uorc-streaming", feature = "uorc-wasm-decode"))]
 pub fn transcode_glb_to_progressive_uorc(
     glb_bytes: &[u8],
     seed: u64,
@@ -1374,24 +1374,6 @@ pub fn transcode_glb_to_progressive_uorc(
     let imported_records: Vec<_> = imported.scene.entities().cloned().collect();
     let total_imported = imported_records.len();
     let max_rank = crate::prism_kernel::wasmMaxLodRank();
-
-    let max_strats = if cfg!(debug_assertions) {
-        1
-    } else {
-        crate::prism_kernel::sEight().unwrap_or(1) as usize
-    };
-    let mut strategies = Vec::new();
-    for pair in &uorc::portfolio::V04_PAIR {
-        for strat in pair {
-            if strat.state == 0
-                && !strat.x86
-                && strategies.len() < max_strats
-                && !strategies.contains(&Some(*strat))
-            {
-                strategies.push(Some(*strat));
-            }
-        }
-    }
 
     let mut stream = Vec::new();
     let mut state = StandardSceneState::new_at_lod0(seed.max(1))?;
@@ -1429,7 +1411,7 @@ pub fn transcode_glb_to_progressive_uorc(
             WorldSnapshot::encode(&state).map_err(|err| StreamingError::LodPayloadMismatch {
                 detail: err.to_string(),
             })?;
-        let archive = uorc::compress_with_strategies(&snap, &[snap.len() as u64], &[], &strategies);
+        let archive = crate::streaming::compress_uorc_portable(&snap);
         stream.extend_from_slice(&archive);
     }
 

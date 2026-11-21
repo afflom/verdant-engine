@@ -1084,30 +1084,13 @@ pub fn split_self_delimiting_uorc_archives(
 }
 
 /// Encodes `LOD0..=LOD3` `StandardSceneState`s into a portable 4-frame `UORC-SHA256-CHAIN-v1`
-/// progressive stream using stateless `state: 0` NCM strategies (`uorc::portfolio::V04_PAIR`) so
-/// browser `wasm32-unknown-unknown` workers decode every LOD natively via `uorc_decompress::run`
-/// without `uorc_search` or warm-state blobs.
-#[cfg(feature = "uorc-streaming")]
+/// progressive stream (`Archive.rawArchive`) so browser `wasm32-unknown-unknown` workers verify
+/// and decode every LOD in sub-millisecond time while remaining 100% decodable by
+/// `uorc_decompress::run`, `uorc::verify`, and `uorc::decompress_objects` without shipping
+/// `uorc_compress`, `uorc_search`, or warm-state blobs in Wasm.
+#[cfg(any(feature = "uorc-streaming", feature = "uorc-wasm-decode"))]
 pub fn pack_portable_progressive_uorc_stream(seed: u64) -> Result<Vec<u8>, StreamingError> {
     let max_rank = prism_kernel::wasmMaxLodRank();
-    let max_strats = if cfg!(debug_assertions) {
-        1
-    } else {
-        prism_kernel::sEight().unwrap_or(1) as usize
-    };
-    let mut strategies = Vec::new();
-    for pair in &uorc::portfolio::V04_PAIR {
-        for strat in pair {
-            if strat.state == 0
-                && !strat.x86
-                && strategies.len() < max_strats
-                && !strategies.contains(&Some(*strat))
-            {
-                strategies.push(Some(*strat));
-            }
-        }
-    }
-
     let mut stream = Vec::new();
     let mut state = StandardSceneState::new_at_lod0(seed)?;
     for rank in 0..=max_rank {
@@ -1116,7 +1099,10 @@ pub fn pack_portable_progressive_uorc_stream(seed: u64) -> Result<Vec<u8>, Strea
             WorldSnapshot::encode(&state).map_err(|err| StreamingError::LodPayloadMismatch {
                 detail: err.to_string(),
             })?;
-        let archive = uorc::compress_with_strategies(&snap, &[snap.len() as u64], &[], &strategies);
+        #[cfg(feature = "uorc-streaming")]
+        let archive = uorc::archive::raw_archive(&snap);
+        #[cfg(not(feature = "uorc-streaming"))]
+        let archive = compress_uorc_portable(&snap);
         stream.extend_from_slice(&archive);
     }
     Ok(stream)
@@ -1226,6 +1212,106 @@ fn decode_single_uorc_frame_bytes(
     }
     #[cfg(not(feature = "uorc-streaming"))]
     {
+        use sha2::{Digest, Sha256};
+        let two = crate::math::two_u32() as u8;
+        let four = crate::math::four_u32() as usize;
+        let hdr_len = four * (two as usize);
+        let seal_len = crate::network::SHA256_BYTES;
+        let block_len = 1usize << (crate::math::three_u32() * crate::math::two_u32());
+        let i_fmt = four;
+        let i_prof = four + 1;
+        let i_scope = four + (two as usize);
+        let i_kind = i_scope + 1;
+        // Fast native SHA-256 chain verifier for unconditional raw UORC archives (`scope=0, kind=0`),
+        // falling back to the certified Lean-exported `uorc_decompress::run` kernel for program/NCM archives.
+        if frame_archive.len() >= hdr_len + seal_len
+            && &frame_archive[..four] == b"UORC"
+            && frame_archive[i_fmt] == two
+            && frame_archive[i_prof] == 1
+            && frame_archive[i_scope] == 0
+            && frame_archive[i_kind] == 0
+        {
+            let mut at = hdr_len;
+            let count = read_uleb128(frame_archive, &mut at)?;
+            if count == 0 {
+                return Err(StreamingError::UorcArchiveRejected {
+                    detail: format!("UORC raw frame {frame_idx} has zero objects"),
+                });
+            }
+            let mut first_obj_len = 0usize;
+            let mut total_obj_len = 0usize;
+            for obj_i in 0..count {
+                let len_u =
+                    usize::try_from(read_uleb128(frame_archive, &mut at)?).map_err(|_| {
+                        StreamingError::UorcArchiveRejected {
+                            detail: format!("UORC raw frame {frame_idx} object length overflow"),
+                        }
+                    })?;
+                if obj_i == 0 {
+                    first_obj_len = len_u;
+                }
+                total_obj_len = total_obj_len.checked_add(len_u).ok_or_else(|| {
+                    StreamingError::UorcArchiveRejected {
+                        detail: format!("UORC raw frame {frame_idx} total length overflow"),
+                    }
+                })?;
+            }
+            let body_len =
+                usize::try_from(read_uleb128(frame_archive, &mut at)?).map_err(|_| {
+                    StreamingError::UorcArchiveRejected {
+                        detail: format!("UORC raw frame {frame_idx} body length overflow"),
+                    }
+                })?;
+            let seal_off =
+                at.checked_add(body_len)
+                    .ok_or_else(|| StreamingError::UorcArchiveRejected {
+                        detail: format!("UORC raw frame {frame_idx} seal offset overflow"),
+                    })?;
+            if body_len != total_obj_len
+                || seal_off.checked_add(seal_len) != Some(frame_archive.len())
+            {
+                return Err(StreamingError::UorcArchiveRejected {
+                    detail: format!("UORC raw frame {frame_idx} framing length mismatch"),
+                });
+            }
+            let preimage = &frame_archive[..seal_off];
+            let expected_seal = &frame_archive[seal_off..];
+            let chain_tag: &[u8] = b"UORC-SHA256-CHAIN-v1\0";
+            let mut c: [u8; crate::network::SHA256_BYTES] = Sha256::new()
+                .chain_update(chain_tag)
+                .chain_update([0u8])
+                .finalize()
+                .into();
+            let mut blocks = preimage.chunks_exact(block_len);
+            for block in &mut blocks {
+                c = Sha256::new()
+                    .chain_update(chain_tag)
+                    .chain_update([1u8])
+                    .chain_update(c)
+                    .chain_update(block)
+                    .finalize()
+                    .into();
+            }
+            let tail = blocks.remainder();
+            let computed: [u8; crate::network::SHA256_BYTES] = Sha256::new()
+                .chain_update(chain_tag)
+                .chain_update([two])
+                .chain_update(c)
+                .chain_update([tail.len() as u8])
+                .chain_update(tail)
+                .finalize()
+                .into();
+            let mut diff = 0u8;
+            for (a, b) in computed.iter().zip(expected_seal.iter()) {
+                diff |= a ^ b;
+            }
+            if diff != 0 {
+                return Err(StreamingError::UorcArchiveRejected {
+                    detail: format!("UORC-SHA256-CHAIN-v1 seal rejected at raw frame {frame_idx}"),
+                });
+            }
+            return Ok(frame_archive[at..at + first_obj_len].to_vec());
+        }
         match uorc_decompress::run(
             uorc_decompress::Bytes::lit(frame_archive),
             uorc_decompress::List::nil(),
@@ -1311,30 +1397,93 @@ pub fn is_uorc_archive(bytes: &[u8]) -> bool {
         && bytes[three] == b'C'
 }
 
-/// Compresses any arbitrary byte slice into a self-delimiting, SHA-256-sealed stateless `UORC`
-/// archive (`state == 0 && !x86` NCM portfolio strategies) executable identically in native Rust
-/// and `wasm32-unknown-unknown` page workers.
-#[cfg(feature = "uorc-streaming")]
+/// Encodes any arbitrary byte slice into a self-delimiting, `UORC-SHA256-CHAIN-v1`-sealed
+/// stateless `UORC` archive decodable identically by `uorc::decompress_objects`, `uorc::verify`,
+/// and `uorc_decompress::run` on native Rust and `wasm32-unknown-unknown` page workers.
+///
+/// Uses stateless `state == 0 && !x86` NCM portfolio compression when `uorc-streaming` is enabled
+/// (native CLI/tests), and emits a byte-exact `UORC-SHA256-CHAIN-v1` raw archive (`Archive.rawArchive`)
+/// when built with `uorc-wasm-decode` alone so browser Wasm avoids bundling `uorc_compress` and
+/// `uorc_search`.
+#[cfg(any(feature = "uorc-streaming", feature = "uorc-wasm-decode"))]
 #[must_use]
 pub fn compress_uorc_portable(payload: &[u8]) -> Vec<u8> {
-    let max_strats = if cfg!(target_arch = "wasm32") || cfg!(debug_assertions) {
-        1usize
-    } else {
-        (1usize + 1usize) * (1usize + 1usize)
-    };
-    let mut strategies = Vec::with_capacity(max_strats);
-    for pair in &uorc::portfolio::V04_PAIR {
-        for strat in pair {
-            if strat.state == 0
-                && !strat.x86
-                && strategies.len() < max_strats
-                && !strategies.contains(&Some(*strat))
-            {
-                strategies.push(Some(*strat));
+    #[cfg(feature = "uorc-streaming")]
+    {
+        let max_strats = if cfg!(target_arch = "wasm32") || cfg!(debug_assertions) {
+            1usize
+        } else {
+            (1usize + 1usize) * (1usize + 1usize)
+        };
+        let mut strategies = Vec::with_capacity(max_strats);
+        for pair in &uorc::portfolio::V04_PAIR {
+            for strat in pair {
+                if strat.state == 0
+                    && !strat.x86
+                    && strategies.len() < max_strats
+                    && !strategies.contains(&Some(*strat))
+                {
+                    strategies.push(Some(*strat));
+                }
             }
         }
+        uorc::compress_with_strategies(payload, &[payload.len() as u64], &[], &strategies)
     }
-    uorc::compress_with_strategies(payload, &[payload.len() as u64], &[], &strategies)
+    #[cfg(not(feature = "uorc-streaming"))]
+    {
+        use sha2::{Digest, Sha256};
+        let two = crate::math::two_u32() as u8;
+        let seven = crate::math::four_u32() + crate::math::three_u32();
+        let cont_bit = 1_u8 << seven;
+        let low_mask = cont_bit - 1;
+        let block_len = 1usize << (crate::math::three_u32() * crate::math::two_u32());
+        let seal_len = crate::network::SHA256_BYTES;
+        let push_uleb = |out: &mut Vec<u8>, mut n: u64| {
+            while n >= u64::from(cont_bit) {
+                out.push(((n as u8) & low_mask) | cont_bit);
+                n >>= seven;
+            }
+            out.push(n as u8);
+        };
+        let mut pre = Vec::with_capacity(payload.len() + seal_len + seal_len);
+        pre.extend_from_slice(b"UORC");
+        pre.push(two);
+        pre.push(1);
+        pre.push(0);
+        pre.push(0);
+        push_uleb(&mut pre, 1);
+        push_uleb(&mut pre, payload.len() as u64);
+        push_uleb(&mut pre, payload.len() as u64);
+        pre.extend_from_slice(payload);
+
+        let chain_tag: &[u8] = b"UORC-SHA256-CHAIN-v1\0";
+        let mut c: [u8; crate::network::SHA256_BYTES] = Sha256::new()
+            .chain_update(chain_tag)
+            .chain_update([0u8])
+            .finalize()
+            .into();
+        let mut blocks = pre.chunks_exact(block_len);
+        for block in &mut blocks {
+            c = Sha256::new()
+                .chain_update(chain_tag)
+                .chain_update([1u8])
+                .chain_update(c)
+                .chain_update(block)
+                .finalize()
+                .into();
+        }
+        let tail = blocks.remainder();
+        let seal: [u8; crate::network::SHA256_BYTES] = Sha256::new()
+            .chain_update(chain_tag)
+            .chain_update([two])
+            .chain_update(c)
+            .chain_update([tail.len() as u8])
+            .chain_update(tail)
+            .finalize()
+            .into();
+        pre.extend_from_slice(&seal);
+        pre
+    }
 }
 
 /// Verifies the self-delimiting `UORC` header and 32-byte SHA-256 seal and returns the exact
@@ -1358,7 +1507,7 @@ pub fn decompress_uorc_portable(archive: &[u8]) -> Result<Vec<u8>, StreamingErro
 impl CodedLodFrameBundle {
     /// Packs this zero-decode `CodedMatrix` (`Grid`, `Packed`, `Runs`) bundle directly into a
     /// SHA-256-sealed stateless `UORC` archive with zero float expansion.
-    #[cfg(feature = "uorc-streaming")]
+    #[cfg(any(feature = "uorc-streaming", feature = "uorc-wasm-decode"))]
     #[must_use]
     pub fn pack_to_uorc(&self) -> Vec<u8> {
         let mut raw = Vec::new();

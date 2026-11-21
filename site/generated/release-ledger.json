@@ -4,10 +4,10 @@
   "authorityId": "AUTH-SEMVER-CHANGE-KPI",
   "currentVersion": {
     "major": 2,
-    "minor": 8,
+    "minor": 9,
     "patch": 0
   },
-  "releaseEpoch": 12,
+  "releaseEpoch": 13,
   "history": [
     {
       "version": "0.1.0",
@@ -112,6 +112,13 @@
       "releaseEpoch": 12,
       "bumpKind": "minor",
       "summary": "M16: Lifted operator automate, 267+ MIR-lifted functions, sub-2000L Rust (163+ lifted modules) & sub-1400L JS decomposition",
+      "citedAuthority": "AUTH-SEMVER-CHANGE-KPI"
+    },
+    {
+      "version": "2.9.0",
+      "releaseEpoch": 13,
+      "bumpKind": "minor",
+      "summary": "M17 (v2.9.0): Native in-Verdant Wasm/Registry build_ops.rs (280 MIR-lifted, 164 lifted modules) & -743 KiB sub-1 MiB gzipped verdant-uorc.wasm + sub-1.5 MiB .holo capsule",
       "citedAuthority": "AUTH-SEMVER-CHANGE-KPI"
     }
   ]

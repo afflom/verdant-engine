@@ -2095,7 +2095,9 @@ fn engine_ve_36() {
     let repo_root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
     let studio_mjs =
         std::fs::read_to_string(repo_root.join("site/studio.mjs")).expect("site/studio.mjs");
-    assert!(studio_mjs.contains("#uorc="));
+    let studio_media_mjs = std::fs::read_to_string(repo_root.join("site/studio-media.mjs"))
+        .expect("site/studio-media.mjs");
+    assert!(studio_mjs.contains("#uorc=") || studio_media_mjs.contains("#uorc="));
     let card_mjs = std::fs::read_to_string(repo_root.join("site/card.mjs")).expect("site/card.mjs");
     assert!(card_mjs.contains(".uorc"));
 }

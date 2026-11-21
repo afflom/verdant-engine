@@ -1324,9 +1324,20 @@ export async function runAllPrismContractChecks(rootDir = ROOT_DIR) {
   const uorcWasmBytes = readFileSync(join(rootDir, "site", "verdant-uorc.wasm"));
   const studioDataSource = readFileSync(join(rootDir, "site", "studio-data.mjs"), "utf8");
   const studioScaffolderSource = readFileSync(join(rootDir, "site", "studio-scaffolder.mjs"), "utf8");
+  const studioMediaSource = readFileSync(join(rootDir, "site", "studio-media.mjs"), "utf8");
+  const studioGameplaySource = readFileSync(join(rootDir, "site", "studio-gameplay-panel.mjs"), "utf8");
   const studioSource = readFileSync(join(rootDir, "site", "studio.mjs"), "utf8");
-  const combinedStudioSource = [studioDataSource, studioScaffolderSource, studioSource].join("\n");
-  const workerSource = readFileSync(join(rootDir, "site", "engine-worker.mjs"), "utf8");
+  const combinedStudioSource = [
+    studioDataSource,
+    studioScaffolderSource,
+    studioMediaSource,
+    studioGameplaySource,
+    studioSource,
+  ].join("\n");
+  const workerCoreSource = readFileSync(join(rootDir, "site", "engine-worker.mjs"), "utf8");
+  const workerCodecSource = readFileSync(join(rootDir, "site", "engine-worker-codec.mjs"), "utf8");
+  const workerExtSource = readFileSync(join(rootDir, "site", "engine-worker-extended.mjs"), "utf8");
+  const workerSource = [workerCoreSource, workerCodecSource, workerExtSource].join("\n");
   const cardSource = readFileSync(join(rootDir, "site", "card.mjs"), "utf8");
   const cardHtml = readFileSync(join(rootDir, "site", "card.html"), "utf8");
   const cardCss = readFileSync(join(rootDir, "site", "card.css"), "utf8");
@@ -1338,16 +1349,20 @@ export async function runAllPrismContractChecks(rootDir = ROOT_DIR) {
   const demoHtml = readFileSync(join(rootDir, "site", "demo", "index.html"), "utf8");
   const demoSource = readFileSync(join(rootDir, "site", "demo", "demo.mjs"), "utf8");
   const studioPageHtml = readFileSync(join(rootDir, "site", "studio", "index.html"), "utf8");
-  const studioPageSource = readFileSync(join(rootDir, "site", "studio", "studio-page.mjs"), "utf8");
+  const studioPageCoreSource = readFileSync(join(rootDir, "site", "studio", "studio-page.mjs"), "utf8");
+  const studioStageAssetsSource = readFileSync(join(rootDir, "site", "studio", "stage-assets.mjs"), "utf8");
+  const studioPageSource = [studioPageCoreSource, studioStageAssetsSource].join("\n");
   const catalogsHtml = readFileSync(join(rootDir, "site", "catalogs", "index.html"), "utf8");
   const catalogsPageSource = readFileSync(join(rootDir, "site", "catalogs", "catalogs.mjs"), "utf8");
-  const catalogStreamsSource = readFileSync(join(rootDir, "site", "catalog-streams.mjs"), "utf8");
+  const catalogStreamsCoreSource = readFileSync(join(rootDir, "site", "catalog-streams.mjs"), "utf8");
+  const catalogStreamsStitchSource = readFileSync(join(rootDir, "site", "catalog-streams-stitch.mjs"), "utf8");
+  const catalogStreamsSource = [catalogStreamsCoreSource, catalogStreamsStitchSource].join("\n");
   const starterHtml = readFileSync(join(rootDir, "templates", "browser-3d-starter", "index.html"), "utf8");
   const starterGameSource = readFileSync(join(rootDir, "templates", "browser-3d-starter", "game.mjs"), "utf8");
 
   const c1 = await verifyPrismHoloContract(holoBuffer, { rootDir });
   const c2 = await verifyWasmBinaryContract(coreWasmBytes, uorcWasmBytes);
-  verifyZeroSlmBypassContract(studioSource);
+  verifyZeroSlmBypassContract(combinedStudioSource);
   verifyFk07CapabilityContract({ studioSource: combinedStudioSource, workerSource, cardSource, stitchSource });
   verifyUnifiedHostAndAudioContract({ workerSource, rendererSource, audioWorkletSource });
   verifyStarterAndScaffolderContract({ starterHtml, starterGameSource });

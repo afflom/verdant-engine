@@ -2442,3 +2442,133 @@ fn engine_ve_67() {
         kpi_rep.kpis
     );
 }
+
+/// `VE-68`: Native in-Verdant Wasm synthesis/verification (`sync-wasm`), deterministic Cargo sparse
+/// crate packaging (`package-crates`), and live loopback HTTP sparse registry verification
+/// (`verify-registry`) lifted into `crates/verdant-core/src/build_ops.rs` + `>= 280` MIR-lifted
+/// constructive functions (`residue <= 1177`) and `>= 164` lifted lifecycle modules.
+#[test]
+fn engine_ve_68() {
+    use std::path::Path;
+    use verdant_core::operator::{NativeBuildOp, VerdantOperatorChannel};
+    use verdant_core::verdant_tensor::scalars::{
+        build_op_stages_all_passed, sparse_index_crate_name_valid,
+        sparse_registry_crate_count_complete, sparse_registry_http_status_ok,
+        wasm_magic_header_valid,
+    };
+
+    let repo_root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+
+    // 1. MIR-lifted build/Wasm/RFC-2789 predicates hold constructively:
+    assert!(wasm_magic_header_valid(0x00, 0x61, 0x73, 0x6d));
+    assert!(!wasm_magic_header_valid(0x00, 0x61, 0x73, 0x00));
+    assert!(sparse_index_crate_name_valid(14));
+    assert!(!sparse_index_crate_name_valid(3));
+    assert!(sparse_registry_crate_count_complete(4, 4));
+    assert!(sparse_registry_http_status_ok(200));
+    assert!(build_op_stages_all_passed(4, 4));
+
+    // 2. All 3 legacy Node build/registry scripts are thin delegates into `verdant operator`:
+    for (rel, subcmd) in [
+        ("scripts/sync-prism-wasm.mjs", "sync-wasm"),
+        ("scripts/package-rust-crates.mjs", "package-crates"),
+        ("scripts/verify-sparse-registry.mjs", "verify-registry"),
+    ] {
+        let txt = std::fs::read_to_string(repo_root.join(rel)).expect(rel);
+        assert!(txt.contains(subcmd), "{rel} must delegate to {subcmd}");
+        assert!(
+            txt.lines().count() <= 40,
+            "{rel} must remain a thin delegate (got {} lines)",
+            txt.lines().count()
+        );
+    }
+
+    // 3. In-process `sync-wasm --check` passes natively and MCP advertises all 3 build tools:
+    let mut ch = VerdantOperatorChannel::new("sunspire-regatta").expect("operator channel");
+    let (sync_rep, _) = ch
+        .execute_native_build_op(
+            &repo_root,
+            &NativeBuildOp::SyncWasm {
+                check_only: true,
+                repack_stream: false,
+            },
+        )
+        .expect("native sync-wasm --check must pass");
+    assert!(sync_rep.passed);
+
+    let list_out = ch
+        .handle_mcp_jsonrpc_line(
+            &repo_root,
+            r#"{"jsonrpc":"2.0","id":68,"method":"tools/list","params":{}}"#,
+        )
+        .expect("MCP tools/list");
+    assert!(list_out.contains("verdant_sync_wasm"));
+    assert!(list_out.contains("verdant_package_crates"));
+    assert!(list_out.contains("verdant_verify_registry"));
+
+    // 4. uorust MIR proof frontier >= 280 lifted functions (residue <= 1177):
+    let rep = prism_fidelity::ratchet::audit_parametric_ratchet(
+        &repo_root,
+        Path::new("model/parametric-ratchet.toml"),
+    )
+    .expect("live repo must pass all 4 ratchet layers");
+    assert!(
+        rep.frontier_lifted_functions >= 280,
+        "M17 must lift >= 280 constructive Rust functions, got {}",
+        rep.frontier_lifted_functions
+    );
+    assert!(
+        rep.frontier_residue_functions <= 1_177,
+        "M17 must shrink residue <= 1177, got {}",
+        rep.frontier_residue_functions
+    );
+}
+
+/// `VE-69`: Browser `verdant-uorc.wasm` decoupled from `uorc_compress`/`uorc_search`/static state
+/// blobs onto `uorc-wasm-decode`, cutting `site/verdant-uorc.wasm <= 3,950,000 B` (sub-1 MiB
+/// gzipped) and `max_release_capsule_bytes <= 1,550,000 B` across all 17 milestones (`M1..M17`).
+#[test]
+fn engine_ve_69() {
+    use std::path::Path;
+    use verdant_core::operator::VerdantOperatorChannel;
+
+    let repo_root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+
+    // 1. `verdant-wasm/Cargo.toml` enables only `verdant-core/uorc-wasm-decode` (not `uorc-streaming`):
+    let wasm_toml = std::fs::read_to_string(repo_root.join("crates/verdant-wasm/Cargo.toml"))
+        .expect("read verdant-wasm/Cargo.toml");
+    assert!(wasm_toml.contains(r#"uorc-decoder = ["verdant-core/uorc-wasm-decode"]"#));
+    assert!(!wasm_toml.contains("verdant-core/uorc-streaming"));
+
+    // 2. Surface ratchet permanently tightened <= 3.95 MB Wasm & <= 1.55 MB .holo capsule:
+    let rep = prism_fidelity::ratchet::audit_parametric_ratchet(
+        &repo_root,
+        Path::new("model/parametric-ratchet.toml"),
+    )
+    .expect("live repo must pass all 4 ratchet layers");
+    assert!(
+        rep.observed_wasm_uorc_bytes <= 3_950_000,
+        "M17 must tighten site/verdant-uorc.wasm <= 3,950,000 B, got {}",
+        rep.observed_wasm_uorc_bytes
+    );
+    assert!(
+        rep.observed_release_capsule_bytes <= 1_550_000,
+        "M17 must tighten .holo capsule <= 1,550,000 B, got {}",
+        rep.observed_release_capsule_bytes
+    );
+
+    // 3. All 17 milestones (M1..M17) & 13/13 Observer KPIs pass:
+    let ch = VerdantOperatorChannel::new("sunspire-regatta").expect("operator channel");
+    let kpi_rep = ch
+        .evaluate_observer_roadmap_kpis(&repo_root, true, true)
+        .expect("observer roadmap & KPI report");
+    assert!(
+        kpi_rep.milestones.len() >= 17,
+        "expected Milestones M1..M17"
+    );
+    assert_eq!(
+        kpi_rep.kpi_passed_count, kpi_rep.kpi_total_count,
+        "all Observer KPIs must pass (kpis={:?})",
+        kpi_rep.kpis
+    );
+}

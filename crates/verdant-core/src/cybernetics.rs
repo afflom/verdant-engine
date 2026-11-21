@@ -206,7 +206,10 @@ impl CyberneticObserverLoop {
         let state_dim = prism_kernel::observerSalienceDim().unwrap_or(1) as usize;
         if entity_slots == 0 || state_dim == 0 {
             return Err(CyberneticError::InvalidObserverDimensions {
+                #[cfg(not(target_arch = "wasm32"))]
                 detail: "entity_slots and observerSalienceDim must be positive".to_string(),
+                #[cfg(target_arch = "wasm32")]
+                detail: String::new(),
             });
         }
 

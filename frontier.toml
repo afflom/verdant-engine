@@ -11,9 +11,9 @@
 #   arithmetic: 31
 #   call: 220
 #   collision: 1
-#   form: 349
+#   form: 348
 #   signature: 69
-#   statements: 28
+#   statements: 29
 #   type: 473
 #   width: 6
 
@@ -49,7 +49,7 @@ functions = 32
 [[construct]]
 construct = "the body has statements other than let"
 cause = "statements"
-functions = 28
+functions = 29
 
 [[construct]]
 construct = "takes or returns VerdantOperatorChannel.observer: ObserverPrismHolon.organs: ObserverOrganModel.schema_org_jsonld: serde_json::Value, a type of the serde_json crate with no LexLean model"
@@ -252,11 +252,6 @@ cause = "foreign"
 functions = 5
 
 [[construct]]
-construct = "expression form outside the lift: expr::macro"
-cause = "form"
-functions = 5
-
-[[construct]]
 construct = "expression form outside the lift: index of String"
 cause = "form"
 functions = 5
@@ -319,6 +314,11 @@ functions = 4
 [[construct]]
 construct = "Fs effect: std::fs::create_dir_all"
 cause = "effect"
+functions = 4
+
+[[construct]]
+construct = "expression form outside the lift: expr::macro"
+cause = "form"
 functions = 4
 
 [[construct]]
@@ -2118,7 +2118,7 @@ reason = "form"
 detail = "expression form outside the lift: method call .is_allowed"
 
 [[residue]]
-kappa = "32ed63f8158ddfd8b72307d92e3c168bc50ed7fdf7c7e520072b2f9b572f1950"
+kappa = "077f39a3c1766810616481ba41daab6e4e3450fbbc3f3535812bbaf0e1d16c79"
 function = "verdant_core::cybernetics::CyberneticObserverLoop::new"
 reason = "type"
 detail = "type outside the lift: Self"
@@ -2262,7 +2262,7 @@ reason = "type"
 detail = "type outside the lift: SceneWorld.entities: EntityRecord.local_transform: Transform.translation: Vec3.x: f64"
 
 [[residue]]
-kappa = "4ff4e90bb06e212b2f7589f42cb67706e1058aeb7623f7c68866a41620a9c605"
+kappa = "57af1c3a522569a3db0748564ae37b7f3c3c9b02f4b7778f12c4d7a32a8dba63"
 function = "verdant_core::ecs::SceneWorld::propagate_all_world_matrices"
 reason = "type"
 detail = "type outside the lift: SceneWorld.entities: EntityRecord.local_transform: Transform.translation: Vec3.x: f64"
@@ -2586,7 +2586,7 @@ reason = "type"
 detail = "type outside the lift: ProceduralMesh.positions: f32"
 
 [[residue]]
-kappa = "eeb18c06911f706ac7f8645475d82ee58b2605ea30b0ca6b60bf21de5c92ae94"
+kappa = "30e253040c1c24c8f005329a23c360e53bb118806da68ce8c620152ebf2be1ec"
 function = "verdant_core::gltf_io::transcode_glb_to_progressive_uorc"
 reason = "call"
 detail = "calls import_glb_to_scene, which is not lifted"
@@ -3894,7 +3894,7 @@ reason = "type"
 detail = "type outside the lift: SceneWorld.entities: EntityRecord.local_transform: Transform.translation: Vec3.x: f64"
 
 [[residue]]
-kappa = "f5cc5ea4491c53b5a4920f118d35a60d638569fcc807cf6684f2925ea86b3fee"
+kappa = "05be510cc69d5f5f67446cc3d50253f938e8bb990db64449454195d5e88574c6"
 function = "verdant_core::render::pack_world_meshes_to_buffers_opts"
 reason = "type"
 detail = "type outside the lift: SceneWorld.entities: EntityRecord.local_transform: Transform.translation: Vec3.x: f64"
@@ -4140,7 +4140,7 @@ reason = "type"
 detail = "type outside the lift: StandardSceneState.params: SceneBuildParams.environment: PhysicalEnvironment.gravity_mps2: f64"
 
 [[residue]]
-kappa = "29bb0c79780fdfb58e36da64df1c7953925b74e6715a25c30039849bfd02b559"
+kappa = "3841337229a3c501bcf68a8bf1441fb6e6b438f79f4251ebdf39759fd48f5ecc"
 function = "verdant_core::runtime::DeltaUorcSnapshot::encode_delta"
 reason = "type"
 detail = "type outside the lift: StandardSceneState.params: SceneBuildParams.environment: PhysicalEnvironment.gravity_mps2: f64"
@@ -4524,10 +4524,10 @@ reason = "type"
 detail = "type outside the lift: SceneBuildParams.environment: PhysicalEnvironment.gravity_mps2: f64"
 
 [[residue]]
-kappa = "01375e4c4c2509c22be9a093f2346d1850dc8152ca6ab8d35c41918a407766be"
+kappa = "65893dc3800faca3f72684bee551cac78ea8c8abc46b64cfd017bf0f3bbdea66"
 function = "verdant_core::streaming::compress_uorc_portable"
-reason = "form"
-detail = "expression form outside the lift: expr::macro"
+reason = "statements"
+detail = "the body has statements other than let"
 
 [[residue]]
 kappa = "c6cad5c73faff5fd2478169c36327bf1d4be7c646a0a056e790054271af72a4b"
@@ -4542,7 +4542,7 @@ reason = "type"
 detail = "type outside the lift: StandardSceneState.params: SceneBuildParams.environment: PhysicalEnvironment.gravity_mps2: f64"
 
 [[residue]]
-kappa = "e522a5c447931d0822ddeaf8f04fdadeb2f36d5b6b37750b1c9b980a605b0126"
+kappa = "0855a8849b094564e8cfd5685aa53ee551b8732f20902916a461e2190c934ea6"
 function = "verdant_core::streaming::decode_single_uorc_frame_bytes"
 reason = "statements"
 detail = "the body has statements other than let"
@@ -4560,7 +4560,7 @@ reason = "call"
 detail = "calls split_self_delimiting_uorc_archives, which is not lifted"
 
 [[residue]]
-kappa = "886254cc2f09eab8acb9e2dff25daab4da2585ba4a799c757112357c29508421"
+kappa = "11f8996bb684b4fb5132d947a6ac8d604d2a8f59390670bad165641499589d40"
 function = "verdant_core::streaming::pack_portable_progressive_uorc_stream"
 reason = "call"
 detail = "calls wasmMaxLodRank, which is not lifted"
@@ -4830,7 +4830,7 @@ reason = "type"
 detail = "type outside the lift: UniversePosition.local: Vec3.x: f64"
 
 [[residue]]
-kappa = "ef33d5904dcd9ef18b069be01b41da2bb8a2183fd1cee93fb303240d1113fbc3"
+kappa = "92c252e4a780e52de91ed33a05104994a0e312b71400d1fc7cfb9af6705b4859"
 function = "verdant_core::universe::UniversePosition::new_canonical"
 reason = "type"
 detail = "type outside the lift: UniversePosition.local: Vec3.x: f64"
@@ -5292,7 +5292,7 @@ reason = "form"
 detail = "expression form outside the lift: method call .is_multiple_of"
 
 [[residue]]
-kappa = "3555bcb36e251cdd7364bda1cb885ae383429977ea9c5d3047f2fa72219c8755"
+kappa = "27925cff8d812f4434d42cd10c2fbd8fd812b42244a8a291ea889da1e79f3fc9"
 function = "verdant_tensor::neural::step_neuromorphic_lif_ssm_ring"
 reason = "arithmetic"
 detail = "integer operator << wraps or panics depending on the build profile"

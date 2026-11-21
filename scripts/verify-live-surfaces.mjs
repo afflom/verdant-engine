@@ -648,7 +648,8 @@ try {
   // Run standalone Studio first so its live Stitch App Catalog publish is verified in /catalogs/ in batch 2:
   await Promise.all([verifyStudio(), verifyDemo()]);
   await Promise.all([verifyRoot(), verifyCatalogs(), verifyStarter()]);
-  await Promise.all(docRoutes.map((r) => verifyDocRoute(r)));
+  await Promise.all(docRoutes.slice(0, 3).map((r) => verifyDocRoute(r)));
+  await Promise.all(docRoutes.slice(3).map((r) => verifyDocRoute(r)));
 } finally {
   await browser.close();
   server.close();

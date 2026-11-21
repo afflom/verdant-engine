@@ -304,7 +304,7 @@ impl StitchFragment {
 /// Enforces `UORC` wire framing before splitting into `3` `afflom/stitch` `(A, B, A ⊕ B)` parity
 /// fragments: if `object_bytes` is not already a `b"UORC"` archive, compresses it via
 /// [`crate::streaming::compress_uorc_portable`] first.
-#[cfg(feature = "uorc-streaming")]
+#[cfg(any(feature = "uorc-streaming", feature = "uorc-wasm-decode"))]
 pub fn shard_uorc_to_stitch_fragments(
     object_bytes: &[u8],
 ) -> Result<[StitchFragment; 1 + 1 + 1], StitchCustodyError> {

@@ -434,3 +434,15 @@ Feature: engine
     Given model/parametric-ratchet.toml [surface_ratchet], site/generated/self-host-ratchet-manifest.toml, catalogs/governance/iso42010-viewpoints.json, and all decomposed Rust and JS submodules
     When prism-fidelity audits [surface_ratchet] and the Observer evaluates all 16 milestones (M1..M16)
     Then max_handwritten_rust_file_lines is at most 1985, max_js_file_lines is at most 1400, at least 163 lifecycle modules are lifted across all 7 categories, and all 13 Observer KPIs pass across M1..M16
+
+  @VE-68 @build
+  Scenario: Verdant lifts Wasm synthesis/verification (sync-wasm), deterministic RFC 2789 Cargo sparse crate packaging (package-crates), and live loopback HTTP Cargo sparse registry verification (verify-registry) natively into crates/verdant-core/src/build_ops.rs (CLI, MCP, in-process lifecycle.rs, and thin JS delegates), lifting >= 164 lifecycle modules and expanding the shrink-only uorust MIR proof frontier to >= 280 lifted constructive functions (residue <= 1177)
+    Given crates/verdant-core/src/build_ops.rs, crates/verdant-core/src/operator_mcp.rs, scripts/sync-prism-wasm.mjs, scripts/package-rust-crates.mjs, scripts/verify-sparse-registry.mjs, and frontier.toml
+    When Verdant runs execute_native_build_op SyncWasm check-only, inspects MCP tools/list, and audits [frontier_ratchet]
+    Then all three scripts are thin delegates into verdant operator, MCP advertises verdant_sync_wasm/verdant_package_crates/verdant_verify_registry, >= 164 lifecycle modules are lifted, and frontier.toml proves >= 280 lifted constructive functions with residue <= 1177
+
+  @VE-69 @build
+  Scenario: Verdant decouples browser verdant-uorc.wasm from uorc_compress, uorc_search, and static warm-state blobs onto uorc-wasm-decode with an inline UORC-SHA256-CHAIN-v1 raw-archive verifier/encoder and certified uorc_decompress::run fallback, cutting site/verdant-uorc.wasm by > 700 KiB raw to <= 3950000 bytes (sub-1 MiB gzipped) and tightening max_release_capsule_bytes <= 1550000 bytes across M1..M17
+    Given crates/verdant-wasm/Cargo.toml, crates/verdant-core/src/streaming.rs, site/verdant-uorc.wasm, model/parametric-ratchet.toml [surface_ratchet], and catalogs/governance/change-roadmap-kpi.json
+    When prism-fidelity audits [surface_ratchet] and the Observer evaluates all 17 milestones (M1..M17)
+    Then verdant-wasm uorc-decoder enables only verdant-core/uorc-wasm-decode, site/verdant-uorc.wasm is at most 3950000 bytes, max_release_capsule_bytes is at most 1550000 bytes, and all 13 Observer KPIs pass across M1..M17

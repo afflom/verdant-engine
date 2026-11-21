@@ -446,7 +446,7 @@ impl VerdantVcs {
 
     /// Serializes the entire [`VerdantVcs`] repository into a compact zero-JSON-bloat binary
     /// frame wrapped in a SHA-256-sealed `.uorc` capsule.
-    #[cfg(feature = "uorc-streaming")]
+    #[cfg(any(feature = "uorc-streaming", feature = "uorc-wasm-decode"))]
     pub fn encode_uorc_capsule(&self) -> Result<Vec<u8>, StitchCustodyError> {
         let blob_index: Vec<(&str, usize)> = self
             .blobs

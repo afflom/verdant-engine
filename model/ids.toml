@@ -516,3 +516,15 @@ id = "VE-67"
 suite = "engine"
 level = "build"
 statement = "Verdant breaks every hand-written Rust file strictly below 2000 lines (max_handwritten_rust_file_lines <= 1985 via 7 focused submodules hd_world_templates.rs, standards_registry.rs, observer_types.rs, uhd_shaders.rs, bridge_sim.rs, exports_cold_stage.rs, exports_uorc_studio.rs lifting >= 163 lifecycle modules) and breaks every shipped JS module strictly below 1400 lines (max_js_file_lines <= 1400 via catalog-streams-stitch.mjs, engine-worker-codec.mjs, and studio/stage-assets.mjs)"
+
+[[id]]
+id = "VE-68"
+suite = "engine"
+level = "build"
+statement = "Verdant lifts Wasm synthesis/verification (sync-wasm), deterministic RFC 2789 Cargo sparse crate packaging (package-crates), and live loopback HTTP Cargo sparse registry verification (verify-registry) natively into crates/verdant-core/src/build_ops.rs (CLI, MCP, in-process lifecycle.rs, and thin JS delegates), lifting >= 164 lifecycle modules and expanding the shrink-only uorust MIR proof frontier to >= 280 lifted constructive functions (residue <= 1177)"
+
+[[id]]
+id = "VE-69"
+suite = "engine"
+level = "build"
+statement = "Verdant decouples browser verdant-uorc.wasm from uorc_compress, uorc_search, and static warm-state blobs onto uorc-wasm-decode with an inline UORC-SHA256-CHAIN-v1 raw-archive verifier/encoder and certified uorc_decompress::run fallback, cutting site/verdant-uorc.wasm by > 700 KiB raw to <= 3950000 bytes (sub-1 MiB gzipped) and tightening max_release_capsule_bytes <= 1550000 bytes across M1..M17"

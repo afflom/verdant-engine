@@ -128,7 +128,10 @@ impl UniversePosition {
         let bounds_verified = check_axis(lx) && check_axis(ly) && check_axis(lz);
         if !bounds_verified {
             return Err(NarrativeLawError::InvalidPortalOrUniverseCell {
+                #[cfg(not(target_arch = "wasm32"))]
                 detail: "canonicalized offset failed universeLocalOffsetBounded".to_string(),
+                #[cfg(target_arch = "wasm32")]
+                detail: String::new(),
             });
         }
 

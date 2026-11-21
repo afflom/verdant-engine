@@ -904,7 +904,10 @@ impl SceneWorld {
             }
             if deferred.len() == prev_len {
                 return Err(TensorComputeError::ZeroOrMismatchedExtents {
+                    #[cfg(not(target_arch = "wasm32"))]
                     detail: "scene hierarchy contains a parent cycle".to_string(),
+                    #[cfg(target_arch = "wasm32")]
+                    detail: String::new(),
                 });
             }
             remaining = deferred;

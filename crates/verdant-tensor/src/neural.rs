@@ -51,7 +51,10 @@ pub fn step_neuromorphic_lif_ssm_ring(
         || c_salience_q.len() != entity_slots.saturating_mul(state_dim)
     {
         return Err(TensorComputeError::ZeroOrMismatchedExtents {
+            #[cfg(not(target_arch = "wasm32"))]
             detail: "neuromorphic LIF/SSM matrix extents invalid".to_string(),
+            #[cfg(target_arch = "wasm32")]
+            detail: String::new(),
         });
     }
 

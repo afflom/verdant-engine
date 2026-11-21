@@ -414,12 +414,14 @@ function formatStabilityLog(elapsed, m, verdict) {
 }
 
 function formatUorcLog(elapsed, m, verdict) {
-  const ratio = Number(m.raw_vdnt_bytes) > 0
-    ? ((1 - Number(m.uorc_snap_bytes) / Number(m.raw_vdnt_bytes)) * 100).toFixed(1)
-    : "0.0";
+  const rawN = Number(m.raw_vdnt_bytes);
+  const uorcN = Number(m.uorc_snap_bytes);
+  const wireNote = rawN > 0 && uorcN <= rawN
+    ? `-${((1 - uorcN / rawN) * 100).toFixed(1)}% wire`
+    : `+${Math.max(0, uorcN - rawN)} B UORC-SHA256-CHAIN-v1 seal`;
   return (
     `Executed in ${elapsed.toFixed(2)} ms (Wasm linear memory)\n` +
-    `Snapshot Wire       : ${m.raw_vdnt_bytes} B raw VDNT -> ${m.uorc_snap_bytes} B UORC (-${ratio}% wire, magic=${m.snap_uorc_magic})\n` +
+    `Snapshot Wire       : ${m.raw_vdnt_bytes} B raw VDNT -> ${m.uorc_snap_bytes} B UORC (${wireNote}, magic=${m.snap_uorc_magic})\n` +
     `SHA-256 Tamper Gate : 1-bit flip refused=${m.tamper_refused}\n` +
     `Zero-Decode CDMX    : ${m.coded_uorc_bytes} B coded matrix · exact_contraction=${m.zero_decode_ok}\n` +
     `Stitch 2-of-3 Shards: ${m.stitch_shard_bytes} B/shard · journal=${m.ckpt_uorc_bytes} B\n` +

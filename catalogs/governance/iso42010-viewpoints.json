@@ -354,6 +354,7 @@
         "site/scene-webgpu-renderer.mjs",
         "site/engine-worker.mjs",
         "site/engine-worker-codec.mjs",
+        "site/engine-worker-extended.mjs",
         "site/audio-worklet.mjs",
         "site/stitch-mesh.mjs",
         "site/generated/tensor-scaling-contract.json"

@@ -781,7 +781,7 @@ impl WorldSnapshot {
 
     /// Encodes `world` into a SHA-256-sealed `UORC` archive (`b"UORC"` magic + stateless NCM coding
     /// over the inner `VDNT` binary payload), shrinking snapshot wire size by `~8x-10x`.
-    #[cfg(feature = "uorc-streaming")]
+    #[cfg(any(feature = "uorc-streaming", feature = "uorc-wasm-decode"))]
     pub fn encode_uorc(world: &StandardSceneState) -> Result<Vec<u8>, SnapshotCodecError> {
         let vdnt_wire = Self::encode(world)?;
         Ok(crate::streaming::compress_uorc_portable(&vdnt_wire))
@@ -1107,7 +1107,7 @@ pub struct DeltaUorcSnapshot;
 impl DeltaUorcSnapshot {
     /// Encodes the bytewise XOR residual from `base` to `next` into a stateless `UORC-SHA256-CHAIN-v1`
     /// archive ready for low-bandwidth rollback/network state synchronization.
-    #[cfg(feature = "uorc-streaming")]
+    #[cfg(any(feature = "uorc-streaming", feature = "uorc-wasm-decode"))]
     pub fn encode_delta(
         base: &StandardSceneState,
         next: &StandardSceneState,
@@ -1120,29 +1120,36 @@ impl DeltaUorcSnapshot {
             .map(|(i, &b)| b ^ base_wire.get(i).copied().unwrap_or(0))
             .collect();
 
-        let max_strats = if cfg!(debug_assertions) {
-            1
-        } else {
-            prism_kernel::sEight().unwrap_or(1) as usize
-        };
-        let mut strategies = Vec::new();
-        for pair in &uorc::portfolio::V04_PAIR {
-            for strat in pair {
-                if strat.state == 0
-                    && !strat.x86
-                    && strategies.len() < max_strats
-                    && !strategies.contains(&Some(*strat))
-                {
-                    strategies.push(Some(*strat));
+        #[cfg(feature = "uorc-streaming")]
+        {
+            let max_strats = if cfg!(debug_assertions) {
+                1
+            } else {
+                prism_kernel::sEight().unwrap_or(1) as usize
+            };
+            let mut strategies = Vec::new();
+            for pair in &uorc::portfolio::V04_PAIR {
+                for strat in pair {
+                    if strat.state == 0
+                        && !strat.x86
+                        && strategies.len() < max_strats
+                        && !strategies.contains(&Some(*strat))
+                    {
+                        strategies.push(Some(*strat));
+                    }
                 }
             }
+            Ok(uorc::compress_with_strategies(
+                &residual,
+                &[residual.len() as u64],
+                &[],
+                &strategies,
+            ))
         }
-        Ok(uorc::compress_with_strategies(
-            &residual,
-            &[residual.len() as u64],
-            &[],
-            &strategies,
-        ))
+        #[cfg(not(feature = "uorc-streaming"))]
+        {
+            Ok(crate::streaming::compress_uorc_portable(&residual))
+        }
     }
 
     /// Decompresses `delta_uorc` via `uorc_decompress::run`, reconstructs the target `VDNT` wire
@@ -1883,7 +1890,7 @@ impl<S: Clone, I: Clone> CheckpointedRollbackJournal<S, I> {
 impl<I: Clone> CheckpointedRollbackJournal<Vec<u8>, I> {
     /// Initializes a UORC-compressed stride-8 rollback journal by compressing `genesis_raw_bytes`
     /// into a stateless `UORC` archive at `frame 0`.
-    #[cfg(feature = "uorc-streaming")]
+    #[cfg(any(feature = "uorc-streaming", feature = "uorc-wasm-decode"))]
     #[must_use]
     pub fn new_uorc(genesis_raw_bytes: &[u8], genesis_seed_bytes: &[u8]) -> Self {
         Self::new(
@@ -1893,7 +1900,7 @@ impl<I: Clone> CheckpointedRollbackJournal<Vec<u8>, I> {
     }
 
     /// Records frame `t + 1`, compressing `post_state_raw` into a `UORC` archive only on stride-8 boundaries.
-    #[cfg(feature = "uorc-streaming")]
+    #[cfg(any(feature = "uorc-streaming", feature = "uorc-wasm-decode"))]
     pub fn record_uorc_step(
         &mut self,
         input: I,

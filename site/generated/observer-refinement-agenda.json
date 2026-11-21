@@ -1,15 +1,15 @@
 {
   "spec": "verdant/observer-refinement-agenda/1",
-  "releaseVersion": "2.8.0",
-  "releaseEpoch": 12,
+  "releaseVersion": "2.9.0",
+  "releaseEpoch": 13,
   "observerKappaHex": "6cd1e9dc15167b134d9887883bf06a5158c9b132f076e10a30e521ea62e0a17b",
   "overallRefinementScorePermille": 950,
   "liveMetrics": {
-    "wasmCoreBytes": 159075,
-    "wasmUorcBytes": 4661787,
-    "releaseCapsuleBytes": 1709968,
+    "wasmCoreBytes": 156431,
+    "wasmUorcBytes": 3917060,
+    "releaseCapsuleBytes": 1473499,
     "blankFrameBytes": 28370,
-    "maxHandwrittenRustFileLines": 1983,
+    "maxHandwrittenRustFileLines": 1965,
     "maxJsFileLines": 1392,
     "frontierLifted": 280,
     "frontierResidue": 1177,
@@ -67,7 +67,7 @@
       "vsmSystem": "VSM-S4",
       "viewpointId": "roadmap-kpi-strategy",
       "ownedFileCount": 7,
-      "maxFileLines": 832,
+      "maxFileLines": 863,
       "heaviestFile": "site/generated/roadmap-kpi-report.json",
       "healthScorePermille": 1000
     },
@@ -84,7 +84,7 @@
       "managerId": "mgr-runtime-stage",
       "vsmSystem": "VSM-S1",
       "viewpointId": "runtime-stage",
-      "ownedFileCount": 15,
+      "ownedFileCount": 16,
       "maxFileLines": 1679,
       "heaviestFile": "app/src/Subsystems.lex.tex",
       "healthScorePermille": 900
@@ -159,7 +159,7 @@
     {
       "construct": "the body has statements other than let",
       "cause": "statements",
-      "functions": 28
+      "functions": 29
     }
   ],
   "proposals": [
@@ -188,31 +188,14 @@
       "citedAuthority": "AUTH-ISO-42010-VIEWPOINTS",
       "ratchetLayer": "surface-loc-rust",
       "priority": "medium",
-      "currentValue": "1983 lines max (crates/verdant-core/src/gltf_io.rs)",
+      "currentValue": "1965 lines max (crates/verdant-core/src/gltf_io.rs)",
       "targetValue": "<= 1800 lines max hand-written Rust file",
       "summary": "Keep every hand-written Rust module modular and auto-tighten max_handwritten_rust_file_lines.",
       "concreteActions": [
         "Extract cohesive sub-traits or geometry tables out of crates/verdant-core/src/gltf_io.rs.",
         "Register every extracted module in catalogs/governance/iso42010-viewpoints.json."
       ],
-      "kappaHex": "6523136f5c51ba8da40feaf08292aedb7dde233a28f63a956f29ae7f4739cb1b"
-    },
-    {
-      "proposalId": "refine-wasm-capsule-weight",
-      "owningManagerId": "mgr-change-release",
-      "vsmSystem": "VSM-S3",
-      "targetOrgan": "engine",
-      "citedAuthority": "AUTH-STITCH-SELF-HOSTING",
-      "ratchetLayer": "surface-wasm",
-      "priority": "medium",
-      "currentValue": "verdant-uorc.wasm 4661787 B · .holo 1709968 B · Blank Frame 28370 B (2350 B headroom)",
-      "targetValue": "verdant-uorc.wasm <= 4194304 B while preserving gzipped .holo <= 1.72 MiB",
-      "summary": "Trim unused codec paths on wasm32 and preserve gzipped STCH2 shard efficiency for cold Blank Frame boots.",
-      "concreteActions": [
-        "Audit gltf/image feature flags on wasm32 to drop unused color/codec tables.",
-        "Maintain Blank Frame strictly under 30720 B with DecompressionStream('gzip')."
-      ],
-      "kappaHex": "fbc6e6fed0c48608b7184b723a1b67477e88576074f05df8fe1a39d30497b39a"
+      "kappaHex": "fb1c8358c0bcf276955d33109ee9a15f7ad2c7153f49bfd47d90eff967f6458e"
     },
     {
       "proposalId": "refine-studio-js-modularity",
@@ -230,7 +213,24 @@
         "Expose VerdantVcs commit diff & branch controls in site/studio/vcs-panel.mjs."
       ],
       "kappaHex": "a8a0db3b9669f510234c08e4e16887d65e27e2a4995cce888167ffc72462642a"
+    },
+    {
+      "proposalId": "refine-wasm-capsule-weight",
+      "owningManagerId": "mgr-change-release",
+      "vsmSystem": "VSM-S3",
+      "targetOrgan": "engine",
+      "citedAuthority": "AUTH-STITCH-SELF-HOSTING",
+      "ratchetLayer": "surface-wasm",
+      "priority": "continuous",
+      "currentValue": "verdant-uorc.wasm 3917060 B · .holo 1473499 B · Blank Frame 28370 B (2350 B headroom)",
+      "targetValue": "verdant-uorc.wasm <= 4194304 B while preserving gzipped .holo <= 1.72 MiB",
+      "summary": "Trim unused codec paths on wasm32 and preserve gzipped STCH2 shard efficiency for cold Blank Frame boots.",
+      "concreteActions": [
+        "Audit gltf/image feature flags on wasm32 to drop unused color/codec tables.",
+        "Maintain Blank Frame strictly under 30720 B with DecompressionStream('gzip')."
+      ],
+      "kappaHex": "6950ca93f690f59541bd5629d5434121e3ed4f403174e0d963b2cc7eea2c2483"
     }
   ],
-  "agendaKappaHex": "460fb95176588c90020043ab38655029d6b14b47062679616dc0e8434bac7a74"
+  "agendaKappaHex": "f63f825f183491e97c2a04835d8585bae9f124a0dab2423fdea34971212d0b44"
 }

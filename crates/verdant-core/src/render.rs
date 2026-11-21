@@ -959,12 +959,14 @@ pub fn pack_world_meshes_to_buffers_opts(
 ) -> Result<PackedSceneRenderBuffers, TensorComputeError> {
     if meshes.is_empty() {
         return Err(TensorComputeError::ZeroOrMismatchedExtents {
+            #[cfg(not(target_arch = "wasm32"))]
             detail: "pack_world_meshes_to_buffers requires non-empty mesh library".to_string(),
+            #[cfg(target_arch = "wasm32")]
+            detail: String::new(),
         });
     }
 
-    let mut world_mats = scene.propagate_all_world_matrices()?;
-    world_mats.sort_unstable_by_key(|(id, _)| *id);
+    let world_mats = scene.propagate_all_world_matrices()?;
     let mut out = PackedSceneRenderBuffers::default();
     let mut scratch_xformed: Vec<[f32; 1 + 1 + 1 + 1]> = Vec::new();
     let i2 = 1usize + 1usize;
