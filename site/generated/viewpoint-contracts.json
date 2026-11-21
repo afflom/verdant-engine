@@ -153,7 +153,7 @@
     },
     {
       "basisPrime": 71,
-      "kappaHex": "bbc7fbdb4852660827b67873b21dc221b7a2f107d724a11c9e1420cd722a6be0",
+      "kappaHex": "d17ffee840c7d0594ed74c85b5e8da2f67b9ae6231c6499bf1edd0c76b3e3853",
       "spec": {
         "almPhases": [
           "change-management",
@@ -184,6 +184,7 @@
           "app/src/Cadence.lex.tex",
           "app/src/Release.lex.tex",
           "crates/verdant-core/src/vcs.rs",
+          "crates/verdant-core/src/vcs_studio.rs",
           "crates/verdant-core/src/governance.rs",
           "crates/verdant-core/src/build_ops.rs",
           "catalogs/governance/change-roadmap-kpi.json",
@@ -369,7 +370,7 @@
     },
     {
       "basisPrime": 89,
-      "kappaHex": "f0b1156736e32d54d4f01ad16f3005338ee296ba78f862cc722e48fbcdb00ae5",
+      "kappaHex": "2266c619ce4e1e95aadee47730da8ee24c01d11c5e91d51e19bc8fa4e2401c83",
       "spec": {
         "almPhases": [
           "operation",
@@ -408,6 +409,7 @@
           "app/src/Foundation/Bytes.lex.tex",
           "app/src/Tensor.lex.tex",
           "app/src/Subsystems.lex.tex",
+          "crates/verdant-core/src/collision_blas.rs",
           "site/card.html",
           "site/card.mjs",
           "site/card.css",

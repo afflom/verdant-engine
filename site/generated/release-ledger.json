@@ -4,10 +4,10 @@
   "authorityId": "AUTH-SEMVER-CHANGE-KPI",
   "currentVersion": {
     "major": 2,
-    "minor": 14,
+    "minor": 15,
     "patch": 0
   },
-  "releaseEpoch": 18,
+  "releaseEpoch": 19,
   "history": [
     {
       "version": "0.1.0",
@@ -154,6 +154,13 @@
       "releaseEpoch": 18,
       "bumpKind": "minor",
       "summary": "M22: Sub-2.0 MiB browser verdant-uorc.wasm breakthrough (1.96 MB raw / 554 KiB gz, -70% from 6.56 MB), 1.02 MiB .holo capsule, CLI/lifecycle-gate ApprovalCertificate custody & 454 MIR-lifted functions (1162 residue / 1319 uncertified)",
+      "citedAuthority": "AUTH-SEMVER-CHANGE-KPI"
+    },
+    {
+      "version": "2.15.0",
+      "releaseEpoch": 19,
+      "bumpKind": "minor",
+      "summary": "M23: Sub-1.00 MiB .holo capsule (<1,024 KiB via native-only operator Wasm gate, verdant-uorc.wasm 1.70 MiB), sub-1360L Rust (181 lifted modules), sub-1024L JS, and 485 lifted / 1161 residue uorust frontier",
       "citedAuthority": "AUTH-SEMVER-CHANGE-KPI"
     }
   ]

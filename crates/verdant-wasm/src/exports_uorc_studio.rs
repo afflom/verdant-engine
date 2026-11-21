@@ -560,8 +560,8 @@ pub extern "C" fn verdant_wasm_tensor_paged_benchmark_aux(
 }
 
 /// Serializes the VSM S1–S5 & ISO/IEC/IEEE 42010:2022 Manager Total Ownership matrix and
-/// Viewpoint contracts into `aux_buffer`.
-#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+/// Viewpoint contracts into `aux_buffer` (native repository governance orchestration).
+#[cfg(not(target_arch = "wasm32"))]
 #[no_mangle]
 pub extern "C" fn verdant_wasm_operator_status_aux() -> u32 {
     let mut guard = global_bridge()
@@ -582,8 +582,8 @@ pub extern "C" fn verdant_wasm_operator_status_aux() -> u32 {
 
 /// Processes a UTF-8 JSON [`verdant_core::operator::OperatorPromptRequest`] staged in `io_buffer`
 /// through Verdant's Observer Executive & owning S1 Manager, writing the signed ISO 24617-2
-/// `Inform`/`Refusal` JSON response into `aux_buffer`.
-#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+/// `Inform`/`Refusal` JSON response into `aux_buffer` (native repository governance orchestration).
+#[cfg(not(target_arch = "wasm32"))]
 #[no_mangle]
 pub extern "C" fn verdant_wasm_operator_prompt_io() -> u32 {
     let mut guard = global_bridge()
@@ -845,8 +845,9 @@ pub extern "C" fn verdant_wasm_stitch_boundary_recover_io() -> u32 {
 }
 
 /// Serializes the Observer's live Stakeholder Roadmap, ISO 15939 KPIs, Knowledge Manager summary,
-/// and Change/Version Manager release readiness into `aux_buffer` (`AUTH-SEMVER-CHANGE-KPI`, `VE-45`).
-#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+/// and Change/Version Manager release readiness into `aux_buffer` (`AUTH-SEMVER-CHANGE-KPI`, `VE-45`,
+/// native repository governance orchestration).
+#[cfg(not(target_arch = "wasm32"))]
 #[no_mangle]
 pub extern "C" fn verdant_wasm_observer_roadmap_kpis_aux() -> u32 {
     let mut guard = global_bridge()

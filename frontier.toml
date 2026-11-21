@@ -5,23 +5,23 @@
 # stops the functions it counts (the detail their rows state, under its
 # cause), the one that stops the most first: the work queue.
 
-# Honesty report: 454 of 1773 functions of product code are lifted; 1162
+# Honesty report: 485 of 1803 functions of product code are lifted; 1161
 # are residue, 74 foreign and 83 effect rows.
 # Residue by cause:
 #   arithmetic: 30
 #   call: 213
 #   form: 344
 #   signature: 71
-#   statements: 22
+#   statements: 21
 #   type: 476
 #   width: 6
 
 spec = "uorust/register/1"
 
 [lift]
-functions = 1773
-lifted = 454
-residue = 1162
+functions = 1803
+lifted = 485
+residue = 1161
 foreign = 74
 effect = 83
 
@@ -68,7 +68,7 @@ functions = 23
 [[construct]]
 construct = "the body has statements other than let"
 cause = "statements"
-functions = 22
+functions = 21
 
 [[construct]]
 construct = "calls new, which is not lifted"
@@ -1908,72 +1908,6 @@ reason = "type"
 detail = "type outside the lift: FlatBvhNode.aabb_min: f32"
 
 [[residue]]
-kappa = "3fadb0204cb6d00f9ebde5516e52e6d9952a90081edde7259b636a441717f7fd"
-function = "verdant_core::collision::MeshBlas::closest_point"
-reason = "type"
-detail = "type outside the lift: MeshBlas.triangles: BlasTriangle.v0: Vec3.x: f64"
-
-[[residue]]
-kappa = "1d8f3cebd2a597f3e690a71e1c4920ea0247b39375bad90fc68a88038b7cf905"
-function = "verdant_core::collision::MeshBlas::flat_nodes"
-reason = "type"
-detail = "type outside the lift: MeshBlas.triangles: BlasTriangle.v0: Vec3.x: f64"
-
-[[residue]]
-kappa = "cf946d203cc3e05b177d97ba45da224803d0a5c5b759c07fac8b02fadb2fb987"
-function = "verdant_core::collision::MeshBlas::from_mesh"
-reason = "type"
-detail = "type outside the lift: MeshBlas.triangles: BlasTriangle.v0: Vec3.x: f64"
-
-[[residue]]
-kappa = "750cb9e0ea1622158abb473b196645155d243aa6f111589325ebe314a76bec69"
-function = "verdant_core::collision::MeshBlas::from_transformed_mesh"
-reason = "type"
-detail = "type outside the lift: MeshBlas.triangles: BlasTriangle.v0: Vec3.x: f64"
-
-[[residue]]
-kappa = "b3436f390939ec0f9eb259aac597abc07dfa4d57a4ea6b31169561c5e3f01b81"
-function = "verdant_core::collision::MeshBlas::node_count"
-reason = "type"
-detail = "type outside the lift: MeshBlas.triangles: BlasTriangle.v0: Vec3.x: f64"
-
-[[residue]]
-kappa = "e91b4ada53dab177cd0590c4372920037f832299b72d1c934a617221b66909f4"
-function = "verdant_core::collision::MeshBlas::raycast_exact"
-reason = "type"
-detail = "type outside the lift: MeshBlas.triangles: BlasTriangle.v0: Vec3.x: f64"
-
-[[residue]]
-kappa = "21359f80521b4f23b6766bf2354f334c6d45c32f18e6d32339b38b10ae7e74e3"
-function = "verdant_core::collision::MeshBlas::raycast_exact_counted"
-reason = "type"
-detail = "type outside the lift: MeshBlas.triangles: BlasTriangle.v0: Vec3.x: f64"
-
-[[residue]]
-kappa = "ebb9488756eff50894e124042504fccec134c223388d217279ba9bb1241754d6"
-function = "verdant_core::collision::MeshBlas::sweep_capsule_counted"
-reason = "type"
-detail = "type outside the lift: MeshBlas.triangles: BlasTriangle.v0: Vec3.x: f64"
-
-[[residue]]
-kappa = "6e46303d423092a73d325426dfc5c32e19d191970270b20e2768ac3eaa421694"
-function = "verdant_core::collision::MeshBlas::sweep_sphere"
-reason = "type"
-detail = "type outside the lift: MeshBlas.triangles: BlasTriangle.v0: Vec3.x: f64"
-
-[[residue]]
-kappa = "682a4bdb8af92015a6096e706f23efbc9e34af1e7c32f378f11f530679fbd732"
-function = "verdant_core::collision::MeshBlas::sweep_sphere_counted"
-reason = "type"
-detail = "type outside the lift: MeshBlas.triangles: BlasTriangle.v0: Vec3.x: f64"
-
-[[residue]]
-kappa = "cb94b5580a05fac3f0cb55f0105d9c609e71f37c38b042bcb76cbecb65a11b43"
-function = "verdant_core::collision::MeshBlas::triangle_count"
-reason = "type"
-detail = "type outside the lift: MeshBlas.triangles: BlasTriangle.v0: Vec3.x: f64"
-
-[[residue]]
 kappa = "d7942f84ee1f58ad1fd1d0ac5e8b211142fe9f45da48e0d08555d3b2fdaca6e8"
 function = "verdant_core::collision::aabb_half_area"
 reason = "type"
@@ -2056,6 +1990,72 @@ kappa = "24d789053c529c7717db1cc581929e42bedd95ca7a66a28da24de7527502f97b"
 function = "verdant_core::collision::update_simplex"
 reason = "type"
 detail = "type outside the lift: &mut Vec<Vec3>"
+
+[[residue]]
+kappa = "504b62ef692e4fec202212702b1a682848c00bdc781b57bae2c00711b877c23b"
+function = "verdant_core::collision_blas::MeshBlas::closest_point"
+reason = "type"
+detail = "type outside the lift: MeshBlas.triangles: BlasTriangle.v0: Vec3.x: f64"
+
+[[residue]]
+kappa = "e9879e10390c2070a64f184da4704d65d4335d3bdd47580b69d106f49abf972b"
+function = "verdant_core::collision_blas::MeshBlas::flat_nodes"
+reason = "type"
+detail = "type outside the lift: MeshBlas.triangles: BlasTriangle.v0: Vec3.x: f64"
+
+[[residue]]
+kappa = "c9e86a347c1c6bda056a86e7d43e3ae4805eef98cf05d88c6e5e596f5226ef18"
+function = "verdant_core::collision_blas::MeshBlas::from_mesh"
+reason = "type"
+detail = "type outside the lift: MeshBlas.triangles: BlasTriangle.v0: Vec3.x: f64"
+
+[[residue]]
+kappa = "c2f60131d6991c28fba998101475a17bc32f1ad9bc5200c900bfd896df9b3567"
+function = "verdant_core::collision_blas::MeshBlas::from_transformed_mesh"
+reason = "type"
+detail = "type outside the lift: MeshBlas.triangles: BlasTriangle.v0: Vec3.x: f64"
+
+[[residue]]
+kappa = "2179d739e48c87aaacac8b8651734a0e0f345ea0a88a2dcc752fa4379faf83d6"
+function = "verdant_core::collision_blas::MeshBlas::node_count"
+reason = "type"
+detail = "type outside the lift: MeshBlas.triangles: BlasTriangle.v0: Vec3.x: f64"
+
+[[residue]]
+kappa = "e6a7d4a8676f6080104c8608b26fab06ec1eda9aadbb1801f3c492fe2b340e5e"
+function = "verdant_core::collision_blas::MeshBlas::raycast_exact"
+reason = "type"
+detail = "type outside the lift: MeshBlas.triangles: BlasTriangle.v0: Vec3.x: f64"
+
+[[residue]]
+kappa = "7744e56ea27974b2f83b6c17420c00d7504a4555a2ff215c32c92ed146d0352e"
+function = "verdant_core::collision_blas::MeshBlas::raycast_exact_counted"
+reason = "type"
+detail = "type outside the lift: MeshBlas.triangles: BlasTriangle.v0: Vec3.x: f64"
+
+[[residue]]
+kappa = "ef49b3cc29f6cd383fd0a23870105cca8c73dbc8535ff750958a9b950b80b06e"
+function = "verdant_core::collision_blas::MeshBlas::sweep_capsule_counted"
+reason = "type"
+detail = "type outside the lift: MeshBlas.triangles: BlasTriangle.v0: Vec3.x: f64"
+
+[[residue]]
+kappa = "1b53c0c07d04bb01712f6903da9d0b509212e9795e941f49ee56118378e71b83"
+function = "verdant_core::collision_blas::MeshBlas::sweep_sphere"
+reason = "type"
+detail = "type outside the lift: MeshBlas.triangles: BlasTriangle.v0: Vec3.x: f64"
+
+[[residue]]
+kappa = "97568027f4e8a59632a8957bef3ee09b75edc9baa9b431dd38af7f8e0c95bc12"
+function = "verdant_core::collision_blas::MeshBlas::sweep_sphere_counted"
+reason = "type"
+detail = "type outside the lift: MeshBlas.triangles: BlasTriangle.v0: Vec3.x: f64"
+
+[[residue]]
+kappa = "1e5ceae4343a3d9c7158c8dc93f7deb1ab2953ab05aa47ce7961a3d9e55c36c8"
+function = "verdant_core::collision_blas::MeshBlas::triangle_count"
+reason = "type"
+detail = "type outside the lift: MeshBlas.triangles: BlasTriangle.v0: Vec3.x: f64"
 
 [[residue]]
 kappa = "4ee1b3f50ae860a9abd0120333ba037a6efe038929b29cbe20da1f5c4471f995"
@@ -2520,6 +2520,12 @@ reason = "type"
 detail = "type outside the lift: SceneWorld.entities: EntityRecord.local_transform: Transform.translation: Vec3.x: f64"
 
 [[residue]]
+kappa = "ac77345dbc19cbd7aa6afaf0108a2bf557eaafdcb4db54017952c59781e26814"
+function = "verdant_core::gltf_export::export_scene_to_glb"
+reason = "type"
+detail = "type outside the lift: SceneWorld.entities: EntityRecord.local_transform: Transform.translation: Vec3.x: f64"
+
+[[residue]]
 kappa = "54703a85afa0c89f1bc897da6c51045c681a06445fbdd5f2143fe81cdba1cbfa"
 function = "verdant_core::gltf_export::export_skinned_character_to_glb"
 reason = "type"
@@ -2542,12 +2548,6 @@ kappa = "65ec8bf773d65137bac241cc48f0ab1ac7cd16522db216f083a68e63d4ea4124"
 function = "verdant_core::gltf_export::transcode_glb_to_progressive_uorc"
 reason = "call"
 detail = "calls import_glb_to_scene, which is not lifted"
-
-[[residue]]
-kappa = "da9a94f8ba3dcd6c2939f80116db1eb7d5ed0c51b75553cb155d0b1a34f26379"
-function = "verdant_core::gltf_io::export_scene_to_glb"
-reason = "type"
-detail = "type outside the lift: SceneWorld.entities: EntityRecord.local_transform: Transform.translation: Vec3.x: f64"
 
 [[residue]]
 kappa = "739805d205d18d047007b987580a61ede3656bc8bb7705760c7ad08123570278"
@@ -3316,12 +3316,6 @@ kappa = "ad6e72391a5b884beaefea2d9abc35637c387f9a254e250b88edf5753f33db88"
 function = "verdant_core::network::cauchy_parity_coeff"
 reason = "arithmetic"
 detail = "integer operator ^ wraps or panics depending on the build profile"
-
-[[residue]]
-kappa = "15d6732bb2e923909c0ab2f3ba4055ca920cc1aa60e42d2367a3296f18f77356"
-function = "verdant_core::network::constant_time_eq_32"
-reason = "statements"
-detail = "the body has statements other than let"
 
 [[residue]]
 kappa = "7971a727066129a95448e38b655df0679325c650f69e220445dadcb7d8b47cef"
@@ -4110,30 +4104,6 @@ reason = "type"
 detail = "type outside the lift: Vec3.x: f64"
 
 [[residue]]
-kappa = "634bad7b55d95177c09f4ff083cfce38a104bc0e5d60ebe026e725079d48971b"
-function = "verdant_core::runtime::OntologicalRuntimeGovernor::certify_all_eight_strata"
-reason = "call"
-detail = "calls sEight, which is not lifted"
-
-[[residue]]
-kappa = "b2d6d4a32e44a0b17e88f077380c65d1584e491e8f3751aef659fa7ef288bee6"
-function = "verdant_core::runtime::OntologicalRuntimeGovernor::evaluate_frame_telos"
-reason = "call"
-detail = "calls from, which is not lifted"
-
-[[residue]]
-kappa = "01ae252b798927058a8eaa09e5a119ac36a46d2bf87f086ac400af59348192e0"
-function = "verdant_core::runtime::OntologicalRuntimeGovernor::recommend_non_coercive_lod"
-reason = "call"
-detail = "calls wasmHdMaxLodRank, which is not lifted"
-
-[[residue]]
-kappa = "459a28116c1ec0ec28cf21b4bec861cba883483c89d2c31d230d7a509a130572"
-function = "verdant_core::runtime::OntologicalRuntimeGovernor::recommend_render_scale_permille"
-reason = "call"
-detail = "calls governorRecommendedScalePermille, which is not lifted"
-
-[[residue]]
 kappa = "9961c449b070fe798a537f7ff66d9af3beff082e29b08309202867d85ae133cc"
 function = "verdant_core::runtime::RollbackSession::advance_frame"
 reason = "type"
@@ -4302,6 +4272,30 @@ reason = "type"
 detail = "type outside the lift: KappaTransitionCache<S>, written with arguments, where a method's type is read by its name alone"
 
 [[residue]]
+kappa = "8e6fb6d4b448514773cf443f7a4dbd0bf0f8b2d989863cf368a7c8777b6a7d6a"
+function = "verdant_core::runtime_monoid::OntologicalRuntimeGovernor::certify_all_eight_strata"
+reason = "call"
+detail = "calls sEight, which is not lifted"
+
+[[residue]]
+kappa = "7df2ffaf6e451e6c4384de93a105999f86f3ad13638b2bb17e244343adf7f80d"
+function = "verdant_core::runtime_monoid::OntologicalRuntimeGovernor::evaluate_frame_telos"
+reason = "call"
+detail = "calls from, which is not lifted"
+
+[[residue]]
+kappa = "6a9e40e94329a1147652c4f7519a56b5ea31af5d2a1b5e94eb51e92865425e52"
+function = "verdant_core::runtime_monoid::OntologicalRuntimeGovernor::recommend_non_coercive_lod"
+reason = "call"
+detail = "calls wasmHdMaxLodRank, which is not lifted"
+
+[[residue]]
+kappa = "a6def1a34e271d2eb2359644d6d47a08b54e0084bcf529e8daea60555367b572"
+function = "verdant_core::runtime_monoid::OntologicalRuntimeGovernor::recommend_render_scale_permille"
+reason = "call"
+detail = "calls governorRecommendedScalePermille, which is not lifted"
+
+[[residue]]
 kappa = "77ce60917def32c4f2db670857c1a9988011cee78c316e038e9ce4f1f9ffab31"
 function = "verdant_core::runtime_monoid::canonicalize_command_monoid"
 reason = "type"
@@ -4312,12 +4306,6 @@ kappa = "24bc2d4207d5a5c9407a41679ceb5acbd4ec2ad630782e278b6ae603732380c1"
 function = "verdant_core::runtime_monoid::compile_parallel_command_layers"
 reason = "type"
 detail = "type outside the lift: RenderGraphError::InvalidShadowFrustumBounds.near_meters: f64"
-
-[[residue]]
-kappa = "9e810f0c4f471962228708527e0c8e3d305b534d8d67f22aa7845d1978ced8b2"
-function = "verdant_core::standards::CatalogHdMaterial::to_hd_descriptor"
-reason = "type"
-detail = "type outside the lift: CatalogHdMaterial.base_color_factor: f32"
 
 [[residue]]
 kappa = "30bbeba60f1222ab50c9234df6ac1beb4545204d19faf57ab63aab0103ba9171"
@@ -4378,6 +4366,12 @@ kappa = "b70cc271cf2769a2db36058a111803833140f3100df32f9255bc4ea5d71da506"
 function = "verdant_core::standards_registry::CatalogBundleRegistry::instantiate_domain_pack"
 reason = "type"
 detail = "type outside the lift: CatalogBundleRegistry.khronos_hd: KhronosHdCatalog.materials: CatalogHdMaterial.base_color_factor: f32"
+
+[[residue]]
+kappa = "792e7f1ea99f4941cf22a4c5007fc50239a6fe525fb5844230e7f1ef754b8e56"
+function = "verdant_core::standards_registry::CatalogHdMaterial::to_hd_descriptor"
+reason = "type"
+detail = "type outside the lift: CatalogHdMaterial.base_color_factor: f32"
 
 [[residue]]
 kappa = "41d54018da9e6327486fa972ffd295c00d02ef5c79ad56ea26a83f0e8f81859d"
@@ -4920,14 +4914,14 @@ reason = "call"
 detail = "calls new, which is not lifted"
 
 [[residue]]
-kappa = "770a007bc163e3d83381e14f012853e4c9bce12358969ab69cbef78bdddc5e44"
-function = "verdant_core::vcs::parse_stitch_deep_link_uri"
+kappa = "f3e81a57690782d4b1d59826912b427fa07423dfb4db384053cb8ab5554a4d99"
+function = "verdant_core::vcs_studio::parse_stitch_deep_link_uri"
 reason = "call"
 detail = "calls thirty_two_u8, which is not lifted"
 
 [[residue]]
-kappa = "d3ee2879fa54e9bf311f42a6420034dcc06b11793f207d3f22af26baf1e65a77"
-function = "verdant_core::vcs::studio_vcs_commit_and_pack_holo_json"
+kappa = "e6426a3323361d9957a88a8acf6435d0fc1d975a2fcba4559427c41a629e32ee"
+function = "verdant_core::vcs_studio::studio_vcs_commit_and_pack_holo_json"
 reason = "call"
 detail = "calls from_str, which is not lifted"
 
@@ -8463,11 +8457,6 @@ function = "verdant_core::operator::VerdantOperatorChannel::check_total_ownershi
 detail = "takes or returns VerdantOperatorChannel.observer: ObserverPrismHolon.organs: ObserverOrganModel.schema_org_jsonld: serde_json::Value, a type of the serde_json crate with no LexLean model"
 
 [[foreign]]
-kappa = "2e78f3a2d23fd5d4bf13d638284e3c9a6be3ae9a742df08197e5f4e8a047b8eb"
-function = "verdant_core::operator::VerdantOperatorChannel::compute_seal_root"
-detail = "takes or returns VerdantOperatorChannel.observer: ObserverPrismHolon.organs: ObserverOrganModel.schema_org_jsonld: serde_json::Value, a type of the serde_json crate with no LexLean model"
-
-[[foreign]]
 kappa = "f3f8fb5c999ab8b84c026f460be5eead4d86aab62f0209d5ad2532ffb04ecf4b"
 function = "verdant_core::operator::VerdantOperatorChannel::has_authoritative_grounding"
 detail = "takes or returns VerdantOperatorChannel.observer: ObserverPrismHolon.organs: ObserverOrganModel.schema_org_jsonld: serde_json::Value, a type of the serde_json crate with no LexLean model"
@@ -8540,6 +8529,11 @@ detail = "takes or returns VerdantOperatorChannel.observer: ObserverPrismHolon.o
 [[foreign]]
 kappa = "572b66750a231e62fe6549335a838e9e7364a0eb56a9c87cbf95c73f9cb66e32"
 function = "verdant_core::operator::VerdantOperatorChannel::synthesize_viewpoint_contracts_json"
+detail = "takes or returns VerdantOperatorChannel.observer: ObserverPrismHolon.organs: ObserverOrganModel.schema_org_jsonld: serde_json::Value, a type of the serde_json crate with no LexLean model"
+
+[[foreign]]
+kappa = "56329e1dd84222d97168936d203c79981123c62f0d88d8214d3bedf9d0931c23"
+function = "verdant_core::operator_seal::VerdantOperatorChannel::compute_seal_root"
 detail = "takes or returns VerdantOperatorChannel.observer: ObserverPrismHolon.organs: ObserverOrganModel.schema_org_jsonld: serde_json::Value, a type of the serde_json crate with no LexLean model"
 
 [[foreign]]
@@ -9488,6 +9482,11 @@ function = "verdant_core::network::PrismIdSessionEnvelope::max_session_lifetime_
 definition = "Behavior::prismIdSessionEnvelopeMaxSessionLifetimeSecs"
 
 [[lifted]]
+kappa = "b9b62a07fbc84396f6a653d52abe6c25b1ac83cf3fd2aec5ba5e0d3b02ee4b1d"
+function = "verdant_core::network::constant_time_eq_32"
+definition = "Behavior::constantTimeEq32"
+
+[[lifted]]
 kappa = "39d40f5afdc968b2808814e40c9bacd65b85974e5bce63eda192e4fe968eba18"
 function = "verdant_core::network_custody::MultiOriginRelayPlan::surviving_relays"
 definition = "Behavior::multiOriginRelayPlanSurvivingRelays"
@@ -9643,11 +9642,6 @@ function = "verdant_core::runtime::FrameBudgetProfiler::new"
 definition = "Behavior::frameBudgetProfilerNew"
 
 [[lifted]]
-kappa = "e7e1bd6500eef2196f3258496c60a64a749a054746ed9cb03569df10ae94d3d9"
-function = "verdant_core::runtime::OntologicalRuntimeGovernor::new"
-definition = "Behavior::ontologicalRuntimeGovernorNew"
-
-[[lifted]]
 kappa = "5265f2d9927955111b6aa89ae77654d5700793cd8b7955e07b07eb0056eea124"
 function = "verdant_core::runtime::WorkerJobGraph::new"
 definition = "Behavior::workerJobGraphNew"
@@ -9661,6 +9655,11 @@ definition = "Behavior::canonicalCommandKindIsSelfInverse"
 kappa = "39fa7c18bcf5ef5382a9498d3c5815833e91e2f20da0948f87cdcade3add6db9"
 function = "verdant_core::runtime_monoid::CanonicalCommandKind::ordinal"
 definition = "Behavior::canonicalCommandKindOrdinal"
+
+[[lifted]]
+kappa = "9e5e336ab541490c637570e440611da9726910d44968c30f889c18c076a39609"
+function = "verdant_core::runtime_monoid::OntologicalRuntimeGovernor::new"
+definition = "Behavior::ontologicalRuntimeGovernorNew"
 
 [[lifted]]
 kappa = "db63449e737fa57587a4f4326c583783062a64fd7065e00fc986d4a643816088"
@@ -9718,14 +9717,14 @@ function = "verdant_core::vcs::VerdantVcs::list_refs"
 definition = "Behavior::verdantVcsListRefs"
 
 [[lifted]]
-kappa = "5bc0ff257e2bcf8af9f5637aa12258976f15702b89e223d8c1db98007294e29e"
-function = "verdant_core::vcs::default_release_rs_geometry"
-definition = "Behavior::defaultReleaseRsGeometry"
-
-[[lifted]]
 kappa = "65f54434a32c2c1c9289152821033cc1744ac807fb9ec49a876bd83b4ba7e878"
 function = "verdant_core::vcs::mime_for_release_path"
 definition = "Behavior::mimeForReleasePath"
+
+[[lifted]]
+kappa = "09e521debe79965df255bf9bae584e2f4c2f2feef6ea38b897b91011e9ace9d9"
+function = "verdant_core::vcs_studio::default_release_rs_geometry"
+definition = "Behavior::defaultReleaseRsGeometry"
 
 [[lifted]]
 kappa = "0173c4f95e0eb88637e2bf64b5d0f5e8f2840e6c46242687f7da8b2f3c9de425"
@@ -10708,6 +10707,16 @@ function = "verdant_tensor::scalars_ratchet::authority_boundary_key_rotated"
 definition = "Behavior::authorityBoundaryKeyRotated"
 
 [[lifted]]
+kappa = "b42950eb1f01f9afeaf81a598b349d359e19e867acc9140abb5ab8500f467a59"
+function = "verdant_tensor::scalars_ratchet::authority_chain_tip_consistent"
+definition = "Behavior::authorityChainTipConsistent"
+
+[[lifted]]
+kappa = "51c71c68de6f1b211077a58984db105d3e6c90b97451e202076cfa2f8e54e419"
+function = "verdant_tensor::scalars_ratchet::authority_historical_quorum_met"
+definition = "Behavior::authorityHistoricalQuorumMet"
+
+[[lifted]]
 kappa = "8e00f9ef9fffdadf353c630f4bdd5dc190eb679a693f7b14c6b7fb1b5a68f551"
 function = "verdant_tensor::scalars_ratchet::authority_quorum_invariants_hold"
 definition = "Behavior::authorityQuorumInvariantsHold"
@@ -10791,6 +10800,21 @@ definition = "Behavior::cliReleasePackAuthorityOk"
 kappa = "c4b93cd6ec67c4e5a2b93ed715e47e6f522337fc1183524bd8d166e216523bca"
 function = "verdant_tensor::scalars_ratchet::cold_boot_transfer_compliant"
 definition = "Behavior::coldBootTransferCompliant"
+
+[[lifted]]
+kappa = "f0623c460e129e45bc51b72d42a0a18a20baba4d73426ae1b5e82419eb5235ca"
+function = "verdant_tensor::scalars_ratchet::collision_blas_leaf_bounded"
+definition = "Behavior::collisionBlasLeafBounded"
+
+[[lifted]]
+kappa = "d6a79805633bdbc13fa61209aa92a328d2c28ce938d5e1ad6edc9e272b468d6c"
+function = "verdant_tensor::scalars_ratchet::collision_blas_non_empty"
+definition = "Behavior::collisionBlasNonEmpty"
+
+[[lifted]]
+kappa = "85153752edb32b2284479fbb4604372875fccb795da5427f8eec4b3d3c8bd10e"
+function = "verdant_tensor::scalars_ratchet::collision_blas_stack_has_room"
+definition = "Behavior::collisionBlasStackHasRoom"
 
 [[lifted]]
 kappa = "88218f9f70032523178da63c7681a3220afca374b2e85b5f41ce0f01bc444da2"
@@ -10883,14 +10907,54 @@ function = "verdant_tensor::scalars_ratchet::glb_texture_edge_within_cap"
 definition = "Behavior::glbTextureEdgeWithinCap"
 
 [[lifted]]
+kappa = "1a93e2a0c46c6671e287203891b2f6d51c57e84a324b7cb840bc26ba0d024357"
+function = "verdant_tensor::scalars_ratchet::gltf_clip_playable"
+definition = "Behavior::gltfClipPlayable"
+
+[[lifted]]
+kappa = "7943bdf65fb660831a05863a26763b16c6089e38e83cc7d0396a07d944714bd7"
+function = "verdant_tensor::scalars_ratchet::gltf_skeleton_parent_acyclic"
+definition = "Behavior::gltfSkeletonParentAcyclic"
+
+[[lifted]]
+kappa = "2f7753478f8f3f17b5567b8797ce702784b852bb3eb286eab2fef996ea250f87"
+function = "verdant_tensor::scalars_ratchet::holo_capsule_sub_one_mib"
+definition = "Behavior::holoCapsuleSubOneMib"
+
+[[lifted]]
+kappa = "1469323d5772a98e62057f257c14fa97f318bec953886776a1a42420b17b170a"
+function = "verdant_tensor::scalars_ratchet::holo_capsule_sub_one_mib_headroom"
+definition = "Behavior::holoCapsuleSubOneMibHeadroom"
+
+[[lifted]]
 kappa = "4eea188543117f569905f456a1d411c358945d2cfc5383cee79a9d9dfa452e80"
 function = "verdant_tensor::scalars_ratchet::holo_capsule_under_budget"
 definition = "Behavior::holoCapsuleUnderBudget"
 
 [[lifted]]
+kappa = "2ab44fd2861364637e588d7581a5055ded502397d3e95f41303ded7e0af4af04"
+function = "verdant_tensor::scalars_ratchet::holo_one_mib_bytes"
+definition = "Behavior::holoOneMibBytes"
+
+[[lifted]]
 kappa = "2858b0408edf1397e1728f2b3ce1e7d0417a489a58cf818706e727bd992a2614"
 function = "verdant_tensor::scalars_ratchet::immutability_seal_entries_intact"
 definition = "Behavior::immutabilitySealEntriesIntact"
+
+[[lifted]]
+kappa = "a98209bd532a52ff829d53654ace4f3f9e5670da56505cecab284b78ae1318f3"
+function = "verdant_tensor::scalars_ratchet::js_companion_extraction_zero_extra_requests"
+definition = "Behavior::jsCompanionExtractionZeroExtraRequests"
+
+[[lifted]]
+kappa = "3505977c747590b10372745c21bc9323ba07b58437e478c62fcd9ca1d1fc2ed0"
+function = "verdant_tensor::scalars_ratchet::js_file_modularity_sub_1015"
+definition = "Behavior::jsFileModularitySub1015"
+
+[[lifted]]
+kappa = "6031052b81f8261d38fbfc4f26e71745ae9b1141b25e5910ec1318b946bc753c"
+function = "verdant_tensor::scalars_ratchet::js_file_modularity_sub_1024"
+definition = "Behavior::jsFileModularitySub1024"
 
 [[lifted]]
 kappa = "29a567f16ef6891fa57b8a58fe71e92e9be45415a580da909e072c96372caa21"
@@ -10913,9 +10977,24 @@ function = "verdant_tensor::scalars_ratchet::lifecycle_seven_category_total"
 definition = "Behavior::lifecycleSevenCategoryTotal"
 
 [[lifted]]
+kappa = "e003f030f9d4ebf3261f3252df6ad4a31dd37291d64e7f6aec039142285d9002"
+function = "verdant_tensor::scalars_ratchet::lifted_rust_module_count_at_least_180"
+definition = "Behavior::liftedRustModuleCountAtLeast180"
+
+[[lifted]]
 kappa = "ccf7bb37c7ad2a1b90e1aabc47ad9a1ae266098d781c7e4f33f967dbcd5565be"
 function = "verdant_tensor::scalars_ratchet::m22_frontier_targets_met"
 definition = "Behavior::m22FrontierTargetsMet"
+
+[[lifted]]
+kappa = "ea4d8d2ddd4c1b37c89424382b79bfdcf1c330fe277e19467c6bc74053068240"
+function = "verdant_tensor::scalars_ratchet::m23_frontier_targets_met"
+definition = "Behavior::m23FrontierTargetsMet"
+
+[[lifted]]
+kappa = "a72b29d4ffdbc262a159035c62c961df037b0092b05bb586bfa17634b113799d"
+function = "verdant_tensor::scalars_ratchet::m23_release_epoch_valid"
+definition = "Behavior::m23ReleaseEpochValid"
 
 [[lifted]]
 kappa = "39c3826b0aa0405ae0c05d87e99f4388dd14cccb162ae9d10bd7b9e1d7a6813d"
@@ -10956,6 +11035,26 @@ definition = "Behavior::observerNextWasmUorcTarget"
 kappa = "f15a9328543d2ac1945bd928c67723087cc40e64536f5d644eca4a4a9dc5aece"
 function = "verdant_tensor::scalars_ratchet::one_mib_bytes_u64"
 definition = "Behavior::oneMibBytesU64"
+
+[[lifted]]
+kappa = "d633fa05782c18f655ac8f46971552a97d560835c3e9fd6d17d818a8a88998b4"
+function = "verdant_tensor::scalars_ratchet::ontology_lod_coercive_pin_respected"
+definition = "Behavior::ontologyLodCoercivePinRespected"
+
+[[lifted]]
+kappa = "af8393de058e2c9675164e24c464035942b3c597b02a25d61603805cd3bbd156"
+function = "verdant_tensor::scalars_ratchet::ontology_stratum_rank_in_bounds"
+definition = "Behavior::ontologyStratumRankInBounds"
+
+[[lifted]]
+kappa = "7504643265f1085f29ef7b542f92dff22e400d7efe142fa1fe2745c8f3479590"
+function = "verdant_tensor::scalars_ratchet::ontology_telos_loss_additive"
+definition = "Behavior::ontologyTelosLossAdditive"
+
+[[lifted]]
+kappa = "6362ce41903b42491a4fe26ea46134a97e0b24c9bbbc67dbf56de00fb10713a3"
+function = "verdant_tensor::scalars_ratchet::operator_sealed_view_count_valid"
+definition = "Behavior::operatorSealedViewCountValid"
 
 [[lifted]]
 kappa = "e0637c79073dea330fa67bfdf9593df52c20e419181f65e9fc169e0fa593a1bf"
@@ -11013,6 +11112,16 @@ function = "verdant_tensor::scalars_ratchet::roadmap_milestones_achieved"
 definition = "Behavior::roadmapMilestonesAchieved"
 
 [[lifted]]
+kappa = "4f21e3f6da0d9fd2160b22e261a1cce2e44ed7fa147f5875b182d13df4c88005"
+function = "verdant_tensor::scalars_ratchet::rust_file_modularity_sub_1360"
+definition = "Behavior::rustFileModularitySub1360"
+
+[[lifted]]
+kappa = "42bb836f96e88dd8d297d7d8f9e416fd4b8a505f56fefbe53c44b4413571bf06"
+function = "verdant_tensor::scalars_ratchet::rust_file_modularity_sub_1390"
+definition = "Behavior::rustFileModularitySub1390"
+
+[[lifted]]
 kappa = "9697a63beecb59f82ce947d47a48924376e9f13c845e2860c4a55b5f5efe2608"
 function = "verdant_tensor::scalars_ratchet::rust_module_sub_1500_lines"
 definition = "Behavior::rustModuleSub1500Lines"
@@ -11043,6 +11152,16 @@ function = "verdant_tensor::scalars_ratchet::sparse_registry_crate_set_complete"
 definition = "Behavior::sparseRegistryCrateSetComplete"
 
 [[lifted]]
+kappa = "89794835d4293a3dfd044612bfe6178bd05ff355c8d5fceb8784f7e051aedd24"
+function = "verdant_tensor::scalars_ratchet::stitch_deeplink_byte_printable"
+definition = "Behavior::stitchDeeplinkBytePrintable"
+
+[[lifted]]
+kappa = "e432d58ca89e30f866049ca1f7cf9dee849a2b5a8387c6da3b67899a597939e6"
+function = "verdant_tensor::scalars_ratchet::stitch_deeplink_kappa_len_valid"
+definition = "Behavior::stitchDeeplinkKappaLenValid"
+
+[[lifted]]
 kappa = "2260caa104b57869eda7faea3c2b0d5efab68f5eee0f32492f3791c6a36c1e78"
 function = "verdant_tensor::scalars_ratchet::stitch_multi_origin_survivable"
 definition = "Behavior::stitchMultiOriginSurvivable"
@@ -11056,6 +11175,16 @@ definition = "Behavior::stitchPairIndicesDistinct"
 kappa = "445f95c1c3d518ef710a27db89d92ea2f98a252a71e6c2cde7379d38853e9360"
 function = "verdant_tensor::scalars_ratchet::stitch_release_quorum_survivable"
 definition = "Behavior::stitchReleaseQuorumSurvivable"
+
+[[lifted]]
+kappa = "a5767cd7f8de8cd44da57dd7aa525b0eab2d74eb64543726aee48325506a53ee"
+function = "verdant_tensor::scalars_ratchet::studio_organ_denial_wins_effective"
+definition = "Behavior::studioOrganDenialWinsEffective"
+
+[[lifted]]
+kappa = "39a898341954795b618e23f685bf30baa0f36fd65cee6da9341b29b14dbc7ffe"
+function = "verdant_tensor::scalars_ratchet::studio_organ_mode_valid"
+definition = "Behavior::studioOrganModeValid"
 
 [[lifted]]
 kappa = "ebd632653c3517985f6357c9fe8b614612e8f16d6cfb3bf0d3af5c7056968e12"
@@ -11108,9 +11237,24 @@ function = "verdant_tensor::scalars_ratchet::uorc_stream_frame_count_sufficient"
 definition = "Behavior::uorcStreamFrameCountSufficient"
 
 [[lifted]]
+kappa = "115b081d3f96abc25c40fea76a6e7bfd4b906eabf406a62fe53a41246ed93111"
+function = "verdant_tensor::scalars_ratchet::uorc_wasm_gzip_sub_550kib"
+definition = "Behavior::uorcWasmGzipSub550kib"
+
+[[lifted]]
+kappa = "530d3696a500d828559937c05e80ce31c282d1531fe200756a806a7b054da328"
+function = "verdant_tensor::scalars_ratchet::uorc_wasm_sub_1800kib"
+definition = "Behavior::uorcWasmSub1800kib"
+
+[[lifted]]
 kappa = "297d4d7f799a8afe3440b7b93706dd31913e8214ae0bae25c5ab678f7346a4ee"
 function = "verdant_tensor::scalars_ratchet::vcs_authority_commit_admissible"
 definition = "Behavior::vcsAuthorityCommitAdmissible"
+
+[[lifted]]
+kappa = "5ec5bc2d12fb28b4ea421bf0436b0b928d7c1ed0349b6b655f41e354f6c92469"
+function = "verdant_tensor::scalars_ratchet::vcs_studio_rs_geometry_valid"
+definition = "Behavior::vcsStudioRsGeometryValid"
 
 [[lifted]]
 kappa = "2ad8651efb778daca6fb6cf30f1f73d062e4ccdd5910450fd9475adbd81ccdd8"
@@ -11121,6 +11265,11 @@ definition = "Behavior::vsmTotalOwnershipComplete"
 kappa = "6ccb72d45abdaedfebbdc4ff52232fed48d6a7989f98d7b0d2bd7e4e038a48ed"
 function = "verdant_tensor::scalars_ratchet::wasm_binary_under_ceiling"
 definition = "Behavior::wasmBinaryUnderCeiling"
+
+[[lifted]]
+kappa = "1b0b29ebd6956b67bc9097a6ce6d4432b68f17cb67cabc1670dc37e535c8418b"
+function = "verdant_tensor::scalars_ratchet::wasm_excludes_native_repo_operator"
+definition = "Behavior::wasmExcludesNativeRepoOperator"
 
 [[lifted]]
 kappa = "3e5f67b79b5150f47bb684ed867b65046212c507529261a6b65dd61eba02b381"

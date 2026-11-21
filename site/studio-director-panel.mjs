@@ -207,3 +207,182 @@ export function buildDirectorPanel({ getStudioCtx, getLatestObserverTelemetry, g
 
   return { pDirector, syncLookDevLabel, stopSequence };
 }
+
+export function buildContainerOrgansCard({ containerOrgans, getStudioCtx }) {
+  const cOrgans = document.createElement("div");
+  cOrgans.className = "ve-m-card";
+  const hOrgans = document.createElement("h3");
+  hOrgans.textContent = "Container Capability Custody (FK-07 Explicit Denial-Wins Lattice)";
+  const pOrgansDesc = document.createElement("p");
+  pOrgansDesc.textContent =
+    "Govern browser hardware and network organs for the active project. Explicit Denial overrides any subsequent Grant in WebAssembly.";
+  const organGrid = document.createElement("div");
+  organGrid.className = "ve-organ-grid";
+  const organSyncFns = [];
+  for (const organ of containerOrgans) {
+    const item = document.createElement("div");
+    item.className = "ve-organ-item";
+    item.dataset.organSlug = organ.slug;
+    const meta = document.createElement("div");
+    meta.className = "ve-organ-meta";
+    const nm = document.createElement("span");
+    nm.className = "ve-organ-name";
+    nm.textContent = `${organ.label} (${organ.slug})`;
+    const st = document.createElement("span");
+    st.className = "ve-organ-state";
+    const hwPresent =
+      organ.slug === "webnn-local"
+        ? typeof navigator !== "undefined" && "ml" in navigator
+        : organ.slug === "gamepad-hid"
+          ? typeof navigator !== "undefined" && typeof navigator.getGamepads === "function"
+          : true;
+    meta.append(nm, st);
+
+    const btnWrap = document.createElement("div");
+    btnWrap.className = "ve-m-row";
+    const grantBtn = document.createElement("button");
+    grantBtn.type = "button";
+    grantBtn.className = "ve-m-btn";
+    grantBtn.dataset.organGrant = organ.slug;
+    grantBtn.textContent = "Grant";
+
+    const denyBtn = document.createElement("button");
+    denyBtn.type = "button";
+    denyBtn.className = "ve-m-btn";
+    denyBtn.dataset.organDeny = organ.slug;
+    denyBtn.textContent = "Deny";
+
+    const resetBtn = document.createElement("button");
+    resetBtn.type = "button";
+    resetBtn.className = "ve-m-btn";
+    resetBtn.dataset.organReset = organ.slug;
+    resetBtn.textContent = "Reset";
+
+    const syncRow = () => {
+      const studioCtx = getStudioCtx();
+      const curMode = studioCtx?.getOrganMode ? (studioCtx.getOrganMode(organ.idx) >>> 0) : 0;
+      if (curMode === 2) st.textContent = "Denied (FK-07 Wins)";
+      else if (curMode === 1) st.textContent = "Granted & Active";
+      else st.textContent = organ.defaultAllowed ? "Allowed (Sandboxed)" : hwPresent ? "Gated (Requires Grant)" : "Probed (API absent)";
+      grantBtn.classList.toggle("primary", curMode === 1);
+      denyBtn.classList.toggle("primary", curMode === 2);
+    };
+    syncRow();
+    organSyncFns.push(syncRow);
+
+    const applyOrganMode = async (nextMode) => {
+      const studioCtx = getStudioCtx();
+      const reply = await studioCtx?.callWorker?.("set-organ-grant", { organIdx: organ.idx, mode: nextMode });
+      const effectiveMode = reply?.mode !== undefined ? (reply.mode >>> 0) : nextMode;
+      studioCtx?.onOrganGrantChange?.(organ.idx, effectiveMode);
+      syncRow();
+    };
+    grantBtn.addEventListener("click", () => applyOrganMode(1));
+    denyBtn.addEventListener("click", () => applyOrganMode(2));
+    resetBtn.addEventListener("click", () => applyOrganMode(0));
+
+    btnWrap.append(grantBtn, denyBtn, resetBtn);
+    item.append(meta, btnWrap);
+    organGrid.append(item);
+  }
+  cOrgans.append(hOrgans, pOrgansDesc, organGrid);
+  return { cOrgans, organSyncFns };
+}
+
+export async function refreshStudioOutlinerAndOpfs({
+  studioCtx,
+  dlg,
+  latestObserverTelemetry,
+  entityTbody,
+  kpiStrata,
+  kpiBudget,
+  kpiEntities,
+  kpiClearance,
+  obsReadout,
+  storyLog,
+  organSyncFns,
+  opfsLog,
+  opfsActionsRow,
+  listOpfsAssets,
+  readOpfsAssetBytes,
+  deleteOpfsAsset,
+}) {
+  const outReply = await studioCtx?.callWorker?.("scene-outliner");
+  if (outReply?.ok && Array.isArray(outReply.entities)) {
+    entityTbody.replaceChildren();
+    for (const ent of outReply.entities) {
+      const tr = document.createElement("tr");
+      const [cx, cy, cz] = ent.center;
+      for (const val of [
+        String(ent.id),
+        ent.name,
+        ent.role,
+        String(ent.tris),
+        `(${cx.toFixed(1)}, ${cy.toFixed(1)}, ${cz.toFixed(1)})`,
+      ]) {
+        const td = document.createElement("td");
+        td.textContent = val;
+        tr.append(td);
+      }
+      const actTd = document.createElement("td");
+      const focusBtn = document.createElement("button");
+      focusBtn.type = "button";
+      focusBtn.className = "ve-m-btn";
+      focusBtn.textContent = "Frame";
+      focusBtn.addEventListener("click", () => {
+        studioCtx?.onFocusPoint?.(ent.center, ent.role === "TerrainPatch" ? 26 : 12, ent.name);
+      });
+      actTd.append(focusBtn);
+      tr.append(actTd);
+      entityTbody.append(tr);
+    }
+    const hdr = outReply.header || {};
+    const cell = outReply.universeCell || [0, 0, 0];
+    const clr = outReply.camera?.clearanceMm ?? 290;
+    const fUs = latestObserverTelemetry?.frameMicros ?? 8000;
+    const scalePct = ((latestObserverTelemetry?.scalePermille ?? 1000) / 10).toFixed(0);
+    kpiStrata.textContent = `${hdr.w5h_strata || 8} / 8 · Loss ${hdr.telos_loss || 0}`;
+    kpiBudget.textContent = `${(fUs / 1000).toFixed(1)} ms · ${scalePct}%`;
+    kpiEntities.textContent = `${outReply.entities.length} entities`;
+    kpiClearance.textContent = `${clr} mm`;
+    obsReadout.textContent =
+      `Observer Coherent · W5H ${hdr.w5h_strata || 8}/8 · Slot ${latestObserverTelemetry?.attendedSlot ?? 0} · Cell (${cell[0]},${cell[1]},${cell[2]})`;
+    storyLog.textContent =
+      `Universe Cell: (${cell[0]}, ${cell[1]}, ${cell[2]}) · 3-Sector 128m Ring Active · Seed ${hdr.seed || 7}\n` +
+      `Click 'Advance Beat at Story Podium' or 'Verify Conservation & Portal Ring' to inspect narrative state.`;
+  }
+
+  for (const fn of organSyncFns) fn();
+
+  if (studioCtx?.getOrganMode?.(4) === 2) {
+    opfsLog.textContent = "Refused: ContainerOrganDenied(opfs-storage) — OPFS asset cache denied by FK-07 custody.";
+    opfsActionsRow.replaceChildren();
+  } else {
+    const entries = await listOpfsAssets();
+    opfsLog.textContent =
+      entries.length > 0
+        ? `OPFS Persistent Asset Vault (${entries.length} object(s)):\n` +
+          entries.map((e) => `  • ${e.name} (${e.bytes} bytes)`).join("\n")
+        : "OPFS Persistent Asset Vault ready (import a .glb model to transcode and cache .uorc in origin storage).";
+    opfsActionsRow.replaceChildren();
+    for (const entry of entries) {
+      const mountBtn = document.createElement("button");
+      mountBtn.type = "button";
+      mountBtn.className = "ve-m-btn primary";
+      mountBtn.textContent = `Mount ${entry.name}`;
+      mountBtn.addEventListener("click", async () => {
+        const bytes = await readOpfsAssetBytes(entry.name);
+        if (bytes?.byteLength) await studioCtx?.onMountOpfsUorc?.(entry.name, bytes);
+      });
+      const delBtn = document.createElement("button");
+      delBtn.type = "button";
+      delBtn.className = "ve-m-btn";
+      delBtn.textContent = `Delete ${entry.name}`;
+      delBtn.addEventListener("click", async () => {
+        await deleteOpfsAsset(entry.name);
+        dlg.dispatchEvent(new CustomEvent("ve-refresh"));
+      });
+      opfsActionsRow.append(mountBtn, delBtn);
+    }
+  }
+}

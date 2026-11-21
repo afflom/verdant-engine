@@ -22,13 +22,159 @@ export async function handleExtendedWorkerMessage(msg, ctx) {
     getEmaFrameMicros,
     getOrganModes,
     getCurrentLod,
+    setCurrentLod,
     getCustomGlbActive,
     getUorcSceneActive,
+    setUorcSceneActive,
     drawScene,
     setCustomGlbActive,
+    getLastAnchor,
+    getLastAnchorActive,
     setLastAnchor,
+    getLastPose,
+    setLastPose,
+    setActiveSeed,
+    clearWalkJournal,
+    syncOrgansToWasm,
     postMessage,
   } = ctx;
+
+  if (msg.kind === "set-seed") {
+    const wasm = getWasm();
+    const uorcWasm = getLoadedUorcWasm();
+    const nextSeed = BigInt(Math.max(1, Number(msg.seed) || 7));
+    setActiveSeed(nextSeed);
+    clearWalkJournal();
+    const rank = simHost().verdant_wasm_active_lod_rank() >>> 0;
+    wasm.verdant_wasm_init(nextSeed);
+    wasm.verdant_wasm_set_lod_rank(rank);
+    if (uorcWasm) {
+      uorcWasm.verdant_wasm_init(nextSeed);
+      uorcWasm.verdant_wasm_set_lod_rank(rank);
+      syncOrgansToWasm(uorcWasm);
+    }
+    setCustomGlbActive(false);
+    const sh = simHost();
+    const lastAnchor = getLastAnchor();
+    if (getLastAnchorActive()) {
+      sh.verdant_wasm_camera_set_anchor(1, lastAnchor[0], lastAnchor[1], lastAnchor[2]);
+    } else {
+      sh.verdant_wasm_camera_set_mode(wasm.verdant_wasm_camera_mode() >>> 0);
+    }
+    const lastPose = getLastPose();
+    sh.verdant_wasm_camera_set_pose_intent(
+      lastPose.yaw,
+      lastPose.pitch,
+      lastPose.distMm,
+      lastPose.aspectMilli,
+    );
+    sh.verdant_wasm_scene_rebuild_buffers(0);
+    const cam = readSolvedCamera(sh);
+    const stats = drawScene(cam.eye, cam.lookTarget, getCurrentLod(), 0, false);
+    postMessage({
+      kind: "seed-updated",
+      id: msg.id,
+      ok: true,
+      seed: Number(nextSeed),
+      tris: stats.tris,
+      camera: cam,
+    });
+    return true;
+  }
+
+  if (msg.kind === "load-domain-pack") {
+    const domainIdx = Math.max(0, Math.min(3, msg.domainIdx | 0)) >>> 0;
+    const uorcWasm = await ensureUorcSceneHost();
+    const len = uorcWasm.verdant_wasm_load_domain_pack(domainIdx) >>> 0;
+    if (len === 0) {
+      postMessage({ kind: "domain-pack-loaded", id: msg.id, ok: false });
+      return true;
+    }
+    const observer = JSON.parse(new TextDecoder().decode(readAuxBytes(uorcWasm)));
+    setCustomGlbActive(false);
+    setUorcSceneActive(true);
+    clearWalkJournal();
+    const seed = BigInt(uorcWasm.verdant_wasm_active_seed());
+    setActiveSeed(seed);
+    if (msg.lod) setCurrentLod(msg.lod);
+    const sh = simHost();
+    const cam = readSolvedCamera(sh);
+    setLastAnchor([cam.lookTarget[0], cam.lookTarget[1], cam.lookTarget[2]]);
+    const dx = cam.eye[0] - cam.lookTarget[0];
+    const dy = cam.eye[1] - cam.lookTarget[1];
+    const dz = cam.eye[2] - cam.lookTarget[2];
+    const distM = Math.max(1.0, Math.hypot(dx, dy, dz));
+    const prevPose = getLastPose();
+    setLastPose({
+      yaw: Math.round(Math.atan2(dx, dz) * 1000),
+      pitch: Math.round(Math.asin(Math.max(-0.95, Math.min(0.95, dy / distM))) * 1000),
+      distMm: Math.round(distM * 1000) >>> 0,
+      aspectMilli: prevPose?.aspectMilli || 1600,
+    });
+    const stats = drawScene(cam.eye, cam.lookTarget, getCurrentLod(), msg.simClockSec || 0, false, 0, 0, true);
+    postMessage({
+      kind: "domain-pack-loaded",
+      id: msg.id,
+      ok: true,
+      domainIdx,
+      seed: Number(seed),
+      tris: stats.tris,
+      walkablePolys: sh.verdant_wasm_navmesh_polygon_count() >>> 0,
+      camera: cam,
+      observer,
+    });
+    return true;
+  }
+
+  if (
+    msg.kind === "studio-load-blank" ||
+    msg.kind === "studio-add-object" ||
+    msg.kind === "studio-update-object" ||
+    msg.kind === "studio-remove-object" ||
+    msg.kind === "studio-clear-objects"
+  ) {
+    const uorcWasm = await ensureUorcSceneHost();
+    let resId = 0;
+    if (msg.kind === "studio-load-blank") {
+      resId = uorcWasm.verdant_wasm_studio_load_blank_stage() >>> 0;
+    } else if (msg.kind === "studio-add-object") {
+      const p = msg.pos || [0, 0, 0];
+      const s = msg.scale || [1.5, 1.5, 1.5];
+      const c = msg.color || [0.82, 0.35, 0.18];
+      resId = uorcWasm.verdant_wasm_studio_add_object(msg.primKind | 0, p[0], p[1], p[2], s[0], s[1], s[2], c[0], c[1], c[2]) >>> 0;
+    } else if (msg.kind === "studio-update-object") {
+      const p = msg.pos || [0, 0, 0];
+      const s = msg.scale || [1.5, 1.5, 1.5];
+      const c = msg.color || [0.82, 0.35, 0.18];
+      resId = uorcWasm.verdant_wasm_studio_update_object(msg.objId >>> 0, p[0], p[1], p[2], msg.yawMilli | 0, s[0], s[1], s[2], c[0], c[1], c[2]) >>> 0;
+    } else if (msg.kind === "studio-remove-object") {
+      resId = uorcWasm.verdant_wasm_studio_remove_object(msg.objId >>> 0) >>> 0;
+    } else {
+      resId = uorcWasm.verdant_wasm_studio_clear_objects() >>> 0;
+    }
+    setCustomGlbActive(false);
+    setUorcSceneActive(true);
+    if (msg.lod) setCurrentLod(msg.lod);
+    const sh = simHost();
+    const cam = readSolvedCamera(sh);
+    if (msg.kind === "studio-load-blank") {
+      setLastAnchor([cam.lookTarget[0], cam.lookTarget[1], cam.lookTarget[2]]);
+      const dx = cam.eye[0] - cam.lookTarget[0], dy = cam.eye[1] - cam.lookTarget[1], dz = cam.eye[2] - cam.lookTarget[2];
+      const distM = Math.max(1.0, Math.hypot(dx, dy, dz));
+      const prevPose = getLastPose();
+      setLastPose({
+        yaw: Math.round(Math.atan2(dx, dz) * 1000),
+        pitch: Math.round(Math.asin(Math.max(-0.95, Math.min(0.95, dy / distM))) * 1000),
+        distMm: Math.round(distM * 1000) >>> 0,
+        aspectMilli: prevPose?.aspectMilli || 1600,
+      });
+    }
+    const stats = drawScene(cam.eye, cam.lookTarget, getCurrentLod(), msg.simClockSec || 0, false, 0, 0, true);
+    const oLen = uorcWasm.verdant_wasm_studio_objects_json_aux() >>> 0;
+    const objects = oLen > 0 ? JSON.parse(new TextDecoder().decode(readAuxBytes(uorcWasm))) : [];
+    postMessage({ kind: "studio-scene-updated", id: msg.id, ok: resId > 0 || msg.kind === "studio-clear-objects", objId: resId, tris: stats.tris, camera: cam, objects });
+    return true;
+  }
 
   if (msg.kind === "set-npc-directive") {
     const npcIdx = Math.max(0, msg.npcIdx | 0) >>> 0;

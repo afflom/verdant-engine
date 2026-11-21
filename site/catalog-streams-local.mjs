@@ -180,3 +180,76 @@ export function buildLocalVerdantCatalogItemsImpl(
   }
   return items;
 }
+
+export async function queryWikidataImpl(query, limit, timeoutMs, fetchJsonSafe) {
+  const q = encodeURIComponent(query || "observatory");
+  const data = await fetchJsonSafe(
+    `https://www.wikidata.org/w/api.php?action=wbsearchentities&search=${q}&language=en&format=json&limit=${Math.min(limit, 8)}&origin=*`,
+    timeoutMs,
+  );
+  return (data?.search || []).map((ent) => ({
+    id: `wikidata:${ent.id}`,
+    title: `${ent.label || ent.id} (${ent.id})`,
+    description: ent.description || "Structured Wikidata ontology entity ready for ISO 24617-2 grounded NPC dialogue & narrative lore.",
+    contentTypeKey: "Dataset",
+    schemaType: "Dataset",
+    mediaType: "application/ld+json",
+    targetSlot: "narrative:ontology",
+    targetRole: "narrative",
+    streamId: "wikidata",
+    streamLabel: "Wikidata",
+    sourceUri: ent.concepturi || `https://www.wikidata.org/wiki/${ent.id}`,
+    previewUrl: "",
+    glbUrl: "",
+    licenseSpdx: "CC0-1.0",
+    tags: ["wikidata", "ontology", "iso-24617-2", ent.id],
+    properties: {
+      qid: ent.id,
+      conceptUri: ent.concepturi || `https://www.wikidata.org/wiki/${ent.id}`,
+      groundedFact: `${ent.label || ent.id}: ${ent.description || "Authoritative Wikidata concept."}`,
+    },
+  }));
+}
+
+export async function queryGitHubImpl(query, contentType, limit, timeoutMs, fetchJsonSafe, authoritativeContentTypes) {
+  const topicHint =
+    contentType === "DefinedTermSet"
+      ? "design-tokens"
+      : contentType === "Place"
+        ? "dungeon OR geojson map"
+        : "wgsl OR gltf OR game-engine";
+  const q = encodeURIComponent(query ? `${query} ${topicHint}` : topicHint);
+  const data = await fetchJsonSafe(
+    `https://api.github.com/search/repositories?q=${q}&sort=stars&per_page=${Math.min(limit, 6)}`,
+    timeoutMs,
+  );
+  return (data?.items || []).map((repo) => {
+    const isTheme = contentType === "DefinedTermSet" || /token|theme|palette/i.test(`${repo.name} ${repo.description || ""}`);
+    const isMap = contentType === "Place" || /dungeon|map|geojson|terrain/i.test(`${repo.name} ${repo.description || ""}`);
+    const ctKey = isTheme ? "DefinedTermSet" : isMap ? "Place" : "SoftwareSourceCode";
+    const ctMeta = authoritativeContentTypes.find((c) => c.key === ctKey) || authoritativeContentTypes[9];
+    return {
+      id: `github:${repo.full_name}`,
+      title: repo.full_name,
+      description: `${repo.description || "Open-source repository"} · ★ ${(repo.stargazers_count || 0).toLocaleString()} · ${repo.language || "Multi-language"}`,
+      contentTypeKey: ctKey,
+      schemaType: ctMeta.schemaType,
+      mediaType: ctMeta.mediaType,
+      targetSlot: ctMeta.targetSlot,
+      targetRole: ctMeta.targetRole,
+      streamId: "github",
+      streamLabel: "GitHub OSS",
+      sourceUri: repo.html_url,
+      previewUrl: "",
+      glbUrl: "",
+      licenseSpdx: repo.license?.spdx_id || "Apache-2.0",
+      tags: ["github", ...(repo.topics || []).slice(0, 4), repo.language || "oss"].filter(Boolean),
+      properties: {
+        repository: repo.full_name,
+        defaultBranch: repo.default_branch || "main",
+        stars: repo.stargazers_count || 0,
+        language: repo.language || "Rust",
+      },
+    };
+  });
+}

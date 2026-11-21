@@ -1,7 +1,7 @@
 {
   "spec": "verdant/lifecycle-gate-report/1",
-  "releaseVersion": "2.14.0",
-  "releaseEpoch": 18,
+  "releaseVersion": "2.15.0",
+  "releaseEpoch": 19,
   "mode": "in-process",
   "allPassed": true,
   "releaseQualified": true,
@@ -9,14 +9,14 @@
   "totalCount": 6,
   "passRatePermille": 1000,
   "liftedCoverage": {
-    "rustModules": 78,
+    "rustModules": 80,
     "verificationTestModules": 24,
     "lexleanModules": 29,
     "featureSuiteModules": 3,
     "modelGovernanceModules": 16,
     "automationScriptModules": 20,
     "viewpointModules": 9,
-    "totalLiftedModules": 179,
+    "totalLiftedModules": 181,
     "allCategoriesLifted": true
   },
   "checks": [
@@ -33,7 +33,7 @@
       "owningManagerId": "mgr-observer-executive",
       "category": "in-process",
       "passed": true,
-      "durationMs": 24,
+      "durationMs": 14,
       "detail": "valid=true entries=16 violations=0"
     },
     {
@@ -41,7 +41,7 @@
       "owningManagerId": "mgr-change-release",
       "category": "in-process",
       "passed": true,
-      "durationMs": 1,
+      "durationMs": 0,
       "detail": "28374 B <= 30720 B"
     },
     {
@@ -50,14 +50,14 @@
       "category": "in-process",
       "passed": true,
       "durationMs": 0,
-      "detail": "cargo=v2.14.0 ledger=v2.14.0 manifest=v2.14.0 wasm_synced=true tag_ok=true"
+      "detail": "cargo=v2.15.0 ledger=v2.15.0 manifest=v2.15.0 wasm_synced=true tag_ok=true"
     },
     {
       "checkId": "formal-fidelity-and-frontier",
       "owningManagerId": "mgr-knowledge-provenance",
       "category": "in-process",
       "passed": true,
-      "durationMs": 1,
+      "durationMs": 0,
       "detail": "fidelity_open=0 frontier_valid=true"
     },
     {
@@ -66,8 +66,8 @@
       "category": "in-process",
       "passed": true,
       "durationMs": 0,
-      "detail": "total=179 (rust=78, test=24, lex=29, feature=3, model=16, script=20, view=9)"
+      "detail": "total=181 (rust=80, test=24, lex=29, feature=3, model=16, script=20, view=9)"
     }
   ],
-  "reportKappaHex": "a35945092bbdeed57e83bb01e7f3765bf1f9690efa20f70889e7573ccf45393a"
+  "reportKappaHex": "d914798248ea1c954ef4d0cfee3dbf36a3d1b270e603dd62c5500ea2875abcba"
 }

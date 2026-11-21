@@ -11,21 +11,13 @@ import { initStudioOutliner } from "./outliner.mjs";
 import { initStudioObserverPanel } from "./observer-panel.mjs";
 import { initStudioProjectInspector } from "./project-inspector.mjs";
 import { bootStudioWorkspace } from "./studio-boot.mjs";
-import { createStudioViewportController } from "./studio-viewport.mjs";
+import { createStudioViewportController, wireStudioControls } from "./studio-viewport.mjs";
 import { DOMAIN_DEFAULT_GENRE, initStudioDiscoveryPanel } from "./discovery-panel.mjs";
 import { initStudioStageAssets, initStudioDomainWizard } from "./stage-assets.mjs";
 import {
-  STARTER_ARCHETYPES,
-  STUDIO_ROLE_KEYS,
-  base64UrlToBytes,
-  exportGlbDownload,
-  mountInlineStudio,
-  pushStudioTelemetry,
-  routeStudioPrompt,
-  shareUorcSnapshot,
-  suspendModalAudio,
-  syncModalAudioSpatial,
-  toggleModalAudio,
+  STARTER_ARCHETYPES, STUDIO_ROLE_KEYS, base64UrlToBytes, cacheBytesInOpfs, exportGlbDownload,
+  mountInlineStudio, pushStudioTelemetry, routeStudioPrompt, shareUorcSnapshot, suspendModalAudio,
+  syncModalAudioSpatial, toggleModalAudio,
 } from "../studio.mjs";
 
 const LODS = [
@@ -857,40 +849,6 @@ const {
   getStudioHandle: () => studioHandle,
 });
 
-// Wire Wizard controls
-document.querySelectorAll("[data-wiz-step]").forEach((btn) => {
-  btn.addEventListener("click", () => setWizardStep(Number(btn.dataset.wizStep)));
-});
-document.querySelectorAll("[data-wiz-cam]").forEach((btn) => {
-  btn.addEventListener("click", async () => {
-    await cycleCameraMode(btn.dataset.wizCam);
-    if (wizComposeLog) wizComposeLog.textContent = `Camera Rig -> ${camPreset} · Clear ${lClr}mm`;
-  });
-});
-wizNpcSelect?.addEventListener("change", () => renderNpcDirectivesAndPrompts(Number(wizNpcSelect.value) || 0));
-wizSabineBtn?.addEventListener("click", async () => {
-  const env = domainPacks[activeDomainIdx]?.environment;
-  const vol = env?.acousticVolumeM3 || 4200;
-  const absMilli = env?.acousticAbsorptionMilliM2 || 310000;
-  const r = await callWorker("sabine-rt60", { volumeM3: vol, absorptionMilliM2: absMilli });
-  if (r?.ok) {
-    lastRt60Ms = r.rt60Ms;
-    ACOUST.rt60Ms = r.rt60Ms;
-    syncHud();
-    if (wizComposeLog) wizComposeLog.textContent = `Sabine RT60 (${env?.name || activeProject}): ${r.rt60Ms} ms`;
-  }
-});
-wizDlgForm?.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  await runNpcDialogue(wizDlgInput?.value);
-  if (wizDlgInput) wizDlgInput.value = "";
-});
-
-wizAuditBtn?.addEventListener("click", runFullPrismQualityGate);
-wizSealUorcBtn?.addEventListener("click", exportActiveUorcArchive);
-wizShareUorcBtn?.addEventListener("click", () => shareUorcSnapshot(callWorker, chip, statusEl));
-stitchPublishBtn?.addEventListener("click", publishActiveAppToStitchCatalog);
-
 const executePrompt = async (text) =>
   routeStudioPrompt(text, {
     callWorker,
@@ -911,73 +869,31 @@ const executePrompt = async (text) =>
     openStitchModal: openStitchGuarded,
   });
 
-// Wire viewport pointer interactions
-let lx = 0;
-let ly = 0;
-canvas?.addEventListener("pointerdown", (e) => {
-  dragging = true;
-  lx = e.clientX;
-  ly = e.clientY;
-  canvas.setPointerCapture?.(e.pointerId);
-  requestRender();
-});
-canvas?.addEventListener("pointermove", (e) => {
-  if (!dragging) return;
-  const dx = e.clientX - lx;
-  const dy = e.clientY - ly;
-  lx = e.clientX;
-  ly = e.clientY;
-  pYaw -= dx * 0.007;
-  pPit += dy * 0.006;
-  requestRender();
-});
-canvas?.addEventListener("pointerup", () => { dragging = false; });
-canvas?.addEventListener("pointercancel", () => { dragging = false; });
-canvas?.addEventListener("wheel", (e) => {
-  e.preventDefault();
-  pDst += e.deltaY * 0.018;
-  requestRender();
-}, { passive: false });
-
-simBtn?.addEventListener("click", () => setSimLive(!simLive));
-camBtn?.addEventListener("click", () => cycleCameraMode());
-audioBtn?.addEventListener("click", toggleGuardedAudio);
-importBtn?.addEventListener("click", () => glbFileIn?.click());
-stitchBtn?.addEventListener("click", openStitchGuarded);
-exportUorcBtn?.addEventListener("click", exportActiveUorcArchive);
-glbFileIn?.addEventListener("change", async () => {
-  const f = glbFileIn.files?.[0];
-  if (!f) return;
-  const copy = new Uint8Array(await f.arrayBuffer());
-  const r = await callWorker("import-glb", { bytes: copy }, [copy.buffer]);
-  if (r?.ok) {
-    lTris = r.tris || lTris;
-    if (r.uorcBytes?.byteLength && isOrganAllowed(4, true)) {
-      await cacheBytesInOpfs(`${f.name}.uorc`, r.uorcBytes);
-    }
-    await syncFallbackBuffers();
-    syncHud();
-    chip(statusEl, `Imported ${f.name} · ${lTris} tris`);
-    studioHandle?.refresh();
-    requestRender();
-  } else {
-    chip(statusEl, `Refused invalid .glb (${f.name})`);
-  }
-  glbFileIn.value = "";
-});
-
-promptForm?.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  await executePrompt(promptInput?.value);
-  if (promptInput) promptInput.value = "";
-});
-
-addEventListener("hashchange", () => {
-  const rk = resolveInitialRole();
-  if (STUDIO_ROLE_KEYS.includes(rk) && location.hash !== "#compose") {
-    setRightRailTab("roles");
-    studioHandle?.selectTab(rk);
-  }
+wireStudioControls({
+  canvas, simBtn, camBtn, audioBtn, importBtn, stitchBtn, exportUorcBtn, glbFileIn,
+  promptForm, promptInput, wizNpcSelect, wizSabineBtn, wizDlgForm, wizDlgInput,
+  wizAuditBtn, wizSealUorcBtn, wizShareUorcBtn, stitchPublishBtn, wizComposeLog,
+  statusEl, ACOUST, STUDIO_ROLE_KEYS,
+  callWorker, chip, isOrganAllowed, cacheBytesInOpfs, syncFallbackBuffers, syncHud,
+  requestRender, setSimLive, cycleCameraMode, toggleGuardedAudio, openStitchGuarded,
+  exportActiveUorcArchive, shareUorcSnapshot, setWizardStep, renderNpcDirectivesAndPrompts,
+  runNpcDialogue, runFullPrismQualityGate, publishActiveAppToStitchCatalog, executePrompt,
+  resolveInitialRole, setRightRailTab,
+  state: {
+    getCamPreset: () => camPreset,
+    getLClr: () => lClr,
+    getDomainPacks: () => domainPacks,
+    getActiveDomainIdx: () => activeDomainIdx,
+    setLastRt60Ms: (v) => { lastRt60Ms = v; },
+    getActiveProject: () => activeProject,
+    getDragging: () => dragging,
+    setDragging: (v) => { dragging = v; },
+    nudgeOrbit: (dyaw, dpit, ddst) => { pYaw += dyaw; pPit += dpit; pDst += ddst; },
+    getSimLive: () => simLive,
+    getLTris: () => lTris,
+    setLTris: (v) => { lTris = v; },
+    getStudioHandle: () => studioHandle,
+  },
 });
 
 // Boot Holo + Domain Packs + Discovery Pills + Worker + Inline 7-Role Atelier

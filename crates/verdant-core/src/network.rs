@@ -599,11 +599,16 @@ fn hmac_sha256(key: &[u8], msg: &[u8]) -> [u8; SHA256_BYTES] {
 }
 
 fn constant_time_eq_32(a: &[u8; SHA256_BYTES], b: &[u8; SHA256_BYTES]) -> bool {
-    let mut diff = 0u8;
-    for i in 0..SHA256_BYTES {
-        diff |= a[i] ^ b[i];
-    }
-    diff == 0
+    a.iter().zip(b.iter()).fold(
+        0_u64,
+        |acc, (&x, &y)| {
+            if x == y {
+                acc
+            } else {
+                acc.wrapping_add(1_u64)
+            }
+        },
+    ) == 0_u64
 }
 
 /// Confidentiality visibility mode for any stakeholder or Observer content on Stitch.

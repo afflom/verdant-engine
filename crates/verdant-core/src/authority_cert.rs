@@ -4,7 +4,358 @@
 
 use serde::{Deserialize, Serialize};
 
-use super::{AuthorityCommand, SigningActionKind, SovereignAuthorityLedger};
+use super::SovereignAuthorityLedger;
+
+/// Sovereign governance role modeled in `Governance::GovernanceRole`.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum GovernanceRole {
+    /// Initial repository owner anchoring genesis epoch `1`.
+    GenesisOwner,
+    /// Active member of the M-of-N Sovereign Admin quorum.
+    SovereignAdmin,
+    /// Developer submitting signed requests and group coordination envelopes.
+    ProjectContributor,
+    /// Read-only cryptographic verifier of epochs, approvals, and revocations.
+    ObserverAuditor,
+}
+
+/// Privileged or coordination action bound by a signing request (`Governance::SigningActionKind`).
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum SigningActionKind {
+    /// Merge a verified `VerdantVcs` commit onto a protected ref.
+    MergeCommit,
+    /// Cut and publish a monotonic `.holo` / Stitch release pointer.
+    CutRelease,
+    /// Grant scoped contributor or maintainer capability.
+    GrantRole,
+    /// Admit a new Sovereign Admin into the authority quorum.
+    AddAdmin,
+    /// Revoke or process departure of an active Sovereign Admin.
+    RevokeAdmin,
+    /// Rotate quorum threshold or path-ownership policy.
+    RotatePolicy,
+    /// Coordinate an issue, RFC proposal, milestone, or review thread.
+    CoordinateWorkItem,
+}
+
+/// Lifecycle state of a content-addressed signing request (`Governance::SigningRequestState`).
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum SigningRequestState {
+    /// Local unsigned draft.
+    Draft,
+    /// Submitted with valid requester Prism ID signature.
+    Submitted,
+    /// Active Admin review in progress.
+    UnderReview,
+    /// Active independent Admin approvals satisfy M-of-N quorum.
+    QuorumApproved,
+    /// Finalized and committed to the immutable ledger.
+    Finalized,
+    /// Explicitly rejected by an active Sovereign Admin.
+    Rejected,
+    /// Invalidated because an approving Admin departed before finalization.
+    RevocationInvalidated,
+    /// Expired past `expiry_epoch`.
+    Expired,
+}
+
+/// Reason an Admin leaves the active quorum (`Governance::DepartureReason`).
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum DepartureReason {
+    /// Clean self-signed or mutually agreed resignation.
+    VoluntaryResignation,
+    /// Removal ratified by M-of-N remaining active Admins.
+    QuorumRemoval,
+    /// Revocation triggered by suspected key compromise (activates compromise-floor quarantine).
+    KeyCompromise,
+}
+
+/// Admin review verdict on a submitted signing request.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum ReviewVerdictKind {
+    /// Signed cryptographic approval bound to the active authority epoch.
+    Approve,
+    /// Signed cryptographic rejection terminating the request.
+    Reject,
+}
+
+/// Ledger record of a Sovereign Admin (active or departed/revoked).
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AdminMemberRecord {
+    /// Sovereign `Prism ID` (`prism:...`).
+    pub prism_id: String,
+    /// Public key fingerprint (`sha256(prism_id || secret)` hex).
+    pub key_fingerprint: String,
+    /// Assigned governance role.
+    pub role: GovernanceRole,
+    /// Authority epoch at which this Admin was admitted.
+    pub admitted_epoch: u64,
+    /// Authority epoch at which this Admin departed or was revoked, if no longer active.
+    pub revoked_at_epoch: Option<u64>,
+    /// Departure classification when revoked.
+    pub departure_reason: Option<DepartureReason>,
+    /// Optional compromise floor epoch for `KeyCompromise` revocations.
+    pub compromise_floor_epoch: Option<u64>,
+}
+
+/// Immutable chained `AuthorityEpoch` snapshot (`prevEpochKappa -> epochKappa`).
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AuthorityEpochRecord {
+    /// Strictly monotonic authority epoch (`>= 1`).
+    pub epoch: u64,
+    /// Content-addressed commitment of the immediately preceding epoch (or genesis anchor).
+    pub prev_epoch_kappa: String,
+    /// Content-addressed SHA-256 commitment of this epoch record.
+    pub epoch_kappa: String,
+    /// Sorted list of active Sovereign Admin `Prism ID`s at this epoch.
+    pub active_admins: Vec<String>,
+    /// Active M-of-N quorum threshold (`1 <= M <= N`; `M >= 2` whenever `N >= 2`).
+    pub quorum_threshold_m: u64,
+    /// Forward-secret private workspace AEAD boundary key epoch.
+    pub boundary_key_epoch: u64,
+    /// W3C PROV-O human-readable transition summary.
+    pub provo_summary: String,
+    /// Active Admin `Prism ID`s that co-signed this epoch transition.
+    pub co_signers: Vec<String>,
+}
+
+/// Signed PROV-O Admin review attestation on a [`SigningRequestRecord`].
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ReviewAttestation {
+    /// Reviewing Admin's `Prism ID`.
+    pub admin_prism_id: String,
+    /// Signed approve or reject verdict.
+    pub verdict: ReviewVerdictKind,
+    /// Authority epoch under which this signature was produced.
+    pub signed_epoch: u64,
+    /// Audit rationale.
+    pub rationale: String,
+    /// Domain-separated cryptographic signature hex.
+    pub signature_hex: String,
+}
+
+/// Content-addressed contributor signing request governed by [`SovereignAuthorityLedger`].
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SigningRequestRecord {
+    /// Content-addressed SHA-256 request `kappa`.
+    pub request_kappa: String,
+    /// Submitting contributor or Admin `Prism ID`.
+    pub requester_prism_id: String,
+    /// Requester's cryptographic signature over the request preimage.
+    pub requester_signature_hex: String,
+    /// Action scope governed by this request.
+    pub action: SigningActionKind,
+    /// Target branch ref, release tag, or capability scope.
+    pub target_ref: String,
+    /// Content-addressed target commit or artifact `kappa`.
+    pub target_kappa: String,
+    /// Authority epoch active when submitted.
+    pub submitted_epoch: u64,
+    /// Final authority epoch at which this request remains admissible.
+    pub expiry_epoch: u64,
+    /// Current deterministic state machine status.
+    pub state: SigningRequestState,
+    /// Immutable chronological review attestations.
+    pub reviews: Vec<ReviewAttestation>,
+    /// Authority epoch at which this request finalized, if finalized.
+    pub finalized_epoch: Option<u64>,
+}
+
+/// Standing delegated capability grant that auto-revokes when its sole attesting Admin departs.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct StandingGrantRecord {
+    /// Content-addressed grant `kappa`.
+    pub grant_kappa: String,
+    /// Grantee's `Prism ID`.
+    pub grantee_prism_id: String,
+    /// Scoped capability identifier (e.g. `branch:release`, `triage:issues`).
+    pub scope: String,
+    /// Authority epoch when granted.
+    pub granted_epoch: u64,
+    /// Active Admins who attested this grant.
+    pub attested_by: Vec<String>,
+    /// True while currently active and not invalidated by Admin departure.
+    pub active: bool,
+    /// Diagnostic reason if automatically revoked on Admin departure.
+    pub revoked_reason: Option<String>,
+}
+
+/// GitHub-free W3C PROV-O group project coordination record (issue, RFC, milestone, review thread).
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct WorkItemRecord {
+    /// Content-addressed work-item `kappa`.
+    pub item_kappa: String,
+    /// Author's `Prism ID`.
+    pub author_prism_id: String,
+    /// Work-item category (`issue`, `rfc`, `milestone`, `review-thread`).
+    pub kind: String,
+    /// Title or summary.
+    pub title: String,
+    /// Path-scoped ownership target (`CODEOWNERS` replacement).
+    pub target_path: String,
+    /// Required review group identifier.
+    pub required_review_group: String,
+    /// Associated milestone identifier.
+    pub milestone: String,
+    /// Verified Stitch erasure shard count (`>= 4` for 4-of-8 custody).
+    pub stitch_shard_count: u64,
+    /// Author's cryptographic signature hex.
+    pub signature_hex: String,
+}
+
+/// Deterministic command dispatched to [`SovereignAuthorityLedger::execute`].
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(tag = "cmd", rename_all = "camelCase")]
+pub enum AuthorityCommand {
+    /// Developer submits a signed content-addressed signing request.
+    SubmitSigningRequest {
+        /// Requester's `Prism ID` (`prism:...`).
+        requester_prism_id: String,
+        /// Requester's key material (for deterministic native/CLI signing).
+        requester_secret: String,
+        /// Requested action kind.
+        action: SigningActionKind,
+        /// Target ref or scope.
+        target_ref: String,
+        /// Target commit or artifact `kappa`.
+        target_kappa: String,
+        /// Expiry authority epoch (`>= current_epoch`).
+        expiry_epoch: u64,
+    },
+    /// Active Verdant Sovereign Admin reviews and signs `Approve` or `Reject`.
+    ReviewSigningRequest {
+        /// Target signing request `kappa`.
+        request_kappa: String,
+        /// Reviewing Admin `Prism ID`.
+        admin_prism_id: String,
+        /// Reviewing Admin key material.
+        admin_secret: String,
+        /// Approve or Reject verdict.
+        verdict: ReviewVerdictKind,
+        /// Immutable PROV-O audit rationale.
+        rationale: String,
+    },
+    /// Finalize a quorum-approved signing request if active approvals still satisfy M-of-N.
+    FinalizeSigningRequest {
+        /// Target signing request `kappa`.
+        request_kappa: String,
+    },
+    /// Admit a new Sovereign Admin and advance the monotonic authority epoch.
+    AddAdmin {
+        /// New Admin's `Prism ID`.
+        candidate_prism_id: String,
+        /// New Admin's key material (for key-fingerprint registration).
+        candidate_secret: String,
+        /// Active Admins approving the addition (`(prism_id, secret)` pairs).
+        approving_admins: Vec<(String, String)>,
+        /// Next M-of-N quorum threshold (`>= 2` once `N >= 2`).
+        next_quorum_threshold_m: u64,
+    },
+    /// Process an Admin's departure or revocation, advance epoch, rotate boundary key, and
+    /// immediately invalidate their pending approvals and sole-attested standing grants.
+    DepartOrRevokeAdmin {
+        /// Departing or revoked Admin `Prism ID`.
+        target_admin_prism_id: String,
+        /// Departure classification (`VoluntaryResignation`, `QuorumRemoval`, `KeyCompromise`).
+        reason: DepartureReason,
+        /// Required for `KeyCompromise`: earliest suspect epoch to quarantine.
+        compromise_floor_epoch: Option<u64>,
+        /// Co-signing active Admins (`(prism_id, secret)` pairs).
+        approving_admins: Vec<(String, String)>,
+        /// Next valid M-of-N threshold for the remaining active Admin set.
+        next_quorum_threshold_m: u64,
+    },
+    /// Issue a standing delegated access grant attested by one or more active Admins.
+    GrantStandingAccess {
+        /// Grantee's `Prism ID`.
+        grantee_prism_id: String,
+        /// Capability scope string.
+        scope: String,
+        /// Attesting active Admins (`(prism_id, secret)` pairs).
+        attesting_admins: Vec<(String, String)>,
+    },
+    /// Record a GitHub-free W3C PROV-O group coordination item (issue, RFC, milestone).
+    CoordinateWorkItem {
+        /// Author's `Prism ID`.
+        author_prism_id: String,
+        /// Author's key material.
+        author_secret: String,
+        /// Work-item category (`issue`, `rfc`, `milestone`, `review-thread`).
+        kind: String,
+        /// Work-item title.
+        title: String,
+        /// Path-scoped ownership target.
+        target_path: String,
+        /// Required review group name.
+        required_review_group: String,
+        /// Target milestone.
+        milestone: String,
+        /// Stitch erasure shard count (`>= 4`).
+        stitch_shard_count: u64,
+    },
+    /// Verify whether a historical finalized commit remains valid or is quarantined by compromise.
+    VerifyHistoricalCommit {
+        /// Epoch at which the commit was finalized.
+        finalized_epoch: u64,
+        /// Admin `Prism ID`s that signed the commit at `finalized_epoch`.
+        signer_prism_ids: Vec<String>,
+    },
+    /// Verify the full monotonic epoch chain, `prev_epoch_kappa` links, and quorum invariants.
+    VerifyChain,
+    /// Issue a self-verifying [`ApprovalCertificate`] for a finalized signing request (`VE-72`).
+    IssueApprovalCertificate {
+        /// Finalized signing request `kappa`.
+        request_kappa: String,
+    },
+    /// Cryptographically verify an [`ApprovalCertificate`] against target `kappa`, action kind,
+    /// monotonic authority chain, active quorum threshold, and compromise quarantine floor (`VE-72`).
+    VerifyApprovalCertificate {
+        /// Candidate approval certificate to verify.
+        certificate: ApprovalCertificate,
+        /// Expected `VerdantVcs` commit or `.holo` capsule target `kappa`.
+        expected_target_kappa: String,
+        /// Expected privileged signing action kind.
+        expected_action: SigningActionKind,
+    },
+}
+
+/// Structured outcome returned by [`SovereignAuthorityLedger::execute`].
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AuthorityOutcome {
+    /// Fixed schema identifier (`verdant/sovereign-authority-outcome/1`).
+    pub spec: String,
+    /// Current authority epoch after execution.
+    pub current_epoch: u64,
+    /// Current forward-secret private workspace boundary key epoch.
+    pub boundary_key_epoch: u64,
+    /// Active Sovereign Admin count.
+    pub active_admin_count: u64,
+    /// Active M-of-N quorum threshold.
+    pub quorum_threshold_m: u64,
+    /// Primary content-addressed `kappa` created or verified by this command.
+    pub subject_kappa: String,
+    /// Count of pending signing requests invalidated by an Admin departure (if applicable).
+    pub invalidated_requests: u64,
+    /// Count of standing grants automatically revoked by an Admin departure (if applicable).
+    pub revoked_grants: u64,
+    /// Concise audit summary.
+    pub summary: String,
+    /// Optional issued or verified [`ApprovalCertificate`] when executing certificate commands.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub certificate: Option<ApprovalCertificate>,
+}
 
 /// Content-addressed cryptographic approval certificate binding a finalized signing request
 /// (`SovereignAuthorityLedger`) directly into `VerdantVcs` commits and `.holo` release capsules (`VE-72`).

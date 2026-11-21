@@ -3563,3 +3563,123 @@ fn engine_ve_74() {
         kpi_rep.kpis
     );
 }
+
+#[test]
+fn engine_ve_75() {
+    use std::path::Path;
+    use verdant_core::operator::VerdantOperatorChannel;
+    use verdant_tensor::scalars::*;
+
+    let repo_root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+
+    // 1. Verify native-only repo operator Wasm exports are gated out of wasm32:
+    let wasm_exports_src =
+        std::fs::read_to_string(repo_root.join("crates/verdant-wasm/src/exports_uorc_studio.rs"))
+            .expect("exports_uorc_studio.rs");
+    assert!(
+        wasm_exports_src.contains("#[cfg(not(target_arch = \"wasm32\"))]\n#[no_mangle]\npub extern \"C\" fn verdant_wasm_operator_status_aux"),
+        "verdant_wasm_operator_status_aux must be gated to native targets"
+    );
+    assert!(
+        wasm_exports_src.contains("#[cfg(not(target_arch = \"wasm32\"))]\n#[no_mangle]\npub extern \"C\" fn verdant_wasm_operator_prompt_io"),
+        "verdant_wasm_operator_prompt_io must be gated to native targets"
+    );
+    assert!(
+        wasm_exports_src.contains("#[cfg(not(target_arch = \"wasm32\"))]\n#[no_mangle]\npub extern \"C\" fn verdant_wasm_observer_roadmap_kpis_aux"),
+        "verdant_wasm_observer_roadmap_kpis_aux must be gated to native targets"
+    );
+
+    // 2. Verify M23 extracted Rust submodules exist and are owned in iso42010-viewpoints.json:
+    assert!(repo_root
+        .join("crates/verdant-core/src/collision_blas.rs")
+        .is_file());
+    assert!(repo_root
+        .join("crates/verdant-core/src/vcs_studio.rs")
+        .is_file());
+
+    // 3. Verify MIR-lifted M23 constructive predicates:
+    assert_eq!(holo_one_mib_bytes(), 1_048_576);
+    assert!(holo_capsule_sub_one_mib(1_020_000));
+    assert!(!holo_capsule_sub_one_mib(1_048_576));
+    assert_eq!(holo_capsule_sub_one_mib_headroom(1_020_000), 28_576);
+    assert!(uorc_wasm_sub_1800kib(1_786_525));
+    assert!(uorc_wasm_gzip_sub_550kib(523_777));
+    assert!(wasm_excludes_native_repo_operator(true, false));
+    assert!(!wasm_excludes_native_repo_operator(true, true));
+    assert!(rust_file_modularity_sub_1390(1_359));
+    assert!(rust_file_modularity_sub_1360(1_359));
+    assert!(js_file_modularity_sub_1024(1_015));
+    assert!(js_file_modularity_sub_1015(1_015));
+    assert!(js_companion_extraction_zero_extra_requests(0));
+    assert!(lifted_rust_module_count_at_least_180(181));
+    assert!(collision_blas_non_empty(12, 4));
+    assert!(collision_blas_leaf_bounded(4, 4));
+    assert!(collision_blas_stack_has_room(0, 64));
+    assert!(gltf_skeleton_parent_acyclic(false, 0, 1));
+    assert!(gltf_clip_playable(1000, 2));
+    assert!(stitch_deeplink_kappa_len_valid(64));
+    assert!(stitch_deeplink_byte_printable(32));
+    assert!(vcs_studio_rs_geometry_valid(4, 8));
+    assert!(ontology_stratum_rank_in_bounds(7));
+    assert!(ontology_lod_coercive_pin_respected(1, 2, 2));
+    assert!(ontology_telos_loss_additive(0, 1, 2, 3, 6));
+    assert!(authority_chain_tip_consistent(3, 3));
+    assert!(authority_historical_quorum_met(2, 2));
+    assert!(studio_organ_mode_valid(2));
+    assert_eq!(studio_organ_denial_wins_effective(1, true), 2);
+    assert!(operator_sealed_view_count_valid(16));
+    assert!(m23_release_epoch_valid(19));
+    assert!(m23_frontier_targets_met(485, 1_162));
+
+    // 4. Ratchet permanently locks sub-1.00 MiB .holo capsule, <= 1.85 MB Wasm, <= 1365 L Rust,
+    //    <= 1024 L JS, >= 480 lifted functions, residue <= 1162, and M1..M23:
+    let rep = prism_fidelity::ratchet::audit_parametric_ratchet(
+        &repo_root,
+        Path::new("model/parametric-ratchet.toml"),
+    )
+    .expect("live repo must pass all 4 ratchet layers");
+    assert!(
+        rep.observed_release_capsule_bytes < 1_048_576,
+        "M23 must break the 1.00 MiB (1,048,576 B) .holo capsule barrier, got {}",
+        rep.observed_release_capsule_bytes
+    );
+    assert!(
+        rep.observed_wasm_uorc_bytes <= 1_850_000,
+        "M23 must tighten site/verdant-uorc.wasm <= 1,850,000 B, got {}",
+        rep.observed_wasm_uorc_bytes
+    );
+    assert!(
+        rep.observed_max_rust_file_lines <= 1_365,
+        "M23 must tighten max_handwritten_rust_file_lines <= 1365, got {}",
+        rep.observed_max_rust_file_lines
+    );
+    assert!(
+        rep.observed_max_js_file_lines <= 1_024,
+        "M23 must tighten max_js_file_lines <= 1024, got {}",
+        rep.observed_max_js_file_lines
+    );
+    assert!(
+        rep.frontier_lifted_functions >= 480,
+        "M23 must lift >= 480 constructive Rust functions, got {}",
+        rep.frontier_lifted_functions
+    );
+    assert!(
+        rep.frontier_residue_functions <= 1_162,
+        "M23 must keep residue <= 1162, got {}",
+        rep.frontier_residue_functions
+    );
+
+    let ch = VerdantOperatorChannel::new("sunspire-regatta").expect("operator channel");
+    let kpi_rep = ch
+        .evaluate_observer_roadmap_kpis(&repo_root, true, true)
+        .expect("observer roadmap & KPI report");
+    assert!(
+        kpi_rep.milestones.len() >= 23,
+        "expected Milestones M1..M23"
+    );
+    assert_eq!(
+        kpi_rep.kpi_passed_count, kpi_rep.kpi_total_count,
+        "all Observer KPIs must pass (kpis={:?})",
+        kpi_rep.kpis
+    );
+}

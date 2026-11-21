@@ -739,3 +739,263 @@ pub const fn m22_frontier_targets_met(lifted: u64, residue: u64) -> bool {
         .wrapping_add(sixty_four_u64());
     lifted >= four_fifty && residue <= max_res
 }
+
+/// Pure MIR-lifted sub-1.00 MiB `.holo` capsule ceiling constant (`1048576` = `1024 * 1024`).
+#[must_use]
+pub const fn holo_one_mib_bytes() -> u64 {
+    let kb = thirty_two_u64().wrapping_mul(thirty_two_u64());
+    kb.wrapping_mul(kb)
+}
+
+/// Pure MIR-lifted sub-1.00 MiB `.holo` release capsule check (`capsule_bytes < 1048576`).
+#[must_use]
+pub const fn holo_capsule_sub_one_mib(capsule_bytes: u64) -> bool {
+    capsule_bytes >= 1 && capsule_bytes < holo_one_mib_bytes()
+}
+
+/// Pure MIR-lifted sub-1.00 MiB `.holo` headroom calculation (`1048576 - capsule_bytes`).
+#[must_use]
+pub const fn holo_capsule_sub_one_mib_headroom(capsule_bytes: u64) -> u64 {
+    let cap = holo_one_mib_bytes();
+    if capsule_bytes < cap {
+        cap.wrapping_sub(capsule_bytes)
+    } else {
+        0
+    }
+}
+
+/// Pure MIR-lifted sub-1.80 MiB `verdant-uorc.wasm` raw weight check (`raw_bytes <= 1887436`).
+#[must_use]
+pub const fn uorc_wasm_sub_1800kib(raw_bytes: u64) -> bool {
+    let kb = thirty_two_u64().wrapping_mul(thirty_two_u64());
+    let nine = eight_u64().wrapping_add(1_u64);
+    let two_hundred = hundred_u64().wrapping_mul(two_u64());
+    let ceiling = nine.wrapping_mul(two_hundred).wrapping_mul(kb);
+    raw_bytes >= 1 && raw_bytes <= ceiling
+}
+
+/// Pure MIR-lifted sub-550 KiB gzipped `verdant-uorc.wasm` weight check (`gz_bytes <= 563200`).
+#[must_use]
+pub const fn uorc_wasm_gzip_sub_550kib(gz_bytes: u64) -> bool {
+    let kb = thirty_two_u64().wrapping_mul(thirty_two_u64());
+    let five = four_u64().wrapping_add(1_u64);
+    let ten = five.wrapping_mul(two_u64());
+    let ceiling = hundred_u64()
+        .wrapping_mul(five)
+        .wrapping_add(five.wrapping_mul(ten))
+        .wrapping_mul(kb);
+    gz_bytes >= 1 && gz_bytes <= ceiling
+}
+
+/// Pure MIR-lifted native-only governance Wasm gate invariant (browser excludes repo governance exports).
+#[must_use]
+pub const fn wasm_excludes_native_repo_operator(
+    browser_target: bool,
+    links_operator_channel: bool,
+) -> bool {
+    !(browser_target && links_operator_channel)
+}
+
+/// Pure MIR-lifted M23 Rust file-length modularity check (`lines <= 1390`).
+#[must_use]
+pub const fn rust_file_modularity_sub_1390(lines: u64) -> bool {
+    let five = four_u64().wrapping_add(1_u64);
+    let ten = five.wrapping_mul(two_u64());
+    let thousand = hundred_u64().wrapping_mul(ten);
+    let nine = eight_u64().wrapping_add(1_u64);
+    let ceiling = thousand
+        .wrapping_add(hundred_u64().wrapping_mul(three_u64()))
+        .wrapping_add(nine.wrapping_mul(ten));
+    lines >= 1 && lines <= ceiling
+}
+
+/// Pure MIR-lifted M23 Rust file-length tight ceiling check (`lines <= 1360`).
+#[must_use]
+pub const fn rust_file_modularity_sub_1360(lines: u64) -> bool {
+    let five = four_u64().wrapping_add(1_u64);
+    let ten = five.wrapping_mul(two_u64());
+    let thousand = hundred_u64().wrapping_mul(ten);
+    let six = four_u64().wrapping_add(two_u64());
+    let ceiling = thousand
+        .wrapping_add(hundred_u64().wrapping_mul(three_u64()))
+        .wrapping_add(six.wrapping_mul(ten));
+    lines >= 1 && lines <= ceiling
+}
+
+/// Pure MIR-lifted M23 shipped JS file-length modularity check (`lines <= 1024`).
+#[must_use]
+pub const fn js_file_modularity_sub_1024(lines: u64) -> bool {
+    let ceiling = thirty_two_u64().wrapping_mul(thirty_two_u64());
+    lines >= 1 && lines <= ceiling
+}
+
+/// Pure MIR-lifted M23 shipped JS file-length tight ceiling check (`lines <= 1015`).
+#[must_use]
+pub const fn js_file_modularity_sub_1015(lines: u64) -> bool {
+    let kb = thirty_two_u64().wrapping_mul(thirty_two_u64());
+    let nine = eight_u64().wrapping_add(1_u64);
+    lines >= 1 && lines <= kb.wrapping_sub(nine)
+}
+
+/// Pure MIR-lifted companion-module zero-network-overhead extraction check (`new_js_files == 0`).
+#[must_use]
+pub const fn js_companion_extraction_zero_extra_requests(new_js_files: u32) -> bool {
+    new_js_files == 0
+}
+
+/// Pure MIR-lifted Rust lifted module count floor (`modules >= 180`).
+#[must_use]
+pub const fn lifted_rust_module_count_at_least_180(modules: u64) -> bool {
+    let five = four_u64().wrapping_add(1_u64);
+    let ten = five.wrapping_mul(two_u64());
+    let floor = hundred_u64().wrapping_add(eight_u64().wrapping_mul(ten));
+    modules >= floor
+}
+
+/// Pure MIR-lifted Collision BLAS triangle-count validity (`triangles >= 1 && nodes >= 1`).
+#[must_use]
+pub const fn collision_blas_non_empty(triangles: u64, nodes: u64) -> bool {
+    triangles >= 1 && nodes >= 1
+}
+
+/// Pure MIR-lifted FlatBVH leaf capacity check (`prim_count >= 1 && prim_count <= leaf_cap`).
+#[must_use]
+pub const fn collision_blas_leaf_bounded(prim_count: u32, leaf_cap: u32) -> bool {
+    prim_count >= 1 && prim_count <= leaf_cap
+}
+
+/// Pure MIR-lifted FlatBVH stack push safety check (`stack_ptr < stack_cap`).
+#[must_use]
+pub const fn collision_blas_stack_has_room(stack_ptr: u32, stack_cap: u32) -> bool {
+    stack_ptr < stack_cap
+}
+
+/// Pure MIR-lifted glTF skeleton joint-parent acyclicity check (`is_root || parent_idx < joint_idx`).
+#[must_use]
+pub const fn gltf_skeleton_parent_acyclic(is_root: bool, parent_idx: u32, joint_idx: u32) -> bool {
+    is_root || parent_idx < joint_idx
+}
+
+/// Pure MIR-lifted glTF animation clip validity (`duration_ms >= 1 && keyframe_count >= 1`).
+#[must_use]
+pub const fn gltf_clip_playable(duration_ms: u64, keyframe_count: u64) -> bool {
+    duration_ms >= 1 && keyframe_count >= 1
+}
+
+/// Pure MIR-lifted `stitch://` deep-link authority hex length check (`len == 64`).
+#[must_use]
+pub const fn stitch_deeplink_kappa_len_valid(hex_len: u32) -> bool {
+    hex_len == sixty_four_u32()
+}
+
+/// Pure MIR-lifted `stitch://` deep-link ASCII control-byte guard (`byte >= 32`).
+#[must_use]
+pub const fn stitch_deeplink_byte_printable(byte: u8) -> bool {
+    byte >= thirty_two_u8()
+}
+
+/// Pure MIR-lifted Studio VCS portable capsule shard geometry check (`k == 4 && n == 8`).
+#[must_use]
+pub const fn vcs_studio_rs_geometry_valid(k: u8, n: u8) -> bool {
+    let two = 1_u8.wrapping_add(1_u8);
+    let four = two.wrapping_mul(two);
+    let eight = four.wrapping_mul(two);
+    k == four && n == eight
+}
+
+/// Pure MIR-lifted OntologicalRuntimeGovernor stratum rank bound (`rank < 8`).
+#[must_use]
+pub const fn ontology_stratum_rank_in_bounds(rank: u64) -> bool {
+    rank < eight_u64()
+}
+
+/// Pure MIR-lifted OntologicalRuntimeGovernor non-coercive LOD pin preservation check.
+#[must_use]
+pub const fn ontology_lod_coercive_pin_respected(
+    coercive_locks: u64,
+    current_lod: u64,
+    next_lod: u64,
+) -> bool {
+    if coercive_locks > 0 {
+        next_lod == current_lod
+    } else {
+        true
+    }
+}
+
+/// Pure MIR-lifted OntologicalRuntimeGovernor telos total loss additivity check.
+#[must_use]
+pub const fn ontology_telos_loss_additive(
+    opacity: u64,
+    legibility: u64,
+    dissonance: u64,
+    ceiling_excess: u64,
+    total_loss: u64,
+) -> bool {
+    opacity
+        .saturating_add(legibility)
+        .saturating_add(dissonance)
+        .saturating_add(ceiling_excess)
+        == total_loss
+}
+
+/// Pure MIR-lifted SovereignAuthorityLedger chain tip consistency (`tip_epoch == current_epoch && tip_epoch >= 1`).
+#[must_use]
+pub const fn authority_chain_tip_consistent(tip_epoch: u64, current_epoch: u64) -> bool {
+    tip_epoch >= 1 && tip_epoch == current_epoch
+}
+
+/// Pure MIR-lifted SovereignAuthorityLedger historical signer quorum satisfaction (`valid_signers >= m`).
+#[must_use]
+pub const fn authority_historical_quorum_met(valid_signers: u64, quorum_m: u64) -> bool {
+    quorum_m >= 1 && valid_signers >= quorum_m
+}
+
+/// Pure MIR-lifted Studio container organ mode validity (`mode <= 2`: 0=Default, 1=Grant, 2=Deny).
+#[must_use]
+pub const fn studio_organ_mode_valid(mode: u32) -> bool {
+    mode <= two_u32()
+}
+
+/// Pure MIR-lifted Studio container organ denial-wins transition (`prev == 2 => next == 2 || reset`).
+#[must_use]
+pub const fn studio_organ_denial_wins_effective(
+    requested_mode: u32,
+    currently_denied: bool,
+) -> u32 {
+    if currently_denied && requested_mode == 1 {
+        two_u32()
+    } else {
+        requested_mode
+    }
+}
+
+/// Pure MIR-lifted Operator View Immutability Seal non-empty check (`sealed_count >= 16`).
+#[must_use]
+pub const fn operator_sealed_view_count_valid(sealed_count: u32) -> bool {
+    sealed_count >= sixteen_u32()
+}
+
+/// Pure MIR-lifted M23 release epoch progression check (`epoch >= 19`).
+#[must_use]
+pub const fn m23_release_epoch_valid(epoch: u64) -> bool {
+    let nineteen = sixteen_u64().wrapping_add(three_u64());
+    epoch >= nineteen
+}
+
+/// Pure MIR-lifted M23 milestone frontier progress check (`lifted >= 485 && residue <= 1162`).
+#[must_use]
+pub const fn m23_frontier_targets_met(lifted: u64, residue: u64) -> bool {
+    let five = four_u64().wrapping_add(1_u64);
+    let ten = five.wrapping_mul(two_u64());
+    let thousand = hundred_u64().wrapping_mul(ten);
+    let four_eighty_five = hundred_u64()
+        .wrapping_mul(four_u64())
+        .wrapping_add(eight_u64().wrapping_mul(ten))
+        .wrapping_add(five);
+    let max_res = thousand
+        .wrapping_add(hundred_u64())
+        .wrapping_add(sixty_four_u64())
+        .wrapping_sub(two_u64());
+    lifted >= four_eighty_five && residue <= max_res
+}

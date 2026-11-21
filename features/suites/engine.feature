@@ -476,3 +476,10 @@ Feature: engine
     Given crates/verdant-core/Cargo.toml, crates/verdant-core/src/streaming_uorc.rs, crates/verdant-cli/src/lib.rs, crates/verdant-cli/src/operator_cmd.rs, site/verdant-uorc.wasm, and frontier.toml
     When Verdant runs lifecycle-gate and release pack with valid and tampered ApprovalCertificates, audits [frontier_ratchet] and [surface_ratchet], and evaluates all 22 milestones M1..M22
     Then site/verdant-uorc.wasm is at most 2097152 bytes, max_release_capsule_bytes is at most 1100000 bytes, CLI refuses tampered certificates, frontier.toml proves at least 450 lifted functions with residue at most 1164, and all Observer KPIs pass across M1..M22
+
+
+  @VE-75 @build
+  Scenario: Verdant breaks the 1.00 MiB .holo release capsule barrier in Milestone M23 (gating native-only VSM/Operator governance exports out of wasm32 to push site/verdant-uorc.wasm <= 1850000 B and .holo capsule < 1048576 B), breaks every hand-written Rust file <= 1365 lines (>= 180 lifted modules via collision_blas.rs, vcs_studio.rs, and companion consolidation), breaks every shipped JS file <= 1024 lines with zero extra JS requests, and expands frontier.toml to >= 480 lifted functions with residue <= 1162 and uncertified <= 1319 across M1..M23
+    Given crates/verdant-wasm/src/exports_uorc_studio.rs, crates/verdant-core/src/collision_blas.rs, crates/verdant-core/src/vcs_studio.rs, site/verdant-uorc.wasm, site/studio.mjs, site/engine-worker.mjs, site/studio/studio-page.mjs, site/catalog-streams.mjs, and frontier.toml
+    When prism-fidelity audits [frontier_ratchet] and [surface_ratchet], Verdant evaluates its MIR-lifted M23 capsule/modularity/governance scalars, and the Observer evaluates all 23 milestones M1..M23
+    Then max_release_capsule_bytes is strictly below 1048576 bytes, site/verdant-uorc.wasm is at most 1850000 bytes, max_handwritten_rust_file_lines is at most 1365, max_js_file_lines is at most 1024, frontier.toml proves at least 480 lifted functions with residue at most 1162, and all Observer KPIs pass across M1..M23
