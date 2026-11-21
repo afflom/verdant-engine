@@ -1,16 +1,16 @@
 {
   "spec": "verdant/observer-refinement-agenda/1",
-  "releaseVersion": "2.7.0",
-  "releaseEpoch": 11,
+  "releaseVersion": "2.8.0",
+  "releaseEpoch": 12,
   "observerKappaHex": "6cd1e9dc15167b134d9887883bf06a5158c9b132f076e10a30e521ea62e0a17b",
-  "overallRefinementScorePermille": 934,
+  "overallRefinementScorePermille": 950,
   "liveMetrics": {
     "wasmCoreBytes": 159075,
-    "wasmUorcBytes": 4664695,
-    "releaseCapsuleBytes": 1709021,
+    "wasmUorcBytes": 4661739,
+    "releaseCapsuleBytes": 1709959,
     "blankFrameBytes": 28370,
     "maxHandwrittenRustFileLines": 1983,
-    "maxJsFileLines": 1524,
+    "maxJsFileLines": 1392,
     "frontierLifted": 267,
     "frontierResidue": 1178,
     "frontierUncertified": 1334,
@@ -21,8 +21,8 @@
       "managerId": "mgr-observer-executive",
       "vsmSystem": "VSM-S5",
       "viewpointId": "observer-executive",
-      "ownedFileCount": 13,
-      "maxFileLines": 1879,
+      "ownedFileCount": 14,
+      "maxFileLines": 1887,
       "heaviestFile": "crates/verdant-core/src/operator.rs",
       "healthScorePermille": 800
     },
@@ -67,7 +67,7 @@
       "vsmSystem": "VSM-S4",
       "viewpointId": "roadmap-kpi-strategy",
       "ownedFileCount": 7,
-      "maxFileLines": 799,
+      "maxFileLines": 832,
       "heaviestFile": "site/generated/roadmap-kpi-report.json",
       "healthScorePermille": 1000
     },
@@ -94,18 +94,18 @@
       "vsmSystem": "VSM-S1",
       "viewpointId": "creator-studio",
       "ownedFileCount": 14,
-      "maxFileLines": 1522,
+      "maxFileLines": 1369,
       "heaviestFile": "site/studio/studio-page.mjs",
-      "healthScorePermille": 900
+      "healthScorePermille": 1000
     },
     {
       "managerId": "mgr-catalog-curator",
       "vsmSystem": "VSM-S1",
       "viewpointId": "asset-catalogs",
-      "ownedFileCount": 5,
-      "maxFileLines": 1481,
+      "ownedFileCount": 6,
+      "maxFileLines": 1247,
       "heaviestFile": "site/catalog-streams.mjs",
-      "healthScorePermille": 900
+      "healthScorePermille": 1000
     },
     {
       "managerId": "mgr-playable-world",
@@ -164,23 +164,6 @@
   ],
   "proposals": [
     {
-      "proposalId": "refine-studio-js-modularity",
-      "owningManagerId": "mgr-studio-alm",
-      "vsmSystem": "VSM-S1",
-      "targetOrgan": "studio",
-      "citedAuthority": "AUTH-ISO-42010-VIEWPOINTS",
-      "ratchetLayer": "surface-loc-js",
-      "priority": "high",
-      "currentValue": "1524 lines max (site/engine-worker.mjs)",
-      "targetValue": "<= 1400 lines max JS file",
-      "summary": "Decompose heaviest Studio JS modules into cohesive submodules and expose VerdantVcs diff/branch UI.",
-      "concreteActions": [
-        "Split site/engine-worker.mjs and site/studio/studio-page.mjs into focused ES modules.",
-        "Expose VerdantVcs commit diff & branch controls in site/studio/vcs-panel.mjs."
-      ],
-      "kappaHex": "f44972181b439105ec1e244fad566f9a628a27b30c6a19707841de9d93f2c3d5"
-    },
-    {
       "proposalId": "refine-uorust-frontier",
       "owningManagerId": "mgr-verification-observatory",
       "vsmSystem": "VSM-S3*",
@@ -222,15 +205,32 @@
       "citedAuthority": "AUTH-STITCH-SELF-HOSTING",
       "ratchetLayer": "surface-wasm",
       "priority": "medium",
-      "currentValue": "verdant-uorc.wasm 4664695 B · .holo 1709021 B · Blank Frame 28370 B (2350 B headroom)",
+      "currentValue": "verdant-uorc.wasm 4661739 B · .holo 1709959 B · Blank Frame 28370 B (2350 B headroom)",
       "targetValue": "verdant-uorc.wasm <= 4194304 B while preserving gzipped .holo <= 1.72 MiB",
       "summary": "Trim unused codec paths on wasm32 and preserve gzipped STCH2 shard efficiency for cold Blank Frame boots.",
       "concreteActions": [
         "Audit gltf/image feature flags on wasm32 to drop unused color/codec tables.",
         "Maintain Blank Frame strictly under 30720 B with DecompressionStream('gzip')."
       ],
-      "kappaHex": "c0436e2f4d71474ebef52032fe7f831b30f219b559c9aff292cd715221f390ef"
+      "kappaHex": "d9c18c3afe5f2fbf552a357bb10a0cb20a6958c63670274c85e63b832695a1b7"
+    },
+    {
+      "proposalId": "refine-studio-js-modularity",
+      "owningManagerId": "mgr-studio-alm",
+      "vsmSystem": "VSM-S1",
+      "targetOrgan": "studio",
+      "citedAuthority": "AUTH-ISO-42010-VIEWPOINTS",
+      "ratchetLayer": "surface-loc-js",
+      "priority": "continuous",
+      "currentValue": "1392 lines max (scripts/enforce-prism-contracts.mjs)",
+      "targetValue": "<= 1400 lines max JS file",
+      "summary": "Decompose heaviest Studio JS modules into cohesive submodules and expose VerdantVcs diff/branch UI.",
+      "concreteActions": [
+        "Split scripts/enforce-prism-contracts.mjs and site/studio/studio-page.mjs into focused ES modules.",
+        "Expose VerdantVcs commit diff & branch controls in site/studio/vcs-panel.mjs."
+      ],
+      "kappaHex": "a8a0db3b9669f510234c08e4e16887d65e27e2a4995cce888167ffc72462642a"
     }
   ],
-  "agendaKappaHex": "73de57edfc9aa77dbbe00e9be060193a8b6ab68f112a98bb355d56cd47527b43"
+  "agendaKappaHex": "ef611d7f8b4b5aa699aebb63a456dbf5599e2f7ce2385731d57e70c383455a66"
 }

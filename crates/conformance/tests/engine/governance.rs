@@ -2304,3 +2304,141 @@ fn engine_ve_65() {
         kpi_rep.kpis
     );
 }
+
+/// `VE-66`: Lifted in-Verdant self-automation pipeline (`execute_automate_pipeline`, CLI
+/// `operator automate`, MCP `verdant_automate`, thin `scripts/verdant-automate.mjs` delegate),
+/// pinpoint crate-aware Observer diagnosis, and expanded `uorust` MIR proof frontier (`>= 267`
+/// lifted constructive functions, residue `<= 1,178`).
+#[test]
+fn engine_ve_66() {
+    use std::path::Path;
+    use verdant_core::operator::VerdantOperatorChannel;
+    use verdant_core::verdant_tensor::scalars::{
+        automate_should_build_wasm, automate_stage_passed, blank_frame_compliant,
+        semver_is_strictly_higher, stitch_quorum_sufficient, vcs_diff_is_clean,
+    };
+
+    let repo_root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+
+    // 1. MIR-lifted automation, Stitch quorum, Blank Frame, VCS & SemVer predicates hold:
+    assert!(automate_stage_passed(11, 1, 12));
+    assert!(!automate_stage_passed(10, 1, 12));
+    assert!(automate_should_build_wasm(false, false, false));
+    assert!(!automate_should_build_wasm(true, true, false));
+    assert!(stitch_quorum_sufficient(4, 4));
+    assert!(!stitch_quorum_sufficient(3, 4));
+    assert!(blank_frame_compliant(28_370, 30_720, 0));
+    assert!(!blank_frame_compliant(28_370, 30_720, 1));
+    assert!(vcs_diff_is_clean(0, 0, 0));
+    assert!(semver_is_strictly_higher(2, 8, 0, 2, 7, 0));
+
+    // 2. Thin scripts/verdant-automate.mjs delegates directly to `verdant operator automate`:
+    let auto_js = std::fs::read_to_string(repo_root.join("scripts/verdant-automate.mjs"))
+        .expect("read scripts/verdant-automate.mjs");
+    assert!(auto_js.contains("\"automate\""));
+    assert!(
+        auto_js.lines().count() <= 40,
+        "scripts/verdant-automate.mjs must remain a thin delegate into Verdant (got {} lines)",
+        auto_js.lines().count()
+    );
+
+    // 3. MCP server advertises `verdant_automate`:
+    let mut mcp = VerdantOperatorChannel::new("sunspire-regatta").expect("mcp channel");
+    let list_out = mcp
+        .handle_mcp_jsonrpc_line(
+            &repo_root,
+            r#"{"jsonrpc":"2.0","id":66,"method":"tools/list","params":{}}"#,
+        )
+        .expect("MCP tools/list response");
+    assert!(list_out.contains("verdant_automate"));
+
+    // 4. uorust MIR proof frontier >= 267 lifted functions:
+    let rep = prism_fidelity::ratchet::audit_parametric_ratchet(
+        &repo_root,
+        Path::new("model/parametric-ratchet.toml"),
+    )
+    .expect("live repo must pass all 4 ratchet layers");
+    assert!(
+        rep.frontier_lifted_functions >= 267,
+        "M16 must lift >= 267 constructive Rust functions, got {}",
+        rep.frontier_lifted_functions
+    );
+}
+
+/// `VE-67`: Sub-2,000-line Rust modularity (`max_handwritten_rust_file_lines <= 1,985`, `>= 163`
+/// lifted lifecycle modules across all 7 categories) and sub-1,400-line JS modularity
+/// (`max_js_file_lines <= 1,400`), with all 16 milestones (`M1..M16`) and 13/13 Observer KPIs.
+#[test]
+fn engine_ve_67() {
+    use std::path::Path;
+    use verdant_core::operator::{LifecycleGateOptions, VerdantOperatorChannel};
+
+    let repo_root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+    let rep = prism_fidelity::ratchet::audit_parametric_ratchet(
+        &repo_root,
+        Path::new("model/parametric-ratchet.toml"),
+    )
+    .expect("live repo must pass all 4 ratchet layers");
+
+    // 1. All 7 decomposed Rust submodules + catalog-streams-stitch.mjs exist:
+    for rel in [
+        "crates/verdant-core/src/hd_world_templates.rs",
+        "crates/verdant-core/src/standards_registry.rs",
+        "crates/verdant-core/src/observer_types.rs",
+        "crates/verdant-core/src/uhd_shaders.rs",
+        "crates/verdant-wasm/src/bridge_sim.rs",
+        "crates/verdant-wasm/src/exports_cold_stage.rs",
+        "crates/verdant-wasm/src/exports_uorc_studio.rs",
+        "site/catalog-streams-stitch.mjs",
+    ] {
+        assert!(
+            repo_root.join(rel).is_file(),
+            "missing M16 decomposed submodule `{rel}`"
+        );
+    }
+
+    // 2. Monotonic surface ceilings strictly < 2000L Rust and <= 1400L JS:
+    assert!(
+        rep.observed_max_rust_file_lines <= 1_985,
+        "M16 must tighten max_handwritten_rust_file_lines <= 1985, got {}",
+        rep.observed_max_rust_file_lines
+    );
+    assert!(
+        rep.observed_max_js_file_lines <= 1_400,
+        "M16 must tighten max_js_file_lines <= 1400, got {}",
+        rep.observed_max_js_file_lines
+    );
+
+    // 3. >= 163 lifted lifecycle modules across all 7 categories & M1..M16 with 13/13 KPIs:
+    let ch = VerdantOperatorChannel::new("sunspire-regatta").expect("operator channel");
+    let (gate, _) = ch
+        .execute_lifecycle_gate(
+            &repo_root,
+            &LifecycleGateOptions {
+                run_workspace_tests: false,
+                run_browser_gates: false,
+                expected_tag: None,
+                write_report: false,
+            },
+        )
+        .expect("in-process lifecycle gate");
+    assert!(gate.all_passed && gate.release_qualified);
+    assert!(
+        gate.lifted_coverage.total_lifted_modules >= 163,
+        "expected >= 163 lifted lifecycle modules, got {}",
+        gate.lifted_coverage.total_lifted_modules
+    );
+
+    let kpi_rep = ch
+        .evaluate_observer_roadmap_kpis(&repo_root, true, true)
+        .expect("observer roadmap & KPI report");
+    assert!(
+        kpi_rep.milestones.len() >= 16,
+        "expected Milestones M1..M16"
+    );
+    assert_eq!(
+        kpi_rep.kpi_passed_count, kpi_rep.kpi_total_count,
+        "all Observer KPIs must pass (kpis={:?})",
+        kpi_rep.kpis
+    );
+}

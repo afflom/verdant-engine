@@ -39,6 +39,7 @@
       "ownedFiles": [
         "app/src/Observer.lex.tex",
         "crates/verdant-core/src/observer.rs",
+        "crates/verdant-core/src/observer_types.rs",
         "crates/verdant-core/src/observer_language.rs",
         "crates/verdant-core/src/observer_refine.rs",
         "crates/verdant-core/src/observer_streams.rs",
@@ -490,6 +491,7 @@
         "site/catalogs/index.html",
         "site/catalogs/catalogs.mjs",
         "site/catalog-streams.mjs",
+        "site/catalog-streams-stitch.mjs",
         "site/prism-catalogs.mjs",
         "site/generated/stitch-app-catalog.json"
       ],

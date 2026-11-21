@@ -504,3 +504,15 @@ id = "VE-65"
 suite = "engine"
 level = "build"
 statement = "Verdant executes its Observer-generated self-refinement agenda by expanding the shrink-only uorust MIR proof frontier to >= 246 lifted constructive Rust functions (shrinking residue <= 1179 and uncertified <= 1334) and decomposing site/engine-worker.mjs, site/studio/studio-page.mjs, and site/studio.mjs into owned submodules (engine-worker-codec.mjs, studio/stage-assets.mjs, studio-gameplay-panel.mjs) to auto-tighten max_js_file_lines <= 1525"
+
+[[id]]
+id = "VE-66"
+suite = "engine"
+level = "build"
+statement = "Verdant lifts its full self-automation pipeline directly into Verdant (execute_automate_pipeline in crates/verdant-core/src/lifecycle.rs, CLI verdant operator automate, MCP verdant_automate, and thin scripts/verdant-automate.mjs delegate), diagnoses owned crate source files accurately inside ObserverRefinementAgenda, and expands the shrink-only uorust MIR proof frontier to >= 267 lifted constructive functions (shrinking residue <= 1178)"
+
+[[id]]
+id = "VE-67"
+suite = "engine"
+level = "build"
+statement = "Verdant breaks every hand-written Rust file strictly below 2000 lines (max_handwritten_rust_file_lines <= 1985 via 7 focused submodules hd_world_templates.rs, standards_registry.rs, observer_types.rs, uhd_shaders.rs, bridge_sim.rs, exports_cold_stage.rs, exports_uorc_studio.rs lifting >= 163 lifecycle modules) and breaks every shipped JS module strictly below 1400 lines (max_js_file_lines <= 1400 via catalog-streams-stitch.mjs, engine-worker-codec.mjs, and studio/stage-assets.mjs)"

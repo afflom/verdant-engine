@@ -2,7 +2,7 @@
   "managers": [
     {
       "basisPrime": 59,
-      "kappaHex": "fb68ae2c5da2cb3e7a37949febfdfd0c6814ee3bf8cdbcd93ff3cf7ffb1304e0",
+      "kappaHex": "5ddc18b2df519a508614f8afd961bde4d3692dec65de71e4bd80d1045e621c27",
       "spec": {
         "almPhases": [
           "governance",
@@ -31,6 +31,7 @@
         "ownedFiles": [
           "app/src/Observer.lex.tex",
           "crates/verdant-core/src/observer.rs",
+          "crates/verdant-core/src/observer_types.rs",
           "crates/verdant-core/src/observer_language.rs",
           "crates/verdant-core/src/observer_refine.rs",
           "crates/verdant-core/src/observer_streams.rs",
@@ -526,7 +527,7 @@
     },
     {
       "basisPrime": 101,
-      "kappaHex": "17c2c5620d8708d80acc0d29fb18d386ae1bc5af53a19cd38117bfe46a28b694",
+      "kappaHex": "e7ba85973fc036c140419e5cce1f67c0b3f82458b4a60c1d84ab291ee373440a",
       "spec": {
         "almPhases": [
           "discovery",
@@ -564,6 +565,7 @@
           "site/catalogs/index.html",
           "site/catalogs/catalogs.mjs",
           "site/catalog-streams.mjs",
+          "site/catalog-streams-stitch.mjs",
           "site/prism-catalogs.mjs",
           "site/generated/stitch-app-catalog.json"
         ],

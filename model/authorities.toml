@@ -84,9 +84,9 @@ id = "AUTH-ISO-42010-VIEWPOINTS"
 name = "ISO/IEC/IEEE 42010:2022 Architecture Viewpoints, ISO/IEC/IEEE 12207:2017 ALM & Stitch App Catalog"
 citation = "ISO/IEC/IEEE 42010:2022 Software, systems and enterprise — Architecture description; ISO/IEC/IEEE 12207:2017 Software life cycle processes; ISO 9241-210:2019; W3C DTCG 2025.10; WCAG 2.2 AA; afflom/stitch"
 artifact = "catalogs/governance/iso42010-viewpoints.json"
-checksum = "707841300c148a1118bb7ba5771b1c10777b61e9510793bdd1dbfb0a059d37dc"
+checksum = "91bd718de96a6a6c97d0c85c151da316e7a6880016353a02ceac3563aa0f332d"
 statement = "ISO/IEC/IEEE 42010:2022 binds every Verdant surface, crate, Observer part, stream, and Stitch App Catalog archetype to an accountable Manager with explicit required elements, forbidden cross-contamination, and correspondence rules."
-realized_by = ["VE-42", "VE-44", "VE-45", "VE-47", "VE-52", "VE-53", "VE-54", "VE-55", "VE-61", "VE-63", "VE-65"]
+realized_by = ["VE-42", "VE-44", "VE-45", "VE-47", "VE-52", "VE-53", "VE-54", "VE-55", "VE-61", "VE-63", "VE-65", "VE-67"]
 
 [[authority]]
 id = "AUTH-ISO-25010-TENSOR-SCALING"
@@ -111,6 +111,6 @@ id = "AUTH-SEMVER-CHANGE-KPI"
 name = "SemVer 2.0.0 Change/Version Governance, ISO/IEC/IEEE 12207 ALM & ISO/IEC/IEEE 15939 Observer KPIs"
 citation = "Semantic Versioning 2.0.0; ISO/IEC/IEEE 12207:2017 §6.3.5 Configuration Management & §6.3.7 Measurement; ISO/IEC/IEEE 15939:2017 Measurement process; Stafford Beer VSM S3/S4/S5"
 artifact = "catalogs/governance/change-roadmap-kpi.json"
-checksum = "b8a7b9b3aa554b4211a3548e2bec4db4ec33e30c9e3b59bfe6880abea71a9f3b"
-statement = "Accountable VSM Managers govern every Verdant and Prism facet including Knowledge, Change/Version, Security, Architecture, and Stakeholder Roadmap/KPIs across M1-M15, advancing SemVer Major/Minor/Patch versions exclusively when the Ratchet is applied and all Release Gates pass."
-realized_by = ["VE-45", "VE-46", "VE-47", "VE-48", "VE-49", "VE-50", "VE-51", "VE-52", "VE-53", "VE-54", "VE-55", "VE-56", "VE-57", "VE-58", "VE-59", "VE-60", "VE-61", "VE-62", "VE-63", "VE-64", "VE-65"]
+checksum = "cb3859bf7b869ec498f89b149a7002f1715d3e66b96f5dc0e52a2e898538cece"
+statement = "Accountable VSM Managers govern every Verdant and Prism facet including Knowledge, Change/Version, Security, Architecture, and Stakeholder Roadmap/KPIs across M1-M16, advancing SemVer Major/Minor/Patch versions exclusively when the Ratchet is applied and all Release Gates pass."
+realized_by = ["VE-45", "VE-46", "VE-47", "VE-48", "VE-49", "VE-50", "VE-51", "VE-52", "VE-53", "VE-54", "VE-55", "VE-56", "VE-57", "VE-58", "VE-59", "VE-60", "VE-61", "VE-62", "VE-63", "VE-64", "VE-65", "VE-66", "VE-67"]

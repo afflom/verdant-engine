@@ -890,7 +890,7 @@ impl VerdantOperatorChannel {
     #[must_use]
     pub fn synthesize_viewpoint_contracts_json(&self) -> String {
         let ownership = self.check_total_ownership();
-        serde_json::to_string_pretty(&serde_json::json!({
+        let payload = serde_json::json!({
             "spec": "verdant/manager-viewpoint-contracts/1",
             "vsmAuthority": self.vsm.authority_id,
             "viewpointsAuthority": self.viewpoints.authority_id,
@@ -898,8 +898,12 @@ impl VerdantOperatorChannel {
             "stitchAppCatalogProtocol": self.viewpoints.stitch_app_catalog_protocol,
             "managers": self.managers,
             "publishedStitchApps": self.stitch_app_catalog,
-        }))
-        .unwrap_or_else(|_| "{}".to_string())
+        });
+        #[cfg(not(target_arch = "wasm32"))]
+        let out = serde_json::to_string_pretty(&payload);
+        #[cfg(target_arch = "wasm32")]
+        let out = serde_json::to_string(&payload);
+        out.unwrap_or_else(|_| "{}".to_string())
     }
 
     /// Serializes the VSM S1–S5 & Total Ownership status summary as JSON.
@@ -1125,15 +1129,19 @@ impl VerdantOperatorChannel {
     /// Serializes the persistent W3C SOSA/PROV-O Operator communication history for this session.
     #[must_use]
     pub fn session_history_json(&self) -> String {
-        serde_json::to_string_pretty(&serde_json::json!({
+        let payload = serde_json::json!({
             "spec": "verdant/operator-session-history/1",
             "activeDomain": self.observer.active_domain.spec.slug,
             "managerCount": self.managers.len(),
             "communicationCount": self.observer.communications.len(),
             "publishedStitchApps": self.stitch_app_catalog.len(),
             "communications": self.observer.communications,
-        }))
-        .unwrap_or_else(|_| "{}".to_string())
+        });
+        #[cfg(not(target_arch = "wasm32"))]
+        let out = serde_json::to_string_pretty(&payload);
+        #[cfg(target_arch = "wasm32")]
+        let out = serde_json::to_string(&payload);
+        out.unwrap_or_else(|_| "{}".to_string())
     }
 
     /// Processes a single NDJSON line inside `verdant operator session` (stateful multi-turn

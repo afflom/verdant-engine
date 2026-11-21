@@ -422,3 +422,15 @@ Feature: engine
     Given frontier.toml, model/parametric-ratchet.toml, site/engine-worker-codec.mjs, site/studio/stage-assets.mjs, site/studio-gameplay-panel.mjs, and catalogs/governance/iso42010-viewpoints.json
     When prism-fidelity audits [frontier_ratchet] and [surface_ratchet] and the Observer evaluates all 15 milestones (M1..M15)
     Then frontier.toml proves at least 246 lifted constructive functions with shrunk residue <= 1179, max_js_file_lines is tightened monotonically to at most 1525, all decomposed JS submodules are owned in iso42010-viewpoints.json, and all 13 Observer KPIs pass across M1..M15
+
+  @VE-66 @build
+  Scenario: Verdant lifts its full self-automation pipeline directly into Verdant (execute_automate_pipeline in crates/verdant-core/src/lifecycle.rs, CLI verdant operator automate, MCP verdant_automate, and thin scripts/verdant-automate.mjs delegate), diagnoses owned crate source files accurately inside ObserverRefinementAgenda, and expands the shrink-only uorust MIR proof frontier to >= 267 lifted constructive functions (shrinking residue <= 1178)
+    Given crates/verdant-core/src/lifecycle.rs, crates/verdant-core/src/operator_mcp.rs, scripts/verdant-automate.mjs, crates/verdant-tensor/src/scalars.rs, and frontier.toml
+    When Verdant verifies its lifted automation predicates, MCP verdant_automate surface, Observer refinement agenda, and [frontier_ratchet]
+    Then scripts/verdant-automate.mjs delegates directly to verdant operator automate, MCP advertises verdant_automate, and frontier.toml proves at least 267 lifted constructive functions with residue <= 1178
+
+  @VE-67 @build
+  Scenario: Verdant breaks every hand-written Rust file strictly below 2000 lines (max_handwritten_rust_file_lines <= 1985 via 7 focused submodules hd_world_templates.rs, standards_registry.rs, observer_types.rs, uhd_shaders.rs, bridge_sim.rs, exports_cold_stage.rs, exports_uorc_studio.rs lifting >= 163 lifecycle modules) and breaks every shipped JS module strictly below 1400 lines (max_js_file_lines <= 1400 via catalog-streams-stitch.mjs, engine-worker-codec.mjs, and studio/stage-assets.mjs)
+    Given model/parametric-ratchet.toml [surface_ratchet], site/generated/self-host-ratchet-manifest.toml, catalogs/governance/iso42010-viewpoints.json, and all decomposed Rust and JS submodules
+    When prism-fidelity audits [surface_ratchet] and the Observer evaluates all 16 milestones (M1..M16)
+    Then max_handwritten_rust_file_lines is at most 1985, max_js_file_lines is at most 1400, at least 163 lifecycle modules are lifted across all 7 categories, and all 13 Observer KPIs pass across M1..M16

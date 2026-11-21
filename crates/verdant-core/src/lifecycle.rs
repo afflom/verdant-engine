@@ -1157,7 +1157,7 @@ impl VerdantOperatorChannel {
                 run_workspace_tests: true,
                 run_browser_gates: opts.run_browser_gates,
                 expected_tag: Some(format!("v{}", lift_rep.version)),
-                write_report: true,
+                write_report: false,
             };
             let (gate_rep, _) = self.execute_lifecycle_gate(repo_root, &gate_opts)?;
             let ok = gate_rep.release_qualified;

@@ -2,12 +2,12 @@
   "spec": "verdant/observer-roadmap-kpi-report/1",
   "managerId": "mgr-roadmap-strategy",
   "authorityId": "AUTH-SEMVER-CHANGE-KPI",
-  "currentVersion": "2.7.0",
-  "releaseEpoch": 11,
+  "currentVersion": "2.8.0",
+  "releaseEpoch": 12,
   "totalManagers": 13,
   "totalPrismFacetsOwned": 9,
   "totalPrismFacetsRequired": 9,
-  "declaredCapabilitiesCount": 76,
+  "declaredCapabilitiesCount": 78,
   "minorProgressPct": 100,
   "majorProgressPct": 100,
   "kpiPassedCount": 13,
@@ -618,6 +618,39 @@
       "progressPct": 100,
       "completed": true,
       "ratchetRequirement": "Lift the entire build/refresh/ratchet-lift/tighten/verify orchestrator into Verdant (execute_ratchet_cycle, verdant operator ratchet-cycle, MCP verdant_ratchet_cycle, thin verdant-ratchet.mjs delegate), lift all 20 automation scripts as the 7th lifecycle category (156+ lifted modules across rust, verification-test, lexlean, feature-suite, model-governance, automation-script, viewpoint), expand uorust MIR proof frontier >= 246 lifted functions, and decompose engine-worker.mjs/studio-page.mjs/studio.mjs to auto-tighten max_js_file_lines <= 1525."
+    },
+    {
+      "milestoneId": "M16",
+      "targetVersion": "2.8.0",
+      "tier": "minor",
+      "title": "Lifted In-Verdant Automation (operator automate), 267+ MIR-Lifted Functions, Sub-2000L Rust Modularity (163+ Lifted Modules) & Sub-1400L JS Decomposition",
+      "stakeholders": [
+        "creator",
+        "developer",
+        "systems-engineer",
+        "operator",
+        "auditor"
+      ],
+      "owningManagers": [
+        "mgr-observer-executive",
+        "mgr-change-release",
+        "mgr-verification-observatory",
+        "mgr-runtime-stage",
+        "mgr-studio-alm",
+        "mgr-catalog-curator"
+      ],
+      "requiredCapabilities": [
+        "VE-66",
+        "VE-67"
+      ],
+      "closedCapabilities": [
+        "VE-66",
+        "VE-67"
+      ],
+      "missingCapabilities": [],
+      "progressPct": 100,
+      "completed": true,
+      "ratchetRequirement": "Lift Verdant's full self-automation pipeline into Verdant (execute_automate_pipeline, verdant operator automate, MCP verdant_automate, thin scripts/verdant-automate.mjs delegate), expand uorust MIR proof frontier >= 267 lifted functions while shrinking residue <= 1178, decompose all 7 Rust files >= 2000L to tighten max_handwritten_rust_file_lines <= 1985 (163+ lifted modules), and decompose engine-worker/studio-page/catalog-streams to tighten max_js_file_lines <= 1400."
     }
   ],
   "observerParts": [
@@ -627,7 +660,7 @@
       "viewpointId": "observer-executive",
       "ownedPrismFacets": [],
       "ownedObserverParts": [],
-      "ownedFilesCount": 13,
+      "ownedFilesCount": 14,
       "active": true
     },
     {
@@ -730,7 +763,7 @@
       "viewpointId": "asset-catalogs",
       "ownedPrismFacets": [],
       "ownedObserverParts": [],
-      "ownedFilesCount": 5,
+      "ownedFilesCount": 6,
       "active": true
     },
     {
@@ -773,7 +806,7 @@
     "governingAuthority": "AUTH-SEMVER-CHANGE-KPI",
     "currentVersion": {
       "major": 2,
-      "minor": 7,
+      "minor": 8,
       "patch": 0
     },
     "recommendedBump": "major",
@@ -782,8 +815,8 @@
       "minor": 0,
       "patch": 0
     },
-    "currentEpoch": 11,
-    "nextEpoch": 12,
+    "currentEpoch": 12,
+    "nextEpoch": 13,
     "versionIncremented": true,
     "gates": {
       "ratchetApplied": true,
@@ -794,6 +827,6 @@
       "pullThroughVerified": true
     },
     "blockingReasons": [],
-    "rationale": "Ratchet applied & 5/5 Release Gates passed: advancing v2.7.0 -> v3.0.0 (Major, epoch 12) — Observer roadmap evaluation: minor=100% major=100% managers=13"
+    "rationale": "Ratchet applied & 5/5 Release Gates passed: advancing v2.8.0 -> v3.0.0 (Major, epoch 13) — Observer roadmap evaluation: minor=100% major=100% managers=13"
   }
 }

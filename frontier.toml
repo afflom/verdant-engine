@@ -8645,7 +8645,7 @@ function = "verdant_core::operator::VerdantOperatorChannel::serialize_response_p
 detail = "takes or returns VerdantOperatorChannel.observer: ObserverPrismHolon.organs: ObserverOrganModel.schema_org_jsonld: serde_json::Value, a type of the serde_json crate with no LexLean model"
 
 [[foreign]]
-kappa = "2626d80f2e163b4fdca70766f646decf1881912b96a606d68445f0f13521b763"
+kappa = "de5d7f4dd259ca8a56957a0d774772ba525703ce2d9e73cc4ca0cc97c9bde5b1"
 function = "verdant_core::operator::VerdantOperatorChannel::session_history_json"
 detail = "takes or returns VerdantOperatorChannel.observer: ObserverPrismHolon.organs: ObserverOrganModel.schema_org_jsonld: serde_json::Value, a type of the serde_json crate with no LexLean model"
 
@@ -8670,7 +8670,7 @@ function = "verdant_core::operator::VerdantOperatorChannel::synthesize_embedded_
 detail = "takes or returns VerdantOperatorChannel.observer: ObserverPrismHolon.organs: ObserverOrganModel.schema_org_jsonld: serde_json::Value, a type of the serde_json crate with no LexLean model"
 
 [[foreign]]
-kappa = "279b4f313d24c9cb2f316d9f600522dc81d3c5fb963bc8a39641abcf97812185"
+kappa = "572b66750a231e62fe6549335a838e9e7364a0eb56a9c87cbf95c73f9cb66e32"
 function = "verdant_core::operator::VerdantOperatorChannel::synthesize_viewpoint_contracts_json"
 detail = "takes or returns VerdantOperatorChannel.observer: ObserverPrismHolon.organs: ObserverOrganModel.schema_org_jsonld: serde_json::Value, a type of the serde_json crate with no LexLean model"
 
@@ -8905,7 +8905,7 @@ function = "verdant_core::lifecycle::VerdantOperatorChannel::execute_lifecycle_g
 effect = "Fs effect: std::fs::read_to_string"
 
 [[effect]]
-kappa = "3920f33a89f38d554732963ed9d5037ef7e5eee33d0a0fbb7ea020f6ab41cee2"
+kappa = "f82fe128b2f96d72189c9b4d508da6ff96be45579ab0e5b62b91192114250899"
 function = "verdant_core::lifecycle::VerdantOperatorChannel::execute_ratchet_cycle"
 effect = "Fs effect: std::fs::create_dir_all"
 
