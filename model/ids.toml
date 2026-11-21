@@ -534,3 +534,9 @@ id = "VE-70"
 suite = "engine"
 level = "build"
 statement = "Verdant realizes its Lean-proved GitHub-free sovereign governance Prism model (app/src/Governance.lex.tex, 838/838 fidelity, 10/10 ISO 15939 measures, 7 STRIDE threats/controls) in crates/verdant-core/src/authority.rs (CLI verdant operator authority + MCP verdant_authority_exec), enforcing Genesis Owner bootstrap, M-of-N Admin quorum with non-self-approval, monotonic prevEpochKappa chains, immediate revocation of departed Admin pending approvals and sole-attested standing grants, forward-secret boundary rekeying, anti-lockout succession, compromise quarantine, and >= 295 uorust MIR-lifted constructive functions (residue <= 1176)"
+
+[[id]]
+id = "VE-71"
+suite = "engine"
+level = "build"
+statement = "Verdant executes Milestone M19 self-refinement across its Observer agenda: decomposing uhd.rs, network.rs, lifecycle.rs, and observer.rs into cohesive submodules (uhd_workload.rs, network_custody.rs, lifecycle_automate.rs, observer_comms.rs -> max_handwritten_rust_file_lines <= 1650, >= 173 lifted lifecycle modules), decomposing site/engine-worker.mjs, site/studio/studio-page.mjs, and site/studio.mjs (via engine-worker-extended.mjs, studio-boot.mjs, studio-director-panel.mjs -> max_js_file_lines <= 1250), expanding the shrink-only uorust MIR proof frontier to >= 345 lifted constructive functions (residue <= 1169, uncertified <= 1325), and exposing zero-account Sovereign Signing Requests & Admin Quorum review/revocation inside Verdant Studio (site/studio/authority-panel.mjs) across M1..M19"

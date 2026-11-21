@@ -2,12 +2,12 @@
   "spec": "verdant/observer-roadmap-kpi-report/1",
   "managerId": "mgr-roadmap-strategy",
   "authorityId": "AUTH-SEMVER-CHANGE-KPI",
-  "currentVersion": "2.10.0",
-  "releaseEpoch": 14,
+  "currentVersion": "2.11.0",
+  "releaseEpoch": 15,
   "totalManagers": 13,
   "totalPrismFacetsOwned": 9,
   "totalPrismFacetsRequired": 9,
-  "declaredCapabilitiesCount": 81,
+  "declaredCapabilitiesCount": 82,
   "minorProgressPct": 100,
   "majorProgressPct": 100,
   "kpiPassedCount": 13,
@@ -138,7 +138,7 @@
       "name": "uorust MIR-Lifted Rust Functions Floor",
       "unit": "functions",
       "direction": "atLeast",
-      "actual": 321,
+      "actual": 351,
       "target": 200,
       "passed": true,
       "owningManager": "mgr-verification-observatory",
@@ -714,6 +714,38 @@
       "progressPct": 100,
       "completed": true,
       "ratchetRequirement": "Complete 100% zero-residue Prism modeling across all 29 LexLean modules (Governance.lex.tex, 9 stakeholders/journeys, 3 OPM/UML views, 7 sovereign governance STRIDE threats/controls, 10/10 ISO 15939 measures), realize SovereignAuthorityLedger & SigningRequestGate in crates/verdant-core/src/authority.rs (CLI verdant operator authority + MCP verdant_authority_exec) with immediate departed-admin pending approval and standing grant revocation, and expand the shrink-only uorust MIR proof frontier >= 295 lifted constructive functions while shrinking residue <= 1176 and uncertified <= 1334."
+    },
+    {
+      "milestoneId": "M19",
+      "targetVersion": "2.11.0",
+      "tier": "minor",
+      "title": "Sub-1650L Rust & Sub-1250L JS Modularity, 345+ MIR-Lifted Functions & In-Studio Zero-Account Sovereign Signing-Request & Admin Quorum UI",
+      "stakeholders": [
+        "creator",
+        "developer",
+        "systems-engineer",
+        "operator",
+        "auditor",
+        "admin",
+        "contributor"
+      ],
+      "owningManagers": [
+        "mgr-observer-executive",
+        "mgr-security-trust",
+        "mgr-verification-observatory",
+        "mgr-runtime-stage",
+        "mgr-studio-alm"
+      ],
+      "requiredCapabilities": [
+        "VE-71"
+      ],
+      "closedCapabilities": [
+        "VE-71"
+      ],
+      "missingCapabilities": [],
+      "progressPct": 100,
+      "completed": true,
+      "ratchetRequirement": "Decompose all 4 remaining Rust files > 1650L (uhd.rs/uhd_workload.rs, network.rs/network_custody.rs, lifecycle.rs/lifecycle_automate.rs, observer.rs/observer_comms.rs -> max_handwritten_rust_file_lines <= 1650, >= 173 lifted modules) and all 3 shipped JS files > 1250L (engine-worker.mjs/engine-worker-extended.mjs, studio/studio-page.mjs/studio-boot.mjs, studio.mjs/studio-director-panel.mjs -> max_js_file_lines <= 1250), expand the shrink-only uorust MIR proof frontier to >= 345 lifted constructive functions (residue <= 1169, uncertified <= 1325), and surface zero-account Sovereign Signing Requests & Admin Quorum revocation inside Verdant Studio (site/studio/authority-panel.mjs) with zero Wasm or FR-03 regression."
     }
   ],
   "observerParts": [
@@ -723,7 +755,7 @@
       "viewpointId": "observer-executive",
       "ownedPrismFacets": [],
       "ownedObserverParts": [],
-      "ownedFilesCount": 15,
+      "ownedFilesCount": 16,
       "active": true
     },
     {
@@ -767,7 +799,7 @@
         "stratum-3-security-stride"
       ],
       "ownedObserverParts": [],
-      "ownedFilesCount": 9,
+      "ownedFilesCount": 10,
       "active": true
     },
     {
@@ -817,7 +849,7 @@
       "ownedObserverParts": [
         "cognitive-language"
       ],
-      "ownedFilesCount": 14,
+      "ownedFilesCount": 17,
       "active": true
     },
     {
@@ -851,7 +883,7 @@
         "stratum-4-quality-measures-fidelity"
       ],
       "ownedObserverParts": [],
-      "ownedFilesCount": 16,
+      "ownedFilesCount": 17,
       "active": true
     },
     {
@@ -869,7 +901,7 @@
     "governingAuthority": "AUTH-SEMVER-CHANGE-KPI",
     "currentVersion": {
       "major": 2,
-      "minor": 10,
+      "minor": 11,
       "patch": 0
     },
     "recommendedBump": "major",
@@ -878,8 +910,8 @@
       "minor": 0,
       "patch": 0
     },
-    "currentEpoch": 14,
-    "nextEpoch": 15,
+    "currentEpoch": 15,
+    "nextEpoch": 16,
     "versionIncremented": true,
     "gates": {
       "ratchetApplied": true,
@@ -890,6 +922,6 @@
       "pullThroughVerified": true
     },
     "blockingReasons": [],
-    "rationale": "Ratchet applied & 5/5 Release Gates passed: advancing v2.10.0 -> v3.0.0 (Major, epoch 15) — Observer roadmap evaluation: minor=100% major=100% managers=13"
+    "rationale": "Ratchet applied & 5/5 Release Gates passed: advancing v2.11.0 -> v3.0.0 (Major, epoch 16) — Observer roadmap evaluation: minor=100% major=100% managers=13"
   }
 }

@@ -10,10 +10,9 @@ import { load } from "../worker-runtime/index.mjs";
 import { initStudioOutliner } from "./outliner.mjs";
 import { initStudioObserverPanel } from "./observer-panel.mjs";
 import { initStudioProjectInspector } from "./project-inspector.mjs";
-import { initStudioVcsPanel } from "./vcs-panel.mjs";
+import { bootStudioWorkspace } from "./studio-boot.mjs";
 import { DOMAIN_DEFAULT_GENRE, initStudioDiscoveryPanel } from "./discovery-panel.mjs";
 import { initStudioStageAssets, initStudioDomainWizard } from "./stage-assets.mjs";
-import { hydrateStitchAppCatalog } from "../catalog-streams.mjs";
 import {
   STARTER_ARCHETYPES,
   STUDIO_ROLE_KEYS,
@@ -1142,228 +1141,88 @@ renderContentTypePills();
   // Launch initial unified live catalog discovery immediately in parallel with Wasm init:
   runUnifiedDiscovery();
 
-  const { w, h } = pxDims();
-  let hostMaxTex = 2048;
-  if (worker && canvas && typeof canvas.transferControlToOffscreen === "function") {
-    try {
-      const oc = canvas.transferControlToOffscreen();
-      const r = await callWorker("init", { canvas: oc, width: w, height: h, lod: currentLodSpec(), hdRenderer: true, autoScale: true }, [oc]);
-      if (r?.kind === "ready") {
-        offOk = true;
-        activeRenderBackend = r.backend || "webgl2";
-        lTris = r.tris || lTris;
-        hostMaxTex = r.maxTextureSize || 2048;
-        if (r.audioSpec) Object.assign(ACOUST, r.audioSpec);
-      }
-    } catch {
-      offOk = false;
-    }
-  }
-  if (!offOk && canvas) {
-    fbM = await import("../scene-hd-renderer.mjs");
-    fbR = await fbM.createBestRenderer(canvas);
-    hostMaxTex = fbR?.maxTextureSize || 2048;
-    if (worker) {
-      const r = await callWorker("init", { canvas: null, width: w, height: h, lod: currentLodSpec(), hdRenderer: true });
-      if (r?.tris) lTris = r.tris;
-      await syncFallbackBuffers();
-    }
-  }
-
-  // Hydrate persisted stream prefs into ObserverPrismHolon and report real host GPU envelope:
-  const savedPrefs = loadStreamPrefs();
-  for (const cs of savedPrefs.custom) {
-    if (cs?.streamId && cs?.endpointUrl) {
-      await callWorker("register-stream", {
-        request: {
-          streamId: cs.streamId,
-          label: cs.label || cs.streamId,
-          authority: cs.authority || "Observer Custom Stream",
-          adapterKind: cs.adapterKind || "schema-org-catalog",
-          endpointUrl: cs.endpointUrl,
-          targetParts: cs.targetParts || ["hero-props"],
-        },
-      });
-    }
-  }
-  for (const disId of savedPrefs.disabled) {
-    await callWorker("toggle-stream", { streamId: disId, enabled: false });
-  }
-  await refreshObserverCognition({
-    maxTex: hostMaxTex,
-    threads: navigator.hardwareConcurrency || 4,
-    frameMicros: 8000,
-    viewportWidth: Math.round((window.screen?.width || 1920) * (window.devicePixelRatio || 1)),
-    viewportHeight: Math.round((window.screen?.height || 1080) * (window.devicePixelRatio || 1)),
-  });
-
-  if (inlineHost) {
-    studioHandle = mountInlineStudio(inlineHost, {
-      initialTab: activeRoleKey,
-      callWorker,
-      queryVerifier,
-      onPickGlb: () => glbFileIn?.click(),
-      onResetGlb: async () => {
-        const r = await callWorker("reset-glb");
-        if (r?.tris) lTris = r.tris;
-        await syncFallbackBuffers();
-        syncHud();
-        requestRender();
-      },
-      onExportGlb: () => exportGlbDownload(callWorker, LODS[lodIdx].short),
-      onShareSnapshot: () => shareUorcSnapshot(callWorker, chip, statusEl),
-      onToggleRenderMode: toggleRenderBackend,
-      onSetLod: streamLod,
-      onSetCameraMode: cycleCameraMode,
-      onSetSimLive: setSimLive,
-      onToggleAudio: toggleGuardedAudio,
-      onFocusPoint: focusPoint,
-      onFocusPreset: focusPreset,
-      onSetSeed: setWorldSeed,
-      onLoadDomainPack: loadCatalogDomainPack,
-      onOpenStitchMesh: openStitchGuarded,
-      onRoutePrompt: executePrompt,
-      onInteractStory: async () => callWorker("story-interact"),
-      onMountOpfsUorc: async (name, bytes) => {
-        if (!isOrganAllowed(4, true)) {
-          refuseOrgan(4);
-          return false;
-        }
-        const r = await callWorker("stream-uorc", { targetRank: 3, customStream: bytes, lod: currentLodSpec(), simClockSec });
-        if (r?.ok) {
-          lTris = r.tris || lTris;
-          await syncFallbackBuffers();
-          syncHud();
-          chip(statusEl, `Mounted OPFS ${name} · ${lTris} tris`);
-          requestRender();
-          return true;
-        }
-        return false;
-      },
-      onRoleChange: (rk) => {
-        activeRoleKey = rk;
-        syncHud();
-      },
-      onProjectChange: (projTitle) => {
-        if (projTitle) {
-          activeProject = projTitle;
-          syncHud();
-        }
-      },
-      getActiveProject: () => activeProject,
-      getAcousticSpec: () => ACOUST,
-      isOrganAllowed,
-      getOrganMode: (idx) => organModes[idx] ?? 0,
-      onOrganGrantChange: (idx, nextMode) => {
-        organModes[idx] = nextMode;
-        if (idx === 3 && nextMode === 2) suspendModalAudio(audioBtn);
-      },
-      onRefuseOrgan: refuseOrgan,
-      getRenderMode: () => renderMode,
-      getLodRank: () => lodIdx,
-    });
-  }
-
-  // Deep-links from /catalogs/: ?domain=<slug>&catalog=<STD-ID>&stream=<id>&q=<term>&type=<ct>&autoGlb=<url>&autoTitle=<title>
-  const params = new URLSearchParams(location.search);
-  const reqDomain = params.get("domain");
-  const reqCatalog = params.get("catalog");
-  const reqStream = params.get("stream");
-  const reqQuery = params.get("q");
-  const reqType = params.get("type");
-  const reqAutoGlb = params.get("autoGlb");
-  const reqAutoSky = params.get("autoSky");
-  const reqAutoTitle = params.get("autoTitle") || "Imported Stream Model";
-  if (reqCatalog && catalogBanner && catalogBannerText) {
-    catalogBanner.dataset.active = "true";
-    catalogBannerText.textContent = `Imported Governing Catalog Standard: ${reqCatalog} — live-verified against Prism app.holo`;
-  }
-  const reqAppId = params.get("app");
-  if (reqAppId) {
-    const allApps = await hydrateStitchAppCatalog();
-    const foundApp = allApps.find((a) => a.appId === reqAppId);
-    if (foundApp) {
-      if (stitchAppTitleInput) stitchAppTitleInput.value = foundApp.title;
-      if (stitchAppGenreSelect) stitchAppGenreSelect.value = foundApp.genre;
-      if (catalogBanner && catalogBannerText) {
-        catalogBanner.dataset.active = "true";
-        catalogBannerText.textContent = `Loaded Stitch App: ${foundApp.title} (${foundApp.genreLabel}) · .uorc ${foundApp.uorcBytes} B · 2-of-3 STCH verified`;
-      }
-    }
-  }
-  if (reqStream && discStreamSelect) discStreamSelect.value = reqStream;
-  if (reqQuery && discSearchInput) discSearchInput.value = reqQuery;
-  if (reqType) setActiveContentType(reqType);
-  if (reqStream || reqQuery || reqType) {
-    runUnifiedDiscovery();
-  }
-  if (reqDomain && domainPacks.length > 0) {
-    const initialDomainIdx = Math.max(
-      0,
-      domainPacks.findIndex((d) => d.slug === reqDomain || d.id === reqDomain),
-    );
-    await loadCatalogDomainPack(initialDomainIdx);
-  } else if (!userSelectedDomain) {
-    await loadBlankStudioStage();
-  }
-  if (reqAutoGlb && /^https:\/\//.test(reqAutoGlb)) {
-    wfState.activeStageAsset = reqAutoTitle;
-    stageModeDomainBtn?.setAttribute("aria-pressed", "false");
-    await loadRemoteGlbIntoStage(reqAutoGlb, reqAutoTitle);
-  }
-  if (reqAutoSky && /^https:\/\//.test(reqAutoSky)) {
-    await applyRemoteEnvSky(reqAutoSky, reqAutoTitle);
-  }
-  await refreshProjectModelsFromWasm();
-  syncWorkflowRibbon();
-
-  if (location.hash === "#compose") {
-    setRightRailTab("compose");
-  } else if (STUDIO_ROLE_KEYS.includes(location.hash.slice(1))) {
-    setRightRailTab("roles");
-  }
-
-  const snapMatch = /^#uorc=(.+)$/.exec(location.hash);
-  if (snapMatch) {
-    const bytes = base64UrlToBytes(snapMatch[1].trim());
-    if (bytes?.byteLength) {
-      const r = await callWorker("restore-snapshot", { bytes });
-      if (r?.ok) await streamLod(r.lodRank ?? 3);
-    }
-  }
-
-  await hydrateExperienceDesignSystem();
-  syncHud();
-
-  // Zero-account in-browser VerdantVcs, portable .holo export, ?pin=stitch:// deep-link sharing (VE-49)
-  // and live PagedTensorArena dynamic UHD/AI workload governor bridge (VE-50):
-  window.__VERDANT_STUDIO_API__ = initStudioVcsPanel({
+  await bootStudioWorkspace({
     $,
+    LODS,
+    STUDIO_ROLE_KEYS,
+    ACOUST,
     canvas,
+    worker,
+    inlineHost,
+    glbFileIn,
     statusEl,
     scaleBadgeEl,
+    audioBtn,
+    catalogBanner,
+    catalogBannerText,
     stitchAppTitleInput,
+    stitchAppGenreSelect,
+    discStreamSelect,
+    discSearchInput,
+    stageModeDomainBtn,
+    wfState,
+    pxDims,
     callWorker,
-    chip,
-    getActiveProject: () => activeProject,
-    setActiveProject: (v) => { activeProject = v; },
-    getActiveDomainSlug: () => domainPacks[activeDomainIdx]?.slug || "sunspire-regatta",
-    getStudioObjects: () => studioObjects,
-    setStudioObjects: (v) => { studioObjects = v; },
-    getLodIdx: () => lodIdx,
-    getSimClockSec: () => simClockSec,
+    queryVerifier,
     currentLodSpec,
-    clearStudioObjects,
     syncFallbackBuffers,
+    loadStreamPrefs,
+    refreshObserverCognition,
+    mountInlineStudio,
+    exportGlbDownload,
+    shareUorcSnapshot,
+    toggleRenderBackend,
+    streamLod,
+    cycleCameraMode,
+    setSimLive,
+    toggleGuardedAudio,
+    focusPoint,
+    focusPreset,
+    setWorldSeed,
+    loadCatalogDomainPack,
+    loadBlankStudioStage,
+    loadRemoteGlbIntoStage,
+    applyRemoteEnvSky,
+    openStitchGuarded,
+    executePrompt,
+    isOrganAllowed,
+    refuseOrgan,
+    suspendModalAudio,
+    setActiveContentType,
+    runUnifiedDiscovery,
+    refreshProjectModelsFromWasm,
+    syncWorkflowRibbon,
+    setRightRailTab,
+    base64UrlToBytes,
+    hydrateExperienceDesignSystem,
+    clearStudioObjects,
     renderStudioOutliner,
     syncHud,
+    chip,
     requestRender,
+    state: {
+      getOffOk: () => offOk,
+      setOffOk: (v) => { offOk = v; },
+      setActiveRenderBackend: (v) => { activeRenderBackend = v; },
+      getLTris: () => lTris,
+      setLTris: (v) => { lTris = v; },
+      setFallbackRenderer: (m, r) => { fbM = m; fbR = r; },
+      getActiveRoleKey: () => activeRoleKey,
+      setActiveRoleKey: (v) => { activeRoleKey = v; },
+      getActiveProject: () => activeProject,
+      setActiveProject: (v) => { activeProject = v; },
+      getActiveDomainIdx: () => activeDomainIdx,
+      getDomainPacks: () => domainPacks,
+      getUserSelectedDomain: () => userSelectedDomain,
+      getStudioObjects: () => studioObjects,
+      setStudioObjects: (v) => { studioObjects = v; },
+      getLodIdx: () => lodIdx,
+      getSimClockSec: () => simClockSec,
+      getOrganMode: (idx) => organModes[idx] ?? 0,
+      setOrganMode: (idx, nextMode) => { organModes[idx] = nextMode; },
+      getRenderMode: () => renderMode,
+      setStudioHandle: (h) => { studioHandle = h; },
+      getExperienceDesign: () => experienceDesign,
+    },
   });
-
-  chip(
-    statusEl,
-    experienceDesign?.plainLanguage?.readyBanner ||
-      `Ready · ${activeProject} — pick a world, browse 3D assets below, or click Play Preview.`,
-  );
-  requestRender();
 })();

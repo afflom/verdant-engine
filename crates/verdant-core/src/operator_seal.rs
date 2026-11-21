@@ -426,6 +426,7 @@ impl VerdantOperatorChannel {
                 || rel_str == "generated/immutability-seal.json"
                 || rel_str == "generated/release-ledger.json"
                 || rel_str == "generated/tensor-scaling-contract.json"
+                || rel_str == "generated/viewpoint-contracts.json"
                 || rel_str == "spec.html"
                 || rel_str == "spec.css"
                 || rel_str == "spec.mjs"

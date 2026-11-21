@@ -976,6 +976,18 @@
               </div>
               <div class="insp-rev-list" id="studio-vcs-history" aria-live="polite"></div>
             </div>
+            <div id="studio-authority-card" class="insp-editor-grid" style="padding-top:var(--space-2);border-top:var(--border-width) solid var(--border);">
+              <div class="ide-pane-sub">Sovereign Signing Requests &amp; Admin Quorum</div>
+              <div class="ide-pane-sub" id="studio-auth-summary" aria-live="polite">Epoch 1 · Quorum 1-of-1</div>
+              <input id="studio-auth-action-input" class="st-input" type="text" value="Approve latest VerdantVcs commit" aria-label="Signing request summary" />
+              <div class="insp-row">
+                <button type="button" class="st-btn primary sm" id="studio-auth-submit-btn">Request Sign-Off</button>
+                <button type="button" class="st-btn sm" id="studio-auth-add-admin-btn">+ Co-Admin</button>
+                <button type="button" class="st-btn danger sm" id="studio-auth-revoke-btn">Revoke Departed</button>
+              </div>
+              <input id="studio-auth-coadmin-input" class="st-input" type="text" placeholder="prism:admin:peer-02 (optional co-Admin ID)" aria-label="Co-Admin Prism ID" />
+              <div class="insp-rev-list" id="studio-auth-requests" aria-live="polite"></div>
+            </div>
             <div class="insp-row">
               <a class="st-btn sm" href="../frame/?pin=stitch://verdant/studio">Blank Frame</a>
               <a class="st-btn sm" href="../catalogs/#cat-apps-h2">App Catalog</a>

@@ -2,7 +2,7 @@
   "managers": [
     {
       "basisPrime": 59,
-      "kappaHex": "82ef91d2d281560e8b3da77821fc475372fafc3182032c95d30a87079b0baac9",
+      "kappaHex": "28737a197775fb8dec24f0af4df3bfd041964a4b82c96f8aa2bcecf9c236b58b",
       "spec": {
         "almPhases": [
           "governance",
@@ -32,6 +32,7 @@
           "app/src/Observer.lex.tex",
           "crates/verdant-core/src/observer.rs",
           "crates/verdant-core/src/observer_types.rs",
+          "crates/verdant-core/src/observer_comms.rs",
           "crates/verdant-core/src/observer_language.rs",
           "crates/verdant-core/src/observer_refine.rs",
           "crates/verdant-core/src/observer_streams.rs",
@@ -214,7 +215,7 @@
     },
     {
       "basisPrime": 73,
-      "kappaHex": "55682c34dffd725d9c591e879c53c9727ae595525f55e04a85030912410f058d",
+      "kappaHex": "a6c13af07e23c19a03b271a95f83d6c17bb472b4696f41411a986b93f11e7bc1",
       "spec": {
         "almPhases": [
           "security",
@@ -247,6 +248,7 @@
           "crates/verdant-core/src/authority.rs",
           "crates/verdant-core/src/digest.rs",
           "crates/verdant-core/src/network.rs",
+          "crates/verdant-core/src/network_custody.rs",
           "catalogs/governance/stitch-self-hosting.json",
           "identity/stitch.lock"
         ],
@@ -446,7 +448,7 @@
     },
     {
       "basisPrime": 97,
-      "kappaHex": "70e72aa2e454a9130d6f86fc92b9eb9b5971f572975082996e5ee1e1be18d345",
+      "kappaHex": "14cb98587cc4d8e8500795912b400c465a0d5652b6b05bd8004a2365f7d737b4",
       "spec": {
         "almPhases": [
           "conception",
@@ -494,6 +496,8 @@
           "crates/verdant-core/src/portable_player.rs",
           "site/studio/index.html",
           "site/studio/studio-page.mjs",
+          "site/studio/studio-boot.mjs",
+          "site/studio/authority-panel.mjs",
           "site/studio/discovery-panel.mjs",
           "site/studio/outliner.mjs",
           "site/studio/observer-panel.mjs",
@@ -501,6 +505,7 @@
           "site/studio/stage-assets.mjs",
           "site/studio/vcs-panel.mjs",
           "site/studio.mjs",
+          "site/studio-director-panel.mjs",
           "site/studio-gameplay-panel.mjs",
           "site/studio-media.mjs",
           "site/studio-data.mjs",
@@ -658,7 +663,7 @@
     },
     {
       "basisPrime": 107,
-      "kappaHex": "2ec267d6cd276537204e43ef9dce9070f2a89f5d67ad40143016c77e4fa1b5fb",
+      "kappaHex": "8f0cd5fe436c7d42581709a21de431484ec1d83d8854c8795fff2643c8b94e8c",
       "spec": {
         "almPhases": [
           "verification",
@@ -690,6 +695,7 @@
           "app/src/Measures.lex.tex",
           "app/src/Fidelity.lex.tex",
           "crates/verdant-core/src/lifecycle.rs",
+          "crates/verdant-core/src/lifecycle_automate.rs",
           "model/measures.toml",
           "model/parametric-ratchet.toml",
           "fidelity.toml",

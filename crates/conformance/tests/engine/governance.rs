@@ -2824,3 +2824,115 @@ fn engine_ve_70() {
         kpi_rep.kpis
     );
 }
+
+#[test]
+fn engine_ve_71() {
+    use std::path::Path;
+    use verdant_core::operator::VerdantOperatorChannel;
+    use verdant_tensor::scalars::{
+        erasure_coding_overhead_within_double, erasure_max_losses_tolerated, erasure_recoverable,
+        governance_byzantine_safe, governance_clean_history_preserved,
+        governance_compromise_quarantines_commit, governance_crash_fault_tolerance,
+        governance_delegation_depth_valid, governance_epoch_monotone, governance_quorum_shortfall,
+        governance_revocation_invalidates_unfinalized, governance_two_thirds_quorum_met,
+        js_module_within_line_budget, observer_manager_health_perfect,
+        observer_refinement_score_improved, ratchet_ceiling_did_not_regress_u64,
+        ratchet_floor_did_not_regress_u64, uhd_lod_rank_valid, uhd_memory_pressure_high,
+        uhd_tile_quantum_bounded, vcs_commit_epoch_monotonic, wasm_budget_compliant,
+        wasm_linear_memory_bytes_for_pages,
+    };
+
+    let repo_root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+
+    // 1. Decomposed Rust and JS submodules and Studio Sovereign Authority panel exist:
+    for rel in [
+        "crates/verdant-core/src/uhd_workload.rs",
+        "crates/verdant-core/src/network_custody.rs",
+        "crates/verdant-core/src/lifecycle_automate.rs",
+        "crates/verdant-core/src/observer_comms.rs",
+        "site/studio-director-panel.mjs",
+        "site/studio/studio-boot.mjs",
+        "site/studio/authority-panel.mjs",
+    ] {
+        assert!(
+            repo_root.join(rel).is_file(),
+            "M19 expected modular artifact `{rel}`"
+        );
+    }
+
+    let studio_html = std::fs::read_to_string(repo_root.join("site/studio/index.html"))
+        .expect("read site/studio/index.html");
+    assert!(studio_html.contains("studio-authority-card"));
+    assert!(studio_html.contains("studio-auth-submit-btn"));
+    assert!(studio_html.contains("studio-auth-revoke-btn"));
+
+    // 2. MIR-lifted M19 constructive governance, erasure, Wasm, UHD, and ratchet predicates:
+    assert_eq!(governance_crash_fault_tolerance(5, 3), 2);
+    assert!(governance_byzantine_safe(4, 1));
+    assert!(!governance_byzantine_safe(3, 1));
+    assert!(governance_delegation_depth_valid(2, 4));
+    assert!(governance_epoch_monotone(14, 15));
+    assert!(governance_revocation_invalidates_unfinalized(3, 4, false));
+    assert!(!governance_revocation_invalidates_unfinalized(3, 4, true));
+    assert!(governance_compromise_quarantines_commit(3, 3, 4));
+    assert!(governance_clean_history_preserved(2, 3));
+    assert!(governance_two_thirds_quorum_met(3, 4));
+    assert!(!governance_two_thirds_quorum_met(2, 4));
+    assert_eq!(governance_quorum_shortfall(1, 3), 2);
+    assert!(erasure_recoverable(4, 4, 8));
+    assert!(!erasure_recoverable(3, 4, 8));
+    assert_eq!(erasure_max_losses_tolerated(4, 8), 4);
+    assert!(erasure_coding_overhead_within_double(4, 8));
+    assert_eq!(wasm_linear_memory_bytes_for_pages(2), 131_072);
+    assert!(wasm_budget_compliant(156_634, 159_744));
+    assert!(js_module_within_line_budget(1247, 1250));
+    assert!(ratchet_floor_did_not_regress_u64(321, 351));
+    assert!(ratchet_ceiling_did_not_regress_u64(1780, 1650));
+    assert!(uhd_lod_rank_valid(4));
+    assert!(uhd_tile_quantum_bounded(16));
+    assert!(uhd_memory_pressure_high(920));
+    assert!(vcs_commit_epoch_monotonic(14, 15));
+    assert!(observer_manager_health_perfect(1000));
+    assert!(observer_refinement_score_improved(957, 980));
+
+    // 3. Frontier >= 345 lifted functions (residue <= 1169), Rust <= 1650L, JS <= 1250L, M1..M19 pass:
+    let rep = prism_fidelity::ratchet::audit_parametric_ratchet(
+        &repo_root,
+        Path::new("model/parametric-ratchet.toml"),
+    )
+    .expect("live repo must pass all 4 ratchet layers");
+    assert!(
+        rep.frontier_lifted_functions >= 345,
+        "M19 must lift >= 345 constructive Rust functions, got {}",
+        rep.frontier_lifted_functions
+    );
+    assert!(
+        rep.frontier_residue_functions <= 1_169,
+        "M19 must keep residue <= 1169, got {}",
+        rep.frontier_residue_functions
+    );
+    assert!(
+        rep.observed_max_rust_file_lines <= 1_650,
+        "M19 must keep every hand-written Rust file <= 1650 lines, got {}",
+        rep.observed_max_rust_file_lines
+    );
+    assert!(
+        rep.observed_max_js_file_lines <= 1_250,
+        "M19 must keep every shipped JS file <= 1250 lines, got {}",
+        rep.observed_max_js_file_lines
+    );
+
+    let ch = VerdantOperatorChannel::new("sunspire-regatta").expect("operator channel");
+    let kpi_rep = ch
+        .evaluate_observer_roadmap_kpis(&repo_root, true, true)
+        .expect("observer roadmap & KPI report");
+    assert!(
+        kpi_rep.milestones.len() >= 19,
+        "expected Milestones M1..M19"
+    );
+    assert_eq!(
+        kpi_rep.kpi_passed_count, kpi_rep.kpi_total_count,
+        "all Observer KPIs must pass (kpis={:?})",
+        kpi_rep.kpis
+    );
+}

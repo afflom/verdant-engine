@@ -4,7 +4,209 @@
 import { readAuxBytes, readSolvedCamera, stageIoBytes } from "./engine-worker-codec.mjs";
 
 export async function handleExtendedWorkerMessage(msg, ctx) {
-  const { ensureUorcSceneHost, simHost, getCanvas, getRenderer, getEmaFrameMicros, postMessage } = ctx;
+  const {
+    ensureUorcSceneHost,
+    getUorcWasm,
+    getLoadedUorcWasm,
+    simHost,
+    getCanvas,
+    getRenderer,
+    getEmaFrameMicros,
+    getOrganModes,
+    getCurrentLod,
+    drawScene,
+    setCustomGlbActive,
+    setLastAnchor,
+    postMessage,
+  } = ctx;
+
+  if (msg.kind === "set-npc-directive") {
+    const npcIdx = Math.max(0, msg.npcIdx | 0) >>> 0;
+    const directiveIdx = Math.max(0, msg.directiveIdx | 0) >>> 0;
+    const uorcWasm = await ensureUorcSceneHost();
+    const len = uorcWasm.verdant_wasm_set_npc_directive(npcIdx, directiveIdx) >>> 0;
+    if (len === 0) {
+      postMessage({ kind: "npc-directive-updated", id: msg.id, ok: false });
+      return true;
+    }
+    const [characterId, directiveLabel, wpStr] = new TextDecoder().decode(readAuxBytes(uorcWasm)).split("|");
+    const sh = simHost();
+    sh.verdant_wasm_scene_rebuild_buffers(msg.simClockSec || 0);
+    const cam = readSolvedCamera(sh);
+    const stats = drawScene(cam.eye, cam.lookTarget, getCurrentLod(), msg.simClockSec || 0, false);
+    postMessage({
+      kind: "npc-directive-updated",
+      id: msg.id,
+      ok: true,
+      npcIdx,
+      directiveIdx,
+      characterId: characterId || "",
+      directiveLabel: directiveLabel || "",
+      waypointCount: Number(wpStr) || 0,
+      tris: stats.tris,
+    });
+    return true;
+  }
+
+  if (msg.kind === "npc-dialogue") {
+    const organModes = getOrganModes();
+    if (organModes[0] === 2) {
+      postMessage({ kind: "npc-dialogue-reply", id: msg.id, ok: false, organDenied: "wasm-core" });
+      return true;
+    }
+    if (organModes[7] === 2) {
+      postMessage({ kind: "npc-dialogue-reply", id: msg.id, ok: false, organDenied: "webcrypto-prism-id" });
+      return true;
+    }
+    const npcIdx = Math.max(0, msg.npcIdx | 0) >>> 0;
+    const utterance = String(msg.utterance || "").trim();
+    if (!utterance) {
+      postMessage({ kind: "npc-dialogue-reply", id: msg.id, ok: false });
+      return true;
+    }
+    const uorcWasm = await ensureUorcSceneHost();
+    stageIoBytes(uorcWasm, new TextEncoder().encode(utterance));
+    const len = uorcWasm.verdant_wasm_dialogue_turn_io(npcIdx) >>> 0;
+    if (len === 0) {
+      postMessage({ kind: "npc-dialogue-reply", id: msg.id, ok: false });
+      return true;
+    }
+    const turn = JSON.parse(new TextDecoder().decode(readAuxBytes(uorcWasm)));
+    const sh = simHost();
+    if (turn.mutatedDirectiveIndex != null && turn.mutatedDirectiveIndex >= 0) {
+      sh.verdant_wasm_scene_rebuild_buffers(msg.simClockSec || 0);
+      const cam = readSolvedCamera(sh);
+      drawScene(cam.eye, cam.lookTarget, getCurrentLod(), msg.simClockSec || 0, false);
+    }
+    postMessage({ kind: "npc-dialogue-reply", id: msg.id, ok: true, turn });
+    return true;
+  }
+
+  if (msg.kind === "observer-status") {
+    const uorcWasm = await ensureUorcSceneHost();
+    const len = uorcWasm.verdant_wasm_observer_status_aux() >>> 0;
+    if (len === 0) {
+      postMessage({ kind: "observer-status", id: msg.id, ok: false });
+      return true;
+    }
+    const observer = JSON.parse(new TextDecoder().decode(readAuxBytes(uorcWasm)));
+    postMessage({ kind: "observer-status", id: msg.id, ok: true, observer });
+    return true;
+  }
+
+  if (msg.kind === "observe-comm") {
+    const channelCode = Math.max(0, Math.min(4, msg.channelCode | 0)) >>> 0;
+    const wire = `${msg.sender || "urn:verdant:organ:engine"}|${msg.recipient || "urn:verdant:organ:studio"}|${msg.message || ""}`;
+    const uorcWasm = await ensureUorcSceneHost();
+    stageIoBytes(uorcWasm, new TextEncoder().encode(wire));
+    const len = uorcWasm.verdant_wasm_observe_comm_io(channelCode) >>> 0;
+    const kappaHex = len > 0 ? new TextDecoder().decode(readAuxBytes(uorcWasm)) : "";
+    postMessage({ kind: "comm-observed", id: msg.id, ok: len > 0, kappaHex });
+    return true;
+  }
+
+  if (msg.kind === "import-project-model") {
+    const uorcWasm = await ensureUorcSceneHost();
+    const jsonBytes = new TextEncoder().encode(JSON.stringify(msg.request || {}));
+    stageIoBytes(uorcWasm, jsonBytes);
+    const len = uorcWasm.verdant_wasm_import_project_model_io() >>> 0;
+    if (len === 0) {
+      postMessage({ kind: "project-model-imported", id: msg.id, ok: false });
+      return true;
+    }
+    const model = JSON.parse(new TextDecoder().decode(readAuxBytes(uorcWasm)));
+    postMessage({ kind: "project-model-imported", id: msg.id, ok: true, model });
+    return true;
+  }
+
+  if (msg.kind === "edit-project-model") {
+    const uorcWasm = await ensureUorcSceneHost();
+    const jsonBytes = new TextEncoder().encode(JSON.stringify(msg.request || {}));
+    stageIoBytes(uorcWasm, jsonBytes);
+    const len = uorcWasm.verdant_wasm_edit_project_model_io() >>> 0;
+    if (len === 0) {
+      postMessage({ kind: "project-model-edited", id: msg.id, ok: false });
+      return true;
+    }
+    const model = JSON.parse(new TextDecoder().decode(readAuxBytes(uorcWasm)));
+    postMessage({ kind: "project-model-edited", id: msg.id, ok: true, model });
+    return true;
+  }
+
+  if (msg.kind === "revert-project-model") {
+    const uorcWasm = await ensureUorcSceneHost();
+    stageIoBytes(uorcWasm, new TextEncoder().encode(String(msg.modelId || "")));
+    const targetVer = Math.max(1, msg.targetVersion | 0) >>> 0;
+    const len = uorcWasm.verdant_wasm_revert_project_model_io(targetVer) >>> 0;
+    if (len === 0) {
+      postMessage({ kind: "project-model-reverted", id: msg.id, ok: false });
+      return true;
+    }
+    const model = JSON.parse(new TextDecoder().decode(readAuxBytes(uorcWasm)));
+    postMessage({ kind: "project-model-reverted", id: msg.id, ok: true, model });
+    return true;
+  }
+
+  if (msg.kind === "remove-project-model") {
+    const uorcWasm = await ensureUorcSceneHost();
+    stageIoBytes(uorcWasm, new TextEncoder().encode(String(msg.modelId || "")));
+    const len = uorcWasm.verdant_wasm_remove_project_model_io() >>> 0;
+    const kappaHex = len > 0 ? new TextDecoder().decode(readAuxBytes(uorcWasm)) : "";
+    postMessage({ kind: "project-model-removed", id: msg.id, ok: len > 0, kappaHex });
+    return true;
+  }
+
+  if (msg.kind === "list-project-models") {
+    const uorcWasm = await ensureUorcSceneHost();
+    const len = uorcWasm.verdant_wasm_list_project_models_aux() >>> 0;
+    if (len === 0) {
+      postMessage({ kind: "project-models-listed", id: msg.id, ok: false, models: [] });
+      return true;
+    }
+    const payload = JSON.parse(new TextDecoder().decode(readAuxBytes(uorcWasm)));
+    postMessage({ kind: "project-models-listed", id: msg.id, ok: true, ...payload });
+    return true;
+  }
+
+  if (msg.kind === "compose-glb-append") {
+    const raw = msg.bytes instanceof Uint8Array ? msg.bytes : new Uint8Array(msg.bytes || []);
+    const uorcWasm = await getUorcWasm();
+    if (!raw.byteLength || !stageIoBytes(uorcWasm, raw)) {
+      postMessage({ kind: "glb-composed", id: msg.id, ok: false });
+      return true;
+    }
+    const tris = uorcWasm.verdant_wasm_glb_compose_append_io() >>> 0;
+    if (!tris) {
+      postMessage({ kind: "glb-composed", id: msg.id, ok: false });
+      return true;
+    }
+    setCustomGlbActive(true);
+    const cam = readSolvedCamera(simHost());
+    setLastAnchor([...cam.lookTarget]);
+    drawScene(cam.eye, cam.lookTarget, getCurrentLod(), 0, false, 0, 0, true);
+    postMessage({ kind: "glb-composed", id: msg.id, ok: true, tris, camera: cam });
+    return true;
+  }
+
+  if (msg.kind === "set-env-sky") {
+    const renderer = getRenderer();
+    renderer?.setTex?.(2, msg.bitmap || null);
+    const sh = simHost();
+    const cam = readSolvedCamera(sh);
+    drawScene(cam.eye, cam.lookTarget, getCurrentLod(), 0, false, 0, 0, true);
+    let cognition = null;
+    const uorcWasm = getLoadedUorcWasm();
+    if (uorcWasm && typeof uorcWasm.verdant_wasm_record_part_hydration_io === "function") {
+      const wire = msg.bitmap
+        ? `stage-environment|polyhaven|${msg.label || "Poly Haven HDRI Sky Dome"}`
+        : "stage-environment|verdant-prism|Procedural Atmosphere";
+      stageIoBytes(uorcWasm, new TextEncoder().encode(wire));
+      const len = uorcWasm.verdant_wasm_record_part_hydration_io(msg.bitmap ? 4 : 1) >>> 0;
+      if (len) cognition = JSON.parse(new TextDecoder().decode(readAuxBytes(uorcWasm)));
+    }
+    postMessage({ kind: "env-sky-set", id: msg.id, ok: true, active: Boolean(msg.bitmap), cognition });
+    return true;
+  }
 
   if (msg.kind === "update-host-envelope") {
     const uorcWasm = await ensureUorcSceneHost();

@@ -1325,12 +1325,14 @@ export async function runAllPrismContractChecks(rootDir = ROOT_DIR) {
   const studioDataSource = readFileSync(join(rootDir, "site", "studio-data.mjs"), "utf8");
   const studioScaffolderSource = readFileSync(join(rootDir, "site", "studio-scaffolder.mjs"), "utf8");
   const studioMediaSource = readFileSync(join(rootDir, "site", "studio-media.mjs"), "utf8");
+  const studioDirectorSource = readFileSync(join(rootDir, "site", "studio-director-panel.mjs"), "utf8");
   const studioGameplaySource = readFileSync(join(rootDir, "site", "studio-gameplay-panel.mjs"), "utf8");
   const studioSource = readFileSync(join(rootDir, "site", "studio.mjs"), "utf8");
   const combinedStudioSource = [
     studioDataSource,
     studioScaffolderSource,
     studioMediaSource,
+    studioDirectorSource,
     studioGameplaySource,
     studioSource,
   ].join("\n");
@@ -1350,8 +1352,15 @@ export async function runAllPrismContractChecks(rootDir = ROOT_DIR) {
   const demoSource = readFileSync(join(rootDir, "site", "demo", "demo.mjs"), "utf8");
   const studioPageHtml = readFileSync(join(rootDir, "site", "studio", "index.html"), "utf8");
   const studioPageCoreSource = readFileSync(join(rootDir, "site", "studio", "studio-page.mjs"), "utf8");
+  const studioBootSource = readFileSync(join(rootDir, "site", "studio", "studio-boot.mjs"), "utf8");
+  const studioAuthoritySource = readFileSync(join(rootDir, "site", "studio", "authority-panel.mjs"), "utf8");
   const studioStageAssetsSource = readFileSync(join(rootDir, "site", "studio", "stage-assets.mjs"), "utf8");
-  const studioPageSource = [studioPageCoreSource, studioStageAssetsSource].join("\n");
+  const studioPageSource = [
+    studioPageCoreSource,
+    studioBootSource,
+    studioAuthoritySource,
+    studioStageAssetsSource,
+  ].join("\n");
   const catalogsHtml = readFileSync(join(rootDir, "site", "catalogs", "index.html"), "utf8");
   const catalogsPageSource = readFileSync(join(rootDir, "site", "catalogs", "catalogs.mjs"), "utf8");
   const catalogStreamsCoreSource = readFileSync(join(rootDir, "site", "catalog-streams.mjs"), "utf8");

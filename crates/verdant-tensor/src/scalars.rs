@@ -881,3 +881,222 @@ pub const fn immutability_seal_intact(entries: u64, violations: u64) -> bool {
 pub const fn rust_module_within_line_budget(lines: u32, max_lines: u32) -> bool {
     lines >= 1 && lines <= max_lines
 }
+
+/// Pure MIR-lifted sovereign governance crash-fault tolerance (`N - M` tolerated unavailable admins).
+#[must_use]
+pub const fn governance_crash_fault_tolerance(active_admins_n: u64, threshold_m: u64) -> u64 {
+    if active_admins_n >= threshold_m {
+        active_admins_n.wrapping_sub(threshold_m)
+    } else {
+        0
+    }
+}
+
+/// Pure MIR-lifted Byzantine quorum safety bound (`3f < N` active admins).
+#[must_use]
+pub const fn governance_byzantine_safe(active_admins_n: u64, faulty_f: u64) -> bool {
+    faulty_f.wrapping_mul(three_u64()) < active_admins_n
+}
+
+/// Pure MIR-lifted authority delegation depth bound (`depth <= max_depth <= 4`).
+#[must_use]
+pub const fn governance_delegation_depth_valid(depth: u32, max_depth: u32) -> bool {
+    depth <= max_depth && max_depth <= four_u32()
+}
+
+/// Pure MIR-lifted authority epoch strict successor predicate (`next_epoch == prev_epoch + 1`).
+#[must_use]
+pub const fn governance_epoch_monotone(prev_epoch: u64, next_epoch: u64) -> bool {
+    next_epoch == prev_epoch.wrapping_add(1)
+}
+
+/// Pure MIR-lifted revocation predicate: a departed Admin's unfinalized approval at or before
+/// `revoked_epoch` is immediately invalidated (`!finalized && approved_epoch <= revoked_epoch`).
+#[must_use]
+pub const fn governance_revocation_invalidates_unfinalized(
+    approved_epoch: u64,
+    revoked_epoch: u64,
+    finalized: bool,
+) -> bool {
+    !finalized && approved_epoch <= revoked_epoch
+}
+
+/// Pure MIR-lifted key-compromise quarantine predicate (`compromise_floor <= commit_epoch <= revoked`).
+#[must_use]
+pub const fn governance_compromise_quarantines_commit(
+    commit_epoch: u64,
+    compromise_floor: u64,
+    revoked_epoch: u64,
+) -> bool {
+    compromise_floor >= 1 && commit_epoch >= compromise_floor && commit_epoch <= revoked_epoch
+}
+
+/// Pure MIR-lifted historical verification preservation predicate (`1 <= commit_epoch < compromise_floor`).
+#[must_use]
+pub const fn governance_clean_history_preserved(commit_epoch: u64, compromise_floor: u64) -> bool {
+    commit_epoch >= 1 && commit_epoch < compromise_floor
+}
+
+/// Pure MIR-lifted supermajority quorum satisfaction check (`3 * valid_approvals >= 2 * N`).
+#[must_use]
+pub const fn governance_two_thirds_quorum_met(valid_approvals: u64, active_admins_n: u64) -> bool {
+    active_admins_n >= 1
+        && valid_approvals.wrapping_mul(three_u64()) >= active_admins_n.wrapping_mul(two_u64())
+}
+
+/// Pure MIR-lifted remaining approvals needed to satisfy threshold `M`.
+#[must_use]
+pub const fn governance_quorum_shortfall(valid_approvals: u64, threshold_m: u64) -> u64 {
+    if threshold_m > valid_approvals {
+        threshold_m.wrapping_sub(valid_approvals)
+    } else {
+        0
+    }
+}
+
+/// Pure MIR-lifted distinct reviewer threshold satisfaction check (`M >= 1 && distinct >= M`).
+#[must_use]
+pub const fn governance_distinct_reviewers_met(distinct_count: u64, threshold_m: u64) -> bool {
+    threshold_m >= 1 && distinct_count >= threshold_m
+}
+
+/// Pure MIR-lifted Reed-Solomon `k-of-n` parity shard count (`n - k`).
+#[must_use]
+pub const fn erasure_parity_shards(data_k: u32, total_n: u32) -> u32 {
+    if total_n >= data_k {
+        total_n.wrapping_sub(data_k)
+    } else {
+        0
+    }
+}
+
+/// Pure MIR-lifted Reed-Solomon `k-of-n` recovery feasibility check (`1 <= k <= surviving <= n`).
+#[must_use]
+pub const fn erasure_recoverable(surviving: u32, data_k: u32, total_n: u32) -> bool {
+    data_k >= 1 && data_k <= total_n && surviving >= data_k && surviving <= total_n
+}
+
+/// Pure MIR-lifted Reed-Solomon maximum simultaneous shard losses tolerated (`n - k`).
+#[must_use]
+pub const fn erasure_max_losses_tolerated(data_k: u32, total_n: u32) -> u32 {
+    erasure_parity_shards(data_k, total_n)
+}
+
+/// Pure MIR-lifted Reed-Solomon bounded redundancy check (`1 <= k <= n <= 2k`).
+#[must_use]
+pub const fn erasure_coding_overhead_within_double(data_k: u32, total_n: u32) -> bool {
+    data_k >= 1 && total_n >= data_k && total_n <= data_k.wrapping_mul(two_u32())
+}
+
+/// Pure MIR-lifted WebAssembly 64 KiB linear-memory byte capacity (`pages * 65536`).
+#[must_use]
+pub const fn wasm_linear_memory_bytes_for_pages(pages: u64) -> u64 {
+    let four_sq = four_u64().wrapping_mul(four_u64());
+    let two_fifty_six = four_sq.wrapping_mul(four_sq);
+    let page = two_fifty_six.wrapping_mul(two_fifty_six);
+    pages.wrapping_mul(page)
+}
+
+/// Pure MIR-lifted WebAssembly linear-memory page budget guard (`1 <= pages <= max_pages`).
+#[must_use]
+pub const fn wasm_page_budget_within_limit(pages: u32, max_pages: u32) -> bool {
+    pages >= 1 && pages <= max_pages
+}
+
+/// Pure MIR-lifted WebAssembly binary size headroom (`ceiling - observed`, saturating at `0`).
+#[must_use]
+pub const fn wasm_budget_headroom_bytes(ceiling_bytes: u64, observed_bytes: u64) -> u64 {
+    if ceiling_bytes >= observed_bytes {
+        ceiling_bytes.wrapping_sub(observed_bytes)
+    } else {
+        0
+    }
+}
+
+/// Pure MIR-lifted WebAssembly binary size compliance check (`0 < observed <= ceiling`).
+#[must_use]
+pub const fn wasm_budget_compliant(observed_bytes: u64, ceiling_bytes: u64) -> bool {
+    observed_bytes >= 1 && observed_bytes <= ceiling_bytes
+}
+
+/// Pure MIR-lifted shipped JS module modularity ceiling predicate (`1 <= lines <= max_lines`).
+#[must_use]
+pub const fn js_module_within_line_budget(lines: u32, max_lines: u32) -> bool {
+    lines >= 1 && lines <= max_lines
+}
+
+/// Pure MIR-lifted 64-bit one-way parametric ratchet floor monotonicity check (`next_floor >= prev_floor`).
+#[must_use]
+pub const fn ratchet_floor_did_not_regress_u64(prev_floor: u64, next_floor: u64) -> bool {
+    next_floor >= prev_floor
+}
+
+/// Pure MIR-lifted 64-bit one-way parametric ratchet ceiling monotonicity check (`next_ceiling <= prev_ceiling`).
+#[must_use]
+pub const fn ratchet_ceiling_did_not_regress_u64(prev_ceiling: u64, next_ceiling: u64) -> bool {
+    next_ceiling <= prev_ceiling
+}
+
+/// Pure MIR-lifted one-way ratchet ceiling improvement margin (`ceiling - observed`).
+#[must_use]
+pub const fn ratchet_improvement_margin_u64(ceiling: u64, observed: u64) -> u64 {
+    if ceiling >= observed {
+        ceiling.wrapping_sub(observed)
+    } else {
+        0
+    }
+}
+
+/// Pure MIR-lifted UHD geometry LOD rank bounds check (`rank <= 4`).
+#[must_use]
+pub const fn uhd_lod_rank_valid(rank: u32) -> bool {
+    rank <= four_u32()
+}
+
+/// Pure MIR-lifted UHD dynamic workload tensor tile quantum bounds check (`2 <= quantum <= 32`).
+#[must_use]
+pub const fn uhd_tile_quantum_bounded(quantum: u32) -> bool {
+    let thirty_two = sixteen_u32().wrapping_mul(two_u32());
+    quantum >= two_u32() && quantum <= thirty_two
+}
+
+/// Pure MIR-lifted UHD frame over-budget overrun in microseconds (`frame_us - budget_us`).
+#[must_use]
+pub const fn uhd_frame_over_budget_margin_us(frame_us: u32, budget_us: u32) -> u32 {
+    if frame_us > budget_us {
+        frame_us.wrapping_sub(budget_us)
+    } else {
+        0
+    }
+}
+
+/// Pure MIR-lifted UHD arena high-pressure trigger (`pressure_permille >= 900`).
+#[must_use]
+pub const fn uhd_memory_pressure_high(pressure_permille: u32) -> bool {
+    let nine = eight_u32().wrapping_add(1);
+    pressure_permille >= hundred_u32().wrapping_mul(nine)
+}
+
+/// Pure MIR-lifted VerdantVcs commit epoch strict increment check (`child == parent + 1`).
+#[must_use]
+pub const fn vcs_commit_epoch_monotonic(parent_epoch: u64, child_epoch: u64) -> bool {
+    child_epoch == parent_epoch.wrapping_add(1)
+}
+
+/// Pure MIR-lifted VerdantVcs Merkle tree non-emptiness predicate (`blob_count >= 1`).
+#[must_use]
+pub const fn vcs_merkle_tree_non_empty(blob_count: u64) -> bool {
+    blob_count >= 1
+}
+
+/// Pure MIR-lifted Observer manager perfect health score check (`score_permille == 1000`).
+#[must_use]
+pub const fn observer_manager_health_perfect(score_permille: u32) -> bool {
+    score_permille == thousand_u32()
+}
+
+/// Pure MIR-lifted Observer refinement score non-regression check (`prev <= next <= 1000`).
+#[must_use]
+pub const fn observer_refinement_score_improved(prev_permille: u32, next_permille: u32) -> bool {
+    next_permille >= prev_permille && next_permille <= thousand_u32()
+}

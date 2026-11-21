@@ -233,6 +233,16 @@
       "requiredCapabilities": ["VE-70"],
       "owningManagers": ["mgr-security-trust", "mgr-observer-executive", "mgr-architecture-design", "mgr-knowledge-provenance", "mgr-verification-observatory"],
       "ratchetRequirement": "Complete 100% zero-residue Prism modeling across all 29 LexLean modules (Governance.lex.tex, 9 stakeholders/journeys, 3 OPM/UML views, 7 sovereign governance STRIDE threats/controls, 10/10 ISO 15939 measures), realize SovereignAuthorityLedger & SigningRequestGate in crates/verdant-core/src/authority.rs (CLI verdant operator authority + MCP verdant_authority_exec) with immediate departed-admin pending approval and standing grant revocation, and expand the shrink-only uorust MIR proof frontier >= 295 lifted constructive functions while shrinking residue <= 1176 and uncertified <= 1334."
+    },
+    {
+      "milestoneId": "M19",
+      "targetVersion": "2.11.0",
+      "tier": "minor",
+      "title": "Sub-1650L Rust & Sub-1250L JS Modularity, 345+ MIR-Lifted Functions & In-Studio Zero-Account Sovereign Signing-Request & Admin Quorum UI",
+      "stakeholders": ["creator", "developer", "systems-engineer", "operator", "auditor", "admin", "contributor"],
+      "requiredCapabilities": ["VE-71"],
+      "owningManagers": ["mgr-observer-executive", "mgr-security-trust", "mgr-verification-observatory", "mgr-runtime-stage", "mgr-studio-alm"],
+      "ratchetRequirement": "Decompose all 4 remaining Rust files > 1650L (uhd.rs/uhd_workload.rs, network.rs/network_custody.rs, lifecycle.rs/lifecycle_automate.rs, observer.rs/observer_comms.rs -> max_handwritten_rust_file_lines <= 1650, >= 173 lifted modules) and all 3 shipped JS files > 1250L (engine-worker.mjs/engine-worker-extended.mjs, studio/studio-page.mjs/studio-boot.mjs, studio.mjs/studio-director-panel.mjs -> max_js_file_lines <= 1250), expand the shrink-only uorust MIR proof frontier to >= 345 lifted constructive functions (residue <= 1169, uncertified <= 1325), and surface zero-account Sovereign Signing Requests & Admin Quorum revocation inside Verdant Studio (site/studio/authority-panel.mjs) with zero Wasm or FR-03 regression."
     }
   ],
   "kpiCatalog": [

@@ -4,10 +4,10 @@
   "authorityId": "AUTH-SEMVER-CHANGE-KPI",
   "currentVersion": {
     "major": 2,
-    "minor": 10,
+    "minor": 11,
     "patch": 0
   },
-  "releaseEpoch": 14,
+  "releaseEpoch": 15,
   "history": [
     {
       "version": "0.1.0",
@@ -126,6 +126,13 @@
       "releaseEpoch": 14,
       "bumpKind": "minor",
       "summary": "M18: GitHub-free Sovereign Governance Prism Model (Governance.lex.tex, 838/838 fidelity, 10/10 measured), SovereignAuthorityLedger runtime (VE-70), 321 MIR-lifted functions, and <1800L Rust modularity",
+      "citedAuthority": "AUTH-SEMVER-CHANGE-KPI"
+    },
+    {
+      "version": "2.11.0",
+      "releaseEpoch": 15,
+      "bumpKind": "minor",
+      "summary": "M19: sub-1650L Rust & sub-1250L JS modularity, 351 MIR-lifted functions & in-Studio Sovereign Signing-Request Quorum UI",
       "citedAuthority": "AUTH-SEMVER-CHANGE-KPI"
     }
   ]
