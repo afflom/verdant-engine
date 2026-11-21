@@ -2,12 +2,12 @@
   "spec": "verdant/observer-roadmap-kpi-report/1",
   "managerId": "mgr-roadmap-strategy",
   "authorityId": "AUTH-SEMVER-CHANGE-KPI",
-  "currentVersion": "2.11.0",
-  "releaseEpoch": 15,
+  "currentVersion": "2.12.0",
+  "releaseEpoch": 16,
   "totalManagers": 13,
   "totalPrismFacetsOwned": 9,
   "totalPrismFacetsRequired": 9,
-  "declaredCapabilitiesCount": 82,
+  "declaredCapabilitiesCount": 83,
   "minorProgressPct": 100,
   "majorProgressPct": 100,
   "kpiPassedCount": 13,
@@ -138,7 +138,7 @@
       "name": "uorust MIR-Lifted Rust Functions Floor",
       "unit": "functions",
       "direction": "atLeast",
-      "actual": 351,
+      "actual": 387,
       "target": 200,
       "passed": true,
       "owningManager": "mgr-verification-observatory",
@@ -746,6 +746,38 @@
       "progressPct": 100,
       "completed": true,
       "ratchetRequirement": "Decompose all 4 remaining Rust files > 1650L (uhd.rs/uhd_workload.rs, network.rs/network_custody.rs, lifecycle.rs/lifecycle_automate.rs, observer.rs/observer_comms.rs -> max_handwritten_rust_file_lines <= 1650, >= 173 lifted modules) and all 3 shipped JS files > 1250L (engine-worker.mjs/engine-worker-extended.mjs, studio/studio-page.mjs/studio-boot.mjs, studio.mjs/studio-director-panel.mjs -> max_js_file_lines <= 1250), expand the shrink-only uorust MIR proof frontier to >= 345 lifted constructive functions (residue <= 1169, uncertified <= 1325), and surface zero-account Sovereign Signing Requests & Admin Quorum revocation inside Verdant Studio (site/studio/authority-panel.mjs) with zero Wasm or FR-03 regression."
+    },
+    {
+      "milestoneId": "M20",
+      "targetVersion": "2.12.0",
+      "tier": "minor",
+      "title": "CI-Parity Lifecycle Gate (conformance-engine), -327 KiB wasm32 GLB Image Split, ApprovalCertificate VCS/Release Custody & Net uorust Residue Reduction",
+      "stakeholders": [
+        "creator",
+        "developer",
+        "systems-engineer",
+        "operator",
+        "auditor",
+        "admin",
+        "contributor"
+      ],
+      "owningManagers": [
+        "mgr-change-release",
+        "mgr-security-trust",
+        "mgr-runtime-stage",
+        "mgr-verification-observatory",
+        "mgr-observer-executive"
+      ],
+      "requiredCapabilities": [
+        "VE-72"
+      ],
+      "closedCapabilities": [
+        "VE-72"
+      ],
+      "missingCapabilities": [],
+      "progressPct": 100,
+      "completed": true,
+      "ratchetRequirement": "Close the local-vs-CI release gate gap by running repo-conformance --test engine inside lifecycle-gate --full and dynamic ratchet-aware Observer refinement targets; drop image/moxcms/png/zune-jpeg from wasm32 via gltf-image-decode feature gating and browser-native createImageBitmap PBR decoding to cut site/verdant-uorc.wasm <= 3810000 B (sub-910 KiB gzipped) and max_release_capsule_bytes <= 1410000 B even while embedding the unified SovereignAuthorityLedger Wasm kernel; bind VerdantVcs commits and VerdantReleaseCapsule .holo sealing to verified SovereignAuthorityLedger ApprovalCertificates with unified Wasm/CLI/MCP authority_cert.rs JSON bridge; and shrink existing uorust residue strictly below 1169 (<= 1168) and uncertified strictly below 1325 (<= 1324) while expanding lifted constructive functions >= 380."
     }
   ],
   "observerParts": [
@@ -799,7 +831,7 @@
         "stratum-3-security-stride"
       ],
       "ownedObserverParts": [],
-      "ownedFilesCount": 10,
+      "ownedFilesCount": 11,
       "active": true
     },
     {
@@ -901,7 +933,7 @@
     "governingAuthority": "AUTH-SEMVER-CHANGE-KPI",
     "currentVersion": {
       "major": 2,
-      "minor": 11,
+      "minor": 12,
       "patch": 0
     },
     "recommendedBump": "major",
@@ -910,8 +942,8 @@
       "minor": 0,
       "patch": 0
     },
-    "currentEpoch": 15,
-    "nextEpoch": 16,
+    "currentEpoch": 16,
+    "nextEpoch": 17,
     "versionIncremented": true,
     "gates": {
       "ratchetApplied": true,
@@ -922,6 +954,6 @@
       "pullThroughVerified": true
     },
     "blockingReasons": [],
-    "rationale": "Ratchet applied & 5/5 Release Gates passed: advancing v2.11.0 -> v3.0.0 (Major, epoch 16) — Observer roadmap evaluation: minor=100% major=100% managers=13"
+    "rationale": "Ratchet applied & 5/5 Release Gates passed: advancing v2.12.0 -> v3.0.0 (Major, epoch 17) — Observer roadmap evaluation: minor=100% major=100% managers=13"
   }
 }

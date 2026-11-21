@@ -351,13 +351,58 @@ pub fn export_scene_to_glb(
     Ok(glb)
 }
 
+/// Parses a `.glb` / `.gltf` slice into its validated [`gltf::Document`] and raw binary buffers
+/// without pulling in CPU image codec crates (`image`/`moxcms`/`png`/`zune-jpeg`) on `wasm32`.
+#[cfg(not(feature = "gltf-image-decode"))]
+fn parse_glb_document_and_buffers(
+    bytes: &[u8],
+) -> Result<(gltf::Document, Vec<Vec<u8>>), AssetValidationError> {
+    let parsed =
+        gltf::Gltf::from_slice(bytes).map_err(|err| AssetValidationError::GltfOracleRejected {
+            oracle_message: err.to_string(),
+        })?;
+    let mut buffers = Vec::new();
+    let blob = parsed.blob.unwrap_or_default();
+    for buf in parsed.document.buffers() {
+        match buf.source() {
+            gltf::buffer::Source::Bin => {
+                if blob.len() < buf.length() {
+                    return Err(AssetValidationError::GltfOracleRejected {
+                        oracle_message: "GLB binary chunk shorter than declared buffer length"
+                            .to_string(),
+                    });
+                }
+                buffers.push(blob[..buf.length()].to_vec());
+            }
+            gltf::buffer::Source::Uri(_) => {
+                return Err(AssetValidationError::GltfOracleRejected {
+                    oracle_message: "external URI buffers are not supported in wasm32 GLB loader"
+                        .to_string(),
+                });
+            }
+        }
+    }
+    Ok((parsed.document, buffers))
+}
+
 /// Validates a `.gltf` or `.glb` byte slice using the authoritative `gltf` specification crate,
 /// including binary buffer bounds and accessor decoding.
 pub fn validate_glb_bytes(bytes: &[u8]) -> Result<VerifiedGltfSummary, AssetValidationError> {
-    let (document, buffers, _images) =
-        gltf::import_slice(bytes).map_err(|err| AssetValidationError::GltfOracleRejected {
-            oracle_message: err.to_string(),
-        })?;
+    #[cfg(feature = "gltf-image-decode")]
+    let (document, total_buffer_bytes) = {
+        let (doc, buffers, _images) =
+            gltf::import_slice(bytes).map_err(|err| AssetValidationError::GltfOracleRejected {
+                oracle_message: err.to_string(),
+            })?;
+        let total = buffers.iter().map(|b| b.len()).sum();
+        (doc, total)
+    };
+    #[cfg(not(feature = "gltf-image-decode"))]
+    let (document, total_buffer_bytes) = {
+        let (doc, buffers) = parse_glb_document_and_buffers(bytes)?;
+        let total = buffers.iter().map(Vec::len).sum();
+        (doc, total)
+    };
 
     for mesh in document.meshes() {
         for prim in mesh.primitives() {
@@ -373,7 +418,6 @@ pub fn validate_glb_bytes(bytes: &[u8]) -> Result<VerifiedGltfSummary, AssetVali
         }
     }
 
-    let total_buffer_bytes = buffers.iter().map(|b| b.len()).sum();
     Ok(VerifiedGltfSummary {
         node_count: document.nodes().count(),
         mesh_count: document.meshes().count(),
@@ -538,6 +582,7 @@ fn import_gltf_node_recursive(
 /// Imports an external Khronos `.glb` or `.gltf` container into a live [`ImportedGlbScene`]
 /// (`SceneWorld` hierarchy, `ProceduralMesh` geometry, `PbrMaterial` descriptors, `Skeleton` skins,
 /// and `SkeletalClip` keyframe animations).
+#[cfg(feature = "gltf-image-decode")]
 fn sample_gltf_base_color(img: &gltf::image::Data, u: f32, v: f32) -> [f32; DIM_HOMOGENEOUS] {
     if img.width == 0 || img.height == 0 || img.pixels.is_empty() {
         return [1.0, 1.0, 1.0, 1.0];
@@ -607,6 +652,7 @@ fn sample_gltf_base_color(img: &gltf::image::Data, u: f32, v: f32) -> [f32; DIM_
     }
 }
 
+#[cfg(feature = "gltf-image-decode")]
 fn decode_rgba_bounded(img: &gltf::image::Data, max_edge_px: u32) -> Option<DecodedRgbaTexture> {
     if img.width == 0 || img.height == 0 || img.pixels.is_empty() {
         return None;
@@ -703,14 +749,22 @@ pub fn import_glb_to_scene(bytes: &[u8]) -> Result<ImportedGlbScene, AssetValida
 
 /// Imports a Khronos glTF 2.0 binary (`.glb`) payload while clamping any extracted GPU albedo
 /// texture strictly to `max_tex_edge_px` so the host container's GPU memory envelope is never exceeded.
+#[cfg_attr(not(feature = "gltf-image-decode"), allow(unused_variables))]
 pub fn import_glb_to_scene_bounded(
     bytes: &[u8],
     max_tex_edge_px: u32,
 ) -> Result<ImportedGlbScene, AssetValidationError> {
-    let (document, buffers, images) =
-        gltf::import_slice(bytes).map_err(|err| AssetValidationError::GltfOracleRejected {
-            oracle_message: err.to_string(),
-        })?;
+    #[cfg(feature = "gltf-image-decode")]
+    let (document, buffers, images) = {
+        let (doc, bufs, imgs) =
+            gltf::import_slice(bytes).map_err(|err| AssetValidationError::GltfOracleRejected {
+                oracle_message: err.to_string(),
+            })?;
+        let raw_bufs: Vec<Vec<u8>> = bufs.into_iter().map(|b| b.0).collect();
+        (doc, raw_bufs, imgs)
+    };
+    #[cfg(not(feature = "gltf-image-decode"))]
+    let (document, buffers) = parse_glb_document_and_buffers(bytes)?;
 
     // Identify the most frequently referenced Khronos PBR `baseColorTexture` images and bind each
     // material's companion `metallicRoughnessTexture`, `normalTexture`, and `emissiveTexture` so
@@ -775,7 +829,9 @@ pub fn import_glb_to_scene_bounded(
     let mut atlas_tile_transforms: Vec<crate::uhd::AtlasUvTransform> = Vec::new();
     let mut atlas_tile_count = 0usize;
     let mut atlas_ordered_srcs: Vec<usize> = Vec::new();
+    #[cfg(feature = "gltf-image-decode")]
     let mut atlas_per_tile_cap = max_tex_edge_px;
+    #[cfg(feature = "gltf-image-decode")]
     let primary_albedo_texture = if ranked_tex.len() <= 1 {
         if let Some(idx) = primary_tex_src_idx {
             atlas_src_to_tile.insert(idx, 0);
@@ -835,7 +891,30 @@ pub fn import_glb_to_scene_bounded(
             None
         }
     };
+    #[cfg(not(feature = "gltf-image-decode"))]
+    let primary_albedo_texture: Option<DecodedRgbaTexture> = {
+        if let Some(idx) = primary_tex_src_idx {
+            atlas_src_to_tile.insert(idx, 0);
+            atlas_ordered_srcs.push(idx);
+            atlas_tile_transforms.push(crate::uhd::AtlasUvTransform {
+                u_offset: 0.0,
+                v_offset: 0.0,
+                u_scale: 1.0,
+                v_scale: 1.0,
+            });
+            atlas_tile_count = 1;
+        }
+        let _ = (
+            &companion_pbr,
+            &atlas_ordered_srcs,
+            mr_src_idx,
+            norm_src_idx,
+            emis_src_idx,
+        );
+        None
+    };
 
+    #[cfg(feature = "gltf-image-decode")]
     let pack_companion_channel_atlas = |channel_idx: usize, neutral_px: [u8; 1 + 1 + 1 + 1]| {
         let mut has_any = false;
         let mut decoded_ch: Vec<DecodedRgbaTexture> = Vec::with_capacity(atlas_ordered_srcs.len());
@@ -877,30 +956,40 @@ pub fn import_glb_to_scene_bounded(
         })
     };
 
-    let full_byte = ((1u32 << (1 + 1 + 1 + 1 + 1 + 1 + 1 + 1)) - 1) as u8;
-    let half_byte = (1u32 << (1 + 1 + 1 + 1 + 1 + 1 + 1)) as u8;
-    let low_byte = (1u32 << (1 + 1 + 1 + 1)) as u8;
-    let primary_mr_texture = if atlas_tile_count <= 1 {
-        mr_src_idx
-            .and_then(|idx| images.get(idx))
-            .and_then(|img| decode_rgba_bounded(img, max_tex_edge_px))
-    } else {
-        pack_companion_channel_atlas(0, [full_byte, half_byte, low_byte, full_byte])
+    #[cfg(feature = "gltf-image-decode")]
+    let (primary_mr_texture, primary_normal_texture, primary_emissive_texture) = {
+        let full_byte = ((1u32 << (1 + 1 + 1 + 1 + 1 + 1 + 1 + 1)) - 1) as u8;
+        let half_byte = (1u32 << (1 + 1 + 1 + 1 + 1 + 1 + 1)) as u8;
+        let low_byte = (1u32 << (1 + 1 + 1 + 1)) as u8;
+        let mr = if atlas_tile_count <= 1 {
+            mr_src_idx
+                .and_then(|idx| images.get(idx))
+                .and_then(|img| decode_rgba_bounded(img, max_tex_edge_px))
+        } else {
+            pack_companion_channel_atlas(0, [full_byte, half_byte, low_byte, full_byte])
+        };
+        let norm = if atlas_tile_count <= 1 {
+            norm_src_idx
+                .and_then(|idx| images.get(idx))
+                .and_then(|img| decode_rgba_bounded(img, max_tex_edge_px))
+        } else {
+            pack_companion_channel_atlas(1, [half_byte, half_byte, full_byte, full_byte])
+        };
+        let emis = if atlas_tile_count <= 1 {
+            emis_src_idx
+                .and_then(|idx| images.get(idx))
+                .and_then(|img| decode_rgba_bounded(img, max_tex_edge_px))
+        } else {
+            pack_companion_channel_atlas(1 + 1, [0, 0, 0, full_byte])
+        };
+        (mr, norm, emis)
     };
-    let primary_normal_texture = if atlas_tile_count <= 1 {
-        norm_src_idx
-            .and_then(|idx| images.get(idx))
-            .and_then(|img| decode_rgba_bounded(img, max_tex_edge_px))
-    } else {
-        pack_companion_channel_atlas(1, [half_byte, half_byte, full_byte, full_byte])
-    };
-    let primary_emissive_texture = if atlas_tile_count <= 1 {
-        emis_src_idx
-            .and_then(|idx| images.get(idx))
-            .and_then(|img| decode_rgba_bounded(img, max_tex_edge_px))
-    } else {
-        pack_companion_channel_atlas(1 + 1, [0, 0, 0, full_byte])
-    };
+    #[cfg(not(feature = "gltf-image-decode"))]
+    let (primary_mr_texture, primary_normal_texture, primary_emissive_texture): (
+        Option<DecodedRgbaTexture>,
+        Option<DecodedRgbaTexture>,
+        Option<DecodedRgbaTexture>,
+    ) = (None, None, None);
 
     let default_ior = (four_u32() as f32) / (three_u32() as f32);
     let mut materials = Vec::new();
@@ -979,7 +1068,7 @@ pub fn import_glb_to_scene_bounded(
             if prim_atlas_xform.is_some() {
                 any_prim_in_atlas = true;
             }
-            let reader = prim.reader(|buffer| buffers.get(buffer.index()).map(|d| d.0.as_slice()));
+            let reader = prim.reader(|buffer| buffers.get(buffer.index()).map(Vec::as_slice));
             let prim_pos: Vec<[f32; DIM_SPATIAL]> = reader
                 .read_positions()
                 .ok_or_else(|| AssetValidationError::GltfOracleRejected {
@@ -1039,6 +1128,7 @@ pub fn import_glb_to_scene_bounded(
             } else {
                 [1.0, 1.0, 1.0, 1.0]
             };
+            #[cfg(feature = "gltf-image-decode")]
             let base_tex_img = prim
                 .material()
                 .pbr_metallic_roughness()
@@ -1060,10 +1150,16 @@ pub fn import_glb_to_scene_bounded(
             match reader.read_colors(0) {
                 Some(col) => {
                     for (local_i, c) in col.into_rgba_f32().enumerate() {
+                        #[cfg(feature = "gltf-image-decode")]
                         let tex = base_tex_img.map_or([1.0, 1.0, 1.0, 1.0], |img| {
                             let uv = uvs.get(uv_start + local_i).copied().unwrap_or([0.0, 0.0]);
                             sample_gltf_base_color(img, uv[0], uv[1])
                         });
+                        #[cfg(not(feature = "gltf-image-decode"))]
+                        let tex = {
+                            let _ = local_i;
+                            [1.0_f32, 1.0, 1.0, 1.0]
+                        };
                         colors.push([
                             (c[0] * mat_tint[0] * tex[0]).clamp(0.0, 1.0),
                             (c[1] * mat_tint[1] * tex[1]).clamp(0.0, 1.0),
@@ -1076,6 +1172,7 @@ pub fn import_glb_to_scene_bounded(
                     }
                 }
                 None => {
+                    #[cfg(feature = "gltf-image-decode")]
                     if let Some(img) = base_tex_img {
                         for local_i in 0..v_count {
                             let uv = uvs.get(uv_start + local_i).copied().unwrap_or([0.0, 0.0]);
@@ -1090,6 +1187,8 @@ pub fn import_glb_to_scene_bounded(
                     } else {
                         colors.resize(positions.len(), mat_tint);
                     }
+                    #[cfg(not(feature = "gltf-image-decode"))]
+                    colors.resize(positions.len(), mat_tint);
                 }
             }
 
@@ -1224,8 +1323,7 @@ pub fn import_glb_to_scene_bounded(
                 let Some(&joint_idx) = node_to_joint.get(&target_node) else {
                     continue;
                 };
-                let reader =
-                    ch.reader(|buffer| buffers.get(buffer.index()).map(|d| d.0.as_slice()));
+                let reader = ch.reader(|buffer| buffers.get(buffer.index()).map(Vec::as_slice));
                 let Some(inputs) = reader.read_inputs() else {
                     continue;
                 };

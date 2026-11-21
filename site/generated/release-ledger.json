@@ -4,10 +4,10 @@
   "authorityId": "AUTH-SEMVER-CHANGE-KPI",
   "currentVersion": {
     "major": 2,
-    "minor": 11,
+    "minor": 12,
     "patch": 0
   },
-  "releaseEpoch": 15,
+  "releaseEpoch": 16,
   "history": [
     {
       "version": "0.1.0",
@@ -133,6 +133,13 @@
       "releaseEpoch": 15,
       "bumpKind": "minor",
       "summary": "M19: sub-1650L Rust & sub-1250L JS modularity, 351 MIR-lifted functions & in-Studio Sovereign Signing-Request Quorum UI",
+      "citedAuthority": "AUTH-SEMVER-CHANGE-KPI"
+    },
+    {
+      "version": "2.12.0",
+      "releaseEpoch": 16,
+      "bumpKind": "minor",
+      "summary": "M20: CI-parity lifecycle-gate (conformance-engine), -117 KiB wasm32 gltf-image split with browser createImageBitmap PBR decoding, ApprovalCertificate VCS/release custody & unified Wasm/CLI/MCP authority bridge, and net uorust residue reduction (387 lifted / 1167 residue / 1324 uncertified)",
       "citedAuthority": "AUTH-SEMVER-CHANGE-KPI"
     }
   ]

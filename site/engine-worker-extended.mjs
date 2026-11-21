@@ -317,13 +317,15 @@ export async function handleExtendedWorkerMessage(msg, ctx) {
     return true;
   }
 
-  if (msg.kind === "vcs-commit-pack-holo" || msg.kind === "paged-workload-step") {
+  if (msg.kind === "vcs-commit-pack-holo" || msg.kind === "paged-workload-step" || msg.kind === "authority-exec") {
     const uorcWasm = await ensureUorcSceneHost();
     stageIoBytes(uorcWasm, new TextEncoder().encode(JSON.stringify(msg.request || {})));
     const fn =
       msg.kind === "vcs-commit-pack-holo"
         ? uorcWasm.verdant_wasm_vcs_commit_and_pack_holo_io
-        : uorcWasm.verdant_wasm_paged_workload_step_io;
+        : msg.kind === "authority-exec"
+          ? uorcWasm.verdant_wasm_authority_exec_io
+          : uorcWasm.verdant_wasm_paged_workload_step_io;
     const len = typeof fn === "function" ? fn() >>> 0 : 0;
     const result = len ? JSON.parse(new TextDecoder().decode(readAuxBytes(uorcWasm))) : { ok: false, error: "export unavailable" };
     postMessage({ kind: `${msg.kind}-done`, id: msg.id, ok: Boolean(result?.ok), result });
@@ -352,4 +354,81 @@ export async function handleExtendedWorkerMessage(msg, ctx) {
   }
 
   return false;
+}
+
+// Native browser GLB PBR texture decoder (`createImageBitmap` + `OffscreenCanvas`), avoiding
+// shipping `image`/`moxcms`/`png`/`zune-jpeg` inside `verdant-uorc.wasm` on `wasm32`.
+export async function decodeGlbPbrTexturesInBrowser(rawGlbBytes, maxEdgePx, renderer) {
+  const out = { albedo: false, metallicRoughness: false, normal: false, emissive: false };
+  if (!renderer?.setTex || typeof createImageBitmap !== "function" || typeof OffscreenCanvas !== "function") {
+    return out;
+  }
+  if (!(rawGlbBytes instanceof Uint8Array) || rawGlbBytes.byteLength < 20) return out;
+  const dv = new DataView(rawGlbBytes.buffer, rawGlbBytes.byteOffset, rawGlbBytes.byteLength);
+  if (dv.getUint32(0, true) !== 0x46546c67) return out;
+  const jsonLen = dv.getUint32(12, true);
+  if (dv.getUint32(16, true) !== 0x4e4f534a || 20 + jsonLen > rawGlbBytes.byteLength) return out;
+  let gltfJson;
+  try {
+    gltfJson = JSON.parse(new TextDecoder().decode(rawGlbBytes.subarray(20, 20 + jsonLen)));
+  } catch {
+    return out;
+  }
+  const binHeaderOff = 20 + jsonLen;
+  if (binHeaderOff + 8 > rawGlbBytes.byteLength || dv.getUint32(binHeaderOff + 4, true) !== 0x004e4942) {
+    return out;
+  }
+  const binLen = dv.getUint32(binHeaderOff, true);
+  const binOff = binHeaderOff + 8;
+  const binChunk = rawGlbBytes.subarray(binOff, Math.min(rawGlbBytes.byteLength, binOff + binLen));
+  const textures = Array.isArray(gltfJson.textures) ? gltfJson.textures : [];
+  const images = Array.isArray(gltfJson.images) ? gltfJson.images : [];
+  const bufferViews = Array.isArray(gltfJson.bufferViews) ? gltfJson.bufferViews : [];
+  const materials = Array.isArray(gltfJson.materials) ? gltfJson.materials : [];
+  const imgIndexForTex = (texInfo) => {
+    const ti = texInfo?.index;
+    return typeof ti === "number" && typeof textures[ti]?.source === "number" ? textures[ti].source : null;
+  };
+  let albedoIdx = null, mrIdx = null, normIdx = null, emisIdx = null;
+  for (const mat of materials) {
+    if (albedoIdx == null) albedoIdx = imgIndexForTex(mat?.pbrMetallicRoughness?.baseColorTexture);
+    if (mrIdx == null) mrIdx = imgIndexForTex(mat?.pbrMetallicRoughness?.metallicRoughnessTexture);
+    if (normIdx == null) normIdx = imgIndexForTex(mat?.normalTexture);
+    if (emisIdx == null) emisIdx = imgIndexForTex(mat?.emissiveTexture);
+  }
+  const cap = Math.max(64, Math.min(2048, Number(maxEdgePx) || 1024));
+  const ep = ((Date.now() & 0x7fffffff) || 1) >>> 0;
+  const decodeOne = async (imgIdx, slot, key) => {
+    if (imgIdx == null || !images[imgIdx]) return;
+    const bvIdx = images[imgIdx].bufferView;
+    if (typeof bvIdx !== "number" || !bufferViews[bvIdx]) return;
+    const bv = bufferViews[bvIdx];
+    const start = bv.byteOffset || 0;
+    const end = start + (bv.byteLength || 0);
+    if (end <= start || end > binChunk.byteLength) return;
+    try {
+      const blob = new Blob([binChunk.subarray(start, end)], { type: images[imgIdx].mimeType || "image/png" });
+      const bmp = await createImageBitmap(blob);
+      const maxDim = Math.max(bmp.width, bmp.height, 1);
+      const scale = maxDim > cap ? cap / maxDim : 1;
+      const w = Math.max(1, Math.round(bmp.width * scale));
+      const h = Math.max(1, Math.round(bmp.height * scale));
+      const oc = new OffscreenCanvas(w, h);
+      const ctx2d = oc.getContext("2d");
+      if (ctx2d) {
+        ctx2d.drawImage(bmp, 0, 0, w, h);
+        const rgba = new Uint8Array(ctx2d.getImageData(0, 0, w, h).data.buffer);
+        renderer.setTex(slot, rgba, w, h, ep);
+        out[key] = true;
+      }
+      bmp.close?.();
+    } catch {}
+  };
+  await Promise.all([
+    decodeOne(albedoIdx, 1, "albedo"),
+    decodeOne(mrIdx, 3, "metallicRoughness"),
+    decodeOne(normIdx, 4, "normal"),
+    decodeOne(emisIdx, 5, "emissive"),
+  ]);
+  return out;
 }

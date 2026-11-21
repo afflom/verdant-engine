@@ -2936,3 +2936,265 @@ fn engine_ve_71() {
         kpi_rep.kpis
     );
 }
+
+#[test]
+fn engine_ve_72() {
+    use std::collections::BTreeMap;
+    use std::path::Path;
+    use verdant_core::authority::{
+        sovereign_authority_exec_json, AuthorityCommand, ReviewVerdictKind, SigningActionKind,
+        SovereignAuthorityLedger,
+    };
+    use verdant_core::digest::sha256_hex;
+    use verdant_core::operator::VerdantOperatorChannel;
+    use verdant_core::vcs::{VerdantReleaseCapsule, VerdantVcs};
+    use verdant_tensor::scalars::{
+        approval_certificate_quorum_met, glb_bin_chunk_bounds_valid, lifecycle_ci_parity_met,
+        release_capsule_authority_valid, vcs_authority_commit_admissible,
+        wasm_binary_under_ceiling,
+    };
+
+    let repo_root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+
+    // 1. Pillar #1: Local-vs-CI release gate parity (`conformance-engine` inside `lifecycle.rs`):
+    let lifecycle_src =
+        std::fs::read_to_string(repo_root.join("crates/verdant-core/src/lifecycle.rs"))
+            .expect("read lifecycle.rs");
+    assert!(lifecycle_src.contains("conformance-engine"));
+    assert!(lifecycle_src.contains("\"engine\""));
+
+    // 2. Pillar #2: `gltf-image-decode` gated off on wasm32 + browser-native `createImageBitmap`
+    //    GLB PBR texture decoding + `authority-exec` bridge inside `site/engine-worker-extended.mjs`:
+    let core_cargo = std::fs::read_to_string(repo_root.join("crates/verdant-core/Cargo.toml"))
+        .expect("read verdant-core Cargo.toml");
+    assert!(core_cargo.contains("gltf-image-decode"));
+    let worker_ext = std::fs::read_to_string(repo_root.join("site/engine-worker-extended.mjs"))
+        .expect("read engine-worker-extended.mjs");
+    assert!(worker_ext.contains("decodeGlbPbrTexturesInBrowser"));
+    assert!(worker_ext.contains("createImageBitmap"));
+    assert!(worker_ext.contains("authority-exec"));
+    assert!(worker_ext.contains("verdant_wasm_authority_exec_io"));
+
+    // 3. Pillar #3: Sovereign Governance ApprovalCertificate binds VerdantVcs commits & .holo capsules
+    //    and unifies CLI/MCP/Studio via `sovereign_authority_exec_json` + `authority-panel.mjs`:
+    let mut ledger =
+        SovereignAuthorityLedger::init_genesis("verdant-engine", "prism:owner-alice", "sec-alice")
+            .expect("genesis");
+    ledger
+        .execute(AuthorityCommand::AddAdmin {
+            candidate_prism_id: "prism:admin-bob".to_string(),
+            candidate_secret: "sec-bob".to_string(),
+            approving_admins: vec![("prism:owner-alice".to_string(), "sec-alice".to_string())],
+            next_quorum_threshold_m: 2,
+        })
+        .expect("add bob");
+    let mut files = BTreeMap::new();
+    files.insert("index.html".to_string(), b"<!doctype html>ve72".to_vec());
+    let mut entries = BTreeMap::new();
+    entries.insert("index.html".to_string(), sha256_hex(b"<!doctype html>ve72"));
+    let tree_root = VerdantVcs::compute_tree_root(&entries);
+
+    let sub = ledger
+        .execute(AuthorityCommand::SubmitSigningRequest {
+            requester_prism_id: "prism:dev-ezra".to_string(),
+            requester_secret: "sec-ezra".to_string(),
+            action: SigningActionKind::MergeCommit,
+            target_ref: "refs/verdant/heads/main".to_string(),
+            target_kappa: tree_root,
+            expiry_epoch: 8,
+        })
+        .expect("submit commit req");
+    let req_k = sub.subject_kappa;
+    for (aid, sec) in [
+        ("prism:owner-alice", "sec-alice"),
+        ("prism:admin-bob", "sec-bob"),
+    ] {
+        ledger
+            .execute(AuthorityCommand::ReviewSigningRequest {
+                request_kappa: req_k.clone(),
+                admin_prism_id: aid.to_string(),
+                admin_secret: sec.to_string(),
+                verdict: ReviewVerdictKind::Approve,
+                rationale: "VE-72 quorum".to_string(),
+            })
+            .expect("approve");
+    }
+    ledger
+        .execute(AuthorityCommand::FinalizeSigningRequest {
+            request_kappa: req_k.clone(),
+        })
+        .expect("finalize");
+    let commit_cert = ledger
+        .execute(AuthorityCommand::IssueApprovalCertificate {
+            request_kappa: req_k,
+        })
+        .expect("issue commit cert")
+        .certificate
+        .expect("cert");
+
+    let mut vcs = VerdantVcs::new();
+    let commit = vcs
+        .commit_with_authority(
+            "refs/verdant/heads/main",
+            "prism:dev-ezra",
+            b"sec-ezra",
+            "mgr-change-release",
+            "AUTH-STITCH-SELF-HOSTING",
+            "VE-72 governed commit",
+            &files,
+            &mut ledger,
+            commit_cert.clone(),
+        )
+        .expect("commit with authority");
+    assert_eq!(commit.approval_certificate, Some(commit_cert.clone()));
+
+    let mut tampered = commit_cert;
+    tampered.certificate_kappa = "0000000000000000".to_string();
+    assert!(vcs
+        .commit_with_authority(
+            "refs/verdant/heads/main",
+            "prism:dev-ezra",
+            b"sec-ezra",
+            "mgr-change-release",
+            "AUTH-STITCH-SELF-HOSTING",
+            "tampered",
+            &files,
+            &mut ledger,
+            tampered.clone(),
+        )
+        .is_err());
+
+    let rel_sub = ledger
+        .execute(AuthorityCommand::SubmitSigningRequest {
+            requester_prism_id: "prism:dev-ezra".to_string(),
+            requester_secret: "sec-ezra".to_string(),
+            action: SigningActionKind::CutRelease,
+            target_ref: "refs/verdant/releases/v2.12.0".to_string(),
+            target_kappa: commit.commit_kappa.clone(),
+            expiry_epoch: 8,
+        })
+        .expect("submit release");
+    let rel_k = rel_sub.subject_kappa;
+    for (aid, sec) in [
+        ("prism:owner-alice", "sec-alice"),
+        ("prism:admin-bob", "sec-bob"),
+    ] {
+        ledger
+            .execute(AuthorityCommand::ReviewSigningRequest {
+                request_kappa: rel_k.clone(),
+                admin_prism_id: aid.to_string(),
+                admin_secret: sec.to_string(),
+                verdict: ReviewVerdictKind::Approve,
+                rationale: "VE-72 release".to_string(),
+            })
+            .expect("approve release");
+    }
+    ledger
+        .execute(AuthorityCommand::FinalizeSigningRequest {
+            request_kappa: rel_k.clone(),
+        })
+        .expect("finalize release");
+    let rel_cert = ledger
+        .execute(AuthorityCommand::IssueApprovalCertificate {
+            request_kappa: rel_k,
+        })
+        .expect("issue release cert")
+        .certificate
+        .expect("rel cert");
+
+    let capsule = VerdantReleaseCapsule::pack_from_files_with_authority(
+        "2.12.0",
+        16,
+        &commit.commit_kappa,
+        "seal-sha",
+        "index.html",
+        &files,
+        &mut ledger,
+        rel_cert.clone(),
+    )
+    .expect("pack governed capsule");
+    let unpacked = VerdantReleaseCapsule::verify_and_unpack(&capsule.holo_bytes).expect("unpack");
+    assert_eq!(unpacked.manifest.approval_certificate, Some(rel_cert));
+    assert!(VerdantReleaseCapsule::pack_from_files_with_authority(
+        "2.12.0",
+        16,
+        &commit.commit_kappa,
+        "seal-sha",
+        "index.html",
+        &files,
+        &mut ledger,
+        tampered,
+    )
+    .is_err());
+
+    let bridge = sovereign_authority_exec_json(
+        &serde_json::json!({
+            "init": {
+                "repoName": "verdant-engine",
+                "ownerPrismId": "prism:owner-bridge",
+                "ownerSecret": "sec-bridge"
+            },
+            "command": { "cmd": "verifyChain" }
+        })
+        .to_string(),
+    );
+    assert!(bridge.contains("\"ok\":true"));
+
+    let auth_panel = std::fs::read_to_string(repo_root.join("site/studio/authority-panel.mjs"))
+        .expect("read authority-panel.mjs");
+    assert!(auth_panel.contains("execWasmAuthority"));
+    assert!(auth_panel.contains("exportLedgerJson"));
+
+    // 4. Pillar #4: MIR-lifted M20 scalars + net uorust residue reduction + Wasm/capsule diet + M1..M20:
+    assert!(approval_certificate_quorum_met(2, 2));
+    assert!(vcs_authority_commit_admissible(true, true, true, true));
+    assert!(release_capsule_authority_valid(true, true, true, true));
+    assert!(glb_bin_chunk_bounds_valid(1024, 64));
+    assert!(wasm_binary_under_ceiling(3_592_861, 3_650_000));
+    assert!(lifecycle_ci_parity_met(true, true, true, true));
+
+    let rep = prism_fidelity::ratchet::audit_parametric_ratchet(
+        &repo_root,
+        Path::new("model/parametric-ratchet.toml"),
+    )
+    .expect("live repo must pass all 4 ratchet layers");
+    assert!(
+        rep.observed_wasm_uorc_bytes <= 3_810_000,
+        "M20 must cut site/verdant-uorc.wasm <= 3,810,000 B (sub-910 KiB gzipped), got {}",
+        rep.observed_wasm_uorc_bytes
+    );
+    assert!(
+        rep.observed_release_capsule_bytes <= 1_410_000,
+        "M20 must tighten release capsule <= 1,410,000 B, got {}",
+        rep.observed_release_capsule_bytes
+    );
+    assert!(
+        rep.frontier_lifted_functions >= 380,
+        "M20 must lift >= 380 constructive Rust functions, got {}",
+        rep.frontier_lifted_functions
+    );
+    assert!(
+        rep.frontier_residue_functions <= 1_168,
+        "M20 must shrink residue strictly below 1169 (<= 1168), got {}",
+        rep.frontier_residue_functions
+    );
+    assert!(
+        rep.frontier_uncertified_functions <= 1_324,
+        "M20 must shrink uncertified strictly below 1325 (<= 1324), got {}",
+        rep.frontier_uncertified_functions
+    );
+
+    let ch = VerdantOperatorChannel::new("sunspire-regatta").expect("operator channel");
+    let kpi_rep = ch
+        .evaluate_observer_roadmap_kpis(&repo_root, true, true)
+        .expect("observer roadmap & KPI report");
+    assert!(
+        kpi_rep.milestones.len() >= 20,
+        "expected Milestones M1..M20"
+    );
+    assert_eq!(
+        kpi_rep.kpi_passed_count, kpi_rep.kpi_total_count,
+        "all Observer KPIs must pass (kpis={:?})",
+        kpi_rep.kpis
+    );
+}

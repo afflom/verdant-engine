@@ -344,6 +344,44 @@ pub enum AuthorityCommand {
     },
     /// Verify the full monotonic epoch chain, `prev_epoch_kappa` links, and quorum invariants.
     VerifyChain,
+    /// Issue a self-verifying [`ApprovalCertificate`] for a finalized signing request (`VE-72`).
+    IssueApprovalCertificate {
+        /// Finalized signing request `kappa`.
+        request_kappa: String,
+    },
+    /// Cryptographically verify an [`ApprovalCertificate`] against target `kappa`, action kind,
+    /// monotonic authority chain, active quorum threshold, and compromise quarantine floor (`VE-72`).
+    VerifyApprovalCertificate {
+        /// Candidate approval certificate to verify.
+        certificate: ApprovalCertificate,
+        /// Expected `VerdantVcs` commit or `.holo` capsule target `kappa`.
+        expected_target_kappa: String,
+        /// Expected privileged signing action kind.
+        expected_action: SigningActionKind,
+    },
+}
+
+/// Content-addressed cryptographic approval certificate binding a finalized signing request
+/// (`SovereignAuthorityLedger`) directly into `VerdantVcs` commits and `.holo` release capsules (`VE-72`).
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ApprovalCertificate {
+    /// Fixed schema identifier (`verdant/approval-certificate/1`).
+    pub spec: String,
+    /// Finalized signing request `kappa`.
+    pub request_kappa: String,
+    /// Target `VerdantVcs` commit/tree or `.holo` release `kappa` authorized by this certificate.
+    pub target_kappa: String,
+    /// Authorized privileged action kind (`MergeCommit`, `CutRelease`, etc.).
+    pub action: SigningActionKind,
+    /// Authority epoch at which the signing request was finalized.
+    pub finalized_epoch: u64,
+    /// Active M-of-N quorum threshold satisfied at `finalized_epoch`.
+    pub quorum_threshold_m: u64,
+    /// Sorted list of distinct active Sovereign Admin `Prism ID`s that signed approval.
+    pub approver_prism_ids: Vec<String>,
+    /// Deterministic SHA-256 hex commitment over all certificate fields.
+    pub certificate_kappa: String,
 }
 
 /// Structured outcome returned by [`SovereignAuthorityLedger::execute`].
@@ -368,6 +406,9 @@ pub struct AuthorityOutcome {
     pub revoked_grants: u64,
     /// Concise audit summary.
     pub summary: String,
+    /// Optional issued or verified [`ApprovalCertificate`] when executing certificate commands.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub certificate: Option<ApprovalCertificate>,
 }
 
 /// Append-only sovereign post-GitHub authority ledger and signing-request gate.
@@ -553,6 +594,7 @@ impl SovereignAuthorityLedger {
                     summary: format!(
                         "Submitted signing request by {requester_prism_id} for {target_ref}"
                     ),
+                    certificate: None,
                 })
             }
 
@@ -674,6 +716,7 @@ impl SovereignAuthorityLedger {
                     summary: format!(
                         "Admin {admin_prism_id} recorded {verdict:?}; state={state:?}"
                     ),
+                    certificate: None,
                 })
             }
 
@@ -738,6 +781,7 @@ impl SovereignAuthorityLedger {
                     invalidated_requests: 0,
                     revoked_grants: 0,
                     summary: format!("Finalized signing request at epoch {}", self.current_epoch),
+                    certificate: None,
                 })
             }
 
@@ -854,6 +898,7 @@ impl SovereignAuthorityLedger {
                     summary: format!(
                         "Admitted admin {candidate_prism_id} at epoch {next_epoch} (M={next_quorum_threshold_m}/N={next_n})"
                     ),
+                    certificate: None,
                 })
             }
 
@@ -1044,6 +1089,7 @@ impl SovereignAuthorityLedger {
                     summary: format!(
                         "Admin {target_admin_prism_id} departed ({reason:?}) at epoch {next_epoch}; invalidated {invalidated_requests} pending requests and {revoked_grants} standing grants"
                     ),
+                    certificate: None,
                 })
             }
 
@@ -1114,6 +1160,7 @@ impl SovereignAuthorityLedger {
                     invalidated_requests: 0,
                     revoked_grants: 0,
                     summary: format!("Granted standing scope `{scope}` to {grantee_prism_id}"),
+                    certificate: None,
                 })
             }
 
@@ -1181,6 +1228,7 @@ impl SovereignAuthorityLedger {
                     invalidated_requests: 0,
                     revoked_grants: 0,
                     summary: format!("Recorded GitHub-free PROV-O work item `{title}`"),
+                    certificate: None,
                 })
             }
 
@@ -1240,6 +1288,7 @@ impl SovereignAuthorityLedger {
                         valid_hist_signers.len(),
                         epoch_rec.quorum_threshold_m
                     ),
+                    certificate: None,
                 })
             }
 
@@ -1303,202 +1352,151 @@ impl SovereignAuthorityLedger {
                         self.quorum_threshold_m,
                         active_n
                     ),
+                    certificate: None,
+                })
+            }
+
+            AuthorityCommand::IssueApprovalCertificate { request_kappa } => {
+                let req = self.requests.get(&request_kappa).ok_or_else(|| {
+                    StitchCustodyError::InvalidJournalSignature {
+                        detail: format!("unknown signing request `{request_kappa}`"),
+                    }
+                })?;
+                if req.state != SigningRequestState::Finalized {
+                    return Err(StitchCustodyError::InvalidJournalSignature {
+                        detail: format!(
+                            "cannot issue ApprovalCertificate for non-finalized request `{request_kappa}` ({:?})",
+                            req.state
+                        ),
+                    });
+                }
+                let finalized_epoch = req.finalized_epoch.unwrap_or(self.current_epoch);
+                let mut approvers: Vec<String> = req
+                    .reviews
+                    .iter()
+                    .filter(|r| r.verdict == ReviewVerdictKind::Approve)
+                    .map(|r| r.admin_prism_id.clone())
+                    .collect();
+                approvers.sort();
+                approvers.dedup();
+                let ep_m = self
+                    .epochs
+                    .iter()
+                    .find(|e| e.epoch == finalized_epoch)
+                    .map_or(self.quorum_threshold_m, |e| e.quorum_threshold_m);
+                if !verdant_tensor::scalars::approval_certificate_quorum_met(
+                    approvers.len() as u64,
+                    ep_m,
+                ) {
+                    return Err(StitchCustodyError::InvalidJournalSignature {
+                        detail: "finalized signing request lacks active quorum approvals"
+                            .to_string(),
+                    });
+                }
+                let cert_preimage = format!(
+                    "req={}|target={}|act={:?}|ep={finalized_epoch}|m={ep_m}|approvers={}",
+                    req.request_kappa,
+                    req.target_kappa,
+                    req.action,
+                    approvers.join(",")
+                );
+                let certificate_kappa = sha256_hex_tagged(
+                    "verdant/authority/cert/1:",
+                    &req.request_kappa,
+                    cert_preimage.as_bytes(),
+                );
+                let cert = ApprovalCertificate {
+                    spec: "verdant/approval-certificate/1".to_string(),
+                    request_kappa: req.request_kappa.clone(),
+                    target_kappa: req.target_kappa.clone(),
+                    action: req.action,
+                    finalized_epoch,
+                    quorum_threshold_m: ep_m,
+                    approver_prism_ids: approvers,
+                    certificate_kappa: certificate_kappa.clone(),
+                };
+                Ok(AuthorityOutcome {
+                    spec: "verdant/sovereign-authority-outcome/1".to_string(),
+                    current_epoch: self.current_epoch,
+                    boundary_key_epoch: self.boundary_key_epoch,
+                    active_admin_count: active_n,
+                    quorum_threshold_m: self.quorum_threshold_m,
+                    subject_kappa: certificate_kappa,
+                    invalidated_requests: 0,
+                    revoked_grants: 0,
+                    summary: format!(
+                        "Issued ApprovalCertificate for {:?} target {} at epoch {finalized_epoch}",
+                        cert.action, cert.target_kappa
+                    ),
+                    certificate: Some(cert),
+                })
+            }
+
+            AuthorityCommand::VerifyApprovalCertificate {
+                certificate,
+                expected_target_kappa,
+                expected_action,
+            } => {
+                if certificate.spec != "verdant/approval-certificate/1"
+                    || certificate.target_kappa != expected_target_kappa
+                    || certificate.action != expected_action
+                    || !verdant_tensor::scalars::approval_certificate_epoch_valid(
+                        certificate.finalized_epoch,
+                        self.current_epoch,
+                    )
+                {
+                    return Err(StitchCustodyError::InvalidJournalSignature {
+                        detail: "ApprovalCertificate spec, target, action, or epoch mismatch"
+                            .to_string(),
+                    });
+                }
+                let mut sorted = certificate.approver_prism_ids.clone();
+                sorted.sort();
+                sorted.dedup();
+                let cert_preimage = format!(
+                    "req={}|target={}|act={:?}|ep={}|m={}|approvers={}",
+                    certificate.request_kappa,
+                    certificate.target_kappa,
+                    certificate.action,
+                    certificate.finalized_epoch,
+                    certificate.quorum_threshold_m,
+                    sorted.join(",")
+                );
+                let expected_cert_kappa = sha256_hex_tagged(
+                    "verdant/authority/cert/1:",
+                    &certificate.request_kappa,
+                    cert_preimage.as_bytes(),
+                );
+                if expected_cert_kappa != certificate.certificate_kappa {
+                    return Err(StitchCustodyError::PayloadDigestMismatch {
+                        detail: "ApprovalCertificate cryptographic commitment mismatch".to_string(),
+                    });
+                }
+                let _ = self.execute(AuthorityCommand::VerifyChain)?;
+                let _ = self.execute(AuthorityCommand::VerifyHistoricalCommit {
+                    finalized_epoch: certificate.finalized_epoch,
+                    signer_prism_ids: sorted,
+                })?;
+                Ok(AuthorityOutcome {
+                    spec: "verdant/sovereign-authority-outcome/1".to_string(),
+                    current_epoch: self.current_epoch,
+                    boundary_key_epoch: self.boundary_key_epoch,
+                    active_admin_count: active_n,
+                    quorum_threshold_m: self.quorum_threshold_m,
+                    subject_kappa: certificate.certificate_kappa.clone(),
+                    invalidated_requests: 0,
+                    revoked_grants: 0,
+                    summary: format!(
+                        "Verified ApprovalCertificate {} for {:?} target {}",
+                        certificate.certificate_kappa, expected_action, expected_target_kappa
+                    ),
+                    certificate: Some(certificate),
                 })
             }
         }
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn sovereign_quorum_signing_requests_departure_revocation_and_quarantine() {
-        // 1. Genesis owner anchors epoch 1 detached from GitHub:
-        assert!(SovereignAuthorityLedger::init_genesis("verdant", "github:alice", "sec").is_err());
-        let mut ledger =
-            SovereignAuthorityLedger::init_genesis("verdant-engine", "prism:owner-alice", "sec-a")
-                .expect("genesis");
-        assert_eq!(ledger.current_epoch, 1);
-        assert_eq!(ledger.quorum_threshold_m, 1);
-
-        // Anti-lockout refuses last-admin departure:
-        assert!(ledger
-            .execute(AuthorityCommand::DepartOrRevokeAdmin {
-                target_admin_prism_id: "prism:owner-alice".to_string(),
-                reason: DepartureReason::VoluntaryResignation,
-                compromise_floor_epoch: None,
-                approving_admins: vec![("prism:owner-alice".to_string(), "sec-a".to_string())],
-                next_quorum_threshold_m: 1,
-            })
-            .is_err());
-
-        // 2. Admit Bob (2-of-2) and Carol (2-of-3); single-admin threshold M=1 refused once N>=2:
-        assert!(ledger
-            .execute(AuthorityCommand::AddAdmin {
-                candidate_prism_id: "prism:admin-bob".to_string(),
-                candidate_secret: "sec-b".to_string(),
-                approving_admins: vec![("prism:owner-alice".to_string(), "sec-a".to_string())],
-                next_quorum_threshold_m: 1,
-            })
-            .is_err());
-        ledger
-            .execute(AuthorityCommand::AddAdmin {
-                candidate_prism_id: "prism:admin-bob".to_string(),
-                candidate_secret: "sec-b".to_string(),
-                approving_admins: vec![("prism:owner-alice".to_string(), "sec-a".to_string())],
-                next_quorum_threshold_m: 2,
-            })
-            .expect("add bob 2-of-2");
-        ledger
-            .execute(AuthorityCommand::AddAdmin {
-                candidate_prism_id: "prism:admin-carol".to_string(),
-                candidate_secret: "sec-c".to_string(),
-                approving_admins: vec![
-                    ("prism:owner-alice".to_string(), "sec-a".to_string()),
-                    ("prism:admin-bob".to_string(), "sec-b".to_string()),
-                ],
-                next_quorum_threshold_m: 2,
-            })
-            .expect("add carol 2-of-3");
-        assert_eq!(ledger.current_epoch, 3);
-
-        // 3. Contributor submits signing request; separation of duties + 2-of-3 review:
-        let sub = ledger
-            .execute(AuthorityCommand::SubmitSigningRequest {
-                requester_prism_id: "prism:dev-ezra".to_string(),
-                requester_secret: "sec-e".to_string(),
-                action: SigningActionKind::MergeCommit,
-                target_ref: "refs/heads/main".to_string(),
-                target_kappa: "abc123commit".to_string(),
-                expiry_epoch: 6,
-            })
-            .expect("submit");
-        let req_k = sub.subject_kappa.clone();
-
-        // Bob approves (1 of 2 — cannot finalize yet):
-        ledger
-            .execute(AuthorityCommand::ReviewSigningRequest {
-                request_kappa: req_k.clone(),
-                admin_prism_id: "prism:admin-bob".to_string(),
-                admin_secret: "sec-b".to_string(),
-                verdict: ReviewVerdictKind::Approve,
-                rationale: "LGTM".to_string(),
-            })
-            .expect("bob approves");
-        assert!(ledger
-            .execute(AuthorityCommand::FinalizeSigningRequest {
-                request_kappa: req_k.clone(),
-            })
-            .is_err());
-
-        // Carol also approves -> QuorumApproved (still unfinalized!):
-        ledger
-            .execute(AuthorityCommand::ReviewSigningRequest {
-                request_kappa: req_k.clone(),
-                admin_prism_id: "prism:admin-carol".to_string(),
-                admin_secret: "sec-c".to_string(),
-                verdict: ReviewVerdictKind::Approve,
-                rationale: "Verified ratchet".to_string(),
-            })
-            .expect("carol approves");
-        assert_eq!(
-            ledger.requests[&req_k].state,
-            SigningRequestState::QuorumApproved
-        );
-
-        // Bob issues a sole-attested standing grant before leaving:
-        let grant_out = ledger
-            .execute(AuthorityCommand::GrantStandingAccess {
-                grantee_prism_id: "prism:dev-ezra".to_string(),
-                scope: "triage:issues".to_string(),
-                attesting_admins: vec![("prism:admin-bob".to_string(), "sec-b".to_string())],
-            })
-            .expect("grant");
-
-        // 4. Bob LEAVES Verdant -> pending approval invalidated, standing grant revoked, boundary rotated!
-        let dep = ledger
-            .execute(AuthorityCommand::DepartOrRevokeAdmin {
-                target_admin_prism_id: "prism:admin-bob".to_string(),
-                reason: DepartureReason::VoluntaryResignation,
-                compromise_floor_epoch: None,
-                approving_admins: vec![("prism:admin-bob".to_string(), "sec-b".to_string())],
-                next_quorum_threshold_m: 2,
-            })
-            .expect("bob resigns cleanly");
-        assert_eq!(dep.invalidated_requests, 1);
-        assert_eq!(dep.revoked_grants, 1);
-        assert_eq!(ledger.boundary_key_epoch, 2);
-        assert_eq!(
-            ledger.requests[&req_k].state,
-            SigningRequestState::RevocationInvalidated
-        );
-        assert!(!ledger.standing_grants[&grant_out.subject_kappa].active);
-
-        // Finalizing now MUST fail because Bob's approval was revoked!
-        assert!(ledger
-            .execute(AuthorityCommand::FinalizeSigningRequest {
-                request_kappa: req_k.clone(),
-            })
-            .is_err());
-        // Departed Bob trying to sign again MUST fail!
-        assert!(ledger
-            .execute(AuthorityCommand::ReviewSigningRequest {
-                request_kappa: req_k.clone(),
-                admin_prism_id: "prism:admin-bob".to_string(),
-                admin_secret: "sec-b".to_string(),
-                verdict: ReviewVerdictKind::Approve,
-                rationale: "Replay".to_string(),
-            })
-            .is_err());
-
-        // Active Admin Alice steps in and approves -> now Alice + Carol = 2-of-2 active quorum -> Finalizes!
-        ledger
-            .execute(AuthorityCommand::ReviewSigningRequest {
-                request_kappa: req_k.clone(),
-                admin_prism_id: "prism:owner-alice".to_string(),
-                admin_secret: "sec-a".to_string(),
-                verdict: ReviewVerdictKind::Approve,
-                rationale: "Re-reviewed after Bob departed".to_string(),
-            })
-            .expect("alice approves");
-        ledger
-            .execute(AuthorityCommand::FinalizeSigningRequest {
-                request_kappa: req_k.clone(),
-            })
-            .expect("finalizes with active quorum");
-        assert_eq!(
-            ledger.requests[&req_k].state,
-            SigningRequestState::Finalized
-        );
-
-        // 5. Historical commit sealed at epoch 3 by Alice+Bob remains valid after Bob's clean resignation at epoch 4:
-        ledger
-            .execute(AuthorityCommand::VerifyHistoricalCommit {
-                finalized_epoch: 3,
-                signer_prism_ids: vec![
-                    "prism:owner-alice".to_string(),
-                    "prism:admin-bob".to_string(),
-                ],
-            })
-            .expect("clean historical commit valid");
-
-        // 6. GitHub-free group project coordination work item + chain verification:
-        ledger
-            .execute(AuthorityCommand::CoordinateWorkItem {
-                author_prism_id: "prism:dev-ezra".to_string(),
-                author_secret: "sec-e".to_string(),
-                kind: "rfc".to_string(),
-                title: "Sovereign Stitch Governance RFC".to_string(),
-                target_path: "crates/verdant-core/src/authority.rs".to_string(),
-                required_review_group: "mgr-security-trust".to_string(),
-                milestone: "M18".to_string(),
-                stitch_shard_count: 4,
-            })
-            .expect("work item");
-        ledger
-            .execute(AuthorityCommand::VerifyChain)
-            .expect("monotonic chain valid");
-    }
-}
+#[path = "authority_cert.rs"]
+mod authority_cert;
+pub use authority_cert::*;

@@ -43,7 +43,7 @@ function defaultLedger(ownerPrismId) {
   };
 }
 
-export function initStudioAuthorityPanel({ $, statusEl, chip, getLocalPrismId, getLatestCommitKappa }) {
+export function initStudioAuthorityPanel({ $, statusEl, chip, callWorker, getLocalPrismId, getLatestCommitKappa }) {
   const summaryEl = $("studio-auth-summary");
   const listEl = $("studio-auth-requests");
   const actionInput = $("studio-auth-action-input");
@@ -343,8 +343,20 @@ export function initStudioAuthorityPanel({ $, statusEl, chip, getLocalPrismId, g
     renderAuthority();
   });
 
+  const execWasmAuthority = async (request) => {
+    if (typeof callWorker !== "function") {
+      return { ok: false, error: "worker bridge unavailable" };
+    }
+    const resp = await callWorker("authority-exec", { request });
+    return resp?.result || { ok: false, error: resp?.error || "authority-exec failed" };
+  };
+
+  const exportLedgerJson = () => JSON.stringify(ledger, null, 2);
+
   return {
     getLedger: () => structuredClone(ledger),
+    exportLedgerJson,
+    execWasmAuthority,
     addAdmin,
     submitSigningRequest,
     reviewRequest,

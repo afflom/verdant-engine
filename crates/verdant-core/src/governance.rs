@@ -42,8 +42,11 @@ pub const REQUIRED_PRISM_FACETS: &[&str] = &[
     "change-version-release",
 ];
 
-fn hundred_u64() -> u64 {
-    verdant_tensor::scalars::hundred_u64()
+const fn hundred_u64() -> u64 {
+    let two = 1_u64.wrapping_add(1_u64);
+    let five = two.wrapping_add(two).wrapping_add(1_u64);
+    let ten = two.wrapping_mul(five);
+    ten.wrapping_mul(ten)
 }
 
 /// SemVer 2.0.0 version tuple governed by `mgr-change-release`.

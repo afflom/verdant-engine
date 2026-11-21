@@ -114,6 +114,9 @@ pub struct VerdantVcsCommit {
     pub message: String,
     /// Deterministic signature commitment over `(commit_kappa || author_prism_id || epoch)`.
     pub signature_hex: String,
+    /// Optional finalized [`crate::authority::ApprovalCertificate`] binding M-of-N Admin quorum custody (`VE-72`).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub approval_certificate: Option<crate::authority::ApprovalCertificate>,
 }
 
 /// In-Verdant content-addressed Merkle revision store (`VerdantVcs`).
@@ -254,9 +257,59 @@ impl VerdantVcs {
             cited_authority: cited_authority.to_string(),
             message: message.to_string(),
             signature_hex,
+            approval_certificate: None,
         };
         self.commits.insert(commit_kappa.clone(), commit.clone());
         self.refs.insert(ref_name.to_string(), commit_kappa);
+        Ok(commit)
+    }
+
+    /// Commits a content-addressed tree ONLY after cryptographically verifying a finalized
+    /// [`crate::authority::ApprovalCertificate`] (`SigningActionKind::MergeCommit`) against
+    /// `ledger` binding this exact tree's `tree_root_sha256` (`VE-72`).
+    #[allow(clippy::too_many_arguments)]
+    pub fn commit_with_authority(
+        &mut self,
+        ref_name: &str,
+        author_prism_id: &str,
+        device_secret: &[u8],
+        manager_id: &str,
+        cited_authority: &str,
+        message: &str,
+        files: &BTreeMap<String, Vec<u8>>,
+        ledger: &mut crate::authority::SovereignAuthorityLedger,
+        certificate: crate::authority::ApprovalCertificate,
+    ) -> Result<VerdantVcsCommit, StitchCustodyError> {
+        let mut preview_entries = BTreeMap::new();
+        for (path, bytes) in files {
+            let clean = path.trim().trim_start_matches("./");
+            if clean.is_empty() || clean.contains("..") || clean.starts_with('/') {
+                return Err(StitchCustodyError::PayloadDigestMismatch {
+                    detail: format!("unsafe VerdantVcs path `{path}`"),
+                });
+            }
+            preview_entries.insert(clean.to_string(), sha256_hex_raw(bytes));
+        }
+        let expected_tree_root = Self::compute_tree_root(&preview_entries);
+        let _ = ledger.execute(
+            crate::authority::AuthorityCommand::VerifyApprovalCertificate {
+                certificate: certificate.clone(),
+                expected_target_kappa: expected_tree_root,
+                expected_action: crate::authority::SigningActionKind::MergeCommit,
+            },
+        )?;
+        let mut commit = self.commit_tree(
+            ref_name,
+            files,
+            author_prism_id,
+            device_secret,
+            manager_id,
+            cited_authority,
+            message,
+        )?;
+        commit.approval_certificate = Some(certificate);
+        self.commits
+            .insert(commit.commit_kappa.clone(), commit.clone());
         Ok(commit)
     }
 
@@ -631,6 +684,10 @@ pub struct VerdantReleaseManifest {
     /// Optional RFC 1952 payload body compression (`"gzip"`, or omitted for uncompressed bodies).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub compression: Option<String>,
+    /// Optional finalized [`crate::authority::ApprovalCertificate`] binding M-of-N Sovereign Admin
+    /// `CutRelease` custody directly inside the `.holo` release manifest (`VE-72`).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub approval_certificate: Option<crate::authority::ApprovalCertificate>,
 }
 
 /// Self-verifying portable Verdant Release `.holo` capsule (`VE-44`).
@@ -720,6 +777,7 @@ impl VerdantReleaseCapsule {
             files: entries,
             total_payload_bytes,
             compression,
+            approval_certificate: None,
         };
         let manifest_json = serde_json::to_vec(&manifest).map_err(|e| {
             StitchCustodyError::PayloadDigestMismatch {
@@ -743,6 +801,70 @@ impl VerdantReleaseCapsule {
         Ok(Self {
             manifest,
             payloads,
+            holo_bytes,
+            capsule_sha256_hex,
+        })
+    }
+
+    /// Packs and seals a portable `.holo` release capsule ONLY after verifying a finalized
+    /// [`crate::authority::ApprovalCertificate`] (`SigningActionKind::CutRelease`) against
+    /// `ledger` binding `vcs_commit_kappa` (`VE-72`), embedding the certificate inside the
+    /// serialized [`VerdantReleaseManifest`] before computing `capsule_sha256_hex`.
+    #[allow(clippy::too_many_arguments)]
+    pub fn pack_from_files_with_authority(
+        version: &str,
+        release_epoch: u64,
+        vcs_commit_kappa: &str,
+        immutability_seal_sha256: &str,
+        default_route: &str,
+        files: &BTreeMap<String, Vec<u8>>,
+        ledger: &mut crate::authority::SovereignAuthorityLedger,
+        certificate: crate::authority::ApprovalCertificate,
+    ) -> Result<Self, StitchCustodyError> {
+        let _ = ledger.execute(
+            crate::authority::AuthorityCommand::VerifyApprovalCertificate {
+                certificate: certificate.clone(),
+                expected_target_kappa: vcs_commit_kappa.trim().to_string(),
+                expected_action: crate::authority::SigningActionKind::CutRelease,
+            },
+        )?;
+        let base = Self::pack_from_files(
+            version,
+            release_epoch,
+            vcs_commit_kappa,
+            immutability_seal_sha256,
+            default_route,
+            files,
+        )?;
+        let mut manifest = base.manifest;
+        manifest.approval_certificate = Some(certificate);
+        let magic_len = RELEASE_CAPSULE_MAGIC.len();
+        let u32_len = 1usize + 1usize + 1usize + 1usize;
+        let min_header = magic_len + u32_len;
+        let mut len_buf = [0u8; 1 + 1 + 1 + 1];
+        len_buf.copy_from_slice(&base.holo_bytes[magic_len..min_header]);
+        let old_manifest_len = u32::from_le_bytes(len_buf) as usize;
+        let body_bytes = &base.holo_bytes[min_header + old_manifest_len..];
+        let manifest_json = serde_json::to_vec(&manifest).map_err(|e| {
+            StitchCustodyError::PayloadDigestMismatch {
+                detail: format!("serialize governed release manifest: {e}"),
+            }
+        })?;
+        let manifest_len_u32 = u32::try_from(manifest_json.len()).map_err(|_| {
+            StitchCustodyError::PayloadDigestMismatch {
+                detail: "governed release manifest exceeds u32 length".to_string(),
+            }
+        })?;
+        let mut holo_bytes =
+            Vec::with_capacity(min_header + manifest_json.len() + body_bytes.len());
+        holo_bytes.extend_from_slice(RELEASE_CAPSULE_MAGIC);
+        holo_bytes.extend_from_slice(&manifest_len_u32.to_le_bytes());
+        holo_bytes.extend_from_slice(&manifest_json);
+        holo_bytes.extend_from_slice(body_bytes);
+        let capsule_sha256_hex = sha256_hex_raw(&holo_bytes);
+        Ok(Self {
+            manifest,
+            payloads: base.payloads,
             holo_bytes,
             capsule_sha256_hex,
         })

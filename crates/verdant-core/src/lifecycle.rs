@@ -600,6 +600,21 @@ impl VerdantOperatorChannel {
             );
             run_cmd(
                 &mut checks,
+                "conformance-engine",
+                "mgr-verification-observatory",
+                "workspace-test",
+                "cargo",
+                &[
+                    "test",
+                    "--locked",
+                    "-p",
+                    "repo-conformance",
+                    "--test",
+                    "engine",
+                ],
+            );
+            run_cmd(
+                &mut checks,
                 "unit-and-fidelity-tests",
                 "mgr-verification-observatory",
                 "workspace-test",

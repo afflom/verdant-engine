@@ -243,6 +243,16 @@
       "requiredCapabilities": ["VE-71"],
       "owningManagers": ["mgr-observer-executive", "mgr-security-trust", "mgr-verification-observatory", "mgr-runtime-stage", "mgr-studio-alm"],
       "ratchetRequirement": "Decompose all 4 remaining Rust files > 1650L (uhd.rs/uhd_workload.rs, network.rs/network_custody.rs, lifecycle.rs/lifecycle_automate.rs, observer.rs/observer_comms.rs -> max_handwritten_rust_file_lines <= 1650, >= 173 lifted modules) and all 3 shipped JS files > 1250L (engine-worker.mjs/engine-worker-extended.mjs, studio/studio-page.mjs/studio-boot.mjs, studio.mjs/studio-director-panel.mjs -> max_js_file_lines <= 1250), expand the shrink-only uorust MIR proof frontier to >= 345 lifted constructive functions (residue <= 1169, uncertified <= 1325), and surface zero-account Sovereign Signing Requests & Admin Quorum revocation inside Verdant Studio (site/studio/authority-panel.mjs) with zero Wasm or FR-03 regression."
+    },
+    {
+      "milestoneId": "M20",
+      "targetVersion": "2.12.0",
+      "tier": "minor",
+      "title": "CI-Parity Lifecycle Gate (conformance-engine), -327 KiB wasm32 GLB Image Split, ApprovalCertificate VCS/Release Custody & Net uorust Residue Reduction",
+      "stakeholders": ["creator", "developer", "systems-engineer", "operator", "auditor", "admin", "contributor"],
+      "requiredCapabilities": ["VE-72"],
+      "owningManagers": ["mgr-change-release", "mgr-security-trust", "mgr-runtime-stage", "mgr-verification-observatory", "mgr-observer-executive"],
+      "ratchetRequirement": "Close the local-vs-CI release gate gap by running repo-conformance --test engine inside lifecycle-gate --full and dynamic ratchet-aware Observer refinement targets; drop image/moxcms/png/zune-jpeg from wasm32 via gltf-image-decode feature gating and browser-native createImageBitmap PBR decoding to cut site/verdant-uorc.wasm <= 3810000 B (sub-910 KiB gzipped) and max_release_capsule_bytes <= 1410000 B even while embedding the unified SovereignAuthorityLedger Wasm kernel; bind VerdantVcs commits and VerdantReleaseCapsule .holo sealing to verified SovereignAuthorityLedger ApprovalCertificates with unified Wasm/CLI/MCP authority_cert.rs JSON bridge; and shrink existing uorust residue strictly below 1169 (<= 1168) and uncertified strictly below 1325 (<= 1324) while expanding lifted constructive functions >= 380."
     }
   ],
   "kpiCatalog": [

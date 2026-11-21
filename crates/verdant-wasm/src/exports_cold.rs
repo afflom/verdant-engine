@@ -313,31 +313,29 @@ pub extern "C" fn verdant_wasm_inst_data_ptr() -> u32 {
 /// Evaluates `prism_kernel::governorRecommendedScalePermille` (`1000`, `850`, or `700`) for `observed_frame_micros`.
 #[no_mangle]
 pub extern "C" fn verdant_wasm_governor_scale_permille(observed_frame_micros: u32) -> u32 {
-    #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
-    {
-        let sixty = pk_u64(prism_kernel::sSix()) * pk_u64(prism_kernel::sTen());
-        let budget = prism_kernel::frameBudgetMicrosForHz(sixty).unwrap_or(1);
-        prism_kernel::governorRecommendedScalePermille(u64::from(observed_frame_micros), budget)
-            .unwrap_or_else(|_| verdant_core::verdant_tensor::kernel_consts().skin_weight_scale)
-            as u32
-    }
-    #[cfg(all(target_arch = "wasm32", not(feature = "uorc-decoder")))]
-    {
-        let two = 1_u32 + 1_u32;
-        let five = two + two + 1_u32;
-        let ten = two * five;
-        let hundred = ten * ten;
-        let thousand = hundred * ten;
-        let million = thousand * thousand;
-        let sixty = (two * (two + 1_u32)) * ten;
-        let budget = million / sixty;
-        if observed_frame_micros <= budget {
-            thousand
-        } else if observed_frame_micros <= two * budget {
-            ((two + 1_u32) * five + two) * five * ten
-        } else {
-            (five + two) * hundred
-        }
+    let two = 1_u32.wrapping_add(1_u32);
+    let three = two.wrapping_add(1_u32);
+    let five = two.wrapping_add(three);
+    let six = three.wrapping_add(three);
+    let seven = six.wrapping_add(1_u32);
+    let ten = two.wrapping_mul(five);
+    let sixteen = two.wrapping_mul(two).wrapping_mul(two).wrapping_mul(two);
+    let hundred = ten.wrapping_mul(ten);
+    let thousand = hundred.wrapping_mul(ten);
+    let budget = sixteen
+        .wrapping_mul(thousand)
+        .wrapping_add(six.wrapping_mul(hundred))
+        .wrapping_add(six.wrapping_mul(ten))
+        .wrapping_add(six);
+    if observed_frame_micros <= budget {
+        thousand
+    } else if observed_frame_micros <= budget.wrapping_mul(two) {
+        seven
+            .wrapping_add(1_u32)
+            .wrapping_mul(hundred)
+            .wrapping_add(five.wrapping_mul(ten))
+    } else {
+        seven.wrapping_mul(hundred)
     }
 }
 

@@ -221,6 +221,7 @@
         "app/src/Security.lex.tex",
         "app/src/Governance.lex.tex",
         "crates/verdant-core/src/authority.rs",
+        "crates/verdant-core/src/authority_cert.rs",
         "crates/verdant-core/src/digest.rs",
         "crates/verdant-core/src/network.rs",
         "crates/verdant-core/src/network_custody.rs",

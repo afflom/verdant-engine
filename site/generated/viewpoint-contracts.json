@@ -215,7 +215,7 @@
     },
     {
       "basisPrime": 73,
-      "kappaHex": "a6c13af07e23c19a03b271a95f83d6c17bb472b4696f41411a986b93f11e7bc1",
+      "kappaHex": "0ff7ca0238c066b5203f8c75944e9c55298affce1cf2f633594adf9d275b2982",
       "spec": {
         "almPhases": [
           "security",
@@ -246,6 +246,7 @@
           "app/src/Security.lex.tex",
           "app/src/Governance.lex.tex",
           "crates/verdant-core/src/authority.rs",
+          "crates/verdant-core/src/authority_cert.rs",
           "crates/verdant-core/src/digest.rs",
           "crates/verdant-core/src/network.rs",
           "crates/verdant-core/src/network_custody.rs",

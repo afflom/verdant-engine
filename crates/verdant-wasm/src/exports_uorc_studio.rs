@@ -901,3 +901,22 @@ pub extern "C" fn verdant_wasm_paged_workload_step_io() -> u32 {
     bridge.aux_buffer = verdant_core::uhd::paged_workload_step_json(raw).into_bytes();
     bridge.aux_buffer.len() as u32
 }
+
+/// Executes a GitHub-free [`verdant_core::authority::SovereignAuthorityLedger`] JSON command
+/// (`VE-72`) staged in `io_buffer` and writes the updated ledger, outcome, and optional
+/// [`verdant_core::authority::ApprovalCertificate`] JSON into `aux_buffer`.
+#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+#[no_mangle]
+pub extern "C" fn verdant_wasm_authority_exec_io() -> u32 {
+    let mut guard = global_bridge()
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
+    let Some(bridge) = guard.as_mut() else {
+        return 0;
+    };
+    let Ok(raw) = std::str::from_utf8(&bridge.io_buffer) else {
+        return 0;
+    };
+    bridge.aux_buffer = verdant_core::authority::sovereign_authority_exec_json(raw).into_bytes();
+    bridge.aux_buffer.len() as u32
+}

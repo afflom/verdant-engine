@@ -326,6 +326,14 @@ impl VerdantOperatorChannel {
                 let p = repo_root.join(rel);
                 if p.is_file() {
                     existing_count = existing_count.saturating_add(1);
+                    let is_data_or_register = rel == "fidelity.toml"
+                        || rel == "frontier.toml"
+                        || rel.starts_with("site/generated/")
+                        || rel.starts_with("model/")
+                        || rel.starts_with("catalogs/");
+                    if is_data_or_register {
+                        continue;
+                    }
                     let lines = std::fs::read_to_string(&p)
                         .map(|s| s.lines().count())
                         .unwrap_or(0);
@@ -340,7 +348,9 @@ impl VerdantOperatorChannel {
                         heaviest_rust_lines = lines;
                         heaviest_rust_file = rel.clone();
                     }
-                    if (rel.ends_with(".mjs") || rel.ends_with(".js")) && lines > heaviest_js_lines
+                    if rel.starts_with("site/")
+                        && (rel.ends_with(".mjs") || rel.ends_with(".js"))
+                        && lines > heaviest_js_lines
                     {
                         heaviest_js_lines = lines;
                         heaviest_js_file = rel.clone();
@@ -474,9 +484,12 @@ impl VerdantOperatorChannel {
             ],
         );
 
-        let js_target = loc_ideal;
+        let nine_hundred = hundred_u32().wrapping_mul(eight_u32().wrapping_add(1));
+        let js_target = (live.max_js_file_lines as u32)
+            .saturating_sub(hundred_u32())
+            .max(nine_hundred);
         let js_focus = if heaviest_js_file.is_empty() {
-            "site/studio.mjs".to_string()
+            "site/catalog-streams.mjs".to_string()
         } else {
             heaviest_js_file
         };
@@ -488,21 +501,23 @@ impl VerdantOperatorChannel {
             "studio",
             "AUTH-ISO-42010-VIEWPOINTS",
             "surface-loc-js",
-            refinement_priority_for_ceiling(live.max_js_file_lines as u32, js_target, true),
+            refinement_priority_for_ceiling(live.max_js_file_lines as u32, js_target, false),
             format!("{} lines max ({js_focus})", live.max_js_file_lines),
-            format!("<= {js_target} lines max JS file"),
-            "Decompose heaviest Studio JS modules into cohesive submodules and expose VerdantVcs diff/branch UI."
+            format!("<= {js_target} lines max shipped JS file"),
+            "Decompose heaviest shipped JS modules under site/ to auto-tighten max_js_file_lines."
                 .to_string(),
             vec![
-                format!("Split {js_focus} and site/studio/studio-page.mjs into focused ES modules."),
-                "Expose VerdantVcs commit diff & branch controls in site/studio/vcs-panel.mjs."
+                format!("Split {js_focus} into focused cohesive ES modules."),
+                "Register every extracted module in catalogs/governance/iso42010-viewpoints.json."
                     .to_string(),
             ],
         );
 
-        let rust_target = thousand_u32().wrapping_add(hundred_u32().wrapping_mul(eight_u32()));
+        let rust_target = (live.max_handwritten_rust_file_lines as u32)
+            .saturating_sub(hundred_u32())
+            .max(thousand_u32());
         let rust_focus = if heaviest_rust_file.is_empty() {
-            "crates/verdant-core/src/hd_world.rs".to_string()
+            "crates/verdant-core/src/streaming.rs".to_string()
         } else {
             heaviest_rust_file
         };
@@ -527,7 +542,7 @@ impl VerdantOperatorChannel {
             "Keep every hand-written Rust module modular and auto-tighten max_handwritten_rust_file_lines."
                 .to_string(),
             vec![
-                format!("Extract cohesive sub-traits or geometry tables out of {rust_focus}."),
+                format!("Extract cohesive submodules out of {rust_focus}."),
                 "Register every extracted module in catalogs/governance/iso42010-viewpoints.json."
                     .to_string(),
             ],
@@ -535,7 +550,7 @@ impl VerdantOperatorChannel {
 
         let kibi = verdant_tensor::scalars::thirty_two_u32()
             .wrapping_mul(verdant_tensor::scalars::thirty_two_u32());
-        let uorc_target = kibi.wrapping_mul(kibi).wrapping_mul(four_u32());
+        let uorc_target = kibi.wrapping_mul(kibi).wrapping_mul(two_u32());
         let headroom =
             blank_frame_headroom_bytes(blank_frame_bytes as u32, MAX_BLANK_FRAME_BYTES as u32);
         push_proposal(
@@ -551,11 +566,11 @@ impl VerdantOperatorChannel {
                 "verdant-uorc.wasm {} B · .holo {} B · Blank Frame {} B ({headroom} B headroom)",
                 live.wasm_uorc_bytes, live.release_capsule_bytes, blank_frame_bytes
             ),
-            format!("verdant-uorc.wasm <= {uorc_target} B while preserving gzipped .holo <= 1.72 MiB"),
-            "Trim unused codec paths on wasm32 and preserve gzipped STCH2 shard efficiency for cold Blank Frame boots."
+            format!("verdant-uorc.wasm <= {uorc_target} B and gzipped .holo <= 1.0 MiB"),
+            "Keep browser verdant-uorc.wasm lean (< 2.0 MiB) and preserve gzipped STCH2 shard efficiency for cold Blank Frame boots."
                 .to_string(),
             vec![
-                "Audit gltf/image feature flags on wasm32 to drop unused color/codec tables."
+                "Decode GLB embedded PBR textures via native browser createImageBitmap instead of shipping image/moxcms in wasm32."
                     .to_string(),
                 "Maintain Blank Frame strictly under 30720 B with DecompressionStream('gzip')."
                     .to_string(),

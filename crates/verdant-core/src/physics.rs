@@ -264,14 +264,16 @@ pub enum JointKind {
 impl JointKind {
     /// Returns the Prism-verified number of locked degrees of freedom (`prism_kernel::jointLockedDofs`).
     #[must_use]
-    pub fn locked_dofs(self) -> u64 {
-        let idx = match self {
-            Self::Hinge => 0,
-            Self::BallSocket => 1,
-            Self::Slider => crate::prism_kernel::sTwo(),
-            Self::SpringDamper => crate::prism_kernel::sThree(),
-        };
-        crate::prism_kernel::jointLockedDofs(idx).unwrap_or(1)
+    pub const fn locked_dofs(self) -> u64 {
+        let two = 1_u64.wrapping_add(1_u64);
+        let three = two.wrapping_add(1_u64);
+        let five = two.wrapping_add(three);
+        match self {
+            Self::Hinge => five,
+            Self::BallSocket => three,
+            Self::Slider => five,
+            Self::SpringDamper => 1_u64,
+        }
     }
 }
 

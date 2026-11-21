@@ -303,6 +303,7 @@ export async function bootStudioWorkspace(ctx) {
     $,
     statusEl,
     chip,
+    callWorker,
     getLocalPrismId: vcsApi.getLocalPrismId,
     getLatestCommitKappa: () => vcsApi.getVcsHistory()[0]?.commitKappa || null,
   });

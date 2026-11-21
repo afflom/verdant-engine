@@ -198,18 +198,23 @@ function drawScene(eye, lookTarget, lodSpec, simClockSec, rebuildDynamic = false
       const te = host.verdant_wasm_scene_tex_epoch() >>> 0;
       const tp = host.verdant_wasm_scene_tex_ptr() >>> 0, tw = host.verdant_wasm_scene_tex_width() >>> 0, th = host.verdant_wasm_scene_tex_height() >>> 0;
       const prevEp = renderer._lastPbrEp || 0;
-      renderer.setTex?.(1, tp && tw && th ? new Uint8Array(host.memory.buffer, tp, tw * th * 4) : null, tw, th, te);
-      if (te !== prevEp && typeof host.verdant_wasm_scene_pbr_tex_ptr === "function") {
-        renderer._lastPbrEp = te;
-        for (const [ch, slot] of [[1, 3], [2, 4], [3, 5]]) {
-          const p = host.verdant_wasm_scene_pbr_tex_ptr(ch) >>> 0;
-          const pw = host.verdant_wasm_scene_pbr_tex_width(ch) >>> 0;
-          const ph = host.verdant_wasm_scene_pbr_tex_height(ch) >>> 0;
-          renderer.setTex?.(slot, p && pw && ph ? new Uint8Array(host.memory.buffer, p, pw * ph * 4) : null, pw, ph, te);
+      if (tp && tw && th) {
+        renderer.setTex?.(1, new Uint8Array(host.memory.buffer, tp, tw * th * 4), tw, th, te);
+        if (te !== prevEp && typeof host.verdant_wasm_scene_pbr_tex_ptr === "function") {
+          renderer._lastPbrEp = te;
+          for (const [ch, slot] of [[1, 3], [2, 4], [3, 5]]) {
+            const p = host.verdant_wasm_scene_pbr_tex_ptr(ch) >>> 0;
+            const pw = host.verdant_wasm_scene_pbr_tex_width(ch) >>> 0;
+            const ph = host.verdant_wasm_scene_pbr_tex_height(ch) >>> 0;
+            renderer.setTex?.(slot, p && pw && ph ? new Uint8Array(host.memory.buffer, p, pw * ph * 4) : null, pw, ph, te);
+          }
         }
+      } else if (!renderer._browserPbrTexActive) {
+        renderer.setTex?.(1, null, 0, 0, te);
       }
     } else {
       renderer._lastPbrEp = 0;
+      renderer._browserPbrTexActive = false;
       renderer.setTex?.(1, null, 0, 0, 0);
     }
     renderer.uploadSplitBuffers(split.staticViews, split.dynViews, split.instViews);
@@ -678,12 +683,20 @@ self.onmessage = async ({ data: msg }) => {
         distMm: Math.round(distM * 1000) >>> 0,
         aspectMilli: lastPose?.aspectMilli || 1600,
       };
+      let browserPbrTex = null;
+      if ((uorcWasm.verdant_wasm_scene_pbr_tex_width?.(0) >>> 0) === 0 && renderer) {
+        const ext = await import("./engine-worker-extended.mjs");
+        browserPbrTex = await ext.decodeGlbPbrTexturesInBrowser(raw, renderer.maxTextureSize || 1024, renderer);
+        renderer._browserPbrTexActive = Boolean(browserPbrTex?.albedo);
+      } else if (renderer) {
+        renderer._browserPbrTexActive = false;
+      }
       drawScene(cam.eye, cam.lookTarget, currentLod || { sky: [0.18, 0.30, 0.38], fog: [0.30, 0.40, 0.44] }, 0, false, 0, 0, true);
-        const pbrChannels = {
-        albedo: (uorcWasm.verdant_wasm_scene_pbr_tex_width?.(0) >>> 0) > 0,
-        metallicRoughness: (uorcWasm.verdant_wasm_scene_pbr_tex_width?.(1) >>> 0) > 0,
-        normal: (uorcWasm.verdant_wasm_scene_pbr_tex_width?.(2) >>> 0) > 0,
-        emissive: (uorcWasm.verdant_wasm_scene_pbr_tex_width?.(3) >>> 0) > 0,
+      const pbrChannels = {
+        albedo: Boolean(browserPbrTex?.albedo) || (uorcWasm.verdant_wasm_scene_pbr_tex_width?.(0) >>> 0) > 0,
+        metallicRoughness: Boolean(browserPbrTex?.metallicRoughness) || (uorcWasm.verdant_wasm_scene_pbr_tex_width?.(1) >>> 0) > 0,
+        normal: Boolean(browserPbrTex?.normal) || (uorcWasm.verdant_wasm_scene_pbr_tex_width?.(2) >>> 0) > 0,
+        emissive: Boolean(browserPbrTex?.emissive) || (uorcWasm.verdant_wasm_scene_pbr_tex_width?.(3) >>> 0) > 0,
         hasAnimation: uorcWasm.verdant_wasm_glb_has_animation?.() === 1,
         atlasTileCount: uorcWasm.verdant_wasm_glb_atlas_tile_count?.() >>> 0,
       };

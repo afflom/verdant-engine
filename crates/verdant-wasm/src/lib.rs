@@ -840,9 +840,10 @@ impl WasmRuntimeBridge {
                 self.scene_buffers = packed;
                 self.custom_glb_uvs_xy.clear();
                 let uv_sentinel = -(1.0_f32 + 1.0_f32);
-                let has_tex = !self.custom_glb_tex_rgba.is_empty()
+                let has_tex = (!self.custom_glb_tex_rgba.is_empty()
                     && self.custom_glb_tex_width > 0
-                    && self.custom_glb_tex_height > 0;
+                    && self.custom_glb_tex_height > 0)
+                    || self.custom_glb_atlas_tile_count > 0;
                 for entity in glb_scene.entities() {
                     let Some(mesh_idx) = entity.mesh_index else {
                         continue;
