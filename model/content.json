@@ -188,6 +188,38 @@
         "build": "How do signed input journals synchronize across tabs and peer rooms?",
         "scale": "How does survival-entropy tracking schedule proactive shard refreshes?"
       }
+    },
+    {
+      "id": "nora",
+      "start": "docs/explanation/tensor-and-uorc-streaming",
+      "stakeholder": "stakeholderVerdantAdmin",
+      "name": "Nora",
+      "prop": "shield",
+      "accessory": "none",
+      "need": "Sovereign M-of-N Prism ID admin quorum governance, verifiable signing-request review, and immediate revocation of departed admin approvals without GitHub.",
+      "asks": {
+        "discover": "How does Verdant govern ownership and access control after leaving GitHub?",
+        "evaluate": "How does an M-of-N admin quorum prevent single-admin hijacking and lockout?",
+        "learn": "What happens to pending requests and standing grants when an Admin leaves Verdant?",
+        "build": "How do I review, approve, or reject a contributor signing request?",
+        "scale": "How do monotonic authority epochs preserve verified history while revoking compromised keys?"
+      }
+    },
+    {
+      "id": "ezra",
+      "start": "docs/getting-started",
+      "stakeholder": "stakeholderProjectContributor",
+      "name": "Ezra",
+      "prop": "quill",
+      "accessory": "glasses",
+      "need": "Zero-account Prism ID signing requests, decentralized issue and RFC coordination, and deterministic verification of VerdantVcs submissions.",
+      "asks": {
+        "discover": "How do I contribute code, issues, and proposals to Verdant without a GitHub account?",
+        "evaluate": "How are contributor signing requests authenticated and reviewed?",
+        "learn": "Walk me through submitting a signed VerdantVcs commit request for Admin review.",
+        "build": "How do I attach PROV-O work items, milestones, and release checks to a signing request?",
+        "scale": "How does path-scoped review ownership coordinate large multi-contributor projects?"
+      }
     }
   ],
   "audience": [

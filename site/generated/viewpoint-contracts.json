@@ -213,7 +213,7 @@
     },
     {
       "basisPrime": 73,
-      "kappaHex": "920f2ec73d7f091032fe2802b6cf24977f9837161ea7b693904eecd7f3414dfd",
+      "kappaHex": "92a07272e164e3ee07ca6f971c1cfa620ce01e24b99bfbefc4ee792ae3c686b6",
       "spec": {
         "almPhases": [
           "security",
@@ -222,8 +222,8 @@
           "cryptographic-custody"
         ],
         "concerns": [
-          "Govern Prism Stratum 3 Security and STRIDE Threat Model (Assets 0..8, Threats 0..19, Controls 0..18)",
-          "Enforce zero-account Prism ID Encrypt-then-MAC boundary privacy, epoch revocation, and k-of-n Reed-Solomon integrity"
+          "Govern Prism Stratum 3 Security, Sovereign Governance, and STRIDE Threat Model (Assets 0..10, Threats 0..26, Controls 0..25)",
+          "Enforce zero-account Prism ID Encrypt-then-MAC boundary privacy, M-of-N Admin quorum signing requests, epoch revocation, and k-of-n Reed-Solomon integrity"
         ],
         "differentiationRequirements": [
           "Every user boundary encrypts client-side under local Prism ID before sharding with zero external account requirement."
@@ -242,6 +242,7 @@
           "app/src/Foundation/Sec.lex.tex",
           "app/src/Production/ThreatModel.lex.tex",
           "app/src/Security.lex.tex",
+          "app/src/Governance.lex.tex",
           "crates/verdant-core/src/digest.rs",
           "crates/verdant-core/src/network.rs",
           "catalogs/governance/stitch-self-hosting.json",

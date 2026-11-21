@@ -1,0 +1,295 @@
+\begin{lexlean}{Governance}
+\useglossary{lexlean.std.bool@1.2.0}
+\useglossary{lexlean.std.nat@1.2.0}
+\useglossary{prism.arch@1.0.0}
+\importmodule{Subsystems}
+\title{Verdant Engine sovereign governance}
+\begin{semanticmodule}
+inductive{
+  name: GovernanceRole,
+  type_parameters: [],
+  parameters: [],
+  constructors: [
+    {name: genesisOwner, fields: []},
+    {name: sovereignAdmin, fields: []},
+    {name: projectContributor, fields: []},
+    {name: observerAuditor, fields: []}
+  ]
+}
+
+inductive{
+  name: SigningActionKind,
+  type_parameters: [],
+  parameters: [],
+  constructors: [
+    {name: mergeCommit, fields: []},
+    {name: cutRelease, fields: []},
+    {name: grantRole, fields: []},
+    {name: addAdmin, fields: []},
+    {name: revokeAdmin, fields: []},
+    {name: rotatePolicy, fields: []},
+    {name: coordinateWorkItem, fields: []}
+  ]
+}
+
+inductive{
+  name: SigningRequestState,
+  type_parameters: [],
+  parameters: [],
+  constructors: [
+    {name: draft, fields: []},
+    {name: submitted, fields: []},
+    {name: underReview, fields: []},
+    {name: quorumApproved, fields: []},
+    {name: finalized, fields: []},
+    {name: rejected, fields: []},
+    {name: revocationInvalidated, fields: []},
+    {name: expired, fields: []}
+  ]
+}
+
+inductive{
+  name: DepartureReason,
+  type_parameters: [],
+  parameters: [],
+  constructors: [
+    {name: voluntaryResignation, fields: []},
+    {name: quorumRemoval, fields: []},
+    {name: keyCompromise, fields: []}
+  ]
+}
+
+structure{
+  name: GovernancePrincipleSpec,
+  type_parameters: [],
+  parameters: [],
+  fields: [
+    {name: index, type: Nat},
+    {name: role, type: GovernanceRole},
+    {name: action, type: SigningActionKind},
+    {name: zeroExternalAccount, type: Bool},
+    {name: name, type: String},
+    {name: text, type: String}
+  ]
+}
+
+definition{
+  name: principle0GenesisOwnerRoot,
+  parameters: [],
+  result: GovernancePrincipleSpec,
+  body: (record GovernancePrincipleSpec {index := 0, role := (ctor GovernanceRole.genesisOwner), action := (ctor SigningActionKind.addAdmin), zeroExternalAccount := true, name := "GenesisOwnerAuthorityRoot", text := "The repository owner initializes authority epoch one with a non-extractable Prism ID genesis root detached from GitHub and bootstraps the initial Sovereign Admin quorum."})
+}
+
+definition{
+  name: principle1SigningRequestSubmission,
+  parameters: [],
+  result: GovernancePrincipleSpec,
+  body: (record GovernancePrincipleSpec {index := 1, role := (ctor GovernanceRole.projectContributor), action := (ctor SigningActionKind.mergeCommit), zeroExternalAccount := true, name := "ContentAddressedSigningRequest", text := "A developer signs and submits a content-addressed signing request binding target commit kappa, action scope, current authority epoch, and expiry epoch directly to Verdant."})
+}
+
+definition{
+  name: principle2AdminReviewAndVerdict,
+  parameters: [],
+  result: GovernancePrincipleSpec,
+  body: (record GovernancePrincipleSpec {index := (Subsystems::sTwo), role := (ctor GovernanceRole.sovereignAdmin), action := (ctor SigningActionKind.cutRelease), zeroExternalAccount := true, name := "AdminReviewApproveOrReject", text := "Active Verdant Sovereign Admins inspect the verifiable change, ratchet verdict, and scope before emitting a signed PROV-O approve or reject attestation."})
+}
+
+definition{
+  name: principle3ThresholdAdminQuorum,
+  parameters: [],
+  result: GovernancePrincipleSpec,
+  body: (record GovernancePrincipleSpec {index := (Subsystems::sThree), role := (ctor GovernanceRole.sovereignAdmin), action := (ctor SigningActionKind.rotatePolicy), zeroExternalAccount := true, name := "ThresholdMOfNAdminQuorum", text := "Once multi-admin custody is active, privileged mutations enforce an M-of-N threshold quorum with at least two independent active Admin signatures and separation of duties."})
+}
+
+definition{
+  name: principle4MonotonicAuthorityEpoch,
+  parameters: [],
+  result: GovernancePrincipleSpec,
+  body: (record GovernancePrincipleSpec {index := (Subsystems::sFour), role := (ctor GovernanceRole.sovereignAdmin), action := (ctor SigningActionKind.revokeAdmin), zeroExternalAccount := true, name := "MonotonicMembershipEpochChain", text := "Every Admin admission, resignation, revocation, or policy change strictly increments the authority epoch and chains prevEpochKappa so rollback and split-brain forks are impossible."})
+}
+
+definition{
+  name: principle5DepartureApprovalRevocation,
+  parameters: [],
+  result: GovernancePrincipleSpec,
+  body: (record GovernancePrincipleSpec {index := (Subsystems::sFive), role := (ctor GovernanceRole.sovereignAdmin), action := (ctor SigningActionKind.revokeAdmin), zeroExternalAccount := true, name := "DepartedAdminApprovalRevocation", text := "When an Admin leaves Verdant, future signing authority terminates immediately at the new epoch, unfinalized pending approvals and sole-attested standing grants from that Admin are invalidated, and private workspace keys rotate forward-secretly."})
+}
+
+definition{
+  name: principle6HistoricalLineageAndCompromiseQuarantine,
+  parameters: [],
+  result: GovernancePrincipleSpec,
+  body: (record GovernancePrincipleSpec {index := (Subsystems::sSix), role := (ctor GovernanceRole.observerAuditor), action := (ctor SigningActionKind.cutRelease), zeroExternalAccount := true, name := "HistoricalEpochVerificationAndQuarantine", text := "Commits finalized under a valid quorum prior to clean Admin departure remain verifiable at their historical epoch while compromise revocations quarantine suspect artifacts from the compromise floor epoch."})
+}
+
+definition{
+  name: principle7AntiLockoutSuccession,
+  parameters: [],
+  result: GovernancePrincipleSpec,
+  body: (record GovernancePrincipleSpec {index := (Subsystems::sSeven), role := (ctor GovernanceRole.sovereignAdmin), action := (ctor SigningActionKind.addAdmin), zeroExternalAccount := true, name := "AntiLockoutSuccessionGuard", text := "Admin departure or removal is refused if remaining active Admins would drop to zero or below the active quorum threshold without first onboarding a successor or atomically ratifying a valid lower threshold."})
+}
+
+definition{
+  name: principle8DecentralizedGroupCoordination,
+  parameters: [],
+  result: GovernancePrincipleSpec,
+  body: (record GovernancePrincipleSpec {index := (Subsystems::sEight), role := (ctor GovernanceRole.projectContributor), action := (ctor SigningActionKind.coordinateWorkItem), zeroExternalAccount := true, name := "GitHubFreeGroupCoordination", text := "Issues, RFC proposals, milestones, path-scoped review ownership, and role grants persist as signed W3C PROV-O envelopes across VerdantVcs and Stitch parity shards with zero GitHub identity dependency."})
+}
+
+definition{
+  name: governancePrinciples,
+  parameters: [],
+  result: (List GovernancePrincipleSpec),
+  body: (cons (principle0GenesisOwnerRoot) (cons (principle1SigningRequestSubmission) (cons (principle2AdminReviewAndVerdict) (cons (principle3ThresholdAdminQuorum) (cons (principle4MonotonicAuthorityEpoch) (cons (principle5DepartureApprovalRevocation) (cons (principle6HistoricalLineageAndCompromiseQuarantine) (cons (principle7AntiLockoutSuccession) (cons (principle8DecentralizedGroupCoordination) (nil GovernancePrincipleSpec))))))))))
+}
+
+definition{
+  name: genesisBootstrapValid,
+  parameters: [
+    epoch : Nat,
+    genesisOwnerIsFirstAdmin : Bool,
+    prismIdNonExtractable : Bool,
+    requiresGithubAccount : Bool
+  ],
+  result: Bool,
+  body: (((epoch =? 1) && genesisOwnerIsFirstAdmin) && (prismIdNonExtractable && (not requiresGithubAccount)))
+}
+
+definition{
+  name: quorumThresholdValid,
+  parameters: [thresholdM : Nat, activeAdminsN : Nat],
+  result: Bool,
+  body: (((1 <=? thresholdM) && (thresholdM <=? activeAdminsN)) && (if ((Subsystems::sTwo) <=? activeAdminsN) then ((Subsystems::sTwo) <=? thresholdM) else true))
+}
+
+definition{
+  name: authorityEpochAdvanceValid,
+  parameters: [
+    prevEpoch : Nat,
+    nextEpoch : Nat,
+    prevKappaBound : Bool,
+    quorumMet : Bool,
+    remainingAdmins : Nat,
+    nextThresholdM : Nat
+  ],
+  result: Bool,
+  body: ((((prevEpoch + 1) <=? nextEpoch) && (prevKappaBound && quorumMet)) && ((1 <=? remainingAdmins) && (quorumThresholdValid nextThresholdM remainingAdmins)))
+}
+
+definition{
+  name: adminSignatureValidAtEpoch,
+  parameters: [
+    signerInActiveSet : Bool,
+    signerRevoked : Bool,
+    signedEpoch : Nat,
+    currentEpoch : Nat
+  ],
+  result: Bool,
+  body: ((signerInActiveSet && (not signerRevoked)) && (signedEpoch =? currentEpoch))
+}
+
+definition{
+  name: pendingApprovalSurvivesDeparture,
+  parameters: [
+    totalApprovals : Nat,
+    departedAdminApprovals : Nat,
+    quorumThresholdM : Nat,
+    authorSelfApproved : Bool,
+    activeAdminsN : Nat
+  ],
+  result: Bool,
+  body: (let surviving : Nat := (prim subtract totalApprovals departedAdminApprovals : Nat); (let independent : Nat := (if (authorSelfApproved && ((Subsystems::sTwo) <=? activeAdminsN)) then (prim subtract surviving 1 : Nat) else surviving); ((quorumThresholdValid quorumThresholdM activeAdminsN) && (quorumThresholdM <=? independent))))
+}
+
+definition{
+  name: standingGrantValidAfterDeparture,
+  parameters: [granterRevoked : Bool, coSignedByActiveQuorum : Bool, boundaryKeysRotated : Bool],
+  result: Bool,
+  body: (if granterRevoked then (coSignedByActiveQuorum && boundaryKeysRotated) else true)
+}
+
+definition{
+  name: historicalCommitValid,
+  parameters: [
+    finalizedEpoch : Nat,
+    revokedAtEpoch : Nat,
+    wasCompromise : Bool,
+    compromiseFloorEpoch : Nat,
+    epochQuorumValid : Bool
+  ],
+  result: Bool,
+  body: ((epochQuorumValid && (finalizedEpoch <? revokedAtEpoch)) && (if wasCompromise then (finalizedEpoch <? compromiseFloorEpoch) else true))
+}
+
+definition{
+  name: signingRequestAdmissible,
+  parameters: [
+    requesterSigned : Bool,
+    explicitlyRejected : Bool,
+    currentEpoch : Nat,
+    expiryEpoch : Nat,
+    totalApprovals : Nat,
+    departedAdminApprovals : Nat,
+    quorumThresholdM : Nat,
+    authorSelfApproved : Bool,
+    activeAdminsN : Nat
+  ],
+  result: Bool,
+  body: (((requesterSigned && (not explicitlyRejected)) && (currentEpoch <=? expiryEpoch)) && (pendingApprovalSurvivesDeparture totalApprovals departedAdminApprovals quorumThresholdM authorSelfApproved activeAdminsN))
+}
+
+definition{
+  name: groupCoordinationEnvelopeValid,
+  parameters: [
+    provoSigned : Bool,
+    stitchShards : Nat,
+    minShards : Nat,
+    pathOwnersVerified : Bool,
+    requiresExternalAccount : Bool
+  ],
+  result: Bool,
+  body: ((provoSigned && (minShards <=? stitchShards)) && (pathOwnersVerified && (not requiresExternalAccount)))
+}
+
+definition{
+  name: principlesValid,
+  parameters: [pos : Nat, items : (List GovernancePrincipleSpec)],
+  result: Bool,
+  body: (match items
+    | List.nil => true
+    | List.cons item rest => (if (((project item index) =? pos) && ((project item zeroExternalAccount) && ((not (prim equal (project item name) "" : Bool)) && (not (prim equal (project item text) "" : Bool))))) then (principlesValid (pos + 1) rest) else false)),
+  recursive_argument: items
+}
+
+definition{
+  name: sovereignGovernanceDirect,
+  parameters: [],
+  result: Bool,
+  body: (((principlesValid 0 (governancePrinciples)) && ((genesisBootstrapValid 1 true true false) && ((not (genesisBootstrapValid 0 true true false)) && ((not (genesisBootstrapValid 1 false true false)) && (not (genesisBootstrapValid 1 true true true)))))) && (((quorumThresholdValid 1 1) && ((quorumThresholdValid (Subsystems::sTwo) (Subsystems::sThree)) && ((not (quorumThresholdValid 1 (Subsystems::sThree))) && ((not (quorumThresholdValid (Subsystems::sFour) (Subsystems::sThree))) && ((authorityEpochAdvanceValid 1 (Subsystems::sTwo) true true (Subsystems::sTwo) (Subsystems::sTwo)) && ((not (authorityEpochAdvanceValid (Subsystems::sTwo) (Subsystems::sTwo) true true (Subsystems::sTwo) (Subsystems::sTwo))) && ((not (authorityEpochAdvanceValid (Subsystems::sTwo) (Subsystems::sThree) true true 0 1)) && (not (authorityEpochAdvanceValid (Subsystems::sTwo) (Subsystems::sThree) true true 1 (Subsystems::sTwo)))))))))) && (((adminSignatureValidAtEpoch true false (Subsystems::sThree) (Subsystems::sThree)) && ((not (adminSignatureValidAtEpoch true true (Subsystems::sThree) (Subsystems::sThree))) && ((not (adminSignatureValidAtEpoch true false (Subsystems::sTwo) (Subsystems::sThree))) && ((pendingApprovalSurvivesDeparture (Subsystems::sThree) 1 (Subsystems::sTwo) false (Subsystems::sThree)) && ((not (pendingApprovalSurvivesDeparture (Subsystems::sTwo) 1 (Subsystems::sTwo) false (Subsystems::sThree))) && ((not (pendingApprovalSurvivesDeparture (Subsystems::sTwo) 0 (Subsystems::sTwo) true (Subsystems::sThree))) && ((not (standingGrantValidAfterDeparture true false true)) && ((standingGrantValidAfterDeparture true true true) && ((historicalCommitValid (Subsystems::sTwo) (Subsystems::sFour) false (Subsystems::sFour) true) && (not (historicalCommitValid (Subsystems::sThree) (Subsystems::sFour) true (Subsystems::sThree) true))))))))))) && ((signingRequestAdmissible true false (Subsystems::sThree) (Subsystems::sFive) (Subsystems::sTwo) 0 (Subsystems::sTwo) false (Subsystems::sThree)) && ((not (signingRequestAdmissible true true (Subsystems::sThree) (Subsystems::sFive) (Subsystems::sTwo) 0 (Subsystems::sTwo) false (Subsystems::sThree))) && ((not (signingRequestAdmissible true false (Subsystems::sSix) (Subsystems::sFive) (Subsystems::sTwo) 0 (Subsystems::sTwo) false (Subsystems::sThree))) && ((not (signingRequestAdmissible true false (Subsystems::sThree) (Subsystems::sFive) (Subsystems::sTwo) 1 (Subsystems::sTwo) false (Subsystems::sThree))) && ((groupCoordinationEnvelopeValid true (Subsystems::sFour) (Subsystems::sFour) true false) && (not (groupCoordinationEnvelopeValid true (Subsystems::sFour) (Subsystems::sFour) true true))))))))))
+}
+
+theorem{
+  name: sovereignGovernanceRulesComplete,
+  parameters: [],
+  statement: (((sovereignGovernanceDirect) && (((project (principle0GenesisOwnerRoot) index) =? 0) && (((project (principle1SigningRequestSubmission) index) =? 1) && (((project (principle2AdminReviewAndVerdict) index) =? (Subsystems::sTwo)) && (((project (principle3ThresholdAdminQuorum) index) =? (Subsystems::sThree)) && (((project (principle4MonotonicAuthorityEpoch) index) =? (Subsystems::sFour)) && (((project (principle5DepartureApprovalRevocation) index) =? (Subsystems::sFive)) && (((project (principle6HistoricalLineageAndCompromiseQuarantine) index) =? (Subsystems::sSix)) && (((project (principle7AntiLockoutSuccession) index) =? (Subsystems::sSeven)) && ((project (principle8DecentralizedGroupCoordination) index) =? (Subsystems::sEight))))))))))) = true),
+  proof: decide{},
+  axioms: []
+}
+
+theorem{
+  name: adminDepartureRevocationVerified,
+  parameters: [],
+  statement: (((not (adminSignatureValidAtEpoch true true (Subsystems::sFour) (Subsystems::sFour))) && ((not (pendingApprovalSurvivesDeparture (Subsystems::sTwo) 1 (Subsystems::sTwo) false (Subsystems::sThree))) && ((not (standingGrantValidAfterDeparture true false true)) && ((standingGrantValidAfterDeparture true true true) && ((historicalCommitValid (Subsystems::sTwo) (Subsystems::sFour) false (Subsystems::sFour) true) && ((not (historicalCommitValid (Subsystems::sThree) (Subsystems::sFour) true (Subsystems::sThree) true)) && (not (authorityEpochAdvanceValid (Subsystems::sThree) (Subsystems::sFour) true true 0 1)))))))) = true),
+  proof: decide{},
+  axioms: []
+}
+
+theorem{
+  name: signingRequestStateMachineVerified,
+  parameters: [],
+  statement: (((signingRequestAdmissible true false (Subsystems::sTwo) (Subsystems::sFour) (Subsystems::sTwo) 0 (Subsystems::sTwo) false (Subsystems::sThree)) && ((not (signingRequestAdmissible false false (Subsystems::sTwo) (Subsystems::sFour) (Subsystems::sTwo) 0 (Subsystems::sTwo) false (Subsystems::sThree))) && ((not (signingRequestAdmissible true true (Subsystems::sTwo) (Subsystems::sFour) (Subsystems::sTwo) 0 (Subsystems::sTwo) false (Subsystems::sThree))) && ((not (signingRequestAdmissible true false (Subsystems::sFive) (Subsystems::sFour) (Subsystems::sTwo) 0 (Subsystems::sTwo) false (Subsystems::sThree))) && ((not (signingRequestAdmissible true false (Subsystems::sTwo) (Subsystems::sFour) (Subsystems::sTwo) 1 (Subsystems::sTwo) false (Subsystems::sThree))) && (not (signingRequestAdmissible true false (Subsystems::sTwo) (Subsystems::sFour) (Subsystems::sTwo) 0 (Subsystems::sTwo) true (Subsystems::sThree)))))))) = true),
+  proof: decide{},
+  axioms: []
+}
+\end{semanticmodule}
+\end{lexlean}

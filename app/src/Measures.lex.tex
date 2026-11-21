@@ -6,6 +6,7 @@
 \importmodule{Engine}
 \importmodule{Foundation.Experience.V1.Model}
 \importmodule{Foundation.Ontology.V1.Model}
+\importmodule{Governance}
 \importmodule{Subsystems}
 \importmodule{Tensor}
 \importmodule{Users}
@@ -142,6 +143,13 @@ definition{
   parameters: [],
   result: Nat,
   body: (if (Subsystems::architecturalWalkabilityValid (Subsystems::citadelStairRiserMilli) (Subsystems::sweptCapsuleMaxStepMilli) (Subsystems::citadelPortalWidthMilli) (prim multiply (Subsystems::sFour) (Subsystems::sHundred) : Nat) (Subsystems::citadelSpringHeightMilli) (prim multiply (Subsystems::sEighteen) (Subsystems::sHundred) : Nat)) then 0 else 1)
+}
+
+definition{
+  name: governancePolicyViolations,
+  parameters: [],
+  result: Nat,
+  body: (if (Governance::sovereignGovernanceDirect) then 0 else 1)
 }
 \end{semanticmodule}
 \end{lexlean}

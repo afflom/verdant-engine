@@ -11,12 +11,12 @@
   "liftedCoverage": {
     "rustModules": 64,
     "verificationTestModules": 24,
-    "lexleanModules": 28,
+    "lexleanModules": 29,
     "featureSuiteModules": 3,
     "modelGovernanceModules": 16,
     "automationScriptModules": 20,
     "viewpointModules": 9,
-    "totalLiftedModules": 164,
+    "totalLiftedModules": 165,
     "allCategoriesLifted": true
   },
   "checks": [
@@ -33,7 +33,7 @@
       "owningManagerId": "mgr-observer-executive",
       "category": "in-process",
       "passed": true,
-      "durationMs": 14,
+      "durationMs": 13,
       "detail": "valid=true entries=16 violations=0"
     },
     {
@@ -66,8 +66,8 @@
       "category": "in-process",
       "passed": true,
       "durationMs": 0,
-      "detail": "total=164 (rust=64, test=24, lex=28, feature=3, model=16, script=20, view=9)"
+      "detail": "total=165 (rust=64, test=24, lex=29, feature=3, model=16, script=20, view=9)"
     }
   ],
-  "reportKappaHex": "cc9238d7728eba3cbe201bc150126f8d26ccc73ce26d0f5c8db95e8544b1fb19"
+  "reportKappaHex": "882438a35ee4554ad8c824e62fc23da5660f5dd60d9717f20dab55fc36242aaf"
 }

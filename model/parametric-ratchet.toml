@@ -20,6 +20,7 @@ pure_zero_one_lex_modules = [
   "app/src/Release.lex.tex",
   "app/src/Measures.lex.tex",
   "app/src/Production/ThreatModel.lex.tex",
+  "app/src/Governance.lex.tex",
 ]
 
 [ceilings]
@@ -123,6 +124,11 @@ role = "Constructive STRIDE threat modeling, risk tolerance matrices, and contro
 path = "app/src/Security.lex.tex"
 stratum = 3
 role = "Verdant Engine browser/Wasm threat model, shader/asset/UORC validation controls, and host-substitution boundary."
+
+[[stratum_module]]
+path = "app/src/Governance.lex.tex"
+stratum = 3
+role = "Constructive {0, 1} GitHub-free sovereign ownership, M-of-N Admin quorum, signing-request state machine, departed-admin approval revocation, anti-lockout succession, and group project coordination."
 
 [[stratum_module]]
 path = "app/src/Foundation/Qual.lex.tex"

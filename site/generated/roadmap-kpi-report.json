@@ -16,10 +16,10 @@
     "managerId": "mgr-knowledge-provenance",
     "lockedAuthoritiesCount": 10,
     "provenanceSourcesCount": 23,
-    "charterBytes": 54149,
-    "governedLexModules": 28,
-    "measuredClosed": 9,
-    "measuredTotal": 9,
+    "charterBytes": 65148,
+    "governedLexModules": 29,
+    "measuredClosed": 10,
+    "measuredTotal": 10,
     "authorityCoveragePct": 100
   },
   "kpis": [
@@ -735,7 +735,7 @@
         "stratum-3-security-stride"
       ],
       "ownedObserverParts": [],
-      "ownedFilesCount": 7,
+      "ownedFilesCount": 8,
       "active": true
     },
     {

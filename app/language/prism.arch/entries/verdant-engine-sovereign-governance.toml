@@ -1,0 +1,17 @@
+spec = "lexlean/entry/1"
+id = "verdant-engine-sovereign-governance"
+category = "label-word"
+surface_arity = 0
+frame = "atom"
+
+[denotation]
+kind = "document"
+module = "Governance"
+component = "governance"
+
+[[form]]
+id = "verdant-engine-sovereign-governance"
+channel = "text"
+surface = "Verdant Engine sovereign governance"
+canonical_source = true
+features = ["sentence-case", "singular"]

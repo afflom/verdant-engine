@@ -6,6 +6,7 @@
 \importmodule{Design}
 \importmodule{Engine}
 \importmodule{Foundation.Arch}
+\importmodule{Governance}
 \importmodule{Security}
 \importmodule{Tensor}
 \title{Verdant Engine features and journeys}
@@ -95,6 +96,27 @@ definition{
 }
 
 definition{
+  name: featureSovereignSigningRequests,
+  parameters: [],
+  result: Foundation.Arch::Feature,
+  body: (record Foundation.Arch::Feature {statement := "Project contributors with local Prism IDs submit content-addressed signing requests for merges, releases, role grants, and group coordination items to Verdant for verifiable Admin review without GitHub.", calls := (cons "Governance::signingRequestAdmissible" (cons "Design::processSubmitSigningRequest" (nil String))), acceptance := (cons "Governance::signingRequestAdmissible" (nil String))})
+}
+
+definition{
+  name: featureAdminQuorumAndRevocation,
+  parameters: [],
+  result: Foundation.Arch::Feature,
+  body: (record Foundation.Arch::Feature {statement := "Verdant Sovereign Admins review, sign, or reject signing requests under an M-of-N authority quorum anchored in the genesis repo owner, immediately revoking a departed Admin's future signing authority and invalidating their pending or standing approvals.", calls := (cons "Governance::pendingApprovalSurvivesDeparture" (cons "Design::processReviewAndSignRequest" (cons "Design::processRevokeDepartedAdmin" (nil String)))), acceptance := (cons "Governance::pendingApprovalSurvivesDeparture" (cons "Governance::standingGrantValidAfterDeparture" (nil String)))})
+}
+
+definition{
+  name: featureDecentralizedProjectCoordination,
+  parameters: [],
+  result: Foundation.Arch::Feature,
+  body: (record Foundation.Arch::Feature {statement := "Teams coordinate issues, RFC proposals, milestones, path-scoped review ownership, and release sign-offs as signed W3C PROV-O envelopes stored inside VerdantVcs and Stitch erasure shards.", calls := (cons "Governance::groupCoordinationEnvelopeValid" (cons "Design::processAdvanceAuthorityEpoch" (nil String))), acceptance := (cons "Governance::sovereignGovernanceDirect" (nil String))})
+}
+
+definition{
   name: journeyGameDeveloper,
   parameters: [],
   result: Foundation.Arch::Journey,
@@ -144,6 +166,20 @@ definition{
 }
 
 definition{
+  name: journeyVerdantAdmin,
+  parameters: [],
+  result: Foundation.Arch::Journey,
+  body: (record Foundation.Arch::Journey {actor := "Architecture::stakeholderVerdantAdmin", steps := (cons "Features::featureSovereignSigningRequests" (cons "Features::featureDecentralizedProjectCoordination" (cons "Features::featureAdminQuorumAndRevocation" (nil String))))})
+}
+
+definition{
+  name: journeyProjectContributor,
+  parameters: [],
+  result: Foundation.Arch::Journey,
+  body: (record Foundation.Arch::Journey {actor := "Architecture::stakeholderProjectContributor", steps := (cons "Features::featureDecentralizedProjectCoordination" (cons "Features::featureSovereignSigningRequests" (cons "Features::featureAdminQuorumAndRevocation" (nil String))))})
+}
+
+definition{
   name: hasCall,
   parameters: [f : Foundation.Arch::Feature],
   result: Bool,
@@ -160,7 +196,7 @@ definition{
 theorem{
   name: featuresAndJourneysRealized,
   parameters: [],
-  statement: ((((hasCall (featureProgressiveUorcStreaming)) && ((hasCall (featurePortableTensorKernels)) && ((hasCall (featureEcsAndBvh)) && ((hasCall (featureGltfAndWgsl)) && ((hasCall (featurePhysicsAndSplines)) && ((hasCall (featureSpatialAudio)) && ((hasCall (featureSnapshotsAndJobGraph)) && ((hasCall (featureStudioAndDocs)) && ((hasCall (featureFormalUiAndCompliance)) && ((hasCall (featureNeuromorphicObserverAndReasoning)) && ((hasCall (featurePrismIdAndStitchUniverses)) && (hasCall (featureLawfulHdCharactersAndUniverses))))))))))))) && (((hasStep (journeyGameDeveloper)) && (hasStep (journeyTechnicalArtist))) && (((hasStep (journeySystemsEngineer)) && (hasStep (journeyBrowserPlayer))) && ((hasStep (journeySecurityAuditor)) && ((hasStep (journeyUiComplianceArchitect)) && (hasStep (journeyMultiplayerCitizen))))))) = true),
+  statement: ((((hasCall (featureProgressiveUorcStreaming)) && ((hasCall (featurePortableTensorKernels)) && ((hasCall (featureEcsAndBvh)) && ((hasCall (featureGltfAndWgsl)) && ((hasCall (featurePhysicsAndSplines)) && ((hasCall (featureSpatialAudio)) && ((hasCall (featureSnapshotsAndJobGraph)) && ((hasCall (featureStudioAndDocs)) && ((hasCall (featureFormalUiAndCompliance)) && ((hasCall (featureNeuromorphicObserverAndReasoning)) && ((hasCall (featurePrismIdAndStitchUniverses)) && ((hasCall (featureLawfulHdCharactersAndUniverses)) && ((hasCall (featureSovereignSigningRequests)) && ((hasCall (featureAdminQuorumAndRevocation)) && (hasCall (featureDecentralizedProjectCoordination)))))))))))))))) && (((hasStep (journeyGameDeveloper)) && (hasStep (journeyTechnicalArtist))) && (((hasStep (journeySystemsEngineer)) && (hasStep (journeyBrowserPlayer))) && ((hasStep (journeySecurityAuditor)) && ((hasStep (journeyUiComplianceArchitect)) && ((hasStep (journeyMultiplayerCitizen)) && ((hasStep (journeyVerdantAdmin)) && (hasStep (journeyProjectContributor))))))))) = true),
   proof: decide{}
 }
 \end{semanticmodule}

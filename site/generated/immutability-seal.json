@@ -2,7 +2,7 @@
   "spec": "verdant/view-immutability-seal/1",
   "owningManager": "mgr-observer-executive",
   "managerKappaHex": "5ddc18b2df519a508614f8afd961bde4d3692dec65de71e4bd80d1045e621c27",
-  "sealRootSha256Hex": "b8484bbedd7f4c0b1c5bc1d9fc7e03c9c12f16d8458a78098e54ea18cfcfd6f4",
+  "sealRootSha256Hex": "303559e1e67afcd28fbd7b6c8d98ec6e3ba3c07846e7465540989a7ad27d458f",
   "files": [
     {
       "path": "site/card.html",
@@ -94,8 +94,8 @@
         "AUTH-ISO-42010-VIEWPOINTS",
         "AUTH-SEMVER-CHANGE-KPI"
       ],
-      "bytes": 28707,
-      "sha256Hex": "69a348878b0a8eb7946da4cac6c2ccc3d943648b7b21323ee7683a3876a90083",
+      "bytes": 28809,
+      "sha256Hex": "a321021310b053418025f52b0978a00b27a568548a48d9f2c4df67f7f58f1d9e",
       "lastDirectiveKappaHex": "7447a6ad81b66b8c718a8588087d26ab958893caf47cfeacb6dea8bf262ca8e6"
     },
     {
@@ -184,8 +184,8 @@
         "AUTH-SEMVER-CHANGE-KPI",
         "AUTH-ISO-42010-VIEWPOINTS"
       ],
-      "bytes": 26938,
-      "sha256Hex": "4992e0af3299ed58d4e9b6fed190f91d37c39c4ed405610fc112eedfe36b6a19",
+      "bytes": 26940,
+      "sha256Hex": "aa4fdce529027651006a21450839cf27cf58e21a5798a612416b7f769582497b",
       "lastDirectiveKappaHex": "7447a6ad81b66b8c718a8588087d26ab958893caf47cfeacb6dea8bf262ca8e6"
     },
     {
@@ -197,8 +197,8 @@
         "AUTH-ISO-42010-VIEWPOINTS",
         "AUTH-SEMVER-CHANGE-KPI"
       ],
-      "bytes": 8526,
-      "sha256Hex": "43a98bbb885334b662d3788fbd9f78ec7abd935f7ea0066dd8b19453ce3e3575",
+      "bytes": 8527,
+      "sha256Hex": "9a9fe647419f0980f8b817de157029f109ee1b646c9e094cdf249981cbe05332",
       "lastDirectiveKappaHex": "7447a6ad81b66b8c718a8588087d26ab958893caf47cfeacb6dea8bf262ca8e6"
     },
     {
@@ -211,7 +211,7 @@
         "AUTH-SEMVER-CHANGE-KPI"
       ],
       "bytes": 2104,
-      "sha256Hex": "07cee74a03d4ddb5d9b1dc0f73643d7c2c3b32377cb35d9cb6598094d5c0048b",
+      "sha256Hex": "6e8ccef7f44b9f12cab821f268f1edcd5dccff89f23ae8cf788132cd7008a402",
       "lastDirectiveKappaHex": "7447a6ad81b66b8c718a8588087d26ab958893caf47cfeacb6dea8bf262ca8e6"
     }
   ]

@@ -6,8 +6,8 @@
   "overallRefinementScorePermille": 950,
   "liveMetrics": {
     "wasmCoreBytes": 156431,
-    "wasmUorcBytes": 3917060,
-    "releaseCapsuleBytes": 1473499,
+    "wasmUorcBytes": 3917156,
+    "releaseCapsuleBytes": 1472503,
     "blankFrameBytes": 28370,
     "maxHandwrittenRustFileLines": 1965,
     "maxJsFileLines": 1392,
@@ -31,7 +31,7 @@
       "vsmSystem": "VSM-S3",
       "viewpointId": "architecture-design",
       "ownedFileCount": 7,
-      "maxFileLines": 769,
+      "maxFileLines": 1000,
       "heaviestFile": "app/src/Design.lex.tex",
       "healthScorePermille": 1000
     },
@@ -40,7 +40,7 @@
       "vsmSystem": "VSM-S4",
       "viewpointId": "knowledge-provenance",
       "ownedFileCount": 7,
-      "maxFileLines": 470,
+      "maxFileLines": 547,
       "heaviestFile": "app/src/Provenance.lex.tex",
       "healthScorePermille": 1000
     },
@@ -57,7 +57,7 @@
       "managerId": "mgr-security-trust",
       "vsmSystem": "VSM-S3",
       "viewpointId": "security-trust",
-      "ownedFileCount": 7,
+      "ownedFileCount": 8,
       "maxFileLines": 1756,
       "heaviestFile": "crates/verdant-core/src/network.rs",
       "healthScorePermille": 900
@@ -121,8 +121,8 @@
       "vsmSystem": "VSM-S3-STAR",
       "viewpointId": "verification-observatory",
       "ownedFileCount": 16,
-      "maxFileLines": 10582,
-      "heaviestFile": "frontier.toml",
+      "maxFileLines": 13885,
+      "heaviestFile": "fidelity.toml",
       "healthScorePermille": 750
     },
     {
@@ -222,15 +222,15 @@
       "citedAuthority": "AUTH-STITCH-SELF-HOSTING",
       "ratchetLayer": "surface-wasm",
       "priority": "continuous",
-      "currentValue": "verdant-uorc.wasm 3917060 B · .holo 1473499 B · Blank Frame 28370 B (2350 B headroom)",
+      "currentValue": "verdant-uorc.wasm 3917156 B · .holo 1472503 B · Blank Frame 28370 B (2350 B headroom)",
       "targetValue": "verdant-uorc.wasm <= 4194304 B while preserving gzipped .holo <= 1.72 MiB",
       "summary": "Trim unused codec paths on wasm32 and preserve gzipped STCH2 shard efficiency for cold Blank Frame boots.",
       "concreteActions": [
         "Audit gltf/image feature flags on wasm32 to drop unused color/codec tables.",
         "Maintain Blank Frame strictly under 30720 B with DecompressionStream('gzip')."
       ],
-      "kappaHex": "6950ca93f690f59541bd5629d5434121e3ed4f403174e0d963b2cc7eea2c2483"
+      "kappaHex": "509af7a190f843bb446d210dc31fa602c47015ee5565604263e293ef3a05b423"
     }
   ],
-  "agendaKappaHex": "f63f825f183491e97c2a04835d8585bae9f124a0dab2423fdea34971212d0b44"
+  "agendaKappaHex": "c39376bf715fe6522dbe51b1307093c0082be1b6926c953277cba94decd5b71d"
 }

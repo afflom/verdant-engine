@@ -221,6 +221,27 @@ definition{
 }
 
 definition{
+  name: viewOpmSovereignSigningAndRevocation,
+  parameters: [],
+  result: DiagramView,
+  body: (record DiagramView {title := "Submitting signing requests, reviewing under M-of-N Admin quorum, and revoking departed Admin approvals", viewpoint := "Architecture::viewpointAdminSovereignAuthority", diagram := (ctor DiagramKind.opmObjectProcess)})
+}
+
+definition{
+  name: viewUmlSigningRequestReview,
+  parameters: [],
+  result: DiagramView,
+  body: (record DiagramView {title := "Contributor signing request review, quorum sign or reject, and epoch verification sequence", viewpoint := "Architecture::viewpointContributorSigningCoordination", diagram := (ctor DiagramKind.umlSequence)})
+}
+
+definition{
+  name: viewUmlAdminAuthorityLifecycle,
+  parameters: [],
+  result: DiagramView,
+  body: (record DiagramView {title := "Sovereign Admin authority lifecycle from Genesis Owner through active quorum custody to departed revocation", viewpoint := "Architecture::viewpointAdminSovereignAuthority", diagram := (ctor DiagramKind.umlStateMachine)})
+}
+
+definition{
   name: processBuildSceneWorld,
   parameters: [],
   result: EngineProcess,
@@ -305,6 +326,34 @@ definition{
 }
 
 definition{
+  name: processSubmitSigningRequest,
+  parameters: [],
+  result: EngineProcess,
+  body: (record EngineProcess {owner := "Architecture::componentSigningRequestGate"})
+}
+
+definition{
+  name: processReviewAndSignRequest,
+  parameters: [],
+  result: EngineProcess,
+  body: (record EngineProcess {owner := "Architecture::componentSigningRequestGate"})
+}
+
+definition{
+  name: processAdvanceAuthorityEpoch,
+  parameters: [],
+  result: EngineProcess,
+  body: (record EngineProcess {owner := "Architecture::componentSovereignAuthorityLedger"})
+}
+
+definition{
+  name: processRevokeDepartedAdmin,
+  parameters: [],
+  result: EngineProcess,
+  body: (record EngineProcess {owner := "Architecture::componentSovereignAuthorityLedger"})
+}
+
+definition{
   name: stateSceneProxyLod,
   parameters: [],
   result: EngineState,
@@ -330,6 +379,27 @@ definition{
   parameters: [],
   result: EngineState,
   body: (record EngineState {owner := "Architecture::componentVerifierGuest"})
+}
+
+definition{
+  name: stateAuthorityGenesisOwner,
+  parameters: [],
+  result: EngineState,
+  body: (record EngineState {owner := "Architecture::componentSovereignAuthorityLedger"})
+}
+
+definition{
+  name: stateAuthorityActiveQuorumAdmin,
+  parameters: [],
+  result: EngineState,
+  body: (record EngineState {owner := "Architecture::componentSovereignAuthorityLedger"})
+}
+
+definition{
+  name: stateAuthorityDepartedRevoked,
+  parameters: [],
+  result: EngineState,
+  body: (record EngineState {owner := "Architecture::componentSovereignAuthorityLedger"})
 }
 
 definition{
@@ -732,6 +802,167 @@ definition{
 }
 
 definition{
+  name: opmSigningGateObject,
+  parameters: [],
+  result: OpmThingSpec,
+  body: (record OpmThingSpec {view := "Design::viewOpmSovereignSigningAndRevocation", kind := (ctor OpmThingKind.object), subject := "Architecture::componentSigningRequestGate"})
+}
+
+definition{
+  name: opmAuthorityLedgerObject,
+  parameters: [],
+  result: OpmThingSpec,
+  body: (record OpmThingSpec {view := "Design::viewOpmSovereignSigningAndRevocation", kind := (ctor OpmThingKind.object), subject := "Architecture::componentSovereignAuthorityLedger"})
+}
+
+definition{
+  name: opmSubmitSigningProcess,
+  parameters: [],
+  result: OpmThingSpec,
+  body: (record OpmThingSpec {view := "Design::viewOpmSovereignSigningAndRevocation", kind := (ctor OpmThingKind.process), subject := "Design::processSubmitSigningRequest"})
+}
+
+definition{
+  name: opmReviewAndSignProcess,
+  parameters: [],
+  result: OpmThingSpec,
+  body: (record OpmThingSpec {view := "Design::viewOpmSovereignSigningAndRevocation", kind := (ctor OpmThingKind.process), subject := "Design::processReviewAndSignRequest"})
+}
+
+definition{
+  name: opmRevokeDepartedProcess,
+  parameters: [],
+  result: OpmThingSpec,
+  body: (record OpmThingSpec {view := "Design::viewOpmSovereignSigningAndRevocation", kind := (ctor OpmThingKind.process), subject := "Design::processRevokeDepartedAdmin"})
+}
+
+definition{
+  name: opmSubmitInvokesReview,
+  parameters: [],
+  result: OpmLinkSpec,
+  body: (record OpmLinkSpec {view := "Design::viewOpmSovereignSigningAndRevocation", kind := (ctor OpmLinkKind.invocation), source := "Design::processSubmitSigningRequest", target := "Design::processReviewAndSignRequest"})
+}
+
+definition{
+  name: opmRevokeAffectsAuthority,
+  parameters: [],
+  result: OpmLinkSpec,
+  body: (record OpmLinkSpec {view := "Design::viewOpmSovereignSigningAndRevocation", kind := (ctor OpmLinkKind.effect), source := "Architecture::componentSovereignAuthorityLedger", target := "Design::processRevokeDepartedAdmin"})
+}
+
+definition{
+  name: umlAuthorityLedger,
+  parameters: [],
+  result: UmlComponentSpec,
+  body: (record UmlComponentSpec {view := "Design::viewUmlComponents", component := "Architecture::componentSovereignAuthorityLedger"})
+}
+
+definition{
+  name: umlSigningGate,
+  parameters: [],
+  result: UmlComponentSpec,
+  body: (record UmlComponentSpec {view := "Design::viewUmlComponents", component := "Architecture::componentSigningRequestGate"})
+}
+
+definition{
+  name: umlStudioToSigningGate,
+  parameters: [],
+  result: UmlConnectorSpec,
+  body: (record UmlConnectorSpec {view := "Design::viewUmlComponents", edge := "Architecture::edgeStudioToSigningGate"})
+}
+
+definition{
+  name: umlSigningGateToLedger,
+  parameters: [],
+  result: UmlConnectorSpec,
+  body: (record UmlConnectorSpec {view := "Design::viewUmlComponents", edge := "Architecture::edgeSigningGateToAuthorityLedger"})
+}
+
+definition{
+  name: umlLedgerToStitch,
+  parameters: [],
+  result: UmlConnectorSpec,
+  body: (record UmlConnectorSpec {view := "Design::viewUmlComponents", edge := "Architecture::edgeAuthorityLedgerToStitch"})
+}
+
+definition{
+  name: seqGovStudio,
+  parameters: [],
+  result: UmlLifelineSpec,
+  body: (record UmlLifelineSpec {view := "Design::viewUmlSigningRequestReview", component := "Architecture::componentEngineStudioSite", order := 0})
+}
+
+definition{
+  name: seqGovSigningGate,
+  parameters: [],
+  result: UmlLifelineSpec,
+  body: (record UmlLifelineSpec {view := "Design::viewUmlSigningRequestReview", component := "Architecture::componentSigningRequestGate", order := 1})
+}
+
+definition{
+  name: seqGovAuthorityLedger,
+  parameters: [],
+  result: UmlLifelineSpec,
+  body: (record UmlLifelineSpec {view := "Design::viewUmlSigningRequestReview", component := "Architecture::componentSovereignAuthorityLedger", order := 2})
+}
+
+definition{
+  name: seqGovSubmitRequest,
+  parameters: [],
+  result: UmlMessageSpec,
+  body: (record UmlMessageSpec {view := "Design::viewUmlSigningRequestReview", kind := (ctor UmlMessageKind.synchronous), order := 0, source := "Architecture::componentEngineStudioSite", target := "Architecture::componentSigningRequestGate", process := "Design::processSubmitSigningRequest"})
+}
+
+definition{
+  name: seqGovVerifyEpoch,
+  parameters: [],
+  result: UmlMessageSpec,
+  body: (record UmlMessageSpec {view := "Design::viewUmlSigningRequestReview", kind := (ctor UmlMessageKind.synchronous), order := 1, source := "Architecture::componentSigningRequestGate", target := "Architecture::componentSovereignAuthorityLedger", process := "Design::processAdvanceAuthorityEpoch"})
+}
+
+definition{
+  name: seqGovReviewVerdict,
+  parameters: [],
+  result: UmlMessageSpec,
+  body: (record UmlMessageSpec {view := "Design::viewUmlSigningRequestReview", kind := (ctor UmlMessageKind.reply), order := 2, source := "Architecture::componentSovereignAuthorityLedger", target := "Architecture::componentSigningRequestGate", process := "Design::processReviewAndSignRequest"})
+}
+
+definition{
+  name: stAuthorityGenesisOwner,
+  parameters: [],
+  result: UmlStateSpec,
+  body: (record UmlStateSpec {view := "Design::viewUmlAdminAuthorityLifecycle", state := "Design::stateAuthorityGenesisOwner", initial := true})
+}
+
+definition{
+  name: stAuthorityActiveQuorumAdmin,
+  parameters: [],
+  result: UmlStateSpec,
+  body: (record UmlStateSpec {view := "Design::viewUmlAdminAuthorityLifecycle", state := "Design::stateAuthorityActiveQuorumAdmin", initial := false})
+}
+
+definition{
+  name: stAuthorityDepartedRevoked,
+  parameters: [],
+  result: UmlStateSpec,
+  body: (record UmlStateSpec {view := "Design::viewUmlAdminAuthorityLifecycle", state := "Design::stateAuthorityDepartedRevoked", initial := false})
+}
+
+definition{
+  name: trBootstrapQuorum,
+  parameters: [],
+  result: UmlTransitionSpec,
+  body: (record UmlTransitionSpec {view := "Design::viewUmlAdminAuthorityLifecycle", order := 0, source := "Design::stateAuthorityGenesisOwner", target := "Design::stateAuthorityActiveQuorumAdmin", trigger := "Design::processAdvanceAuthorityEpoch"})
+}
+
+definition{
+  name: trDepartAndRevoke,
+  parameters: [],
+  result: UmlTransitionSpec,
+  body: (record UmlTransitionSpec {view := "Design::viewUmlAdminAuthorityLifecycle", order := 1, source := "Design::stateAuthorityActiveQuorumAdmin", target := "Design::stateAuthorityDepartedRevoked", trigger := "Design::processRevokeDepartedAdmin"})
+}
+
+definition{
   name: allStringsPopulated,
   parameters: [items : (List String)],
   result: Bool,
@@ -745,7 +976,7 @@ definition{
 theorem{
   name: designViewsConsistent,
   parameters: [],
-  statement: (((((project (opmZoomStream) order) =? 0) && (((project (opmZoomTensors) order) =? 1) && ((project (opmZoomExport) order) =? 2))) && ((((project (seqStudio) order) =? 0) && (((project (seqVerifier) order) =? 1) && (((project (seqCanvasHost) order) =? 2) && (((project (seqStitchStudio) order) =? 0) && ((project (seqStitchFabric) order) =? 1))))) && ((((project (seqVerifyRequest) order) =? 0) && (((project (seqVerifyReply) order) =? 1) && (((project (seqDrawSubmit) order) =? 2) && (((project (seqStitchShardRequest) order) =? 0) && ((project (seqStitchRecoverReply) order) =? 1))))) && (((project (stVerifierIdle) initial) && (not (project (stVerifierEvaluating) initial))) && (((project (trParseQuery) order) =? 0) && ((project (trEmitVerdict) order) =? 1)))))) = true),
+  statement: (((((project (opmZoomStream) order) =? 0) && (((project (opmZoomTensors) order) =? 1) && ((project (opmZoomExport) order) =? 2))) && ((((project (seqStudio) order) =? 0) && (((project (seqVerifier) order) =? 1) && (((project (seqCanvasHost) order) =? 2) && (((project (seqStitchStudio) order) =? 0) && (((project (seqStitchFabric) order) =? 1) && (((project (seqGovStudio) order) =? 0) && (((project (seqGovSigningGate) order) =? 1) && ((project (seqGovAuthorityLedger) order) =? 2)))))))) && ((((project (seqVerifyRequest) order) =? 0) && (((project (seqVerifyReply) order) =? 1) && (((project (seqDrawSubmit) order) =? 2) && (((project (seqStitchShardRequest) order) =? 0) && (((project (seqStitchRecoverReply) order) =? 1) && (((project (seqGovSubmitRequest) order) =? 0) && (((project (seqGovVerifyEpoch) order) =? 1) && ((project (seqGovReviewVerdict) order) =? 2)))))))) && (((project (stVerifierIdle) initial) && ((not (project (stVerifierEvaluating) initial)) && ((project (stAuthorityGenesisOwner) initial) && ((not (project (stAuthorityActiveQuorumAdmin) initial)) && (not (project (stAuthorityDepartedRevoked) initial)))))) && (((project (trParseQuery) order) =? 0) && (((project (trEmitVerdict) order) =? 1) && (((project (trBootstrapQuorum) order) =? 0) && ((project (trDepartAndRevoke) order) =? 1)))))))) = true),
   proof: decide{},
   axioms: []
 }
@@ -753,7 +984,7 @@ theorem{
 theorem{
   name: designViewsAndProcessesNamed,
   parameters: [],
-  statement: ((allStringsPopulated (cons (project (viewOpmSceneStreaming) title) (cons (project (viewUmlComponents) title) (cons (project (viewUmlFrameSequence) title) (cons (project (viewUmlVerifierStates) title) (cons (project (viewOpmCyberneticLoop) title) (cons (project (viewUmlStitchRollback) title) (cons (project (viewOpmLawfulWorldAndStory) title) (cons (project (processBuildSceneWorld) owner) (cons (project (processStreamUorcLods) owner) (cons (project (processExecuteTensorKernels) owner) (cons (project (processExportGlbAndShaders) owner) (cons (project (processParseQuery) owner) (cons (project (processVerifyTensorAndLod) owner) (cons (project (processRenderViewportFrame) owner) (cons (project (processSolveUiConstraints) owner) (cons (project (processStepCyberneticObserver) owner) (cons (project (processRecoverStitchFragments) owner) (cons (project (processStepLawfulPhysicsAndCamera) owner) (cons (project (processAdvanceStoryConservation) owner) (cons (project (stateSceneProxyLod) owner) (cons (project (stateSceneLosslessLod) owner) (cons (project (stateVerifierIdle) owner) (cons (project (stateVerifierEvaluating) owner) (nil String))))))))))))))))))))))))) = true),
+  statement: ((allStringsPopulated (cons (project (viewOpmSceneStreaming) title) (cons (project (viewUmlComponents) title) (cons (project (viewUmlFrameSequence) title) (cons (project (viewUmlVerifierStates) title) (cons (project (viewOpmCyberneticLoop) title) (cons (project (viewUmlStitchRollback) title) (cons (project (viewOpmLawfulWorldAndStory) title) (cons (project (viewOpmSovereignSigningAndRevocation) title) (cons (project (viewUmlSigningRequestReview) title) (cons (project (viewUmlAdminAuthorityLifecycle) title) (cons (project (processBuildSceneWorld) owner) (cons (project (processStreamUorcLods) owner) (cons (project (processExecuteTensorKernels) owner) (cons (project (processExportGlbAndShaders) owner) (cons (project (processParseQuery) owner) (cons (project (processVerifyTensorAndLod) owner) (cons (project (processRenderViewportFrame) owner) (cons (project (processSolveUiConstraints) owner) (cons (project (processStepCyberneticObserver) owner) (cons (project (processRecoverStitchFragments) owner) (cons (project (processStepLawfulPhysicsAndCamera) owner) (cons (project (processAdvanceStoryConservation) owner) (cons (project (processSubmitSigningRequest) owner) (cons (project (processReviewAndSignRequest) owner) (cons (project (processAdvanceAuthorityEpoch) owner) (cons (project (processRevokeDepartedAdmin) owner) (cons (project (stateSceneProxyLod) owner) (cons (project (stateSceneLosslessLod) owner) (cons (project (stateVerifierIdle) owner) (cons (project (stateVerifierEvaluating) owner) (cons (project (stateAuthorityGenesisOwner) owner) (cons (project (stateAuthorityActiveQuorumAdmin) owner) (cons (project (stateAuthorityDepartedRevoked) owner) (nil String))))))))))))))))))))))))))))))))))) = true),
   proof: decide{},
   axioms: []
 }
@@ -761,7 +992,7 @@ theorem{
 theorem{
   name: designOpmAndUmlElementsBound,
   parameters: [],
-  statement: ((allStringsPopulated (cons (project (opmCoreEngine) subject) (cons (project (opmStudioScene) subject) (cons (project (opmBuildScene) subject) (cons (project (opmStreamLods) subject) (cons (project (opmExecuteTensors) subject) (cons (project (opmExport) subject) (cons (project (opmCyberneticStudio) subject) (cons (project (opmCyberneticStepProcess) subject) (cons (project (opmCyberneticUiProcess) subject) (cons (project (opmCyberneticDrivesUi) target) (cons (project (opmLawfulWasmHost) subject) (cons (project (opmLawfulStepProcess) subject) (cons (project (opmStoryConservationProcess) subject) (cons (project (opmLawfulInvokesStory) target) (cons (project (opmSceneAtProxy) state) (cons (project (opmSceneAtLossless) state) (cons (project (opmCoreAgent) target) (cons (project (opmStreamInvokesTensors) target) (cons (project (opmTensorsInvokeExport) target) (cons (project (opmExportAffectsScene) target) (cons (project (umlVerdantCore) component) (cons (project (umlVerdantTensor) component) (cons (project (umlVerdantWasm) component) (cons (project (umlVerdantCli) component) (cons (project (umlStitchFabric) component) (cons (project (umlCliExamples) component) (cons (project (umlEngineStudio) component) (cons (project (umlVerifierGuest) component) (cons (project (umlBrowserCanvas) component) (cons (project (umlBrowserAudio) component) (cons (project (umlTensorToCore) edge) (cons (project (umlCoreToWasm) edge) (cons (project (umlWasmToStudio) edge) (cons (project (umlCoreToCli) edge) (cons (project (umlCoreToExamples) edge) (cons (project (umlCoreToStudio) edge) (cons (project (umlStudioToCanvas) edge) (cons (project (umlStudioToAudio) edge) (cons (project (umlStudioToVerifier) edge) (cons (project (umlVerifierToStudio) edge) (nil String)))))))))))))))))))))))))))))))))))))))))) = true),
+  statement: ((allStringsPopulated (cons (project (opmCoreEngine) subject) (cons (project (opmStudioScene) subject) (cons (project (opmBuildScene) subject) (cons (project (opmStreamLods) subject) (cons (project (opmExecuteTensors) subject) (cons (project (opmExport) subject) (cons (project (opmCyberneticStudio) subject) (cons (project (opmCyberneticStepProcess) subject) (cons (project (opmCyberneticUiProcess) subject) (cons (project (opmCyberneticDrivesUi) target) (cons (project (opmLawfulWasmHost) subject) (cons (project (opmLawfulStepProcess) subject) (cons (project (opmStoryConservationProcess) subject) (cons (project (opmLawfulInvokesStory) target) (cons (project (opmSigningGateObject) subject) (cons (project (opmAuthorityLedgerObject) subject) (cons (project (opmSubmitSigningProcess) subject) (cons (project (opmReviewAndSignProcess) subject) (cons (project (opmRevokeDepartedProcess) subject) (cons (project (opmSubmitInvokesReview) target) (cons (project (opmRevokeAffectsAuthority) target) (cons (project (opmSceneAtProxy) state) (cons (project (opmSceneAtLossless) state) (cons (project (opmCoreAgent) target) (cons (project (opmStreamInvokesTensors) target) (cons (project (opmTensorsInvokeExport) target) (cons (project (opmExportAffectsScene) target) (cons (project (umlVerdantCore) component) (cons (project (umlVerdantTensor) component) (cons (project (umlVerdantWasm) component) (cons (project (umlVerdantCli) component) (cons (project (umlStitchFabric) component) (cons (project (umlAuthorityLedger) component) (cons (project (umlSigningGate) component) (cons (project (umlCliExamples) component) (cons (project (umlEngineStudio) component) (cons (project (umlVerifierGuest) component) (cons (project (umlBrowserCanvas) component) (cons (project (umlBrowserAudio) component) (cons (project (umlTensorToCore) edge) (cons (project (umlCoreToWasm) edge) (cons (project (umlWasmToStudio) edge) (cons (project (umlCoreToCli) edge) (cons (project (umlCoreToExamples) edge) (cons (project (umlCoreToStudio) edge) (cons (project (umlStudioToCanvas) edge) (cons (project (umlStudioToAudio) edge) (cons (project (umlStudioToVerifier) edge) (cons (project (umlVerifierToStudio) edge) (cons (project (umlStudioToSigningGate) edge) (cons (project (umlSigningGateToLedger) edge) (cons (project (umlLedgerToStitch) edge) (nil String)))))))))))))))))))))))))))))))))))))))))))))))))))))) = true),
   proof: decide{},
   axioms: []
 }
