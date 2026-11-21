@@ -570,7 +570,7 @@ impl VerdantOperatorChannel {
             "Keep browser verdant-uorc.wasm lean (< 2.0 MiB) and preserve gzipped STCH2 shard efficiency for cold Blank Frame boots."
                 .to_string(),
             vec![
-                "Decode GLB embedded PBR textures via native browser createImageBitmap instead of shipping image/moxcms in wasm32."
+                "Split heavy uorc_decompress and gltf-json paths into an on-demand lazy Wasm module so verdant-uorc.wasm drops below 2.0 MiB."
                     .to_string(),
                 "Maintain Blank Frame strictly under 30720 B with DecompressionStream('gzip')."
                     .to_string(),

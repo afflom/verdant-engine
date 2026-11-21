@@ -425,6 +425,7 @@
         "site/studio/index.html",
         "site/studio/studio-page.mjs",
         "site/studio/studio-boot.mjs",
+        "site/studio/studio-viewport.mjs",
         "site/studio/authority-panel.mjs",
         "site/studio/discovery-panel.mjs",
         "site/studio/outliner.mjs",
@@ -502,6 +503,7 @@
         "site/catalogs/index.html",
         "site/catalogs/catalogs.mjs",
         "site/catalog-streams.mjs",
+        "site/catalog-streams-local.mjs",
         "site/catalog-streams-stitch.mjs",
         "site/prism-catalogs.mjs",
         "site/generated/stitch-app-catalog.json"

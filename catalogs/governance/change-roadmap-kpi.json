@@ -253,6 +253,16 @@
       "requiredCapabilities": ["VE-72"],
       "owningManagers": ["mgr-change-release", "mgr-security-trust", "mgr-runtime-stage", "mgr-verification-observatory", "mgr-observer-executive"],
       "ratchetRequirement": "Close the local-vs-CI release gate gap by running repo-conformance --test engine inside lifecycle-gate --full and dynamic ratchet-aware Observer refinement targets; drop image/moxcms/png/zune-jpeg from wasm32 via gltf-image-decode feature gating and browser-native createImageBitmap PBR decoding to cut site/verdant-uorc.wasm <= 3810000 B (sub-910 KiB gzipped) and max_release_capsule_bytes <= 1410000 B even while embedding the unified SovereignAuthorityLedger Wasm kernel; bind VerdantVcs commits and VerdantReleaseCapsule .holo sealing to verified SovereignAuthorityLedger ApprovalCertificates with unified Wasm/CLI/MCP authority_cert.rs JSON bridge; and shrink existing uorust residue strictly below 1169 (<= 1168) and uncertified strictly below 1325 (<= 1324) while expanding lifted constructive functions >= 380."
+    },
+    {
+      "milestoneId": "M21",
+      "targetVersion": "2.13.0",
+      "tier": "minor",
+      "title": "Sub-1500L Rust Modularity (178+ Lifted Modules), Sub-1125L Shipped JS Decomposition & Deep uorust Residue Elimination (420+ Lifted / <= 1162 Residue)",
+      "stakeholders": ["creator", "developer", "systems-engineer", "operator", "auditor", "admin", "contributor"],
+      "requiredCapabilities": ["VE-73"],
+      "owningManagers": ["mgr-runtime-stage", "mgr-studio-alm", "mgr-catalog-curator", "mgr-verification-observatory", "mgr-observer-executive"],
+      "ratchetRequirement": "Decompose all remaining Rust files >= 1500L (streaming.rs/streaming_uorc.rs, ecs.rs/ecs_tlas.rs, physics.rs/physics_controller.rs, verdant-cli/src/lib.rs/automate_cmd.rs, authority.rs/authority_cert.rs -> max_handwritten_rust_file_lines <= 1495, >= 178 lifted lifecycle modules) and all remaining shipped JS files >= 1125L (catalog-streams.mjs/catalog-streams-local.mjs, studio/studio-page.mjs/studio-viewport.mjs, engine-worker.mjs/engine-worker-extended.mjs -> max_js_file_lines <= 1125 with lower FR-03 weight), eliminate existing uorust residue in place (PagedTensorArena, ContainerGrantMatrix, KnowledgeProvenanceManager, FrameBudgetProfiler, tropical_inf_sentinel) while expanding lifted constructive functions >= 420 and shrinking residue <= 1164 and uncertified <= 1321 across M1..M21."
     }
   ],
   "kpiCatalog": [

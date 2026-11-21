@@ -4,10 +4,10 @@
   "authorityId": "AUTH-SEMVER-CHANGE-KPI",
   "currentVersion": {
     "major": 2,
-    "minor": 12,
+    "minor": 13,
     "patch": 0
   },
-  "releaseEpoch": 16,
+  "releaseEpoch": 17,
   "history": [
     {
       "version": "0.1.0",
@@ -140,6 +140,13 @@
       "releaseEpoch": 16,
       "bumpKind": "minor",
       "summary": "M20: CI-parity lifecycle-gate (conformance-engine), -117 KiB wasm32 gltf-image split with browser createImageBitmap PBR decoding, ApprovalCertificate VCS/release custody & unified Wasm/CLI/MCP authority bridge, and net uorust residue reduction (387 lifted / 1167 residue / 1324 uncertified)",
+      "citedAuthority": "AUTH-SEMVER-CHANGE-KPI"
+    },
+    {
+      "version": "2.13.0",
+      "releaseEpoch": 17,
+      "bumpKind": "minor",
+      "summary": "M21: Sub-1500L Rust modularity (179 lifted modules), sub-1125L shipped JS decomposition, wasm32 governance-catalog trim & 421 MIR-lifted functions (1164 residue / 1321 uncertified)",
       "citedAuthority": "AUTH-SEMVER-CHANGE-KPI"
     }
   ]

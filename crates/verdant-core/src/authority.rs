@@ -361,29 +361,6 @@ pub enum AuthorityCommand {
     },
 }
 
-/// Content-addressed cryptographic approval certificate binding a finalized signing request
-/// (`SovereignAuthorityLedger`) directly into `VerdantVcs` commits and `.holo` release capsules (`VE-72`).
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct ApprovalCertificate {
-    /// Fixed schema identifier (`verdant/approval-certificate/1`).
-    pub spec: String,
-    /// Finalized signing request `kappa`.
-    pub request_kappa: String,
-    /// Target `VerdantVcs` commit/tree or `.holo` release `kappa` authorized by this certificate.
-    pub target_kappa: String,
-    /// Authorized privileged action kind (`MergeCommit`, `CutRelease`, etc.).
-    pub action: SigningActionKind,
-    /// Authority epoch at which the signing request was finalized.
-    pub finalized_epoch: u64,
-    /// Active M-of-N quorum threshold satisfied at `finalized_epoch`.
-    pub quorum_threshold_m: u64,
-    /// Sorted list of distinct active Sovereign Admin `Prism ID`s that signed approval.
-    pub approver_prism_ids: Vec<String>,
-    /// Deterministic SHA-256 hex commitment over all certificate fields.
-    pub certificate_kappa: String,
-}
-
 /// Structured outcome returned by [`SovereignAuthorityLedger::execute`].
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]

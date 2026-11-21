@@ -11,6 +11,7 @@ import { initStudioOutliner } from "./outliner.mjs";
 import { initStudioObserverPanel } from "./observer-panel.mjs";
 import { initStudioProjectInspector } from "./project-inspector.mjs";
 import { bootStudioWorkspace } from "./studio-boot.mjs";
+import { createStudioViewportController } from "./studio-viewport.mjs";
 import { DOMAIN_DEFAULT_GENRE, initStudioDiscoveryPanel } from "./discovery-panel.mjs";
 import { initStudioStageAssets, initStudioDomainWizard } from "./stage-assets.mjs";
 import {
@@ -567,195 +568,63 @@ const callWorker = (kind, payload = {}, transfer = []) =>
         worker.postMessage({ kind, id, ...payload }, transfer);
       });
 
-function pxDims() {
-  if (!canvas) return { w: 640, h: 360 };
-  const dpr = Math.min(window.devicePixelRatio || 1, 4);
-  return {
-    w: Math.max(1, Math.floor((canvas.clientWidth || 640) * dpr)),
-    h: Math.max(1, Math.floor((canvas.clientHeight || 360) * dpr)),
-  };
-}
-
-async function syncFallbackBuffers() {
-  if (offOk || !fbR || !worker) return;
-  const r = await callWorker("get-packed-buffers", { simClockSec });
-  if (r?.ok) {
-    fbR.uploadPackedBuffers(r.pos, r.norm, r.col, r.idx);
-    lTris = r.tris || lTris;
-    if (r.camera) {
-      sEye = r.camera.eye;
-      sTgt = r.camera.lookTarget;
-      lClr = r.camera.clearanceMm ?? lClr;
-    }
-  }
-}
-
-function requestRender() {
-  if (rafId === 0) {
-    prevNow = performance.now();
-    rafId = requestAnimationFrame(renderFrame);
-  }
-}
-
-function renderFrame(now) {
-  rafId = 0;
-  const dt = Math.min(0.05, Math.max(0.001, (now - prevNow) * 0.001));
-  prevNow = now;
-  const stepping = simLive || followMover;
-  if (stepping) simClockSec += dt;
-  let dYaw = pYaw;
-  const dPit = pPit;
-  const dDst = pDst;
-  pYaw = pPit = pDst = 0;
-  if (simLive && !dragging && camPreset === "landmark" && !followMover) dYaw += dt * 0.14;
-
-  const { w, h } = pxDims();
-  const lod = currentLodSpec();
-  if (offOk && worker && workerFramesInFlight < 2) {
-    workerFramesInFlight++;
-    worker.postMessage({
-      kind: "frame",
-      width: w,
-      height: h,
-      dt,
-      stepPhysics: stepping,
-      followMover,
-      fwd: 0,
-      strafe: 0,
-      speedScale: 1,
-      jump: false,
-      deltaYaw: dYaw,
-      deltaPitch: dPit,
-      deltaDist: dDst,
-      gazedSlot: 0,
-      dwellMs: 400,
-      angSpeedMilli: dragging ? 600 : 60,
-      lod,
-      simClockSec,
-    });
-  } else if (fbR && fbM && canvas) {
-    if (canvas.width !== w || canvas.height !== h) {
-      canvas.width = w;
-      canvas.height = h;
-    }
-    const proj = fbM.mat4Perspective(Math.PI / 3.4, Math.max(0.2, w / h), 0.25, 140.0);
-    fbR.render(fbM.mat4Mul(proj, fbM.mat4LookAt(sEye, sTgt, [0, 1, 0])), sEye, lod, simClockSec, sTgt, Math.PI / 3.4);
-  }
-  if (simLive || dragging || followMover) rafId = requestAnimationFrame(renderFrame);
-}
-
-function setSimLive(next) {
-  simLive = Boolean(next);
-  if (simBtn) {
-    simBtn.setAttribute("aria-pressed", String(simLive));
-    simBtn.textContent = simLive
-      ? (experienceDesign?.plainLanguage?.pausePreview || "Pause Preview")
-      : (experienceDesign?.plainLanguage?.playPreview || "Play Preview");
-  }
-  requestRender();
-}
-
-async function cycleCameraMode(force = null) {
-  const order = ["landmark", "third", "first"];
-  camPreset = force || order[(order.indexOf(camPreset) + 1) % 3];
-  followMover = false;
-  const spec =
-    camPreset === "landmark"
-      ? ["Camera: Orbit", "camera-focus-landmark", { target: [2.2, 3.8, 9.2], dist: 18.5, yawMilli: 460, pitchMilli: 260 }, "Orbit Rig · Guarded (>=290mm)"]
-      : camPreset === "third"
-        ? ["Camera: 3rd IK", "camera-set-mode", { mode: 0, simClockSec }, "3rd-Person Character Rig · Foot IK"]
-        : ["Camera: 1st Eye", "camera-set-mode", { mode: 1, simClockSec }, "1st-Person Head-Masked Eye Rig"];
-  if (camBtn) camBtn.textContent = spec[0];
-  document.querySelectorAll("[data-wiz-cam]").forEach((b) => {
-    b.classList.toggle("primary", b.dataset.wizCam === camPreset);
-  });
-  const r = await callWorker(spec[1], spec[2]);
-  if (r?.camera) {
-    sEye = r.camera.eye;
-    sTgt = r.camera.lookTarget;
-    lClr = r.camera.clearanceMm ?? lClr;
-  }
-  await syncFallbackBuffers();
-  syncHud();
-  chip(statusEl, spec[3]);
-  requestRender();
-}
-
-async function streamLod(targetRank) {
-  const clamped = Math.max(0, Math.min(LODS.length - 1, targetRank | 0));
-  lodIdx = clamped;
-  const lod = currentLodSpec();
-  const r = await callWorker("stream-uorc", { targetRank: clamped, lod, simClockSec });
-  if (r?.tris) lTris = r.tris;
-  await syncFallbackBuffers();
-  syncHud();
-  chip(statusEl, `Dynamic workload scaled (${lTris.toLocaleString()} tris · Σ=${r?.codedChecksum ?? 320})`);
-  requestRender();
-  return r;
-}
-
-async function focusPoint(target, dist = 12, label = "Entity", yawMilli = 520, pitchMilli = 300) {
-  camPreset = "landmark";
-  followMover = false;
-  if (camBtn) camBtn.textContent = "Camera: Orbit";
-  const r = await callWorker("camera-focus-landmark", { target, dist, yawMilli, pitchMilli, simClockSec });
-  if (r?.camera) {
-    sEye = r.camera.eye;
-    sTgt = r.camera.lookTarget;
-    lClr = r.camera.clearanceMm ?? lClr;
-  }
-  await syncFallbackBuffers();
-  syncHud();
-  chip(statusEl, `Framed ${label} · Guarded Rig (${lClr} mm clearance)`);
-  requestRender();
-}
-
-async function focusPreset(idx) {
-  const node = NODES[idx];
-  if (!node) return;
-  followMover = Boolean(node.followMover);
-  if (followMover || node.id === 3) setSimLive(true);
-  camPreset = node.possessExplorer ? "third" : "landmark";
-  if (camBtn) camBtn.textContent = node.possessExplorer ? "Camera: 3rd IK" : "Camera: Orbit";
-  const r = await callWorker("camera-focus-landmark", {
-    possessExplorer: Boolean(node.possessExplorer),
-    target: node.target,
-    dist: node.dist,
-    yawMilli: node.yawMilli ?? 560,
-    pitchMilli: node.pitchMilli ?? 300,
-    lod: currentLodSpec(),
-    simClockSec,
-  });
-  if (r?.camera) {
-    sEye = r.camera.eye;
-    sTgt = r.camera.lookTarget;
-    lClr = r.camera.clearanceMm ?? lClr;
-  }
-  if (r?.tris) lTris = r.tris;
-  await syncFallbackBuffers();
-  syncHud();
-  chip(statusEl, `Framed ${node.name}`);
-  if (simLive || followMover || !offOk) requestRender();
-}
-
-async function setWorldSeed(seed) {
-  const r = await callWorker("set-seed", { seed });
-  if (r?.ok) {
-    lTris = r.tris || lTris;
-    await syncFallbackBuffers();
-    syncHud();
-    chip(statusEl, `${activeProject} · Seed ${r.seed} · ${LODS[lodIdx].label}`);
-    requestRender();
-  }
-  return r;
-}
-
-async function toggleRenderBackend(force = null) {
-  renderMode = force || (renderMode === "webgl2" ? "tile" : "webgl2");
-  await callWorker("set-render-mode", { mode: renderMode, simClockSec });
-  chip(statusEl, renderMode === "tile" ? "Look-Dev: Wasm 16x16 Software Tile" : "Look-Dev: Hardware WebGL2 3-Pass PBR");
-  requestRender();
-}
+const {
+  pxDims,
+  syncFallbackBuffers,
+  requestRender,
+  setSimLive,
+  cycleCameraMode,
+  streamLod,
+  focusPoint,
+  focusPreset,
+  setWorldSeed,
+  toggleRenderBackend,
+} = createStudioViewportController({
+  canvas,
+  simBtn,
+  camBtn,
+  statusEl,
+  LODS,
+  NODES,
+  callWorker,
+  chip,
+  currentLodSpec,
+  syncHud,
+  state: {
+    getOffOk: () => offOk,
+    getFbR: () => fbR,
+    getFbM: () => fbM,
+    getWorker: () => worker,
+    getSimClockSec: () => simClockSec,
+    setSimClockSec: (v) => { simClockSec = v; },
+    getLTris: () => lTris,
+    setLTris: (v) => { lTris = v; },
+    getLClr: () => lClr,
+    setCamera: (eye, tgt, clr) => { sEye = eye; sTgt = tgt; lClr = clr ?? lClr; },
+    getSEye: () => sEye,
+    getSTgt: () => sTgt,
+    getRafId: () => rafId,
+    setRafId: (v) => { rafId = v; },
+    getPrevNow: () => prevNow,
+    setPrevNow: (v) => { prevNow = v; },
+    getSimLive: () => simLive,
+    setSimLive: (v) => { simLive = v; },
+    getFollowMover: () => followMover,
+    setFollowMover: (v) => { followMover = v; },
+    getDragging: () => dragging,
+    getCamPreset: () => camPreset,
+    setCamPreset: (v) => { camPreset = v; },
+    getWorkerFramesInFlight: () => workerFramesInFlight,
+    incWorkerFramesInFlight: () => { workerFramesInFlight++; },
+    consumePointerDeltas: () => { const out = { dYaw: pYaw, dPit: pPit, dDst: pDst }; pYaw = pPit = pDst = 0; return out; },
+    getExperienceDesign: () => experienceDesign,
+    getLodIdx: () => lodIdx,
+    setLodIdx: (v) => { lodIdx = v; },
+    getActiveProject: () => activeProject,
+    getRenderMode: () => renderMode,
+    setRenderMode: (v) => { renderMode = v; },
+  },
+});
 
 const toggleGuardedAudio = async () => {
   if (!isOrganAllowed(3, true)) {

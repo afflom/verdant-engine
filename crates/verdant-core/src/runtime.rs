@@ -324,7 +324,9 @@ impl FrameBudgetProfiler {
     /// Maximum observed frame duration in microseconds.
     #[must_use]
     pub fn max_frame_micros(&self) -> u64 {
-        self.samples_micros.iter().copied().max().unwrap_or(0)
+        self.samples_micros
+            .iter()
+            .fold(0_u64, |acc, &v| if v > acc { v } else { acc })
     }
 
     /// Returns whether every recorded frame stayed within `budget_micros`.

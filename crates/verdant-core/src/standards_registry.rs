@@ -44,26 +44,29 @@ impl CatalogBundleRegistry {
             "catalogs/domains/world-packs.json",
             EMBEDDED_DOMAIN_PACKS_JSON.as_bytes(),
         );
-        raw_files.insert(
-            "catalogs/governance/vsm-viable-system.json",
-            crate::operator::LOCKED_VSM_CATALOG_JSON.as_bytes(),
-        );
-        raw_files.insert(
-            "catalogs/governance/iso42010-viewpoints.json",
-            crate::operator::LOCKED_ISO42010_VIEWPOINTS_JSON.as_bytes(),
-        );
-        raw_files.insert(
-            "catalogs/governance/iso25010-tensor-scaling.json",
-            crate::operator::LOCKED_ISO25010_TENSOR_SCALING_JSON.as_bytes(),
-        );
-        raw_files.insert(
-            "catalogs/governance/stitch-self-hosting.json",
-            crate::operator::LOCKED_STITCH_SELF_HOSTING_JSON.as_bytes(),
-        );
-        raw_files.insert(
-            "catalogs/governance/change-roadmap-kpi.json",
-            crate::governance::LOCKED_CHANGE_ROADMAP_KPI_JSON.as_bytes(),
-        );
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            raw_files.insert(
+                "catalogs/governance/vsm-viable-system.json",
+                crate::operator::LOCKED_VSM_CATALOG_JSON.as_bytes(),
+            );
+            raw_files.insert(
+                "catalogs/governance/iso42010-viewpoints.json",
+                crate::operator::LOCKED_ISO42010_VIEWPOINTS_JSON.as_bytes(),
+            );
+            raw_files.insert(
+                "catalogs/governance/iso25010-tensor-scaling.json",
+                crate::operator::LOCKED_ISO25010_TENSOR_SCALING_JSON.as_bytes(),
+            );
+            raw_files.insert(
+                "catalogs/governance/stitch-self-hosting.json",
+                crate::operator::LOCKED_STITCH_SELF_HOSTING_JSON.as_bytes(),
+            );
+            raw_files.insert(
+                "catalogs/governance/change-roadmap-kpi.json",
+                crate::governance::LOCKED_CHANGE_ROADMAP_KPI_JSON.as_bytes(),
+            );
+        }
         Self::from_locked_bytes(EMBEDDED_AUTHORITIES_TOML, &raw_files)
     }
 
@@ -114,6 +117,12 @@ impl CatalogBundleRegistry {
         }
 
         for lock in &file_locks {
+            #[cfg(target_arch = "wasm32")]
+            if lock.path.starts_with("catalogs/governance/")
+                && !files_by_rel_path.contains_key(lock.path.as_str())
+            {
+                continue;
+            }
             let Some(&bytes) = files_by_rel_path.get(lock.path.as_str()) else {
                 return Err(OracleValidationError::CatalogIntegrityMismatch {
                     authority_id: lock.id.clone(),

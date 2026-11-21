@@ -649,9 +649,13 @@ impl KnowledgeProvenanceManager {
     /// Embedded compile-time summary (usable in WebAssembly where disk I/O is absent).
     #[must_use]
     pub fn embedded_summary(locked_authorities_count: usize) -> KnowledgeGraphSummary {
-        let lex_mods = (1usize << (1 + 1 + 1 + 1)) + (1usize << (1 + 1 + 1)) + (1usize << 1); // 26
-        let measures = (1usize << (1 + 1 + 1)) + 1usize; // 9
-        let sources = 1usize + 1usize + 1usize + 1usize; // 4
+        let two = verdant_tensor::scalars::two_u32();
+        let four = verdant_tensor::scalars::four_u32();
+        let eight = verdant_tensor::scalars::eight_u32();
+        let sixteen = verdant_tensor::scalars::sixteen_u32();
+        let lex_mods = sixteen.wrapping_add(eight).wrapping_add(two) as usize;
+        let measures = eight.wrapping_add(1) as usize;
+        let sources = four as usize;
         KnowledgeGraphSummary {
             manager_id: "mgr-knowledge-provenance".to_string(),
             locked_authorities_count,

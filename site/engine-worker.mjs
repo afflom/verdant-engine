@@ -958,99 +958,6 @@ self.onmessage = async ({ data: msg }) => {
       return;
     }
 
-    if (msg.kind === "stitch-shard") {
-      uorcWasm ??= await getUorcWasm();
-      let source = msg.bytes instanceof Uint8Array ? msg.bytes : null;
-      if (!source || !source.byteLength) {
-        uorcWasm.verdant_wasm_set_lod_rank(Math.min(3, simHost().verdant_wasm_active_lod_rank() >>> 0));
-        const snapLen = uorcWasm.verdant_wasm_snapshot_encode() >>> 0;
-        if (snapLen === 0) {
-          self.postMessage({ kind: "stitch-sharded", id: msg.id, ok: false });
-          return;
-        }
-        source = readIoBytes(uorcWasm);
-      }
-      stageIoBytes(uorcWasm, source);
-      const shards = [];
-      for (let s = 0; s < 3; s++) {
-        const len = uorcWasm.verdant_wasm_stitch_shard_io(s) >>> 0;
-        if (len === 0) {
-          self.postMessage({ kind: "stitch-sharded", id: msg.id, ok: false });
-          return;
-        }
-        shards.push(readAuxBytes(uorcWasm));
-      }
-      self.postMessage(
-        {
-          kind: "stitch-sharded",
-          id: msg.id,
-          ok: true,
-          sourceBytes: source.byteLength,
-          shards,
-        },
-        shards.map((u) => u.buffer),
-      );
-      return;
-    }
-
-    if (msg.kind === "stitch-recover") {
-      uorcWasm ??= await getUorcWasm();
-      const a = msg.shardA instanceof Uint8Array ? msg.shardA : new Uint8Array(msg.shardA || []);
-      const b = msg.shardB instanceof Uint8Array ? msg.shardB : new Uint8Array(msg.shardB || []);
-      const combined = new Uint8Array(a.byteLength + b.byteLength);
-      combined.set(a, 0);
-      combined.set(b, a.byteLength);
-      stageIoBytes(uorcWasm, combined);
-      const recLen = uorcWasm.verdant_wasm_stitch_recover_io(a.byteLength >>> 0) >>> 0;
-      if (recLen === 0) {
-        self.postMessage({ kind: "stitch-recovered", id: msg.id, ok: false });
-        return;
-      }
-      const recovered = readAuxBytes(uorcWasm);
-      self.postMessage(
-        { kind: "stitch-recovered", id: msg.id, ok: true, recovered },
-        [recovered.buffer],
-      );
-      return;
-    }
-
-    if (msg.kind === "scene-outliner") {
-      uorcWasm ??= await getUorcWasm();
-      if (!customGlbActive && !uorcSceneActive) {
-        uorcWasm.verdant_wasm_set_lod_rank(simHost().verdant_wasm_active_lod_rank() >>> 0);
-      }
-      const len = uorcWasm.verdant_wasm_scene_outliner_aux((msg.observedFrameMicros || 8200) >>> 0) >>> 0;
-      if (len === 0) {
-        self.postMessage({ kind: "scene-outliner", id: msg.id, ok: false });
-        return;
-      }
-      const lines = new TextDecoder().decode(readAuxBytes(uorcWasm)).split("\n");
-      const header = parsePipeKv(lines[0] || "");
-      const entities = lines.slice(1).filter(Boolean).map((line) => {
-        const [id, name, role, tris, coords, minLodScale] = line.split("|");
-        const [cx, cy, cz] = (coords || "0,0,0").split(",").map(Number);
-        return {
-          id: Number(id) || 0,
-          name: name || "Entity",
-          role: role || "StaticArchitecture",
-          tris: Number(tris) || 0,
-          center: [cx || 0, cy || 0, cz || 0],
-          minLodScale: Number(minLodScale) || 0,
-        };
-      });
-      const sh = simHost();
-      self.postMessage({
-        kind: "scene-outliner",
-        id: msg.id,
-        ok: true,
-        header,
-        entities,
-        camera: readSolvedCamera(sh),
-        universeCell: readUniverseCell(sh),
-      });
-      return;
-    }
-
     if (msg.kind === "set-seed") {
       const nextSeed = BigInt(Math.max(1, Number(msg.seed) || 7));
       activeSeed = nextSeed;
@@ -1086,21 +993,6 @@ self.onmessage = async ({ data: msg }) => {
         seed: Number(nextSeed),
         tris: stats.tris,
         camera: cam,
-      });
-      return;
-    }
-
-    if (msg.kind === "sabine-rt60") {
-      const vol = Math.max(10, Math.round(Number(msg.volumeM3) || 1800)) >>> 0;
-      const absMilli = Math.max(100, Math.round(Number(msg.absorptionMilliM2) || 96000)) >>> 0;
-      const rt60Ms = wasm.verdant_wasm_sabine_rt60_millis(vol, absMilli) >>> 0;
-      self.postMessage({
-        kind: "sabine-rt60",
-        id: msg.id,
-        ok: true,
-        volumeM3: vol,
-        absorptionMilliM2: absMilli,
-        rt60Ms,
       });
       return;
     }
@@ -1200,6 +1092,7 @@ self.onmessage = async ({ data: msg }) => {
 
     if (await handleExtendedWorkerMessage(msg, {
       ensureUorcSceneHost,
+      getWasm: () => wasm,
       getUorcWasm: async () => { uorcWasm ??= await getUorcWasm(); return uorcWasm; },
       getLoadedUorcWasm: () => uorcWasm,
       simHost,
@@ -1208,10 +1101,12 @@ self.onmessage = async ({ data: msg }) => {
       getEmaFrameMicros: () => emaFrameMicros,
       getOrganModes: () => organModes,
       getCurrentLod: () => currentLod,
+      getCustomGlbActive: () => customGlbActive,
+      getUorcSceneActive: () => uorcSceneActive,
       drawScene,
       setCustomGlbActive: (v) => { customGlbActive = Boolean(v); },
       setLastAnchor: (anchor) => { lastAnchor = anchor; lastAnchorActive = true; },
-      postMessage: (p) => self.postMessage(p),
+      postMessage: (p, t) => self.postMessage(p, t),
     })) {
       return;
     }

@@ -57,23 +57,23 @@ max_unlifted_workspace_modules = 0
 
 [frontier_ratchet]
 frontier_register = "frontier.toml"
-frontier_rust_tree_sha256 = "b687bd4cbc6047bf7e7e570213d152334c9e92aeebce693ac9e7e9d5f8f87748"
-min_lifted_functions = 387
-max_residue_functions = 1167
-max_uncertified_functions = 1324
+frontier_rust_tree_sha256 = "87cf0df7febc481827c6580d8fb2073ffc3b708b6baa7a5cfd8541c7475a7402"
+min_lifted_functions = 421
+max_residue_functions = 1164
+max_uncertified_functions = 1321
 
 [surface_ratchet]
 wasm_core_path = "site/verdant-wasm.wasm"
 max_wasm_core_bytes = 155648
 wasm_uorc_path = "site/verdant-uorc.wasm"
-max_wasm_uorc_bytes = 3805184
+max_wasm_uorc_bytes = 3801088
 frame_pin_path = "site/frame/frame-pin.json"
 max_release_capsule_bytes = 1400832
-max_handwritten_rust_file_lines = 1646
+max_handwritten_rust_file_lines = 1490
 rust_line_exclude = ["crates/verdant-tensor/src/prism_kernel.rs"]
 js_surface_roots = ["site"]
 js_line_exclude_prefixes = ["site/vendor/", "site/crates/"]
-max_js_file_lines = 1247
+max_js_file_lines = 1124
 
 [[stratum_module]]
 path = "app/src/Foundation/Ontology/V1/Model.lex.tex"

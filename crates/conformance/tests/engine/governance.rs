@@ -3198,3 +3198,122 @@ fn engine_ve_72() {
         kpi_rep.kpis
     );
 }
+
+#[test]
+fn engine_ve_73() {
+    use std::path::Path;
+    use verdant_core::operator::VerdantOperatorChannel;
+    use verdant_tensor::scalars::{
+        blank_frame_weight_compliant, bvh_stack_push_safe, capsule_skin_clearance_safe,
+        capsule_slide_iteration_valid, capsule_stair_riser_walkable,
+        capsule_three_plane_wedge_halt, container_organ_access_admitted, fr03_app_weight_compliant,
+        frame_profiler_budget_met, frame_profiler_max_step, frontier_lifted_gain,
+        frontier_residue_reduction, frontier_residue_strictly_reduced,
+        frontier_uncertified_strictly_reduced, js_module_sub_1125_lines, observer_all_kpis_passed,
+        paged_arena_clamped_budget_bytes, paged_arena_default_budget_bytes,
+        paged_arena_min_budget_bytes, paged_arena_resident_within_budget,
+        roadmap_milestones_achieved, rust_module_sub_1500_lines, sabine_room_params_admissible,
+        stitch_pair_indices_distinct, stitch_release_quorum_survivable,
+        tlas_instance_blas_bound_valid, uorc_chain_block_bytes, uorc_header_flags_valid,
+        uorc_seal_digest_bytes, uorc_stream_frame_count_sufficient,
+    };
+
+    let repo_root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+
+    // 1. All extracted M21 Rust and JS submodules exist on disk:
+    for rel in [
+        "crates/verdant-core/src/streaming_uorc.rs",
+        "crates/verdant-core/src/ecs_tlas.rs",
+        "crates/verdant-core/src/physics_controller.rs",
+        "crates/verdant-cli/src/automate_cmd.rs",
+        "site/catalog-streams-local.mjs",
+        "site/studio/studio-viewport.mjs",
+    ] {
+        assert!(
+            repo_root.join(rel).is_file(),
+            "M21 expected extracted modular artifact `{rel}`"
+        );
+    }
+
+    // 2. MIR-lifted M21 constructive predicates (BVH, CCD, UORC, modularity, arena, frontier):
+    assert!(tlas_instance_blas_bound_valid(12, 16));
+    assert!(bvh_stack_push_safe(4, 64));
+    assert!(capsule_slide_iteration_valid(2, 4));
+    assert!(capsule_skin_clearance_safe(402, 400, 2));
+    assert!(capsule_stair_riser_walkable(250, 350));
+    assert!(capsule_three_plane_wedge_halt(3));
+    assert!(uorc_header_flags_valid(0, 1));
+    assert!(uorc_stream_frame_count_sufficient(4, 3));
+    assert_eq!(uorc_chain_block_bytes(), 64);
+    assert_eq!(uorc_seal_digest_bytes(), 32);
+    assert!(rust_module_sub_1500_lines(1490));
+    assert!(js_module_sub_1125_lines(1124));
+    assert_eq!(paged_arena_min_budget_bytes(), 65_536);
+    assert_eq!(paged_arena_default_budget_bytes(), 67_108_864);
+    assert_eq!(paged_arena_clamped_budget_bytes(1024), 65_536);
+    assert!(paged_arena_resident_within_budget(
+        1_048_576, 2_097_152, 67_108_864
+    ));
+    assert!(frontier_residue_strictly_reduced(1167, 1160));
+    assert!(frontier_uncertified_strictly_reduced(1324, 1317));
+    assert_eq!(frontier_lifted_gain(387, 425), 38);
+    assert_eq!(frontier_residue_reduction(1167, 1160), 7);
+    assert!(container_organ_access_admitted(false, true, false));
+    assert!(!container_organ_access_admitted(true, true, true));
+    assert_eq!(frame_profiler_max_step(7200, 8100), 8100);
+    assert!(frame_profiler_budget_met(0, 60));
+    assert!(sabine_room_params_admissible(1800, 96_000));
+    assert!(stitch_pair_indices_distinct(0, 2));
+    assert!(stitch_release_quorum_survivable(4, 8));
+    assert!(fr03_app_weight_compliant(121_700, 122_880));
+    assert!(blank_frame_weight_compliant(28_374, 30_720));
+    assert!(observer_all_kpis_passed(13, 13));
+    assert!(roadmap_milestones_achieved(21, 21));
+
+    // 3. Tightened M21 ratchet ceilings & frontier:
+    let rep = prism_fidelity::ratchet::audit_parametric_ratchet(
+        &repo_root,
+        Path::new("model/parametric-ratchet.toml"),
+    )
+    .expect("live repo must pass all 4 ratchet layers");
+    assert!(
+        rep.observed_max_rust_file_lines <= 1_495,
+        "M21 must keep every hand-written Rust file <= 1495 lines, got {}",
+        rep.observed_max_rust_file_lines
+    );
+    assert!(
+        rep.observed_max_js_file_lines <= 1_125,
+        "M21 must keep every shipped JS file <= 1125 lines, got {}",
+        rep.observed_max_js_file_lines
+    );
+    assert!(
+        rep.frontier_lifted_functions >= 420,
+        "M21 must lift >= 420 constructive Rust functions, got {}",
+        rep.frontier_lifted_functions
+    );
+    assert!(
+        rep.frontier_residue_functions <= 1_164,
+        "M21 must shrink residue <= 1164, got {}",
+        rep.frontier_residue_functions
+    );
+    assert!(
+        rep.frontier_uncertified_functions <= 1_321,
+        "M21 must shrink uncertified <= 1321, got {}",
+        rep.frontier_uncertified_functions
+    );
+
+    // 4. All 21 milestones M1..M21 and 100% Observer KPIs pass:
+    let ch = VerdantOperatorChannel::new("sunspire-regatta").expect("operator channel");
+    let kpi_rep = ch
+        .evaluate_observer_roadmap_kpis(&repo_root, true, true)
+        .expect("observer roadmap & KPI report");
+    assert!(
+        kpi_rep.milestones.len() >= 21,
+        "expected Milestones M1..M21"
+    );
+    assert_eq!(
+        kpi_rep.kpi_passed_count, kpi_rep.kpi_total_count,
+        "all Observer KPIs must pass (kpis={:?})",
+        kpi_rep.kpis
+    );
+}

@@ -449,7 +449,7 @@
     },
     {
       "basisPrime": 97,
-      "kappaHex": "14cb98587cc4d8e8500795912b400c465a0d5652b6b05bd8004a2365f7d737b4",
+      "kappaHex": "fa77956484583c1e3323767a6040276428f7098e0f50f96a2fe5fc1648757461",
       "spec": {
         "almPhases": [
           "conception",
@@ -498,6 +498,7 @@
           "site/studio/index.html",
           "site/studio/studio-page.mjs",
           "site/studio/studio-boot.mjs",
+          "site/studio/studio-viewport.mjs",
           "site/studio/authority-panel.mjs",
           "site/studio/discovery-panel.mjs",
           "site/studio/outliner.mjs",
@@ -538,7 +539,7 @@
     },
     {
       "basisPrime": 101,
-      "kappaHex": "e7ba85973fc036c140419e5cce1f67c0b3f82458b4a60c1d84ab291ee373440a",
+      "kappaHex": "18a2bb5fef531fe2233f8f0bc29f40feb57a6b2a6722708df9196df138daa21a",
       "spec": {
         "almPhases": [
           "discovery",
@@ -576,6 +577,7 @@
           "site/catalogs/index.html",
           "site/catalogs/catalogs.mjs",
           "site/catalog-streams.mjs",
+          "site/catalog-streams-local.mjs",
           "site/catalog-streams-stitch.mjs",
           "site/prism-catalogs.mjs",
           "site/generated/stitch-app-catalog.json"

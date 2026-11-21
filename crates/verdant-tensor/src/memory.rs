@@ -25,7 +25,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     coded::{contract_packed_nibbles_lut_into, CodebookProductLut},
-    pow2_u64, TensorComputeError, PACKED_NIBBLE_BLOCK,
+    TensorComputeError, PACKED_NIBBLE_BLOCK,
 };
 
 /// Canonical tensor page quantum (`64 KiB` = `2^16` bytes), aligning with WebAssembly linear
@@ -159,14 +159,11 @@ pub struct PagedTensorArena {
 impl Default for PagedTensorArena {
     fn default() -> Self {
         // Default 64 MiB resident host envelope (`2^26` bytes = `1024` 64 KiB pages):
-        let two = 1_u32.wrapping_add(1_u32);
-        let three = two.wrapping_add(1_u32);
-        let four = two.wrapping_mul(two);
-        let shift_26 = four
-            .wrapping_mul(three)
-            .wrapping_add(1_u32)
-            .wrapping_mul(two);
-        Self::new(pow2_u64(shift_26))
+        let kb = crate::scalars::thirty_two_u64().wrapping_mul(crate::scalars::thirty_two_u64());
+        let mib_64 = crate::scalars::sixty_four_u64()
+            .wrapping_mul(kb)
+            .wrapping_mul(kb);
+        Self::new(mib_64)
     }
 }
 
@@ -174,8 +171,16 @@ impl PagedTensorArena {
     /// Creates a new [`PagedTensorArena`] enforcing `resident_bytes <= budget_bytes`.
     #[must_use]
     pub fn new(budget_bytes: u64) -> Self {
+        let min_budget = crate::scalars::sixty_four_u64()
+            .wrapping_mul(crate::scalars::thirty_two_u64())
+            .wrapping_mul(crate::scalars::thirty_two_u64());
+        let clamped_budget = if budget_bytes >= min_budget {
+            budget_bytes
+        } else {
+            min_budget
+        };
         Self {
-            budget_bytes: budget_bytes.max(MIN_ARENA_BUDGET_BYTES),
+            budget_bytes: clamped_budget,
             resident_bytes: 0,
             peak_resident_bytes: 0,
             logical_workload_bytes: 0,

@@ -2,12 +2,12 @@
   "spec": "verdant/observer-roadmap-kpi-report/1",
   "managerId": "mgr-roadmap-strategy",
   "authorityId": "AUTH-SEMVER-CHANGE-KPI",
-  "currentVersion": "2.12.0",
-  "releaseEpoch": 16,
+  "currentVersion": "2.13.0",
+  "releaseEpoch": 17,
   "totalManagers": 13,
   "totalPrismFacetsOwned": 9,
   "totalPrismFacetsRequired": 9,
-  "declaredCapabilitiesCount": 83,
+  "declaredCapabilitiesCount": 84,
   "minorProgressPct": 100,
   "majorProgressPct": 100,
   "kpiPassedCount": 13,
@@ -138,7 +138,7 @@
       "name": "uorust MIR-Lifted Rust Functions Floor",
       "unit": "functions",
       "direction": "atLeast",
-      "actual": 387,
+      "actual": 421,
       "target": 200,
       "passed": true,
       "owningManager": "mgr-verification-observatory",
@@ -778,6 +778,38 @@
       "progressPct": 100,
       "completed": true,
       "ratchetRequirement": "Close the local-vs-CI release gate gap by running repo-conformance --test engine inside lifecycle-gate --full and dynamic ratchet-aware Observer refinement targets; drop image/moxcms/png/zune-jpeg from wasm32 via gltf-image-decode feature gating and browser-native createImageBitmap PBR decoding to cut site/verdant-uorc.wasm <= 3810000 B (sub-910 KiB gzipped) and max_release_capsule_bytes <= 1410000 B even while embedding the unified SovereignAuthorityLedger Wasm kernel; bind VerdantVcs commits and VerdantReleaseCapsule .holo sealing to verified SovereignAuthorityLedger ApprovalCertificates with unified Wasm/CLI/MCP authority_cert.rs JSON bridge; and shrink existing uorust residue strictly below 1169 (<= 1168) and uncertified strictly below 1325 (<= 1324) while expanding lifted constructive functions >= 380."
+    },
+    {
+      "milestoneId": "M21",
+      "targetVersion": "2.13.0",
+      "tier": "minor",
+      "title": "Sub-1500L Rust Modularity (178+ Lifted Modules), Sub-1125L Shipped JS Decomposition & Deep uorust Residue Elimination (420+ Lifted / <= 1162 Residue)",
+      "stakeholders": [
+        "creator",
+        "developer",
+        "systems-engineer",
+        "operator",
+        "auditor",
+        "admin",
+        "contributor"
+      ],
+      "owningManagers": [
+        "mgr-runtime-stage",
+        "mgr-studio-alm",
+        "mgr-catalog-curator",
+        "mgr-verification-observatory",
+        "mgr-observer-executive"
+      ],
+      "requiredCapabilities": [
+        "VE-73"
+      ],
+      "closedCapabilities": [
+        "VE-73"
+      ],
+      "missingCapabilities": [],
+      "progressPct": 100,
+      "completed": true,
+      "ratchetRequirement": "Decompose all remaining Rust files >= 1500L (streaming.rs/streaming_uorc.rs, ecs.rs/ecs_tlas.rs, physics.rs/physics_controller.rs, verdant-cli/src/lib.rs/automate_cmd.rs, authority.rs/authority_cert.rs -> max_handwritten_rust_file_lines <= 1495, >= 178 lifted lifecycle modules) and all remaining shipped JS files >= 1125L (catalog-streams.mjs/catalog-streams-local.mjs, studio/studio-page.mjs/studio-viewport.mjs, engine-worker.mjs/engine-worker-extended.mjs -> max_js_file_lines <= 1125 with lower FR-03 weight), eliminate existing uorust residue in place (PagedTensorArena, ContainerGrantMatrix, KnowledgeProvenanceManager, FrameBudgetProfiler, tropical_inf_sentinel) while expanding lifted constructive functions >= 420 and shrinking residue <= 1164 and uncertified <= 1321 across M1..M21."
     }
   ],
   "observerParts": [
@@ -881,7 +913,7 @@
       "ownedObserverParts": [
         "cognitive-language"
       ],
-      "ownedFilesCount": 17,
+      "ownedFilesCount": 18,
       "active": true
     },
     {
@@ -890,7 +922,7 @@
       "viewpointId": "asset-catalogs",
       "ownedPrismFacets": [],
       "ownedObserverParts": [],
-      "ownedFilesCount": 6,
+      "ownedFilesCount": 7,
       "active": true
     },
     {
@@ -933,7 +965,7 @@
     "governingAuthority": "AUTH-SEMVER-CHANGE-KPI",
     "currentVersion": {
       "major": 2,
-      "minor": 12,
+      "minor": 13,
       "patch": 0
     },
     "recommendedBump": "major",
@@ -942,8 +974,8 @@
       "minor": 0,
       "patch": 0
     },
-    "currentEpoch": 16,
-    "nextEpoch": 17,
+    "currentEpoch": 17,
+    "nextEpoch": 18,
     "versionIncremented": true,
     "gates": {
       "ratchetApplied": true,
@@ -954,6 +986,6 @@
       "pullThroughVerified": true
     },
     "blockingReasons": [],
-    "rationale": "Ratchet applied & 5/5 Release Gates passed: advancing v2.12.0 -> v3.0.0 (Major, epoch 17) — Observer roadmap evaluation: minor=100% major=100% managers=13"
+    "rationale": "Ratchet applied & 5/5 Release Gates passed: advancing v2.13.0 -> v3.0.0 (Major, epoch 18) — Observer roadmap evaluation: minor=100% major=100% managers=13"
   }
 }

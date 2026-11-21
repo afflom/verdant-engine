@@ -1,11 +1,37 @@
-//! Unified Wasm / CLI / MCP JSON kernel bridge for `SovereignAuthorityLedger` (`VE-72`)
-//! so Browser Studio, CLI, and MCP execute the exact same Rust governance kernel.
+//! Unified Wasm / CLI / MCP JSON kernel bridge and [`ApprovalCertificate`] for
+//! `SovereignAuthorityLedger` (`VE-72`) so Browser Studio, CLI, and MCP execute the exact same
+//! Rust governance kernel.
 
-use super::{AuthorityCommand, SovereignAuthorityLedger};
+use serde::{Deserialize, Serialize};
+
+use super::{AuthorityCommand, SigningActionKind, SovereignAuthorityLedger};
+
+/// Content-addressed cryptographic approval certificate binding a finalized signing request
+/// (`SovereignAuthorityLedger`) directly into `VerdantVcs` commits and `.holo` release capsules (`VE-72`).
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ApprovalCertificate {
+    /// Fixed schema identifier (`verdant/approval-certificate/1`).
+    pub spec: String,
+    /// Finalized signing request `kappa`.
+    pub request_kappa: String,
+    /// Target `VerdantVcs` commit/tree or `.holo` release `kappa` authorized by this certificate.
+    pub target_kappa: String,
+    /// Authorized privileged action kind (`MergeCommit`, `CutRelease`, etc.).
+    pub action: SigningActionKind,
+    /// Authority epoch at which the signing request was finalized.
+    pub finalized_epoch: u64,
+    /// Active M-of-N quorum threshold satisfied at `finalized_epoch`.
+    pub quorum_threshold_m: u64,
+    /// Sorted list of distinct active Sovereign Admin `Prism ID`s that signed approval.
+    pub approver_prism_ids: Vec<String>,
+    /// Deterministic SHA-256 hex commitment over all certificate fields.
+    pub certificate_kappa: String,
+}
 
 /// Executes a sovereign governance JSON request across Wasm, CLI, and MCP (`VE-72`):
 /// accepts `{ "ledger": <optional>, "init": { "repoName", "ownerPrismId", "ownerSecret" }, "command": <optional AuthorityCommand> }`
-/// and returns `{ "ok": true, "ledger": ..., "outcome": ..., "certificate": ... }`.
+/// and returns `{ "ok": true, "ledger": ..., "outcome": ... }`.
 #[must_use]
 pub fn sovereign_authority_exec_json(raw_json: &str) -> String {
     let Ok(req) = serde_json::from_str::<serde_json::Value>(raw_json) else {

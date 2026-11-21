@@ -1,11 +1,19 @@
 // Post-boot extended Verdant Worker handlers (`site/engine-worker-extended.mjs`),
 // lazy-loaded on demand by `site/engine-worker-codec.mjs` so cold-boot `/` stays well below FR-03.
 
-import { readAuxBytes, readSolvedCamera, stageIoBytes } from "./engine-worker-codec.mjs";
+import {
+  parsePipeKv,
+  readAuxBytes,
+  readIoBytes,
+  readSolvedCamera,
+  readUniverseCell,
+  stageIoBytes,
+} from "./engine-worker-codec.mjs";
 
 export async function handleExtendedWorkerMessage(msg, ctx) {
   const {
     ensureUorcSceneHost,
+    getWasm,
     getUorcWasm,
     getLoadedUorcWasm,
     simHost,
@@ -14,6 +22,8 @@ export async function handleExtendedWorkerMessage(msg, ctx) {
     getEmaFrameMicros,
     getOrganModes,
     getCurrentLod,
+    getCustomGlbActive,
+    getUorcSceneActive,
     drawScene,
     setCustomGlbActive,
     setLastAnchor,
@@ -350,6 +360,99 @@ export async function handleExtendedWorkerMessage(msg, ctx) {
     const cLen = uorcWasm.verdant_wasm_cognitive_resolution_aux() >>> 0;
     const cognition = cLen ? JSON.parse(new TextDecoder().decode(readAuxBytes(uorcWasm))) : null;
     postMessage({ kind: `${msg.kind}-done`, id: msg.id, ok: len > 0, result, cognition });
+    return true;
+  }
+
+  if (msg.kind === "stitch-shard") {
+    const uorcWasm = await getUorcWasm();
+    let source = msg.bytes instanceof Uint8Array ? msg.bytes : null;
+    if (!source || !source.byteLength) {
+      uorcWasm.verdant_wasm_set_lod_rank(Math.min(3, simHost().verdant_wasm_active_lod_rank() >>> 0));
+      const snapLen = uorcWasm.verdant_wasm_snapshot_encode() >>> 0;
+      if (snapLen === 0) {
+        postMessage({ kind: "stitch-sharded", id: msg.id, ok: false });
+        return true;
+      }
+      source = readIoBytes(uorcWasm);
+    }
+    stageIoBytes(uorcWasm, source);
+    const shards = [];
+    for (let s = 0; s < 3; s++) {
+      const len = uorcWasm.verdant_wasm_stitch_shard_io(s) >>> 0;
+      if (len === 0) {
+        postMessage({ kind: "stitch-sharded", id: msg.id, ok: false });
+        return true;
+      }
+      shards.push(readAuxBytes(uorcWasm));
+    }
+    postMessage(
+      { kind: "stitch-sharded", id: msg.id, ok: true, sourceBytes: source.byteLength, shards },
+      shards.map((u) => u.buffer),
+    );
+    return true;
+  }
+
+  if (msg.kind === "stitch-recover") {
+    const uorcWasm = await getUorcWasm();
+    const a = msg.shardA instanceof Uint8Array ? msg.shardA : new Uint8Array(msg.shardA || []);
+    const b = msg.shardB instanceof Uint8Array ? msg.shardB : new Uint8Array(msg.shardB || []);
+    const combined = new Uint8Array(a.byteLength + b.byteLength);
+    combined.set(a, 0);
+    combined.set(b, a.byteLength);
+    stageIoBytes(uorcWasm, combined);
+    const recLen = uorcWasm.verdant_wasm_stitch_recover_io(a.byteLength >>> 0) >>> 0;
+    if (recLen === 0) {
+      postMessage({ kind: "stitch-recovered", id: msg.id, ok: false });
+      return true;
+    }
+    const recovered = readAuxBytes(uorcWasm);
+    postMessage({ kind: "stitch-recovered", id: msg.id, ok: true, recovered }, [recovered.buffer]);
+    return true;
+  }
+
+  if (msg.kind === "scene-outliner") {
+    const uorcWasm = await getUorcWasm();
+    if (!getCustomGlbActive() && !getUorcSceneActive()) {
+      uorcWasm.verdant_wasm_set_lod_rank(simHost().verdant_wasm_active_lod_rank() >>> 0);
+    }
+    const len = uorcWasm.verdant_wasm_scene_outliner_aux((msg.observedFrameMicros || 8200) >>> 0) >>> 0;
+    if (len === 0) {
+      postMessage({ kind: "scene-outliner", id: msg.id, ok: false });
+      return true;
+    }
+    const lines = new TextDecoder().decode(readAuxBytes(uorcWasm)).split("\n");
+    const header = parsePipeKv(lines[0] || "");
+    const entities = lines.slice(1).filter(Boolean).map((line) => {
+      const [id, name, role, tris, coords, minLodScale] = line.split("|");
+      const [cx, cy, cz] = (coords || "0,0,0").split(",").map(Number);
+      return {
+        id: Number(id) || 0,
+        name: name || "Entity",
+        role: role || "StaticArchitecture",
+        tris: Number(tris) || 0,
+        center: [cx || 0, cy || 0, cz || 0],
+        minLodScale: Number(minLodScale) || 0,
+      };
+    });
+    const sh = simHost();
+    postMessage({
+      kind: "scene-outliner",
+      id: msg.id,
+      ok: true,
+      header,
+      entities,
+      camera: readSolvedCamera(sh),
+      universeCell: readUniverseCell(sh),
+    });
+    return true;
+  }
+
+  if (msg.kind === "sabine-rt60") {
+    const wasm = getWasm();
+    const vol = Math.max(10, Math.round(Number(msg.volumeM3) || 1800)) >>> 0;
+    const absMilli = Math.max(100, Math.round(Number(msg.absorptionMilliM2) || 96000)) >>> 0;
+    const rt60Ms = wasm.verdant_wasm_sabine_rt60_millis(vol, absMilli) >>> 0;
+    postMessage({ kind: "sabine-rt60", id: msg.id, ok: true, volumeM3: vol, absorptionMilliM2: absMilli, rt60Ms });
     return true;
   }
 

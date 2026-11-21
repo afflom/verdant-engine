@@ -546,3 +546,9 @@ id = "VE-72"
 suite = "engine"
 level = "build"
 statement = "Verdant executes Milestone M20: closing the local-vs-CI release gate gap by executing repo-conformance --test engine inside lifecycle-gate --full with ratchet-aware Observer refinement targets; disabling gltf image decoding on wasm32 via browser-native createImageBitmap PBR texture decoding to cut site/verdant-uorc.wasm <= 3810000 bytes (sub-910 KiB gzipped) and max_release_capsule_bytes <= 1410000 bytes even while embedding the unified SovereignAuthorityLedger Wasm kernel; binding VerdantVcs::commit_with_authority and VerdantReleaseCapsule::pack_from_files_with_authority to finalized ApprovalCertificates with unified Wasm/CLI/MCP authority_cert.rs JSON bridge; and reducing uorust residue strictly below 1169 (<= 1168) and uncertified strictly below 1325 (<= 1324) while lifting >= 380 constructive functions across M1..M20"
+
+[[id]]
+id = "VE-73"
+suite = "engine"
+level = "build"
+statement = "Verdant executes Milestone M21 across its Observer refinement agenda: decomposing streaming.rs, ecs.rs, physics.rs, verdant-cli/src/lib.rs, and authority.rs into cohesive submodules (streaming_uorc.rs, ecs_tlas.rs, physics_controller.rs, automate_cmd.rs, authority_cert.rs -> max_handwritten_rust_file_lines <= 1495, >= 178 lifted lifecycle modules), decomposing catalog-streams.mjs, studio/studio-page.mjs, and engine-worker.mjs (via catalog-streams-local.mjs, studio-viewport.mjs, and engine-worker-extended.mjs -> max_js_file_lines <= 1125), lifting existing residue functions directly in place (PagedTensorArena, ContainerGrantMatrix, KnowledgeProvenanceManager, FrameBudgetProfiler, tropical_inf_sentinel), and expanding the shrink-only uorust MIR proof frontier to >= 420 lifted constructive functions with residue <= 1164 and uncertified <= 1321 across M1..M21"
