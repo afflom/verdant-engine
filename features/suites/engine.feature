@@ -616,3 +616,10 @@ Feature: engine
     When Verdant evaluates the natural exponential
     Then each finite answer agrees within one ULP with the imported scalar function
     And zero, infinity and NaN results have the reference class
+
+  @VTK-20 @build
+  Scenario: Verdant evaluates the binary32 SwiGLU product with single precision activation and multiplication checked against the imported scalar CPU function
+    Given two independent binary32 operands including special values
+    When Verdant evaluates the SiLU of the first operand times the second
+    Then finite products agree within four representable steps of the imported CPU function
+    And signed zero, infinity and NaN classes match at exceptional operands

@@ -44,6 +44,16 @@ static int compare_rows(ggml_type type) {
 int main(int argc, char **argv) {
   if (argc != 2) return 1;
   ggml_cpu_init();
+  if (!std::strcmp(argv[1], "swiglu-scalar")) {
+    uint32_t first, second;
+    while (std::scanf("%u %u", &first, &second) == 2) {
+      float x, gate, result;
+      std::memcpy(&x, &first, sizeof(x)); std::memcpy(&gate, &second, sizeof(gate));
+      ggml_vec_swiglu_f32(1, &result, &x, &gate);
+      std::memcpy(&first, &result, sizeof(first)); std::printf("%u\n", first);
+    }
+    return std::ferror(stdin) ? 2 : 0;
+  }
   if (!std::strcmp(argv[1], "natural-exp")) {
     uint32_t bits;
     while (std::scanf("%u", &bits) == 1) {
@@ -1086,6 +1096,57 @@ fn natural_exponential_vtk_19() {
             assert!(
                 actual > 0 && actual < f32::INFINITY.to_bits() && actual.abs_diff(expected) <= 1,
                 "exp({word:#010x}): {actual:#010x} versus {expected:#010x}"
+            );
+        }
+    }
+}
+
+#[test]
+fn gated_product_vtk_20() {
+    use std::fmt::Write;
+    let gates = [
+        0u32,
+        1 << 31,
+        1,
+        0x00800000,
+        0xbf800000,
+        0x3f800000,
+        0x3eaaaaab,
+        0xc0b00000,
+        0x7f7fffff,
+        0x7f800000,
+        0xff800000,
+        0x7fc00042,
+    ];
+    let mut input = String::new();
+    let mut operands = Vec::new();
+    let specials = gates.into_iter().map(f32::from_bits);
+    let finite = (-4608..=4608).map(|step| step as f32 / 32.0);
+    let mut inputs: Vec<_> = specials.chain(finite).map(f32::to_bits).collect();
+    inputs.sort_unstable();
+    inputs.dedup();
+    for x in inputs.into_iter().map(f32::from_bits) {
+        for g in gates {
+            writeln!(input, "{} {g}", x.to_bits()).unwrap();
+            operands.push((x, f32::from_bits(g)));
+        }
+    }
+    let expected = query_oracle("swiglu-scalar", input);
+    assert_eq!(operands.len(), 110_700);
+    assert_eq!(operands.len(), expected.len());
+    for ((x, g), reference) in operands.into_iter().zip(expected) {
+        let actual = super::swiglu_f32(x, g).unwrap();
+        let wanted = f32::from_bits(reference);
+        if wanted.is_nan() {
+            assert!(actual.is_nan(), "swiglu({x}, {g})");
+        } else if wanted == 0.0 || wanted.is_infinite() {
+            assert_eq!(actual.to_bits(), reference, "swiglu({x}, {g})");
+        } else {
+            assert!(
+                actual.is_finite()
+                    && actual.is_sign_negative() == wanted.is_sign_negative()
+                    && actual.to_bits().abs_diff(reference) <= 4,
+                "swiglu({x}, {g}): {actual:?} versus {wanted:?}"
             );
         }
     }

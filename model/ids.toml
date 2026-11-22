@@ -697,3 +697,9 @@ id = "VTK-19"
 level = "build"
 suite = "engine"
 statement = "Verdant evaluates the binary32 natural exponential within one representable step of the imported GGML scalar oracle with gradual underflow and matching overflow and exceptional classes"
+
+[[id]]
+id = "VTK-20"
+level = "build"
+suite = "engine"
+statement = "Verdant evaluates the binary32 SwiGLU product with single precision activation and multiplication checked against the imported scalar CPU function"
