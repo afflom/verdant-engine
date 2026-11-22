@@ -180,3 +180,8 @@ on input `0x34fffffe`. Verdant returned `0x3f800002` against the oracle's
 cargo-deny also passed. The three compiled roots carry attestation
 `7ae660150f63832441d4ec0310f032f5a6c08bf612e1a8f58c2f8e2d1ccf62b3`.
 [Certified artifacts](generated/tensor-exponential/result.json)
+
+The native source lift includes this module and its Rust adapter. Verdant's
+full release gate stops at fidelity. The refreshed frontier measures 1,172
+native residue functions against 1,160 and 1,330 uncertified functions
+against 1,318. The PR #15 parent measured 1,171 and 1,329.

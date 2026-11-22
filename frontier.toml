@@ -5,7 +5,7 @@
 # stops the functions it counts (the detail their rows state, under its
 # cause), the one that stops the most first: the work queue.
 
-# Honesty report: 551 of 1880 functions of product code are lifted; 1171
+# Honesty report: 551 of 1881 functions of product code are lifted; 1172
 # are residue, 75 foreign and 83 effect rows.
 # Residue by cause:
 #   arithmetic: 30
@@ -13,15 +13,15 @@
 #   form: 344
 #   signature: 75
 #   statements: 23
-#   type: 478
+#   type: 479
 #   width: 6
 
 spec = "uorust/register/1"
 
 [lift]
-functions = 1880
+functions = 1881
 lifted = 551
-residue = 1171
+residue = 1172
 foreign = 75
 effect = 83
 
@@ -76,12 +76,12 @@ cause = "type"
 functions = 20
 
 [[construct]]
-construct = "type outside the lift: WasmRuntimeBridge.terrain_params: TerrainReliefParams"
+construct = "type outside the lift: f32"
 cause = "type"
-functions = 18
+functions = 19
 
 [[construct]]
-construct = "type outside the lift: f32"
+construct = "type outside the lift: WasmRuntimeBridge.terrain_params: TerrainReliefParams"
 cause = "type"
 functions = 18
 
@@ -5205,6 +5205,12 @@ kappa = "28f0d3901f04e663d459247e53d3c264ea1e9e256733af8bfc19951f8ae2ef1b"
 function = "verdant_tensor::linear::evaluate_wide"
 reason = "statements"
 detail = "the body has statements other than let"
+
+[[residue]]
+kappa = "285a26a40554d1a5527560ef38b0a9ba6b9c394d984417f41d222f101a93d4d6"
+function = "verdant_tensor::linear::exponential_f32"
+reason = "type"
+detail = "type outside the lift: f32"
 
 [[residue]]
 kappa = "240bb733f55ef321994fff933d97c111d3488bbfa68b2b20f64321482e14ca60"

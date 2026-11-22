@@ -57,7 +57,7 @@ max_unlifted_workspace_modules = 0
 
 [frontier_ratchet]
 frontier_register = "frontier.toml"
-frontier_rust_tree_sha256 = "3bd270473afb3322a4dd7938bbcd97d813a3872f763b7d6895909f8c14da451e"
+frontier_rust_tree_sha256 = "5d6d019189cc4c6f5d9ccc1991eae4ea15e1d890065b21e4a8f7e28be7491a81"
 min_lifted_functions = 551
 max_residue_functions = 1160
 max_uncertified_functions = 1318
@@ -294,3 +294,8 @@ role = "Compose certified scalar arithmetic, integer conversion and binary16 wid
 path = "app/src/PackedDot.lex.tex"
 stratum = 1
 role = "Symmetric four-bit lane placement, row extent admission and ordered F32 reduction instructions."
+
+[[stratum_module]]
+path = "app/src/NaturalExponential.lex.tex"
+stratum = 1
+role = "Binary32 exponential range reduction, fixed-point recurrence and final storage rounding."
