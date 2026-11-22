@@ -3,7 +3,6 @@ const GGML_VECTOR_DRIVER: &str = r#"
 #include "ops.h"
 #include "unary-ops.h"
 #include "ggml-cpu-impl.h"
-#include "ggml-cpu-impl.h"
 #include "ggml-cpu.h"
 #include "ggml-quants.h"
 #include "ops.h"
@@ -42,9 +41,48 @@ static int compare_rows(ggml_type type) {
   }
   return std::ferror(stdin) ? 3 : 0;
 }
+// Observe the scale computed by the imported rotary kernel, preserving the real call.
+extern "C" float __real_powf(float, float);
+static bool observe_power = false;
+static unsigned power_calls = 0;
+static float observed_base, observed_exponent, observed_ratio;
+extern "C" float __wrap_powf(float base, float exponent) {
+  const float ratio = __real_powf(base, exponent);
+  if (observe_power) {
+    ++power_calls; observed_base=base; observed_exponent=exponent; observed_ratio=ratio;
+  }
+  return ratio;
+}
 int main(int argc, char **argv) {
   if (argc != 2) return 1;
   ggml_cpu_init();
+  if (!std::strcmp(argv[1], "logarithm")) {
+    unsigned word;
+    while (std::scanf("%u", &word) == 1) {
+      float x, y; std::memcpy(&x, &word, 4); ggml_vec_log_f32(1, &y, &x);
+      std::memcpy(&word, &y, 4); std::printf("%u\n",word);
+    }
+    return std::feof(stdin) ? 0 : 2;
+  }
+  if (!std::strcmp(argv[1], "rotary-ratio")) {
+    unsigned word, degree;
+    while(std::scanf("%u %u", &word, &degree)==2) {
+      if(!degree || degree>2048) return 3;
+      float base; std::memcpy(&base,&word,4);
+      const int dims=2*int(degree);
+      ggml_init_params init={256*1024,nullptr,false}; auto *ctx=ggml_init(init);
+      auto *source=ggml_new_tensor_1d(ctx,GGML_TYPE_F32,dims);
+      auto *pos=ggml_new_tensor_1d(ctx,GGML_TYPE_I32,1);
+      std::memset(source->data,0,ggml_nbytes(source)); *static_cast<int32_t*>(pos->data)=1;
+      auto *out=ggml_rope_ext(ctx,source,pos,nullptr,dims,0,512,base,1.0f,0.0f,1.0f,32.0f,1.0f);
+      std::vector<float> cache(dims+64); ggml_compute_params params{};
+      params.ith=0; params.nth=1; params.wdata=cache.data(); params.wsize=cache.size()*sizeof(float);
+      power_calls=0; observe_power=true; ggml_compute_forward_rope(&params,out); observe_power=false;
+      if(power_calls!=1 || observed_base!=base || observed_exponent!=-1.0f/degree) return 4;
+      std::memcpy(&word,&observed_ratio,4); std::printf("%u\n",word); ggml_free(ctx);
+    }
+    return std::feof(stdin) ? 0 : 2;
+  }
   if (!std::strcmp(argv[1], "plane-rotation")) {
     int dims, position, inverse, truncate;
     unsigned scale_bits, extension_bits, magnitude_bits;
@@ -579,7 +617,7 @@ pub(crate) fn query_oracle(mode: &str, requests: String) -> Vec<u32> {
                 .arg(&common)
                 .arg(cache.join("driver.cpp"))
                 .args(objects)
-                .args(["-pthread", "-lm", "-ldl"])
+                .args(["-pthread", "-lm", "-ldl", "-Wl,--wrap=powf"])
                 .args(["-o"])
                 .arg(cache.join("oracle.new"))
                 .output()
@@ -851,6 +889,14 @@ fn verify_bundle(scope: &str, directory: &str) -> std::collections::BTreeMap<Str
                     "verdant_circular_prepare" => include_bytes!("../../../../generated/tensor-circular/packages/rust-core/verdant_circular_prepare/src/lib.rs"),
                     "verdant_circular_reduce" => include_bytes!("../../../../generated/tensor-circular/packages/rust-core/verdant_circular_reduce/src/lib.rs"),
                     "verdant_circular_square" => include_bytes!("../../../../generated/tensor-circular/packages/rust-core/verdant_circular_square/src/lib.rs"),
+                    "verdant_logarithmic_admit" => include_bytes!("../../../../generated/tensor-logscale/packages/rust-core/verdant_logarithmic_admit/src/lib.rs"),
+                    "verdant_logarithmic_inverse" => include_bytes!("../../../../generated/tensor-logscale/packages/rust-core/verdant_logarithmic_inverse/src/lib.rs"),
+                    "verdant_logarithmic_prepare" => include_bytes!("../../../../generated/tensor-logscale/packages/rust-core/verdant_logarithmic_prepare/src/lib.rs"),
+                    "verdant_logarithmic_product" => include_bytes!("../../../../generated/tensor-logscale/packages/rust-core/verdant_logarithmic_product/src/lib.rs"),
+                    "verdant_logarithmic_scale" => include_bytes!("../../../../generated/tensor-logscale/packages/rust-core/verdant_logarithmic_scale/src/lib.rs"),
+                    "verdant_logarithmic_series" => include_bytes!("../../../../generated/tensor-logscale/packages/rust-core/verdant_logarithmic_series/src/lib.rs"),
+                    "verdant_logarithmic_term" => include_bytes!("../../../../generated/tensor-logscale/packages/rust-core/verdant_logarithmic_term/src/lib.rs"),
+                    "verdant_logarithmic_word" => include_bytes!("../../../../generated/tensor-logscale/packages/rust-core/verdant_logarithmic_word/src/lib.rs"),
                     "verdant_rotation_geometry" => include_bytes!("../../../../generated/tensor-plane/packages/rust-core/verdant_rotation_geometry/src/lib.rs"),
                     "verdant_rotation_limit" => include_bytes!("../../../../generated/tensor-plane/packages/rust-core/verdant_rotation_limit/src/lib.rs"),
                     "verdant_rotation_signed" => include_bytes!("../../../../generated/tensor-plane/packages/rust-core/verdant_rotation_signed/src/lib.rs"),
@@ -1274,6 +1320,84 @@ fn circular_functions_vtk_21() {
                 );
             }
         }
+    }
+}
+
+#[test]
+fn logarithmic_frequency_vtk_22() {
+    assert_eq!(verify_bundle("logscale", "tensor-logscale").len(), 8);
+    use std::fmt::Write;
+    let mut words = vec![0x80000000, 0xbf800000, 0xff800000, 0x7fc00042];
+    for exp in 0..=255u32 {
+        for sample in 0..64u32 {
+            words.push((exp << 23) | (sample.wrapping_mul(2654435761) & 0x007fffff));
+        }
+    }
+    for delta in 0..4096 {
+        words.extend([0x3f800000 - delta, 0x3f800000 + delta]);
+    }
+    words.sort_unstable();
+    words.dedup();
+    let mut input = String::new();
+    for w in &words {
+        writeln!(input, "{w}").unwrap();
+    }
+    let expected = query_oracle("logarithm", input);
+    assert_eq!(expected.len(), words.len());
+    let compare = |actual: f32, bits: u32| {
+        let value = f32::from_bits(bits);
+        if value.is_nan() {
+            assert!(actual.is_nan());
+        } else if value.is_infinite() || value == 0.0 {
+            assert_eq!(actual.to_bits(), bits);
+        } else {
+            assert!(
+                actual.is_finite()
+                    && actual.is_sign_negative() == value.is_sign_negative()
+                    && actual.to_bits().abs_diff(bits) <= 1,
+                "{actual:?} versus {value:?}"
+            );
+        }
+    };
+    for (word, bits) in words.into_iter().zip(expected) {
+        compare(super::natural_log_f32(f32::from_bits(word)).unwrap(), bits);
+    }
+    let mut inputs = String::new();
+    let mut pairs = Vec::new();
+    for degree in [
+        1, 2, 3, 4, 8, 10, 12, 16, 18, 24, 30, 32, 40, 64, 128, 255, 256, 513, 1024, 2048,
+    ] {
+        for base in [
+            f32::from_bits(1),
+            f32::MIN_POSITIVE,
+            0.01,
+            0.5,
+            0.99999994,
+            1.0,
+            1.0000001,
+            2.0,
+            10.0,
+            100.0,
+            10000.0,
+            1000000.0,
+            f32::MAX,
+        ] {
+            writeln!(inputs, "{} {degree}", base.to_bits()).unwrap();
+            pairs.push((base, degree));
+        }
+    }
+    let expected = query_oracle("rotary-ratio", inputs);
+    assert_eq!(pairs.len(), expected.len());
+    for ((base, degree), bits) in pairs.into_iter().zip(expected) {
+        let actual = super::inverse_root_f32(base, degree).unwrap();
+        compare(actual, bits);
+        if base == 10000.0 || base == 1000000.0 {
+            assert_eq!(actual.to_bits(), bits, "base {base} degree {degree}");
+        }
+    }
+    assert!(super::inverse_root_f32(2.0, 0).is_err());
+    for base in [0.0, -1.0, f32::INFINITY, f32::NAN] {
+        assert!(super::inverse_root_f32(base, 3).is_err());
     }
 }
 

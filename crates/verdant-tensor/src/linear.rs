@@ -14,8 +14,10 @@ use crate::{
 
 mod activations;
 mod rotation;
+pub use activations::{
+    exponential_f32, inverse_root_f32, natural_log_f32, sin_cos_f32, swiglu_f32,
+};
 pub use rotation::{rotate_pair_f32, signed_word_f32, RotaryParameters, RotarySpectrum};
-pub use activations::{exponential_f32, sin_cos_f32, swiglu_f32};
 
 #[inline]
 fn transform_triple_exact(

@@ -321,6 +321,54 @@ expression = "MIT OR Apache-2.0"
 license-files = [{ path = "src/lib.rs", hash = 0x460ae74a }]
 
 [[licenses.clarify]]
+name = "verdant_logarithmic_admit"
+version = "=2.22.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0xb1b824b0 }]
+
+[[licenses.clarify]]
+name = "verdant_logarithmic_inverse"
+version = "=2.22.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0x8b0cf2e4 }]
+
+[[licenses.clarify]]
+name = "verdant_logarithmic_prepare"
+version = "=2.22.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0x5019602a }]
+
+[[licenses.clarify]]
+name = "verdant_logarithmic_product"
+version = "=2.22.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0x31fbff7 }]
+
+[[licenses.clarify]]
+name = "verdant_logarithmic_scale"
+version = "=2.22.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0xc2485a5c }]
+
+[[licenses.clarify]]
+name = "verdant_logarithmic_series"
+version = "=2.22.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0x3f76040a }]
+
+[[licenses.clarify]]
+name = "verdant_logarithmic_term"
+version = "=2.22.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0xf7c52c8a }]
+
+[[licenses.clarify]]
+name = "verdant_logarithmic_word"
+version = "=2.22.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0x2a6f540a }]
+
+[[licenses.clarify]]
 name = "verdant_rotation_geometry"
 version = "=2.22.0"
 expression = "MIT OR Apache-2.0"

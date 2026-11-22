@@ -16,6 +16,14 @@ verdant_rotation_geometry = { version = "2.22.0", path = "../../generated/tensor
 verdant_rotation_limit = { version = "2.22.0", path = "../../generated/tensor-plane/packages/rust-core/verdant_rotation_limit" }
 verdant_rotation_signed = { version = "2.22.0", path = "../../generated/tensor-plane/packages/rust-core/verdant_rotation_signed" }
 verdant_rotation_step = { version = "2.22.0", path = "../../generated/tensor-plane/packages/rust-core/verdant_rotation_step" }
+verdant_logarithmic_admit = { version = "2.22.0", path = "../../generated/tensor-logscale/packages/rust-core/verdant_logarithmic_admit" }
+verdant_logarithmic_inverse = { version = "2.22.0", path = "../../generated/tensor-logscale/packages/rust-core/verdant_logarithmic_inverse" }
+verdant_logarithmic_prepare = { version = "2.22.0", path = "../../generated/tensor-logscale/packages/rust-core/verdant_logarithmic_prepare" }
+verdant_logarithmic_product = { version = "2.22.0", path = "../../generated/tensor-logscale/packages/rust-core/verdant_logarithmic_product" }
+verdant_logarithmic_scale = { version = "2.22.0", path = "../../generated/tensor-logscale/packages/rust-core/verdant_logarithmic_scale" }
+verdant_logarithmic_series = { version = "2.22.0", path = "../../generated/tensor-logscale/packages/rust-core/verdant_logarithmic_series" }
+verdant_logarithmic_term = { version = "2.22.0", path = "../../generated/tensor-logscale/packages/rust-core/verdant_logarithmic_term" }
+verdant_logarithmic_word = { version = "2.22.0", path = "../../generated/tensor-logscale/packages/rust-core/verdant_logarithmic_word" }
 verdant_circular_magnitudes = { version = "2.21.0", path = "../../generated/tensor-circular/packages/rust-core/verdant_circular_magnitudes" }
 verdant_circular_orient = { version = "2.21.0", path = "../../generated/tensor-circular/packages/rust-core/verdant_circular_orient" }
 verdant_circular_prepare = { version = "2.21.0", path = "../../generated/tensor-circular/packages/rust-core/verdant_circular_prepare" }

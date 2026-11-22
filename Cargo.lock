@@ -843,6 +843,14 @@ dependencies = [
  "verdant_float_transform",
  "verdant_high_f64",
  "verdant_integer_f32",
+ "verdant_logarithmic_admit",
+ "verdant_logarithmic_inverse",
+ "verdant_logarithmic_prepare",
+ "verdant_logarithmic_product",
+ "verdant_logarithmic_scale",
+ "verdant_logarithmic_series",
+ "verdant_logarithmic_term",
+ "verdant_logarithmic_word",
  "verdant_low_f64",
  "verdant_matrix_shape",
  "verdant_narrow_f64",
@@ -955,6 +963,38 @@ version = "2.9.0"
 [[package]]
 name = "verdant_integer_f32"
 version = "2.9.0"
+
+[[package]]
+name = "verdant_logarithmic_admit"
+version = "2.22.0"
+
+[[package]]
+name = "verdant_logarithmic_inverse"
+version = "2.22.0"
+
+[[package]]
+name = "verdant_logarithmic_prepare"
+version = "2.22.0"
+
+[[package]]
+name = "verdant_logarithmic_product"
+version = "2.22.0"
+
+[[package]]
+name = "verdant_logarithmic_scale"
+version = "2.22.0"
+
+[[package]]
+name = "verdant_logarithmic_series"
+version = "2.22.0"
+
+[[package]]
+name = "verdant_logarithmic_term"
+version = "2.22.0"
+
+[[package]]
+name = "verdant_logarithmic_word"
+version = "2.22.0"
 
 [[package]]
 name = "verdant_low_f64"

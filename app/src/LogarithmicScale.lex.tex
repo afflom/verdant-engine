@@ -1,0 +1,156 @@
+\begin{lexlean}{LogarithmicScale}
+\useglossary{lexlean.std.bool@1.2.0}
+\useglossary{lexlean.std.nat@1.2.0}
+\importmodule{FloatStorage}
+\importmodule{ScalarF32}
+\title{Natural number}
+\begin{semanticmodule}
+inductive{
+  name: Preparation,
+  type_parameters: [],
+  parameters: [],
+  constructors: [{name: exact, fields: [Nat]}, {name: positive, fields: [Bool, Nat, Nat]}]
+}
+
+inductive{
+  name: Reduction,
+  type_parameters: [],
+  parameters: [],
+  constructors: [{name: series, fields: [Nat, Nat, Nat, Nat]}]
+}
+
+inductive{
+  name: SeriesState,
+  type_parameters: [],
+  parameters: [],
+  constructors: [
+    {name: start, fields: []},
+    {name: square, fields: []},
+    {name: term, fields: [Nat, Nat]},
+    {name: finish, fields: []}
+  ]
+}
+
+inductive{
+  name: SeriesAction,
+  type_parameters: [],
+  parameters: [],
+  constructors: [{name: product, fields: [Nat, Nat, SeriesState]}, {name: magnitude, fields: [Nat]}]
+}
+
+definition{
+  name: qMultiply,
+  parameters: [a : Nat, b : Nat],
+  result: Nat,
+  body: (let al : Nat := (prim remainder a 268435456 0 : Nat); (let bl : Nat := (prim remainder b 268435456 0 : Nat); (let ah : Nat := (prim quotient a 268435456 0 : Nat); (let bh : Nat := (prim quotient b 268435456 0 : Nat); (let middle : Nat := (((prim multiply ah bl : Nat) + (prim multiply al bh : Nat)) + (prim quotient (prim multiply al bl : Nat) 268435456 0 : Nat)); ((prim multiply 2 (prim multiply ah bh : Nat) : Nat) + (FloatStorage::roundQuotient middle 134217728))))))),
+  executable: true,
+  production: {effects: [overflow], targets: [rust-core]}
+}
+
+definition{
+  name: fractionalRatio,
+  parameters: [numerator : Nat, denominator : Nat],
+  result: Nat,
+  body: (let part : Nat := (prim multiply numerator 268435456 : Nat); ((prim multiply (prim quotient part denominator 0 : Nat) 134217728 : Nat) + (FloatStorage::roundQuotient (prim multiply (prim remainder part denominator 0 : Nat) 134217728 : Nat) denominator))),
+  executable: true
+}
+
+definition{
+  name: normal,
+  parameters: [mantissa : Nat, exponentPlus : Nat],
+  result: Preparation,
+  body: (let numerator : Nat := (prim subtract mantissa 8388608 : Nat); (let ratio : Nat := (fractionalRatio numerator (mantissa + 8388608)); (let neg : Bool := (exponentPlus <? 151); (ctor Preparation.positive neg (if neg then (prim subtract 151 exponentPlus : Nat) else (prim subtract exponentPlus 151 : Nat)) ratio)))),
+  executable: true
+}
+
+definition{
+  name: prepare,
+  parameters: [word : Nat],
+  result: Preparation,
+  body: (let absolute : Nat := (prim remainder word 2147483648 0 : Nat); (let exponent : Nat := (prim quotient absolute 8388608 0 : Nat); (let fraction : Nat := (prim remainder absolute 8388608 0 : Nat); (if (absolute =? 0) then (ctor Preparation.exact 4286578688) else (if (2147483647 <? word) then (ctor Preparation.exact 2143289344) else (if (exponent =? 255) then (ctor Preparation.exact (if (fraction =? 0) then 2139095040 else 2143289344)) else (if (exponent =? 0) then (let state : ScalarF32::Norm := (ScalarF32::normalize 24 fraction 0 8388608); (normal (project state m) (1 + (project state e)))) else (normal (8388608 + fraction) (exponent + 24))))))))),
+  executable: true,
+  production: {effects: [overflow], targets: [rust-core]}
+}
+
+definition{
+  name: series,
+  parameters: [neg : Bool, whole : Nat, ratio : Nat, state : SeriesState, product : Nat],
+  result: SeriesAction,
+  body: (match state
+    | SeriesState.start => (ctor SeriesAction.product ratio ratio (ctor SeriesState.square))
+    | SeriesState.square => (ctor SeriesAction.product product 973751270782810 (ctor SeriesState.term 35 product))
+    | SeriesState.term odd square => (let sum : Nat := ((FloatStorage::roundQuotient 36028797018963968 odd) + product); (if (odd =? 1) then (ctor SeriesAction.product ratio sum (ctor SeriesState.finish)) else (ctor SeriesAction.product square sum (ctor SeriesState.term (prim subtract odd 2 : Nat) square))))
+    | SeriesState.finish => (let head : Nat := (prim multiply whole 24973259072661437 : Nat); (let tail : Nat := (prim multiply 2 product : Nat); (ctor SeriesAction.magnitude (if neg then (prim subtract head tail : Nat) else (head + tail)))))),
+  executable: true,
+  production: {effects: [overflow], targets: [rust-core]}
+}
+
+definition{
+  name: logWord,
+  parameters: [neg : Bool, magnitudeQ : Nat],
+  result: Nat,
+  body: (if (magnitudeQ =? 0) then 0 else (let norm : ScalarF32::Norm := (first (prim iterate_until (fun (value : ScalarF32::Norm) => (ScalarF32::normalizeStep value)) 63 (record ScalarF32::Norm {e := 134, m := magnitudeQ, minimum := 0, threshold := 4611686018427387904}) : (ScalarF32::Norm * Bool))); (((if neg then 2147483648 else 0) + (prim multiply (prim subtract (project norm e) 1 : Nat) 8388608 : Nat)) + (FloatStorage::roundQuotient (project norm m) 549755813888)))),
+  executable: true,
+  production: {effects: [overflow], targets: [rust-core]}
+}
+
+definition{
+  name: inverseAdmitted,
+  parameters: [base : Nat, degree : Nat],
+  result: Bool,
+  body: (((0 <? base) && (base <? 2139095040)) && (0 <? degree)),
+  executable: true,
+  production: {effects: [], targets: [rust-core]}
+}
+
+definition{
+  name: reduceInverse,
+  parameters: [negativeLog : Bool, magnitudeQ : Nat, inverseDegree : Nat],
+  result: Reduction,
+  body: (let exponent : Nat := (prim quotient inverseDegree 8388608 0 : Nat); (let mantissa : Nat := (8388608 + (prim remainder inverseDegree 8388608 0 : Nat)); (let high : Nat := (prim multiply (prim quotient magnitudeQ 16777216 0 : Nat) mantissa : Nat); (let low : Nat := (prim quotient (prim multiply (prim remainder magnitudeQ 16777216 0 : Nat) mantissa : Nat) 16777216 0 : Nat); (let absolute : Nat := (FloatStorage::roundQuotient (high + low) (ScalarF32::power (prim subtract 131 exponent : Nat))); (let whole : Nat := (prim quotient absolute 780414346020670 0 : Nat); (let tail : Nat := (prim remainder absolute 780414346020670 0 : Nat); (let residual : Nat := (if negativeLog then tail else (prim subtract 780414346020670 tail : Nat)); (ctor Reduction.series (if negativeLog then (256 + whole) else (prim subtract 255 whole : Nat)) (prim multiply residual 32 : Nat) 16 36028797018963968))))))))),
+  executable: true,
+  production: {effects: [overflow], targets: [rust-core]}
+}
+
+definition{
+  name: exponentialTerm,
+  parameters: [product : Nat, order : Nat],
+  result: Nat,
+  body: (36028797018963968 + (FloatStorage::roundQuotient product order)),
+  executable: true,
+  production: {effects: [overflow], targets: [rust-core]}
+}
+
+definition{
+  name: exponentialWord,
+  parameters: [scale : Nat, value : Nat],
+  result: Nat,
+  body: (if (scale <? 106) then 0 else (if (scale <? 130) then (FloatStorage::roundQuotient value (ScalarF32::power (prim subtract 162 scale : Nat))) else (if (383 <? scale) then 2139095040 else ((prim multiply (prim subtract scale 130 : Nat) 8388608 : Nat) + (FloatStorage::roundQuotient value 4294967296))))),
+  executable: true,
+  production: {effects: [overflow], targets: [rust-core]}
+}
+
+theorem{
+  name: logZero,
+  parameters: [],
+  statement: ((prepare 0) = (ctor Preparation.exact 4286578688)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: logOfNegative,
+  parameters: [],
+  statement: ((prepare 3212836864) = (ctor Preparation.exact 2143289344)),
+  proof: reflexivity{}
+}
+
+theorem{name: unitLog, parameters: [], statement: ((logWord false 0) = 0), proof: reflexivity{}}
+
+theorem{
+  name: zeroDegree,
+  parameters: [],
+  statement: ((inverseAdmitted 1065353216 0) = false),
+  proof: reflexivity{}
+}
+\end{semanticmodule}
+\end{lexlean}

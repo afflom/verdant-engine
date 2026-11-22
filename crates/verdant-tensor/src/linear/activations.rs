@@ -70,3 +70,78 @@ pub fn sin_cos_f32(radians: f32) -> Result<(f32, f32), TensorComputeError> {
     let decode = |word| u32::try_from(word).map(f32::from_bits).map_err(|_| error());
     Ok((decode(sin)?, decode(cos)?))
 }
+
+fn log_failure() -> TensorComputeError {
+    TensorComputeError::InvalidKernelSpecification {
+        kernel_name: "LogarithmicScale".to_owned(),
+    }
+}
+
+fn logarithm_magnitude(negative: bool, whole: u64, ratio: u64) -> Result<u64, TensorComputeError> {
+    use verdant_logarithmic_series::{Adt0 as State, Adt1 as Action};
+    let mut state = State::C0;
+    let mut product = 0;
+    loop {
+        match verdant_logarithmic_series::run(negative, whole, ratio, state, product)
+            .map_err(|_| log_failure())?
+        {
+            Action::C0(a, b, next) => {
+                product = verdant_logarithmic_product::run(a, b).map_err(|_| log_failure())?;
+                state = next;
+            }
+            Action::C1(value) => return Ok(value),
+        }
+    }
+}
+
+/// Evaluate the binary32 natural logarithm, including IEEE zeros and nonfinite inputs.
+///
+/// # Errors
+/// Returns a typed kernel error if a certified word operation overflows.
+pub fn natural_log_f32(value: f32) -> Result<f32, TensorComputeError> {
+    let word = match verdant_logarithmic_prepare::run(u64::from(value.to_bits()))
+        .map_err(|_| log_failure())?
+    {
+        verdant_logarithmic_prepare::Adt0::C0(word) => word,
+        verdant_logarithmic_prepare::Adt0::C1(negative, whole, ratio) => {
+            let magnitude = logarithm_magnitude(negative, whole, ratio)?;
+            verdant_logarithmic_word::run(negative, magnitude).map_err(|_| log_failure())?
+        }
+    };
+    Ok(f32::from_bits(
+        u32::try_from(word).map_err(|_| log_failure())?,
+    ))
+}
+
+/// Raise a positive finite base to the negative binary32 reciprocal of the root degree.
+///
+/// # Errors
+/// Returns a typed kernel error for a zero degree, a nonpositive or nonfinite
+/// base, or failure of a certified component.
+pub fn inverse_root_f32(base: f32, degree: u32) -> Result<f32, TensorComputeError> {
+    let base = u64::from(base.to_bits());
+    if !verdant_logarithmic_admit::run(base, u64::from(degree)) {
+        return Err(log_failure());
+    }
+    let verdant_logarithmic_prepare::Adt0::C1(negative, whole, ratio) =
+        verdant_logarithmic_prepare::run(base).map_err(|_| log_failure())?
+    else {
+        return Err(log_failure());
+    };
+    let magnitude = logarithm_magnitude(negative, whole, ratio)?;
+    let degree = super::evaluate_wide(3, u64::from(degree), 0)?.ok_or_else(log_failure)?;
+    let divisor = f32::from_bits(u32::try_from(degree).map_err(|_| log_failure())?);
+    let inverse = evaluate_f32_scalar(3, 1.0, divisor)?;
+    let verdant_logarithmic_inverse::Adt0::C0(scale, residual, order, mut current) =
+        verdant_logarithmic_inverse::run(negative, magnitude, u64::from(inverse.to_bits()))
+            .map_err(|_| log_failure())?;
+    for term in (1..=order).rev() {
+        let product =
+            verdant_logarithmic_product::run(residual, current).map_err(|_| log_failure())?;
+        current = verdant_logarithmic_term::run(product, term).map_err(|_| log_failure())?;
+    }
+    let word = verdant_logarithmic_scale::run(scale, current).map_err(|_| log_failure())?;
+    Ok(f32::from_bits(
+        u32::try_from(word).map_err(|_| log_failure())?,
+    ))
+}
