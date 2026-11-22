@@ -153,7 +153,7 @@
     },
     {
       "basisPrime": 71,
-      "kappaHex": "d17ffee840c7d0594ed74c85b5e8da2f67b9ae6231c6499bf1edd0c76b3e3853",
+      "kappaHex": "24ad182f9a563618459a61053ab6ce6848ad6957a063ed33a8dc1b6ce026aad1",
       "spec": {
         "almPhases": [
           "change-management",
@@ -187,6 +187,7 @@
           "crates/verdant-core/src/vcs_studio.rs",
           "crates/verdant-core/src/governance.rs",
           "crates/verdant-core/src/build_ops.rs",
+          "crates/verdant-core/src/gateway.rs",
           "catalogs/governance/change-roadmap-kpi.json",
           "site/frame/index.html",
           "site/frame/frame-boot.mjs",
@@ -370,7 +371,7 @@
     },
     {
       "basisPrime": 89,
-      "kappaHex": "e522bdd7fde2bfc1f220062fe3db45b45895aae74efaab4c340940934e2290b8",
+      "kappaHex": "e9591cbef005fd636983570613bbb196d006721d3ceb61be8c65c0a4b93be7ee",
       "spec": {
         "almPhases": [
           "operation",
@@ -412,6 +413,7 @@
           "crates/verdant-core/src/collision_blas.rs",
           "crates/verdant-core/src/character_types.rs",
           "crates/verdant-core/src/render_shaders.rs",
+          "crates/verdant-tensor/src/scalars_gateway.rs",
           "site/card.html",
           "site/card.mjs",
           "site/card.css",

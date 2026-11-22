@@ -490,3 +490,9 @@ Feature: engine
     Given .github/workflows/release-stitch.yml, crates/verdant-core/src/character_types.rs, crates/verdant-core/src/render_shaders.rs, site/studio.mjs, site/engine-worker.mjs, site/studio/studio-page.mjs, site/catalog-streams.mjs, and frontier.toml
     When prism-fidelity audits [frontier_ratchet] and [surface_ratchet], Verdant evaluates its MIR-lifted M24 modularity/retry/governance scalars, and the Observer evaluates all 24 milestones M1..M24
     Then max_handwritten_rust_file_lines is at most 1250, max_js_file_lines is at most 930, max_release_capsule_bytes is strictly below 1048576 bytes, frontier.toml proves at least 515 lifted functions with residue at most 1161, and all Observer KPIs pass across M1..M24
+
+  @VE-77 @build
+  Scenario: Verdant delivers Multi-Gateway Stitch Hosting and Serving in Milestone M25: hosting Verdant and all 6 canonical stakeholder parts on GitHub and independent external gateways (Cloudflare Pages, Netlify, IPFS, OCI, and native zero-dependency verdant gateway serve) with live primary-outage failover, Blank Frame same-origin/gateway/OPFS resilience, and >= 545 lifted functions across M1..M25
+    Given crates/verdant-core/src/gateway.rs, crates/verdant-tensor/src/scalars_gateway.rs, site/frame/frame-boot.mjs, .github/workflows/release-stitch.yml, .github/workflows/pages.yml, catalogs/governance/stitch-self-hosting.json, and frontier.toml
+    When Verdant packs and failover-verifies a multi-gateway Stitch bundle under simulated GitHub primary outage plus 4-of-8 shard withholding, audits Blank Frame and ratchet ceilings, and evaluates all 25 milestones M1..M25
+    Then GitHub-only plans fail closed, all 6 stakeholder parts and 6 gateway adapters verify cleanly, live dual-gateway 4-of-8 recovery passes, frontier.toml proves at least 545 lifted functions with residue at most 1161, and all Observer KPIs pass across M1..M25

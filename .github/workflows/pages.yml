@@ -242,6 +242,13 @@ jobs:
             --relay "https://raw.githubusercontent.com/${owner_lc}/verdant-engine/stitch-mirror/v${ver}/shards" \
             --pin "stitch://verdant/studio"
           cp "site/stitch/v${ver}/frame-pin.json" site/frame/frame-pin.json
+          ./target/debug/verdant gateway pack \
+            --root . \
+            --release-dir "site/stitch/v${ver}" \
+            --out "dist/pages-gateway"
+          ./target/debug/verdant gateway verify --dir "dist/pages-gateway"
+          cp "dist/pages-gateway/gateway-manifest.json" site/gateway-manifest.json
+          cp -r "dist/pages-gateway/part" site/part
           node scripts/verify-stitch-release.mjs --dir "site/stitch/v${ver}"
           node scripts/verify-uhd-workload.mjs site
       - name: Keep the screens

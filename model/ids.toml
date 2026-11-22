@@ -572,3 +572,9 @@ id = "VE-76"
 suite = "engine"
 level = "build"
 statement = "Verdant executes Milestone M24 across its Observer refinement agenda: hardening .github/workflows/release-stitch.yml stitch-mirror publication with 3-attempt ls-remote and push retries that never mask transient remote errors as missing branches; breaking every hand-written Rust file <= 1250 lines with zero added residue/foreign functions (character_types.rs, render_shaders.rs, and companion consolidation across verdant-wasm/src/lib.rs, hd_world.rs, operator.rs, operator_mcp.rs, network.rs -> >= 183 lifted lifecycle modules); breaking every shipped JS file <= 930 lines with zero extra JS requests; holding the .holo release capsule strictly below 1.00 MiB (< 1048576 B); and expanding the shrink-only uorust MIR proof frontier to >= 515 lifted constructive functions with residue <= 1161 and uncertified <= 1318 across M1..M24"
+
+[[id]]
+id = "VE-77"
+suite = "engine"
+level = "build"
+statement = "Verdant delivers Multi-Gateway Stitch Hosting & Serving in Milestone M25 (crates/verdant-core/src/gateway.rs, crates/verdant-tensor/src/scalars_gateway.rs, CLI verdant gateway pack|serve|verify, MCP verdant_gateway, Blank Frame ?gateway=/same-origin/OPFS resilience, and GitHub Pages + release-stitch.yml multi-gateway bundle publication), hosting Verdant and all 6 canonical stakeholder parts (studio, catalogs, demo, docs, starter, card) simultaneously on GitHub and independent external gateways (Cloudflare Pages/Workers, Netlify Edge, IPFS/IPNS HTTP gateways, OCI/Docker, and self-hosted Stitch HTTP nodes) while refusing GitHub-only single-provider plans, proving live dual-gateway failover under primary 503 outage plus 4-of-8 shard withholding, and expanding frontier.toml to >= 545 lifted functions with residue <= 1161 and uncertified <= 1318 across M1..M25"

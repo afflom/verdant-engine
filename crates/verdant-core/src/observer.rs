@@ -456,16 +456,16 @@ pub enum ObserverPartSlot {
 impl ObserverPartSlot {
     /// Returns all eight differentiated Observer parts in canonical order.
     #[must_use]
-    pub const fn all() -> [Self; 1 << (1 + 1 + 1)] {
+    pub const fn all() -> [ObserverPartSlot; 1 << (1 + 1 + 1)] {
         [
-            Self::StageEnvironment,
-            Self::CharacterRigs,
-            Self::HeroProps,
-            Self::SurfaceMaterials,
-            Self::SpatialAcoustics,
-            Self::VisualIdentity,
-            Self::CognitiveLanguage,
-            Self::RuntimeFrameworks,
+            ObserverPartSlot::StageEnvironment,
+            ObserverPartSlot::CharacterRigs,
+            ObserverPartSlot::HeroProps,
+            ObserverPartSlot::SurfaceMaterials,
+            ObserverPartSlot::SpatialAcoustics,
+            ObserverPartSlot::VisualIdentity,
+            ObserverPartSlot::CognitiveLanguage,
+            ObserverPartSlot::RuntimeFrameworks,
         ]
     }
 

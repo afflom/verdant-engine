@@ -3792,3 +3792,263 @@ fn engine_ve_76() {
         kpi_rep.kpis
     );
 }
+
+#[test]
+fn engine_ve_77() {
+    use std::path::Path;
+    use verdant_core::gateway::{
+        build_multi_gateway_manifest, execute_gateway_op, GatewayOp, GatewayOpOutcome,
+        GatewayProviderKind, StitchGatewayEndpoint,
+    };
+    use verdant_core::operator::VerdantOperatorChannel;
+    use verdant_tensor::scalars::*;
+
+    let repo_root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+    let ch = VerdantOperatorChannel::new("sunspire-regatta").expect("operator channel");
+
+    // 1. Pack an isolated release + verify MultiGatewayManifest refuses GitHub-only plans!
+    let tmp_root = std::env::temp_dir().join(format!("verdant-ve77-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&tmp_root);
+    let rel_dir = tmp_root.join("release");
+    let gw_dir = tmp_root.join("gateway-bundle");
+
+    let gh_only_pin = ch
+        .pack_repo_release_capsule(
+            &repo_root,
+            "2.17.0",
+            21,
+            &rel_dir,
+            vec![
+                "https://afflom.github.io/verdant-engine/stitch/v2.17.0/shards".to_string(),
+                "https://raw.githubusercontent.com/afflom/verdant-engine/stitch-mirror/v2.17.0/shards"
+                    .to_string(),
+            ],
+            "stitch://verdant/studio",
+        )
+        .expect("pack isolated release");
+    assert!(
+        build_multi_gateway_manifest(&gh_only_pin, &[]).is_err(),
+        "GitHub-only single-provider-family plan MUST fail closed"
+    );
+
+    // Unsafe non-HTTPS external gateway URL MUST fail closed:
+    let bad_extra = StitchGatewayEndpoint {
+        id: "unsafe-http".to_string(),
+        provider: GatewayProviderKind::CloudflarePages,
+        provider_family: "cloudflare".to_string(),
+        base_url: "http://evil.example".to_string(),
+        frame_url: "http://evil.example/".to_string(),
+        shard_relay_url: "http://evil.example/shards".to_string(),
+        holo_url: None,
+        crates_index_url: None,
+        priority: 2,
+        cors_wildcard_required: true,
+    };
+    assert!(
+        build_multi_gateway_manifest(&gh_only_pin, &[bad_extra]).is_err(),
+        "non-HTTPS external gateway URL MUST fail closed"
+    );
+
+    // 2. Pack complete multi-gateway bundle with GitHub + Cloudflare + Netlify + IPFS gateways!
+    let extra_gateways = vec![
+        StitchGatewayEndpoint {
+            id: "cloudflare-pages".to_string(),
+            provider: GatewayProviderKind::CloudflarePages,
+            provider_family: "cloudflare".to_string(),
+            base_url: "https://verdant-engine.pages.dev".to_string(),
+            frame_url: "https://verdant-engine.pages.dev/".to_string(),
+            shard_relay_url: "https://verdant-engine.pages.dev/shards".to_string(),
+            holo_url: Some(
+                "https://verdant-engine.pages.dev/holo/verdant-v2.17.0.holo".to_string(),
+            ),
+            crates_index_url: Some("https://verdant-engine.pages.dev/crates/index/".to_string()),
+            priority: 1,
+            cors_wildcard_required: true,
+        },
+        StitchGatewayEndpoint {
+            id: "netlify-edge".to_string(),
+            provider: GatewayProviderKind::NetlifyEdge,
+            provider_family: "netlify".to_string(),
+            base_url: "https://verdant-engine.netlify.app".to_string(),
+            frame_url: "https://verdant-engine.netlify.app/".to_string(),
+            shard_relay_url: "https://verdant-engine.netlify.app/shards".to_string(),
+            holo_url: None,
+            crates_index_url: None,
+            priority: 2,
+            cors_wildcard_required: true,
+        },
+        StitchGatewayEndpoint {
+            id: "ipfs-dweb".to_string(),
+            provider: GatewayProviderKind::IpfsHttpGateway,
+            provider_family: "ipfs".to_string(),
+            base_url: "https://dweb.link/ipfs/bafybeiverdant".to_string(),
+            frame_url: "https://dweb.link/ipfs/bafybeiverdant/".to_string(),
+            shard_relay_url: "https://dweb.link/ipfs/bafybeiverdant/shards".to_string(),
+            holo_url: None,
+            crates_index_url: None,
+            priority: 3,
+            cors_wildcard_required: true,
+        },
+    ];
+    let (pack_out, _) = execute_gateway_op(&GatewayOp::PackBundle {
+        repo_root: repo_root.clone(),
+        release_dir: rel_dir.clone(),
+        out_dir: gw_dir.clone(),
+        extra_gateways,
+        crates_dir: None,
+    })
+    .expect("pack multi-gateway bundle");
+    let GatewayOpOutcome::Packed(manifest) = pack_out else {
+        panic!("expected Packed outcome");
+    };
+    assert!(manifest.distinct_provider_families.len() >= 4);
+    assert_eq!(manifest.stakeholder_parts.len(), 6);
+    assert!(gw_dir.join("_headers").is_file());
+    assert!(gw_dir.join("_redirects").is_file());
+    assert!(gw_dir.join("wrangler.toml").is_file());
+    assert!(gw_dir.join("netlify.toml").is_file());
+    assert!(gw_dir.join(".ipfs-gateway-root.json").is_file());
+    assert!(gw_dir.join("Dockerfile").is_file());
+    assert!(gw_dir.join("part/studio/index.html").is_file());
+    assert!(gw_dir.join("part/catalogs/index.html").is_file());
+    assert!(gw_dir.join("part/demo/index.html").is_file());
+    assert!(gw_dir.join("part/docs/index.html").is_file());
+    assert!(gw_dir.join("part/starter/index.html").is_file());
+    assert!(gw_dir.join("part/card/index.html").is_file());
+
+    // 3. Run LIVE dual-gateway failover verification (primary 503 outage + secondary 4-of-8 withholding)!
+    let (verify_out, _) = execute_gateway_op(&GatewayOp::VerifyFailover {
+        bundle_dir: gw_dir.clone(),
+    })
+    .expect("live multi-gateway failover verify");
+    let GatewayOpOutcome::Verified(failover) = verify_out else {
+        panic!("expected Verified outcome");
+    };
+    assert!(failover.all_passed);
+    assert_eq!(failover.primary_outage_status, 503);
+    assert_eq!(failover.secondary_healthz_status, 200);
+    assert_eq!(failover.part_redirect_status, 302);
+    assert_eq!(failover.cors_preflight_status, 204);
+    assert_eq!(failover.surviving_shards_fetched, 4);
+    assert_eq!(failover.withheld_shards_tolerated, 4);
+    assert_eq!(failover.release_kappa_hex, gh_only_pin.release_kappa_hex);
+    assert!(failover.recovered_files_count >= 50);
+
+    // 4. Verify CLI `verdant gateway verify` and MCP `verdant_gateway`:
+    let cli_out = verdant_cli::run_cli(&[
+        "gateway".to_string(),
+        "verify".to_string(),
+        "--dir".to_string(),
+        gw_dir.to_string_lossy().to_string(),
+    ])
+    .expect("CLI verdant gateway verify");
+    assert!(cli_out.contains("\"allPassed\": true"));
+
+    let mut ch_mcp = VerdantOperatorChannel::new("sunspire-regatta").expect("mcp channel");
+    let mcp_req = serde_json::json!({
+        "jsonrpc": "2.0",
+        "id": 77,
+        "method": "tools/call",
+        "params": {
+            "name": "verdant_gateway",
+            "arguments": {
+                "action": "verify",
+                "dir": gw_dir.to_string_lossy()
+            }
+        }
+    })
+    .to_string();
+    let mcp_raw = ch_mcp
+        .handle_mcp_jsonrpc_line(&repo_root, &mcp_req)
+        .expect("MCP verdant_gateway response");
+    assert!(mcp_raw.contains("\"isError\":false"));
+
+    let _ = std::fs::remove_dir_all(&tmp_root);
+
+    // 5. Verify Blank Frame multi-gateway ?gateway=, same-origin ./shards, & OPFS fallback:
+    let frame_boot = std::fs::read_to_string(repo_root.join("site/frame/frame-boot.mjs"))
+        .expect("read frame-boot.mjs");
+    assert!(frame_boot.contains("params.get(\"gateway\")"));
+    assert!(frame_boot.contains("./shards"));
+    assert!(frame_boot.contains("stitch-opfs-offline-fallback"));
+
+    // 6. Verify CI workflows publish multi-gateway bundle & stakeholder part shims:
+    let rel_yml = std::fs::read_to_string(repo_root.join(".github/workflows/release-stitch.yml"))
+        .expect("release-stitch.yml");
+    assert!(rel_yml.contains("verdant gateway pack") && rel_yml.contains("verdant gateway verify"));
+    let pages_yml =
+        std::fs::read_to_string(repo_root.join(".github/workflows/pages.yml")).expect("pages.yml");
+    assert!(pages_yml.contains("gateway-manifest.json"));
+
+    // 7. Verify pure MIR-lifted M25 multi-gateway predicates:
+    assert!(gateway_provider_families_independent(2));
+    assert!(!gateway_provider_families_independent(1));
+    assert!(gateway_endpoint_count_resilient(3));
+    assert!(gateway_http_status_ok(200));
+    assert!(gateway_http_status_redirect(302));
+    assert!(gateway_http_status_no_content(204));
+    assert!(gateway_http_status_unavailable(503));
+    assert!(gateway_http_status_not_found(404));
+    assert!(gateway_http_status_bad_request(400));
+    assert!(gateway_stakeholder_part_count_complete(6));
+    assert!(gateway_shard_quorum_reachable(4, 4));
+    assert!(gateway_failover_survives_primary_outage(3, 1));
+    assert!(gateway_surviving_shards_recover_4_of_8(4));
+    assert!(gateway_full_shard_set_complete(8));
+    assert!(gateway_priority_valid(1));
+    assert!(gateway_provider_kind_code_valid(6));
+    assert!(gateway_port_valid(8088));
+    assert!(gateway_max_request_bytes_bounded(4096));
+    assert_eq!(gateway_immutable_cache_max_age_secs(), 31_536_000);
+    assert!(gateway_adapter_count_complete(4));
+    assert!(gateway_blank_frame_budget_ok(29_000));
+    assert!(gateway_opfs_offline_fallback_valid(0, 4, true));
+    assert!(gateway_cors_wildcard_required(true, true));
+    assert!(gateway_release_epoch_monotonic(20, 21));
+    assert!(gateway_part_route_index_valid(5));
+    assert!(gateway_m25_lifted_module_floor_ok(185));
+    assert!(gateway_healthz_quorum_healthy(4, 4, true));
+    assert!(gateway_non_github_origin_present(3, 1));
+    assert!(gateway_bundle_tarball_nonempty(1024));
+    assert!(gateway_dual_mirror_quorum_ok(false, true));
+    assert!(gateway_full_redundancy_ok(true, true));
+    assert_eq!(gateway_http_503_code(), 503);
+    assert_eq!(gateway_http_302_code(), 302);
+    assert_eq!(gateway_http_204_code(), 204);
+    assert_eq!(gateway_probe_timeout_millis(), 2000);
+
+    // 8. Ratchet permanently locks <= 1250L Rust, <= 930L JS, < 1.00 MiB capsule, <= 30 KiB Blank Frame,
+    //    >= 545 lifted functions, residue <= 1161, uncertified <= 1318, and M1..M25:
+    let rep = prism_fidelity::ratchet::audit_parametric_ratchet(
+        &repo_root,
+        Path::new("model/parametric-ratchet.toml"),
+    )
+    .expect("live repo must pass all 4 ratchet layers");
+    assert!(rep.blank_frame_total_bytes <= 30_720);
+    assert!(rep.observed_max_rust_file_lines <= 1_250);
+    assert!(rep.observed_max_js_file_lines <= 930);
+    assert!(rep.observed_release_capsule_bytes < 1_048_576);
+    assert!(
+        rep.frontier_lifted_functions >= 545,
+        "M25 must lift >= 545 constructive functions, got {}",
+        rep.frontier_lifted_functions
+    );
+    assert!(
+        rep.frontier_residue_functions <= 1_161,
+        "M25 must keep residue <= 1161, got {}",
+        rep.frontier_residue_functions
+    );
+
+    let kpi_rep = ch
+        .evaluate_observer_roadmap_kpis(&repo_root, true, true)
+        .expect("observer roadmap & KPI report");
+    assert!(
+        kpi_rep.milestones.len() >= 25,
+        "expected Milestones M1..M25"
+    );
+    assert_eq!(
+        kpi_rep.kpi_passed_count, kpi_rep.kpi_total_count,
+        "all Observer KPIs must pass (kpis={:?})",
+        kpi_rep.kpis
+    );
+}

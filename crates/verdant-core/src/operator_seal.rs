@@ -736,6 +736,16 @@ impl VerdantOperatorChannel {
     }
 }
 
+#[cfg(not(target_arch = "wasm32"))]
+pub(super) const MCP_EXTRA_TOOLS_JSON: &str = r#"[
+  {"name":"verdant_gateway","description":"Emit or failover-verify a multi-gateway Stitch bundle (GitHub + Cloudflare + Netlify + IPFS + Self-Hosted).","inputSchema":{"type":"object","properties":{"action":{"type":"string","enum":["pack","verify"]},"dir":{"type":"string"},"releaseDir":{"type":"string"}}}},
+  {"name":"verdant_sync_wasm","description":"Natively build and verify site/verdant-wasm.wasm, site/verdant-uorc.wasm, site/scene-stream.uorc, and site/prism-bridge-meta.mjs directly inside Verdant with zero Node.js build dependency.","inputSchema":{"type":"object","properties":{"checkOnly":{"type":"boolean"},"repackStream":{"type":"boolean"}}}},
+  {"name":"verdant_package_crates","description":"Natively package Verdant's 4 shipped workspace crates into deterministic .crate tarballs and an RFC 2789 Cargo Sparse Registry index directly inside Verdant.","inputSchema":{"type":"object","properties":{"outDir":{"type":"string"},"dlTemplate":{"type":"string"}}}},
+  {"name":"verdant_verify_registry","description":"Natively verify Verdant's RFC 2789 Cargo Sparse Registry over a local loopback HTTP server with real cargo sparse+http resolution (VE-54).","inputSchema":{"type":"object","properties":{"cratesDir":{"type":"string"}}}},
+  {"name":"verdant_authority_exec","description":"Execute a GitHub-free Sovereign Authority Ledger & Signing Request Gate operation (VE-70).","inputSchema":{"type":"object","properties":{"ledgerPath":{"type":"string"},"initRepoName":{"type":"string"},"initOwnerPrismId":{"type":"string"},"initOwnerSecret":{"type":"string"},"command":{"type":"object"}}}},
+  {"name":"verdant_ratchet_lift","description":"Autonomous closed-loop Verdant self-lift (VE-47): verifies 13-Manager Total Ownership & <=30KiB zero-account Blank Frame, synthesizes all Manager manifests, lifts 100% of Rust/LexLean/Viewpoint modules into VerdantVcs, packs & 4-of-8 verifies verdant-vX.Y.Z.holo, pins site/frame/frame-pin.json, and emits site/generated/self-host-ratchet-manifest.toml.","inputSchema":{"type":"object","properties":{"outDir":{"type":"string"},"writeRepoArtifacts":{"type":"boolean"},"updateFramePin":{"type":"boolean"},"stitchRelays":{"type":"array","items":{"type":"string"}},"advanceMajor":{"type":"boolean"},"advanceMinor":{"type":"boolean"},"advancePatch":{"type":"boolean"},"summary":{"type":"string"}}}}
+]"#;
+
 #[cfg(test)]
 mod tests {
     use super::*;

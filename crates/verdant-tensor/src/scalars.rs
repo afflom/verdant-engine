@@ -1104,3 +1104,7 @@ pub const fn observer_refinement_score_improved(prev_permille: u32, next_permill
 #[path = "scalars_ratchet.rs"]
 mod scalars_ratchet;
 pub use scalars_ratchet::*;
+
+#[path = "scalars_gateway.rs"]
+mod scalars_gateway;
+pub use scalars_gateway::*;

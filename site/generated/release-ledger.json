@@ -4,10 +4,10 @@
   "authorityId": "AUTH-SEMVER-CHANGE-KPI",
   "currentVersion": {
     "major": 2,
-    "minor": 16,
+    "minor": 17,
     "patch": 0
   },
-  "releaseEpoch": 20,
+  "releaseEpoch": 21,
   "history": [
     {
       "version": "0.1.0",
@@ -168,6 +168,13 @@
       "releaseEpoch": 20,
       "bumpKind": "minor",
       "summary": "M24: Sub-1250L Rust (183 lifted modules), sub-920L JS, hardened stitch-mirror CI retries, sub-1.00 MiB .holo capsule & 515+ MIR-lifted functions",
+      "citedAuthority": "AUTH-SEMVER-CHANGE-KPI"
+    },
+    {
+      "version": "2.17.0",
+      "releaseEpoch": 21,
+      "bumpKind": "minor",
+      "summary": "M25 (v2.17.0, VE-77): Multi-Gateway Stitch Hosting & Serving (GitHub + Cloudflare + Netlify + IPFS + Native HTTP Gateway, Blank Frame Failover/OPFS Fallback & Stakeholder Part Routing)",
       "citedAuthority": "AUTH-SEMVER-CHANGE-KPI"
     }
   ]

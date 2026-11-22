@@ -124,8 +124,10 @@ const ans=await b.createAnswer();await b.setLocalDescription(ans);await a.setRem
 try{return await done;}finally{a.close();b.close();}};
 if(bc)bc.onmessage=(e)=>{const m=e.data;if(m?.type==="STCH2_WANT"&&m.from!==localId&&shardCache.has(m.key))try{bc.postMessage({type:"STCH2_HAVE",from:localId,key:m.key,bytes:serveToPeer(m.from,m.key)});}catch{}};
 return{localPrismId:localId,shardCache,stats,cacheVerified,serveToPeer,openLoopbackWebRtcDemo};}
-async function fetchShards(pin,relayOverride,mesh){
-const relays=relayOverride?relayOverride.split(",").map((s)=>s.trim()).filter(Boolean):(pin.stitchRelays||[]);
+async function fetchShards(pin,relayOverride,gwOverride,mesh){
+const gwRelays=gwOverride?gwOverride.split(",").map((s)=>s.trim().replace(/\/+$/,"")).filter(Boolean).map((u)=>`${u}/shards`):[];
+const baseRelays=relayOverride?relayOverride.split(",").map((s)=>s.trim()).filter(Boolean):[...gwRelays,...(pin.stitchRelays||[]),new URL("./shards",location.href).href];
+const relays=[...new Set(baseRelays)];
 const k=pin.dataShardsK||4,collected=[],relayHits={},failedRelays={};let dropped=0;
 const raceOne=(fn)=>Promise.any(relays.map(async(base)=>{
 const clean=base.replace(/\/+$/,""),res=await fetch(`${clean}/${fn}`,{cache:"no-store"});
@@ -133,7 +135,8 @@ if(!res.ok){failedRelays[clean]=(failedRelays[clean]||0)+1;throw new Error(`HTTP
 const raw=new Uint8Array(await res.arrayBuffer()),shard=await parseAndVerifyStch2Shard(raw);
 relayHits[clean]=(relayHits[clean]||0)+1;if(mesh)try{await mesh.cacheVerified(mesh.localPrismId,raw);}catch{}return shard;}));
 for(const r of await Promise.allSettled((pin.shardFiles||[]).map(raceOne))){if(r.status==="fulfilled"&&collected.length<k)collected.push(r.value);else if(r.status==="rejected")dropped++;}
-return{collected,dropped,relayHits,failedRelays,relayCount:relays.length};}
+const activeGateway=Object.keys(relayHits)[0]||null;
+return{collected,dropped,relayHits,failedRelays,relayCount:relays.length,activeGateway};}
 export async function bootBlankFrame(){
 const $=(id)=>document.getElementById(id),setStatus=(t,d)=>{if($("frame-status"))$("frame-status").textContent=t;if($("frame-detail"))$("frame-detail").textContent=d;};
 const id=await getLocalPrismId();if($("prism-id-badge"))$("prism-id-badge").textContent=`${id.prismId} (zero-account local key)`;
@@ -163,10 +166,14 @@ const pinRes=await fetch("./frame-pin.json",{cache:"no-store"});if(!pinRes.ok)th
 const pin=await pinRes.json(),target=sanitizeStitchDeepLink(reqPin||pin.defaultStitchUri||"stitch://verdant/studio");
 if($("pin-uri-input"))$("pin-uri-input").value=target.canonicalUri;
 const lastEpoch=Number(localStorage.getItem(EPOCH_KEY)||"0");if(Number(pin.releaseEpoch)<lastEpoch)throw new Error(`Rollback refused: ${pin.releaseEpoch} < ${lastEpoch}`);
-const{collected,dropped,relayHits,failedRelays,relayCount}=await fetchShards(pin,params.get("relay")||"",peerMesh);
-if(collected.length<pin.dataShardsK)throw new Error(`Only ${collected.length}/${pin.dataShardsK} shards reachable — drop a portable .holo for offline boot.`);
+const{collected,dropped,relayHits,failedRelays,relayCount,activeGateway}=await fetchShards(pin,params.get("relay")||"",params.get("gateway")||"",peerMesh);
+const parts=["studio","catalogs","demo","docs","starter","card"];
+if(collected.length<pin.dataShardsK){
+const cached=await readOpfs(`verdant-v${pin.releaseVersion}.holo`);
+if(cached){const offCap=await verifyAndUnpackHoloCapsule(cached);if(offCap.capsuleSha256Hex===pin.releaseKappaHex){await mountAndShow(offCap,target.virtualRoute,{source:"stitch-opfs-offline-fallback",relayCount,failedRelays,activeGateway:"opfs-cache",availableParts:parts});return;}}
+throw new Error(`Only ${collected.length}/${pin.dataShardsK} shards reachable — drop a portable .holo for offline boot.`);}
 const cap=await verifyAndUnpackHoloCapsule(await recoverKofNShards(collected));if(cap.capsuleSha256Hex!==pin.releaseKappaHex)throw new Error("Recovered .holo kappa mismatch");
 try{localStorage.setItem(EPOCH_KEY,String(pin.releaseEpoch));}catch{}
-await mountAndShow(cap,target.virtualRoute,{source:"stitch-4-of-8-pull-through",shardsUsed:collected.length,shardsDropped:dropped,relayHits,failedRelays,relayCount});
+await mountAndShow(cap,target.virtualRoute,{source:"stitch-4-of-8-pull-through",shardsUsed:collected.length,shardsDropped:dropped,relayHits,failedRelays,relayCount,activeGateway,availableParts:parts});
 }catch(err){setStatus("Blank Frame ready (awaiting Stitch shards or offline .holo)",String(err));window.__VERDANT_BLANK_FRAME__={...window.__VERDANT_BLANK_FRAME__,status:"error",error:String(err)};}}
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",()=>bootBlankFrame());else bootBlankFrame();

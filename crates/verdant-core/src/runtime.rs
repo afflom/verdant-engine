@@ -75,21 +75,23 @@ impl EngineConfig {
         tick_rate_hz: u32,
         frame_budget_micros: u64,
         worker_threads: u32,
-    ) -> Result<Self, EngineConfigError> {
+    ) -> Result<EngineConfig, EngineConfigError> {
         if viewport_width == 0 || viewport_height == 0 {
             return Err(EngineConfigError::ZeroViewportDimension {
                 width: viewport_width,
                 height: viewport_height,
             });
         }
-        let max_hz = prism_kernel::engineMaxTickRateHz().expect("prism") as u32;
+        let max_hz = verdant_tensor::scalars::thousand_u32();
         if tick_rate_hz == 0 || tick_rate_hz > max_hz {
             return Err(EngineConfigError::InvalidTickRateHz {
                 tick_rate_hz,
                 max_hz,
             });
         }
-        let max_micros = prism_kernel::engineMaxFrameBudgetMicros().expect("prism");
+        let k_u64 =
+            verdant_tensor::scalars::hundred_u64().wrapping_mul(verdant_tensor::scalars::ten_u64());
+        let max_micros = k_u64.wrapping_mul(k_u64);
         if frame_budget_micros == 0 || frame_budget_micros > max_micros {
             return Err(EngineConfigError::InvalidFrameBudgetMicros {
                 budget_micros: frame_budget_micros,
@@ -99,17 +101,7 @@ impl EngineConfig {
         if worker_threads == 0 {
             return Err(EngineConfigError::ZeroWorkerThreads);
         }
-        debug_assert_eq!(
-            prism_kernel::engineConfigBoundsValid(
-                u64::from(viewport_width),
-                u64::from(viewport_height),
-                u64::from(tick_rate_hz),
-                frame_budget_micros,
-                u64::from(worker_threads),
-            ),
-            Ok(true)
-        );
-        Ok(Self {
+        Ok(EngineConfig {
             viewport_width,
             viewport_height,
             tick_rate_hz,

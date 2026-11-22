@@ -84,8 +84,8 @@ impl VerdantOperatorChannel {
                 }
             })),
             "ping" => ok_resp(serde_json::json!({})),
-            "tools/list" => ok_resp(serde_json::json!({
-                "tools": [
+            "tools/list" => {
+                let mut tools_arr = serde_json::json!([
                     {
                         "name": "verdant_status",
                         "description": "Inspect all 8 VSM S1-S5 Managers, Total Ownership status, and View Immutability Seal health.",
@@ -335,72 +335,18 @@ impl VerdantOperatorChannel {
                                 "summary": { "type": "string" }
                             }
                         }
-                    },
-                    {
-                        "name": "verdant_sync_wasm",
-                        "description": "Natively build and verify site/verdant-wasm.wasm, site/verdant-uorc.wasm, site/scene-stream.uorc, and site/prism-bridge-meta.mjs directly inside Verdant with zero Node.js build dependency.",
-                        "inputSchema": {
-                            "type": "object",
-                            "properties": {
-                                "checkOnly": { "type": "boolean" },
-                                "repackStream": { "type": "boolean" }
-                            }
-                        }
-                    },
-                    {
-                        "name": "verdant_package_crates",
-                        "description": "Natively package Verdant's 4 shipped workspace crates into deterministic .crate tarballs and an RFC 2789 Cargo Sparse Registry index directly inside Verdant.",
-                        "inputSchema": {
-                            "type": "object",
-                            "properties": {
-                                "outDir": { "type": "string" },
-                                "dlTemplate": { "type": "string" }
-                            }
-                        }
-                    },
-                    {
-                        "name": "verdant_verify_registry",
-                        "description": "Natively verify Verdant's RFC 2789 Cargo Sparse Registry over a local loopback HTTP server with real cargo sparse+http resolution (VE-54).",
-                        "inputSchema": {
-                            "type": "object",
-                            "properties": {
-                                "cratesDir": { "type": "string" }
-                            }
-                        }
-                    },
-                    {
-                        "name": "verdant_authority_exec",
-                        "description": "Execute a GitHub-free Sovereign Authority Ledger & Signing Request Gate operation (genesis init, submit signing request, Admin review approve/reject, finalize under M-of-N quorum, add/depart/revoke Admin with immediate approval invalidation, standing grant, PROV-O work item, historical commit or monotonic chain verification — VE-70).",
-                        "inputSchema": {
-                            "type": "object",
-                            "properties": {
-                                "ledgerPath": { "type": "string" },
-                                "initRepoName": { "type": "string" },
-                                "initOwnerPrismId": { "type": "string" },
-                                "initOwnerSecret": { "type": "string" },
-                                "command": { "type": "object" }
-                            }
-                        }
-                    },
-                    {
-                        "name": "verdant_ratchet_lift",
-                        "description": "Autonomous closed-loop Verdant self-lift (VE-47): verifies 13-Manager Total Ownership & <=30KiB zero-account Blank Frame, synthesizes all Manager manifests, optionally advances SemVer via mgr-change-release, lifts 100% of Rust/LexLean/Viewpoint modules into VerdantVcs, packs & 4-of-8 verifies verdant-vX.Y.Z.holo, pins site/frame/frame-pin.json, and emits site/generated/self-host-ratchet-manifest.toml to satisfy prism/parametric-ratchet/2.",
-                        "inputSchema": {
-                            "type": "object",
-                            "properties": {
-                                "outDir": { "type": "string" },
-                                "writeRepoArtifacts": { "type": "boolean" },
-                                "updateFramePin": { "type": "boolean" },
-                                "stitchRelays": { "type": "array", "items": { "type": "string" } },
-                                "advanceMajor": { "type": "boolean" },
-                                "advanceMinor": { "type": "boolean" },
-                                "advancePatch": { "type": "boolean" },
-                                "summary": { "type": "string" }
-                            }
-                        }
                     }
-                ]
-            })),
+                ]);
+                if let (Some(dst), Ok(serde_json::Value::Array(extra))) = (
+                    tools_arr.as_array_mut(),
+                    serde_json::from_str::<serde_json::Value>(
+                        super::operator_seal::MCP_EXTRA_TOOLS_JSON,
+                    ),
+                ) {
+                    dst.extend(extra);
+                }
+                ok_resp(serde_json::json!({ "tools": tools_arr }))
+            }
             "tools/call" => {
                 let tool_name = params.get("name").and_then(|v| v.as_str()).unwrap_or("");
                 let args = params
@@ -1201,6 +1147,39 @@ impl VerdantOperatorChannel {
                                 ),
                                 Err(e) => tool_out(true, serde_json::json!({ "error": e })),
                             }
+                        }
+                    }
+                    "verdant_gateway" => {
+                        let act = args
+                            .get("action")
+                            .and_then(|v| v.as_str())
+                            .unwrap_or("verify");
+                        let dir = repo_root.join(
+                            args.get("dir")
+                                .and_then(|v| v.as_str())
+                                .unwrap_or("dist/gateway-bundle"),
+                        );
+                        let op = if act == "pack" {
+                            crate::gateway::GatewayOp::PackBundle {
+                                repo_root: repo_root.to_path_buf(),
+                                release_dir: repo_root.join(
+                                    args.get("releaseDir")
+                                        .and_then(|v| v.as_str())
+                                        .unwrap_or("dist/stitch-release"),
+                                ),
+                                out_dir: dir,
+                                extra_gateways: Vec::new(),
+                                crates_dir: None,
+                            }
+                        } else {
+                            crate::gateway::GatewayOp::VerifyFailover { bundle_dir: dir }
+                        };
+                        match crate::gateway::execute_gateway_op(&op) {
+                            Ok((o, _)) => tool_out(
+                                false,
+                                serde_json::to_value(&o).unwrap_or(serde_json::Value::Null),
+                            ),
+                            Err(e) => tool_out(true, serde_json::json!({ "error": e.to_string() })),
                         }
                     }
                     other => err_resp(err_params, format!("unknown MCP tool `{other}`")),

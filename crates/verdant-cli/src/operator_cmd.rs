@@ -3,6 +3,92 @@
 use super::*;
 
 pub(crate) fn run_operator_command(args: &[String]) -> Result<String, CliCommandError> {
+    if args.first().map(String::as_str) == Some("gateway") {
+        let action = args.get(1).map(String::as_str).unwrap_or("verify");
+        let two = 1usize + 1usize;
+        let mut root = std::env::current_dir().unwrap_or_else(|_| std::path::PathBuf::from("."));
+        let mut release_dir = std::path::PathBuf::from("dist/stitch-release");
+        let mut out_dir = std::path::PathBuf::from("dist/gateway-bundle");
+        let mut crates_dir: Option<std::path::PathBuf> = None;
+        let mut bind_addr = "127.0.0.1:8088".to_string();
+        let mut max_requests: Option<usize> = None;
+        let mut extra_gateways: Vec<verdant_core::gateway::StitchGatewayEndpoint> = Vec::new();
+        let mut i = two;
+        while i < args.len() {
+            match args[i].as_str() {
+                "--root" | "--repo" if i + 1 < args.len() => {
+                    root = std::path::PathBuf::from(&args[i + 1]);
+                    i += two;
+                }
+                "--release-dir" if i + 1 < args.len() => {
+                    release_dir = std::path::PathBuf::from(&args[i + 1]);
+                    i += two;
+                }
+                "--out" | "--dir" if i + 1 < args.len() => {
+                    out_dir = std::path::PathBuf::from(&args[i + 1]);
+                    i += two;
+                }
+                "--crates-dir" if i + 1 < args.len() => {
+                    crates_dir = Some(std::path::PathBuf::from(&args[i + 1]));
+                    i += two;
+                }
+                "--bind" if i + 1 < args.len() => {
+                    bind_addr = args[i + 1].clone();
+                    i += two;
+                }
+                "--max-requests" if i + 1 < args.len() => {
+                    max_requests = args[i + 1].parse().ok();
+                    i += two;
+                }
+                "--gateway" if i + 1 < args.len() => {
+                    let base = args[i + 1].trim().trim_end_matches('/').to_string();
+                    extra_gateways.push(verdant_core::gateway::StitchGatewayEndpoint {
+                        id: String::new(),
+                        provider: verdant_core::gateway::GatewayProviderKind::SelfHostedStitchNode,
+                        provider_family: String::new(),
+                        frame_url: format!("{base}/"),
+                        shard_relay_url: format!("{base}/shards"),
+                        holo_url: None,
+                        crates_index_url: None,
+                        base_url: base,
+                        priority: 0,
+                        cors_wildcard_required: true,
+                    });
+                    i += two;
+                }
+                _ => i += 1,
+            }
+        }
+        let op = match action {
+            "pack" => verdant_core::gateway::GatewayOp::PackBundle {
+                repo_root: root,
+                release_dir,
+                out_dir,
+                extra_gateways,
+                crates_dir,
+            },
+            "serve" => verdant_core::gateway::GatewayOp::Serve {
+                bundle_dir: out_dir,
+                bind_addr,
+                max_requests,
+            },
+            "verify" => verdant_core::gateway::GatewayOp::VerifyFailover {
+                bundle_dir: out_dir,
+            },
+            other => {
+                return Err(CliCommandError::InvalidUsage {
+                    usage: format!("unknown gateway action `{other}` (expected pack|serve|verify)"),
+                });
+            }
+        };
+        let (_, pretty) = verdant_core::gateway::execute_gateway_op(&op).map_err(|e| {
+            CliCommandError::ValidationRejected {
+                command: format!("gateway {action}"),
+                diagnostic: e.to_string(),
+            }
+        })?;
+        return Ok(pretty);
+    }
     let sub = args.get(1).map(String::as_str).unwrap_or("status");
     let mut ch =
         verdant_core::operator::VerdantOperatorChannel::new("sunspire-regatta").map_err(|e| {

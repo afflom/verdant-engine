@@ -809,7 +809,7 @@ pub extern "C" fn verdant_wasm_studio_objects_json_aux() -> u32 {
 /// Zero-account Prism-ID Encrypt-then-MAC boundary seal + systematic k-of-n Reed-Solomon
 /// Stitch sharding (`AUTH-STITCH-SELF-HOSTING`), reading a JSON request from `io_buffer`
 /// and writing the JSON response into `aux_buffer`.
-#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+#[cfg(not(target_arch = "wasm32"))]
 #[no_mangle]
 pub extern "C" fn verdant_wasm_stitch_boundary_seal_io() -> u32 {
     let mut guard = global_bridge()
@@ -828,7 +828,7 @@ pub extern "C" fn verdant_wasm_stitch_boundary_seal_io() -> u32 {
 /// Zero-account Stitch k-of-n Reed-Solomon recovery + Encrypt-then-MAC boundary decryption
 /// (`AUTH-STITCH-SELF-HOSTING`), reading `{ boundaryId, ownerPrismId, secretPassphrase, shards }`
 /// from `io_buffer` and writing the verified plaintext JSON into `aux_buffer`.
-#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+#[cfg(not(target_arch = "wasm32"))]
 #[no_mangle]
 pub extern "C" fn verdant_wasm_stitch_boundary_recover_io() -> u32 {
     let mut guard = global_bridge()

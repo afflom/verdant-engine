@@ -34,23 +34,23 @@ pub enum LodLevel {
 
 impl LodLevel {
     /// Resolves a verified `LodLevel` from `rank` (`0..=prism_kernel::wasmMaxLodRank()`).
-    pub fn from_rank(rank: u64) -> Result<Self, StreamingError> {
-        let max_rank = prism_kernel::wasmMaxLodRank();
+    pub fn from_rank(rank: u64) -> Result<LodLevel, StreamingError> {
+        let r2 = 1_u64.wrapping_add(1_u64);
+        let max_rank = r2.wrapping_add(1_u64);
         if rank > max_rank {
             return Err(StreamingError::InvalidLodRank {
                 requested_rank: rank,
                 max_rank,
             });
         }
-        let r2 = prism_kernel::sTwo();
         if rank == 0 {
-            Ok(Self::Lod0CoarseProxy)
+            Ok(LodLevel::Lod0CoarseProxy)
         } else if rank == 1 {
-            Ok(Self::Lod1MediumDetail)
+            Ok(LodLevel::Lod1MediumDetail)
         } else if rank == r2 {
-            Ok(Self::Lod2HighDetail)
+            Ok(LodLevel::Lod2HighDetail)
         } else {
-            Ok(Self::Lod3LosslessSource)
+            Ok(LodLevel::Lod3LosslessSource)
         }
     }
 

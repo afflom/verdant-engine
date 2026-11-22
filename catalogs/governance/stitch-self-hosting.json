@@ -62,6 +62,32 @@
     "supportsThirdPartyDeepLinks": true,
     "monotonicEpochAntiRollback": true,
     "workerVerificationBeforeSwMount": true,
-    "offlinePortableHoloBoot": true
+    "offlinePortableHoloBoot": true,
+    "opfsOfflineFallback": true,
+    "gatewayOverrideQueryParam": "gateway"
+  },
+  "multiGatewayDistributionContract": {
+    "manifestSpec": "verdant/multi-gateway-manifest/1",
+    "minIndependentProviderFamilies": 2,
+    "refusesSingleProviderGitHubOnly": true,
+    "supportedGateways": [
+      "github-pages",
+      "github-raw-mirror",
+      "jsdelivr-cdn",
+      "cloudflare-pages",
+      "netlify-edge",
+      "ipfs-http-gateway",
+      "self-hosted-stitch-node"
+    ],
+    "stakeholderParts": [
+      "studio",
+      "catalogs",
+      "demo",
+      "docs",
+      "starter",
+      "card"
+    ],
+    "corsWildcardRequired": true,
+    "nativeGatewayCli": "verdant gateway <pack|serve|verify>"
   }
 }

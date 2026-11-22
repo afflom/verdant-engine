@@ -113,6 +113,7 @@ verdant <subcommand> [options]
   automate-check                              Self-verify all 4 catalog domains, Observer, UI, WGSL, & .uorc
   operator <status|prompt|apply|synthesize|publish-app|verify-seal|audit|session>  Manage Verdant via VSM & ISO 42010 API
   release <pack|verify> [options]             Pack or 4-of-8 verify a self-hosted .holo Stitch release
+  gateway <pack|serve|verify> [options]       Emit, serve, or failover-verify a multi-gateway Stitch bundle
   mcp [--root <dir>]                          Run Model Context Protocol (JSON-RPC 2.0 stdio) server
   benchmark [frames]                          Run headless 60fps physics + BVH + GJK + NavMesh benchmark
   stress-benchmark [entities]                 Run 10k+ SoA bit-plane, TwoLevelBvh & monoid stress benchmark";
@@ -996,7 +997,7 @@ pub fn run_cli(args: &[String]) -> Result<String, CliCommandError> {
             ))
         }
         "automate-check" => automate_cmd::run_automate_check(),
-        "operator" => operator_cmd::run_operator_command(args),
+        "operator" | "gateway" => operator_cmd::run_operator_command(args),
         "release" => {
             let Some(action) = args.get(1).map(String::as_str) else {
                 return Err(CliCommandError::InvalidUsage {

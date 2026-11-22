@@ -47,6 +47,8 @@ pub mod cybernetics;
 pub mod digest;
 pub mod ecs;
 pub mod error;
+#[cfg(not(target_arch = "wasm32"))]
+pub mod gateway;
 pub mod geometry;
 pub mod gltf_io;
 pub mod governance;
