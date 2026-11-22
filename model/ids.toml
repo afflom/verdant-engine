@@ -733,3 +733,9 @@ id = "VTK-25"
 level = "build"
 suite = "engine"
 statement = "Verdant evaluates binary32 sigmoid and SiLU across finite and exceptional words against the imported CPU scalar functions"
+
+[[id]]
+id = "VTK-26"
+level = "build"
+suite = "engine"
+statement = "Verdant encodes 256 binary32 lanes as Q8_K signed coefficients with a binary32 scale and sixteen group sums against the imported GGML reference"

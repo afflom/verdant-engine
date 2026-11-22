@@ -41,6 +41,22 @@ static int compare_rows(ggml_type type) {
   }
   return std::ferror(stdin) ? 3 : 0;
 }
+template<int Lanes, class Block>
+static int encode_blocks(void (*encode)(const float *, Block *, int64_t)) {
+    uint32_t word;
+    while (std::scanf("%u", &word) == 1) {
+      float block[Lanes];
+      for (int i = 0; i < Lanes; ++i) {
+        if (i && std::scanf("%u", &word) != 1) return 2;
+        std::memcpy(&block[i], &word, sizeof(word));
+      }
+      Block encoded{};
+      encode(block, &encoded, Lanes);
+      const auto *bytes = reinterpret_cast<const uint8_t *>(&encoded);
+      for (size_t i = 0; i < sizeof(encoded); ++i) std::printf("%u\n", unsigned(bytes[i]));
+    }
+    return std::ferror(stdin) ? 3 : 0;
+}
 // Observe the scale computed by the imported rotary kernel, preserving the real call.
 extern "C" float __real_powf(float, float);
 static bool observe_power = false;
@@ -206,21 +222,8 @@ int main(int argc, char **argv) {
   }
   if (!std::strcmp(argv[1], "symmetric-dot")) return compare_rows<block_q8_0>(GGML_TYPE_Q8_0);
   if (!std::strcmp(argv[1], "packed-dot")) return compare_rows<block_q4_0>(GGML_TYPE_Q4_0);
-  if (!std::strcmp(argv[1], "symmetric-q8")) {
-    uint32_t word;
-    while (std::scanf("%u", &word) == 1) {
-      float block[QK8_0];
-      for (int i = 0; i < QK8_0; ++i) {
-        if (i && std::scanf("%u", &word) != 1) return 2;
-        std::memcpy(&block[i], &word, sizeof(word));
-      }
-      block_q8_0 encoded;
-      quantize_row_q8_0_ref(block, &encoded, QK8_0);
-      const auto *bytes = reinterpret_cast<const uint8_t *>(&encoded);
-      for (size_t i = 0; i < sizeof(encoded); ++i) std::printf("%u\n", unsigned(bytes[i]));
-    }
-    return 0;
-  }
+  if (!std::strcmp(argv[1], "symmetric-q8")) return encode_blocks<QK8_0>(quantize_row_q8_0_ref);
+  if (!std::strcmp(argv[1], "grouped-q8")) return encode_blocks<QK_K>(quantize_row_q8_K_ref);
   if (!std::strcmp(argv[1], "storage-block")) {
     std::printf("1196705586\n");
     for (unsigned kind=0; kind<GGML_TYPE_COUNT; ++kind) {
@@ -1075,6 +1078,44 @@ fn symmetric_block_encoding_vtk_16() {
             super::encode_symmetric_q8_block(&block),
             Err(crate::TensorComputeError::InvalidKernelSpecification { .. })
         ));
+    }
+}
+
+#[test]
+fn grouped_block_encoding_vtk_26() {
+    use std::fmt::Write;
+    let mut blocks = vec![[0.0; 256], [-0.0; 256]];
+    for sign in [-1.0, 1.0] {
+        let mut block = std::array::from_fn(|i| sign * ((i % 127) as f32 - 63.5));
+        block[0] = sign * 127.0;
+        block[255] = -block[0];
+        blocks.push(block);
+    }
+    let mut state = 42u32;
+    for _ in 0..128 {
+        blocks.push(std::array::from_fn(|_| {
+            state = state.wrapping_mul(1_664_525).wrapping_add(1_013_904_223);
+            f32::from_bits((state & 0x807f_ffff) | ((77 + (state >> 24) % 100) << 23))
+        }));
+    }
+    let mut input = String::new();
+    let mut bytes = Vec::new();
+    for block in blocks {
+        for lane in block { writeln!(input, "{}", lane.to_bits()).unwrap(); }
+        let encoded = super::encode_grouped_q8_block(&block).unwrap();
+        bytes.extend(encoded.scale.to_ne_bytes());
+        bytes.extend(encoded.codes.map(|x| x as u8));
+        bytes.extend(encoded.sums.iter().flat_map(|x| x.to_ne_bytes()));
+    }
+    let reference = query_oracle("grouped-q8", input);
+    assert_eq!(bytes.len(), reference.len());
+    for (i, (byte, expected)) in bytes.into_iter().zip(reference).enumerate() {
+        assert_eq!(u32::from(byte), expected, "block {} byte {}", i / 292, i % 292);
+    }
+    for invalid in [f32::NAN, f32::INFINITY, f32::NEG_INFINITY, 1e-38] {
+        let mut block = [0.0; 256];
+        block[255] = invalid;
+        assert!(super::encode_grouped_q8_block(&block).is_err());
     }
 }
 

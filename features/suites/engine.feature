@@ -656,3 +656,9 @@ Feature: engine
     Given binary32 words spanning signed zeros, subnormal inputs and the finite activation range
     When Verdant evaluates sigmoid and SiLU
     Then signed zeros and nonfinite classes match GGML and finite results differ by at most four representable steps
+
+  @VTK-26 @build
+  Scenario: Encode grouped signed activation blocks
+    Given 256 binary32 lanes including equal-magnitude extrema and halfway values
+    When Verdant encodes the scale signed coefficients and sixteen partial sums
+    Then the complete block matches the pinned GGML Q8_K reference and undefined inputs are refused

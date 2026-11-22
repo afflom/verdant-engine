@@ -122,6 +122,7 @@ model does not sanction.
 | `VTK-23` | `build` | Verdant computes scaled rotary frequency coefficients and binary32 plane rotations against the imported GGML rotary kernel |
 | `VTK-24` | `build` | Verdant accumulates a streaming softmax weighted mean of binary32 rows against the imported GGML CPU attention evaluator |
 | `VTK-25` | `build` | Verdant evaluates binary32 sigmoid and SiLU across finite and exceptional words against the imported CPU scalar functions |
+| `VTK-26` | `build` | Verdant encodes 256 binary32 lanes as Q8_K signed coefficients with a binary32 scale and sixteen group sums against the imported GGML reference |
 
 ## fidelity
 
