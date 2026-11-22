@@ -1,0 +1,158 @@
+\begin{lexlean}{PackedWord}
+\useglossary{lexlean.std.bool@1.2.0}
+\useglossary{lexlean.std.nat@1.2.0}
+\title{Natural number}
+\begin{semanticmodule}
+definition{
+  name: extract,
+  parameters: [word : Nat, factor : Nat, divisor : Nat, modulus : Nat],
+  result: (Option Nat),
+  body: (if ((0 <? divisor) && (0 <? modulus)) then (ctor Option.some [Nat] (prim remainder (prim quotient (prim multiply word factor : Nat) divisor 0 : Nat) modulus 0 : Nat)) else (ctor Option.none [Nat])),
+  executable: true,
+  production: {effects: [overflow], targets: [rust-core]}
+}
+
+definition{
+  name: magnitudeBits,
+  parameters: [magnitude : Nat],
+  result: Nat,
+  body: (if (magnitude =? 0) then 0 else (if (magnitude <? 2) then (1065353216 + (prim multiply (prim subtract magnitude 1 : Nat) 8388608 : Nat)) else (if (magnitude <? 4) then (1073741824 + (prim multiply (prim subtract magnitude 2 : Nat) 4194304 : Nat)) else (if (magnitude <? 8) then (1082130432 + (prim multiply (prim subtract magnitude 4 : Nat) 2097152 : Nat)) else (if (magnitude <? 16) then (1090519040 + (prim multiply (prim subtract magnitude 8 : Nat) 1048576 : Nat)) else (if (magnitude <? 32) then (1098907648 + (prim multiply (prim subtract magnitude 16 : Nat) 524288 : Nat)) else (if (magnitude <? 64) then (1107296256 + (prim multiply (prim subtract magnitude 32 : Nat) 262144 : Nat)) else (if (magnitude <? 128) then (1115684864 + (prim multiply (prim subtract magnitude 64 : Nat) 131072 : Nat)) else (if (magnitude <? 256) then (1124073472 + (prim multiply (prim subtract magnitude 128 : Nat) 65536 : Nat)) else 1132462080))))))))),
+  executable: true
+}
+
+definition{
+  name: coefficient,
+  parameters: [word : Nat, zeroPoint : Nat],
+  result: (Option Nat),
+  body: (if ((word <? 256) && (zeroPoint <? 257)) then (ctor Option.some [Nat] (let negative : Nat := (if (word <? zeroPoint) then 1 else 0); (let magnitude : Nat := (if (negative =? 1) then (prim subtract zeroPoint word : Nat) else (prim subtract word zeroPoint : Nat)); (if (magnitude =? 0) then 0 else ((prim multiply negative 2147483648 : Nat) + (magnitudeBits magnitude)))))) else (ctor Option.none [Nat])),
+  executable: true,
+  production: {effects: [overflow], targets: [rust-core]}
+}
+
+theorem{
+  name: lowNibble,
+  parameters: [],
+  statement: ((extract 171 1 1 16) = (ctor Option.some [Nat] 11)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: highNibble,
+  parameters: [],
+  statement: ((extract 171 1 16 16) = (ctor Option.some [Nat] 10)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: highestQ5Bit,
+  parameters: [],
+  statement: ((extract 2147483648 1 2147483648 2) = (ctor Option.some [Nat] 1)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: highestByte,
+  parameters: [],
+  statement: ((extract 18446744073709551615 1 72057594037927936 256) = (ctor Option.some [Nat] 255)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: ternaryWrap,
+  parameters: [],
+  statement: ((extract 255 81 1 256) = (ctor Option.some [Nat] 175)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: ternaryDigit,
+  parameters: [],
+  statement: ((extract 175 3 256 3) = (ctor Option.some [Nat] 2)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: rejectZeroDivisor,
+  parameters: [],
+  statement: ((extract 7 1 0 16) = (ctor Option.none [Nat])),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: rejectZeroModulus,
+  parameters: [],
+  statement: ((extract 7 1 1 0) = (ctor Option.none [Nat])),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: integerZero,
+  parameters: [],
+  statement: ((coefficient 128 128) = (ctor Option.some [Nat] 0)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: integerOne,
+  parameters: [],
+  statement: ((coefficient 1 0) = (ctor Option.some [Nat] 1065353216)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: integerNegativeOne,
+  parameters: [],
+  statement: ((coefficient 0 1) = (ctor Option.some [Nat] 3212836864)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: integer127,
+  parameters: [],
+  statement: ((coefficient 127 0) = (ctor Option.some [Nat] 1123942400)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: integer128,
+  parameters: [],
+  statement: ((coefficient 128 0) = (ctor Option.some [Nat] 1124073472)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: integer255,
+  parameters: [],
+  statement: ((coefficient 255 0) = (ctor Option.some [Nat] 1132396544)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: integerNegative256,
+  parameters: [],
+  statement: ((coefficient 0 256) = (ctor Option.some [Nat] 3279945728)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: rejectLargeWord,
+  parameters: [],
+  statement: ((coefficient 256 0) = (ctor Option.none [Nat])),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: rejectLargeZeroPoint,
+  parameters: [],
+  statement: ((coefficient 0 257) = (ctor Option.none [Nat])),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: fieldDefinition,
+  parameters: [word : Nat],
+  statement: ((extract word 1 256 256) = (ctor Option.some [Nat] (prim remainder (prim quotient (prim multiply word 1 : Nat) 256 0 : Nat) 256 0 : Nat))),
+  proof: reflexivity{}
+}
+\end{semanticmodule}
+\end{lexlean}

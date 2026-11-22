@@ -1,0 +1,208 @@
+\begin{lexlean}{SmallFloat}
+\useglossary{lexlean.std.bool@1.2.0}
+\useglossary{lexlean.std.nat@1.2.0}
+\importmodule{FloatStorage}
+\importmodule{WordComparison}
+\title{Natural number}
+\begin{semanticmodule}
+definition{
+  name: exponent,
+  parameters: [word : Nat],
+  result: Nat,
+  body: (prim quotient (WordComparison::magnitude word) 8388608 0 : Nat),
+  executable: true
+}
+
+definition{
+  name: fraction,
+  parameters: [word : Nat],
+  result: Nat,
+  body: (prim remainder word 8388608 0 : Nat),
+  executable: true
+}
+
+definition{
+  name: mantissa,
+  parameters: [word : Nat],
+  result: Nat,
+  body: ((fraction word) + (if ((exponent word) =? 0) then 0 else 8388608)),
+  executable: true
+}
+
+definition{
+  name: magnitude,
+  parameters: [word : Nat, bias : Nat],
+  result: Nat,
+  body: (let e : Nat := (prim quotient (prim remainder word 128 0 : Nat) 8 0 : Nat); (let m : Nat := (prim remainder word 8 0 : Nat); (if (e =? 0) then (if (m =? 0) then 0 else (if (m <? 2) then ((prim multiply (prim subtract bias 3 : Nat) 8388608 : Nat) + (prim multiply 0 1048576 : Nat)) else (if (m <? 4) then ((prim multiply (prim subtract bias 2 : Nat) 8388608 : Nat) + (prim multiply (prim subtract (prim multiply m 4 : Nat) 8 : Nat) 1048576 : Nat)) else ((prim multiply (prim subtract bias 1 : Nat) 8388608 : Nat) + (prim multiply (prim subtract (prim multiply m 2 : Nat) 8 : Nat) 1048576 : Nat))))) else ((prim multiply (e + (prim subtract bias 1 : Nat)) 8388608 : Nat) + (prim multiply m 1048576 : Nat))))),
+  executable: true
+}
+
+definition{
+  name: decode,
+  parameters: [operation : Nat, word : Nat],
+  result: Nat,
+  body: (if (operation =? 0) then (if (word =? 0) then 4194304 else (prim multiply word 8388608 : Nat)) else (if (operation =? 1) then (if (word <? 2) then (if (word =? 0) then 2097152 else 4194304) else (prim multiply (prim subtract word 1 : Nat) 8388608 : Nat)) else (if (operation =? 2) then (if ((word =? 0) || (word =? 127)) then 0 else (magnitude word 120)) else (if ((prim remainder word 128 0 : Nat) =? 127) then 2143289344 else ((prim multiply (prim quotient word 128 0 : Nat) 2147483648 : Nat) + (magnitude word 121)))))),
+  executable: true
+}
+
+definition{
+  name: shiftDivisor,
+  parameters: [e : Nat],
+  result: Nat,
+  body: (if (e =? 117) then 16777216 else (if (e =? 118) then 8388608 else (if (e =? 119) then 4194304 else 2097152))),
+  executable: true
+}
+
+definition{
+  name: encodeSigned,
+  parameters: [word : Nat],
+  result: Nat,
+  body: (let s : Nat := (prim multiply (WordComparison::sign word) 128 : Nat); (let e : Nat := (exponent word); (if (WordComparison::isNaN word) then 127 else (if (1138753536 <=? (WordComparison::magnitude word)) then (s + 126) else (s + (if (e <? 121) then (if (e <? 117) then 0 else (FloatStorage::roundQuotient (mantissa word) (shiftDivisor e))) else ((prim multiply (prim subtract e 120 : Nat) 8 : Nat) + (FloatStorage::roundQuotient (fraction word) 1048576)))))))),
+  executable: true
+}
+
+definition{
+  name: encodeUnsigned,
+  parameters: [word : Nat],
+  result: Nat,
+  body: (if ((((WordComparison::sign word) =? 1) || (word =? 0)) || (WordComparison::isNaN word)) then 0 else (let e : Nat := (exponent word); (if (135 <=? e) then 126 else (if (e <=? 120) then (if (e <? 117) then (if (981467135 <=? word) then 1 else 0) else (let divisor : Nat := (shiftDivisor e); (let n : Nat := (prim quotient ((mantissa word) + (prim quotient divisor 2 0 : Nat)) divisor 0 : Nat); (if (7 <? n) then 7 else n)))) else (let code : Nat := (((prim multiply (prim subtract e 120 : Nat) 8 : Nat) + (prim quotient (fraction word) 1048576 0 : Nat)) + (prim remainder (prim quotient (fraction word) 524288 0 : Nat) 2 0 : Nat)); (if (120 <=? code) then 126 else code)))))),
+  executable: true
+}
+
+definition{
+  name: coefficient,
+  parameters: [word : Nat],
+  result: Nat,
+  body: (let m : Nat := (prim remainder word 8 0 : Nat); (let u : Nat := (if (m <? 4) then m else (prim multiply (2 + (prim remainder m 2 0 : Nat)) (if (m <? 6) then 2 else 4) : Nat)); (if (u =? 0) then 0 else ((prim multiply (prim quotient word 8 0 : Nat) 2147483648 : Nat) + (if (u <? 2) then ((prim multiply 127 8388608 : Nat) + (prim multiply 0 1048576 : Nat)) else (if (u <? 4) then ((prim multiply 128 8388608 : Nat) + (prim multiply (prim subtract (prim multiply u 4 : Nat) 8 : Nat) 1048576 : Nat)) else (if (u <? 8) then ((prim multiply 129 8388608 : Nat) + (prim multiply (prim subtract (prim multiply u 2 : Nat) 8 : Nat) 1048576 : Nat)) else ((prim multiply 130 8388608 : Nat) + (prim multiply (prim subtract u 8 : Nat) 1048576 : Nat))))))))),
+  executable: true
+}
+
+definition{
+  name: evaluate,
+  parameters: [operation : Nat, word : Nat],
+  result: (Option Nat),
+  body: (if ((operation <? 7) && (word <? (if (operation <? 4) then 256 else (if (operation <? 6) then 4294967296 else 16)))) then (ctor Option.some [Nat] (if (operation <? 4) then (decode operation word) else (if (operation =? 4) then (encodeSigned word) else (if (operation =? 5) then (encodeUnsigned word) else (coefficient word))))) else (ctor Option.none [Nat])),
+  executable: true,
+  production: {effects: [overflow], targets: [rust-core]}
+}
+
+theorem{
+  name: scaleInfinity,
+  parameters: [],
+  statement: ((evaluate 0 255) = (ctor Option.some [Nat] 2139095040)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: halfScaleFinite,
+  parameters: [],
+  statement: ((evaluate 1 255) = (ctor Option.some [Nat] 2130706432)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: unsignedNaNZero,
+  parameters: [],
+  statement: ((evaluate 2 127) = (ctor Option.some [Nat] 0)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: unsignedSignIgnored,
+  parameters: [],
+  statement: ((evaluate 2 255) = (ctor Option.some [Nat] 1131413504)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: negativeZero,
+  parameters: [],
+  statement: ((evaluate 3 128) = (ctor Option.some [Nat] 2147483648)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: signedNaN,
+  parameters: [],
+  statement: ((evaluate 3 255) = (ctor Option.some [Nat] 2143289344)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: signedSubnormalCarry,
+  parameters: [],
+  statement: ((evaluate 4 1013972992) = (ctor Option.some [Nat] 8)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: unsignedSubnormalClamp,
+  parameters: [],
+  statement: ((evaluate 5 1013972992) = (ctor Option.some [Nat] 7)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: unsignedExponentClamp,
+  parameters: [],
+  statement: ((evaluate 5 1132462080) = (ctor Option.some [Nat] 126)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: coefficientNegativeZero,
+  parameters: [],
+  statement: ((evaluate 6 8) = (ctor Option.some [Nat] 0)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: coefficientNegativeTwelve,
+  parameters: [],
+  statement: ((evaluate 6 15) = (ctor Option.some [Nat] 3242196992)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: rejectByte,
+  parameters: [],
+  statement: ((evaluate 0 256) = (ctor Option.none [Nat])),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: rejectFloat,
+  parameters: [],
+  statement: ((evaluate 4 4294967296) = (ctor Option.none [Nat])),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: rejectNibble,
+  parameters: [],
+  statement: ((evaluate 6 16) = (ctor Option.none [Nat])),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: rejectOperation,
+  parameters: [],
+  statement: ((evaluate 7 0) = (ctor Option.none [Nat])),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: unsignedRoundedBiasEdge,
+  parameters: [],
+  statement: ((evaluate 5 981467135) = (ctor Option.some [Nat] 1)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: unsignedBelowRoundedBiasEdge,
+  parameters: [],
+  statement: ((evaluate 5 981467134) = (ctor Option.some [Nat] 0)),
+  proof: reflexivity{}
+}
+\end{semanticmodule}
+\end{lexlean}

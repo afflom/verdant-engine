@@ -1,0 +1,46 @@
+\begin{lexlean}{StorageTransfer}
+\useglossary{lexlean.std.nat@1.2.0}
+\title{Natural number}
+\begin{semanticmodule}
+inductive{
+  name: TransferDecision,
+  type_parameters: [],
+  parameters: [],
+  constructors: [
+    {name: invalid, fields: []},
+    {name: empty, fields: []},
+    {name: copy, fields: [Nat]}
+  ]
+}
+
+definition{
+  name: transferLength,
+  parameters: [sourceBytes : Nat, destinationBytes : Nat],
+  result: TransferDecision,
+  body: (if (sourceBytes =? destinationBytes) then (if (sourceBytes =? 0) then (ctor TransferDecision.empty) else (ctor TransferDecision.copy sourceBytes)) else (ctor TransferDecision.invalid)),
+  executable: true,
+  production: {effects: [], targets: [rust-core]}
+}
+
+theorem{
+  name: emptyTransfer,
+  parameters: [],
+  statement: ((transferLength 0 0) = (ctor TransferDecision.empty)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: byteTransfer,
+  parameters: [],
+  statement: ((transferLength 1 1) = (ctor TransferDecision.copy 1)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: mismatchRefused,
+  parameters: [],
+  statement: ((transferLength 1 0) = (ctor TransferDecision.invalid)),
+  proof: reflexivity{}
+}
+\end{semanticmodule}
+\end{lexlean}

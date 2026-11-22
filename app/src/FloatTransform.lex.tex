@@ -1,0 +1,63 @@
+\begin{lexlean}{FloatTransform}
+\useglossary{lexlean.std.bool@1.2.0}
+\useglossary{lexlean.std.nat@1.2.0}
+\importmodule{ScalarF32}
+\importmodule{FloatStorage}
+\title{Natural number}
+\begin{semanticmodule}
+definition{
+  name: less,
+  parameters: [a : Nat, b : Nat],
+  result: Bool,
+  body: (if ((ScalarF32::isNaN a) || (ScalarF32::isNaN b)) then false else (if ((ScalarF32::isZero a) && (ScalarF32::isZero b)) then false else (if ((ScalarF32::sign a) =? (ScalarF32::sign b)) then (if ((ScalarF32::sign a) =? 0) then ((ScalarF32::magnitude a) <? (ScalarF32::magnitude b)) else ((ScalarF32::magnitude b) <? (ScalarF32::magnitude a))) else ((ScalarF32::sign a) =? 1)))),
+  executable: true
+}
+
+definition{
+  name: value,
+  parameters: [operation : Nat, storage : Nat, x : Nat, a : Nat, b : Nat],
+  result: Nat,
+  body: (if (operation =? 0) then (let product : Nat := (ScalarF32::multiply x a); (if ((storage =? 0) && (ScalarF32::isZero b)) then product else (ScalarF32::add product b))) else (if (operation =? 1) then (let upper : Nat := (if (less x b) then x else b); (if (less a upper) then upper else a)) else (ScalarF32::add (if (less 0 x) then x else 0) (ScalarF32::multiply a (if (less x 0) then x else 0))))),
+  executable: true
+}
+
+definition{
+  name: transform,
+  parameters: [operation : Nat, storage : Nat, bits : Nat, a : Nat, b : Nat],
+  result: (Option Nat),
+  body: (if (((operation <? 3) && (a <? 4294967296)) && (b <? 4294967296)) then (match (FloatStorage::convert storage 0 bits)
+    | Option.none => (ctor Option.none [Nat])
+    | Option.some x => (FloatStorage::convert 0 storage (value operation storage x a b))) else (ctor Option.none [Nat])),
+  executable: true,
+  production: {effects: [overflow], targets: [rust-core]}
+}
+
+theorem{
+  name: oppositeZerosCompareEqual,
+  parameters: [],
+  statement: ((less 2147483648 0) = false),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: clampNaNChoosesUpper,
+  parameters: [],
+  statement: ((transform 1 0 2143289345 0 1065353216) = (ctor Option.some [Nat] 1065353216)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: reversedClampChoosesLower,
+  parameters: [],
+  statement: ((transform 1 0 0 1065353216 3212836864) = (ctor Option.some [Nat] 1065353216)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: leakyZeroHasPositiveSign,
+  parameters: [],
+  statement: ((transform 2 0 2147483648 3204448256 0) = (ctor Option.some [Nat] 0)),
+  proof: reflexivity{}
+}
+\end{semanticmodule}
+\end{lexlean}

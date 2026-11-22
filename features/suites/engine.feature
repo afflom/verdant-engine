@@ -496,3 +496,95 @@ Feature: engine
     Given crates/verdant-core/src/gateway.rs, crates/verdant-tensor/src/scalars_gateway.rs, site/frame/frame-boot.mjs, .github/workflows/release-stitch.yml, .github/workflows/pages.yml, catalogs/governance/stitch-self-hosting.json, and frontier.toml
     When Verdant packs and failover-verifies a multi-gateway Stitch bundle under simulated GitHub primary outage plus 4-of-8 shard withholding, audits Blank Frame and ratchet ceilings, and evaluates all 25 milestones M1..M25
     Then GitHub-only plans fail closed, all 6 stakeholder parts and 6 gateway adapters verify cleanly, live dual-gateway 4-of-8 recovery passes, frontier.toml proves at least 545 lifted functions with residue at most 1161, and all Observer KPIs pass across M1..M25
+
+  @VTK-01 @build
+  Scenario: Verdant exposes arbitrary row-major F32 matrix products through uor-matmul with exact operand extents and typed shape refusals for GGML integration
+    Given rectangular F32 matrices and caller-owned output storage
+    When Verdant executes the general matrix product
+    Then exact contractions match the imported GGML numerical oracle
+    And mismatched operand lengths or overflowing extents return TensorComputeError before writes
+
+  @VTK-02 @build
+  Scenario: Verdant evaluates F32 addition, subtraction, multiplication, division, square root, square, negation and absolute value through a Prism-defined integer encoding with nearest-even rounding and explicit exceptional-value behavior
+    Given finite, subnormal, zero, infinite and NaN F32 encodings
+    When the certified scalar kernel executes
+    Then results match the imported GGML reference
+    And an unknown scalar operation returns TensorComputeError
+
+  @VTK-03 @build
+  Scenario: Verdant moves opaque storage blocks under Prism transfer-length admission and preserves encoded bytes against the imported GGML vector copy reference
+    Given preadmitted readable and writable storage blocks
+    When Verdant executes the Prism-admitted transfer
+    Then bytes match the imported GGML copy reference
+    And empty transfers succeed and mismatched lengths fail before mutation
+
+  @VTK-04 @build
+  Scenario: Verdant converts F32 F16 and BF16 storage encodings through a certified Prism bit model and matches the imported GGML conversion oracle including all sixteen-bit words and rounding boundaries
+    Given every F16 and BF16 encoding and F32 rounding boundary inputs
+    When the certified storage conversion root executes all supported type pairs
+    Then the encoded results match the imported GGML reference bit for bit
+    And unknown storage types and out-of-width input encodings are refused
+
+  @VTK-05 @build
+  Scenario: Verdant composes certified float storage and F32 arithmetic to execute scale bias clamp and leaky ReLU for F32 F16 and BF16 with explicit NaN signed-zero and typed refusal semantics
+    Given encoded F32 F16 and BF16 values and raw F32 parameter words
+    When the certified transform root executes
+    Then results match the imported GGML CPU transform kernels
+    And unknown operations types and out-of-width words are refused
+
+  @VTK-06 @build
+  Scenario: Verdant evaluates thirteen typed unary float operations including integer rounding through certified Prism composition and matches every supported GGML CPU source destination pair
+    Given F32 F16 and BF16 words including every sixteen-bit encoding and F32 rounding boundaries
+    When the certified unary root executes all five supported source destination pairs
+    Then numerical results match the imported CPU kernels
+    And unsupported operations types pairs and input widths are refused
+
+  @VTK-07 @build
+  Scenario: Verdant models nearest-even F64 addition F32 F64 conversion and unsigned count conversion through certified Prism bit arithmetic validated against imported Berkeley SoftFloat
+    Given F64 and F32 encodings at exponent rounding cancellation and exceptional boundaries
+    When the certified arithmetic and conversion roots execute with nearest-even rounding
+    Then results match the pinned imported SoftFloat oracle
+    And invalid input widths are refused and generated bindings match their certificates
+
+  @VTK-08 @build
+  Scenario: Verdant classifies F32 comparison and unordered operands against imported SoftFloat and provides certified bounded integer equality addition and identity words for row graphs
+    Given signed F32 words at exponent fraction zero infinity and NaN boundaries
+    When the certified word-comparison root executes
+    Then comparison and NaN operand classification match the imported SoftFloat predicates
+    And invalid word widths unknown operations and integer overflow are refused
+
+  @VTK-11 @build
+  Scenario: Verdant decodes packed E8M0 UE4M3 E4M3 and E2M1 scales and encodes F8 and unsigned E4M3 through certified Prism bit arithmetic checked against imported GGML
+    Given all packed byte words and float encoding rounding boundaries
+    When the certified small float root executes
+    Then bit patterns match the pinned imported GGML helpers
+    And unknown operations and out of width words are refused
+
+  @VTK-12 @build
+  Scenario: Verdant extracts scaled packed fields and encodes bounded biased integer coefficients through certified Prism arithmetic checked against imported GGML quantized row decoders
+    Given packed GGML bytes lane positions and small integer zero points
+    When certified extraction and coefficient roots execute
+    Then the composed values match the imported quantized row decoders
+    And zero divisors oversized coefficients and intermediate overflow are typed refusals
+
+  @VTK-13 @build
+  Scenario: Verdant imports every GGML CPU quantized codebook as immutable source bound data and verifies compiled bytes and table spans against the pinned external declarations
+    Given every table declared by the pinned GGML common header
+    When the external reference exports canonical bytes and dimensions
+    Then the checked data and metadata match all source declarations
+    And corrupted bytes missing tables and altered offsets are rejected
+
+  @VTK-14 @build
+  Scenario: Verdant decodes complete GGML CPU storage blocks through Prism instruction plans and imported codebooks and preserves strided output padding with typed atomic layout refusals
+    Given every executable GGML CPU row source format and packed byte patterns
+    When the certified block instruction plan runs with Verdant numeric primitives
+    Then every decoded word matches the pinned external CPU row operator
+    And invalid storage lengths strides and output spans fail without writes
+
+  @VTK-15 @build
+  Scenario: Verdant performs nearest even F64 division and unsigned count to F64 conversion through certified Prism arithmetic checked against imported Berkeley SoftFloat including gradual underflow overflow and exceptional operands
+    Given imported nearest even SoftFloat F64 division and unsigned conversion
+    When the certified Prism roots execute through the public wide arithmetic interface
+    Then finite outputs signed zeros infinities and unordered classes match the external oracle
+    And conversion preserves count rounding beyond the F64 exact integer range
+    And unsupported operation codes are typed refusals

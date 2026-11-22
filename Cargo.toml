@@ -1,6 +1,7 @@
 [workspace]
 resolver = "2"
 members = ["crates/*", "xtask"]
+exclude = ["generated/tensor-quotient/packages/rust-core/verdant_division_class", "generated/tensor-quotient/packages/rust-core/verdant_division_norm", "generated/tensor-quotient/packages/rust-core/verdant_division_finish", "generated/tensor-quotient/packages/rust-core/verdant_count_f64", "generated/tensor-quotient/packages/rust-core/verdant_quotient_f64", "generated/tensor-quotient/packages/rust-core/verdant_quotient_route", "generated/tensor-execution/packages/rust-core/verdant_storage_block", "generated/tensor-execution/packages/rust-core/verdant_float_storage", "generated/tensor-execution/packages/rust-core/verdant_float_transform", "generated/tensor-execution/packages/rust-core/verdant_unary_activate", "generated/tensor-execution/packages/rust-core/verdant_unary_plan", "generated/tensor-execution/packages/rust-core/verdant_unary_round", "generated/tensor-execution/packages/rust-core/verdant_unary_select", "generated/tensor-execution/packages/rust-core/verdant_high_f64", "generated/tensor-execution/packages/rust-core/verdant_low_f64", "generated/tensor-execution/packages/rust-core/verdant_wide_mode", "generated/tensor-execution/packages/rust-core/verdant_pack_plan_f64", "generated/tensor-execution/packages/rust-core/verdant_matrix_shape", "generated/tensor-execution/packages/rust-core/verdant_integer_f32", "generated/tensor-execution/packages/rust-core/verdant_packed_field", "generated/tensor-execution/packages/rust-core/verdant_scalar_f32", "generated/tensor-execution/packages/rust-core/verdant_count_f32", "generated/tensor-execution/packages/rust-core/verdant_narrow_f64", "generated/tensor-execution/packages/rust-core/verdant_normalize_f64", "generated/tensor-execution/packages/rust-core/verdant_add_f64", "generated/tensor-execution/packages/rust-core/verdant_round_mantissa_f64", "generated/tensor-execution/packages/rust-core/verdant_widen_f32", "generated/tensor-execution/packages/rust-core/verdant_small_float", "generated/tensor-execution/packages/rust-core/verdant_storage_transfer", "generated/tensor-execution/packages/rust-core/verdant_encoded_word"]
 
 [workspace.package]
 version = "2.17.0"
@@ -67,4 +68,11 @@ opt-level = 1
 [profile.test.package.uorc_decompress]
 opt-level = 1
 
+[profile.dev.package.verdant_quotient_f64]
+opt-level = 2
 
+[profile.dev.package.verdant_count_f64]
+opt-level = 2
+
+[profile.dev.package.verdant_division_norm]
+opt-level = 2

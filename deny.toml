@@ -59,3 +59,185 @@ license-files = []
 crate = "uorc_search"
 expression = "MIT OR Apache-2.0"
 license-files = []
+
+# The SDK renderer omits licensing metadata; preserve its certified source bytes.
+# The repository's MIT OR Apache-2.0 license applies to this generated planner.
+[[licenses.clarify]]
+name = "verdant_matrix_shape"
+version = "=2.9.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0x6c232fe6 }]
+
+[[licenses.clarify]]
+name = "verdant_scalar_f32"
+version = "=2.9.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0x78d9cd18 }]
+
+[[licenses.clarify]]
+name = "verdant_storage_transfer"
+version = "=2.9.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0x90bfa796 }]
+
+[[licenses.clarify]]
+name = "verdant_float_storage"
+version = "=2.9.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0xfc57fc6c }]
+
+[[licenses.clarify]]
+name = "verdant_float_transform"
+version = "=2.9.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0x97816007 }]
+
+[[licenses.clarify]]
+name = "verdant_unary_activate"
+version = "=2.9.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0x84905fc5 }]
+
+[[licenses.clarify]]
+name = "verdant_unary_plan"
+version = "=2.9.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0xcfc25a71 }]
+
+[[licenses.clarify]]
+name = "verdant_unary_round"
+version = "=2.9.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0xeb74a07c }]
+
+[[licenses.clarify]]
+name = "verdant_unary_select"
+version = "=2.9.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0xcad12ac0 }]
+
+[[licenses.clarify]]
+name = "verdant_add_f64"
+version = "=2.9.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0x3ee8570e }]
+
+[[licenses.clarify]]
+name = "verdant_count_f32"
+version = "=2.9.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0xc3e3a0fa }]
+
+[[licenses.clarify]]
+name = "verdant_high_f64"
+version = "=2.9.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0xb41642d4 }]
+
+[[licenses.clarify]]
+name = "verdant_low_f64"
+version = "=2.9.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0xe6108d60 }]
+
+[[licenses.clarify]]
+name = "verdant_narrow_f64"
+version = "=2.9.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0x2a307149 }]
+
+[[licenses.clarify]]
+name = "verdant_normalize_f64"
+version = "=2.9.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0x74946f31 }]
+
+[[licenses.clarify]]
+name = "verdant_pack_plan_f64"
+version = "=2.9.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0x9372b115 }]
+
+[[licenses.clarify]]
+name = "verdant_round_mantissa_f64"
+version = "=2.9.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0x3adf2136 }]
+
+[[licenses.clarify]]
+name = "verdant_wide_mode"
+version = "=2.9.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0xd5cd767a }]
+
+[[licenses.clarify]]
+name = "verdant_widen_f32"
+version = "=2.9.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0x1bd7ad63 }]
+
+[[licenses.clarify]]
+name = "verdant_encoded_word"
+version = "=2.9.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0x3e01166f }]
+
+[[licenses.clarify]]
+name = "verdant_small_float"
+version = "=2.9.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0x32da1e47 }]
+
+[[licenses.clarify]]
+name = "verdant_integer_f32"
+version = "=2.9.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0x156cce0 }]
+
+[[licenses.clarify]]
+name = "verdant_packed_field"
+version = "=2.9.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0x6bb35d53 }]
+
+[[licenses.clarify]]
+name = "verdant_storage_block"
+version = "=2.9.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0xf77d0560 }]
+
+[[licenses.clarify]]
+name = "verdant_count_f64"
+version = "=2.12.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0x68af070d }]
+
+[[licenses.clarify]]
+name = "verdant_division_class"
+version = "=2.12.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0x073dd632 }]
+
+[[licenses.clarify]]
+name = "verdant_division_finish"
+version = "=2.12.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0xb7f214df }]
+
+[[licenses.clarify]]
+name = "verdant_division_norm"
+version = "=2.12.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0x178f8abf }]
+
+[[licenses.clarify]]
+name = "verdant_quotient_f64"
+version = "=2.12.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0xf1e15a93 }]
+
+[[licenses.clarify]]
+name = "verdant_quotient_route"
+version = "=2.12.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0x824c1aca }]

@@ -1,0 +1,99 @@
+\begin{lexlean}{FloatStorage}
+\useglossary{lexlean.std.bool@1.2.0}
+\useglossary{lexlean.std.nat@1.2.0}
+\importmodule{ScalarF32}
+\title{Natural number}
+\begin{semanticmodule}
+definition{
+  name: roundQuotient,
+  parameters: [value : Nat, divisor : Nat],
+  result: Nat,
+  body: (let head : Nat := (prim quotient value divisor 0 : Nat); (let tail : Nat := (prim multiply (prim remainder value divisor 0 : Nat) 2 : Nat); (head + (if ((divisor <? tail) || ((tail =? divisor) && ((prim remainder head 2 0 : Nat) =? 1))) then 1 else 0)))),
+  executable: true
+}
+
+definition{
+  name: narrowHalf,
+  parameters: [bits : Nat],
+  result: Nat,
+  body: (let s : Nat := (prim multiply (ScalarF32::sign bits) 32768 : Nat); (let e : Nat := (ScalarF32::exponent bits); (s + (if (e =? 255) then (if ((ScalarF32::fraction bits) =? 0) then 31744 else 32256) else (if (143 <=? e) then 31744 else (if (e <? 102) then 0 else (if (113 <=? e) then ((prim multiply (prim subtract e 113 : Nat) 1024 : Nat) + (roundQuotient (ScalarF32::mantissa bits) 8192)) else (roundQuotient (ScalarF32::mantissa bits) (ScalarF32::power (prim subtract 126 e : Nat)))))))))),
+  executable: true
+}
+
+definition{
+  name: widenHalf,
+  parameters: [bits : Nat],
+  result: Nat,
+  body: (let s : Nat := (prim multiply (prim quotient bits 32768 0 : Nat) 2147483648 : Nat); (let e : Nat := (prim quotient (prim remainder bits 32768 0 : Nat) 1024 0 : Nat); (let m : Nat := (prim remainder bits 1024 0 : Nat); (s + (if (e =? 31) then (2139095040 + (prim multiply (if ((0 <? m) && (m <? 512)) then (m + 512) else m) 8192 : Nat)) else (if (e =? 0) then (if (m =? 0) then 0 else (let norm : ScalarF32::Norm := (ScalarF32::normalize 113 m 0 1024); ((prim multiply (project norm e) 8388608 : Nat) + (prim multiply (prim subtract (project norm m) 1024 : Nat) 8192 : Nat)))) else ((prim multiply (e + 112) 8388608 : Nat) + (prim multiply m 8192 : Nat)))))))),
+  executable: true
+}
+
+definition{
+  name: narrowBrain,
+  parameters: [bits : Nat],
+  result: Nat,
+  body: (if (ScalarF32::isNaN bits) then (let head : Nat := (prim quotient bits 65536 0 : Nat); (head + (if ((prim remainder (prim quotient head 64 0 : Nat) 2 0 : Nat) =? 0) then 64 else 0))) else (prim quotient ((bits + 32767) + (prim remainder (prim quotient bits 65536 0 : Nat) 2 0 : Nat)) 65536 0 : Nat)),
+  executable: true
+}
+
+definition{
+  name: knownType,
+  parameters: [kind : Nat],
+  result: Bool,
+  body: (((kind =? 0) || (kind =? 1)) || (kind =? 30)),
+  executable: true
+}
+
+definition{
+  name: widen,
+  parameters: [kind : Nat, bits : Nat],
+  result: Nat,
+  body: (if (kind =? 0) then bits else (if (kind =? 1) then (widenHalf bits) else (prim multiply bits 65536 : Nat))),
+  executable: true
+}
+
+definition{
+  name: convert,
+  parameters: [source : Nat, destination : Nat, bits : Nat],
+  result: (Option Nat),
+  body: (if (((knownType source) && (knownType destination)) && (bits <? (if (source =? 0) then 4294967296 else 65536))) then (ctor Option.some [Nat] (if (source =? destination) then bits else (let value : Nat := (widen source bits); (if (destination =? 0) then value else (if (destination =? 1) then (narrowHalf value) else (narrowBrain value)))))) else (ctor Option.none [Nat])),
+  executable: true,
+  production: {effects: [overflow], targets: [rust-core]}
+}
+
+theorem{
+  name: halfOne,
+  parameters: [],
+  statement: ((convert 0 1 1065353216) = (ctor Option.some [Nat] 15360)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: halfLeastSubnormal,
+  parameters: [],
+  statement: ((convert 1 0 1) = (ctor Option.some [Nat] 864026624)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: halfTieEven,
+  parameters: [],
+  statement: ((convert 0 1 1065357312) = (ctor Option.some [Nat] 15360)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: brainQuietNaN,
+  parameters: [],
+  statement: ((convert 0 30 2139095041) = (ctor Option.some [Nat] 32704)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: badWidth,
+  parameters: [],
+  statement: ((convert 1 0 65536) = (ctor Option.none [Nat])),
+  proof: reflexivity{}
+}
+\end{semanticmodule}
+\end{lexlean}

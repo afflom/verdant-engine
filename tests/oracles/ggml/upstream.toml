@@ -1,0 +1,33 @@
+spec = "vtensor/upstream-oracle/1"
+repository = "https://github.com/ggml-org/llama.cpp"
+commit = "9a080f44b503c64f66c84a6274b9d9ee5d5b09d5"
+
+[[file]]
+path = "LICENSE"
+sha256 = "94f29bbed6a22c35b992c5c6ebf0e7c92f13b836b90f36f461c9cf2f0f1d010d"
+
+[[file]]
+path = "ggml/include/ggml-backend.h"
+sha256 = "34464da4b46314c710cd634626578c6f2a6811431d41eddaf5e8aa77082fea2a"
+
+[[file]]
+path = "ggml/include/ggml.h"
+sha256 = "7a95dc0abc3360481c07732bfcd534a3e59228127331898b1d0926b87b018498"
+
+[[file]]
+path = "ggml/include/ggml-alloc.h"
+sha256 = "d114067f9099c4a0e2bbc0625c676d4894d9cf0ea27168ee072c7de0e71bb51d"
+
+[[file]]
+path = "ggml/src/ggml-backend-impl.h"
+sha256 = "7693def12dcc79a10dd2152e7cb659278756dba7622ebe41937f951dc94944e3"
+
+[[file]]
+path = "tests/test-backend-ops.cpp"
+sha256 = "f634a61fa3ff71eb7675410999b0ea4ada2161c01934680e5ded3cef95441e52"
+
+[[archive]]
+path = "source.tar.gz"
+format = "git-archive-tar-gzip"
+paths = ["ggml", "tests/test-backend-ops.cpp", "LICENSE"]
+sha256 = "4eec816a907885c31932e0ab4fa1ee2278af43000dc19d514929cd03cb4ff8a0"

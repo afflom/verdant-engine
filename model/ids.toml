@@ -578,3 +578,98 @@ id = "VE-77"
 suite = "engine"
 level = "build"
 statement = "Verdant delivers Multi-Gateway Stitch Hosting & Serving in Milestone M25 (crates/verdant-core/src/gateway.rs, crates/verdant-tensor/src/scalars_gateway.rs, CLI verdant gateway pack|serve|verify, MCP verdant_gateway, Blank Frame ?gateway=/same-origin/OPFS resilience, and GitHub Pages + release-stitch.yml multi-gateway bundle publication), hosting Verdant and all 6 canonical stakeholder parts (studio, catalogs, demo, docs, starter, card) simultaneously on GitHub and independent external gateways (Cloudflare Pages/Workers, Netlify Edge, IPFS/IPNS HTTP gateways, OCI/Docker, and self-hosted Stitch HTTP nodes) while refusing GitHub-only single-provider plans, proving live dual-gateway failover under primary 503 outage plus 4-of-8 shard withholding, and expanding frontier.toml to >= 545 lifted functions with residue <= 1161 and uncertified <= 1318 across M1..M25"
+
+[[id]]
+id = "VTK-01"
+level = "build"
+suite = "engine"
+statement = "Verdant exposes arbitrary row-major F32 matrix products through uor-matmul with exact operand extents and typed shape refusals for GGML integration"
+
+
+[[id]]
+id = "VTK-02"
+level = "build"
+suite = "engine"
+statement = "Verdant evaluates F32 addition, subtraction, multiplication, division, square root, square, negation and absolute value through a Prism-defined integer encoding with nearest-even rounding and explicit exceptional-value behavior"
+
+
+[[id]]
+id = "VTK-03"
+level = "build"
+suite = "engine"
+statement = "Verdant moves opaque storage blocks under Prism transfer-length admission and preserves encoded bytes against the imported GGML vector copy reference"
+
+
+[[id]]
+id = "VTK-04"
+level = "build"
+suite = "engine"
+statement = "Verdant converts F32 F16 and BF16 storage encodings through a certified Prism bit model and matches the imported GGML conversion oracle including all sixteen-bit words and rounding boundaries"
+
+
+[[id]]
+id = "VTK-05"
+level = "build"
+suite = "engine"
+statement = "Verdant composes certified float storage and F32 arithmetic to execute scale bias clamp and leaky ReLU for F32 F16 and BF16 with explicit NaN signed-zero and typed refusal semantics"
+
+
+[[id]]
+id = "VTK-06"
+level = "build"
+suite = "engine"
+statement = "Verdant evaluates thirteen typed unary float operations including integer rounding through certified Prism composition and matches every supported GGML CPU source destination pair"
+
+
+[[id]]
+id = "VTK-07"
+level = "build"
+suite = "engine"
+statement = "Verdant models nearest-even F64 addition F32 F64 conversion and unsigned count conversion through certified Prism bit arithmetic validated against imported Berkeley SoftFloat"
+
+
+[[id]]
+id = "VTK-08"
+level = "build"
+suite = "engine"
+statement = "Verdant classifies F32 comparison and unordered operands against imported SoftFloat and provides certified bounded integer equality addition and identity words for row graphs"
+
+
+
+[[id]]
+id = "VTK-11"
+level = "build"
+suite = "engine"
+statement = "Verdant decodes packed E8M0 UE4M3 E4M3 and E2M1 scales and encodes F8 and unsigned E4M3 through certified Prism bit arithmetic checked against imported GGML"
+
+
+
+[[id]]
+id = "VTK-12"
+level = "build"
+suite = "engine"
+statement = "Verdant extracts scaled packed fields and encodes bounded biased integer coefficients through certified Prism arithmetic checked against imported GGML quantized row decoders"
+
+
+
+[[id]]
+id = "VTK-13"
+level = "build"
+suite = "engine"
+statement = "Verdant imports every GGML CPU quantized codebook as immutable source bound data and verifies compiled bytes and table spans against the pinned external declarations"
+
+
+
+[[id]]
+id = "VTK-14"
+level = "build"
+suite = "engine"
+statement = "Verdant decodes complete GGML CPU storage blocks through Prism instruction plans and imported codebooks and preserves strided output padding with typed atomic layout refusals"
+
+
+
+[[id]]
+id = "VTK-15"
+level = "build"
+suite = "engine"
+statement = "Verdant performs nearest even F64 division and unsigned count to F64 conversion through certified Prism arithmetic checked against imported Berkeley SoftFloat including gradual underflow overflow and exceptional operands"

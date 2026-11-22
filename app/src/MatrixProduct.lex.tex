@@ -1,0 +1,36 @@
+\begin{lexlean}{MatrixProduct}
+\useglossary{lexlean.std.bool@1.2.0}
+\useglossary{lexlean.std.nat@1.2.0}
+\title{Natural number}
+\begin{semanticmodule}
+definition{
+  name: matrixProductShapeValid,
+  parameters: [
+    rows : Nat,
+    inner : Nat,
+    cols : Nat,
+    leftLength : Nat,
+    rightLength : Nat,
+    outputLength : Nat
+  ],
+  result: Bool,
+  body: (((leftLength =? (prim multiply rows inner : Nat)) && (rightLength =? (prim multiply inner cols : Nat))) && (outputLength =? (prim multiply rows cols : Nat))),
+  executable: true,
+  production: {effects: [overflow], targets: [rust-core]}
+}
+
+theorem{
+  name: emptyMatrixProductShapeValid,
+  parameters: [],
+  statement: ((matrixProductShapeValid 0 0 0 0 0 0) = true),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: missingLeftOperandRefused,
+  parameters: [],
+  statement: ((matrixProductShapeValid 1 1 1 0 1 1) = false),
+  proof: reflexivity{}
+}
+\end{semanticmodule}
+\end{lexlean}

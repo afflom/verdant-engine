@@ -1,0 +1,117 @@
+\begin{lexlean}{WordComparison}
+\useglossary{lexlean.std.bool@1.2.0}
+\useglossary{lexlean.std.nat@1.2.0}
+\title{Natural number}
+\begin{semanticmodule}
+definition{
+  name: magnitude,
+  parameters: [word : Nat],
+  result: Nat,
+  body: (prim remainder word 2147483648 0 : Nat),
+  executable: true
+}
+
+definition{
+  name: sign,
+  parameters: [word : Nat],
+  result: Nat,
+  body: (prim quotient word 2147483648 0 : Nat),
+  executable: true
+}
+
+definition{
+  name: isNaN,
+  parameters: [word : Nat],
+  result: Bool,
+  body: (2139095040 <? (magnitude word)),
+  executable: true
+}
+
+definition{
+  name: compareF32,
+  parameters: [a : Nat, b : Nat],
+  result: Nat,
+  body: (if (isNaN b) then 3 else (if (isNaN a) then 4 else (if ((a =? b) || (((magnitude a) =? 0) && ((magnitude b) =? 0))) then 1 else (if ((sign a) =? (sign b)) then (if ((sign a) =? 0) then (if ((magnitude a) <? (magnitude b)) then 0 else 2) else (if ((magnitude b) <? (magnitude a)) then 0 else 2)) else (if ((sign a) =? 1) then 0 else 2))))),
+  executable: true
+}
+
+definition{
+  name: evaluate,
+  parameters: [operation : Nat, a : Nat, b : Nat],
+  result: (Option Nat),
+  body: (if (operation <? 2) then (if ((a <? 4294967296) && (b <? 4294967296)) then (ctor Option.some [Nat] (if (operation =? 0) then (compareF32 a b) else (if (a =? b) then 1 else 0))) else (ctor Option.none [Nat])) else (if (operation =? 2) then (ctor Option.some [Nat] (a + b)) else (if (operation =? 3) then (ctor Option.some [Nat] a) else (ctor Option.none [Nat])))),
+  executable: true,
+  production: {effects: [overflow], targets: [rust-core]}
+}
+
+theorem{
+  name: signedZerosAreNumericallyEqual,
+  parameters: [],
+  statement: ((evaluate 0 2147483648 0) = (ctor Option.some [Nat] 1)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: signedZerosAreDifferentIntegerWords,
+  parameters: [],
+  statement: ((evaluate 1 2147483648 0) = (ctor Option.some [Nat] 0)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: negativeMagnitudeReversesOrder,
+  parameters: [],
+  statement: ((evaluate 0 3221225472 3212836864) = (ctor Option.some [Nat] 0)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: positiveMagnitudePreservesOrder,
+  parameters: [],
+  statement: ((evaluate 0 1065353216 1073741824) = (ctor Option.some [Nat] 0)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: rightSignalingNaNHasPriority,
+  parameters: [],
+  statement: ((evaluate 0 4290772993 2139095041) = (ctor Option.some [Nat] 3)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: leftSignalingNaNRecoversOnFinite,
+  parameters: [],
+  statement: ((evaluate 0 2139095041 1065353216) = (ctor Option.some [Nat] 4)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: equalNegativeInfinities,
+  parameters: [],
+  statement: ((evaluate 0 4286578688 4286578688) = (ctor Option.some [Nat] 1)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: rejectsOutOfWidthComparison,
+  parameters: [],
+  statement: ((evaluate 0 4294967296 0) = (ctor Option.none [Nat])),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: integerAdditionIsNaturalAddition,
+  parameters: [a : Nat, b : Nat],
+  statement: ((evaluate 2 a b) = (ctor Option.some [Nat] (a + b))),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: identityPreservesEveryWord,
+  parameters: [a : Nat, b : Nat],
+  statement: ((evaluate 3 a b) = (ctor Option.some [Nat] a)),
+  proof: reflexivity{}
+}
+\end{semanticmodule}
+\end{lexlean}

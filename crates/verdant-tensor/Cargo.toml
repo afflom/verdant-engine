@@ -12,8 +12,43 @@ keywords.workspace = true
 categories.workspace = true
 
 [dependencies]
+verdant_division_class = { version = "2.12.0", path = "../../generated/tensor-quotient/packages/rust-core/verdant_division_class" }
+verdant_division_norm = { version = "2.12.0", path = "../../generated/tensor-quotient/packages/rust-core/verdant_division_norm" }
+verdant_division_finish = { version = "2.12.0", path = "../../generated/tensor-quotient/packages/rust-core/verdant_division_finish" }
+verdant_count_f64 = { version = "2.12.0", path = "../../generated/tensor-quotient/packages/rust-core/verdant_count_f64" }
+verdant_quotient_f64 = { version = "2.12.0", path = "../../generated/tensor-quotient/packages/rust-core/verdant_quotient_f64" }
+verdant_quotient_route = { version = "2.12.0", path = "../../generated/tensor-quotient/packages/rust-core/verdant_quotient_route" }
+verdant_storage_block = { version = "2.9.0", path = "../../generated/tensor-execution/packages/rust-core/verdant_storage_block" }
+verdant_packed_field = { version = "2.9.0", path = "../../generated/tensor-execution/packages/rust-core/verdant_packed_field" }
+verdant_integer_f32 = { version = "2.9.0", path = "../../generated/tensor-execution/packages/rust-core/verdant_integer_f32" }
+verdant_small_float = { version = "2.9.0", path = "../../generated/tensor-execution/packages/rust-core/verdant_small_float" }
+verdant_encoded_word = { version = "2.9.0", path = "../../generated/tensor-execution/packages/rust-core/verdant_encoded_word" }
+verdant_pack_plan_f64 = { version = "2.9.0", path = "../../generated/tensor-execution/packages/rust-core/verdant_pack_plan_f64" }
+verdant_wide_mode = { version = "2.9.0", path = "../../generated/tensor-execution/packages/rust-core/verdant_wide_mode" }
+verdant_low_f64 = { version = "2.9.0", path = "../../generated/tensor-execution/packages/rust-core/verdant_low_f64" }
+verdant_high_f64 = { version = "2.9.0", path = "../../generated/tensor-execution/packages/rust-core/verdant_high_f64" }
+verdant_widen_f32 = { version = "2.9.0", path = "../../generated/tensor-execution/packages/rust-core/verdant_widen_f32" }
+verdant_round_mantissa_f64 = { version = "2.9.0", path = "../../generated/tensor-execution/packages/rust-core/verdant_round_mantissa_f64" }
+verdant_add_f64 = { version = "2.9.0", path = "../../generated/tensor-execution/packages/rust-core/verdant_add_f64" }
+verdant_normalize_f64 = { version = "2.9.0", path = "../../generated/tensor-execution/packages/rust-core/verdant_normalize_f64" }
+verdant_narrow_f64 = { version = "2.9.0", path = "../../generated/tensor-execution/packages/rust-core/verdant_narrow_f64" }
+verdant_count_f32 = { version = "2.9.0", path = "../../generated/tensor-execution/packages/rust-core/verdant_count_f32" }
+verdant_unary_plan = { version = "2.9.0", path = "../../generated/tensor-execution/packages/rust-core/verdant_unary_plan" }
+verdant_unary_select = { version = "2.9.0", path = "../../generated/tensor-execution/packages/rust-core/verdant_unary_select" }
+verdant_unary_activate = { version = "2.9.0", path = "../../generated/tensor-execution/packages/rust-core/verdant_unary_activate" }
+verdant_unary_round = { version = "2.9.0", path = "../../generated/tensor-execution/packages/rust-core/verdant_unary_round" }
+verdant_float_transform = { version = "2.9.0", path = "../../generated/tensor-execution/packages/rust-core/verdant_float_transform" }
+verdant_float_storage = { version = "2.9.0", path = "../../generated/tensor-execution/packages/rust-core/verdant_float_storage" }
+verdant_storage_transfer = { version = "2.9.0", path = "../../generated/tensor-execution/packages/rust-core/verdant_storage_transfer" }
+verdant_scalar_f32 = { version = "2.9.0", path = "../../generated/tensor-execution/packages/rust-core/verdant_scalar_f32" }
+verdant_matrix_shape = { version = "2.9.0", path = "../../generated/tensor-execution/packages/rust-core/verdant_matrix_shape" }
 serde = { version = "1.0.219", features = ["derive"] }
 uor-matmul.workspace = true
+
+[dev-dependencies]
+proc-macro2 = "1.0.107"
+serde_json = "1.0.140"
+sha2 = "0.10.9"
 
 [lints]
 workspace = true

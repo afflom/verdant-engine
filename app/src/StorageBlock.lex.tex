@@ -1,0 +1,760 @@
+\begin{lexlean}{StorageBlock}
+\useglossary{lexlean.std.bool@1.2.0}
+\useglossary{lexlean.std.nat@1.2.0}
+\title{Natural number}
+\begin{semanticmodule}
+inductive{
+  name: Instruction,
+  type_parameters: [],
+  parameters: [],
+  constructors: [
+    {name: refused, fields: [Nat]},
+    {name: metadata, fields: [Nat, Nat, Nat, Nat]},
+    {name: load, fields: [Nat, Nat, Nat, Nat]},
+    {name: compute, fields: [Nat, Nat, Nat, Nat]},
+    {name: store, fields: [Nat, Nat]}
+  ]
+}
+
+inductive{
+  name: Request,
+  type_parameters: [],
+  parameters: [],
+  constructors: [
+    {name: inspectBlock, fields: [Nat, Nat, Nat, Nat]},
+    {name: prefixStep, fields: [Nat, Nat, Nat, Nat, Nat, Nat, Nat, Nat, Nat, Nat]},
+    {name: laneStep, fields: [Nat, Nat, Nat, Nat, Nat, Nat, Nat, Nat, Nat, Nat, Nat, Nat]},
+    {name: arithmeticStep, fields: [Nat, Nat, Nat, Nat]}
+  ]
+}
+
+definition{
+  name: wordMagnitude,
+  parameters: [word : Nat],
+  result: Nat,
+  body: (prim remainder word 2147483648 0 : Nat),
+  executable: true
+}
+
+definition{
+  name: nanWord,
+  parameters: [word : Nat],
+  result: Bool,
+  body: (2139095040 <? (wordMagnitude word)),
+  executable: true
+}
+
+definition{
+  name: quietWord,
+  parameters: [word : Nat],
+  result: Nat,
+  body: (word + (if ((prim remainder (prim quotient word 4194304 0 : Nat) 2 0 : Nat) =? 0) then 4194304 else 0)),
+  executable: true
+}
+
+definition{
+  name: arithmeticInstruction,
+  parameters: [operation : Nat, a : Nat, b : Nat, register : Nat],
+  result: Instruction,
+  body: (if ((operation <? 4) && ((a <? 4294967296) && ((b <? 4294967296) && (register <? 8)))) then (if (nanWord a) then (ctor Instruction.compute 11 (quietWord a) 0 register) else (if (nanWord b) then (ctor Instruction.compute 11 (quietWord b) 0 register) else (if (if (operation =? 0) then ((((wordMagnitude a) =? 2139095040) && ((wordMagnitude b) =? 2139095040)) && (if ((prim quotient a 2147483648 0 : Nat) =? (prim quotient b 2147483648 0 : Nat)) then false else true)) else (if (operation =? 1) then ((((wordMagnitude a) =? 2139095040) && ((wordMagnitude b) =? 2139095040)) && ((prim quotient a 2147483648 0 : Nat) =? (prim quotient b 2147483648 0 : Nat))) else (if (operation =? 2) then ((((wordMagnitude a) =? 2139095040) && ((wordMagnitude b) =? 0)) || (((wordMagnitude a) =? 0) && ((wordMagnitude b) =? 2139095040))) else (if (operation =? 3) then ((((wordMagnitude a) =? 2139095040) && ((wordMagnitude b) =? 2139095040)) || (((wordMagnitude a) =? 0) && ((wordMagnitude b) =? 0))) else false)))) then (ctor Instruction.compute 11 4290772992 0 register) else (ctor Instruction.compute operation a b register)))) else (ctor Instruction.refused 0)),
+  executable: true
+}
+
+definition{
+  name: signInstruction,
+  parameters: [word : Nat, negative : Bool, register : Nat],
+  result: Instruction,
+  body: (if ((word <? 4294967296) && (register <? 8)) then (ctor Instruction.compute (if negative then 6 else 11) word 0 register) else (ctor Instruction.refused 0)),
+  executable: true
+}
+
+definition{
+  name: shiftDivisor,
+  parameters: [shift : Nat],
+  result: Nat,
+  body: (if (shift =? 0) then 1 else (if (shift =? 1) then 2 else (if (shift =? 2) then 4 else (if (shift =? 3) then 8 else (if (shift =? 4) then 16 else (if (shift =? 5) then 32 else (if (shift =? 6) then 64 else (if (shift =? 7) then 128 else (if (shift =? 8) then 256 else (if (shift =? 9) then 512 else (if (shift =? 10) then 1024 else (if (shift =? 11) then 2048 else (if (shift =? 12) then 4096 else (if (shift =? 13) then 8192 else (if (shift =? 14) then 16384 else (if (shift =? 15) then 32768 else (if (shift =? 16) then 65536 else (if (shift =? 17) then 131072 else (if (shift =? 18) then 262144 else (if (shift =? 19) then 524288 else (if (shift =? 20) then 1048576 else (if (shift =? 21) then 2097152 else (if (shift =? 22) then 4194304 else (if (shift =? 23) then 8388608 else (if (shift =? 24) then 16777216 else (if (shift =? 25) then 33554432 else (if (shift =? 26) then 67108864 else (if (shift =? 27) then 134217728 else (if (shift =? 28) then 268435456 else (if (shift =? 29) then 536870912 else (if (shift =? 30) then 1073741824 else (if (shift =? 31) then 2147483648 else 1)))))))))))))))))))))))))))))))),
+  executable: true
+}
+
+definition{
+  name: blockLanes,
+  parameters: [kind : Nat],
+  result: Nat,
+  body: (if (kind =? 0) then 1 else (if (kind =? 1) then 1 else (if (kind =? 2) then 32 else (if (kind =? 3) then 32 else (if (kind =? 6) then 32 else (if (kind =? 7) then 32 else (if (kind =? 8) then 32 else (if (kind =? 10) then 256 else (if (kind =? 11) then 256 else (if (kind =? 12) then 256 else (if (kind =? 13) then 256 else (if (kind =? 14) then 256 else (if (kind =? 16) then 256 else (if (kind =? 17) then 256 else (if (kind =? 18) then 256 else (if (kind =? 19) then 256 else (if (kind =? 20) then 32 else (if (kind =? 21) then 256 else (if (kind =? 22) then 256 else (if (kind =? 23) then 256 else (if (kind =? 26) then 1 else (if (kind =? 29) then 256 else (if (kind =? 30) then 1 else (if (kind =? 34) then 256 else (if (kind =? 35) then 256 else (if (kind =? 39) then 32 else (if (kind =? 40) then 64 else (if (kind =? 41) then 128 else (if (kind =? 42) then 64 else (if (kind =? 43) then 1 else 0)))))))))))))))))))))))))))))),
+  executable: true
+}
+
+definition{
+  name: blockBytes,
+  parameters: [kind : Nat],
+  result: Nat,
+  body: (if (kind =? 0) then 4 else (if (kind =? 1) then 2 else (if (kind =? 2) then 18 else (if (kind =? 3) then 20 else (if (kind =? 6) then 22 else (if (kind =? 7) then 24 else (if (kind =? 8) then 34 else (if (kind =? 10) then 84 else (if (kind =? 11) then 110 else (if (kind =? 12) then 144 else (if (kind =? 13) then 176 else (if (kind =? 14) then 210 else (if (kind =? 16) then 66 else (if (kind =? 17) then 74 else (if (kind =? 18) then 98 else (if (kind =? 19) then 50 else (if (kind =? 20) then 18 else (if (kind =? 21) then 110 else (if (kind =? 22) then 82 else (if (kind =? 23) then 136 else (if (kind =? 26) then 4 else (if (kind =? 29) then 56 else (if (kind =? 30) then 2 else (if (kind =? 34) then 54 else (if (kind =? 35) then 66 else (if (kind =? 39) then 17 else (if (kind =? 40) then 36 else (if (kind =? 41) then 18 else (if (kind =? 42) then 18 else (if (kind =? 43) then 1 else 0)))))))))))))))))))))))))))))),
+  executable: true
+}
+
+definition{
+  name: prefixSteps,
+  parameters: [kind : Nat],
+  result: Nat,
+  body: (if (kind =? 0) then 0 else (if (kind =? 1) then 0 else (if (kind =? 2) then 2 else (if (kind =? 3) then 4 else (if (kind =? 6) then 2 else (if (kind =? 7) then 4 else (if (kind =? 8) then 2 else (if (kind =? 10) then 4 else (if (kind =? 11) then 2 else (if (kind =? 12) then 4 else (if (kind =? 13) then 4 else (if (kind =? 14) then 2 else (if (kind =? 16) then 2 else (if (kind =? 17) then 2 else (if (kind =? 18) then 2 else (if (kind =? 19) then 2 else (if (kind =? 20) then 2 else (if (kind =? 21) then 2 else (if (kind =? 22) then 2 else (if (kind =? 23) then 2 else (if (kind =? 26) then 0 else (if (kind =? 29) then 3 else (if (kind =? 30) then 0 else (if (kind =? 34) then 2 else (if (kind =? 35) then 2 else (if (kind =? 39) then 2 else (if (kind =? 40) then 0 else (if (kind =? 41) then 2 else (if (kind =? 42) then 2 else (if (kind =? 43) then 0 else 0)))))))))))))))))))))))))))))),
+  executable: true
+}
+
+definition{
+  name: laneSteps,
+  parameters: [kind : Nat],
+  result: Nat,
+  body: (if (kind =? 0) then 2 else (if (kind =? 26) then 2 else (if (kind =? 1) then 3 else (if (kind =? 30) then 3 else (if (kind =? 43) then 3 else (if (kind =? 2) then 4 else (if (kind =? 3) then 5 else (if (kind =? 6) then 5 else (if (kind =? 7) then 6 else (if (kind =? 8) then 4 else (if (kind =? 41) then 3 else (if (kind =? 42) then 4 else (if (kind =? 39) then 4 else (if (kind =? 40) then 6 else (if (kind =? 10) then 10 else (if (kind =? 11) then 9 else (if (kind =? 12) then 12 else (if (kind =? 13) then 13 else (if (kind =? 14) then 8 else (if (kind =? 34) then 4 else (if (kind =? 35) then 4 else (if (kind =? 16) then 12 else (if (kind =? 17) then 12 else (if (kind =? 22) then 13 else (if (kind =? 18) then 12 else (if (kind =? 21) then 11 else (if (kind =? 19) then 9 else (if (kind =? 29) then 10 else (if (kind =? 20) then 5 else (if (kind =? 23) then 9 else 0)))))))))))))))))))))))))))))),
+  executable: true
+}
+
+definition{
+  name: inspectBounds,
+  parameters: [kind : Nat, sourceBytes : Nat, destinationBytes : Nat, stride : Nat],
+  result: Instruction,
+  body: (if ((blockLanes kind) =? 0) then (ctor Instruction.refused 0) else (if ((sourceBytes =? (blockBytes kind)) && ((4 <=? stride) && (((prim multiply (prim subtract (blockLanes kind) 1 : Nat) stride : Nat) + 4) <=? destinationBytes))) then (ctor Instruction.metadata (blockLanes kind) (blockBytes kind) (prefixSteps kind) (laneSteps kind)) else (ctor Instruction.refused 1))),
+  executable: true
+}
+
+definition{
+  name: prefix,
+  parameters: [
+    kind : Nat,
+    step : Nat,
+    r0 : Nat,
+    r1 : Nat,
+    r2 : Nat,
+    r3 : Nat,
+    r4 : Nat,
+    r5 : Nat,
+    r6 : Nat,
+    r7 : Nat
+  ],
+  result: Instruction,
+  body: (if (kind =? 2) then (if (step =? 0) then (ctor Instruction.load 0 2 0 0) else (if (step =? 1) then (ctor Instruction.compute 10 1 r0 0) else (ctor Instruction.refused 0))) else (if (kind =? 3) then (if (step =? 0) then (ctor Instruction.load 0 2 0 0) else (if (step =? 1) then (ctor Instruction.compute 10 1 r0 0) else (if (step =? 2) then (ctor Instruction.load 0 2 2 1) else (if (step =? 3) then (ctor Instruction.compute 10 1 r1 1) else (ctor Instruction.refused 0))))) else (if (kind =? 6) then (if (step =? 0) then (ctor Instruction.load 0 2 0 0) else (if (step =? 1) then (ctor Instruction.compute 10 1 r0 0) else (ctor Instruction.refused 0))) else (if (kind =? 7) then (if (step =? 0) then (ctor Instruction.load 0 2 0 0) else (if (step =? 1) then (ctor Instruction.compute 10 1 r0 0) else (if (step =? 2) then (ctor Instruction.load 0 2 2 1) else (if (step =? 3) then (ctor Instruction.compute 10 1 r1 1) else (ctor Instruction.refused 0))))) else (if (kind =? 8) then (if (step =? 0) then (ctor Instruction.load 0 2 0 0) else (if (step =? 1) then (ctor Instruction.compute 10 1 r0 0) else (ctor Instruction.refused 0))) else (if (kind =? 10) then (if (step =? 0) then (ctor Instruction.load 0 2 80 0) else (if (step =? 1) then (ctor Instruction.compute 10 1 r0 0) else (if (step =? 2) then (ctor Instruction.load 0 2 82 1) else (if (step =? 3) then (ctor Instruction.compute 10 1 r1 1) else (ctor Instruction.refused 0))))) else (if (kind =? 11) then (if (step =? 0) then (ctor Instruction.load 0 2 108 0) else (if (step =? 1) then (ctor Instruction.compute 10 1 r0 0) else (ctor Instruction.refused 0))) else (if (kind =? 12) then (if (step =? 0) then (ctor Instruction.load 0 2 0 0) else (if (step =? 1) then (ctor Instruction.compute 10 1 r0 0) else (if (step =? 2) then (ctor Instruction.load 0 2 2 1) else (if (step =? 3) then (ctor Instruction.compute 10 1 r1 1) else (ctor Instruction.refused 0))))) else (if (kind =? 13) then (if (step =? 0) then (ctor Instruction.load 0 2 0 0) else (if (step =? 1) then (ctor Instruction.compute 10 1 r0 0) else (if (step =? 2) then (ctor Instruction.load 0 2 2 1) else (if (step =? 3) then (ctor Instruction.compute 10 1 r1 1) else (ctor Instruction.refused 0))))) else (if (kind =? 14) then (if (step =? 0) then (ctor Instruction.load 0 2 208 0) else (if (step =? 1) then (ctor Instruction.compute 10 1 r0 0) else (ctor Instruction.refused 0))) else (if (kind =? 16) then (if (step =? 0) then (ctor Instruction.load 0 2 0 0) else (if (step =? 1) then (ctor Instruction.compute 10 1 r0 0) else (ctor Instruction.refused 0))) else (if (kind =? 17) then (if (step =? 0) then (ctor Instruction.load 0 2 0 0) else (if (step =? 1) then (ctor Instruction.compute 10 1 r0 0) else (ctor Instruction.refused 0))) else (if (kind =? 18) then (if (step =? 0) then (ctor Instruction.load 0 2 0 0) else (if (step =? 1) then (ctor Instruction.compute 10 1 r0 0) else (ctor Instruction.refused 0))) else (if (kind =? 19) then (if (step =? 0) then (ctor Instruction.load 0 2 0 0) else (if (step =? 1) then (ctor Instruction.compute 10 1 r0 0) else (ctor Instruction.refused 0))) else (if (kind =? 20) then (if (step =? 0) then (ctor Instruction.load 0 2 0 0) else (if (step =? 1) then (ctor Instruction.compute 10 1 r0 0) else (ctor Instruction.refused 0))) else (if (kind =? 21) then (if (step =? 0) then (ctor Instruction.load 0 2 0 0) else (if (step =? 1) then (ctor Instruction.compute 10 1 r0 0) else (ctor Instruction.refused 0))) else (if (kind =? 22) then (if (step =? 0) then (ctor Instruction.load 0 2 0 0) else (if (step =? 1) then (ctor Instruction.compute 10 1 r0 0) else (ctor Instruction.refused 0))) else (if (kind =? 23) then (if (step =? 0) then (ctor Instruction.load 0 2 0 0) else (if (step =? 1) then (ctor Instruction.compute 10 1 r0 0) else (ctor Instruction.refused 0))) else (if (kind =? 29) then (if (step =? 0) then (ctor Instruction.load 0 4 48 6) else (if (step =? 1) then (ctor Instruction.load 0 4 52 7) else (if (step =? 2) then (ctor Instruction.compute 10 1 (((prim remainder (prim quotient r6 4096 0 : Nat) 16 0 : Nat) + (prim multiply (prim remainder (prim quotient r6 268435456 0 : Nat) 16 0 : Nat) 16 : Nat)) + ((prim multiply (prim remainder (prim quotient r7 4096 0 : Nat) 16 0 : Nat) 256 : Nat) + (prim multiply (prim remainder (prim quotient r7 268435456 0 : Nat) 16 0 : Nat) 4096 : Nat))) 0) else (ctor Instruction.refused 0)))) else (if (kind =? 34) then (if (step =? 0) then (ctor Instruction.load 0 2 52 0) else (if (step =? 1) then (ctor Instruction.compute 10 1 r0 0) else (ctor Instruction.refused 0))) else (if (kind =? 35) then (if (step =? 0) then (ctor Instruction.load 0 2 64 0) else (if (step =? 1) then (ctor Instruction.compute 10 1 r0 0) else (ctor Instruction.refused 0))) else (if (kind =? 39) then (if (step =? 0) then (ctor Instruction.load 0 1 0 0) else (if (step =? 1) then (ctor Instruction.compute 9 1 r0 0) else (ctor Instruction.refused 0))) else (if (kind =? 41) then (if (step =? 0) then (ctor Instruction.load 0 2 0 0) else (if (step =? 1) then (ctor Instruction.compute 10 1 r0 0) else (ctor Instruction.refused 0))) else (if (kind =? 42) then (if (step =? 0) then (ctor Instruction.load 0 2 0 0) else (if (step =? 1) then (ctor Instruction.compute 10 1 r0 0) else (ctor Instruction.refused 0))) else (ctor Instruction.refused 0))))))))))))))))))))))))),
+  executable: true
+}
+
+definition{
+  name: lane,
+  parameters: [
+    kind : Nat,
+    column : Nat,
+    stride : Nat,
+    step : Nat,
+    r0 : Nat,
+    r1 : Nat,
+    r2 : Nat,
+    r3 : Nat,
+    r4 : Nat,
+    r5 : Nat,
+    r6 : Nat,
+    r7 : Nat
+  ],
+  result: Instruction,
+  body: (if ((column <? (blockLanes kind)) && (4 <=? stride)) then (if (kind =? 0) then (if (step =? 0) then (ctor Instruction.load 0 4 0 2) else (if (step =? 1) then (ctor Instruction.store (prim multiply column stride : Nat) r2) else (ctor Instruction.refused 0))) else (if (kind =? 26) then (if (step =? 0) then (ctor Instruction.load 0 4 0 2) else (if (step =? 1) then (ctor Instruction.store (prim multiply column stride : Nat) r2) else (ctor Instruction.refused 0))) else (if (kind =? 1) then (if (step =? 0) then (ctor Instruction.load 0 2 0 2) else (if (step =? 1) then (ctor Instruction.compute 10 1 r2 2) else (if (step =? 2) then (ctor Instruction.store (prim multiply column stride : Nat) r2) else (ctor Instruction.refused 0)))) else (if (kind =? 30) then (if (step =? 0) then (ctor Instruction.load 0 2 0 2) else (if (step =? 1) then (ctor Instruction.compute 10 30 r2 2) else (if (step =? 2) then (ctor Instruction.store (prim multiply column stride : Nat) r2) else (ctor Instruction.refused 0)))) else (if (kind =? 43) then (if (step =? 0) then (ctor Instruction.load 0 1 0 2) else (if (step =? 1) then (ctor Instruction.compute 9 3 r2 2) else (if (step =? 2) then (ctor Instruction.store (prim multiply column stride : Nat) r2) else (ctor Instruction.refused 0)))) else (if (kind =? 2) then (if (step =? 0) then (ctor Instruction.load 0 1 (2 + (prim remainder column 16 0 : Nat)) 3) else (if (step =? 1) then (ctor Instruction.compute 8 (prim remainder (prim quotient r3 (if ((prim quotient column 16 0 : Nat) =? 0) then 1 else 16) 0 : Nat) 16 0 : Nat) 8 2) else (if (step =? 2) then (arithmeticInstruction 2 r2 r0 2) else (if (step =? 3) then (ctor Instruction.store (prim multiply column stride : Nat) r2) else (ctor Instruction.refused 0))))) else (if (kind =? 3) then (if (step =? 0) then (ctor Instruction.load 0 1 (4 + (prim remainder column 16 0 : Nat)) 3) else (if (step =? 1) then (ctor Instruction.compute 8 (prim remainder (prim quotient r3 (if ((prim quotient column 16 0 : Nat) =? 0) then 1 else 16) 0 : Nat) 16 0 : Nat) 0 2) else (if (step =? 2) then (arithmeticInstruction 2 r2 r0 2) else (if (step =? 3) then (arithmeticInstruction 0 r2 r1 2) else (if (step =? 4) then (ctor Instruction.store (prim multiply column stride : Nat) r2) else (ctor Instruction.refused 0)))))) else (if (kind =? 6) then (if (step =? 0) then (ctor Instruction.load 0 1 (6 + (prim remainder column 16 0 : Nat)) 3) else (if (step =? 1) then (ctor Instruction.load 0 1 (2 + (prim quotient column 8 0 : Nat)) 4) else (if (step =? 2) then (ctor Instruction.compute 8 ((prim remainder (prim quotient r3 (if ((prim quotient column 16 0 : Nat) =? 0) then 1 else 16) 0 : Nat) 16 0 : Nat) + (prim multiply (prim remainder (prim quotient r4 (shiftDivisor (prim remainder column 8 0 : Nat)) 0 : Nat) 2 0 : Nat) 16 : Nat)) 16 2) else (if (step =? 3) then (arithmeticInstruction 2 r2 r0 2) else (if (step =? 4) then (ctor Instruction.store (prim multiply column stride : Nat) r2) else (ctor Instruction.refused 0)))))) else (if (kind =? 7) then (if (step =? 0) then (ctor Instruction.load 0 1 (8 + (prim remainder column 16 0 : Nat)) 3) else (if (step =? 1) then (ctor Instruction.load 0 1 (4 + (prim quotient column 8 0 : Nat)) 4) else (if (step =? 2) then (ctor Instruction.compute 8 ((prim remainder (prim quotient r3 (if ((prim quotient column 16 0 : Nat) =? 0) then 1 else 16) 0 : Nat) 16 0 : Nat) + (prim multiply (prim remainder (prim quotient r4 (shiftDivisor (prim remainder column 8 0 : Nat)) 0 : Nat) 2 0 : Nat) 16 : Nat)) 0 2) else (if (step =? 3) then (arithmeticInstruction 2 r2 r0 2) else (if (step =? 4) then (arithmeticInstruction 0 r2 r1 2) else (if (step =? 5) then (ctor Instruction.store (prim multiply column stride : Nat) r2) else (ctor Instruction.refused 0))))))) else (if (kind =? 8) then (if (step =? 0) then (ctor Instruction.load 0 1 (2 + column) 3) else (if (step =? 1) then (ctor Instruction.compute 8 r3 (if (r3 <? 128) then 0 else 256) 2) else (if (step =? 2) then (arithmeticInstruction 2 r2 r0 2) else (if (step =? 3) then (ctor Instruction.store (prim multiply column stride : Nat) r2) else (ctor Instruction.refused 0))))) else (if (kind =? 41) then (if (step =? 0) then (ctor Instruction.load 0 1 (2 + (prim quotient column 8 0 : Nat)) 3) else (if (step =? 1) then (ctor Instruction.compute 6 r0 0 2) else (if (step =? 2) then (ctor Instruction.store (prim multiply column stride : Nat) (if ((prim remainder (prim quotient r3 (shiftDivisor (prim remainder column 8 0 : Nat)) 0 : Nat) 2 0 : Nat) =? 1) then r0 else r2)) else (ctor Instruction.refused 0)))) else (if (kind =? 42) then (if (step =? 0) then (ctor Instruction.load 0 1 (2 + (prim quotient column 4 0 : Nat)) 3) else (if (step =? 1) then (ctor Instruction.compute 8 (prim remainder (prim quotient r3 (shiftDivisor (prim multiply 2 (prim remainder column 4 0 : Nat) : Nat)) 0 : Nat) 4 0 : Nat) 1 2) else (if (step =? 2) then (arithmeticInstruction 2 r2 r0 2) else (if (step =? 3) then (ctor Instruction.store (prim multiply column stride : Nat) r2) else (ctor Instruction.refused 0))))) else (if (kind =? 39) then (if (step =? 0) then (ctor Instruction.load 0 1 (1 + (prim remainder column 16 0 : Nat)) 3) else (if (step =? 1) then (ctor Instruction.compute 9 6 (prim remainder (prim quotient r3 (if ((prim quotient column 16 0 : Nat) =? 0) then 1 else 16) 0 : Nat) 16 0 : Nat) 2) else (if (step =? 2) then (arithmeticInstruction 2 r2 r0 2) else (if (step =? 3) then (ctor Instruction.store (prim multiply column stride : Nat) r2) else (ctor Instruction.refused 0))))) else (if (kind =? 40) then (if (step =? 0) then (ctor Instruction.load 0 1 (prim quotient column 16 0 : Nat) 3) else (if (step =? 1) then (ctor Instruction.compute 9 2 r3 2) else (if (step =? 2) then (ctor Instruction.load 0 1 ((4 + (prim multiply (prim quotient column 16 0 : Nat) 8 : Nat)) + (prim remainder column 8 0 : Nat)) 3) else (if (step =? 3) then (ctor Instruction.compute 9 6 (prim remainder (prim quotient r3 (if ((prim quotient (prim remainder column 16 0 : Nat) 8 0 : Nat) =? 0) then 1 else 16) 0 : Nat) 16 0 : Nat) 3) else (if (step =? 4) then (arithmeticInstruction 2 r3 r2 2) else (if (step =? 5) then (ctor Instruction.store (prim multiply column stride : Nat) r2) else (ctor Instruction.refused 0))))))) else (if (kind =? 10) then (if (step =? 0) then (ctor Instruction.load 0 1 (prim quotient column 16 0 : Nat) 3) else (if (step =? 1) then (ctor Instruction.compute 8 (prim remainder r3 16 0 : Nat) 0 2) else (if (step =? 2) then (arithmeticInstruction 2 r0 r2 2) else (if (step =? 3) then (ctor Instruction.compute 8 (prim quotient r3 16 0 : Nat) 0 4) else (if (step =? 4) then (arithmeticInstruction 2 r1 r4 4) else (if (step =? 5) then (ctor Instruction.load 0 1 (16 + ((prim multiply 32 (prim quotient column 128 0 : Nat) : Nat) + (prim remainder column 32 0 : Nat))) 3) else (if (step =? 6) then (ctor Instruction.compute 8 (prim remainder (prim quotient r3 (shiftDivisor (prim multiply 2 (prim quotient (prim remainder column 128 0 : Nat) 32 0 : Nat) : Nat)) 0 : Nat) 4 0 : Nat) 0 3) else (if (step =? 7) then (arithmeticInstruction 2 r2 r3 2) else (if (step =? 8) then (arithmeticInstruction 1 r2 r4 2) else (if (step =? 9) then (ctor Instruction.store (prim multiply column stride : Nat) r2) else (ctor Instruction.refused 0))))))))))) else (if (kind =? 11) then (if (step =? 0) then (ctor Instruction.load 0 1 (96 + (prim remainder (prim quotient column 16 0 : Nat) 8 0 : Nat)) 3) else (if (step =? 1) then (ctor Instruction.load 0 1 (104 + (prim remainder (prim quotient column 16 0 : Nat) 4 0 : Nat)) 4) else (if (step =? 2) then (ctor Instruction.compute 8 ((prim remainder (prim quotient r3 (if ((prim quotient (prim quotient column 16 0 : Nat) 8 0 : Nat) =? 0) then 1 else 16) 0 : Nat) 16 0 : Nat) + (prim multiply (prim remainder (prim quotient r4 (shiftDivisor (prim multiply 2 (prim quotient (prim quotient column 16 0 : Nat) 4 0 : Nat) : Nat)) 0 : Nat) 4 0 : Nat) 16 : Nat)) 32 2) else (if (step =? 3) then (arithmeticInstruction 2 r0 r2 2) else (if (step =? 4) then (ctor Instruction.load 0 1 (32 + ((prim multiply 32 (prim quotient column 128 0 : Nat) : Nat) + (prim remainder column 32 0 : Nat))) 3) else (if (step =? 5) then (ctor Instruction.load 0 1 (prim remainder column 32 0 : Nat) 4) else (if (step =? 6) then (ctor Instruction.compute 8 (prim remainder (prim quotient r3 (shiftDivisor (prim multiply 2 (prim quotient (prim remainder column 128 0 : Nat) 32 0 : Nat) : Nat)) 0 : Nat) 4 0 : Nat) (if ((prim remainder (prim quotient r4 (shiftDivisor (prim quotient column 32 0 : Nat)) 0 : Nat) 2 0 : Nat) =? 1) then 0 else 4) 3) else (if (step =? 7) then (arithmeticInstruction 2 r2 r3 2) else (if (step =? 8) then (ctor Instruction.store (prim multiply column stride : Nat) r2) else (ctor Instruction.refused 0)))))))))) else (if (kind =? 12) then (if (step =? 0) then (ctor Instruction.load 0 1 (4 + (if ((prim quotient column 32 0 : Nat) <? 4) then (prim quotient column 32 0 : Nat) else (prim subtract (prim quotient column 32 0 : Nat) 4 : Nat))) 3) else (if (step =? 1) then (ctor Instruction.load 0 1 (4 + (if ((prim quotient column 32 0 : Nat) <? 4) then ((prim quotient column 32 0 : Nat) + 4) else (prim quotient column 32 0 : Nat))) 4) else (if (step =? 2) then (ctor Instruction.load 0 1 (4 + (if ((prim quotient column 32 0 : Nat) <? 4) then (prim quotient column 32 0 : Nat) else ((prim quotient column 32 0 : Nat) + 4))) 5) else (if (step =? 3) then (ctor Instruction.compute 8 (if ((prim quotient column 32 0 : Nat) <? 4) then (prim remainder r3 64 0 : Nat) else ((prim remainder r5 16 0 : Nat) + (prim multiply (prim quotient r3 64 0 : Nat) 16 : Nat))) 0 2) else (if (step =? 4) then (arithmeticInstruction 2 r0 r2 2) else (if (step =? 5) then (ctor Instruction.compute 8 (if ((prim quotient column 32 0 : Nat) <? 4) then (prim remainder r4 64 0 : Nat) else ((prim quotient r5 16 0 : Nat) + (prim multiply (prim quotient r4 64 0 : Nat) 16 : Nat))) 0 6) else (if (step =? 6) then (arithmeticInstruction 2 r1 r6 6) else (if (step =? 7) then (ctor Instruction.load 0 1 ((16 + (prim multiply (prim quotient (prim quotient column 32 0 : Nat) 2 0 : Nat) 32 : Nat)) + (prim remainder column 32 0 : Nat)) 3) else (if (step =? 8) then (ctor Instruction.compute 8 (prim remainder (prim quotient r3 (if ((prim remainder (prim quotient column 32 0 : Nat) 2 0 : Nat) =? 0) then 1 else 16) 0 : Nat) 16 0 : Nat) 0 3) else (if (step =? 9) then (arithmeticInstruction 2 r2 r3 2) else (if (step =? 10) then (arithmeticInstruction 1 r2 r6 2) else (if (step =? 11) then (ctor Instruction.store (prim multiply column stride : Nat) r2) else (ctor Instruction.refused 0))))))))))))) else (if (kind =? 13) then (if (step =? 0) then (ctor Instruction.load 0 1 (4 + (if ((prim quotient column 32 0 : Nat) <? 4) then (prim quotient column 32 0 : Nat) else (prim subtract (prim quotient column 32 0 : Nat) 4 : Nat))) 3) else (if (step =? 1) then (ctor Instruction.load 0 1 (4 + (if ((prim quotient column 32 0 : Nat) <? 4) then ((prim quotient column 32 0 : Nat) + 4) else (prim quotient column 32 0 : Nat))) 4) else (if (step =? 2) then (ctor Instruction.load 0 1 (4 + (if ((prim quotient column 32 0 : Nat) <? 4) then (prim quotient column 32 0 : Nat) else ((prim quotient column 32 0 : Nat) + 4))) 5) else (if (step =? 3) then (ctor Instruction.compute 8 (if ((prim quotient column 32 0 : Nat) <? 4) then (prim remainder r3 64 0 : Nat) else ((prim remainder r5 16 0 : Nat) + (prim multiply (prim quotient r3 64 0 : Nat) 16 : Nat))) 0 2) else (if (step =? 4) then (arithmeticInstruction 2 r0 r2 2) else (if (step =? 5) then (ctor Instruction.compute 8 (if ((prim quotient column 32 0 : Nat) <? 4) then (prim remainder r4 64 0 : Nat) else ((prim quotient r5 16 0 : Nat) + (prim multiply (prim quotient r4 64 0 : Nat) 16 : Nat))) 0 6) else (if (step =? 6) then (arithmeticInstruction 2 r1 r6 6) else (if (step =? 7) then (ctor Instruction.load 0 1 ((48 + (prim multiply (prim quotient (prim quotient column 32 0 : Nat) 2 0 : Nat) 32 : Nat)) + (prim remainder column 32 0 : Nat)) 3) else (if (step =? 8) then (ctor Instruction.load 0 1 (16 + (prim remainder column 32 0 : Nat)) 4) else (if (step =? 9) then (ctor Instruction.compute 8 ((prim remainder (prim quotient r3 (if ((prim remainder (prim quotient column 32 0 : Nat) 2 0 : Nat) =? 0) then 1 else 16) 0 : Nat) 16 0 : Nat) + (prim multiply (prim remainder (prim quotient r4 (shiftDivisor (prim quotient column 32 0 : Nat)) 0 : Nat) 2 0 : Nat) 16 : Nat)) 0 3) else (if (step =? 10) then (arithmeticInstruction 2 r2 r3 2) else (if (step =? 11) then (arithmeticInstruction 1 r2 r6 2) else (if (step =? 12) then (ctor Instruction.store (prim multiply column stride : Nat) r2) else (ctor Instruction.refused 0)))))))))))))) else (if (kind =? 14) then (if (step =? 0) then (ctor Instruction.load 0 1 ((192 + (prim multiply 8 (prim quotient column 128 0 : Nat) : Nat)) + ((prim multiply 2 (prim quotient (prim remainder column 128 0 : Nat) 32 0 : Nat) : Nat) + (prim quotient (prim remainder column 32 0 : Nat) 16 0 : Nat))) 3) else (if (step =? 1) then (ctor Instruction.compute 8 r3 (if (r3 <? 128) then 0 else 256) 2) else (if (step =? 2) then (arithmeticInstruction 2 r0 r2 2) else (if (step =? 3) then (ctor Instruction.load 0 1 ((prim multiply 64 (prim quotient column 128 0 : Nat) : Nat) + ((prim multiply 32 (prim remainder (prim quotient (prim remainder column 128 0 : Nat) 32 0 : Nat) 2 0 : Nat) : Nat) + (prim remainder column 32 0 : Nat))) 3) else (if (step =? 4) then (ctor Instruction.load 0 1 (128 + ((prim multiply 32 (prim quotient column 128 0 : Nat) : Nat) + (prim remainder column 32 0 : Nat))) 4) else (if (step =? 5) then (ctor Instruction.compute 8 ((prim remainder (prim quotient r3 (if ((prim quotient (prim quotient (prim remainder column 128 0 : Nat) 32 0 : Nat) 2 0 : Nat) =? 0) then 1 else 16) 0 : Nat) 16 0 : Nat) + (prim multiply (prim remainder (prim quotient r4 (shiftDivisor (prim multiply 2 (prim quotient (prim remainder column 128 0 : Nat) 32 0 : Nat) : Nat)) 0 : Nat) 4 0 : Nat) 16 : Nat)) 32 3) else (if (step =? 6) then (arithmeticInstruction 2 r2 r3 2) else (if (step =? 7) then (ctor Instruction.store (prim multiply column stride : Nat) r2) else (ctor Instruction.refused 0))))))))) else (if (kind =? 34) then (if (step =? 0) then (ctor Instruction.load 0 1 (if (column <? 160) then (prim remainder column 32 0 : Nat) else (if (column <? 240) then (32 + (prim remainder (prim subtract column 160 : Nat) 16 0 : Nat)) else (48 + (prim remainder (prim subtract column 240 : Nat) 4 0 : Nat)))) 3) else (if (step =? 1) then (ctor Instruction.compute 8 (prim quotient (prim multiply (prim remainder (prim multiply r3 (if ((if (column <? 160) then (prim quotient column 32 0 : Nat) else (if (column <? 240) then (prim quotient (prim subtract column 160 : Nat) 16 0 : Nat) else (prim quotient (prim subtract column 240 : Nat) 4 0 : Nat))) =? 0) then 1 else (if ((if (column <? 160) then (prim quotient column 32 0 : Nat) else (if (column <? 240) then (prim quotient (prim subtract column 160 : Nat) 16 0 : Nat) else (prim quotient (prim subtract column 240 : Nat) 4 0 : Nat))) =? 1) then 3 else (if ((if (column <? 160) then (prim quotient column 32 0 : Nat) else (if (column <? 240) then (prim quotient (prim subtract column 160 : Nat) 16 0 : Nat) else (prim quotient (prim subtract column 240 : Nat) 4 0 : Nat))) =? 2) then 9 else (if ((if (column <? 160) then (prim quotient column 32 0 : Nat) else (if (column <? 240) then (prim quotient (prim subtract column 160 : Nat) 16 0 : Nat) else (prim quotient (prim subtract column 240 : Nat) 4 0 : Nat))) =? 3) then 27 else 81)))) : Nat) 256 0 : Nat) 3 : Nat) 256 0 : Nat) 1 2) else (if (step =? 2) then (arithmeticInstruction 2 r2 r0 2) else (if (step =? 3) then (ctor Instruction.store (prim multiply column stride : Nat) r2) else (ctor Instruction.refused 0))))) else (if (kind =? 35) then (if (step =? 0) then (ctor Instruction.load 0 1 ((prim multiply 32 (prim quotient column 128 0 : Nat) : Nat) + (prim remainder column 32 0 : Nat)) 3) else (if (step =? 1) then (ctor Instruction.compute 8 (prim remainder (prim quotient r3 (shiftDivisor (prim multiply 2 (prim quotient (prim remainder column 128 0 : Nat) 32 0 : Nat) : Nat)) 0 : Nat) 4 0 : Nat) 1 2) else (if (step =? 2) then (arithmeticInstruction 2 r2 r0 2) else (if (step =? 3) then (ctor Instruction.store (prim multiply column stride : Nat) r2) else (ctor Instruction.refused 0))))) else (if (kind =? 16) then (if (step =? 0) then (ctor Instruction.load 0 4 (6 + (prim multiply (prim quotient column 32 0 : Nat) 8 : Nat)) 5) else (if (step =? 1) then (ctor Instruction.load 0 1 (2 + ((prim multiply (prim quotient column 32 0 : Nat) 8 : Nat) + (prim quotient (prim remainder column 32 0 : Nat) 8 0 : Nat))) 4) else (if (step =? 2) then (ctor Instruction.load 1 1 (8 + (prim remainder (prim quotient r5 (shiftDivisor (prim multiply (prim quotient (prim remainder column 32 0 : Nat) 8 0 : Nat) 7 : Nat)) 0 : Nat) 128 0 : Nat)) 7) else (if (step =? 3) then (ctor Instruction.compute 8 (prim quotient r5 268435456 0 : Nat) 0 2) else (if (step =? 4) then (arithmeticInstruction 0 1056964608 r2 2) else (if (step =? 5) then (arithmeticInstruction 2 r0 r2 2) else (if (step =? 6) then (arithmeticInstruction 2 r2 1048576000 2) else (if (step =? 7) then (ctor Instruction.load 1 1 (1160 + ((prim multiply r4 8 : Nat) + (prim remainder column 8 0 : Nat))) 3) else (if (step =? 8) then (ctor Instruction.compute 8 r3 0 3) else (if (step =? 9) then (arithmeticInstruction 2 r2 r3 2) else (if (step =? 10) then (signInstruction r2 ((prim remainder (prim quotient r7 (shiftDivisor (prim remainder column 8 0 : Nat)) 0 : Nat) 2 0 : Nat) =? 1) 2) else (if (step =? 11) then (ctor Instruction.store (prim multiply column stride : Nat) r2) else (ctor Instruction.refused 0))))))))))))) else (if (kind =? 17) then (if (step =? 0) then (ctor Instruction.load 0 2 (2 + ((prim multiply (prim quotient column 32 0 : Nat) 8 : Nat) + (prim multiply (prim quotient (prim remainder column 32 0 : Nat) 8 0 : Nat) 2 : Nat))) 4) else (if (step =? 1) then (ctor Instruction.load 0 1 (66 + (prim quotient column 32 0 : Nat)) 5) else (if (step =? 2) then (ctor Instruction.load 1 1 (8 + (prim quotient r4 512 0 : Nat)) 7) else (if (step =? 3) then (ctor Instruction.compute 8 (prim remainder (prim quotient r5 (if ((prim quotient (prim quotient (prim remainder column 32 0 : Nat) 8 0 : Nat) 2 0 : Nat) =? 0) then 1 else 16) 0 : Nat) 16 0 : Nat) 0 2) else (if (step =? 4) then (arithmeticInstruction 0 1056964608 r2 2) else (if (step =? 5) then (arithmeticInstruction 2 r0 r2 2) else (if (step =? 6) then (arithmeticInstruction 2 r2 1048576000 2) else (if (step =? 7) then (ctor Instruction.load 1 1 (3208 + ((prim multiply (prim remainder r4 512 0 : Nat) 8 : Nat) + (prim remainder column 8 0 : Nat))) 3) else (if (step =? 8) then (ctor Instruction.compute 8 r3 0 3) else (if (step =? 9) then (arithmeticInstruction 2 r2 r3 2) else (if (step =? 10) then (signInstruction r2 ((prim remainder (prim quotient r7 (shiftDivisor (prim remainder column 8 0 : Nat)) 0 : Nat) 2 0 : Nat) =? 1) 2) else (if (step =? 11) then (ctor Instruction.store (prim multiply column stride : Nat) r2) else (ctor Instruction.refused 0))))))))))))) else (if (kind =? 22) then (if (step =? 0) then (ctor Instruction.load 0 1 (2 + ((prim multiply (prim quotient column 32 0 : Nat) 4 : Nat) + (prim quotient (prim remainder column 32 0 : Nat) 8 0 : Nat))) 4) else (if (step =? 1) then (ctor Instruction.load 0 1 (66 + (prim quotient column 32 0 : Nat)) 6) else (if (step =? 2) then (ctor Instruction.load 0 1 (74 + (prim quotient column 32 0 : Nat)) 5) else (if (step =? 3) then (ctor Instruction.load 0 1 (34 + ((prim multiply (prim quotient column 32 0 : Nat) 4 : Nat) + (prim quotient (prim remainder column 32 0 : Nat) 8 0 : Nat))) 7) else (if (step =? 4) then (ctor Instruction.compute 8 (prim remainder (prim quotient r5 (if ((prim quotient (prim quotient (prim remainder column 32 0 : Nat) 8 0 : Nat) 2 0 : Nat) =? 0) then 1 else 16) 0 : Nat) 16 0 : Nat) 0 2) else (if (step =? 5) then (arithmeticInstruction 0 1056964608 r2 2) else (if (step =? 6) then (arithmeticInstruction 2 r0 r2 2) else (if (step =? 7) then (arithmeticInstruction 2 r2 1048576000 2) else (if (step =? 8) then (ctor Instruction.load 1 1 (7304 + ((prim multiply (r4 + (prim multiply (prim remainder (prim quotient r6 (shiftDivisor (prim multiply 2 (prim quotient (prim remainder column 32 0 : Nat) 8 0 : Nat) : Nat)) 0 : Nat) 4 0 : Nat) 256 : Nat)) 8 : Nat) + (prim remainder column 8 0 : Nat))) 3) else (if (step =? 9) then (ctor Instruction.compute 8 r3 0 3) else (if (step =? 10) then (arithmeticInstruction 2 r2 r3 2) else (if (step =? 11) then (signInstruction r2 ((prim remainder (prim quotient r7 (shiftDivisor (prim remainder column 8 0 : Nat)) 0 : Nat) 2 0 : Nat) =? 1) 2) else (if (step =? 12) then (ctor Instruction.store (prim multiply column stride : Nat) r2) else (ctor Instruction.refused 0)))))))))))))) else (if (kind =? 18) then (if (step =? 0) then (ctor Instruction.load 0 4 (66 + (prim multiply (prim quotient column 32 0 : Nat) 4 : Nat)) 5) else (if (step =? 1) then (ctor Instruction.load 0 1 (2 + ((prim multiply (prim quotient column 32 0 : Nat) 8 : Nat) + ((prim multiply (prim quotient (prim remainder column 32 0 : Nat) 8 0 : Nat) 2 : Nat) + (prim quotient (prim remainder column 8 0 : Nat) 4 0 : Nat)))) 4) else (if (step =? 2) then (ctor Instruction.load 1 1 (8 + (prim remainder (prim quotient r5 (shiftDivisor (prim multiply (prim quotient (prim remainder column 32 0 : Nat) 8 0 : Nat) 7 : Nat)) 0 : Nat) 128 0 : Nat)) 7) else (if (step =? 3) then (ctor Instruction.compute 8 (prim quotient r5 268435456 0 : Nat) 0 2) else (if (step =? 4) then (arithmeticInstruction 0 1056964608 r2 2) else (if (step =? 5) then (arithmeticInstruction 2 r0 r2 2) else (if (step =? 6) then (arithmeticInstruction 2 r2 1056964608 2) else (if (step =? 7) then (ctor Instruction.load 1 1 (15496 + ((prim multiply r4 4 : Nat) + (prim remainder (prim remainder column 8 0 : Nat) 4 0 : Nat))) 3) else (if (step =? 8) then (ctor Instruction.compute 8 r3 0 3) else (if (step =? 9) then (arithmeticInstruction 2 r2 r3 2) else (if (step =? 10) then (signInstruction r2 ((prim remainder (prim quotient r7 (shiftDivisor (prim remainder column 8 0 : Nat)) 0 : Nat) 2 0 : Nat) =? 1) 2) else (if (step =? 11) then (ctor Instruction.store (prim multiply column stride : Nat) r2) else (ctor Instruction.refused 0))))))))))))) else (if (kind =? 21) then (if (step =? 0) then (ctor Instruction.load 0 1 (2 + ((prim multiply (prim quotient column 32 0 : Nat) 8 : Nat) + ((prim multiply (prim quotient (prim remainder column 32 0 : Nat) 8 0 : Nat) 2 : Nat) + (prim quotient (prim remainder column 8 0 : Nat) 4 0 : Nat)))) 4) else (if (step =? 1) then (ctor Instruction.load 0 1 (66 + (prim quotient column 32 0 : Nat)) 6) else (if (step =? 2) then (ctor Instruction.load 0 1 (106 + (prim quotient (prim quotient column 32 0 : Nat) 2 0 : Nat)) 5) else (if (step =? 3) then (ctor Instruction.load 0 1 (74 + ((prim multiply (prim quotient column 32 0 : Nat) 4 : Nat) + (prim quotient (prim remainder column 32 0 : Nat) 8 0 : Nat))) 7) else (if (step =? 4) then (ctor Instruction.compute 8 (1 + (prim multiply 2 (prim remainder (prim quotient r5 (if ((prim remainder (prim quotient column 32 0 : Nat) 2 0 : Nat) =? 0) then 1 else 16) 0 : Nat) 16 0 : Nat) : Nat)) 0 2) else (if (step =? 5) then (arithmeticInstruction 2 r0 r2 2) else (if (step =? 6) then (ctor Instruction.load 1 1 (16520 + ((prim multiply (r4 + (prim multiply (prim remainder (prim quotient r6 (shiftDivisor ((prim multiply 2 (prim quotient (prim remainder column 32 0 : Nat) 8 0 : Nat) : Nat) + (prim quotient (prim remainder column 8 0 : Nat) 4 0 : Nat))) 0 : Nat) 2 0 : Nat) 256 : Nat)) 4 : Nat) + (prim remainder (prim remainder column 8 0 : Nat) 4 0 : Nat))) 3) else (if (step =? 7) then (ctor Instruction.compute 8 r3 0 3) else (if (step =? 8) then (arithmeticInstruction 2 r2 r3 2) else (if (step =? 9) then (signInstruction r2 ((prim remainder (prim quotient r7 (shiftDivisor (prim remainder column 8 0 : Nat)) 0 : Nat) 2 0 : Nat) =? 1) 2) else (if (step =? 10) then (ctor Instruction.store (prim multiply column stride : Nat) r2) else (ctor Instruction.refused 0)))))))))))) else (if (kind =? 19) then (if (step =? 0) then (ctor Instruction.load 0 2 (34 + (prim multiply (prim quotient column 32 0 : Nat) 2 : Nat)) 5) else (if (step =? 1) then (ctor Instruction.load 0 1 (2 + ((prim multiply (prim quotient column 32 0 : Nat) 4 : Nat) + (prim quotient (prim remainder column 32 0 : Nat) 8 0 : Nat))) 4) else (if (step =? 2) then (ctor Instruction.compute 8 (1 + (prim multiply 2 (prim remainder (prim quotient r5 4096 0 : Nat) 8 0 : Nat) : Nat)) 0 2) else (if (step =? 3) then (arithmeticInstruction 2 r0 r2 2) else (if (step =? 4) then (ctor Instruction.load 1 1 (18600 + ((prim multiply (r4 + (prim multiply (prim remainder (prim quotient r5 (shiftDivisor (prim multiply 3 (prim quotient (prim remainder column 32 0 : Nat) 8 0 : Nat) : Nat)) 0 : Nat) 8 0 : Nat) 256 : Nat)) 8 : Nat) + (prim remainder column 8 0 : Nat))) 3) else (if (step =? 5) then (ctor Instruction.compute 8 r3 (if (r3 <? 128) then 0 else 256) 3) else (if (step =? 6) then (arithmeticInstruction 0 r3 (if ((prim remainder (prim quotient r5 32768 0 : Nat) 2 0 : Nat) =? 1) then 3187671040 else 1040187392) 3) else (if (step =? 7) then (arithmeticInstruction 2 r2 r3 2) else (if (step =? 8) then (ctor Instruction.store (prim multiply column stride : Nat) r2) else (ctor Instruction.refused 0)))))))))) else (if (kind =? 29) then (if (step =? 0) then (ctor Instruction.load 0 2 (48 + (prim multiply (prim quotient column 64 0 : Nat) 2 : Nat)) 6) else (if (step =? 1) then (ctor Instruction.load 0 1 (32 + ((prim multiply (prim quotient column 32 0 : Nat) 2 : Nat) + (prim quotient (prim quotient (prim remainder column 32 0 : Nat) 8 0 : Nat) 2 0 : Nat))) 5) else (if (step =? 2) then (ctor Instruction.load 0 1 (prim quotient column 8 0 : Nat) 4) else (if (step =? 3) then (ctor Instruction.compute 8 (1 + (prim multiply 2 (prim remainder (prim quotient r6 (shiftDivisor (prim multiply 3 (prim remainder (prim quotient column 16 0 : Nat) 4 0 : Nat) : Nat)) 0 : Nat) 8 0 : Nat) : Nat)) 0 2) else (if (step =? 4) then (arithmeticInstruction 2 r0 r2 2) else (if (step =? 5) then (ctor Instruction.load 1 1 (18600 + ((prim multiply (r4 + (prim multiply (prim remainder (prim quotient r5 (shiftDivisor (prim multiply 4 (prim remainder (prim quotient (prim remainder column 32 0 : Nat) 8 0 : Nat) 2 0 : Nat) : Nat)) 0 : Nat) 8 0 : Nat) 256 : Nat)) 8 : Nat) + (prim remainder column 8 0 : Nat))) 3) else (if (step =? 6) then (ctor Instruction.compute 8 r3 (if (r3 <? 128) then 0 else 256) 3) else (if (step =? 7) then (arithmeticInstruction 0 r3 (if ((prim remainder (prim quotient r5 (shiftDivisor ((prim multiply 4 (prim remainder (prim quotient (prim remainder column 32 0 : Nat) 8 0 : Nat) 2 0 : Nat) : Nat) + 3)) 0 : Nat) 2 0 : Nat) =? 1) then 3187671040 else 1040187392) 3) else (if (step =? 8) then (arithmeticInstruction 2 r2 r3 2) else (if (step =? 9) then (ctor Instruction.store (prim multiply column stride : Nat) r2) else (ctor Instruction.refused 0))))))))))) else (if (kind =? 20) then (if (step =? 0) then (ctor Instruction.load 0 1 (2 + (prim remainder column 16 0 : Nat)) 4) else (if (step =? 1) then (ctor Instruction.load 1 1 (18568 + ((prim multiply (prim remainder (prim quotient r4 (if ((prim quotient column 16 0 : Nat) =? 0) then 1 else 16) 0 : Nat) 16 0 : Nat) 1 : Nat) + 0)) 3) else (if (step =? 2) then (ctor Instruction.compute 8 r3 (if (r3 <? 128) then 0 else 256) 2) else (if (step =? 3) then (arithmeticInstruction 2 r0 r2 2) else (if (step =? 4) then (ctor Instruction.store (prim multiply column stride : Nat) r2) else (ctor Instruction.refused 0)))))) else (if (kind =? 23) then (if (step =? 0) then (ctor Instruction.load 0 2 2 5) else (if (step =? 1) then (ctor Instruction.load 0 1 (4 + (prim quotient (prim quotient column 32 0 : Nat) 2 0 : Nat)) 4) else (if (step =? 2) then (ctor Instruction.compute 8 ((prim remainder (prim quotient r4 (if ((prim remainder (prim quotient column 32 0 : Nat) 2 0 : Nat) =? 0) then 1 else 16) 0 : Nat) 16 0 : Nat) + (prim multiply (prim remainder (prim quotient r5 (shiftDivisor (prim multiply 2 (prim quotient column 32 0 : Nat) : Nat)) 0 : Nat) 4 0 : Nat) 16 : Nat)) 32 2) else (if (step =? 3) then (arithmeticInstruction 2 r0 r2 2) else (if (step =? 4) then (ctor Instruction.load 0 1 (8 + ((prim multiply (prim quotient column 32 0 : Nat) 16 : Nat) + (prim remainder column 16 0 : Nat))) 4) else (if (step =? 5) then (ctor Instruction.load 1 1 (18568 + ((prim multiply (prim remainder (prim quotient r4 (if ((prim quotient (prim remainder column 32 0 : Nat) 16 0 : Nat) =? 0) then 1 else 16) 0 : Nat) 16 0 : Nat) 1 : Nat) + 0)) 3) else (if (step =? 6) then (ctor Instruction.compute 8 r3 (if (r3 <? 128) then 0 else 256) 3) else (if (step =? 7) then (arithmeticInstruction 2 r2 r3 2) else (if (step =? 8) then (ctor Instruction.store (prim multiply column stride : Nat) r2) else (ctor Instruction.refused 0)))))))))) else (ctor Instruction.refused 0))))))))))))))))))))))))))))))) else (ctor Instruction.refused 1)),
+  executable: true
+}
+
+definition{
+  name: evaluate,
+  parameters: [request : Request],
+  result: Instruction,
+  body: (match request
+    | Request.inspectBlock kind sourceBytes destinationBytes stride => (inspectBounds kind sourceBytes destinationBytes stride)
+    | Request.prefixStep kind step r0 r1 r2 r3 r4 r5 r6 r7 => (prefix kind step r0 r1 r2 r3 r4 r5 r6 r7)
+    | Request.laneStep kind column stride step r0 r1 r2 r3 r4 r5 r6 r7 => (lane kind column stride step r0 r1 r2 r3 r4 r5 r6 r7)
+    | Request.arithmeticStep operation a b register => (arithmeticInstruction operation a b register)),
+  executable: true,
+  production: {effects: [overflow], targets: [rust-core]}
+}
+
+theorem{
+  name: admitType0,
+  parameters: [],
+  statement: ((inspectBounds 0 4 4 4) = (ctor Instruction.metadata 1 4 0 2)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: shortSourceType0,
+  parameters: [],
+  statement: ((inspectBounds 0 3 4 4) = (ctor Instruction.refused 1)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: admitType1,
+  parameters: [],
+  statement: ((inspectBounds 1 2 4 4) = (ctor Instruction.metadata 1 2 0 3)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: shortSourceType1,
+  parameters: [],
+  statement: ((inspectBounds 1 1 4 4) = (ctor Instruction.refused 1)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: admitType2,
+  parameters: [],
+  statement: ((inspectBounds 2 18 128 4) = (ctor Instruction.metadata 32 18 2 4)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: shortSourceType2,
+  parameters: [],
+  statement: ((inspectBounds 2 17 128 4) = (ctor Instruction.refused 1)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: admitType3,
+  parameters: [],
+  statement: ((inspectBounds 3 20 128 4) = (ctor Instruction.metadata 32 20 4 5)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: shortSourceType3,
+  parameters: [],
+  statement: ((inspectBounds 3 19 128 4) = (ctor Instruction.refused 1)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: admitType6,
+  parameters: [],
+  statement: ((inspectBounds 6 22 128 4) = (ctor Instruction.metadata 32 22 2 5)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: shortSourceType6,
+  parameters: [],
+  statement: ((inspectBounds 6 21 128 4) = (ctor Instruction.refused 1)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: admitType7,
+  parameters: [],
+  statement: ((inspectBounds 7 24 128 4) = (ctor Instruction.metadata 32 24 4 6)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: shortSourceType7,
+  parameters: [],
+  statement: ((inspectBounds 7 23 128 4) = (ctor Instruction.refused 1)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: admitType8,
+  parameters: [],
+  statement: ((inspectBounds 8 34 128 4) = (ctor Instruction.metadata 32 34 2 4)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: shortSourceType8,
+  parameters: [],
+  statement: ((inspectBounds 8 33 128 4) = (ctor Instruction.refused 1)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: admitType10,
+  parameters: [],
+  statement: ((inspectBounds 10 84 1024 4) = (ctor Instruction.metadata 256 84 4 10)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: shortSourceType10,
+  parameters: [],
+  statement: ((inspectBounds 10 83 1024 4) = (ctor Instruction.refused 1)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: admitType11,
+  parameters: [],
+  statement: ((inspectBounds 11 110 1024 4) = (ctor Instruction.metadata 256 110 2 9)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: shortSourceType11,
+  parameters: [],
+  statement: ((inspectBounds 11 109 1024 4) = (ctor Instruction.refused 1)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: admitType12,
+  parameters: [],
+  statement: ((inspectBounds 12 144 1024 4) = (ctor Instruction.metadata 256 144 4 12)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: shortSourceType12,
+  parameters: [],
+  statement: ((inspectBounds 12 143 1024 4) = (ctor Instruction.refused 1)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: admitType13,
+  parameters: [],
+  statement: ((inspectBounds 13 176 1024 4) = (ctor Instruction.metadata 256 176 4 13)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: shortSourceType13,
+  parameters: [],
+  statement: ((inspectBounds 13 175 1024 4) = (ctor Instruction.refused 1)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: admitType14,
+  parameters: [],
+  statement: ((inspectBounds 14 210 1024 4) = (ctor Instruction.metadata 256 210 2 8)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: shortSourceType14,
+  parameters: [],
+  statement: ((inspectBounds 14 209 1024 4) = (ctor Instruction.refused 1)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: admitType16,
+  parameters: [],
+  statement: ((inspectBounds 16 66 1024 4) = (ctor Instruction.metadata 256 66 2 12)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: shortSourceType16,
+  parameters: [],
+  statement: ((inspectBounds 16 65 1024 4) = (ctor Instruction.refused 1)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: admitType17,
+  parameters: [],
+  statement: ((inspectBounds 17 74 1024 4) = (ctor Instruction.metadata 256 74 2 12)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: shortSourceType17,
+  parameters: [],
+  statement: ((inspectBounds 17 73 1024 4) = (ctor Instruction.refused 1)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: admitType18,
+  parameters: [],
+  statement: ((inspectBounds 18 98 1024 4) = (ctor Instruction.metadata 256 98 2 12)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: shortSourceType18,
+  parameters: [],
+  statement: ((inspectBounds 18 97 1024 4) = (ctor Instruction.refused 1)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: admitType19,
+  parameters: [],
+  statement: ((inspectBounds 19 50 1024 4) = (ctor Instruction.metadata 256 50 2 9)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: shortSourceType19,
+  parameters: [],
+  statement: ((inspectBounds 19 49 1024 4) = (ctor Instruction.refused 1)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: admitType20,
+  parameters: [],
+  statement: ((inspectBounds 20 18 128 4) = (ctor Instruction.metadata 32 18 2 5)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: shortSourceType20,
+  parameters: [],
+  statement: ((inspectBounds 20 17 128 4) = (ctor Instruction.refused 1)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: admitType21,
+  parameters: [],
+  statement: ((inspectBounds 21 110 1024 4) = (ctor Instruction.metadata 256 110 2 11)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: shortSourceType21,
+  parameters: [],
+  statement: ((inspectBounds 21 109 1024 4) = (ctor Instruction.refused 1)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: admitType22,
+  parameters: [],
+  statement: ((inspectBounds 22 82 1024 4) = (ctor Instruction.metadata 256 82 2 13)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: shortSourceType22,
+  parameters: [],
+  statement: ((inspectBounds 22 81 1024 4) = (ctor Instruction.refused 1)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: admitType23,
+  parameters: [],
+  statement: ((inspectBounds 23 136 1024 4) = (ctor Instruction.metadata 256 136 2 9)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: shortSourceType23,
+  parameters: [],
+  statement: ((inspectBounds 23 135 1024 4) = (ctor Instruction.refused 1)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: admitType26,
+  parameters: [],
+  statement: ((inspectBounds 26 4 4 4) = (ctor Instruction.metadata 1 4 0 2)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: shortSourceType26,
+  parameters: [],
+  statement: ((inspectBounds 26 3 4 4) = (ctor Instruction.refused 1)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: admitType29,
+  parameters: [],
+  statement: ((inspectBounds 29 56 1024 4) = (ctor Instruction.metadata 256 56 3 10)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: shortSourceType29,
+  parameters: [],
+  statement: ((inspectBounds 29 55 1024 4) = (ctor Instruction.refused 1)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: admitType30,
+  parameters: [],
+  statement: ((inspectBounds 30 2 4 4) = (ctor Instruction.metadata 1 2 0 3)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: shortSourceType30,
+  parameters: [],
+  statement: ((inspectBounds 30 1 4 4) = (ctor Instruction.refused 1)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: admitType34,
+  parameters: [],
+  statement: ((inspectBounds 34 54 1024 4) = (ctor Instruction.metadata 256 54 2 4)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: shortSourceType34,
+  parameters: [],
+  statement: ((inspectBounds 34 53 1024 4) = (ctor Instruction.refused 1)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: admitType35,
+  parameters: [],
+  statement: ((inspectBounds 35 66 1024 4) = (ctor Instruction.metadata 256 66 2 4)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: shortSourceType35,
+  parameters: [],
+  statement: ((inspectBounds 35 65 1024 4) = (ctor Instruction.refused 1)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: admitType39,
+  parameters: [],
+  statement: ((inspectBounds 39 17 128 4) = (ctor Instruction.metadata 32 17 2 4)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: shortSourceType39,
+  parameters: [],
+  statement: ((inspectBounds 39 16 128 4) = (ctor Instruction.refused 1)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: admitType40,
+  parameters: [],
+  statement: ((inspectBounds 40 36 256 4) = (ctor Instruction.metadata 64 36 0 6)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: shortSourceType40,
+  parameters: [],
+  statement: ((inspectBounds 40 35 256 4) = (ctor Instruction.refused 1)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: admitType41,
+  parameters: [],
+  statement: ((inspectBounds 41 18 512 4) = (ctor Instruction.metadata 128 18 2 3)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: shortSourceType41,
+  parameters: [],
+  statement: ((inspectBounds 41 17 512 4) = (ctor Instruction.refused 1)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: admitType42,
+  parameters: [],
+  statement: ((inspectBounds 42 18 256 4) = (ctor Instruction.metadata 64 18 2 4)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: shortSourceType42,
+  parameters: [],
+  statement: ((inspectBounds 42 17 256 4) = (ctor Instruction.refused 1)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: admitType43,
+  parameters: [],
+  statement: ((inspectBounds 43 1 4 4) = (ctor Instruction.metadata 1 1 0 3)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: shortSourceType43,
+  parameters: [],
+  statement: ((inspectBounds 43 0 4 4) = (ctor Instruction.refused 1)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: unknownRefused,
+  parameters: [],
+  statement: ((inspectBounds 44 0 0 4) = (ctor Instruction.refused 0)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: intermediateQ8Refused,
+  parameters: [],
+  statement: ((inspectBounds 15 292 1024 4) = (ctor Instruction.refused 0)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: shortDestinationRefused,
+  parameters: [],
+  statement: ((inspectBounds 2 18 127 4) = (ctor Instruction.refused 1)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: zeroStrideRefused,
+  parameters: [],
+  statement: ((inspectBounds 2 18 128 0) = (ctor Instruction.refused 1)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: unalignedStrideRefused,
+  parameters: [],
+  statement: ((inspectBounds 2 18 128 3) = (ctor Instruction.refused 1)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: q1SignBit,
+  parameters: [],
+  statement: ((lane 41 7 4 2 1065353216 0 3212836864 128 0 0 0 0) = (ctor Instruction.store 28 1065353216)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: q1NegativeSignBit,
+  parameters: [],
+  statement: ((lane 41 0 4 2 1065353216 0 3212836864 128 0 0 0 0) = (ctor Instruction.store 0 3212836864)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: rawIntegerWord,
+  parameters: [],
+  statement: ((lane 26 0 12 1 0 0 4294967295 0 0 0 0 0) = (ctor Instruction.store 0 4294967295)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: invalidLaneRefused,
+  parameters: [],
+  statement: ((lane 2 32 4 0 0 0 0 0 0 0 0 0) = (ctor Instruction.refused 1)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: quietLeftPayload,
+  parameters: [],
+  statement: ((arithmeticInstruction 0 2143289345 1065353216 2) = (ctor Instruction.compute 11 2143289345 0 2)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: quietRightPayload,
+  parameters: [],
+  statement: ((arithmeticInstruction 2 1065353216 4290772994 2) = (ctor Instruction.compute 11 4290772994 0 2)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: signalLeftPayload,
+  parameters: [],
+  statement: ((arithmeticInstruction 1 2139095041 2143289346 2) = (ctor Instruction.compute 11 2143289345 0 2)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: signalRightPayload,
+  parameters: [],
+  statement: ((arithmeticInstruction 2 1065353216 4286578690 2) = (ctor Instruction.compute 11 4290772994 0 2)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: oppositeInfiniteAddition,
+  parameters: [],
+  statement: ((arithmeticInstruction 0 2139095040 4286578688 2) = (ctor Instruction.compute 11 4290772992 0 2)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: equalInfiniteSubtraction,
+  parameters: [],
+  statement: ((arithmeticInstruction 1 2139095040 2139095040 2) = (ctor Instruction.compute 11 4290772992 0 2)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: zeroInfiniteMultiplication,
+  parameters: [],
+  statement: ((arithmeticInstruction 2 2147483648 2139095040 2) = (ctor Instruction.compute 11 4290772992 0 2)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: zeroDivision,
+  parameters: [],
+  statement: ((arithmeticInstruction 3 0 0 2) = (ctor Instruction.compute 11 4290772992 0 2)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: unknownArithmetic,
+  parameters: [],
+  statement: ((arithmeticInstruction 4 0 0 2) = (ctor Instruction.refused 0)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: wideLeft,
+  parameters: [],
+  statement: ((arithmeticInstruction 0 4294967296 0 2) = (ctor Instruction.refused 0)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: wideRight,
+  parameters: [],
+  statement: ((arithmeticInstruction 0 0 4294967296 2) = (ctor Instruction.refused 0)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: invalidRegister,
+  parameters: [],
+  statement: ((arithmeticInstruction 0 0 0 8) = (ctor Instruction.refused 0)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: negativeGridSign,
+  parameters: [],
+  statement: ((signInstruction 4294959104 true 2) = (ctor Instruction.compute 6 4294959104 0 2)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: positiveGridSign,
+  parameters: [],
+  statement: ((signInstruction 4294959104 false 2) = (ctor Instruction.compute 11 4294959104 0 2)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: wideGridSignRefused,
+  parameters: [],
+  statement: ((signInstruction 4294967296 true 2) = (ctor Instruction.refused 0)),
+  proof: reflexivity{}
+}
+\end{semanticmodule}
+\end{lexlean}

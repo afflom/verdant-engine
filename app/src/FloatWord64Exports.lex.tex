@@ -1,0 +1,71 @@
+\begin{lexlean}{FloatWord64Exports}
+\useglossary{lexlean.std.bool@1.2.0}
+\useglossary{lexlean.std.nat@1.2.0}
+\importmodule{FloatWord64}
+\title{Natural number}
+\begin{semanticmodule}
+definition{
+  name: high,
+  parameters: [s : Nat, e : Nat, f : Nat],
+  result: (Option Nat),
+  body: (if (((s <=? 1) && (e <? 2048)) && (f <? 4503599627370496)) then (ctor Option.some [Nat] (((prim multiply s 2147483648 : Nat) + (prim multiply e 1048576 : Nat)) + (prim quotient f 4294967296 0 : Nat))) else (ctor Option.none [Nat])),
+  executable: true,
+  production: {effects: [overflow], targets: [rust-core]}
+}
+
+definition{
+  name: low,
+  parameters: [f : Nat],
+  result: Nat,
+  body: (prim remainder f 4294967296 0 : Nat),
+  executable: true,
+  production: {effects: [], targets: [rust-core]}
+}
+
+definition{
+  name: operation,
+  parameters: [code : Nat],
+  result: (Option FloatWord64::Operation),
+  body: (if (code =? 0) then (ctor Option.some [FloatWord64::Operation] (ctor FloatWord64::Operation.addition)) else (if (code =? 1) then (ctor Option.some [FloatWord64::Operation] (ctor FloatWord64::Operation.widening)) else (if (code =? 2) then (ctor Option.some [FloatWord64::Operation] (ctor FloatWord64::Operation.narrowing)) else (if (code =? 3) then (ctor Option.some [FloatWord64::Operation] (ctor FloatWord64::Operation.count)) else (ctor Option.none [FloatWord64::Operation]))))),
+  executable: true,
+  production: {effects: [], targets: [rust-core]}
+}
+
+definition{
+  name: packAddition,
+  parameters: [s : Nat, e : Nat, m : Nat],
+  result: (Option FloatWord64::Fields),
+  body: (if ((((s <=? 1) && ((0 <? e) && (e <=? 2047))) && (m <=? 9007199254740992)) && (((m =? 0) || (e =? 1)) || (4503599627370496 <=? m))) then (ctor Option.some [FloatWord64::Fields] (if (m =? 0) then (record FloatWord64::Fields {s := s, e := 0, f := 0}) else (let finalExponent : Nat := (e + (if (9007199254740992 <=? m) then 1 else 0)); (let finalMantissa : Nat := (if (9007199254740992 <=? m) then (prim quotient m 2 0 : Nat) else m); (if (2047 <=? finalExponent) then (record FloatWord64::Fields {s := s, e := 2047, f := 0}) else (record FloatWord64::Fields {s := s, e := (if ((finalExponent =? 1) && (finalMantissa <? 4503599627370496)) then 0 else finalExponent), f := (prim remainder finalMantissa 4503599627370496 0 : Nat)})))))) else (ctor Option.none [FloatWord64::Fields])),
+  executable: true,
+  production: {effects: [overflow], targets: [rust-core]}
+}
+
+theorem{
+  name: highRefinesSpecification,
+  parameters: [s : Nat, e : Nat, f : Nat],
+  statement: ((high s e f) = (if (((s <=? 1) && (e <? 2048)) && (f <? 4503599627370496)) then (ctor Option.some [Nat] (FloatWord64::high s e f)) else (ctor Option.none [Nat]))),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: lowRefinesSpecification,
+  parameters: [f : Nat],
+  statement: ((low f) = (FloatWord64::low f)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: operationRefinesSpecification,
+  parameters: [code : Nat],
+  statement: ((operation code) = (FloatWord64::operation code)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: packAdditionRefinesSpecification,
+  parameters: [s : Nat, e : Nat, m : Nat],
+  statement: ((packAddition s e m) = (FloatWord64::packAddition s e m)),
+  proof: reflexivity{}
+}
+\end{semanticmodule}
+\end{lexlean}

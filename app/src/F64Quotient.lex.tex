@@ -1,0 +1,383 @@
+\begin{lexlean}{F64Quotient}
+\useglossary{lexlean.std.bool@1.2.0}
+\useglossary{lexlean.std.nat@1.2.0}
+\importmodule{ScalarF64}
+\importmodule{FloatWord64}
+\title{Natural number}
+\begin{semanticmodule}
+inductive{
+  name: Route,
+  type_parameters: [],
+  parameters: [],
+  constructors: [
+    {name: legacy, fields: [Nat]},
+    {name: division, fields: []},
+    {name: count, fields: []}
+  ]
+}
+
+definition{
+  name: route,
+  parameters: [code : Nat],
+  result: (Option Route),
+  body: (if (code <? 4) then (ctor Option.some [Route] (ctor Route.legacy code)) else (if (code =? 4) then (ctor Option.some [Route] (ctor Route.division)) else (if (code =? 5) then (ctor Option.some [Route] (ctor Route.count)) else (ctor Option.none [Route])))),
+  executable: true,
+  production: {effects: [], targets: [rust-core]}
+}
+
+inductive{
+  name: DivisionClass,
+  type_parameters: [],
+  parameters: [],
+  constructors: [{name: direct, fields: [Nat]}, {name: finite, fields: [Nat]}]
+}
+
+structure{
+  name: DivisionState,
+  type_parameters: [],
+  parameters: [],
+  fields: [
+    {name: divisor, type: Nat},
+    {name: remainderWord, type: Nat},
+    {name: quotientWord, type: Nat}
+  ]
+}
+
+definition{
+  name: divisionChunk,
+  parameters: [state : DivisionState, factor : Nat],
+  result: DivisionState,
+  body: (let scaled : Nat := (prim multiply (project state remainderWord) factor : Nat); (record DivisionState {divisor := (project state divisor), remainderWord := (prim remainder scaled (project state divisor) 0 : Nat), quotientWord := ((prim multiply (project state quotientWord) factor : Nat) + (prim quotient scaled (project state divisor) 0 : Nat))})),
+  executable: true
+}
+
+definition{
+  name: normalizedOperand,
+  parameters: [bits : Nat],
+  result: ScalarF64::Norm,
+  body: (first (prim iterate_until (fun (state : ScalarF64::Norm) => (ScalarF64::normalizeStep state)) 52 (record ScalarF64::Norm {e := ((ScalarF64::effectiveExponent bits) + 4096), m := (ScalarF64::mantissa bits), minimum := 0, threshold := 4503599627370496}) : (ScalarF64::Norm * Bool))),
+  executable: true,
+  production: {effects: [overflow], targets: [rust-core]}
+}
+
+definition{
+  name: quotientSign,
+  parameters: [a : Nat, b : Nat],
+  result: Nat,
+  body: (prim remainder ((ScalarF64::sign a) + (ScalarF64::sign b)) 2 0 : Nat),
+  executable: true
+}
+
+definition{
+  name: signedInfinity,
+  parameters: [negative : Nat],
+  result: Nat,
+  body: (if (negative =? 0) then 9218868437227405312 else 18442240474082181120),
+  executable: true
+}
+
+definition{
+  name: quotientWord,
+  parameters: [leftMantissa : Nat, rightMantissa : Nat],
+  result: (Option Nat),
+  body: (if ((((4503599627370496 <=? leftMantissa) && (leftMantissa <? 9007199254740992)) && (4503599627370496 <=? rightMantissa)) && (rightMantissa <? 9007199254740992)) then (let lower : Bool := (leftMantissa <? rightMantissa); (let numerator : Nat := (prim multiply leftMantissa (if lower then 2 else 1) : Nat); (let state : DivisionState := (divisionChunk (prim iterate (fun (prior : DivisionState) => (divisionChunk prior 1024)) 5 (record DivisionState {divisor := rightMantissa, remainderWord := (prim subtract numerator rightMantissa : Nat), quotientWord := 1}) : DivisionState) 32); (ctor Option.some [Nat] ((project state quotientWord) + (if ((0 <? (project state remainderWord)) && ((prim remainder (project state quotientWord) 2 0 : Nat) =? 0)) then 1 else 0)))))) else (ctor Option.none [Nat])),
+  executable: true,
+  production: {effects: [overflow], targets: [rust-core]}
+}
+
+definition{
+  name: divisionFinish,
+  parameters: [
+    negative : Nat,
+    leftExponent : Nat,
+    leftMantissa : Nat,
+    rightExponent : Nat,
+    rightMantissa : Nat,
+    quotient : Nat
+  ],
+  result: (Option ScalarF64::WideAddition),
+  body: (if (((((((((((negative <=? 1) && (4045 <=? leftExponent)) && (leftExponent <=? 6142)) && (4045 <=? rightExponent)) && (rightExponent <=? 6142)) && (4503599627370496 <=? leftMantissa)) && (leftMantissa <? 9007199254740992)) && (4503599627370496 <=? rightMantissa)) && (rightMantissa <? 9007199254740992)) && (36028797018963968 <=? quotient)) && (quotient <? 72057594037927936)) then (let exponent : Nat := (prim subtract (prim subtract (leftExponent + 5119) rightExponent : Nat) (if (leftMantissa <? rightMantissa) then 1 else 0) : Nat); (if (6143 <=? exponent) then (ctor Option.some [ScalarF64::WideAddition] (ctor ScalarF64::WideAddition.direct (signedInfinity negative))) else (ctor Option.some [ScalarF64::WideAddition] (ctor ScalarF64::WideAddition.finite negative (if (exponent <=? 4096) then 1 else (prim subtract exponent 4096 : Nat)) (ScalarF64::shiftJam quotient (if (exponent <=? 4096) then (prim subtract 4097 exponent : Nat) else 0)))))) else (ctor Option.none [ScalarF64::WideAddition])),
+  executable: true,
+  production: {effects: [overflow], targets: [rust-core]}
+}
+
+definition{
+  name: divisionFinitePlan,
+  parameters: [a : Nat, b : Nat],
+  result: (Option ScalarF64::WideAddition),
+  body: (let left : ScalarF64::Norm := (normalizedOperand a); (let right : ScalarF64::Norm := (normalizedOperand b); (match (quotientWord (project left m) (project right m))
+    | Option.none => (ctor Option.none [ScalarF64::WideAddition])
+    | Option.some quotient => (divisionFinish (quotientSign a b) (project left e) (project left m) (project right e) (project right m) quotient)))),
+  executable: true
+}
+
+definition{
+  name: classify,
+  parameters: [a : Nat, b : Nat],
+  result: (Option DivisionClass),
+  body: (if ((a <=? 18446744073709551615) && (b <=? 18446744073709551615)) then (if ((((ScalarF64::isNaN a) || (ScalarF64::isNaN b)) || ((ScalarF64::isInfinity a) && (ScalarF64::isInfinity b))) || (((ScalarF64::magnitude a) =? 0) && ((ScalarF64::magnitude b) =? 0))) then (ctor Option.some [DivisionClass] (ctor DivisionClass.direct 9221120237041090560)) else (if ((ScalarF64::isInfinity a) || ((ScalarF64::magnitude b) =? 0)) then (ctor Option.some [DivisionClass] (ctor DivisionClass.direct (signedInfinity (quotientSign a b)))) else (if ((ScalarF64::isInfinity b) || ((ScalarF64::magnitude a) =? 0)) then (ctor Option.some [DivisionClass] (ctor DivisionClass.direct (if ((quotientSign a b) =? 0) then 0 else 9223372036854775808))) else (ctor Option.some [DivisionClass] (ctor DivisionClass.finite (quotientSign a b)))))) else (ctor Option.none [DivisionClass])),
+  executable: true,
+  production: {effects: [overflow], targets: [rust-core]}
+}
+
+definition{
+  name: divisionPlan,
+  parameters: [a : Nat, b : Nat],
+  result: (Option ScalarF64::WideAddition),
+  body: (match (classify a b)
+    | Option.none => (ctor Option.none [ScalarF64::WideAddition])
+    | Option.some decision => (match decision
+      | DivisionClass.direct bits => (ctor Option.some [ScalarF64::WideAddition] (ctor ScalarF64::WideAddition.direct bits))
+      | DivisionClass.finite negative => (divisionFinitePlan a b))),
+  executable: true
+}
+
+definition{
+  name: divide,
+  parameters: [a : Nat, b : Nat],
+  result: (Option Nat),
+  body: (match (divisionPlan a b)
+    | Option.none => (ctor Option.none [Nat])
+    | Option.some plan => (match plan
+      | ScalarF64::WideAddition.direct bits => (ctor Option.some [Nat] bits)
+      | ScalarF64::WideAddition.finite negative exponent mantissa => (ScalarF64::roundAddition negative exponent mantissa))),
+  executable: true
+}
+
+definition{
+  name: countReductionStep,
+  parameters: [state : ScalarF64::Norm],
+  result: (Option ScalarF64::Norm),
+  body: (if (72057594037927936 <=? (project state m)) then (ctor Option.some [ScalarF64::Norm] (record ScalarF64::Norm {e := ((project state e) + 1), m := (ScalarF64::shiftJam (project state m) 1), minimum := (project state minimum), threshold := (project state threshold)})) else (ctor Option.none [ScalarF64::Norm])),
+  executable: true
+}
+
+definition{
+  name: countPlan,
+  parameters: [value : Nat],
+  result: (Option ScalarF64::WideAddition),
+  body: (if (value <=? 18446744073709551615) then (if (value =? 0) then (ctor Option.some [ScalarF64::WideAddition] (ctor ScalarF64::WideAddition.direct 0)) else (let shifted : ScalarF64::Norm := (first (prim iterate_until (fun (state : ScalarF64::Norm) => (countReductionStep state)) 64 (record ScalarF64::Norm {e := 1078, m := value, minimum := 1, threshold := 36028797018963968}) : (ScalarF64::Norm * Bool))); (let normalized : ScalarF64::Norm := (first (prim iterate_until (fun (state : ScalarF64::Norm) => (ScalarF64::normalizeStep state)) 55 shifted : (ScalarF64::Norm * Bool))); (ctor Option.some [ScalarF64::WideAddition] (ctor ScalarF64::WideAddition.finite 0 (project normalized e) (project normalized m)))))) else (ctor Option.none [ScalarF64::WideAddition])),
+  executable: true,
+  production: {effects: [overflow], targets: [rust-core]}
+}
+
+definition{
+  name: fromNatural,
+  parameters: [value : Nat],
+  result: (Option Nat),
+  body: (match (countPlan value)
+    | Option.none => (ctor Option.none [Nat])
+    | Option.some plan => (match plan
+      | ScalarF64::WideAddition.direct bits => (ctor Option.some [Nat] bits)
+      | ScalarF64::WideAddition.finite negative exponent mantissa => (ScalarF64::roundAddition negative exponent mantissa))),
+  executable: true
+}
+
+theorem{
+  name: oneDividedByTwo,
+  parameters: [],
+  statement: ((divide 4607182418800017408 4611686018427387904) = (ctor Option.some [Nat] 4602678819172646912)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: negativeZeroPreserved,
+  parameters: [],
+  statement: ((divide 9223372036854775808 4611686018427387904) = (ctor Option.some [Nat] 9223372036854775808)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: invalidZeroQuotient,
+  parameters: [],
+  statement: ((divide 0 0) = (ctor Option.some [Nat] 9221120237041090560)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: oppositeInfiniteQuotient,
+  parameters: [],
+  statement: ((divide 9218868437227405312 18442240474082181120) = (ctor Option.some [Nat] 9221120237041090560)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: negativeZeroDivisor,
+  parameters: [],
+  statement: ((divide 4607182418800017408 9223372036854775808) = (ctor Option.some [Nat] 18442240474082181120)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: underflowTiesToZero,
+  parameters: [],
+  statement: ((divide 1 4611686018427387904) = (ctor Option.some [Nat] 0)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: underflowTiesToEven,
+  parameters: [],
+  statement: ((divide 3 4611686018427387904) = (ctor Option.some [Nat] 2)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: underflowCarryToNormal,
+  parameters: [],
+  statement: ((divide 9007199254740991 4611686018427387904) = (ctor Option.some [Nat] 4503599627370496)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: overflowToInfinity,
+  parameters: [],
+  statement: ((divide 9218868437227405311 4602678819172646912) = (ctor Option.some [Nat] 9218868437227405312)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: zeroCount,
+  parameters: [],
+  statement: ((fromNatural 0) = (ctor Option.some [Nat] 0)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: oneCount,
+  parameters: [],
+  statement: ((fromNatural 1) = (ctor Option.some [Nat] 4607182418800017408)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: countTieEvenDown,
+  parameters: [],
+  statement: ((fromNatural 9007199254740993) = (ctor Option.some [Nat] 4845873199050653696)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: countTieEvenUp,
+  parameters: [],
+  statement: ((fromNatural 9007199254740995) = (ctor Option.some [Nat] 4845873199050653698)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: largestCount,
+  parameters: [],
+  statement: ((fromNatural 18446744073709551615) = (ctor Option.some [Nat] 4895412794951729152)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: regressionQuotient,
+  parameters: [],
+  statement: ((divide 4715268810125344768 4617315517961601024) = (ctor Option.some [Nat] 4704460171180716851)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: regressionNarrowing,
+  parameters: [],
+  statement: ((ScalarF64::narrow 4704460171180716851) = (ctor Option.some [Nat] 1246547150)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: regressionMean,
+  parameters: [],
+  statement: ((match (divide 4715268810125344768 4617315517961601024)
+    | Option.none => (ctor Option.none [Nat])
+    | Option.some bits => (ScalarF64::narrow bits)) = (ctor Option.some [Nat] 1246547150)),
+  proof: simplify{definitions: [regressionNarrowing, regressionQuotient]},
+  axioms: [propext]
+}
+
+theorem{
+  name: unsupportedOperation,
+  parameters: [],
+  statement: ((route 6) = (ctor Option.none [Route])),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: remainderChunkBound,
+  parameters: [remaining : Nat, divisorWord : Nat],
+  statement: ((remaining < divisorWord) -> ((divisorWord <= 9007199254740992) -> ((prim multiply remaining 1024 : Nat) < 9223372036854775808))),
+  proof: linear_arithmetic{},
+  axioms: [Quot.sound, propext]
+}
+
+theorem{
+  name: quotientChunkBound,
+  parameters: [prefix : Nat, digit : Nat],
+  statement: ((prefix < 2251799813685248) -> ((digit <= 31) -> (((prim multiply prefix 32 : Nat) + digit) < 72057594037927936))),
+  proof: linear_arithmetic{},
+  axioms: [Quot.sound, propext]
+}
+
+definition{
+  name: evaluate,
+  parameters: [operation : Nat, a : Nat, b : Nat],
+  result: (Option Nat),
+  body: (match (route operation)
+    | Option.none => (ctor Option.none [Nat])
+    | Option.some decision => (match decision
+      | Route.legacy code => (ScalarF64::evaluate code a b)
+      | Route.division => (divide a b)
+      | Route.count => (fromNatural a))),
+  executable: true
+}
+
+theorem{
+  name: interfaceOperation0,
+  parameters: [a : Nat, b : Nat],
+  statement: ((evaluate 0 a b) = (ScalarF64::evaluate 0 a b)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: interfaceOperation1,
+  parameters: [a : Nat, b : Nat],
+  statement: ((evaluate 1 a b) = (ScalarF64::evaluate 1 a b)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: interfaceOperation2,
+  parameters: [a : Nat, b : Nat],
+  statement: ((evaluate 2 a b) = (ScalarF64::evaluate 2 a b)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: interfaceOperation3,
+  parameters: [a : Nat, b : Nat],
+  statement: ((evaluate 3 a b) = (ScalarF64::evaluate 3 a b)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: interfaceOperation4,
+  parameters: [a : Nat, b : Nat],
+  statement: ((evaluate 4 a b) = (divide a b)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: interfaceOperation5,
+  parameters: [a : Nat, b : Nat],
+  statement: ((evaluate 5 a b) = (fromNatural a)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: interfaceOperation6,
+  parameters: [a : Nat, b : Nat],
+  statement: ((evaluate 6 a b) = (ctor Option.none [Nat])),
+  proof: reflexivity{}
+}
+\end{semanticmodule}
+\end{lexlean}

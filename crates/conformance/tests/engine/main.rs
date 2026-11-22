@@ -18,4 +18,5 @@ pub(crate) fn wasm_abi_lock() -> std::sync::MutexGuard<'static, ()> {
 
 mod core;
 mod governance;
+mod tensor_primitives;
 mod world;

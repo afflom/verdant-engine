@@ -635,3 +635,402 @@ pub fn delassus_effective_mass_matrix(
 
     Ok(out)
 }
+
+/// Contract arbitrary row-major F32 operands into caller-owned output storage.
+///
+/// Prism admits the exact operand extents before any output write. All scalar
+/// computation, including non-finite IEEE-754 inputs, is delegated to the same
+/// uor-matmul substrate used by Verdant's specialized linear contractions.
+/// Unlike the geometry APIs, this entry point imposes no fixed inner dimension.
+///
+/// # Errors
+/// Returns `TensorComputeError::ZeroOrMismatchedExtents` for an overflowing
+/// extent product, mismatched slice length, or a rejected upstream product.
+pub fn multiply_matrix_rows_f32(
+    rows: usize,
+    inner: usize,
+    cols: usize,
+    left: &[f32],
+    right: &[f32],
+    output: &mut [f32],
+) -> Result<(), TensorComputeError> {
+    if !matches!(
+        verdant_matrix_shape::run(
+            rows as u64,
+            inner as u64,
+            cols as u64,
+            left.len() as u64,
+            right.len() as u64,
+            output.len() as u64,
+        ),
+        Ok(true)
+    ) {
+        return Err(TensorComputeError::ZeroOrMismatchedExtents {
+            detail: "matrix product extents do not match exact storage lengths".to_string(),
+        });
+    }
+    uor_matmul::slice::gemm_float::<f32, f32>(
+        rows,
+        inner,
+        cols,
+        left,
+        right,
+        output,
+        &mut [],
+        &mut [],
+    )
+    .map_err(|_| TensorComputeError::ZeroOrMismatchedExtents {
+        detail: "matrix product rejected by uor-matmul".to_string(),
+    })
+}
+
+/// Classify F32 comparison (0), compare integer U32 words (1), add U64 words (2),
+/// or preserve an encoded word (3). Comparison returns less/equal/greater (0/1/2),
+/// right NaN (3), or left NaN with a non-NaN right operand (4).
+/// Unknown operations and invalid U32 widths return None; addition overflow is typed.
+pub use verdant_encoded_word::run as evaluate_encoded_word;
+
+/// Certified GGML packed-scale and F8 word conversion with bounded input admission.
+pub use verdant_small_float::run as evaluate_small_float;
+
+/// Extract `(word * factor / divisor) % modulus`; zero denominators return None.
+/// An intermediate product exceeding U64 returns the certified SDK overflow error.
+pub use verdant_packed_field::run as extract_packed_field;
+
+/// Encode `word - zero_point` as F32 bits for word < 256 and zero_point <= 256.
+/// Oversized inputs return None; integer zero always encodes positive zero.
+pub use verdant_integer_f32::run as encode_small_integer;
+
+/// Canonical GGML CPU quantized tables reproduced from the pinned external header.
+pub const GGML_QUANTIZED_TABLES: &[u8] = include_bytes!("ggml_tables.bin");
+/// Exact table extents, byte spans, source pin and content digests.
+pub const GGML_QUANTIZED_TABLE_CATALOG: &str = include_str!("ggml_tables.json");
+
+/// Decode one block of the thirty GGML GET_ROWS CPU source formats into strided U32 words.
+/// Prism admits the full block before writes and orders every load and arithmetic step.
+/// Unsupported kinds return `InvalidKernelSpecification`; malformed extents and
+/// address overflow return `ZeroOrMismatchedExtents` without changing the destination.
+pub fn decode_storage_block(
+    kind: u64,
+    source: &[u8],
+    destination: &mut [u8],
+    stride: usize,
+) -> Result<(), TensorComputeError> {
+    use verdant_storage_block::{run, Adt0 as Request, Adt1 as Instruction};
+    let failure = || TensorComputeError::InvalidKernelSpecification {
+        kernel_name: "StorageBlock.evaluate".to_string(),
+    };
+    let layout = || TensorComputeError::ZeroOrMismatchedExtents {
+        detail: "storage block extents or stride do not admit every decoded word".to_string(),
+    };
+    let (lanes, prefix_steps, lane_steps) = match run(Request::C0(
+        kind,
+        source.len() as u64,
+        destination.len() as u64,
+        stride as u64,
+    ))
+    .map_err(|_| layout())?
+    {
+        Instruction::C0(0) => return Err(failure()),
+        Instruction::C0(_) => return Err(layout()),
+        Instruction::C1(lanes, _, prefix_steps, lane_steps) => (lanes, prefix_steps, lane_steps),
+        _ => return Err(failure()),
+    };
+    const REGISTER_WORDS: usize = crate::scalars::eight_u64() as usize;
+    const SCALAR_OPERATIONS: u64 = crate::scalars::eight_u64();
+    let mut execute =
+        |instruction, registers: &mut [u64; REGISTER_WORDS]| -> Result<(), TensorComputeError> {
+            match instruction {
+                Instruction::C2(bank, width, offset, register) => {
+                    let input = match bank {
+                        0 => source,
+                        1 => GGML_QUANTIZED_TABLES,
+                        _ => return Err(failure()),
+                    };
+                    let offset = usize::try_from(offset).map_err(|_| failure())?;
+                    let width = usize::try_from(width).map_err(|_| failure())?;
+                    let end = offset.checked_add(width).ok_or_else(failure)?;
+                    let bytes = input.get(offset..end).ok_or_else(failure)?;
+                    let mut word = [0; std::mem::size_of::<u64>()];
+                    word.get_mut(..width)
+                        .ok_or_else(failure)?
+                        .copy_from_slice(bytes);
+                    *registers
+                        .get_mut(usize::try_from(register).map_err(|_| failure())?)
+                        .ok_or_else(failure)? = u64::from_le_bytes(word);
+                }
+                Instruction::C3(operation, a, b, register) => {
+                    let word = match operation {
+                        op if op < SCALAR_OPERATIONS => {
+                            verdant_scalar_f32::run(operation, a, b).map_err(|_| failure())?
+                        }
+                        op if op == SCALAR_OPERATIONS => {
+                            encode_small_integer(a, b).map_err(|_| failure())?
+                        }
+                        op if op == SCALAR_OPERATIONS.wrapping_add(1) => {
+                            evaluate_small_float(a, b).map_err(|_| failure())?
+                        }
+                        op if op == SCALAR_OPERATIONS.wrapping_add(crate::scalars::two_u64()) => {
+                            convert_float_storage(a, 0, b).map_err(|_| failure())?
+                        }
+                        op if op
+                            == SCALAR_OPERATIONS
+                                .wrapping_add(u64::from(crate::scalars::three_u32())) =>
+                        {
+                            evaluate_encoded_word(u64::from(crate::scalars::three_u32()), a, 0)
+                                .map_err(|_| failure())?
+                        }
+                        _ => return Err(failure()),
+                    }
+                    .ok_or_else(failure)?;
+                    *registers
+                        .get_mut(usize::try_from(register).map_err(|_| failure())?)
+                        .ok_or_else(failure)? = word;
+                }
+                Instruction::C4(offset, word) => {
+                    let offset = usize::try_from(offset).map_err(|_| failure())?;
+                    let bytes = u32::try_from(word).map_err(|_| failure())?.to_le_bytes();
+                    let end = offset.checked_add(bytes.len()).ok_or_else(failure)?;
+                    destination
+                        .get_mut(offset..end)
+                        .ok_or_else(failure)?
+                        .copy_from_slice(&bytes);
+                }
+                _ => return Err(failure()),
+            }
+            Ok(())
+        };
+    let mut registers = [0; REGISTER_WORDS];
+    for step in 0..prefix_steps {
+        let [a, b, c, d, e, f, g, h] = registers;
+        execute(
+            run(Request::C1(kind, step, a, b, c, d, e, f, g, h)).map_err(|_| failure())?,
+            &mut registers,
+        )?;
+    }
+    for lane in 0..lanes {
+        for step in 0..lane_steps {
+            let [a, b, c, d, e, f, g, h] = registers;
+            execute(
+                run(Request::C2(
+                    kind,
+                    lane,
+                    stride as u64,
+                    step,
+                    a,
+                    b,
+                    c,
+                    d,
+                    e,
+                    f,
+                    g,
+                    h,
+                ))
+                .map_err(|_| failure())?,
+                &mut registers,
+            )?;
+        }
+    }
+    Ok(())
+}
+
+/// Convert encoded F32 (type 0), F16 (type 1) or BF16 (type 30) storage words.
+/// Invalid types and input widths return `None`; checked model overflow is typed.
+/// Identity conversions preserve every bit, including signaling NaNs.
+pub use verdant_float_storage::run as convert_float_storage;
+
+/// Transform encoded F32/F16/BF16 with scale-bias (0), clamp (1), or leaky ReLU (2).
+/// Parameters are raw F32 words. Invalid codes, types and widths return `None`.
+/// Composition follows the generic GGML CPU reference's unfused arithmetic.
+pub use verdant_float_transform::run as transform_float_storage;
+
+/// Evaluate encoded F64 addition (0), F32-to-F64 widening (1),
+/// F64-to-F32 narrowing (2), unsigned-count-to-F32 conversion (3),
+/// F64 division (4), or unsigned-count-to-F64 conversion (5).
+/// Unknown operations and invalid F32 input widths return None.
+///
+/// # Errors
+/// Returns InvalidKernelSpecification if a certified component or word binding overflows.
+pub fn evaluate_wide(operation: u64, a: u64, b: u64) -> Result<Option<u64>, TensorComputeError> {
+    let failure = || TensorComputeError::InvalidKernelSpecification {
+        kernel_name: "ScalarF64.evaluate".to_string(),
+    };
+    macro_rules! checked {
+        ($expression:expr) => {
+            match $expression {
+                Ok(value) => value,
+                Err(_) => return Err(failure()),
+            }
+        };
+    }
+    let Some(route) = verdant_quotient_route::run(operation) else {
+        return Ok(None);
+    };
+    let (fields, requires_rounding) = match route {
+        verdant_quotient_route::Adt0::C0(operation) => {
+            let Some(mode) = verdant_wide_mode::run(operation) else {
+                return Ok(None);
+            };
+            match mode {
+                verdant_wide_mode::Adt0::C0 => match checked!(verdant_add_f64::run(a, b)) {
+                    None => return Ok(None),
+                    Some(verdant_add_f64::Adt0::C0(bits)) => return Ok(Some(bits)),
+                    Some(verdant_add_f64::Adt0::C1(s, e, m)) => {
+                        let Some(verdant_normalize_f64::Adt0::C0(s, e, m)) =
+                            checked!(verdant_normalize_f64::run(s, e, m))
+                        else {
+                            return Ok(None);
+                        };
+                        (Some((s, e, m)), true)
+                    }
+                },
+                verdant_wide_mode::Adt0::C1 => {
+                    let Some(verdant_widen_f32::Adt0::C0(s, e, f)) =
+                        checked!(verdant_widen_f32::run(a))
+                    else {
+                        return Ok(None);
+                    };
+                    (Some((s, e, f)), false)
+                }
+                verdant_wide_mode::Adt0::C2 => {
+                    return verdant_narrow_f64::run(a).map_err(|_| failure())
+                }
+                verdant_wide_mode::Adt0::C3 => {
+                    return verdant_count_f32::run(a).map_err(|_| failure())
+                }
+            }
+        }
+        verdant_quotient_route::Adt0::C1 => match checked!(verdant_division_class::run(a, b)) {
+            None => return Ok(None),
+            Some(verdant_division_class::Adt0::C0(bits)) => return Ok(Some(bits)),
+            Some(verdant_division_class::Adt0::C1(negative)) => {
+                let verdant_division_norm::Adt0::C0(ae, am, _, _) =
+                    checked!(verdant_division_norm::run(a));
+                let verdant_division_norm::Adt0::C0(be, bm, _, _) =
+                    checked!(verdant_division_norm::run(b));
+                let Some(quotient) = checked!(verdant_quotient_f64::run(am, bm)) else {
+                    return Ok(None);
+                };
+                match checked!(verdant_division_finish::run(
+                    negative, ae, am, be, bm, quotient
+                )) {
+                    None => return Ok(None),
+                    Some(verdant_division_finish::Adt0::C0(bits)) => return Ok(Some(bits)),
+                    Some(verdant_division_finish::Adt0::C1(s, e, m)) => (Some((s, e, m)), true),
+                }
+            }
+        },
+        verdant_quotient_route::Adt0::C2 => match checked!(verdant_count_f64::run(a)) {
+            None => return Ok(None),
+            Some(verdant_count_f64::Adt0::C0(bits)) => return Ok(Some(bits)),
+            Some(verdant_count_f64::Adt0::C1(s, e, m)) => (Some((s, e, m)), true),
+        },
+    };
+    let Some((s, e, m)) = fields else {
+        return Ok(None);
+    };
+    let (s, e, f) = if requires_rounding {
+        let rounded = checked!(verdant_round_mantissa_f64::run(m));
+        let Some(verdant_pack_plan_f64::Adt0::C0(s, e, f)) =
+            checked!(verdant_pack_plan_f64::run(s, e, rounded))
+        else {
+            return Ok(None);
+        };
+        (s, e, f)
+    } else {
+        (s, e, m)
+    };
+    let Some(high) = verdant_high_f64::run(s, e, f).map_err(|_| failure())? else {
+        return Ok(None);
+    };
+    let low = verdant_low_f64::run(f);
+    let [h0, h1, h2, h3] = u32::try_from(high).map_err(|_| failure())?.to_be_bytes();
+    let [l0, l1, l2, l3] = u32::try_from(low).map_err(|_| failure())?.to_be_bytes();
+    Ok(Some(u64::from_be_bytes([h0, h1, h2, h3, l0, l1, l2, l3])))
+}
+
+/// Evaluate ABS, SGN, NEG, STEP, RELU, SQR, SQRT, HARDSIGMOID, HARDSWISH,
+/// FLOOR, CEIL, ROUND and TRUNC (codes 0..12) on encoded float storage.
+/// Source/destination pairs are F32/F32, F16/F16, BF16/BF16, F16/F32 and BF16/F32.
+/// Unsupported codes/pairs and out-of-width words return `None`.
+///
+/// # Errors
+/// Returns `InvalidKernelSpecification` if a certified component overflows.
+pub fn evaluate_float_unary(
+    operation: u64,
+    source: u64,
+    destination: u64,
+    bits: u64,
+) -> Result<Option<u64>, TensorComputeError> {
+    let failure = || TensorComputeError::InvalidKernelSpecification {
+        kernel_name: "FloatUnary.evaluate".to_string(),
+    };
+    let Some(plan) =
+        verdant_unary_plan::run(operation, source, destination, bits).map_err(|_| failure())?
+    else {
+        return Ok(None);
+    };
+    let answer = match plan {
+        verdant_unary_plan::Adt0::C0(kind, word) => {
+            verdant_scalar_f32::run(kind, word, 0).map_err(|_| failure())
+        }
+        verdant_unary_plan::Adt0::C1(kind, word) => {
+            verdant_unary_select::run(kind, word).map_err(|_| failure())
+        }
+        verdant_unary_plan::Adt0::C2(kind, word) => {
+            verdant_unary_activate::run(kind, word).map_err(|_| failure())
+        }
+        verdant_unary_plan::Adt0::C3(kind, word) => {
+            verdant_unary_round::run(kind, word).map_err(|_| failure())
+        }
+    }?;
+    match answer {
+        None => Ok(None),
+        Some(word) => convert_float_storage(0, destination, word).map_err(|_| failure()),
+    }
+}
+
+/// Evaluate an F32 operation using the certified Prism integer encoding.
+///
+/// Operation codes are add, subtract, multiply, divide, square root, square,
+/// negate and absolute value in that order, beginning at zero. Rounding is
+/// nearest-even; exceptional operands follow the scalar model. Unknown codes
+/// or a model overflow return `InvalidKernelSpecification`.
+pub fn evaluate_f32_scalar(
+    operation: u64,
+    left: f32,
+    right: f32,
+) -> Result<f32, TensorComputeError> {
+    let failure = || TensorComputeError::InvalidKernelSpecification {
+        kernel_name: "ScalarF32.evaluate".to_string(),
+    };
+    let value = verdant_scalar_f32::run(
+        operation,
+        u64::from(left.to_bits()),
+        u64::from(right.to_bits()),
+    )
+    .map_err(|_| failure())?
+    .ok_or_else(failure)?;
+    let bits = u32::try_from(value).map_err(|_| failure())?;
+    Ok(f32::from_bits(bits))
+}
+
+#[cfg(test)]
+#[path = "../tests/models/matrix_product_tests.rs"]
+pub(crate) mod matrix_product_tests;
+
+#[cfg(test)]
+#[path = "../tests/models/scalar_kernel_tests.rs"]
+mod scalar_kernel_tests;
+
+#[cfg(test)]
+#[path = "../tests/models/wide_accumulator_tests.rs"]
+mod wide_accumulator_tests;
+
+#[cfg(test)]
+#[path = "../tests/models/small_float_tests.rs"]
+mod small_float_tests;
+
+#[cfg(test)]
+#[path = "../tests/models/packed_word_tests.rs"]
+mod packed_word_tests;

@@ -1,0 +1,9 @@
+{
+  "repository": "https://github.com/ucb-bar/berkeley-softfloat-3",
+  "commit": "07ebd29db0cfb55723a79fbbffe99103ef38e305",
+  "archive_sha256": "a43936117a4b62b2c942b62144ab903f7d93c5fb313389caecbd6e790d416e34",
+  "format": "git-archive-tar-gzip",
+  "prefix": "softfloat/",
+  "specialization": "8086-SSE",
+  "rounding": "softfloat_round_near_even"
+}

@@ -1,0 +1,354 @@
+\begin{lexlean}{ScalarF32}
+\useglossary{lexlean.std.bool@1.2.0}
+\useglossary{lexlean.std.nat@1.2.0}
+\title{Natural number}
+\begin{semanticmodule}
+structure{
+  name: Norm,
+  type_parameters: [],
+  parameters: [],
+  fields: [
+    {name: e, type: Nat},
+    {name: m, type: Nat},
+    {name: minimum, type: Nat},
+    {name: threshold, type: Nat}
+  ]
+}
+
+structure{
+  name: SqrtState,
+  type_parameters: [],
+  parameters: [],
+  fields: [{name: radicand, type: Nat}, {name: root, type: Nat}]
+}
+
+inductive{
+  name: ScalarOperation,
+  type_parameters: [],
+  parameters: [],
+  constructors: [
+    {name: addCode, fields: []},
+    {name: subtractCode, fields: []},
+    {name: multiplyCode, fields: []},
+    {name: divideCode, fields: []},
+    {name: squareRootCode, fields: []},
+    {name: squareCode, fields: []},
+    {name: negateCode, fields: []},
+    {name: absoluteCode, fields: []}
+  ]
+}
+
+definition{
+  name: power,
+  parameters: [n : Nat],
+  result: Nat,
+  body: (prim iterate (fun (x : Nat) => (x + x)) n 1 : Nat),
+  executable: true
+}
+
+definition{
+  name: magnitude,
+  parameters: [a : Nat],
+  result: Nat,
+  body: (prim remainder a (power ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) 1 : Nat) + 1) : Nat) + 1) : Nat) + 1) : Nat) + 1)) 0 : Nat),
+  executable: true
+}
+
+definition{
+  name: sign,
+  parameters: [a : Nat],
+  result: Nat,
+  body: (prim quotient a (power ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) 1 : Nat) + 1) : Nat) + 1) : Nat) + 1) : Nat) + 1)) 0 : Nat),
+  executable: true
+}
+
+definition{
+  name: exponent,
+  parameters: [a : Nat],
+  result: Nat,
+  body: (prim quotient (magnitude a) (power ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) (prim multiply (1 + 1) 1 : Nat) : Nat) + 1) : Nat) + 1) : Nat) + 1)) 0 : Nat),
+  executable: true
+}
+
+definition{
+  name: fraction,
+  parameters: [a : Nat],
+  result: Nat,
+  body: (prim remainder a (power ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) (prim multiply (1 + 1) 1 : Nat) : Nat) + 1) : Nat) + 1) : Nat) + 1)) 0 : Nat),
+  executable: true
+}
+
+definition{
+  name: mantissa,
+  parameters: [a : Nat],
+  result: Nat,
+  body: ((fraction a) + (if ((exponent a) =? 0) then 0 else (power ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) (prim multiply (1 + 1) 1 : Nat) : Nat) + 1) : Nat) + 1) : Nat) + 1)))),
+  executable: true
+}
+
+definition{
+  name: encodedExponent,
+  parameters: [a : Nat],
+  result: Nat,
+  body: ((if ((exponent a) =? 0) then 1 else (exponent a)) + (prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) 1 : Nat) : Nat) : Nat) : Nat) : Nat) : Nat) : Nat) : Nat) : Nat)),
+  executable: true
+}
+
+definition{
+  name: isNaN,
+  parameters: [a : Nat],
+  result: Bool,
+  body: (((exponent a) =? ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) 1 : Nat) + 1) : Nat) + 1) : Nat) + 1) : Nat) + 1) : Nat) + 1) : Nat) + 1) : Nat) + 1)) && (0 <? (fraction a))),
+  executable: true
+}
+
+definition{
+  name: isInfinity,
+  parameters: [a : Nat],
+  result: Bool,
+  body: (((exponent a) =? ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) 1 : Nat) + 1) : Nat) + 1) : Nat) + 1) : Nat) + 1) : Nat) + 1) : Nat) + 1) : Nat) + 1)) && ((fraction a) =? 0)),
+  executable: true
+}
+
+definition{
+  name: isZero,
+  parameters: [a : Nat],
+  result: Bool,
+  body: ((magnitude a) =? 0),
+  executable: true
+}
+
+definition{
+  name: signedZero,
+  parameters: [s : Nat],
+  result: Nat,
+  body: (prim multiply s (power ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) 1 : Nat) + 1) : Nat) + 1) : Nat) + 1) : Nat) + 1)) : Nat),
+  executable: true
+}
+
+definition{
+  name: infinity,
+  parameters: [s : Nat],
+  result: Nat,
+  body: ((signedZero s) + (prim multiply ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) 1 : Nat) + 1) : Nat) + 1) : Nat) + 1) : Nat) + 1) : Nat) + 1) : Nat) + 1) : Nat) + 1) (power ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) (prim multiply (1 + 1) 1 : Nat) : Nat) + 1) : Nat) + 1) : Nat) + 1)) : Nat)),
+  executable: true
+}
+
+definition{
+  name: negate,
+  parameters: [a : Nat],
+  result: Nat,
+  body: (prim remainder (a + (power ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) 1 : Nat) + 1) : Nat) + 1) : Nat) + 1) : Nat) + 1))) (power (prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) 1 : Nat) : Nat) : Nat) : Nat) : Nat)) 0 : Nat),
+  executable: true
+}
+
+definition{
+  name: productSign,
+  parameters: [a : Nat, b : Nat],
+  result: Nat,
+  body: (prim remainder ((sign a) + (sign b)) (prim multiply (1 + 1) 1 : Nat) 0 : Nat),
+  executable: true
+}
+
+definition{
+  name: jamBit,
+  parameters: [x : Nat, sticky : Bool],
+  result: Nat,
+  body: (if (sticky && ((prim remainder x (prim multiply (1 + 1) 1 : Nat) 0 : Nat) =? 0)) then (x + 1) else x),
+  executable: true
+}
+
+definition{
+  name: shiftJam,
+  parameters: [x : Nat, distance : Nat],
+  result: Nat,
+  body: (if (distance =? 0) then x else (if ((prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) 1 : Nat) : Nat) : Nat) : Nat) : Nat) : Nat) <=? distance) then (if (x =? 0) then 0 else 1) else (let factor : Nat := (power distance); (jamBit (prim quotient x factor 0 : Nat) (0 <? (prim remainder x factor 0 : Nat)))))),
+  executable: true
+}
+
+definition{
+  name: normalizeStep,
+  parameters: [state : Norm],
+  result: (Option Norm),
+  body: (if (((0 <? (project state m)) && ((project state m) <? (project state threshold))) && ((project state minimum) <? (project state e))) then (ctor Option.some [Norm] (record Norm {e := (prim subtract (project state e) 1 : Nat), m := ((project state m) + (project state m)), minimum := (project state minimum), threshold := (project state threshold)})) else (ctor Option.none [Norm])),
+  executable: true
+}
+
+definition{
+  name: normalize,
+  parameters: [e : Nat, m : Nat, minimum : Nat, threshold : Nat],
+  result: Norm,
+  body: (first (prim iterate_until (fun (state : Norm) => (normalizeStep state)) (prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) 1 : Nat) : Nat) : Nat) : Nat) : Nat) (record Norm {e := e, m := m, minimum := minimum, threshold := threshold}) : (Norm * Bool))),
+  executable: true
+}
+
+definition{
+  name: roundBits,
+  parameters: [s : Nat, e : Nat, m : Nat],
+  result: Nat,
+  body: (let tail : Nat := (prim remainder m (prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) 1 : Nat) : Nat) : Nat) 0 : Nat); (let head : Nat := (prim quotient m (prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) 1 : Nat) : Nat) : Nat) 0 : Nat); (let increment : Bool := (((prim multiply (1 + 1) (prim multiply (1 + 1) 1 : Nat) : Nat) <? tail) || ((tail =? (prim multiply (1 + 1) (prim multiply (1 + 1) 1 : Nat) : Nat)) && ((prim remainder head (prim multiply (1 + 1) 1 : Nat) 0 : Nat) =? 1))); (let rounded : Nat := (head + (if increment then 1 else 0)); (let carry : Bool := ((prim multiply (prim multiply (1 + 1) 1 : Nat) (power ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) (prim multiply (1 + 1) 1 : Nat) : Nat) + 1) : Nat) + 1) : Nat) + 1)) : Nat) <=? rounded); (let finalMantissa : Nat := (if carry then (prim quotient rounded (prim multiply (1 + 1) 1 : Nat) 0 : Nat) else rounded); (let finalExponent : Nat := (if carry then (e + 1) else e); (let exponentBits : Nat := (if ((finalExponent =? ((prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) 1 : Nat) : Nat) : Nat) : Nat) : Nat) : Nat) : Nat) : Nat) : Nat) + 1)) && (finalMantissa <? (power ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) (prim multiply (1 + 1) 1 : Nat) : Nat) + 1) : Nat) + 1) : Nat) + 1)))) then 0 else (prim subtract finalExponent (prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) 1 : Nat) : Nat) : Nat) : Nat) : Nat) : Nat) : Nat) : Nat) : Nat) : Nat)); (if (finalMantissa =? 0) then (signedZero s) else (if (((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) (prim multiply (1 + 1) 1 : Nat) : Nat) + 1) : Nat) + 1) : Nat) + 1) : Nat) + 1) : Nat) + 1) : Nat) + 1) : Nat) + 1) : Nat) + 1) <=? finalExponent) then (infinity s) else (((signedZero s) + (prim multiply exponentBits (power ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) (prim multiply (1 + 1) 1 : Nat) : Nat) + 1) : Nat) + 1) : Nat) + 1)) : Nat)) + (prim remainder finalMantissa (power ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) (prim multiply (1 + 1) 1 : Nat) : Nat) + 1) : Nat) + 1) : Nat) + 1)) 0 : Nat)))))))))))),
+  executable: true
+}
+
+definition{
+  name: roundExtended,
+  parameters: [s : Nat, e : Nat, m : Nat],
+  result: Nat,
+  body: (if (e <? ((prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) 1 : Nat) : Nat) : Nat) : Nat) : Nat) : Nat) : Nat) : Nat) : Nat) + 1)) then (roundBits s ((prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) 1 : Nat) : Nat) : Nat) : Nat) : Nat) : Nat) : Nat) : Nat) : Nat) + 1) (shiftJam m (prim subtract ((prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) 1 : Nat) : Nat) : Nat) : Nat) : Nat) : Nat) : Nat) : Nat) : Nat) + 1) e : Nat))) else (roundBits s e m)),
+  executable: true
+}
+
+definition{
+  name: finish,
+  parameters: [s : Nat, e : Nat, m : Nat],
+  result: Nat,
+  body: (if ((power ((prim multiply (1 + 1) ((prim multiply (1 + 1) (prim multiply (1 + 1) ((prim multiply (1 + 1) 1 : Nat) + 1) : Nat) : Nat) + 1) : Nat) + 1)) <=? m) then (roundExtended s (e + 1) (shiftJam m 1)) else (let normalized : Norm := (normalize e m ((prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) 1 : Nat) : Nat) : Nat) : Nat) : Nat) : Nat) : Nat) : Nat) : Nat) + 1) (power (prim multiply (1 + 1) ((prim multiply (1 + 1) (prim multiply (1 + 1) ((prim multiply (1 + 1) 1 : Nat) + 1) : Nat) : Nat) + 1) : Nat))); (roundExtended s (project normalized e) (project normalized m)))),
+  executable: true
+}
+
+definition{
+  name: addOrdered,
+  parameters: [a : Nat, b : Nat],
+  result: Nat,
+  body: (let e : Nat := (encodedExponent a); (let left : Nat := (prim multiply (mantissa a) (prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) 1 : Nat) : Nat) : Nat) : Nat); (let right : Nat := (shiftJam (prim multiply (mantissa b) (prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) 1 : Nat) : Nat) : Nat) : Nat) (prim subtract e (encodedExponent b) : Nat)); (if ((sign a) =? (sign b)) then (finish (sign a) e (left + right)) else (if (left =? right) then 0 else (finish (sign a) e (prim subtract left right : Nat))))))),
+  executable: true
+}
+
+definition{
+  name: add,
+  parameters: [a : Nat, b : Nat],
+  result: Nat,
+  body: (if ((isNaN a) || (isNaN b)) then ((prim multiply ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) 1 : Nat) + 1) : Nat) + 1) : Nat) + 1) : Nat) + 1) : Nat) + 1) : Nat) + 1) : Nat) + 1) (power ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) (prim multiply (1 + 1) 1 : Nat) : Nat) + 1) : Nat) + 1) : Nat) + 1)) : Nat) + (power (prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) (prim multiply (1 + 1) 1 : Nat) : Nat) + 1) : Nat) + 1) : Nat))) else (if ((isInfinity a) && (isInfinity b)) then (if ((sign a) =? (sign b)) then a else ((prim multiply ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) 1 : Nat) + 1) : Nat) + 1) : Nat) + 1) : Nat) + 1) : Nat) + 1) : Nat) + 1) : Nat) + 1) (power ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) (prim multiply (1 + 1) 1 : Nat) : Nat) + 1) : Nat) + 1) : Nat) + 1)) : Nat) + (power (prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) (prim multiply (1 + 1) 1 : Nat) : Nat) + 1) : Nat) + 1) : Nat)))) else (if (isInfinity a) then a else (if (isInfinity b) then b else (if ((magnitude b) <=? (magnitude a)) then (addOrdered a b) else (addOrdered b a)))))),
+  executable: true
+}
+
+definition{
+  name: normalizedOperand,
+  parameters: [a : Nat],
+  result: Norm,
+  body: (normalize (encodedExponent a) (mantissa a) 0 (power ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) (prim multiply (1 + 1) 1 : Nat) : Nat) + 1) : Nat) + 1) : Nat) + 1))),
+  executable: true
+}
+
+definition{
+  name: multiplyFinite,
+  parameters: [a : Nat, b : Nat],
+  result: Nat,
+  body: (let an : Norm := (normalizedOperand a); (let bn : Norm := (normalizedOperand b); (finish (productSign a b) (prim subtract ((project an e) + (project bn e)) ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) 1 : Nat) : Nat) : Nat) + 1) : Nat) + 1) : Nat) + 1) : Nat) + 1) : Nat) + 1) : Nat) + 1) : Nat) + 1) : Nat) (shiftJam (prim multiply (project an m) (project bn m) : Nat) (prim multiply (1 + 1) (prim multiply (1 + 1) ((prim multiply (1 + 1) (prim multiply (1 + 1) 1 : Nat) : Nat) + 1) : Nat) : Nat))))),
+  executable: true
+}
+
+definition{
+  name: multiply,
+  parameters: [a : Nat, b : Nat],
+  result: Nat,
+  body: (if ((((isNaN a) || (isNaN b)) || ((isInfinity a) && (isZero b))) || ((isInfinity b) && (isZero a))) then ((prim multiply ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) 1 : Nat) + 1) : Nat) + 1) : Nat) + 1) : Nat) + 1) : Nat) + 1) : Nat) + 1) : Nat) + 1) (power ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) (prim multiply (1 + 1) 1 : Nat) : Nat) + 1) : Nat) + 1) : Nat) + 1)) : Nat) + (power (prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) (prim multiply (1 + 1) 1 : Nat) : Nat) + 1) : Nat) + 1) : Nat))) else (if ((isInfinity a) || (isInfinity b)) then (infinity (productSign a b)) else (if ((isZero a) || (isZero b)) then (signedZero (productSign a b)) else (multiplyFinite a b)))),
+  executable: true
+}
+
+definition{
+  name: divideFinite,
+  parameters: [a : Nat, b : Nat],
+  result: Nat,
+  body: (let an : Norm := (normalizedOperand a); (let bn : Norm := (normalizedOperand b); (let lower : Bool := ((project an m) <? (project bn m)); (let numerator : Nat := (prim multiply (project an m) (power (if lower then ((prim multiply (1 + 1) ((prim multiply (1 + 1) (prim multiply (1 + 1) ((prim multiply (1 + 1) 1 : Nat) + 1) : Nat) : Nat) + 1) : Nat) + 1) else (prim multiply (1 + 1) ((prim multiply (1 + 1) (prim multiply (1 + 1) ((prim multiply (1 + 1) 1 : Nat) + 1) : Nat) : Nat) + 1) : Nat))) : Nat); (let e : Nat := (prim subtract (prim subtract ((project an e) + ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) 1 : Nat) : Nat) : Nat) + 1) : Nat) + 1) : Nat) + 1) : Nat) + 1) : Nat) + 1) : Nat) + 1) : Nat) + 1)) (project bn e) : Nat) (if lower then 1 else 0) : Nat); (let quotient : Nat := (prim quotient numerator (project bn m) 0 : Nat); (let sticky : Bool := (0 <? (prim remainder numerator (project bn m) 0 : Nat)); (finish (productSign a b) e (jamBit quotient sticky))))))))),
+  executable: true
+}
+
+definition{
+  name: divide,
+  parameters: [a : Nat, b : Nat],
+  result: Nat,
+  body: (if ((((isNaN a) || (isNaN b)) || ((isInfinity a) && (isInfinity b))) || ((isZero a) && (isZero b))) then ((prim multiply ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) 1 : Nat) + 1) : Nat) + 1) : Nat) + 1) : Nat) + 1) : Nat) + 1) : Nat) + 1) : Nat) + 1) (power ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) (prim multiply (1 + 1) 1 : Nat) : Nat) + 1) : Nat) + 1) : Nat) + 1)) : Nat) + (power (prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) (prim multiply (1 + 1) 1 : Nat) : Nat) + 1) : Nat) + 1) : Nat))) else (if ((isInfinity a) || (isZero b)) then (infinity (productSign a b)) else (if ((isInfinity b) || (isZero a)) then (signedZero (productSign a b)) else (divideFinite a b)))),
+  executable: true
+}
+
+definition{
+  name: sqrtStep,
+  parameters: [state : SqrtState],
+  result: (Option SqrtState),
+  body: (let next : Nat := (prim quotient ((project state root) + (prim quotient (project state radicand) (project state root) 0 : Nat)) (prim multiply (1 + 1) 1 : Nat) 0 : Nat); (if (next <? (project state root)) then (ctor Option.some [SqrtState] (record SqrtState {radicand := (project state radicand), root := next})) else (ctor Option.none [SqrtState]))),
+  executable: true
+}
+
+definition{
+  name: squareRootFinite,
+  parameters: [a : Nat],
+  result: Nat,
+  body: (let an : Norm := (normalizedOperand a); (let adjusted : Nat := (if ((prim remainder (project an e) (prim multiply (1 + 1) 1 : Nat) 0 : Nat) =? 0) then (prim multiply (project an m) (prim multiply (1 + 1) 1 : Nat) : Nat) else (project an m)); (let radicand : Nat := (prim multiply adjusted (power ((prim multiply (1 + 1) (prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) 1 : Nat) + 1) : Nat) + 1) : Nat) : Nat) + 1)) : Nat); (let state : SqrtState := (first (prim iterate_until (fun (state : SqrtState) => (sqrtStep state)) (prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) 1 : Nat) : Nat) : Nat) : Nat) : Nat) (record SqrtState {radicand := radicand, root := (power ((prim multiply (1 + 1) ((prim multiply (1 + 1) (prim multiply (1 + 1) ((prim multiply (1 + 1) 1 : Nat) + 1) : Nat) : Nat) + 1) : Nat) + 1))}) : (SqrtState * Bool))); (let sticky : Bool := ((prim multiply (project state root) (project state root) : Nat) <? radicand); (roundExtended 0 (prim quotient ((project an e) + ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) 1 : Nat) : Nat) : Nat) + 1) : Nat) + 1) : Nat) + 1) : Nat) + 1) : Nat) + 1) : Nat) + 1) : Nat) + 1)) (prim multiply (1 + 1) 1 : Nat) 0 : Nat) (jamBit (project state root) sticky))))))),
+  executable: true
+}
+
+definition{
+  name: squareRootExceptional,
+  parameters: [a : Nat],
+  result: (Option Nat),
+  body: (if ((isNaN a) || (((sign a) =? 1) && (0 <? (magnitude a)))) then (ctor Option.some [Nat] ((prim multiply ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) 1 : Nat) + 1) : Nat) + 1) : Nat) + 1) : Nat) + 1) : Nat) + 1) : Nat) + 1) : Nat) + 1) (power ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) (prim multiply (1 + 1) 1 : Nat) : Nat) + 1) : Nat) + 1) : Nat) + 1)) : Nat) + (power (prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) (prim multiply (1 + 1) 1 : Nat) : Nat) + 1) : Nat) + 1) : Nat)))) else (if ((isZero a) || (isInfinity a)) then (ctor Option.some [Nat] a) else (ctor Option.none [Nat]))),
+  executable: true
+}
+
+definition{
+  name: squareRoot,
+  parameters: [a : Nat],
+  result: Nat,
+  body: (match (squareRootExceptional a)
+    | Option.some value => value
+    | Option.none => (squareRootFinite a)),
+  executable: true
+}
+
+definition{
+  name: decodeOperation,
+  parameters: [operation : Nat, a : Nat, b : Nat],
+  result: (Option ScalarOperation),
+  body: (if (((operation <? (prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) 1 : Nat) : Nat) : Nat)) && (a <? (power (prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) 1 : Nat) : Nat) : Nat) : Nat) : Nat)))) && (b <? (power (prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) 1 : Nat) : Nat) : Nat) : Nat) : Nat)))) then (ctor Option.some [ScalarOperation] (if (operation =? 0) then (ctor ScalarOperation.addCode) else (if (operation =? 1) then (ctor ScalarOperation.subtractCode) else (if (operation =? (prim multiply (1 + 1) 1 : Nat)) then (ctor ScalarOperation.multiplyCode) else (if (operation =? ((prim multiply (1 + 1) 1 : Nat) + 1)) then (ctor ScalarOperation.divideCode) else (if (operation =? (prim multiply (1 + 1) (prim multiply (1 + 1) 1 : Nat) : Nat)) then (ctor ScalarOperation.squareRootCode) else (if (operation =? ((prim multiply (1 + 1) (prim multiply (1 + 1) 1 : Nat) : Nat) + 1)) then (ctor ScalarOperation.squareCode) else (if (operation =? (prim multiply (1 + 1) ((prim multiply (1 + 1) 1 : Nat) + 1) : Nat)) then (ctor ScalarOperation.negateCode) else (ctor ScalarOperation.absoluteCode))))))))) else (ctor Option.none [ScalarOperation])),
+  executable: true
+}
+
+definition{
+  name: evaluate,
+  parameters: [operation : Nat, a : Nat, b : Nat],
+  result: (Option Nat),
+  body: (match (decodeOperation operation a b)
+    | Option.none => (ctor Option.none [Nat])
+    | Option.some kind => (ctor Option.some [Nat] (match kind
+      | ScalarOperation.addCode => (add a b)
+      | ScalarOperation.subtractCode => (add a (negate b))
+      | ScalarOperation.multiplyCode => (multiply a b)
+      | ScalarOperation.divideCode => (divide a b)
+      | ScalarOperation.squareRootCode => (squareRoot a)
+      | ScalarOperation.squareCode => (multiply a a)
+      | ScalarOperation.negateCode => (negate a)
+      | ScalarOperation.absoluteCode => (magnitude a)))),
+  executable: true,
+  production: {effects: [overflow], targets: [rust-core]}
+}
+
+theorem{
+  name: onePlusOne,
+  parameters: [],
+  statement: ((evaluate 0 (prim multiply ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) 1 : Nat) + 1) : Nat) + 1) : Nat) + 1) : Nat) + 1) : Nat) + 1) : Nat) + 1) (power ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) (prim multiply (1 + 1) 1 : Nat) : Nat) + 1) : Nat) + 1) : Nat) + 1)) : Nat) (prim multiply ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) 1 : Nat) + 1) : Nat) + 1) : Nat) + 1) : Nat) + 1) : Nat) + 1) : Nat) + 1) (power ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) (prim multiply (1 + 1) 1 : Nat) : Nat) + 1) : Nat) + 1) : Nat) + 1)) : Nat)) = (ctor Option.some [Nat] (prim multiply (prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) 1 : Nat) : Nat) : Nat) : Nat) : Nat) : Nat) : Nat) (power ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) (prim multiply (1 + 1) 1 : Nat) : Nat) + 1) : Nat) + 1) : Nat) + 1)) : Nat))),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: oneDividedByTwo,
+  parameters: [],
+  statement: ((evaluate ((prim multiply (1 + 1) 1 : Nat) + 1) (prim multiply ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) 1 : Nat) + 1) : Nat) + 1) : Nat) + 1) : Nat) + 1) : Nat) + 1) : Nat) + 1) (power ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) (prim multiply (1 + 1) 1 : Nat) : Nat) + 1) : Nat) + 1) : Nat) + 1)) : Nat) (prim multiply (prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) 1 : Nat) : Nat) : Nat) : Nat) : Nat) : Nat) : Nat) (power ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) (prim multiply (1 + 1) 1 : Nat) : Nat) + 1) : Nat) + 1) : Nat) + 1)) : Nat)) = (ctor Option.some [Nat] (prim multiply (prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) 1 : Nat) + 1) : Nat) + 1) : Nat) + 1) : Nat) + 1) : Nat) + 1) : Nat) (power ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) (prim multiply (1 + 1) 1 : Nat) : Nat) + 1) : Nat) + 1) : Nat) + 1)) : Nat))),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: squareRootFour,
+  parameters: [],
+  statement: ((evaluate (prim multiply (1 + 1) (prim multiply (1 + 1) 1 : Nat) : Nat) (prim multiply ((prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) 1 : Nat) : Nat) : Nat) : Nat) : Nat) : Nat) : Nat) + 1) (power ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) (prim multiply (1 + 1) 1 : Nat) : Nat) + 1) : Nat) + 1) : Nat) + 1)) : Nat) 0) = (ctor Option.some [Nat] (prim multiply (prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) (prim multiply (1 + 1) 1 : Nat) : Nat) : Nat) : Nat) : Nat) : Nat) : Nat) (power ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) (prim multiply (1 + 1) 1 : Nat) : Nat) + 1) : Nat) + 1) : Nat) + 1)) : Nat))),
+  proof: decide{}
+}
+
+theorem{
+  name: negativeZeroTimesOne,
+  parameters: [],
+  statement: ((evaluate (prim multiply (1 + 1) 1 : Nat) (power ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) 1 : Nat) + 1) : Nat) + 1) : Nat) + 1) : Nat) + 1)) (prim multiply ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) 1 : Nat) + 1) : Nat) + 1) : Nat) + 1) : Nat) + 1) : Nat) + 1) : Nat) + 1) (power ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) (prim multiply (1 + 1) 1 : Nat) : Nat) + 1) : Nat) + 1) : Nat) + 1)) : Nat)) = (ctor Option.some [Nat] (power ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) ((prim multiply (1 + 1) 1 : Nat) + 1) : Nat) + 1) : Nat) + 1) : Nat) + 1)))),
+  proof: reflexivity{}
+}
+\end{semanticmodule}
+\end{lexlean}

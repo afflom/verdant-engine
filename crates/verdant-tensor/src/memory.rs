@@ -667,3 +667,70 @@ mod tests {
         assert!(rep.avoided_f32_bytes > 0);
     }
 }
+
+/// Copy a storage block without interpreting its element encoding.
+///
+/// Prism admits equal byte lengths and treats empty blocks as no-ops.
+/// Mismatched lengths return `ZeroOrMismatchedExtents` before any mutation.
+/// Rust slice borrowing supplies the readable/writable, nonaliasing regions.
+pub fn copy_storage_block(source: &[u8], destination: &mut [u8]) -> Result<(), TensorComputeError> {
+    match verdant_storage_transfer::run(source.len() as u64, destination.len() as u64) {
+        verdant_storage_transfer::Adt0::C0 => Err(TensorComputeError::ZeroOrMismatchedExtents {
+            detail: "storage block lengths differ".to_string(),
+        }),
+        verdant_storage_transfer::Adt0::C1 => Ok(()),
+        verdant_storage_transfer::Adt0::C2(bytes) => {
+            let bytes = bytes as usize;
+            destination[..bytes].copy_from_slice(&source[..bytes]);
+            Ok(())
+        }
+    }
+}
+
+#[cfg(test)]
+mod storage_transfer_tests {
+    #[test]
+    fn storage_transfer_vtk_03() {
+        use std::fmt::Write as _;
+        let mut requests = String::new();
+        let mut actual = Vec::new();
+        let mut cases = 0;
+        for length in 0..=512 {
+            for pattern in 0..3 {
+                let input: Vec<u8> = (0..length)
+                    .map(|i| match pattern {
+                        0 => 0,
+                        1 => 255,
+                        _ => (i * 37 + 17) as u8,
+                    })
+                    .collect();
+                let mut output = vec![0xA5; length + 2];
+                super::copy_storage_block(&input, &mut output[1..length + 1]).unwrap();
+                assert_eq!(output[0], 0xA5);
+                assert_eq!(output[length + 1], 0xA5);
+                writeln!(requests, "{length}").unwrap();
+                for value in input {
+                    writeln!(requests, "{value}").unwrap();
+                }
+                actual.extend(output[1..length + 1].iter().map(|&byte| u32::from(byte)));
+                cases += 1;
+            }
+        }
+        assert_eq!(cases, 1539);
+        let expected = crate::linear::matrix_product_tests::query_oracle("bytes", requests);
+        assert_eq!(
+            actual.len(),
+            expected.len(),
+            "GGML byte oracle omitted output"
+        );
+        for (index, (actual, expected)) in actual.into_iter().zip(expected).enumerate() {
+            assert_eq!(actual, expected, "GGML storage byte {index}");
+        }
+        let mut destination = [0xA5];
+        assert!(matches!(
+            super::copy_storage_block(&[], &mut destination),
+            Err(crate::TensorComputeError::ZeroOrMismatchedExtents { .. })
+        ));
+        assert_eq!(destination, [0xA5]);
+    }
+}

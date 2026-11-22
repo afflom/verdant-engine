@@ -1,0 +1,791 @@
+const GGML_VECTOR_DRIVER: &str = r#"
+#include "vec.h"
+#include "ops.h"
+#include "unary-ops.h"
+#include "ggml-cpu-impl.h"
+#include "ggml-cpu.h"
+#include "ggml-quants.h"
+#include "ops.h"
+#include <cstdio>
+#include <cstdint>
+#include <cstring>
+#include <vector>
+#include <type_traits>
+#define GGML_COMMON_IMPL_CPP
+#include "ggml-common.h"
+int main(int argc, char **argv) {
+  if (argc != 2) return 1;
+  ggml_cpu_init();
+  if (!std::strcmp(argv[1], "storage-block")) {
+    std::printf("1196705586\n");
+    for (unsigned kind=0; kind<GGML_TYPE_COUNT; ++kind) {
+      const auto type=(ggml_type)kind;
+      if (type!=GGML_TYPE_F32 && type!=GGML_TYPE_I32 && !ggml_get_type_traits(type)->to_float) continue;
+      ggml_init_params init={1024*1024,nullptr,false};
+      ggml_context *ctx=ggml_init(init); if (!ctx) return 8;
+      const auto lanes=ggml_blck_size(type);
+      auto *source=ggml_new_tensor_2d(ctx,type,lanes,1);
+      auto *indices=ggml_new_tensor_1d(ctx,GGML_TYPE_I32,1);
+      auto *result=ggml_get_rows(ctx,source,indices);
+      *(int32_t *)indices->data=0;
+      ggml_compute_params params={}; params.nth=1;
+      const uint16_t exceptional[]={0x7c01,0xfc02,0x7e03,0xfe04,0x7c00,0xfc00,0,0x8000,0x3c00,0xbc00,0x0001,0x8001,0x7bff,0xfbff,0x3555,0xb555};
+      for (unsigned pattern=0; pattern<25; ++pattern) {
+        const size_t bytes=ggml_nbytes(source);
+        auto *input=(uint8_t *)source->data;
+        for (size_t j=0; j<bytes; ++j) {
+          input[j]=pattern==0?0:pattern==1?255:pattern==2?165:
+              (uint8_t)((j*(2*pattern+1)+kind*11+pattern*53)^((j+pattern)<<3));
+          if (pattern>=9) input[j]=(uint8_t)(exceptional[(pattern-9+j/2)%16]>>(8*(j%2)));
+        }
+        ggml_compute_forward_get_rows(&params,result);
+        std::printf("%u\n%u\n%u\n%u\n",kind+1,(unsigned)lanes,(unsigned)bytes,pattern);
+        for (size_t j=0; j<bytes; ++j) std::printf("%u\n",(unsigned)input[j]);
+        for (int64_t lane=0; lane<lanes; ++lane) {
+          uint32_t word; std::memcpy(&word,(const uint8_t *)result->data+4*lane,4);
+          std::printf("%u\n",word);
+        }
+      }
+      ggml_free(ctx);
+    }
+    std::printf("0\n"); return 0;
+  }
+  if (!std::strcmp(argv[1], "quantized-tables")) {
+std::printf("1196705585\n");
+auto emit=[](const char *label,const auto &values) {
+  const unsigned length=std::strlen(label);
+  std::printf("%u\n",length);for(unsigned i=0;i<length;i++)std::printf("%u\n",(unsigned)(uint8_t)label[i]);
+  std::printf("%u\n%u\n",(unsigned)sizeof(values[0]),(unsigned)(sizeof(values)/sizeof(values[0])));
+  for(auto value:values){
+    using U=std::make_unsigned_t<decltype(value)>;
+    const uint64_t word=(U)value;
+    for(unsigned byte=0;byte<sizeof(value);byte++)std::printf("%u\n",(unsigned)((word>>(8*byte))&255));
+  }
+};
+#include "ggml-table-exports.inc"
+std::printf("0\n");return 0;
+  }
+  if (!std::strcmp(argv[1], "integer-coefficient")) {
+unsigned word, zero_point;
+while(std::scanf("%u %u",&word,&zero_point)==2) {
+  block_q4_1 block={};float result[QK4_1];
+  const ggml_half d=GGML_CPU_FP32_TO_FP16((float)word);
+  const ggml_half m=GGML_CPU_FP32_TO_FP16(-(float)zero_point);
+  std::memcpy(&block,&d,sizeof(d));std::memcpy((char *)&block+sizeof(d),&m,sizeof(m));
+  std::memset(block.qs,0x11,sizeof(block.qs));
+  ggml_get_type_traits(GGML_TYPE_Q4_1)->to_float(&block,result,QK4_1);
+  uint32_t bits;std::memcpy(&bits,result,4);std::printf("%u\n",bits);
+}
+return std::ferror(stdin)?3:0;
+  }
+  if (!std::strcmp(argv[1], "packed-field")) {
+unsigned type, low, high;
+while(std::scanf("%u %u %u",&type,&low,&high)==3) {
+  const ggml_half d=GGML_CPU_FP32_TO_FP16(1.0f);
+  auto emit=[&](const auto &block) {
+    std::vector<float> result(ggml_blck_size((ggml_type)type));
+    const auto *traits=ggml_get_type_traits((ggml_type)type);if(!traits->to_float)return false;
+    traits->to_float(&block,result.data(),result.size());
+    for(float value:result){uint32_t bits;std::memcpy(&bits,&value,4);std::printf("%u\n",bits);}return true;
+  };
+  switch(type) {
+    case GGML_TYPE_Q1_0: {block_q1_0 b={};b.d=d;std::memset(b.qs,low,sizeof(b.qs));if(!emit(b))return 7;break;}
+    case GGML_TYPE_Q2_0: {block_q2_0 b={};b.d=d;std::memset(b.qs,low,sizeof(b.qs));if(!emit(b))return 7;break;}
+    case GGML_TYPE_Q4_0: {block_q4_0 b={};b.d=d;std::memset(b.qs,low,sizeof(b.qs));if(!emit(b))return 7;break;}
+    case GGML_TYPE_Q4_1: {block_q4_1 b={};std::memcpy(&b,&d,2);std::memset(b.qs,low,sizeof(b.qs));if(!emit(b))return 7;break;}
+    case GGML_TYPE_Q5_0: {block_q5_0 b={};b.d=d;std::memcpy(b.qh,&high,4);std::memset(b.qs,low,sizeof(b.qs));if(!emit(b))return 7;break;}
+    case GGML_TYPE_Q5_1: {block_q5_1 b={};std::memcpy(&b,&d,2);std::memcpy(b.qh,&high,4);std::memset(b.qs,low,sizeof(b.qs));if(!emit(b))return 7;break;}
+    case GGML_TYPE_Q8_0: {block_q8_0 b={};b.d=d;std::memset(b.qs,low,sizeof(b.qs));if(!emit(b))return 7;break;}
+    case GGML_TYPE_TQ1_0: {block_tq1_0 b={};b.d=d;std::memset(b.qs,low,sizeof(b.qs));std::memcpy(b.qh,&high,4);if(!emit(b))return 7;break;}
+    case GGML_TYPE_TQ2_0: {block_tq2_0 b={};b.d=d;std::memset(b.qs,low,sizeof(b.qs));if(!emit(b))return 7;break;}
+    default:return 6;
+  }
+}
+return std::ferror(stdin)?3:0;
+  }
+  if (!std::strcmp(argv[1], "small-float")) {
+unsigned operation; uint32_t bits;
+while(std::scanf("%u %u",&operation,&bits)==2) {
+  float value, result; uint32_t word;
+  std::memcpy(&value,&bits,4);
+  switch(operation) {
+    case 0: result=ggml_e8m0_to_fp32((uint8_t)bits); break;
+    case 1: result=ggml_e8m0_to_fp32_half((uint8_t)bits); break;
+    case 2: result=ggml_ue4m3_to_fp32((uint8_t)bits); break;
+    case 3: result=ggml_f8_e4m3_to_fp32((uint8_t)bits); break;
+    case 4: word=ggml_fp32_to_f8_e4m3(value); break;
+    case 5: word=ggml_fp32_to_ue4m3(value); break;
+    case 6: result=(float)kvalues_fp4[bits]; break;
+    default: return 6;
+  }
+  if(operation<4 || operation==6)std::memcpy(&word,&result,4);
+  std::printf("%u\n",word);
+}
+return std::ferror(stdin)?3:0;
+  }
+  if (!std::strcmp(argv[1], "unary")) {
+void (*functions[])(const ggml_compute_params *,ggml_tensor *)={ggml_compute_forward_abs,ggml_compute_forward_sgn,ggml_compute_forward_neg,ggml_compute_forward_step,ggml_compute_forward_relu,ggml_compute_forward_sqr,ggml_compute_forward_sqrt,ggml_compute_forward_hardsigmoid,ggml_compute_forward_hardswish,ggml_compute_forward_floor,ggml_compute_forward_ceil,ggml_compute_forward_round,ggml_compute_forward_trunc};
+unsigned operation, source_type, destination_type;uint32_t bits;
+while(std::scanf("%u %u %u %u",&operation,&source_type,&destination_type,&bits)==4) {
+  if(operation>=13)return 6;
+  uint32_t result=0;uint16_t input=(uint16_t)bits,narrow_result=0;ggml_tensor source={},destination={};
+  source.type=(ggml_type)source_type;source.data=source_type==0?(void *)&bits:&input;
+  for(int axis=0;axis<4;axis++) {source.ne[axis]=1;source.nb[axis]=source_type==0?4:2;}
+  destination=source;destination.type=(ggml_type)destination_type;destination.data=destination_type==0?(void *)&result:&narrow_result;destination.src[0]=&source;
+  for(int axis=0;axis<4;axis++)destination.nb[axis]=destination_type==0?4:2;
+  ggml_compute_params parameters={};parameters.nth=1;functions[operation](&parameters,&destination);
+  if(destination_type!=0)result=narrow_result;
+  std::printf("%u\n",result);
+}
+return std::ferror(stdin)?3:0;
+  }
+  if (!std::strcmp(argv[1], "transform")) {
+unsigned operation, storage; uint32_t bits, a, b;
+while(std::scanf("%u %u %u %u %u",&operation,&storage,&bits,&a,&b)==5) {
+  uint32_t result=0; uint16_t input=(uint16_t)bits, narrow_result=0; ggml_tensor source={}, destination={};
+  source.type=(ggml_type)storage; source.data=storage==0?(void *)&bits:&input;
+  for(int axis=0;axis<4;axis++) {source.ne[axis]=1;source.nb[axis]=storage==0?4:2;}
+  destination=source;destination.data=storage==0?(void *)&result:&narrow_result;destination.src[0]=&source;
+  std::memcpy(destination.op_params,&a,4);std::memcpy((char *)destination.op_params+4,&b,4);
+  ggml_compute_params parameters={};parameters.nth=1;
+  if(operation==0)ggml_compute_forward_scale(&parameters,&destination);
+  else if(operation==1)ggml_compute_forward_clamp(&parameters,&destination);
+  else if(operation==2)ggml_compute_forward_leaky_relu(&parameters,&destination);
+  else return 6;
+  if(storage!=0) result=narrow_result;
+  std::printf("%u\n",result);
+}
+return std::ferror(stdin)?3:0;
+  }
+  if (!std::strcmp(argv[1], "conversion")) {
+unsigned source, destination; uint32_t bits;
+while (std::scanf("%u %u %u", &source, &destination, &bits)==3) {
+  uint32_t result=bits;
+  if (source!=destination) {
+    float value;
+    if(source==0) std::memcpy(&value,&bits,4);
+    else if(source==1) value=GGML_COMPUTE_FP16_TO_FP32((ggml_fp16_t)bits);
+    else if(source==30) value=GGML_BF16_TO_FP32(ggml_bf16_t{(uint16_t)bits});
+    else return 4;
+    if(destination==0) std::memcpy(&result,&value,4);
+    else if(destination==1) result=GGML_CPU_FP32_TO_FP16(value);
+    else if(destination==30) result=GGML_FP32_TO_BF16(value).bits;
+    else return 5;
+  }
+  std::printf("%u\n",result);
+}
+return std::ferror(stdin)?3:0;
+  }
+  if (!std::strcmp(argv[1], "scalar")) {
+unsigned operation; uint32_t left_bits, right_bits;
+while (std::scanf("%u %u %u", &operation, &left_bits, &right_bits) == 3) {
+  float left, right, result;
+  std::memcpy(&left, &left_bits, sizeof(left)); std::memcpy(&right, &right_bits, sizeof(right));
+  switch (operation) {
+    case 0: ggml_vec_add_f32(1, &result, &left, &right); break;
+    case 1: ggml_vec_sub_f32(1, &result, &left, &right); break;
+    case 2: ggml_vec_mul_f32(1, &result, &left, &right); break;
+    case 3: ggml_vec_div_f32(1, &result, &left, &right); break;
+    case 4: ggml_vec_sqrt_f32(1, &result, &left); break;
+    case 5: ggml_vec_sqr_f32(1, &result, &left); break;
+    case 6: ggml_vec_neg_f32(1, &result, &left); break;
+    case 7: ggml_vec_abs_f32(1, &result, &left); break;
+    default: return 2;
+  }
+  uint32_t bits; std::memcpy(&bits, &result, sizeof(bits)); std::printf("%u\n", bits);
+}
+return std::ferror(stdin) ? 3 : 0;
+  }
+  if (!std::strcmp(argv[1], "bytes")) {
+unsigned size;
+while (std::scanf("%u", &size)==1) {
+  std::vector<float> source((size+3)/4), destination(source.size());
+  for(unsigned i=0;i<size;i++) { unsigned value; if(std::scanf("%u", &value)!=1) return 2; ((unsigned char *)source.data())[i]=(unsigned char)value; }
+  ggml_vec_cpy_f32((int)source.size(), destination.data(), source.data());
+  for(unsigned i=0;i<size;i++) std::printf("%u\n",(unsigned)((unsigned char *)destination.data())[i]);
+}
+return std::ferror(stdin)?3:0;
+  }
+  if (std::strcmp(argv[1], "dot")) return 2;
+  unsigned count;
+  while (std::scanf("%u", &count) == 1) {
+std::vector<float> left(count), right(count);
+for (auto *operand : {&left, &right}) {
+  for (float &value : *operand) {
+    uint32_t bits;
+    if (std::scanf("%u", &bits) != 1) return 2;
+    std::memcpy(&value, &bits, sizeof(value));
+  }
+}
+float result;
+ggml_vec_dot_f32((int)count, &result, 0, left.data(), 0, right.data(), 0, 1);
+uint32_t bits;
+std::memcpy(&bits, &result, sizeof(bits));
+std::printf("%u\n", bits);
+  }
+  return std::ferror(stdin) ? 3 : 0;
+}
+"#;
+
+pub(crate) fn query_oracle(mode: &str, requests: String) -> Vec<u32> {
+    use sha2::{Digest, Sha256};
+    use std::io::Write as _;
+    use std::process::{Command, Stdio};
+    static PROGRAM: std::sync::OnceLock<std::path::PathBuf> = std::sync::OnceLock::new();
+    let program = PROGRAM.get_or_init(|| {
+        let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .parent()
+            .unwrap()
+            .parent()
+            .unwrap();
+        let archive = root.join("tests/oracles/ggml/source.tar.gz");
+        let archive_sha = format!("{:x}", Sha256::digest(std::fs::read(&archive).unwrap()));
+        assert_eq!(
+            archive_sha,
+            "4eec816a907885c31932e0ab4fa1ee2278af43000dc19d514929cd03cb4ff8a0"
+        );
+        let flags = [
+            "-O2",
+            "-std=c++17",
+            "-ffunction-sections",
+            "-fdata-sections",
+            "-Wl,--gc-sections",
+        ];
+        let compiler = Command::new("c++").arg("--version").output().unwrap();
+        assert!(compiler.status.success());
+        let mut identity = Sha256::new();
+        identity.update(archive_sha);
+        let builder = include_str!("matrix_product_tests.rs")
+            .split_once("\npub(crate) fn query_oracle")
+            .unwrap()
+            .1
+            .split_once("\n#[test]")
+            .unwrap()
+            .0;
+        identity.update(
+            builder
+                .parse::<proc_macro2::TokenStream>()
+                .unwrap()
+                .to_string(),
+        );
+        identity.update(format!("{flags:?}"));
+        identity.update(compiler.stdout);
+        let compiler_c = Command::new("cc").arg("--version").output().unwrap();
+        assert!(compiler_c.status.success());
+        identity.update(compiler_c.stdout);
+        if let Some(inventory) = std::env::var_os("PRISMPM_SDK_INVENTORY") {
+            identity.update(std::fs::read(inventory).unwrap());
+        }
+        identity.update(std::env::consts::ARCH);
+        identity.update(std::fs::read(root.join("prismpm.lock")).unwrap());
+        let common_key = format!("{:x}", identity.clone().finalize());
+        identity.update(GGML_VECTOR_DRIVER);
+        let base = std::env::var_os("CARGO_TARGET_DIR")
+            .map(std::path::PathBuf::from)
+            .unwrap_or_else(|| root.join("target"))
+            .join("ggml-vector-oracle");
+        let common = base.join("cpu").join(common_key);
+        let cache = base
+            .join("program")
+            .join(format!("{:x}", identity.finalize()));
+        std::fs::create_dir_all(&common).unwrap();
+        if !common.join("ggml").exists() {
+            assert!(Command::new("tar")
+                .args(["-xzf"])
+                .arg(&archive)
+                .arg("-C")
+                .arg(&common)
+                .status()
+                .unwrap()
+                .success());
+        }
+        let listing = Command::new("tar")
+            .arg("-tvzf")
+            .arg(&archive)
+            .output()
+            .unwrap();
+        assert!(listing.status.success());
+        let mut inputs = Vec::new();
+        for line in std::str::from_utf8(&listing.stdout).unwrap().lines() {
+            let fields: Vec<_> = line.split_whitespace().collect();
+            let name = fields[5];
+            let relevant = name.starts_with("ggml/include/")
+                || name.starts_with("ggml/src/ggml-cpu/")
+                || name
+                    .strip_prefix("ggml/src/")
+                    .is_some_and(|tail| !tail.contains('/'));
+            if relevant && !name.ends_with('/') {
+                assert!(
+                    line.starts_with('-') && fields.len() == 6,
+                    "non-regular oracle source: {line}"
+                );
+                inputs.push((name.to_string(), fields[2].parse::<usize>().unwrap()));
+            }
+        }
+        assert!(inputs.len() > 100, "oracle source inventory truncated");
+        let authoritative = Command::new("tar")
+            .arg("-xOzf")
+            .arg(&archive)
+            .args(inputs.iter().map(|(name, _)| name))
+            .output()
+            .unwrap();
+        assert!(authoritative.status.success());
+        let mut cached = Sha256::new();
+        for (name, len) in inputs {
+            let bytes = std::fs::read(common.join(name)).unwrap();
+            assert_eq!(bytes.len(), len, "oracle source size differs");
+            cached.update(bytes);
+        }
+        assert_eq!(
+            cached.finalize(),
+            Sha256::digest(authoritative.stdout),
+            "oracle source bytes differ"
+        );
+        let program = cache.join("oracle");
+        if !program.exists() {
+            std::fs::create_dir_all(&cache).unwrap();
+            let inventory_source = cache.join("table-inventory.cpp");
+            std::fs::write(&inventory_source,
+                "#define GGML_COMMON_DECL_CPP\n#define GGML_COMMON_IMPL_CPP\n#include \"ggml-common.h\"\n").unwrap();
+            let inventory = Command::new("c++").args(["-E", "-std=c++17", "-I"])
+                .arg(common.join("ggml/src")).arg(&inventory_source).output().unwrap();
+            assert!(inventory.status.success(), "{}", String::from_utf8_lossy(&inventory.stderr));
+            let mut in_header = false;
+            let mut names = std::collections::BTreeSet::new();
+            let mut exports = String::new();
+            for line in std::str::from_utf8(&inventory.stdout).unwrap().lines() {
+                if line.starts_with("# ") {
+                    in_header = line.split('"').nth(1).is_some_and(|p| p.ends_with("/ggml-common.h"));
+                } else if in_header {
+                    if let Some(declaration) = line.trim().strip_prefix("static const ") {
+                        let (_, array) = declaration.split_once(' ').expect("unmodeled table declaration");
+                        let (name, _) = array.split_once('[').expect("unmodeled table extent");
+                        assert!(name.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'_'));
+                        assert!(names.insert(name.to_string()), "duplicate reference table");
+                        exports.push_str(&format!("emit({name:?}, {name});\n"));
+                    }
+                }
+            }
+            assert!(!names.is_empty(), "reference table declarations missing");
+            std::fs::write(cache.join("ggml-table-exports.inc"), exports).unwrap();
+            std::fs::write(cache.join("driver.cpp"), GGML_VECTOR_DRIVER).unwrap();
+            let version = std::fs::read_to_string(common.join("ggml/src/ggml-version.h.in"))
+                .unwrap()
+                .replace("@GGML_VERSION@", "1.0.0")
+                .replace(
+                    "@GGML_BUILD_COMMIT@",
+                    "9a080f44b503c64f66c84a6274b9d9ee5d5b09d5",
+                );
+            std::fs::write(common.join("ggml-version.h"), version).unwrap();
+            let mut sources = vec![
+                "ggml.c".to_string(),
+                "ggml-quants.c".to_string(),
+                "ggml-alloc.c".to_string(),
+                "ggml-backend.cpp".to_string(),
+                "ggml-backend-meta.cpp".to_string(),
+                "ggml-backend-reg.cpp".to_string(),
+                "ggml-backend-dl.cpp".to_string(),
+                "ggml-threading.cpp".to_string(),
+            ];
+            let build_list =
+                std::fs::read_to_string(common.join("ggml/src/ggml-cpu/CMakeLists.txt")).unwrap();
+            sources.extend(
+                build_list
+                    .split_once("list (APPEND GGML_CPU_SOURCES")
+                    .unwrap()
+                    .1
+                    .split_once(')')
+                    .unwrap()
+                    .0
+                    .split_whitespace()
+                    .filter(|name| name.ends_with(".c") || name.ends_with(".cpp"))
+                    .map(str::to_string),
+            );
+            let architecture = match std::env::consts::ARCH {
+                "x86_64" => "x86",
+                "aarch64" => "arm",
+                other => panic!("unmodeled oracle architecture: {other}"),
+            };
+            sources.extend([
+                format!("ggml-cpu/arch/{architecture}/quants.c"),
+                format!("ggml-cpu/arch/{architecture}/repack.cpp"),
+            ]);
+            let mut objects = Vec::new();
+            for source in sources {
+                let object = common.join(format!("{}.o", source.replace('/', "_")));
+                if !object.exists() {
+                    let c = source.ends_with(".c");
+                    let mut command = Command::new(if c { "cc" } else { "c++" });
+                    command.args(["-O2", "-ffunction-sections", "-fdata-sections"]);
+                    command.args(if c {
+                        &["-std=c11", "-D_GNU_SOURCE"][..]
+                    } else {
+                        &["-std=c++17"][..]
+                    });
+                    for directory in ["ggml/include", "ggml/src", "ggml/src/ggml-cpu", ""] {
+                        command.arg("-I").arg(common.join(directory));
+                    }
+                    let compiled = command
+                        .arg("-c")
+                        .arg(common.join("ggml/src").join(&source))
+                        .arg("-o")
+                        .arg(object.with_extension("new"))
+                        .output()
+                        .unwrap();
+                    assert!(
+                        compiled.status.success(),
+                        "{source}: {}",
+                        String::from_utf8_lossy(&compiled.stderr)
+                    );
+                    std::fs::write(
+                        object.with_extension("sha256"),
+                        format!(
+                            "{:x}",
+                            Sha256::digest(std::fs::read(object.with_extension("new")).unwrap())
+                        ),
+                    )
+                    .unwrap();
+                    std::fs::rename(object.with_extension("new"), &object).unwrap();
+                }
+                assert_eq!(
+                    format!("{:x}", Sha256::digest(std::fs::read(&object).unwrap())),
+                    std::fs::read_to_string(object.with_extension("sha256")).unwrap(),
+                    "oracle object differs: {}",
+                    object.display()
+                );
+                objects.push(object);
+            }
+            let compiled = Command::new("c++")
+                .args(flags)
+                .arg("-I")
+                .arg(common.join("ggml/include"))
+                .arg("-I")
+                .arg(common.join("ggml/src"))
+                .arg("-I")
+                .arg(common.join("ggml/src/ggml-cpu"))
+                .arg("-I")
+                .arg(&common)
+                .arg(cache.join("driver.cpp"))
+                .args(objects)
+                .args(["-pthread", "-lm", "-ldl"])
+                .args(["-o"])
+                .arg(cache.join("oracle.new"))
+                .output()
+                .unwrap();
+            assert!(
+                compiled.status.success(),
+                "{}",
+                String::from_utf8_lossy(&compiled.stderr)
+            );
+            std::fs::write(
+                cache.join("oracle.sha256"),
+                format!(
+                    "{:x}",
+                    Sha256::digest(std::fs::read(cache.join("oracle.new")).unwrap())
+                ),
+            )
+            .unwrap();
+            std::fs::rename(cache.join("oracle.new"), &program).unwrap();
+        }
+        program
+    });
+    assert_eq!(
+        format!("{:x}", Sha256::digest(std::fs::read(program).unwrap())),
+        std::fs::read_to_string(program.with_file_name("oracle.sha256")).unwrap()
+    );
+    let mut child = Command::new(program)
+        .arg(mode)
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .spawn()
+        .unwrap();
+    let input = child.stdin.take().unwrap();
+    let writer = std::thread::spawn(move || {
+        let mut input = input;
+        input.write_all(requests.as_bytes()).unwrap();
+    });
+    let result = child.wait_with_output().unwrap();
+    writer.join().unwrap();
+    assert!(result.status.success());
+    String::from_utf8(result.stdout)
+        .unwrap()
+        .lines()
+        .map(|line| line.parse().unwrap())
+        .collect()
+}
+
+#[test]
+fn ggml_matrix_contractions_vtk_01() {
+    use std::fmt::Write as _;
+    let mut requests = String::new();
+    let mut actual = Vec::new();
+    for rows in [1, 2, 5] {
+        for cols in [1, 3, 7] {
+            for inner in [0, 1, 2, 3, 7, 16, 33] {
+                let left: Vec<_> = (0..rows * inner)
+                    .map(|i| ((i * 7 % 17) as f32 - 8.0) / 4.0)
+                    .collect();
+                let right: Vec<_> = (0..inner * cols)
+                    .map(|i| ((i * 11 % 19) as f32 - 9.0) / 4.0)
+                    .collect();
+                let mut output = vec![99.0; rows * cols];
+                super::multiply_matrix_rows_f32(rows, inner, cols, &left, &right, &mut output)
+                    .unwrap();
+                for row in 0..rows {
+                    for col in 0..cols {
+                        writeln!(requests, "{inner}").unwrap();
+                        for &value in &left[row * inner..(row + 1) * inner] {
+                            writeln!(requests, "{}", value.to_bits()).unwrap();
+                        }
+                        for i in 0..inner {
+                            writeln!(requests, "{}", right[i * cols + col].to_bits()).unwrap();
+                        }
+                        actual.push(output[row * cols + col].to_bits());
+                    }
+                }
+            }
+        }
+    }
+    for (left, right) in [
+        (f32::INFINITY, 0.0),
+        (f32::INFINITY, -1.0),
+        (f32::NAN, 1.0),
+        (-0.0, 1.0),
+        (f32::from_bits(1), 1.0),
+        (f32::MIN_POSITIVE, 0.5),
+        (f32::MAX, 2.0),
+        (f32::NEG_INFINITY, f32::NEG_INFINITY),
+    ] {
+        let mut output = [0.0];
+        super::multiply_matrix_rows_f32(1, 1, 1, &[left], &[right], &mut output).unwrap();
+        writeln!(requests, "1\n{}\n{}", left.to_bits(), right.to_bits()).unwrap();
+        actual.push(output[0].to_bits());
+    }
+    assert_eq!(
+        actual.len(),
+        624,
+        "the full contraction corpus must execute"
+    );
+    let reference = query_oracle("dot", requests);
+    assert_eq!(
+        reference.len(),
+        actual.len(),
+        "upstream oracle omitted a contraction"
+    );
+    for (index, (expected, actual)) in reference.into_iter().zip(actual).enumerate() {
+        if f32::from_bits(expected).is_nan() {
+            assert!(
+                f32::from_bits(actual).is_nan(),
+                "contraction {index} must be NaN"
+            );
+        } else {
+            assert_eq!(actual, expected, "GGML contraction {index}");
+        }
+    }
+}
+
+#[test]
+fn shape_certificate_vtk_01() {
+    certified_model(
+        "verdant_matrix_shape",
+        "VerdantEngine.MatrixProduct.matrixProductShapeValid",
+    );
+}
+
+pub(super) fn certified_model(package: &str, root_name: &str) {
+    static VERIFIED: std::sync::OnceLock<std::collections::BTreeMap<String, String>> =
+        std::sync::OnceLock::new();
+    let bindings = VERIFIED.get_or_init(verify_tensor_bundle);
+    assert_eq!(bindings.get(root_name).map(String::as_str), Some(package));
+}
+
+fn verify_tensor_bundle() -> std::collections::BTreeMap<String, String> {
+    verify_bundle("tensor", "tensor-execution")
+}
+
+pub(super) fn certified_quotient_model() {
+    static VERIFIED: std::sync::OnceLock<std::collections::BTreeMap<String, String>> =
+        std::sync::OnceLock::new();
+    let bindings = VERIFIED.get_or_init(|| verify_bundle("quotient", "tensor-quotient"));
+    for (root, package) in [
+        ("quotientWord", "verdant_quotient_f64"),
+        ("classify", "verdant_division_class"),
+        ("normalizedOperand", "verdant_division_norm"),
+        ("divisionFinish", "verdant_division_finish"),
+        ("countPlan", "verdant_count_f64"),
+        ("route", "verdant_quotient_route"),
+    ] {
+        assert_eq!(
+            bindings
+                .get(&format!("VerdantEngine.F64Quotient.{root}"))
+                .map(String::as_str),
+            Some(package)
+        );
+    }
+}
+
+fn verify_bundle(scope: &str, directory: &str) -> std::collections::BTreeMap<String, String> {
+    use sha2::{Digest, Sha256};
+    use std::process::Command;
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .unwrap()
+        .parent()
+        .unwrap();
+    let bundle = root.join(format!("generated/{directory}"));
+    let result: serde_json::Value =
+        serde_json::from_slice(&std::fs::read(bundle.join("result.json")).unwrap()).unwrap();
+    let checked = Command::new("lexlean")
+        .current_dir(root)
+        .args([
+            "--project",
+            &format!("app/{scope}.lexlean.toml"),
+            "--diagnostic-format",
+            "json",
+            "check",
+        ])
+        .output()
+        .unwrap();
+    assert!(
+        checked.status.success(),
+        "{}",
+        format!(
+            "{}\n{}",
+            String::from_utf8_lossy(&checked.stdout),
+            String::from_utf8_lossy(&checked.stderr)
+        )
+    );
+    let current: serde_json::Value = serde_json::from_slice(&checked.stdout).unwrap();
+    for key in ["source_id", "semantic_id"] {
+        assert_eq!(
+            current[key], result["source"][key],
+            "stale {scope} model: {key}"
+        );
+    }
+    assert_eq!(
+        format!(
+            "{:x}",
+            Sha256::digest(std::fs::read(root.join(format!("app/{scope}.lexlean.lock"))).unwrap())
+        ),
+        result["source"]["lock_sha256"].as_str().unwrap()
+    );
+    let roots = result["roots"].as_array().unwrap();
+    let request: serde_json::Value = serde_json::from_slice(
+        &std::fs::read(root.join(format!("app/{scope}-production.json"))).unwrap(),
+    )
+    .unwrap();
+    let expected = request["roots"].as_array().unwrap();
+    assert_eq!(roots.len(), expected.len());
+    for requested in expected {
+        let exported = roots
+            .iter()
+            .find(|r| r["root"] == requested["root"])
+            .unwrap();
+        let package = requested["package"]["name"].as_str().unwrap();
+        let outputs = exported["outputs"].as_array().unwrap();
+        assert_eq!(outputs.len(), 1);
+        assert_eq!(outputs[0]["certification"]["status"], "kernel-checked");
+        assert_eq!(outputs[0]["package"]["name"], package);
+        assert_eq!(
+            outputs[0]["package"]["version"],
+            requested["package"]["version"]
+        );
+        let mut source_found = false;
+        for file in outputs[0]["package"]["files"].as_array().unwrap() {
+            let path = file["path"].as_str().unwrap();
+            let actual = std::fs::read(bundle.join(path)).unwrap();
+            assert_eq!(
+                format!("{:x}", Sha256::digest(&actual)),
+                file["sha256"].as_str().unwrap()
+            );
+            if path == format!("packages/rust-core/{package}/src/lib.rs") {
+                let compiled: &[u8] = match package {
+                    "verdant_matrix_shape" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_matrix_shape/src/lib.rs"),
+                    "verdant_scalar_f32" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_scalar_f32/src/lib.rs"),
+                    "verdant_storage_transfer" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_storage_transfer/src/lib.rs"),
+                    "verdant_float_storage" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_float_storage/src/lib.rs"),
+                    "verdant_float_transform" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_float_transform/src/lib.rs"),
+                    "verdant_unary_plan" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_unary_plan/src/lib.rs"),
+                    "verdant_unary_select" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_unary_select/src/lib.rs"),
+                    "verdant_unary_activate" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_unary_activate/src/lib.rs"),
+                    "verdant_unary_round" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_unary_round/src/lib.rs"),
+                    "verdant_count_f32" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_count_f32/src/lib.rs"),
+                    "verdant_narrow_f64" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_narrow_f64/src/lib.rs"),
+                    "verdant_normalize_f64" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_normalize_f64/src/lib.rs"),
+                    "verdant_add_f64" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_add_f64/src/lib.rs"),
+                    "verdant_round_mantissa_f64" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_round_mantissa_f64/src/lib.rs"),
+                    "verdant_widen_f32" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_widen_f32/src/lib.rs"),
+                    "verdant_high_f64" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_high_f64/src/lib.rs"),
+                    "verdant_low_f64" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_low_f64/src/lib.rs"),
+                    "verdant_wide_mode" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_wide_mode/src/lib.rs"),
+                    "verdant_packed_field" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_packed_field/src/lib.rs"),
+                    "verdant_integer_f32" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_integer_f32/src/lib.rs"),
+                    "verdant_small_float" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_small_float/src/lib.rs"),
+                    "verdant_encoded_word" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_encoded_word/src/lib.rs"),
+                    "verdant_pack_plan_f64" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_pack_plan_f64/src/lib.rs"),
+                    "verdant_storage_block" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_storage_block/src/lib.rs"),
+                    "verdant_count_f64" => include_bytes!("../../../../generated/tensor-quotient/packages/rust-core/verdant_count_f64/src/lib.rs"),
+                    "verdant_quotient_f64" => include_bytes!("../../../../generated/tensor-quotient/packages/rust-core/verdant_quotient_f64/src/lib.rs"),
+                    "verdant_quotient_route" => include_bytes!("../../../../generated/tensor-quotient/packages/rust-core/verdant_quotient_route/src/lib.rs"),
+                    "verdant_division_class" => include_bytes!("../../../../generated/tensor-quotient/packages/rust-core/verdant_division_class/src/lib.rs"),
+                    "verdant_division_norm" => include_bytes!("../../../../generated/tensor-quotient/packages/rust-core/verdant_division_norm/src/lib.rs"),
+                    "verdant_division_finish" => include_bytes!("../../../../generated/tensor-quotient/packages/rust-core/verdant_division_finish/src/lib.rs"),
+                    _ => panic!("unknown certified dependency"),
+                };
+                assert_eq!(actual, compiled);
+                source_found = true;
+            }
+        }
+        assert!(source_found);
+    }
+    let verified = Command::new("lexlean")
+        .args(["production", "verify-artifact"])
+        .arg(&bundle)
+        .output()
+        .unwrap();
+    assert!(
+        verified.status.success(),
+        "{}",
+        String::from_utf8_lossy(&verified.stderr)
+    );
+    roots
+        .iter()
+        .map(|root| {
+            (
+                root["root"].as_str().unwrap().to_string(),
+                root["outputs"][0]["package"]["name"]
+                    .as_str()
+                    .unwrap()
+                    .to_string(),
+            )
+        })
+        .collect()
+}
+
+#[test]
+fn rectangular_product_vtk_01() {
+    let mut output = [99.0_f32; 6];
+    super::multiply_matrix_rows_f32(
+        2,
+        2,
+        3,
+        &[1.0, 2.0, 3.0, 4.0],
+        &[1.0, 2.0, 3.0, 4.0, 5.0, 6.0],
+        &mut output,
+    )
+    .unwrap();
+    assert_eq!(output, [9.0, 12.0, 15.0, 19.0, 26.0, 33.0]);
+    assert!(super::multiply_matrix_rows_f32(2, 2, 3, &[], &[], &mut output).is_err());
+    assert_eq!(output, [9.0, 12.0, 15.0, 19.0, 26.0, 33.0]);
+    assert!(super::multiply_matrix_rows_f32(usize::MAX, 2, 3, &[], &[], &mut output).is_err());
+    let mut scalar = [99.0_f32];
+    super::multiply_matrix_rows_f32(1, 1, 1, &[f32::from_bits(1)], &[1.0], &mut scalar).unwrap();
+    assert_eq!(scalar[0].to_bits(), 1);
+    super::multiply_matrix_rows_f32(1, 1, 1, &[f32::INFINITY], &[0.0], &mut scalar).unwrap();
+    assert!(scalar[0].is_nan());
+    super::multiply_matrix_rows_f32(1, 1, 1, &[f32::INFINITY], &[-1.0], &mut scalar).unwrap();
+    assert_eq!(scalar[0], f32::NEG_INFINITY);
+    super::multiply_matrix_rows_f32(0, 2, 3, &[], &[1.0; 6], &mut []).unwrap();
+    super::multiply_matrix_rows_f32(2, 0, 3, &[], &[], &mut output).unwrap();
+    assert_eq!(output, [0.0; 6]);
+}

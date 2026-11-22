@@ -39,3 +39,6 @@ screens/
 .verdant-cache/
 site/crates/
 site/stitch/
+
+/app/.lexlean-tensor/
+/app/.lexlean-quotient/

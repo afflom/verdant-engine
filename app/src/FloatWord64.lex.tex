@@ -1,0 +1,101 @@
+\begin{lexlean}{FloatWord64}
+\useglossary{lexlean.std.bool@1.2.0}
+\useglossary{lexlean.std.nat@1.2.0}
+\title{Natural number}
+\begin{semanticmodule}
+structure{
+  name: Fields,
+  type_parameters: [],
+  parameters: [],
+  fields: [{name: s, type: Nat}, {name: e, type: Nat}, {name: f, type: Nat}]
+}
+
+inductive{
+  name: Operation,
+  type_parameters: [],
+  parameters: [],
+  constructors: [
+    {name: addition, fields: []},
+    {name: widening, fields: []},
+    {name: narrowing, fields: []},
+    {name: count, fields: []}
+  ]
+}
+
+definition{
+  name: high,
+  parameters: [s : Nat, e : Nat, f : Nat],
+  result: Nat,
+  body: (((prim multiply s 2147483648 : Nat) + (prim multiply e 1048576 : Nat)) + (prim quotient f 4294967296 0 : Nat)),
+  executable: true
+}
+
+definition{
+  name: low,
+  parameters: [f : Nat],
+  result: Nat,
+  body: (prim remainder f 4294967296 0 : Nat),
+  executable: true
+}
+
+definition{
+  name: join,
+  parameters: [value : Fields],
+  result: Nat,
+  body: ((prim multiply (high (project value s) (project value e) (project value f)) 4294967296 : Nat) + (low (project value f))),
+  executable: true
+}
+
+definition{
+  name: operation,
+  parameters: [code : Nat],
+  result: (Option Operation),
+  body: (if (code =? 0) then (ctor Option.some [Operation] (ctor Operation.addition)) else (if (code =? 1) then (ctor Option.some [Operation] (ctor Operation.widening)) else (if (code =? 2) then (ctor Option.some [Operation] (ctor Operation.narrowing)) else (if (code =? 3) then (ctor Option.some [Operation] (ctor Operation.count)) else (ctor Option.none [Operation]))))),
+  executable: true
+}
+
+definition{
+  name: packRounded,
+  parameters: [s : Nat, e : Nat, m : Nat],
+  result: Fields,
+  body: (if (m =? 0) then (record Fields {s := s, e := 0, f := 0}) else (let finalExponent : Nat := (e + (if (9007199254740992 <=? m) then 1 else 0)); (let finalMantissa : Nat := (if (9007199254740992 <=? m) then (prim quotient m 2 0 : Nat) else m); (if (2047 <=? finalExponent) then (record Fields {s := s, e := 2047, f := 0}) else (record Fields {s := s, e := (if ((finalExponent =? 1) && (finalMantissa <? 4503599627370496)) then 0 else finalExponent), f := (prim remainder finalMantissa 4503599627370496 0 : Nat)}))))),
+  executable: true
+}
+
+definition{
+  name: packAddition,
+  parameters: [s : Nat, e : Nat, m : Nat],
+  result: (Option Fields),
+  body: (if ((((s <=? 1) && ((0 <? e) && (e <=? 2047))) && (m <=? 9007199254740992)) && (((m =? 0) || (e =? 1)) || (4503599627370496 <=? m))) then (ctor Option.some [Fields] (packRounded s e m)) else (ctor Option.none [Fields])),
+  executable: true
+}
+
+theorem{
+  name: negativeZeroFields,
+  parameters: [],
+  statement: ((packAddition 1 1 0) = (ctor Option.some [Fields] (record Fields {s := 1, e := 0, f := 0}))),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: largestFiniteHighWord,
+  parameters: [],
+  statement: ((high 0 2046 4503599627370495) = 2146435071),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: largestFiniteLowWord,
+  parameters: [],
+  statement: ((low 4503599627370495) = 4294967295),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: carryOverflowsToInfinity,
+  parameters: [],
+  statement: ((packAddition 1 2046 9007199254740992) = (ctor Option.some [Fields] (record Fields {s := 1, e := 2047, f := 0}))),
+  proof: reflexivity{}
+}
+\end{semanticmodule}
+\end{lexlean}

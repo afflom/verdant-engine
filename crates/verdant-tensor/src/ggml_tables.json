@@ -1,0 +1,88 @@
+{
+  "spec": "verdant/ggml-quantized-tables/1",
+  "revision": "9a080f44b503c64f66c84a6274b9d9ee5d5b09d5",
+  "archive_sha256": "4eec816a907885c31932e0ab4fa1ee2278af43000dc19d514929cd03cb4ff8a0",
+  "header": "ggml/src/ggml-common.h",
+  "byte_order": "little-endian",
+  "license_sha256": "94f29bbed6a22c35b992c5c6ebf0e7c92f13b836b90f36f461c9cf2f0f1d010d",
+  "data_sha256": "4c7dda6f97acca70654a93868dda58faa3e299b9e3044b95afa9a55147c96c2a",
+  "tables": [
+    {
+      "name": "kmask_iq2xs",
+      "element_bytes": 1,
+      "elements": 8,
+      "offset": 0,
+      "sha256": "5ac9831b2e30eb285ef34f8501620f878432d5c04331ad1ae47f977a83ba41a5"
+    },
+    {
+      "name": "ksigns_iq2xs",
+      "element_bytes": 1,
+      "elements": 128,
+      "offset": 8,
+      "sha256": "a76742a603f8beca5212ecce0f1f02f11a4887fd2f7c8b15aca0ea3eb3380c31"
+    },
+    {
+      "name": "ksigns64",
+      "element_bytes": 8,
+      "elements": 128,
+      "offset": 136,
+      "sha256": "6ca8598509cc63406eaece40cff6b60198f6fa1e0dff261de7bd8d73bfed770c"
+    },
+    {
+      "name": "iq2xxs_grid",
+      "element_bytes": 8,
+      "elements": 256,
+      "offset": 1160,
+      "sha256": "05826b5d3e472a3a78f196be62ac78acf81df0f909626e12ab9fa2a5d490dd54"
+    },
+    {
+      "name": "iq2xs_grid",
+      "element_bytes": 8,
+      "elements": 512,
+      "offset": 3208,
+      "sha256": "06e47aaca60b4dc1d9b5a3f34540437058a6b142b4d7a59d5ded769b4d1bf1de"
+    },
+    {
+      "name": "iq2s_grid",
+      "element_bytes": 8,
+      "elements": 1024,
+      "offset": 7304,
+      "sha256": "e1aa1473412b0552c2174c30ef22ab4073f6a181b85a17056e8249bd2932fd88"
+    },
+    {
+      "name": "iq3xxs_grid",
+      "element_bytes": 4,
+      "elements": 256,
+      "offset": 15496,
+      "sha256": "46e35f5a997efdee6c99ce57854c8a0d4f0ff8ca57e5e8a60c0793ea580acf5d"
+    },
+    {
+      "name": "iq3s_grid",
+      "element_bytes": 4,
+      "elements": 512,
+      "offset": 16520,
+      "sha256": "bd1af4945a1717c65610b0284e4628b9a1ba3b306fae3a06f6e5f597356e349f"
+    },
+    {
+      "name": "kvalues_iq4nl",
+      "element_bytes": 1,
+      "elements": 16,
+      "offset": 18568,
+      "sha256": "61aa47540aa024b5d6ddaa839b84ffe59f3d5a349af5c6c7ffcb5e0474b46163"
+    },
+    {
+      "name": "kvalues_fp4",
+      "element_bytes": 1,
+      "elements": 16,
+      "offset": 18584,
+      "sha256": "adf76b672d47eb7fc0afd4db132d548d59d3190aa0ad118fdbf569d5fd478f97"
+    },
+    {
+      "name": "iq1s_grid",
+      "element_bytes": 8,
+      "elements": 2048,
+      "offset": 18600,
+      "sha256": "07540ffc1aeaf6ad4d97e96b0fcc765aae39671d4ae4a27bbd0e796fde167c6a"
+    }
+  ]
+}

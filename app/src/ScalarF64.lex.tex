@@ -1,0 +1,363 @@
+\begin{lexlean}{ScalarF64}
+\useglossary{lexlean.std.bool@1.2.0}
+\useglossary{lexlean.std.nat@1.2.0}
+\importmodule{FloatWord64}
+\title{Natural number}
+\begin{semanticmodule}
+structure{
+  name: Norm,
+  type_parameters: [],
+  parameters: [],
+  fields: [
+    {name: e, type: Nat},
+    {name: m, type: Nat},
+    {name: minimum, type: Nat},
+    {name: threshold, type: Nat}
+  ]
+}
+
+definition{
+  name: power,
+  parameters: [n : Nat],
+  result: Nat,
+  body: (prim iterate (fun (value : Nat) => (value + value)) n 1 : Nat),
+  executable: true
+}
+
+definition{
+  name: shiftJam,
+  parameters: [x : Nat, distance : Nat],
+  result: Nat,
+  body: (if (distance =? 0) then x else (if (64 <=? distance) then (if (x =? 0) then 0 else 1) else (let factor : Nat := (power distance); (let head : Nat := (prim quotient x factor 0 : Nat); (head + (if ((0 <? (prim remainder x factor 0 : Nat)) && ((prim remainder head 2 0 : Nat) =? 0)) then 1 else 0)))))),
+  executable: true
+}
+
+definition{
+  name: normalizeStep,
+  parameters: [state : Norm],
+  result: (Option Norm),
+  body: (if (((0 <? (project state m)) && ((project state m) <? (project state threshold))) && ((project state minimum) <? (project state e))) then (ctor Option.some [Norm] (record Norm {e := (prim subtract (project state e) 1 : Nat), m := ((project state m) + (project state m)), minimum := (project state minimum), threshold := (project state threshold)})) else (ctor Option.none [Norm])),
+  executable: true
+}
+
+definition{
+  name: roundQuotient,
+  parameters: [value : Nat, divisor : Nat],
+  result: Nat,
+  body: (let head : Nat := (prim quotient value divisor 0 : Nat); (let tail : Nat := (prim multiply (prim remainder value divisor 0 : Nat) 2 : Nat); (head + (if ((divisor <? tail) || ((tail =? divisor) && ((prim remainder head 2 0 : Nat) =? 1))) then 1 else 0)))),
+  executable: true
+}
+
+definition{
+  name: exponent32,
+  parameters: [bits : Nat],
+  result: Nat,
+  body: (prim quotient (prim remainder bits 2147483648 0 : Nat) 8388608 0 : Nat),
+  executable: true
+}
+
+definition{
+  name: fraction32,
+  parameters: [bits : Nat],
+  result: Nat,
+  body: (prim remainder bits 8388608 0 : Nat),
+  executable: true
+}
+
+definition{
+  name: normalized32,
+  parameters: [bits : Nat],
+  result: Norm,
+  body: (first (prim iterate_until (fun (state : Norm) => (normalizeStep state)) 32 (record Norm {e := ((if ((exponent32 bits) =? 0) then 1 else (exponent32 bits)) + 512), m := ((fraction32 bits) + (if ((exponent32 bits) =? 0) then 0 else 8388608)), minimum := 0, threshold := 8388608}) : (Norm * Bool))),
+  executable: true
+}
+
+definition{
+  name: magnitude,
+  parameters: [bits : Nat],
+  result: Nat,
+  body: (prim remainder bits 9223372036854775808 0 : Nat),
+  executable: true
+}
+
+definition{
+  name: sign,
+  parameters: [bits : Nat],
+  result: Nat,
+  body: (prim quotient bits 9223372036854775808 0 : Nat),
+  executable: true
+}
+
+definition{
+  name: exponent,
+  parameters: [bits : Nat],
+  result: Nat,
+  body: (prim quotient (magnitude bits) 4503599627370496 0 : Nat),
+  executable: true
+}
+
+definition{
+  name: fraction,
+  parameters: [bits : Nat],
+  result: Nat,
+  body: (prim remainder bits 4503599627370496 0 : Nat),
+  executable: true
+}
+
+definition{
+  name: mantissa,
+  parameters: [bits : Nat],
+  result: Nat,
+  body: ((fraction bits) + (if ((exponent bits) =? 0) then 0 else 4503599627370496)),
+  executable: true
+}
+
+definition{
+  name: effectiveExponent,
+  parameters: [bits : Nat],
+  result: Nat,
+  body: (if ((exponent bits) =? 0) then 1 else (exponent bits)),
+  executable: true
+}
+
+definition{
+  name: isNaN,
+  parameters: [bits : Nat],
+  result: Bool,
+  body: (((exponent bits) =? 2047) && (0 <? (fraction bits))),
+  executable: true
+}
+
+definition{
+  name: isInfinity,
+  parameters: [bits : Nat],
+  result: Bool,
+  body: (((exponent bits) =? 2047) && ((fraction bits) =? 0)),
+  executable: true
+}
+
+definition{
+  name: roundMantissa,
+  parameters: [m : Nat],
+  result: Nat,
+  body: (let head : Nat := (prim quotient m 8 0 : Nat); (let tail : Nat := (prim remainder m 8 0 : Nat); (head + (if ((4 <? tail) || ((tail =? 4) && ((prim remainder head 2 0 : Nat) =? 1))) then 1 else 0)))),
+  executable: true,
+  production: {effects: [overflow], targets: [rust-core]}
+}
+
+structure{
+  name: WideRounding,
+  type_parameters: [],
+  parameters: [],
+  fields: [{name: s, type: Nat}, {name: e, type: Nat}, {name: m, type: Nat}]
+}
+
+definition{
+  name: normalizeAddition,
+  parameters: [s : Nat, e : Nat, m : Nat],
+  result: (Option WideRounding),
+  body: (if (((s <=? 1) && ((0 <? e) && (e <? 2047))) && (m <? 144115188075855872)) then (ctor Option.some [WideRounding] (if (72057594037927936 <=? m) then (record WideRounding {s := s, e := (e + 1), m := (shiftJam m 1)}) else (let normalized : Norm := (first (prim iterate_until (fun (state : Norm) => (normalizeStep state)) 56 (record Norm {e := e, m := m, minimum := 1, threshold := 36028797018963968}) : (Norm * Bool))); (record WideRounding {s := s, e := (project normalized e), m := (project normalized m)})))) else (ctor Option.none [WideRounding])),
+  executable: true,
+  production: {effects: [overflow], targets: [rust-core]}
+}
+
+inductive{
+  name: WideAddition,
+  type_parameters: [],
+  parameters: [],
+  constructors: [{name: direct, fields: [Nat]}, {name: finite, fields: [Nat, Nat, Nat]}]
+}
+
+definition{
+  name: orderedPlan,
+  parameters: [a : Nat, b : Nat],
+  result: WideAddition,
+  body: (let e : Nat := (effectiveExponent a); (let left : Nat := (prim multiply (mantissa a) 8 : Nat); (let right : Nat := (shiftJam (prim multiply (mantissa b) 8 : Nat) (prim subtract e (effectiveExponent b) : Nat)); (if ((sign a) =? (sign b)) then (ctor WideAddition.finite (sign a) e (left + right)) else (if (left =? right) then (ctor WideAddition.direct 0) else (ctor WideAddition.finite (sign a) e (prim subtract left right : Nat))))))),
+  executable: true
+}
+
+definition{
+  name: planAdd,
+  parameters: [a : Nat, b : Nat],
+  result: (Option WideAddition),
+  body: (if ((a <=? 18446744073709551615) && (b <=? 18446744073709551615)) then (ctor Option.some [WideAddition] (if ((isNaN a) || (isNaN b)) then (ctor WideAddition.direct 9221120237041090560) else (if ((isInfinity a) && (isInfinity b)) then (ctor WideAddition.direct (if ((sign a) =? (sign b)) then a else 9221120237041090560)) else (if (isInfinity a) then (ctor WideAddition.direct a) else (if (isInfinity b) then (ctor WideAddition.direct b) else (if ((magnitude b) <=? (magnitude a)) then (orderedPlan a b) else (orderedPlan b a))))))) else (ctor Option.none [WideAddition])),
+  executable: true,
+  production: {effects: [overflow], targets: [rust-core]}
+}
+
+definition{
+  name: roundAddition,
+  parameters: [s : Nat, e : Nat, m : Nat],
+  result: (Option Nat),
+  body: (if ((((s <=? 1) && ((0 <? e) && (e <=? 2047))) && (m <? 72057594037927936)) && (((m =? 0) || (e =? 1)) || (36028797018963968 <=? m))) then (match (FloatWord64::packAddition s e (roundMantissa m))
+    | Option.none => (ctor Option.none [Nat])
+    | Option.some word => (ctor Option.some [Nat] (FloatWord64::join word))) else (ctor Option.none [Nat])),
+  executable: true
+}
+
+definition{
+  name: add,
+  parameters: [a : Nat, b : Nat],
+  result: (Option Nat),
+  body: (match (planAdd a b)
+    | Option.none => (ctor Option.none [Nat])
+    | Option.some plan => (match plan
+      | WideAddition.direct bits => (ctor Option.some [Nat] bits)
+      | WideAddition.finite s e m => (match (normalizeAddition s e m)
+        | Option.none => (ctor Option.none [Nat])
+        | Option.some state => (roundAddition (project state s) (project state e) (project state m))))),
+  executable: true
+}
+
+definition{
+  name: widenPlan,
+  parameters: [bits : Nat],
+  result: (Option FloatWord64::Fields),
+  body: (if (bits <? 4294967296) then (let s : Nat := (prim quotient bits 2147483648 0 : Nat); (ctor Option.some [FloatWord64::Fields] (if ((exponent32 bits) =? 255) then (record FloatWord64::Fields {s := s, e := 2047, f := (if ((fraction32 bits) =? 0) then 0 else (prim multiply ((fraction32 bits) + (if ((fraction32 bits) <? 4194304) then 4194304 else 0)) 536870912 : Nat))}) else (if ((prim remainder bits 2147483648 0 : Nat) =? 0) then (record FloatWord64::Fields {s := s, e := 0, f := 0}) else (let normalized : Norm := (normalized32 bits); (record FloatWord64::Fields {s := s, e := ((project normalized e) + 384), f := (prim multiply (prim subtract (project normalized m) 8388608 : Nat) 536870912 : Nat)})))))) else (ctor Option.none [FloatWord64::Fields])),
+  executable: true,
+  production: {effects: [overflow], targets: [rust-core]}
+}
+
+definition{
+  name: widen,
+  parameters: [bits : Nat],
+  result: (Option Nat),
+  body: (match (widenPlan bits)
+    | Option.none => (ctor Option.none [Nat])
+    | Option.some word => (ctor Option.some [Nat] (FloatWord64::join word))),
+  executable: true
+}
+
+definition{
+  name: narrow,
+  parameters: [bits : Nat],
+  result: (Option Nat),
+  body: (if (bits <=? 18446744073709551615) then (let s : Nat := (prim multiply (sign bits) 2147483648 : Nat); (let e : Nat := (exponent bits); (ctor Option.some [Nat] (if (isNaN bits) then (s + 2143289344) else (if ((isInfinity bits) || (1150 <? e)) then (s + 2139095040) else (if (e <? 873) then s else (s + (if (897 <=? e) then ((prim multiply (prim subtract e 897 : Nat) 8388608 : Nat) + (roundQuotient (mantissa bits) 536870912)) else (roundQuotient (mantissa bits) (power (prim subtract 926 e : Nat))))))))))) else (ctor Option.none [Nat])),
+  executable: true,
+  production: {effects: [overflow], targets: [rust-core]}
+}
+
+definition{
+  name: countStep,
+  parameters: [state : Norm],
+  result: (Option Norm),
+  body: (if (134217728 <=? (project state m)) then (ctor Option.some [Norm] (record Norm {e := ((project state e) + 1), m := (shiftJam (project state m) 1), minimum := (project state minimum), threshold := (project state threshold)})) else (ctor Option.none [Norm])),
+  executable: true
+}
+
+definition{
+  name: encodeCount,
+  parameters: [e : Nat, m : Nat],
+  result: Nat,
+  body: (if (m =? 0) then 0 else (if (16777216 <=? m) then ((prim multiply e 8388608 : Nat) + (prim quotient m 2 0 : Nat)) else ((prim multiply (prim subtract e 1 : Nat) 8388608 : Nat) + m))),
+  executable: true
+}
+
+definition{
+  name: fromNatural,
+  parameters: [value : Nat],
+  result: (Option Nat),
+  body: (if (value <=? 18446744073709551615) then (let shifted : Norm := (first (prim iterate_until (fun (state : Norm) => (countStep state)) 64 (record Norm {e := 153, m := value, minimum := 1, threshold := 67108864}) : (Norm * Bool))); (let normalized : Norm := (first (prim iterate_until (fun (state : Norm) => (normalizeStep state)) 32 shifted : (Norm * Bool))); (ctor Option.some [Nat] (encodeCount (project normalized e) (roundMantissa (project normalized m)))))) else (ctor Option.none [Nat])),
+  executable: true,
+  production: {effects: [overflow], targets: [rust-core]}
+}
+
+definition{
+  name: evaluate,
+  parameters: [code : Nat, a : Nat, b : Nat],
+  result: (Option Nat),
+  body: (match (FloatWord64::operation code)
+    | Option.none => (ctor Option.none [Nat])
+    | Option.some mode => (match mode
+      | FloatWord64::Operation.addition => (add a b)
+      | FloatWord64::Operation.widening => (widen a)
+      | FloatWord64::Operation.narrowing => (narrow a)
+      | FloatWord64::Operation.count => (fromNatural a))),
+  executable: true
+}
+
+theorem{
+  name: addOneAndOne,
+  parameters: [],
+  statement: ((add 4607182418800017408 4607182418800017408) = (ctor Option.some [Nat] 4611686018427387904)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: halfUlpTiesEven,
+  parameters: [],
+  statement: ((add 4607182418800017408 4368491638549381120) = (ctor Option.some [Nat] 4607182418800017408)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: halfUlpCarriesOdd,
+  parameters: [],
+  statement: ((add 4607182418800017409 4368491638549381120) = (ctor Option.some [Nat] 4607182418800017410)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: negativeZerosStayNegative,
+  parameters: [],
+  statement: ((add 9223372036854775808 9223372036854775808) = (ctor Option.some [Nat] 9223372036854775808)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: oppositeZerosBecomePositive,
+  parameters: [],
+  statement: ((add 0 9223372036854775808) = (ctor Option.some [Nat] 0)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: subnormalSum,
+  parameters: [],
+  statement: ((add 1 1) = (ctor Option.some [Nat] 2)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: wideOverflow,
+  parameters: [],
+  statement: ((add 9218868437227405311 9218868437227405311) = (ctor Option.some [Nat] 9218868437227405312)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: widenSmallestFloat,
+  parameters: [],
+  statement: ((widen 1) = (ctor Option.some [Nat] 3936146074321813504)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: narrowHalfSmallestFloat,
+  parameters: [],
+  statement: ((narrow 3931642474694443008) = (ctor Option.some [Nat] 0)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: narrowAboveHalfSmallestFloat,
+  parameters: [],
+  statement: ((narrow 3931642474694443009) = (ctor Option.some [Nat] 1)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: largestCountRoundsUp,
+  parameters: [],
+  statement: ((fromNatural 18446744073709551615) = (ctor Option.some [Nat] 1602224128)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: wideInputRefused,
+  parameters: [],
+  statement: ((widen 4294967296) = (ctor Option.none [Nat])),
+  proof: reflexivity{}
+}
+\end{semanticmodule}
+\end{lexlean}
