@@ -120,6 +120,7 @@ model does not sanction.
 | `VTK-21` | `build` | Verdant evaluates binary32 sine and cosine across the finite exponent range and exceptional inputs against the imported GGML CPU scalar functions |
 | `VTK-22` | `build` | Verdant computes binary32 natural logarithms and reciprocal root frequency ratios against the imported GGML CPU logarithm and rotary evaluator |
 | `VTK-23` | `build` | Verdant computes scaled rotary frequency coefficients and binary32 plane rotations against the imported GGML rotary kernel |
+| `VTK-24` | `build` | Verdant accumulates a streaming softmax weighted mean of binary32 rows against the imported GGML CPU attention evaluator |
 
 ## fidelity
 

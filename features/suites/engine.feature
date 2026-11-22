@@ -644,3 +644,9 @@ Feature: engine
     When Verdant applies each coefficient pair to two binary32 coordinates
     Then the coefficients agree with the imported frequency cache
     And rotation using the imported coefficients matches the imported output words
+
+  @VTK-24 @build
+  Scenario: Verdant accumulates a streaming softmax weighted mean of binary32 rows against the imported GGML CPU attention evaluator
+    Given streamed scores and equally sized rows with optional zero-valued observations
+    When the accumulator rescales its total and weighted coordinates on a new maximum
+    Then the normalized coordinates agree with the imported evaluator for changing maxima ties excluded rows and sinks

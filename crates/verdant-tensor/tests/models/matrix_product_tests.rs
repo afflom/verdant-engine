@@ -83,6 +83,47 @@ int main(int argc, char **argv) {
     }
     return std::feof(stdin) ? 0 : 2;
   }
+  if (!std::strcmp(argv[1], "weighted-mean")) {
+    int count, width, with_sink;
+    unsigned sink_word;
+    while (std::scanf("%d %d %d %u", &count, &width, &with_sink, &sink_word) == 4) {
+      if (count < 1 || count > 128 || width < 1 || width > 128) return 2;
+      ggml_init_params init{2*1024*1024, nullptr, false};
+      auto *ctx = ggml_init(init);
+      auto *q = ggml_new_tensor_1d(ctx, GGML_TYPE_F32, 1);
+      auto *k = ggml_new_tensor_2d(ctx, GGML_TYPE_F32, 1, count);
+      auto *v = ggml_new_tensor_2d(ctx, GGML_TYPE_F32, width, count);
+      auto *mask = ggml_new_tensor_1d(ctx, GGML_TYPE_F16, count);
+      *static_cast<float *>(q->data) = 1.0f;
+      for (int i = 0; i < count; ++i) {
+        unsigned score, included;
+        if (std::scanf("%u %u", &score, &included) != 2) return 2;
+        std::memcpy(static_cast<float *>(k->data) + i, &score, 4);
+        static_cast<ggml_fp16_t *>(mask->data)[i] = included ? 0 : 0xfc00;
+        for (int j = 0; j < width; ++j) {
+          unsigned word;
+          if (std::scanf("%u", &word) != 1) return 2;
+          std::memcpy(static_cast<float *>(v->data) + i*width + j, &word, 4);
+        }
+      }
+      auto *dst = ggml_flash_attn_ext(ctx, q, k, v, mask, 1.0f, 0.0f, 0.0f);
+      if (with_sink) {
+        auto *sink = ggml_new_tensor_1d(ctx, GGML_TYPE_F32, 1);
+        std::memcpy(sink->data, &sink_word, 4);
+        ggml_flash_attn_ext_add_sinks(dst, sink);
+      }
+      auto *graph = ggml_new_graph_custom(ctx, 32, false);
+      ggml_build_forward_expand(graph, dst);
+      if (ggml_graph_compute_with_ctx(ctx, graph, 1) != GGML_STATUS_SUCCESS) return 3;
+      for (int j = 0; j < width; ++j) {
+        unsigned word;
+        std::memcpy(&word, static_cast<float *>(dst->data) + j, 4);
+        std::printf("%u\n", word);
+      }
+      ggml_free(ctx);
+    }
+    return std::feof(stdin) ? 0 : 2;
+  }
   if (!std::strcmp(argv[1], "plane-rotation")) {
     int dims, position, inverse, truncate;
     unsigned scale_bits, extension_bits, magnitude_bits;
@@ -1476,4 +1517,46 @@ fn plane_rotation_vtk_23() {
         }
     }
     assert!(results.next().is_none());
+}
+
+#[test]
+fn online_weighted_mean_vtk_24() {
+    use std::fmt::Write;
+    let mut input = String::new();
+    let mut actual = Vec::new();
+    for count in [1, 3, 8, 31, 64] {
+        for width in [1, 4, 13, 48] {
+            for pattern in 0..6 {
+                for sink in [None, Some(-8.0_f32), Some(3.5_f32)] {
+                    let mut mean = super::WeightedMeanF32::new(width);
+                    writeln!(input, "{count} {width} {} {}", u8::from(sink.is_some()), sink.unwrap_or_default().to_bits()).unwrap();
+                    for i in 0..count {
+                        let enabled = pattern != 5 && (pattern != 4 || i % 3 != 0);
+                        let score = match pattern {
+                            0 => i as f32 / 8.0,
+                            1 => -(i as f32) / 8.0,
+                            2 => 2.5,
+                            _ => ((i * 7 % 13) as f32 - 6.0) * 4.0,
+                        };
+                        write!(input, "{} {}", score.to_bits(), u8::from(enabled)).unwrap();
+                        let row: Vec<_> = (0..width).map(|j| ((i * 11 + j * 7) % 31) as f32 / 16.0 - 0.75).collect();
+                        for x in &row { write!(input, " {}", x.to_bits()).unwrap(); }
+                        input.push('\n');
+                        if enabled { mean.push(score, Some(&row)).unwrap(); }
+                    }
+                    if let Some(score) = sink { mean.push(score, None).unwrap(); }
+                    actual.extend(mean.finish().unwrap());
+                }
+            }
+        }
+    }
+    let expected = query_oracle("weighted-mean", input);
+    assert_eq!(actual.len(), expected.len());
+    for (value, word) in actual.into_iter().zip(expected) {
+        let reference = f32::from_bits(word);
+        assert!((value - reference).abs() <= 0.000001, "{value} vs {reference}");
+    }
+    let mut mean = super::WeightedMeanF32::new(2);
+    assert!(mean.push(0.0, Some(&[1.0])).is_err());
+    assert_eq!(mean.finish().unwrap(), [0.0, 0.0]);
 }
