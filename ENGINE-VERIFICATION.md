@@ -237,3 +237,19 @@ passed the same batch. Scoped Clippy and cargo-deny passed.
 The frontier measures 1,174 residual functions and 1,332 uncertified
 functions against ceilings of 1,160 and 1,318. PR #17 measured 1,173
 and 1,331. The published release remains open.
+
+## VTK-24 streaming weighted mean
+
+The locked SDK certified the pivot, coordinate blend and reciprocal-mass
+exports. The unchanged GGML CPU FLASH_ATTN_EXT evaluator supplied 5,940
+reference output coordinates over 360 graphs. Unit queries made each key
+the observation score. Values covered widths 1, 4, 13 and 48, increasing,
+decreasing and tied scores, large differences, masked and all-masked rows,
+and absent, negative and positive sinks. Maximum permitted absolute error
+was 0.000001. Passing a mismatched width preserved the empty accumulator.
+
+Reversing the new-maximum branch in the coordinate blend returned 0
+where GGML returned −0.75. Restoring the branch passed the batch. Scoped
+Clippy and cargo-deny passed. The full Engine gate reached the fidelity
+ratchet and refused the logarithm and rotary stack. Release acceptance
+remains open. [Prism artifact](generated/tensor-weighted/result.json)

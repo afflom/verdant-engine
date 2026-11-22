@@ -65,7 +65,7 @@ impl WeightedMeanF32 {
             std::mem::swap(&mut self.sums, &mut self.scratch);
         } else if raised {
             for (next, &prior) in self.scratch.iter_mut().zip(&self.sums) {
-                *next = evaluate_f32_scalar(2, prior, weight)?;
+                *next = evaluate_f32_scalar(crate::scalars::two_u64(), prior, weight)?;
             }
             std::mem::swap(&mut self.sums, &mut self.scratch);
         }
@@ -83,7 +83,7 @@ impl WeightedMeanF32 {
             verdant_weighted_reciprocal::run(bits(self.mass), bits(1.0)).map_err(|_| failure())?;
         let scale = float(inverse)?;
         for value in &mut self.sums {
-            *value = evaluate_f32_scalar(2, *value, scale)?;
+            *value = evaluate_f32_scalar(crate::scalars::two_u64(), *value, scale)?;
         }
         Ok(self.sums)
     }
