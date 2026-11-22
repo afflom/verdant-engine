@@ -13,6 +13,8 @@ use crate::{
 };
 
 mod activations;
+mod rotation;
+pub use rotation::{rotate_pair_f32, signed_word_f32, RotaryParameters, RotarySpectrum};
 pub use activations::{exponential_f32, sin_cos_f32, swiglu_f32};
 
 #[inline]

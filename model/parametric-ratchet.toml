@@ -309,3 +309,8 @@ role = "Order the certified binary32 scalar operations for a sigmoid-weighted ga
 path = "app/src/CircularFunctions.lex.tex"
 stratum = 1
 role = "Reduce binary32 angles to a quadrant and evaluate the two circular functions."
+
+[[stratum_module]]
+path = "app/src/PlaneRotation.lex.tex"
+stratum = 1
+role = "Define geometric frequency corrections and the order of binary32 coefficient and coordinate operations."

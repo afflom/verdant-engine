@@ -49,3 +49,4 @@ site/stitch/
 /app/.lexlean-exponential/
 /app/.lexlean-swiglu/
 /app/.lexlean-sincos/
+/app/.lexlean-plane/

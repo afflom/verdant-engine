@@ -319,3 +319,27 @@ name = "verdant_circular_square"
 version = "=2.21.0"
 expression = "MIT OR Apache-2.0"
 license-files = [{ path = "src/lib.rs", hash = 0x460ae74a }]
+
+[[licenses.clarify]]
+name = "verdant_rotation_geometry"
+version = "=2.22.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0xe09c5359 }]
+
+[[licenses.clarify]]
+name = "verdant_rotation_limit"
+version = "=2.22.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0x26192144 }]
+
+[[licenses.clarify]]
+name = "verdant_rotation_signed"
+version = "=2.22.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0xa7db5fef }]
+
+[[licenses.clarify]]
+name = "verdant_rotation_step"
+version = "=2.22.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0x8f1d53f3 }]

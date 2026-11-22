@@ -852,6 +852,10 @@ dependencies = [
  "verdant_packed_field",
  "verdant_quotient_f64",
  "verdant_quotient_route",
+ "verdant_rotation_geometry",
+ "verdant_rotation_limit",
+ "verdant_rotation_signed",
+ "verdant_rotation_step",
  "verdant_round_mantissa_f64",
  "verdant_scalar_f32",
  "verdant_small_float",
@@ -987,6 +991,22 @@ version = "2.12.0"
 [[package]]
 name = "verdant_quotient_route"
 version = "2.12.0"
+
+[[package]]
+name = "verdant_rotation_geometry"
+version = "2.22.0"
+
+[[package]]
+name = "verdant_rotation_limit"
+version = "2.22.0"
+
+[[package]]
+name = "verdant_rotation_signed"
+version = "2.22.0"
+
+[[package]]
+name = "verdant_rotation_step"
+version = "2.22.0"
 
 [[package]]
 name = "verdant_round_mantissa_f64"

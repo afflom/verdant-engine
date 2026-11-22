@@ -851,6 +851,10 @@ fn verify_bundle(scope: &str, directory: &str) -> std::collections::BTreeMap<Str
                     "verdant_circular_prepare" => include_bytes!("../../../../generated/tensor-circular/packages/rust-core/verdant_circular_prepare/src/lib.rs"),
                     "verdant_circular_reduce" => include_bytes!("../../../../generated/tensor-circular/packages/rust-core/verdant_circular_reduce/src/lib.rs"),
                     "verdant_circular_square" => include_bytes!("../../../../generated/tensor-circular/packages/rust-core/verdant_circular_square/src/lib.rs"),
+                    "verdant_rotation_geometry" => include_bytes!("../../../../generated/tensor-plane/packages/rust-core/verdant_rotation_geometry/src/lib.rs"),
+                    "verdant_rotation_limit" => include_bytes!("../../../../generated/tensor-plane/packages/rust-core/verdant_rotation_limit/src/lib.rs"),
+                    "verdant_rotation_signed" => include_bytes!("../../../../generated/tensor-plane/packages/rust-core/verdant_rotation_signed/src/lib.rs"),
+                    "verdant_rotation_step" => include_bytes!("../../../../generated/tensor-plane/packages/rust-core/verdant_rotation_step/src/lib.rs"),
                     "verdant_swiglu" => include_bytes!("../../../../generated/tensor-swiglu/packages/rust-core/verdant_swiglu/src/lib.rs"),
                     "verdant_packed_dot" => include_bytes!("../../../../generated/tensor-packed/packages/rust-core/verdant_packed_dot/src/lib.rs"),
                     "verdant_symmetric_dot" => include_bytes!("../../../../generated/tensor-dot/packages/rust-core/verdant_symmetric_dot/src/lib.rs"),
@@ -1275,6 +1279,7 @@ fn circular_functions_vtk_21() {
 
 #[test]
 fn plane_rotation_vtk_23() {
+    assert_eq!(verify_bundle("plane", "tensor-plane").len(), 4);
     use std::fmt::Write;
     let mut request = String::new();
     let mut cases = Vec::new();
@@ -1321,7 +1326,7 @@ fn plane_rotation_vtk_23() {
             truncate,
         })
         .unwrap();
-        let mut phase = position as f32;
+        let mut phase = super::signed_word_f32(position).unwrap();
         for lane in 0..dims / 2 {
             let row = results
                 .next()
