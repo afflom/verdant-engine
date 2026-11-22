@@ -3,6 +3,7 @@ const GGML_VECTOR_DRIVER: &str = r#"
 #include "ops.h"
 #include "unary-ops.h"
 #include "ggml-cpu-impl.h"
+#include "ggml-cpu-impl.h"
 #include "ggml-cpu.h"
 #include "ggml-quants.h"
 #include "ops.h"
@@ -44,6 +45,41 @@ static int compare_rows(ggml_type type) {
 int main(int argc, char **argv) {
   if (argc != 2) return 1;
   ggml_cpu_init();
+  if (!std::strcmp(argv[1], "plane-rotation")) {
+    int dims, position, inverse, truncate;
+    unsigned scale_bits, extension_bits, magnitude_bits;
+    const auto decode = [](unsigned bits) { float v; std::memcpy(&v, &bits, 4); return v; };
+    const auto output = [](float v) { unsigned bits; std::memcpy(&bits, &v, 4); std::printf("%u\n", bits); };
+    while (std::scanf("%d %d %d %d %u %u %u", &dims, &position, &inverse, &truncate,
+                      &scale_bits, &extension_bits, &magnitude_bits) == 7) {
+      if (dims < 2 || dims % 2 || dims > 128) return 2;
+      ggml_init_params init{256*1024, nullptr, false};
+      auto *ctx = ggml_init(init);
+      auto *src = ggml_new_tensor_1d(ctx, GGML_TYPE_F32, dims);
+      auto *pos = ggml_new_tensor_1d(ctx, GGML_TYPE_I32, 1);
+      auto *factors = ggml_new_tensor_1d(ctx, GGML_TYPE_F32, dims/2);
+      *static_cast<int32_t *>(pos->data) = position;
+      for (int j=0; j < dims; ++j) static_cast<float *>(src->data)[j] = float((7*j)%17-8)/4;
+      for (int j=0; j < dims/2; ++j) static_cast<float *>(factors->data)[j] = 1.0f + float(j%5)/4;
+      auto *dst = inverse
+          ? ggml_rope_ext_back(ctx, src, pos, factors, dims, 0, 512, 10000,
+                               decode(scale_bits), decode(extension_bits), decode(magnitude_bits), 32, 1)
+          : ggml_rope_ext(ctx, src, pos, factors, dims, 0, 512, 10000,
+                          decode(scale_bits), decode(extension_bits), decode(magnitude_bits), 32, 1);
+      ggml_rope_set_truncate(dst, truncate != 0);
+      ggml_compute_params params{};
+      std::vector<float> cache(dims+64);
+      params.nth=1; params.wdata=cache.data(); params.wsize=cache.size()*sizeof(float);
+      if (inverse) ggml_compute_forward_rope_back(&params, dst);
+      else ggml_compute_forward_rope(&params, dst);
+      for (int j=0; j<dims; j+=2) {
+        output(cache[j]); output(cache[j+1]);
+        output(static_cast<float *>(dst->data)[j]); output(static_cast<float *>(dst->data)[j+1]);
+      }
+      ggml_free(ctx);
+    }
+    return std::feof(stdin) ? 0 : 2;
+  }
   if (!std::strcmp(argv[1], "sincos")) {
     unsigned input;
     while (std::scanf("%u", &input) == 1) {
@@ -1235,4 +1271,80 @@ fn circular_functions_vtk_21() {
             }
         }
     }
+}
+
+#[test]
+fn plane_rotation_vtk_23() {
+    use std::fmt::Write;
+    let mut request = String::new();
+    let mut cases = Vec::new();
+    for dims in [16, 48, 128] {
+        for position in [-7, 0, 1, 59, 512] {
+            for inverse in [false, true] {
+                for truncate in [false, true] {
+                    for (scale, extension, magnitude) in [
+                        (1_f32, 0_f32, 1_f32),
+                        (0.5, 0.0, 0.8),
+                        (0.25, 1.0, 1.0),
+                        (0.7, 0.6, 1.2),
+                    ] {
+                        writeln!(
+                            request,
+                            "{dims} {position} {} {} {} {} {}",
+                            u8::from(inverse),
+                            u8::from(truncate),
+                            scale.to_bits(),
+                            extension.to_bits(),
+                            magnitude.to_bits()
+                        )
+                        .unwrap();
+                        cases.push((
+                            dims, position, inverse, truncate, scale, extension, magnitude,
+                        ));
+                    }
+                }
+            }
+        }
+    }
+    let words = query_oracle("plane-rotation", request);
+    let mut results = words.chunks_exact(4);
+    assert!(results.remainder().is_empty());
+    for (dims, position, inverse, truncate, scale, extension, magnitude) in cases {
+        let spectrum = super::RotarySpectrum::new(super::RotaryParameters {
+            dimensions: dims,
+            context: 512,
+            base: 10000.0,
+            frequency_scale: scale,
+            extension,
+            magnitude,
+            rotations: [32.0, 1.0],
+            truncate,
+        })
+        .unwrap();
+        let mut phase = position as f32;
+        for lane in 0..dims / 2 {
+            let row = results
+                .next()
+                .expect("upstream coefficient and rotated pair");
+            let weights = spectrum
+                .weights(phase, 1.0 + (lane % 5) as f32 / 4.0, lane, inverse)
+                .unwrap();
+            for (actual, expected) in [weights.0, weights.1].into_iter().zip(row) {
+                assert!(
+                    actual.to_bits().abs_diff(*expected) <= 3,
+                    "dims {dims} position {position} lane {lane}: {actual:?} versus {:?}",
+                    f32::from_bits(*expected)
+                );
+            }
+            let coordinate = |i: u32| ((7 * i % 17) as i32 - 8) as f32 / 4.0;
+            let actual = super::rotate_pair_f32(
+                (coordinate(2 * lane), coordinate(2 * lane + 1)),
+                (f32::from_bits(row[0]), f32::from_bits(row[1])),
+            )
+            .unwrap();
+            assert_eq!([actual.0.to_bits(), actual.1.to_bits()], row[2..]);
+            phase = spectrum.advance(phase).unwrap();
+        }
+    }
+    assert!(results.next().is_none());
 }

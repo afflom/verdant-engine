@@ -630,3 +630,10 @@ Feature: engine
     When Verdant evaluates their sine and cosine together
     Then both results match the imported functions within one representable step
     And zeros retain their reference sign and unordered results retain their reference class
+
+  @VTK-23 @build
+  Scenario: Verdant computes scaled rotary frequency coefficients and binary32 plane rotations against the imported GGML rotary kernel
+    Given forward and inverse rotations with geometric frequencies and optional interpolation
+    When Verdant applies each coefficient pair to two binary32 coordinates
+    Then the coefficients agree with the imported frequency cache
+    And rotation using the imported coefficients matches the imported output words

@@ -709,3 +709,9 @@ id = "VTK-21"
 level = "build"
 suite = "engine"
 statement = "Verdant evaluates binary32 sine and cosine across the finite exponent range and exceptional inputs against the imported GGML CPU scalar functions"
+
+[[id]]
+id = "VTK-23"
+level = "build"
+suite = "engine"
+statement = "Verdant computes scaled rotary frequency coefficients and binary32 plane rotations against the imported GGML rotary kernel"
