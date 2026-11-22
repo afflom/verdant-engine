@@ -306,6 +306,11 @@ stratum = 1
 role = "Symmetric four-bit lane placement, row extent admission and ordered F32 reduction instructions."
 
 [[stratum_module]]
+path = "app/src/HyperbolicTangent.lex.tex"
+stratum = 1
+role = "Binary32 tangent range selection, odd-series coefficients, exponential reconstruction and signed saturation."
+
+[[stratum_module]]
 path = "app/src/NaturalExponential.lex.tex"
 stratum = 1
 role = "Binary32 exponential range reduction, fixed-point recurrence and final storage rounding."
