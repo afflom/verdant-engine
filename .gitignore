@@ -46,3 +46,4 @@ site/stitch/
 /app/.lexlean-dot/
 
 /app/.lexlean-packed/
+/app/.lexlean-exponential/

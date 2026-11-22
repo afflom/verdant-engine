@@ -265,3 +265,21 @@ name = "verdant_packed_dot"
 version = "=2.18.0"
 expression = "MIT OR Apache-2.0"
 license-files = [{ path = "src/lib.rs", hash = 0xae638752 }]
+
+[[licenses.clarify]]
+name = "verdant_exponential_f32"
+version = "=2.19.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0x06dd29d6 }]
+
+[[licenses.clarify]]
+name = "verdant_exponential_scale"
+version = "=2.19.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0x7780e124 }]
+
+[[licenses.clarify]]
+name = "verdant_exponential_step"
+version = "=2.19.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0x2ca5ea94 }]

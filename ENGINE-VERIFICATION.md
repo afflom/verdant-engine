@@ -155,3 +155,28 @@ run. Packed-plan attestation
 The locked-SDK component Clippy check passed. The full Engine fidelity gate
 reports 1,171 native residue functions against 1,160 and 1,329 uncertified
 functions against 1,318. The parent measured 1,169 and 1,327.
+
+## VTK-19 binary32 exponential
+
+The public `linear::exponential_f32` accepts one binary32 word. The Prism
+reduction handles NaNs, signed zeros and infinities. For the remaining range
+it represents the input magnitude with 50 fractional bits and divides by
+round(2⁵⁰ ln 2). This yields a power-of-two scale and a nonnegative remainder
+below ln 2. A 12-term Taylor recurrence evaluates the reduced exponential
+with 31 fractional bits. The certified scaling stage rounds to nearest even
+at the final normal or subnormal precision. The Rust adapter passes words
+between the three compiled Prism roots.
+
+The imported oracle runs the unchanged `ggml_vec_exp_f32` from llama.cpp
+`9a080f44`. The 166,856 distinct inputs cover every binary32 exponent with
+both signs, neighboring words around powers of two in the result, and a
+1/256-spaced sweep of the active range. The check requires the reference
+zero, infinity or NaN class at those endpoints and allows one ULP for finite
+positive outputs. [Imported authority](https://github.com/ggml-org/llama.cpp/blob/9a080f44b503c64f66c84a6274b9d9ee5d5b09d5/ggml/src/ggml-cpu/vec.h#L985)
+
+All 166,856 comparisons passed. Omitting the final recurrence term failed
+on input `0x34fffffe`. Verdant returned `0x3f800002` against the oracle's
+`0x3f800004`. Restoring the term passed the suite. Scoped Clippy and
+cargo-deny also passed. The three compiled roots carry attestation
+`7ae660150f63832441d4ec0310f032f5a6c08bf612e1a8f58c2f8e2d1ccf62b3`.
+[Certified artifacts](generated/tensor-exponential/result.json)

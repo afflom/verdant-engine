@@ -787,6 +787,9 @@ fn verify_bundle(scope: &str, directory: &str) -> std::collections::BTreeMap<Str
                     "verdant_division_norm" => include_bytes!("../../../../generated/tensor-quotient/packages/rust-core/verdant_division_norm/src/lib.rs"),
                     "verdant_division_finish" => include_bytes!("../../../../generated/tensor-quotient/packages/rust-core/verdant_division_finish/src/lib.rs"),
                     "verdant_symmetric_q8" => include_bytes!("../../../../generated/tensor-q8/packages/rust-core/verdant_symmetric_q8/src/lib.rs"),
+                    "verdant_exponential_f32" => include_bytes!("../../../../generated/tensor-exponential/packages/rust-core/verdant_exponential_f32/src/lib.rs"),
+                    "verdant_exponential_step" => include_bytes!("../../../../generated/tensor-exponential/packages/rust-core/verdant_exponential_step/src/lib.rs"),
+                    "verdant_exponential_scale" => include_bytes!("../../../../generated/tensor-exponential/packages/rust-core/verdant_exponential_scale/src/lib.rs"),
                     "verdant_packed_dot" => include_bytes!("../../../../generated/tensor-packed/packages/rust-core/verdant_packed_dot/src/lib.rs"),
                     "verdant_symmetric_dot" => include_bytes!("../../../../generated/tensor-dot/packages/rust-core/verdant_symmetric_dot/src/lib.rs"),
                     "verdant_symmetric_dot_layout" => include_bytes!("../../../../generated/tensor-dot/packages/rust-core/verdant_symmetric_dot_layout/src/lib.rs"),
@@ -1036,6 +1039,11 @@ fn check_symmetric_rows(packed: bool) {
 
 #[test]
 fn natural_exponential_vtk_19() {
+    assert_eq!(
+        verify_bundle("exponential", "tensor-exponential")
+            ["VerdantEngine.NaturalExponential.prepare"],
+        "verdant_exponential_f32"
+    );
     use std::fmt::Write;
     let mut words = Vec::new();
     for sign in [0, 1u32 << 31] {
@@ -1058,6 +1066,7 @@ fn natural_exponential_vtk_19() {
     }
     words.sort_unstable();
     words.dedup();
+    assert_eq!(words.len(), 166_856);
     let mut input = String::new();
     for &word in &words {
         writeln!(input, "{word}").unwrap();

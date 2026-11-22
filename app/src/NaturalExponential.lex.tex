@@ -1,0 +1,85 @@
+\begin{lexlean}{NaturalExponential}
+\useglossary{lexlean.std.bool@1.2.0}
+\useglossary{lexlean.std.nat@1.2.0}
+\importmodule{FloatStorage}
+\importmodule{ScalarF32}
+\title{Natural number}
+\begin{semanticmodule}
+inductive{
+  name: Reduction,
+  type_parameters: [],
+  parameters: [],
+  constructors: [{name: exact, fields: [Nat]}, {name: series, fields: [Nat, Nat, Nat, Nat]}]
+}
+
+definition{
+  name: seriesStep,
+  parameters: [residual : Nat, order : Nat, value : Nat],
+  result: Nat,
+  body: (2147483648 + (FloatStorage::roundQuotient (prim multiply residual value : Nat) (prim multiply order 2147483648 : Nat))),
+  executable: true,
+  production: {effects: [overflow], targets: [rust-core]}
+}
+
+definition{
+  name: scaleResult,
+  parameters: [scale : Nat, value : Nat],
+  result: Nat,
+  body: (if (scale <? 106) then 0 else (if (scale <? 130) then (FloatStorage::roundQuotient value (ScalarF32::power (prim subtract 138 scale : Nat))) else (if (383 <? scale) then 2139095040 else ((prim multiply (prim subtract scale 130 : Nat) 8388608 : Nat) + (FloatStorage::roundQuotient value 256))))),
+  executable: true,
+  production: {effects: [overflow], targets: [rust-core]}
+}
+
+definition{
+  name: finite,
+  parameters: [negative : Bool, exponent : Nat, fraction : Nat],
+  result: Reduction,
+  body: (let magnitude : Nat := (prim multiply (8388608 + fraction) (ScalarF32::power (prim subtract exponent 100 : Nat)) : Nat); (let count : Nat := (prim quotient magnitude 780414346020670 0 : Nat); (let tail : Nat := (prim remainder magnitude 780414346020670 0 : Nat); (let residual : Nat := (if negative then (prim subtract 780414346020670 tail : Nat) else tail); (let scale : Nat := (if negative then (prim subtract 255 count : Nat) else (256 + count)); (ctor Reduction.series scale (FloatStorage::roundQuotient residual 524288) 12 2147483648)))))),
+  executable: true
+}
+
+definition{
+  name: prepare,
+  parameters: [word : Nat],
+  result: Reduction,
+  body: (let absolute : Nat := (prim remainder word 2147483648 0 : Nat); (let exponent : Nat := (prim quotient absolute 8388608 0 : Nat); (let fraction : Nat := (prim remainder absolute 8388608 0 : Nat); (if (2139095040 <? absolute) then (ctor Reduction.exact 2143289344) else (if (exponent <? 100) then (ctor Reduction.exact 1065353216) else (if (133 <? exponent) then (if (word <? 2147483648) then (ctor Reduction.exact 2139095040) else (ctor Reduction.exact 0)) else (finite (2147483647 <? word) exponent fraction))))))),
+  executable: true,
+  production: {effects: [overflow], targets: [rust-core]}
+}
+
+theorem{
+  name: zero,
+  parameters: [],
+  statement: ((prepare 0) = (ctor Reduction.exact 1065353216)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: negativeZero,
+  parameters: [],
+  statement: ((prepare 2147483648) = (ctor Reduction.exact 1065353216)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: positiveInfinity,
+  parameters: [],
+  statement: ((prepare 2139095040) = (ctor Reduction.exact 2139095040)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: negativeInfinity,
+  parameters: [],
+  statement: ((prepare 4286578688) = (ctor Reduction.exact 0)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: unordered,
+  parameters: [],
+  statement: ((prepare 2143289345) = (ctor Reduction.exact 2143289344)),
+  proof: reflexivity{}
+}
+\end{semanticmodule}
+\end{lexlean}

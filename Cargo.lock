@@ -831,6 +831,9 @@ dependencies = [
  "verdant_division_finish",
  "verdant_division_norm",
  "verdant_encoded_word",
+ "verdant_exponential_f32",
+ "verdant_exponential_scale",
+ "verdant_exponential_step",
  "verdant_float_storage",
  "verdant_float_transform",
  "verdant_high_f64",
@@ -894,6 +897,18 @@ version = "2.12.0"
 [[package]]
 name = "verdant_encoded_word"
 version = "2.9.0"
+
+[[package]]
+name = "verdant_exponential_f32"
+version = "2.19.0"
+
+[[package]]
+name = "verdant_exponential_scale"
+version = "2.19.0"
+
+[[package]]
+name = "verdant_exponential_step"
+version = "2.19.0"
 
 [[package]]
 name = "verdant_float_storage"
