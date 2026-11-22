@@ -306,6 +306,11 @@ stratum = 2
 role = "Order the certified binary32 scalar operations for a sigmoid-weighted gated product."
 
 [[stratum_module]]
+path = "app/src/Logistic.lex.tex"
+stratum = 2
+role = "Select the numerator and gate of the shared binary32 sigmoid and SiLU calculation."
+
+[[stratum_module]]
 path = "app/src/CircularFunctions.lex.tex"
 stratum = 1
 role = "Reduce binary32 angles to a quadrant and evaluate the two circular functions."
