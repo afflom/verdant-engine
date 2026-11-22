@@ -287,6 +287,15 @@ pub struct CatalogBundleRegistry {
 }
 
 impl CatalogBundleRegistry {
+    // Conformance corpora are verified by the model and the tensor tests.
+    // Runtime catalogs must still supply bytes for every other file lock.
+    fn catalog_locks(authorities: &str) -> Vec<AuthorityFileLock> {
+        parse_authority_file_locks(authorities)
+            .into_iter()
+            .filter(|lock| !lock.path.starts_with("tests/oracles/"))
+            .collect()
+    }
+
     /// Loads and cross-validates the embedded compile-time catalogs against `model/authorities.toml`
     /// SHA-256 locks (usable inside pure `wasm32-unknown-unknown` with zero filesystem I/O).
     pub fn embedded() -> Result<Self, OracleValidationError> {
@@ -347,7 +356,7 @@ impl CatalogBundleRegistry {
                 detail: err.to_string(),
             }
         })?;
-        let locks = parse_authority_file_locks(&auth_toml);
+        let locks = Self::catalog_locks(&auth_toml);
         let mut owned_bytes: BTreeMap<String, Vec<u8>> = BTreeMap::new();
         for lock in &locks {
             let full_path = repo_dir.join(&lock.path);
@@ -371,7 +380,7 @@ impl CatalogBundleRegistry {
         authorities_toml: &str,
         files_by_rel_path: &BTreeMap<&str, &[u8]>,
     ) -> Result<Self, OracleValidationError> {
-        let file_locks = parse_authority_file_locks(authorities_toml);
+        let file_locks = Self::catalog_locks(authorities_toml);
         let min_locks = (four_u32() as usize) + 1usize;
         if file_locks.len() < min_locks {
             return Err(OracleValidationError::CatalogIntegrityMismatch {

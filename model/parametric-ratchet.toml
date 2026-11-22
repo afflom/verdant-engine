@@ -219,3 +219,63 @@ role = "Constructive autonomous release cadence state machine proving red-main r
 path = "app/src/Release.lex.tex"
 stratum = 5
 role = "Constructive multi-channel release distribution matrix covering 3 CORS-verified Stitch shard mirrors, RFC 2789 Cargo Sparse Registry, GHCR OCI, and Zenodo DOI."
+
+[[stratum_module]]
+path = "app/src/MatrixProduct.lex.tex"
+stratum = 1
+role = "Prism admission for exact F32 matrix operand extents."
+[[stratum_module]]
+path = "app/src/ScalarF32.lex.tex"
+stratum = 1
+role = "Prism integer encoding of IEEE F32 scalar arithmetic and exceptional values."
+[[stratum_module]]
+path = "app/src/StorageTransfer.lex.tex"
+stratum = 1
+role = "Prism admission for equal-length opaque storage transfers."
+[[stratum_module]]
+path = "app/src/FloatStorage.lex.tex"
+stratum = 1
+role = "Prism F32 F16 and BF16 storage encoding conversions and width refusals."
+[[stratum_module]]
+path = "app/src/FloatTransform.lex.tex"
+stratum = 1
+role = "Prism composition of float storage arithmetic and ordered selections for GGML transforms."
+[[stratum_module]]
+path = "app/src/FloatUnary.lex.tex"
+stratum = 1
+role = "Prism typed float unary composition and exact integer rounding for the GGML CPU contract."
+[[stratum_module]]
+path = "app/src/ScalarF64.lex.tex"
+stratum = 1
+role = "Prism nearest-even wide accumulation and F32 count storage conversion."
+[[stratum_module]]
+path = "app/src/FloatWord64.lex.tex"
+stratum = 1
+role = "Prism two-word IEEE F64 encoding and typed wide-arithmetic operation selection."
+[[stratum_module]]
+path = "app/src/FloatWord64Exports.lex.tex"
+stratum = 1
+role = "Prism direct F64 field exports with universal refinement equalities to the pure word specification."
+[[stratum_module]]
+path = "app/src/WordComparison.lex.tex"
+stratum = 1
+role = "Prism encoded F32 ordering and NaN operand classification with bounded integer word operations for row graphs."
+[[stratum_module]]
+path = "app/src/SmallFloat.lex.tex"
+stratum = 1
+role = "Prism GGML packed scales and F8 encodings with finite field projections and bounded word admission."
+
+[[stratum_module]]
+path = "app/src/PackedWord.lex.tex"
+stratum = 1
+role = "Prism packed field extraction and bounded biased integer F32 coefficients for GGML quantized rows."
+
+[[stratum_module]]
+path = "app/src/StorageBlock.lex.tex"
+stratum = 1
+role = "Certified GGML CPU storage-block instruction plans and exact primitive word sequencing bound to imported codebooks."
+
+[[stratum_module]]
+path = "app/src/F64Quotient.lex.tex"
+stratum = 1
+role = "Prism nearest-even F64 quotient plans and unsigned-count normalization with imported SoftFloat validation."
