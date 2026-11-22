@@ -662,3 +662,9 @@ Feature: engine
     Given 256 binary32 lanes including equal-magnitude extrema and halfway values
     When Verdant encodes the scale signed coefficients and sixteen partial sums
     Then the complete block matches the pinned GGML Q8_K reference and undefined inputs are refused
+
+  @VTK-27 @build
+  Scenario: Verdant contracts packed affine Q2_K weight rows with grouped Q8_K activations against the pinned GGML CPU vector product
+    Given packed weight scales offsets and two-bit lanes and signed activation groups
+    When Verdant contracts the row with zero one or multiple blocks
+    Then each result matches the imported GGML CPU vector product and mismatched storage is refused

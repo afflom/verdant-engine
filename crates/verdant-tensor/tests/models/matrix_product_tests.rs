@@ -220,6 +220,30 @@ int main(int argc, char **argv) {
     }
     return std::ferror(stdin) ? 2 : 0;
   }
+  if (!std::strcmp(argv[1], "grouped-dot")) {
+    unsigned count, word;
+    const auto dot = ggml_get_type_traits_cpu(GGML_TYPE_Q2_K)->vec_dot;
+    while (std::scanf("%u", &count) == 1) {
+      std::vector<block_q2_K> weights(count+1);
+      std::vector<block_q8_K> activations(count+1);
+      for (unsigned i=0; i<count; ++i) {
+        for (size_t j=0; j<sizeof(block_q2_K); ++j) {
+          if (std::scanf("%u",&word)!=1) return 2;
+          reinterpret_cast<uint8_t*>(&weights[i])[j]=uint8_t(word);
+        }
+        float lanes[QK_K];
+        for (float &lane:lanes) {
+          if (std::scanf("%u",&word)!=1) return 2;
+          std::memcpy(&lane,&word,sizeof(word));
+        }
+        quantize_row_q8_K_ref(lanes,&activations[i],QK_K);
+      }
+      float result;
+      dot(int(count)*QK_K,&result,0,weights.data(),0,activations.data(),0,1);
+      std::memcpy(&word,&result,sizeof(word)); std::printf("%u\n",word);
+    }
+    return std::ferror(stdin) ? 3 : 0;
+  }
   if (!std::strcmp(argv[1], "symmetric-dot")) return compare_rows<block_q8_0>(GGML_TYPE_Q8_0);
   if (!std::strcmp(argv[1], "packed-dot")) return compare_rows<block_q4_0>(GGML_TYPE_Q4_0);
   if (!std::strcmp(argv[1], "symmetric-q8")) return encode_blocks<QK8_0>(quantize_row_q8_0_ref);
@@ -1130,6 +1154,41 @@ fn grouped_block_encoding_vtk_26() {
         block[255] = invalid;
         assert!(super::encode_grouped_q8_block(&block).is_err());
     }
+}
+
+#[test]
+fn grouped_row_product_vtk_27() {
+    use std::fmt::Write;
+    let mut input = String::new();
+    let mut actual = Vec::new();
+    let mut seed = 42u32;
+    let mut next = || {seed = seed.wrapping_mul(1_664_525).wrapping_add(1_013_904_223); seed};
+    for row in 0..97 {
+        let count = row % 5;
+        writeln!(input, "{count}").unwrap();
+        let mut weights = Vec::new();
+        let mut activations = Vec::new();
+        for i in 0..count {
+            let mut block = [0u8; 84];
+            for byte in &mut block[..80] { *byte = (next() >> 24) as u8; }
+            let scales = [0u16, 0x3800, 0xbc00, 0x4000, 0x3400, 0x4200];
+            block[80..82].copy_from_slice(&scales[(row+i)%scales.len()].to_ne_bytes());
+            block[82..].copy_from_slice(&scales[(row*3+i+1)%scales.len()].to_ne_bytes());
+            let lanes = std::array::from_fn(|_| ((next() >> 24) as f32 - 128.0) / 4.0);
+            for byte in block { writeln!(input, "{byte}").unwrap(); }
+            for lane in lanes { writeln!(input, "{}",lane.to_bits()).unwrap(); }
+            weights.extend_from_slice(&block);
+            activations.push(super::encode_grouped_q8_block(&lanes).unwrap());
+        }
+        actual.push(super::dot_grouped_q2_row(&weights,&activations).unwrap());
+    }
+    let expected = query_oracle("grouped-dot", input);
+    assert_eq!(expected.len(),actual.len());
+    for (i,(out,bits)) in actual.into_iter().zip(expected).enumerate() {
+        assert_eq!(out.to_bits(),bits,"grouped row {i}");
+    }
+    assert!(super::dot_grouped_q2_row(&[0;83], &[]).is_err());
+    assert!(super::dot_grouped_q2_row(&[0;84], &[]).is_err());
 }
 
 #[test]

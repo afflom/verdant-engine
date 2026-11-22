@@ -123,6 +123,7 @@ model does not sanction.
 | `VTK-24` | `build` | Verdant accumulates a streaming softmax weighted mean of binary32 rows against the imported GGML CPU attention evaluator |
 | `VTK-25` | `build` | Verdant evaluates binary32 sigmoid and SiLU across finite and exceptional words against the imported CPU scalar functions |
 | `VTK-26` | `build` | Verdant encodes 256 binary32 lanes as Q8_K signed coefficients with a binary32 scale and sixteen group sums against the imported GGML reference |
+| `VTK-27` | `build` | Verdant contracts packed affine Q2_K weight rows with grouped Q8_K activations against the pinned GGML CPU vector product |
 
 ## fidelity
 

@@ -739,3 +739,9 @@ id = "VTK-26"
 level = "build"
 suite = "engine"
 statement = "Verdant encodes 256 binary32 lanes as Q8_K signed coefficients with a binary32 scale and sixteen group sums against the imported GGML reference"
+
+[[id]]
+id = "VTK-27"
+level = "build"
+suite = "engine"
+statement = "Verdant contracts packed affine Q2_K weight rows with grouped Q8_K activations against the pinned GGML CPU vector product"
