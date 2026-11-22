@@ -44,6 +44,17 @@ static int compare_rows(ggml_type type) {
 int main(int argc, char **argv) {
   if (argc != 2) return 1;
   ggml_cpu_init();
+  if (!std::strcmp(argv[1], "natural-exp")) {
+    uint32_t bits;
+    while (std::scanf("%u", &bits) == 1) {
+      float x, y;
+      std::memcpy(&x, &bits, sizeof(x));
+      ggml_vec_exp_f32(1, &y, &x);
+      std::memcpy(&bits, &y, sizeof(bits));
+      std::printf("%u\n", bits);
+    }
+    return std::ferror(stdin) ? 2 : 0;
+  }
   if (!std::strcmp(argv[1], "symmetric-dot")) return compare_rows<block_q8_0>(GGML_TYPE_Q8_0);
   if (!std::strcmp(argv[1], "packed-dot")) return compare_rows<block_q4_0>(GGML_TYPE_Q4_0);
   if (!std::strcmp(argv[1], "symmetric-q8")) {
@@ -1021,4 +1032,52 @@ fn check_symmetric_rows(packed: bool) {
         super::dot_symmetric_q8_row
     };
     assert!(dot(&vec![0; width], &[wrong]).is_err());
+}
+
+#[test]
+fn natural_exponential_vtk_19() {
+    use std::fmt::Write;
+    let mut words = Vec::new();
+    for sign in [0, 1u32 << 31] {
+        for exponent in 0..256 {
+            for fraction in [0, 1, 0x3fffff, 0x400000, 0x7ffffe, 0x7fffff] {
+                words.push(sign | (exponent << 23) | fraction);
+            }
+        }
+    }
+    for step in -28672..=24576 {
+        let center = (step as f32 / 256.0).to_bits();
+        words.extend([center.wrapping_sub(1), center, center + 1]);
+    }
+    for power in -151..=128 {
+        let center = (f64::from(power) * std::f64::consts::LN_2) as f32;
+        let word = center.to_bits();
+        words.extend(
+            (0..8).flat_map(|offset| [word.wrapping_add(offset), word.wrapping_sub(offset)]),
+        );
+    }
+    words.sort_unstable();
+    words.dedup();
+    let mut input = String::new();
+    for &word in &words {
+        writeln!(input, "{word}").unwrap();
+    }
+    let reference = query_oracle("natural-exp", input);
+    assert_eq!(reference.len(), words.len());
+    for (word, expected) in words.into_iter().zip(reference) {
+        let actual = super::exponential_f32(f32::from_bits(word))
+            .unwrap()
+            .to_bits();
+        let result = f32::from_bits(expected);
+        if result.is_nan() {
+            assert!(f32::from_bits(actual).is_nan(), "exp({word:#010x})");
+        } else if result == 0.0 || result.is_infinite() {
+            assert_eq!(actual, expected, "exp({word:#010x}) endpoint");
+        } else {
+            assert!(
+                actual > 0 && actual < f32::INFINITY.to_bits() && actual.abs_diff(expected) <= 1,
+                "exp({word:#010x}): {actual:#010x} versus {expected:#010x}"
+            );
+        }
+    }
 }

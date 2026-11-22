@@ -609,3 +609,10 @@ Feature: engine
     When Verdant contracts the two rows
     Then all output words or unordered classes match the external CPU callback
     And invalid block extents have typed refusals
+
+  @VTK-19 @build
+  Scenario: Verdant evaluates the binary32 natural exponential within one representable step of the imported GGML scalar oracle with gradual underflow and matching overflow and exceptional classes
+    Given binary32 inputs spanning normals, subnormals, rounding transitions, infinities and NaNs
+    When Verdant evaluates the natural exponential
+    Then each finite answer agrees within one ULP with the imported scalar function
+    And zero, infinity and NaN results have the reference class
