@@ -4,8 +4,8 @@ spec = "verdant/self-host-ratchet-manifest/1"
 generator = "verdant-operator-ratchet-lift"
 version = "2.17.0"
 release_epoch = 21
-source_commit_kappa = "01d2439c5bd6dbfc6b4b99c5a21bff75e6b42ec312630dcc197d041cb713d039"
-source_tree_root_sha256 = "fe40d28ec155301790cc4bb453ae5f4a921b63dc74c702769f23f1d4296b2146"
+source_commit_kappa = "d2f63a2afebb7aad308c0b0d896303b7d9c75540ca5dbe0ec07994bfc7893a8d"
+source_tree_root_sha256 = "b265360bcea381006e0c913d3fc4ac504dcfac4fcc093bbe5eff6a482e870e4f"
 immutability_seal_root_sha256 = "2f48856fdd3036b177f155d7c77d972dc1efb4f7628e690fc688e1ed3f9654b4"
 release_capsule_sha256 = "de964eba48287d89a7a59a2d2fdb251973e61d5d23116a81c47c0da108c9df25"
 unlifted_ui_files = 0
@@ -371,7 +371,7 @@ sha256 = "05439174330f82ea2b2bcc639340a2bdd81bff43bd4b194d38c17ae694698e7a"
 [[lifted_module]]
 path = "crates/verdant-tensor/src/linear/grouped.rs"
 category = "rust"
-sha256 = "d6daea0eaea11399760b07576eafcabea7058605a9aa7dcacd6743f391a179e1"
+sha256 = "2a5998e92a993afb8e4822ff32b6d238842c93345424ebabf5ccfb46eea848e7"
 
 [[lifted_module]]
 path = "crates/verdant-tensor/src/linear/rotation.rs"
