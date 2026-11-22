@@ -31,7 +31,7 @@ inductive{
   type_parameters: [],
   parameters: [],
   constructors: [
-    {name: setup, fields: [Bool, Bool]},
+    {name: setup, fields: [Bool, Bool, Nat]},
     {name: weights, fields: [Bool, Bool]},
     {name: apply, fields: []}
   ]
@@ -42,14 +42,15 @@ inductive{
   type_parameters: [],
   parameters: [],
   constructors: [
-    {name: done, fields: []},
+    {name: done, fields: [Nat, Nat]},
     {name: scalar, fields: [Nat, Nat, Operand, Operand]},
     {name: limit, fields: [Bool, Nat, Operand, Operand]},
     {name: log, fields: [Nat, Operand]},
     {name: integer, fields: [Bool, Nat, Operand]},
     {name: integral, fields: [Nat, Nat, Operand]},
     {name: circular, fields: [Nat, Nat, Operand]},
-    {name: next, fields: []}
+    {name: next, fields: []},
+    {name: finishSetup, fields: [Nat, Nat, Nat]}
   ]
 }
 
@@ -82,9 +83,9 @@ definition{
 
 definition{
   name: configure,
-  parameters: [extend : Bool, truncate : Bool, stage : Nat],
+  parameters: [extend : Bool, truncate : Bool, last : Nat, stage : Nat],
   result: Action,
-  body: (if extend then (if (stage =? 0) then (ctor Action.integer false 11 (ctor Operand.slot 0)) else (if (stage =? 1) then (ctor Action.integer true 12 (ctor Operand.slot 1)) else (if (stage =? 2) then (ctor Action.integer false 13 (ctor Operand.slot 14)) else (if (stage =? 3) then (ctor Action.log 10 (ctor Operand.slot 2)) else (if (stage =? 4) then (ctor Action.scalar 2 10 (ctor Operand.word 1073741824) (ctor Operand.slot 10)) else (if (stage =? 5) then (ctor Action.scalar 2 8 (ctor Operand.slot 6) (ctor Operand.word 1073741824)) else (if (stage =? 6) then (ctor Action.scalar 2 8 (ctor Operand.slot 8) (ctor Operand.word 1078530011)) else (if (stage =? 7) then (ctor Action.scalar 3 8 (ctor Operand.slot 12) (ctor Operand.slot 8)) else (if (stage =? 8) then (ctor Action.log 8 (ctor Operand.slot 8)) else (if (stage =? 9) then (ctor Action.scalar 2 8 (ctor Operand.slot 11) (ctor Operand.slot 8)) else (if (stage =? 10) then (ctor Action.scalar 3 8 (ctor Operand.slot 8) (ctor Operand.slot 10)) else (if (stage =? 11) then (if truncate then (ctor Action.integral 9 8 (ctor Operand.slot 8)) else (ctor Action.next)) else (if (stage =? 12) then (ctor Action.limit true 8 (ctor Operand.word 0) (ctor Operand.slot 8)) else (if (stage =? 13) then (ctor Action.scalar 2 9 (ctor Operand.slot 7) (ctor Operand.word 1073741824)) else (if (stage =? 14) then (ctor Action.scalar 2 9 (ctor Operand.slot 9) (ctor Operand.word 1078530011)) else (if (stage =? 15) then (ctor Action.scalar 3 9 (ctor Operand.slot 12) (ctor Operand.slot 9)) else (if (stage =? 16) then (ctor Action.log 9 (ctor Operand.slot 9)) else (if (stage =? 17) then (ctor Action.scalar 2 9 (ctor Operand.slot 11) (ctor Operand.slot 9)) else (if (stage =? 18) then (ctor Action.scalar 3 9 (ctor Operand.slot 9) (ctor Operand.slot 10)) else (if (stage =? 19) then (if truncate then (ctor Action.integral 10 9 (ctor Operand.slot 9)) else (ctor Action.next)) else (if (stage =? 20) then (ctor Action.limit false 9 (ctor Operand.slot 13) (ctor Operand.slot 9)) else (if (stage =? 21) then (ctor Action.scalar 3 10 (ctor Operand.word 1065353216) (ctor Operand.slot 3)) else (if (stage =? 22) then (ctor Action.log 10 (ctor Operand.slot 10)) else (if (stage =? 23) then (ctor Action.scalar 2 10 (ctor Operand.word 1036831949) (ctor Operand.slot 10)) else (if (stage =? 24) then (ctor Action.scalar 0 10 (ctor Operand.word 1065353216) (ctor Operand.slot 10)) else (if (stage =? 25) then (ctor Action.scalar 2 5 (ctor Operand.slot 5) (ctor Operand.slot 10)) else (ctor Action.done))))))))))))))))))))))))))) else (ctor Action.done)),
+  body: (if extend then (if (stage =? 0) then (ctor Action.integer false 11 (ctor Operand.slot 0)) else (if (stage =? 1) then (ctor Action.integer true 12 (ctor Operand.slot 1)) else (if (stage =? 2) then (ctor Action.integer false 13 (ctor Operand.word last)) else (if (stage =? 3) then (ctor Action.log 10 (ctor Operand.slot 2)) else (if (stage =? 4) then (ctor Action.scalar 2 10 (ctor Operand.word 1073741824) (ctor Operand.slot 10)) else (if (stage =? 5) then (ctor Action.scalar 2 8 (ctor Operand.slot 6) (ctor Operand.word 1073741824)) else (if (stage =? 6) then (ctor Action.scalar 2 8 (ctor Operand.slot 8) (ctor Operand.word 1078530011)) else (if (stage =? 7) then (ctor Action.scalar 3 8 (ctor Operand.slot 12) (ctor Operand.slot 8)) else (if (stage =? 8) then (ctor Action.log 8 (ctor Operand.slot 8)) else (if (stage =? 9) then (ctor Action.scalar 2 8 (ctor Operand.slot 11) (ctor Operand.slot 8)) else (if (stage =? 10) then (ctor Action.scalar 3 8 (ctor Operand.slot 8) (ctor Operand.slot 10)) else (if (stage =? 11) then (if truncate then (ctor Action.integral 9 8 (ctor Operand.slot 8)) else (ctor Action.next)) else (if (stage =? 12) then (ctor Action.limit true 8 (ctor Operand.word 0) (ctor Operand.slot 8)) else (if (stage =? 13) then (ctor Action.scalar 2 9 (ctor Operand.slot 7) (ctor Operand.word 1073741824)) else (if (stage =? 14) then (ctor Action.scalar 2 9 (ctor Operand.slot 9) (ctor Operand.word 1078530011)) else (if (stage =? 15) then (ctor Action.scalar 3 9 (ctor Operand.slot 12) (ctor Operand.slot 9)) else (if (stage =? 16) then (ctor Action.log 9 (ctor Operand.slot 9)) else (if (stage =? 17) then (ctor Action.scalar 2 9 (ctor Operand.slot 11) (ctor Operand.slot 9)) else (if (stage =? 18) then (ctor Action.scalar 3 9 (ctor Operand.slot 9) (ctor Operand.slot 10)) else (if (stage =? 19) then (if truncate then (ctor Action.integral 10 9 (ctor Operand.slot 9)) else (ctor Action.next)) else (if (stage =? 20) then (ctor Action.limit false 9 (ctor Operand.slot 13) (ctor Operand.slot 9)) else (if (stage =? 21) then (ctor Action.scalar 3 10 (ctor Operand.word 1065353216) (ctor Operand.slot 3)) else (if (stage =? 22) then (ctor Action.log 10 (ctor Operand.slot 10)) else (if (stage =? 23) then (ctor Action.scalar 2 10 (ctor Operand.word 1036831949) (ctor Operand.slot 10)) else (if (stage =? 24) then (ctor Action.scalar 0 10 (ctor Operand.word 1065353216) (ctor Operand.slot 10)) else (if (stage =? 25) then (ctor Action.scalar 2 5 (ctor Operand.slot 5) (ctor Operand.slot 10)) else (ctor Action.finishSetup 5 8 9))))))))))))))))))))))))))) else (ctor Action.finishSetup 5 8 9)),
   executable: true
 }
 
@@ -92,7 +93,7 @@ definition{
   name: coefficients,
   parameters: [extend : Bool, inverse : Bool, stage : Nat],
   result: Action,
-  body: (if extend then (if (stage =? 0) then (ctor Action.scalar 3 8 (ctor Operand.slot 0) (ctor Operand.slot 1)) else (if (stage =? 1) then (ctor Action.scalar 2 9 (ctor Operand.slot 3) (ctor Operand.slot 8)) else (if (stage =? 2) then (ctor Action.integer false 10 (ctor Operand.slot 2)) else (if (stage =? 3) then (ctor Action.scalar 1 10 (ctor Operand.slot 10) (ctor Operand.slot 6)) else (if (stage =? 4) then (ctor Action.scalar 1 11 (ctor Operand.slot 7) (ctor Operand.slot 6)) else (if (stage =? 5) then (ctor Action.limit true 11 (ctor Operand.word 981668463) (ctor Operand.slot 11)) else (if (stage =? 6) then (ctor Action.scalar 3 10 (ctor Operand.slot 10) (ctor Operand.slot 11)) else (if (stage =? 7) then (ctor Action.limit true 10 (ctor Operand.word 0) (ctor Operand.slot 10)) else (if (stage =? 8) then (ctor Action.limit false 10 (ctor Operand.word 1065353216) (ctor Operand.slot 10)) else (if (stage =? 9) then (ctor Action.scalar 1 10 (ctor Operand.word 1065353216) (ctor Operand.slot 10)) else (if (stage =? 10) then (ctor Action.scalar 2 10 (ctor Operand.slot 10) (ctor Operand.slot 4)) else (if (stage =? 11) then (ctor Action.scalar 1 11 (ctor Operand.word 1065353216) (ctor Operand.slot 10)) else (if (stage =? 12) then (ctor Action.scalar 2 9 (ctor Operand.slot 9) (ctor Operand.slot 11)) else (if (stage =? 13) then (ctor Action.scalar 2 8 (ctor Operand.slot 8) (ctor Operand.slot 10)) else (if (stage =? 14) then (ctor Action.scalar 0 9 (ctor Operand.slot 9) (ctor Operand.slot 8)) else (if (stage =? 15) then (ctor Action.circular 8 9 (ctor Operand.slot 9)) else (if (stage =? 16) then (ctor Action.scalar 2 8 (ctor Operand.slot 8) (ctor Operand.slot 5)) else (if (stage =? 17) then (ctor Action.scalar 2 9 (ctor Operand.slot 9) (ctor Operand.slot 5)) else (if (stage =? 18) then (ctor Action.scalar 2 9 (ctor Operand.slot 9) (if inverse then (ctor Operand.word 3212836864) else (ctor Operand.word 1065353216))) else (ctor Action.done)))))))))))))))))))) else (if (stage =? 0) then (ctor Action.scalar 3 8 (ctor Operand.slot 0) (ctor Operand.slot 1)) else (if (stage =? 1) then (ctor Action.scalar 2 9 (ctor Operand.slot 3) (ctor Operand.slot 8)) else (if (stage =? 2) then (ctor Action.circular 8 9 (ctor Operand.slot 9)) else (if (stage =? 3) then (ctor Action.scalar 2 8 (ctor Operand.slot 8) (ctor Operand.slot 5)) else (if (stage =? 4) then (ctor Action.scalar 2 9 (ctor Operand.slot 9) (ctor Operand.slot 5)) else (if (stage =? 5) then (ctor Action.scalar 2 9 (ctor Operand.slot 9) (if inverse then (ctor Operand.word 3212836864) else (ctor Operand.word 1065353216))) else (ctor Action.done)))))))),
+  body: (if extend then (if (stage =? 0) then (ctor Action.scalar 3 8 (ctor Operand.slot 0) (ctor Operand.slot 1)) else (if (stage =? 1) then (ctor Action.scalar 2 9 (ctor Operand.slot 3) (ctor Operand.slot 8)) else (if (stage =? 2) then (ctor Action.integer false 10 (ctor Operand.slot 2)) else (if (stage =? 3) then (ctor Action.scalar 1 10 (ctor Operand.slot 10) (ctor Operand.slot 6)) else (if (stage =? 4) then (ctor Action.scalar 1 11 (ctor Operand.slot 7) (ctor Operand.slot 6)) else (if (stage =? 5) then (ctor Action.limit true 11 (ctor Operand.word 981668463) (ctor Operand.slot 11)) else (if (stage =? 6) then (ctor Action.scalar 3 10 (ctor Operand.slot 10) (ctor Operand.slot 11)) else (if (stage =? 7) then (ctor Action.limit true 10 (ctor Operand.word 0) (ctor Operand.slot 10)) else (if (stage =? 8) then (ctor Action.limit false 10 (ctor Operand.word 1065353216) (ctor Operand.slot 10)) else (if (stage =? 9) then (ctor Action.scalar 1 10 (ctor Operand.word 1065353216) (ctor Operand.slot 10)) else (if (stage =? 10) then (ctor Action.scalar 2 10 (ctor Operand.slot 10) (ctor Operand.slot 4)) else (if (stage =? 11) then (ctor Action.scalar 1 11 (ctor Operand.word 1065353216) (ctor Operand.slot 10)) else (if (stage =? 12) then (ctor Action.scalar 2 9 (ctor Operand.slot 9) (ctor Operand.slot 11)) else (if (stage =? 13) then (ctor Action.scalar 2 8 (ctor Operand.slot 8) (ctor Operand.slot 10)) else (if (stage =? 14) then (ctor Action.scalar 0 9 (ctor Operand.slot 9) (ctor Operand.slot 8)) else (if (stage =? 15) then (ctor Action.circular 8 9 (ctor Operand.slot 9)) else (if (stage =? 16) then (ctor Action.scalar 2 8 (ctor Operand.slot 8) (ctor Operand.slot 5)) else (if (stage =? 17) then (ctor Action.scalar 2 9 (ctor Operand.slot 9) (ctor Operand.slot 5)) else (if (stage =? 18) then (ctor Action.scalar 2 9 (ctor Operand.slot 9) (if inverse then (ctor Operand.word 3212836864) else (ctor Operand.word 1065353216))) else (ctor Action.done 8 9)))))))))))))))))))) else (if (stage =? 0) then (ctor Action.scalar 3 8 (ctor Operand.slot 0) (ctor Operand.slot 1)) else (if (stage =? 1) then (ctor Action.scalar 2 9 (ctor Operand.slot 3) (ctor Operand.slot 8)) else (if (stage =? 2) then (ctor Action.circular 8 9 (ctor Operand.slot 9)) else (if (stage =? 3) then (ctor Action.scalar 2 8 (ctor Operand.slot 8) (ctor Operand.slot 5)) else (if (stage =? 4) then (ctor Action.scalar 2 9 (ctor Operand.slot 9) (ctor Operand.slot 5)) else (if (stage =? 5) then (ctor Action.scalar 2 9 (ctor Operand.slot 9) (if inverse then (ctor Operand.word 3212836864) else (ctor Operand.word 1065353216))) else (ctor Action.done 8 9)))))))),
   executable: true
 }
 
@@ -101,9 +102,9 @@ definition{
   parameters: [program : Program, stage : Nat],
   result: Action,
   body: (match program
-    | Program.setup extend truncate => (configure extend truncate stage)
+    | Program.setup extend truncate last => (configure extend truncate last stage)
     | Program.weights extend inverse => (coefficients extend inverse stage)
-    | Program.apply => (if (stage =? 0) then (ctor Action.scalar 2 4 (ctor Operand.slot 0) (ctor Operand.slot 2)) else (if (stage =? 1) then (ctor Action.scalar 2 5 (ctor Operand.slot 1) (ctor Operand.slot 3)) else (if (stage =? 2) then (ctor Action.scalar 1 4 (ctor Operand.slot 4) (ctor Operand.slot 5)) else (if (stage =? 3) then (ctor Action.scalar 2 5 (ctor Operand.slot 0) (ctor Operand.slot 3)) else (if (stage =? 4) then (ctor Action.scalar 2 6 (ctor Operand.slot 1) (ctor Operand.slot 2)) else (if (stage =? 5) then (ctor Action.scalar 0 5 (ctor Operand.slot 5) (ctor Operand.slot 6)) else (ctor Action.done)))))))),
+    | Program.apply => (if (stage =? 0) then (ctor Action.scalar 2 4 (ctor Operand.slot 0) (ctor Operand.slot 2)) else (if (stage =? 1) then (ctor Action.scalar 2 5 (ctor Operand.slot 1) (ctor Operand.slot 3)) else (if (stage =? 2) then (ctor Action.scalar 1 4 (ctor Operand.slot 4) (ctor Operand.slot 5)) else (if (stage =? 3) then (ctor Action.scalar 2 5 (ctor Operand.slot 0) (ctor Operand.slot 3)) else (if (stage =? 4) then (ctor Action.scalar 2 6 (ctor Operand.slot 1) (ctor Operand.slot 2)) else (if (stage =? 5) then (ctor Action.scalar 0 5 (ctor Operand.slot 5) (ctor Operand.slot 6)) else (ctor Action.done 4 5)))))))),
   executable: true,
   production: {effects: [], targets: [rust-core]}
 }
@@ -118,7 +119,7 @@ theorem{
 theorem{
   name: preserveNoExtension,
   parameters: [],
-  statement: ((configure false true 0) = (ctor Action.done)),
+  statement: ((configure false true 0 0) = (ctor Action.finishSetup 5 8 9)),
   proof: reflexivity{}
 }
 

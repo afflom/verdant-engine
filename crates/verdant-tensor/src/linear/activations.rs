@@ -129,9 +129,11 @@ pub fn inverse_root_f32(base: f32, degree: u32) -> Result<f32, TensorComputeErro
         return Err(log_failure());
     };
     let magnitude = logarithm_magnitude(negative, whole, ratio)?;
-    let degree = super::evaluate_wide(3, u64::from(degree), 0)?.ok_or_else(log_failure)?;
+    let degree = verdant_count_f32::run(u64::from(degree))
+        .map_err(|_| log_failure())?
+        .ok_or_else(log_failure)?;
     let divisor = f32::from_bits(u32::try_from(degree).map_err(|_| log_failure())?);
-    let inverse = evaluate_f32_scalar(3, 1.0, divisor)?;
+    let inverse = evaluate_f32_scalar(crate::scalars::three_u64(), 1.0, divisor)?;
     let verdant_logarithmic_inverse::Adt0::C0(scale, residual, order, mut current) =
         verdant_logarithmic_inverse::run(negative, magnitude, u64::from(inverse.to_bits()))
             .map_err(|_| log_failure())?;

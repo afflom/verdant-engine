@@ -1,8 +1,8 @@
 //! Binary32 rotary frequency scaling and two-coordinate rotations.
 
 use super::{
-    evaluate_f32_scalar, evaluate_float_unary, evaluate_wide, inverse_root_f32, natural_log_f32,
-    sin_cos_f32, TensorComputeError,
+    evaluate_f32_scalar, evaluate_float_unary, inverse_root_f32, natural_log_f32, sin_cos_f32,
+    TensorComputeError,
 };
 use verdant_rotation_step::{Adt0 as Program, Adt1 as Action, Adt2 as Operand};
 
@@ -21,7 +21,10 @@ fn value(word: u64) -> f32 {
 }
 
 fn unsigned_float(word: u64) -> Result<f32, TensorComputeError> {
-    evaluate_wide(3, word, 0)?.map(value).ok_or_else(failure)
+    verdant_count_f32::run(word)
+        .map_err(|_| failure())?
+        .map(value)
+        .ok_or_else(failure)
 }
 
 /// Convert a signed 32-bit coordinate to binary32, rounding to nearest even.
@@ -33,15 +36,23 @@ pub fn signed_word_f32(coordinate: i32) -> Result<f32, TensorComputeError> {
         verdant_rotation_signed::run(u64::from(coordinate as u32));
     let result = unsigned_float(magnitude)?;
     if negative {
-        evaluate_f32_scalar(6, result, 0.0)
+        evaluate_f32_scalar(u64::from(crate::scalars::six_u32()), result, 0.0)
     } else {
         Ok(result)
     }
 }
 
-type Slots = [u64; 15];
-
-fn execute(program: Program, slots: &mut Slots) -> Result<(), TensorComputeError> {
+fn execute(
+    program: Program,
+    inputs: &[u64],
+) -> Result<(u64, u64, Option<u64>), TensorComputeError> {
+    // Keep the interpreter registers on the stack for each coordinate pair.
+    // The certified terminal instruction selects each result register.
+    let mut slots = [0; crate::scalars::sixteen_u64() as usize];
+    slots
+        .get_mut(..inputs.len())
+        .ok_or_else(failure)?
+        .copy_from_slice(inputs);
     let mut stage = 0;
     loop {
         let read = |operand| match operand {
@@ -49,7 +60,14 @@ fn execute(program: Program, slots: &mut Slots) -> Result<(), TensorComputeError
             Operand::C1(word) => Ok(word),
         };
         let write = match verdant_rotation_step::run(program.clone(), stage) {
-            Action::C0 => return Ok(()),
+            Action::C0(a, b) => return Ok((read(Operand::C0(a))?, read(Operand::C0(b))?, None)),
+            Action::C8(a, b, c) => {
+                return Ok((
+                    read(Operand::C0(a))?,
+                    read(Operand::C0(b))?,
+                    Some(read(Operand::C0(c))?),
+                ))
+            }
             Action::C1(op, dst, a, b) => Some((
                 dst,
                 bits(evaluate_f32_scalar(op, value(read(a)?), value(read(b)?))?),
@@ -102,7 +120,7 @@ pub struct RotaryParameters {
     /// Requested coefficient magnitude.
     pub magnitude: f32,
     /// Fast and slow rotation counts defining the correction interval.
-    pub rotations: [f32; 2],
+    pub rotations: [f32; crate::scalars::two_u64() as usize],
     /// Round the ends of the correction interval outward.
     pub truncate: bool,
 }
@@ -132,8 +150,7 @@ impl RotarySpectrum {
             return Err(failure());
         };
         let ratio = inverse_root_f32(p.base, u32::try_from(degree).map_err(|_| failure())?)?;
-        let mut slots = [0; 15];
-        slots[..8].copy_from_slice(&[
+        let inputs = [
             u64::from(p.dimensions),
             u64::from(p.context as u32),
             bits(p.base),
@@ -142,17 +159,16 @@ impl RotarySpectrum {
             bits(p.magnitude),
             bits(p.rotations[0]),
             bits(p.rotations[1]),
-        ]);
-        slots[14] = last;
-        execute(Program::C0(extended, p.truncate), &mut slots)?;
+        ];
+        let (magnitude, low, high) = execute(Program::C0(extended, p.truncate, last), &inputs)?;
         Ok(Self {
             ratio,
             scale: p.frequency_scale,
             extension: p.extension,
             extended,
-            magnitude: slots[5],
-            low: slots[8],
-            high: slots[9],
+            magnitude,
+            low,
+            high: high.ok_or_else(failure)?,
         })
     }
 
@@ -161,7 +177,7 @@ impl RotarySpectrum {
     /// # Errors
     /// Propagates a certified scalar multiplication error.
     pub fn advance(&self, phase: f32) -> Result<f32, TensorComputeError> {
-        evaluate_f32_scalar(2, phase, self.ratio)
+        evaluate_f32_scalar(crate::scalars::two_u64(), phase, self.ratio)
     }
 
     /// Compute cosine and signed sine for one frequency pair, including its factor.
@@ -175,8 +191,7 @@ impl RotarySpectrum {
         lane: u32,
         inverse: bool,
     ) -> Result<(f32, f32), TensorComputeError> {
-        let mut slots = [0; 15];
-        slots[..8].copy_from_slice(&[
+        let inputs = [
             bits(phase),
             bits(factor),
             u64::from(lane),
@@ -185,9 +200,9 @@ impl RotarySpectrum {
             self.magnitude,
             self.low,
             self.high,
-        ]);
-        execute(Program::C1(self.extended, inverse), &mut slots)?;
-        Ok((value(slots[8]), value(slots[9])))
+        ];
+        let (cosine, sine, _) = execute(Program::C1(self.extended, inverse), &inputs)?;
+        Ok((value(cosine), value(sine)))
     }
 }
 
@@ -199,13 +214,12 @@ pub fn rotate_pair_f32(
     coordinates: (f32, f32),
     coefficients: (f32, f32),
 ) -> Result<(f32, f32), TensorComputeError> {
-    let mut slots = [0; 15];
-    slots[..4].copy_from_slice(&[
+    let inputs = [
         bits(coordinates.0),
         bits(coordinates.1),
         bits(coefficients.0),
         bits(coefficients.1),
-    ]);
-    execute(Program::C2, &mut slots)?;
-    Ok((value(slots[4]), value(slots[5])))
+    ];
+    let (x, y, _) = execute(Program::C2, &inputs)?;
+    Ok((value(x), value(y)))
 }

@@ -390,7 +390,7 @@ license-files = [{ path = "src/lib.rs", hash = 0xa7db5fef }]
 name = "verdant_rotation_step"
 version = "=2.22.0"
 expression = "MIT OR Apache-2.0"
-license-files = [{ path = "src/lib.rs", hash = 0x8f1d53f3 }]
+license-files = [{ path = "src/lib.rs", hash = 0x855b3e0d }]
 
 [[licenses.clarify]]
 name = "verdant_weighted_blend"
