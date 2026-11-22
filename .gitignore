@@ -44,3 +44,5 @@ site/stitch/
 /app/.lexlean-quotient/
 /app/.lexlean-q8/
 /app/.lexlean-dot/
+
+/app/.lexlean-packed/

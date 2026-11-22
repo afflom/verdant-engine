@@ -840,6 +840,7 @@ dependencies = [
  "verdant_narrow_f64",
  "verdant_normalize_f64",
  "verdant_pack_plan_f64",
+ "verdant_packed_dot",
  "verdant_packed_field",
  "verdant_quotient_f64",
  "verdant_quotient_route",
@@ -929,6 +930,10 @@ version = "2.9.0"
 [[package]]
 name = "verdant_pack_plan_f64"
 version = "2.9.0"
+
+[[package]]
+name = "verdant_packed_dot"
+version = "2.18.0"
 
 [[package]]
 name = "verdant_packed_field"

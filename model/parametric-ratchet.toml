@@ -57,7 +57,7 @@ max_unlifted_workspace_modules = 0
 
 [frontier_ratchet]
 frontier_register = "frontier.toml"
-frontier_rust_tree_sha256 = "8c556e965e34ba5cc175131e953f10d5dc0a528f37257c225659a6857060d053"
+frontier_rust_tree_sha256 = "3bd270473afb3322a4dd7938bbcd97d813a3872f763b7d6895909f8c14da451e"
 min_lifted_functions = 551
 max_residue_functions = 1160
 max_uncertified_functions = 1318
@@ -289,3 +289,8 @@ role = "Symmetric signed-byte block scale, reciprocal and lane instruction selec
 path = "app/src/SymmetricDot.lex.tex"
 stratum = 2
 role = "Compose certified scalar arithmetic, integer conversion and binary16 widening in symmetric block dot order."
+
+[[stratum_module]]
+path = "app/src/PackedDot.lex.tex"
+stratum = 1
+role = "Symmetric four-bit lane placement, row extent admission and ordered F32 reduction instructions."

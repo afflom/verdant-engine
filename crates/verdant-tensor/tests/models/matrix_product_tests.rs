@@ -776,6 +776,7 @@ fn verify_bundle(scope: &str, directory: &str) -> std::collections::BTreeMap<Str
                     "verdant_division_norm" => include_bytes!("../../../../generated/tensor-quotient/packages/rust-core/verdant_division_norm/src/lib.rs"),
                     "verdant_division_finish" => include_bytes!("../../../../generated/tensor-quotient/packages/rust-core/verdant_division_finish/src/lib.rs"),
                     "verdant_symmetric_q8" => include_bytes!("../../../../generated/tensor-q8/packages/rust-core/verdant_symmetric_q8/src/lib.rs"),
+                    "verdant_packed_dot" => include_bytes!("../../../../generated/tensor-packed/packages/rust-core/verdant_packed_dot/src/lib.rs"),
                     "verdant_symmetric_dot" => include_bytes!("../../../../generated/tensor-dot/packages/rust-core/verdant_symmetric_dot/src/lib.rs"),
                     "verdant_symmetric_dot_layout" => include_bytes!("../../../../generated/tensor-dot/packages/rust-core/verdant_symmetric_dot_layout/src/lib.rs"),
                     _ => panic!("unknown certified dependency"),
@@ -894,15 +895,6 @@ fn symmetric_block_encoding_vtk_16() {
 
 #[test]
 fn symmetric_row_dot_vtk_17() {
-    let bindings = verify_bundle("dot", "tensor-dot");
-    assert_eq!(
-        bindings["VerdantEngine.SymmetricDot.accumulate"],
-        "verdant_symmetric_dot"
-    );
-    assert_eq!(
-        bindings["VerdantEngine.SymmetricDot.rowBlockBytes"],
-        "verdant_symmetric_dot_layout"
-    );
     check_symmetric_rows(false);
 }
 
@@ -912,6 +904,22 @@ fn packed_row_dot_vtk_18() {
 }
 
 fn check_symmetric_rows(packed: bool) {
+    if packed {
+        assert_eq!(
+            verify_bundle("packed", "tensor-packed")["VerdantEngine.PackedDot.plan"],
+            "verdant_packed_dot"
+        );
+    } else {
+        let bindings = verify_bundle("dot", "tensor-dot");
+        assert_eq!(
+            bindings["VerdantEngine.SymmetricDot.accumulate"],
+            "verdant_symmetric_dot"
+        );
+        assert_eq!(
+            bindings["VerdantEngine.SymmetricDot.rowBlockBytes"],
+            "verdant_symmetric_dot_layout"
+        );
+    }
     use std::fmt::Write;
     let mut input = String::new();
     let mut actual = Vec::new();

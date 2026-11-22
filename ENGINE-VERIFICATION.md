@@ -132,3 +132,26 @@ The restored encoder and contraction oracles, component Clippy, and cargo-deny
 passed in the locked Engine SDK. Fidelity reports 1,169 native residue
 functions against a ceiling of 1,160 and 1,327 uncertified functions against
 1,318. This row API adds one native bridge to the preceding checkpoint.
+
+## VTK-18 packed four-bit row contraction
+
+At registration `69ca3ad`, the public packed-row API was missing. The
+restored API contracts 32-lane symmetric four-bit weight blocks against
+prepared signed-byte activations. Prism determines nibble placement and
+the order of the two F32 products and addition. Existing certified
+conversion and scalar primitives execute each instruction. The Q8 and Q4
+paths share the exact signed integer dot product.
+
+The pinned GGML CPU Q4_0 vector-dot callback supplied every expected output
+for 256 rows, including mixed signs, cancellation, asymmetric nibbles,
+subnormal scales, empty rows, infinities and NaNs. Five invalid extents were
+refused. Swapping the low and high lane halves failed on row 2 (1094989686
+versus 3246198874). Restoring the lane order passed. VTK-17 passed its
+original 256-row comparison against the separate Q8_0 callback in the same
+run. Packed-plan attestation
+`921073e9e0db94e98395260de8e0b4fe3b3884bbe31d18396ad726512998a386`.
+[Certified package](generated/tensor-packed/result.json)
+
+The locked-SDK component Clippy check passed. The full Engine fidelity gate
+reports 1,171 native residue functions against 1,160 and 1,329 uncertified
+functions against 1,318. The parent measured 1,169 and 1,327.

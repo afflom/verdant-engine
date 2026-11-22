@@ -5,13 +5,13 @@
 # stops the functions it counts (the detail their rows state, under its
 # cause), the one that stops the most first: the work queue.
 
-# Honesty report: 551 of 1878 functions of product code are lifted; 1169
+# Honesty report: 551 of 1880 functions of product code are lifted; 1171
 # are residue, 75 foreign and 83 effect rows.
 # Residue by cause:
 #   arithmetic: 30
 #   call: 215
 #   form: 344
-#   signature: 73
+#   signature: 75
 #   statements: 23
 #   type: 478
 #   width: 6
@@ -19,9 +19,9 @@
 spec = "uorust/register/1"
 
 [lift]
-functions = 1878
+functions = 1880
 lifted = 551
-residue = 1169
+residue = 1171
 foreign = 75
 effect = 83
 
@@ -166,6 +166,11 @@ cause = "type"
 functions = 9
 
 [[construct]]
+construct = "signature outside the lift: generic, async, unsafe or variadic"
+cause = "signature"
+functions = 8
+
+[[construct]]
 construct = "signature outside the lift: takes &mut self of WordBitset: the lift reads self and &self as the value, and threads no other receiver"
 cause = "signature"
 functions = 8
@@ -204,11 +209,6 @@ functions = 7
 construct = "type outside the lift: SmoothMeshAcc.positions: f32"
 cause = "type"
 functions = 7
-
-[[construct]]
-construct = "signature outside the lift: generic, async, unsafe or variadic"
-cause = "signature"
-functions = 6
 
 [[construct]]
 construct = "type outside the lift: CheckpointedRollbackJournal<S, I>, written with arguments, where a method's type is read by its name alone"
@@ -5165,8 +5165,20 @@ reason = "type"
 detail = "type outside the lift: f64"
 
 [[residue]]
-kappa = "e2786f8d8ed4c7de03b74a67cd352ccc4a6d7535359c38a6efa9101766d46b5a"
+kappa = "1993d2ed07e622a3da1ce39479219470df07fc2bdad3cad747f259e239d457ee"
+function = "verdant_tensor::linear::dot_symmetric_q4_row"
+reason = "signature"
+detail = "signature outside the lift: generic, async, unsafe or variadic"
+
+[[residue]]
+kappa = "2fa9599567e19f2d40a488b9ba6fd9017ccc7e5805ec8b93e2c5a30693dcc7f4"
 function = "verdant_tensor::linear::dot_symmetric_q8_row"
+reason = "signature"
+detail = "signature outside the lift: generic, async, unsafe or variadic"
+
+[[residue]]
+kappa = "93f30e0eb69ebc616e400b41af97453b224b1a6f185ad73bbe63a77cb1685226"
+function = "verdant_tensor::linear::dot_symmetric_row"
 reason = "signature"
 detail = "signature outside the lift: generic, async, unsafe or variadic"
 

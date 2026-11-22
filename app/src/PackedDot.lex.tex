@@ -1,0 +1,69 @@
+\begin{lexlean}{PackedDot}
+\useglossary{lexlean.std.bool@1.2.0}
+\useglossary{lexlean.std.nat@1.2.0}
+\title{Natural number}
+\begin{semanticmodule}
+inductive{
+  name: Request,
+  type_parameters: [],
+  parameters: [],
+  constructors: [
+    {name: width, fields: [Nat, Nat, Nat]},
+    {name: codes, fields: [Nat]},
+    {name: blockSum, fields: [Nat, Bool, Nat, Nat, Nat, Nat]}
+  ]
+}
+
+inductive{
+  name: Instruction,
+  type_parameters: [],
+  parameters: [],
+  constructors: [
+    {name: refused, fields: []},
+    {name: word, fields: [Nat]},
+    {name: arithmetic, fields: [Nat, Nat, Nat]}
+  ]
+}
+
+definition{
+  name: signedNibble,
+  parameters: [nibble : Nat],
+  result: Nat,
+  body: (if (nibble <? 8) then (248 + nibble) else (prim subtract nibble 8 : Nat)),
+  executable: true
+}
+
+definition{
+  name: plan,
+  parameters: [request : Request],
+  result: Instruction,
+  body: (match request
+    | Request.width lanes bytes blocks => (if (((lanes =? 32) && ((prim remainder bytes 18 0 : Nat) =? 0)) && ((prim quotient bytes 18 0 : Nat) =? blocks)) then (ctor Instruction.word 18) else (ctor Instruction.refused))
+    | Request.codes byte => (if (byte <? 256) then (ctor Instruction.word ((signedNibble (prim remainder byte 16 0 : Nat)) + (prim multiply 256 (signedNibble (prim quotient byte 16 0 : Nat)) : Nat))) else (ctor Instruction.refused))
+    | Request.blockSum phase negative sum current left right => (if (((((sum <? 4294967296) && (current <? 4294967296)) && (left <? 4294967296)) && (right <? 4294967296)) && (phase <? 4)) then (if (phase =? 0) then (ctor Instruction.arithmetic 2 (if (negative && (0 <? current)) then (2147483648 + current) else current) left) else (if (phase =? 1) then (ctor Instruction.arithmetic 2 current right) else (if (phase =? 2) then (ctor Instruction.arithmetic 0 sum current) else (ctor Instruction.word current)))) else (ctor Instruction.refused))),
+  executable: true,
+  production: {effects: [overflow], targets: [rust-core]}
+}
+
+theorem{
+  name: nibbleOrder,
+  parameters: [],
+  statement: ((plan (ctor Request.codes 240)) = (ctor Instruction.word 2040)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: packedWidth,
+  parameters: [],
+  statement: ((plan (ctor Request.width 32 36 2)) = (ctor Instruction.word 18)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: negativeFirstProduct,
+  parameters: [],
+  statement: ((plan (ctor Request.blockSum 0 true 0 1065353216 0 0)) = (ctor Instruction.arithmetic 2 3212836864 0)),
+  proof: reflexivity{}
+}
+\end{semanticmodule}
+\end{lexlean}
