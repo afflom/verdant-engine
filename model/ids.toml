@@ -703,3 +703,9 @@ id = "VTK-20"
 level = "build"
 suite = "engine"
 statement = "Verdant evaluates the binary32 SwiGLU product with single precision activation and multiplication checked against the imported scalar CPU function"
+
+[[id]]
+id = "VTK-21"
+level = "build"
+suite = "engine"
+statement = "Verdant evaluates binary32 sine and cosine across the finite exponent range and exceptional inputs against the imported GGML CPU scalar functions"

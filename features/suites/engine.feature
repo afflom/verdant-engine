@@ -623,3 +623,10 @@ Feature: engine
     When Verdant evaluates the SiLU of the first operand times the second
     Then finite products agree within four representable steps of the imported CPU function
     And signed zero, infinity and NaN classes match at exceptional operands
+
+  @VTK-21 @build
+  Scenario: Verdant evaluates binary32 sine and cosine across the finite exponent range and exceptional inputs against the imported GGML CPU scalar functions
+    Given binary32 inputs spanning quadrant boundaries and all exponent fields
+    When Verdant evaluates their sine and cosine together
+    Then both results match the imported functions within one representable step
+    And zeros retain their reference sign and unordered results retain their reference class

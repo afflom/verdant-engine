@@ -44,6 +44,16 @@ static int compare_rows(ggml_type type) {
 int main(int argc, char **argv) {
   if (argc != 2) return 1;
   ggml_cpu_init();
+  if (!std::strcmp(argv[1], "sincos")) {
+    unsigned input;
+    while (std::scanf("%u", &input) == 1) {
+      float x, sine, cosine; unsigned sw, cw; std::memcpy(&x,&input,sizeof x);
+      ggml_vec_sin_f32(1,&sine,&x); ggml_vec_cos_f32(1,&cosine,&x);
+      std::memcpy(&sw,&sine,sizeof sw); std::memcpy(&cw,&cosine,sizeof cw);
+      std::printf("%u\n%u\n",sw,cw);
+    }
+    return std::feof(stdin) ? 0 : 2;
+  }
   if (!std::strcmp(argv[1], "swiglu-scalar")) {
     uint32_t first, second;
     while (std::scanf("%u %u", &first, &second) == 2) {
@@ -1153,6 +1163,50 @@ fn gated_product_vtk_20() {
                     && actual.to_bits().abs_diff(reference) <= 4,
                 "swiglu({x}, {g}): {actual:?} versus {wanted:?}"
             );
+        }
+    }
+}
+
+#[test]
+fn circular_functions_vtk_21() {
+    use std::fmt::Write;
+    let mut words = Vec::new();
+    for exponent in 0..256u32 {
+        for index in 0..128u32 {
+            let fraction = index.wrapping_mul(2654435761) & 0x007fffff;
+            let word = (exponent << 23) | fraction;
+            words.extend([word, word | (1 << 31), word | 0x007fffff]);
+        }
+    }
+    for multiple in -4096..=4096 {
+        let center = ((std::f64::consts::FRAC_PI_2 * f64::from(multiple)) as f32).to_bits();
+        words.extend((0..=4).flat_map(|d| [center.wrapping_sub(d), center.wrapping_add(d)]));
+    }
+    words.sort_unstable();
+    words.dedup();
+    let mut input = String::new();
+    for word in &words {
+        writeln!(input, "{word}").unwrap();
+    }
+    let reference = query_oracle("sincos", input);
+    assert_eq!(reference.len(), words.len() * 2);
+    for (word, pair) in words.into_iter().zip(reference.chunks_exact(2)) {
+        let (sine, cosine) = super::sin_cos_f32(f32::from_bits(word)).unwrap();
+        for (value, &expected) in [sine, cosine].into_iter().zip(pair) {
+            let target = f32::from_bits(expected);
+            if target.is_nan() {
+                assert!(value.is_nan(), "nonfinite input {word:#010x}");
+            } else if target == 0.0 {
+                assert_eq!(value.to_bits(), expected, "signed zero at {word:#010x}");
+            } else {
+                assert!(
+                    value.is_finite()
+                        && value.is_sign_negative() == target.is_sign_negative()
+                        && value.to_bits().abs_diff(expected) <= 1,
+                    "input {word:#010x}: {:#010x} versus {expected:#010x}",
+                    value.to_bits()
+                );
+            }
         }
     }
 }
