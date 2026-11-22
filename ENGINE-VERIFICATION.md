@@ -311,3 +311,5 @@ The isolated engine lift bound the grouped encoder and its storage dimensions. T
 Verdant accepts Q2_K weight bytes and prepared Q8_K activation blocks. Prism selects the packed plane, group scale and minimum, then orders the binary32 operations. Two integer contractions evaluate the scaled coefficients and the group minimum contributions. The caller supplies storage slices. [Certified export](generated/tensor-groupeddot/result.json)
 
 All 97 row results, spanning zero through four blocks, matched the imported GGML CPU vector product bit for bit. Both mismatched-length probes were refused. Replacing the minimum nibble with the scale nibble returned −1,096 instead of −1,615.1875 on row 1. Restoring the correct field passed the row product and activation encoder regressions. [Reference kernel](https://github.com/ggml-org/llama.cpp/blob/9a080f44b503c64f66c84a6274b9d9ee5d5b09d5/ggml/src/ggml-cpu/quants.c#L613)
+
+Tensor Clippy, cargo-deny and the isolated engine lift passed. The complete engine gate reaches the same native-frontier failure recorded under VTK-26. The grouped product introduces no additional fidelity diagnostic.
