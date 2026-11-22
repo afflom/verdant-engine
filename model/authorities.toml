@@ -130,5 +130,5 @@ name = "GGML CPU Tensor oracle"
 citation = "https://github.com/ggml-org/llama.cpp/tree/9a080f44b503c64f66c84a6274b9d9ee5d5b09d5/ggml/src"
 artifact = "tests/oracles/ggml/source.tar.gz"
 checksum = "4eec816a907885c31932e0ab4fa1ee2278af43000dc19d514929cd03cb4ff8a0"
-statement = "Defines F32 dot/scalar operations, byte copies, F16/BF16 conversions, scale/bias/clamp/leaky ReLU and thirteen typed unary CPU kernels; packed fields, scales, codebooks, F8 and complete CPU GET_ROWS block decoding."
-realized_by = ["VTK-01", "VTK-02", "VTK-03", "VTK-04", "VTK-05", "VTK-06", "VTK-11", "VTK-12", "VTK-13", "VTK-14", "VTK-16", "VTK-17", "VTK-18", "VTK-19", "VTK-20", "VTK-21", "VTK-22", "VTK-23"]
+statement = "Defines F32 dot/scalar operations, byte copies, F16/BF16 conversions, scale/bias/clamp/leaky ReLU and thirteen typed unary CPU kernels; packed fields, scales, codebooks, F8 and complete CPU GET_ROWS block decoding and normalized weighted rows in FLASH_ATTN_EXT."
+realized_by = ["VTK-01", "VTK-02", "VTK-03", "VTK-04", "VTK-05", "VTK-06", "VTK-11", "VTK-12", "VTK-13", "VTK-14", "VTK-16", "VTK-17", "VTK-18", "VTK-19", "VTK-20", "VTK-21", "VTK-22", "VTK-23", "VTK-24"]

@@ -938,6 +938,9 @@ fn verify_bundle(scope: &str, directory: &str) -> std::collections::BTreeMap<Str
                     "verdant_logarithmic_series" => include_bytes!("../../../../generated/tensor-logscale/packages/rust-core/verdant_logarithmic_series/src/lib.rs"),
                     "verdant_logarithmic_term" => include_bytes!("../../../../generated/tensor-logscale/packages/rust-core/verdant_logarithmic_term/src/lib.rs"),
                     "verdant_logarithmic_word" => include_bytes!("../../../../generated/tensor-logscale/packages/rust-core/verdant_logarithmic_word/src/lib.rs"),
+                    "verdant_weighted_blend" => include_bytes!("../../../../generated/tensor-weighted/packages/rust-core/verdant_weighted_blend/src/lib.rs"),
+                    "verdant_weighted_pivot" => include_bytes!("../../../../generated/tensor-weighted/packages/rust-core/verdant_weighted_pivot/src/lib.rs"),
+                    "verdant_weighted_reciprocal" => include_bytes!("../../../../generated/tensor-weighted/packages/rust-core/verdant_weighted_reciprocal/src/lib.rs"),
                     "verdant_rotation_geometry" => include_bytes!("../../../../generated/tensor-plane/packages/rust-core/verdant_rotation_geometry/src/lib.rs"),
                     "verdant_rotation_limit" => include_bytes!("../../../../generated/tensor-plane/packages/rust-core/verdant_rotation_limit/src/lib.rs"),
                     "verdant_rotation_signed" => include_bytes!("../../../../generated/tensor-plane/packages/rust-core/verdant_rotation_signed/src/lib.rs"),
@@ -1521,6 +1524,7 @@ fn plane_rotation_vtk_23() {
 
 #[test]
 fn online_weighted_mean_vtk_24() {
+    assert_eq!(verify_bundle("weighted", "tensor-weighted").len(), 3);
     use std::fmt::Write;
     let mut input = String::new();
     let mut actual = Vec::new();
@@ -1529,7 +1533,13 @@ fn online_weighted_mean_vtk_24() {
             for pattern in 0..6 {
                 for sink in [None, Some(-8.0_f32), Some(3.5_f32)] {
                     let mut mean = super::WeightedMeanF32::new(width);
-                    writeln!(input, "{count} {width} {} {}", u8::from(sink.is_some()), sink.unwrap_or_default().to_bits()).unwrap();
+                    writeln!(
+                        input,
+                        "{count} {width} {} {}",
+                        u8::from(sink.is_some()),
+                        sink.unwrap_or_default().to_bits()
+                    )
+                    .unwrap();
                     for i in 0..count {
                         let enabled = pattern != 5 && (pattern != 4 || i % 3 != 0);
                         let score = match pattern {
@@ -1539,12 +1549,20 @@ fn online_weighted_mean_vtk_24() {
                             _ => ((i * 7 % 13) as f32 - 6.0) * 4.0,
                         };
                         write!(input, "{} {}", score.to_bits(), u8::from(enabled)).unwrap();
-                        let row: Vec<_> = (0..width).map(|j| ((i * 11 + j * 7) % 31) as f32 / 16.0 - 0.75).collect();
-                        for x in &row { write!(input, " {}", x.to_bits()).unwrap(); }
+                        let row: Vec<_> = (0..width)
+                            .map(|j| ((i * 11 + j * 7) % 31) as f32 / 16.0 - 0.75)
+                            .collect();
+                        for x in &row {
+                            write!(input, " {}", x.to_bits()).unwrap();
+                        }
                         input.push('\n');
-                        if enabled { mean.push(score, Some(&row)).unwrap(); }
+                        if enabled {
+                            mean.push(score, Some(&row)).unwrap();
+                        }
                     }
-                    if let Some(score) = sink { mean.push(score, None).unwrap(); }
+                    if let Some(score) = sink {
+                        mean.push(score, None).unwrap();
+                    }
                     actual.extend(mean.finish().unwrap());
                 }
             }
@@ -1554,7 +1572,10 @@ fn online_weighted_mean_vtk_24() {
     assert_eq!(actual.len(), expected.len());
     for (value, word) in actual.into_iter().zip(expected) {
         let reference = f32::from_bits(word);
-        assert!((value - reference).abs() <= 0.000001, "{value} vs {reference}");
+        assert!(
+            (value - reference).abs() <= 0.000001,
+            "{value} vs {reference}"
+        );
     }
     let mut mean = super::WeightedMeanF32::new(2);
     assert!(mean.push(0.0, Some(&[1.0])).is_err());

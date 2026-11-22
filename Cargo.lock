@@ -877,6 +877,9 @@ dependencies = [
  "verdant_unary_plan",
  "verdant_unary_round",
  "verdant_unary_select",
+ "verdant_weighted_blend",
+ "verdant_weighted_pivot",
+ "verdant_weighted_reciprocal",
  "verdant_wide_mode",
  "verdant_widen_f32",
 ]
@@ -1099,6 +1102,18 @@ version = "2.9.0"
 [[package]]
 name = "verdant_unary_select"
 version = "2.9.0"
+
+[[package]]
+name = "verdant_weighted_blend"
+version = "2.23.0"
+
+[[package]]
+name = "verdant_weighted_pivot"
+version = "2.23.0"
+
+[[package]]
+name = "verdant_weighted_reciprocal"
+version = "2.23.0"
 
 [[package]]
 name = "verdant_wide_mode"

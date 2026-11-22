@@ -391,3 +391,21 @@ name = "verdant_rotation_step"
 version = "=2.22.0"
 expression = "MIT OR Apache-2.0"
 license-files = [{ path = "src/lib.rs", hash = 0x8f1d53f3 }]
+
+[[licenses.clarify]]
+name = "verdant_weighted_blend"
+version = "=2.23.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0x4fbf8a11 }]
+
+[[licenses.clarify]]
+name = "verdant_weighted_pivot"
+version = "=2.23.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0x48ade1e7 }]
+
+[[licenses.clarify]]
+name = "verdant_weighted_reciprocal"
+version = "=2.23.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0x1a27f392 }]

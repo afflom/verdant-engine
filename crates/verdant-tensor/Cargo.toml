@@ -12,6 +12,9 @@ keywords.workspace = true
 categories.workspace = true
 
 [dependencies]
+verdant_weighted_blend = { version = "=2.23.0", path = "../../generated/tensor-weighted/packages/rust-core/verdant_weighted_blend" }
+verdant_weighted_pivot = { version = "=2.23.0", path = "../../generated/tensor-weighted/packages/rust-core/verdant_weighted_pivot" }
+verdant_weighted_reciprocal = { version = "=2.23.0", path = "../../generated/tensor-weighted/packages/rust-core/verdant_weighted_reciprocal" }
 verdant_rotation_geometry = { version = "2.22.0", path = "../../generated/tensor-plane/packages/rust-core/verdant_rotation_geometry" }
 verdant_rotation_limit = { version = "2.22.0", path = "../../generated/tensor-plane/packages/rust-core/verdant_rotation_limit" }
 verdant_rotation_signed = { version = "2.22.0", path = "../../generated/tensor-plane/packages/rust-core/verdant_rotation_signed" }

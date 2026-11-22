@@ -314,3 +314,8 @@ role = "Reduce binary32 angles to a quadrant and evaluate the two circular funct
 path = "app/src/PlaneRotation.lex.tex"
 stratum = 1
 role = "Define geometric frequency corrections and the order of binary32 coefficient and coordinate operations."
+
+[[stratum_module]]
+path = "app/src/OnlineWeightedMean.lex.tex"
+stratum = 2
+role = "Rescale streaming binary32 weighted means at changes of maximum score and normalize their final mass."

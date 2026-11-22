@@ -1,0 +1,56 @@
+\begin{lexlean}{OnlineWeightedMean}
+\useglossary{lexlean.std.bool@1.2.0}
+\useglossary{lexlean.std.nat@1.2.0}
+\importmodule{FloatTransform}
+\importmodule{ScalarF32}
+\title{Natural number}
+\begin{semanticmodule}
+inductive{
+  name: Pivot,
+  type_parameters: [],
+  parameters: [],
+  constructors: [{name: selected, fields: [Bool, Nat, Nat]}]
+}
+
+definition{
+  name: pivot,
+  parameters: [maximum : Nat, score : Nat],
+  result: Pivot,
+  body: (if (FloatTransform::less maximum score) then (ctor Pivot.selected true score (ScalarF32::add maximum (ScalarF32::negate score))) else (ctor Pivot.selected false maximum (ScalarF32::add score (ScalarF32::negate maximum)))),
+  executable: true,
+  production: {effects: [overflow], targets: [rust-core]}
+}
+
+definition{
+  name: blend,
+  parameters: [raised : Bool, prior : Nat, sample : Nat, weight : Nat],
+  result: Nat,
+  body: (if raised then (ScalarF32::add (ScalarF32::multiply prior weight) sample) else (ScalarF32::add prior (ScalarF32::multiply sample weight))),
+  executable: true,
+  production: {effects: [overflow], targets: [rust-core]}
+}
+
+definition{
+  name: reciprocalMass,
+  parameters: [mass : Nat, unit : Nat],
+  result: Nat,
+  body: (if (ScalarF32::isZero mass) then 0 else (ScalarF32::divide unit mass)),
+  executable: true,
+  production: {effects: [overflow], targets: [rust-core]}
+}
+
+theorem{
+  name: emptyMass,
+  parameters: [unit : Nat],
+  statement: ((reciprocalMass 0 unit) = 0),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: risingMaximum,
+  parameters: [],
+  statement: ((pivot 0 1) = (ctor Pivot.selected true 1 (ScalarF32::negate 1))),
+  proof: reflexivity{}
+}
+\end{semanticmodule}
+\end{lexlean}

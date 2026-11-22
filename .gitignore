@@ -51,3 +51,4 @@ site/stitch/
 /app/.lexlean-sincos/
 /app/.lexlean-logscale/
 /app/.lexlean-plane/
+/app/.lexlean-weighted/
