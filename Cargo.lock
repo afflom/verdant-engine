@@ -841,6 +841,7 @@ dependencies = [
  "verdant_exponential_step",
  "verdant_float_storage",
  "verdant_float_transform",
+ "verdant_grouped_dot",
  "verdant_grouped_q8",
  "verdant_high_f64",
  "verdant_integer_f32",
@@ -959,6 +960,10 @@ version = "2.9.0"
 [[package]]
 name = "verdant_float_transform"
 version = "2.9.0"
+
+[[package]]
+name = "verdant_grouped_dot"
+version = "2.26.0"
 
 [[package]]
 name = "verdant_grouped_q8"

@@ -986,6 +986,7 @@ fn verify_bundle(scope: &str, directory: &str) -> std::collections::BTreeMap<Str
                     "verdant_rotation_limit" => include_bytes!("../../../../generated/tensor-plane/packages/rust-core/verdant_rotation_limit/src/lib.rs"),
                     "verdant_rotation_signed" => include_bytes!("../../../../generated/tensor-plane/packages/rust-core/verdant_rotation_signed/src/lib.rs"),
                     "verdant_rotation_step" => include_bytes!("../../../../generated/tensor-plane/packages/rust-core/verdant_rotation_step/src/lib.rs"),
+                    "verdant_grouped_dot" => include_bytes!("../../../../generated/tensor-groupeddot/packages/rust-core/verdant_grouped_dot/src/lib.rs"),
                     "verdant_grouped_q8" => include_bytes!("../../../../generated/tensor-grouped/packages/rust-core/verdant_grouped_q8/src/lib.rs"),
                     "verdant_logistic" => include_bytes!("../../../../generated/tensor-logistic/packages/rust-core/verdant_logistic/src/lib.rs"),
                     "verdant_swiglu" => include_bytes!("../../../../generated/tensor-swiglu/packages/rust-core/verdant_swiglu/src/lib.rs"),
@@ -1158,11 +1159,18 @@ fn grouped_block_encoding_vtk_26() {
 
 #[test]
 fn grouped_row_product_vtk_27() {
+    assert_eq!(
+        verify_bundle("groupeddot", "tensor-groupeddot")["VerdantEngine.GroupedDot.plan"],
+        "verdant_grouped_dot"
+    );
     use std::fmt::Write;
     let mut input = String::new();
     let mut actual = Vec::new();
     let mut seed = 42u32;
-    let mut next = || {seed = seed.wrapping_mul(1_664_525).wrapping_add(1_013_904_223); seed};
+    let mut next = || {
+        seed = seed.wrapping_mul(1_664_525).wrapping_add(1_013_904_223);
+        seed
+    };
     for row in 0..97 {
         let count = row % 5;
         writeln!(input, "{count}").unwrap();
@@ -1170,25 +1178,31 @@ fn grouped_row_product_vtk_27() {
         let mut activations = Vec::new();
         for i in 0..count {
             let mut block = [0u8; 84];
-            for byte in &mut block[..80] { *byte = (next() >> 24) as u8; }
+            for byte in &mut block[..80] {
+                *byte = (next() >> 24) as u8;
+            }
             let scales = [0u16, 0x3800, 0xbc00, 0x4000, 0x3400, 0x4200];
-            block[80..82].copy_from_slice(&scales[(row+i)%scales.len()].to_ne_bytes());
-            block[82..].copy_from_slice(&scales[(row*3+i+1)%scales.len()].to_ne_bytes());
+            block[80..82].copy_from_slice(&scales[(row + i) % scales.len()].to_ne_bytes());
+            block[82..].copy_from_slice(&scales[(row * 3 + i + 1) % scales.len()].to_ne_bytes());
             let lanes = std::array::from_fn(|_| ((next() >> 24) as f32 - 128.0) / 4.0);
-            for byte in block { writeln!(input, "{byte}").unwrap(); }
-            for lane in lanes { writeln!(input, "{}",lane.to_bits()).unwrap(); }
+            for byte in block {
+                writeln!(input, "{byte}").unwrap();
+            }
+            for lane in lanes {
+                writeln!(input, "{}", lane.to_bits()).unwrap();
+            }
             weights.extend_from_slice(&block);
             activations.push(super::encode_grouped_q8_block(&lanes).unwrap());
         }
-        actual.push(super::dot_grouped_q2_row(&weights,&activations).unwrap());
+        actual.push(super::dot_grouped_q2_row(&weights, &activations).unwrap());
     }
     let expected = query_oracle("grouped-dot", input);
-    assert_eq!(expected.len(),actual.len());
-    for (i,(out,bits)) in actual.into_iter().zip(expected).enumerate() {
-        assert_eq!(out.to_bits(),bits,"grouped row {i}");
+    assert_eq!(expected.len(), actual.len());
+    for (i, (out, bits)) in actual.into_iter().zip(expected).enumerate() {
+        assert_eq!(out.to_bits(), bits, "grouped row {i}");
     }
-    assert!(super::dot_grouped_q2_row(&[0;83], &[]).is_err());
-    assert!(super::dot_grouped_q2_row(&[0;84], &[]).is_err());
+    assert!(super::dot_grouped_q2_row(&[0; 83], &[]).is_err());
+    assert!(super::dot_grouped_q2_row(&[0; 84], &[]).is_err());
 }
 
 #[test]
