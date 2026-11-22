@@ -124,6 +124,7 @@ model does not sanction.
 | `VTK-25` | `build` | Verdant evaluates binary32 sigmoid and SiLU across finite and exceptional words against the imported CPU scalar functions |
 | `VTK-26` | `build` | Verdant encodes 256 binary32 lanes as Q8_K signed coefficients with a binary32 scale and sixteen group sums against the imported GGML reference |
 | `VTK-27` | `build` | Verdant contracts packed affine Q2_K weight rows with grouped Q8_K activations against the pinned GGML CPU vector product |
+| `VTK-28` | `build` | Verdant evaluates binary32 hyperbolic tangent against the imported GGML CPU function across signed zeros, subnormals, saturation and rounding boundaries |
 
 ## fidelity
 

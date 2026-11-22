@@ -668,3 +668,9 @@ Feature: engine
     Given packed weight scales offsets and two-bit lanes and signed activation groups
     When Verdant contracts the row with zero one or multiple blocks
     Then each result matches the imported GGML CPU vector product and mismatched storage is refused
+
+  @VTK-28 @build
+  Scenario: Verdant evaluates binary32 hyperbolic tangent against the imported GGML CPU function across signed zeros, subnormals, saturation and rounding boundaries
+    Given binary32 inputs spanning cancellation near zero and both saturation tails
+    When Verdant evaluates each word
+    Then signed zeros and nonfinite classes match GGML and finite results agree within four representable steps

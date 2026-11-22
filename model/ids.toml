@@ -745,3 +745,9 @@ id = "VTK-27"
 level = "build"
 suite = "engine"
 statement = "Verdant contracts packed affine Q2_K weight rows with grouped Q8_K activations against the pinned GGML CPU vector product"
+
+[[id]]
+id = "VTK-28"
+level = "build"
+suite = "engine"
+statement = "Verdant evaluates binary32 hyperbolic tangent against the imported GGML CPU function across signed zeros, subnormals, saturation and rounding boundaries"

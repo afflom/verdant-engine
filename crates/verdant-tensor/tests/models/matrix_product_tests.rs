@@ -185,6 +185,17 @@ int main(int argc, char **argv) {
     }
     return std::feof(stdin) ? 0 : 2;
   }
+  if (!std::strcmp(argv[1], "tanh")) {
+    unsigned bits;
+    while (std::scanf("%u", &bits) == 1) {
+      float x, result;
+      std::memcpy(&x, &bits, sizeof(x));
+      ggml_vec_tanh_f32(1, &result, &x);
+      std::memcpy(&bits, &result, sizeof(bits));
+      std::printf("%u\n", bits);
+    }
+    return std::feof(stdin) ? 0 : 2;
+  }
   if (!std::strcmp(argv[1], "logistic")) {
     unsigned bits;
     while (std::scanf("%u", &bits) == 1) {
@@ -1385,6 +1396,37 @@ fn natural_exponential_vtk_19() {
                 actual > 0 && actual < f32::INFINITY.to_bits() && actual.abs_diff(expected) <= 1,
                 "exp({word:#010x}): {actual:#010x} versus {expected:#010x}"
             );
+        }
+    }
+}
+
+#[test]
+fn hyperbolic_tangent_vtk_28() {
+    use std::fmt::Write;
+    let mut words: Vec<u32> = (0u32..=u16::MAX.into()).map(|high| high << 16).collect();
+    words.extend((-32768..=32768).map(|n| (n as f32 / 2048.0).to_bits()));
+    for value in [0.000244140625f32, 0.25, 10.0] {
+        for magnitude in value.to_bits()-8..=value.to_bits()+8 {
+            words.extend([magnitude, magnitude | 0x80000000]);
+        }
+    }
+    words.extend([1, 0x80000001, 0x007fffff, 0x807fffff, 0x7f7fffff, 0xff7fffff]);
+    words.sort_unstable();
+    words.dedup();
+    let mut input = String::new();
+    for word in &words { writeln!(input, "{word}").unwrap(); }
+    let expected = query_oracle("tanh", input);
+    assert_eq!(expected.len(), words.len());
+    for (word, bits) in words.into_iter().zip(expected) {
+        let value = super::tanh_f32(f32::from_bits(word)).unwrap();
+        let reference = f32::from_bits(bits);
+        if reference.is_nan() {
+            assert!(value.is_nan(), "input {word:#x}");
+        } else if reference == 0.0 || reference.abs() == 1.0 {
+            assert_eq!(value.to_bits(), bits, "input {word:#x}");
+        } else {
+            assert!(value.is_finite() && value.is_sign_negative() == reference.is_sign_negative() &&
+                value.to_bits().abs_diff(bits) <= 4, "input {word:#x}: {value} vs {reference}");
         }
     }
 }
