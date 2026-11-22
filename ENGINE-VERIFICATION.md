@@ -89,3 +89,23 @@ cargo run -p verdant-core --example headless_benchmark
 cargo run --manifest-path templates/browser-3d-starter/Cargo.toml
 cargo run -p verdant-cli -- benchmark
 ```
+
+## VTK-16 symmetric block encoding
+
+The pinned GGML function `quantize_row_q8_0_ref` supplies all 34 expected
+bytes of each of 271 blocks. These inputs cover signed zeros, scale underflow,
+halfway cases of both signs, binary16 scale overflow and mixed F32 exponents.
+Four additional inputs and a wrong-length block exercise the modeled refusals. Stored scale and lane
+codes match in all 9,214 byte comparisons. The first registered test failed
+to compile because the public encoder was missing. Flipping each encoded
+lane's low bit made the oracle reject block 3, byte 2 (17 versus 16).
+The restored encoder passed. Reproduce the test with
+`cargo test --locked -p verdant-tensor --lib symmetric_block_encoding_vtk_16`.
+The independent Prism scope exports via `just certified-export q8 tensor-q8`.
+[GGML reference](https://github.com/ggml-org/llama.cpp/blob/9a080f44b503c64f66c84a6274b9d9ee5d5b09d5/ggml/src/ggml-quants.c#L273)
+
+Prism attestation `313a4bfed6b4563a4e405bf58fb4c88ee5bd7676f8dbe476353d23e444cf512a`
+binds the final block layout and arithmetic instructions. The scoped oracle,
+Clippy and cargo-deny pass. The Engine fidelity gate reports 1,168 native
+residue functions against 1,160 and 1,326 uncertified functions against 1,318.
+The preceding PR measured 1,167 and 1,325 respectively.

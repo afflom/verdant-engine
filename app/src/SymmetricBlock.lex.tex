@@ -1,0 +1,76 @@
+\begin{lexlean}{SymmetricBlock}
+\useglossary{lexlean.std.bool@1.2.0}
+\useglossary{lexlean.std.nat@1.2.0}
+\title{Natural number}
+\begin{semanticmodule}
+inductive{
+  name: Request,
+  type_parameters: [],
+  parameters: [],
+  constructors: [
+    {name: maximum, fields: [Nat, Nat]},
+    {name: scale, fields: [Nat]},
+    {name: reciprocal, fields: [Nat]},
+    {name: scaleLane, fields: [Nat, Nat]},
+    {name: lane, fields: [Nat]},
+    {name: layout, fields: [Nat]}
+  ]
+}
+
+inductive{
+  name: Step,
+  type_parameters: [],
+  parameters: [],
+  constructors: [
+    {name: refused, fields: []},
+    {name: word, fields: [Nat]},
+    {name: zeroBlock, fields: []},
+    {name: scalar, fields: [Nat, Nat, Nat]}
+  ]
+}
+
+definition{
+  name: laneByte,
+  parameters: [word : Nat, magnitude : Nat],
+  result: Step,
+  body: (if (magnitude <? 1056964608) then (ctor Step.word 0) else (let exponent : Nat := (prim quotient magnitude 8388608 0 : Nat); (if (134 <? exponent) then (ctor Step.refused) else (let step : Nat := (prim iterate (fun (v : Nat) => (v + v)) (prim subtract 150 exponent : Nat) 1 : Nat); (let mantissa : Nat := (8388608 + (prim remainder magnitude 8388608 0 : Nat)); (let rounded : Nat := (prim quotient (mantissa + (prim quotient step 2 0 : Nat)) step 0 : Nat); (if (word <? 2147483648) then (if (rounded <? 128) then (ctor Step.word rounded) else (ctor Step.refused)) else (if (rounded <=? 128) then (ctor Step.word (prim subtract 256 rounded : Nat)) else (ctor Step.refused))))))))),
+  executable: true
+}
+
+definition{
+  name: plan,
+  parameters: [request : Request],
+  result: Step,
+  body: (match request
+    | Request.maximum previous word => (let magnitude : Nat := (prim remainder word 2147483648 0 : Nat); (if (((word <? 4294967296) && (previous <? 2139095040)) && (magnitude <? 2139095040)) then (ctor Step.word (if (previous <? magnitude) then magnitude else previous)) else (ctor Step.refused)))
+    | Request.scale maximum => (if (maximum <? 2139095040) then (ctor Step.scalar 3 maximum 1123942400) else (ctor Step.refused))
+    | Request.reciprocal scale => (if (scale =? 0) then (ctor Step.zeroBlock) else (if (scale <? 2139095040) then (ctor Step.scalar 3 1065353216 scale) else (ctor Step.refused)))
+    | Request.scaleLane word inverse => (if ((word <? 4294967296) && (inverse <? 2139095040)) then (ctor Step.scalar 2 word inverse) else (ctor Step.refused))
+    | Request.lane word => (if (word <? 4294967296) then (laneByte word (prim remainder word 2147483648 0 : Nat)) else (ctor Step.refused))
+    | Request.layout lanes => (if (lanes =? 32) then (ctor Step.word 0) else (ctor Step.refused))),
+  executable: true,
+  production: {effects: [overflow], targets: [rust-core]}
+}
+
+theorem{
+  name: negativeHalfRoundsAway,
+  parameters: [],
+  statement: ((plan (ctor Request.lane 3204448256)) = (ctor Step.word 255)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: refusesInfiniteInput,
+  parameters: [],
+  statement: ((plan (ctor Request.maximum 0 2139095040)) = (ctor Step.refused)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: allZeroScale,
+  parameters: [],
+  statement: ((plan (ctor Request.reciprocal 0)) = (ctor Step.zeroBlock)),
+  proof: reflexivity{}
+}
+\end{semanticmodule}
+\end{lexlean}

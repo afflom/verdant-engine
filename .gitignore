@@ -42,3 +42,4 @@ site/stitch/
 
 /app/.lexlean-tensor/
 /app/.lexlean-quotient/
+/app/.lexlean-q8/

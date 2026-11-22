@@ -701,6 +701,73 @@ pub use verdant_packed_field::run as extract_packed_field;
 /// Oversized inputs return None; integer zero always encodes positive zero.
 pub use verdant_integer_f32::run as encode_small_integer;
 
+/// Native binary16 scale bits followed by signed quantized lane codes.
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct SymmetricQ8Block<const LANES: usize> {
+    /// Bits of the stored IEEE binary16 scale.
+    pub scale: u16,
+    /// Signed integer coefficients in input order.
+    pub codes: [i8; LANES],
+}
+
+/// Encode 32 F32 lanes as a native binary16 scale and 32 signed codes.
+/// The symmetric reference format scales the lanes with the original F32
+/// step before narrowing the stored scale. Its ties round away from zero.
+///
+/// # Errors
+/// Returns `InvalidKernelSpecification` for a wrong lane count, nonfinite input or an undefined
+/// float-to-byte conversion. The encoded block is returned atomically.
+pub fn encode_symmetric_q8_block<const LANES: usize>(
+    input: &[f32; LANES],
+) -> Result<SymmetricQ8Block<LANES>, TensorComputeError> {
+    use verdant_symmetric_q8::{run, Adt0 as Request, Adt1 as Step};
+    let invalid = || TensorComputeError::InvalidKernelSpecification {
+        kernel_name: "SymmetricBlock.plan".to_string(),
+    };
+    let plan = |request| run(request).map_err(|_| invalid());
+    let Step::C1(mut maximum) = plan(Request::C5(LANES as u64))? else {
+        return Err(invalid());
+    };
+    for &lane in input {
+        let Step::C1(next) = plan(Request::C0(maximum, u64::from(lane.to_bits())))? else {
+            return Err(invalid());
+        };
+        maximum = next;
+    }
+    let evaluate = |step| match step {
+        Step::C3(operation, left, right) => verdant_scalar_f32::run(operation, left, right)
+            .map_err(|_| invalid())?
+            .ok_or_else(invalid),
+        _ => Err(invalid()),
+    };
+    let scale = evaluate(plan(Request::C1(maximum))?)?;
+    let inverse = match plan(Request::C2(scale))? {
+        Step::C2 => {
+            return Ok(SymmetricQ8Block {
+                scale: 0,
+                codes: [0; LANES],
+            })
+        }
+        instruction => evaluate(instruction)?,
+    };
+    let half = convert_float_storage(0, 1, scale)
+        .map_err(|_| invalid())?
+        .ok_or_else(invalid)?;
+    let mut output = SymmetricQ8Block {
+        scale: half as u16,
+        codes: [0; LANES],
+    };
+    for (code, &lane) in output.codes.iter_mut().zip(input) {
+        let scaled = evaluate(plan(Request::C3(u64::from(lane.to_bits()), inverse))?)?;
+        let Step::C1(byte) = plan(Request::C4(scaled))? else {
+            return Err(invalid());
+        };
+        *code = byte as i8;
+    }
+    Ok(output)
+}
+
 /// Canonical GGML CPU quantized tables reproduced from the pinned external header.
 pub const GGML_QUANTIZED_TABLES: &[u8] = include_bytes!("ggml_tables.bin");
 /// Exact table extents, byte spans, source pin and content digests.

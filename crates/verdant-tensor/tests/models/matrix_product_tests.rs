@@ -745,6 +745,7 @@ fn verify_bundle(scope: &str, directory: &str) -> std::collections::BTreeMap<Str
                     "verdant_division_class" => include_bytes!("../../../../generated/tensor-quotient/packages/rust-core/verdant_division_class/src/lib.rs"),
                     "verdant_division_norm" => include_bytes!("../../../../generated/tensor-quotient/packages/rust-core/verdant_division_norm/src/lib.rs"),
                     "verdant_division_finish" => include_bytes!("../../../../generated/tensor-quotient/packages/rust-core/verdant_division_finish/src/lib.rs"),
+                    "verdant_symmetric_q8" => include_bytes!("../../../../generated/tensor-q8/packages/rust-core/verdant_symmetric_q8/src/lib.rs"),
                     _ => panic!("unknown certified dependency"),
                 };
                 assert_eq!(actual, compiled);
@@ -807,6 +808,11 @@ fn rectangular_product_vtk_01() {
 
 #[test]
 fn symmetric_block_encoding_vtk_16() {
+    let bindings = verify_bundle("q8", "tensor-q8");
+    assert_eq!(
+        bindings["VerdantEngine.SymmetricBlock.plan"],
+        "verdant_symmetric_q8"
+    );
     use std::fmt::Write;
     let mut blocks = vec![[0.0; 32], [-0.0; 32], [f32::from_bits(1); 32]];
     for maximum in [0.125, 1.0, 127.0, 254.0, 16_384.0, 16_777_216.0] {
@@ -830,13 +836,26 @@ fn symmetric_block_encoding_vtk_16() {
         for value in block {
             writeln!(input, "{}", value.to_bits()).unwrap();
         }
-        actual.extend(super::encode_symmetric_q8_block(&block).unwrap().map(u32::from));
+        let encoded = super::encode_symmetric_q8_block(&block).unwrap();
+        assert_eq!(std::mem::size_of_val(&encoded), 34);
+        actual.extend(encoded.scale.to_ne_bytes().map(u32::from));
+        actual.extend(encoded.codes.map(|code| u32::from(code as u8)));
     }
-    assert_eq!(actual, query_oracle("symmetric-q8", input));
+    let reference = query_oracle("symmetric-q8", input);
+    assert_eq!(actual.len(), reference.len());
+    for (index, (byte, expected)) in actual.into_iter().zip(reference).enumerate() {
+        assert_eq!(byte, expected, "block {} byte {}", index / 34, index % 34);
+    }
+    assert!(matches!(
+        super::encode_symmetric_q8_block(&[0.0; 31]),
+        Err(crate::TensorComputeError::InvalidKernelSpecification { .. })
+    ));
     for invalid in [f32::NAN, f32::INFINITY, f32::NEG_INFINITY, 1e-38] {
         let mut block = [0.0; 32];
         block[31] = invalid;
-        assert!(matches!(super::encode_symmetric_q8_block(&block),
-            Err(crate::TensorComputeError::InvalidKernelSpecification { .. })));
+        assert!(matches!(
+            super::encode_symmetric_q8_block(&block),
+            Err(crate::TensorComputeError::InvalidKernelSpecification { .. })
+        ));
     }
 }

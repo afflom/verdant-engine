@@ -57,7 +57,7 @@ max_unlifted_workspace_modules = 0
 
 [frontier_ratchet]
 frontier_register = "frontier.toml"
-frontier_rust_tree_sha256 = "bfc2abb5090d21c512c9b2be39c5b9aa9e6af2a3276bfbf228f30372e2897b5c"
+frontier_rust_tree_sha256 = "aa68101564cc1ecde5ec882f349a9b14d43b11a9f9bf4ecbf3599609d844f319"
 min_lifted_functions = 551
 max_residue_functions = 1160
 max_uncertified_functions = 1318
@@ -279,3 +279,8 @@ role = "Certified GGML CPU storage-block instruction plans and exact primitive w
 path = "app/src/F64Quotient.lex.tex"
 stratum = 1
 role = "Prism nearest-even F64 quotient plans and unsigned-count normalization with imported SoftFloat validation."
+
+[[stratum_module]]
+path = "app/src/SymmetricBlock.lex.tex"
+stratum = 1
+role = "Symmetric signed-byte block scale, reciprocal and lane instruction selection with bounded ties-away conversion."
