@@ -650,3 +650,9 @@ Feature: engine
     Given streamed scores and equally sized rows with optional zero-valued observations
     When the accumulator rescales its total and weighted coordinates on a new maximum
     Then the normalized coordinates agree with the imported evaluator for changing maxima ties excluded rows and sinks
+
+  @VTK-25 @build
+  Scenario: Verdant evaluates binary32 sigmoid and SiLU across finite and exceptional words against the imported CPU scalar functions
+    Given binary32 words spanning signed zeros, subnormal inputs and the finite activation range
+    When Verdant evaluates sigmoid and SiLU
+    Then signed zeros and nonfinite classes match GGML and finite results differ by at most four representable steps

@@ -169,6 +169,20 @@ int main(int argc, char **argv) {
     }
     return std::feof(stdin) ? 0 : 2;
   }
+  if (!std::strcmp(argv[1], "logistic")) {
+    unsigned bits;
+    while (std::scanf("%u", &bits) == 1) {
+      float x, sigmoid;
+      std::memcpy(&x, &bits, sizeof(x));
+      ggml_vec_sigmoid_f32(1, &sigmoid, &x);
+      float silu = ggml_silu_f32(x);
+      for (float result : {sigmoid, silu}) {
+        std::memcpy(&bits, &result, sizeof(bits));
+        std::printf("%u\n", bits);
+      }
+    }
+    return std::feof(stdin) ? 0 : 2;
+  }
   if (!std::strcmp(argv[1], "swiglu-scalar")) {
     uint32_t first, second;
     while (std::scanf("%u %u", &first, &second) == 2) {
@@ -1243,6 +1257,36 @@ fn natural_exponential_vtk_19() {
                 actual > 0 && actual < f32::INFINITY.to_bits() && actual.abs_diff(expected) <= 1,
                 "exp({word:#010x}): {actual:#010x} versus {expected:#010x}"
             );
+        }
+    }
+}
+
+#[test]
+fn logistic_functions_vtk_25() {
+    use std::fmt::Write;
+    let mut words: Vec<u32> = (-4608..=4608).map(|step| (step as f32 / 32.0).to_bits()).collect();
+    for magnitude in [0, 1, 0x007fffff, 0x00800000, 0x7f7fffff, 0x7f800000, 0x7fc00042] {
+        words.extend([magnitude, magnitude | 0x80000000]);
+    }
+    words.sort_unstable();
+    words.dedup();
+    let mut requests = String::new();
+    for &word in &words { writeln!(requests, "{word}").unwrap(); }
+    let expected = query_oracle("logistic", requests);
+    assert_eq!(expected.len(), words.len() * 2);
+    for (word, pair) in words.into_iter().zip(expected.chunks_exact(2)) {
+        let x = f32::from_bits(word);
+        let actual = [super::sigmoid_f32(x).unwrap(), super::silu_f32(x).unwrap()];
+        for (observed, &bits) in actual.into_iter().zip(pair) {
+            let wanted = f32::from_bits(bits);
+            if wanted.is_nan() {
+                assert!(observed.is_nan(), "input {word:#x}");
+            } else if wanted == 0.0 || wanted.is_infinite() {
+                assert_eq!(observed.to_bits(), bits, "input {word:#x}");
+            } else {
+                assert!(observed.is_finite() && observed.is_sign_negative() == wanted.is_sign_negative()
+                    && observed.to_bits().abs_diff(bits) <= 4, "input {word:#x}: {observed} versus {wanted}");
+            }
         }
     }
 }

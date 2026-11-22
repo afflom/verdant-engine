@@ -727,3 +727,9 @@ id = "VTK-24"
 level = "build"
 suite = "engine"
 statement = "Verdant accumulates a streaming softmax weighted mean of binary32 rows against the imported GGML CPU attention evaluator"
+
+[[id]]
+id = "VTK-25"
+level = "build"
+suite = "engine"
+statement = "Verdant evaluates binary32 sigmoid and SiLU across finite and exceptional words against the imported CPU scalar functions"
