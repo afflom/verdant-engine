@@ -810,6 +810,11 @@ fn verify_bundle(scope: &str, directory: &str) -> std::collections::BTreeMap<Str
                     "verdant_exponential_f32" => include_bytes!("../../../../generated/tensor-exponential/packages/rust-core/verdant_exponential_f32/src/lib.rs"),
                     "verdant_exponential_step" => include_bytes!("../../../../generated/tensor-exponential/packages/rust-core/verdant_exponential_step/src/lib.rs"),
                     "verdant_exponential_scale" => include_bytes!("../../../../generated/tensor-exponential/packages/rust-core/verdant_exponential_scale/src/lib.rs"),
+                    "verdant_circular_magnitudes" => include_bytes!("../../../../generated/tensor-circular/packages/rust-core/verdant_circular_magnitudes/src/lib.rs"),
+                    "verdant_circular_orient" => include_bytes!("../../../../generated/tensor-circular/packages/rust-core/verdant_circular_orient/src/lib.rs"),
+                    "verdant_circular_prepare" => include_bytes!("../../../../generated/tensor-circular/packages/rust-core/verdant_circular_prepare/src/lib.rs"),
+                    "verdant_circular_reduce" => include_bytes!("../../../../generated/tensor-circular/packages/rust-core/verdant_circular_reduce/src/lib.rs"),
+                    "verdant_circular_square" => include_bytes!("../../../../generated/tensor-circular/packages/rust-core/verdant_circular_square/src/lib.rs"),
                     "verdant_swiglu" => include_bytes!("../../../../generated/tensor-swiglu/packages/rust-core/verdant_swiglu/src/lib.rs"),
                     "verdant_packed_dot" => include_bytes!("../../../../generated/tensor-packed/packages/rust-core/verdant_packed_dot/src/lib.rs"),
                     "verdant_symmetric_dot" => include_bytes!("../../../../generated/tensor-dot/packages/rust-core/verdant_symmetric_dot/src/lib.rs"),
@@ -1169,6 +1174,7 @@ fn gated_product_vtk_20() {
 
 #[test]
 fn circular_functions_vtk_21() {
+    assert_eq!(verify_bundle("sincos", "tensor-circular").len(), 5);
     use std::fmt::Write;
     let mut words = Vec::new();
     for exponent in 0..256u32 {
@@ -1182,12 +1188,32 @@ fn circular_functions_vtk_21() {
         let center = ((std::f64::consts::FRAC_PI_2 * f64::from(multiple)) as f32).to_bits();
         words.extend((0..=4).flat_map(|d| [center.wrapping_sub(d), center.wrapping_add(d)]));
     }
+    // These binary32 angles approach multiples of pi/2 particularly closely.
+    // Both neighbors exercise the lost-significance boundary in the range reduction.
+    for center in [
+        0x6f79be45, 0x50a3e87f, 0x6ff9be45, 0x5123e87f, 0x437ce5f1, 0x7079be45, 0x6a1976f1,
+        0x53b146a6, 0x65898498, 0x51a3e87f, 0x43fce5f1, 0x77584625, 0x4c2332e9, 0x4096cbe4,
+        0x6c55da58, 0x70f9be45,
+    ] {
+        for word in [center - 1, center, center + 1] {
+            words.extend([word, word | (1 << 31)]);
+        }
+    }
+    for half in 0..=u16::MAX {
+        words.push(u32::from(half) << 16);
+        words.push(
+            super::convert_float_storage(1, 0, u64::from(half))
+                .unwrap()
+                .unwrap() as u32,
+        );
+    }
     words.sort_unstable();
     words.dedup();
     let mut input = String::new();
     for word in &words {
         writeln!(input, "{word}").unwrap();
     }
+    assert_eq!(words.len(), 260_284);
     let reference = query_oracle("sincos", input);
     assert_eq!(reference.len(), words.len() * 2);
     for (word, pair) in words.into_iter().zip(reference.chunks_exact(2)) {

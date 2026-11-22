@@ -204,3 +204,36 @@ cargo-deny. [Imported evaluator](https://github.com/ggml-org/llama.cpp/blob/9a08
 The refreshed native frontier measures 1,173 residual functions and 1,331
 uncertified functions against ceilings of 1,160 and 1,318. PR #16 measured
 1,172 and 1,330. The published release gate remains open.
+
+## VTK-21 binary32 sine and cosine
+
+`linear::sin_cos_f32` returns both results from one range reduction. Five
+compiled Prism roots classify the input, reduce the angle, square the
+reduced argument, evaluate its two magnitudes, and restore quadrant signs.
+Tiny inputs preserve the sine word and return one for cosine. Nonfinite
+inputs return a NaN pair. The Rust adapter passes values between the roots.
+[Certified package](generated/tensor-circular/result.json)
+
+The reducer multiplies the binary32 significand by a window of the first
+256 fractional bits of 2/π. It retains the quadrant and 61 fractional
+bits before folding around the nearest multiple of π/2. The constants
+were computed with Machin's formula and checked against the leading digits
+in fdlibm. On the resulting interval the model uses fixed-point series for
+cosine and sinc. Keeping the fractional magnitude separately until the
+final rounding preserves small sines close to a quadrant boundary.
+[Range-reduction constant](https://netlib.org/fdlibm/e_rem_pio2.c)
+
+The pinned, unchanged `ggml_vec_sin_f32` and `ggml_vec_cos_f32` supplied
+520,568 results for 260,284 distinct binary32 words. Inputs covered every
+exponent field, all widened binary16 and bfloat16 encodings, neighbors of
+8,193 multiples of π/2, and large angles close to quadrant boundaries.
+Every finite nonzero result agreed within one ULP, with the reference
+sign. Signed zeros matched exactly and all NaN classifications matched.
+Inverting the reducer's reflection flag returned `0xb9000000` for the sine
+of `0x39000000`; the oracle returned `0x39000000`. Restoring the flag
+passed the same batch. Scoped Clippy and cargo-deny passed.
+[GGML scalar functions](https://github.com/ggml-org/llama.cpp/blob/9a080f44b503c64f66c84a6274b9d9ee5d5b09d5/ggml/src/ggml-cpu/vec.h#L913)
+
+The frontier measures 1,174 residual functions and 1,332 uncertified
+functions against ceilings of 1,160 and 1,318. PR #17 measured 1,173
+and 1,331. The published release remains open.

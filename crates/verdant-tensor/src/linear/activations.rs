@@ -43,3 +43,30 @@ pub fn exponential_f32(value: f32) -> Result<f32, TensorComputeError> {
     };
     Ok(f32::from_bits(u32::try_from(word).map_err(|_| failure())?))
 }
+
+/// Evaluate the sine and cosine of one binary32 angle in radians.
+///
+/// # Errors
+/// Returns a typed kernel error if a certified word operation overflows.
+pub fn sin_cos_f32(radians: f32) -> Result<(f32, f32), TensorComputeError> {
+    let error = || TensorComputeError::InvalidKernelSpecification {
+        kernel_name: "CircularFunctions".to_owned(),
+    };
+    let (sin, cos) =
+        match verdant_circular_prepare::run(u64::from(radians.to_bits())).map_err(|_| error())? {
+            verdant_circular_prepare::Adt0::C0(sin, cos) => (sin, cos),
+            verdant_circular_prepare::Adt0::C1(negative, mantissa, shift) => {
+                let verdant_circular_reduce::Adt0::C0(quadrant, upper, fraction) =
+                    verdant_circular_reduce::run(mantissa, shift).map_err(|_| error())?;
+                let square = verdant_circular_square::run(fraction).map_err(|_| error())?;
+                let verdant_circular_magnitudes::Adt0::C0(sin, cos) =
+                    verdant_circular_magnitudes::run(fraction, square).map_err(|_| error())?;
+                let verdant_circular_orient::Adt0::C0(sin, cos) =
+                    verdant_circular_orient::run(negative, quadrant, upper, sin, cos)
+                        .map_err(|_| error())?;
+                (sin, cos)
+            }
+        };
+    let decode = |word| u32::try_from(word).map(f32::from_bits).map_err(|_| error());
+    Ok((decode(sin)?, decode(cos)?))
+}

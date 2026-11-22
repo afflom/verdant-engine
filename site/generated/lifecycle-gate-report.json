@@ -11,12 +11,12 @@
   "liftedCoverage": {
     "rustModules": 85,
     "verificationTestModules": 25,
-    "lexleanModules": 48,
+    "lexleanModules": 49,
     "featureSuiteModules": 3,
     "modelGovernanceModules": 16,
     "automationScriptModules": 20,
     "viewpointModules": 9,
-    "totalLiftedModules": 206,
+    "totalLiftedModules": 207,
     "allCategoriesLifted": true
   },
   "checks": [
@@ -33,7 +33,7 @@
       "owningManagerId": "mgr-observer-executive",
       "category": "in-process",
       "passed": true,
-      "durationMs": 10,
+      "durationMs": 9,
       "detail": "valid=true entries=16 violations=0"
     },
     {
@@ -57,7 +57,7 @@
       "owningManagerId": "mgr-knowledge-provenance",
       "category": "in-process",
       "passed": true,
-      "durationMs": 1,
+      "durationMs": 0,
       "detail": "fidelity_open=0 frontier_valid=true"
     },
     {
@@ -66,8 +66,8 @@
       "category": "in-process",
       "passed": true,
       "durationMs": 0,
-      "detail": "total=206 (rust=85, test=25, lex=48, feature=3, model=16, script=20, view=9)"
+      "detail": "total=207 (rust=85, test=25, lex=49, feature=3, model=16, script=20, view=9)"
     }
   ],
-  "reportKappaHex": "d81c375c5346da740e4e85d7313450d73e852f75304bd8d5bda64bc9564c5880"
+  "reportKappaHex": "62e3735424c65a8b90f0c989fcdb04242758902b33e986bc3ea2930cc43cfef7"
 }

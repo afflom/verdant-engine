@@ -825,6 +825,11 @@ dependencies = [
  "sha2 0.10.9",
  "uor-matmul",
  "verdant_add_f64",
+ "verdant_circular_magnitudes",
+ "verdant_circular_orient",
+ "verdant_circular_prepare",
+ "verdant_circular_reduce",
+ "verdant_circular_square",
  "verdant_count_f32",
  "verdant_count_f64",
  "verdant_division_class",
@@ -874,6 +879,26 @@ dependencies = [
 [[package]]
 name = "verdant_add_f64"
 version = "2.9.0"
+
+[[package]]
+name = "verdant_circular_magnitudes"
+version = "2.21.0"
+
+[[package]]
+name = "verdant_circular_orient"
+version = "2.21.0"
+
+[[package]]
+name = "verdant_circular_prepare"
+version = "2.21.0"
+
+[[package]]
+name = "verdant_circular_reduce"
+version = "2.21.0"
+
+[[package]]
+name = "verdant_circular_square"
+version = "2.21.0"
 
 [[package]]
 name = "verdant_count_f32"

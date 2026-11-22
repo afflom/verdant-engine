@@ -57,7 +57,7 @@ max_unlifted_workspace_modules = 0
 
 [frontier_ratchet]
 frontier_register = "frontier.toml"
-frontier_rust_tree_sha256 = "b66b0b1b1629d87daeb84b02f270939e00eda9232fc7fa0d55ed87976290ecd7"
+frontier_rust_tree_sha256 = "53fc288c0fc40178001294ecfc10cc8eb86dedf6adfec7a99b35f7ae051dbdc1"
 min_lifted_functions = 551
 max_residue_functions = 1160
 max_uncertified_functions = 1318
@@ -304,3 +304,8 @@ role = "Binary32 exponential range reduction, fixed-point recurrence and final s
 path = "app/src/SwiGlu.lex.tex"
 stratum = 2
 role = "Order the certified binary32 scalar operations for a sigmoid-weighted gated product."
+
+[[stratum_module]]
+path = "app/src/CircularFunctions.lex.tex"
+stratum = 1
+role = "Reduce binary32 angles to a quadrant and evaluate the two circular functions."

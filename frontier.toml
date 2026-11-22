@@ -5,7 +5,7 @@
 # stops the functions it counts (the detail their rows state, under its
 # cause), the one that stops the most first: the work queue.
 
-# Honesty report: 551 of 1882 functions of product code are lifted; 1173
+# Honesty report: 551 of 1883 functions of product code are lifted; 1174
 # are residue, 75 foreign and 83 effect rows.
 # Residue by cause:
 #   arithmetic: 30
@@ -13,15 +13,15 @@
 #   form: 344
 #   signature: 75
 #   statements: 23
-#   type: 480
+#   type: 481
 #   width: 6
 
 spec = "uorust/register/1"
 
 [lift]
-functions = 1882
+functions = 1883
 lifted = 551
-residue = 1173
+residue = 1174
 foreign = 75
 effect = 83
 
@@ -66,17 +66,17 @@ cause = "statements"
 functions = 23
 
 [[construct]]
+construct = "type outside the lift: f32"
+cause = "type"
+functions = 21
+
+[[construct]]
 construct = "calls new, which is not lifted"
 cause = "call"
 functions = 20
 
 [[construct]]
 construct = "type outside the lift: Self"
-cause = "type"
-functions = 20
-
-[[construct]]
-construct = "type outside the lift: f32"
 cause = "type"
 functions = 20
 
@@ -5143,6 +5143,12 @@ detail = "type outside the lift: VerifiedKernelConsts.skin_weight_scale_f64: f64
 [[residue]]
 kappa = "802b409eed83c8ecbca3d8f0365207f3a4094e18ab8751679ce4331b97fa6fa4"
 function = "verdant_tensor::linear::activations::exponential_f32"
+reason = "type"
+detail = "type outside the lift: f32"
+
+[[residue]]
+kappa = "611b6da75a0c8c66668022bbde517dff3770fa7926ca0da233e582ac84412f45"
+function = "verdant_tensor::linear::activations::sin_cos_f32"
 reason = "type"
 detail = "type outside the lift: f32"
 

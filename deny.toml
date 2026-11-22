@@ -289,3 +289,33 @@ name = "verdant_swiglu"
 version = "=2.20.0"
 expression = "MIT OR Apache-2.0"
 license-files = [{ path = "src/lib.rs", hash = 0xd3157ae3 }]
+
+[[licenses.clarify]]
+name = "verdant_circular_magnitudes"
+version = "=2.21.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0x1a890bb2 }]
+
+[[licenses.clarify]]
+name = "verdant_circular_orient"
+version = "=2.21.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0xe4136874 }]
+
+[[licenses.clarify]]
+name = "verdant_circular_prepare"
+version = "=2.21.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0xabe1d18c }]
+
+[[licenses.clarify]]
+name = "verdant_circular_reduce"
+version = "=2.21.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0xd3eaf551 }]
+
+[[licenses.clarify]]
+name = "verdant_circular_square"
+version = "=2.21.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0x460ae74a }]

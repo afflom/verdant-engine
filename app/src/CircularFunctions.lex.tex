@@ -1,0 +1,143 @@
+\begin{lexlean}{CircularFunctions}
+\useglossary{lexlean.std.bool@1.2.0}
+\useglossary{lexlean.std.nat@1.2.0}
+\importmodule{FloatStorage}
+\importmodule{ScalarF32}
+\title{Natural number}
+\begin{semanticmodule}
+inductive{
+  name: Preparation,
+  type_parameters: [],
+  parameters: [],
+  constructors: [{name: exact, fields: [Nat, Nat]}, {name: general, fields: [Bool, Nat, Nat]}]
+}
+
+inductive{
+  name: Words,
+  type_parameters: [],
+  parameters: [],
+  constructors: [{name: pair, fields: [Nat, Nat]}]
+}
+
+inductive{
+  name: Angle,
+  type_parameters: [],
+  parameters: [],
+  constructors: [{name: reduced, fields: [Nat, Bool, Nat]}]
+}
+
+definition{
+  name: prepare,
+  parameters: [word : Nat],
+  result: Preparation,
+  body: (let absolute : Nat := (prim remainder word 2147483648 0 : Nat); (let exponent : Nat := (prim quotient absolute 8388608 0 : Nat); (if (exponent =? 255) then (ctor Preparation.exact 2143289344 2143289344) else (if (exponent <? 114) then (ctor Preparation.exact word 1065353216) else (ctor Preparation.general (2147483647 <? word) (8388608 + (prim remainder absolute 8388608 0 : Nat)) (prim subtract 345 exponent : Nat)))))),
+  executable: true,
+  production: {effects: [overflow], targets: [rust-core]}
+}
+
+definition{
+  name: coefficientLimb,
+  parameters: [index : Nat],
+  result: Nat,
+  body: (let group : Nat := (prim quotient index 4 0 : Nat); (let chunk : Nat := (if (group =? 0) then 18325537948574664033 else (if (group =? 1) then 15808362127397457985 else (if (group =? 2) then 18169587780923219392 else (if (group =? 3) then 11743562013128004905 else 0)))); (prim remainder (prim quotient chunk (ScalarF32::power (prim multiply (prim remainder index 4 0 : Nat) 16 : Nat)) 0 : Nat) 65536 0 : Nat))),
+  executable: true
+}
+
+definition{
+  name: coefficientWindow,
+  parameters: [offset : Nat],
+  result: Nat,
+  body: (let index : Nat := (prim quotient offset 16 0 : Nat); (let joined : Nat := ((coefficientLimb index) + (prim multiply 65536 (coefficientLimb (index + 1)) : Nat)); (prim remainder (prim quotient joined (ScalarF32::power (prim remainder offset 16 0 : Nat)) 0 : Nat) 65536 0 : Nat))),
+  executable: true
+}
+
+definition{
+  name: productDigit,
+  parameters: [mantissa : Nat, offset : Nat, previous : Nat],
+  result: Nat,
+  body: ((prim multiply mantissa (coefficientWindow offset) : Nat) + (prim quotient previous 65536 0 : Nat)),
+  executable: true
+}
+
+definition{
+  name: reduce,
+  parameters: [mantissa : Nat, shift : Nat],
+  result: Angle,
+  body: (let d0 : Nat := (productDigit mantissa (prim subtract shift 32 : Nat) 0); (let d1 : Nat := (productDigit mantissa (prim subtract shift 16 : Nat) d0); (let d2 : Nat := (productDigit mantissa shift d1); (let d3 : Nat := (productDigit mantissa (shift + 16) d2); (let d4 : Nat := (productDigit mantissa (shift + 32) d3); (let d5 : Nat := (productDigit mantissa (shift + 48) d4); (let phase : Nat := ((prim remainder d2 65536 0 : Nat) + (prim multiply 65536 ((prim remainder d3 65536 0 : Nat) + (prim multiply 65536 ((prim remainder d4 65536 0 : Nat) + (prim multiply 65536 (prim remainder d5 32768 0 : Nat) : Nat)) : Nat)) : Nat)); (let fraction : Nat := (prim remainder phase 2305843009213693952 0 : Nat); (let upper : Bool := (1152921504606846976 <? fraction); (ctor Angle.reduced (prim remainder ((prim quotient phase 2305843009213693952 0 : Nat) + (if upper then 1 else 0)) 4 0 : Nat) upper (if upper then (prim subtract 2305843009213693952 fraction : Nat) else fraction))))))))))),
+  executable: true,
+  production: {effects: [overflow], targets: [rust-core]}
+}
+
+definition{
+  name: qProduct,
+  parameters: [left : Nat, right : Nat],
+  result: Nat,
+  body: (FloatStorage::roundQuotient (prim multiply left right : Nat) 1073741824),
+  executable: true
+}
+
+definition{
+  name: angleSquared,
+  parameters: [fraction : Nat],
+  result: Nat,
+  body: (let unit : Nat := (FloatStorage::roundQuotient fraction 2147483648); (let angle : Nat := (qProduct unit 1686629713); (qProduct angle angle))),
+  executable: true,
+  production: {effects: [overflow], targets: [rust-core]}
+}
+
+definition{
+  name: sinc,
+  parameters: [square : Nat],
+  result: Nat,
+  body: (prim subtract 1073741824 (qProduct square (prim subtract 178956971 (qProduct square (prim subtract 8947849 (qProduct square (prim subtract 213044 (qProduct square (prim subtract 2959 (qProduct square 27) : Nat)) : Nat)) : Nat)) : Nat)) : Nat),
+  executable: true
+}
+
+definition{
+  name: cosineSeries,
+  parameters: [square : Nat],
+  result: Nat,
+  body: (prim subtract 1073741824 (qProduct square (prim subtract 536870912 (qProduct square (prim subtract 44739243 (qProduct square (prim subtract 1491308 (qProduct square (prim subtract 26631 (qProduct square 296) : Nat)) : Nat)) : Nat)) : Nat)) : Nat),
+  executable: true
+}
+
+definition{
+  name: magnitudes,
+  parameters: [fraction : Nat, square : Nat],
+  result: Words,
+  body: (let cosWord : Nat := (1048576000 + (FloatStorage::roundQuotient (cosineSeries square) 64)); (let norm : ScalarF32::Norm := (first (prim iterate_until (fun (state : ScalarF32::Norm) => (ScalarF32::normalizeStep state)) 61 (record ScalarF32::Norm {e := 126, m := fraction, minimum := 0, threshold := 1152921504606846976}) : (ScalarF32::Norm * Bool))); (let scaled : Nat := (FloatStorage::roundQuotient (project norm m) 536870912); (let factor : Nat := (qProduct 1686629713 (sinc square)); (let value : Nat := (prim multiply scaled factor : Nat); (let exp : Nat := (project norm e); (let sinWord : Nat := (if (fraction =? 0) then 0 else (if (value <? 4611686018427387904) then ((prim multiply (prim subtract exp 1 : Nat) 8388608 : Nat) + (FloatStorage::roundQuotient value 274877906944)) else ((prim multiply exp 8388608 : Nat) + (FloatStorage::roundQuotient value 549755813888)))); (ctor Words.pair sinWord cosWord)))))))),
+  executable: true,
+  production: {effects: [overflow], targets: [rust-core]}
+}
+
+definition{
+  name: orient,
+  parameters: [negative : Bool, quadrant : Nat, upper : Bool, sine : Nat, cosine : Nat],
+  result: Words,
+  body: (let odd : Bool := ((prim remainder quadrant 2 0 : Nat) =? 1); (let sineNegative : Bool := (if odd then (quadrant =? 3) else (if (quadrant =? 0) then upper else (if upper then false else true))); (let cosNegative : Bool := (if odd then (if (quadrant =? 1) then (if upper then false else true) else upper) else (quadrant =? 2)); (ctor Words.pair ((if odd then cosine else sine) + (if (if negative then (if sineNegative then false else true) else sineNegative) then 2147483648 else 0)) ((if odd then sine else cosine) + (if cosNegative then 2147483648 else 0)))))),
+  executable: true,
+  production: {effects: [overflow], targets: [rust-core]}
+}
+
+theorem{
+  name: negativeZero,
+  parameters: [],
+  statement: ((prepare 2147483648) = (ctor Preparation.exact 2147483648 1065353216)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: zero,
+  parameters: [],
+  statement: ((prepare 0) = (ctor Preparation.exact 0 1065353216)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: infinite,
+  parameters: [],
+  statement: ((prepare 2139095040) = (ctor Preparation.exact 2143289344 2143289344)),
+  proof: reflexivity{}
+}
+\end{semanticmodule}
+\end{lexlean}
