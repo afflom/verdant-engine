@@ -875,6 +875,7 @@ dependencies = [
  "verdant_symmetric_dot",
  "verdant_symmetric_dot_layout",
  "verdant_symmetric_q8",
+ "verdant_tanh",
  "verdant_unary_activate",
  "verdant_unary_plan",
  "verdant_unary_round",
@@ -1096,6 +1097,10 @@ version = "2.17.0"
 [[package]]
 name = "verdant_symmetric_q8"
 version = "2.17.0"
+
+[[package]]
+name = "verdant_tanh"
+version = "2.27.0"
 
 [[package]]
 name = "verdant_unary_activate"

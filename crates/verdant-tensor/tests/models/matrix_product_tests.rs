@@ -999,6 +999,7 @@ fn verify_bundle(scope: &str, directory: &str) -> std::collections::BTreeMap<Str
                     "verdant_rotation_step" => include_bytes!("../../../../generated/tensor-plane/packages/rust-core/verdant_rotation_step/src/lib.rs"),
                     "verdant_grouped_dot" => include_bytes!("../../../../generated/tensor-groupeddot/packages/rust-core/verdant_grouped_dot/src/lib.rs"),
                     "verdant_grouped_q8" => include_bytes!("../../../../generated/tensor-grouped/packages/rust-core/verdant_grouped_q8/src/lib.rs"),
+                    "verdant_tanh" => include_bytes!("../../../../generated/tensor-tanh/packages/rust-core/verdant_tanh/src/lib.rs"),
                     "verdant_logistic" => include_bytes!("../../../../generated/tensor-logistic/packages/rust-core/verdant_logistic/src/lib.rs"),
                     "verdant_swiglu" => include_bytes!("../../../../generated/tensor-swiglu/packages/rust-core/verdant_swiglu/src/lib.rs"),
                     "verdant_packed_dot" => include_bytes!("../../../../generated/tensor-packed/packages/rust-core/verdant_packed_dot/src/lib.rs"),
@@ -1402,19 +1403,27 @@ fn natural_exponential_vtk_19() {
 
 #[test]
 fn hyperbolic_tangent_vtk_28() {
+    assert_eq!(
+        verify_bundle("tanh", "tensor-tanh")["VerdantEngine.HyperbolicTangent.evaluate"],
+        "verdant_tanh"
+    );
     use std::fmt::Write;
     let mut words: Vec<u32> = (0u32..=u16::MAX.into()).map(|high| high << 16).collect();
     words.extend((-32768..=32768).map(|n| (n as f32 / 2048.0).to_bits()));
     for value in [0.000244140625f32, 0.25, 10.0] {
-        for magnitude in value.to_bits()-8..=value.to_bits()+8 {
+        for magnitude in value.to_bits() - 8..=value.to_bits() + 8 {
             words.extend([magnitude, magnitude | 0x80000000]);
         }
     }
-    words.extend([1, 0x80000001, 0x007fffff, 0x807fffff, 0x7f7fffff, 0xff7fffff]);
+    words.extend([
+        1, 0x80000001, 0x007fffff, 0x807fffff, 0x7f7fffff, 0xff7fffff,
+    ]);
     words.sort_unstable();
     words.dedup();
     let mut input = String::new();
-    for word in &words { writeln!(input, "{word}").unwrap(); }
+    for word in &words {
+        writeln!(input, "{word}").unwrap();
+    }
     let expected = query_oracle("tanh", input);
     assert_eq!(expected.len(), words.len());
     for (word, bits) in words.into_iter().zip(expected) {
@@ -1425,8 +1434,12 @@ fn hyperbolic_tangent_vtk_28() {
         } else if reference == 0.0 || reference.abs() == 1.0 {
             assert_eq!(value.to_bits(), bits, "input {word:#x}");
         } else {
-            assert!(value.is_finite() && value.is_sign_negative() == reference.is_sign_negative() &&
-                value.to_bits().abs_diff(bits) <= 4, "input {word:#x}: {value} vs {reference}");
+            assert!(
+                value.is_finite()
+                    && value.is_sign_negative() == reference.is_sign_negative()
+                    && value.to_bits().abs_diff(bits) <= 4,
+                "input {word:#x}: {value} vs {reference}"
+            );
         }
     }
 }

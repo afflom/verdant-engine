@@ -1,0 +1,76 @@
+\begin{lexlean}{HyperbolicTangent}
+\useglossary{lexlean.std.bool@1.2.0}
+\useglossary{lexlean.std.nat@1.2.0}
+\importmodule{ScalarF32}
+\title{Natural number}
+\begin{semanticmodule}
+inductive{
+  name: Action,
+  type_parameters: [],
+  parameters: [],
+  constructors: [{name: resultWord, fields: [Nat]}, {name: exponential, fields: [Nat]}]
+}
+
+definition{
+  name: signedMagnitude,
+  parameters: [x : Nat, magnitude : Nat],
+  result: Nat,
+  body: ((ScalarF32::signedZero (ScalarF32::sign x)) + magnitude),
+  executable: true
+}
+
+definition{
+  name: term,
+  parameters: [coefficient : Nat, square : Nat, tail : Nat],
+  result: Nat,
+  body: (ScalarF32::add coefficient (ScalarF32::multiply square tail)),
+  executable: true
+}
+
+definition{
+  name: nearZero,
+  parameters: [x : Nat],
+  result: Nat,
+  body: (let square : Nat := (ScalarF32::multiply x x); (ScalarF32::add x (ScalarF32::multiply (ScalarF32::multiply x square) (term 3198855851 square (term 1040746633 square (term 3176992209 square (term 1018374052 square (term 3155244827 square (term 996895208 square 3133067698))))))))),
+  executable: true
+}
+
+definition{
+  name: fromExponential,
+  parameters: [exponential : Nat],
+  result: Nat,
+  body: (ScalarF32::add 1065353216 (ScalarF32::negate (ScalarF32::divide (ScalarF32::add exponential exponential) (ScalarF32::add 1065353216 exponential)))),
+  executable: true
+}
+
+definition{
+  name: evaluate,
+  parameters: [x : Nat, ready : Bool, exponential : Nat],
+  result: Action,
+  body: (let absolute : Nat := (ScalarF32::magnitude x); (if (ScalarF32::isNaN x) then (ctor Action.resultWord 2143289344) else (if (absolute <=? 964689920) then (ctor Action.resultWord x) else (if (1092616192 <=? absolute) then (ctor Action.resultWord (signedMagnitude x 1065353216)) else (if (absolute <=? 1056964608) then (ctor Action.resultWord (signedMagnitude x (nearZero absolute))) else (if ready then (ctor Action.resultWord (signedMagnitude x (fromExponential exponential))) else (ctor Action.exponential (ScalarF32::negate (ScalarF32::add absolute absolute))))))))),
+  executable: true,
+  production: {effects: [overflow], targets: [rust-core]}
+}
+
+theorem{
+  name: negativeZero,
+  parameters: [],
+  statement: ((evaluate 2147483648 false 0) = (ctor Action.resultWord 2147483648)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: positiveInfinity,
+  parameters: [],
+  statement: ((evaluate 2139095040 false 0) = (ctor Action.resultWord 1065353216)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: unitRequestsNegativeDouble,
+  parameters: [],
+  statement: ((evaluate 1065353216 false 0) = (ctor Action.exponential 3221225472)),
+  proof: reflexivity{}
+}
+\end{semanticmodule}
+\end{lexlean}

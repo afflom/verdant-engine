@@ -8,6 +8,36 @@ pub fn swiglu_f32(value: f32, gate: f32) -> Result<f32, TensorComputeError> {
     logistic(value, false, Some(gate))
 }
 
+/// Evaluate binary32 hyperbolic tangent with sign-preserving zeros and saturation.
+///
+/// # Errors
+/// Propagates a typed failure from certified word operations or exponentiation.
+pub fn tanh_f32(value: f32) -> Result<f32, TensorComputeError> {
+    use verdant_tanh::Adt0 as Action;
+    let invalid = || TensorComputeError::InvalidKernelSpecification {
+        kernel_name: "HyperbolicTangent.evaluate".into(),
+    };
+    let evaluate = |exp: Option<f32>| {
+        verdant_tanh::run(
+            u64::from(value.to_bits()),
+            exp.is_some(),
+            u64::from(exp.unwrap_or_default().to_bits()),
+        )
+        .map_err(|_| invalid())
+    };
+    let result = match evaluate(None)? {
+        Action::C0(word) => word,
+        Action::C1(argument) => {
+            let exp = exponential_f32(f32::from_bits(argument as u32))?;
+            let Action::C0(word) = evaluate(Some(exp))? else {
+                return Err(invalid());
+            };
+            word
+        }
+    };
+    Ok(f32::from_bits(result as u32))
+}
+
 /// Evaluate the binary32 logistic sigmoid.
 ///
 /// # Errors

@@ -34,6 +34,7 @@ verdant_circular_reduce = { version = "2.21.0", path = "../../generated/tensor-c
 verdant_circular_square = { version = "2.21.0", path = "../../generated/tensor-circular/packages/rust-core/verdant_circular_square" }
 verdant_grouped_dot = { version = "=2.26.0", path = "../../generated/tensor-groupeddot/packages/rust-core/verdant_grouped_dot" }
 verdant_grouped_q8 = { version = "=2.25.0", path = "../../generated/tensor-grouped/packages/rust-core/verdant_grouped_q8" }
+verdant_tanh = { version = "=2.27.0", path = "../../generated/tensor-tanh/packages/rust-core/verdant_tanh" }
 verdant_logistic = { version = "2.24.0", path = "../../generated/tensor-logistic/packages/rust-core/verdant_logistic" }
 verdant_exponential_f32 = { version = "2.19.0", path = "../../generated/tensor-exponential/packages/rust-core/verdant_exponential_f32" }
 verdant_exponential_step = { version = "2.19.0", path = "../../generated/tensor-exponential/packages/rust-core/verdant_exponential_step" }
