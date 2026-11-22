@@ -630,3 +630,10 @@ Feature: engine
     When Verdant evaluates their sine and cosine together
     Then both results match the imported functions within one representable step
     And zeros retain their reference sign and unordered results retain their reference class
+
+  @VTK-22 @build
+  Scenario: Verdant computes binary32 natural logarithms and reciprocal root frequency ratios against the imported GGML CPU logarithm and rotary evaluator
+    Given binary32 values and positive frequency bases with an integer root degree
+    When Verdant computes logarithms and reciprocal roots
+    Then logarithms agree with the imported scalar oracle within one representable step
+    And the geometric frequency ratio agrees with the scaling operation inside the imported rotary implementation
