@@ -33,9 +33,7 @@ import {
 } from "./studio-scaffolder.mjs";
 import { catalogModelsForRole } from "./prism-catalogs.mjs";
 import {
-  buildContainerOrgansCard,
-  buildDirectorPanel,
-  refreshStudioOutlinerAndOpfs,
+  buildContainerOrgansCard, buildDirectorPanel, wireStudioDialogLifecycle, wireStudioRoleTabs,
 } from "./studio-director-panel.mjs";
 import { buildGameplayPanel } from "./studio-gameplay-panel.mjs";
 
@@ -864,131 +862,34 @@ function buildStudioDialog({ inline = false } = {}) {
     { key: "gameplay", label: "Gameplay", el: pGameplay },
   ];
 
-  const tabBtns = panels.map((p, idx) => {
-    const roleModels = catalogModelsForRole(p.key);
-    if (roleModels.length > 0) {
-      const stdBanner = document.createElement("div");
-      stdBanner.className = "ve-role-standards";
-      stdBanner.append("Governing Catalog Models: ");
-      roleModels.slice(0, 5).forEach((rm, rIdx) => {
-        if (rIdx > 0) stdBanner.append(" · ");
-        const link = document.createElement("a");
-        link.href = siteUrl(`./catalogs/#${rm.id}`);
-        link.textContent = `${rm.authority.split("·")[0].trim()}`;
-        link.title = `${rm.title} (${rm.lexModule})`;
-        stdBanner.append(link);
-      });
-      p.el.prepend(stdBanner);
-    }
-
-    const panelId = `ve-panel-${p.key}`;
-    const tabId = `ve-tab-${p.key}`;
-    const b = document.createElement("button");
-    b.type = "button";
-    b.id = tabId;
-    b.className = "ve-m-tab";
-    b.dataset.tabKey = p.key;
-    b.dataset.role = p.key;
-    b.setAttribute("role", "tab");
-    b.setAttribute("aria-controls", panelId);
-    b.setAttribute("aria-selected", idx === 0 ? "true" : "false");
-    b.textContent = p.label;
-    b.addEventListener("click", () => selectStudioTab(p.key));
-    tabBar.append(b);
-    p.el.id = panelId;
-    p.el.setAttribute("role", "tabpanel");
-    p.el.setAttribute("aria-labelledby", tabId);
-    p.el.hidden = idx !== 0;
-    body.append(p.el);
-    return b;
+  selectStudioTab = wireStudioRoleTabs({
+    panels,
+    tabBar,
+    body,
+    dlg,
+    inline,
+    catalogModelsForRole,
+    siteUrl,
+    getStudioCtx: () => studioCtx,
   });
 
-  if (!inline) {
-    const peekBtn = document.createElement("button");
-    peekBtn.type = "button";
-    peekBtn.className = "ve-m-peek";
-    peekBtn.id = "ve-dock-btn";
-    peekBtn.setAttribute("aria-pressed", "false");
-    peekBtn.textContent = "Dock Right";
-    peekBtn.addEventListener("click", () => {
-      const docked = dlg.classList.toggle("ve-docked");
-      peekBtn.setAttribute("aria-pressed", String(docked));
-      peekBtn.textContent = docked ? "Expand Studio" : "Dock Right";
-    });
-    tabBar.append(peekBtn);
-  }
-
-  selectStudioTab = (keyOrIdx) => {
-    const targetIdx =
-      typeof keyOrIdx === "number"
-        ? Math.max(0, Math.min(panels.length - 1, keyOrIdx))
-        : Math.max(0, panels.findIndex((p) => p.key === keyOrIdx));
-    panels.forEach((it, j) => {
-      it.el.hidden = j !== targetIdx;
-      tabBtns[j].setAttribute("aria-selected", j === targetIdx ? "true" : "false");
-    });
-    const activePanel = panels[targetIdx];
-    if (activePanel) studioCtx?.onRoleChange?.(activePanel.key);
-  };
-
-  subscribeThemeChanges(() => {
-    if (!inline && !dlg.open) return;
-    drawObserverCanvas(neuroCanvas, latestObserverTelemetry);
-    drawAudioSpectrumCanvas(audioCanvas, activeFundHz, activeRt60Ms, latestObserverTelemetry);
-    uiDrawHook?.();
+  wireStudioDialogLifecycle({
+    dlg, inline, neuroCanvas, audioCanvas, uiCanvas, uiLog, entityTbody, kpiStrata, kpiBudget,
+    kpiEntities, kpiClearance, obsReadout, storyLog, organSyncFns, opfsLog, opfsActionsRow,
+    subscribeThemeChanges, drawObserverCanvas, drawAudioSpectrumCanvas, drawUiComplianceCanvas,
+    listOpfsAssets, readOpfsAssetBytes, deleteOpfsAsset, syncLookDevLabel, verifyAllRoleTrace,
+    renderGameMode, stopDirectorSequence,
+    state: {
+      getStudioCtx: () => studioCtx,
+      getLatestObserverTelemetry: () => latestObserverTelemetry,
+      getActiveFundHz: () => activeFundHz,
+      setActiveFundHz: (v) => { activeFundHz = v; },
+      getActiveRt60Ms: () => activeRt60Ms,
+      setActiveRt60Ms: (v) => { activeRt60Ms = v; },
+      getUiDrawHook: () => uiDrawHook,
+      setLastUiState: (v) => { lastUiState = v; },
+    },
   });
-
-  dlg.addEventListener("ve-refresh", async () => {
-    syncLookDevLabel();
-    const spec = studioCtx?.getAcousticSpec?.();
-    if (spec?.fundamentalHz) activeFundHz = spec.fundamentalHz;
-    if (spec?.rt60Ms) activeRt60Ms = spec.rt60Ms;
-
-    drawObserverCanvas(neuroCanvas, latestObserverTelemetry);
-    drawAudioSpectrumCanvas(audioCanvas, activeFundHz, activeRt60Ms, latestObserverTelemetry);
-    verifyAllRoleTrace();
-    renderGameMode();
-
-    await refreshStudioOutlinerAndOpfs({
-      studioCtx,
-      dlg,
-      latestObserverTelemetry,
-      entityTbody,
-      kpiStrata,
-      kpiBudget,
-      kpiEntities,
-      kpiClearance,
-      obsReadout,
-      storyLog,
-      organSyncFns,
-      opfsLog,
-      opfsActionsRow,
-      listOpfsAssets,
-      readOpfsAssetBytes,
-      deleteOpfsAsset,
-    });
-
-    const vw = Math.max(360, window.innerWidth || 1280);
-    const vh = Math.max(640, window.innerHeight || 900);
-    const [uiReply, uiVerdict] = await Promise.all([
-      studioCtx?.callWorker?.("verify-ui", { width: vw, height: vh }),
-      studioCtx?.queryVerifier?.("scene:ui"),
-    ]);
-    if (uiReply?.ok) {
-      lastUiState = { vw, vh, report: uiReply.report };
-      uiLog.textContent = `VERIFIED (${uiReply.widgetCount} widgets · 0 overlaps · >=48px targets · WCAG AA · ${uiVerdict || "conformant"}):\n${uiReply.report}`;
-      drawUiComplianceCanvas(uiCanvas, vw, vh, uiReply.report);
-    }
-  });
-
-  if (!inline) {
-    dlg.addEventListener("click", (e) => {
-      if (e.target === dlg) {
-        stopDirectorSequence?.();
-        dlg.close();
-      }
-    });
-  }
 
   shell.append(head, obsBar, tabBar, body);
   dlg.append(shell);

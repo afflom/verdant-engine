@@ -2,6 +2,93 @@
 
 use super::*;
 
+pub(super) const MCP_RESOURCE_SPECS: &[(&str, &str, &str, &str)] = &[
+    (
+        "verdant://governance/vsm",
+        "VSM Cybernetics Authority (AUTH-VSM-CYBERNETICS)",
+        "application/json",
+        "catalogs/governance/vsm-viable-system.json",
+    ),
+    (
+        "verdant://governance/viewpoints",
+        "ISO 42010 Viewpoints & Managers (AUTH-ISO-42010-VIEWPOINTS)",
+        "application/json",
+        "catalogs/governance/iso42010-viewpoints.json",
+    ),
+    (
+        "verdant://governance/tensor-scaling",
+        "ISO 25010 & ITU-R BT.2020/2100 Tensor Scaling Authority (AUTH-ISO-25010-TENSOR-SCALING)",
+        "application/json",
+        "catalogs/governance/iso25010-tensor-scaling.json",
+    ),
+    (
+        "verdant://governance/stitch-self-hosting",
+        "Zero-Account Stitch Self-Hosting & Boundary Privacy (AUTH-STITCH-SELF-HOSTING)",
+        "application/json",
+        "catalogs/governance/stitch-self-hosting.json",
+    ),
+    (
+        "verdant://governance/change-roadmap-kpi",
+        "SemVer Change Manager, Stakeholder Roadmap & ISO 15939 KPIs (AUTH-SEMVER-CHANGE-KPI)",
+        "application/json",
+        "catalogs/governance/change-roadmap-kpi.json",
+    ),
+    (
+        "verdant://generated/viewpoint-contracts",
+        "Manager Viewpoint Contracts",
+        "application/json",
+        "site/generated/viewpoint-contracts.json",
+    ),
+    (
+        "verdant://generated/experience-design-system",
+        "Design System & Communications Spec",
+        "application/json",
+        "site/generated/experience-design-system.json",
+    ),
+    (
+        "verdant://generated/world-differentiation-profiles",
+        "4-World Differentiation Profiles",
+        "application/json",
+        "site/generated/world-differentiation-profiles.json",
+    ),
+    (
+        "verdant://generated/tensor-scaling-contract",
+        "ISO 25010 Tensor Scaling & Paged Memory Contract",
+        "application/json",
+        "site/generated/tensor-scaling-contract.json",
+    ),
+    (
+        "verdant://generated/stitch-app-catalog",
+        "Stitch 2-of-3 Verdant App Catalog",
+        "application/json",
+        "site/generated/stitch-app-catalog.json",
+    ),
+    (
+        "verdant://generated/release-ledger",
+        "Change & Version Manager SemVer Release Ledger",
+        "application/json",
+        "site/generated/release-ledger.json",
+    ),
+    (
+        "verdant://generated/roadmap-kpi-report",
+        "Observer Stakeholder Roadmap & KPI Telemetry Report",
+        "application/json",
+        "site/generated/roadmap-kpi-report.json",
+    ),
+    (
+        "verdant://generated/immutability-seal",
+        "Cryptographic View Immutability Seal",
+        "application/json",
+        "site/generated/immutability-seal.json",
+    ),
+    (
+        "verdant://generated/self-host-ratchet-manifest",
+        "Self-Hosting Parametric Ratchet Manifest (TOML)",
+        "application/toml",
+        "site/generated/self-host-ratchet-manifest.toml",
+    ),
+];
+
 impl VerdantOperatorChannel {
     /// Computes and writes the cryptographic View Immutability Seal
     /// (`site/generated/immutability-seal.json`) over every shipped Verdant view and
@@ -463,6 +550,189 @@ impl VerdantOperatorChannel {
             buf.push('\n');
         }
         sha256_hex_raw(buf.as_bytes())
+    }
+
+    /// Processes a single NDJSON line inside `verdant operator session` (stateful multi-turn
+    /// Operator RPC channel). Returns `(should_continue, single_line_json_response)`.
+    pub fn handle_session_rpc_line(&mut self, repo_root: &Path, line: &str) -> (bool, String) {
+        let trimmed = line.trim();
+        if trimmed.is_empty() {
+            return (true, String::new());
+        }
+        let parsed: serde_json::Value = match serde_json::from_str(trimmed) {
+            Ok(v) => v,
+            Err(err) => {
+                return (
+                    true,
+                    serde_json::json!({
+                        "ok": false,
+                        "error": format!("invalid NDJSON request: {err}"),
+                    })
+                    .to_string(),
+                );
+            }
+        };
+        let op = parsed
+            .get("op")
+            .and_then(|v| v.as_str())
+            .unwrap_or("prompt");
+        match op {
+            "quit" | "exit" => (
+                false,
+                serde_json::json!({
+                    "ok": true,
+                    "op": "quit",
+                    "communicationCount": self.observer.communications.len(),
+                })
+                .to_string(),
+            ),
+            "status" => {
+                let st: serde_json::Value =
+                    serde_json::from_str(&self.status_json()).unwrap_or(serde_json::Value::Null);
+                (true, serde_json::json!({ "ok": true, "op": "status", "result": st }).to_string())
+            }
+            "history" => {
+                let hist: serde_json::Value = serde_json::from_str(&self.session_history_json())
+                    .unwrap_or(serde_json::Value::Null);
+                (true, serde_json::json!({ "ok": true, "op": "history", "result": hist }).to_string())
+            }
+            "audit" => {
+                let vp = parsed.get("viewpoint").and_then(|v| v.as_str());
+                let rep = self.audit_repository(repo_root, vp);
+                (
+                    true,
+                    serde_json::json!({ "ok": rep.passed, "op": "audit", "result": rep }).to_string(),
+                )
+            }
+            "synthesize" => {
+                let vp = parsed.get("viewpoint").and_then(|v| v.as_str());
+                match self.materialize_manager_artifacts(repo_root, vp) {
+                    Ok(rep) => (
+                        true,
+                        serde_json::json!({ "ok": rep.ok, "op": "synthesize", "result": rep })
+                            .to_string(),
+                    ),
+                    Err(e) => (
+                        true,
+                        serde_json::json!({ "ok": false, "op": "synthesize", "error": e.to_string() })
+                            .to_string(),
+                    ),
+                }
+            }
+            "prompt" => {
+                let req = OperatorPromptRequest {
+                    viewpoint: parsed
+                        .get("viewpoint")
+                        .and_then(|v| v.as_str())
+                        .unwrap_or("auto")
+                        .to_string(),
+                    directive: parsed
+                        .get("directive")
+                        .and_then(|v| v.as_str())
+                        .unwrap_or("")
+                        .to_string(),
+                    cited_authority: parsed
+                        .get("authority")
+                        .and_then(|v| v.as_str())
+                        .map(str::to_string),
+                    operator_prism_id: parsed
+                        .get("actor")
+                        .and_then(|v| v.as_str())
+                        .unwrap_or("prism:verdant-operator")
+                        .to_string(),
+                };
+                match self.submit_directive(&req) {
+                    Ok(resp) => (
+                        true,
+                        serde_json::json!({ "ok": resp.admitted, "op": "prompt", "result": resp })
+                            .to_string(),
+                    ),
+                    Err(e) => (
+                        true,
+                        serde_json::json!({ "ok": false, "op": "prompt", "error": e.to_string() })
+                            .to_string(),
+                    ),
+                }
+            }
+            "apply" => {
+                let req = OperatorPromptRequest {
+                    viewpoint: parsed
+                        .get("viewpoint")
+                        .and_then(|v| v.as_str())
+                        .unwrap_or("auto")
+                        .to_string(),
+                    directive: parsed
+                        .get("directive")
+                        .and_then(|v| v.as_str())
+                        .unwrap_or("")
+                        .to_string(),
+                    cited_authority: parsed
+                        .get("authority")
+                        .and_then(|v| v.as_str())
+                        .map(str::to_string),
+                    operator_prism_id: parsed
+                        .get("actor")
+                        .and_then(|v| v.as_str())
+                        .unwrap_or("prism:verdant-operator")
+                        .to_string(),
+                };
+                match self.apply_directive(repo_root, &req) {
+                    Ok(rep) => (
+                        true,
+                        serde_json::json!({ "ok": rep.applied, "op": "apply", "result": rep })
+                            .to_string(),
+                    ),
+                    Err(e) => (
+                        true,
+                        serde_json::json!({ "ok": false, "op": "apply", "error": e.to_string() })
+                            .to_string(),
+                    ),
+                }
+            }
+            "publish_app" => {
+                let title = parsed
+                    .get("title")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("Untitled Verdant App");
+                let genre = parsed
+                    .get("genre")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("coastal-adventure");
+                let domain = parsed
+                    .get("domain")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("sunspire-regatta");
+                let summary = parsed
+                    .get("summary")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("Published via Verdant Operator API");
+                let actor = parsed
+                    .get("actor")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("prism:verdant-operator");
+                match self.publish_app_to_repo_catalog(repo_root, title, genre, domain, summary, actor)
+                {
+                    Ok(app) => (
+                        true,
+                        serde_json::json!({ "ok": true, "op": "publish_app", "result": app })
+                            .to_string(),
+                    ),
+                    Err(e) => (
+                        true,
+                        serde_json::json!({ "ok": false, "op": "publish_app", "error": e.to_string() })
+                            .to_string(),
+                    ),
+                }
+            }
+            other => (
+                true,
+                serde_json::json!({
+                    "ok": false,
+                    "error": format!("unknown session op `{other}` (expected status|prompt|apply|synthesize|publish_app|audit|history|quit)"),
+                })
+                .to_string(),
+            ),
+        }
     }
 }
 

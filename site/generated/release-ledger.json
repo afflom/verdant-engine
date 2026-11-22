@@ -4,10 +4,10 @@
   "authorityId": "AUTH-SEMVER-CHANGE-KPI",
   "currentVersion": {
     "major": 2,
-    "minor": 15,
+    "minor": 16,
     "patch": 0
   },
-  "releaseEpoch": 19,
+  "releaseEpoch": 20,
   "history": [
     {
       "version": "0.1.0",
@@ -161,6 +161,13 @@
       "releaseEpoch": 19,
       "bumpKind": "minor",
       "summary": "M23: Sub-1.00 MiB .holo capsule (<1,024 KiB via native-only operator Wasm gate, verdant-uorc.wasm 1.70 MiB), sub-1360L Rust (181 lifted modules), sub-1024L JS, and 485 lifted / 1161 residue uorust frontier",
+      "citedAuthority": "AUTH-SEMVER-CHANGE-KPI"
+    },
+    {
+      "version": "2.16.0",
+      "releaseEpoch": 20,
+      "bumpKind": "minor",
+      "summary": "M24: Sub-1250L Rust (183 lifted modules), sub-920L JS, hardened stitch-mirror CI retries, sub-1.00 MiB .holo capsule & 515+ MIR-lifted functions",
       "citedAuthority": "AUTH-SEMVER-CHANGE-KPI"
     }
   ]

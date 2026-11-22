@@ -1,17 +1,17 @@
 {
   "spec": "verdant/observer-refinement-agenda/1",
-  "releaseVersion": "2.15.0",
-  "releaseEpoch": 19,
+  "releaseVersion": "2.16.0",
+  "releaseEpoch": 20,
   "observerKappaHex": "6cd1e9dc15167b134d9887883bf06a5158c9b132f076e10a30e521ea62e0a17b",
   "overallRefinementScorePermille": 984,
   "liveMetrics": {
-    "wasmCoreBytes": 154466,
-    "wasmUorcBytes": 1786632,
-    "releaseCapsuleBytes": 1022974,
+    "wasmCoreBytes": 154462,
+    "wasmUorcBytes": 1786624,
+    "releaseCapsuleBytes": 1023905,
     "blankFrameBytes": 28374,
-    "maxHandwrittenRustFileLines": 1359,
-    "maxJsFileLines": 1013,
-    "frontierLifted": 485,
+    "maxHandwrittenRustFileLines": 1247,
+    "maxJsFileLines": 920,
+    "frontierLifted": 515,
     "frontierResidue": 1161,
     "frontierUncertified": 1318,
     "fidelityOpenResidue": 0
@@ -22,8 +22,8 @@
       "vsmSystem": "VSM-S5",
       "viewpointId": "observer-executive",
       "ownedFileCount": 16,
-      "maxFileLines": 1339,
-      "heaviestFile": "crates/verdant-core/src/operator.rs",
+      "maxFileLines": 1242,
+      "heaviestFile": "crates/verdant-core/src/operator_release.rs",
       "healthScorePermille": 1000
     },
     {
@@ -67,7 +67,7 @@
       "vsmSystem": "VSM-S4",
       "viewpointId": "roadmap-kpi-strategy",
       "ownedFileCount": 7,
-      "maxFileLines": 485,
+      "maxFileLines": 492,
       "heaviestFile": "features/suites/engine.feature",
       "healthScorePermille": 1000
     },
@@ -84,7 +84,7 @@
       "managerId": "mgr-runtime-stage",
       "vsmSystem": "VSM-S1",
       "viewpointId": "runtime-stage",
-      "ownedFileCount": 17,
+      "ownedFileCount": 19,
       "maxFileLines": 1679,
       "heaviestFile": "app/src/Subsystems.lex.tex",
       "healthScorePermille": 900
@@ -103,7 +103,7 @@
       "vsmSystem": "VSM-S1",
       "viewpointId": "asset-catalogs",
       "ownedFileCount": 7,
-      "maxFileLines": 1013,
+      "maxFileLines": 899,
       "heaviestFile": "site/catalog-streams.mjs",
       "healthScorePermille": 1000
     },
@@ -159,7 +159,7 @@
     {
       "construct": "takes or returns VerdantOperatorChannel.observer: ObserverPrismHolon.organs: ObserverOrganModel.schema_org_jsonld: serde_json::Value, a type of the serde_json crate with no LexLean model",
       "cause": "foreign",
-      "functions": 26
+      "functions": 27
     }
   ],
   "proposals": [
@@ -171,14 +171,14 @@
       "citedAuthority": "AUTH-SEMVER-CHANGE-KPI",
       "ratchetLayer": "uorust-frontier",
       "priority": "high",
-      "currentValue": "485 lifted / 1161 residue (1318 uncertified)",
-      "targetValue": ">= 505 lifted functions",
+      "currentValue": "515 lifted / 1161 residue (1318 uncertified)",
+      "targetValue": ">= 535 lifted functions",
       "summary": "Expand constructive MIR proof frontier; top blocker: expression form outside the lift: ? below the function's own statements (269 fns, cause=form).",
       "concreteActions": [
         "Replace remaining raw shift/overflow ops with lifted verdant_tensor::scalars and wrapping ops.",
         "Extract pure decision/calculation helpers out of IO/effectful wrappers so uorust lifts them."
       ],
-      "kappaHex": "47d827d454a55e15da93a58f2c17fd90d796bb48ef6d8627fe88a307ea080ba8"
+      "kappaHex": "5cbdf32d2ae3ccab62e683890533cb4feedc8aafb3b2cfa902da591c495c6b9c"
     },
     {
       "proposalId": "refine-rust-modularity",
@@ -188,14 +188,14 @@
       "citedAuthority": "AUTH-ISO-42010-VIEWPOINTS",
       "ratchetLayer": "surface-loc-rust",
       "priority": "medium",
-      "currentValue": "1359 lines max (crates/verdant-core/src/character.rs)",
-      "targetValue": "<= 1259 lines max hand-written Rust file",
+      "currentValue": "1247 lines max (crates/verdant-core/src/physics.rs)",
+      "targetValue": "<= 1147 lines max hand-written Rust file",
       "summary": "Keep every hand-written Rust module modular and auto-tighten max_handwritten_rust_file_lines.",
       "concreteActions": [
-        "Extract cohesive submodules out of crates/verdant-core/src/character.rs.",
+        "Extract cohesive submodules out of crates/verdant-core/src/physics.rs.",
         "Register every extracted module in catalogs/governance/iso42010-viewpoints.json."
       ],
-      "kappaHex": "00883c73798b4929b1fc8a8db6cc3047fc429a34e58313be5d1023d521fe3053"
+      "kappaHex": "2a2a5d8a450b97c90a3ae4866e81ddf3f2dc27a46604083426951f5307f3a760"
     },
     {
       "proposalId": "refine-studio-js-modularity",
@@ -205,14 +205,14 @@
       "citedAuthority": "AUTH-ISO-42010-VIEWPOINTS",
       "ratchetLayer": "surface-loc-js",
       "priority": "medium",
-      "currentValue": "1013 lines max (site/studio/studio-page.mjs)",
-      "targetValue": "<= 913 lines max shipped JS file",
+      "currentValue": "920 lines max (site/studio/studio-page.mjs)",
+      "targetValue": "<= 900 lines max shipped JS file",
       "summary": "Decompose heaviest shipped JS modules under site/ to auto-tighten max_js_file_lines.",
       "concreteActions": [
         "Split site/studio/studio-page.mjs into focused cohesive ES modules.",
         "Register every extracted module in catalogs/governance/iso42010-viewpoints.json."
       ],
-      "kappaHex": "533e917f854561164b8f2b5a2a1d2d570c7b7f10575593e65060e5d39e77300d"
+      "kappaHex": "7ac92e95bd7b594f138abaf3e5d4fc64beab5ed4de286b2667fc0b54e1a946a5"
     },
     {
       "proposalId": "refine-wasm-capsule-weight",
@@ -222,15 +222,15 @@
       "citedAuthority": "AUTH-STITCH-SELF-HOSTING",
       "ratchetLayer": "surface-wasm",
       "priority": "medium",
-      "currentValue": "verdant-uorc.wasm 1786632 B · .holo 1022974 B · Blank Frame 28374 B (2346 B headroom)",
+      "currentValue": "verdant-uorc.wasm 1786624 B · .holo 1023905 B · Blank Frame 28374 B (2346 B headroom)",
       "targetValue": "verdant-uorc.wasm <= 1560576 B and gzipped .holo <= 1.0 MiB",
       "summary": "Keep browser verdant-uorc.wasm ultra-lean (< 1.5 MiB) and drive gzipped .holo release capsules below 1.0 MiB for instant Blank Frame cold boots.",
       "concreteActions": [
         "Keep uorc-ncm-decode native-only and audit gltf-json / serde_json monomorphizations inside verdant-uorc.wasm.",
         "Maintain Blank Frame strictly under 30720 B with DecompressionStream('gzip')."
       ],
-      "kappaHex": "d55d77a92f5d09349a7464be86fb342af36808f7231886bcbd0e088afbe357d1"
+      "kappaHex": "34ca15ad3819efab69b78a7a34c4969cb5fec2d3965f15f9fbc7de689f1d14ce"
     }
   ],
-  "agendaKappaHex": "23dcfc7f2d5e8430fe8ee94a543625df31a73712831f2155be7f859d682d62f0"
+  "agendaKappaHex": "fa9a88f6ee893fe166e13b4b33a930712b5346eee9aeac22df6a5d86bb0a3743"
 }

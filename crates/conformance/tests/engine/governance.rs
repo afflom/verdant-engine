@@ -3683,3 +3683,112 @@ fn engine_ve_75() {
         kpi_rep.kpis
     );
 }
+
+#[test]
+fn engine_ve_76() {
+    use std::path::Path;
+    use verdant_core::operator::VerdantOperatorChannel;
+    use verdant_tensor::scalars::*;
+
+    let repo_root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+
+    // 1. Verify stitch-release workflow hardens stitch-mirror ls-remote & push retries:
+    let stitch_yml =
+        std::fs::read_to_string(repo_root.join(".github/workflows/release-stitch.yml"))
+            .expect("release-stitch.yml");
+    assert!(
+        stitch_yml.contains("for attempt in 1 2 3; do")
+            && stitch_yml.contains("could not query remote stitch-mirror after 3 attempts"),
+        "release-stitch.yml must retry ls-remote and refuse silent init on transient errors"
+    );
+
+    // 2. Verify M24 extracted Rust submodules exist:
+    assert!(repo_root
+        .join("crates/verdant-core/src/character_types.rs")
+        .is_file());
+    assert!(repo_root
+        .join("crates/verdant-core/src/render_shaders.rs")
+        .is_file());
+
+    // 3. Verify MIR-lifted M24 constructive predicates:
+    assert!(rust_file_modularity_sub_1259(1_247));
+    assert!(rust_file_modularity_sub_1247(1_247));
+    assert!(js_file_modularity_sub_913(909));
+    assert!(js_file_modularity_sub_909(909));
+    assert!(lifted_rust_module_count_at_least_183(183));
+    assert!(humanoid_joint_index_valid(21));
+    assert!(!humanoid_joint_index_valid(22));
+    assert!(humanoid_foot_ik_knee_bounded(2_618));
+    assert!(wasm_bridge_lod_rank_valid(4));
+    assert!(wasm_bridge_command_ring_has_room(0, 64));
+    assert!(studio_primitive_kind_valid(4));
+    assert!(hd_world_architecture_kind_valid(4));
+    assert!(webgl2_glsl_es_version_valid(300));
+    assert!(builtin_webgl2_shader_pair_count_valid(8));
+    assert!(stch2_shard_geometry_valid(4, 8, 7));
+    assert_eq!(stch2_header_bytes(), 80);
+    assert!(stch2_frame_len_valid(81));
+    assert!(mcp_resource_registry_complete(14));
+    assert!(stitch_mirror_retry_attempt_valid(1, 3));
+    assert_eq!(stitch_mirror_retry_backoff_secs(2), 6);
+    assert!(stitch_mirror_ls_remote_admits_init(0, false));
+    assert!(!stitch_mirror_ls_remote_admits_init(128, false));
+    assert!(studio_slm_kappa_cache_bounded(64));
+    assert!(studio_right_rail_tabs_valid(3));
+    assert!(studio_seven_roles_complete(7));
+    assert!(catalog_stream_result_limit_valid(6));
+    assert!(deterministic_rng_seed_is_odd(deterministic_rng_odd_seed(0)));
+    assert_eq!(deterministic_rng_odd_seed(0), 1);
+    assert_eq!(deterministic_rng_odd_seed(7), 7);
+    assert!(m24_release_epoch_valid(20));
+    assert!(m24_semver_matches(2, 16, 0));
+    assert!(m24_frontier_targets_met(515, 1_161));
+    assert!(m24_holo_capsule_sub_1024k(1_023_000));
+
+    // 4. Ratchet permanently locks <= 1250L Rust, <= 930L JS, < 1.00 MiB .holo capsule,
+    //    >= 515 lifted functions, residue <= 1161, and M1..M24:
+    let rep = prism_fidelity::ratchet::audit_parametric_ratchet(
+        &repo_root,
+        Path::new("model/parametric-ratchet.toml"),
+    )
+    .expect("live repo must pass all 4 ratchet layers");
+    assert!(
+        rep.observed_max_rust_file_lines <= 1_250,
+        "M24 must tighten max_handwritten_rust_file_lines <= 1250, got {}",
+        rep.observed_max_rust_file_lines
+    );
+    assert!(
+        rep.observed_max_js_file_lines <= 930,
+        "M24 must tighten max_js_file_lines <= 930, got {}",
+        rep.observed_max_js_file_lines
+    );
+    assert!(
+        rep.observed_release_capsule_bytes < 1_048_576,
+        "M24 must preserve sub-1.00 MiB .holo capsule, got {}",
+        rep.observed_release_capsule_bytes
+    );
+    assert!(
+        rep.frontier_lifted_functions >= 515,
+        "M24 must lift >= 515 constructive Rust functions, got {}",
+        rep.frontier_lifted_functions
+    );
+    assert!(
+        rep.frontier_residue_functions <= 1_161,
+        "M24 must keep residue <= 1161, got {}",
+        rep.frontier_residue_functions
+    );
+
+    let ch = VerdantOperatorChannel::new("sunspire-regatta").expect("operator channel");
+    let kpi_rep = ch
+        .evaluate_observer_roadmap_kpis(&repo_root, true, true)
+        .expect("observer roadmap & KPI report");
+    assert!(
+        kpi_rep.milestones.len() >= 24,
+        "expected Milestones M1..M24"
+    );
+    assert_eq!(
+        kpi_rep.kpi_passed_count, kpi_rep.kpi_total_count,
+        "all Observer KPIs must pass (kpis={:?})",
+        kpi_rep.kpis
+    );
+}

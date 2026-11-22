@@ -120,7 +120,24 @@ jobs:
           mirror_tmp=$(mktemp -d)
           trap 'rm -rf "$mirror_tmp"' EXIT
           remote_url="https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
-          if git ls-remote --exit-code --heads "$remote_url" stitch-mirror >/dev/null 2>&1; then
+          ls_out=""
+          ls_rc=0
+          for attempt in 1 2 3; do
+            set +e
+            ls_out=$(git ls-remote --heads "$remote_url" stitch-mirror 2>&1)
+            ls_rc=$?
+            set -e
+            if [[ $ls_rc -eq 0 ]]; then
+              break
+            fi
+            echo "stitch-mirror ls-remote attempt ${attempt} failed (rc=${ls_rc}): ${ls_out}" >&2
+            sleep $((attempt * 3))
+          done
+          if [[ $ls_rc -ne 0 ]]; then
+            echo "fatal: could not query remote stitch-mirror after 3 attempts" >&2
+            exit "$ls_rc"
+          fi
+          if [[ -n "$ls_out" ]]; then
             git clone --depth 1 --branch stitch-mirror "$remote_url" "$mirror_tmp"
           else
             git init -b stitch-mirror "$mirror_tmp"
@@ -134,7 +151,16 @@ jobs:
           git -C "$mirror_tmp" add "v${VER}"
           if ! git -C "$mirror_tmp" diff --cached --quiet; then
             git -C "$mirror_tmp" commit -m "Mirror CORS-verified 4-of-8 STCH2 shards for Verdant v${VER}"
-            git -C "$mirror_tmp" push origin stitch-mirror
+            for attempt in 1 2 3; do
+              if git -C "$mirror_tmp" push origin stitch-mirror; then
+                break
+              fi
+              if [[ $attempt -eq 3 ]]; then
+                exit 1
+              fi
+              sleep $((attempt * 3))
+              git -C "$mirror_tmp" pull --rebase origin stitch-mirror || true
+            done
           fi
 
       - name: Publish .holo release capsule & Rust crates to GitHub Packages (ghcr.io) and GitHub Release

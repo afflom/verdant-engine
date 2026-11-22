@@ -370,7 +370,7 @@
     },
     {
       "basisPrime": 89,
-      "kappaHex": "2266c619ce4e1e95aadee47730da8ee24c01d11c5e91d51e19bc8fa4e2401c83",
+      "kappaHex": "e522bdd7fde2bfc1f220062fe3db45b45895aae74efaab4c340940934e2290b8",
       "spec": {
         "almPhases": [
           "operation",
@@ -410,6 +410,8 @@
           "app/src/Tensor.lex.tex",
           "app/src/Subsystems.lex.tex",
           "crates/verdant-core/src/collision_blas.rs",
+          "crates/verdant-core/src/character_types.rs",
+          "crates/verdant-core/src/render_shaders.rs",
           "site/card.html",
           "site/card.mjs",
           "site/card.css",

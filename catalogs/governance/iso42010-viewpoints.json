@@ -354,6 +354,8 @@
         "app/src/Tensor.lex.tex",
         "app/src/Subsystems.lex.tex",
         "crates/verdant-core/src/collision_blas.rs",
+        "crates/verdant-core/src/character_types.rs",
+        "crates/verdant-core/src/render_shaders.rs",
         "site/card.html",
         "site/card.mjs",
         "site/card.css",

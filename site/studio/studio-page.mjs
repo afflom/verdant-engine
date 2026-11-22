@@ -11,7 +11,11 @@ import { initStudioOutliner } from "./outliner.mjs";
 import { initStudioObserverPanel } from "./observer-panel.mjs";
 import { initStudioProjectInspector } from "./project-inspector.mjs";
 import { bootStudioWorkspace } from "./studio-boot.mjs";
-import { createStudioViewportController, wireStudioControls } from "./studio-viewport.mjs";
+import {
+  STUDIO_LODS as LODS, STUDIO_NODES as NODES, STUDIO_ORGAN_DEFAULTS as ORGAN_DEFAULTS,
+  STUDIO_ORGAN_SLUGS as ORGAN_SLUGS, createStudioViewportController, exportActiveUorcArchiveImpl,
+  loadStreamPrefs, openStitchGuardedImpl, saveStreamPrefs, setRightRailTab, wireStudioControls,
+} from "./studio-viewport.mjs";
 import { DOMAIN_DEFAULT_GENRE, initStudioDiscoveryPanel } from "./discovery-panel.mjs";
 import { initStudioStageAssets, initStudioDomainWizard } from "./stage-assets.mjs";
 import {
@@ -20,39 +24,6 @@ import {
   syncModalAudioSpatial, toggleModalAudio,
 } from "../studio.mjs";
 
-const LODS = [
-  { rank: 0, key: "lod:0", short: "LOD0", label: "LOD0 Proxy", res: 0.125, density: 0.35, lossless: false, sky: [0.09, 0.08, 0.12], fog: [0.14, 0.11, 0.16] },
-  { rank: 1, key: "lod:1", short: "LOD1", label: "LOD1 Medium", res: 0.25, density: 0.72, lossless: false, sky: [0.12, 0.17, 0.24], fog: [0.18, 0.24, 0.31] },
-  { rank: 2, key: "lod:2", short: "LOD2", label: "LOD2 High", res: 0.625, density: 0.92, lossless: false, sky: [0.16, 0.27, 0.34], fog: [0.24, 0.35, 0.39] },
-  { rank: 3, key: "lod:3", short: "LOD3", label: "LOD3 Lossless", res: 1.0, density: 1.0, lossless: true, sky: [0.18, 0.30, 0.38], fog: [0.30, 0.40, 0.44] },
-  { rank: 4, key: "scene:lod:4", short: "LOD4", label: "LOD4 Ultra HD", res: 2.0, density: 2.0, lossless: true, sky: [0.20, 0.34, 0.44], fog: [0.34, 0.44, 0.48] },
-];
-
-const NODES = [
-  { id: 0, query: "scene:telos", name: "Master Overview & Observer", target: [2.2, 3.8, 9.2], dist: 18.5, yawMilli: 460, pitchMilli: 260 },
-  { id: 1, query: "scene:acoustics", name: "Parabolic Stone Arch Span", target: [7.5, 1.8, -4.0], dist: 13.5, yawMilli: 640, pitchMilli: 320 },
-  { id: 2, query: "scene:character", name: "22-Joint Explorer & NPCs", target: [0, 1.6, 11.5], dist: 6.2, possessExplorer: true },
-  { id: 3, query: "scene:joints", name: "Articulated Rig & ECS Bay", target: [-6.5, 1.8, 9.0], dist: 10, yawMilli: -540, pitchMilli: 320 },
-  { id: 4, query: "scene:ui", name: "South Terrace & Spatial UI", target: [6.0, 2.0, 8.0], dist: 11, yawMilli: 520, pitchMilli: 300 },
-  { id: 5, query: "scene:narrative", name: "Story Podium & Portals", target: [1.5, 2.2, -1.0], dist: 8.5, yawMilli: 350, pitchMilli: 260 },
-  { id: 6, query: "scene:lawful", name: "Suspension Mover Track", target: [16.5, 1.2, 0], dist: 11, followMover: true },
-  { id: 7, query: "scene:uorc", name: "Pavilion Vault & Semiring Dome", target: [0.0, 5.2, 2.0], dist: 12.5, yawMilli: -420, pitchMilli: 220 },
-];
-
-const ORGAN_SLUGS = [
-  "wasm-core",
-  "offscreen-canvas",
-  "service-worker",
-  "audio-worklet",
-  "opfs-storage",
-  "gamepad-hid",
-  "device-orientation",
-  "webcrypto-prism-id",
-  "broadcast-channel",
-  "webrtc-stitch-mesh",
-  "webnn-local",
-];
-const ORGAN_DEFAULTS = [1, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0];
 const ACOUST = { quantumFrames: 128, stereoChannels: 2, fundamentalHz: 110.0, modeNumers: [9, 25, 49, 81, 121], modeDenom: 9, rt60Ms: 3000 };
 
 const utf8Enc = new TextEncoder();
@@ -225,30 +196,6 @@ const cogStreamAdapterSel = $("cog-stream-adapter");
 const cogStreamPartSel = $("cog-stream-part");
 const cogLogEl = $("cog-log");
 let lastCognition = null;
-const STREAM_PREFS_KEY = "verdant.observer.streams.v1";
-
-function loadStreamPrefs() {
-  try {
-    const raw = JSON.parse(localStorage.getItem(STREAM_PREFS_KEY) || "{}");
-    return {
-      disabled: Array.isArray(raw.disabled) ? raw.disabled : [],
-      custom: Array.isArray(raw.custom) ? raw.custom : [],
-    };
-  } catch {
-    return { disabled: [], custom: [] };
-  }
-}
-
-function saveStreamPrefs(cognition) {
-  if (!cognition?.streams) return;
-  try {
-    const disabled = cognition.streams.filter((s) => !s.enabled).map((s) => s.streamId);
-    const custom = cognition.streams.filter((s) => !s.builtIn);
-    localStorage.setItem(STREAM_PREFS_KEY, JSON.stringify({ disabled, custom }));
-  } catch {
-    // Ignore storage quota / privacy errors
-  }
-}
 const discPrevCloseBtn = $("disc-prev-close");
 
 const inspEmptyState = $("insp-empty-state");
@@ -626,57 +573,17 @@ const toggleGuardedAudio = async () => {
   await toggleModalAudio(audioBtn, ACOUST, () => sEye);
 };
 
-const openStitchGuarded = async () => {
-  const { openStitchMeshModal } = await import("../stitch-mesh.mjs");
-  return openStitchMeshModal({
-    callWorker,
-    queryVerifier,
-    isOrganAllowed,
-    onRefuseOrgan: refuseOrgan,
-    onRestoreSnapshot: async (bytes) => {
-      const r = await callWorker("restore-snapshot", { bytes });
-      if (r?.ok) {
-        await streamLod(r.lodRank ?? 3);
-        return true;
-      }
-      return false;
-    },
-  });
-};
+const openStitchGuarded = () =>
+  openStitchGuardedImpl({ callWorker, queryVerifier, isOrganAllowed, refuseOrgan, streamLod });
 
 let studioHandle = null;
 
-async function exportActiveUorcArchive() {
-  const arch = STARTER_ARCHETYPES[activeDomainIdx] || STARTER_ARCHETYPES[0];
-  const r = await callWorker("encode-snapshot");
-  if (!r?.ok || !r.bytes) {
-    chip(statusEl, "UORC export unavailable — waiting for Wasm runtime");
-    return null;
-  }
-  const bytes = r.bytes instanceof Uint8Array ? r.bytes : new Uint8Array(r.bytes);
-  const url = URL.createObjectURL(new Blob([bytes], { type: "application/octet-stream" }));
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `${arch.slug}.uorc`;
-  a.click();
-  setTimeout(() => URL.revokeObjectURL(url), 1500);
-  wfState.done5 = true;
-  wfState.activeStep = 5;
-  syncWorkflowRibbon();
-  chip(statusEl, `Sealed & exported ${arch.slug}.uorc (${bytes.byteLength}B SHA-256 UORC archive)`);
-  return bytes;
-}
-
-// ==================== RIGHT RAIL TABS ====================
-
-function setRightRailTab(tabKey) {
-  document.querySelectorAll("[data-right-tab]").forEach((btn) => {
-    btn.setAttribute("aria-selected", btn.dataset.rightTab === tabKey ? "true" : "false");
+const exportActiveUorcArchive = () =>
+  exportActiveUorcArchiveImpl({
+    arch: STARTER_ARCHETYPES[activeDomainIdx] || STARTER_ARCHETYPES[0],
+    callWorker, chip, statusEl, wfState, syncWorkflowRibbon,
   });
-  document.querySelectorAll("[data-right-panel]").forEach((panel) => {
-    panel.hidden = panel.dataset.rightPanel !== tabKey;
-  });
-}
+
 document.querySelectorAll("[data-right-tab]").forEach((btn) => {
   btn.addEventListener("click", () => setRightRailTab(btn.dataset.rightTab));
 });

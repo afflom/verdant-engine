@@ -36,8 +36,113 @@ export async function handleExtendedWorkerMessage(msg, ctx) {
     setActiveSeed,
     clearWalkJournal,
     syncOrgansToWasm,
+    slmKappaCache,
+    getSlmKappaHits,
+    incSlmKappaHits,
     postMessage,
   } = ctx;
+
+  if (msg.kind === "route-prompt") {
+    const organModes = getOrganModes();
+    if (organModes[0] === 2) {
+      postMessage({ kind: "prompt-routed", id: msg.id, ok: false, organDenied: "wasm-core" });
+      return true;
+    }
+    const promptKey = String(msg.prompt || "").trim().toLowerCase();
+    const cached = slmKappaCache.get(promptKey);
+    if (cached) {
+      const hits = incSlmKappaHits();
+      postMessage({ ...cached, id: msg.id, elidedHit: true, slmKappaHits: hits });
+      return true;
+    }
+    const uorcWasm = await getUorcWasm();
+    syncOrgansToWasm(uorcWasm);
+    const raw = new TextEncoder().encode(String(msg.prompt || ""));
+    stageIoBytes(uorcWasm, raw);
+    const auxLen = uorcWasm.verdant_wasm_route_prompt_io() >>> 0;
+    if (auxLen === 0) {
+      const organDenied = organModes[8] === 2 ? "broadcast-channel" : null;
+      postMessage({ kind: "prompt-routed", id: msg.id, ok: false, organDenied });
+      return true;
+    }
+    const decoded = new TextDecoder().decode(readAuxBytes(uorcWasm));
+    const [slug, scoreStr, logitStr, ...rest] = decoded.split("|");
+    const reply = {
+      kind: "prompt-routed",
+      ok: true,
+      slug,
+      scoreMilli: Number(scoreStr) || 0,
+      rawLogit: Number(logitStr) || 0,
+      summary: rest.join("|"),
+    };
+    if (slmKappaCache.size >= 64) slmKappaCache.clear();
+    slmKappaCache.set(promptKey, reply);
+    postMessage({ ...reply, id: msg.id, elidedHit: false, slmKappaHits: getSlmKappaHits() });
+    return true;
+  }
+
+  if (msg.kind === "aqm-benchmark") {
+    const uorcWasm = await getUorcWasm();
+    const t0 = performance.now();
+    const len = uorcWasm.verdant_wasm_aqm_benchmark_aux((msg.entityCount || 16384) >>> 0) >>> 0;
+    const elapsedMs = performance.now() - t0;
+    if (len === 0) {
+      postMessage({ kind: "aqm-benchmark", id: msg.id, ok: false });
+      return true;
+    }
+    const kvMap = parsePipeKv(new TextDecoder().decode(readAuxBytes(uorcWasm)));
+    postMessage({
+      kind: "aqm-benchmark",
+      id: msg.id,
+      ok: true,
+      elapsedMs,
+      metrics: kvMap,
+      slmKappaHits: getSlmKappaHits(),
+    });
+    return true;
+  }
+
+  if (msg.kind === "stability-audit") {
+    const uorcWasm = await getUorcWasm();
+    const t0 = performance.now();
+    const len = uorcWasm.verdant_wasm_stability_audit_aux((msg.bodyCount || 512) >>> 0) >>> 0;
+    const elapsedMs = performance.now() - t0;
+    if (len === 0) {
+      postMessage({ kind: "stability-audit", id: msg.id, ok: false });
+      return true;
+    }
+    const kvMap = parsePipeKv(new TextDecoder().decode(readAuxBytes(uorcWasm)));
+    postMessage({ kind: "stability-audit", id: msg.id, ok: true, elapsedMs, metrics: kvMap });
+    return true;
+  }
+
+  if (msg.kind === "uorc-exclusive-audit") {
+    const uorcWasm = await getUorcWasm();
+    const t0 = performance.now();
+    const len = uorcWasm.verdant_wasm_uorc_exclusive_audit_aux() >>> 0;
+    const elapsedMs = performance.now() - t0;
+    if (len === 0) {
+      postMessage({ kind: "uorc-exclusive-audit", id: msg.id, ok: false });
+      return true;
+    }
+    const kvMap = parsePipeKv(new TextDecoder().decode(readAuxBytes(uorcWasm)));
+    postMessage({ kind: "uorc-exclusive-audit", id: msg.id, ok: true, elapsedMs, metrics: kvMap });
+    return true;
+  }
+
+  if (msg.kind === "verify-ui") {
+    const uorcWasm = await getUorcWasm();
+    const count = uorcWasm.verdant_wasm_verify_ui((msg.width || 1280) >>> 0, (msg.height || 900) >>> 0) >>> 0;
+    const report = new TextDecoder().decode(readAuxBytes(uorcWasm));
+    postMessage({
+      kind: "ui-verified",
+      id: msg.id,
+      ok: count > 0,
+      widgetCount: count,
+      report,
+    });
+    return true;
+  }
 
   if (msg.kind === "set-seed") {
     const wasm = getWasm();

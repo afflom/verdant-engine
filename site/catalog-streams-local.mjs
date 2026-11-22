@@ -253,3 +253,121 @@ export async function queryGitHubImpl(query, contentType, limit, timeoutMs, fetc
     };
   });
 }
+
+export async function queryFontsourceImpl(tokens, limit, timeoutMs, indexCache, fetchJsonSafe, matchesTokens) {
+  if (!indexCache.fontsource) {
+    const raw = await fetchJsonSafe("https://api.fontsource.org/v1/fonts", timeoutMs);
+    indexCache.fontsource = Array.isArray(raw) ? raw : [];
+  }
+  const out = [];
+  for (const f of indexCache.fontsource) {
+    const hay = `${f.id || ""} ${f.family || ""} ${f.category || ""} ${(f.subsets || []).join(" ")}`;
+    if (!matchesTokens(hay, tokens)) continue;
+    const cssUrl = `https://cdn.jsdelivr.net/npm/@fontsource/${encodeURIComponent(f.id)}/index.css`;
+    out.push({
+      id: `fontsource:${f.id}`,
+      title: `${f.family} (${f.category || "sans"})`,
+      description: `Open-source ${f.variable ? "variable " : ""}${f.category || "font"} family · weights ${(f.weights || []).join(", ")} · live CSS Fonts Level 4 stream.`,
+      contentTypeKey: "Font",
+      schemaType: "CreativeWork",
+      mediaType: "font/woff2",
+      targetSlot: "design:typography",
+      targetRole: "design",
+      streamId: "fontsource",
+      streamLabel: "Fontsource",
+      sourceUri: `https://fontsource.org/fonts/${encodeURIComponent(f.id)}`,
+      previewUrl: cssUrl,
+      glbUrl: "",
+      licenseSpdx: f.license || "OFL-1.1",
+      tags: ["font", f.category || "sans-serif", f.variable ? "variable" : "static"],
+      properties: {
+        fontId: f.id,
+        fontFamily: f.family,
+        category: f.category || "sans-serif",
+        weights: f.weights || [400, 600],
+        stylesheetUrl: cssUrl,
+      },
+    });
+    if (out.length >= limit) break;
+  }
+  return out;
+}
+
+export async function queryOpenverseImpl(query, contentType, limit, timeoutMs, fetchJsonSafe) {
+  const q = encodeURIComponent(query || "architecture");
+  const out = [];
+  const wantAudio = contentType === "all" || contentType === "AudioObject";
+  const wantImages = contentType === "all" || contentType === "PBRMaterial";
+
+  if (wantAudio) {
+    const data = await fetchJsonSafe(`https://api.openverse.org/v1/audio/?q=${q}&page_size=${Math.min(limit, 6)}`, timeoutMs);
+    for (const a of data?.results || []) {
+      out.push({
+        id: `openverse:audio:${a.id}`,
+        title: a.title || "Openverse Audio",
+        description: `Creative Commons audio asset by ${a.creator || "Community"} (${String(a.license || "cc0").toUpperCase()} · ${a.filetype || "mp3"}). Live WebAudio preview.`,
+        contentTypeKey: "AudioObject",
+        schemaType: "AudioObject",
+        mediaType: a.filetype === "ogg" ? "audio/ogg" : "audio/mpeg",
+        targetSlot: "audio:soundscape",
+        targetRole: "audio",
+        streamId: "openverse",
+        streamLabel: "Openverse CC",
+        sourceUri: a.foreign_landing_url || a.url || "",
+        previewUrl: a.url || "",
+        glbUrl: "",
+        licenseSpdx: String(a.license || "CC0").toUpperCase(),
+        tags: ["audio", "openverse", ...(a.tags || []).map((t) => t.name).filter(Boolean).slice(0, 4)],
+        properties: {
+          audioUrl: a.url || "",
+          creator: a.creator || "",
+          gain: 0.75,
+          loop: true,
+        },
+      });
+    }
+  }
+
+  if (wantImages) {
+    const data = await fetchJsonSafe(`https://api.openverse.org/v1/images/?q=${q}&page_size=${Math.min(limit, 4)}`, timeoutMs);
+    for (const img of data?.results || []) {
+      out.push({
+        id: `openverse:image:${img.id}`,
+        title: img.title || "Openverse Artwork",
+        description: `Creative Commons visual artwork / reference by ${img.creator || "Community"} (${String(img.license || "cc-by").toUpperCase()}).`,
+        contentTypeKey: "PBRMaterial",
+        schemaType: "CreativeWork",
+        mediaType: "image/jpeg",
+        targetSlot: "design:material",
+        targetRole: "design",
+        streamId: "openverse",
+        streamLabel: "Openverse CC",
+        sourceUri: img.foreign_landing_url || img.url || "",
+        previewUrl: img.thumbnail || img.url || "",
+        glbUrl: "",
+        licenseSpdx: String(img.license || "CC-BY").toUpperCase(),
+        tags: ["artwork", "openverse", ...(img.tags || []).map((t) => t.name).filter(Boolean).slice(0, 4)],
+        properties: {
+          imageUrl: img.url || "",
+          creator: img.creator || "",
+          tiling: [1, 1],
+        },
+      });
+    }
+  }
+  return out;
+}
+
+export async function fetchLiveKnowledgePassageImpl(topic, timeoutMs, fetchJsonSafe) {
+  const clean = String(topic || "").trim().replace(/\s+/g, "_");
+  if (!clean) return null;
+  const url = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(clean)}`;
+  const data = await fetchJsonSafe(url, timeoutMs);
+  if (!data?.extract) return null;
+  return {
+    sourceStream: "wikidata",
+    sourceUri: data?.content_urls?.desktop?.page || url,
+    topic: data.title || topic,
+    passage: String(data.extract).trim(),
+  };
+}

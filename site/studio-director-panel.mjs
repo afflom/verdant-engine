@@ -386,3 +386,163 @@ export async function refreshStudioOutlinerAndOpfs({
     }
   }
 }
+
+export function wireStudioRoleTabs({
+  panels,
+  tabBar,
+  body,
+  dlg,
+  inline,
+  catalogModelsForRole,
+  siteUrl,
+  getStudioCtx,
+}) {
+  let selectTab = () => {};
+  const tabBtns = panels.map((p, idx) => {
+    const roleModels = catalogModelsForRole(p.key);
+    if (roleModels.length > 0) {
+      const stdBanner = document.createElement("div");
+      stdBanner.className = "ve-role-standards";
+      stdBanner.append("Governing Catalog Models: ");
+      roleModels.slice(0, 5).forEach((rm, rIdx) => {
+        if (rIdx > 0) stdBanner.append(" · ");
+        const link = document.createElement("a");
+        link.href = siteUrl(`./catalogs/#${rm.id}`);
+        link.textContent = `${rm.authority.split("·")[0].trim()}`;
+        link.title = `${rm.title} (${rm.lexModule})`;
+        stdBanner.append(link);
+      });
+      p.el.prepend(stdBanner);
+    }
+
+    const panelId = `ve-panel-${p.key}`;
+    const tabId = `ve-tab-${p.key}`;
+    const b = document.createElement("button");
+    b.type = "button";
+    b.id = tabId;
+    b.className = "ve-m-tab";
+    b.dataset.tabKey = p.key;
+    b.dataset.role = p.key;
+    b.setAttribute("role", "tab");
+    b.setAttribute("aria-controls", panelId);
+    b.setAttribute("aria-selected", idx === 0 ? "true" : "false");
+    b.textContent = p.label;
+    b.addEventListener("click", () => selectTab(p.key));
+    tabBar.append(b);
+    p.el.id = panelId;
+    p.el.setAttribute("role", "tabpanel");
+    p.el.setAttribute("aria-labelledby", tabId);
+    p.el.hidden = idx !== 0;
+    body.append(p.el);
+    return b;
+  });
+
+  if (!inline) {
+    const peekBtn = document.createElement("button");
+    peekBtn.type = "button";
+    peekBtn.className = "ve-m-peek";
+    peekBtn.id = "ve-dock-btn";
+    peekBtn.setAttribute("aria-pressed", "false");
+    peekBtn.textContent = "Dock Right";
+    peekBtn.addEventListener("click", () => {
+      const docked = dlg.classList.toggle("ve-docked");
+      peekBtn.setAttribute("aria-pressed", String(docked));
+      peekBtn.textContent = docked ? "Expand Studio" : "Dock Right";
+    });
+    tabBar.append(peekBtn);
+  }
+
+  selectTab = (keyOrIdx) => {
+    const targetIdx =
+      typeof keyOrIdx === "number"
+        ? Math.max(0, Math.min(panels.length - 1, keyOrIdx))
+        : Math.max(0, panels.findIndex((p) => p.key === keyOrIdx));
+    panels.forEach((it, j) => {
+      it.el.hidden = j !== targetIdx;
+      tabBtns[j].setAttribute("aria-selected", j === targetIdx ? "true" : "false");
+    });
+    const activePanel = panels[targetIdx];
+    if (activePanel) getStudioCtx()?.onRoleChange?.(activePanel.key);
+  };
+
+  return selectTab;
+}
+
+export function wireStudioDialogLifecycle({
+  dlg,
+  inline,
+  neuroCanvas,
+  audioCanvas,
+  uiCanvas,
+  uiLog,
+  entityTbody,
+  kpiStrata,
+  kpiBudget,
+  kpiEntities,
+  kpiClearance,
+  obsReadout,
+  storyLog,
+  organSyncFns,
+  opfsLog,
+  opfsActionsRow,
+  subscribeThemeChanges,
+  drawObserverCanvas,
+  drawAudioSpectrumCanvas,
+  drawUiComplianceCanvas,
+  listOpfsAssets,
+  readOpfsAssetBytes,
+  deleteOpfsAsset,
+  syncLookDevLabel,
+  verifyAllRoleTrace,
+  renderGameMode,
+  stopDirectorSequence,
+  state,
+}) {
+  subscribeThemeChanges(() => {
+    if (!inline && !dlg.open) return;
+    drawObserverCanvas(neuroCanvas, state.getLatestObserverTelemetry());
+    drawAudioSpectrumCanvas(audioCanvas, state.getActiveFundHz(), state.getActiveRt60Ms(), state.getLatestObserverTelemetry());
+    state.getUiDrawHook()?.();
+  });
+
+  dlg.addEventListener("ve-refresh", async () => {
+    const studioCtx = state.getStudioCtx();
+    syncLookDevLabel();
+    const spec = studioCtx?.getAcousticSpec?.();
+    if (spec?.fundamentalHz) state.setActiveFundHz(spec.fundamentalHz);
+    if (spec?.rt60Ms) state.setActiveRt60Ms(spec.rt60Ms);
+
+    const latestObs = state.getLatestObserverTelemetry();
+    drawObserverCanvas(neuroCanvas, latestObs);
+    drawAudioSpectrumCanvas(audioCanvas, state.getActiveFundHz(), state.getActiveRt60Ms(), latestObs);
+    verifyAllRoleTrace();
+    renderGameMode();
+
+    await refreshStudioOutlinerAndOpfs({
+      studioCtx, dlg, latestObserverTelemetry: latestObs, entityTbody, kpiStrata, kpiBudget,
+      kpiEntities, kpiClearance, obsReadout, storyLog, organSyncFns, opfsLog, opfsActionsRow,
+      listOpfsAssets, readOpfsAssetBytes, deleteOpfsAsset,
+    });
+
+    const vw = Math.max(360, window.innerWidth || 1280);
+    const vh = Math.max(640, window.innerHeight || 900);
+    const [uiReply, uiVerdict] = await Promise.all([
+      studioCtx?.callWorker?.("verify-ui", { width: vw, height: vh }),
+      studioCtx?.queryVerifier?.("scene:ui"),
+    ]);
+    if (uiReply?.ok) {
+      state.setLastUiState({ vw, vh, report: uiReply.report });
+      uiLog.textContent = `VERIFIED (${uiReply.widgetCount} widgets · 0 overlaps · >=48px targets · WCAG AA · ${uiVerdict || "conformant"}):\n${uiReply.report}`;
+      drawUiComplianceCanvas(uiCanvas, vw, vh, uiReply.report);
+    }
+  });
+
+  if (!inline) {
+    dlg.addEventListener("click", (e) => {
+      if (e.target === dlg) {
+        stopDirectorSequence?.();
+        dlg.close();
+      }
+    });
+  }
+}

@@ -1207,70 +1207,16 @@ impl VerdantOperatorChannel {
                 }
             }
             "resources/list" => ok_resp(serde_json::json!({
-                "resources": [
-                    { "uri": "verdant://governance/vsm", "name": "VSM Cybernetics Authority (AUTH-VSM-CYBERNETICS)", "mimeType": "application/json" },
-                    { "uri": "verdant://governance/viewpoints", "name": "ISO 42010 Viewpoints & Managers (AUTH-ISO-42010-VIEWPOINTS)", "mimeType": "application/json" },
-                    { "uri": "verdant://governance/tensor-scaling", "name": "ISO 25010 & ITU-R BT.2020/2100 Tensor Scaling Authority (AUTH-ISO-25010-TENSOR-SCALING)", "mimeType": "application/json" },
-                    { "uri": "verdant://governance/stitch-self-hosting", "name": "Zero-Account Stitch Self-Hosting & Boundary Privacy (AUTH-STITCH-SELF-HOSTING)", "mimeType": "application/json" },
-                    { "uri": "verdant://governance/change-roadmap-kpi", "name": "SemVer Change Manager, Stakeholder Roadmap & ISO 15939 KPIs (AUTH-SEMVER-CHANGE-KPI)", "mimeType": "application/json" },
-                    { "uri": "verdant://generated/viewpoint-contracts", "name": "Manager Viewpoint Contracts", "mimeType": "application/json" },
-                    { "uri": "verdant://generated/experience-design-system", "name": "Design System & Communications Spec", "mimeType": "application/json" },
-                    { "uri": "verdant://generated/world-differentiation-profiles", "name": "4-World Differentiation Profiles", "mimeType": "application/json" },
-                    { "uri": "verdant://generated/tensor-scaling-contract", "name": "ISO 25010 Tensor Scaling & Paged Memory Contract", "mimeType": "application/json" },
-                    { "uri": "verdant://generated/stitch-app-catalog", "name": "Stitch 2-of-3 Verdant App Catalog", "mimeType": "application/json" },
-                    { "uri": "verdant://generated/release-ledger", "name": "Change & Version Manager SemVer Release Ledger", "mimeType": "application/json" },
-                    { "uri": "verdant://generated/roadmap-kpi-report", "name": "Observer Stakeholder Roadmap & KPI Telemetry Report", "mimeType": "application/json" },
-                    { "uri": "verdant://generated/immutability-seal", "name": "Cryptographic View Immutability Seal", "mimeType": "application/json" },
-                    { "uri": "verdant://generated/self-host-ratchet-manifest", "name": "Self-Hosting Parametric Ratchet Manifest (TOML)", "mimeType": "application/toml" }
-                ]
+                "resources": super::operator_seal::MCP_RESOURCE_SPECS.iter().map(|(uri, name, mime, _)| serde_json::json!({
+                    "uri": uri, "name": name, "mimeType": mime
+                })).collect::<Vec<_>>()
             })),
             "resources/read" => {
                 let uri = params.get("uri").and_then(|v| v.as_str()).unwrap_or("");
-                let rel_opt = match uri {
-                    "verdant://governance/vsm" => {
-                        Some("catalogs/governance/vsm-viable-system.json")
-                    }
-                    "verdant://governance/viewpoints" => {
-                        Some("catalogs/governance/iso42010-viewpoints.json")
-                    }
-                    "verdant://governance/tensor-scaling" => {
-                        Some("catalogs/governance/iso25010-tensor-scaling.json")
-                    }
-                    "verdant://governance/stitch-self-hosting" => {
-                        Some("catalogs/governance/stitch-self-hosting.json")
-                    }
-                    "verdant://governance/change-roadmap-kpi" => {
-                        Some("catalogs/governance/change-roadmap-kpi.json")
-                    }
-                    "verdant://generated/viewpoint-contracts" => {
-                        Some("site/generated/viewpoint-contracts.json")
-                    }
-                    "verdant://generated/experience-design-system" => {
-                        Some("site/generated/experience-design-system.json")
-                    }
-                    "verdant://generated/world-differentiation-profiles" => {
-                        Some("site/generated/world-differentiation-profiles.json")
-                    }
-                    "verdant://generated/tensor-scaling-contract" => {
-                        Some("site/generated/tensor-scaling-contract.json")
-                    }
-                    "verdant://generated/stitch-app-catalog" => {
-                        Some("site/generated/stitch-app-catalog.json")
-                    }
-                    "verdant://generated/release-ledger" => {
-                        Some("site/generated/release-ledger.json")
-                    }
-                    "verdant://generated/roadmap-kpi-report" => {
-                        Some("site/generated/roadmap-kpi-report.json")
-                    }
-                    "verdant://generated/immutability-seal" => {
-                        Some("site/generated/immutability-seal.json")
-                    }
-                    "verdant://generated/self-host-ratchet-manifest" => {
-                        Some("site/generated/self-host-ratchet-manifest.toml")
-                    }
-                    _ => None,
-                };
+                let rel_opt = super::operator_seal::MCP_RESOURCE_SPECS
+                    .iter()
+                    .find(|(u, _, _, _)| *u == uri)
+                    .map(|(_, _, _, rel)| *rel);
                 match rel_opt.and_then(|rel| std::fs::read_to_string(repo_root.join(rel)).ok()) {
                     Some(text) => ok_resp(serde_json::json!({
                         "contents": [{ "uri": uri, "mimeType": "application/json", "text": text }]

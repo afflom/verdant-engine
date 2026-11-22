@@ -833,107 +833,6 @@ self.onmessage = async ({ data: msg }) => {
       return;
     }
 
-    if (msg.kind === "route-prompt") {
-      if (organModes[0] === 2) {
-        self.postMessage({ kind: "prompt-routed", id: msg.id, ok: false, organDenied: "wasm-core" });
-        return;
-      }
-      const promptKey = String(msg.prompt || "").trim().toLowerCase();
-      const cached = slmKappaCache.get(promptKey);
-      if (cached) {
-        slmKappaHits++;
-        self.postMessage({ ...cached, id: msg.id, elidedHit: true, slmKappaHits });
-        return;
-      }
-      uorcWasm ??= await getUorcWasm();
-      syncOrgansToWasm(uorcWasm);
-      const raw = new TextEncoder().encode(String(msg.prompt || ""));
-      stageIoBytes(uorcWasm, raw);
-      const auxLen = uorcWasm.verdant_wasm_route_prompt_io() >>> 0;
-      if (auxLen === 0) {
-        const organDenied = organModes[8] === 2 ? "broadcast-channel" : null;
-        self.postMessage({ kind: "prompt-routed", id: msg.id, ok: false, organDenied });
-        return;
-      }
-      const decoded = new TextDecoder().decode(readAuxBytes(uorcWasm));
-      const [slug, scoreStr, logitStr, ...rest] = decoded.split("|");
-      const reply = {
-        kind: "prompt-routed",
-        ok: true,
-        slug,
-        scoreMilli: Number(scoreStr) || 0,
-        rawLogit: Number(logitStr) || 0,
-        summary: rest.join("|"),
-      };
-      if (slmKappaCache.size >= 64) slmKappaCache.clear();
-      slmKappaCache.set(promptKey, reply);
-      self.postMessage({ ...reply, id: msg.id, elidedHit: false, slmKappaHits });
-      return;
-    }
-
-    if (msg.kind === "aqm-benchmark") {
-      uorcWasm ??= await getUorcWasm();
-      const t0 = performance.now();
-      const len = uorcWasm.verdant_wasm_aqm_benchmark_aux((msg.entityCount || 16384) >>> 0) >>> 0;
-      const elapsedMs = performance.now() - t0;
-      if (len === 0) {
-        self.postMessage({ kind: "aqm-benchmark", id: msg.id, ok: false });
-        return;
-      }
-      const kvMap = parsePipeKv(new TextDecoder().decode(readAuxBytes(uorcWasm)));
-      self.postMessage({
-        kind: "aqm-benchmark",
-        id: msg.id,
-        ok: true,
-        elapsedMs,
-        metrics: kvMap,
-        slmKappaHits,
-      });
-      return;
-    }
-
-    if (msg.kind === "stability-audit") {
-      uorcWasm ??= await getUorcWasm();
-      const t0 = performance.now();
-      const len = uorcWasm.verdant_wasm_stability_audit_aux((msg.bodyCount || 512) >>> 0) >>> 0;
-      const elapsedMs = performance.now() - t0;
-      if (len === 0) {
-        self.postMessage({ kind: "stability-audit", id: msg.id, ok: false });
-        return;
-      }
-      const kvMap = parsePipeKv(new TextDecoder().decode(readAuxBytes(uorcWasm)));
-      self.postMessage({ kind: "stability-audit", id: msg.id, ok: true, elapsedMs, metrics: kvMap });
-      return;
-    }
-
-    if (msg.kind === "uorc-exclusive-audit") {
-      uorcWasm ??= await getUorcWasm();
-      const t0 = performance.now();
-      const len = uorcWasm.verdant_wasm_uorc_exclusive_audit_aux() >>> 0;
-      const elapsedMs = performance.now() - t0;
-      if (len === 0) {
-        self.postMessage({ kind: "uorc-exclusive-audit", id: msg.id, ok: false });
-        return;
-      }
-      const kvMap = parsePipeKv(new TextDecoder().decode(readAuxBytes(uorcWasm)));
-      self.postMessage({ kind: "uorc-exclusive-audit", id: msg.id, ok: true, elapsedMs, metrics: kvMap });
-      return;
-    }
-
-    if (msg.kind === "verify-ui") {
-      uorcWasm ??= await getUorcWasm();
-      const count = uorcWasm.verdant_wasm_verify_ui((msg.width || 1280) >>> 0, (msg.height || 900) >>> 0) >>> 0;
-      const report = new TextDecoder().decode(readAuxBytes(uorcWasm));
-      self.postMessage({
-        kind: "ui-verified",
-        id: msg.id,
-        ok: count > 0,
-        widgetCount: count,
-        report,
-      });
-      return;
-    }
-
     if (msg.kind === "set-organ-grant") {
       uorcWasm ??= await getUorcWasm();
       const idx = Math.max(0, Math.min(10, msg.organIdx >>> 0));
@@ -983,6 +882,9 @@ self.onmessage = async ({ data: msg }) => {
       setActiveSeed: (s) => { activeSeed = s; },
       clearWalkJournal: () => { walkJournal.length = 0; },
       syncOrgansToWasm,
+      slmKappaCache,
+      getSlmKappaHits: () => slmKappaHits,
+      incSlmKappaHits: () => ++slmKappaHits,
       postMessage: (p, t) => self.postMessage(p, t),
     })) {
       return;

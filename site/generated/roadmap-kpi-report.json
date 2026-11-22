@@ -2,12 +2,12 @@
   "spec": "verdant/observer-roadmap-kpi-report/1",
   "managerId": "mgr-roadmap-strategy",
   "authorityId": "AUTH-SEMVER-CHANGE-KPI",
-  "currentVersion": "2.15.0",
-  "releaseEpoch": 19,
+  "currentVersion": "2.16.0",
+  "releaseEpoch": 20,
   "totalManagers": 13,
   "totalPrismFacetsOwned": 9,
   "totalPrismFacetsRequired": 9,
-  "declaredCapabilitiesCount": 86,
+  "declaredCapabilitiesCount": 87,
   "minorProgressPct": 100,
   "majorProgressPct": 100,
   "kpiPassedCount": 13,
@@ -138,7 +138,7 @@
       "name": "uorust MIR-Lifted Rust Functions Floor",
       "unit": "functions",
       "direction": "atLeast",
-      "actual": 485,
+      "actual": 515,
       "target": 200,
       "passed": true,
       "owningManager": "mgr-verification-observatory",
@@ -875,6 +875,39 @@
       "progressPct": 100,
       "completed": true,
       "ratchetRequirement": "Gate native-only VSM/Operator repo governance exports (verdant_wasm_operator_status_aux, verdant_wasm_operator_prompt_io, verdant_wasm_observer_roadmap_kpis_aux) to #[cfg(not(target_arch = \"wasm32\"))], cutting site/verdant-uorc.wasm by > 170 KiB raw (-44 KiB gz) to <= 1,850,000 B and pushing the gzipped .holo release capsule strictly below 1.00 MiB (< 1,048,576 B); decompose all 7 Rust files > 1390L (standards.rs, collision.rs/collision_blas.rs, authority.rs, gltf_io.rs, operator.rs, runtime.rs, vcs.rs/vcs_studio.rs -> max_handwritten_rust_file_lines <= 1365, >= 180 lifted lifecycle modules); decompose all 4 shipped JS files > 1024L (studio.mjs, engine-worker.mjs, studio-page.mjs, catalog-streams.mjs) into existing companion modules with zero extra JS requests (max_js_file_lines <= 1024); and expand frontier.toml to >= 480 lifted constructive functions with residue <= 1162 and uncertified <= 1319 across M1..M23."
+    },
+    {
+      "milestoneId": "M24",
+      "targetVersion": "2.16.0",
+      "tier": "minor",
+      "title": "Sub-1250L Rust Modularity (183 Lifted Modules), Sub-920L Shipped JS, Bulletproof stitch-mirror CI Retries & 515+ MIR-Lifted Functions",
+      "stakeholders": [
+        "creator",
+        "developer",
+        "systems-engineer",
+        "operator",
+        "auditor",
+        "admin",
+        "contributor"
+      ],
+      "owningManagers": [
+        "mgr-change-release",
+        "mgr-runtime-stage",
+        "mgr-studio-alm",
+        "mgr-catalog-curator",
+        "mgr-verification-observatory",
+        "mgr-observer-executive"
+      ],
+      "requiredCapabilities": [
+        "VE-76"
+      ],
+      "closedCapabilities": [
+        "VE-76"
+      ],
+      "missingCapabilities": [],
+      "progressPct": 100,
+      "completed": true,
+      "ratchetRequirement": "Harden .github/workflows/release-stitch.yml stitch-mirror publication with 3-attempt ls-remote/push retries so transient HTTP 403/5xx errors never mask an existing stitch-mirror branch; decompose all 7 remaining Rust files > 1247L with zero added residue/foreign functions (character.rs/character_types.rs, render.rs/render_shaders.rs, verdant-wasm/src/lib.rs/bridge_sim.rs, hd_world.rs/hd_world_templates.rs, operator.rs/operator_seal.rs, operator_mcp.rs, network.rs/network_custody.rs -> max_handwritten_rust_file_lines <= 1250, >= 183 lifted lifecycle modules); decompose all 4 shipped JS files > 913L into existing companion modules with zero extra JS requests (max_js_file_lines <= 920); and expand frontier.toml to >= 515 lifted constructive functions with residue <= 1161 and uncertified <= 1318 while holding .holo capsule < 1.00 MiB across M1..M24."
     }
   ],
   "observerParts": [
@@ -967,7 +1000,7 @@
         "runtime-frameworks",
         "spatial-acoustics"
       ],
-      "ownedFilesCount": 17,
+      "ownedFilesCount": 19,
       "active": true
     },
     {
@@ -1030,7 +1063,7 @@
     "governingAuthority": "AUTH-SEMVER-CHANGE-KPI",
     "currentVersion": {
       "major": 2,
-      "minor": 15,
+      "minor": 16,
       "patch": 0
     },
     "recommendedBump": "major",
@@ -1039,8 +1072,8 @@
       "minor": 0,
       "patch": 0
     },
-    "currentEpoch": 19,
-    "nextEpoch": 20,
+    "currentEpoch": 20,
+    "nextEpoch": 21,
     "versionIncremented": true,
     "gates": {
       "ratchetApplied": true,
@@ -1051,6 +1084,6 @@
       "pullThroughVerified": true
     },
     "blockingReasons": [],
-    "rationale": "Ratchet applied & 5/5 Release Gates passed: advancing v2.15.0 -> v3.0.0 (Major, epoch 20) — Observer roadmap evaluation: minor=100% major=100% managers=13"
+    "rationale": "Ratchet applied & 5/5 Release Gates passed: advancing v2.16.0 -> v3.0.0 (Major, epoch 21) — Observer roadmap evaluation: minor=100% major=100% managers=13"
   }
 }

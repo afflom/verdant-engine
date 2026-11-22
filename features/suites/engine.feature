@@ -483,3 +483,10 @@ Feature: engine
     Given crates/verdant-wasm/src/exports_uorc_studio.rs, crates/verdant-core/src/collision_blas.rs, crates/verdant-core/src/vcs_studio.rs, site/verdant-uorc.wasm, site/studio.mjs, site/engine-worker.mjs, site/studio/studio-page.mjs, site/catalog-streams.mjs, and frontier.toml
     When prism-fidelity audits [frontier_ratchet] and [surface_ratchet], Verdant evaluates its MIR-lifted M23 capsule/modularity/governance scalars, and the Observer evaluates all 23 milestones M1..M23
     Then max_release_capsule_bytes is strictly below 1048576 bytes, site/verdant-uorc.wasm is at most 1850000 bytes, max_handwritten_rust_file_lines is at most 1365, max_js_file_lines is at most 1024, frontier.toml proves at least 480 lifted functions with residue at most 1162, and all Observer KPIs pass across M1..M23
+
+
+  @VE-76 @build
+  Scenario: Verdant executes Milestone M24: hardens release-stitch.yml stitch-mirror retries, breaks every hand-written Rust file <= 1250 lines (>= 183 lifted modules via character_types.rs, render_shaders.rs, and zero-new-function companion consolidation), breaks every shipped JS file <= 930 lines with zero extra JS requests, preserves sub-1.00 MiB .holo capsule, and expands frontier.toml to >= 515 lifted functions with residue <= 1161 and uncertified <= 1318 across M1..M24
+    Given .github/workflows/release-stitch.yml, crates/verdant-core/src/character_types.rs, crates/verdant-core/src/render_shaders.rs, site/studio.mjs, site/engine-worker.mjs, site/studio/studio-page.mjs, site/catalog-streams.mjs, and frontier.toml
+    When prism-fidelity audits [frontier_ratchet] and [surface_ratchet], Verdant evaluates its MIR-lifted M24 modularity/retry/governance scalars, and the Observer evaluates all 24 milestones M1..M24
+    Then max_handwritten_rust_file_lines is at most 1250, max_js_file_lines is at most 930, max_release_capsule_bytes is strictly below 1048576 bytes, frontier.toml proves at least 515 lifted functions with residue at most 1161, and all Observer KPIs pass across M1..M24
