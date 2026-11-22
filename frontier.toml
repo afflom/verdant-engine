@@ -2454,7 +2454,7 @@ reason = "type"
 detail = "type outside the lift: RenderGraphError::InvalidShadowFrustumBounds.near_meters: f64"
 
 [[residue]]
-kappa = "690a83dc585a7fd8efa9bd4ca69f7c825f8b7c62b7953f1f69c2e34f73e68d57"
+kappa = "caba209cb2a56559e21d8c93c73d736e758b96b87afd51a9a8c86e771e4a7f52"
 function = "verdant_core::gateway::build_multi_gateway_manifest"
 reason = "statements"
 detail = "the body has statements other than let"
@@ -8751,7 +8751,7 @@ function = "verdant_core::build_ops::VerdantOperatorChannel::execute_native_buil
 effect = "Process effect: Command::new"
 
 [[effect]]
-kappa = "3f6ec031fa4e2cecfc1a36a494214fa068fc110908d5726ecbb4f35dc4899f08"
+kappa = "75318a4259d3f3058c5d8827f9001193133a02d6aea3a3842ba979be026cc6ff"
 function = "verdant_core::gateway::execute_gateway_op"
 effect = "Fs effect: std::fs::read_to_string"
 

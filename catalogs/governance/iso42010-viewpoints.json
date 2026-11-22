@@ -167,6 +167,7 @@
       "ownedFiles": [
         "app/src/Cadence.lex.tex",
         "app/src/Release.lex.tex",
+        "app/src/StitchHosting.lex.tex",
         "crates/verdant-core/src/vcs.rs",
         "crates/verdant-core/src/vcs_studio.rs",
         "crates/verdant-core/src/governance.rs",
@@ -210,7 +211,7 @@
       "stakeholderDomain": "ISO/IEC 27005/27034 STRIDE Threat Model & Zero-Account Sovereign Privacy",
       "almPhases": ["security", "privacy", "threat-modeling", "cryptographic-custody"],
       "concerns": [
-        "Govern Prism Stratum 3 Security, Sovereign Governance, and STRIDE Threat Model (Assets 0..10, Threats 0..26, Controls 0..25)",
+        "Govern Prism Stratum 3 Security, Sovereign Governance, and STRIDE Threat Model (Assets 0..12, Threats 0..32, Controls 0..31)",
         "Enforce zero-account Prism ID Encrypt-then-MAC boundary privacy, M-of-N Admin quorum signing requests, epoch revocation, and k-of-n Reed-Solomon integrity"
       ],
       "governingAuthorities": [

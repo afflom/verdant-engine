@@ -55,6 +55,31 @@ record = "Architecture::componentEngineStudioSite"
 axis = "meant"
 
 [[closed]]
+kappa = "90ff3528b3496fa368c551817b997886782bbcd182cd0d959524959fee07e083"
+record = "Architecture::componentOfflinePortableEnvelope"
+axis = "derived"
+
+[[closed]]
+kappa = "fa98a171bc1d0fea72642958429b544d272db4153d5e33e4ad107d59570d52d6"
+record = "Architecture::componentOfflinePortableEnvelope"
+axis = "derived"
+
+[[closed]]
+kappa = "3ffedad3b197d34fb1932a6d3e15a091011a93dc1322257bedb640192c9b13c8"
+record = "Architecture::componentOfflinePortableEnvelope"
+axis = "meant"
+
+[[closed]]
+kappa = "4c74cc951c510d873c97ccba84dfee4a2ca85666be103767417e7b26e61756a5"
+record = "Architecture::componentOfflinePortableEnvelope"
+axis = "meant"
+
+[[closed]]
+kappa = "2a173866f65507ee6e6cee840f191b913d10d094320ff1cdc9d0028893335e88"
+record = "Architecture::componentPagesTarget"
+axis = "derived"
+
+[[closed]]
 kappa = "33d46b97e2ed537dda2dd1d626bd426cfbc8ad8bece2c201147717e8238efc42"
 record = "Architecture::componentPagesTarget"
 axis = "derived"
@@ -65,7 +90,17 @@ record = "Architecture::componentPagesTarget"
 axis = "meant"
 
 [[closed]]
+kappa = "e6a1368a0fb596afffc423caa155382a903a2458c87db1d0f3963080e75b8c3c"
+record = "Architecture::componentPagesTarget"
+axis = "meant"
+
+[[closed]]
 kappa = "0c1038f0e35ae3509fd11ec277a6fca1e0836cb55013ab6a84914a5a4b5df5e6"
+record = "Architecture::componentSigningRequestGate"
+axis = "derived"
+
+[[closed]]
+kappa = "6d72367eb57e4f72ae352e5faae094d55cf8dcbeb0393f77edf2608c52501766"
 record = "Architecture::componentSigningRequestGate"
 axis = "derived"
 
@@ -85,12 +120,22 @@ record = "Architecture::componentSigningRequestGate"
 axis = "meant"
 
 [[closed]]
+kappa = "bf98241f7924d557bfbda199ba9e2cbce72dbf360b7118099f89412f6e62b0d9"
+record = "Architecture::componentSigningRequestGate"
+axis = "meant"
+
+[[closed]]
 kappa = "906faba09ced82f8abe33df6c377a31041598cfb4c790a4e9bac3a79574f4c98"
 record = "Architecture::componentSovereignAuthorityLedger"
 axis = "derived"
 
 [[closed]]
 kappa = "ec014e13eaa3f4f6ffe236aab227ea1195d254667e585cff1d61163c34941fd2"
+record = "Architecture::componentSovereignAuthorityLedger"
+axis = "derived"
+
+[[closed]]
+kappa = "f5a7b10bcb2700909bd1a8ed78648b0000b14df56afe6f6c2c361a055393e14e"
 record = "Architecture::componentSovereignAuthorityLedger"
 axis = "derived"
 
@@ -102,6 +147,31 @@ axis = "meant"
 [[closed]]
 kappa = "6e06d7c2664c59fc7c9105e00a69b5a50a25f00ba8bf6d04ee0226e8f2325956"
 record = "Architecture::componentSovereignAuthorityLedger"
+axis = "meant"
+
+[[closed]]
+kappa = "da9968eb39872ef9bf1a052f8c0e7146c165cc2e15fdfe6f2c1d1e337766b434"
+record = "Architecture::componentSovereignAuthorityLedger"
+axis = "meant"
+
+[[closed]]
+kappa = "a1222b9e3fe6dde25b680d9b53877b106c9b6a06a644dd21f16e16d922a31f92"
+record = "Architecture::componentStitchLayer5Swarm"
+axis = "derived"
+
+[[closed]]
+kappa = "b7d598fdec4872b65186c306ec93dd5a5b2bbfe019da3f239e8633ca13cf4b7a"
+record = "Architecture::componentStitchLayer5Swarm"
+axis = "derived"
+
+[[closed]]
+kappa = "35b1133cdd032e874c56661e88d151b3810f1ee26021df831822f8853078a2b0"
+record = "Architecture::componentStitchLayer5Swarm"
+axis = "meant"
+
+[[closed]]
+kappa = "9dd799494dc1dcea616a9dd8b74501ff25f80549a57061dbd30c776d6ee30a39"
+record = "Architecture::componentStitchLayer5Swarm"
 axis = "meant"
 
 [[closed]]
@@ -120,12 +190,22 @@ record = "Architecture::componentStitchMultiplayerFabric"
 axis = "derived"
 
 [[closed]]
+kappa = "e4f4baed056b5b3a7cd16cfc0c59b68d59beaa2bbfad54dff37fa06d57a958d6"
+record = "Architecture::componentStitchMultiplayerFabric"
+axis = "derived"
+
+[[closed]]
 kappa = "1c5b2e221937d11848bd1093d95b5fb8b64686e2f1e2db200e5f89a71a9777de"
 record = "Architecture::componentStitchMultiplayerFabric"
 axis = "meant"
 
 [[closed]]
 kappa = "343b7985e66fef33d64f99e338404565b932022cca3990cd88e1fa4d305ebb8b"
+record = "Architecture::componentStitchMultiplayerFabric"
+axis = "meant"
+
+[[closed]]
+kappa = "3cbff630beaa1f0e22110941a04f6dfc4447f6b7406ff2414d302a4a1ed03971"
 record = "Architecture::componentStitchMultiplayerFabric"
 axis = "meant"
 
@@ -163,6 +243,11 @@ axis = "meant"
 kappa = "f61544c0d8444cb252c64e959c662c87842c87265a42ea6323572a4ea1a3205a"
 record = "Architecture::componentVerdantCliCrate"
 axis = "meant"
+
+[[closed]]
+kappa = "31f4b89c3d96ea26eafc936aa547f0b647f7f20afdfb9fbbb85931868bd6f3a0"
+record = "Architecture::componentVerdantCoreCrate"
+axis = "derived"
 
 [[closed]]
 kappa = "4b5b23c3c7544e0e30c2de49cb3f029f8df4f4b2fe9eed71576de5536746249d"
@@ -205,7 +290,17 @@ record = "Architecture::componentVerdantCoreCrate"
 axis = "meant"
 
 [[closed]]
+kappa = "ff10d0d08b9dbc98fe6d66aaf882bb0077e364ae30070afbf88aaf953fbbb454"
+record = "Architecture::componentVerdantCoreCrate"
+axis = "meant"
+
+[[closed]]
 kappa = "2c9ebd76b08dbc63538ba8e6f2e68681b3308d8cbc2539658e2c0b8d5be41126"
+record = "Architecture::componentVerdantTensorCrate"
+axis = "derived"
+
+[[closed]]
+kappa = "43f1c4db65d3736a2f285019a6d251ae33946f32131716effe393b3aa66f9553"
 record = "Architecture::componentVerdantTensorCrate"
 axis = "derived"
 
@@ -218,6 +313,11 @@ axis = "derived"
 kappa = "7888efaaf2ba9b979fa2a178022593dfcb773cfb74c51d46fa7c14e1f1de9889"
 record = "Architecture::componentVerdantTensorCrate"
 axis = "derived"
+
+[[closed]]
+kappa = "27a1b1b34022a4a8c74d2e03b2e3dc7b30f743f769d7d3ec4ec4a342b9053aba"
+record = "Architecture::componentVerdantTensorCrate"
+axis = "meant"
 
 [[closed]]
 kappa = "69db8402ab148ad61f0c2d3766e1e65de2c5731b255802476ab64c918d13515f"
@@ -233,6 +333,11 @@ axis = "meant"
 kappa = "d28ae0b117eaf1df5a6338c19640783e094ce8079610a7cc8688449a9680a399"
 record = "Architecture::componentVerdantTensorCrate"
 axis = "meant"
+
+[[closed]]
+kappa = "3bafa1f9b49859574a30236c401bcee9fcbb01c9b73537f4a4120b7ba90bc13b"
+record = "Architecture::componentVerdantWasmCrate"
+axis = "derived"
 
 [[closed]]
 kappa = "d0fd5e9731173a2ae682ca75b2797cac123e2fd84aa22b0b2ff7c5db9547a83c"
@@ -255,12 +360,22 @@ record = "Architecture::componentVerdantWasmCrate"
 axis = "meant"
 
 [[closed]]
+kappa = "51e611824554a3afd9ccbbb93169d3fd263964edc6ae724ca336040961e1ab6c"
+record = "Architecture::componentVerdantWasmCrate"
+axis = "meant"
+
+[[closed]]
 kappa = "1e15e1e96741b6a3287b48d1376275f8841b918605dc9db476164bbd9d9d5529"
 record = "Architecture::componentVerifierGuest"
 axis = "derived"
 
 [[closed]]
 kappa = "3823e265e9df63d4fb4dfac363d9e74cf6b4821938b6a070d0d91f1ac14c2e79"
+record = "Architecture::componentVerifierGuest"
+axis = "derived"
+
+[[closed]]
+kappa = "6db6e7342641a94aa8a718e244280c2c06407fc4746e08178589a7ede4ef23b6"
 record = "Architecture::componentVerifierGuest"
 axis = "derived"
 
@@ -290,8 +405,33 @@ record = "Architecture::componentVerifierGuest"
 axis = "meant"
 
 [[closed]]
+kappa = "e53ffd287823074c5a2cfba02e5aa1d73520a7ecde2c55f43bf0502682d96c46"
+record = "Architecture::componentVerifierGuest"
+axis = "meant"
+
+[[closed]]
 kappa = "f256ee6cec5fd063baa31e24c2c1111a3e80d23bca1263cfff550159f67aea29"
 record = "Architecture::componentVerifierGuest"
+axis = "meant"
+
+[[closed]]
+kappa = "9ef8d1e6e07d167873bbde80ce1319c769e930b6b1f9ed5b26c0d1748fe8e5ce"
+record = "Architecture::componentVolunteerStitchGateway"
+axis = "derived"
+
+[[closed]]
+kappa = "ee0aa9047102c15ea19303123d6e6f1229527bc6df67fdf83c30d9fdd3026395"
+record = "Architecture::componentVolunteerStitchGateway"
+axis = "derived"
+
+[[closed]]
+kappa = "42cc6eade7a120547e076c5653157b11ab322c892c35d46003fb5d9fe6055515"
+record = "Architecture::componentVolunteerStitchGateway"
+axis = "meant"
+
+[[closed]]
+kappa = "ec0e6745408c653c75322f58404af8627cd723479867823e67334501404ffbd1"
+record = "Architecture::componentVolunteerStitchGateway"
 axis = "meant"
 
 [[closed]]
@@ -645,6 +785,21 @@ record = "Architecture::concernTensorAndStreamingFidelity"
 axis = "meant"
 
 [[closed]]
+kappa = "252d1e23c522ef2e938c3e1f434f58dbcaa64f0a7db0e4222d1584ea59372afb"
+record = "Architecture::concernZeroRegistrationAvailability"
+axis = "derived"
+
+[[closed]]
+kappa = "5c234ee4afac27a0972382f9602929f791f5ddef8508ad7614067d451ff84742"
+record = "Architecture::concernZeroRegistrationAvailability"
+axis = "meant"
+
+[[closed]]
+kappa = "1cc578cbb2e0add8d3f57947a9a068b127d2adac78e0c48d74c9d538daa185fe"
+record = "Architecture::edgeAuthorityLedgerToSigningGate"
+axis = "derived"
+
+[[closed]]
 kappa = "404a4b293b26b691ad92dd1aa1fbb881e15bd411233d76bac27b0065ff294d0e"
 record = "Architecture::edgeAuthorityLedgerToSigningGate"
 axis = "derived"
@@ -665,6 +820,16 @@ record = "Architecture::edgeAuthorityLedgerToSigningGate"
 axis = "meant"
 
 [[closed]]
+kappa = "d2d161573b96b54ae24f310ae1a72529d1b9bd9f6ef208f5a27a52248a52dfd2"
+record = "Architecture::edgeAuthorityLedgerToSigningGate"
+axis = "meant"
+
+[[closed]]
+kappa = "703cbe8003e674b9371804c1329f6535b6f12d135615c3d86838caba9c3c5b32"
+record = "Architecture::edgeAuthorityLedgerToStitch"
+axis = "derived"
+
+[[closed]]
 kappa = "7a4192c42df45b8fbe1c2faedc6fa493b082c65d0c012ff4d6877eaae448a89e"
 record = "Architecture::edgeAuthorityLedgerToStitch"
 axis = "derived"
@@ -673,6 +838,11 @@ axis = "derived"
 kappa = "fc17e2780bc334c3ba0f2018bf101c09495fabcec94f022fd5a3d381bd570847"
 record = "Architecture::edgeAuthorityLedgerToStitch"
 axis = "derived"
+
+[[closed]]
+kappa = "53660f40bdd630d77ad3a24585e730214e06ffcc25cd4615bde7b69ecc87e3bf"
+record = "Architecture::edgeAuthorityLedgerToStitch"
+axis = "meant"
 
 [[closed]]
 kappa = "9841a3dbe56d4575bd169ecb06d1d9fce7e545a184e6e36ff3e1a3f4dcfbad33"
@@ -685,6 +855,11 @@ record = "Architecture::edgeAuthorityLedgerToStitch"
 axis = "meant"
 
 [[closed]]
+kappa = "2aeffdff067b7673655783f0d0c7f48d1247cc256907e49479d1af2e509725a0"
+record = "Architecture::edgeCliToSigningGate"
+axis = "derived"
+
+[[closed]]
 kappa = "75237bd90562ecaa77b33df5407e528014416df23c96362cc3c7bbef94edade7"
 record = "Architecture::edgeCliToSigningGate"
 axis = "derived"
@@ -695,6 +870,11 @@ record = "Architecture::edgeCliToSigningGate"
 axis = "derived"
 
 [[closed]]
+kappa = "8a16f374ec1cb1414b791c949758b30e20803cfa02ff58bba1032734bde09927"
+record = "Architecture::edgeCliToSigningGate"
+axis = "meant"
+
+[[closed]]
 kappa = "a2f637ed3f5a5d611e9b3a4b7de2b3a990aacf93ff8e74a25938d0933e7b96e2"
 record = "Architecture::edgeCliToSigningGate"
 axis = "meant"
@@ -703,6 +883,31 @@ axis = "meant"
 kappa = "cff552657b5027af4545c0a4b0b3a72e3e99713d237d51b5fc4f02a4b79aeffb"
 record = "Architecture::edgeCliToSigningGate"
 axis = "meant"
+
+[[closed]]
+kappa = "51fac28c5bf06cfd1c23c85c90ab276db599bf6ca03ccc41ac21bc11562b78ba"
+record = "Architecture::edgeCliToVolunteerGateway"
+axis = "derived"
+
+[[closed]]
+kappa = "cb9fad0af67e8745a4a48849e59fbaabf68a2a8d314bc0e65311f99c3ca1bf2a"
+record = "Architecture::edgeCliToVolunteerGateway"
+axis = "derived"
+
+[[closed]]
+kappa = "121c4df4c6ed1db763e2854a9fd78f29337b1302eb2ed376fa3f974699754024"
+record = "Architecture::edgeCliToVolunteerGateway"
+axis = "meant"
+
+[[closed]]
+kappa = "f0de5ece5bb4a8ebaa14cbcfcd8f5c807c23313984f5bff1daba507dda5ad85d"
+record = "Architecture::edgeCliToVolunteerGateway"
+axis = "meant"
+
+[[closed]]
+kappa = "7e08a85b450209320034255b65e2611dfdff305799003baf9393732ccac74cdd"
+record = "Architecture::edgeCoreToCli"
+axis = "derived"
 
 [[closed]]
 kappa = "b26e25397211cb4c3a368ff0d8b34d4a4711e24de99d87b9e99c45aeb50e2629"
@@ -720,6 +925,11 @@ record = "Architecture::edgeCoreToCli"
 axis = "derived"
 
 [[closed]]
+kappa = "253333d3fa156c06b42d7ebec1089127d3835fa532d8935a41729982b822e9d2"
+record = "Architecture::edgeCoreToCli"
+axis = "meant"
+
+[[closed]]
 kappa = "4ccca3461f7c53f3235e1ea53d22d0ea8387ca9b02647027c6ace739dee2cf48"
 record = "Architecture::edgeCoreToCli"
 axis = "meant"
@@ -733,6 +943,11 @@ axis = "meant"
 kappa = "c9975489541bced80c42b83216caf92b18ebbb3d7dc279e5c7d0761e7f23b448"
 record = "Architecture::edgeCoreToCli"
 axis = "meant"
+
+[[closed]]
+kappa = "3e17935c6954f05561910a0b4396bae3b7b08e8a8f30375ebb6f287a389133ea"
+record = "Architecture::edgeCoreToExamples"
+axis = "derived"
 
 [[closed]]
 kappa = "3ee760f5fca6dfd51b4e0b53fc7fd35f8a2b247e41b6a333296acb0ee99da919"
@@ -765,6 +980,11 @@ record = "Architecture::edgeCoreToExamples"
 axis = "meant"
 
 [[closed]]
+kappa = "6271a89720c382a9de40f966283d1735b01ccbf9e1a6e2d65af4b007ee6c8009"
+record = "Architecture::edgeCoreToExamples"
+axis = "meant"
+
+[[closed]]
 kappa = "b0c04da1d048251bd68e461157ce5b66e72ada5bcd464c2605580360571fd6a7"
 record = "Architecture::edgeCoreToExamples"
 axis = "meant"
@@ -781,6 +1001,11 @@ axis = "derived"
 
 [[closed]]
 kappa = "2d696a9ade64cfc74d9112af43a1e8b06ed69bedd9e402d6c75b409ae3fd5c2a"
+record = "Architecture::edgeCoreToStudio"
+axis = "derived"
+
+[[closed]]
+kappa = "6d0742b6ec3207bb81195386090b94d5ab39ea5f10d343e1c1f7000ed2b88cc8"
 record = "Architecture::edgeCoreToStudio"
 axis = "derived"
 
@@ -810,6 +1035,11 @@ record = "Architecture::edgeCoreToStudio"
 axis = "meant"
 
 [[closed]]
+kappa = "8b87e40dc8b6814e714982010b6687d4441199611e76c6c13d460f776d9df2f1"
+record = "Architecture::edgeCoreToStudio"
+axis = "meant"
+
+[[closed]]
 kappa = "a861ec86bce3031f00bddf5ded524a4a0219dcc9c9777c4e8a5e95da9af9818e"
 record = "Architecture::edgeCoreToStudio"
 axis = "meant"
@@ -821,6 +1051,11 @@ axis = "derived"
 
 [[closed]]
 kappa = "3d2728627109ff0971019c8edf370526d23959c86fb49be84a8f41ae6447a156"
+record = "Architecture::edgeCoreToWasm"
+axis = "derived"
+
+[[closed]]
+kappa = "d92a856bc0107eaa41e78c1bcf96e320f2ed20001f2bc9ef2b5152dfa1c96f23"
 record = "Architecture::edgeCoreToWasm"
 axis = "derived"
 
@@ -845,12 +1080,62 @@ record = "Architecture::edgeCoreToWasm"
 axis = "meant"
 
 [[closed]]
+kappa = "b39ab6266384cc94ea6dad2e9c30bdcc34b18e2ee01fcc92a58718814af7a611"
+record = "Architecture::edgeCoreToWasm"
+axis = "meant"
+
+[[closed]]
+kappa = "9d69c9ad71e09aa71bf848d58399e5ce32979efd17ad2919df2277187e43b5fd"
+record = "Architecture::edgeLayer5SwarmToStudio"
+axis = "derived"
+
+[[closed]]
+kappa = "f4e4e9dab32ae3a68cc6be8218835e00ae4bfed20f0d903346b6c543ea296cc1"
+record = "Architecture::edgeLayer5SwarmToStudio"
+axis = "derived"
+
+[[closed]]
+kappa = "a28fc706438d5e91267c580e801bda361196b19897b519c8eb40f1bc1691727b"
+record = "Architecture::edgeLayer5SwarmToStudio"
+axis = "meant"
+
+[[closed]]
+kappa = "b5b756310ca574cda9ba793225156b0d4ad327311a1d6f46fe52bc3a0d925829"
+record = "Architecture::edgeLayer5SwarmToStudio"
+axis = "meant"
+
+[[closed]]
+kappa = "46306cf06880152a8bddc1bee116ec223f2222c0569bb46ec1ca79115010473f"
+record = "Architecture::edgeOfflineEnvelopeToCanvas"
+axis = "derived"
+
+[[closed]]
+kappa = "ab450e6d7bdf1c3df1df58a8072af60fd10118a58b4b530b091202c289f11bb6"
+record = "Architecture::edgeOfflineEnvelopeToCanvas"
+axis = "derived"
+
+[[closed]]
+kappa = "3af95eb2a0209af80d6a268757f07457d1e184adccf5c148d5cdaa2edef26e04"
+record = "Architecture::edgeOfflineEnvelopeToCanvas"
+axis = "meant"
+
+[[closed]]
+kappa = "b1222582943a8a619450098a0096ddb24e0c648f91d5878dbba17691afd00722"
+record = "Architecture::edgeOfflineEnvelopeToCanvas"
+axis = "meant"
+
+[[closed]]
 kappa = "42fc0b91704745f7f57814c7377cecba4d8c5837c9a4b4a4abee9b5d3af04fc1"
 record = "Architecture::edgePagesToAgent"
 axis = "derived"
 
 [[closed]]
 kappa = "44a9b26612ebe8d951ef08462511e8786a3f397859a37d3a7a9b9c4acb0b4aca"
+record = "Architecture::edgePagesToAgent"
+axis = "derived"
+
+[[closed]]
+kappa = "6c02bf778353f5c639c4e5f4ade45262007da0816094bb6a9a198669a26cb07d"
 record = "Architecture::edgePagesToAgent"
 axis = "derived"
 
@@ -875,6 +1160,16 @@ record = "Architecture::edgePagesToAgent"
 axis = "meant"
 
 [[closed]]
+kappa = "cd30e54ae3b666840e68755e66560db3b8d2cde9eed46ffd9573f471be2c4adf"
+record = "Architecture::edgePagesToAgent"
+axis = "meant"
+
+[[closed]]
+kappa = "1c45227f08e560cadaeea108f59fcc0a4bf5aa9c76ec7654d020db4cb0dbc5d9"
+record = "Architecture::edgePagesToCanvas"
+axis = "derived"
+
+[[closed]]
 kappa = "567d4c49efbff915eba3cb62862434e4602f1612b36dfba37795ccea8c53b0fb"
 record = "Architecture::edgePagesToCanvas"
 axis = "derived"
@@ -891,6 +1186,11 @@ axis = "derived"
 
 [[closed]]
 kappa = "c2171b0b20443085fdea5ea9ca1bc2f002a27ca70cf3bea5861c248a00b81e4f"
+record = "Architecture::edgePagesToCanvas"
+axis = "meant"
+
+[[closed]]
+kappa = "c6515319c48aad164744296b10895583c9cfdfe9546608a3cc8e2633396f89bd"
 record = "Architecture::edgePagesToCanvas"
 axis = "meant"
 
@@ -915,6 +1215,16 @@ record = "Architecture::edgeSigningGateToAuthorityLedger"
 axis = "derived"
 
 [[closed]]
+kappa = "ee0867486229528de529d25922016a1d7ab57303b7f7337c37bd6ac56cc1b3a0"
+record = "Architecture::edgeSigningGateToAuthorityLedger"
+axis = "derived"
+
+[[closed]]
+kappa = "53f3ecfc35059e3854185a21dbc4bd6cdc327d906d8678c6d480ead8f31ae697"
+record = "Architecture::edgeSigningGateToAuthorityLedger"
+axis = "meant"
+
+[[closed]]
 kappa = "903e41afcd2651c066b6ea54d965709f7b8630fe92df84938c50ae2fdfb5d7b4"
 record = "Architecture::edgeSigningGateToAuthorityLedger"
 axis = "meant"
@@ -926,6 +1236,11 @@ axis = "meant"
 
 [[closed]]
 kappa = "21dc00d5526d8b76a9717f194ddd45069c6424890702b2eb934fdb3446580603"
+record = "Architecture::edgeStitchToStudio"
+axis = "derived"
+
+[[closed]]
+kappa = "8bf005e6e6e85a38e028a9de78899de9879694d47862e46684296c33c7dc0db4"
 record = "Architecture::edgeStitchToStudio"
 axis = "derived"
 
@@ -965,7 +1280,17 @@ record = "Architecture::edgeStitchToStudio"
 axis = "meant"
 
 [[closed]]
+kappa = "df63af171cc3d347ce5110c9c4ec631c83d80fef06e4d96d379d689da785feca"
+record = "Architecture::edgeStitchToStudio"
+axis = "meant"
+
+[[closed]]
 kappa = "4f3d6ec9918897b9f954ae2abaf34d1636994ddede157ff4b3302fdc5989ea34"
+record = "Architecture::edgeStudioToAudio"
+axis = "derived"
+
+[[closed]]
+kappa = "b8ae9bc4ede3ce267c314ece1589b0902efd73826ebe13cb232c2dc03e906870"
 record = "Architecture::edgeStudioToAudio"
 axis = "derived"
 
@@ -1005,12 +1330,22 @@ record = "Architecture::edgeStudioToAudio"
 axis = "meant"
 
 [[closed]]
+kappa = "e1e411b57688a0e6081d4a1da23646132f508308d745a63c739c1aca6639c948"
+record = "Architecture::edgeStudioToAudio"
+axis = "meant"
+
+[[closed]]
 kappa = "08a751850080e5c82843fa5918a0821b814ccba42ebcde2aec26e686d5bd77e3"
 record = "Architecture::edgeStudioToCanvas"
 axis = "derived"
 
 [[closed]]
 kappa = "1127ae94f229dfbafad2a92b3beb2a8ca69f16e9ecf87550077de08aef1bfced"
+record = "Architecture::edgeStudioToCanvas"
+axis = "derived"
+
+[[closed]]
+kappa = "973217bb5b522276a6d57b6c61bf76ec3667995c405bfe722481e382127bcf43"
 record = "Architecture::edgeStudioToCanvas"
 axis = "derived"
 
@@ -1023,6 +1358,11 @@ axis = "derived"
 kappa = "e1777fe88189f7b9d35c4582eb8f25f950657b3064e967aa86bb3baa081c542f"
 record = "Architecture::edgeStudioToCanvas"
 axis = "derived"
+
+[[closed]]
+kappa = "40b004a7028852a0f2ec8d9afcae7dd289241755541995285c7ffac2c0d595da"
+record = "Architecture::edgeStudioToCanvas"
+axis = "meant"
 
 [[closed]]
 kappa = "56699ae31a09c32d2e6d8089e82b7703f48f690d2ab0ad36e48a27d0e8aa0104"
@@ -1045,7 +1385,52 @@ record = "Architecture::edgeStudioToCanvas"
 axis = "meant"
 
 [[closed]]
+kappa = "59e76eef8f654e784297c2094c4903dcee39f7cb9efcbb682e3fc13ad97477fd"
+record = "Architecture::edgeStudioToLayer5Swarm"
+axis = "derived"
+
+[[closed]]
+kappa = "cd092250f9efa68c65c814958b79ccd61edf522ef9d7ff808a61d4a38d493b6a"
+record = "Architecture::edgeStudioToLayer5Swarm"
+axis = "derived"
+
+[[closed]]
+kappa = "687c8df1325d923bc86a0e4acbddde83e75f42660882e73501eea297dacd8180"
+record = "Architecture::edgeStudioToLayer5Swarm"
+axis = "meant"
+
+[[closed]]
+kappa = "db8f2b7711319bdc4a1f5c1f99f6cca06b6b6fe05707ab307ad8ce6ee01461bf"
+record = "Architecture::edgeStudioToLayer5Swarm"
+axis = "meant"
+
+[[closed]]
+kappa = "1bc7a71e082bfdba04e75046418d6ee621f1ed9e5e49122a1b335bd2d1b2d02f"
+record = "Architecture::edgeStudioToOfflineEnvelope"
+axis = "derived"
+
+[[closed]]
+kappa = "e4a3c9140fb882605ba0c7f58794c745ccd32a7657f98d06dd392acfacdc4d88"
+record = "Architecture::edgeStudioToOfflineEnvelope"
+axis = "derived"
+
+[[closed]]
+kappa = "8d8895715c7c4e6f2914fe3f4a62f5c381ef036b5c0128a2a67727e7d3bc9021"
+record = "Architecture::edgeStudioToOfflineEnvelope"
+axis = "meant"
+
+[[closed]]
+kappa = "b07a3fc7ddecb7bd7520bc5ee27bdcf7a52022198fe3b04e49f682a62d1ce5d7"
+record = "Architecture::edgeStudioToOfflineEnvelope"
+axis = "meant"
+
+[[closed]]
 kappa = "4039fa95effacfdd45da96e56fd1645a4b81ba5ec931a9c38a2641df7b266f21"
+record = "Architecture::edgeStudioToPages"
+axis = "derived"
+
+[[closed]]
+kappa = "855df39ae06ce92b9d06921ef6fcd1e85ac7d095da92d3a690d29415b20f9342"
 record = "Architecture::edgeStudioToPages"
 axis = "derived"
 
@@ -1066,6 +1451,11 @@ axis = "derived"
 
 [[closed]]
 kappa = "0dc63d629a74544fa1fa2ca7befc0d6a86676104aa2ba9b182cc8d19d0b07688"
+record = "Architecture::edgeStudioToPages"
+axis = "meant"
+
+[[closed]]
+kappa = "0f4f7fe2d6600a0e6670e8bdebd0b21d2a098657849a4fdb2f86b393a51aaf16"
 record = "Architecture::edgeStudioToPages"
 axis = "meant"
 
@@ -1095,6 +1485,16 @@ record = "Architecture::edgeStudioToSigningGate"
 axis = "derived"
 
 [[closed]]
+kappa = "e4bafee356550ed859b3de0f944dddf64554ee7f518a6ecdff3f7da6dff72153"
+record = "Architecture::edgeStudioToSigningGate"
+axis = "derived"
+
+[[closed]]
+kappa = "71dc5bfe2b54f2a24d1c600ddd6087d2c49aba624be97d85cbaf1318d0a1a15b"
+record = "Architecture::edgeStudioToSigningGate"
+axis = "meant"
+
+[[closed]]
 kappa = "85ed59dbfa7ea254afcc8b6cb88c4a2f07273c9f35c19e7f9b6c8f772400d1e0"
 record = "Architecture::edgeStudioToSigningGate"
 axis = "meant"
@@ -1106,6 +1506,11 @@ axis = "meant"
 
 [[closed]]
 kappa = "03e41a55d89e6784dd4c647fbe4fdd473ad451c80b7ee6088801116e817acb51"
+record = "Architecture::edgeStudioToStitch"
+axis = "derived"
+
+[[closed]]
+kappa = "11b990a59342cdc290d178b6cca2e05610756a0a4d7bda228dc0f72fa09acf00"
 record = "Architecture::edgeStudioToStitch"
 axis = "derived"
 
@@ -1123,6 +1528,11 @@ axis = "derived"
 kappa = "fcdcae5f0ac1f6fb15bae2fad4711f19c033f871d12e3d93c8fb12d67789f408"
 record = "Architecture::edgeStudioToStitch"
 axis = "derived"
+
+[[closed]]
+kappa = "a0de679838b7b1eaaa0eea90a671e08ce13fdfd6271f235a1c8e43755b427a2d"
+record = "Architecture::edgeStudioToStitch"
+axis = "meant"
 
 [[closed]]
 kappa = "a6b1b29d38ec6fa697fb59cd0dff21ba522e40d297c0c495eb807e0374abce41"
@@ -1160,9 +1570,19 @@ record = "Architecture::edgeStudioToVerifier"
 axis = "derived"
 
 [[closed]]
+kappa = "62edd3dd13340930a5e722fd59b7ed3b76572def5940e8538c81bac479c7f8c4"
+record = "Architecture::edgeStudioToVerifier"
+axis = "derived"
+
+[[closed]]
 kappa = "c7ab05a935da8d210034fa48f2b644b4f98418a6d6cc0e6b3d7fd593f07b311f"
 record = "Architecture::edgeStudioToVerifier"
 axis = "derived"
+
+[[closed]]
+kappa = "3ddc35925b10555ad0e9ff155e6954c8769d37a1fdad6b3fde4503de201c8cab"
+record = "Architecture::edgeStudioToVerifier"
+axis = "meant"
 
 [[closed]]
 kappa = "708efaea5db72ce5cb5bb0f831035871fbc0184653064ce18dea50caab296a2d"
@@ -1200,12 +1620,22 @@ record = "Architecture::edgeTensorToCore"
 axis = "derived"
 
 [[closed]]
+kappa = "accee769365931a7a8f6d93617a22b071de013efbf7206ef80d40e229714fb5c"
+record = "Architecture::edgeTensorToCore"
+axis = "derived"
+
+[[closed]]
 kappa = "c10d6218897a05ac937a0063f9089175349db546ff48ae85ac0a3009761fbc64"
 record = "Architecture::edgeTensorToCore"
 axis = "derived"
 
 [[closed]]
 kappa = "012f965ecdfb4fcb945ec7f3431d89f288862548ae4c3b857e7d898278cae75f"
+record = "Architecture::edgeTensorToCore"
+axis = "meant"
+
+[[closed]]
+kappa = "1a3158b3b9a884ec25ee9f408368ce9b4e12e2ef8089917c00d9efd5eefb147e"
 record = "Architecture::edgeTensorToCore"
 axis = "meant"
 
@@ -1240,9 +1670,19 @@ record = "Architecture::edgeVerifierToStudio"
 axis = "derived"
 
 [[closed]]
+kappa = "d0a14c582b4f1b54b93b932114940ad3a06e76feb78e180d011f3147bafb3ea0"
+record = "Architecture::edgeVerifierToStudio"
+axis = "derived"
+
+[[closed]]
 kappa = "d3d6f42fe4a068fda74b09b18cb055c2e21733076ad9f0d85d22385894080d83"
 record = "Architecture::edgeVerifierToStudio"
 axis = "derived"
+
+[[closed]]
+kappa = "134fa8e10d657389270a250b75725d9220a202b708a9ad3e7e8a6174110cea0b"
+record = "Architecture::edgeVerifierToStudio"
+axis = "meant"
 
 [[closed]]
 kappa = "430b26ebf4ad0d8b12fa552f6d7cf1455651667e13ac0f95a3b70697b95c9b25"
@@ -1265,6 +1705,26 @@ record = "Architecture::edgeVerifierToStudio"
 axis = "meant"
 
 [[closed]]
+kappa = "0114ca3cb4e1e90a4233eb088f2398253c7273f9f18c4931bb69ad9f03b93b29"
+record = "Architecture::edgeVolunteerGatewayToCanvas"
+axis = "derived"
+
+[[closed]]
+kappa = "b5d411dc06acf445271e07f3e789d06baa33e90e6c21b12366be5b61b0df5fb4"
+record = "Architecture::edgeVolunteerGatewayToCanvas"
+axis = "derived"
+
+[[closed]]
+kappa = "00df725f053e7f9701b2766e1a8063cba74964445ac30f7c4dc1981fe59a196e"
+record = "Architecture::edgeVolunteerGatewayToCanvas"
+axis = "meant"
+
+[[closed]]
+kappa = "50be3d7e3f4539147e7b1ab6165cbafd3fbf75bbee6b78085e821dd08eb4e183"
+record = "Architecture::edgeVolunteerGatewayToCanvas"
+axis = "meant"
+
+[[closed]]
 kappa = "35fb8c7388e30e07bd13830a2eab6599dc6b47a15222e44acf305922a89ecb94"
 record = "Architecture::edgeWasmToStudio"
 axis = "derived"
@@ -1275,12 +1735,22 @@ record = "Architecture::edgeWasmToStudio"
 axis = "derived"
 
 [[closed]]
+kappa = "cca5365d6cc5eb51b40e4b4d045dbf1f2770dbd05cf663edb2a5d7badfe0f8d2"
+record = "Architecture::edgeWasmToStudio"
+axis = "derived"
+
+[[closed]]
 kappa = "f695086e02ab4f72e391cdb26499bef7360e8968375fe85e9bd6ebcab85f590c"
 record = "Architecture::edgeWasmToStudio"
 axis = "derived"
 
 [[closed]]
 kappa = "7a9a138bcce142d412b12f08b75072f463f291cd8dc298a6d6009009c9646251"
+record = "Architecture::edgeWasmToStudio"
+axis = "meant"
+
+[[closed]]
+kappa = "8fc180660684dafbee296ff308ae03f7d3207a6d557fa4312943cedf756cad92"
 record = "Architecture::edgeWasmToStudio"
 axis = "meant"
 
@@ -1305,9 +1775,39 @@ record = "Architecture::stakeholderBrowserPlayer"
 axis = "meant"
 
 [[closed]]
+kappa = "381d683da261eccd1d2d51fc05f6be8ca4db4ba8ce6cbd13300fb327cf136371"
+record = "Architecture::stakeholderCommunityHostOperator"
+axis = "derived"
+
+[[closed]]
+kappa = "9d836a0842873a10fc48458809a665be06637519a97a6f999d2020d289c14029"
+record = "Architecture::stakeholderCommunityHostOperator"
+axis = "derived"
+
+[[closed]]
+kappa = "32df9fbe5b762e834000961cc474d4dd458ce29250515fdb5f7a22ee10eef82b"
+record = "Architecture::stakeholderCommunityHostOperator"
+axis = "meant"
+
+[[closed]]
+kappa = "3f411b31127703c963f36beb5bfe99f75f434199093c9832f846f7cf982a4f3c"
+record = "Architecture::stakeholderCommunityHostOperator"
+axis = "meant"
+
+[[closed]]
+kappa = "0dd72dee33674ef1c0a56cda24be08724549324bb871f9f7b09c964b3a8f0285"
+record = "Architecture::stakeholderGameDeveloper"
+axis = "derived"
+
+[[closed]]
 kappa = "b4583fc2d8a1ef47d21faa4ca94d4899392da2d6cac8192f80bbd86810573f81"
 record = "Architecture::stakeholderGameDeveloper"
 axis = "derived"
+
+[[closed]]
+kappa = "9be24a81ee3bf5b71233cda72916edf56e60ec5de2cb3fedb80e69e0d701c6f0"
+record = "Architecture::stakeholderGameDeveloper"
+axis = "meant"
 
 [[closed]]
 kappa = "d434770ab4008bca69e1b1431013be6c72b5ce8de630699b47673f7ebebb1a9a"
@@ -1325,6 +1825,16 @@ record = "Architecture::stakeholderMultiplayerCitizen"
 axis = "derived"
 
 [[closed]]
+kappa = "f07c685243681c44739a013aead19577c1ba2b0f5fe49d7ace26d0990bd694d2"
+record = "Architecture::stakeholderMultiplayerCitizen"
+axis = "derived"
+
+[[closed]]
+kappa = "adfbc8dfa8130ceb794ee8ad15bafd912dad86dc42b916add770e06005806e7c"
+record = "Architecture::stakeholderMultiplayerCitizen"
+axis = "meant"
+
+[[closed]]
 kappa = "cf719fc4807f21aae9fbc93623579b57710c54f51da9a09bd5852348a58c7913"
 record = "Architecture::stakeholderMultiplayerCitizen"
 axis = "meant"
@@ -1333,6 +1843,11 @@ axis = "meant"
 kappa = "d598105081ea48a701dae33e34aca653cbb94ecca3880cb9f5954aac6387a584"
 record = "Architecture::stakeholderMultiplayerCitizen"
 axis = "meant"
+
+[[closed]]
+kappa = "99cf49f29150ba5483611f46f398a8703ca47352d525a8a4a6e1c7ac7a382f64"
+record = "Architecture::stakeholderProjectContributor"
+axis = "derived"
 
 [[closed]]
 kappa = "ce5a5c172fa235b79947d1e78abe71c2d3c37a39ff7793257801da6ddeb5a1c4"
@@ -1355,6 +1870,11 @@ record = "Architecture::stakeholderProjectContributor"
 axis = "meant"
 
 [[closed]]
+kappa = "e1014e190e178cacfb7cf4d193fbad1df21ef26189839c483ce4d1406b1a3b46"
+record = "Architecture::stakeholderProjectContributor"
+axis = "meant"
+
+[[closed]]
 kappa = "0287bcb30d735ad219a85f1a19614dd361a2823ae1b54878328d06d71fa5e9aa"
 record = "Architecture::stakeholderSecurityAuditor"
 axis = "derived"
@@ -1368,6 +1888,16 @@ axis = "derived"
 kappa = "1c53d4b7d3e68897b7e5fd9707d72128b9763da440c72a9ec6d9d5f67966f473"
 record = "Architecture::stakeholderSecurityAuditor"
 axis = "derived"
+
+[[closed]]
+kappa = "964cca3726ae393a946615f4f529476611edde39b635c923c158a752255b7f51"
+record = "Architecture::stakeholderSecurityAuditor"
+axis = "derived"
+
+[[closed]]
+kappa = "283aba06127f61419c65efeaf5572896c257deba5b177dbbca61e645af845309"
+record = "Architecture::stakeholderSecurityAuditor"
+axis = "meant"
 
 [[closed]]
 kappa = "7e8dcac0baa54de37e0f64ef4394d84d52c7d7646006479caccf0162f2c29f2c"
@@ -1395,6 +1925,11 @@ record = "Architecture::stakeholderSystemsEngineer"
 axis = "derived"
 
 [[closed]]
+kappa = "49d98b92af0c29cc9e9470f96d2480de855e5b4c6fe3a05221341c009e9acec0"
+record = "Architecture::stakeholderSystemsEngineer"
+axis = "derived"
+
+[[closed]]
 kappa = "4a9f17926144d50ba6e4a9ec4c2a149e666c667057fa27d7ca8dc0d87519b46d"
 record = "Architecture::stakeholderSystemsEngineer"
 axis = "derived"
@@ -1415,6 +1950,11 @@ record = "Architecture::stakeholderSystemsEngineer"
 axis = "meant"
 
 [[closed]]
+kappa = "e38300b364b3c7ec069faf2105b1a203e93e7d54ba14f6ab2785700f352f09de"
+record = "Architecture::stakeholderSystemsEngineer"
+axis = "meant"
+
+[[closed]]
 kappa = "23e04dd7b13c51390cf72ed060555fac9b41fabebe4e03f97a385a171c00ca6b"
 record = "Architecture::stakeholderTechnicalArtist"
 axis = "derived"
@@ -1425,9 +1965,19 @@ record = "Architecture::stakeholderTechnicalArtist"
 axis = "derived"
 
 [[closed]]
+kappa = "5770dea4b1151f2c804af150741e5b08dfd28e1713401fe6ad685dc48b362354"
+record = "Architecture::stakeholderTechnicalArtist"
+axis = "derived"
+
+[[closed]]
 kappa = "e15979eea2712e3a6fe82b51a18a625f404422d93b940461757163f191769023"
 record = "Architecture::stakeholderTechnicalArtist"
 axis = "derived"
+
+[[closed]]
+kappa = "c5b37bee96db968b0fb184f62ba75b9a1782ca8e764e41f25add91d560ce3f8a"
+record = "Architecture::stakeholderTechnicalArtist"
+axis = "meant"
 
 [[closed]]
 kappa = "d2e68ab92fbccd46feefb0fb453cc8d5f1ed43e4cea7609904c2213d615cb14b"
@@ -1460,7 +2010,17 @@ record = "Architecture::stakeholderUiComplianceArchitect"
 axis = "derived"
 
 [[closed]]
+kappa = "54c504d24e6ef174d1d22d08d6738947b92a8bd9fb3223bc0833087958e093d8"
+record = "Architecture::stakeholderUiComplianceArchitect"
+axis = "derived"
+
+[[closed]]
 kappa = "44ff05d925cd4024793a0160788b19419bd6bc646a0a2aaadedf06ace33d6dcc"
+record = "Architecture::stakeholderUiComplianceArchitect"
+axis = "meant"
+
+[[closed]]
+kappa = "83ee051797f0fd50e6c2091e4565313c306533daf1d11f26f378661fbc598dc4"
 record = "Architecture::stakeholderUiComplianceArchitect"
 axis = "meant"
 
@@ -1483,6 +2043,16 @@ axis = "derived"
 kappa = "c1761e68ade2ea1a8dda2229b2486e6977e9cedee2c1d249113b05d3c7c666d4"
 record = "Architecture::stakeholderVerdantAdmin"
 axis = "derived"
+
+[[closed]]
+kappa = "d2023362cc5f4300d7f092ce700898de9f4a48eca421f8fd8d7eabded85c24d1"
+record = "Architecture::stakeholderVerdantAdmin"
+axis = "derived"
+
+[[closed]]
+kappa = "39ea0d89359a76e9fe3b10060f98dcac9c980192b2d29c738193e59eed84ab80"
+record = "Architecture::stakeholderVerdantAdmin"
+axis = "meant"
 
 [[closed]]
 kappa = "4d484e1fdab10f5313253ede14611918728fcd8c89d61650134a5af63454769f"
@@ -1625,12 +2195,37 @@ record = "Architecture::viewCitizenStitchMesh"
 axis = "meant"
 
 [[closed]]
+kappa = "5d5b62d6cd2a72513020db4db6d74ed971a82256e4f492371fbc1ac757fd0a2f"
+record = "Architecture::viewCommunityHostAvailability"
+axis = "derived"
+
+[[closed]]
+kappa = "f375b24a06372713abc904ed5d0d182f6972dd6ea8cce55dad58a34e9d91f204"
+record = "Architecture::viewCommunityHostAvailability"
+axis = "derived"
+
+[[closed]]
+kappa = "1b2c0ff5d21cc09fe4388aadc1f429a93adb51f51ce264bf74a2e30626223496"
+record = "Architecture::viewCommunityHostAvailability"
+axis = "meant"
+
+[[closed]]
+kappa = "3b3ad3251afa998ef803f0e70f9b23d68a7d9afeeb00b2dd7f5dbe64787a6dce"
+record = "Architecture::viewCommunityHostAvailability"
+axis = "meant"
+
+[[closed]]
 kappa = "0ff014d588c7696e6a04d1465017bb4217b05c17bf40743bc7e5f27274a312e0"
 record = "Architecture::viewContributorSigningCoordination"
 axis = "derived"
 
 [[closed]]
 kappa = "60ffa67f1c85c58e4532e63cd8738296c933cfef540a1622d3bf395db7937403"
+record = "Architecture::viewContributorSigningCoordination"
+axis = "derived"
+
+[[closed]]
+kappa = "b7b9d5af89f0a2f30e3b1b501f82e956bdbed01e864fc1db198fc0332b6e7d31"
 record = "Architecture::viewContributorSigningCoordination"
 axis = "derived"
 
@@ -1645,7 +2240,17 @@ record = "Architecture::viewContributorSigningCoordination"
 axis = "meant"
 
 [[closed]]
+kappa = "ac9cf1c0c61e843faa034179b4b51777a96528b7a90507b3c6cfd99150111679"
+record = "Architecture::viewContributorSigningCoordination"
+axis = "meant"
+
+[[closed]]
 kappa = "3550527fdda9e4d5540bfacda27da400a94e694f002ca21856582ccfddd8ee55"
+record = "Architecture::viewDeveloperLawfulWorld"
+axis = "derived"
+
+[[closed]]
+kappa = "70d2e81b3d339bd3c1b00938425c717869c6aabcbff49cec67a78fd33c21b07a"
 record = "Architecture::viewDeveloperLawfulWorld"
 axis = "derived"
 
@@ -1675,12 +2280,22 @@ record = "Architecture::viewDeveloperLawfulWorld"
 axis = "meant"
 
 [[closed]]
+kappa = "4fcfdf743c0a7e6e16de11324b96c8a71fea63e2f6e5f356c4309bfeb7049edb"
+record = "Architecture::viewDeveloperLawfulWorld"
+axis = "meant"
+
+[[closed]]
 kappa = "188d88e3105ec8931e03e46762fedbabd3e290c5a646146e03718c2250debc9b"
 record = "Architecture::viewDeveloperOnboarding"
 axis = "derived"
 
 [[closed]]
 kappa = "3db8ab13b392674deb1f9e32b27e868d1f9382ab64dd590f345ed2ef294e510a"
+record = "Architecture::viewDeveloperOnboarding"
+axis = "derived"
+
+[[closed]]
+kappa = "617be88072aa45a6ca8978319256cf0292ebbf53a51d3061f31b241f37764b9f"
 record = "Architecture::viewDeveloperOnboarding"
 axis = "derived"
 
@@ -1696,6 +2311,11 @@ axis = "derived"
 
 [[closed]]
 kappa = "89668b23516a1d5430704a91a4e0314479dfba39ca1668aecf6b63e604154a0c"
+record = "Architecture::viewDeveloperOnboarding"
+axis = "meant"
+
+[[closed]]
+kappa = "9a96ad66d584a677182675289815f3ce548e7d2c719af0054c301eaaf2730910"
 record = "Architecture::viewDeveloperOnboarding"
 axis = "meant"
 
@@ -1730,6 +2350,11 @@ record = "Architecture::viewPlayerAccessibility"
 axis = "derived"
 
 [[closed]]
+kappa = "d1ffb5c18d423240fcea08b5c0ceee1f456bcb41ff85a974e0c703f480f5b63f"
+record = "Architecture::viewPlayerAccessibility"
+axis = "derived"
+
+[[closed]]
 kappa = "e26beb0a401a6e13080b772e3af83477ab99569f8405ed0e58a1ab2b4637cc40"
 record = "Architecture::viewPlayerAccessibility"
 axis = "derived"
@@ -1745,6 +2370,11 @@ record = "Architecture::viewPlayerAccessibility"
 axis = "meant"
 
 [[closed]]
+kappa = "65337a695064b907d7b6a23d49f470f06b62995602e4cc47a5c9de7c432af22b"
+record = "Architecture::viewPlayerAccessibility"
+axis = "meant"
+
+[[closed]]
 kappa = "7d40118e139e7637ca918d4eb4e8b5154f51fe03d0dafc6fa533c00bf39772fe"
 record = "Architecture::viewPlayerAccessibility"
 axis = "meant"
@@ -1756,6 +2386,11 @@ axis = "meant"
 
 [[closed]]
 kappa = "482de27e4d6d097d6486ffe2883a3b92bd7ea86d10d30fee28c57181f36d8a01"
+record = "Architecture::viewPlayerCybernetics"
+axis = "derived"
+
+[[closed]]
+kappa = "5d3e65a6f8a2f50a7df860ca6cac5270a1e2a8a42b6b7d4f1e2706db071ef2e2"
 record = "Architecture::viewPlayerCybernetics"
 axis = "derived"
 
@@ -1795,6 +2430,11 @@ record = "Architecture::viewPlayerCybernetics"
 axis = "meant"
 
 [[closed]]
+kappa = "d4166e5f49f3c93a74f153ecf2c79c1305fe9df81ab7a36f4a2aa792d3f20fa4"
+record = "Architecture::viewPlayerCybernetics"
+axis = "meant"
+
+[[closed]]
 kappa = "1b034bc9ac4e11d27c120eb94dc68e3449061afcc34639c9181fac6ab4cd8812"
 record = "Architecture::viewPlayerLawfulWorld"
 axis = "derived"
@@ -1805,12 +2445,22 @@ record = "Architecture::viewPlayerLawfulWorld"
 axis = "derived"
 
 [[closed]]
+kappa = "940a3dec5ba56960252b1dd4e491527eaf1b00d7a60de1390ba7dab6c3f6f5a4"
+record = "Architecture::viewPlayerLawfulWorld"
+axis = "derived"
+
+[[closed]]
 kappa = "0ecf121cca691e7de7952ad0dc54fbe2685ae0f19683971e6d060ed02af8e98e"
 record = "Architecture::viewPlayerLawfulWorld"
 axis = "meant"
 
 [[closed]]
 kappa = "9aa41480e2f0401fbdff0c5d46c48dc484f25e57d9baa21b28cb28c259080c30"
+record = "Architecture::viewPlayerLawfulWorld"
+axis = "meant"
+
+[[closed]]
+kappa = "cf94a7f381f9a5821667ba424e008ee1d936dd8536c75a1937fe87a9789056db"
 record = "Architecture::viewPlayerLawfulWorld"
 axis = "meant"
 
@@ -1835,12 +2485,22 @@ record = "Architecture::viewSystemsPerformance"
 axis = "derived"
 
 [[closed]]
+kappa = "c8661a270cc35813bb6d4e36ae9b5516bfccd106bc68f86e7c8ae3c5d30d86e0"
+record = "Architecture::viewSystemsPerformance"
+axis = "derived"
+
+[[closed]]
 kappa = "03d5ad594b472d7aef72d5948b5490b3129fbd863cdd1a902bd18832ebca8054"
 record = "Architecture::viewSystemsPerformance"
 axis = "meant"
 
 [[closed]]
 kappa = "5b7c50279a1f41bc53084ca47de54d73e6dcac39f596e8c605775ba69b7128ee"
+record = "Architecture::viewSystemsPerformance"
+axis = "meant"
+
+[[closed]]
+kappa = "9a550bca69f20aba8534e9627f8b89e0b3efc3c1a5ee743e9e3d984e7fe7fb31"
 record = "Architecture::viewSystemsPerformance"
 axis = "meant"
 
@@ -1856,6 +2516,11 @@ axis = "meant"
 
 [[closed]]
 kappa = "09150df28a015555eae233ff76fee4dbd55f3aad475365e5dcd112e267ca132e"
+record = "Architecture::viewSystemsTensorStreaming"
+axis = "derived"
+
+[[closed]]
+kappa = "2ba3ef38626fc0cb81a24367839aa7fc257a8ccc1d9be2f6562ab497ac5cfc52"
 record = "Architecture::viewSystemsTensorStreaming"
 axis = "derived"
 
@@ -1890,6 +2555,11 @@ record = "Architecture::viewSystemsTensorStreaming"
 axis = "meant"
 
 [[closed]]
+kappa = "bfda9098ad0bf23ffb4b3f5e5752482d67f7005e15386dfaa38ab3f629b4a5f4"
+record = "Architecture::viewSystemsTensorStreaming"
+axis = "meant"
+
+[[closed]]
 kappa = "deffb52d632aac7ddb1532c1d1ba9f8b8df8ede6c667fa45c87b59d661d914bf"
 record = "Architecture::viewSystemsTensorStreaming"
 axis = "meant"
@@ -1910,9 +2580,19 @@ record = "Architecture::viewUiCompliance"
 axis = "derived"
 
 [[closed]]
+kappa = "b1c97f0f879e709fa2c1917994a9dc01b515d4eacb469aaec439f2bf5df58574"
+record = "Architecture::viewUiCompliance"
+axis = "derived"
+
+[[closed]]
 kappa = "e12af677cacc54f1e241ec2a6998d1103d01c00915f9526f1869c200a3ff9576"
 record = "Architecture::viewUiCompliance"
 axis = "derived"
+
+[[closed]]
+kappa = "0eb751068ac079ceec4e04abb8027eb6e27a1f788dbb0d92f7304d82cb8e0ce6"
+record = "Architecture::viewUiCompliance"
+axis = "meant"
 
 [[closed]]
 kappa = "161608a45a23545df339ed2977cd56e8b01b5c0e3c0fe42b626658632aa54b99"
@@ -1935,6 +2615,11 @@ record = "Architecture::viewUiCompliance"
 axis = "meant"
 
 [[closed]]
+kappa = "1096bfc47e0a7c87599dccddff21fe651449b721557316a55d5ffb4678ea698d"
+record = "Architecture::viewpointAdminSovereignAuthority"
+axis = "derived"
+
+[[closed]]
 kappa = "96b979d719cbaf558d26772205d706bd91affa1f6cdc75556782572e23ee2afd"
 record = "Architecture::viewpointAdminSovereignAuthority"
 axis = "derived"
@@ -1945,6 +2630,11 @@ record = "Architecture::viewpointAdminSovereignAuthority"
 axis = "derived"
 
 [[closed]]
+kappa = "60bd7f6b1cae539bd687427bd2975b51a0b9c758848ac99c00974ad7179ee076"
+record = "Architecture::viewpointAdminSovereignAuthority"
+axis = "meant"
+
+[[closed]]
 kappa = "9ba1b33d82f1f36c1884f7a6063c3c4fe9b6841076cafb274432844d81473149"
 record = "Architecture::viewpointAdminSovereignAuthority"
 axis = "meant"
@@ -1953,6 +2643,11 @@ axis = "meant"
 kappa = "ec03bec89e4af0a903729e93604ef7830715d03d1ff061fb5714ac81518ea877"
 record = "Architecture::viewpointAdminSovereignAuthority"
 axis = "meant"
+
+[[closed]]
+kappa = "42cf015aa21b9e68a271ed103929707d948be51348fc5483a46fe8e743e49573"
+record = "Architecture::viewpointArtistStandards"
+axis = "derived"
 
 [[closed]]
 kappa = "4936ca0e541bc915cc1e0c2ddd6d3e61711e661a81e27d28e28c57f14d5a26f5"
@@ -1990,6 +2685,11 @@ record = "Architecture::viewpointArtistStandards"
 axis = "meant"
 
 [[closed]]
+kappa = "7a2242a9e4f0709282273efd4463dd3e477e654a297ad984aa6723e8f15f0045"
+record = "Architecture::viewpointArtistStandards"
+axis = "meant"
+
+[[closed]]
 kappa = "ce2e58dd460b29ccc850213c03fbaf5a58ebf6eab7dc16df7aad1c1bdac5cff0"
 record = "Architecture::viewpointArtistStandards"
 axis = "meant"
@@ -2015,6 +2715,16 @@ record = "Architecture::viewpointAuditorIntegrity"
 axis = "derived"
 
 [[closed]]
+kappa = "ff727f05291ea3f7fc3a35d7237f12053922d745e0aadcfc22d80ce21d84ee3d"
+record = "Architecture::viewpointAuditorIntegrity"
+axis = "derived"
+
+[[closed]]
+kappa = "19764628e61ff81da9bc1b61ff7f0205c8dc48f4a5e3c373c963c0d93254bbe6"
+record = "Architecture::viewpointAuditorIntegrity"
+axis = "meant"
+
+[[closed]]
 kappa = "47b293861893a7c4acfd35d9568e7cd690d8da892483818f8aeea88bf6c44428"
 record = "Architecture::viewpointAuditorIntegrity"
 axis = "meant"
@@ -2036,6 +2746,11 @@ axis = "meant"
 
 [[closed]]
 kappa = "4eabd907c8302f5f349522ce0ecd51ba06d71adf717cbab4e53841acacb5ea76"
+record = "Architecture::viewpointCitizenStitchMesh"
+axis = "derived"
+
+[[closed]]
+kappa = "6d58f7386f631eca3dc94f0d90409415a792ff8b7e4240d8632f0b5c6bd7df8c"
 record = "Architecture::viewpointCitizenStitchMesh"
 axis = "derived"
 
@@ -2065,6 +2780,11 @@ record = "Architecture::viewpointCitizenStitchMesh"
 axis = "meant"
 
 [[closed]]
+kappa = "4a46244619f50114f54d80254a60591ef9ca6426336ab079850ad79bafda4071"
+record = "Architecture::viewpointCitizenStitchMesh"
+axis = "meant"
+
+[[closed]]
 kappa = "b8e66d4e59e1393b477de056dd71eb5e72f227f2855aeb65fd9f2f076065aa24"
 record = "Architecture::viewpointCitizenStitchMesh"
 axis = "meant"
@@ -2075,6 +2795,31 @@ record = "Architecture::viewpointCitizenStitchMesh"
 axis = "meant"
 
 [[closed]]
+kappa = "4a68d037fd2d5bb6c875fcd693457aaa6090f3651b597a1e50e0e577491149ff"
+record = "Architecture::viewpointCommunityHostAvailability"
+axis = "derived"
+
+[[closed]]
+kappa = "de3701f99d1400c15c6a1b74d3710f9b21dd4df6953420c8f5f8892f3ff411b0"
+record = "Architecture::viewpointCommunityHostAvailability"
+axis = "derived"
+
+[[closed]]
+kappa = "81bfb8264b0f5e2a029b5a053f30c2f0d074cd5f6430af863165b473f14c536a"
+record = "Architecture::viewpointCommunityHostAvailability"
+axis = "meant"
+
+[[closed]]
+kappa = "eea20b3d3ec8569fed5f2996965b1c576522d82dee1446658b85da208fe89701"
+record = "Architecture::viewpointCommunityHostAvailability"
+axis = "meant"
+
+[[closed]]
+kappa = "364dbbed9897f00287f2e199a11674fad570309b2bd0913e0e171bdd71913a9d"
+record = "Architecture::viewpointContributorSigningCoordination"
+axis = "derived"
+
+[[closed]]
 kappa = "cc6e96a6c97a0ca2c13072602c5c8a583e69b498c4a3ee29b21872e8c38920ef"
 record = "Architecture::viewpointContributorSigningCoordination"
 axis = "derived"
@@ -2083,6 +2828,11 @@ axis = "derived"
 kappa = "dac0d1c5a7f950ec1492afa884ed02f0a8a0ce59afa473f0b76c7b8448325579"
 record = "Architecture::viewpointContributorSigningCoordination"
 axis = "derived"
+
+[[closed]]
+kappa = "5b877c5229911df5e1b5d6d290b3eaf405836e841c638e37ce59704d28a75036"
+record = "Architecture::viewpointContributorSigningCoordination"
+axis = "meant"
 
 [[closed]]
 kappa = "6e2f2e30a9188805daba8e5dd23946a6351ca90ef8bfe0828a55b431e86ee4d6"
@@ -2100,6 +2850,11 @@ record = "Architecture::viewpointDeveloperLawfulWorld"
 axis = "derived"
 
 [[closed]]
+kappa = "65ddecf11f6010523ee38ad4e9a4d6aa5c6e4c1b6db005980815b840d8194cc2"
+record = "Architecture::viewpointDeveloperLawfulWorld"
+axis = "derived"
+
+[[closed]]
 kappa = "aab324f4726f984a02771d044b9d377089b84eae7827360b451008e01e424efc"
 record = "Architecture::viewpointDeveloperLawfulWorld"
 axis = "derived"
@@ -2111,6 +2866,11 @@ axis = "derived"
 
 [[closed]]
 kappa = "1c321a00718d887d95385cf92f8f6cb569a6514b73fdc2d157654974d85cd2a8"
+record = "Architecture::viewpointDeveloperLawfulWorld"
+axis = "meant"
+
+[[closed]]
+kappa = "3aa8daabfd9ea3a7d69c15adb40794aa6fc1828661a674878fb157e1da856f2c"
 record = "Architecture::viewpointDeveloperLawfulWorld"
 axis = "meant"
 
@@ -2135,6 +2895,11 @@ record = "Architecture::viewpointDeveloperOnboarding"
 axis = "derived"
 
 [[closed]]
+kappa = "3421fac3ba90d0f97aa0a15be34a2c6a0d2ae9c837b5e509c1aec399c9db2c4f"
+record = "Architecture::viewpointDeveloperOnboarding"
+axis = "derived"
+
+[[closed]]
 kappa = "a8008badbc598e441fd9a388476526da29eb13b2b1f2457d18b03cdbe50f45e1"
 record = "Architecture::viewpointDeveloperOnboarding"
 axis = "derived"
@@ -2146,6 +2911,11 @@ axis = "derived"
 
 [[closed]]
 kappa = "2676bc82841ba8f452cb59005b77aeb269ec70fb7379922ad0169b41b7ea057c"
+record = "Architecture::viewpointDeveloperOnboarding"
+axis = "meant"
+
+[[closed]]
+kappa = "82b3708fd3965b483588daf903ae8e7d07fd710b3d13077fa143c752b1733726"
 record = "Architecture::viewpointDeveloperOnboarding"
 axis = "meant"
 
@@ -2175,6 +2945,11 @@ record = "Architecture::viewpointPlayerAccessibility"
 axis = "derived"
 
 [[closed]]
+kappa = "753d6a55613ea12817924dc3a5e230c1e03a5e4c5f156949ab698adc709dbfa7"
+record = "Architecture::viewpointPlayerAccessibility"
+axis = "derived"
+
+[[closed]]
 kappa = "82525ff1d223edae8ab3c00dbe2c3c8f9c864d8984d07e09156c01ad25e080d0"
 record = "Architecture::viewpointPlayerAccessibility"
 axis = "derived"
@@ -2196,6 +2971,11 @@ axis = "meant"
 
 [[closed]]
 kappa = "80d19c9d0cb0acf9d82af067844899b45e8808167c5f7a58f738d0447fa7306f"
+record = "Architecture::viewpointPlayerAccessibility"
+axis = "meant"
+
+[[closed]]
+kappa = "883e0b77cfc18baf8d20c90aaafa9efee11db7e8b79648bb7e00d99d54e97c66"
 record = "Architecture::viewpointPlayerAccessibility"
 axis = "meant"
 
@@ -2225,7 +3005,17 @@ record = "Architecture::viewpointPlayerCybernetics"
 axis = "derived"
 
 [[closed]]
+kappa = "ed5903c210295fd208210cb584babce59abf841d5bae5e924d11eb55a4a46411"
+record = "Architecture::viewpointPlayerCybernetics"
+axis = "derived"
+
+[[closed]]
 kappa = "067bbff1a97dd8f1305b785a108ca3f28d0b555f5cf79e607545924416e8d61c"
+record = "Architecture::viewpointPlayerCybernetics"
+axis = "meant"
+
+[[closed]]
+kappa = "5c9140cad28c647cc6f083220c7335c6180c0813574da76390cc2abd8bae2f55"
 record = "Architecture::viewpointPlayerCybernetics"
 axis = "meant"
 
@@ -2250,6 +3040,11 @@ record = "Architecture::viewpointPlayerLawfulWorld"
 axis = "derived"
 
 [[closed]]
+kappa = "54940153f6efb16e41e2c1cbc82f099f28392bd28416fdc7c50ace2670394cfe"
+record = "Architecture::viewpointPlayerLawfulWorld"
+axis = "derived"
+
+[[closed]]
 kappa = "c9404ab4f8ead7fcd50bc2fc12f5dc00e6f9ade22f1ff059c07037015db09cbe"
 record = "Architecture::viewpointPlayerLawfulWorld"
 axis = "derived"
@@ -2258,6 +3053,11 @@ axis = "derived"
 kappa = "e82767e62a7d55e089dd8532415407309180db336e0fb95c89ea2c3dacf3f98b"
 record = "Architecture::viewpointPlayerLawfulWorld"
 axis = "derived"
+
+[[closed]]
+kappa = "3e78d73c22c2ba888d36fe0d22926a70eca2dceded407091fff4c394e7a74f2f"
+record = "Architecture::viewpointPlayerLawfulWorld"
+axis = "meant"
 
 [[closed]]
 kappa = "93a2a21b2c5e6a94a1d671e903f788f145a46cee7246adf03059bebac9b85fe6"
@@ -2273,6 +3073,11 @@ axis = "meant"
 kappa = "e2e162d273d8ed44929dcec2842ce75da3f330c2d3518425e1d63ef4c5566484"
 record = "Architecture::viewpointPlayerLawfulWorld"
 axis = "meant"
+
+[[closed]]
+kappa = "23184cbc999e6afc53dcd836abc72b39735e1454a6180d3e39e0e279fcbfe8cf"
+record = "Architecture::viewpointSystemsPerformance"
+axis = "derived"
 
 [[closed]]
 kappa = "43d1919cb7cc19b554626f6fba5d4e15618b26177d24133d1b99d6d15bb2ed1e"
@@ -2310,6 +3115,11 @@ record = "Architecture::viewpointSystemsPerformance"
 axis = "meant"
 
 [[closed]]
+kappa = "d55e6a2f759d093c145738e9aea85c91cf631d052c1ac4d21e7d404a1c39010f"
+record = "Architecture::viewpointSystemsPerformance"
+axis = "meant"
+
+[[closed]]
 kappa = "f75bc75b054647a33588266746fac3036b438eb91a83f63cf179066683d257f5"
 record = "Architecture::viewpointSystemsPerformance"
 axis = "meant"
@@ -2325,6 +3135,11 @@ record = "Architecture::viewpointSystemsTensorStreaming"
 axis = "derived"
 
 [[closed]]
+kappa = "b4977fd23a076da16fbb0fc7e704a0bfc207476e6f15dca739c09d5e2d84b450"
+record = "Architecture::viewpointSystemsTensorStreaming"
+axis = "derived"
+
+[[closed]]
 kappa = "e55bc6598af5949f96a956b22f28727e743ea83332bb38c7afc68b4774aee5f9"
 record = "Architecture::viewpointSystemsTensorStreaming"
 axis = "derived"
@@ -2336,6 +3151,11 @@ axis = "derived"
 
 [[closed]]
 kappa = "178e78f0182c0c088139e6b6e69b8d9b65e549191a07ac62a5bd8dfdb1c64319"
+record = "Architecture::viewpointSystemsTensorStreaming"
+axis = "meant"
+
+[[closed]]
+kappa = "7982eecad0bb3b4c2b7e389ddd5db0cd0d204676b277c14ca6681aa45148fdbc"
 record = "Architecture::viewpointSystemsTensorStreaming"
 axis = "meant"
 
@@ -2370,12 +3190,22 @@ record = "Architecture::viewpointUiCompliance"
 axis = "derived"
 
 [[closed]]
+kappa = "d69e8644f2c5361768c0ce35009a528e0c6b4370787a3dffb0cfcbdcab2e32ac"
+record = "Architecture::viewpointUiCompliance"
+axis = "derived"
+
+[[closed]]
 kappa = "efc6717098d60ca13d66dd8048b957db4d1a16955208793f3e8307e1641e808b"
 record = "Architecture::viewpointUiCompliance"
 axis = "derived"
 
 [[closed]]
 kappa = "05bdd77aa4aa18893538b419196a0756a8c352bf7c21442d7823071de8dd51ea"
+record = "Architecture::viewpointUiCompliance"
+axis = "meant"
+
+[[closed]]
+kappa = "9f4fa00db149e5a768c6f86d41abf9fe152af6baa386cd477f637b1f54660bca"
 record = "Architecture::viewpointUiCompliance"
 axis = "meant"
 
@@ -3120,6 +3950,16 @@ record = "Compliance::obligations#10"
 axis = "meant"
 
 [[closed]]
+kappa = "4ffbc77e954f14f7bdb6d0eee28b87d73ee90713c655d8d07a3cca7fb98ddda7"
+record = "Compliance::obligations#11"
+axis = "derived"
+
+[[closed]]
+kappa = "e7d0ec80fb71acd8dbb72c6e8a1f0635c71542cdf2b42366ad71859945b18ab3"
+record = "Compliance::obligations#11"
+axis = "meant"
+
+[[closed]]
 kappa = "cc55b19ba266b74ad91c7831861b566d6dad6d22ae3778d162b45b745ffaf306"
 record = "Compliance::obligations#2"
 axis = "derived"
@@ -3280,6 +4120,16 @@ record = "Design::opmAuthorityLedgerObject"
 axis = "meant"
 
 [[closed]]
+kappa = "071f830e03e6b906ef63957cb30b2f9bbf44bd3ef1764a7f3e3d96794780961a"
+record = "Design::opmBootOfflineProcess"
+axis = "derived"
+
+[[closed]]
+kappa = "31b911401c8f16d8358fa32307259a5d6202b8992a3ef1c515c5e09edffb5b30"
+record = "Design::opmBootOfflineProcess"
+axis = "meant"
+
+[[closed]]
 kappa = "7cbd4a8adc4e361cc0ab1b6ba6d6314e6d368083ecd7f3e552d39ef1c63d55ca"
 record = "Design::opmBuildScene"
 axis = "derived"
@@ -3410,6 +4260,26 @@ record = "Design::opmLawfulWasmHost"
 axis = "meant"
 
 [[closed]]
+kappa = "28c12f4cf1c2d7c11235caedb07007e6c88057ed0d4a6dcbb7db0a24c8adccbf"
+record = "Design::opmLayer5SwarmObject"
+axis = "derived"
+
+[[closed]]
+kappa = "d9e7168e8c7a9b09d14af98f43e496929758b642549f710f87fe1e12f7731eb9"
+record = "Design::opmLayer5SwarmObject"
+axis = "meant"
+
+[[closed]]
+kappa = "dc4ede7a4346db4d2bf06b0e73250e87900e341189cff42b1569185d1ef32670"
+record = "Design::opmOfflineEnvelopeObject"
+axis = "derived"
+
+[[closed]]
+kappa = "e5312658914ef4dfa05b3f158c313e8d409abaf30802bffc08d501b1083094ba"
+record = "Design::opmOfflineEnvelopeObject"
+axis = "meant"
+
+[[closed]]
 kappa = "13bad9a6cf8edd1e6f9049d33d268f4bee2c985f0df0a5424e86cc6709d7dae8"
 record = "Design::opmReviewAndSignProcess"
 axis = "derived"
@@ -3457,6 +4327,46 @@ axis = "derived"
 [[closed]]
 kappa = "87b46f3127141cbf794d78450a3bb684c510ddf469ba32c16db8e9f28a5f9a6d"
 record = "Design::opmSceneAtProxy"
+axis = "meant"
+
+[[closed]]
+kappa = "57c35e71d53c73b9d008eaa5c46a4c5560ac9516397a37f3037523195819daef"
+record = "Design::opmServeFeedsOffline"
+axis = "derived"
+
+[[closed]]
+kappa = "835367c10a5336a92fab1376af9c27375e4cd9c953a8d0f2186d25b20e388296"
+record = "Design::opmServeFeedsOffline"
+axis = "meant"
+
+[[closed]]
+kappa = "59f9c7499d6cb56e42f444a1b33b89b1265bd4a623a52e3c18174b1c2c1e8b92"
+record = "Design::opmServeGatewayProcess"
+axis = "derived"
+
+[[closed]]
+kappa = "0d0b8b84d1d68d8523a6b49bab4d77ddb7c64825d033877616831439fc1d74b9"
+record = "Design::opmServeGatewayProcess"
+axis = "meant"
+
+[[closed]]
+kappa = "c0ccb42f9df060ef2b1bdfd0fb232c0e7a2b79f85243ff6924f4200fe6a528e9"
+record = "Design::opmSignalInvokesServe"
+axis = "derived"
+
+[[closed]]
+kappa = "07ecc2fb20cecad25fbe84cdc9ef0cd606a5f72674d3fb21434d990f57135844"
+record = "Design::opmSignalInvokesServe"
+axis = "meant"
+
+[[closed]]
+kappa = "f3d27b1d5df089f448a0d12fe15d04d779fc9cc0990507ea4b8a3050b2412623"
+record = "Design::opmSignalSwarmProcess"
+axis = "derived"
+
+[[closed]]
+kappa = "10ddc69f0f8df3ff302c1b55511bc98a6f74d97e170a8bbb7e7fb18c1b1d9e49"
+record = "Design::opmSignalSwarmProcess"
 axis = "meant"
 
 [[closed]]
@@ -3540,6 +4450,16 @@ record = "Design::opmTensorsInvokeExport"
 axis = "meant"
 
 [[closed]]
+kappa = "0be2d754196428e844d1ac4bea9866d7ef775ec448ec9917f2517c44e9cbb41e"
+record = "Design::opmVolunteerGatewayObject"
+axis = "derived"
+
+[[closed]]
+kappa = "a8b4d04a9f80f457a2fb5ad11c56bed989b1aea92051bd58094232a2c93a6cd3"
+record = "Design::opmVolunteerGatewayObject"
+axis = "meant"
+
+[[closed]]
 kappa = "456947e44c09657b12df46207fe6988435d5c6baa871300dccadb73cbafa893c"
 record = "Design::opmZoomExport"
 axis = "derived"
@@ -3587,6 +4507,16 @@ axis = "derived"
 [[closed]]
 kappa = "4e15074a32ceea8ee166fc40b55c783f379ec75c8dbfd7d31710feb3d0a70c28"
 record = "Design::processAdvanceStoryConservation"
+axis = "meant"
+
+[[closed]]
+kappa = "407cef8e3992f985541757794a5964617dd8f62838d79a71dfb06a5dbc9d79d7"
+record = "Design::processBootOfflinePortable"
+axis = "derived"
+
+[[closed]]
+kappa = "3ae0c6eda62245cf98d8ab6d3365221c1fd9ccf1119d013337c96c1c1f017373"
+record = "Design::processBootOfflinePortable"
 axis = "meant"
 
 [[closed]]
@@ -3667,6 +4597,26 @@ axis = "derived"
 [[closed]]
 kappa = "e6cd8a0fe37211b7a4999585bb9bcc4eb47f5a7871bf6dcec65990ab44a3d6d0"
 record = "Design::processRevokeDepartedAdmin"
+axis = "meant"
+
+[[closed]]
+kappa = "8948666649d2bc668aa812422b172784af70a1faa2150fa637c90ed6e128b277"
+record = "Design::processServeVolunteerGateway"
+axis = "derived"
+
+[[closed]]
+kappa = "77d8202c9e72a3276eba2d0caef1d7fdf77a3367fb7788d3f4a21df647fa0ce5"
+record = "Design::processServeVolunteerGateway"
+axis = "meant"
+
+[[closed]]
+kappa = "a532fe49e96b8db532bed80ae56ff00e6e6db6174d433fa8bd73aba16ac903c0"
+record = "Design::processSignalStitchSwarm"
+axis = "derived"
+
+[[closed]]
+kappa = "fe74fdf51d8b13655b457a43e6e1691cc7e1c656ac0dad1dd6e2073a8c8b2d9f"
+record = "Design::processSignalStitchSwarm"
 axis = "meant"
 
 [[closed]]
@@ -3857,6 +4807,66 @@ axis = "derived"
 [[closed]]
 kappa = "d07c1e389209d3cc0048c1200cfeeef1c34381535869bc3cc055a4cf1e4af86e"
 record = "Design::seqStudio"
+axis = "meant"
+
+[[closed]]
+kappa = "c21fbcab08a6ab90e110bba701700c28d4726467e03f05c3273e25339b69efc0"
+record = "Design::seqSwarmAnnounce"
+axis = "derived"
+
+[[closed]]
+kappa = "a9b993224fe8a2f290877ad0da80d768819bfca97408b1ffa48985d2095a2976"
+record = "Design::seqSwarmAnnounce"
+axis = "meant"
+
+[[closed]]
+kappa = "36630082c8a1bcb7d530156fa600f58714f3163bcee9b26422fa2de5b6877bc8"
+record = "Design::seqSwarmFetchFallback"
+axis = "derived"
+
+[[closed]]
+kappa = "719487b3bfb2a5eae1d47e95a94ad567a1a344f2124d9e1ed1dcf6f79bbf9dc1"
+record = "Design::seqSwarmFetchFallback"
+axis = "meant"
+
+[[closed]]
+kappa = "1f3ff4a0945187081050a14d5deffd65994a1332536c0a1e2e173fe8cd57a3ab"
+record = "Design::seqSwarmGateway"
+axis = "derived"
+
+[[closed]]
+kappa = "b1497ab05d8cf49459d29e5fc7ff614bf0fe1901f95702d3b8958439790c9fb5"
+record = "Design::seqSwarmGateway"
+axis = "meant"
+
+[[closed]]
+kappa = "0a4dc93e0ed9fb1f301abec0c8ec3c5534a53a17a4e179db6d0d618ba632c32b"
+record = "Design::seqSwarmRelay"
+axis = "derived"
+
+[[closed]]
+kappa = "e48377cfedc28b39afdf562edf9e18938edf669c648c25b3c2d18e4b22a0a971"
+record = "Design::seqSwarmRelay"
+axis = "meant"
+
+[[closed]]
+kappa = "57c7c84b53433ab3df10ceb563c95fbc494c62e0fea2cd201d1f3165cb37e635"
+record = "Design::seqSwarmStudio"
+axis = "derived"
+
+[[closed]]
+kappa = "dfa0d2d6c0e67ced6a6a4f157a281a149c1f2ec6ad8fbf04dfefed7cb718fff9"
+record = "Design::seqSwarmStudio"
+axis = "meant"
+
+[[closed]]
+kappa = "119df37f9155c7d7da0475b4c634e099eba9a129798395c1257ff95efa406d5d"
+record = "Design::seqSwarmVerifyReply"
+axis = "derived"
+
+[[closed]]
+kappa = "92b94e8055119b78217dcd0dd5e58d41244ecd2fe81e151eebf947891563256e"
+record = "Design::seqSwarmVerifyReply"
 axis = "meant"
 
 [[closed]]
@@ -4090,6 +5100,16 @@ record = "Design::umlCliExamples"
 axis = "meant"
 
 [[closed]]
+kappa = "0ed0cbeb1529cc19f7d37e08071f815eee93c211f720e14f7108ee34710055ec"
+record = "Design::umlCliToVolunteerGateway"
+axis = "derived"
+
+[[closed]]
+kappa = "acf694441344741fe8896cdee63ea64749107396e738f345ce1d6a80d5216366"
+record = "Design::umlCliToVolunteerGateway"
+axis = "meant"
+
+[[closed]]
 kappa = "54e00473c72a0aee53c2bace4bdc5defcf8de30da5ed7bcac5807a9b91133c7f"
 record = "Design::umlCoreToCli"
 axis = "derived"
@@ -4140,6 +5160,16 @@ record = "Design::umlEngineStudio"
 axis = "meant"
 
 [[closed]]
+kappa = "9dfb8786bc9fc85a20ef8b2fd1631da7cae2d7bbc03e047d6a3dc731355a8945"
+record = "Design::umlLayer5Swarm"
+axis = "derived"
+
+[[closed]]
+kappa = "14eabb4cbdc9fbd35fa67648066ea92df194f5f732863281fb3bb28e81fa5904"
+record = "Design::umlLayer5Swarm"
+axis = "meant"
+
+[[closed]]
 kappa = "f7ea63f3ad049b5ca9524a151c6fea4e5c142781172924620a6aee3fbbce6c7e"
 record = "Design::umlLedgerToStitch"
 axis = "derived"
@@ -4147,6 +5177,16 @@ axis = "derived"
 [[closed]]
 kappa = "aeab65be814825a33a9450ea7c8ed54d80669e52324decf29b9e74f4ff68b74c"
 record = "Design::umlLedgerToStitch"
+axis = "meant"
+
+[[closed]]
+kappa = "a31115ff5348ae738041a3ef824ce56d2c7a707e52b2321e26d91827aef38239"
+record = "Design::umlOfflineEnvelope"
+axis = "derived"
+
+[[closed]]
+kappa = "d71828c0b0032ef0572ec02b30f79451b10b72b56490b9a737485975ced82c4a"
+record = "Design::umlOfflineEnvelope"
 axis = "meant"
 
 [[closed]]
@@ -4197,6 +5237,26 @@ axis = "derived"
 [[closed]]
 kappa = "dd639ab2417084517b1cf3fc142f7c6966ff24166a1b3f64bff79dfff9047ff2"
 record = "Design::umlStudioToCanvas"
+axis = "meant"
+
+[[closed]]
+kappa = "0f4df283488d2d8aa21601306f46bd518d7befab72c0f962ca0f9c0eee9d06b1"
+record = "Design::umlStudioToLayer5Swarm"
+axis = "derived"
+
+[[closed]]
+kappa = "d30ae0d6373604a44af84f838e3337976f25a31d5c24c1498f7cd4bdd42a6268"
+record = "Design::umlStudioToLayer5Swarm"
+axis = "meant"
+
+[[closed]]
+kappa = "8ee6d90b93fc0bcc8b409c82a84b16fc971a5097a977edb7dbc830fd398b2afa"
+record = "Design::umlStudioToOfflineEnvelope"
+axis = "derived"
+
+[[closed]]
+kappa = "26f0abe0db8e09aad34acdd30b1c75210682dfe1c71f7fa1b4e5035549bc4a3a"
+record = "Design::umlStudioToOfflineEnvelope"
 axis = "meant"
 
 [[closed]]
@@ -4290,6 +5350,16 @@ record = "Design::umlVerifierToStudio"
 axis = "meant"
 
 [[closed]]
+kappa = "ca5a7c98052b53397f5e8d3aa9a558c75ca8415ea508111861c69abfefc90510"
+record = "Design::umlVolunteerGateway"
+axis = "derived"
+
+[[closed]]
+kappa = "49c8532358bb94a2e45c8c8ecf00a6285693bda1561157081aba66d827fc506e"
+record = "Design::umlVolunteerGateway"
+axis = "meant"
+
+[[closed]]
 kappa = "d560553ec0666ddb2d43c3921e9c762056395863cb61ef24cde307adccdbe7da"
 record = "Design::umlWasmToStudio"
 axis = "derived"
@@ -4340,6 +5410,16 @@ record = "Design::viewOpmSovereignSigningAndRevocation"
 axis = "meant"
 
 [[closed]]
+kappa = "bbd194e39048cf43473634432750aa7e6da8646ec0f87c9a111330bdab3b7208"
+record = "Design::viewOpmStitchSelfServing"
+axis = "derived"
+
+[[closed]]
+kappa = "9970a07471b004f281f1150bde3eb1508db70b24207a5c76f712a640963dd42d"
+record = "Design::viewOpmStitchSelfServing"
+axis = "meant"
+
+[[closed]]
 kappa = "8f3836d16769593487072cad9e7491f88a9a7c07d6a434acadd84667e62c6215"
 record = "Design::viewUmlAdminAuthorityLifecycle"
 axis = "derived"
@@ -4387,6 +5467,16 @@ axis = "derived"
 [[closed]]
 kappa = "ff6de846ab7f737e83fbe3355c4573fc201390718b983f44b558d04957fa6f2a"
 record = "Design::viewUmlStitchRollback"
+axis = "meant"
+
+[[closed]]
+kappa = "0120a84bc9e394f9db03538bac81aab00b4d0715a0b73a47c037a0d4deb71e3e"
+record = "Design::viewUmlStitchSwarmSignalingSequence"
+axis = "derived"
+
+[[closed]]
+kappa = "f416dcb9278d960d3f21cdaa52f997b9cc0c8029c47f9bfe8e7c904f8eb63a8b"
+record = "Design::viewUmlStitchSwarmSignalingSequence"
 axis = "meant"
 
 [[closed]]
@@ -6100,6 +7190,26 @@ record = "Features::featureSpatialAudio"
 axis = "meant"
 
 [[closed]]
+kappa = "acc0614cdd5208d2b13dc1fef6729ea6e1df5043b02fbf87f4d777433c826660"
+record = "Features::featureStitchLayer5PeerSeeding"
+axis = "derived"
+
+[[closed]]
+kappa = "c0011f6c6fc5a0791546a5f514bee51b724d96a8bdd9d8d9051b82f17dc600da"
+record = "Features::featureStitchLayer5PeerSeeding"
+axis = "derived"
+
+[[closed]]
+kappa = "87c7e23c07fd379f5af02082abc9dc103010d0c09b29da90ffd5bb8b7fe978c7"
+record = "Features::featureStitchLayer5PeerSeeding"
+axis = "meant"
+
+[[closed]]
+kappa = "8b548916c5661039692525aad0acc491ba65dfe7ed9782abcdd5b11948be88c1"
+record = "Features::featureStitchLayer5PeerSeeding"
+axis = "meant"
+
+[[closed]]
 kappa = "68b7193ccca90ef7b5d60af9c239b1b790a53fb5a80ed7cc3136dd3ebd967a93"
 record = "Features::featureStudioAndDocs"
 axis = "derived"
@@ -6120,6 +7230,26 @@ record = "Features::featureStudioAndDocs"
 axis = "meant"
 
 [[closed]]
+kappa = "9665b71fafd2ed06732592682160ba3bf0ed8094d5035e62c3ae01081bba46c2"
+record = "Features::featureVolunteerGatewayAndOfflineEnvelope"
+axis = "derived"
+
+[[closed]]
+kappa = "d710ee512a4362a661dbd3d1ccfd10c6648ff9bcdcd884652dda4a2d99e4e0c0"
+record = "Features::featureVolunteerGatewayAndOfflineEnvelope"
+axis = "derived"
+
+[[closed]]
+kappa = "683318f467c108170536513454ae4fc069e86505fafbbd5f58db7c7937ad9e96"
+record = "Features::featureVolunteerGatewayAndOfflineEnvelope"
+axis = "meant"
+
+[[closed]]
+kappa = "93567b6d725d73029a4434282c823ea3d3e5fd121085b4965aeb71c778ba2b2d"
+record = "Features::featureVolunteerGatewayAndOfflineEnvelope"
+axis = "meant"
+
+[[closed]]
 kappa = "137f4127ddd8da327fc7c254b57d3ae992989e51b7ca808b681ee59d99a6a1f0"
 record = "Features::journeyBrowserPlayer"
 axis = "derived"
@@ -6137,6 +7267,16 @@ axis = "meant"
 [[closed]]
 kappa = "6a37206cc33ab204053268e7727291645f2f1caa3555540390a82f0ffc9b1c55"
 record = "Features::journeyBrowserPlayer"
+axis = "meant"
+
+[[closed]]
+kappa = "f3ef3e27c3c4bb77a28be86bc36be82931954d4115048dfafb6f6774c4f19f73"
+record = "Features::journeyCommunityHostOperator"
+axis = "derived"
+
+[[closed]]
+kappa = "28399b510a2c1745787074ccaac48992643b40a099d2dc12233f2ad0667dcb10"
+record = "Features::journeyCommunityHostOperator"
 axis = "meant"
 
 [[closed]]
@@ -6950,6 +8090,26 @@ record = "Quality::measureNames#1"
 axis = "meant"
 
 [[closed]]
+kappa = "323b60114a839cde627e5b396f3349ffe3573c1539abaa9a15438eef9031e5e0"
+record = "Quality::measureNames#10"
+axis = "derived"
+
+[[closed]]
+kappa = "ea9c1d92be7ca17f5e5650eb6fd3d04d4fa66611fb6f6817914a40073adb7684"
+record = "Quality::measureNames#10"
+axis = "derived"
+
+[[closed]]
+kappa = "5fd7db3294c77b361bb02919217a34dceb8d623a866c3818c6669636d2f16e3f"
+record = "Quality::measureNames#10"
+axis = "meant"
+
+[[closed]]
+kappa = "a619752699d7085c65ce79b813118bcfc9ca06da2d0810e9c91297962e7a63cd"
+record = "Quality::measureNames#10"
+axis = "meant"
+
+[[closed]]
 kappa = "231046d6863627fb0f7b620eab369704f8655b08b918816a4cf1281da5d08593"
 record = "Quality::measureNames#2"
 axis = "derived"
@@ -7145,6 +8305,16 @@ record = "Quality::measureNames#8"
 axis = "derived"
 
 [[closed]]
+kappa = "e433875be3bb38133397049cfcb0bfee5e64c5378765ef4521d4f6a9ab216b1b"
+record = "Quality::measureNames#8"
+axis = "derived"
+
+[[closed]]
+kappa = "0fb2b3fcd5f88a72db1269f3bd7a6e112964d22b091f126dca95d4dfeb403bc2"
+record = "Quality::measureNames#8"
+axis = "meant"
+
+[[closed]]
 kappa = "1ab657ee4253fc6b8cbe10747dabee548fa3a8e62f34209c7037d49980996640"
 record = "Quality::measureNames#8"
 axis = "meant"
@@ -7158,6 +8328,11 @@ axis = "meant"
 kappa = "d618a1a0ea6f705af39b02bf955eff4300c1e8dc26b0aeb44a795777e394caa7"
 record = "Quality::measureNames#8"
 axis = "meant"
+
+[[closed]]
+kappa = "04fc6a389fba71d578e3be8eceb392103ae1fc7c40ff9dbd238fa522fc17a47e"
+record = "Quality::measureNames#9"
+axis = "derived"
 
 [[closed]]
 kappa = "84865fa672adb14c4f398b305a0a9dc2c25078a68b25ed344e923aff56a563d5"
@@ -7180,12 +8355,52 @@ record = "Quality::measureNames#9"
 axis = "meant"
 
 [[closed]]
+kappa = "f4a86286299a0513d48d04b64e0db060eb2508227ea029a8672b1e3a94f2223f"
+record = "Quality::measureNames#9"
+axis = "meant"
+
+[[closed]]
+kappa = "276b49a6e8fc21d115d3a43b52dfec9f0862c3f9c053234ae56a7d85adaa15c9"
+record = "Quality::measureSelfHostingPolicyViolations"
+axis = "derived"
+
+[[closed]]
+kappa = "bd004b1f5afe4b1e4e62a7f09a72af7fbdf63ba5ab6c81e967a15155c752afa6"
+record = "Quality::measureSelfHostingPolicyViolations"
+axis = "derived"
+
+[[closed]]
+kappa = "058e8d096aacee0b224e1ebc7f0072e7eeb5ef25baf35609d2761b2ec6b0a922"
+record = "Quality::measureSelfHostingPolicyViolations"
+axis = "meant"
+
+[[closed]]
+kappa = "3348d6665da936f917ee8436f5a68c82e4fe74c565745dceac5a2c9dc71ac9a8"
+record = "Quality::measureSelfHostingPolicyViolations"
+axis = "meant"
+
+[[closed]]
+kappa = "9659f709b2494f03ff80773ac616285a361dfe26d9f37d007d39173e4111b644"
+record = "Quality::measureSelfHostingPolicyViolations"
+axis = "measured"
+
+[[closed]]
+kappa = "9d524409e83a00484d4a7d5fb6bd518cb45ec63f88d35f3774c71eb7596bbdee"
+record = "Quality::measureSelfHostingPolicyViolations"
+axis = "measured"
+
+[[closed]]
 kappa = "566dc93fb551cbc4057a562969d0791195a100d40904fee3af484ba5eaf284d0"
 record = "Quality::measureUnverifiedEngineSubsystems"
 axis = "derived"
 
 [[closed]]
 kappa = "60a65508aabc90dd7f5199cc0572c05963716a498bfc44056eb01862c0d3baf0"
+record = "Quality::measureUnverifiedEngineSubsystems"
+axis = "derived"
+
+[[closed]]
+kappa = "679c166a83d72820e3b472e5f650ee750416e453cc9a87bbbe41b9edc4904996"
 record = "Quality::measureUnverifiedEngineSubsystems"
 axis = "derived"
 
@@ -7205,9 +8420,19 @@ record = "Quality::measureUnverifiedEngineSubsystems"
 axis = "meant"
 
 [[closed]]
+kappa = "b34742d90959ee4fd952de8fed0905295917410f8a0e1742435ab230deae9901"
+record = "Quality::measureUnverifiedEngineSubsystems"
+axis = "meant"
+
+[[closed]]
 kappa = "b7e8f17ac1876c2657ed3613df1df2efd6320fde55f3b12ad8034d3b547c0c00"
 record = "Quality::measureUnverifiedEngineSubsystems"
 axis = "meant"
+
+[[closed]]
+kappa = "10d1442f83cff3fc4da80abd9ac5618a72a1fbadc2dc312a09c913c1e6102f4f"
+record = "Quality::measureUnverifiedEngineSubsystems"
+axis = "measured"
 
 [[closed]]
 kappa = "127b49a90f720a3e63158bdfcfe5643df91a6c71caacee985be9dd040bf13351"
@@ -7235,12 +8460,22 @@ record = "Quality::measureVerifierRequestCapBytes"
 axis = "derived"
 
 [[closed]]
+kappa = "f3e4f5b78536eed66eaefac7149dcd9e49bfa925bc7a7901e21b0486fa315f17"
+record = "Quality::measureVerifierRequestCapBytes"
+axis = "derived"
+
+[[closed]]
 kappa = "f96308de625c6fc436bd4c34322a630605371795f889666dd27dbf3977c27a85"
 record = "Quality::measureVerifierRequestCapBytes"
 axis = "derived"
 
 [[closed]]
 kappa = "562ee4b2ee05f0f6d7b3ab09172365109e4c01b9ef5d23959c3a4f9e4559af22"
+record = "Quality::measureVerifierRequestCapBytes"
+axis = "meant"
+
+[[closed]]
+kappa = "83de843dafa5e8a74f3e6b2a12a55099baef00e8650e1536da645475c111d25e"
 record = "Quality::measureVerifierRequestCapBytes"
 axis = "meant"
 
@@ -7256,6 +8491,11 @@ axis = "meant"
 
 [[closed]]
 kappa = "31c11a4c69a4fa6c312563e1790146521c4260687ac9ecef2d64581a8d4e8f59"
+record = "Quality::measureVerifierRequestCapBytes"
+axis = "measured"
+
+[[closed]]
+kappa = "6fa2643fb7698bc745a817569b5b3da726c1dc9288227e04e92182bb1d586035"
 record = "Quality::measureVerifierRequestCapBytes"
 axis = "measured"
 
@@ -7417,6 +8657,16 @@ axis = "meant"
 [[closed]]
 kappa = "fd3856be3a0f3807f930f7f8956e8da2cc7f4b7e146b4eab3d20e9e67216f29e"
 record = "Quality::requirementNames#1"
+axis = "meant"
+
+[[closed]]
+kappa = "5f2d92e9a69d7503c23d24af4bd684ecd30b13a2040149a6e8da9c3ec60a6b42"
+record = "Quality::requirementNames#10"
+axis = "derived"
+
+[[closed]]
+kappa = "49c1a89d0cb17267b0bc41a2e78c888d5ac47b531a63cdf3682209085a6a1332"
+record = "Quality::requirementNames#10"
 axis = "meant"
 
 [[closed]]
@@ -7797,6 +9047,16 @@ axis = "meant"
 [[closed]]
 kappa = "b38309453134d9a8ffbbbf602660b3248d810f123af3abf575655e5e0ee78069"
 record = "Quality::requirementZeroConstantsKernel"
+axis = "meant"
+
+[[closed]]
+kappa = "b9ba742dfc1d33333f0d8688d4459b7b58da1ba767f0a88a6470a960f37bcb60"
+record = "Quality::requirementZeroRegistrationSelfHosting"
+axis = "derived"
+
+[[closed]]
+kappa = "1523ea54532e258914e06a62e13bee114602c9ce42820e6db3dc6c35702436a9"
+record = "Quality::requirementZeroRegistrationSelfHosting"
 axis = "meant"
 
 [[closed]]
@@ -8340,6 +9600,26 @@ record = "Release::channel5ZenodoDoiArchive"
 axis = "meant"
 
 [[closed]]
+kappa = "d4d94d890c1663a4843129e17212d38972ae51d5fd9f5ab236009982e3258b84"
+record = "Release::channel6StitchLayer5Swarm"
+axis = "derived"
+
+[[closed]]
+kappa = "581a6b2a4f8d4f615792e9bc48cb1a6a6cc107296c534e028be92d6541701e53"
+record = "Release::channel6StitchLayer5Swarm"
+axis = "meant"
+
+[[closed]]
+kappa = "64c65cf070e3592287190d9d7f861b49507321869323afc176d425d4b9ba4fe4"
+record = "Release::channel7VolunteerIpfsGateway"
+axis = "derived"
+
+[[closed]]
+kappa = "985eb34710b27b9a33ff2ec2dd2649b7425a65a36575a08d75e7bd237dbaf6f0"
+record = "Release::channel7VolunteerIpfsGateway"
+axis = "meant"
+
+[[closed]]
 kappa = "53e9cd53fc0ea6fad2ac959196e84cd2e9cf197d723baae825b48ec98dd08338"
 record = "Security::acceptedHostSubstitution"
 axis = "derived"
@@ -8348,6 +9628,11 @@ axis = "derived"
 kappa = "c61dc98757283dbf5e1761200c5956915a86b4fd1b9e152217646696b0cdf1fc"
 record = "Security::acceptedHostSubstitution"
 axis = "meant"
+
+[[closed]]
+kappa = "10705b1901ef408b2923c0e2f2ce5fa2e188075a7c6ca2bfa62c043c4cf3d594"
+record = "Security::assetImmutableBlankFrame"
+axis = "derived"
 
 [[closed]]
 kappa = "398fe66f3eb8077baaa82601d22e9eb0e5fa229b0c85c9b3dd51a99e94d79e30"
@@ -8360,12 +9645,22 @@ record = "Security::assetImmutableBlankFrame"
 axis = "derived"
 
 [[closed]]
+kappa = "aa9a29b8128953a8e8e74183a475b0fdd983a424a482abcc297ffac4012e184c"
+record = "Security::assetImmutableBlankFrame"
+axis = "meant"
+
+[[closed]]
 kappa = "fd67db9e9f1ab37920d446dd10364a33f128578fe61e3e5ebff924d03bc3926a"
 record = "Security::assetImmutableBlankFrame"
 axis = "meant"
 
 [[closed]]
 kappa = "32fe49fdd27fc2ac1fa56770c7356b60c62ba34758875f18435626eb98f0612f"
+record = "Security::assetPublishedPagesArtifact"
+axis = "derived"
+
+[[closed]]
+kappa = "44930cbed3aac05e0a9fa3205abcc201d06a5be9c9222f9fb10a7cb6384f1490"
 record = "Security::assetPublishedPagesArtifact"
 axis = "derived"
 
@@ -8380,9 +9675,19 @@ record = "Security::assetPublishedPagesArtifact"
 axis = "meant"
 
 [[closed]]
+kappa = "c8c4136dc31b73ff01762a5c381e2827a1db76b16bee888e63da50a4c8147d64"
+record = "Security::assetPublishedPagesArtifact"
+axis = "meant"
+
+[[closed]]
 kappa = "da2b1ae0291f49caaaa38f8d73aac918720ab1e41b4f418c403f7599bbc8f5f5"
 record = "Security::assetPublishedPagesArtifact"
 axis = "meant"
+
+[[closed]]
+kappa = "4aeac164b43263937507bdcb5ab350a846e5da84247645dffed33f39a7bdc7e7"
+record = "Security::assetSigningRequestQueue"
+axis = "derived"
 
 [[closed]]
 kappa = "514524f25c11be28cf5f8d89677611ff1a3b756c61048da3c69762ef550e3867"
@@ -8405,7 +9710,17 @@ record = "Security::assetSigningRequestQueue"
 axis = "meant"
 
 [[closed]]
+kappa = "e175f124ba248b8adf5c054f3d22dc2a6febcb9759ef29e0f2b5892121f17ebd"
+record = "Security::assetSigningRequestQueue"
+axis = "meant"
+
+[[closed]]
 kappa = "2476ee97c5d5046dd7aff4b261a7f4cea478693ac8b175b1fab2b50e96d150e7"
+record = "Security::assetSovereignAuthorityLedger"
+axis = "derived"
+
+[[closed]]
+kappa = "8bdf33987992a3f292e6865b75a5d318c39a45e6be960d229046431bad56b4be"
 record = "Security::assetSovereignAuthorityLedger"
 axis = "derived"
 
@@ -8420,9 +9735,19 @@ record = "Security::assetSovereignAuthorityLedger"
 axis = "meant"
 
 [[closed]]
+kappa = "8d5801dae484768427bf819f4183a064ff8062206fd12b8dee43b458c99dc366"
+record = "Security::assetSovereignAuthorityLedger"
+axis = "meant"
+
+[[closed]]
 kappa = "8df10d62a21161fec7ae4539dcb65306a91e9b4e481dba2420f1e420d8029d58"
 record = "Security::assetSovereignAuthorityLedger"
 axis = "meant"
+
+[[closed]]
+kappa = "341c145d2301c1dc9158d3d309a17a27e1e4cd8f47f1d5e4eab7940665d128ef"
+record = "Security::assetStakeholderPrivateBoundary"
+axis = "derived"
 
 [[closed]]
 kappa = "6d3c1d36a1fb3348425f2c719193ba48031b4a5ee0e78b289d411953d078525c"
@@ -8445,12 +9770,42 @@ record = "Security::assetStakeholderPrivateBoundary"
 axis = "meant"
 
 [[closed]]
+kappa = "ea9ab1d9b8c3fa24aa055017df4526d836ac856dad2fbf8741c5cc64eef1c629"
+record = "Security::assetStakeholderPrivateBoundary"
+axis = "meant"
+
+[[closed]]
 kappa = "f965422f32a12125a52b2a741644c392ebb68399e1c6bd0f2409c27b7d6c7bef"
 record = "Security::assetStakeholderPrivateBoundary"
 axis = "meant"
 
 [[closed]]
+kappa = "0136babde2f7247040a435e43fbb27f044bd3bbc69250a30f4f43a9738d7835b"
+record = "Security::assetStitchLayer5SignalingChannel"
+axis = "derived"
+
+[[closed]]
+kappa = "f784eebd86f5a97869490b79b22ffd4c0266bad24025752bf0a444588650e564"
+record = "Security::assetStitchLayer5SignalingChannel"
+axis = "derived"
+
+[[closed]]
+kappa = "18ebc8730d205784252ddd00fad78478e462a7e78fe621e01c1026a381dbd6de"
+record = "Security::assetStitchLayer5SignalingChannel"
+axis = "meant"
+
+[[closed]]
+kappa = "8a7e781530f202b25b9bde880443527f06f255564a20b4226a14432181764555"
+record = "Security::assetStitchLayer5SignalingChannel"
+axis = "meant"
+
+[[closed]]
 kappa = "05279ff0f19c2475b437ecc79b067fe74092c55ac5f8e49c209e0e28d8b49b3d"
+record = "Security::assetStitchMultiplayerFabric"
+axis = "derived"
+
+[[closed]]
+kappa = "0c0439c81bdccc722e31b727aeb60ad9656fc305e56878612c74f6fb00402120"
 record = "Security::assetStitchMultiplayerFabric"
 axis = "derived"
 
@@ -8485,9 +9840,19 @@ record = "Security::assetStitchMultiplayerFabric"
 axis = "meant"
 
 [[closed]]
+kappa = "8fe7422e7a3f74e69d2f6e53dc1ba2ed1e5451afffbc6b9088805ca903259515"
+record = "Security::assetStitchMultiplayerFabric"
+axis = "meant"
+
+[[closed]]
 kappa = "9fecff9f979c2776ea7839e5de2c30100214d8401a2d666960e60a48556108cb"
 record = "Security::assetStitchMultiplayerFabric"
 axis = "meant"
+
+[[closed]]
+kappa = "70d46651a2f6b23379367d0fd4e29d83767a98e064f3a76efdfe68a9f0bd5753"
+record = "Security::assetStudioAndDocsPages"
+axis = "derived"
 
 [[closed]]
 kappa = "a1bbd57cf4a43d7060f393f3309e4e5cfe6c15920f04d054e7ccb366c93aa8a2"
@@ -8508,6 +9873,11 @@ axis = "derived"
 kappa = "ff0a224d7c4b0c4470f67313bff4b123303a9dc1ce338b3e4631e5fef1c3b139"
 record = "Security::assetStudioAndDocsPages"
 axis = "derived"
+
+[[closed]]
+kappa = "0442fb9940f7bf97c51e3f3ca7a1df26e1acdc20788232c92cca8b4bbdae5608"
+record = "Security::assetStudioAndDocsPages"
+axis = "meant"
 
 [[closed]]
 kappa = "0da1164ad53c4a946dcb7880116bf3f2237883e28e9255fed2e5a6f4d8055942"
@@ -8550,6 +9920,11 @@ record = "Security::assetVerdantCoreRuntime"
 axis = "derived"
 
 [[closed]]
+kappa = "a249f7d2a94673fec5edbb5c7c9be64ca020161ce24bcb15e8f58b7a499cf100"
+record = "Security::assetVerdantCoreRuntime"
+axis = "derived"
+
+[[closed]]
 kappa = "b84305fd630966e37d0972202b1e8ddf311da194633e2bbaa3abb4283234c191"
 record = "Security::assetVerdantCoreRuntime"
 axis = "derived"
@@ -8580,12 +9955,22 @@ record = "Security::assetVerdantCoreRuntime"
 axis = "meant"
 
 [[closed]]
+kappa = "d923b5b33f8865536826aee7dc2a1ab8c91b597159805e34d24aa523786eb8a3"
+record = "Security::assetVerdantCoreRuntime"
+axis = "meant"
+
+[[closed]]
 kappa = "6b259cb15a23bf17ac4fdeef77a68cbd77be1c260e5b629623026cb0c3be9207"
 record = "Security::assetVerdantVcsAndReleases"
 axis = "derived"
 
 [[closed]]
 kappa = "a1100351660b5ac42b082481fe9b17493ab776c4020c1bfa937ae646f416a6fb"
+record = "Security::assetVerdantVcsAndReleases"
+axis = "derived"
+
+[[closed]]
+kappa = "b27161ec80d77af58eb6d6871feda8da7d4c7eaf353d68f7eb524a065aa0aeb1"
 record = "Security::assetVerdantVcsAndReleases"
 axis = "derived"
 
@@ -8605,12 +9990,22 @@ record = "Security::assetVerdantVcsAndReleases"
 axis = "meant"
 
 [[closed]]
+kappa = "9f3cc7ffe0b98d2b1bff646a00a494034ed4c5b171bd5450687f2d0aa7c2708a"
+record = "Security::assetVerdantVcsAndReleases"
+axis = "meant"
+
+[[closed]]
 kappa = "0b4239ff824bec540dee3701e44f63a1b7ae9a230a9ec01ab464cbe13a75140f"
 record = "Security::assetVerdantWasmBridge"
 axis = "derived"
 
 [[closed]]
 kappa = "61ebbcf89779a6bb864520b47fd2106ea420d68ff249e152316c8207a84eeae3"
+record = "Security::assetVerdantWasmBridge"
+axis = "derived"
+
+[[closed]]
+kappa = "8615857549d998796971bb4cd922f51a356dd35e097957b44d0199a61be593f4"
 record = "Security::assetVerdantWasmBridge"
 axis = "derived"
 
@@ -8631,6 +10026,11 @@ axis = "meant"
 
 [[closed]]
 kappa = "dbe1942a8a276abacc68fadff4c6809ef0f0cd03b8a0b484dce030ac8bea33e3"
+record = "Security::assetVerdantWasmBridge"
+axis = "meant"
+
+[[closed]]
+kappa = "e212b651bbac3012d66a6e3f24e8d07204cdd60cc383ffae55f0472b73468664"
 record = "Security::assetVerdantWasmBridge"
 axis = "meant"
 
@@ -8670,6 +10070,16 @@ record = "Security::assetVerifierGuestArchive"
 axis = "derived"
 
 [[closed]]
+kappa = "fb1e4a05b366d4c8eec3a4d6a4df2635ebe4ac07d3cdf0dd8adab3eea58913bf"
+record = "Security::assetVerifierGuestArchive"
+axis = "derived"
+
+[[closed]]
+kappa = "1e9e7f3e4ccca9abd4ed17b277c3fafecea4a6bd1ddef36dbfe548675d14fff8"
+record = "Security::assetVerifierGuestArchive"
+axis = "meant"
+
+[[closed]]
 kappa = "23cdfa0fca5b0412d505980f7edea3facb35e3855339c2392d5d31876083fda6"
 record = "Security::assetVerifierGuestArchive"
 axis = "meant"
@@ -8695,6 +10105,26 @@ record = "Security::assetVerifierGuestArchive"
 axis = "meant"
 
 [[closed]]
+kappa = "93b32109725cdbfe05826bec8eb574d66adc8bcf5126d2eaf42dd68bd88bfc09"
+record = "Security::assetVolunteerGatewayAndArchiveBundle"
+axis = "derived"
+
+[[closed]]
+kappa = "d966e94bcaa687c3735e5ab70943b19f8685da03983116a148ad06986bf80027"
+record = "Security::assetVolunteerGatewayAndArchiveBundle"
+axis = "derived"
+
+[[closed]]
+kappa = "16c05fb894d43fdc4fa61c70d0c91f7ddb85b1c5abd1e80ec413e45ef16bcd8b"
+record = "Security::assetVolunteerGatewayAndArchiveBundle"
+axis = "meant"
+
+[[closed]]
+kappa = "44ad703f3b76cc5a92f321cf6a044a1fc59f3278c1dba697f10c41fb7b853b5d"
+record = "Security::assetVolunteerGatewayAndArchiveBundle"
+axis = "meant"
+
+[[closed]]
 kappa = "766e9a9743beb96da583bf3b343716f31d469d48530cd5367e4a457e191e3586"
 record = "Security::controlAntiLockoutSuccessionAndQuotaGate"
 axis = "derived"
@@ -8715,6 +10145,26 @@ record = "Security::controlAntiLockoutSuccessionAndQuotaGate"
 axis = "meant"
 
 [[closed]]
+kappa = "12944265afa93e20bc0c1c8f9054e9df7eec5f49ce425e6557cdca97f4c41f4a"
+record = "Security::controlBlankFrameZeroTrustHashAndPinLock"
+axis = "derived"
+
+[[closed]]
+kappa = "91549b6929fba400895c4922ae75308e7d854288b47b6a4568b8ae56eafbace3"
+record = "Security::controlBlankFrameZeroTrustHashAndPinLock"
+axis = "derived"
+
+[[closed]]
+kappa = "52b205f234a5edcea7f29ce58ad1cb2d611c5be230044c6c055d63e362860207"
+record = "Security::controlBlankFrameZeroTrustHashAndPinLock"
+axis = "meant"
+
+[[closed]]
+kappa = "d1306eb79758d264a3750d112ee46f85f84703dfa17ed00163d427fcfe1cd525"
+record = "Security::controlBlankFrameZeroTrustHashAndPinLock"
+axis = "meant"
+
+[[closed]]
 kappa = "592e5c44129b6b415eea2c722b9fe5212a06485937106a2cb9c79c718644d6d9"
 record = "Security::controlBoundaryEpochRotationAndRevocation"
 axis = "derived"
@@ -8723,6 +10173,16 @@ axis = "derived"
 kappa = "6699fd8a2ca87994494b7d28e6bb201ba2390b2b6dbd0e155a58efde2e0f7aa0"
 record = "Security::controlBoundaryEpochRotationAndRevocation"
 axis = "derived"
+
+[[closed]]
+kappa = "c85aac6b75bc2f0998594fd87442a72abe553db7531dda0daa7db9af8330736b"
+record = "Security::controlBoundaryEpochRotationAndRevocation"
+axis = "derived"
+
+[[closed]]
+kappa = "0cc7046ab87f44d0be9931fa95c67d6cb74ad570a936b8154b7cd361ca077670"
+record = "Security::controlBoundaryEpochRotationAndRevocation"
+axis = "meant"
 
 [[closed]]
 kappa = "447e5766f4cad1dccd37613f5ef74787722c87f544a962aa0f36eb5466fc0865"
@@ -8746,6 +10206,11 @@ axis = "derived"
 
 [[closed]]
 kappa = "4700972890761dbfffd9c76a6952623b72bddf8e796cebd5bcfd9fbdf8b3406d"
+record = "Security::controlCapabilityGrantLattice"
+axis = "derived"
+
+[[closed]]
+kappa = "c534f9955613f45ce8a600663849003256881b5921d45addd1d57b017c147469"
 record = "Security::controlCapabilityGrantLattice"
 axis = "derived"
 
@@ -8785,6 +10250,11 @@ record = "Security::controlCapabilityGrantLattice"
 axis = "meant"
 
 [[closed]]
+kappa = "f2a5699bdfa1160c80cc8b4380e352a1807fc69ae3c1d5162bcc7eef5aeff612"
+record = "Security::controlCapabilityGrantLattice"
+axis = "meant"
+
+[[closed]]
 kappa = "14435383fdb334f8ed9272f2816e804c42c6f156e4df4d7424b56bc24176f986"
 record = "Security::controlConservationAndReachabilityOracle"
 axis = "derived"
@@ -8803,6 +10273,16 @@ axis = "derived"
 kappa = "e6a63f1c33a3f42112245417b2291a7e945efdabdbfab8ec5e402e7a70592a31"
 record = "Security::controlConservationAndReachabilityOracle"
 axis = "derived"
+
+[[closed]]
+kappa = "fbd6e42625fd2ab507a6d5a07bec16be40b777a47f05b29d2bdb8c7c143b20e1"
+record = "Security::controlConservationAndReachabilityOracle"
+axis = "derived"
+
+[[closed]]
+kappa = "605b4801a40d0673c90e3de9f4235920ae1f740d47c50b68f151b62739b85566"
+record = "Security::controlConservationAndReachabilityOracle"
+axis = "meant"
 
 [[closed]]
 kappa = "8eeaea75b38c034fc6dc275f071cbbf42cb3d2faf9379b880c700b0d6b4883dd"
@@ -8825,6 +10305,11 @@ record = "Security::controlConservationAndReachabilityOracle"
 axis = "meant"
 
 [[closed]]
+kappa = "988d76f65ee66e7dd1935f483f0f268f5eefedc3cc20dc4f755a327c1c0195b1"
+record = "Security::controlDepartureForwardSecretRekey"
+axis = "derived"
+
+[[closed]]
 kappa = "a0129a2ab92c28a8523bd6a2fb74997b3fdff665cfc2b97af7aa7dd38c7db57d"
 record = "Security::controlDepartureForwardSecretRekey"
 axis = "derived"
@@ -8833,6 +10318,11 @@ axis = "derived"
 kappa = "e064f71891b4b28716a8a617a7885c0a147faa075426f895d44ee2909c2b5c8a"
 record = "Security::controlDepartureForwardSecretRekey"
 axis = "derived"
+
+[[closed]]
+kappa = "32a0a9a3d6b783e9b066bd4104517717628202e896f390bb30702994cf3a2b30"
+record = "Security::controlDepartureForwardSecretRekey"
+axis = "meant"
 
 [[closed]]
 kappa = "62b54ff50426e4bb2502fdfbb6c534aa491b3742ade836e56afdebc2caa948a3"
@@ -8850,6 +10340,11 @@ record = "Security::controlEncryptBeforeShardBoundary"
 axis = "derived"
 
 [[closed]]
+kappa = "a254377041ad1b31dd7ce7154357b3be99381cfb3d3b03908c2a7e46cc6bc3b7"
+record = "Security::controlEncryptBeforeShardBoundary"
+axis = "derived"
+
+[[closed]]
 kappa = "cf232fe711bf407030f2422bba1f6d3ab581dd677f6c777385245be102273dbe"
 record = "Security::controlEncryptBeforeShardBoundary"
 axis = "derived"
@@ -8860,12 +10355,22 @@ record = "Security::controlEncryptBeforeShardBoundary"
 axis = "meant"
 
 [[closed]]
+kappa = "501c9c0cfea8835850b71faa94af910b88a0a4ee2b8c2ded9e3ce56faf24240d"
+record = "Security::controlEncryptBeforeShardBoundary"
+axis = "meant"
+
+[[closed]]
 kappa = "a9fabf0bbbcd7a8baa1904590dd1d58d65b55539e71570194fc713384f881dac"
 record = "Security::controlEncryptBeforeShardBoundary"
 axis = "meant"
 
 [[closed]]
 kappa = "007a818a1eff83bbd099433ef2516a09a9a8c472b3e69319c9d81fe24c6f7a89"
+record = "Security::controlFloatingOriginCanonicalizer"
+axis = "derived"
+
+[[closed]]
+kappa = "24d4d71e5b3faccac88a309c39af94f467c6abe336636d46a66e63a85df8d069"
 record = "Security::controlFloatingOriginCanonicalizer"
 axis = "derived"
 
@@ -8895,6 +10400,11 @@ record = "Security::controlFloatingOriginCanonicalizer"
 axis = "meant"
 
 [[closed]]
+kappa = "3b0bb648a88d74e3ad999dbc702f2b20bb5e6502be4d25cc9832bc701cb6aab2"
+record = "Security::controlFloatingOriginCanonicalizer"
+axis = "meant"
+
+[[closed]]
 kappa = "4e4d4dba29ae2441569fd4c307dbdee3ffdc7425650790932af87ae28adaba0f"
 record = "Security::controlFloatingOriginCanonicalizer"
 axis = "meant"
@@ -8902,6 +10412,26 @@ axis = "meant"
 [[closed]]
 kappa = "bc1e73438b4abee29ef64c95a7da97f3b9d84337ea13af7591b6b974f0d7813d"
 record = "Security::controlFloatingOriginCanonicalizer"
+axis = "meant"
+
+[[closed]]
+kappa = "422b8cc31e41db142383585c89d015eaec961c9ac5accc0cc79c4d428e508cb7"
+record = "Security::controlGatewayPathCanonicalizationAndOriginIsolation"
+axis = "derived"
+
+[[closed]]
+kappa = "e7f4d622149fec23a2e2f3a98ff77a5edac3420f94edf889c126fc5db7f8bcc3"
+record = "Security::controlGatewayPathCanonicalizationAndOriginIsolation"
+axis = "derived"
+
+[[closed]]
+kappa = "2d550536590d21377f4390833f00ef403c94d6c315eb72e88a34f89618cac258"
+record = "Security::controlGatewayPathCanonicalizationAndOriginIsolation"
+axis = "meant"
+
+[[closed]]
+kappa = "915d9387418ddc024eb47cb5c6a09d450ba6ff6e4048a38c8c1033307e0658f4"
+record = "Security::controlGatewayPathCanonicalizationAndOriginIsolation"
 axis = "meant"
 
 [[closed]]
@@ -8915,7 +10445,17 @@ record = "Security::controlImmediateDepartureApprovalRevocation"
 axis = "derived"
 
 [[closed]]
+kappa = "ef9e230b552e9e3b4e22fad7b05c668c72e0ee9a5757d520d64029a191b2e9ea"
+record = "Security::controlImmediateDepartureApprovalRevocation"
+axis = "derived"
+
+[[closed]]
 kappa = "1f5b55b99b060bed073318b622f4f5b0b95a172f1cf8aff722e3be6191e8f699"
+record = "Security::controlImmediateDepartureApprovalRevocation"
+axis = "meant"
+
+[[closed]]
+kappa = "3b9aba066b3edb0e20dfac4432b5a22a513ca0911de91501f63164fad7beaf47"
 record = "Security::controlImmediateDepartureApprovalRevocation"
 axis = "meant"
 
@@ -8935,6 +10475,16 @@ record = "Security::controlKOfNReedSolomonAndAutonomousRepair"
 axis = "derived"
 
 [[closed]]
+kappa = "eb44ecd1d0661de01afeb9f6616994c86c1f9ef8dd19360b454c1a10ca0f6bef"
+record = "Security::controlKOfNReedSolomonAndAutonomousRepair"
+axis = "derived"
+
+[[closed]]
+kappa = "7ee2384a17e2f30c91b7c2b7e441043e77e80a11ff8a1a130c0d55169acf4795"
+record = "Security::controlKOfNReedSolomonAndAutonomousRepair"
+axis = "meant"
+
+[[closed]]
 kappa = "8a82c2d8ec831328723d5a218fccc925a22ab73e79606b2c79098276bc605635"
 record = "Security::controlKOfNReedSolomonAndAutonomousRepair"
 axis = "meant"
@@ -8943,6 +10493,11 @@ axis = "meant"
 kappa = "d87d953fc0628b4704dc66b2cd3243cc5e255cee7c5097ad6ad2f083a2d606fa"
 record = "Security::controlKOfNReedSolomonAndAutonomousRepair"
 axis = "meant"
+
+[[closed]]
+kappa = "4a73230635a59bc929e3f3838a89cc4f13ae24592cbb6a416278f7db2ee6cdbe"
+record = "Security::controlKhronosGltfOracle"
+axis = "derived"
 
 [[closed]]
 kappa = "52b77a464ec92c79aa667e69ceba2735fb549e18a0ddb54edffaaeb3645f2251"
@@ -8980,6 +10535,11 @@ record = "Security::controlKhronosGltfOracle"
 axis = "meant"
 
 [[closed]]
+kappa = "82dc7368b665e0f57b29c0c9f6500907069530962452f959ebf394eac36ebe09"
+record = "Security::controlKhronosGltfOracle"
+axis = "meant"
+
+[[closed]]
 kappa = "971a3cdf0f9934f50d2bd99f97340da1e0cbbef3fda799116ad06ade98b33935"
 record = "Security::controlKhronosGltfOracle"
 axis = "meant"
@@ -9005,6 +10565,11 @@ record = "Security::controlMonotonicAuthorityEpochChain"
 axis = "derived"
 
 [[closed]]
+kappa = "a8e3c684b70fcce706f663b2374852074b4a93b7cf246d1def91b3c7eef6f1a4"
+record = "Security::controlMonotonicAuthorityEpochChain"
+axis = "derived"
+
+[[closed]]
 kappa = "0b0317de0b5213893f71f404e6c50b34572ff5f9193d88ea3deb246b9942837b"
 record = "Security::controlMonotonicAuthorityEpochChain"
 axis = "meant"
@@ -9013,6 +10578,16 @@ axis = "meant"
 kappa = "a08c7ceb569ff9165fe580d2e0be28eab36595f8248c60037f360d9141a8c64f"
 record = "Security::controlMonotonicAuthorityEpochChain"
 axis = "meant"
+
+[[closed]]
+kappa = "d507ba5607316c496bec94ab7248c593e2516c6d8c712e10196e5130a7e2b37f"
+record = "Security::controlMonotonicAuthorityEpochChain"
+axis = "meant"
+
+[[closed]]
+kappa = "06e2c2544dfaec7eb36dc104afa0c8fda755a292603ceddcdb8d59b46489970f"
+record = "Security::controlMonotonicEpochQuorumPointer"
+axis = "derived"
 
 [[closed]]
 kappa = "82f05eecfdba9007a1de651d740552407105a54b6dce2fccfedbce268f156709"
@@ -9032,6 +10607,31 @@ axis = "meant"
 [[closed]]
 kappa = "b1787a13017329e73d146778749176629b5832e71a6268709dcdd4eb803dac0b"
 record = "Security::controlMonotonicEpochQuorumPointer"
+axis = "meant"
+
+[[closed]]
+kappa = "f2c5faa9ccea6992a0f77de5d4da4860e86c888fb7298c738338b6a704fe66bb"
+record = "Security::controlMonotonicEpochQuorumPointer"
+axis = "meant"
+
+[[closed]]
+kappa = "2ba6cb83e5ccb900712ac714569cfa3a6a2d0498b8588bbe4a38ffe2533e4029"
+record = "Security::controlMultiRelayQuorumAndPeerKappaAuth"
+axis = "derived"
+
+[[closed]]
+kappa = "56899ba9e1f2b6b01cfd4acb7f33ec021e498d1904a31c8cb8c38d3a6e2e6dd6"
+record = "Security::controlMultiRelayQuorumAndPeerKappaAuth"
+axis = "derived"
+
+[[closed]]
+kappa = "1d47990c26a750136be50376ab4381a47c21a10788e546c687c20499fee0a7f2"
+record = "Security::controlMultiRelayQuorumAndPeerKappaAuth"
+axis = "meant"
+
+[[closed]]
+kappa = "c176cd3bf6bcd20b5757276101ceb6da5adb861e2ec0b8b49958b85f86b0d5bb"
+record = "Security::controlMultiRelayQuorumAndPeerKappaAuth"
 axis = "meant"
 
 [[closed]]
@@ -9056,6 +10656,11 @@ axis = "derived"
 
 [[closed]]
 kappa = "6a55a398b3fca73280104dc00acec93e6aa8b86cb0474acd10bbd74d1016eeda"
+record = "Security::controlNagaShaderOracle"
+axis = "derived"
+
+[[closed]]
+kappa = "7f8553dd423844c77a9ad48d1e5ae490929f00bb5260aed21517c84a3b044bcd"
 record = "Security::controlNagaShaderOracle"
 axis = "derived"
 
@@ -9085,6 +10690,36 @@ record = "Security::controlNagaShaderOracle"
 axis = "meant"
 
 [[closed]]
+kappa = "f06e69a69bf28341c62b0c69fb023f443c8e1f3ba8e6e1c9aa3aeafc45250390"
+record = "Security::controlNagaShaderOracle"
+axis = "meant"
+
+[[closed]]
+kappa = "0d2efc3d162f486516f66840a61b9afbb164ed759d60496766d303899d75e251"
+record = "Security::controlOptInSwarmAndOpaqueTopicIsolation"
+axis = "derived"
+
+[[closed]]
+kappa = "2697525c03b5367a26518ccfc2da69d261c085c00f068b466a4dd0cd9a61ce5e"
+record = "Security::controlOptInSwarmAndOpaqueTopicIsolation"
+axis = "derived"
+
+[[closed]]
+kappa = "5a6c4d247fecdea1681c93ae07748f4a3c4f9f7a75e42af1a91f2f11dc256968"
+record = "Security::controlOptInSwarmAndOpaqueTopicIsolation"
+axis = "meant"
+
+[[closed]]
+kappa = "6b1c0fce769995ae53447b4f41e280608cb3fe3fef857c9daf5bd149ec5387b9"
+record = "Security::controlOptInSwarmAndOpaqueTopicIsolation"
+axis = "meant"
+
+[[closed]]
+kappa = "47080a9422ee9617c4aeb7d544d8666cfdf19c356606772905ebbd767d691b10"
+record = "Security::controlOriginScopedPrismIdAudience"
+axis = "derived"
+
+[[closed]]
 kappa = "9f3282a57dc89e6de9b31eec891cf2db745d74019dcd28fc221f6512af20e182"
 record = "Security::controlOriginScopedPrismIdAudience"
 axis = "derived"
@@ -9105,12 +10740,22 @@ record = "Security::controlOriginScopedPrismIdAudience"
 axis = "meant"
 
 [[closed]]
+kappa = "4d13ac69e47a4f1fae78abf485fa0a90d0a782138b3f10bae88f037bd19521c8"
+record = "Security::controlOriginScopedPrismIdAudience"
+axis = "meant"
+
+[[closed]]
 kappa = "164d97c8d5facc32c19f9a79aabc7f5a4ef7b11814f77691d0879acdb17c33af"
 record = "Security::controlPrismIdJournalSignature"
 axis = "derived"
 
 [[closed]]
 kappa = "39c75329fb50b58ba721e52d4476e08e6ed26a49b35fc2e9eb392c4e8442cdec"
+record = "Security::controlPrismIdJournalSignature"
+axis = "derived"
+
+[[closed]]
+kappa = "7b12202d81f08cf836470e7cec6c743b3e6c63cf31d6c720ee55f2f6a2dc3c9f"
 record = "Security::controlPrismIdJournalSignature"
 axis = "derived"
 
@@ -9140,6 +10785,11 @@ record = "Security::controlPrismIdJournalSignature"
 axis = "meant"
 
 [[closed]]
+kappa = "36c4522f9b55a59b01636cd1a64f5be98932d349ac71e8f95d158891165284e6"
+record = "Security::controlPrismIdJournalSignature"
+axis = "meant"
+
+[[closed]]
 kappa = "37110bd41110c410a48b356de271c176d9fa3e004e50c3232c1abf2a7d33d706"
 record = "Security::controlPrismIdJournalSignature"
 axis = "meant"
@@ -9153,6 +10803,11 @@ axis = "meant"
 kappa = "974f4006931460bb21470ca7064b43c195c225cceee53e25fedf15a99e2135ff"
 record = "Security::controlPrismIdJournalSignature"
 axis = "meant"
+
+[[closed]]
+kappa = "00b51b8b9c766b5ebba0a822d72e56312b8349678bc1ba5c00c102a1429fe5e8"
+record = "Security::controlPrismIdSigningRequestAuth"
+axis = "derived"
 
 [[closed]]
 kappa = "06dde13e90ca550e9d72ee1605ae6f3982090fe4d2f97f771681d9e20d45a740"
@@ -9170,9 +10825,19 @@ record = "Security::controlPrismIdSigningRequestAuth"
 axis = "meant"
 
 [[closed]]
+kappa = "6ff20dd615eab7878fce287c06d38d1761c5f67422ec062b14292fb8d995b8a8"
+record = "Security::controlPrismIdSigningRequestAuth"
+axis = "meant"
+
+[[closed]]
 kappa = "8b412d9481db4d155dedb4cb306d4c07d60b91b49069ccd9ba476c4c76edc89c"
 record = "Security::controlPrismIdSigningRequestAuth"
 axis = "meant"
+
+[[closed]]
+kappa = "08eae98866ece9f6afb4a4b977557e6c1e99c1546c1e46336551835b44e8fb08"
+record = "Security::controlProvoSignedReviewLedger"
+axis = "derived"
 
 [[closed]]
 kappa = "25c09cc6756b512a3d22ec278590b41ce490a2bf4c30b3bb2c3257dc931a214c"
@@ -9183,6 +10848,11 @@ axis = "derived"
 kappa = "84e9720c6af0e76d3baccfa1b5bfb5264b1b54d804edf2f0964e6e7f283c14f9"
 record = "Security::controlProvoSignedReviewLedger"
 axis = "derived"
+
+[[closed]]
+kappa = "0c0da947e83a77041818fa924d4f842eb0cbfbf9a131b6710ac7c53aa8ab44f7"
+record = "Security::controlProvoSignedReviewLedger"
+axis = "meant"
 
 [[closed]]
 kappa = "32c27590d0dd9a7f2c3356fcc72ea01d92720092296bfb64382f7f51968574ab"
@@ -9205,12 +10875,22 @@ record = "Security::controlSelfHostingRatchetAndPullThroughGate"
 axis = "derived"
 
 [[closed]]
+kappa = "feca754ff57b5799e3c9f07977ccaf817b7a69437205470fde4f1e4392f1a7e0"
+record = "Security::controlSelfHostingRatchetAndPullThroughGate"
+axis = "derived"
+
+[[closed]]
 kappa = "0d9340c530e4824590d704679aa4186cd4ae5dc6c714117c393cd17e2320b645"
 record = "Security::controlSelfHostingRatchetAndPullThroughGate"
 axis = "meant"
 
 [[closed]]
 kappa = "cff324c4dd84fd35a0556b1647b5f175597a196e4c16f16320055fca2bda2373"
+record = "Security::controlSelfHostingRatchetAndPullThroughGate"
+axis = "meant"
+
+[[closed]]
+kappa = "de403c8b00f8bc0f6a0b6268d2ce33fa2c4683746b821492ee9cb613e4101834"
 record = "Security::controlSelfHostingRatchetAndPullThroughGate"
 axis = "meant"
 
@@ -9222,6 +10902,26 @@ axis = "derived"
 [[closed]]
 kappa = "976576aac0f4033b4a72a22328d0c296dce47c7089973a478fff32ca204387dd"
 record = "Security::controlSet"
+axis = "meant"
+
+[[closed]]
+kappa = "9ca9a63b9f556e284397cdafa4045e7de71875ccb75782e1ceff834a431c94ff"
+record = "Security::controlSignedGatewayManifestAndEpochLineage"
+axis = "derived"
+
+[[closed]]
+kappa = "fd5429e1dc1efce10a6721f30f1d0d99ba4d19426894cbd3cbae4a0d0ed4cfbd"
+record = "Security::controlSignedGatewayManifestAndEpochLineage"
+axis = "derived"
+
+[[closed]]
+kappa = "2d3529f8d9041db72181a00d8e2737b0cef79cbb5e2c793b537529c1b1f0a6c8"
+record = "Security::controlSignedGatewayManifestAndEpochLineage"
+axis = "meant"
+
+[[closed]]
+kappa = "cd1d532d2a0be12efe6145e9acf15cfc8f8d3c82f090a69fc15b709a2a227392"
+record = "Security::controlSignedGatewayManifestAndEpochLineage"
 axis = "meant"
 
 [[closed]]
@@ -9248,6 +10948,16 @@ axis = "derived"
 kappa = "81bd56f93a6a7ecf4caa534545c2946ee19900edf290553875c48d9991716c86"
 record = "Security::controlSnapshotSha256Trailer"
 axis = "derived"
+
+[[closed]]
+kappa = "a673a130c64c0e62afeda127fcf565284c84564d71c2084041bcd932ed656c42"
+record = "Security::controlSnapshotSha256Trailer"
+axis = "derived"
+
+[[closed]]
+kappa = "026ec15e8ccd29364fd3139c69f71778ec66822594e9778f3fa316cb3eb85af4"
+record = "Security::controlSnapshotSha256Trailer"
+axis = "meant"
 
 [[closed]]
 kappa = "56e15c963132627e36cadf4e13b02881896d4520e80593372605160faf398b14"
@@ -9285,7 +10995,17 @@ record = "Security::controlStitchBudgetAndReciprocalAdmission"
 axis = "derived"
 
 [[closed]]
+kappa = "e728fef8c9475703384222e862ae7230cee2e3d93888ce698b2555c9fb1e401e"
+record = "Security::controlStitchBudgetAndReciprocalAdmission"
+axis = "derived"
+
+[[closed]]
 kappa = "2c734a019dec9d239e9ed07d4ef1790af1c0e3f3bf851c3a6dae8d0066924ee4"
+record = "Security::controlStitchBudgetAndReciprocalAdmission"
+axis = "meant"
+
+[[closed]]
+kappa = "337480e8d138b9aaa62349c04893418bd4c5fdfd53510bd51aebdc53fb13a5fa"
 record = "Security::controlStitchBudgetAndReciprocalAdmission"
 axis = "meant"
 
@@ -9315,6 +11035,11 @@ record = "Security::controlStitchFragmentCommitment"
 axis = "derived"
 
 [[closed]]
+kappa = "e2d2e733bf623bbda327935870b2026b9e87fd9d71c931632a37e2b23f4e37de"
+record = "Security::controlStitchFragmentCommitment"
+axis = "derived"
+
+[[closed]]
 kappa = "ee23d79ba7183e66104e4b0643b5d7e5d443866b92d9fd024fa988423c4db8e2"
 record = "Security::controlStitchFragmentCommitment"
 axis = "derived"
@@ -9340,9 +11065,39 @@ record = "Security::controlStitchFragmentCommitment"
 axis = "meant"
 
 [[closed]]
+kappa = "e6a101fbd4e017527434020a9e21af1b222071eb6002183cf7dc524927309065"
+record = "Security::controlStitchFragmentCommitment"
+axis = "meant"
+
+[[closed]]
 kappa = "f433bbb2953942dc19ba25095bec866d88b7e94b76ea6a556508cf17273e81a1"
 record = "Security::controlStitchFragmentCommitment"
 axis = "meant"
+
+[[closed]]
+kappa = "34bd1cc7aca910ccff0d1996b44c4d222f457f52f2a7e6f5e3d768a8370a0bc3"
+record = "Security::controlStitchLayer5FramingAndBudgetCeiling"
+axis = "derived"
+
+[[closed]]
+kappa = "379ebfe5ea365067d1a812337c346c0af5f9df06a5bb5423613ed4ceee89a430"
+record = "Security::controlStitchLayer5FramingAndBudgetCeiling"
+axis = "derived"
+
+[[closed]]
+kappa = "36458dd59e820be4e345a607c1414583fa9e7c07b7d68b5b152c9e2fc784ccd8"
+record = "Security::controlStitchLayer5FramingAndBudgetCeiling"
+axis = "meant"
+
+[[closed]]
+kappa = "d6ab66f0f4795a2dedf25493b74028070ef7cb234ef582bec158f0ac7a4998b2"
+record = "Security::controlStitchLayer5FramingAndBudgetCeiling"
+axis = "meant"
+
+[[closed]]
+kappa = "1b22459baa968d8869e65c6ec7b97d378f9cef3f8151a68a01cca9a6e1d1d1ae"
+record = "Security::controlStrictHashedCsp"
+axis = "derived"
 
 [[closed]]
 kappa = "73735dc133836f3b4c5dce2369fce4481ac689328720ae78ad1b6a05ced9bcaa"
@@ -9385,6 +11140,11 @@ record = "Security::controlStrictHashedCsp"
 axis = "meant"
 
 [[closed]]
+kappa = "93a6b6623260aca860fa96372ce50492376d1dc31e56cffdaf9afe1bb5c8ecff"
+record = "Security::controlStrictHashedCsp"
+axis = "meant"
+
+[[closed]]
 kappa = "a06703f2693f7a22ea3b20b80d8a97c7340a0b595eb1f2d94428969b95995cbe"
 record = "Security::controlStrictHashedCsp"
 axis = "meant"
@@ -9410,12 +11170,22 @@ record = "Security::controlSweptBlasAndCameraGuard"
 axis = "derived"
 
 [[closed]]
+kappa = "b44fceee8aad82b2f3707efafde3f90dd572744d844532d407b3ab654f85cdce"
+record = "Security::controlSweptBlasAndCameraGuard"
+axis = "derived"
+
+[[closed]]
 kappa = "b9f3aed5b443e491919815743c0ea7afc9cd6c6e17a913a377f842eb4c65deb0"
 record = "Security::controlSweptBlasAndCameraGuard"
 axis = "derived"
 
 [[closed]]
 kappa = "65c0212a98b430a74559a979c5117dbe0f97145eb8df3b39d1c03d7e7afac43f"
+record = "Security::controlSweptBlasAndCameraGuard"
+axis = "meant"
+
+[[closed]]
+kappa = "67811ca3189d5759b0ba1fd71ae8345dfe621da3f1a0c2da730a5505dd65c3a0"
 record = "Security::controlSweptBlasAndCameraGuard"
 axis = "meant"
 
@@ -9433,6 +11203,11 @@ axis = "meant"
 kappa = "c88d9fc95c9013bb1c30c520e3372e95620f9047c3ce1b908ad2f6559f8a9627"
 record = "Security::controlSweptBlasAndCameraGuard"
 axis = "meant"
+
+[[closed]]
+kappa = "845e0bdf77783b410cf8b172a5439042aa41acfd389bfdf89b20066ef81204b6"
+record = "Security::controlThresholdQuorumSeparationOfDuties"
+axis = "derived"
 
 [[closed]]
 kappa = "b5c1d8b282804200ff9cd653a3292d9bf14b11335b70d7a224c1387e3f76855e"
@@ -9455,6 +11230,11 @@ record = "Security::controlThresholdQuorumSeparationOfDuties"
 axis = "meant"
 
 [[closed]]
+kappa = "5488043c2597e0bd45007c256c42ed6df733171c9bf1330b1c604138e6a2e731"
+record = "Security::controlThresholdQuorumSeparationOfDuties"
+axis = "meant"
+
+[[closed]]
 kappa = "0af382caf8d01b42ba0a23f7c2043c78ef597660c2b4f3a9b4b2d6261b349884"
 record = "Security::controlVerifierRequestCap"
 axis = "derived"
@@ -9470,6 +11250,11 @@ record = "Security::controlVerifierRequestCap"
 axis = "derived"
 
 [[closed]]
+kappa = "a36422246bb571ae9e20a8d2e63508db932962336668bc4b6530e580c51b8c58"
+record = "Security::controlVerifierRequestCap"
+axis = "derived"
+
+[[closed]]
 kappa = "ba34fa850ea1b4cb72f232467af011d49a49d7a0919f5c19bfca3a2fbfeb8c47"
 record = "Security::controlVerifierRequestCap"
 axis = "derived"
@@ -9481,6 +11266,11 @@ axis = "derived"
 
 [[closed]]
 kappa = "28e40833748da9c303aa212abe0867a8fca9953b47ab9e3c43073d06afaabd81"
+record = "Security::controlVerifierRequestCap"
+axis = "meant"
+
+[[closed]]
+kappa = "493ddda177cb5602db9b0ba403f497d617623ef84fc19cbeff230204c02a7ff8"
 record = "Security::controlVerifierRequestCap"
 axis = "meant"
 
@@ -9510,6 +11300,11 @@ record = "Security::controlZeroTrustSwVirtualFsMount"
 axis = "derived"
 
 [[closed]]
+kappa = "8baaf02a1403fedf5d34e7c7305835c778e86ff6fc3bd1bdb06fb27619eb5d4e"
+record = "Security::controlZeroTrustSwVirtualFsMount"
+axis = "derived"
+
+[[closed]]
 kappa = "f368a609dbf1641a661dcdfd9cb6aa40e55fcab1460df1e494f05a02ff779904"
 record = "Security::controlZeroTrustSwVirtualFsMount"
 axis = "derived"
@@ -9521,6 +11316,11 @@ axis = "meant"
 
 [[closed]]
 kappa = "8b69b10e22c709ad5dd060843ce597c3fd9ec7286e484f9b6a55a6d3fde98588"
+record = "Security::controlZeroTrustSwVirtualFsMount"
+axis = "meant"
+
+[[closed]]
+kappa = "fb2ed5074e28ac9a8ae9d0a61fbae42fc04dc482afa7d431854cb558febcc8f5"
 record = "Security::controlZeroTrustSwVirtualFsMount"
 axis = "meant"
 
@@ -9625,6 +11425,16 @@ record = "Security::mappingMalformedGlbExport"
 axis = "meant"
 
 [[closed]]
+kappa = "3a682b5558747b6dba0a1b4bb88e7aa5aa72cb7b0efa57379ea0d53f2a5fce51"
+record = "Security::mappingMaliciousGatewayPathTraversalOrOriginAbuse"
+axis = "derived"
+
+[[closed]]
+kappa = "42e002859bad692a92c4da10a722ae791516f696376d1d77fe6271366baea0d8"
+record = "Security::mappingMaliciousGatewayPathTraversalOrOriginAbuse"
+axis = "meant"
+
+[[closed]]
 kappa = "fc23fdc9b02c9c26bd7382fbf55be2facec8ffbb7410446778eec459778911b3"
 record = "Security::mappingNarrativeSupplyInflationOrDeadlock"
 axis = "derived"
@@ -9695,6 +11505,36 @@ record = "Security::mappingShardAttritionOrColdDisappearance"
 axis = "meant"
 
 [[closed]]
+kappa = "437bcb5b01f36569abe1d0f6fec187f20b675db8f56529a62918398d1a68f694"
+record = "Security::mappingSignalingIpOrPresenceCorrelation"
+axis = "derived"
+
+[[closed]]
+kappa = "2a15cd88e5d4b93c32732177617edd49c42b083efc0232bba8739491b4ee5017"
+record = "Security::mappingSignalingIpOrPresenceCorrelation"
+axis = "meant"
+
+[[closed]]
+kappa = "f7ca78a8e253321fa9e3e2b73669f8f05ee67e1647dc3c6872c172509f6f40f3"
+record = "Security::mappingSignalingRelayEclipseOrMitm"
+axis = "derived"
+
+[[closed]]
+kappa = "efca611e71352365cf97d3bc465bd327ee9bedfcfc9453eb4f1c3cb8cc1c939a"
+record = "Security::mappingSignalingRelayEclipseOrMitm"
+axis = "meant"
+
+[[closed]]
+kappa = "cb01f342a696dcf03a0b3a9ebbb60cdb4e7b8d9d1e15d0684e002549f9eace8a"
+record = "Security::mappingSignalingTopicSpamOrWebRtcAmplification"
+axis = "derived"
+
+[[closed]]
+kappa = "973a403c445a30328a32aaeee5f10246f40fab0da2ad4647457836d037d09c58"
+record = "Security::mappingSignalingTopicSpamOrWebRtcAmplification"
+axis = "meant"
+
+[[closed]]
 kappa = "5a972e1c9ab8ce24106c54e2b105ecfb201428f82e844f0d99bfaa84a64febdc"
 record = "Security::mappingSnapshotTampering"
 axis = "derived"
@@ -9755,6 +11595,16 @@ record = "Security::mappingUniverseCoordinatePrecisionCollapse"
 axis = "meant"
 
 [[closed]]
+kappa = "feb63f1a98d54596975341e1d6a6c91f65e919448268a34bf0bfe3fc99a7b6f9"
+record = "Security::mappingUnverifiableGatewayProvenance"
+axis = "derived"
+
+[[closed]]
+kappa = "7f30f816b44942076acfa3259178dc018d059a1386e8773c3e8ffefdb8797057"
+record = "Security::mappingUnverifiableGatewayProvenance"
+axis = "meant"
+
+[[closed]]
 kappa = "c8b913bb3a9e7b70eb6655747751de5b38aa584b257ee4b6ceffa2584328cc64"
 record = "Security::mappingUnverifiedRepoDriftOrBypass"
 axis = "derived"
@@ -9772,6 +11622,16 @@ axis = "derived"
 [[closed]]
 kappa = "2b22cd17442755f1271f37f62f3b471c7c39ce1812df947df5e24eebb23314d4"
 record = "Security::mappingVerifierQueryExhaustion"
+axis = "meant"
+
+[[closed]]
+kappa = "62402cc5078b0bfdc92cf734d1044496704483761e51fc988b57e7b4c427db70"
+record = "Security::mappingVolunteerGatewayContentSubstitution"
+axis = "derived"
+
+[[closed]]
+kappa = "e6dfcedbc4ab2b423a9aaf4ae610fb933ab68467e7cde9c6e16c57f470fd9300"
+record = "Security::mappingVolunteerGatewayContentSubstitution"
 axis = "meant"
 
 [[closed]]
@@ -9835,6 +11695,16 @@ record = "Security::modeledAssetStakeholderPrivateBoundary"
 axis = "meant"
 
 [[closed]]
+kappa = "5cd94aa16d789b3d3791dfa5cdc504d4beb0dbe5f6181ec10ff52ff18c2e5d3e"
+record = "Security::modeledAssetStitchLayer5SignalingChannel"
+axis = "derived"
+
+[[closed]]
+kappa = "a5fa181d114366fb639f93a1eb4d909aa8dd9b78621bbeb9ba5bd4926006b9ea"
+record = "Security::modeledAssetStitchLayer5SignalingChannel"
+axis = "meant"
+
+[[closed]]
 kappa = "1d629710a90ff688af65863e21f2a4c2000ec9957baba5353c4bf17546fddbba"
 record = "Security::modeledAssetStitchMultiplayerFabric"
 axis = "derived"
@@ -9895,6 +11765,16 @@ record = "Security::modeledAssetVerifierGuestArchive"
 axis = "meant"
 
 [[closed]]
+kappa = "be965b4e089ffd6c48b91461539ca7a2fbc6ca8ed484fe1f8f8d07a78cef6a00"
+record = "Security::modeledAssetVolunteerGatewayAndArchiveBundle"
+axis = "derived"
+
+[[closed]]
+kappa = "613e5331157d4268184938ec0facb223a8359eed2bb94765f50c40329dd92e1d"
+record = "Security::modeledAssetVolunteerGatewayAndArchiveBundle"
+axis = "meant"
+
+[[closed]]
 kappa = "a55cf3684341c0c8ca5a973eb56b7ad6685ff5397366a44f6d4aa80591540487"
 record = "Security::modeledControlAntiLockoutSuccessionAndQuotaGate"
 axis = "derived"
@@ -9902,6 +11782,16 @@ axis = "derived"
 [[closed]]
 kappa = "7683f710b7d1e61469aafd1f4e7eca192360f64023d0d09ef16ee93985ca04c1"
 record = "Security::modeledControlAntiLockoutSuccessionAndQuotaGate"
+axis = "meant"
+
+[[closed]]
+kappa = "20e422b4035b4715ec4fc8a16b7b020e2413c4debafdafbff981907f941fa052"
+record = "Security::modeledControlBlankFrameZeroTrustHashAndPinLock"
+axis = "derived"
+
+[[closed]]
+kappa = "34d99a3d7f94eaacb9c4455a7e544527b4373f7e6bc2df96f02efbc06ffbb728"
+record = "Security::modeledControlBlankFrameZeroTrustHashAndPinLock"
 axis = "meant"
 
 [[closed]]
@@ -9965,6 +11855,16 @@ record = "Security::modeledControlFloatingOriginCanonicalizer"
 axis = "meant"
 
 [[closed]]
+kappa = "72d1df70b6f4420cd0fa09a06fb341db780d214c3851c954ca976438e85aaad7"
+record = "Security::modeledControlGatewayPathCanonicalizationAndOriginIsolation"
+axis = "derived"
+
+[[closed]]
+kappa = "18d0167bd34382a8f52f3c8d81460c8ae79f7ef8ddaed3a2912910f4664149dd"
+record = "Security::modeledControlGatewayPathCanonicalizationAndOriginIsolation"
+axis = "meant"
+
+[[closed]]
 kappa = "4c28d92db7f7a63f0038617054dcaa77037b4633879ba17ec4e079c275e75812"
 record = "Security::modeledControlImmediateDepartureApprovalRevocation"
 axis = "derived"
@@ -10015,6 +11915,16 @@ record = "Security::modeledControlMonotonicEpochQuorumPointer"
 axis = "meant"
 
 [[closed]]
+kappa = "f7835e57a5bace0ec798a684bd1e0a1b200a3f07921622521f7535708b41f47c"
+record = "Security::modeledControlMultiRelayQuorumAndPeerKappaAuth"
+axis = "derived"
+
+[[closed]]
+kappa = "71d9d96251dd21bc6472746cdd16f451f192c5dcf46a899fecf805bdaccc731e"
+record = "Security::modeledControlMultiRelayQuorumAndPeerKappaAuth"
+axis = "meant"
+
+[[closed]]
 kappa = "54a54f033e16e41bddaac25ee37dda5a91aa00a6e89cd737cf61d443ec504310"
 record = "Security::modeledControlNagaShaderOracle"
 axis = "derived"
@@ -10022,6 +11932,16 @@ axis = "derived"
 [[closed]]
 kappa = "3e3312b360cdc50b8c12e83d29af0d22c14a1aca252ddceabf86455898bbb1c0"
 record = "Security::modeledControlNagaShaderOracle"
+axis = "meant"
+
+[[closed]]
+kappa = "9feed05567ea53dee7f9183e8b56cd5e2ef7627de0cfd253744a09e78d1ebb15"
+record = "Security::modeledControlOptInSwarmAndOpaqueTopicIsolation"
+axis = "derived"
+
+[[closed]]
+kappa = "4e6c047082554af9bb8177508639b1b7c8bc1a44f34edf6384721df3b038fae9"
+record = "Security::modeledControlOptInSwarmAndOpaqueTopicIsolation"
 axis = "meant"
 
 [[closed]]
@@ -10075,6 +11995,16 @@ record = "Security::modeledControlSelfHostingRatchetAndPullThroughGate"
 axis = "meant"
 
 [[closed]]
+kappa = "7d4d3ef626810253d1425c66e6bc0cb1eac2822153a5ddb3175e7635c3fedce2"
+record = "Security::modeledControlSignedGatewayManifestAndEpochLineage"
+axis = "derived"
+
+[[closed]]
+kappa = "187f52b5d9f3c86565a983802525bbe3a10d338b8e1eb674c2198e8eabf630c0"
+record = "Security::modeledControlSignedGatewayManifestAndEpochLineage"
+axis = "meant"
+
+[[closed]]
 kappa = "041c85cd4e2edbed69d8bf071ff789a227920cc70ab09a22bc8bb6fa8c76aa0e"
 record = "Security::modeledControlSnapshotSha256Trailer"
 axis = "derived"
@@ -10102,6 +12032,16 @@ axis = "derived"
 [[closed]]
 kappa = "d9c013d152903e6c410bfef14a92140a8dc3f684e13740d8b53ec369764a0ceb"
 record = "Security::modeledControlStitchFragmentCommitment"
+axis = "meant"
+
+[[closed]]
+kappa = "cb30d095e64715c90d9610c4afd8be3b6769f5bd683398fa72a924f80c5c03df"
+record = "Security::modeledControlStitchLayer5FramingAndBudgetCeiling"
+axis = "derived"
+
+[[closed]]
+kappa = "d9896657c61df89280864f125c93f9402eb7ca1167b53cb03357948282a5bd20"
+record = "Security::modeledControlStitchLayer5FramingAndBudgetCeiling"
 axis = "meant"
 
 [[closed]]
@@ -10265,6 +12205,16 @@ record = "Security::modeledThreatMalformedGlbExport"
 axis = "meant"
 
 [[closed]]
+kappa = "b9333d06ac60bba1fe8570e10b79d66e6304467ebf95068fa338ade4e36b5337"
+record = "Security::modeledThreatMaliciousGatewayPathTraversalOrOriginAbuse"
+axis = "derived"
+
+[[closed]]
+kappa = "f67d95b0e46a21c2fc243444832577cad254b4642d9755e4669f2db1615d1cbb"
+record = "Security::modeledThreatMaliciousGatewayPathTraversalOrOriginAbuse"
+axis = "meant"
+
+[[closed]]
 kappa = "4c1794448937f2fb9e5cd1d53edabeb9c7bad78d252c3cdc4cba2a8e024bd393"
 record = "Security::modeledThreatNarrativeSupplyInflationOrDeadlock"
 axis = "derived"
@@ -10335,6 +12285,36 @@ record = "Security::modeledThreatShardAttritionOrColdDisappearance"
 axis = "meant"
 
 [[closed]]
+kappa = "c7c55e723ecc7c5f057bf16268e600fd36ecd6cae7a7ce788b75073d2c755783"
+record = "Security::modeledThreatSignalingIpOrPresenceCorrelation"
+axis = "derived"
+
+[[closed]]
+kappa = "5d6446bea68ae891451cf0197203ee5f74858a580675acc36a7c51c5be45d9a8"
+record = "Security::modeledThreatSignalingIpOrPresenceCorrelation"
+axis = "meant"
+
+[[closed]]
+kappa = "8a62171add07d35c80c03eb7a6c1ccb2d193483047e90c3a20eb3a3bfa414f9e"
+record = "Security::modeledThreatSignalingRelayEclipseOrMitm"
+axis = "derived"
+
+[[closed]]
+kappa = "a9010f121546bf99532b791e0eee6205d2c3e4cdd96458d7761fcf88dd7d9d09"
+record = "Security::modeledThreatSignalingRelayEclipseOrMitm"
+axis = "meant"
+
+[[closed]]
+kappa = "eb316abe9082ed0de7b707f6a1ff957612417afa08d8fb6c1f2e0f456920f55f"
+record = "Security::modeledThreatSignalingTopicSpamOrWebRtcAmplification"
+axis = "derived"
+
+[[closed]]
+kappa = "68c1b679bafa8f6a5ae465cb5bf35f46f8004e848ce52ce2efe3fd59f32adced"
+record = "Security::modeledThreatSignalingTopicSpamOrWebRtcAmplification"
+axis = "meant"
+
+[[closed]]
 kappa = "bf6328b097b33d4f9160ebdc9533bba0dcbcca42518f08cc84d0b19923a0a53c"
 record = "Security::modeledThreatSnapshotTampering"
 axis = "derived"
@@ -10395,6 +12375,16 @@ record = "Security::modeledThreatUniverseCoordinatePrecisionCollapse"
 axis = "meant"
 
 [[closed]]
+kappa = "b384adc16bdf6ce48711d9d52de201cdcc1e9475f5f16a190c5fb33c4c6b6ed3"
+record = "Security::modeledThreatUnverifiableGatewayProvenance"
+axis = "derived"
+
+[[closed]]
+kappa = "4151ae0e1eebcf016c713e2385b6cc519042403bc5e6b0efcdcdc5b47433ff9f"
+record = "Security::modeledThreatUnverifiableGatewayProvenance"
+axis = "meant"
+
+[[closed]]
 kappa = "a9de6c4c0f9e72f2863746f2313bea2b5b458815bbf1fb0b040e479345bd484a"
 record = "Security::modeledThreatUnverifiedRepoDriftOrBypass"
 axis = "derived"
@@ -10412,6 +12402,16 @@ axis = "derived"
 [[closed]]
 kappa = "e0f8fd1495bf558f23ce311e0228aa0dcacd8e32d436833c16b31fbd5a7c91bb"
 record = "Security::modeledThreatVerifierQueryExhaustion"
+axis = "meant"
+
+[[closed]]
+kappa = "f929d5d5ce79715c2de62ceff1f655909039681fab0271243eec46285de92507"
+record = "Security::modeledThreatVolunteerGatewayContentSubstitution"
+axis = "derived"
+
+[[closed]]
+kappa = "5de001303b9d15eb191395da58929831fec337431f817ce6fb9aea4e67836f8a"
+record = "Security::modeledThreatVolunteerGatewayContentSubstitution"
 axis = "meant"
 
 [[closed]]
@@ -10500,6 +12500,11 @@ record = "Security::riskCorruptedStitchParityShard"
 axis = "derived"
 
 [[closed]]
+kappa = "6ce0a63f488d97adcc60576dc9b53a49ac2e5f26b24679cf023c9f505dfb115c"
+record = "Security::riskCorruptedStitchParityShard"
+axis = "derived"
+
+[[closed]]
 kappa = "ca5d9ad3e06b8bef7911074144a132b35da0b85f66dacb6a9b897f865242862b"
 record = "Security::riskCorruptedStitchParityShard"
 axis = "derived"
@@ -10516,6 +12521,11 @@ axis = "meant"
 
 [[closed]]
 kappa = "4807efce901d42d3f200861c0b51a66104ee4aac65c24089ecdf78e099814df5"
+record = "Security::riskCorruptedStitchParityShard"
+axis = "meant"
+
+[[closed]]
+kappa = "7886ba04646d8aff615de6fcdd48f87970d6e9ec2bc5648a6855271412e89eca"
 record = "Security::riskCorruptedStitchParityShard"
 axis = "meant"
 
@@ -10570,6 +12580,11 @@ record = "Security::riskForgedPeerInputEnvelope"
 axis = "derived"
 
 [[closed]]
+kappa = "54271d1b17d1e04ec6c8ad9b0c2eddc8dcab0f0d7bc01b673e751f2033d6a065"
+record = "Security::riskForgedPeerInputEnvelope"
+axis = "derived"
+
+[[closed]]
 kappa = "54d30601067c98c10b70020a27f29b7c8bd694592d90fcdc14c261c1032312ba"
 record = "Security::riskForgedPeerInputEnvelope"
 axis = "derived"
@@ -10596,6 +12611,11 @@ axis = "meant"
 
 [[closed]]
 kappa = "c587327a16c868116b5d5360b4e2172bac629125837b646cd98dfbb35558b2c0"
+record = "Security::riskForgedPeerInputEnvelope"
+axis = "meant"
+
+[[closed]]
+kappa = "c70165257c51ae98c2975ee5b6187fcc66425f8c220c862e63211565db7f17a0"
 record = "Security::riskForgedPeerInputEnvelope"
 axis = "meant"
 
@@ -10680,6 +12700,11 @@ record = "Security::riskInvalidShaderCompilation"
 axis = "derived"
 
 [[closed]]
+kappa = "bc8837763f140fa68412a5fd38eb7cd541a367567e8493bc4774f927bbb66e42"
+record = "Security::riskInvalidShaderCompilation"
+axis = "derived"
+
+[[closed]]
 kappa = "e87f6bebd256c9ff895bf0ad8553c8f1cc682ce3b50e9a766544b97ee001f252"
 record = "Security::riskInvalidShaderCompilation"
 axis = "derived"
@@ -10705,12 +12730,22 @@ record = "Security::riskInvalidShaderCompilation"
 axis = "meant"
 
 [[closed]]
+kappa = "f2b208f4ff4dc7a0ea6f5bcafbbbcd6f8a6b549e448e6342d0c1ab0d9702db46"
+record = "Security::riskInvalidShaderCompilation"
+axis = "meant"
+
+[[closed]]
 kappa = "39cb041fca00840e13f57582def78ef588631b127104912ffe1dbc39feb5bbf8"
 record = "Security::riskMalformedGlbExport"
 axis = "derived"
 
 [[closed]]
 kappa = "ac5c73e9610d10e8291a791845f5c3d68e38f1f4aabec8baf4304c23d7e53e81"
+record = "Security::riskMalformedGlbExport"
+axis = "derived"
+
+[[closed]]
+kappa = "c747bbc1f0e70c80a244c690afaf1dc2fd897899022d662e7a099d4c2f0b138e"
 record = "Security::riskMalformedGlbExport"
 axis = "derived"
 
@@ -10745,7 +12780,37 @@ record = "Security::riskMalformedGlbExport"
 axis = "meant"
 
 [[closed]]
+kappa = "d6e4f923270980cf2b0498820a374754733a5e59cde85093c121c4ce7faaa078"
+record = "Security::riskMalformedGlbExport"
+axis = "meant"
+
+[[closed]]
+kappa = "4dd90e08ce56480f8dd81a99680bb6df2b2b1b0d866ae82f460e917b7d3c5cf9"
+record = "Security::riskMaliciousGatewayPathTraversalOrOriginAbuse"
+axis = "derived"
+
+[[closed]]
+kappa = "8c4943580945bce34cde0b0497f080f92deabde6d09ec32a44a5c16de2067648"
+record = "Security::riskMaliciousGatewayPathTraversalOrOriginAbuse"
+axis = "derived"
+
+[[closed]]
+kappa = "37944cd172c633df01bc46fcd0c2c89adbee90d5d02616151ebe29f390e994d1"
+record = "Security::riskMaliciousGatewayPathTraversalOrOriginAbuse"
+axis = "meant"
+
+[[closed]]
+kappa = "c9cb53a8ac5f0994b538143f8e65c26e17108abf46a9485ce1bdf7215f4bcf48"
+record = "Security::riskMaliciousGatewayPathTraversalOrOriginAbuse"
+axis = "meant"
+
+[[closed]]
 kappa = "025a4fa4cd73081f46cfeb424b2c5dd29621809c529b77edaf71a117ec70d905"
+record = "Security::riskNarrativeSupplyInflationOrDeadlock"
+axis = "derived"
+
+[[closed]]
+kappa = "0ee3f7afa9e770de26b224c6a5972f2f0b7b6fb378a5d5b9323c1e00f807fc93"
 record = "Security::riskNarrativeSupplyInflationOrDeadlock"
 axis = "derived"
 
@@ -10763,6 +12828,11 @@ axis = "derived"
 kappa = "ad8fa3c738e35f97893c4295157771463d471b4c15b27fb72beca65f3060bb21"
 record = "Security::riskNarrativeSupplyInflationOrDeadlock"
 axis = "derived"
+
+[[closed]]
+kappa = "13246116eea2f6b2c23e68a703abeb8ad3238d2a6c3826cdbda38ec0ddfa91bc"
+record = "Security::riskNarrativeSupplyInflationOrDeadlock"
+axis = "meant"
 
 [[closed]]
 kappa = "27d489f7d1e48514ea60c2ac522133b5bf68b51694861be1feffe190eb8bed76"
@@ -10790,6 +12860,11 @@ record = "Security::riskReleasePointerRollbackOrEquivocation"
 axis = "derived"
 
 [[closed]]
+kappa = "ed0c38ec366f297293a59368c0d3e6367c0ab5b914b36f687825f38078ba13c2"
+record = "Security::riskReleasePointerRollbackOrEquivocation"
+axis = "derived"
+
+[[closed]]
 kappa = "f9047531b7731f07425568cd0ee55a7aff0e9b4afd78653bf389ee1a1b33d9f4"
 record = "Security::riskReleasePointerRollbackOrEquivocation"
 axis = "derived"
@@ -10800,9 +12875,19 @@ record = "Security::riskReleasePointerRollbackOrEquivocation"
 axis = "meant"
 
 [[closed]]
+kappa = "d9cbad0dfe1c8efe1ebffc208e126024376380a3e7aa4fce2e2e4d45716f4ef2"
+record = "Security::riskReleasePointerRollbackOrEquivocation"
+axis = "meant"
+
+[[closed]]
 kappa = "e55493a142cbe1f4f24e432e991f539f60ee675b59e217785fc50bf8641a8741"
 record = "Security::riskReleasePointerRollbackOrEquivocation"
 axis = "meant"
+
+[[closed]]
+kappa = "52acdb6249b5da231887d76e1b90104d4bb5dd06c2e91afbb8aed3f91e3605ef"
+record = "Security::riskRepudiatedAdminApprovalOrPolicyEdit"
+axis = "derived"
 
 [[closed]]
 kappa = "ebaa62f0602b85042153f4d8fed42dd15f3a38f01ab0ab778e563b887ff8e551"
@@ -10820,9 +12905,19 @@ record = "Security::riskRepudiatedAdminApprovalOrPolicyEdit"
 axis = "meant"
 
 [[closed]]
+kappa = "7178ec7fa64ee7ebfd4dc77da9db3c3a64877a8dbd560ec6f1dde5577328fea0"
+record = "Security::riskRepudiatedAdminApprovalOrPolicyEdit"
+axis = "meant"
+
+[[closed]]
 kappa = "d305e10cc4f72fc1ac8183fd5f4aaa25f54cb6a2b204aeb447dfdfdb06b2928a"
 record = "Security::riskRepudiatedAdminApprovalOrPolicyEdit"
 axis = "meant"
+
+[[closed]]
+kappa = "86ed3f4dbd912376b35bd784445d1234240143d1119c534e63a801d5637afb04"
+record = "Security::riskRevokedAdminSignatureOrStaleApprovalReplay"
+axis = "derived"
 
 [[closed]]
 kappa = "d5c0c4a8f5187cc158054aa89de918d3438baf2d111f45f3f641e239d8b9a66d"
@@ -10845,6 +12940,11 @@ record = "Security::riskRevokedAdminSignatureOrStaleApprovalReplay"
 axis = "meant"
 
 [[closed]]
+kappa = "8ff02a6d3a711df1fcedd1aba3ba0475db4ab588c84c2bceb27725e3568f8998"
+record = "Security::riskRevokedAdminSignatureOrStaleApprovalReplay"
+axis = "meant"
+
+[[closed]]
 kappa = "78ebf71ebf1018baa4d3f0c75fcc00c99041025f429a8f6d473418566249a767"
 record = "Security::riskRevokedPeerRetentionOrReplay"
 axis = "derived"
@@ -10855,7 +12955,17 @@ record = "Security::riskRevokedPeerRetentionOrReplay"
 axis = "derived"
 
 [[closed]]
+kappa = "dd7789d5a301b8fb3efee8ae8e75f3c216a43263788a176283d2a4c57d925b6f"
+record = "Security::riskRevokedPeerRetentionOrReplay"
+axis = "derived"
+
+[[closed]]
 kappa = "1daef326cd9aba9c87660f515b2a39c1292b3cb3e8d33ac6067e8d33f1bcea1c"
+record = "Security::riskRevokedPeerRetentionOrReplay"
+axis = "meant"
+
+[[closed]]
+kappa = "2893be71a7397f9e218d5f7b1261b9eef4aa6c05238c7207ffe69931b16a8ae6"
 record = "Security::riskRevokedPeerRetentionOrReplay"
 axis = "meant"
 
@@ -10873,6 +12983,16 @@ axis = "derived"
 kappa = "3ba2df09130bcf2f58f81a2e4b8b843e5e3890801393afa3801d1aabaa94a5dd"
 record = "Security::riskRogueSingleAdminOrSelfApprovalBypass"
 axis = "derived"
+
+[[closed]]
+kappa = "64a91002abab443fc5df1fcddbf7cbda1d88cce178fd31249aa62d84a75e4a42"
+record = "Security::riskRogueSingleAdminOrSelfApprovalBypass"
+axis = "derived"
+
+[[closed]]
+kappa = "cacd262d1da615641db399bdcd247d1ea511aa4a1879910de8c5b89129c2120e"
+record = "Security::riskRogueSingleAdminOrSelfApprovalBypass"
+axis = "meant"
 
 [[closed]]
 kappa = "cf9f171572aad602eec2c784ecfacd17a007b59e2f931f7d042294a8314f30a1"
@@ -10895,6 +13015,16 @@ record = "Security::riskShardAttritionOrColdDisappearance"
 axis = "derived"
 
 [[closed]]
+kappa = "ba585c8bb96c9163e7a474da40d5e43d326e82a40a6507cd97d0706aa928d8d8"
+record = "Security::riskShardAttritionOrColdDisappearance"
+axis = "derived"
+
+[[closed]]
+kappa = "b0bf4b47d02cfef50d1fb84006d588afdde8fb44c120f1de946f472075133f78"
+record = "Security::riskShardAttritionOrColdDisappearance"
+axis = "meant"
+
+[[closed]]
 kappa = "b7d69f0ce86ba0740a2bd8fcca6f1d8e1f6750de813ccc27f1792828cb76b3f4"
 record = "Security::riskShardAttritionOrColdDisappearance"
 axis = "meant"
@@ -10902,6 +13032,66 @@ axis = "meant"
 [[closed]]
 kappa = "e3d3828b499b6907af84f94dc91a94466df21503004282968ad7a58231169d8e"
 record = "Security::riskShardAttritionOrColdDisappearance"
+axis = "meant"
+
+[[closed]]
+kappa = "75b1d44d76132c7f872a1e5943ba42ddffb86ca697141e11fe4d217c1eb2f1aa"
+record = "Security::riskSignalingIpOrPresenceCorrelation"
+axis = "derived"
+
+[[closed]]
+kappa = "b11b5915baad8361b42579ef3699149423bb364e3d6f20de31d3927284ae8f3f"
+record = "Security::riskSignalingIpOrPresenceCorrelation"
+axis = "derived"
+
+[[closed]]
+kappa = "5f34ded7d654a1b18c9bbe7d77299e7da02d7bda71b07ab64ba0c69edbe7ccfa"
+record = "Security::riskSignalingIpOrPresenceCorrelation"
+axis = "meant"
+
+[[closed]]
+kappa = "da904c563274dac15bd85a52962e05a88cbdcfdd28c8e0f0daeb06c3afa73c5c"
+record = "Security::riskSignalingIpOrPresenceCorrelation"
+axis = "meant"
+
+[[closed]]
+kappa = "039e217696186ab360c303bbb7f644ae2a6c6eb3cc7168d8327fe4b294013f42"
+record = "Security::riskSignalingRelayEclipseOrMitm"
+axis = "derived"
+
+[[closed]]
+kappa = "97339362dbbd9b9ca9c57ba2653295deab80a4d52083ccea08ee1335a8fd3796"
+record = "Security::riskSignalingRelayEclipseOrMitm"
+axis = "derived"
+
+[[closed]]
+kappa = "7369ba70e70bbe74a7714400b232e1a10eb3e7db6659286a4927fd35cdc0b80e"
+record = "Security::riskSignalingRelayEclipseOrMitm"
+axis = "meant"
+
+[[closed]]
+kappa = "d3f9d01c8dde9393359eedf87f3fd23096eea1aadfce774d7ec12d39857fcac8"
+record = "Security::riskSignalingRelayEclipseOrMitm"
+axis = "meant"
+
+[[closed]]
+kappa = "ad8e8246c05ee7dcb6a1fdefb2d90e518f996bfaa3e0fa0c770d097becd47345"
+record = "Security::riskSignalingTopicSpamOrWebRtcAmplification"
+axis = "derived"
+
+[[closed]]
+kappa = "f2a011a9ecf37329990ee272d63ee58a6d406c93fc7ac0df94ca7f15304d0267"
+record = "Security::riskSignalingTopicSpamOrWebRtcAmplification"
+axis = "derived"
+
+[[closed]]
+kappa = "a34b8072330b095e7fb318028dcaf654302171958bf4636e87e3925e7ab52c54"
+record = "Security::riskSignalingTopicSpamOrWebRtcAmplification"
+axis = "meant"
+
+[[closed]]
+kappa = "a4113f151ec04e5cd550ca1b758ba72dd314577478d6ec94787ee82322bc2854"
+record = "Security::riskSignalingTopicSpamOrWebRtcAmplification"
 axis = "meant"
 
 [[closed]]
@@ -10921,6 +13111,11 @@ axis = "derived"
 
 [[closed]]
 kappa = "8325714f077a69212103330778298a930c226f66adab2297ab61c9d38aea5eaf"
+record = "Security::riskSnapshotTampering"
+axis = "derived"
+
+[[closed]]
+kappa = "ec525f9b9ebcf5181da088a855898fc0e25944237713828559221e3b03c3f50e"
 record = "Security::riskSnapshotTampering"
 axis = "derived"
 
@@ -10945,6 +13140,11 @@ record = "Security::riskSnapshotTampering"
 axis = "meant"
 
 [[closed]]
+kappa = "aff3828998d103e06d1e1028b8f4318155f88049919ecf106b27dda548a2aa6f"
+record = "Security::riskSnapshotTampering"
+axis = "meant"
+
+[[closed]]
 kappa = "d01e2cd9f17f036b432bf8ad474b81b7ca7679dc36567138861d708f504ef272"
 record = "Security::riskSnapshotTampering"
 axis = "meant"
@@ -10960,12 +13160,22 @@ record = "Security::riskStitchStorageFloodOrSybilExhaustion"
 axis = "derived"
 
 [[closed]]
+kappa = "3499f29c86a4f0a1375c24cd7652745b0a699b8c12b8fd8baa5831cffc44556d"
+record = "Security::riskStitchStorageFloodOrSybilExhaustion"
+axis = "derived"
+
+[[closed]]
 kappa = "e92340741b93aab556b5e365d4ea1a74764c1f0604dc147d8185e748006a27a6"
 record = "Security::riskStitchStorageFloodOrSybilExhaustion"
 axis = "derived"
 
 [[closed]]
 kappa = "56515f9b5e970a8be8ea56c7d70ea522430e37110dcc74581be4fd264d7d5dfe"
+record = "Security::riskStitchStorageFloodOrSybilExhaustion"
+axis = "meant"
+
+[[closed]]
+kappa = "b4a094a7aaa01a027c235ed845ce03d839f41b435d97e1416194a71369179767"
 record = "Security::riskStitchStorageFloodOrSybilExhaustion"
 axis = "meant"
 
@@ -10990,6 +13200,11 @@ record = "Security::riskStudioScriptInjection"
 axis = "derived"
 
 [[closed]]
+kappa = "972e1df1efabd227f8116cb53b1fdb83be8279898a739bae1bb9c882cf188922"
+record = "Security::riskStudioScriptInjection"
+axis = "derived"
+
+[[closed]]
 kappa = "9e7e58f7b3276181c2716dbf3fe4436d2945d69cc742e027457125cb11b2cb6f"
 record = "Security::riskStudioScriptInjection"
 axis = "derived"
@@ -11001,6 +13216,11 @@ axis = "derived"
 
 [[closed]]
 kappa = "14e434d5fd1cedea1d3d8e0f63b4547cfa8b931edc1b92ed6cf3231d4374abf4"
+record = "Security::riskStudioScriptInjection"
+axis = "meant"
+
+[[closed]]
+kappa = "2b11cb7eb5bc1aa76b97ea7f69b48539080554b69f1ee86ad89607f1d58c8829"
 record = "Security::riskStudioScriptInjection"
 axis = "meant"
 
@@ -11035,6 +13255,16 @@ record = "Security::riskUnauthorizedPrivateBoundaryRead"
 axis = "derived"
 
 [[closed]]
+kappa = "d843a384f5fb0d61c6aa3348031fcee7864250aed614af6cf8f2be376ee7aa91"
+record = "Security::riskUnauthorizedPrivateBoundaryRead"
+axis = "derived"
+
+[[closed]]
+kappa = "2c1271c1a8536107954ac763df256a76b5efffe2a1fa30147dc66ae800dd4028"
+record = "Security::riskUnauthorizedPrivateBoundaryRead"
+axis = "meant"
+
+[[closed]]
 kappa = "55756a95abc21738b3434a9c57c1e1b3c89be1b570029b61b4bb6c6457eca639"
 record = "Security::riskUnauthorizedPrivateBoundaryRead"
 axis = "meant"
@@ -11065,9 +13295,19 @@ record = "Security::riskUngrantedContainerOrganAccess"
 axis = "derived"
 
 [[closed]]
+kappa = "ccf94dc2e8e2300a3e81ba5225b4d9a508e046107a77ccd42538dbda651ff46e"
+record = "Security::riskUngrantedContainerOrganAccess"
+axis = "derived"
+
+[[closed]]
 kappa = "dd71d7ce4e1f543bc3ae629a85239afe48834f46f004de5f63a59ae771101ff6"
 record = "Security::riskUngrantedContainerOrganAccess"
 axis = "derived"
+
+[[closed]]
+kappa = "3d9932013da1cce88ea2fd610e367c155f662697de5bcd02946cc13546b25ed9"
+record = "Security::riskUngrantedContainerOrganAccess"
+axis = "meant"
 
 [[closed]]
 kappa = "75bd2f9c04f7756aa4e6e197a822c8f39170d584c8507d273780f9be9fb87786"
@@ -11110,12 +13350,22 @@ record = "Security::riskUniverseCoordinatePrecisionCollapse"
 axis = "derived"
 
 [[closed]]
+kappa = "a9b3ebab8d0c6cc4d8925434bf3db8d69afff05957f525d88b47efa528877f9f"
+record = "Security::riskUniverseCoordinatePrecisionCollapse"
+axis = "derived"
+
+[[closed]]
 kappa = "bcd9707de2165dd9cb2d3ddefadc6ea02217c7696f44925dc75d76f9f73d1196"
 record = "Security::riskUniverseCoordinatePrecisionCollapse"
 axis = "derived"
 
 [[closed]]
 kappa = "0c6c9a30f8704d24efafbd389009173aa84188c69fb9f25bbe133705ccb0ee83"
+record = "Security::riskUniverseCoordinatePrecisionCollapse"
+axis = "meant"
+
+[[closed]]
+kappa = "1eb430e874f92fd0bdda9230a6c136289599d43fd88777bbb6719f8c0e349c25"
 record = "Security::riskUniverseCoordinatePrecisionCollapse"
 axis = "meant"
 
@@ -11135,6 +13385,31 @@ record = "Security::riskUniverseCoordinatePrecisionCollapse"
 axis = "meant"
 
 [[closed]]
+kappa = "05817890fb897dc0bb46c641a2d84fee06c0d4a96309c3c359309097fb0133a5"
+record = "Security::riskUnverifiableGatewayProvenance"
+axis = "derived"
+
+[[closed]]
+kappa = "792d7d0ead4b45c79f1d804c11c9a6c995362e51b29ac26535b1ea1b7a7b09d0"
+record = "Security::riskUnverifiableGatewayProvenance"
+axis = "derived"
+
+[[closed]]
+kappa = "bf0261ac32f44b1bcbef83417882ba6e11cb8687daf56a5c31a299685e49e2c6"
+record = "Security::riskUnverifiableGatewayProvenance"
+axis = "meant"
+
+[[closed]]
+kappa = "f032a7e27257e7a3d8def6be12f5bd5cd09be88710a7f98f193f96df0b027d73"
+record = "Security::riskUnverifiableGatewayProvenance"
+axis = "meant"
+
+[[closed]]
+kappa = "2239e3baf6d240a01f98c49447ba7632dcc5f7141d176e93bb40a5954df6d282"
+record = "Security::riskUnverifiedRepoDriftOrBypass"
+axis = "derived"
+
+[[closed]]
 kappa = "300e9cc309d4f6f1fa2f9c98113098b7dc8d6723130dbfd7f716aa1db2ddcc41"
 record = "Security::riskUnverifiedRepoDriftOrBypass"
 axis = "derived"
@@ -11151,6 +13426,11 @@ axis = "meant"
 
 [[closed]]
 kappa = "88713443dfd4eff16a3b5b3b8ace5edb13bf4885be2dc996aaf9b85e931b2638"
+record = "Security::riskUnverifiedRepoDriftOrBypass"
+axis = "meant"
+
+[[closed]]
+kappa = "d60a704f87a897d7f78c8d099e940cf71343ffa571a78a7684c761b452578427"
 record = "Security::riskUnverifiedRepoDriftOrBypass"
 axis = "meant"
 
@@ -11180,6 +13460,11 @@ record = "Security::riskVerifierQueryExhaustion"
 axis = "derived"
 
 [[closed]]
+kappa = "eb5a354411ab09b71e83db38c93e13fbf43f1a42346e108549306ca0c1cefa46"
+record = "Security::riskVerifierQueryExhaustion"
+axis = "derived"
+
+[[closed]]
 kappa = "0e03b5c5e77763be846c549fe4f52e023bbfc323e4dcafdc49f6a9cc73737012"
 record = "Security::riskVerifierQueryExhaustion"
 axis = "meant"
@@ -11200,8 +13485,33 @@ record = "Security::riskVerifierQueryExhaustion"
 axis = "meant"
 
 [[closed]]
+kappa = "da8dd09c615ff53fec71646315d414a0a9922838a10beab49f19a55ade0a880b"
+record = "Security::riskVerifierQueryExhaustion"
+axis = "meant"
+
+[[closed]]
 kappa = "db17cdaed9c775eae8f8c4264a46554785e5c221b10db69f36d4d4107d89b0dc"
 record = "Security::riskVerifierQueryExhaustion"
+axis = "meant"
+
+[[closed]]
+kappa = "404367c9729ec976f7f2854ab71eb6a7633d50a86f69341ade80889b5433afaa"
+record = "Security::riskVolunteerGatewayContentSubstitution"
+axis = "derived"
+
+[[closed]]
+kappa = "b575a6b259823e1b3ff377db0786d032fc5f4bfc65841b7d0c3488855d4732ce"
+record = "Security::riskVolunteerGatewayContentSubstitution"
+axis = "derived"
+
+[[closed]]
+kappa = "1fa5f4e5f703015168460bd0b8cb1c0a7c0fe48eb5a22c297fabde7691e0b81a"
+record = "Security::riskVolunteerGatewayContentSubstitution"
+axis = "meant"
+
+[[closed]]
+kappa = "f0977a5a2ade486c4a97e7e68cd0f9a64de6685c64f3d8f9fa992e90c1dde54e"
+record = "Security::riskVolunteerGatewayContentSubstitution"
 axis = "meant"
 
 [[closed]]
@@ -11225,7 +13535,17 @@ record = "Security::riskWallClippingOrTunnelingBypass"
 axis = "derived"
 
 [[closed]]
+kappa = "d0492b3555d1d9f783e2c9197286906b3a209767797906a2e81fb6d10b5949b2"
+record = "Security::riskWallClippingOrTunnelingBypass"
+axis = "derived"
+
+[[closed]]
 kappa = "3435c1fda13095d51fd0a0d046b7cb440ed5aaf24e4c0c66802fe0647eed4933"
+record = "Security::riskWallClippingOrTunnelingBypass"
+axis = "meant"
+
+[[closed]]
+kappa = "6468c14e5e7481cfd1e8096f85b3743f9ae5229f19d6e0e7412025e45f9ecb94"
 record = "Security::riskWallClippingOrTunnelingBypass"
 axis = "meant"
 
@@ -11555,6 +13875,26 @@ record = "Security::threatMalformedGlbExport"
 axis = "meant"
 
 [[closed]]
+kappa = "19700222d36b2d12d46505ab7df654b36cfea5e2443a836c9031451fc7baee4c"
+record = "Security::threatMaliciousGatewayPathTraversalOrOriginAbuse"
+axis = "derived"
+
+[[closed]]
+kappa = "c6fe1819e13c7ddfffa3afe365f179fda6dd31f55c7740842146526269dfba2f"
+record = "Security::threatMaliciousGatewayPathTraversalOrOriginAbuse"
+axis = "derived"
+
+[[closed]]
+kappa = "7aa61ba43ec49be90839b7fc8bd51b741736a7c20b69d81e863f50baabddb727"
+record = "Security::threatMaliciousGatewayPathTraversalOrOriginAbuse"
+axis = "meant"
+
+[[closed]]
+kappa = "a65e64ba2edc3c2f8e161aa7d7411211102a6376542cabc5a61024620e539f61"
+record = "Security::threatMaliciousGatewayPathTraversalOrOriginAbuse"
+axis = "meant"
+
+[[closed]]
 kappa = "34953bebd22a00965fa028be6148defdfc4e6f78d54d5edbc799f46d3e0bc996"
 record = "Security::threatNarrativeSupplyInflationOrDeadlock"
 axis = "derived"
@@ -11565,9 +13905,19 @@ record = "Security::threatNarrativeSupplyInflationOrDeadlock"
 axis = "derived"
 
 [[closed]]
+kappa = "d4d4885c02bd99f8f5fa12a66ab6681f9f90caab4ecefb92a21a848145687e33"
+record = "Security::threatNarrativeSupplyInflationOrDeadlock"
+axis = "derived"
+
+[[closed]]
 kappa = "e59774496460c99e83ca40da9e10d1706ef51a43c0b8216f3b1faef5b7abd650"
 record = "Security::threatNarrativeSupplyInflationOrDeadlock"
 axis = "derived"
+
+[[closed]]
+kappa = "2fe79baa5abfaf405a9b2f35c0c29af71e9077976b6c0b7a39a11738ac825e1a"
+record = "Security::threatNarrativeSupplyInflationOrDeadlock"
+axis = "meant"
 
 [[closed]]
 kappa = "5b8a7b972bca0eed151ec0c4843b92ac926695daa93acb0b85d09f01a144ccc0"
@@ -11590,6 +13940,11 @@ record = "Security::threatReleasePointerRollbackOrEquivocation"
 axis = "derived"
 
 [[closed]]
+kappa = "bf1a29a7680967f8825933bc9a12e9b0a866254397e87ce6ecb4b61440723998"
+record = "Security::threatReleasePointerRollbackOrEquivocation"
+axis = "derived"
+
+[[closed]]
 kappa = "e85d147db62dc13232d5b5f84988470cbb531140e2050370e46706959fe53d1d"
 record = "Security::threatReleasePointerRollbackOrEquivocation"
 axis = "derived"
@@ -11600,9 +13955,19 @@ record = "Security::threatReleasePointerRollbackOrEquivocation"
 axis = "meant"
 
 [[closed]]
+kappa = "73bbb3513e2f647c2136fcb9c06e8d830b2fbe3f031e4d75c7f81cf5d71951ad"
+record = "Security::threatReleasePointerRollbackOrEquivocation"
+axis = "meant"
+
+[[closed]]
 kappa = "e39e625f8900c22a353a16e4e6e7d30a8efdd8ceb010fa32881eb5fc9e8e23fc"
 record = "Security::threatReleasePointerRollbackOrEquivocation"
 axis = "meant"
+
+[[closed]]
+kappa = "4b1639f05019c4928faef5e6bdd0dd43d54ae92eb69bf73c84da20fd9d9e4860"
+record = "Security::threatRepudiatedAdminApprovalOrPolicyEdit"
+axis = "derived"
 
 [[closed]]
 kappa = "b0c7b02513606049fc140f7da6f9bd62cceee608cb514e35eb22d73b3f1c7712"
@@ -11620,9 +13985,19 @@ record = "Security::threatRepudiatedAdminApprovalOrPolicyEdit"
 axis = "meant"
 
 [[closed]]
+kappa = "c3887fcf8bedc588fe2e9e076ea5e7f26899f45a1bfdafef3884cb275015d4be"
+record = "Security::threatRepudiatedAdminApprovalOrPolicyEdit"
+axis = "meant"
+
+[[closed]]
 kappa = "f0eddf5c29990175c6b5772428c3d939252fe33495ef732ed98eb68938d8640f"
 record = "Security::threatRepudiatedAdminApprovalOrPolicyEdit"
 axis = "meant"
+
+[[closed]]
+kappa = "04f42442eda20797769b38130248232327b154fac622f96922207871f5499bbb"
+record = "Security::threatRevokedAdminSignatureOrStaleApprovalReplay"
+axis = "derived"
 
 [[closed]]
 kappa = "c6c7dc42081ebc1cc403391db8ee325fed5dbe6a70af0a575b3491bf706c911b"
@@ -11645,12 +14020,22 @@ record = "Security::threatRevokedAdminSignatureOrStaleApprovalReplay"
 axis = "meant"
 
 [[closed]]
+kappa = "424219e47e3a2a50c2d4739b9a77897e84c891ae10fa68b55e9e1b00525465cc"
+record = "Security::threatRevokedAdminSignatureOrStaleApprovalReplay"
+axis = "meant"
+
+[[closed]]
 kappa = "3de28d9d9251671447d3cdf03b2840b8811941821ac066f4d2f211f9d69d6a5a"
 record = "Security::threatRevokedPeerRetentionOrReplay"
 axis = "derived"
 
 [[closed]]
 kappa = "481870b7497ca48e79076d29be660d64e066fffcc69b934bbc27481696e76340"
+record = "Security::threatRevokedPeerRetentionOrReplay"
+axis = "derived"
+
+[[closed]]
+kappa = "481ab635a5e7a4562e532d82eaca18c04b0292ca3490ce929aa5c4bf8feac234"
 record = "Security::threatRevokedPeerRetentionOrReplay"
 axis = "derived"
 
@@ -11665,6 +14050,16 @@ record = "Security::threatRevokedPeerRetentionOrReplay"
 axis = "meant"
 
 [[closed]]
+kappa = "d414609e80ef39dd2e38f0a54914bdc9c134300f37a160231d4de645795ea6a2"
+record = "Security::threatRevokedPeerRetentionOrReplay"
+axis = "meant"
+
+[[closed]]
+kappa = "5b280e0cb7b3ed430be5416bdb25798e89709ed58e266829946b5b3568877315"
+record = "Security::threatRogueSingleAdminOrSelfApprovalBypass"
+axis = "derived"
+
+[[closed]]
 kappa = "dc5df51f00461efd047d635bd8a68d7437fe3bbda6f15a5b73690e71098a0497"
 record = "Security::threatRogueSingleAdminOrSelfApprovalBypass"
 axis = "derived"
@@ -11673,6 +14068,11 @@ axis = "derived"
 kappa = "fe1ff5a30a48fb0e73ae56a9c083bb08bc601d8d84a5ee6e3936022edb9a22ae"
 record = "Security::threatRogueSingleAdminOrSelfApprovalBypass"
 axis = "derived"
+
+[[closed]]
+kappa = "61c57306ae1e4cdf1ae3d351e5c91b263e0a34b8832e5d78cdabb7a6fc37ae86"
+record = "Security::threatRogueSingleAdminOrSelfApprovalBypass"
+axis = "meant"
 
 [[closed]]
 kappa = "8ad40f1d97299ad6101cf4bf10c718956b6849540a8b03cd13aed761c75c9ee5"
@@ -11690,6 +14090,11 @@ record = "Security::threatShardAttritionOrColdDisappearance"
 axis = "derived"
 
 [[closed]]
+kappa = "a6fb4660d29fcacf909b83824463000c62222a34cfad53126b015dc807f17246"
+record = "Security::threatShardAttritionOrColdDisappearance"
+axis = "derived"
+
+[[closed]]
 kappa = "c205fb691b596a207e9748f053f404dc1bc778e5b43b66e050bf9c581853c30f"
 record = "Security::threatShardAttritionOrColdDisappearance"
 axis = "derived"
@@ -11700,8 +14105,73 @@ record = "Security::threatShardAttritionOrColdDisappearance"
 axis = "meant"
 
 [[closed]]
+kappa = "9ec3adada011b21b63a0854db76ab0e2a5e2b9da7b00d12d3a43e27053a098fd"
+record = "Security::threatShardAttritionOrColdDisappearance"
+axis = "meant"
+
+[[closed]]
 kappa = "e5259ea77edbe753fd1346a81feb2cbd14b7810b0592fc59b02b84e2acb34460"
 record = "Security::threatShardAttritionOrColdDisappearance"
+axis = "meant"
+
+[[closed]]
+kappa = "297f5dfc6a518d6e5414c594c013531bd566b1097db469b7c7f05c27cb53a7e1"
+record = "Security::threatSignalingIpOrPresenceCorrelation"
+axis = "derived"
+
+[[closed]]
+kappa = "7916bacbb3d35a20cddd756d86bc5b41af2cb5dd123f7e39b2ba07366dc43cc2"
+record = "Security::threatSignalingIpOrPresenceCorrelation"
+axis = "derived"
+
+[[closed]]
+kappa = "54425ff92ca1ac0c2677c42423096fa010e0ca86da29290757550f0f226a4cfb"
+record = "Security::threatSignalingIpOrPresenceCorrelation"
+axis = "meant"
+
+[[closed]]
+kappa = "66f07209c80a098efcbeedc8f3a2fe3dcb3206d01ebec2ca7f01688a7534b05b"
+record = "Security::threatSignalingIpOrPresenceCorrelation"
+axis = "meant"
+
+[[closed]]
+kappa = "d7411bbe5281d311dc759b0d4da1c2919719ebcd1262f6c81c4203f42c8f5330"
+record = "Security::threatSignalingRelayEclipseOrMitm"
+axis = "derived"
+
+[[closed]]
+kappa = "ead32007066a923f05f2b5a7ef0b3ed6ddbb81cf87c2718d9d0b2ea30f321fff"
+record = "Security::threatSignalingRelayEclipseOrMitm"
+axis = "derived"
+
+[[closed]]
+kappa = "6bad41fad3435391a480aae9cbf73e7832c50c71bc49f1d40d6d9ae17deb2292"
+record = "Security::threatSignalingRelayEclipseOrMitm"
+axis = "meant"
+
+[[closed]]
+kappa = "b06eabb3cfa197f21bf62dc4d0a930817b3b084ec2bf998ddd98aac680e57b0c"
+record = "Security::threatSignalingRelayEclipseOrMitm"
+axis = "meant"
+
+[[closed]]
+kappa = "560c15fa39891d6884e0aa68bba8c45eee58c4f8f32778825a6270f89250b19c"
+record = "Security::threatSignalingTopicSpamOrWebRtcAmplification"
+axis = "derived"
+
+[[closed]]
+kappa = "fae9a837935bb4ce2c4dbdf684335022ba687f14167d8d22e79363b89ac670b5"
+record = "Security::threatSignalingTopicSpamOrWebRtcAmplification"
+axis = "derived"
+
+[[closed]]
+kappa = "295921b9d44a7b5b0a985f22cb0eeee2da96c66f03ae4eb22ee9bba30668fe0a"
+record = "Security::threatSignalingTopicSpamOrWebRtcAmplification"
+axis = "meant"
+
+[[closed]]
+kappa = "eee3cc82c422b3ca0d08a5ed0007028665dff4c589f5d3a494dbf54dd6896003"
+record = "Security::threatSignalingTopicSpamOrWebRtcAmplification"
 axis = "meant"
 
 [[closed]]
@@ -11716,6 +14186,11 @@ axis = "derived"
 
 [[closed]]
 kappa = "8bf428d952d33519d52a1aaed1e87524f62f91f6f894b7ab4b64db19690c8262"
+record = "Security::threatSnapshotTampering"
+axis = "derived"
+
+[[closed]]
+kappa = "8cb30132e12a540e427d7357e8591ecb4ffe262baee94ddc91602fabb1737166"
 record = "Security::threatSnapshotTampering"
 axis = "derived"
 
@@ -11750,9 +14225,19 @@ record = "Security::threatSnapshotTampering"
 axis = "meant"
 
 [[closed]]
+kappa = "9a51fb9ae469851af37b01184bb6015fc2f6198b96512b85ece2ecb5f8eff1fb"
+record = "Security::threatSnapshotTampering"
+axis = "meant"
+
+[[closed]]
 kappa = "9ab7c7679cdb5c754054ff3db9e6b019828a9d054439d38b99acf47490ec7cd5"
 record = "Security::threatSnapshotTampering"
 axis = "meant"
+
+[[closed]]
+kappa = "86238f7de3303ba26c5b5a15eb280931c55bbd3b61729f7b5c5badd8f875c0c9"
+record = "Security::threatStitchStorageFloodOrSybilExhaustion"
+axis = "derived"
 
 [[closed]]
 kappa = "ae7ad3d3e16587c5afc8d857bcc3c7bc455df0c06020ffc1dbef76b42fd4bbb7"
@@ -11763,6 +14248,11 @@ axis = "derived"
 kappa = "ce191465082ce881ea123e6efd22843fe1fec42d40ed89dd0565ff60475f440e"
 record = "Security::threatStitchStorageFloodOrSybilExhaustion"
 axis = "derived"
+
+[[closed]]
+kappa = "75c5be6c8819a18f1e44f70dab31f17be315a2496a397265e24d14950dfececc"
+record = "Security::threatStitchStorageFloodOrSybilExhaustion"
+axis = "meant"
 
 [[closed]]
 kappa = "ce1eabc450313cdd77689da74a51bd72ee877bba11aa41911657b4ac320d9efe"
@@ -11795,9 +14285,19 @@ record = "Security::threatStudioScriptInjection"
 axis = "derived"
 
 [[closed]]
+kappa = "ba9e8a317d0aac492e71cd1bbaf3d300569a299c48a338e88dd562e05e2b7027"
+record = "Security::threatStudioScriptInjection"
+axis = "derived"
+
+[[closed]]
 kappa = "c623063ba53618f6fe3a45a00b0fd73a37e65777bdb9d67a05b8f465ed67fa6d"
 record = "Security::threatStudioScriptInjection"
 axis = "derived"
+
+[[closed]]
+kappa = "0347728a58b871ff0b36d52498dbff313dd0e397688b66b30d87dd2ebba468aa"
+record = "Security::threatStudioScriptInjection"
+axis = "meant"
 
 [[closed]]
 kappa = "08a3e644cb432992194f7749e5bb7730cebd2bf88402d893153b5c4b720652f8"
@@ -11835,6 +14335,16 @@ record = "Security::threatUnauthorizedPrivateBoundaryRead"
 axis = "derived"
 
 [[closed]]
+kappa = "f39b1f8dd62e0476b7e1092779154d4d2fcfda7d69cd68f2ff3c3870de8d7841"
+record = "Security::threatUnauthorizedPrivateBoundaryRead"
+axis = "derived"
+
+[[closed]]
+kappa = "8323f9182c15469a2ccfa55eb3498b9f79a349ba8b304d4af3e1c76f2bf6c380"
+record = "Security::threatUnauthorizedPrivateBoundaryRead"
+axis = "meant"
+
+[[closed]]
 kappa = "99d5a8af08f79f8d70d0997d6936214cf5154416d1debb238d17a78054f2c0e9"
 record = "Security::threatUnauthorizedPrivateBoundaryRead"
 axis = "meant"
@@ -11846,6 +14356,11 @@ axis = "meant"
 
 [[closed]]
 kappa = "4f36dcb31d28db3a76eed0e074688ce25e21bf0e4c9240765c90a540088dfbb7"
+record = "Security::threatUngrantedContainerOrganAccess"
+axis = "derived"
+
+[[closed]]
+kappa = "839e9dd2194bcdfe660c8dc050a2a65a77c7f8faa758b38f202547720c75842e"
 record = "Security::threatUngrantedContainerOrganAccess"
 axis = "derived"
 
@@ -11885,12 +14400,22 @@ record = "Security::threatUngrantedContainerOrganAccess"
 axis = "meant"
 
 [[closed]]
+kappa = "f86e244286b05bc85aa3d3af58bb5a34eeebdc00f6952a4cff0aa061882f718a"
+record = "Security::threatUngrantedContainerOrganAccess"
+axis = "meant"
+
+[[closed]]
 kappa = "43d325daa9f46e987944e7ddc7cb59f4eefb2768a1531b4e30768eae03366491"
 record = "Security::threatUniverseCoordinatePrecisionCollapse"
 axis = "derived"
 
 [[closed]]
 kappa = "6b512a9f715febc53d8ae61bdd1623af90863203fef452683eac2d14989bc956"
+record = "Security::threatUniverseCoordinatePrecisionCollapse"
+axis = "derived"
+
+[[closed]]
+kappa = "79af68d1ecb2eea8837645af02ad591576b43185ac4fb69770c55be0be5da5c4"
 record = "Security::threatUniverseCoordinatePrecisionCollapse"
 axis = "derived"
 
@@ -11920,12 +14445,42 @@ record = "Security::threatUniverseCoordinatePrecisionCollapse"
 axis = "meant"
 
 [[closed]]
+kappa = "c77d1e59526b940d1191247c2f2263c7977ad06919fd209a8b0fe32ebf795fa6"
+record = "Security::threatUniverseCoordinatePrecisionCollapse"
+axis = "meant"
+
+[[closed]]
 kappa = "f6b8256b13457c16f694496ad0acf73a6188287cd634dc1f6194e244fca6c1f0"
 record = "Security::threatUniverseCoordinatePrecisionCollapse"
 axis = "meant"
 
 [[closed]]
+kappa = "4afb355bd201bfdfaf7096cb9ed2105785cfad5e4d595c71cbc20efdc69f11cc"
+record = "Security::threatUnverifiableGatewayProvenance"
+axis = "derived"
+
+[[closed]]
+kappa = "bc2e406ebe84bae45a4684b1b08102e7f7c78f832c4a5c89e520d991277d9dc7"
+record = "Security::threatUnverifiableGatewayProvenance"
+axis = "derived"
+
+[[closed]]
+kappa = "252712ef72c9b507722895303895424b53c920fb2a6e5d1211fd60753791ef93"
+record = "Security::threatUnverifiableGatewayProvenance"
+axis = "meant"
+
+[[closed]]
+kappa = "e406673508b9910a83b73a188f64569d70470deac2c37a3a4eab2c2afa9bef23"
+record = "Security::threatUnverifiableGatewayProvenance"
+axis = "meant"
+
+[[closed]]
 kappa = "0f4fae71ff058025d197bf5f9b2ac078bcbc354de49a65262d8fa4bb39996980"
+record = "Security::threatUnverifiedRepoDriftOrBypass"
+axis = "derived"
+
+[[closed]]
+kappa = "6764760d45869d771908187f86561ec541267350c2acd469fd172ced277dc0c4"
 record = "Security::threatUnverifiedRepoDriftOrBypass"
 axis = "derived"
 
@@ -11940,9 +14495,19 @@ record = "Security::threatUnverifiedRepoDriftOrBypass"
 axis = "meant"
 
 [[closed]]
+kappa = "8f42523c268491d5910df33f685356f858b519464f31a1aa397cd83734ae8e21"
+record = "Security::threatUnverifiedRepoDriftOrBypass"
+axis = "meant"
+
+[[closed]]
 kappa = "ca6cbfe2462dc09980f5b18b3430bc4f3af6d6ec1bf24c6f59a0532b6a71a13b"
 record = "Security::threatUnverifiedRepoDriftOrBypass"
 axis = "meant"
+
+[[closed]]
+kappa = "319fbb43ae7cdd4bdbe13720b98f657a4f03940e0b3104f5106e565623916083"
+record = "Security::threatVerifierQueryExhaustion"
+axis = "derived"
 
 [[closed]]
 kappa = "33b899c6a3144c545d4970aae01803022bf5de992286c53c4f5221379f05192f"
@@ -11970,6 +14535,11 @@ record = "Security::threatVerifierQueryExhaustion"
 axis = "derived"
 
 [[closed]]
+kappa = "4411eceaf1f29608b5c2dfe5cb3e8b0df93bc93159d084a5b263bc46a923af18"
+record = "Security::threatVerifierQueryExhaustion"
+axis = "meant"
+
+[[closed]]
 kappa = "5ae933c27b01c07646658e5347737fd09cf95d1d099a7934b304f3820d859ebf"
 record = "Security::threatVerifierQueryExhaustion"
 axis = "meant"
@@ -11995,7 +14565,32 @@ record = "Security::threatVerifierQueryExhaustion"
 axis = "meant"
 
 [[closed]]
+kappa = "019d3a1adeaa728c40ac108532777835b13a83b72c61ed8bc9bca6d2a6eebc3a"
+record = "Security::threatVolunteerGatewayContentSubstitution"
+axis = "derived"
+
+[[closed]]
+kappa = "d4e288732c16d169aa987f1fb3da74ab8522e52457e37257def22bf3cdcc0398"
+record = "Security::threatVolunteerGatewayContentSubstitution"
+axis = "derived"
+
+[[closed]]
+kappa = "67f8cb344d987c4f8f3681af70bed828d1471e02ba7396f0692aafd10362fdd2"
+record = "Security::threatVolunteerGatewayContentSubstitution"
+axis = "meant"
+
+[[closed]]
+kappa = "f3bd40445cb0ab283dc0201d980a30e90d9d229634346ab7bb4da23e1113be46"
+record = "Security::threatVolunteerGatewayContentSubstitution"
+axis = "meant"
+
+[[closed]]
 kappa = "7327ed9e58c0ffde5be4267fb3e04c53aa98f17bad831a5d61d1a8ac63184dcb"
+record = "Security::threatWallClippingOrTunnelingBypass"
+axis = "derived"
+
+[[closed]]
+kappa = "771dadc02d3684b8b9fc16fa66f767dd75f6799f7d809317451b8ffefef601ca"
 record = "Security::threatWallClippingOrTunnelingBypass"
 axis = "derived"
 
@@ -12020,6 +14615,11 @@ record = "Security::threatWallClippingOrTunnelingBypass"
 axis = "meant"
 
 [[closed]]
+kappa = "4b1eacd10a1a096e382459e6b4e087e4c75d780effdbedd36f0499faf4058db8"
+record = "Security::threatWallClippingOrTunnelingBypass"
+axis = "meant"
+
+[[closed]]
 kappa = "95638626226b474415a30e2147835c6db2c2cf36f878861d8b0811bd84b015e8"
 record = "Security::threatWallClippingOrTunnelingBypass"
 axis = "meant"
@@ -12032,6 +14632,91 @@ axis = "meant"
 [[closed]]
 kappa = "debc2fce415dea14654b79e8439b84491ed1e4d6731747b53df10ee54d6f0d95"
 record = "Security::threatWallClippingOrTunnelingBypass"
+axis = "meant"
+
+[[closed]]
+kappa = "e88521e48768fd4ee822677aeaf9697a8734e420b1222c8f3f454845de833db7"
+record = "StitchHosting::canonicalLayer5Envelope"
+axis = "derived"
+
+[[closed]]
+kappa = "0dffee12f38b702736a503f548bc259e43d5033ad218b15c29331e4039e2b7ce"
+record = "StitchHosting::canonicalLayer5Envelope"
+axis = "meant"
+
+[[closed]]
+kappa = "ed8aaf6027c560322c7b3a316b0ed6cc3343843db5ae7f0072e15506d1f04605"
+record = "StitchHosting::canonicalLayer5Envelope"
+axis = "meant"
+
+[[closed]]
+kappa = "baacf2ca7aa6634d21f547161376aa1e5632bf2c81180a4dac13e691fd558b9a"
+record = "StitchHosting::principle0ZeroCommercialProviderRegistration"
+axis = "derived"
+
+[[closed]]
+kappa = "54e697b6cd467a66b1ce3d55c79c7ec82392edd7190919562f0b887700e9c37a"
+record = "StitchHosting::principle0ZeroCommercialProviderRegistration"
+axis = "meant"
+
+[[closed]]
+kappa = "50523bbd79d5bdb858bcd7f31f5afdf996b3f24aa4927176dfc0d372fc162061"
+record = "StitchHosting::principle1StitchLayer5ZeroAccountSignaling"
+axis = "derived"
+
+[[closed]]
+kappa = "482abca08b9ea4805df6db2cbeaf5d55f904f194490615a2e4abb82779e51438"
+record = "StitchHosting::principle1StitchLayer5ZeroAccountSignaling"
+axis = "meant"
+
+[[closed]]
+kappa = "d46e9eebfe0e0a6d1f5a02ece5ccac6249fe05b02eaa8492c27d1c7341f4c1a0"
+record = "StitchHosting::principle2BudgetedReciprocalBrowserSeeding"
+axis = "derived"
+
+[[closed]]
+kappa = "09dbe73ff9e9b1fe85a29f1a01ee9b1ca95637977d51451f0789e234d1f0e263"
+record = "StitchHosting::principle2BudgetedReciprocalBrowserSeeding"
+axis = "meant"
+
+[[closed]]
+kappa = "64a6e6bb02f17cc9e88d4d5c092c72dcf9a3853601a5febdc8e921e301352588"
+record = "StitchHosting::principle3VolunteerAndLanNodeServing"
+axis = "derived"
+
+[[closed]]
+kappa = "aeb458642dd3dbfec19cec5d9f86035e950077d54e6972d74e717026ab237d7c"
+record = "StitchHosting::principle3VolunteerAndLanNodeServing"
+axis = "meant"
+
+[[closed]]
+kappa = "86f21c319152e6b831e6f3e068d6d8a7abb9627a3292902c9ce35d5ea0bf3e8d"
+record = "StitchHosting::principle4OfflineFirstPwaAndPortableHtml"
+axis = "derived"
+
+[[closed]]
+kappa = "56297f4c5a76f0109707d606a94c40c9d38c444784d707c1463d1910b0dd5aee"
+record = "StitchHosting::principle4OfflineFirstPwaAndPortableHtml"
+axis = "meant"
+
+[[closed]]
+kappa = "918f1c3eaec047141164c3ee0da3233bf2ee6df764e8c6bcddd03de4557ccf6f"
+record = "StitchHosting::principle5PermissionlessPublicArchives"
+axis = "derived"
+
+[[closed]]
+kappa = "815ca0585cddb76aed6411f477f7c630795e292aa37b42ebf2b78439179d233c"
+record = "StitchHosting::principle5PermissionlessPublicArchives"
+axis = "meant"
+
+[[closed]]
+kappa = "474e2202060f720eb439cf4f3a65b6b4d07c15be194fac3a6122fa78fde18ba9"
+record = "StitchHosting::principle6ZeroTrustVerifiedHydration"
+axis = "derived"
+
+[[closed]]
+kappa = "4d5d27a172dc3af4654eba4d1b2c9ea091a5a3d0fed5e66ea54ec8d6bafdffa8"
+record = "StitchHosting::principle6ZeroTrustVerifiedHydration"
 axis = "meant"
 
 [[closed]]
@@ -12845,6 +15530,16 @@ record = "Users::environments#5"
 axis = "meant"
 
 [[closed]]
+kappa = "68cba0d1b7db742ad0381ed7998c5f769b06bc580aab5ea7d7c7c7ae365d4a2a"
+record = "Users::environments#6"
+axis = "derived"
+
+[[closed]]
+kappa = "93536e289d91f782ff1fc8b58dadb2ea9bc4d944e39a5d4c8053ea7c2db3af5e"
+record = "Users::environments#6"
+axis = "meant"
+
+[[closed]]
 kappa = "048324cc2552e593a575ca5b078c49d59940307ae595054e4c76237b1d72ad7c"
 record = "Users::goals#0"
 axis = "derived"
@@ -12985,6 +15680,16 @@ record = "Users::goals#8"
 axis = "meant"
 
 [[closed]]
+kappa = "035903aa87ca2e7ff1906b005ab4c7021d257c5236a1702454c585dd155b61f8"
+record = "Users::goals#9"
+axis = "derived"
+
+[[closed]]
+kappa = "9c989afe3fcf2cbf44da0a10b2d3924ffae3ae3cbff6b6aec54f6bfa35088658"
+record = "Users::goals#9"
+axis = "meant"
+
+[[closed]]
 kappa = "c1665ee5b8f8d8961f3f8d1d30af87e41702a24533cb4c3dafe3ca2749b5f398"
 record = "Users::groups#0"
 axis = "derived"
@@ -13072,6 +15777,16 @@ axis = "derived"
 [[closed]]
 kappa = "7ac8028557c3753820439657fbfc25ea19bb2a06b7807762f6dd1eb7421043dc"
 record = "Users::groups#8"
+axis = "meant"
+
+[[closed]]
+kappa = "697837090daa4166e67f20c374e4b34879a6f4f8d169169b47aa7b7152a48756"
+record = "Users::groups#9"
+axis = "derived"
+
+[[closed]]
+kappa = "ecf8d8abc6027cf24a38de04a0c434c2a199e20222b63dff99efd73d626176a1"
+record = "Users::groups#9"
 axis = "meant"
 
 [[closed]]
@@ -13312,6 +16027,46 @@ axis = "derived"
 [[closed]]
 kappa = "a3309132c4499a2c6612d182ef4970b5a99b48ff560d66b4dfc111c7dfc110e9"
 record = "Users::measures#26"
+axis = "meant"
+
+[[closed]]
+kappa = "9d163cf82e5bcd0b08e01aa876be4d0897d1df55b01622bde8c8bf0400386fc6"
+record = "Users::measures#27"
+axis = "derived"
+
+[[closed]]
+kappa = "9f6c1c74c5452053e3761c3d85aebe1a90236be766fd7236e60656f7365602a3"
+record = "Users::measures#27"
+axis = "derived"
+
+[[closed]]
+kappa = "1f149edc654be4ca850a9ee318d4e28e0a1cfdf78d9a0754b7da0a9a6fa3cbd4"
+record = "Users::measures#27"
+axis = "meant"
+
+[[closed]]
+kappa = "c0fe081cbc49b2ff96a650647fc141d2790ada5f2e8907506fb7f38d8a7ab547"
+record = "Users::measures#27"
+axis = "meant"
+
+[[closed]]
+kappa = "690aa001f89797912bb28a0719eee2a112b8d2c3e9a20e64fa9f0d5473e8a8ec"
+record = "Users::measures#28"
+axis = "derived"
+
+[[closed]]
+kappa = "ea3e80f0a501a2c01749df78ab5fb8835e0dae2bda130004a07af6601f5afcc5"
+record = "Users::measures#28"
+axis = "meant"
+
+[[closed]]
+kappa = "ac95d2896d1e538fe912097a8bc6854b6bc52286d8b5c10c0836becd4ea22042"
+record = "Users::measures#29"
+axis = "derived"
+
+[[closed]]
+kappa = "b665d01056d84f9c1386c950848967b6751ee3687e4954b173af0dcba3e8e2e6"
+record = "Users::measures#29"
 axis = "meant"
 
 [[closed]]
@@ -13755,6 +16510,16 @@ record = "Users::tasks#28"
 axis = "meant"
 
 [[closed]]
+kappa = "9dbc8b077c94cbd19071903786e5d0d5cad2bd7f2d4c62d51e1422e5af1fed6d"
+record = "Users::tasks#29"
+axis = "derived"
+
+[[closed]]
+kappa = "7ef0b1fd56a619c692ec8f1694c6cfead142a54f085ee6c5f661a7c12f1f6e02"
+record = "Users::tasks#29"
+axis = "meant"
+
+[[closed]]
 kappa = "db1499473a563b94e3f77ddd52906535e81e2eeec8d0a678a35d69983492871b"
 record = "Users::tasks#3"
 axis = "derived"
@@ -13762,6 +16527,26 @@ axis = "derived"
 [[closed]]
 kappa = "6b4f5ec306193e2d81d9c57fc52fe32414b0c0a3a8d751b54d31c0723be424ba"
 record = "Users::tasks#3"
+axis = "meant"
+
+[[closed]]
+kappa = "e67946aeedabbe36a39a4b4707c8b8ccbf680e5ad19de5858e147f1e371c2806"
+record = "Users::tasks#30"
+axis = "derived"
+
+[[closed]]
+kappa = "13d665a8d23649ee3020ab60ecaf0ac870804c6ae01e28e297f89cf7b502a1a1"
+record = "Users::tasks#30"
+axis = "meant"
+
+[[closed]]
+kappa = "2382db759478ef8b2500726e88ee597d8a04764cebde298fc9166850133f08c7"
+record = "Users::tasks#31"
+axis = "derived"
+
+[[closed]]
+kappa = "5e9466f12e90177527fd7a5c67971a2b0f0a40f30b41c712ffb681a747671bc1"
+record = "Users::tasks#31"
 axis = "meant"
 
 [[closed]]

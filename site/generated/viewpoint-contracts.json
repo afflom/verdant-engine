@@ -153,7 +153,7 @@
     },
     {
       "basisPrime": 71,
-      "kappaHex": "24ad182f9a563618459a61053ab6ce6848ad6957a063ed33a8dc1b6ce026aad1",
+      "kappaHex": "41546477d323dc1baa489f99c058f39ebc8c1796363b695d459e81b2b9f40a5c",
       "spec": {
         "almPhases": [
           "change-management",
@@ -183,6 +183,7 @@
         "ownedFiles": [
           "app/src/Cadence.lex.tex",
           "app/src/Release.lex.tex",
+          "app/src/StitchHosting.lex.tex",
           "crates/verdant-core/src/vcs.rs",
           "crates/verdant-core/src/vcs_studio.rs",
           "crates/verdant-core/src/governance.rs",
@@ -217,7 +218,7 @@
     },
     {
       "basisPrime": 73,
-      "kappaHex": "0ff7ca0238c066b5203f8c75944e9c55298affce1cf2f633594adf9d275b2982",
+      "kappaHex": "cad1fe42267b4ef5c53f366cf6121a2acccbc9025bfc9658825a9bbd4dc1c73d",
       "spec": {
         "almPhases": [
           "security",
@@ -226,7 +227,7 @@
           "cryptographic-custody"
         ],
         "concerns": [
-          "Govern Prism Stratum 3 Security, Sovereign Governance, and STRIDE Threat Model (Assets 0..10, Threats 0..26, Controls 0..25)",
+          "Govern Prism Stratum 3 Security, Sovereign Governance, and STRIDE Threat Model (Assets 0..12, Threats 0..32, Controls 0..31)",
           "Enforce zero-account Prism ID Encrypt-then-MAC boundary privacy, M-of-N Admin quorum signing requests, epoch revocation, and k-of-n Reed-Solomon integrity"
         ],
         "differentiationRequirements": [

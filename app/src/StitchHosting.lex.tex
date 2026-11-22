@@ -1,0 +1,265 @@
+\begin{lexlean}{StitchHosting}
+\useglossary{lexlean.std.bool@1.2.0}
+\useglossary{lexlean.std.nat@1.2.0}
+\useglossary{prism.arch@1.0.0}
+\importmodule{Foundation.Ontology.V1.Model}
+\importmodule{Subsystems}
+\importmodule{Release}
+\title{Verdant Engine runtime subsystems}
+\begin{semanticmodule}
+inductive{
+  name: CarrierTier,
+  type_parameters: [],
+  parameters: [],
+  constructors: [
+    {name: githubOriginMirror, fields: []},
+    {name: stitchLayer5PeerSwarm, fields: []},
+    {name: volunteerCommunityGateway, fields: []},
+    {name: permissionlessPublicArchive, fields: []},
+    {name: offlineLocalCustody, fields: []},
+    {name: commercialCloudPaas, fields: []}
+  ]
+}
+
+inductive{
+  name: ServingMode,
+  type_parameters: [],
+  parameters: [],
+  constructors: [
+    {name: browserReciprocalSeed, fields: []},
+    {name: volunteerNodeHttp, fields: []},
+    {name: ipfsContentAddressed, fields: []},
+    {name: offlineOpfsOrPortableHtml, fields: []},
+    {name: githubPrimaryFallback, fields: []}
+  ]
+}
+
+structure{
+  name: SelfHostingPrincipleSpec,
+  type_parameters: [],
+  parameters: [],
+  fields: [
+    {name: index, type: Nat},
+    {name: tier, type: CarrierTier},
+    {name: mode, type: ServingMode},
+    {name: zeroRegistration, type: Bool},
+    {name: commercialLockInFree, type: Bool},
+    {name: name, type: String},
+    {name: text, type: String}
+  ]
+}
+
+structure{
+  name: Layer5EnvelopeSpec,
+  type_parameters: [],
+  parameters: [],
+  fields: [
+    {name: wireBytesMax, type: Nat},
+    {name: chunkBytesMax, type: Nat},
+    {name: messageKibMax, type: Nat},
+    {name: maxFrames, type: Nat},
+    {name: signalLifetimeSecs, type: Nat},
+    {name: warmLifetimeSecs, type: Nat},
+    {name: epochRequestCap, type: Nat},
+    {name: transferBudgetKib, type: Nat},
+    {name: storageBudgetKib, type: Nat},
+    {name: name, type: String},
+    {name: text, type: String}
+  ]
+}
+
+definition{
+  name: principle0ZeroCommercialProviderRegistration,
+  parameters: [],
+  result: SelfHostingPrincipleSpec,
+  body: (record SelfHostingPrincipleSpec {index := 0, tier := (ctor CarrierTier.stitchLayer5PeerSwarm), mode := (ctor ServingMode.browserReciprocalSeed), zeroRegistration := true, commercialLockInFree := true, name := "ZeroCommercialProviderRegistration", text := "Verdant is a free public-benefit service requiring zero accounts or registrations with commercial cloud PaaS providers outside GitHub."})
+}
+
+definition{
+  name: principle1StitchLayer5ZeroAccountSignaling,
+  parameters: [],
+  result: SelfHostingPrincipleSpec,
+  body: (record SelfHostingPrincipleSpec {index := 1, tier := (ctor CarrierTier.stitchLayer5PeerSwarm), mode := (ctor ServingMode.browserReciprocalSeed), zeroRegistration := true, commercialLockInFree := true, name := "StitchLayer5ZeroAccountSignaling", text := "Browsers and volunteer nodes discover Stitch peers and exchange WebRTC session descriptions over Stitch Layer-5 stitch/1 framed text relays without accounts or centralized trackers."})
+}
+
+definition{
+  name: principle2BudgetedReciprocalBrowserSeeding,
+  parameters: [],
+  result: SelfHostingPrincipleSpec,
+  body: (record SelfHostingPrincipleSpec {index := (Subsystems::sTwo), tier := (ctor CarrierTier.stitchLayer5PeerSwarm), mode := (ctor ServingMode.browserReciprocalSeed), zeroRegistration := true, commercialLockInFree := true, name := "BudgetedReciprocalBrowserSeeding", text := "Visiting browsers cache verified 4-of-8 STCH2 shards in OPFS and reciprocally seed peers over WebRTC DataChannels under ResourceAdmission request, transfer, storage, and compute ceilings."})
+}
+
+definition{
+  name: principle3VolunteerAndLanNodeServing,
+  parameters: [],
+  result: SelfHostingPrincipleSpec,
+  body: (record SelfHostingPrincipleSpec {index := (Subsystems::sThree), tier := (ctor CarrierTier.volunteerCommunityGateway), mode := (ctor ServingMode.volunteerNodeHttp), zeroRegistration := true, commercialLockInFree := true, name := "VolunteerAndLanNodeServing", text := "Any community operator running verdant gateway serve or the static OCI container serves the immutable Blank Frame, STCH2 shards, and all six stakeholder parts over HTTPS or local LAN with zero vendor lock-in."})
+}
+
+definition{
+  name: principle4OfflineFirstPwaAndPortableHtml,
+  parameters: [],
+  result: SelfHostingPrincipleSpec,
+  body: (record SelfHostingPrincipleSpec {index := (Subsystems::sFour), tier := (ctor CarrierTier.offlineLocalCustody), mode := (ctor ServingMode.offlineOpfsOrPortableHtml), zeroRegistration := true, commercialLockInFree := true, name := "OfflineFirstPwaAndPortableHtml", text := "After first verified hydration, OPFS ServiceWorker caching and self-contained offline portable HTML envelopes keep Verdant usable completely offline and shareable via local storage or LAN."})
+}
+
+definition{
+  name: principle5PermissionlessPublicArchives,
+  parameters: [],
+  result: SelfHostingPrincipleSpec,
+  body: (record SelfHostingPrincipleSpec {index := (Subsystems::sFive), tier := (ctor CarrierTier.permissionlessPublicArchive), mode := (ctor ServingMode.ipfsContentAddressed), zeroRegistration := true, commercialLockInFree := true, name := "PermissionlessPublicArchives", text := "Immutable .holo capsules, STCH2 shards, and source DAGs mirror to permissionless public-benefit archives including IPFS content-addressed roots and permanent Zenodo DOI records."})
+}
+
+definition{
+  name: principle6ZeroTrustVerifiedHydration,
+  parameters: [],
+  result: SelfHostingPrincipleSpec,
+  body: (record SelfHostingPrincipleSpec {index := (Subsystems::sSix), tier := (ctor CarrierTier.githubOriginMirror), mode := (ctor ServingMode.githubPrimaryFallback), zeroRegistration := true, commercialLockInFree := true, name := "ZeroTrustVerifiedHydration", text := "Every peer, volunteer gateway, or offline artifact is treated as untrusted transport; the Blank Frame verifies SHA-256 commitments, quorum signatures, and monotonic release epochs before ServiceWorker mounting."})
+}
+
+definition{
+  name: selfHostingPrinciples,
+  parameters: [],
+  result: (List SelfHostingPrincipleSpec),
+  body: (cons (principle0ZeroCommercialProviderRegistration) (cons (principle1StitchLayer5ZeroAccountSignaling) (cons (principle2BudgetedReciprocalBrowserSeeding) (cons (principle3VolunteerAndLanNodeServing) (cons (principle4OfflineFirstPwaAndPortableHtml) (cons (principle5PermissionlessPublicArchives) (cons (principle6ZeroTrustVerifiedHydration) (nil SelfHostingPrincipleSpec))))))))
+}
+
+definition{
+  name: stitchWireBytesLimit,
+  parameters: [],
+  result: Nat,
+  body: (Foundation.Ontology.V1.Model::pow2Constructive (Subsystems::sTwelve))
+}
+
+definition{
+  name: stitchChunkBytesLimit,
+  parameters: [],
+  result: Nat,
+  body: ((prim multiply (Subsystems::sTwo) (Foundation.Ontology.V1.Model::pow10Constructive (Subsystems::sThree)) : Nat) + (prim multiply (Subsystems::sSeven) (Foundation.Ontology.V1.Model::pow10Constructive (Subsystems::sTwo)) : Nat))
+}
+
+definition{
+  name: stitchMessageKibLimit,
+  parameters: [],
+  result: Nat,
+  body: (Foundation.Ontology.V1.Model::pow2Constructive (Subsystems::sNine))
+}
+
+definition{
+  name: stitchMaxFramesLimit,
+  parameters: [],
+  result: Nat,
+  body: (Foundation.Ontology.V1.Model::pow2Constructive (Subsystems::sEight))
+}
+
+definition{
+  name: stitchSignalLifetimeSecsLimit,
+  parameters: [],
+  result: Nat,
+  body: (prim multiply (Subsystems::sSix) (Subsystems::sTen) : Nat)
+}
+
+definition{
+  name: stitchWarmLifetimeSecsLimit,
+  parameters: [],
+  result: Nat,
+  body: (prim multiply ((Subsystems::sTen) + (Subsystems::sEight)) (Foundation.Ontology.V1.Model::pow10Constructive (Subsystems::sTwo)) : Nat)
+}
+
+definition{
+  name: stitchBudgetKibLimit,
+  parameters: [],
+  result: Nat,
+  body: (Foundation.Ontology.V1.Model::pow2Constructive ((Subsystems::sTwelve) + (Subsystems::sTwo)))
+}
+
+definition{
+  name: canonicalLayer5Envelope,
+  parameters: [],
+  result: Layer5EnvelopeSpec,
+  body: (record Layer5EnvelopeSpec {wireBytesMax := (stitchWireBytesLimit), chunkBytesMax := (stitchChunkBytesLimit), messageKibMax := (stitchMessageKibLimit), maxFrames := (stitchMaxFramesLimit), signalLifetimeSecs := (stitchSignalLifetimeSecsLimit), warmLifetimeSecs := (stitchWarmLifetimeSecsLimit), epochRequestCap := (stitchWireBytesLimit), transferBudgetKib := (stitchBudgetKibLimit), storageBudgetKib := (stitchBudgetKibLimit), name := "StitchLayer5CanonicalEnvelope", text := "Canonical stitch/1 Layer-5 framing and ResourceAdmission seeder envelope: 4096-byte wire cap, 2700-byte chunk cap, 512 KiB message cap, 256 frames, 60-second signal lifetime, 1800-second warm lifetime, 4096 requests, 16384 KiB transfer, and 16384 KiB storage per epoch."})
+}
+
+definition{
+  name: carrierAdmittedPublicBenefit,
+  parameters: [tier : CarrierTier, requiresCommercialRegistration : Bool],
+  result: Bool,
+  body: (if requiresCommercialRegistration then false else (match tier
+    | CarrierTier.githubOriginMirror => true
+    | CarrierTier.stitchLayer5PeerSwarm => true
+    | CarrierTier.volunteerCommunityGateway => true
+    | CarrierTier.permissionlessPublicArchive => true
+    | CarrierTier.offlineLocalCustody => true
+    | CarrierTier.commercialCloudPaas => false))
+}
+
+definition{
+  name: stitchLayer5FrameBounded,
+  parameters: [wireBytes : Nat, chunkBytes : Nat, messageKib : Nat, frameCount : Nat],
+  result: Bool,
+  body: ((((1 <=? chunkBytes) && (chunkBytes <? wireBytes)) && (wireBytes <=? (stitchWireBytesLimit))) && (((1 <=? messageKib) && (messageKib <=? (stitchMessageKibLimit))) && ((1 <=? frameCount) && (frameCount <=? (stitchMaxFramesLimit)))))
+}
+
+definition{
+  name: seederBudgetRespectsCeiling,
+  parameters: [reqCount : Nat, transferKib : Nat, storageKib : Nat, optInConsent : Bool],
+  result: Bool,
+  body: ((optInConsent && (reqCount <=? (stitchWireBytesLimit))) && ((transferKib <=? (stitchBudgetKibLimit)) && (storageKib <=? (stitchBudgetKibLimit))))
+}
+
+definition{
+  name: availabilitySurvivesOriginLoss,
+  parameters: [
+    githubOriginUp : Bool,
+    swarmPeers : Nat,
+    volunteerNodes : Nat,
+    opfsVerified : Bool,
+    survivingShards : Nat,
+    requiredK : Nat
+  ],
+  result: Bool,
+  body: (if opfsVerified then true else ((1 <=? requiredK) && ((requiredK <=? survivingShards) && (githubOriginUp || ((1 <=? swarmPeers) || (1 <=? volunteerNodes))))))
+}
+
+definition{
+  name: principlesValid,
+  parameters: [pos : Nat, items : (List SelfHostingPrincipleSpec)],
+  result: Bool,
+  body: (match items
+    | List.nil => true
+    | List.cons item rest => (if (((project item index) =? pos) && ((project item zeroRegistration) && ((project item commercialLockInFree) && ((carrierAdmittedPublicBenefit (project item tier) false) && ((not (prim equal (project item name) "" : Bool)) && (not (prim equal (project item text) "" : Bool))))))) then (principlesValid (pos + 1) rest) else false)),
+  recursive_argument: items
+}
+
+definition{
+  name: selfHostingDirect,
+  parameters: [],
+  result: Bool,
+  body: (((principlesValid 0 (selfHostingPrinciples)) && ((carrierAdmittedPublicBenefit (ctor CarrierTier.stitchLayer5PeerSwarm) false) && ((carrierAdmittedPublicBenefit (ctor CarrierTier.volunteerCommunityGateway) false) && ((carrierAdmittedPublicBenefit (ctor CarrierTier.permissionlessPublicArchive) false) && ((carrierAdmittedPublicBenefit (ctor CarrierTier.offlineLocalCustody) false) && ((not (carrierAdmittedPublicBenefit (ctor CarrierTier.commercialCloudPaas) false)) && (not (carrierAdmittedPublicBenefit (ctor CarrierTier.volunteerCommunityGateway) true)))))))) && (((stitchLayer5FrameBounded (project (canonicalLayer5Envelope) wireBytesMax) (project (canonicalLayer5Envelope) chunkBytesMax) (project (canonicalLayer5Envelope) messageKibMax) (project (canonicalLayer5Envelope) maxFrames)) && ((not (stitchLayer5FrameBounded ((stitchWireBytesLimit) + 1) (stitchChunkBytesLimit) (stitchMessageKibLimit) (stitchMaxFramesLimit))) && ((not (stitchLayer5FrameBounded (stitchWireBytesLimit) (stitchWireBytesLimit) (stitchMessageKibLimit) (stitchMaxFramesLimit))) && ((seederBudgetRespectsCeiling (Subsystems::sEight) (Subsystems::sTwelve) (Subsystems::sTwelve) true) && ((not (seederBudgetRespectsCeiling (Subsystems::sEight) (Subsystems::sTwelve) (Subsystems::sTwelve) false)) && (not (seederBudgetRespectsCeiling ((stitchWireBytesLimit) + 1) (Subsystems::sTwelve) (Subsystems::sTwelve) true))))))) && ((availabilitySurvivesOriginLoss false (Subsystems::sTwo) 0 false (Subsystems::sFour) (Subsystems::sFour)) && ((availabilitySurvivesOriginLoss false 0 1 false (Subsystems::sFour) (Subsystems::sFour)) && ((availabilitySurvivesOriginLoss false 0 0 true 0 (Subsystems::sFour)) && ((not (availabilitySurvivesOriginLoss false 0 0 false (Subsystems::sFour) (Subsystems::sFour))) && ((not (availabilitySurvivesOriginLoss false (Subsystems::sTwo) 1 false (Subsystems::sThree) (Subsystems::sFour))) && (Release::releaseDistributionDirect))))))))
+}
+
+theorem{
+  name: selfHostingPrinciplesComplete,
+  parameters: [],
+  statement: (((selfHostingDirect) && (((project (principle0ZeroCommercialProviderRegistration) index) =? 0) && (((project (principle1StitchLayer5ZeroAccountSignaling) index) =? 1) && (((project (principle2BudgetedReciprocalBrowserSeeding) index) =? (Subsystems::sTwo)) && (((project (principle3VolunteerAndLanNodeServing) index) =? (Subsystems::sThree)) && (((project (principle4OfflineFirstPwaAndPortableHtml) index) =? (Subsystems::sFour)) && (((project (principle5PermissionlessPublicArchives) index) =? (Subsystems::sFive)) && ((project (principle6ZeroTrustVerifiedHydration) index) =? (Subsystems::sSix))))))))) = true),
+  proof: decide{},
+  axioms: []
+}
+
+theorem{
+  name: stitchLayer5BoundsVerified,
+  parameters: [],
+  statement: (((stitchLayer5FrameBounded (project (canonicalLayer5Envelope) wireBytesMax) (project (canonicalLayer5Envelope) chunkBytesMax) (project (canonicalLayer5Envelope) messageKibMax) (project (canonicalLayer5Envelope) maxFrames)) && ((not (stitchLayer5FrameBounded ((stitchWireBytesLimit) + 1) (stitchChunkBytesLimit) (stitchMessageKibLimit) (stitchMaxFramesLimit))) && ((seederBudgetRespectsCeiling (project (canonicalLayer5Envelope) epochRequestCap) (project (canonicalLayer5Envelope) transferBudgetKib) (project (canonicalLayer5Envelope) storageBudgetKib) true) && ((not (seederBudgetRespectsCeiling (project (canonicalLayer5Envelope) epochRequestCap) ((stitchBudgetKibLimit) + 1) (project (canonicalLayer5Envelope) storageBudgetKib) true)) && ((project (canonicalLayer5Envelope) signalLifetimeSecs) <? (project (canonicalLayer5Envelope) warmLifetimeSecs)))))) = true),
+  proof: decide{},
+  axioms: []
+}
+
+theorem{
+  name: publicBenefitAvailabilityVerified,
+  parameters: [],
+  statement: (((not (carrierAdmittedPublicBenefit (ctor CarrierTier.commercialCloudPaas) false)) && ((availabilitySurvivesOriginLoss false 1 0 false (Subsystems::sFour) (Subsystems::sFour)) && ((availabilitySurvivesOriginLoss false 0 1 false (Subsystems::sFour) (Subsystems::sFour)) && ((availabilitySurvivesOriginLoss false 0 0 true 0 (Subsystems::sFour)) && ((not (availabilitySurvivesOriginLoss false 0 0 false (Subsystems::sFour) (Subsystems::sFour))) && (not (availabilitySurvivesOriginLoss false (Subsystems::sTwo) 1 false (Subsystems::sThree) (Subsystems::sFour)))))))) = true),
+  proof: decide{},
+  axioms: []
+}
+\end{semanticmodule}
+\end{lexlean}

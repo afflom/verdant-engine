@@ -21,6 +21,7 @@ pure_zero_one_lex_modules = [
   "app/src/Measures.lex.tex",
   "app/src/Production/ThreatModel.lex.tex",
   "app/src/Governance.lex.tex",
+  "app/src/StitchHosting.lex.tex",
 ]
 
 [ceilings]
@@ -57,7 +58,7 @@ max_unlifted_workspace_modules = 0
 
 [frontier_ratchet]
 frontier_register = "frontier.toml"
-frontier_rust_tree_sha256 = "bfc2abb5090d21c512c9b2be39c5b9aa9e6af2a3276bfbf228f30372e2897b5c"
+frontier_rust_tree_sha256 = "89c633137df17bf2283d5fc8977c5f3ae383af0a0fb91e5e6d99623845e1a586"
 min_lifted_functions = 551
 max_residue_functions = 1160
 max_uncertified_functions = 1318
@@ -218,4 +219,9 @@ role = "Constructive autonomous release cadence state machine proving red-main r
 [[stratum_module]]
 path = "app/src/Release.lex.tex"
 stratum = 5
-role = "Constructive multi-channel release distribution matrix covering 3 CORS-verified Stitch shard mirrors, RFC 2789 Cargo Sparse Registry, GHCR OCI, and Zenodo DOI."
+role = "Constructive multi-channel release distribution matrix covering 3 CORS-verified Stitch shard mirrors, RFC 2789 Cargo Sparse Registry, GHCR OCI, Zenodo DOI, Stitch Layer-5 WebRTC peer swarm, and volunteer IPFS/HTTP gateways."
+
+[[stratum_module]]
+path = "app/src/StitchHosting.lex.tex"
+stratum = 3
+role = "Constructive {0, 1} public-benefit Stitch self-hosting and self-serving model enforcing zero commercial PaaS registrations outside GitHub, Stitch Layer-5 stitch/1 framing bounds, ResourceAdmission seeder ceilings, and GitHub-outage availability."

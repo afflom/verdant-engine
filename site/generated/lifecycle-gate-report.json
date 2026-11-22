@@ -1,7 +1,7 @@
 {
   "spec": "verdant/lifecycle-gate-report/1",
-  "releaseVersion": "2.17.0",
-  "releaseEpoch": 21,
+  "releaseVersion": "2.18.0",
+  "releaseEpoch": 22,
   "mode": "in-process",
   "allPassed": true,
   "releaseQualified": true,
@@ -11,12 +11,12 @@
   "liftedCoverage": {
     "rustModules": 84,
     "verificationTestModules": 24,
-    "lexleanModules": 29,
+    "lexleanModules": 30,
     "featureSuiteModules": 3,
     "modelGovernanceModules": 16,
     "automationScriptModules": 20,
     "viewpointModules": 9,
-    "totalLiftedModules": 185,
+    "totalLiftedModules": 186,
     "allCategoriesLifted": true
   },
   "checks": [
@@ -33,7 +33,7 @@
       "owningManagerId": "mgr-observer-executive",
       "category": "in-process",
       "passed": true,
-      "durationMs": 13,
+      "durationMs": 14,
       "detail": "valid=true entries=16 violations=0"
     },
     {
@@ -50,14 +50,14 @@
       "category": "in-process",
       "passed": true,
       "durationMs": 0,
-      "detail": "cargo=v2.17.0 ledger=v2.17.0 manifest=v2.17.0 wasm_synced=true tag_ok=true"
+      "detail": "cargo=v2.18.0 ledger=v2.18.0 manifest=v2.18.0 wasm_synced=true tag_ok=true"
     },
     {
       "checkId": "formal-fidelity-and-frontier",
       "owningManagerId": "mgr-knowledge-provenance",
       "category": "in-process",
       "passed": true,
-      "durationMs": 0,
+      "durationMs": 1,
       "detail": "fidelity_open=0 frontier_valid=true"
     },
     {
@@ -66,8 +66,8 @@
       "category": "in-process",
       "passed": true,
       "durationMs": 0,
-      "detail": "total=185 (rust=84, test=24, lex=29, feature=3, model=16, script=20, view=9)"
+      "detail": "total=186 (rust=84, test=24, lex=30, feature=3, model=16, script=20, view=9)"
     }
   ],
-  "reportKappaHex": "e5629871ce168030dfda53756505802cf50e137566eecf4f7db3be4d78f2a852"
+  "reportKappaHex": "69bf38095b0c598c548b12195989871fe3f1e23539fe29358b6ed9e6fae17e2d"
 }

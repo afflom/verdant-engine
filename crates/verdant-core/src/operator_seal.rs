@@ -738,7 +738,7 @@ impl VerdantOperatorChannel {
 
 #[cfg(not(target_arch = "wasm32"))]
 pub(super) const MCP_EXTRA_TOOLS_JSON: &str = r#"[
-  {"name":"verdant_gateway","description":"Emit or failover-verify a multi-gateway Stitch bundle (GitHub + Cloudflare + Netlify + IPFS + Self-Hosted).","inputSchema":{"type":"object","properties":{"action":{"type":"string","enum":["pack","verify"]},"dir":{"type":"string"},"releaseDir":{"type":"string"}}}},
+  {"name":"verdant_gateway","description":"Emit or failover-verify a public-benefit multi-gateway Stitch bundle (GitHub + Stitch Layer-5 Swarm + IPFS + Zenodo + Volunteer Self-Hosted).","inputSchema":{"type":"object","properties":{"action":{"type":"string","enum":["pack","verify"]},"dir":{"type":"string"},"releaseDir":{"type":"string"}}}},
   {"name":"verdant_sync_wasm","description":"Natively build and verify site/verdant-wasm.wasm, site/verdant-uorc.wasm, site/scene-stream.uorc, and site/prism-bridge-meta.mjs directly inside Verdant with zero Node.js build dependency.","inputSchema":{"type":"object","properties":{"checkOnly":{"type":"boolean"},"repackStream":{"type":"boolean"}}}},
   {"name":"verdant_package_crates","description":"Natively package Verdant's 4 shipped workspace crates into deterministic .crate tarballs and an RFC 2789 Cargo Sparse Registry index directly inside Verdant.","inputSchema":{"type":"object","properties":{"outDir":{"type":"string"},"dlTemplate":{"type":"string"}}}},
   {"name":"verdant_verify_registry","description":"Natively verify Verdant's RFC 2789 Cargo Sparse Registry over a local loopback HTTP server with real cargo sparse+http resolution (VE-54).","inputSchema":{"type":"object","properties":{"cratesDir":{"type":"string"}}}},

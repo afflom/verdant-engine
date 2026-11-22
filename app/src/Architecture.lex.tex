@@ -44,56 +44,63 @@ definition{
   name: stakeholderGameDeveloper,
   parameters: [],
   result: Foundation.Arch::Stakeholder,
-  body: (record Foundation.Arch::Stakeholder {index := 1, name := "Game developer", text := "Builds 3D games and interactive worlds on verdant-core with deterministic ECS, rigid-body physics, spatial audio, and starter templates."})
+  body: (record Foundation.Arch::Stakeholder {index := 2, name := "Game developer", text := "Builds 3D games and interactive worlds on verdant-core with deterministic ECS, rigid-body physics, spatial audio, and starter templates."})
 }
 
 definition{
   name: stakeholderMultiplayerCitizen,
   parameters: [],
   result: Foundation.Arch::Stakeholder,
-  body: (record Foundation.Arch::Stakeholder {index := 2, name := "Multiplayer world citizen", text := "Inhabits persistent peer-to-peer 3D universes authenticated by zero-signin WebCrypto Prism IDs and healed by Stitch erasure fragments."})
+  body: (record Foundation.Arch::Stakeholder {index := 3, name := "Multiplayer world citizen", text := "Inhabits persistent peer-to-peer 3D universes authenticated by zero-signin WebCrypto Prism IDs and healed by Stitch erasure fragments."})
 }
 
 definition{
   name: stakeholderSecurityAuditor,
   parameters: [],
   result: Foundation.Arch::Stakeholder,
-  body: (record Foundation.Arch::Stakeholder {index := 4, name := "Security auditor", text := "Verifies shader safety, UORC stream and snapshot integrity, strict Content-Security-Policy isolation, and Core-Wasm archive provenance."})
+  body: (record Foundation.Arch::Stakeholder {index := 5, name := "Security auditor", text := "Verifies shader safety, UORC stream and snapshot integrity, strict Content-Security-Policy isolation, and Core-Wasm archive provenance."})
 }
 
 definition{
   name: stakeholderSystemsEngineer,
   parameters: [],
   result: Foundation.Arch::Stakeholder,
-  body: (record Foundation.Arch::Stakeholder {index := 5, name := "Engine systems engineer", text := "Maintains exact uor-matmul tensor kernels, progressive UORC streaming frames, frame-budget job graphs, and zero-constant parametric simulation."})
+  body: (record Foundation.Arch::Stakeholder {index := 6, name := "Engine systems engineer", text := "Maintains exact uor-matmul tensor kernels, progressive UORC streaming frames, frame-budget job graphs, and zero-constant parametric simulation."})
 }
 
 definition{
   name: stakeholderTechnicalArtist,
   parameters: [],
   result: Foundation.Arch::Stakeholder,
-  body: (record Foundation.Arch::Stakeholder {index := 6, name := "Technical artist", text := "Authors procedural terrain, skeletal rigs, PBR materials, portable WGSL shaders, and glTF 2.0 scene exports that validate cleanly."})
+  body: (record Foundation.Arch::Stakeholder {index := 7, name := "Technical artist", text := "Authors procedural terrain, skeletal rigs, PBR materials, portable WGSL shaders, and glTF 2.0 scene exports that validate cleanly."})
 }
 
 definition{
   name: stakeholderUiComplianceArchitect,
   parameters: [],
   result: Foundation.Arch::Stakeholder,
-  body: (record Foundation.Arch::Stakeholder {index := 7, name := "UI and compliance architect", text := "Models responsive 2D panels, diegetic 3D world-space interfaces, focus graphs, and WCAG 2.2 and ISO 9241 compliance invariants directly in Prism."})
+  body: (record Foundation.Arch::Stakeholder {index := 8, name := "UI and compliance architect", text := "Models responsive 2D panels, diegetic 3D world-space interfaces, focus graphs, and WCAG 2.2 and ISO 9241 compliance invariants directly in Prism."})
 }
 
 definition{
   name: stakeholderVerdantAdmin,
   parameters: [],
   result: Foundation.Arch::Stakeholder,
-  body: (record Foundation.Arch::Stakeholder {index := 8, name := "Verdant Sovereign Admin", text := "Custodian of the sovereign Prism ID authority quorum who reviews contributor signing requests, signs or rejects proposals, manages epoch membership, and rotates revocation boundaries without GitHub."})
+  body: (record Foundation.Arch::Stakeholder {index := 9, name := "Verdant Sovereign Admin", text := "Custodian of the sovereign Prism ID authority quorum who reviews contributor signing requests, signs or rejects proposals, manages epoch membership, and rotates revocation boundaries without GitHub."})
 }
 
 definition{
   name: stakeholderProjectContributor,
   parameters: [],
   result: Foundation.Arch::Stakeholder,
-  body: (record Foundation.Arch::Stakeholder {index := 3, name := "Project Contributor", text := "Developer or collaborator with a local Prism ID who authors VerdantVcs commits, issues, RFCs, and signed approval requests for Admin review without external accounts."})
+  body: (record Foundation.Arch::Stakeholder {index := 4, name := "Project Contributor", text := "Developer or collaborator with a local Prism ID who authors VerdantVcs commits, issues, RFCs, and signed approval requests for Admin review without external accounts."})
+}
+
+definition{
+  name: stakeholderCommunityHostOperator,
+  parameters: [],
+  result: Foundation.Arch::Stakeholder,
+  body: (record Foundation.Arch::Stakeholder {index := 1, name := "Community Stitch Seeder and Host", text := "Volunteer browser peer, LAN operator, or public-benefit archivist who caches verified 4-of-8 STCH2 shards, seeds peers over Stitch Layer-5 WebRTC swarms, or runs a zero-registration Verdant gateway without commercial cloud lock-in."})
 }
 
 definition{
@@ -181,6 +188,13 @@ definition{
 }
 
 definition{
+  name: concernZeroRegistrationAvailability,
+  parameters: [],
+  result: Foundation.Arch::Concern,
+  body: (record Foundation.Arch::Concern {index := 12, name := "Zero-registration public-benefit self-hosting and peer availability", text := "Verdant and all six stakeholder parts remain continuously verifiable and available even during GitHub outages through Stitch Layer-5 browser swarms, volunteer HTTP and OCI nodes, IPFS, Zenodo, and offline OPFS or portable envelopes without commercial cloud registrations."})
+}
+
+definition{
   name: componentAgentClient,
   parameters: [],
   result: Foundation.Arch::Component,
@@ -219,294 +233,364 @@ definition{
   name: componentPagesTarget,
   parameters: [],
   result: Foundation.Arch::Component,
-  body: (record Foundation.Arch::Component {index := 5, kind := (ctor Foundation.Arch::ComponentKind.externalSystem), name := "GitHub Pages", text := "Publishes the verified Engine Studio, documentation suite, and signed holo archive from CI."})
+  body: (record Foundation.Arch::Component {index := 6, kind := (ctor Foundation.Arch::ComponentKind.externalSystem), name := "GitHub Pages", text := "Publishes the verified Engine Studio, documentation suite, and signed holo archive from CI."})
 }
 
 definition{
   name: componentStitchMultiplayerFabric,
   parameters: [],
   result: Foundation.Arch::Component,
-  body: (record Foundation.Arch::Component {index := 8, kind := (ctor Foundation.Arch::ComponentKind.service), name := "Prism ID and Stitch Multiplayer Fabric", text := "Client-side WebCrypto Prism ID session signer, 2-of-3 XOR erasure fragment verifier, and BroadcastChannel and WebRTC rollback mesh."})
+  body: (record Foundation.Arch::Component {index := 10, kind := (ctor Foundation.Arch::ComponentKind.service), name := "Prism ID and Stitch Multiplayer Fabric", text := "Client-side WebCrypto Prism ID session signer, 2-of-3 XOR erasure fragment verifier, and BroadcastChannel and WebRTC rollback mesh."})
 }
 
 definition{
   name: componentVerdantCoreCrate,
   parameters: [],
   result: Foundation.Arch::Component,
-  body: (record Foundation.Arch::Component {index := 10, kind := (ctor Foundation.Arch::ComponentKind.releaseBinary), name := "Verdant Core Engine", text := "crates/verdant-core: standalone Rust and WebAssembly 3D game engine library providing uor-matmul tensor kernels, UORC streaming, ECS, BVH, glTF 2.0, WGSL, physics, spatial audio, and snapshots."})
+  body: (record Foundation.Arch::Component {index := 12, kind := (ctor Foundation.Arch::ComponentKind.releaseBinary), name := "Verdant Core Engine", text := "crates/verdant-core: standalone Rust and WebAssembly 3D game engine library providing uor-matmul tensor kernels, UORC streaming, ECS, BVH, glTF 2.0, WGSL, physics, spatial audio, and snapshots."})
 }
 
 definition{
   name: componentVerdantTensorCrate,
   parameters: [],
   result: Foundation.Arch::Component,
-  body: (record Foundation.Arch::Component {index := 11, kind := (ctor Foundation.Arch::ComponentKind.releaseBinary), name := "Verdant Tensor Semiring Substrate", text := "crates/verdant-tensor: pure semiring tensor-logic substrate executing linear, tropical, audio and neuromorphic ring, and zero-decode coded_gemm SLM kernels."})
+  body: (record Foundation.Arch::Component {index := 13, kind := (ctor Foundation.Arch::ComponentKind.releaseBinary), name := "Verdant Tensor Semiring Substrate", text := "crates/verdant-tensor: pure semiring tensor-logic substrate executing linear, tropical, audio and neuromorphic ring, and zero-decode coded_gemm SLM kernels."})
 }
 
 definition{
   name: componentVerifierGuest,
   parameters: [],
   result: Foundation.Arch::Component,
-  body: (record Foundation.Arch::Component {index := 13, kind := (ctor Foundation.Arch::ComponentKind.service), name := "Engine Verifier Guest", text := "The Core-Wasm guest compiled from Engine.lex.tex that verifies progressive UORC streaming LODs and uor-matmul tensor kernels inside a Web Worker."})
+  body: (record Foundation.Arch::Component {index := 15, kind := (ctor Foundation.Arch::ComponentKind.service), name := "Engine Verifier Guest", text := "The Core-Wasm guest compiled from Engine.lex.tex that verifies progressive UORC streaming LODs and uor-matmul tensor kernels inside a Web Worker."})
 }
 
 definition{
   name: componentVerdantWasmCrate,
   parameters: [],
   result: Foundation.Arch::Component,
-  body: (record Foundation.Arch::Component {index := 12, kind := (ctor Foundation.Arch::ComponentKind.releaseBinary), name := "Verdant Wasm Worker Bridge", text := "crates/verdant-wasm: zero-unsafe WebAssembly C-ABI simulation, lawful camera, progressive uorc_decompress streaming, and zero-copy OffscreenCanvas host."})
+  body: (record Foundation.Arch::Component {index := 14, kind := (ctor Foundation.Arch::ComponentKind.releaseBinary), name := "Verdant Wasm Worker Bridge", text := "crates/verdant-wasm: zero-unsafe WebAssembly C-ABI simulation, lawful camera, progressive uorc_decompress streaming, and zero-copy OffscreenCanvas host."})
 }
 
 definition{
   name: componentVerdantCliCrate,
   parameters: [],
   result: Foundation.Arch::Component,
-  body: (record Foundation.Arch::Component {index := 9, kind := (ctor Foundation.Arch::ComponentKind.cliAdapter), name := "Verdant CLI Asset and Universe Packer", text := "crates/verdant-cli: command-line binary glTF 2.0 importer, progressive UORC transcoder, universe sector bundler, story conservation verifier, and benchmark oracle."})
+  body: (record Foundation.Arch::Component {index := 11, kind := (ctor Foundation.Arch::ComponentKind.cliAdapter), name := "Verdant CLI Asset and Universe Packer", text := "crates/verdant-cli: command-line binary glTF 2.0 importer, progressive UORC transcoder, universe sector bundler, story conservation verifier, and benchmark oracle."})
 }
 
 definition{
   name: componentSovereignAuthorityLedger,
   parameters: [],
   result: Foundation.Arch::Component,
-  body: (record Foundation.Arch::Component {index := 7, kind := (ctor Foundation.Arch::ComponentKind.service), name := "Sovereign Authority and Revocation Ledger", text := "Append-only PROV-O epoch ledger anchoring the genesis owner Prism ID, M-of-N admin quorum state, monotonic revocation epochs, and anti-lockout succession proofs."})
+  body: (record Foundation.Arch::Component {index := 8, kind := (ctor Foundation.Arch::ComponentKind.service), name := "Sovereign Authority and Revocation Ledger", text := "Append-only PROV-O epoch ledger anchoring the genesis owner Prism ID, M-of-N admin quorum state, monotonic revocation epochs, and anti-lockout succession proofs."})
 }
 
 definition{
   name: componentSigningRequestGate,
   parameters: [],
   result: Foundation.Arch::Component,
-  body: (record Foundation.Arch::Component {index := 6, kind := (ctor Foundation.Arch::ComponentKind.service), name := "Signing Request and Coordination Gate", text := "Verifies developer signing requests, Admin approve and reject attestations, departed-admin pending approval invalidation, and path-scoped group coordination rules."})
+  body: (record Foundation.Arch::Component {index := 7, kind := (ctor Foundation.Arch::ComponentKind.service), name := "Signing Request and Coordination Gate", text := "Verifies developer signing requests, Admin approve and reject attestations, departed-admin pending approval invalidation, and path-scoped group coordination rules."})
+}
+
+definition{
+  name: componentStitchLayer5Swarm,
+  parameters: [],
+  result: Foundation.Arch::Component,
+  body: (record Foundation.Arch::Component {index := 9, kind := (ctor Foundation.Arch::ComponentKind.service), name := "Stitch Layer-5 Signaling and WebRTC Peer Swarm", text := "Zero-account browser-to-browser and volunteer peer discovery over Stitch Layer-5 stitch/1 framed text relays and budgeted WebRTC DataChannel 4-of-8 STCH2 shard seeding."})
+}
+
+definition{
+  name: componentVolunteerStitchGateway,
+  parameters: [],
+  result: Foundation.Arch::Component,
+  body: (record Foundation.Arch::Component {index := 16, kind := (ctor Foundation.Arch::ComponentKind.service), name := "Volunteer Public-Benefit Stitch Gateway", text := "Zero-dependency verdant gateway serve HTTP and CORS node, static OCI container, IPFS relative root, and Zenodo archive mirror serving the Blank Frame, STCH2 shards, and all six stakeholder parts with zero commercial PaaS accounts."})
+}
+
+definition{
+  name: componentOfflinePortableEnvelope,
+  parameters: [],
+  result: Foundation.Arch::Component,
+  body: (record Foundation.Arch::Component {index := 5, kind := (ctor Foundation.Arch::ComponentKind.staticSite), name := "Offline OPFS Cache and Portable Single-File Envelope", text := "Verified browser ServiceWorker OPFS cache and self-contained offline portable HTML and .holo envelope enabling zero-network execution and peer-to-peer file sharing."})
 }
 
 definition{
   name: edgeCoreToExamples,
   parameters: [],
   result: Foundation.Arch::Edge,
-  body: (record Foundation.Arch::Edge {index := 4, fromIndex := 10, toIndex := 3, kind := (ctor Foundation.Arch::EdgeKind.dataFlow)})
+  body: (record Foundation.Arch::Edge {index := 5, fromIndex := 12, toIndex := 3, kind := (ctor Foundation.Arch::EdgeKind.dataFlow)})
 }
 
 definition{
   name: edgeCoreToStudio,
   parameters: [],
   result: Foundation.Arch::Edge,
-  body: (record Foundation.Arch::Edge {index := 5, fromIndex := 10, toIndex := 4, kind := (ctor Foundation.Arch::EdgeKind.dataFlow)})
+  body: (record Foundation.Arch::Edge {index := 6, fromIndex := 12, toIndex := 4, kind := (ctor Foundation.Arch::EdgeKind.dataFlow)})
 }
 
 definition{
   name: edgePagesToAgent,
   parameters: [],
   result: Foundation.Arch::Edge,
-  body: (record Foundation.Arch::Edge {index := 7, fromIndex := 5, toIndex := 0, kind := (ctor Foundation.Arch::EdgeKind.dataFlow)})
+  body: (record Foundation.Arch::Edge {index := 10, fromIndex := 6, toIndex := 0, kind := (ctor Foundation.Arch::EdgeKind.dataFlow)})
 }
 
 definition{
   name: edgePagesToCanvas,
   parameters: [],
   result: Foundation.Arch::Edge,
-  body: (record Foundation.Arch::Edge {index := 8, fromIndex := 5, toIndex := 2, kind := (ctor Foundation.Arch::EdgeKind.dataFlow)})
+  body: (record Foundation.Arch::Edge {index := 11, fromIndex := 6, toIndex := 2, kind := (ctor Foundation.Arch::EdgeKind.dataFlow)})
 }
 
 definition{
   name: edgeStitchToStudio,
   parameters: [],
   result: Foundation.Arch::Edge,
-  body: (record Foundation.Arch::Edge {index := 10, fromIndex := 8, toIndex := 4, kind := (ctor Foundation.Arch::EdgeKind.dataFlow)})
+  body: (record Foundation.Arch::Edge {index := 13, fromIndex := 10, toIndex := 4, kind := (ctor Foundation.Arch::EdgeKind.dataFlow)})
 }
 
 definition{
   name: edgeStudioToAudio,
   parameters: [],
   result: Foundation.Arch::Edge,
-  body: (record Foundation.Arch::Edge {index := 11, fromIndex := 4, toIndex := 1, kind := (ctor Foundation.Arch::EdgeKind.dataFlow)})
+  body: (record Foundation.Arch::Edge {index := 14, fromIndex := 4, toIndex := 1, kind := (ctor Foundation.Arch::EdgeKind.dataFlow)})
 }
 
 definition{
   name: edgeStudioToCanvas,
   parameters: [],
   result: Foundation.Arch::Edge,
-  body: (record Foundation.Arch::Edge {index := 12, fromIndex := 4, toIndex := 2, kind := (ctor Foundation.Arch::EdgeKind.dataFlow)})
+  body: (record Foundation.Arch::Edge {index := 15, fromIndex := 4, toIndex := 2, kind := (ctor Foundation.Arch::EdgeKind.dataFlow)})
 }
 
 definition{
   name: edgeStudioToPages,
   parameters: [],
   result: Foundation.Arch::Edge,
-  body: (record Foundation.Arch::Edge {index := 13, fromIndex := 4, toIndex := 5, kind := (ctor Foundation.Arch::EdgeKind.dataFlow)})
+  body: (record Foundation.Arch::Edge {index := 18, fromIndex := 4, toIndex := 6, kind := (ctor Foundation.Arch::EdgeKind.dataFlow)})
 }
 
 definition{
   name: edgeStudioToStitch,
   parameters: [],
   result: Foundation.Arch::Edge,
-  body: (record Foundation.Arch::Edge {index := 15, fromIndex := 4, toIndex := 8, kind := (ctor Foundation.Arch::EdgeKind.dataFlow)})
+  body: (record Foundation.Arch::Edge {index := 20, fromIndex := 4, toIndex := 10, kind := (ctor Foundation.Arch::EdgeKind.dataFlow)})
 }
 
 definition{
   name: edgeStudioToVerifier,
   parameters: [],
   result: Foundation.Arch::Edge,
-  body: (record Foundation.Arch::Edge {index := 16, fromIndex := 4, toIndex := 13, kind := (ctor Foundation.Arch::EdgeKind.dataFlow)})
+  body: (record Foundation.Arch::Edge {index := 21, fromIndex := 4, toIndex := 15, kind := (ctor Foundation.Arch::EdgeKind.dataFlow)})
 }
 
 definition{
   name: edgeTensorToCore,
   parameters: [],
   result: Foundation.Arch::Edge,
-  body: (record Foundation.Arch::Edge {index := 17, fromIndex := 11, toIndex := 10, kind := (ctor Foundation.Arch::EdgeKind.dataFlow)})
+  body: (record Foundation.Arch::Edge {index := 22, fromIndex := 13, toIndex := 12, kind := (ctor Foundation.Arch::EdgeKind.dataFlow)})
 }
 
 definition{
   name: edgeVerifierToStudio,
   parameters: [],
   result: Foundation.Arch::Edge,
-  body: (record Foundation.Arch::Edge {index := 18, fromIndex := 13, toIndex := 4, kind := (ctor Foundation.Arch::EdgeKind.dataFlow)})
+  body: (record Foundation.Arch::Edge {index := 23, fromIndex := 15, toIndex := 4, kind := (ctor Foundation.Arch::EdgeKind.dataFlow)})
 }
 
 definition{
   name: edgeCoreToWasm,
   parameters: [],
   result: Foundation.Arch::Edge,
-  body: (record Foundation.Arch::Edge {index := 6, fromIndex := 10, toIndex := 12, kind := (ctor Foundation.Arch::EdgeKind.dataFlow)})
+  body: (record Foundation.Arch::Edge {index := 7, fromIndex := 12, toIndex := 14, kind := (ctor Foundation.Arch::EdgeKind.dataFlow)})
 }
 
 definition{
   name: edgeWasmToStudio,
   parameters: [],
   result: Foundation.Arch::Edge,
-  body: (record Foundation.Arch::Edge {index := 19, fromIndex := 12, toIndex := 4, kind := (ctor Foundation.Arch::EdgeKind.dataFlow)})
+  body: (record Foundation.Arch::Edge {index := 25, fromIndex := 14, toIndex := 4, kind := (ctor Foundation.Arch::EdgeKind.dataFlow)})
 }
 
 definition{
   name: edgeCoreToCli,
   parameters: [],
   result: Foundation.Arch::Edge,
-  body: (record Foundation.Arch::Edge {index := 3, fromIndex := 10, toIndex := 9, kind := (ctor Foundation.Arch::EdgeKind.dataFlow)})
+  body: (record Foundation.Arch::Edge {index := 4, fromIndex := 12, toIndex := 11, kind := (ctor Foundation.Arch::EdgeKind.dataFlow)})
 }
 
 definition{
   name: edgeStudioToSigningGate,
   parameters: [],
   result: Foundation.Arch::Edge,
-  body: (record Foundation.Arch::Edge {index := 14, fromIndex := 4, toIndex := 6, kind := (ctor Foundation.Arch::EdgeKind.dataFlow)})
+  body: (record Foundation.Arch::Edge {index := 19, fromIndex := 4, toIndex := 7, kind := (ctor Foundation.Arch::EdgeKind.dataFlow)})
 }
 
 definition{
   name: edgeCliToSigningGate,
   parameters: [],
   result: Foundation.Arch::Edge,
-  body: (record Foundation.Arch::Edge {index := 2, fromIndex := 9, toIndex := 6, kind := (ctor Foundation.Arch::EdgeKind.dataFlow)})
+  body: (record Foundation.Arch::Edge {index := 2, fromIndex := 11, toIndex := 7, kind := (ctor Foundation.Arch::EdgeKind.dataFlow)})
 }
 
 definition{
   name: edgeSigningGateToAuthorityLedger,
   parameters: [],
   result: Foundation.Arch::Edge,
-  body: (record Foundation.Arch::Edge {index := 9, fromIndex := 6, toIndex := 7, kind := (ctor Foundation.Arch::EdgeKind.dataFlow)})
+  body: (record Foundation.Arch::Edge {index := 12, fromIndex := 7, toIndex := 8, kind := (ctor Foundation.Arch::EdgeKind.dataFlow)})
 }
 
 definition{
   name: edgeAuthorityLedgerToSigningGate,
   parameters: [],
   result: Foundation.Arch::Edge,
-  body: (record Foundation.Arch::Edge {index := 0, fromIndex := 7, toIndex := 6, kind := (ctor Foundation.Arch::EdgeKind.dataFlow)})
+  body: (record Foundation.Arch::Edge {index := 0, fromIndex := 8, toIndex := 7, kind := (ctor Foundation.Arch::EdgeKind.dataFlow)})
 }
 
 definition{
   name: edgeAuthorityLedgerToStitch,
   parameters: [],
   result: Foundation.Arch::Edge,
-  body: (record Foundation.Arch::Edge {index := 1, fromIndex := 7, toIndex := 8, kind := (ctor Foundation.Arch::EdgeKind.dataFlow)})
+  body: (record Foundation.Arch::Edge {index := 1, fromIndex := 8, toIndex := 10, kind := (ctor Foundation.Arch::EdgeKind.dataFlow)})
+}
+
+definition{
+  name: edgeStudioToLayer5Swarm,
+  parameters: [],
+  result: Foundation.Arch::Edge,
+  body: (record Foundation.Arch::Edge {index := 16, fromIndex := 4, toIndex := 9, kind := (ctor Foundation.Arch::EdgeKind.dataFlow)})
+}
+
+definition{
+  name: edgeLayer5SwarmToStudio,
+  parameters: [],
+  result: Foundation.Arch::Edge,
+  body: (record Foundation.Arch::Edge {index := 8, fromIndex := 9, toIndex := 4, kind := (ctor Foundation.Arch::EdgeKind.dataFlow)})
+}
+
+definition{
+  name: edgeCliToVolunteerGateway,
+  parameters: [],
+  result: Foundation.Arch::Edge,
+  body: (record Foundation.Arch::Edge {index := 3, fromIndex := 11, toIndex := 16, kind := (ctor Foundation.Arch::EdgeKind.dataFlow)})
+}
+
+definition{
+  name: edgeVolunteerGatewayToCanvas,
+  parameters: [],
+  result: Foundation.Arch::Edge,
+  body: (record Foundation.Arch::Edge {index := 24, fromIndex := 16, toIndex := 2, kind := (ctor Foundation.Arch::EdgeKind.dataFlow)})
+}
+
+definition{
+  name: edgeStudioToOfflineEnvelope,
+  parameters: [],
+  result: Foundation.Arch::Edge,
+  body: (record Foundation.Arch::Edge {index := 17, fromIndex := 4, toIndex := 5, kind := (ctor Foundation.Arch::EdgeKind.dataFlow)})
+}
+
+definition{
+  name: edgeOfflineEnvelopeToCanvas,
+  parameters: [],
+  result: Foundation.Arch::Edge,
+  body: (record Foundation.Arch::Edge {index := 9, fromIndex := 5, toIndex := 2, kind := (ctor Foundation.Arch::EdgeKind.dataFlow)})
 }
 
 definition{
   name: viewpointArtistStandards,
   parameters: [],
   result: Foundation.Arch::Viewpoint,
-  body: (record Foundation.Arch::Viewpoint {index := 1, stakeholderIndex := 6, concernIndex := 10, modelKindIndex := 0})
+  body: (record Foundation.Arch::Viewpoint {index := 1, stakeholderIndex := 7, concernIndex := 10, modelKindIndex := 0})
 }
 
 definition{
   name: viewpointAuditorIntegrity,
   parameters: [],
   result: Foundation.Arch::Viewpoint,
-  body: (record Foundation.Arch::Viewpoint {index := 2, stakeholderIndex := 4, concernIndex := 7, modelKindIndex := 2})
+  body: (record Foundation.Arch::Viewpoint {index := 2, stakeholderIndex := 5, concernIndex := 7, modelKindIndex := 2})
 }
 
 definition{
   name: viewpointCitizenStitchMesh,
   parameters: [],
   result: Foundation.Arch::Viewpoint,
-  body: (record Foundation.Arch::Viewpoint {index := 3, stakeholderIndex := 2, concernIndex := 8, modelKindIndex := 1})
+  body: (record Foundation.Arch::Viewpoint {index := 3, stakeholderIndex := 3, concernIndex := 8, modelKindIndex := 1})
 }
 
 definition{
   name: viewpointDeveloperOnboarding,
   parameters: [],
   result: Foundation.Arch::Viewpoint,
-  body: (record Foundation.Arch::Viewpoint {index := 6, stakeholderIndex := 1, concernIndex := 2, modelKindIndex := 0})
+  body: (record Foundation.Arch::Viewpoint {index := 7, stakeholderIndex := 2, concernIndex := 2, modelKindIndex := 0})
 }
 
 definition{
   name: viewpointPlayerAccessibility,
   parameters: [],
   result: Foundation.Arch::Viewpoint,
-  body: (record Foundation.Arch::Viewpoint {index := 7, stakeholderIndex := 0, concernIndex := 0, modelKindIndex := 1})
+  body: (record Foundation.Arch::Viewpoint {index := 8, stakeholderIndex := 0, concernIndex := 0, modelKindIndex := 1})
 }
 
 definition{
   name: viewpointPlayerCybernetics,
   parameters: [],
   result: Foundation.Arch::Viewpoint,
-  body: (record Foundation.Arch::Viewpoint {index := 8, stakeholderIndex := 0, concernIndex := 6, modelKindIndex := 1})
+  body: (record Foundation.Arch::Viewpoint {index := 9, stakeholderIndex := 0, concernIndex := 6, modelKindIndex := 1})
 }
 
 definition{
   name: viewpointSystemsPerformance,
   parameters: [],
   result: Foundation.Arch::Viewpoint,
-  body: (record Foundation.Arch::Viewpoint {index := 10, stakeholderIndex := 5, concernIndex := 4, modelKindIndex := 1})
+  body: (record Foundation.Arch::Viewpoint {index := 11, stakeholderIndex := 6, concernIndex := 4, modelKindIndex := 1})
 }
 
 definition{
   name: viewpointSystemsTensorStreaming,
   parameters: [],
   result: Foundation.Arch::Viewpoint,
-  body: (record Foundation.Arch::Viewpoint {index := 11, stakeholderIndex := 5, concernIndex := 11, modelKindIndex := 0})
+  body: (record Foundation.Arch::Viewpoint {index := 12, stakeholderIndex := 6, concernIndex := 11, modelKindIndex := 0})
 }
 
 definition{
   name: viewpointUiCompliance,
   parameters: [],
   result: Foundation.Arch::Viewpoint,
-  body: (record Foundation.Arch::Viewpoint {index := 12, stakeholderIndex := 7, concernIndex := 3, modelKindIndex := 0})
+  body: (record Foundation.Arch::Viewpoint {index := 13, stakeholderIndex := 8, concernIndex := 3, modelKindIndex := 0})
 }
 
 definition{
   name: viewpointPlayerLawfulWorld,
   parameters: [],
   result: Foundation.Arch::Viewpoint,
-  body: (record Foundation.Arch::Viewpoint {index := 9, stakeholderIndex := 0, concernIndex := 5, modelKindIndex := 1})
+  body: (record Foundation.Arch::Viewpoint {index := 10, stakeholderIndex := 0, concernIndex := 5, modelKindIndex := 1})
 }
 
 definition{
   name: viewpointDeveloperLawfulWorld,
   parameters: [],
   result: Foundation.Arch::Viewpoint,
-  body: (record Foundation.Arch::Viewpoint {index := 5, stakeholderIndex := 1, concernIndex := 5, modelKindIndex := 0})
+  body: (record Foundation.Arch::Viewpoint {index := 6, stakeholderIndex := 2, concernIndex := 5, modelKindIndex := 0})
 }
 
 definition{
   name: viewpointAdminSovereignAuthority,
   parameters: [],
   result: Foundation.Arch::Viewpoint,
-  body: (record Foundation.Arch::Viewpoint {index := 0, stakeholderIndex := 8, concernIndex := 9, modelKindIndex := 2})
+  body: (record Foundation.Arch::Viewpoint {index := 0, stakeholderIndex := 9, concernIndex := 9, modelKindIndex := 2})
 }
 
 definition{
   name: viewpointContributorSigningCoordination,
   parameters: [],
   result: Foundation.Arch::Viewpoint,
-  body: (record Foundation.Arch::Viewpoint {index := 4, stakeholderIndex := 3, concernIndex := 1, modelKindIndex := 1})
+  body: (record Foundation.Arch::Viewpoint {index := 5, stakeholderIndex := 4, concernIndex := 1, modelKindIndex := 1})
+}
+
+definition{
+  name: viewpointCommunityHostAvailability,
+  parameters: [],
+  result: Foundation.Arch::Viewpoint,
+  body: (record Foundation.Arch::Viewpoint {index := 4, stakeholderIndex := 1, concernIndex := 12, modelKindIndex := 1})
 }
 
 definition{
@@ -534,56 +618,56 @@ definition{
   name: viewDeveloperOnboarding,
   parameters: [],
   result: Foundation.Arch::View,
-  body: (record Foundation.Arch::View {index := 6, viewpointIndex := 6, modelKindIndex := 0})
+  body: (record Foundation.Arch::View {index := 7, viewpointIndex := 7, modelKindIndex := 0})
 }
 
 definition{
   name: viewPlayerAccessibility,
   parameters: [],
   result: Foundation.Arch::View,
-  body: (record Foundation.Arch::View {index := 7, viewpointIndex := 7, modelKindIndex := 1})
+  body: (record Foundation.Arch::View {index := 8, viewpointIndex := 8, modelKindIndex := 1})
 }
 
 definition{
   name: viewPlayerCybernetics,
   parameters: [],
   result: Foundation.Arch::View,
-  body: (record Foundation.Arch::View {index := 8, viewpointIndex := 8, modelKindIndex := 1})
+  body: (record Foundation.Arch::View {index := 9, viewpointIndex := 9, modelKindIndex := 1})
 }
 
 definition{
   name: viewSystemsPerformance,
   parameters: [],
   result: Foundation.Arch::View,
-  body: (record Foundation.Arch::View {index := 10, viewpointIndex := 10, modelKindIndex := 1})
+  body: (record Foundation.Arch::View {index := 11, viewpointIndex := 11, modelKindIndex := 1})
 }
 
 definition{
   name: viewSystemsTensorStreaming,
   parameters: [],
   result: Foundation.Arch::View,
-  body: (record Foundation.Arch::View {index := 11, viewpointIndex := 11, modelKindIndex := 0})
+  body: (record Foundation.Arch::View {index := 12, viewpointIndex := 12, modelKindIndex := 0})
 }
 
 definition{
   name: viewUiCompliance,
   parameters: [],
   result: Foundation.Arch::View,
-  body: (record Foundation.Arch::View {index := 12, viewpointIndex := 12, modelKindIndex := 0})
+  body: (record Foundation.Arch::View {index := 13, viewpointIndex := 13, modelKindIndex := 0})
 }
 
 definition{
   name: viewPlayerLawfulWorld,
   parameters: [],
   result: Foundation.Arch::View,
-  body: (record Foundation.Arch::View {index := 9, viewpointIndex := 9, modelKindIndex := 1})
+  body: (record Foundation.Arch::View {index := 10, viewpointIndex := 10, modelKindIndex := 1})
 }
 
 definition{
   name: viewDeveloperLawfulWorld,
   parameters: [],
   result: Foundation.Arch::View,
-  body: (record Foundation.Arch::View {index := 5, viewpointIndex := 5, modelKindIndex := 0})
+  body: (record Foundation.Arch::View {index := 6, viewpointIndex := 6, modelKindIndex := 0})
 }
 
 definition{
@@ -597,6 +681,13 @@ definition{
   name: viewContributorSigningCoordination,
   parameters: [],
   result: Foundation.Arch::View,
+  body: (record Foundation.Arch::View {index := 5, viewpointIndex := 5, modelKindIndex := 1})
+}
+
+definition{
+  name: viewCommunityHostAvailability,
+  parameters: [],
+  result: Foundation.Arch::View,
   body: (record Foundation.Arch::View {index := 4, viewpointIndex := 4, modelKindIndex := 1})
 }
 
@@ -604,28 +695,28 @@ definition{
   name: componentRecords,
   parameters: [],
   result: (List Foundation.Arch::Component),
-  body: (cons (componentAgentClient) (cons (componentBrowserAudioHost) (cons (componentBrowserCanvasHost) (cons (componentEngineCliExamples) (cons (componentEngineStudioSite) (cons (componentPagesTarget) (cons (componentStitchMultiplayerFabric) (cons (componentVerdantCliCrate) (cons (componentVerdantCoreCrate) (cons (componentVerdantTensorCrate) (cons (componentVerdantWasmCrate) (cons (componentVerifierGuest) (cons (componentSovereignAuthorityLedger) (cons (componentSigningRequestGate) (nil Foundation.Arch::Component)))))))))))))))
+  body: (cons (componentAgentClient) (cons (componentBrowserAudioHost) (cons (componentBrowserCanvasHost) (cons (componentEngineCliExamples) (cons (componentEngineStudioSite) (cons (componentPagesTarget) (cons (componentStitchMultiplayerFabric) (cons (componentVerdantCliCrate) (cons (componentVerdantCoreCrate) (cons (componentVerdantTensorCrate) (cons (componentVerdantWasmCrate) (cons (componentVerifierGuest) (cons (componentSovereignAuthorityLedger) (cons (componentSigningRequestGate) (cons (componentStitchLayer5Swarm) (cons (componentVolunteerStitchGateway) (cons (componentOfflinePortableEnvelope) (nil Foundation.Arch::Component))))))))))))))))))
 }
 
 definition{
   name: edgeRecords,
   parameters: [],
   result: (List Foundation.Arch::Edge),
-  body: (cons (edgeCoreToCli) (cons (edgeCoreToExamples) (cons (edgeCoreToStudio) (cons (edgeCoreToWasm) (cons (edgePagesToAgent) (cons (edgePagesToCanvas) (cons (edgeStitchToStudio) (cons (edgeStudioToAudio) (cons (edgeStudioToCanvas) (cons (edgeStudioToPages) (cons (edgeStudioToStitch) (cons (edgeStudioToVerifier) (cons (edgeTensorToCore) (cons (edgeVerifierToStudio) (cons (edgeWasmToStudio) (cons (edgeStudioToSigningGate) (cons (edgeCliToSigningGate) (cons (edgeSigningGateToAuthorityLedger) (cons (edgeAuthorityLedgerToSigningGate) (cons (edgeAuthorityLedgerToStitch) (nil Foundation.Arch::Edge)))))))))))))))))))))
+  body: (cons (edgeCoreToCli) (cons (edgeCoreToExamples) (cons (edgeCoreToStudio) (cons (edgeCoreToWasm) (cons (edgePagesToAgent) (cons (edgePagesToCanvas) (cons (edgeStitchToStudio) (cons (edgeStudioToAudio) (cons (edgeStudioToCanvas) (cons (edgeStudioToPages) (cons (edgeStudioToStitch) (cons (edgeStudioToVerifier) (cons (edgeTensorToCore) (cons (edgeVerifierToStudio) (cons (edgeWasmToStudio) (cons (edgeStudioToSigningGate) (cons (edgeCliToSigningGate) (cons (edgeSigningGateToAuthorityLedger) (cons (edgeAuthorityLedgerToSigningGate) (cons (edgeAuthorityLedgerToStitch) (cons (edgeStudioToLayer5Swarm) (cons (edgeLayer5SwarmToStudio) (cons (edgeCliToVolunteerGateway) (cons (edgeVolunteerGatewayToCanvas) (cons (edgeStudioToOfflineEnvelope) (cons (edgeOfflineEnvelopeToCanvas) (nil Foundation.Arch::Edge)))))))))))))))))))))))))))
 }
 
 definition{
   name: viewpointRecords,
   parameters: [],
   result: (List Foundation.Arch::Viewpoint),
-  body: (cons (viewpointArtistStandards) (cons (viewpointAuditorIntegrity) (cons (viewpointCitizenStitchMesh) (cons (viewpointDeveloperLawfulWorld) (cons (viewpointDeveloperOnboarding) (cons (viewpointPlayerAccessibility) (cons (viewpointPlayerCybernetics) (cons (viewpointPlayerLawfulWorld) (cons (viewpointSystemsPerformance) (cons (viewpointSystemsTensorStreaming) (cons (viewpointUiCompliance) (cons (viewpointAdminSovereignAuthority) (cons (viewpointContributorSigningCoordination) (nil Foundation.Arch::Viewpoint))))))))))))))
+  body: (cons (viewpointArtistStandards) (cons (viewpointAuditorIntegrity) (cons (viewpointCitizenStitchMesh) (cons (viewpointDeveloperLawfulWorld) (cons (viewpointDeveloperOnboarding) (cons (viewpointPlayerAccessibility) (cons (viewpointPlayerCybernetics) (cons (viewpointPlayerLawfulWorld) (cons (viewpointSystemsPerformance) (cons (viewpointSystemsTensorStreaming) (cons (viewpointUiCompliance) (cons (viewpointAdminSovereignAuthority) (cons (viewpointContributorSigningCoordination) (cons (viewpointCommunityHostAvailability) (nil Foundation.Arch::Viewpoint)))))))))))))))
 }
 
 definition{
   name: viewRecords,
   parameters: [],
   result: (List Foundation.Arch::View),
-  body: (cons (viewArtistStandards) (cons (viewAuditorIntegrity) (cons (viewCitizenStitchMesh) (cons (viewDeveloperLawfulWorld) (cons (viewDeveloperOnboarding) (cons (viewPlayerAccessibility) (cons (viewPlayerCybernetics) (cons (viewPlayerLawfulWorld) (cons (viewSystemsPerformance) (cons (viewSystemsTensorStreaming) (cons (viewUiCompliance) (cons (viewAdminSovereignAuthority) (cons (viewContributorSigningCoordination) (nil Foundation.Arch::View))))))))))))))
+  body: (cons (viewArtistStandards) (cons (viewAuditorIntegrity) (cons (viewCitizenStitchMesh) (cons (viewDeveloperLawfulWorld) (cons (viewDeveloperOnboarding) (cons (viewPlayerAccessibility) (cons (viewPlayerCybernetics) (cons (viewPlayerLawfulWorld) (cons (viewSystemsPerformance) (cons (viewSystemsTensorStreaming) (cons (viewUiCompliance) (cons (viewAdminSovereignAuthority) (cons (viewContributorSigningCoordination) (cons (viewCommunityHostAvailability) (nil Foundation.Arch::View)))))))))))))))
 }
 
 definition{
@@ -679,20 +770,20 @@ definition{
   name: architectureValid,
   parameters: [],
   result: Bool,
-  body: ((edgesKnown 14 (edgeRecords)) && ((viewpointsKnown 9 12 (viewpointRecords)) && (viewsConform (viewpointRecords) (viewRecords))))
+  body: ((edgesKnown 17 (edgeRecords)) && ((viewpointsKnown 10 13 (viewpointRecords)) && (viewsConform (viewpointRecords) (viewRecords))))
 }
 
 theorem{
   name: architectureDescriptionHolds,
   parameters: [],
-  statement: ((((architectureValid) && (((project (standardIso25010) editionIndex) =? 0) && (((project (standardIso27005) editionIndex) =? 0) && (((project (standardIso27034) editionIndex) =? 0) && ((project (standardIso42010) editionIndex) =? 0))))) && ((((project (stakeholderBrowserPlayer) index) =? 0) && (((project (stakeholderGameDeveloper) index) =? 1) && (((project (stakeholderMultiplayerCitizen) index) =? 2) && (((project (stakeholderSecurityAuditor) index) =? 4) && (((project (stakeholderSystemsEngineer) index) =? 5) && (((project (stakeholderTechnicalArtist) index) =? 6) && (((project (stakeholderUiComplianceArchitect) index) =? 7) && (((project (stakeholderVerdantAdmin) index) =? 8) && ((project (stakeholderProjectContributor) index) =? 3))))))))) && ((((project (concernAccessibilityAndResponsiveUi) index) =? 0) && (((project (concernDeveloperOnboarding) index) =? 2) && (((project (concernFormalUiAndCompliance) index) =? 3) && (((project (concernFramePerformance) index) =? 4) && (((project (concernNeuromorphicMutualAttention) index) =? 6) && (((project (concernRuntimeIntegrity) index) =? 7) && (((project (concernSovereignIdentityAndStitchMesh) index) =? 8) && (((project (concernStandardsInteroperability) index) =? 10) && (((project (concernTensorAndStreamingFidelity) index) =? 11) && (((project (concernLawfulSpatialAndNarrativeInvariants) index) =? 5) && (((project (concernSovereignOwnershipAndAccessControl) index) =? 9) && ((project (concernDecentralizedGroupCoordination) index) =? 1)))))))))))) && (((project (componentAgentClient) index) =? 0) && (((project (componentBrowserAudioHost) index) =? 1) && (((project (componentBrowserCanvasHost) index) =? 2) && (((project (componentEngineCliExamples) index) =? 3) && (((project (componentEngineStudioSite) index) =? 4) && (((project (componentPagesTarget) index) =? 5) && (((project (componentStitchMultiplayerFabric) index) =? 8) && (((project (componentVerdantCoreCrate) index) =? 10) && (((project (componentVerdantTensorCrate) index) =? 11) && (((project (componentVerifierGuest) index) =? 13) && (((project (componentVerdantWasmCrate) index) =? 12) && (((project (componentVerdantCliCrate) index) =? 9) && (((project (componentSovereignAuthorityLedger) index) =? 7) && ((project (componentSigningRequestGate) index) =? 6))))))))))))))))) = true),
+  statement: ((((architectureValid) && (((project (standardIso25010) editionIndex) =? 0) && (((project (standardIso27005) editionIndex) =? 0) && (((project (standardIso27034) editionIndex) =? 0) && ((project (standardIso42010) editionIndex) =? 0))))) && ((((project (stakeholderBrowserPlayer) index) =? 0) && (((project (stakeholderGameDeveloper) index) =? 2) && (((project (stakeholderMultiplayerCitizen) index) =? 3) && (((project (stakeholderSecurityAuditor) index) =? 5) && (((project (stakeholderSystemsEngineer) index) =? 6) && (((project (stakeholderTechnicalArtist) index) =? 7) && (((project (stakeholderUiComplianceArchitect) index) =? 8) && (((project (stakeholderVerdantAdmin) index) =? 9) && (((project (stakeholderProjectContributor) index) =? 4) && ((project (stakeholderCommunityHostOperator) index) =? 1)))))))))) && ((((project (concernAccessibilityAndResponsiveUi) index) =? 0) && (((project (concernDeveloperOnboarding) index) =? 2) && (((project (concernFormalUiAndCompliance) index) =? 3) && (((project (concernFramePerformance) index) =? 4) && (((project (concernNeuromorphicMutualAttention) index) =? 6) && (((project (concernRuntimeIntegrity) index) =? 7) && (((project (concernSovereignIdentityAndStitchMesh) index) =? 8) && (((project (concernStandardsInteroperability) index) =? 10) && (((project (concernTensorAndStreamingFidelity) index) =? 11) && (((project (concernLawfulSpatialAndNarrativeInvariants) index) =? 5) && (((project (concernSovereignOwnershipAndAccessControl) index) =? 9) && (((project (concernDecentralizedGroupCoordination) index) =? 1) && ((project (concernZeroRegistrationAvailability) index) =? 12))))))))))))) && (((project (componentAgentClient) index) =? 0) && (((project (componentBrowserAudioHost) index) =? 1) && (((project (componentBrowserCanvasHost) index) =? 2) && (((project (componentEngineCliExamples) index) =? 3) && (((project (componentEngineStudioSite) index) =? 4) && (((project (componentPagesTarget) index) =? 6) && (((project (componentStitchMultiplayerFabric) index) =? 10) && (((project (componentVerdantCoreCrate) index) =? 12) && (((project (componentVerdantTensorCrate) index) =? 13) && (((project (componentVerifierGuest) index) =? 15) && (((project (componentVerdantWasmCrate) index) =? 14) && (((project (componentVerdantCliCrate) index) =? 11) && (((project (componentSovereignAuthorityLedger) index) =? 8) && (((project (componentSigningRequestGate) index) =? 7) && (((project (componentStitchLayer5Swarm) index) =? 9) && (((project (componentVolunteerStitchGateway) index) =? 16) && ((project (componentOfflinePortableEnvelope) index) =? 5)))))))))))))))))))) = true),
   proof: decide{}
 }
 
 theorem{
   name: architectureEdgesAndViewsIndexed,
   parameters: [],
-  statement: (((((project (edgeCoreToExamples) index) =? 4) && (((project (edgeCoreToStudio) index) =? 5) && (((project (edgePagesToAgent) index) =? 7) && (((project (edgePagesToCanvas) index) =? 8) && (((project (edgeStitchToStudio) index) =? 10) && (((project (edgeStudioToAudio) index) =? 11) && (((project (edgeStudioToCanvas) index) =? 12) && (((project (edgeStudioToPages) index) =? 13) && (((project (edgeStudioToStitch) index) =? 15) && (((project (edgeStudioToVerifier) index) =? 16) && (((project (edgeTensorToCore) index) =? 17) && (((project (edgeVerifierToStudio) index) =? 18) && (((project (edgeCoreToWasm) index) =? 6) && (((project (edgeWasmToStudio) index) =? 19) && (((project (edgeCoreToCli) index) =? 3) && (((project (edgeStudioToSigningGate) index) =? 14) && (((project (edgeCliToSigningGate) index) =? 2) && (((project (edgeSigningGateToAuthorityLedger) index) =? 9) && (((project (edgeAuthorityLedgerToSigningGate) index) =? 0) && ((project (edgeAuthorityLedgerToStitch) index) =? 1)))))))))))))))))))) && ((((project (viewpointArtistStandards) index) =? 1) && (((project (viewpointAuditorIntegrity) index) =? 2) && (((project (viewpointCitizenStitchMesh) index) =? 3) && (((project (viewpointDeveloperOnboarding) index) =? 6) && (((project (viewpointPlayerAccessibility) index) =? 7) && (((project (viewpointPlayerCybernetics) index) =? 8) && (((project (viewpointSystemsPerformance) index) =? 10) && (((project (viewpointSystemsTensorStreaming) index) =? 11) && (((project (viewpointUiCompliance) index) =? 12) && (((project (viewpointPlayerLawfulWorld) index) =? 9) && (((project (viewpointDeveloperLawfulWorld) index) =? 5) && (((project (viewpointAdminSovereignAuthority) index) =? 0) && ((project (viewpointContributorSigningCoordination) index) =? 4))))))))))))) && (((project (viewArtistStandards) index) =? 1) && (((project (viewAuditorIntegrity) index) =? 2) && (((project (viewCitizenStitchMesh) index) =? 3) && (((project (viewDeveloperOnboarding) index) =? 6) && (((project (viewPlayerAccessibility) index) =? 7) && (((project (viewPlayerCybernetics) index) =? 8) && (((project (viewSystemsPerformance) index) =? 10) && (((project (viewSystemsTensorStreaming) index) =? 11) && (((project (viewUiCompliance) index) =? 12) && (((project (viewPlayerLawfulWorld) index) =? 9) && (((project (viewDeveloperLawfulWorld) index) =? 5) && (((project (viewAdminSovereignAuthority) index) =? 0) && ((project (viewContributorSigningCoordination) index) =? 4))))))))))))))) = true),
+  statement: (((((project (edgeCoreToExamples) index) =? 5) && (((project (edgeCoreToStudio) index) =? 6) && (((project (edgePagesToAgent) index) =? 10) && (((project (edgePagesToCanvas) index) =? 11) && (((project (edgeStitchToStudio) index) =? 13) && (((project (edgeStudioToAudio) index) =? 14) && (((project (edgeStudioToCanvas) index) =? 15) && (((project (edgeStudioToPages) index) =? 18) && (((project (edgeStudioToStitch) index) =? 20) && (((project (edgeStudioToVerifier) index) =? 21) && (((project (edgeTensorToCore) index) =? 22) && (((project (edgeVerifierToStudio) index) =? 23) && (((project (edgeCoreToWasm) index) =? 7) && (((project (edgeWasmToStudio) index) =? 25) && (((project (edgeCoreToCli) index) =? 4) && (((project (edgeStudioToSigningGate) index) =? 19) && (((project (edgeCliToSigningGate) index) =? 2) && (((project (edgeSigningGateToAuthorityLedger) index) =? 12) && (((project (edgeAuthorityLedgerToSigningGate) index) =? 0) && (((project (edgeAuthorityLedgerToStitch) index) =? 1) && (((project (edgeStudioToLayer5Swarm) index) =? 16) && (((project (edgeLayer5SwarmToStudio) index) =? 8) && (((project (edgeCliToVolunteerGateway) index) =? 3) && (((project (edgeVolunteerGatewayToCanvas) index) =? 24) && (((project (edgeStudioToOfflineEnvelope) index) =? 17) && ((project (edgeOfflineEnvelopeToCanvas) index) =? 9)))))))))))))))))))))))))) && ((((project (viewpointArtistStandards) index) =? 1) && (((project (viewpointAuditorIntegrity) index) =? 2) && (((project (viewpointCitizenStitchMesh) index) =? 3) && (((project (viewpointDeveloperOnboarding) index) =? 7) && (((project (viewpointPlayerAccessibility) index) =? 8) && (((project (viewpointPlayerCybernetics) index) =? 9) && (((project (viewpointSystemsPerformance) index) =? 11) && (((project (viewpointSystemsTensorStreaming) index) =? 12) && (((project (viewpointUiCompliance) index) =? 13) && (((project (viewpointPlayerLawfulWorld) index) =? 10) && (((project (viewpointDeveloperLawfulWorld) index) =? 6) && (((project (viewpointAdminSovereignAuthority) index) =? 0) && (((project (viewpointContributorSigningCoordination) index) =? 5) && ((project (viewpointCommunityHostAvailability) index) =? 4)))))))))))))) && (((project (viewArtistStandards) index) =? 1) && (((project (viewAuditorIntegrity) index) =? 2) && (((project (viewCitizenStitchMesh) index) =? 3) && (((project (viewDeveloperOnboarding) index) =? 7) && (((project (viewPlayerAccessibility) index) =? 8) && (((project (viewPlayerCybernetics) index) =? 9) && (((project (viewSystemsPerformance) index) =? 11) && (((project (viewSystemsTensorStreaming) index) =? 12) && (((project (viewUiCompliance) index) =? 13) && (((project (viewPlayerLawfulWorld) index) =? 10) && (((project (viewDeveloperLawfulWorld) index) =? 6) && (((project (viewAdminSovereignAuthority) index) =? 0) && (((project (viewContributorSigningCoordination) index) =? 5) && ((project (viewCommunityHostAvailability) index) =? 4)))))))))))))))) = true),
   proof: decide{}
 }
 \end{semanticmodule}

@@ -3834,8 +3834,8 @@ fn engine_ve_77() {
     // Unsafe non-HTTPS external gateway URL MUST fail closed:
     let bad_extra = StitchGatewayEndpoint {
         id: "unsafe-http".to_string(),
-        provider: GatewayProviderKind::CloudflarePages,
-        provider_family: "cloudflare".to_string(),
+        provider: GatewayProviderKind::SelfHostedStitchNode,
+        provider_family: "self-hosted".to_string(),
         base_url: "http://evil.example".to_string(),
         frame_url: "http://evil.example/".to_string(),
         shard_relay_url: "http://evil.example/shards".to_string(),
@@ -3849,30 +3849,30 @@ fn engine_ve_77() {
         "non-HTTPS external gateway URL MUST fail closed"
     );
 
-    // 2. Pack complete multi-gateway bundle with GitHub + Cloudflare + Netlify + IPFS gateways!
+    // 2. Pack complete public-benefit Stitch bundle with GitHub + Stitch Layer-5 Swarm + Zenodo + IPFS gateways!
     let extra_gateways = vec![
         StitchGatewayEndpoint {
-            id: "cloudflare-pages".to_string(),
-            provider: GatewayProviderKind::CloudflarePages,
-            provider_family: "cloudflare".to_string(),
-            base_url: "https://verdant-engine.pages.dev".to_string(),
-            frame_url: "https://verdant-engine.pages.dev/".to_string(),
-            shard_relay_url: "https://verdant-engine.pages.dev/shards".to_string(),
-            holo_url: Some(
-                "https://verdant-engine.pages.dev/holo/verdant-v2.17.0.holo".to_string(),
-            ),
-            crates_index_url: Some("https://verdant-engine.pages.dev/crates/index/".to_string()),
+            id: "stitch-layer5-swarm".to_string(),
+            provider: GatewayProviderKind::StitchPeerSwarm,
+            provider_family: "stitch-swarm".to_string(),
+            base_url: "https://ntfy.sh/verdant-stitch-swarm".to_string(),
+            frame_url: "https://ntfy.sh/verdant-stitch-swarm/".to_string(),
+            shard_relay_url: "https://ntfy.sh/verdant-stitch-swarm/shards".to_string(),
+            holo_url: None,
+            crates_index_url: None,
             priority: 1,
             cors_wildcard_required: true,
         },
         StitchGatewayEndpoint {
-            id: "netlify-edge".to_string(),
-            provider: GatewayProviderKind::NetlifyEdge,
-            provider_family: "netlify".to_string(),
-            base_url: "https://verdant-engine.netlify.app".to_string(),
-            frame_url: "https://verdant-engine.netlify.app/".to_string(),
-            shard_relay_url: "https://verdant-engine.netlify.app/shards".to_string(),
-            holo_url: None,
+            id: "zenodo-doi-archive".to_string(),
+            provider: GatewayProviderKind::ZenodoPublicArchive,
+            provider_family: "zenodo".to_string(),
+            base_url: "https://zenodo.org/records/24383968".to_string(),
+            frame_url: "https://zenodo.org/records/24383968/".to_string(),
+            shard_relay_url: "https://zenodo.org/records/24383968/files/shards".to_string(),
+            holo_url: Some(
+                "https://zenodo.org/records/24383968/files/verdant-v2.17.0.holo".to_string(),
+            ),
             crates_index_url: None,
             priority: 2,
             cors_wildcard_required: true,
@@ -3905,10 +3905,11 @@ fn engine_ve_77() {
     assert_eq!(manifest.stakeholder_parts.len(), 6);
     assert!(gw_dir.join("_headers").is_file());
     assert!(gw_dir.join("_redirects").is_file());
-    assert!(gw_dir.join("wrangler.toml").is_file());
-    assert!(gw_dir.join("netlify.toml").is_file());
+    assert!(gw_dir.join("stitch-swarm-config.json").is_file());
     assert!(gw_dir.join(".ipfs-gateway-root.json").is_file());
     assert!(gw_dir.join("Dockerfile").is_file());
+    assert!(!gw_dir.join("wrangler.toml").exists());
+    assert!(!gw_dir.join("netlify.toml").exists());
     assert!(gw_dir.join("part/studio/index.html").is_file());
     assert!(gw_dir.join("part/catalogs/index.html").is_file());
     assert!(gw_dir.join("part/demo/index.html").is_file());
@@ -4045,6 +4046,175 @@ fn engine_ve_77() {
     assert!(
         kpi_rep.milestones.len() >= 25,
         "expected Milestones M1..M25"
+    );
+    assert_eq!(
+        kpi_rep.kpi_passed_count, kpi_rep.kpi_total_count,
+        "all Observer KPIs must pass (kpis={:?})",
+        kpi_rep.kpis
+    );
+}
+
+#[test]
+fn engine_ve_78() {
+    use std::path::Path;
+    use verdant_core::gateway::{
+        build_multi_gateway_manifest, execute_gateway_op, GatewayOp, GatewayProviderKind,
+        StitchGatewayEndpoint,
+    };
+    use verdant_core::operator::VerdantOperatorChannel;
+
+    let repo_root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+    let ch = VerdantOperatorChannel::new("sunspire-regatta").expect("operator channel");
+
+    // 1. Commercial cloud PaaS scaffolding outside GitHub MUST be absent from workflows & catalogs
+    //    AND fail closed in gateway.rs!
+    let rel_yml = std::fs::read_to_string(repo_root.join(".github/workflows/release-stitch.yml"))
+        .expect("read release-stitch.yml");
+    for forbidden in [
+        "CLOUDFLARE",
+        "NETLIFY",
+        "wrangler",
+        "netlify-cli",
+        "VERCEL",
+        "PINATA",
+    ] {
+        assert!(
+            !rel_yml.contains(forbidden),
+            "release-stitch.yml must not contain commercial PaaS scaffolding `{forbidden}`"
+        );
+    }
+
+    let stitch_cat =
+        std::fs::read_to_string(repo_root.join("catalogs/governance/stitch-self-hosting.json"))
+            .expect("read stitch-self-hosting.json");
+    assert!(!stitch_cat.contains("cloudflare"));
+    assert!(!stitch_cat.contains("netlify"));
+    assert!(stitch_cat.contains("\"forbidsNonGitHubCommercialProviders\": true"));
+    assert!(stitch_cat.contains("stitch-peer-swarm"));
+    assert!(stitch_cat.contains("zenodo-public-archive"));
+
+    let tmp_root = std::env::temp_dir().join(format!("verdant-ve78-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&tmp_root);
+    let rel_dir = tmp_root.join("release");
+    let gw_dir = tmp_root.join("gateway-bundle");
+    let pin = ch
+        .pack_repo_release_capsule(
+            &repo_root,
+            "2.18.0",
+            22,
+            &rel_dir,
+            vec![
+                "https://afflom.github.io/verdant-engine/stitch/v2.18.0/shards".to_string(),
+                "https://cdn.jsdelivr.net/gh/afflom/verdant-engine@stitch-mirror/v2.18.0/shards"
+                    .to_string(),
+            ],
+            "stitch://verdant/studio",
+        )
+        .expect("pack isolated v2.18.0 release");
+
+    for commercial_url in [
+        "https://verdant-engine.pages.dev",
+        "https://verdant-engine.netlify.app",
+        "https://verdant-engine.vercel.app",
+    ] {
+        let bad_paas = StitchGatewayEndpoint {
+            id: "commercial-paas".to_string(),
+            provider: GatewayProviderKind::SelfHostedStitchNode,
+            provider_family: "commercial".to_string(),
+            base_url: commercial_url.to_string(),
+            frame_url: format!("{commercial_url}/"),
+            shard_relay_url: format!("{commercial_url}/shards"),
+            holo_url: None,
+            crates_index_url: None,
+            priority: 2,
+            cors_wildcard_required: true,
+        };
+        assert!(
+            build_multi_gateway_manifest(&pin, &[bad_paas]).is_err(),
+            "commercial cloud PaaS gateway `{commercial_url}` MUST fail closed"
+        );
+    }
+
+    // Packing a bundle and planting a commercial wrangler.toml MUST fail closed in VerifyFailover!
+    execute_gateway_op(&GatewayOp::PackBundle {
+        repo_root: repo_root.clone(),
+        release_dir: rel_dir.clone(),
+        out_dir: gw_dir.clone(),
+        extra_gateways: vec![],
+        crates_dir: None,
+    })
+    .expect("pack public-benefit bundle");
+    std::fs::write(gw_dir.join("wrangler.toml"), b"name = \"planted\"\n")
+        .expect("plant wrangler.toml");
+    assert!(
+        execute_gateway_op(&GatewayOp::VerifyFailover {
+            bundle_dir: gw_dir.clone()
+        })
+        .is_err(),
+        "planted wrangler.toml MUST fail closed in VerifyFailover"
+    );
+    let _ = std::fs::remove_dir_all(&tmp_root);
+
+    // 2. Formal Prism StitchHosting.lex.tex, Architecture, Design, Security (6 STRIDE threats),
+    //    Release (8 channels), Quality/Measures/Fidelity (11/11 measured, 0 open), and Compliance!
+    let stitch_lex = std::fs::read_to_string(repo_root.join("app/src/StitchHosting.lex.tex"))
+        .expect("read StitchHosting.lex.tex");
+    assert!(stitch_lex.contains("selfHostingPrinciplesComplete"));
+    assert!(stitch_lex.contains("stitchLayer5BoundsVerified"));
+    assert!(stitch_lex.contains("publicBenefitAvailabilityVerified"));
+    assert!(!stitch_lex.contains("Classical.choice"));
+
+    let arch_lex = std::fs::read_to_string(repo_root.join("app/src/Architecture.lex.tex"))
+        .expect("read Architecture.lex.tex");
+    assert!(arch_lex.contains("stakeholderCommunityHostOperator"));
+    assert!(arch_lex.contains("componentStitchLayer5Swarm"));
+    assert!(arch_lex.contains("componentVolunteerStitchGateway"));
+    assert!(arch_lex.contains("componentOfflinePortableEnvelope"));
+
+    let sec_lex = std::fs::read_to_string(repo_root.join("app/src/Security.lex.tex"))
+        .expect("read Security.lex.tex");
+    assert!(sec_lex.contains("stitchSelfHostingThreatModelEvidenced"));
+    for threat in [
+        "threatSignalingRelayEclipseOrMitm",
+        "threatVolunteerGatewayContentSubstitution",
+        "threatUnverifiableGatewayProvenance",
+        "threatSignalingIpOrPresenceCorrelation",
+        "threatSignalingTopicSpamOrWebRtcAmplification",
+        "threatMaliciousGatewayPathTraversalOrOriginAbuse",
+    ] {
+        assert!(
+            sec_lex.contains(threat),
+            "Security.lex.tex missing {threat}"
+        );
+    }
+
+    let fidelity_toml =
+        std::fs::read_to_string(repo_root.join("fidelity.toml")).expect("read fidelity.toml");
+    assert!(
+        !fidelity_toml.contains("[[residue]]"),
+        "fidelity.toml must have 0 open residue rows"
+    );
+    assert!(fidelity_toml.contains("Quality::measureSelfHostingPolicyViolations"));
+    let fidelity_lex = std::fs::read_to_string(repo_root.join("app/src/Fidelity.lex.tex"))
+        .expect("read Fidelity.lex.tex");
+    assert!(fidelity_lex.contains("measureSelfHostingPolicyViolationsHolds"));
+
+    // 3. Ratchet + Total Ownership + Observer M1..M26 KPIs all pass cleanly:
+    let rep = prism_fidelity::ratchet::audit_parametric_ratchet(
+        &repo_root,
+        Path::new("model/parametric-ratchet.toml"),
+    )
+    .expect("live repo must pass all 4 ratchet layers in M26");
+    assert!(rep.observed_release_capsule_bytes < 1_048_576);
+    assert!(rep.observed_max_rust_file_lines <= 1_247);
+    assert!(rep.observed_max_js_file_lines <= 920);
+
+    let kpi_rep = ch
+        .evaluate_observer_roadmap_kpis(&repo_root, true, true)
+        .expect("observer roadmap & KPI report");
+    assert!(
+        kpi_rep.milestones.len() >= 26,
+        "expected Milestones M1..M26"
     );
     assert_eq!(
         kpi_rep.kpi_passed_count, kpi_rep.kpi_total_count,

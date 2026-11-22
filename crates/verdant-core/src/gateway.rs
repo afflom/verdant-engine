@@ -1,11 +1,11 @@
-//! **Multi-Gateway Stitch Hosting, Portable Edge Bundle Emitter & Native HTTP Gateway (`gateway.rs`, `VE-77`)**.
+//! **Public-Benefit Multi-Gateway Stitch Hosting, Portable Bundle Emitter & Native HTTP Gateway (`gateway.rs`, `VE-77`, `VE-78`)**.
 //!
 //! Ensures Verdant Engine (its `<= 30 KiB` Blank Frame, verified `.holo` capsule, `4-of-8`
 //! `STCH2` Reed-Solomon shards, all 6 stakeholder parts, and optional RFC 2789 Cargo Sparse
-//! Registry) is hosted and served simultaneously on **GitHub** AND through **independent
-//! non-GitHub gateways** (Cloudflare Pages/Workers, Netlify Edge, IPFS/IPNS HTTP gateways,
-//! jsDelivr CDN, and self-hosted `verdant gateway serve` nodes) with zero external account
-//! requirements and full primary-outage failover.
+//! Registry) is hosted and served simultaneously on **GitHub** AND through **zero-registration
+//! public-benefit Stitch carriers** (Stitch Layer-5 WebRTC peer swarm, volunteer `verdant gateway serve`
+//! / OCI nodes, permissionless IPFS/IPNS HTTP gateways, Zenodo permanent DOI archives, and jsDelivr CDN)
+//! with ZERO commercial cloud PaaS provider registrations outside GitHub and full primary-outage failover.
 
 use std::collections::{BTreeMap, BTreeSet};
 #[cfg(not(target_arch = "wasm32"))]
@@ -33,7 +33,7 @@ use crate::error::ObserverModelError;
 use crate::observer::CommunicationChannelKind;
 use crate::vcs::FramePinManifest;
 
-/// Supported Verdant Stitch hosting gateway provider classes (`AUTH-STITCH-SELF-HOSTING`).
+/// Supported public-benefit Verdant Stitch hosting carrier classes (`AUTH-STITCH-SELF-HOSTING`).
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "kebab-case")]
 pub enum GatewayProviderKind {
@@ -41,15 +41,15 @@ pub enum GatewayProviderKind {
     GitHubPages,
     /// GitHub raw `stitch-mirror` branch (`raw.githubusercontent.com`).
     GitHubRawMirror,
-    /// jsDelivr global CDN mirror over `stitch-mirror` (`cdn.jsdelivr.net`).
+    /// jsDelivr public CDN mirror over `stitch-mirror` (`cdn.jsdelivr.net`).
     JsDelivrCdn,
-    /// Cloudflare Pages / Workers edge gateway (`*.pages.dev`, `*.workers.dev`, custom domain).
-    CloudflarePages,
-    /// Netlify Edge static gateway (`*.netlify.app`, custom domain).
-    NetlifyEdge,
+    /// Permanent public-benefit Zenodo DOI archive (`zenodo.org`).
+    ZenodoPublicArchive,
+    /// Zero-account Stitch Layer-5 `stitch/1` signaling & WebRTC peer swarm (`ntfy.sh`, `stitch-swarm`).
+    StitchPeerSwarm,
     /// Content-addressed IPFS / IPNS HTTP gateway (`ipfs.io`, `dweb.link`, `*.ipfs.w3s.link`).
     IpfsHttpGateway,
-    /// Self-hosted Verdant Stitch HTTP gateway (`verdant gateway serve` or OCI container).
+    /// Volunteer or LAN self-hosted Verdant Stitch HTTP gateway (`verdant gateway serve` or OCI container).
     SelfHostedStitchNode,
 }
 
@@ -77,11 +77,11 @@ pub struct StakeholderPartLink {
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct StitchGatewayEndpoint {
-    /// Unique gateway identifier (e.g. `github-pages`, `cloudflare-pages`, `ipfs-dweb`).
+    /// Unique gateway identifier (e.g. `github-pages`, `stitch-swarm`, `ipfs-dweb`, `zenodo-doi`).
     pub id: String,
     /// Hosting provider class.
     pub provider: GatewayProviderKind,
-    /// Independent provider family (`github`, `jsdelivr`, `cloudflare`, `netlify`, `ipfs`, `self-hosted`).
+    /// Independent provider family (`github`, `jsdelivr`, `zenodo`, `stitch-swarm`, `ipfs`, `self-hosted`).
     pub provider_family: String,
     /// Base HTTPS (or localhost loopback) gateway URL.
     pub base_url: String,
@@ -175,7 +175,7 @@ pub struct GatewayFailoverReport {
     pub withheld_shards_tolerated: u32,
     /// Lifted files verified inside the recovered `.holo` capsule.
     pub recovered_files_count: usize,
-    /// Verified hosting adapter files (`_headers`, `_redirects`, `wrangler.toml`, `netlify.toml`, `.ipfs-gateway-root.json`, `Dockerfile`).
+    /// Verified hosting adapter files (`_headers`, `_redirects`, `stitch-swarm-config.json`, `.ipfs-gateway-root.json`, `Dockerfile`).
     pub adapters_verified: Vec<String>,
     /// Independent provider families committed in `gateway-manifest.json`.
     pub distinct_provider_families: Vec<String>,
@@ -187,8 +187,8 @@ pub struct GatewayFailoverReport {
 #[cfg(not(target_arch = "wasm32"))]
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum GatewayOp {
-    /// Emits a self-contained drop-in multi-gateway bundle deployable identically to GitHub Pages,
-    /// Cloudflare Pages/Workers, Netlify, IPFS/IPNS, OCI/Docker, and `verdant gateway serve`.
+    /// Emits a self-contained drop-in public-benefit Stitch bundle deployable identically to GitHub Pages,
+    /// Stitch Layer-5 peer swarms, IPFS/IPNS, Zenodo archives, volunteer OCI/Docker, and `verdant gateway serve`.
     PackBundle {
         /// Repository root containing `site/frame/`.
         repo_root: PathBuf,
@@ -196,7 +196,7 @@ pub enum GatewayOp {
         release_dir: PathBuf,
         /// Output directory for the portable multi-gateway bundle.
         out_dir: PathBuf,
-        /// Additional external gateway endpoints (Cloudflare, Netlify, IPFS, self-hosted, etc.).
+        /// Additional public-benefit gateway endpoints (Stitch swarm, IPFS, Zenodo, volunteer self-hosted, etc.).
         extra_gateways: Vec<StitchGatewayEndpoint>,
         /// Optional RFC 2789 Cargo Sparse Registry directory (`dist/crates`) to include.
         crates_dir: Option<PathBuf>,
@@ -265,19 +265,32 @@ pub fn build_multi_gateway_manifest(
                     "Stitch gateway URL missing host: `{clean}`"
                 )));
             }
+            if host.ends_with(".pages.dev")
+                || host.ends_with(".workers.dev")
+                || host.contains("cloudflare")
+                || host.ends_with(".netlify.app")
+                || host.contains("netlify")
+                || host.ends_with(".vercel.app")
+                || host.contains("vercel")
+                || host.contains("pinata")
+            {
+                return Err(make_err(format!(
+                    "refused commercial cloud PaaS gateway URL (Verdant is a free public-benefit service with zero non-GitHub commercial provider registrations): `{clean}`"
+                )));
+            }
             let (kind, family) = if host.ends_with(".github.io") || host == "github.io" {
                 (GatewayProviderKind::GitHubPages, "github")
             } else if host.ends_with("githubusercontent.com") || host == "github.com" {
                 (GatewayProviderKind::GitHubRawMirror, "github")
             } else if host.ends_with("jsdelivr.net") {
                 (GatewayProviderKind::JsDelivrCdn, "jsdelivr")
-            } else if host.ends_with(".pages.dev")
-                || host.ends_with(".workers.dev")
-                || host.contains("cloudflare")
+            } else if host == "zenodo.org" || host.ends_with(".zenodo.org") {
+                (GatewayProviderKind::ZenodoPublicArchive, "zenodo")
+            } else if host == "ntfy.sh"
+                || host.ends_with(".ntfy.sh")
+                || host.contains("stitch-swarm")
             {
-                (GatewayProviderKind::CloudflarePages, "cloudflare")
-            } else if host.ends_with(".netlify.app") || host.contains("netlify") {
-                (GatewayProviderKind::NetlifyEdge, "netlify")
+                (GatewayProviderKind::StitchPeerSwarm, "stitch-swarm")
             } else if host == "ipfs.io"
                 || host == "dweb.link"
                 || host.ends_with(".ipfs.w3s.link")
@@ -374,7 +387,7 @@ pub fn build_multi_gateway_manifest(
     let distinct_provider_families: Vec<String> = families_set.into_iter().collect();
     if !gateway_provider_families_independent(distinct_provider_families.len() as u32) {
         return Err(make_err(format!(
-            "multi-gateway resilience requires >= {} independent provider families (found {:?}); add an independent non-GitHub gateway (Cloudflare, Netlify, IPFS, jsDelivr, or self-hosted)",
+            "multi-gateway resilience requires >= {} independent provider families (found {:?}); add an independent public-benefit non-GitHub carrier (Stitch Layer-5 swarm, IPFS, Zenodo, jsDelivr, or volunteer self-hosted)",
             two_u32(),
             distinct_provider_families
         )));
@@ -430,8 +443,8 @@ pub fn build_multi_gateway_manifest(
     Ok(manifest)
 }
 
-/// Executes a native multi-gateway Stitch hosting operation (`PackBundle`, `Serve`, or
-/// `VerifyFailover`), providing GitHub + Cloudflare + Netlify + IPFS + Self-Hosted parity (`VE-77`).
+/// Executes a native public-benefit multi-gateway Stitch hosting operation (`PackBundle`, `Serve`, or
+/// `VerifyFailover`), providing GitHub + Stitch Layer-5 Swarm + IPFS + Zenodo + Volunteer Self-Hosted parity (`VE-77`, `VE-78`).
 #[cfg(not(target_arch = "wasm32"))]
 pub fn execute_gateway_op(
     op: &GatewayOp,
@@ -529,7 +542,7 @@ pub fn execute_gateway_op(
                 .map_err(|e| make_err(format!("write gateway {holo_name}: {e}")))?;
 
             // Emit static redirect shims under `/part/<part>/index.html` so GitHub Pages, IPFS,
-            // S3, Cloudflare, and Netlify all serve clean stakeholder part links natively:
+            // volunteer HTTP/OCI mirrors, and offline archives all serve clean stakeholder part links natively:
             for part in &manifest.stakeholder_parts {
                 let pdir = out_dir.join("part").join(&part.part_id);
                 std::fs::create_dir_all(&pdir)
@@ -556,7 +569,8 @@ pub fn execute_gateway_op(
             )
             .map_err(|e| make_err(format!("write gateway-manifest.json: {e}")))?;
 
-            // Emit Cloudflare Pages / Workers & Netlify shared `_headers` + `_redirects` + `wrangler.toml` + `netlify.toml`:
+            // Emit generic static HTTP `_headers` + `_redirects` and public-benefit Stitch Layer-5 swarm descriptor
+            // (zero commercial cloud provider manifests such as wrangler.toml or netlify.toml):
             let max_age = gateway_immutable_cache_max_age_secs();
             let headers_txt = format!(
                 "/*\n  Access-Control-Allow-Origin: *\n  Cross-Origin-Resource-Policy: cross-origin\n  X-Verdant-Gateway: stitch-v1\n\n/shards/*\n  Cache-Control: public, max-age={max_age}, immutable\n  Content-Type: application/octet-stream\n\n/stitch/*\n  Cache-Control: public, max-age={max_age}, immutable\n  Content-Type: application/octet-stream\n\n/frame-pin.json\n  Cache-Control: no-store\n\n/gateway-manifest.json\n  Cache-Control: no-store\n"
@@ -568,18 +582,41 @@ pub fn execute_gateway_op(
             std::fs::write(out_dir.join("_redirects"), redirects_txt.as_bytes())
                 .map_err(|e| make_err(format!("write _redirects: {e}")))?;
 
-            let wrangler_txt = format!(
-                "# Verdant Multi-Gateway Stitch Bundle — Cloudflare Pages / Workers Adapter\nname = \"verdant-stitch-gateway\"\ncompatibility_date = \"2026-01-01\"\npages_build_output_dir = \".\"\n\n[vars]\nVERDANT_RELEASE_VERSION = \"{}\"\nVERDANT_RELEASE_EPOCH = \"{}\"\nVERDANT_RELEASE_KAPPA = \"{}\"\n",
-                manifest.release_version, manifest.release_epoch, manifest.release_kappa_hex
-            );
-            std::fs::write(out_dir.join("wrangler.toml"), wrangler_txt.as_bytes())
-                .map_err(|e| make_err(format!("write wrangler.toml: {e}")))?;
-
-            let netlify_txt = format!(
-                "# Verdant Multi-Gateway Stitch Bundle — Netlify Edge Adapter\n[build]\n  publish = \".\"\n\n[[headers]]\n  for = \"/*\"\n  [headers.values]\n    Access-Control-Allow-Origin = \"*\"\n    Cross-Origin-Resource-Policy = \"cross-origin\"\n    X-Verdant-Gateway = \"stitch-v1\"\n\n[[headers]]\n  for = \"/shards/*\"\n  [headers.values]\n    Cache-Control = \"public, max-age={max_age}, immutable\"\n\n[[redirects]]\n  from = \"/part/:part\"\n  to = \"/?pin=stitch://verdant/:part\"\n  status = 302\n\n[[redirects]]\n  from = \"/healthz\"\n  to = \"/gateway-manifest.json\"\n  status = 200\n"
-            );
-            std::fs::write(out_dir.join("netlify.toml"), netlify_txt.as_bytes())
-                .map_err(|e| make_err(format!("write netlify.toml: {e}")))?;
+            let kappa_prefix = &manifest.release_kappa_hex[..manifest
+                .release_kappa_hex
+                .len()
+                .min((eight_u32() + eight_u32()) as usize)];
+            let wire_max = 1u64 << (eight_u32() + four_u32());
+            let swarm_desc = serde_json::json!({
+                "spec": "verdant/stitch-layer5-swarm/1",
+                "protocol": "stitch/1",
+                "zeroCommercialRegistration": true,
+                "releaseVersion": manifest.release_version,
+                "releaseEpoch": manifest.release_epoch,
+                "releaseKappaHex": manifest.release_kappa_hex,
+                "opaqueTopic": format!("verdant-stitch-{kappa_prefix}"),
+                "optInConsentRequired": true,
+                "framingLimits": {
+                    "wireBytesMax": wire_max,
+                    "erasureDataShardsK": manifest.data_shards_k,
+                    "erasureTotalShardsN": manifest.total_shards_n,
+                },
+                "publicBenefitCarriers": [
+                    "stitch-layer5-webrtc-swarm",
+                    "volunteer-stitch-http-gateway",
+                    "ipfs-content-addressed-root",
+                    "zenodo-permanent-doi",
+                    "offline-opfs-portable-envelope"
+                ]
+            });
+            std::fs::write(
+                out_dir.join("stitch-swarm-config.json"),
+                format!(
+                    "{}\n",
+                    serde_json::to_string_pretty(&swarm_desc).unwrap_or_default()
+                ),
+            )
+            .map_err(|e| make_err(format!("write stitch-swarm-config.json: {e}")))?;
 
             // Emit IPFS / IPNS content-addressed root descriptor (100% relative paths):
             let ipfs_desc = serde_json::json!({
@@ -863,11 +900,17 @@ pub fn execute_gateway_op(
             let root = bundle_dir
                 .canonicalize()
                 .map_err(|e| make_err(format!("resolve bundle dir for verify: {e}")))?;
+            for forbidden in ["wrangler.toml", "netlify.toml", "vercel.json"] {
+                if root.join(forbidden).exists() {
+                    return Err(make_err(format!(
+                        "public-benefit Stitch bundle refuses commercial cloud provider manifest `{forbidden}`"
+                    )));
+                }
+            }
             let required_adapters = [
                 "_headers",
                 "_redirects",
-                "wrangler.toml",
-                "netlify.toml",
+                "stitch-swarm-config.json",
                 ".ipfs-gateway-root.json",
                 "Dockerfile",
             ];

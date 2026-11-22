@@ -70,12 +70,14 @@
     "manifestSpec": "verdant/multi-gateway-manifest/1",
     "minIndependentProviderFamilies": 2,
     "refusesSingleProviderGitHubOnly": true,
+    "forbidsNonGitHubCommercialProviders": true,
+    "stitchLayer5Protocol": "stitch/1",
     "supportedGateways": [
       "github-pages",
       "github-raw-mirror",
       "jsdelivr-cdn",
-      "cloudflare-pages",
-      "netlify-edge",
+      "zenodo-public-archive",
+      "stitch-peer-swarm",
       "ipfs-http-gateway",
       "self-hosted-stitch-node"
     ],

@@ -64,3 +64,9 @@ record = "Quality::measureGovernancePolicyViolations"
 method = "Measures::governancePolicyViolations"
 source = "app/src/Measures.lex.tex"
 direction = "atMost"
+
+[[measure]]
+record = "Quality::measureSelfHostingPolicyViolations"
+method = "Measures::selfHostingPolicyViolations"
+source = "app/src/Measures.lex.tex"
+direction = "atMost"

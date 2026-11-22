@@ -1,13 +1,13 @@
 {
   "spec": "verdant/observer-refinement-agenda/1",
-  "releaseVersion": "2.17.0",
-  "releaseEpoch": 21,
+  "releaseVersion": "2.18.0",
+  "releaseEpoch": 22,
   "observerKappaHex": "6cd1e9dc15167b134d9887883bf06a5158c9b132f076e10a30e521ea62e0a17b",
-  "overallRefinementScorePermille": 984,
+  "overallRefinementScorePermille": 976,
   "liveMetrics": {
     "wasmCoreBytes": 154462,
-    "wasmUorcBytes": 1738622,
-    "releaseCapsuleBytes": 1011217,
+    "wasmUorcBytes": 1737557,
+    "releaseCapsuleBytes": 1011662,
     "blankFrameBytes": 29177,
     "maxHandwrittenRustFileLines": 1247,
     "maxJsFileLines": 920,
@@ -31,7 +31,7 @@
       "vsmSystem": "VSM-S3",
       "viewpointId": "architecture-design",
       "ownedFileCount": 7,
-      "maxFileLines": 1000,
+      "maxFileLines": 1175,
       "heaviestFile": "app/src/Design.lex.tex",
       "healthScorePermille": 1000
     },
@@ -40,7 +40,7 @@
       "vsmSystem": "VSM-S4",
       "viewpointId": "knowledge-provenance",
       "ownedFileCount": 7,
-      "maxFileLines": 547,
+      "maxFileLines": 603,
       "heaviestFile": "app/src/Provenance.lex.tex",
       "healthScorePermille": 1000
     },
@@ -48,9 +48,9 @@
       "managerId": "mgr-change-release",
       "vsmSystem": "VSM-S3",
       "viewpointId": "change-version-release",
-      "ownedFileCount": 20,
-      "maxFileLines": 1188,
-      "heaviestFile": "crates/verdant-core/src/governance.rs",
+      "ownedFileCount": 21,
+      "maxFileLines": 1226,
+      "heaviestFile": "crates/verdant-core/src/gateway.rs",
       "healthScorePermille": 1000
     },
     {
@@ -58,16 +58,16 @@
       "vsmSystem": "VSM-S3",
       "viewpointId": "security-trust",
       "ownedFileCount": 11,
-      "maxFileLines": 1388,
+      "maxFileLines": 1690,
       "heaviestFile": "app/src/Security.lex.tex",
-      "healthScorePermille": 1000
+      "healthScorePermille": 900
     },
     {
       "managerId": "mgr-roadmap-strategy",
       "vsmSystem": "VSM-S4",
       "viewpointId": "roadmap-kpi-strategy",
       "ownedFileCount": 7,
-      "maxFileLines": 498,
+      "maxFileLines": 504,
       "heaviestFile": "features/suites/engine.feature",
       "healthScorePermille": 1000
     },
@@ -222,15 +222,15 @@
       "citedAuthority": "AUTH-STITCH-SELF-HOSTING",
       "ratchetLayer": "surface-wasm",
       "priority": "medium",
-      "currentValue": "verdant-uorc.wasm 1738622 B · .holo 1011217 B · Blank Frame 29177 B (1543 B headroom)",
+      "currentValue": "verdant-uorc.wasm 1737557 B · .holo 1011662 B · Blank Frame 29177 B (1543 B headroom)",
       "targetValue": "verdant-uorc.wasm <= 1560576 B and gzipped .holo <= 1.0 MiB",
       "summary": "Keep browser verdant-uorc.wasm ultra-lean (< 1.5 MiB) and drive gzipped .holo release capsules below 1.0 MiB for instant Blank Frame cold boots.",
       "concreteActions": [
         "Keep uorc-ncm-decode native-only and audit gltf-json / serde_json monomorphizations inside verdant-uorc.wasm.",
         "Maintain Blank Frame strictly under 30720 B with DecompressionStream('gzip')."
       ],
-      "kappaHex": "ed3902ef2cf6053052e039a7ab4e75fcfc5173b16618170c343f1aba27d85c0a"
+      "kappaHex": "6ee0a033b2c770642d26e62d5eea30be2869d757c35433313e7315aa2cef960d"
     }
   ],
-  "agendaKappaHex": "3b64077317b4c40cab8890faeaee65f23143eaa8e13f49c8b271ee3775480a23"
+  "agendaKappaHex": "3409a85a56b9cfc6b4f9808c7fc3a570dfc3598217088af3dddf1ccdb1200b11"
 }

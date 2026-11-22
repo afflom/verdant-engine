@@ -151,7 +151,7 @@ pub const fn gateway_immutable_cache_max_age_secs() -> u64 {
         .wrapping_mul(sixty)
 }
 
-/// Pure MIR-lifted multi-gateway deployment adapter completeness (`adapters >= 4`: GitHub, Cloudflare, Netlify, IPFS).
+/// Pure MIR-lifted public-benefit Stitch bundle adapter completeness (`adapters >= 4`: Stitch Layer-5 Swarm, IPFS, Volunteer OCI/HTTP, GitHub).
 #[must_use]
 pub const fn gateway_adapter_count_complete(adapters: u32) -> bool {
     adapters >= four_u32()
