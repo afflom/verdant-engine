@@ -588,3 +588,10 @@ Feature: engine
     Then finite outputs signed zeros infinities and unordered classes match the external oracle
     And conversion preserves count rounding beyond the F64 exact integer range
     And unsupported operation codes are typed refusals
+
+  @VTK-16 @build
+  Scenario: Verdant encodes symmetric 32-lane signed eight-bit storage blocks with a binary16 scale and matches the pinned external reference quantizer on its defined inputs
+    Given finite F32 lanes with a defined reference conversion
+    When Verdant encodes one symmetric block
+    Then scale and lane bytes match the imported quantizer
+    And nonfinite inputs and undefined lane conversions return a typed error

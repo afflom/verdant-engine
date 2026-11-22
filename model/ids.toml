@@ -673,3 +673,9 @@ id = "VTK-15"
 level = "build"
 suite = "engine"
 statement = "Verdant performs nearest even F64 division and unsigned count to F64 conversion through certified Prism arithmetic checked against imported Berkeley SoftFloat including gradual underflow overflow and exceptional operands"
+
+[[id]]
+id = "VTK-16"
+level = "build"
+suite = "engine"
+statement = "Verdant encodes symmetric 32-lane signed eight-bit storage blocks with a binary16 scale and matches the pinned external reference quantizer on its defined inputs"

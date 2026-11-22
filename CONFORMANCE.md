@@ -112,6 +112,7 @@ model does not sanction.
 | `VTK-13` | `build` | Verdant imports every GGML CPU quantized codebook as immutable source bound data and verifies compiled bytes and table spans against the pinned external declarations |
 | `VTK-14` | `build` | Verdant decodes complete GGML CPU storage blocks through Prism instruction plans and imported codebooks and preserves strided output padding with typed atomic layout refusals |
 | `VTK-15` | `build` | Verdant performs nearest even F64 division and unsigned count to F64 conversion through certified Prism arithmetic checked against imported Berkeley SoftFloat including gradual underflow overflow and exceptional operands |
+| `VTK-16` | `build` | Verdant encodes symmetric 32-lane signed eight-bit storage blocks with a binary16 scale and matches the pinned external reference quantizer on its defined inputs |
 
 ## fidelity
 

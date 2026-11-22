@@ -16,6 +16,21 @@ const GGML_VECTOR_DRIVER: &str = r#"
 int main(int argc, char **argv) {
   if (argc != 2) return 1;
   ggml_cpu_init();
+  if (!std::strcmp(argv[1], "symmetric-q8")) {
+    uint32_t word;
+    while (std::scanf("%u", &word) == 1) {
+      float block[QK8_0];
+      for (int i = 0; i < QK8_0; ++i) {
+        if (i && std::scanf("%u", &word) != 1) return 2;
+        std::memcpy(&block[i], &word, sizeof(word));
+      }
+      block_q8_0 encoded;
+      quantize_row_q8_0_ref(block, &encoded, QK8_0);
+      const auto *bytes = reinterpret_cast<const uint8_t *>(&encoded);
+      for (size_t i = 0; i < sizeof(encoded); ++i) std::printf("%u\n", unsigned(bytes[i]));
+    }
+    return 0;
+  }
   if (!std::strcmp(argv[1], "storage-block")) {
     std::printf("1196705586\n");
     for (unsigned kind=0; kind<GGML_TYPE_COUNT; ++kind) {
@@ -788,4 +803,40 @@ fn rectangular_product_vtk_01() {
     super::multiply_matrix_rows_f32(0, 2, 3, &[], &[1.0; 6], &mut []).unwrap();
     super::multiply_matrix_rows_f32(2, 0, 3, &[], &[], &mut output).unwrap();
     assert_eq!(output, [0.0; 6]);
+}
+
+#[test]
+fn symmetric_block_encoding_vtk_16() {
+    use std::fmt::Write;
+    let mut blocks = vec![[0.0; 32], [-0.0; 32], [f32::from_bits(1); 32]];
+    for maximum in [0.125, 1.0, 127.0, 254.0, 16_384.0, 16_777_216.0] {
+        for sign in [-1.0, 1.0] {
+            let mut block = std::array::from_fn(|i| sign * (i as f32 - 15.5) * maximum / 127.0);
+            block[31] = sign * maximum;
+            blocks.push(block);
+        }
+    }
+    let mut state = 42u32;
+    for _ in 0..256 {
+        blocks.push(std::array::from_fn(|_| {
+            state = state.wrapping_mul(1_664_525).wrapping_add(1_013_904_223);
+            let exponent = 77 + (state >> 24) % 100;
+            f32::from_bits((state & 0x807f_ffff) | (exponent << 23))
+        }));
+    }
+    let mut input = String::new();
+    let mut actual = Vec::new();
+    for block in blocks {
+        for value in block {
+            writeln!(input, "{}", value.to_bits()).unwrap();
+        }
+        actual.extend(super::encode_symmetric_q8_block(&block).unwrap().map(u32::from));
+    }
+    assert_eq!(actual, query_oracle("symmetric-q8", input));
+    for invalid in [f32::NAN, f32::INFINITY, f32::NEG_INFINITY, 1e-38] {
+        let mut block = [0.0; 32];
+        block[31] = invalid;
+        assert!(matches!(super::encode_symmetric_q8_block(&block),
+            Err(crate::TensorComputeError::InvalidKernelSpecification { .. })));
+    }
 }
