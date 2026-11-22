@@ -12,6 +12,8 @@ keywords.workspace = true
 categories.workspace = true
 
 [dependencies]
+verdant_symmetric_dot = { version = "2.17.0", path = "../../generated/tensor-dot/packages/rust-core/verdant_symmetric_dot" }
+verdant_symmetric_dot_layout = { version = "2.17.0", path = "../../generated/tensor-dot/packages/rust-core/verdant_symmetric_dot_layout" }
 verdant_symmetric_q8 = { version = "2.17.0", path = "../../generated/tensor-q8/packages/rust-core/verdant_symmetric_q8" }
 verdant_division_class = { version = "2.12.0", path = "../../generated/tensor-quotient/packages/rust-core/verdant_division_class" }
 verdant_division_norm = { version = "2.12.0", path = "../../generated/tensor-quotient/packages/rust-core/verdant_division_norm" }

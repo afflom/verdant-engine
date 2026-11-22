@@ -1,0 +1,50 @@
+\begin{lexlean}{SymmetricDot}
+\useglossary{lexlean.std.bool@1.2.0}
+\useglossary{lexlean.std.nat@1.2.0}
+\importmodule{ScalarF32}
+\importmodule{FloatStorage}
+\importmodule{ScalarF64}
+\title{Natural number}
+\begin{semanticmodule}
+definition{
+  name: rowBlockBytes,
+  parameters: [lanes : Nat, bytes : Nat, blocks : Nat],
+  result: Nat,
+  body: (if (((lanes =? 32) && ((prim remainder bytes 34 0 : Nat) =? 0)) && ((prim quotient bytes 34 0 : Nat) =? blocks)) then 34 else 0),
+  executable: true,
+  production: {effects: [], targets: [rust-core]}
+}
+
+definition{
+  name: accumulate,
+  parameters: [sum : Nat, negative : Bool, magnitude : Nat, leftScale : Nat, rightScale : Nat],
+  result: (Option Nat),
+  body: (if ((((sum <? 4294967296) && (magnitude <=? 524288)) && (leftScale <? 65536)) && (rightScale <? 65536)) then (match (ScalarF64::fromNatural magnitude)
+    | Option.some integer => (let signed : Nat := (if (negative && (0 <? magnitude)) then (2147483648 + integer) else integer); (let scale : Nat := (ScalarF32::multiply (FloatStorage::widenHalf leftScale) (FloatStorage::widenHalf rightScale)); (ctor Option.some [Nat] (ScalarF32::add sum (ScalarF32::multiply signed scale)))))
+    | Option.none => (ctor Option.none [Nat])) else (ctor Option.none [Nat])),
+  executable: true,
+  production: {effects: [overflow], targets: [rust-core]}
+}
+
+theorem{
+  name: completeRow,
+  parameters: [],
+  statement: ((rowBlockBytes 32 68 2) = 34),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: partialRow,
+  parameters: [],
+  statement: ((rowBlockBytes 32 67 2) = 0),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: outsideDotRange,
+  parameters: [],
+  statement: ((accumulate 0 false 524289 0 0) = (ctor Option.none [Nat])),
+  proof: reflexivity{}
+}
+\end{semanticmodule}
+\end{lexlean}

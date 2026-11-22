@@ -770,6 +770,8 @@ fn verify_bundle(scope: &str, directory: &str) -> std::collections::BTreeMap<Str
                     "verdant_division_norm" => include_bytes!("../../../../generated/tensor-quotient/packages/rust-core/verdant_division_norm/src/lib.rs"),
                     "verdant_division_finish" => include_bytes!("../../../../generated/tensor-quotient/packages/rust-core/verdant_division_finish/src/lib.rs"),
                     "verdant_symmetric_q8" => include_bytes!("../../../../generated/tensor-q8/packages/rust-core/verdant_symmetric_q8/src/lib.rs"),
+                    "verdant_symmetric_dot" => include_bytes!("../../../../generated/tensor-dot/packages/rust-core/verdant_symmetric_dot/src/lib.rs"),
+                    "verdant_symmetric_dot_layout" => include_bytes!("../../../../generated/tensor-dot/packages/rust-core/verdant_symmetric_dot_layout/src/lib.rs"),
                     _ => panic!("unknown certified dependency"),
                 };
                 assert_eq!(actual, compiled);
@@ -886,6 +888,15 @@ fn symmetric_block_encoding_vtk_16() {
 
 #[test]
 fn symmetric_row_dot_vtk_17() {
+    let bindings = verify_bundle("dot", "tensor-dot");
+    assert_eq!(
+        bindings["VerdantEngine.SymmetricDot.accumulate"],
+        "verdant_symmetric_dot"
+    );
+    assert_eq!(
+        bindings["VerdantEngine.SymmetricDot.rowBlockBytes"],
+        "verdant_symmetric_dot_layout"
+    );
     use std::fmt::Write;
     let mut input = String::new();
     let mut actual = Vec::new();
@@ -902,19 +913,29 @@ fn symmetric_row_dot_vtk_17() {
                     1 => [0x7c00, 0][side],
                     2 => [1, 0x7bff][side],
                     3 => 0x7e32,
-                    _ => ((case * 211 + block * 1311 + side * 10003) % 0x7c00) as u16
-                        | if (block + side) % 3 == 0 { 0x8000 } else { 0 },
+                    _ => {
+                        ((case * 211 + block * 1311 + side * 10003) % 0x7c00) as u16
+                            | if (block + side) % 3 == 0 { 0x8000 } else { 0 }
+                    }
                 };
-                let codes: [i8;32] = std::array::from_fn(|lane| {
+                let codes: [i8; 32] = std::array::from_fn(|lane| {
                     state = state.wrapping_mul(1664525).wrapping_add(1013904223);
                     match case % 7 {
                         0 => -128,
-                        1 => if (lane + side) % 2 == 0 { -128 } else { 127 },
+                        1 => {
+                            if (lane + side) % 2 == 0 {
+                                -128
+                            } else {
+                                127
+                            }
+                        }
                         _ => (state >> 24) as i8,
                     }
                 });
                 writeln!(input, "{scale}").unwrap();
-                for code in codes { writeln!(input, "{}", code as u8).unwrap(); }
+                for code in codes {
+                    writeln!(input, "{}", code as u8).unwrap();
+                }
                 if side == 0 {
                     weights.extend(scale.to_ne_bytes());
                     weights.extend(codes.map(|code| code as u8));
@@ -928,14 +949,25 @@ fn symmetric_row_dot_vtk_17() {
     let expected = query_oracle("symmetric-dot", input);
     assert_eq!(actual.len(), expected.len());
     for (case, (got, want)) in actual.into_iter().zip(expected).enumerate() {
-        if f32::from_bits(want).is_nan() { assert!(got.is_nan(), "row {case}"); }
-        else { assert_eq!(got.to_bits(), want, "row {case}"); }
+        if f32::from_bits(want).is_nan() {
+            assert!(got.is_nan(), "row {case}");
+        } else {
+            assert_eq!(got.to_bits(), want, "row {case}");
+        }
     }
-    let block = super::SymmetricQ8Block { scale: 0, codes: [0;32] };
+    let block = super::SymmetricQ8Block {
+        scale: 0,
+        codes: [0; 32],
+    };
     for bytes in [0, 33, 35, 68] {
-        assert!(matches!(super::dot_symmetric_q8_row(&vec![0;bytes], &[block]),
-            Err(crate::TensorComputeError::ZeroOrMismatchedExtents { .. })));
+        assert!(matches!(
+            super::dot_symmetric_q8_row(&vec![0; bytes], &[block]),
+            Err(crate::TensorComputeError::ZeroOrMismatchedExtents { .. })
+        ));
     }
-    let wrong = super::SymmetricQ8Block { scale: 0, codes: [0;31] };
-    assert!(super::dot_symmetric_q8_row(&[0;34], &[wrong]).is_err());
+    let wrong = super::SymmetricQ8Block {
+        scale: 0,
+        codes: [0; 31],
+    };
+    assert!(super::dot_symmetric_q8_row(&[0; 34], &[wrong]).is_err());
 }

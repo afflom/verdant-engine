@@ -109,3 +109,26 @@ binds the final block layout and arithmetic instructions. The scoped oracle,
 Clippy and cargo-deny pass. The Engine fidelity gate reports 1,168 native
 residue functions against 1,160 and 1,326 uncertified functions against 1,318.
 The preceding PR measured 1,167 and 1,325 respectively.
+
+## VTK-17 symmetric row contraction
+
+The public row API accepts encoded weight bytes and typed activation blocks.
+Verdant's existing uor-matmul dependency supplies the exact signed integer dot.
+The Prism projection widens each binary16 scale, multiplies the scales, weights
+the integer dot and accumulates in F32 block order. It admits matching complete
+32-lane rows before reading them. Attestation
+`74a961acf6a2947760f675e2e936d63e9d2c89f49e08051d8d284dc3538fea20`
+binds both exported roots.
+
+The pinned CPU's Q8_0 vector-dot callback supplies the expected F32 word for
+256 rows, including empty rows, signed extreme coefficients, cancellation,
+subnormal scales, infinities and NaNs. Five malformed layouts are refused.
+Binding both operands to the weight codes fails row 2 (1151092021 versus
+3274873258). Restore and run `cargo test --locked -p verdant-tensor --lib
+symmetric_row_dot_vtk_17` to repeat the oracle.
+[Upstream scalar reduction](https://github.com/ggml-org/llama.cpp/blob/9a080f44b503c64f66c84a6274b9d9ee5d5b09d5/ggml/src/ggml-cpu/quants.c#L499)
+
+The restored encoder and contraction oracles, component Clippy, and cargo-deny
+passed in the locked Engine SDK. Fidelity reports 1,169 native residue
+functions against a ceiling of 1,160 and 1,327 uncertified functions against
+1,318. This row API adds one native bridge to the preceding checkpoint.

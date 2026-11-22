@@ -57,7 +57,7 @@ max_unlifted_workspace_modules = 0
 
 [frontier_ratchet]
 frontier_register = "frontier.toml"
-frontier_rust_tree_sha256 = "aa68101564cc1ecde5ec882f349a9b14d43b11a9f9bf4ecbf3599609d844f319"
+frontier_rust_tree_sha256 = "8c556e965e34ba5cc175131e953f10d5dc0a528f37257c225659a6857060d053"
 min_lifted_functions = 551
 max_residue_functions = 1160
 max_uncertified_functions = 1318
@@ -284,3 +284,8 @@ role = "Prism nearest-even F64 quotient plans and unsigned-count normalization w
 path = "app/src/SymmetricBlock.lex.tex"
 stratum = 1
 role = "Symmetric signed-byte block scale, reciprocal and lane instruction selection with bounded ties-away conversion."
+
+[[stratum_module]]
+path = "app/src/SymmetricDot.lex.tex"
+stratum = 2
+role = "Compose certified scalar arithmetic, integer conversion and binary16 widening in symmetric block dot order."

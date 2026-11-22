@@ -768,6 +768,55 @@ pub fn encode_symmetric_q8_block<const LANES: usize>(
     Ok(output)
 }
 
+/// Contract encoded symmetric weight blocks with a prepared activation row.
+/// Each block's signed integer dot is exact. Prism widens the two scales,
+/// rounds their product, weights the dot and adds it to the running F32 sum.
+///
+/// # Errors
+/// A partial weight block, incorrect lane count or mismatched row lengths
+/// returns `ZeroOrMismatchedExtents` before either row is read.
+pub fn dot_symmetric_q8_row<const LANES: usize>(
+    weights: &[u8],
+    activations: &[SymmetricQ8Block<LANES>],
+) -> Result<f32, TensorComputeError> {
+    let invalid = || TensorComputeError::ZeroOrMismatchedExtents {
+        detail: "symmetric block rows do not have matching extents".into(),
+    };
+    let width = verdant_symmetric_dot_layout::run(
+        LANES as u64,
+        weights.len() as u64,
+        activations.len() as u64,
+    ) as usize;
+    if width == 0 {
+        return Err(invalid());
+    }
+    let mut sum = 0;
+    for (weight, activation) in weights.chunks_exact(width).zip(activations) {
+        let (scale, codes) = weight
+            .split_first_chunk::<{ std::mem::size_of::<u16>() }>()
+            .ok_or_else(invalid)?;
+        let codes: &[u8; LANES] = codes.try_into().map_err(|_| invalid())?;
+        let signed = codes.map(|byte| byte as i8);
+        let dot = uor_matmul::dot_ref(
+            uor_matmul::as_alphabet_full(&signed),
+            uor_matmul::as_alphabet_full(&activation.codes),
+        );
+        sum = verdant_symmetric_dot::run(
+            sum,
+            dot.is_negative(),
+            dot.unsigned_abs() as u64,
+            u64::from(u16::from_ne_bytes(*scale)),
+            u64::from(activation.scale),
+        )
+        .ok()
+        .flatten()
+        .ok_or_else(|| TensorComputeError::InvalidKernelSpecification {
+            kernel_name: "SymmetricDot.accumulate".into(),
+        })?;
+    }
+    Ok(f32::from_bits(sum as u32))
+}
+
 /// Canonical GGML CPU quantized tables reproduced from the pinned external header.
 pub const GGML_QUANTIZED_TABLES: &[u8] = include_bytes!("ggml_tables.bin");
 /// Exact table extents, byte spans, source pin and content digests.
