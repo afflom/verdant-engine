@@ -595,3 +595,10 @@ Feature: engine
     When Verdant encodes one symmetric block
     Then scale and lane bytes match the imported quantizer
     And nonfinite inputs and undefined lane conversions return a typed error
+
+  @VTK-17 @build
+  Scenario: Verdant contracts symmetric signed-byte weight and activation blocks with ordered F32 reduction checked against the imported GGML CPU dot product
+    Given encoded weight rows and prepared activation blocks
+    When Verdant contracts the two rows
+    Then the output matches the independent CPU dot product in block order
+    And malformed row lengths have typed refusals

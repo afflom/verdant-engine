@@ -679,3 +679,9 @@ id = "VTK-16"
 level = "build"
 suite = "engine"
 statement = "Verdant encodes symmetric 32-lane signed eight-bit storage blocks with a binary16 scale and matches the pinned external reference quantizer on its defined inputs"
+
+[[id]]
+id = "VTK-17"
+level = "build"
+suite = "engine"
+statement = "Verdant contracts symmetric signed-byte weight and activation blocks with ordered F32 reduction checked against the imported GGML CPU dot product"
