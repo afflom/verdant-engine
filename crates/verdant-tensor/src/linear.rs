@@ -12,6 +12,9 @@ use crate::{
     DIM_SPATIAL,
 };
 
+mod activations;
+pub use activations::{exponential_f32, swiglu_f32};
+
 #[inline]
 fn transform_triple_exact(
     triple: &[[f32; DIM_SPATIAL]; DIM_SPATIAL],
@@ -1131,29 +1134,6 @@ pub fn evaluate_wide(operation: u64, a: u64, b: u64) -> Result<Option<u64>, Tens
     let [h0, h1, h2, h3] = u32::try_from(high).map_err(|_| failure())?.to_be_bytes();
     let [l0, l1, l2, l3] = u32::try_from(low).map_err(|_| failure())?.to_be_bytes();
     Ok(Some(u64::from_be_bytes([h0, h1, h2, h3, l0, l1, l2, l3])))
-}
-
-/// Evaluate the natural exponential of a binary32 value, including gradual underflow.
-///
-/// # Errors
-/// Returns `InvalidKernelSpecification` if the certified evaluator exceeds its word width.
-pub fn exponential_f32(value: f32) -> Result<f32, TensorComputeError> {
-    let failure = || TensorComputeError::InvalidKernelSpecification {
-        kernel_name: "NaturalExponential.evaluate".to_owned(),
-    };
-    let reduction =
-        verdant_exponential_f32::run(u64::from(value.to_bits())).map_err(|_| failure())?;
-    let word = match reduction {
-        verdant_exponential_f32::Adt0::C0(exact) => exact,
-        verdant_exponential_f32::Adt0::C1(scale, residual, order, mut value) => {
-            for term in (1..=order).rev() {
-                value =
-                    verdant_exponential_step::run(residual, term, value).map_err(|_| failure())?;
-            }
-            verdant_exponential_scale::run(scale, value).map_err(|_| failure())?
-        }
-    };
-    Ok(f32::from_bits(u32::try_from(word).map_err(|_| failure())?))
 }
 
 /// Evaluate ABS, SGN, NEG, STEP, RELU, SQR, SQRT, HARDSIGMOID, HARDSWISH,

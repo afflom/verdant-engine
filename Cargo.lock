@@ -852,6 +852,7 @@ dependencies = [
  "verdant_small_float",
  "verdant_storage_block",
  "verdant_storage_transfer",
+ "verdant_swiglu",
  "verdant_symmetric_dot",
  "verdant_symmetric_dot_layout",
  "verdant_symmetric_q8",
@@ -981,6 +982,10 @@ version = "2.9.0"
 [[package]]
 name = "verdant_storage_transfer"
 version = "2.9.0"
+
+[[package]]
+name = "verdant_swiglu"
+version = "2.20.0"
 
 [[package]]
 name = "verdant_symmetric_dot"

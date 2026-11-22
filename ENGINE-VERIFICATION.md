@@ -185,3 +185,22 @@ The native source lift includes this module and its Rust adapter. Verdant's
 full release gate stops at fidelity. The refreshed frontier measures 1,172
 native residue functions against 1,160 and 1,330 uncertified functions
 against 1,318. The PR #15 parent measured 1,171 and 1,329.
+
+## VTK-20 binary32 SwiGLU
+
+Verdant accepts two binary32 values and returns their gated product. The
+compiled Prism program sequences negation, exponential, addition, division
+and multiplication. The public adapter transports the intermediate words
+between the certified scalar operations. GGML descriptors, operand selection
+and row addressing remain in the consumer. [Certified artifact](generated/tensor-swiglu/result.json)
+
+All 110,700 operand pairs matched the imported scalar GGML oracle within
+four ULP for finite nonzero outputs, with exact signs for zeros and infinities
+and matching NaN classification. Skipping addition produced `0x80000001`
+for the smallest positive subnormal gated by −1. The oracle returned
+`0x80000000`. Restoring the stage passed the suite, scoped Clippy and
+cargo-deny. [Imported evaluator](https://github.com/ggml-org/llama.cpp/blob/9a080f44b503c64f66c84a6274b9d9ee5d5b09d5/ggml/src/ggml-cpu/vec.cpp#L500)
+
+The refreshed native frontier measures 1,173 residual functions and 1,331
+uncertified functions against ceilings of 1,160 and 1,318. PR #16 measured
+1,172 and 1,330. The published release gate remains open.

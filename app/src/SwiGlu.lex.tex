@@ -1,0 +1,40 @@
+\begin{lexlean}{SwiGlu}
+\useglossary{lexlean.std.bool@1.2.0}
+\useglossary{lexlean.std.nat@1.2.0}
+\title{Natural number}
+\begin{semanticmodule}
+inductive{
+  name: Action,
+  type_parameters: [],
+  parameters: [],
+  constructors: [
+    {name: arithmetic, fields: [Nat, Nat, Nat]},
+    {name: exponential, fields: [Nat]},
+    {name: resultWord, fields: [Nat]}
+  ]
+}
+
+definition{
+  name: step,
+  parameters: [stage : Nat, x : Nat, gate : Nat, previous : Nat],
+  result: Action,
+  body: (if (stage =? 0) then (ctor Action.arithmetic 6 x 0) else (if (stage =? 1) then (ctor Action.exponential previous) else (if (stage =? 2) then (ctor Action.arithmetic 0 1065353216 previous) else (if (stage =? 3) then (ctor Action.arithmetic 3 x previous) else (if (stage =? 4) then (ctor Action.arithmetic 2 previous gate) else (ctor Action.resultWord previous)))))),
+  executable: true,
+  production: {effects: [], targets: [rust-core]}
+}
+
+theorem{
+  name: numeratorPreserved,
+  parameters: [x : Nat, gate : Nat, denominator : Nat],
+  statement: ((step 3 x gate denominator) = (ctor Action.arithmetic 3 x denominator)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: gateLast,
+  parameters: [x : Nat, gate : Nat, activated : Nat],
+  statement: ((step 4 x gate activated) = (ctor Action.arithmetic 2 activated gate)),
+  proof: reflexivity{}
+}
+\end{semanticmodule}
+\end{lexlean}

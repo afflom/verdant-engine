@@ -47,3 +47,4 @@ site/stitch/
 
 /app/.lexlean-packed/
 /app/.lexlean-exponential/
+/app/.lexlean-swiglu/

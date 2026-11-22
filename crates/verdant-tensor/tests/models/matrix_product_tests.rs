@@ -800,6 +800,7 @@ fn verify_bundle(scope: &str, directory: &str) -> std::collections::BTreeMap<Str
                     "verdant_exponential_f32" => include_bytes!("../../../../generated/tensor-exponential/packages/rust-core/verdant_exponential_f32/src/lib.rs"),
                     "verdant_exponential_step" => include_bytes!("../../../../generated/tensor-exponential/packages/rust-core/verdant_exponential_step/src/lib.rs"),
                     "verdant_exponential_scale" => include_bytes!("../../../../generated/tensor-exponential/packages/rust-core/verdant_exponential_scale/src/lib.rs"),
+                    "verdant_swiglu" => include_bytes!("../../../../generated/tensor-swiglu/packages/rust-core/verdant_swiglu/src/lib.rs"),
                     "verdant_packed_dot" => include_bytes!("../../../../generated/tensor-packed/packages/rust-core/verdant_packed_dot/src/lib.rs"),
                     "verdant_symmetric_dot" => include_bytes!("../../../../generated/tensor-dot/packages/rust-core/verdant_symmetric_dot/src/lib.rs"),
                     "verdant_symmetric_dot_layout" => include_bytes!("../../../../generated/tensor-dot/packages/rust-core/verdant_symmetric_dot_layout/src/lib.rs"),
@@ -1103,6 +1104,10 @@ fn natural_exponential_vtk_19() {
 
 #[test]
 fn gated_product_vtk_20() {
+    assert_eq!(
+        verify_bundle("swiglu", "tensor-swiglu")["VerdantEngine.SwiGlu.step"],
+        "verdant_swiglu"
+    );
     use std::fmt::Write;
     let gates = [
         0u32,

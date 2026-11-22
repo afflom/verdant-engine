@@ -5,7 +5,7 @@
 # stops the functions it counts (the detail their rows state, under its
 # cause), the one that stops the most first: the work queue.
 
-# Honesty report: 551 of 1881 functions of product code are lifted; 1172
+# Honesty report: 551 of 1882 functions of product code are lifted; 1173
 # are residue, 75 foreign and 83 effect rows.
 # Residue by cause:
 #   arithmetic: 30
@@ -13,15 +13,15 @@
 #   form: 344
 #   signature: 75
 #   statements: 23
-#   type: 479
+#   type: 480
 #   width: 6
 
 spec = "uorust/register/1"
 
 [lift]
-functions = 1881
+functions = 1882
 lifted = 551
-residue = 1172
+residue = 1173
 foreign = 75
 effect = 83
 
@@ -78,7 +78,7 @@ functions = 20
 [[construct]]
 construct = "type outside the lift: f32"
 cause = "type"
-functions = 19
+functions = 20
 
 [[construct]]
 construct = "type outside the lift: WasmRuntimeBridge.terrain_params: TerrainReliefParams"
@@ -5141,6 +5141,18 @@ reason = "type"
 detail = "type outside the lift: VerifiedKernelConsts.skin_weight_scale_f64: f64"
 
 [[residue]]
+kappa = "802b409eed83c8ecbca3d8f0365207f3a4094e18ab8751679ce4331b97fa6fa4"
+function = "verdant_tensor::linear::activations::exponential_f32"
+reason = "type"
+detail = "type outside the lift: f32"
+
+[[residue]]
+kappa = "8e7b3965c4223aa28a70daf02cc083f8b1c0ac5d5c99975106522d2ec1326a30"
+function = "verdant_tensor::linear::activations::swiglu_f32"
+reason = "type"
+detail = "type outside the lift: f32"
+
+[[residue]]
 kappa = "3aa39b9ed53407f8472668340767d9afea088bbb65f49509466146a2ea3b24e1"
 function = "verdant_tensor::linear::batch_transform_positions_exact"
 reason = "type"
@@ -5205,12 +5217,6 @@ kappa = "28f0d3901f04e663d459247e53d3c264ea1e9e256733af8bfc19951f8ae2ef1b"
 function = "verdant_tensor::linear::evaluate_wide"
 reason = "statements"
 detail = "the body has statements other than let"
-
-[[residue]]
-kappa = "285a26a40554d1a5527560ef38b0a9ba6b9c394d984417f41d222f101a93d4d6"
-function = "verdant_tensor::linear::exponential_f32"
-reason = "type"
-detail = "type outside the lift: f32"
 
 [[residue]]
 kappa = "240bb733f55ef321994fff933d97c111d3488bbfa68b2b20f64321482e14ca60"

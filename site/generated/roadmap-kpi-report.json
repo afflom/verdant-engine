@@ -7,7 +7,7 @@
   "totalManagers": 13,
   "totalPrismFacetsOwned": 9,
   "totalPrismFacetsRequired": 9,
-  "declaredCapabilitiesCount": 105,
+  "declaredCapabilitiesCount": 106,
   "minorProgressPct": 100,
   "majorProgressPct": 100,
   "kpiPassedCount": 13,
@@ -17,7 +17,7 @@
     "lockedAuthoritiesCount": 12,
     "provenanceSourcesCount": 23,
     "charterBytes": 65148,
-    "governedLexModules": 47,
+    "governedLexModules": 48,
     "measuredClosed": 10,
     "measuredTotal": 10,
     "authorityCoveragePct": 100

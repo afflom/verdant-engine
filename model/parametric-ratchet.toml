@@ -57,7 +57,7 @@ max_unlifted_workspace_modules = 0
 
 [frontier_ratchet]
 frontier_register = "frontier.toml"
-frontier_rust_tree_sha256 = "5d6d019189cc4c6f5d9ccc1991eae4ea15e1d890065b21e4a8f7e28be7491a81"
+frontier_rust_tree_sha256 = "cdc6f400952084b0cab3d9e17ce5a5553204cfbf1cdde21337f2c075080b0ef4"
 min_lifted_functions = 551
 max_residue_functions = 1160
 max_uncertified_functions = 1318
@@ -299,3 +299,8 @@ role = "Symmetric four-bit lane placement, row extent admission and ordered F32 
 path = "app/src/NaturalExponential.lex.tex"
 stratum = 1
 role = "Binary32 exponential range reduction, fixed-point recurrence and final storage rounding."
+
+[[stratum_module]]
+path = "app/src/SwiGlu.lex.tex"
+stratum = 2
+role = "Order the certified binary32 scalar operations for a sigmoid-weighted gated product."
