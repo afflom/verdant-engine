@@ -245,3 +245,15 @@ Eight certified Prism roots implement the binary32 logarithm and the negative re
 VTK-22 compared 24,578 inputs with the imported GGML vector logarithm, covering every exponent, both sides of one and IEEE special cases. It also observed the unmodified GGML rotary kernel's power call on 13 positive bases and 20 degrees. All 260 ratios met the one-ULP bound. Bases 10,000 and 1,000,000 matched at every tested degree bit for bit. The earlier Q31 calculation returned `0x3f5dafd6` for base 10,000 at degree 64, one word below the upstream result. Reversing the exponent sign in the corrected adapter returned the smallest positive subnormal in place of positive infinity. Restoring it passed the same oracle, scoped Clippy and cargo-deny. [Imported logarithm](https://github.com/ggml-org/llama.cpp/blob/9a080f44b503c64f66c84a6274b9d9ee5d5b09d5/ggml/src/ggml-cpu/vec.h) · [Imported frequency calculation](https://github.com/ggml-org/llama.cpp/blob/9a080f44b503c64f66c84a6274b9d9ee5d5b09d5/ggml/src/ggml-cpu/ops.cpp#L6369)
 
 The full locked-SDK gate reached the native fidelity check. The refreshed frontier measured 1,177 residual and 1,335 uncertified functions against ceilings of 1,160 and 1,318. The preceding patch measured 1,174 and 1,332.
+
+## VTK-23 plane rotations
+
+The certified program returns the register addresses for each coordinate pair
+and each frequency configuration. Rust supplies the input words and interprets
+the actions with Verdant primitives. The imported GGML rotary kernel passed
+`cargo test --locked -p verdant-tensor --lib plane_rotation_vtk_23` in the
+locked SDK. Reading the first result register twice produced 0.75390226 for
+GGML's −0.6569866 at dimension 16, position −7, lane 0. Restoring the
+instruction-selected registers passed the same oracle. Scoped Clippy and
+cargo-deny passed. The outstanding engine fidelity checks concern the native
+frontier and self-host manifest. [Prism result and attestation](generated/tensor-plane/result.json)
