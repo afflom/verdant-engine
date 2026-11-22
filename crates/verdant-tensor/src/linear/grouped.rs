@@ -23,7 +23,9 @@ pub struct GroupedQ8Block {
 ///
 /// # Errors
 /// Returns a typed failure for nonfinite lanes or an unrepresentable inverse scale.
-pub fn encode_grouped_q8_block(input: &[f32; BLOCK_LANES]) -> Result<GroupedQ8Block, TensorComputeError> {
+pub fn encode_grouped_q8_block(
+    input: &[f32; BLOCK_LANES],
+) -> Result<GroupedQ8Block, TensorComputeError> {
     let invalid = || TensorComputeError::InvalidKernelSpecification {
         kernel_name: "GroupedBlock.plan".to_owned(),
     };
