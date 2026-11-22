@@ -52,3 +52,5 @@ site/stitch/
 /app/.lexlean-logscale/
 /app/.lexlean-plane/
 /app/.lexlean-weighted/
+
+/app/.lexlean-logistic/

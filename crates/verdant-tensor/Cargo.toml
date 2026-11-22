@@ -32,7 +32,7 @@ verdant_circular_orient = { version = "2.21.0", path = "../../generated/tensor-c
 verdant_circular_prepare = { version = "2.21.0", path = "../../generated/tensor-circular/packages/rust-core/verdant_circular_prepare" }
 verdant_circular_reduce = { version = "2.21.0", path = "../../generated/tensor-circular/packages/rust-core/verdant_circular_reduce" }
 verdant_circular_square = { version = "2.21.0", path = "../../generated/tensor-circular/packages/rust-core/verdant_circular_square" }
-verdant_swiglu = { version = "2.20.0", path = "../../generated/tensor-swiglu/packages/rust-core/verdant_swiglu" }
+verdant_logistic = { version = "2.24.0", path = "../../generated/tensor-logistic/packages/rust-core/verdant_logistic" }
 verdant_exponential_f32 = { version = "2.19.0", path = "../../generated/tensor-exponential/packages/rust-core/verdant_exponential_f32" }
 verdant_exponential_step = { version = "2.19.0", path = "../../generated/tensor-exponential/packages/rust-core/verdant_exponential_step" }
 verdant_exponential_scale = { version = "2.19.0", path = "../../generated/tensor-exponential/packages/rust-core/verdant_exponential_scale" }

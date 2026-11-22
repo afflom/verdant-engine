@@ -1,0 +1,37 @@
+\begin{lexlean}{Logistic}
+\useglossary{lexlean.std.bool@1.2.0}
+\useglossary{lexlean.std.nat@1.2.0}
+\importmodule{SwiGlu}
+\title{Natural number}
+\begin{semanticmodule}
+definition{
+  name: step,
+  parameters: [unitNumerator : Bool, gated : Bool, stage : Nat, x : Nat, gate : Nat, previous : Nat],
+  result: SwiGlu::Action,
+  body: (if ((stage =? 3) && unitNumerator) then (ctor SwiGlu::Action.arithmetic 3 1065353216 previous) else (if ((stage =? 4) && (if gated then false else true)) then (ctor SwiGlu::Action.resultWord previous) else (SwiGlu::step stage x gate previous))),
+  executable: true,
+  production: {effects: [], targets: [rust-core]}
+}
+
+theorem{
+  name: sigmoidUnitNumerator,
+  parameters: [x : Nat, denominator : Nat],
+  statement: ((step true false 3 x 0 denominator) = (ctor SwiGlu::Action.arithmetic 3 1065353216 denominator)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: siluUsesInputNumerator,
+  parameters: [x : Nat, denominator : Nat],
+  statement: ((step false false 3 x 0 denominator) = (ctor SwiGlu::Action.arithmetic 3 x denominator)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: ungatedResult,
+  parameters: [unitNumerator : Bool, x : Nat, result : Nat],
+  statement: ((step unitNumerator false 4 x 0 result) = (ctor SwiGlu::Action.resultWord result)),
+  proof: reflexivity{}
+}
+\end{semanticmodule}
+\end{lexlean}

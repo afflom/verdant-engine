@@ -409,3 +409,9 @@ name = "verdant_weighted_reciprocal"
 version = "=2.23.0"
 expression = "MIT OR Apache-2.0"
 license-files = [{ path = "src/lib.rs", hash = 0x1a27f392 }]
+
+[[licenses.clarify]]
+name = "verdant_logistic"
+version = "=2.24.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0xb8fd44df }]

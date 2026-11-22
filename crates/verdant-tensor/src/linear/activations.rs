@@ -5,13 +5,47 @@ use super::{evaluate_f32_scalar, TensorComputeError};
 /// # Errors
 /// Propagates a typed error from a certified scalar operation.
 pub fn swiglu_f32(value: f32, gate: f32) -> Result<f32, TensorComputeError> {
-    use verdant_swiglu::Adt0 as Action;
+    logistic(value, false, Some(gate))
+}
+
+/// Evaluate the binary32 logistic sigmoid.
+///
+/// # Errors
+/// Propagates a typed error from a certified scalar operation.
+pub fn sigmoid_f32(value: f32) -> Result<f32, TensorComputeError> {
+    logistic(value, true, None)
+}
+
+/// Evaluate the binary32 sigmoid linear unit.
+///
+/// # Errors
+/// Propagates a typed error from a certified scalar operation.
+pub fn silu_f32(value: f32) -> Result<f32, TensorComputeError> {
+    logistic(value, false, None)
+}
+
+fn logistic(
+    value: f32,
+    unit_numerator: bool,
+    gate: Option<f32>,
+) -> Result<f32, TensorComputeError> {
+    use verdant_logistic::Adt0 as Action;
     let decode = |word: u64| f32::from_bits(word as u32);
-    let (x, multiplier) = (u64::from(value.to_bits()), u64::from(gate.to_bits()));
+    let (x, multiplier) = (
+        u64::from(value.to_bits()),
+        u64::from(gate.unwrap_or_default().to_bits()),
+    );
     let mut prior = 0;
     let mut stage = 0;
     loop {
-        let value = match verdant_swiglu::run(stage, x, multiplier, prior) {
+        let value = match verdant_logistic::run(
+            unit_numerator,
+            gate.is_some(),
+            stage,
+            x,
+            multiplier,
+            prior,
+        ) {
             Action::C0(operation, a, b) => evaluate_f32_scalar(operation, decode(a), decode(b))?,
             Action::C1(a) => exponential_f32(decode(a))?,
             Action::C2(a) => return Ok(decode(a)),

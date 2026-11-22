@@ -273,3 +273,19 @@ where GGML returned −0.75. Restoring the branch passed the batch. Scoped
 Clippy and cargo-deny passed. The full Engine gate reached the fidelity
 ratchet and refused the logarithm and rotary stack. Release acceptance
 remains open. [Prism artifact](generated/tensor-weighted/result.json)
+
+## VTK-25 binary32 sigmoid and SiLU
+
+The exported Logistic step reuses the certified exponential and scalar
+operations of SwiGLU. It selects either one or the input as the numerator
+and returns unary results before the optional multiplication by a gate.
+Verdant exposes `sigmoid_f32` and `silu_f32`. The existing SwiGLU entry
+point uses the same driver. [Prism export](generated/tensor-logistic/result.json)
+
+The pinned GGML functions `ggml_vec_sigmoid_f32` and `ggml_silu_f32` supplied
+18,460 reference results across 9,230 input words. The test checks signed
+zeros, infinity and NaN classes and a four-ULP bound on other finite results.
+Selecting the input as the sigmoid numerator returned zero for +0. The
+imported function returned 0.5. Restoring the unit numerator passed the
+entire corpus. All 110,700 existing gated-product comparisons also passed.
+[CPU scalar definitions](https://github.com/ggml-org/llama.cpp/blob/9a080f44b503c64f66c84a6274b9d9ee5d5b09d5/ggml/src/ggml-cpu/vec.h)

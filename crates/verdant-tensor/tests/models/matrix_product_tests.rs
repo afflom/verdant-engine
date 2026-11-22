@@ -959,6 +959,7 @@ fn verify_bundle(scope: &str, directory: &str) -> std::collections::BTreeMap<Str
                     "verdant_rotation_limit" => include_bytes!("../../../../generated/tensor-plane/packages/rust-core/verdant_rotation_limit/src/lib.rs"),
                     "verdant_rotation_signed" => include_bytes!("../../../../generated/tensor-plane/packages/rust-core/verdant_rotation_signed/src/lib.rs"),
                     "verdant_rotation_step" => include_bytes!("../../../../generated/tensor-plane/packages/rust-core/verdant_rotation_step/src/lib.rs"),
+                    "verdant_logistic" => include_bytes!("../../../../generated/tensor-logistic/packages/rust-core/verdant_logistic/src/lib.rs"),
                     "verdant_swiglu" => include_bytes!("../../../../generated/tensor-swiglu/packages/rust-core/verdant_swiglu/src/lib.rs"),
                     "verdant_packed_dot" => include_bytes!("../../../../generated/tensor-packed/packages/rust-core/verdant_packed_dot/src/lib.rs"),
                     "verdant_symmetric_dot" => include_bytes!("../../../../generated/tensor-dot/packages/rust-core/verdant_symmetric_dot/src/lib.rs"),
@@ -1263,15 +1264,25 @@ fn natural_exponential_vtk_19() {
 
 #[test]
 fn logistic_functions_vtk_25() {
+    assert_eq!(
+        verify_bundle("logistic", "tensor-logistic")["VerdantEngine.Logistic.step"],
+        "verdant_logistic"
+    );
     use std::fmt::Write;
-    let mut words: Vec<u32> = (-4608..=4608).map(|step| (step as f32 / 32.0).to_bits()).collect();
-    for magnitude in [0, 1, 0x007fffff, 0x00800000, 0x7f7fffff, 0x7f800000, 0x7fc00042] {
+    let mut words: Vec<u32> = (-4608..=4608)
+        .map(|step| (step as f32 / 32.0).to_bits())
+        .collect();
+    for magnitude in [
+        0, 1, 0x007fffff, 0x00800000, 0x7f7fffff, 0x7f800000, 0x7fc00042,
+    ] {
         words.extend([magnitude, magnitude | 0x80000000]);
     }
     words.sort_unstable();
     words.dedup();
     let mut requests = String::new();
-    for &word in &words { writeln!(requests, "{word}").unwrap(); }
+    for &word in &words {
+        writeln!(requests, "{word}").unwrap();
+    }
     let expected = query_oracle("logistic", requests);
     assert_eq!(expected.len(), words.len() * 2);
     for (word, pair) in words.into_iter().zip(expected.chunks_exact(2)) {
@@ -1284,8 +1295,12 @@ fn logistic_functions_vtk_25() {
             } else if wanted == 0.0 || wanted.is_infinite() {
                 assert_eq!(observed.to_bits(), bits, "input {word:#x}");
             } else {
-                assert!(observed.is_finite() && observed.is_sign_negative() == wanted.is_sign_negative()
-                    && observed.to_bits().abs_diff(bits) <= 4, "input {word:#x}: {observed} versus {wanted}");
+                assert!(
+                    observed.is_finite()
+                        && observed.is_sign_negative() == wanted.is_sign_negative()
+                        && observed.to_bits().abs_diff(bits) <= 4,
+                    "input {word:#x}: {observed} versus {wanted}"
+                );
             }
         }
     }

@@ -851,6 +851,7 @@ dependencies = [
  "verdant_logarithmic_series",
  "verdant_logarithmic_term",
  "verdant_logarithmic_word",
+ "verdant_logistic",
  "verdant_low_f64",
  "verdant_matrix_shape",
  "verdant_narrow_f64",
@@ -869,7 +870,6 @@ dependencies = [
  "verdant_small_float",
  "verdant_storage_block",
  "verdant_storage_transfer",
- "verdant_swiglu",
  "verdant_symmetric_dot",
  "verdant_symmetric_dot_layout",
  "verdant_symmetric_q8",
@@ -1000,6 +1000,10 @@ name = "verdant_logarithmic_word"
 version = "2.22.0"
 
 [[package]]
+name = "verdant_logistic"
+version = "2.24.0"
+
+[[package]]
 name = "verdant_low_f64"
 version = "2.9.0"
 
@@ -1070,10 +1074,6 @@ version = "2.9.0"
 [[package]]
 name = "verdant_storage_transfer"
 version = "2.9.0"
-
-[[package]]
-name = "verdant_swiglu"
-version = "2.20.0"
 
 [[package]]
 name = "verdant_symmetric_dot"
