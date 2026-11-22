@@ -289,3 +289,9 @@ Selecting the input as the sigmoid numerator returned zero for +0. The
 imported function returned 0.5. Restoring the unit numerator passed the
 entire corpus. All 110,700 existing gated-product comparisons also passed.
 [CPU scalar definitions](https://github.com/ggml-org/llama.cpp/blob/9a080f44b503c64f66c84a6274b9d9ee5d5b09d5/ggml/src/ggml-cpu/vec.h)
+
+The engine operator regenerated the self-host manifest with `ratchet-lift
+--isolated`. It counted 213 lifted modules and zero unlifted workspace
+modules. The fidelity gate now reports only the Rust frontier, whose recorded
+counts are 1,177 residue and 1,335 uncertified functions against ceilings of
+1,160 and 1,318. Its source-tree binding also needs regeneration.
