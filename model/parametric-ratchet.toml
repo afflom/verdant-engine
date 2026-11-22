@@ -57,7 +57,7 @@ max_unlifted_workspace_modules = 0
 
 [frontier_ratchet]
 frontier_register = "frontier.toml"
-frontier_rust_tree_sha256 = "53fc288c0fc40178001294ecfc10cc8eb86dedf6adfec7a99b35f7ae051dbdc1"
+frontier_rust_tree_sha256 = "5d011918bdb9d2a166d6ac72435c0a40d4054de082b0ec2eb8292c0eb0574edd"
 min_lifted_functions = 551
 max_residue_functions = 1160
 max_uncertified_functions = 1318
@@ -309,3 +309,8 @@ role = "Order the certified binary32 scalar operations for a sigmoid-weighted ga
 path = "app/src/CircularFunctions.lex.tex"
 stratum = 1
 role = "Reduce binary32 angles to a quadrant and evaluate the two circular functions."
+
+[[stratum_module]]
+path = "app/src/LogarithmicScale.lex.tex"
+stratum = 1
+role = "Evaluate binary32 logarithms and reduce inverse-root exponents for geometric frequency progression."

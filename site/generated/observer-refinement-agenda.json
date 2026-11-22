@@ -11,9 +11,9 @@
     "blankFrameBytes": 29177,
     "maxHandwrittenRustFileLines": 1247,
     "maxJsFileLines": 920,
-    "frontierLifted": 551,
-    "frontierResidue": 1174,
-    "frontierUncertified": 1332,
+    "frontierLifted": 552,
+    "frontierResidue": 1177,
+    "frontierUncertified": 1335,
     "fidelityOpenResidue": 0
   },
   "partHealth": [
@@ -67,7 +67,7 @@
       "vsmSystem": "VSM-S4",
       "viewpointId": "roadmap-kpi-strategy",
       "ownedFileCount": 7,
-      "maxFileLines": 632,
+      "maxFileLines": 639,
       "heaviestFile": "features/suites/engine.feature",
       "healthScorePermille": 1000
     },
@@ -171,14 +171,14 @@
       "citedAuthority": "AUTH-SEMVER-CHANGE-KPI",
       "ratchetLayer": "uorust-frontier",
       "priority": "high",
-      "currentValue": "551 lifted / 1174 residue (1332 uncertified)",
-      "targetValue": ">= 571 lifted functions",
+      "currentValue": "552 lifted / 1177 residue (1335 uncertified)",
+      "targetValue": ">= 572 lifted functions",
       "summary": "Expand constructive MIR proof frontier; top blocker: expression form outside the lift: ? below the function's own statements (269 fns, cause=form).",
       "concreteActions": [
         "Replace remaining raw shift/overflow ops with lifted verdant_tensor::scalars and wrapping ops.",
         "Extract pure decision/calculation helpers out of IO/effectful wrappers so uorust lifts them."
       ],
-      "kappaHex": "90b6e1923283ab090703322a6c1f901573d2a1d9c1053d1cab4136520deb60e6"
+      "kappaHex": "a90f9b7d80e74f971881ce3ebce0e62e5b25aaeb14e9970c5ae54091b88394a9"
     },
     {
       "proposalId": "refine-rust-modularity",
@@ -232,5 +232,5 @@
       "kappaHex": "ed3902ef2cf6053052e039a7ab4e75fcfc5173b16618170c343f1aba27d85c0a"
     }
   ],
-  "agendaKappaHex": "ac313bfbbe25e6eaf1779259a0a2ab15010a5e1baa8778fb9c0666ccbdf19ce8"
+  "agendaKappaHex": "30d3cb584e17bd1b633cf272ebdd240c584971a768b3e210aca61ac1ca1901cf"
 }
