@@ -1,0 +1,100 @@
+\begin{lexlean}{GroupedBlock}
+\useglossary{lexlean.std.bool@1.2.0}
+\useglossary{lexlean.std.nat@1.2.0}
+\title{Natural number}
+\begin{semanticmodule}
+inductive{
+  name: Request,
+  type_parameters: [],
+  parameters: [],
+  constructors: [
+    {name: extremum, fields: [Nat, Nat]},
+    {name: inverse, fields: [Nat]},
+    {name: scale, fields: [Nat]},
+    {name: lane, fields: [Nat, Nat]},
+    {name: code, fields: [Nat]},
+    {name: groupSum, fields: [Nat, Nat]}
+  ]
+}
+
+inductive{
+  name: Step,
+  type_parameters: [],
+  parameters: [],
+  constructors: [
+    {name: refused, fields: []},
+    {name: word, fields: [Nat]},
+    {name: zeroBlock, fields: []},
+    {name: scalar, fields: [Nat, Nat, Nat]}
+  ]
+}
+
+definition{
+  name: magnitude,
+  parameters: [word : Nat],
+  result: Nat,
+  body: (prim remainder word 2147483648 0 : Nat),
+  executable: true
+}
+
+definition{
+  name: finite,
+  parameters: [word : Nat],
+  result: Bool,
+  body: ((word <? 4294967296) && ((magnitude word) <? 2139095040)),
+  executable: true
+}
+
+definition{
+  name: nearestEven,
+  parameters: [mantissa : Nat, unit : Nat],
+  result: Nat,
+  body: (let whole : Nat := (prim quotient mantissa unit 0 : Nat); (let rest : Nat := (prim remainder mantissa unit 0 : Nat); (let twice : Nat := (rest + rest); (if ((unit <? twice) || ((unit =? twice) && ((prim remainder whole 2 0 : Nat) =? 1))) then (whole + 1) else whole)))),
+  executable: true
+}
+
+definition{
+  name: code,
+  parameters: [word : Nat],
+  result: Step,
+  body: (let mag : Nat := (magnitude word); (if (mag <=? 1056964608) then (ctor Step.word 0) else (if (mag <=? 1124073472) then (let exponent : Nat := (prim quotient mag 8388608 0 : Nat); (let unit : Nat := (prim iterate (fun (v : Nat) => (v + v)) (prim subtract 150 exponent : Nat) 1 : Nat); (let rounded : Nat := (nearestEven (8388608 + (prim remainder mag 8388608 0 : Nat)) unit); (if (word <? 2147483648) then (ctor Step.word (if (127 <? rounded) then 127 else rounded)) else (ctor Step.word (prim subtract 256 rounded : Nat)))))) else (ctor Step.refused)))),
+  executable: true
+}
+
+definition{
+  name: plan,
+  parameters: [request : Request],
+  result: Step,
+  body: (match request
+    | Request.extremum current word => (if ((finite current) && (finite word)) then (ctor Step.word (if ((magnitude current) <? (magnitude word)) then word else current)) else (ctor Step.refused))
+    | Request.inverse maximum => (if ((magnitude maximum) =? 0) then (ctor Step.zeroBlock) else (if (finite maximum) then (ctor Step.scalar 3 3271426048 maximum) else (ctor Step.refused)))
+    | Request.scale inverse => (if ((finite inverse) && (0 <? (magnitude inverse))) then (ctor Step.scalar 3 1065353216 inverse) else (ctor Step.refused))
+    | Request.lane word inverse => (if ((finite word) && (finite inverse)) then (ctor Step.scalar 2 word inverse) else (ctor Step.refused))
+    | Request.code word => (if (finite word) then (code word) else (ctor Step.refused))
+    | Request.groupSum previous byte => (if ((previous <? 65536) && (byte <? 256)) then (ctor Step.word (prim remainder (previous + (if (byte <? 128) then byte else (byte + 65280))) 65536 0 : Nat)) else (ctor Step.refused))),
+  executable: true,
+  production: {effects: [overflow], targets: [rust-core]}
+}
+
+theorem{
+  name: firstExtremeWins,
+  parameters: [],
+  statement: ((plan (ctor Request.extremum 3212836864 1065353216)) = (ctor Step.word 3212836864)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: halfwayToEven,
+  parameters: [],
+  statement: ((plan (ctor Request.code 1075838976)) = (ctor Step.word 2)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: negativeSignedSum,
+  parameters: [],
+  statement: ((plan (ctor Request.groupSum 0 255)) = (ctor Step.word 65535)),
+  proof: reflexivity{}
+}
+\end{semanticmodule}
+\end{lexlean}

@@ -286,6 +286,11 @@ stratum = 1
 role = "Symmetric signed-byte block scale, reciprocal and lane instruction selection with bounded ties-away conversion."
 
 [[stratum_module]]
+path = "app/src/GroupedBlock.lex.tex"
+stratum = 1
+role = "Select signed extrema, nearest-even activation codes and signed group sums for 256-lane blocks."
+
+[[stratum_module]]
 path = "app/src/SymmetricDot.lex.tex"
 stratum = 2
 role = "Compose certified scalar arithmetic, integer conversion and binary16 widening in symmetric block dot order."

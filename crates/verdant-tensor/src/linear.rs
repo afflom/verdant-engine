@@ -13,12 +13,14 @@ use crate::{
 };
 
 mod activations;
+mod grouped;
 mod rotation;
 mod weighted_mean;
 pub use activations::{
     exponential_f32, inverse_root_f32, natural_log_f32, sigmoid_f32, silu_f32, sin_cos_f32,
     swiglu_f32,
 };
+pub use grouped::{encode_grouped_q8_block, GroupedQ8Block};
 pub use rotation::{rotate_pair_f32, signed_word_f32, RotaryParameters, RotarySpectrum};
 pub use weighted_mean::WeightedMeanF32;
 

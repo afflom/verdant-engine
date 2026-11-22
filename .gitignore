@@ -54,3 +54,5 @@ site/stitch/
 /app/.lexlean-weighted/
 
 /app/.lexlean-logistic/
+
+/app/.lexlean-grouped/

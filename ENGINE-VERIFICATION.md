@@ -295,3 +295,11 @@ The engine operator regenerated the self-host manifest with `ratchet-lift
 modules. The fidelity gate now reports only the Rust frontier, whose recorded
 counts are 1,177 residue and 1,335 uncertified functions against ceilings of
 1,160 and 1,318. Its source-tree binding also needs regeneration.
+
+## VTK-26 grouped activation blocks
+
+Verdant encodes 256 binary32 lanes into the Q8_K scale, signed coefficients and sixteen signed partial sums. The Prism model selects the first signed absolute maximum, rounds ties to even and emits the scalar operations. The public adapter accepts a fixed-size array. [Certified export](generated/tensor-grouped/result.json)
+
+All 38,544 bytes of 132 blocks matched the pinned GGML reference, including both signs of zero, tied extrema in both orders, halfway values and 128 seeded blocks. The reference leaves partial sums untouched for an all-zero block. Both outputs were zero-initialized. The encoder also refused each nonfinite input and the unrepresentable reciprocal. [Reference encoder](https://github.com/ggml-org/llama.cpp/blob/9a080f44b503c64f66c84a6274b9d9ee5d5b09d5/ggml/src/ggml-quants.c#L2784)
+
+Reversing the extremum traversal changed byte 3 of block 2 from 63 to 191. Restoring input order passed the full grouped block regression. The existing 32-lane encoder regression, locked tensor Clippy and dependency checks passed.

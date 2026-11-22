@@ -962,6 +962,7 @@ fn verify_bundle(scope: &str, directory: &str) -> std::collections::BTreeMap<Str
                     "verdant_rotation_limit" => include_bytes!("../../../../generated/tensor-plane/packages/rust-core/verdant_rotation_limit/src/lib.rs"),
                     "verdant_rotation_signed" => include_bytes!("../../../../generated/tensor-plane/packages/rust-core/verdant_rotation_signed/src/lib.rs"),
                     "verdant_rotation_step" => include_bytes!("../../../../generated/tensor-plane/packages/rust-core/verdant_rotation_step/src/lib.rs"),
+                    "verdant_grouped_q8" => include_bytes!("../../../../generated/tensor-grouped/packages/rust-core/verdant_grouped_q8/src/lib.rs"),
                     "verdant_logistic" => include_bytes!("../../../../generated/tensor-logistic/packages/rust-core/verdant_logistic/src/lib.rs"),
                     "verdant_swiglu" => include_bytes!("../../../../generated/tensor-swiglu/packages/rust-core/verdant_swiglu/src/lib.rs"),
                     "verdant_packed_dot" => include_bytes!("../../../../generated/tensor-packed/packages/rust-core/verdant_packed_dot/src/lib.rs"),
@@ -1083,6 +1084,10 @@ fn symmetric_block_encoding_vtk_16() {
 
 #[test]
 fn grouped_block_encoding_vtk_26() {
+    assert_eq!(
+        verify_bundle("grouped", "tensor-grouped")["VerdantEngine.GroupedBlock.plan"],
+        "verdant_grouped_q8"
+    );
     use std::fmt::Write;
     let mut blocks = vec![[0.0; 256], [-0.0; 256]];
     for sign in [-1.0, 1.0] {
@@ -1101,7 +1106,9 @@ fn grouped_block_encoding_vtk_26() {
     let mut input = String::new();
     let mut bytes = Vec::new();
     for block in blocks {
-        for lane in block { writeln!(input, "{}", lane.to_bits()).unwrap(); }
+        for lane in block {
+            writeln!(input, "{}", lane.to_bits()).unwrap();
+        }
         let encoded = super::encode_grouped_q8_block(&block).unwrap();
         bytes.extend(encoded.scale.to_ne_bytes());
         bytes.extend(encoded.codes.map(|x| x as u8));
@@ -1110,7 +1117,13 @@ fn grouped_block_encoding_vtk_26() {
     let reference = query_oracle("grouped-q8", input);
     assert_eq!(bytes.len(), reference.len());
     for (i, (byte, expected)) in bytes.into_iter().zip(reference).enumerate() {
-        assert_eq!(u32::from(byte), expected, "block {} byte {}", i / 292, i % 292);
+        assert_eq!(
+            u32::from(byte),
+            expected,
+            "block {} byte {}",
+            i / 292,
+            i % 292
+        );
     }
     for invalid in [f32::NAN, f32::INFINITY, f32::NEG_INFINITY, 1e-38] {
         let mut block = [0.0; 256];

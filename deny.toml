@@ -415,3 +415,9 @@ name = "verdant_logistic"
 version = "=2.24.0"
 expression = "MIT OR Apache-2.0"
 license-files = [{ path = "src/lib.rs", hash = 0xb8fd44df }]
+
+[[licenses.clarify]]
+name = "verdant_grouped_q8"
+version = "=2.25.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0xa91da5e7 }]
