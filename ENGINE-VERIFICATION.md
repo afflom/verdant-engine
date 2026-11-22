@@ -237,3 +237,11 @@ passed the same batch. Scoped Clippy and cargo-deny passed.
 The frontier measures 1,174 residual functions and 1,332 uncertified
 functions against ceilings of 1,160 and 1,318. PR #17 measured 1,173
 and 1,331. The published release remains open.
+
+## VTK-22 binary32 logarithms and reciprocal roots
+
+Eight certified Prism roots implement the binary32 logarithm and the negative reciprocal-root power. Both use a fixed-point logarithm with 55 fractional bits. The power uses a 16-term exponential recurrence before final binary32 rounding. The locked SDK exported result `8ce219d6438e79ee7fa9ba4f4ebad55277daaa58f14d189bae3d49fd1aedee98` with attestation `fa69b72b2fe05ed6049b55cef917c3967091c0f53093c22280dccb5bff3676f8`.
+
+VTK-22 compared 24,578 inputs with the imported GGML vector logarithm, covering every exponent, both sides of one and IEEE special cases. It also observed the unmodified GGML rotary kernel's power call on 13 positive bases and 20 degrees. All 260 ratios met the one-ULP bound. Bases 10,000 and 1,000,000 matched at every tested degree bit for bit. The earlier Q31 calculation returned `0x3f5dafd6` for base 10,000 at degree 64, one word below the upstream result. Reversing the exponent sign in the corrected adapter returned the smallest positive subnormal in place of positive infinity. Restoring it passed the same oracle, scoped Clippy and cargo-deny. [Imported logarithm](https://github.com/ggml-org/llama.cpp/blob/9a080f44b503c64f66c84a6274b9d9ee5d5b09d5/ggml/src/ggml-cpu/vec.h) · [Imported frequency calculation](https://github.com/ggml-org/llama.cpp/blob/9a080f44b503c64f66c84a6274b9d9ee5d5b09d5/ggml/src/ggml-cpu/ops.cpp#L6369)
+
+The full locked-SDK gate reached the native fidelity check. The refreshed frontier measured 1,177 residual and 1,335 uncertified functions against ceilings of 1,160 and 1,318. The preceding patch measured 1,174 and 1,332.
