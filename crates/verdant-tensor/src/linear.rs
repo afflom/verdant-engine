@@ -13,7 +13,9 @@ use crate::{
 };
 
 mod activations;
-pub use activations::{exponential_f32, sin_cos_f32, swiglu_f32};
+pub use activations::{
+    exponential_f32, inverse_root_f32, natural_log_f32, sin_cos_f32, swiglu_f32,
+};
 
 #[inline]
 fn transform_triple_exact(

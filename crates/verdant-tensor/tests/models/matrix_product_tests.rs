@@ -854,6 +854,14 @@ fn verify_bundle(scope: &str, directory: &str) -> std::collections::BTreeMap<Str
                     "verdant_circular_prepare" => include_bytes!("../../../../generated/tensor-circular/packages/rust-core/verdant_circular_prepare/src/lib.rs"),
                     "verdant_circular_reduce" => include_bytes!("../../../../generated/tensor-circular/packages/rust-core/verdant_circular_reduce/src/lib.rs"),
                     "verdant_circular_square" => include_bytes!("../../../../generated/tensor-circular/packages/rust-core/verdant_circular_square/src/lib.rs"),
+                    "verdant_logarithmic_admit" => include_bytes!("../../../../generated/tensor-logscale/packages/rust-core/verdant_logarithmic_admit/src/lib.rs"),
+                    "verdant_logarithmic_inverse" => include_bytes!("../../../../generated/tensor-logscale/packages/rust-core/verdant_logarithmic_inverse/src/lib.rs"),
+                    "verdant_logarithmic_prepare" => include_bytes!("../../../../generated/tensor-logscale/packages/rust-core/verdant_logarithmic_prepare/src/lib.rs"),
+                    "verdant_logarithmic_product" => include_bytes!("../../../../generated/tensor-logscale/packages/rust-core/verdant_logarithmic_product/src/lib.rs"),
+                    "verdant_logarithmic_scale" => include_bytes!("../../../../generated/tensor-logscale/packages/rust-core/verdant_logarithmic_scale/src/lib.rs"),
+                    "verdant_logarithmic_series" => include_bytes!("../../../../generated/tensor-logscale/packages/rust-core/verdant_logarithmic_series/src/lib.rs"),
+                    "verdant_logarithmic_term" => include_bytes!("../../../../generated/tensor-logscale/packages/rust-core/verdant_logarithmic_term/src/lib.rs"),
+                    "verdant_logarithmic_word" => include_bytes!("../../../../generated/tensor-logscale/packages/rust-core/verdant_logarithmic_word/src/lib.rs"),
                     "verdant_swiglu" => include_bytes!("../../../../generated/tensor-swiglu/packages/rust-core/verdant_swiglu/src/lib.rs"),
                     "verdant_packed_dot" => include_bytes!("../../../../generated/tensor-packed/packages/rust-core/verdant_packed_dot/src/lib.rs"),
                     "verdant_symmetric_dot" => include_bytes!("../../../../generated/tensor-dot/packages/rust-core/verdant_symmetric_dot/src/lib.rs"),
@@ -1278,6 +1286,7 @@ fn circular_functions_vtk_21() {
 
 #[test]
 fn logarithmic_frequency_vtk_22() {
+    assert_eq!(verify_bundle("logscale", "tensor-logscale").len(), 8);
     use std::fmt::Write;
     let mut words = vec![0x80000000, 0xbf800000, 0xff800000, 0x7fc00042];
     for exp in 0..=255u32 {
