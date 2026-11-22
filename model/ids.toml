@@ -685,3 +685,9 @@ id = "VTK-17"
 level = "build"
 suite = "engine"
 statement = "Verdant contracts symmetric signed-byte weight and activation blocks with ordered F32 reduction checked against the imported GGML CPU dot product"
+
+[[id]]
+id = "VTK-18"
+level = "build"
+suite = "engine"
+statement = "Verdant contracts packed symmetric four-bit weights with signed-byte activation rows and matches the imported CPU dot product in block order"

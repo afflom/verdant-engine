@@ -602,3 +602,10 @@ Feature: engine
     When Verdant contracts the two rows
     Then the output matches the independent CPU dot product in block order
     And malformed row lengths have typed refusals
+
+  @VTK-18 @build
+  Scenario: Verdant contracts packed symmetric four-bit weights with signed-byte activation rows and matches the imported CPU dot product in block order
+    Given packed four-bit weight rows and prepared signed-byte activation blocks
+    When Verdant contracts the two rows
+    Then all output words or unordered classes match the external CPU callback
+    And invalid block extents have typed refusals
