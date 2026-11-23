@@ -1095,6 +1095,7 @@ fn verify_bundle(scope: &str, directory: &str) -> std::collections::BTreeMap<Str
                     "verdant_tanh" => include_bytes!("../../../../generated/tensor-tanh/packages/rust-core/verdant_tanh/src/lib.rs"),
                     "verdant_row_ranking" => include_bytes!("../../../../generated/tensor-rowrank/packages/rust-core/verdant_row_ranking/src/lib.rs"),
                     "verdant_normalized_exponential" => include_bytes!("../../../../generated/tensor-softmax/packages/rust-core/verdant_normalized_exponential/src/lib.rs"),
+                    "verdant_grouped_affine" => include_bytes!("../../../../generated/tensor-affinedot/packages/rust-core/verdant_grouped_affine/src/lib.rs"),
                     "verdant_head_slope_index" => include_bytes!("../../../../generated/tensor-slopes/packages/rust-core/verdant_head_slope_index/src/lib.rs"),
                     "verdant_head_slope_group" => include_bytes!("../../../../generated/tensor-slopes/packages/rust-core/verdant_head_slope_group/src/lib.rs"),
                     "verdant_head_slope_exponent" => include_bytes!("../../../../generated/tensor-slopes/packages/rust-core/verdant_head_slope_exponent/src/lib.rs"),
@@ -2173,6 +2174,11 @@ fn normalized_exponential_vtk_32() {
 
 #[test]
 fn grouped_affine_products_vtk_33() {
+    assert_eq!(
+        verify_bundle("affinedot", "tensor-affinedot")
+            ["VerdantEngine.GroupedAffineProduct.evaluate"],
+        "verdant_grouped_affine"
+    );
     use std::fmt::Write;
     type Product = fn(&[u8], &[super::GroupedQ8Block]) -> Result<f32, crate::TensorComputeError>;
     let products: [(usize, &str, Product); 2] = [
@@ -2190,27 +2196,32 @@ fn grouped_affine_products_vtk_33() {
         let halves = [0_u16, 0x3800, 0xbc00, 0x4000, 0x3400, 0x3a00, 0x3955];
         for row in 0..98 {
             let count = row % 6;
-            writeln!(input,"{count}").unwrap();
+            writeln!(input, "{count}").unwrap();
             let mut weights = Vec::new();
             let mut activations = Vec::new();
             for i in 0..count {
                 let mut block: Vec<_> = (0..width).map(|_| next()).collect();
-                block[..2].copy_from_slice(&halves[(row+i)%halves.len()].to_ne_bytes());
-                block[2..4].copy_from_slice(&halves[(row*3+i+1)%halves.len()].to_ne_bytes());
+                block[..2].copy_from_slice(&halves[(row + i) % halves.len()].to_ne_bytes());
+                block[2..4]
+                    .copy_from_slice(&halves[(row * 3 + i + 1) % halves.len()].to_ne_bytes());
                 let lanes = std::array::from_fn(|_| (f32::from(next()) - 128.0) / 4.0);
-                for byte in &block { writeln!(input,"{byte}").unwrap(); }
-                for lane in lanes { writeln!(input,"{}",lane.to_bits()).unwrap(); }
+                for byte in &block {
+                    writeln!(input, "{byte}").unwrap();
+                }
+                for lane in lanes {
+                    writeln!(input, "{}", lane.to_bits()).unwrap();
+                }
                 weights.extend(block);
                 activations.push(super::encode_grouped_q8_block(&lanes).unwrap());
             }
             actual.push(dot(&weights, &activations).unwrap());
         }
         let expected = query_oracle(mode, input);
-        assert_eq!(expected.len(),actual.len());
-        for (i,(value,word)) in actual.into_iter().zip(expected).enumerate() {
-            assert_eq!(value.to_bits(),word,"{mode} row {i}");
+        assert_eq!(expected.len(), actual.len());
+        for (i, (value, word)) in actual.into_iter().zip(expected).enumerate() {
+            assert_eq!(value.to_bits(), word, "{mode} row {i}");
         }
-        assert!(dot(&vec![0;width-1], &[]).is_err());
-        assert!(dot(&vec![0;width], &[]).is_err());
+        assert!(dot(&vec![0; width - 1], &[]).is_err());
+        assert!(dot(&vec![0; width], &[]).is_err());
     }
 }

@@ -62,3 +62,4 @@ site/stitch/
 /app/.lexlean-slopes/
 /app/.lexlean-rowrank/
 /app/.lexlean-softmax/
+/app/.lexlean-affinedot/
