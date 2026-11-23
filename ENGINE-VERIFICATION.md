@@ -385,3 +385,5 @@ The public entry point selects the coefficient encoding and reuses the scale and
 The pinned GGML reference encoder supplied 9,756 bytes from 271 Q8_1 blocks. The imported CPU vector-dot functions supplied 224 binary32 words from Q4_1 and Q5_1 weight rows of zero through six blocks. Every encoded byte and output word matched. Partial weight blocks, wrong lane counts and mismatched activation counts returned typed errors.
 
 Multiplying the code sum by the stored binary16 step instead of the original binary32 step failed the Q8_1 byte comparison. Restoring the original step passed both VTK-37 tests and the existing symmetric encoding and compact product regressions. The engine API accepts numerical rows. GGML graph selection and tensor addressing remain with the consumer.
+
+The complete locked-SDK `just vv` passed on `0c70cf1d`, including 85 engine conformance tests, 68 tensor tests, dependency checks and the Prism proof. The verified application attestation is `c042402611bc9473d0de0c22172e8c13c7251af510bf8e27c966358a20c9074e`.
