@@ -135,6 +135,7 @@ model does not sanction.
 | `VTK-34` | `build` | Verdant evaluates binary32 softplus across finite, subnormal and exceptional scores against the imported CPU unary kernel |
 | `VTK-35` | `build` | Verdant contracts one-bit sign and two-bit weight rows against symmetric signed-byte blocks with the imported row precision |
 | `VTK-36` | `build` | Signed five-bit and nonlinear four-bit coefficient rows contract with symmetric signed-byte activations against the pinned CPU |
+| `VTK-37` | `build` | Affine four-bit and five-bit rows contract with signed-byte activations carrying an independently rounded scaled sum |
 
 ## fidelity
 

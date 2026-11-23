@@ -794,3 +794,9 @@ id = "VTK-36"
 level = "build"
 suite = "engine"
 statement = "Signed five-bit and nonlinear four-bit coefficient rows contract with symmetric signed-byte activations against the pinned CPU"
+
+[[id]]
+id = "VTK-37"
+level = "build"
+suite = "engine"
+statement = "Affine four-bit and five-bit rows contract with signed-byte activations carrying an independently rounded scaled sum"

@@ -25,13 +25,13 @@ static bool read_dot_block(Block &block) {
   }
   return true;
 }
-template<class Weight, int Groups=1>
+template<class Weight, int Groups=1, class Activation=block_q8_0>
 static int compare_rows(ggml_type type) {
   const auto dot = ggml_get_type_traits_cpu(type)->vec_dot;
   unsigned blocks;
   while (std::scanf("%u", &blocks) == 1) {
     std::vector<Weight> left(blocks + 1);
-    std::vector<block_q8_0> right(blocks * Groups + 1);
+    std::vector<Activation> right(blocks * Groups + 1);
     for (unsigned i = 0; i < blocks; ++i) {
       if (!read_dot_block(left[i])) return 2;
       for (int g=0;g<Groups;++g) if (!read_dot_block(right[i*Groups+g])) return 2;
@@ -373,6 +373,9 @@ int main(int argc, char **argv) {
   if (!std::strcmp(argv[1], "grouped-dot")) return compare_grouped_rows<block_q2_K>(GGML_TYPE_Q2_K);
   if (!std::strcmp(argv[1], "grouped-q4-dot")) return compare_grouped_rows<block_q4_K>(GGML_TYPE_Q4_K);
   if (!std::strcmp(argv[1], "grouped-q5-dot")) return compare_grouped_rows<block_q5_K>(GGML_TYPE_Q5_K);
+  if (!std::strcmp(argv[1], "affine-q8")) return encode_blocks<QK8_1>(quantize_row_q8_1_ref);
+  if (!std::strcmp(argv[1], "affine-four-dot")) return compare_rows<block_q4_1,1,block_q8_1>(GGML_TYPE_Q4_1);
+  if (!std::strcmp(argv[1], "affine-five-dot")) return compare_rows<block_q5_1,1,block_q8_1>(GGML_TYPE_Q5_1);
   if (!std::strcmp(argv[1], "five-bit-dot")) return compare_rows<block_q5_0>(GGML_TYPE_Q5_0);
   if (!std::strcmp(argv[1], "nonlinear-dot")) return compare_rows<block_iq4_nl>(GGML_TYPE_IQ4_NL);
   if (!std::strcmp(argv[1], "sign-dot")) return compare_rows<block_q1_0,QK1_0/QK8_0>(GGML_TYPE_Q1_0);
@@ -1213,22 +1216,7 @@ fn symmetric_block_encoding_vtk_16() {
         "verdant_symmetric_q8"
     );
     use std::fmt::Write;
-    let mut blocks = vec![[0.0; 32], [-0.0; 32], [f32::from_bits(1); 32]];
-    for maximum in [0.125, 1.0, 127.0, 254.0, 16_384.0, 16_777_216.0] {
-        for sign in [-1.0, 1.0] {
-            let mut block = std::array::from_fn(|i| sign * (i as f32 - 15.5) * maximum / 127.0);
-            block[31] = sign * maximum;
-            blocks.push(block);
-        }
-    }
-    let mut state = 42u32;
-    for _ in 0..256 {
-        blocks.push(std::array::from_fn(|_| {
-            state = state.wrapping_mul(1_664_525).wrapping_add(1_013_904_223);
-            let exponent = 77 + (state >> 24) % 100;
-            f32::from_bits((state & 0x807f_ffff) | (exponent << 23))
-        }));
-    }
+    let blocks = symmetric_encoding_inputs();
     let mut input = String::new();
     let mut actual = Vec::new();
     for block in blocks {
@@ -1256,6 +1244,112 @@ fn symmetric_block_encoding_vtk_16() {
             super::encode_symmetric_q8_block(&block),
             Err(crate::TensorComputeError::InvalidKernelSpecification { .. })
         ));
+    }
+}
+
+fn symmetric_encoding_inputs() -> Vec<[f32; 32]> {
+    let mut blocks = vec![[0.0; 32], [-0.0; 32], [f32::from_bits(1); 32]];
+    for maximum in [0.125, 1.0, 127.0, 254.0, 16_384.0, 16_777_216.0] {
+        for sign in [-1.0, 1.0] {
+            let mut block = std::array::from_fn(|i| sign * (i as f32 - 15.5) * maximum / 127.0);
+            block[31] = sign * maximum;
+            blocks.push(block);
+        }
+    }
+    let mut state = 42u32;
+    for _ in 0..256 {
+        blocks.push(std::array::from_fn(|_| {
+            state = state.wrapping_mul(1_664_525).wrapping_add(1_013_904_223);
+            let exponent = 77 + (state >> 24) % 100;
+            f32::from_bits((state & 0x807f_ffff) | (exponent << 23))
+        }));
+    }
+    blocks
+}
+
+#[test]
+fn affine_byte_activation_vtk_37() {
+    use std::fmt::Write;
+    let mut input = String::new();
+    let mut encoded = Vec::new();
+    for block in symmetric_encoding_inputs() {
+        for v in block {
+            writeln!(input, "{}", v.to_bits()).unwrap();
+        }
+        let b = super::encode_affine_q8_block(&block).unwrap();
+        encoded.extend(b.symmetric.scale.to_ne_bytes());
+        encoded.extend(b.scaled_sum.to_ne_bytes());
+        encoded.extend(b.symmetric.codes.map(|c| c as u8));
+    }
+    let expected = query_oracle("affine-q8", input);
+    assert_eq!(
+        encoded.iter().copied().map(u32::from).collect::<Vec<_>>(),
+        expected
+    );
+    assert!(super::encode_affine_q8_block(&[0.0; 31]).is_err());
+}
+
+#[test]
+fn affine_byte_products_vtk_37() {
+    use super::AffineWeightEncoding::{FiveBit, FourBit};
+    use std::fmt::Write;
+    let mut seed = 671_u32;
+    let mut byte = || {
+        seed = seed.wrapping_mul(1_664_525).wrapping_add(1_013_904_223);
+        (seed >> 24) as u8
+    };
+    let scales = [0_u16, 0x3955, 0xc221, 0x3801, 0x3a00, 0xb800, 0x4000];
+    for (kind, bytes, mode) in [
+        (FourBit, 16, "affine-four-dot"),
+        (FiveBit, 20, "affine-five-dot"),
+    ] {
+        let (mut requests, mut actual) = (String::new(), Vec::new());
+        for row in 0..112 {
+            let n = row % 7;
+            writeln!(requests, "{n}").unwrap();
+            let (mut weights, mut activations) = (Vec::new(), Vec::new());
+            for block in 0..n {
+                let d = scales[(row + block) % 7];
+                let m = scales[(2 * row + block + 1) % 7];
+                weights.extend(d.to_ne_bytes());
+                weights.extend(m.to_ne_bytes());
+                writeln!(requests, "{d}").unwrap();
+                for b in m.to_ne_bytes() {
+                    writeln!(requests, "{b}").unwrap();
+                }
+                for _ in 0..bytes {
+                    let b = byte();
+                    weights.push(b);
+                    writeln!(requests, "{b}").unwrap();
+                }
+                let scale = scales[(4 * row + block + 2) % 7];
+                let scaled_sum = scales[(5 * row + block + 4) % 7];
+                writeln!(requests, "{scale}").unwrap();
+                for b in scaled_sum.to_ne_bytes() {
+                    writeln!(requests, "{b}").unwrap();
+                }
+                let codes = std::array::from_fn(|_| byte() as i8);
+                for c in codes {
+                    writeln!(requests, "{}", c as u8).unwrap();
+                }
+                activations.push(super::AffineQ8Block {
+                    symmetric: super::SymmetricQ8Block { scale, codes },
+                    scaled_sum,
+                });
+            }
+            actual.push(
+                super::dot_affine_weight_row(&weights, &activations, kind)
+                    .unwrap()
+                    .to_bits(),
+            );
+        }
+        let expected = query_oracle(mode, requests);
+        assert_eq!(actual.len(), expected.len());
+        for (row, (a, b)) in actual.into_iter().zip(expected).enumerate() {
+            assert_eq!(a, b, "{mode} row {row}");
+        }
+        assert!(super::dot_affine_weight_row(&vec![0; bytes + 3], &[], kind).is_err());
+        assert!(super::dot_affine_weight_row(&vec![0; bytes + 4], &[], kind).is_err());
     }
 }
 
