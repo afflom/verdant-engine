@@ -374,3 +374,8 @@ role = "Select packed coefficient bits, group offsets and arithmetic instruction
 path = "app/src/Softplus.lex.tex"
 stratum = 2
 role = "Select the binary32 softplus cutoff and compensate rounding in the logarithm of one plus an exponential."
+
+[[stratum_module]]
+path = "app/src/BitpackedProduct.lex.tex"
+stratum = 1
+role = "Define coefficient extraction and signed-byte activation grouping for short bit-packed weight fields."

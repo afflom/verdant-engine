@@ -361,3 +361,15 @@ The full fidelity check reported these frontier findings.
 - frontier.toml: hand-written Rust residue grew: 1177 > ceiling 1160
 - frontier.toml: uncertified Rust surface grew: 1335 > ceiling 1318
 - frontier.toml: frontier.toml is stale against live Rust source tree (recorded 5d011918bdb9d2a1 != live 2e6374e23a32ccd2; run `npm run ratchet`)
+
+### VTK-35 sign and two-bit row products
+
+The certified model defines the coefficient fields and number of signed-byte activation blocks per packed weight block. Verdant uses its existing integer dot, half scale conversion and binary32 accumulation. Each input is a packed weight row and a slice of prepared activation blocks.
+
+The pinned CPU agreed bit for bit on 112 rows per format, including zero through six weight blocks, signed scales and all packed bit positions. Inconsistent byte and activation counts returned typed errors. Removing the coefficient offset changed sign-dot row 1 to 3276111872 where the CPU returned 1116323840. Restoring it passed both formats and the grouped affine regression. The model, targeted Clippy, dependency checks and isolated lift passed.
+
+The full fidelity check reported these frontier findings.
+
+- frontier.toml: hand-written Rust residue grew: 1177 > ceiling 1160
+- frontier.toml: uncertified Rust surface grew: 1335 > ceiling 1318
+- frontier.toml: frontier.toml is stale against live Rust source tree (recorded 5d011918bdb9d2a1 != live 99d5248e5e205b4e; run `npm run ratchet`)

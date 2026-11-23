@@ -825,6 +825,7 @@ dependencies = [
  "sha2 0.10.9",
  "uor-matmul",
  "verdant_add_f64",
+ "verdant_bitpacked_product",
  "verdant_circular_magnitudes",
  "verdant_circular_orient",
  "verdant_circular_prepare",
@@ -914,6 +915,10 @@ dependencies = [
 [[package]]
 name = "verdant_add_f64"
 version = "2.9.0"
+
+[[package]]
+name = "verdant_bitpacked_product"
+version = "2.33.0"
 
 [[package]]
 name = "verdant_circular_magnitudes"

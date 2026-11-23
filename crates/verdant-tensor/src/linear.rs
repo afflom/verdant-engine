@@ -13,6 +13,7 @@ use crate::{
 };
 
 mod activations;
+mod bitpacked_product;
 mod grouped;
 mod grouped_affine;
 mod grouped_product;
@@ -24,6 +25,7 @@ pub use activations::{
     attention_head_slope_f32, exponential_f32, gelu_f32, gelu_quick_f32, inverse_root_f32,
     natural_log_f32, sigmoid_f32, silu_f32, sin_cos_f32, softplus_f32, swiglu_f32, tanh_f32,
 };
+pub use bitpacked_product::{dot_binary_sign_row, dot_two_bit_row};
 pub use grouped::{encode_grouped_q8_block, GroupedQ8Block};
 pub use grouped_affine::{dot_grouped_q4_row, dot_grouped_q5_row};
 pub use grouped_product::dot_grouped_q2_row;

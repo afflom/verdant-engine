@@ -64,3 +64,4 @@ site/stitch/
 /app/.lexlean-softmax/
 /app/.lexlean-affinedot/
 /app/.lexlean-softplus/
+/app/.lexlean-bitrows/

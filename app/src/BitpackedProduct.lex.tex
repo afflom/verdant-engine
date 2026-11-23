@@ -1,0 +1,70 @@
+\begin{lexlean}{BitpackedProduct}
+\useglossary{lexlean.std.bool@1.2.0}
+\useglossary{lexlean.std.nat@1.2.0}
+\importmodule{PackedWord}
+\title{Natural number}
+\begin{semanticmodule}
+inductive{
+  name: Request,
+  type_parameters: [],
+  parameters: [],
+  constructors: [
+    {name: layout, fields: [Bool, Nat, Nat]},
+    {name: coefficient, fields: [Bool, Nat, Nat]}
+  ]
+}
+
+inductive{
+  name: Step,
+  type_parameters: [],
+  parameters: [],
+  constructors: [
+    {name: refuse, fields: []},
+    {name: row, fields: [Nat, Nat, Nat, Nat]},
+    {name: value, fields: [Nat]}
+  ]
+}
+
+definition{
+  name: bitDivisor,
+  parameters: [shift : Nat],
+  result: Nat,
+  body: (if (shift =? 0) then 1 else (if (shift =? 1) then 2 else (if (shift =? 2) then 4 else (if (shift =? 3) then 8 else (if (shift =? 4) then 16 else (if (shift =? 5) then 32 else (if (shift =? 6) then 64 else 128))))))),
+  executable: true
+}
+
+definition{
+  name: evaluate,
+  parameters: [request : Request],
+  result: Step,
+  body: (match request
+    | Request.layout two bytes blocks => (let groups : Nat := (if two then 2 else 4); (if (((prim remainder bytes 18 0 : Nat) =? 0) && ((prim multiply (prim quotient bytes 18 0 : Nat) groups : Nat) =? blocks)) then (ctor Step.row 18 groups (if two then 8 else 4) (if two then 4 else 8)) else (ctor Step.refuse)))
+    | Request.coefficient two byte lane => (if ((byte <? 256) && (lane <? (if two then 4 else 8))) then (match (PackedWord::extract byte 1 (bitDivisor (if two then (prim multiply lane 2 : Nat) else lane)) (if two then 4 else 2))
+      | Option.some raw => (ctor Step.value (if two then raw else (prim multiply raw 2 : Nat)))
+      | Option.none => (ctor Step.refuse)) else (ctor Step.refuse))),
+  executable: true,
+  production: {effects: [overflow], targets: [rust-core]}
+}
+
+theorem{
+  name: lastSignBit,
+  parameters: [],
+  statement: ((evaluate (ctor Request.coefficient false 128 7)) = (ctor Step.value 2)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: lastTwoBitField,
+  parameters: [],
+  statement: ((evaluate (ctor Request.coefficient true 192 3)) = (ctor Step.value 3)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: missingActivationBlock,
+  parameters: [],
+  statement: ((evaluate (ctor Request.layout false 18 3)) = (ctor Step.refuse)),
+  proof: reflexivity{}
+}
+\end{semanticmodule}
+\end{lexlean}

@@ -1123,6 +1123,7 @@ fn verify_bundle(scope: &str, directory: &str) -> std::collections::BTreeMap<Str
                     "verdant_normalized_exponential" => include_bytes!("../../../../generated/tensor-softmax/packages/rust-core/verdant_normalized_exponential/src/lib.rs"),
                     "verdant_grouped_affine" => include_bytes!("../../../../generated/tensor-affinedot/packages/rust-core/verdant_grouped_affine/src/lib.rs"),
                     "verdant_softplus" => include_bytes!("../../../../generated/tensor-softplus/packages/rust-core/verdant_softplus/src/lib.rs"),
+                    "verdant_bitpacked_product" => include_bytes!("../../../../generated/tensor-bitrows/packages/rust-core/verdant_bitpacked_product/src/lib.rs"),
                     "verdant_head_slope_index" => include_bytes!("../../../../generated/tensor-slopes/packages/rust-core/verdant_head_slope_index/src/lib.rs"),
                     "verdant_head_slope_group" => include_bytes!("../../../../generated/tensor-slopes/packages/rust-core/verdant_head_slope_group/src/lib.rs"),
                     "verdant_head_slope_exponent" => include_bytes!("../../../../generated/tensor-slopes/packages/rust-core/verdant_head_slope_exponent/src/lib.rs"),
@@ -2311,8 +2312,13 @@ fn softplus_vtk_34() {
 
 #[test]
 fn bitpacked_row_products_vtk_35() {
+    assert_eq!(
+        verify_bundle("bitrows", "tensor-bitrows")["VerdantEngine.BitpackedProduct.evaluate"],
+        "verdant_bitpacked_product"
+    );
     use std::fmt::Write;
-    type Product = fn(&[u8], &[super::SymmetricQ8Block<32>]) -> Result<f32, crate::TensorComputeError>;
+    type Product =
+        fn(&[u8], &[super::SymmetricQ8Block<32>]) -> Result<f32, crate::TensorComputeError>;
     let products: [(usize, &str, Product); 2] = [
         (4, "sign-dot", super::dot_binary_sign_row),
         (2, "two-bit-dot", super::dot_two_bit_row),
@@ -2332,7 +2338,7 @@ fn bitpacked_row_products_vtk_35() {
             let mut weights = Vec::new();
             let mut activations = Vec::new();
             for i in 0..count {
-                let scale = scales[(row+i)%scales.len()];
+                let scale = scales[(row + i) % scales.len()];
                 writeln!(requests, "{scale}").unwrap();
                 weights.extend(scale.to_ne_bytes());
                 for _ in 0..16 {
@@ -2341,21 +2347,23 @@ fn bitpacked_row_products_vtk_35() {
                     writeln!(requests, "{bits}").unwrap();
                 }
                 for group in 0..groups {
-                    let scale = scales[(2*row+group+i)%scales.len()];
-                    let codes = std::array::from_fn(|_|byte() as i8);
+                    let scale = scales[(2 * row + group + i) % scales.len()];
+                    let codes = std::array::from_fn(|_| byte() as i8);
                     writeln!(requests, "{scale}").unwrap();
-                    for code in codes { writeln!(requests,"{}",code as u8).unwrap(); }
-                    activations.push(super::SymmetricQ8Block{scale,codes});
+                    for code in codes {
+                        writeln!(requests, "{}", code as u8).unwrap();
+                    }
+                    activations.push(super::SymmetricQ8Block { scale, codes });
                 }
             }
-            actual.push(dot(&weights,&activations).unwrap().to_bits());
+            actual.push(dot(&weights, &activations).unwrap().to_bits());
         }
         let expected = query_oracle(mode, requests);
-        assert_eq!(expected.len(),actual.len());
-        for (i,(observed,reference)) in actual.into_iter().zip(expected).enumerate() {
-            assert_eq!(observed,reference,"{mode} row {i}");
+        assert_eq!(expected.len(), actual.len());
+        for (i, (observed, reference)) in actual.into_iter().zip(expected).enumerate() {
+            assert_eq!(observed, reference, "{mode} row {i}");
         }
-        assert!(dot(&[0;17], &[]).is_err());
-        assert!(dot(&[0;18], &[]).is_err());
+        assert!(dot(&[0; 17], &[]).is_err());
+        assert!(dot(&[0; 18], &[]).is_err());
     }
 }

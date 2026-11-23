@@ -25,7 +25,10 @@ fn word(request: Request) -> Result<u64, TensorComputeError> {
     }
 }
 
-fn scaled_half(bytes: [u8; size_of::<u16>()], base: f32) -> Result<f32, TensorComputeError> {
+pub(super) fn scaled_half(
+    bytes: [u8; size_of::<u16>()],
+    base: f32,
+) -> Result<f32, TensorComputeError> {
     let value = convert_float_storage(1, 0, u64::from(u16::from_ne_bytes(bytes)))
         .map_err(|_| invalid())?
         .ok_or_else(invalid)?;
