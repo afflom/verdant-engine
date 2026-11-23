@@ -82,6 +82,35 @@ int main(int argc, char **argv) {
     }
     return std::feof(stdin) ? 0 : 2;
   }
+  if (!std::strcmp(argv[1], "normalized-exp")) {
+    unsigned width, present, sink_bits;
+    while (std::scanf("%u %u %u", &width, &present, &sink_bits) == 3) {
+      if (!width || width > 4096 || present > 1) return 3;
+      auto *ctx = ggml_init({1024*1024, nullptr, false});
+      auto *src = ggml_new_tensor_1d(ctx, GGML_TYPE_F32, width);
+      for (unsigned i = 0; i < width; ++i) {
+        uint32_t word;
+        if (std::scanf("%u", &word) != 1) return 2;
+        std::memcpy(static_cast<float*>(src->data) + i, &word, sizeof(word));
+      }
+      auto *out = ggml_soft_max(ctx, src);
+      if (present) {
+        auto *extra = ggml_new_tensor_1d(ctx, GGML_TYPE_F32, 1);
+        std::memcpy(extra->data, &sink_bits, sizeof(sink_bits));
+        ggml_soft_max_add_sinks(out, extra);
+      }
+      std::vector<float> scratch(width + 256);
+      ggml_compute_params params{}; params.nth = 1;
+      params.wdata = scratch.data(); params.wsize = scratch.size()*sizeof(float);
+      ggml_compute_forward_soft_max(&params, out);
+      for (unsigned i = 0; i < width; ++i) {
+        uint32_t word; std::memcpy(&word, static_cast<float*>(out->data) + i, sizeof(word));
+        std::printf("%u\n", word);
+      }
+      ggml_free(ctx);
+    }
+    return std::feof(stdin) ? 0 : 2;
+  }
   if (!std::strcmp(argv[1], "row-rank")) {
     unsigned width, count, descending;
     while (std::scanf("%u %u %u", &width, &count, &descending)==3) {
@@ -2080,4 +2109,41 @@ fn binary32_row_ranking_vtk_31() {
         .select(&[1.0])
         .unwrap()
         .is_empty());
+}
+
+#[test]
+fn normalized_exponential_vtk_32() {
+    use std::fmt::Write;
+    let mut requests = String::new();
+    let mut cases = Vec::new();
+    for width in [1, 3, 8, 31, 64, 257, 1024] {
+        for sink in [None, Some(-11.0_f32), Some(9.0_f32)] {
+            let row: Vec<_> = (0..width).map(|i| match i % 7 {
+                1 => f32::NEG_INFINITY,
+                2 => -65.0,
+                3 => -0.0,
+                _ => (((i * 53 + 5) % 97) as f32 - 48.0) / 4.0,
+            }).collect();
+            writeln!(requests,"{width} {} {}",u8::from(sink.is_some()),sink.unwrap_or_default().to_bits()).unwrap();
+            for &score in &row { writeln!(requests,"{}",score.to_bits()).unwrap(); }
+            cases.push((row,sink));
+        }
+    }
+    let words = query_oracle("normalized-exp", requests);
+    let mut oracle = words.as_slice();
+    for (mut row, sink) in cases {
+        let (expected, tail) = oracle.split_at(row.len()); oracle = tail;
+        super::normalize_exponential_f32(&mut row, sink).unwrap();
+        for (actual, &word) in row.into_iter().zip(expected) {
+            let expected = f32::from_bits(word);
+            assert!((actual-expected).abs() <= 1.0e-6 * expected.abs() + 1.0e-8, "{actual} != {expected}");
+        }
+    }
+    assert!(oracle.is_empty());
+    for mut invalid in [vec![f32::NAN], vec![f32::INFINITY], vec![f32::NEG_INFINITY]] {
+        let before = invalid[0].to_bits();
+        assert!(super::normalize_exponential_f32(&mut invalid, None).is_err());
+        assert_eq!(before,invalid[0].to_bits());
+    }
+    assert!(super::normalize_exponential_f32(&mut [], None).is_ok());
 }

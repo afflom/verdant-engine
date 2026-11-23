@@ -769,3 +769,9 @@ id = "VTK-31"
 level = "build"
 suite = "engine"
 statement = "Verdant selects deterministic binary32 row indices in ascending or descending value order and agrees with the imported CPU ranking kernels"
+
+[[id]]
+id = "VTK-32"
+level = "build"
+suite = "engine"
+statement = "Verdant normalizes binary32 score rows with an optional unreturned score and matches the imported CPU probabilities"

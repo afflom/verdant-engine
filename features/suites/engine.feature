@@ -692,3 +692,9 @@ Feature: engine
     Given finite values, signed zeros, infinities and ties
     When a caller selects a row prefix in value order
     Then the selected values match the imported CPU reference and tied indices remain deterministic
+
+  @VTK-32 @build
+  Scenario: Verdant normalizes binary32 score rows with an optional unreturned score and matches the imported CPU probabilities
+    Given finite score rows and masked entries
+    When the normalized exponential includes an optional unreturned score
+    Then the probabilities agree with the imported CPU implementation
