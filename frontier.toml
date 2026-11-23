@@ -5,7 +5,7 @@
 # stops the functions it counts (the detail their rows state, under its
 # cause), the one that stops the most first: the work queue.
 
-# Honesty report: 584 of 1892 functions of product code are lifted; 1150
+# Honesty report: 585 of 1893 functions of product code are lifted; 1150
 # are residue, 75 foreign and 83 effect rows.
 # Residue by cause:
 #   arithmetic: 24
@@ -19,8 +19,8 @@
 spec = "uorust/register/1"
 
 [lift]
-functions = 1892
-lifted = 584
+functions = 1893
+lifted = 585
 residue = 1150
 foreign = 75
 effect = 83
@@ -4991,20 +4991,20 @@ reason = "type"
 detail = "type outside the lift: f32"
 
 [[residue]]
-kappa = "eb0c4d6dc897e32b8098f76c3f4aee46b5750320152a7be3055a63515adeacea"
-function = "verdant_tensor::linear::grouped_affine::dot_codebook_row"
-reason = "type"
-detail = "type outside the lift: GroupedQ8Block.scale: f32"
-
-[[residue]]
-kappa = "60c0206502b695361477e455d2505b77f19882c176d214a9c76b815e271fba6a"
+kappa = "15410499084a5b84ac39b944aeedd327e94429318efd29ea6685a08dd4f7d25a"
 function = "verdant_tensor::linear::grouped_affine::dot_grouped_q4_row"
 reason = "type"
 detail = "type outside the lift: GroupedQ8Block.scale: f32"
 
 [[residue]]
-kappa = "d41f1c2c04a4e38910c3bef96cb7d994c755d7623140591c2bc1b45bd466bb8f"
+kappa = "b41de942352d156f4d325ff6a856fc879ccfc4c70844a8265e8c651f7caafbcc"
 function = "verdant_tensor::linear::grouped_affine::dot_grouped_q5_row"
+reason = "type"
+detail = "type outside the lift: GroupedQ8Block.scale: f32"
+
+[[residue]]
+kappa = "0bed735948aca9a19bfe1840278a6d22ad03803874438fa726460c3a550df0a2"
+function = "verdant_tensor::linear::grouped_affine::dot_grouped_weight_row"
 reason = "type"
 detail = "type outside the lift: GroupedQ8Block.scale: f32"
 
@@ -9734,6 +9734,11 @@ definition = "Behavior::logFailure"
 kappa = "17009022c7d972b60176ef44ecec7be7a3670660a82fce46044d9eef1742747d"
 function = "verdant_tensor::linear::bitpacked_product::invalid"
 definition = "Behavior::linearBitpackedProductInvalid"
+
+[[lifted]]
+kappa = "2de4895fffcfced4e777292670e7c12f876cfd0d1f731243747402815925fbeb"
+function = "verdant_tensor::linear::grouped_affine::GroupedWeightEncoding::from"
+definition = "Behavior::groupedWeightEncodingFromCodebookEncodingFrom"
 
 [[lifted]]
 kappa = "f7fb7a54465ba492b9d73457e164a730b4ae5232280a8f56491a6ff16e7ee995"

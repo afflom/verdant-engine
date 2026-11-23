@@ -824,3 +824,9 @@ id = "VTK-41"
 level = "build"
 suite = "engine"
 statement = "Verdant encodes packed sign and centered two-bit weight blocks byte for byte against the imported reference encoders"
+
+[[id]]
+id = "VTK-42"
+level = "build"
+suite = "engine"
+statement = "Verdant contracts grouped signed three-bit and six-bit weights with prepared signed-byte activations in the reference accumulator order"

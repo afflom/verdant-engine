@@ -381,6 +381,8 @@ int main(int argc, char **argv) {
   if (!std::strcmp(argv[1], "iq2_xxs-dot")) return compare_grouped_rows<block_iq2_xxs>(GGML_TYPE_IQ2_XXS);
   if (!std::strcmp(argv[1], "iq2_xs-dot")) return compare_grouped_rows<block_iq2_xs>(GGML_TYPE_IQ2_XS);
   if (!std::strcmp(argv[1], "iq2_s-dot")) return compare_grouped_rows<block_iq2_s>(GGML_TYPE_IQ2_S);
+  if (!std::strcmp(argv[1], "grouped-q3-dot")) return compare_grouped_rows<block_q3_K>(GGML_TYPE_Q3_K);
+  if (!std::strcmp(argv[1], "grouped-q6-dot")) return compare_grouped_rows<block_q6_K>(GGML_TYPE_Q6_K);
   if (!std::strcmp(argv[1], "grouped-q4-dot")) return compare_grouped_rows<block_q4_K>(GGML_TYPE_Q4_K);
   if (!std::strcmp(argv[1], "grouped-q5-dot")) return compare_grouped_rows<block_q5_K>(GGML_TYPE_Q5_K);
   if (!std::strcmp(argv[1], "q1_0")) return encode_blocks<QK1_0>(quantize_row_q1_0_ref);
@@ -2337,13 +2339,19 @@ fn grouped_affine_products_vtk_33() {
             (144, "grouped-q4-dot", super::dot_grouped_q4_row),
             (176, "grouped-q5-dot", super::dot_grouped_q5_row),
         ],
-        true,
+        GroupedScales::LeadingPair,
     );
 }
 
 #[test]
 fn codebook_row_products_vtk_39() {
     use super::CodebookEncoding::{ExplicitSigns, ExtendedIndex, IndexedSigns};
+    type CodebookProduct = fn(
+        &[u8],
+        &[super::GroupedQ8Block],
+        super::CodebookEncoding,
+    ) -> Result<f32, crate::TensorComputeError>;
+    let _: CodebookProduct = super::dot_codebook_row;
     compare_grouped_products(
         &[
             (66, "iq2_xxs-dot", |w, a| {
@@ -2356,13 +2364,36 @@ fn codebook_row_products_vtk_39() {
                 super::dot_codebook_row(w, a, ExplicitSigns)
             }),
         ],
-        false,
+        GroupedScales::Leading,
     );
+}
+
+#[test]
+fn grouped_signed_products_vtk_42() {
+    use super::GroupedWeightEncoding::{SignedSix, SignedThree};
+    compare_grouped_products(
+        &[
+            (110, "grouped-q3-dot", |w, a| {
+                super::dot_grouped_weight_row(w, a, SignedThree)
+            }),
+            (210, "grouped-q6-dot", |w, a| {
+                super::dot_grouped_weight_row(w, a, SignedSix)
+            }),
+        ],
+        GroupedScales::Trailing,
+    );
+}
+
+#[derive(Clone, Copy)]
+enum GroupedScales {
+    Leading,
+    LeadingPair,
+    Trailing,
 }
 
 type GroupedProduct = fn(&[u8], &[super::GroupedQ8Block]) -> Result<f32, crate::TensorComputeError>;
 
-fn compare_grouped_products(products: &[(usize, &str, GroupedProduct)], affine: bool) {
+fn compare_grouped_products(products: &[(usize, &str, GroupedProduct)], scales: GroupedScales) {
     use std::fmt::Write;
     for &(width, mode, dot) in products {
         let mut input = String::new();
@@ -2380,8 +2411,13 @@ fn compare_grouped_products(products: &[(usize, &str, GroupedProduct)], affine: 
             let mut activations = Vec::new();
             for i in 0..count {
                 let mut block: Vec<_> = (0..width).map(|_| next()).collect();
-                block[..2].copy_from_slice(&halves[(row + i) % halves.len()].to_ne_bytes());
-                if affine {
+                let at = if matches!(scales, GroupedScales::Trailing) {
+                    width - 2
+                } else {
+                    0
+                };
+                block[at..at + 2].copy_from_slice(&halves[(row + i) % halves.len()].to_ne_bytes());
+                if matches!(scales, GroupedScales::LeadingPair) {
                     block[2..4]
                         .copy_from_slice(&halves[(row * 3 + i + 1) % halves.len()].to_ne_bytes());
                 }

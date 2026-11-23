@@ -415,3 +415,9 @@ A standalone Cargo consumer of the v2.20.0 source package initially failed to re
 The imported GGML reference encoders quantized 273 Q1_0 blocks and 272 Q2_0 blocks. All 9,810 scale and coefficient bytes matched the certified Verdant output. Inputs include signed zeros, mixed signs, exact and adjacent half-integer rounding boundaries, and 256 seeded mixed-exponent blocks per format. Q2_0 refuses an unrepresentable reciprocal before the C reference would convert a nonfinite value to an integer. Malformed widths and a nonfinite final lane leave the destination intact. Existing 32-lane callers retain their function signature.
 
 Reading only the first lane of each packed byte changed Q1_0 block 3, byte 7, from 127 to 255. Restoring lane order passed VTK-41, the VTK-40 four- and five-bit encoding checks and the VTK-35 packed row products. [Pinned source](https://github.com/ggml-org/llama.cpp/blob/9a080f44b503c64f66c84a6274b9d9ee5d5b09d5/ggml/src/ggml-quants.c#L36)
+
+## VTK-42 signed grouped row products
+
+The signed three-bit and six-bit plans unpack 256 coefficients per block and use the upstream eight-accumulator order. All 196 result words from zero through five blocks matched the pinned GGML CPU row products. The CPU prepared its own Q8_K activations from the same binary32 inputs. Both layouts reject partial blocks and mismatched row lengths.
+
+Repeating the first activation lane failed Q3_K row 1 with output word 1137278976 against 1154226176. Restoring the modeled lane order passed the comparison. [Reference CPU implementation](https://github.com/ggml-org/llama.cpp/blob/9a080f44b503c64f66c84a6274b9d9ee5d5b09d5/ggml/src/ggml-cpu/quants.c)

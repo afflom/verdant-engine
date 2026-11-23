@@ -765,3 +765,9 @@ Feature: engine
     Given finite binary32 weights with both zero signs and tied rounding boundaries
     When Verdant packs their coefficients and binary16 scale
     Then every output byte matches the pinned independent encoder and malformed blocks preserve the destination
+
+  @VTK-42 @build
+  Scenario: Verdant contracts grouped signed three-bit and six-bit weights with prepared signed-byte activations in the reference accumulator order
+    Given packed weight groups and prepared signed-byte activation blocks
+    When the engine evaluates multiple contracted blocks
+    Then every result word matches the pinned GGML CPU product and mismatched extents are refused

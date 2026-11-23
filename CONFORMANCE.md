@@ -140,6 +140,7 @@ model does not sanction.
 | `VTK-39` | `build` | Verdant contracts signed two-bit codebook rows with grouped byte activations against the imported GGML vector products |
 | `VTK-40` | `build` | Verdant encodes centered and affine four- and five-bit weight blocks against the imported reference encoders |
 | `VTK-41` | `build` | Verdant encodes packed sign and centered two-bit weight blocks byte for byte against the imported reference encoders |
+| `VTK-42` | `build` | Verdant contracts grouped signed three-bit and six-bit weights with prepared signed-byte activations in the reference accumulator order |
 
 ## fidelity
 

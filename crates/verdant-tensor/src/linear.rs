@@ -34,7 +34,8 @@ pub use bitpacked_product::{
 };
 pub use grouped::{encode_grouped_q8_block, GroupedQ8Block};
 pub use grouped_affine::{
-    dot_codebook_row, dot_grouped_q4_row, dot_grouped_q5_row, CodebookEncoding,
+    dot_grouped_q4_row, dot_grouped_q5_row, dot_grouped_weight_row as dot_codebook_row,
+    dot_grouped_weight_row, CodebookEncoding, GroupedWeightEncoding,
 };
 pub use grouped_product::dot_grouped_q2_row;
 pub use ranking::RowRankingF32;

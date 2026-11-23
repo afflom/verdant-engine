@@ -1,4 +1,4 @@
-//! Grouped affine four- and five-bit weight products.
+//! Grouped signed, affine, and codebook weight products.
 
 use super::{convert_float_storage, evaluate_f32_scalar, signed_word_f32, GroupedQ8Block};
 use crate::{scalars, TensorComputeError};
@@ -15,8 +15,9 @@ fn invalid() -> TensorComputeError {
 }
 
 macro_rules! run_grouped_affine_row {
-    ($high:expr, $weights:expr, $activations:expr) => {{
+    ($high:expr, $signed:expr, $weights:expr, $activations:expr) => {{
         let high: bool = $high;
+        let signed: bool = $signed;
         let weights: &[u8] = $weights;
         let activations: &[GroupedQ8Block] = $activations;
         let plan = |request: Request| run(request).map_err(|_| invalid());
@@ -40,50 +41,75 @@ macro_rules! run_grouped_affine_row {
                 let contribution = evaluate_f32_scalar(product, scale, term)?;
                 evaluate_f32_scalar(combine, prior, contribution)
             };
-        let width = word(Request::C0(
-            high,
-            weights.len() as u64,
-            activations.len() as u64,
-        ))
-        .map_err(|_| TensorComputeError::ZeroOrMismatchedExtents {
-            detail: "grouped affine weights and activation block counts differ".into(),
-        })? as usize;
+        let layout = if signed { Request::C9 } else { Request::C0 };
+        let width =
+            word(layout(high, weights.len() as u64, activations.len() as u64)).map_err(|_| {
+                TensorComputeError::ZeroOrMismatchedExtents {
+                    detail: "grouped affine weights and activation block counts differ".into(),
+                }
+            })? as usize;
         let mut sums = [0.0; ACCUMULATORS];
         let mut total = 0.0;
         for (block, activation) in weights.chunks_exact(width).zip(activations) {
-            let [a, b, c, d] = *block.first_chunk().ok_or_else(invalid)?;
-            let scale = scaled_half([a, b], activation.scale)?;
-            let minimum_scale = scaled_half([c, d], activation.scale)?;
+            let (scale_bytes, minimum_bytes) = if signed {
+                (*block.last_chunk().ok_or_else(invalid)?, None)
+            } else {
+                let [a, b, c, d] = *block.first_chunk().ok_or_else(invalid)?;
+                ([a, b], Some([c, d]))
+            };
+            let scale = scaled_half(scale_bytes, activation.scale)?;
             let mut coefficients = [[0_i16; GROUP_WIDTH]; ACCUMULATORS];
             let mut inputs = coefficients;
             let mut minima = activation.sums.map(|_| 0_i16);
-            for (group, row) in activation.codes.chunks_exact(GROUP_WIDTH).enumerate() {
-                let Step::C2(ga, gb, gc) = plan(Request::C1(group as u64))? else {
-                    return Err(invalid());
-                };
-                let Step::C3(start, shift, plane, gscale, minimum) = plan(Request::C2(
-                    high,
-                    group as u64,
-                    block[ga as usize].into(),
-                    block[gb as usize].into(),
-                    block[gc as usize].into(),
-                ))?
-                else {
-                    return Err(invalid());
-                };
-                let min_count = minima.len() / ACCUMULATORS;
-                minima[group * min_count..(group + 1) * min_count].fill(minimum as i16);
-                for (lane, &sample) in row.iter().enumerate() {
-                    let index = lane % ACCUMULATORS;
-                    let column = group * (GROUP_WIDTH / ACCUMULATORS) + lane / ACCUMULATORS;
-                    coefficients[index][column] = word(Request::C3(
-                        block[start as usize + lane].into(),
-                        shift,
-                        block[HIGH_PLANE_START + lane].into(),
-                        plane,
-                        gscale,
-                    ))? as i16;
-                    inputs[index][column] = i16::from(sample);
+            if signed {
+                for (lane, &sample) in activation.codes.iter().enumerate() {
+                    let Step::C8(lo, hi, scale_low, scale_high) =
+                        plan(Request::C10(high, lane as u64))?
+                    else {
+                        return Err(invalid());
+                    };
+                    let [lo, hi, scale_low, scale_high] =
+                        [lo, hi, scale_low, scale_high].map(|i| u64::from(block[i as usize]));
+                    coefficients[lane % ACCUMULATORS][lane / ACCUMULATORS] = word(Request::C11(
+                        high,
+                        lane as u64,
+                        lo,
+                        hi,
+                        scale_low,
+                        scale_high,
+                    ))?
+                        as i16;
+                    inputs[lane % ACCUMULATORS][lane / ACCUMULATORS] = i16::from(sample);
+                }
+            } else {
+                for (group, row) in activation.codes.chunks_exact(GROUP_WIDTH).enumerate() {
+                    let Step::C2(ga, gb, gc) = plan(Request::C1(group as u64))? else {
+                        return Err(invalid());
+                    };
+                    let Step::C3(start, shift, plane, gscale, minimum) = plan(Request::C2(
+                        high,
+                        group as u64,
+                        block[ga as usize].into(),
+                        block[gb as usize].into(),
+                        block[gc as usize].into(),
+                    ))?
+                    else {
+                        return Err(invalid());
+                    };
+                    let min_count = minima.len() / ACCUMULATORS;
+                    minima[group * min_count..(group + 1) * min_count].fill(minimum as i16);
+                    for (lane, &sample) in row.iter().enumerate() {
+                        let index = lane % ACCUMULATORS;
+                        let column = group * (GROUP_WIDTH / ACCUMULATORS) + lane / ACCUMULATORS;
+                        coefficients[index][column] = word(Request::C3(
+                            block[start as usize + lane].into(),
+                            shift,
+                            block[HIGH_PLANE_START + lane].into(),
+                            plane,
+                            gscale,
+                        ))? as i16;
+                        inputs[index][column] = i16::from(sample);
+                    }
                 }
             }
             let dot = |left: &[i16], right: &[i16]| {
@@ -97,11 +123,17 @@ macro_rules! run_grouped_affine_row {
             for ((sum, lhs), rhs) in products.iter_mut().zip(&coefficients).zip(&inputs) {
                 *sum = dot(lhs, rhs)?;
             }
-            let offset = dot(&minima, &activation.sums)?;
             for (acc, product) in sums.iter_mut().zip(products) {
                 *acc = blend(false, *acc, scale, product)?;
             }
-            total = blend(true, total, minimum_scale, offset)?;
+            if let Some(bytes) = minimum_bytes {
+                total = blend(
+                    true,
+                    total,
+                    scaled_half(bytes, activation.scale)?,
+                    dot(&minima, &activation.sums)?,
+                )?;
+            }
         }
         sums.into_iter()
             .try_fold(total, |sum, value| evaluate_f32_scalar(0, sum, value))
@@ -116,7 +148,7 @@ pub fn dot_grouped_q4_row(
     weights: &[u8],
     activations: &[GroupedQ8Block],
 ) -> Result<f32, TensorComputeError> {
-    run_grouped_affine_row!(false, weights, activations)
+    run_grouped_affine_row!(false, false, weights, activations)
 }
 
 /// Contract a Q5_K weight row with prepared grouped signed-byte activations.
@@ -127,7 +159,7 @@ pub fn dot_grouped_q5_row(
     weights: &[u8],
     activations: &[GroupedQ8Block],
 ) -> Result<f32, TensorComputeError> {
-    run_grouped_affine_row!(true, weights, activations)
+    run_grouped_affine_row!(true, false, weights, activations)
 }
 
 /// Layout of eight-lane signed codewords in a grouped two-bit weight block.
@@ -141,18 +173,55 @@ pub enum CodebookEncoding {
     ExplicitSigns,
 }
 
-/// Contract complete signed codebook weight blocks with prepared grouped Q8 activations.
+/// Packed weight formats accepted by the grouped product.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum GroupedWeightEncoding {
+    /// Two-bit affine coefficients and packed group minima.
+    AffineTwo,
+    /// Four-bit affine coefficients and packed group minima.
+    AffineFour,
+    /// Five-bit affine coefficients and packed group minima.
+    AffineFive,
+    /// Two-bit codebook with a packed index and signs.
+    Codebook(CodebookEncoding),
+    /// Three-bit signed coefficients and six-bit signed group scales.
+    SignedThree,
+    /// Six-bit signed coefficients and eight-bit signed group scales.
+    SignedSix,
+}
+
+impl From<CodebookEncoding> for GroupedWeightEncoding {
+    fn from(value: CodebookEncoding) -> GroupedWeightEncoding {
+        GroupedWeightEncoding::Codebook(value)
+    }
+}
+
+/// Contract complete grouped weight blocks with prepared grouped Q8 activations.
 ///
 /// # Errors
 /// Rejects inconsistent weight and activation lengths or an invalid certified instruction.
-pub fn dot_codebook_row(
+pub fn dot_grouped_weight_row(
     weights: &[u8],
     activations: &[GroupedQ8Block],
-    encoding: CodebookEncoding,
+    encoding: impl Into<GroupedWeightEncoding>,
 ) -> Result<f32, TensorComputeError> {
     const HALF_BYTES: u64 = size_of::<u16>() as u64;
     const WORD_BYTES: u64 = size_of::<u32>() as u64;
-    let kind = encoding as u64;
+    let encoding = encoding.into();
+    let kind = match encoding {
+        GroupedWeightEncoding::AffineTwo => return super::dot_grouped_q2_row(weights, activations),
+        GroupedWeightEncoding::AffineFour => return dot_grouped_q4_row(weights, activations),
+        GroupedWeightEncoding::AffineFive => return dot_grouped_q5_row(weights, activations),
+        GroupedWeightEncoding::Codebook(codebook) => codebook as u64,
+        GroupedWeightEncoding::SignedThree | GroupedWeightEncoding::SignedSix => {
+            return run_grouped_affine_row!(
+                encoding == GroupedWeightEncoding::SignedSix,
+                true,
+                weights,
+                activations
+            )
+        }
+    };
     let query = |request| run(request).map_err(|_| invalid());
     let Step::C5(width, normalization) = query(Request::C5(
         kind,

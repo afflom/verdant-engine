@@ -16,7 +16,10 @@ inductive{
     {name: codebookLayout, fields: [Nat, Nat, Nat]},
     {name: codebookOffsets, fields: [Nat, Nat]},
     {name: codebookGrid, fields: [Nat, Nat, Nat, Nat, Nat, Nat]},
-    {name: signedCoefficient, fields: [Nat, Nat, Nat, Nat]}
+    {name: signedCoefficient, fields: [Nat, Nat, Nat, Nat]},
+    {name: signedLayout, fields: [Bool, Nat, Nat]},
+    {name: signedOffsets, fields: [Bool, Nat]},
+    {name: signedProduct, fields: [Bool, Nat, Nat, Nat, Nat, Nat]}
   ]
 }
 
@@ -32,7 +35,8 @@ inductive{
     {name: arithmetic, fields: [Nat, Nat]},
     {name: row, fields: [Nat, Nat]},
     {name: offsets, fields: [Nat, Nat, Nat, Nat, Nat, Nat]},
-    {name: grid, fields: [Nat, Bool, Nat, Nat]}
+    {name: grid, fields: [Nat, Bool, Nat, Nat]},
+    {name: fields, fields: [Nat, Nat, Nat, Nat]}
   ]
 }
 
@@ -85,6 +89,41 @@ definition{
 }
 
 definition{
+  name: signedOffsets,
+  parameters: [six : Bool, lane : Nat],
+  result: Step,
+  body: (if (lane <? 256) then (let bank : Nat := (prim quotient lane 128 0 : Nat);
+    (let band : Nat := (prim remainder (prim quotient lane 32 0 : Nat) 4 0 : Nat);
+    (let slot : Nat := (prim remainder lane 32 0 : Nat);
+    (let group : Nat := (prim quotient lane 16 0 : Nat);
+    (let low : Nat := (if six then ((prim multiply bank 64 : Nat) + ((prim multiply (prim remainder band 2 0 : Nat) 32 : Nat) + slot)) else (32 + ((prim multiply bank 32 : Nat) + slot)));
+    (let high : Nat := (if six then (128 + ((prim multiply bank 32 : Nat) + slot)) else slot);
+    (let scale : Nat := (if six then (192 + group) else (96 + (prim remainder group 8 0 : Nat)));
+    (let scaleHigh : Nat := (if six then scale else (104 + (prim remainder group 4 0 : Nat)));
+    (ctor Step.fields low high scale scaleHigh))))))))) else (ctor Step.refused)),
+  executable: true
+}
+
+definition{
+  name: signedProduct,
+  parameters: [six : Bool, lane : Nat, low : Nat, high : Nat, scaleLow : Nat, scaleHigh : Nat],
+  result: Step,
+  body: (if (lane <? 256) then (if ((((low <? 256) && (high <? 256)) && (scaleLow <? 256)) && (scaleHigh <? 256)) then (let band : Nat := (prim remainder (prim quotient lane 32 0 : Nat) 4 0 : Nat);
+    (let group : Nat := (prim quotient lane 16 0 : Nat);
+    (let power : Nat := (highDivisor (prim multiply band 2 : Nat));
+    (let upper : Nat := (if six then (prim remainder (prim quotient high power 0 : Nat) 4 0 : Nat) else (prim remainder (prim quotient high (highDivisor (prim quotient lane 32 0 : Nat)) 0 : Nat) 2 0 : Nat));
+    (let biased : Nat := (if six then ((prim remainder (prim quotient low (if (band <? 2) then 1 else 16) 0 : Nat) 16 0 : Nat) + (prim multiply upper 16 : Nat)) else ((prim remainder (prim quotient low power 0 : Nat) 4 0 : Nat) + (prim multiply upper 4 : Nat)));
+    (let center : Nat := (if six then 32 else 4);
+    (let scale : Nat := (if six then (prim remainder (scaleLow + 128) 256 0 : Nat) else ((prim remainder (prim quotient scaleLow (if (group <? 8) then 1 else 16) 0 : Nat) 16 0 : Nat) + (prim multiply 16 (prim remainder (prim quotient scaleHigh (highDivisor (prim multiply (prim quotient group 4 0 : Nat) 2 : Nat)) 0 : Nat) 4 0 : Nat) : Nat)));
+    (let zero : Nat := (if six then 128 else 32);
+    (let coefMag : Nat := (if (biased <? center) then (prim subtract center biased : Nat) else (prim subtract biased center : Nat));
+    (let scaleMag : Nat := (if (scale <? zero) then (prim subtract zero scale : Nat) else (prim subtract scale zero : Nat));
+    (let product : Nat := (prim multiply coefMag scaleMag : Nat);
+    (ctor Step.word (if (if (biased <? center) then (scale <? zero) else (if (scale <? zero) then false else true)) then product else (prim remainder (prim subtract 65536 product : Nat) 65536 0 : Nat)))))))))))))) else (ctor Step.refused)) else (ctor Step.refused)),
+  executable: true
+}
+
+definition{
   name: evaluate,
   parameters: [request : Request],
   result: Step,
@@ -97,6 +136,9 @@ definition{
     | Request.codebookOffsets kind group => (codebookOffsets kind group)
     | Request.codebookGrid kind group code control scale signs => (codebookGrid kind group code control scale signs)
     | Request.signedCoefficient lane signs magnitude scale => (signedCoefficient lane signs magnitude scale)
+    | Request.signedLayout six bytes count => (let width : Nat := (if six then 210 else 110); (if (bytes =? (prim multiply width count : Nat)) then (ctor Step.word width) else (ctor Step.refused)))
+    | Request.signedOffsets six lane => (signedOffsets six lane)
+    | Request.signedProduct six lane low high scaleLow scaleHigh => (signedProduct six lane low high scaleLow scaleHigh)
     | Request.accumulation subtract => (ctor Step.arithmetic 2 (if subtract then 1 else 0))),
   executable: true,
   production: {effects: [overflow], targets: [rust-core]}
@@ -141,6 +183,48 @@ theorem{
   name: negativeGridCoefficient,
   parameters: [],
   statement: ((signedCoefficient 7 128 43 31) = (ctor Step.word 64203)),
+  proof: reflexivity{}
+}
+theorem{
+  name: lastThreeBitFields,
+  parameters: [],
+  statement: ((evaluate (ctor Request.signedOffsets false 255)) = (ctor Step.fields 95 31 103 107)),
+  proof: reflexivity{}
+}
+theorem{
+  name: lastSixBitFields,
+  parameters: [],
+  statement: ((evaluate (ctor Request.signedOffsets true 255)) = (ctor Step.fields 127 191 207 207)),
+  proof: reflexivity{}
+}
+theorem{
+  name: negativeSixBitScale,
+  parameters: [],
+  statement: ((evaluate (ctor Request.signedProduct true 0 0 2 255 255)) = (ctor Step.word 0)),
+  proof: reflexivity{}
+}
+theorem{
+  name: lowestSixBitWeight,
+  parameters: [],
+  statement: ((evaluate (ctor Request.signedProduct true 0 0 0 1 1)) = (ctor Step.word 65504)),
+  proof: reflexivity{}
+}
+theorem{
+  name: lowestThreeBitWeight,
+  parameters: [],
+  statement: ((evaluate (ctor Request.signedProduct false 0 0 0 1 2)) = (ctor Step.word 65532)),
+  proof: reflexivity{}
+}
+theorem{
+  name: highThreeBitWeight,
+  parameters: [],
+  statement: ((evaluate (ctor Request.signedProduct false 0 3 1 1 2)) = (ctor Step.word 3)),
+  proof: reflexivity{}
+}
+theorem{
+  name: outOfRangeSignedLane,
+  parameters: [],
+  statement: ((evaluate (ctor Request.signedOffsets true 256)) = (ctor Step.refused)),
   proof: reflexivity{}
 }
 \end{semanticmodule}
