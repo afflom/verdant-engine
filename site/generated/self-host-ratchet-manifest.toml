@@ -4,10 +4,10 @@ spec = "verdant/self-host-ratchet-manifest/1"
 generator = "verdant-operator-ratchet-lift"
 version = "2.20.0"
 release_epoch = 24
-source_commit_kappa = "61a8523a3ab243316bec9b772d6f3a24c0c3096a812f243b371824f9dd7a5961"
-source_tree_root_sha256 = "fd9798966d2b82b8ca1b7d0acfcea8d4880606e51101f83bf548daae608c83d3"
+source_commit_kappa = "34f452805f4159a45368e1455d2013ae1a67412e43de4432147733863e2a1825"
+source_tree_root_sha256 = "25cbe7f45d6fea0d822bea754f961e076c4775e9c9baec0880b46c60d856121c"
 immutability_seal_root_sha256 = "cbca629ea5bc28e3b1ac53c4175f35362c76823c61c2ce0c1d30e6dc90c2e577"
-release_capsule_sha256 = "6994dcea96e8d9f44458d033b15c2423042a3e1df4f5e4d854058a0fb83ed303"
+release_capsule_sha256 = "2b88f0a29fbf127466bc20b9a0b2c6c21b829165eab9e3ba258a5d5e55689343"
 unlifted_ui_files = 0
 unverified_frame_assets = 0
 user_required_external_accounts = 0
@@ -56,7 +56,7 @@ sha256 = "d614040f404026425d0e30222cc226797ddfb44983d394a5b76582a2b7f914aa"
 [[lifted_module]]
 path = "crates/verdant-core/src/build_ops.rs"
 category = "rust"
-sha256 = "b2ac8f15cff97606a0010dd7b97faf5f516ee62fb0990e22adcc15e5b8376625"
+sha256 = "16fe825e2d3f189137cbb9d099982cc40b35fc6f0ee3adf5b5d964de618d3e25"
 
 [[lifted_module]]
 path = "crates/verdant-core/src/camera.rs"
@@ -946,7 +946,7 @@ sha256 = "9d26ca3eaa7ccad7aaea3e2bc023f66d8dfeda7f8baa0690f64d52bd7068bcb9"
 [[lifted_module]]
 path = "features/suites/engine.feature"
 category = "feature-suite"
-sha256 = "9fb6c7d96739fd95e9588e0d4fce26f0aac4d4b625d076f185d180cd671c352d"
+sha256 = "0962ba770511feb407054fadbd03ebbce1fbc788880224c5fe5d8cb6b9da7a42"
 
 [[lifted_module]]
 path = "features/suites/fidelity.feature"
