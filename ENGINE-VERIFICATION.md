@@ -349,3 +349,15 @@ The full fidelity check reported these frontier findings.
 - frontier.toml: hand-written Rust residue grew: 1177 > ceiling 1160
 - frontier.toml: uncertified Rust surface grew: 1335 > ceiling 1318
 - frontier.toml: frontier.toml is stale against live Rust source tree (recorded 5d011918bdb9d2a1 != live a6682851511226af; run `npm run ratchet`)
+
+### VTK-34 binary32 softplus
+
+The locked SDK checked 123,837 distinct input words against the pinned GGML CPU unary implementation. The corpus includes every widened F16 and BF16 word, stratified binary32 words, subnormals, infinities, NaNs and the positive cutoff neighborhood. Values above the cutoff, zeros and infinities matched exactly. The remaining finite results were within four binary32 steps, and NaNs remained NaNs. The primitive combines the existing certified exponential and logarithm with a compensated logarithm-of-one-plus calculation.
+
+Discarding the exponential during compensation returned 0.19314718 for zero input, where the CPU returned 0.6931472. Restoration passed. The stacked grouped affine regression, model, targeted Clippy, dependency checks and isolated lift passed.
+
+The full fidelity check reported these frontier findings.
+
+- frontier.toml: hand-written Rust residue grew: 1177 > ceiling 1160
+- frontier.toml: uncertified Rust surface grew: 1335 > ceiling 1318
+- frontier.toml: frontier.toml is stale against live Rust source tree (recorded 5d011918bdb9d2a1 != live 2e6374e23a32ccd2; run `npm run ratchet`)
