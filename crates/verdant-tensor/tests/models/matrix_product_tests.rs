@@ -392,6 +392,9 @@ int main(int argc, char **argv) {
   if (!std::strcmp(argv[1], "grouped-q6-dot")) return compare_grouped_rows<block_q6_K>(GGML_TYPE_Q6_K);
   if (!std::strcmp(argv[1], "grouped-q4-dot")) return compare_grouped_rows<block_q4_K>(GGML_TYPE_Q4_K);
   if (!std::strcmp(argv[1], "grouped-q5-dot")) return compare_grouped_rows<block_q5_K>(GGML_TYPE_Q5_K);
+  if (!std::strcmp(argv[1], "grouped-affine-2")) return encode_blocks<QK_K>(quantize_row_q2_K_ref);
+  if (!std::strcmp(argv[1], "grouped-affine-4")) return encode_blocks<QK_K>(quantize_row_q4_K_ref);
+  if (!std::strcmp(argv[1], "grouped-affine-5")) return encode_blocks<QK_K>(quantize_row_q5_K_ref);
   if (!std::strcmp(argv[1], "signed-six-encode")) return encode_blocks<QK_K>(quantize_row_q6_K_ref);
   if (!std::strcmp(argv[1], "mxfp4-encode")) return encode_blocks<QK_MXFP4>(quantize_row_mxfp4_ref);
   if (!std::strcmp(argv[1], "nvfp4-encode")) return encode_blocks<QK_NVFP4>(quantize_row_nvfp4_ref);
@@ -1164,6 +1167,12 @@ fn verify_bundle(scope: &str, directory: &str) -> std::collections::BTreeMap<Str
                     "verdant_row_ranking" => include_bytes!("../../../../generated/tensor-rowrank/packages/rust-core/verdant_row_ranking/src/lib.rs"),
                     "verdant_normalized_exponential" => include_bytes!("../../../../generated/tensor-softmax/packages/rust-core/verdant_normalized_exponential/src/lib.rs"),
                     "verdant_grouped_affine" => include_bytes!("../../../../generated/tensor-affinedot/packages/rust-core/verdant_grouped_affine/src/lib.rs"),
+                    "verdant_affine_finite" => include_bytes!("../../../../generated/tensor-affinepack/packages/rust-core/verdant_affine_finite/src/lib.rs"),
+                    "verdant_affine_geometry" => include_bytes!("../../../../generated/tensor-affinepack/packages/rust-core/verdant_affine_geometry/src/lib.rs"),
+                    "verdant_affine_insert_field" => include_bytes!("../../../../generated/tensor-affinepack/packages/rust-core/verdant_affine_insert_field/src/lib.rs"),
+                    "verdant_affine_fit" => include_bytes!("../../../../generated/tensor-affinepack/packages/rust-core/verdant_affine_fit/src/lib.rs"),
+                    "verdant_affine_weight_fields" => include_bytes!("../../../../generated/tensor-affinepack/packages/rust-core/verdant_affine_weight_fields/src/lib.rs"),
+                    "verdant_affine_quantized" => include_bytes!("../../../../generated/tensor-affinepack/packages/rust-core/verdant_affine_quantized/src/lib.rs"),
                     "verdant_grouped_six_encoding" => include_bytes!("../../../../generated/tensor-sixpack/packages/rust-core/verdant_grouped_six_encoding/src/lib.rs"),
                     "verdant_softplus" => include_bytes!("../../../../generated/tensor-softplus/packages/rust-core/verdant_softplus/src/lib.rs"),
                     "verdant_bitpacked_product" => include_bytes!("../../../../generated/tensor-bitrows/packages/rust-core/verdant_bitpacked_product/src/lib.rs"),
@@ -2833,6 +2842,30 @@ fn grouped_signed_six_encoding_vtk_49() {
     compare_weight_encoders::<256>(&[(GroupedSignedSix, 210, "signed-six-encode")]);
 }
 
+#[test]
+fn grouped_affine_encoding_vtk_50() {
+    use super::PackedWeightEncoding::{GroupedAffineFive, GroupedAffineFour, GroupedAffineTwo};
+    let roots = verify_bundle("affinepack", "tensor-affinepack");
+    for (operation, package) in [
+        ("finite", "verdant_affine_finite"),
+        ("geometry", "verdant_affine_geometry"),
+        ("insertField", "verdant_affine_insert_field"),
+        ("instruction", "verdant_affine_fit"),
+        ("planFields", "verdant_affine_weight_fields"),
+        ("quantized", "verdant_affine_quantized"),
+    ] {
+        assert_eq!(
+            roots[&format!("VerdantEngine.GroupedAffineEncoding.{operation}")],
+            package
+        );
+    }
+    compare_weight_encoders::<256>(&[
+        (GroupedAffineTwo, 84, "grouped-affine-2"),
+        (GroupedAffineFour, 144, "grouped-affine-4"),
+        (GroupedAffineFive, 176, "grouped-affine-5"),
+    ]);
+}
+
 fn compare_weight_encoders<const N: usize>(formats: &[(super::PackedWeightEncoding, usize, &str)]) {
     use std::fmt::Write;
     let ties = [
@@ -2912,6 +2945,25 @@ fn compare_weight_encoders<const N: usize>(formats: &[(super::PackedWeightEncodi
                         2 => signed * ((i % 16) as f32 - 7.5) / 8.0,
                         _ => 0.0,
                     }
+                }));
+            }
+        }
+    }
+    if formats
+        .iter()
+        .any(|(_, _, mode)| mode.starts_with("grouped-affine-"))
+    {
+        for scale in [0.00000001_f32, 0.00001, 0.125, 1.0, 32.0, 4096.0] {
+            rows.extend([[scale; N], [-scale; N]]);
+            for shift in [0.0, 0.25, -0.375] {
+                rows.push(std::array::from_fn(|i| {
+                    let local = match i / 16 % 4 {
+                        0 => 0.0,
+                        1 => 1.0,
+                        2 => 1.0 / 128.0,
+                        _ => -0.25,
+                    };
+                    scale * (local * ((i % 16) as f32 - 6.0) / 8.0 + shift)
                 }));
             }
         }

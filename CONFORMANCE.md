@@ -148,6 +148,7 @@ model does not sanction.
 | `VTK-47` | `build` | Verdant contracts signed one-bit codebooks with shared and distributed block scales |
 | `VTK-48` | `build` | Verdant encodes exponent-only and grouped unsigned-scale four-bit floating weight blocks |
 | `VTK-49` | `build` | Verdant encodes grouped signed six-bit weight blocks with per-group scale selection and separate low and high bit planes |
+| `VTK-50` | `build` | Verdant encodes grouped affine two-, four- and five-bit weights with weighted scale and minimum selection |
 
 ## fidelity
 

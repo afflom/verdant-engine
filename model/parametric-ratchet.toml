@@ -58,7 +58,7 @@ max_unlifted_workspace_modules = 0
 
 [frontier_ratchet]
 frontier_register = "frontier.toml"
-frontier_rust_tree_sha256 = "253f1e1c14afb07fb4ac12af57dbaf266ff0f659a6561b83a5cf1dab18e538a9"
+frontier_rust_tree_sha256 = "107d6e6c0ab627fd330f7e922bc9dad5d08a0553d508f83736bc1f17f0c386e8"
 min_lifted_functions = 585
 max_residue_functions = 1150
 max_uncertified_functions = 1308
@@ -400,3 +400,8 @@ role = "Define coefficient extraction and signed-byte activation grouping for sh
 path = "app/src/GroupedSixEncoding.lex.tex"
 stratum = 2
 role = "Select grouped signed six-bit coefficients with weighted binary32 scale trials and pack their two planes."
+
+[[stratum_module]]
+path = "app/src/GroupedAffineEncoding.lex.tex"
+stratum = 2
+role = "Select weighted affine scale fits and encode grouped unsigned coefficient and scale fields."

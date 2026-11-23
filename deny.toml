@@ -547,3 +547,39 @@ name = "verdant_grouped_six_encoding"
 version = "=2.42.0"
 expression = "MIT OR Apache-2.0"
 license-files = [{ path = "src/lib.rs", hash = 0x0d3aebf4 }]
+
+[[licenses.clarify]]
+name = "verdant_affine_finite"
+version = "=2.43.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0x510609b9 }]
+
+[[licenses.clarify]]
+name = "verdant_affine_geometry"
+version = "=2.43.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0x8783ca60 }]
+
+[[licenses.clarify]]
+name = "verdant_affine_insert_field"
+version = "=2.43.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0xe2b3b275 }]
+
+[[licenses.clarify]]
+name = "verdant_affine_fit"
+version = "=2.43.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0x6376de8b }]
+
+[[licenses.clarify]]
+name = "verdant_affine_weight_fields"
+version = "=2.43.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0x69681bd9 }]
+
+[[licenses.clarify]]
+name = "verdant_affine_quantized"
+version = "=2.43.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0xb11fef40 }]

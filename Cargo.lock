@@ -825,6 +825,12 @@ dependencies = [
  "sha2 0.10.9",
  "uor-matmul",
  "verdant_add_f64",
+ "verdant_affine_finite",
+ "verdant_affine_fit",
+ "verdant_affine_geometry",
+ "verdant_affine_insert_field",
+ "verdant_affine_quantized",
+ "verdant_affine_weight_fields",
  "verdant_bitpacked_product",
  "verdant_circular_magnitudes",
  "verdant_circular_orient",
@@ -916,6 +922,30 @@ dependencies = [
 [[package]]
 name = "verdant_add_f64"
 version = "2.9.0"
+
+[[package]]
+name = "verdant_affine_finite"
+version = "2.43.0"
+
+[[package]]
+name = "verdant_affine_fit"
+version = "2.43.0"
+
+[[package]]
+name = "verdant_affine_geometry"
+version = "2.43.0"
+
+[[package]]
+name = "verdant_affine_insert_field"
+version = "2.43.0"
+
+[[package]]
+name = "verdant_affine_quantized"
+version = "2.43.0"
+
+[[package]]
+name = "verdant_affine_weight_fields"
+version = "2.43.0"
 
 [[package]]
 name = "verdant_bitpacked_product"

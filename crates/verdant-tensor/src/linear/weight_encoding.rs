@@ -49,6 +49,12 @@ pub enum PackedWeightEncoding {
     UnsignedScaleFour,
     /// Signed six-bit coefficients with per-group multipliers and a binary16 block scale.
     GroupedSignedSix,
+    /// Sixteen groups of unsigned two-bit weights with scale and minimum.
+    GroupedAffineTwo,
+    /// Eight groups of unsigned four-bit weights with scale and minimum.
+    GroupedAffineFour,
+    /// Eight groups of unsigned five-bit weights with scale and minimum.
+    GroupedAffineFive,
 }
 
 impl From<WeightBlockEncoding> for PackedWeightEncoding {
@@ -77,6 +83,15 @@ pub fn encode_weight_block<I: AsRef<[f32]> + ?Sized>(
     use PackedWeightEncoding::*;
     let input = input.as_ref();
     let kind = kind.into();
+    let affine = match kind {
+        GroupedAffineTwo => Some(scalars::two_u64()),
+        GroupedAffineFour => Some(scalars::four_u64()),
+        GroupedAffineFive => Some(u64::from(scalars::five_u32())),
+        _ => None,
+    };
+    if let Some(bits) = affine {
+        return super::grouped_affine_encoding::encode(bits, input, output);
+    }
     if kind == GroupedSignedSix {
         use verdant_grouped_six_encoding::{run, Adt0 as Request, Adt1 as Frame, Adt2 as Step};
         let invalid = || TensorComputeError::InvalidKernelSpecification {

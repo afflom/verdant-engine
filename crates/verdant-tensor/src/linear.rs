@@ -22,6 +22,7 @@ mod ranking;
 mod rotation;
 mod softmax;
 mod symmetric_product;
+mod grouped_affine_encoding;
 mod weight_encoding;
 mod weighted_mean;
 pub use activations::{

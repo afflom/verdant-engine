@@ -813,3 +813,9 @@ Feature: engine
     Given signed binary32 rows bound to the imported six-bit weight encoder
     When the certified quantizer chooses the group scales and packs its two bit planes
     Then every output byte matches the original reference and failed encodings preserve the destination
+
+  @VTK-50 @build
+  Scenario: Verdant encodes grouped affine two-, four- and five-bit weights with weighted scale and minimum selection
+    Given complete binary32 rows, including tied and variably scaled groups
+    When Verdant fits each group and packs the coefficients and scale fields
+    Then every byte matches the imported encoder for its format and malformed inputs preserve the destination
