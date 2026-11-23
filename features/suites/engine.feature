@@ -674,3 +674,9 @@ Feature: engine
     Given binary32 inputs spanning cancellation near zero and both saturation tails
     When Verdant evaluates each word
     Then signed zeros and nonfinite classes match GGML and finite results agree within four representable steps
+
+  @VTK-29 @build
+  Scenario: Binary32 Gaussian error linear unit tangent and logistic approximations match the imported numerical reference
+    Given binary32 inputs including signed zeros, subnormals, infinities and NaNs
+    When the certified tensor primitives evaluate the two activation approximations
+    Then their results agree with the pinned upstream scalar evaluator

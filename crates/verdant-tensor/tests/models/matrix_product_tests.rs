@@ -185,6 +185,18 @@ int main(int argc, char **argv) {
     }
     return std::feof(stdin) ? 0 : 2;
   }
+  if (!std::strcmp(argv[1], "gelu")) {
+    unsigned bits;
+    while (std::scanf("%u", &bits) == 1) {
+      float x;
+      std::memcpy(&x, &bits, sizeof(x));
+      for (float value : {ggml_gelu_f32(x), ggml_gelu_quick_f32(x)}) {
+        std::memcpy(&bits, &value, sizeof(bits));
+        std::printf("%u\n", bits);
+      }
+    }
+    return std::feof(stdin) ? 0 : 2;
+  }
   if (!std::strcmp(argv[1], "tanh")) {
     unsigned bits;
     while (std::scanf("%u", &bits) == 1) {
@@ -1397,6 +1409,61 @@ fn natural_exponential_vtk_19() {
                 actual > 0 && actual < f32::INFINITY.to_bits() && actual.abs_diff(expected) <= 1,
                 "exp({word:#010x}): {actual:#010x} versus {expected:#010x}"
             );
+        }
+    }
+}
+
+#[test]
+fn gaussian_activations_vtk_29() {
+    assert_eq!(
+        verify_bundle("gelu", "tensor-gelu")["VerdantEngine.GaussianActivation.evaluate"],
+        "verdant_gelu"
+    );
+    use std::fmt::Write;
+    let mut words: Vec<u32> = (0..=u16::MAX).map(|word| u32::from(word) << 16).collect();
+    words.extend((-32_768..=32_768).map(|n| (n as f32 / 2048.0).to_bits()));
+    words.extend([1, 0x80000001, 0x7fffff, 0x807fffff, 0x7f7fffff, 0xff7fffff]);
+    words.sort_unstable();
+    words.dedup();
+    let mut requests = String::new();
+    for word in &words {
+        writeln!(requests, "{word}").unwrap();
+    }
+    let reference = query_oracle("gelu", requests);
+    assert_eq!(reference.len(), words.len() * 2);
+    for (word, expected) in words.into_iter().zip(reference.chunks_exact(2)) {
+        let x = f32::from_bits(word);
+        for (kind, value) in [
+            super::gelu_f32(x).unwrap(),
+            super::gelu_quick_f32(x).unwrap(),
+        ]
+        .into_iter()
+        .enumerate()
+        {
+            let wanted = f32::from_bits(expected[kind]);
+            if wanted.is_nan() {
+                assert!(value.is_nan(), "kind {kind}, input {word:#x}");
+            } else if x == 0.0 || !x.is_finite() || wanted.is_infinite() {
+                assert_eq!(
+                    value.to_bits(),
+                    wanted.to_bits(),
+                    "kind {kind}, input {word:#x}"
+                );
+            } else if kind == 1 {
+                assert!(
+                    value.is_finite()
+                        && value.is_sign_negative() == wanted.is_sign_negative()
+                        && value.to_bits().abs_diff(wanted.to_bits()) <= 5,
+                    "quick input {word:#x}: {value} vs {wanted}"
+                );
+            } else {
+                // The tangent's four-ULP envelope is multiplied by half the input.
+                let allowance = f64::from(x.abs()) * f64::from(f32::EPSILON) * 3.0;
+                assert!(
+                    value.is_finite() && (f64::from(value) - f64::from(wanted)).abs() <= allowance,
+                    "tangent input {word:#x}: {value} vs {wanted}"
+                );
+            }
         }
     }
 }
