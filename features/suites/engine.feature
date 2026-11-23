@@ -746,3 +746,9 @@ Feature: engine
     Given four-bit coefficients with independent weight and activation scales
     When Verdant contracts complete encoded rows
     Then the result matches the imported CPU vector product
+
+  @VTK-39 @build
+  Scenario: Verdant contracts signed two-bit codebook rows with grouped byte activations against the imported GGML vector products
+    Given signed eight-lane lookup groups and prepared activation blocks
+    When Verdant contracts complete two-bit codebook rows
+    Then every result matches the imported CPU vector product

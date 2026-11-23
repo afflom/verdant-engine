@@ -806,3 +806,9 @@ id = "VTK-38"
 level = "build"
 suite = "engine"
 statement = "Verdant contracts E2M1 weight rows with exponent-only or grouped E4M3 scales and signed-byte activation blocks against the imported CPU"
+
+[[id]]
+id = "VTK-39"
+level = "build"
+suite = "engine"
+statement = "Verdant contracts signed two-bit codebook rows with grouped byte activations against the imported GGML vector products"

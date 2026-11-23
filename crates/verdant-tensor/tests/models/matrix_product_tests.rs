@@ -378,6 +378,9 @@ int main(int argc, char **argv) {
     return std::ferror(stdin) ? 2 : 0;
   }
   if (!std::strcmp(argv[1], "grouped-dot")) return compare_grouped_rows<block_q2_K>(GGML_TYPE_Q2_K);
+  if (!std::strcmp(argv[1], "iq2_xxs-dot")) return compare_grouped_rows<block_iq2_xxs>(GGML_TYPE_IQ2_XXS);
+  if (!std::strcmp(argv[1], "iq2_xs-dot")) return compare_grouped_rows<block_iq2_xs>(GGML_TYPE_IQ2_XS);
+  if (!std::strcmp(argv[1], "iq2_s-dot")) return compare_grouped_rows<block_iq2_s>(GGML_TYPE_IQ2_S);
   if (!std::strcmp(argv[1], "grouped-q4-dot")) return compare_grouped_rows<block_q4_K>(GGML_TYPE_Q4_K);
   if (!std::strcmp(argv[1], "grouped-q5-dot")) return compare_grouped_rows<block_q5_K>(GGML_TYPE_Q5_K);
   if (!std::strcmp(argv[1], "affine-q8")) return encode_blocks<QK8_1>(quantize_row_q8_1_ref);
@@ -2319,13 +2322,39 @@ fn grouped_affine_products_vtk_33() {
             ["VerdantEngine.GroupedAffineProduct.evaluate"],
         "verdant_grouped_affine"
     );
+    compare_grouped_products(
+        &[
+            (144, "grouped-q4-dot", super::dot_grouped_q4_row),
+            (176, "grouped-q5-dot", super::dot_grouped_q5_row),
+        ],
+        true,
+    );
+}
+
+#[test]
+fn codebook_row_products_vtk_39() {
+    use super::CodebookEncoding::{ExplicitSigns, ExtendedIndex, IndexedSigns};
+    compare_grouped_products(
+        &[
+            (66, "iq2_xxs-dot", |w, a| {
+                super::dot_codebook_row(w, a, IndexedSigns)
+            }),
+            (74, "iq2_xs-dot", |w, a| {
+                super::dot_codebook_row(w, a, ExtendedIndex)
+            }),
+            (82, "iq2_s-dot", |w, a| {
+                super::dot_codebook_row(w, a, ExplicitSigns)
+            }),
+        ],
+        false,
+    );
+}
+
+type GroupedProduct = fn(&[u8], &[super::GroupedQ8Block]) -> Result<f32, crate::TensorComputeError>;
+
+fn compare_grouped_products(products: &[(usize, &str, GroupedProduct)], affine: bool) {
     use std::fmt::Write;
-    type Product = fn(&[u8], &[super::GroupedQ8Block]) -> Result<f32, crate::TensorComputeError>;
-    let products: [(usize, &str, Product); 2] = [
-        (144, "grouped-q4-dot", super::dot_grouped_q4_row),
-        (176, "grouped-q5-dot", super::dot_grouped_q5_row),
-    ];
-    for (width, mode, dot) in products {
+    for &(width, mode, dot) in products {
         let mut input = String::new();
         let mut actual = Vec::new();
         let mut seed = 77_u32;
@@ -2342,8 +2371,10 @@ fn grouped_affine_products_vtk_33() {
             for i in 0..count {
                 let mut block: Vec<_> = (0..width).map(|_| next()).collect();
                 block[..2].copy_from_slice(&halves[(row + i) % halves.len()].to_ne_bytes());
-                block[2..4]
-                    .copy_from_slice(&halves[(row * 3 + i + 1) % halves.len()].to_ne_bytes());
+                if affine {
+                    block[2..4]
+                        .copy_from_slice(&halves[(row * 3 + i + 1) % halves.len()].to_ne_bytes());
+                }
                 let lanes = std::array::from_fn(|_| (f32::from(next()) - 128.0) / 4.0);
                 for byte in &block {
                     writeln!(input, "{byte}").unwrap();

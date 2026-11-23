@@ -137,6 +137,7 @@ model does not sanction.
 | `VTK-36` | `build` | Signed five-bit and nonlinear four-bit coefficient rows contract with symmetric signed-byte activations against the pinned CPU |
 | `VTK-37` | `build` | Affine four-bit and five-bit rows contract with signed-byte activations carrying an independently rounded scaled sum |
 | `VTK-38` | `build` | Verdant contracts E2M1 weight rows with exponent-only or grouped E4M3 scales and signed-byte activation blocks against the imported CPU |
+| `VTK-39` | `build` | Verdant contracts signed two-bit codebook rows with grouped byte activations against the imported GGML vector products |
 
 ## fidelity
 
