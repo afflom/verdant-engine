@@ -775,3 +775,9 @@ id = "VTK-32"
 level = "build"
 suite = "engine"
 statement = "Verdant normalizes binary32 score rows with an optional unreturned score and matches the imported CPU probabilities"
+
+[[id]]
+id = "VTK-33"
+level = "build"
+suite = "engine"
+statement = "Verdant contracts grouped four- and five-bit affine weight rows with signed eight-bit activation blocks and matches the imported CPU"

@@ -71,6 +71,31 @@ extern "C" float __wrap_powf(float base, float exponent) {
   }
   return ratio;
 }
+template<class Weight>
+static int compare_grouped_rows(ggml_type type) {
+  unsigned count, word;
+  const auto dot = ggml_get_type_traits_cpu(type)->vec_dot;
+  while (std::scanf("%u", &count) == 1) {
+    std::vector<Weight> weights(count+1);
+    std::vector<block_q8_K> activations(count+1);
+    for (unsigned i=0; i<count; ++i) {
+      for (size_t j=0; j<sizeof(Weight); ++j) {
+        if (std::scanf("%u",&word)!=1) return 2;
+        reinterpret_cast<uint8_t*>(&weights[i])[j]=uint8_t(word);
+      }
+      float lanes[QK_K];
+      for (float &lane:lanes) {
+        if (std::scanf("%u",&word)!=1) return 2;
+        std::memcpy(&lane,&word,sizeof(word));
+      }
+      quantize_row_q8_K_ref(lanes,&activations[i],QK_K);
+    }
+    float result;
+    dot(int(count)*QK_K,&result,0,weights.data(),0,activations.data(),0,1);
+    std::memcpy(&word,&result,sizeof(word)); std::printf("%u\n",word);
+  }
+  return std::ferror(stdin) ? 3 : 0;
+}
 int main(int argc, char **argv) {
   if (argc != 2) return 1;
   ggml_cpu_init();
@@ -320,30 +345,9 @@ int main(int argc, char **argv) {
     }
     return std::ferror(stdin) ? 2 : 0;
   }
-  if (!std::strcmp(argv[1], "grouped-dot")) {
-    unsigned count, word;
-    const auto dot = ggml_get_type_traits_cpu(GGML_TYPE_Q2_K)->vec_dot;
-    while (std::scanf("%u", &count) == 1) {
-      std::vector<block_q2_K> weights(count+1);
-      std::vector<block_q8_K> activations(count+1);
-      for (unsigned i=0; i<count; ++i) {
-        for (size_t j=0; j<sizeof(block_q2_K); ++j) {
-          if (std::scanf("%u",&word)!=1) return 2;
-          reinterpret_cast<uint8_t*>(&weights[i])[j]=uint8_t(word);
-        }
-        float lanes[QK_K];
-        for (float &lane:lanes) {
-          if (std::scanf("%u",&word)!=1) return 2;
-          std::memcpy(&lane,&word,sizeof(word));
-        }
-        quantize_row_q8_K_ref(lanes,&activations[i],QK_K);
-      }
-      float result;
-      dot(int(count)*QK_K,&result,0,weights.data(),0,activations.data(),0,1);
-      std::memcpy(&word,&result,sizeof(word)); std::printf("%u\n",word);
-    }
-    return std::ferror(stdin) ? 3 : 0;
-  }
+  if (!std::strcmp(argv[1], "grouped-dot")) return compare_grouped_rows<block_q2_K>(GGML_TYPE_Q2_K);
+  if (!std::strcmp(argv[1], "grouped-q4-dot")) return compare_grouped_rows<block_q4_K>(GGML_TYPE_Q4_K);
+  if (!std::strcmp(argv[1], "grouped-q5-dot")) return compare_grouped_rows<block_q5_K>(GGML_TYPE_Q5_K);
   if (!std::strcmp(argv[1], "symmetric-dot")) return compare_rows<block_q8_0>(GGML_TYPE_Q8_0);
   if (!std::strcmp(argv[1], "packed-dot")) return compare_rows<block_q4_0>(GGML_TYPE_Q4_0);
   if (!std::strcmp(argv[1], "symmetric-q8")) return encode_blocks<QK8_0>(quantize_row_q8_0_ref);
@@ -2165,4 +2169,48 @@ fn normalized_exponential_vtk_32() {
         assert_eq!(before, invalid[0].to_bits());
     }
     assert!(super::normalize_exponential_f32(&mut [], None).is_ok());
+}
+
+#[test]
+fn grouped_affine_products_vtk_33() {
+    use std::fmt::Write;
+    type Product = fn(&[u8], &[super::GroupedQ8Block]) -> Result<f32, crate::TensorComputeError>;
+    let products: [(usize, &str, Product); 2] = [
+        (144, "grouped-q4-dot", super::dot_grouped_q4_row),
+        (176, "grouped-q5-dot", super::dot_grouped_q5_row),
+    ];
+    for (width, mode, dot) in products {
+        let mut input = String::new();
+        let mut actual = Vec::new();
+        let mut seed = 77_u32;
+        let mut next = || {
+            seed = seed.wrapping_mul(1_664_525).wrapping_add(1_013_904_223);
+            (seed >> 24) as u8
+        };
+        let halves = [0_u16, 0x3800, 0xbc00, 0x4000, 0x3400, 0x3a00, 0x3955];
+        for row in 0..98 {
+            let count = row % 6;
+            writeln!(input,"{count}").unwrap();
+            let mut weights = Vec::new();
+            let mut activations = Vec::new();
+            for i in 0..count {
+                let mut block: Vec<_> = (0..width).map(|_| next()).collect();
+                block[..2].copy_from_slice(&halves[(row+i)%halves.len()].to_ne_bytes());
+                block[2..4].copy_from_slice(&halves[(row*3+i+1)%halves.len()].to_ne_bytes());
+                let lanes = std::array::from_fn(|_| (f32::from(next()) - 128.0) / 4.0);
+                for byte in &block { writeln!(input,"{byte}").unwrap(); }
+                for lane in lanes { writeln!(input,"{}",lane.to_bits()).unwrap(); }
+                weights.extend(block);
+                activations.push(super::encode_grouped_q8_block(&lanes).unwrap());
+            }
+            actual.push(dot(&weights, &activations).unwrap());
+        }
+        let expected = query_oracle(mode, input);
+        assert_eq!(expected.len(),actual.len());
+        for (i,(value,word)) in actual.into_iter().zip(expected).enumerate() {
+            assert_eq!(value.to_bits(),word,"{mode} row {i}");
+        }
+        assert!(dot(&vec![0;width-1], &[]).is_err());
+        assert!(dot(&vec![0;width], &[]).is_err());
+    }
 }
