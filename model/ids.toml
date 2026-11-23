@@ -584,3 +584,9 @@ id = "VE-78"
 suite = "engine"
 level = "build"
 statement = "Verdant removes 100% of commercial cloud PaaS provider scaffolding outside GitHub (failing closed on commercial PaaS hostnames and manifests in gateway.rs, CI workflows, and governance catalogs) and formally models public-benefit Stitch self-hosting and self-serving in Prism across all strata (pure {0, 1} app/src/StitchHosting.lex.tex with zero Classical.choice, 10 stakeholders, 13 concerns, 17 components, 26 edges, 14 viewpoints/views, OPM/UML design views, 6 complete STRIDE threats and evidenced controls in Security.lex.tex, 8 zero-account Release channels, 11/11 kernel-measured ISO 15939 Fidelity indicators with 0 open derived/meant/measured questions, and W3C PROV-O primary-source spans in model/charter.md) while holding every one-way parametric ratchet ceiling across M1..M26"
+
+[[id]]
+id = "VE-79"
+suite = "engine"
+level = "build"
+statement = "Verdant realizes all three M26 Prism-modeled public-benefit Stitch self-hosting components in runtime in Milestone M27: lazy-loaded site/stitch-swarm.mjs (wired into site/stitch-mesh.mjs) enforcing stitch/1 Layer-5 framing (4096 B wire / 2700 B chunk / 512 KiB msg / 60s signal TTL), ResourceAdmission seeder ceilings, explicit opt-in FK-07 consent, opaque release-kappa topics, and OPFS 4-of-8 STCH2 shard verification; offline single-file portable HTML envelope emission (verdant-portable-v<ver>.html) inside gateway_swarm.rs with inline WebCrypto SHA-256 verification and DecompressionStream gzip unpacking; volunteer gateway /swarm and /portable HTTP/CORS endpoints with --swarm-relay CLI support; and >= 575 MIR-lifted functions in frontier.toml while strictly shrinking residue and holding all surface ceilings across M1..M27"

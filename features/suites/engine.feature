@@ -502,3 +502,9 @@ Feature: engine
     Given app/src/StitchHosting.lex.tex, app/src/Architecture.lex.tex, app/src/Design.lex.tex, app/src/Features.lex.tex, app/src/Security.lex.tex, app/src/Quality.lex.tex, app/src/Measures.lex.tex, app/src/Release.lex.tex, app/src/Compliance.lex.tex, model/charter.md, and crates/verdant-core/src/gateway.rs
     When Verdant refuses commercial cloud PaaS hostnames and manifests, audits zero commercial scaffolding across workflows and catalogs, verifies the formal Prism Stitch self-hosting strata and 11/11 measured fidelity, and evaluates all 26 milestones M1..M26
     Then commercial cloud PaaS hosts and manifests fail closed, StitchHosting.lex.tex and all 6 STRIDE self-hosting threats and controls are verified with 0 open fidelity questions and 11/11 measured indicators, and all Observer KPIs and ratchet ceilings pass across M1..M26
+
+  @VE-79 @build
+  Scenario: Verdant realizes public-benefit Stitch Layer-5 swarm seeding (site/stitch-swarm.mjs), offline portable single-file HTML envelopes (verdant-portable-v<ver>.html), and volunteer gateway /swarm + /portable endpoints in Milestone M27 with >= 575 MIR-lifted functions across M1..M27
+    Given site/stitch-swarm.mjs, site/stitch-mesh.mjs, crates/verdant-core/src/gateway_swarm.rs, crates/verdant-tensor/src/scalars_gateway.rs, crates/verdant-cli/src/operator_cmd.rs, and frontier.toml
+    When Verdant exercises stitch/1 Layer-5 framing, ResourceAdmission budget refusal, opt-in consent refusal, portable HTML SHA-256 round-trip, live volunteer /swarm and /portable failover verification, and audits all 27 milestones M1..M27
+    Then oversized Layer-5 frames and unconsented joins fail closed, portable HTML embeds the exact SHA-256-verified .holo capsule, volunteer /swarm serves stitch/1 metadata, frontier.toml proves at least 575 lifted functions with shrinking residue, and all Observer KPIs pass across M1..M27

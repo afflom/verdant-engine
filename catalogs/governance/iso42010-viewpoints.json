@@ -173,6 +173,7 @@
         "crates/verdant-core/src/governance.rs",
         "crates/verdant-core/src/build_ops.rs",
         "crates/verdant-core/src/gateway.rs",
+        "crates/verdant-core/src/gateway_swarm.rs",
         "catalogs/governance/change-roadmap-kpi.json",
         "site/frame/index.html",
         "site/frame/frame-boot.mjs",
@@ -370,6 +371,7 @@
         "site/engine-worker-extended.mjs",
         "site/audio-worklet.mjs",
         "site/stitch-mesh.mjs",
+        "site/stitch-swarm.mjs",
         "site/generated/tensor-scaling-contract.json"
       ],
       "ownedCrates": [

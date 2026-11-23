@@ -5,11 +5,11 @@
 # stops the functions it counts (the detail their rows state, under its
 # cause), the one that stops the most first: the work queue.
 
-# Honesty report: 551 of 1869 functions of product code are lifted; 1160
+# Honesty report: 577 of 1894 functions of product code are lifted; 1159
 # are residue, 75 foreign and 83 effect rows.
 # Residue by cause:
 #   arithmetic: 30
-#   call: 214
+#   call: 213
 #   form: 344
 #   signature: 71
 #   statements: 22
@@ -19,9 +19,9 @@
 spec = "uorust/register/1"
 
 [lift]
-functions = 1869
-lifted = 551
-residue = 1160
+functions = 1894
+lifted = 577
+residue = 1159
 foreign = 75
 effect = 83
 
@@ -206,6 +206,11 @@ cause = "type"
 functions = 7
 
 [[construct]]
+construct = "calls from, which is not lifted"
+cause = "call"
+functions = 6
+
+[[construct]]
 construct = "type outside the lift: CheckpointedRollbackJournal<S, I>, written with arguments, where a method's type is read by its name alone"
 cause = "type"
 functions = 6
@@ -233,11 +238,6 @@ functions = 6
 [[construct]]
 construct = "integer operator << wraps or panics depending on the build profile"
 cause = "arithmetic"
-functions = 5
-
-[[construct]]
-construct = "calls from, which is not lifted"
-cause = "call"
 functions = 5
 
 [[construct]]
@@ -472,11 +472,6 @@ functions = 2
 
 [[construct]]
 construct = "calls sha256_digest, which is not lifted"
-cause = "call"
-functions = 2
-
-[[construct]]
-construct = "calls ten_u64, which is not lifted"
 cause = "call"
 functions = 2
 
@@ -3498,12 +3493,6 @@ reason = "arithmetic"
 detail = "usize + wraps or panics where its value leaves the pointer width: past 2^32 on wasm32-unknown-unknown and thumbv7em-none-eabihf, past 2^64 on x86_64-unknown-linux-gnu and aarch64-unknown-linux-gnu"
 
 [[residue]]
-kappa = "e2b6ae5b313480d878f219c01ee407cc211bceeaa63f60632e299e9aae7157dc"
-function = "verdant_core::observer_types::HostCapabilityEnvelope::default_safe"
-reason = "call"
-detail = "calls ten_u64, which is not lifted"
-
-[[residue]]
 kappa = "f9c9b25917d2b8b842beb234eb5f83243b4a5bcb2c7c1819eef4ab7899047697"
 function = "verdant_core::observer_types::HostCapabilityEnvelope::update"
 reason = "signature"
@@ -4074,10 +4063,10 @@ reason = "type"
 detail = "type outside the lift: Self"
 
 [[residue]]
-kappa = "d205c498cbe6f7855b18f03385fba975f41497f536d53c9f7cb6a13808f22847"
+kappa = "c965a1a8e8eba053b027a87c8dd132c8a9a86a9cd37a22785346a1b49670af7e"
 function = "verdant_core::runtime::EngineConfig::new"
 reason = "call"
-detail = "calls ten_u64, which is not lifted"
+detail = "calls from, which is not lifted"
 
 [[residue]]
 kappa = "3edcf19bec531e481e1516e5d6dfbb94eecacecd350e4392c66de3eff4cdc4a0"
@@ -4806,7 +4795,7 @@ reason = "type"
 detail = "type outside the lift: f64"
 
 [[residue]]
-kappa = "9e12d8e6571a3fa0bd810f82e2d4e1f7018b5b666cc70d29032068e8404afddb"
+kappa = "92d91cd802a7a632339bd921fbac12fb8ff0ed4cbeb5a8a6399935a83259a597"
 function = "verdant_core::universe::cell_err"
 reason = "statements"
 detail = "the body has statements other than let"
@@ -8736,7 +8725,7 @@ function = "verdant::main"
 effect = "Env effect: std::env::args"
 
 [[effect]]
-kappa = "1297a357126f4f98bdd8f53c601f23f9f696121fea9d5b60f2dabf8d09ab090b"
+kappa = "0a65297b0e9a49c1832fb92470b10b7e5f701c8a9bacbef4eb90f075f9f33f61"
 function = "verdant_cli::operator_cmd::run_operator_command"
 effect = "Env effect: std::env::current_dir"
 
@@ -8751,8 +8740,8 @@ function = "verdant_core::build_ops::VerdantOperatorChannel::execute_native_buil
 effect = "Process effect: Command::new"
 
 [[effect]]
-kappa = "75318a4259d3f3058c5d8827f9001193133a02d6aea3a3842ba979be026cc6ff"
-function = "verdant_core::gateway::execute_gateway_op"
+kappa = "6ea9f32aac9a035570bba9695ed2e4086aa970cb8d1c40745e6dfa2b884787cb"
+function = "verdant_core::gateway_swarm::execute_gateway_op"
 effect = "Fs effect: std::fs::read_to_string"
 
 [[effect]]
@@ -8861,7 +8850,7 @@ function = "verdant_core::operator_release::VerdantOperatorChannel::verify_relea
 effect = "Fs effect: std::fs::read_to_string"
 
 [[effect]]
-kappa = "34bc8cb78b9250e95f26656d4bfebd504c18b3e81947c40041bddc8d780ee935"
+kappa = "37caa6a99658078523b27620185a4198b6d838f4a29c5cd36c1a86c23106cb72"
 function = "verdant_core::operator_seal::VerdantOperatorChannel::collect_distilled_site_tree"
 effect = "Fs effect: std::fs::read_dir"
 
@@ -9574,6 +9563,11 @@ definition = "Behavior::partHealthScorePermille"
 kappa = "67b82c86441cb65fbe3bc355ef2c10fbe6d04576ea7065e1aa5434235c5b4594"
 function = "verdant_core::observer_refine::refinement_priority_for_ceiling"
 definition = "Behavior::refinementPriorityForCeiling"
+
+[[lifted]]
+kappa = "f2e2691f2f5efc151be99ed94027a3f7995f0b6bac4f153cffc6b290a1adb5a3"
+function = "verdant_core::observer_types::HostCapabilityEnvelope::default_safe"
+definition = "Behavior::hostCapabilityEnvelopeDefaultSafe"
 
 [[lifted]]
 kappa = "9e82655221302531736270e4e3844d679092f4bbc7dfb70f06edf78bfcf8fca6"
@@ -10869,6 +10863,131 @@ definition = "Behavior::gatewayStakeholderPartCountComplete"
 kappa = "e45a8dcde84a58f31a501c6a211c84d9a74e417ea29748419bcd7c120c78843b"
 function = "verdant_tensor::scalars_gateway::gateway_surviving_shards_recover_4_of_8"
 definition = "Behavior::gatewaySurvivingShardsRecover4Of8"
+
+[[lifted]]
+kappa = "0b735ccaab3fb0fd7b415a8fc8eb0382be0cdec99a35a8407b6872ce1f2fed07"
+function = "verdant_tensor::scalars_gateway::stitch_l5_budget_reserve_ok"
+definition = "Behavior::stitchL5BudgetReserveOk"
+
+[[lifted]]
+kappa = "96b723c84752b143a32d6caafd4685aa1a8145bfb79665a18147fe600c690a43"
+function = "verdant_tensor::scalars_gateway::stitch_l5_chunk_bytes_max"
+definition = "Behavior::stitchL5ChunkBytesMax"
+
+[[lifted]]
+kappa = "3ae0be79a3e368b49be10d01f142a09a404a8156f1421ecd36ac5cb0477e6b93"
+function = "verdant_tensor::scalars_gateway::stitch_l5_compute_steps_cap"
+definition = "Behavior::stitchL5ComputeStepsCap"
+
+[[lifted]]
+kappa = "5ea9e4a1c506aac04dafa7072bf3d7a4e923c8e02c0eb270760ecfb4228cde41"
+function = "verdant_tensor::scalars_gateway::stitch_l5_epoch_request_cap"
+definition = "Behavior::stitchL5EpochRequestCap"
+
+[[lifted]]
+kappa = "e06c1e329a122cd62cdb3e9a55c3f79511ee3e34d0f9c0d405e9391ce4141d14"
+function = "verdant_tensor::scalars_gateway::stitch_l5_frame_admitted"
+definition = "Behavior::stitchL5FrameAdmitted"
+
+[[lifted]]
+kappa = "4974ecbab6a11f534e70b187d771e83ad597ec772aead23e52a27f5337dadd6e"
+function = "verdant_tensor::scalars_gateway::stitch_l5_frame_index_valid"
+definition = "Behavior::stitchL5FrameIndexValid"
+
+[[lifted]]
+kappa = "0ac9170df98cab2668461b7c09e085fa8cd7cf0ab73138f7596e87dbb2bc5423"
+function = "verdant_tensor::scalars_gateway::stitch_l5_future_skew_ms"
+definition = "Behavior::stitchL5FutureSkewMs"
+
+[[lifted]]
+kappa = "392e3f44ebe760b8d922f61a6526ea5f7964e369283938ada73ab617f4da4b01"
+function = "verdant_tensor::scalars_gateway::stitch_l5_max_frames"
+definition = "Behavior::stitchL5MaxFrames"
+
+[[lifted]]
+kappa = "d66ddf6b01018ab69c35190935470dcbb06639d7e77a86bb87bb95a869fd11db"
+function = "verdant_tensor::scalars_gateway::stitch_l5_message_bounded"
+definition = "Behavior::stitchL5MessageBounded"
+
+[[lifted]]
+kappa = "f7c9ffae69259c6b4fbd06dc66a038bc4674d1a8b90d7ddfc59ec4e78f0422e0"
+function = "verdant_tensor::scalars_gateway::stitch_l5_message_bytes_max"
+definition = "Behavior::stitchL5MessageBytesMax"
+
+[[lifted]]
+kappa = "00240a20e1ceed65ad6b1cc8953fa289f2bf796ac436d263022ba5ad7cda2645"
+function = "verdant_tensor::scalars_gateway::stitch_l5_opaque_topic_len_valid"
+definition = "Behavior::stitchL5OpaqueTopicLenValid"
+
+[[lifted]]
+kappa = "8581c3340c47f1922c01510ba6dbfe080833d9ecd4fc70a2f6c79fcc9def2e37"
+function = "verdant_tensor::scalars_gateway::stitch_l5_seeder_admitted"
+definition = "Behavior::stitchL5SeederAdmitted"
+
+[[lifted]]
+kappa = "72d5c00ff9357598f026ce4c67ac201626f1e25ffdd1c7ce0e2dac1b0af9cea3"
+function = "verdant_tensor::scalars_gateway::stitch_l5_sha256_hex_len_valid"
+definition = "Behavior::stitchL5Sha256HexLenValid"
+
+[[lifted]]
+kappa = "abbc1cd1e6a8f02c710eb30e48a0f7954d0e4055a3c34b228956598dd28b5715"
+function = "verdant_tensor::scalars_gateway::stitch_l5_signal_fresh"
+definition = "Behavior::stitchL5SignalFresh"
+
+[[lifted]]
+kappa = "bf81eddbcff6fd4a28e6201587e0422902947ea6d89954b988997f911e2dcb8a"
+function = "verdant_tensor::scalars_gateway::stitch_l5_signal_lifetime_ms"
+definition = "Behavior::stitchL5SignalLifetimeMs"
+
+[[lifted]]
+kappa = "89c8ab54a66c8aaf2850d82d38454766b84bebfcbc39b881642b05a864d69166"
+function = "verdant_tensor::scalars_gateway::stitch_l5_transfer_budget_bytes"
+definition = "Behavior::stitchL5TransferBudgetBytes"
+
+[[lifted]]
+kappa = "aa9c4217baeb91e72b96788ce637be1348ae376ef279917ac3defecfa478e4ad"
+function = "verdant_tensor::scalars_gateway::stitch_l5_warm_fresh"
+definition = "Behavior::stitchL5WarmFresh"
+
+[[lifted]]
+kappa = "f89e88256ed10bb0d442a569714fc205476711caf5e1b2b4cc07262f4e3d2f36"
+function = "verdant_tensor::scalars_gateway::stitch_l5_warm_lifetime_ms"
+definition = "Behavior::stitchL5WarmLifetimeMs"
+
+[[lifted]]
+kappa = "bbbca9197c76fea44e1c84ceebd4288b398749c20ab7c93ed0851b728eb9b652"
+function = "verdant_tensor::scalars_gateway::stitch_l5_wire_bytes_max"
+definition = "Behavior::stitchL5WireBytesMax"
+
+[[lifted]]
+kappa = "1c9d6f4de5babea549d2c4ab9db2aaec0dff7d06e7ce4efffea7268317655378"
+function = "verdant_tensor::scalars_gateway::stitch_m27_lifted_module_floor_ok"
+definition = "Behavior::stitchM27LiftedModuleFloorOk"
+
+[[lifted]]
+kappa = "856004f965bad216a11f6b4d1b5d091436389832d50d17fb43c7bcb8ea2e6336"
+function = "verdant_tensor::scalars_gateway::stitch_origin_outage_survived"
+definition = "Behavior::stitchOriginOutageSurvived"
+
+[[lifted]]
+kappa = "4a63890036b7d33c27f6b708b245b823a49c9bbf9ab04da2d627e105b6746bb6"
+function = "verdant_tensor::scalars_gateway::stitch_portable_base64_valid"
+definition = "Behavior::stitchPortableBase64Valid"
+
+[[lifted]]
+kappa = "d6490ed9415587879b074bddd13ed8c2351cf73cb16dcb8236c7490734e06ae1"
+function = "verdant_tensor::scalars_gateway::stitch_portable_html_envelope_valid"
+definition = "Behavior::stitchPortableHtmlEnvelopeValid"
+
+[[lifted]]
+kappa = "934ce6903ae10030717188f77fae5da9cafc56ea160db83d17b0ada409756107"
+function = "verdant_tensor::scalars_gateway::stitch_public_benefit_carrier_ok"
+definition = "Behavior::stitchPublicBenefitCarrierOk"
+
+[[lifted]]
+kappa = "4cf5e85d0396ce37835d7c45653bd13286deeba2d691e0db091b8a34450be4f7"
+function = "verdant_tensor::scalars_gateway::stitch_volunteer_swarm_ready"
+definition = "Behavior::stitchVolunteerSwarmReady"
 
 [[lifted]]
 kappa = "fee180067fab8a64427b5cdd300e44cd695d50f8f5d156d7bbf2346260928b90"

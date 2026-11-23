@@ -153,7 +153,7 @@
     },
     {
       "basisPrime": 71,
-      "kappaHex": "41546477d323dc1baa489f99c058f39ebc8c1796363b695d459e81b2b9f40a5c",
+      "kappaHex": "232d807733c1821d92fb43d056b4bb7d29b96adad3a489c6efd90f2f5e7ade91",
       "spec": {
         "almPhases": [
           "change-management",
@@ -189,6 +189,7 @@
           "crates/verdant-core/src/governance.rs",
           "crates/verdant-core/src/build_ops.rs",
           "crates/verdant-core/src/gateway.rs",
+          "crates/verdant-core/src/gateway_swarm.rs",
           "catalogs/governance/change-roadmap-kpi.json",
           "site/frame/index.html",
           "site/frame/frame-boot.mjs",
@@ -372,7 +373,7 @@
     },
     {
       "basisPrime": 89,
-      "kappaHex": "e9591cbef005fd636983570613bbb196d006721d3ceb61be8c65c0a4b93be7ee",
+      "kappaHex": "6cf4b2e949bb51bb68d4abeb4c8b7a7f28a7697c953b6cd80306f78e4398a782",
       "spec": {
         "almPhases": [
           "operation",
@@ -426,6 +427,7 @@
           "site/engine-worker-extended.mjs",
           "site/audio-worklet.mjs",
           "site/stitch-mesh.mjs",
+          "site/stitch-swarm.mjs",
           "site/generated/tensor-scaling-contract.json"
         ],
         "ownedObserverParts": [

@@ -522,6 +522,11 @@ impl VerdantOperatorChannel {
                 || rel_str == "worker-gate.mjs"
                 || rel_str == "page.template.html"
                 || rel_str == "sw.js"
+                || rel_str == "llms.txt"
+                || rel_str.ends_with(".md")
+                || rel_str.ends_with(".d.ts")
+                || rel_str == "vendor/prism-code/src/docker.mjs"
+                || rel_str == "vendor/prism-code/src/node.mjs"
             {
                 continue;
             }

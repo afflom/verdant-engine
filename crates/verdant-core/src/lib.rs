@@ -49,6 +49,8 @@ pub mod ecs;
 pub mod error;
 #[cfg(not(target_arch = "wasm32"))]
 pub mod gateway;
+#[cfg(not(target_arch = "wasm32"))]
+pub mod gateway_swarm;
 pub mod geometry;
 pub mod gltf_io;
 pub mod governance;

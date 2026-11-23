@@ -1,19 +1,19 @@
 {
   "spec": "verdant/observer-refinement-agenda/1",
-  "releaseVersion": "2.18.0",
-  "releaseEpoch": 22,
+  "releaseVersion": "2.19.0",
+  "releaseEpoch": 23,
   "observerKappaHex": "6cd1e9dc15167b134d9887883bf06a5158c9b132f076e10a30e521ea62e0a17b",
   "overallRefinementScorePermille": 976,
   "liveMetrics": {
-    "wasmCoreBytes": 154462,
-    "wasmUorcBytes": 1737557,
-    "releaseCapsuleBytes": 1011662,
+    "wasmCoreBytes": 154421,
+    "wasmUorcBytes": 1736506,
+    "releaseCapsuleBytes": 1005323,
     "blankFrameBytes": 29177,
     "maxHandwrittenRustFileLines": 1247,
     "maxJsFileLines": 920,
-    "frontierLifted": 551,
-    "frontierResidue": 1160,
-    "frontierUncertified": 1318,
+    "frontierLifted": 577,
+    "frontierResidue": 1159,
+    "frontierUncertified": 1317,
     "fidelityOpenResidue": 0
   },
   "partHealth": [
@@ -48,9 +48,9 @@
       "managerId": "mgr-change-release",
       "vsmSystem": "VSM-S3",
       "viewpointId": "change-version-release",
-      "ownedFileCount": 21,
-      "maxFileLines": 1226,
-      "heaviestFile": "crates/verdant-core/src/gateway.rs",
+      "ownedFileCount": 22,
+      "maxFileLines": 1188,
+      "heaviestFile": "crates/verdant-core/src/governance.rs",
       "healthScorePermille": 1000
     },
     {
@@ -67,7 +67,7 @@
       "vsmSystem": "VSM-S4",
       "viewpointId": "roadmap-kpi-strategy",
       "ownedFileCount": 7,
-      "maxFileLines": 504,
+      "maxFileLines": 510,
       "heaviestFile": "features/suites/engine.feature",
       "healthScorePermille": 1000
     },
@@ -84,7 +84,7 @@
       "managerId": "mgr-runtime-stage",
       "vsmSystem": "VSM-S1",
       "viewpointId": "runtime-stage",
-      "ownedFileCount": 20,
+      "ownedFileCount": 21,
       "maxFileLines": 1679,
       "heaviestFile": "app/src/Subsystems.lex.tex",
       "healthScorePermille": 900
@@ -171,14 +171,14 @@
       "citedAuthority": "AUTH-SEMVER-CHANGE-KPI",
       "ratchetLayer": "uorust-frontier",
       "priority": "high",
-      "currentValue": "551 lifted / 1160 residue (1318 uncertified)",
-      "targetValue": ">= 571 lifted functions",
+      "currentValue": "577 lifted / 1159 residue (1317 uncertified)",
+      "targetValue": ">= 597 lifted functions",
       "summary": "Expand constructive MIR proof frontier; top blocker: expression form outside the lift: ? below the function's own statements (269 fns, cause=form).",
       "concreteActions": [
         "Replace remaining raw shift/overflow ops with lifted verdant_tensor::scalars and wrapping ops.",
         "Extract pure decision/calculation helpers out of IO/effectful wrappers so uorust lifts them."
       ],
-      "kappaHex": "f3f0fe07913f6a928a31f2c151c9702549428b185b908099add2a9a496933930"
+      "kappaHex": "0f5ebc54210b9b79e0550795558300a4519a4243f1f58ca0a238c2b2c3a40a94"
     },
     {
       "proposalId": "refine-rust-modularity",
@@ -222,15 +222,15 @@
       "citedAuthority": "AUTH-STITCH-SELF-HOSTING",
       "ratchetLayer": "surface-wasm",
       "priority": "medium",
-      "currentValue": "verdant-uorc.wasm 1737557 B · .holo 1011662 B · Blank Frame 29177 B (1543 B headroom)",
+      "currentValue": "verdant-uorc.wasm 1736506 B · .holo 1005323 B · Blank Frame 29177 B (1543 B headroom)",
       "targetValue": "verdant-uorc.wasm <= 1560576 B and gzipped .holo <= 1.0 MiB",
       "summary": "Keep browser verdant-uorc.wasm ultra-lean (< 1.5 MiB) and drive gzipped .holo release capsules below 1.0 MiB for instant Blank Frame cold boots.",
       "concreteActions": [
         "Keep uorc-ncm-decode native-only and audit gltf-json / serde_json monomorphizations inside verdant-uorc.wasm.",
         "Maintain Blank Frame strictly under 30720 B with DecompressionStream('gzip')."
       ],
-      "kappaHex": "6ee0a033b2c770642d26e62d5eea30be2869d757c35433313e7315aa2cef960d"
+      "kappaHex": "a4b84ad30ef6790d939eefe95aaf6055faebfc889e115153a056e0559ba348cf"
     }
   ],
-  "agendaKappaHex": "3409a85a56b9cfc6b4f9808c7fc3a570dfc3598217088af3dddf1ccdb1200b11"
+  "agendaKappaHex": "9ca32fab2bd563b7466954e6249c6ba4a8b480871b1d991439e4fde86b3bf554"
 }

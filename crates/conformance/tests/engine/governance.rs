@@ -4222,3 +4222,209 @@ fn engine_ve_78() {
         kpi_rep.kpis
     );
 }
+
+#[test]
+fn engine_ve_79() {
+    use std::path::Path;
+    use std::process::Command;
+    use verdant_core::gateway::{execute_gateway_op, GatewayOp, GatewayOpOutcome};
+    use verdant_core::operator::VerdantOperatorChannel;
+    use verdant_tensor::scalars::*;
+
+    let repo_root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+    let ch = VerdantOperatorChannel::new("sunspire-regatta").expect("operator channel");
+
+    // 1. Pack & failover-verify a public-benefit bundle and assert M27 offline portable HTML
+    //    AND volunteer /swarm + /portable endpoints pass live!
+    let tmp_root = std::env::temp_dir().join(format!("verdant-ve79-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&tmp_root);
+    let rel_dir = tmp_root.join("release");
+    let gw_dir = tmp_root.join("gateway-bundle");
+    let pin = ch
+        .pack_repo_release_capsule(
+            &repo_root,
+            "2.19.0",
+            23,
+            &rel_dir,
+            vec![
+                "https://afflom.github.io/verdant-engine/stitch/v2.19.0/shards".to_string(),
+                "https://cdn.jsdelivr.net/gh/afflom/verdant-engine@stitch-mirror/v2.19.0/shards"
+                    .to_string(),
+            ],
+            "stitch://verdant/studio",
+        )
+        .expect("pack isolated v2.19.0 release");
+
+    execute_gateway_op(&GatewayOp::PackBundle {
+        repo_root: repo_root.clone(),
+        release_dir: rel_dir.clone(),
+        out_dir: gw_dir.clone(),
+        extra_gateways: vec![],
+        crates_dir: None,
+    })
+    .expect("pack public-benefit bundle with offline portable HTML");
+
+    let portable_path = gw_dir.join("verdant-portable-v2.19.0.html");
+    assert!(
+        portable_path.is_file(),
+        "PackBundle must emit offline portable single-file HTML"
+    );
+    let portable_txt = std::fs::read_to_string(&portable_path).expect("read portable HTML");
+    assert!(portable_txt.contains(&pin.release_kappa_hex));
+    assert!(portable_txt.contains("DecompressionStream(\"gzip\")"));
+    assert!(portable_txt.contains("verdant-holo-b64"));
+
+    let (verify_out, _) = execute_gateway_op(&GatewayOp::VerifyFailover {
+        bundle_dir: gw_dir.clone(),
+    })
+    .expect("live failover + /swarm + /portable verify");
+    let GatewayOpOutcome::Verified(rep) = verify_out else {
+        panic!("expected Verified outcome");
+    };
+    assert!(rep.all_passed);
+    assert!(rep.portable_html_verified);
+    assert_eq!(rep.swarm_endpoint_status, 200);
+    assert_eq!(rep.primary_outage_status, 503);
+    assert_eq!(rep.surviving_shards_fetched, 4);
+
+    // 2. Execute real Node.js ESM verification against site/stitch-swarm.mjs:
+    //    - stitch/1 framing round-trip, > 4096 B wire refusal, expired signal TTL refusal
+    //    - opt-in FK-07 organ 9 consent refusal when denied
+    //    - ResourceAdmission budget enforcement & STCH2 SHA-256 shard admission + tamper refusal
+    let shard0_path = gw_dir.join("shards/shard-0.stch");
+    let node_script = format!(
+        r#"
+import fs from 'node:fs';
+import {{
+  STITCH_L5_LIMITS,
+  deriveOpaqueReleaseTopic,
+  createResourceAdmissionLedger,
+  encodeStitchLayer5Frames,
+  createStitchLayer5Reassembler,
+  createStitchSwarmSeeder,
+  verifyStch2Shard,
+}} from './site/stitch-swarm.mjs';
+
+const kappa = {kappa:?};
+const topic = deriveOpaqueReleaseTopic(kappa);
+if (!topic.startsWith('verdant-stitch-') || topic.length > 64) throw new Error('bad topic ' + topic);
+
+const enc = await encodeStitchLayer5Frames({{ kind: 'stitch-l5-announce', ok: true }}, {{ channelHex: kappa, sessionHex: '0123456789abcdef', scope: 'signal' }});
+if (!enc.frames.length || Buffer.byteLength(enc.frames[0]) > STITCH_L5_LIMITS.wireBytesMax) throw new Error('bad wire frame');
+
+const reasm = createStitchLayer5Reassembler({{ channelHex: kappa, scope: 'signal' }});
+let oversizedRefused = false;
+try {{ await reasm.accept('x'.repeat(4097)); }} catch {{ oversizedRefused = true; }}
+if (!oversizedRefused) throw new Error('oversized >4096B frame must fail closed');
+
+let expiredRefused = false;
+try {{ await reasm.accept(enc.frames[0], Date.now() + 120000); }} catch {{ expiredRefused = true; }}
+if (!expiredRefused) throw new Error('expired signal frame must fail closed');
+
+const assembled = await reasm.accept(enc.frames[0]);
+if (!assembled || assembled.payload.ok !== true) throw new Error('reassembly failed');
+
+const deniedSeeder = createStitchSwarmSeeder({{ releaseKappaHex: kappa, isOrganAllowed: () => false }});
+let consentRefused = false;
+try {{ deniedSeeder.join(); }} catch {{ consentRefused = true; }}
+if (!consentRefused) throw new Error('unconsented swarm join must fail closed');
+
+const seeder = createStitchSwarmSeeder({{ releaseKappaHex: kappa, isOrganAllowed: () => true, budgetOverrides: {{ transferBytes: 64 }} }});
+seeder.join();
+const rawShard = new Uint8Array(fs.readFileSync({shard0:?}));
+const parsed = await verifyStch2Shard(rawShard, kappa);
+if (parsed.index !== 0) throw new Error('bad shard index');
+await seeder.cacheVerifiedShard(rawShard, false);
+let overBudgetRefused = false;
+try {{ seeder.serveShardToPeer('prism:peer-a', 0); }} catch {{ overBudgetRefused = true; }}
+if (!overBudgetRefused) throw new Error('over-budget transfer must fail closed');
+
+const tampered = rawShard.slice();
+tampered[tampered.length - 1] ^= 0xff;
+let tamperRefused = false;
+try {{ await verifyStch2Shard(tampered, kappa); }} catch {{ tamperRefused = true; }}
+if (!tamperRefused) throw new Error('tampered STCH2 shard must fail closed');
+
+seeder.leave();
+reasm.dispose();
+console.log('STITCH_L5_SWARM_OK');
+"#,
+        kappa = pin.release_kappa_hex,
+        shard0 = shard0_path.to_string_lossy()
+    );
+    let node_out = Command::new("node")
+        .args(["--input-type=module", "-e", &node_script])
+        .current_dir(&repo_root)
+        .output()
+        .expect("run node stitch-swarm.mjs verification");
+    assert!(
+        node_out.status.success()
+            && String::from_utf8_lossy(&node_out.stdout).contains("STITCH_L5_SWARM_OK"),
+        "site/stitch-swarm.mjs verification failed: stdout={} stderr={}",
+        String::from_utf8_lossy(&node_out.stdout),
+        String::from_utf8_lossy(&node_out.stderr)
+    );
+    let _ = std::fs::remove_dir_all(&tmp_root);
+
+    // 3. Verify pure MIR-lifted M27 Stitch Layer-5, ResourceAdmission & Portable HTML predicates:
+    assert_eq!(stitch_l5_wire_bytes_max(), 4096);
+    assert_eq!(stitch_l5_chunk_bytes_max(), 2700);
+    assert_eq!(stitch_l5_message_bytes_max(), 524_288);
+    assert_eq!(stitch_l5_max_frames(), 256);
+    assert_eq!(stitch_l5_signal_lifetime_ms(), 60_000);
+    assert_eq!(stitch_l5_warm_lifetime_ms(), 1_800_000);
+    assert_eq!(stitch_l5_future_skew_ms(), 5000);
+    assert!(stitch_l5_frame_admitted(4096, 2700));
+    assert!(!stitch_l5_frame_admitted(4097, 2700));
+    assert!(stitch_l5_frame_index_valid(0, 256));
+    assert!(!stitch_l5_frame_index_valid(256, 256));
+    assert!(stitch_l5_message_bounded(524_288));
+    assert!(!stitch_l5_message_bounded(524_289));
+    assert!(stitch_l5_signal_fresh(60_000));
+    assert!(!stitch_l5_signal_fresh(60_001));
+    assert!(stitch_l5_warm_fresh(1_800_000));
+    assert_eq!(stitch_l5_epoch_request_cap(), 4096);
+    assert_eq!(stitch_l5_transfer_budget_bytes(), 16_777_216);
+    assert_eq!(stitch_l5_compute_steps_cap(), 1_000_000);
+    assert!(stitch_l5_budget_reserve_ok(1024, 1024, 4096));
+    assert!(!stitch_l5_budget_reserve_ok(4000, 100, 4096));
+    assert!(stitch_l5_seeder_admitted(true, 10, 4096, 4096));
+    assert!(!stitch_l5_seeder_admitted(false, 10, 4096, 4096));
+    assert!(stitch_l5_opaque_topic_len_valid(31));
+    assert!(stitch_l5_sha256_hex_len_valid(64));
+    assert!(stitch_public_benefit_carrier_ok(false, false));
+    assert!(!stitch_public_benefit_carrier_ok(true, false));
+    assert!(stitch_portable_html_envelope_valid(2000, 1000, true, true));
+    assert!(stitch_volunteer_swarm_ready(200, 4, 4, true));
+    assert!(stitch_origin_outage_survived(false, 1, 0, false, 4, 4));
+    assert!(stitch_origin_outage_survived(false, 0, 1, false, 4, 4));
+    assert!(stitch_origin_outage_survived(false, 0, 0, true, 0, 4));
+    assert!(!stitch_origin_outage_survived(false, 0, 0, false, 4, 4));
+    assert!(stitch_m27_lifted_module_floor_ok(186));
+    assert!(stitch_portable_base64_valid(100, 136));
+
+    // 4. Ratchet & Observer M1..M27 KPIs pass cleanly:
+    let ratchet = prism_fidelity::ratchet::audit_parametric_ratchet(
+        &repo_root,
+        Path::new("model/parametric-ratchet.toml"),
+    )
+    .expect("live repo must pass all 4 ratchet layers in M27");
+    assert!(ratchet.frontier_lifted_functions >= 575);
+    assert!(ratchet.frontier_residue_functions < 1_160);
+    assert!(ratchet.observed_release_capsule_bytes < 1_048_576);
+    assert!(ratchet.observed_max_rust_file_lines <= 1_247);
+    assert!(ratchet.observed_max_js_file_lines <= 920);
+
+    let kpi_rep = ch
+        .evaluate_observer_roadmap_kpis(&repo_root, true, true)
+        .expect("observer roadmap & KPI report");
+    assert!(
+        kpi_rep.milestones.len() >= 27,
+        "expected Milestones M1..M27"
+    );
+    assert_eq!(
+        kpi_rep.kpi_passed_count, kpi_rep.kpi_total_count,
+        "all Observer KPIs must pass (kpis={:?})",
+        kpi_rep.kpis
+    );
+}

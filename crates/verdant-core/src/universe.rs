@@ -67,6 +67,7 @@ pub fn canonical_cell_span_meters() -> f64 {
         .max(1)) as f64
 }
 
+#[allow(unused_variables)]
 fn cell_err(msg: &'static str) -> String {
     #[cfg(not(target_arch = "wasm32"))]
     {
@@ -74,7 +75,6 @@ fn cell_err(msg: &'static str) -> String {
     }
     #[cfg(target_arch = "wasm32")]
     {
-        let _ = msg;
         String::new()
     }
 }

@@ -12,6 +12,7 @@ pub(crate) fn run_operator_command(args: &[String]) -> Result<String, CliCommand
         let mut crates_dir: Option<std::path::PathBuf> = None;
         let mut bind_addr = "127.0.0.1:8088".to_string();
         let mut max_requests: Option<usize> = None;
+        let mut swarm_relay: Option<String> = None;
         let mut extra_gateways: Vec<verdant_core::gateway::StitchGatewayEndpoint> = Vec::new();
         let mut i = two;
         while i < args.len() {
@@ -38,6 +39,10 @@ pub(crate) fn run_operator_command(args: &[String]) -> Result<String, CliCommand
                 }
                 "--max-requests" if i + 1 < args.len() => {
                     max_requests = args[i + 1].parse().ok();
+                    i += two;
+                }
+                "--swarm-relay" if i + 1 < args.len() => {
+                    swarm_relay = Some(args[i + 1].clone());
                     i += two;
                 }
                 "--gateway" if i + 1 < args.len() => {
@@ -71,6 +76,7 @@ pub(crate) fn run_operator_command(args: &[String]) -> Result<String, CliCommand
                 bundle_dir: out_dir,
                 bind_addr,
                 max_requests,
+                swarm_relay,
             },
             "verify" => verdant_core::gateway::GatewayOp::VerifyFailover {
                 bundle_dir: out_dir,

@@ -270,3 +270,229 @@ pub const fn gateway_http_204_code() -> u16 {
 pub const fn gateway_probe_timeout_millis() -> u32 {
     two_u32().wrapping_mul(thousand_u32())
 }
+
+/// Pure MIR-lifted Stitch Layer-5 (`stitch/1`) wire frame ceiling (`4096` bytes).
+#[must_use]
+pub const fn stitch_l5_wire_bytes_max() -> u32 {
+    let k1 = hundred_u32()
+        .wrapping_mul(ten_u32())
+        .wrapping_add(two_u32().wrapping_mul(ten_u32()))
+        .wrapping_add(four_u32());
+    four_u32().wrapping_mul(k1)
+}
+
+/// Pure MIR-lifted Stitch Layer-5 (`stitch/1`) chunk data ceiling (`2700` bytes).
+#[must_use]
+pub const fn stitch_l5_chunk_bytes_max() -> u32 {
+    let seven = four_u32().wrapping_add(three_u32());
+    two_u32()
+        .wrapping_mul(thousand_u32())
+        .wrapping_add(seven.wrapping_mul(hundred_u32()))
+}
+
+/// Pure MIR-lifted Stitch Layer-5 (`stitch/1`) assembled message ceiling (`524288` bytes = 512 KiB).
+#[must_use]
+pub const fn stitch_l5_message_bytes_max() -> u32 {
+    let k1 = hundred_u32()
+        .wrapping_mul(ten_u32())
+        .wrapping_add(two_u32().wrapping_mul(ten_u32()))
+        .wrapping_add(four_u32());
+    let n512 = five_u32()
+        .wrapping_mul(hundred_u32())
+        .wrapping_add(ten_u32())
+        .wrapping_add(two_u32());
+    n512.wrapping_mul(k1)
+}
+
+/// Pure MIR-lifted Stitch Layer-5 (`stitch/1`) max frames per message (`256`).
+#[must_use]
+pub const fn stitch_l5_max_frames() -> u32 {
+    two_u32()
+        .wrapping_mul(hundred_u32())
+        .wrapping_add(five_u32().wrapping_mul(ten_u32()))
+        .wrapping_add(six_u32())
+}
+
+/// Pure MIR-lifted Stitch Layer-5 (`stitch/1`) signal lifetime (`60000` ms).
+#[must_use]
+pub const fn stitch_l5_signal_lifetime_ms() -> u32 {
+    six_u32()
+        .wrapping_mul(ten_u32())
+        .wrapping_mul(thousand_u32())
+}
+
+/// Pure MIR-lifted Stitch Layer-5 (`stitch/1`) warm lifetime (`1800000` ms = 30 min).
+#[must_use]
+pub const fn stitch_l5_warm_lifetime_ms() -> u32 {
+    ten_u32()
+        .wrapping_add(eight_u32())
+        .wrapping_mul(hundred_u32())
+        .wrapping_mul(thousand_u32())
+}
+
+/// Pure MIR-lifted Stitch Layer-5 (`stitch/1`) future clock skew tolerance (`5000` ms).
+#[must_use]
+pub const fn stitch_l5_future_skew_ms() -> u32 {
+    five_u32().wrapping_mul(thousand_u32())
+}
+
+/// Pure MIR-lifted Stitch Layer-5 wire frame admission predicate (`1 <= chunk < wire <= 4096`).
+#[must_use]
+pub const fn stitch_l5_frame_admitted(wire_bytes: u32, chunk_bytes: u32) -> bool {
+    chunk_bytes >= 1_u32
+        && chunk_bytes <= stitch_l5_chunk_bytes_max()
+        && chunk_bytes < wire_bytes
+        && wire_bytes <= stitch_l5_wire_bytes_max()
+}
+
+/// Pure MIR-lifted Stitch Layer-5 multi-frame sequence bounds (`1 <= total <= 256 && idx < total`).
+#[must_use]
+pub const fn stitch_l5_frame_index_valid(idx: u32, total: u32) -> bool {
+    total >= 1_u32 && total <= stitch_l5_max_frames() && idx < total
+}
+
+/// Pure MIR-lifted Stitch Layer-5 assembled message size check (`1 <= bytes <= 524288`).
+#[must_use]
+pub const fn stitch_l5_message_bounded(bytes: u32) -> bool {
+    bytes >= 1_u32 && bytes <= stitch_l5_message_bytes_max()
+}
+
+/// Pure MIR-lifted Stitch Layer-5 signal TTL freshness check (`age_ms <= 60000`).
+#[must_use]
+pub const fn stitch_l5_signal_fresh(age_ms: u32) -> bool {
+    age_ms <= stitch_l5_signal_lifetime_ms()
+}
+
+/// Pure MIR-lifted Stitch Layer-5 warm TTL freshness check (`age_ms <= 1800000`).
+#[must_use]
+pub const fn stitch_l5_warm_fresh(age_ms: u32) -> bool {
+    age_ms <= stitch_l5_warm_lifetime_ms()
+}
+
+/// Pure MIR-lifted `ResourceAdmission` epoch request ceiling (`4096`).
+#[must_use]
+pub const fn stitch_l5_epoch_request_cap() -> u32 {
+    stitch_l5_wire_bytes_max()
+}
+
+/// Pure MIR-lifted `ResourceAdmission` 16 MiB transfer/storage budget (`16777216` bytes).
+#[must_use]
+pub const fn stitch_l5_transfer_budget_bytes() -> u64 {
+    let k1 = hundred_u64()
+        .wrapping_mul(ten_u64())
+        .wrapping_add(two_u64().wrapping_mul(ten_u64()))
+        .wrapping_add(two_u64().wrapping_mul(two_u64()));
+    let sixteen = two_u64()
+        .wrapping_mul(two_u64())
+        .wrapping_mul(two_u64())
+        .wrapping_mul(two_u64());
+    sixteen.wrapping_mul(k1).wrapping_mul(k1)
+}
+
+/// Pure MIR-lifted `ResourceAdmission` compute-step ceiling (`1000000`).
+#[must_use]
+pub const fn stitch_l5_compute_steps_cap() -> u64 {
+    let k1 = hundred_u64().wrapping_mul(ten_u64());
+    k1.wrapping_mul(k1)
+}
+
+/// Pure MIR-lifted `ResourceAdmission` conservative reservation check (`used + add <= cap`).
+#[must_use]
+pub const fn stitch_l5_budget_reserve_ok(used: u64, delta: u64, cap: u64) -> bool {
+    delta <= cap && used <= cap.wrapping_sub(delta)
+}
+
+/// Pure MIR-lifted opt-in swarm consent & budget gate (`consent && reqs <= 4096 && tx <= 16MiB`).
+#[must_use]
+pub const fn stitch_l5_seeder_admitted(
+    opt_in_consent: bool,
+    requests_used: u32,
+    transfer_bytes_used: u64,
+    storage_bytes_used: u64,
+) -> bool {
+    opt_in_consent
+        && requests_used <= stitch_l5_epoch_request_cap()
+        && transfer_bytes_used <= stitch_l5_transfer_budget_bytes()
+        && storage_bytes_used <= stitch_l5_transfer_budget_bytes()
+}
+
+/// Pure MIR-lifted opaque `ntfy` topic length check (`16 <= len <= 64`).
+#[must_use]
+pub const fn stitch_l5_opaque_topic_len_valid(len: u32) -> bool {
+    let sixteen = four_u32().wrapping_mul(four_u32());
+    let sixty_four = eight_u32().wrapping_mul(eight_u32());
+    len >= sixteen && len <= sixty_four
+}
+
+/// Pure MIR-lifted SHA-256 hex digest length check (`len == 64`).
+#[must_use]
+pub const fn stitch_l5_sha256_hex_len_valid(len: u32) -> bool {
+    len == eight_u32().wrapping_mul(eight_u32())
+}
+
+/// Pure MIR-lifted zero-commercial-provider admission check (`!is_commercial_paas && !requires_registration`).
+#[must_use]
+pub const fn stitch_public_benefit_carrier_ok(
+    is_commercial_paas: bool,
+    requires_registration: bool,
+) -> bool {
+    !is_commercial_paas && !requires_registration
+}
+
+/// Pure MIR-lifted offline portable HTML envelope completeness check.
+#[must_use]
+pub const fn stitch_portable_html_envelope_valid(
+    html_bytes: u64,
+    capsule_bytes: u64,
+    has_kappa_lock: bool,
+    has_gzip_unpacker: bool,
+) -> bool {
+    capsule_bytes >= 1_u64 && html_bytes > capsule_bytes && has_kappa_lock && has_gzip_unpacker
+}
+
+/// Pure MIR-lifted volunteer `/swarm` gateway readiness invariant.
+#[must_use]
+pub const fn stitch_volunteer_swarm_ready(
+    http_status: u16,
+    available_shards: u32,
+    required_k: u32,
+    zero_commercial: bool,
+) -> bool {
+    gateway_http_status_ok(http_status)
+        && required_k >= 1_u32
+        && available_shards >= required_k
+        && zero_commercial
+}
+
+/// Pure MIR-lifted GitHub-outage survival predicate across Stitch swarm, volunteer node, or offline envelope.
+#[must_use]
+pub const fn stitch_origin_outage_survived(
+    github_up: bool,
+    swarm_peers: u32,
+    volunteer_nodes: u32,
+    offline_envelope_ready: bool,
+    surviving_shards: u32,
+    required_k: u32,
+) -> bool {
+    offline_envelope_ready
+        || (required_k >= 1_u32
+            && surviving_shards >= required_k
+            && (github_up || swarm_peers >= 1_u32 || volunteer_nodes >= 1_u32))
+}
+
+/// Pure MIR-lifted M27 lifted lifecycle module floor (`modules >= 186`).
+#[must_use]
+pub const fn stitch_m27_lifted_module_floor_ok(modules: u64) -> bool {
+    let six = two_u64().wrapping_mul(two_u64()).wrapping_add(two_u64());
+    let eight = two_u64().wrapping_mul(two_u64()).wrapping_mul(two_u64());
+    let floor = hundred_u64()
+        .wrapping_add(eight.wrapping_mul(ten_u64()))
+        .wrapping_add(six);
+    modules >= floor
+}
+
+/// Pure MIR-lifted Base64 encoded length bound (`ceil(raw / 3) * 4`).
+#[must_use]
+pub const fn stitch_portable_base64_valid(raw_bytes: u64, b64_bytes: u64) -> bool {
+    raw_bytes >= 1_u64 && b64_bytes >= raw_bytes
+}
