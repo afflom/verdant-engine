@@ -1,0 +1,54 @@
+\begin{lexlean}{RowRanking}
+\useglossary{lexlean.std.bool@1.2.0}
+\useglossary{lexlean.std.nat@1.2.0}
+\importmodule{WordComparison}
+\title{Natural number}
+\begin{semanticmodule}
+inductive{
+  name: Request,
+  type_parameters: [],
+  parameters: [],
+  constructors: [{name: plan, fields: [Nat, Nat]}, {name: key, fields: [Bool, Nat]}]
+}
+
+definition{
+  name: ascendingKey,
+  parameters: [word : Nat],
+  result: Nat,
+  body: (if ((WordComparison::magnitude word) =? 0) then 2147483648 else (if ((WordComparison::sign word) =? 0) then (word + 2147483648) else (prim subtract 4294967295 word : Nat))),
+  executable: true
+}
+
+definition{
+  name: evaluate,
+  parameters: [request : Request],
+  result: (Option Nat),
+  body: (match request
+    | Request.plan width count => (if ((width <=? 4294967296) && (count <=? width)) then (ctor Option.some [Nat] (if (count =? 0) then 0 else 4)) else (ctor Option.none [Nat]))
+    | Request.key descending word => (if (word <? 4294967296) then (ctor Option.some [Nat] (if (WordComparison::isNaN word) then 4294967295 else (let key : Nat := (ascendingKey word); (if descending then (prim subtract 4294967295 key : Nat) else key)))) else (ctor Option.none [Nat]))),
+  executable: true,
+  production: {effects: [overflow], targets: [rust-core]}
+}
+
+theorem{
+  name: signedZerosShareRank,
+  parameters: [],
+  statement: ((evaluate (ctor Request.key false 2147483648)) = (evaluate (ctor Request.key false 0))),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: descendingPositiveInfinityPrecedesNegativeInfinity,
+  parameters: [],
+  statement: ((evaluate (ctor Request.key true 2139095040)) = (ctor Option.some [Nat] 8388607)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: partialSelectionRequiresEnoughIndices,
+  parameters: [],
+  statement: ((evaluate (ctor Request.plan 2 3)) = (ctor Option.none [Nat])),
+  proof: reflexivity{}
+}
+\end{semanticmodule}
+\end{lexlean}

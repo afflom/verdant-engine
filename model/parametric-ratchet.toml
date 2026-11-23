@@ -306,6 +306,11 @@ stratum = 1
 role = "Symmetric four-bit lane placement, row extent admission and ordered F32 reduction instructions."
 
 [[stratum_module]]
+path = "app/src/RowRanking.lex.tex"
+stratum = 1
+role = "Binary32 row-order keys, NaN and signed-zero handling, and index capacity for stable selection."
+
+[[stratum_module]]
 path = "app/src/HeadSlope.lex.tex"
 stratum = 1
 role = "Certified binary32 geometric attention slopes with bounded range reduction and integer powers."

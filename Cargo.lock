@@ -881,6 +881,7 @@ dependencies = [
  "verdant_rotation_signed",
  "verdant_rotation_step",
  "verdant_round_mantissa_f64",
+ "verdant_row_ranking",
  "verdant_scalar_f32",
  "verdant_small_float",
  "verdant_storage_block",
@@ -1134,6 +1135,10 @@ version = "2.22.0"
 [[package]]
 name = "verdant_round_mantissa_f64"
 version = "2.9.0"
+
+[[package]]
+name = "verdant_row_ranking"
+version = "2.29.0"
 
 [[package]]
 name = "verdant_scalar_f32"

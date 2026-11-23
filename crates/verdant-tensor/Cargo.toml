@@ -12,6 +12,7 @@ keywords.workspace = true
 categories.workspace = true
 
 [dependencies]
+verdant_row_ranking = { version = "=2.29.0", path = "../../generated/tensor-rowrank/packages/rust-core/verdant_row_ranking" }
 verdant_weighted_blend = { version = "=2.23.0", path = "../../generated/tensor-weighted/packages/rust-core/verdant_weighted_blend" }
 verdant_weighted_pivot = { version = "=2.23.0", path = "../../generated/tensor-weighted/packages/rust-core/verdant_weighted_pivot" }
 verdant_weighted_reciprocal = { version = "=2.23.0", path = "../../generated/tensor-weighted/packages/rust-core/verdant_weighted_reciprocal" }

@@ -1060,6 +1060,7 @@ fn verify_bundle(scope: &str, directory: &str) -> std::collections::BTreeMap<Str
                     "verdant_grouped_dot" => include_bytes!("../../../../generated/tensor-groupeddot/packages/rust-core/verdant_grouped_dot/src/lib.rs"),
                     "verdant_grouped_q8" => include_bytes!("../../../../generated/tensor-grouped/packages/rust-core/verdant_grouped_q8/src/lib.rs"),
                     "verdant_tanh" => include_bytes!("../../../../generated/tensor-tanh/packages/rust-core/verdant_tanh/src/lib.rs"),
+                    "verdant_row_ranking" => include_bytes!("../../../../generated/tensor-rowrank/packages/rust-core/verdant_row_ranking/src/lib.rs"),
                     "verdant_head_slope_index" => include_bytes!("../../../../generated/tensor-slopes/packages/rust-core/verdant_head_slope_index/src/lib.rs"),
                     "verdant_head_slope_group" => include_bytes!("../../../../generated/tensor-slopes/packages/rust-core/verdant_head_slope_group/src/lib.rs"),
                     "verdant_head_slope_exponent" => include_bytes!("../../../../generated/tensor-slopes/packages/rust-core/verdant_head_slope_exponent/src/lib.rs"),
@@ -2016,35 +2017,67 @@ fn online_weighted_mean_vtk_24() {
 
 #[test]
 fn binary32_row_ranking_vtk_31() {
+    assert_eq!(
+        verify_bundle("rowrank", "tensor-rowrank")["VerdantEngine.RowRanking.evaluate"],
+        "verdant_row_ranking"
+    );
     use std::fmt::Write;
     let patterns = [f32::NEG_INFINITY, -2.0, -0.0, 0.0, 0.5, 9.0, f32::INFINITY];
     let mut queries = String::new();
     let mut cases = Vec::new();
     for width in [1_usize, 3, 9, 32, 127, 257] {
-        let row: Vec<f32> = (0..width).map(|i| patterns[(i * 13 + i / 11) % patterns.len()]).collect();
-        for (count, descending) in [(width,false), (width,true), (width.div_ceil(2),true), (1,true)] {
-            writeln!(queries,"{width} {count} {}",u8::from(descending)).unwrap();
-            for word in &row { writeln!(queries,"{}",word.to_bits()).unwrap(); }
-            cases.push((row.clone(),count,descending));
+        let row: Vec<f32> = (0..width)
+            .map(|i| patterns[(i * 13 + i / 11) % patterns.len()])
+            .collect();
+        for (count, descending) in std::collections::BTreeSet::from([
+            (width, false),
+            (width, true),
+            (width.div_ceil(2), true),
+            (1, true),
+        ]) {
+            writeln!(queries, "{width} {count} {}", u8::from(descending)).unwrap();
+            for word in &row {
+                writeln!(queries, "{}", word.to_bits()).unwrap();
+            }
+            cases.push((row.clone(), count, descending));
         }
     }
     let expected = query_oracle("row-rank", queries);
     let mut oracle = expected.as_slice();
     for (row, count, descending) in cases {
-        let (reference, tail)=oracle.split_at(count); oracle=tail;
-        let result=super::rank_indices_f32(&row,count,descending).unwrap();
-        assert_eq!(result.len(),count);
-        let mut values: Vec<_>=reference.iter().map(|&i|row[i as usize]).collect();
-        values.sort_by(|a,b| if descending { b.partial_cmp(a).unwrap() } else { a.partial_cmp(b).unwrap() });
-        let mut previous=None;
-        for (&i,value) in result.iter().zip(values) {
-            assert_eq!(row[i as usize],value);
-            if let Some((last,j))=previous { if value==last { assert!(i>j); } }
-            previous=Some((value,i));
+        let (reference, tail) = oracle.split_at(count);
+        oracle = tail;
+        let mut rank = super::RowRankingF32::new(row.len(), count, descending).unwrap();
+        let result = rank.select(&row).unwrap();
+        assert_eq!(result.len(), count);
+        let mut values: Vec<_> = reference.iter().map(|&i| row[i as usize]).collect();
+        values.sort_by(|a, b| {
+            if descending {
+                b.partial_cmp(a).unwrap()
+            } else {
+                a.partial_cmp(b).unwrap()
+            }
+        });
+        let mut previous = None;
+        for (&i, value) in result.iter().zip(values) {
+            assert_eq!(row[i as usize], value);
+            if let Some((last, j)) = previous {
+                if value == last {
+                    assert!(i > j);
+                }
+            }
+            previous = Some((value, i));
         }
     }
     assert!(oracle.is_empty());
-    assert_eq!(super::rank_indices_f32(&[f32::NAN, 1.0, f32::NAN],3,true).unwrap(),[1,0,2]);
-    assert!(super::rank_indices_f32(&[],1,false).is_err());
-    assert!(super::rank_indices_f32(&[1.0],0,true).unwrap().is_empty());
+    let mut rank = super::RowRankingF32::new(3, 3, true).unwrap();
+    assert_eq!(rank.select(&[f32::NAN, 1.0, f32::NAN]).unwrap(), [1, 0, 2]);
+    assert_eq!(rank.select(&[9.0, -2.0, 11.0]).unwrap(), [2, 0, 1]);
+    assert!(rank.select(&[1.0]).is_err());
+    assert!(super::RowRankingF32::new(0, 1, false).is_err());
+    assert!(super::RowRankingF32::new(1, 0, true)
+        .unwrap()
+        .select(&[1.0])
+        .unwrap()
+        .is_empty());
 }

@@ -15,6 +15,7 @@ use crate::{
 mod activations;
 mod grouped;
 mod grouped_product;
+mod ranking;
 mod rotation;
 mod weighted_mean;
 pub use activations::{
@@ -23,6 +24,7 @@ pub use activations::{
 };
 pub use grouped::{encode_grouped_q8_block, GroupedQ8Block};
 pub use grouped_product::dot_grouped_q2_row;
+pub use ranking::RowRankingF32;
 pub use rotation::{rotate_pair_f32, signed_word_f32, RotaryParameters, RotarySpectrum};
 pub use weighted_mean::WeightedMeanF32;
 

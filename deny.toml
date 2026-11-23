@@ -511,3 +511,9 @@ name = "verdant_head_slope_exponent"
 version = "=2.29.0"
 expression = "MIT OR Apache-2.0"
 license-files = [{ path = "src/lib.rs", hash = 0x0721f043 }]
+
+[[licenses.clarify]]
+name = "verdant_row_ranking"
+version = "=2.29.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0xaa1fa4e3 }]

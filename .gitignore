@@ -60,3 +60,4 @@ site/stitch/
 /app/.lexlean-tanh/
 /app/.lexlean-gelu/
 /app/.lexlean-slopes/
+/app/.lexlean-rowrank/
