@@ -23,7 +23,7 @@ gltf-image-decode = ["gltf/import"]
 [dependencies]
 flate2 = { version = "1.1.11", default-features = false, features = ["rust_backend"], optional = true }
 gltf = { version = "1.4.1", default-features = false, features = ["extras", "names", "utils"] }
-naga = { version = "24.0.0", features = ["wgsl-in", "glsl-out"], optional = true }
+naga = { version = "30.0.2", features = ["wgsl-in", "glsl-out"], optional = true }
 serde = { version = "1.0.219", features = ["derive"] }
 serde_json = "1.0.140"
 sha2 = "0.11.1"
