@@ -12,7 +12,7 @@ keywords.workspace = true
 categories.workspace = true
 
 [dependencies]
-verdant_bitpacked_product = { version = "=2.33.0", path = "../../generated/tensor-bitrows/packages/rust-core/verdant_bitpacked_product" }
+verdant_bitpacked_product = { version = "=2.34.0", path = "../../generated/tensor-bitrows/packages/rust-core/verdant_bitpacked_product" }
 verdant_grouped_affine = { version = "=2.31.0", path = "../../generated/tensor-affinedot/packages/rust-core/verdant_grouped_affine" }
 verdant_softplus = { version = "=2.32.0", path = "../../generated/tensor-softplus/packages/rust-core/verdant_softplus" }
 verdant_normalized_exponential = { version = "=2.30.0", path = "../../generated/tensor-softmax/packages/rust-core/verdant_normalized_exponential" }

@@ -758,3 +758,9 @@ Feature: engine
     Given 32 binary32 weights and a centered or affine four- or five-bit representation
     When Verdant encodes the block
     Then its scale, offset and packed coefficients match every imported reference byte
+
+  @VTK-41 @build
+  Scenario: Verdant encodes packed sign and centered two-bit weight blocks byte for byte against the imported reference encoders
+    Given finite binary32 weights with both zero signs and tied rounding boundaries
+    When Verdant packs their coefficients and binary16 scale
+    Then every output byte matches the pinned independent encoder and malformed blocks preserve the destination

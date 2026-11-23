@@ -21,7 +21,11 @@ inductive{
     {name: scaledSum, fields: [Nat, Nat]},
     {name: floatLayout, fields: [Bool, Nat, Nat]},
     {name: floatPair, fields: [Nat]},
-    {name: floatSum, fields: [Nat, Nat, Nat, Nat]}
+    {name: floatSum, fields: [Nat, Nat, Nat, Nat]},
+    {name: encodingLayout, fields: [Bool, Nat, Nat]},
+    {name: encodingPeak, fields: [Bool, Nat, Nat]},
+    {name: encodingScale, fields: [Bool, Nat]},
+    {name: encodingByte, fields: [Bool, Nat, Nat, Nat, Nat]}
   ]
 }
 
@@ -95,6 +99,40 @@ definition{
 }
 
 definition{
+  name: encodingPeak,
+  parameters: [two : Bool, previous : Nat, word : Nat],
+  result: Step,
+  body: (let magnitude : Nat := (ScalarF32::magnitude word);
+    (if ((word <? 4294967296) && (magnitude <? 2139095040)) then
+      (ctor Step.value (if two then (if (previous <? magnitude) then magnitude else previous) else (ScalarF32::add previous magnitude)))
+      else (ctor Step.refuse))),
+  executable: true
+}
+
+definition{
+  name: encodingScale,
+  parameters: [two : Bool, peak : Nat],
+  result: Step,
+  body: (let scale : Nat := (if two then peak else (ScalarF32::divide peak 1124073472));
+    (let inverse : Nat := (if two then (if (scale =? 0) then 0 else (ScalarF32::divide 1065353216 scale)) else 0);
+      (if (inverse <? 2139095040) then (ctor Step.signedPair (FloatStorage::narrowHalf scale) inverse) else (ctor Step.refuse)))),
+  executable: true
+}
+
+definition{
+  name: encodingByte,
+  parameters: [two : Bool, lane : Nat, prefix : Nat, word : Nat, inverse : Nat],
+  result: Step,
+  body: (if ((prefix <? 256) && (lane <? (if two then 4 else 8))) then
+    (let scaled : Nat := (if two then (ScalarF32::multiply word inverse) else word);
+      (let magnitude : Nat := (ScalarF32::magnitude scaled);
+        (let code : Nat := (if two then (if (magnitude <? 1056964608) then 1 else (if (scaled <? 2147483648) then (if (magnitude <? 1069547520) then 2 else 3) else 0)) else (if ((word <? 2147483648) || (magnitude =? 0)) then 1 else 0));
+          (ctor Step.value (prefix + (prim multiply code (bitDivisor (if two then (prim multiply lane 2 : Nat) else lane)) : Nat))))))
+    else (ctor Step.refuse)),
+  executable: true
+}
+
+definition{
   name: evaluate,
   parameters: [request : Request],
   result: Step,
@@ -111,6 +149,10 @@ definition{
     | Request.floatLayout grouped bytes activations => (floatLayout grouped bytes activations)
     | Request.floatPair byte => (if (byte <? 256) then (ctor Step.tablePair (18584 + (prim remainder byte 16 0 : Nat)) (18584 + (prim quotient byte 16 0 : Nat))) else (ctor Step.refuse))
     | Request.floatSum sum dot scale activationScale => (floatSum sum dot scale activationScale)
+    | Request.encodingLayout two lanes bytes => (if ((bytes =? 18) && (lanes =? (if two then 64 else 128))) then (ctor Step.value (if two then 4 else 8)) else (ctor Step.refuse))
+    | Request.encodingPeak two previous word => (encodingPeak two previous word)
+    | Request.encodingScale two peak => (encodingScale two peak)
+    | Request.encodingByte two lane prefix word inverse => (encodingByte two lane prefix word inverse)
     | Request.scaledSum word scale => (if ((word <? 4294967296) && (scale <? 2139095040)) then (ctor Step.value (FloatStorage::narrowHalf (ScalarF32::multiply word scale))) else (ctor Step.refuse))),
   executable: true,
   production: {effects: [overflow], targets: [rust-core]}
@@ -178,5 +220,54 @@ theorem{
   statement: ((evaluate (ctor Request.floatPair 241)) = (ctor Step.tablePair 18585 18599)),
   proof: reflexivity{}
 }
+theorem{
+  name: signWidth,
+  parameters: [],
+  statement: ((evaluate (ctor Request.encodingLayout false 128 18)) = (ctor Step.value 8)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: twoWidth,
+  parameters: [],
+  statement: ((evaluate (ctor Request.encodingLayout true 64 18)) = (ctor Step.value 4)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: shortSignInput,
+  parameters: [],
+  statement: ((evaluate (ctor Request.encodingLayout false 127 18)) = (ctor Step.refuse)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: signOfNegativeZero,
+  parameters: [],
+  statement: ((evaluate (ctor Request.encodingByte false 7 0 2147483648 0)) = (ctor Step.value 128)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: positiveHalfTie,
+  parameters: [],
+  statement: ((evaluate (ctor Request.encodingByte true 3 0 1056964608 1065353216)) = (ctor Step.value 128)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: negativeHalfTie,
+  parameters: [],
+  statement: ((evaluate (ctor Request.encodingByte true 3 3 3204448256 1065353216)) = (ctor Step.value 3)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: nonfiniteEncoderLane,
+  parameters: [],
+  statement: ((evaluate (ctor Request.encodingPeak false 0 2139095040)) = (ctor Step.refuse)),
+  proof: reflexivity{}
+}
+
 \end{semanticmodule}
 \end{lexlean}

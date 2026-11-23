@@ -383,6 +383,8 @@ int main(int argc, char **argv) {
   if (!std::strcmp(argv[1], "iq2_s-dot")) return compare_grouped_rows<block_iq2_s>(GGML_TYPE_IQ2_S);
   if (!std::strcmp(argv[1], "grouped-q4-dot")) return compare_grouped_rows<block_q4_K>(GGML_TYPE_Q4_K);
   if (!std::strcmp(argv[1], "grouped-q5-dot")) return compare_grouped_rows<block_q5_K>(GGML_TYPE_Q5_K);
+  if (!std::strcmp(argv[1], "q1_0")) return encode_blocks<QK1_0>(quantize_row_q1_0_ref);
+  if (!std::strcmp(argv[1], "q2_0")) return encode_blocks<QK2_0>(quantize_row_q2_0_ref);
   if (!std::strcmp(argv[1], "q4_0")) return encode_blocks<32>(quantize_row_q4_0_ref);
   if (!std::strcmp(argv[1], "q4_1")) return encode_blocks<32>(quantize_row_q4_1_ref);
   if (!std::strcmp(argv[1], "q5_0")) return encode_blocks<32>(quantize_row_q5_0_ref);
@@ -2619,5 +2621,70 @@ fn low_bit_block_encoding_vtk_40() {
         }
         assert!(super::encode_weight_block(&[0.0; 32], kind, &mut output[1..]).is_err());
         assert_eq!(output, vec![0x55; width]);
+    }
+}
+
+#[test]
+fn bitpacked_weight_encoding_vtk_41() {
+    use super::PackedWeightEncoding::{BinarySign, CenteredTwo};
+    // Existing consumers can still bind the original 32-lane function signature.
+    type LegacyEncoder = fn(
+        &[f32; 32],
+        super::WeightBlockEncoding,
+        &mut [u8],
+    ) -> Result<(), super::TensorComputeError>;
+    let _: LegacyEncoder = super::encode_weight_block;
+    use std::fmt::Write;
+    for (kind, lanes, mode) in [(BinarySign, 128, "q1_0"), (CenteredTwo, 64, "q2_0")] {
+        let mut input = String::new();
+        let mut actual = Vec::new();
+        let edges = [
+            0.0,
+            -0.0,
+            0.5,
+            -0.5,
+            0.5_f32.next_up(),
+            0.5_f32.next_down(),
+            -0.5_f32.next_up(),
+            -0.5_f32.next_down(),
+            1.0,
+            -1.0,
+        ];
+        let ties = std::array::from_fn(|index| edges[index % edges.len()]);
+        let bases = symmetric_encoding_inputs();
+        for base in bases.iter().chain(&[[1.0; 32], ties]) {
+            let block: Vec<_> = (0..lanes).map(|i| base[(i + i / 32) % 32]).collect();
+            // The C oracle casts the rounded quotient to int. An infinite reciprocal makes that conversion undefined.
+            if mode == "q2_0" && block.iter().all(|v| v.to_bits() == 1) {
+                let mut untouched = [0xa5; 18];
+                assert!(super::encode_weight_block(&block, kind, &mut untouched).is_err());
+                assert_eq!(untouched, [0xa5; 18]);
+                continue;
+            }
+            for value in &block {
+                writeln!(input, "{}", value.to_bits()).unwrap();
+            }
+            let mut output = [0xa5; 18];
+            super::encode_weight_block(&block, kind, &mut output).unwrap();
+            actual.extend(output.map(u32::from));
+        }
+        let reference = query_oracle(mode, input);
+        assert_eq!(actual.len(), reference.len());
+        for (at, (observed, expected)) in actual.into_iter().zip(reference).enumerate() {
+            assert_eq!(
+                observed,
+                expected,
+                "{mode} block {} byte {}",
+                at / 18,
+                at % 18
+            );
+        }
+        let mut malformed = vec![0.0; lanes];
+        let mut untouched = [0xa5; 18];
+        assert!(super::encode_weight_block(&malformed[1..], kind, &mut untouched).is_err());
+        assert!(super::encode_weight_block(&malformed, kind, &mut untouched[1..]).is_err());
+        malformed[lanes - 1] = f32::NAN;
+        assert!(super::encode_weight_block(&malformed, kind, &mut untouched).is_err());
+        assert_eq!(untouched, [0xa5; 18]);
     }
 }

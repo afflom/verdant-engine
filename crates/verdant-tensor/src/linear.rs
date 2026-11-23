@@ -43,7 +43,7 @@ pub use softmax::normalize_exponential_f32;
 pub use symmetric_product::{
     dot_encoded_symmetric_row, dot_symmetric_q4_row, dot_symmetric_q8_row, SymmetricWeightEncoding,
 };
-pub use weight_encoding::{encode_weight_block, WeightBlockEncoding};
+pub use weight_encoding::{encode_weight_block, PackedWeightEncoding, WeightBlockEncoding};
 pub use weighted_mean::WeightedMeanF32;
 
 #[inline]

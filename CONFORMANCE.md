@@ -139,6 +139,7 @@ model does not sanction.
 | `VTK-38` | `build` | Verdant contracts E2M1 weight rows with exponent-only or grouped E4M3 scales and signed-byte activation blocks against the imported CPU |
 | `VTK-39` | `build` | Verdant contracts signed two-bit codebook rows with grouped byte activations against the imported GGML vector products |
 | `VTK-40` | `build` | Verdant encodes centered and affine four- and five-bit weight blocks against the imported reference encoders |
+| `VTK-41` | `build` | Verdant encodes packed sign and centered two-bit weight blocks byte for byte against the imported reference encoders |
 
 ## fidelity
 

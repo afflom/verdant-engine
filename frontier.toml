@@ -5,22 +5,22 @@
 # stops the functions it counts (the detail their rows state, under its
 # cause), the one that stops the most first: the work queue.
 
-# Honesty report: 583 of 1891 functions of product code are lifted; 1150
+# Honesty report: 584 of 1892 functions of product code are lifted; 1150
 # are residue, 75 foreign and 83 effect rows.
 # Residue by cause:
 #   arithmetic: 24
 #   call: 211
 #   form: 338
-#   signature: 52
+#   signature: 53
 #   statements: 21
-#   type: 498
+#   type: 497
 #   width: 6
 
 spec = "uorust/register/1"
 
 [lift]
-functions = 1891
-lifted = 583
+functions = 1892
+lifted = 584
 residue = 1150
 foreign = 75
 effect = 83
@@ -41,13 +41,13 @@ cause = "type"
 functions = 55
 
 [[construct]]
-construct = "type outside the lift: f32"
-cause = "type"
-functions = 33
-
-[[construct]]
 construct = "takes or returns ObserverPrismHolon.organs: ObserverOrganModel.schema_org_jsonld: serde_json::Value, a type of the serde_json crate with no LexLean model"
 cause = "foreign"
+functions = 32
+
+[[construct]]
+construct = "type outside the lift: f32"
+cause = "type"
 functions = 32
 
 [[construct]]
@@ -131,6 +131,11 @@ cause = "type"
 functions = 10
 
 [[construct]]
+construct = "signature outside the lift: generic, async, unsafe or variadic"
+cause = "signature"
+functions = 9
+
+[[construct]]
 construct = "type outside the lift: BoundingVolumeHierarchy.items: Aabb.min: Vec3.x: f64"
 cause = "type"
 functions = 9
@@ -143,11 +148,6 @@ functions = 9
 [[construct]]
 construct = "usize + wraps or panics where its value leaves the pointer width: past 2^32 on wasm32-unknown-unknown and thumbv7em-none-eabihf, past 2^64 on x86_64-unknown-linux-gnu and aarch64-unknown-linux-gnu"
 cause = "arithmetic"
-functions = 8
-
-[[construct]]
-construct = "signature outside the lift: generic, async, unsafe or variadic"
-cause = "signature"
 functions = 8
 
 [[construct]]
@@ -5129,10 +5129,10 @@ reason = "type"
 detail = "type outside the lift: f32"
 
 [[residue]]
-kappa = "07120ca3e9a65266adeba199a08744a477b449c54a288ddef6336037d4077ed2"
+kappa = "600781e59500d0294c8ee7022bd87c405c5d3db9ccc202c0c4c4f425fd9a9909"
 function = "verdant_tensor::linear::weight_encoding::encode_weight_block"
-reason = "type"
-detail = "type outside the lift: f32"
+reason = "signature"
+detail = "signature outside the lift: generic, async, unsafe or variadic"
 
 [[residue]]
 kappa = "709ab20a47f5c9c65ae8e4755a41f2d3ea5235847479008f5c5e69ff885ac36a"
@@ -9754,6 +9754,11 @@ definition = "Behavior::linearRotationFailure"
 kappa = "191e5163c5a324f54d7a70152dfeb4d8fb462a4a709bce110ec5f3c48bab9cfa"
 function = "verdant_tensor::linear::softmax::invalid"
 definition = "Behavior::linearSoftmaxInvalid"
+
+[[lifted]]
+kappa = "d51cfb000cf46afe9022a227dabe8538c52a47412f62510f10dcf524dae6c1c7"
+function = "verdant_tensor::linear::weight_encoding::PackedWeightEncoding::from"
+definition = "Behavior::packedWeightEncodingFromWeightBlockEncodingFrom"
 
 [[lifted]]
 kappa = "175f973e7ca8680e21de08fb8232e13ee7c1db619d3194770c62c3e6ea4d1a93"

@@ -22,23 +22,95 @@ pub enum WeightBlockEncoding {
     AffineFive,
 }
 
-/// Encode 32 binary32 lanes into native scale words and paired nibbles.
-/// Five-bit representations store a native upper-bit plane before the nibbles.
+/// Supported packed weight representations, including variable block lengths.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum PackedWeightEncoding {
+    /// Binary16 scale and one signed byte per lane.
+    SymmetricEight,
+    /// Binary16 scale and centered four-bit coefficients.
+    CenteredFour,
+    /// Binary16 scale, minimum and unsigned four-bit coefficients.
+    AffineFour,
+    /// Binary16 scale and centered five-bit coefficients.
+    CenteredFive,
+    /// Binary16 scale, minimum and unsigned five-bit coefficients.
+    AffineFive,
+    /// Sign bits for 128 lanes with their mean absolute magnitude.
+    BinarySign,
+    /// Centered two-bit coefficients for 64 lanes with their maximum absolute magnitude.
+    CenteredTwo,
+}
+
+impl From<WeightBlockEncoding> for PackedWeightEncoding {
+    fn from(kind: WeightBlockEncoding) -> Self {
+        match kind {
+            WeightBlockEncoding::SymmetricEight => PackedWeightEncoding::SymmetricEight,
+            WeightBlockEncoding::CenteredFour => PackedWeightEncoding::CenteredFour,
+            WeightBlockEncoding::AffineFour => PackedWeightEncoding::AffineFour,
+            WeightBlockEncoding::CenteredFive => PackedWeightEncoding::CenteredFive,
+            WeightBlockEncoding::AffineFive => PackedWeightEncoding::AffineFive,
+        }
+    }
+}
+
+/// Encode a block into its native scale words and packed coefficients.
+/// The representation selects the required lane count and destination width.
 ///
 /// # Errors
-/// Returns `InvalidKernelSpecification` for wrong output length, nonfinite lanes
-/// or an undefined coefficient conversion. An error preserves the output.
-pub fn encode_weight_block(
-    input: &[f32; LANES],
-    kind: WeightBlockEncoding,
+/// Returns a typed error for mismatched extents, nonfinite input or an undefined
+/// coefficient conversion. Errors preserve the destination bytes.
+pub fn encode_weight_block<I: AsRef<[f32]> + ?Sized>(
+    input: &I,
+    kind: impl Into<PackedWeightEncoding>,
     output: &mut [u8],
 ) -> Result<(), TensorComputeError> {
-    use WeightBlockEncoding::*;
+    use PackedWeightEncoding::*;
+    let input = input.as_ref();
+    let kind = kind.into();
+    if matches!(kind, BinarySign | CenteredTwo) {
+        use verdant_bitpacked_product::{run, Adt0 as Request, Adt1 as Step};
+        let two = kind == PackedWeightEncoding::CenteredTwo;
+        let invalid = || TensorComputeError::InvalidKernelSpecification {
+            kernel_name: "BitpackedProduct.encoding".into(),
+        };
+        let plan = |request| run(request).map_err(|_| invalid());
+        let value = |request| match plan(request)? {
+            Step::C2(word) => Ok(word),
+            _ => Err(invalid()),
+        };
+        let slots = value(Request::C11(two, input.len() as u64, output.len() as u64))?;
+        let mut peak = 0;
+        for lane in input {
+            peak = value(Request::C12(two, peak, lane.to_bits().into()))?;
+        }
+        let Step::C3(scale, inverse) = plan(Request::C13(two, peak))? else {
+            return Err(invalid());
+        };
+        let mut packed = [0; PAIRS];
+        for (byte, lanes) in packed.iter_mut().zip(input.chunks_exact(slots as usize)) {
+            let mut prefix = 0;
+            for (index, lane) in lanes.iter().enumerate() {
+                prefix = value(Request::C14(
+                    two,
+                    index as u64,
+                    prefix,
+                    lane.to_bits().into(),
+                    inverse,
+                ))?;
+            }
+            *byte = prefix as u8;
+        }
+        let (header, body) = output.split_at_mut(HALF);
+        header.copy_from_slice(&(scale as u16).to_ne_bytes());
+        body.copy_from_slice(&packed);
+        return Ok(());
+    }
     let affine = matches!(kind, AffineFour | AffineFive);
     let five = matches!(kind, CenteredFive | AffineFive);
     let invalid = || TensorComputeError::InvalidKernelSpecification {
         kernel_name: "SymmetricBlock.plan".into(),
     };
+    let input: &[f32; LANES] = input.try_into().map_err(|_| invalid())?;
     if kind == SymmetricEight {
         let output: &mut [u8; LANES + HALF] = output.try_into().map_err(|_| invalid())?;
         let block = super::encode_symmetric_q8_block(input)?;

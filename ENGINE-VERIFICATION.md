@@ -405,3 +405,9 @@ The certified grouped product extension uses the existing imported grid and sign
 All 1,104 centered and affine four- and five-bit blocks matched every byte emitted by the four unmodified reference encoders from the pinned GGML archive. The 276 inputs per encoding include signed zero, tied positive and negative extrema in both orders, constant rows, narrow and overflowing half scales and mixed-exponent random values. Nonfinite lanes and malformed destination widths preserve the output. The symmetric byte path delegates to the existing VTK-16 encoder.
 
 Replacing every upper nibble’s source with the lower lane failed Q4_0 block 3 at byte 2 (153 versus 137). Restoring the lane passed VTK-40, VTK-16 and VTK-37 together. Run `cargo test --locked -p verdant-tensor --lib low_bit_block_encoding_vtk_40` inside the pinned SDK.
+
+## VTK-41 sign and centered two-bit weight encoding
+
+The imported GGML reference encoders quantized 273 Q1_0 blocks and 272 Q2_0 blocks. All 9,810 scale and coefficient bytes matched the certified Verdant output. Inputs include signed zeros, mixed signs, exact and adjacent half-integer rounding boundaries, and 256 seeded mixed-exponent blocks per format. Q2_0 refuses an unrepresentable reciprocal before the C reference would convert a nonfinite value to an integer. Malformed widths and a nonfinite final lane leave the destination intact. Existing 32-lane callers retain their function signature.
+
+Reading only the first lane of each packed byte changed Q1_0 block 3, byte 7, from 127 to 255. Restoring lane order passed VTK-41, the VTK-40 four- and five-bit encoding checks and the VTK-35 packed row products. [Pinned source](https://github.com/ggml-org/llama.cpp/blob/9a080f44b503c64f66c84a6274b9d9ee5d5b09d5/ggml/src/ggml-quants.c#L36)
