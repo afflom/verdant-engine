@@ -8713,7 +8713,7 @@ function = "verdant_core::build_ops::VerdantOperatorChannel::execute_native_buil
 effect = "Process effect: Command::new"
 
 [[effect]]
-kappa = "6ea9f32aac9a035570bba9695ed2e4086aa970cb8d1c40745e6dfa2b884787cb"
+kappa = "bfaad828fa4edee564abe44e7cc34265b55811817365db74324e82d34fe7d2e9"
 function = "verdant_core::gateway_swarm::execute_gateway_op"
 effect = "Fs effect: std::fs::read_to_string"
 

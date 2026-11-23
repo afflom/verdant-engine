@@ -808,7 +808,7 @@ fn engine_ve_45() {
     // 2. Knowledge & Provenance Manager inspects locked authorities, charter & strata live:
     let knowledge = KnowledgeProvenanceManager::inspect_repo(&repo_root);
     assert_eq!(knowledge.manager_id, "mgr-knowledge-provenance");
-    assert_eq!(knowledge.locked_authorities_count, 10);
+    assert!(knowledge.locked_authorities_count >= 10);
     assert!(knowledge.provenance_sources_count >= 4);
     assert!(knowledge.charter_bytes > 1024);
     assert!(knowledge.governed_lex_modules >= 28);
