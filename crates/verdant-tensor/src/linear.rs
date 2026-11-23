@@ -28,7 +28,9 @@ pub use activations::{
     natural_log_f32, sigmoid_f32, silu_f32, sin_cos_f32, softplus_f32, swiglu_f32, tanh_f32,
 };
 pub use affine_product::{dot_affine_weight_row, AffineWeightEncoding};
-pub use bitpacked_product::{dot_binary_sign_row, dot_two_bit_row};
+pub use bitpacked_product::{
+    dot_binary_sign_row, dot_block_float_row, dot_two_bit_row, BlockFloatEncoding,
+};
 pub use grouped::{encode_grouped_q8_block, GroupedQ8Block};
 pub use grouped_affine::{dot_grouped_q4_row, dot_grouped_q5_row};
 pub use grouped_product::dot_grouped_q2_row;

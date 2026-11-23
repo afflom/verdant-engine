@@ -18,7 +18,10 @@ inductive{
     {name: affineWidth, fields: [Bool, Nat, Nat]},
     {name: affinePair, fields: [Nat, Nat, Nat]},
     {name: affineSum, fields: [Nat, Nat, Nat, Nat, Nat, Nat]},
-    {name: scaledSum, fields: [Nat, Nat]}
+    {name: scaledSum, fields: [Nat, Nat]},
+    {name: floatLayout, fields: [Bool, Nat, Nat]},
+    {name: floatPair, fields: [Nat]},
+    {name: floatSum, fields: [Nat, Nat, Nat, Nat]}
   ]
 }
 
@@ -76,6 +79,22 @@ definition{
 }
 
 definition{
+  name: floatLayout,
+  parameters: [grouped : Bool, weightBytes : Nat, activationCount : Nat],
+  result: Step,
+  body: (let width : Nat := (if grouped then 36 else 17); (let activations : Nat := (if grouped then 2 else 1); (if (((prim remainder weightBytes width 0 : Nat) =? 0) && ((prim multiply (prim quotient weightBytes width 0 : Nat) activations : Nat) =? activationCount)) then (ctor Step.row width (if grouped then 4 else 1) (if grouped then 16 else 32) activations) else (ctor Step.refuse)))),
+  executable: true
+}
+
+definition{
+  name: floatSum,
+  parameters: [sum : Nat, dot : Nat, scale : Nat, activationScale : Nat],
+  result: Step,
+  body: (if ((((sum <? 4294967296) && (dot <? 4294967296)) && (scale <? 4294967296)) && (activationScale <? 65536)) then (let combined : Nat := (ScalarF32::multiply (FloatStorage::widenHalf activationScale) scale); (ctor Step.value (ScalarF32::add sum (ScalarF32::multiply combined dot)))) else (ctor Step.refuse)),
+  executable: true
+}
+
+definition{
   name: evaluate,
   parameters: [request : Request],
   result: Step,
@@ -89,6 +108,9 @@ definition{
     | Request.affineWidth five bytes blocks => (let width : Nat := (if five then 24 else 20); (if (((prim remainder bytes width 0 : Nat) =? 0) && ((prim quotient bytes width 0 : Nat) =? blocks)) then (ctor Step.value width) else (ctor Step.refuse)))
     | Request.affinePair column byte flags => (affinePair column byte flags)
     | Request.affineSum sum dot left right minimum scaled => (if ((((((sum <? 4294967296) && (dot <? 4294967296)) && (left <? 65536)) && (right <? 65536)) && (minimum <? 65536)) && (scaled <? 65536)) then (let scale : Nat := (ScalarF32::multiply (FloatStorage::widenHalf left) (FloatStorage::widenHalf right)); (let correction : Nat := (ScalarF32::multiply (FloatStorage::widenHalf minimum) (FloatStorage::widenHalf scaled)); (ctor Step.value (ScalarF32::add sum (ScalarF32::add (ScalarF32::multiply scale dot) correction))))) else (ctor Step.refuse))
+    | Request.floatLayout grouped bytes activations => (floatLayout grouped bytes activations)
+    | Request.floatPair byte => (if (byte <? 256) then (ctor Step.tablePair (18584 + (prim remainder byte 16 0 : Nat)) (18584 + (prim quotient byte 16 0 : Nat))) else (ctor Step.refuse))
+    | Request.floatSum sum dot scale activationScale => (floatSum sum dot scale activationScale)
     | Request.scaledSum word scale => (if ((word <? 4294967296) && (scale <? 2139095040)) then (ctor Step.value (FloatStorage::narrowHalf (ScalarF32::multiply word scale))) else (ctor Step.refuse))),
   executable: true,
   production: {effects: [overflow], targets: [rust-core]}
@@ -140,6 +162,20 @@ theorem{
   name: incompleteAffineRow,
   parameters: [],
   statement: ((evaluate (ctor Request.affineWidth false 21 1)) = (ctor Step.refuse)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: groupedFloatRowNeedsTwoActivations,
+  parameters: [],
+  statement: ((evaluate (ctor Request.floatLayout true 36 1)) = (ctor Step.refuse)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: floatPairUsesImportedTable,
+  parameters: [],
+  statement: ((evaluate (ctor Request.floatPair 241)) = (ctor Step.tablePair 18585 18599)),
   proof: reflexivity{}
 }
 \end{semanticmodule}

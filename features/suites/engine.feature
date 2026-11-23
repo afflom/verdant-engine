@@ -740,3 +740,9 @@ Feature: engine
     Given floating-point activation rows and weights with an independent offset per block
     When Verdant encodes the activations and contracts each weight row
     Then the pinned CPU agrees on the encoded bytes and binary32 result
+
+  @VTK-38 @build
+  Scenario: Verdant contracts E2M1 weight rows with exponent-only or grouped E4M3 scales and signed-byte activation blocks against the imported CPU
+    Given four-bit coefficients with independent weight and activation scales
+    When Verdant contracts complete encoded rows
+    Then the result matches the imported CPU vector product

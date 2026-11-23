@@ -10,10 +10,10 @@
 # Residue by cause:
 #   arithmetic: 24
 #   call: 212
-#   form: 341
+#   form: 340
 #   signature: 52
 #   statements: 22
-#   type: 495
+#   type: 496
 #   width: 6
 
 spec = "uorust/register/1"
@@ -241,11 +241,6 @@ cause = "foreign"
 functions = 5
 
 [[construct]]
-construct = "expression form outside the lift: a while loop that does not advance its cursor once per step"
-cause = "form"
-functions = 5
-
-[[construct]]
 construct = "signature outside the lift: takes &mut self of PagedTensorArena: the lift reads self and &self as the value, and threads no other receiver"
 cause = "signature"
 functions = 5
@@ -311,6 +306,11 @@ cause = "form"
 functions = 4
 
 [[construct]]
+construct = "expression form outside the lift: a while loop that does not advance its cursor once per step"
+cause = "form"
+functions = 4
+
+[[construct]]
 construct = "expression form outside the lift: expr::macro"
 cause = "form"
 functions = 4
@@ -368,6 +368,11 @@ functions = 4
 [[construct]]
 construct = "integer operator + wraps or panics depending on the build profile"
 cause = "arithmetic"
+functions = 3
+
+[[construct]]
+construct = "calls pow2_u64, which is not lifted"
+cause = "call"
 functions = 3
 
 [[construct]]
@@ -431,6 +436,11 @@ cause = "type"
 functions = 3
 
 [[construct]]
+construct = "type outside the lift: SymmetricQ8Block: a struct with type or const parameters"
+cause = "type"
+functions = 3
+
+[[construct]]
 construct = "type outside the lift: Transform.translation: Vec3.x: f64"
 cause = "type"
 functions = 3
@@ -467,11 +477,6 @@ functions = 2
 
 [[construct]]
 construct = "calls parse_str, which is not lifted"
-cause = "call"
-functions = 2
-
-[[construct]]
-construct = "calls pow2_u64, which is not lifted"
 cause = "call"
 functions = 2
 
@@ -646,11 +651,6 @@ cause = "type"
 functions = 2
 
 [[construct]]
-construct = "type outside the lift: SymmetricQ8Block: a struct with type or const parameters"
-cause = "type"
-functions = 2
-
-[[construct]]
 construct = "type outside the lift: TileRasterScratch.flat_positions: f32"
 cause = "type"
 functions = 2
@@ -816,11 +816,6 @@ cause = "call"
 functions = 1
 
 [[construct]]
-construct = "calls uorcDefaultDecodeWork, which is not lifted"
-cause = "call"
-functions = 1
-
-[[construct]]
 construct = "calls verify_coded_tier_spec, which is not lifted"
 cause = "call"
 functions = 1
@@ -981,6 +976,11 @@ cause = "form"
 functions = 1
 
 [[construct]]
+construct = "expression form outside the lift: free name u64::BITS"
+cause = "form"
+functions = 1
+
+[[construct]]
 construct = "expression form outside the lift: let of another type"
 cause = "form"
 functions = 1
@@ -1042,11 +1042,6 @@ functions = 1
 
 [[construct]]
 construct = "expression form outside the lift: method call .wrapping_rem"
-cause = "form"
-functions = 1
-
-[[construct]]
-construct = "expression form outside the lift: method call .wrapping_shl"
 cause = "form"
 functions = 1
 
@@ -3009,12 +3004,6 @@ reason = "form"
 detail = "expression form outside the lift: a while loop that does not advance its cursor once per step"
 
 [[residue]]
-kappa = "ed59ac4409f838a6f29aecd0311b60c32ff3353f85bccd68a54f49c4659c7871"
-function = "verdant_core::math::pow2_u64"
-reason = "form"
-detail = "expression form outside the lift: method call .wrapping_shl"
-
-[[residue]]
 kappa = "f00c7788845b2331fe50e1f0154aeedc5c932f18c9370471b41167bd17d717d0"
 function = "verdant_core::math::verify_constructive_math_with_prism_kernel"
 reason = "call"
@@ -4266,7 +4255,7 @@ detail = "type outside the lift: TerrainReliefParams.basin_depth_meters: f64"
 kappa = "e8a2025139d1e12ba11138649e4414c372d028d82b4c67df17854736ec7f3a3f"
 function = "verdant_core::streaming::verify_progressive_uorc_stream"
 reason = "call"
-detail = "calls uorcDefaultDecodeWork, which is not lifted"
+detail = "calls pow2_u64, which is not lifted"
 
 [[residue]]
 kappa = "50664d6483af4a9862943993c889ed08894ea04d78ff60c186a1e2291eb9f59e"
@@ -4965,6 +4954,12 @@ reason = "type"
 detail = "type outside the lift: SymmetricQ8Block: a struct with type or const parameters"
 
 [[residue]]
+kappa = "10ec4cb55f7a384e0f1c4c5219a951937bb4a0b038c7091f6423c45d3625b4d7"
+function = "verdant_tensor::linear::bitpacked_product::dot_block_float_row"
+reason = "type"
+detail = "type outside the lift: SymmetricQ8Block: a struct with type or const parameters"
+
+[[residue]]
 kappa = "a26a9912db4712444f293cb18c0d742923d65a6228a6c262a083def8eb8c176a"
 function = "verdant_tensor::linear::bitpacked_product::dot_two_bit_row"
 reason = "type"
@@ -5235,10 +5230,10 @@ reason = "arithmetic"
 detail = "integer operator * wraps or panics depending on the build profile"
 
 [[residue]]
-kappa = "03c2e38b632afcb6a1e43aa751ffefeb2891d796c0fa6886670066f34f58fcaa"
+kappa = "3621e63f19d49cad0fba1d9cc907f0ab955d86c2e1719bfba1da9b3d2d3264a9"
 function = "verdant_tensor::pow2_u64"
 reason = "form"
-detail = "expression form outside the lift: a while loop that does not advance its cursor once per step"
+detail = "expression form outside the lift: free name u64::BITS"
 
 [[residue]]
 kappa = "7978044fd27ddb78c897531c33905daab09ae1603dbbb57e11c86c6ca46565ae"

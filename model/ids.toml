@@ -800,3 +800,9 @@ id = "VTK-37"
 level = "build"
 suite = "engine"
 statement = "Affine four-bit and five-bit rows contract with signed-byte activations carrying an independently rounded scaled sum"
+
+[[id]]
+id = "VTK-38"
+level = "build"
+suite = "engine"
+statement = "Verdant contracts E2M1 weight rows with exponent-only or grouped E4M3 scales and signed-byte activation blocks against the imported CPU"

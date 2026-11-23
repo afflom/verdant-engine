@@ -93,3 +93,78 @@ pub fn dot_two_bit_row(
 ) -> Result<f32, TensorComputeError> {
     run_bitpacked_row!(true, weights, activations)
 }
+
+/// Scale layout for four-bit E2M1 coefficients paired with signed-byte activations.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum BlockFloatEncoding {
+    /// One E8M0 scale for all 32 coefficients.
+    ExponentOnly,
+    /// One unsigned E4M3 scale per 16 coefficients, with four groups in a block.
+    GroupedE4M3,
+}
+
+/// Contract complete block-float rows with pre-encoded symmetric activation blocks.
+///
+/// # Errors
+/// Rejects partial weight blocks or an activation count that differs from the encoded width.
+pub fn dot_block_float_row(
+    weights: &[u8],
+    activations: &[SymmetricQ8Block<LANES>],
+    encoding: BlockFloatEncoding,
+) -> Result<f32, TensorComputeError> {
+    let grouped = encoding == BlockFloatEncoding::GroupedE4M3;
+    let query = |request| run(request).map_err(|_| invalid());
+    let Step::C1(width, groups, lanes, blocks) = query(Request::C8(
+        grouped,
+        weights.len() as u64,
+        activations.len() as u64,
+    ))?
+    else {
+        return Err(TensorComputeError::ZeroOrMismatchedExtents {
+            detail: "block-float weight and activation counts differ".into(),
+        });
+    };
+    let lanes = lanes as usize;
+    let mut coefficients = [0_i8; LANES];
+    let scale_operation = if grouped { scalars::two_u64() } else { 1 };
+    let mut sum = 0;
+    for (weight, acts) in weights
+        .chunks_exact(width as usize)
+        .zip(activations.chunks_exact(blocks as usize))
+    {
+        let (scales, packed) = weight.split_at(groups as usize);
+        let half = lanes / scalars::two_u64() as usize;
+        for (g, (&scale, pairs)) in scales.iter().zip(packed.chunks_exact(half)).enumerate() {
+            let (low, high) = coefficients[..lanes].split_at_mut(half);
+            for ((x, y), &byte) in low.iter_mut().zip(high.iter_mut()).zip(pairs) {
+                let Step::C4(a, b) = query(Request::C9(byte.into()))? else {
+                    return Err(invalid());
+                };
+                *x = super::GGML_QUANTIZED_TABLES[a as usize] as i8;
+                *y = super::GGML_QUANTIZED_TABLES[b as usize] as i8;
+            }
+            let start = g * lanes;
+            let activation = &acts[start / LANES];
+            let codes = &activation.codes[start % LANES..][..lanes];
+            let integer = uor_matmul::dot_ref(
+                uor_matmul::as_alphabet_full(&coefficients[..lanes]),
+                uor_matmul::as_alphabet_full(codes),
+            );
+            let signed = signed_word_f32(integer as i32)?.to_bits();
+            let scale_word = super::evaluate_small_float(scale_operation, u64::from(scale))
+                .map_err(|_| invalid())?
+                .ok_or_else(invalid)?;
+            let Step::C2(next) = query(Request::C10(
+                sum,
+                signed.into(),
+                scale_word,
+                activation.scale.into(),
+            ))?
+            else {
+                return Err(invalid());
+            };
+            sum = next;
+        }
+    }
+    Ok(f32::from_bits(sum as u32))
+}

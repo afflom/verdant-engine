@@ -17,9 +17,16 @@ template<class Block>
 static bool read_dot_block(Block &block) {
   unsigned word;
   if (std::scanf("%u", &word) != 1) return false;
-  block.d = ggml_fp16_t(word);
   auto *bytes = reinterpret_cast<uint8_t *>(&block);
-  for (size_t i = sizeof(block.d); i < sizeof(block); ++i) {
+  size_t consumed;
+  if constexpr (std::is_same_v<Block,block_mxfp4> || std::is_same_v<Block,block_nvfp4>) {
+    bytes[0] = uint8_t(word);
+    consumed = 1;
+  } else {
+    block.d = ggml_fp16_t(word);
+    consumed = sizeof(block.d);
+  }
+  for (size_t i = consumed; i < sizeof(block); ++i) {
     if (std::scanf("%u", &word) != 1) return false;
     bytes[i] = uint8_t(word);
   }
@@ -376,6 +383,8 @@ int main(int argc, char **argv) {
   if (!std::strcmp(argv[1], "affine-q8")) return encode_blocks<QK8_1>(quantize_row_q8_1_ref);
   if (!std::strcmp(argv[1], "affine-four-dot")) return compare_rows<block_q4_1,1,block_q8_1>(GGML_TYPE_Q4_1);
   if (!std::strcmp(argv[1], "affine-five-dot")) return compare_rows<block_q5_1,1,block_q8_1>(GGML_TYPE_Q5_1);
+  if (!std::strcmp(argv[1], "mxfp4-dot")) return compare_rows<block_mxfp4>(GGML_TYPE_MXFP4);
+  if (!std::strcmp(argv[1], "nvfp4-dot")) return compare_rows<block_nvfp4,2>(GGML_TYPE_NVFP4);
   if (!std::strcmp(argv[1], "five-bit-dot")) return compare_rows<block_q5_0>(GGML_TYPE_Q5_0);
   if (!std::strcmp(argv[1], "nonlinear-dot")) return compare_rows<block_iq4_nl>(GGML_TYPE_IQ4_NL);
   if (!std::strcmp(argv[1], "sign-dot")) return compare_rows<block_q1_0,QK1_0/QK8_0>(GGML_TYPE_Q1_0);
@@ -2437,6 +2446,19 @@ fn compact_row_products_vtk_36() {
     ]);
 }
 
+#[test]
+fn scaled_fp4_products_vtk_38() {
+    use super::BlockFloatEncoding::{ExponentOnly, GroupedE4M3};
+    compare_packed_weight_products(&[
+        (1, 16, "mxfp4-dot", |weights, activations| {
+            super::dot_block_float_row(weights, activations, ExponentOnly)
+        }),
+        (2, 32, "nvfp4-dot", |weights, activations| {
+            super::dot_block_float_row(weights, activations, GroupedE4M3)
+        }),
+    ]);
+}
+
 type PackedWeightProduct =
     fn(&[u8], &[super::SymmetricQ8Block<32>]) -> Result<f32, crate::TensorComputeError>;
 
@@ -2451,15 +2473,28 @@ fn compare_packed_weight_products(products: &[(usize, usize, &str, PackedWeightP
     for &(groups, bytes, mode, dot) in products {
         let mut requests = String::new();
         let mut actual = Vec::new();
-        for row in 0..112 {
+        let scales_per_block = match mode {
+            "mxfp4-dot" => 1,
+            "nvfp4-dot" => 4,
+            _ => 0,
+        };
+        for row in 0..if scales_per_block == 0 { 112 } else { 512 } {
             let count = row % 7;
             writeln!(requests, "{count}").unwrap();
             let mut weights = Vec::new();
             let mut activations = Vec::new();
             for i in 0..count {
-                let scale = scales[(row + i) % scales.len()];
-                writeln!(requests, "{scale}").unwrap();
-                weights.extend(scale.to_ne_bytes());
+                if scales_per_block == 0 {
+                    let scale = scales[(row + i) % scales.len()];
+                    writeln!(requests, "{scale}").unwrap();
+                    weights.extend(scale.to_ne_bytes());
+                } else {
+                    for subgroup in 0..scales_per_block {
+                        let scale = (row + 37 * i + 79 * subgroup) as u8;
+                        weights.push(scale);
+                        writeln!(requests, "{scale}").unwrap();
+                    }
+                }
                 for _ in 0..bytes {
                     let bits = byte();
                     weights.push(bits);
@@ -2480,7 +2515,11 @@ fn compare_packed_weight_products(products: &[(usize, usize, &str, PackedWeightP
         let expected = query_oracle(mode, requests);
         assert_eq!(expected.len(), actual.len());
         for (i, (observed, reference)) in actual.into_iter().zip(expected).enumerate() {
-            assert_eq!(observed, reference, "{mode} row {i}");
+            if f32::from_bits(reference).is_nan() {
+                assert!(f32::from_bits(observed).is_nan(), "{mode} row {i}");
+            } else {
+                assert_eq!(observed, reference, "{mode} row {i}");
+            }
         }
         assert!(dot(&vec![0; bytes + 1], &[]).is_err());
         assert!(dot(&vec![0; bytes + 2], &[]).is_err());

@@ -387,3 +387,9 @@ The pinned GGML reference encoder supplied 9,756 bytes from 271 Q8_1 blocks. The
 Multiplying the code sum by the stored binary16 step instead of the original binary32 step failed the Q8_1 byte comparison. Restoring the original step passed both VTK-37 tests and the existing symmetric encoding and compact product regressions. The engine API accepts numerical rows. GGML graph selection and tensor addressing remain with the consumer.
 
 The complete locked-SDK `just vv` passed on `0c70cf1d`, including 85 engine conformance tests, 68 tensor tests, dependency checks and the Prism proof. The verified application attestation is `c042402611bc9473d0de0c22172e8c13c7251af510bf8e27c966358a20c9074e`.
+
+### VTK-38 block-float row products
+
+The `linear::dot_block_float_row` API contracts E2M1 coefficients with signed-byte activation blocks. It accepts either one E8M0 scale per 32 coefficients or four unsigned E4M3 scales per 64 coefficients. Prism checks the block counts, selects the coefficient table entries and defines the binary32 accumulation. The imported GGML CPU vector products matched 512 rows per encoding across zero through six blocks and all scale bytes. Reusing the low nibble for both lane halves changed MXFP4 row 1 from `2234220544` to `2225029120`. Restoring separate indices passed all five packed-product regression tests. [CPU authority](https://github.com/ggml-org/llama.cpp/blob/9a080f44b503c64f66c84a6274b9d9ee5d5b09d5/ggml/src/ggml-cpu/quants.c#L303)
+
+Prism certified the export with attestation `3c6431afca879dca5ec9e996076a9d757ad2628a697c834f634eca23c4c29771`. The isolated source lift, fidelity check and tensor Clippy passed. The frontier records 583 lifted and 1,152 residual functions. Core and Tensor share the bounded power-of-two implementation, including zero for exponents at or above the word width.
