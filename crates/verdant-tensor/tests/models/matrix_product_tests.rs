@@ -60,10 +60,12 @@ static int encode_blocks(void (*encode)(const float *, Block *, int64_t)) {
 // Observe the scale computed by the imported rotary kernel, preserving the real call.
 extern "C" float __real_powf(float, float);
 static bool observe_power = false;
+static std::vector<float> *head_powers = nullptr;
 static unsigned power_calls = 0;
 static float observed_base, observed_exponent, observed_ratio;
 extern "C" float __wrap_powf(float base, float exponent) {
   const float ratio = __real_powf(base, exponent);
+  if (head_powers) head_powers->push_back(ratio);
   if (observe_power) {
     ++power_calls; observed_base=base; observed_exponent=exponent; observed_ratio=ratio;
   }
@@ -79,6 +81,31 @@ int main(int argc, char **argv) {
       std::memcpy(&word, &y, 4); std::printf("%u\n",word);
     }
     return std::feof(stdin) ? 0 : 2;
+  }
+  if (!std::strcmp(argv[1], "head-slopes")) {
+    unsigned bits, heads;
+    while (std::scanf("%u %u", &bits, &heads)==2) {
+      if (!heads || heads>2048) return 3;
+      float bias; std::memcpy(&bias,&bits,4);
+      if (!(bias>0.0f)) return 4;
+      auto *ctx=ggml_init({1024*1024,nullptr,false});
+      auto *input=ggml_new_tensor_3d(ctx,GGML_TYPE_F32,2,1,heads);
+      auto *mask=ggml_new_tensor_1d(ctx,GGML_TYPE_F32,2);
+      std::memset(input->data,0,ggml_nbytes(input));
+      static_cast<float*>(mask->data)[0]=0; static_cast<float*>(mask->data)[1]=1;
+      auto *out=ggml_soft_max_ext(ctx,input,mask,1.0f,bias);
+      std::vector<float> scratch(128),powers; ggml_compute_params params{};
+      params.nth=1; params.wdata=scratch.data(); params.wsize=scratch.size()*sizeof(float);
+      head_powers=&powers; ggml_compute_forward_soft_max(&params,out); head_powers=nullptr;
+      // Compilers may implement powers of two as exp2f. The final head-count
+      // calls always compute the slopes from a runtime base in the CPU kernel.
+      if (powers.size()<heads || powers.size()>heads+2) return 5;
+      for(size_t i=powers.size()-heads;i<powers.size();++i) {
+        std::memcpy(&bits,&powers[i],4); std::printf("%u\n",bits);
+      }
+      ggml_free(ctx);
+    }
+    return std::feof(stdin)?0:2;
   }
   if (!std::strcmp(argv[1], "rotary-ratio")) {
     unsigned word, degree;
@@ -1411,6 +1438,64 @@ fn natural_exponential_vtk_19() {
                 "exp({word:#010x}): {actual:#010x} versus {expected:#010x}"
             );
         }
+    }
+}
+
+#[test]
+fn attention_head_slopes_vtk_30() {
+    use std::fmt::Write;
+    assert_eq!(
+        verify_bundle("slopes", "tensor-slopes")["VerdantEngine.HeadSlope.evaluate"],
+        "verdant_head_slope"
+    );
+    let mut cases = Vec::new();
+    let mut input = String::new();
+    for heads in [
+        1, 2, 3, 4, 5, 7, 8, 12, 31, 32, 33, 64, 96, 127, 128, 257, 1024, 1537,
+    ] {
+        for bias in [
+            f32::from_bits(1),
+            0.015625,
+            0.3,
+            1.0,
+            4.0,
+            7.75,
+            8.0,
+            16.0,
+            32.0,
+            127.0,
+            256.0,
+            4096.0,
+        ] {
+            writeln!(input, "{} {heads}", bias.to_bits()).unwrap();
+            cases.extend((0..heads).map(|head| (bias, heads, head)));
+        }
+    }
+    let expected = query_oracle("head-slopes", input);
+    assert_eq!(expected.len(), cases.len());
+    for ((bias, heads, head), bits) in cases.into_iter().zip(expected) {
+        let actual = super::attention_head_slope_f32(bias, heads, head).unwrap();
+        let wanted = f32::from_bits(bits);
+        if wanted == 0.0 || wanted == 1.0 {
+            assert_eq!(actual.to_bits(), bits, "{bias}, {heads}, {head}");
+        } else {
+            assert!(
+                actual >= 0.0 && actual <= 1.0 && actual.to_bits().abs_diff(bits) <= 4,
+                "{bias}, {heads}, {head}: {actual} vs {wanted} ({:#x}/{bits:#x})",
+                actual.to_bits()
+            );
+        }
+    }
+    for bias in [0.0, -0.0, -1.0] {
+        assert_eq!(super::attention_head_slope_f32(bias, 3, 2).unwrap(), 1.0);
+    }
+    for (bias, heads, head) in [
+        (1.0, 0, 0),
+        (1.0, 4, 4),
+        (f32::NAN, 1, 0),
+        (f32::INFINITY, 1, 0),
+    ] {
+        assert!(super::attention_head_slope_f32(bias, heads, head).is_err());
     }
 }
 

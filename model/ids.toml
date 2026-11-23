@@ -757,3 +757,9 @@ id = "VTK-29"
 level = "build"
 suite = "engine"
 statement = "Binary32 Gaussian error linear unit tangent and logistic approximations match the imported numerical reference"
+
+[[id]]
+id = "VTK-30"
+level = "build"
+suite = "engine"
+statement = "Verdant evaluates binary32 linear attention bias slopes for power-of-two and non-power-of-two head groups against the imported GGML CPU kernel"

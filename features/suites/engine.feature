@@ -680,3 +680,9 @@ Feature: engine
     Given binary32 inputs including signed zeros, subnormals, infinities and NaNs
     When the certified tensor primitives evaluate the two activation approximations
     Then their results agree with the pinned upstream scalar evaluator
+
+  @VTK-30 @build
+  Scenario: Verdant evaluates binary32 linear attention bias slopes for power-of-two and non-power-of-two head groups against the imported GGML CPU kernel
+    Given attention groups of different sizes and finite biases
+    When the pinned GGML CPU softmax computes each head slope
+    Then the certified numerical primitive agrees on every head

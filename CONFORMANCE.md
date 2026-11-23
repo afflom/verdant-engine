@@ -126,6 +126,7 @@ model does not sanction.
 | `VTK-27` | `build` | Verdant contracts packed affine Q2_K weight rows with grouped Q8_K activations against the pinned GGML CPU vector product |
 | `VTK-28` | `build` | Verdant evaluates binary32 hyperbolic tangent against the imported GGML CPU function across signed zeros, subnormals, saturation and rounding boundaries |
 | `VTK-29` | `build` | Binary32 Gaussian error linear unit tangent and logistic approximations match the imported numerical reference |
+| `VTK-30` | `build` | Verdant evaluates binary32 linear attention bias slopes for power-of-two and non-power-of-two head groups against the imported GGML CPU kernel |
 
 ## fidelity
 
