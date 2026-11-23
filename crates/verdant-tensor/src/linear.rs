@@ -22,6 +22,7 @@ mod ranking;
 mod rotation;
 mod softmax;
 mod symmetric_product;
+mod weight_encoding;
 mod weighted_mean;
 pub use activations::{
     attention_head_slope_f32, exponential_f32, gelu_f32, gelu_quick_f32, inverse_root_f32,
@@ -42,6 +43,7 @@ pub use softmax::normalize_exponential_f32;
 pub use symmetric_product::{
     dot_encoded_symmetric_row, dot_symmetric_q4_row, dot_symmetric_q8_row, SymmetricWeightEncoding,
 };
+pub use weight_encoding::{encode_weight_block, WeightBlockEncoding};
 pub use weighted_mean::WeightedMeanF32;
 
 #[inline]

@@ -399,3 +399,9 @@ Prism certified the export with attestation `3c6431afca879dca5ec9e996076a9d757ad
 The pinned llama.cpp CPU type traits supply the independent IQ2_XXS, IQ2_XS and IQ2_S vector products. Each reference row uses the upstream Q8_K reference encoder on the original activations. All 294 binary32 results matched bit-for-bit across zero to five blocks, and each encoding rejected both malformed lengths. Reusing the first grid coefficient for every lane failed IQ2_XXS row 1 (1170642016 instead of 1170701216). Restoring lane selection passed VTK-39 and the existing Q4_K/Q5_K regression.
 
 The certified grouped product extension uses the existing imported grid and sign tables. The SDK attestation is `9d86a2a8a6e022e89c94da60784d6a83d8ea6aba6153edf2c7144f20c67da2c5`. The isolated source lift, fidelity checks and tensor Clippy passed at the existing frontier limits.
+
+## VTK-40 fixed-width weight block encoding
+
+All 1,104 centered and affine four- and five-bit blocks matched every byte emitted by the four unmodified reference encoders from the pinned GGML archive. The 276 inputs per encoding include signed zero, tied positive and negative extrema in both orders, constant rows, narrow and overflowing half scales and mixed-exponent random values. Nonfinite lanes and malformed destination widths preserve the output. The symmetric byte path delegates to the existing VTK-16 encoder.
+
+Replacing every upper nibble’s source with the lower lane failed Q4_0 block 3 at byte 2 (153 versus 137). Restoring the lane passed VTK-40, VTK-16 and VTK-37 together. Run `cargo test --locked -p verdant-tensor --lib low_bit_block_encoding_vtk_40` inside the pinned SDK.

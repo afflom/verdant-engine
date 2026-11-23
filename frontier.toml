@@ -9,11 +9,11 @@
 # are residue, 75 foreign and 83 effect rows.
 # Residue by cause:
 #   arithmetic: 24
-#   call: 212
+#   call: 211
 #   form: 339
 #   signature: 52
 #   statements: 22
-#   type: 497
+#   type: 498
 #   width: 6
 
 spec = "uorust/register/1"
@@ -41,13 +41,13 @@ cause = "type"
 functions = 55
 
 [[construct]]
-construct = "takes or returns ObserverPrismHolon.organs: ObserverOrganModel.schema_org_jsonld: serde_json::Value, a type of the serde_json crate with no LexLean model"
-cause = "foreign"
-functions = 32
-
-[[construct]]
 construct = "type outside the lift: f32"
 cause = "type"
+functions = 33
+
+[[construct]]
+construct = "takes or returns ObserverPrismHolon.organs: ObserverOrganModel.schema_org_jsonld: serde_json::Value, a type of the serde_json crate with no LexLean model"
+cause = "foreign"
 functions = 32
 
 [[construct]]
@@ -291,11 +291,6 @@ cause = "call"
 functions = 4
 
 [[construct]]
-construct = "calls with_capacity, which is not lifted"
-cause = "call"
-functions = 4
-
-[[construct]]
 construct = "Fs effect: std::fs::create_dir_all"
 cause = "effect"
 functions = 4
@@ -377,6 +372,11 @@ functions = 3
 
 [[construct]]
 construct = "calls pow2_u64, which is not lifted"
+cause = "call"
+functions = 3
+
+[[construct]]
+construct = "calls with_capacity, which is not lifted"
 cause = "call"
 functions = 3
 
@@ -1557,12 +1557,6 @@ kappa = "112a5545774f1f3b18dfec6d479fa45597bcc26f91b9d13af599d5bac3eff7cd"
 function = "repo_model::ModelError::fmt"
 reason = "type"
 detail = "type outside the lift: ModelError::Io.1: std::io::Error"
-
-[[residue]]
-kappa = "aef8a0876562362782582c6deba0670f9ef782794ca9c91d99ffca3948ffe618"
-function = "repo_model::artifact::hex"
-reason = "call"
-detail = "calls with_capacity, which is not lifted"
 
 [[residue]]
 kappa = "111fcbd2082dbbc92ed63038252eb153d81728f4599467cdafcc471cf9713b0d"
@@ -5147,6 +5141,12 @@ reason = "type"
 detail = "type outside the lift: f32"
 
 [[residue]]
+kappa = "07120ca3e9a65266adeba199a08744a477b449c54a288ddef6336037d4077ed2"
+function = "verdant_tensor::linear::weight_encoding::encode_weight_block"
+reason = "type"
+detail = "type outside the lift: f32"
+
+[[residue]]
 kappa = "709ab20a47f5c9c65ae8e4755a41f2d3ea5235847479008f5c5e69ff885ac36a"
 function = "verdant_tensor::linear::weighted_mean::WeightedMeanF32::finish"
 reason = "type"
@@ -8673,7 +8673,7 @@ function = "repo_model::artifact::Model::check_artifacts"
 effect = "calls repo_model::artifact::artifact_checksum, which performs a Fs effect: std::fs::symlink_metadata"
 
 [[effect]]
-kappa = "88a68fa953b5b8fffcaa7e44d5f6d5a387fe1a456ed6a117709f52f691713046"
+kappa = "c65ccaf1d161ebe1ef125b66d11400b16f8548dc4cfe4eb0f70e4cfa11039f84"
 function = "repo_model::artifact::artifact_checksum"
 effect = "Fs effect: std::fs::symlink_metadata"
 
