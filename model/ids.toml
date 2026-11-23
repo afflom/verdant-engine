@@ -787,3 +787,9 @@ id = "VTK-34"
 level = "build"
 suite = "engine"
 statement = "Verdant evaluates binary32 softplus across finite, subnormal and exceptional scores against the imported CPU unary kernel"
+
+[[id]]
+id = "VTK-35"
+level = "build"
+suite = "engine"
+statement = "Verdant contracts one-bit sign and two-bit weight rows against symmetric signed-byte blocks with the imported row precision"

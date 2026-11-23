@@ -24,18 +24,20 @@ static bool read_dot_block(Block &block) {
   }
   return true;
 }
-template<class Weight>
+template<class Weight, int Groups=1>
 static int compare_rows(ggml_type type) {
   const auto dot = ggml_get_type_traits_cpu(type)->vec_dot;
   unsigned blocks;
   while (std::scanf("%u", &blocks) == 1) {
     std::vector<Weight> left(blocks + 1);
-    std::vector<block_q8_0> right(blocks + 1);
-    for (unsigned i = 0; i < blocks; ++i)
-      if (!read_dot_block(left[i]) || !read_dot_block(right[i])) return 2;
+    std::vector<block_q8_0> right(blocks * Groups + 1);
+    for (unsigned i = 0; i < blocks; ++i) {
+      if (!read_dot_block(left[i])) return 2;
+      for (int g=0;g<Groups;++g) if (!read_dot_block(right[i*Groups+g])) return 2;
+    }
     float result;
     uint32_t bits;
-    dot(int(blocks)*QK8_0, &result, 0, left.data(), 0, right.data(), 0, 1);
+    dot(int(blocks)*Groups*QK8_0, &result, 0, left.data(), 0, right.data(), 0, 1);
     std::memcpy(&bits, &result, sizeof(bits));
     std::printf("%u\n", bits);
   }
@@ -370,6 +372,8 @@ int main(int argc, char **argv) {
   if (!std::strcmp(argv[1], "grouped-dot")) return compare_grouped_rows<block_q2_K>(GGML_TYPE_Q2_K);
   if (!std::strcmp(argv[1], "grouped-q4-dot")) return compare_grouped_rows<block_q4_K>(GGML_TYPE_Q4_K);
   if (!std::strcmp(argv[1], "grouped-q5-dot")) return compare_grouped_rows<block_q5_K>(GGML_TYPE_Q5_K);
+  if (!std::strcmp(argv[1], "sign-dot")) return compare_rows<block_q1_0,QK1_0/QK8_0>(GGML_TYPE_Q1_0);
+  if (!std::strcmp(argv[1], "two-bit-dot")) return compare_rows<block_q2_0,QK2_0/QK8_0>(GGML_TYPE_Q2_0);
   if (!std::strcmp(argv[1], "symmetric-dot")) return compare_rows<block_q8_0>(GGML_TYPE_Q8_0);
   if (!std::strcmp(argv[1], "packed-dot")) return compare_rows<block_q4_0>(GGML_TYPE_Q4_0);
   if (!std::strcmp(argv[1], "symmetric-q8")) return encode_blocks<QK8_0>(quantize_row_q8_0_ref);
@@ -2302,5 +2306,56 @@ fn softplus_vtk_34() {
                 "input {word:#x}, {got} vs {reference}"
             );
         }
+    }
+}
+
+#[test]
+fn bitpacked_row_products_vtk_35() {
+    use std::fmt::Write;
+    type Product = fn(&[u8], &[super::SymmetricQ8Block<32>]) -> Result<f32, crate::TensorComputeError>;
+    let products: [(usize, &str, Product); 2] = [
+        (4, "sign-dot", super::dot_binary_sign_row),
+        (2, "two-bit-dot", super::dot_two_bit_row),
+    ];
+    let mut seed = 157_u32;
+    let mut byte = || {
+        seed = seed.wrapping_mul(1_664_525).wrapping_add(1_013_904_223);
+        (seed >> 24) as u8
+    };
+    let scales = [0_u16, 0x3800, 0xbc00, 0x4000, 0x3400, 0x3a00, 0x3955];
+    for (groups, mode, dot) in products {
+        let mut requests = String::new();
+        let mut actual = Vec::new();
+        for row in 0..112 {
+            let count = row % 7;
+            writeln!(requests, "{count}").unwrap();
+            let mut weights = Vec::new();
+            let mut activations = Vec::new();
+            for i in 0..count {
+                let scale = scales[(row+i)%scales.len()];
+                writeln!(requests, "{scale}").unwrap();
+                weights.extend(scale.to_ne_bytes());
+                for _ in 0..16 {
+                    let bits = byte();
+                    weights.push(bits);
+                    writeln!(requests, "{bits}").unwrap();
+                }
+                for group in 0..groups {
+                    let scale = scales[(2*row+group+i)%scales.len()];
+                    let codes = std::array::from_fn(|_|byte() as i8);
+                    writeln!(requests, "{scale}").unwrap();
+                    for code in codes { writeln!(requests,"{}",code as u8).unwrap(); }
+                    activations.push(super::SymmetricQ8Block{scale,codes});
+                }
+            }
+            actual.push(dot(&weights,&activations).unwrap().to_bits());
+        }
+        let expected = query_oracle(mode, requests);
+        assert_eq!(expected.len(),actual.len());
+        for (i,(observed,reference)) in actual.into_iter().zip(expected).enumerate() {
+            assert_eq!(observed,reference,"{mode} row {i}");
+        }
+        assert!(dot(&[0;17], &[]).is_err());
+        assert!(dot(&[0;18], &[]).is_err());
     }
 }

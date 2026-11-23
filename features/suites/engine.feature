@@ -710,3 +710,9 @@ Feature: engine
     Given encoded binary32 inputs including tiny exponentials and the positive cutoff
     When the arithmetic kernel evaluates softplus
     Then the independent CPU unary operation agrees within four binary32 steps
+
+  @VTK-35 @build
+  Scenario: Verdant contracts one-bit sign and two-bit weight rows against symmetric signed-byte blocks with the imported row precision
+    Given packed bit fields with independent activation scales
+    When Verdant contracts the encoded row
+    Then the pinned CPU dot product returns the same binary32 word
