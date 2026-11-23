@@ -281,7 +281,7 @@ impl WasmRuntimeBridge {
         })?;
         let head_anchor = Vec3::new(exp_start.x, exp_start.y + 1.0 + half, exp_start.z);
         let last_camera_frame = camera_rig
-            .solve_frame(half * half, head_anchor, &two_level_bvh, |x, z| {
+            .solve_frame(half * half, head_anchor, &two_level_bvh, &|x, z| {
                 hd_terrain_height(clean_seed, &terrain_params, x, z)
             })
             .map_err(|e| WasmBridgeError::InvalidSnapshotEnvelope {
@@ -821,42 +821,45 @@ impl WasmRuntimeBridge {
 
         if self.lod_rank >= i2_u32 {
             // Live XPBD Articulated Hinge Rig (`bodies[1]` anchor & `bodies[2]` pendulum bob):
-            let i2_idx = 1usize + 1usize;
-            if let (Some(anchor), Some(bob)) =
-                (self.physics.bodies.get(1), self.physics.bodies.get(i2_idx))
+            #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
             {
-                self.dynamic_buffers.surface_class = GpuSurfaceClass::OpaqueDielectric;
-                self.dynamic_buffers.append_oriented_box_gpu_only(
-                    anchor.position,
-                    Vec3::new(1.0 + half, quarter * half, quarter),
-                    0.0,
-                    0.0,
-                    slate,
-                );
-                let mid = Vec3::new(
-                    (anchor.position.x + bob.position.x) * half,
-                    (anchor.position.y + bob.position.y) * half,
-                    (anchor.position.z + bob.position.z) * half,
-                );
-                let link_vec = bob.position - anchor.position;
-                let link_len = (link_vec.length() * half).max(quarter);
-                let swing_angle = link_vec.x.atan2((-link_vec.y).max(quarter * quarter));
-                self.dynamic_buffers.surface_class = GpuSurfaceClass::OpaqueDielectric;
-                self.dynamic_buffers.append_oriented_box_gpu_only(
-                    mid,
-                    Vec3::new(quarter * quarter, link_len, quarter * quarter),
-                    0.0,
-                    swing_angle,
-                    stone,
-                );
-                self.dynamic_buffers.surface_class = GpuSurfaceClass::EmissiveGlass;
-                self.dynamic_buffers.append_oriented_box_gpu_only(
-                    bob.position,
-                    Vec3::new(quarter + quarter * half, quarter + quarter * half, quarter),
-                    sim_time_sec,
-                    swing_angle,
-                    cyan,
-                );
+                let i2_idx = 1usize + 1usize;
+                if let (Some(anchor), Some(bob)) =
+                    (self.physics.bodies.get(1), self.physics.bodies.get(i2_idx))
+                {
+                    self.dynamic_buffers.surface_class = GpuSurfaceClass::OpaqueDielectric;
+                    self.dynamic_buffers.append_oriented_box_gpu_only(
+                        anchor.position,
+                        Vec3::new(1.0 + half, quarter * half, quarter),
+                        0.0,
+                        0.0,
+                        slate,
+                    );
+                    let mid = Vec3::new(
+                        (anchor.position.x + bob.position.x) * half,
+                        (anchor.position.y + bob.position.y) * half,
+                        (anchor.position.z + bob.position.z) * half,
+                    );
+                    let link_vec = bob.position - anchor.position;
+                    let link_len = (link_vec.length() * half).max(quarter);
+                    let swing_angle = link_vec.x.atan2((-link_vec.y).max(quarter * quarter));
+                    self.dynamic_buffers.surface_class = GpuSurfaceClass::OpaqueDielectric;
+                    self.dynamic_buffers.append_oriented_box_gpu_only(
+                        mid,
+                        Vec3::new(quarter * quarter, link_len, quarter * quarter),
+                        0.0,
+                        swing_angle,
+                        stone,
+                    );
+                    self.dynamic_buffers.surface_class = GpuSurfaceClass::EmissiveGlass;
+                    self.dynamic_buffers.append_oriented_box_gpu_only(
+                        bob.position,
+                        Vec3::new(quarter + quarter * half, quarter + quarter * half, quarter),
+                        sim_time_sec,
+                        swing_angle,
+                        cyan,
+                    );
+                }
             }
 
             // Live 4-Wheel Suspension Vehicle along the autonomous spline / vehicle state:
@@ -866,15 +869,21 @@ impl WasmRuntimeBridge {
                 let mz = mover.position.z * scale;
                 let my = hd_terrain_height(self.seed_val, &self.terrain_params, mx, mz) + half;
                 (mx, my, mz, mover.heading.x.atan2(mover.heading.z))
-            } else if let Some(veh) = self.physics.vehicles.first() {
-                (
-                    veh.chassis_position.x,
-                    veh.chassis_position.y,
-                    veh.chassis_position.z,
-                    veh.yaw_radians,
-                )
             } else {
-                (sixteen, 1.0, 0.0, 0.0)
+                #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+                let fallback = if let Some(veh) = self.physics.vehicles.first() {
+                    (
+                        veh.chassis_position.x,
+                        veh.chassis_position.y,
+                        veh.chassis_position.z,
+                        veh.yaw_radians,
+                    )
+                } else {
+                    (sixteen, 1.0, 0.0, 0.0)
+                };
+                #[cfg(all(target_arch = "wasm32", not(feature = "uorc-decoder")))]
+                let fallback = (sixteen, 1.0, 0.0, 0.0);
+                fallback
             };
             self.dynamic_buffers.surface_class = GpuSurfaceClass::Metal;
             self.dynamic_buffers.append_oriented_box_gpu_only(

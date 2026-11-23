@@ -215,16 +215,13 @@ impl LawfulCameraRig {
 
     /// Evaluates the collision-guarded camera frame around `anchor` against `two_level_bvh` and
     /// `support_height_at` (`terrain` floor), guaranteeing zero near-plane wall/floor intersections.
-    pub fn solve_frame<F>(
+    pub fn solve_frame(
         &mut self,
         dt_seconds: f64,
         anchor: Vec3,
         two_level_bvh: &TwoLevelBvh,
-        support_height_at: F,
-    ) -> Result<SolvedCameraFrame, CameraRigError>
-    where
-        F: Fn(f64, f64) -> f64,
-    {
+        support_height_at: &dyn Fn(f64, f64) -> f64,
+    ) -> Result<SolvedCameraFrame, CameraRigError> {
         let (guard_r, near_sphere_guarded) = self.config.validate_and_guard_radius()?;
         if !self.desired_distance_meters.is_finite()
             || self.desired_distance_meters < 0.0

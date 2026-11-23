@@ -406,6 +406,10 @@ All 1,104 centered and affine four- and five-bit blocks matched every byte emitt
 
 Replacing every upper nibble’s source with the lower lane failed Q4_0 block 3 at byte 2 (153 versus 137). Restoring the lane passed VTK-40, VTK-16 and VTK-37 together. Run `cargo test --locked -p verdant-tensor --lib low_bit_block_encoding_vtk_40` inside the pinned SDK.
 
+## VE-54 release dependency closure
+
+A standalone Cargo consumer of the v2.20.0 source package initially failed to resolve `serde` and the generated kernel packages. The release packager now indexes four products, 79 generated kernels and nine packages from the locked Git revisions. External registry dependencies retain their registry. An isolated consumer fetched the packaged graph and ran `linear::encode_weight_block` successfully. Removing the `verdant_logarithmic_scale` archive made the normal registry verifier fail on the missing download. With the archive present the verifier compiled the downstream consumer and recorded 171 HTTP requests.
+
 ## VTK-41 sign and centered two-bit weight encoding
 
 The imported GGML reference encoders quantized 273 Q1_0 blocks and 272 Q2_0 blocks. All 9,810 scale and coefficient bytes matched the certified Verdant output. Inputs include signed zeros, mixed signs, exact and adjacent half-integer rounding boundaries, and 256 seeded mixed-exponent blocks per format. Q2_0 refuses an unrepresentable reciprocal before the C reference would convert a nonfinite value to an integer. Malformed widths and a nonfinite final lane leave the destination intact. Existing 32-lane callers retain their function signature.

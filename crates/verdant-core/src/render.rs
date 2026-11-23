@@ -745,6 +745,7 @@ impl PackedSceneRenderBuffers {
     }
 
     /// Appends an oriented world-space 3D box into GPU streams only (`0` software tile overhead).
+    #[inline(never)]
     pub fn append_oriented_box_gpu_only(
         &mut self,
         center: Vec3,

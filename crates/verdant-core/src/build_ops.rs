@@ -9,7 +9,7 @@
 use std::io::{Read, Write};
 use std::net::{TcpListener, TcpStream};
 use std::path::{Path, PathBuf};
-use std::process::{Command, Stdio};
+use std::process::Command;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
@@ -55,7 +55,7 @@ pub enum NativeBuildOp {
         /// RFC 2789 `index/config.json` `dl` URL template.
         dl_template: String,
     },
-    /// Runs the live HTTP + real `cargo generate-lockfile` RFC 2789 Sparse Registry gate (`VE-54`).
+    /// Runs the live HTTP + downstream `cargo check` RFC 2789 Sparse Registry gate (`VE-54`).
     VerifySparseRegistry {
         /// Root directory containing `index/` and `crates/` (e.g. `site/crates`).
         crates_root: PathBuf,
@@ -378,7 +378,12 @@ impl VerdantOperatorChannel {
                     "verdant-cli",
                 ];
                 let meta_out = Command::new("cargo")
-                    .args(["metadata", "--format-version=1", "--no-deps", "--locked"])
+                    .args([
+                        "metadata",
+                        "--format-version=1",
+                        "--all-features",
+                        "--locked",
+                    ])
                     .current_dir(repo_root)
                     .output()
                     .map_err(|e| make_err(format!("spawn cargo metadata: {e}")))?;
@@ -424,204 +429,106 @@ impl VerdantOperatorChannel {
                 std::fs::create_dir_all(&stage_root)
                     .map_err(|e| make_err(format!("create crate stage dir: {e}")))?;
 
-                let copy_tree = |src: &Path, dst: &Path| -> Result<(), ObserverModelError> {
-                    let mut stack = vec![(src.to_path_buf(), dst.to_path_buf())];
-                    while let Some((s, d)) = stack.pop() {
-                        if s.is_dir() {
-                            std::fs::create_dir_all(&d)
-                                .map_err(|e| make_err(format!("mkdir {}: {e}", d.display())))?;
-                            let rd = std::fs::read_dir(&s)
-                                .map_err(|e| make_err(format!("readdir {}: {e}", s.display())))?;
-                            for ent in rd.flatten() {
-                                stack.push((ent.path(), d.join(ent.file_name())));
-                            }
-                        } else if s.is_file() {
-                            if let Some(p) = d.parent() {
-                                std::fs::create_dir_all(p)
-                                    .map_err(|e| make_err(format!("mkdir parent: {e}")))?;
-                            }
-                            std::fs::copy(&s, &d)
-                                .map_err(|e| make_err(format!("copy {}: {e}", s.display())))?;
+                // Cargo resolves the exact local kernels and Git packages for all published features.
+                // Registry packages keep their own registry in the index and are never repackaged.
+                let nodes = meta["resolve"]["nodes"]
+                    .as_array()
+                    .ok_or_else(|| make_err("cargo metadata missing resolved graph".to_string()))?;
+                let mut pending = Vec::new();
+                for name in shipped_crates {
+                    let pkg = packages
+                        .iter()
+                        .find(|p| p["name"] == name && p["source"].is_null())
+                        .ok_or_else(|| make_err(format!("missing workspace package: {name}")))?;
+                    pending.push(pkg);
+                }
+                let mut closure = std::collections::BTreeMap::new();
+                while let Some(pkg) = pending.pop() {
+                    let id = pkg["id"]
+                        .as_str()
+                        .ok_or_else(|| make_err("missing package ID".to_string()))?;
+                    if closure.insert(id, pkg).is_some() {
+                        continue;
+                    }
+                    let node = nodes
+                        .iter()
+                        .find(|n| n["id"] == id)
+                        .ok_or_else(|| make_err(format!("missing resolved node: {id}")))?;
+                    for dep in node["deps"]
+                        .as_array()
+                        .ok_or_else(|| make_err(format!("missing dependencies: {id}")))?
+                    {
+                        if !dep["dep_kinds"]
+                            .as_array()
+                            .is_some_and(|kinds| kinds.iter().any(|k| k["kind"] != "dev"))
+                        {
+                            continue;
+                        }
+                        let child = packages
+                            .iter()
+                            .find(|p| p["id"] == dep["pkg"])
+                            .ok_or_else(|| make_err(format!("missing resolved child of {id}")))?;
+                        if !child["source"].as_str().is_some_and(|source| {
+                            source.starts_with("registry+") || source.starts_with("sparse+")
+                        }) {
+                            pending.push(child);
                         }
                     }
-                    Ok(())
-                };
-
+                }
                 let mut summary_rows: Vec<serde_json::Value> = Vec::new();
+                let mut dependency_rows: Vec<serde_json::Value> = Vec::new();
                 let mut labels: Vec<String> = Vec::new();
                 let p_two = two_u32() as usize;
                 let p_four = four_u32() as usize;
 
                 let pkg_res: Result<(), ObserverModelError> = (|| {
-                    for &crate_name in &shipped_crates {
-                        if !sparse_index_crate_name_valid(crate_name.len() as u32) {
-                            return Err(make_err(format!("invalid crate name: {crate_name}")));
-                        }
-                        let pkg = packages
-                            .iter()
-                            .find(|p| p.get("name").and_then(|v| v.as_str()) == Some(crate_name))
-                            .ok_or_else(|| {
-                                make_err(format!("workspace crate not found: {crate_name}"))
-                            })?;
-                        let version = pkg
-                            .get("version")
-                            .and_then(|v| v.as_str())
-                            .unwrap_or("0.1.0");
-                        let edition = pkg
-                            .get("edition")
-                            .and_then(|v| v.as_str())
-                            .unwrap_or("2021");
-                        let rust_version = pkg
-                            .get("rust_version")
-                            .and_then(|v| v.as_str())
-                            .unwrap_or("1.89");
-                        let license = pkg
-                            .get("license")
-                            .and_then(|v| v.as_str())
-                            .unwrap_or("MIT OR Apache-2.0");
-                        let repository = pkg
-                            .get("repository")
-                            .and_then(|v| v.as_str())
-                            .unwrap_or("https://github.com/afflom/verdant-engine");
-                        let homepage = pkg
-                            .get("homepage")
-                            .and_then(|v| v.as_str())
-                            .unwrap_or("https://afflom.github.io/verdant-engine/");
-                        let authors = serde_json::to_string(
-                            pkg.get("authors").unwrap_or(&serde_json::json!(["Alex"])),
-                        )
-                        .unwrap_or_else(|_| "[\"Alex\"]".to_string());
-                        let keywords = serde_json::to_string(
-                            pkg.get("keywords").unwrap_or(&serde_json::json!([])),
-                        )
-                        .unwrap_or_else(|_| "[]".to_string());
-                        let categories = serde_json::to_string(
-                            pkg.get("categories").unwrap_or(&serde_json::json!([])),
-                        )
-                        .unwrap_or_else(|_| "[]".to_string());
-
-                        let manifest_path = pkg
-                            .get("manifest_path")
-                            .and_then(|v| v.as_str())
-                            .ok_or_else(|| {
-                                make_err(format!("missing manifest_path for {crate_name}"))
-                            })?;
-                        let pkg_dir = Path::new(manifest_path).parent().ok_or_else(|| {
-                            make_err(format!("invalid manifest_path for {crate_name}"))
-                        })?;
-                        let dir_name = format!("{crate_name}-{version}");
-                        let crate_stage = stage_root.join(&dir_name);
-                        std::fs::create_dir_all(&crate_stage)
-                            .map_err(|e| make_err(format!("mkdir crate stage: {e}")))?;
-
-                        let raw_toml = std::fs::read_to_string(pkg_dir.join("Cargo.toml"))
-                            .map_err(|e| make_err(format!("read {crate_name}/Cargo.toml: {e}")))?;
-                        let mut out_lines: Vec<String> = Vec::new();
-                        let mut skip_lints = false;
-                        for line in raw_toml.lines() {
-                            let tr = line.trim();
-                            if tr == "[lints]" {
-                                skip_lints = true;
-                                continue;
-                            }
-                            if skip_lints {
-                                if tr.starts_with('[') {
-                                    skip_lints = false;
-                                } else if tr == "workspace = true" || tr.is_empty() {
-                                    continue;
-                                } else {
-                                    skip_lints = false;
-                                }
-                            }
-                            let replaced = if tr == "version.workspace = true" {
-                                format!("version = \"{version}\"")
-                            } else if tr == "edition.workspace = true" {
-                                format!("edition = \"{edition}\"")
-                            } else if tr == "rust-version.workspace = true" {
-                                format!("rust-version = \"{rust_version}\"")
-                            } else if tr == "license.workspace = true" {
-                                format!("license = \"{license}\"")
-                            } else if tr == "repository.workspace = true" {
-                                format!("repository = \"{repository}\"")
-                            } else if tr == "homepage.workspace = true" {
-                                format!("homepage = \"{homepage}\"")
-                            } else if tr == "authors.workspace = true" {
-                                format!("authors = {authors}")
-                            } else if tr == "keywords.workspace = true" {
-                                format!("keywords = {keywords}")
-                            } else if tr == "categories.workspace = true" {
-                                format!("categories = {categories}")
-                            } else if tr == "verdant-tensor.workspace = true" {
-                                format!("verdant-tensor = {{ version = \"{version}\", registry = \"verdant\" }}")
-                            } else if tr == "verdant-core.workspace = true"
-                                || tr == "verdant-core = { workspace = true }"
-                            {
-                                format!("verdant-core = {{ version = \"{version}\", registry = \"verdant\" }}")
-                            } else if tr.starts_with("verdant-core = {")
-                                && tr.contains("path = \"../verdant-core\"")
-                            {
-                                let tail = tr
-                                    .split("path = \"../verdant-core\"")
-                                    .nth(1)
-                                    .unwrap_or(" }");
-                                format!("verdant-core = {{ version = \"{version}\", registry = \"verdant\"{tail}")
-                            } else if tr == "uor-matmul.workspace = true" {
-                                "uor-matmul = { version = \"0.1.0\", git = \"https://github.com/UOR-Foundation/uor-matmul\", branch = \"main\", default-features = false }".to_string()
-                            } else if tr == "uorc.workspace = true" {
-                                "uorc = { version = \"0.6.0\", git = \"https://github.com/UOR-Foundation/compression\", branch = \"main\" }".to_string()
-                            } else if tr.starts_with("uorc = {")
-                                && tr.contains("workspace = true")
-                                && tr.contains("optional = true")
-                            {
-                                "uorc = { version = \"0.6.0\", git = \"https://github.com/UOR-Foundation/compression\", branch = \"main\", optional = true }".to_string()
-                            } else if tr == "uorc_decompress.workspace = true" {
-                                "uorc_decompress = { version = \"0.1.0\", git = \"https://github.com/UOR-Foundation/compression\", branch = \"main\" }".to_string()
-                            } else if tr.starts_with("uorc_decompress = {")
-                                && tr.contains("workspace = true")
-                                && tr.contains("optional = true")
-                            {
-                                "uorc_decompress = { version = \"0.1.0\", git = \"https://github.com/UOR-Foundation/compression\", branch = \"main\", optional = true }".to_string()
-                            } else {
-                                line.to_string()
-                            };
-                            out_lines.push(replaced);
-                        }
-                        let standalone_toml = format!("{}\n", out_lines.join("\n").trim_end());
-                        std::fs::write(crate_stage.join("Cargo.toml"), standalone_toml.as_bytes())
-                            .map_err(|e| make_err(format!("write standalone Cargo.toml: {e}")))?;
-
-                        copy_tree(&pkg_dir.join("src"), &crate_stage.join("src"))?;
-                        for extra in ["build.rs", "README.md", "examples"] {
-                            let src_extra = pkg_dir.join(extra);
-                            if src_extra.exists() {
-                                copy_tree(&src_extra, &crate_stage.join(extra))?;
-                            }
-                        }
-
-                        let crate_file_name = format!("{dir_name}.crate");
-                        let dst_crate_path = crates_dir.join(&crate_file_name);
-                        let tar_out = Command::new("tar")
-                            .args([
-                                "--sort=name",
-                                "--mtime=2026-01-01 00:00:00Z",
-                                "--owner=0",
-                                "--group=0",
-                                "--numeric-owner",
-                                "-czf",
-                            ])
-                            .arg(&dst_crate_path)
-                            .arg("-C")
-                            .arg(&stage_root)
-                            .arg(&dir_name)
-                            .output()
-                            .map_err(|e| make_err(format!("spawn tar: {e}")))?;
-                        if !tar_out.status.success() {
+                    let mut identities = std::collections::BTreeSet::new();
+                    let mut records = std::collections::BTreeMap::new();
+                    for pkg in closure.values() {
+                        let crate_name = pkg["name"]
+                            .as_str()
+                            .ok_or_else(|| make_err("missing package name".to_string()))?;
+                        let version = pkg["version"]
+                            .as_str()
+                            .ok_or_else(|| make_err(format!("missing version for {crate_name}")))?;
+                        if !sparse_index_crate_name_valid(crate_name.len() as u32)
+                            || !identities.insert((crate_name, version))
+                        {
                             return Err(make_err(format!(
-                                "tar failed for {dir_name}: {}",
-                                String::from_utf8_lossy(&tar_out.stderr)
+                                "invalid or duplicate package: {crate_name}@{version}"
                             )));
                         }
-
+                        let crate_file_name = format!("{crate_name}-{version}.crate");
+                        let dst_crate_path = crates_dir.join(&crate_file_name);
+                        let manifest_path = pkg["manifest_path"].as_str().ok_or_else(|| {
+                            make_err(format!("missing manifest for {crate_name}"))
+                        })?;
+                        let output = Command::new("cargo")
+                            .args([
+                                "package",
+                                "--offline",
+                                "--no-verify",
+                                "--allow-dirty",
+                                "--exclude-lockfile",
+                                "--manifest-path",
+                                manifest_path,
+                                "--target-dir",
+                            ])
+                            .arg(&stage_root)
+                            .current_dir(repo_root)
+                            .output()
+                            .map_err(|e| make_err(format!("package {crate_name}: {e}")))?;
+                        if !output.status.success() {
+                            return Err(make_err(format!(
+                                "package {crate_name}: {}",
+                                String::from_utf8_lossy(&output.stderr)
+                            )));
+                        }
+                        std::fs::copy(
+                            stage_root.join("package").join(&crate_file_name),
+                            &dst_crate_path,
+                        )
+                        .map_err(|e| make_err(format!("stage {crate_file_name}: {e}")))?;
                         let bytes = std::fs::read(&dst_crate_path)
                             .map_err(|e| make_err(format!("read packaged crate: {e}")))?;
                         if !crate_tarball_nonempty(bytes.len() as u64) {
@@ -645,6 +552,11 @@ impl VerdantOperatorChannel {
                                 }
                                 let d_name = d.get("name").and_then(|v| v.as_str()).unwrap_or("");
                                 let d_rename = d.get("rename").and_then(|v| v.as_str());
+                                let registry = d["source"].as_str().and_then(|source| {
+                                    source
+                                        .strip_prefix("registry+")
+                                        .or_else(|| source.starts_with("sparse+").then_some(source))
+                                });
                                 deps_vec.push(serde_json::json!({
                                     "name": d_rename.unwrap_or(d_name),
                                     "req": d.get("req").and_then(|v| v.as_str()).unwrap_or("*"),
@@ -653,6 +565,7 @@ impl VerdantOperatorChannel {
                                     "default_features": d.get("uses_default_features").and_then(|v| v.as_bool()).unwrap_or(true),
                                     "target": d.get("target").cloned().unwrap_or(serde_json::Value::Null),
                                     "kind": kind_opt.unwrap_or("normal"),
+                                    "registry": registry,
                                     "package": if d_rename.is_some() { serde_json::Value::String(d_name.to_string()) } else { serde_json::Value::Null },
                                 }));
                             }
@@ -667,11 +580,18 @@ impl VerdantOperatorChannel {
                             "yanked": false,
                             "rust_version": pkg.get("rust_version").cloned().unwrap_or(serde_json::Value::Null),
                         });
-                        std::fs::write(entry_dir.join(&lower), format!("{index_rec}\n"))
-                            .map_err(|e| make_err(format!("write sparse index entry: {e}")))?;
+                        records
+                            .entry(entry_dir.join(&lower))
+                            .or_insert_with(String::new)
+                            .push_str(&format!("{index_rec}\n"));
 
-                        labels.push(format!("{crate_name}@{version}"));
-                        summary_rows.push(serde_json::json!({
+                        let rows = if shipped_crates.contains(&crate_name) {
+                            labels.push(format!("{crate_name}@{version}"));
+                            &mut summary_rows
+                        } else {
+                            &mut dependency_rows
+                        };
+                        rows.push(serde_json::json!({
                             "name": crate_name,
                             "version": version,
                             "file": crate_file_name,
@@ -679,6 +599,10 @@ impl VerdantOperatorChannel {
                             "sha256": cksum,
                             "indexPath": format!("{p1}/{p2}/{lower}"),
                         }));
+                    }
+                    for (path, rows) in records {
+                        std::fs::write(path, rows)
+                            .map_err(|e| make_err(format!("write sparse index entry: {e}")))?;
                     }
                     Ok(())
                 })();
@@ -694,7 +618,8 @@ impl VerdantOperatorChannel {
 
                 let manifest_json = serde_json::to_string_pretty(&serde_json::json!({
                     "spec": "verdant/rust-crates-sparse/1",
-                    "crates": summary_rows
+                    "crates": summary_rows,
+                    "dependencies": dependency_rows
                 }))
                 .unwrap_or_default();
                 std::fs::write(
@@ -973,7 +898,7 @@ impl VerdantOperatorChannel {
                         verified_crates = verified_crates.saturating_add(1);
                     }
 
-                    // Exercise real `cargo generate-lockfile` against our live local RFC 2789 HTTP server:
+                    // Build outside the source workspace so every local dependency must come from the registry.
                     let proj_dir = consumer_dir.join("consumer");
                     std::fs::create_dir_all(proj_dir.join(".cargo"))
                         .map_err(|e| make_err(format!("mkdir consumer .cargo: {e}")))?;
@@ -993,61 +918,40 @@ impl VerdantOperatorChannel {
                         ),
                     )
                     .map_err(|e| make_err(format!("write consumer Cargo.toml: {e}")))?;
-                    std::fs::write(proj_dir.join("src/lib.rs"), "pub fn check() {}\n")
-                        .map_err(|e| make_err(format!("write consumer lib.rs: {e}")))?;
+                    std::fs::write(
+                        proj_dir.join("src/lib.rs"),
+                        "pub use verdant_tensor::linear::encode_weight_block;\n",
+                    )
+                    .map_err(|e| make_err(format!("write consumer lib.rs: {e}")))?;
 
                     if let Ok(mut guard) = served_paths.lock() {
                         guard.clear();
                     }
 
-                    let mut child = Command::new("cargo")
-                        .args(["generate-lockfile", "--manifest-path"])
-                        .arg(proj_dir.join("Cargo.toml"))
+                    let out = Command::new("cargo")
+                        .args(["check", "--quiet"])
                         .current_dir(&proj_dir)
-                        .env("CARGO_NET_RETRY", "0")
-                        .stdin(Stdio::null())
-                        .stdout(Stdio::piped())
-                        .stderr(Stdio::piped())
-                        .spawn()
-                        .map_err(|e| make_err(format!("spawn cargo generate-lockfile: {e}")))?;
-
-                    let deadline =
-                        Instant::now() + Duration::from_secs(u64::from(ten_u32() + five_u32()));
-                    let poll_ms = u64::from(hundred_u32());
-                    loop {
-                        if let Ok(Some(_)) = child.try_wait() {
-                            break;
-                        }
-                        if Instant::now() >= deadline {
-                            let _ = child.kill();
-                            break;
-                        }
-                        std::thread::sleep(Duration::from_millis(poll_ms));
+                        .env("CARGO_HOME", consumer_dir.join("cargo-home"))
+                        .env("CARGO_TARGET_DIR", consumer_dir.join("target"))
+                        .output()
+                        .map_err(|e| make_err(format!("check registry consumer: {e}")))?;
+                    if !out.status.success() {
+                        return Err(make_err(format!(
+                            "registry consumer failed: {}",
+                            String::from_utf8_lossy(&out.stderr)
+                        )));
                     }
-                    let out = child
-                        .wait_with_output()
-                        .map_err(|e| make_err(format!("wait cargo generate-lockfile: {e}")))?;
-                    let combined = format!(
-                        "{}{}",
-                        String::from_utf8_lossy(&out.stdout),
-                        String::from_utf8_lossy(&out.stderr)
-                    );
                     let seen: Vec<String> =
                         served_paths.lock().map(|g| g.clone()).unwrap_or_default();
-                    if !seen.iter().any(|p| p == "/index/config.json")
-                        || !seen.iter().any(|p| p == "/index/ve/rd/verdant-tensor")
-                    {
-                        return Err(make_err(format!(
-                            "real cargo client did not query RFC 2789 sparse index endpoints (seen: {seen:?}): {combined}"
-                        )));
-                    }
-                    let lower_out = combined.to_ascii_lowercase();
-                    if lower_out.contains("failed to parse registry")
-                        || lower_out.contains("invalid json")
-                    {
-                        return Err(make_err(format!(
-                            "cargo reported RFC 2789 sparse index parse error: {combined}"
-                        )));
+                    let archive = format!("/crates/verdant-tensor-{expected_version}.crate");
+                    for path in [
+                        "/index/config.json",
+                        "/index/ve/rd/verdant-tensor",
+                        &archive,
+                    ] {
+                        if !seen.iter().any(|served| served == path) {
+                            return Err(make_err(format!("Cargo did not fetch {path}")));
+                        }
                     }
                     Ok(seen)
                 })();
@@ -1065,9 +969,9 @@ impl VerdantOperatorChannel {
                 }
 
                 let summary_line = format!(
-                    "verify-sparse-registry: PASS — verified {} crates @ v{expected_version} (SHA-256 + standalone Cargo.toml + CORS *) and live cargo sparse+http index fetch ({}).",
+                    "verify-sparse-registry: PASS — verified {} crates @ v{expected_version} (SHA-256 + standalone Cargo.toml + CORS *) and downstream Cargo build ({} HTTP requests).",
                     verified_crates,
-                    seen_paths.join(", ")
+                    seen_paths.len()
                 );
                 (
                     "verify-registry".to_string(),

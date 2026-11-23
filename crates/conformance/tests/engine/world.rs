@@ -384,7 +384,7 @@ fn engine_ve_26() {
         rig.yaw_radians = (step as f64) * (std::f64::consts::TAU / 36.0);
         rig.pitch_radians = if step % 2 == 0 { 0.65 } else { -0.45 };
         let frame = rig
-            .solve_frame(1.0 / 60.0, anchor, &bvh, |_, _| 0.0)
+            .solve_frame(1.0 / 60.0, anchor, &bvh, &|_, _| 0.0)
             .expect("lawful camera frame");
         assert!(
             frame.near_sphere_guarded,
@@ -411,7 +411,7 @@ fn engine_ve_26() {
     // First-person eye mode pressed right up against the `+X` inner wall (`x = 2.79`):
     rig.mode = CameraMode::FirstPersonEye;
     let fp_frame = rig
-        .solve_frame(1.0 / 60.0, Vec3::new(2.79, 1.6, 0.0), &bvh, |_, _| 0.0)
+        .solve_frame(1.0 / 60.0, Vec3::new(2.79, 1.6, 0.0), &bvh, &|_, _| 0.0)
         .expect("first-person wall-guarded frame");
     assert!(fp_frame.near_sphere_guarded);
     assert!(
