@@ -461,3 +461,9 @@ All 196 result words matched the original GGML CPU over zero to five blocks, inc
 The certified layout assigns one exponent-only scale to 32 lanes or four unsigned scales to groups of 16. Candidate selection follows the imported table order on ties. The destination is published after every group succeeds. Attestation `d982858873ba0e37afa86b778d4f7be7c5c69dbf9a1e65aac988a421f99966ea` binds the export.
 
 All 16,787 bytes in 622 blocks matched the two original GGML encoders. The cases include single-lane impulses, powers of two and their representable neighbors, and unsigned scale transitions. Short buffers and nonfinite lanes preserved the destination. Repeating the low nibble in both positions failed the MXFP4 byte comparison. The restored encoders and prior ternary contracts passed. The source lift retained 585 lifted and 1,150 residual functions.
+
+## VTK-49 grouped signed six-bit encoder
+
+For each group of 16 lanes the certified plan compares the initial inverse scale and 18 neighboring trials. It ranks the squared weighted correlation in binary32 order, preserves the winning provisional coefficients when the stored group scale decodes to zero, and joins the low nibbles with the separate two-bit planes. Attestation `8ad7829da0bfdc0d89dbd75e0ed6bfce4df3b7af8ccec72f486f3625fc4ad055` binds the export.
+
+All 65,520 bytes in 312 blocks matched the original GGML Q6_K reference. The inputs cover sign ties, each impulse position, varied group magnitudes, zeros, scale underflow and the small-group cutoff. Short blocks and nonfinite lanes preserved the destination. Clearing the upper plane failed the original byte comparison. The source lift retained 585 lifted and 1,150 residual functions.

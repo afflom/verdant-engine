@@ -47,6 +47,8 @@ pub enum PackedWeightEncoding {
     ExponentOnlyFour,
     /// Four-bit floating codebook with unsigned E4M3 group scales.
     UnsignedScaleFour,
+    /// Signed six-bit coefficients with per-group multipliers and a binary16 block scale.
+    GroupedSignedSix,
 }
 
 impl From<WeightBlockEncoding> for PackedWeightEncoding {
@@ -75,6 +77,172 @@ pub fn encode_weight_block<I: AsRef<[f32]> + ?Sized>(
     use PackedWeightEncoding::*;
     let input = input.as_ref();
     let kind = kind.into();
+    if kind == GroupedSignedSix {
+        use verdant_grouped_six_encoding::{run, Adt0 as Request, Adt1 as Frame, Adt2 as Step};
+        let invalid = || TensorComputeError::InvalidKernelSpecification {
+            kernel_name: "GroupedSixEncoding".into(),
+        };
+        let plan = |request| run(request).map_err(|_| invalid());
+        let word = |step| match step {
+            Step::C2(value) => Ok(value),
+            _ => Err(invalid()),
+        };
+        let calculate = |program: fn(u64, Frame) -> Request, a, b, c, d| {
+            let mut registers = [0; PLANE];
+            let mut phase = 0;
+            loop {
+                let [x, y, z, t] = registers;
+                let frame = Frame::C0(a, b, c, d, x, y, z, t);
+                let (target, result) = match plan(program(phase, frame))? {
+                    Step::C5(operation, left, right, target) => {
+                        let value = super::evaluate_f32_scalar(
+                            operation,
+                            f32::from_bits(left as u32),
+                            f32::from_bits(right as u32),
+                        )?;
+                        (target, u64::from(value.to_bits()))
+                    }
+                    Step::C6(code, center, target) => (
+                        target,
+                        super::encode_small_integer(code, center)
+                            .map_err(|_| invalid())?
+                            .ok_or_else(invalid)?,
+                    ),
+                    Step::C7(narrow, word, target) => (
+                        target,
+                        super::convert_float_storage(u64::from(!narrow), u64::from(narrow), word)
+                            .map_err(|_| invalid())?
+                            .ok_or_else(invalid)?,
+                    ),
+                    Step::C8(left, right, target) => (
+                        target,
+                        super::evaluate_encoded_word(0, left, right)
+                            .map_err(|_| invalid())?
+                            .ok_or_else(invalid)?,
+                    ),
+                    Step::C9(input, center, target) => {
+                        (target, word(plan(Request::C9(input, center))?)?)
+                    }
+                    result => return Ok::<_, TensorComputeError>(result),
+                };
+                *registers.get_mut(target as usize).ok_or_else(invalid)? = result;
+                phase += 1;
+            }
+        };
+        let Step::C1(width, trials, stride, bank) =
+            plan(Request::C0(input.len() as u64, output.len() as u64))?
+        else {
+            return Err(invalid());
+        };
+        let mut scales = [0; PAIRS];
+        let mut provisional = [0; PAIRS];
+        let mut peak_scale = 0;
+        for ((group, scale), chosen) in input
+            .chunks_exact(width as usize)
+            .zip(&mut scales)
+            .zip(&mut provisional)
+        {
+            let peak = group.iter().try_fold(0, |peak, x| {
+                word(plan(Request::C1(true, peak, x.to_bits().into()))?)
+            })?;
+            let first = word(calculate(Request::C2, peak, 0, 0, 0)?)?;
+            if first == 0 {
+                continue;
+            }
+            let mut best = 0;
+            for trial in 0..trials {
+                let inverse = if trial == 0 {
+                    first
+                } else {
+                    word(calculate(Request::C2, peak, trial, 0, 0)?)?
+                };
+                let mut xy = 0;
+                let mut yy = 0;
+                for x in group {
+                    let Step::C3(a, b) =
+                        calculate(Request::C3, x.to_bits().into(), inverse, xy, yy)?
+                    else {
+                        return Err(invalid());
+                    };
+                    (xy, yy) = (a, b);
+                }
+                match calculate(Request::C4, u64::from(trial == 0), xy, yy, best)? {
+                    Step::C4(candidate, score) => {
+                        (*scale, best, *chosen) = (candidate, score, inverse)
+                    }
+                    Step::C2(0) => (),
+                    _ => return Err(invalid()),
+                }
+            }
+            peak_scale = word(plan(Request::C1(false, peak_scale, *scale))?)?;
+        }
+        let (inverse, half, unit) = match calculate(Request::C5, peak_scale, 0, 0, 0)? {
+            Step::C2(0) => {
+                output.fill(0);
+                return Ok(());
+            }
+            Step::C1(inverse, half, unit, _) => (inverse, half, unit),
+            _ => return Err(invalid()),
+        };
+        let mut staged = [0; PAIRS * PAIRS];
+        let mut codes = [0; PAIRS * PAIRS];
+        let (low, rest) = staged[..output.len()].split_at_mut(bank as usize);
+        let (high, rest) = rest.split_at_mut((bank / scalars::two_u64()) as usize);
+        let (headers, trailer) = rest.split_at_mut(scales.len());
+        trailer.copy_from_slice(&(half as u16).to_ne_bytes());
+        for ((((group, lanes), scale), chosen), header) in input
+            .chunks_exact(width as usize)
+            .zip(codes.chunks_exact_mut(width as usize))
+            .zip(scales)
+            .zip(provisional)
+            .zip(headers)
+        {
+            let Step::C3(byte, local) = calculate(Request::C6, inverse, unit, scale, 0)? else {
+                return Err(invalid());
+            };
+            *header = byte as u8;
+            // A rounded zero group scale retains the codes from the winning search trial.
+            let retain = super::evaluate_encoded_word(0, local, 0)
+                .map_err(|_| invalid())?
+                .ok_or_else(invalid)?
+                == 1;
+            let factor = if retain { chosen } else { local };
+            for (lane, x) in lanes.iter_mut().zip(group) {
+                *lane = word(calculate(
+                    Request::C7,
+                    u64::from(retain),
+                    x.to_bits().into(),
+                    factor,
+                    0,
+                )?)? as u8;
+            }
+        }
+        for ((codes, lows), highs) in codes
+            .chunks_exact(bank as usize)
+            .zip(low.chunks_exact_mut((bank / scalars::two_u64()) as usize))
+            .zip(high.chunks_exact_mut(stride as usize))
+        {
+            let mut bands = codes.chunks_exact(stride as usize);
+            let [Some(a), Some(b), Some(c), Some(d)] = std::array::from_fn(|_| bands.next()) else {
+                return Err(invalid());
+            };
+            let (first, second) = lows.split_at_mut(stride as usize);
+            for (lane, dst) in highs.iter_mut().enumerate() {
+                let Step::C1(x, y, z, _) = plan(Request::C8(
+                    a[lane].into(),
+                    b[lane].into(),
+                    c[lane].into(),
+                    d[lane].into(),
+                ))?
+                else {
+                    return Err(invalid());
+                };
+                (first[lane], second[lane], *dst) = (x as u8, y as u8, z as u8);
+            }
+        }
+        output.copy_from_slice(&staged[..output.len()]);
+        return Ok(());
+    }
     if matches!(
         kind,
         BinarySign

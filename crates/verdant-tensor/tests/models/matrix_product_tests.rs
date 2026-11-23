@@ -392,6 +392,7 @@ int main(int argc, char **argv) {
   if (!std::strcmp(argv[1], "grouped-q6-dot")) return compare_grouped_rows<block_q6_K>(GGML_TYPE_Q6_K);
   if (!std::strcmp(argv[1], "grouped-q4-dot")) return compare_grouped_rows<block_q4_K>(GGML_TYPE_Q4_K);
   if (!std::strcmp(argv[1], "grouped-q5-dot")) return compare_grouped_rows<block_q5_K>(GGML_TYPE_Q5_K);
+  if (!std::strcmp(argv[1], "signed-six-encode")) return encode_blocks<QK_K>(quantize_row_q6_K_ref);
   if (!std::strcmp(argv[1], "mxfp4-encode")) return encode_blocks<QK_MXFP4>(quantize_row_mxfp4_ref);
   if (!std::strcmp(argv[1], "nvfp4-encode")) return encode_blocks<QK_NVFP4>(quantize_row_nvfp4_ref);
   if (!std::strcmp(argv[1], "tq1_0")) return encode_blocks<QK_K>(quantize_row_tq1_0_ref);
@@ -1163,6 +1164,7 @@ fn verify_bundle(scope: &str, directory: &str) -> std::collections::BTreeMap<Str
                     "verdant_row_ranking" => include_bytes!("../../../../generated/tensor-rowrank/packages/rust-core/verdant_row_ranking/src/lib.rs"),
                     "verdant_normalized_exponential" => include_bytes!("../../../../generated/tensor-softmax/packages/rust-core/verdant_normalized_exponential/src/lib.rs"),
                     "verdant_grouped_affine" => include_bytes!("../../../../generated/tensor-affinedot/packages/rust-core/verdant_grouped_affine/src/lib.rs"),
+                    "verdant_grouped_six_encoding" => include_bytes!("../../../../generated/tensor-sixpack/packages/rust-core/verdant_grouped_six_encoding/src/lib.rs"),
                     "verdant_softplus" => include_bytes!("../../../../generated/tensor-softplus/packages/rust-core/verdant_softplus/src/lib.rs"),
                     "verdant_bitpacked_product" => include_bytes!("../../../../generated/tensor-bitrows/packages/rust-core/verdant_bitpacked_product/src/lib.rs"),
                     "verdant_head_slope_index" => include_bytes!("../../../../generated/tensor-slopes/packages/rust-core/verdant_head_slope_index/src/lib.rs"),
@@ -2821,6 +2823,16 @@ fn compact_float_weight_encoding_vtk_48() {
     compare_weight_encoders::<64>(&[(UnsignedScaleFour, 36, "nvfp4-encode")]);
 }
 
+#[test]
+fn grouped_signed_six_encoding_vtk_49() {
+    use super::PackedWeightEncoding::GroupedSignedSix;
+    assert_eq!(
+        verify_bundle("sixpack", "tensor-sixpack")["VerdantEngine.GroupedSixEncoding.evaluate"],
+        "verdant_grouped_six_encoding"
+    );
+    compare_weight_encoders::<256>(&[(GroupedSignedSix, 210, "signed-six-encode")]);
+}
+
 fn compare_weight_encoders<const N: usize>(formats: &[(super::PackedWeightEncoding, usize, &str)]) {
     use std::fmt::Write;
     let ties = [
@@ -2877,6 +2889,28 @@ fn compare_weight_encoders<const N: usize>(formats: &[(super::PackedWeightEncodi
                         magnitude
                     } else {
                         magnitude * (ties[i % ties.len()] / 2.0)
+                    }
+                }));
+            }
+        }
+    }
+    if formats
+        .iter()
+        .any(|(kind, _, _)| *kind == super::PackedWeightEncoding::GroupedSignedSix)
+    {
+        for amplitude in [1.0e9_f32, 1.0e20, f32::MAX] {
+            rows.push([amplitude; N]);
+            rows.push([-amplitude; N]);
+        }
+        for amplitude in [1.0e-15_f32, 32.0e-15, 0.0001, 0.125, 1.0, 128.0] {
+            for peak in [amplitude.next_down(), amplitude, amplitude.next_up()] {
+                rows.push(std::array::from_fn(|i| {
+                    let signed = if i % 2 == 0 { peak } else { -peak };
+                    match i / 16 % 4 {
+                        0 => signed,
+                        1 => signed / 1024.0,
+                        2 => signed * ((i % 16) as f32 - 7.5) / 8.0,
+                        _ => 0.0,
                     }
                 }));
             }

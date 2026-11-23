@@ -807,3 +807,9 @@ Feature: engine
     Given signed scalar inputs, scale boundaries, signed zeros and tied nearest values
     When Verdant encodes the complete block
     Then every stored byte matches the original GGML encoder and rejected inputs preserve the destination
+
+  @VTK-49 @build
+  Scenario: Verdant encodes grouped signed six-bit weight blocks with per-group scale selection and separate low and high bit planes
+    Given signed binary32 rows bound to the imported six-bit weight encoder
+    When the certified quantizer chooses the group scales and packs its two bit planes
+    Then every output byte matches the original reference and failed encodings preserve the destination

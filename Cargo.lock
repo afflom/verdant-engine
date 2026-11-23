@@ -846,6 +846,7 @@ dependencies = [
  "verdant_grouped_affine",
  "verdant_grouped_dot",
  "verdant_grouped_q8",
+ "verdant_grouped_six_encoding",
  "verdant_head_slope",
  "verdant_head_slope_base",
  "verdant_head_slope_digit",
@@ -999,6 +1000,10 @@ version = "2.26.0"
 [[package]]
 name = "verdant_grouped_q8"
 version = "2.25.0"
+
+[[package]]
+name = "verdant_grouped_six_encoding"
+version = "2.42.0"
 
 [[package]]
 name = "verdant_head_slope"

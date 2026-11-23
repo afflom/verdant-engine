@@ -866,3 +866,9 @@ id = "VTK-48"
 level = "build"
 suite = "engine"
 statement = "Verdant encodes exponent-only and grouped unsigned-scale four-bit floating weight blocks"
+
+[[id]]
+id = "VTK-49"
+level = "build"
+suite = "engine"
+statement = "Verdant encodes grouped signed six-bit weight blocks with per-group scale selection and separate low and high bit planes"

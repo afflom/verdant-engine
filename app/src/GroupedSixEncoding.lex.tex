@@ -1,0 +1,161 @@
+\begin{lexlean}{GroupedSixEncoding}
+\useglossary{lexlean.std.bool@1.2.0}
+\useglossary{lexlean.std.nat@1.2.0}
+\title{Natural number}
+\begin{semanticmodule}
+structure{
+  name: Frame,
+  type_parameters: [],
+  parameters: [],
+  fields: [
+    {name: a, type: Nat},
+    {name: b, type: Nat},
+    {name: c, type: Nat},
+    {name: d, type: Nat},
+    {name: x, type: Nat},
+    {name: y, type: Nat},
+    {name: z, type: Nat},
+    {name: t, type: Nat}
+  ]
+}
+
+inductive{
+  name: Request,
+  type_parameters: [],
+  parameters: [],
+  constructors: [
+    {name: sixGeometry, fields: [Nat, Nat]},
+    {name: signedPeak, fields: [Bool, Nat, Nat]},
+    {name: sixInverse, fields: [Nat, Frame]},
+    {name: weightedMoments, fields: [Nat, Frame]},
+    {name: trialScore, fields: [Nat, Frame]},
+    {name: sixBase, fields: [Nat, Frame]},
+    {name: sixLocal, fields: [Nat, Frame]},
+    {name: sixLane, fields: [Nat, Frame]},
+    {name: sixPlaneBytes, fields: [Nat, Nat, Nat, Nat]},
+    {name: roundedCode, fields: [Nat, Nat]}
+  ]
+}
+
+inductive{
+  name: Step,
+  type_parameters: [],
+  parameters: [],
+  constructors: [
+    {name: refuse, fields: []},
+    {name: row, fields: [Nat, Nat, Nat, Nat]},
+    {name: value, fields: [Nat]},
+    {name: signedPair, fields: [Nat, Nat]},
+    {name: candidate, fields: [Nat, Nat]},
+    {name: arithmetic, fields: [Nat, Nat, Nat, Nat]},
+    {name: integer, fields: [Nat, Nat, Nat]},
+    {name: storage, fields: [Bool, Nat, Nat]},
+    {name: compareWords, fields: [Nat, Nat, Nat]},
+    {name: round, fields: [Nat, Nat, Nat]}
+  ]
+}
+
+definition{
+  name: sixPlanes,
+  parameters: [a : Nat, b : Nat, c : Nat, d : Nat],
+  result: Step,
+  body: (ctor Step.row ((prim remainder a 16 0 : Nat) + (prim multiply 16 (prim remainder c 16 0 : Nat) : Nat)) ((prim remainder b 16 0 : Nat) + (prim multiply 16 (prim remainder d 16 0 : Nat) : Nat)) (((prim quotient a 16 0 : Nat) + (prim multiply 4 (prim quotient b 16 0 : Nat) : Nat)) + ((prim multiply 16 (prim quotient c 16 0 : Nat) : Nat) + (prim multiply 64 (prim quotient d 16 0 : Nat) : Nat))) 0),
+  executable: true
+}
+
+definition{
+  name: sixInverseStep,
+  parameters: [phase : Nat, frame : Frame],
+  result: Step,
+  body: (if ((project frame b) <? 19) then (if ((prim remainder (project frame a) 2147483648 0 : Nat) <? 646978941) then (ctor Step.value 0) else (if ((project frame b) =? 0) then (if (phase <? 1) then (ctor Step.arithmetic 3 3254779904 (project frame a) 0) else (ctor Step.value (project frame x))) else (if (phase <? 2) then (if (phase <? 1) then (ctor Step.integer (project frame b) (if ((project frame b) <=? 9) then 10 else 9) 0) else (ctor Step.arithmetic 2 1036831949 (project frame x) 0)) else (if (phase <? 3) then (ctor Step.arithmetic 1 3254779904 (project frame x) 0) else (if (phase <? 4) then (ctor Step.arithmetic 3 (project frame x) (project frame a) 0) else (ctor Step.value (project frame x))))))) else (ctor Step.refuse)),
+  executable: true
+}
+
+definition{
+  name: weightedMomentsStep,
+  parameters: [phase : Nat, frame : Frame],
+  result: Step,
+  body: (if (phase <? 6) then (if (phase <? 3) then (if (phase <? 1) then (ctor Step.arithmetic 2 (project frame b) (project frame a) 0) else (if (phase <? 2) then (ctor Step.arithmetic 0 1262485504 (project frame x) 0) else (ctor Step.round (project frame x) 32 0))) else (if (phase <? 4) then (ctor Step.integer (project frame x) 32 0) else (if (phase <? 5) then (ctor Step.arithmetic 2 (project frame a) (project frame a) 1) else (ctor Step.arithmetic 2 (project frame y) (project frame a) 2)))) else (if (phase <? 9) then (if (phase <? 7) then (ctor Step.arithmetic 2 (project frame z) (project frame x) 2) else (if (phase <? 8) then (ctor Step.arithmetic 0 (project frame c) (project frame z) 2) else (ctor Step.arithmetic 2 (project frame y) (project frame x) 1))) else (if (phase <? 10) then (ctor Step.arithmetic 2 (project frame y) (project frame x) 1) else (if (phase <? 11) then (ctor Step.arithmetic 0 (project frame d) (project frame y) 1) else (ctor Step.signedPair (project frame z) (project frame y)))))),
+  executable: true
+}
+
+definition{
+  name: trialScoreStep,
+  parameters: [phase : Nat, frame : Frame],
+  result: Step,
+  body: (if ((project frame a) =? 1) then (if ((prim remainder (project frame c) 2147483648 0 : Nat) =? 0) then (ctor Step.candidate 0 0) else (if (phase <? 1) then (ctor Step.arithmetic 3 (project frame b) (project frame c) 2) else (if (phase <? 2) then (ctor Step.arithmetic 2 (project frame z) (project frame b) 3) else (ctor Step.candidate (project frame z) (project frame t))))) else (if (phase <? 3) then (if (phase <? 1) then (ctor Step.arithmetic 2 (project frame b) (project frame b) 0) else (if (phase <? 2) then (ctor Step.arithmetic 2 (project frame d) (project frame c) 1) else (ctor Step.compareWords (project frame x) (project frame y) 0))) else (if (phase <? 5) then (if (phase <? 4) then (ctor Step.compareWords (project frame c) 0 1) else (if (((project frame x) =? 2) && ((project frame y) =? 2)) then (ctor Step.arithmetic 3 (project frame b) (project frame c) 2) else (ctor Step.value 0))) else (if (phase <? 6) then (ctor Step.arithmetic 2 (project frame z) (project frame b) 3) else (ctor Step.candidate (project frame z) (project frame t)))))),
+  executable: true
+}
+
+definition{
+  name: sixBaseStep,
+  parameters: [phase : Nat, frame : Frame],
+  result: Step,
+  body: (if ((prim remainder (project frame a) 2147483648 0 : Nat) <? 646978941) then (ctor Step.value 0) else (if (phase <? 2) then (if (phase <? 1) then (ctor Step.arithmetic 3 3271557120 (project frame a) 0) else (ctor Step.arithmetic 3 1065353216 (project frame x) 1)) else (if (phase <? 3) then (ctor Step.storage true (project frame y) 2) else (if (phase <? 4) then (ctor Step.storage false (project frame z) 1) else (ctor Step.row (project frame x) (project frame z) (project frame y) 0))))),
+  executable: true
+}
+
+definition{
+  name: sixLocalStep,
+  parameters: [phase : Nat, frame : Frame],
+  result: Step,
+  body: (if (phase <? 3) then (if (phase <? 1) then (ctor Step.arithmetic 2 (project frame a) (project frame c) 0) else (if (phase <? 2) then (ctor Step.arithmetic 0 1262485504 (project frame x) 0) else (ctor Step.round (project frame x) 128 0))) else (if (phase <? 4) then (ctor Step.integer (project frame x) 128 1) else (if (phase <? 5) then (ctor Step.arithmetic 2 (project frame b) (project frame y) 1) else (ctor Step.signedPair (prim remainder ((project frame x) + 128) 256 0 : Nat) (project frame y))))),
+  executable: true
+}
+
+definition{
+  name: sixLaneStep,
+  parameters: [phase : Nat, frame : Frame],
+  result: Step,
+  body: (if (((project frame a) =? 1) && ((prim remainder (project frame c) 2147483648 0 : Nat) =? 0)) then (ctor Step.value 0) else (if (phase <? 2) then (if (phase <? 1) then (if ((project frame a) =? 1) then (ctor Step.arithmetic 2 (project frame c) (project frame b) 0) else (ctor Step.arithmetic 3 (project frame b) (project frame c) 0)) else (ctor Step.arithmetic 0 1262485504 (project frame x) 0)) else (if (phase <? 3) then (ctor Step.round (project frame x) 32 0) else (ctor Step.value (project frame x))))),
+  executable: true
+}
+
+definition{
+  name: evaluate,
+  parameters: [request : Request],
+  result: Step,
+  body: (match request
+    | Request.sixGeometry input output => (if ((input =? 256) && (output =? 210)) then (ctor Step.row 16 19 32 128) else (ctor Step.refuse))
+    | Request.signedPeak input previous word => (if ((word <? 4294967296) && (if input then ((prim remainder word 2147483648 0 : Nat) <? 2139095040) else true)) then (ctor Step.value (if (((prim remainder word 2147483648 0 : Nat) <=? 2139095040) && ((prim remainder previous 2147483648 0 : Nat) <? (prim remainder word 2147483648 0 : Nat))) then word else previous)) else (ctor Step.refuse))
+    | Request.sixInverse phase frame => (sixInverseStep phase frame)
+    | Request.weightedMoments phase frame => (weightedMomentsStep phase frame)
+    | Request.trialScore phase frame => (trialScoreStep phase frame)
+    | Request.sixBase phase frame => (sixBaseStep phase frame)
+    | Request.sixLocal phase frame => (sixLocalStep phase frame)
+    | Request.sixLane phase frame => (sixLaneStep phase frame)
+    | Request.sixPlaneBytes a b c d => (if (((a <? 64) && (b <? 64)) && ((c <? 64) && (d <? 64))) then (sixPlanes a b c d) else (ctor Step.refuse))
+    | Request.roundedCode word center => (if (center =? 32) then (ctor Step.value (if (word <=? 1262485472) then 0 else (if (1262485535 <=? word) then 63 else (prim remainder ((prim remainder word 64 0 : Nat) + 32) 64 0 : Nat)))) else (if (center =? 128) then (ctor Step.value (if (word <=? 1262485376) then 0 else (if (1262485631 <=? word) then 255 else (prim remainder ((prim remainder word 256 0 : Nat) + 128) 256 0 : Nat)))) else (ctor Step.refuse)))),
+  executable: true,
+  production: {effects: [overflow], targets: [rust-core]}
+}
+
+theorem{
+  name: sixRejectsTruncatedOutput,
+  parameters: [],
+  statement: ((evaluate (ctor Request.sixGeometry 256 209)) = (ctor Step.refuse)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: sixAlternatingPlanes,
+  parameters: [],
+  statement: ((evaluate (ctor Request.sixPlaneBytes 0 16 32 48)) = (ctor Step.row 0 0 228 0)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: sixRefusesNonfiniteLane,
+  parameters: [],
+  statement: ((evaluate (ctor Request.signedPeak true 0 2139095040)) = (ctor Step.refuse)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: unorderedGroupScalePreservesEarlierPeak,
+  parameters: [],
+  statement: ((evaluate (ctor Request.signedPeak false 1065353216 2143289344)) = (ctor Step.value 1065353216)),
+  proof: reflexivity{}
+}
+\end{semanticmodule}
+\end{lexlean}

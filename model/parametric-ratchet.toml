@@ -58,7 +58,7 @@ max_unlifted_workspace_modules = 0
 
 [frontier_ratchet]
 frontier_register = "frontier.toml"
-frontier_rust_tree_sha256 = "f9e9cd0e0584daefccdb5584b8a33d180d15acaef23fc613b83de42bd01d9eca"
+frontier_rust_tree_sha256 = "253f1e1c14afb07fb4ac12af57dbaf266ff0f659a6561b83a5cf1dab18e538a9"
 min_lifted_functions = 585
 max_residue_functions = 1150
 max_uncertified_functions = 1308
@@ -395,3 +395,8 @@ role = "Select the binary32 softplus cutoff and compensate rounding in the logar
 path = "app/src/BitpackedProduct.lex.tex"
 stratum = 1
 role = "Define coefficient extraction and signed-byte activation grouping for short bit-packed weight fields."
+
+[[stratum_module]]
+path = "app/src/GroupedSixEncoding.lex.tex"
+stratum = 2
+role = "Select grouped signed six-bit coefficients with weighted binary32 scale trials and pack their two planes."
