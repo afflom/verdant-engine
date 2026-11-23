@@ -7,7 +7,7 @@
   "liveMetrics": {
     "wasmCoreBytes": 154421,
     "wasmUorcBytes": 1736506,
-    "releaseCapsuleBytes": 1005357,
+    "releaseCapsuleBytes": 1005317,
     "blankFrameBytes": 29177,
     "maxHandwrittenRustFileLines": 1247,
     "maxJsFileLines": 920,
@@ -222,15 +222,15 @@
       "citedAuthority": "AUTH-STITCH-SELF-HOSTING",
       "ratchetLayer": "surface-wasm",
       "priority": "medium",
-      "currentValue": "verdant-uorc.wasm 1736506 B · .holo 1005357 B · Blank Frame 29177 B (1543 B headroom)",
+      "currentValue": "verdant-uorc.wasm 1736506 B · .holo 1005317 B · Blank Frame 29177 B (1543 B headroom)",
       "targetValue": "verdant-uorc.wasm <= 1560576 B and gzipped .holo <= 1.0 MiB",
       "summary": "Keep browser verdant-uorc.wasm ultra-lean (< 1.5 MiB) and drive gzipped .holo release capsules below 1.0 MiB for instant Blank Frame cold boots.",
       "concreteActions": [
         "Keep uorc-ncm-decode native-only and audit gltf-json / serde_json monomorphizations inside verdant-uorc.wasm.",
         "Maintain Blank Frame strictly under 30720 B with DecompressionStream('gzip')."
       ],
-      "kappaHex": "8b19c2f6abeb617d306c076107a12caa93908fbdce64d0753e46ba198e916da5"
+      "kappaHex": "1539d4fbe8d4c92b303692c71a193dbcbc5263a27c43cb045cfe4d2817fc0b4b"
     }
   ],
-  "agendaKappaHex": "2b4f602df4e58c19fe56c2b0259e255d97552481d96dfaaaf6c2777f2edaa6a2"
+  "agendaKappaHex": "5eaaa3a76b2cfcd0d8f7f495b4c80ea5e611123ab6eac402990801a86e56223f"
 }

@@ -33,7 +33,7 @@
       "owningManagerId": "mgr-observer-executive",
       "category": "in-process",
       "passed": true,
-      "durationMs": 19,
+      "durationMs": 108,
       "detail": "valid=true entries=16 violations=0"
     },
     {
@@ -41,7 +41,7 @@
       "owningManagerId": "mgr-change-release",
       "category": "in-process",
       "passed": true,
-      "durationMs": 1,
+      "durationMs": 4,
       "detail": "29177 B <= 30720 B"
     },
     {
@@ -57,7 +57,7 @@
       "owningManagerId": "mgr-knowledge-provenance",
       "category": "in-process",
       "passed": true,
-      "durationMs": 1,
+      "durationMs": 8,
       "detail": "fidelity_open=0 frontier_valid=true"
     },
     {
@@ -69,5 +69,5 @@
       "detail": "total=231 (rust=94, test=25, lex=64, feature=3, model=16, script=20, view=9)"
     }
   ],
-  "reportKappaHex": "0677ea019c1053dfbebc574fc48538b95848bf3e2716d083021d3ccdd64c54f9"
+  "reportKappaHex": "7facf5a5c07ca37ee6417490e288aeac8fb91fb8bc55e2586253053fd42d4b0c"
 }

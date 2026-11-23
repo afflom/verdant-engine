@@ -687,8 +687,12 @@ pub fn execute_gateway_op(
             }
 
             // Prepare a shadow secondary gateway directory with 4 of 8 shards DELIBERATELY WITHHELD:
-            let shadow_dir =
-                std::env::temp_dir().join(format!("verdant-gw-verify-{}", std::process::id()));
+            static VERIFY_SEQ: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(1);
+            let verify_seq = VERIFY_SEQ.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+            let shadow_dir = std::env::temp_dir().join(format!(
+                "verdant-gw-verify-{}-{verify_seq}",
+                std::process::id()
+            ));
             let _ = std::fs::remove_dir_all(&shadow_dir);
             std::fs::create_dir_all(shadow_dir.join("shards"))
                 .map_err(|e| make_err(format!("mkdir shadow gateway shards: {e}")))?;

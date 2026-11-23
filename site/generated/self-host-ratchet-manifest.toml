@@ -4,10 +4,10 @@ spec = "verdant/self-host-ratchet-manifest/1"
 generator = "verdant-operator-ratchet-lift"
 version = "2.19.0"
 release_epoch = 23
-source_commit_kappa = "7987600adeebde0ccc68314eef5d66842203eb445141c9cbb9a985588290bc2f"
-source_tree_root_sha256 = "65202d818b8434f11d41d0cac3d9fc618962f18327917fdc65355ad750aa75a5"
-immutability_seal_root_sha256 = "60e2b572aec8386cb0fd3b0ce9e713c16b62e64a3209d19c5752a2a1ee3e234d"
-release_capsule_sha256 = "4af3108aa2a91dc091219f75f63043286b3f54e12e90f9b142610e887ab5e7b0"
+source_commit_kappa = "96150a433de686681e735c6e025a23d8213feb1d8e0ceef9724395ce80efd16d"
+source_tree_root_sha256 = "77ac6a1523dbeab3c2021dadb74f0f4b51865c0d2c5e763dd43907dbc6db198a"
+immutability_seal_root_sha256 = "c1347df9c56643b9c5feb1a43cba57c40094c0f63e26d54dc97c905d24af5ec0"
+release_capsule_sha256 = "9d1445d73de40ae2e14ce0062459f8fcf4e5a419cbbfd3dbd29513ad254f2c74"
 unlifted_ui_files = 0
 unverified_frame_assets = 0
 user_required_external_accounts = 0
@@ -116,7 +116,7 @@ sha256 = "e0ea19dbbf7bbfe00fc4b7dff743f8b9c47462137a905e8367e153614b09fc35"
 [[lifted_module]]
 path = "crates/verdant-core/src/gateway_swarm.rs"
 category = "rust"
-sha256 = "e89a1185567428f8f8b6353f8ca92efecbf2334c6691da4a3d988b5d6cab3f39"
+sha256 = "a42a524ac307d6b4547e0d9104a6ffa4b512a93a173faae6c1c76e3eac0f47c8"
 
 [[lifted_module]]
 path = "crates/verdant-core/src/geometry.rs"
@@ -511,7 +511,7 @@ sha256 = "151612c25732124f89626c18b88e963727f09ae74c10f4b90bb7a9e874595509"
 [[lifted_module]]
 path = "crates/conformance/tests/engine/governance.rs"
 category = "verification-test"
-sha256 = "8b6dce83f86d8baf062682064c38f9cdab03de59a5f42e2b75f979e0fb8f817c"
+sha256 = "73f350a908e3d97cd915da887bc9dc83115e4855b2e84df5c01090d4d42c3e42"
 
 [[lifted_module]]
 path = "crates/conformance/tests/engine/main.rs"
