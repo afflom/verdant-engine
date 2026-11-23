@@ -1,0 +1,44 @@
+\begin{lexlean}{GaussianActivation}
+\useglossary{lexlean.std.bool@1.2.0}
+\useglossary{lexlean.std.nat@1.2.0}
+\importmodule{ScalarF32}
+\title{Natural number}
+\begin{semanticmodule}
+inductive{
+  name: Action,
+  type_parameters: [],
+  parameters: [],
+  constructors: [
+    {name: resultWord, fields: [Nat]},
+    {name: hyperbolicTangent, fields: [Nat]},
+    {name: sigmoid, fields: [Nat]}
+  ]
+}
+
+definition{
+  name: evaluate,
+  parameters: [quick : Bool, x : Nat, ready : Bool, response : Nat],
+  result: Action,
+  body: (if quick then (if ready then (ctor Action.resultWord (ScalarF32::multiply x response)) else (ctor Action.sigmoid (ScalarF32::multiply 1071242019 x))) else
+    (if ready then (ctor Action.resultWord (ScalarF32::multiply (ScalarF32::multiply 1056964608 x) (ScalarF32::add 1065353216 response))) else
+    (let cubic : Nat := (ScalarF32::multiply (ScalarF32::multiply 1027024659 x) x);
+    (ctor Action.hyperbolicTangent (ScalarF32::multiply (ScalarF32::multiply 1061962282 x) (ScalarF32::add 1065353216 cubic)))))),
+  executable: true,
+  production: {effects: [overflow], targets: [rust-core]}
+}
+
+theorem{
+  name: negativeZeroSurvivesTheLogisticProduct,
+  parameters: [],
+  statement: ((evaluate true 2147483648 true 1056964608) = (ctor Action.resultWord 2147483648)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: zeroRequestsZeroTangent,
+  parameters: [],
+  statement: ((evaluate false 0 false 0) = (ctor Action.hyperbolicTangent 0)),
+  proof: reflexivity{}
+}
+\end{semanticmodule}
+\end{lexlean}

@@ -306,6 +306,11 @@ stratum = 1
 role = "Symmetric four-bit lane placement, row extent admission and ordered F32 reduction instructions."
 
 [[stratum_module]]
+path = "app/src/GaussianActivation.lex.tex"
+stratum = 1
+role = "Compose certified binary32 products with the tangent and logistic forms of Gaussian activation."
+
+[[stratum_module]]
 path = "app/src/HyperbolicTangent.lex.tex"
 stratum = 1
 role = "Binary32 tangent range selection, odd-series coefficients, exponential reconstruction and signed saturation."

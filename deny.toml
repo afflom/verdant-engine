@@ -433,3 +433,9 @@ name = "verdant_tanh"
 version = "=2.27.0"
 expression = "MIT OR Apache-2.0"
 license-files = [{ path = "src/lib.rs", hash = 0x5c3364f3 }]
+
+[[licenses.clarify]]
+name = "verdant_gelu"
+version = "=2.28.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0x23496885 }]

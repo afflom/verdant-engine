@@ -38,6 +38,47 @@ pub fn tanh_f32(value: f32) -> Result<f32, TensorComputeError> {
     Ok(f32::from_bits(result as u32))
 }
 
+/// Evaluate the binary32 hyperbolic-tangent approximation to the Gaussian error linear unit.
+///
+/// # Errors
+/// Propagates failures from the certified word operations.
+pub fn gelu_f32(value: f32) -> Result<f32, TensorComputeError> {
+    gaussian_activation(value, false)
+}
+
+/// Evaluate the binary32 logistic approximation to the Gaussian error linear unit.
+///
+/// # Errors
+/// Propagates failures from the certified word operations.
+pub fn gelu_quick_f32(value: f32) -> Result<f32, TensorComputeError> {
+    gaussian_activation(value, true)
+}
+
+fn gaussian_activation(value: f32, quick: bool) -> Result<f32, TensorComputeError> {
+    use verdant_gelu::Adt0 as Action;
+    let invalid = || TensorComputeError::InvalidKernelSpecification {
+        kernel_name: "GaussianActivation.evaluate".into(),
+    };
+    let request = |response: Option<f32>| {
+        verdant_gelu::run(
+            quick,
+            u64::from(value.to_bits()),
+            response.is_some(),
+            u64::from(response.unwrap_or_default().to_bits()),
+        )
+        .map_err(|_| invalid())
+    };
+    let intermediate = match request(None)? {
+        Action::C1(word) => tanh_f32(f32::from_bits(word as u32))?,
+        Action::C2(word) => sigmoid_f32(f32::from_bits(word as u32))?,
+        Action::C0(word) => return Ok(f32::from_bits(word as u32)),
+    };
+    let Action::C0(word) = request(Some(intermediate))? else {
+        return Err(invalid());
+    };
+    Ok(f32::from_bits(word as u32))
+}
+
 /// Evaluate the binary32 logistic sigmoid.
 ///
 /// # Errors
