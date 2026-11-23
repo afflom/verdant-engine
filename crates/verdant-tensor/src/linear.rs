@@ -32,7 +32,9 @@ pub use bitpacked_product::{
     dot_binary_sign_row, dot_block_float_row, dot_two_bit_row, BlockFloatEncoding,
 };
 pub use grouped::{encode_grouped_q8_block, GroupedQ8Block};
-pub use grouped_affine::{dot_grouped_q4_row, dot_grouped_q5_row};
+pub use grouped_affine::{
+    dot_codebook_row, dot_grouped_q4_row, dot_grouped_q5_row, CodebookEncoding,
+};
 pub use grouped_product::dot_grouped_q2_row;
 pub use ranking::RowRankingF32;
 pub use rotation::{rotate_pair_f32, signed_word_f32, RotaryParameters, RotarySpectrum};

@@ -12,7 +12,11 @@ inductive{
     {name: metadata, fields: [Nat]},
     {name: group, fields: [Bool, Nat, Nat, Nat, Nat]},
     {name: coefficient, fields: [Nat, Nat, Nat, Nat, Nat]},
-    {name: accumulation, fields: [Bool]}
+    {name: accumulation, fields: [Bool]},
+    {name: codebookLayout, fields: [Nat, Nat, Nat]},
+    {name: codebookOffsets, fields: [Nat, Nat]},
+    {name: codebookGrid, fields: [Nat, Nat, Nat, Nat, Nat, Nat]},
+    {name: signedCoefficient, fields: [Nat, Nat, Nat, Nat]}
   ]
 }
 
@@ -25,7 +29,10 @@ inductive{
     {name: word, fields: [Nat]},
     {name: metadata, fields: [Nat, Nat, Nat]},
     {name: group, fields: [Nat, Nat, Nat, Nat, Nat]},
-    {name: arithmetic, fields: [Nat, Nat]}
+    {name: arithmetic, fields: [Nat, Nat]},
+    {name: row, fields: [Nat, Nat]},
+    {name: offsets, fields: [Nat, Nat, Nat, Nat, Nat, Nat]},
+    {name: grid, fields: [Nat, Bool, Nat, Nat]}
   ]
 }
 
@@ -46,6 +53,38 @@ definition{
 }
 
 definition{
+  name: codebookLayout,
+  parameters: [kind : Nat, bytes : Nat, count : Nat],
+  result: Step,
+  body: (let size : Nat := (if (kind =? 0) then 66 else (if (kind =? 1) then 74 else 82)); (if ((kind <? 3) && (bytes =? (prim multiply size count : Nat))) then (ctor Step.row size 1040187392) else (ctor Step.refused))),
+  executable: true
+}
+
+definition{
+  name: codebookOffsets,
+  parameters: [kind : Nat, group : Nat],
+  result: Step,
+  body: (if ((kind <? 3) && (group <? 32)) then (let sub : Nat := (prim quotient group 4 0 : Nat); (let slot : Nat := (prim remainder group 4 0 : Nat); (if (kind =? 0) then (let start : Nat := (2 + (prim multiply 8 sub : Nat)); (ctor Step.offsets (start + slot) 1 (start + 4) 4 start start)) else (if (kind =? 1) then (ctor Step.offsets (2 + (prim multiply 2 group : Nat)) 2 0 1 (66 + sub) 0) else (ctor Step.offsets (2 + group) 1 (66 + sub) 1 (74 + sub) (34 + group)))))) else (ctor Step.refused)),
+  executable: true
+}
+
+definition{
+  name: codebookGrid,
+  parameters: [kind : Nat, group : Nat, code : Nat, control : Nat, scale : Nat, signs : Nat],
+  result: Step,
+  body: (let slot : Nat := (prim remainder group 4 0 : Nat); (if (kind =? 0) then (ctor Step.grid (1160 + (prim multiply 8 code : Nat)) true (8 + (prim remainder (prim quotient control (if (slot =? 0) then 1 else (if (slot =? 1) then 128 else (if (slot =? 2) then 16384 else 2097152))) 0 : Nat) 128 0 : Nat)) (1 + (prim multiply 2 (prim quotient control 268435456 0 : Nat) : Nat))) else (if (kind =? 1) then (ctor Step.grid (3208 + (prim multiply 8 (prim remainder code 512 0 : Nat) : Nat)) true (8 + (prim quotient code 512 0 : Nat)) (1 + (prim multiply 2 (prim remainder (prim quotient scale (if (slot <? 2) then 1 else 16) 0 : Nat) 16 0 : Nat) : Nat))) else (ctor Step.grid (7304 + (prim multiply 8 (code + (prim multiply 256 (prim remainder (prim quotient control (if (slot =? 0) then 1 else (if (slot =? 1) then 4 else (if (slot =? 2) then 16 else 64))) 0 : Nat) 4 0 : Nat) : Nat)) : Nat)) false signs (1 + (prim multiply 2 (prim remainder (prim quotient scale (if (slot <? 2) then 1 else 16) 0 : Nat) 16 0 : Nat) : Nat)))))),
+  executable: true
+}
+
+definition{
+  name: signedCoefficient,
+  parameters: [lane : Nat, signs : Nat, magnitude : Nat, scale : Nat],
+  result: Step,
+  body: (let value : Nat := (prim multiply magnitude scale : Nat); (ctor Step.word (if ((prim remainder (prim quotient signs (highDivisor lane) 0 : Nat) 2 0 : Nat) =? 0) then value else (prim subtract 65536 value : Nat)))),
+  executable: true
+}
+
+definition{
   name: evaluate,
   parameters: [request : Request],
   result: Step,
@@ -54,6 +93,10 @@ definition{
     | Request.metadata group => (if (group <? 8) then (let slot : Nat := (prim remainder group 4 0 : Nat); (ctor Step.metadata (4 + slot) (8 + slot) (12 + slot))) else (ctor Step.refused))
     | Request.group high group a b c => (groupFields high group a b c)
     | Request.coefficient low divisor high plane scale => (let part : Nat := (prim remainder (prim quotient low divisor 0 : Nat) 16 0 : Nat); (let extra : Nat := (if (plane =? 0) then 0 else (prim multiply 16 (prim remainder (prim quotient high plane 0 : Nat) 2 0 : Nat) : Nat)); (ctor Step.word (prim multiply scale (part + extra) : Nat))))
+    | Request.codebookLayout kind bytes count => (codebookLayout kind bytes count)
+    | Request.codebookOffsets kind group => (codebookOffsets kind group)
+    | Request.codebookGrid kind group code control scale signs => (codebookGrid kind group code control scale signs)
+    | Request.signedCoefficient lane signs magnitude scale => (signedCoefficient lane signs magnitude scale)
     | Request.accumulation subtract => (ctor Step.arithmetic 2 (if subtract then 1 else 0))),
   executable: true,
   production: {effects: [overflow], targets: [rust-core]}
@@ -77,6 +120,27 @@ theorem{
   name: shortWeightRowRefused,
   parameters: [],
   statement: ((evaluate (ctor Request.layout false 143 1)) = (ctor Step.refused)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: indexedSignsLastGroup,
+  parameters: [],
+  statement: ((codebookOffsets 0 31) = (ctor Step.offsets 61 1 62 4 58 58)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: explicitSignsUpperPlane,
+  parameters: [],
+  statement: ((codebookGrid 2 31 255 192 240 170) = (ctor Step.grid 15488 false 170 31)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: negativeGridCoefficient,
+  parameters: [],
+  statement: ((signedCoefficient 7 128 43 31) = (ctor Step.word 64203)),
   proof: reflexivity{}
 }
 \end{semanticmodule}

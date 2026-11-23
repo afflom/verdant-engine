@@ -159,10 +159,13 @@ impl Score {
 }
 
 fn hex(bytes: &[u8]) -> String {
-    bytes.iter().fold(String::new(), |mut s, b| {
-        let _ = write!(s, "{b:02x}");
-        s
-    })
+    const DIGITS: &[u8; 16] = b"0123456789abcdef";
+    let mut output = String::with_capacity(bytes.len() * 2);
+    for &byte in bytes {
+        output.push(char::from(DIGITS[usize::from(byte >> 4)]));
+        output.push(char::from(DIGITS[usize::from(byte & 15)]));
+    }
+    output
 }
 
 /// κ of a question.

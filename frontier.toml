@@ -10,10 +10,10 @@
 # Residue by cause:
 #   arithmetic: 24
 #   call: 212
-#   form: 340
+#   form: 339
 #   signature: 52
 #   statements: 22
-#   type: 496
+#   type: 497
 #   width: 6
 
 spec = "uorust/register/1"
@@ -341,6 +341,11 @@ cause = "type"
 functions = 4
 
 [[construct]]
+construct = "type outside the lift: GroupedQ8Block.scale: f32"
+cause = "type"
+functions = 4
+
+[[construct]]
 construct = "type outside the lift: HdSectorBundle.scene: SceneWorld.entities: EntityRecord.local_transform: Transform.translation: Vec3.x: f64"
 cause = "type"
 functions = 4
@@ -412,11 +417,6 @@ functions = 3
 
 [[construct]]
 construct = "type outside the lift: &mut [i64]"
-cause = "type"
-functions = 3
-
-[[construct]]
-construct = "type outside the lift: GroupedQ8Block.scale: f32"
 cause = "type"
 functions = 3
 
@@ -1051,11 +1051,6 @@ cause = "form"
 functions = 1
 
 [[construct]]
-construct = "expression form outside the lift: write! into something other than the formatter"
-cause = "form"
-functions = 1
-
-[[construct]]
 construct = "signature outside the lift: takes &mut self of CyberneticObserverLoop: the lift reads self and &self as the value, and threads no other receiver"
 cause = "signature"
 functions = 1
@@ -1366,10 +1361,10 @@ reason = "statements"
 detail = "the body has statements other than let"
 
 [[residue]]
-kappa = "c1cd8b6e2ce3b745900a332053ab0e798232d6b868e0039990e18e917d7691a3"
+kappa = "6d8302ca802313337509e16803970ebfc1533ee6574e52afcfb8b0cebab477e6"
 function = "prism_fidelity::hex"
-reason = "form"
-detail = "expression form outside the lift: write! into something other than the formatter"
+reason = "call"
+detail = "calls with_capacity, which is not lifted"
 
 [[residue]]
 kappa = "0661c36b3baf7fc509cd26c3ff247f0a7e32a8d68830f19cb46589fdc899c281"
@@ -1478,12 +1473,6 @@ kappa = "ab2baf308ee0312e60ff48c289824c6d728f130e906004f57ee399de78262182"
 function = "prism_fidelity::ratchet::scan_rust_magic_literals"
 reason = "statements"
 detail = "the body has statements other than let"
-
-[[residue]]
-kappa = "93622583d65e74847a402d8e3082f49017e153b78f558fa06f587568ada4fd8f"
-function = "prism_fidelity::ratchet::sha256_hex_bytes"
-reason = "call"
-detail = "calls with_capacity, which is not lifted"
 
 [[residue]]
 kappa = "7ffb35cb700d8586c81ba6bae329fda3625f68d5b3d7ffb3be37a6e41a2d6d9a"
@@ -5018,6 +5007,12 @@ kappa = "c6b9dec173d5faacbc74a109fb4edcabe41a39e7851d5f85a9aac8bb963929e5"
 function = "verdant_tensor::linear::grouped::encode_grouped_q8_block"
 reason = "type"
 detail = "type outside the lift: f32"
+
+[[residue]]
+kappa = "eb0c4d6dc897e32b8098f76c3f4aee46b5750320152a7be3055a63515adeacea"
+function = "verdant_tensor::linear::grouped_affine::dot_codebook_row"
+reason = "type"
+detail = "type outside the lift: GroupedQ8Block.scale: f32"
 
 [[residue]]
 kappa = "60c0206502b695361477e455d2505b77f19882c176d214a9c76b815e271fba6a"
@@ -8613,7 +8608,7 @@ function = "prism_fidelity::main"
 effect = "Env effect: std::env::args"
 
 [[effect]]
-kappa = "03650280e04f568a065ea0c96b9e0c1a82596c79e91add9af80505b088578621"
+kappa = "72a6f2eae23f6cedf181feee895730af16bb7dacccbe23130d270d787a648c11"
 function = "prism_fidelity::ratchet::audit_parametric_ratchet"
 effect = "Fs effect: std::fs::read_to_string"
 

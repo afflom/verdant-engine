@@ -129,3 +129,111 @@ pub fn dot_grouped_q5_row(
 ) -> Result<f32, TensorComputeError> {
     run_grouped_affine_row!(true, weights, activations)
 }
+
+/// Layout of eight-lane signed codewords in a grouped two-bit weight block.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum CodebookEncoding {
+    /// Eight-bit grid index and four packed seven-bit sign selectors.
+    IndexedSigns,
+    /// Nine-bit grid index with a seven-bit sign selector in the same word.
+    ExtendedIndex,
+    /// Ten-bit grid index with separate high bits and an explicit sign byte.
+    ExplicitSigns,
+}
+
+/// Contract complete signed codebook weight blocks with prepared grouped Q8 activations.
+///
+/// # Errors
+/// Rejects inconsistent weight and activation lengths or an invalid certified instruction.
+pub fn dot_codebook_row(
+    weights: &[u8],
+    activations: &[GroupedQ8Block],
+    encoding: CodebookEncoding,
+) -> Result<f32, TensorComputeError> {
+    const HALF_BYTES: u64 = size_of::<u16>() as u64;
+    const WORD_BYTES: u64 = size_of::<u32>() as u64;
+    let kind = encoding as u64;
+    let query = |request| run(request).map_err(|_| invalid());
+    let Step::C5(width, normalization) = query(Request::C5(
+        kind,
+        weights.len() as u64,
+        activations.len() as u64,
+    ))?
+    else {
+        return Err(TensorComputeError::ZeroOrMismatchedExtents {
+            detail: "codebook weights and activation block counts differ".into(),
+        });
+    };
+    let tables = super::GGML_QUANTIZED_TABLES;
+    let mut total = 0.0;
+    for (block, activation) in weights.chunks_exact(width as usize).zip(activations) {
+        let field = |offset: u64, size: u64| -> Result<u64, TensorComputeError> {
+            let tail = block.get(offset as usize..).ok_or_else(invalid)?;
+            match size {
+                1 => Ok(u64::from(*tail.first().ok_or_else(invalid)?)),
+                HALF_BYTES => Ok(u64::from(u16::from_ne_bytes(
+                    *tail.first_chunk().ok_or_else(invalid)?,
+                ))),
+                WORD_BYTES => Ok(u64::from(u32::from_ne_bytes(
+                    *tail.first_chunk().ok_or_else(invalid)?,
+                ))),
+                _ => Err(invalid()),
+            }
+        };
+        let mut coefficients = activation.codes.map(|_| 0_i16);
+        for (group, lanes) in coefficients.chunks_exact_mut(ACCUMULATORS).enumerate() {
+            let group = group as u64;
+            let Step::C6(code, code_width, control, control_width, scale, signs) =
+                query(Request::C6(kind, group))?
+            else {
+                return Err(invalid());
+            };
+            let Step::C7(grid, indexed, mask, multiplier) = query(Request::C7(
+                kind,
+                group,
+                field(code, code_width)?,
+                field(control, control_width)?,
+                field(scale, 1)?,
+                field(signs, 1)?,
+            ))?
+            else {
+                return Err(invalid());
+            };
+            let mask = if indexed {
+                u64::from(tables[mask as usize])
+            } else {
+                mask
+            };
+            for (lane, dst) in lanes.iter_mut().enumerate() {
+                let magnitude = tables[grid as usize + lane];
+                let Step::C1(value) =
+                    query(Request::C8(lane as u64, mask, magnitude.into(), multiplier))?
+                else {
+                    return Err(invalid());
+                };
+                *dst = value as i16;
+            }
+        }
+        let codes = activation.codes.map(i16::from);
+        let product = uor_matmul::dot_ref(
+            uor_matmul::as_alphabet_full(&coefficients),
+            uor_matmul::as_alphabet_full(&codes),
+        );
+        let signed = signed_word_f32(i32::try_from(product).map_err(|_| invalid())?)?;
+        let half = convert_float_storage(1, 0, field(0, HALF_BYTES)?)
+            .map_err(|_| invalid())?
+            .ok_or_else(invalid)?;
+        let scale = evaluate_f32_scalar(
+            scalars::two_u64(),
+            f32::from_bits(half as u32),
+            activation.scale,
+        )?;
+        let term = evaluate_f32_scalar(scalars::two_u64(), scale, signed)?;
+        total = evaluate_f32_scalar(0, total, term)?;
+    }
+    evaluate_f32_scalar(
+        scalars::two_u64(),
+        f32::from_bits(normalization as u32),
+        total,
+    )
+}

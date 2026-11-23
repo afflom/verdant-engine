@@ -12,7 +12,6 @@
 //!    outside `{0.0, 1.0}` and zero integer literals `> 1`.
 
 use std::collections::{BTreeMap, BTreeSet};
-use std::fmt::Write as _;
 use std::path::{Path, PathBuf};
 
 use serde::Deserialize;
@@ -692,7 +691,7 @@ pub fn audit_parametric_ratchet(
         for full in &rust_files {
             let rel = rel_slash(repo, full);
             let bytes = std::fs::read(full).map_err(|e| FidelityError::Io(full.clone(), e))?;
-            let live = sha256_hex_bytes(&bytes);
+            let live = crate::hex(&Sha256::digest(&bytes));
             match manifest_map.get(&rel) {
                 Some(expected) if expected == &live => {
                     self_hosted_lifted_module_count += 1;
@@ -721,7 +720,7 @@ pub fn audit_parametric_ratchet(
         for full in &lex_files {
             let rel = rel_slash(repo, full);
             let bytes = std::fs::read(full).map_err(|e| FidelityError::Io(full.clone(), e))?;
-            let live = sha256_hex_bytes(&bytes);
+            let live = crate::hex(&Sha256::digest(&bytes));
             match manifest_map.get(&rel) {
                 Some(expected) if expected == &live => {
                     self_hosted_lifted_module_count += 1;
@@ -750,7 +749,7 @@ pub fn audit_parametric_ratchet(
         for vp_rel in &sh.lifted_viewpoint_files {
             let full = repo.join(vp_rel);
             let bytes = std::fs::read(&full).map_err(|e| FidelityError::Io(full.clone(), e))?;
-            let live = sha256_hex_bytes(&bytes);
+            let live = crate::hex(&Sha256::digest(&bytes));
             match manifest_map.get(vp_rel) {
                 Some(expected) if expected == &live => {
                     self_hosted_lifted_module_count += 1;
@@ -873,14 +872,7 @@ pub fn audit_parametric_ratchet(
                     tree_hasher.update(&bytes);
                     tree_hasher.update([0_u8]);
                 }
-                let live_tree_sha =
-                    tree_hasher
-                        .finalize()
-                        .iter()
-                        .fold(String::with_capacity(64), |mut s, b| {
-                            let _ = write!(s, "{b:02x}");
-                            s
-                        });
+                let live_tree_sha = crate::hex(&tree_hasher.finalize());
                 if trimmed_sha != live_tree_sha {
                     violations.push(RatchetViolation {
                         path: fr.frontier_register.clone(),
@@ -1077,14 +1069,6 @@ pub fn audit_parametric_ratchet(
 
 fn is_hex_sha256(s: &str) -> bool {
     s.len() == 64 && s.bytes().all(|b| b.is_ascii_hexdigit())
-}
-
-fn sha256_hex_bytes(bytes: &[u8]) -> String {
-    let digest = Sha256::digest(bytes);
-    digest.iter().fold(String::with_capacity(64), |mut s, b| {
-        let _ = write!(s, "{b:02x}");
-        s
-    })
 }
 
 fn collect_all_files(dir: &Path, out: &mut Vec<PathBuf>) -> Result<(), FidelityError> {
@@ -1570,7 +1554,8 @@ mod tests {
 
     #[test]
     fn self_hosting_ratchet_v2_enforces_zero_unlifted_and_catches_tampering() {
-        use super::{audit_parametric_ratchet, sha256_hex_bytes};
+        use super::audit_parametric_ratchet;
+        use sha2::{Digest, Sha256};
         let base = std::env::temp_dir().join(format!(
             "prism-fidelity-self-host-v2-{}",
             std::process::id()
@@ -1645,9 +1630,9 @@ mod tests {
              path = \"site/card.html\"\n\
              category = \"viewpoint\"\n\
              sha256 = \"{}\"\n",
-            sha256_hex_bytes(rs_src.as_bytes()),
-            sha256_hex_bytes(lex_src.as_bytes()),
-            sha256_hex_bytes(ui_src.as_bytes()),
+            crate::hex(&Sha256::digest(rs_src.as_bytes())),
+            crate::hex(&Sha256::digest(lex_src.as_bytes())),
+            crate::hex(&Sha256::digest(ui_src.as_bytes())),
         );
         std::fs::write(
             base.join("site/generated/self-host-ratchet-manifest.toml"),
