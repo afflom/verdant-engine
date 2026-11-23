@@ -374,14 +374,14 @@ impl WasmRuntimeBridge {
             let five = (prism_kernel::sTwo() + prism_kernel::sThree()) as f64;
             let floor_y = anchor.y - five * five;
             self.camera_rig
-                .solve_frame(dt_seconds, anchor, &empty_bvh, |_, _| floor_y)
+                .solve_frame(dt_seconds, anchor, &empty_bvh, &|_, _| floor_y)
                 .map_err(|e| WasmBridgeError::InvalidSnapshotEnvelope {
                     byte_len: 0,
                     reason: bridge_reason(e),
                 })?
         } else {
             self.camera_rig
-                .solve_frame(dt_seconds, anchor, &self.two_level_bvh, |x, z| {
+                .solve_frame(dt_seconds, anchor, &self.two_level_bvh, &|x, z| {
                     hd_terrain_height(seed_copy, &relief_copy, x, z)
                 })
                 .map_err(|e| WasmBridgeError::InvalidSnapshotEnvelope {
@@ -392,7 +392,7 @@ impl WasmRuntimeBridge {
         #[cfg(all(target_arch = "wasm32", not(feature = "uorc-decoder")))]
         let solved = self
             .camera_rig
-            .solve_frame(dt_seconds, anchor, &self.two_level_bvh, |x, z| {
+            .solve_frame(dt_seconds, anchor, &self.two_level_bvh, &|x, z| {
                 hd_terrain_height(seed_copy, &relief_copy, x, z)
             })
             .map_err(|e| WasmBridgeError::InvalidSnapshotEnvelope {

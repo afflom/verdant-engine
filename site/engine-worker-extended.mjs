@@ -2,13 +2,56 @@
 // lazy-loaded on demand by `site/engine-worker-codec.mjs` so cold-boot `/` stays well below FR-03.
 
 import {
-  parsePipeKv,
-  readAuxBytes,
-  readIoBytes,
   readSolvedCamera,
   readUniverseCell,
-  stageIoBytes,
 } from "./engine-worker-codec.mjs";
+
+export function stageIoBytes(ex, b) {
+  if (typeof ex.verdant_wasm_io_resize === "function") {
+    const p = ex.verdant_wasm_io_resize(b.byteLength >>> 0) >>> 0;
+    if (p > 0 && ex.memory) { new Uint8Array(ex.memory.buffer, p, b.byteLength).set(b); return true; }
+  }
+  ex.verdant_wasm_io_clear();
+  for (let i = 0; i < b.byteLength; i++) ex.verdant_wasm_io_push_byte(b[i]);
+  return (ex.verdant_wasm_io_len() >>> 0) === b.byteLength;
+}
+export function readIoBytes(ex) {
+  const n = ex.verdant_wasm_io_len() >>> 0;
+  if (!n) return new Uint8Array(0);
+  if (typeof ex.verdant_wasm_io_ptr === "function" && ex.memory) {
+    const p = ex.verdant_wasm_io_ptr() >>> 0;
+    if (p > 0) return new Uint8Array(ex.memory.buffer, p, n).slice();
+  }
+  const o = new Uint8Array(n);
+  for (let i = 0; i < n; i++) o[i] = ex.verdant_wasm_io_get_byte(i) & 0xff;
+  return o;
+}
+export function readAuxBytes(ex) {
+  const n = ex.verdant_wasm_aux_len() >>> 0, p = ex.verdant_wasm_aux_ptr() >>> 0;
+  return n && p && ex.memory ? new Uint8Array(ex.memory.buffer, p, n).slice() : new Uint8Array(0);
+}
+export function readStoryStatus(u) {
+  if (!(u.verdant_wasm_story_status_aux() >>> 0)) return null;
+  const [i, title = "", s, objective = "", ...d] = new TextDecoder().decode(readAuxBytes(u)).split("|");
+  return { stateIdx: Number(i) || 0, title, supply: Number(s) || 0, objective, dialogue: d.join("|") };
+}
+export function readZeroCopyMeshViews(h) {
+  if (!h?.memory) return null;
+  const v = h.verdant_wasm_scene_vert_count() >>> 0, i = h.verdant_wasm_scene_idx_count() >>> 0;
+  const p = h.verdant_wasm_scene_pos_ptr() >>> 0, n = h.verdant_wasm_scene_norm_ptr() >>> 0, c = h.verdant_wasm_scene_col_ptr() >>> 0, q = h.verdant_wasm_scene_idx_ptr() >>> 0;
+  if (!v || !i || !p || !n || !c || !q) return null;
+  const b = h.memory.buffer;
+  return { pos: new Float32Array(b, p, v * 3), norm: new Float32Array(b, n, v * 3), col: new Float32Array(b, c, v * 3), idx: new Uint32Array(b, q, i), tris: Math.floor(i / 3) };
+}
+
+function parsePipeKv(raw) {
+  const kv = {};
+  for (const part of raw.split("|")) {
+    const eq = part.indexOf("=");
+    if (eq > 0) kv[part.slice(0, eq)] = part.slice(eq + 1);
+  }
+  return kv;
+}
 
 export async function handleExtendedWorkerMessage(msg, ctx) {
   const {

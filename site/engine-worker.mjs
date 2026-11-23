@@ -11,16 +11,11 @@ import {
   mat4Perspective,
 } from "./scene-renderer.mjs";
 import {
+  getExtendedWorkerModule,
   handleExtendedWorkerMessage,
-  parsePipeKv,
-  readAuxBytes,
-  readIoBytes,
   readSolvedCamera,
   readSplitMeshViews,
-  readStoryStatus,
   readUniverseCell,
-  readZeroCopyMeshViews,
-  stageIoBytes,
 } from "./engine-worker-codec.mjs";
 
 const wasmUrl = new URL("./verdant-wasm.wasm", import.meta.url);
@@ -437,6 +432,7 @@ self.onmessage = async ({ data: msg }) => {
     }
 
     if (msg.kind === "get-packed-buffers") {
+      const { readZeroCopyMeshViews } = await getExtendedWorkerModule();
       const host = activeSceneHost();
       const sh = simHost();
       if (!customGlbActive) host.verdant_wasm_scene_rebuild_buffers(msg.simClockSec || 0);
@@ -548,7 +544,8 @@ self.onmessage = async ({ data: msg }) => {
         ) >>> 0;
         if (gLen > 0) {
           try {
-            const dec = JSON.parse(new TextDecoder().decode(readAuxBytes(uorcWasm)));
+            const gPtr = uorcWasm.verdant_wasm_aux_ptr() >>> 0;
+            const dec = JSON.parse(new TextDecoder().decode(new Uint8Array(uorcWasm.memory.buffer, gPtr, gLen)));
             lastWorkloadScaling = dec;
             scalePermille = Math.min(govScale, dec.drsScalePermille || govScale);
             casPermille = dec.casSharpnessPermille || 350;
@@ -622,6 +619,7 @@ self.onmessage = async ({ data: msg }) => {
     }
 
     if (msg.kind === "story-status" || msg.kind === "story-interact") {
+      const { readStoryStatus } = await getExtendedWorkerModule();
       uorcWasm ??= await getUorcWasm();
       const sh = simHost();
       let advanced = false;
@@ -643,6 +641,7 @@ self.onmessage = async ({ data: msg }) => {
     }
 
     if (msg.kind === "export-glb") {
+      const { readAuxBytes } = await getExtendedWorkerModule();
       uorcWasm ??= await getUorcWasm();
       const sh = simHost();
       uorcWasm.verdant_wasm_set_lod_rank(sh.verdant_wasm_active_lod_rank() >>> 0);
@@ -657,6 +656,8 @@ self.onmessage = async ({ data: msg }) => {
     }
 
     if (msg.kind === "import-glb") {
+      const ext = await getExtendedWorkerModule();
+      const { readAuxBytes, stageIoBytes } = ext;
       const raw = msg.bytes instanceof Uint8Array ? msg.bytes : new Uint8Array(msg.bytes || []);
       uorcWasm ??= await getUorcWasm();
       if (!raw.byteLength || !stageIoBytes(uorcWasm, raw)) {
@@ -685,7 +686,6 @@ self.onmessage = async ({ data: msg }) => {
       };
       let browserPbrTex = null;
       if ((uorcWasm.verdant_wasm_scene_pbr_tex_width?.(0) >>> 0) === 0 && renderer) {
-        const ext = await import("./engine-worker-extended.mjs");
         browserPbrTex = await ext.decodeGlbPbrTexturesInBrowser(raw, renderer.maxTextureSize || 1024, renderer);
         renderer._browserPbrTexActive = Boolean(browserPbrTex?.albedo);
       } else if (renderer) {
@@ -744,6 +744,7 @@ self.onmessage = async ({ data: msg }) => {
     }
 
     if (msg.kind === "encode-snapshot") {
+      const { readIoBytes } = await getExtendedWorkerModule();
       uorcWasm ??= await getUorcWasm();
       const sh = simHost();
       const baseRank = Math.min(3, sh.verdant_wasm_active_lod_rank() >>> 0);
@@ -762,6 +763,7 @@ self.onmessage = async ({ data: msg }) => {
     }
 
     if (msg.kind === "restore-snapshot") {
+      const { stageIoBytes } = await getExtendedWorkerModule();
       const raw = msg.bytes instanceof Uint8Array ? msg.bytes : new Uint8Array(msg.bytes || []);
       uorcWasm ??= await getUorcWasm();
       if (raw.byteLength === 0 || raw.byteLength > snapshotMaxBytes || !stageIoBytes(uorcWasm, raw)) {
@@ -794,6 +796,7 @@ self.onmessage = async ({ data: msg }) => {
     }
 
     if (msg.kind === "stream-uorc") {
+      const { readIoBytes, stageIoBytes } = await getExtendedWorkerModule();
       const targetRank = Math.max(0, Math.min(4, msg.targetRank | 0)) >>> 0;
       uorcWasm ??= await getUorcWasm();
       const streamBytes =

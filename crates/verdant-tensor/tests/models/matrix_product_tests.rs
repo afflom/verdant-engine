@@ -453,8 +453,8 @@ std::printf("0\n");return 0;
 unsigned word, zero_point;
 while(std::scanf("%u %u",&word,&zero_point)==2) {
   block_q4_1 block={};float result[QK4_1];
-  const ggml_half d=GGML_CPU_FP32_TO_FP16((float)word);
-  const ggml_half m=GGML_CPU_FP32_TO_FP16(-(float)zero_point);
+  const ggml_half d=GGML_COMPUTE_FP32_TO_FP16((float)word);
+  const ggml_half m=GGML_COMPUTE_FP32_TO_FP16(-(float)zero_point);
   std::memcpy(&block,&d,sizeof(d));std::memcpy((char *)&block+sizeof(d),&m,sizeof(m));
   std::memset(block.qs,0x11,sizeof(block.qs));
   ggml_get_type_traits(GGML_TYPE_Q4_1)->to_float(&block,result,QK4_1);
@@ -465,7 +465,7 @@ return std::ferror(stdin)?3:0;
   if (!std::strcmp(argv[1], "packed-field")) {
 unsigned type, low, high;
 while(std::scanf("%u %u %u",&type,&low,&high)==3) {
-  const ggml_half d=GGML_CPU_FP32_TO_FP16(1.0f);
+  const ggml_half d=GGML_COMPUTE_FP32_TO_FP16(1.0f);
   auto emit=[&](const auto &block) {
     std::vector<float> result(ggml_blck_size((ggml_type)type));
     const auto *traits=ggml_get_type_traits((ggml_type)type);if(!traits->to_float)return false;
@@ -552,7 +552,7 @@ while (std::scanf("%u %u %u", &source, &destination, &bits)==3) {
     else if(source==30) value=GGML_BF16_TO_FP32(ggml_bf16_t{(uint16_t)bits});
     else return 4;
     if(destination==0) std::memcpy(&result,&value,4);
-    else if(destination==1) result=GGML_CPU_FP32_TO_FP16(value);
+    else if(destination==1) result=GGML_COMPUTE_FP32_TO_FP16(value);
     else if(destination==30) result=GGML_FP32_TO_BF16(value).bits;
     else return 5;
   }
@@ -632,7 +632,6 @@ pub(crate) fn query_oracle(mode: &str, requests: String) -> Vec<u32> {
             "-O2",
             "-ffp-contract=off",
             "-DGGML_CPU_GENERIC",
-            "-U__ARM_FP16_FORMAT_IEEE",
             "-std=c++17",
             "-ffunction-sections",
             "-fdata-sections",
@@ -803,7 +802,6 @@ pub(crate) fn query_oracle(mode: &str, requests: String) -> Vec<u32> {
                         "-O2",
                         "-ffp-contract=off",
                         "-DGGML_CPU_GENERIC",
-                        "-U__ARM_FP16_FORMAT_IEEE",
                         "-ffunction-sections",
                         "-fdata-sections",
                     ]);

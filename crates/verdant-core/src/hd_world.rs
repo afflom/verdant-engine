@@ -55,6 +55,7 @@ impl SmoothMeshAcc {
         }
     }
 
+    #[inline(never)]
     fn push_vertex(
         &mut self,
         p: Vec3,
@@ -70,6 +71,7 @@ impl SmoothMeshAcc {
         idx
     }
 
+    #[inline(never)]
     #[allow(clippy::too_many_arguments)]
     fn append_quad_smooth(
         &mut self,
@@ -90,6 +92,7 @@ impl SmoothMeshAcc {
         self.indices.extend_from_slice(&[i0, i1, i2, i0, i2, i3]);
     }
 
+    #[inline(never)]
     fn append_quad_flat(
         &mut self,
         p0: Vec3,
@@ -106,6 +109,7 @@ impl SmoothMeshAcc {
         self.append_quad_smooth(p0, p1, p2, p3, n, n, n, n, col);
     }
 
+    #[inline(never)]
     fn append_box(&mut self, min: Vec3, max: Vec3, col: [f32; DIM_HOMOGENEOUS]) {
         let p000 = Vec3::new(min.x, min.y, min.z);
         let p100 = Vec3::new(max.x, min.y, min.z);

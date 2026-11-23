@@ -2,7 +2,7 @@
   "spec": "verdant/view-immutability-seal/1",
   "owningManager": "mgr-observer-executive",
   "managerKappaHex": "28737a197775fb8dec24f0af4df3bfd041964a4b82c96f8aa2bcecf9c236b58b",
-  "sealRootSha256Hex": "cbca629ea5bc28e3b1ac53c4175f35362c76823c61c2ce0c1d30e6dc90c2e577",
+  "sealRootSha256Hex": "4cd0159506890a0489f43fec8de00c51c81d7889234ccc5df51ffbaf4028b9be",
   "files": [
     {
       "path": "site/card.html",
@@ -198,7 +198,7 @@
         "AUTH-SEMVER-CHANGE-KPI"
       ],
       "bytes": 8508,
-      "sha256Hex": "a6b290beaf0c677be27ecd4113bdc160d210b016ab3c46b21933694273f0af7a",
+      "sha256Hex": "ef22bfd424e6352ed582d3b5bbcdf99fd4b97b3aa07f5398b01c311bf92e0dc5",
       "lastDirectiveKappaHex": "9d880c47510a31c4c6e8c8e4ffc757a38a8a4d35d09a9201558bca20767fe89a"
     },
     {
@@ -211,7 +211,7 @@
         "AUTH-SEMVER-CHANGE-KPI"
       ],
       "bytes": 2108,
-      "sha256Hex": "3efdea4341d68031b504d4809ee71ae2a969a786b40cca31248b1768510c81cc",
+      "sha256Hex": "ce307e6f52fa55818d8d86c68f95ea646fa828b7f48a3f7c23ab7545831ab233",
       "lastDirectiveKappaHex": "9d880c47510a31c4c6e8c8e4ffc757a38a8a4d35d09a9201558bca20767fe89a"
     }
   ]

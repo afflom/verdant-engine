@@ -405,3 +405,7 @@ The certified grouped product extension uses the existing imported grid and sign
 All 1,104 centered and affine four- and five-bit blocks matched every byte emitted by the four unmodified reference encoders from the pinned GGML archive. The 276 inputs per encoding include signed zero, tied positive and negative extrema in both orders, constant rows, narrow and overflowing half scales and mixed-exponent random values. Nonfinite lanes and malformed destination widths preserve the output. The symmetric byte path delegates to the existing VTK-16 encoder.
 
 Replacing every upper nibble’s source with the lower lane failed Q4_0 block 3 at byte 2 (153 versus 137). Restoring the lane passed VTK-40, VTK-16 and VTK-37 together. Run `cargo test --locked -p verdant-tensor --lib low_bit_block_encoding_vtk_40` inside the pinned SDK.
+
+## VE-54 release dependency closure
+
+A standalone Cargo consumer of the v2.20.0 source package initially failed to resolve `serde` and the generated kernel packages. The release packager now indexes four products, 79 generated kernels and nine packages from the locked Git revisions. External registry dependencies retain their registry. An isolated consumer fetched the packaged graph and ran `linear::encode_weight_block` successfully. Removing the `verdant_logarithmic_scale` archive made the normal registry verifier fail on the missing download. With the archive present the verifier compiled the downstream consumer and recorded 171 HTTP requests.

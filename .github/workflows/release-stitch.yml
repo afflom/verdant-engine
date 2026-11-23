@@ -101,13 +101,16 @@ jobs:
           node scripts/verify-stitch-release.mjs --dir dist/stitch-release
 
       - name: Package & verify Rust library .crate files & RFC 2789 Cargo sparse index
+        env:
+          VER: ${{ steps.meta.outputs.version }}
         shell: bash
         run: |
           set -euo pipefail
           node scripts/package-rust-crates.mjs \
             --out dist/crates \
-            --dl "https://github.com/${{ github.repository }}/releases/download/v{version}/{crate}-{version}.crate"
+            --dl "https://github.com/${{ github.repository }}/releases/download/v${VER}/{crate}-{version}.crate"
           node scripts/verify-sparse-registry.mjs --dir dist/crates
+          tar -czf "dist/verdant-cargo-index-v${VER}.tar.gz" -C dist/crates index
 
       - name: Emit & failover-verify Public-Benefit Stitch Gateway Bundle (GitHub + Stitch Layer-5 Swarm + IPFS + Zenodo + Volunteer Self-Hosted)
         shell: bash
@@ -210,12 +213,13 @@ jobs:
             "dist/verdant-gateway-bundle-v${VER}.tar.gz"
             dist/stitch-release/shards/*.stch
             dist/stitch-release/source-shards/*.stch
+            "dist/verdant-cargo-index-v${VER}.tar.gz"
             dist/crates/crates/*.crate
             dist/crates/crates-manifest.json
           )
           gh release create "v${VER}" "${RELEASE_ASSETS[@]}" \
             --title "Verdant Engine v${VER} (Self-Hosted Stitch .holo + Rust Crates)" \
-            --notes "Verified via mandatory Chromium Pull-Through Blank Frame Gate (4-of-8 GF(2^8) Reed-Solomon recovery with 4 shards withheld, 0 loose UI files) and 13-Manager Total Ownership (9/9 Prism Facets, 8/8 ISO 15939 KPIs). Includes portable verdant-v${VER}.holo capsule, verdant-source-v${VER}.uorc full Source DAG, 8+8 STCH2 shards, frame-pin.json, and 4 Rust .crate packages." \
+            --notes "Verified via mandatory Chromium Pull-Through Blank Frame Gate (4-of-8 GF(2^8) Reed-Solomon recovery with 4 shards withheld, 0 loose UI files) and 13-Manager Total Ownership (9/9 Prism Facets, 8/8 ISO 15939 KPIs). Includes portable verdant-v${VER}.holo capsule, verdant-source-v${VER}.uorc full Source DAG, 8+8 STCH2 shards, frame-pin.json, and the Cargo index and package archives for all four Rust products and their dependencies." \
             || gh release upload "v${VER}" "${RELEASE_ASSETS[@]}" --clobber
 
           # Push immutable OCI release bundle (.holo + Source DAG + shards + Rust crates & RFC 2789 sparse index)

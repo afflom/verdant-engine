@@ -467,3 +467,69 @@ export async function routeStudioPrompt(text, ctx) {
   ctx.chip?.(ctx.statusEl, `Director -> ${r.slug} (${(r.scoreMilli / 10).toFixed(0)}% coded_gemm)`, "good");
   return r;
 }
+
+export async function importCardGlb(name, buf, h) {
+  h.chip(h.statusEl, `Importing ${name}…`, "wait");
+  const copy = new Uint8Array(buf);
+  const r = await h.cW("import-glb", { bytes: copy }, [copy.buffer]);
+  if (!r?.ok) {
+    h.chip(h.statusEl, `Refused invalid .glb (${name})`, "warn");
+    return;
+  }
+  const saved = r.uorcBytes?.byteLength && h.isOrganAllowed(4, true)
+    ? Boolean((await cacheBytesInOpfs(`${name}.uorc`, r.uorcBytes))?.cached)
+    : false;
+  await h.onImported(r.tris, `Asset ${name} (${r.tris} tris)`);
+  h.chip(h.statusEl, `Imported ${name} · ${r.tris} tris${saved ? " · OPFS cached" : ""}`, "good");
+}
+
+export function launchCardStudio(mod, tab, h) {
+  mod.openStudioModal({
+    initialTab: tab,
+    callWorker: h.cW,
+    queryVerifier: h.qVer,
+    onPickGlb: h.onPickGlb,
+    onResetGlb: async () => {
+      const r = await h.cW("reset-glb");
+      await h.onReset(r?.tris);
+    },
+    onExportGlb: () => mod.exportGlbDownload(h.cW, h.getLodShort()),
+    onShareSnapshot: () => mod.shareUorcSnapshot(h.cW, h.chip, h.statusEl),
+    onToggleRenderMode: h.togRnd,
+    onSetLod: h.strUorc,
+    onSetCameraMode: h.cycCam,
+    onSetSimLive: h.setSim,
+    onToggleAudio: h.togAudio,
+    onFocusPoint: async (target, dist = 12, label = "Entity", yawMilli = 520, pitchMilli = 300) => {
+      await h.onFocusPointRaw(target, dist, yawMilli, pitchMilli);
+      h.chip(h.statusEl, `Framed ${label} · Guarded Rig`, "good");
+    },
+    onFocusPreset: h.focNd,
+    onSetSeed: async (seed) => {
+      const r = await h.cW("set-seed", { seed });
+      if (r?.ok) await h.onSeeded(r);
+      return r;
+    },
+    onOpenStitchMesh: h.openStitch,
+    onRoutePrompt: h.execP,
+    onInteractStory: h.doStory,
+    onMountOpfsUorc: async (name, bytes) => {
+      if (!h.isOrganAllowed(4, true)) { h.refuseOrgan(4); return false; }
+      const r = await h.onStreamOpfs(bytes);
+      if (!r?.ok) { h.chip(h.statusEl, `Refused invalid .uorc (${name})`, "warn"); return false; }
+      await h.onMountedOpfs(name, r.tris);
+      h.chip(h.statusEl, `Mounted OPFS ${name} · ${r.tris} tris`, "good");
+      return true;
+    },
+    onRoleChange: h.syncRole,
+    onProjectChange: h.onProjectChange,
+    getActiveProject: h.getActiveProject,
+    getAcousticSpec: h.getAcousticSpec,
+    isOrganAllowed: h.isOrganAllowed,
+    getOrganMode: h.getOrganMode,
+    onOrganGrantChange: h.onOrganGrantChange,
+    onRefuseOrgan: h.refuseOrgan,
+    getRenderMode: h.getRenderMode,
+    getLodRank: h.getLodRank,
+  });
+}

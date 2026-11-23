@@ -1745,7 +1745,7 @@ reason = "type"
 detail = "type outside the lift: LawfulCameraRig.config: CameraRigConfig.vertical_fov_radians: f64"
 
 [[residue]]
-kappa = "91c9549bda68c4a799fae8f3bb70e8cbd546ec68463e4b68ebbb7977113e579f"
+kappa = "3bd7c738e2160a9156d29111993b877d0a2f9862d656afe45188d6280e5285e4"
 function = "verdant_core::camera::LawfulCameraRig::solve_frame"
 reason = "type"
 detail = "type outside the lift: LawfulCameraRig.config: CameraRigConfig.vertical_fov_radians: f64"
@@ -7031,7 +7031,7 @@ reason = "type"
 detail = "type outside the lift: WasmRuntimeBridge.terrain_params: TerrainReliefParams"
 
 [[residue]]
-kappa = "a6692219187d3106fcc85cc85d5f535c5283d99016a324d9783f14cd798811eb"
+kappa = "03b6a1c9218990776cf219ff5aa7a93ae42021cbc8fc454132638e20aa987f4b"
 function = "verdant_wasm::WasmRuntimeBridge::new"
 reason = "type"
 detail = "type outside the lift: WasmRuntimeBridge.terrain_params: TerrainReliefParams"
@@ -7043,7 +7043,7 @@ reason = "type"
 detail = "type outside the lift: WasmRuntimeBridge.terrain_params: TerrainReliefParams"
 
 [[residue]]
-kappa = "5e6a5868bef6cd244edcab359c5c349dccbf393c8ca4c0db1b585eaea8d5d8e5"
+kappa = "b89fff2026093dc38735f6e2767ad211facc61318dfdd2386b5944eae2cb0dcd"
 function = "verdant_wasm::WasmRuntimeBridge::rebuild_scene_buffers"
 reason = "type"
 detail = "type outside the lift: WasmRuntimeBridge.terrain_params: TerrainReliefParams"
@@ -7127,7 +7127,7 @@ reason = "type"
 detail = "type outside the lift: WasmRuntimeBridge.terrain_params: TerrainReliefParams"
 
 [[residue]]
-kappa = "14e131c64795059ede7d3457d68cea7ca4b6a6c5ba405147a16647b475110379"
+kappa = "4eb8d775fd8e1880a9809283fa923e815d7cacd078bd973cd60329eb9150abfa"
 function = "verdant_wasm::bridge_sim::WasmRuntimeBridge::solve_active_camera"
 reason = "type"
 detail = "type outside the lift: WasmRuntimeBridge.terrain_params: TerrainReliefParams"
@@ -8691,7 +8691,7 @@ function = "verdant_cli::run_cli"
 effect = "Fs effect: std::fs::read"
 
 [[effect]]
-kappa = "e956530d7e6456aa17e642d3861bd55852273d2feeda2b32569f53b2773258ed"
+kappa = "ec1e0204ad10bacaffba1999c3d713fa268874e52c3be7b5d30f52912850f81d"
 function = "verdant_core::build_ops::VerdantOperatorChannel::execute_native_build_op"
 effect = "Process effect: Command::new"
 
