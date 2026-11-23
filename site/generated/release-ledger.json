@@ -4,10 +4,10 @@
   "authorityId": "AUTH-SEMVER-CHANGE-KPI",
   "currentVersion": {
     "major": 2,
-    "minor": 17,
+    "minor": 19,
     "patch": 0
   },
-  "releaseEpoch": 21,
+  "releaseEpoch": 23,
   "history": [
     {
       "version": "0.1.0",
@@ -175,6 +175,20 @@
       "releaseEpoch": 21,
       "bumpKind": "minor",
       "summary": "M25 (v2.17.0, VE-77): Multi-Gateway Stitch Hosting & Serving (GitHub + Cloudflare + Netlify + IPFS + Native HTTP Gateway, Blank Frame Failover/OPFS Fallback & Stakeholder Part Routing)",
+      "citedAuthority": "AUTH-SEMVER-CHANGE-KPI"
+    },
+    {
+      "version": "2.18.0",
+      "releaseEpoch": 22,
+      "bumpKind": "minor",
+      "summary": "M26 (v2.18.0, VE-78): Remove commercial cloud scaffolding & formally model public-benefit Stitch self-hosting/self-serving in Prism",
+      "citedAuthority": "AUTH-SEMVER-CHANGE-KPI"
+    },
+    {
+      "version": "2.19.0",
+      "releaseEpoch": 23,
+      "bumpKind": "minor",
+      "summary": "M27 (v2.19.0, VE-79): Stitch Layer-5 swarm seeder (stitch-swarm.mjs), offline portable single-file HTML envelope & volunteer gateway /swarm bridge",
       "citedAuthority": "AUTH-SEMVER-CHANGE-KPI"
     }
   ]

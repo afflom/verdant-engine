@@ -105,17 +105,14 @@ pub fn authors(list: &str) -> Result<Vec<Author>, FidelityError> {
     Ok(out)
 }
 
-fn line_of(text: &str, byte: usize) -> usize {
-    text[..byte].matches('\n').count() + 1
-}
-
 /// The smallest span `(first, last)` of `text` holding every one of `texts`.
 fn smallest(text: &str, texts: &[String]) -> Option<(usize, usize)> {
+    let line_of = |byte: usize| text[..byte].matches('\n').count() + 1;
     let occurrences: Vec<Vec<(usize, usize)>> = texts
         .iter()
         .map(|t| {
             text.match_indices(t.as_str())
-                .map(|(at, m)| (line_of(text, at), line_of(text, at + m.len())))
+                .map(|(at, m)| (line_of(at), line_of(at + m.len())))
                 .collect::<Vec<_>>()
         })
         .collect();

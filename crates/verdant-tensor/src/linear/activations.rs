@@ -5,7 +5,20 @@ use super::{evaluate_f32_scalar, TensorComputeError};
 /// # Errors
 /// Propagates a typed error from a certified scalar operation.
 pub fn swiglu_f32(value: f32, gate: f32) -> Result<f32, TensorComputeError> {
-    logistic(value, false, Some(gate))
+    use verdant_logistic::Adt0 as Action;
+    let decode = |word: u64| f32::from_bits(word as u32);
+    let (x, multiplier) = (u64::from(value.to_bits()), u64::from(gate.to_bits()));
+    let mut prior = 0;
+    let mut stage = 0;
+    loop {
+        let out = match verdant_logistic::run(false, true, stage, x, multiplier, prior) {
+            Action::C0(operation, a, b) => evaluate_f32_scalar(operation, decode(a), decode(b))?,
+            Action::C1(a) => exponential_f32(decode(a))?,
+            Action::C2(a) => return Ok(decode(a)),
+        };
+        prior = u64::from(out.to_bits());
+        stage += 1;
+    }
 }
 
 /// Compute the binary32 geometric slope for one head of a linear attention bias.
@@ -109,7 +122,28 @@ pub fn tanh_f32(value: f32) -> Result<f32, TensorComputeError> {
 /// # Errors
 /// Propagates failures from the certified word operations.
 pub fn gelu_f32(value: f32) -> Result<f32, TensorComputeError> {
-    gaussian_activation(value, false)
+    use verdant_gelu::Adt0 as Action;
+    let invalid = || TensorComputeError::InvalidKernelSpecification {
+        kernel_name: "GaussianActivation.evaluate".into(),
+    };
+    let request = |response: Option<f32>| {
+        verdant_gelu::run(
+            false,
+            u64::from(value.to_bits()),
+            response.is_some(),
+            u64::from(response.unwrap_or_default().to_bits()),
+        )
+        .map_err(|_| invalid())
+    };
+    let intermediate = match request(None)? {
+        Action::C1(word) => tanh_f32(f32::from_bits(word as u32))?,
+        Action::C2(word) => sigmoid_f32(f32::from_bits(word as u32))?,
+        Action::C0(word) => return Ok(f32::from_bits(word as u32)),
+    };
+    let Action::C0(word) = request(Some(intermediate))? else {
+        return Err(invalid());
+    };
+    Ok(f32::from_bits(word as u32))
 }
 
 /// Evaluate the binary32 logistic approximation to the Gaussian error linear unit.
@@ -117,17 +151,13 @@ pub fn gelu_f32(value: f32) -> Result<f32, TensorComputeError> {
 /// # Errors
 /// Propagates failures from the certified word operations.
 pub fn gelu_quick_f32(value: f32) -> Result<f32, TensorComputeError> {
-    gaussian_activation(value, true)
-}
-
-fn gaussian_activation(value: f32, quick: bool) -> Result<f32, TensorComputeError> {
     use verdant_gelu::Adt0 as Action;
     let invalid = || TensorComputeError::InvalidKernelSpecification {
         kernel_name: "GaussianActivation.evaluate".into(),
     };
     let request = |response: Option<f32>| {
         verdant_gelu::run(
-            quick,
+            true,
             u64::from(value.to_bits()),
             response.is_some(),
             u64::from(response.unwrap_or_default().to_bits()),
@@ -150,7 +180,20 @@ fn gaussian_activation(value: f32, quick: bool) -> Result<f32, TensorComputeErro
 /// # Errors
 /// Propagates a typed error from a certified scalar operation.
 pub fn sigmoid_f32(value: f32) -> Result<f32, TensorComputeError> {
-    logistic(value, true, None)
+    use verdant_logistic::Adt0 as Action;
+    let decode = |word: u64| f32::from_bits(word as u32);
+    let x = u64::from(value.to_bits());
+    let mut prior = 0;
+    let mut stage = 0;
+    loop {
+        let out = match verdant_logistic::run(true, false, stage, x, 0, prior) {
+            Action::C0(operation, a, b) => evaluate_f32_scalar(operation, decode(a), decode(b))?,
+            Action::C1(a) => exponential_f32(decode(a))?,
+            Action::C2(a) => return Ok(decode(a)),
+        };
+        prior = u64::from(out.to_bits());
+        stage += 1;
+    }
 }
 
 /// Evaluate the binary32 sigmoid linear unit.
@@ -158,36 +201,18 @@ pub fn sigmoid_f32(value: f32) -> Result<f32, TensorComputeError> {
 /// # Errors
 /// Propagates a typed error from a certified scalar operation.
 pub fn silu_f32(value: f32) -> Result<f32, TensorComputeError> {
-    logistic(value, false, None)
-}
-
-fn logistic(
-    value: f32,
-    unit_numerator: bool,
-    gate: Option<f32>,
-) -> Result<f32, TensorComputeError> {
     use verdant_logistic::Adt0 as Action;
     let decode = |word: u64| f32::from_bits(word as u32);
-    let (x, multiplier) = (
-        u64::from(value.to_bits()),
-        u64::from(gate.unwrap_or_default().to_bits()),
-    );
+    let x = u64::from(value.to_bits());
     let mut prior = 0;
     let mut stage = 0;
     loop {
-        let value = match verdant_logistic::run(
-            unit_numerator,
-            gate.is_some(),
-            stage,
-            x,
-            multiplier,
-            prior,
-        ) {
+        let out = match verdant_logistic::run(false, false, stage, x, 0, prior) {
             Action::C0(operation, a, b) => evaluate_f32_scalar(operation, decode(a), decode(b))?,
             Action::C1(a) => exponential_f32(decode(a))?,
             Action::C2(a) => return Ok(decode(a)),
         };
-        prior = u64::from(value.to_bits());
+        prior = u64::from(out.to_bits());
         stage += 1;
     }
 }
@@ -248,34 +273,31 @@ fn log_failure() -> TensorComputeError {
     }
 }
 
-fn logarithm_magnitude(negative: bool, whole: u64, ratio: u64) -> Result<u64, TensorComputeError> {
-    use verdant_logarithmic_series::{Adt0 as State, Adt1 as Action};
-    let mut state = State::C0;
-    let mut product = 0;
-    loop {
-        match verdant_logarithmic_series::run(negative, whole, ratio, state, product)
-            .map_err(|_| log_failure())?
-        {
-            Action::C0(a, b, next) => {
-                product = verdant_logarithmic_product::run(a, b).map_err(|_| log_failure())?;
-                state = next;
-            }
-            Action::C1(value) => return Ok(value),
-        }
-    }
-}
-
 /// Evaluate the binary32 natural logarithm, including IEEE zeros and nonfinite inputs.
 ///
 /// # Errors
 /// Returns a typed kernel error if a certified word operation overflows.
 pub fn natural_log_f32(value: f32) -> Result<f32, TensorComputeError> {
+    use verdant_logarithmic_series::{Adt0 as State, Adt1 as Action};
     let word = match verdant_logarithmic_prepare::run(u64::from(value.to_bits()))
         .map_err(|_| log_failure())?
     {
         verdant_logarithmic_prepare::Adt0::C0(word) => word,
         verdant_logarithmic_prepare::Adt0::C1(negative, whole, ratio) => {
-            let magnitude = logarithm_magnitude(negative, whole, ratio)?;
+            let mut state = State::C0;
+            let mut product = 0;
+            let magnitude = loop {
+                match verdant_logarithmic_series::run(negative, whole, ratio, state, product)
+                    .map_err(|_| log_failure())?
+                {
+                    Action::C0(a, b, next) => {
+                        product =
+                            verdant_logarithmic_product::run(a, b).map_err(|_| log_failure())?;
+                        state = next;
+                    }
+                    Action::C1(v) => break v,
+                }
+            };
             verdant_logarithmic_word::run(negative, magnitude).map_err(|_| log_failure())?
         }
     };
@@ -290,6 +312,7 @@ pub fn natural_log_f32(value: f32) -> Result<f32, TensorComputeError> {
 /// Returns a typed kernel error for a zero degree, a nonpositive or nonfinite
 /// base, or failure of a certified component.
 pub fn inverse_root_f32(base: f32, degree: u32) -> Result<f32, TensorComputeError> {
+    use verdant_logarithmic_series::{Adt0 as State, Adt1 as Action};
     let base = u64::from(base.to_bits());
     if !verdant_logarithmic_admit::run(base, u64::from(degree)) {
         return Err(log_failure());
@@ -299,7 +322,19 @@ pub fn inverse_root_f32(base: f32, degree: u32) -> Result<f32, TensorComputeErro
     else {
         return Err(log_failure());
     };
-    let magnitude = logarithm_magnitude(negative, whole, ratio)?;
+    let mut state = State::C0;
+    let mut product = 0;
+    let magnitude = loop {
+        match verdant_logarithmic_series::run(negative, whole, ratio, state, product)
+            .map_err(|_| log_failure())?
+        {
+            Action::C0(a, b, next) => {
+                product = verdant_logarithmic_product::run(a, b).map_err(|_| log_failure())?;
+                state = next;
+            }
+            Action::C1(v) => break v,
+        }
+    };
     let degree = verdant_count_f32::run(u64::from(degree))
         .map_err(|_| log_failure())?
         .ok_or_else(log_failure)?;

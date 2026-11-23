@@ -72,10 +72,24 @@ definition{
 }
 
 definition{
+  name: channel6StitchLayer5Swarm,
+  parameters: [],
+  result: ReleaseChannelSpec,
+  body: (record ReleaseChannelSpec {index := (Subsystems::sSix), corsBrowserFetch := true, zeroAccount := true, digestVerified := true, channelId := "stitch-layer5-webrtc-swarm", endpoint := "stitch://verdant/v{version}/swarm"})
+}
+
+definition{
+  name: channel7VolunteerIpfsGateway,
+  parameters: [],
+  result: ReleaseChannelSpec,
+  body: (record ReleaseChannelSpec {index := (Subsystems::sSeven), corsBrowserFetch := true, zeroAccount := true, digestVerified := true, channelId := "volunteer-ipfs-http-gateway", endpoint := "https://dweb.link/ipfs/{cid}/shards"})
+}
+
+definition{
   name: releaseChannels,
   parameters: [],
   result: (List ReleaseChannelSpec),
-  body: (cons (channel0PagesShards) (cons (channel1JsDelivrMirror) (cons (channel2RawGitHubMirror) (cons (channel3CargoSparseRegistry) (cons (channel4GhcrOciBundle) (cons (channel5ZenodoDoiArchive) (nil ReleaseChannelSpec)))))))
+  body: (cons (channel0PagesShards) (cons (channel1JsDelivrMirror) (cons (channel2RawGitHubMirror) (cons (channel3CargoSparseRegistry) (cons (channel4GhcrOciBundle) (cons (channel5ZenodoDoiArchive) (cons (channel6StitchLayer5Swarm) (cons (channel7VolunteerIpfsGateway) (nil ReleaseChannelSpec)))))))))
 }
 
 definition{
@@ -116,7 +130,7 @@ theorem{
 theorem{
   name: releaseChannelsNamedVerified,
   parameters: [],
-  statement: (((project (channel0PagesShards) digestVerified) && ((project (channel1JsDelivrMirror) digestVerified) && ((project (channel2RawGitHubMirror) digestVerified) && ((project (channel3CargoSparseRegistry) digestVerified) && ((project (channel4GhcrOciBundle) digestVerified) && (project (channel5ZenodoDoiArchive) digestVerified)))))) = true),
+  statement: (((project (channel0PagesShards) digestVerified) && ((project (channel1JsDelivrMirror) digestVerified) && ((project (channel2RawGitHubMirror) digestVerified) && ((project (channel3CargoSparseRegistry) digestVerified) && ((project (channel4GhcrOciBundle) digestVerified) && ((project (channel5ZenodoDoiArchive) digestVerified) && ((project (channel6StitchLayer5Swarm) digestVerified) && (project (channel7VolunteerIpfsGateway) digestVerified)))))))) = true),
   proof: decide{},
   axioms: []
 }

@@ -67,26 +67,25 @@ pub fn canonical_cell_span_meters() -> f64 {
         .max(1)) as f64
 }
 
-fn cell_err(msg: &'static str) -> String {
-    #[cfg(not(target_arch = "wasm32"))]
-    {
-        msg.to_string()
-    }
-    #[cfg(target_arch = "wasm32")]
-    {
-        let _ = msg;
-        String::new()
-    }
-}
-
 fn canonicalize_axis(
     cell_idx: i64,
     raw_offset: f64,
     span: f64,
 ) -> Result<(i64, f64), NarrativeLawError> {
+    let mk_err = |msg: &'static str| -> String {
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            msg.to_string()
+        }
+        #[cfg(target_arch = "wasm32")]
+        {
+            let _ = msg;
+            String::new()
+        }
+    };
     if !raw_offset.is_finite() || !span.is_finite() || span <= 0.0 {
         return Err(NarrativeLawError::InvalidPortalOrUniverseCell {
-            detail: cell_err("non-finite universe coordinate or non-positive cell span"),
+            detail: mk_err("non-finite universe coordinate or non-positive cell span"),
         });
     }
     let half_span = span * half_f64();
@@ -95,16 +94,14 @@ fn canonicalize_axis(
     let exact_cell_horizon = verdant_tensor::pow2_u64(mantissa_bits) as f64;
     if !shifted.is_finite() || shifted.abs() >= exact_cell_horizon {
         return Err(NarrativeLawError::InvalidPortalOrUniverseCell {
-            detail: cell_err(
-                "universe sector shift exceeds exact 52-bit IEEE-754 mantissa horizon",
-            ),
+            detail: mk_err("universe sector shift exceeds exact 52-bit IEEE-754 mantissa horizon"),
         });
     }
     let delta_cell = shifted.floor() as i64;
     let wrapped = (raw_offset + half_span).rem_euclid(span) - half_span;
     let next_cell = cell_idx.checked_add(delta_cell).ok_or_else(|| {
         NarrativeLawError::InvalidPortalOrUniverseCell {
-            detail: cell_err("i64 sector index overflow"),
+            detail: mk_err("i64 sector index overflow"),
         }
     })?;
     Ok((next_cell, wrapped))

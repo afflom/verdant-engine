@@ -121,7 +121,7 @@ pub fn decode_portable_uorc_stream_up_to_lod(
     }
 
     #[cfg(feature = "uorc-ncm-decode")]
-    let work = uorc_work_budget();
+    let work = pow2_u64(prism_kernel::uorcDefaultDecodeWork().expect("prism") as u32);
     let mut prev_spec: Option<prism_kernel::StreamingLodSpec> = None;
     let mut latest_state: Option<StandardSceneState> = None;
 
@@ -193,12 +193,12 @@ fn decode_single_uorc_frame_bytes(
 ) -> Result<Vec<u8>, StreamingError> {
     #[cfg(feature = "uorc-streaming")]
     {
-        let objects =
-            uorc::decompress_objects(frame_archive, uorc_work_budget()).map_err(|err| {
-                StreamingError::UorcArchiveRejected {
-                    detail: format!("uorc::decompress_objects rejected frame {frame_idx}: {err}"),
-                }
-            })?;
+        let work = pow2_u64(prism_kernel::uorcDefaultDecodeWork().expect("prism") as u32);
+        let objects = uorc::decompress_objects(frame_archive, work).map_err(|err| {
+            StreamingError::UorcArchiveRejected {
+                detail: format!("uorc::decompress_objects rejected frame {frame_idx}: {err}"),
+            }
+        })?;
         objects
             .into_iter()
             .next()

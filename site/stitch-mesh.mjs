@@ -465,7 +465,51 @@ function buildMeshDialog() {
   });
   sdpRow.append(sdpInput, btnRtcAccept);
 
-  card.append(desc, canvas, row, sdpRow, log);
+  const swarmRow = document.createElement("div");
+  swarmRow.className = "ve-m-row";
+  const btnSwarmJoin = document.createElement("button");
+  btnSwarmJoin.type = "button";
+  btnSwarmJoin.className = "ve-m-btn";
+  btnSwarmJoin.id = "stitch-l5-swarm-btn";
+  btnSwarmJoin.textContent = "Join Stitch Layer-5 Swarm (4-of-8 Seeder)";
+  let activeSeeder = null;
+  btnSwarmJoin.addEventListener("click", async () => {
+    try {
+      if (activeSeeder) {
+        activeSeeder.leave();
+        activeSeeder = null;
+        btnSwarmJoin.textContent = "Join Stitch Layer-5 Swarm (4-of-8 Seeder)";
+        log.textContent = "Left public-benefit Stitch Layer-5 swarm (zero background WebRTC connections).";
+        return;
+      }
+      const { createStitchSwarmSeeder, STITCH_L5_LIMITS } = await import("./stitch-swarm.mjs");
+      let pin = { releaseVersion: "2.19.0", releaseKappaHex: "0".repeat(64) };
+      try {
+        const res = await fetch("./frame/frame-pin.json", { cache: "no-store" });
+        if (res.ok) pin = await res.json();
+      } catch {}
+      const seeder = createStitchSwarmSeeder({
+        releaseKappaHex: pin.releaseKappaHex || "0".repeat(64),
+        releaseVersion: pin.releaseVersion || "2.19.0",
+        localPrismId: `prism:${localPeerShort || "local-seeder"}`,
+        isOrganAllowed: meshCtx?.isOrganAllowed,
+      });
+      const st = seeder.join();
+      const ann = await seeder.announceAvailability({ publishRelays: false });
+      activeSeeder = seeder;
+      btnSwarmJoin.textContent = "Leave Stitch Layer-5 Swarm";
+      log.textContent =
+        `Public-Benefit Stitch Layer-5 Swarm ACTIVE (${STITCH_L5_LIMITS.protocol}, zero commercial PaaS):\n` +
+        `  • Opaque Release Topic: ${st.opaqueTopic}\n` +
+        `  • Announce Digest: ${ann.msgDigest.slice(0, 16)}… (${ann.frames.length} frame <= ${STITCH_L5_LIMITS.wireBytesMax} B)\n` +
+        `  • ResourceAdmission Used: ${st.budget.used.requests}/${st.budget.limits.requests} reqs · ${st.budget.used.transferBytes}/${st.budget.limits.transferBytes} B`;
+    } catch (err) {
+      log.textContent = `Refused Stitch Layer-5 swarm join: ${String(err?.message || err)}`;
+    }
+  });
+  swarmRow.append(btnSwarmJoin);
+
+  card.append(desc, canvas, row, sdpRow, swarmRow, log);
   body.append(card);
   shell.append(head, body);
   dlg.append(shell);

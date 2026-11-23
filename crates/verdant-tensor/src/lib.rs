@@ -300,10 +300,6 @@ impl WordBitset {
         let word_count = new_len.div_ceil(WORD_BIT_WIDTH);
         self.words.resize(word_count, 0_u64);
         self.bit_len = new_len;
-        self.mask_tail();
-    }
-
-    fn mask_tail(&mut self) {
         let rem = self.bit_len % WORD_BIT_WIDTH;
         if rem != 0 {
             if let Some(last) = self.words.last_mut() {
@@ -352,7 +348,12 @@ impl WordBitset {
     /// Sets all valid slots `0..bit_len` to `1` in `O(N / 64)`.
     pub fn fill_ones(&mut self) {
         self.words.fill(!0_u64);
-        self.mask_tail();
+        let rem = self.bit_len % WORD_BIT_WIDTH;
+        if rem != 0 {
+            if let Some(last) = self.words.last_mut() {
+                *last &= (1_u64 << rem).wrapping_sub(1);
+            }
+        }
     }
 
     /// Bitwise `self &= rhs` in `O(N / 64)`.
@@ -372,7 +373,12 @@ impl WordBitset {
         for (dst, &src) in self.words.iter_mut().zip(rhs.words.iter()) {
             *dst |= src;
         }
-        self.mask_tail();
+        let rem = self.bit_len % WORD_BIT_WIDTH;
+        if rem != 0 {
+            if let Some(last) = self.words.last_mut() {
+                *last &= (1_u64 << rem).wrapping_sub(1);
+            }
+        }
     }
 
     /// Hardware `popcnt` across all packed `u64` words in `O(N / 64)`.
@@ -712,24 +718,6 @@ pub struct VerifiedCodedTier {
     pub summary: String,
 }
 
-fn map_semiring(sr: prism_kernel::TensorSemiring) -> TensorSemiringKind {
-    match sr {
-        prism_kernel::TensorSemiring::linearExact => TensorSemiringKind::LinearExact,
-        prism_kernel::TensorSemiring::tropicalMaxPlus => TensorSemiringKind::TropicalMaxPlus,
-        prism_kernel::TensorSemiring::tropicalMinPlus => TensorSemiringKind::TropicalMinPlus,
-        prism_kernel::TensorSemiring::modularAudioRing => TensorSemiringKind::ModularAudioRing,
-        prism_kernel::TensorSemiring::codedZeroDecode => TensorSemiringKind::CodedZeroDecode,
-    }
-}
-
-fn map_coded_tier(tier: prism_kernel::CodedMatrixTier) -> CodedMatrixTierKind {
-    match tier {
-        prism_kernel::CodedMatrixTier::gridLookup => CodedMatrixTierKind::GridLookup,
-        prism_kernel::CodedMatrixTier::packedNibble => CodedMatrixTierKind::PackedNibble,
-        prism_kernel::CodedMatrixTier::sparseRuns => CodedMatrixTierKind::SparseRuns,
-    }
-}
-
 /// Validates a `prism_kernel::TensorKernelSpec` through the Lean-proved `tensorKernelValid` predicate.
 pub fn verify_tensor_kernel_spec(
     spec: &prism_kernel::TensorKernelSpec,
@@ -741,7 +729,13 @@ pub fn verify_tensor_kernel_spec(
     }
     Ok(VerifiedTensorKernel {
         index: spec.index,
-        semiring: map_semiring(spec.semiring),
+        semiring: match spec.semiring {
+            prism_kernel::TensorSemiring::linearExact => TensorSemiringKind::LinearExact,
+            prism_kernel::TensorSemiring::tropicalMaxPlus => TensorSemiringKind::TropicalMaxPlus,
+            prism_kernel::TensorSemiring::tropicalMinPlus => TensorSemiringKind::TropicalMinPlus,
+            prism_kernel::TensorSemiring::modularAudioRing => TensorSemiringKind::ModularAudioRing,
+            prism_kernel::TensorSemiring::codedZeroDecode => TensorSemiringKind::CodedZeroDecode,
+        },
         lhs_cols: spec.lhsCols,
         accum_bits: spec.accumBits,
         min_accum_bits: spec.minAccumBits,
@@ -802,7 +796,11 @@ pub fn verify_coded_tier_spec(
     }
     Ok(VerifiedCodedTier {
         index: spec.index,
-        tier: map_coded_tier(spec.tier),
+        tier: match spec.tier {
+            prism_kernel::CodedMatrixTier::gridLookup => CodedMatrixTierKind::GridLookup,
+            prism_kernel::CodedMatrixTier::packedNibble => CodedMatrixTierKind::PackedNibble,
+            prism_kernel::CodedMatrixTier::sparseRuns => CodedMatrixTierKind::SparseRuns,
+        },
         code_bits: spec.codeBits,
         block_len: spec.blockLen,
         table_size: spec.tableSize,

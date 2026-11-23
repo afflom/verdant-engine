@@ -8,16 +8,6 @@ fn failure() -> TensorComputeError {
     }
 }
 
-fn bits(value: f32) -> u64 {
-    u64::from(value.to_bits())
-}
-
-fn float(word: u64) -> Result<f32, TensorComputeError> {
-    u32::try_from(word)
-        .map(f32::from_bits)
-        .map_err(|_| failure())
-}
-
 /// A running weighted sum and its normalization mass at the current maximum score.
 pub struct WeightedMeanF32 {
     maximum: f32,
@@ -48,6 +38,8 @@ impl WeightedMeanF32 {
                 detail: "weighted observation width differs from accumulator".to_string(),
             });
         }
+        let bits = |v: f32| u64::from(v.to_bits());
+        let float = |w: u64| u32::try_from(w).map(f32::from_bits).map_err(|_| failure());
         let verdant_weighted_pivot::Adt0::C0(raised, maximum, difference) =
             verdant_weighted_pivot::run(bits(self.maximum), bits(score)).map_err(|_| failure())?;
         let maximum = float(maximum)?;
@@ -79,9 +71,14 @@ impl WeightedMeanF32 {
     /// # Errors
     /// Returns a typed error if a certified arithmetic operation exceeds its word width.
     pub fn finish(mut self) -> Result<Vec<f32>, TensorComputeError> {
-        let inverse =
-            verdant_weighted_reciprocal::run(bits(self.mass), bits(1.0)).map_err(|_| failure())?;
-        let scale = float(inverse)?;
+        let inverse = verdant_weighted_reciprocal::run(
+            u64::from(self.mass.to_bits()),
+            u64::from(1.0_f32.to_bits()),
+        )
+        .map_err(|_| failure())?;
+        let scale = u32::try_from(inverse)
+            .map(f32::from_bits)
+            .map_err(|_| failure())?;
         for value in &mut self.sums {
             *value = evaluate_f32_scalar(crate::scalars::two_u64(), *value, scale)?;
         }

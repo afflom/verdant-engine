@@ -109,24 +109,20 @@ jobs:
             --dl "https://github.com/${{ github.repository }}/releases/download/v{version}/{crate}-{version}.crate"
           node scripts/verify-sparse-registry.mjs --dir dist/crates
 
-      - name: Emit & failover-verify Multi-Gateway Stitch Bundle (GitHub + Cloudflare + Netlify + IPFS + Self-Hosted)
+      - name: Emit & failover-verify Public-Benefit Stitch Gateway Bundle (GitHub + Stitch Layer-5 Swarm + IPFS + Zenodo + Volunteer Self-Hosted)
         shell: bash
         env:
           VER: ${{ steps.meta.outputs.version }}
-          CLOUDFLARE_PAGES_URL: ${{ vars.VERDANT_CLOUDFLARE_GATEWAY_URL || '' }}
-          NETLIFY_GATEWAY_URL: ${{ vars.VERDANT_NETLIFY_GATEWAY_URL || '' }}
           IPFS_GATEWAY_URL: ${{ vars.VERDANT_IPFS_GATEWAY_URL || '' }}
+          COMMUNITY_GATEWAY_URL: ${{ vars.VERDANT_COMMUNITY_GATEWAY_URL || '' }}
         run: |
           set -euo pipefail
           extra_flags=()
-          if [[ -n "${CLOUDFLARE_PAGES_URL}" ]]; then
-            extra_flags+=(--gateway "${CLOUDFLARE_PAGES_URL}")
-          fi
-          if [[ -n "${NETLIFY_GATEWAY_URL}" ]]; then
-            extra_flags+=(--gateway "${NETLIFY_GATEWAY_URL}")
-          fi
           if [[ -n "${IPFS_GATEWAY_URL}" ]]; then
             extra_flags+=(--gateway "${IPFS_GATEWAY_URL}")
+          fi
+          if [[ -n "${COMMUNITY_GATEWAY_URL}" ]]; then
+            extra_flags+=(--gateway "${COMMUNITY_GATEWAY_URL}")
           fi
           ./target/debug/verdant gateway pack \
             --root . \
@@ -244,27 +240,3 @@ jobs:
             dist/oci-bundle
           docker push "ghcr.io/${OWNER_LC}/verdant-engine/verdant-release:v${VER}"
           docker push "ghcr.io/${OWNER_LC}/verdant-engine/verdant-release:latest"
-
-      - name: Optional External Gateway Deploy (Cloudflare Pages, Netlify Edge, IPFS Pinning)
-        if: startsWith(github.ref, 'refs/tags/v') || github.event.inputs.publish == 'true'
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          CLOUDFLARE_PROJECT_NAME: ${{ vars.CLOUDFLARE_PAGES_PROJECT || 'verdant-engine' }}
-          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
-          VER: ${{ steps.meta.outputs.version }}
-        run: |
-          set -euo pipefail
-          if [[ -n "${CLOUDFLARE_API_TOKEN}" && -n "${CLOUDFLARE_ACCOUNT_ID}" ]]; then
-            npx --yes wrangler@3 pages deploy dist/gateway-bundle \
-              --project-name "${CLOUDFLARE_PROJECT_NAME}" \
-              --commit-message "Verdant Stitch v${VER}"
-          else
-            echo "Cloudflare Pages mirror skipped (configure CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID to enable)."
-          fi
-          if [[ -n "${NETLIFY_AUTH_TOKEN}" && -n "${NETLIFY_SITE_ID}" ]]; then
-            npx --yes netlify-cli@17 deploy --prod --dir=dist/gateway-bundle --site "${NETLIFY_SITE_ID}"
-          else
-            echo "Netlify Edge mirror skipped (configure NETLIFY_AUTH_TOKEN + NETLIFY_SITE_ID to enable)."
-          fi

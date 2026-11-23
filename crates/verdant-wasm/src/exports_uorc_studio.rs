@@ -438,7 +438,7 @@ pub extern "C" fn verdant_wasm_workload_governor_step_aux(
 }
 
 /// Serializes live [`PagedTensorArena`] ISO/IEC 25010 resource utilization telemetry into `aux_buffer`.
-#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+#[cfg(not(target_arch = "wasm32"))]
 #[no_mangle]
 pub extern "C" fn verdant_wasm_tensor_memory_status_aux() -> u32 {
     let mut guard = global_bridge()

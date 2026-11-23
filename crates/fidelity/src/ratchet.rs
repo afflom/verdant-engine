@@ -488,7 +488,7 @@ pub fn audit_parametric_ratchet(
             )));
         }
     }
-    rust_files.sort();
+    rust_files.sort_by_key(|p| rel_slash(repo, p));
     rust_files.dedup();
 
     let mut engine_rust_magic_literal_count = 0usize;

@@ -47,14 +47,6 @@ pub struct NavCorridorPath {
     pub total_cost_meters: f64,
 }
 
-fn quantized_vertex_key(v: Vec3, scale: f64) -> (i64, i64, i64) {
-    (
-        (v.x * scale).round() as i64,
-        (v.y * scale).round() as i64,
-        (v.z * scale).round() as i64,
-    )
-}
-
 impl NavMesh {
     /// Counts triangles satisfying `prism_kernel::navTriangleWalkable` without allocating full edge adjacency.
     #[must_use]
@@ -144,13 +136,20 @@ impl NavMesh {
             return Err(NavigationError::EmptyWalkableNavMesh);
         }
 
+        let qkey = |v: Vec3| {
+            (
+                (v.x * scale).round() as i64,
+                (v.y * scale).round() as i64,
+                (v.z * scale).round() as i64,
+            )
+        };
         let keys: Vec<[(i64, i64, i64); DIM_SPATIAL]> = polygons
             .iter()
             .map(|poly| {
                 [
-                    quantized_vertex_key(poly.vertices[0], scale),
-                    quantized_vertex_key(poly.vertices[1], scale),
-                    quantized_vertex_key(poly.vertices[1 + 1], scale),
+                    qkey(poly.vertices[0]),
+                    qkey(poly.vertices[1]),
+                    qkey(poly.vertices[1 + 1]),
                 ]
             })
             .collect();

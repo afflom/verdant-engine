@@ -618,7 +618,7 @@ pub extern "C" fn verdant_wasm_mover_x() -> f64 {
 }
 
 /// Current autonomous kinematic spline mover Y coordinate in world meters.
-#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+#[cfg(not(target_arch = "wasm32"))]
 #[no_mangle]
 pub extern "C" fn verdant_wasm_mover_y() -> f64 {
     global_bridge()
@@ -655,7 +655,7 @@ pub extern "C" fn verdant_wasm_mover_z() -> f64 {
 }
 
 /// Current autonomous kinematic spline mover heading yaw in radians.
-#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+#[cfg(not(target_arch = "wasm32"))]
 #[no_mangle]
 pub extern "C" fn verdant_wasm_mover_yaw() -> f64 {
     global_bridge()
@@ -960,7 +960,7 @@ pub extern "C" fn verdant_wasm_fb_ptr() -> u32 {
 }
 
 /// Byte length of the latest `RGBA8` tensor framebuffer.
-#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+#[cfg(not(target_arch = "wasm32"))]
 #[no_mangle]
 pub extern "C" fn verdant_wasm_fb_len() -> u32 {
     global_bridge()

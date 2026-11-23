@@ -148,10 +148,6 @@ pub struct ContactManifold {
     pub iterations: u32,
 }
 
-fn triple_cross(a: Vec3, b: Vec3, c: Vec3) -> Vec3 {
-    b.scale(a.dot(c)) - a.scale(b.dot(c))
-}
-
 fn update_simplex(simplex: &mut Vec<Vec3>, dir: &mut Vec3) -> bool {
     let eps = geometric_epsilon();
     let two = 1usize + 1usize;
@@ -164,7 +160,7 @@ fn update_simplex(simplex: &mut Vec<Vec3>, dir: &mut Vec3) -> bool {
         let ab = b - a;
         let ao = Vec3::ZERO - a;
         if ab.dot(ao) > 0.0 {
-            let perp = triple_cross(ab, ao, ab);
+            let perp = ao.scale(ab.dot(ab)) - ab.scale(ao.dot(ab));
             *dir = if perp.length() > eps {
                 perp
             } else {
@@ -189,7 +185,7 @@ fn update_simplex(simplex: &mut Vec<Vec3>, dir: &mut Vec3) -> bool {
         if abc.cross(ac).dot(ao) > 0.0 {
             if ac.dot(ao) > 0.0 {
                 *simplex = vec![c, a];
-                *dir = triple_cross(ac, ao, ac);
+                *dir = ao.scale(ac.dot(ac)) - ac.scale(ao.dot(ac));
             } else {
                 *simplex = vec![b, a];
                 return update_simplex(simplex, dir);
@@ -238,28 +234,6 @@ fn update_simplex(simplex: &mut Vec<Vec3>, dir: &mut Vec3) -> bool {
     }
 
     false
-}
-
-fn minkowski_depth_along(
-    hull_a: &ConvexHullCollider,
-    pos_a: Vec3,
-    hull_b: &ConvexHullCollider,
-    pos_b: Vec3,
-    axis: Vec3,
-) -> Option<(Vec3, f64)> {
-    let len = axis.length();
-    if len <= geometric_epsilon() {
-        return None;
-    }
-    let unit = axis.scale(1.0 / len);
-    let max_a = hull_a.support(pos_a, unit).dot(unit);
-    let min_b = hull_b.support(pos_b, Vec3::ZERO - unit).dot(unit);
-    let overlap = max_a - min_b;
-    if overlap >= 0.0 {
-        Some((unit, overlap))
-    } else {
-        None
-    }
 }
 
 /// Runs bounded 3D GJK Minkowski intersection and extracts a deterministic contact manifold.
@@ -340,8 +314,14 @@ pub fn gjk_intersect_and_manifold(
     let mut best_normal = Vec3::UP;
     let mut best_depth = f64::INFINITY;
     for axis in candidates {
-        if let Some((n, depth)) = minkowski_depth_along(hull_a, pos_a, hull_b, pos_b, axis) {
-            if depth < best_depth && (delta.length() <= geometric_epsilon() || n.dot(delta) >= 0.0)
+        let len = axis.length();
+        if len > geometric_epsilon() {
+            let n = axis.scale(1.0 / len);
+            let depth =
+                hull_a.support(pos_a, n).dot(n) - hull_b.support(pos_b, Vec3::ZERO - n).dot(n);
+            if depth >= 0.0
+                && depth < best_depth
+                && (delta.length() <= geometric_epsilon() || n.dot(delta) >= 0.0)
             {
                 best_depth = depth;
                 best_normal = n;
@@ -585,27 +565,6 @@ fn closest_point_on_triangle(p: Vec3, a: Vec3, b: Vec3, c: Vec3) -> Vec3 {
     a + ab.scale(v) + ac.scale(w)
 }
 
-fn point_in_triangle_barycentric(p: Vec3, a: Vec3, b: Vec3, c: Vec3) -> bool {
-    let eps = geometric_epsilon();
-    let v0 = b - a;
-    let v1 = c - a;
-    let v2 = p - a;
-    let d00 = v0.dot(v0);
-    let d01 = v0.dot(v1);
-    let d11 = v1.dot(v1);
-    let d20 = v2.dot(v0);
-    let d21 = v2.dot(v1);
-    let denom = d00 * d11 - d01 * d01;
-    if denom.abs() <= eps {
-        return false;
-    }
-    let inv = 1.0 / denom;
-    let v = (d11 * d20 - d01 * d21) * inv;
-    let w = (d00 * d21 - d01 * d20) * inv;
-    let u = 1.0 - v - w;
-    u >= -eps && v >= -eps && w >= -eps
-}
-
 fn smallest_unit_quadratic_root(a_coef: f64, b_coef: f64, c_coef: f64) -> Option<f64> {
     let eps = geometric_epsilon();
     let two = two_f64();
@@ -688,8 +647,23 @@ fn sweep_sphere_against_triangle(
         let t_plane = (radius - d0) / dn;
         if (0.0..=1.0).contains(&t_plane) {
             let p_plane = origin + delta.scale(t_plane) - n_side.scale(radius);
-            if point_in_triangle_barycentric(p_plane, tri.v0, tri.v1, tri.v2) {
-                consider(t_plane, p_plane, n_side);
+            let bv0 = tri.v1 - tri.v0;
+            let bv1 = tri.v2 - tri.v0;
+            let bv2 = p_plane - tri.v0;
+            let bd00 = bv0.dot(bv0);
+            let bd01 = bv0.dot(bv1);
+            let bd11 = bv1.dot(bv1);
+            let bd20 = bv2.dot(bv0);
+            let bd21 = bv2.dot(bv1);
+            let bdenom = bd00 * bd11 - bd01 * bd01;
+            if bdenom.abs() > eps {
+                let binv = 1.0 / bdenom;
+                let bv = (bd11 * bd20 - bd01 * bd21) * binv;
+                let bw = (bd00 * bd21 - bd01 * bd20) * binv;
+                let bu = 1.0 - bv - bw;
+                if bu >= -eps && bv >= -eps && bw >= -eps {
+                    consider(t_plane, p_plane, n_side);
+                }
             }
         }
     }
