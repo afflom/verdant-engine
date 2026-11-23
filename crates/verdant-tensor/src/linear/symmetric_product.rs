@@ -1,5 +1,5 @@
 //! Packed weight rows with a shared symmetric signed-byte activation format.
-use super::{bitpacked_product, convert_float_storage, SymmetricQ8Block, TensorComputeError};
+use super::{convert_float_storage, SymmetricQ8Block, TensorComputeError, GGML_QUANTIZED_TABLES};
 
 /// Contract encoded symmetric weight blocks with a prepared activation row.
 /// Each block's signed integer dot is exact. Prism widens the two scales,
@@ -12,7 +12,7 @@ pub fn dot_symmetric_q8_row<const LANES: usize>(
     weights: &[u8],
     activations: &[SymmetricQ8Block<LANES>],
 ) -> Result<f32, TensorComputeError> {
-    dot_symmetric_row(weights, activations, WeightEncoding::SignedByte)
+    dot_encoded_symmetric_row(weights, activations, SymmetricWeightEncoding::SignedByte)
 }
 
 /// Contract symmetric four-bit weights with prepared signed-byte activation blocks.
@@ -25,43 +25,30 @@ pub fn dot_symmetric_q4_row<const LANES: usize>(
     weights: &[u8],
     activations: &[SymmetricQ8Block<LANES>],
 ) -> Result<f32, TensorComputeError> {
-    dot_symmetric_row(weights, activations, WeightEncoding::SignedFour)
+    dot_encoded_symmetric_row(weights, activations, SymmetricWeightEncoding::SignedFour)
 }
 
-/// Contract signed five-bit coefficients with independent half scales and signed-byte activations.
-///
-/// # Errors
-/// Rejects incomplete or mismatched blocks and lane counts other than 32.
-pub fn dot_symmetric_q5_row<const LANES: usize>(
-    weights: &[u8],
-    activations: &[SymmetricQ8Block<LANES>],
-) -> Result<f32, TensorComputeError> {
-    dot_symmetric_row(weights, activations, WeightEncoding::SignedFive)
-}
-
-/// Contract nonlinear four-bit codebook indices with symmetric signed-byte activations.
-///
-/// # Errors
-/// Rejects incomplete or mismatched blocks and lane counts other than 32.
-pub fn dot_nonlinear_q4_row<const LANES: usize>(
-    weights: &[u8],
-    activations: &[SymmetricQ8Block<LANES>],
-) -> Result<f32, TensorComputeError> {
-    dot_symmetric_row(weights, activations, WeightEncoding::NonlinearFour)
-}
-
-#[derive(Clone, Copy, PartialEq)]
-enum WeightEncoding {
+/// Encoded weights accepted by a signed-byte activation row.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum SymmetricWeightEncoding {
+    /// Signed bytes with an independent half scale.
     SignedByte,
+    /// Signed nibbles in low and high lane halves.
     SignedFour,
+    /// Four low bits and an independent high-bit plane.
     SignedFive,
+    /// Indices into the imported nonlinear four-bit coefficient table.
     NonlinearFour,
 }
 
-fn dot_symmetric_row<const LANES: usize>(
+/// Contract encoded weights with prepared symmetric signed-byte activation blocks.
+///
+/// # Errors
+/// Rejects incomplete, mismatched or non-32-lane blocks.
+pub fn dot_encoded_symmetric_row<const LANES: usize>(
     weights: &[u8],
     activations: &[SymmetricQ8Block<LANES>],
-    encoding: WeightEncoding,
+    encoding: SymmetricWeightEncoding,
 ) -> Result<f32, TensorComputeError> {
     use verdant_packed_dot::{Adt0 as Packed, Adt1 as Step};
     let invalid = || TensorComputeError::ZeroOrMismatchedExtents {
@@ -75,9 +62,9 @@ fn dot_symmetric_row<const LANES: usize>(
     let lanes = LANES as u64;
     let bytes = weights.len() as u64;
     let blocks = activations.len() as u64;
-    let packed = encoding == WeightEncoding::SignedFour;
-    let nonlinear = encoding == WeightEncoding::NonlinearFour;
-    let compact = nonlinear || encoding == WeightEncoding::SignedFive;
+    let packed = encoding == SymmetricWeightEncoding::SignedFour;
+    let nonlinear = encoding == SymmetricWeightEncoding::NonlinearFour;
+    let compact = nonlinear || encoding == SymmetricWeightEncoding::SignedFive;
     let width = if compact {
         let verdant_bitpacked_product::Adt1::C2(width) = verdant_bitpacked_product::run(
             verdant_bitpacked_product::Adt0::C2(nonlinear, lanes, bytes, blocks),
@@ -100,21 +87,52 @@ fn dot_symmetric_row<const LANES: usize>(
         let (scale, codes) = weight
             .split_first_chunk::<{ std::mem::size_of::<u16>() }>()
             .ok_or_else(invalid)?;
-        let signed = if compact {
-            bitpacked_product::compact_coefficients(nonlinear, codes)?
-        } else if packed {
-            let mut signed = [0i8; LANES];
-            let (low, high) = signed.split_at_mut(codes.len());
-            for ((l, h), &byte) in low.iter_mut().zip(high).zip(codes) {
-                let pair = packed_word(Packed::C1(u64::from(byte)))? as u16;
-                let [first, second] = pair.to_le_bytes();
-                *l = first as i8;
-                *h = second as i8;
-            }
-            signed
-        } else {
+        let signed = if encoding == SymmetricWeightEncoding::SignedByte {
             let codes: &[u8; LANES] = codes.try_into().map_err(|_| invalid())?;
             codes.map(|byte| byte as i8)
+        } else {
+            let (flags, pairs) = if encoding == SymmetricWeightEncoding::SignedFive {
+                let (bits, pairs) = codes
+                    .split_first_chunk::<{ size_of::<u32>() }>()
+                    .ok_or_else(invalid)?;
+                (u32::from_ne_bytes(*bits), pairs)
+            } else {
+                (0, codes)
+            };
+            let mut coefficients = [0_i8; LANES];
+            let (low, high) = coefficients
+                .split_at_mut_checked(pairs.len())
+                .ok_or_else(invalid)?;
+            if high.len() != low.len() {
+                return Err(invalid());
+            }
+            for (column, ((l, h), &byte)) in low.iter_mut().zip(high).zip(pairs).enumerate() {
+                let [a, b] = if packed {
+                    (packed_word(Packed::C1(byte.into()))? as u16).to_le_bytes()
+                } else {
+                    use verdant_bitpacked_product::{Adt0 as Request, Adt1 as Coefficients};
+                    let pair = verdant_bitpacked_product::run(Request::C3(
+                        nonlinear,
+                        column as u64,
+                        byte.into(),
+                        flags.into(),
+                    ))
+                    .map_err(|_| invalid())?;
+                    let lookup = |index: u64| {
+                        GGML_QUANTIZED_TABLES
+                            .get(index as usize)
+                            .copied()
+                            .ok_or_else(invalid)
+                    };
+                    match pair {
+                        Coefficients::C3(a, b) => [a as u8, b as u8],
+                        Coefficients::C4(a, b) => [lookup(a)?, lookup(b)?],
+                        _ => return Err(invalid()),
+                    }
+                };
+                (*l, *h) = (a as i8, b as i8);
+            }
+            coefficients
         };
         let dot = uor_matmul::dot_ref(
             uor_matmul::as_alphabet_full(&signed),

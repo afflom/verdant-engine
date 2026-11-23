@@ -373,3 +373,9 @@ The full fidelity check reported these frontier findings.
 - frontier.toml: hand-written Rust residue grew: 1177 > ceiling 1160
 - frontier.toml: uncertified Rust surface grew: 1335 > ceiling 1318
 - frontier.toml: frontier.toml is stale against live Rust source tree (recorded 5d011918bdb9d2a1 != live 99d5248e5e205b4e; run `npm run ratchet`)
+
+### VTK-36 compact symmetric row products
+
+The pinned GGML CPU dot functions supplied 224 binary32 results for Q5_0 and IQ4_NL coefficients and signed-byte activation blocks. All 224 words matched over zero through six blocks. Partial blocks and mismatched activation counts returned typed errors. Dropping the high 16 flag bits failed five-bit row 1 with observed word 1160574976 and reference word 1134018560. Restoration and the existing four-bit and signed-byte dot regressions passed.
+
+The public entry point selects the coefficient encoding and reuses the scale and contraction logic. Its inputs are weight bytes and activation blocks. The isolated Verdant lift reported 232 modules with zero unlifted workspace or UI modules. The regenerated frontier and fidelity audit passed with 583 lifted functions, 1,152 residue functions and 1,310 uncertified functions. The existing ceilings were retained. [GGML CPU dot authority](https://github.com/ggml-org/llama.cpp/blob/9a080f44b503c64f66c84a6274b9d9ee5d5b09d5/ggml/src/ggml-cpu/quants.c)

@@ -34,7 +34,7 @@ pub use ranking::RowRankingF32;
 pub use rotation::{rotate_pair_f32, signed_word_f32, RotaryParameters, RotarySpectrum};
 pub use softmax::normalize_exponential_f32;
 pub use symmetric_product::{
-    dot_nonlinear_q4_row, dot_symmetric_q4_row, dot_symmetric_q5_row, dot_symmetric_q8_row,
+    dot_encoded_symmetric_row, dot_symmetric_q4_row, dot_symmetric_q8_row, SymmetricWeightEncoding,
 };
 pub use weighted_mean::WeightedMeanF32;
 

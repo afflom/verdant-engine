@@ -2328,8 +2328,12 @@ fn bitpacked_row_products_vtk_35() {
 #[test]
 fn compact_row_products_vtk_36() {
     compare_packed_weight_products(&[
-        (1, 20, "five-bit-dot", super::dot_symmetric_q5_row),
-        (1, 16, "nonlinear-dot", super::dot_nonlinear_q4_row),
+        (1, 20, "five-bit-dot", |w, a| {
+            super::dot_encoded_symmetric_row(w, a, super::SymmetricWeightEncoding::SignedFive)
+        }),
+        (1, 16, "nonlinear-dot", |w, a| {
+            super::dot_encoded_symmetric_row(w, a, super::SymmetricWeightEncoding::NonlinearFour)
+        }),
     ]);
 }
 

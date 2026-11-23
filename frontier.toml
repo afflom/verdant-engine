@@ -4990,24 +4990,6 @@ reason = "type"
 detail = "type outside the lift: f64"
 
 [[residue]]
-kappa = "1993d2ed07e622a3da1ce39479219470df07fc2bdad3cad747f259e239d457ee"
-function = "verdant_tensor::linear::dot_symmetric_q4_row"
-reason = "signature"
-detail = "signature outside the lift: generic, async, unsafe or variadic"
-
-[[residue]]
-kappa = "2fa9599567e19f2d40a488b9ba6fd9017ccc7e5805ec8b93e2c5a30693dcc7f4"
-function = "verdant_tensor::linear::dot_symmetric_q8_row"
-reason = "signature"
-detail = "signature outside the lift: generic, async, unsafe or variadic"
-
-[[residue]]
-kappa = "93f30e0eb69ebc616e400b41af97453b224b1a6f185ad73bbe63a77cb1685226"
-function = "verdant_tensor::linear::dot_symmetric_row"
-reason = "signature"
-detail = "signature outside the lift: generic, async, unsafe or variadic"
-
-[[residue]]
 kappa = "42715b4cca48150a1988bb86d07e8be67caa57168b88da96091e81e873b042ae"
 function = "verdant_tensor::linear::encode_symmetric_q8_block"
 reason = "signature"
@@ -5144,6 +5126,24 @@ kappa = "b4c50cf8249ec3c35bfcf985f40ecc978bf45aa591f1429b60a4e2244e2cf4a9"
 function = "verdant_tensor::linear::solve_two_bone_ik_exact"
 reason = "type"
 detail = "type outside the lift: f64"
+
+[[residue]]
+kappa = "9fdd8b8df581eb5556c233a69c6e252f0246c91906d664c493fc8e06e8183cae"
+function = "verdant_tensor::linear::symmetric_product::dot_encoded_symmetric_row"
+reason = "signature"
+detail = "signature outside the lift: generic, async, unsafe or variadic"
+
+[[residue]]
+kappa = "b398ca1d3e9297e9fec4346a3126f90ecc42f7a138c6cceffdd9aaf768686450"
+function = "verdant_tensor::linear::symmetric_product::dot_symmetric_q4_row"
+reason = "signature"
+detail = "signature outside the lift: generic, async, unsafe or variadic"
+
+[[residue]]
+kappa = "1e3c6bad949b79374769ec8020a2f3bf123e9cd39897a5b26c7f4c7283b2f960"
+function = "verdant_tensor::linear::symmetric_product::dot_symmetric_q8_row"
+reason = "signature"
+detail = "signature outside the lift: generic, async, unsafe or variadic"
 
 [[residue]]
 kappa = "eda38a5f00c1afcdd6e32b96ae05d29ed51f8efde016f3817774e6448db558c6"

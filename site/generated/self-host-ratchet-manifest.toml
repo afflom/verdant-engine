@@ -4,10 +4,10 @@ spec = "verdant/self-host-ratchet-manifest/1"
 generator = "verdant-operator-ratchet-lift"
 version = "2.19.0"
 release_epoch = 23
-source_commit_kappa = "7987600adeebde0ccc68314eef5d66842203eb445141c9cbb9a985588290bc2f"
-source_tree_root_sha256 = "65202d818b8434f11d41d0cac3d9fc618962f18327917fdc65355ad750aa75a5"
+source_commit_kappa = "b4adf7afa8defca1c3e5964cb8a1a668e54325955fa53f6fbf5a215b499230e7"
+source_tree_root_sha256 = "7afe214b00b48a4a3444c35aa44ed7cc0975225d0fb34d4e6a2aae8b09e96268"
 immutability_seal_root_sha256 = "60e2b572aec8386cb0fd3b0ce9e713c16b62e64a3209d19c5752a2a1ee3e234d"
-release_capsule_sha256 = "4af3108aa2a91dc091219f75f63043286b3f54e12e90f9b142610e887ab5e7b0"
+release_capsule_sha256 = "3078d957835f5aec685881222d2090c4c62661443bbb9a8ed912e76f795c6b06"
 unlifted_ui_files = 0
 unverified_frame_assets = 0
 user_required_external_accounts = 0
@@ -366,7 +366,7 @@ sha256 = "72e9649ccbbdbbf2fb2fee83fe038550f550a0cb56a8864adcecd2feb699a677"
 [[lifted_module]]
 path = "crates/verdant-tensor/src/linear.rs"
 category = "rust"
-sha256 = "bba8b0f17ae2e637624223616a9fc8f6ac74f15e765be8f1d319744f00a700d6"
+sha256 = "3554d55545c146370803f2c34d6baff7fbdaf087f51bae9d0ffc92ade62e4100"
 
 [[lifted_module]]
 path = "crates/verdant-tensor/src/linear/activations.rs"
@@ -376,7 +376,7 @@ sha256 = "1c3f09f2c76b308fce289064fe251ff5dec41d8f1f0865e885817e285ff5b103"
 [[lifted_module]]
 path = "crates/verdant-tensor/src/linear/bitpacked_product.rs"
 category = "rust"
-sha256 = "5055c93536cd42c4c6ce53474a1b88431586ca409519daf35449dbefba6f968a"
+sha256 = "2aed88be137df5409ec9b9e7976ed2d7d46de22a0372ad9ddb85379081a3d38f"
 
 [[lifted_module]]
 path = "crates/verdant-tensor/src/linear/grouped.rs"
@@ -407,6 +407,11 @@ sha256 = "fa4144fca632c9ed972cbdbdcd594224ecb842d7d71a7033a5dd44702ad6208a"
 path = "crates/verdant-tensor/src/linear/softmax.rs"
 category = "rust"
 sha256 = "f989db8333a2dc5d9852486e5fbe13da9c8488e20cdfe37787491b9b50673562"
+
+[[lifted_module]]
+path = "crates/verdant-tensor/src/linear/symmetric_product.rs"
+category = "rust"
+sha256 = "6266e1465c08f05767533f7dee730edfabe8c5662da380190fb6de738b83d1a4"
 
 [[lifted_module]]
 path = "crates/verdant-tensor/src/linear/weighted_mean.rs"
@@ -616,7 +621,7 @@ sha256 = "fdba67fa2ed22c2ff040acc86dd4d9c475c7dbbf60ca73df2955d4cd248b6509"
 [[lifted_module]]
 path = "app/src/BitpackedProduct.lex.tex"
 category = "lexlean"
-sha256 = "53ab3dcfb3ef74889828c510dd958e64e247e5828a07876347aeb26c6ad5fc91"
+sha256 = "4d7012e6c8a533f93aa8314afe640277c7ed32253363ec6013e9791ae20c030c"
 
 [[lifted_module]]
 path = "app/src/Brand.lex.tex"
@@ -931,7 +936,7 @@ sha256 = "9d26ca3eaa7ccad7aaea3e2bc023f66d8dfeda7f8baa0690f64d52bd7068bcb9"
 [[lifted_module]]
 path = "features/suites/engine.feature"
 category = "feature-suite"
-sha256 = "4af98d228ff2ba9e588854b82bb20d5c81cbfe24d1923c3cc700f9b242a31ca5"
+sha256 = "33524ca1dc0538ed217871e8a7b621c55a6d73b000e3e92591e49f5dafc427f2"
 
 [[lifted_module]]
 path = "features/suites/fidelity.feature"
@@ -1006,7 +1011,7 @@ sha256 = "1c897a9ae31a25e75893ca9a06d7a406ab62cc18caa7bc1f8a7d6697b55224d4"
 [[lifted_module]]
 path = "model/ids.toml"
 category = "model-governance"
-sha256 = "1aa37913d3d1a0d156523bc159eaa4247c6104d0d1b62d400bca11c75b5b58c4"
+sha256 = "3f98bfbf7b2597e17a17295f734fbcbffc77802d442878dcbdae61a001e8dcc7"
 
 [[lifted_module]]
 path = "model/ledger.toml"
