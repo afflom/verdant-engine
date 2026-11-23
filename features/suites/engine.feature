@@ -777,3 +777,9 @@ Feature: engine
     Given packed nonlinear coefficients with signed group scales
     When Verdant evaluates complete or truncated weight rows
     Then each complete product matches the pinned GGML CPU word and mismatched extents are refused
+
+  @VTK-44 @build
+  Scenario: Verdant encodes 256-lane ternary blocks in packed-trit and two-bit-plane layouts with a trailing binary16 scale
+    Given finite activation rows including signed half ties
+    When Verdant packs the ternary coefficients in either representation
+    Then every byte matches the pinned GGML reference encoder and malformed input leaves its destination intact

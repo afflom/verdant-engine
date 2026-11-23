@@ -1,1 +1,1 @@
-{"spec":"lexlean/production-request/1","roots":[{"root":"VerdantEngine.BitpackedProduct.evaluate","package":{"name":"verdant_bitpacked_product","version":"2.34.0"},"targets":[{"id":"rust-core","digest":"62c2e726c8ecf9006db5cbb3f0b3eda35053adccf2c61dd259048077681c2779"}]}]}
+{"spec":"lexlean/production-request/1","roots":[{"root":"VerdantEngine.BitpackedProduct.evaluate","package":{"name":"verdant_bitpacked_product","version":"2.37.0"},"targets":[{"id":"rust-core","digest":"62c2e726c8ecf9006db5cbb3f0b3eda35053adccf2c61dd259048077681c2779"}]}]}

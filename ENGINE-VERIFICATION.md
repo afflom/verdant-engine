@@ -429,3 +429,11 @@ The pinned GGML CPU type traits independently prepare the F32 activation and eva
 The grouped Prism model checks row extents, locates the eight groups and decodes their signed scales. The existing certified compact-pair model selects both coefficients from the imported nonlinear table. Each group contracts one 32-value activation segment and adds one rounded binary32 term in reference order. The signed export attestation is `125d57fe4d99b3105594bcf1c0eae4b2023ba29f75587396fe787f5fd2044ce6`.
 
 Using the low nibble for both codebook indices made `cargo test -p verdant-tensor --lib grouped_nonlinear_product_vtk_43` fail on row 1 with word 1211694456 against 3326743808. Restoring the upper nibble passed all 98 comparisons. The source lift retained 585 lifted functions and 1,150 residual functions.
+
+## VTK-44 ternary block encoding
+
+The unchanged GGML reference functions `quantize_row_tq1_0_ref` and `quantize_row_tq2_0_ref` produced all 34,560 expected bytes for 576 blocks. The inputs cover 256 separate impulse positions, signed zeros, positive and negative half ties and 29 scales of pseudorandom values. Each encoding also preserves the destination on truncated input, incorrect output width and nonfinite lanes.
+
+The BitpackedProduct certificate selects each code's source index and stride, rounds the signed coefficient, packs base-three digits or two-bit planes, and finalizes the byte before the binary16 scale is appended. It reuses the existing certified peak and scale operations. Attestation `ce1196f01544c9ee4f6d29f8ff614b08889676ec79031f22f4c2f9756bf8b43a` binds the production export.
+
+Reading adjacent values instead of applying the certified stride makes `cargo test -p verdant-tensor --lib ternary_block_encoding_vtk_44` fail on TQ1_0 row 2. Restoring the model-directed read passes both encoders and the previous compact encoders.

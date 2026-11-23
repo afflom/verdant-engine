@@ -386,6 +386,8 @@ int main(int argc, char **argv) {
   if (!std::strcmp(argv[1], "grouped-q6-dot")) return compare_grouped_rows<block_q6_K>(GGML_TYPE_Q6_K);
   if (!std::strcmp(argv[1], "grouped-q4-dot")) return compare_grouped_rows<block_q4_K>(GGML_TYPE_Q4_K);
   if (!std::strcmp(argv[1], "grouped-q5-dot")) return compare_grouped_rows<block_q5_K>(GGML_TYPE_Q5_K);
+  if (!std::strcmp(argv[1], "tq1_0")) return encode_blocks<QK_K>(quantize_row_tq1_0_ref);
+  if (!std::strcmp(argv[1], "tq2_0")) return encode_blocks<QK_K>(quantize_row_tq2_0_ref);
   if (!std::strcmp(argv[1], "q1_0")) return encode_blocks<QK1_0>(quantize_row_q1_0_ref);
   if (!std::strcmp(argv[1], "q2_0")) return encode_blocks<QK2_0>(quantize_row_q2_0_ref);
   if (!std::strcmp(argv[1], "q4_0")) return encode_blocks<32>(quantize_row_q4_0_ref);
@@ -2731,5 +2733,66 @@ fn bitpacked_weight_encoding_vtk_41() {
         malformed[lanes - 1] = f32::NAN;
         assert!(super::encode_weight_block(&malformed, kind, &mut untouched).is_err());
         assert_eq!(untouched, [0xa5; 18]);
+    }
+}
+
+#[test]
+fn ternary_block_encoding_vtk_44() {
+    use super::PackedWeightEncoding::{PackedTrits, TwoBitTernary};
+    use std::fmt::Write;
+    let ties = [
+        0.0_f32,
+        -0.0,
+        1.0,
+        -1.0,
+        0.5,
+        -0.5,
+        0.5_f32.next_down(),
+        -0.5_f32.next_up(),
+    ];
+    let mut state = 12345_u32;
+    let mut rows = vec![
+        [0.0; 256],
+        [-0.0; 256],
+        std::array::from_fn(|i| ties[i % ties.len()]),
+    ];
+    for column in 0..256 {
+        let mut impulse = [0.0; 256];
+        impulse[column] = if column % 2 == 0 { 1.0 } else { -1.0 };
+        rows.push(impulse);
+    }
+    for exponent in -14..=14 {
+        rows.push(std::array::from_fn(|_| {
+            state = state.wrapping_mul(1664525).wrapping_add(1013904223);
+            (state as i32 as f32 / i32::MAX as f32) * 2.0_f32.powi(exponent)
+        }));
+    }
+    let mut input = String::new();
+    for row in &rows {
+        for lane in row {
+            writeln!(input, "{}", lane.to_bits()).unwrap();
+        }
+    }
+    for (kind, width, mode) in [(PackedTrits, 54, "tq1_0"), (TwoBitTernary, 66, "tq2_0")] {
+        let expected = query_oracle(mode, input.clone());
+        assert_eq!(expected.len(), rows.len() * width);
+        for (i, (row, reference)) in rows.iter().zip(expected.chunks_exact(width)).enumerate() {
+            let mut output = vec![0xa5; width];
+            super::encode_weight_block(row, kind, &mut output).unwrap();
+            assert_eq!(
+                output.into_iter().map(u32::from).collect::<Vec<_>>(),
+                reference,
+                "{mode} row {i}"
+            );
+        }
+        let mut untouched = vec![0xa5; width];
+        let mut row = [1.0; 256];
+        assert!(super::encode_weight_block(&row[..255], kind, &mut untouched).is_err());
+        assert!(super::encode_weight_block(&row, kind, &mut untouched[1..]).is_err());
+        for invalid in [f32::NAN, f32::INFINITY, f32::NEG_INFINITY] {
+            row[255] = invalid;
+            assert!(super::encode_weight_block(&row, kind, &mut untouched).is_err());
+            assert_eq!(untouched, vec![0xa5; width]);
+        }
     }
 }
