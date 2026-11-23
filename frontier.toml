@@ -5,23 +5,23 @@
 # stops the functions it counts (the detail their rows state, under its
 # cause), the one that stops the most first: the work queue.
 
-# Honesty report: 551 of 1876 functions of product code are lifted; 1167
+# Honesty report: 578 of 1893 functions of product code are lifted; 1157
 # are residue, 75 foreign and 83 effect rows.
 # Residue by cause:
-#   arithmetic: 30
-#   call: 215
-#   form: 344
+#   arithmetic: 28
+#   call: 212
+#   form: 345
 #   signature: 71
-#   statements: 23
-#   type: 478
+#   statements: 22
+#   type: 473
 #   width: 6
 
 spec = "uorust/register/1"
 
 [lift]
-functions = 1876
-lifted = 551
-residue = 1167
+functions = 1893
+lifted = 578
+residue = 1157
 foreign = 75
 effect = 83
 
@@ -38,7 +38,7 @@ functions = 125
 [[construct]]
 construct = "type outside the lift: f64"
 cause = "type"
-functions = 60
+functions = 59
 
 [[construct]]
 construct = "takes or returns ObserverPrismHolon.organs: ObserverOrganModel.schema_org_jsonld: serde_json::Value, a type of the serde_json crate with no LexLean model"
@@ -51,19 +51,19 @@ cause = "foreign"
 functions = 27
 
 [[construct]]
-construct = "type outside the lift: Vec3.x: f64"
-cause = "type"
-functions = 26
-
-[[construct]]
 construct = "Fs effect: std::fs::read_to_string"
 cause = "effect"
 functions = 24
 
 [[construct]]
+construct = "type outside the lift: Vec3.x: f64"
+cause = "type"
+functions = 24
+
+[[construct]]
 construct = "the body has statements other than let"
 cause = "statements"
-functions = 23
+functions = 22
 
 [[construct]]
 construct = "calls new, which is not lifted"
@@ -161,11 +161,6 @@ cause = "type"
 functions = 9
 
 [[construct]]
-construct = "type outside the lift: TerrainReliefParams.basin_depth_meters: f64"
-cause = "type"
-functions = 9
-
-[[construct]]
 construct = "signature outside the lift: takes &mut self of WordBitset: the lift reads self and &self as the value, and threads no other receiver"
 cause = "signature"
 functions = 8
@@ -181,18 +176,13 @@ cause = "type"
 functions = 8
 
 [[construct]]
-construct = "expression form outside the lift: a while loop that does not advance its cursor once per step"
-cause = "form"
-functions = 7
+construct = "type outside the lift: TerrainReliefParams.basin_depth_meters: f64"
+cause = "type"
+functions = 8
 
 [[construct]]
 construct = "expression form outside the lift: expr::loop"
 cause = "form"
-functions = 7
-
-[[construct]]
-construct = "type outside the lift: ConvexHullCollider.vertices: Vec3.x: f64"
-cause = "type"
 functions = 7
 
 [[construct]]
@@ -206,7 +196,17 @@ cause = "type"
 functions = 7
 
 [[construct]]
+construct = "expression form outside the lift: a while loop that does not advance its cursor once per step"
+cause = "form"
+functions = 6
+
+[[construct]]
 construct = "type outside the lift: CheckpointedRollbackJournal<S, I>, written with arguments, where a method's type is read by its name alone"
+cause = "type"
+functions = 6
+
+[[construct]]
+construct = "type outside the lift: ConvexHullCollider.vertices: Vec3.x: f64"
 cause = "type"
 functions = 6
 
@@ -301,11 +301,6 @@ cause = "arithmetic"
 functions = 4
 
 [[construct]]
-construct = "integer operator + wraps or panics depending on the build profile"
-cause = "arithmetic"
-functions = 4
-
-[[construct]]
 construct = "calls identity, which is not lifted"
 cause = "call"
 functions = 4
@@ -374,6 +369,11 @@ functions = 4
 construct = "type outside the lift: UniverseManager.portal_graph: PortalGraph.portals: SpatialPortal.source_local: Vec3.x: f64"
 cause = "type"
 functions = 4
+
+[[construct]]
+construct = "integer operator + wraps or panics depending on the build profile"
+cause = "arithmetic"
+functions = 3
 
 [[construct]]
 construct = "Env effect: std::env::args"
@@ -477,11 +477,6 @@ functions = 2
 
 [[construct]]
 construct = "calls sha256_digest, which is not lifted"
-cause = "call"
-functions = 2
-
-[[construct]]
-construct = "calls ten_u64, which is not lifted"
 cause = "call"
 functions = 2
 
@@ -666,11 +661,6 @@ cause = "arithmetic"
 functions = 1
 
 [[construct]]
-construct = "integer operator | wraps or panics depending on the build profile"
-cause = "arithmetic"
-functions = 1
-
-[[construct]]
 construct = "calls __prod_borrowed_byteAt, which is not lifted"
 cause = "call"
 functions = 1
@@ -822,11 +812,6 @@ functions = 1
 
 [[construct]]
 construct = "calls uorcDefaultDecodeWork, which is not lifted"
-cause = "call"
-functions = 1
-
-[[construct]]
-construct = "calls verify, which is not lifted"
 cause = "call"
 functions = 1
 
@@ -1047,6 +1032,16 @@ functions = 1
 
 [[construct]]
 construct = "expression form outside the lift: method call .wrapping_add"
+cause = "form"
+functions = 1
+
+[[construct]]
+construct = "expression form outside the lift: method call .wrapping_rem"
+cause = "form"
+functions = 1
+
+[[construct]]
+construct = "expression form outside the lift: method call .wrapping_shl"
 cause = "form"
 functions = 1
 
@@ -1937,22 +1932,10 @@ reason = "type"
 detail = "type outside the lift: Vec3.x: f64"
 
 [[residue]]
-kappa = "0d150330de0b6c48fcd4c7a859e848e7dbe8ab325b6d4413ece06e9c39851165"
+kappa = "1d4c19668084fa2011aa3f990ae830ae5db69aaa8c6caf9cb8bd16eb86937256"
 function = "verdant_core::collision::gjk_intersect_and_manifold"
 reason = "type"
 detail = "type outside the lift: ConvexHullCollider.vertices: Vec3.x: f64"
-
-[[residue]]
-kappa = "c14c17b253326b346f999e81e4bf48f76511a160f2bd845f6340043ebaadd4fb"
-function = "verdant_core::collision::minkowski_depth_along"
-reason = "type"
-detail = "type outside the lift: ConvexHullCollider.vertices: Vec3.x: f64"
-
-[[residue]]
-kappa = "f2ff259dc3d94ae181809914e137fa52321eed9c5f820967320037c4b4bff162"
-function = "verdant_core::collision::point_in_triangle_barycentric"
-reason = "type"
-detail = "type outside the lift: Vec3.x: f64"
 
 [[residue]]
 kappa = "20528c2215c154b91c7d6bdfba808e17acf8801af3cb421df5b585bea55d9219"
@@ -1979,19 +1962,13 @@ reason = "type"
 detail = "type outside the lift: Vec3.x: f64"
 
 [[residue]]
-kappa = "cd7a7aa5fb3bbfbb5efc0abb3cb18a8821c008be280482e729b4c796bfc4b87b"
+kappa = "06fadb3736c77919b21f2a980271310bf86691a183cc33a2cb1ee1ad3a36129c"
 function = "verdant_core::collision::sweep_sphere_against_triangle"
 reason = "type"
 detail = "type outside the lift: Vec3.x: f64"
 
 [[residue]]
-kappa = "e714f77864fd78aa3880e002f2fe978cebd4d9d43d90080590b2b1c4b13e7309"
-function = "verdant_core::collision::triple_cross"
-reason = "type"
-detail = "type outside the lift: Vec3.x: f64"
-
-[[residue]]
-kappa = "24d789053c529c7717db1cc581929e42bedd95ca7a66a28da24de7527502f97b"
+kappa = "fbd8ed2c5e991c91ea7f44904a2103956862a18893ae0b1c5d84deae9d0c65e1"
 function = "verdant_core::collision::update_simplex"
 reason = "type"
 detail = "type outside the lift: &mut Vec<Vec3>"
@@ -2459,7 +2436,7 @@ reason = "type"
 detail = "type outside the lift: RenderGraphError::InvalidShadowFrustumBounds.near_meters: f64"
 
 [[residue]]
-kappa = "690a83dc585a7fd8efa9bd4ca69f7c825f8b7c62b7953f1f69c2e34f73e68d57"
+kappa = "caba209cb2a56559e21d8c93c73d736e758b96b87afd51a9a8c86e771e4a7f52"
 function = "verdant_core::gateway::build_multi_gateway_manifest"
 reason = "statements"
 detail = "the body has statements other than let"
@@ -2789,10 +2766,10 @@ reason = "type"
 detail = "type outside the lift: Aabb.min: Vec3.x: f64"
 
 [[residue]]
-kappa = "a5747307ac561e359c65375c86ebd97b8c73ed9b16d352b7b7cfb5aa3f5d2fbf"
+kappa = "3528b79cc2bac24404be03ea276fe72aad95d209c50a26f647c0f90a9deabed1"
 function = "verdant_core::math::DeterministicRng::new"
-reason = "arithmetic"
-detail = "integer operator | wraps or panics depending on the build profile"
+reason = "form"
+detail = "expression form outside the lift: method call .wrapping_rem"
 
 [[residue]]
 kappa = "de85134da35908c6b0e6b94872b024049a1dcf43d281777c0a032ed9b7f7f920"
@@ -3071,10 +3048,10 @@ reason = "form"
 detail = "expression form outside the lift: a while loop that does not advance its cursor once per step"
 
 [[residue]]
-kappa = "8b17d326067f803f562a3d93a3ef9f416a3de7537a934b1fa2ecfc8c3cc6604f"
+kappa = "ed59ac4409f838a6f29aecd0311b60c32ff3353f85bccd68a54f49c4659c7871"
 function = "verdant_core::math::pow2_u64"
 reason = "form"
-detail = "expression form outside the lift: a while loop that does not advance its cursor once per step"
+detail = "expression form outside the lift: method call .wrapping_shl"
 
 [[residue]]
 kappa = "0298af6c501d0a3d7ff087d82e3ad5671ab972b017a0a327bf6325761c003ca6"
@@ -3501,12 +3478,6 @@ kappa = "a3f6b7c9065edb442f021e4163489572a111f749216417c981d4e920059834ea"
 function = "verdant_core::observer_language::tokenize_content_words"
 reason = "arithmetic"
 detail = "usize + wraps or panics where its value leaves the pointer width: past 2^32 on wasm32-unknown-unknown and thumbv7em-none-eabihf, past 2^64 on x86_64-unknown-linux-gnu and aarch64-unknown-linux-gnu"
-
-[[residue]]
-kappa = "e2b6ae5b313480d878f219c01ee407cc211bceeaa63f60632e299e9aae7157dc"
-function = "verdant_core::observer_types::HostCapabilityEnvelope::default_safe"
-reason = "call"
-detail = "calls ten_u64, which is not lifted"
 
 [[residue]]
 kappa = "f9c9b25917d2b8b842beb234eb5f83243b4a5bcb2c7c1819eef4ab7899047697"
@@ -4079,12 +4050,6 @@ reason = "type"
 detail = "type outside the lift: Self"
 
 [[residue]]
-kappa = "d205c498cbe6f7855b18f03385fba975f41497f536d53c9f7cb6a13808f22847"
-function = "verdant_core::runtime::EngineConfig::new"
-reason = "call"
-detail = "calls ten_u64, which is not lifted"
-
-[[residue]]
 kappa = "3edcf19bec531e481e1516e5d6dfbb94eecacecd350e4392c66de3eff4cdc4a0"
 function = "verdant_core::runtime::FrameBudgetProfiler::mean_frame_micros"
 reason = "call"
@@ -4463,13 +4428,13 @@ reason = "type"
 detail = "type outside the lift: TerrainReliefParams.basin_depth_meters: f64"
 
 [[residue]]
-kappa = "3ed624f070a760d2565b2690d4bf1b5d32e4e1fda0697d390ea827972323676b"
+kappa = "ec0d5eabbcc3f6602ea50d6dc0f32e992ab973ffb4a77c05292a92df7ea758b8"
 function = "verdant_core::streaming::build_scene_nodes"
 reason = "type"
 detail = "type outside the lift: SceneBuildParams.environment: PhysicalEnvironment.gravity_mps2: f64"
 
 [[residue]]
-kappa = "122de8f8a7cd9375c5c22b6ccbcef62f5fe38ffe98e2ab3b2ec5690b403bab00"
+kappa = "dfd8ac5ebc4b9fa6891bdbc80d7d781d2a0e8bc1be13c4b0e36797ed061ff3c9"
 function = "verdant_core::streaming::decode_uorc_stream_up_to_lod"
 reason = "type"
 detail = "type outside the lift: StandardSceneState.params: SceneBuildParams.environment: PhysicalEnvironment.gravity_mps2: f64"
@@ -4479,12 +4444,6 @@ kappa = "29caaf77d5a59a7d5508fdd99c0350a289218d44d30996bac1dc408f9b9977fe"
 function = "verdant_core::streaming::pack_progressive_uorc_stream"
 reason = "call"
 detail = "calls wasmMaxLodRank, which is not lifted"
-
-[[residue]]
-kappa = "91d7f7d5e163aecf1c875c758be7852965aa75bb433a5bca8a7ad740825c50fa"
-function = "verdant_core::streaming::preset_world_position"
-reason = "type"
-detail = "type outside the lift: TerrainReliefParams.basin_depth_meters: f64"
 
 [[residue]]
 kappa = "a50f6d5e22ac655be4a4d2014cf9f257c8fc17f6b915635409d669d517ac32ba"
@@ -4505,16 +4464,10 @@ reason = "type"
 detail = "type outside the lift: TerrainReliefParams.basin_depth_meters: f64"
 
 [[residue]]
-kappa = "b1f796df90a6ecb2656ef4a80f6ff80a960d2bbbe04d20e7218230b7050eb7f7"
-function = "verdant_core::streaming::uorc_work_budget"
-reason = "call"
-detail = "calls uorcDefaultDecodeWork, which is not lifted"
-
-[[residue]]
-kappa = "a94bc164ce76db28a3d192ead711ec8f52a0ac389c2741ff519c4cca7e418f16"
+kappa = "e8a2025139d1e12ba11138649e4414c372d028d82b4c67df17854736ec7f3a3f"
 function = "verdant_core::streaming::verify_progressive_uorc_stream"
 reason = "call"
-detail = "calls verify, which is not lifted"
+detail = "calls uorcDefaultDecodeWork, which is not lifted"
 
 [[residue]]
 kappa = "50664d6483af4a9862943993c889ed08894ea04d78ff60c186a1e2291eb9f59e"
@@ -4541,13 +4494,13 @@ reason = "type"
 detail = "type outside the lift: StandardSceneState.params: SceneBuildParams.environment: PhysicalEnvironment.gravity_mps2: f64"
 
 [[residue]]
-kappa = "1451eae1e6732ccdfaa6a3cff07f5881e98b996f4da5942c3fd02f5025dd4dd7"
+kappa = "81051629a3d3447f8e51e95ef0aba0c1e91a40432477e73deb3f4b1b69c723f8"
 function = "verdant_core::streaming_uorc::decode_portable_uorc_stream_up_to_lod"
 reason = "type"
 detail = "type outside the lift: StandardSceneState.params: SceneBuildParams.environment: PhysicalEnvironment.gravity_mps2: f64"
 
 [[residue]]
-kappa = "63a27f17aba8b71d301637749db9b156c5a9c817a74e89ce357e0e15dc8842fc"
+kappa = "3c65c2c6ac910502e853c6cf6bcae7fd7c06d703b4c081a419d6fb81611427ab"
 function = "verdant_core::streaming_uorc::decode_single_uorc_frame_bytes"
 reason = "statements"
 detail = "the body has statements other than let"
@@ -4631,7 +4584,7 @@ reason = "type"
 detail = "type outside the lift: f32"
 
 [[residue]]
-kappa = "40da945201e83ab77c24cd5539dd7ef7142d88259f492982ad629c1dad3d98a2"
+kappa = "cb905dfd44362856c2b425dd8e57dd24e33ef747384467aa43dbc4f1400d9774"
 function = "verdant_core::uhd::build_meshlet_graph"
 reason = "type"
 detail = "type outside the lift: f32"
@@ -4661,22 +4614,10 @@ reason = "arithmetic"
 detail = "integer operator + wraps or panics depending on the build profile"
 
 [[residue]]
-kappa = "e7be5643a2d6a2e37ff7f24a3f1af2b88ca00de97c5c4261b7840e59f8059455"
-function = "verdant_core::uhd::morton_code_3d"
-reason = "type"
-detail = "type outside the lift: f64"
-
-[[residue]]
 kappa = "1faaeb9fb1bb88fcab589001e38e8b3e6a04090abf34f285c4eb8af46ccecff3"
 function = "verdant_core::uhd::pack_rgba_texture_atlas"
 reason = "type"
 detail = "type outside the lift: PackedTextureAtlas.tile_transforms: AtlasUvTransform.u_offset: f32"
-
-[[residue]]
-kappa = "b98a9557506b212c3ad1bae9b37dd72f278da1ceb241bfda84326209d395a318"
-function = "verdant_core::uhd::spread_10_bits_for_morton"
-reason = "arithmetic"
-detail = "integer operator + wraps or panics depending on the build profile"
 
 [[residue]]
 kappa = "74a9d479809a4632ee6782d99fab9fdb531083931d3322ba1f816dcabfd99158"
@@ -4811,16 +4752,10 @@ reason = "type"
 detail = "type outside the lift: f64"
 
 [[residue]]
-kappa = "d4ff93f6a404d95426b8ef0acdffc6e49598a03c9a4e459136c8039d3676d29c"
+kappa = "6a39f8c3081cd6ca46d52dab88391f287c901a8466c4cbb9875220155bb3e519"
 function = "verdant_core::universe::canonicalize_axis"
 reason = "type"
 detail = "type outside the lift: f64"
-
-[[residue]]
-kappa = "9e12d8e6571a3fa0bd810f82e2d4e1f7018b5b666cc70d29032068e8404afddb"
-function = "verdant_core::universe::cell_err"
-reason = "statements"
-detail = "the body has statements other than let"
 
 [[residue]]
 kappa = "2028685514cb1ad09b65d7a12c3c8ff93ac1e10eae9dffc2c4aaadf20deb37c0"
@@ -8783,7 +8718,7 @@ function = "verdant::main"
 effect = "Env effect: std::env::args"
 
 [[effect]]
-kappa = "1297a357126f4f98bdd8f53c601f23f9f696121fea9d5b60f2dabf8d09ab090b"
+kappa = "0a65297b0e9a49c1832fb92470b10b7e5f701c8a9bacbef4eb90f075f9f33f61"
 function = "verdant_cli::operator_cmd::run_operator_command"
 effect = "Env effect: std::env::current_dir"
 
@@ -8798,8 +8733,8 @@ function = "verdant_core::build_ops::VerdantOperatorChannel::execute_native_buil
 effect = "Process effect: Command::new"
 
 [[effect]]
-kappa = "3f6ec031fa4e2cecfc1a36a494214fa068fc110908d5726ecbb4f35dc4899f08"
-function = "verdant_core::gateway::execute_gateway_op"
+kappa = "6ea9f32aac9a035570bba9695ed2e4086aa970cb8d1c40745e6dfa2b884787cb"
+function = "verdant_core::gateway_swarm::execute_gateway_op"
 effect = "Fs effect: std::fs::read_to_string"
 
 [[effect]]
@@ -8908,7 +8843,7 @@ function = "verdant_core::operator_release::VerdantOperatorChannel::verify_relea
 effect = "Fs effect: std::fs::read_to_string"
 
 [[effect]]
-kappa = "34bc8cb78b9250e95f26656d4bfebd504c18b3e81947c40041bddc8d780ee935"
+kappa = "37caa6a99658078523b27620185a4198b6d838f4a29c5cd36c1a86c23106cb72"
 function = "verdant_core::operator_seal::VerdantOperatorChannel::collect_distilled_site_tree"
 effect = "Fs effect: std::fs::read_dir"
 
@@ -9623,6 +9558,11 @@ function = "verdant_core::observer_refine::refinement_priority_for_ceiling"
 definition = "Behavior::refinementPriorityForCeiling"
 
 [[lifted]]
+kappa = "f2e2691f2f5efc151be99ed94027a3f7995f0b6bac4f153cffc6b290a1adb5a3"
+function = "verdant_core::observer_types::HostCapabilityEnvelope::default_safe"
+definition = "Behavior::hostCapabilityEnvelopeDefaultSafe"
+
+[[lifted]]
 kappa = "9e82655221302531736270e4e3844d679092f4bbc7dfb70f06edf78bfcf8fca6"
 function = "verdant_core::operator_types::AutonomousRatchetLiftOptions::default"
 definition = "Behavior::autonomousRatchetLiftOptionsDefaultDefault"
@@ -9671,6 +9611,11 @@ definition = "Behavior::deterministicInputJournalChainDigestBytes"
 kappa = "e2e9e3d762d12c02f6f67e814961daf4548b66de51d8234103cde4423d9b5a51"
 function = "verdant_core::runtime::DeterministicInputJournal::commands"
 definition = "Behavior::deterministicInputJournalCommands"
+
+[[lifted]]
+kappa = "e4c21e994331ef93b866d2f289a51a0ed394994f754a613f2c45ebef4d013cb4"
+function = "verdant_core::runtime::EngineConfig::new"
+definition = "Behavior::engineConfigNew"
 
 [[lifted]]
 kappa = "cb771b0008435074b3c91bb080b9fa2fcdf2fca9f48684dc59a30bfbc9754aaf"
@@ -10916,6 +10861,131 @@ definition = "Behavior::gatewayStakeholderPartCountComplete"
 kappa = "e45a8dcde84a58f31a501c6a211c84d9a74e417ea29748419bcd7c120c78843b"
 function = "verdant_tensor::scalars_gateway::gateway_surviving_shards_recover_4_of_8"
 definition = "Behavior::gatewaySurvivingShardsRecover4Of8"
+
+[[lifted]]
+kappa = "0b735ccaab3fb0fd7b415a8fc8eb0382be0cdec99a35a8407b6872ce1f2fed07"
+function = "verdant_tensor::scalars_gateway::stitch_l5_budget_reserve_ok"
+definition = "Behavior::stitchL5BudgetReserveOk"
+
+[[lifted]]
+kappa = "96b723c84752b143a32d6caafd4685aa1a8145bfb79665a18147fe600c690a43"
+function = "verdant_tensor::scalars_gateway::stitch_l5_chunk_bytes_max"
+definition = "Behavior::stitchL5ChunkBytesMax"
+
+[[lifted]]
+kappa = "3ae0be79a3e368b49be10d01f142a09a404a8156f1421ecd36ac5cb0477e6b93"
+function = "verdant_tensor::scalars_gateway::stitch_l5_compute_steps_cap"
+definition = "Behavior::stitchL5ComputeStepsCap"
+
+[[lifted]]
+kappa = "5ea9e4a1c506aac04dafa7072bf3d7a4e923c8e02c0eb270760ecfb4228cde41"
+function = "verdant_tensor::scalars_gateway::stitch_l5_epoch_request_cap"
+definition = "Behavior::stitchL5EpochRequestCap"
+
+[[lifted]]
+kappa = "e06c1e329a122cd62cdb3e9a55c3f79511ee3e34d0f9c0d405e9391ce4141d14"
+function = "verdant_tensor::scalars_gateway::stitch_l5_frame_admitted"
+definition = "Behavior::stitchL5FrameAdmitted"
+
+[[lifted]]
+kappa = "4974ecbab6a11f534e70b187d771e83ad597ec772aead23e52a27f5337dadd6e"
+function = "verdant_tensor::scalars_gateway::stitch_l5_frame_index_valid"
+definition = "Behavior::stitchL5FrameIndexValid"
+
+[[lifted]]
+kappa = "0ac9170df98cab2668461b7c09e085fa8cd7cf0ab73138f7596e87dbb2bc5423"
+function = "verdant_tensor::scalars_gateway::stitch_l5_future_skew_ms"
+definition = "Behavior::stitchL5FutureSkewMs"
+
+[[lifted]]
+kappa = "392e3f44ebe760b8d922f61a6526ea5f7964e369283938ada73ab617f4da4b01"
+function = "verdant_tensor::scalars_gateway::stitch_l5_max_frames"
+definition = "Behavior::stitchL5MaxFrames"
+
+[[lifted]]
+kappa = "d66ddf6b01018ab69c35190935470dcbb06639d7e77a86bb87bb95a869fd11db"
+function = "verdant_tensor::scalars_gateway::stitch_l5_message_bounded"
+definition = "Behavior::stitchL5MessageBounded"
+
+[[lifted]]
+kappa = "f7c9ffae69259c6b4fbd06dc66a038bc4674d1a8b90d7ddfc59ec4e78f0422e0"
+function = "verdant_tensor::scalars_gateway::stitch_l5_message_bytes_max"
+definition = "Behavior::stitchL5MessageBytesMax"
+
+[[lifted]]
+kappa = "00240a20e1ceed65ad6b1cc8953fa289f2bf796ac436d263022ba5ad7cda2645"
+function = "verdant_tensor::scalars_gateway::stitch_l5_opaque_topic_len_valid"
+definition = "Behavior::stitchL5OpaqueTopicLenValid"
+
+[[lifted]]
+kappa = "8581c3340c47f1922c01510ba6dbfe080833d9ecd4fc70a2f6c79fcc9def2e37"
+function = "verdant_tensor::scalars_gateway::stitch_l5_seeder_admitted"
+definition = "Behavior::stitchL5SeederAdmitted"
+
+[[lifted]]
+kappa = "72d5c00ff9357598f026ce4c67ac201626f1e25ffdd1c7ce0e2dac1b0af9cea3"
+function = "verdant_tensor::scalars_gateway::stitch_l5_sha256_hex_len_valid"
+definition = "Behavior::stitchL5Sha256HexLenValid"
+
+[[lifted]]
+kappa = "abbc1cd1e6a8f02c710eb30e48a0f7954d0e4055a3c34b228956598dd28b5715"
+function = "verdant_tensor::scalars_gateway::stitch_l5_signal_fresh"
+definition = "Behavior::stitchL5SignalFresh"
+
+[[lifted]]
+kappa = "bf81eddbcff6fd4a28e6201587e0422902947ea6d89954b988997f911e2dcb8a"
+function = "verdant_tensor::scalars_gateway::stitch_l5_signal_lifetime_ms"
+definition = "Behavior::stitchL5SignalLifetimeMs"
+
+[[lifted]]
+kappa = "89c8ab54a66c8aaf2850d82d38454766b84bebfcbc39b881642b05a864d69166"
+function = "verdant_tensor::scalars_gateway::stitch_l5_transfer_budget_bytes"
+definition = "Behavior::stitchL5TransferBudgetBytes"
+
+[[lifted]]
+kappa = "aa9c4217baeb91e72b96788ce637be1348ae376ef279917ac3defecfa478e4ad"
+function = "verdant_tensor::scalars_gateway::stitch_l5_warm_fresh"
+definition = "Behavior::stitchL5WarmFresh"
+
+[[lifted]]
+kappa = "f89e88256ed10bb0d442a569714fc205476711caf5e1b2b4cc07262f4e3d2f36"
+function = "verdant_tensor::scalars_gateway::stitch_l5_warm_lifetime_ms"
+definition = "Behavior::stitchL5WarmLifetimeMs"
+
+[[lifted]]
+kappa = "bbbca9197c76fea44e1c84ceebd4288b398749c20ab7c93ed0851b728eb9b652"
+function = "verdant_tensor::scalars_gateway::stitch_l5_wire_bytes_max"
+definition = "Behavior::stitchL5WireBytesMax"
+
+[[lifted]]
+kappa = "1c9d6f4de5babea549d2c4ab9db2aaec0dff7d06e7ce4efffea7268317655378"
+function = "verdant_tensor::scalars_gateway::stitch_m27_lifted_module_floor_ok"
+definition = "Behavior::stitchM27LiftedModuleFloorOk"
+
+[[lifted]]
+kappa = "856004f965bad216a11f6b4d1b5d091436389832d50d17fb43c7bcb8ea2e6336"
+function = "verdant_tensor::scalars_gateway::stitch_origin_outage_survived"
+definition = "Behavior::stitchOriginOutageSurvived"
+
+[[lifted]]
+kappa = "4a63890036b7d33c27f6b708b245b823a49c9bbf9ab04da2d627e105b6746bb6"
+function = "verdant_tensor::scalars_gateway::stitch_portable_base64_valid"
+definition = "Behavior::stitchPortableBase64Valid"
+
+[[lifted]]
+kappa = "d6490ed9415587879b074bddd13ed8c2351cf73cb16dcb8236c7490734e06ae1"
+function = "verdant_tensor::scalars_gateway::stitch_portable_html_envelope_valid"
+definition = "Behavior::stitchPortableHtmlEnvelopeValid"
+
+[[lifted]]
+kappa = "934ce6903ae10030717188f77fae5da9cafc56ea160db83d17b0ada409756107"
+function = "verdant_tensor::scalars_gateway::stitch_public_benefit_carrier_ok"
+definition = "Behavior::stitchPublicBenefitCarrierOk"
+
+[[lifted]]
+kappa = "4cf5e85d0396ce37835d7c45653bd13286deeba2d691e0db091b8a34450be4f7"
+function = "verdant_tensor::scalars_gateway::stitch_volunteer_swarm_ready"
+definition = "Behavior::stitchVolunteerSwarmReady"
 
 [[lifted]]
 kappa = "fee180067fab8a64427b5cdd300e44cd695d50f8f5d156d7bbf2346260928b90"

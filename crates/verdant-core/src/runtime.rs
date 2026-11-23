@@ -82,15 +82,17 @@ impl EngineConfig {
                 height: viewport_height,
             });
         }
-        let max_hz = verdant_tensor::scalars::thousand_u32();
+        let two_u32 = 1_u32.wrapping_add(1_u32);
+        let five_u32 = two_u32.wrapping_mul(two_u32).wrapping_add(1_u32);
+        let ten_u32 = two_u32.wrapping_mul(five_u32);
+        let max_hz = ten_u32.wrapping_mul(ten_u32).wrapping_mul(ten_u32);
         if tick_rate_hz == 0 || tick_rate_hz > max_hz {
             return Err(EngineConfigError::InvalidTickRateHz {
                 tick_rate_hz,
                 max_hz,
             });
         }
-        let k_u64 =
-            verdant_tensor::scalars::hundred_u64().wrapping_mul(verdant_tensor::scalars::ten_u64());
+        let k_u64 = max_hz as u64;
         let max_micros = k_u64.wrapping_mul(k_u64);
         if frame_budget_micros == 0 || frame_budget_micros > max_micros {
             return Err(EngineConfigError::InvalidFrameBudgetMicros {

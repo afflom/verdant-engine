@@ -1,19 +1,19 @@
 {
   "spec": "verdant/observer-refinement-agenda/1",
-  "releaseVersion": "2.17.0",
-  "releaseEpoch": 21,
+  "releaseVersion": "2.19.0",
+  "releaseEpoch": 23,
   "observerKappaHex": "6cd1e9dc15167b134d9887883bf06a5158c9b132f076e10a30e521ea62e0a17b",
-  "overallRefinementScorePermille": 984,
+  "overallRefinementScorePermille": 976,
   "liveMetrics": {
-    "wasmCoreBytes": 154462,
-    "wasmUorcBytes": 1738622,
-    "releaseCapsuleBytes": 1011217,
+    "wasmCoreBytes": 154421,
+    "wasmUorcBytes": 1736506,
+    "releaseCapsuleBytes": 1005333,
     "blankFrameBytes": 29177,
     "maxHandwrittenRustFileLines": 1247,
     "maxJsFileLines": 920,
-    "frontierLifted": 551,
-    "frontierResidue": 1160,
-    "frontierUncertified": 1318,
+    "frontierLifted": 578,
+    "frontierResidue": 1157,
+    "frontierUncertified": 1315,
     "fidelityOpenResidue": 0
   },
   "partHealth": [
@@ -31,7 +31,7 @@
       "vsmSystem": "VSM-S3",
       "viewpointId": "architecture-design",
       "ownedFileCount": 7,
-      "maxFileLines": 1000,
+      "maxFileLines": 1175,
       "heaviestFile": "app/src/Design.lex.tex",
       "healthScorePermille": 1000
     },
@@ -40,7 +40,7 @@
       "vsmSystem": "VSM-S4",
       "viewpointId": "knowledge-provenance",
       "ownedFileCount": 7,
-      "maxFileLines": 547,
+      "maxFileLines": 603,
       "heaviestFile": "app/src/Provenance.lex.tex",
       "healthScorePermille": 1000
     },
@@ -48,7 +48,7 @@
       "managerId": "mgr-change-release",
       "vsmSystem": "VSM-S3",
       "viewpointId": "change-version-release",
-      "ownedFileCount": 20,
+      "ownedFileCount": 22,
       "maxFileLines": 1188,
       "heaviestFile": "crates/verdant-core/src/governance.rs",
       "healthScorePermille": 1000
@@ -58,16 +58,16 @@
       "vsmSystem": "VSM-S3",
       "viewpointId": "security-trust",
       "ownedFileCount": 11,
-      "maxFileLines": 1388,
+      "maxFileLines": 1690,
       "heaviestFile": "app/src/Security.lex.tex",
-      "healthScorePermille": 1000
+      "healthScorePermille": 900
     },
     {
       "managerId": "mgr-roadmap-strategy",
       "vsmSystem": "VSM-S4",
       "viewpointId": "roadmap-kpi-strategy",
       "ownedFileCount": 7,
-      "maxFileLines": 498,
+      "maxFileLines": 602,
       "heaviestFile": "features/suites/engine.feature",
       "healthScorePermille": 1000
     },
@@ -84,7 +84,7 @@
       "managerId": "mgr-runtime-stage",
       "vsmSystem": "VSM-S1",
       "viewpointId": "runtime-stage",
-      "ownedFileCount": 20,
+      "ownedFileCount": 21,
       "maxFileLines": 1679,
       "heaviestFile": "app/src/Subsystems.lex.tex",
       "healthScorePermille": 900
@@ -149,7 +149,7 @@
     {
       "construct": "type outside the lift: f64",
       "cause": "type",
-      "functions": 60
+      "functions": 59
     },
     {
       "construct": "takes or returns ObserverPrismHolon.organs: ObserverOrganModel.schema_org_jsonld: serde_json::Value, a type of the serde_json crate with no LexLean model",
@@ -171,14 +171,14 @@
       "citedAuthority": "AUTH-SEMVER-CHANGE-KPI",
       "ratchetLayer": "uorust-frontier",
       "priority": "high",
-      "currentValue": "551 lifted / 1160 residue (1318 uncertified)",
-      "targetValue": ">= 571 lifted functions",
+      "currentValue": "578 lifted / 1157 residue (1315 uncertified)",
+      "targetValue": ">= 598 lifted functions",
       "summary": "Expand constructive MIR proof frontier; top blocker: expression form outside the lift: ? below the function's own statements (269 fns, cause=form).",
       "concreteActions": [
         "Replace remaining raw shift/overflow ops with lifted verdant_tensor::scalars and wrapping ops.",
         "Extract pure decision/calculation helpers out of IO/effectful wrappers so uorust lifts them."
       ],
-      "kappaHex": "f3f0fe07913f6a928a31f2c151c9702549428b185b908099add2a9a496933930"
+      "kappaHex": "2942e9d1b5deb91e7a8cb7071d469b864b821d6533aff17c55ec915fb9d8736e"
     },
     {
       "proposalId": "refine-rust-modularity",
@@ -222,15 +222,15 @@
       "citedAuthority": "AUTH-STITCH-SELF-HOSTING",
       "ratchetLayer": "surface-wasm",
       "priority": "medium",
-      "currentValue": "verdant-uorc.wasm 1738622 B · .holo 1011217 B · Blank Frame 29177 B (1543 B headroom)",
+      "currentValue": "verdant-uorc.wasm 1736506 B · .holo 1005333 B · Blank Frame 29177 B (1543 B headroom)",
       "targetValue": "verdant-uorc.wasm <= 1560576 B and gzipped .holo <= 1.0 MiB",
       "summary": "Keep browser verdant-uorc.wasm ultra-lean (< 1.5 MiB) and drive gzipped .holo release capsules below 1.0 MiB for instant Blank Frame cold boots.",
       "concreteActions": [
         "Keep uorc-ncm-decode native-only and audit gltf-json / serde_json monomorphizations inside verdant-uorc.wasm.",
         "Maintain Blank Frame strictly under 30720 B with DecompressionStream('gzip')."
       ],
-      "kappaHex": "ed3902ef2cf6053052e039a7ab4e75fcfc5173b16618170c343f1aba27d85c0a"
+      "kappaHex": "a2d7b1087c9990a7458052a3540605d56042005e235bf356c1329de0e8f53a8e"
     }
   ],
-  "agendaKappaHex": "3b64077317b4c40cab8890faeaee65f23143eaa8e13f49c8b271ee3775480a23"
+  "agendaKappaHex": "ea6ff6ac963884ac2134fdc88f3a9ea87ae6a3b2e974e343d154575fff69f75e"
 }

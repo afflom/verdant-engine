@@ -1,30 +1,30 @@
 {
   "spec": "verdant/frame-pin/1",
-  "releaseVersion": "2.17.0",
-  "releaseEpoch": 21,
-  "releaseKappaHex": "556015f77d623a0e015bdc7941b35222704e74434113a41c4a5fc345ee56c803",
+  "releaseVersion": "2.19.0",
+  "releaseEpoch": 23,
+  "releaseKappaHex": "c9df5b9d4339800f4d189977257e4b3d6467fc7e5fd9d41f9657791384ceeaf7",
   "prevKappaHex": "genesis",
-  "vcsCommitKappa": "cd148f13ee9cbe04a1777ba92a5639da3e58fdbed8eca0fcb80f082910769d64",
-  "immutabilitySealSha256": "34207fc67cbf2258c46f155dca45825932f5c4c069d8f8cb00fb5aac33060e42",
+  "vcsCommitKappa": "aa7f07939edf8d00e87d6a4673e15902b3d83900cb6146333cf86a18522cf179",
+  "immutabilitySealSha256": "160c8e7749fd3400f52d791a2e3ca8b40880def1ed90f8d0cb4d5d75ad58b4cb",
   "defaultStitchUri": "stitch://verdant/studio",
   "dataShardsK": 4,
   "totalShardsN": 8,
-  "capsuleByteLen": 1011217,
+  "capsuleByteLen": 1005333,
   "pointer": {
     "stitchUri": "stitch://verdant/studio",
-    "releaseEpoch": 21,
+    "releaseEpoch": 23,
     "prevKappaHex": "genesis",
-    "targetKappaHex": "556015f77d623a0e015bdc7941b35222704e74434113a41c4a5fc345ee56c803",
+    "targetKappaHex": "c9df5b9d4339800f4d189977257e4b3d6467fc7e5fd9d41f9657791384ceeaf7",
     "minQuorum": 2,
     "quorumSignatures": {
-      "prism:verdant-observer-executive": "3ad93da34a6c5570d76fb81896b4521f690e8285bbfff2375516f5cd3908c7c3",
-      "prism:verdant-release-bot": "c15bf919cda3cac73b34f0f7e01c5aeb04e53a3e32b0079b4d5d7761fe239251"
+      "prism:verdant-observer-executive": "75552fcead04c5dcb8570921c2052016df6cda0c8bf12275cb70ae8bd629513b",
+      "prism:verdant-release-bot": "44f7800e8fc2c6d3d47c59e22ffae8277a648cec557cf588d3d7638ffa907787"
     }
   },
   "stitchRelays": [
-    "https://afflom.github.io/verdant-engine/stitch/v2.17.0/shards",
-    "https://cdn.jsdelivr.net/gh/afflom/verdant-engine@stitch-mirror/v2.17.0/shards",
-    "https://raw.githubusercontent.com/afflom/verdant-engine/stitch-mirror/v2.17.0/shards"
+    "https://afflom.github.io/verdant-engine/stitch/v2.19.0/shards",
+    "https://cdn.jsdelivr.net/gh/afflom/verdant-engine@stitch-mirror/v2.19.0/shards",
+    "https://raw.githubusercontent.com/afflom/verdant-engine/stitch-mirror/v2.19.0/shards"
   ],
   "shardFiles": [
     "shard-0.stch",
