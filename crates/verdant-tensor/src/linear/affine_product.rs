@@ -3,6 +3,8 @@
 use super::{signed_word_f32, AffineQ8Block, TensorComputeError};
 use verdant_bitpacked_product::{run, Adt0 as Request, Adt1 as Step};
 
+const LANES: usize = crate::scalars::thirty_two_u64() as usize;
+
 /// Unsigned weight lanes with a binary16 scale and minimum.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum AffineWeightEncoding {
@@ -18,7 +20,7 @@ pub enum AffineWeightEncoding {
 /// Rejects a partial weight block or a mismatched activation count before computation.
 pub fn dot_affine_weight_row(
     weights: &[u8],
-    activations: &[AffineQ8Block<32>],
+    activations: &[AffineQ8Block<LANES>],
     encoding: AffineWeightEncoding,
 ) -> Result<f32, TensorComputeError> {
     let invalid = || TensorComputeError::InvalidKernelSpecification {
@@ -45,8 +47,8 @@ pub fn dot_affine_weight_row(
         } else {
             (0, data)
         };
-        let mut coefficients = [0_i8; 32];
-        let (low, high) = coefficients.split_at_mut(16);
+        let mut coefficients = [0_i8; LANES];
+        let (low, high) = coefficients.split_at_mut(crate::scalars::sixteen_u64() as usize);
         for (column, ((l, h), &byte)) in low.iter_mut().zip(high).zip(pairs).enumerate() {
             let Step::C3(x, y) = plan(Request::C5(column as u64, byte.into(), flags.into()))?
             else {

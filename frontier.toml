@@ -1166,7 +1166,7 @@ cause = "type"
 functions = 1
 
 [[construct]]
-construct = "type outside the lift: AffineQ8Block<32>"
+construct = "type outside the lift: AffineQ8Block: a struct with type or const parameters"
 cause = "type"
 functions = 1
 
@@ -4941,10 +4941,10 @@ reason = "type"
 detail = "type outside the lift: f32"
 
 [[residue]]
-kappa = "3eb1362015fb40cb05484e11fd02846a812b13ccb17e0e2f6566450809f3705f"
+kappa = "01e06c6ad5b4cc37864dd033df9daf25878b664743b7c0474d91d76afca760b8"
 function = "verdant_tensor::linear::affine_product::dot_affine_weight_row"
 reason = "type"
-detail = "type outside the lift: AffineQ8Block<32>"
+detail = "type outside the lift: AffineQ8Block: a struct with type or const parameters"
 
 [[residue]]
 kappa = "3aa39b9ed53407f8472668340767d9afea088bbb65f49509466146a2ea3b24e1"
