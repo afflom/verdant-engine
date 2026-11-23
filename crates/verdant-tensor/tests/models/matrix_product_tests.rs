@@ -18,9 +18,10 @@ static bool read_dot_block(Block &block) {
   unsigned word;
   if (std::scanf("%u", &word) != 1) return false;
   block.d = ggml_fp16_t(word);
-  for (auto &lane : block.qs) {
+  auto *bytes = reinterpret_cast<uint8_t *>(&block);
+  for (size_t i = sizeof(block.d); i < sizeof(block); ++i) {
     if (std::scanf("%u", &word) != 1) return false;
-    lane = static_cast<std::remove_reference_t<decltype(lane)>>(uint8_t(word));
+    bytes[i] = uint8_t(word);
   }
   return true;
 }

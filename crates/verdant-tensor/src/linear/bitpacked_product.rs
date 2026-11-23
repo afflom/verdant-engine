@@ -1,4 +1,4 @@
-//! Integer contractions over sign or two-bit weight coefficients.
+//! Integer contractions and coefficient decoding for packed weight rows.
 use super::{convert_float_storage, evaluate_f32_scalar, signed_word_f32, SymmetricQ8Block};
 use crate::{scalars, TensorComputeError};
 use verdant_bitpacked_product::{run, Adt0 as Request, Adt1 as Step};
@@ -92,4 +92,47 @@ pub fn dot_two_bit_row(
     activations: &[SymmetricQ8Block<LANES>],
 ) -> Result<f32, TensorComputeError> {
     run_bitpacked_row!(true, weights, activations)
+}
+
+pub(super) fn compact_coefficients<const N: usize>(
+    nonlinear: bool,
+    fields: &[u8],
+) -> Result<[i8; N], TensorComputeError> {
+    let (flags, pairs) = if nonlinear {
+        (0, fields)
+    } else {
+        let (bits, pairs) = fields
+            .split_first_chunk::<{ size_of::<u32>() }>()
+            .ok_or_else(invalid)?;
+        (u32::from_ne_bytes(*bits), pairs)
+    };
+    let mut codes = [0_i8; N];
+    let (low, high) = codes
+        .split_at_mut_checked(pairs.len())
+        .ok_or_else(invalid)?;
+    if low.len() != high.len() {
+        return Err(invalid());
+    }
+    for (column, ((l, h), &byte)) in low.iter_mut().zip(high).zip(pairs).enumerate() {
+        let instruction = run(Request::C3(
+            nonlinear,
+            column as u64,
+            byte.into(),
+            flags.into(),
+        ))
+        .map_err(|_| invalid())?;
+        let lookup = |index: u64| {
+            super::GGML_QUANTIZED_TABLES
+                .get(index as usize)
+                .copied()
+                .ok_or_else(invalid)
+        };
+        let (first, second) = match instruction {
+            Step::C3(a, b) => (a as u8, b as u8),
+            Step::C4(a, b) => (lookup(a)?, lookup(b)?),
+            _ => return Err(invalid()),
+        };
+        (*l, *h) = (first as i8, second as i8);
+    }
+    Ok(codes)
 }

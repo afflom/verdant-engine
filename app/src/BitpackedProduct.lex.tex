@@ -10,7 +10,9 @@ inductive{
   parameters: [],
   constructors: [
     {name: layout, fields: [Bool, Nat, Nat]},
-    {name: coefficient, fields: [Bool, Nat, Nat]}
+    {name: coefficient, fields: [Bool, Nat, Nat]},
+    {name: compactWidth, fields: [Bool, Nat, Nat, Nat]},
+    {name: compactPair, fields: [Bool, Nat, Nat, Nat]}
   ]
 }
 
@@ -21,7 +23,9 @@ inductive{
   constructors: [
     {name: refuse, fields: []},
     {name: row, fields: [Nat, Nat, Nat, Nat]},
-    {name: value, fields: [Nat]}
+    {name: value, fields: [Nat]},
+    {name: signedPair, fields: [Nat, Nat]},
+    {name: tablePair, fields: [Nat, Nat]}
   ]
 }
 
@@ -34,6 +38,22 @@ definition{
 }
 
 definition{
+  name: signedFiveBit,
+  parameters: [nibble : Nat, flags : Nat, divisor : Nat],
+  result: Nat,
+  body: (if ((prim remainder (prim quotient flags divisor 0 : Nat) 2 0 : Nat) =? 1) then nibble else (240 + nibble)),
+  executable: true
+}
+
+definition{
+  name: compactPair,
+  parameters: [nonlinear : Bool, column : Nat, byte : Nat, flags : Nat],
+  result: Step,
+  body: (if (((column <? 16) && (byte <? 256)) && (flags <? 4294967296)) then (let low : Nat := (prim remainder byte 16 0 : Nat); (let high : Nat := (prim quotient byte 16 0 : Nat); (if nonlinear then (ctor Step.tablePair (18568 + low) (18568 + high)) else (let divisor : Nat := (prim multiply (bitDivisor (prim remainder column 8 0 : Nat)) (if (column <? 8) then 1 else 256) : Nat); (ctor Step.signedPair (signedFiveBit low flags divisor) (signedFiveBit high flags (prim multiply divisor 65536 : Nat))))))) else (ctor Step.refuse)),
+  executable: true
+}
+
+definition{
   name: evaluate,
   parameters: [request : Request],
   result: Step,
@@ -41,7 +61,9 @@ definition{
     | Request.layout two bytes blocks => (let groups : Nat := (if two then 2 else 4); (if (((prim remainder bytes 18 0 : Nat) =? 0) && ((prim multiply (prim quotient bytes 18 0 : Nat) groups : Nat) =? blocks)) then (ctor Step.row 18 groups (if two then 8 else 4) (if two then 4 else 8)) else (ctor Step.refuse)))
     | Request.coefficient two byte lane => (if ((byte <? 256) && (lane <? (if two then 4 else 8))) then (match (PackedWord::extract byte 1 (bitDivisor (if two then (prim multiply lane 2 : Nat) else lane)) (if two then 4 else 2))
       | Option.some raw => (ctor Step.value (if two then raw else (prim multiply raw 2 : Nat)))
-      | Option.none => (ctor Step.refuse)) else (ctor Step.refuse))),
+      | Option.none => (ctor Step.refuse)) else (ctor Step.refuse))
+    | Request.compactWidth nonlinear lanes bytes blocks => (let width : Nat := (if nonlinear then 18 else 22); (if (((lanes =? 32) && ((prim remainder bytes width 0 : Nat) =? 0)) && ((prim quotient bytes width 0 : Nat) =? blocks)) then (ctor Step.value width) else (ctor Step.refuse)))
+    | Request.compactPair nonlinear column byte flags => (compactPair nonlinear column byte flags)),
   executable: true,
   production: {effects: [overflow], targets: [rust-core]}
 }
@@ -64,6 +86,20 @@ theorem{
   name: missingActivationBlock,
   parameters: [],
   statement: ((evaluate (ctor Request.layout false 18 3)) = (ctor Step.refuse)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: independentFifthBits,
+  parameters: [],
+  statement: ((compactPair false 15 143 2147483648) = (ctor Step.signedPair 255 8)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: tableOrderFollowsLaneHalves,
+  parameters: [],
+  statement: ((compactPair true 0 240 0) = (ctor Step.tablePair 18568 18583)),
   proof: reflexivity{}
 }
 \end{semanticmodule}
