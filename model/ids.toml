@@ -812,3 +812,9 @@ id = "VTK-39"
 level = "build"
 suite = "engine"
 statement = "Verdant contracts signed two-bit codebook rows with grouped byte activations against the imported GGML vector products"
+
+[[id]]
+id = "VTK-40"
+level = "build"
+suite = "engine"
+statement = "Verdant encodes centered and affine four- and five-bit weight blocks against the imported reference encoders"

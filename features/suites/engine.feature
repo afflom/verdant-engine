@@ -752,3 +752,9 @@ Feature: engine
     Given signed eight-lane lookup groups and prepared activation blocks
     When Verdant contracts complete two-bit codebook rows
     Then every result matches the imported CPU vector product
+
+  @VTK-40 @build
+  Scenario: Verdant encodes centered and affine four- and five-bit weight blocks against the imported reference encoders
+    Given 32 binary32 weights and a centered or affine four- or five-bit representation
+    When Verdant encodes the block
+    Then its scale, offset and packed coefficients match every imported reference byte

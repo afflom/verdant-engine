@@ -383,6 +383,10 @@ int main(int argc, char **argv) {
   if (!std::strcmp(argv[1], "iq2_s-dot")) return compare_grouped_rows<block_iq2_s>(GGML_TYPE_IQ2_S);
   if (!std::strcmp(argv[1], "grouped-q4-dot")) return compare_grouped_rows<block_q4_K>(GGML_TYPE_Q4_K);
   if (!std::strcmp(argv[1], "grouped-q5-dot")) return compare_grouped_rows<block_q5_K>(GGML_TYPE_Q5_K);
+  if (!std::strcmp(argv[1], "q4_0")) return encode_blocks<32>(quantize_row_q4_0_ref);
+  if (!std::strcmp(argv[1], "q4_1")) return encode_blocks<32>(quantize_row_q4_1_ref);
+  if (!std::strcmp(argv[1], "q5_0")) return encode_blocks<32>(quantize_row_q5_0_ref);
+  if (!std::strcmp(argv[1], "q5_1")) return encode_blocks<32>(quantize_row_q5_1_ref);
   if (!std::strcmp(argv[1], "affine-q8")) return encode_blocks<QK8_1>(quantize_row_q8_1_ref);
   if (!std::strcmp(argv[1], "affine-four-dot")) return compare_rows<block_q4_1,1,block_q8_1>(GGML_TYPE_Q4_1);
   if (!std::strcmp(argv[1], "affine-five-dot")) return compare_rows<block_q5_1,1,block_q8_1>(GGML_TYPE_Q5_1);
@@ -2554,5 +2558,60 @@ fn compare_packed_weight_products(products: &[(usize, usize, &str, PackedWeightP
         }
         assert!(dot(&vec![0; bytes + 1], &[]).is_err());
         assert!(dot(&vec![0; bytes + 2], &[]).is_err());
+    }
+}
+
+#[test]
+fn low_bit_block_encoding_vtk_40() {
+    use super::WeightBlockEncoding::*;
+    use std::fmt::Write;
+    let mut blocks = symmetric_encoding_inputs();
+    blocks.extend([
+        [7.25; 32],
+        [-3.875; 32],
+        std::array::from_fn(|i| if i % 2 == 0 { -0.0 } else { 0.0 }),
+    ]);
+    for sign in [-1.0, 1.0] {
+        let mut tied = std::array::from_fn(|i| (i as f32 - 15.5) * sign);
+        tied[0] = 16.0 * sign;
+        tied[31] = -tied[0];
+        blocks.push(tied);
+    }
+    for (kind, width, mode) in [
+        (CenteredFour, 18, "q4_0"),
+        (AffineFour, 20, "q4_1"),
+        (CenteredFive, 22, "q5_0"),
+        (AffineFive, 24, "q5_1"),
+    ] {
+        let mut input = String::new();
+        let mut bytes = Vec::new();
+        for block in &blocks {
+            for value in block {
+                writeln!(input, "{}", value.to_bits()).unwrap();
+            }
+            let mut output = [0xa5; 24];
+            super::encode_weight_block(block, kind, &mut output[..width]).unwrap();
+            bytes.extend_from_slice(&output[..width]);
+        }
+        let expected = query_oracle(mode, input);
+        assert_eq!(bytes.len(), expected.len());
+        for (i, (actual, reference)) in bytes.into_iter().zip(expected).enumerate() {
+            assert_eq!(
+                u32::from(actual),
+                reference,
+                "{mode} block {} byte {}",
+                i / width,
+                i % width
+            );
+        }
+        let mut output = vec![0x55; width];
+        for invalid in [f32::NAN, f32::INFINITY, f32::NEG_INFINITY] {
+            let mut block = [1.0; 32];
+            block[31] = invalid;
+            assert!(super::encode_weight_block(&block, kind, &mut output).is_err());
+            assert_eq!(output, vec![0x55; width]);
+        }
+        assert!(super::encode_weight_block(&[0.0; 32], kind, &mut output[1..]).is_err());
+        assert_eq!(output, vec![0x55; width]);
     }
 }
