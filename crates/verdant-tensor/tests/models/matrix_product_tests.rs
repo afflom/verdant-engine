@@ -1282,10 +1282,16 @@ fn affine_byte_activation_vtk_37() {
         encoded.extend(b.symmetric.codes.map(|c| c as u8));
     }
     let expected = query_oracle("affine-q8", input);
-    assert_eq!(
-        encoded.iter().copied().map(u32::from).collect::<Vec<_>>(),
-        expected
-    );
+    assert_eq!(encoded.len(), expected.len());
+    for (index, (actual, oracle)) in encoded.into_iter().zip(expected).enumerate() {
+        assert_eq!(
+            u32::from(actual),
+            oracle,
+            "Q8_1 block {} byte {}",
+            index / 36,
+            index % 36
+        );
+    }
     assert!(super::encode_affine_q8_block(&[0.0; 31]).is_err());
 }
 

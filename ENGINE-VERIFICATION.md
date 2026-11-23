@@ -379,3 +379,9 @@ The full fidelity check reported these frontier findings.
 The pinned GGML CPU dot functions supplied 224 binary32 results for Q5_0 and IQ4_NL coefficients and signed-byte activation blocks. All 224 words matched over zero through six blocks. Partial blocks and mismatched activation counts returned typed errors. Dropping the high 16 flag bits failed five-bit row 1 with observed word 1160574976 and reference word 1134018560. Restoration and the existing four-bit and signed-byte dot regressions passed.
 
 The public entry point selects the coefficient encoding and reuses the scale and contraction logic. Its inputs are weight bytes and activation blocks. The isolated Verdant lift reported 232 modules with zero unlifted workspace or UI modules. The regenerated frontier and fidelity audit passed with 583 lifted functions, 1,152 residue functions and 1,310 uncertified functions. The existing ceilings were retained. [GGML CPU dot authority](https://github.com/ggml-org/llama.cpp/blob/9a080f44b503c64f66c84a6274b9d9ee5d5b09d5/ggml/src/ggml-cpu/quants.c)
+
+### VTK-37 affine four- and five-bit row products
+
+The pinned GGML reference encoder supplied 9,756 bytes from 271 Q8_1 blocks. The imported CPU vector-dot functions supplied 224 binary32 words from Q4_1 and Q5_1 weight rows of zero through six blocks. Every encoded byte and output word matched. Partial weight blocks, wrong lane counts and mismatched activation counts returned typed errors.
+
+Multiplying the code sum by the stored binary16 step instead of the original binary32 step failed the Q8_1 byte comparison. Restoring the original step passed both VTK-37 tests and the existing symmetric encoding and compact product regressions. The engine API accepts numerical rows. GGML graph selection and tensor addressing remain with the consumer.

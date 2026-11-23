@@ -162,24 +162,8 @@ pub const fn pow10_u64(exp: u32) -> u64 {
     acc
 }
 
-/// Double-precision `2.0` (`1.0 + 1.0`).
-#[must_use]
-pub fn two_f64() -> f64 {
-    1.0 + 1.0
-}
-
-/// Double-precision `0.5` (`1.0 / (1.0 + 1.0)`).
-#[must_use]
-pub fn half_f64() -> f64 {
-    1.0 / two_f64()
-}
-
-/// Numerical degeneracy tolerance `2^-40` derived constructively without magic float literals.
-#[must_use]
-pub fn geometric_epsilon() -> f64 {
-    let forty = (1_u32 + 1_u32 + 1_u32 + 1_u32 + 1_u32) * (1_u32 << (1_u32 + 1_u32 + 1_u32));
-    1.0 / (pow2_u64(forty) as f64)
-}
+/// Shared constructive binary64 constants used by core and tensor operations.
+pub use verdant_tensor::{geometric_epsilon, half_f64, two_f64};
 
 /// Golden ratio `phi = (1 + sqrt(5)) / 2` derived constructively from `{0, 1}`.
 #[must_use]

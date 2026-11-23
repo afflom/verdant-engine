@@ -11,9 +11,9 @@
 #   arithmetic: 24
 #   call: 212
 #   form: 341
-#   signature: 50
+#   signature: 52
 #   statements: 22
-#   type: 497
+#   type: 495
 #   width: 6
 
 spec = "uorust/register/1"
@@ -38,7 +38,7 @@ functions = 125
 [[construct]]
 construct = "type outside the lift: f64"
 cause = "type"
-functions = 58
+functions = 55
 
 [[construct]]
 construct = "takes or returns ObserverPrismHolon.organs: ObserverOrganModel.schema_org_jsonld: serde_json::Value, a type of the serde_json crate with no LexLean model"
@@ -151,6 +151,11 @@ cause = "arithmetic"
 functions = 8
 
 [[construct]]
+construct = "signature outside the lift: generic, async, unsafe or variadic"
+cause = "signature"
+functions = 8
+
+[[construct]]
 construct = "type outside the lift: ArticulatedCharacter.skeleton: Skeleton.joints: Joint.rest_translation: Vec3.x: f64"
 cause = "type"
 functions = 8
@@ -184,11 +189,6 @@ functions = 7
 construct = "type outside the lift: SmoothMeshAcc.positions: f32"
 cause = "type"
 functions = 7
-
-[[construct]]
-construct = "signature outside the lift: generic, async, unsafe or variadic"
-cause = "signature"
-functions = 6
 
 [[construct]]
 construct = "type outside the lift: CheckpointedRollbackJournal<S, I>, written with arguments, where a method's type is read by its name alone"
@@ -1162,6 +1162,11 @@ functions = 1
 
 [[construct]]
 construct = "type outside the lift: &mut usize"
+cause = "type"
+functions = 1
+
+[[construct]]
+construct = "type outside the lift: AffineQ8Block<32>"
 cause = "type"
 functions = 1
 
@@ -2974,12 +2979,6 @@ reason = "form"
 detail = "expression form outside the lift: a while loop that does not advance its cursor once per step"
 
 [[residue]]
-kappa = "788af5f08a03c525768198437135d936ef0f2484ec7fb0cf2180e650a10dd32a"
-function = "verdant_core::math::geometric_epsilon"
-reason = "type"
-detail = "type outside the lift: f64"
-
-[[residue]]
 kappa = "3b8d43e1971a1255249f8eda65bb1d8d36c95fb9e06d755641fa95be50c85e26"
 function = "verdant_core::math::golden_angle_radians"
 reason = "type"
@@ -2988,12 +2987,6 @@ detail = "type outside the lift: f64"
 [[residue]]
 kappa = "eee6635f1f59ab8ae068f57e16f5600c632a9d6503f5bd2396966e26cc031dee"
 function = "verdant_core::math::golden_ratio"
-reason = "type"
-detail = "type outside the lift: f64"
-
-[[residue]]
-kappa = "0e1fc06bed4a5306604cf4b903d773257e1345f9d01160867ee6b9fe5379172b"
-function = "verdant_core::math::half_f64"
 reason = "type"
 detail = "type outside the lift: f64"
 
@@ -3020,12 +3013,6 @@ kappa = "ed59ac4409f838a6f29aecd0311b60c32ff3353f85bccd68a54f49c4659c7871"
 function = "verdant_core::math::pow2_u64"
 reason = "form"
 detail = "expression form outside the lift: method call .wrapping_shl"
-
-[[residue]]
-kappa = "0298af6c501d0a3d7ff087d82e3ad5671ab972b017a0a327bf6325761c003ca6"
-function = "verdant_core::math::two_f64"
-reason = "type"
-detail = "type outside the lift: f64"
 
 [[residue]]
 kappa = "f00c7788845b2331fe50e1f0154aeedc5c932f18c9370471b41167bd17d717d0"
@@ -4954,6 +4941,12 @@ reason = "type"
 detail = "type outside the lift: f32"
 
 [[residue]]
+kappa = "3eb1362015fb40cb05484e11fd02846a812b13ccb17e0e2f6566450809f3705f"
+function = "verdant_tensor::linear::affine_product::dot_affine_weight_row"
+reason = "type"
+detail = "type outside the lift: AffineQ8Block<32>"
+
+[[residue]]
 kappa = "3aa39b9ed53407f8472668340767d9afea088bbb65f49509466146a2ea3b24e1"
 function = "verdant_tensor::linear::batch_transform_positions_exact"
 reason = "type"
@@ -4990,7 +4983,19 @@ reason = "type"
 detail = "type outside the lift: f64"
 
 [[residue]]
-kappa = "42715b4cca48150a1988bb86d07e8be67caa57168b88da96091e81e873b042ae"
+kappa = "9997b4feb2d66127cae43c4ed6912f7fb24fcc35b8b937a1a0e7331404b28f3f"
+function = "verdant_tensor::linear::encode_affine_q8_block"
+reason = "signature"
+detail = "signature outside the lift: generic, async, unsafe or variadic"
+
+[[residue]]
+kappa = "6b4e815c7932ede9fddac4986644468a5b5fea2761af63198d2e6e6d4278a294"
+function = "verdant_tensor::linear::encode_q8_with_scale"
+reason = "signature"
+detail = "signature outside the lift: generic, async, unsafe or variadic"
+
+[[residue]]
+kappa = "8d44e0144f7271fcfba3dc7af3cf665160ab30ae6853062cad8b9d4106beb179"
 function = "verdant_tensor::linear::encode_symmetric_q8_block"
 reason = "signature"
 detail = "signature outside the lift: generic, async, unsafe or variadic"

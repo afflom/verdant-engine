@@ -13,6 +13,7 @@ use crate::{
 };
 
 mod activations;
+mod affine_product;
 mod bitpacked_product;
 mod grouped;
 mod grouped_affine;
@@ -26,6 +27,7 @@ pub use activations::{
     attention_head_slope_f32, exponential_f32, gelu_f32, gelu_quick_f32, inverse_root_f32,
     natural_log_f32, sigmoid_f32, silu_f32, sin_cos_f32, softplus_f32, swiglu_f32, tanh_f32,
 };
+pub use affine_product::{dot_affine_weight_row, AffineWeightEncoding};
 pub use bitpacked_product::{dot_binary_sign_row, dot_two_bit_row};
 pub use grouped::{encode_grouped_q8_block, GroupedQ8Block};
 pub use grouped_affine::{dot_grouped_q4_row, dot_grouped_q5_row};
@@ -747,6 +749,50 @@ pub struct SymmetricQ8Block<const LANES: usize> {
 pub fn encode_symmetric_q8_block<const LANES: usize>(
     input: &[f32; LANES],
 ) -> Result<SymmetricQ8Block<LANES>, TensorComputeError> {
+    encode_q8_with_scale(input).map(|(block, _)| block)
+}
+
+/// A prepared signed-byte block with the affine format's independently rounded scaled sum.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct AffineQ8Block<const LANES: usize> {
+    /// Scale and signed lane codes shared with the symmetric encoding.
+    pub symmetric: SymmetricQ8Block<LANES>,
+    /// Binary16 bits of the code sum times the original binary32 step.
+    pub scaled_sum: u16,
+}
+
+/// Prepare a signed-byte activation block for affine four- and five-bit weights.
+///
+/// # Errors
+/// Refuses the same invalid lanes and extents as the symmetric encoder.
+pub fn encode_affine_q8_block<const LANES: usize>(
+    input: &[f32; LANES],
+) -> Result<AffineQ8Block<LANES>, TensorComputeError> {
+    let (symmetric, scale) = encode_q8_with_scale(input)?;
+    let sum = uor_matmul::dot_ref(
+        uor_matmul::as_alphabet_full(&symmetric.codes),
+        uor_matmul::as_alphabet_full(&[1_i8; LANES]),
+    );
+    // The certified encoder admits exactly 32 signed bytes.
+    let word = signed_word_f32(sum as i32)?.to_bits();
+    let invalid = || TensorComputeError::InvalidKernelSpecification {
+        kernel_name: "BitpackedProduct.scaledSum".into(),
+    };
+    let verdant_bitpacked_product::Adt1::C2(scaled_sum) =
+        verdant_bitpacked_product::run(verdant_bitpacked_product::Adt0::C7(word.into(), scale))
+            .map_err(|_| invalid())?
+    else {
+        return Err(invalid());
+    };
+    Ok(AffineQ8Block {
+        symmetric,
+        scaled_sum: scaled_sum as u16,
+    })
+}
+
+fn encode_q8_with_scale<const LANES: usize>(
+    input: &[f32; LANES],
+) -> Result<(SymmetricQ8Block<LANES>, u64), TensorComputeError> {
     use verdant_symmetric_q8::{run, Adt0 as Request, Adt1 as Step};
     let invalid = || TensorComputeError::InvalidKernelSpecification {
         kernel_name: "SymmetricBlock.plan".to_string(),
@@ -770,10 +816,13 @@ pub fn encode_symmetric_q8_block<const LANES: usize>(
     let scale = evaluate(plan(Request::C1(maximum))?)?;
     let inverse = match plan(Request::C2(scale))? {
         Step::C2 => {
-            return Ok(SymmetricQ8Block {
-                scale: 0,
-                codes: [0; LANES],
-            })
+            return Ok((
+                SymmetricQ8Block {
+                    scale: 0,
+                    codes: [0; LANES],
+                },
+                scale,
+            ))
         }
         instruction => evaluate(instruction)?,
     };
@@ -791,7 +840,7 @@ pub fn encode_symmetric_q8_block<const LANES: usize>(
         };
         *code = byte as i8;
     }
-    Ok(output)
+    Ok((output, scale))
 }
 
 /// Canonical GGML CPU quantized tables reproduced from the pinned external header.
