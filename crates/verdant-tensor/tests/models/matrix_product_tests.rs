@@ -372,6 +372,8 @@ int main(int argc, char **argv) {
   if (!std::strcmp(argv[1], "grouped-dot")) return compare_grouped_rows<block_q2_K>(GGML_TYPE_Q2_K);
   if (!std::strcmp(argv[1], "grouped-q4-dot")) return compare_grouped_rows<block_q4_K>(GGML_TYPE_Q4_K);
   if (!std::strcmp(argv[1], "grouped-q5-dot")) return compare_grouped_rows<block_q5_K>(GGML_TYPE_Q5_K);
+  if (!std::strcmp(argv[1], "five-bit-dot")) return compare_rows<block_q5_0>(GGML_TYPE_Q5_0);
+  if (!std::strcmp(argv[1], "nonlinear-dot")) return compare_rows<block_iq4_nl>(GGML_TYPE_IQ4_NL);
   if (!std::strcmp(argv[1], "sign-dot")) return compare_rows<block_q1_0,QK1_0/QK8_0>(GGML_TYPE_Q1_0);
   if (!std::strcmp(argv[1], "two-bit-dot")) return compare_rows<block_q2_0,QK2_0/QK8_0>(GGML_TYPE_Q2_0);
   if (!std::strcmp(argv[1], "symmetric-dot")) return compare_rows<block_q8_0>(GGML_TYPE_Q8_0);
@@ -2316,20 +2318,32 @@ fn bitpacked_row_products_vtk_35() {
         verify_bundle("bitrows", "tensor-bitrows")["VerdantEngine.BitpackedProduct.evaluate"],
         "verdant_bitpacked_product"
     );
+    compare_packed_weight_products(&[
+        (4, 16, "sign-dot", super::dot_binary_sign_row),
+        (2, 16, "two-bit-dot", super::dot_two_bit_row),
+    ]);
+}
+
+#[test]
+fn compact_row_products_vtk_36() {
+    compare_packed_weight_products(&[
+        (1, 20, "five-bit-dot", super::dot_symmetric_q5_row),
+        (1, 16, "nonlinear-dot", super::dot_nonlinear_q4_row),
+    ]);
+}
+
+type PackedWeightProduct =
+    fn(&[u8], &[super::SymmetricQ8Block<32>]) -> Result<f32, crate::TensorComputeError>;
+
+fn compare_packed_weight_products(products: &[(usize, usize, &str, PackedWeightProduct)]) {
     use std::fmt::Write;
-    type Product =
-        fn(&[u8], &[super::SymmetricQ8Block<32>]) -> Result<f32, crate::TensorComputeError>;
-    let products: [(usize, &str, Product); 2] = [
-        (4, "sign-dot", super::dot_binary_sign_row),
-        (2, "two-bit-dot", super::dot_two_bit_row),
-    ];
     let mut seed = 157_u32;
     let mut byte = || {
         seed = seed.wrapping_mul(1_664_525).wrapping_add(1_013_904_223);
         (seed >> 24) as u8
     };
     let scales = [0_u16, 0x3800, 0xbc00, 0x4000, 0x3400, 0x3a00, 0x3955];
-    for (groups, mode, dot) in products {
+    for &(groups, bytes, mode, dot) in products {
         let mut requests = String::new();
         let mut actual = Vec::new();
         for row in 0..112 {
@@ -2341,7 +2355,7 @@ fn bitpacked_row_products_vtk_35() {
                 let scale = scales[(row + i) % scales.len()];
                 writeln!(requests, "{scale}").unwrap();
                 weights.extend(scale.to_ne_bytes());
-                for _ in 0..16 {
+                for _ in 0..bytes {
                     let bits = byte();
                     weights.push(bits);
                     writeln!(requests, "{bits}").unwrap();
@@ -2363,7 +2377,7 @@ fn bitpacked_row_products_vtk_35() {
         for (i, (observed, reference)) in actual.into_iter().zip(expected).enumerate() {
             assert_eq!(observed, reference, "{mode} row {i}");
         }
-        assert!(dot(&[0; 17], &[]).is_err());
-        assert!(dot(&[0; 18], &[]).is_err());
+        assert!(dot(&vec![0; bytes + 1], &[]).is_err());
+        assert!(dot(&vec![0; bytes + 2], &[]).is_err());
     }
 }

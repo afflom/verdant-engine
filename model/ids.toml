@@ -788,3 +788,9 @@ id = "VTK-35"
 level = "build"
 suite = "engine"
 statement = "Verdant contracts one-bit sign and two-bit weight rows against symmetric signed-byte blocks with the imported row precision"
+
+[[id]]
+id = "VTK-36"
+level = "build"
+suite = "engine"
+statement = "Signed five-bit and nonlinear four-bit coefficient rows contract with symmetric signed-byte activations against the pinned CPU"

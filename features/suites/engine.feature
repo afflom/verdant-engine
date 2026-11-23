@@ -728,3 +728,9 @@ Feature: engine
     Given packed bit fields with independent activation scales
     When Verdant contracts the encoded row
     Then the pinned CPU dot product returns the same binary32 word
+
+  @VTK-36 @build
+  Scenario: Signed five-bit and nonlinear four-bit coefficient rows contract with symmetric signed-byte activations against the pinned CPU
+    Given encoded five-bit or nonlinear four-bit coefficients and independent block scales
+    When Verdant contracts the packed row with signed-byte activation blocks
+    Then the imported CPU returns the same binary32 word and malformed extents are refused
