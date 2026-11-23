@@ -1113,6 +1113,7 @@ fn verify_bundle(scope: &str, directory: &str) -> std::collections::BTreeMap<Str
                     "verdant_tanh" => include_bytes!("../../../../generated/tensor-tanh/packages/rust-core/verdant_tanh/src/lib.rs"),
                     "verdant_row_ranking" => include_bytes!("../../../../generated/tensor-rowrank/packages/rust-core/verdant_row_ranking/src/lib.rs"),
                     "verdant_normalized_exponential" => include_bytes!("../../../../generated/tensor-softmax/packages/rust-core/verdant_normalized_exponential/src/lib.rs"),
+                    "verdant_softplus" => include_bytes!("../../../../generated/tensor-softplus/packages/rust-core/verdant_softplus/src/lib.rs"),
                     "verdant_head_slope_index" => include_bytes!("../../../../generated/tensor-slopes/packages/rust-core/verdant_head_slope_index/src/lib.rs"),
                     "verdant_head_slope_group" => include_bytes!("../../../../generated/tensor-slopes/packages/rust-core/verdant_head_slope_group/src/lib.rs"),
                     "verdant_head_slope_exponent" => include_bytes!("../../../../generated/tensor-slopes/packages/rust-core/verdant_head_slope_exponent/src/lib.rs"),
@@ -2191,39 +2192,56 @@ fn normalized_exponential_vtk_32() {
 
 #[test]
 fn softplus_vtk_34() {
+    assert_eq!(
+        verify_bundle("softplus", "tensor-softplus")["VerdantEngine.Softplus.evaluate"],
+        "verdant_softplus"
+    );
     use std::fmt::Write;
     let mut words = Vec::new();
     for value in 0..=u16::MAX {
         for format in [1_u64, 30] {
-            words.push(super::convert_float_storage(format, 0, value.into()).unwrap().unwrap() as u32);
+            words.push(
+                super::convert_float_storage(format, 0, value.into())
+                    .unwrap()
+                    .unwrap() as u32,
+            );
         }
     }
-    for sign in [0, 1_u32<<31] {
+    for sign in [0, 1_u32 << 31] {
         for exponent in 0..=255 {
-            for mantissa in [0,1,0x2aaaaa,0x555555,0x7ffffe,0x7fffff] {
-                words.push(sign | (exponent<<23) | mantissa);
+            for mantissa in [0, 1, 0x2aaaaa, 0x555555, 0x7ffffe, 0x7fffff] {
+                words.push(sign | (exponent << 23) | mantissa);
             }
         }
     }
     for center in [20.0_f32, -16.0, -17.0, -100.0] {
-        let word = center.to_bits(); words.extend(word-8..=word+8);
+        let word = center.to_bits();
+        words.extend(word - 8..=word + 8);
     }
-    words.sort_unstable(); words.dedup();
+    words.sort_unstable();
+    words.dedup();
     let mut requests = String::new();
     for chunk in words.chunks(1024) {
-        writeln!(requests,"{}",chunk.len()).unwrap();
-        for word in chunk {writeln!(requests,"{word}").unwrap();}
+        writeln!(requests, "{}", chunk.len()).unwrap();
+        for word in chunk {
+            writeln!(requests, "{word}").unwrap();
+        }
     }
-    let oracle = query_oracle("unary-softplus",requests);
-    assert_eq!(oracle.len(),words.len());
-    for (word,bits) in words.into_iter().zip(oracle) {
+    let oracle = query_oracle("unary-softplus", requests);
+    assert_eq!(oracle.len(), words.len());
+    eprintln!("{} distinct binary32 softplus inputs compared", words.len());
+    for (word, bits) in words.into_iter().zip(oracle) {
         let got = super::softplus_f32(f32::from_bits(word)).unwrap();
         let reference = f32::from_bits(bits);
-        if reference.is_nan() { assert!(got.is_nan()); }
-        else if reference == 0.0 || !reference.is_finite() || f32::from_bits(word)>20.0 {
-            assert_eq!(got.to_bits(),bits,"input {word:#x}");
+        if reference.is_nan() {
+            assert!(got.is_nan());
+        } else if reference == 0.0 || !reference.is_finite() || f32::from_bits(word) > 20.0 {
+            assert_eq!(got.to_bits(), bits, "input {word:#x}");
         } else {
-            assert!(got.is_finite() && !got.is_sign_negative() && got.to_bits().abs_diff(bits)<=4,"input {word:#x}, {got} vs {reference}");
+            assert!(
+                got.is_finite() && !got.is_sign_negative() && got.to_bits().abs_diff(bits) <= 4,
+                "input {word:#x}, {got} vs {reference}"
+            );
         }
     }
 }

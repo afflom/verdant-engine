@@ -885,6 +885,7 @@ dependencies = [
  "verdant_row_ranking",
  "verdant_scalar_f32",
  "verdant_small_float",
+ "verdant_softplus",
  "verdant_storage_block",
  "verdant_storage_transfer",
  "verdant_symmetric_dot",
@@ -1152,6 +1153,10 @@ version = "2.9.0"
 [[package]]
 name = "verdant_small_float"
 version = "2.9.0"
+
+[[package]]
+name = "verdant_softplus"
+version = "2.32.0"
 
 [[package]]
 name = "verdant_storage_block"

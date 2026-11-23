@@ -1,0 +1,62 @@
+\begin{lexlean}{Softplus}
+\useglossary{lexlean.std.bool@1.2.0}
+\useglossary{lexlean.std.nat@1.2.0}
+\importmodule{ScalarF32}
+\title{Natural number}
+\begin{semanticmodule}
+inductive{
+  name: Request,
+  type_parameters: [],
+  parameters: [],
+  constructors: [
+    {name: input, fields: [Nat]},
+    {name: exponential, fields: [Nat]},
+    {name: logarithm, fields: [Nat, Nat, Nat]}
+  ]
+}
+
+inductive{
+  name: Step,
+  type_parameters: [],
+  parameters: [],
+  constructors: [
+    {name: done, fields: [Nat]},
+    {name: exponentiate, fields: [Nat]},
+    {name: takeLog, fields: [Nat, Nat]}
+  ]
+}
+
+definition{
+  name: evaluate,
+  parameters: [request : Request],
+  result: Step,
+  body: (match request
+    | Request.input word => (if ((1101004800 <? word) && (word <=? 2139095040)) then (ctor Step.done word) else (ctor Step.exponentiate word))
+    | Request.exponential word => (let unit : Nat := (ScalarF32::add 1065353216 word); (if (unit =? 1065353216) then (ctor Step.done word) else (ctor Step.takeLog unit word)))
+    | Request.logarithm unit value log => (let increment : Nat := (ScalarF32::add unit 3212836864); (let residual : Nat := (ScalarF32::add value (ScalarF32::negate increment)); (ctor Step.done (ScalarF32::add log (ScalarF32::divide residual unit)))))),
+  executable: true,
+  production: {effects: [overflow], targets: [rust-core]}
+}
+
+theorem{
+  name: tinyExponentialSurvivesRoundedUnit,
+  parameters: [],
+  statement: ((evaluate (ctor Request.exponential 1)) = (ctor Step.done 1)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: aboveCutoffKeepsTheInput,
+  parameters: [],
+  statement: ((evaluate (ctor Request.input 1101004801)) = (ctor Step.done 1101004801)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: cutoffStillUsesExponential,
+  parameters: [],
+  statement: ((evaluate (ctor Request.input 1101004800)) = (ctor Step.exponentiate 1101004800)),
+  proof: reflexivity{}
+}
+\end{semanticmodule}
+\end{lexlean}

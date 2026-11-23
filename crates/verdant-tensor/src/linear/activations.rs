@@ -215,6 +215,36 @@ pub fn exponential_f32(value: f32) -> Result<f32, TensorComputeError> {
     Ok(f32::from_bits(u32::try_from(word).map_err(|_| failure())?))
 }
 
+/// Evaluate softplus for a binary32 input. Large positive values pass through,
+/// and a compensated logarithm preserves small exponential increments.
+///
+/// # Errors
+/// Returns a typed kernel error if a certified word operation overflows.
+pub fn softplus_f32(input: f32) -> Result<f32, TensorComputeError> {
+    use verdant_softplus::{run, Adt0 as Request, Adt1 as Step};
+    let mut request = Request::C0(input.to_bits().into());
+    loop {
+        request =
+            match run(request).map_err(|_| TensorComputeError::InvalidKernelSpecification {
+                kernel_name: "Softplus".into(),
+            })? {
+                Step::C0(word) => return Ok(f32::from_bits(word as u32)),
+                Step::C1(word) => Request::C1(
+                    exponential_f32(f32::from_bits(word as u32))?
+                        .to_bits()
+                        .into(),
+                ),
+                Step::C2(unit, value) => Request::C2(
+                    unit,
+                    value,
+                    natural_log_f32(f32::from_bits(unit as u32))?
+                        .to_bits()
+                        .into(),
+                ),
+            };
+    }
+}
+
 /// Evaluate the sine and cosine of one binary32 angle in radians.
 ///
 /// # Errors

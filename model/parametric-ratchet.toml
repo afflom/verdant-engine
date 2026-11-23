@@ -364,3 +364,8 @@ role = "Evaluate binary32 logarithms and reduce inverse-root exponents for geome
 path = "app/src/OnlineWeightedMean.lex.tex"
 stratum = 2
 role = "Rescale streaming binary32 weighted means at changes of maximum score and normalize their final mass."
+
+[[stratum_module]]
+path = "app/src/Softplus.lex.tex"
+stratum = 2
+role = "Select the binary32 softplus cutoff and compensate rounding in the logarithm of one plus an exponential."
