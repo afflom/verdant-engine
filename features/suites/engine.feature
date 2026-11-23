@@ -789,3 +789,9 @@ Feature: engine
     Given packed ternary weights and independently prepared signed-byte activation blocks
     When the engine evaluates a complete row
     Then all output words reproduce the imported GGML CPU products and inconsistent extents are refused
+
+  @VTK-46 @build
+  Scenario: Verdant contracts three-bit four-lane codebooks using indexed and explicit signs
+    Given independently packed grid indices, signs and signed-byte activations
+    When the engine contracts zero or more complete blocks
+    Then every output word matches the pinned GGML CPU and mismatched extents are refused

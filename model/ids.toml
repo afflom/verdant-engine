@@ -848,3 +848,9 @@ id = "VTK-45"
 level = "build"
 suite = "engine"
 statement = "Verdant contracts packed trit and two-bit ternary rows with prepared grouped signed-byte activations"
+
+[[id]]
+id = "VTK-46"
+level = "build"
+suite = "engine"
+statement = "Verdant contracts three-bit four-lane codebooks using indexed and explicit signs"

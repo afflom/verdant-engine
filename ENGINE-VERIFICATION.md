@@ -443,3 +443,9 @@ Reading adjacent values instead of applying the certified stride makes `cargo te
 The same certified ternary layout used by the encoders selects each physical lane. The packed-trit decoder recovers five signed coefficients and the two-bit decoder preserves every raw field, including code three. Each 256-lane block uses the existing exact integer contraction and the certified binary32 scaled accumulation. Attestation `6e4d44c9170897532a80e686638769430910ab5a0b10a8488d7c46bcd354eab8` binds the decoder.
 
 All 196 result words across zero to five blocks matched the original GGML CPU products. The CPU quantized its own activations. Both row formats reject truncated weights and mismatched activation counts. Removing the physical stride failed TQ1_0 row 1. Restoring it passed both products and the encoder and nonlinear-product regressions. The source lift retained 585 lifted and 1,150 residual functions.
+
+## VTK-46 four-lane codebook products
+
+Each four-lane grid is selected from the original imported IQ3_XXS or IQ3_S table. The certified instructions locate the low and high index bits, signed-byte mask, group scale and starting sign bit. The existing exact integer contraction and row accumulation serve both codebooks. Attestation `9e42f5dbdd07596113465bdcaba4e3e3a86cc9684b78daa6d9229a2e861f1bd0` binds the production export.
+
+The pinned GGML CPU independently prepared its activations and produced all 196 matching binary32 words across zero to five blocks. Both row formats reject partial weights and mismatched activation counts. Using the low four sign bits for both halves failed IQ3_XXS row 1. Restoring the certified sign position passed both new products and the existing two-bit codebook and ternary regressions. The source lift retained 585 lifted and 1,150 residual functions.

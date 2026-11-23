@@ -171,6 +171,10 @@ pub enum CodebookEncoding {
     ExtendedIndex,
     /// Ten-bit grid index with separate high bits and an explicit sign byte.
     ExplicitSigns,
+    /// Four-lane eight-bit grids with packed seven-bit sign selectors.
+    FourLaneIndexedSigns,
+    /// Four-lane nine-bit grids with explicit signs.
+    FourLaneExplicitSigns,
 }
 
 /// Packed weight formats accepted by the grouped product.
@@ -272,10 +276,14 @@ pub fn dot_grouped_weight_row(
         }
     };
     let query = |request| run(request).map_err(|_| invalid());
-    let Step::C5(width, normalization) = query(layout)? else {
-        return Err(TensorComputeError::ZeroOrMismatchedExtents {
-            detail: "codebook weights and activation block counts differ".into(),
-        });
+    let (width, normalization, grid_width) = match query(layout)? {
+        Step::C5(width, normalization) => (width, normalization, ACCUMULATORS),
+        Step::C9(width, normalization, lanes) => (width, normalization, lanes as usize),
+        _ => {
+            return Err(TensorComputeError::ZeroOrMismatchedExtents {
+                detail: "codebook weights and activation block counts differ".into(),
+            })
+        }
     };
     let tables = super::GGML_QUANTIZED_TABLES;
     let mut total = 0.0;
@@ -339,23 +347,24 @@ pub fn dot_grouped_weight_row(
         };
         let kind = kind as u64;
         let mut coefficients = activation.codes.map(|_| 0_i16);
-        for (group, lanes) in coefficients.chunks_exact_mut(ACCUMULATORS).enumerate() {
+        for (group, lanes) in coefficients.chunks_exact_mut(grid_width).enumerate() {
             let group = group as u64;
             let Step::C6(code, code_width, control, control_width, scale, signs) =
                 query(Request::C6(kind, group))?
             else {
                 return Err(invalid());
             };
-            let Step::C7(grid, indexed, mask, multiplier) = query(Request::C7(
+            let (grid, indexed, mask, multiplier, sign_lane) = match query(Request::C7(
                 kind,
                 group,
                 field(code, code_width)?,
                 field(control, control_width)?,
                 field(scale, 1)?,
                 field(signs, 1)?,
-            ))?
-            else {
-                return Err(invalid());
+            ))? {
+                Step::C7(grid, indexed, mask, scale) => (grid, indexed, mask, scale, 0),
+                Step::C10(grid, indexed, mask, scale, start) => (grid, indexed, mask, scale, start),
+                _ => return Err(invalid()),
             };
             let mask = if indexed {
                 u64::from(tables[mask as usize])
@@ -364,8 +373,12 @@ pub fn dot_grouped_weight_row(
             };
             for (lane, dst) in lanes.iter_mut().enumerate() {
                 let magnitude = tables[grid as usize + lane];
-                let Step::C1(value) =
-                    query(Request::C8(lane as u64, mask, magnitude.into(), multiplier))?
+                let Step::C1(value) = query(Request::C8(
+                    sign_lane + lane as u64,
+                    mask,
+                    magnitude.into(),
+                    multiplier,
+                ))?
                 else {
                     return Err(invalid());
                 };

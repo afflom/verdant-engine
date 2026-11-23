@@ -144,6 +144,7 @@ model does not sanction.
 | `VTK-43` | `build` | Verdant contracts grouped four-bit codebook weights with prepared signed-byte activations in reference group order |
 | `VTK-44` | `build` | Verdant encodes 256-lane ternary blocks in packed-trit and two-bit-plane layouts with a trailing binary16 scale |
 | `VTK-45` | `build` | Verdant contracts packed trit and two-bit ternary rows with prepared grouped signed-byte activations |
+| `VTK-46` | `build` | Verdant contracts three-bit four-lane codebooks using indexed and explicit signs |
 
 ## fidelity
 

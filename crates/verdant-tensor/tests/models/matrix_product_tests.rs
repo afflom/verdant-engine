@@ -383,6 +383,8 @@ int main(int argc, char **argv) {
   if (!std::strcmp(argv[1], "iq2_s-dot")) return compare_grouped_rows<block_iq2_s>(GGML_TYPE_IQ2_S);
   if (!std::strcmp(argv[1], "tq1_0-dot")) return compare_grouped_rows<block_tq1_0>(GGML_TYPE_TQ1_0);
   if (!std::strcmp(argv[1], "tq2_0-dot")) return compare_grouped_rows<block_tq2_0>(GGML_TYPE_TQ2_0);
+  if (!std::strcmp(argv[1], "iq3_xxs-dot")) return compare_grouped_rows<block_iq3_xxs>(GGML_TYPE_IQ3_XXS);
+  if (!std::strcmp(argv[1], "iq3_s-dot")) return compare_grouped_rows<block_iq3_s>(GGML_TYPE_IQ3_S);
   if (!std::strcmp(argv[1], "iq4_xs-dot")) return compare_grouped_rows<block_iq4_xs>(GGML_TYPE_IQ4_XS);
   if (!std::strcmp(argv[1], "grouped-q3-dot")) return compare_grouped_rows<block_q3_K>(GGML_TYPE_Q3_K);
   if (!std::strcmp(argv[1], "grouped-q6-dot")) return compare_grouped_rows<block_q6_K>(GGML_TYPE_Q6_K);
@@ -2412,6 +2414,22 @@ fn ternary_row_products_vtk_45() {
             }),
         ],
         GroupedScales::Trailing,
+    );
+}
+
+#[test]
+fn four_lane_codebook_products_vtk_46() {
+    use super::CodebookEncoding::{FourLaneExplicitSigns, FourLaneIndexedSigns};
+    compare_grouped_products(
+        &[
+            (98, "iq3_xxs-dot", |w, a| {
+                super::dot_codebook_row(w, a, FourLaneIndexedSigns)
+            }),
+            (110, "iq3_s-dot", |w, a| {
+                super::dot_codebook_row(w, a, FourLaneExplicitSigns)
+            }),
+        ],
+        GroupedScales::Leading,
     );
 }
 
