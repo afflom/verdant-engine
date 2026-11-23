@@ -990,7 +990,7 @@ version = "2.28.0"
 
 [[package]]
 name = "verdant_grouped_affine"
-version = "2.39.0"
+version = "2.40.0"
 
 [[package]]
 name = "verdant_grouped_dot"

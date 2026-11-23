@@ -1,6 +1,6 @@
 [package]
 name = "verdant_grouped_affine"
-version = "2.39.0"
+version = "2.40.0"
 edition = "2021"
 publish = false
 

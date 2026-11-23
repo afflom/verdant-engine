@@ -175,6 +175,10 @@ pub enum CodebookEncoding {
     FourLaneIndexedSigns,
     /// Four-lane nine-bit grids with explicit signs.
     FourLaneExplicitSigns,
+    /// Eight-lane signed grids with a shared half and per-group eighth shifts.
+    ShiftedGrid,
+    /// Eight-lane shifted grids with half-scale nibbles distributed across group words.
+    DistributedScale,
 }
 
 /// Packed weight formats accepted by the grouped product.
@@ -276,9 +280,15 @@ pub fn dot_grouped_weight_row(
         }
     };
     let query = |request| run(request).map_err(|_| invalid());
-    let (width, normalization, grid_width) = match query(layout)? {
-        Step::C5(width, normalization) => (width, normalization, ACCUMULATORS),
-        Step::C9(width, normalization, lanes) => (width, normalization, lanes as usize),
+    let (width, normalization, grid_width, grid_unit) = match query(layout)? {
+        Step::C5(width, normalization) => (width, normalization, ACCUMULATORS, None),
+        Step::C9(width, normalization, lanes) => (width, normalization, lanes as usize, None),
+        Step::C12(width, normalization, lanes, unit) => (
+            width,
+            normalization,
+            lanes as usize,
+            Some(f32::from_bits(unit as u32)),
+        ),
         _ => {
             return Err(TensorComputeError::ZeroOrMismatchedExtents {
                 detail: "codebook weights and activation block counts differ".into(),
@@ -301,7 +311,25 @@ pub fn dot_grouped_weight_row(
                 _ => Err(invalid()),
             }
         };
-        let half = convert_float_storage(1, 0, field(0, HALF_BYTES)?)
+        let stored_scale =
+            if encoding == GroupedWeightEncoding::Codebook(CodebookEncoding::DistributedScale) {
+                let Step::C8(a, b, c, d) = query(Request::C15)? else {
+                    return Err(invalid());
+                };
+                let Step::C1(word) = query(Request::C16(
+                    field(a, HALF_BYTES)?,
+                    field(b, HALF_BYTES)?,
+                    field(c, HALF_BYTES)?,
+                    field(d, HALF_BYTES)?,
+                ))?
+                else {
+                    return Err(invalid());
+                };
+                word
+            } else {
+                field(0, HALF_BYTES)?
+            };
+        let half = convert_float_storage(1, 0, stored_scale)
             .map_err(|_| invalid())?
             .ok_or_else(invalid)?;
         let scale = evaluate_f32_scalar(
@@ -354,14 +382,25 @@ pub fn dot_grouped_weight_row(
             else {
                 return Err(invalid());
             };
-            let (grid, indexed, mask, multiplier, sign_lane) = match query(Request::C7(
+            let lookup = query(Request::C7(
                 kind,
                 group,
                 field(code, code_width)?,
                 field(control, control_width)?,
                 field(scale, 1)?,
                 field(signs, 1)?,
-            ))? {
+            ))?;
+            if let Step::C11(grid, scale, down) = lookup {
+                for (lane, dst) in lanes.iter_mut().enumerate() {
+                    let raw = tables[grid as usize + lane];
+                    let Step::C1(word) = query(Request::C17(raw.into(), scale, down))? else {
+                        return Err(invalid());
+                    };
+                    *dst = word as i16;
+                }
+                continue;
+            }
+            let (grid, indexed, mask, multiplier, sign_lane) = match lookup {
                 Step::C7(grid, indexed, mask, scale) => (grid, indexed, mask, scale, 0),
                 Step::C10(grid, indexed, mask, scale, start) => (grid, indexed, mask, scale, start),
                 _ => return Err(invalid()),
@@ -391,6 +430,10 @@ pub fn dot_grouped_weight_row(
             uor_matmul::as_alphabet_full(&codes),
         );
         let signed = signed_word_f32(i32::try_from(product).map_err(|_| invalid())?)?;
+        let signed = match grid_unit {
+            Some(unit) => evaluate_f32_scalar(scalars::two_u64(), signed, unit)?,
+            None => signed,
+        };
         let term = evaluate_f32_scalar(scalars::two_u64(), scale, signed)?;
         total = evaluate_f32_scalar(0, total, term)?;
     }

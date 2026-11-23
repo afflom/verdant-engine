@@ -449,3 +449,9 @@ All 196 result words across zero to five blocks matched the original GGML CPU pr
 Each four-lane grid is selected from the original imported IQ3_XXS or IQ3_S table. The certified instructions locate the low and high index bits, signed-byte mask, group scale and starting sign bit. The existing exact integer contraction and row accumulation serve both codebooks. Attestation `9e42f5dbdd07596113465bdcaba4e3e3a86cc9684b78daa6d9229a2e861f1bd0` binds the production export.
 
 The pinned GGML CPU independently prepared its activations and produced all 196 matching binary32 words across zero to five blocks. Both row formats reject partial weights and mismatched activation counts. Using the low four sign bits for both halves failed IQ3_XXS row 1. Restoring the certified sign position passed both new products and the existing two-bit codebook and ternary regressions. The source lift retained 585 lifted and 1,150 residual functions.
+
+## VTK-47 shifted signed-codebook products
+
+The Prism plan reconstructs a shared binary16 scale or its four distributed nibbles, selects the eight-lane grid and applies the signed one-eighth shift. The imported grid contains exactly −1, 0 and 1. Expressing each scaled coefficient in eighths bounds the integral product by 256 × 128 × 15 × 9, within binary32's exact integer range. Applying the certified one-eighth unit before each scaled block preserves the reference sum order. Attestation `3599877f41301c37e0a457a2ec904887919b3a89383794350226ef82e12384a4` binds the export.
+
+All 196 result words matched the original GGML CPU over zero to five blocks, including distributed scale nibbles with independently varied group scales. Both formats reject incomplete blocks and mismatched activation counts. Reversing the shift sign failed IQ1_S row 1. Restoring it passed both new products, the two-bit codebooks and the four-lane codebooks. The source lift retained 585 lifted and 1,150 residual functions.

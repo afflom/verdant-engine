@@ -385,6 +385,8 @@ int main(int argc, char **argv) {
   if (!std::strcmp(argv[1], "tq2_0-dot")) return compare_grouped_rows<block_tq2_0>(GGML_TYPE_TQ2_0);
   if (!std::strcmp(argv[1], "iq3_xxs-dot")) return compare_grouped_rows<block_iq3_xxs>(GGML_TYPE_IQ3_XXS);
   if (!std::strcmp(argv[1], "iq3_s-dot")) return compare_grouped_rows<block_iq3_s>(GGML_TYPE_IQ3_S);
+  if (!std::strcmp(argv[1], "iq1_s-dot")) return compare_grouped_rows<block_iq1_s>(GGML_TYPE_IQ1_S);
+  if (!std::strcmp(argv[1], "iq1_m-dot")) return compare_grouped_rows<block_iq1_m>(GGML_TYPE_IQ1_M);
   if (!std::strcmp(argv[1], "iq4_xs-dot")) return compare_grouped_rows<block_iq4_xs>(GGML_TYPE_IQ4_XS);
   if (!std::strcmp(argv[1], "grouped-q3-dot")) return compare_grouped_rows<block_q3_K>(GGML_TYPE_Q3_K);
   if (!std::strcmp(argv[1], "grouped-q6-dot")) return compare_grouped_rows<block_q6_K>(GGML_TYPE_Q6_K);
@@ -2433,11 +2435,29 @@ fn four_lane_codebook_products_vtk_46() {
     );
 }
 
+#[test]
+fn shifted_codebook_products_vtk_47() {
+    use super::CodebookEncoding::{DistributedScale, ShiftedGrid};
+    compare_grouped_products(
+        &[(50, "iq1_s-dot", |w, a| {
+            super::dot_codebook_row(w, a, ShiftedGrid)
+        })],
+        GroupedScales::Leading,
+    );
+    compare_grouped_products(
+        &[(56, "iq1_m-dot", |w, a| {
+            super::dot_codebook_row(w, a, DistributedScale)
+        })],
+        GroupedScales::Distributed,
+    );
+}
+
 #[derive(Clone, Copy)]
 enum GroupedScales {
     Leading,
     LeadingPair,
     Trailing,
+    Distributed,
 }
 
 type GroupedProduct = fn(&[u8], &[super::GroupedQ8Block]) -> Result<f32, crate::TensorComputeError>;
@@ -2465,7 +2485,21 @@ fn compare_grouped_products(products: &[(usize, &str, GroupedProduct)], scales: 
                 } else {
                     0
                 };
-                block[at..at + 2].copy_from_slice(&halves[(row + i) % halves.len()].to_ne_bytes());
+                let scale = halves[(row + i) % halves.len()];
+                if matches!(scales, GroupedScales::Distributed) {
+                    for (part, bytes) in block[width - 8..]
+                        .as_chunks_mut::<2>()
+                        .0
+                        .iter_mut()
+                        .enumerate()
+                    {
+                        let groups = u16::from_ne_bytes(*bytes) & 0x0fff;
+                        let nibble = (scale >> (4 * part)) & 15;
+                        *bytes = (groups | (nibble << 12)).to_ne_bytes();
+                    }
+                } else {
+                    block[at..at + 2].copy_from_slice(&scale.to_ne_bytes());
+                }
                 if matches!(scales, GroupedScales::LeadingPair) {
                     block[2..4]
                         .copy_from_slice(&halves[(row * 3 + i + 1) % halves.len()].to_ne_bytes());

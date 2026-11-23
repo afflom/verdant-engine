@@ -795,3 +795,9 @@ Feature: engine
     Given independently packed grid indices, signs and signed-byte activations
     When the engine contracts zero or more complete blocks
     Then every output word matches the pinned GGML CPU and mismatched extents are refused
+
+  @VTK-47 @build
+  Scenario: Verdant contracts signed one-bit codebooks with shared and distributed block scales
+    Given signed codebook weights, per-group shifts and independently prepared signed-byte activations
+    When the engine contracts zero or more complete blocks
+    Then every output word matches the pinned GGML CPU and mismatched extents are refused

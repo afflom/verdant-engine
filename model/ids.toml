@@ -854,3 +854,9 @@ id = "VTK-46"
 level = "build"
 suite = "engine"
 statement = "Verdant contracts three-bit four-lane codebooks using indexed and explicit signs"
+
+[[id]]
+id = "VTK-47"
+level = "build"
+suite = "engine"
+statement = "Verdant contracts signed one-bit codebooks with shared and distributed block scales"
