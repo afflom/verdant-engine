@@ -788,3 +788,33 @@ id = "VTK-35"
 level = "build"
 suite = "engine"
 statement = "Verdant contracts one-bit sign and two-bit weight rows against symmetric signed-byte blocks with the imported row precision"
+
+[[id]]
+id = "VTK-36"
+level = "build"
+suite = "engine"
+statement = "Signed five-bit and nonlinear four-bit coefficient rows contract with symmetric signed-byte activations against the pinned CPU"
+
+[[id]]
+id = "VTK-37"
+level = "build"
+suite = "engine"
+statement = "Affine four-bit and five-bit rows contract with signed-byte activations carrying an independently rounded scaled sum"
+
+[[id]]
+id = "VTK-38"
+level = "build"
+suite = "engine"
+statement = "Verdant contracts E2M1 weight rows with exponent-only or grouped E4M3 scales and signed-byte activation blocks against the imported CPU"
+
+[[id]]
+id = "VTK-39"
+level = "build"
+suite = "engine"
+statement = "Verdant contracts signed two-bit codebook rows with grouped byte activations against the imported GGML vector products"
+
+[[id]]
+id = "VTK-40"
+level = "build"
+suite = "engine"
+statement = "Verdant encodes centered and affine four- and five-bit weight blocks against the imported reference encoders"

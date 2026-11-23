@@ -1,6 +1,6 @@
 {
   "spec": "prism/content/1",
-  "about": "Mechanized Diataxis documentation model for Verdant Engine: maps all seven stakeholders in app/src/Architecture.lex.tex to guide personas, defines engine glossary terms, and configures plain-language and accessibility checks.",
+  "about": "Mechanized Diataxis documentation model for Verdant Engine: maps all ten stakeholders in app/src/Architecture.lex.tex to guide personas, defines engine glossary terms, and configures plain-language and accessibility checks.",
   "site": "Verdant Engine",
   "pages": ["docs/"],
   "css": "docs/content.css",
@@ -219,6 +219,22 @@
         "learn": "Walk me through submitting a signed VerdantVcs commit request for Admin review.",
         "build": "How do I attach PROV-O work items, milestones, and release checks to a signing request?",
         "scale": "How does path-scoped review ownership coordinate large multi-contributor projects?"
+      }
+    },
+    {
+      "id": "tomas",
+      "start": "docs/guides/progressive-uorc-streaming",
+      "stakeholder": "stakeholderCommunityHostOperator",
+      "name": "Tomas",
+      "prop": "compass",
+      "accessory": "beanie",
+      "need": "Zero-account Stitch peer seeding, verified four-of-eight STCH shards, volunteer gateways, and offline portable HTML envelopes.",
+      "asks": {
+        "discover": "How does Verdant serve 3D worlds and releases without commercial cloud lock-in?",
+        "evaluate": "Are peer-seeded STCH shards and offline HTML envelopes verified before they run?",
+        "learn": "How do browsers and volunteer gateways cache and seed Stitch shards?",
+        "build": "How do I run a volunteer gateway or pack an offline HTML file?",
+        "scale": "How do request, transfer, and storage budgets bound volunteer seeding across peers?"
       }
     }
   ],

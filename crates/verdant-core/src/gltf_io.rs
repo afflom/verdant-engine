@@ -235,7 +235,7 @@ fn import_gltf_node_recursive(
     let role = node
         .extras()
         .as_ref()
-        .and_then(|raw| serde_json::from_str::<serde_json::Value>(raw.get()).ok())
+        .and_then(|raw| serde_json::from_slice::<serde_json::Value>(raw.get().as_bytes()).ok())
         .and_then(|extras| serde_json::from_value::<EntityRole>(extras.get("role")?.clone()).ok())
         .unwrap_or(if node.skin().is_some() {
             EntityRole::ArticulatedRig

@@ -5,23 +5,23 @@
 # stops the functions it counts (the detail their rows state, under its
 # cause), the one that stops the most first: the work queue.
 
-# Honesty report: 583 of 1893 functions of product code are lifted; 1152
+# Honesty report: 583 of 1891 functions of product code are lifted; 1150
 # are residue, 75 foreign and 83 effect rows.
 # Residue by cause:
 #   arithmetic: 24
-#   call: 212
-#   form: 341
-#   signature: 50
-#   statements: 22
-#   type: 497
+#   call: 211
+#   form: 338
+#   signature: 52
+#   statements: 21
+#   type: 498
 #   width: 6
 
 spec = "uorust/register/1"
 
 [lift]
-functions = 1893
+functions = 1891
 lifted = 583
-residue = 1152
+residue = 1150
 foreign = 75
 effect = 83
 
@@ -38,16 +38,16 @@ functions = 125
 [[construct]]
 construct = "type outside the lift: f64"
 cause = "type"
-functions = 58
-
-[[construct]]
-construct = "takes or returns ObserverPrismHolon.organs: ObserverOrganModel.schema_org_jsonld: serde_json::Value, a type of the serde_json crate with no LexLean model"
-cause = "foreign"
-functions = 32
+functions = 55
 
 [[construct]]
 construct = "type outside the lift: f32"
 cause = "type"
+functions = 33
+
+[[construct]]
+construct = "takes or returns ObserverPrismHolon.organs: ObserverOrganModel.schema_org_jsonld: serde_json::Value, a type of the serde_json crate with no LexLean model"
+cause = "foreign"
 functions = 32
 
 [[construct]]
@@ -68,7 +68,7 @@ functions = 23
 [[construct]]
 construct = "the body has statements other than let"
 cause = "statements"
-functions = 22
+functions = 21
 
 [[construct]]
 construct = "type outside the lift: Self"
@@ -131,11 +131,6 @@ cause = "type"
 functions = 10
 
 [[construct]]
-construct = "calls from_str, which is not lifted"
-cause = "call"
-functions = 9
-
-[[construct]]
 construct = "type outside the lift: BoundingVolumeHierarchy.items: Aabb.min: Vec3.x: f64"
 cause = "type"
 functions = 9
@@ -148,6 +143,11 @@ functions = 9
 [[construct]]
 construct = "usize + wraps or panics where its value leaves the pointer width: past 2^32 on wasm32-unknown-unknown and thumbv7em-none-eabihf, past 2^64 on x86_64-unknown-linux-gnu and aarch64-unknown-linux-gnu"
 cause = "arithmetic"
+functions = 8
+
+[[construct]]
+construct = "signature outside the lift: generic, async, unsafe or variadic"
+cause = "signature"
 functions = 8
 
 [[construct]]
@@ -186,8 +186,8 @@ cause = "type"
 functions = 7
 
 [[construct]]
-construct = "signature outside the lift: generic, async, unsafe or variadic"
-cause = "signature"
+construct = "calls from_str, which is not lifted"
+cause = "call"
 functions = 6
 
 [[construct]]
@@ -241,11 +241,6 @@ cause = "foreign"
 functions = 5
 
 [[construct]]
-construct = "expression form outside the lift: a while loop that does not advance its cursor once per step"
-cause = "form"
-functions = 5
-
-[[construct]]
 construct = "signature outside the lift: takes &mut self of PagedTensorArena: the lift reads self and &self as the value, and threads no other receiver"
 cause = "signature"
 functions = 5
@@ -291,12 +286,12 @@ cause = "arithmetic"
 functions = 4
 
 [[construct]]
-construct = "calls identity, which is not lifted"
+construct = "calls from_slice, which is not lifted"
 cause = "call"
 functions = 4
 
 [[construct]]
-construct = "calls with_capacity, which is not lifted"
+construct = "calls identity, which is not lifted"
 cause = "call"
 functions = 4
 
@@ -307,6 +302,11 @@ functions = 4
 
 [[construct]]
 construct = "expression form outside the lift: ? outside a let"
+cause = "form"
+functions = 4
+
+[[construct]]
+construct = "expression form outside the lift: a while loop that does not advance its cursor once per step"
 cause = "form"
 functions = 4
 
@@ -341,6 +341,11 @@ cause = "type"
 functions = 4
 
 [[construct]]
+construct = "type outside the lift: GroupedQ8Block.scale: f32"
+cause = "type"
+functions = 4
+
+[[construct]]
 construct = "type outside the lift: HdSectorBundle.scene: SceneWorld.entities: EntityRecord.local_transform: Transform.translation: Vec3.x: f64"
 cause = "type"
 functions = 4
@@ -368,6 +373,16 @@ functions = 4
 [[construct]]
 construct = "integer operator + wraps or panics depending on the build profile"
 cause = "arithmetic"
+functions = 3
+
+[[construct]]
+construct = "calls pow2_u64, which is not lifted"
+cause = "call"
+functions = 3
+
+[[construct]]
+construct = "calls with_capacity, which is not lifted"
+cause = "call"
 functions = 3
 
 [[construct]]
@@ -411,11 +426,6 @@ cause = "type"
 functions = 3
 
 [[construct]]
-construct = "type outside the lift: GroupedQ8Block.scale: f32"
-cause = "type"
-functions = 3
-
-[[construct]]
 construct = "type outside the lift: HdPbrDescriptor.base_color_factor: f32"
 cause = "type"
 functions = 3
@@ -427,6 +437,11 @@ functions = 3
 
 [[construct]]
 construct = "type outside the lift: SpatialAudioSource.position: Vec3.x: f64"
+cause = "type"
+functions = 3
+
+[[construct]]
+construct = "type outside the lift: SymmetricQ8Block: a struct with type or const parameters"
 cause = "type"
 functions = 3
 
@@ -467,11 +482,6 @@ functions = 2
 
 [[construct]]
 construct = "calls parse_str, which is not lifted"
-cause = "call"
-functions = 2
-
-[[construct]]
-construct = "calls pow2_u64, which is not lifted"
 cause = "call"
 functions = 2
 
@@ -542,11 +552,6 @@ functions = 2
 
 [[construct]]
 construct = "expression form outside the lift: method call .ok_or_else"
-cause = "form"
-functions = 2
-
-[[construct]]
-construct = "expression form outside the lift: method call .strip_prefix"
 cause = "form"
 functions = 2
 
@@ -646,11 +651,6 @@ cause = "type"
 functions = 2
 
 [[construct]]
-construct = "type outside the lift: SymmetricQ8Block: a struct with type or const parameters"
-cause = "type"
-functions = 2
-
-[[construct]]
 construct = "type outside the lift: TileRasterScratch.flat_positions: f32"
 cause = "type"
 functions = 2
@@ -697,11 +697,6 @@ functions = 1
 
 [[construct]]
 construct = "calls epistemicDialogueTurnValid, which is not lifted"
-cause = "call"
-functions = 1
-
-[[construct]]
-construct = "calls from_slice, which is not lifted"
 cause = "call"
 functions = 1
 
@@ -812,11 +807,6 @@ functions = 1
 
 [[construct]]
 construct = "calls unifiedTensorKernelsDirect, which is not lifted"
-cause = "call"
-functions = 1
-
-[[construct]]
-construct = "calls uorcDefaultDecodeWork, which is not lifted"
 cause = "call"
 functions = 1
 
@@ -981,6 +971,11 @@ cause = "form"
 functions = 1
 
 [[construct]]
+construct = "expression form outside the lift: free name u64::BITS"
+cause = "form"
+functions = 1
+
+[[construct]]
 construct = "expression form outside the lift: let of another type"
 cause = "form"
 functions = 1
@@ -1026,6 +1021,11 @@ cause = "form"
 functions = 1
 
 [[construct]]
+construct = "expression form outside the lift: method call .strip_prefix"
+cause = "form"
+functions = 1
+
+[[construct]]
 construct = "expression form outside the lift: method call .to_string"
 cause = "form"
 functions = 1
@@ -1046,17 +1046,7 @@ cause = "form"
 functions = 1
 
 [[construct]]
-construct = "expression form outside the lift: method call .wrapping_shl"
-cause = "form"
-functions = 1
-
-[[construct]]
 construct = "expression form outside the lift: narrowing or sign-changing cast"
-cause = "form"
-functions = 1
-
-[[construct]]
-construct = "expression form outside the lift: write! into something other than the formatter"
 cause = "form"
 functions = 1
 
@@ -1162,6 +1152,11 @@ functions = 1
 
 [[construct]]
 construct = "type outside the lift: &mut usize"
+cause = "type"
+functions = 1
+
+[[construct]]
+construct = "type outside the lift: AffineQ8Block: a struct with type or const parameters"
 cause = "type"
 functions = 1
 
@@ -1360,16 +1355,16 @@ reason = "call"
 detail = "calls new, which is not lifted"
 
 [[residue]]
-kappa = "f06661bb8e2918b2487d891354e2c09a93999925719227c83e8b2211ca657632"
+kappa = "cf1aa2dc9a91be05b39fc7d7ecf75abe641d603e5762a05df0cd79e420dff84f"
 function = "prism_fidelity::find_record_by_kind_index"
 reason = "statements"
 detail = "the body has statements other than let"
 
 [[residue]]
-kappa = "c1cd8b6e2ce3b745900a332053ab0e798232d6b868e0039990e18e917d7691a3"
+kappa = "6d8302ca802313337509e16803970ebfc1533ee6574e52afcfb8b0cebab477e6"
 function = "prism_fidelity::hex"
-reason = "form"
-detail = "expression form outside the lift: write! into something other than the formatter"
+reason = "call"
+detail = "calls with_capacity, which is not lifted"
 
 [[residue]]
 kappa = "0661c36b3baf7fc509cd26c3ff247f0a7e32a8d68830f19cb46589fdc899c281"
@@ -1480,12 +1475,6 @@ reason = "statements"
 detail = "the body has statements other than let"
 
 [[residue]]
-kappa = "93622583d65e74847a402d8e3082f49017e153b78f558fa06f587568ada4fd8f"
-function = "prism_fidelity::ratchet::sha256_hex_bytes"
-reason = "call"
-detail = "calls with_capacity, which is not lifted"
-
-[[residue]]
 kappa = "7ffb35cb700d8586c81ba6bae329fda3625f68d5b3d7ffb3be37a6e41a2d6d9a"
 function = "prism_fidelity::ratchet::strip_rust_comments_and_strings"
 reason = "form"
@@ -1498,28 +1487,16 @@ reason = "call"
 detail = "calls list_items, which is not lifted"
 
 [[residue]]
-kappa = "7018f491d83bc4403dbf15329d66eb34bb575ad3912afeee50742c1025898229"
-function = "prism_fidelity::record_literal_fields"
-reason = "form"
-detail = "expression form outside the lift: index of String"
-
-[[residue]]
 kappa = "b6b58ef50679585d304a5040e9b2f6463f77a5aab70a29c30caea2dd9010797d"
 function = "prism_fidelity::references"
 reason = "form"
 detail = "expression form outside the lift: method call .match_indices"
 
 [[residue]]
-kappa = "bfc3bec70aa424aeae21ce1c74ca75461cd11d8976c4fc1e42bc5de799b4699e"
+kappa = "5c3bafeb1d947eaec0d3c73acb934f9ddf01fd2d75f79429854751cddbcde642"
 function = "prism_fidelity::references_in"
-reason = "statements"
-detail = "the body has statements other than let"
-
-[[residue]]
-kappa = "f5683b3e1d8bfbf81e98377709ba6621724f15294e1df8aeb3fcba3dc7202579"
-function = "prism_fidelity::rel"
 reason = "form"
-detail = "expression form outside the lift: method call .strip_prefix"
+detail = "expression form outside the lift: index of String"
 
 [[residue]]
 kappa = "2df1526b35d010b8e7246b4e1f9b12f3eb15e31aaa23a0dc14014c19600eb2b7"
@@ -1568,12 +1545,6 @@ kappa = "112a5545774f1f3b18dfec6d479fa45597bcc26f91b9d13af599d5bac3eff7cd"
 function = "repo_model::ModelError::fmt"
 reason = "type"
 detail = "type outside the lift: ModelError::Io.1: std::io::Error"
-
-[[residue]]
-kappa = "aef8a0876562362782582c6deba0670f9ef782794ca9c91d99ffca3948ffe618"
-function = "repo_model::artifact::hex"
-reason = "call"
-detail = "calls with_capacity, which is not lifted"
 
 [[residue]]
 kappa = "111fcbd2082dbbc92ed63038252eb153d81728f4599467cdafcc471cf9713b0d"
@@ -1738,10 +1709,10 @@ reason = "type"
 detail = "type outside the lift: Self"
 
 [[residue]]
-kappa = "a30943c14642e71ba89d6812c3635f972eb16da897f4fb913c13f725bdd3ee96"
+kappa = "90efa86a7e8346f633de00d05cca2ea0cc14d71f730bcce6b8e1fe009d7740b3"
 function = "verdant_core::authority_cert::sovereign_authority_exec_json"
 reason = "call"
-detail = "calls from_str, which is not lifted"
+detail = "calls from_slice, which is not lifted"
 
 [[residue]]
 kappa = "0ed102b305e296cfa93e773e3600f2fe943dc58cf94ce7010ac2ef7592c85d6d"
@@ -1792,7 +1763,7 @@ reason = "type"
 detail = "type outside the lift: ArticulatedCharacter.skeleton: Skeleton.joints: Joint.rest_translation: Vec3.x: f64"
 
 [[residue]]
-kappa = "12e2268ece9f04f2fbe7527902a41927a1926399e2ea2c7752d92afe394a2b5a"
+kappa = "749a4a8db4320077b0cf22f61b4734a2a14a5a41b4c976ceace65c003641d22d"
 function = "verdant_core::character::ArticulatedCharacter::bind_external_mesh"
 reason = "type"
 detail = "type outside the lift: ArticulatedCharacter.skeleton: Skeleton.joints: Joint.rest_translation: Vec3.x: f64"
@@ -1816,7 +1787,7 @@ reason = "type"
 detail = "type outside the lift: ArticulatedCharacter.skeleton: Skeleton.joints: Joint.rest_translation: Vec3.x: f64"
 
 [[residue]]
-kappa = "a75f5328685b4486990bb9411026ce754a5447cccc3bc046a54d01e77af7e523"
+kappa = "3f12726bd7001d008a147e10894689679f48ba20b9dc1e21627823cb8afb4e54"
 function = "verdant_core::character::ArticulatedCharacter::step_and_solve_ik"
 reason = "type"
 detail = "type outside the lift: ArticulatedCharacter.skeleton: Skeleton.joints: Joint.rest_translation: Vec3.x: f64"
@@ -2974,12 +2945,6 @@ reason = "form"
 detail = "expression form outside the lift: a while loop that does not advance its cursor once per step"
 
 [[residue]]
-kappa = "788af5f08a03c525768198437135d936ef0f2484ec7fb0cf2180e650a10dd32a"
-function = "verdant_core::math::geometric_epsilon"
-reason = "type"
-detail = "type outside the lift: f64"
-
-[[residue]]
 kappa = "3b8d43e1971a1255249f8eda65bb1d8d36c95fb9e06d755641fa95be50c85e26"
 function = "verdant_core::math::golden_angle_radians"
 reason = "type"
@@ -2988,12 +2953,6 @@ detail = "type outside the lift: f64"
 [[residue]]
 kappa = "eee6635f1f59ab8ae068f57e16f5600c632a9d6503f5bd2396966e26cc031dee"
 function = "verdant_core::math::golden_ratio"
-reason = "type"
-detail = "type outside the lift: f64"
-
-[[residue]]
-kappa = "0e1fc06bed4a5306604cf4b903d773257e1345f9d01160867ee6b9fe5379172b"
-function = "verdant_core::math::half_f64"
 reason = "type"
 detail = "type outside the lift: f64"
 
@@ -3014,18 +2973,6 @@ kappa = "211e1fb0c15be215f7762b1e609309ad389779a2f0a237185ab6f4ad054292f6"
 function = "verdant_core::math::pow10_u64"
 reason = "form"
 detail = "expression form outside the lift: a while loop that does not advance its cursor once per step"
-
-[[residue]]
-kappa = "ed59ac4409f838a6f29aecd0311b60c32ff3353f85bccd68a54f49c4659c7871"
-function = "verdant_core::math::pow2_u64"
-reason = "form"
-detail = "expression form outside the lift: method call .wrapping_shl"
-
-[[residue]]
-kappa = "0298af6c501d0a3d7ff087d82e3ad5671ab972b017a0a327bf6325761c003ca6"
-function = "verdant_core::math::two_f64"
-reason = "type"
-detail = "type outside the lift: f64"
 
 [[residue]]
 kappa = "f00c7788845b2331fe50e1f0154aeedc5c932f18c9370471b41167bd17d717d0"
@@ -4150,7 +4097,7 @@ reason = "type"
 detail = "type outside the lift: CatalogBundleRegistry.khronos_hd: KhronosHdCatalog.materials: CatalogHdMaterial.base_color_factor: f32"
 
 [[residue]]
-kappa = "b70cc271cf2769a2db36058a111803833140f3100df32f9255bc4ea5d71da506"
+kappa = "db0dbbd00d1fe3be580113dbda7bc9e04fa2666df3427c8733565a8e36fc2186"
 function = "verdant_core::standards_registry::CatalogBundleRegistry::instantiate_domain_pack"
 reason = "type"
 detail = "type outside the lift: CatalogBundleRegistry.khronos_hd: KhronosHdCatalog.materials: CatalogHdMaterial.base_color_factor: f32"
@@ -4279,7 +4226,7 @@ detail = "type outside the lift: TerrainReliefParams.basin_depth_meters: f64"
 kappa = "e8a2025139d1e12ba11138649e4414c372d028d82b4c67df17854736ec7f3a3f"
 function = "verdant_core::streaming::verify_progressive_uorc_stream"
 reason = "call"
-detail = "calls uorcDefaultDecodeWork, which is not lifted"
+detail = "calls pow2_u64, which is not lifted"
 
 [[residue]]
 kappa = "50664d6483af4a9862943993c889ed08894ea04d78ff60c186a1e2291eb9f59e"
@@ -4462,10 +4409,10 @@ reason = "signature"
 detail = "signature outside the lift: takes &mut self of DynamicWorkloadGovernor: the lift reads self and &self as the value, and threads no other receiver"
 
 [[residue]]
-kappa = "f6a8b9aa20676d0e0941da978562517b108f73118bafc7c4926d039c6c3f39f4"
+kappa = "a622204d6abcd053f2adbbcc7f4cf4977f3e764a8dc47cc82f61c70ca0ad70a4"
 function = "verdant_core::uhd_workload::paged_workload_step_json"
 reason = "call"
-detail = "calls from_str, which is not lifted"
+detail = "calls from_slice, which is not lifted"
 
 [[residue]]
 kappa = "6cddb20d8fbc4add0c31b3f93ef6374fc895282a7e273170e01a1690f68f8cfc"
@@ -4672,10 +4619,10 @@ reason = "call"
 detail = "calls thirty_two_u8, which is not lifted"
 
 [[residue]]
-kappa = "e6426a3323361d9957a88a8acf6435d0fc1d975a2fcba4559427c41a629e32ee"
+kappa = "6e72353afa80eeb91c84981c718ca3e1d0f7832281f00e43fd68edcdccfa96fe"
 function = "verdant_core::vcs_studio::studio_vcs_commit_and_pack_holo_json"
 reason = "call"
-detail = "calls from_str, which is not lifted"
+detail = "calls from_slice, which is not lifted"
 
 [[residue]]
 kappa = "9fa61ad74bfa02c84c7d9aec821dd368c7a587c2b6d0af005db454e4ee17de58"
@@ -4954,6 +4901,12 @@ reason = "type"
 detail = "type outside the lift: f32"
 
 [[residue]]
+kappa = "01e06c6ad5b4cc37864dd033df9daf25878b664743b7c0474d91d76afca760b8"
+function = "verdant_tensor::linear::affine_product::dot_affine_weight_row"
+reason = "type"
+detail = "type outside the lift: AffineQ8Block: a struct with type or const parameters"
+
+[[residue]]
 kappa = "3aa39b9ed53407f8472668340767d9afea088bbb65f49509466146a2ea3b24e1"
 function = "verdant_tensor::linear::batch_transform_positions_exact"
 reason = "type"
@@ -4968,6 +4921,12 @@ detail = "type outside the lift: f32"
 [[residue]]
 kappa = "a4900db2358da9525364be8787b20c16e435a00490c0835a431a97c29f5674bd"
 function = "verdant_tensor::linear::bitpacked_product::dot_binary_sign_row"
+reason = "type"
+detail = "type outside the lift: SymmetricQ8Block: a struct with type or const parameters"
+
+[[residue]]
+kappa = "10ec4cb55f7a384e0f1c4c5219a951937bb4a0b038c7091f6423c45d3625b4d7"
+function = "verdant_tensor::linear::bitpacked_product::dot_block_float_row"
 reason = "type"
 detail = "type outside the lift: SymmetricQ8Block: a struct with type or const parameters"
 
@@ -4990,25 +4949,19 @@ reason = "type"
 detail = "type outside the lift: f64"
 
 [[residue]]
-kappa = "1993d2ed07e622a3da1ce39479219470df07fc2bdad3cad747f259e239d457ee"
-function = "verdant_tensor::linear::dot_symmetric_q4_row"
+kappa = "9997b4feb2d66127cae43c4ed6912f7fb24fcc35b8b937a1a0e7331404b28f3f"
+function = "verdant_tensor::linear::encode_affine_q8_block"
 reason = "signature"
 detail = "signature outside the lift: generic, async, unsafe or variadic"
 
 [[residue]]
-kappa = "2fa9599567e19f2d40a488b9ba6fd9017ccc7e5805ec8b93e2c5a30693dcc7f4"
-function = "verdant_tensor::linear::dot_symmetric_q8_row"
+kappa = "6b4e815c7932ede9fddac4986644468a5b5fea2761af63198d2e6e6d4278a294"
+function = "verdant_tensor::linear::encode_q8_with_scale"
 reason = "signature"
 detail = "signature outside the lift: generic, async, unsafe or variadic"
 
 [[residue]]
-kappa = "93f30e0eb69ebc616e400b41af97453b224b1a6f185ad73bbe63a77cb1685226"
-function = "verdant_tensor::linear::dot_symmetric_row"
-reason = "signature"
-detail = "signature outside the lift: generic, async, unsafe or variadic"
-
-[[residue]]
-kappa = "42715b4cca48150a1988bb86d07e8be67caa57168b88da96091e81e873b042ae"
+kappa = "8d44e0144f7271fcfba3dc7af3cf665160ab30ae6853062cad8b9d4106beb179"
 function = "verdant_tensor::linear::encode_symmetric_q8_block"
 reason = "signature"
 detail = "signature outside the lift: generic, async, unsafe or variadic"
@@ -5036,6 +4989,12 @@ kappa = "c6b9dec173d5faacbc74a109fb4edcabe41a39e7851d5f85a9aac8bb963929e5"
 function = "verdant_tensor::linear::grouped::encode_grouped_q8_block"
 reason = "type"
 detail = "type outside the lift: f32"
+
+[[residue]]
+kappa = "eb0c4d6dc897e32b8098f76c3f4aee46b5750320152a7be3055a63515adeacea"
+function = "verdant_tensor::linear::grouped_affine::dot_codebook_row"
+reason = "type"
+detail = "type outside the lift: GroupedQ8Block.scale: f32"
 
 [[residue]]
 kappa = "60c0206502b695361477e455d2505b77f19882c176d214a9c76b815e271fba6a"
@@ -5146,8 +5105,32 @@ reason = "type"
 detail = "type outside the lift: f64"
 
 [[residue]]
+kappa = "9fdd8b8df581eb5556c233a69c6e252f0246c91906d664c493fc8e06e8183cae"
+function = "verdant_tensor::linear::symmetric_product::dot_encoded_symmetric_row"
+reason = "signature"
+detail = "signature outside the lift: generic, async, unsafe or variadic"
+
+[[residue]]
+kappa = "b398ca1d3e9297e9fec4346a3126f90ecc42f7a138c6cceffdd9aaf768686450"
+function = "verdant_tensor::linear::symmetric_product::dot_symmetric_q4_row"
+reason = "signature"
+detail = "signature outside the lift: generic, async, unsafe or variadic"
+
+[[residue]]
+kappa = "1e3c6bad949b79374769ec8020a2f3bf123e9cd39897a5b26c7f4c7283b2f960"
+function = "verdant_tensor::linear::symmetric_product::dot_symmetric_q8_row"
+reason = "signature"
+detail = "signature outside the lift: generic, async, unsafe or variadic"
+
+[[residue]]
 kappa = "eda38a5f00c1afcdd6e32b96ae05d29ed51f8efde016f3817774e6448db558c6"
 function = "verdant_tensor::linear::transform_triple_exact"
+reason = "type"
+detail = "type outside the lift: f32"
+
+[[residue]]
+kappa = "07120ca3e9a65266adeba199a08744a477b449c54a288ddef6336037d4077ed2"
+function = "verdant_tensor::linear::weight_encoding::encode_weight_block"
 reason = "type"
 detail = "type outside the lift: f32"
 
@@ -5230,10 +5213,10 @@ reason = "arithmetic"
 detail = "integer operator * wraps or panics depending on the build profile"
 
 [[residue]]
-kappa = "03c2e38b632afcb6a1e43aa751ffefeb2891d796c0fa6886670066f34f58fcaa"
+kappa = "3621e63f19d49cad0fba1d9cc907f0ab955d86c2e1719bfba1da9b3d2d3264a9"
 function = "verdant_tensor::pow2_u64"
 reason = "form"
-detail = "expression form outside the lift: a while loop that does not advance its cursor once per step"
+detail = "expression form outside the lift: free name u64::BITS"
 
 [[residue]]
 kappa = "7978044fd27ddb78c897531c33905daab09ae1603dbbb57e11c86c6ca46565ae"
@@ -7048,7 +7031,7 @@ reason = "type"
 detail = "type outside the lift: WasmRuntimeBridge.terrain_params: TerrainReliefParams"
 
 [[residue]]
-kappa = "358635e7b9ee3e3c221682072c079ed87b48625d69b8a87745825ce7862b3a53"
+kappa = "a6692219187d3106fcc85cc85d5f535c5283d99016a324d9783f14cd798811eb"
 function = "verdant_wasm::WasmRuntimeBridge::new"
 reason = "type"
 detail = "type outside the lift: WasmRuntimeBridge.terrain_params: TerrainReliefParams"
@@ -7138,7 +7121,7 @@ reason = "type"
 detail = "type outside the lift: WasmRuntimeBridge.terrain_params: TerrainReliefParams"
 
 [[residue]]
-kappa = "ba5f4d762b12e20fcfab5cfe7a219bf993ebbcaa81e2b7942388645b9a6b649f"
+kappa = "5c5096a7f90772a46bf96e9ccfd48b9d6a168c18d5ccfd1f91a612652a0a4970"
 function = "verdant_wasm::bridge_sim::WasmRuntimeBridge::set_lod_rank"
 reason = "type"
 detail = "type outside the lift: WasmRuntimeBridge.terrain_params: TerrainReliefParams"
@@ -7156,7 +7139,7 @@ reason = "type"
 detail = "type outside the lift: WasmRuntimeBridge.terrain_params: TerrainReliefParams"
 
 [[residue]]
-kappa = "def2421560a1a2cc2270756e339715d742833e50b66ab416ebb4ab030c865592"
+kappa = "400aeea273ab2d92c9f50700de671186d6a4188d49cda0a2abe699b05a267c88"
 function = "verdant_wasm::bridge_sim::WasmRuntimeBridge::step_frame_lawful"
 reason = "type"
 detail = "type outside the lift: WasmRuntimeBridge.terrain_params: TerrainReliefParams"
@@ -8228,7 +8211,7 @@ function = "verdant_core::gltf_io::decode_rgba_bounded"
 detail = "takes or returns gltf::image::Data, a type of the gltf crate with no LexLean model"
 
 [[foreign]]
-kappa = "ba466b484016fa0c7da50ab582ed053a4a1b9cdbcbda53e653d13476a087e4a1"
+kappa = "54807f28af8125d08c0773ebabfcfdb29b5f38b5162e86cdaf6a5c452f5e4653"
 function = "verdant_core::gltf_io::import_gltf_node_recursive"
 detail = "takes or returns gltf::Node<'_>, a type of the gltf crate with no LexLean model"
 
@@ -8278,7 +8261,7 @@ function = "verdant_core::observer::ObserverPrismHolon::set_npc_directive"
 detail = "takes or returns ObserverPrismHolon.organs: ObserverOrganModel.schema_org_jsonld: serde_json::Value, a type of the serde_json crate with no LexLean model"
 
 [[foreign]]
-kappa = "c87b82d7b08837e181b7d2a3044758cc9edd28fde7306e20bf6ec3b3a1ed9a10"
+kappa = "9d13cd395dab78dc041f28f51c1005a1842495d0c30bf55cf0c1fb1063dac3f3"
 function = "verdant_core::observer::ObserverPrismHolon::step_npc_patrols"
 detail = "takes or returns ObserverPrismHolon.organs: ObserverOrganModel.schema_org_jsonld: serde_json::Value, a type of the serde_json crate with no LexLean model"
 
@@ -8613,7 +8596,7 @@ function = "prism_fidelity::main"
 effect = "Env effect: std::env::args"
 
 [[effect]]
-kappa = "03650280e04f568a065ea0c96b9e0c1a82596c79e91add9af80505b088578621"
+kappa = "72a6f2eae23f6cedf181feee895730af16bb7dacccbe23130d270d787a648c11"
 function = "prism_fidelity::ratchet::audit_parametric_ratchet"
 effect = "Fs effect: std::fs::read_to_string"
 
@@ -8643,7 +8626,7 @@ function = "prism_fidelity::score"
 effect = "calls prism_fidelity::score_ignoring, which performs a Fs effect: std::fs::read_to_string"
 
 [[effect]]
-kappa = "dfc11362bfaf4cb9caca1d9965b67a936881804998756ce6c343dd3d1ad5138a"
+kappa = "5f2ae541ba1a1dc83efea0e0d89e91f741daec16dc0c8611fac5922d7b84d004"
 function = "prism_fidelity::score_ignoring"
 effect = "Fs effect: std::fs::read_to_string"
 
@@ -8678,7 +8661,7 @@ function = "repo_model::artifact::Model::check_artifacts"
 effect = "calls repo_model::artifact::artifact_checksum, which performs a Fs effect: std::fs::symlink_metadata"
 
 [[effect]]
-kappa = "88a68fa953b5b8fffcaa7e44d5f6d5a387fe1a456ed6a117709f52f691713046"
+kappa = "888d6a28e5a6450126d65374e96783dbf74964b2820972bdfa21e5aa48780696"
 function = "repo_model::artifact::artifact_checksum"
 effect = "Fs effect: std::fs::symlink_metadata"
 
@@ -8728,7 +8711,7 @@ function = "verdant_core::governance::RoadmapKpiManager::evaluate_repo"
 effect = "Fs effect: std::fs::read_to_string"
 
 [[effect]]
-kappa = "8a71db5146a3a72dcf183c66fdade2d03a4465d13b4578847447faa168f805ce"
+kappa = "43a93aa83d050f031357b90b162dced98d2db8d531e9dba14f280cca1879d724"
 function = "verdant_core::lifecycle::VerdantOperatorChannel::execute_lifecycle_gate"
 effect = "Fs effect: std::fs::read_to_string"
 
@@ -8823,7 +8806,7 @@ function = "verdant_core::operator_release::VerdantOperatorChannel::verify_relea
 effect = "Fs effect: std::fs::read_to_string"
 
 [[effect]]
-kappa = "37caa6a99658078523b27620185a4198b6d838f4a29c5cd36c1a86c23106cb72"
+kappa = "e796fe324e76bff0ddc5d8740cee8f568061a1578bd6830bc0e886be3e497400"
 function = "verdant_core::operator_seal::VerdantOperatorChannel::collect_distilled_site_tree"
 effect = "Fs effect: std::fs::read_dir"
 

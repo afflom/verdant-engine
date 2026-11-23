@@ -830,7 +830,8 @@ impl ArticulatedCharacter {
                 detail: "cannot bind empty external character mesh".to_string(),
             });
         }
-        let mut base = Self::new_humanoid(name, archetype, foot_position, 1)?;
+        let name_str = name.into();
+        let mut base = Self::new_humanoid(name_str.as_str(), archetype, foot_position, 1)?;
         let scale_u16 = crate::prism_kernel::skinWeightScale().expect("prism") as u16;
         let j_count = base.skeleton.joints.len();
         let bounds = external_mesh.bounds();
@@ -889,7 +890,7 @@ impl ArticulatedCharacter {
     /// Advances locomotion cycle, neuromorphic head-look tracking, and analytical two-bone Foot IK
     /// (`verdant_tensor::solve_two_bone_ik_exact` / `kernel13`) against `two_level_bvh`.
     #[allow(clippy::too_many_arguments)]
-    pub fn step_and_solve_ik<F>(
+    pub fn step_and_solve_ik(
         &mut self,
         dt_seconds: f64,
         foot_world: Vec3,
@@ -898,11 +899,8 @@ impl ArticulatedCharacter {
         sim_time_seconds: f64,
         salience_target: Option<Vec3>,
         two_level_bvh: &TwoLevelBvh,
-        support_height_at: F,
-    ) -> Result<FootIkTelemetry, AnimationError>
-    where
-        F: Fn(f64, f64) -> f64,
-    {
+        support_height_at: &dyn Fn(f64, f64) -> f64,
+    ) -> Result<FootIkTelemetry, AnimationError> {
         let half = half_f64();
         let q = half * half;
         let e = q * half;

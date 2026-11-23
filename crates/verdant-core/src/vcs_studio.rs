@@ -126,7 +126,7 @@ pub const fn default_release_rs_geometry() -> (u8, u8) {
 /// link ready for Blank Frame mounting.
 #[must_use]
 pub fn studio_vcs_commit_and_pack_holo_json(raw_json: &str) -> String {
-    let Ok(req) = serde_json::from_str::<serde_json::Value>(raw_json) else {
+    let Ok(req) = serde_json::from_slice::<serde_json::Value>(raw_json.as_bytes()) else {
         return serde_json::json!({ "ok": false, "error": "invalid JSON request" }).to_string();
     };
     let app_title = req

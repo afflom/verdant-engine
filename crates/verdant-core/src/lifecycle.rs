@@ -490,8 +490,8 @@ impl VerdantOperatorChannel {
                 "cargo-fmt-check",
                 "mgr-verification-observatory",
                 "workspace-test",
-                "cargo",
-                &["fmt", "--all", "--", "--check"],
+                "just",
+                &["fmt-check"],
             );
             if std::env::var_os("PRISMPM_SDK_DIGEST").is_some() {
                 run_cmd(

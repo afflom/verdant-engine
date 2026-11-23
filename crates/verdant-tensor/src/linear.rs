@@ -13,6 +13,7 @@ use crate::{
 };
 
 mod activations;
+mod affine_product;
 mod bitpacked_product;
 mod grouped;
 mod grouped_affine;
@@ -20,18 +21,29 @@ mod grouped_product;
 mod ranking;
 mod rotation;
 mod softmax;
+mod symmetric_product;
+mod weight_encoding;
 mod weighted_mean;
 pub use activations::{
     attention_head_slope_f32, exponential_f32, gelu_f32, gelu_quick_f32, inverse_root_f32,
     natural_log_f32, sigmoid_f32, silu_f32, sin_cos_f32, softplus_f32, swiglu_f32, tanh_f32,
 };
-pub use bitpacked_product::{dot_binary_sign_row, dot_two_bit_row};
+pub use affine_product::{dot_affine_weight_row, AffineWeightEncoding};
+pub use bitpacked_product::{
+    dot_binary_sign_row, dot_block_float_row, dot_two_bit_row, BlockFloatEncoding,
+};
 pub use grouped::{encode_grouped_q8_block, GroupedQ8Block};
-pub use grouped_affine::{dot_grouped_q4_row, dot_grouped_q5_row};
+pub use grouped_affine::{
+    dot_codebook_row, dot_grouped_q4_row, dot_grouped_q5_row, CodebookEncoding,
+};
 pub use grouped_product::dot_grouped_q2_row;
 pub use ranking::RowRankingF32;
 pub use rotation::{rotate_pair_f32, signed_word_f32, RotaryParameters, RotarySpectrum};
 pub use softmax::normalize_exponential_f32;
+pub use symmetric_product::{
+    dot_encoded_symmetric_row, dot_symmetric_q4_row, dot_symmetric_q8_row, SymmetricWeightEncoding,
+};
+pub use weight_encoding::{encode_weight_block, WeightBlockEncoding};
 pub use weighted_mean::WeightedMeanF32;
 
 #[inline]
@@ -743,6 +755,50 @@ pub struct SymmetricQ8Block<const LANES: usize> {
 pub fn encode_symmetric_q8_block<const LANES: usize>(
     input: &[f32; LANES],
 ) -> Result<SymmetricQ8Block<LANES>, TensorComputeError> {
+    encode_q8_with_scale(input).map(|(block, _)| block)
+}
+
+/// A prepared signed-byte block with the affine format's independently rounded scaled sum.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct AffineQ8Block<const LANES: usize> {
+    /// Scale and signed lane codes shared with the symmetric encoding.
+    pub symmetric: SymmetricQ8Block<LANES>,
+    /// Binary16 bits of the code sum times the original binary32 step.
+    pub scaled_sum: u16,
+}
+
+/// Prepare a signed-byte activation block for affine four- and five-bit weights.
+///
+/// # Errors
+/// Refuses the same invalid lanes and extents as the symmetric encoder.
+pub fn encode_affine_q8_block<const LANES: usize>(
+    input: &[f32; LANES],
+) -> Result<AffineQ8Block<LANES>, TensorComputeError> {
+    let (symmetric, scale) = encode_q8_with_scale(input)?;
+    let sum = uor_matmul::dot_ref(
+        uor_matmul::as_alphabet_full(&symmetric.codes),
+        uor_matmul::as_alphabet_full(&[1_i8; LANES]),
+    );
+    // The certified encoder admits exactly 32 signed bytes.
+    let word = signed_word_f32(sum as i32)?.to_bits();
+    let invalid = || TensorComputeError::InvalidKernelSpecification {
+        kernel_name: "BitpackedProduct.scaledSum".into(),
+    };
+    let verdant_bitpacked_product::Adt1::C2(scaled_sum) =
+        verdant_bitpacked_product::run(verdant_bitpacked_product::Adt0::C7(word.into(), scale))
+            .map_err(|_| invalid())?
+    else {
+        return Err(invalid());
+    };
+    Ok(AffineQ8Block {
+        symmetric,
+        scaled_sum: scaled_sum as u16,
+    })
+}
+
+fn encode_q8_with_scale<const LANES: usize>(
+    input: &[f32; LANES],
+) -> Result<(SymmetricQ8Block<LANES>, u64), TensorComputeError> {
     use verdant_symmetric_q8::{run, Adt0 as Request, Adt1 as Step};
     let invalid = || TensorComputeError::InvalidKernelSpecification {
         kernel_name: "SymmetricBlock.plan".to_string(),
@@ -766,10 +822,13 @@ pub fn encode_symmetric_q8_block<const LANES: usize>(
     let scale = evaluate(plan(Request::C1(maximum))?)?;
     let inverse = match plan(Request::C2(scale))? {
         Step::C2 => {
-            return Ok(SymmetricQ8Block {
-                scale: 0,
-                codes: [0; LANES],
-            })
+            return Ok((
+                SymmetricQ8Block {
+                    scale: 0,
+                    codes: [0; LANES],
+                },
+                scale,
+            ))
         }
         instruction => evaluate(instruction)?,
     };
@@ -787,124 +846,7 @@ pub fn encode_symmetric_q8_block<const LANES: usize>(
         };
         *code = byte as i8;
     }
-    Ok(output)
-}
-
-/// Contract encoded symmetric weight blocks with a prepared activation row.
-/// Each block's signed integer dot is exact. Prism widens the two scales,
-/// rounds their product, weights the dot and adds it to the running F32 sum.
-///
-/// # Errors
-/// A partial weight block, incorrect lane count or mismatched row lengths
-/// returns `ZeroOrMismatchedExtents` before either row is read.
-pub fn dot_symmetric_q8_row<const LANES: usize>(
-    weights: &[u8],
-    activations: &[SymmetricQ8Block<LANES>],
-) -> Result<f32, TensorComputeError> {
-    dot_symmetric_row(weights, activations, false)
-}
-
-/// Contract symmetric four-bit weights with prepared signed-byte activation blocks.
-/// Each block rounds the signed dot times the weight scale before multiplying
-/// by the activation scale. Low and high nibbles occupy separate lane halves.
-///
-/// # Errors
-/// Rejects partial blocks, mismatched extents and lane counts other than 32.
-pub fn dot_symmetric_q4_row<const LANES: usize>(
-    weights: &[u8],
-    activations: &[SymmetricQ8Block<LANES>],
-) -> Result<f32, TensorComputeError> {
-    dot_symmetric_row(weights, activations, true)
-}
-
-fn dot_symmetric_row<const LANES: usize>(
-    weights: &[u8],
-    activations: &[SymmetricQ8Block<LANES>],
-    packed: bool,
-) -> Result<f32, TensorComputeError> {
-    use verdant_packed_dot::{Adt0 as Packed, Adt1 as Step};
-    let invalid = || TensorComputeError::ZeroOrMismatchedExtents {
-        detail: "symmetric block rows do not have matching extents".into(),
-    };
-    let packed_step = |request| verdant_packed_dot::run(request).map_err(|_| invalid());
-    let packed_word = |request| match packed_step(request)? {
-        Step::C1(word) => Ok(word),
-        _ => Err(invalid()),
-    };
-    let lanes = LANES as u64;
-    let bytes = weights.len() as u64;
-    let blocks = activations.len() as u64;
-    let width = if packed {
-        packed_word(Packed::C0(lanes, bytes, blocks))?
-    } else {
-        verdant_symmetric_dot_layout::run(lanes, bytes, blocks)
-    } as usize;
-    if width == 0 {
-        return Err(invalid());
-    }
-    let mut sum = 0;
-    for (weight, activation) in weights.chunks_exact(width).zip(activations) {
-        let (scale, codes) = weight
-            .split_first_chunk::<{ std::mem::size_of::<u16>() }>()
-            .ok_or_else(invalid)?;
-        let signed = if packed {
-            let mut signed = [0i8; LANES];
-            let (low, high) = signed.split_at_mut(codes.len());
-            for ((l, h), &byte) in low.iter_mut().zip(high).zip(codes) {
-                let pair = packed_word(Packed::C1(u64::from(byte)))? as u16;
-                let [first, second] = pair.to_le_bytes();
-                *l = first as i8;
-                *h = second as i8;
-            }
-            signed
-        } else {
-            let codes: &[u8; LANES] = codes.try_into().map_err(|_| invalid())?;
-            codes.map(|byte| byte as i8)
-        };
-        let dot = uor_matmul::dot_ref(
-            uor_matmul::as_alphabet_full(&signed),
-            uor_matmul::as_alphabet_full(&activation.codes),
-        );
-        let negative = dot.is_negative();
-        let magnitude = dot.unsigned_abs() as u64;
-        let left = u64::from(u16::from_ne_bytes(*scale));
-        let right = u64::from(activation.scale);
-        sum = if packed {
-            let widen = |half| {
-                convert_float_storage(1, 0, half)
-                    .ok()
-                    .flatten()
-                    .ok_or_else(invalid)
-            };
-            let (left, right) = (widen(left)?, widen(right)?);
-            let mut current = verdant_count_f32::run(magnitude)
-                .ok()
-                .flatten()
-                .ok_or_else(invalid)?;
-            let mut phase = 0;
-            loop {
-                match packed_step(Packed::C2(phase, negative, sum, current, left, right))? {
-                    Step::C2(op, a, b) => {
-                        current = verdant_scalar_f32::run(op, a, b)
-                            .ok()
-                            .flatten()
-                            .ok_or_else(invalid)?
-                    }
-                    Step::C1(value) => break value,
-                    Step::C0 => return Err(invalid()),
-                }
-                phase += 1;
-            }
-        } else {
-            verdant_symmetric_dot::run(sum, negative, magnitude, left, right)
-                .ok()
-                .flatten()
-                .ok_or_else(|| TensorComputeError::InvalidKernelSpecification {
-                    kernel_name: "SymmetricDot.accumulate".into(),
-                })?
-        };
-    }
-    Ok(f32::from_bits(sum as u32))
+    Ok((output, scale))
 }
 
 /// Canonical GGML CPU quantized tables reproduced from the pinned external header.

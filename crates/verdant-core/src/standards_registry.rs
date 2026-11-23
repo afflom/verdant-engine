@@ -708,7 +708,7 @@ impl CatalogBundleRegistry {
             let cz = (ch_spec.spawn_decimeters[i2] as f64) / deci;
             let cy = hd_terrain_height(dom.seed, &terrain_relief, cx, cz);
             let mut ch = ArticulatedCharacter::new_humanoid(
-                ch_spec.name.clone(),
+                ch_spec.name.as_str(),
                 archetype,
                 Vec3::new(cx, cy, cz),
                 lod_rank.max(1),

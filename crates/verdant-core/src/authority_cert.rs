@@ -385,7 +385,7 @@ pub struct ApprovalCertificate {
 /// and returns `{ "ok": true, "ledger": ..., "outcome": ... }`.
 #[must_use]
 pub fn sovereign_authority_exec_json(raw_json: &str) -> String {
-    let Ok(req) = serde_json::from_str::<serde_json::Value>(raw_json) else {
+    let Ok(req) = serde_json::from_slice::<serde_json::Value>(raw_json.as_bytes()) else {
         return serde_json::json!({ "ok": false, "error": "invalid authority JSON request" })
             .to_string();
     };

@@ -246,7 +246,7 @@ license-files = [{ path = "src/lib.rs", hash = 0x824c1aca }]
 name = "verdant_symmetric_q8"
 version = "=2.17.0"
 expression = "MIT OR Apache-2.0"
-license-files = [{ path = "src/lib.rs", hash = 0x4f55f3b8 }]
+license-files = [{ path = "src/lib.rs", hash = 0x777c7391 }]
 
 [[licenses.clarify]]
 name = "verdant_symmetric_dot"
@@ -528,7 +528,7 @@ license-files = [{ path = "src/lib.rs", hash = 0x8fd1c57a }]
 name = "verdant_grouped_affine"
 version = "=2.31.0"
 expression = "MIT OR Apache-2.0"
-license-files = [{ path = "src/lib.rs", hash = 0xfda83b54 }]
+license-files = [{ path = "src/lib.rs", hash = 0x3ff081c8 }]
 
 [[licenses.clarify]]
 name = "verdant_softplus"
@@ -540,4 +540,4 @@ license-files = [{ path = "src/lib.rs", hash = 0x099b2b77 }]
 name = "verdant_bitpacked_product"
 version = "=2.33.0"
 expression = "MIT OR Apache-2.0"
-license-files = [{ path = "src/lib.rs", hash = 0x1707fa6b }]
+license-files = [{ path = "src/lib.rs", hash = 0xb8be90c9 }]

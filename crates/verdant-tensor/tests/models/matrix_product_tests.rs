@@ -17,20 +17,28 @@ template<class Block>
 static bool read_dot_block(Block &block) {
   unsigned word;
   if (std::scanf("%u", &word) != 1) return false;
-  block.d = ggml_fp16_t(word);
-  for (auto &lane : block.qs) {
+  auto *bytes = reinterpret_cast<uint8_t *>(&block);
+  size_t consumed;
+  if constexpr (std::is_same_v<Block,block_mxfp4> || std::is_same_v<Block,block_nvfp4>) {
+    bytes[0] = uint8_t(word);
+    consumed = 1;
+  } else {
+    block.d = ggml_fp16_t(word);
+    consumed = sizeof(block.d);
+  }
+  for (size_t i = consumed; i < sizeof(block); ++i) {
     if (std::scanf("%u", &word) != 1) return false;
-    lane = static_cast<std::remove_reference_t<decltype(lane)>>(uint8_t(word));
+    bytes[i] = uint8_t(word);
   }
   return true;
 }
-template<class Weight, int Groups=1>
+template<class Weight, int Groups=1, class Activation=block_q8_0>
 static int compare_rows(ggml_type type) {
   const auto dot = ggml_get_type_traits_cpu(type)->vec_dot;
   unsigned blocks;
   while (std::scanf("%u", &blocks) == 1) {
     std::vector<Weight> left(blocks + 1);
-    std::vector<block_q8_0> right(blocks * Groups + 1);
+    std::vector<Activation> right(blocks * Groups + 1);
     for (unsigned i = 0; i < blocks; ++i) {
       if (!read_dot_block(left[i])) return 2;
       for (int g=0;g<Groups;++g) if (!read_dot_block(right[i*Groups+g])) return 2;
@@ -370,8 +378,22 @@ int main(int argc, char **argv) {
     return std::ferror(stdin) ? 2 : 0;
   }
   if (!std::strcmp(argv[1], "grouped-dot")) return compare_grouped_rows<block_q2_K>(GGML_TYPE_Q2_K);
+  if (!std::strcmp(argv[1], "iq2_xxs-dot")) return compare_grouped_rows<block_iq2_xxs>(GGML_TYPE_IQ2_XXS);
+  if (!std::strcmp(argv[1], "iq2_xs-dot")) return compare_grouped_rows<block_iq2_xs>(GGML_TYPE_IQ2_XS);
+  if (!std::strcmp(argv[1], "iq2_s-dot")) return compare_grouped_rows<block_iq2_s>(GGML_TYPE_IQ2_S);
   if (!std::strcmp(argv[1], "grouped-q4-dot")) return compare_grouped_rows<block_q4_K>(GGML_TYPE_Q4_K);
   if (!std::strcmp(argv[1], "grouped-q5-dot")) return compare_grouped_rows<block_q5_K>(GGML_TYPE_Q5_K);
+  if (!std::strcmp(argv[1], "q4_0")) return encode_blocks<32>(quantize_row_q4_0_ref);
+  if (!std::strcmp(argv[1], "q4_1")) return encode_blocks<32>(quantize_row_q4_1_ref);
+  if (!std::strcmp(argv[1], "q5_0")) return encode_blocks<32>(quantize_row_q5_0_ref);
+  if (!std::strcmp(argv[1], "q5_1")) return encode_blocks<32>(quantize_row_q5_1_ref);
+  if (!std::strcmp(argv[1], "affine-q8")) return encode_blocks<QK8_1>(quantize_row_q8_1_ref);
+  if (!std::strcmp(argv[1], "affine-four-dot")) return compare_rows<block_q4_1,1,block_q8_1>(GGML_TYPE_Q4_1);
+  if (!std::strcmp(argv[1], "affine-five-dot")) return compare_rows<block_q5_1,1,block_q8_1>(GGML_TYPE_Q5_1);
+  if (!std::strcmp(argv[1], "mxfp4-dot")) return compare_rows<block_mxfp4>(GGML_TYPE_MXFP4);
+  if (!std::strcmp(argv[1], "nvfp4-dot")) return compare_rows<block_nvfp4,2>(GGML_TYPE_NVFP4);
+  if (!std::strcmp(argv[1], "five-bit-dot")) return compare_rows<block_q5_0>(GGML_TYPE_Q5_0);
+  if (!std::strcmp(argv[1], "nonlinear-dot")) return compare_rows<block_iq4_nl>(GGML_TYPE_IQ4_NL);
   if (!std::strcmp(argv[1], "sign-dot")) return compare_rows<block_q1_0,QK1_0/QK8_0>(GGML_TYPE_Q1_0);
   if (!std::strcmp(argv[1], "two-bit-dot")) return compare_rows<block_q2_0,QK2_0/QK8_0>(GGML_TYPE_Q2_0);
   if (!std::strcmp(argv[1], "symmetric-dot")) return compare_rows<block_q8_0>(GGML_TYPE_Q8_0);
@@ -608,6 +630,9 @@ pub(crate) fn query_oracle(mode: &str, requests: String) -> Vec<u32> {
         );
         let flags = [
             "-O2",
+            "-ffp-contract=off",
+            "-DGGML_CPU_GENERIC",
+            "-U__ARM_FP16_FORMAT_IEEE",
             "-std=c++17",
             "-ffunction-sections",
             "-fdata-sections",
@@ -763,22 +788,25 @@ pub(crate) fn query_oracle(mode: &str, requests: String) -> Vec<u32> {
                     .filter(|name| name.ends_with(".c") || name.ends_with(".cpp"))
                     .map(str::to_string),
             );
-            let architecture = match std::env::consts::ARCH {
-                "x86_64" => "x86",
-                "aarch64" => "arm",
-                other => panic!("unmodeled oracle architecture: {other}"),
-            };
-            sources.extend([
-                format!("ggml-cpu/arch/{architecture}/quants.c"),
-                format!("ggml-cpu/arch/{architecture}/repack.cpp"),
-            ]);
+            assert!(
+                matches!(std::env::consts::ARCH, "x86_64" | "aarch64"),
+                "unmodeled oracle architecture: {}",
+                std::env::consts::ARCH
+            );
             let mut objects = Vec::new();
             for source in sources {
                 let object = common.join(format!("{}.o", source.replace('/', "_")));
                 if !object.exists() {
                     let c = source.ends_with(".c");
                     let mut command = Command::new(if c { "cc" } else { "c++" });
-                    command.args(["-O2", "-ffunction-sections", "-fdata-sections"]);
+                    command.args([
+                        "-O2",
+                        "-ffp-contract=off",
+                        "-DGGML_CPU_GENERIC",
+                        "-U__ARM_FP16_FORMAT_IEEE",
+                        "-ffunction-sections",
+                        "-fdata-sections",
+                    ]);
                     command.args(if c {
                         &["-std=c11", "-D_GNU_SOURCE"][..]
                     } else {
@@ -1210,22 +1238,7 @@ fn symmetric_block_encoding_vtk_16() {
         "verdant_symmetric_q8"
     );
     use std::fmt::Write;
-    let mut blocks = vec![[0.0; 32], [-0.0; 32], [f32::from_bits(1); 32]];
-    for maximum in [0.125, 1.0, 127.0, 254.0, 16_384.0, 16_777_216.0] {
-        for sign in [-1.0, 1.0] {
-            let mut block = std::array::from_fn(|i| sign * (i as f32 - 15.5) * maximum / 127.0);
-            block[31] = sign * maximum;
-            blocks.push(block);
-        }
-    }
-    let mut state = 42u32;
-    for _ in 0..256 {
-        blocks.push(std::array::from_fn(|_| {
-            state = state.wrapping_mul(1_664_525).wrapping_add(1_013_904_223);
-            let exponent = 77 + (state >> 24) % 100;
-            f32::from_bits((state & 0x807f_ffff) | (exponent << 23))
-        }));
-    }
+    let blocks = symmetric_encoding_inputs();
     let mut input = String::new();
     let mut actual = Vec::new();
     for block in blocks {
@@ -1253,6 +1266,118 @@ fn symmetric_block_encoding_vtk_16() {
             super::encode_symmetric_q8_block(&block),
             Err(crate::TensorComputeError::InvalidKernelSpecification { .. })
         ));
+    }
+}
+
+fn symmetric_encoding_inputs() -> Vec<[f32; 32]> {
+    let mut blocks = vec![[0.0; 32], [-0.0; 32], [f32::from_bits(1); 32]];
+    for maximum in [0.125, 1.0, 127.0, 254.0, 16_384.0, 16_777_216.0] {
+        for sign in [-1.0, 1.0] {
+            let mut block = std::array::from_fn(|i| sign * (i as f32 - 15.5) * maximum / 127.0);
+            block[31] = sign * maximum;
+            blocks.push(block);
+        }
+    }
+    let mut state = 42u32;
+    for _ in 0..256 {
+        blocks.push(std::array::from_fn(|_| {
+            state = state.wrapping_mul(1_664_525).wrapping_add(1_013_904_223);
+            let exponent = 77 + (state >> 24) % 100;
+            f32::from_bits((state & 0x807f_ffff) | (exponent << 23))
+        }));
+    }
+    blocks
+}
+
+#[test]
+fn affine_byte_activation_vtk_37() {
+    use std::fmt::Write;
+    let mut input = String::new();
+    let mut encoded = Vec::new();
+    for block in symmetric_encoding_inputs() {
+        for v in block {
+            writeln!(input, "{}", v.to_bits()).unwrap();
+        }
+        let b = super::encode_affine_q8_block(&block).unwrap();
+        encoded.extend(b.symmetric.scale.to_ne_bytes());
+        encoded.extend(b.scaled_sum.to_ne_bytes());
+        encoded.extend(b.symmetric.codes.map(|c| c as u8));
+    }
+    let expected = query_oracle("affine-q8", input);
+    assert_eq!(encoded.len(), expected.len());
+    for (index, (actual, oracle)) in encoded.into_iter().zip(expected).enumerate() {
+        assert_eq!(
+            u32::from(actual),
+            oracle,
+            "Q8_1 block {} byte {}",
+            index / 36,
+            index % 36
+        );
+    }
+    assert!(super::encode_affine_q8_block(&[0.0; 31]).is_err());
+}
+
+#[test]
+fn affine_byte_products_vtk_37() {
+    use super::AffineWeightEncoding::{FiveBit, FourBit};
+    use std::fmt::Write;
+    let mut seed = 671_u32;
+    let mut byte = || {
+        seed = seed.wrapping_mul(1_664_525).wrapping_add(1_013_904_223);
+        (seed >> 24) as u8
+    };
+    let scales = [0_u16, 0x3955, 0xc221, 0x3801, 0x3a00, 0xb800, 0x4000];
+    for (kind, bytes, mode) in [
+        (FourBit, 16, "affine-four-dot"),
+        (FiveBit, 20, "affine-five-dot"),
+    ] {
+        let (mut requests, mut actual) = (String::new(), Vec::new());
+        for row in 0..112 {
+            let n = row % 7;
+            writeln!(requests, "{n}").unwrap();
+            let (mut weights, mut activations) = (Vec::new(), Vec::new());
+            for block in 0..n {
+                let d = scales[(row + block) % 7];
+                let m = scales[(2 * row + block + 1) % 7];
+                weights.extend(d.to_ne_bytes());
+                weights.extend(m.to_ne_bytes());
+                writeln!(requests, "{d}").unwrap();
+                for b in m.to_ne_bytes() {
+                    writeln!(requests, "{b}").unwrap();
+                }
+                for _ in 0..bytes {
+                    let b = byte();
+                    weights.push(b);
+                    writeln!(requests, "{b}").unwrap();
+                }
+                let scale = scales[(4 * row + block + 2) % 7];
+                let scaled_sum = scales[(5 * row + block + 4) % 7];
+                writeln!(requests, "{scale}").unwrap();
+                for b in scaled_sum.to_ne_bytes() {
+                    writeln!(requests, "{b}").unwrap();
+                }
+                let codes = std::array::from_fn(|_| byte() as i8);
+                for c in codes {
+                    writeln!(requests, "{}", c as u8).unwrap();
+                }
+                activations.push(super::AffineQ8Block {
+                    symmetric: super::SymmetricQ8Block { scale, codes },
+                    scaled_sum,
+                });
+            }
+            actual.push(
+                super::dot_affine_weight_row(&weights, &activations, kind)
+                    .unwrap()
+                    .to_bits(),
+            );
+        }
+        let expected = query_oracle(mode, requests);
+        assert_eq!(actual.len(), expected.len());
+        for (row, (a, b)) in actual.into_iter().zip(expected).enumerate() {
+            assert_eq!(a, b, "{mode} row {row}");
+        }
+        assert!(super::dot_affine_weight_row(&vec![0; bytes + 3], &[], kind).is_err());
+        assert!(super::dot_affine_weight_row(&vec![0; bytes + 4], &[], kind).is_err());
     }
 }
 
@@ -2207,13 +2332,39 @@ fn grouped_affine_products_vtk_33() {
             ["VerdantEngine.GroupedAffineProduct.evaluate"],
         "verdant_grouped_affine"
     );
+    compare_grouped_products(
+        &[
+            (144, "grouped-q4-dot", super::dot_grouped_q4_row),
+            (176, "grouped-q5-dot", super::dot_grouped_q5_row),
+        ],
+        true,
+    );
+}
+
+#[test]
+fn codebook_row_products_vtk_39() {
+    use super::CodebookEncoding::{ExplicitSigns, ExtendedIndex, IndexedSigns};
+    compare_grouped_products(
+        &[
+            (66, "iq2_xxs-dot", |w, a| {
+                super::dot_codebook_row(w, a, IndexedSigns)
+            }),
+            (74, "iq2_xs-dot", |w, a| {
+                super::dot_codebook_row(w, a, ExtendedIndex)
+            }),
+            (82, "iq2_s-dot", |w, a| {
+                super::dot_codebook_row(w, a, ExplicitSigns)
+            }),
+        ],
+        false,
+    );
+}
+
+type GroupedProduct = fn(&[u8], &[super::GroupedQ8Block]) -> Result<f32, crate::TensorComputeError>;
+
+fn compare_grouped_products(products: &[(usize, &str, GroupedProduct)], affine: bool) {
     use std::fmt::Write;
-    type Product = fn(&[u8], &[super::GroupedQ8Block]) -> Result<f32, crate::TensorComputeError>;
-    let products: [(usize, &str, Product); 2] = [
-        (144, "grouped-q4-dot", super::dot_grouped_q4_row),
-        (176, "grouped-q5-dot", super::dot_grouped_q5_row),
-    ];
-    for (width, mode, dot) in products {
+    for &(width, mode, dot) in products {
         let mut input = String::new();
         let mut actual = Vec::new();
         let mut seed = 77_u32;
@@ -2230,8 +2381,10 @@ fn grouped_affine_products_vtk_33() {
             for i in 0..count {
                 let mut block: Vec<_> = (0..width).map(|_| next()).collect();
                 block[..2].copy_from_slice(&halves[(row + i) % halves.len()].to_ne_bytes());
-                block[2..4]
-                    .copy_from_slice(&halves[(row * 3 + i + 1) % halves.len()].to_ne_bytes());
+                if affine {
+                    block[2..4]
+                        .copy_from_slice(&halves[(row * 3 + i + 1) % halves.len()].to_ne_bytes());
+                }
                 let lanes = std::array::from_fn(|_| (f32::from(next()) - 128.0) / 4.0);
                 for byte in &block {
                     writeln!(input, "{byte}").unwrap();
@@ -2316,32 +2469,74 @@ fn bitpacked_row_products_vtk_35() {
         verify_bundle("bitrows", "tensor-bitrows")["VerdantEngine.BitpackedProduct.evaluate"],
         "verdant_bitpacked_product"
     );
+    compare_packed_weight_products(&[
+        (4, 16, "sign-dot", super::dot_binary_sign_row),
+        (2, 16, "two-bit-dot", super::dot_two_bit_row),
+    ]);
+}
+
+#[test]
+fn compact_row_products_vtk_36() {
+    compare_packed_weight_products(&[
+        (1, 20, "five-bit-dot", |w, a| {
+            super::dot_encoded_symmetric_row(w, a, super::SymmetricWeightEncoding::SignedFive)
+        }),
+        (1, 16, "nonlinear-dot", |w, a| {
+            super::dot_encoded_symmetric_row(w, a, super::SymmetricWeightEncoding::NonlinearFour)
+        }),
+    ]);
+}
+
+#[test]
+fn scaled_fp4_products_vtk_38() {
+    use super::BlockFloatEncoding::{ExponentOnly, GroupedE4M3};
+    compare_packed_weight_products(&[
+        (1, 16, "mxfp4-dot", |weights, activations| {
+            super::dot_block_float_row(weights, activations, ExponentOnly)
+        }),
+        (2, 32, "nvfp4-dot", |weights, activations| {
+            super::dot_block_float_row(weights, activations, GroupedE4M3)
+        }),
+    ]);
+}
+
+type PackedWeightProduct =
+    fn(&[u8], &[super::SymmetricQ8Block<32>]) -> Result<f32, crate::TensorComputeError>;
+
+fn compare_packed_weight_products(products: &[(usize, usize, &str, PackedWeightProduct)]) {
     use std::fmt::Write;
-    type Product =
-        fn(&[u8], &[super::SymmetricQ8Block<32>]) -> Result<f32, crate::TensorComputeError>;
-    let products: [(usize, &str, Product); 2] = [
-        (4, "sign-dot", super::dot_binary_sign_row),
-        (2, "two-bit-dot", super::dot_two_bit_row),
-    ];
     let mut seed = 157_u32;
     let mut byte = || {
         seed = seed.wrapping_mul(1_664_525).wrapping_add(1_013_904_223);
         (seed >> 24) as u8
     };
     let scales = [0_u16, 0x3800, 0xbc00, 0x4000, 0x3400, 0x3a00, 0x3955];
-    for (groups, mode, dot) in products {
+    for &(groups, bytes, mode, dot) in products {
         let mut requests = String::new();
         let mut actual = Vec::new();
-        for row in 0..112 {
+        let scales_per_block = match mode {
+            "mxfp4-dot" => 1,
+            "nvfp4-dot" => 4,
+            _ => 0,
+        };
+        for row in 0..if scales_per_block == 0 { 112 } else { 512 } {
             let count = row % 7;
             writeln!(requests, "{count}").unwrap();
             let mut weights = Vec::new();
             let mut activations = Vec::new();
             for i in 0..count {
-                let scale = scales[(row + i) % scales.len()];
-                writeln!(requests, "{scale}").unwrap();
-                weights.extend(scale.to_ne_bytes());
-                for _ in 0..16 {
+                if scales_per_block == 0 {
+                    let scale = scales[(row + i) % scales.len()];
+                    writeln!(requests, "{scale}").unwrap();
+                    weights.extend(scale.to_ne_bytes());
+                } else {
+                    for subgroup in 0..scales_per_block {
+                        let scale = (row + 37 * i + 79 * subgroup) as u8;
+                        weights.push(scale);
+                        writeln!(requests, "{scale}").unwrap();
+                    }
+                }
+                for _ in 0..bytes {
                     let bits = byte();
                     weights.push(bits);
                     writeln!(requests, "{bits}").unwrap();
@@ -2361,9 +2556,68 @@ fn bitpacked_row_products_vtk_35() {
         let expected = query_oracle(mode, requests);
         assert_eq!(expected.len(), actual.len());
         for (i, (observed, reference)) in actual.into_iter().zip(expected).enumerate() {
-            assert_eq!(observed, reference, "{mode} row {i}");
+            if f32::from_bits(reference).is_nan() {
+                assert!(f32::from_bits(observed).is_nan(), "{mode} row {i}");
+            } else {
+                assert_eq!(observed, reference, "{mode} row {i}");
+            }
         }
-        assert!(dot(&[0; 17], &[]).is_err());
-        assert!(dot(&[0; 18], &[]).is_err());
+        assert!(dot(&vec![0; bytes + 1], &[]).is_err());
+        assert!(dot(&vec![0; bytes + 2], &[]).is_err());
+    }
+}
+
+#[test]
+fn low_bit_block_encoding_vtk_40() {
+    use super::WeightBlockEncoding::*;
+    use std::fmt::Write;
+    let mut blocks = symmetric_encoding_inputs();
+    blocks.extend([
+        [7.25; 32],
+        [-3.875; 32],
+        std::array::from_fn(|i| if i % 2 == 0 { -0.0 } else { 0.0 }),
+    ]);
+    for sign in [-1.0, 1.0] {
+        let mut tied = std::array::from_fn(|i| (i as f32 - 15.5) * sign);
+        tied[0] = 16.0 * sign;
+        tied[31] = -tied[0];
+        blocks.push(tied);
+    }
+    for (kind, width, mode) in [
+        (CenteredFour, 18, "q4_0"),
+        (AffineFour, 20, "q4_1"),
+        (CenteredFive, 22, "q5_0"),
+        (AffineFive, 24, "q5_1"),
+    ] {
+        let mut input = String::new();
+        let mut bytes = Vec::new();
+        for block in &blocks {
+            for value in block {
+                writeln!(input, "{}", value.to_bits()).unwrap();
+            }
+            let mut output = [0xa5; 24];
+            super::encode_weight_block(block, kind, &mut output[..width]).unwrap();
+            bytes.extend_from_slice(&output[..width]);
+        }
+        let expected = query_oracle(mode, input);
+        assert_eq!(bytes.len(), expected.len());
+        for (i, (actual, reference)) in bytes.into_iter().zip(expected).enumerate() {
+            assert_eq!(
+                u32::from(actual),
+                reference,
+                "{mode} block {} byte {}",
+                i / width,
+                i % width
+            );
+        }
+        let mut output = vec![0x55; width];
+        for invalid in [f32::NAN, f32::INFINITY, f32::NEG_INFINITY] {
+            let mut block = [1.0; 32];
+            block[31] = invalid;
+            assert!(super::encode_weight_block(&block, kind, &mut output).is_err());
+            assert_eq!(output, vec![0x55; width]);
+        }
+        assert!(super::encode_weight_block(&[0.0; 32], kind, &mut output[1..]).is_err());
+        assert_eq!(output, vec![0x55; width]);
     }
 }

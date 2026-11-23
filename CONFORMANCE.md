@@ -134,6 +134,11 @@ model does not sanction.
 | `VTK-33` | `build` | Verdant contracts grouped four- and five-bit affine weight rows with signed eight-bit activation blocks and matches the imported CPU |
 | `VTK-34` | `build` | Verdant evaluates binary32 softplus across finite, subnormal and exceptional scores against the imported CPU unary kernel |
 | `VTK-35` | `build` | Verdant contracts one-bit sign and two-bit weight rows against symmetric signed-byte blocks with the imported row precision |
+| `VTK-36` | `build` | Signed five-bit and nonlinear four-bit coefficient rows contract with symmetric signed-byte activations against the pinned CPU |
+| `VTK-37` | `build` | Affine four-bit and five-bit rows contract with signed-byte activations carrying an independently rounded scaled sum |
+| `VTK-38` | `build` | Verdant contracts E2M1 weight rows with exponent-only or grouped E4M3 scales and signed-byte activation blocks against the imported CPU |
+| `VTK-39` | `build` | Verdant contracts signed two-bit codebook rows with grouped byte activations against the imported GGML vector products |
+| `VTK-40` | `build` | Verdant encodes centered and affine four- and five-bit weight blocks against the imported reference encoders |
 
 ## fidelity
 

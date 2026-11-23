@@ -85,15 +85,7 @@ pub const fn thousand_u32() -> u32 {
     hundred_u32().wrapping_mul(ten_u32())
 }
 
-/// Constructive power of two (`2^exp`) computed purely from `{0, 1}`.
-#[must_use]
-pub const fn pow2_u64(exp: u32) -> u64 {
-    if exp >= sixty_four_u32() {
-        0_u64
-    } else {
-        1_u64.wrapping_shl(exp)
-    }
-}
+pub use verdant_tensor::pow2_u64;
 
 /// Constructive low-bit mask (`2^bits - 1`) computed purely from `{0, 1}`.
 #[must_use]
@@ -162,24 +154,8 @@ pub const fn pow10_u64(exp: u32) -> u64 {
     acc
 }
 
-/// Double-precision `2.0` (`1.0 + 1.0`).
-#[must_use]
-pub fn two_f64() -> f64 {
-    1.0 + 1.0
-}
-
-/// Double-precision `0.5` (`1.0 / (1.0 + 1.0)`).
-#[must_use]
-pub fn half_f64() -> f64 {
-    1.0 / two_f64()
-}
-
-/// Numerical degeneracy tolerance `2^-40` derived constructively without magic float literals.
-#[must_use]
-pub fn geometric_epsilon() -> f64 {
-    let forty = (1_u32 + 1_u32 + 1_u32 + 1_u32 + 1_u32) * (1_u32 << (1_u32 + 1_u32 + 1_u32));
-    1.0 / (pow2_u64(forty) as f64)
-}
+/// Shared constructive binary64 constants used by core and tensor operations.
+pub use verdant_tensor::{geometric_epsilon, half_f64, two_f64};
 
 /// Golden ratio `phi = (1 + sqrt(5)) / 2` derived constructively from `{0, 1}`.
 #[must_use]

@@ -1,19 +1,19 @@
 {
   "spec": "verdant/observer-refinement-agenda/1",
-  "releaseVersion": "2.19.0",
-  "releaseEpoch": 23,
+  "releaseVersion": "2.20.0",
+  "releaseEpoch": 24,
   "observerKappaHex": "6cd1e9dc15167b134d9887883bf06a5158c9b132f076e10a30e521ea62e0a17b",
   "overallRefinementScorePermille": 976,
   "liveMetrics": {
-    "wasmCoreBytes": 154421,
-    "wasmUorcBytes": 1736506,
-    "releaseCapsuleBytes": 1005317,
-    "blankFrameBytes": 29177,
+    "wasmCoreBytes": 154331,
+    "wasmUorcBytes": 1724824,
+    "releaseCapsuleBytes": 987819,
+    "blankFrameBytes": 29176,
     "maxHandwrittenRustFileLines": 1247,
     "maxJsFileLines": 920,
     "frontierLifted": 583,
-    "frontierResidue": 1152,
-    "frontierUncertified": 1310,
+    "frontierResidue": 1150,
+    "frontierUncertified": 1308,
     "fidelityOpenResidue": 0
   },
   "partHealth": [
@@ -67,7 +67,7 @@
       "vsmSystem": "VSM-S4",
       "viewpointId": "roadmap-kpi-strategy",
       "ownedFileCount": 7,
-      "maxFileLines": 730,
+      "maxFileLines": 760,
       "heaviestFile": "features/suites/engine.feature",
       "healthScorePermille": 1000
     },
@@ -149,16 +149,16 @@
     {
       "construct": "type outside the lift: f64",
       "cause": "type",
-      "functions": 58
-    },
-    {
-      "construct": "takes or returns ObserverPrismHolon.organs: ObserverOrganModel.schema_org_jsonld: serde_json::Value, a type of the serde_json crate with no LexLean model",
-      "cause": "foreign",
-      "functions": 32
+      "functions": 55
     },
     {
       "construct": "type outside the lift: f32",
       "cause": "type",
+      "functions": 33
+    },
+    {
+      "construct": "takes or returns ObserverPrismHolon.organs: ObserverOrganModel.schema_org_jsonld: serde_json::Value, a type of the serde_json crate with no LexLean model",
+      "cause": "foreign",
       "functions": 32
     }
   ],
@@ -171,14 +171,14 @@
       "citedAuthority": "AUTH-SEMVER-CHANGE-KPI",
       "ratchetLayer": "uorust-frontier",
       "priority": "high",
-      "currentValue": "583 lifted / 1152 residue (1310 uncertified)",
+      "currentValue": "583 lifted / 1150 residue (1308 uncertified)",
       "targetValue": ">= 603 lifted functions",
       "summary": "Expand constructive MIR proof frontier; top blocker: expression form outside the lift: ? below the function's own statements (269 fns, cause=form).",
       "concreteActions": [
         "Replace remaining raw shift/overflow ops with lifted verdant_tensor::scalars and wrapping ops.",
         "Extract pure decision/calculation helpers out of IO/effectful wrappers so uorust lifts them."
       ],
-      "kappaHex": "dbdea300e1bea851a69569671bf076fe5c6933c62bd913629a952dbed259e28b"
+      "kappaHex": "7010b4790874c69e8eccaa19c43b15d271c3850f69b2e93de2bce70185d417f3"
     },
     {
       "proposalId": "refine-rust-modularity",
@@ -222,15 +222,15 @@
       "citedAuthority": "AUTH-STITCH-SELF-HOSTING",
       "ratchetLayer": "surface-wasm",
       "priority": "medium",
-      "currentValue": "verdant-uorc.wasm 1736506 B · .holo 1005317 B · Blank Frame 29177 B (1543 B headroom)",
+      "currentValue": "verdant-uorc.wasm 1724824 B · .holo 987819 B · Blank Frame 29176 B (1544 B headroom)",
       "targetValue": "verdant-uorc.wasm <= 1560576 B and gzipped .holo <= 1.0 MiB",
       "summary": "Keep browser verdant-uorc.wasm ultra-lean (< 1.5 MiB) and drive gzipped .holo release capsules below 1.0 MiB for instant Blank Frame cold boots.",
       "concreteActions": [
         "Keep uorc-ncm-decode native-only and audit gltf-json / serde_json monomorphizations inside verdant-uorc.wasm.",
         "Maintain Blank Frame strictly under 30720 B with DecompressionStream('gzip')."
       ],
-      "kappaHex": "1539d4fbe8d4c92b303692c71a193dbcbc5263a27c43cb045cfe4d2817fc0b4b"
+      "kappaHex": "2a90b4db2fb9b0be35af3401c6f7c3ee47cfdf96543efc6df8be65b9d1069982"
     }
   ],
-  "agendaKappaHex": "5eaaa3a76b2cfcd0d8f7f495b4c80ea5e611123ab6eac402990801a86e56223f"
+  "agendaKappaHex": "0b821613d6c72960b1eaae9c748bc69a0cb2b4e9bb53100a607ec7c224d4e13b"
 }

@@ -215,7 +215,7 @@ impl DynamicWorkloadGovernor {
 /// `CodedMatrix` AI workloads while strictly enforcing the host RAM ceiling.
 #[must_use]
 pub fn paged_workload_step_json(raw_json: &str) -> String {
-    let Ok(req) = serde_json::from_str::<serde_json::Value>(raw_json) else {
+    let Ok(req) = serde_json::from_slice::<serde_json::Value>(raw_json.as_bytes()) else {
         return serde_json::json!({ "ok": false, "error": "invalid JSON request" }).to_string();
     };
     let two_u32 = 1u32 + 1u32;

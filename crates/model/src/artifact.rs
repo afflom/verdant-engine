@@ -35,14 +35,6 @@ pub(crate) fn is_sha256(s: &str) -> bool {
     s.len() == 64 && s.bytes().all(|b| matches!(b, b'0'..=b'9' | b'a'..=b'f'))
 }
 
-fn hex(bytes: &[u8]) -> String {
-    use core::fmt::Write as _;
-    bytes.iter().fold(String::with_capacity(64), |mut out, b| {
-        let _ = write!(out, "{b:02x}");
-        out
-    })
-}
-
 fn io(path: &Path, e: std::io::Error) -> ModelError {
     ModelError::Io(path.to_path_buf(), e)
 }
@@ -83,6 +75,14 @@ fn files(base: &Path, dir: &Path, id: &str, out: &mut Vec<String>) -> Result<(),
 
 /// The checksum of the committed `artifact` of authority `id`, under `root`.
 pub fn artifact_checksum(root: &Path, id: &str, artifact: &str) -> Result<String, ModelError> {
+    let checksum = |bytes: &[u8]| {
+        use std::fmt::Write;
+        let mut hex = String::with_capacity(64);
+        for byte in Sha256::digest(bytes) {
+            write!(hex, "{byte:02x}").expect("writing to a string");
+        }
+        hex
+    };
     let path = root.join(artifact);
     let meta = match std::fs::symlink_metadata(&path) {
         Ok(meta) => meta,
@@ -96,7 +96,7 @@ pub fn artifact_checksum(root: &Path, id: &str, artifact: &str) -> Result<String
     };
     if meta.is_file() {
         let bytes = std::fs::read(&path).map_err(|e| io(&path, e))?;
-        return Ok(hex(&Sha256::digest(bytes)));
+        return Ok(checksum(&bytes));
     }
     if !meta.is_dir() {
         return Err(ModelError::Inconsistent(format!(
@@ -115,9 +115,9 @@ pub fn artifact_checksum(root: &Path, id: &str, artifact: &str) -> Result<String
     for name in names {
         let file = path.join(&name);
         let bytes = std::fs::read(&file).map_err(|e| io(&file, e))?;
-        manifest.push_str(&format!("{}  {name}\n", hex(&Sha256::digest(bytes))));
+        manifest.push_str(&format!("{}  {name}\n", checksum(&bytes)));
     }
-    Ok(hex(&Sha256::digest(manifest.as_bytes())))
+    Ok(checksum(manifest.as_bytes()))
 }
 
 impl Model {

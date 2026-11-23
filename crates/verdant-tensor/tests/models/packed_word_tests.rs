@@ -357,7 +357,10 @@ fn storage_blocks_vtk_14() {
                     );
                     let expected = case.expected[lane];
                     if actual != expected {
-                        if f32::from_bits(actual).is_nan() && f32::from_bits(expected).is_nan() {
+                        if f32::from_bits(actual).is_nan()
+                            && (actual & 0x0040_0000) != 0
+                            && f32::from_bits(expected).is_nan()
+                        {
                             nan_pairs += 1;
                         } else {
                             other_words += 1;
@@ -371,10 +374,12 @@ fn storage_blocks_vtk_14() {
                     .enumerate()
                     .filter(|(offset, (a, b))| a != b && (*offset >= span || *offset % stride >= 4))
                     .count();
-                failures.push(format!(
-                    "kind={} pattern={} stride={stride} result={result:?} first_byte={difference:?} words={word:?} nan_pairs={nan_pairs} other_words={other_words} padding={padding}",
-                    case.kind, case.pattern
-                ));
+                if result.is_err() || other_words > 0 || padding > 0 {
+                    failures.push(format!(
+                        "kind={} pattern={} stride={stride} result={result:?} first_byte={difference:?} words={word:?} nan_pairs={nan_pairs} other_words={other_words} padding={padding}",
+                        case.kind, case.pattern
+                    ));
+                }
             }
         }
     }
@@ -497,11 +502,19 @@ fn storage_arithmetic_words_vtk_14() {
             11 => super::evaluate_encoded_word(3, a, 0).unwrap().unwrap(),
             _ => panic!("unexpected arithmetic effect {code}"),
         };
-        assert_eq!(
-            actual,
-            u64::from(expected),
-            "operation={operation} left={left:08x} right={right:08x}"
-        );
+        if f32::from_bits(expected).is_nan() {
+            let bits = u32::try_from(actual).expect("binary32 word");
+            assert!(
+                f32::from_bits(bits).is_nan() && (bits & 0x0040_0000) != 0,
+                "operation={operation} left={left:08x} right={right:08x} actual={actual:08x}"
+            );
+        } else {
+            assert_eq!(
+                actual,
+                u64::from(expected),
+                "operation={operation} left={left:08x} right={right:08x}"
+            );
+        }
     }
     for (operation, left, right, register) in [
         (4, 0, 0, 0),

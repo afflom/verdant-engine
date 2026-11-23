@@ -1,6 +1,9 @@
 \begin{lexlean}{SymmetricBlock}
 \useglossary{lexlean.std.bool@1.2.0}
 \useglossary{lexlean.std.nat@1.2.0}
+\importmodule{ScalarF32}
+\importmodule{FloatStorage}
+\importmodule{WordComparison}
 \title{Natural number}
 \begin{semanticmodule}
 inductive{
@@ -13,7 +16,12 @@ inductive{
     {name: reciprocal, fields: [Nat]},
     {name: scaleLane, fields: [Nat, Nat]},
     {name: lane, fields: [Nat]},
-    {name: layout, fields: [Nat]}
+    {name: layout, fields: [Nat]},
+    {name: weightLayout, fields: [Bool, Bool, Nat]},
+    {name: extrema, fields: [Nat, Nat, Nat, Nat]},
+    {name: parameters, fields: [Bool, Bool, Nat, Nat, Nat]},
+    {name: weightLane, fields: [Bool, Bool, Nat, Nat, Nat]},
+    {name: packPair, fields: [Nat, Nat, Nat]}
   ]
 }
 
@@ -25,7 +33,10 @@ inductive{
     {name: refused, fields: []},
     {name: word, fields: [Nat]},
     {name: zeroBlock, fields: []},
-    {name: scalar, fields: [Nat, Nat, Nat]}
+    {name: scalar, fields: [Nat, Nat, Nat]},
+    {name: extremes, fields: [Nat, Nat, Nat]},
+    {name: parameters, fields: [Nat, Nat, Nat]},
+    {name: packed, fields: [Nat, Nat]}
   ]
 }
 
@@ -38,10 +49,47 @@ definition{
 }
 
 definition{
+  name: weightExtrema,
+  parameters: [low : Nat, high : Nat, peak : Nat, word : Nat],
+  result: Step,
+  body: (if ((word <? 4294967296) && ((ScalarF32::magnitude word) <? 2139095040)) then (ctor Step.extremes (if ((WordComparison::compareF32 word low) =? 0) then word else low) (if ((WordComparison::compareF32 high word) =? 0) then word else high) (if ((ScalarF32::magnitude peak) <? (ScalarF32::magnitude word)) then word else peak)) else (ctor Step.refused)),
+  executable: true
+}
+
+definition{
+  name: weightParameters,
+  parameters: [affine : Bool, five : Bool, low : Nat, high : Nat, peak : Nat],
+  result: Step,
+  body: (let scale : Nat := (ScalarF32::divide (if affine then (ScalarF32::add high (ScalarF32::negate low)) else peak) (if affine then (if five then 1106771968 else 1097859072) else (if five then 3246391296 else 3238002688))); (let inverse : Nat := (if (ScalarF32::isZero scale) then 0 else (ScalarF32::divide 1065353216 scale)); (if ((ScalarF32::magnitude inverse) <? 2139095040) then (ctor Step.parameters (FloatStorage::narrowHalf scale) (FloatStorage::narrowHalf low) inverse) else (ctor Step.refused)))),
+  executable: true
+}
+
+definition{
+  name: weightLane,
+  parameters: [affine : Bool, five : Bool, low : Nat, inverse : Nat, word : Nat],
+  result: Step,
+  body: (let biased : Nat := (ScalarF32::add (ScalarF32::multiply (if affine then (ScalarF32::add word (ScalarF32::negate low)) else word) inverse) (if affine then 1056964608 else (if five then 1099169792 else 1091043328))); (if (biased <? 1115684864) then (let code : Nat := (if (biased <? 1065353216) then 0 else (prim quotient (ScalarF32::mantissa biased) (prim iterate (fun (v : Nat) => (v + v)) (prim subtract 150 (ScalarF32::exponent biased) : Nat) 1 : Nat) 0 : Nat)); (let limit : Nat := (if five then 31 else 15); (ctor Step.word (if (limit <? code) then limit else code)))) else (ctor Step.refused))),
+  executable: true
+}
+
+definition{
+  name: packPair,
+  parameters: [pair : Nat, lo : Nat, hi : Nat],
+  result: Step,
+  body: (if (((pair <? 16) && (lo <? 32)) && (hi <? 32)) then (ctor Step.packed ((prim remainder lo 16 0 : Nat) + (prim multiply 16 (prim remainder hi 16 0 : Nat) : Nat)) (prim multiply (prim iterate (fun (v : Nat) => (v + v)) pair 1 : Nat) ((prim quotient lo 16 0 : Nat) + (prim multiply 65536 (prim quotient hi 16 0 : Nat) : Nat)) : Nat)) else (ctor Step.refused)),
+  executable: true
+}
+
+definition{
   name: plan,
   parameters: [request : Request],
   result: Step,
   body: (match request
+    | Request.weightLayout affine five bytes => (let header : Nat := ((if affine then 4 else 2) + (if five then 4 else 0)); (if (bytes =? (header + 16)) then (ctor Step.word header) else (ctor Step.refused)))
+    | Request.extrema low high peak word => (weightExtrema low high peak word)
+    | Request.parameters affine five low high peak => (weightParameters affine five low high peak)
+    | Request.weightLane affine five low inverse word => (weightLane affine five low inverse word)
+    | Request.packPair pair lo hi => (packPair pair lo hi)
     | Request.maximum previous word => (let magnitude : Nat := (prim remainder word 2147483648 0 : Nat); (if (((word <? 4294967296) && (previous <? 2139095040)) && (magnitude <? 2139095040)) then (ctor Step.word (if (previous <? magnitude) then magnitude else previous)) else (ctor Step.refused)))
     | Request.scale maximum => (if (maximum <? 2139095040) then (ctor Step.scalar 3 maximum 1123942400) else (ctor Step.refused))
     | Request.reciprocal scale => (if (scale =? 0) then (ctor Step.zeroBlock) else (if (scale <? 2139095040) then (ctor Step.scalar 3 1065353216 scale) else (ctor Step.refused)))
@@ -70,6 +118,20 @@ theorem{
   name: allZeroScale,
   parameters: [],
   statement: ((plan (ctor Request.reciprocal 0)) = (ctor Step.zeroBlock)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: affineFiveByteLayout,
+  parameters: [],
+  statement: ((plan (ctor Request.weightLayout true true 24)) = (ctor Step.word 8)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: splitFifthBitPlane,
+  parameters: [],
+  statement: ((packPair 15 31 16) = (ctor Step.packed 15 2147516416)),
   proof: reflexivity{}
 }
 \end{semanticmodule}

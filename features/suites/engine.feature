@@ -728,3 +728,33 @@ Feature: engine
     Given packed bit fields with independent activation scales
     When Verdant contracts the encoded row
     Then the pinned CPU dot product returns the same binary32 word
+
+  @VTK-36 @build
+  Scenario: Signed five-bit and nonlinear four-bit coefficient rows contract with symmetric signed-byte activations against the pinned CPU
+    Given encoded five-bit or nonlinear four-bit coefficients and independent block scales
+    When Verdant contracts the packed row with signed-byte activation blocks
+    Then the imported CPU returns the same binary32 word and malformed extents are refused
+
+  @VTK-37 @build
+  Scenario: Affine four-bit and five-bit rows contract with signed-byte activations carrying an independently rounded scaled sum
+    Given floating-point activation rows and weights with an independent offset per block
+    When Verdant encodes the activations and contracts each weight row
+    Then the pinned CPU agrees on the encoded bytes and binary32 result
+
+  @VTK-38 @build
+  Scenario: Verdant contracts E2M1 weight rows with exponent-only or grouped E4M3 scales and signed-byte activation blocks against the imported CPU
+    Given four-bit coefficients with independent weight and activation scales
+    When Verdant contracts complete encoded rows
+    Then the result matches the imported CPU vector product
+
+  @VTK-39 @build
+  Scenario: Verdant contracts signed two-bit codebook rows with grouped byte activations against the imported GGML vector products
+    Given signed eight-lane lookup groups and prepared activation blocks
+    When Verdant contracts complete two-bit codebook rows
+    Then every result matches the imported CPU vector product
+
+  @VTK-40 @build
+  Scenario: Verdant encodes centered and affine four- and five-bit weight blocks against the imported reference encoders
+    Given 32 binary32 weights and a centered or affine four- or five-bit representation
+    When Verdant encodes the block
+    Then its scale, offset and packed coefficients match every imported reference byte

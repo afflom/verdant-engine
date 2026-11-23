@@ -587,7 +587,7 @@ fn engine_ve_28() {
                 (frame as f64) * (1.0 / 30.0),
                 Some(Vec3::new(2.0, 1.8, 3.0)),
                 &bvh,
-                |_, _| 0.0,
+                &|_, _| 0.0,
             )
             .expect("step_and_solve_ik");
     }

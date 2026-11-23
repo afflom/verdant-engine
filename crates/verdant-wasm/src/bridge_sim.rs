@@ -524,7 +524,7 @@ impl WasmRuntimeBridge {
                     prev_yaw,
                     None,
                     &self.two_level_bvh,
-                    |x, z| hd_terrain_height(seed_copy, &relief_copy, x, z),
+                    &|x, z| hd_terrain_height(seed_copy, &relief_copy, x, z),
                 );
                 self.explorer = rebuilt_exp;
             }
@@ -674,7 +674,7 @@ impl WasmRuntimeBridge {
                 walk_yaw_rad,
                 gaze_target,
                 &self.two_level_bvh,
-                |x, z| hd_terrain_height(seed_copy, &relief_copy, x, z),
+                &|x, z| hd_terrain_height(seed_copy, &relief_copy, x, z),
             );
 
             let player_head = self.explorer.head_anchor_world();
@@ -706,7 +706,7 @@ impl WasmRuntimeBridge {
                                 npc.body_yaw_radians,
                                 Some(player_head),
                                 &self.two_level_bvh,
-                                |x, z| hd_terrain_height(seed_copy, &relief_copy, x, z),
+                                &|x, z| hd_terrain_height(seed_copy, &relief_copy, x, z),
                             );
                         }
                     }

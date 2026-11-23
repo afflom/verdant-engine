@@ -373,3 +373,35 @@ The full fidelity check reported these frontier findings.
 - frontier.toml: hand-written Rust residue grew: 1177 > ceiling 1160
 - frontier.toml: uncertified Rust surface grew: 1335 > ceiling 1318
 - frontier.toml: frontier.toml is stale against live Rust source tree (recorded 5d011918bdb9d2a1 != live 99d5248e5e205b4e; run `npm run ratchet`)
+
+### VTK-36 compact symmetric row products
+
+The pinned GGML CPU dot functions supplied 224 binary32 results for Q5_0 and IQ4_NL coefficients and signed-byte activation blocks. All 224 words matched over zero through six blocks. Partial blocks and mismatched activation counts returned typed errors. Dropping the high 16 flag bits failed five-bit row 1 with observed word 1160574976 and reference word 1134018560. Restoration and the existing four-bit and signed-byte dot regressions passed.
+
+The public entry point selects the coefficient encoding and reuses the scale and contraction logic. Its inputs are weight bytes and activation blocks. The isolated Verdant lift reported 232 modules with zero unlifted workspace or UI modules. The regenerated frontier and fidelity audit passed with 583 lifted functions, 1,152 residue functions and 1,310 uncertified functions. The existing ceilings were retained. [GGML CPU dot authority](https://github.com/ggml-org/llama.cpp/blob/9a080f44b503c64f66c84a6274b9d9ee5d5b09d5/ggml/src/ggml-cpu/quants.c)
+
+### VTK-37 affine four- and five-bit row products
+
+The pinned GGML reference encoder supplied 9,756 bytes from 271 Q8_1 blocks. The imported CPU vector-dot functions supplied 224 binary32 words from Q4_1 and Q5_1 weight rows of zero through six blocks. Every encoded byte and output word matched. Partial weight blocks, wrong lane counts and mismatched activation counts returned typed errors.
+
+Multiplying the code sum by the stored binary16 step instead of the original binary32 step failed the Q8_1 byte comparison. Restoring the original step passed both VTK-37 tests and the existing symmetric encoding and compact product regressions. The engine API accepts numerical rows. GGML graph selection and tensor addressing remain with the consumer.
+
+The complete locked-SDK `just vv` passed on `0c70cf1d`, including 85 engine conformance tests, 68 tensor tests, dependency checks and the Prism proof. The verified application attestation is `c042402611bc9473d0de0c22172e8c13c7251af510bf8e27c966358a20c9074e`.
+
+### VTK-38 block-float row products
+
+The `linear::dot_block_float_row` API contracts E2M1 coefficients with signed-byte activation blocks. It accepts either one E8M0 scale per 32 coefficients or four unsigned E4M3 scales per 64 coefficients. Prism checks the block counts, selects the coefficient table entries and defines the binary32 accumulation. The imported GGML CPU vector products matched 512 rows per encoding across zero through six blocks and all scale bytes. Reusing the low nibble for both lane halves changed MXFP4 row 1 from `2234220544` to `2225029120`. Restoring separate indices passed all five packed-product regression tests. [CPU authority](https://github.com/ggml-org/llama.cpp/blob/9a080f44b503c64f66c84a6274b9d9ee5d5b09d5/ggml/src/ggml-cpu/quants.c#L303)
+
+Prism certified the export with attestation `3c6431afca879dca5ec9e996076a9d757ad2628a697c834f634eca23c4c29771`. The isolated source lift, fidelity check and tensor Clippy passed. The frontier records 583 lifted and 1,152 residual functions. Core and Tensor share the bounded power-of-two implementation, including zero for exponents at or above the word width.
+
+## VTK-39 grouped two-bit codebook rows
+
+The pinned llama.cpp CPU type traits supply the independent IQ2_XXS, IQ2_XS and IQ2_S vector products. Each reference row uses the upstream Q8_K reference encoder on the original activations. All 294 binary32 results matched bit-for-bit across zero to five blocks, and each encoding rejected both malformed lengths. Reusing the first grid coefficient for every lane failed IQ2_XXS row 1 (1170642016 instead of 1170701216). Restoring lane selection passed VTK-39 and the existing Q4_K/Q5_K regression.
+
+The certified grouped product extension uses the existing imported grid and sign tables. The SDK attestation is `9d86a2a8a6e022e89c94da60784d6a83d8ea6aba6153edf2c7144f20c67da2c5`. The isolated source lift, fidelity checks and tensor Clippy passed at the existing frontier limits.
+
+## VTK-40 fixed-width weight block encoding
+
+All 1,104 centered and affine four- and five-bit blocks matched every byte emitted by the four unmodified reference encoders from the pinned GGML archive. The 276 inputs per encoding include signed zero, tied positive and negative extrema in both orders, constant rows, narrow and overflowing half scales and mixed-exponent random values. Nonfinite lanes and malformed destination widths preserve the output. The symmetric byte path delegates to the existing VTK-16 encoder.
+
+Replacing every upper nibble’s source with the lower lane failed Q4_0 block 3 at byte 2 (153 versus 137). Restoring the lane passed VTK-40, VTK-16 and VTK-37 together. Run `cargo test --locked -p verdant-tensor --lib low_bit_block_encoding_vtk_40` inside the pinned SDK.

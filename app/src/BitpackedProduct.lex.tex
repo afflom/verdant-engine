@@ -2,6 +2,8 @@
 \useglossary{lexlean.std.bool@1.2.0}
 \useglossary{lexlean.std.nat@1.2.0}
 \importmodule{PackedWord}
+\importmodule{ScalarF32}
+\importmodule{FloatStorage}
 \title{Natural number}
 \begin{semanticmodule}
 inductive{
@@ -10,7 +12,16 @@ inductive{
   parameters: [],
   constructors: [
     {name: layout, fields: [Bool, Nat, Nat]},
-    {name: coefficient, fields: [Bool, Nat, Nat]}
+    {name: coefficient, fields: [Bool, Nat, Nat]},
+    {name: compactWidth, fields: [Bool, Nat, Nat, Nat]},
+    {name: compactPair, fields: [Bool, Nat, Nat, Nat]},
+    {name: affineWidth, fields: [Bool, Nat, Nat]},
+    {name: affinePair, fields: [Nat, Nat, Nat]},
+    {name: affineSum, fields: [Nat, Nat, Nat, Nat, Nat, Nat]},
+    {name: scaledSum, fields: [Nat, Nat]},
+    {name: floatLayout, fields: [Bool, Nat, Nat]},
+    {name: floatPair, fields: [Nat]},
+    {name: floatSum, fields: [Nat, Nat, Nat, Nat]}
   ]
 }
 
@@ -21,7 +32,9 @@ inductive{
   constructors: [
     {name: refuse, fields: []},
     {name: row, fields: [Nat, Nat, Nat, Nat]},
-    {name: value, fields: [Nat]}
+    {name: value, fields: [Nat]},
+    {name: signedPair, fields: [Nat, Nat]},
+    {name: tablePair, fields: [Nat, Nat]}
   ]
 }
 
@@ -34,6 +47,54 @@ definition{
 }
 
 definition{
+  name: signedFiveBit,
+  parameters: [nibble : Nat, flags : Nat, divisor : Nat],
+  result: Nat,
+  body: (if ((prim remainder (prim quotient flags divisor 0 : Nat) 2 0 : Nat) =? 1) then nibble else (240 + nibble)),
+  executable: true
+}
+
+definition{
+  name: compactPair,
+  parameters: [nonlinear : Bool, column : Nat, byte : Nat, flags : Nat],
+  result: Step,
+  body: (if (((column <? 16) && (byte <? 256)) && (flags <? 4294967296)) then (let low : Nat := (prim remainder byte 16 0 : Nat); (let high : Nat := (prim quotient byte 16 0 : Nat); (if nonlinear then (ctor Step.tablePair (18568 + low) (18568 + high)) else (let divisor : Nat := (prim multiply (bitDivisor (prim remainder column 8 0 : Nat)) (if (column <? 8) then 1 else 256) : Nat); (ctor Step.signedPair (signedFiveBit low flags divisor) (signedFiveBit high flags (prim multiply divisor 65536 : Nat))))))) else (ctor Step.refuse)),
+  executable: true
+}
+
+definition{
+  name: unsignedFiveBit,
+  parameters: [nibble : Nat, flags : Nat, divisor : Nat],
+  result: Nat,
+  body: (if ((prim remainder (prim quotient flags divisor 0 : Nat) 2 0 : Nat) =? 1) then (16 + nibble) else nibble),
+  executable: true
+}
+
+definition{
+  name: affinePair,
+  parameters: [column : Nat, byte : Nat, flags : Nat],
+  result: Step,
+  body: (if (((column <? 16) && (byte <? 256)) && (flags <? 4294967296)) then (let divisor : Nat := (prim multiply (bitDivisor (prim remainder column 8 0 : Nat)) (if (column <? 8) then 1 else 256) : Nat); (ctor Step.signedPair (unsignedFiveBit (prim remainder byte 16 0 : Nat) flags divisor) (unsignedFiveBit (prim quotient byte 16 0 : Nat) flags (prim multiply divisor 65536 : Nat)))) else (ctor Step.refuse)),
+  executable: true
+}
+
+definition{
+  name: floatLayout,
+  parameters: [grouped : Bool, weightBytes : Nat, activationCount : Nat],
+  result: Step,
+  body: (let width : Nat := (if grouped then 36 else 17); (let activations : Nat := (if grouped then 2 else 1); (if (((prim remainder weightBytes width 0 : Nat) =? 0) && ((prim multiply (prim quotient weightBytes width 0 : Nat) activations : Nat) =? activationCount)) then (ctor Step.row width (if grouped then 4 else 1) (if grouped then 16 else 32) activations) else (ctor Step.refuse)))),
+  executable: true
+}
+
+definition{
+  name: floatSum,
+  parameters: [sum : Nat, dot : Nat, scale : Nat, activationScale : Nat],
+  result: Step,
+  body: (if ((((sum <? 4294967296) && (dot <? 4294967296)) && (scale <? 4294967296)) && (activationScale <? 65536)) then (let combined : Nat := (ScalarF32::multiply (FloatStorage::widenHalf activationScale) scale); (ctor Step.value (ScalarF32::add sum (ScalarF32::multiply combined dot)))) else (ctor Step.refuse)),
+  executable: true
+}
+
+definition{
   name: evaluate,
   parameters: [request : Request],
   result: Step,
@@ -41,7 +102,16 @@ definition{
     | Request.layout two bytes blocks => (let groups : Nat := (if two then 2 else 4); (if (((prim remainder bytes 18 0 : Nat) =? 0) && ((prim multiply (prim quotient bytes 18 0 : Nat) groups : Nat) =? blocks)) then (ctor Step.row 18 groups (if two then 8 else 4) (if two then 4 else 8)) else (ctor Step.refuse)))
     | Request.coefficient two byte lane => (if ((byte <? 256) && (lane <? (if two then 4 else 8))) then (match (PackedWord::extract byte 1 (bitDivisor (if two then (prim multiply lane 2 : Nat) else lane)) (if two then 4 else 2))
       | Option.some raw => (ctor Step.value (if two then raw else (prim multiply raw 2 : Nat)))
-      | Option.none => (ctor Step.refuse)) else (ctor Step.refuse))),
+      | Option.none => (ctor Step.refuse)) else (ctor Step.refuse))
+    | Request.compactWidth nonlinear lanes bytes blocks => (let width : Nat := (if nonlinear then 18 else 22); (if (((lanes =? 32) && ((prim remainder bytes width 0 : Nat) =? 0)) && ((prim quotient bytes width 0 : Nat) =? blocks)) then (ctor Step.value width) else (ctor Step.refuse)))
+    | Request.compactPair nonlinear column byte flags => (compactPair nonlinear column byte flags)
+    | Request.affineWidth five bytes blocks => (let width : Nat := (if five then 24 else 20); (if (((prim remainder bytes width 0 : Nat) =? 0) && ((prim quotient bytes width 0 : Nat) =? blocks)) then (ctor Step.value width) else (ctor Step.refuse)))
+    | Request.affinePair column byte flags => (affinePair column byte flags)
+    | Request.affineSum sum dot left right minimum scaled => (if ((((((sum <? 4294967296) && (dot <? 4294967296)) && (left <? 65536)) && (right <? 65536)) && (minimum <? 65536)) && (scaled <? 65536)) then (let scale : Nat := (ScalarF32::multiply (FloatStorage::widenHalf left) (FloatStorage::widenHalf right)); (let correction : Nat := (ScalarF32::multiply (FloatStorage::widenHalf minimum) (FloatStorage::widenHalf scaled)); (ctor Step.value (ScalarF32::add sum (ScalarF32::add (ScalarF32::multiply scale dot) correction))))) else (ctor Step.refuse))
+    | Request.floatLayout grouped bytes activations => (floatLayout grouped bytes activations)
+    | Request.floatPair byte => (if (byte <? 256) then (ctor Step.tablePair (18584 + (prim remainder byte 16 0 : Nat)) (18584 + (prim quotient byte 16 0 : Nat))) else (ctor Step.refuse))
+    | Request.floatSum sum dot scale activationScale => (floatSum sum dot scale activationScale)
+    | Request.scaledSum word scale => (if ((word <? 4294967296) && (scale <? 2139095040)) then (ctor Step.value (FloatStorage::narrowHalf (ScalarF32::multiply word scale))) else (ctor Step.refuse))),
   executable: true,
   production: {effects: [overflow], targets: [rust-core]}
 }
@@ -64,6 +134,48 @@ theorem{
   name: missingActivationBlock,
   parameters: [],
   statement: ((evaluate (ctor Request.layout false 18 3)) = (ctor Step.refuse)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: independentFifthBits,
+  parameters: [],
+  statement: ((compactPair false 15 143 2147483648) = (ctor Step.signedPair 255 8)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: tableOrderFollowsLaneHalves,
+  parameters: [],
+  statement: ((compactPair true 0 240 0) = (ctor Step.tablePair 18568 18583)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: affineHighPlane,
+  parameters: [],
+  statement: ((affinePair 15 143 2147483648) = (ctor Step.signedPair 15 24)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: incompleteAffineRow,
+  parameters: [],
+  statement: ((evaluate (ctor Request.affineWidth false 21 1)) = (ctor Step.refuse)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: groupedFloatRowNeedsTwoActivations,
+  parameters: [],
+  statement: ((evaluate (ctor Request.floatLayout true 36 1)) = (ctor Step.refuse)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: floatPairUsesImportedTable,
+  parameters: [],
+  statement: ((evaluate (ctor Request.floatPair 241)) = (ctor Step.tablePair 18585 18599)),
   proof: reflexivity{}
 }
 \end{semanticmodule}

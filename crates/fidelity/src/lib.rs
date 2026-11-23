@@ -158,11 +158,14 @@ impl Score {
     }
 }
 
-fn hex(bytes: &[u8]) -> String {
-    bytes.iter().fold(String::new(), |mut s, b| {
-        let _ = write!(s, "{b:02x}");
-        s
-    })
+pub(crate) fn hex(bytes: &[u8]) -> String {
+    const DIGITS: &[u8; 16] = b"0123456789abcdef";
+    let mut output = String::with_capacity(bytes.len() * 2);
+    for &byte in bytes {
+        output.push(char::from(DIGITS[usize::from(byte >> 4)]));
+        output.push(char::from(DIGITS[usize::from(byte & 15)]));
+    }
+    output
 }
 
 /// κ of a question.
@@ -261,13 +264,6 @@ fn collect(dir: &Path, out: &mut Vec<PathBuf>) -> Result<(), FidelityError> {
     Ok(())
 }
 
-fn rel(path: &Path, root: &Path) -> String {
-    path.strip_prefix(root)
-        .unwrap_or(path)
-        .to_string_lossy()
-        .replace('\\', "/")
-}
-
 fn normalize(decl: &lextex::Declaration) -> String {
     let mut out = String::new();
     for (k, v) in &decl.fields {
@@ -347,19 +343,16 @@ pub fn references(record: &Record, ids: &BTreeSet<&str>) -> Vec<String> {
     out
 }
 
-fn record_literal_fields(record: &Record) -> Vec<crate::lextex::Field> {
-    if let Some(at) = record.normalized.find("(record ") {
-        return lextex::record_fields(&record.normalized[at..]);
-    }
-    Vec::new()
-}
-
 fn find_record_by_kind_index(records: &[Record], kind: &str, idx: usize) -> Option<String> {
     records.iter().find_map(|r| {
         if r.kind != kind {
             return None;
         }
-        let fields = record_literal_fields(r);
+        let fields = r
+            .normalized
+            .find("(record ")
+            .map(|at| lextex::record_fields(&r.normalized[at..]))
+            .unwrap_or_default();
         (nat(&fields, "index") == Some(idx)).then(|| r.id.clone())
     })
 }
@@ -377,7 +370,11 @@ pub fn references_in(record: &Record, records: &[Record], ids: &BTreeSet<&str>) 
         }
     };
     let module_prefix = record.id.split_once("::").map(|(m, _)| m).unwrap_or("");
-    let fields = record_literal_fields(record);
+    let fields = record
+        .normalized
+        .find("(record ")
+        .map(|at| lextex::record_fields(&record.normalized[at..]))
+        .unwrap_or_default();
     match record.kind.as_str() {
         "Edge" => {
             if let Some(from_idx) = nat(&fields, "fromIndex") {
@@ -511,7 +508,11 @@ pub fn score_ignoring(
             lextex::parse(&text).map_err(|why| FidelityError::Source(file.clone(), why))?;
         parsed.push(Parsed {
             module,
-            source: rel(file, repo),
+            source: file
+                .strip_prefix(repo)
+                .unwrap_or(file)
+                .to_string_lossy()
+                .replace('\\', "/"),
         });
     }
 

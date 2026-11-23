@@ -246,7 +246,7 @@ impl WasmRuntimeBridge {
                 0.0,
                 Some(Vec3::new(0.0, podium_y + two, 0.0)),
                 &two_level_bvh,
-                |x, z| hd_terrain_height(clean_seed, &terrain_params, x, z),
+                &|x, z| hd_terrain_height(clean_seed, &terrain_params, x, z),
             );
             for npc in &mut npc_list {
                 let p = npc.foot_position;
@@ -258,7 +258,7 @@ impl WasmRuntimeBridge {
                     0.0,
                     Some(exp_start + Vec3::new(0.0, 1.0 + half, 0.0)),
                     &two_level_bvh,
-                    |x, z| hd_terrain_height(clean_seed, &terrain_params, x, z),
+                    &|x, z| hd_terrain_height(clean_seed, &terrain_params, x, z),
                 );
             }
             (exp, npc_list)

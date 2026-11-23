@@ -179,7 +179,7 @@ test("Planted Defect Gate C8: rejects stakeholder/persona UI jargon, demo #hex c
   const baseInputs = {
     cardHtml: readFileSync(join(ROOT, "site", "card.html"), "utf8"),
     cardSource: readFileSync(join(ROOT, "site", "card.mjs"), "utf8"),
-    studioSource: readFileSync(join(ROOT, "site", "studio.mjs"), "utf8"),
+    studioSource: `${readFileSync(join(ROOT, "site", "studio.mjs"), "utf8")}\n${readFileSync(join(ROOT, "site", "studio-director-panel.mjs"), "utf8")}`,
     stitchSource: readFileSync(join(ROOT, "site", "stitch-mesh.mjs"), "utf8"),
     demoHtml: readFileSync(join(ROOT, "site", "demo", "index.html"), "utf8"),
     demoSource: readFileSync(join(ROOT, "site", "demo", "demo.mjs"), "utf8"),
@@ -234,7 +234,7 @@ test("Planted Defect Gate C9: rejects BooleanOrAnd drift, legacy aliases, 160.0 
     demoHtml: readFileSync(join(ROOT, "site", "demo", "index.html"), "utf8"),
     studioDataSource: readFileSync(join(ROOT, "site", "studio-data.mjs"), "utf8"),
     studioScaffolderSource: readFileSync(join(ROOT, "site", "studio-scaffolder.mjs"), "utf8"),
-    studioSource: readFileSync(join(ROOT, "site", "studio.mjs"), "utf8"),
+    studioSource: `${readFileSync(join(ROOT, "site", "studio.mjs"), "utf8")}\n${readFileSync(join(ROOT, "site", "studio-director-panel.mjs"), "utf8")}`,
     cardSource: readFileSync(join(ROOT, "site", "card.mjs"), "utf8"),
     workerSource: readFileSync(join(ROOT, "site", "engine-worker.mjs"), "utf8"),
     starterGameSource: readFileSync(join(ROOT, "templates", "browser-3d-starter", "game.mjs"), "utf8"),

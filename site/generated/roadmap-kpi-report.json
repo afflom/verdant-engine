@@ -2,12 +2,12 @@
   "spec": "verdant/observer-roadmap-kpi-report/1",
   "managerId": "mgr-roadmap-strategy",
   "authorityId": "AUTH-SEMVER-CHANGE-KPI",
-  "currentVersion": "2.19.0",
-  "releaseEpoch": 23,
+  "currentVersion": "2.20.0",
+  "releaseEpoch": 24,
   "totalManagers": 13,
   "totalPrismFacetsOwned": 9,
   "totalPrismFacetsRequired": 9,
-  "declaredCapabilitiesCount": 123,
+  "declaredCapabilitiesCount": 128,
   "minorProgressPct": 100,
   "majorProgressPct": 100,
   "kpiPassedCount": 13,
@@ -83,7 +83,7 @@
       "name": "Immutable Composable Blank Frame Weight",
       "unit": "bytes",
       "direction": "atMost",
-      "actual": 29177,
+      "actual": 29176,
       "target": 30720,
       "passed": true,
       "owningManager": "mgr-change-release",
@@ -1166,7 +1166,7 @@
     "governingAuthority": "AUTH-SEMVER-CHANGE-KPI",
     "currentVersion": {
       "major": 2,
-      "minor": 19,
+      "minor": 20,
       "patch": 0
     },
     "recommendedBump": "major",
@@ -1175,8 +1175,8 @@
       "minor": 0,
       "patch": 0
     },
-    "currentEpoch": 23,
-    "nextEpoch": 24,
+    "currentEpoch": 24,
+    "nextEpoch": 25,
     "versionIncremented": true,
     "gates": {
       "ratchetApplied": true,
@@ -1187,6 +1187,6 @@
       "pullThroughVerified": true
     },
     "blockingReasons": [],
-    "rationale": "Ratchet applied & 5/5 Release Gates passed: advancing v2.19.0 -> v3.0.0 (Major, epoch 24) — Observer roadmap evaluation: minor=100% major=100% managers=13"
+    "rationale": "Ratchet applied & 5/5 Release Gates passed: advancing v2.20.0 -> v3.0.0 (Major, epoch 25) — Observer roadmap evaluation: minor=100% major=100% managers=13"
   }
 }

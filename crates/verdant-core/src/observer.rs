@@ -1121,7 +1121,7 @@ impl ObserverPrismHolon {
                 sim_time_seconds,
                 Some(player_focus_pos),
                 two_level_bvh,
-                |x, z| hd_terrain_height(seed, &relief, x, z),
+                &|x, z| hd_terrain_height(seed, &relief, x, z),
             );
         }
     }

@@ -4,10 +4,10 @@
   "authorityId": "AUTH-SEMVER-CHANGE-KPI",
   "currentVersion": {
     "major": 2,
-    "minor": 19,
+    "minor": 20,
     "patch": 0
   },
-  "releaseEpoch": 23,
+  "releaseEpoch": 24,
   "history": [
     {
       "version": "0.1.0",
@@ -189,6 +189,13 @@
       "releaseEpoch": 23,
       "bumpKind": "minor",
       "summary": "M27 (v2.19.0, VE-79): Stitch Layer-5 swarm seeder (stitch-swarm.mjs), offline portable single-file HTML envelope & volunteer gateway /swarm bridge",
+      "citedAuthority": "AUTH-SEMVER-CHANGE-KPI"
+    },
+    {
+      "version": "2.20.0",
+      "releaseEpoch": 24,
+      "bumpKind": "minor",
+      "summary": "Milestone M28: certified VTK-36..38 compact/affine/FP4 row contractions, ARM64 C-oracle parity, and Community Stitch Seeder persona",
       "citedAuthority": "AUTH-SEMVER-CHANGE-KPI"
     }
   ]
