@@ -127,6 +127,7 @@ model does not sanction.
 | `VTK-28` | `build` | Verdant evaluates binary32 hyperbolic tangent against the imported GGML CPU function across signed zeros, subnormals, saturation and rounding boundaries |
 | `VTK-29` | `build` | Binary32 Gaussian error linear unit tangent and logistic approximations match the imported numerical reference |
 | `VTK-30` | `build` | Verdant evaluates binary32 linear attention bias slopes for power-of-two and non-power-of-two head groups against the imported GGML CPU kernel |
+| `VTK-31` | `build` | Verdant selects deterministic binary32 row indices in ascending or descending value order and agrees with the imported CPU ranking kernels |
 
 ## fidelity
 

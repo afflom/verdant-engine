@@ -763,3 +763,9 @@ id = "VTK-30"
 level = "build"
 suite = "engine"
 statement = "Verdant evaluates binary32 linear attention bias slopes for power-of-two and non-power-of-two head groups against the imported GGML CPU kernel"
+
+[[id]]
+id = "VTK-31"
+level = "build"
+suite = "engine"
+statement = "Verdant selects deterministic binary32 row indices in ascending or descending value order and agrees with the imported CPU ranking kernels"

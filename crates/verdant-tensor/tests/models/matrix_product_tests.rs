@@ -82,6 +82,27 @@ int main(int argc, char **argv) {
     }
     return std::feof(stdin) ? 0 : 2;
   }
+  if (!std::strcmp(argv[1], "row-rank")) {
+    unsigned width, count, descending;
+    while (std::scanf("%u %u %u", &width, &count, &descending)==3) {
+      if (!count || count>width || width>4096 || descending>1 || (count!=width && !descending)) return 3;
+      auto *ctx=ggml_init({1024*1024,nullptr,false});
+      auto *src=ggml_new_tensor_1d(ctx,GGML_TYPE_F32,width);
+      for (unsigned i=0;i<width;++i) {
+        uint32_t bits;
+        if (std::scanf("%u",&bits)!=1) return 2;
+        std::memcpy(static_cast<float*>(src->data)+i,&bits,4);
+      }
+      std::vector<int32_t> scratch(width+256);
+      ggml_compute_params params{};params.nth=1;params.wdata=scratch.data();params.wsize=scratch.size()*sizeof(int32_t);
+      auto *out=count==width?ggml_argsort(ctx,src,descending?GGML_SORT_ORDER_DESC:GGML_SORT_ORDER_ASC):ggml_top_k(ctx,src,count);
+      if (count==width) ggml_compute_forward_argsort(&params,out);
+      else ggml_compute_forward_top_k(&params,out);
+      for (unsigned i=0;i<count;++i) std::printf("%u\n",static_cast<uint32_t>(static_cast<int32_t*>(out->data)[i]));
+      ggml_free(ctx);
+    }
+    return std::feof(stdin)?0:2;
+  }
   if (!std::strcmp(argv[1], "head-slopes")) {
     unsigned bits, heads;
     while (std::scanf("%u %u", &bits, &heads)==2) {
@@ -1991,4 +2012,39 @@ fn online_weighted_mean_vtk_24() {
     let mut mean = super::WeightedMeanF32::new(2);
     assert!(mean.push(0.0, Some(&[1.0])).is_err());
     assert_eq!(mean.finish().unwrap(), [0.0, 0.0]);
+}
+
+#[test]
+fn binary32_row_ranking_vtk_31() {
+    use std::fmt::Write;
+    let patterns = [f32::NEG_INFINITY, -2.0, -0.0, 0.0, 0.5, 9.0, f32::INFINITY];
+    let mut queries = String::new();
+    let mut cases = Vec::new();
+    for width in [1_usize, 3, 9, 32, 127, 257] {
+        let row: Vec<f32> = (0..width).map(|i| patterns[(i * 13 + i / 11) % patterns.len()]).collect();
+        for (count, descending) in [(width,false), (width,true), (width.div_ceil(2),true), (1,true)] {
+            writeln!(queries,"{width} {count} {}",u8::from(descending)).unwrap();
+            for word in &row { writeln!(queries,"{}",word.to_bits()).unwrap(); }
+            cases.push((row.clone(),count,descending));
+        }
+    }
+    let expected = query_oracle("row-rank", queries);
+    let mut oracle = expected.as_slice();
+    for (row, count, descending) in cases {
+        let (reference, tail)=oracle.split_at(count); oracle=tail;
+        let result=super::rank_indices_f32(&row,count,descending).unwrap();
+        assert_eq!(result.len(),count);
+        let mut values: Vec<_>=reference.iter().map(|&i|row[i as usize]).collect();
+        values.sort_by(|a,b| if descending { b.partial_cmp(a).unwrap() } else { a.partial_cmp(b).unwrap() });
+        let mut previous=None;
+        for (&i,value) in result.iter().zip(values) {
+            assert_eq!(row[i as usize],value);
+            if let Some((last,j))=previous { if value==last { assert!(i>j); } }
+            previous=Some((value,i));
+        }
+    }
+    assert!(oracle.is_empty());
+    assert_eq!(super::rank_indices_f32(&[f32::NAN, 1.0, f32::NAN],3,true).unwrap(),[1,0,2]);
+    assert!(super::rank_indices_f32(&[],1,false).is_err());
+    assert!(super::rank_indices_f32(&[1.0],0,true).unwrap().is_empty());
 }

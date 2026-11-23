@@ -686,3 +686,9 @@ Feature: engine
     Given attention groups of different sizes and finite biases
     When the pinned GGML CPU softmax computes each head slope
     Then the certified numerical primitive agrees on every head
+
+  @VTK-31 @build
+  Scenario: Verdant selects deterministic binary32 row indices in ascending or descending value order and agrees with the imported CPU ranking kernels
+    Given finite values, signed zeros, infinities and ties
+    When a caller selects a row prefix in value order
+    Then the selected values match the imported CPU reference and tied indices remain deterministic
