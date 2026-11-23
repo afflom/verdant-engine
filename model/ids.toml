@@ -830,3 +830,9 @@ id = "VTK-42"
 level = "build"
 suite = "engine"
 statement = "Verdant contracts grouped signed three-bit and six-bit weights with prepared signed-byte activations in the reference accumulator order"
+
+[[id]]
+id = "VTK-43"
+level = "build"
+suite = "engine"
+statement = "Verdant contracts grouped four-bit codebook weights with prepared signed-byte activations in reference group order"

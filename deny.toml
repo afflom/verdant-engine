@@ -526,9 +526,9 @@ license-files = [{ path = "src/lib.rs", hash = 0x8fd1c57a }]
 
 [[licenses.clarify]]
 name = "verdant_grouped_affine"
-version = "=2.35.0"
+version = "=2.36.0"
 expression = "MIT OR Apache-2.0"
-license-files = [{ path = "src/lib.rs", hash = 0x4ea298f3 }]
+license-files = [{ path = "src/lib.rs", hash = 0x9ecfc923 }]
 
 [[licenses.clarify]]
 name = "verdant_softplus"

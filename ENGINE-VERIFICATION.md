@@ -421,3 +421,11 @@ Reading only the first lane of each packed byte changed Q1_0 block 3, byte 7, fr
 The signed three-bit and six-bit plans unpack 256 coefficients per block and use the upstream eight-accumulator order. All 196 result words from zero through five blocks matched the pinned GGML CPU row products. The CPU prepared its own Q8_K activations from the same binary32 inputs. Both layouts reject partial blocks and mismatched row lengths.
 
 Repeating the first activation lane failed Q3_K row 1 with output word 1137278976 against 1154226176. Restoring the modeled lane order passed the comparison. [Reference CPU implementation](https://github.com/ggml-org/llama.cpp/blob/9a080f44b503c64f66c84a6274b9d9ee5d5b09d5/ggml/src/ggml-cpu/quants.c)
+
+## VTK-43 grouped nonlinear four-bit products
+
+The pinned GGML CPU type traits independently prepare the F32 activation and evaluate the original IQ4_XS row product. All 98 words matched bit-for-bit over zero to five blocks with independent signed scales, codebook indices and activation samples. The entry point rejects a truncated block and a complete block without an activation. The consumer selects `GroupedWeightEncoding::NonlinearFour` through `dot_grouped_weight_row`.
+
+The grouped Prism model checks row extents, locates the eight groups and decodes their signed scales. The existing certified compact-pair model selects both coefficients from the imported nonlinear table. Each group contracts one 32-value activation segment and adds one rounded binary32 term in reference order. The signed export attestation is `125d57fe4d99b3105594bcf1c0eae4b2023ba29f75587396fe787f5fd2044ce6`.
+
+Using the low nibble for both codebook indices made `cargo test -p verdant-tensor --lib grouped_nonlinear_product_vtk_43` fail on row 1 with word 1211694456 against 3326743808. Restoring the upper nibble passed all 98 comparisons. The source lift retained 585 lifted functions and 1,150 residual functions.

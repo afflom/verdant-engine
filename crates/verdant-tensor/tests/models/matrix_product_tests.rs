@@ -381,6 +381,7 @@ int main(int argc, char **argv) {
   if (!std::strcmp(argv[1], "iq2_xxs-dot")) return compare_grouped_rows<block_iq2_xxs>(GGML_TYPE_IQ2_XXS);
   if (!std::strcmp(argv[1], "iq2_xs-dot")) return compare_grouped_rows<block_iq2_xs>(GGML_TYPE_IQ2_XS);
   if (!std::strcmp(argv[1], "iq2_s-dot")) return compare_grouped_rows<block_iq2_s>(GGML_TYPE_IQ2_S);
+  if (!std::strcmp(argv[1], "iq4_xs-dot")) return compare_grouped_rows<block_iq4_xs>(GGML_TYPE_IQ4_XS);
   if (!std::strcmp(argv[1], "grouped-q3-dot")) return compare_grouped_rows<block_q3_K>(GGML_TYPE_Q3_K);
   if (!std::strcmp(argv[1], "grouped-q6-dot")) return compare_grouped_rows<block_q6_K>(GGML_TYPE_Q6_K);
   if (!std::strcmp(argv[1], "grouped-q4-dot")) return compare_grouped_rows<block_q4_K>(GGML_TYPE_Q4_K);
@@ -2381,6 +2382,16 @@ fn grouped_signed_products_vtk_42() {
             }),
         ],
         GroupedScales::Trailing,
+    );
+}
+
+#[test]
+fn grouped_nonlinear_product_vtk_43() {
+    compare_grouped_products(
+        &[(136, "iq4_xs-dot", |w, a| {
+            super::dot_grouped_weight_row(w, a, super::GroupedWeightEncoding::NonlinearFour)
+        })],
+        GroupedScales::Leading,
     );
 }
 
