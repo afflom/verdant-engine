@@ -1,5 +1,5 @@
 //! Packed weight rows with a shared symmetric signed-byte activation format.
-use super::{bitpacked_product, SymmetricQ8Block, TensorComputeError};
+use super::{bitpacked_product, convert_float_storage, SymmetricQ8Block, TensorComputeError};
 
 /// Contract encoded symmetric weight blocks with a prepared activation row.
 /// Each block's signed integer dot is exact. Prism widens the two scales,
