@@ -337,3 +337,15 @@ The locked-SDK test compared 1,079 selected indices over 22 row selections with 
 The certified model checks score words, selects the maximum and centers the input. The tensor primitive reuses the Verdant exponential, wide accumulator, division and binary32 multiplication. An optional extra score contributes to the denominator. The API takes binary32 slices and has no GGML dependency.
 
 The locked SDK compared 4,164 output probabilities in 21 rows of widths 1 through 1,024 against the imported GGML CPU softmax. The inputs covered negative infinity, signed zero, repeated values and optional extra scores. NaN, positive infinity and an undefined nonempty mass were refused. Omitting the extra mass produced 1.0 for a probability for which the CPU returned 0.5621765. Restoring it passed. The model, targeted Clippy, dependency checks and isolated self-host lift passed. The full fidelity gate still reports the inherited frontier counts and stale Rust source digest.
+
+### VTK-33 grouped affine row products
+
+The packed four- and five-bit products take weight bytes and typed grouped signed-byte activation blocks. The Prism model selects scale and minimum fields, nibble and high-bit planes, and arithmetic instructions. Verdant reuses its existing activation encoder, integer dot product and binary32 arithmetic. The public API receives no graph, device or GGML tensor descriptors.
+
+The pinned CPU produced identical binary32 words for 98 inputs of each format, including zero through five blocks, varied signed scales and unrelated high bits. Inconsistent byte and activation counts returned typed errors. Discarding the five-bit high plane changed row 1 from CPU word 1194307488 to 1200470161. Restoration passed both formats. The existing grouped two-bit regression, model, targeted Clippy, dependency checks and isolated self-host lift passed.
+
+The full fidelity check reported these frontier findings.
+
+- frontier.toml: hand-written Rust residue grew: 1177 > ceiling 1160
+- frontier.toml: uncertified Rust surface grew: 1335 > ceiling 1318
+- frontier.toml: frontier.toml is stale against live Rust source tree (recorded 5d011918bdb9d2a1 != live a6682851511226af; run `npm run ratchet`)
