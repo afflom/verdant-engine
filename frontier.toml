@@ -8673,7 +8673,7 @@ function = "repo_model::artifact::Model::check_artifacts"
 effect = "calls repo_model::artifact::artifact_checksum, which performs a Fs effect: std::fs::symlink_metadata"
 
 [[effect]]
-kappa = "c65ccaf1d161ebe1ef125b66d11400b16f8548dc4cfe4eb0f70e4cfa11039f84"
+kappa = "888d6a28e5a6450126d65374e96783dbf74964b2820972bdfa21e5aa48780696"
 function = "repo_model::artifact::artifact_checksum"
 effect = "Fs effect: std::fs::symlink_metadata"
 
