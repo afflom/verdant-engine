@@ -1,0 +1,200 @@
+\begin{lexlean}{HeadSlope}
+\useglossary{lexlean.std.bool@1.2.0}
+\useglossary{lexlean.std.nat@1.2.0}
+\importmodule{ScalarF32}
+\importmodule{FloatStorage}
+\title{Natural number}
+\begin{semanticmodule}
+
+definition{
+  name: productLimbs,
+  parameters: [a : Nat, b : Nat],
+  result: (Nat * (Nat * Nat)),
+  body: (let ah : Nat := (prim quotient a 16777216 0 : Nat);
+    (let al : Nat := (prim remainder a 16777216 0 : Nat);
+    (let bh : Nat := (prim quotient b 16777216 0 : Nat);
+    (let bl : Nat := (prim remainder b 16777216 0 : Nat);
+    ((prim multiply ah bh : Nat), (((prim multiply ah bl : Nat) + (prim multiply al bh : Nat)), (prim multiply al bl : Nat))))))),
+  executable: true,
+  production: {effects: [overflow], targets: [rust-core]}
+}
+
+definition{
+  name: fractionProduct,
+  parameters: [high : Nat, cross : Nat, low : Nat],
+  result: Nat,
+  body: (let middle : Nat := (cross + (prim quotient low 16777216 0 : Nat));
+    (let top : Nat := (high + (prim quotient middle 16777216 0 : Nat));
+    (let residue : Nat := (prim remainder middle 16777216 0 : Nat);
+    (top + (if ((8388608 <? residue) || ((residue =? 8388608) && ((0 <? (prim remainder low 16777216 0 : Nat)) || ((prim remainder top 2 0 : Nat) =? 1)))) then 1 else 0))))),
+  executable: true,
+  production: {effects: [overflow], targets: [rust-core]}
+}
+
+definition{
+  name: normalizeProduct,
+  parameters: [fraction : Nat, left : Nat, right : Nat],
+  result: (Nat * Nat),
+  body: (let down : Nat := (left + right);
+    (if (150 <=? down) then (0, 150) else
+    (if (fraction <? 140737488355328) then ((prim multiply fraction 2 : Nat), (down + 1)) else (fraction, down)))),
+  executable: true,
+  production: {effects: [overflow], targets: [rust-core]}
+}
+
+definition{
+  name: toWord,
+  parameters: [f : Nat, down : Nat],
+  result: Nat,
+  body: (if (150 <=? down) then 0 else (if (down <=? 125) then ((prim multiply (prim subtract 125 down : Nat) 8388608 : Nat) + (FloatStorage::roundQuotient f 16777216)) else (FloatStorage::roundQuotient f (ScalarF32::power (prim subtract down 101 : Nat))))),
+  executable: true,
+  production: {effects: [overflow], targets: [rust-core]}
+}
+
+inductive{
+  name: Base,
+  type_parameters: [],
+  parameters: [],
+  constructors: [{name: exact, fields: [Nat]}, {name: series, fields: [Nat, Nat, Nat, Nat, Nat]}]
+}
+
+definition{
+  name: negativePowerOfTwo,
+  parameters: [x : Nat],
+  result: Base,
+  body: (if (x <=? 838860800) then (ctor Base.exact 1065353216) else (if (1125515264 <=? x) then (ctor Base.exact 0) else
+    (let e : Nat := (ScalarF32::exponent x);
+    (let m : Nat := (ScalarF32::mantissa x);
+    (let fixed : Nat := (if (102 <=? e) then (prim multiply m (ScalarF32::power (prim subtract e 102 : Nat)) : Nat) else (FloatStorage::roundQuotient m (ScalarF32::power (prim subtract 102 e : Nat))));
+    (ctor Base.series (prim quotient fixed 281474976710656 0 : Nat) (prim remainder fixed 281474976710656 0 : Nat) 195103586505167 16 281474976710656)))))),
+  executable: true,
+  production: {effects: [overflow], targets: [rust-core]}
+}
+
+definition{
+  name: seriesTerm,
+  parameters: [product : Nat, order : Nat],
+  result: (Nat * Nat),
+  body: ((prim subtract order 1 : Nat), (prim subtract 281474976710656 (FloatStorage::roundQuotient product order) : Nat)),
+  executable: true,
+  production: {effects: [overflow], targets: [rust-core]}
+}
+
+inductive{
+  name: Power,
+  type_parameters: [],
+  parameters: [],
+  constructors: [{name: exact, fields: [Nat]}, {name: start, fields: [Nat, Nat, Nat, Nat]}]
+}
+
+definition{
+  name: integerPower,
+  parameters: [base : Nat, count : Nat],
+  result: Power,
+  body: (if ((base =? 1065353216) || (count =? 0)) then (ctor Power.exact 1065353216) else
+    (if (count =? 1) then (ctor Power.exact base) else
+    (if (base <? 8388608) then (ctor Power.exact 0) else
+    (ctor Power.start (prim multiply (ScalarF32::mantissa base) 16777216 : Nat) (prim subtract 126 (ScalarF32::exponent base) : Nat) 281474976710656 0)))),
+  executable: true,
+  production: {effects: [overflow], targets: [rust-core]}
+}
+
+theorem{
+  name: firstPowerRetainsLargestSubnormal,
+  parameters: [],
+  statement: ((integerPower 8388607 1) = (ctor Power.exact 8388607)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: squaredLargestSubnormalRoundsToZero,
+  parameters: [],
+  statement: ((integerPower 8388607 2) = (ctor Power.exact 0)),
+  proof: reflexivity{}
+}
+
+definition{
+  name: powerDigit,
+  parameters: [count : Nat],
+  result: (Nat * Bool),
+  body: ((prim quotient count 2 0 : Nat), ((prim remainder count 2 0 : Nat) =? 1)),
+  executable: true,
+  production: {effects: [overflow], targets: [rust-core]}
+}
+
+definition{
+  name: groupPivot,
+  parameters: [heads : Nat],
+  result: Nat,
+  body: (if (heads <? 65536) then (if (heads <? 256) then (if (heads <? 16) then (if (heads <? 4) then (if (heads <? 2) then 1 else 2) else (if (heads <? 8) then 4 else 8)) else (if (heads <? 64) then (if (heads <? 32) then 16 else 32) else (if (heads <? 128) then 64 else 128))) else (if (heads <? 4096) then (if (heads <? 1024) then (if (heads <? 512) then 256 else 512) else (if (heads <? 2048) then 1024 else 2048)) else (if (heads <? 16384) then (if (heads <? 8192) then 4096 else 8192) else (if (heads <? 32768) then 16384 else 32768)))) else (if (heads <? 16777216) then (if (heads <? 1048576) then (if (heads <? 262144) then (if (heads <? 131072) then 65536 else 131072) else (if (heads <? 524288) then 262144 else 524288)) else (if (heads <? 4194304) then (if (heads <? 2097152) then 1048576 else 2097152) else (if (heads <? 8388608) then 4194304 else 8388608))) else (if (heads <? 268435456) then (if (heads <? 67108864) then (if (heads <? 33554432) then 16777216 else 33554432) else (if (heads <? 134217728) then 67108864 else 134217728)) else (if (heads <? 1073741824) then (if (heads <? 536870912) then 268435456 else 536870912) else (if (heads <? 2147483648) then 1073741824 else 2147483648))))),
+  executable: true,
+  production: {effects: [overflow], targets: [rust-core]}
+}
+
+definition{
+  name: binary32Index,
+  parameters: [index : Nat],
+  result: Nat,
+  body: (if (index <=? 16777216) then index else
+    (let unit : Nat := (if (index <? 268435456) then (if (index <? 67108864) then (if (index <? 33554432) then 2 else 4) else (if (index <? 134217728) then 8 else 16)) else (if (index <? 1073741824) then (if (index <? 536870912) then 32 else 64) else (if (index <? 2147483648) then 128 else 256)));
+    (prim multiply (FloatStorage::roundQuotient index unit) unit : Nat))),
+  executable: true,
+  production: {effects: [overflow], targets: [rust-core]}
+}
+
+theorem{
+  name: largeOddIndexRoundsToEven,
+  parameters: [],
+  statement: ((binary32Index 16777219) = 16777220),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: largestHeadIndexRoundsUp,
+  parameters: [],
+  statement: ((binary32Index 4294967295) = 4294967296),
+  proof: reflexivity{}
+}
+
+definition{
+  name: evaluate,
+  parameters: [bias : Nat, heads : Nat, head : Nat],
+  result: (Option Nat),
+  body: (if (((((0 <? heads) && (heads <=? 4294967295)) && (head <? heads)) && (bias <? 4294967296)) && ((prim remainder bias 2147483648 0 : Nat) <? 2139095040)) then (ctor Option.some [Nat] (if (2147483648 <=? bias) then 0 else bias)) else (ctor Option.none [Nat])),
+  executable: true,
+  production: {effects: [overflow], targets: [rust-core]}
+}
+
+definition{
+  name: headPower,
+  parameters: [head : Nat, pivot : Nat],
+  result: (Nat * Nat),
+  body: (if (head <? pivot) then (pivot, (head + 1)) else ((prim multiply pivot 2 : Nat), ((prim multiply (prim subtract head pivot : Nat) 2 : Nat) + 1))),
+  executable: true,
+  production: {effects: [overflow], targets: [rust-core]}
+}
+
+theorem{
+  name: disabledBiasSelectsUnitPower,
+  parameters: [],
+  statement: ((evaluate 0 3 2) = (ctor Option.some [Nat] 0)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: headMustBelongToGroup,
+  parameters: [],
+  statement: ((evaluate 1065353216 3 3) = (ctor Option.none [Nat])),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: firstOfTwoUsesHalfExponent,
+  parameters: [],
+  statement: ((groupPivot 3) = 2),
+  proof: reflexivity{}
+}
+
+\end{semanticmodule}
+
+\end{lexlean}

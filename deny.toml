@@ -439,3 +439,75 @@ name = "verdant_gelu"
 version = "=2.28.0"
 expression = "MIT OR Apache-2.0"
 license-files = [{ path = "src/lib.rs", hash = 0x23496885 }]
+
+[[licenses.clarify]]
+name = "verdant_head_slope"
+version = "=2.29.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0x13363aa2 }]
+
+[[licenses.clarify]]
+name = "verdant_head_slope_base"
+version = "=2.29.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0xa38f93cc }]
+
+[[licenses.clarify]]
+name = "verdant_head_slope_power"
+version = "=2.29.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0x4886efe5 }]
+
+[[licenses.clarify]]
+name = "verdant_head_slope_multiply"
+version = "=2.29.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0x0edfe9db }]
+
+[[licenses.clarify]]
+name = "verdant_head_slope_term"
+version = "=2.29.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0x648397aa }]
+
+[[licenses.clarify]]
+name = "verdant_head_slope_word"
+version = "=2.29.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0xa9b0ec95 }]
+
+[[licenses.clarify]]
+name = "verdant_head_slope_normalize"
+version = "=2.29.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0x75bd5227 }]
+
+[[licenses.clarify]]
+name = "verdant_head_slope_digit"
+version = "=2.29.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0x214c8c99 }]
+
+[[licenses.clarify]]
+name = "verdant_head_slope_limbs"
+version = "=2.29.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0xe13efa1d }]
+
+[[licenses.clarify]]
+name = "verdant_head_slope_index"
+version = "=2.29.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0x194cd938 }]
+
+[[licenses.clarify]]
+name = "verdant_head_slope_group"
+version = "=2.29.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0xd572eb3d }]
+
+[[licenses.clarify]]
+name = "verdant_head_slope_exponent"
+version = "=2.29.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0x0721f043 }]

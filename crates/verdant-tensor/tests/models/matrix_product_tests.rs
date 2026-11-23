@@ -1039,6 +1039,18 @@ fn verify_bundle(scope: &str, directory: &str) -> std::collections::BTreeMap<Str
                     "verdant_grouped_dot" => include_bytes!("../../../../generated/tensor-groupeddot/packages/rust-core/verdant_grouped_dot/src/lib.rs"),
                     "verdant_grouped_q8" => include_bytes!("../../../../generated/tensor-grouped/packages/rust-core/verdant_grouped_q8/src/lib.rs"),
                     "verdant_tanh" => include_bytes!("../../../../generated/tensor-tanh/packages/rust-core/verdant_tanh/src/lib.rs"),
+                    "verdant_head_slope_index" => include_bytes!("../../../../generated/tensor-slopes/packages/rust-core/verdant_head_slope_index/src/lib.rs"),
+                    "verdant_head_slope_group" => include_bytes!("../../../../generated/tensor-slopes/packages/rust-core/verdant_head_slope_group/src/lib.rs"),
+                    "verdant_head_slope_exponent" => include_bytes!("../../../../generated/tensor-slopes/packages/rust-core/verdant_head_slope_exponent/src/lib.rs"),
+                    "verdant_head_slope_base" => include_bytes!("../../../../generated/tensor-slopes/packages/rust-core/verdant_head_slope_base/src/lib.rs"),
+                    "verdant_head_slope_power" => include_bytes!("../../../../generated/tensor-slopes/packages/rust-core/verdant_head_slope_power/src/lib.rs"),
+                    "verdant_head_slope_multiply" => include_bytes!("../../../../generated/tensor-slopes/packages/rust-core/verdant_head_slope_multiply/src/lib.rs"),
+                    "verdant_head_slope_term" => include_bytes!("../../../../generated/tensor-slopes/packages/rust-core/verdant_head_slope_term/src/lib.rs"),
+                    "verdant_head_slope_word" => include_bytes!("../../../../generated/tensor-slopes/packages/rust-core/verdant_head_slope_word/src/lib.rs"),
+                    "verdant_head_slope_normalize" => include_bytes!("../../../../generated/tensor-slopes/packages/rust-core/verdant_head_slope_normalize/src/lib.rs"),
+                    "verdant_head_slope_digit" => include_bytes!("../../../../generated/tensor-slopes/packages/rust-core/verdant_head_slope_digit/src/lib.rs"),
+                    "verdant_head_slope_limbs" => include_bytes!("../../../../generated/tensor-slopes/packages/rust-core/verdant_head_slope_limbs/src/lib.rs"),
+                    "verdant_head_slope" => include_bytes!("../../../../generated/tensor-slopes/packages/rust-core/verdant_head_slope/src/lib.rs"),
                     "verdant_gelu" => include_bytes!("../../../../generated/tensor-gelu/packages/rust-core/verdant_gelu/src/lib.rs"),
                     "verdant_logistic" => include_bytes!("../../../../generated/tensor-logistic/packages/rust-core/verdant_logistic/src/lib.rs"),
                     "verdant_swiglu" => include_bytes!("../../../../generated/tensor-swiglu/packages/rust-core/verdant_swiglu/src/lib.rs"),
@@ -1473,19 +1485,24 @@ fn attention_head_slopes_vtk_30() {
     }
     let expected = query_oracle("head-slopes", input);
     assert_eq!(expected.len(), cases.len());
+    let comparisons = expected.len();
+    let mut maximum_delta = 0;
     for ((bias, heads, head), bits) in cases.into_iter().zip(expected) {
         let actual = super::attention_head_slope_f32(bias, heads, head).unwrap();
         let wanted = f32::from_bits(bits);
+        let delta = actual.to_bits().abs_diff(bits);
+        maximum_delta = maximum_delta.max(delta);
         if wanted == 0.0 || wanted == 1.0 {
             assert_eq!(actual.to_bits(), bits, "{bias}, {heads}, {head}");
         } else {
             assert!(
-                actual >= 0.0 && actual <= 1.0 && actual.to_bits().abs_diff(bits) <= 4,
+                (0.0..=1.0).contains(&actual) && delta <= 4,
                 "{bias}, {heads}, {head}: {actual} vs {wanted} ({:#x}/{bits:#x})",
                 actual.to_bits()
             );
         }
     }
+    eprintln!("{comparisons} GGML head slopes, maximum difference {maximum_delta} binary32 steps");
     for bias in [0.0, -0.0, -1.0] {
         assert_eq!(super::attention_head_slope_f32(bias, 3, 2).unwrap(), 1.0);
     }

@@ -844,6 +844,18 @@ dependencies = [
  "verdant_gelu",
  "verdant_grouped_dot",
  "verdant_grouped_q8",
+ "verdant_head_slope",
+ "verdant_head_slope_base",
+ "verdant_head_slope_digit",
+ "verdant_head_slope_exponent",
+ "verdant_head_slope_group",
+ "verdant_head_slope_index",
+ "verdant_head_slope_limbs",
+ "verdant_head_slope_multiply",
+ "verdant_head_slope_normalize",
+ "verdant_head_slope_power",
+ "verdant_head_slope_term",
+ "verdant_head_slope_word",
  "verdant_high_f64",
  "verdant_integer_f32",
  "verdant_logarithmic_admit",
@@ -974,6 +986,54 @@ version = "2.26.0"
 [[package]]
 name = "verdant_grouped_q8"
 version = "2.25.0"
+
+[[package]]
+name = "verdant_head_slope"
+version = "2.29.0"
+
+[[package]]
+name = "verdant_head_slope_base"
+version = "2.29.0"
+
+[[package]]
+name = "verdant_head_slope_digit"
+version = "2.29.0"
+
+[[package]]
+name = "verdant_head_slope_exponent"
+version = "2.29.0"
+
+[[package]]
+name = "verdant_head_slope_group"
+version = "2.29.0"
+
+[[package]]
+name = "verdant_head_slope_index"
+version = "2.29.0"
+
+[[package]]
+name = "verdant_head_slope_limbs"
+version = "2.29.0"
+
+[[package]]
+name = "verdant_head_slope_multiply"
+version = "2.29.0"
+
+[[package]]
+name = "verdant_head_slope_normalize"
+version = "2.29.0"
+
+[[package]]
+name = "verdant_head_slope_power"
+version = "2.29.0"
+
+[[package]]
+name = "verdant_head_slope_term"
+version = "2.29.0"
+
+[[package]]
+name = "verdant_head_slope_word"
+version = "2.29.0"
 
 [[package]]
 name = "verdant_high_f64"

@@ -8,6 +8,72 @@ pub fn swiglu_f32(value: f32, gate: f32) -> Result<f32, TensorComputeError> {
     logistic(value, false, Some(gate))
 }
 
+/// Compute the binary32 geometric slope for one head of a linear attention bias.
+///
+/// # Errors
+/// Rejects nonfinite biases, empty head groups and out-of-range head indices.
+pub fn attention_head_slope_f32(
+    bias: f32,
+    heads: u32,
+    head: u32,
+) -> Result<f32, TensorComputeError> {
+    let invalid = || TensorComputeError::InvalidKernelSpecification {
+        kernel_name: "HeadSlope.evaluate".into(),
+    };
+    let bias = u64::from(bias.to_bits());
+    let head = u64::from(head);
+    let heads = u64::from(heads);
+    let bias = verdant_head_slope::run(bias, heads, head).ok_or_else(invalid)?;
+    let pivot = verdant_head_slope_group::run(heads);
+    let (denominator, count) =
+        verdant_head_slope_exponent::run(head, pivot).map_err(|_| invalid())?;
+    let divisor = verdant_count_f32::run(denominator)
+        .map_err(|_| invalid())?
+        .ok_or_else(invalid)?;
+    let decode = |bits: u64| f32::from_bits(bits as u32);
+    let scaled = evaluate_f32_scalar(crate::scalars::three_u64(), decode(bias), decode(divisor))?;
+    let scaled = u64::from(scaled.to_bits());
+    let mut count = verdant_head_slope_index::run(count).map_err(|_| invalid())?;
+    let multiply = |a, b| {
+        let (high, (cross, low)) = verdant_head_slope_limbs::run(a, b).map_err(|_| invalid())?;
+        verdant_head_slope_multiply::run(high, cross, low).map_err(|_| invalid())
+    };
+    let to_word = |f, down| verdant_head_slope_word::run(f, down).map_err(|_| invalid());
+    let base = match verdant_head_slope_base::run(scaled).map_err(|_| invalid())? {
+        verdant_head_slope_base::Adt0::C0(word) => word,
+        verdant_head_slope_base::Adt0::C1(whole, fraction, logarithm, mut order, mut term) => {
+            let argument = multiply(fraction, logarithm)?;
+            while order != 0 {
+                (order, term) = verdant_head_slope_term::run(multiply(argument, term)?, order)
+                    .map_err(|_| invalid())?;
+            }
+            to_word(term, whole)?
+        }
+    };
+    let product = |a: (u64, u64), b: (u64, u64)| {
+        verdant_head_slope_normalize::run(multiply(a.0, b.0)?, a.1, b.1).map_err(|_| invalid())
+    };
+    let word = match verdant_head_slope_power::run(base, count).map_err(|_| invalid())? {
+        verdant_head_slope_power::Adt0::C0(word) => word,
+        verdant_head_slope_power::Adt0::C1(f, down, unit, exponent) => {
+            let mut factor = (f, down);
+            let mut value = (unit, exponent);
+            while count != 0 {
+                let (next, odd) = verdant_head_slope_digit::run(count);
+                if odd {
+                    value = product(value, factor)?;
+                }
+                if next != 0 {
+                    factor = product(factor, factor)?;
+                }
+                count = next;
+            }
+            to_word(value.0, value.1)?
+        }
+    };
+    Ok(f32::from_bits(u32::try_from(word).map_err(|_| invalid())?))
+}
+
 /// Evaluate binary32 hyperbolic tangent with sign-preserving zeros and saturation.
 ///
 /// # Errors

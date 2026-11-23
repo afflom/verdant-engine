@@ -306,6 +306,11 @@ stratum = 1
 role = "Symmetric four-bit lane placement, row extent admission and ordered F32 reduction instructions."
 
 [[stratum_module]]
+path = "app/src/HeadSlope.lex.tex"
+stratum = 1
+role = "Certified binary32 geometric attention slopes with bounded range reduction and integer powers."
+
+[[stratum_module]]
 path = "app/src/GaussianActivation.lex.tex"
 stratum = 1
 role = "Compose certified binary32 products with the tangent and logistic forms of Gaussian activation."
