@@ -1390,7 +1390,7 @@ export async function runAllPrismContractChecks(rootDir = ROOT_DIR) {
     demoHtml,
     studioDataSource,
     studioScaffolderSource,
-    studioSource,
+    studioSource: combinedStudioSource,
     cardSource,
     workerSource,
     starterGameSource,
