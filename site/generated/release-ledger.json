@@ -5,9 +5,9 @@
   "currentVersion": {
     "major": 2,
     "minor": 20,
-    "patch": 0
+    "patch": 1
   },
-  "releaseEpoch": 24,
+  "releaseEpoch": 25,
   "history": [
     {
       "version": "0.1.0",
@@ -196,6 +196,13 @@
       "releaseEpoch": 24,
       "bumpKind": "minor",
       "summary": "Milestone M28: certified VTK-36..38 compact/affine/FP4 row contractions, ARM64 C-oracle parity, and Community Stitch Seeder persona",
+      "citedAuthority": "AUTH-SEMVER-CHANGE-KPI"
+    },
+    {
+      "version": "2.20.1",
+      "releaseEpoch": 25,
+      "bumpKind": "patch",
+      "summary": "Certify sign/two-bit weight encoders and grouped Q3_K/Q6_K row products (VTK-41, VTK-42)",
       "citedAuthority": "AUTH-SEMVER-CHANGE-KPI"
     }
   ]

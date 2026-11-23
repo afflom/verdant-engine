@@ -2,12 +2,12 @@
 # Enforced mechanically by `prism-fidelity` (`prism/parametric-ratchet/2`, VE-47).
 spec = "verdant/self-host-ratchet-manifest/1"
 generator = "verdant-operator-ratchet-lift"
-version = "2.20.0"
-release_epoch = 24
-source_commit_kappa = "3a43127532c5fff7b200c2b1eaa1fa0c355f7a87924e08f0c3cdfc5292546e1f"
-source_tree_root_sha256 = "d5500191590ae134ca56ae70270994a11a4d89950b03db21acc68c725c3f8f08"
-immutability_seal_root_sha256 = "4cd0159506890a0489f43fec8de00c51c81d7889234ccc5df51ffbaf4028b9be"
-release_capsule_sha256 = "374eb8db286b50f8491d72c2c3cf4c113486b4314c4f6df6c45e150ce1e8e374"
+version = "2.20.1"
+release_epoch = 25
+source_commit_kappa = "d92e2d0d0baa598502f7a113d42b5e84fa70d32efa251debc1167424d93e81e3"
+source_tree_root_sha256 = "7859ae420cbf71198278fb40e6868c0f0e18f76b3b087ebf5021fae6aec3df71"
+immutability_seal_root_sha256 = "ff27e435bc87dd92265d726d126b19aa8c75e1b9a735b9cbaca111234c5bf4d7"
+release_capsule_sha256 = "1d90c377c404fb94f00b87a7ba6dd502fb761969883db8402e5db8687abebf78"
 unlifted_ui_files = 0
 unverified_frame_assets = 0
 user_required_external_accounts = 0

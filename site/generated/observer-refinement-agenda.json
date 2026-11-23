@@ -1,17 +1,17 @@
 {
   "spec": "verdant/observer-refinement-agenda/1",
-  "releaseVersion": "2.20.0",
-  "releaseEpoch": 24,
+  "releaseVersion": "2.20.1",
+  "releaseEpoch": 25,
   "observerKappaHex": "6cd1e9dc15167b134d9887883bf06a5158c9b132f076e10a30e521ea62e0a17b",
   "overallRefinementScorePermille": 976,
   "liveMetrics": {
-    "wasmCoreBytes": 153294,
-    "wasmUorcBytes": 1722290,
-    "releaseCapsuleBytes": 986963,
+    "wasmCoreBytes": 153490,
+    "wasmUorcBytes": 1722278,
+    "releaseCapsuleBytes": 986947,
     "blankFrameBytes": 29176,
     "maxHandwrittenRustFileLines": 1247,
     "maxJsFileLines": 920,
-    "frontierLifted": 583,
+    "frontierLifted": 585,
     "frontierResidue": 1150,
     "frontierUncertified": 1308,
     "fidelityOpenResidue": 0
@@ -67,7 +67,7 @@
       "vsmSystem": "VSM-S4",
       "viewpointId": "roadmap-kpi-strategy",
       "ownedFileCount": 7,
-      "maxFileLines": 761,
+      "maxFileLines": 773,
       "heaviestFile": "features/suites/engine.feature",
       "healthScorePermille": 1000
     },
@@ -152,13 +152,13 @@
       "functions": 55
     },
     {
-      "construct": "type outside the lift: f32",
-      "cause": "type",
-      "functions": 33
-    },
-    {
       "construct": "takes or returns ObserverPrismHolon.organs: ObserverOrganModel.schema_org_jsonld: serde_json::Value, a type of the serde_json crate with no LexLean model",
       "cause": "foreign",
+      "functions": 32
+    },
+    {
+      "construct": "type outside the lift: f32",
+      "cause": "type",
       "functions": 32
     }
   ],
@@ -171,14 +171,14 @@
       "citedAuthority": "AUTH-SEMVER-CHANGE-KPI",
       "ratchetLayer": "uorust-frontier",
       "priority": "high",
-      "currentValue": "583 lifted / 1150 residue (1308 uncertified)",
-      "targetValue": ">= 603 lifted functions",
+      "currentValue": "585 lifted / 1150 residue (1308 uncertified)",
+      "targetValue": ">= 605 lifted functions",
       "summary": "Expand constructive MIR proof frontier; top blocker: expression form outside the lift: ? below the function's own statements (269 fns, cause=form).",
       "concreteActions": [
         "Replace remaining raw shift/overflow ops with lifted verdant_tensor::scalars and wrapping ops.",
         "Extract pure decision/calculation helpers out of IO/effectful wrappers so uorust lifts them."
       ],
-      "kappaHex": "7010b4790874c69e8eccaa19c43b15d271c3850f69b2e93de2bce70185d417f3"
+      "kappaHex": "5147c59b12b3e7b8d9db00ae728d5fefc5db18e25e4b1fc6c31f8fc56861cdad"
     },
     {
       "proposalId": "refine-rust-modularity",
@@ -222,15 +222,15 @@
       "citedAuthority": "AUTH-STITCH-SELF-HOSTING",
       "ratchetLayer": "surface-wasm",
       "priority": "medium",
-      "currentValue": "verdant-uorc.wasm 1722290 B · .holo 986963 B · Blank Frame 29176 B (1544 B headroom)",
+      "currentValue": "verdant-uorc.wasm 1722278 B · .holo 986947 B · Blank Frame 29176 B (1544 B headroom)",
       "targetValue": "verdant-uorc.wasm <= 1560576 B and gzipped .holo <= 1.0 MiB",
       "summary": "Keep browser verdant-uorc.wasm ultra-lean (< 1.5 MiB) and drive gzipped .holo release capsules below 1.0 MiB for instant Blank Frame cold boots.",
       "concreteActions": [
         "Keep uorc-ncm-decode native-only and audit gltf-json / serde_json monomorphizations inside verdant-uorc.wasm.",
         "Maintain Blank Frame strictly under 30720 B with DecompressionStream('gzip')."
       ],
-      "kappaHex": "10defcf24e6f217f9ad01a6bd5ebb2c50b4f7c2dcebb3690ad104c87b26f6ba1"
+      "kappaHex": "f420cf68ac0b45e4fa6b8e65d9127e355deec0138f67235fb5f189a8248bd2fb"
     }
   ],
-  "agendaKappaHex": "556120fbe223aac0416a3693a153fd9f196c2f170c517c0bc01ca3e8e8e7da4f"
+  "agendaKappaHex": "d3f516ecb7e738e54bf9319725aa206e07d8b73ce84a8e92adec22fe94de078d"
 }
