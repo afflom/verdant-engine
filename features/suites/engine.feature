@@ -783,3 +783,9 @@ Feature: engine
     Given finite activation rows including signed half ties
     When Verdant packs the ternary coefficients in either representation
     Then every byte matches the pinned GGML reference encoder and malformed input leaves its destination intact
+
+  @VTK-45 @build
+  Scenario: Verdant contracts packed trit and two-bit ternary rows with prepared grouped signed-byte activations
+    Given packed ternary weights and independently prepared signed-byte activation blocks
+    When the engine evaluates a complete row
+    Then all output words reproduce the imported GGML CPU products and inconsistent extents are refused

@@ -842,3 +842,9 @@ id = "VTK-44"
 level = "build"
 suite = "engine"
 statement = "Verdant encodes 256-lane ternary blocks in packed-trit and two-bit-plane layouts with a trailing binary16 scale"
+
+[[id]]
+id = "VTK-45"
+level = "build"
+suite = "engine"
+statement = "Verdant contracts packed trit and two-bit ternary rows with prepared grouped signed-byte activations"

@@ -918,7 +918,7 @@ version = "2.9.0"
 
 [[package]]
 name = "verdant_bitpacked_product"
-version = "2.37.0"
+version = "2.38.0"
 
 [[package]]
 name = "verdant_circular_magnitudes"

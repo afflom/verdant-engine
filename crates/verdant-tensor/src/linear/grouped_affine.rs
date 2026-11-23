@@ -190,6 +190,10 @@ pub enum GroupedWeightEncoding {
     SignedSix,
     /// Nonlinear four-bit codewords with signed six-bit group scales.
     NonlinearFour,
+    /// Five packed trits per byte with a four-trit tail and a trailing scale.
+    PackedTrits,
+    /// Four two-bit ternary fields per byte with a trailing scale.
+    TwoBitTernary,
 }
 
 impl From<CodebookEncoding> for GroupedWeightEncoding {
@@ -217,6 +221,46 @@ pub fn dot_grouped_weight_row(
         GroupedWeightEncoding::AffineFour => return dot_grouped_q4_row(weights, activations),
         GroupedWeightEncoding::AffineFive => return dot_grouped_q5_row(weights, activations),
         GroupedWeightEncoding::Codebook(codebook) => Request::C5(codebook as u64, bytes, blocks),
+        GroupedWeightEncoding::PackedTrits | GroupedWeightEncoding::TwoBitTernary => {
+            use verdant_bitpacked_product::{run, Adt0 as Packed, Adt1 as Fields};
+            let trits = encoding == GroupedWeightEncoding::PackedTrits;
+            let plan = |request| run(request).map_err(|_| invalid());
+            let value = |request| match plan(request)? {
+                Fields::C2(word) => Ok(word),
+                _ => Err(invalid()),
+            };
+            let width = value(Packed::C19(trits, bytes, blocks))?;
+            let mut sum = 0;
+            for (block, activation) in weights.chunks_exact(width as usize).zip(activations) {
+                let (payload, scale) = block
+                    .split_last_chunk::<{ size_of::<u16>() }>()
+                    .ok_or_else(invalid)?;
+                let mut coefficients = activation.codes.map(|_| 0_i8);
+                for (slot, byte) in payload.iter().enumerate() {
+                    let Fields::C1(start, stride, count, _) =
+                        plan(Packed::C16(trits, slot as u64))?
+                    else {
+                        return Err(invalid());
+                    };
+                    let decoded = value(Packed::C20(trits, u64::from(*byte)))?.to_le_bytes();
+                    for (position, code) in decoded[..count as usize].iter().enumerate() {
+                        coefficients[start as usize + position * stride as usize] = *code as i8;
+                    }
+                }
+                let dot = uor_matmul::dot_ref(
+                    uor_matmul::as_alphabet_full(&coefficients),
+                    uor_matmul::as_alphabet_full(&activation.codes),
+                );
+                let dot = signed_word_f32(i32::try_from(dot).map_err(|_| invalid())?)?;
+                sum = value(Packed::C10(
+                    sum,
+                    dot.to_bits().into(),
+                    activation.scale.to_bits().into(),
+                    u16::from_ne_bytes(*scale).into(),
+                ))?;
+            }
+            return Ok(f32::from_bits(sum as u32));
+        }
         GroupedWeightEncoding::NonlinearFour => Request::C12(bytes, blocks),
         GroupedWeightEncoding::SignedThree | GroupedWeightEncoding::SignedSix => {
             return run_grouped_affine_row!(

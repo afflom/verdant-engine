@@ -437,3 +437,9 @@ The unchanged GGML reference functions `quantize_row_tq1_0_ref` and `quantize_ro
 The BitpackedProduct certificate selects each code's source index and stride, rounds the signed coefficient, packs base-three digits or two-bit planes, and finalizes the byte before the binary16 scale is appended. It reuses the existing certified peak and scale operations. Attestation `ce1196f01544c9ee4f6d29f8ff614b08889676ec79031f22f4c2f9756bf8b43a` binds the production export.
 
 Reading adjacent values instead of applying the certified stride makes `cargo test -p verdant-tensor --lib ternary_block_encoding_vtk_44` fail on TQ1_0 row 2. Restoring the model-directed read passes both encoders and the previous compact encoders.
+
+## VTK-45 ternary row products
+
+The same certified ternary layout used by the encoders selects each physical lane. The packed-trit decoder recovers five signed coefficients and the two-bit decoder preserves every raw field, including code three. Each 256-lane block uses the existing exact integer contraction and the certified binary32 scaled accumulation. Attestation `6e4d44c9170897532a80e686638769430910ab5a0b10a8488d7c46bcd354eab8` binds the decoder.
+
+All 196 result words across zero to five blocks matched the original GGML CPU products. The CPU quantized its own activations. Both row formats reject truncated weights and mismatched activation counts. Removing the physical stride failed TQ1_0 row 1. Restoring it passed both products and the encoder and nonlinear-product regressions. The source lift retained 585 lifted and 1,150 residual functions.

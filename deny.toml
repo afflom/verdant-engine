@@ -538,6 +538,6 @@ license-files = [{ path = "src/lib.rs", hash = 0x099b2b77 }]
 
 [[licenses.clarify]]
 name = "verdant_bitpacked_product"
-version = "=2.37.0"
+version = "=2.38.0"
 expression = "MIT OR Apache-2.0"
-license-files = [{ path = "src/lib.rs", hash = 0xa17cf679 }]
+license-files = [{ path = "src/lib.rs", hash = 0x86143191 }]

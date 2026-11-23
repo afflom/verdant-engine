@@ -5003,7 +5003,7 @@ reason = "type"
 detail = "type outside the lift: GroupedQ8Block.scale: f32"
 
 [[residue]]
-kappa = "f8a8124766c393a34ab61f7321ae4e0cb59bf88757d84b9d22a52856156d2ca7"
+kappa = "15a6ed3f04270fdc68f7ccba66b5d0b3b68e72f7b36b108136a3babd3c8a58ce"
 function = "verdant_tensor::linear::grouped_affine::dot_grouped_weight_row"
 reason = "type"
 detail = "type outside the lift: GroupedQ8Block.scale: f32"

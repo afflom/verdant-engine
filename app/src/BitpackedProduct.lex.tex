@@ -29,7 +29,9 @@ inductive{
     {name: ternaryLayout, fields: [Bool, Nat, Nat]},
     {name: ternaryGroup, fields: [Bool, Nat]},
     {name: ternaryDigit, fields: [Bool, Nat, Nat, Nat, Nat]},
-    {name: ternaryFinish, fields: [Bool, Nat, Nat]}
+    {name: ternaryFinish, fields: [Bool, Nat, Nat]},
+    {name: ternaryRow, fields: [Bool, Nat, Nat]},
+    {name: ternaryCoefficients, fields: [Bool, Nat]}
   ]
 }
 
@@ -148,6 +150,22 @@ definition{
 }
 
 definition{
+  name: ternarySignedByte,
+  parameters: [trits : Bool, byte : Nat, power : Nat],
+  result: Nat,
+  body: (let digit : Nat := (if trits then (prim quotient (prim multiply 3 (prim remainder (prim multiply byte power : Nat) 256 0 : Nat) : Nat) 256 0 : Nat) else (prim remainder (prim quotient byte power 0 : Nat) 4 0 : Nat)); (prim remainder (digit + 255) 256 0 : Nat)),
+  executable: true
+}
+
+definition{
+  name: ternaryCoefficients,
+  parameters: [trits : Bool, byte : Nat],
+  result: Step,
+  body: (if (byte <? 256) then (let a : Nat := (ternarySignedByte trits byte 1); (let b : Nat := (ternarySignedByte trits byte (if trits then 3 else 4)); (let c : Nat := (ternarySignedByte trits byte (if trits then 9 else 16)); (let d : Nat := (ternarySignedByte trits byte (if trits then 27 else 64)); (let e : Nat := (if trits then (ternarySignedByte true byte 81) else 0); (ctor Step.value (a + (prim multiply 256 (b + (prim multiply 256 (c + (prim multiply 256 (d + (prim multiply 256 e : Nat)) : Nat)) : Nat)) : Nat)))))))) else (ctor Step.refuse)),
+  executable: true
+}
+
+definition{
   name: evaluate,
   parameters: [request : Request],
   result: Step,
@@ -164,6 +182,8 @@ definition{
     | Request.floatLayout grouped bytes activations => (floatLayout grouped bytes activations)
     | Request.floatPair byte => (if (byte <? 256) then (ctor Step.tablePair (18584 + (prim remainder byte 16 0 : Nat)) (18584 + (prim quotient byte 16 0 : Nat))) else (ctor Step.refuse))
     | Request.floatSum sum dot scale activationScale => (floatSum sum dot scale activationScale)
+    | Request.ternaryRow trits bytes blocks => (let width : Nat := (if trits then 54 else 66); (if (((prim remainder bytes width 0 : Nat) =? 0) && ((prim quotient bytes width 0 : Nat) =? blocks)) then (ctor Step.value width) else (ctor Step.refuse)))
+    | Request.ternaryCoefficients trits byte => (ternaryCoefficients trits byte)
     | Request.ternaryLayout trits lanes bytes => (let codes : Nat := (if trits then 52 else 64); (if ((lanes =? 256) && (bytes =? (codes + 2))) then (ctor Step.value codes) else (ctor Step.refuse)))
     | Request.ternaryGroup trits byte => (ternaryGroup trits byte)
     | Request.ternaryDigit trits position prefix word inverse => (ternaryDigit trits position prefix word inverse)
@@ -321,6 +341,34 @@ theorem{
   name: ternaryNegativeTie,
   parameters: [],
   statement: ((evaluate (ctor Request.ternaryDigit true 0 0 3204448256 1065353216)) = (ctor Step.value 0)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: rejectShortTernaryRow,
+  parameters: [],
+  statement: ((evaluate (ctor Request.ternaryRow true 53 1)) = (ctor Step.refuse)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: twoBitUnusedCode,
+  parameters: [],
+  statement: ((evaluate (ctor Request.ternaryCoefficients false 255)) = (ctor Step.value 33686018)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: ternaryZeroByte,
+  parameters: [],
+  statement: ((evaluate (ctor Request.ternaryCoefficients true 0)) = (ctor Step.value 1099511627775)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: packedTritOrdering,
+  parameters: [],
+  statement: ((evaluate (ctor Request.ternaryCoefficients true 43)) = (ctor Step.value 255)),
   proof: reflexivity{}
 }
 \end{semanticmodule}
