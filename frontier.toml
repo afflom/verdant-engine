@@ -8691,7 +8691,7 @@ function = "verdant_cli::run_cli"
 effect = "Fs effect: std::fs::read"
 
 [[effect]]
-kappa = "e956530d7e6456aa17e642d3861bd55852273d2feeda2b32569f53b2773258ed"
+kappa = "ec1e0204ad10bacaffba1999c3d713fa268874e52c3be7b5d30f52912850f81d"
 function = "verdant_core::build_ops::VerdantOperatorChannel::execute_native_build_op"
 effect = "Process effect: Command::new"
 
