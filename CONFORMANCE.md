@@ -129,6 +129,7 @@ model does not sanction.
 | `VTK-30` | `build` | Verdant evaluates binary32 linear attention bias slopes for power-of-two and non-power-of-two head groups against the imported GGML CPU kernel |
 | `VTK-31` | `build` | Verdant selects deterministic binary32 row indices in ascending or descending value order and agrees with the imported CPU ranking kernels |
 | `VTK-32` | `build` | Verdant normalizes binary32 score rows with an optional unreturned score and matches the imported CPU probabilities |
+| `VTK-34` | `build` | Verdant evaluates binary32 softplus across finite, subnormal and exceptional scores against the imported CPU unary kernel |
 
 ## fidelity
 

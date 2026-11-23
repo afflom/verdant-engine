@@ -775,3 +775,9 @@ id = "VTK-32"
 level = "build"
 suite = "engine"
 statement = "Verdant normalizes binary32 score rows with an optional unreturned score and matches the imported CPU probabilities"
+
+[[id]]
+id = "VTK-34"
+level = "build"
+suite = "engine"
+statement = "Verdant evaluates binary32 softplus across finite, subnormal and exceptional scores against the imported CPU unary kernel"

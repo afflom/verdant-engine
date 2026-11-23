@@ -698,3 +698,9 @@ Feature: engine
     Given finite score rows and masked entries
     When the normalized exponential includes an optional unreturned score
     Then the probabilities agree with the imported CPU implementation
+
+  @VTK-34 @build
+  Scenario: Verdant evaluates binary32 softplus across finite, subnormal and exceptional scores against the imported CPU unary kernel
+    Given encoded binary32 inputs including tiny exponentials and the positive cutoff
+    When the arithmetic kernel evaluates softplus
+    Then the independent CPU unary operation agrees within four binary32 steps

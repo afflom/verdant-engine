@@ -82,6 +82,28 @@ int main(int argc, char **argv) {
     }
     return std::feof(stdin) ? 0 : 2;
   }
+  if (!std::strcmp(argv[1], "unary-softplus")) {
+    unsigned width;
+    while (std::scanf("%u", &width) == 1) {
+      if (!width || width > 4096) return 3;
+      auto *ctx = ggml_init({1024*1024, nullptr, false});
+      auto *src = ggml_new_tensor_1d(ctx, GGML_TYPE_F32, width);
+      for (unsigned i=0; i<width; ++i) {
+        uint32_t word;
+        if (std::scanf("%u", &word)!=1) return 2;
+        std::memcpy(static_cast<float*>(src->data)+i, &word, sizeof(word));
+      }
+      auto *out = ggml_softplus(ctx,src);
+      ggml_compute_params params{}; params.nth=1;
+      ggml_compute_forward_softplus(&params,out);
+      for (unsigned i=0; i<width; ++i) {
+        uint32_t word; std::memcpy(&word,static_cast<const float*>(out->data)+i,sizeof(word));
+        std::printf("%u\n",word);
+      }
+      ggml_free(ctx);
+    }
+    return std::feof(stdin)?0:2;
+  }
   if (!std::strcmp(argv[1], "normalized-exp")) {
     unsigned width, present, sink_bits;
     while (std::scanf("%u %u %u", &width, &present, &sink_bits) == 3) {
@@ -2165,4 +2187,43 @@ fn normalized_exponential_vtk_32() {
         assert_eq!(before, invalid[0].to_bits());
     }
     assert!(super::normalize_exponential_f32(&mut [], None).is_ok());
+}
+
+#[test]
+fn softplus_vtk_34() {
+    use std::fmt::Write;
+    let mut words = Vec::new();
+    for value in 0..=u16::MAX {
+        for format in [1_u64, 30] {
+            words.push(super::convert_float_storage(format, 0, value.into()).unwrap().unwrap() as u32);
+        }
+    }
+    for sign in [0, 1_u32<<31] {
+        for exponent in 0..=255 {
+            for mantissa in [0,1,0x2aaaaa,0x555555,0x7ffffe,0x7fffff] {
+                words.push(sign | (exponent<<23) | mantissa);
+            }
+        }
+    }
+    for center in [20.0_f32, -16.0, -17.0, -100.0] {
+        let word = center.to_bits(); words.extend(word-8..=word+8);
+    }
+    words.sort_unstable(); words.dedup();
+    let mut requests = String::new();
+    for chunk in words.chunks(1024) {
+        writeln!(requests,"{}",chunk.len()).unwrap();
+        for word in chunk {writeln!(requests,"{word}").unwrap();}
+    }
+    let oracle = query_oracle("unary-softplus",requests);
+    assert_eq!(oracle.len(),words.len());
+    for (word,bits) in words.into_iter().zip(oracle) {
+        let got = super::softplus_f32(f32::from_bits(word)).unwrap();
+        let reference = f32::from_bits(bits);
+        if reference.is_nan() { assert!(got.is_nan()); }
+        else if reference == 0.0 || !reference.is_finite() || f32::from_bits(word)>20.0 {
+            assert_eq!(got.to_bits(),bits,"input {word:#x}");
+        } else {
+            assert!(got.is_finite() && !got.is_sign_negative() && got.to_bits().abs_diff(bits)<=4,"input {word:#x}, {got} vs {reference}");
+        }
+    }
 }
