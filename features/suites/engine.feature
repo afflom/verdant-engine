@@ -801,3 +801,9 @@ Feature: engine
     Given signed codebook weights, per-group shifts and independently prepared signed-byte activations
     When the engine contracts zero or more complete blocks
     Then every output word matches the pinned GGML CPU and mismatched extents are refused
+
+  @VTK-48 @build
+  Scenario: Verdant encodes exponent-only and grouped unsigned-scale four-bit floating weight blocks
+    Given signed scalar inputs, scale boundaries, signed zeros and tied nearest values
+    When Verdant encodes the complete block
+    Then every stored byte matches the original GGML encoder and rejected inputs preserve the destination

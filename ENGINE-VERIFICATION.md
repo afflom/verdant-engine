@@ -455,3 +455,9 @@ The pinned GGML CPU independently prepared its activations and produced all 196 
 The Prism plan reconstructs a shared binary16 scale or its four distributed nibbles, selects the eight-lane grid and applies the signed one-eighth shift. The imported grid contains exactly −1, 0 and 1. Expressing each scaled coefficient in eighths bounds the integral product by 256 × 128 × 15 × 9, within binary32's exact integer range. Applying the certified one-eighth unit before each scaled block preserves the reference sum order. Attestation `3599877f41301c37e0a457a2ec904887919b3a89383794350226ef82e12384a4` binds the export.
 
 All 196 result words matched the original GGML CPU over zero to five blocks, including distributed scale nibbles with independently varied group scales. Both formats reject incomplete blocks and mismatched activation counts. Reversing the shift sign failed IQ1_S row 1. Restoring it passed both new products, the two-bit codebooks and the four-lane codebooks. The source lift retained 585 lifted and 1,150 residual functions.
+
+## VTK-48 compact four-bit block encoders
+
+The certified layout assigns one exponent-only scale to 32 lanes or four unsigned scales to groups of 16. Candidate selection follows the imported table order on ties. The destination is published after every group succeeds. Attestation `d982858873ba0e37afa86b778d4f7be7c5c69dbf9a1e65aac988a421f99966ea` binds the export.
+
+All 16,787 bytes in 622 blocks matched the two original GGML encoders. The cases include single-lane impulses, powers of two and their representable neighbors, and unsigned scale transitions. Short buffers and nonfinite lanes preserved the destination. Repeating the low nibble in both positions failed the MXFP4 byte comparison. The restored encoders and prior ternary contracts passed. The source lift retained 585 lifted and 1,150 residual functions.

@@ -31,7 +31,11 @@ inductive{
     {name: ternaryDigit, fields: [Bool, Nat, Nat, Nat, Nat]},
     {name: ternaryFinish, fields: [Bool, Nat, Nat]},
     {name: ternaryRow, fields: [Bool, Nat, Nat]},
-    {name: ternaryCoefficients, fields: [Bool, Nat]}
+    {name: ternaryCoefficients, fields: [Bool, Nat]},
+    {name: floatEncodingLayout, fields: [Bool, Nat, Nat]},
+    {name: floatEncodingScale, fields: [Bool, Nat]},
+    {name: nearestFloatCode, fields: [Nat, Nat, Nat, Nat, Nat]},
+    {name: floatCodePair, fields: [Nat, Nat]}
   ]
 }
 
@@ -44,7 +48,8 @@ inductive{
     {name: row, fields: [Nat, Nat, Nat, Nat]},
     {name: value, fields: [Nat]},
     {name: signedPair, fields: [Nat, Nat]},
-    {name: tablePair, fields: [Nat, Nat]}
+    {name: tablePair, fields: [Nat, Nat]},
+    {name: candidate, fields: [Nat, Nat]}
   ]
 }
 
@@ -145,6 +150,7 @@ definition{
     | Step.refuse => (ctor Step.refuse)
     | Step.row width groups lanes blocks => (ctor Step.refuse)
     | Step.signedPair low high => (ctor Step.refuse)
+    | Step.candidate index error => (ctor Step.refuse)
     | Step.tablePair low high => (ctor Step.refuse)) else (ctor Step.refuse)),
   executable: true
 }
@@ -166,6 +172,22 @@ definition{
 }
 
 definition{
+  name: exponentScale,
+  parameters: [peak : Nat],
+  result: Nat,
+  body: (if (peak =? 0) then 0 else (let sub : Bool := (peak <? 8388608); (let word : Nat := (if sub then (ScalarF32::multiply peak 1266679808) else peak); (let exponent : Nat := (ScalarF32::exponent word); (let bias : Nat := (if sub then 150 else 126); (let size : Nat := (if (bias <? exponent) then (prim subtract exponent (bias + 1) : Nat) else (prim subtract bias exponent : Nat)); (let near : Nat := (if (size <? 2) then 0 else (if (size <? 4) then 1 else (if (size <? 8) then 2 else (if (size <? 16) then 5 else (if (size <? 32) then 11 else (if (size <? 64) then 22 else (if (size <? 128) then 44 else 88))))))); (let carry : Nat := (if ((prim subtract 8388608 (ScalarF32::fraction word) : Nat) <=? near) then 1 else 0); (prim remainder (prim subtract ((exponent + 256) + carry) (if sub then 26 else 2) : Nat) 256 0 : Nat))))))))),
+  executable: true
+}
+
+definition{
+  name: unsignedScale,
+  parameters: [word : Nat],
+  result: Nat,
+  body: (let exponent : Nat := (ScalarF32::exponent word); (if (exponent <=? 120) then (let rounded : Nat := (ScalarF32::add (ScalarF32::multiply word 1140850688) 1056964608); (let integer : Nat := (prim quotient (ScalarF32::mantissa rounded) (ScalarF32::power (prim subtract 150 (ScalarF32::exponent rounded) : Nat)) 0 : Nat); (if (integer <? 8) then integer else 7))) else (if (134 <? exponent) then 126 else (let field : Nat := ((prim multiply 8 (prim subtract exponent 120 : Nat) : Nat) + (prim quotient ((ScalarF32::fraction word) + 524288) 1048576 0 : Nat)); (if (field <? 120) then field else 126))))),
+  executable: true
+}
+
+definition{
   name: evaluate,
   parameters: [request : Request],
   result: Step,
@@ -182,6 +204,10 @@ definition{
     | Request.floatLayout grouped bytes activations => (floatLayout grouped bytes activations)
     | Request.floatPair byte => (if (byte <? 256) then (ctor Step.tablePair (18584 + (prim remainder byte 16 0 : Nat)) (18584 + (prim quotient byte 16 0 : Nat))) else (ctor Step.refuse))
     | Request.floatSum sum dot scale activationScale => (floatSum sum dot scale activationScale)
+    | Request.floatEncodingLayout grouped lanes bytes => (if ((lanes =? (if grouped then 64 else 32)) && (bytes =? (if grouped then 36 else 17))) then (ctor Step.row (if grouped then 4 else 1) (if grouped then 16 else 32) (if grouped then 2 else 1) 18584) else (ctor Step.refuse))
+    | Request.floatEncodingScale grouped peak => (if (peak <? 2139095040) then (ctor Step.value (if grouped then (unsignedScale (ScalarF32::divide peak 1086324736)) else (exponentScale peak))) else (ctor Step.refuse))
+    | Request.nearestFloatCode word candidate index best error => (if (((word <? 4294967296) && (candidate <? 4294967296)) && ((index <? 16) && (best <? 16))) then (let distance : Nat := (ScalarF32::magnitude (ScalarF32::add candidate (ScalarF32::negate word))); (if (distance <? error) then (ctor Step.candidate index distance) else (ctor Step.candidate best error))) else (ctor Step.refuse))
+    | Request.floatCodePair left right => (if ((left <? 16) && (right <? 16)) then (ctor Step.value (left + (prim multiply 16 right : Nat))) else (ctor Step.refuse))
     | Request.ternaryRow trits bytes blocks => (let width : Nat := (if trits then 54 else 66); (if (((prim remainder bytes width 0 : Nat) =? 0) && ((prim quotient bytes width 0 : Nat) =? blocks)) then (ctor Step.value width) else (ctor Step.refuse)))
     | Request.ternaryCoefficients trits byte => (ternaryCoefficients trits byte)
     | Request.ternaryLayout trits lanes bytes => (let codes : Nat := (if trits then 52 else 64); (if ((lanes =? 256) && (bytes =? (codes + 2))) then (ctor Step.value codes) else (ctor Step.refuse)))
@@ -369,6 +395,41 @@ theorem{
   name: packedTritOrdering,
   parameters: [],
   statement: ((evaluate (ctor Request.ternaryCoefficients true 43)) = (ctor Step.value 255)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: exponentOnlyUnit,
+  parameters: [],
+  statement: ((evaluate (ctor Request.floatEncodingScale false 1065353216)) = (ctor Step.value 125)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: unsignedUnitScale,
+  parameters: [],
+  statement: ((unsignedScale 1065353216) = 56),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: clampUnsignedSubnormal,
+  parameters: [],
+  statement: ((unsignedScale 1014350479) = 7),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: equalDistanceKeepsFirstCode,
+  parameters: [],
+  statement: ((evaluate (ctor Request.nearestFloatCode 1065353216 1073741824 2 1 1065353216)) = (ctor Step.candidate 1 1065353216)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: refuseTruncatedGroup,
+  parameters: [],
+  statement: ((evaluate (ctor Request.floatEncodingLayout true 64 35)) = (ctor Step.refuse)),
   proof: reflexivity{}
 }
 \end{semanticmodule}

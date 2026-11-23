@@ -43,6 +43,10 @@ pub enum PackedWeightEncoding {
     PackedTrits,
     /// 256 ternary lanes in interleaved two-bit planes.
     TwoBitTernary,
+    /// Four-bit floating codebook with one exponent-only scale.
+    ExponentOnlyFour,
+    /// Four-bit floating codebook with unsigned E4M3 group scales.
+    UnsignedScaleFour,
 }
 
 impl From<WeightBlockEncoding> for PackedWeightEncoding {
@@ -71,7 +75,15 @@ pub fn encode_weight_block<I: AsRef<[f32]> + ?Sized>(
     use PackedWeightEncoding::*;
     let input = input.as_ref();
     let kind = kind.into();
-    if matches!(kind, BinarySign | CenteredTwo | PackedTrits | TwoBitTernary) {
+    if matches!(
+        kind,
+        BinarySign
+            | CenteredTwo
+            | PackedTrits
+            | TwoBitTernary
+            | ExponentOnlyFour
+            | UnsignedScaleFour
+    ) {
         use verdant_bitpacked_product::{run, Adt0 as Request, Adt1 as Step};
         let ternary = matches!(kind, PackedTrits | TwoBitTernary);
         let trits = kind == PackedTrits;
@@ -84,6 +96,68 @@ pub fn encode_weight_block<I: AsRef<[f32]> + ?Sized>(
             Step::C2(word) => Ok(word),
             _ => Err(invalid()),
         };
+        if matches!(kind, ExponentOnlyFour | UnsignedScaleFour) {
+            let grouped = kind == UnsignedScaleFour;
+            let Step::C1(groups, lanes, scale_operation, table) = plan(Request::C21(
+                grouped,
+                input.len() as u64,
+                output.len() as u64,
+            ))?
+            else {
+                return Err(invalid());
+            };
+            let mut staged = [0_u8; LANES + size_of::<u32>()];
+            let (scales, codes) = staged[..output.len()].split_at_mut(groups as usize);
+            for ((fields, header), body) in input
+                .chunks_exact(lanes as usize)
+                .zip(scales)
+                .zip(codes.chunks_exact_mut((lanes / scalars::two_u64()) as usize))
+            {
+                let mut peak = 0;
+                for lane in fields {
+                    peak = value(Request::C12(true, peak, lane.to_bits().into()))?;
+                }
+                let byte = value(Request::C22(grouped, peak))?;
+                *header = byte as u8;
+                let scale = super::evaluate_small_float(scale_operation, byte)
+                    .map_err(|_| invalid())?
+                    .ok_or_else(invalid)?;
+                let mut candidates = [0; PAIRS];
+                for (slot, candidate) in candidates.iter_mut().enumerate() {
+                    let level = super::GGML_QUANTIZED_TABLES[table as usize + slot] as i8;
+                    let level = super::signed_word_f32(i32::from(level))?;
+                    *candidate = super::evaluate_f32_scalar(
+                        scalars::two_u64(),
+                        level,
+                        f32::from_bits(scale as u32),
+                    )?
+                    .to_bits();
+                }
+                let nearest = |word: f32| -> Result<u64, TensorComputeError> {
+                    let (mut best, mut error) = (0, u64::from(u32::MAX));
+                    for (index, &candidate) in candidates.iter().enumerate() {
+                        let Step::C5(next, distance) = plan(Request::C23(
+                            word.to_bits().into(),
+                            candidate.into(),
+                            index as u64,
+                            best,
+                            error,
+                        ))?
+                        else {
+                            return Err(invalid());
+                        };
+                        (best, error) = (next, distance);
+                    }
+                    Ok(best)
+                };
+                let (low, high) = fields.split_at(body.len());
+                for ((dst, &a), &b) in body.iter_mut().zip(low).zip(high) {
+                    *dst = value(Request::C24(nearest(a)?, nearest(b)?))? as u8;
+                }
+            }
+            output.copy_from_slice(&staged[..output.len()]);
+            return Ok(());
+        }
         let layout = if ternary { Request::C15 } else { Request::C11 };
         let slots = value(layout(
             if ternary { trits } else { peak_scale },
