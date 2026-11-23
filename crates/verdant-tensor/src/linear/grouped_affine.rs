@@ -188,6 +188,8 @@ pub enum GroupedWeightEncoding {
     SignedThree,
     /// Six-bit signed coefficients and eight-bit signed group scales.
     SignedSix,
+    /// Nonlinear four-bit codewords with signed six-bit group scales.
+    NonlinearFour,
 }
 
 impl From<CodebookEncoding> for GroupedWeightEncoding {
@@ -208,11 +210,14 @@ pub fn dot_grouped_weight_row(
     const HALF_BYTES: u64 = size_of::<u16>() as u64;
     const WORD_BYTES: u64 = size_of::<u32>() as u64;
     let encoding = encoding.into();
-    let kind = match encoding {
+    let bytes = weights.len() as u64;
+    let blocks = activations.len() as u64;
+    let layout = match encoding {
         GroupedWeightEncoding::AffineTwo => return super::dot_grouped_q2_row(weights, activations),
         GroupedWeightEncoding::AffineFour => return dot_grouped_q4_row(weights, activations),
         GroupedWeightEncoding::AffineFive => return dot_grouped_q5_row(weights, activations),
-        GroupedWeightEncoding::Codebook(codebook) => codebook as u64,
+        GroupedWeightEncoding::Codebook(codebook) => Request::C5(codebook as u64, bytes, blocks),
+        GroupedWeightEncoding::NonlinearFour => Request::C12(bytes, blocks),
         GroupedWeightEncoding::SignedThree | GroupedWeightEncoding::SignedSix => {
             return run_grouped_affine_row!(
                 encoding == GroupedWeightEncoding::SignedSix,
@@ -223,12 +228,7 @@ pub fn dot_grouped_weight_row(
         }
     };
     let query = |request| run(request).map_err(|_| invalid());
-    let Step::C5(width, normalization) = query(Request::C5(
-        kind,
-        weights.len() as u64,
-        activations.len() as u64,
-    ))?
-    else {
+    let Step::C5(width, normalization) = query(layout)? else {
         return Err(TensorComputeError::ZeroOrMismatchedExtents {
             detail: "codebook weights and activation block counts differ".into(),
         });
@@ -249,6 +249,51 @@ pub fn dot_grouped_weight_row(
                 _ => Err(invalid()),
             }
         };
+        let half = convert_float_storage(1, 0, field(0, HALF_BYTES)?)
+            .map_err(|_| invalid())?
+            .ok_or_else(invalid)?;
+        let scale = evaluate_f32_scalar(
+            scalars::two_u64(),
+            f32::from_bits(half as u32),
+            activation.scale,
+        )?;
+        let GroupedWeightEncoding::Codebook(kind) = encoding else {
+            for (group, inputs) in activation.codes.chunks_exact(GROUP_WIDTH).enumerate() {
+                let group = group as u64;
+                let Step::C2(low, high, start) = query(Request::C13(group))? else {
+                    return Err(invalid());
+                };
+                let Step::C1(multiplier) =
+                    query(Request::C14(group, field(low, 1)?, field(high, 1)?))?
+                else {
+                    return Err(invalid());
+                };
+                let mut coefficients = [0_i8; GROUP_WIDTH];
+                let (lo, hi) = coefficients.split_at_mut(HIGH_PLANE_START);
+                for (column, (a, b)) in lo.iter_mut().zip(hi).enumerate() {
+                    use verdant_bitpacked_product::{run, Adt0 as Packed, Adt1 as Pair};
+                    let byte = field(start + column as u64, 1)?;
+                    let Pair::C4(first, second) =
+                        run(Packed::C3(true, column as u64, byte, 0)).map_err(|_| invalid())?
+                    else {
+                        return Err(invalid());
+                    };
+                    *a = tables[first as usize] as i8;
+                    *b = tables[second as usize] as i8;
+                }
+                let dot = uor_matmul::dot_ref(
+                    uor_matmul::as_alphabet_full(&coefficients),
+                    uor_matmul::as_alphabet_full(inputs),
+                );
+                let multiplier = signed_word_f32(i32::from(multiplier as i8))?;
+                let scaled = evaluate_f32_scalar(scalars::two_u64(), scale, multiplier)?;
+                let value = signed_word_f32(i32::try_from(dot).map_err(|_| invalid())?)?;
+                let term = evaluate_f32_scalar(scalars::two_u64(), scaled, value)?;
+                total = evaluate_f32_scalar(0, total, term)?;
+            }
+            continue;
+        };
+        let kind = kind as u64;
         let mut coefficients = activation.codes.map(|_| 0_i16);
         for (group, lanes) in coefficients.chunks_exact_mut(ACCUMULATORS).enumerate() {
             let group = group as u64;
@@ -289,14 +334,6 @@ pub fn dot_grouped_weight_row(
             uor_matmul::as_alphabet_full(&codes),
         );
         let signed = signed_word_f32(i32::try_from(product).map_err(|_| invalid())?)?;
-        let half = convert_float_storage(1, 0, field(0, HALF_BYTES)?)
-            .map_err(|_| invalid())?
-            .ok_or_else(invalid)?;
-        let scale = evaluate_f32_scalar(
-            scalars::two_u64(),
-            f32::from_bits(half as u32),
-            activation.scale,
-        )?;
         let term = evaluate_f32_scalar(scalars::two_u64(), scale, signed)?;
         total = evaluate_f32_scalar(0, total, term)?;
     }

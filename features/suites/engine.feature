@@ -771,3 +771,9 @@ Feature: engine
     Given packed weight groups and prepared signed-byte activation blocks
     When the engine evaluates multiple contracted blocks
     Then every result word matches the pinned GGML CPU product and mismatched extents are refused
+
+  @VTK-43 @build
+  Scenario: Verdant contracts grouped four-bit codebook weights with prepared signed-byte activations in reference group order
+    Given packed nonlinear coefficients with signed group scales
+    When Verdant evaluates complete or truncated weight rows
+    Then each complete product matches the pinned GGML CPU word and mismatched extents are refused

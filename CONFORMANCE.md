@@ -141,6 +141,7 @@ model does not sanction.
 | `VTK-40` | `build` | Verdant encodes centered and affine four- and five-bit weight blocks against the imported reference encoders |
 | `VTK-41` | `build` | Verdant encodes packed sign and centered two-bit weight blocks byte for byte against the imported reference encoders |
 | `VTK-42` | `build` | Verdant contracts grouped signed three-bit and six-bit weights with prepared signed-byte activations in the reference accumulator order |
+| `VTK-43` | `build` | Verdant contracts grouped four-bit codebook weights with prepared signed-byte activations in reference group order |
 
 ## fidelity
 
