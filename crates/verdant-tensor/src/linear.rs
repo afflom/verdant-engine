@@ -14,6 +14,7 @@ use crate::{
 
 mod activations;
 mod grouped;
+mod grouped_affine;
 mod grouped_product;
 mod ranking;
 mod rotation;
@@ -24,6 +25,7 @@ pub use activations::{
     natural_log_f32, sigmoid_f32, silu_f32, sin_cos_f32, softplus_f32, swiglu_f32, tanh_f32,
 };
 pub use grouped::{encode_grouped_q8_block, GroupedQ8Block};
+pub use grouped_affine::{dot_grouped_q4_row, dot_grouped_q5_row};
 pub use grouped_product::dot_grouped_q2_row;
 pub use ranking::RowRankingF32;
 pub use rotation::{rotate_pair_f32, signed_word_f32, RotaryParameters, RotarySpectrum};

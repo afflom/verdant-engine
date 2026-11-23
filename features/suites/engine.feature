@@ -699,6 +699,12 @@ Feature: engine
     When the normalized exponential includes an optional unreturned score
     Then the probabilities agree with the imported CPU implementation
 
+  @VTK-33 @build
+  Scenario: Verdant contracts grouped four- and five-bit affine weight rows with signed eight-bit activation blocks and matches the imported CPU
+    Given encoded weight rows and grouped signed activations
+    When the tensor kernel contracts one or more blocks
+    Then the imported CPU reference agrees across scale and high-bit planes
+
   @VTK-34 @build
   Scenario: Verdant evaluates binary32 softplus across finite, subnormal and exceptional scores against the imported CPU unary kernel
     Given encoded binary32 inputs including tiny exponentials and the positive cutoff

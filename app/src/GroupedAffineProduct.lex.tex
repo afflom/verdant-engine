@@ -1,0 +1,83 @@
+\begin{lexlean}{GroupedAffineProduct}
+\useglossary{lexlean.std.bool@1.2.0}
+\useglossary{lexlean.std.nat@1.2.0}
+\title{Natural number}
+\begin{semanticmodule}
+inductive{
+  name: Request,
+  type_parameters: [],
+  parameters: [],
+  constructors: [
+    {name: layout, fields: [Bool, Nat, Nat]},
+    {name: metadata, fields: [Nat]},
+    {name: group, fields: [Bool, Nat, Nat, Nat, Nat]},
+    {name: coefficient, fields: [Nat, Nat, Nat, Nat, Nat]},
+    {name: accumulation, fields: [Bool]}
+  ]
+}
+
+inductive{
+  name: Step,
+  type_parameters: [],
+  parameters: [],
+  constructors: [
+    {name: refused, fields: []},
+    {name: word, fields: [Nat]},
+    {name: metadata, fields: [Nat, Nat, Nat]},
+    {name: group, fields: [Nat, Nat, Nat, Nat, Nat]},
+    {name: arithmetic, fields: [Nat, Nat]}
+  ]
+}
+
+definition{
+  name: highDivisor,
+  parameters: [group : Nat],
+  result: Nat,
+  body: (if (group =? 0) then 1 else (if (group =? 1) then 2 else (if (group =? 2) then 4 else (if (group =? 3) then 8 else (if (group =? 4) then 16 else (if (group =? 5) then 32 else (if (group =? 6) then 64 else 128))))))),
+  executable: true
+}
+
+definition{
+  name: groupFields,
+  parameters: [high : Bool, group : Nat, a : Nat, b : Nat, c : Nat],
+  result: Step,
+  body: (if ((((group <? 8) && (a <? 256)) && (b <? 256)) && (c <? 256)) then (let scale : Nat := (if (group <? 4) then (prim remainder a 64 0 : Nat) else ((prim remainder c 16 0 : Nat) + (prim multiply 16 (prim quotient a 64 0 : Nat) : Nat))); (let minimum : Nat := (if (group <? 4) then (prim remainder b 64 0 : Nat) else ((prim quotient c 16 0 : Nat) + (prim multiply 16 (prim quotient b 64 0 : Nat) : Nat))); (ctor Step.group ((if high then 48 else 16) + (prim multiply 32 (prim quotient group 2 0 : Nat) : Nat)) (if ((prim remainder group 2 0 : Nat) =? 0) then 1 else 16) (if high then (highDivisor group) else 0) scale minimum))) else (ctor Step.refused)),
+  executable: true
+}
+
+definition{
+  name: evaluate,
+  parameters: [request : Request],
+  result: Step,
+  body: (match request
+    | Request.layout high bytes count => (let size : Nat := (if high then 176 else 144); (if (bytes =? (prim multiply size count : Nat)) then (ctor Step.word size) else (ctor Step.refused)))
+    | Request.metadata group => (if (group <? 8) then (let slot : Nat := (prim remainder group 4 0 : Nat); (ctor Step.metadata (4 + slot) (8 + slot) (12 + slot))) else (ctor Step.refused))
+    | Request.group high group a b c => (groupFields high group a b c)
+    | Request.coefficient low divisor high plane scale => (let part : Nat := (prim remainder (prim quotient low divisor 0 : Nat) 16 0 : Nat); (let extra : Nat := (if (plane =? 0) then 0 else (prim multiply 16 (prim remainder (prim quotient high plane 0 : Nat) 2 0 : Nat) : Nat)); (ctor Step.word (prim multiply scale (part + extra) : Nat))))
+    | Request.accumulation subtract => (ctor Step.arithmetic 2 (if subtract then 1 else 0))),
+  executable: true,
+  production: {effects: [overflow], targets: [rust-core]}
+}
+
+theorem{
+  name: highGroupCombinesSixBitScales,
+  parameters: [],
+  statement: ((groupFields true 7 192 128 173) = (ctor Step.group 144 16 128 61 42)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: fifthBitContributesToCoefficient,
+  parameters: [],
+  statement: ((evaluate (ctor Request.coefficient 240 16 128 128 3)) = (ctor Step.word 93)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: shortWeightRowRefused,
+  parameters: [],
+  statement: ((evaluate (ctor Request.layout false 143 1)) = (ctor Step.refused)),
+  proof: reflexivity{}
+}
+\end{semanticmodule}
+\end{lexlean}
