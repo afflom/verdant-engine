@@ -13,26 +13,6 @@ use crate::{
 static LOD_ENVELOPES: OnceLock<[prism_kernel::LodRenderEnvelopeSpec; HD_LOD_ENVELOPE_COUNT]> =
     OnceLock::new();
 
-fn cached_lod_envelope(lod_rank: u64) -> prism_kernel::LodRenderEnvelopeSpec {
-    let table = LOD_ENVELOPES.get_or_init(|| {
-        let r2 = (1 + 1) as u64;
-        let r3 = r2 + 1;
-        let r4 = r3 + 1;
-        [
-            prism_kernel::lodEnvelopeByRank(0).expect("verified LOD0 envelope"),
-            prism_kernel::lodEnvelopeByRank(1).expect("verified LOD1 envelope"),
-            prism_kernel::lodEnvelopeByRank(r2).expect("verified LOD2 envelope"),
-            prism_kernel::lodEnvelopeByRank(r3).expect("verified LOD3 envelope"),
-            prism_kernel::lodEnvelopeByRank(r4).expect("verified LOD4 envelope"),
-        ]
-    });
-    if (lod_rank as usize) < table.len() {
-        table[lod_rank as usize]
-    } else {
-        prism_kernel::lodEnvelopeByRank(lod_rank).expect("verified Prism lodEnvelopeByRank")
-    }
-}
-
 /// World-space shaded triangle primitive submitted to the portable software tile rasterizer.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 pub struct RasterTriangle {
@@ -59,20 +39,6 @@ pub struct SoftwareTileFramebuffer {
     pub tiles_shaded: u32,
     /// Number of triangles that survived clip and backface culling.
     pub rasterized_triangles: u32,
-}
-
-fn edge_fn(ax: f32, ay: f32, bx: f32, by: f32, px: f32, py: f32) -> f32 {
-    (px - ax) * (by - ay) - (py - ay) * (bx - ax)
-}
-
-fn normalize3(v: [f64; DIM_SPATIAL]) -> [f64; DIM_SPATIAL] {
-    let i2 = 1usize + 1usize;
-    let len = (v[0] * v[0] + v[1] * v[1] + v[i2] * v[i2]).sqrt();
-    if len > geometric_epsilon() {
-        [v[0] / len, v[1] / len, v[i2] / len]
-    } else {
-        [0.0, 1.0, 0.0]
-    }
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -174,7 +140,23 @@ pub fn render_triangles_tile_framebuffer_with_scratch(
     let eight = (1_u32 + 1_u32) << (1_u32 + 1_u32);
     let byte_max = (pow2_u64(eight) - 1) as f32;
     let pct_denom = kc.percent_denom_f32;
-    let env = cached_lod_envelope(lod_rank);
+    let env_table = LOD_ENVELOPES.get_or_init(|| {
+        let r2 = (1 + 1) as u64;
+        let r3 = r2 + 1;
+        let r4 = r3 + 1;
+        [
+            prism_kernel::lodEnvelopeByRank(0).expect("verified LOD0 envelope"),
+            prism_kernel::lodEnvelopeByRank(1).expect("verified LOD1 envelope"),
+            prism_kernel::lodEnvelopeByRank(r2).expect("verified LOD2 envelope"),
+            prism_kernel::lodEnvelopeByRank(r3).expect("verified LOD3 envelope"),
+            prism_kernel::lodEnvelopeByRank(r4).expect("verified LOD4 envelope"),
+        ]
+    });
+    let env = if (lod_rank as usize) < env_table.len() {
+        env_table[lod_rank as usize]
+    } else {
+        prism_kernel::lodEnvelopeByRank(lod_rank).expect("verified Prism lodEnvelopeByRank")
+    };
 
     let sky_r = (env.skyRedPercent as f32) / pct_denom;
     let sky_g = (env.skyGreenPercent as f32) / pct_denom;
@@ -232,6 +214,17 @@ pub fn render_triangles_tile_framebuffer_with_scratch(
     )?;
 
     let mut rasterized_triangles = 0_u32;
+    let normalize3 = |v: [f64; DIM_SPATIAL]| -> [f64; DIM_SPATIAL] {
+        let len = (v[0] * v[0] + v[1] * v[1] + v[i2] * v[i2]).sqrt();
+        if len > geometric_epsilon() {
+            [v[0] / len, v[1] / len, v[i2] / len]
+        } else {
+            [0.0, 1.0, 0.0]
+        }
+    };
+    let edge_fn = |ax: f32, ay: f32, bx: f32, by: f32, px: f32, py: f32| -> f32 {
+        (px - ax) * (by - ay) - (py - ay) * (bx - ax)
+    };
     let sun = normalize3(sun_direction);
     let half = half_f64() as f32;
     let two = two_f64() as f32;

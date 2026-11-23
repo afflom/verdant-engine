@@ -12,21 +12,6 @@ fn failure() -> TensorComputeError {
     }
 }
 
-fn bits(value: f32) -> u64 {
-    u64::from(value.to_bits())
-}
-
-fn value(word: u64) -> f32 {
-    f32::from_bits(word as u32)
-}
-
-fn unsigned_float(word: u64) -> Result<f32, TensorComputeError> {
-    verdant_count_f32::run(word)
-        .map_err(|_| failure())?
-        .map(value)
-        .ok_or_else(failure)
-}
-
 /// Convert a signed 32-bit coordinate to binary32, rounding to nearest even.
 ///
 /// # Errors
@@ -34,7 +19,10 @@ fn unsigned_float(word: u64) -> Result<f32, TensorComputeError> {
 pub fn signed_word_f32(coordinate: i32) -> Result<f32, TensorComputeError> {
     let verdant_rotation_signed::Adt0::C0(negative, magnitude) =
         verdant_rotation_signed::run(u64::from(coordinate as u32));
-    let result = unsigned_float(magnitude)?;
+    let result = verdant_count_f32::run(magnitude)
+        .map_err(|_| failure())?
+        .map(|w| f32::from_bits(w as u32))
+        .ok_or_else(failure)?;
     if negative {
         evaluate_f32_scalar(u64::from(crate::scalars::six_u32()), result, 0.0)
     } else {
@@ -70,30 +58,43 @@ fn execute(
             }
             Action::C1(op, dst, a, b) => Some((
                 dst,
-                bits(evaluate_f32_scalar(op, value(read(a)?), value(read(b)?))?),
+                u64::from(
+                    evaluate_f32_scalar(
+                        op,
+                        f32::from_bits(read(a)? as u32),
+                        f32::from_bits(read(b)? as u32),
+                    )?
+                    .to_bits(),
+                ),
             )),
             Action::C2(maximum, dst, a, b) => Some((
                 dst,
                 verdant_rotation_limit::run(maximum, read(a)?, read(b)?).map_err(|_| failure())?,
             )),
-            Action::C3(dst, a) => Some((dst, bits(natural_log_f32(value(read(a)?))?))),
+            Action::C3(dst, a) => Some((
+                dst,
+                u64::from(natural_log_f32(f32::from_bits(read(a)? as u32))?.to_bits()),
+            )),
             Action::C4(signed, dst, a) => {
                 let input = read(a)?;
                 let converted = if signed {
                     signed_word_f32(input as i32)?
                 } else {
-                    unsigned_float(input)?
+                    verdant_count_f32::run(input)
+                        .map_err(|_| failure())?
+                        .map(|w| f32::from_bits(w as u32))
+                        .ok_or_else(failure)?
                 };
-                Some((dst, bits(converted)))
+                Some((dst, u64::from(converted.to_bits())))
             }
             Action::C5(op, dst, a) => Some((
                 dst,
                 evaluate_float_unary(op, 0, 0, read(a)?)?.ok_or_else(failure)?,
             )),
             Action::C6(cosine, sine, a) => {
-                let (s, c) = sin_cos_f32(value(read(a)?))?;
-                *slots.get_mut(cosine as usize).ok_or_else(failure)? = bits(c);
-                Some((sine, bits(s)))
+                let (s, c) = sin_cos_f32(f32::from_bits(read(a)? as u32))?;
+                *slots.get_mut(cosine as usize).ok_or_else(failure)? = u64::from(c.to_bits());
+                Some((sine, u64::from(s.to_bits())))
             }
             Action::C7 => None,
         };
@@ -144,8 +145,11 @@ impl RotarySpectrum {
     /// Returns a typed kernel error for an invalid dimension or frequency base.
     pub fn new(p: RotaryParameters) -> Result<Self, TensorComputeError> {
         let verdant_rotation_geometry::Adt0::C1(degree, last, extended) =
-            verdant_rotation_geometry::run(u64::from(p.dimensions), bits(p.extension))
-                .map_err(|_| failure())?
+            verdant_rotation_geometry::run(
+                u64::from(p.dimensions),
+                u64::from(p.extension.to_bits()),
+            )
+            .map_err(|_| failure())?
         else {
             return Err(failure());
         };
@@ -153,12 +157,12 @@ impl RotarySpectrum {
         let inputs = [
             u64::from(p.dimensions),
             u64::from(p.context as u32),
-            bits(p.base),
-            bits(p.frequency_scale),
-            bits(p.extension),
-            bits(p.magnitude),
-            bits(p.rotations[0]),
-            bits(p.rotations[1]),
+            u64::from(p.base.to_bits()),
+            u64::from(p.frequency_scale.to_bits()),
+            u64::from(p.extension.to_bits()),
+            u64::from(p.magnitude.to_bits()),
+            u64::from(p.rotations[0].to_bits()),
+            u64::from(p.rotations[1].to_bits()),
         ];
         let (magnitude, low, high) = execute(Program::C0(extended, p.truncate, last), &inputs)?;
         Ok(Self {
@@ -192,17 +196,17 @@ impl RotarySpectrum {
         inverse: bool,
     ) -> Result<(f32, f32), TensorComputeError> {
         let inputs = [
-            bits(phase),
-            bits(factor),
+            u64::from(phase.to_bits()),
+            u64::from(factor.to_bits()),
             u64::from(lane),
-            bits(self.scale),
-            bits(self.extension),
+            u64::from(self.scale.to_bits()),
+            u64::from(self.extension.to_bits()),
             self.magnitude,
             self.low,
             self.high,
         ];
         let (cosine, sine, _) = execute(Program::C1(self.extended, inverse), &inputs)?;
-        Ok((value(cosine), value(sine)))
+        Ok((f32::from_bits(cosine as u32), f32::from_bits(sine as u32)))
     }
 }
 
@@ -215,11 +219,11 @@ pub fn rotate_pair_f32(
     coefficients: (f32, f32),
 ) -> Result<(f32, f32), TensorComputeError> {
     let inputs = [
-        bits(coordinates.0),
-        bits(coordinates.1),
-        bits(coefficients.0),
-        bits(coefficients.1),
+        u64::from(coordinates.0.to_bits()),
+        u64::from(coordinates.1.to_bits()),
+        u64::from(coefficients.0.to_bits()),
+        u64::from(coefficients.1.to_bits()),
     ];
     let (x, y, _) = execute(Program::C2, &inputs)?;
-    Ok((value(x), value(y)))
+    Ok((f32::from_bits(x as u32), f32::from_bits(y as u32)))
 }

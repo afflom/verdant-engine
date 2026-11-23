@@ -8,6 +8,7 @@
 \importmodule{Foundation.Arch}
 \importmodule{Governance}
 \importmodule{Security}
+\importmodule{StitchHosting}
 \importmodule{Tensor}
 \title{Verdant Engine features and journeys}
 \begin{semanticmodule}
@@ -117,6 +118,20 @@ definition{
 }
 
 definition{
+  name: featureStitchLayer5PeerSeeding,
+  parameters: [],
+  result: Foundation.Arch::Feature,
+  body: (record Foundation.Arch::Feature {statement := "Visiting browsers and volunteer peers discover each other over zero-account Stitch Layer-5 signaling and reciprocally exchange verified 4-of-8 STCH2 release shards under ResourceAdmission budgets so Verdant self-serves without commercial cloud providers.", calls := (cons "StitchHosting::stitchLayer5FrameBounded" (cons "Design::processSignalStitchSwarm" (nil String))), acceptance := (cons "StitchHosting::stitchLayer5FrameBounded" (cons "StitchHosting::seederBudgetRespectsCeiling" (nil String)))})
+}
+
+definition{
+  name: featureVolunteerGatewayAndOfflineEnvelope,
+  parameters: [],
+  result: Foundation.Arch::Feature,
+  body: (record Foundation.Arch::Feature {statement := "Community hosts serve the immutable Blank Frame, STCH2 shards, and all six stakeholder parts from zero-registration volunteer HTTP and OCI nodes, IPFS, Zenodo, or offline OPFS and portable HTML envelopes that survive full GitHub outages.", calls := (cons "StitchHosting::availabilitySurvivesOriginLoss" (cons "Design::processServeVolunteerGateway" (cons "Design::processBootOfflinePortable" (nil String)))), acceptance := (cons "StitchHosting::availabilitySurvivesOriginLoss" (cons "StitchHosting::selfHostingDirect" (nil String)))})
+}
+
+definition{
   name: journeyGameDeveloper,
   parameters: [],
   result: Foundation.Arch::Journey,
@@ -180,6 +195,13 @@ definition{
 }
 
 definition{
+  name: journeyCommunityHostOperator,
+  parameters: [],
+  result: Foundation.Arch::Journey,
+  body: (record Foundation.Arch::Journey {actor := "Architecture::stakeholderCommunityHostOperator", steps := (cons "Features::featureStitchLayer5PeerSeeding" (cons "Features::featureVolunteerGatewayAndOfflineEnvelope" (cons "Features::featureStudioAndDocs" (nil String))))})
+}
+
+definition{
   name: hasCall,
   parameters: [f : Foundation.Arch::Feature],
   result: Bool,
@@ -196,7 +218,7 @@ definition{
 theorem{
   name: featuresAndJourneysRealized,
   parameters: [],
-  statement: ((((hasCall (featureProgressiveUorcStreaming)) && ((hasCall (featurePortableTensorKernels)) && ((hasCall (featureEcsAndBvh)) && ((hasCall (featureGltfAndWgsl)) && ((hasCall (featurePhysicsAndSplines)) && ((hasCall (featureSpatialAudio)) && ((hasCall (featureSnapshotsAndJobGraph)) && ((hasCall (featureStudioAndDocs)) && ((hasCall (featureFormalUiAndCompliance)) && ((hasCall (featureNeuromorphicObserverAndReasoning)) && ((hasCall (featurePrismIdAndStitchUniverses)) && ((hasCall (featureLawfulHdCharactersAndUniverses)) && ((hasCall (featureSovereignSigningRequests)) && ((hasCall (featureAdminQuorumAndRevocation)) && (hasCall (featureDecentralizedProjectCoordination)))))))))))))))) && (((hasStep (journeyGameDeveloper)) && (hasStep (journeyTechnicalArtist))) && (((hasStep (journeySystemsEngineer)) && (hasStep (journeyBrowserPlayer))) && ((hasStep (journeySecurityAuditor)) && ((hasStep (journeyUiComplianceArchitect)) && ((hasStep (journeyMultiplayerCitizen)) && ((hasStep (journeyVerdantAdmin)) && (hasStep (journeyProjectContributor))))))))) = true),
+  statement: ((((hasCall (featureProgressiveUorcStreaming)) && ((hasCall (featurePortableTensorKernels)) && ((hasCall (featureEcsAndBvh)) && ((hasCall (featureGltfAndWgsl)) && ((hasCall (featurePhysicsAndSplines)) && ((hasCall (featureSpatialAudio)) && ((hasCall (featureSnapshotsAndJobGraph)) && ((hasCall (featureStudioAndDocs)) && ((hasCall (featureFormalUiAndCompliance)) && ((hasCall (featureNeuromorphicObserverAndReasoning)) && ((hasCall (featurePrismIdAndStitchUniverses)) && ((hasCall (featureLawfulHdCharactersAndUniverses)) && ((hasCall (featureSovereignSigningRequests)) && ((hasCall (featureAdminQuorumAndRevocation)) && ((hasCall (featureDecentralizedProjectCoordination)) && ((hasCall (featureStitchLayer5PeerSeeding)) && (hasCall (featureVolunteerGatewayAndOfflineEnvelope)))))))))))))))))) && (((hasStep (journeyGameDeveloper)) && (hasStep (journeyTechnicalArtist))) && (((hasStep (journeySystemsEngineer)) && (hasStep (journeyBrowserPlayer))) && ((hasStep (journeySecurityAuditor)) && ((hasStep (journeyUiComplianceArchitect)) && ((hasStep (journeyMultiplayerCitizen)) && ((hasStep (journeyVerdantAdmin)) && ((hasStep (journeyProjectContributor)) && (hasStep (journeyCommunityHostOperator)))))))))) = true),
   proof: decide{}
 }
 \end{semanticmodule}

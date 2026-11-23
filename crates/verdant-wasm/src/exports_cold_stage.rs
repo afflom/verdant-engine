@@ -20,7 +20,7 @@ pub extern "C" fn verdant_wasm_node_preset_count() -> u32 {
 }
 
 /// World-space X coordinate in meters of scene node preset `index`.
-#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+#[cfg(not(target_arch = "wasm32"))]
 #[no_mangle]
 pub extern "C" fn verdant_wasm_node_x(index: u32) -> f64 {
     global_bridge()
@@ -40,7 +40,7 @@ pub extern "C" fn verdant_wasm_node_x(index: u32) -> f64 {
 }
 
 /// World-space Y coordinate in meters of scene node preset `index`.
-#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+#[cfg(not(target_arch = "wasm32"))]
 #[no_mangle]
 pub extern "C" fn verdant_wasm_node_y(index: u32) -> f64 {
     global_bridge()
@@ -60,7 +60,7 @@ pub extern "C" fn verdant_wasm_node_y(index: u32) -> f64 {
 }
 
 /// World-space Z coordinate in meters of scene node preset `index`.
-#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+#[cfg(not(target_arch = "wasm32"))]
 #[no_mangle]
 pub extern "C" fn verdant_wasm_node_z(index: u32) -> f64 {
     global_bridge()
@@ -80,7 +80,7 @@ pub extern "C" fn verdant_wasm_node_z(index: u32) -> f64 {
 }
 
 /// Fundamental modal acoustic pitch in hertz of scene node preset `index`.
-#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+#[cfg(not(target_arch = "wasm32"))]
 #[no_mangle]
 pub extern "C" fn verdant_wasm_node_modal_hz(index: u32) -> f64 {
     global_bridge()
@@ -99,6 +99,7 @@ pub extern "C" fn verdant_wasm_node_modal_hz(index: u32) -> f64 {
 }
 
 /// Number of base Prism `uor-matmul` tensor kernels (`7`).
+#[cfg(not(target_arch = "wasm32"))]
 #[no_mangle]
 pub extern "C" fn verdant_wasm_tensor_kernel_count() -> u32 {
     let two = 1_u32.wrapping_add(1_u32);
@@ -782,7 +783,7 @@ pub extern "C" fn verdant_wasm_universe_cell_z() -> i64 {
 }
 
 /// Active Chronicle `StoryAutomaton` node index.
-#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+#[cfg(not(target_arch = "wasm32"))]
 #[no_mangle]
 pub extern "C" fn verdant_wasm_story_state() -> u32 {
     global_bridge()
@@ -793,7 +794,7 @@ pub extern "C" fn verdant_wasm_story_state() -> u32 {
 }
 
 /// Total conserved item supply in the active Chronicle `ConservationLedger`.
-#[cfg(any(not(target_arch = "wasm32"), feature = "uorc-decoder"))]
+#[cfg(not(target_arch = "wasm32"))]
 #[no_mangle]
 pub extern "C" fn verdant_wasm_story_supply() -> u64 {
     global_bridge()

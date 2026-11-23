@@ -313,21 +313,6 @@ pub struct StandardSceneState {
     pub scene: SceneWorld,
 }
 
-fn preset_world_position(
-    seed: u64,
-    terrain: &TerrainReliefParams,
-    spec: &prism_kernel::SceneNodePresetSpec,
-) -> Vec3 {
-    let ten = pow10_u64(1) as f64;
-    let raw_x = (spec.xTenths as f64) / ten;
-    let raw_z = (spec.zTenths as f64) / ten;
-    let x = if spec.xNeg { -raw_x } else { raw_x };
-    let z = if spec.zNeg { -raw_z } else { raw_z };
-    let y_offset = (spec.yTenths as f64) / ten;
-    let ground_y = terrain_height_with_params(seed, terrain, x, z);
-    Vec3::new(x, ground_y + y_offset, z)
-}
-
 fn build_scene_nodes(
     seed: u64,
     params: &SceneBuildParams,
@@ -417,7 +402,14 @@ fn build_scene_nodes(
     let mut out = Vec::with_capacity(max_presets);
     for &(idx, slug, title, kind, span, height, hz) in descriptors.iter().take(max_presets) {
         let spec = prism_kernel::sceneNodePresetByIndex(idx).expect("prism");
-        let pos = preset_world_position(seed, &params.terrain, &spec);
+        let ten_f = pow10_u64(1) as f64;
+        let raw_x = (spec.xTenths as f64) / ten_f;
+        let raw_z = (spec.zTenths as f64) / ten_f;
+        let px = if spec.xNeg { -raw_x } else { raw_x };
+        let pz = if spec.zNeg { -raw_z } else { raw_z };
+        let py = terrain_height_with_params(seed, &params.terrain, px, pz)
+            + (spec.yTenths as f64) / ten_f;
+        let pos = Vec3::new(px, py, pz);
         out.push(SceneNodeInstance {
             preset_index: idx,
             id_slug: slug.to_string(),
@@ -683,12 +675,6 @@ pub struct UorcStreamSummary {
     pub max_lod_rank: u64,
 }
 
-#[cfg(any(feature = "uorc-streaming", feature = "uorc-ncm-decode"))]
-fn uorc_work_budget() -> u64 {
-    let shift = prism_kernel::uorcDefaultDecodeWork().expect("prism") as u32;
-    pow2_u64(shift)
-}
-
 /// Synthesizes all four progressive LOD states (`LOD0..=LOD3`) for `seed` and encodes them into a
 /// single `UORC-SHA256-CHAIN-v1` progressive multi-object `.uorc` stream via `uorc::FrameEncoder`.
 #[cfg(feature = "uorc-streaming")]
@@ -741,7 +727,7 @@ pub fn verify_progressive_uorc_stream(
             detail: "empty UORC stream".to_string(),
         });
     }
-    let work = uorc_work_budget();
+    let work = pow2_u64(prism_kernel::uorcDefaultDecodeWork().expect("prism") as u32);
     let infos = uorc::verify(stream_bytes, None, work).map_err(|err| {
         StreamingError::UorcArchiveRejected {
             detail: err.to_string(),
@@ -833,7 +819,7 @@ pub fn decode_uorc_stream_up_to_lod(
 ) -> Result<StandardSceneState, StreamingError> {
     let lod = LodLevel::from_rank(target_lod_rank)?;
     let _summary = verify_progressive_uorc_stream(stream_bytes)?;
-    let work = uorc_work_budget();
+    let work = pow2_u64(prism_kernel::uorcDefaultDecodeWork().expect("prism") as u32);
     let objects = uorc::decompress_objects(stream_bytes, work).map_err(|err| {
         StreamingError::UorcArchiveRejected {
             detail: err.to_string(),

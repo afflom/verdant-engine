@@ -45,23 +45,25 @@ impl HostCapabilityEnvelope {
     #[must_use]
     pub fn default_safe() -> Self {
         let two = 1_u32.wrapping_add(1_u32);
-        let ten = verdant_tensor::scalars::ten_u64() as u32;
-        let eight = verdant_tensor::scalars::eight_u64() as u32;
-        let tex_1024 = crate::math::pow2_u64(ten) as u32;
-        let tex_2048 = tex_1024.wrapping_mul(two);
-        let mb_8 =
-            crate::math::pow2_u64(ten.wrapping_add(ten).wrapping_add(two).wrapping_add(1_u32))
-                as u32;
-        let thousand = pow10_u64(two_u32().wrapping_add(1_u32)) as u32;
-        let threads = verdant_tensor::scalars::four_u64() as u32;
-        let px_256 = crate::math::pow2_u64(eight) as u32;
+        let four = two.wrapping_mul(two);
+        let five = four.wrapping_add(1_u32);
+        let eight = four.wrapping_mul(two);
+        let ten = two.wrapping_mul(five);
+        let hundred = ten.wrapping_mul(ten);
+        let thousand = hundred.wrapping_mul(ten);
+        let five_hundred = five.wrapping_mul(hundred);
+        let sixteen = four.wrapping_mul(four);
+        let px_256 = sixteen.wrapping_mul(sixteen);
         let px_512 = px_256.wrapping_mul(two);
+        let tex_1024 = px_512.wrapping_mul(two);
+        let tex_2048 = tex_1024.wrapping_mul(two);
+        let mb_8 = eight.wrapping_mul(tex_1024).wrapping_mul(tex_1024);
         let default_w = tex_1024.wrapping_add(px_256);
         let default_h = px_512.wrapping_add(px_256);
         Self {
             max_texture_edge_px: tex_1024,
             is_software_gpu: false,
-            hardware_threads: threads,
+            hardware_threads: four,
             ema_frame_micros: thousand.wrapping_mul(eight),
             active_triangles: 0,
             viewport_width_px: default_w,
@@ -71,9 +73,9 @@ impl HostCapabilityEnvelope {
             recommended_glb_max_bytes: mb_8,
             recommended_render_scale_permille: thousand,
             recommended_shadow_map_px: tex_2048,
-            recommended_anisotropy: threads,
+            recommended_anisotropy: four,
             uhd_tier_label: "FHD 1080p Native".to_string(),
-            host_headroom_permille: thousand.checked_div(two).unwrap_or(0),
+            host_headroom_permille: five_hundred,
             stream_escalation_active: true,
         }
     }

@@ -62,8 +62,13 @@ const KEYWORDS: [&str; 6] = [
 
 /// Parse one module.
 pub fn parse(text: &str) -> Result<Module, String> {
-    let name = between(text, "\\begin{lexlean}{", "}").ok_or("no \\begin{lexlean}{...}")?;
-    let title = between(text, "\\title{", "}").unwrap_or_default();
+    let between = |open: &str, close: &str| -> Option<&str> {
+        let start = text.find(open)? + open.len();
+        let end = text[start..].find(close)? + start;
+        Some(&text[start..end])
+    };
+    let name = between("\\begin{lexlean}{", "}").ok_or("no \\begin{lexlean}{...}")?;
+    let title = between("\\title{", "}").unwrap_or_default();
     let mut declarations = Vec::new();
     let mut at = 0;
     while at < text.len() {
@@ -117,12 +122,6 @@ pub fn parse(text: &str) -> Result<Module, String> {
         declarations,
         structures,
     })
-}
-
-fn between<'a>(text: &'a str, open: &str, close: &str) -> Option<&'a str> {
-    let start = text.find(open)? + open.len();
-    let end = text[start..].find(close)? + start;
-    Some(&text[start..end])
 }
 
 /// The index of the bracket closing the one at `open`, skipping string

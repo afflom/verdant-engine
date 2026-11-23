@@ -82,15 +82,17 @@ impl EngineConfig {
                 height: viewport_height,
             });
         }
-        let max_hz = verdant_tensor::scalars::thousand_u32();
+        let two_u32 = 1_u32.wrapping_add(1_u32);
+        let five_u32 = two_u32.wrapping_mul(two_u32).wrapping_add(1_u32);
+        let ten_u32 = two_u32.wrapping_mul(five_u32);
+        let max_hz = ten_u32.wrapping_mul(ten_u32).wrapping_mul(ten_u32);
         if tick_rate_hz == 0 || tick_rate_hz > max_hz {
             return Err(EngineConfigError::InvalidTickRateHz {
                 tick_rate_hz,
                 max_hz,
             });
         }
-        let k_u64 =
-            verdant_tensor::scalars::hundred_u64().wrapping_mul(verdant_tensor::scalars::ten_u64());
+        let k_u64 = max_hz as u64;
         let max_micros = k_u64.wrapping_mul(k_u64);
         if frame_budget_micros == 0 || frame_budget_micros > max_micros {
             return Err(EngineConfigError::InvalidFrameBudgetMicros {
@@ -362,356 +364,334 @@ const ALL_ENTITY_ROLES: &[EntityRole] = &[
     EntityRole::PlayerRig,
 ];
 
-struct BinWriter {
-    buf: Vec<u8>,
-}
-
-impl BinWriter {
-    fn new() -> Self {
-        Self { buf: Vec::new() }
-    }
-
-    fn write_u8(&mut self, v: u8) {
-        self.buf.push(v);
-    }
-
-    fn write_bool(&mut self, v: bool) {
-        self.write_u8(u8::from(v));
-    }
-
-    fn write_u32(&mut self, v: u32) {
-        self.buf.extend_from_slice(&v.to_le_bytes());
-    }
-
-    fn write_u64(&mut self, v: u64) {
-        self.buf.extend_from_slice(&v.to_le_bytes());
-    }
-
-    fn write_usize(&mut self, v: usize) {
-        self.write_u64(v as u64);
-    }
-
-    fn write_f64(&mut self, v: f64) {
-        self.buf.extend_from_slice(&v.to_le_bytes());
-    }
-
-    fn write_str(&mut self, s: &str) {
-        let bytes = s.as_bytes();
-        self.write_u32(bytes.len() as u32);
-        self.buf.extend_from_slice(bytes);
-    }
-
-    fn write_vec3(&mut self, v: Vec3) {
-        self.write_f64(v.x);
-        self.write_f64(v.y);
-        self.write_f64(v.z);
-    }
-
-    fn write_quat(&mut self, q: Quat) {
-        self.write_f64(q.x);
-        self.write_f64(q.y);
-        self.write_f64(q.z);
-        self.write_f64(q.w);
-    }
-
-    fn write_aabb(&mut self, b: Aabb) {
-        self.write_vec3(b.min);
-        self.write_vec3(b.max);
-    }
-
-    fn write_enum<T: PartialEq>(&mut self, table: &[T], val: &T) -> Result<(), SnapshotCodecError> {
-        let idx = table.iter().position(|item| item == val).ok_or_else(|| {
-            SnapshotCodecError::MalformedStatePayload {
-                detail: "unrecognized enum variant during snapshot encode".to_string(),
-            }
-        })?;
-        self.write_u8(idx as u8);
-        Ok(())
-    }
-
-    fn write_opt_u64(&mut self, v: Option<u64>) {
-        match v {
-            None => self.write_u8(0),
-            Some(val) => {
-                self.write_u8(1);
-                self.write_u64(val);
-            }
-        }
-    }
-}
-
-struct BinReader<'a> {
-    bytes: &'a [u8],
-    cursor: usize,
-}
-
-impl<'a> BinReader<'a> {
-    const fn new(bytes: &'a [u8]) -> Self {
-        Self { bytes, cursor: 0 }
-    }
-
-    fn read_exact(&mut self, len: usize) -> Result<&'a [u8], SnapshotCodecError> {
-        let end = self.cursor.checked_add(len).ok_or_else(|| {
-            SnapshotCodecError::MalformedStatePayload {
-                detail: "snapshot cursor overflow".to_string(),
-            }
-        })?;
-        if end > self.bytes.len() {
-            return Err(SnapshotCodecError::MalformedStatePayload {
-                detail: "unexpected end of binary scene payload".to_string(),
-            });
-        }
-        let slice = &self.bytes[self.cursor..end];
-        self.cursor = end;
-        Ok(slice)
-    }
-
-    fn read_u8(&mut self) -> Result<u8, SnapshotCodecError> {
-        Ok(self.read_exact(1)?[0])
-    }
-
-    fn read_bool(&mut self) -> Result<bool, SnapshotCodecError> {
-        match self.read_u8()? {
-            0 => Ok(false),
-            1 => Ok(true),
-            _ => Err(SnapshotCodecError::MalformedStatePayload {
-                detail: "invalid boolean byte in binary scene payload".to_string(),
-            }),
-        }
-    }
-
-    fn read_u32(&mut self) -> Result<u32, SnapshotCodecError> {
-        let raw = self.read_exact(std::mem::size_of::<u32>())?;
-        let mut arr = [0_u8; std::mem::size_of::<u32>()];
-        arr.copy_from_slice(raw);
-        Ok(u32::from_le_bytes(arr))
-    }
-
-    fn read_u64(&mut self) -> Result<u64, SnapshotCodecError> {
-        let raw = self.read_exact(std::mem::size_of::<u64>())?;
-        let mut arr = [0_u8; std::mem::size_of::<u64>()];
-        arr.copy_from_slice(raw);
-        Ok(u64::from_le_bytes(arr))
-    }
-
-    fn read_usize(&mut self) -> Result<usize, SnapshotCodecError> {
-        Ok(self.read_u64()? as usize)
-    }
-
-    fn read_f64(&mut self) -> Result<f64, SnapshotCodecError> {
-        let raw = self.read_exact(std::mem::size_of::<f64>())?;
-        let mut arr = [0_u8; std::mem::size_of::<f64>()];
-        arr.copy_from_slice(raw);
-        Ok(f64::from_le_bytes(arr))
-    }
-
-    fn read_string(&mut self) -> Result<String, SnapshotCodecError> {
-        let len = self.read_u32()? as usize;
-        let raw = self.read_exact(len)?;
-        std::str::from_utf8(raw).map(str::to_owned).map_err(|err| {
-            SnapshotCodecError::MalformedStatePayload {
-                detail: err.to_string(),
-            }
-        })
-    }
-
-    fn read_vec3(&mut self) -> Result<Vec3, SnapshotCodecError> {
-        Ok(Vec3::new(
-            self.read_f64()?,
-            self.read_f64()?,
-            self.read_f64()?,
-        ))
-    }
-
-    fn read_quat(&mut self) -> Result<Quat, SnapshotCodecError> {
-        Ok(Quat {
-            x: self.read_f64()?,
-            y: self.read_f64()?,
-            z: self.read_f64()?,
-            w: self.read_f64()?,
-        })
-    }
-
-    fn read_aabb(&mut self) -> Result<Aabb, SnapshotCodecError> {
-        Ok(Aabb::new(self.read_vec3()?, self.read_vec3()?))
-    }
-
-    fn read_enum<T: Copy>(&mut self, table: &[T]) -> Result<T, SnapshotCodecError> {
-        let idx = self.read_u8()? as usize;
-        table
-            .get(idx)
-            .copied()
-            .ok_or_else(|| SnapshotCodecError::MalformedStatePayload {
-                detail: "invalid enum ordinal in binary scene payload".to_string(),
-            })
-    }
-
-    fn read_opt_u64(&mut self) -> Result<Option<u64>, SnapshotCodecError> {
-        match self.read_u8()? {
-            0 => Ok(None),
-            1 => Ok(Some(self.read_u64()?)),
-            _ => Err(SnapshotCodecError::MalformedStatePayload {
-                detail: "invalid option tag in binary scene payload".to_string(),
-            }),
-        }
-    }
-}
-
 fn encode_scene_payload(world: &StandardSceneState) -> Result<Vec<u8>, SnapshotCodecError> {
-    let mut w = BinWriter::new();
-    w.write_u64(world.seed);
+    let mut buf = Vec::new();
+    macro_rules! w_u8 {
+        ($v:expr) => {
+            buf.push($v)
+        };
+    }
+    macro_rules! w_u64 {
+        ($v:expr) => {
+            buf.extend_from_slice(&($v as u64).to_le_bytes())
+        };
+    }
+    macro_rules! w_f64 {
+        ($v:expr) => {
+            buf.extend_from_slice(&($v as f64).to_le_bytes())
+        };
+    }
+    macro_rules! w_str {
+        ($s:expr) => {{
+            let bytes = ($s).as_bytes();
+            buf.extend_from_slice(&(bytes.len() as u32).to_le_bytes());
+            buf.extend_from_slice(bytes);
+        }};
+    }
+    macro_rules! w_vec3 {
+        ($v:expr) => {{
+            let v: Vec3 = $v;
+            w_f64!(v.x);
+            w_f64!(v.y);
+            w_f64!(v.z);
+        }};
+    }
+    macro_rules! w_enum {
+        ($table:expr, $val:expr) => {{
+            let idx = $table.iter().position(|item| item == $val).ok_or_else(|| {
+                SnapshotCodecError::MalformedStatePayload {
+                    detail: "unrecognized enum variant during snapshot encode".to_string(),
+                }
+            })?;
+            w_u8!(idx as u8);
+        }};
+    }
+    macro_rules! w_opt_u64 {
+        ($v:expr) => {
+            match $v {
+                None => w_u8!(0),
+                Some(val) => {
+                    w_u8!(1);
+                    w_u64!(val);
+                }
+            }
+        };
+    }
+
+    w_u64!(world.seed);
     let env = &world.params.environment;
-    w.write_f64(env.gravity_mps2);
-    w.write_f64(env.fluid_density_kg_m3);
-    w.write_f64(env.sound_speed_mps);
-    w.write_f64(env.key_light_temperature_kelvin);
-    w.write_f64(env.key_light_irradiance_w_m2);
-    w.write_f64(env.water_level_meters);
+    w_f64!(env.gravity_mps2);
+    w_f64!(env.fluid_density_kg_m3);
+    w_f64!(env.sound_speed_mps);
+    w_f64!(env.key_light_temperature_kelvin);
+    w_f64!(env.key_light_irradiance_w_m2);
+    w_f64!(env.water_level_meters);
 
     let ter = &world.params.terrain;
-    w.write_f64(ter.basin_depth_meters);
-    w.write_f64(ter.basin_variance_m2);
-    w.write_f64(ter.basin_center_x);
-    w.write_f64(ter.basin_center_z);
-    w.write_f64(ter.hill_amplitude_meters);
-    w.write_f64(ter.hill_frequency_per_meter);
-    w.write_f64(ter.outer_rim_curvature);
-    w.write_f64(ter.outer_rim_cap_m2);
+    w_f64!(ter.basin_depth_meters);
+    w_f64!(ter.basin_variance_m2);
+    w_f64!(ter.basin_center_x);
+    w_f64!(ter.basin_center_z);
+    w_f64!(ter.hill_amplitude_meters);
+    w_f64!(ter.hill_frequency_per_meter);
+    w_f64!(ter.outer_rim_curvature);
+    w_f64!(ter.outer_rim_cap_m2);
 
-    w.write_usize(world.params.max_foliage_instances);
-    w.write_usize(world.params.max_agent_count);
-    w.write_usize(world.params.crystal_prop_count);
-    w.write_usize(world.params.spline_waypoint_count);
-    w.write_f64(world.params.spline_orbit_radius_meters);
+    w_u64!(world.params.max_foliage_instances);
+    w_u64!(world.params.max_agent_count);
+    w_u64!(world.params.crystal_prop_count);
+    w_u64!(world.params.spline_waypoint_count);
+    w_f64!(world.params.spline_orbit_radius_meters);
 
-    w.write_enum(ALL_LOD_LEVELS, &world.active_lod)?;
-    w.write_f64(world.resolution_scale);
-    w.write_usize(world.foliage_count);
-    w.write_usize(world.agent_count);
+    w_enum!(ALL_LOD_LEVELS, &world.active_lod);
+    w_f64!(world.resolution_scale);
+    w_u64!(world.foliage_count);
+    w_u64!(world.agent_count);
 
-    w.write_usize(world.scene_nodes.len());
+    w_u64!(world.scene_nodes.len());
     for node in &world.scene_nodes {
-        w.write_u64(node.preset_index);
-        w.write_str(&node.id_slug);
-        w.write_str(&node.title);
-        w.write_enum(ALL_SCENE_NODE_KINDS, &node.kind)?;
-        w.write_vec3(node.world_position);
-        w.write_f64(node.span_meters);
-        w.write_f64(node.height_meters);
-        w.write_f64(node.orbit_distance_meters);
-        w.write_f64(node.modal_frequency_hz);
-        w.write_bool(node.follow_mover);
+        w_u64!(node.preset_index);
+        w_str!(&node.id_slug);
+        w_str!(&node.title);
+        w_enum!(ALL_SCENE_NODE_KINDS, &node.kind);
+        w_vec3!(node.world_position);
+        w_f64!(node.span_meters);
+        w_f64!(node.height_meters);
+        w_f64!(node.orbit_distance_meters);
+        w_f64!(node.modal_frequency_hz);
+        w_u8!(u8::from(node.follow_mover));
     }
 
-    w.write_usize(world.mover_spline_waypoints.len());
+    w_u64!(world.mover_spline_waypoints.len());
     for &wp in &world.mover_spline_waypoints {
-        w.write_vec3(wp);
+        w_vec3!(wp);
     }
 
-    w.write_u64(world.scene.next_id);
-    w.write_usize(world.scene.entities.len());
+    w_u64!(world.scene.next_id);
+    w_u64!(world.scene.entities.len());
     for rec in world.scene.entities.values() {
-        w.write_u64(rec.id.0);
-        w.write_str(&rec.name);
-        w.write_enum(ALL_ENTITY_ROLES, &rec.role)?;
-        w.write_opt_u64(rec.parent.map(|p| p.0));
-        w.write_usize(rec.children.len());
+        w_u64!(rec.id.0);
+        w_str!(&rec.name);
+        w_enum!(ALL_ENTITY_ROLES, &rec.role);
+        w_opt_u64!(rec.parent.map(|p| p.0));
+        w_u64!(rec.children.len());
         for child in &rec.children {
-            w.write_u64(child.0);
+            w_u64!(child.0);
         }
-        w.write_vec3(rec.local_transform.translation);
-        w.write_quat(rec.local_transform.rotation);
-        w.write_vec3(rec.local_transform.scale);
-        w.write_aabb(rec.local_bounds);
-        w.write_opt_u64(rec.mesh_index.map(|m| m as u64));
-        w.write_opt_u64(rec.material_index.map(|m| m as u64));
-        w.write_f64(rec.emerged_at_lod_scale);
-        w.write_str(&rec.provenance_tag);
+        w_vec3!(rec.local_transform.translation);
+        let q = rec.local_transform.rotation;
+        w_f64!(q.x);
+        w_f64!(q.y);
+        w_f64!(q.z);
+        w_f64!(q.w);
+        w_vec3!(rec.local_transform.scale);
+        w_vec3!(rec.local_bounds.min);
+        w_vec3!(rec.local_bounds.max);
+        w_opt_u64!(rec.mesh_index.map(|m| m as u64));
+        w_opt_u64!(rec.material_index.map(|m| m as u64));
+        w_f64!(rec.emerged_at_lod_scale);
+        w_str!(&rec.provenance_tag);
     }
-    Ok(w.buf)
+    Ok(buf)
 }
 
 fn decode_scene_payload(payload: &[u8]) -> Result<StandardSceneState, SnapshotCodecError> {
-    let mut r = BinReader::new(payload);
-    let seed = r.read_u64()?;
+    let mut cursor = 0usize;
+    macro_rules! r_exact {
+        ($len:expr) => {{
+            let len: usize = $len;
+            let end = cursor.checked_add(len).ok_or_else(|| {
+                SnapshotCodecError::MalformedStatePayload {
+                    detail: "snapshot cursor overflow".to_string(),
+                }
+            })?;
+            if end > payload.len() {
+                return Err(SnapshotCodecError::MalformedStatePayload {
+                    detail: "unexpected end of binary scene payload".to_string(),
+                });
+            }
+            let slice = &payload[cursor..end];
+            cursor = end;
+            slice
+        }};
+    }
+    macro_rules! r_u8 {
+        () => {
+            r_exact!(1)[0]
+        };
+    }
+    macro_rules! r_u32 {
+        () => {{
+            let raw = r_exact!(std::mem::size_of::<u32>());
+            let mut arr = [0_u8; std::mem::size_of::<u32>()];
+            arr.copy_from_slice(raw);
+            u32::from_le_bytes(arr)
+        }};
+    }
+    macro_rules! r_u64 {
+        () => {{
+            let raw = r_exact!(std::mem::size_of::<u64>());
+            let mut arr = [0_u8; std::mem::size_of::<u64>()];
+            arr.copy_from_slice(raw);
+            u64::from_le_bytes(arr)
+        }};
+    }
+    macro_rules! r_usize {
+        () => {
+            r_u64!() as usize
+        };
+    }
+    macro_rules! r_f64 {
+        () => {{
+            let raw = r_exact!(std::mem::size_of::<f64>());
+            let mut arr = [0_u8; std::mem::size_of::<f64>()];
+            arr.copy_from_slice(raw);
+            f64::from_le_bytes(arr)
+        }};
+    }
+    macro_rules! r_str {
+        () => {{
+            let len = r_u32!() as usize;
+            let raw = r_exact!(len);
+            std::str::from_utf8(raw).map(str::to_owned).map_err(|err| {
+                SnapshotCodecError::MalformedStatePayload {
+                    detail: err.to_string(),
+                }
+            })?
+        }};
+    }
+    macro_rules! r_vec3 {
+        () => {
+            Vec3::new(r_f64!(), r_f64!(), r_f64!())
+        };
+    }
+    macro_rules! r_enum {
+        ($table:expr) => {{
+            let idx = r_u8!() as usize;
+            $table
+                .get(idx)
+                .copied()
+                .ok_or_else(|| SnapshotCodecError::MalformedStatePayload {
+                    detail: "invalid enum ordinal in binary scene payload".to_string(),
+                })?
+        }};
+    }
+    macro_rules! r_opt_u64 {
+        () => {
+            match r_u8!() {
+                0 => None,
+                1 => Some(r_u64!()),
+                _ => {
+                    return Err(SnapshotCodecError::MalformedStatePayload {
+                        detail: "invalid option tag in binary scene payload".to_string(),
+                    })
+                }
+            }
+        };
+    }
+
+    let seed = r_u64!();
     let environment = PhysicalEnvironment {
-        gravity_mps2: r.read_f64()?,
-        fluid_density_kg_m3: r.read_f64()?,
-        sound_speed_mps: r.read_f64()?,
-        key_light_temperature_kelvin: r.read_f64()?,
-        key_light_irradiance_w_m2: r.read_f64()?,
-        water_level_meters: r.read_f64()?,
+        gravity_mps2: r_f64!(),
+        fluid_density_kg_m3: r_f64!(),
+        sound_speed_mps: r_f64!(),
+        key_light_temperature_kelvin: r_f64!(),
+        key_light_irradiance_w_m2: r_f64!(),
+        water_level_meters: r_f64!(),
     };
     let terrain = TerrainReliefParams {
-        basin_depth_meters: r.read_f64()?,
-        basin_variance_m2: r.read_f64()?,
-        basin_center_x: r.read_f64()?,
-        basin_center_z: r.read_f64()?,
-        hill_amplitude_meters: r.read_f64()?,
-        hill_frequency_per_meter: r.read_f64()?,
-        outer_rim_curvature: r.read_f64()?,
-        outer_rim_cap_m2: r.read_f64()?,
+        basin_depth_meters: r_f64!(),
+        basin_variance_m2: r_f64!(),
+        basin_center_x: r_f64!(),
+        basin_center_z: r_f64!(),
+        hill_amplitude_meters: r_f64!(),
+        hill_frequency_per_meter: r_f64!(),
+        outer_rim_curvature: r_f64!(),
+        outer_rim_cap_m2: r_f64!(),
     };
     let params = SceneBuildParams {
         environment,
         terrain,
-        max_foliage_instances: r.read_usize()?,
-        max_agent_count: r.read_usize()?,
-        crystal_prop_count: r.read_usize()?,
-        spline_waypoint_count: r.read_usize()?,
-        spline_orbit_radius_meters: r.read_f64()?,
+        max_foliage_instances: r_usize!(),
+        max_agent_count: r_usize!(),
+        crystal_prop_count: r_usize!(),
+        spline_waypoint_count: r_usize!(),
+        spline_orbit_radius_meters: r_f64!(),
     };
-    let active_lod = r.read_enum(ALL_LOD_LEVELS)?;
-    let resolution_scale = r.read_f64()?;
-    let foliage_count = r.read_usize()?;
-    let agent_count = r.read_usize()?;
+    let active_lod = r_enum!(ALL_LOD_LEVELS);
+    let resolution_scale = r_f64!();
+    let foliage_count = r_usize!();
+    let agent_count = r_usize!();
 
-    let node_len = r.read_usize()?;
+    let node_len = r_usize!();
     let mut scene_nodes = Vec::with_capacity(node_len.min(payload.len()));
     for _ in 0..node_len {
+        let preset_index = r_u64!();
+        let id_slug = r_str!();
+        let title = r_str!();
+        let kind = r_enum!(ALL_SCENE_NODE_KINDS);
+        let world_position = r_vec3!();
+        let span_meters = r_f64!();
+        let height_meters = r_f64!();
+        let orbit_distance_meters = r_f64!();
+        let modal_frequency_hz = r_f64!();
+        let follow_mover = match r_u8!() {
+            0 => false,
+            1 => true,
+            _ => {
+                return Err(SnapshotCodecError::MalformedStatePayload {
+                    detail: "invalid boolean byte in binary scene payload".to_string(),
+                });
+            }
+        };
         scene_nodes.push(SceneNodeInstance {
-            preset_index: r.read_u64()?,
-            id_slug: r.read_string()?,
-            title: r.read_string()?,
-            kind: r.read_enum(ALL_SCENE_NODE_KINDS)?,
-            world_position: r.read_vec3()?,
-            span_meters: r.read_f64()?,
-            height_meters: r.read_f64()?,
-            orbit_distance_meters: r.read_f64()?,
-            modal_frequency_hz: r.read_f64()?,
-            follow_mover: r.read_bool()?,
+            preset_index,
+            id_slug,
+            title,
+            kind,
+            world_position,
+            span_meters,
+            height_meters,
+            orbit_distance_meters,
+            modal_frequency_hz,
+            follow_mover,
         });
     }
 
-    let wp_len = r.read_usize()?;
+    let wp_len = r_usize!();
     let mut mover_spline_waypoints = Vec::with_capacity(wp_len.min(payload.len()));
     for _ in 0..wp_len {
-        mover_spline_waypoints.push(r.read_vec3()?);
+        mover_spline_waypoints.push(r_vec3!());
     }
 
-    let next_id = r.read_u64()?;
-    let ent_len = r.read_usize()?;
+    let next_id = r_u64!();
+    let ent_len = r_usize!();
     let mut entities = BTreeMap::new();
     for _ in 0..ent_len {
-        let id = EntityId(r.read_u64()?);
-        let name = r.read_string()?;
-        let role = r.read_enum(ALL_ENTITY_ROLES)?;
-        let parent = r.read_opt_u64()?.map(EntityId);
-        let child_len = r.read_usize()?;
+        let id = EntityId(r_u64!());
+        let name = r_str!();
+        let role = r_enum!(ALL_ENTITY_ROLES);
+        let parent = r_opt_u64!().map(EntityId);
+        let child_len = r_usize!();
         let mut children = Vec::with_capacity(child_len.min(payload.len()));
         for _ in 0..child_len {
-            children.push(EntityId(r.read_u64()?));
+            children.push(EntityId(r_u64!()));
         }
         let local_transform = Transform {
-            translation: r.read_vec3()?,
-            rotation: r.read_quat()?,
-            scale: r.read_vec3()?,
+            translation: r_vec3!(),
+            rotation: Quat {
+                x: r_f64!(),
+                y: r_f64!(),
+                z: r_f64!(),
+                w: r_f64!(),
+            },
+            scale: r_vec3!(),
         };
-        let local_bounds = r.read_aabb()?;
-        let mesh_index = r.read_opt_u64()?.map(|v| v as usize);
-        let material_index = r.read_opt_u64()?.map(|v| v as usize);
-        let emerged_at_lod_scale = r.read_f64()?;
-        let provenance_tag = r.read_string()?;
+        let local_bounds = Aabb::new(r_vec3!(), r_vec3!());
+        let mesh_index = r_opt_u64!().map(|v| v as usize);
+        let material_index = r_opt_u64!().map(|v| v as usize);
+        let emerged_at_lod_scale = r_f64!();
+        let provenance_tag = r_str!();
         entities.insert(
             id,
             EntityRecord {
@@ -729,7 +709,7 @@ fn decode_scene_payload(payload: &[u8]) -> Result<StandardSceneState, SnapshotCo
             },
         );
     }
-    if r.cursor != payload.len() {
+    if cursor != payload.len() {
         return Err(SnapshotCodecError::MalformedStatePayload {
             detail: "trailing bytes in binary scene payload".to_string(),
         });

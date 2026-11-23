@@ -88,13 +88,11 @@ pub const fn thousand_u32() -> u32 {
 /// Constructive power of two (`2^exp`) computed purely from `{0, 1}`.
 #[must_use]
 pub const fn pow2_u64(exp: u32) -> u64 {
-    let mut acc = 1_u64;
-    let mut i = 0_u32;
-    while i < exp {
-        acc = acc.wrapping_add(acc);
-        i = i.wrapping_add(1_u32);
+    if exp >= sixty_four_u32() {
+        0_u64
+    } else {
+        1_u64.wrapping_shl(exp)
     }
-    acc
 }
 
 /// Constructive low-bit mask (`2^bits - 1`) computed purely from `{0, 1}`.
@@ -880,8 +878,14 @@ impl DeterministicRng {
     /// Initializes a deterministic generator from a world seed without magic constants.
     #[must_use]
     pub const fn new(seed: u64) -> Self {
+        let two = 1_u64.wrapping_add(1_u64);
+        let odd_seed = if seed.wrapping_rem(two) == 0 {
+            seed.wrapping_add(1_u64)
+        } else {
+            seed
+        };
         DeterministicRng {
-            state: seed | 1,
+            state: odd_seed,
             counter: 1,
         }
     }

@@ -3834,8 +3834,8 @@ fn engine_ve_77() {
     // Unsafe non-HTTPS external gateway URL MUST fail closed:
     let bad_extra = StitchGatewayEndpoint {
         id: "unsafe-http".to_string(),
-        provider: GatewayProviderKind::CloudflarePages,
-        provider_family: "cloudflare".to_string(),
+        provider: GatewayProviderKind::SelfHostedStitchNode,
+        provider_family: "self-hosted".to_string(),
         base_url: "http://evil.example".to_string(),
         frame_url: "http://evil.example/".to_string(),
         shard_relay_url: "http://evil.example/shards".to_string(),
@@ -3849,30 +3849,30 @@ fn engine_ve_77() {
         "non-HTTPS external gateway URL MUST fail closed"
     );
 
-    // 2. Pack complete multi-gateway bundle with GitHub + Cloudflare + Netlify + IPFS gateways!
+    // 2. Pack complete public-benefit Stitch bundle with GitHub + Stitch Layer-5 Swarm + Zenodo + IPFS gateways!
     let extra_gateways = vec![
         StitchGatewayEndpoint {
-            id: "cloudflare-pages".to_string(),
-            provider: GatewayProviderKind::CloudflarePages,
-            provider_family: "cloudflare".to_string(),
-            base_url: "https://verdant-engine.pages.dev".to_string(),
-            frame_url: "https://verdant-engine.pages.dev/".to_string(),
-            shard_relay_url: "https://verdant-engine.pages.dev/shards".to_string(),
-            holo_url: Some(
-                "https://verdant-engine.pages.dev/holo/verdant-v2.17.0.holo".to_string(),
-            ),
-            crates_index_url: Some("https://verdant-engine.pages.dev/crates/index/".to_string()),
+            id: "stitch-layer5-swarm".to_string(),
+            provider: GatewayProviderKind::StitchPeerSwarm,
+            provider_family: "stitch-swarm".to_string(),
+            base_url: "https://ntfy.sh/verdant-stitch-swarm".to_string(),
+            frame_url: "https://ntfy.sh/verdant-stitch-swarm/".to_string(),
+            shard_relay_url: "https://ntfy.sh/verdant-stitch-swarm/shards".to_string(),
+            holo_url: None,
+            crates_index_url: None,
             priority: 1,
             cors_wildcard_required: true,
         },
         StitchGatewayEndpoint {
-            id: "netlify-edge".to_string(),
-            provider: GatewayProviderKind::NetlifyEdge,
-            provider_family: "netlify".to_string(),
-            base_url: "https://verdant-engine.netlify.app".to_string(),
-            frame_url: "https://verdant-engine.netlify.app/".to_string(),
-            shard_relay_url: "https://verdant-engine.netlify.app/shards".to_string(),
-            holo_url: None,
+            id: "zenodo-doi-archive".to_string(),
+            provider: GatewayProviderKind::ZenodoPublicArchive,
+            provider_family: "zenodo".to_string(),
+            base_url: "https://zenodo.org/records/24383968".to_string(),
+            frame_url: "https://zenodo.org/records/24383968/".to_string(),
+            shard_relay_url: "https://zenodo.org/records/24383968/files/shards".to_string(),
+            holo_url: Some(
+                "https://zenodo.org/records/24383968/files/verdant-v2.17.0.holo".to_string(),
+            ),
             crates_index_url: None,
             priority: 2,
             cors_wildcard_required: true,
@@ -3905,10 +3905,11 @@ fn engine_ve_77() {
     assert_eq!(manifest.stakeholder_parts.len(), 6);
     assert!(gw_dir.join("_headers").is_file());
     assert!(gw_dir.join("_redirects").is_file());
-    assert!(gw_dir.join("wrangler.toml").is_file());
-    assert!(gw_dir.join("netlify.toml").is_file());
+    assert!(gw_dir.join("stitch-swarm-config.json").is_file());
     assert!(gw_dir.join(".ipfs-gateway-root.json").is_file());
     assert!(gw_dir.join("Dockerfile").is_file());
+    assert!(!gw_dir.join("wrangler.toml").exists());
+    assert!(!gw_dir.join("netlify.toml").exists());
     assert!(gw_dir.join("part/studio/index.html").is_file());
     assert!(gw_dir.join("part/catalogs/index.html").is_file());
     assert!(gw_dir.join("part/demo/index.html").is_file());
@@ -4045,6 +4046,381 @@ fn engine_ve_77() {
     assert!(
         kpi_rep.milestones.len() >= 25,
         "expected Milestones M1..M25"
+    );
+    assert_eq!(
+        kpi_rep.kpi_passed_count, kpi_rep.kpi_total_count,
+        "all Observer KPIs must pass (kpis={:?})",
+        kpi_rep.kpis
+    );
+}
+
+#[test]
+fn engine_ve_78() {
+    use std::path::Path;
+    use verdant_core::gateway::{
+        build_multi_gateway_manifest, execute_gateway_op, GatewayOp, GatewayProviderKind,
+        StitchGatewayEndpoint,
+    };
+    use verdant_core::operator::VerdantOperatorChannel;
+
+    let repo_root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+    let ch = VerdantOperatorChannel::new("sunspire-regatta").expect("operator channel");
+
+    // 1. Commercial cloud PaaS scaffolding outside GitHub MUST be absent from workflows & catalogs
+    //    AND fail closed in gateway.rs!
+    let rel_yml = std::fs::read_to_string(repo_root.join(".github/workflows/release-stitch.yml"))
+        .expect("read release-stitch.yml");
+    for forbidden in [
+        "CLOUDFLARE",
+        "NETLIFY",
+        "wrangler",
+        "netlify-cli",
+        "VERCEL",
+        "PINATA",
+    ] {
+        assert!(
+            !rel_yml.contains(forbidden),
+            "release-stitch.yml must not contain commercial PaaS scaffolding `{forbidden}`"
+        );
+    }
+
+    let stitch_cat =
+        std::fs::read_to_string(repo_root.join("catalogs/governance/stitch-self-hosting.json"))
+            .expect("read stitch-self-hosting.json");
+    assert!(!stitch_cat.contains("cloudflare"));
+    assert!(!stitch_cat.contains("netlify"));
+    assert!(stitch_cat.contains("\"forbidsNonGitHubCommercialProviders\": true"));
+    assert!(stitch_cat.contains("stitch-peer-swarm"));
+    assert!(stitch_cat.contains("zenodo-public-archive"));
+
+    let tmp_root = std::env::temp_dir().join(format!("verdant-ve78-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&tmp_root);
+    let rel_dir = tmp_root.join("release");
+    let gw_dir = tmp_root.join("gateway-bundle");
+    let pin = ch
+        .pack_repo_release_capsule(
+            &repo_root,
+            "2.18.0",
+            22,
+            &rel_dir,
+            vec![
+                "https://afflom.github.io/verdant-engine/stitch/v2.18.0/shards".to_string(),
+                "https://cdn.jsdelivr.net/gh/afflom/verdant-engine@stitch-mirror/v2.18.0/shards"
+                    .to_string(),
+            ],
+            "stitch://verdant/studio",
+        )
+        .expect("pack isolated v2.18.0 release");
+
+    for commercial_url in [
+        "https://verdant-engine.pages.dev",
+        "https://verdant-engine.netlify.app",
+        "https://verdant-engine.vercel.app",
+    ] {
+        let bad_paas = StitchGatewayEndpoint {
+            id: "commercial-paas".to_string(),
+            provider: GatewayProviderKind::SelfHostedStitchNode,
+            provider_family: "commercial".to_string(),
+            base_url: commercial_url.to_string(),
+            frame_url: format!("{commercial_url}/"),
+            shard_relay_url: format!("{commercial_url}/shards"),
+            holo_url: None,
+            crates_index_url: None,
+            priority: 2,
+            cors_wildcard_required: true,
+        };
+        assert!(
+            build_multi_gateway_manifest(&pin, &[bad_paas]).is_err(),
+            "commercial cloud PaaS gateway `{commercial_url}` MUST fail closed"
+        );
+    }
+
+    // Packing a bundle and planting a commercial wrangler.toml MUST fail closed in VerifyFailover!
+    execute_gateway_op(&GatewayOp::PackBundle {
+        repo_root: repo_root.clone(),
+        release_dir: rel_dir.clone(),
+        out_dir: gw_dir.clone(),
+        extra_gateways: vec![],
+        crates_dir: None,
+    })
+    .expect("pack public-benefit bundle");
+    std::fs::write(gw_dir.join("wrangler.toml"), b"name = \"planted\"\n")
+        .expect("plant wrangler.toml");
+    assert!(
+        execute_gateway_op(&GatewayOp::VerifyFailover {
+            bundle_dir: gw_dir.clone()
+        })
+        .is_err(),
+        "planted wrangler.toml MUST fail closed in VerifyFailover"
+    );
+    let _ = std::fs::remove_dir_all(&tmp_root);
+
+    // 2. Formal Prism StitchHosting.lex.tex, Architecture, Design, Security (6 STRIDE threats),
+    //    Release (8 channels), Quality/Measures/Fidelity (11/11 measured, 0 open), and Compliance!
+    let stitch_lex = std::fs::read_to_string(repo_root.join("app/src/StitchHosting.lex.tex"))
+        .expect("read StitchHosting.lex.tex");
+    assert!(stitch_lex.contains("selfHostingPrinciplesComplete"));
+    assert!(stitch_lex.contains("stitchLayer5BoundsVerified"));
+    assert!(stitch_lex.contains("publicBenefitAvailabilityVerified"));
+    assert!(!stitch_lex.contains("Classical.choice"));
+
+    let arch_lex = std::fs::read_to_string(repo_root.join("app/src/Architecture.lex.tex"))
+        .expect("read Architecture.lex.tex");
+    assert!(arch_lex.contains("stakeholderCommunityHostOperator"));
+    assert!(arch_lex.contains("componentStitchLayer5Swarm"));
+    assert!(arch_lex.contains("componentVolunteerStitchGateway"));
+    assert!(arch_lex.contains("componentOfflinePortableEnvelope"));
+
+    let sec_lex = std::fs::read_to_string(repo_root.join("app/src/Security.lex.tex"))
+        .expect("read Security.lex.tex");
+    assert!(sec_lex.contains("stitchSelfHostingThreatModelEvidenced"));
+    for threat in [
+        "threatSignalingRelayEclipseOrMitm",
+        "threatVolunteerGatewayContentSubstitution",
+        "threatUnverifiableGatewayProvenance",
+        "threatSignalingIpOrPresenceCorrelation",
+        "threatSignalingTopicSpamOrWebRtcAmplification",
+        "threatMaliciousGatewayPathTraversalOrOriginAbuse",
+    ] {
+        assert!(
+            sec_lex.contains(threat),
+            "Security.lex.tex missing {threat}"
+        );
+    }
+
+    let fidelity_toml =
+        std::fs::read_to_string(repo_root.join("fidelity.toml")).expect("read fidelity.toml");
+    assert!(
+        !fidelity_toml.contains("[[residue]]"),
+        "fidelity.toml must have 0 open residue rows"
+    );
+    assert!(fidelity_toml.contains("Quality::measureSelfHostingPolicyViolations"));
+    let fidelity_lex = std::fs::read_to_string(repo_root.join("app/src/Fidelity.lex.tex"))
+        .expect("read Fidelity.lex.tex");
+    assert!(fidelity_lex.contains("measureSelfHostingPolicyViolationsHolds"));
+
+    // 3. Ratchet + Total Ownership + Observer M1..M26 KPIs all pass cleanly:
+    let rep = prism_fidelity::ratchet::audit_parametric_ratchet(
+        &repo_root,
+        Path::new("model/parametric-ratchet.toml"),
+    )
+    .expect("live repo must pass all 4 ratchet layers in M26");
+    assert!(rep.observed_release_capsule_bytes < 1_048_576);
+    assert!(rep.observed_max_rust_file_lines <= 1_247);
+    assert!(rep.observed_max_js_file_lines <= 920);
+
+    let kpi_rep = ch
+        .evaluate_observer_roadmap_kpis(&repo_root, true, true)
+        .expect("observer roadmap & KPI report");
+    assert!(
+        kpi_rep.milestones.len() >= 26,
+        "expected Milestones M1..M26"
+    );
+    assert_eq!(
+        kpi_rep.kpi_passed_count, kpi_rep.kpi_total_count,
+        "all Observer KPIs must pass (kpis={:?})",
+        kpi_rep.kpis
+    );
+}
+
+#[test]
+fn engine_ve_79() {
+    use std::path::Path;
+    use std::process::Command;
+    use verdant_core::gateway::{execute_gateway_op, GatewayOp, GatewayOpOutcome};
+    use verdant_core::operator::VerdantOperatorChannel;
+    use verdant_tensor::scalars::*;
+
+    let repo_root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+    let ch = VerdantOperatorChannel::new("sunspire-regatta").expect("operator channel");
+
+    // 1. Pack & failover-verify a public-benefit bundle and assert M27 offline portable HTML
+    //    AND volunteer /swarm + /portable endpoints pass live!
+    let tmp_root = std::env::temp_dir().join(format!("verdant-ve79-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&tmp_root);
+    let rel_dir = tmp_root.join("release");
+    let gw_dir = tmp_root.join("gateway-bundle");
+    let pin = ch
+        .pack_repo_release_capsule(
+            &repo_root,
+            "2.19.0",
+            23,
+            &rel_dir,
+            vec![
+                "https://afflom.github.io/verdant-engine/stitch/v2.19.0/shards".to_string(),
+                "https://cdn.jsdelivr.net/gh/afflom/verdant-engine@stitch-mirror/v2.19.0/shards"
+                    .to_string(),
+            ],
+            "stitch://verdant/studio",
+        )
+        .expect("pack isolated v2.19.0 release");
+
+    execute_gateway_op(&GatewayOp::PackBundle {
+        repo_root: repo_root.clone(),
+        release_dir: rel_dir.clone(),
+        out_dir: gw_dir.clone(),
+        extra_gateways: vec![],
+        crates_dir: None,
+    })
+    .expect("pack public-benefit bundle with offline portable HTML");
+
+    let portable_path = gw_dir.join("verdant-portable-v2.19.0.html");
+    assert!(
+        portable_path.is_file(),
+        "PackBundle must emit offline portable single-file HTML"
+    );
+    let portable_txt = std::fs::read_to_string(&portable_path).expect("read portable HTML");
+    assert!(portable_txt.contains(&pin.release_kappa_hex));
+    assert!(portable_txt.contains("DecompressionStream(\"gzip\")"));
+    assert!(portable_txt.contains("verdant-holo-b64"));
+
+    let (verify_out, _) = execute_gateway_op(&GatewayOp::VerifyFailover {
+        bundle_dir: gw_dir.clone(),
+    })
+    .expect("live failover + /swarm + /portable verify");
+    let GatewayOpOutcome::Verified(rep) = verify_out else {
+        panic!("expected Verified outcome");
+    };
+    assert!(rep.all_passed);
+    assert!(rep.portable_html_verified);
+    assert_eq!(rep.swarm_endpoint_status, 200);
+    assert_eq!(rep.primary_outage_status, 503);
+    assert_eq!(rep.surviving_shards_fetched, 4);
+
+    // 2. Execute real Node.js ESM verification against site/stitch-swarm.mjs:
+    //    - stitch/1 framing round-trip, > 4096 B wire refusal, expired signal TTL refusal
+    //    - opt-in FK-07 organ 9 consent refusal when denied
+    //    - ResourceAdmission budget enforcement & STCH2 SHA-256 shard admission + tamper refusal
+    let shard0_path = gw_dir.join("shards/shard-0.stch");
+    let node_script = format!(
+        r#"
+import fs from 'node:fs';
+import {{
+  STITCH_L5_LIMITS,
+  deriveOpaqueReleaseTopic,
+  createResourceAdmissionLedger,
+  encodeStitchLayer5Frames,
+  createStitchLayer5Reassembler,
+  createStitchSwarmSeeder,
+  verifyStch2Shard,
+}} from './site/stitch-swarm.mjs';
+
+const kappa = {kappa:?};
+const topic = deriveOpaqueReleaseTopic(kappa);
+if (!topic.startsWith('verdant-stitch-') || topic.length > 64) throw new Error('bad topic ' + topic);
+
+const enc = await encodeStitchLayer5Frames({{ kind: 'stitch-l5-announce', ok: true }}, {{ channelHex: kappa, sessionHex: '0123456789abcdef', scope: 'signal' }});
+if (!enc.frames.length || Buffer.byteLength(enc.frames[0]) > STITCH_L5_LIMITS.wireBytesMax) throw new Error('bad wire frame');
+
+const reasm = createStitchLayer5Reassembler({{ channelHex: kappa, scope: 'signal' }});
+let oversizedRefused = false;
+try {{ await reasm.accept('x'.repeat(4097)); }} catch {{ oversizedRefused = true; }}
+if (!oversizedRefused) throw new Error('oversized >4096B frame must fail closed');
+
+let expiredRefused = false;
+try {{ await reasm.accept(enc.frames[0], Date.now() + 120000); }} catch {{ expiredRefused = true; }}
+if (!expiredRefused) throw new Error('expired signal frame must fail closed');
+
+const assembled = await reasm.accept(enc.frames[0]);
+if (!assembled || assembled.payload.ok !== true) throw new Error('reassembly failed');
+
+const deniedSeeder = createStitchSwarmSeeder({{ releaseKappaHex: kappa, isOrganAllowed: () => false }});
+let consentRefused = false;
+try {{ deniedSeeder.join(); }} catch {{ consentRefused = true; }}
+if (!consentRefused) throw new Error('unconsented swarm join must fail closed');
+
+const seeder = createStitchSwarmSeeder({{ releaseKappaHex: kappa, isOrganAllowed: () => true, budgetOverrides: {{ transferBytes: 64 }} }});
+seeder.join();
+const rawShard = new Uint8Array(fs.readFileSync({shard0:?}));
+const parsed = await verifyStch2Shard(rawShard, kappa);
+if (parsed.index !== 0) throw new Error('bad shard index');
+await seeder.cacheVerifiedShard(rawShard, false);
+let overBudgetRefused = false;
+try {{ seeder.serveShardToPeer('prism:peer-a', 0); }} catch {{ overBudgetRefused = true; }}
+if (!overBudgetRefused) throw new Error('over-budget transfer must fail closed');
+
+const tampered = rawShard.slice();
+tampered[tampered.length - 1] ^= 0xff;
+let tamperRefused = false;
+try {{ await verifyStch2Shard(tampered, kappa); }} catch {{ tamperRefused = true; }}
+if (!tamperRefused) throw new Error('tampered STCH2 shard must fail closed');
+
+seeder.leave();
+reasm.dispose();
+console.log('STITCH_L5_SWARM_OK');
+"#,
+        kappa = pin.release_kappa_hex,
+        shard0 = shard0_path.to_string_lossy()
+    );
+    let node_out = Command::new("node")
+        .args(["--input-type=module", "-e", &node_script])
+        .current_dir(&repo_root)
+        .output()
+        .expect("run node stitch-swarm.mjs verification");
+    assert!(
+        node_out.status.success()
+            && String::from_utf8_lossy(&node_out.stdout).contains("STITCH_L5_SWARM_OK"),
+        "site/stitch-swarm.mjs verification failed: stdout={} stderr={}",
+        String::from_utf8_lossy(&node_out.stdout),
+        String::from_utf8_lossy(&node_out.stderr)
+    );
+    let _ = std::fs::remove_dir_all(&tmp_root);
+
+    // 3. Verify pure MIR-lifted M27 Stitch Layer-5, ResourceAdmission & Portable HTML predicates:
+    assert_eq!(stitch_l5_wire_bytes_max(), 4096);
+    assert_eq!(stitch_l5_chunk_bytes_max(), 2700);
+    assert_eq!(stitch_l5_message_bytes_max(), 524_288);
+    assert_eq!(stitch_l5_max_frames(), 256);
+    assert_eq!(stitch_l5_signal_lifetime_ms(), 60_000);
+    assert_eq!(stitch_l5_warm_lifetime_ms(), 1_800_000);
+    assert_eq!(stitch_l5_future_skew_ms(), 5000);
+    assert!(stitch_l5_frame_admitted(4096, 2700));
+    assert!(!stitch_l5_frame_admitted(4097, 2700));
+    assert!(stitch_l5_frame_index_valid(0, 256));
+    assert!(!stitch_l5_frame_index_valid(256, 256));
+    assert!(stitch_l5_message_bounded(524_288));
+    assert!(!stitch_l5_message_bounded(524_289));
+    assert!(stitch_l5_signal_fresh(60_000));
+    assert!(!stitch_l5_signal_fresh(60_001));
+    assert!(stitch_l5_warm_fresh(1_800_000));
+    assert_eq!(stitch_l5_epoch_request_cap(), 4096);
+    assert_eq!(stitch_l5_transfer_budget_bytes(), 16_777_216);
+    assert_eq!(stitch_l5_compute_steps_cap(), 1_000_000);
+    assert!(stitch_l5_budget_reserve_ok(1024, 1024, 4096));
+    assert!(!stitch_l5_budget_reserve_ok(4000, 100, 4096));
+    assert!(stitch_l5_seeder_admitted(true, 10, 4096, 4096));
+    assert!(!stitch_l5_seeder_admitted(false, 10, 4096, 4096));
+    assert!(stitch_l5_opaque_topic_len_valid(31));
+    assert!(stitch_l5_sha256_hex_len_valid(64));
+    assert!(stitch_public_benefit_carrier_ok(false, false));
+    assert!(!stitch_public_benefit_carrier_ok(true, false));
+    assert!(stitch_portable_html_envelope_valid(2000, 1000, true, true));
+    assert!(stitch_volunteer_swarm_ready(200, 4, 4, true));
+    assert!(stitch_origin_outage_survived(false, 1, 0, false, 4, 4));
+    assert!(stitch_origin_outage_survived(false, 0, 1, false, 4, 4));
+    assert!(stitch_origin_outage_survived(false, 0, 0, true, 0, 4));
+    assert!(!stitch_origin_outage_survived(false, 0, 0, false, 4, 4));
+    assert!(stitch_m27_lifted_module_floor_ok(186));
+    assert!(stitch_portable_base64_valid(100, 136));
+
+    // 4. Ratchet & Observer M1..M27 KPIs pass cleanly:
+    let ratchet = prism_fidelity::ratchet::audit_parametric_ratchet(
+        &repo_root,
+        Path::new("model/parametric-ratchet.toml"),
+    )
+    .expect("live repo must pass all 4 ratchet layers in M27");
+    assert!(ratchet.frontier_lifted_functions >= 575);
+    assert!(ratchet.frontier_residue_functions < 1_160);
+    assert!(ratchet.observed_release_capsule_bytes < 1_048_576);
+    assert!(ratchet.observed_max_rust_file_lines <= 1_247);
+    assert!(ratchet.observed_max_js_file_lines <= 920);
+
+    let kpi_rep = ch
+        .evaluate_observer_roadmap_kpis(&repo_root, true, true)
+        .expect("observer roadmap & KPI report");
+    assert!(
+        kpi_rep.milestones.len() >= 27,
+        "expected Milestones M1..M27"
     );
     assert_eq!(
         kpi_rep.kpi_passed_count, kpi_rep.kpi_total_count,

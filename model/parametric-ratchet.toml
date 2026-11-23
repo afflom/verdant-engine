@@ -21,6 +21,7 @@ pure_zero_one_lex_modules = [
   "app/src/Measures.lex.tex",
   "app/src/Production/ThreatModel.lex.tex",
   "app/src/Governance.lex.tex",
+  "app/src/StitchHosting.lex.tex",
 ]
 
 [ceilings]
@@ -57,18 +58,18 @@ max_unlifted_workspace_modules = 0
 
 [frontier_ratchet]
 frontier_register = "frontier.toml"
-frontier_rust_tree_sha256 = "5d011918bdb9d2a166d6ac72435c0a40d4054de082b0ec2eb8292c0eb0574edd"
-min_lifted_functions = 551
-max_residue_functions = 1160
-max_uncertified_functions = 1318
+frontier_rust_tree_sha256 = "fe7d6790ceb1f2c5af3c2d8b24584d0a4df868228182a71a352af63868c22d0c"
+min_lifted_functions = 583
+max_residue_functions = 1152
+max_uncertified_functions = 1310
 
 [surface_ratchet]
 wasm_core_path = "site/verdant-wasm.wasm"
 max_wasm_core_bytes = 155648
 wasm_uorc_path = "site/verdant-uorc.wasm"
-max_wasm_uorc_bytes = 1740800
+max_wasm_uorc_bytes = 1736704
 frame_pin_path = "site/frame/frame-pin.json"
-max_release_capsule_bytes = 1011712
+max_release_capsule_bytes = 1007616
 max_handwritten_rust_file_lines = 1247
 rust_line_exclude = ["crates/verdant-tensor/src/prism_kernel.rs"]
 js_surface_roots = ["site"]
@@ -218,48 +219,63 @@ role = "Constructive autonomous release cadence state machine proving red-main r
 [[stratum_module]]
 path = "app/src/Release.lex.tex"
 stratum = 5
-role = "Constructive multi-channel release distribution matrix covering 3 CORS-verified Stitch shard mirrors, RFC 2789 Cargo Sparse Registry, GHCR OCI, and Zenodo DOI."
+role = "Constructive multi-channel release distribution matrix covering 3 CORS-verified Stitch shard mirrors, RFC 2789 Cargo Sparse Registry, GHCR OCI, Zenodo DOI, Stitch Layer-5 WebRTC peer swarm, and volunteer IPFS/HTTP gateways."
+
+[[stratum_module]]
+path = "app/src/StitchHosting.lex.tex"
+stratum = 3
+role = "Constructive {0, 1} public-benefit Stitch self-hosting and self-serving model enforcing zero commercial PaaS registrations outside GitHub, Stitch Layer-5 stitch/1 framing bounds, ResourceAdmission seeder ceilings, and GitHub-outage availability."
 
 [[stratum_module]]
 path = "app/src/MatrixProduct.lex.tex"
 stratum = 1
 role = "Prism admission for exact F32 matrix operand extents."
+
 [[stratum_module]]
 path = "app/src/ScalarF32.lex.tex"
 stratum = 1
 role = "Prism integer encoding of IEEE F32 scalar arithmetic and exceptional values."
+
 [[stratum_module]]
 path = "app/src/StorageTransfer.lex.tex"
 stratum = 1
 role = "Prism admission for equal-length opaque storage transfers."
+
 [[stratum_module]]
 path = "app/src/FloatStorage.lex.tex"
 stratum = 1
 role = "Prism F32 F16 and BF16 storage encoding conversions and width refusals."
+
 [[stratum_module]]
 path = "app/src/FloatTransform.lex.tex"
 stratum = 1
 role = "Prism composition of float storage arithmetic and ordered selections for GGML transforms."
+
 [[stratum_module]]
 path = "app/src/FloatUnary.lex.tex"
 stratum = 1
 role = "Prism typed float unary composition and exact integer rounding for the GGML CPU contract."
+
 [[stratum_module]]
 path = "app/src/ScalarF64.lex.tex"
 stratum = 1
 role = "Prism nearest-even wide accumulation and F32 count storage conversion."
+
 [[stratum_module]]
 path = "app/src/FloatWord64.lex.tex"
 stratum = 1
 role = "Prism two-word IEEE F64 encoding and typed wide-arithmetic operation selection."
+
 [[stratum_module]]
 path = "app/src/FloatWord64Exports.lex.tex"
 stratum = 1
 role = "Prism direct F64 field exports with universal refinement equalities to the pure word specification."
+
 [[stratum_module]]
 path = "app/src/WordComparison.lex.tex"
 stratum = 1
 role = "Prism encoded F32 ordering and NaN operand classification with bounded integer word operations for row graphs."
+
 [[stratum_module]]
 path = "app/src/SmallFloat.lex.tex"
 stratum = 1

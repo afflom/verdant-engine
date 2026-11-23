@@ -10,15 +10,6 @@ fn invalid() -> TensorComputeError {
     }
 }
 
-fn step(request: Request) -> Result<u32, TensorComputeError> {
-    let word = run(request).map_err(|_| invalid())?.ok_or_else(invalid)?;
-    u32::try_from(word).map_err(|_| invalid())
-}
-
-fn wide(op: u64, left: u64, right: u64) -> Result<u64, TensorComputeError> {
-    evaluate_wide(op, left, right)?.ok_or_else(invalid)
-}
-
 /// Replace each score with its normalized exponential. An optional extra score
 /// contributes to the denominator. Negative infinity represents a masked lane.
 ///
@@ -32,6 +23,13 @@ pub fn normalize_exponential_f32(
     if row.is_empty() {
         return Ok(());
     }
+    let step = |request: Request| -> Result<u32, TensorComputeError> {
+        let word = run(request).map_err(|_| invalid())?.ok_or_else(invalid)?;
+        u32::try_from(word).map_err(|_| invalid())
+    };
+    let wide = |op: u64, left: u64, right: u64| -> Result<u64, TensorComputeError> {
+        evaluate_wide(op, left, right)?.ok_or_else(invalid)
+    };
     let mut maximum = f32::NEG_INFINITY.to_bits();
     for &score in row.iter().chain(extra.as_ref()) {
         maximum = step(Request::C0(u64::from(maximum), u64::from(score.to_bits())))?;

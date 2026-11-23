@@ -98,33 +98,6 @@ pub struct UhdVisibilityTelemetry {
     pub cull_ratio_permille: u32,
 }
 
-#[inline]
-fn spread_10_bits_for_morton(v: u32) -> u32 {
-    let ten = 1u32 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1;
-    let three = 1u32 + 1 + 1;
-    let clamped = v & ((1u32 << ten) - 1);
-    let mut out = 0u32;
-    let mut bit = 0u32;
-    while bit < ten {
-        out |= ((clamped >> bit) & 1) << (bit * three);
-        bit += 1;
-    }
-    out
-}
-
-#[inline]
-fn morton_code_3d(nx: f64, ny: f64, nz: f64) -> u32 {
-    let ten = 1u32 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1;
-    let max_coord = f64::from((1u32 << ten) - 1);
-    let qx = (nx.clamp(0.0, 1.0) * max_coord) as u32;
-    let qy = (ny.clamp(0.0, 1.0) * max_coord) as u32;
-    let qz = (nz.clamp(0.0, 1.0) * max_coord) as u32;
-    let two = 1u32 + 1;
-    spread_10_bits_for_morton(qx)
-        | (spread_10_bits_for_morton(qy) << 1)
-        | (spread_10_bits_for_morton(qz) << two)
-}
-
 /// Partitions packed world-space vertex positions (`3 floats/vert`) and triangle indices (`3 u32/tri`)
 /// into spatially Morton-sorted 64-triangle GPU [`MeshletCluster`]s with tight bounding spheres and
 /// outward normal cones (zero per-cluster heap allocations).
@@ -220,11 +193,25 @@ pub fn build_meshlet_graph(positions_xyz: &[f32], indices: &[u32]) -> MeshletGra
                 + f64::from(positions_xyz[i1 + two])
                 + f64::from(positions_xyz[i2 + two]))
                 * third;
-            morton_code_3d(
-                (cx - g_min_x) * inv_ex,
-                (cy - g_min_y) * inv_ey,
-                (cz - g_min_z) * inv_ez,
-            )
+            let ten_u = 1u32 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1;
+            let three_u = 1u32 + 1 + 1;
+            let two_u = 1u32 + 1;
+            let mask10 = (1u32 << ten_u) - 1;
+            let max_coord = f64::from(mask10);
+            let spread10 = |v: u32| -> u32 {
+                let clamped = v & mask10;
+                let mut out = 0u32;
+                let mut bit = 0u32;
+                while bit < ten_u {
+                    out |= ((clamped >> bit) & 1) << (bit * three_u);
+                    bit += 1;
+                }
+                out
+            };
+            let qx = (((cx - g_min_x) * inv_ex).clamp(0.0, 1.0) * max_coord) as u32;
+            let qy = (((cy - g_min_y) * inv_ey).clamp(0.0, 1.0) * max_coord) as u32;
+            let qz = (((cz - g_min_z) * inv_ez).clamp(0.0, 1.0) * max_coord) as u32;
+            spread10(qx) | (spread10(qy) << 1) | (spread10(qz) << two_u)
         } else {
             u32::MAX
         };

@@ -488,7 +488,7 @@ pub fn audit_parametric_ratchet(
             )));
         }
     }
-    rust_files.sort();
+    rust_files.sort_by_key(|p| rel_slash(repo, p));
     rust_files.dedup();
 
     let mut engine_rust_magic_literal_count = 0usize;
@@ -1289,11 +1289,15 @@ pub fn scan_rust_magic_literals(source: &str) -> Vec<(usize, String)> {
                 i += 1;
             }
             let tok = String::from_utf8_lossy(&buf[start..i]).into_owned();
+            let stem: String = strip_numeric_suffix(&tok)
+                .chars()
+                .filter(|&c| c != '_')
+                .collect();
             if is_float {
-                if !is_allowed_float_zero_or_one(&tok) {
+                if stem != "0.0" && stem != "1.0" {
                     out.push((line, tok));
                 }
-            } else if !is_allowed_decimal_zero_or_one(&tok) {
+            } else if stem != "0" && stem != "1" {
                 out.push((line, tok));
             }
             continue;
@@ -1317,22 +1321,6 @@ fn strip_numeric_suffix(raw: &str) -> &str {
     raw
 }
 
-fn is_allowed_float_zero_or_one(tok: &str) -> bool {
-    let stem: String = strip_numeric_suffix(tok)
-        .chars()
-        .filter(|&c| c != '_')
-        .collect();
-    stem == "0.0" || stem == "1.0"
-}
-
-fn is_allowed_decimal_zero_or_one(tok: &str) -> bool {
-    let stem: String = strip_numeric_suffix(tok)
-        .chars()
-        .filter(|&c| c != '_')
-        .collect();
-    stem == "0" || stem == "1"
-}
-
 fn is_allowed_radix_zero_or_one(tok: &str) -> bool {
     let stem = strip_numeric_suffix(tok);
     if stem.len() < 3 {
@@ -1349,6 +1337,80 @@ fn is_allowed_radix_zero_or_one(tok: &str) -> bool {
 }
 
 fn strip_rust_comments_and_strings(bytes: &[u8]) -> Vec<u8> {
+    let skip_quoted = |quote_at: usize| -> usize {
+        let mut j = quote_at + 1;
+        while j < bytes.len() {
+            if bytes[j] == b'\\' {
+                j += 2;
+                continue;
+            }
+            if bytes[j] == b'"' {
+                return j + 1;
+            }
+            j += 1;
+        }
+        bytes.len()
+    };
+    let skip_raw = |start: usize| -> Option<usize> {
+        let mut j = start;
+        if j < bytes.len() && bytes[j] == b'b' {
+            j += 1;
+        }
+        if j >= bytes.len() || bytes[j] != b'r' {
+            return None;
+        }
+        if start > 0 && (bytes[start - 1].is_ascii_alphanumeric() || bytes[start - 1] == b'_') {
+            return None;
+        }
+        j += 1;
+        let mut hashes = 0usize;
+        while j < bytes.len() && bytes[j] == b'#' {
+            hashes += 1;
+            j += 1;
+        }
+        if j >= bytes.len() || bytes[j] != b'"' {
+            return None;
+        }
+        j += 1;
+        while j < bytes.len() {
+            if bytes[j] == b'"'
+                && j + hashes < bytes.len()
+                && bytes[j + 1..=j + hashes].iter().all(|&b| b == b'#')
+            {
+                return Some(j + 1 + hashes);
+            }
+            j += 1;
+        }
+        Some(bytes.len())
+    };
+    let skip_char = |quote_at: usize| -> Option<usize> {
+        let k = quote_at + 1;
+        if k >= bytes.len() {
+            return None;
+        }
+        if bytes[k] == b'\\' {
+            let mut j = k + 2;
+            while j < bytes.len() && j <= k + 10 {
+                if bytes[j] == b'\'' {
+                    return Some(j + 1);
+                }
+                if bytes[j] == b'\n' {
+                    return None;
+                }
+                j += 1;
+            }
+            return None;
+        }
+        let rest = std::str::from_utf8(&bytes[k..]).ok()?;
+        let ch = rest.chars().next()?;
+        let close = k + ch.len_utf8();
+        if close < bytes.len() && bytes[close] == b'\'' {
+            Some(close + 1)
+        } else {
+            None
+        }
+    };
+
     let mut out = vec![b' '; bytes.len()];
     for (idx, &b) in bytes.iter().enumerate() {
         if b == b'\n' {
@@ -1358,14 +1420,12 @@ fn strip_rust_comments_and_strings(bytes: &[u8]) -> Vec<u8> {
 
     let mut i = 0usize;
     while i < bytes.len() {
-        // Line comment `//`:
         if i + 1 < bytes.len() && bytes[i] == b'/' && bytes[i + 1] == b'/' {
             while i < bytes.len() && bytes[i] != b'\n' {
                 i += 1;
             }
             continue;
         }
-        // Nested block comment `/* ... */`:
         if i + 1 < bytes.len() && bytes[i] == b'/' && bytes[i + 1] == b'*' {
             let mut depth = 1usize;
             i += 2;
@@ -1382,31 +1442,26 @@ fn strip_rust_comments_and_strings(bytes: &[u8]) -> Vec<u8> {
             }
             continue;
         }
-        // Raw string `r#"..."#` or byte raw string `br#"..."#`:
-        if let Some(after_raw) = skip_raw_string(bytes, i) {
+        if let Some(after_raw) = skip_raw(i) {
             i = after_raw;
             continue;
         }
-        // Byte string `b"..."`:
         if i + 1 < bytes.len() && bytes[i] == b'b' && bytes[i + 1] == b'"' {
-            i = skip_quoted_string(bytes, i + 1);
+            i = skip_quoted(i + 1);
             continue;
         }
-        // Normal string `"..."`:
         if bytes[i] == b'"' {
-            i = skip_quoted_string(bytes, i);
+            i = skip_quoted(i);
             continue;
         }
-        // Byte char literal `b'x'`:
         if i + 1 < bytes.len() && bytes[i] == b'b' && bytes[i + 1] == b'\'' {
-            if let Some(after_ch) = skip_char_literal(bytes, i + 1) {
+            if let Some(after_ch) = skip_char(i + 1) {
                 i = after_ch;
                 continue;
             }
         }
-        // Char literal `'x'` (distinguished from lifetime `'a`):
         if bytes[i] == b'\'' {
-            if let Some(after_ch) = skip_char_literal(bytes, i) {
+            if let Some(after_ch) = skip_char(i) {
                 i = after_ch;
                 continue;
             }
@@ -1416,83 +1471,6 @@ fn strip_rust_comments_and_strings(bytes: &[u8]) -> Vec<u8> {
         i += 1;
     }
     out
-}
-
-fn skip_quoted_string(bytes: &[u8], quote_at: usize) -> usize {
-    let mut i = quote_at + 1;
-    while i < bytes.len() {
-        if bytes[i] == b'\\' {
-            i += 2;
-            continue;
-        }
-        if bytes[i] == b'"' {
-            return i + 1;
-        }
-        i += 1;
-    }
-    bytes.len()
-}
-
-fn skip_raw_string(bytes: &[u8], start: usize) -> Option<usize> {
-    let mut i = start;
-    if i < bytes.len() && bytes[i] == b'b' {
-        i += 1;
-    }
-    if i >= bytes.len() || bytes[i] != b'r' {
-        return None;
-    }
-    if start > 0 && (bytes[start - 1].is_ascii_alphanumeric() || bytes[start - 1] == b'_') {
-        return None;
-    }
-    i += 1;
-    let mut hashes = 0usize;
-    while i < bytes.len() && bytes[i] == b'#' {
-        hashes += 1;
-        i += 1;
-    }
-    if i >= bytes.len() || bytes[i] != b'"' {
-        return None;
-    }
-    i += 1;
-    while i < bytes.len() {
-        if bytes[i] == b'"'
-            && i + hashes < bytes.len()
-            && bytes[i + 1..=i + hashes].iter().all(|&b| b == b'#')
-        {
-            return Some(i + 1 + hashes);
-        }
-        i += 1;
-    }
-    Some(bytes.len())
-}
-
-fn skip_char_literal(bytes: &[u8], quote_at: usize) -> Option<usize> {
-    let i = quote_at + 1;
-    if i >= bytes.len() {
-        return None;
-    }
-    if bytes[i] == b'\\' {
-        let mut j = i + 2;
-        while j < bytes.len() && j <= i + 10 {
-            if bytes[j] == b'\'' {
-                return Some(j + 1);
-            }
-            if bytes[j] == b'\n' {
-                return None;
-            }
-            j += 1;
-        }
-        return None;
-    }
-    // Single UTF-8 scalar followed immediately by `'`:
-    let rest = std::str::from_utf8(&bytes[i..]).ok()?;
-    let ch = rest.chars().next()?;
-    let close = i + ch.len_utf8();
-    if close < bytes.len() && bytes[close] == b'\'' {
-        Some(close + 1)
-    } else {
-        None
-    }
 }
 
 fn blank_cfg_test_items(buf: &mut [u8]) {
