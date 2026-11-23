@@ -1090,6 +1090,7 @@ fn verify_bundle(scope: &str, directory: &str) -> std::collections::BTreeMap<Str
                     "verdant_grouped_q8" => include_bytes!("../../../../generated/tensor-grouped/packages/rust-core/verdant_grouped_q8/src/lib.rs"),
                     "verdant_tanh" => include_bytes!("../../../../generated/tensor-tanh/packages/rust-core/verdant_tanh/src/lib.rs"),
                     "verdant_row_ranking" => include_bytes!("../../../../generated/tensor-rowrank/packages/rust-core/verdant_row_ranking/src/lib.rs"),
+                    "verdant_normalized_exponential" => include_bytes!("../../../../generated/tensor-softmax/packages/rust-core/verdant_normalized_exponential/src/lib.rs"),
                     "verdant_head_slope_index" => include_bytes!("../../../../generated/tensor-slopes/packages/rust-core/verdant_head_slope_index/src/lib.rs"),
                     "verdant_head_slope_group" => include_bytes!("../../../../generated/tensor-slopes/packages/rust-core/verdant_head_slope_group/src/lib.rs"),
                     "verdant_head_slope_exponent" => include_bytes!("../../../../generated/tensor-slopes/packages/rust-core/verdant_head_slope_exponent/src/lib.rs"),
@@ -2113,37 +2114,55 @@ fn binary32_row_ranking_vtk_31() {
 
 #[test]
 fn normalized_exponential_vtk_32() {
+    assert_eq!(
+        verify_bundle("softmax", "tensor-softmax")["VerdantEngine.NormalizedExponential.evaluate"],
+        "verdant_normalized_exponential"
+    );
     use std::fmt::Write;
     let mut requests = String::new();
     let mut cases = Vec::new();
     for width in [1, 3, 8, 31, 64, 257, 1024] {
         for sink in [None, Some(-11.0_f32), Some(9.0_f32)] {
-            let row: Vec<_> = (0..width).map(|i| match i % 7 {
-                1 => f32::NEG_INFINITY,
-                2 => -65.0,
-                3 => -0.0,
-                _ => (((i * 53 + 5) % 97) as f32 - 48.0) / 4.0,
-            }).collect();
-            writeln!(requests,"{width} {} {}",u8::from(sink.is_some()),sink.unwrap_or_default().to_bits()).unwrap();
-            for &score in &row { writeln!(requests,"{}",score.to_bits()).unwrap(); }
-            cases.push((row,sink));
+            let row: Vec<_> = (0..width)
+                .map(|i| match i % 7 {
+                    1 => f32::NEG_INFINITY,
+                    2 => -65.0,
+                    3 => -0.0,
+                    _ => (((i * 53 + 5) % 97) as f32 - 48.0) / 4.0,
+                })
+                .collect();
+            writeln!(
+                requests,
+                "{width} {} {}",
+                u8::from(sink.is_some()),
+                sink.unwrap_or_default().to_bits()
+            )
+            .unwrap();
+            for &score in &row {
+                writeln!(requests, "{}", score.to_bits()).unwrap();
+            }
+            cases.push((row, sink));
         }
     }
     let words = query_oracle("normalized-exp", requests);
     let mut oracle = words.as_slice();
     for (mut row, sink) in cases {
-        let (expected, tail) = oracle.split_at(row.len()); oracle = tail;
+        let (expected, tail) = oracle.split_at(row.len());
+        oracle = tail;
         super::normalize_exponential_f32(&mut row, sink).unwrap();
         for (actual, &word) in row.into_iter().zip(expected) {
             let expected = f32::from_bits(word);
-            assert!((actual-expected).abs() <= 1.0e-6 * expected.abs() + 1.0e-8, "{actual} != {expected}");
+            assert!(
+                (actual - expected).abs() <= 1.0e-6 * expected.abs() + 1.0e-8,
+                "{actual} != {expected}"
+            );
         }
     }
     assert!(oracle.is_empty());
     for mut invalid in [vec![f32::NAN], vec![f32::INFINITY], vec![f32::NEG_INFINITY]] {
         let before = invalid[0].to_bits();
         assert!(super::normalize_exponential_f32(&mut invalid, None).is_err());
-        assert_eq!(before,invalid[0].to_bits());
+        assert_eq!(before, invalid[0].to_bits());
     }
     assert!(super::normalize_exponential_f32(&mut [], None).is_ok());
 }

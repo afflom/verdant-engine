@@ -1,0 +1,55 @@
+\begin{lexlean}{NormalizedExponential}
+\useglossary{lexlean.std.bool@1.2.0}
+\useglossary{lexlean.std.nat@1.2.0}
+\importmodule{FloatTransform}
+\importmodule{ScalarF32}
+\title{Natural number}
+\begin{semanticmodule}
+inductive{
+  name: Request,
+  type_parameters: [],
+  parameters: [],
+  constructors: [{name: maximum, fields: [Nat, Nat]}, {name: center, fields: [Nat, Nat]}]
+}
+
+definition{
+  name: supportedScore,
+  parameters: [word : Nat],
+  result: Bool,
+  body: (((word <? 4294967296) && (if (word =? 2139095040) then false else true)) && (if (ScalarF32::isNaN word) then false else true)),
+  executable: true
+}
+
+definition{
+  name: evaluate,
+  parameters: [request : Request],
+  result: (Option Nat),
+  body: (match request
+    | Request.maximum prior score => (if ((supportedScore prior) && (supportedScore score)) then (ctor Option.some [Nat] (if (FloatTransform::less prior score) then score else prior)) else (ctor Option.none [Nat]))
+    | Request.center score maximum => (if (((supportedScore score) && (supportedScore maximum)) && (if (maximum =? 4286578688) then false else true)) then (ctor Option.some [Nat] (ScalarF32::add score (ScalarF32::negate maximum))) else (ctor Option.none [Nat]))),
+  executable: true,
+  production: {effects: [overflow], targets: [rust-core]}
+}
+
+theorem{
+  name: maskedScoreHasZeroExponentialLimit,
+  parameters: [],
+  statement: ((evaluate (ctor Request.center 4286578688 0)) = (ctor Option.some [Nat] 4286578688)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: undefinedMassRefused,
+  parameters: [],
+  statement: ((evaluate (ctor Request.center 4286578688 4286578688)) = (ctor Option.none [Nat])),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: positiveInfinityRefused,
+  parameters: [],
+  statement: ((evaluate (ctor Request.maximum 0 2139095040)) = (ctor Option.none [Nat])),
+  proof: reflexivity{}
+}
+\end{semanticmodule}
+\end{lexlean}

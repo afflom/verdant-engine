@@ -306,6 +306,11 @@ stratum = 1
 role = "Symmetric four-bit lane placement, row extent admission and ordered F32 reduction instructions."
 
 [[stratum_module]]
+path = "app/src/NormalizedExponential.lex.tex"
+stratum = 1
+role = "Validate binary32 scores, select a row maximum and center values for stable normalization."
+
+[[stratum_module]]
 path = "app/src/RowRanking.lex.tex"
 stratum = 1
 role = "Binary32 row-order keys, NaN and signed-zero handling, and index capacity for stable selection."
