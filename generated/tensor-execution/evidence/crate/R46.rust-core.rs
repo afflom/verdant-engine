@@ -629,197 +629,65 @@ pub fn checked_neg_i64(p0: i64) -> Option<i64> {
 
 #[derive(Clone)]
 pub enum Adt0 {
-    C0(u64),
-    C1(u64, u64, u64, u64),
+    C0(u64, u64, u64),
+    C1(u64),
+    C2(u64),
 }
 
-#[derive(Clone)]
-pub enum Fn0 {
-    F5,
-}
-
-impl Fn0 {
-    pub fn apply(&self, p0: u64) -> R<u64> {
-        match self {
-            Fn0::F5 => f5(p0),
-        }
-    }
-}
-
-pub fn f0(v0: u64) -> R<Adt0> {
-    let v1: u64 = {
-        let a1 = v0;
-        let a2 = 2147483648u64;
-        let a3 = 0u64;
-        nat_rem(a1, a2, a3)
-    };
-    let v2: u64 = {
-        let a4 = v1;
-        let a5 = 8388608u64;
-        let a6 = 0u64;
-        nat_quot(a4, a5, a6)
-    };
-    let v3: u64 = {
-        let a7 = v1;
-        let a8 = 8388608u64;
-        let a9 = 0u64;
-        nat_rem(a7, a8, a9)
-    };
-    let a10 = 2139095040u64;
-    let a11 = v1;
-    if nat_lt(a10, a11) {
-        Ok(Adt0::C0(2143289344u64))
+pub fn f0(v0: bool, v1: bool, v2: u64, v3: u64, v4: u64, v5: u64) -> Adt0 {
+    let a1 = v2;
+    let a2 = 3u64;
+    if if nat_eq(a1, a2) {
+        v0
     } else {
-        let a12 = v2;
-        let a13 = 100u64;
-        if nat_lt(a12, a13) {
-            Ok(Adt0::C0(1065353216u64))
+        false
+    } {
+        Adt0::C0(3u64, 1065353216u64, v5)
+    } else {
+        let a3 = v2;
+        let a4 = 4u64;
+        if if nat_eq(a3, a4) {
+            !v1
         } else {
-            let a14 = 133u64;
-            let a15 = v2;
-            if nat_lt(a14, a15) {
-                let a16 = v0;
-                let a17 = 2147483648u64;
-                if nat_lt(a16, a17) {
-                    Ok(Adt0::C0(2139095040u64))
-                } else {
-                    Ok(Adt0::C0(0u64))
-                }
-            } else {
-                f1({
-                    let a18 = 2147483647u64;
-                    let a19 = v0;
-                    nat_lt(a18, a19)
-                }, v2, v3)
-            }
-        }
-    }
-}
-
-pub fn f1(v0: bool, v1: u64, v2: u64) -> R<Adt0> {
-    let v3: u64 = {
-        let a24 = {
-            let a20 = 8388608u64;
-            let a21 = v2;
-            nat_add(a20, a21)?
-        };
-        let a25 = f2({
-            let a22 = v1;
-            let a23 = 100u64;
-            nat_sub(a22, a23)
-        })?;
-        nat_mul(a24, a25)?
-    };
-    let v4: u64 = {
-        let a26 = v3;
-        let a27 = 780414346020670u64;
-        let a28 = 0u64;
-        nat_quot(a26, a27, a28)
-    };
-    let v5: u64 = {
-        let a29 = v3;
-        let a30 = 780414346020670u64;
-        let a31 = 0u64;
-        nat_rem(a29, a30, a31)
-    };
-    let v6: u64 = if v0 {
-        let a32 = 780414346020670u64;
-        let a33 = v5;
-        nat_sub(a32, a33)
-    } else {
-        v5
-    };
-    let v7: u64 = if v0 {
-        let a34 = 255u64;
-        let a35 = v4;
-        nat_sub(a34, a35)
-    } else {
-        let a36 = 256u64;
-        let a37 = v4;
-        nat_add(a36, a37)?
-    };
-    Ok(Adt0::C1(v7, f3(v6, 524288u64)?, 12u64, 2147483648u64))
-}
-
-pub fn f2(v0: u64) -> R<u64> {
-    f4(Fn0::F5, v0, 1u64)
-}
-
-pub fn f3(v0: u64, v1: u64) -> R<u64> {
-    let v2: u64 = {
-        let a38 = v0;
-        let a39 = v1;
-        let a40 = 0u64;
-        nat_quot(a38, a39, a40)
-    };
-    let v3: u64 = {
-        let a44 = {
-            let a41 = v0;
-            let a42 = v1;
-            let a43 = 0u64;
-            nat_rem(a41, a42, a43)
-        };
-        let a45 = 2u64;
-        nat_mul(a44, a45)?
-    };
-    let a55 = v2;
-    let a56 = {
-        let a46 = v1;
-        let a47 = v3;
-        if if nat_lt(a46, a47) {
-            true
-        } else {
-            let a48 = v3;
-            let a49 = v1;
-            if nat_eq(a48, a49) {
-                let a53 = {
-                    let a50 = v2;
-                    let a51 = 2u64;
-                    let a52 = 0u64;
-                    nat_rem(a50, a51, a52)
-                };
-                let a54 = 1u64;
-                nat_eq(a53, a54)
-            } else {
-                false
-            }
+            false
         } {
-            1u64
+            Adt0::C2(v5)
         } else {
-            0u64
-        }
-    };
-    nat_add(a55, a56)
-}
-
-pub fn f4(v0: Fn0, p60: u64, p61: u64) -> R<u64> {
-    let m59 = (p60, p61);
-    {
-        let mut m59 = m59;
-        loop {
-            let step = {
-                let (v1, v2) = m59;
-                let m57 = v1;
-                if m57 == 0 {
-                    Err::<(u64, u64), R<u64>>(Ok(v2))
-                } else {
-                    let v3 = m57 - 1;
-                    Ok::<(u64, u64), R<u64>>((v3, {
-                        let c58: Fn0 = v0.clone();
-                        c58.apply(v2)?
-                    }))
-                }
-            };
-            match step {
-                Ok(next) => { m59 = next; }
-                Err(done) => break done,
-            }
+            f1(v2, v3, v4, v5)
         }
     }
 }
 
-pub fn f5(v0: u64) -> R<u64> {
-    let a62 = v0;
-    let a63 = v0;
-    nat_add(a62, a63)
+pub fn f1(v0: u64, v1: u64, v2: u64, v3: u64) -> Adt0 {
+    let a5 = v0;
+    let a6 = 0u64;
+    if nat_eq(a5, a6) {
+        Adt0::C0(6u64, v1, 0u64)
+    } else {
+        let a7 = v0;
+        let a8 = 1u64;
+        if nat_eq(a7, a8) {
+            Adt0::C1(v3)
+        } else {
+            let a9 = v0;
+            let a10 = 2u64;
+            if nat_eq(a9, a10) {
+                Adt0::C0(0u64, 1065353216u64, v3)
+            } else {
+                let a11 = v0;
+                let a12 = 3u64;
+                if nat_eq(a11, a12) {
+                    Adt0::C0(3u64, v1, v3)
+                } else {
+                    let a13 = v0;
+                    let a14 = 4u64;
+                    if nat_eq(a13, a14) {
+                        Adt0::C0(2u64, v3, v2)
+                    } else {
+                        Adt0::C2(v3)
+                    }
+                }
+            }
+        }
+    }
 }

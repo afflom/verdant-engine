@@ -504,8 +504,10 @@ The published kernel archive contains the same source bytes as the certified Rus
 
 ## VTK-55 binary32 exponential increment
 
-Unary operation 13 evaluates `expm1` on the existing F32, F16 and BF16 storage pairs. The `increment` Prism project certifies dispatch, magnitude selection, signed correction to the existing exponential series step, and final rounding. Its production result is `f5a4db688f5887c22e40f6f7e677d09b6e6614547b018818964a67f31d03f843`.
+Unary operation 13 evaluates `expm1` on the existing F32, F16 and BF16 storage pairs. The shared `tensor` Prism project certifies dispatch, magnitude selection, signed correction to the existing exponential series step, and final rounding. Its production result is `5ca34e63f54d8ed8282f55b98c65b3801f6f027aa876cc402fa840cb15c65d12`.
 
 The test `exponential_increment_vtk_55` compared 195,716 distinct binary32 inputs with the C++ math library and the pinned GGML CPU ELU kernel. The maximum observed finite difference was one ULP. Tiny inputs, both zero signs, infinities and overflow agreed exactly. Sixteen binary16 and bfloat16 inputs exercised 32 destination conversions against the imported storage oracle.
+
+VE-80 verified the three shared proof projects with all four increment roots in the tensor bundle. The downstream VTK-55 differential test passed on that bundle.
 
 Replacing the small-input result with a binary32 exponential followed by subtraction returned zero for input word `00000001`. The differential test rejected that result and passed after restoration. Existing exponential and unary-refusal tests also passed.

@@ -192,7 +192,7 @@ license-files = [{ path = "src/lib.rs", hash = 0x32da1e47 }]
 name = "verdant_integer_f32"
 version = "=2.9.0"
 expression = "MIT OR Apache-2.0"
-license-files = [{ path = "src/lib.rs", hash = 0x156cce0 }]
+license-files = [{ path = "src/lib.rs", hash = 0x0156cce0 }]
 
 [[licenses.clarify]]
 name = "verdant_packed_field"
@@ -342,7 +342,7 @@ license-files = [{ path = "src/lib.rs", hash = 0x5019602a }]
 name = "verdant_logarithmic_product"
 version = "=2.22.0"
 expression = "MIT OR Apache-2.0"
-license-files = [{ path = "src/lib.rs", hash = 0x31fbff7 }]
+license-files = [{ path = "src/lib.rs", hash = 0x031fbff7 }]
 
 [[licenses.clarify]]
 name = "verdant_logarithmic_scale"

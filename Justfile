@@ -125,9 +125,6 @@ new-capability id level suite statement:
 tensor-export:
     just certified-export tensor tensor-execution
 
-increment-export:
-    just certified-export increment tensor-increment
-
 quotient-export:
     just certified-export quotient tensor-quotient
 

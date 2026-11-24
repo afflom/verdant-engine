@@ -91,10 +91,10 @@ verdant_add_f64 = { version = "2.9.0", path = "../../generated/tensor-execution/
 verdant_normalize_f64 = { version = "2.9.0", path = "../../generated/tensor-execution/packages/rust-core/verdant_normalize_f64" }
 verdant_narrow_f64 = { version = "2.9.0", path = "../../generated/tensor-execution/packages/rust-core/verdant_narrow_f64" }
 verdant_count_f32 = { version = "2.9.0", path = "../../generated/tensor-execution/packages/rust-core/verdant_count_f32" }
-verdant_unary_dispatch = { version = "=2.48.0", path = "../../generated/tensor-increment/packages/rust-core/verdant_unary_dispatch" }
-verdant_exponential_increment = { version = "=2.48.0", path = "../../generated/tensor-increment/packages/rust-core/verdant_exponential_increment" }
-verdant_increment_term = { version = "=2.48.0", path = "../../generated/tensor-increment/packages/rust-core/verdant_increment_term" }
-verdant_increment_pack = { version = "=2.48.0", path = "../../generated/tensor-increment/packages/rust-core/verdant_increment_pack" }
+verdant_unary_dispatch = { version = "=2.48.0", path = "../../generated/tensor-execution/packages/rust-core/verdant_unary_dispatch" }
+verdant_exponential_increment = { version = "=2.48.0", path = "../../generated/tensor-execution/packages/rust-core/verdant_exponential_increment" }
+verdant_increment_term = { version = "=2.48.0", path = "../../generated/tensor-execution/packages/rust-core/verdant_increment_term" }
+verdant_increment_pack = { version = "=2.48.0", path = "../../generated/tensor-execution/packages/rust-core/verdant_increment_pack" }
 verdant_unary_plan = { version = "2.9.0", path = "../../generated/tensor-execution/packages/rust-core/verdant_unary_plan" }
 verdant_unary_select = { version = "2.9.0", path = "../../generated/tensor-execution/packages/rust-core/verdant_unary_select" }
 verdant_unary_activate = { version = "2.9.0", path = "../../generated/tensor-execution/packages/rust-core/verdant_unary_activate" }

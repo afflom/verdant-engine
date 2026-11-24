@@ -627,32 +627,20 @@ pub fn checked_neg_i64(p0: i64) -> Option<i64> {
     i64::checked_neg(p0)
 }
 
-pub fn f0(v0: u64, v1: u64) -> R<(u64, u64)> {
-    let a1 = v0;
-    let a2 = v1;
-    if nat_lt(a1, a2) {
-        Ok((v1, {
-            let a3 = v0;
-            let a4 = 1u64;
-            nat_add(a3, a4)?
-        }))
-    } else {
-        Ok(({
-            let a5 = v1;
-            let a6 = 2u64;
-            nat_mul(a5, a6)?
-        }, {
-            let a11 = {
-                let a9 = {
-                    let a7 = v0;
-                    let a8 = v1;
-                    nat_sub(a7, a8)
-                };
-                let a10 = 2u64;
-                nat_mul(a9, a10)?
-            };
-            let a12 = 1u64;
-            nat_add(a11, a12)?
-        }))
-    }
+pub fn f0(v0: u64) -> (u64, bool) {
+    ({
+        let a1 = v0;
+        let a2 = 2u64;
+        let a3 = 0u64;
+        nat_quot(a1, a2, a3)
+    }, {
+        let a7 = {
+            let a4 = v0;
+            let a5 = 2u64;
+            let a6 = 0u64;
+            nat_rem(a4, a5, a6)
+        };
+        let a8 = 1u64;
+        nat_eq(a7, a8)
+    })
 }

@@ -1443,10 +1443,10 @@ fn verify_bundle(scope: &str, directory: &str) -> std::collections::BTreeMap<Str
                     "verdant_head_slope" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_head_slope/src/lib.rs"),
                     "verdant_gelu" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_gelu/src/lib.rs"),
                     "verdant_error_function" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_error_function/src/lib.rs"),
-                    "verdant_unary_dispatch" => include_bytes!("../../../../generated/tensor-increment/packages/rust-core/verdant_unary_dispatch/src/lib.rs"),
-                    "verdant_exponential_increment" => include_bytes!("../../../../generated/tensor-increment/packages/rust-core/verdant_exponential_increment/src/lib.rs"),
-                    "verdant_increment_term" => include_bytes!("../../../../generated/tensor-increment/packages/rust-core/verdant_increment_term/src/lib.rs"),
-                    "verdant_increment_pack" => include_bytes!("../../../../generated/tensor-increment/packages/rust-core/verdant_increment_pack/src/lib.rs"),
+                    "verdant_unary_dispatch" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_unary_dispatch/src/lib.rs"),
+                    "verdant_exponential_increment" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_exponential_increment/src/lib.rs"),
+                    "verdant_increment_term" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_increment_term/src/lib.rs"),
+                    "verdant_increment_pack" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_increment_pack/src/lib.rs"),
                     "verdant_logistic" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_logistic/src/lib.rs"),
                     "verdant_swiglu" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_swiglu/src/lib.rs"),
                     "verdant_packed_dot" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_packed_dot/src/lib.rs"),
@@ -1993,16 +1993,15 @@ fn attention_head_slopes_vtk_30() {
 #[test]
 fn exponential_increment_vtk_55() {
     use std::fmt::Write;
-    let bindings = verify_bundle("increment", "tensor-increment");
     for (name, package) in [
         ("plan", "verdant_unary_dispatch"),
         ("increment", "verdant_exponential_increment"),
         ("incrementTerm", "verdant_increment_term"),
         ("packIncrement", "verdant_increment_pack"),
     ] {
-        assert_eq!(
-            bindings[&format!("VerdantEngine.ExponentialIncrement.{name}")],
-            package
+        certified_model(
+            package,
+            &format!("VerdantEngine.ExponentialIncrement.{name}"),
         );
     }
     let mut words: Vec<u32> = (0..=u16::MAX).map(|high| u32::from(high) << 16).collect();
