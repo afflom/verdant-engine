@@ -914,3 +914,9 @@ id = "VTK-55"
 level = "build"
 suite = "engine"
 statement = "A certified binary32 exponential increment preserves tiny signed operands and agrees with the C and GGML oracles"
+
+[[id]]
+id = "VTK-56"
+level = "build"
+suite = "engine"
+statement = "Verdant encodes four-lane three-bit importance grids into packed weight blocks matching the imported CPU quantizers"

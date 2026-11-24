@@ -1,0 +1,24 @@
+{
+  "revision": "9a080f44b503c64f66c84a6274b9d9ee5d5b09d5",
+  "source": "ggml/src/ggml-quants.c",
+  "entry_point": "iq3xs_init_impl",
+  "format": "The first little-endian u16 is the total directory size in words. Two 4097-entry offset directories precede the ordered grid indices. Each directory offsets from the first grid index. A one-element interval is an exact grid point.",
+  "grids": [
+    {
+      "size": 256,
+      "directory_words": 0,
+      "direct": 256,
+      "candidates": 19241
+    },
+    {
+      "size": 512,
+      "directory_words": 4097,
+      "direct": 512,
+      "candidates": 25245
+    }
+  ],
+  "directory_words": 8194,
+  "sha256": "e7f8c64c1969997dde3e68220c34873e289b3d89f0cfa2184f1b6d6bc720435f",
+  "upstream_rows_sha256": "dc76f2644e4fe06f994de591c2d819d4841660241b0080d32b2be59fc87252b8",
+  "license": "ggml_tables.LICENSE"
+}

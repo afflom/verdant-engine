@@ -25,6 +25,10 @@ pub enum WeightBlockEncoding {
 /// Supported packed weight representations, including variable block lengths.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum PackedWeightEncoding {
+    /// Four-lane IQ3_XXS codebook with seven stored sign bits per eight lanes.
+    ImportanceThreeCompact,
+    /// Four-lane IQ3_S codebook with an independent sign for every lane.
+    ImportanceThree,
     /// Binary16 scale and one signed byte per lane.
     SymmetricEight,
     /// Binary16 scale and centered four-bit coefficients.
@@ -89,6 +93,9 @@ pub fn encode_weight_block<I: AsRef<[f32]> + ?Sized>(
     use PackedWeightEncoding::*;
     let input = input.as_ref();
     let kind = kind.into();
+    if matches!(kind, ImportanceThreeCompact | ImportanceThree) {
+        return super::encode_importance_weight_block(input, None, kind, output);
+    }
     let affine = match kind {
         GroupedAffineTwo => Some(scalars::two_u64()),
         GroupedAffineFour => Some(scalars::four_u64()),

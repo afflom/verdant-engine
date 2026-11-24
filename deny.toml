@@ -623,3 +623,33 @@ name = "verdant_unary_dispatch"
 version = "=2.48.0"
 expression = "MIT OR Apache-2.0"
 license-files = [{ path = "src/lib.rs", hash = 0x1b8b8323 }]
+
+[[licenses.clarify]]
+name = "verdant_importance_grid"
+version = "=2.49.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0x69f4096b }]
+
+[[licenses.clarify]]
+name = "verdant_iq3_fit"
+version = "=2.49.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0x1b955707 }]
+
+[[licenses.clarify]]
+name = "verdant_iq3_level"
+version = "=2.49.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0x88149e5c }]
+
+[[licenses.clarify]]
+name = "verdant_iq3_scale"
+version = "=2.49.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0xb737722c }]
+
+[[licenses.clarify]]
+name = "verdant_iq3_score"
+version = "=2.49.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0xb55da332 }]

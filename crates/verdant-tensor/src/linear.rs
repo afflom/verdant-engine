@@ -18,6 +18,7 @@ mod bitpacked_product;
 mod grouped;
 mod grouped_affine;
 mod grouped_product;
+mod importance_grid;
 mod ranking;
 mod rotation;
 mod softmax;
@@ -39,6 +40,7 @@ pub use grouped_affine::{
     dot_grouped_weight_row, CodebookEncoding, GroupedWeightEncoding,
 };
 pub use grouped_product::dot_grouped_q2_row;
+pub use importance_grid::encode_importance_weight_block;
 pub use ranking::RowRankingF32;
 pub use rotation::{rotate_pair_f32, signed_word_f32, RotaryParameters, RotarySpectrum};
 pub use softmax::normalize_exponential_f32;

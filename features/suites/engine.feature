@@ -855,3 +855,9 @@ Feature: engine
     Given binary32 inputs around zero and across the exponential range
     When the certified increment evaluates each input
     Then the result agrees with the independent exponential-minus-one oracle
+
+  @VTK-56 @build
+  Scenario: Verdant encodes four-lane three-bit importance grids into packed weight blocks matching the imported CPU quantizers
+    Given finite weight lanes and optional nonnegative importance values
+    When the tensor kernel selects signs, grid points and local scales
+    Then every packed byte agrees with the upstream reference

@@ -415,3 +415,8 @@ role = "Select weighted affine scale fits and encode grouped unsigned coefficien
 path = "app/src/SignedTruncation.lex.tex"
 stratum = 2
 role = "Truncate finite binary32 values to representable signed storage words."
+
+[[stratum_module]]
+path = "app/src/ImportanceGridEncoding.lex.tex"
+stratum = 1
+role = "Weighted four-lane grid projection, binary32 fit instructions and packed scale/sign fields."
