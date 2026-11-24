@@ -58,8 +58,8 @@ max_unlifted_workspace_modules = 0
 
 [frontier_ratchet]
 frontier_register = "frontier.toml"
-frontier_rust_tree_sha256 = "cbe6dd5b83d0d083ad0e4d6f03fdd8582aa130c191e696e7ff76cf8b75e6f7d2"
-min_lifted_functions = 587
+frontier_rust_tree_sha256 = "cf5f4f72b41872c716ead8c2e6eaa350e67674cc3c2d842613c7b49290ed8b62"
+min_lifted_functions = 589
 max_residue_functions = 1150
 max_uncertified_functions = 1302
 
@@ -420,3 +420,8 @@ role = "Truncate finite binary32 values to representable signed storage words."
 path = "app/src/ImportanceGridEncoding.lex.tex"
 stratum = 1
 role = "Weighted four-lane grid projection, binary32 fit instructions and packed scale/sign fields."
+
+[[stratum_module]]
+path = "app/src/DeltaRule.lex.tex"
+stratum = 2
+role = "Evaluate binary32 decay, prediction residual, rank-one state correction and scaled query projection."

@@ -1,17 +1,17 @@
 {
   "spec": "verdant/observer-refinement-agenda/1",
-  "releaseVersion": "2.21.5",
-  "releaseEpoch": 31,
+  "releaseVersion": "2.21.6",
+  "releaseEpoch": 32,
   "observerKappaHex": "6cd1e9dc15167b134d9887883bf06a5158c9b132f076e10a30e521ea62e0a17b",
   "overallRefinementScorePermille": 976,
   "liveMetrics": {
-    "wasmCoreBytes": 153490,
-    "wasmUorcBytes": 1713669,
-    "releaseCapsuleBytes": 968945,
+    "wasmCoreBytes": 153483,
+    "wasmUorcBytes": 1713662,
+    "releaseCapsuleBytes": 968868,
     "blankFrameBytes": 29630,
     "maxHandwrittenRustFileLines": 1247,
     "maxJsFileLines": 920,
-    "frontierLifted": 587,
+    "frontierLifted": 589,
     "frontierResidue": 1150,
     "frontierUncertified": 1302,
     "fidelityOpenResidue": 0
@@ -67,7 +67,7 @@
       "vsmSystem": "VSM-S4",
       "viewpointId": "roadmap-kpi-strategy",
       "ownedFileCount": 7,
-      "maxFileLines": 863,
+      "maxFileLines": 881,
       "heaviestFile": "features/suites/engine.feature",
       "healthScorePermille": 1000
     },
@@ -171,14 +171,14 @@
       "citedAuthority": "AUTH-SEMVER-CHANGE-KPI",
       "ratchetLayer": "uorust-frontier",
       "priority": "high",
-      "currentValue": "587 lifted / 1150 residue (1302 uncertified)",
-      "targetValue": ">= 607 lifted functions",
+      "currentValue": "589 lifted / 1150 residue (1302 uncertified)",
+      "targetValue": ">= 609 lifted functions",
       "summary": "Expand constructive MIR proof frontier; top blocker: expression form outside the lift: ? below the function's own statements (269 fns, cause=form).",
       "concreteActions": [
         "Replace remaining raw shift/overflow ops with lifted verdant_tensor::scalars and wrapping ops.",
         "Extract pure decision/calculation helpers out of IO/effectful wrappers so uorust lifts them."
       ],
-      "kappaHex": "1e8d91618176bf0eba9a118f2bb42f2e5e55288436faeaf5fdbdb5674cb8222f"
+      "kappaHex": "96001db5d5ddea7f7b5b63c9808821671935b494526dad445a76359233c83c8e"
     },
     {
       "proposalId": "refine-rust-modularity",
@@ -222,15 +222,15 @@
       "citedAuthority": "AUTH-STITCH-SELF-HOSTING",
       "ratchetLayer": "surface-wasm",
       "priority": "medium",
-      "currentValue": "verdant-uorc.wasm 1713669 B · .holo 968945 B · Blank Frame 29630 B (1090 B headroom)",
+      "currentValue": "verdant-uorc.wasm 1713662 B · .holo 968868 B · Blank Frame 29630 B (1090 B headroom)",
       "targetValue": "verdant-uorc.wasm <= 1560576 B and gzipped .holo <= 1.0 MiB",
       "summary": "Keep browser verdant-uorc.wasm ultra-lean (< 1.5 MiB) and drive gzipped .holo release capsules below 1.0 MiB for instant Blank Frame cold boots.",
       "concreteActions": [
         "Keep uorc-ncm-decode native-only and audit gltf-json / serde_json monomorphizations inside verdant-uorc.wasm.",
         "Maintain Blank Frame strictly under 30720 B with DecompressionStream('gzip')."
       ],
-      "kappaHex": "85bcd409343c0e94916751fe1f0e66596b839afb45297f0c8b2ea7245aa4ba46"
+      "kappaHex": "d72c8ebf5cf5b0315375ffdefc42a27fd0b1c549d027a74d46cd6d85e93ec92f"
     }
   ],
-  "agendaKappaHex": "35c888756162a173d90a4a293ed0afc9f967b23d8a7cbb984dd6fce9583e35ca"
+  "agendaKappaHex": "f1141ec922b5dfe62595f301339c5d82837c8450e3e2f02a3a94181ae6b859b7"
 }

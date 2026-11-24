@@ -627,38 +627,9 @@ pub fn checked_neg_i64(p0: i64) -> Option<i64> {
     i64::checked_neg(p0)
 }
 
-#[derive(Clone)]
-pub enum Adt0 {
-    C0,
-    C1,
-    C2,
-    C3,
-}
-
-pub fn f0(v0: u64) -> Option<Adt0> {
+pub fn f0(v0: u64) -> u64 {
     let a1 = v0;
-    let a2 = 0u64;
-    if nat_eq(a1, a2) {
-        Some(Adt0::C0)
-    } else {
-        let a3 = v0;
-        let a4 = 1u64;
-        if nat_eq(a3, a4) {
-            Some(Adt0::C1)
-        } else {
-            let a5 = v0;
-            let a6 = 2u64;
-            if nat_eq(a5, a6) {
-                Some(Adt0::C2)
-            } else {
-                let a7 = v0;
-                let a8 = 3u64;
-                if nat_eq(a7, a8) {
-                    Some(Adt0::C3)
-                } else {
-                    None::<Adt0>
-                }
-            }
-        }
-    }
+    let a2 = 4294967296u64;
+    let a3 = 0u64;
+    nat_rem(a1, a2, a3)
 }

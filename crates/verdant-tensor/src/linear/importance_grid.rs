@@ -74,7 +74,7 @@ const ACTIONS: [Action; scalars::sixteen_u64() as usize] = [
     Action::InsertWide,
 ];
 
-/// Encode a four-lane importance-grid block, using optional nonnegative importance weights.
+/// Encode an importance-grid block, using optional nonnegative importance weights.
 ///
 /// # Errors
 /// Unsupported representations, extents or inputs are refused before publication.
@@ -88,12 +88,23 @@ pub fn encode_importance_weight_block(
     let invalid = || TensorComputeError::InvalidKernelSpecification {
         kernel_name: "ImportanceGridEncoding".into(),
     };
+    let eight_lane = kind == PackedWeightEncoding::ImportanceTwo;
+    let directory = if eight_lane {
+        include_bytes!("../iq2s_neighbors.bin").as_slice()
+    } else {
+        DIRECTORY
+    };
     let compact = match kind {
         PackedWeightEncoding::ImportanceThreeCompact => true,
-        PackedWeightEncoding::ImportanceThree => false,
+        PackedWeightEncoding::ImportanceThree | PackedWeightEncoding::ImportanceTwo => false,
         _ => return Err(invalid()),
     };
     let format = |tag, a, b, c| {
+        let tag = if eight_lane && tag < scalars::ten_u64() {
+            tag + scalars::sixteen_u64()
+        } else {
+            tag
+        };
         let (kind, (a, (b, (c, (d, e))))) =
             verdant_importance_grid::run(tag, compact, a, b, c).map_err(|_| invalid())?;
         Ok([kind, a, b, c, d, e])
@@ -146,7 +157,7 @@ pub fn encode_importance_weight_block(
             Bank::Importance => importance
                 .and_then(|v| v.get(at))
                 .map(|v| u64::from(v.to_bits())),
-            Bank::Directory => DIRECTORY
+            Bank::Directory => directory
                 .as_chunks::<{ size_of::<u16>() }>()
                 .0
                 .get(at)
@@ -176,7 +187,8 @@ pub fn encode_importance_weight_block(
     let mut pc = 0_usize;
     loop {
         let section = pc / SECTION;
-        let local = (section % (scalars::two_u64() as usize)) as u64;
+        let local = (section % (scalars::two_u64() as usize)) as u64
+            + u64::from(eight_lane) * scalars::two_u64();
         let step = (pc % SECTION) as u64;
         let instruction = match section / (scalars::two_u64() as usize) {
             0 => verdant_iq3_fit::run(local, step).ok(),

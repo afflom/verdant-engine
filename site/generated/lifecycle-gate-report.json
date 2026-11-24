@@ -1,7 +1,7 @@
 {
   "spec": "verdant/lifecycle-gate-report/1",
-  "releaseVersion": "2.21.5",
-  "releaseEpoch": 31,
+  "releaseVersion": "2.21.6",
+  "releaseEpoch": 32,
   "mode": "in-process",
   "allPassed": true,
   "releaseQualified": true,
@@ -9,14 +9,14 @@
   "totalCount": 6,
   "passRatePermille": 1000,
   "liftedCoverage": {
-    "rustModules": 98,
+    "rustModules": 99,
     "verificationTestModules": 25,
-    "lexleanModules": 69,
+    "lexleanModules": 70,
     "featureSuiteModules": 3,
     "modelGovernanceModules": 16,
     "automationScriptModules": 21,
     "viewpointModules": 9,
-    "totalLiftedModules": 241,
+    "totalLiftedModules": 243,
     "allCategoriesLifted": true
   },
   "checks": [
@@ -33,7 +33,7 @@
       "owningManagerId": "mgr-observer-executive",
       "category": "in-process",
       "passed": true,
-      "durationMs": 14,
+      "durationMs": 20,
       "detail": "valid=true entries=16 violations=0"
     },
     {
@@ -41,7 +41,7 @@
       "owningManagerId": "mgr-change-release",
       "category": "in-process",
       "passed": true,
-      "durationMs": 0,
+      "durationMs": 1,
       "detail": "29630 B <= 30720 B"
     },
     {
@@ -50,7 +50,7 @@
       "category": "in-process",
       "passed": true,
       "durationMs": 0,
-      "detail": "cargo=v2.21.5 ledger=v2.21.5 manifest=v2.21.5 wasm_synced=true tag_ok=true"
+      "detail": "cargo=v2.21.6 ledger=v2.21.6 manifest=v2.21.6 wasm_synced=true tag_ok=true"
     },
     {
       "checkId": "formal-fidelity-and-frontier",
@@ -66,8 +66,8 @@
       "category": "in-process",
       "passed": true,
       "durationMs": 0,
-      "detail": "total=241 (rust=98, test=25, lex=69, feature=3, model=16, script=21, view=9)"
+      "detail": "total=243 (rust=99, test=25, lex=70, feature=3, model=16, script=21, view=9)"
     }
   ],
-  "reportKappaHex": "8be1905450b2b6ce58ab5ef9f05182162bf71d77f85c0fe72bfb6d48dda9c343"
+  "reportKappaHex": "d774b282903cb6c861ef7a745416b845d985fe58f383b8233013446c147a66d8"
 }

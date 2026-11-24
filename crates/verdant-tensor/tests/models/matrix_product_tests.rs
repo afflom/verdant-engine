@@ -308,6 +308,59 @@ int main(int argc, char **argv) {
     }
     return std::feof(stdin) ? 0 : 2;
   }
+  if (!std::strcmp(argv[1], "selective-step")) {
+    int cols, rows, transitions;
+    while(std::scanf("%d %d %d",&cols,&rows,&transitions)==3) {
+      if(cols<1 || rows<1 || cols>256 || rows>64 || (transitions!=1 && transitions!=cols)) return 2;
+      auto ctx=ggml_init({2u<<20,nullptr,false});
+      auto state=ggml_new_tensor_2d(ctx,GGML_TYPE_F32,cols,rows);
+      auto input=ggml_new_tensor_1d(ctx,GGML_TYPE_F32,rows);
+      auto dt=ggml_new_tensor_1d(ctx,GGML_TYPE_F32,1);
+      auto transition=ggml_new_tensor_1d(ctx,GGML_TYPE_F32,transitions);
+      auto inject=ggml_new_tensor_1d(ctx,GGML_TYPE_F32,cols);
+      auto readout=ggml_dup_tensor(ctx,inject);
+      auto ids=ggml_new_tensor_1d(ctx,GGML_TYPE_I32,1);
+      ggml_set_i32_1d(ids,0,0);
+      for(auto t:{state,input,dt,transition,inject,readout}) for(int i=0;i<ggml_nelements(t);++i) {
+        unsigned bits;if(std::scanf("%u",&bits)!=1) return 2;
+        std::memcpy(static_cast<float *>(t->data)+i,&bits,4);
+      }
+      auto out=ggml_ssm_scan(ctx,state,input,dt,transition,inject,readout,ids,1);
+      auto graph=ggml_new_graph_custom(ctx,32,false);ggml_build_forward_expand(graph,out);
+      if(ggml_graph_compute_with_ctx(ctx,graph,1)!=GGML_STATUS_SUCCESS) return 3;
+      for(int i=0;i<ggml_nelements(out);++i) {
+        unsigned bits;std::memcpy(&bits,static_cast<float *>(out->data)+i,4);std::printf("%u\n",bits);
+      }
+      ggml_free(ctx);
+    }
+    return std::feof(stdin)?0:2;
+  }
+  if (!std::strcmp(argv[1], "delta-rule")) {
+    int width, gates;
+    while (std::scanf("%d %d",&width,&gates)==2) {
+      if (width<1 || width>128 || (gates!=1 && gates!=width)) return 2;
+      auto ctx=ggml_init({2u<<20,nullptr,false});
+      ggml_tensor *sources[6];
+      const int lengths[]={width,width,width,gates,1,width*width};
+      for (int i=0;i<6;++i) {
+        sources[i]=i==5?ggml_new_tensor_2d(ctx,GGML_TYPE_F32,width,width):ggml_new_tensor_1d(ctx,GGML_TYPE_F32,lengths[i]);
+        for(int j=0;j<lengths[i];++j) {
+          unsigned word;
+          if(std::scanf("%u",&word)!=1) return 2;
+          std::memcpy(static_cast<float *>(sources[i]->data)+j,&word,4);
+        }
+      }
+      auto result=ggml_gated_delta_net(ctx,sources[0],sources[1],sources[2],sources[3],sources[4],sources[5],1);
+      auto graph=ggml_new_graph_custom(ctx,32,false);
+      ggml_build_forward_expand(graph,result);
+      if(ggml_graph_compute_with_ctx(ctx,graph,1)!=GGML_STATUS_SUCCESS) return 3;
+      for(int i=0;i<width+width*width;++i) {
+        unsigned word;std::memcpy(&word,static_cast<float *>(result->data)+i,4);std::printf("%u\n",word);
+      }
+      ggml_free(ctx);
+    }
+    return std::feof(stdin)?0:2;
+  }
   if (!std::strcmp(argv[1], "weighted-mean")) {
     int count, width, with_sink;
     unsigned sink_word;
@@ -497,8 +550,11 @@ int main(int argc, char **argv) {
   if (!std::strcmp(argv[1], "grouped-affine-4")) return encode_blocks<QK_K>(quantize_row_q4_K_ref);
   if (!std::strcmp(argv[1], "grouped-affine-5")) return encode_blocks<QK_K>(quantize_row_q5_K_ref);
   if (!std::strcmp(argv[1], "nonlinear-four-encode")) return encode_blocks<QK4_NL>(reference_nonlinear_four);
-  if (!std::strcmp(argv[1], "iq3-compact-weighted") || !std::strcmp(argv[1], "iq3-weighted")) {
-    auto kind = !std::strcmp(argv[1], "iq3-weighted") ? GGML_TYPE_IQ3_S : GGML_TYPE_IQ3_XXS;
+  const std::pair<const char *, ggml_type> weighted_formats[] = {
+      {"iq3-compact-weighted", GGML_TYPE_IQ3_XXS}, {"iq3-weighted", GGML_TYPE_IQ3_S},
+      {"iq2-s-weighted", GGML_TYPE_IQ2_S},
+  };
+  for (const auto &[mode, kind] : weighted_formats) if (!std::strcmp(argv[1], mode)) {
     std::vector<uint8_t> encoded(ggml_row_size(kind, QK_K));
     uint32_t word;
     while (std::scanf("%u", &word) == 1) {
@@ -511,6 +567,10 @@ int main(int argc, char **argv) {
       for (auto byte : encoded) std::printf("%u\n", unsigned(byte));
     }
     return std::ferror(stdin) ? 2 : 0;
+  }
+  if (!std::strcmp(argv[1], "iq2-s-encode")) {
+    ggml_quantize_init(GGML_TYPE_IQ2_S);
+    return encode_blocks<QK_K>(quantize_row_iq2_s_ref);
   }
   if (!std::strcmp(argv[1], "iq3-compact-encode")) {
     ggml_quantize_init(GGML_TYPE_IQ3_XXS);
@@ -1382,6 +1442,7 @@ fn verify_bundle(scope: &str, directory: &str) -> std::collections::BTreeMap<Str
             );
             if path == format!("packages/rust-core/{package}/src/lib.rs") {
                 let compiled: &[u8] = match package {
+                    "verdant_delta_rule" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_delta_rule/src/lib.rs"),
                     "verdant_signed_truncation" => include_bytes!("../../../../generated/tensor-encoding/packages/rust-core/verdant_signed_truncation/src/lib.rs"),
                     "verdant_matrix_shape" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_matrix_shape/src/lib.rs"),
                     "verdant_scalar_f32" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_scalar_f32/src/lib.rs"),
@@ -3370,9 +3431,118 @@ fn nonlinear_four_encoding_vtk_53() {
 }
 
 #[test]
+fn gated_delta_projection_vtk_57() {
+    use std::fmt::Write as _;
+    certified_model("verdant_delta_rule", "VerdantEngine.DeltaRule.evaluate");
+    let mut requests = String::new();
+    let mut observed = Vec::new();
+    for width in [1_usize, 3, 8, 16, 32, 65] {
+        let sample = |slot: usize, step: usize, i: usize| {
+            let n = (i * 13 + 5 * slot + 7 * step) % 31;
+            match slot {
+                3 => -(n as f32) / 16.0,
+                4 => (n as f32) / 32.0,
+                _ => (n as f32 - 15.0) / 16.0,
+            }
+        };
+        for gate_width in [1, width].into_iter().skip(usize::from(width == 1)) {
+            let initial: Vec<_> = (0..width * width).map(|i| sample(5, 0, i)).collect();
+            let mut state = initial;
+            let mut scores = vec![0.0; width];
+            let mut scratch = vec![0.0; state.len() + 2 * width];
+            for step in 0..3 {
+                let lengths = [width, width, width, gate_width, 1];
+                let [q, k, v, g, b] = std::array::from_fn(|slot| {
+                    (0..lengths[slot])
+                        .map(|i| sample(slot, step, i))
+                        .collect::<Vec<_>>()
+                });
+                writeln!(requests, "{width} {gate_width}").unwrap();
+                for part in [&*q, &k, &v, &g, &b, &state] {
+                    for value in part {
+                        writeln!(requests, "{}", value.to_bits()).unwrap();
+                    }
+                }
+                let input = super::GatedDeltaInput {
+                    query: &q,
+                    key: &k,
+                    value: &v,
+                    log_decay: &g,
+                    gain: b[0],
+                };
+                super::gated_delta_step_f32(input, &mut state, &mut scores, &mut scratch).unwrap();
+                observed.extend_from_slice(&scores);
+                observed.extend_from_slice(&state);
+                let before = (state.clone(), scores.clone());
+                let invalid = super::GatedDeltaInput {
+                    query: &q[..width - 1],
+                    ..input
+                };
+                assert!(super::gated_delta_step_f32(
+                    invalid,
+                    &mut state,
+                    &mut scores,
+                    &mut scratch
+                )
+                .is_err());
+                assert_eq!((&state, &scores), (&before.0, &before.1));
+            }
+        }
+    }
+    let lanes = [1.0, 0.5];
+    let input = super::GatedDeltaInput {
+        query: &lanes,
+        key: &lanes,
+        value: &lanes,
+        log_decay: &lanes,
+        gain: 1.0,
+    };
+    let mut state = [1.0, 2.0, 3.0, 4.0];
+    let mut scores = [13.0; 2];
+    let mut scratch = [0.0; 8];
+    for invalid in [
+        super::GatedDeltaInput {
+            key: &lanes[..1],
+            ..input
+        },
+        super::GatedDeltaInput {
+            value: &[],
+            ..input
+        },
+        super::GatedDeltaInput {
+            log_decay: &[],
+            ..input
+        },
+    ] {
+        assert!(
+            super::gated_delta_step_f32(invalid, &mut state, &mut scores, &mut scratch).is_err()
+        );
+    }
+    assert!(
+        super::gated_delta_step_f32(input, &mut state[..3], &mut scores, &mut scratch).is_err()
+    );
+    assert!(
+        super::gated_delta_step_f32(input, &mut state, &mut scores[..1], &mut scratch).is_err()
+    );
+    assert!(
+        super::gated_delta_step_f32(input, &mut state, &mut scores, &mut scratch[..7]).is_err()
+    );
+    assert_eq!(state, [1.0, 2.0, 3.0, 4.0]);
+    assert_eq!(scores, [13.0; 2]);
+    let expected = query_oracle("delta-rule", requests);
+    assert_eq!(expected.len(), observed.len());
+    for (index, (a, b)) in observed.into_iter().zip(expected).enumerate() {
+        let reference = f32::from_bits(b);
+        assert!(
+            (a - reference).abs() <= 1e-6 * (1.0 + reference.abs()),
+            "word {index}: {a} vs {reference}"
+        );
+    }
+}
+
+#[test]
 fn importance_grid_three_encoding_vtk_56() {
     use super::PackedWeightEncoding::{ImportanceThree, ImportanceThreeCompact};
-    use std::fmt::Write as _;
     certified_encoding_model(
         "verdant_importance_grid",
         "VerdantEngine.ImportanceGridEncoding.evaluate",
@@ -3381,10 +3551,26 @@ fn importance_grid_three_encoding_vtk_56() {
         (ImportanceThreeCompact, 98, "iq3-compact-encode"),
         (ImportanceThree, 110, "iq3-encode"),
     ]);
-    for (kind, width, mode) in [
+    compare_weighted_encoders(&[
         (ImportanceThreeCompact, 98, "iq3-compact-weighted"),
         (ImportanceThree, 110, "iq3-weighted"),
-    ] {
+    ]);
+}
+
+#[test]
+fn importance_grid_two_encoding_vtk_59() {
+    use super::PackedWeightEncoding::ImportanceTwo;
+    certified_encoding_model(
+        "verdant_importance_grid",
+        "VerdantEngine.ImportanceGridEncoding.evaluate",
+    );
+    compare_weight_encoders::<256>(&[(ImportanceTwo, 82, "iq2-s-encode")]);
+    compare_weighted_encoders(&[(ImportanceTwo, 82, "iq2-s-weighted")]);
+}
+
+fn compare_weighted_encoders(formats: &[(super::PackedWeightEncoding, usize, &str)]) {
+    use std::fmt::Write as _;
+    for &(kind, width, mode) in formats {
         let mut input = String::new();
         let mut blocks = Vec::new();
         for row in 0..12 {
@@ -3705,5 +3891,120 @@ fn binary32_signed_truncation_vtk_51() {
         0x1_0000_0000,
     ] {
         assert_eq!(super::truncate_signed_word_f32(invalid).unwrap(), None);
+    }
+}
+
+#[test]
+fn selective_state_projection_vtk_58() {
+    use super::{selective_state_step_f32, SelectiveStateInput};
+    use std::fmt::Write;
+    let mut requests = String::new();
+    let mut actual = Vec::new();
+    for cols in [1_usize, 3, 16, 65, 128] {
+        for rows in [1, 3, 8] {
+            for n in [1, cols].into_iter().skip(usize::from(cols == 1)) {
+                let vector = |count: usize, salt: usize| {
+                    (0..count)
+                        .map(|i| (((i * 13 + salt * 7) % 31) as f32 - 15.0) / 16.0)
+                        .collect::<Vec<_>>()
+                };
+                let mut state = vector(cols * rows, 1);
+                let mut scores = vec![0.0; rows];
+                let mut scratch = vec![0.0; cols * rows + cols + rows];
+                for (step, dt) in [-4.0, 0.0, 0.75, 20.0, 21.0].into_iter().enumerate() {
+                    let x = vector(rows, step + 2);
+                    let a: Vec<_> = vector(n, step + 3)
+                        .iter()
+                        .map(|value| -value.abs())
+                        .collect();
+                    let b = vector(cols, step + 4);
+                    let c = vector(cols, step + 5);
+                    writeln!(requests, "{cols} {rows} {n}").unwrap();
+                    for data in [&*state, &x, &[dt], &a, &b, &c] {
+                        for value in data {
+                            writeln!(requests, "{}", value.to_bits()).unwrap();
+                        }
+                    }
+                    let input = SelectiveStateInput {
+                        drive: &x,
+                        time_step: dt,
+                        transition: &a,
+                        injection: &b,
+                        readout: &c,
+                    };
+                    selective_state_step_f32(input, &mut state, &mut scores, &mut scratch).unwrap();
+                    actual.extend_from_slice(&scores);
+                    actual.extend_from_slice(&state);
+                }
+            }
+        }
+    }
+    let values = [0.25_f32; 3];
+    let input = SelectiveStateInput {
+        drive: &values[..2],
+        time_step: 0.75,
+        transition: &values,
+        injection: &values,
+        readout: &values,
+    };
+    for (bad, cells, rows, capacity) in [
+        (
+            SelectiveStateInput {
+                drive: &[],
+                ..input
+            },
+            6,
+            2,
+            11,
+        ),
+        (
+            SelectiveStateInput {
+                injection: &[],
+                ..input
+            },
+            6,
+            2,
+            11,
+        ),
+        (
+            SelectiveStateInput {
+                readout: &values[..2],
+                ..input
+            },
+            6,
+            2,
+            11,
+        ),
+        (
+            SelectiveStateInput {
+                transition: &values[..2],
+                ..input
+            },
+            6,
+            2,
+            11,
+        ),
+        (input, 5, 2, 11),
+        (input, 6, 1, 11),
+        (input, 6, 2, 10),
+    ] {
+        let (mut state, mut scores, mut scratch) = ([2.0; 6], [3.0; 2], [0.0; 11]);
+        assert!(selective_state_step_f32(
+            bad,
+            &mut state[..cells],
+            &mut scores[..rows],
+            &mut scratch[..capacity]
+        )
+        .is_err());
+        assert_eq!((state, scores), ([2.0; 6], [3.0; 2]));
+    }
+    let expected = query_oracle("selective-step", requests);
+    assert_eq!(expected.len(), actual.len());
+    for (i, (word, value)) in expected.into_iter().zip(actual).enumerate() {
+        let reference = f32::from_bits(word);
+        assert!(
+            (reference - value).abs() <= 3e-6 * (1.0 + reference.abs()),
+            "word {i}: {value} vs {reference}"
+        );
     }
 }

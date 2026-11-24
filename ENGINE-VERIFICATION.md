@@ -517,3 +517,21 @@ Replacing the small-input result with a binary32 exponential followed by subtrac
 The certified encoding bundle `blake3:863a5ec0eb55dfc018a428d75eb05d2a7f83d500159388e4f32d3c99c56fbaa5` supplies the IQ3 search, float operation order, grid addresses and packed fields. The nearest-neighbor directory reproduces all 8,192 keys and 44,486 candidate entries from the pinned GGML initializer. [Directory provenance](crates/verdant-tensor/src/iq3_neighbors.json)
 
 The test `importance_grid_three_encoding_vtk_56` compared 67,392 bytes from 648 encoded blocks against GGML at `9a080f44`. It covered every impulse position, signed zero, ties, 29 input exponents, uniform, nonuniform and sparse weights with three zero lanes in every four. Incorrect extents, nonfinite weights and negative weights preserved the destination. Writing ones into a zero block failed the imported comparison at `iq3-compact-encode row 0`. After restoration, VTK-50, VTK-52 and VTK-56 passed together.
+
+## Gated delta projection (VTK-57)
+
+The certified DeltaRule program defines binary32 state decay, residual gain, rank-one correction and score normalization. The shared tensor bundle exports it in `blake3:0d4e70cd12a6f058610ba907ea6350ba880233e412e88c02b014a11aeab5af56`. VE-80 rejected a separate fourth scope. The corrected export uses the existing tensor project and the once-per-process certificate verifier. The engine uses the existing Verdant exponential and matrix product for each step. Callers own graph layouts and snapshot placement.
+
+The test `gated_delta_projection_vtk_57` compared 34,218 scores and state entries from 33 steps with the pinned GGML CPU implementation. It covers widths 1, 3, 8, 16, 32 and 65, scalar and per-coordinate decay, and repeated updates. Each word passed an absolute tolerance of one millionth times one plus the absolute reference value. Invalid vector, matrix, output and scratch lengths preserved both outputs. Reversing the residual sign failed at the first score, −0.17103513 versus −0.28787768. Restoring the certified correction passed.
+
+## Selective state projection (VTK-58)
+
+Verdant advances and projects a rectangular state using its certified scalar, softplus, exponential and matrix kernels. VTK-58 compared 26,040 scores and state entries in 135 steps with the pinned GGML CPU implementation. Both scalar and per-coordinate transitions were exercised across five state widths, three row counts and time increments on either side of the softplus cutoff. Seven invalid extent and capacity checks preserve both caller-owned buffers. Substituting the drive for the time-scaled drive failed the first CPU comparison at 0.3763304 versus 0.34205195. The restored step passed.
+
+The existing RNG seed uses checked remainder with its constructive divisor of two. Its newly lifted initialization preserves the odd-seed rule. All prior lifted identities remain present, with 589 lifted functions, 1,150 residue functions and 1,302 uncertified functions.
+
+## VTK-59 eight-lane IQ2_S encoding
+
+The shared encoding certificate `blake3:29a4e9d0735b7cdceb5bf67fb91ab93ddf18471bc859a0db617c28b11d273b26` supplies the level search, sign planes, scale fitting and packed fields. The imported directory preserves GGML's candidate order for all 6,561 ternary inputs, including 925 off-grid inputs with one candidate. [GGML source and directory digest](crates/verdant-tensor/src/iq2s_neighbors.json)
+
+VTK-59 compared all 26,568 bytes in 288 unweighted and 36 weighted blocks with the pinned GGML IQ2_S quantizers. Cases cover every impulse lane, signed zeros, rounding ties, 29 amplitude exponents, and uniform, nonuniform and sparse importance. Incorrect weight extents, negative weights and nonfinite weights preserve the destination. Flipping bit zero in the first output byte failed the unweighted zero block. The original implementation passed VTK-59 and the existing two IQ3 encoders passed VTK-56.

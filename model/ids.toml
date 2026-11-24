@@ -920,3 +920,21 @@ id = "VTK-56"
 level = "build"
 suite = "engine"
 statement = "Verdant encodes four-lane three-bit importance grids into packed weight blocks matching the imported CPU quantizers"
+
+[[id]]
+id = "VTK-57"
+level = "build"
+suite = "engine"
+statement = "A certified gated delta rule updates binary32 projection state and scores against the imported GGML CPU"
+
+[[id]]
+id = "VTK-58"
+level = "build"
+suite = "engine"
+statement = "A diagonal state recurrence with scalar or per-coordinate transition matches GGML CPU across repeated inputs"
+
+[[id]]
+id = "VTK-59"
+level = "build"
+suite = "engine"
+statement = "Verdant encodes eight-lane two-bit importance grids into signed blocks with optional weights against the imported CPU quantizer"

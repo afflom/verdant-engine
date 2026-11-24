@@ -629,41 +629,23 @@ pub fn checked_neg_i64(p0: i64) -> Option<i64> {
 
 #[derive(Clone)]
 pub enum Adt0 {
-    C0(u64, u64, u64),
-    C1(u64),
+    C0,
+    C1,
     C2(u64),
 }
 
-pub fn f0(v0: u64, v1: u64, v2: u64, v3: u64) -> Adt0 {
+pub fn f0(v0: u64, v1: u64) -> Adt0 {
     let a1 = v0;
-    let a2 = 0u64;
+    let a2 = v1;
     if nat_eq(a1, a2) {
-        Adt0::C0(6u64, v1, 0u64)
-    } else {
         let a3 = v0;
-        let a4 = 1u64;
+        let a4 = 0u64;
         if nat_eq(a3, a4) {
-            Adt0::C1(v3)
+            Adt0::C1
         } else {
-            let a5 = v0;
-            let a6 = 2u64;
-            if nat_eq(a5, a6) {
-                Adt0::C0(0u64, 1065353216u64, v3)
-            } else {
-                let a7 = v0;
-                let a8 = 3u64;
-                if nat_eq(a7, a8) {
-                    Adt0::C0(3u64, v1, v3)
-                } else {
-                    let a9 = v0;
-                    let a10 = 4u64;
-                    if nat_eq(a9, a10) {
-                        Adt0::C0(2u64, v3, v2)
-                    } else {
-                        Adt0::C2(v3)
-                    }
-                }
-            }
+            Adt0::C2(v0)
         }
+    } else {
+        Adt0::C0
     }
 }

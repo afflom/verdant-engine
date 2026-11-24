@@ -103,6 +103,10 @@ mod tests {
 
     #[test]
     fn constructive_generators_and_verified_tensor_kernels_match_spec() {
+        assert_eq!(crate::math::pow10_u64(0), 1);
+        assert_eq!(crate::math::pow10_u64(19), 10_000_000_000_000_000_000);
+        assert_eq!(crate::math::pow10_u64(20), u64::MAX);
+        assert_eq!(crate::math::pow10_u64(u32::MAX), u64::MAX);
         assert_eq!(pow2_u64(0), 1);
         assert_eq!(pow2_u64(10), 1024);
         assert_eq!(fibonacci_u64(0), 0);
