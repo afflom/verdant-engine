@@ -15,6 +15,7 @@ use crate::{
 mod activations;
 mod affine_product;
 mod bitpacked_product;
+mod delta_rule;
 mod grouped;
 mod grouped_affine;
 mod grouped_product;
@@ -34,6 +35,7 @@ pub use affine_product::{dot_affine_weight_row, AffineWeightEncoding};
 pub use bitpacked_product::{
     dot_binary_sign_row, dot_block_float_row, dot_two_bit_row, BlockFloatEncoding,
 };
+pub use delta_rule::{gated_delta_step_f32, GatedDeltaInput};
 pub use grouped::{encode_grouped_q8_block, GroupedQ8Block};
 pub use grouped_affine::{
     dot_grouped_q4_row, dot_grouped_q5_row, dot_grouped_weight_row as dot_codebook_row,

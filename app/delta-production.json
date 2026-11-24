@@ -1,0 +1,1 @@
+{"spec":"lexlean/production-request/2","roots":[{"root":"VerdantEngine.DeltaRule.evaluate","package":{"name":"verdant_delta_rule","version":"2.50.0"},"targets":[{"id":"rust-core","digest":"blake3:299bf4d61f9acd8d4208c8416aa14b15fc2f888bb38f5b813324e986e48cf40e"}]}]}

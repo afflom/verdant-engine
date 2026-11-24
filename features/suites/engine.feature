@@ -861,3 +861,9 @@ Feature: engine
     Given finite weight lanes and optional nonnegative importance values
     When the tensor kernel selects signs, grid points and local scales
     Then every packed byte agrees with the upstream reference
+
+  @VTK-57 @build
+  Scenario: A certified gated delta rule updates binary32 projection state and scores against the imported GGML CPU
+    Given a square projection state and a stream of query, key and value vectors
+    When scalar or per-coordinate log decay and a residual gain are applied
+    Then the new state and scaled projection agree with the independent CPU and invalid extents preserve the previous state

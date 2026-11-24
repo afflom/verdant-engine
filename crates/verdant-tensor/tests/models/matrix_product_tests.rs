@@ -308,6 +308,32 @@ int main(int argc, char **argv) {
     }
     return std::feof(stdin) ? 0 : 2;
   }
+  if (!std::strcmp(argv[1], "delta-rule")) {
+    int width, gates;
+    while (std::scanf("%d %d",&width,&gates)==2) {
+      if (width<1 || width>128 || (gates!=1 && gates!=width)) return 2;
+      auto ctx=ggml_init({2u<<20,nullptr,false});
+      ggml_tensor *sources[6];
+      const int lengths[]={width,width,width,gates,1,width*width};
+      for (int i=0;i<6;++i) {
+        sources[i]=i==5?ggml_new_tensor_2d(ctx,GGML_TYPE_F32,width,width):ggml_new_tensor_1d(ctx,GGML_TYPE_F32,lengths[i]);
+        for(int j=0;j<lengths[i];++j) {
+          unsigned word;
+          if(std::scanf("%u",&word)!=1) return 2;
+          std::memcpy(static_cast<float *>(sources[i]->data)+j,&word,4);
+        }
+      }
+      auto result=ggml_gated_delta_net(ctx,sources[0],sources[1],sources[2],sources[3],sources[4],sources[5],1);
+      auto graph=ggml_new_graph_custom(ctx,32,false);
+      ggml_build_forward_expand(graph,result);
+      if(ggml_graph_compute_with_ctx(ctx,graph,1)!=GGML_STATUS_SUCCESS) return 3;
+      for(int i=0;i<width+width*width;++i) {
+        unsigned word;std::memcpy(&word,static_cast<float *>(result->data)+i,4);std::printf("%u\n",word);
+      }
+      ggml_free(ctx);
+    }
+    return std::feof(stdin)?0:2;
+  }
   if (!std::strcmp(argv[1], "weighted-mean")) {
     int count, width, with_sink;
     unsigned sink_word;
@@ -1382,6 +1408,7 @@ fn verify_bundle(scope: &str, directory: &str) -> std::collections::BTreeMap<Str
             );
             if path == format!("packages/rust-core/{package}/src/lib.rs") {
                 let compiled: &[u8] = match package {
+                    "verdant_delta_rule" => include_bytes!("../../../../generated/tensor-delta/packages/rust-core/verdant_delta_rule/src/lib.rs"),
                     "verdant_signed_truncation" => include_bytes!("../../../../generated/tensor-encoding/packages/rust-core/verdant_signed_truncation/src/lib.rs"),
                     "verdant_matrix_shape" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_matrix_shape/src/lib.rs"),
                     "verdant_scalar_f32" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_scalar_f32/src/lib.rs"),
@@ -3367,6 +3394,121 @@ fn nonlinear_four_encoding_vtk_53() {
     );
     compare_weight_encoders::<32>(&[(NonlinearFour, 18, "nonlinear-four-encode")]);
     compare_weight_encoders::<256>(&[(GroupedNonlinearFour, 136, "grouped-nonlinear-four-encode")]);
+}
+
+#[test]
+fn gated_delta_projection_vtk_57() {
+    use std::fmt::Write as _;
+    assert_eq!(
+        verify_bundle("delta", "tensor-delta")
+            .get("VerdantEngine.DeltaRule.evaluate")
+            .map(String::as_str),
+        Some("verdant_delta_rule")
+    );
+    let mut requests = String::new();
+    let mut observed = Vec::new();
+    for width in [1_usize, 3, 8, 16, 32, 65] {
+        let sample = |slot: usize, step: usize, i: usize| {
+            let n = (i * 13 + 5 * slot + 7 * step) % 31;
+            match slot {
+                3 => -(n as f32) / 16.0,
+                4 => (n as f32) / 32.0,
+                _ => (n as f32 - 15.0) / 16.0,
+            }
+        };
+        for gate_width in [1, width].into_iter().skip(usize::from(width == 1)) {
+            let initial: Vec<_> = (0..width * width).map(|i| sample(5, 0, i)).collect();
+            let mut state = initial;
+            let mut scores = vec![0.0; width];
+            let mut scratch = vec![0.0; state.len() + 2 * width];
+            for step in 0..3 {
+                let lengths = [width, width, width, gate_width, 1];
+                let [q, k, v, g, b] = std::array::from_fn(|slot| {
+                    (0..lengths[slot])
+                        .map(|i| sample(slot, step, i))
+                        .collect::<Vec<_>>()
+                });
+                writeln!(requests, "{width} {gate_width}").unwrap();
+                for part in [&*q, &k, &v, &g, &b, &state] {
+                    for value in part {
+                        writeln!(requests, "{}", value.to_bits()).unwrap();
+                    }
+                }
+                let input = super::GatedDeltaInput {
+                    query: &q,
+                    key: &k,
+                    value: &v,
+                    log_decay: &g,
+                    gain: b[0],
+                };
+                super::gated_delta_step_f32(input, &mut state, &mut scores, &mut scratch).unwrap();
+                observed.extend_from_slice(&scores);
+                observed.extend_from_slice(&state);
+                let before = (state.clone(), scores.clone());
+                let invalid = super::GatedDeltaInput {
+                    query: &q[..width - 1],
+                    ..input
+                };
+                assert!(super::gated_delta_step_f32(
+                    invalid,
+                    &mut state,
+                    &mut scores,
+                    &mut scratch
+                )
+                .is_err());
+                assert_eq!((&state, &scores), (&before.0, &before.1));
+            }
+        }
+    }
+    let lanes = [1.0, 0.5];
+    let input = super::GatedDeltaInput {
+        query: &lanes,
+        key: &lanes,
+        value: &lanes,
+        log_decay: &lanes,
+        gain: 1.0,
+    };
+    let mut state = [1.0, 2.0, 3.0, 4.0];
+    let mut scores = [13.0; 2];
+    let mut scratch = [0.0; 8];
+    for invalid in [
+        super::GatedDeltaInput {
+            key: &lanes[..1],
+            ..input
+        },
+        super::GatedDeltaInput {
+            value: &[],
+            ..input
+        },
+        super::GatedDeltaInput {
+            log_decay: &[],
+            ..input
+        },
+    ] {
+        assert!(
+            super::gated_delta_step_f32(invalid, &mut state, &mut scores, &mut scratch).is_err()
+        );
+    }
+    assert!(
+        super::gated_delta_step_f32(input, &mut state[..3], &mut scores, &mut scratch).is_err()
+    );
+    assert!(
+        super::gated_delta_step_f32(input, &mut state, &mut scores[..1], &mut scratch).is_err()
+    );
+    assert!(
+        super::gated_delta_step_f32(input, &mut state, &mut scores, &mut scratch[..7]).is_err()
+    );
+    assert_eq!(state, [1.0, 2.0, 3.0, 4.0]);
+    assert_eq!(scores, [13.0; 2]);
+    let expected = query_oracle("delta-rule", requests);
+    assert_eq!(expected.len(), observed.len());
+    for (index, (a, b)) in observed.into_iter().zip(expected).enumerate() {
+        let reference = f32::from_bits(b);
+        assert!(
+            (a - reference).abs() <= 1e-6 * (1.0 + reference.abs()),
+            "word {index}: {a} vs {reference}"
+        );
+    }
 }
 
 #[test]

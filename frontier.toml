@@ -5,22 +5,22 @@
 # stops the functions it counts (the detail their rows state, under its
 # cause), the one that stops the most first: the work queue.
 
-# Honesty report: 587 of 1889 functions of product code are lifted; 1150
+# Honesty report: 588 of 1890 functions of product code are lifted; 1150
 # are residue, 72 foreign and 80 effect rows.
 # Residue by cause:
 #   arithmetic: 25
 #   call: 210
-#   form: 337
+#   form: 336
 #   signature: 53
 #   statements: 23
-#   type: 496
+#   type: 497
 #   width: 6
 
 spec = "uorust/register/1"
 
 [lift]
-functions = 1889
-lifted = 587
+functions = 1890
+lifted = 588
 residue = 1150
 foreign = 72
 effect = 80
@@ -386,11 +386,6 @@ cause = "effect"
 functions = 3
 
 [[construct]]
-construct = "expression form outside the lift: a while loop that does not advance its cursor once per step"
-cause = "form"
-functions = 3
-
-[[construct]]
 construct = "expression form outside the lift: free name Axis::ALL"
 cause = "form"
 functions = 3
@@ -512,6 +507,11 @@ functions = 2
 
 [[construct]]
 construct = "expression form outside the lift: a while let, whose walk the lift reads no measure for"
+cause = "form"
+functions = 2
+
+[[construct]]
+construct = "expression form outside the lift: a while loop that does not advance its cursor once per step"
 cause = "form"
 functions = 2
 
@@ -1162,6 +1162,11 @@ functions = 1
 
 [[construct]]
 construct = "type outside the lift: CollisionError::InvalidContactSolverInputs.effective_mass_kg: f64"
+cause = "type"
+functions = 1
+
+[[construct]]
+construct = "type outside the lift: GatedDeltaInput.query: f32"
 cause = "type"
 functions = 1
 
@@ -2936,12 +2941,6 @@ kappa = "5539ec8e4aaa0a8c67837a5d6a6081df8207b57ef4dce0d7acca473b49bc8af2"
 function = "verdant_core::math::nth_prime_u64"
 reason = "form"
 detail = "expression form outside the lift: expr::loop"
-
-[[residue]]
-kappa = "211e1fb0c15be215f7762b1e609309ad389779a2f0a237185ab6f4ad054292f6"
-function = "verdant_core::math::pow10_u64"
-reason = "form"
-detail = "expression form outside the lift: a while loop that does not advance its cursor once per step"
 
 [[residue]]
 kappa = "f00c7788845b2331fe50e1f0154aeedc5c932f18c9370471b41167bd17d717d0"
@@ -4928,6 +4927,12 @@ kappa = "4a8b7448f47f0c08f74b43a7bb6e801778bea56a2decd9a5ac2c649798ad7ecc"
 function = "verdant_tensor::linear::delassus_effective_mass_matrix"
 reason = "type"
 detail = "type outside the lift: f64"
+
+[[residue]]
+kappa = "612d5d7da76eb7afaf8d1200797a8e98938a59c8bb6343ad07f42cf596226ea6"
+function = "verdant_tensor::linear::delta_rule::gated_delta_step_f32"
+reason = "type"
+detail = "type outside the lift: GatedDeltaInput.query: f32"
 
 [[residue]]
 kappa = "9997b4feb2d66127cae43c4ed6912f7fb24fcc35b8b937a1a0e7331404b28f3f"
@@ -9319,6 +9324,11 @@ definition = "Behavior::verdantCoreFourU32"
 kappa = "c85f5d5b0b36882edcf592824445e45c1dcda27866436eb319a4a73c29c3186c"
 function = "verdant_core::math::hundred_u32"
 definition = "Behavior::verdantCoreHundredU32"
+
+[[lifted]]
+kappa = "097552653d838d5903d5fe4c4356a05e83a3fb94c8313584ed09561fba43dd32"
+function = "verdant_core::math::pow10_u64"
+definition = "Behavior::pow10U64"
 
 [[lifted]]
 kappa = "a79568a0433f5d959c8ed781724671dac580f64ad8a10aa7b7e119512c27a26d"

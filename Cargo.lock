@@ -839,6 +839,7 @@ dependencies = [
  "verdant_circular_square",
  "verdant_count_f32",
  "verdant_count_f64",
+ "verdant_delta_rule",
  "verdant_division_class",
  "verdant_division_finish",
  "verdant_division_norm",
@@ -989,6 +990,10 @@ version = "2.9.0"
 [[package]]
 name = "verdant_count_f64"
 version = "2.12.0"
+
+[[package]]
+name = "verdant_delta_rule"
+version = "2.50.0"
 
 [[package]]
 name = "verdant_division_class"

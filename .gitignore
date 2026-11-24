@@ -44,4 +44,5 @@ site/stitch/
 /app/.lexlean-tensor/
 /app/.lexlean-quotient/
 /app/.lexlean-encoding/
+/app/.lexlean-delta/
 /app/.lexlean-engine/
