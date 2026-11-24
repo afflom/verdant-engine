@@ -535,3 +535,9 @@ The existing RNG seed uses checked remainder with its constructive divisor of tw
 The shared encoding certificate `blake3:29a4e9d0735b7cdceb5bf67fb91ab93ddf18471bc859a0db617c28b11d273b26` supplies the level search, sign planes, scale fitting and packed fields. The imported directory preserves GGML's candidate order for all 6,561 ternary inputs, including 925 off-grid inputs with one candidate. [GGML source and directory digest](crates/verdant-tensor/src/iq2s_neighbors.json)
 
 VTK-59 compared all 26,568 bytes in 288 unweighted and 36 weighted blocks with the pinned GGML IQ2_S quantizers. Cases cover every impulse lane, signed zeros, rounding ties, 29 amplitude exponents, and uniform, nonuniform and sparse importance. Incorrect weight extents, negative weights and nonfinite weights preserve the destination. Flipping bit zero in the first output byte failed the unweighted zero block. The original implementation passed VTK-59 and the existing two IQ3 encoders passed VTK-56.
+
+## VTK-60 parity-constrained IQ2_XS encoding
+
+The certified grid program selects the 9-bit code and seven sign bits for each octet using explicit importance weights. Its certificate is `blake3:c90af29856827f26720b7b4d6f4e2994231f6d3f8826b3c7b62ee658122e9e66`. The imported directory preserves the order of all 182,233 GGML candidate entries across 6,561 ternary patterns. [Directory provenance](crates/verdant-tensor/src/iq2xs_neighbors.json)
+
+VTK-60 compared all 4,440 bytes in 60 blocks against GGML at `9a080f44` using uniform, nonuniform and sparse importance. Inputs vary the parity and the least-cost lane. Missing weights, invalid widths and negative weights preserve the destination. The previous dispatch refused the encoding. Flipping one packed sign bit failed the imported byte comparison, and restoring the certified output passed.

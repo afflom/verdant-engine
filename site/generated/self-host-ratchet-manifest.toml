@@ -4,8 +4,8 @@ spec = "verdant/self-host-ratchet-manifest/1"
 generator = "verdant-operator-ratchet-lift"
 version = "2.21.5"
 release_epoch = 31
-source_commit_kappa = "20b78d1b8143144d6d7b90c378a14588c86162a68103b84438114b02d07af2c8"
-source_tree_root_sha256 = "61bd3e83fba53e490d8686bfd85a215525ffcbf2bca24354759ff52b20fdf36d"
+source_commit_kappa = "7e856c706fe245f2b9c1c7adc3fc54715ed64eb29fc79ff2224d01befbdfa734"
+source_tree_root_sha256 = "2ff775c9bc746daaea7ab406de866d729d62eb93be3f7ff5d1eb2427ec89f818"
 immutability_seal_root_sha256 = "4d3b1dd49999f9bd6f0ae4e45abd6272ee5b83b0ede9c54f562ad8c3b09984e5"
 release_capsule_sha256 = "168b2577dcbf7e6cb1ddd5129347ac29cf512cd53bb0a28d1fd750c755e2ef7c"
 unlifted_ui_files = 0
@@ -406,7 +406,7 @@ sha256 = "d9539534afcc487944c5ee24d7527b001100451bb3d3f47c23ec8bc4e7827c23"
 [[lifted_module]]
 path = "crates/verdant-tensor/src/linear/importance_grid.rs"
 category = "rust"
-sha256 = "04c5292d4afb03586166dc77811eece4d39c6e77d2cbf706c133d3e281d463fa"
+sha256 = "02aebe52c76babf5fb36703cec96372a33281bf4e007ed648666efc4199cd1fa"
 
 [[lifted_module]]
 path = "crates/verdant-tensor/src/linear/ranking.rs"
@@ -431,7 +431,7 @@ sha256 = "6266e1465c08f05767533f7dee730edfabe8c5662da380190fb6de738b83d1a4"
 [[lifted_module]]
 path = "crates/verdant-tensor/src/linear/weight_encoding.rs"
 category = "rust"
-sha256 = "418455c84125c0fbd239760e0c3b66fdf3f56d556c1654918eb3257c7178ead5"
+sha256 = "997084a82be200b91022bfa2efe602d497519f8f4103910b4ff62b303f24c1e2"
 
 [[lifted_module]]
 path = "crates/verdant-tensor/src/linear/weighted_mean.rs"
@@ -821,7 +821,7 @@ sha256 = "d40dea2cac2462cef955f7f5ee9c624de1a36f3811c8f246b5a34c34a69037fa"
 [[lifted_module]]
 path = "app/src/ImportanceGridEncoding.lex.tex"
 category = "lexlean"
-sha256 = "4ce69f388cf6eb96b9ad80e990bb307ce724ba039a09ecdf54a568cbb63bbdb0"
+sha256 = "b48604defb97fabfbc67940cdeaf622a71f33d6de228145162e3f21fe3e5826b"
 
 [[lifted_module]]
 path = "app/src/LogarithmicScale.lex.tex"
@@ -986,7 +986,7 @@ sha256 = "9d26ca3eaa7ccad7aaea3e2bc023f66d8dfeda7f8baa0690f64d52bd7068bcb9"
 [[lifted_module]]
 path = "features/suites/engine.feature"
 category = "feature-suite"
-sha256 = "d716a75003ee0daafcc706425bbbd2c91f117f1237fa179798c83f50339f3c52"
+sha256 = "e12cc0a4f058d781beeff62a5cf54d86a664dfc42597eb17858306e27fa181dc"
 
 [[lifted_module]]
 path = "features/suites/fidelity.feature"
@@ -1061,7 +1061,7 @@ sha256 = "ffb9e3d60915570e6f34cdee81e0dd6a2ff965c70c39ea0ef11d41d479c462bb"
 [[lifted_module]]
 path = "model/ids.toml"
 category = "model-governance"
-sha256 = "712bdba9fa02bfb4dd2d4567b1c5cd79f61b9dbaf5924e1fc44116e096d624a7"
+sha256 = "fccdceacb225a5f13692929c3080c60193d7ba96c6f0669aa61ba8d458888746"
 
 [[lifted_module]]
 path = "model/ledger.toml"

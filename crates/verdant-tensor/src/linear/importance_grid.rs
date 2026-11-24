@@ -88,14 +88,20 @@ pub fn encode_importance_weight_block(
     let invalid = || TensorComputeError::InvalidKernelSpecification {
         kernel_name: "ImportanceGridEncoding".into(),
     };
-    let eight_lane = kind == PackedWeightEncoding::ImportanceTwo;
-    let directory = if eight_lane {
+    let eight_lane = matches!(
+        kind,
+        PackedWeightEncoding::ImportanceTwo | PackedWeightEncoding::ImportanceTwoParity
+    );
+    let directory = if kind == PackedWeightEncoding::ImportanceTwoParity {
+        include_bytes!("../iq2xs_neighbors.bin").as_slice()
+    } else if eight_lane {
         include_bytes!("../iq2s_neighbors.bin").as_slice()
     } else {
         DIRECTORY
     };
     let compact = match kind {
-        PackedWeightEncoding::ImportanceThreeCompact => true,
+        PackedWeightEncoding::ImportanceThreeCompact
+        | PackedWeightEncoding::ImportanceTwoParity => true,
         PackedWeightEncoding::ImportanceThree | PackedWeightEncoding::ImportanceTwo => false,
         _ => return Err(invalid()),
     };

@@ -552,7 +552,7 @@ int main(int argc, char **argv) {
   if (!std::strcmp(argv[1], "nonlinear-four-encode")) return encode_blocks<QK4_NL>(reference_nonlinear_four);
   const std::pair<const char *, ggml_type> weighted_formats[] = {
       {"iq3-compact-weighted", GGML_TYPE_IQ3_XXS}, {"iq3-weighted", GGML_TYPE_IQ3_S},
-      {"iq2-s-weighted", GGML_TYPE_IQ2_S},
+      {"iq2-s-weighted", GGML_TYPE_IQ2_S}, {"iq2-xs-weighted", GGML_TYPE_IQ2_XS},
   };
   for (const auto &[mode, kind] : weighted_formats) if (!std::strcmp(argv[1], mode)) {
     std::vector<uint8_t> encoded(ggml_row_size(kind, QK_K));
@@ -3568,12 +3568,36 @@ fn importance_grid_two_encoding_vtk_59() {
     compare_weighted_encoders(&[(ImportanceTwo, 82, "iq2-s-weighted")]);
 }
 
+#[test]
+fn importance_two_parity_encoding_vtk_60() {
+    use super::PackedWeightEncoding::ImportanceTwoParity;
+    certified_encoding_model(
+        "verdant_importance_grid",
+        "VerdantEngine.ImportanceGridEncoding.evaluate",
+    );
+    compare_weighted_encoders(&[(ImportanceTwoParity, 74, "iq2-xs-weighted")]);
+    let mut untouched = [0xa5_u8; 74];
+    assert!(super::encode_importance_weight_block(
+        &[1.0; 256],
+        None,
+        ImportanceTwoParity,
+        &mut untouched
+    )
+    .is_err());
+    assert_eq!(untouched, [0xa5; 74]);
+}
+
 fn compare_weighted_encoders(formats: &[(super::PackedWeightEncoding, usize, &str)]) {
     use std::fmt::Write as _;
     for &(kind, width, mode) in formats {
         let mut input = String::new();
         let mut blocks = Vec::new();
-        for row in 0..12 {
+        let rows = if kind == super::PackedWeightEncoding::ImportanceTwoParity {
+            20
+        } else {
+            12
+        };
+        for row in 0..rows {
             let data: [f32; 256] = std::array::from_fn(|i| match row {
                 0 => {
                     if i % 2 == 0 {
@@ -3587,6 +3611,17 @@ fn compare_weighted_encoders(formats: &[(super::PackedWeightEncoding, usize, &st
                 2 if i % 2 == 0 => -8.0,
                 2 => 8.0,
                 3 => (if i % 2 == 0 { 1.0 } else { -1.0 }) * (i % 7) as f32,
+                12.. => {
+                    let lane = i % 8;
+                    let flip = (row - 12 + i / 8) % 8;
+                    if lane == flip {
+                        -4.0
+                    } else if lane == (flip + 3) % 8 {
+                        0.125
+                    } else {
+                        1.0
+                    }
+                }
                 _ => (((i * (2 * row + 1) + 7 * row) % 83) as f32 - 41.0) / 16.0,
             });
             for weights in [

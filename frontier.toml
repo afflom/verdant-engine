@@ -5001,7 +5001,7 @@ reason = "type"
 detail = "type outside the lift: GroupedQ8Block.scale: f32"
 
 [[residue]]
-kappa = "4448b87a938f11517b6f7a7d3cf5d9693fc25aab72af7f1d489f1d91b497b28c"
+kappa = "106894b5624fd5fe116f943877a1c7a13540fb4e298f3fdcec640675262e27fd"
 function = "verdant_tensor::linear::importance_grid::encode_importance_weight_block"
 reason = "type"
 detail = "type outside the lift: f32"
