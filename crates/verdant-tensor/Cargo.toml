@@ -60,6 +60,7 @@ verdant_head_slope_index = { version = "=2.29.0", path = "../../generated/tensor
 verdant_head_slope_exponent = { version = "=2.29.0", path = "../../generated/tensor-execution/packages/rust-core/verdant_head_slope_exponent" }
 verdant_head_slope = { version = "=2.29.0", path = "../../generated/tensor-execution/packages/rust-core/verdant_head_slope" }
 verdant_gelu = { version = "=2.28.0", path = "../../generated/tensor-execution/packages/rust-core/verdant_gelu" }
+verdant_error_function = { version = "=2.47.0", path = "../../generated/tensor-execution/packages/rust-core/verdant_error_function" }
 verdant_tanh = { version = "=2.27.0", path = "../../generated/tensor-execution/packages/rust-core/verdant_tanh" }
 verdant_logistic = { version = "2.24.0", path = "../../generated/tensor-execution/packages/rust-core/verdant_logistic" }
 verdant_exponential_f32 = { version = "2.19.0", path = "../../generated/tensor-execution/packages/rust-core/verdant_exponential_f32" }

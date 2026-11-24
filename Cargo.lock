@@ -843,6 +843,7 @@ dependencies = [
  "verdant_division_finish",
  "verdant_division_norm",
  "verdant_encoded_word",
+ "verdant_error_function",
  "verdant_exponential_f32",
  "verdant_exponential_scale",
  "verdant_exponential_step",
@@ -995,6 +996,10 @@ version = "2.12.0"
 [[package]]
 name = "verdant_encoded_word"
 version = "2.9.0"
+
+[[package]]
+name = "verdant_error_function"
+version = "2.47.0"
 
 [[package]]
 name = "verdant_exponential_f32"

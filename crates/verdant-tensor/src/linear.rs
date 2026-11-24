@@ -25,8 +25,9 @@ mod symmetric_product;
 mod weight_encoding;
 mod weighted_mean;
 pub use activations::{
-    attention_head_slope_f32, exponential_f32, gelu_f32, gelu_quick_f32, inverse_root_f32,
-    natural_log_f32, sigmoid_f32, silu_f32, sin_cos_f32, softplus_f32, swiglu_f32, tanh_f32,
+    attention_head_slope_f32, exponential_f32, gaussian_error_f32, gelu_f32, gelu_quick_f32,
+    inverse_root_f32, natural_log_f32, sigmoid_f32, silu_f32, sin_cos_f32, softplus_f32,
+    swiglu_f32, tanh_f32,
 };
 pub use affine_product::{dot_affine_weight_row, AffineWeightEncoding};
 pub use bitpacked_product::{
@@ -46,29 +47,6 @@ pub use symmetric_product::{
 };
 pub use weight_encoding::{encode_weight_block, PackedWeightEncoding, WeightBlockEncoding};
 pub use weighted_mean::WeightedMeanF32;
-
-#[inline]
-fn transform_triple_exact(
-    triple: &[[f32; DIM_SPATIAL]; DIM_SPATIAL],
-    matrix_cols: &[[f64; DIM_HOMOGENEOUS]; DIM_HOMOGENEOUS],
-) -> [[f32; DIM_HOMOGENEOUS]; DIM_SPATIAL] {
-    let i2 = 1usize + 1usize;
-    let i3 = i2 + 1usize;
-    let mut out = [[0.0_f32; DIM_HOMOGENEOUS]; DIM_SPATIAL];
-    for (row_idx, p) in triple.iter().enumerate() {
-        let px = f64::from(p[0]);
-        let py = f64::from(p[1]);
-        let pz = f64::from(p[i2]);
-        for c in 0..DIM_HOMOGENEOUS {
-            let val = px * matrix_cols[0][c]
-                + py * matrix_cols[1][c]
-                + pz * matrix_cols[i2][c]
-                + matrix_cols[i3][c];
-            out[row_idx][c] = val as f32;
-        }
-    }
-    out
-}
 
 /// Contracts two column-major `4x4` homogeneous matrices `lhs * rhs` via `uor-matmul`.
 pub fn multiply_mat4_cols_exact(
@@ -530,14 +508,16 @@ pub fn skin_vertices_linear_blend_into(
             }
         }
 
-        let pos = positions[v_idx];
-        let nrm = normals[v_idx];
-        let origin_nrm = [0.0_f32, 0.0_f32, 0.0_f32];
-        let contracted = transform_triple_exact(&[pos, nrm, origin_nrm], &blended_cols);
-
-        let p_out = contracted[0];
-        let n_tip = contracted[1];
-        let n_org = contracted[i2];
+        let transform = |[x, y, z]: [f32; DIM_SPATIAL]| -> [f32; DIM_HOMOGENEOUS] {
+            std::array::from_fn(|c| {
+                (f64::from(x) * blended_cols[0][c]
+                    + f64::from(y) * blended_cols[1][c]
+                    + f64::from(z) * blended_cols[i2][c]
+                    + blended_cols[i3][c]) as f32
+            })
+        };
+        let [p_out, n_tip, n_org] =
+            [positions[v_idx], normals[v_idx], [0.0; DIM_SPATIAL]].map(transform);
         let nx = f64::from(n_tip[0] - n_org[0]);
         let ny = f64::from(n_tip[1] - n_org[1]);
         let nz = f64::from(n_tip[i2] - n_org[i2]);

@@ -175,6 +175,46 @@ pub fn gelu_quick_f32(value: f32) -> Result<f32, TensorComputeError> {
     Ok(f32::from_bits(word as u32))
 }
 
+/// Evaluate the binary32 error function, or GELU with that error function when `gelu` is true.
+///
+/// # Errors
+/// Propagates a typed error from the certified scalar program.
+pub fn gaussian_error_f32(value: f32, gelu: bool) -> Result<f32, TensorComputeError> {
+    use verdant_error_function::Adt0 as Action;
+    let invalid = || TensorComputeError::InvalidKernelSpecification {
+        kernel_name: "GaussianActivation.evaluateError".into(),
+    };
+    let x = u64::from(value.to_bits());
+    let mut registers = [x, 0, 0, 0, 0, 0, 0];
+    let mut pc = 0;
+    let decode = |word| f32::from_bits(word as u32);
+    loop {
+        let [argument, basis, numerator, denominator, temp, held, magnitude] = registers;
+        let action = verdant_error_function::run(
+            gelu,
+            x,
+            pc,
+            argument,
+            basis,
+            numerator,
+            denominator,
+            temp,
+            held,
+            magnitude,
+        )
+        .map_err(|_| invalid())?;
+        let (value, slot, next) = match action {
+            Action::C0(word) => return Ok(decode(word)),
+            Action::C1(op, a, b, slot, next) => {
+                (evaluate_f32_scalar(op, decode(a), decode(b))?, slot, next)
+            }
+            Action::C2(a, slot, next) => (exponential_f32(decode(a))?, slot, next),
+        };
+        *registers.get_mut(slot as usize).ok_or_else(invalid)? = value.to_bits().into();
+        pc = next;
+    }
+}
+
 /// Evaluate the binary32 logistic sigmoid.
 ///
 /// # Errors

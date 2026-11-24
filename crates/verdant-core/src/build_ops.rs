@@ -503,6 +503,33 @@ impl VerdantOperatorChannel {
                         let manifest_path = pkg["manifest_path"].as_str().ok_or_else(|| {
                             make_err(format!("missing manifest for {crate_name}"))
                         })?;
+                        // The certified Prism directory is immutable. Stage its published package
+                        // separately when a numerical kernel carries a third-party notice.
+                        let mut manifest = PathBuf::from(manifest_path);
+                        if crate_name == "verdant_error_function" {
+                            let notice = repo_root
+                                .join("crates/verdant-tensor/notices/verdant_error_function.txt");
+                            let source = manifest.parent().ok_or_else(|| {
+                                make_err(format!("missing source for {crate_name}"))
+                            })?;
+                            let staged = stage_root.join(crate_name);
+                            std::fs::create_dir_all(staged.join("src"))
+                                .map_err(|e| make_err(format!("stage {crate_name}: {e}")))?;
+                            for entry in [
+                                "Cargo.toml",
+                                "package.json",
+                                "provenance.json",
+                                "src/lib.rs",
+                            ] {
+                                std::fs::copy(source.join(entry), staged.join(entry)).map_err(
+                                    |e| make_err(format!("stage {crate_name}/{entry}: {e}")),
+                                )?;
+                            }
+                            std::fs::copy(notice, staged.join("NOTICE")).map_err(|e| {
+                                make_err(format!("stage notice for {crate_name}: {e}"))
+                            })?;
+                            manifest = staged.join("Cargo.toml");
+                        }
                         let output = Command::new("cargo")
                             .args([
                                 "package",
@@ -511,9 +538,9 @@ impl VerdantOperatorChannel {
                                 "--allow-dirty",
                                 "--exclude-lockfile",
                                 "--manifest-path",
-                                manifest_path,
-                                "--target-dir",
                             ])
+                            .arg(&manifest)
+                            .arg("--target-dir")
                             .arg(&stage_root)
                             .current_dir(repo_root)
                             .output()
