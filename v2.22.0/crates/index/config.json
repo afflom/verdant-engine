@@ -1,0 +1,4 @@
+{
+  "api": "https://github.com/afflom/verdant-engine",
+  "dl": "https://github.com/afflom/verdant-engine/releases/download/v2.22.0/{crate}-{version}.crate"
+}
