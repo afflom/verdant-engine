@@ -6,6 +6,7 @@ const GGML_VECTOR_DRIVER: &str = r#"
 #include "ggml-cpu.h"
 #include "ggml-quants.h"
 #include "ops.h"
+#include <cmath>
 #include <cstdio>
 #include <cstdint>
 #include <cstring>
@@ -66,6 +67,40 @@ static int encode_blocks(void (*encode)(const float *, Block *, int64_t)) {
       for (size_t i = 0; i < sizeof(encoded); ++i) std::printf("%u\n", unsigned(bytes[i]));
     }
     return std::ferror(stdin) ? 3 : 0;
+}
+// GGML casts its exponent directly from float to uint8_t. A negative integer
+// is outside that conversion's domain. Verdant defines those finite inputs by
+// reducing the signed exponent modulo 256. Use GGML's decoder to independently
+// choose the nearest codeword for that header, preserving the first tie.
+static void reference_mxfp4(const float *x, block_mxfp4 *block, int64_t lanes) {
+    float peak = 0.0f;
+    for (int i = 0; i < lanes; ++i) peak = std::fmax(peak, std::fabs(x[i]));
+    const int exponent = peak == 0 ? 0 : int(std::floor(std::log2(peak))) + 125;
+    if (exponent >= 0) {
+        quantize_row_mxfp4_ref(x, block, lanes);
+        return;
+    }
+
+    block->e = static_cast<uint8_t>(exponent);
+    uint8_t nearest[QK_MXFP4] = {};
+    float distances[QK_MXFP4] = {};
+    for (unsigned code = 0; code < 16; ++code) {
+        block_mxfp4 candidate{};
+        candidate.e = block->e;
+        std::memset(candidate.qs, code | (code << 4), sizeof(candidate.qs));
+        float decoded[QK_MXFP4];
+        dequantize_row_mxfp4(&candidate, decoded, lanes);
+        for (int i = 0; i < lanes; ++i) {
+            const float distance = std::fabs(decoded[i] - x[i]);
+            if (code == 0 || distance < distances[i]) {
+                nearest[i] = code;
+                distances[i] = distance;
+            }
+        }
+    }
+    for (int i = 0; i < QK_MXFP4 / 2; ++i) {
+        block->qs[i] = nearest[i] | (nearest[i + QK_MXFP4 / 2] << 4);
+    }
 }
 // Observe the scale computed by the imported rotary kernel, preserving the real call.
 extern "C" float __real_powf(float, float);
@@ -416,7 +451,7 @@ int main(int argc, char **argv) {
   if (!std::strcmp(argv[1], "grouped-affine-4")) return encode_blocks<QK_K>(quantize_row_q4_K_ref);
   if (!std::strcmp(argv[1], "grouped-affine-5")) return encode_blocks<QK_K>(quantize_row_q5_K_ref);
   if (!std::strcmp(argv[1], "signed-six-encode")) return encode_blocks<QK_K>(quantize_row_q6_K_ref);
-  if (!std::strcmp(argv[1], "mxfp4-encode")) return encode_blocks<QK_MXFP4>(quantize_row_mxfp4_ref);
+  if (!std::strcmp(argv[1], "mxfp4-encode")) return encode_blocks<QK_MXFP4>(reference_mxfp4);
   if (!std::strcmp(argv[1], "nvfp4-encode")) return encode_blocks<QK_NVFP4>(quantize_row_nvfp4_ref);
   if (!std::strcmp(argv[1], "tq1_0")) return encode_blocks<QK_K>(quantize_row_tq1_0_ref);
   if (!std::strcmp(argv[1], "tq2_0")) return encode_blocks<QK_K>(quantize_row_tq2_0_ref);
@@ -3116,6 +3151,12 @@ fn compare_weight_encoders<const N: usize>(formats: &[(super::PackedWeightEncodi
         }));
     }
     if N < 256 {
+        for bits in [1, 2, 0x0002_0000, 0x00ff_ffd3, 0x00ff_ffd4] {
+            let peak = f32::from_bits(bits);
+            rows.push(std::array::from_fn(
+                |i| if i % 2 == 0 { peak } else { -peak },
+            ));
+        }
         for exponent in [
             -148, -132, -125, -64, -31, -16, -1, 0, 1, 8, 16, 31, 64, 126, 127,
         ] {
