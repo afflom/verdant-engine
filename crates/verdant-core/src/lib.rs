@@ -107,6 +107,9 @@ mod tests {
         assert_eq!(pow2_u64(10), 1024);
         assert_eq!(fibonacci_u64(0), 0);
         assert_eq!(fibonacci_u64(8), 21);
+        assert_eq!(fibonacci_u64(93), 12_200_160_415_121_876_738);
+        assert_eq!(fibonacci_u64(94), u64::MAX);
+        assert_eq!(fibonacci_u64(u32::MAX), u64::MAX);
         assert_eq!(nth_prime_u64(0), 2);
         assert_eq!(nth_prime_u64(1), 3);
         assert_eq!(nth_prime_u64(2), 5);

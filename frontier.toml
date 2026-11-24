@@ -5,22 +5,22 @@
 # stops the functions it counts (the detail their rows state, under its
 # cause), the one that stops the most first: the work queue.
 
-# Honesty report: 586 of 1888 functions of product code are lifted; 1150
+# Honesty report: 587 of 1889 functions of product code are lifted; 1150
 # are residue, 72 foreign and 80 effect rows.
 # Residue by cause:
 #   arithmetic: 25
 #   call: 210
-#   form: 338
+#   form: 337
 #   signature: 53
 #   statements: 23
-#   type: 495
+#   type: 496
 #   width: 6
 
 spec = "uorust/register/1"
 
 [lift]
-functions = 1888
-lifted = 586
+functions = 1889
+lifted = 587
 residue = 1150
 foreign = 72
 effect = 80
@@ -41,13 +41,13 @@ cause = "type"
 functions = 55
 
 [[construct]]
-construct = "takes or returns ObserverPrismHolon.organs: ObserverOrganModel.schema_org_jsonld: serde_json::Value, a type of the serde_json crate with no LexLean model"
-cause = "foreign"
-functions = 32
-
-[[construct]]
 construct = "type outside the lift: f32"
 cause = "type"
+functions = 33
+
+[[construct]]
+construct = "takes or returns ObserverPrismHolon.organs: ObserverOrganModel.schema_org_jsonld: serde_json::Value, a type of the serde_json crate with no LexLean model"
+cause = "foreign"
 functions = 32
 
 [[construct]]
@@ -301,11 +301,6 @@ cause = "form"
 functions = 4
 
 [[construct]]
-construct = "expression form outside the lift: a while loop that does not advance its cursor once per step"
-cause = "form"
-functions = 4
-
-[[construct]]
 construct = "expression form outside the lift: expr::macro"
 cause = "form"
 functions = 4
@@ -388,6 +383,11 @@ functions = 3
 [[construct]]
 construct = "Env effect: std::env::args"
 cause = "effect"
+functions = 3
+
+[[construct]]
+construct = "expression form outside the lift: a while loop that does not advance its cursor once per step"
+cause = "form"
 functions = 3
 
 [[construct]]
@@ -2914,12 +2914,6 @@ reason = "call"
 detail = "calls pow2_u64, which is not lifted"
 
 [[residue]]
-kappa = "0e0e3889c0546ad11d88afa741312b357fc24861af5cd201b4e7d472010e3101"
-function = "verdant_core::math::fibonacci_u64"
-reason = "form"
-detail = "expression form outside the lift: a while loop that does not advance its cursor once per step"
-
-[[residue]]
 kappa = "3b8d43e1971a1255249f8eda65bb1d8d36c95fb9e06d755641fa95be50c85e26"
 function = "verdant_core::math::golden_angle_radians"
 reason = "type"
@@ -5002,6 +4996,12 @@ reason = "type"
 detail = "type outside the lift: GroupedQ8Block.scale: f32"
 
 [[residue]]
+kappa = "1a96cf86dd5455b2747dbd7904f1d5264cf2e5ba04a5fb84a01d8abca096dd5d"
+function = "verdant_tensor::linear::importance_grid::encode_importance_weight_block"
+reason = "type"
+detail = "type outside the lift: f32"
+
+[[residue]]
 kappa = "240bb733f55ef321994fff933d97c111d3488bbfa68b2b20f64321482e14ca60"
 function = "verdant_tensor::linear::multiply_mat4_cols_exact"
 reason = "type"
@@ -5110,7 +5110,7 @@ reason = "signature"
 detail = "signature outside the lift: generic, async, unsafe or variadic"
 
 [[residue]]
-kappa = "111221dbda964f04af866e89fd2b3e78a808af44cf61516cf0916ede5eaf3aeb"
+kappa = "ff12bc4c0c7aba521ab876597ed3ea6c70022f474567259345962fc3c6d41ed2"
 function = "verdant_tensor::linear::weight_encoding::encode_weight_block"
 reason = "signature"
 detail = "signature outside the lift: generic, async, unsafe or variadic"
@@ -8963,7 +8963,7 @@ definition = "Behavior::definition"
 [[lifted]]
 kappa = "2a98b59591cd67f4ad35dfdb7c5877a0b83e199db4b660bc9d1953cee6befa25"
 function = "prism_fidelity::field"
-definition = "Behavior::field"
+definition = "Behavior::prismFidelityField"
 
 [[lifted]]
 kappa = "5fd5332743f13fe56048a0d00eee139d2223e554dca5c8ca69aa7028cbfdb9a0"
@@ -9299,6 +9299,11 @@ definition = "Behavior::ratchetStageCacheHit"
 kappa = "4cd9f67af4aa2c00fddba36002f0afa982d8c68e22b2a6ab2aa22b1fdcc05640"
 function = "verdant_core::math::eight_u32"
 definition = "Behavior::verdantCoreEightU32"
+
+[[lifted]]
+kappa = "5c52c7b4e18a5928a34e49bb988f18f7c79658553269d52df7c834effff90334"
+function = "verdant_core::math::fibonacci_u64"
+definition = "Behavior::fibonacciU64"
 
 [[lifted]]
 kappa = "e52869441eef828a2246e50bf28734035ab7bd5e92d6767492fbc2b41296a95f"

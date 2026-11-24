@@ -511,3 +511,9 @@ The test `exponential_increment_vtk_55` compared 195,716 distinct binary32 input
 VE-80 verified the three shared proof projects with all four increment roots in the tensor bundle. The downstream VTK-55 differential test passed on that bundle.
 
 Replacing the small-input result with a binary32 exponential followed by subtraction returned zero for input word `00000001`. The differential test rejected that result and passed after restoration. Existing exponential and unary-refusal tests also passed.
+
+## VTK-56 four-lane importance-grid encoding
+
+The certified encoding bundle `blake3:863a5ec0eb55dfc018a428d75eb05d2a7f83d500159388e4f32d3c99c56fbaa5` supplies the IQ3 search, float operation order, grid addresses and packed fields. The nearest-neighbor directory reproduces all 8,192 keys and 44,486 candidate entries from the pinned GGML initializer. [Directory provenance](crates/verdant-tensor/src/iq3_neighbors.json)
+
+The test `importance_grid_three_encoding_vtk_56` compared 64,896 bytes from 624 encoded blocks against GGML at `9a080f44`. It covered every impulse position, signed zero, ties, 29 input exponents, uniform weights and nonuniform weights. Incorrect extents, nonfinite weights and negative weights preserved the destination. Writing ones into a zero block failed the imported comparison at `iq3-compact-encode row 0`. After restoration, VTK-50, VTK-52 and VTK-56 passed together.
