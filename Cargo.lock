@@ -903,6 +903,7 @@ dependencies = [
  "verdant_round_mantissa_f64",
  "verdant_row_ranking",
  "verdant_scalar_f32",
+ "verdant_signed64_conversion",
  "verdant_signed_truncation",
  "verdant_small_float",
  "verdant_softplus",
@@ -1246,6 +1247,10 @@ version = "2.29.0"
 [[package]]
 name = "verdant_scalar_f32"
 version = "2.9.0"
+
+[[package]]
+name = "verdant_signed64_conversion"
+version = "2.21.8"
 
 [[package]]
 name = "verdant_signed_truncation"

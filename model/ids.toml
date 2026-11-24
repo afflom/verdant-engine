@@ -956,3 +956,9 @@ id = "VTK-62"
 level = "build"
 suite = "engine"
 statement = "Verdant fits shifted ternary grids and packs single-scale and distributed-scale blocks against the original GGML quantizers"
+
+[[id]]
+id = "VTK-63"
+level = "build"
+suite = "engine"
+statement = "Verdant converts signed 64-bit words directly to binary32 and binary64 and truncates representable binary64 values to signed 64-bit words"

@@ -20,6 +20,15 @@ while(scanf("%" SCNu64 " %" SCNu64,&a,&b)==2) {
     else if(!strcmp(argv[1],"count"))result=ui64_to_f32(a).v;
     else if(!strcmp(argv[1],"divide"))result=f64_div((float64_t){a},(float64_t){b}).v;
     else if(!strcmp(argv[1],"count64"))result=ui64_to_f64(a).v;
+    else if(!strcmp(argv[1],"signed64-f32") || !strcmp(argv[1],"signed64-f64")) {
+        int64_t signed_word; memcpy(&signed_word,&a,sizeof(a));
+        result=!strcmp(argv[1],"signed64-f32") ? i64_to_f32(signed_word).v : i64_to_f64(signed_word).v;
+    }
+    else if(!strcmp(argv[1],"f64-signed64") || !strcmp(argv[1],"f64-signed64-invalid")) {
+        softfloat_exceptionFlags=0;
+        result=(uint64_t)f64_to_i64_r_minMag((float64_t){a},false);
+        if(!strcmp(argv[1],"f64-signed64-invalid")) result=(softfloat_exceptionFlags & softfloat_flag_invalid)!=0;
+    }
     else if(!strcmp(argv[1],"mean"))result=f64_to_f32(f64_div((float64_t){a},ui64_to_f64(b))).v;
     else if(!strcmp(argv[1],"compare")) {
         const float32_t x={(uint32_t)a},y={(uint32_t)b};
@@ -656,4 +665,69 @@ fn quotient_oracle_vtk_15() {
         means.len(),
         division_count + counts.len() + means.len()
     );
+}
+
+#[test]
+fn signed_word_conversion_vtk_63() {
+    super::matrix_product_tests::certified_quotient_model();
+    let mut integers = vec![
+        (0_u64, 0),
+        (1, 0),
+        (i64::MIN as u64, 0),
+        (i64::MAX as u64, 0),
+    ];
+    for shift in 1..63 {
+        let pivot = 1_u64 << shift;
+        let half_ulp = if shift >= 24 {
+            1_u64 << (shift - 24)
+        } else {
+            1
+        };
+        let half_wide = if shift >= 53 {
+            1_u64 << (shift - 53)
+        } else {
+            1
+        };
+        for offset in [1, half_ulp, half_wide] {
+            for word in [
+                pivot - offset,
+                pivot + offset - 1,
+                pivot + offset,
+                pivot + offset + 1,
+            ] {
+                integers.extend([(word, 0), (word.wrapping_neg(), 0)]);
+            }
+        }
+    }
+    integers.sort_unstable();
+    integers.dedup();
+    for (mode, code) in [("signed64-f32", 9), ("signed64-f64", 7)] {
+        for (&(word, _), expected) in integers.iter().zip(query(mode, &integers)) {
+            assert_eq!(
+                super::evaluate_wide(code, word, 0).unwrap(),
+                Some(expected),
+                "{mode} {word:016x}"
+            );
+        }
+    }
+    let mut floats = Vec::new();
+    for exponent in 0..2048 {
+        for fraction in [0, 1, (1 << 51) - 1, 1 << 51, (1 << 52) - 1] {
+            let word = (exponent << 52) | fraction;
+            floats.extend([(word, 0), (word | (1 << 63), 0)]);
+        }
+    }
+    let invalid = query("f64-signed64-invalid", &floats);
+    for ((&(word, _), expected), flag) in floats
+        .iter()
+        .zip(query("f64-signed64", &floats))
+        .zip(invalid)
+    {
+        assert_eq!(
+            super::evaluate_wide(8, word, 0).unwrap(),
+            (flag == 0).then_some(expected),
+            "f64 {word:016x}"
+        );
+    }
+    assert_eq!(super::evaluate_wide(10, 0, 0).unwrap(), None);
 }

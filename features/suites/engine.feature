@@ -897,3 +897,9 @@ Feature: engine
     Given 256 finite lanes and format-specific importance data
     When Verdant selects ternary splits, shifts, grid points and scales
     Then the complete IQ1_S and IQ1_M blocks match the pinned quantizers and invalid inputs preserve the destination
+
+  @VTK-63 @build
+  Scenario: Verdant converts signed 64-bit words directly to binary32 and binary64 and truncates representable binary64 values to signed 64-bit words
+    Given signed 64-bit limits, rounding ties and binary64 exponent boundaries
+    When Verdant converts in either direction
+    Then encoded words and invalid refusals agree with Berkeley SoftFloat Release 3e

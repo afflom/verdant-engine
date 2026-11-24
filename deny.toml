@@ -659,3 +659,9 @@ name = "verdant_delta_rule"
 version = "=2.50.0"
 expression = "MIT OR Apache-2.0"
 license-files = [{ path = "src/lib.rs", hash = 0x4055dbcb }]
+
+[[licenses.clarify]]
+name = "verdant_signed64_conversion"
+version = "=2.21.8"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0x4e2a2aaf }]

@@ -553,3 +553,9 @@ Certificate `blake3:b4459047ca2188e8616d5af8d4ab30aafc29987e9ad4b54697266b219c12
 The certified grid program selects signed ternary shifts and fits the shared scales for IQ1_S and IQ1_M. Both consume the same original GGML directory of 329,769 candidate entries across 6,561 ternary patterns. IQ1_M distributes the block scale over four packed words. [Directory provenance](crates/verdant-tensor/src/iq1_neighbors.json)
 
 Certificate `blake3:ec593c8224e46ad0d1d717781b7f4979ffd48fe1fee16c412aef05020b0db492` drives the encoding interpreter. VTK-62 compared 19,944 bytes with GGML at `9a080f44` across 36 weighted blocks per format and 288 unweighted IQ1_M blocks. The corpus includes every impulse lane, signed zeros, ties, varying magnitudes and nonuniform importance. The previous implementation refused these formats. Flipping one bit in the distributed IQ1_M scale failed the comparison, and the restored implementation passed.
+
+## VTK-63 signed 64-bit conversions
+
+The wide-word interpreter converts signed I64 directly to binary32 or binary64 at nearest-even and truncates binary64 toward zero to I64. Certificate `blake3:da3d965872af1fa634b111f5555c2071eaff34a03a9613e77ade57dcd3f103eb` binds the routes. The original SoftFloat Release 3e functions supplied 22,206 reference results. The truncation comparisons also checked the invalid flag for every exponent field, both signs and five fraction boundaries. Tests include negative fractions, the exact signed minimum and integer-to-float midpoint neighbors.
+
+The original interpreter refused all three modes. Discarding the upper 32 magnitude bits returned zero for `0x0000000100000000` to binary32. Restoring the certified magnitude passed the wide-word tests. [Berkeley SoftFloat](https://github.com/ucb-bar/berkeley-softfloat-3/tree/07ebd29db0cfb55723a79fbbffe99103ef38e305)
