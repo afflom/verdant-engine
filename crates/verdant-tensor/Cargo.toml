@@ -79,6 +79,7 @@ verdant_symmetric_q8 = { version = "2.17.0", path = "../../generated/tensor-exec
 verdant_division_class = { version = "2.12.0", path = "../../generated/tensor-quotient/packages/rust-core/verdant_division_class" }
 verdant_division_norm = { version = "2.12.0", path = "../../generated/tensor-quotient/packages/rust-core/verdant_division_norm" }
 verdant_division_finish = { version = "2.12.0", path = "../../generated/tensor-quotient/packages/rust-core/verdant_division_finish" }
+verdant_wide_narrowing = { version = "=2.21.8", path = "../../generated/tensor-quotient/packages/rust-core/verdant_wide_narrowing" }
 verdant_signed64_conversion = { version = "=2.21.8", path = "../../generated/tensor-quotient/packages/rust-core/verdant_signed64_conversion" }
 verdant_count_f64 = { version = "2.12.0", path = "../../generated/tensor-quotient/packages/rust-core/verdant_count_f64" }
 verdant_quotient_f64 = { version = "2.12.0", path = "../../generated/tensor-quotient/packages/rust-core/verdant_quotient_f64" }

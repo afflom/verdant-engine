@@ -903,3 +903,9 @@ Feature: engine
     Given signed 64-bit limits, rounding ties and binary64 exponent boundaries
     When Verdant converts in either direction
     Then encoded words and invalid refusals agree with Berkeley SoftFloat Release 3e
+
+  @VTK-64 @build
+  Scenario: Verdant rounds binary64 and signed I64 directly to binary32 at round-to-odd and truncates representable binary64 values to signed I32
+    Given signed extrema, discarded significand bits, subnormals, NaNs and every binary64 exponent
+    When Verdant rounds to an odd significand or truncates toward zero
+    Then the result word and invalid truncation flag agree with Berkeley SoftFloat

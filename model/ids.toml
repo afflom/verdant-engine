@@ -962,3 +962,9 @@ id = "VTK-63"
 level = "build"
 suite = "engine"
 statement = "Verdant converts signed 64-bit words directly to binary32 and binary64 and truncates representable binary64 values to signed 64-bit words"
+
+[[id]]
+id = "VTK-64"
+level = "build"
+suite = "engine"
+statement = "Verdant rounds binary64 and signed I64 directly to binary32 at round-to-odd and truncates representable binary64 values to signed I32"

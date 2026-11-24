@@ -922,6 +922,7 @@ dependencies = [
  "verdant_weighted_pivot",
  "verdant_weighted_reciprocal",
  "verdant_wide_mode",
+ "verdant_wide_narrowing",
  "verdant_widen_f32",
 ]
 
@@ -1323,6 +1324,10 @@ version = "2.23.0"
 [[package]]
 name = "verdant_wide_mode"
 version = "2.9.0"
+
+[[package]]
+name = "verdant_wide_narrowing"
+version = "2.21.8"
 
 [[package]]
 name = "verdant_widen_f32"

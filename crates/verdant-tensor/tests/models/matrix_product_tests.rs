@@ -1222,6 +1222,7 @@ pub(super) fn certified_quotient_model() {
         ("divisionFinish", "verdant_division_finish"),
         ("countPlan", "verdant_count_f64"),
         ("signedConversionPlan", "verdant_signed64_conversion"),
+        ("wideNarrowing", "verdant_wide_narrowing"),
         ("route", "verdant_quotient_route"),
     ] {
         assert_eq!(
@@ -1475,6 +1476,7 @@ fn verify_bundle(scope: &str, directory: &str) -> std::collections::BTreeMap<Str
                     "verdant_encoded_word" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_encoded_word/src/lib.rs"),
                     "verdant_pack_plan_f64" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_pack_plan_f64/src/lib.rs"),
                     "verdant_storage_block" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_storage_block/src/lib.rs"),
+                    "verdant_wide_narrowing" => include_bytes!("../../../../generated/tensor-quotient/packages/rust-core/verdant_wide_narrowing/src/lib.rs"),
                     "verdant_signed64_conversion" => include_bytes!("../../../../generated/tensor-quotient/packages/rust-core/verdant_signed64_conversion/src/lib.rs"),
                     "verdant_count_f64" => include_bytes!("../../../../generated/tensor-quotient/packages/rust-core/verdant_count_f64/src/lib.rs"),
                     "verdant_quotient_f64" => include_bytes!("../../../../generated/tensor-quotient/packages/rust-core/verdant_quotient_f64/src/lib.rs"),

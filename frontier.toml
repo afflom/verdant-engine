@@ -4965,7 +4965,7 @@ reason = "call"
 detail = "calls run, which is not lifted"
 
 [[residue]]
-kappa = "0d4f15456baa8e62f67eedf9e7d286c2347feb017e41e0cd5da6cdd7a2b9b00f"
+kappa = "832be5b774a89066ed9d8bb562267a22adc3c3f3e578be47e027e1f4e41ab2e0"
 function = "verdant_tensor::linear::evaluate_wide"
 reason = "statements"
 detail = "the body has statements other than let"

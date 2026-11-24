@@ -383,11 +383,62 @@ definition{
 }
 
 definition{
+  name: oddBinary32,
+  parameters: [bits : Nat],
+  result: Nat,
+  body: (let signWord : Nat := (prim multiply (ScalarF64::sign bits) 2147483648 : Nat);
+    (let exponent : Nat := (ScalarF64::exponent bits);
+      (signWord + (if (ScalarF64::isNaN bits) then 2143289344 else
+       (if (ScalarF64::isInfinity bits) then 2139095040 else
+       (if (1150 <? exponent) then 2139095039 else
+       (if (897 <=? exponent) then ((prim multiply (prim subtract exponent 897 : Nat) 8388608 : Nat) + (ScalarF64::shiftJam (ScalarF64::mantissa bits) 29))
+       else (ScalarF64::shiftJam (ScalarF64::mantissa bits) (prim subtract 926 exponent : Nat))))))))),
+  executable: true
+}
+
+definition{
+  name: oddSignedBinary32,
+  parameters: [bits : Nat],
+  result: Nat,
+  body: (let negative : Bool := (9223372036854775808 <=? bits);
+    (let magnitude : Nat := (if negative then (negateWord64 bits) else bits);
+    (let shifted : ScalarF64::Norm := (first (prim iterate_until (fun (state : ScalarF64::Norm) => (ScalarF64::countStep state)) 64
+      (record ScalarF64::Norm {e := 153, m := magnitude, minimum := 1, threshold := 67108864}) : (ScalarF64::Norm * Bool)));
+    (let normalized : ScalarF64::Norm := (first (prim iterate_until (fun (state : ScalarF64::Norm) => (ScalarF64::normalizeStep state)) 32 shifted : (ScalarF64::Norm * Bool)));
+      ((if negative then 2147483648 else 0) + (ScalarF64::encodeCount (project normalized e) (ScalarF64::shiftJam (project normalized m) 3))))))),
+  executable: true
+}
+
+definition{
+  name: truncateSigned32,
+  parameters: [bits : Nat],
+  result: (Option Nat),
+  body: (match (truncateSigned64 bits)
+    | Option.none => (ctor Option.none [Nat])
+    | Option.some word => (if ((word <? 2147483648) || (18446744071562067968 <=? word)) then
+        (ctor Option.some [Nat] (prim remainder word 4294967296 0 : Nat)) else (ctor Option.none [Nat]))),
+  executable: true
+}
+
+definition{
+  name: wideNarrowing,
+  parameters: [operation : Nat, bits : Nat],
+  result: (Option Nat),
+  body: (if (((operation <? 11) || (13 <? operation)) || (18446744073709551615 <? bits)) then (ctor Option.none [Nat])
+    else (if (operation =? 13) then (truncateSigned32 bits) else
+      (ctor Option.some [Nat] (if (operation =? 11) then (oddBinary32 bits) else (oddSignedBinary32 bits))))),
+  executable: true,
+  production: {effects: [overflow], targets: [rust-core]}
+}
+
+definition{
   name: evaluate,
   parameters: [operation : Nat, a : Nat, b : Nat],
   result: (Option Nat),
   body: (match (route operation)
-    | Option.none => (signedConversion operation a)
+    | Option.none => (match (signedConversion operation a)
+      | Option.some word => (ctor Option.some [Nat] word)
+      | Option.none => (wideNarrowing operation a))
     | Option.some decision => (match decision
       | Route.legacy code => (ScalarF64::evaluate code a b)
       | Route.division => (divide a b)
@@ -483,6 +534,41 @@ theorem{
   name: signedConversionCodeRefused,
   parameters: [],
   statement: ((evaluate 6 0 0) = (ctor Option.none [Nat])),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: oddWideTiny,
+  parameters: [],
+  statement: ((evaluate 11 1 0) = (ctor Option.some [Nat] 1)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: oddWideInteger,
+  parameters: [],
+  statement: ((evaluate 12 16777217 0) = (ctor Option.some [Nat] 1266679809)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: oddWideOverflow,
+  parameters: [],
+  statement: ((evaluate 11 9218868437227405311 0) = (ctor Option.some [Nat] 2139095039)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: wideSigned32Maximum,
+  parameters: [],
+  statement: ((evaluate 13 4746794007248502783 0) = (ctor Option.some [Nat] 2147483647)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: wideSigned32Overflow,
+  parameters: [],
+  statement: ((evaluate 13 4746794007248502784 0) = (ctor Option.none [Nat])),
   proof: reflexivity{}
 }
 

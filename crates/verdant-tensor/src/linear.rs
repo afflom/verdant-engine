@@ -987,7 +987,8 @@ pub use verdant_float_transform::run as transform_float_storage;
 /// F64-to-F32 narrowing (2), unsigned-count-to-F32 conversion (3),
 /// F64 division (4), unsigned-count-to-F64 (5), signed-I64-to-F64 (7),
 /// F64-to-signed-I64 truncation (8), or signed-I64-to-F32 (9).
-/// Unrepresentable signed truncations return None.
+/// Modes 11 and 12 round F64 and signed I64 respectively to F32 at round-to-odd.
+/// Mode 13 truncates F64 to signed I32. Unrepresentable signed truncations return None.
 /// Unknown operations and invalid F32 input widths return None.
 ///
 /// # Errors
@@ -1007,7 +1008,7 @@ pub fn evaluate_wide(operation: u64, a: u64, b: u64) -> Result<Option<u64>, Tens
     let Some(route) = verdant_quotient_route::run(operation) else {
         use verdant_signed64_conversion::Adt0 as SignedRoute;
         return match checked!(verdant_signed64_conversion::run(operation, a)) {
-            None => Ok(None),
+            None => Ok(checked!(verdant_wide_narrowing::run(operation, a))),
             Some(SignedRoute::C0(word)) => Ok(Some(word)),
             Some(SignedRoute::C1(code, magnitude, sign)) => {
                 let Some(encoded) = evaluate_wide(code, magnitude, 0)? else {

@@ -665,3 +665,9 @@ name = "verdant_signed64_conversion"
 version = "=2.21.8"
 expression = "MIT OR Apache-2.0"
 license-files = [{ path = "src/lib.rs", hash = 0x4e2a2aaf }]
+
+[[licenses.clarify]]
+name = "verdant_wide_narrowing"
+version = "=2.21.8"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0x17934949 }]
