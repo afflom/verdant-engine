@@ -17,12 +17,12 @@ mod affine_product;
 mod bitpacked_product;
 mod grouped;
 mod grouped_affine;
+mod grouped_affine_encoding;
 mod grouped_product;
 mod ranking;
 mod rotation;
 mod softmax;
 mod symmetric_product;
-mod grouped_affine_encoding;
 mod weight_encoding;
 mod weighted_mean;
 pub use activations::{
