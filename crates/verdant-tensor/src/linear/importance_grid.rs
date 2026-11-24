@@ -88,20 +88,31 @@ pub fn encode_importance_weight_block(
     let invalid = || TensorComputeError::InvalidKernelSpecification {
         kernel_name: "ImportanceGridEncoding".into(),
     };
-    let eight_lane = kind == PackedWeightEncoding::ImportanceTwo;
-    let directory = if eight_lane {
-        include_bytes!("../iq2s_neighbors.bin").as_slice()
-    } else {
-        DIRECTORY
-    };
-    let compact = match kind {
-        PackedWeightEncoding::ImportanceThreeCompact => true,
-        PackedWeightEncoding::ImportanceThree | PackedWeightEncoding::ImportanceTwo => false,
+    let (family, compact, directory) = match kind {
+        PackedWeightEncoding::ImportanceThree => (0, false, DIRECTORY),
+        PackedWeightEncoding::ImportanceThreeCompact => (0, true, DIRECTORY),
+        PackedWeightEncoding::ImportanceTwo => {
+            (1, false, include_bytes!("../iq2s_neighbors.bin").as_slice())
+        }
+        PackedWeightEncoding::ImportanceTwoParity => {
+            (1, true, include_bytes!("../iq2xs_neighbors.bin").as_slice())
+        }
+        PackedWeightEncoding::ImportanceTwoGroupedParity => (
+            scalars::two_u64(),
+            true,
+            include_bytes!("../iq2xxs_neighbors.bin").as_slice(),
+        ),
+        PackedWeightEncoding::ImportanceOneShifted
+        | PackedWeightEncoding::ImportanceOneDistributed => (
+            scalars::three_u64(),
+            kind == PackedWeightEncoding::ImportanceOneDistributed,
+            include_bytes!("../iq1_neighbors.bin").as_slice(),
+        ),
         _ => return Err(invalid()),
     };
     let format = |tag, a, b, c| {
-        let tag = if eight_lane && tag < scalars::ten_u64() {
-            tag + scalars::sixteen_u64()
+        let tag = if tag < scalars::ten_u64() {
+            tag + family * scalars::sixteen_u64()
         } else {
             tag
         };
@@ -187,8 +198,7 @@ pub fn encode_importance_weight_block(
     let mut pc = 0_usize;
     loop {
         let section = pc / SECTION;
-        let local = (section % (scalars::two_u64() as usize)) as u64
-            + u64::from(eight_lane) * scalars::two_u64();
+        let local = (section % (scalars::two_u64() as usize)) as u64 + family * scalars::two_u64();
         let step = (pc % SECTION) as u64;
         let instruction = match section / (scalars::two_u64() as usize) {
             0 => verdant_iq3_fit::run(local, step).ok(),

@@ -31,6 +31,14 @@ pub enum PackedWeightEncoding {
     ImportanceThree,
     /// Eight-lane two-bit codes, full signs and 16 independently fitted scales.
     ImportanceTwo,
+    /// Nine-bit eight-lane grid indices with seven stored sign bits and explicit importance.
+    ImportanceTwoParity,
+    /// Shifted ternary grids with a shared sign and scale per four octets.
+    ImportanceOneShifted,
+    /// Shifted ternary grids with per-octet shifts and distributed scale bits.
+    ImportanceOneDistributed,
+    /// Four parity-constrained octets sharing a fitted scale.
+    ImportanceTwoGroupedParity,
     /// Binary16 scale and one signed byte per lane.
     SymmetricEight,
     /// Binary16 scale and centered four-bit coefficients.
@@ -97,7 +105,7 @@ pub fn encode_weight_block<I: AsRef<[f32]> + ?Sized>(
     let kind = kind.into();
     if matches!(
         kind,
-        ImportanceThreeCompact | ImportanceThree | ImportanceTwo
+        ImportanceThreeCompact | ImportanceThree | ImportanceTwo | ImportanceOneDistributed
     ) {
         return super::encode_importance_weight_block(input, None, kind, output);
     }

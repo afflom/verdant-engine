@@ -1,7 +1,7 @@
 {
   "spec": "verdant/lifecycle-gate-report/1",
-  "releaseVersion": "2.21.6",
-  "releaseEpoch": 32,
+  "releaseVersion": "2.21.7",
+  "releaseEpoch": 33,
   "mode": "in-process",
   "allPassed": true,
   "releaseQualified": true,
@@ -33,7 +33,7 @@
       "owningManagerId": "mgr-observer-executive",
       "category": "in-process",
       "passed": true,
-      "durationMs": 20,
+      "durationMs": 9,
       "detail": "valid=true entries=16 violations=0"
     },
     {
@@ -41,7 +41,7 @@
       "owningManagerId": "mgr-change-release",
       "category": "in-process",
       "passed": true,
-      "durationMs": 1,
+      "durationMs": 0,
       "detail": "29630 B <= 30720 B"
     },
     {
@@ -50,7 +50,7 @@
       "category": "in-process",
       "passed": true,
       "durationMs": 0,
-      "detail": "cargo=v2.21.6 ledger=v2.21.6 manifest=v2.21.6 wasm_synced=true tag_ok=true"
+      "detail": "cargo=v2.21.7 ledger=v2.21.7 manifest=v2.21.7 wasm_synced=true tag_ok=true"
     },
     {
       "checkId": "formal-fidelity-and-frontier",
@@ -69,5 +69,5 @@
       "detail": "total=243 (rust=99, test=25, lex=70, feature=3, model=16, script=21, view=9)"
     }
   ],
-  "reportKappaHex": "d774b282903cb6c861ef7a745416b845d985fe58f383b8233013446c147a66d8"
+  "reportKappaHex": "786e9554fef069783c3ce6baf7c88f00388e10cc65137bf35db0114b2bca69b3"
 }

@@ -5001,7 +5001,7 @@ reason = "type"
 detail = "type outside the lift: GroupedQ8Block.scale: f32"
 
 [[residue]]
-kappa = "4448b87a938f11517b6f7a7d3cf5d9693fc25aab72af7f1d489f1d91b497b28c"
+kappa = "24ff1f6ea5f8cc1a35e12699932522948456592e69848501c168f6351b72491a"
 function = "verdant_tensor::linear::importance_grid::encode_importance_weight_block"
 reason = "type"
 detail = "type outside the lift: f32"
@@ -5115,7 +5115,7 @@ reason = "signature"
 detail = "signature outside the lift: generic, async, unsafe or variadic"
 
 [[residue]]
-kappa = "fec6abc74e4992fd930d1386fc7c26f598a80efd9ad1d5a2fe7be4b89b1c14ab"
+kappa = "3414dbaee27bd6bc20de1c62346ecf7df388aa2ccd6cfa057347e8939d25a77d"
 function = "verdant_tensor::linear::weight_encoding::encode_weight_block"
 reason = "signature"
 detail = "signature outside the lift: generic, async, unsafe or variadic"

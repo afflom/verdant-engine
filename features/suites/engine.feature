@@ -879,3 +879,21 @@ Feature: engine
     Given 256 finite lanes and optional nonnegative weights
     When Verdant fits the eight-lane grid points and packs their signs and scales
     Then all 82 bytes match the pinned IQ2_S quantizer and invalid inputs preserve the destination
+
+  @VTK-60 @build
+  Scenario: Verdant encodes parity-constrained two-bit IQ2_XS blocks with explicit importance weights against the pinned GGML quantizer
+    Given 256 finite lanes and a nonnegative importance vector
+    When Verdant fits IQ2_XS codes and parity-constrained signs
+    Then every one of the 74 bytes matches GGML and missing weights preserve the destination
+
+  @VTK-61 @build
+  Scenario: Verdant encodes parity-constrained octets with a shared 32-lane fitted scale against the imported IQ2_XXS quantizer
+    Given 256 finite lanes and an explicit nonnegative importance matrix
+    When the certified program fits four octets per group and packs 8-bit ordinals and seven sign bits
+    Then all 66 bytes match the pinned IQ2_XXS quantizer and missing weights preserve the destination
+
+  @VTK-62 @build
+  Scenario: Verdant fits shifted ternary grids and packs single-scale and distributed-scale blocks against the original GGML quantizers
+    Given 256 finite lanes and format-specific importance data
+    When Verdant selects ternary splits, shifts, grid points and scales
+    Then the complete IQ1_S and IQ1_M blocks match the pinned quantizers and invalid inputs preserve the destination

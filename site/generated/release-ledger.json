@@ -5,9 +5,9 @@
   "currentVersion": {
     "major": 2,
     "minor": 21,
-    "patch": 6
+    "patch": 7
   },
-  "releaseEpoch": 32,
+  "releaseEpoch": 33,
   "history": [
     {
       "version": "0.1.0",
@@ -252,6 +252,13 @@
       "releaseEpoch": 32,
       "bumpKind": "patch",
       "summary": "v2.21.6: certified gated delta rule, selective state projection, and IQ2_S importance encoding (VTK-57, VTK-58, VTK-59)",
+      "citedAuthority": "AUTH-SEMVER-CHANGE-KPI"
+    },
+    {
+      "version": "2.21.7",
+      "releaseEpoch": 33,
+      "bumpKind": "patch",
+      "summary": "v2.21.7: certified IQ2_XS, IQ2_XXS, IQ1_S, and IQ1_M importance-grid weight encodings (VTK-60, VTK-61, VTK-62)",
       "citedAuthority": "AUTH-SEMVER-CHANGE-KPI"
     }
   ]
