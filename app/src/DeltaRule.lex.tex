@@ -1,0 +1,47 @@
+\begin{lexlean}{DeltaRule}
+\useglossary{lexlean.std.nat@1.2.0}
+\importmodule{ScalarF32}
+\title{Natural number}
+\begin{semanticmodule}
+inductive{
+  name: Operation,
+  type_parameters: [],
+  parameters: [],
+  constructors: [
+    {name: normalizer, fields: [Nat]},
+    {name: decay, fields: [Nat, Nat]},
+    {name: residual, fields: [Nat, Nat, Nat]},
+    {name: correct, fields: [Nat, Nat, Nat]},
+    {name: score, fields: [Nat, Nat]}
+  ]
+}
+
+definition{
+  name: evaluate,
+  parameters: [operation : Operation],
+  result: Nat,
+  body: (match operation
+    | Operation.normalizer width => (ScalarF32::divide 1065353216 (ScalarF32::squareRoot width))
+    | Operation.decay prior factor => (ScalarF32::multiply prior factor)
+    | Operation.residual value prediction gain => (ScalarF32::multiply (ScalarF32::add value (ScalarF32::negate prediction)) gain)
+    | Operation.correct decayed key residual => (ScalarF32::add decayed (ScalarF32::multiply key residual))
+    | Operation.score projection scale => (ScalarF32::multiply projection scale)),
+  executable: true,
+  production: {effects: [overflow], targets: [rust-core]}
+}
+
+theorem{
+  name: matchedPrediction,
+  parameters: [],
+  statement: ((evaluate (ctor Operation.residual 1065353216 1065353216 1056964608)) = 0),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: fourLaneScale,
+  parameters: [],
+  statement: ((evaluate (ctor Operation.normalizer 1082130432)) = 1056964608),
+  proof: reflexivity{}
+}
+\end{semanticmodule}
+\end{lexlean}

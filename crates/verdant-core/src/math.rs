@@ -147,12 +147,15 @@ pub const fn nth_prime_u64(rank: u32) -> u64 {
 /// Constructive power of ten (`10^exp` where `10 = 2 * 5`) from `{0, 1}`.
 #[must_use]
 pub const fn pow10_u64(exp: u32) -> u64 {
-    let ten = nth_prime_u64(0).wrapping_mul(nth_prime_u64(1_u32.wrapping_add(1_u32)));
+    let ten = ten_u32() as u64;
+    // 10^20 exceeds u64. Further multiplications leave the saturated value unchanged.
+    let cap = ten_u32().saturating_mul(two_u32());
+    let bound = if exp < cap { exp } else { cap } as usize;
     let mut acc = 1_u64;
-    let mut i = 0_u32;
-    while i < exp {
+    let mut i = 0_usize;
+    while i < bound {
         acc = acc.saturating_mul(ten);
-        i = i.wrapping_add(1_u32);
+        i += 1;
     }
     acc
 }
@@ -858,10 +861,9 @@ impl DeterministicRng {
     #[must_use]
     pub const fn new(seed: u64) -> Self {
         let two = 1_u64.wrapping_add(1_u64);
-        let odd_seed = if seed.wrapping_rem(two) == 0 {
-            seed.wrapping_add(1_u64)
-        } else {
-            seed
+        let odd_seed = match seed.checked_rem(two) {
+            Some(0) => seed.wrapping_add(1),
+            _ => seed,
         };
         DeterministicRng {
             state: odd_seed,

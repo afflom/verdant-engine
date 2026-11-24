@@ -862,6 +862,18 @@ Feature: engine
     When the tensor kernel selects signs, grid points and local scales
     Then every packed byte agrees with the upstream reference
 
+  @VTK-57 @build
+  Scenario: A certified gated delta rule updates binary32 projection state and scores against the imported GGML CPU
+    Given a square projection state and a stream of query, key and value vectors
+    When scalar or per-coordinate log decay and a residual gain are applied
+    Then the new state and scaled projection agree with the independent CPU and invalid extents preserve the previous state
+
+  @VTK-58 @build
+  Scenario: A diagonal state recurrence with scalar or per-coordinate transition matches GGML CPU across repeated inputs
+    Given a rectangular state, input, step, transition, injection and readout vectors
+    When the state is updated with softplus time and projected after each input
+    Then state and scores match the independent CPU and a refused extent leaves both intact
+
   @VTK-59 @build
   Scenario: Verdant encodes eight-lane two-bit importance grids into signed blocks with optional weights against the imported CPU quantizer
     Given 256 finite lanes and optional nonnegative weights

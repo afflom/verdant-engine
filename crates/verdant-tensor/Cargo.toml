@@ -12,6 +12,7 @@ keywords.workspace = true
 categories.workspace = true
 
 [dependencies]
+verdant_delta_rule = { version = "=2.50.0", path = "../../generated/tensor-execution/packages/rust-core/verdant_delta_rule" }
 verdant_importance_grid = { version = "=2.49.0", path = "../../generated/tensor-encoding/packages/rust-core/verdant_importance_grid" }
 verdant_iq3_scale = { version = "=2.49.0", path = "../../generated/tensor-encoding/packages/rust-core/verdant_iq3_scale" }
 verdant_iq3_score = { version = "=2.49.0", path = "../../generated/tensor-encoding/packages/rust-core/verdant_iq3_score" }
