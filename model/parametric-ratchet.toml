@@ -410,3 +410,8 @@ role = "Select weighted affine scale fits and encode grouped unsigned coefficien
 path = "app/src/GroupedAffineScales.lex.tex"
 stratum = 2
 role = "Round unsigned group levels and store and recover their binary32 and half scales."
+
+[[stratum_module]]
+path = "app/src/SignedTruncation.lex.tex"
+stratum = 2
+role = "Truncate finite binary32 values to representable signed storage words."

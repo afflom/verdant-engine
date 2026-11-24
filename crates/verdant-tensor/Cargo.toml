@@ -12,6 +12,7 @@ keywords.workspace = true
 categories.workspace = true
 
 [dependencies]
+verdant_signed_truncation = { version = "=2.44.0", path = "../../generated/tensor-signedtruncation/packages/rust-core/verdant_signed_truncation" }
 verdant_affine_block_scale = { version = "=2.43.0", path = "../../generated/tensor-affinescales/packages/rust-core/verdant_affine_block_scale" }
 verdant_affine_group_scale = { version = "=2.43.0", path = "../../generated/tensor-affinescales/packages/rust-core/verdant_affine_group_scale" }
 verdant_affine_lane_code = { version = "=2.43.0", path = "../../generated/tensor-affinescales/packages/rust-core/verdant_affine_lane_code" }

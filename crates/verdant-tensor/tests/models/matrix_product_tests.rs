@@ -117,6 +117,26 @@ int main(int argc, char **argv) {
     }
     return std::feof(stdin) ? 0 : 2;
   }
+  if (!std::strcmp(argv[1], "signed-truncation")) {
+    unsigned count;
+    while (std::scanf("%u", &count) == 1) {
+      if (!count || count > 4096) return 3;
+      auto *ctx = ggml_init({1024*1024, nullptr, false});
+      auto *src = ggml_new_tensor_1d(ctx, GGML_TYPE_F32, count);
+      auto *dst = ggml_new_tensor_1d(ctx, GGML_TYPE_I32, count);
+      for (unsigned i = 0; i < count; ++i) {
+        unsigned word;
+        if (std::scanf("%u", &word) != 1) return 2;
+        std::memcpy(static_cast<float *>(src->data) + i, &word, sizeof(word));
+      }
+      auto *copy = ggml_cpy(ctx, src, dst);
+      ggml_compute_params params{}; params.nth = 1;
+      ggml_compute_forward_cpy(&params, copy);
+      for (unsigned i = 0; i < count; ++i) std::printf("%u\n", static_cast<unsigned>(static_cast<int32_t *>(dst->data)[i]));
+      ggml_free(ctx);
+    }
+    return 0;
+  }
   if (!std::strcmp(argv[1], "unary-softplus")) {
     unsigned width;
     while (std::scanf("%u", &width) == 1) {
@@ -1107,6 +1127,7 @@ fn verify_bundle(scope: &str, directory: &str) -> std::collections::BTreeMap<Str
             );
             if path == format!("packages/rust-core/{package}/src/lib.rs") {
                 let compiled: &[u8] = match package {
+                    "verdant_signed_truncation" => include_bytes!("../../../../generated/tensor-signedtruncation/packages/rust-core/verdant_signed_truncation/src/lib.rs"),
                     "verdant_matrix_shape" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_matrix_shape/src/lib.rs"),
                     "verdant_scalar_f32" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_scalar_f32/src/lib.rs"),
                     "verdant_storage_transfer" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_storage_transfer/src/lib.rs"),
@@ -3009,5 +3030,57 @@ fn compare_weight_encoders<const N: usize>(formats: &[(super::PackedWeightEncodi
             assert!(super::encode_weight_block(&row, kind, &mut untouched).is_err());
             assert_eq!(untouched, vec![0xa5; width]);
         }
+    }
+}
+
+#[test]
+fn binary32_signed_truncation_vtk_51() {
+    use std::fmt::Write as _;
+    let roots = verify_bundle("signedtruncation", "tensor-signedtruncation");
+    assert_eq!(
+        roots["VerdantEngine.SignedTruncation.signedWord"],
+        "verdant_signed_truncation"
+    );
+    let mut words = Vec::new();
+    for exponent in 0..158_u32 {
+        for fraction in [
+            0,
+            1,
+            0x003f_ffff,
+            0x0040_0000,
+            0x0040_0001,
+            0x007f_fffe,
+            0x007f_ffff,
+        ] {
+            let word = (exponent << 23) | fraction;
+            words.extend([word, word | 0x8000_0000]);
+        }
+    }
+    words.push((-2_147_483_648_f32).to_bits());
+    let mut requests = format!("{}\n", words.len());
+    for word in &words {
+        writeln!(requests, "{word}").unwrap();
+    }
+    let expected = query_oracle("signed-truncation", requests);
+    assert_eq!(expected.len(), words.len());
+    for (word, result) in words.into_iter().zip(expected) {
+        assert_eq!(
+            super::truncate_signed_word_f32(u64::from(word)).unwrap(),
+            Some(u64::from(result)),
+            "input {word:08x}"
+        );
+    }
+    for invalid in [
+        0x4f00_0000_u64,
+        0xcf00_0001,
+        0x7f7f_ffff,
+        0xff7f_ffff,
+        0x7f80_0000,
+        0xff80_0000,
+        0x7fc0_0001,
+        0xffa0_0000,
+        0x1_0000_0000,
+    ] {
+        assert_eq!(super::truncate_signed_word_f32(invalid).unwrap(), None);
     }
 }

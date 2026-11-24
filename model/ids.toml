@@ -878,3 +878,9 @@ id = "VTK-50"
 level = "build"
 suite = "engine"
 statement = "Verdant encodes grouped affine two-, four- and five-bit weights with weighted scale and minimum selection"
+
+[[id]]
+id = "VTK-51"
+level = "build"
+suite = "engine"
+statement = "Verdant converts finite binary32 values to signed 32-bit storage words by truncating toward zero within the representable range"

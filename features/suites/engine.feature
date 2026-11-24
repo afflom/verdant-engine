@@ -819,3 +819,9 @@ Feature: engine
     Given complete binary32 rows, including tied and variably scaled groups
     When Verdant fits each group and packs the coefficients and scale fields
     Then every byte matches the imported encoder for its format and malformed inputs preserve the destination
+
+  @VTK-51 @build
+  Scenario: Verdant converts finite binary32 values to signed 32-bit storage words by truncating toward zero within the representable range
+    Given binary32 words across subnormal, fractional and integral exponents
+    When Verdant truncates them to signed 32-bit storage words
+    Then representable results match the imported GGML CPU copy and invalid values are refused

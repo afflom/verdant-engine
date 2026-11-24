@@ -475,3 +475,7 @@ The Q2_K, Q4_K and Q5_K encoders matched all 128,472 bytes from 318 blocks per f
 The test binds both Prism exports to their compiled packages. Forcing the group scale limit to zero first changed Q2_K row 2. Restoring the limit passed the same byte comparisons. [Fitting and packing](app/src/GroupedAffineEncoding.lex.tex) · [Scale calculations](app/src/GroupedAffineScales.lex.tex)
 
 The fitting equations run directly from their Prism export. Replacing the stored lane offset with its scale changed the quantized bytes in the reference comparison. Restoring the correct operand passed all 954 blocks.
+
+## VTK-51 binary32 to signed integer conversion
+
+All 2,213 representable binary32 inputs matched the signed words written by the imported GGML CPU copy operation. Nine other inputs exercised the refusal boundary, including infinities, NaNs, overwide words and both sides of the signed range. Clearing the sign bit before conversion changed the result for −1. Restoring it passed the pinned comparison. Run `cargo test --locked -p verdant-tensor --lib binary32_signed_truncation_vtk_51`. [Conversion oracle](https://github.com/ggml-org/llama.cpp/blob/9a080f44b503c64f66c84a6274b9d9ee5d5b09d5/ggml/src/ggml-cpu/common.h)

@@ -737,6 +737,10 @@ pub use verdant_packed_field::run as extract_packed_field;
 /// Oversized inputs return None; integer zero always encodes positive zero.
 pub use verdant_integer_f32::run as encode_small_integer;
 
+/// Truncate a binary32 word toward zero and return its signed 32-bit storage representation.
+/// Invalid encodings, nonfinite values and unrepresentable results return `None`.
+pub use verdant_signed_truncation::run as truncate_signed_word_f32;
+
 /// Native binary16 scale bits followed by signed quantized lane codes.
 #[repr(C)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]

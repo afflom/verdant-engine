@@ -602,3 +602,9 @@ name = "verdant_affine_less"
 version = "=2.43.0"
 expression = "MIT OR Apache-2.0"
 license-files = [{ path = "src/lib.rs", hash = 0x79d96ef0 }]
+
+[[licenses.clarify]]
+name = "verdant_signed_truncation"
+version = "=2.44.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0x4ca32179 }]

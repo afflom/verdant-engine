@@ -69,3 +69,5 @@ site/stitch/
 /app/.lexlean-sixpack/
 /app/.lexlean-affinescales/
 /app/.lexlean-affinepack/
+
+/app/.lexlean-signedtruncation/
