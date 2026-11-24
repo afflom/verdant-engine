@@ -3406,6 +3406,7 @@ fn importance_grid_three_encoding_vtk_56() {
             for weights in [
                 [1.0; 256],
                 std::array::from_fn(|i| (1 + (i * 11) % 31) as f32 / 8.0),
+                std::array::from_fn(|i| if i % 4 == 0 { 1.0 } else { 0.0 }),
             ] {
                 for value in data.iter().chain(&weights) {
                     writeln!(input, "{}", value.to_bits()).unwrap();
