@@ -102,6 +102,12 @@ pub fn encode_importance_weight_block(
             true,
             include_bytes!("../iq2xxs_neighbors.bin").as_slice(),
         ),
+        PackedWeightEncoding::ImportanceOneShifted
+        | PackedWeightEncoding::ImportanceOneDistributed => (
+            scalars::three_u64(),
+            kind == PackedWeightEncoding::ImportanceOneDistributed,
+            include_bytes!("../iq1_neighbors.bin").as_slice(),
+        ),
         _ => return Err(invalid()),
     };
     let format = |tag, a, b, c| {

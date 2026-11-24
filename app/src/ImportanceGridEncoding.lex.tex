@@ -182,10 +182,70 @@ definition{
 }
 
 definition{
+  name: shiftedLevel,
+  parameters: [digit : Nat, shift : Nat],
+  result: (Nat * (Nat * (Nat * (Nat * (Nat * Nat))))),
+  body: (if (digit <? 2) then
+      (if (digit <? 1) then
+      (if (digit =? 0) then (stepValue (if (shift =? 0) then 3210739712 else 3213885440)) else (0, (0, (0, (0, (0, 0)))))) else
+      (if (digit =? 1) then (stepValue (if (shift =? 0) then 1040187392 else 3187671040)) else (0, (0, (0, (0, (0, 0))))))) else
+      (if (digit <? 3) then
+      (if (digit =? 2) then (stepValue (if (shift =? 0) then 1066401792 else 1063256064)) else (0, (0, (0, (0, (0, 0)))))) else
+      (if (digit <? 4) then
+      (if (digit =? 3) then (stepValue (if (shift =? 0) then 1061158912 else 1067450368)) else (0, (0, (0, (0, (0, 0)))))) else
+      (if (digit =? 4) then (stepValue (if (shift =? 0) then 3214934016 else 3208642560)) else (0, (0, (0, (0, (0, 0))))))))),
+  executable: true
+}
+
+definition{
+  name: threeBitMultiplier,
+  parameters: [part : Nat],
+  result: Nat,
+  body: (if (part <? 2) then
+      (if (part <? 1) then
+      (if (part =? 0) then 1 else 0) else
+      (if (part =? 1) then 8 else 0)) else
+      (if (part <? 3) then
+      (if (part =? 2) then 64 else 0) else
+      (if (part =? 3) then 512 else 0))),
+  executable: true
+}
+
+definition{
+  name: shiftedFields,
+  parameters: [tag : Nat, compact : Bool, a : Nat, b : Nat, c : Nat],
+  result: (Nat * (Nat * (Nat * (Nat * (Nat * Nat))))),
+  body: (if (tag <? 4) then
+      (if (tag <? 2) then
+      (if (tag <? 1) then
+      (if (tag =? 0) then (if compact then (if (((a =? 256) && ((b =? 0) || (b =? 256))) && (c =? 56)) then (stepLayout 16 16 16 869711765 329769) else (0, (0, (0, (0, (0, 0)))))) else (if (((a =? 256) && (b =? 256)) && (c =? 50)) then (stepLayout 8 32 32 730643660 329769) else (0, (0, (0, (0, (0, 0))))))) else (0, (0, (0, (0, (0, 0)))))) else
+      (if (tag =? 1) then (shiftedLevel a b) else (0, (0, (0, (0, (0, 0))))))) else
+      (if (tag <? 3) then
+      (if (tag =? 2) then (gridDigit a b) else (0, (0, (0, (0, (0, 0)))))) else
+      (if (tag =? 3) then (eightGridFields 3 false a b c) else (0, (0, (0, (0, (0, 0)))))))) else
+      (if (tag <? 6) then
+      (if (tag <? 5) then
+      (if (tag =? 4) then (stepPair a (18600 + (prim multiply b 8 : Nat))) else (0, (0, (0, (0, (0, 0)))))) else
+      (if (tag =? 5) then (shiftedLevel (if (a =? 255) then 0 else (if (a =? 0) then 1 else 2)) b) else (0, (0, (0, (0, (0, 0))))))) else
+      (if (tag <? 7) then
+      (if (tag =? 6) then (stepValue (if (a <? 2) then
+      (if (a <? 1) then
+      (if (a =? 0) then 0 else 0) else
+      (if (a =? 1) then 128 else 0)) else
+      (if (a <? 3) then
+      (if (a =? 2) then 8 else 0) else
+      (if (a =? 3) then 136 else 0)))) else (0, (0, (0, (0, (0, 0)))))) else
+      (if (tag <? 8) then
+      (if (tag =? 7) then (if compact then (stepField ((prim multiply a 2 : Nat) + b) (if (b =? 0) then 1 else 16) (prim remainder c 256 0 : Nat)) else (stepField ((2 + (prim multiply a 4 : Nat)) + b) (threeBitMultiplier b) (prim remainder c 256 0 : Nat))) else (0, (0, (0, (0, (0, 0)))))) else
+      (if (tag =? 8) then (stepPair (48 + (prim multiply 2 (prim quotient a 4 0 : Nat) : Nat)) (threeBitMultiplier (prim remainder a 4 0 : Nat))) else (0, (0, (0, (0, (0, 0)))))))))),
+  executable: true
+}
+
+definition{
   name: evaluate,
   parameters: [tag : Nat, compact : Bool, a : Nat, b : Nat, c : Nat],
   result: (Nat * (Nat * (Nat * (Nat * (Nat * Nat))))),
-  body: (if (tag <? 32) then (if (tag <? 16) then (if (tag <? 6) then
+  body: (if (tag <? 48) then (if (tag <? 32) then (if (tag <? 16) then (if (tag <? 6) then
       (if (tag <? 3) then
       (if (tag <? 1) then
       (if (tag =? 0) then (gridGeometry compact a b c) else (0, (0, (0, (0, (0, 0)))))) else
@@ -207,7 +267,7 @@ definition{
       (if (tag =? 9) then (gridSignfield compact a b) else (0, (0, (0, (0, (0, 0)))))) else
       (if (tag <? 11) then
       (if (tag =? 10) then (let bank : Nat := (prim quotient a 4294967296 0 : Nat); (let local : Nat := (prim remainder a 4294967296 0 : Nat); (if (bank =? 2) then (stepField bank (prim quotient local 256 0 : Nat) (prim remainder local 256 0 : Nat)) else (if (bank <? 2) then (stepField bank local 0) else (stepField bank 0 local))))) else (0, (0, (0, (0, (0, 0)))))) else
-      (if (tag =? 11) then (stepValue (controlWord a b c)) else (0, (0, (0, (0, (0, 0)))))))))) else (eightGridFields (prim subtract tag 16 : Nat) compact a b c)) else (groupedParityFields (prim subtract tag 32 : Nat) a b c)),
+      (if (tag =? 11) then (stepValue (controlWord a b c)) else (0, (0, (0, (0, (0, 0)))))))))) else (eightGridFields (prim subtract tag 16 : Nat) compact a b c)) else (groupedParityFields (prim subtract tag 32 : Nat) a b c)) else (shiftedFields (prim subtract tag 48 : Nat) compact a b c)),
   executable: true,
   production: {effects: [overflow], targets: [rust-core]}
 }
@@ -3447,10 +3507,1388 @@ definition{
 }
 
 definition{
+  name: workImportanceLane,
+  parameters: [index : Nat],
+  result: Nat,
+  body: (8589950976 + (prim remainder index 4294967296 0 : Nat)),
+  executable: true
+}
+
+definition{
+  name: workSortedLane,
+  parameters: [index : Nat],
+  result: Nat,
+  body: (8589959168 + (prim remainder index 4294967296 0 : Nat)),
+  executable: true
+}
+
+definition{
+  name: workPrefixX,
+  parameters: [index : Nat],
+  result: Nat,
+  body: (8589967360 + (prim remainder index 4294967296 0 : Nat)),
+  executable: true
+}
+
+definition{
+  name: workPrefixW,
+  parameters: [index : Nat],
+  result: Nat,
+  body: (8589976064 + (prim remainder index 4294967296 0 : Nat)),
+  executable: true
+}
+
+definition{
+  name: workLevelsOne,
+  parameters: [index : Nat],
+  result: Nat,
+  body: (8589984768 + (prim remainder index 4294967296 0 : Nat)),
+  executable: true
+}
+
+definition{
+  name: workHalfsX,
+  parameters: [index : Nat],
+  result: Nat,
+  body: (8589984768 + (prim remainder index 4294967296 0 : Nat)),
+  executable: true
+}
+
+definition{
+  name: workHalfsW,
+  parameters: [index : Nat],
+  result: Nat,
+  body: (8589985792 + (prim remainder index 4294967296 0 : Nat)),
+  executable: true
+}
+
+definition{
+  name: workShiftScale,
+  parameters: [index : Nat],
+  result: Nat,
+  body: (8589992960 + (prim remainder index 4294967296 0 : Nat)),
+  executable: true
+}
+
+definition{
+  name: shiftInitializeBlock0,
+  parameters: [step : Nat],
+  result: (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * Nat))))))),
+  body: (if (step <? 4) then
+      (if (step <? 2) then
+      (if (step <? 1) then
+      (if (step =? 0) then (doNatural 3 256 (rTrials) (rOutputWidth)) else (doFail)) else
+      (if (step =? 1) then (doNatural 3 (rTrials) 8 (rEmitted)) else (doFail))) else
+      (if (step <? 3) then
+      (if (step =? 2) then (doMove 0 (rPeakScale)) else (doFail)) else
+      (if (step =? 3) then (doMove 0 (rGroup)) else (doFail)))) else
+      (if (step <? 6) then
+      (if (step <? 5) then
+      (if (step =? 4) then (doMove 0 (rVariance)) else (doFail)) else
+      (if (step =? 5) then (doBranch 0 (rWeighted) 0 512) else (doFail))) else
+      (if (step <? 7) then
+      (if (step =? 6) then (doMove 0 (rLane)) else (doFail)) else
+      (if (step =? 7) then (doScalar 2 (inputCell (rLane)) (inputCell (rLane)) (rTemp)) else (doFail))))),
+  executable: true
+}
+
+definition{
+  name: shiftInitializeBlock1,
+  parameters: [step : Nat],
+  result: (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * Nat))))))),
+  body: (if (step <? 3) then
+      (if (step <? 1) then
+      (if (step =? 0) then (doScalar 0 (rVariance) (rTemp) (rVariance)) else (doFail)) else
+      (if (step <? 2) then
+      (if (step =? 1) then (doNatural 0 (rLane) 1 (rLane)) else (doFail)) else
+      (if (step =? 2) then (doBranch 1 (rLane) 256 7) else (doFail)))) else
+      (if (step <? 4) then
+      (if (step =? 3) then (doScalar 2 1073741824 (rVariance) (rVariance)) else (doFail)) else
+      (if (step <? 5) then
+      (if (step =? 4) then (doScalar 3 (rVariance) 1132462080 (rVariance)) else (doFail)) else
+      (if (step =? 5) then (doJump 512) else (doFail))))),
+  executable: true
+}
+
+definition{
+  name: shiftInitializeStep,
+  parameters: [step : Nat],
+  result: (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * Nat))))))),
+  body: (let block : Nat := (prim quotient step 8 0 : Nat); (if (block <? 1) then
+      (if (block =? 0) then (shiftInitializeBlock0 (prim remainder step 8 0 : Nat)) else (doFail)) else
+      (if (block =? 1) then (shiftInitializeBlock1 (prim remainder step 8 0 : Nat)) else (doFail)))),
+  executable: true
+}
+
+definition{
+  name: shiftPrepareGroupBlock0,
+  parameters: [step : Nat],
+  result: (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * Nat))))))),
+  body: (if (step <? 4) then
+      (if (step <? 2) then
+      (if (step <? 1) then
+      (if (step =? 0) then (doNatural 2 (rGroup) (rTrials) (rBase)) else (doFail)) else
+      (if (step =? 1) then (doMove 0 (rPeak)) else (doFail))) else
+      (if (step <? 3) then
+      (if (step =? 2) then (doMove 0 (rLane)) else (doFail)) else
+      (if (step =? 3) then (doMove 0 (workShiftScale (rGroup))) else (doFail)))) else
+      (if (step <? 6) then
+      (if (step <? 5) then
+      (if (step =? 4) then (doNatural 0 (rBase) (rLane) (rRowIndex)) else (doFail)) else
+      (if (step =? 5) then (doScalar 2 (inputCell (rRowIndex)) (inputCell (rRowIndex)) (rWeight)) else (doFail))) else
+      (if (step <? 7) then
+      (if (step =? 6) then (doBranch 0 (rWeighted) 0 522) else (doFail)) else
+      (if (step =? 7) then (doScalar 0 (rVariance) (rWeight) (rWeight)) else (doFail))))),
+  executable: true
+}
+
+definition{
+  name: shiftPrepareGroupBlock1,
+  parameters: [step : Nat],
+  result: (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * Nat))))))),
+  body: (if (step <? 4) then
+      (if (step <? 2) then
+      (if (step <? 1) then
+      (if (step =? 0) then (doScalar 4 (rWeight) 0 (rWeight)) else (doFail)) else
+      (if (step =? 1) then (doScalar 2 (importanceCell (rRowIndex)) (rWeight) (rWeight)) else (doFail))) else
+      (if (step <? 3) then
+      (if (step =? 2) then (doMove (rWeight) (workImportanceLane (rLane))) else (doFail)) else
+      (if (step =? 3) then (doMove (inputCell (rRowIndex)) (rRaw)) else (doFail)))) else
+      (if (step <? 6) then
+      (if (step <? 5) then
+      (if (step =? 4) then (doBranch 2 (rRaw) 0 526) else (doFail)) else
+      (if (step =? 5) then (doJump 527) else (doFail))) else
+      (if (step <? 7) then
+      (if (step =? 6) then (doScalar 6 (rRaw) 0 (rRaw)) else (doFail)) else
+      (if (step =? 7) then (doBranch 2 (rPeak) (rRaw) 529) else (doFail))))),
+  executable: true
+}
+
+definition{
+  name: shiftPrepareGroupBlock2,
+  parameters: [step : Nat],
+  result: (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * Nat))))))),
+  body: (if (step <? 4) then
+      (if (step <? 2) then
+      (if (step <? 1) then
+      (if (step =? 0) then (doJump 530) else (doFail)) else
+      (if (step =? 1) then (doMove (rRaw) (rPeak)) else (doFail))) else
+      (if (step <? 3) then
+      (if (step =? 2) then (doMove (rLane) (workSortedLane (rLane))) else (doFail)) else
+      (if (step =? 3) then (doNatural 0 (rLane) 1 (rLane)) else (doFail)))) else
+      (if (step <? 6) then
+      (if (step <? 5) then
+      (if (step =? 4) then (doBranch 1 (rLane) (rTrials) 516) else (doFail)) else
+      (if (step =? 5) then (doBranch 2 (rPeak) (rThreshold) 2586) else (doFail))) else
+      (if (step <? 7) then
+      (if (step =? 6) then (doMove 1 (rLane)) else (doFail)) else
+      (if (step =? 7) then (doMove (rLane) (rCursor)) else (doFail))))),
+  executable: true
+}
+
+definition{
+  name: shiftPrepareGroupBlock3,
+  parameters: [step : Nat],
+  result: (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * Nat))))))),
+  body: (if (step <? 4) then
+      (if (step <? 2) then
+      (if (step <? 1) then
+      (if (step =? 0) then (doNatural 0 (rBase) (rLane) (rRowIndex)) else (doFail)) else
+      (if (step =? 1) then (doMove (inputCell (rRowIndex)) (rRaw)) else (doFail))) else
+      (if (step <? 3) then
+      (if (step =? 2) then (doBranch 0 (rCursor) 0 547) else (doFail)) else
+      (if (step =? 3) then (doNatural 1 (rCursor) 1 (rIndex)) else (doFail)))) else
+      (if (step <? 6) then
+      (if (step <? 5) then
+      (if (step =? 4) then (doMove (workSortedLane (rIndex)) (rCandidate)) else (doFail)) else
+      (if (step =? 5) then (doNatural 0 (rBase) (rCandidate) (rRowIndex)) else (doFail))) else
+      (if (step <? 7) then
+      (if (step =? 6) then (doBranch 2 (rRaw) (inputCell (rRowIndex)) 544) else (doFail)) else
+      (if (step =? 7) then (doJump 547) else (doFail))))),
+  executable: true
+}
+
+definition{
+  name: shiftPrepareGroupBlock4,
+  parameters: [step : Nat],
+  result: (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * Nat))))))),
+  body: (if (step <? 4) then
+      (if (step <? 2) then
+      (if (step <? 1) then
+      (if (step =? 0) then (doMove (rCandidate) (workSortedLane (rCursor))) else (doFail)) else
+      (if (step =? 1) then (doMove (rIndex) (rCursor)) else (doFail))) else
+      (if (step <? 3) then
+      (if (step =? 2) then (doJump 538) else (doFail)) else
+      (if (step =? 3) then (doMove (rLane) (workSortedLane (rCursor))) else (doFail)))) else
+      (if (step <? 6) then
+      (if (step <? 5) then
+      (if (step =? 4) then (doNatural 0 (rLane) 1 (rLane)) else (doFail)) else
+      (if (step =? 5) then (doBranch 1 (rLane) (rTrials) 535) else (doFail))) else
+      (if (step <? 7) then
+      (if (step =? 6) then (doMove 0 (rIndex)) else (doFail)) else
+      (if (step =? 7) then (doMove 0 (workPrefixX (rIndex))) else (doFail))))),
+  executable: true
+}
+
+definition{
+  name: shiftPrepareGroupBlock5,
+  parameters: [step : Nat],
+  result: (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * Nat))))))),
+  body: (if (step <? 4) then
+      (if (step <? 2) then
+      (if (step <? 1) then
+      (if (step =? 0) then (doMove 0 (workPrefixW (rIndex))) else (doFail)) else
+      (if (step =? 1) then (doMove 17 (rIndex)) else (doFail))) else
+      (if (step <? 3) then
+      (if (step =? 2) then (doMove 0 (workPrefixX (rIndex))) else (doFail)) else
+      (if (step =? 3) then (doMove 0 (workPrefixW (rIndex))) else (doFail)))) else
+      (if (step <? 6) then
+      (if (step <? 5) then
+      (if (step =? 4) then (doMove 0 (rLane)) else (doFail)) else
+      (if (step =? 5) then (doMove (workSortedLane (rLane)) (rCandidate)) else (doFail))) else
+      (if (step <? 7) then
+      (if (step =? 6) then (doNatural 0 (rBase) (rCandidate) (rRowIndex)) else (doFail)) else
+      (if (step =? 7) then (doMove (rLane) (rIndex)) else (doFail))))),
+  executable: true
+}
+
+definition{
+  name: shiftPrepareGroupBlock6,
+  parameters: [step : Nat],
+  result: (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * Nat))))))),
+  body: (if (step <? 4) then
+      (if (step <? 2) then
+      (if (step <? 1) then
+      (if (step =? 0) then (doBranch 0 (rCompact) 0 568) else (doFail)) else
+      (if (step =? 1) then (doNatural 0 (rLane) 17 (rPoint)) else (doFail))) else
+      (if (step <? 3) then
+      (if (step =? 2) then (doBranch 1 (rCandidate) 8 565) else (doFail)) else
+      (if (step =? 3) then (doMove (rLane) (rPoint)) else (doFail)))) else
+      (if (step <? 6) then
+      (if (step <? 5) then
+      (if (step =? 4) then (doNatural 0 (rLane) 17 (rIndex)) else (doFail)) else
+      (if (step =? 5) then (doNatural 0 (rPoint) 1 (rTemp)) else (doFail))) else
+      (if (step <? 7) then
+      (if (step =? 6) then (doMove (workPrefixX (rPoint)) (workPrefixX (rTemp))) else (doFail)) else
+      (if (step =? 7) then (doMove (workPrefixW (rPoint)) (workPrefixW (rTemp))) else (doFail))))),
+  executable: true
+}
+
+definition{
+  name: shiftPrepareGroupBlock7,
+  parameters: [step : Nat],
+  result: (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * Nat))))))),
+  body: (if (step <? 3) then
+      (if (step <? 1) then
+      (if (step =? 0) then (doNatural 0 (rIndex) 1 (rTemp)) else (doFail)) else
+      (if (step <? 2) then
+      (if (step =? 1) then (doScalar 2 (workImportanceLane (rCandidate)) (inputCell (rRowIndex)) (rTerm)) else (doFail)) else
+      (if (step =? 2) then (doScalar 0 (workPrefixX (rIndex)) (rTerm) (workPrefixX (rTemp))) else (doFail)))) else
+      (if (step <? 5) then
+      (if (step <? 4) then
+      (if (step =? 3) then (doScalar 0 (workPrefixW (rIndex)) (workImportanceLane (rCandidate)) (workPrefixW (rTemp))) else (doFail)) else
+      (if (step =? 4) then (doNatural 0 (rLane) 1 (rLane)) else (doFail))) else
+      (if (step <? 6) then
+      (if (step =? 5) then (doBranch 1 (rLane) (rTrials) 557) else (doFail)) else
+      (if (step =? 6) then (doJump 1024) else (doFail))))),
+  executable: true
+}
+
+definition{
+  name: shiftPrepareGroupStep,
+  parameters: [step : Nat],
+  result: (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * Nat))))))),
+  body: (let block : Nat := (prim quotient step 8 0 : Nat); (if (block <? 4) then
+      (if (block <? 2) then
+      (if (block <? 1) then
+      (if (block =? 0) then (shiftPrepareGroupBlock0 (prim remainder step 8 0 : Nat)) else (doFail)) else
+      (if (block =? 1) then (shiftPrepareGroupBlock1 (prim remainder step 8 0 : Nat)) else (doFail))) else
+      (if (block <? 3) then
+      (if (block =? 2) then (shiftPrepareGroupBlock2 (prim remainder step 8 0 : Nat)) else (doFail)) else
+      (if (block =? 3) then (shiftPrepareGroupBlock3 (prim remainder step 8 0 : Nat)) else (doFail)))) else
+      (if (block <? 6) then
+      (if (block <? 5) then
+      (if (block =? 4) then (shiftPrepareGroupBlock4 (prim remainder step 8 0 : Nat)) else (doFail)) else
+      (if (block =? 5) then (shiftPrepareGroupBlock5 (prim remainder step 8 0 : Nat)) else (doFail))) else
+      (if (block <? 7) then
+      (if (block =? 6) then (shiftPrepareGroupBlock6 (prim remainder step 8 0 : Nat)) else (doFail)) else
+      (if (block =? 7) then (shiftPrepareGroupBlock7 (prim remainder step 8 0 : Nat)) else (doFail)))))),
+  executable: true
+}
+
+definition{
+  name: shiftFitGroupBlock0,
+  parameters: [step : Nat],
+  result: (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * Nat))))))),
+  body: (if (step <? 4) then
+      (if (step <? 2) then
+      (if (step <? 1) then
+      (if (step =? 0) then (doMove 4286578687 (rBest)) else (doFail)) else
+      (if (step =? 1) then (doMove 0 (rActive)) else (doFail))) else
+      (if (step <? 3) then
+      (if (step =? 2) then (doMove 0 (rStart)) else (doFail)) else
+      (if (step =? 3) then (doMove (rStart) (rEnd)) else (doFail)))) else
+      (if (step <? 6) then
+      (if (step <? 5) then
+      (if (step =? 4) then (doBranch 0 (rCompact) 1 1059) else (doFail)) else
+      (if (step =? 5) then (doMove 0 (rSign)) else (doFail))) else
+      (if (step <? 7) then
+      (if (step =? 6) then (doFormatValue 1 0 (rSign) 0 (rQ)) else (doFail)) else
+      (if (step =? 7) then (doScalar 1 (workPrefixX (rStart)) (workPrefixX (rZero)) (rTerm)) else (doFail))))),
+  executable: true
+}
+
+definition{
+  name: shiftFitGroupBlock1,
+  parameters: [step : Nat],
+  result: (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * Nat))))))),
+  body: (if (step <? 4) then
+      (if (step <? 2) then
+      (if (step <? 1) then
+      (if (step =? 0) then (doScalar 2 (rTerm) (rQ) (rTerm)) else (doFail)) else
+      (if (step =? 1) then (doScalar 1 (workPrefixW (rStart)) (workPrefixW (rZero)) (rTemp)) else (doFail))) else
+      (if (step <? 3) then
+      (if (step =? 2) then (doScalar 2 (rTemp) (rQ) (rTemp)) else (doFail)) else
+      (if (step =? 3) then (doScalar 2 (rTemp) (rQ) (rTemp)) else (doFail)))) else
+      (if (step <? 6) then
+      (if (step <? 5) then
+      (if (step =? 4) then (doMove (rTerm) (rXy)) else (doFail)) else
+      (if (step =? 5) then (doMove (rTemp) (rYy)) else (doFail))) else
+      (if (step <? 7) then
+      (if (step =? 6) then (doFormatValue 1 1 (rSign) 0 (rQ)) else (doFail)) else
+      (if (step =? 7) then (doScalar 1 (workPrefixX (rEnd)) (workPrefixX (rStart)) (rTerm)) else (doFail))))),
+  executable: true
+}
+
+definition{
+  name: shiftFitGroupBlock2,
+  parameters: [step : Nat],
+  result: (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * Nat))))))),
+  body: (if (step <? 4) then
+      (if (step <? 2) then
+      (if (step <? 1) then
+      (if (step =? 0) then (doScalar 2 (rTerm) (rQ) (rTerm)) else (doFail)) else
+      (if (step =? 1) then (doScalar 1 (workPrefixW (rEnd)) (workPrefixW (rStart)) (rTemp)) else (doFail))) else
+      (if (step <? 3) then
+      (if (step =? 2) then (doScalar 2 (rTemp) (rQ) (rTemp)) else (doFail)) else
+      (if (step =? 3) then (doScalar 2 (rTemp) (rQ) (rTemp)) else (doFail)))) else
+      (if (step <? 6) then
+      (if (step <? 5) then
+      (if (step =? 4) then (doScalar 0 (rXy) (rTerm) (rXy)) else (doFail)) else
+      (if (step =? 5) then (doScalar 0 (rYy) (rTemp) (rYy)) else (doFail))) else
+      (if (step <? 7) then
+      (if (step =? 6) then (doFormatValue 1 2 (rSign) 0 (rQ)) else (doFail)) else
+      (if (step =? 7) then (doScalar 1 (workPrefixX (rTrials)) (workPrefixX (rEnd)) (rTerm)) else (doFail))))),
+  executable: true
+}
+
+definition{
+  name: shiftFitGroupBlock3,
+  parameters: [step : Nat],
+  result: (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * Nat))))))),
+  body: (if (step <? 4) then
+      (if (step <? 2) then
+      (if (step <? 1) then
+      (if (step =? 0) then (doScalar 2 (rTerm) (rQ) (rTerm)) else (doFail)) else
+      (if (step =? 1) then (doScalar 1 (workPrefixW (rTrials)) (workPrefixW (rEnd)) (rTemp)) else (doFail))) else
+      (if (step <? 3) then
+      (if (step =? 2) then (doScalar 2 (rTemp) (rQ) (rTemp)) else (doFail)) else
+      (if (step =? 3) then (doScalar 2 (rTemp) (rQ) (rTemp)) else (doFail)))) else
+      (if (step <? 6) then
+      (if (step <? 5) then
+      (if (step =? 4) then (doScalar 0 (rXy) (rTerm) (rXy)) else (doFail)) else
+      (if (step =? 5) then (doScalar 0 (rYy) (rTemp) (rYy)) else (doFail))) else
+      (if (step <? 7) then
+      (if (step =? 6) then (doMove 1056 (rReturnProject)) else (doFail)) else
+      (if (step =? 7) then (doJump 1099) else (doFail))))),
+  executable: true
+}
+
+definition{
+  name: shiftFitGroupBlock4,
+  parameters: [step : Nat],
+  result: (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * Nat))))))),
+  body: (if (step <? 4) then
+      (if (step <? 2) then
+      (if (step <? 1) then
+      (if (step =? 0) then (doNatural 0 (rSign) 1 (rSign)) else (doFail)) else
+      (if (step =? 1) then (doBranch 1 (rSign) 2 1030) else (doFail))) else
+      (if (step <? 3) then
+      (if (step =? 2) then (doJump 1093) else (doFail)) else
+      (if (step =? 3) then (doMove 0 (rPart)) else (doFail)))) else
+      (if (step <? 6) then
+      (if (step <? 5) then
+      (if (step =? 4) then (doNatural 2 (rPart) 17 (rIndex)) else (doFail)) else
+      (if (step =? 5) then (doNatural 0 (rIndex) (rStart) (rMinLane)) else (doFail))) else
+      (if (step <? 7) then
+      (if (step =? 6) then (doNatural 0 (rIndex) (rEnd) (rPoint)) else (doFail)) else
+      (if (step =? 7) then (doNatural 0 (rIndex) (rTrials) (rIndex)) else (doFail))))),
+  executable: true
+}
+
+definition{
+  name: shiftFitGroupBlock5,
+  parameters: [step : Nat],
+  result: (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * Nat))))))),
+  body: (if (step <? 4) then
+      (if (step <? 2) then
+      (if (step <? 1) then
+      (if (step =? 0) then (doScalar 0 (workPrefixX (rMinLane)) (workPrefixX (rPoint)) (rDistance)) else (doFail)) else
+      (if (step =? 1) then (doMove 0 (rSign)) else (doFail))) else
+      (if (step <? 3) then
+      (if (step =? 2) then (doNatural 2 (rPart) 2 (rSlot)) else (doFail)) else
+      (if (step =? 3) then (doNatural 0 (rSlot) (rSign) (rSlot)) else (doFail)))) else
+      (if (step <? 6) then
+      (if (step <? 5) then
+      (if (step =? 4) then (doFormatValue 1 2 (rSign) 0 (rQ)) else (doFail)) else
+      (if (step =? 5) then (doScalar 2 (workPrefixX (rIndex)) (rQ) (rTerm)) else (doFail))) else
+      (if (step <? 7) then
+      (if (step =? 6) then (doScalar 1 (rTerm) (rDistance) (workHalfsX (rSlot))) else (doFail)) else
+      (if (step =? 7) then (doScalar 2 (workPrefixW (rIndex)) (rQ) (rTerm)) else (doFail))))),
+  executable: true
+}
+
+definition{
+  name: shiftFitGroupBlock6,
+  parameters: [step : Nat],
+  result: (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * Nat))))))),
+  body: (if (step <? 4) then
+      (if (step <? 2) then
+      (if (step <? 1) then
+      (if (step =? 0) then (doScalar 2 (rTerm) (rQ) (rTerm)) else (doFail)) else
+      (if (step =? 1) then (doFormatValue 1 3 (rSign) 0 (rQ)) else (doFail))) else
+      (if (step <? 3) then
+      (if (step =? 2) then (doScalar 2 (workPrefixW (rMinLane)) (rQ) (rTemp)) else (doFail)) else
+      (if (step =? 3) then (doScalar 0 (rTerm) (rTemp) (rTerm)) else (doFail)))) else
+      (if (step <? 6) then
+      (if (step <? 5) then
+      (if (step =? 4) then (doFormatValue 1 4 (rSign) 0 (rQ)) else (doFail)) else
+      (if (step =? 5) then (doScalar 2 (workPrefixW (rPoint)) (rQ) (rTemp)) else (doFail))) else
+      (if (step <? 7) then
+      (if (step =? 6) then (doScalar 0 (rTerm) (rTemp) (workHalfsW (rSlot))) else (doFail)) else
+      (if (step =? 7) then (doNatural 0 (rSign) 1 (rSign)) else (doFail))))),
+  executable: true
+}
+
+definition{
+  name: shiftFitGroupBlock7,
+  parameters: [step : Nat],
+  result: (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * Nat))))))),
+  body: (if (step <? 4) then
+      (if (step <? 2) then
+      (if (step <? 1) then
+      (if (step =? 0) then (doBranch 1 (rSign) 2 1066) else (doFail)) else
+      (if (step =? 1) then (doNatural 0 (rPart) 1 (rPart)) else (doFail))) else
+      (if (step <? 3) then
+      (if (step =? 2) then (doBranch 1 (rPart) 2 1060) else (doFail)) else
+      (if (step =? 3) then (doMove 0 (rSign)) else (doFail)))) else
+      (if (step <? 6) then
+      (if (step <? 5) then
+      (if (step =? 4) then (doNatural 3 (rSign) 2 (rPoint)) else (doFail)) else
+      (if (step =? 5) then (doNatural 4 (rSign) 2 (rIndex)) else (doFail))) else
+      (if (step <? 7) then
+      (if (step =? 6) then (doNatural 0 (rIndex) 2 (rIndex)) else (doFail)) else
+      (if (step =? 7) then (doScalar 0 (workHalfsX (rPoint)) (workHalfsX (rIndex)) (rXy)) else (doFail))))),
+  executable: true
+}
+
+definition{
+  name: shiftFitGroupBlock8,
+  parameters: [step : Nat],
+  result: (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * Nat))))))),
+  body: (if (step <? 4) then
+      (if (step <? 2) then
+      (if (step <? 1) then
+      (if (step =? 0) then (doScalar 0 (workHalfsW (rPoint)) (workHalfsW (rIndex)) (rYy)) else (doFail)) else
+      (if (step =? 1) then (doMove 1091 (rReturnProject)) else (doFail))) else
+      (if (step <? 3) then
+      (if (step =? 2) then (doJump 1099) else (doFail)) else
+      (if (step =? 3) then (doNatural 0 (rSign) 1 (rSign)) else (doFail)))) else
+      (if (step <? 6) then
+      (if (step <? 5) then
+      (if (step =? 4) then (doBranch 1 (rSign) 4 1084) else (doFail)) else
+      (if (step =? 5) then (doNatural 0 (rEnd) 1 (rEnd)) else (doFail))) else
+      (if (step <? 7) then
+      (if (step =? 6) then (doBranch 1 (rTrials) (rEnd) 1096) else (doFail)) else
+      (if (step =? 7) then (doJump 1028) else (doFail))))),
+  executable: true
+}
+
+definition{
+  name: shiftFitGroupBlock9,
+  parameters: [step : Nat],
+  result: (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * Nat))))))),
+  body: (if (step <? 4) then
+      (if (step <? 2) then
+      (if (step <? 1) then
+      (if (step =? 0) then (doNatural 0 (rStart) 1 (rStart)) else (doFail)) else
+      (if (step =? 1) then (doBranch 1 (rTrials) (rStart) 1112) else (doFail))) else
+      (if (step <? 3) then
+      (if (step =? 2) then (doJump 1027) else (doFail)) else
+      (if (step =? 3) then (doBranch 2 0 (rYy) 1101) else (doFail)))) else
+      (if (step <? 6) then
+      (if (step <? 5) then
+      (if (step =? 4) then (doResume (rReturnProject)) else (doFail)) else
+      (if (step =? 5) then (doScalar 2 (rXy) (rXy) (rTemp)) else (doFail))) else
+      (if (step <? 7) then
+      (if (step =? 6) then (doScalar 2 (rBest) (rYy) (rTerm)) else (doFail)) else
+      (if (step =? 7) then (doBranch 2 (rTerm) (rTemp) 1105) else (doFail))))),
+  executable: true
+}
+
+definition{
+  name: shiftFitGroupBlock10,
+  parameters: [step : Nat],
+  result: (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * Nat))))))),
+  body: (if (step <? 4) then
+      (if (step <? 2) then
+      (if (step <? 1) then
+      (if (step =? 0) then (doResume (rReturnProject)) else (doFail)) else
+      (if (step =? 1) then (doScalar 3 (rXy) (rYy) (rScale)) else (doFail))) else
+      (if (step <? 3) then
+      (if (step =? 2) then (doScalar 2 (rScale) (rXy) (rBest)) else (doFail)) else
+      (if (step =? 3) then (doMove (rStart) (rKey)) else (doFail)))) else
+      (if (step <? 6) then
+      (if (step <? 5) then
+      (if (step =? 4) then (doMove (rEnd) (rMask)) else (doFail)) else
+      (if (step =? 5) then (doMove (rSign) (rPacked)) else (doFail))) else
+      (if (step <? 7) then
+      (if (step =? 6) then (doMove 1 (rActive)) else (doFail)) else
+      (if (step =? 7) then (doResume (rReturnProject)) else (doFail))))),
+  executable: true
+}
+
+definition{
+  name: shiftFitGroupBlock11,
+  parameters: [step : Nat],
+  result: (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * Nat))))))),
+  body: (if (step <? 4) then
+      (if (step <? 2) then
+      (if (step <? 1) then
+      (if (step =? 0) then (doBranch 0 (rActive) 0 2586) else (doFail)) else
+      (if (step =? 1) then (doMove 0 (rLane)) else (doFail))) else
+      (if (step <? 3) then
+      (if (step =? 2) then (doBranch 2 (rScale) 0 1117) else (doFail)) else
+      (if (step =? 3) then (doMove 0 (rParity)) else (doFail)))) else
+      (if (step <? 6) then
+      (if (step <? 5) then
+      (if (step =? 4) then (doJump 1123) else (doFail)) else
+      (if (step =? 5) then (doScalar 6 (rScale) 0 (rScale)) else (doFail))) else
+      (if (step <? 7) then
+      (if (step =? 6) then (doMove 1 (rParity)) else (doFail)) else
+      (if (step =? 7) then (doMove 1 (rTemp)) else (doFail))))),
+  executable: true
+}
+
+definition{
+  name: shiftFitGroupBlock12,
+  parameters: [step : Nat],
+  result: (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * Nat))))))),
+  body: (if (step <? 4) then
+      (if (step <? 2) then
+      (if (step <? 1) then
+      (if (step =? 0) then (doBranch 0 (rCompact) 0 1122) else (doFail)) else
+      (if (step =? 1) then (doMove 3 (rTemp)) else (doFail))) else
+      (if (step <? 3) then
+      (if (step =? 2) then (doNatural 1 (rTemp) (rPacked) (rPacked)) else (doFail)) else
+      (if (step =? 3) then (doMove (workSortedLane (rLane)) (rIndex)) else (doFail)))) else
+      (if (step <? 6) then
+      (if (step <? 5) then
+      (if (step =? 4) then (doMove 0 (rDigit)) else (doFail)) else
+      (if (step =? 5) then (doBranch 1 (rLane) (rKey) 1129) else (doFail))) else
+      (if (step <? 7) then
+      (if (step =? 6) then (doNatural 0 (rDigit) 1 (rDigit)) else (doFail)) else
+      (if (step =? 7) then (doBranch 1 (rLane) (rMask) 1129) else (doFail))))),
+  executable: true
+}
+
+definition{
+  name: shiftFitGroupBlock13,
+  parameters: [step : Nat],
+  result: (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * Nat))))))),
+  body: (if (step <? 3) then
+      (if (step <? 1) then
+      (if (step =? 0) then (doNatural 0 (rDigit) 1 (rDigit)) else (doFail)) else
+      (if (step <? 2) then
+      (if (step =? 1) then (doBranch 0 (rParity) 0 1131) else (doFail)) else
+      (if (step =? 2) then (doNatural 1 2 (rDigit) (rDigit)) else (doFail)))) else
+      (if (step <? 5) then
+      (if (step <? 4) then
+      (if (step =? 3) then (doMove (rDigit) (workLevelsOne (rIndex))) else (doFail)) else
+      (if (step =? 4) then (doNatural 0 (rLane) 1 (rLane)) else (doFail))) else
+      (if (step <? 6) then
+      (if (step =? 5) then (doBranch 1 (rLane) (rTrials) 1123) else (doFail)) else
+      (if (step =? 6) then (doJump 1536) else (doFail))))),
+  executable: true
+}
+
+definition{
+  name: shiftFitGroupStep,
+  parameters: [step : Nat],
+  result: (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * Nat))))))),
+  body: (let block : Nat := (prim quotient step 8 0 : Nat); (if (block <? 7) then
+      (if (block <? 3) then
+      (if (block <? 1) then
+      (if (block =? 0) then (shiftFitGroupBlock0 (prim remainder step 8 0 : Nat)) else (doFail)) else
+      (if (block <? 2) then
+      (if (block =? 1) then (shiftFitGroupBlock1 (prim remainder step 8 0 : Nat)) else (doFail)) else
+      (if (block =? 2) then (shiftFitGroupBlock2 (prim remainder step 8 0 : Nat)) else (doFail)))) else
+      (if (block <? 5) then
+      (if (block <? 4) then
+      (if (block =? 3) then (shiftFitGroupBlock3 (prim remainder step 8 0 : Nat)) else (doFail)) else
+      (if (block =? 4) then (shiftFitGroupBlock4 (prim remainder step 8 0 : Nat)) else (doFail))) else
+      (if (block <? 6) then
+      (if (block =? 5) then (shiftFitGroupBlock5 (prim remainder step 8 0 : Nat)) else (doFail)) else
+      (if (block =? 6) then (shiftFitGroupBlock6 (prim remainder step 8 0 : Nat)) else (doFail))))) else
+      (if (block <? 10) then
+      (if (block <? 8) then
+      (if (block =? 7) then (shiftFitGroupBlock7 (prim remainder step 8 0 : Nat)) else (doFail)) else
+      (if (block <? 9) then
+      (if (block =? 8) then (shiftFitGroupBlock8 (prim remainder step 8 0 : Nat)) else (doFail)) else
+      (if (block =? 9) then (shiftFitGroupBlock9 (prim remainder step 8 0 : Nat)) else (doFail)))) else
+      (if (block <? 12) then
+      (if (block <? 11) then
+      (if (block =? 10) then (shiftFitGroupBlock10 (prim remainder step 8 0 : Nat)) else (doFail)) else
+      (if (block =? 11) then (shiftFitGroupBlock11 (prim remainder step 8 0 : Nat)) else (doFail))) else
+      (if (block <? 13) then
+      (if (block =? 12) then (shiftFitGroupBlock12 (prim remainder step 8 0 : Nat)) else (doFail)) else
+      (if (block =? 13) then (shiftFitGroupBlock13 (prim remainder step 8 0 : Nat)) else (doFail))))))),
+  executable: true
+}
+
+definition{
+  name: shiftProjectBlock0,
+  parameters: [step : Nat],
+  result: (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * Nat))))))),
+  body: (if (step <? 4) then
+      (if (step <? 2) then
+      (if (step <? 1) then
+      (if (step =? 0) then (doMove 0 (rPart)) else (doFail)) else
+      (if (step =? 1) then (doMove 0 (rSawIndirect)) else (doFail))) else
+      (if (step <? 3) then
+      (if (step =? 2) then (doBranch 0 (rCompact) 0 1544) else (doFail)) else
+      (if (step =? 3) then (doBranch 0 (rPart) 0 1542) else (doFail)))) else
+      (if (step <? 6) then
+      (if (step <? 5) then
+      (if (step =? 4) then (doNatural 4 (rPacked) 2 (rSign)) else (doFail)) else
+      (if (step =? 5) then (doJump 1545) else (doFail))) else
+      (if (step <? 7) then
+      (if (step =? 6) then (doNatural 3 (rPacked) 2 (rSign)) else (doFail)) else
+      (if (step =? 7) then (doJump 1545) else (doFail))))),
+  executable: true
+}
+
+definition{
+  name: shiftProjectBlock1,
+  parameters: [step : Nat],
+  result: (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * Nat))))))),
+  body: (if (step <? 4) then
+      (if (step <? 2) then
+      (if (step <? 1) then
+      (if (step =? 0) then (doMove (rPacked) (rSign)) else (doFail)) else
+      (if (step =? 1) then (doNatural 2 (rPart) 8 (rXIndex)) else (doFail))) else
+      (if (step <? 3) then
+      (if (step =? 2) then (doMove 0 (rColumn)) else (doFail)) else
+      (if (step =? 3) then (doMove 0 (rKey)) else (doFail)))) else
+      (if (step <? 6) then
+      (if (step <? 5) then
+      (if (step =? 4) then (doNatural 0 (rXIndex) (rColumn) (rLane)) else (doFail)) else
+      (if (step =? 5) then (doFormatValue 3 (rKey) (rColumn) (workLevelsOne (rLane)) (rKey)) else (doFail))) else
+      (if (step <? 7) then
+      (if (step =? 6) then (doNatural 0 (rColumn) 1 (rColumn)) else (doFail)) else
+      (if (step =? 7) then (doBranch 1 (rColumn) 8 1548) else (doFail))))),
+  executable: true
+}
+
+definition{
+  name: shiftProjectBlock2,
+  parameters: [step : Nat],
+  result: (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * Nat))))))),
+  body: (if (step <? 4) then
+      (if (step <? 2) then
+      (if (step <? 1) then
+      (if (step =? 0) then (doNatural 0 (rKey) 1 (rIndex)) else (doFail)) else
+      (if (step =? 1) then (doMove (directoryCell (rIndex)) (rStart)) else (doFail))) else
+      (if (step <? 3) then
+      (if (step =? 2) then (doNatural 0 (rIndex) 1 (rIndex)) else (doFail)) else
+      (if (step =? 3) then (doMove (directoryCell (rIndex)) (rEnd)) else (doFail)))) else
+      (if (step <? 6) then
+      (if (step <? 5) then
+      (if (step =? 4) then (doNatural 0 (rIndex) 6561 (rIndex)) else (doFail)) else
+      (if (step =? 5) then (doNatural 2 (directoryCell (rIndex)) 65536 (rTemp)) else (doFail))) else
+      (if (step <? 7) then
+      (if (step =? 6) then (doNatural 0 (rStart) (rTemp) (rStart)) else (doFail)) else
+      (if (step =? 7) then (doNatural 0 (rIndex) 1 (rIndex)) else (doFail))))),
+  executable: true
+}
+
+definition{
+  name: shiftProjectBlock3,
+  parameters: [step : Nat],
+  result: (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * Nat))))))),
+  body: (if (step <? 4) then
+      (if (step <? 2) then
+      (if (step <? 1) then
+      (if (step =? 0) then (doNatural 2 (directoryCell (rIndex)) 65536 (rTemp)) else (doFail)) else
+      (if (step =? 1) then (doNatural 0 (rEnd) (rTemp) (rEnd)) else (doFail))) else
+      (if (step <? 3) then
+      (if (step =? 2) then (doNatural 0 (rStart) 13125 (rStart)) else (doFail)) else
+      (if (step =? 3) then (doNatural 0 (rEnd) 13125 (rEnd)) else (doFail)))) else
+      (if (step <? 6) then
+      (if (step <? 5) then
+      (if (step =? 4) then (doMove (directoryCell (rStart)) (rCode)) else (doFail)) else
+      (if (step =? 5) then (doBranch 1 (rCode) 32768 1568) else (doFail))) else
+      (if (step <? 7) then
+      (if (step =? 6) then (doNatural 1 (rCode) 32768 (rCode)) else (doFail)) else
+      (if (step =? 7) then (doJump 1604) else (doFail))))),
+  executable: true
+}
+
+definition{
+  name: shiftProjectBlock4,
+  parameters: [step : Nat],
+  result: (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * Nat))))))),
+  body: (if (step <? 4) then
+      (if (step <? 2) then
+      (if (step <? 1) then
+      (if (step =? 0) then (doMove 1 (rSawIndirect)) else (doFail)) else
+      (if (step =? 1) then (doMove 0 (rMode)) else (doFail))) else
+      (if (step <? 3) then
+      (if (step =? 2) then (doMove (rStart) (rCursor)) else (doFail)) else
+      (if (step =? 3) then (doMove 2048 (rCode)) else (doFail)))) else
+      (if (step <? 6) then
+      (if (step <? 5) then
+      (if (step =? 4) then (doMove 2139095039 (rMinimum)) else (doFail)) else
+      (if (step =? 5) then (doBranch 0 (rMode) 1 1576) else (doFail))) else
+      (if (step <? 7) then
+      (if (step =? 6) then (doMove (directoryCell (rCursor)) (rCandidate)) else (doFail)) else
+      (if (step =? 7) then (doJump 1577) else (doFail))))),
+  executable: true
+}
+
+definition{
+  name: shiftProjectBlock5,
+  parameters: [step : Nat],
+  result: (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * Nat))))))),
+  body: (if (step <? 4) then
+      (if (step <? 2) then
+      (if (step <? 1) then
+      (if (step =? 0) then (doMove (rCursor) (rCandidate)) else (doFail)) else
+      (if (step =? 1) then (doMove 0 (rDistance)) else (doFail))) else
+      (if (step <? 3) then
+      (if (step =? 2) then (doMove 0 (rColumn)) else (doFail)) else
+      (if (step =? 3) then (doFormatPair 4 0 (rCandidate) 0 (rTemp) (rGridAt)) else (doFail)))) else
+      (if (step <? 6) then
+      (if (step <? 5) then
+      (if (step =? 4) then (doNatural 0 (rGridAt) (rColumn) (rGridAt)) else (doFail)) else
+      (if (step =? 5) then (doFormatValue 5 (gridCell (rGridAt)) (rSign) 0 (rQ)) else (doFail))) else
+      (if (step <? 7) then
+      (if (step =? 6) then (doNatural 0 (rXIndex) (rColumn) (rLane)) else (doFail)) else
+      (if (step =? 7) then (doNatural 0 (rBase) (rLane) (rRowIndex)) else (doFail))))),
+  executable: true
+}
+
+definition{
+  name: shiftProjectBlock6,
+  parameters: [step : Nat],
+  result: (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * Nat))))))),
+  body: (if (step <? 4) then
+      (if (step <? 2) then
+      (if (step <? 1) then
+      (if (step =? 0) then (doScalar 2 (rScale) (rQ) (rTerm)) else (doFail)) else
+      (if (step =? 1) then (doScalar 1 (rTerm) (inputCell (rRowIndex)) (rTerm)) else (doFail))) else
+      (if (step <? 3) then
+      (if (step =? 2) then (doScalar 2 (workImportanceLane (rLane)) (rTerm) (rTemp)) else (doFail)) else
+      (if (step =? 3) then (doScalar 2 (rTemp) (rTerm) (rTemp)) else (doFail)))) else
+      (if (step <? 6) then
+      (if (step <? 5) then
+      (if (step =? 4) then (doScalar 0 (rDistance) (rTemp) (rDistance)) else (doFail)) else
+      (if (step =? 5) then (doNatural 0 (rColumn) 1 (rColumn)) else (doFail))) else
+      (if (step <? 7) then
+      (if (step =? 6) then (doBranch 1 (rColumn) 8 1579) else (doFail)) else
+      (if (step =? 7) then (doBranch 2 (rDistance) (rMinimum) 1593) else (doFail))))),
+  executable: true
+}
+
+definition{
+  name: shiftProjectBlock7,
+  parameters: [step : Nat],
+  result: (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * Nat))))))),
+  body: (if (step <? 4) then
+      (if (step <? 2) then
+      (if (step <? 1) then
+      (if (step =? 0) then (doJump 1595) else (doFail)) else
+      (if (step =? 1) then (doMove (rDistance) (rMinimum)) else (doFail))) else
+      (if (step <? 3) then
+      (if (step =? 2) then (doMove (rCandidate) (rCode)) else (doFail)) else
+      (if (step =? 3) then (doNatural 0 (rCursor) 1 (rCursor)) else (doFail)))) else
+      (if (step <? 6) then
+      (if (step <? 5) then
+      (if (step =? 4) then (doBranch 1 (rCursor) (rEnd) 1573) else (doFail)) else
+      (if (step =? 5) then (doBranch 1 (rCode) 2048 1604) else (doFail))) else
+      (if (step <? 7) then
+      (if (step =? 6) then (doBranch 0 (rMode) 1 1603) else (doFail)) else
+      (if (step =? 7) then (doMove 1 (rMode)) else (doFail))))),
+  executable: true
+}
+
+definition{
+  name: shiftProjectBlock8,
+  parameters: [step : Nat],
+  result: (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * Nat))))))),
+  body: (if (step <? 4) then
+      (if (step <? 2) then
+      (if (step <? 1) then
+      (if (step =? 0) then (doMove 0 (rCursor)) else (doFail)) else
+      (if (step =? 1) then (doMove 2048 (rEnd)) else (doFail))) else
+      (if (step <? 3) then
+      (if (step =? 2) then (doJump 1573) else (doFail)) else
+      (if (step =? 3) then (doFail) else (doFail)))) else
+      (if (step <? 6) then
+      (if (step <? 5) then
+      (if (step =? 4) then (doMove (rCode) (workSortedLane (rPart))) else (doFail)) else
+      (if (step =? 5) then (doNatural 0 (rPart) 1 (rPart)) else (doFail))) else
+      (if (step <? 7) then
+      (if (step =? 6) then (doBranch 1 (rPart) (rEmitted) 1538) else (doFail)) else
+      (if (step =? 7) then (doBranch 0 (rSawIndirect) 0 2560) else (doFail))))),
+  executable: true
+}
+
+definition{
+  name: shiftProjectBlock9,
+  parameters: [step : Nat],
+  result: (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * Nat))))))),
+  body: (if (step =? 0) then (doJump 2048) else (doFail)),
+  executable: true
+}
+
+definition{
+  name: shiftProjectStep,
+  parameters: [step : Nat],
+  result: (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * Nat))))))),
+  body: (let block : Nat := (prim quotient step 8 0 : Nat); (if (block <? 5) then
+      (if (block <? 2) then
+      (if (block <? 1) then
+      (if (block =? 0) then (shiftProjectBlock0 (prim remainder step 8 0 : Nat)) else (doFail)) else
+      (if (block =? 1) then (shiftProjectBlock1 (prim remainder step 8 0 : Nat)) else (doFail))) else
+      (if (block <? 3) then
+      (if (block =? 2) then (shiftProjectBlock2 (prim remainder step 8 0 : Nat)) else (doFail)) else
+      (if (block <? 4) then
+      (if (block =? 3) then (shiftProjectBlock3 (prim remainder step 8 0 : Nat)) else (doFail)) else
+      (if (block =? 4) then (shiftProjectBlock4 (prim remainder step 8 0 : Nat)) else (doFail))))) else
+      (if (block <? 7) then
+      (if (block <? 6) then
+      (if (block =? 5) then (shiftProjectBlock5 (prim remainder step 8 0 : Nat)) else (doFail)) else
+      (if (block =? 6) then (shiftProjectBlock6 (prim remainder step 8 0 : Nat)) else (doFail))) else
+      (if (block <? 8) then
+      (if (block =? 7) then (shiftProjectBlock7 (prim remainder step 8 0 : Nat)) else (doFail)) else
+      (if (block <? 9) then
+      (if (block =? 8) then (shiftProjectBlock8 (prim remainder step 8 0 : Nat)) else (doFail)) else
+      (if (block =? 9) then (shiftProjectBlock9 (prim remainder step 8 0 : Nat)) else (doFail))))))),
+  executable: true
+}
+
+definition{
+  name: shiftMomentsBlock0,
+  parameters: [step : Nat],
+  result: (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * Nat))))))),
+  body: (if (step <? 4) then
+      (if (step <? 2) then
+      (if (step <? 1) then
+      (if (step =? 0) then (doMove 0 (rPart)) else (doFail)) else
+      (if (step =? 1) then (doMove 0 (rXy)) else (doFail))) else
+      (if (step <? 3) then
+      (if (step =? 2) then (doMove 0 (rYy)) else (doFail)) else
+      (if (step =? 3) then (doMove 0 (rLane)) else (doFail)))) else
+      (if (step <? 6) then
+      (if (step <? 5) then
+      (if (step =? 4) then (doBranch 0 (rCompact) 0 2058) else (doFail)) else
+      (if (step =? 5) then (doBranch 0 (rPart) 0 2056) else (doFail))) else
+      (if (step <? 7) then
+      (if (step =? 6) then (doNatural 4 (rPacked) 2 (rSign)) else (doFail)) else
+      (if (step =? 7) then (doJump 2059) else (doFail))))),
+  executable: true
+}
+
+definition{
+  name: shiftMomentsBlock1,
+  parameters: [step : Nat],
+  result: (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * Nat))))))),
+  body: (if (step <? 4) then
+      (if (step <? 2) then
+      (if (step <? 1) then
+      (if (step =? 0) then (doNatural 3 (rPacked) 2 (rSign)) else (doFail)) else
+      (if (step =? 1) then (doJump 2059) else (doFail))) else
+      (if (step <? 3) then
+      (if (step =? 2) then (doMove (rPacked) (rSign)) else (doFail)) else
+      (if (step =? 3) then (doMove 0 (rColumn)) else (doFail)))) else
+      (if (step <? 6) then
+      (if (step <? 5) then
+      (if (step =? 4) then (doFormatPair 4 0 (workSortedLane (rPart)) 0 (rTemp) (rGridAt)) else (doFail)) else
+      (if (step =? 5) then (doNatural 0 (rGridAt) (rColumn) (rGridAt)) else (doFail))) else
+      (if (step <? 7) then
+      (if (step =? 6) then (doFormatValue 5 (gridCell (rGridAt)) (rSign) 0 (rQ)) else (doFail)) else
+      (if (step =? 7) then (doNatural 0 (rBase) (rLane) (rRowIndex)) else (doFail))))),
+  executable: true
+}
+
+definition{
+  name: shiftMomentsBlock2,
+  parameters: [step : Nat],
+  result: (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * Nat))))))),
+  body: (if (step <? 4) then
+      (if (step <? 2) then
+      (if (step <? 1) then
+      (if (step =? 0) then (doScalar 2 (workImportanceLane (rLane)) (rQ) (rTerm)) else (doFail)) else
+      (if (step =? 1) then (doScalar 2 (rTerm) (inputCell (rRowIndex)) (rTerm)) else (doFail))) else
+      (if (step <? 3) then
+      (if (step =? 2) then (doScalar 0 (rXy) (rTerm) (rXy)) else (doFail)) else
+      (if (step =? 3) then (doScalar 2 (workImportanceLane (rLane)) (rQ) (rTerm)) else (doFail)))) else
+      (if (step <? 6) then
+      (if (step <? 5) then
+      (if (step =? 4) then (doScalar 2 (rTerm) (rQ) (rTerm)) else (doFail)) else
+      (if (step =? 5) then (doScalar 0 (rYy) (rTerm) (rYy)) else (doFail))) else
+      (if (step <? 7) then
+      (if (step =? 6) then (doNatural 0 (rLane) 1 (rLane)) else (doFail)) else
+      (if (step =? 7) then (doNatural 0 (rColumn) 1 (rColumn)) else (doFail))))),
+  executable: true
+}
+
+definition{
+  name: shiftMomentsBlock3,
+  parameters: [step : Nat],
+  result: (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * Nat))))))),
+  body: (if (step <? 4) then
+      (if (step <? 2) then
+      (if (step <? 1) then
+      (if (step =? 0) then (doBranch 1 (rColumn) 8 2060) else (doFail)) else
+      (if (step =? 1) then (doNatural 0 (rPart) 1 (rPart)) else (doFail))) else
+      (if (step <? 3) then
+      (if (step =? 2) then (doBranch 1 (rPart) (rEmitted) 2052) else (doFail)) else
+      (if (step =? 3) then (doBranch 2 0 (rXy) 2077) else (doFail)))) else
+      (if (step <? 6) then
+      (if (step <? 5) then
+      (if (step =? 4) then (doJump 2560) else (doFail)) else
+      (if (step =? 5) then (doBranch 2 0 (rYy) 2079) else (doFail))) else
+      (if (step <? 7) then
+      (if (step =? 6) then (doJump 2560) else (doFail)) else
+      (if (step =? 7) then (doScalar 3 (rXy) (rYy) (rScale)) else (doFail))))),
+  executable: true
+}
+
+definition{
+  name: shiftMomentsBlock4,
+  parameters: [step : Nat],
+  result: (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * Nat))))))),
+  body: (if (step =? 0) then (doJump 2560) else (doFail)),
+  executable: true
+}
+
+definition{
+  name: shiftMomentsStep,
+  parameters: [step : Nat],
+  result: (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * Nat))))))),
+  body: (let block : Nat := (prim quotient step 8 0 : Nat); (if (block <? 2) then
+      (if (block <? 1) then
+      (if (block =? 0) then (shiftMomentsBlock0 (prim remainder step 8 0 : Nat)) else (doFail)) else
+      (if (block =? 1) then (shiftMomentsBlock1 (prim remainder step 8 0 : Nat)) else (doFail))) else
+      (if (block <? 3) then
+      (if (block =? 2) then (shiftMomentsBlock2 (prim remainder step 8 0 : Nat)) else (doFail)) else
+      (if (block <? 4) then
+      (if (block =? 3) then (shiftMomentsBlock3 (prim remainder step 8 0 : Nat)) else (doFail)) else
+      (if (block =? 4) then (shiftMomentsBlock4 (prim remainder step 8 0 : Nat)) else (doFail)))))),
+  executable: true
+}
+
+definition{
+  name: shiftEncodeGroupBlock0,
+  parameters: [step : Nat],
+  result: (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * Nat))))))),
+  body: (if (step <? 4) then
+      (if (step <? 2) then
+      (if (step <? 1) then
+      (if (step =? 0) then (doMove (rScale) (workShiftScale (rGroup))) else (doFail)) else
+      (if (step =? 1) then (doBranch 2 (rPeakScale) (rScale) 2563) else (doFail))) else
+      (if (step <? 3) then
+      (if (step =? 2) then (doJump 2564) else (doFail)) else
+      (if (step =? 3) then (doMove (rScale) (rPeakScale)) else (doFail)))) else
+      (if (step <? 6) then
+      (if (step <? 5) then
+      (if (step =? 4) then (doMove 0 (rPart)) else (doFail)) else
+      (if (step =? 5) then (doMove 0 (rMask)) else (doFail))) else
+      (if (step <? 7) then
+      (if (step =? 6) then (doFormatField 7 (rGroup) (rPart) (workSortedLane (rPart)) (rByte) (rShift) (rDigit)) else (doFail)) else
+      (if (step =? 7) then (doMove (rDigit) (outputCell (rByte))) else (doFail))))),
+  executable: true
+}
+
+definition{
+  name: shiftEncodeGroupBlock1,
+  parameters: [step : Nat],
+  result: (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * Nat))))))),
+  body: (if (step <? 4) then
+      (if (step <? 2) then
+      (if (step <? 1) then
+      (if (step =? 0) then (doNatural 3 (workSortedLane (rPart)) 256 (rDigit)) else (doFail)) else
+      (if (step =? 1) then (doNatural 2 (rDigit) (rShift) (rDigit)) else (doFail))) else
+      (if (step <? 3) then
+      (if (step =? 2) then (doNatural 0 (rMask) (rDigit) (rMask)) else (doFail)) else
+      (if (step =? 3) then (doNatural 0 (rPart) 1 (rPart)) else (doFail)))) else
+      (if (step <? 6) then
+      (if (step <? 5) then
+      (if (step =? 4) then (doBranch 1 (rPart) (rEmitted) 2566) else (doFail)) else
+      (if (step =? 5) then (doBranch 0 (rCompact) 1 2582) else (doFail))) else
+      (if (step <? 7) then
+      (if (step =? 6) then (doNatural 2 (rPacked) 32768 (rTemp)) else (doFail)) else
+      (if (step =? 7) then (doNatural 0 (rMask) (rTemp) (rMask)) else (doFail))))),
+  executable: true
+}
+
+definition{
+  name: shiftEncodeGroupBlock2,
+  parameters: [step : Nat],
+  result: (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * Nat))))))),
+  body: (if (step <? 4) then
+      (if (step <? 2) then
+      (if (step <? 1) then
+      (if (step =? 0) then (doNatural 2 (rGroup) 2 (rByte)) else (doFail)) else
+      (if (step =? 1) then (doNatural 0 (rByte) 34 (rByte)) else (doFail))) else
+      (if (step <? 3) then
+      (if (step =? 2) then (doNatural 4 (rMask) 256 (outputCell (rByte))) else (doFail)) else
+      (if (step =? 3) then (doNatural 0 (rByte) 1 (rByte)) else (doFail)))) else
+      (if (step <? 6) then
+      (if (step <? 5) then
+      (if (step =? 4) then (doNatural 3 (rMask) 256 (outputCell (rByte))) else (doFail)) else
+      (if (step =? 5) then (doJump 2586) else (doFail))) else
+      (if (step <? 7) then
+      (if (step =? 6) then (doFormatValue 6 (rPacked) 0 0 (rTemp)) else (doFail)) else
+      (if (step =? 7) then (doNatural 0 (rMask) (rTemp) (rMask)) else (doFail))))),
+  executable: true
+}
+
+definition{
+  name: shiftEncodeGroupBlock3,
+  parameters: [step : Nat],
+  result: (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * Nat))))))),
+  body: (if (step <? 2) then
+      (if (step <? 1) then
+      (if (step =? 0) then (doNatural 0 (rGroup) 32 (rByte)) else (doFail)) else
+      (if (step =? 1) then (doMove (rMask) (outputCell (rByte))) else (doFail))) else
+      (if (step <? 3) then
+      (if (step =? 2) then (doNatural 0 (rGroup) 1 (rGroup)) else (doFail)) else
+      (if (step <? 4) then
+      (if (step =? 3) then (doBranch 1 (rGroup) (rOutputWidth) 512) else (doFail)) else
+      (if (step =? 4) then (doJump 3584) else (doFail))))),
+  executable: true
+}
+
+definition{
+  name: shiftEncodeGroupStep,
+  parameters: [step : Nat],
+  result: (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * Nat))))))),
+  body: (let block : Nat := (prim quotient step 8 0 : Nat); (if (block <? 2) then
+      (if (block <? 1) then
+      (if (block =? 0) then (shiftEncodeGroupBlock0 (prim remainder step 8 0 : Nat)) else (doFail)) else
+      (if (block =? 1) then (shiftEncodeGroupBlock1 (prim remainder step 8 0 : Nat)) else (doFail))) else
+      (if (block <? 3) then
+      (if (block =? 2) then (shiftEncodeGroupBlock2 (prim remainder step 8 0 : Nat)) else (doFail)) else
+      (if (block =? 3) then (shiftEncodeGroupBlock3 (prim remainder step 8 0 : Nat)) else (doFail))))),
+  executable: true
+}
+
+definition{
+  name: shiftRoundedGroupsBlock0,
+  parameters: [step : Nat],
+  result: (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * Nat))))))),
+  body: (if (step <? 4) then
+      (if (step <? 2) then
+      (if (step <? 1) then
+      (if (step =? 0) then (doMove 0 (rXy)) else (doFail)) else
+      (if (step =? 1) then (doMove 0 (rYy)) else (doFail))) else
+      (if (step <? 3) then
+      (if (step =? 2) then (doMove 0 (rGroup)) else (doFail)) else
+      (if (step =? 3) then (doScalar 2 (rInv) (workShiftScale (rGroup)) (rTemp)) else (doFail)))) else
+      (if (step <? 6) then
+      (if (step <? 5) then
+      (if (step =? 4) then (doScalar 1 (rTemp) 1065353216 (rTemp)) else (doFail)) else
+      (if (step =? 5) then (doScalar 2 1056964608 (rTemp) (rTemp)) else (doFail))) else
+      (if (step <? 7) then
+      (if (step =? 6) then (doScalar 0 (rTemp) 1262485504 (rTemp)) else (doFail)) else
+      (if (step =? 7) then (doFormatValue 2 (rTemp) 7 0 (rDigit)) else (doFail))))),
+  executable: true
+}
+
+definition{
+  name: shiftRoundedGroupsBlock1,
+  parameters: [step : Nat],
+  result: (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * Nat))))))),
+  body: (if (step <? 4) then
+      (if (step <? 2) then
+      (if (step <? 1) then
+      (if (step =? 0) then (doBranch 0 (rCompact) 1 3086) else (doFail)) else
+      (if (step =? 1) then (doNatural 2 (rGroup) 2 (rByte)) else (doFail))) else
+      (if (step <? 3) then
+      (if (step =? 2) then (doNatural 0 (rByte) 35 (rByte)) else (doFail)) else
+      (if (step =? 3) then (doMove 4 (rShift)) else (doFail)))) else
+      (if (step <? 6) then
+      (if (step <? 5) then
+      (if (step =? 4) then (doInsert (rByte) (rShift) (rDigit)) else (doFail)) else
+      (if (step =? 5) then (doJump 3134) else (doFail))) else
+      (if (step <? 7) then
+      (if (step =? 6) then (doMove (rDigit) (rLast)) else (doFail)) else
+      (if (step =? 7) then (doFormatPair 8 (rGroup) 0 0 (rByte) (rPoint)) else (doFail))))),
+  executable: true
+}
+
+definition{
+  name: shiftRoundedGroupsBlock2,
+  parameters: [step : Nat],
+  result: (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * Nat))))))),
+  body: (if (step <? 4) then
+      (if (step <? 2) then
+      (if (step <? 1) then
+      (if (step =? 0) then (doNatural 2 (rDigit) (rPoint) (rTemp)) else (doFail)) else
+      (if (step =? 1) then (doNatural 4 (rTemp) 256 (rDigit)) else (doFail))) else
+      (if (step <? 3) then
+      (if (step =? 2) then (doNatural 0 (outputCell (rByte)) (rDigit) (outputCell (rByte))) else (doFail)) else
+      (if (step =? 3) then (doNatural 0 (rByte) 1 (rByte)) else (doFail)))) else
+      (if (step <? 6) then
+      (if (step <? 5) then
+      (if (step =? 4) then (doNatural 3 (rTemp) 256 (rDigit)) else (doFail)) else
+      (if (step =? 5) then (doNatural 0 (outputCell (rByte)) (rDigit) (outputCell (rByte))) else (doFail))) else
+      (if (step <? 7) then
+      (if (step =? 6) then (doNatural 2 (rLast) 2 (rLast)) else (doFail)) else
+      (if (step =? 7) then (doNatural 0 (rLast) 1 (rLast)) else (doFail))))),
+  executable: true
+}
+
+definition{
+  name: shiftRoundedGroupsBlock3,
+  parameters: [step : Nat],
+  result: (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * Nat))))))),
+  body: (if (step <? 4) then
+      (if (step <? 2) then
+      (if (step <? 1) then
+      (if (step =? 0) then (doToFloat (rLast) (rLast)) else (doFail)) else
+      (if (step =? 1) then (doNatural 2 (rGroup) (rTrials) (rBase)) else (doFail))) else
+      (if (step <? 3) then
+      (if (step =? 2) then (doMove 0 (rPart)) else (doFail)) else
+      (if (step =? 3) then (doNatural 2 (rGroup) 2 (rIndex)) else (doFail)))) else
+      (if (step <? 6) then
+      (if (step <? 5) then
+      (if (step =? 4) then (doNatural 0 (rIndex) (rPart) (rIndex)) else (doFail)) else
+      (if (step =? 5) then (doMove (outputCell (rIndex)) (rCode)) else (doFail))) else
+      (if (step <? 7) then
+      (if (step =? 6) then (doNatural 0 (rGroup) 32 (rByte)) else (doFail)) else
+      (if (step =? 7) then (doMove (outputCell (rByte)) (rMask)) else (doFail))))),
+  executable: true
+}
+
+definition{
+  name: shiftRoundedGroupsBlock4,
+  parameters: [step : Nat],
+  result: (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * Nat))))))),
+  body: (if (step <? 4) then
+      (if (step <? 2) then
+      (if (step <? 1) then
+      (if (step =? 0) then (doBranch 0 (rPart) 0 3106) else (doFail)) else
+      (if (step =? 1) then (doNatural 3 (rMask) 16 (rMask)) else (doFail))) else
+      (if (step <? 3) then
+      (if (step =? 2) then (doNatural 4 (rMask) 8 (rTemp)) else (doFail)) else
+      (if (step =? 3) then (doNatural 2 (rTemp) 256 (rTemp)) else (doFail)))) else
+      (if (step <? 6) then
+      (if (step <? 5) then
+      (if (step =? 4) then (doNatural 0 (rTemp) (rCode) (rCode)) else (doFail)) else
+      (if (step =? 5) then (doNatural 3 (rMask) 8 (rTemp)) else (doFail))) else
+      (if (step <? 7) then
+      (if (step =? 6) then (doNatural 4 (rTemp) 2 (rSign)) else (doFail)) else
+      (if (step =? 7) then (doMove 0 (rColumn)) else (doFail))))),
+  executable: true
+}
+
+definition{
+  name: shiftRoundedGroupsBlock5,
+  parameters: [step : Nat],
+  result: (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * Nat))))))),
+  body: (if (step <? 4) then
+      (if (step <? 2) then
+      (if (step <? 1) then
+      (if (step =? 0) then (doNatural 2 (rPart) 8 (rXIndex)) else (doFail)) else
+      (if (step =? 1) then (doNatural 0 (rXIndex) (rColumn) (rLane)) else (doFail))) else
+      (if (step <? 3) then
+      (if (step =? 2) then (doNatural 0 (rBase) (rLane) (rRowIndex)) else (doFail)) else
+      (if (step =? 3) then (doScalar 2 (inputCell (rRowIndex)) (inputCell (rRowIndex)) (rWeight)) else (doFail)))) else
+      (if (step <? 6) then
+      (if (step <? 5) then
+      (if (step =? 4) then (doBranch 0 (rWeighted) 0 3120) else (doFail)) else
+      (if (step =? 5) then (doScalar 0 (rVariance) (rWeight) (rWeight)) else (doFail))) else
+      (if (step <? 7) then
+      (if (step =? 6) then (doScalar 4 (rWeight) 0 (rWeight)) else (doFail)) else
+      (if (step =? 7) then (doScalar 2 (importanceCell (rRowIndex)) (rWeight) (rWeight)) else (doFail))))),
+  executable: true
+}
+
+definition{
+  name: shiftRoundedGroupsBlock6,
+  parameters: [step : Nat],
+  result: (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * Nat))))))),
+  body: (if (step <? 4) then
+      (if (step <? 2) then
+      (if (step <? 1) then
+      (if (step =? 0) then (doFormatPair 4 0 (rCode) 0 (rTemp) (rGridAt)) else (doFail)) else
+      (if (step =? 1) then (doNatural 0 (rGridAt) (rColumn) (rGridAt)) else (doFail))) else
+      (if (step <? 3) then
+      (if (step =? 2) then (doFormatValue 5 (gridCell (rGridAt)) (rSign) 0 (rQ)) else (doFail)) else
+      (if (step =? 3) then (doScalar 2 (rQ) (rLast) (rQ)) else (doFail)))) else
+      (if (step <? 6) then
+      (if (step <? 5) then
+      (if (step =? 4) then (doScalar 2 (rWeight) (rQ) (rTerm)) else (doFail)) else
+      (if (step =? 5) then (doScalar 2 (rTerm) (inputCell (rRowIndex)) (rTerm)) else (doFail))) else
+      (if (step <? 7) then
+      (if (step =? 6) then (doScalar 0 (rXy) (rTerm) (rXy)) else (doFail)) else
+      (if (step =? 7) then (doScalar 2 (rWeight) (rQ) (rTerm)) else (doFail))))),
+  executable: true
+}
+
+definition{
+  name: shiftRoundedGroupsBlock7,
+  parameters: [step : Nat],
+  result: (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * Nat))))))),
+  body: (if (step <? 4) then
+      (if (step <? 2) then
+      (if (step <? 1) then
+      (if (step =? 0) then (doScalar 2 (rTerm) (rQ) (rTerm)) else (doFail)) else
+      (if (step =? 1) then (doScalar 0 (rYy) (rTerm) (rYy)) else (doFail))) else
+      (if (step <? 3) then
+      (if (step =? 2) then (doNatural 0 (rColumn) 1 (rColumn)) else (doFail)) else
+      (if (step =? 3) then (doBranch 1 (rColumn) 8 3113) else (doFail)))) else
+      (if (step <? 6) then
+      (if (step <? 5) then
+      (if (step =? 4) then (doNatural 0 (rPart) 1 (rPart)) else (doFail)) else
+      (if (step =? 5) then (doBranch 1 (rPart) (rEmitted) 3099) else (doFail))) else
+      (if (step <? 7) then
+      (if (step =? 6) then (doNatural 0 (rGroup) 1 (rGroup)) else (doFail)) else
+      (if (step =? 7) then (doBranch 1 (rGroup) (rOutputWidth) 3075) else (doFail))))),
+  executable: true
+}
+
+definition{
+  name: shiftRoundedGroupsBlock8,
+  parameters: [step : Nat],
+  result: (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * Nat))))))),
+  body: (if (step <? 4) then
+      (if (step <? 2) then
+      (if (step <? 1) then
+      (if (step =? 0) then (doBranch 0 (rCompact) 0 3150) else (doFail)) else
+      (if (step =? 1) then (doBranch 2 0 (rYy) 3139) else (doFail))) else
+      (if (step <? 3) then
+      (if (step =? 2) then (doJump 3140) else (doFail)) else
+      (if (step =? 3) then (doScalar 3 (rXy) (rYy) (rScale)) else (doFail)))) else
+      (if (step <? 6) then
+      (if (step <? 5) then
+      (if (step =? 4) then (doScalar 2 (rScale) 1066296934 (rTemp)) else (doFail)) else
+      (if (step =? 5) then (doToHalf (rTemp) (rTemp)) else (doFail))) else
+      (if (step <? 7) then
+      (if (step =? 6) then (doMove 49 (rByte)) else (doFail)) else
+      (if (step =? 7) then (doNatural 4 (rTemp) 16 (rDigit)) else (doFail))))),
+  executable: true
+}
+
+definition{
+  name: shiftRoundedGroupsBlock9,
+  parameters: [step : Nat],
+  result: (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * Nat))))))),
+  body: (if (step <? 4) then
+      (if (step <? 2) then
+      (if (step <? 1) then
+      (if (step =? 0) then (doMove 4 (rShift)) else (doFail)) else
+      (if (step =? 1) then (doInsert (rByte) (rShift) (rDigit)) else (doFail))) else
+      (if (step <? 3) then
+      (if (step =? 2) then (doNatural 3 (rTemp) 16 (rTemp)) else (doFail)) else
+      (if (step =? 3) then (doNatural 0 (rByte) 2 (rByte)) else (doFail)))) else
+      (if (step <? 6) then
+      (if (step <? 5) then
+      (if (step =? 4) then (doBranch 1 (rByte) 56 3143) else (doFail)) else
+      (if (step =? 5) then (doDone) else (doFail))) else
+      (if (step <? 7) then
+      (if (step =? 6) then (doScalar 2 (rScale) 1066401792 (rTemp)) else (doFail)) else
+      (if (step =? 7) then (doToHalf (rTemp) (rTemp)) else (doFail))))),
+  executable: true
+}
+
+definition{
+  name: shiftRoundedGroupsBlock10,
+  parameters: [step : Nat],
+  result: (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * Nat))))))),
+  body: (if (step <? 2) then
+      (if (step <? 1) then
+      (if (step =? 0) then (doMove 0 (rByte)) else (doFail)) else
+      (if (step =? 1) then (doNatural 4 (rTemp) 256 (outputCell (rByte))) else (doFail))) else
+      (if (step <? 3) then
+      (if (step =? 2) then (doNatural 0 (rByte) 1 (rByte)) else (doFail)) else
+      (if (step <? 4) then
+      (if (step =? 3) then (doNatural 3 (rTemp) 256 (outputCell (rByte))) else (doFail)) else
+      (if (step =? 4) then (doDone) else (doFail))))),
+  executable: true
+}
+
+definition{
+  name: shiftRoundedGroupsStep,
+  parameters: [step : Nat],
+  result: (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * Nat))))))),
+  body: (let block : Nat := (prim quotient step 8 0 : Nat); (if (block <? 5) then
+      (if (block <? 2) then
+      (if (block <? 1) then
+      (if (block =? 0) then (shiftRoundedGroupsBlock0 (prim remainder step 8 0 : Nat)) else (doFail)) else
+      (if (block =? 1) then (shiftRoundedGroupsBlock1 (prim remainder step 8 0 : Nat)) else (doFail))) else
+      (if (block <? 3) then
+      (if (block =? 2) then (shiftRoundedGroupsBlock2 (prim remainder step 8 0 : Nat)) else (doFail)) else
+      (if (block <? 4) then
+      (if (block =? 3) then (shiftRoundedGroupsBlock3 (prim remainder step 8 0 : Nat)) else (doFail)) else
+      (if (block =? 4) then (shiftRoundedGroupsBlock4 (prim remainder step 8 0 : Nat)) else (doFail))))) else
+      (if (block <? 8) then
+      (if (block <? 6) then
+      (if (block =? 5) then (shiftRoundedGroupsBlock5 (prim remainder step 8 0 : Nat)) else (doFail)) else
+      (if (block <? 7) then
+      (if (block =? 6) then (shiftRoundedGroupsBlock6 (prim remainder step 8 0 : Nat)) else (doFail)) else
+      (if (block =? 7) then (shiftRoundedGroupsBlock7 (prim remainder step 8 0 : Nat)) else (doFail)))) else
+      (if (block <? 9) then
+      (if (block =? 8) then (shiftRoundedGroupsBlock8 (prim remainder step 8 0 : Nat)) else (doFail)) else
+      (if (block <? 10) then
+      (if (block =? 9) then (shiftRoundedGroupsBlock9 (prim remainder step 8 0 : Nat)) else (doFail)) else
+      (if (block =? 10) then (shiftRoundedGroupsBlock10 (prim remainder step 8 0 : Nat)) else (doFail))))))),
+  executable: true
+}
+
+definition{
+  name: shiftFinishRowBlock0,
+  parameters: [step : Nat],
+  result: (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * Nat))))))),
+  body: (if (step <? 2) then
+      (if (step <? 1) then
+      (if (step =? 0) then (doBranch 0 (rPeakScale) 0 3588) else (doFail)) else
+      (if (step =? 1) then (doScalar 3 (rPeakScale) 1097859072 (rScale)) else (doFail))) else
+      (if (step <? 3) then
+      (if (step =? 2) then (doScalar 3 1065353216 (rScale) (rInv)) else (doFail)) else
+      (if (step <? 4) then
+      (if (step =? 3) then (doJump 3072) else (doFail)) else
+      (if (step =? 4) then (doClear) else (doFail))))),
+  executable: true
+}
+
+definition{
+  name: shiftFinishRowStep,
+  parameters: [step : Nat],
+  result: (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * Nat))))))),
+  body: (let block : Nat := (prim quotient step 8 0 : Nat); (if (block =? 0) then (shiftFinishRowBlock0 (prim remainder step 8 0 : Nat)) else (doFail))),
+  executable: true
+}
+
+definition{
   name: prepareInstructions,
   parameters: [section : Nat, step : Nat],
   result: (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * Nat))))))),
-  body: (if (section <? 3) then
+  body: (if (section <? 6) then (if (section <? 3) then
       (if (section <? 1) then
       (if (section =? 0) then (initializeStep step) else (doFail)) else
       (if (section <? 2) then
@@ -3460,7 +4898,9 @@ definition{
       (if (section =? 3) then (eightPrepareGroupStep step) else (doFail)) else
       (if (section <? 5) then
       (if (section =? 4) then (groupedInitializeStep step) else (doFail)) else
-      (if (section =? 5) then (groupedPrepareGroupStep step) else (doFail))))),
+      (if (section =? 5) then (groupedPrepareGroupStep step) else (doFail))))) else (if (section <? 7) then
+      (if (section =? 6) then (shiftInitializeStep step) else (doFail)) else
+      (if (section =? 7) then (shiftPrepareGroupStep step) else (doFail)))),
   executable: true,
   production: {effects: [overflow], targets: [rust-core]}
 }
@@ -3469,7 +4909,7 @@ definition{
   name: fitInstructions,
   parameters: [section : Nat, step : Nat],
   result: (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * Nat))))))),
-  body: (if (section <? 3) then
+  body: (if (section <? 6) then (if (section <? 3) then
       (if (section <? 1) then
       (if (section =? 0) then (fitGroupStep step) else (doFail)) else
       (if (section <? 2) then
@@ -3479,7 +4919,9 @@ definition{
       (if (section =? 3) then (eightProjectStep step) else (doFail)) else
       (if (section <? 5) then
       (if (section =? 4) then (groupedFitGroupStep step) else (doFail)) else
-      (if (section =? 5) then (groupedProjectStep step) else (doFail))))),
+      (if (section =? 5) then (groupedProjectStep step) else (doFail))))) else (if (section <? 7) then
+      (if (section =? 6) then (shiftFitGroupStep step) else (doFail)) else
+      (if (section =? 7) then (shiftProjectStep step) else (doFail)))),
   executable: true,
   production: {effects: [overflow], targets: [rust-core]}
 }
@@ -3488,7 +4930,7 @@ definition{
   name: refineInstructions,
   parameters: [section : Nat, step : Nat],
   result: (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * Nat))))))),
-  body: (if (section <? 3) then
+  body: (if (section <? 6) then (if (section <? 3) then
       (if (section <? 1) then
       (if (section =? 0) then (momentsStep step) else (doFail)) else
       (if (section <? 2) then
@@ -3498,7 +4940,9 @@ definition{
       (if (section =? 3) then (eightRefitStep step) else (doFail)) else
       (if (section <? 5) then
       (if (section =? 4) then (groupedMomentsStep step) else (doFail)) else
-      (if (section =? 5) then (groupedRefitStep step) else (doFail))))),
+      (if (section =? 5) then (groupedRefitStep step) else (doFail))))) else (if (section <? 7) then
+      (if (section =? 6) then (shiftMomentsStep step) else (doFail)) else
+      (if (section =? 7) then (shiftEncodeGroupStep step) else (doFail)))),
   executable: true,
   production: {effects: [overflow], targets: [rust-core]}
 }
@@ -3507,7 +4951,7 @@ definition{
   name: emitInstructions,
   parameters: [section : Nat, step : Nat],
   result: (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * (Nat * Nat))))))),
-  body: (if (section <? 3) then
+  body: (if (section <? 6) then (if (section <? 3) then
       (if (section <? 1) then
       (if (section =? 0) then (encodeGroupStep step) else (doFail)) else
       (if (section <? 2) then
@@ -3517,9 +4961,18 @@ definition{
       (if (section =? 3) then (eightFinishRowStep step) else (doFail)) else
       (if (section <? 5) then
       (if (section =? 4) then (groupedEncodeGroupStep step) else (doFail)) else
-      (if (section =? 5) then (groupedFinishRowStep step) else (doFail))))),
+      (if (section =? 5) then (groupedFinishRowStep step) else (doFail))))) else (if (section <? 7) then
+      (if (section =? 6) then (shiftRoundedGroupsStep step) else (doFail)) else
+      (if (section =? 7) then (shiftFinishRowStep step) else (doFail)))),
   executable: true,
   production: {effects: [overflow], targets: [rust-core]}
+}
+
+theorem{
+  name: distributedLastScale,
+  parameters: [],
+  statement: ((evaluate 56 true 15 0 0) = (stepPair 54 512)),
+  proof: reflexivity{}
 }
 
 theorem{

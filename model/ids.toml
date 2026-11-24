@@ -950,3 +950,9 @@ id = "VTK-61"
 level = "build"
 suite = "engine"
 statement = "Verdant encodes parity-constrained octets with a shared 32-lane fitted scale against the imported IQ2_XXS quantizer"
+
+[[id]]
+id = "VTK-62"
+level = "build"
+suite = "engine"
+statement = "Verdant fits shifted ternary grids and packs single-scale and distributed-scale blocks against the original GGML quantizers"

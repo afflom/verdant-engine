@@ -891,3 +891,9 @@ Feature: engine
     Given 256 finite lanes and an explicit nonnegative importance matrix
     When the certified program fits four octets per group and packs 8-bit ordinals and seven sign bits
     Then all 66 bytes match the pinned IQ2_XXS quantizer and missing weights preserve the destination
+
+  @VTK-62 @build
+  Scenario: Verdant fits shifted ternary grids and packs single-scale and distributed-scale blocks against the original GGML quantizers
+    Given 256 finite lanes and format-specific importance data
+    When Verdant selects ternary splits, shifts, grid points and scales
+    Then the complete IQ1_S and IQ1_M blocks match the pinned quantizers and invalid inputs preserve the destination

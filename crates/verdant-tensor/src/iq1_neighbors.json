@@ -1,0 +1,12 @@
+{
+  "revision": "9a080f44b503c64f66c84a6274b9d9ee5d5b09d5",
+  "source": "ggml/src/ggml-quants.c",
+  "entry_point": "iq2xs_init_impl(GGML_TYPE_IQ1_S), shared with GGML_TYPE_IQ1_M",
+  "license": "ggml_tables.LICENSE",
+  "points": 6561,
+  "candidates": 329769,
+  "direct": 2048,
+  "single_neighbor_off_grid": 0,
+  "format": "Little-endian u16 words. The first gives the total directory size. The next 6562 low words and 6562 high words index the candidate list. Bit 15 on the first candidate marks an exact point. The first lane is the least significant ternary digit.",
+  "sha256": "86ce87e03451a0a6f8fcbbbc6b5f2c641887802a92e4d651a4b4834e6620e68d"
+}

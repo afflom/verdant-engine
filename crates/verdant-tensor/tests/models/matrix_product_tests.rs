@@ -553,6 +553,7 @@ int main(int argc, char **argv) {
   const std::pair<const char *, ggml_type> weighted_formats[] = {
       {"iq3-compact-weighted", GGML_TYPE_IQ3_XXS}, {"iq3-weighted", GGML_TYPE_IQ3_S},
       {"iq2-s-weighted", GGML_TYPE_IQ2_S}, {"iq2-xs-weighted", GGML_TYPE_IQ2_XS},
+      {"iq1-s-weighted", GGML_TYPE_IQ1_S}, {"iq1-m-weighted", GGML_TYPE_IQ1_M},
       {"iq2-xxs-weighted", GGML_TYPE_IQ2_XXS},
   };
   for (const auto &[mode, kind] : weighted_formats) if (!std::strcmp(argv[1], mode)) {
@@ -568,6 +569,10 @@ int main(int argc, char **argv) {
       for (auto byte : encoded) std::printf("%u\n", unsigned(byte));
     }
     return std::ferror(stdin) ? 2 : 0;
+  }
+  if (!std::strcmp(argv[1], "iq1-m-encode")) {
+    ggml_quantize_init(GGML_TYPE_IQ1_M);
+    return encode_blocks<QK_K, block_iq1_m>([](const float *x, block_iq1_m *y, int64_t n) { quantize_iq1_m(x, y, 1, n, nullptr); });
   }
   if (!std::strcmp(argv[1], "iq2-s-encode")) {
     ggml_quantize_init(GGML_TYPE_IQ2_S);
@@ -3605,6 +3610,29 @@ fn grouped_parity_encoding_vtk_61() {
     )
     .is_err());
     assert_eq!(untouched, [0xa5; 66]);
+}
+
+#[test]
+fn shifted_grid_encoding_vtk_62() {
+    use super::PackedWeightEncoding::{ImportanceOneDistributed, ImportanceOneShifted};
+    certified_encoding_model(
+        "verdant_importance_grid",
+        "VerdantEngine.ImportanceGridEncoding.evaluate",
+    );
+    compare_weighted_encoders(&[
+        (ImportanceOneShifted, 50, "iq1-s-weighted"),
+        (ImportanceOneDistributed, 56, "iq1-m-weighted"),
+    ]);
+    compare_weight_encoders::<256>(&[(ImportanceOneDistributed, 56, "iq1-m-encode")]);
+    let mut output = [0xa5; 50];
+    assert!(super::encode_importance_weight_block(
+        &[1.0; 256],
+        None,
+        ImportanceOneShifted,
+        &mut output
+    )
+    .is_err());
+    assert_eq!(output, [0xa5; 50]);
 }
 
 fn compare_weighted_encoders(formats: &[(super::PackedWeightEncoding, usize, &str)]) {

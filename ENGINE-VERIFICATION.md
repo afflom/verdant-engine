@@ -547,3 +547,9 @@ VTK-60 compared all 4,440 bytes in 60 blocks against GGML at `9a080f44` using un
 The certified IQ2_XXS program fits four eight-lane grid points to a shared scale. It models GGML’s preliminary four-level fit, its coordinate refinements, the grid projection and the packed sign and scale fields. The imported directory preserves all 113,413 candidate entries across 6,561 ternary inputs. [Directory provenance](crates/verdant-tensor/src/iq2xxs_neighbors.json)
 
 Certificate `blake3:b4459047ca2188e8616d5af8d4ab30aafc29987e9ad4b54697266b219c12a44e` drives the existing encoding interpreter. VTK-61 compared 3,960 output bytes from 60 blocks with the pinned GGML quantizer using uniform, nonuniform and sparse weights. The previous implementation refused the format. Flipping the low bit of the first packed sign group failed the byte comparison. The restored encoder passed, including preservation of the destination on invalid inputs.
+
+## VTK-62 shifted ternary block encoding
+
+The certified grid program selects signed ternary shifts and fits the shared scales for IQ1_S and IQ1_M. Both consume the same original GGML directory of 329,769 candidate entries across 6,561 ternary patterns. IQ1_M distributes the block scale over four packed words. [Directory provenance](crates/verdant-tensor/src/iq1_neighbors.json)
+
+Certificate `blake3:ec593c8224e46ad0d1d717781b7f4979ffd48fe1fee16c412aef05020b0db492` drives the encoding interpreter. VTK-62 compared 19,944 bytes with GGML at `9a080f44` across 36 weighted blocks per format and 288 unweighted IQ1_M blocks. The corpus includes every impulse lane, signed zeros, ties, varying magnitudes and nonuniform importance. The previous implementation refused these formats. Flipping one bit in the distributed IQ1_M scale failed the comparison, and the restored implementation passed.

@@ -628,31 +628,31 @@ license-files = [{ path = "src/lib.rs", hash = 0x1b8b8323 }]
 name = "verdant_importance_grid"
 version = "=2.49.0"
 expression = "MIT OR Apache-2.0"
-license-files = [{ path = "src/lib.rs", hash = 0xc2edaad5 }]
+license-files = [{ path = "src/lib.rs", hash = 0xe56bbedf }]
 
 [[licenses.clarify]]
 name = "verdant_iq3_fit"
 version = "=2.49.0"
 expression = "MIT OR Apache-2.0"
-license-files = [{ path = "src/lib.rs", hash = 0xd13fa238 }]
+license-files = [{ path = "src/lib.rs", hash = 0xb3587160 }]
 
 [[licenses.clarify]]
 name = "verdant_iq3_level"
 version = "=2.49.0"
 expression = "MIT OR Apache-2.0"
-license-files = [{ path = "src/lib.rs", hash = 0x9734cc1b }]
+license-files = [{ path = "src/lib.rs", hash = 0x76e9c8b0 }]
 
 [[licenses.clarify]]
 name = "verdant_iq3_scale"
 version = "=2.49.0"
 expression = "MIT OR Apache-2.0"
-license-files = [{ path = "src/lib.rs", hash = 0x085214a3 }]
+license-files = [{ path = "src/lib.rs", hash = 0x53040046 }]
 
 [[licenses.clarify]]
 name = "verdant_iq3_score"
 version = "=2.49.0"
 expression = "MIT OR Apache-2.0"
-license-files = [{ path = "src/lib.rs", hash = 0x05ab14a4 }]
+license-files = [{ path = "src/lib.rs", hash = 0x95cff225 }]
 
 [[licenses.clarify]]
 name = "verdant_delta_rule"
