@@ -1,0 +1,47 @@
+spec = "lexlean/lock/4"
+language = "1.2"
+compiler_semantics = "blake3:ccb147883807678b975239e2d603f2a296e8fae42223edbf0a7d9b1d1f893c6b"
+project_config_kappa = "blake3:61d2bbe24bfd3b89c3a44c2c761d91d831a1c738c95acbac4795622a0ba6fa89"
+lean_toolchain = "leanprover/lean4:v4.32.2"
+
+[[workspace_file]]
+path = "lake-manifest.json"
+kappa = "blake3:89f544bb9702a81acc0f67cf3126eebaef35a3e5a6fb1c1317307cbc16c9e6e0"
+
+[[workspace_file]]
+path = "lakefile.toml"
+kappa = "blake3:acb59d42b9b85bfeea4c176bea0d8ef1ba969e9ed128a1e547f8833f926c613b"
+
+[[workspace_file]]
+path = "lean-toolchain"
+kappa = "blake3:a97821a267801086f27c546268ed08ab29cf5a2d15de1258094c5f95ace394aa"
+
+[[package]]
+id = "lexlean.core"
+version = "1.2.0"
+kind = "builtin"
+source = "embedded"
+revision = "compiler-semantics"
+tree_kappa = "blake3:1335378be2ecc63829a21de194b8bb413376cf89a6586c45f65740af5a38dcff"
+manifest_kappa = "blake3:2849b32a5b173ab42d35386a7b3606db9d120c2ae64bec1ddbbf7c3b71089be5"
+imports = []
+
+[[package]]
+id = "lexlean.std.bool"
+version = "1.2.0"
+kind = "builtin"
+source = "embedded"
+revision = "compiler-semantics"
+tree_kappa = "blake3:7becccdde09615bd0fff4866cbaa12076ccc8b1c8417f7a3776ba42c238684e8"
+manifest_kappa = "blake3:cd851a8327cd69875094fccf04164e5fbb4f5ce866667ea48a36fbd7dec66c2a"
+imports = ["lexlean.core@1.2.0"]
+
+[[package]]
+id = "lexlean.std.nat"
+version = "1.2.0"
+kind = "builtin"
+source = "embedded"
+revision = "compiler-semantics"
+tree_kappa = "blake3:35eb218aadbdb0caf4fc8567e0052fc4c21cced95416a2df4c64bab9e87f7d0d"
+manifest_kappa = "blake3:de03ecbd4fb28dc206fb07a6ce449ec8752ad18303939e9343d77e30a32d018d"
+imports = ["lexlean.core@1.2.0", "lexlean.std.bool@1.2.0"]

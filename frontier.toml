@@ -4960,7 +4960,7 @@ reason = "type"
 detail = "type outside the lift: f32"
 
 [[residue]]
-kappa = "27363460a55c0aaf3afaeab3ffbf4ea75c01b49eeca6bd7dcbd99367c9651733"
+kappa = "4e7b377b42bb4f3326cbb4c0e51d27c4154f82600eb4e0b8d0b89677d401bcc7"
 function = "verdant_tensor::linear::evaluate_float_unary"
 reason = "call"
 detail = "calls run, which is not lifted"

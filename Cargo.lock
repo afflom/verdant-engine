@@ -845,6 +845,7 @@ dependencies = [
  "verdant_encoded_word",
  "verdant_error_function",
  "verdant_exponential_f32",
+ "verdant_exponential_increment",
  "verdant_exponential_scale",
  "verdant_exponential_step",
  "verdant_float_storage",
@@ -867,6 +868,8 @@ dependencies = [
  "verdant_head_slope_term",
  "verdant_head_slope_word",
  "verdant_high_f64",
+ "verdant_increment_pack",
+ "verdant_increment_term",
  "verdant_integer_f32",
  "verdant_logarithmic_admit",
  "verdant_logarithmic_inverse",
@@ -904,6 +907,7 @@ dependencies = [
  "verdant_symmetric_q8",
  "verdant_tanh",
  "verdant_unary_activate",
+ "verdant_unary_dispatch",
  "verdant_unary_plan",
  "verdant_unary_round",
  "verdant_unary_select",
@@ -1006,6 +1010,10 @@ name = "verdant_exponential_f32"
 version = "2.19.0"
 
 [[package]]
+name = "verdant_exponential_increment"
+version = "2.48.0"
+
+[[package]]
 name = "verdant_exponential_scale"
 version = "2.19.0"
 
@@ -1092,6 +1100,14 @@ version = "2.29.0"
 [[package]]
 name = "verdant_high_f64"
 version = "2.9.0"
+
+[[package]]
+name = "verdant_increment_pack"
+version = "2.48.0"
+
+[[package]]
+name = "verdant_increment_term"
+version = "2.48.0"
 
 [[package]]
 name = "verdant_integer_f32"
@@ -1240,6 +1256,10 @@ version = "2.27.0"
 [[package]]
 name = "verdant_unary_activate"
 version = "2.9.0"
+
+[[package]]
+name = "verdant_unary_dispatch"
+version = "2.48.0"
 
 [[package]]
 name = "verdant_unary_plan"

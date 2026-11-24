@@ -501,3 +501,11 @@ Flipping a single byte inside `generated/stitch-proof.holo` or incrementing `man
 The exported `GaussianActivation.evaluateError` program selects the rational approximation, scalar operations and exponential calls for erf and GELU_ERF. The test compares 129,730 binary32 inputs with the platform C++ error function and the pinned GGML CPU GELU_ERF vector routine. It checks signed zero, nonfinite inputs, both sides of each interval boundary and the finite error envelopes in `gaussian_error_vtk_54`. Replacing the requested exponential with its input failed at word `3fa00000`: the candidate returned 0.6353329 and the oracle returned 0.92290014. The restored interpreter passed both outputs.
 
 The published kernel archive contains the same source bytes as the certified Rust package and the original SunPro notice in `NOTICE`. The notice and algorithm attribution are retained in [the tensor source package](crates/verdant-tensor/notices/verdant_error_function.txt).
+
+## VTK-55 binary32 exponential increment
+
+Unary operation 13 evaluates `expm1` on the existing F32, F16 and BF16 storage pairs. The `increment` Prism project certifies dispatch, magnitude selection, signed correction to the existing exponential series step, and final rounding. Its production result is `f5a4db688f5887c22e40f6f7e677d09b6e6614547b018818964a67f31d03f843`.
+
+The test `exponential_increment_vtk_55` compared 195,716 distinct binary32 inputs with the C++ math library and the pinned GGML CPU ELU kernel. The maximum observed finite difference was one ULP. Tiny inputs, both zero signs, infinities and overflow agreed exactly. Sixteen binary16 and bfloat16 inputs exercised 32 destination conversions against the imported storage oracle.
+
+Replacing the small-input result with a binary32 exponential followed by subtraction returned zero for input word `00000001`. The differential test rejected that result and passed after restoration. Existing exponential and unary-refusal tests also passed.

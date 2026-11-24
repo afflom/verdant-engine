@@ -908,3 +908,9 @@ id = "VTK-54"
 level = "build"
 suite = "engine"
 statement = "Verdant evaluates the binary32 error function and its Gaussian activation against the imported GGML CPU"
+
+[[id]]
+id = "VTK-55"
+level = "build"
+suite = "engine"
+statement = "A certified binary32 exponential increment preserves tiny signed operands and agrees with the C and GGML oracles"

@@ -394,6 +394,19 @@ int main(int argc, char **argv) {
     }
     return std::feof(stdin) ? 0 : 2;
   }
+  if (!std::strcmp(argv[1], "exponential-increment")) {
+    unsigned bits;
+    while (std::scanf("%u", &bits) == 1) {
+      float x, elu;
+      std::memcpy(&x, &bits, sizeof(x));
+      ggml_vec_elu_f32(1, &elu, &x);
+      for (float value : {std::expm1(x), elu}) {
+        std::memcpy(&bits, &value, sizeof(bits));
+        std::printf("%u\n", bits);
+      }
+    }
+    return std::feof(stdin) ? 0 : 2;
+  }
   if (!std::strcmp(argv[1], "gaussian-error")) {
     unsigned bits;
     while (std::scanf("%u", &bits) == 1) {
@@ -1430,6 +1443,10 @@ fn verify_bundle(scope: &str, directory: &str) -> std::collections::BTreeMap<Str
                     "verdant_head_slope" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_head_slope/src/lib.rs"),
                     "verdant_gelu" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_gelu/src/lib.rs"),
                     "verdant_error_function" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_error_function/src/lib.rs"),
+                    "verdant_unary_dispatch" => include_bytes!("../../../../generated/tensor-increment/packages/rust-core/verdant_unary_dispatch/src/lib.rs"),
+                    "verdant_exponential_increment" => include_bytes!("../../../../generated/tensor-increment/packages/rust-core/verdant_exponential_increment/src/lib.rs"),
+                    "verdant_increment_term" => include_bytes!("../../../../generated/tensor-increment/packages/rust-core/verdant_increment_term/src/lib.rs"),
+                    "verdant_increment_pack" => include_bytes!("../../../../generated/tensor-increment/packages/rust-core/verdant_increment_pack/src/lib.rs"),
                     "verdant_logistic" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_logistic/src/lib.rs"),
                     "verdant_swiglu" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_swiglu/src/lib.rs"),
                     "verdant_packed_dot" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_packed_dot/src/lib.rs"),
@@ -1970,6 +1987,115 @@ fn attention_head_slopes_vtk_30() {
         (f32::INFINITY, 1, 0),
     ] {
         assert!(super::attention_head_slope_f32(bias, heads, head).is_err());
+    }
+}
+
+#[test]
+fn exponential_increment_vtk_55() {
+    use std::fmt::Write;
+    let bindings = verify_bundle("increment", "tensor-increment");
+    for (name, package) in [
+        ("plan", "verdant_unary_dispatch"),
+        ("increment", "verdant_exponential_increment"),
+        ("incrementTerm", "verdant_increment_term"),
+        ("packIncrement", "verdant_increment_pack"),
+    ] {
+        assert_eq!(
+            bindings[&format!("VerdantEngine.ExponentialIncrement.{name}")],
+            package
+        );
+    }
+    let mut words: Vec<u32> = (0..=u16::MAX).map(|high| u32::from(high) << 16).collect();
+    words.extend((-65536..=65536).map(|n| (n as f32 / 65536.0).to_bits()));
+    for pivot in [
+        0_u32, 0x00800000, 0x33000000, 0x3f000000, 0x418aa123, 0x42b17218, 0x7f800000,
+    ] {
+        for word in pivot.saturating_sub(64)..=pivot + 64 {
+            words.extend([word, word | 0x80000000]);
+        }
+    }
+    words.sort_unstable();
+    words.dedup();
+    let mut inputs = String::new();
+    for &word in &words {
+        writeln!(inputs, "{word}").unwrap();
+    }
+    assert_eq!(
+        super::evaluate_float_unary(13, 0, 0, 1u64 << 32).unwrap(),
+        None
+    );
+    let expected = query_oracle("exponential-increment", inputs);
+    assert_eq!(expected.len(), words.len() * 2);
+    let samples = words.len();
+    let mut max_ulp = 0;
+    for (word, pair) in words.into_iter().zip(expected.chunks_exact(2)) {
+        let x = f32::from_bits(word);
+        let result = super::evaluate_float_unary(13, 0, 0, u64::from(word))
+            .unwrap()
+            .unwrap();
+        let bits = u32::try_from(result).unwrap();
+        let value = f32::from_bits(bits);
+        if x.is_nan() {
+            assert!(value.is_nan());
+            continue;
+        }
+        if !x.is_finite()
+            || x.abs() <= f32::from_bits(0x33000000)
+            || !f32::from_bits(pair[0]).is_finite()
+        {
+            assert_eq!(bits, pair[0], "input {word:08x}");
+        } else {
+            max_ulp = max_ulp.max(bits.abs_diff(pair[0]));
+            assert_eq!(value.is_sign_negative(), x.is_sign_negative());
+            assert!(
+                bits.abs_diff(pair[0]) <= 3,
+                "expm1 {word:08x}: {bits:08x} vs {:08x}",
+                pair[0]
+            );
+        }
+        assert_eq!(
+            pair[1],
+            if x > 0.0 { word } else { pair[0] },
+            "GGML ELU {word:08x}"
+        );
+    }
+    eprintln!("{samples} binary32 exponential increments and GGML ELU values, maximum difference {max_ulp} ULP");
+    for (source, words) in [
+        (1, [0, 0x8000, 1, 0x8001, 0x3800, 0xb800, 0x3d00, 0xbd00]),
+        (30, [0, 0x8000, 1, 0x8001, 0x3f00, 0xbf00, 0x3fa0, 0xbfa0]),
+    ] {
+        let decoded = query_oracle(
+            "conversion",
+            words.iter().map(|w| format!("{source} 0 {w}\n")).collect(),
+        );
+        let reference = query_oracle(
+            "exponential-increment",
+            decoded.iter().map(|w| format!("{w}\n")).collect(),
+        );
+        let narrowed = query_oracle(
+            "conversion",
+            reference
+                .chunks_exact(2)
+                .map(|p| format!("0 {source} {}\n", p[0]))
+                .collect(),
+        );
+        assert_eq!((decoded.len(), reference.len(), narrowed.len()), (8, 16, 8));
+        for ((word, pair), narrow) in words
+            .into_iter()
+            .zip(reference.chunks_exact(2))
+            .zip(narrowed)
+        {
+            let run = |destination| {
+                super::evaluate_float_unary(13, source, destination, word)
+                    .unwrap()
+                    .unwrap() as u32
+            };
+            assert!(
+                run(0).abs_diff(pair[0]) <= 3,
+                "float output {source}/{word:04x}"
+            );
+            assert_eq!(run(source), narrow, "narrow output {source}/{word:04x}");
+        }
     }
 }
 

@@ -1083,7 +1083,7 @@ pub fn evaluate_wide(operation: u64, a: u64, b: u64) -> Result<Option<u64>, Tens
 }
 
 /// Evaluate ABS, SGN, NEG, STEP, RELU, SQR, SQRT, HARDSIGMOID, HARDSWISH,
-/// FLOOR, CEIL, ROUND and TRUNC (codes 0..12) on encoded float storage.
+/// FLOOR, CEIL, ROUND, TRUNC and EXPM1 (codes 0..13) on encoded float storage.
 /// Source/destination pairs are F32/F32, F16/F16, BF16/BF16, F16/F32 and BF16/F32.
 /// Unsupported codes/pairs and out-of-width words return `None`.
 ///
@@ -1099,22 +1099,56 @@ pub fn evaluate_float_unary(
         kernel_name: "FloatUnary.evaluate".to_string(),
     };
     let Some(plan) =
-        verdant_unary_plan::run(operation, source, destination, bits).map_err(|_| failure())?
+        verdant_unary_dispatch::run(operation, source, destination, bits).map_err(|_| failure())?
     else {
         return Ok(None);
     };
     let answer = match plan {
-        verdant_unary_plan::Adt0::C0(kind, word) => {
-            verdant_scalar_f32::run(kind, word, 0).map_err(|_| failure())
-        }
-        verdant_unary_plan::Adt0::C1(kind, word) => {
-            verdant_unary_select::run(kind, word).map_err(|_| failure())
-        }
-        verdant_unary_plan::Adt0::C2(kind, word) => {
-            verdant_unary_activate::run(kind, word).map_err(|_| failure())
-        }
-        verdant_unary_plan::Adt0::C3(kind, word) => {
-            verdant_unary_round::run(kind, word).map_err(|_| failure())
+        verdant_unary_dispatch::Adt0::C0(ordinary) => match ordinary {
+            verdant_unary_dispatch::Adt1::C0(kind, word) => {
+                verdant_scalar_f32::run(kind, word, 0).map_err(|_| failure())
+            }
+            verdant_unary_dispatch::Adt1::C1(kind, word) => {
+                verdant_unary_select::run(kind, word).map_err(|_| failure())
+            }
+            verdant_unary_dispatch::Adt1::C2(kind, word) => {
+                verdant_unary_activate::run(kind, word).map_err(|_| failure())
+            }
+            verdant_unary_dispatch::Adt1::C3(kind, word) => {
+                verdant_unary_round::run(kind, word).map_err(|_| failure())
+            }
+        },
+        verdant_unary_dispatch::Adt0::C1(word) => {
+            use verdant_exponential_increment::Adt0 as Increment;
+            let value = match verdant_exponential_increment::run(word).map_err(|_| failure())? {
+                Increment::C0 => return Ok(None),
+                Increment::C1(value) => value,
+                Increment::C2(argument, unit) => {
+                    let exp = exponential_f32(f32::from_bits(argument as u32))?;
+                    let result = evaluate_f32_scalar(1, exp, f32::from_bits(unit as u32))?;
+                    u64::from(result.to_bits())
+                }
+                Increment::C3(
+                    negative,
+                    sign,
+                    exponent,
+                    mantissa,
+                    argument,
+                    low,
+                    high,
+                    mut factor,
+                ) => {
+                    let unit = factor;
+                    for order in (low..=high).rev() {
+                        let positive = verdant_exponential_step::run(argument, order, factor)
+                            .map_err(|_| failure())?;
+                        factor = verdant_increment_term::run(negative, unit, positive);
+                    }
+                    verdant_increment_pack::run(sign, exponent, mantissa, factor)
+                        .map_err(|_| failure())?
+                }
+            };
+            Ok(Some(value))
         }
     }?;
     match answer {
