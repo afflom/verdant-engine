@@ -35,3 +35,31 @@ export const getExtendedWorkerModule=()=>(extP??=import("./engine-worker-extende
 export async function handleExtendedWorkerMessage(msg,ctx){
 return(await getExtendedWorkerModule()).handleExtendedWorkerMessage(msg,ctx);
 }
+export async function handleStreamOrGrantWorkerMessage(msg,ctx){
+if(msg.kind==="stream-uorc"){
+const{readIoBytes,stageIoBytes}=await getExtendedWorkerModule();
+const targetRank=Math.max(0,Math.min(4,msg.targetRank|0))>>>0;
+const uorcWasm=await ctx.getUorcWasm();
+const streamBytes=msg.customStream instanceof Uint8Array&&msg.customStream.byteLength>0?msg.customStream:await ctx.getCanonicalUorcStream();
+stageIoBytes(uorcWasm,streamBytes);
+const ok=uorcWasm.verdant_wasm_uorc_decode_and_restore(targetRank)===1;
+if(!ok){ctx.postMessage({kind:"uorc-streamed",id:msg.id,ok:false});return;}
+const vdntBytes=readIoBytes(uorcWasm);
+if(!ctx.getUorcSceneActive())ctx.syncCoreStateToUorc(uorcWasm);else ctx.syncOrgansToWasm(uorcWasm);
+ctx.clearWalkJournal();ctx.setUorcSceneActive(true);ctx.setCustomGlbActive(false);
+const sh=ctx.simHost();
+const codedChecksum=Number(uorcWasm.verdant_wasm_coded_zero_decode_checksum(Math.min(3,targetRank)));
+const lod=msg.lod||ctx.getCurrentLod();ctx.setCurrentLod(lod);
+const cam=readSolvedCamera(sh);
+const stats=ctx.drawScene(cam.eye,cam.lookTarget,lod,msg.simClockSec||0,false);
+ctx.postMessage({kind:"uorc-streamed",id:msg.id,ok:true,lodRank:sh.verdant_wasm_active_lod_rank()>>>0,tris:stats.tris,streamBytes:streamBytes.byteLength,vdntBytes:vdntBytes.byteLength,codedChecksum});
+return;
+}
+const uorcWasm=await ctx.getUorcWasm();
+const idx=Math.max(0,Math.min(10,msg.organIdx>>>0));
+const reqMode=msg.mode>>>0;
+if(reqMode===0)ctx.organModes[idx]=0;else if(reqMode===2)ctx.organModes[idx]=2;else if(reqMode===1&&ctx.organModes[idx]!==2)ctx.organModes[idx]=1;
+ctx.slmKappaCache.clear();
+const allowed=ctx.syncOrgansToWasm(uorcWasm,idx);
+ctx.postMessage({kind:"organ-grant-updated",id:msg.id,ok:true,organIdx:idx,mode:ctx.organModes[idx],allowed});
+}

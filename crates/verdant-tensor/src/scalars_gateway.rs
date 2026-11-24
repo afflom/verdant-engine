@@ -565,3 +565,226 @@ pub const fn holo_v6_self_carrying_admitted(
         && holo_v6_theorems_complete(proved_theorems, total_theorems)
         && capsule_bytes < megabyte
 }
+
+/// Pure MIR-lifted 256-lane GGML importance-grid super-block lane count (`16 * 16 = 256`, `M30`, `VE-81`).
+#[must_use]
+pub const fn importance_grid_superblock_lanes() -> u32 {
+    sixteen_u32().wrapping_mul(sixteen_u32())
+}
+
+/// Pure MIR-lifted 32-lane importance-grid sub-block count per 256-lane super-block (`8`, `M30`).
+#[must_use]
+pub const fn importance_grid_subblocks_per_block() -> u32 {
+    eight_u32()
+}
+
+/// Pure MIR-lifted 8-lane octet group count per 256-lane super-block (`32`, `VTK-59`..`VTK-62`).
+#[must_use]
+pub const fn importance_grid_octets_per_block() -> u32 {
+    thirty_two_u32()
+}
+
+/// Pure MIR-lifted 4-lane quartet count per 256-lane super-block (`64`, `VTK-56`).
+#[must_use]
+pub const fn importance_grid_quartets_per_block() -> u32 {
+    sixty_four_u32()
+}
+
+/// Pure MIR-lifted exact super-block divisibility check (`lanes >= 256 && lanes % 256 == 0`).
+#[must_use]
+pub const fn importance_grid_extent_admissible(total_lanes: u32) -> bool {
+    let block = importance_grid_superblock_lanes();
+    let whole_blocks = match total_lanes.checked_div(block) {
+        Some(q) => q,
+        None => 0_u32,
+    };
+    total_lanes >= block && whole_blocks.wrapping_mul(block) == total_lanes
+}
+
+/// Pure MIR-lifted IQ4_NL / IQ4_XS 16-entry nonlinear codebook index bound (`idx < 16`, `VTK-53`).
+#[must_use]
+pub const fn iq4_codebook_index_valid(idx: u32) -> bool {
+    idx < sixteen_u32()
+}
+
+/// Pure MIR-lifted IQ3_XXS 256-entry 4-lane codebook index bound (`idx < 256`, `VTK-56`).
+#[must_use]
+pub const fn iq3_xxs_grid_index_valid(idx: u32) -> bool {
+    idx < importance_grid_superblock_lanes()
+}
+
+/// Pure MIR-lifted IQ3_S 512-entry 4-lane codebook index bound (`idx < 512`, `VTK-56`).
+#[must_use]
+pub const fn iq3_s_grid_index_valid(idx: u32) -> bool {
+    idx < importance_grid_superblock_lanes().wrapping_mul(two_u32())
+}
+
+/// Pure MIR-lifted IQ2_S 1024-entry 8-lane codebook index bound (`idx < 1024`, `VTK-59`).
+#[must_use]
+pub const fn iq2_s_grid_index_valid(idx: u32) -> bool {
+    idx < thirty_two_u32().wrapping_mul(thirty_two_u32())
+}
+
+/// Pure MIR-lifted IQ2_XS 512-entry parity-constrained codebook index bound (`idx < 512`, `VTK-60`).
+#[must_use]
+pub const fn iq2_xs_grid_index_valid(idx: u32) -> bool {
+    idx < importance_grid_superblock_lanes().wrapping_mul(two_u32())
+}
+
+/// Pure MIR-lifted IQ2_XXS 256-entry parity-constrained codebook index bound (`idx < 256`, `VTK-61`).
+#[must_use]
+pub const fn iq2_xxs_grid_index_valid(idx: u32) -> bool {
+    idx < importance_grid_superblock_lanes()
+}
+
+/// Pure MIR-lifted IQ1_S / IQ1_M 2048-entry shifted ternary codebook index bound (`idx < 2048`, `VTK-62`).
+#[must_use]
+pub const fn iq1_shifted_grid_index_valid(idx: u32) -> bool {
+    let kibi = thirty_two_u32().wrapping_mul(thirty_two_u32());
+    idx < kibi.wrapping_mul(two_u32())
+}
+
+/// Pure MIR-lifted odd-popcount parity constraint check (`negative_sign_count % 2 == expected_odd`).
+#[must_use]
+pub const fn importance_octet_parity_valid(negative_sign_count: u32, require_odd: bool) -> bool {
+    let two = two_u32();
+    let pairs = match negative_sign_count.checked_div(two) {
+        Some(q) => q,
+        None => 0_u32,
+    };
+    let is_even = pairs.wrapping_mul(two) == negative_sign_count;
+    if require_odd {
+        !is_even
+    } else {
+        is_even
+    }
+}
+
+/// Pure MIR-lifted IQ1_S byte footprint per 256-lane block (`50` bytes: `2 + 32 + 16`, `VTK-62`).
+#[must_use]
+pub const fn iq1_s_block_bytes() -> u32 {
+    ten_u32().wrapping_mul(five_u32())
+}
+
+/// Pure MIR-lifted IQ1_M byte footprint per 256-lane block (`56` bytes: `32 + 16 + 6 + 2`, `VTK-62`).
+#[must_use]
+pub const fn iq1_m_block_bytes() -> u32 {
+    eight_u32().wrapping_mul(four_u32().wrapping_add(three_u32()))
+}
+
+/// Pure MIR-lifted IQ2_XXS byte footprint per 256-lane block (`66` bytes: `2 + 64`, `VTK-61`).
+#[must_use]
+pub const fn iq2_xxs_block_bytes() -> u32 {
+    sixty_four_u32().wrapping_add(two_u32())
+}
+
+/// Pure MIR-lifted IQ2_XS byte footprint per 256-lane block (`74` bytes: `2 + 64 + 8`, `VTK-60`).
+#[must_use]
+pub const fn iq2_xs_block_bytes() -> u32 {
+    sixty_four_u32().wrapping_add(ten_u32())
+}
+
+/// Pure MIR-lifted IQ2_S byte footprint per 256-lane block (`82` bytes: `2 + 64 + 8 + 8`, `VTK-59`).
+#[must_use]
+pub const fn iq2_s_block_bytes() -> u32 {
+    sixty_four_u32()
+        .wrapping_add(sixteen_u32())
+        .wrapping_add(two_u32())
+}
+
+/// Pure MIR-lifted monotonic K/IQ block-byte ordering invariant (`IQ1_S < IQ1_M < IQ2_XXS < IQ2_XS < IQ2_S`).
+#[must_use]
+pub const fn importance_grid_block_sizes_ordered() -> bool {
+    iq1_s_block_bytes() < iq1_m_block_bytes()
+        && iq1_m_block_bytes() < iq2_xxs_block_bytes()
+        && iq2_xxs_block_bytes() < iq2_xs_block_bytes()
+        && iq2_xs_block_bytes() < iq2_s_block_bytes()
+}
+
+/// Pure MIR-lifted gated delta rule state matrix extent check (`head_dim >= 1 && heads >= 1 && steps >= 1`, `VTK-57`).
+#[must_use]
+pub const fn delta_rule_extents_admissible(head_dim: u32, heads: u32, steps: u32) -> bool {
+    head_dim >= 1_u32 && heads >= 1_u32 && steps >= 1_u32
+}
+
+/// Pure MIR-lifted selective state space (`SSM`) recurrence extent check (`state_dim >= 1 && channels >= 1`, `VTK-58`).
+#[must_use]
+pub const fn selective_state_extents_admissible(
+    state_dim: u32,
+    channels: u32,
+    seq_len: u32,
+) -> bool {
+    state_dim >= 1_u32 && channels >= 1_u32 && seq_len >= 1_u32
+}
+
+/// Pure MIR-lifted write-once release-pinned Cargo sparse index immutability check (`PR #53`).
+#[must_use]
+pub const fn versioned_sparse_index_write_once_admissible(
+    version_dir_exists: bool,
+    has_config_json: bool,
+    crate_count: u32,
+) -> bool {
+    let four = four_u32();
+    !version_dir_exists && has_config_json && crate_count >= four
+}
+
+/// Pure MIR-lifted unified 3-scope certified root coverage check (`tensor >= 80 && quotient >= 6 && encoding >= 13`, `VE-81`).
+#[must_use]
+pub const fn unified_scope_root_counts_valid(
+    tensor_roots: u32,
+    quotient_roots: u32,
+    encoding_roots: u32,
+) -> bool {
+    let eighty = eight_u32().wrapping_mul(ten_u32());
+    let six = six_u32();
+    let thirteen = ten_u32().wrapping_add(three_u32());
+    tensor_roots >= eighty && quotient_roots >= six && encoding_roots >= thirteen
+}
+
+/// Pure MIR-lifted M30 Rust modularity ceiling check (`max_lines <= 1145`, `VE-81`).
+#[must_use]
+pub const fn m30_rust_modularity_ceiling() -> u32 {
+    let thousand = thousand_u32();
+    let hundred = hundred_u32();
+    let forty_five = ten_u32().wrapping_mul(four_u32()).wrapping_add(five_u32());
+    thousand.wrapping_add(hundred).wrapping_add(forty_five)
+}
+
+/// Pure MIR-lifted M30 shipped JS modularity ceiling check (`max_lines <= 850`, `VE-81`).
+#[must_use]
+pub const fn m30_js_modularity_ceiling() -> u32 {
+    let eight_hundred = hundred_u32().wrapping_mul(eight_u32());
+    let fifty = ten_u32().wrapping_mul(five_u32());
+    eight_hundred.wrapping_add(fifty)
+}
+
+/// Pure MIR-lifted M30 modularity compliance check (`rust_max <= 1145 && js_max <= 850`, `VE-81`).
+#[must_use]
+pub const fn m30_modularity_targets_met(rust_max_lines: u32, js_max_lines: u32) -> bool {
+    rust_max_lines >= 1_u32
+        && js_max_lines >= 1_u32
+        && rust_max_lines <= m30_rust_modularity_ceiling()
+        && js_max_lines <= m30_js_modularity_ceiling()
+}
+
+/// Pure MIR-lifted M30 uorust frontier advancement check (`lifted >= 615 && residue <= 1148 && uncertified <= 1300`, `VE-81`).
+#[must_use]
+pub const fn m30_frontier_targets_met(lifted: u64, residue: u64, uncertified: u64) -> bool {
+    let six_fifteen = hundred_u64()
+        .wrapping_mul(six_u32() as u64)
+        .wrapping_add(ten_u64())
+        .wrapping_add(five_u32() as u64);
+    let max_res = (thousand_u32() as u64)
+        .wrapping_add(hundred_u64())
+        .wrapping_add(sixteen_u64().wrapping_mul(three_u64()));
+    let max_uncert = (thousand_u32() as u64).wrapping_add(hundred_u64().wrapping_mul(three_u64()));
+    lifted >= six_fifteen && residue <= max_res && uncertified <= max_uncert
+}
+
+/// Pure MIR-lifted M30 Observer self-refinement score floor check (`score_permille >= 984`, `VE-81`).
+#[must_use]
+pub const fn m30_refinement_score_valid(score_permille: u32) -> bool {
+    let thousand = thousand_u32();
+    let floor = thousand.wrapping_sub(sixteen_u32());
+    score_permille >= floor && score_permille <= thousand
+}

@@ -852,3 +852,139 @@ impl CatalogBundleRegistry {
         })
     }
 }
+
+/// OMG DMN 1.5 decision rule in `catalogs/language/iso24617-dmn-dialogue.json`.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct DmnRuleEntry {
+    /// Rule identifier (`R1-HALTED`..`R8-ADMIT-VERDANT`).
+    pub id: String,
+    /// Optional halted condition (`"yes"` / `"no"`).
+    #[serde(default)]
+    pub halted: Option<String>,
+    /// Optional source lock condition (`"locked"` / `"unlocked"`).
+    #[serde(default)]
+    pub source: Option<String>,
+    /// Optional flag matching when model format is outside `allowedVerdantFormats`.
+    #[serde(rename = "formatNotInAllowed", default)]
+    pub format_not_in_allowed: Option<bool>,
+    /// Optional FK-07 route condition (`"granted"` / `"ungranted"`).
+    #[serde(default)]
+    pub route: Option<String>,
+    /// Optional runtime digest condition (`"match"` / `"mismatch"`).
+    #[serde(default)]
+    pub runtime: Option<String>,
+    /// Optional weights digest condition (`"match"` / `"mismatch"`).
+    #[serde(default)]
+    pub weights: Option<String>,
+    /// Optional missing bundle condition.
+    #[serde(rename = "missingRuntimeOrWeights", default)]
+    pub missing_runtime_or_weights: Option<bool>,
+    /// Decision outcome (`"run"`, `"ask"`, `"fetch"`, `"refuse"`).
+    pub outcome: String,
+    /// Machine-readable reason slug.
+    pub reason: String,
+}
+
+/// ISO 24617-2 dialogue act entry in `catalogs/language/iso24617-dmn-dialogue.json`.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct IsoDialogueActEntry {
+    /// Zero-based act index (`0..=7`).
+    pub code: u8,
+    /// ISO 24617-2 communicative function (`inform`, `whQuestion`, `ynQuestion`, `request`, `offer`, `confirm`, `disconfirm`, `abstain`).
+    pub id: String,
+    /// ISO dimension (`task`, `autoFeedback`, `epistemicSafety`).
+    #[serde(rename = "isoDimension")]
+    pub iso_dimension: String,
+    /// Whether this dialogue act may propose conserved world state transitions.
+    #[serde(rename = "mutatesWorld")]
+    pub mutates_world: bool,
+}
+
+/// BCP-47 language starter profile in `catalogs/language/iso24617-dmn-dialogue.json`.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct LanguageStarterProfile {
+    /// BCP-47 tag (`en`, `es`, `fr`, `ja`).
+    pub bcp47: String,
+    /// Language display name.
+    pub name: String,
+    /// Wh-question starter tokens.
+    #[serde(rename = "questionStarters")]
+    pub question_starters: Vec<String>,
+    /// Yes/No-question starter tokens.
+    #[serde(rename = "ynStarters")]
+    pub yn_starters: Vec<String>,
+}
+
+/// Cataloged Studio/Engine cybernetic intent route (`0..=15`).
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct CatalogIntentRoute {
+    /// Zero-based route index (`0..=15`).
+    pub index: usize,
+    /// Canonical route slug.
+    pub slug: String,
+    /// Required `FK-07` container organ slug.
+    pub organ: String,
+    /// Lexical feature keywords feeding the `uor-matmul` `CodedSlmDirector`.
+    pub keywords: Vec<String>,
+}
+
+/// Verified ISO 24617-2 Dialogue & OMG DMN 1.5 Model Admission catalog (`AUTH-ISO-24617-DMN`).
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct LanguageDialogueCatalog {
+    /// Spec header.
+    pub spec: String,
+    /// Authority ID (`AUTH-ISO-24617-DMN`).
+    #[serde(rename = "authorityId")]
+    pub authority_id: String,
+    /// External model/3D runtimes strictly prohibited in Verdant.
+    #[serde(rename = "prohibitedExternalRuntimes")]
+    pub prohibited_external_runtimes: Vec<String>,
+    /// Native Verdant Engine model formats permitted for execution.
+    #[serde(rename = "allowedVerdantFormats")]
+    pub allowed_verdant_formats: Vec<String>,
+    /// OMG DMN 1.5 hit policy (`"FIRST"`).
+    #[serde(rename = "dmnHitPolicy")]
+    pub dmn_hit_policy: String,
+    /// Ordered `FIRST`-hit DMN rules.
+    #[serde(rename = "dmnRules")]
+    pub dmn_rules: Vec<DmnRuleEntry>,
+    /// ISO 24617-2 communicative acts.
+    #[serde(rename = "dialogueActs")]
+    pub dialogue_acts: Vec<IsoDialogueActEntry>,
+    /// Deterministic epistemic abstention token (`"Unknown"`).
+    #[serde(rename = "abstentionToken")]
+    pub abstention_token: String,
+    /// Supported BCP-47 language profiles.
+    pub languages: Vec<LanguageStarterProfile>,
+    /// 16 cybernetic intent routes.
+    #[serde(rename = "intentRoutes")]
+    pub intent_routes: Vec<CatalogIntentRoute>,
+}
+
+/// Input context evaluated by the OMG DMN 1.5 `FIRST`-hit model admission gate.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct DmnAdmissionInput {
+    /// Model format identifier (`"verdant-uorc"`, `"verdant-coded-matrix"`, `"verdant-holo"`, or external e.g. `"onnx"`).
+    pub model_format: String,
+    /// Whether the Observer emergency halt latch is active.
+    pub observer_halted: bool,
+    /// Whether the model authority is SHA-256 locked (`true` = `"locked"`, `false` = `"unlocked"`).
+    pub source_locked: bool,
+    /// Whether the required `FK-07` container organ route is granted.
+    pub route_granted: bool,
+    /// Runtime binary state (`"match"`, `"mismatch"`, or `"missing"`).
+    pub runtime_state: String,
+    /// Model weights state (`"match"`, `"mismatch"`, or `"missing"`).
+    pub weights_state: String,
+}
+
+/// Decision returned by [`LanguageDialogueCatalog::evaluate_dmn_admission`].
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct DmnAdmissionDecision {
+    /// Matched rule ID (`R1-HALTED`..`R8-ADMIT-VERDANT`).
+    pub rule_id: String,
+    /// Outcome (`"run"`, `"ask"`, `"fetch"`, `"refuse"`).
+    pub outcome: String,
+    /// Reason slug.
+    pub reason: String,
+}

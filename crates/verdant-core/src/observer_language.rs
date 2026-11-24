@@ -126,14 +126,16 @@ fn tokenize_content_words(text: &str) -> Vec<String> {
         "have", "about", "tell", "me", "you", "your", "please", "one", "two", "que", "donde",
         "quien", "como", "quel", "quelle", "est", "les", "des", "une", "para", "del",
     ];
-    let min_len = (1usize + 1usize) + 1usize;
+    let min_len = crate::math::three_u32() as u64;
+    let plural_min = crate::math::four_u32() as u64;
     text.to_ascii_lowercase()
         .split(|c: char| !c.is_ascii_alphanumeric())
-        .filter(|w| w.len() >= min_len && !STOP_WORDS.contains(w))
+        .filter(|w| (w.len() as u64) >= min_len && !STOP_WORDS.contains(w))
         .map(|w| {
             // Light plural normalization (`sextants -> sextant`, `gates -> gate`) for exact lexical grounding:
-            if w.len() > (min_len + 1) && w.ends_with('s') && !w.ends_with("ss") {
-                w[..w.len() - 1].to_string()
+            let stem = w.strip_suffix('s').unwrap_or(w);
+            if (w.len() as u64) > plural_min && w.ends_with('s') && !w.ends_with("ss") {
+                stem.to_string()
             } else {
                 w.to_string()
             }

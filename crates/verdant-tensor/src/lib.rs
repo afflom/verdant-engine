@@ -49,10 +49,19 @@ pub const HD_LOD_ENVELOPE_COUNT: usize = 1 + (1 << (1 + 1));
 /// Constructive power of two (`2^exp`) computed purely from `{0, 1}`.
 #[must_use]
 pub const fn pow2_u64(exp: u32) -> u64 {
-    if exp >= u64::BITS {
+    let two = crate::scalars::two_u64();
+    let sixty_four = crate::scalars::sixty_four_u32();
+    if exp >= sixty_four {
         0_u64
     } else {
-        1_u64.wrapping_shl(exp)
+        let bound = exp as usize;
+        let mut acc = 1_u64;
+        let mut i = 0_usize;
+        while i < bound {
+            acc = acc.wrapping_mul(two);
+            i += 1;
+        }
+        acc
     }
 }
 

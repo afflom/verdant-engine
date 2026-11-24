@@ -103,51 +103,31 @@ fn native_coverage_is_complete(bootstrap: &str) -> bool {
 const PROOF_KEY: &str = "key: prism-proof-${{ runner.os }}-${{ runner.arch }}-lexlean-${{ steps.proof-inputs.outputs.lexlean }}-lean-${{ steps.proof-inputs.outputs.lean }}-${{ hashFiles('app/**', 'template.lock', 'Justfile', 'rust-toolchain.toml', 'scripts/build-holo-v6.mjs') }}";
 
 fn proof_reuse_is_confined(bootstrap: &str, justfile: &str) -> bool {
-    let mut key_count = 0usize;
-    let mut key_matches = false;
-    for raw in bootstrap.lines() {
-        let line = raw.trim();
-        if line.starts_with("key: prism-proof-") {
-            key_count += 1;
-            key_matches = line == PROOF_KEY;
-        }
-    }
+    let key_count = bootstrap
+        .lines()
+        .filter(|raw| raw.trim().starts_with("key: prism-proof-"))
+        .count();
+    let key_matches = bootstrap.lines().any(|raw| raw.trim() == PROOF_KEY);
     if key_count != 1 || !key_matches {
         return false;
     }
-    let Some(start) = justfile.find("\napp:\n") else {
+    let Some((_, after_app)) = justfile.split_once("\napp:\n") else {
         return false;
     };
-    let mut has_event = false;
-    let mut has_reuse = false;
-    let mut has_clean = false;
-    let mut has_verify = false;
-    let mut has_holo = false;
-    let mut has_keep = false;
-    for (idx, line) in justfile[start + 1..].lines().enumerate() {
-        if idx == 0 {
-            continue;
-        }
-        if !(line.starts_with("    ") || line.is_empty()) {
-            break;
-        }
-        let trimmed = line.trim();
-        if trimmed == "pull_request:*|merge_group:*|push:refs/heads/main)" {
-            has_event = true;
-        } else if trimmed == "if cargo run -q --locked -p xtask -- proof-reuse; then" {
-            has_reuse = true;
-        } else if trimmed == "rm -rf .prism-proof" {
-            has_clean = true;
-        } else if trimmed
-            == "(cd app && lexlean --diagnostic-format json verify) > .prism-proof.json"
-        {
-            has_verify = true;
-        } else if trimmed == "node scripts/build-holo-v6.mjs" {
-            has_holo = true;
-        } else if trimmed == r#"cargo run -q --locked -p xtask -- proof-keep "$attestation""# {
-            has_keep = true;
-        }
-    }
+    let recipe_lines: Vec<&str> = after_app
+        .lines()
+        .take_while(|line| line.starts_with("    ") || line.is_empty())
+        .map(str::trim)
+        .collect();
+    let has_event = recipe_lines.contains(&"pull_request:*|merge_group:*|push:refs/heads/main)");
+    let has_reuse =
+        recipe_lines.contains(&"if cargo run -q --locked -p xtask -- proof-reuse; then");
+    let has_clean = recipe_lines.contains(&"rm -rf .prism-proof");
+    let has_verify = recipe_lines
+        .contains(&"(cd app && lexlean --diagnostic-format json verify) > .prism-proof.json");
+    let has_holo = recipe_lines.contains(&"node scripts/build-holo-v6.mjs");
+    let has_keep =
+        recipe_lines.contains(&r#"cargo run -q --locked -p xtask -- proof-keep "$attestation""#);
     bootstrap.contains("PRISM_PROOF_EVENT: ${{ github.event_name }}:${{ github.ref }}")
         && bootstrap.contains(".prism-proof")
         && has_event

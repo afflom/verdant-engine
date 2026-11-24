@@ -3,8 +3,100 @@
 
 use serde::{Deserialize, Serialize};
 
-use super::{evaluate_uhd_display_profile, FrameBudgetOracle, FrameStabilityReport};
-use crate::math::{pow10_u64, two_u32};
+use super::{
+    build_hierarchical_lod_mesh, evaluate_uhd_display_profile, FrameBudgetOracle,
+    FrameStabilityReport, UhdLodPyramidTelemetry,
+};
+use crate::math::{pow10_u64, two_u32, Vec3};
+
+/// A 64-triangle GPU meshlet cluster with tight world bounding sphere and outward normal cone.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MeshletCluster {
+    /// Zero-based meshlet identifier.
+    pub meshlet_id: usize,
+    /// Bounding sphere center in world meters.
+    pub center: Vec3,
+    /// Bounding sphere radius in meters.
+    pub radius: f64,
+    /// Average outward unit normal of all triangles in this meshlet.
+    pub cone_axis: Vec3,
+    /// Backface normal-cone cosine cutoff (`>= 1.0` disables backface rejection for wrap-around clusters).
+    pub cone_cutoff: f64,
+    /// Start index offset in the packed index buffer (`3 * first_tri`).
+    pub first_index: usize,
+    /// Number of vertex indices in this meshlet (`3 * tri_count`).
+    pub index_count: usize,
+}
+
+/// Complete spatially-clustered meshlet partition over an arbitrary packed world scene.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MeshletGraph {
+    /// All 64-triangle spatially-sorted meshlet clusters covering the packed scene.
+    pub clusters: Vec<MeshletCluster>,
+    /// Spatially Morton-ordered triangle indices (`3 * total_triangles`) aligned with `clusters`.
+    #[serde(default, skip_serializing)]
+    pub reordered_indices: Vec<u32>,
+    /// Total triangles indexed by this graph.
+    pub total_triangles: usize,
+}
+
+/// Result of per-frame UHD Frustum + Backface Normal-Cone + Screen-Space Error meshlet culling.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct UhdVisibilityTelemetry {
+    /// Total meshlets partitioned across the active scene.
+    pub total_meshlets: usize,
+    /// Meshlets surviving frustum, backface normal-cone, and SSE tests.
+    pub visible_meshlets: usize,
+    /// Meshlets rejected outside the 6 camera frustum planes.
+    pub culled_frustum: usize,
+    /// Meshlets rejected via O(1) outward normal-cone backface test.
+    pub culled_backface_cone: usize,
+    /// Meshlets rejected as sub-pixel at the current UHD viewport height & FOV.
+    pub culled_subpixel: usize,
+    /// Total scene triangles before culling.
+    pub total_triangles: usize,
+    /// Triangles submitted to the GPU after meshlet culling.
+    pub visible_triangles: usize,
+    /// Fraction of scene triangles eliminated prior to rasterization (`0..=1000` permille).
+    pub cull_ratio_permille: u32,
+}
+
+/// Evaluates the 3-level monotonic hierarchical LOD pyramid (`LOD0` full -> `LOD1` 32-grid ->
+/// `LOD2` 16-grid) for any arbitrary packed scene buffer.
+#[must_use]
+pub fn evaluate_lod_pyramid_telemetry(
+    positions_xyz: &[f32],
+    normals_xyz: &[f32],
+    colors_rgb: &[f32],
+    indices: &[u32],
+) -> UhdLodPyramidTelemetry {
+    let three = 1usize + 1usize + 1usize;
+    let lod0_triangles = indices.len() / three;
+    let grid_lod2 = 1u32 << (1 + 1 + 1 + 1);
+    let grid_lod1 = grid_lod2 << 1;
+    let lod1 =
+        build_hierarchical_lod_mesh(positions_xyz, normals_xyz, colors_rgb, indices, grid_lod1);
+    let lod2 =
+        build_hierarchical_lod_mesh(positions_xyz, normals_xyz, colors_rgb, indices, grid_lod2);
+    let lod1_triangles = lod1.indices.len() / three;
+    let lod2_triangles = lod2.indices.len() / three;
+    let thousand = pow10_u64(two_u32() + 1);
+    let lod2_reduction_permille = if lod0_triangles == 0 {
+        0
+    } else {
+        let reduced = lod0_triangles.saturating_sub(lod2_triangles) as u64;
+        ((reduced * thousand) / (lod0_triangles as u64)) as u32
+    };
+    UhdLodPyramidTelemetry {
+        lod0_triangles,
+        lod1_triangles,
+        lod2_triangles,
+        lod2_reduction_permille,
+    }
+}
 
 /// Closed-loop ISO/IEC 25010:2023 + ITU-R BT.2020/2100 dynamic workload scaling decision uniting
 /// pixel fillrate (DRS + 5-tap CAS), automatic geometry density (`LOD0..LOD4`), meshlet SSE, and

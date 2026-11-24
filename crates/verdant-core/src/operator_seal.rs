@@ -983,3 +983,110 @@ mod tests {
         assert!(entry.app_iri.starts_with("urn:verdant:stitch-app:"));
     }
 }
+
+impl VerdantOperatorChannel {
+    /// Verifies a packed release directory by dropping `n - k` shards (`4` of `8`), recovering the
+    /// `.holo` capsule via Reed-Solomon `GF(2^8)` from the surviving `k` shards, and verifying
+    /// quorum signatures + every lifted file's SHA-256 digest.
+    #[cfg(not(target_arch = "wasm32"))]
+    pub fn verify_release_dir(&self, release_dir: &Path) -> Result<String, ObserverModelError> {
+        let pin_raw = std::fs::read_to_string(release_dir.join("frame-pin.json")).map_err(|e| {
+            ObserverModelError::CommunicationEnvelopeRejected {
+                channel: CommunicationChannelKind::OrganToOrgan.slug().to_string(),
+                detail: format!("read frame-pin.json: {e}"),
+            }
+        })?;
+        let pin: FramePinManifest = serde_json::from_str(&pin_raw).map_err(|e| {
+            ObserverModelError::CommunicationEnvelopeRejected {
+                channel: CommunicationChannelKind::OrganToOrgan.slug().to_string(),
+                detail: format!("parse frame-pin.json: {e}"),
+            }
+        })?;
+        let shards_dir = release_dir.join("shards");
+        let mut surviving = Vec::new();
+        let stride = 1usize + 1usize;
+        for (idx, fname) in pin.shard_files.iter().enumerate() {
+            if idx % stride == 1 {
+                let raw = std::fs::read(shards_dir.join(fname)).map_err(|e| {
+                    ObserverModelError::CommunicationEnvelopeRejected {
+                        channel: CommunicationChannelKind::OrganToOrgan.slug().to_string(),
+                        detail: format!("read {fname}: {e}"),
+                    }
+                })?;
+                let shard =
+                    crate::network::StitchRsShard::from_binary_stch2(&raw).map_err(|e| {
+                        ObserverModelError::CommunicationEnvelopeRejected {
+                            channel: CommunicationChannelKind::OrganToOrgan.slug().to_string(),
+                            detail: format!("parse {fname}: {e}"),
+                        }
+                    })?;
+                surviving.push(shard);
+            }
+        }
+        let mut trusted = BTreeMap::new();
+        trusted.insert(
+            "prism:verdant-observer-executive".to_string(),
+            b"verdant-observer-executive-quorum-key".to_vec(),
+        );
+        trusted.insert(
+            "prism:verdant-release-bot".to_string(),
+            b"verdant-release-bot-quorum-key".to_vec(),
+        );
+        let capsule = VerdantReleaseCapsule::recover_from_stitch(
+            &surviving,
+            &pin,
+            0,
+            Some(pin.prev_kappa_hex.as_str()),
+            &trusted,
+        )
+        .map_err(|e| ObserverModelError::CommunicationEnvelopeRejected {
+            channel: CommunicationChannelKind::OrganToOrgan.slug().to_string(),
+            detail: format!("release recovery failed: {e}"),
+        })?;
+        Ok(format!(
+            "RELEASE VERIFIED: version={} epoch={} files={} bytes={} survived_shards={}/{} kappa={}",
+            capsule.manifest.version,
+            capsule.manifest.release_epoch,
+            capsule.manifest.files.len(),
+            capsule.holo_bytes.len(),
+            surviving.len(),
+            pin.total_shards_n,
+            capsule.capsule_sha256_hex
+        ))
+    }
+
+    #[cfg(not(target_arch = "wasm32"))]
+    pub(super) fn collect_tree_matching(
+        repo_root: &Path,
+        curr: &Path,
+        exts: &[&str],
+        out: &mut BTreeMap<String, Vec<u8>>,
+    ) {
+        let Ok(rd) = std::fs::read_dir(curr) else {
+            return;
+        };
+        let mut entries: Vec<_> = rd.filter_map(Result::ok).collect();
+        entries.sort_by_key(|e| e.path());
+        for entry in entries {
+            let p = entry.path();
+            if let Some(name) = p.file_name().and_then(|n| n.to_str()) {
+                if name.starts_with('.') || name == "target" || name == "node_modules" {
+                    continue;
+                }
+            }
+            if p.is_dir() {
+                Self::collect_tree_matching(repo_root, &p, exts, out);
+            } else if p.is_file() {
+                let Ok(rel) = p.strip_prefix(repo_root) else {
+                    continue;
+                };
+                let rel_str = rel.to_string_lossy().replace('\\', "/");
+                if exts.is_empty() || exts.iter().any(|ext| rel_str.ends_with(ext)) {
+                    if let Ok(bytes) = std::fs::read(&p) {
+                        out.insert(rel_str, bytes);
+                    }
+                }
+            }
+        }
+    }
+}

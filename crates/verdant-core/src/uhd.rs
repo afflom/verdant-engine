@@ -43,61 +43,6 @@ const DRS_LADDER_LEN: usize = 1 + 1 + 1 + 1 + 1;
 mod uhd_shaders;
 pub use uhd_shaders::*;
 
-/// A 64-triangle GPU meshlet cluster with tight world bounding sphere and outward normal cone.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct MeshletCluster {
-    /// Zero-based meshlet identifier.
-    pub meshlet_id: usize,
-    /// Bounding sphere center in world meters.
-    pub center: Vec3,
-    /// Bounding sphere radius in meters.
-    pub radius: f64,
-    /// Average outward unit normal of all triangles in this meshlet.
-    pub cone_axis: Vec3,
-    /// Backface normal-cone cosine cutoff (`>= 1.0` disables backface rejection for wrap-around clusters).
-    pub cone_cutoff: f64,
-    /// Start index offset in the packed index buffer (`3 * first_tri`).
-    pub first_index: usize,
-    /// Number of vertex indices in this meshlet (`3 * tri_count`).
-    pub index_count: usize,
-}
-
-/// Complete spatially-clustered meshlet partition over an arbitrary packed world scene.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct MeshletGraph {
-    /// All 64-triangle spatially-sorted meshlet clusters covering the packed scene.
-    pub clusters: Vec<MeshletCluster>,
-    /// Spatially Morton-ordered triangle indices (`3 * total_triangles`) aligned with `clusters`.
-    #[serde(default, skip_serializing)]
-    pub reordered_indices: Vec<u32>,
-    /// Total triangles indexed by this graph.
-    pub total_triangles: usize,
-}
-
-/// Result of per-frame UHD Frustum + Backface Normal-Cone + Screen-Space Error meshlet culling.
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct UhdVisibilityTelemetry {
-    /// Total meshlets partitioned across the active scene.
-    pub total_meshlets: usize,
-    /// Meshlets surviving frustum, backface normal-cone, and SSE tests.
-    pub visible_meshlets: usize,
-    /// Meshlets rejected outside the 6 camera frustum planes.
-    pub culled_frustum: usize,
-    /// Meshlets rejected via O(1) outward normal-cone backface test.
-    pub culled_backface_cone: usize,
-    /// Meshlets rejected as sub-pixel at the current UHD viewport height & FOV.
-    pub culled_subpixel: usize,
-    /// Total scene triangles before culling.
-    pub total_triangles: usize,
-    /// Triangles submitted to the GPU after meshlet culling.
-    pub visible_triangles: usize,
-    /// Fraction of scene triangles eliminated prior to rasterization (`0..=1000` permille).
-    pub cull_ratio_permille: u32,
-}
-
 /// Partitions packed world-space vertex positions (`3 floats/vert`) and triangle indices (`3 u32/tri`)
 /// into spatially Morton-sorted 64-triangle GPU [`MeshletCluster`]s with tight bounding spheres and
 /// outward normal cones (zero per-cluster heap allocations).
@@ -657,15 +602,18 @@ pub fn evaluate_uhd_display_profile(
     webgpu_available: bool,
     ema_frame_micros: u32,
 ) -> UhdDisplayProfile {
-    let thousand = pow10_u64(two_u32() + 1) as u32;
+    let thousand = pow10_u64(two_u32().wrapping_add(1_u32)) as u32;
     let hundred = pow10_u64(two_u32()) as u32;
-    let budget_us = thousand * (1u32 << (1 + 1 + 1 + 1));
+    let budget_us = thousand.wrapping_mul(crate::math::sixteen_u32());
 
     let w = width_px.max(1);
     let h = height_px.max(1);
-    let pixels = u64::from(w) * u64::from(h);
-    let mp_x100 =
-        ((pixels * u64::from(hundred)) / (u64::from(thousand) * u64::from(thousand))) as u32;
+    let pixels = (w as u64).wrapping_mul(h as u64);
+    let denom = (thousand as u64).wrapping_mul(thousand as u64);
+    let mp_x100 = pixels
+        .wrapping_mul(hundred as u64)
+        .checked_div(denom)
+        .unwrap_or(0) as u32;
 
     let tier = uhd_classify_display_tier(mp_x100);
     let display_class = if tier >= four_u32().wrapping_add(1_u32) {
@@ -1152,40 +1100,6 @@ pub fn build_hierarchical_lod_mesh(
         colors_rgb: out_col,
         indices: out_indices,
         grid_resolution: res,
-    }
-}
-
-/// Evaluates the 3-level monotonic hierarchical LOD pyramid (`LOD0` full -> `LOD1` 32-grid ->
-/// `LOD2` 16-grid) for any arbitrary packed scene buffer.
-#[must_use]
-pub fn evaluate_lod_pyramid_telemetry(
-    positions_xyz: &[f32],
-    normals_xyz: &[f32],
-    colors_rgb: &[f32],
-    indices: &[u32],
-) -> UhdLodPyramidTelemetry {
-    let three = 1usize + 1usize + 1usize;
-    let lod0_triangles = indices.len() / three;
-    let grid_lod2 = 1u32 << (1 + 1 + 1 + 1);
-    let grid_lod1 = grid_lod2 << 1;
-    let lod1 =
-        build_hierarchical_lod_mesh(positions_xyz, normals_xyz, colors_rgb, indices, grid_lod1);
-    let lod2 =
-        build_hierarchical_lod_mesh(positions_xyz, normals_xyz, colors_rgb, indices, grid_lod2);
-    let lod1_triangles = lod1.indices.len() / three;
-    let lod2_triangles = lod2.indices.len() / three;
-    let thousand = pow10_u64(two_u32() + 1);
-    let lod2_reduction_permille = if lod0_triangles == 0 {
-        0
-    } else {
-        let reduced = lod0_triangles.saturating_sub(lod2_triangles) as u64;
-        ((reduced * thousand) / (lod0_triangles as u64)) as u32
-    };
-    UhdLodPyramidTelemetry {
-        lod0_triangles,
-        lod1_triangles,
-        lod2_triangles,
-        lod2_reduction_permille,
     }
 }
 

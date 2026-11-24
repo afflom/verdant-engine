@@ -36,53 +36,6 @@ const GLB_CHUNK_HEADER_BYTES: usize = DIM_PLANAR * DIM_HOMOGENEOUS;
 /// Byte length of the GLB file header (`magic` + `version` + `length` = `12` bytes).
 const GLB_FILE_HEADER_BYTES: usize = DIM_SPATIAL * DIM_HOMOGENEOUS;
 
-/// Summary of a Khronos glTF asset verified by the `gltf` specification oracle.
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-pub struct VerifiedGltfSummary {
-    /// Number of scene nodes in the asset.
-    pub node_count: usize,
-    /// Number of mesh primitives in the asset.
-    pub mesh_count: usize,
-    /// Number of PBR materials in the asset.
-    pub material_count: usize,
-    /// Total binary buffer byte length across all buffers.
-    pub total_buffer_bytes: usize,
-}
-
-/// Parses a `.glb` / `.gltf` slice into its validated [`gltf::Document`] and raw binary buffers
-/// without pulling in CPU image codec crates (`image`/`moxcms`/`png`/`zune-jpeg`) on `wasm32`.
-#[cfg(not(feature = "gltf-image-decode"))]
-fn parse_glb_document_and_buffers(
-    bytes: &[u8],
-) -> Result<(gltf::Document, Vec<Vec<u8>>), AssetValidationError> {
-    let parsed =
-        gltf::Gltf::from_slice(bytes).map_err(|err| AssetValidationError::GltfOracleRejected {
-            oracle_message: err.to_string(),
-        })?;
-    let mut buffers = Vec::new();
-    let blob = parsed.blob.unwrap_or_default();
-    for buf in parsed.document.buffers() {
-        match buf.source() {
-            gltf::buffer::Source::Bin => {
-                if blob.len() < buf.length() {
-                    return Err(AssetValidationError::GltfOracleRejected {
-                        oracle_message: "GLB binary chunk shorter than declared buffer length"
-                            .to_string(),
-                    });
-                }
-                buffers.push(blob[..buf.length()].to_vec());
-            }
-            gltf::buffer::Source::Uri(_) => {
-                return Err(AssetValidationError::GltfOracleRejected {
-                    oracle_message: "external URI buffers are not supported in wasm32 GLB loader"
-                        .to_string(),
-                });
-            }
-        }
-    }
-    Ok((parsed.document, buffers))
-}
-
 /// Validates a `.gltf` or `.glb` byte slice using the authoritative `gltf` specification crate,
 /// including binary buffer bounds and accessor decoding.
 pub fn validate_glb_bytes(bytes: &[u8]) -> Result<VerifiedGltfSummary, AssetValidationError> {

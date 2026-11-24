@@ -787,18 +787,12 @@ wireStudioControls({
   runNpcDialogue, runFullPrismQualityGate, publishActiveAppToStitchCatalog, executePrompt,
   resolveInitialRole, setRightRailTab,
   state: {
-    getCamPreset: () => camPreset,
-    getLClr: () => lClr,
-    getDomainPacks: () => domainPacks,
-    getActiveDomainIdx: () => activeDomainIdx,
-    setLastRt60Ms: (v) => { lastRt60Ms = v; },
-    getActiveProject: () => activeProject,
-    getDragging: () => dragging,
+    getCamPreset: () => camPreset, getLClr: () => lClr, getDomainPacks: () => domainPacks,
+    getActiveDomainIdx: () => activeDomainIdx, setLastRt60Ms: (v) => { lastRt60Ms = v; },
+    getActiveProject: () => activeProject, getDragging: () => dragging,
     setDragging: (v) => { dragging = v; },
     nudgeOrbit: (dyaw, dpit, ddst) => { pYaw += dyaw; pPit += dpit; pDst += ddst; },
-    getSimLive: () => simLive,
-    getLTris: () => lTris,
-    setLTris: (v) => { lTris = v; },
+    getSimLive: () => simLive, getLTris: () => lTris, setLTris: (v) => { lTris = v; },
     getStudioHandle: () => studioHandle,
   },
 });
@@ -812,9 +806,7 @@ renderContentTypePills();
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       holoApp = await load(new Uint8Array(await res.arrayBuffer()));
       holoSummary = await holoApp.acceptance();
-      if (holoStatusEl) {
-        holoStatusEl.textContent = `Atelier Ready · Prism Holo Verified (${holoSummary.passed}/${holoSummary.total} vectors) · 10 Live Streams · 7 Lifecycle Roles`;
-      }
+      if (holoStatusEl) holoStatusEl.textContent = `Atelier Ready · Prism Holo Verified (${holoSummary.passed}/${holoSummary.total} vectors) · 10 Live Streams · 7 Lifecycle Roles`;
     }),
     fetch(new URL("../catalogs/world-packs.json", import.meta.url)).then(async (res) => {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -823,98 +815,32 @@ renderContentTypePills();
       renderDomainPackCards();
     }),
   ]);
-  if (holoResult.status === "rejected" && holoStatusEl) {
-    holoStatusEl.textContent = "Atelier Ready · Local Authoring Mode";
-  }
-  if (packsResult.status === "rejected" && wizDomainLog) {
-    wizDomainLog.textContent = "Catalog manifest unavailable — using embedded Wasm domain defaults.";
-  }
-
-  // Launch initial unified live catalog discovery immediately in parallel with Wasm init:
+  if (holoResult.status === "rejected" && holoStatusEl) holoStatusEl.textContent = "Atelier Ready · Local Authoring Mode";
+  if (packsResult.status === "rejected" && wizDomainLog) wizDomainLog.textContent = "Catalog manifest unavailable — using embedded Wasm domain defaults.";
   runUnifiedDiscovery();
 
   await bootStudioWorkspace({
-    $,
-    LODS,
-    STUDIO_ROLE_KEYS,
-    ACOUST,
-    canvas,
-    worker,
-    inlineHost,
-    glbFileIn,
-    statusEl,
-    scaleBadgeEl,
-    audioBtn,
-    catalogBanner,
-    catalogBannerText,
-    stitchAppTitleInput,
-    stitchAppGenreSelect,
-    discStreamSelect,
-    discSearchInput,
-    stageModeDomainBtn,
-    wfState,
-    pxDims,
-    callWorker,
-    queryVerifier,
-    currentLodSpec,
-    syncFallbackBuffers,
-    loadStreamPrefs,
-    refreshObserverCognition,
-    mountInlineStudio,
-    exportGlbDownload,
-    shareUorcSnapshot,
-    toggleRenderBackend,
-    streamLod,
-    cycleCameraMode,
-    setSimLive,
-    toggleGuardedAudio,
-    focusPoint,
-    focusPreset,
-    setWorldSeed,
-    loadCatalogDomainPack,
-    loadBlankStudioStage,
-    loadRemoteGlbIntoStage,
-    applyRemoteEnvSky,
-    openStitchGuarded,
-    executePrompt,
-    isOrganAllowed,
-    refuseOrgan,
-    suspendModalAudio,
-    setActiveContentType,
-    runUnifiedDiscovery,
-    refreshProjectModelsFromWasm,
-    syncWorkflowRibbon,
-    setRightRailTab,
-    base64UrlToBytes,
-    hydrateExperienceDesignSystem,
-    clearStudioObjects,
-    renderStudioOutliner,
-    syncHud,
-    chip,
-    requestRender,
+    $, LODS, STUDIO_ROLE_KEYS, ACOUST, canvas, worker, inlineHost, glbFileIn, statusEl,
+    scaleBadgeEl, audioBtn, catalogBanner, catalogBannerText, stitchAppTitleInput,
+    stitchAppGenreSelect, discStreamSelect, discSearchInput, stageModeDomainBtn, wfState,
+    pxDims, callWorker, queryVerifier, currentLodSpec, syncFallbackBuffers, loadStreamPrefs,
+    refreshObserverCognition, mountInlineStudio, exportGlbDownload, shareUorcSnapshot,
+    toggleRenderBackend, streamLod, cycleCameraMode, setSimLive, toggleGuardedAudio,
+    focusPoint, focusPreset, setWorldSeed, loadCatalogDomainPack, loadBlankStudioStage,
+    loadRemoteGlbIntoStage, applyRemoteEnvSky, openStitchGuarded, executePrompt,
+    isOrganAllowed, refuseOrgan, suspendModalAudio, setActiveContentType, runUnifiedDiscovery,
+    refreshProjectModelsFromWasm, syncWorkflowRibbon, setRightRailTab, base64UrlToBytes,
+    hydrateExperienceDesignSystem, clearStudioObjects, renderStudioOutliner, syncHud, chip, requestRender,
     state: {
-      getOffOk: () => offOk,
-      setOffOk: (v) => { offOk = v; },
-      setActiveRenderBackend: (v) => { activeRenderBackend = v; },
-      getLTris: () => lTris,
-      setLTris: (v) => { lTris = v; },
-      setFallbackRenderer: (m, r) => { fbM = m; fbR = r; },
-      getActiveRoleKey: () => activeRoleKey,
-      setActiveRoleKey: (v) => { activeRoleKey = v; },
-      getActiveProject: () => activeProject,
-      setActiveProject: (v) => { activeProject = v; },
-      getActiveDomainIdx: () => activeDomainIdx,
-      getDomainPacks: () => domainPacks,
-      getUserSelectedDomain: () => userSelectedDomain,
-      getStudioObjects: () => studioObjects,
-      setStudioObjects: (v) => { studioObjects = v; },
-      getLodIdx: () => lodIdx,
-      getSimClockSec: () => simClockSec,
-      getOrganMode: (idx) => organModes[idx] ?? 0,
-      setOrganMode: (idx, nextMode) => { organModes[idx] = nextMode; },
-      getRenderMode: () => renderMode,
-      setStudioHandle: (h) => { studioHandle = h; },
-      getExperienceDesign: () => experienceDesign,
+      getOffOk: () => offOk, setOffOk: (v) => { offOk = v; }, setActiveRenderBackend: (v) => { activeRenderBackend = v; },
+      getLTris: () => lTris, setLTris: (v) => { lTris = v; }, setFallbackRenderer: (m, r) => { fbM = m; fbR = r; },
+      getActiveRoleKey: () => activeRoleKey, setActiveRoleKey: (v) => { activeRoleKey = v; },
+      getActiveProject: () => activeProject, setActiveProject: (v) => { activeProject = v; },
+      getActiveDomainIdx: () => activeDomainIdx, getDomainPacks: () => domainPacks, getUserSelectedDomain: () => userSelectedDomain,
+      getStudioObjects: () => studioObjects, setStudioObjects: (v) => { studioObjects = v; },
+      getLodIdx: () => lodIdx, getSimClockSec: () => simClockSec,
+      getOrganMode: (idx) => organModes[idx] ?? 0, setOrganMode: (idx, nextMode) => { organModes[idx] = nextMode; },
+      getRenderMode: () => renderMode, setStudioHandle: (h) => { studioHandle = h; }, getExperienceDesign: () => experienceDesign,
     },
   });
 })();

@@ -242,3 +242,116 @@ export function subscribeStitchAppCatalog(onUpdate) {
     try { ch?.close(); } catch {}
   };
 }
+
+export async function runLiveCatalogSearch(
+  {
+    query = "",
+    contentType = "all",
+    streamId = "all",
+    localWorldPacks = [],
+    localPrismCatalogs,
+    timeoutMs = 5500,
+    includeRemote = true,
+    disabledStreamIds = [],
+    customStreams = [],
+  } = {},
+  deps,
+) {
+  const {
+    LIVE_CATALOG_STREAMS,
+    PRISM_MODEL_CATALOGS,
+    buildLocalVerdantCatalogItems,
+    matchesTokens,
+    queryKhronosGltf,
+    queryNasa3d,
+    queryThreeJsGltf,
+    queryBabylonAssets,
+    queryPolyHaven,
+    queryFontsource,
+    queryOpenverse,
+    queryWikidata,
+    queryGitHub,
+    queryCustomStream,
+  } = deps;
+  const activePrismCatalogs = localPrismCatalogs ?? PRISM_MODEL_CATALOGS;
+  const cleanQuery = String(query || "").trim();
+  const tokens = cleanQuery.toLowerCase().split(/\s+/).filter((t) => t.length > 0);
+  const disabledSet = new Set(disabledStreamIds || []);
+  const streamStatus = {};
+  const tasks = [];
+
+  const wantStream = (id, supportedTypes) =>
+    !disabledSet.has(id) &&
+    (streamId === "all" || streamId === id) &&
+    (contentType === "all" || supportedTypes.includes(contentType));
+
+  const prismMeta = LIVE_CATALOG_STREAMS.find((s) => s.id === "verdant-prism");
+  const localItems = wantStream("verdant-prism", prismMeta.contentTypes)
+    ? buildLocalVerdantCatalogItems(localWorldPacks, activePrismCatalogs).filter((item) => {
+        if (contentType !== "all" && item.contentTypeKey !== contentType) return false;
+        const hay = `${item.id} ${item.title} ${item.description} ${item.tags.join(" ")} ${item.contentTypeKey}`;
+        return matchesTokens(hay, tokens);
+      })
+    : [];
+  streamStatus["verdant-prism"] = {
+    status: disabledSet.has("verdant-prism") ? "disabled" : "live",
+    count: localItems.length,
+  };
+
+  const addRemoteTask = (id, fn) => {
+    const t0 = typeof performance !== "undefined" ? performance.now() : Date.now();
+    tasks.push(
+      fn()
+        .then((res) => {
+          const ms = Math.max(1, Math.round((typeof performance !== "undefined" ? performance.now() : Date.now()) - t0));
+          streamStatus[id] = { status: "live", count: res.length, latencyMs: ms };
+          return res;
+        })
+        .catch(() => {
+          const ms = Math.max(1, Math.round((typeof performance !== "undefined" ? performance.now() : Date.now()) - t0));
+          streamStatus[id] = { status: "offline", count: 0, latencyMs: ms };
+          return [];
+        }),
+    );
+  };
+
+  if (includeRemote) {
+    if (wantStream("khronos-gltf", ["3DModel"])) addRemoteTask("khronos-gltf", () => queryKhronosGltf(tokens, 6, timeoutMs));
+    if (wantStream("nasa-3d", ["3DModel", "Place"])) addRemoteTask("nasa-3d", () => queryNasa3d(tokens, 6, timeoutMs));
+    if (wantStream("threejs-gltf", ["3DModel"])) addRemoteTask("threejs-gltf", () => queryThreeJsGltf(tokens, 6, timeoutMs));
+    if (wantStream("babylon-assets", ["3DModel"])) addRemoteTask("babylon-assets", () => queryBabylonAssets(tokens, 6, timeoutMs));
+    if (wantStream("polyhaven", ["3DModel", "PBRMaterial", "Place"])) addRemoteTask("polyhaven", () => queryPolyHaven(tokens, contentType, 6, timeoutMs));
+    if (wantStream("fontsource", ["Font"])) addRemoteTask("fontsource", () => queryFontsource(tokens, 5, timeoutMs));
+    if (wantStream("openverse", ["AudioObject", "PBRMaterial"])) addRemoteTask("openverse", () => queryOpenverse(cleanQuery, contentType, 5, timeoutMs));
+    if (wantStream("wikidata", ["Dataset", "Place", "Story"])) addRemoteTask("wikidata", () => queryWikidata(cleanQuery, 5, timeoutMs));
+    if (wantStream("github", ["SoftwareSourceCode", "DefinedTermSet", "Place"])) addRemoteTask("github", () => queryGitHub(cleanQuery, contentType, 5, timeoutMs));
+    for (const cs of customStreams || []) {
+      if (!cs?.enabled || disabledSet.has(cs.streamId)) continue;
+      if (streamId !== "all" && streamId !== cs.streamId) continue;
+      addRemoteTask(cs.streamId, () => queryCustomStream(cs, tokens, 6, timeoutMs));
+    }
+  }
+
+  const remoteBatches = await Promise.all(tasks);
+  const remoteItems = remoteBatches.flat();
+  let combined;
+  if (streamId === "all" && remoteBatches.length > 1) {
+    const queues = [...remoteBatches.map((b) => [...b]), [...localItems]].filter((q) => q.length > 0);
+    combined = [];
+    while (queues.some((q) => q.length > 0)) {
+      for (const q of queues) {
+        if (q.length > 0) combined.push(q.shift());
+      }
+    }
+  } else {
+    combined = [...remoteItems, ...localItems];
+  }
+  const filtered = contentType === "all" ? combined : combined.filter((i) => i.contentTypeKey === contentType);
+  return {
+    items: filtered,
+    streamStatus,
+    totalCount: filtered.length,
+    liveRemoteCount: remoteItems.length,
+    localLockedCount: localItems.length,
+  };
+}

@@ -5,12 +5,12 @@
 # stops the functions it counts (the detail their rows state, under its
 # cause), the one that stops the most first: the work queue.
 
-# Honesty report: 589 of 1891 functions of product code are lifted; 1150
+# Honesty report: 618 of 1919 functions of product code are lifted; 1149
 # are residue, 72 foreign and 80 effect rows.
 # Residue by cause:
-#   arithmetic: 25
-#   call: 210
-#   form: 335
+#   arithmetic: 21
+#   call: 212
+#   form: 336
 #   signature: 53
 #   statements: 23
 #   type: 498
@@ -19,9 +19,9 @@
 spec = "uorust/register/1"
 
 [lift]
-functions = 1891
-lifted = 589
-residue = 1150
+functions = 1919
+lifted = 618
+residue = 1149
 foreign = 72
 effect = 80
 
@@ -131,11 +131,6 @@ cause = "type"
 functions = 10
 
 [[construct]]
-construct = "usize + wraps or panics where its value leaves the pointer width: past 2^32 on wasm32-unknown-unknown and thumbv7em-none-eabihf, past 2^64 on x86_64-unknown-linux-gnu and aarch64-unknown-linux-gnu"
-cause = "arithmetic"
-functions = 9
-
-[[construct]]
 construct = "signature outside the lift: generic, async, unsafe or variadic"
 cause = "signature"
 functions = 9
@@ -166,6 +161,11 @@ cause = "type"
 functions = 8
 
 [[construct]]
+construct = "calls from, which is not lifted"
+cause = "call"
+functions = 7
+
+[[construct]]
 construct = "expression form outside the lift: expr::loop"
 cause = "form"
 functions = 7
@@ -184,6 +184,11 @@ functions = 7
 construct = "type outside the lift: SmoothMeshAcc.positions: f32"
 cause = "type"
 functions = 7
+
+[[construct]]
+construct = "usize + wraps or panics where its value leaves the pointer width: past 2^32 on wasm32-unknown-unknown and thumbv7em-none-eabihf, past 2^64 on x86_64-unknown-linux-gnu and aarch64-unknown-linux-gnu"
+cause = "arithmetic"
+functions = 6
 
 [[construct]]
 construct = "calls from_str, which is not lifted"
@@ -223,11 +228,6 @@ functions = 6
 [[construct]]
 construct = "integer operator << wraps or panics depending on the build profile"
 cause = "arithmetic"
-functions = 5
-
-[[construct]]
-construct = "calls from, which is not lifted"
-cause = "call"
 functions = 5
 
 [[construct]]
@@ -311,6 +311,11 @@ cause = "form"
 functions = 4
 
 [[construct]]
+construct = "expression form outside the lift: method call .is_multiple_of"
+cause = "form"
+functions = 4
+
+[[construct]]
 construct = "signature outside the lift: takes &mut self of VerdantVcs: the lift reads self and &self as the value, and threads no other receiver"
 cause = "signature"
 functions = 4
@@ -359,11 +364,6 @@ functions = 4
 construct = "type outside the lift: UniverseManager.portal_graph: PortalGraph.portals: SpatialPortal.source_local: Vec3.x: f64"
 cause = "type"
 functions = 4
-
-[[construct]]
-construct = "integer operator + wraps or panics depending on the build profile"
-cause = "arithmetic"
-functions = 3
 
 [[construct]]
 construct = "calls from_slice, which is not lifted"
@@ -456,6 +456,11 @@ cause = "type"
 functions = 3
 
 [[construct]]
+construct = "integer operator + wraps or panics depending on the build profile"
+cause = "arithmetic"
+functions = 2
+
+[[construct]]
 construct = "integer operator - wraps or panics depending on the build profile"
 cause = "arithmetic"
 functions = 2
@@ -527,11 +532,6 @@ functions = 2
 
 [[construct]]
 construct = "expression form outside the lift: if without else"
-cause = "form"
-functions = 2
-
-[[construct]]
-construct = "expression form outside the lift: method call .is_multiple_of"
 cause = "form"
 functions = 2
 
@@ -946,11 +946,6 @@ cause = "form"
 functions = 1
 
 [[construct]]
-construct = "expression form outside the lift: free name u64::BITS"
-cause = "form"
-functions = 1
-
-[[construct]]
 construct = "expression form outside the lift: let of another type"
 cause = "form"
 functions = 1
@@ -1303,12 +1298,6 @@ kappa = "4b02fee7ca262361f4b5c757089723b6e7963f713e7f0c0838d21f0b65ac272f"
 function = "prism_fidelity::Register::render"
 reason = "form"
 detail = "expression form outside the lift: expr::macro"
-
-[[residue]]
-kappa = "902fc17eecdac36c82903b50741ea3625751807eb852c3a4337d170055550d2e"
-function = "prism_fidelity::Score::asked"
-reason = "arithmetic"
-detail = "usize + wraps or panics where its value leaves the pointer width: past 2^32 on wasm32-unknown-unknown and thumbv7em-none-eabihf, past 2^64 on x86_64-unknown-linux-gnu and aarch64-unknown-linux-gnu"
 
 [[residue]]
 kappa = "1df118ea797b8c76acd0dca26080e1239aad565d03137d8c82443b007f47bcbc"
@@ -3345,10 +3334,10 @@ reason = "call"
 detail = "calls epistemicDialogueTurnValid, which is not lifted"
 
 [[residue]]
-kappa = "a3f6b7c9065edb442f021e4163489572a111f749216417c981d4e920059834ea"
+kappa = "cb3a3cb152bdeebd7b4d8f9343115b85398a7b2482699f41dc635f3af31fab9b"
 function = "verdant_core::observer_language::tokenize_content_words"
-reason = "arithmetic"
-detail = "usize + wraps or panics where its value leaves the pointer width: past 2^32 on wasm32-unknown-unknown and thumbv7em-none-eabihf, past 2^64 on x86_64-unknown-linux-gnu and aarch64-unknown-linux-gnu"
+reason = "call"
+detail = "calls from, which is not lifted"
 
 [[residue]]
 kappa = "f9c9b25917d2b8b842beb234eb5f83243b4a5bcb2c7c1819eef4ab7899047697"
@@ -4329,10 +4318,10 @@ reason = "type"
 detail = "type outside the lift: MeshletGraph.clusters: MeshletCluster.center: Vec3.x: f64"
 
 [[residue]]
-kappa = "79232c6b07b79eb23be048c040212d6a763581da4adce4b2fec590c9615c1af2"
+kappa = "aac460ef9011315cc23185dff0ec1ed7ec8d835dfce3039eedfe19e3cea9247f"
 function = "verdant_core::uhd::evaluate_uhd_display_profile"
-reason = "arithmetic"
-detail = "integer operator + wraps or panics depending on the build profile"
+reason = "call"
+detail = "calls from, which is not lifted"
 
 [[residue]]
 kappa = "1faaeb9fb1bb88fcab589001e38e8b3e6a04090abf34f285c4eb8af46ccecff3"
@@ -5197,12 +5186,6 @@ kappa = "f91f6242479b10f9058087e4b47a1b6cd6ff5e2b4957f8e764e926c339b3ca80"
 function = "verdant_tensor::neural::verify_conservation_and_reachability"
 reason = "arithmetic"
 detail = "integer operator * wraps or panics depending on the build profile"
-
-[[residue]]
-kappa = "3621e63f19d49cad0fba1d9cc907f0ab955d86c2e1719bfba1da9b3d2d3264a9"
-function = "verdant_tensor::pow2_u64"
-reason = "form"
-detail = "expression form outside the lift: free name u64::BITS"
 
 [[residue]]
 kappa = "7978044fd27ddb78c897531c33905daab09ae1603dbbb57e11c86c6ca46565ae"
@@ -6921,6 +6904,18 @@ reason = "type"
 detail = "type outside the lift: f64"
 
 [[residue]]
+kappa = "e58dc4740e2c9de6ebe55bd0b553028c54859d796ed550c64ff5ba0c11fafc53"
+function = "verdant_tensor::scalars_gateway::importance_grid_extent_admissible"
+reason = "form"
+detail = "expression form outside the lift: method call .is_multiple_of"
+
+[[residue]]
+kappa = "63080961039eea98f89e7286b39f8847ebca8c11b9b02575e961817e71d3ab40"
+function = "verdant_tensor::scalars_gateway::importance_octet_parity_valid"
+reason = "form"
+detail = "expression form outside the lift: method call .is_multiple_of"
+
+[[residue]]
 kappa = "83014b1ef78fbecff6361f0a0f69f935bc132a4d0d7078cab4f923ede0e567b1"
 function = "verdant_tensor::tropical::reconstruct_tropical_next_hop_path"
 reason = "width"
@@ -8145,12 +8140,6 @@ reason = "statements"
 detail = "the body has statements other than let"
 
 [[residue]]
-kappa = "8114cd72b78a549aa6dc6885a8930c33bc2528fe580fd6e3f0ce2129fb231310"
-function = "xtask::bootstrap::proof_reuse_is_confined"
-reason = "arithmetic"
-detail = "usize + wraps or panics where its value leaves the pointer width: past 2^32 on wasm32-unknown-unknown and thumbv7em-none-eabihf, past 2^64 on x86_64-unknown-linux-gnu and aarch64-unknown-linux-gnu"
-
-[[residue]]
 kappa = "a5a6913a073db7bffcf47498cbb3da8576292a604ffc8b8da6f5f2e47ff97e85"
 function = "xtask::bootstrap::upstream_pins"
 reason = "type"
@@ -8949,6 +8938,11 @@ definition = "Behavior::axisName"
 kappa = "b6b0198a4c0be9eb7f605fb748d501e8a932973ee24123787879ee9ca2eb9601"
 function = "prism_fidelity::Axis::parse"
 definition = "Behavior::axisParse"
+
+[[lifted]]
+kappa = "f3f4b553ef7b4e3069be3e2a7ec38b688c792806a6ce22ade92abaf86dc326d8"
+function = "prism_fidelity::Score::asked"
+definition = "Behavior::scoreAsked"
 
 [[lifted]]
 kappa = "41b7f8b47907c064975fa9a791fa7d5ade938144050f0f5f6c24961ddc1f6eee"
@@ -9764,6 +9758,11 @@ definition = "Behavior::pagedTensorArenaTelemetry"
 kappa = "7f1252931b8168b3483599c31fe9ed66505e8da059fcfad0d9824bd87e4658dd"
 function = "verdant_tensor::memory::TensorStorageEncoding::compression_factor"
 definition = "Behavior::tensorStorageEncodingCompressionFactor"
+
+[[lifted]]
+kappa = "48053cb7f85482e9425bb302ed4c05194a1fd62ad1a4742281c2f39a09245108"
+function = "verdant_tensor::pow2_u64"
+definition = "Behavior::pow2U64"
 
 [[lifted]]
 kappa = "b2aa4cb865d902a3b2b1abe9ca6b0e9c99a3d5f5511e857c28349d5bda3043ef"
@@ -10656,6 +10655,11 @@ function = "verdant_tensor::scalars::wasm_page_budget_within_limit"
 definition = "Behavior::wasmPageBudgetWithinLimit"
 
 [[lifted]]
+kappa = "be172771efdc31038bc6d24caa9cf079609b1fd596c1ea24e6e07feafc61857f"
+function = "verdant_tensor::scalars_gateway::delta_rule_extents_admissible"
+definition = "Behavior::deltaRuleExtentsAdmissible"
+
+[[lifted]]
 kappa = "e8c6dcf71c591dbff59afade68cdd204697868de957dfdb9938c4d0299892331"
 function = "verdant_tensor::scalars_gateway::gateway_adapter_count_complete"
 definition = "Behavior::gatewayAdapterCountComplete"
@@ -10856,6 +10860,121 @@ function = "verdant_tensor::scalars_gateway::holo_v6_uorc_minor"
 definition = "Behavior::holoV6UorcMinor"
 
 [[lifted]]
+kappa = "1297b7b66976a4a24ed93757c0b9fe972f940412c15d7292c67321b763f92e3b"
+function = "verdant_tensor::scalars_gateway::importance_grid_block_sizes_ordered"
+definition = "Behavior::importanceGridBlockSizesOrdered"
+
+[[lifted]]
+kappa = "fec3f98ac83af6e9ca8e5da66d18ffe9a930e03c2a24df1eb6911dddfe0b63e2"
+function = "verdant_tensor::scalars_gateway::importance_grid_octets_per_block"
+definition = "Behavior::importanceGridOctetsPerBlock"
+
+[[lifted]]
+kappa = "70299b7c811e5df56a2628173f6472704870a7bf94ddb226e94d5ae2fbfdb52c"
+function = "verdant_tensor::scalars_gateway::importance_grid_quartets_per_block"
+definition = "Behavior::importanceGridQuartetsPerBlock"
+
+[[lifted]]
+kappa = "69ab5a06be39f31a45ac80b11fe544d2ce2cf70ef845f22887b10567b8b15c0f"
+function = "verdant_tensor::scalars_gateway::importance_grid_subblocks_per_block"
+definition = "Behavior::importanceGridSubblocksPerBlock"
+
+[[lifted]]
+kappa = "60d9a226fa393524197e61625be08121d7aa9d02527ec3e00510228d11e50341"
+function = "verdant_tensor::scalars_gateway::importance_grid_superblock_lanes"
+definition = "Behavior::importanceGridSuperblockLanes"
+
+[[lifted]]
+kappa = "2fe4fe944519b60e6e07a406aa3911a03c4946a8f344a3a9824d66810012c969"
+function = "verdant_tensor::scalars_gateway::iq1_m_block_bytes"
+definition = "Behavior::iq1MBlockBytes"
+
+[[lifted]]
+kappa = "f6c9c0bf662197084eedb5cfd17b96fe1975ec49001bdaa9f12770a800a001a9"
+function = "verdant_tensor::scalars_gateway::iq1_s_block_bytes"
+definition = "Behavior::iq1SBlockBytes"
+
+[[lifted]]
+kappa = "7f1300beaa363abe7a09b35f2c2507c06536ad19e74b1d34e8fea7e2a3156a4f"
+function = "verdant_tensor::scalars_gateway::iq1_shifted_grid_index_valid"
+definition = "Behavior::iq1ShiftedGridIndexValid"
+
+[[lifted]]
+kappa = "612550e89a6519e3946d1a6eb570d00f67820c5c44fdad259c372fbdbb40859d"
+function = "verdant_tensor::scalars_gateway::iq2_s_block_bytes"
+definition = "Behavior::iq2SBlockBytes"
+
+[[lifted]]
+kappa = "b98c7e9a35c72d6671845b013647592900b4c35603c0b31a4a4ab4f04ba08051"
+function = "verdant_tensor::scalars_gateway::iq2_s_grid_index_valid"
+definition = "Behavior::iq2SGridIndexValid"
+
+[[lifted]]
+kappa = "52be5f5369be94775b27ed8f471354334fe9c3d1bc81c0cef3d286767bf2340d"
+function = "verdant_tensor::scalars_gateway::iq2_xs_block_bytes"
+definition = "Behavior::iq2XsBlockBytes"
+
+[[lifted]]
+kappa = "a19d7170f20b691fd5784b4101ffca826ea13f16436be8ed4671e59d63233ae9"
+function = "verdant_tensor::scalars_gateway::iq2_xs_grid_index_valid"
+definition = "Behavior::iq2XsGridIndexValid"
+
+[[lifted]]
+kappa = "01b2b076d742cb2c0ebc3de64dbb7a641f278678d2c0804cd38d4aa1b074e43f"
+function = "verdant_tensor::scalars_gateway::iq2_xxs_block_bytes"
+definition = "Behavior::iq2XxsBlockBytes"
+
+[[lifted]]
+kappa = "65687d0d22b11f5944c0112f3de4a0abff95f00acd9d169c417de094ec39b8d2"
+function = "verdant_tensor::scalars_gateway::iq2_xxs_grid_index_valid"
+definition = "Behavior::iq2XxsGridIndexValid"
+
+[[lifted]]
+kappa = "e49f3cf8605f9dee352d0a037801340773990e39e291e4ebbb09f3bc63c2d495"
+function = "verdant_tensor::scalars_gateway::iq3_s_grid_index_valid"
+definition = "Behavior::iq3SGridIndexValid"
+
+[[lifted]]
+kappa = "4d40975330b5021d6845c699f575919bb8ca07c2cc473944a412cf894352ec03"
+function = "verdant_tensor::scalars_gateway::iq3_xxs_grid_index_valid"
+definition = "Behavior::iq3XxsGridIndexValid"
+
+[[lifted]]
+kappa = "fd24c46c3839da3d5e993de8f2d6c4d574d4fc1cd092c4b0878737c93ada3ba5"
+function = "verdant_tensor::scalars_gateway::iq4_codebook_index_valid"
+definition = "Behavior::iq4CodebookIndexValid"
+
+[[lifted]]
+kappa = "b11768b9543f1ef9b6982c3a6744c3e282013b36af69cc911004a404f73e458b"
+function = "verdant_tensor::scalars_gateway::m30_frontier_targets_met"
+definition = "Behavior::m30FrontierTargetsMet"
+
+[[lifted]]
+kappa = "c3f10adb54d85ad7beea0831f827bbeab745630ba92fe0e9d748c056c224fd8a"
+function = "verdant_tensor::scalars_gateway::m30_js_modularity_ceiling"
+definition = "Behavior::m30JsModularityCeiling"
+
+[[lifted]]
+kappa = "d78ffac3ca092d4d9096a43f8bf5c88ed90f6075514a5d93405cda654d770f68"
+function = "verdant_tensor::scalars_gateway::m30_modularity_targets_met"
+definition = "Behavior::m30ModularityTargetsMet"
+
+[[lifted]]
+kappa = "d73ddd1d837bdee8e27d928d892c5726cf2e78d634ae7569db8dcd90bda57986"
+function = "verdant_tensor::scalars_gateway::m30_refinement_score_valid"
+definition = "Behavior::m30RefinementScoreValid"
+
+[[lifted]]
+kappa = "01ab50712810b1e7ded879465dcef1604da98403b0d99327644617a7aad1a5f3"
+function = "verdant_tensor::scalars_gateway::m30_rust_modularity_ceiling"
+definition = "Behavior::m30RustModularityCeiling"
+
+[[lifted]]
+kappa = "1c660ec844f9d8a363c49cf96949ea73711210ff246ed92b2d450a3b873e4284"
+function = "verdant_tensor::scalars_gateway::selective_state_extents_admissible"
+definition = "Behavior::selectiveStateExtentsAdmissible"
+
+[[lifted]]
 kappa = "0b735ccaab3fb0fd7b415a8fc8eb0382be0cdec99a35a8407b6872ce1f2fed07"
 function = "verdant_tensor::scalars_gateway::stitch_l5_budget_reserve_ok"
 definition = "Behavior::stitchL5BudgetReserveOk"
@@ -10981,6 +11100,11 @@ function = "verdant_tensor::scalars_gateway::stitch_volunteer_swarm_ready"
 definition = "Behavior::stitchVolunteerSwarmReady"
 
 [[lifted]]
+kappa = "b9e925c456b001a59558199660262b974f5c1d0a2516647a4d3d7cfe9ca79e60"
+function = "verdant_tensor::scalars_gateway::unified_scope_root_counts_valid"
+definition = "Behavior::unifiedScopeRootCountsValid"
+
+[[lifted]]
 kappa = "b47106703d1c510ef56ae6679ebf9f9412d069598480550c5592b9ae48f50f23"
 function = "verdant_tensor::scalars_gateway::unified_scopes_exact"
 definition = "Behavior::unifiedScopesExact"
@@ -10989,6 +11113,11 @@ definition = "Behavior::unifiedScopesExact"
 kappa = "196772e061d70971fe5e19bbbf155ff6f69730396f21f9e43ce974b789be2b6f"
 function = "verdant_tensor::scalars_gateway::unified_tensor_scopes_count"
 definition = "Behavior::unifiedTensorScopesCount"
+
+[[lifted]]
+kappa = "96592f7a3371c8c1e519cb573f21eddaf1e42f0cb1e4a3a6f15c4ec61152d3bc"
+function = "verdant_tensor::scalars_gateway::versioned_sparse_index_write_once_admissible"
+definition = "Behavior::versionedSparseIndexWriteOnceAdmissible"
 
 [[lifted]]
 kappa = "fee180067fab8a64427b5cdd300e44cd695d50f8f5d156d7bbf2346260928b90"
@@ -11839,6 +11968,11 @@ definition = "Behavior::immutableImage"
 kappa = "19065686427b89b61141335cd03612f95449a97b7782cb25bb775bff04ebdfee"
 function = "xtask::bootstrap::native_coverage_is_complete"
 definition = "Behavior::nativeCoverageIsComplete"
+
+[[lifted]]
+kappa = "1019ae9b6955c7b6dd930cecef8d7fdc1e7e11eeef286b7adc88c03b15fb9c9e"
+function = "xtask::bootstrap::proof_reuse_is_confined"
+definition = "Behavior::proofReuseIsConfined"
 
 [[lifted]]
 kappa = "a7856747c45cf7e9a14c93b1c884368aefae50be0093af9fdb4b36c48d629141"

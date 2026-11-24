@@ -90,7 +90,20 @@ pub use verdant_tensor::pow2_u64;
 /// Constructive low-bit mask (`2^bits - 1`) computed purely from `{0, 1}`.
 #[must_use]
 pub const fn bit_mask_u64(bits: u32) -> u64 {
-    pow2_u64(bits).saturating_sub(1)
+    let two = two_u32() as u64;
+    let sixty_four = sixty_four_u32();
+    if bits >= sixty_four {
+        0_u64.wrapping_sub(1_u64)
+    } else {
+        let bound = bits as usize;
+        let mut acc = 1_u64;
+        let mut i = 0_usize;
+        while i < bound {
+            acc = acc.wrapping_mul(two);
+            i += 1;
+        }
+        acc.saturating_sub(1_u64)
+    }
 }
 
 /// Constructive Fibonacci sequence `F(index)` (`0, 1, 1, 2, 3, 5, 8, ...`) from `{0, 1}`.

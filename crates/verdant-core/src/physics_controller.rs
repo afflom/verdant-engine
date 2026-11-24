@@ -336,3 +336,125 @@ impl CapsuleController {
         })
     }
 }
+
+impl PhysicsWorld {
+    /// Advances the entire physics world by `dt_seconds` under continuous two-level BVH swept
+    /// collision (`CCD`), 1-plane tangent sliding, stair auto-stepping, 2-plane acute crease
+    /// projection (`normalize(n1 x n2)`), 3-plane corner wedge halting, and post-step
+    /// `prism_kernel::sweptClearanceValid` verification.
+    pub fn step_lawful(
+        &mut self,
+        dt_seconds: f64,
+        intent: CharacterMoveIntent,
+        two_level_bvh: &TwoLevelBvh,
+    ) -> Result<LawfulStepReport, PhysicsStepError> {
+        if !dt_seconds.is_finite() || dt_seconds <= 0.0 || dt_seconds > self.config.max_dt_seconds {
+            return Err(PhysicsStepError::InvalidTimeStepSeconds {
+                dt_seconds,
+                max_dt_seconds: self.config.max_dt_seconds,
+            });
+        }
+
+        let saved_capsule = self.player_capsule.take();
+
+        #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-wasm-decode"))]
+        let skin_m = {
+            let mut prev_bodies = std::mem::take(&mut self.prev_positions_scratch);
+            prev_bodies.clear();
+            prev_bodies.extend(self.bodies.iter().map(|b| b.position));
+
+            // Step dynamic rigid bodies, XPBD joints, suspension vehicles, and spline movers uniformly:
+            if let Err(err) = self.step(dt_seconds, Vec3::ZERO) {
+                self.player_capsule = saved_capsule;
+                prev_bodies.clear();
+                self.prev_positions_scratch = prev_bodies;
+                return Err(err);
+            }
+
+            // Sweep dynamic rigid bodies against solid two-level BVH triangles so props never tunnel walls:
+            let skin_m = verdant_tensor::kernel_consts().ccd_skin_margin_meters;
+            for (idx, body) in self.bodies.iter_mut().enumerate() {
+                if let Some(&start_pos) = prev_bodies.get(idx) {
+                    let delta = body.position - start_pos;
+                    if delta.length_squared() > geometric_epsilon() {
+                        if let Some((_, hit)) =
+                            two_level_bvh.sweep_sphere(start_pos, body.radius_meters, delta)
+                        {
+                            let d_len = delta.length();
+                            let safe_d = (hit.toi * d_len - skin_m).max(0.0);
+                            body.position = start_pos + delta.scale(safe_d / d_len);
+                            let vn = body.velocity.dot(hit.contact_normal);
+                            if vn < 0.0 {
+                                body.velocity = body.velocity
+                                    - hit.contact_normal.scale((1.0 + body.restitution) * vn);
+                            }
+                            if hit.contact_normal.y > half_f64() {
+                                body.grounded = true;
+                            }
+                        }
+                    }
+                }
+            }
+            constrain_sphere_paths(&mut self.bodies, &mut prev_bodies);
+            prev_bodies.clear();
+            self.prev_positions_scratch = prev_bodies;
+            skin_m
+        };
+
+        #[cfg(all(target_arch = "wasm32", not(feature = "uorc-wasm-decode")))]
+        {
+            let _ = &self.prev_positions_scratch;
+            if let Some(mover) = &mut self.kinematic_mover {
+                mover.step(dt_seconds);
+            }
+            self.elapsed_seconds += dt_seconds;
+        }
+
+        let Some(mut capsule) = saved_capsule else {
+            return Ok(LawfulStepReport {
+                slide_iterations: 0,
+                crease_projected: false,
+                min_clearance_meters: 1.0,
+                clearance_verified: true,
+            });
+        };
+
+        let g = self.config.environment.gravity_mps2;
+        let water_y = self.config.environment.water_level_meters;
+        let report =
+            capsule.step_collide_and_slide(dt_seconds, intent, g, two_level_bvh, |x, z| {
+                self.support_surface_height(x, z).max(water_y - half_f64())
+            })?;
+
+        // Mutual non-penetration between capsule and dynamic rigid spheres:
+        #[cfg(any(not(target_arch = "wasm32"), feature = "uorc-wasm-decode"))]
+        {
+            let cap_center = Vec3::new(
+                capsule.foot_position.x,
+                capsule.foot_position.y + capsule.radius_meters,
+                capsule.foot_position.z,
+            );
+            for body in &mut self.bodies {
+                let diff = body.position - cap_center;
+                let min_sep = capsule.radius_meters + body.radius_meters + skin_m;
+                let dist = diff.length();
+                if dist < min_sep {
+                    let push_dir = if dist > geometric_epsilon() {
+                        diff.scale(1.0 / dist)
+                    } else {
+                        Vec3::new(1.0, 0.0, 0.0)
+                    };
+                    body.position = cap_center + push_dir.scale(min_sep);
+                    let vn = body.velocity.dot(push_dir);
+                    let cap_vn = capsule.velocity.dot(push_dir);
+                    if vn < cap_vn {
+                        body.velocity = body.velocity + push_dir.scale(cap_vn - vn);
+                    }
+                }
+            }
+        }
+
+        self.player_capsule = Some(capsule);
+        Ok(report)
+    }
+}

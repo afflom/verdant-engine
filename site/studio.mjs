@@ -35,7 +35,7 @@ import { catalogModelsForRole } from "./prism-catalogs.mjs";
 import {
   buildContainerOrgansCard, buildDirectorPanel, wireStudioDialogLifecycle, wireStudioRoleTabs,
 } from "./studio-director-panel.mjs";
-import { buildGameplayPanel } from "./studio-gameplay-panel.mjs";
+import { buildGameplayPanel, buildNarrativePanel } from "./studio-gameplay-panel.mjs";
 
 import {
   cacheBytesInOpfs,
@@ -772,72 +772,9 @@ function buildStudioDialog({ inline = false } = {}) {
   pAudio.append(cAudio);
 
   // ==================== ROLE 4: NARRATIVE (WRITER) ====================
-  const pNarrative = document.createElement("section");
-  pNarrative.className = "ve-m-panel";
-  pNarrative.hidden = true;
-
-  const cNarrative = document.createElement("div");
-  cNarrative.className = "ve-m-card";
-  const hNarrative = document.createElement("h3");
-  hNarrative.textContent = "Narrative · Deadlock-Free StoryAutomaton, ConservationLedger & 128m Portals";
-  const pNarrativeDesc = document.createElement("p");
-  pNarrativeDesc.textContent =
-    "Authors quest state graphs over the tropical semiring where every state remains reachable, item/relic supply obeys exact integer conservation, and 3-sector portals link 128m UniversePosition cells.";
-
-  const narActions = document.createElement("div");
-  narActions.className = "ve-m-row";
-  const btnStoryStep = document.createElement("button");
-  btnStoryStep.type = "button";
-  btnStoryStep.className = "ve-m-btn primary";
-  btnStoryStep.id = "ve-narrative-step-btn";
-  btnStoryStep.textContent = "Advance Beat at Story Podium";
-
-  const btnFramePodium = document.createElement("button");
-  btnFramePodium.type = "button";
-  btnFramePodium.className = "ve-m-btn";
-  btnFramePodium.textContent = "Frame Story Podium";
-  btnFramePodium.addEventListener("click", () => studioCtx?.onFocusPreset?.(5));
-
-  const btnVerifyNarrative = document.createElement("button");
-  btnVerifyNarrative.type = "button";
-  btnVerifyNarrative.className = "ve-m-btn";
-  btnVerifyNarrative.textContent = "Verify Conservation & Portal Ring";
-
-  const storyLog = document.createElement("pre");
-  storyLog.className = "ve-m-log";
-  storyLog.id = "ve-story-log";
-  storyLog.textContent = "Querying StoryAutomaton, ConservationLedger, & UniversePosition portal ring…";
-
-  btnStoryStep.addEventListener("click", async () => {
-    const r = await studioCtx?.callWorker?.("story-interact", { pos: [1.5, 2.2, -1.0] });
-    if (r?.ok) {
-      storyLog.textContent =
-        `Narrative Beat [${r.stateIdx}]: ${r.title} (${r.advanced ? "BEAT ADVANCED" : "GUARD ACTIVE"})\n` +
-        `  ConservationLedger Total Supply: ${r.supply} relics (before + minted - burned == after)\n` +
-        `  Active Objective: ${r.objective}\n` +
-        `  Authored Dialogue: "${r.dialogue}"`;
-      await studioCtx?.onInteractStory?.();
-    }
+  const { pNarrative, storyLog } = buildNarrativePanel({
+    getStudioCtx: () => studioCtx,
   });
-
-  btnVerifyNarrative.addEventListener("click", async () => {
-    const [vNar, vUni, st] = await Promise.all([
-      studioCtx?.queryVerifier?.("scene:narrative"),
-      studioCtx?.queryVerifier?.("scene:universe"),
-      studioCtx?.callWorker?.("story-status"),
-    ]);
-    storyLog.textContent =
-      `Narrative & Universe Proofs:\n` +
-      `  Active Beat: [${st?.stateIdx ?? 0}] ${st?.title || "Arrival"} · Supply=${st?.supply ?? 12}\n` +
-      `  Objective  : ${st?.objective || "Approach the central podium"}\n` +
-      `  Dialogue   : "${st?.dialogue || "Every relic transfer is conserved."}"\n` +
-      `  scene:narrative -> ${vNar || "conformant"}\n` +
-      `  scene:universe  -> ${vUni || "conformant"} (3-sector 128m portal ring)`;
-  });
-
-  narActions.append(btnStoryStep, btnFramePodium, btnVerifyNarrative);
-  cNarrative.append(hNarrative, pNarrativeDesc, narActions, storyLog);
-  pNarrative.append(cNarrative);
 
   // ==================== ROLE 5: DIRECTOR (CINEMATOGRAPHY & CHOREOGRAPHY) ====================
   const { pDirector, syncLookDevLabel, stopSequence } = buildDirectorPanel({

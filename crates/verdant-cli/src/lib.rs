@@ -1127,25 +1127,7 @@ pub fn run_cli(args: &[String]) -> Result<String, CliCommandError> {
                     }
                 }),
                 "self-host" => {
-                    let lift = ch
-                        .lift_full_workspace_into_vcs(&root, &out_dir, &version, epoch)
-                        .map_err(|e| CliCommandError::ValidationRejected {
-                            command: "release self-host".to_string(),
-                            diagnostic: e.to_string(),
-                        })?;
-                    Ok(format!(
-                        "SELF-HOST LIFTED: version={} epoch={} rust={} lex={} gov={} site={} unlifted={} uorc_bytes={} shards={} commit={}",
-                        lift.version,
-                        lift.release_epoch,
-                        lift.lifted_rust_files,
-                        lift.lifted_lex_files,
-                        lift.lifted_governance_files,
-                        lift.lifted_site_files,
-                        lift.unlifted_workspace_modules,
-                        lift.source_uorc_bytes,
-                        lift.source_shard_count,
-                        lift.source_commit_kappa
-                    ))
+                    automate_cmd::run_release_self_host(&mut ch, &root, &out_dir, &version, epoch)
                 }
                 other => Err(CliCommandError::InvalidUsage {
                     usage: format!(
@@ -1154,45 +1136,7 @@ pub fn run_cli(args: &[String]) -> Result<String, CliCommandError> {
                 }),
             }
         }
-        "mcp" => {
-            use std::io::{BufRead, Write};
-            let two = 1usize + 1usize;
-            let mut root =
-                std::env::current_dir().unwrap_or_else(|_| std::path::PathBuf::from("."));
-            let mut i = 1usize;
-            while i < args.len() {
-                if args[i] == "--root" && i + 1 < args.len() {
-                    root = std::path::PathBuf::from(&args[i + 1]);
-                    i += two;
-                } else {
-                    i += 1;
-                }
-            }
-            let mut ch = verdant_core::operator::VerdantOperatorChannel::new("sunspire-regatta")
-                .map_err(|e| CliCommandError::ValidationRejected {
-                    command: "mcp".to_string(),
-                    diagnostic: e.to_string(),
-                })?;
-            let stdin = std::io::stdin();
-            let mut stdout = std::io::stdout().lock();
-            for line_res in stdin.lock().lines() {
-                let line = line_res.map_err(|e| CliCommandError::IoFailure {
-                    path: "stdin".to_string(),
-                    reason: e.to_string(),
-                })?;
-                if let Some(resp) = ch.handle_mcp_jsonrpc_line(&root, &line) {
-                    writeln!(stdout, "{resp}").map_err(|e| CliCommandError::IoFailure {
-                        path: "stdout".to_string(),
-                        reason: e.to_string(),
-                    })?;
-                    stdout.flush().map_err(|e| CliCommandError::IoFailure {
-                        path: "stdout".to_string(),
-                        reason: e.to_string(),
-                    })?;
-                }
-            }
-            Ok(String::new())
-        }
+        "mcp" => automate_cmd::run_mcp_stdio_loop(&args[1..]),
         other => Err(CliCommandError::InvalidUsage {
             usage: format!("unknown subcommand `{other}`\n{CLI_USAGE}"),
         }),

@@ -769,3 +769,104 @@ impl OntologicalRuntimeGovernor {
         .unwrap_or_else(|_| verdant_tensor::kernel_consts().skin_weight_scale)
     }
 }
+
+/// Stateless XOR-residual `UORC-SHA256-CHAIN-v1` delta snapshot codec between two `StandardSceneState`s.
+pub struct DeltaUorcSnapshot;
+
+impl DeltaUorcSnapshot {
+    /// Encodes the bytewise XOR residual from `base` to `next` into a stateless `UORC-SHA256-CHAIN-v1`
+    /// archive ready for low-bandwidth rollback/network state synchronization.
+    #[cfg(any(feature = "uorc-streaming", feature = "uorc-wasm-decode"))]
+    pub fn encode_delta(
+        base: &StandardSceneState,
+        next: &StandardSceneState,
+    ) -> Result<Vec<u8>, SnapshotCodecError> {
+        let base_wire = WorldSnapshot::encode(base)?;
+        let next_wire = WorldSnapshot::encode(next)?;
+        let residual: Vec<u8> = next_wire
+            .iter()
+            .enumerate()
+            .map(|(i, &b)| b ^ base_wire.get(i).copied().unwrap_or(0))
+            .collect();
+
+        #[cfg(feature = "uorc-streaming")]
+        {
+            let max_strats = if cfg!(debug_assertions) {
+                1
+            } else {
+                prism_kernel::sEight().unwrap_or(1) as usize
+            };
+            let mut strategies = Vec::new();
+            for pair in &uorc::portfolio::V04_PAIR {
+                for strat in pair {
+                    if strat.state == 0
+                        && !strat.x86
+                        && strategies.len() < max_strats
+                        && !strategies.contains(&Some(*strat))
+                    {
+                        strategies.push(Some(*strat));
+                    }
+                }
+            }
+            Ok(uorc::compress_with_strategies(
+                &residual,
+                &[residual.len() as u64],
+                &[],
+                &strategies,
+            ))
+        }
+        #[cfg(not(feature = "uorc-streaming"))]
+        {
+            Ok(crate::streaming::compress_uorc_portable(&residual))
+        }
+    }
+
+    /// Decompresses `delta_uorc` via `uorc_decompress::run`, reconstructs the target `VDNT` wire
+    /// against `base`, and verifies its SHA-256 trailer via [`WorldSnapshot::decode`].
+    #[cfg(feature = "uorc-wasm-decode")]
+    pub fn decode_delta(
+        base: &StandardSceneState,
+        delta_uorc: &[u8],
+    ) -> Result<StandardSceneState, SnapshotCodecError> {
+        if delta_uorc.is_empty() {
+            return Err(SnapshotCodecError::TruncatedSnapshot { byte_len: 0 });
+        }
+        let base_wire = WorldSnapshot::encode(base)?;
+        #[cfg(feature = "uorc-ncm-decode")]
+        let residual = {
+            let shift = prism_kernel::uorcDefaultDecodeWork().unwrap_or(1) as u32;
+            let work = 1_u64 << shift;
+            match uorc_decompress::run(
+                uorc_decompress::Bytes::lit(delta_uorc),
+                uorc_decompress::List::nil(),
+                uorc_decompress::List::nil(),
+                work,
+            ) {
+                Ok(Some(out)) => out.octets().to_vec(),
+                Ok(None) => {
+                    return Err(SnapshotCodecError::MalformedStatePayload {
+                        detail: "uorc_decompress::run rejected delta snapshot seal or work budget"
+                            .to_string(),
+                    });
+                }
+                Err(_) => {
+                    return Err(SnapshotCodecError::MalformedStatePayload {
+                        detail: "uorc_decompress::run overflow on delta snapshot".to_string(),
+                    });
+                }
+            }
+        };
+        #[cfg(not(feature = "uorc-ncm-decode"))]
+        let residual = crate::streaming::decompress_uorc_portable(delta_uorc).map_err(|e| {
+            SnapshotCodecError::MalformedStatePayload {
+                detail: e.to_string(),
+            }
+        })?;
+        let next_wire: Vec<u8> = residual
+            .iter()
+            .enumerate()
+            .map(|(i, &r)| r ^ base_wire.get(i).copied().unwrap_or(0))
+            .collect();
+        WorldSnapshot::decode(&next_wire)
+    }
+}

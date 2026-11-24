@@ -989,4 +989,116 @@ mod holo_v6_tests {
         forged_holo.extend_from_slice(body_slice);
         assert!(VerdantReleaseCapsule::verify_and_unpack(&forged_holo).is_err());
     }
+
+    #[test]
+    fn gzip_release_capsule_round_trip_and_tamper_refusal() {
+        let mut files = BTreeMap::new();
+        let big_html = "<html><body>Verdant Studio World 3D Mesh</body></html>"
+            .repeat(1 << (1 + 1 + 1 + 1 + 1));
+        files.insert(
+            "studio/index.html".to_string(),
+            big_html.as_bytes().to_vec(),
+        );
+        files.insert("scene.json".to_string(), b"{\"objects\":[]}".to_vec());
+
+        let packed = VerdantReleaseCapsule::pack_from_files(
+            "2.5.0",
+            1,
+            "commit-kappa-test",
+            "seal-sha-test",
+            "studio/index.html",
+            &files,
+        )
+        .expect("pack gzipped capsule");
+        assert_eq!(packed.manifest.compression.as_deref(), Some("gzip"));
+        assert!(packed.holo_bytes.len() < packed.manifest.total_payload_bytes);
+
+        let unpacked = VerdantReleaseCapsule::verify_and_unpack(&packed.holo_bytes)
+            .expect("verify and unpack gzipped capsule");
+        assert_eq!(unpacked.payloads, files);
+        assert_eq!(unpacked.capsule_sha256_hex, packed.capsule_sha256_hex);
+
+        let mut trailing = packed.holo_bytes.clone();
+        trailing.push(0);
+        assert!(VerdantReleaseCapsule::verify_and_unpack(&trailing).is_err());
+
+        let mut tampered = packed.holo_bytes.clone();
+        let last = tampered.len() - 1;
+        tampered[last] ^= 1;
+        assert!(VerdantReleaseCapsule::verify_and_unpack(&tampered).is_err());
+
+        let mut tiny = BTreeMap::new();
+        tiny.insert("a.txt".to_string(), b"x".to_vec());
+        let plain = VerdantReleaseCapsule::pack_from_files(
+            "2.5.0",
+            1,
+            "commit-kappa-plain",
+            "seal-sha-plain",
+            "a.txt",
+            &tiny,
+        )
+        .expect("pack tiny uncompressed capsule");
+        assert_eq!(plain.manifest.compression, None);
+        let unpacked_plain = VerdantReleaseCapsule::verify_and_unpack(&plain.holo_bytes)
+            .expect("unpack uncompressed capsule");
+        assert_eq!(unpacked_plain.payloads, tiny);
+    }
+
+    #[test]
+    fn verdant_vcs_diff_commits_and_branch_refs() {
+        let mut vcs = VerdantVcs::new();
+        let mut tree_a = BTreeMap::new();
+        tree_a.insert("a.txt".to_string(), b"alpha".to_vec());
+        tree_a.insert("b.txt".to_string(), b"bravo".to_vec());
+        let c1 = vcs
+            .commit_tree(
+                "refs/verdant/heads/main",
+                &tree_a,
+                "prism:tester",
+                b"secret",
+                "mgr-change-release",
+                "AUTH-STITCH-SELF-HOSTING",
+                "genesis",
+            )
+            .expect("commit c1");
+
+        let mut tree_b = BTreeMap::new();
+        tree_b.insert("a.txt".to_string(), b"alpha-v2".to_vec());
+        tree_b.insert("c.txt".to_string(), b"charlie".to_vec());
+        let c2 = vcs
+            .commit_tree(
+                "refs/verdant/heads/main",
+                &tree_b,
+                "prism:tester",
+                b"secret",
+                "mgr-change-release",
+                "AUTH-STITCH-SELF-HOSTING",
+                "update",
+            )
+            .expect("commit c2");
+
+        let diff = vcs
+            .diff_commits(&c1.commit_kappa, &c2.commit_kappa)
+            .expect("diff commits");
+        assert_eq!(diff.added_count, 1);
+        assert_eq!(diff.modified_count, 1);
+        assert_eq!(diff.removed_count, 1);
+        assert_eq!(diff.entries[0].path, "a.txt");
+        assert_eq!(diff.entries[0].kind, VerdantVcsChangeKind::Modified);
+        assert_eq!(diff.entries[1].path, "b.txt");
+        assert_eq!(diff.entries[1].kind, VerdantVcsChangeKind::Removed);
+        assert_eq!(diff.entries[1 + 1].path, "c.txt");
+        assert_eq!(diff.entries[1 + 1].kind, VerdantVcsChangeKind::Added);
+
+        let branch_ref = vcs
+            .create_branch("release/m13", &c1.commit_kappa)
+            .expect("create branch");
+        assert_eq!(branch_ref, "refs/verdant/heads/release/m13");
+        assert!(vcs.create_branch("../bad", &c1.commit_kappa).is_err());
+        assert!(vcs.create_branch("missing", "unknown-kappa").is_err());
+        let refs = vcs.list_refs();
+        assert_eq!(refs.len(), 1 + 1);
+        assert_eq!(refs[0].0, "refs/verdant/heads/main");
+        assert_eq!(refs[1].0, "refs/verdant/heads/release/m13");
+    }
 }

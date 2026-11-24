@@ -836,3 +836,241 @@ pub struct OperatorAuditReport {
     /// Number of differentiated world packs verified in `AUTH-DOMAIN-PACKS`.
     pub differentiated_worlds: usize,
 }
+
+impl VerdantOperatorChannel {
+    /// Executes [`Self::audit_repository`] and returns `(passed, pretty_json)`.
+    #[cfg(not(target_arch = "wasm32"))]
+    #[must_use]
+    pub fn audit_repository_json(
+        &self,
+        repo_root: &Path,
+        viewpoint_filter: Option<&str>,
+    ) -> (bool, String) {
+        let rep = self.audit_repository(repo_root, viewpoint_filter);
+        let json = serde_json::to_string_pretty(&rep).unwrap_or_else(|_| "{}".to_string());
+        (rep.passed, json)
+    }
+
+    /// Executes the VSM S3* independent direct repository audit across every accountable Manager,
+    /// verifying Total Ownership, file existence, required Viewpoint elements, zero forbidden
+    /// cross-contamination, single Studio search input, and 4-world differentiation.
+    #[cfg(not(target_arch = "wasm32"))]
+    #[must_use]
+    pub fn audit_repository(
+        &self,
+        repo_root: &Path,
+        viewpoint_filter: Option<&str>,
+    ) -> OperatorAuditReport {
+        let ownership = self.check_total_ownership();
+        let mut results = Vec::new();
+        let mut all_ok = ownership.complete;
+
+        for mgr in &self.managers {
+            if let Some(f) = viewpoint_filter {
+                if f != "all"
+                    && !mgr.spec.viewpoint_id.eq_ignore_ascii_case(f)
+                    && !mgr.spec.manager_id.eq_ignore_ascii_case(f)
+                {
+                    continue;
+                }
+            }
+            let mut violations = Vec::new();
+            for rel in &mgr.spec.owned_files {
+                let p = repo_root.join(rel);
+                if !p.is_file() {
+                    violations.push(format!("missing owned file `{rel}`"));
+                }
+            }
+            if let Some(primary_rel) = mgr.spec.owned_files.first() {
+                if primary_rel.ends_with(".html") {
+                    if let Ok(html) = std::fs::read_to_string(repo_root.join(primary_rel)) {
+                        for req in &mgr.spec.required_elements {
+                            if !html.contains(req) {
+                                violations.push(format!(
+                                    "`{primary_rel}` missing required Viewpoint element `{req}`"
+                                ));
+                            }
+                        }
+                        for bad in &mgr.spec.forbidden_cross_contamination {
+                            if html.contains(bad) {
+                                violations.push(format!(
+                                    "`{primary_rel}` contains forbidden cross-contamination `{bad}`"
+                                ));
+                            }
+                        }
+                        if mgr.spec.viewpoint_id == "creator-studio" {
+                            let search_count = html.matches("type=\"search\"").count();
+                            if search_count != 1 {
+                                violations.push(format!(
+                                    "`{primary_rel}` must expose exactly 1 unified search input (found {search_count})"
+                                ));
+                            }
+                        }
+                    }
+                }
+            }
+            if mgr.spec.manager_id == "mgr-observer-executive" {
+                let seal_rep = self.verify_immutability_seal(repo_root);
+                if !seal_rep.valid {
+                    violations.extend(seal_rep.violations);
+                }
+            }
+            let passed = violations.is_empty();
+            if !passed {
+                all_ok = false;
+            }
+            results.push(ManagerAuditResult {
+                manager_id: mgr.spec.manager_id.clone(),
+                viewpoint_id: mgr.spec.viewpoint_id.clone(),
+                vsm_system: mgr.spec.vsm_system.clone(),
+                kappa_hex: mgr.kappa_hex.clone(),
+                passed,
+                violations,
+            });
+        }
+
+        let mut distinct_titles = BTreeSet::new();
+        let mut distinct_skies = BTreeSet::new();
+        for dom in &self.observer.catalogs.domain_packs.domains {
+            distinct_titles.insert(dom.title.as_str());
+            distinct_skies.insert(dom.environment.sky_rgb_percent);
+        }
+        let differentiated_worlds = distinct_titles.len().min(distinct_skies.len());
+        let expected_worlds = 1usize << (1 + 1);
+        if differentiated_worlds < expected_worlds {
+            all_ok = false;
+        }
+
+        OperatorAuditReport {
+            passed: all_ok,
+            ownership,
+            managers: results,
+            differentiated_worlds,
+        }
+    }
+
+    /// Serializes the persistent W3C SOSA/PROV-O Operator communication history for this session.
+    #[must_use]
+    pub fn session_history_json(&self) -> String {
+        let payload = serde_json::json!({
+            "spec": "verdant/operator-session-history/1",
+            "activeDomain": self.observer.active_domain.spec.slug,
+            "managerCount": self.managers.len(),
+            "communicationCount": self.observer.communications.len(),
+            "publishedStitchApps": self.stitch_app_catalog.len(),
+            "communications": self.observer.communications,
+        });
+        #[cfg(not(target_arch = "wasm32"))]
+        let out = serde_json::to_string_pretty(&payload);
+        #[cfg(target_arch = "wasm32")]
+        let out = serde_json::to_string(&payload);
+        out.unwrap_or_else(|_| "{}".to_string())
+    }
+
+    #[cfg(not(target_arch = "wasm32"))]
+    pub(super) fn exec_mcp_authority_or_gateway_tool(
+        repo_root: &Path,
+        tool_name: &str,
+        args: &serde_json::Value,
+    ) -> (bool, serde_json::Value) {
+        if tool_name == "verdant_authority_exec" {
+            let rel_ledger = args
+                .get("ledgerPath")
+                .and_then(|v| v.as_str())
+                .unwrap_or(".verdant/authority-ledger.json");
+            let ledger_path = if Path::new(rel_ledger).is_absolute() {
+                std::path::PathBuf::from(rel_ledger)
+            } else {
+                repo_root.join(rel_ledger)
+            };
+            if let Some(owner) = args.get("initOwnerPrismId").and_then(|v| v.as_str()) {
+                let rname = args
+                    .get("initRepoName")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("verdant-engine");
+                let sec = args
+                    .get("initOwnerSecret")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("");
+                match crate::authority::SovereignAuthorityLedger::init_genesis(rname, owner, sec) {
+                    Ok(ledger) => {
+                        if let Some(parent) = ledger_path.parent() {
+                            let _ = std::fs::create_dir_all(parent);
+                        }
+                        let _ = std::fs::write(
+                            &ledger_path,
+                            serde_json::to_string_pretty(&ledger).unwrap_or_default(),
+                        );
+                        (
+                            false,
+                            serde_json::to_value(&ledger).unwrap_or(serde_json::Value::Null),
+                        )
+                    }
+                    Err(e) => (true, serde_json::json!({ "error": e.to_string() })),
+                }
+            } else {
+                let cmd_val = args
+                    .get("command")
+                    .cloned()
+                    .unwrap_or_else(|| serde_json::json!({ "cmd": "verifyChain" }));
+                let res = std::fs::read_to_string(&ledger_path)
+                    .map_err(|e| format!("read ledger `{}`: {e}", ledger_path.display()))
+                    .and_then(|raw| {
+                        serde_json::from_str::<crate::authority::SovereignAuthorityLedger>(&raw)
+                            .map_err(|e| format!("parse ledger: {e}"))
+                    })
+                    .and_then(|mut ledger| {
+                        let cmd: crate::authority::AuthorityCommand =
+                            serde_json::from_value(cmd_val)
+                                .map_err(|e| format!("invalid command: {e}"))?;
+                        let out = ledger.execute(cmd).map_err(|e| e.to_string())?;
+                        std::fs::write(
+                            &ledger_path,
+                            serde_json::to_string_pretty(&ledger).unwrap_or_default(),
+                        )
+                        .map_err(|e| format!("write ledger: {e}"))?;
+                        Ok(out)
+                    });
+                match res {
+                    Ok(out) => (
+                        false,
+                        serde_json::to_value(&out).unwrap_or(serde_json::Value::Null),
+                    ),
+                    Err(e) => (true, serde_json::json!({ "error": e })),
+                }
+            }
+        } else {
+            let act = args
+                .get("action")
+                .and_then(|v| v.as_str())
+                .unwrap_or("verify");
+            let dir = repo_root.join(
+                args.get("dir")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("dist/gateway-bundle"),
+            );
+            let op = if act == "pack" {
+                crate::gateway::GatewayOp::PackBundle {
+                    repo_root: repo_root.to_path_buf(),
+                    release_dir: repo_root.join(
+                        args.get("releaseDir")
+                            .and_then(|v| v.as_str())
+                            .unwrap_or("dist/stitch-release"),
+                    ),
+                    out_dir: dir,
+                    extra_gateways: Vec::new(),
+                    crates_dir: None,
+                }
+            } else {
+                crate::gateway::GatewayOp::VerifyFailover { bundle_dir: dir }
+            };
+            match crate::gateway::execute_gateway_op(&op) {
+                Ok((o, _)) => (
+                    false,
+                    serde_json::to_value(&o).unwrap_or(serde_json::Value::Null),
+                ),
+                Err(e) => (true, serde_json::json!({ "error": e.to_string() })),
+            }
+        }
+    }
+}

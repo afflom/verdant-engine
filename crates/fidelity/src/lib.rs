@@ -154,7 +154,11 @@ impl Score {
 
     /// Questions asked on one axis.
     pub fn asked(&self, axis: Axis) -> usize {
-        self.open(axis) + self.closed.iter().filter(|r| r.axis == axis).count()
+        self.residue
+            .iter()
+            .chain(self.closed.iter())
+            .filter(|r| r.axis == axis)
+            .count()
     }
 }
 

@@ -13,6 +13,7 @@ import {
 import {
   getExtendedWorkerModule,
   handleExtendedWorkerMessage,
+  handleStreamOrGrantWorkerMessage,
   readSolvedCamera,
   readSplitMeshViews,
   readUniverseCell,
@@ -795,99 +796,40 @@ self.onmessage = async ({ data: msg }) => {
       return;
     }
 
-    if (msg.kind === "stream-uorc") {
-      const { readIoBytes, stageIoBytes } = await getExtendedWorkerModule();
-      const targetRank = Math.max(0, Math.min(4, msg.targetRank | 0)) >>> 0;
-      uorcWasm ??= await getUorcWasm();
-      const streamBytes =
-        msg.customStream instanceof Uint8Array && msg.customStream.byteLength > 0
-          ? msg.customStream
-          : await getCanonicalUorcStream();
-      stageIoBytes(uorcWasm, streamBytes);
-      const ok = uorcWasm.verdant_wasm_uorc_decode_and_restore(targetRank) === 1;
-      if (!ok) {
-        self.postMessage({ kind: "uorc-streamed", id: msg.id, ok: false });
-        return;
-      }
-      const vdntBytes = readIoBytes(uorcWasm);
-      if (!uorcSceneActive) {
-        syncCoreStateToUorc(uorcWasm);
-      } else {
-        syncOrgansToWasm(uorcWasm);
-      }
-      walkJournal.length = 0;
-      uorcSceneActive = true;
-      customGlbActive = false;
-      const sh = simHost();
-      const codedChecksum = Number(uorcWasm.verdant_wasm_coded_zero_decode_checksum(Math.min(3, targetRank)));
-      currentLod = msg.lod || currentLod;
-      const cam = readSolvedCamera(sh);
-      const stats = drawScene(cam.eye, cam.lookTarget, currentLod, msg.simClockSec || 0, false);
-      self.postMessage({
-        kind: "uorc-streamed",
-        id: msg.id,
-        ok: true,
-        lodRank: sh.verdant_wasm_active_lod_rank() >>> 0,
-        tris: stats.tris,
-        streamBytes: streamBytes.byteLength,
-        vdntBytes: vdntBytes.byteLength,
-        codedChecksum,
-      });
-      return;
-    }
-
-    if (msg.kind === "set-organ-grant") {
-      uorcWasm ??= await getUorcWasm();
-      const idx = Math.max(0, Math.min(10, msg.organIdx >>> 0));
-      const reqMode = msg.mode >>> 0;
-      if (reqMode === 0) {
-        organModes[idx] = 0;
-      } else if (reqMode === 2) {
-        organModes[idx] = 2;
-      } else if (reqMode === 1 && organModes[idx] !== 2) {
-        organModes[idx] = 1;
-      }
-      slmKappaCache.clear();
-      const allowed = syncOrgansToWasm(uorcWasm, idx);
-      self.postMessage({
-        kind: "organ-grant-updated",
-        id: msg.id,
-        ok: true,
-        organIdx: idx,
-        mode: organModes[idx],
-        allowed,
+    if (msg.kind === "stream-uorc" || msg.kind === "set-organ-grant") {
+      await handleStreamOrGrantWorkerMessage(msg, {
+        getUorcWasm: async () => { uorcWasm ??= await getUorcWasm(); return uorcWasm; },
+        getCanonicalUorcStream,
+        getUorcSceneActive: () => uorcSceneActive,
+        setUorcSceneActive: (v) => { uorcSceneActive = Boolean(v); },
+        setCustomGlbActive: (v) => { customGlbActive = Boolean(v); },
+        clearWalkJournal: () => { walkJournal.length = 0; },
+        syncCoreStateToUorc,
+        syncOrgansToWasm,
+        simHost,
+        getCurrentLod: () => currentLod,
+        setCurrentLod: (v) => { currentLod = v; },
+        drawScene,
+        organModes,
+        slmKappaCache,
+        postMessage: (p) => self.postMessage(p),
       });
       return;
     }
 
     if (await handleExtendedWorkerMessage(msg, {
-      ensureUorcSceneHost,
-      getWasm: () => wasm,
+      ensureUorcSceneHost, simHost, drawScene, syncOrgansToWasm, slmKappaCache,
+      getWasm: () => wasm, getLoadedUorcWasm: () => uorcWasm,
       getUorcWasm: async () => { uorcWasm ??= await getUorcWasm(); return uorcWasm; },
-      getLoadedUorcWasm: () => uorcWasm,
-      simHost,
-      getCanvas: () => canvas,
-      getRenderer: () => renderer,
-      getEmaFrameMicros: () => emaFrameMicros,
-      getOrganModes: () => organModes,
-      getCurrentLod: () => currentLod,
-      setCurrentLod: (v) => { currentLod = v; },
-      getCustomGlbActive: () => customGlbActive,
-      getUorcSceneActive: () => uorcSceneActive,
-      setUorcSceneActive: (v) => { uorcSceneActive = Boolean(v); },
-      drawScene,
-      setCustomGlbActive: (v) => { customGlbActive = Boolean(v); },
-      getLastAnchor: () => lastAnchor,
-      getLastAnchorActive: () => lastAnchorActive,
+      getCanvas: () => canvas, getRenderer: () => renderer, getEmaFrameMicros: () => emaFrameMicros,
+      getOrganModes: () => organModes, getCurrentLod: () => currentLod, setCurrentLod: (v) => { currentLod = v; },
+      getCustomGlbActive: () => customGlbActive, setCustomGlbActive: (v) => { customGlbActive = Boolean(v); },
+      getUorcSceneActive: () => uorcSceneActive, setUorcSceneActive: (v) => { uorcSceneActive = Boolean(v); },
+      getLastAnchor: () => lastAnchor, getLastAnchorActive: () => lastAnchorActive,
       setLastAnchor: (anchor) => { lastAnchor = anchor; lastAnchorActive = true; },
-      getLastPose: () => lastPose,
-      setLastPose: (pose) => { lastPose = pose; },
-      setActiveSeed: (s) => { activeSeed = s; },
-      clearWalkJournal: () => { walkJournal.length = 0; },
-      syncOrgansToWasm,
-      slmKappaCache,
-      getSlmKappaHits: () => slmKappaHits,
-      incSlmKappaHits: () => ++slmKappaHits,
+      getLastPose: () => lastPose, setLastPose: (pose) => { lastPose = pose; },
+      setActiveSeed: (s) => { activeSeed = s; }, clearWalkJournal: () => { walkJournal.length = 0; },
+      getSlmKappaHits: () => slmKappaHits, incSlmKappaHits: () => ++slmKappaHits,
       postMessage: (p, t) => self.postMessage(p, t),
     })) {
       return;

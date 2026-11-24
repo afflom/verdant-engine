@@ -765,130 +765,16 @@ export function buildLocalVerdantCatalogItems(localWorldPacks = [], localPrismCa
   return buildLocalVerdantCatalogItemsImpl(localWorldPacks, localPrismCatalogs, AUTHORITATIVE_CONTENT_TYPES);
 }
 
-/**
- * Executes a unified concurrent discovery search across all selected live internet streams
- * and Verdant's locked local Prism catalog. Gracefully absorbs offline/sandboxed external
- * fetch failures without throwing.
- */
-export async function searchLiveCatalogStreams({
-  query = "",
-  contentType = "all",
-  streamId = "all",
-  localWorldPacks = [],
-  localPrismCatalogs = PRISM_MODEL_CATALOGS,
-  timeoutMs = 5500,
-  includeRemote = true,
-  disabledStreamIds = [],
-  customStreams = [],
-} = {}) {
-  const cleanQuery = String(query || "").trim();
-  const tokens = cleanQuery
-    .toLowerCase()
-    .split(/\s+/)
-    .filter((t) => t.length > 0);
+import {
+  SEEDED_VERDANT_APPS,
+  STITCH_APP_GENRES,
+  hydrateStitchAppCatalog,
+  loadStitchAppCatalog,
+  publishStitchAppToCatalog,
+  runLiveCatalogSearch,
+  subscribeStitchAppCatalog,
+} from "./catalog-streams-stitch.mjs";
 
-  const disabledSet = new Set(disabledStreamIds || []);
-  const streamStatus = {};
-  const tasks = [];
-
-  const wantStream = (id, supportedTypes) =>
-    !disabledSet.has(id) &&
-    (streamId === "all" || streamId === id) &&
-    (contentType === "all" || supportedTypes.includes(contentType));
-
-  const prismMeta = LIVE_CATALOG_STREAMS.find((s) => s.id === "verdant-prism");
-  // Always evaluate local SHA-256-locked Verdant Prism catalog synchronously (<2ms):
-  const localItems = wantStream("verdant-prism", prismMeta.contentTypes)
-    ? buildLocalVerdantCatalogItems(localWorldPacks, localPrismCatalogs).filter((item) => {
-        if (contentType !== "all" && item.contentTypeKey !== contentType) return false;
-        const hay = `${item.id} ${item.title} ${item.description} ${item.tags.join(" ")} ${item.contentTypeKey}`;
-        return matchesTokens(hay, tokens);
-      })
-    : [];
-  streamStatus["verdant-prism"] = {
-    status: disabledSet.has("verdant-prism") ? "disabled" : "live",
-    count: localItems.length,
-  };
-
-  const addRemoteTask = (id, fn) => {
-    const t0 = typeof performance !== "undefined" ? performance.now() : Date.now();
-    tasks.push(
-      fn()
-        .then((res) => {
-          const ms = Math.max(1, Math.round((typeof performance !== "undefined" ? performance.now() : Date.now()) - t0));
-          streamStatus[id] = { status: "live", count: res.length, latencyMs: ms };
-          return res;
-        })
-        .catch(() => {
-          const ms = Math.max(1, Math.round((typeof performance !== "undefined" ? performance.now() : Date.now()) - t0));
-          streamStatus[id] = { status: "offline", count: 0, latencyMs: ms };
-          return [];
-        }),
-    );
-  };
-
-  if (includeRemote) {
-    if (wantStream("khronos-gltf", ["3DModel"])) {
-      addRemoteTask("khronos-gltf", () => queryKhronosGltf(tokens, 6, timeoutMs));
-    }
-    if (wantStream("nasa-3d", ["3DModel", "Place"])) {
-      addRemoteTask("nasa-3d", () => queryNasa3d(tokens, 6, timeoutMs));
-    }
-    if (wantStream("threejs-gltf", ["3DModel"])) {
-      addRemoteTask("threejs-gltf", () => queryThreeJsGltf(tokens, 6, timeoutMs));
-    }
-    if (wantStream("babylon-assets", ["3DModel"])) {
-      addRemoteTask("babylon-assets", () => queryBabylonAssets(tokens, 6, timeoutMs));
-    }
-    if (wantStream("polyhaven", ["3DModel", "PBRMaterial", "Place"])) {
-      addRemoteTask("polyhaven", () => queryPolyHaven(tokens, contentType, 6, timeoutMs));
-    }
-    if (wantStream("fontsource", ["Font"])) {
-      addRemoteTask("fontsource", () => queryFontsource(tokens, 5, timeoutMs));
-    }
-    if (wantStream("openverse", ["AudioObject", "PBRMaterial"])) {
-      addRemoteTask("openverse", () => queryOpenverse(cleanQuery, contentType, 5, timeoutMs));
-    }
-    if (wantStream("wikidata", ["Dataset", "Place", "Story"])) {
-      addRemoteTask("wikidata", () => queryWikidata(cleanQuery, 5, timeoutMs));
-    }
-    if (wantStream("github", ["SoftwareSourceCode", "DefinedTermSet", "Place"])) {
-      addRemoteTask("github", () => queryGitHub(cleanQuery, contentType, 5, timeoutMs));
-    }
-    for (const cs of customStreams || []) {
-      if (!cs?.enabled || disabledSet.has(cs.streamId)) continue;
-      if (streamId !== "all" && streamId !== cs.streamId) continue;
-      addRemoteTask(cs.streamId, () => queryCustomStream(cs, tokens, 6, timeoutMs));
-    }
-  }
-
-  const remoteBatches = await Promise.all(tasks);
-  const remoteItems = remoteBatches.flat();
-  // Round-robin interleave across active streams when browsing "all" so every content type shines immediately:
-  let combined;
-  if (streamId === "all" && remoteBatches.length > 1) {
-    const queues = [...remoteBatches.map((b) => [...b]), [...localItems]].filter((q) => q.length > 0);
-    combined = [];
-    while (queues.some((q) => q.length > 0)) {
-      for (const q of queues) {
-        if (q.length > 0) combined.push(q.shift());
-      }
-    }
-  } else {
-    combined = [...remoteItems, ...localItems];
-  }
-  const filtered = contentType === "all" ? combined : combined.filter((i) => i.contentTypeKey === contentType);
-
-  return {
-    items: filtered,
-    streamStatus,
-    totalCount: filtered.length,
-    liveRemoteCount: remoteItems.length,
-    localLockedCount: localItems.length,
-  };
-}
-
-// ==================== STITCH 2-OF-3 VERDANT APP CATALOG PROTOCOL ====================
 export {
   SEEDED_VERDANT_APPS,
   STITCH_APP_GENRES,
@@ -896,4 +782,23 @@ export {
   loadStitchAppCatalog,
   publishStitchAppToCatalog,
   subscribeStitchAppCatalog,
-} from "./catalog-streams-stitch.mjs";
+};
+
+export async function searchLiveCatalogStreams(opts = {}) {
+  return runLiveCatalogSearch(opts, {
+    LIVE_CATALOG_STREAMS,
+    PRISM_MODEL_CATALOGS,
+    buildLocalVerdantCatalogItems,
+    matchesTokens,
+    queryKhronosGltf,
+    queryNasa3d,
+    queryThreeJsGltf,
+    queryBabylonAssets,
+    queryPolyHaven,
+    queryFontsource,
+    queryOpenverse,
+    queryWikidata,
+    queryGitHub,
+    queryCustomStream,
+  });
+}
