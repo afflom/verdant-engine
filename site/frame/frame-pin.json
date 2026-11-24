@@ -2,10 +2,10 @@
   "spec": "verdant/frame-pin/1",
   "releaseVersion": "2.21.0",
   "releaseEpoch": 26,
-  "releaseKappaHex": "551304c85a84c62842b208b5dce0a5b71ac6c127c64ebf5433ac57ac53cb0689",
+  "releaseKappaHex": "f3439793543859e86f5f0a753aadf1c668fa83c602c90a9230721bb810afaf14",
   "prevKappaHex": "genesis",
   "vcsCommitKappa": "8091e4d08fa3bfd5019ec631fb1eef81adc69697b183a88cf4725ad4b581df4d",
-  "immutabilitySealSha256": "725b313eb603b03d5d705d18d9bdf54bede9a7a63c3bf3c07a3d72f1b2cba1b0",
+  "immutabilitySealSha256": "d3d7b9df563b2b6ed33d42f81cb2dc65752a6c7b0ab3afff0cf16b5b52fa2d36",
   "defaultStitchUri": "stitch://verdant/studio",
   "dataShardsK": 4,
   "totalShardsN": 8,
@@ -14,11 +14,11 @@
     "stitchUri": "stitch://verdant/studio",
     "releaseEpoch": 26,
     "prevKappaHex": "genesis",
-    "targetKappaHex": "551304c85a84c62842b208b5dce0a5b71ac6c127c64ebf5433ac57ac53cb0689",
+    "targetKappaHex": "f3439793543859e86f5f0a753aadf1c668fa83c602c90a9230721bb810afaf14",
     "minQuorum": 2,
     "quorumSignatures": {
-      "prism:verdant-observer-executive": "ab13266a918c5d5d5bb04137205bd808249f8fd205626238c992ca3fb46f8527",
-      "prism:verdant-release-bot": "73afadae624cd2e4c73d8a9b2d3837a314c3836c50cb3deb0b60fc9af66500a9"
+      "prism:verdant-observer-executive": "8e08e20b3c82d954e47951e4c2df3828af2f0f5d8bae423cd9b7f47c88fb410b",
+      "prism:verdant-release-bot": "2c4eed8d487f0cb5703c00b806bd3d2894dd0b1be4db4a6358c85f32273b0953"
     }
   },
   "stitchRelays": [
