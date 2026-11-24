@@ -98,12 +98,15 @@ pub const fn bit_mask_u64(bits: u32) -> u64 {
 pub const fn fibonacci_u64(index: u32) -> u64 {
     let mut a = 0_u64;
     let mut b = 1_u64;
-    let mut i = 0_u32;
-    while i < index {
+    let mut i = 0_usize;
+    // F(94) exceeds u64. Extra saturated steps leave the result unchanged.
+    let cap = sixty_four_u32().saturating_add(sixteen_u32().saturating_mul(two_u32()));
+    let bound = if index < cap { index } else { cap } as usize;
+    while i < bound {
         let next = a.saturating_add(b);
         a = b;
         b = next;
-        i = i.wrapping_add(1_u32);
+        i += 1;
     }
     a
 }

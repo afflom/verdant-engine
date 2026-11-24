@@ -2,12 +2,12 @@
   "spec": "verdant/observer-roadmap-kpi-report/1",
   "managerId": "mgr-roadmap-strategy",
   "authorityId": "AUTH-SEMVER-CHANGE-KPI",
-  "currentVersion": "2.21.4",
-  "releaseEpoch": 30,
+  "currentVersion": "2.21.5",
+  "releaseEpoch": 31,
   "totalManagers": 13,
   "totalPrismFacetsOwned": 9,
   "totalPrismFacetsRequired": 9,
-  "declaredCapabilitiesCount": 144,
+  "declaredCapabilitiesCount": 145,
   "minorProgressPct": 100,
   "majorProgressPct": 100,
   "kpiPassedCount": 13,
@@ -17,7 +17,7 @@
     "lockedAuthoritiesCount": 12,
     "provenanceSourcesCount": 23,
     "charterBytes": 75816,
-    "governedLexModules": 68,
+    "governedLexModules": 69,
     "measuredClosed": 11,
     "measuredTotal": 11,
     "authorityCoveragePct": 100
@@ -138,7 +138,7 @@
       "name": "uorust MIR-Lifted Rust Functions Floor",
       "unit": "functions",
       "direction": "atLeast",
-      "actual": 586,
+      "actual": 587,
       "target": 200,
       "passed": true,
       "owningManager": "mgr-verification-observatory",
@@ -1167,7 +1167,7 @@
     "currentVersion": {
       "major": 2,
       "minor": 21,
-      "patch": 4
+      "patch": 5
     },
     "recommendedBump": "major",
     "nextVersion": {
@@ -1175,8 +1175,8 @@
       "minor": 0,
       "patch": 0
     },
-    "currentEpoch": 30,
-    "nextEpoch": 31,
+    "currentEpoch": 31,
+    "nextEpoch": 32,
     "versionIncremented": true,
     "gates": {
       "ratchetApplied": true,
@@ -1187,6 +1187,6 @@
       "pullThroughVerified": true
     },
     "blockingReasons": [],
-    "rationale": "Ratchet applied & 5/5 Release Gates passed: advancing v2.21.4 -> v3.0.0 (Major, epoch 31) — Observer roadmap evaluation: minor=100% major=100% managers=13"
+    "rationale": "Ratchet applied & 5/5 Release Gates passed: advancing v2.21.5 -> v3.0.0 (Major, epoch 32) — Observer roadmap evaluation: minor=100% major=100% managers=13"
   }
 }

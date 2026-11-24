@@ -473,7 +473,7 @@ dependencies = [
 
 [[package]]
 name = "prism-fidelity"
-version = "2.21.4"
+version = "2.21.5"
 dependencies = [
  "serde",
  "sha2 0.11.1",
@@ -506,7 +506,7 @@ dependencies = [
 
 [[package]]
 name = "repo-conformance"
-version = "2.21.4"
+version = "2.21.5"
 dependencies = [
  "prism-fidelity",
  "repo-model",
@@ -519,7 +519,7 @@ dependencies = [
 
 [[package]]
 name = "repo-model"
-version = "2.21.4"
+version = "2.21.5"
 dependencies = [
  "serde",
  "sha2 0.11.1",
@@ -794,14 +794,14 @@ checksum = "daf8dba3b7eb870caf1ddeed7bc9d2a049f3cfdfae7cb521b087cc33ae4c49da"
 
 [[package]]
 name = "verdant-cli"
-version = "2.21.4"
+version = "2.21.5"
 dependencies = [
  "verdant-core",
 ]
 
 [[package]]
 name = "verdant-core"
-version = "2.21.4"
+version = "2.21.5"
 dependencies = [
  "flate2",
  "gltf",
@@ -817,7 +817,7 @@ dependencies = [
 
 [[package]]
 name = "verdant-tensor"
-version = "2.21.4"
+version = "2.21.5"
 dependencies = [
  "proc-macro2",
  "serde",
@@ -868,9 +868,14 @@ dependencies = [
  "verdant_head_slope_term",
  "verdant_head_slope_word",
  "verdant_high_f64",
+ "verdant_importance_grid",
  "verdant_increment_pack",
  "verdant_increment_term",
  "verdant_integer_f32",
+ "verdant_iq3_fit",
+ "verdant_iq3_level",
+ "verdant_iq3_scale",
+ "verdant_iq3_score",
  "verdant_logarithmic_admit",
  "verdant_logarithmic_inverse",
  "verdant_logarithmic_prepare",
@@ -920,7 +925,7 @@ dependencies = [
 
 [[package]]
 name = "verdant-wasm"
-version = "2.21.4"
+version = "2.21.5"
 dependencies = [
  "verdant-core",
 ]
@@ -1102,6 +1107,10 @@ name = "verdant_high_f64"
 version = "2.9.0"
 
 [[package]]
+name = "verdant_importance_grid"
+version = "2.49.0"
+
+[[package]]
 name = "verdant_increment_pack"
 version = "2.48.0"
 
@@ -1112,6 +1121,22 @@ version = "2.48.0"
 [[package]]
 name = "verdant_integer_f32"
 version = "2.9.0"
+
+[[package]]
+name = "verdant_iq3_fit"
+version = "2.49.0"
+
+[[package]]
+name = "verdant_iq3_level"
+version = "2.49.0"
+
+[[package]]
+name = "verdant_iq3_scale"
+version = "2.49.0"
+
+[[package]]
+name = "verdant_iq3_score"
+version = "2.49.0"
 
 [[package]]
 name = "verdant_logarithmic_admit"
@@ -1307,7 +1332,7 @@ checksum = "8c3b93199df0ab874cdf0c6a94f0a0dc3423fe41f1cafb62b8bd7b1deb277aef"
 
 [[package]]
 name = "xtask"
-version = "2.21.4"
+version = "2.21.5"
 dependencies = [
  "repo-conformance",
  "repo-model",

@@ -5,9 +5,9 @@
   "currentVersion": {
     "major": 2,
     "minor": 21,
-    "patch": 4
+    "patch": 5
   },
-  "releaseEpoch": 30,
+  "releaseEpoch": 31,
   "history": [
     {
       "version": "0.1.0",
@@ -238,6 +238,13 @@
       "releaseEpoch": 30,
       "bumpKind": "patch",
       "summary": "v2.21.4: certified binary32 exponential increment in unified tensor scope (VTK-55)",
+      "citedAuthority": "AUTH-SEMVER-CHANGE-KPI"
+    },
+    {
+      "version": "2.21.5",
+      "releaseEpoch": 31,
+      "bumpKind": "patch",
+      "summary": "v2.21.5: certified IQ3 importance-grid weight encoding (VTK-56)",
       "citedAuthority": "AUTH-SEMVER-CHANGE-KPI"
     }
   ]

@@ -6,6 +6,7 @@ source_roots = ["src"]
 entrypoints = [
   "src/GroupedAffineEncoding.lex.tex",
   "src/GroupedSixEncoding.lex.tex",
+  "src/ImportanceGridEncoding.lex.tex",
   "src/SignedTruncation.lex.tex",
 ]
 build_root = ".lexlean-encoding"

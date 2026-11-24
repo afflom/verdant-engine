@@ -58,8 +58,8 @@ max_unlifted_workspace_modules = 0
 
 [frontier_ratchet]
 frontier_register = "frontier.toml"
-frontier_rust_tree_sha256 = "02d080803b0c287a44ba9ea9d578e6a239314a4a294c17e532e55fd42e68b35d"
-min_lifted_functions = 586
+frontier_rust_tree_sha256 = "cbe6dd5b83d0d083ad0e4d6f03fdd8582aa130c191e696e7ff76cf8b75e6f7d2"
+min_lifted_functions = 587
 max_residue_functions = 1150
 max_uncertified_functions = 1302
 
@@ -415,3 +415,8 @@ role = "Select weighted affine scale fits and encode grouped unsigned coefficien
 path = "app/src/SignedTruncation.lex.tex"
 stratum = 2
 role = "Truncate finite binary32 values to representable signed storage words."
+
+[[stratum_module]]
+path = "app/src/ImportanceGridEncoding.lex.tex"
+stratum = 1
+role = "Weighted four-lane grid projection, binary32 fit instructions and packed scale/sign fields."

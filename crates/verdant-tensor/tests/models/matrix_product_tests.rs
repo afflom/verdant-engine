@@ -497,6 +497,29 @@ int main(int argc, char **argv) {
   if (!std::strcmp(argv[1], "grouped-affine-4")) return encode_blocks<QK_K>(quantize_row_q4_K_ref);
   if (!std::strcmp(argv[1], "grouped-affine-5")) return encode_blocks<QK_K>(quantize_row_q5_K_ref);
   if (!std::strcmp(argv[1], "nonlinear-four-encode")) return encode_blocks<QK4_NL>(reference_nonlinear_four);
+  if (!std::strcmp(argv[1], "iq3-compact-weighted") || !std::strcmp(argv[1], "iq3-weighted")) {
+    auto kind = !std::strcmp(argv[1], "iq3-weighted") ? GGML_TYPE_IQ3_S : GGML_TYPE_IQ3_XXS;
+    std::vector<uint8_t> encoded(ggml_row_size(kind, QK_K));
+    uint32_t word;
+    while (std::scanf("%u", &word) == 1) {
+      float data[2*QK_K];
+      for (int i = 0; i < 2*QK_K; ++i) {
+        if (i && std::scanf("%u", &word) != 1) return 2;
+        std::memcpy(data+i, &word, sizeof(word));
+      }
+      if (ggml_quantize_chunk(kind, data, encoded.data(), 0, 1, QK_K, data+QK_K) != encoded.size()) return 3;
+      for (auto byte : encoded) std::printf("%u\n", unsigned(byte));
+    }
+    return std::ferror(stdin) ? 2 : 0;
+  }
+  if (!std::strcmp(argv[1], "iq3-compact-encode")) {
+    ggml_quantize_init(GGML_TYPE_IQ3_XXS);
+    return encode_blocks<QK_K>(quantize_row_iq3_xxs_ref);
+  }
+  if (!std::strcmp(argv[1], "iq3-encode")) {
+    ggml_quantize_init(GGML_TYPE_IQ3_S);
+    return encode_blocks<QK_K>(quantize_row_iq3_s_ref);
+  }
   if (!std::strcmp(argv[1], "grouped-nonlinear-four-encode")) return encode_blocks<QK_K>(quantize_row_iq4_xs_ref);
   if (!std::strcmp(argv[1], "signed-three-encode")) return encode_blocks<QK_K>(quantize_row_q3_K_ref);
   if (!std::strcmp(argv[1], "signed-six-encode")) return encode_blocks<QK_K>(quantize_row_q6_K_ref);
@@ -1452,6 +1475,21 @@ fn verify_bundle(scope: &str, directory: &str) -> std::collections::BTreeMap<Str
                     "verdant_packed_dot" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_packed_dot/src/lib.rs"),
                     "verdant_symmetric_dot" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_symmetric_dot/src/lib.rs"),
                     "verdant_symmetric_dot_layout" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_symmetric_dot_layout/src/lib.rs"),
+                    "verdant_importance_grid" => include_bytes!(
+                        "../../../../generated/tensor-encoding/packages/rust-core/verdant_importance_grid/src/lib.rs"
+                    ),
+                    "verdant_iq3_fit" => include_bytes!(
+                        "../../../../generated/tensor-encoding/packages/rust-core/verdant_iq3_fit/src/lib.rs"
+                    ),
+                    "verdant_iq3_level" => include_bytes!(
+                        "../../../../generated/tensor-encoding/packages/rust-core/verdant_iq3_level/src/lib.rs"
+                    ),
+                    "verdant_iq3_score" => include_bytes!(
+                        "../../../../generated/tensor-encoding/packages/rust-core/verdant_iq3_score/src/lib.rs"
+                    ),
+                    "verdant_iq3_scale" => include_bytes!(
+                        "../../../../generated/tensor-encoding/packages/rust-core/verdant_iq3_scale/src/lib.rs"
+                    ),
                     _ => panic!("unknown certified dependency"),
                 };
                 assert_eq!(actual, compiled);
@@ -3329,6 +3367,83 @@ fn nonlinear_four_encoding_vtk_53() {
     );
     compare_weight_encoders::<32>(&[(NonlinearFour, 18, "nonlinear-four-encode")]);
     compare_weight_encoders::<256>(&[(GroupedNonlinearFour, 136, "grouped-nonlinear-four-encode")]);
+}
+
+#[test]
+fn importance_grid_three_encoding_vtk_56() {
+    use super::PackedWeightEncoding::{ImportanceThree, ImportanceThreeCompact};
+    use std::fmt::Write as _;
+    certified_encoding_model(
+        "verdant_importance_grid",
+        "VerdantEngine.ImportanceGridEncoding.evaluate",
+    );
+    compare_weight_encoders::<256>(&[
+        (ImportanceThreeCompact, 98, "iq3-compact-encode"),
+        (ImportanceThree, 110, "iq3-encode"),
+    ]);
+    for (kind, width, mode) in [
+        (ImportanceThreeCompact, 98, "iq3-compact-weighted"),
+        (ImportanceThree, 110, "iq3-weighted"),
+    ] {
+        let mut input = String::new();
+        let mut blocks = Vec::new();
+        for row in 0..12 {
+            let data: [f32; 256] = std::array::from_fn(|i| match row {
+                0 => {
+                    if i % 2 == 0 {
+                        0.0
+                    } else {
+                        -0.0
+                    }
+                }
+                1 => 1.0,
+                2 if i % 31 != 0 => 0.0,
+                2 if i % 2 == 0 => -8.0,
+                2 => 8.0,
+                3 => (if i % 2 == 0 { 1.0 } else { -1.0 }) * (i % 7) as f32,
+                _ => (((i * (2 * row + 1) + 7 * row) % 83) as f32 - 41.0) / 16.0,
+            });
+            for weights in [
+                [1.0; 256],
+                std::array::from_fn(|i| (1 + (i * 11) % 31) as f32 / 8.0),
+                std::array::from_fn(|i| if i % 4 == 0 { 1.0 } else { 0.0 }),
+            ] {
+                for value in data.iter().chain(&weights) {
+                    writeln!(input, "{}", value.to_bits()).unwrap();
+                }
+                blocks.push((data, weights));
+            }
+        }
+        let expected = query_oracle(mode, input);
+        assert_eq!(expected.len(), width * blocks.len());
+        let mut out = vec![0xa5; width];
+        for ((data, weights), reference) in blocks.iter().zip(expected.chunks_exact(width)) {
+            super::encode_importance_weight_block(data, Some(weights), kind, &mut out).unwrap();
+            assert!(
+                out.iter()
+                    .map(|&v| u32::from(v))
+                    .eq(reference.iter().copied()),
+                "{mode}"
+            );
+        }
+        let (data, mut weights) = blocks[0];
+        out.fill(0xa5);
+        assert!(super::encode_importance_weight_block(
+            &data,
+            Some(&weights[..255]),
+            kind,
+            &mut out
+        )
+        .is_err());
+        for bad in [-1.0, f32::NAN, f32::INFINITY] {
+            weights[21] = bad;
+            assert!(
+                super::encode_importance_weight_block(&data, Some(&weights), kind, &mut out)
+                    .is_err()
+            );
+        }
+        assert!(out.iter().all(|&byte| byte == 0xa5));
+    }
 }
 
 #[test]
