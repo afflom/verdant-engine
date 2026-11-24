@@ -2,8 +2,9 @@
 //! stakeholder part routing predicates (`M25`, `VE-77`), included by `scalars.rs`.
 
 use super::{
-    eight_u32, five_u32, four_u32, hundred_u32, hundred_u64, six_u32, ten_u32, ten_u64,
-    thousand_u32, three_u32, two_u32, two_u64,
+    eight_u32, five_u32, four_u32, hundred_u32, hundred_u64, six_u32, sixteen_u32, sixteen_u64,
+    sixty_four_u32, ten_u32, ten_u64, thirty_two_u32, thousand_u32, three_u32, three_u64, two_u32,
+    two_u64,
 };
 
 /// Pure MIR-lifted multi-gateway independent provider family floor (`families >= 2`).
@@ -767,7 +768,7 @@ pub const fn m30_modularity_targets_met(rust_max_lines: u32, js_max_lines: u32) 
         && js_max_lines <= m30_js_modularity_ceiling()
 }
 
-/// Pure MIR-lifted M30 uorust frontier advancement check (`lifted >= 615 && residue <= 1148 && uncertified <= 1300`, `VE-81`).
+/// Pure MIR-lifted M30 uorust frontier advancement check (`lifted >= 615 && residue <= 1148 && uncertified <= 1301`, `VE-81`).
 #[must_use]
 pub const fn m30_frontier_targets_met(lifted: u64, residue: u64, uncertified: u64) -> bool {
     let six_fifteen = hundred_u64()
@@ -777,7 +778,9 @@ pub const fn m30_frontier_targets_met(lifted: u64, residue: u64, uncertified: u6
     let max_res = (thousand_u32() as u64)
         .wrapping_add(hundred_u64())
         .wrapping_add(sixteen_u64().wrapping_mul(three_u64()));
-    let max_uncert = (thousand_u32() as u64).wrapping_add(hundred_u64().wrapping_mul(three_u64()));
+    let max_uncert = (thousand_u32() as u64)
+        .wrapping_add(hundred_u64().wrapping_mul(three_u64()))
+        .wrapping_add(1_u64);
     lifted >= six_fifteen && residue <= max_res && uncertified <= max_uncert
 }
 

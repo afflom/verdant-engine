@@ -956,3 +956,21 @@ id = "VTK-62"
 level = "build"
 suite = "engine"
 statement = "Verdant fits shifted ternary grids and packs single-scale and distributed-scale blocks against the original GGML quantizers"
+
+[[id]]
+id = "VTK-63"
+level = "build"
+suite = "engine"
+statement = "Verdant converts signed 64-bit words directly to binary32 and binary64 and truncates representable binary64 values to signed 64-bit words"
+
+[[id]]
+id = "VTK-64"
+level = "build"
+suite = "engine"
+statement = "Verdant rounds binary64 and signed I64 directly to binary32 at round-to-odd and truncates representable binary64 values to signed I32"
+
+[[id]]
+id = "VE-81"
+level = "build"
+suite = "engine"
+statement = "Verdant enforces sub-1145-line hand-written Rust modularity, sub-850-line shipped JS modularity, sub-1400-line Observatory contract scripts, 984-permille Observer self-refinement health, and at least 615 uorust MIR-lifted functions"

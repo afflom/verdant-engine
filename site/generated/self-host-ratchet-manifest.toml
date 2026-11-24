@@ -2,12 +2,12 @@
 # Enforced mechanically by `prism-fidelity` (`prism/parametric-ratchet/2`, VE-47).
 spec = "verdant/self-host-ratchet-manifest/1"
 generator = "verdant-operator-ratchet-lift"
-version = "2.21.7"
-release_epoch = 33
-source_commit_kappa = "e2d781eeaf58f66a31401d80369e16289f7b701617002b67586b8cae7856a9ff"
-source_tree_root_sha256 = "47ceef860fc990c5f6c8f4b912a363e6f3e0c1ea5e27adc4f144bbc90cd3d2cf"
-immutability_seal_root_sha256 = "7e294362ea661fc1baafb3d0ae2c86017097e0ce58f736398afa7a53772f2418"
-release_capsule_sha256 = "54e008b6c688224f0179c4a210627dcba6b7e139a34bcaf93b98629a79d21d79"
+version = "2.22.0"
+release_epoch = 34
+source_commit_kappa = "89d81a79f3d18b4bc7c46693d90d35b00a089e2644c7b7c20c0047ea1272a506"
+source_tree_root_sha256 = "c560dbcb2a7954b546f0a0dd04e2ae0cc071dd2f9a216a3a1d47ee208dec5f47"
+immutability_seal_root_sha256 = "4622b10476797acc6d7c0380bc9f4d457096977db02b98fca9d3916f2d1122dc"
+release_capsule_sha256 = "7f7786bc2a69b2e680c05e2b1a6c619ff28bb1161c27bd977c560f09c5e0f6d3"
 unlifted_ui_files = 0
 unverified_frame_assets = 0
 user_required_external_accounts = 0
@@ -16,12 +16,12 @@ unlifted_workspace_modules = 0
 [[lifted_module]]
 path = "crates/verdant-cli/src/automate_cmd.rs"
 category = "rust"
-sha256 = "aca742e3c3a5f615b0e539be65cb0369afd68248ef4ca5345be81b7c822b20c2"
+sha256 = "b2a00db8f6b935adebd81d467d7f8e537cad78d8ed2ac1aba773687027a14618"
 
 [[lifted_module]]
 path = "crates/verdant-cli/src/lib.rs"
 category = "rust"
-sha256 = "6aad07e0b674fd4debca59fbba5198b0e426ac0dd112affc9c75b8e838ecb320"
+sha256 = "021a38c4ccabcb65fb271e4161780092d135f8afbada16a3720af61f6b640f51"
 
 [[lifted_module]]
 path = "crates/verdant-cli/src/main.rs"
@@ -66,12 +66,12 @@ sha256 = "785bf2beaf0e4ed90aaaa7f55a6e306e405da4495b44b04d6579d79b9d07af5b"
 [[lifted_module]]
 path = "crates/verdant-core/src/character.rs"
 category = "rust"
-sha256 = "3e9e3f1c8f8e576820aa99e32d000a970fbc0ecaa290a48a715531bc480192c5"
+sha256 = "055be7c1d04321e14077ab13301f009daa3dbb1113cabc49e5806d5c9a141680"
 
 [[lifted_module]]
 path = "crates/verdant-core/src/character_types.rs"
 category = "rust"
-sha256 = "c1c35e82e5841f69683867b461ea0495cb90241e182dede797c142442fe0da17"
+sha256 = "3737ca58d267d8436d2ec79316a7cb87cb4682f27cd23f3150d5eca8fd68233f"
 
 [[lifted_module]]
 path = "crates/verdant-core/src/collision.rs"
@@ -126,17 +126,22 @@ sha256 = "f0166b71ac03f2fc4c62da9168fdf4ae271f8f45fa3b11f06585f0e217df013a"
 [[lifted_module]]
 path = "crates/verdant-core/src/gltf_export.rs"
 category = "rust"
-sha256 = "7148e7fab1cede6ea416a6f18638f83b26e169a1f9e4b1a3eb3f2b4466f87b22"
+sha256 = "56b969ba74ef8ee202b96b9ada3705a4ec92c7ce8132b46a512e7884f54ed7bb"
 
 [[lifted_module]]
 path = "crates/verdant-core/src/gltf_io.rs"
 category = "rust"
-sha256 = "05b21469e479b848a03060c2ca6a6ce7b2dee8c7a7b7740dd88743dbe1b0c6cb"
+sha256 = "3a4d61d719b049466cf11fd6c306880b0a5da42a2ebed0297d96f25501a520f9"
 
 [[lifted_module]]
 path = "crates/verdant-core/src/governance.rs"
 category = "rust"
-sha256 = "a2af9838f7bad72b01dab95d1b5cb7b3d118f906eee04715be8523c221da1b3c"
+sha256 = "109ef46281172b3d0c46433af18a1e4d81e23081cd43bb81ec5fbcf839d172b7"
+
+[[lifted_module]]
+path = "crates/verdant-core/src/governance_kpi.rs"
+category = "rust"
+sha256 = "08a8bfa2ebbcb742b8fb3ded9b5aaa540c63a2c04dd41455e184893a764b2301"
 
 [[lifted_module]]
 path = "crates/verdant-core/src/hd_world.rs"
@@ -156,17 +161,17 @@ sha256 = "bab24250ca9146ff807e6afee9cb0a92fe42afbc6ed9c1b311a532ab7dd17ede"
 [[lifted_module]]
 path = "crates/verdant-core/src/lifecycle.rs"
 category = "rust"
-sha256 = "c0050cfe4287c63182bc23724e6c2c57c35fe8b25c20d9185ede517d22da22c1"
+sha256 = "8234d5c2484f6044d0063dcf84e4971fbaf1bcd350fe2281ab6f4f1e7df8be90"
 
 [[lifted_module]]
 path = "crates/verdant-core/src/lifecycle_automate.rs"
 category = "rust"
-sha256 = "0e5cda8b57b1d3017a0bf6295f327d789dcf9467c649c8dc34d3e6f09bbac091"
+sha256 = "95c7bb5b4fd65249004adf4984b939320e2a2852c058e62f7e5165a599e6587c"
 
 [[lifted_module]]
 path = "crates/verdant-core/src/math.rs"
 category = "rust"
-sha256 = "3230c5149c1d14f42e6cac1d465cbcba61642fff74a4fd9d80c4daa6c150c347"
+sha256 = "23717d010b4f85fff4d911b35ef2abe1b3e0be89ef487dcd12005a414fecb0a3"
 
 [[lifted_module]]
 path = "crates/verdant-core/src/narrative.rs"
@@ -191,17 +196,17 @@ sha256 = "ca9370945c821661da8e9f31a221ebbce327a56e3c11b2b0980f4a2c878da54d"
 [[lifted_module]]
 path = "crates/verdant-core/src/observer.rs"
 category = "rust"
-sha256 = "123e91f7f5abf4d3d83cc5221461c640d46ea3d28254fe000c4647b4a2be64c3"
+sha256 = "644f49afa9dbcc2670be1edbd2128ebb5a6513a844f46550d0a039a4cb73023c"
 
 [[lifted_module]]
 path = "crates/verdant-core/src/observer_comms.rs"
 category = "rust"
-sha256 = "7636472888aed6ba1028bdc8425adf5f41110a7d85112ea7b6c5a8aba42297da"
+sha256 = "38bcd7ea44774743a42dfbfc40369e66f990e555b52a3c98a1db01e569b61f6e"
 
 [[lifted_module]]
 path = "crates/verdant-core/src/observer_language.rs"
 category = "rust"
-sha256 = "51ec2bab09eec3bfc3f1653c68ec2218ac4434d424781e2ca1d44159ff210562"
+sha256 = "19bb1beb6a25d5ff143fef4e1b8119d2d358228e5b263fc61aa3e555df5ced9e"
 
 [[lifted_module]]
 path = "crates/verdant-core/src/observer_refine.rs"
@@ -221,22 +226,22 @@ sha256 = "474781fa3dac9016a906ca29f7414ba1661875a4d4e46d04485fe21af3258b11"
 [[lifted_module]]
 path = "crates/verdant-core/src/operator.rs"
 category = "rust"
-sha256 = "11916de0c3fe19bc4b1df5fe2af553de3ad32e0e7f9fed5abad54a5f23e9bd4d"
+sha256 = "8d02242e8a56fddb567ab689e8b13fd133babb617f5f818382cb66ff0a6b03fe"
 
 [[lifted_module]]
 path = "crates/verdant-core/src/operator_mcp.rs"
 category = "rust"
-sha256 = "5720c098026f0fdbf7075924722676b0cbcc2052b9b387969e94a80341cbbfb5"
+sha256 = "69071b340456e8b9c4ed6d54c300711ff72f275ede5d7233c3ae140c8a093f90"
 
 [[lifted_module]]
 path = "crates/verdant-core/src/operator_release.rs"
 category = "rust"
-sha256 = "32c499af850803a6de9bcfc1092855949428d8232dcffd57d029698fe7bcd791"
+sha256 = "a6d7c282b7eb82c7c09f1f7040edd496200764492f389cecd4c0eda053f85fd8"
 
 [[lifted_module]]
 path = "crates/verdant-core/src/operator_seal.rs"
 category = "rust"
-sha256 = "aae80ed5760f2e7c2cd11f6677aa4837186da1a0ae9a8b751665022ce2a90eb5"
+sha256 = "3f7e828f5193d9dd3f8ff424753f90536cd62ae395dd5e6c1fb3b7911398c8db"
 
 [[lifted_module]]
 path = "crates/verdant-core/src/operator_synth.rs"
@@ -246,17 +251,17 @@ sha256 = "bc9aa886c573a152847dc9c71e158091bcdbee979729c242b82631a9cb658609"
 [[lifted_module]]
 path = "crates/verdant-core/src/operator_types.rs"
 category = "rust"
-sha256 = "5e4efb8fefacf3c36cc29879f07248b851148845ad23bf73768a55b8e8a881af"
+sha256 = "c181171ab1a9f1a6dfb6ce0e40f9ab1d23a53387a2eb01be5a8e9b637d175418"
 
 [[lifted_module]]
 path = "crates/verdant-core/src/physics.rs"
 category = "rust"
-sha256 = "07a85f0c48b3725a89c04642b8cd6f5c7ba402500c19ee143a696dbbeca2d1df"
+sha256 = "f5f01dce43315a26a918d71e9992a451f1256a0439ab4cacb76bd69b40d28418"
 
 [[lifted_module]]
 path = "crates/verdant-core/src/physics_controller.rs"
 category = "rust"
-sha256 = "5996d504a00786485ec692cd898d1911517477b766af6713180b474cfb4aa7c6"
+sha256 = "5ce73860096aa5e66c43002f4b21f48e21916c844065095cddfa6c0bb74cd100"
 
 [[lifted_module]]
 path = "crates/verdant-core/src/portable_player.rs"
@@ -281,22 +286,22 @@ sha256 = "85127cc53fbcf45b30311870f75b5e8d73b0645bb5c40f439918042ddba86e8e"
 [[lifted_module]]
 path = "crates/verdant-core/src/runtime.rs"
 category = "rust"
-sha256 = "a1514acafb8c911501d109c8b39defbb08a4a7a4a6265db1df3c056791a0eff4"
+sha256 = "237b5fe96b50deb2f5f6beed3affd2da94fb81d04101cdfb1d255c409055d06c"
 
 [[lifted_module]]
 path = "crates/verdant-core/src/runtime_monoid.rs"
 category = "rust"
-sha256 = "b9e6fb7684fc465e914356f33259d949e3a06a9f9f23d3cb2425da2c7ae8c935"
+sha256 = "6abde2c35bcbc28e569cec44f346310e439047e4631dc7c6db4c2b3511bf1ad1"
 
 [[lifted_module]]
 path = "crates/verdant-core/src/standards.rs"
 category = "rust"
-sha256 = "7d04d0a0c267cc8ebb78aec774cfdb917f366d74b1bfdc7c898e3d01596521af"
+sha256 = "fe2ddeac75c06db5afe34f20092d4ee8035d5bc97da92b8cfe7b089ee6842670"
 
 [[lifted_module]]
 path = "crates/verdant-core/src/standards_registry.rs"
 category = "rust"
-sha256 = "1c439ce1f90285a12d54eae1e800c4d336e9fe664a09da701d0b04628391f806"
+sha256 = "629570925b306e81e7f40ec1cf9a355f842b2a502c4b1186a55f829391f7df5c"
 
 [[lifted_module]]
 path = "crates/verdant-core/src/streaming.rs"
@@ -316,7 +321,7 @@ sha256 = "fbdf797bf5e880e69e9852c96c123b597f5c3582246c7a7000a0be680a3cac16"
 [[lifted_module]]
 path = "crates/verdant-core/src/uhd.rs"
 category = "rust"
-sha256 = "70695923897c5b84e285279d569fdc0dd2a274a550d5669cefc73093864d538f"
+sha256 = "e747ab0bf9839b1b899b1b61548172cec8cafd3f275d5612133e987b0a01cc08"
 
 [[lifted_module]]
 path = "crates/verdant-core/src/uhd_shaders.rs"
@@ -326,7 +331,7 @@ sha256 = "3a98f12cc691cd2c2ceaccc6a40564a36c307e330b08de17143234ada3976b9a"
 [[lifted_module]]
 path = "crates/verdant-core/src/uhd_workload.rs"
 category = "rust"
-sha256 = "8b85425f6a47f81e2767d90c5b6292f80318da9929e0bb450066fe732898e106"
+sha256 = "d5cb90a187047324c56d8aa965a146db708005e1e0f9d15d9b41d4ecf8bcf2cf"
 
 [[lifted_module]]
 path = "crates/verdant-core/src/ui.rs"
@@ -341,12 +346,12 @@ sha256 = "427d3df8c02ac5fda71f2b99de0ec9033599becbf9452fb250c46ae72ca7a2de"
 [[lifted_module]]
 path = "crates/verdant-core/src/vcs.rs"
 category = "rust"
-sha256 = "6bfabfaa9291d1e31a4a04c7dc4ed8e2f6e4da1e16cf7df1b49a1bf5721fc93d"
+sha256 = "05ad36528a6ffc4fa5ef3c08f07026b2b46a5744eb5b703800ea794cfeb77fbd"
 
 [[lifted_module]]
 path = "crates/verdant-core/src/vcs_studio.rs"
 category = "rust"
-sha256 = "563232c33175f857753988c5f9648a9f73f99f428daa5e89b4863835083c7bd9"
+sha256 = "108f3736f0a53dc07116fcb9576f530fe3efb438fcf4a9a14766655800b84869"
 
 [[lifted_module]]
 path = "crates/verdant-tensor/src/audio_ring.rs"
@@ -361,17 +366,17 @@ sha256 = "f73883027d935a410699b5d1e3efb54359145d13e306062c518e249ae0c81522"
 [[lifted_module]]
 path = "crates/verdant-tensor/src/lib.rs"
 category = "rust"
-sha256 = "9130a183b40fd09f21a83850dbbc53b1aade56719cb37bc1c7b2aeea0bb1dcca"
+sha256 = "ca1d16be7bd28b534d2c665e7f086e443cce71dd50e509ca412218a310aac931"
 
 [[lifted_module]]
 path = "crates/verdant-tensor/src/linear.rs"
 category = "rust"
-sha256 = "f5f443257995e476cc323447adb40c4ca2749203fdb6cbd4467b0858cd046d75"
+sha256 = "68f8434c1942fd6a6702c18e8405501a25404def8988b2aec4dbd6d049640315"
 
 [[lifted_module]]
 path = "crates/verdant-tensor/src/linear/activations.rs"
 category = "rust"
-sha256 = "0f6abc2144414616db77c75e12c15ac24e0b6f4757859b9b4ea4ff322bb94f49"
+sha256 = "e0da452a9a7580ebbd3698c4b9b56401d887333ed28cac74207956bb86048ab1"
 
 [[lifted_module]]
 path = "crates/verdant-tensor/src/linear/affine_product.rs"
@@ -466,12 +471,17 @@ sha256 = "b7e9a6533ddd23f86101a2ec3a103d248936cc749a42ed3ae361461483a4522b"
 [[lifted_module]]
 path = "crates/verdant-tensor/src/scalars_gateway.rs"
 category = "rust"
-sha256 = "4fbb5f5321154e01d00c3760e45d93ddbe125c7e62977f231c7a15f479232097"
+sha256 = "3a67ed7b67573a28db7e7139def190cb523d9c667eb4ff6d90e79d7a864d42a0"
 
 [[lifted_module]]
 path = "crates/verdant-tensor/src/scalars_ratchet.rs"
 category = "rust"
-sha256 = "9d2078dbe3a5a58a4e7b9ebe6e24909f15c2e69fa55150ce0b35ae62bd0b6b1f"
+sha256 = "6c88be893b313f38b38f16b289a12e528f75127754fad8eb5d7637ab6f46c82a"
+
+[[lifted_module]]
+path = "crates/verdant-tensor/src/scalars_ratchet_m24.rs"
+category = "rust"
+sha256 = "1e870caafd938b1a38b2b35305d11f5f0d0b681cf4f03a29596073292057e3a4"
 
 [[lifted_module]]
 path = "crates/verdant-tensor/src/tropical.rs"
@@ -536,7 +546,7 @@ sha256 = "151612c25732124f89626c18b88e963727f09ae74c10f4b90bb7a9e874595509"
 [[lifted_module]]
 path = "crates/conformance/tests/engine/governance.rs"
 category = "verification-test"
-sha256 = "69ffd5889d7e11c0b16066f405f0cb43d99db9467fa8baada803c5f32046a569"
+sha256 = "d08ec7f6fab1fd535f2bf753e1f892d9eecb7f31d6edf2827343def6dcf96b3f"
 
 [[lifted_module]]
 path = "crates/conformance/tests/engine/main.rs"
@@ -571,7 +581,7 @@ sha256 = "91a4d636cc2652dfcab4a1bad522a5d8c3daed6d161eb9796d4000c970cd7c54"
 [[lifted_module]]
 path = "crates/fidelity/src/lib.rs"
 category = "verification-test"
-sha256 = "8e5394a951cad8dee2daf5d531095845fdddebcf49deee120ff1c1e6ad4e3c42"
+sha256 = "ffbb2d040382e1bf5237aad434314c8e1e793a679d49cbe05e72d542efca3e1b"
 
 [[lifted_module]]
 path = "crates/fidelity/src/main.rs"
@@ -616,7 +626,7 @@ sha256 = "6d1d010aa711a9343c597ec5332c9c5555094c0ad2c3ef6bb5b510e9116e4625"
 [[lifted_module]]
 path = "xtask/src/bootstrap.rs"
 category = "verification-test"
-sha256 = "77d6d465bf7918fa62e3bc21d392935a9c46f1afd61ac6148385a15c4f67b33e"
+sha256 = "6b18603d3fee8445845201266aa11c40ddb3717e7a05a4b6bc5538a6f046cae1"
 
 [[lifted_module]]
 path = "xtask/src/main.rs"
@@ -691,7 +701,7 @@ sha256 = "c807f771fe2477d9047f250aaed69ba24ab3ce7f072a9b08e96b3b4a763a8c62"
 [[lifted_module]]
 path = "app/src/F64Quotient.lex.tex"
 category = "lexlean"
-sha256 = "a468b24cba996860d86ba87172bf70d66ace662b5b092ca07e203b7833db37fd"
+sha256 = "ba8d124f9fe9e7dc65d70b8200e71cb216f5bd1af2eba7d890ae820b9239ea77"
 
 [[lifted_module]]
 path = "app/src/Features.lex.tex"
@@ -986,7 +996,7 @@ sha256 = "9d26ca3eaa7ccad7aaea3e2bc023f66d8dfeda7f8baa0690f64d52bd7068bcb9"
 [[lifted_module]]
 path = "features/suites/engine.feature"
 category = "feature-suite"
-sha256 = "bfb0b6f5d2a855c3df6ea7692bdcf398d2c10ec119347b293e5474aaf6f5d753"
+sha256 = "7127c925ffe8c729f3007cd1542319ca6c3506e63ca7cec4e3dadfc29ab308b1"
 
 [[lifted_module]]
 path = "features/suites/fidelity.feature"
@@ -1006,7 +1016,7 @@ sha256 = "9126c51aaf92eff57190870c1f909978b08d83b91ea064a2a9cd9c72d1d4009c"
 [[lifted_module]]
 path = "catalogs/governance/change-roadmap-kpi.json"
 category = "model-governance"
-sha256 = "a0d7a6ec7f4ed8e3ce6cecd4ef22516af05de2cebcbf7484356d6f80ec5737af"
+sha256 = "edce1f0bc75e0d9f199912621c0681cd142b9124dbd35729791e95cf66b74b17"
 
 [[lifted_module]]
 path = "catalogs/governance/iso25010-tensor-scaling.json"
@@ -1016,7 +1026,7 @@ sha256 = "bb3bd31f42e171fe501b852577f9047d77fbbca2a8cd93a939761776bebd43e2"
 [[lifted_module]]
 path = "catalogs/governance/iso42010-viewpoints.json"
 category = "model-governance"
-sha256 = "c0da292f17fc268fc4895239cc121163e6fd8bc7037004ca5a3cce1860e8675f"
+sha256 = "aad42a22ceab211dcef941a99e2dfa6c94af026ed36b069654e17f2be4033c56"
 
 [[lifted_module]]
 path = "catalogs/governance/stitch-self-hosting.json"
@@ -1051,7 +1061,7 @@ sha256 = "7d4e3c36e438491a505a85d5044e36074c67ce7948ea9cbf0d4480ec37d91df8"
 [[lifted_module]]
 path = "model/authorities.toml"
 category = "model-governance"
-sha256 = "12892686eec7c1a1a76d2afe00feaa756a40b837a37b1c2b4c7891c73b7418d9"
+sha256 = "dfdf7a5050e60d15df08d507e9ec9080d209d64455310fe808e1c851c27cd0af"
 
 [[lifted_module]]
 path = "model/charter.md"
@@ -1061,7 +1071,7 @@ sha256 = "ffb9e3d60915570e6f34cdee81e0dd6a2ff965c70c39ea0ef11d41d479c462bb"
 [[lifted_module]]
 path = "model/ids.toml"
 category = "model-governance"
-sha256 = "3e2b2130e3eb09b4ae4e67f347568044a1545a29f0ff02f1d4077616d73177b1"
+sha256 = "ef8e11ba2de806907b7811855caba8cbdaf19dab8e4118e1c5fdea65e8f65dd3"
 
 [[lifted_module]]
 path = "model/ledger.toml"
@@ -1131,7 +1141,12 @@ sha256 = "769d60a0e9629a3e9dcbd9b8115936419d9a53d7d96ad4adbaf32d92969791da"
 [[lifted_module]]
 path = "scripts/enforce-prism-contracts.mjs"
 category = "automation-script"
-sha256 = "b9acc227c240c1ba6a8e24d67e5988ef6e3d56018938146df081e1da9b88a1b8"
+sha256 = "f98b4b2d5a06665bc83b9bd38dd1bc414e50c9cb104e0e210e3fc7eafcbde8b1"
+
+[[lifted_module]]
+path = "scripts/enforce-prism-viewpoints.mjs"
+category = "automation-script"
+sha256 = "2a24f3e4b8af128510485bd8061b1a48b68a86d45438df3fae21406689751f13"
 
 [[lifted_module]]
 path = "scripts/package-rust-crates.mjs"

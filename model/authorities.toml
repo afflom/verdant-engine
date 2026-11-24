@@ -84,9 +84,9 @@ id = "AUTH-ISO-42010-VIEWPOINTS"
 name = "ISO/IEC/IEEE 42010:2022 Architecture Viewpoints, ISO/IEC/IEEE 12207:2017 ALM & Stitch App Catalog"
 citation = "ISO/IEC/IEEE 42010:2022 Software, systems and enterprise — Architecture description; ISO/IEC/IEEE 12207:2017 Software life cycle processes; ISO 9241-210:2019; W3C DTCG 2025.10; WCAG 2.2 AA; afflom/stitch"
 artifact = "catalogs/governance/iso42010-viewpoints.json"
-checksum = "c0da292f17fc268fc4895239cc121163e6fd8bc7037004ca5a3cce1860e8675f"
+checksum = "aad42a22ceab211dcef941a99e2dfa6c94af026ed36b069654e17f2be4033c56"
 statement = "ISO/IEC/IEEE 42010:2022 binds every Verdant surface, crate, Observer part, stream, and Stitch App Catalog archetype to an accountable Manager with explicit required elements, forbidden cross-contamination, and correspondence rules."
-realized_by = ["VE-42", "VE-44", "VE-45", "VE-47", "VE-52", "VE-53", "VE-54", "VE-55", "VE-61", "VE-63", "VE-65", "VE-67", "VE-68", "VE-71", "VE-72", "VE-73", "VE-75", "VE-76", "VE-77", "VE-78", "VE-79"]
+realized_by = ["VE-42", "VE-44", "VE-45", "VE-47", "VE-52", "VE-53", "VE-54", "VE-55", "VE-61", "VE-63", "VE-65", "VE-67", "VE-68", "VE-71", "VE-72", "VE-73", "VE-75", "VE-76", "VE-77", "VE-78", "VE-79", "VE-81"]
 
 [[authority]]
 id = "AUTH-ISO-25010-TENSOR-SCALING"
@@ -111,9 +111,9 @@ id = "AUTH-SEMVER-CHANGE-KPI"
 name = "SemVer 2.0.0 Change/Version Governance, ISO/IEC/IEEE 12207 ALM & ISO/IEC/IEEE 15939 Observer KPIs"
 citation = "Semantic Versioning 2.0.0; ISO/IEC/IEEE 12207:2017 §6.3.5 Configuration Management & §6.3.7 Measurement; ISO/IEC/IEEE 15939:2017 Measurement process; Stafford Beer VSM S3/S4/S5"
 artifact = "catalogs/governance/change-roadmap-kpi.json"
-checksum = "a0d7a6ec7f4ed8e3ce6cecd4ef22516af05de2cebcbf7484356d6f80ec5737af"
-statement = "Accountable VSM Managers govern every Verdant and Prism facet including Knowledge, Change/Version, Security, Architecture, and Stakeholder Roadmap/KPIs across M1-M27, advancing SemVer Major/Minor/Patch versions exclusively when the Ratchet is applied and all Release Gates pass."
-realized_by = ["VE-45", "VE-46", "VE-47", "VE-48", "VE-49", "VE-50", "VE-51", "VE-52", "VE-53", "VE-54", "VE-55", "VE-56", "VE-57", "VE-58", "VE-59", "VE-60", "VE-61", "VE-62", "VE-63", "VE-64", "VE-65", "VE-66", "VE-67", "VE-68", "VE-69", "VE-70", "VE-71", "VE-72", "VE-73", "VE-74", "VE-75", "VE-76", "VE-77", "VE-78", "VE-79", "VE-80"]
+checksum = "edce1f0bc75e0d9f199912621c0681cd142b9124dbd35729791e95cf66b74b17"
+statement = "Accountable VSM Managers govern every Verdant and Prism facet including Knowledge, Change/Version, Security, Architecture, and Stakeholder Roadmap/KPIs across M1-M30, advancing SemVer Major/Minor/Patch versions exclusively when the Ratchet is applied and all Release Gates pass."
+realized_by = ["VE-45", "VE-46", "VE-47", "VE-48", "VE-49", "VE-50", "VE-51", "VE-52", "VE-53", "VE-54", "VE-55", "VE-56", "VE-57", "VE-58", "VE-59", "VE-60", "VE-61", "VE-62", "VE-63", "VE-64", "VE-65", "VE-66", "VE-67", "VE-68", "VE-69", "VE-70", "VE-71", "VE-72", "VE-73", "VE-74", "VE-75", "VE-76", "VE-77", "VE-78", "VE-79", "VE-80", "VE-81"]
 
 [[authority]]
 id = "BERKELEY-SOFTFLOAT"
@@ -121,8 +121,8 @@ name = "Berkeley SoftFloat Release 3e"
 citation = "https://github.com/ucb-bar/berkeley-softfloat-3/tree/07ebd29db0cfb55723a79fbbffe99103ef38e305"
 artifact = "tests/oracles/softfloat/source.tar.gz"
 checksum = "a43936117a4b62b2c942b62144ab903f7d93c5fb313389caecbd6e790d416e34"
-statement = "Defines f64_add, f32_to_f64, f64_to_f32, ui64_to_f32, ui64_to_f64, f64_div, f32_eq and f32_lt with nearest-even IEEE rounding and NaN predicates."
-realized_by = ["VTK-07", "VTK-08", "VTK-15"]
+statement = "Defines f64_add, f32_to_f64, f64_to_f32, ui64_to_f32, ui64_to_f64, i64_to_f32, i64_to_f64, f64_to_i64_r_minMag, f64_to_i32_r_minMag, softfloat_round_odd, f64_div, f32_eq and f32_lt with nearest-even IEEE rounding and NaN predicates."
+realized_by = ["VTK-07", "VTK-08", "VTK-15", "VTK-63", "VTK-64"]
 
 [[authority]]
 id = "GGML-TENSOR-CPU"

@@ -889,101 +889,6 @@ pub(super) const MCP_EXTRA_TOOLS_JSON: &str = r#"[
   {"name":"verdant_ratchet_lift","description":"Autonomous closed-loop Verdant self-lift (VE-47): verifies 13-Manager Total Ownership & <=30KiB zero-account Blank Frame, synthesizes all Manager manifests, lifts 100% of Rust/LexLean/Viewpoint modules into VerdantVcs, packs & 4-of-8 verifies verdant-vX.Y.Z.holo, pins site/frame/frame-pin.json, and emits site/generated/self-host-ratchet-manifest.toml.","inputSchema":{"type":"object","properties":{"outDir":{"type":"string"},"writeRepoArtifacts":{"type":"boolean"},"updateFramePin":{"type":"boolean"},"stitchRelays":{"type":"array","items":{"type":"string"}},"advanceMajor":{"type":"boolean"},"advanceMinor":{"type":"boolean"},"advancePatch":{"type":"boolean"},"summary":{"type":"string"}}}}
 ]"#;
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::runtime::WorldSnapshot;
-    use crate::streaming::StandardSceneState;
-
-    #[test]
-    fn total_ownership_invariant_covers_all_parts_and_catches_orphans() {
-        let ch = VerdantOperatorChannel::new("sunspire-regatta").expect("operator channel");
-        let rep = ch.check_total_ownership();
-        assert!(rep.complete, "Total Ownership must pass cleanly: {rep:?}");
-        assert!(rep.orphans.is_empty());
-        assert!(rep.duplicate_owners.is_empty());
-        assert_eq!(rep.managers_checked, 13);
-
-        // Negative test: planting an unmanaged orphan route or crate must fail Total Ownership!
-        let bad = audit_total_ownership(
-            &ch.viewpoints,
-            &["/", "/unmanaged-orphan/"],
-            REQUIRED_SHIPPED_CRATES,
-            &[],
-            &[],
-            REQUIRED_LOCKED_AUTHORITIES,
-        );
-        assert!(!bad.complete);
-        assert!(bad.orphans.iter().any(|o| o.contains("/unmanaged-orphan/")));
-    }
-
-    #[test]
-    fn operator_channel_admits_standards_backed_prompts_and_refuses_contrived_or_cross_contaminated(
-    ) {
-        let mut ch = VerdantOperatorChannel::new("sunspire-regatta").expect("operator channel");
-
-        // 1. Positive standards-backed in-viewpoint prompt:
-        let ok = ch
-            .submit_directive(&OperatorPromptRequest {
-                viewpoint: "creator-studio".to_string(),
-                directive:
-                    "Publish sealed .uorc FPS application to Stitch App Catalog under ISO 12207"
-                        .to_string(),
-                cited_authority: Some("AUTH-ISO-42010-VIEWPOINTS".to_string()),
-                operator_prism_id: "prism:creator-alex".to_string(),
-            })
-            .expect("directive");
-        assert!(ok.admitted);
-        assert_eq!(ok.dialogue_act, "Inform");
-        assert_eq!(ok.manager_id, "mgr-studio-alm");
-        assert!(!ok.comm_kappa_hex.is_empty());
-
-        // 2. Negative refusal: cross-contaminated Holo proof / UHD diagnostic inside Studio:
-        let cross = ch
-            .submit_directive(&OperatorPromptRequest {
-                viewpoint: "creator-studio".to_string(),
-                directive: "Add a Verify UHD 4K Envelope button to Studio".to_string(),
-                cited_authority: None,
-                operator_prism_id: "prism:creator-alex".to_string(),
-            })
-            .expect("cross refusal");
-        assert!(!cross.admitted);
-        assert_eq!(cross.dialogue_act, "Refusal");
-        assert_eq!(
-            cross.recommended_viewpoint.as_deref(),
-            Some("verification-observatory")
-        );
-
-        // 3. Negative refusal: contrived hand-coded ungrounded feature:
-        let contrived = ch
-            .submit_directive(&OperatorPromptRequest {
-                viewpoint: "playable-world".to_string(),
-                directive: "Sprinkle random sparkly widgets everywhere".to_string(),
-                cited_authority: None,
-                operator_prism_id: "prism:creator-alex".to_string(),
-            })
-            .expect("contrived refusal");
-        assert!(!contrived.admitted);
-        assert_eq!(contrived.dialogue_act, "Refusal");
-
-        // 4. Stitch 2-of-3 Verdant App Catalog publishing:
-        let world = StandardSceneState::synthesize_at_lod(7, 2).expect("world");
-        let uorc = WorldSnapshot::encode_uorc(&world).expect("uorc");
-        let entry = ch
-            .publish_stitch_app_catalog_entry(
-                "Neon Rift FPS",
-                "first-person-shooter",
-                "High-definition arena shooter authored in Verdant Studio",
-                "prism:creator-alex",
-                &uorc,
-            )
-            .expect("publish stitch app");
-        assert_eq!(entry.schema_org_type, "VideoGame");
-        assert_eq!(entry.stitch_fragments.len(), 3);
-        assert!(entry.app_iri.starts_with("urn:verdant:stitch-app:"));
-    }
-}
-
 impl VerdantOperatorChannel {
     /// Verifies a packed release directory by dropping `n - k` shards (`4` of `8`), recovering the
     /// `.holo` capsule via Reed-Solomon `GF(2^8)` from the surviving `k` shards, and verifying
@@ -1088,5 +993,100 @@ impl VerdantOperatorChannel {
                 }
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::runtime::WorldSnapshot;
+    use crate::streaming::StandardSceneState;
+
+    #[test]
+    fn total_ownership_invariant_covers_all_parts_and_catches_orphans() {
+        let ch = VerdantOperatorChannel::new("sunspire-regatta").expect("operator channel");
+        let rep = ch.check_total_ownership();
+        assert!(rep.complete, "Total Ownership must pass cleanly: {rep:?}");
+        assert!(rep.orphans.is_empty());
+        assert!(rep.duplicate_owners.is_empty());
+        assert_eq!(rep.managers_checked, 13);
+
+        // Negative test: planting an unmanaged orphan route or crate must fail Total Ownership!
+        let bad = audit_total_ownership(
+            &ch.viewpoints,
+            &["/", "/unmanaged-orphan/"],
+            REQUIRED_SHIPPED_CRATES,
+            &[],
+            &[],
+            REQUIRED_LOCKED_AUTHORITIES,
+        );
+        assert!(!bad.complete);
+        assert!(bad.orphans.iter().any(|o| o.contains("/unmanaged-orphan/")));
+    }
+
+    #[test]
+    fn operator_channel_admits_standards_backed_prompts_and_refuses_contrived_or_cross_contaminated(
+    ) {
+        let mut ch = VerdantOperatorChannel::new("sunspire-regatta").expect("operator channel");
+
+        // 1. Positive standards-backed in-viewpoint prompt:
+        let ok = ch
+            .submit_directive(&OperatorPromptRequest {
+                viewpoint: "creator-studio".to_string(),
+                directive:
+                    "Publish sealed .uorc FPS application to Stitch App Catalog under ISO 12207"
+                        .to_string(),
+                cited_authority: Some("AUTH-ISO-42010-VIEWPOINTS".to_string()),
+                operator_prism_id: "prism:creator-alex".to_string(),
+            })
+            .expect("directive");
+        assert!(ok.admitted);
+        assert_eq!(ok.dialogue_act, "Inform");
+        assert_eq!(ok.manager_id, "mgr-studio-alm");
+        assert!(!ok.comm_kappa_hex.is_empty());
+
+        // 2. Negative refusal: cross-contaminated Holo proof / UHD diagnostic inside Studio:
+        let cross = ch
+            .submit_directive(&OperatorPromptRequest {
+                viewpoint: "creator-studio".to_string(),
+                directive: "Add a Verify UHD 4K Envelope button to Studio".to_string(),
+                cited_authority: None,
+                operator_prism_id: "prism:creator-alex".to_string(),
+            })
+            .expect("cross refusal");
+        assert!(!cross.admitted);
+        assert_eq!(cross.dialogue_act, "Refusal");
+        assert_eq!(
+            cross.recommended_viewpoint.as_deref(),
+            Some("verification-observatory")
+        );
+
+        // 3. Negative refusal: contrived hand-coded ungrounded feature:
+        let contrived = ch
+            .submit_directive(&OperatorPromptRequest {
+                viewpoint: "playable-world".to_string(),
+                directive: "Sprinkle random sparkly widgets everywhere".to_string(),
+                cited_authority: None,
+                operator_prism_id: "prism:creator-alex".to_string(),
+            })
+            .expect("contrived refusal");
+        assert!(!contrived.admitted);
+        assert_eq!(contrived.dialogue_act, "Refusal");
+
+        // 4. Stitch 2-of-3 Verdant App Catalog publishing:
+        let world = StandardSceneState::synthesize_at_lod(7, 2).expect("world");
+        let uorc = WorldSnapshot::encode_uorc(&world).expect("uorc");
+        let entry = ch
+            .publish_stitch_app_catalog_entry(
+                "Neon Rift FPS",
+                "first-person-shooter",
+                "High-definition arena shooter authored in Verdant Studio",
+                "prism:creator-alex",
+                &uorc,
+            )
+            .expect("publish stitch app");
+        assert_eq!(entry.schema_org_type, "VideoGame");
+        assert_eq!(entry.stitch_fragments.len(), 3);
+        assert!(entry.app_iri.starts_with("urn:verdant:stitch-app:"));
     }
 }

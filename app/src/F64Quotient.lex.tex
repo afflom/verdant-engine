@@ -319,11 +319,126 @@ theorem{
 }
 
 definition{
+  name: negateWord64,
+  parameters: [magnitude : Nat],
+  result: Nat,
+  body: (if (magnitude =? 0) then 0 else ((prim subtract 18446744073709551615 magnitude : Nat) + 1)),
+  executable: true
+}
+
+definition{
+  name: truncateSigned64,
+  parameters: [bits : Nat],
+  result: (Option Nat),
+  body: (let exponent : Nat := (ScalarF64::exponent bits);
+    (if (exponent <? 1023) then (ctor Option.some [Nat] 0) else
+    (if (1086 <=? exponent) then
+      (if (bits =? 14114281232179134464) then (ctor Option.some [Nat] 9223372036854775808) else (ctor Option.none [Nat]))
+    else (let significand : Nat := (4503599627370496 + (ScalarF64::fraction bits));
+      (let magnitude : Nat := (if (exponent <? 1075) then (prim quotient significand (ScalarF64::power (prim subtract 1075 exponent : Nat)) 0 : Nat)
+        else (prim multiply significand (ScalarF64::power (prim subtract exponent 1075 : Nat)) : Nat));
+        (ctor Option.some [Nat] (if ((ScalarF64::sign bits) =? 0) then magnitude else (negateWord64 magnitude)))))))),
+  executable: true
+}
+
+inductive{
+  name: SignedConversionRoute,
+  type_parameters: [],
+  parameters: [],
+  constructors: [
+    {name: word, fields: [Nat]},
+    {name: convertMagnitude, fields: [Nat, Nat, Nat]}
+  ]
+}
+
+definition{
+  name: signedConversionPlan,
+  parameters: [operation : Nat, bits : Nat],
+  result: (Option SignedConversionRoute),
+  body: (if (((operation <? 7) || (9 <? operation)) || (18446744073709551615 <? bits)) then (ctor Option.none [SignedConversionRoute]) else
+    (if (operation =? 8) then (match (truncateSigned64 bits)
+      | Option.none => (ctor Option.none [SignedConversionRoute])
+      | Option.some word => (ctor Option.some [SignedConversionRoute] (ctor SignedConversionRoute.word word)))
+    else (let negative : Bool := (9223372036854775808 <=? bits);
+      (ctor Option.some [SignedConversionRoute] (ctor SignedConversionRoute.convertMagnitude
+        (if (operation =? 7) then 5 else 3) (if negative then (negateWord64 bits) else bits)
+        (if negative then (if (operation =? 7) then 9223372036854775808 else 2147483648) else 0)))))),
+  executable: true,
+  production: {effects: [overflow], targets: [rust-core]}
+}
+
+definition{
+  name: signedConversion,
+  parameters: [operation : Nat, bits : Nat],
+  result: (Option Nat),
+  body: (match (signedConversionPlan operation bits)
+    | Option.none => (ctor Option.none [Nat])
+    | Option.some selectedPlan => (match selectedPlan
+      | SignedConversionRoute.word word => (ctor Option.some [Nat] word)
+      | SignedConversionRoute.convertMagnitude code magnitude sign =>
+        (match (if (code =? 5) then (fromNatural magnitude) else (ScalarF64::fromNatural magnitude))
+          | Option.none => (ctor Option.none [Nat])
+          | Option.some encoded => (ctor Option.some [Nat] (encoded + sign))))),
+  executable: true
+}
+
+definition{
+  name: oddBinary32,
+  parameters: [bits : Nat],
+  result: Nat,
+  body: (let signWord : Nat := (prim multiply (ScalarF64::sign bits) 2147483648 : Nat);
+    (let exponent : Nat := (ScalarF64::exponent bits);
+      (signWord + (if (ScalarF64::isNaN bits) then 2143289344 else
+       (if (ScalarF64::isInfinity bits) then 2139095040 else
+       (if (1150 <? exponent) then 2139095039 else
+       (if (897 <=? exponent) then ((prim multiply (prim subtract exponent 897 : Nat) 8388608 : Nat) + (ScalarF64::shiftJam (ScalarF64::mantissa bits) 29))
+       else (ScalarF64::shiftJam (ScalarF64::mantissa bits) (prim subtract 926 exponent : Nat))))))))),
+  executable: true
+}
+
+definition{
+  name: oddSignedBinary32,
+  parameters: [bits : Nat],
+  result: Nat,
+  body: (let negative : Bool := (9223372036854775808 <=? bits);
+    (let magnitude : Nat := (if negative then (negateWord64 bits) else bits);
+    (let shifted : ScalarF64::Norm := (first (prim iterate_until (fun (state : ScalarF64::Norm) => (ScalarF64::countStep state)) 64
+      (record ScalarF64::Norm {e := 153, m := magnitude, minimum := 1, threshold := 67108864}) : (ScalarF64::Norm * Bool)));
+    (let normalized : ScalarF64::Norm := (first (prim iterate_until (fun (state : ScalarF64::Norm) => (ScalarF64::normalizeStep state)) 32 shifted : (ScalarF64::Norm * Bool)));
+      ((if negative then 2147483648 else 0) + (ScalarF64::encodeCount (project normalized e) (ScalarF64::shiftJam (project normalized m) 3))))))),
+  executable: true
+}
+
+definition{
+  name: truncateSigned32,
+  parameters: [bits : Nat],
+  result: (Option Nat),
+  body: (match (truncateSigned64 bits)
+    | Option.none => (ctor Option.none [Nat])
+    | Option.some word => (if ((word <? 2147483648) || (18446744071562067968 <=? word)) then
+        (ctor Option.some [Nat] (prim remainder word 4294967296 0 : Nat)) else (ctor Option.none [Nat]))),
+  executable: true
+}
+
+definition{
+  name: wideNarrowing,
+  parameters: [operation : Nat, bits : Nat],
+  result: (Option Nat),
+  body: (if (((operation <? 11) || (13 <? operation)) || (18446744073709551615 <? bits)) then (ctor Option.none [Nat])
+    else (if (operation =? 13) then (truncateSigned32 bits) else
+      (ctor Option.some [Nat] (if (operation =? 11) then (oddBinary32 bits) else (oddSignedBinary32 bits))))),
+  executable: true,
+  production: {effects: [overflow], targets: [rust-core]}
+}
+
+definition{
   name: evaluate,
   parameters: [operation : Nat, a : Nat, b : Nat],
   result: (Option Nat),
   body: (match (route operation)
-    | Option.none => (ctor Option.none [Nat])
+    | Option.none => (match (signedConversion operation a)
+      | Option.some word => (ctor Option.some [Nat] word)
+      | Option.none => (wideNarrowing operation a))
     | Option.some decision => (match decision
       | Route.legacy code => (ScalarF64::evaluate code a b)
       | Route.division => (divide a b)
@@ -379,5 +494,83 @@ theorem{
   statement: ((evaluate 6 a b) = (ctor Option.none [Nat])),
   proof: reflexivity{}
 }
+
+theorem{
+  name: minimumSignedToWide,
+  parameters: [],
+  statement: ((evaluate 7 9223372036854775808 0) = (ctor Option.some [Nat] 14114281232179134464)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: minimumWideToSigned,
+  parameters: [],
+  statement: ((evaluate 8 14114281232179134464 0) = (ctor Option.some [Nat] 9223372036854775808)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: positiveWideLimitRefused,
+  parameters: [],
+  statement: ((evaluate 8 4890909195324358656 0) = (ctor Option.none [Nat])),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: negativeFractionTruncates,
+  parameters: [],
+  statement: ((evaluate 8 13833932155375321088 0) = (ctor Option.some [Nat] 18446744073709551615)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: signedSingleRoundsDirectly,
+  parameters: [],
+  statement: ((evaluate 9 4611686293305294849 0) = (ctor Option.some [Nat] 1585446913)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: signedConversionCodeRefused,
+  parameters: [],
+  statement: ((evaluate 6 0 0) = (ctor Option.none [Nat])),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: oddWideTiny,
+  parameters: [],
+  statement: ((evaluate 11 1 0) = (ctor Option.some [Nat] 1)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: oddWideInteger,
+  parameters: [],
+  statement: ((evaluate 12 16777217 0) = (ctor Option.some [Nat] 1266679809)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: oddWideOverflow,
+  parameters: [],
+  statement: ((evaluate 11 9218868437227405311 0) = (ctor Option.some [Nat] 2139095039)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: wideSigned32Maximum,
+  parameters: [],
+  statement: ((evaluate 13 4746794007248502783 0) = (ctor Option.some [Nat] 2147483647)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: wideSigned32Overflow,
+  parameters: [],
+  statement: ((evaluate 13 4746794007248502784 0) = (ctor Option.none [Nat])),
+  proof: reflexivity{}
+}
+
 \end{semanticmodule}
 \end{lexlean}

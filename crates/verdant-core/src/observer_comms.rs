@@ -4,14 +4,15 @@
 use serde_json::json;
 
 use super::{
-    compute_kappa, sha256_payload_digest, CommunicationChannelKind, NpcDialogueTurnResult,
-    ObservedCommunicationRecord, ObserverPrismHolon,
+    compute_kappa, sha256_payload_digest, CommunicationChannelKind, ContainerGrantMatrix,
+    NpcDialogueTurnResult, ObservedCommunicationRecord, ObserverPrismHolon, VerdantModelEnvelope,
 };
 use crate::cybernetics::PlayerObserverSample;
 use crate::error::ObserverModelError;
 use crate::math::{four_u32, pow10_u64, two_u32};
 use crate::network::PrismIdSessionEnvelope;
 use crate::prism_kernel;
+use crate::standards::DmnAdmissionInput;
 
 impl ObserverPrismHolon {
     /// Experiences, verifies, and records a communication across any of the Observer's 5 channels
@@ -323,6 +324,102 @@ impl ObserverPrismHolon {
         });
         serde_json::to_vec(&doc).unwrap_or_default()
     }
+
+    /// Admits an arbitrary `VerdantModelEnvelope` into the Verdant Engine runtime after verifying:
+    /// 1. Non-zero 32-byte `kappa` matching `(model_id, payload_bytes)`,
+    /// 2. OMG DMN 1.5 `FIRST`-hit Verdant-only format admission (`dmnModelRouteAdmitted`),
+    /// 3. `FK-07` capability grant on `required_container_organ`,
+    /// 4. Schema.org JSON-LD validity (`SchemaOrgVocabulary`), and
+    /// 5. Constructive `prism_kernel::arbitraryPrismModelValid`.
+    pub fn admit_arbitrary_prism_model(
+        &mut self,
+        envelope: &VerdantModelEnvelope,
+        grants: &ContainerGrantMatrix,
+    ) -> Result<String, ObserverModelError> {
+        if envelope.payload_bytes.is_empty() || envelope.kappa.iter().all(|&b| b == 0) {
+            return Err(ObserverModelError::InvalidPrismModelEnvelope {
+                model_id: envelope.model_id.clone(),
+                detail: "empty payload or all-zero kappa digest".to_string(),
+            });
+        }
+        let (expected_kappa, kappa_hex) =
+            compute_kappa(&envelope.model_id, &envelope.payload_bytes);
+        if expected_kappa != envelope.kappa {
+            return Err(ObserverModelError::InvalidPrismModelEnvelope {
+                model_id: envelope.model_id.clone(),
+                detail: "kappa digest mismatch against canonical model payload".to_string(),
+            });
+        }
+
+        let route_granted = grants.is_allowed(envelope.required_container_organ);
+        let dmn_decision = self
+            .catalogs
+            .language_dmn
+            .evaluate_dmn_admission(&DmnAdmissionInput {
+                model_format: envelope.model_format.clone(),
+                observer_halted: self.emergency_halted,
+                source_locked: true,
+                route_granted,
+                runtime_state: "match".to_string(),
+                weights_state: "match".to_string(),
+            })
+            .map_err(|err| ObserverModelError::InvalidPrismModelEnvelope {
+                model_id: envelope.model_id.clone(),
+                detail: err.to_string(),
+            })?;
+
+        let verdant_only = self
+            .catalogs
+            .language_dmn
+            .allowed_verdant_formats
+            .iter()
+            .any(|f| f == &envelope.model_format);
+        let kernel_dmn = prism_kernel::dmnModelRouteAdmitted(
+            !self.emergency_halted,
+            true,
+            verdant_only,
+            route_granted,
+            true,
+            true,
+        );
+        if dmn_decision.outcome != "run" || !kernel_dmn {
+            return Err(ObserverModelError::InvalidPrismModelEnvelope {
+                model_id: envelope.model_id.clone(),
+                detail: format!(
+                    "DMN 1.5 admission outcome `{}` ({})",
+                    dmn_decision.outcome, dmn_decision.reason
+                ),
+            });
+        }
+
+        let schema_rep = self
+            .catalogs
+            .schema_org
+            .validate_schema_org_jsonld(&envelope.schema_org_jsonld)
+            .map_err(|err| ObserverModelError::InvalidPrismModelEnvelope {
+                model_id: envelope.model_id.clone(),
+                detail: err.to_string(),
+            })?;
+
+        let kernel_model_ok = prism_kernel::arbitraryPrismModelValid(
+            envelope.kappa.len() as u64,
+            schema_rep.entity_count as u64,
+            envelope.owner_organ.index() as u64,
+            verdant_only,
+            true,
+        )
+        .unwrap_or(false);
+        if !kernel_model_ok {
+            return Err(ObserverModelError::InvalidPrismModelEnvelope {
+                model_id: envelope.model_id.clone(),
+                detail: "rejected by Observer::arbitraryPrismModelValid".to_string(),
+            });
+        }
+
+        self.admitted_model_kappas
+            .push((envelope.model_id.clone(), kappa_hex.clone()));
+        Ok(kappa_hex)
+    }
 }
 
 #[cfg(test)]
@@ -492,103 +589,5 @@ mod observer_cognition_tests {
         assert_eq!(env.recommended_shadow_map_px, 1024);
         assert_eq!(env.recommended_anisotropy, 1);
         assert_eq!(env.recommended_render_scale_permille, 650);
-    }
-}
-
-impl ObserverPrismHolon {
-    /// Admits an arbitrary `VerdantModelEnvelope` into the Verdant Engine runtime after verifying:
-    /// 1. Non-zero 32-byte `kappa` matching `(model_id, payload_bytes)`,
-    /// 2. OMG DMN 1.5 `FIRST`-hit Verdant-only format admission (`dmnModelRouteAdmitted`),
-    /// 3. `FK-07` capability grant on `required_container_organ`,
-    /// 4. Schema.org JSON-LD validity (`SchemaOrgVocabulary`), and
-    /// 5. Constructive `prism_kernel::arbitraryPrismModelValid`.
-    pub fn admit_arbitrary_prism_model(
-        &mut self,
-        envelope: &VerdantModelEnvelope,
-        grants: &ContainerGrantMatrix,
-    ) -> Result<String, ObserverModelError> {
-        if envelope.payload_bytes.is_empty() || envelope.kappa.iter().all(|&b| b == 0) {
-            return Err(ObserverModelError::InvalidPrismModelEnvelope {
-                model_id: envelope.model_id.clone(),
-                detail: "empty payload or all-zero kappa digest".to_string(),
-            });
-        }
-        let (expected_kappa, kappa_hex) =
-            compute_kappa(&envelope.model_id, &envelope.payload_bytes);
-        if expected_kappa != envelope.kappa {
-            return Err(ObserverModelError::InvalidPrismModelEnvelope {
-                model_id: envelope.model_id.clone(),
-                detail: "kappa digest mismatch against canonical model payload".to_string(),
-            });
-        }
-
-        let route_granted = grants.is_allowed(envelope.required_container_organ);
-        let dmn_decision = self
-            .catalogs
-            .language_dmn
-            .evaluate_dmn_admission(&DmnAdmissionInput {
-                model_format: envelope.model_format.clone(),
-                observer_halted: self.emergency_halted,
-                source_locked: true,
-                route_granted,
-                runtime_state: "match".to_string(),
-                weights_state: "match".to_string(),
-            })
-            .map_err(|err| ObserverModelError::InvalidPrismModelEnvelope {
-                model_id: envelope.model_id.clone(),
-                detail: err.to_string(),
-            })?;
-
-        let verdant_only = self
-            .catalogs
-            .language_dmn
-            .allowed_verdant_formats
-            .iter()
-            .any(|f| f == &envelope.model_format);
-        let kernel_dmn = prism_kernel::dmnModelRouteAdmitted(
-            !self.emergency_halted,
-            true,
-            verdant_only,
-            route_granted,
-            true,
-            true,
-        );
-        if dmn_decision.outcome != "run" || !kernel_dmn {
-            return Err(ObserverModelError::InvalidPrismModelEnvelope {
-                model_id: envelope.model_id.clone(),
-                detail: format!(
-                    "DMN 1.5 admission outcome `{}` ({})",
-                    dmn_decision.outcome, dmn_decision.reason
-                ),
-            });
-        }
-
-        let schema_rep = self
-            .catalogs
-            .schema_org
-            .validate_schema_org_jsonld(&envelope.schema_org_jsonld)
-            .map_err(|err| ObserverModelError::InvalidPrismModelEnvelope {
-                model_id: envelope.model_id.clone(),
-                detail: err.to_string(),
-            })?;
-
-        let kernel_model_ok = prism_kernel::arbitraryPrismModelValid(
-            envelope.kappa.len() as u64,
-            schema_rep.entity_count as u64,
-            envelope.owner_organ.index() as u64,
-            verdant_only,
-            true,
-        )
-        .unwrap_or(false);
-        if !kernel_model_ok {
-            return Err(ObserverModelError::InvalidPrismModelEnvelope {
-                model_id: envelope.model_id.clone(),
-                detail: "rejected by Observer::arbitraryPrismModelValid".to_string(),
-            });
-        }
-
-        self.admitted_model_kappas
-            .push((envelope.model_id.clone(), kappa_hex.clone()));
-        Ok(kappa_hex)
     }
 }

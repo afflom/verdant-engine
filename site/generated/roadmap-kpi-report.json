@@ -2,12 +2,12 @@
   "spec": "verdant/observer-roadmap-kpi-report/1",
   "managerId": "mgr-roadmap-strategy",
   "authorityId": "AUTH-SEMVER-CHANGE-KPI",
-  "currentVersion": "2.21.7",
-  "releaseEpoch": 33,
+  "currentVersion": "2.22.0",
+  "releaseEpoch": 34,
   "totalManagers": 13,
   "totalPrismFacetsOwned": 9,
   "totalPrismFacetsRequired": 9,
-  "declaredCapabilitiesCount": 151,
+  "declaredCapabilitiesCount": 154,
   "minorProgressPct": 100,
   "majorProgressPct": 100,
   "kpiPassedCount": 13,
@@ -138,7 +138,7 @@
       "name": "uorust MIR-Lifted Rust Functions Floor",
       "unit": "functions",
       "direction": "atLeast",
-      "actual": 589,
+      "actual": 621,
       "target": 200,
       "passed": true,
       "owningManager": "mgr-verification-observatory",
@@ -1011,6 +1011,101 @@
       "progressPct": 100,
       "completed": true,
       "ratchetRequirement": "Realize all three M26 Prism-modeled public-benefit Stitch self-hosting components in runtime with zero FR-03 cold-boot regression and zero non-GitHub commercial providers: (1) lazy-loaded site/stitch-swarm.mjs wired into site/stitch-mesh.mjs implementing stitch/1 Layer-5 wire framing (4096 B wire / 2700 B chunk / 512 KiB msg / 60s signal TTL), ResourceAdmission budget ceilings (4096 reqs / 16 MiB transfer / 16 MiB storage), explicit opt-in FK-07 organ 9 consent, opaque release-kappa topics, and OPFS 4-of-8 STCH2 verification/seeding; (2) single-file offline portable HTML envelope (verdant-portable-v<ver>.html) emitted by gateway_swarm.rs embedding Base64 .holo with inline WebCrypto SHA-256 verification and DecompressionStream('gzip'); (3) volunteer gateway /swarm and /portable HTTP/CORS endpoints + --swarm-relay CLI option; and expand frontier.toml to >= 575 lifted functions while shrinking residue below 1160 and holding all surface ceilings across M1..M27."
+    },
+    {
+      "milestoneId": "M28",
+      "targetVersion": "2.20.0",
+      "tier": "minor",
+      "title": "Certified GGML CPU Tensor & Block-Quantized Primitives Baseline (VTK-01..VTK-42, Portable aarch64/x86_64 C-Oracle Parity & Release-Pinned Cargo Registry)",
+      "stakeholders": [
+        "developer",
+        "systems-engineer",
+        "operator",
+        "auditor"
+      ],
+      "owningManagers": [
+        "mgr-runtime-stage",
+        "mgr-verification-observatory",
+        "mgr-change-release"
+      ],
+      "requiredCapabilities": [
+        "VTK-01",
+        "VTK-42"
+      ],
+      "closedCapabilities": [
+        "VTK-01",
+        "VTK-42"
+      ],
+      "missingCapabilities": [],
+      "progressPct": 100,
+      "completed": true,
+      "ratchetRequirement": "Certify binary32/binary64 scalar, row-ranking, softmax, rotary, online weighted-mean, symmetric/affine/bitpacked block-dot, and centered/affine weight-encoding kernels (VTK-01..VTK-42) against imported SoftFloat and GGML CPU references on both x86_64 and aarch64."
+    },
+    {
+      "milestoneId": "M29",
+      "targetVersion": "2.21.0",
+      "tier": "minor",
+      "title": "LexLean 0.4.5 + prism-code 0.11.1 + Template Contract v2 Modernization, Unified 3-Scope Tensor Proofs & Self-Carrying Holo v6 Proof Capsules (VE-80, VTK-43..VTK-62)",
+      "stakeholders": [
+        "creator",
+        "developer",
+        "systems-engineer",
+        "operator",
+        "auditor",
+        "community-host"
+      ],
+      "owningManagers": [
+        "mgr-architecture-design",
+        "mgr-runtime-stage",
+        "mgr-security-trust",
+        "mgr-change-release",
+        "mgr-verification-observatory"
+      ],
+      "requiredCapabilities": [
+        "VE-80",
+        "VTK-62"
+      ],
+      "closedCapabilities": [
+        "VE-80",
+        "VTK-62"
+      ],
+      "missingCapabilities": [],
+      "progressPct": 100,
+      "completed": true,
+      "ratchetRequirement": "Modernize onto LexLean 0.4.5 (Lean 4.32.2, BLAKE3 kappa-labels), prism-code 0.11.1, and uor/template-contract/2 with zero-runner draft PR gating (#600) and two-lane CI splitting (#603); consolidate 23+ per-PR tensor configs into 3 unified scopes (tensor, quotient, encoding); embed offline-verifiable Holo v6 (prism/holo/6) self-carrying proof capsules in Stitch shards and portable HTML envelopes (< 1,000,000 B); and ship certified K-quant, importance-grid (IQ4..IQ1), erf/expm1, gated delta, and SSM primitives (VTK-43..VTK-62) with write-once v<VER>/crates/index/ sparse registries."
+    },
+    {
+      "milestoneId": "M30",
+      "targetVersion": "2.22.0",
+      "tier": "minor",
+      "title": "Sub-1145L Rust Modularity, Sub-850L Shipped JS, 984+ Observer Self-Refinement Score, 615+ MIR-Lifted Proof Frontier & Certified Signed64 Wide Conversions (VE-81, VTK-63)",
+      "stakeholders": [
+        "creator",
+        "developer",
+        "systems-engineer",
+        "operator",
+        "auditor",
+        "admin",
+        "contributor"
+      ],
+      "owningManagers": [
+        "mgr-observer-executive",
+        "mgr-runtime-stage",
+        "mgr-studio-alm",
+        "mgr-catalog-curator",
+        "mgr-change-release",
+        "mgr-verification-observatory"
+      ],
+      "requiredCapabilities": [
+        "VE-81"
+      ],
+      "closedCapabilities": [
+        "VE-81"
+      ],
+      "missingCapabilities": [],
+      "progressPct": 100,
+      "completed": true,
+      "ratchetRequirement": "Decompose all 16 remaining Rust files > 1145L (max_handwritten_rust_file_lines <= 1145) and all 5 remaining shipped JS files > 850L (max_js_file_lines <= 850, graduating refine-studio-js-modularity to Continuous) plus enforce-prism-contracts.mjs (< 1400L, lifting mgr-verification-observatory to 1000 permille and overallRefinementScorePermille >= 984); expand uorust MIR proof frontier >= 615 lifted functions while shrinking residue <= 1148 and uncertified <= 1300; and ship certified signed I64 wide conversions (VTK-63)."
     }
   ],
   "observerParts": [
@@ -1053,7 +1148,7 @@
         "change-version-release"
       ],
       "ownedObserverParts": [],
-      "ownedFilesCount": 22,
+      "ownedFilesCount": 23,
       "active": true
     },
     {
@@ -1103,7 +1198,7 @@
         "runtime-frameworks",
         "spatial-acoustics"
       ],
-      "ownedFilesCount": 21,
+      "ownedFilesCount": 22,
       "active": true
     },
     {
@@ -1148,7 +1243,7 @@
         "stratum-4-quality-measures-fidelity"
       ],
       "ownedObserverParts": [],
-      "ownedFilesCount": 17,
+      "ownedFilesCount": 19,
       "active": true
     },
     {
@@ -1166,8 +1261,8 @@
     "governingAuthority": "AUTH-SEMVER-CHANGE-KPI",
     "currentVersion": {
       "major": 2,
-      "minor": 21,
-      "patch": 7
+      "minor": 22,
+      "patch": 0
     },
     "recommendedBump": "major",
     "nextVersion": {
@@ -1175,8 +1270,8 @@
       "minor": 0,
       "patch": 0
     },
-    "currentEpoch": 33,
-    "nextEpoch": 34,
+    "currentEpoch": 34,
+    "nextEpoch": 35,
     "versionIncremented": true,
     "gates": {
       "ratchetApplied": true,
@@ -1187,6 +1282,6 @@
       "pullThroughVerified": true
     },
     "blockingReasons": [],
-    "rationale": "Ratchet applied & 5/5 Release Gates passed: advancing v2.21.7 -> v3.0.0 (Major, epoch 34) — Observer roadmap evaluation: minor=100% major=100% managers=13"
+    "rationale": "Ratchet applied & 5/5 Release Gates passed: advancing v2.22.0 -> v3.0.0 (Major, epoch 35) — Observer roadmap evaluation: minor=100% major=100% managers=13"
   }
 }

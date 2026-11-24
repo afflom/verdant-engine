@@ -55,35 +55,37 @@ function parsePipeKv(raw) {
 
 export async function handleExtendedWorkerMessage(msg, ctx) {
   const {
-    ensureUorcSceneHost,
-    getWasm,
-    getUorcWasm,
-    getLoadedUorcWasm,
-    simHost,
-    getCanvas,
-    getRenderer,
-    getEmaFrameMicros,
-    getOrganModes,
-    getCurrentLod,
-    setCurrentLod,
-    getCustomGlbActive,
-    getUorcSceneActive,
-    setUorcSceneActive,
-    drawScene,
-    setCustomGlbActive,
-    getLastAnchor,
-    getLastAnchorActive,
-    setLastAnchor,
-    getLastPose,
-    setLastPose,
-    setActiveSeed,
-    clearWalkJournal,
-    syncOrgansToWasm,
-    slmKappaCache,
-    getSlmKappaHits,
-    incSlmKappaHits,
-    postMessage,
+    ensureUorcSceneHost, getWasm, getUorcWasm, getLoadedUorcWasm, simHost, getCanvas, getRenderer,
+    getEmaFrameMicros, getOrganModes, getCurrentLod, setCurrentLod, getCustomGlbActive, getUorcSceneActive,
+    setUorcSceneActive, drawScene, setCustomGlbActive, getLastAnchor, getLastAnchorActive, setLastAnchor,
+    getLastPose, setLastPose, setActiveSeed, clearWalkJournal, syncOrgansToWasm, syncCoreStateToUorc,
+    getCanonicalUorcStream, slmKappaCache, getSlmKappaHits, incSlmKappaHits, postMessage,
   } = ctx;
+
+  if (msg.kind === "stream-uorc") {
+    const targetRank = Math.max(0, Math.min(4, msg.targetRank | 0)) >>> 0;
+    const uorcWasm = await getUorcWasm();
+    const streamBytes = msg.customStream instanceof Uint8Array && msg.customStream.byteLength > 0 ? msg.customStream : await getCanonicalUorcStream();
+    stageIoBytes(uorcWasm, streamBytes);
+    const ok = uorcWasm.verdant_wasm_uorc_decode_and_restore(targetRank) === 1;
+    if (!ok) { postMessage({ kind: "uorc-streamed", id: msg.id, ok: false }); return true; }
+    const vdntBytes = readIoBytes(uorcWasm);
+    if (!getUorcSceneActive()) syncCoreStateToUorc(uorcWasm); else syncOrgansToWasm(uorcWasm);
+    clearWalkJournal(); setUorcSceneActive(true); setCustomGlbActive(false);
+    const sh = simHost(), codedChecksum = Number(uorcWasm.verdant_wasm_coded_zero_decode_checksum(Math.min(3, targetRank)));
+    const lod = msg.lod || getCurrentLod(); setCurrentLod(lod);
+    const cam = readSolvedCamera(sh), stats = drawScene(cam.eye, cam.lookTarget, lod, msg.simClockSec || 0, false);
+    postMessage({ kind: "uorc-streamed", id: msg.id, ok: true, lodRank: sh.verdant_wasm_active_lod_rank() >>> 0, tris: stats.tris, streamBytes: streamBytes.byteLength, vdntBytes: vdntBytes.byteLength, codedChecksum });
+    return true;
+  }
+
+  if (msg.kind === "set-organ-grant") {
+    const uorcWasm = await getUorcWasm(), organModes = getOrganModes(), idx = Math.max(0, Math.min(10, msg.organIdx >>> 0)), reqMode = msg.mode >>> 0;
+    if (reqMode === 0) organModes[idx] = 0; else if (reqMode === 2) organModes[idx] = 2; else if (reqMode === 1 && organModes[idx] !== 2) organModes[idx] = 1;
+    slmKappaCache.clear();
+    postMessage({ kind: "organ-grant-updated", id: msg.id, ok: true, organIdx: idx, mode: organModes[idx], allowed: syncOrgansToWasm(uorcWasm, idx) });
+    return true;
+  }
 
   if (msg.kind === "route-prompt") {
     const organModes = getOrganModes();

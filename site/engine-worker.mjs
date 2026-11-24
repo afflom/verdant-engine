@@ -13,7 +13,6 @@ import {
 import {
   getExtendedWorkerModule,
   handleExtendedWorkerMessage,
-  handleStreamOrGrantWorkerMessage,
   readSolvedCamera,
   readSplitMeshViews,
   readUniverseCell,
@@ -796,29 +795,8 @@ self.onmessage = async ({ data: msg }) => {
       return;
     }
 
-    if (msg.kind === "stream-uorc" || msg.kind === "set-organ-grant") {
-      await handleStreamOrGrantWorkerMessage(msg, {
-        getUorcWasm: async () => { uorcWasm ??= await getUorcWasm(); return uorcWasm; },
-        getCanonicalUorcStream,
-        getUorcSceneActive: () => uorcSceneActive,
-        setUorcSceneActive: (v) => { uorcSceneActive = Boolean(v); },
-        setCustomGlbActive: (v) => { customGlbActive = Boolean(v); },
-        clearWalkJournal: () => { walkJournal.length = 0; },
-        syncCoreStateToUorc,
-        syncOrgansToWasm,
-        simHost,
-        getCurrentLod: () => currentLod,
-        setCurrentLod: (v) => { currentLod = v; },
-        drawScene,
-        organModes,
-        slmKappaCache,
-        postMessage: (p) => self.postMessage(p),
-      });
-      return;
-    }
-
     if (await handleExtendedWorkerMessage(msg, {
-      ensureUorcSceneHost, simHost, drawScene, syncOrgansToWasm, slmKappaCache,
+      ensureUorcSceneHost, simHost, drawScene, syncOrgansToWasm, syncCoreStateToUorc, getCanonicalUorcStream, slmKappaCache,
       getWasm: () => wasm, getLoadedUorcWasm: () => uorcWasm,
       getUorcWasm: async () => { uorcWasm ??= await getUorcWasm(); return uorcWasm; },
       getCanvas: () => canvas, getRenderer: () => renderer, getEmaFrameMicros: () => emaFrameMicros,

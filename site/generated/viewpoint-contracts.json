@@ -153,7 +153,7 @@
     },
     {
       "basisPrime": 71,
-      "kappaHex": "232d807733c1821d92fb43d056b4bb7d29b96adad3a489c6efd90f2f5e7ade91",
+      "kappaHex": "40d84ded0f4184d3b8d3f8cc97f95f29ef6dd9b5d860c79074c4c0b04c711960",
       "spec": {
         "almPhases": [
           "change-management",
@@ -187,6 +187,7 @@
           "crates/verdant-core/src/vcs.rs",
           "crates/verdant-core/src/vcs_studio.rs",
           "crates/verdant-core/src/governance.rs",
+          "crates/verdant-core/src/governance_kpi.rs",
           "crates/verdant-core/src/build_ops.rs",
           "crates/verdant-core/src/gateway.rs",
           "crates/verdant-core/src/gateway_swarm.rs",
@@ -373,7 +374,7 @@
     },
     {
       "basisPrime": 89,
-      "kappaHex": "6cf4b2e949bb51bb68d4abeb4c8b7a7f28a7697c953b6cd80306f78e4398a782",
+      "kappaHex": "e208749fc836a9b443e61e181282fd2e9987dbb26f0da2516eca83271eac0be5",
       "spec": {
         "almPhases": [
           "operation",
@@ -416,6 +417,7 @@
           "crates/verdant-core/src/character_types.rs",
           "crates/verdant-core/src/render_shaders.rs",
           "crates/verdant-tensor/src/scalars_gateway.rs",
+          "crates/verdant-tensor/src/scalars_ratchet_m24.rs",
           "site/card.html",
           "site/card.mjs",
           "site/card.css",
@@ -675,7 +677,7 @@
     },
     {
       "basisPrime": 107,
-      "kappaHex": "8f0cd5fe436c7d42581709a21de431484ec1d83d8854c8795fff2643c8b94e8c",
+      "kappaHex": "9fab4eb57c21e961e17794aea795c960d8ea1efda261f14bb881389b92380489",
       "spec": {
         "almPhases": [
           "verification",
@@ -715,8 +717,10 @@
           "site/generated/lifecycle-gate-report.json",
           "site/demo/index.html",
           "site/demo/demo.mjs",
+          "site/demo/demo-uhd.mjs",
           "scripts/verdant-ratchet.mjs",
           "scripts/enforce-prism-contracts.mjs",
+          "scripts/enforce-prism-viewpoints.mjs",
           "scripts/verify-live-surfaces.mjs"
         ],
         "ownedObserverParts": [],

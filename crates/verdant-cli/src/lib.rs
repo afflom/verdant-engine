@@ -1004,7 +1004,7 @@ pub fn run_cli(args: &[String]) -> Result<String, CliCommandError> {
                     usage: "verdant release <pack|verify> [--root <dir>] [--version <v>] [--epoch <n>] [--out <dir>] [--relay <url>] [--pin <stitch://...>]".to_string(),
                 });
             };
-            let ch = verdant_core::operator::VerdantOperatorChannel::new("sunspire-regatta")
+            let mut ch = verdant_core::operator::VerdantOperatorChannel::new("sunspire-regatta")
                 .map_err(|e| CliCommandError::ValidationRejected {
                     command: "release".to_string(),
                     diagnostic: e.to_string(),

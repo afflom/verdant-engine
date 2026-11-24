@@ -4634,3 +4634,83 @@ fn holo_v6_self_carrying_proof_and_unified_scopes_ve_80() {
     .expect("parametric ratchet");
     assert!(ratchet.observed_release_capsule_bytes < 1_000_000);
 }
+
+#[test]
+fn m30_modularity_and_frontier_refinement_ve_81() {
+    use std::path::Path;
+    use verdant_core::operator::VerdantOperatorChannel;
+    use verdant_tensor::scalars::{
+        importance_grid_block_sizes_ordered, importance_grid_extent_admissible,
+        importance_octet_parity_valid, m30_frontier_targets_met, m30_js_modularity_ceiling,
+        m30_modularity_targets_met, m30_refinement_score_valid, m30_rust_modularity_ceiling,
+        unified_scope_root_counts_valid, versioned_sparse_index_write_once_admissible,
+    };
+
+    let repo_root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+    assert_eq!(m30_rust_modularity_ceiling(), 1145);
+    assert_eq!(m30_js_modularity_ceiling(), 850);
+    assert!(importance_grid_block_sizes_ordered());
+    assert!(importance_grid_extent_admissible(256));
+    assert!(!importance_grid_extent_admissible(255));
+    assert!(importance_octet_parity_valid(3, true));
+    assert!(!importance_octet_parity_valid(4, true));
+    assert!(versioned_sparse_index_write_once_admissible(false, true, 4));
+    assert!(!versioned_sparse_index_write_once_admissible(true, true, 4));
+    assert!(unified_scope_root_counts_valid(80, 8, 22));
+    assert!(!m30_modularity_targets_met(1247, 850));
+    assert!(!m30_modularity_targets_met(1145, 920));
+    assert!(!m30_frontier_targets_met(589, 1148, 1300));
+    assert!(!m30_refinement_score_valid(976));
+
+    let ratchet = prism_fidelity::ratchet::audit_parametric_ratchet(
+        &repo_root,
+        Path::new("model/parametric-ratchet.toml"),
+    )
+    .expect("M30 parametric ratchet must pass");
+    assert!(
+        m30_modularity_targets_met(
+            ratchet.observed_max_rust_file_lines as u32,
+            ratchet.observed_max_js_file_lines as u32,
+        ),
+        "M30 modularity ceilings violated: rust={} js={}",
+        ratchet.observed_max_rust_file_lines,
+        ratchet.observed_max_js_file_lines
+    );
+    assert!(
+        m30_frontier_targets_met(
+            ratchet.frontier_lifted_functions as u64,
+            ratchet.frontier_residue_functions as u64,
+            ratchet.frontier_uncertified_functions as u64,
+        ),
+        "M30 frontier targets violated: lifted={} residue={} uncertified={}",
+        ratchet.frontier_lifted_functions,
+        ratchet.frontier_residue_functions,
+        ratchet.frontier_uncertified_functions
+    );
+
+    let ch = VerdantOperatorChannel::new("sunspire-regatta").expect("load operator channel");
+    let (agenda, _json) = ch
+        .synthesize_refinement_agenda(&repo_root)
+        .expect("synthesize M30 refinement agenda");
+    assert!(
+        m30_refinement_score_valid(agenda.overall_refinement_score_permille),
+        "expected M30 refinement score >= 984 permille, got {}",
+        agenda.overall_refinement_score_permille
+    );
+    let obs_mgr = agenda
+        .part_health
+        .iter()
+        .find(|d| d.manager_id == "mgr-verification-observatory")
+        .expect("mgr-verification-observatory diagnostic");
+    assert_eq!(obs_mgr.health_score_permille, 1000);
+
+    let enforce_lines =
+        std::fs::read_to_string(repo_root.join("scripts/enforce-prism-contracts.mjs"))
+            .expect("read enforce-prism-contracts.mjs")
+            .lines()
+            .count();
+    assert!(
+        enforce_lines < 1400,
+        "enforce-prism-contracts.mjs must stay < 1400 lines, got {enforce_lines}"
+    );
+}

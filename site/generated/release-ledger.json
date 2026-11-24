@@ -4,10 +4,10 @@
   "authorityId": "AUTH-SEMVER-CHANGE-KPI",
   "currentVersion": {
     "major": 2,
-    "minor": 21,
-    "patch": 7
+    "minor": 22,
+    "patch": 0
   },
-  "releaseEpoch": 33,
+  "releaseEpoch": 34,
   "history": [
     {
       "version": "0.1.0",
@@ -259,6 +259,13 @@
       "releaseEpoch": 33,
       "bumpKind": "patch",
       "summary": "v2.21.7: certified IQ2_XS, IQ2_XXS, IQ1_S, and IQ1_M importance-grid weight encodings (VTK-60, VTK-61, VTK-62)",
+      "citedAuthority": "AUTH-SEMVER-CHANGE-KPI"
+    },
+    {
+      "version": "2.22.0",
+      "releaseEpoch": 34,
+      "bumpKind": "minor",
+      "summary": "M30 (v2.22.0, VE-81, VTK-63..VTK-64): Sub-1145L Rust & sub-850L JS modularity, 984 permille Observer health, 620+ uorust MIR-lifted frontier, and certified signed64/round-to-odd wide conversions",
       "citedAuthority": "AUTH-SEMVER-CHANGE-KPI"
     }
   ]

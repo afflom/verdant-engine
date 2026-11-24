@@ -897,3 +897,21 @@ Feature: engine
     Given 256 finite lanes and format-specific importance data
     When Verdant selects ternary splits, shifts, grid points and scales
     Then the complete IQ1_S and IQ1_M blocks match the pinned quantizers and invalid inputs preserve the destination
+
+  @VTK-63 @build
+  Scenario: Verdant converts signed 64-bit words directly to binary32 and binary64 and truncates representable binary64 values to signed 64-bit words
+    Given signed 64-bit limits, rounding ties and binary64 exponent boundaries
+    When Verdant converts in either direction
+    Then encoded words and invalid refusals agree with Berkeley SoftFloat Release 3e
+
+  @VTK-64 @build
+  Scenario: Verdant rounds binary64 and signed I64 directly to binary32 at round-to-odd and truncates representable binary64 values to signed I32
+    Given signed extrema, discarded significand bits, subnormals, NaNs and every binary64 exponent
+    When Verdant rounds to an odd significand or truncates toward zero
+    Then the result word and invalid truncation flag agree with Berkeley SoftFloat
+
+  @VE-81 @build
+  Scenario: Verdant enforces M30 Rust and JS file modularity ceilings, 984-permille Observer health, and an expanded uorust MIR proof frontier
+    Given the workspace Rust crates, shipped browser JavaScript modules, Observatory contract scripts, and uorust frontier register
+    When Verdant audits its parametric ratchet and synthesizes the Observer self-refinement agenda
+    Then every hand-written Rust file is at most 1145 lines, every shipped JS file is at most 850 lines, Observatory health reaches 1000 permille with overall score at least 984 permille, and at least 615 constructive Rust functions are MIR-lifted
