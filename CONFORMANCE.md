@@ -160,6 +160,7 @@ model does not sanction.
 | `VTK-58` | `build` | A diagonal state recurrence with scalar or per-coordinate transition matches GGML CPU across repeated inputs |
 | `VTK-59` | `build` | Verdant encodes eight-lane two-bit importance grids into signed blocks with optional weights against the imported CPU quantizer |
 | `VTK-60` | `build` | Verdant encodes parity-constrained two-bit IQ2_XS blocks with explicit importance weights against the pinned GGML quantizer |
+| `VTK-61` | `build` | Verdant encodes parity-constrained octets with a shared 32-lane fitted scale against the imported IQ2_XXS quantizer |
 
 ## fidelity
 

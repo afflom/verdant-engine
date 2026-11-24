@@ -541,3 +541,9 @@ VTK-59 compared all 26,568 bytes in 288 unweighted and 36 weighted blocks with t
 The certified grid program selects the 9-bit code and seven sign bits for each octet using explicit importance weights. Its certificate is `blake3:c90af29856827f26720b7b4d6f4e2994231f6d3f8826b3c7b62ee658122e9e66`. The imported directory preserves the order of all 182,233 GGML candidate entries across 6,561 ternary patterns. [Directory provenance](crates/verdant-tensor/src/iq2xs_neighbors.json)
 
 VTK-60 compared all 4,440 bytes in 60 blocks against GGML at `9a080f44` using uniform, nonuniform and sparse importance. Inputs vary the parity and the least-cost lane. Missing weights, invalid widths and negative weights preserve the destination. The previous dispatch refused the encoding. Flipping one packed sign bit failed the imported byte comparison, and restoring the certified output passed.
+
+## VTK-61 grouped parity encoding
+
+The certified IQ2_XXS program fits four eight-lane grid points to a shared scale. It models GGML’s preliminary four-level fit, its coordinate refinements, the grid projection and the packed sign and scale fields. The imported directory preserves all 113,413 candidate entries across 6,561 ternary inputs. [Directory provenance](crates/verdant-tensor/src/iq2xxs_neighbors.json)
+
+Certificate `blake3:b4459047ca2188e8616d5af8d4ab30aafc29987e9ad4b54697266b219c12a44e` drives the existing encoding interpreter. VTK-61 compared 3,960 output bytes from 60 blocks with the pinned GGML quantizer using uniform, nonuniform and sparse weights. The previous implementation refused the format. Flipping the low bit of the first packed sign group failed the byte comparison. The restored encoder passed, including preservation of the destination on invalid inputs.

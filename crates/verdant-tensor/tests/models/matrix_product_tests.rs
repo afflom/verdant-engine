@@ -553,6 +553,7 @@ int main(int argc, char **argv) {
   const std::pair<const char *, ggml_type> weighted_formats[] = {
       {"iq3-compact-weighted", GGML_TYPE_IQ3_XXS}, {"iq3-weighted", GGML_TYPE_IQ3_S},
       {"iq2-s-weighted", GGML_TYPE_IQ2_S}, {"iq2-xs-weighted", GGML_TYPE_IQ2_XS},
+      {"iq2-xxs-weighted", GGML_TYPE_IQ2_XXS},
   };
   for (const auto &[mode, kind] : weighted_formats) if (!std::strcmp(argv[1], mode)) {
     std::vector<uint8_t> encoded(ggml_row_size(kind, QK_K));
@@ -3587,12 +3588,35 @@ fn importance_two_parity_encoding_vtk_60() {
     assert_eq!(untouched, [0xa5; 74]);
 }
 
+#[test]
+fn grouped_parity_encoding_vtk_61() {
+    use super::PackedWeightEncoding::ImportanceTwoGroupedParity;
+    certified_encoding_model(
+        "verdant_importance_grid",
+        "VerdantEngine.ImportanceGridEncoding.evaluate",
+    );
+    compare_weighted_encoders(&[(ImportanceTwoGroupedParity, 66, "iq2-xxs-weighted")]);
+    let mut untouched = [0xa5_u8; 66];
+    assert!(super::encode_importance_weight_block(
+        &[1.0; 256],
+        None,
+        ImportanceTwoGroupedParity,
+        &mut untouched
+    )
+    .is_err());
+    assert_eq!(untouched, [0xa5; 66]);
+}
+
 fn compare_weighted_encoders(formats: &[(super::PackedWeightEncoding, usize, &str)]) {
     use std::fmt::Write as _;
     for &(kind, width, mode) in formats {
         let mut input = String::new();
         let mut blocks = Vec::new();
-        let rows = if kind == super::PackedWeightEncoding::ImportanceTwoParity {
+        let rows = if matches!(
+            kind,
+            super::PackedWeightEncoding::ImportanceTwoParity
+                | super::PackedWeightEncoding::ImportanceTwoGroupedParity
+        ) {
             20
         } else {
             12

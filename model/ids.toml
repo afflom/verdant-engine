@@ -944,3 +944,9 @@ id = "VTK-60"
 level = "build"
 suite = "engine"
 statement = "Verdant encodes parity-constrained two-bit IQ2_XS blocks with explicit importance weights against the pinned GGML quantizer"
+
+[[id]]
+id = "VTK-61"
+level = "build"
+suite = "engine"
+statement = "Verdant encodes parity-constrained octets with a shared 32-lane fitted scale against the imported IQ2_XXS quantizer"

@@ -885,3 +885,9 @@ Feature: engine
     Given 256 finite lanes and a nonnegative importance vector
     When Verdant fits IQ2_XS codes and parity-constrained signs
     Then every one of the 74 bytes matches GGML and missing weights preserve the destination
+
+  @VTK-61 @build
+  Scenario: Verdant encodes parity-constrained octets with a shared 32-lane fitted scale against the imported IQ2_XXS quantizer
+    Given 256 finite lanes and an explicit nonnegative importance matrix
+    When the certified program fits four octets per group and packs 8-bit ordinals and seven sign bits
+    Then all 66 bytes match the pinned IQ2_XXS quantizer and missing weights preserve the destination

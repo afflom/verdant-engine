@@ -33,6 +33,8 @@ pub enum PackedWeightEncoding {
     ImportanceTwo,
     /// Nine-bit eight-lane grid indices with seven stored sign bits and explicit importance.
     ImportanceTwoParity,
+    /// Four parity-constrained octets sharing a fitted scale.
+    ImportanceTwoGroupedParity,
     /// Binary16 scale and one signed byte per lane.
     SymmetricEight,
     /// Binary16 scale and centered four-bit coefficients.
