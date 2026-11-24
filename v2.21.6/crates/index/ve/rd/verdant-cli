@@ -1,0 +1,1 @@
+{"cksum":"b9c69879a3dd87fd5e2d173a6ca7b39bc45080f2dccb7d8cf455496bc7537464","deps":[{"default_features":true,"features":[],"kind":"normal","name":"verdant-core","optional":false,"package":null,"registry":null,"req":"^2.21.6","target":null}],"features":{},"name":"verdant-cli","rust_version":"1.89","vers":"2.21.6","yanked":false}
