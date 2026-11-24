@@ -48,7 +48,7 @@ jobs:
             ~/.cargo/registry/index
             ~/.cargo/registry/cache
             ~/.cargo/git/db
-          key: fast-cargo-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('rust-toolchain.toml', 'Cargo.lock') }}
+          key: fast-cargo-${{ runner.os }}-${{ runner.arch }}-deny0202-${{ hashFiles('rust-toolchain.toml', 'Cargo.lock') }}
       - name: Install locked Rust toolchain, just, and cargo-deny
         shell: bash
         run: |
@@ -56,8 +56,14 @@ jobs:
           tc=$(sed -n 's/^channel = "\([^"]*\)"/\1/p' rust-toolchain.toml)
           rustup toolchain install "$tc" --profile minimal --component rustfmt --component clippy
           rustup default "$tc"
+          mkdir -p "$HOME/.cargo/bin"
           command -v just >/dev/null 2>&1 || cargo install --locked just@1.40.0
-          command -v cargo-deny >/dev/null 2>&1 || cargo install --locked cargo-deny@0.18.2
+          if ! cargo deny --version 2>/dev/null | grep -q '0\.20\.2'; then
+            curl -fsSL https://github.com/EmbarkStudios/cargo-deny/releases/download/0.20.2/cargo-deny-0.20.2-x86_64-unknown-linux-musl.tar.gz -o "$RUNNER_TEMP/cargo-deny.tar.gz"
+            echo "9f12ed4c49936e09b48bf862b595cde2fe64fcbd9d74dfacac6131ca824c8d5f  $RUNNER_TEMP/cargo-deny.tar.gz" | sha256sum -c -
+            tar -xzf "$RUNNER_TEMP/cargo-deny.tar.gz" --strip-components=1 -C "$HOME/.cargo/bin" cargo-deny-0.20.2-x86_64-unknown-linux-musl/cargo-deny
+            chmod +x "$HOME/.cargo/bin/cargo-deny"
+          fi
       - name: Run containerless independent fast gate
         shell: bash
         env:
