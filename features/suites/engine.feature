@@ -861,3 +861,9 @@ Feature: engine
     Given finite weight lanes and optional nonnegative importance values
     When the tensor kernel selects signs, grid points and local scales
     Then every packed byte agrees with the upstream reference
+
+  @VTK-59 @build
+  Scenario: Verdant encodes eight-lane two-bit importance grids into signed blocks with optional weights against the imported CPU quantizer
+    Given 256 finite lanes and optional nonnegative weights
+    When Verdant fits the eight-lane grid points and packs their signs and scales
+    Then all 82 bytes match the pinned IQ2_S quantizer and invalid inputs preserve the destination

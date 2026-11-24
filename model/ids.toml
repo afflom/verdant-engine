@@ -920,3 +920,9 @@ id = "VTK-56"
 level = "build"
 suite = "engine"
 statement = "Verdant encodes four-lane three-bit importance grids into packed weight blocks matching the imported CPU quantizers"
+
+[[id]]
+id = "VTK-59"
+level = "build"
+suite = "engine"
+statement = "Verdant encodes eight-lane two-bit importance grids into signed blocks with optional weights against the imported CPU quantizer"

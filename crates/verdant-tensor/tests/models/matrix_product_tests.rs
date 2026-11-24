@@ -497,8 +497,11 @@ int main(int argc, char **argv) {
   if (!std::strcmp(argv[1], "grouped-affine-4")) return encode_blocks<QK_K>(quantize_row_q4_K_ref);
   if (!std::strcmp(argv[1], "grouped-affine-5")) return encode_blocks<QK_K>(quantize_row_q5_K_ref);
   if (!std::strcmp(argv[1], "nonlinear-four-encode")) return encode_blocks<QK4_NL>(reference_nonlinear_four);
-  if (!std::strcmp(argv[1], "iq3-compact-weighted") || !std::strcmp(argv[1], "iq3-weighted")) {
-    auto kind = !std::strcmp(argv[1], "iq3-weighted") ? GGML_TYPE_IQ3_S : GGML_TYPE_IQ3_XXS;
+  const std::pair<const char *, ggml_type> weighted_formats[] = {
+      {"iq3-compact-weighted", GGML_TYPE_IQ3_XXS}, {"iq3-weighted", GGML_TYPE_IQ3_S},
+      {"iq2-s-weighted", GGML_TYPE_IQ2_S},
+  };
+  for (const auto &[mode, kind] : weighted_formats) if (!std::strcmp(argv[1], mode)) {
     std::vector<uint8_t> encoded(ggml_row_size(kind, QK_K));
     uint32_t word;
     while (std::scanf("%u", &word) == 1) {
@@ -511,6 +514,10 @@ int main(int argc, char **argv) {
       for (auto byte : encoded) std::printf("%u\n", unsigned(byte));
     }
     return std::ferror(stdin) ? 2 : 0;
+  }
+  if (!std::strcmp(argv[1], "iq2-s-encode")) {
+    ggml_quantize_init(GGML_TYPE_IQ2_S);
+    return encode_blocks<QK_K>(quantize_row_iq2_s_ref);
   }
   if (!std::strcmp(argv[1], "iq3-compact-encode")) {
     ggml_quantize_init(GGML_TYPE_IQ3_XXS);
@@ -3372,7 +3379,6 @@ fn nonlinear_four_encoding_vtk_53() {
 #[test]
 fn importance_grid_three_encoding_vtk_56() {
     use super::PackedWeightEncoding::{ImportanceThree, ImportanceThreeCompact};
-    use std::fmt::Write as _;
     certified_encoding_model(
         "verdant_importance_grid",
         "VerdantEngine.ImportanceGridEncoding.evaluate",
@@ -3381,10 +3387,26 @@ fn importance_grid_three_encoding_vtk_56() {
         (ImportanceThreeCompact, 98, "iq3-compact-encode"),
         (ImportanceThree, 110, "iq3-encode"),
     ]);
-    for (kind, width, mode) in [
+    compare_weighted_encoders(&[
         (ImportanceThreeCompact, 98, "iq3-compact-weighted"),
         (ImportanceThree, 110, "iq3-weighted"),
-    ] {
+    ]);
+}
+
+#[test]
+fn importance_grid_two_encoding_vtk_59() {
+    use super::PackedWeightEncoding::ImportanceTwo;
+    certified_encoding_model(
+        "verdant_importance_grid",
+        "VerdantEngine.ImportanceGridEncoding.evaluate",
+    );
+    compare_weight_encoders::<256>(&[(ImportanceTwo, 82, "iq2-s-encode")]);
+    compare_weighted_encoders(&[(ImportanceTwo, 82, "iq2-s-weighted")]);
+}
+
+fn compare_weighted_encoders(formats: &[(super::PackedWeightEncoding, usize, &str)]) {
+    use std::fmt::Write as _;
+    for &(kind, width, mode) in formats {
         let mut input = String::new();
         let mut blocks = Vec::new();
         for row in 0..12 {

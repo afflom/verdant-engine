@@ -1,0 +1,12 @@
+{
+  "revision": "9a080f44b503c64f66c84a6274b9d9ee5d5b09d5",
+  "source": "ggml/src/ggml-quants.c",
+  "entry_point": "iq2xs_init_impl(GGML_TYPE_IQ2_S)",
+  "license": "ggml_tables.LICENSE",
+  "points": 6561,
+  "candidates": 45740,
+  "direct": 1024,
+  "single_neighbor_off_grid": 925,
+  "format": "All words are little-endian u16. The first gives the number of directory words. The next 6562 index the start and end of each ternary pattern in the candidate list. Bit 15 on its first candidate identifies an exact grid point. The first lane is the least significant ternary digit.",
+  "sha256": "287ca8673f30b846208eb0afd03aa7daa4a66bca48dd682e5b73bcddfaabb98f"
+}
