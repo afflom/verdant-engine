@@ -1168,6 +1168,10 @@ fn verify_bundle(scope: &str, directory: &str) -> std::collections::BTreeMap<Str
                     "verdant_normalized_exponential" => include_bytes!("../../../../generated/tensor-softmax/packages/rust-core/verdant_normalized_exponential/src/lib.rs"),
                     "verdant_grouped_affine" => include_bytes!("../../../../generated/tensor-affinedot/packages/rust-core/verdant_grouped_affine/src/lib.rs"),
                     "verdant_affine_finite" => include_bytes!("../../../../generated/tensor-affinepack/packages/rust-core/verdant_affine_finite/src/lib.rs"),
+                    "verdant_affine_block_scale" => include_bytes!("../../../../generated/tensor-affinescales/packages/rust-core/verdant_affine_block_scale/src/lib.rs"),
+                    "verdant_affine_group_scale" => include_bytes!("../../../../generated/tensor-affinescales/packages/rust-core/verdant_affine_group_scale/src/lib.rs"),
+                    "verdant_affine_lane_code" => include_bytes!("../../../../generated/tensor-affinescales/packages/rust-core/verdant_affine_lane_code/src/lib.rs"),
+                    "verdant_affine_less" => include_bytes!("../../../../generated/tensor-affinescales/packages/rust-core/verdant_affine_less/src/lib.rs"),
                     "verdant_affine_geometry" => include_bytes!("../../../../generated/tensor-affinepack/packages/rust-core/verdant_affine_geometry/src/lib.rs"),
                     "verdant_affine_insert_field" => include_bytes!("../../../../generated/tensor-affinepack/packages/rust-core/verdant_affine_insert_field/src/lib.rs"),
                     "verdant_affine_fit" => include_bytes!("../../../../generated/tensor-affinepack/packages/rust-core/verdant_affine_fit/src/lib.rs"),
@@ -2845,6 +2849,18 @@ fn grouped_signed_six_encoding_vtk_49() {
 #[test]
 fn grouped_affine_encoding_vtk_50() {
     use super::PackedWeightEncoding::{GroupedAffineFive, GroupedAffineFour, GroupedAffineTwo};
+    let scales = verify_bundle("affinescales", "tensor-affinescales");
+    for (operation, package) in [
+        ("blockScale", "verdant_affine_block_scale"),
+        ("groupScale", "verdant_affine_group_scale"),
+        ("laneCode", "verdant_affine_lane_code"),
+        ("less", "verdant_affine_less"),
+    ] {
+        assert_eq!(
+            scales[&format!("VerdantEngine.GroupedAffineScales.{operation}")],
+            package
+        );
+    }
     let roots = verify_bundle("affinepack", "tensor-affinepack");
     for (operation, package) in [
         ("finite", "verdant_affine_finite"),

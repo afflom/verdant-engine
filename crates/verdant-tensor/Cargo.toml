@@ -12,6 +12,10 @@ keywords.workspace = true
 categories.workspace = true
 
 [dependencies]
+verdant_affine_block_scale = { version = "=2.43.0", path = "../../generated/tensor-affinescales/packages/rust-core/verdant_affine_block_scale" }
+verdant_affine_group_scale = { version = "=2.43.0", path = "../../generated/tensor-affinescales/packages/rust-core/verdant_affine_group_scale" }
+verdant_affine_lane_code = { version = "=2.43.0", path = "../../generated/tensor-affinescales/packages/rust-core/verdant_affine_lane_code" }
+verdant_affine_less = { version = "=2.43.0", path = "../../generated/tensor-affinescales/packages/rust-core/verdant_affine_less" }
 verdant_affine_geometry = { version = "=2.43.0", path = "../../generated/tensor-affinepack/packages/rust-core/verdant_affine_geometry" }
 verdant_affine_finite = { version = "=2.43.0", path = "../../generated/tensor-affinepack/packages/rust-core/verdant_affine_finite" }
 verdant_affine_quantized = { version = "=2.43.0", path = "../../generated/tensor-affinepack/packages/rust-core/verdant_affine_quantized" }

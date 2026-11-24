@@ -58,7 +58,7 @@ max_unlifted_workspace_modules = 0
 
 [frontier_ratchet]
 frontier_register = "frontier.toml"
-frontier_rust_tree_sha256 = "b4639e9d2f34e59f04b2df3a60b75d092788f5909fed1fd9ec1d5d61f771da7d"
+frontier_rust_tree_sha256 = "02b18cae2b016739ab7fcdbceef4829c61426a2b06b9e9e47d36cc36780e70e2"
 min_lifted_functions = 585
 max_residue_functions = 1150
 max_uncertified_functions = 1308
@@ -405,3 +405,8 @@ role = "Select grouped signed six-bit coefficients with weighted binary32 scale 
 path = "app/src/GroupedAffineEncoding.lex.tex"
 stratum = 2
 role = "Select weighted affine scale fits and encode grouped unsigned coefficient and scale fields."
+
+[[stratum_module]]
+path = "app/src/GroupedAffineScales.lex.tex"
+stratum = 2
+role = "Round unsigned group levels and store and recover their binary32 and half scales."

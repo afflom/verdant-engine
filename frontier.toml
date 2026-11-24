@@ -5,12 +5,12 @@
 # stops the functions it counts (the detail their rows state, under its
 # cause), the one that stops the most first: the work queue.
 
-# Honesty report: 586 of 1902 functions of product code are lifted; 1158
+# Honesty report: 586 of 1898 functions of product code are lifted; 1154
 # are residue, 75 foreign and 83 effect rows.
 # Residue by cause:
 #   arithmetic: 24
-#   call: 212
-#   form: 342
+#   call: 211
+#   form: 339
 #   signature: 53
 #   statements: 21
 #   type: 500
@@ -19,9 +19,9 @@
 spec = "uorust/register/1"
 
 [lift]
-functions = 1902
+functions = 1898
 lifted = 586
-residue = 1158
+residue = 1154
 foreign = 75
 effect = 83
 
@@ -317,11 +317,6 @@ functions = 4
 
 [[construct]]
 construct = "expression form outside the lift: index of String"
-cause = "form"
-functions = 4
-
-[[construct]]
-construct = "expression form outside the lift: method call .calculate"
 cause = "form"
 functions = 4
 
@@ -711,11 +706,6 @@ cause = "call"
 functions = 1
 
 [[construct]]
-construct = "calls evaluate_encoded_word, which is not lifted"
-cause = "call"
-functions = 1
-
-[[construct]]
 construct = "calls governorRecommendedScalePermille, which is not lifted"
 cause = "call"
 functions = 1
@@ -1007,6 +997,11 @@ functions = 1
 
 [[construct]]
 construct = "expression form outside the lift: method call .append"
+cause = "form"
+functions = 1
+
+[[construct]]
+construct = "expression form outside the lift: method call .calculate"
 cause = "form"
 functions = 1
 
@@ -5024,22 +5019,10 @@ reason = "type"
 detail = "type outside the lift: GroupedQ8Block.scale: f32"
 
 [[residue]]
-kappa = "d36b0b197fa046b0e009c15c3e830f4856c80f1d59f81e48e1edb838d056c1dd"
-function = "verdant_tensor::linear::grouped_affine_encoding::Fit::assign"
-reason = "form"
-detail = "expression form outside the lift: method call .calculate"
-
-[[residue]]
 kappa = "71a1fc0ba175fc006319aea7ae0758d7fa6c2127fe5ad45718ed05bdfd7284c4"
 function = "verdant_tensor::linear::grouped_affine_encoding::Fit::calculate"
 reason = "type"
 detail = "type outside the lift: Program"
-
-[[residue]]
-kappa = "4a180d620111dff0160b5f2cb8b884bc2c0703116b43c7fc2190522d2c6d516a"
-function = "verdant_tensor::linear::grouped_affine_encoding::Fit::code"
-reason = "form"
-detail = "expression form outside the lift: method call .calculate"
 
 [[residue]]
 kappa = "395a16877ea9ccfa46838b6922591d2b4b08d3f1a5ff3bfe3fccbb4460d9eb52"
@@ -5048,28 +5031,16 @@ reason = "form"
 detail = "expression form outside the lift: method call .calculate"
 
 [[residue]]
-kappa = "ba16f053e4c0718a6a932ec45563dc0e29e322f95d748972d04e19d7b5eed2a2"
+kappa = "17147f3e1959e8ec637e7414bf90933fee59969fb6091720a8ebb4644a01ccdc"
 function = "verdant_tensor::linear::grouped_affine_encoding::Fit::group"
 reason = "type"
 detail = "type outside the lift: &mut [u64]"
 
 [[residue]]
-kappa = "04ebe7c17324583bb7f9084ee6a451cec369dc4df4167d9d871b5c08a30b5be8"
-function = "verdant_tensor::linear::grouped_affine_encoding::Fit::scale"
-reason = "form"
-detail = "expression form outside the lift: method call .calculate"
-
-[[residue]]
-kappa = "f12a45e3d381aef3fd4627e45d97c5de00228e457d94ef4147a5da869fca6d7e"
+kappa = "f331448104804d2e1c8c99664793e989195a87059b1803e6f23167e600cf0081"
 function = "verdant_tensor::linear::grouped_affine_encoding::encode"
 reason = "type"
 detail = "type outside the lift: f32"
-
-[[residue]]
-kappa = "73be10af40a8597f268929d956b519bc29586f40cbc2dba029fd683d497bfbd0"
-function = "verdant_tensor::linear::grouped_affine_encoding::less"
-reason = "call"
-detail = "calls evaluate_encoded_word, which is not lifted"
 
 [[residue]]
 kappa = "842fbe1d98217cfe57c0693261b53236e521a3097bdc92ee3655c9de95a04962"

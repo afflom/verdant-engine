@@ -1,0 +1,68 @@
+\begin{lexlean}{GroupedAffineScales}
+\useglossary{lexlean.std.bool@1.2.0}
+\useglossary{lexlean.std.nat@1.2.0}
+\importmodule{ScalarF32}
+\importmodule{FloatStorage}
+\importmodule{WordComparison}
+\importmodule{PackedWord}
+\title{Natural number}
+\begin{semanticmodule}
+structure{
+  name: BlockScale,
+  type_parameters: [],
+  parameters: [],
+  fields: [{name: inverse, type: Nat}, {name: stored, type: Nat}, {name: expanded, type: Nat}]
+}
+
+structure{
+  name: GroupScale,
+  type_parameters: [],
+  parameters: [],
+  fields: [{name: code, type: Nat}, {name: decoded, type: Nat}]
+}
+
+definition{
+  name: less,
+  parameters: [left : Nat, right : Nat],
+  result: Bool,
+  body: ((WordComparison::compareF32 left right) =? 0),
+  executable: true,
+  production: {effects: [overflow], targets: [rust-core]}
+}
+
+definition{
+  name: roundedLevel,
+  parameters: [scaled : Nat, limit : Nat, bias : Nat],
+  result: Nat,
+  body: (let biased : Nat := (ScalarF32::add scaled bias); (let level : Nat := (prim subtract biased bias : Nat); (if (level <? limit) then level else limit))),
+  executable: true
+}
+
+definition{
+  name: laneCode,
+  parameters: [sample : Nat, minimum : Nat, inverse : Nat, limit : Nat],
+  result: Nat,
+  body: (let delta : Nat := (ScalarF32::add sample (ScalarF32::negate minimum)); (let scaled : Nat := (ScalarF32::multiply inverse delta); (roundedLevel scaled limit 1262485504))),
+  executable: true,
+  production: {effects: [overflow], targets: [rust-core]}
+}
+
+definition{
+  name: blockScale,
+  parameters: [largest : Nat, limit : Nat],
+  result: BlockScale,
+  body: (if (less 0 largest) then (let maxCode : Nat := (PackedWord::magnitudeBits limit); (let stored : Nat := (FloatStorage::narrowHalf (ScalarF32::divide largest maxCode)); (record BlockScale {inverse := (ScalarF32::divide maxCode largest), stored := stored, expanded := (FloatStorage::widenHalf stored)}))) else (record BlockScale {inverse := 0, stored := 0, expanded := 0})),
+  executable: true,
+  production: {effects: [overflow], targets: [rust-core]}
+}
+
+definition{
+  name: groupScale,
+  parameters: [value : Nat, inverse : Nat, base : Nat, limit : Nat],
+  result: GroupScale,
+  body: (let scaled : Nat := (ScalarF32::multiply value inverse); (let code : Nat := (roundedLevel scaled limit 1262485504); (record GroupScale {code := code, decoded := (ScalarF32::multiply base (PackedWord::magnitudeBits code))}))),
+  executable: true,
+  production: {effects: [overflow], targets: [rust-core]}
+}
+\end{semanticmodule}
+\end{lexlean}

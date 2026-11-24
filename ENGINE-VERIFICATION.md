@@ -467,3 +467,9 @@ All 16,787 bytes in 622 blocks matched the two original GGML encoders. The cases
 For each group of 16 lanes the certified plan compares the initial inverse scale and 18 neighboring trials. It ranks the squared weighted correlation in binary32 order, preserves the winning provisional coefficients when the stored group scale decodes to zero, and joins the low nibbles with the separate two-bit planes. Attestation `8ad7829da0bfdc0d89dbd75e0ed6bfce4df3b7af8ccec72f486f3625fc4ad055` binds the export.
 
 All 65,520 bytes in 312 blocks matched the original GGML Q6_K reference. The inputs cover sign ties, each impulse position, varied group magnitudes, zeros, scale underflow and the small-group cutoff. Short blocks and nonfinite lanes preserved the destination. Clearing the upper plane failed the original byte comparison. The source lift retained 585 lifted and 1,150 residual functions.
+
+## VTK-50 grouped affine block encoding
+
+The Q2_K, Q4_K and Q5_K encoders matched all 128,472 bytes from 318 blocks per format. The test calls the three reference quantizers in the pinned GGML source. Run it with `cargo test --locked -p verdant-tensor --lib grouped_affine_encoding_vtk_50`. [GGML reference quantizers](https://github.com/ggml-org/llama.cpp/blob/9a080f44b503c64f66c84a6274b9d9ee5d5b09d5/ggml/src/ggml-quants.c)
+
+The test binds both Prism exports to their compiled packages. Forcing the group scale limit to zero first changed Q2_K row 2. Restoring the limit passed the same byte comparisons. [Fitting and packing](app/src/GroupedAffineEncoding.lex.tex) · [Scale calculations](app/src/GroupedAffineScales.lex.tex)

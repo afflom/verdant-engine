@@ -825,10 +825,14 @@ dependencies = [
  "sha2 0.10.9",
  "uor-matmul",
  "verdant_add_f64",
+ "verdant_affine_block_scale",
  "verdant_affine_finite",
  "verdant_affine_fit",
  "verdant_affine_geometry",
+ "verdant_affine_group_scale",
  "verdant_affine_insert_field",
+ "verdant_affine_lane_code",
+ "verdant_affine_less",
  "verdant_affine_quantized",
  "verdant_affine_weight_fields",
  "verdant_bitpacked_product",
@@ -924,6 +928,10 @@ name = "verdant_add_f64"
 version = "2.9.0"
 
 [[package]]
+name = "verdant_affine_block_scale"
+version = "2.43.0"
+
+[[package]]
 name = "verdant_affine_finite"
 version = "2.43.0"
 
@@ -936,7 +944,19 @@ name = "verdant_affine_geometry"
 version = "2.43.0"
 
 [[package]]
+name = "verdant_affine_group_scale"
+version = "2.43.0"
+
+[[package]]
 name = "verdant_affine_insert_field"
+version = "2.43.0"
+
+[[package]]
+name = "verdant_affine_lane_code"
+version = "2.43.0"
+
+[[package]]
+name = "verdant_affine_less"
 version = "2.43.0"
 
 [[package]]

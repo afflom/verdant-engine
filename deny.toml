@@ -583,3 +583,27 @@ name = "verdant_affine_quantized"
 version = "=2.43.0"
 expression = "MIT OR Apache-2.0"
 license-files = [{ path = "src/lib.rs", hash = 0xb11fef40 }]
+
+[[licenses.clarify]]
+name = "verdant_affine_block_scale"
+version = "=2.43.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0x84fd1597 }]
+
+[[licenses.clarify]]
+name = "verdant_affine_group_scale"
+version = "=2.43.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0x8673fd29 }]
+
+[[licenses.clarify]]
+name = "verdant_affine_lane_code"
+version = "=2.43.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0xc1fc8df7 }]
+
+[[licenses.clarify]]
+name = "verdant_affine_less"
+version = "=2.43.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0x79d96ef0 }]

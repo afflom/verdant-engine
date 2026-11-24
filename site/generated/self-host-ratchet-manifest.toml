@@ -4,8 +4,8 @@ spec = "verdant/self-host-ratchet-manifest/1"
 generator = "verdant-operator-ratchet-lift"
 version = "2.20.1"
 release_epoch = 25
-source_commit_kappa = "991f7ff87580c33a9db5f9614c1ce8fd9ab635866c77ac7072847c0f40d354e0"
-source_tree_root_sha256 = "5631548a6825feb0ddfe84fecc936720c7e0969ba24c6b75f02ee4c6de3d2fbc"
+source_commit_kappa = "af97a6d12081a0114d66bd45d4e616cbe5ba36c2ad184b4bdcdfdd2eb929de8a"
+source_tree_root_sha256 = "ad3356eeab2edd4b6a471e7bf5bd02a0c23141dacceb1ea2bfbd9f036416ccf9"
 immutability_seal_root_sha256 = "ff27e435bc87dd92265d726d126b19aa8c75e1b9a735b9cbaca111234c5bf4d7"
 release_capsule_sha256 = "ba21ba18bd7f474dc98bd8d8057d04ef98b587b1ba0b1fbc96aba112e85ecc15"
 unlifted_ui_files = 0
@@ -396,7 +396,7 @@ sha256 = "e21837e93cfcc1f091997dd43393746f4d2d55a9d0b762b4db35090c7f49d5f7"
 [[lifted_module]]
 path = "crates/verdant-tensor/src/linear/grouped_affine_encoding.rs"
 category = "rust"
-sha256 = "250eea2ef92a281f5bb1cad99f694e7784502ebe9f2ac0346ad9bf71e7af2b71"
+sha256 = "957ed03cc2c3397595c3bddc12b96b2def7966ae2e2f9edc12e481a8f3510ceb"
 
 [[lifted_module]]
 path = "crates/verdant-tensor/src/linear/grouped_product.rs"
@@ -777,6 +777,11 @@ sha256 = "3f1e6727bd61689b87b04875d719827fcb8a16b236a68d6d0893cfa9c11a14f0"
 path = "app/src/GroupedAffineProduct.lex.tex"
 category = "lexlean"
 sha256 = "0fe1c546df638d6ff0e006da9577b6472af19d4debcbbee5805d197885d0183b"
+
+[[lifted_module]]
+path = "app/src/GroupedAffineScales.lex.tex"
+category = "lexlean"
+sha256 = "f4ec7c6b088b787d9333aa0bec3300766b88bb5c6aa0426b84e530f3ed392979"
 
 [[lifted_module]]
 path = "app/src/GroupedBlock.lex.tex"

@@ -1,10 +1,9 @@
 //! Execute the certified grouped affine fitting and bit placement plans.
-use super::{
-    convert_float_storage, encode_small_integer, evaluate_encoded_word, evaluate_f32_scalar,
-};
+use super::{convert_float_storage, encode_small_integer, evaluate_f32_scalar};
 use crate::{scalars, TensorComputeError};
 use verdant_affine_fit::{Adt0 as Program, Adt1 as Instruction};
 use verdant_affine_geometry::Adt0 as Format;
+use verdant_affine_less::run as less;
 
 const REGISTERS: usize = scalars::eight_u64() as usize + 1;
 const GROUPS: usize = scalars::sixteen_u64() as usize;
@@ -15,13 +14,6 @@ fn invalid() -> TensorComputeError {
     TensorComputeError::InvalidKernelSpecification {
         kernel_name: "GroupedAffineEncoding".into(),
     }
-}
-
-fn less(a: u64, b: u64) -> Result<bool, TensorComputeError> {
-    Ok(evaluate_encoded_word(0, a, b)
-        .map_err(|_| invalid())?
-        .ok_or_else(invalid)?
-        == 0)
 }
 
 struct Fit {
@@ -83,10 +75,6 @@ impl Fit {
         unreachable!()
     }
 
-    fn code(&self, x: u64, minimum: u64, inverse: u64) -> Result<u64, TensorComputeError> {
-        Ok(self.calculate(Program::C6, &[x, minimum, inverse, self.level_max])?[0])
-    }
-
     fn error(
         &self,
         values: &[u64],
@@ -109,10 +97,10 @@ impl Fit {
         let mut maximum = minimum;
         let mut sum_squares = 0;
         for &x in values {
-            if less(x, minimum)? {
+            if less(x, minimum) {
                 minimum = x;
             }
-            if less(maximum, x)? {
+            if less(maximum, x) {
                 maximum = x;
             }
             if self.bits != scalars::two_u64() {
@@ -124,14 +112,14 @@ impl Fit {
         } else {
             self.calculate(Program::C1, &[sum_squares])?[0]
         };
-        if less(0, minimum)? {
+        if less(0, minimum) {
             minimum = 0;
         }
         let negate = |x| {
             evaluate_f32_scalar(u64::from(scalars::six_u32()), f32::from_bits(x as u32), 0.0)
                 .map(|v| u64::from(v.to_bits()))
         };
-        if !less(minimum, maximum)? {
+        if !less(minimum, maximum) {
             codes.fill(0);
             return Ok((0, negate(minimum)?));
         }
@@ -146,7 +134,8 @@ impl Fit {
         let [inverse, mut scale, ..] =
             self.calculate(Program::C4, &[maximum, minimum, self.level_max])?;
         for (&x, code) in values.iter().zip(codes.iter_mut()) {
-            *code = self.code(x, minimum, inverse)?;
+            *code = verdant_affine_lane_code::run(x, minimum, inverse, self.level_max)
+                .map_err(|_| invalid())?;
         }
         let mut best = self.error(values, &weights, codes, scale, minimum)?;
         let mut candidate = [0; WIDTH];
@@ -155,49 +144,29 @@ impl Fit {
                 self.calculate(Program::C5, &[maximum, minimum, trial, self.level_max])?;
             let (mut sum_l, mut sum_l2, mut sum_xl) = (0, 0, 0);
             for ((&x, &w), slot) in values.iter().zip(&weights).zip(&mut candidate) {
-                *slot = self.code(x, minimum, inverse)?;
+                *slot = verdant_affine_lane_code::run(x, minimum, inverse, self.level_max)
+                    .map_err(|_| invalid())?;
                 let [_, _, _, l, ll, xl, ..] =
                     self.calculate(Program::C7, &[x, w, *slot, sum_l, sum_l2, sum_xl])?;
                 (sum_l, sum_l2, sum_xl) = (l, ll, xl);
             }
             let [det, ..] = self.calculate(Program::C8, &[sum_w, sum_l, sum_l2])?;
-            if !less(0, det)? {
+            if !less(0, det) {
                 continue;
             }
             let [_, _, _, _, _, _, mut slope, mut intercept, ..] =
                 self.calculate(Program::C9, &[sum_w, sum_x, sum_l, sum_l2, sum_xl, det])?;
-            if less(0, intercept)? {
+            if less(0, intercept) {
                 intercept = 0;
                 slope = self.calculate(Program::C10, &[sum_xl, sum_l2])?[0];
             }
             let error = self.error(values, &weights, &candidate, slope, intercept)?;
-            if less(error, best)? {
+            if less(error, best) {
                 (best, scale, minimum) = (error, slope, intercept);
                 codes.copy_from_slice(&candidate[..codes.len()]);
             }
         }
         Ok((scale, negate(minimum)?))
-    }
-
-    fn scale(&self, largest: u64, max_code: u64) -> Result<(u64, u64, u64), TensorComputeError> {
-        if !less(0, largest)? {
-            return Ok((0, 0, 0));
-        }
-        let [_, inverse, half, expanded, ..] =
-            self.calculate(Program::C12, &[largest, max_code])?;
-        Ok((inverse, half, expanded))
-    }
-
-    fn assign(
-        &self,
-        value: u64,
-        inverse: u64,
-        base: u64,
-        max_code: u64,
-    ) -> Result<(u64, u64), TensorComputeError> {
-        let [code, ..] = self.calculate(Program::C13, &[value, inverse, max_code])?;
-        let [local, ..] = self.calculate(Program::C14, &[base, code])?;
-        Ok((code, local))
     }
 }
 
@@ -235,26 +204,30 @@ pub(super) fn encode(
         .zip(&mut group_mins)
     {
         (*scale, *minimum) = fit.group(xs, codes)?;
-        if less(largest_scale, *scale)? {
+        if less(largest_scale, *scale) {
             largest_scale = *scale;
         }
-        if less(largest_min, *minimum)? {
+        if less(largest_min, *minimum) {
             largest_min = *minimum;
         }
     }
-    let (iscale, half_scale, scale) = fit.scale(largest_scale, max_code)?;
-    let (imin, half_min, minimum) = fit.scale(largest_min, max_code)?;
+    let verdant_affine_block_scale::Adt0::C0(iscale, half_scale, scale) =
+        verdant_affine_block_scale::run(largest_scale, max_code).map_err(|_| invalid())?;
+    let verdant_affine_block_scale::Adt0::C0(imin, half_min, minimum) =
+        verdant_affine_block_scale::run(largest_min, max_code).map_err(|_| invalid())?;
     for (((xs, codes), sc), mn) in values
         .chunks_exact(width)
         .zip(levels.chunks_exact_mut(width))
         .zip(&mut group_scales)
         .zip(&mut group_mins)
     {
-        let (code, unit) = fit.assign(*sc, iscale, scale, max_code)?;
+        let verdant_affine_group_scale::Adt0::C0(code, unit) =
+            verdant_affine_group_scale::run(*sc, iscale, scale, max_code).map_err(|_| invalid())?;
         *sc = code;
-        let (code, offset) = fit.assign(*mn, imin, minimum, max_code)?;
+        let verdant_affine_group_scale::Adt0::C0(code, offset) =
+            verdant_affine_group_scale::run(*mn, imin, minimum, max_code).map_err(|_| invalid())?;
         *mn = code;
-        if less(0, unit)? {
+        if less(0, unit) {
             for (&x, c) in xs.iter().zip(codes) {
                 *c = fit.calculate(Program::C15, &[x, unit, offset, level_max])?[0];
             }
