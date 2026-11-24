@@ -95,7 +95,10 @@ pub fn encode_weight_block<I: AsRef<[f32]> + ?Sized>(
     use PackedWeightEncoding::*;
     let input = input.as_ref();
     let kind = kind.into();
-    if matches!(kind, ImportanceThreeCompact | ImportanceThree | ImportanceTwo) {
+    if matches!(
+        kind,
+        ImportanceThreeCompact | ImportanceThree | ImportanceTwo
+    ) {
         return super::encode_importance_weight_block(input, None, kind, output);
     }
     let affine = match kind {
