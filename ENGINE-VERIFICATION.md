@@ -520,6 +520,6 @@ The test `importance_grid_three_encoding_vtk_56` compared 67,392 bytes from 648 
 
 ## Gated delta projection (VTK-57)
 
-The certified DeltaRule program defines binary32 state decay, residual gain, rank-one correction and score normalization. Its exported result is `blake3:6164a7d7f5dbd352a7511785e0cd89b914173c7f920f2f234047a3b5b12f7963`. The engine uses the existing Verdant exponential and matrix product for each step. Callers own graph layouts and snapshot placement.
+The certified DeltaRule program defines binary32 state decay, residual gain, rank-one correction and score normalization. The shared tensor bundle exports it in `blake3:0d4e70cd12a6f058610ba907ea6350ba880233e412e88c02b014a11aeab5af56`. VE-80 rejected a separate fourth scope. The corrected export uses the existing tensor project and the once-per-process certificate verifier. The engine uses the existing Verdant exponential and matrix product for each step. Callers own graph layouts and snapshot placement.
 
 The test `gated_delta_projection_vtk_57` compared 34,218 scores and state entries from 33 steps with the pinned GGML CPU implementation. It covers widths 1, 3, 8, 16, 32 and 65, scalar and per-coordinate decay, and repeated updates. Each word passed an absolute tolerance of one millionth times one plus the absolute reference value. Invalid vector, matrix, output and scratch lengths preserved both outputs. Reversing the residual sign failed at the first score, −0.17103513 versus −0.28787768. Restoring the certified correction passed.

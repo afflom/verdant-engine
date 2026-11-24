@@ -1408,7 +1408,7 @@ fn verify_bundle(scope: &str, directory: &str) -> std::collections::BTreeMap<Str
             );
             if path == format!("packages/rust-core/{package}/src/lib.rs") {
                 let compiled: &[u8] = match package {
-                    "verdant_delta_rule" => include_bytes!("../../../../generated/tensor-delta/packages/rust-core/verdant_delta_rule/src/lib.rs"),
+                    "verdant_delta_rule" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_delta_rule/src/lib.rs"),
                     "verdant_signed_truncation" => include_bytes!("../../../../generated/tensor-encoding/packages/rust-core/verdant_signed_truncation/src/lib.rs"),
                     "verdant_matrix_shape" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_matrix_shape/src/lib.rs"),
                     "verdant_scalar_f32" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_scalar_f32/src/lib.rs"),
@@ -3399,12 +3399,7 @@ fn nonlinear_four_encoding_vtk_53() {
 #[test]
 fn gated_delta_projection_vtk_57() {
     use std::fmt::Write as _;
-    assert_eq!(
-        verify_bundle("delta", "tensor-delta")
-            .get("VerdantEngine.DeltaRule.evaluate")
-            .map(String::as_str),
-        Some("verdant_delta_rule")
-    );
+    certified_model("verdant_delta_rule", "VerdantEngine.DeltaRule.evaluate");
     let mut requests = String::new();
     let mut observed = Vec::new();
     for width in [1_usize, 3, 8, 16, 32, 65] {
