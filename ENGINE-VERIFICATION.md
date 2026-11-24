@@ -523,3 +523,9 @@ The test `importance_grid_three_encoding_vtk_56` compared 67,392 bytes from 648 
 The certified DeltaRule program defines binary32 state decay, residual gain, rank-one correction and score normalization. Its exported result is `blake3:6164a7d7f5dbd352a7511785e0cd89b914173c7f920f2f234047a3b5b12f7963`. The engine uses the existing Verdant exponential and matrix product for each step. Callers own graph layouts and snapshot placement.
 
 The test `gated_delta_projection_vtk_57` compared 34,218 scores and state entries from 33 steps with the pinned GGML CPU implementation. It covers widths 1, 3, 8, 16, 32 and 65, scalar and per-coordinate decay, and repeated updates. Each word passed an absolute tolerance of one millionth times one plus the absolute reference value. Invalid vector, matrix, output and scratch lengths preserved both outputs. Reversing the residual sign failed at the first score, −0.17103513 versus −0.28787768. Restoring the certified correction passed.
+
+## Selective state projection (VTK-58)
+
+Verdant advances and projects a rectangular state using its certified scalar, softplus, exponential and matrix kernels. VTK-58 compared 26,040 scores and state entries in 135 steps with the pinned GGML CPU implementation. Both scalar and per-coordinate transitions were exercised across five state widths, three row counts and time increments on either side of the softplus cutoff. Seven invalid extent and capacity checks preserve both caller-owned buffers. Substituting the drive for the time-scaled drive failed the first CPU comparison at 0.3763304 versus 0.34205195. The restored step passed.
+
+The existing RNG seed uses checked remainder with its constructive divisor of two. Its newly lifted initialization preserves the odd-seed rule. All prior lifted identities remain present, with 589 lifted functions, 1,150 residue functions and 1,302 uncertified functions.

@@ -867,3 +867,9 @@ Feature: engine
     Given a square projection state and a stream of query, key and value vectors
     When scalar or per-coordinate log decay and a residual gain are applied
     Then the new state and scaled projection agree with the independent CPU and invalid extents preserve the previous state
+
+  @VTK-58 @build
+  Scenario: A diagonal state recurrence with scalar or per-coordinate transition matches GGML CPU across repeated inputs
+    Given a rectangular state, input, step, transition, injection and readout vectors
+    When the state is updated with softplus time and projected after each input
+    Then state and scores match the independent CPU and a refused extent leaves both intact

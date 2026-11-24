@@ -308,6 +308,33 @@ int main(int argc, char **argv) {
     }
     return std::feof(stdin) ? 0 : 2;
   }
+  if (!std::strcmp(argv[1], "selective-step")) {
+    int cols, rows, transitions;
+    while(std::scanf("%d %d %d",&cols,&rows,&transitions)==3) {
+      if(cols<1 || rows<1 || cols>256 || rows>64 || (transitions!=1 && transitions!=cols)) return 2;
+      auto ctx=ggml_init({2u<<20,nullptr,false});
+      auto state=ggml_new_tensor_2d(ctx,GGML_TYPE_F32,cols,rows);
+      auto input=ggml_new_tensor_1d(ctx,GGML_TYPE_F32,rows);
+      auto dt=ggml_new_tensor_1d(ctx,GGML_TYPE_F32,1);
+      auto transition=ggml_new_tensor_1d(ctx,GGML_TYPE_F32,transitions);
+      auto inject=ggml_new_tensor_1d(ctx,GGML_TYPE_F32,cols);
+      auto readout=ggml_dup_tensor(ctx,inject);
+      auto ids=ggml_new_tensor_1d(ctx,GGML_TYPE_I32,1);
+      ggml_set_i32_1d(ids,0,0);
+      for(auto t:{state,input,dt,transition,inject,readout}) for(int i=0;i<ggml_nelements(t);++i) {
+        unsigned bits;if(std::scanf("%u",&bits)!=1) return 2;
+        std::memcpy(static_cast<float *>(t->data)+i,&bits,4);
+      }
+      auto out=ggml_ssm_scan(ctx,state,input,dt,transition,inject,readout,ids,1);
+      auto graph=ggml_new_graph_custom(ctx,32,false);ggml_build_forward_expand(graph,out);
+      if(ggml_graph_compute_with_ctx(ctx,graph,1)!=GGML_STATUS_SUCCESS) return 3;
+      for(int i=0;i<ggml_nelements(out);++i) {
+        unsigned bits;std::memcpy(&bits,static_cast<float *>(out->data)+i,4);std::printf("%u\n",bits);
+      }
+      ggml_free(ctx);
+    }
+    return std::feof(stdin)?0:2;
+  }
   if (!std::strcmp(argv[1], "delta-rule")) {
     int width, gates;
     while (std::scanf("%d %d",&width,&gates)==2) {
@@ -3847,5 +3874,120 @@ fn binary32_signed_truncation_vtk_51() {
         0x1_0000_0000,
     ] {
         assert_eq!(super::truncate_signed_word_f32(invalid).unwrap(), None);
+    }
+}
+
+#[test]
+fn selective_state_projection_vtk_58() {
+    use super::{selective_state_step_f32, SelectiveStateInput};
+    use std::fmt::Write;
+    let mut requests = String::new();
+    let mut actual = Vec::new();
+    for cols in [1_usize, 3, 16, 65, 128] {
+        for rows in [1, 3, 8] {
+            for n in [1, cols].into_iter().skip(usize::from(cols == 1)) {
+                let vector = |count: usize, salt: usize| {
+                    (0..count)
+                        .map(|i| (((i * 13 + salt * 7) % 31) as f32 - 15.0) / 16.0)
+                        .collect::<Vec<_>>()
+                };
+                let mut state = vector(cols * rows, 1);
+                let mut scores = vec![0.0; rows];
+                let mut scratch = vec![0.0; cols * rows + cols + rows];
+                for (step, dt) in [-4.0, 0.0, 0.75, 20.0, 21.0].into_iter().enumerate() {
+                    let x = vector(rows, step + 2);
+                    let a: Vec<_> = vector(n, step + 3)
+                        .iter()
+                        .map(|value| -value.abs())
+                        .collect();
+                    let b = vector(cols, step + 4);
+                    let c = vector(cols, step + 5);
+                    writeln!(requests, "{cols} {rows} {n}").unwrap();
+                    for data in [&*state, &x, &[dt], &a, &b, &c] {
+                        for value in data {
+                            writeln!(requests, "{}", value.to_bits()).unwrap();
+                        }
+                    }
+                    let input = SelectiveStateInput {
+                        drive: &x,
+                        time_step: dt,
+                        transition: &a,
+                        injection: &b,
+                        readout: &c,
+                    };
+                    selective_state_step_f32(input, &mut state, &mut scores, &mut scratch).unwrap();
+                    actual.extend_from_slice(&scores);
+                    actual.extend_from_slice(&state);
+                }
+            }
+        }
+    }
+    let values = [0.25_f32; 3];
+    let input = SelectiveStateInput {
+        drive: &values[..2],
+        time_step: 0.75,
+        transition: &values,
+        injection: &values,
+        readout: &values,
+    };
+    for (bad, cells, rows, capacity) in [
+        (
+            SelectiveStateInput {
+                drive: &[],
+                ..input
+            },
+            6,
+            2,
+            11,
+        ),
+        (
+            SelectiveStateInput {
+                injection: &[],
+                ..input
+            },
+            6,
+            2,
+            11,
+        ),
+        (
+            SelectiveStateInput {
+                readout: &values[..2],
+                ..input
+            },
+            6,
+            2,
+            11,
+        ),
+        (
+            SelectiveStateInput {
+                transition: &values[..2],
+                ..input
+            },
+            6,
+            2,
+            11,
+        ),
+        (input, 5, 2, 11),
+        (input, 6, 1, 11),
+        (input, 6, 2, 10),
+    ] {
+        let (mut state, mut scores, mut scratch) = ([2.0; 6], [3.0; 2], [0.0; 11]);
+        assert!(selective_state_step_f32(
+            bad,
+            &mut state[..cells],
+            &mut scores[..rows],
+            &mut scratch[..capacity]
+        )
+        .is_err());
+        assert_eq!((state, scores), ([2.0; 6], [3.0; 2]));
+    }
+    let expected = query_oracle("selective-step", requests);
+    assert_eq!(expected.len(), actual.len());
+    for (i, (word, value)) in expected.into_iter().zip(actual).enumerate() {
+        let reference = f32::from_bits(word);
+        assert!(
+            (reference - value).abs() <= 3e-6 * (1.0 + reference.abs()),
+            "word {i}: {value} vs {reference}"
+        );
     }
 }

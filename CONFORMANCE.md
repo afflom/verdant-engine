@@ -157,6 +157,7 @@ model does not sanction.
 | `VTK-55` | `build` | A certified binary32 exponential increment preserves tiny signed operands and agrees with the C and GGML oracles |
 | `VTK-56` | `build` | Verdant encodes four-lane three-bit importance grids into packed weight blocks matching the imported CPU quantizers |
 | `VTK-57` | `build` | A certified gated delta rule updates binary32 projection state and scores against the imported GGML CPU |
+| `VTK-58` | `build` | A diagonal state recurrence with scalar or per-coordinate transition matches GGML CPU across repeated inputs |
 
 ## fidelity
 

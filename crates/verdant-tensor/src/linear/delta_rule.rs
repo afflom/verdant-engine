@@ -1,6 +1,9 @@
 //! Decayed rank-one state updates with scaled query projection.
 
-use super::{exponential_f32, multiply_matrix_rows_f32, TensorComputeError};
+use super::{
+    evaluate_f32_scalar, exponential_f32, multiply_matrix_rows_f32, softplus_f32,
+    TensorComputeError,
+};
 
 /// Inputs for one time step of a decayed rank-one update and query projection.
 #[derive(Clone, Copy)]
@@ -96,5 +99,87 @@ pub fn gated_delta_step_f32(
     }
     state.copy_from_slice(next);
     scores.copy_from_slice(factors);
+    Ok(())
+}
+
+/// Input, continuous-time diagonal transition and readout for one state-space step.
+#[derive(Clone, Copy)]
+pub struct SelectiveStateInput<'a> {
+    /// One drive value per state row.
+    pub drive: &'a [f32],
+    /// Unconstrained time increment before softplus.
+    pub time_step: f32,
+    /// A scalar transition, or one coefficient per state column.
+    pub transition: &'a [f32],
+    /// Input weights across state columns.
+    pub injection: &'a [f32],
+    /// Output weights across state columns.
+    pub readout: &'a [f32],
+}
+
+/// Advance a row-major rectangular state and project each new row onto the readout.
+/// Scratch requires one matrix, one column vector and one row vector.
+///
+/// # Errors
+/// Refused extents or failed arithmetic preserve the state and projected output.
+pub fn selective_state_step_f32(
+    input: SelectiveStateInput<'_>,
+    state: &mut [f32],
+    scores: &mut [f32],
+    scratch: &mut [f32],
+) -> Result<(), TensorComputeError> {
+    let extent = || TensorComputeError::ZeroOrMismatchedExtents {
+        detail: "selective state projection extents".into(),
+    };
+    let rows = input.drive.len();
+    let cols = input.injection.len();
+    let cells = rows.checked_mul(cols).ok_or_else(extent)?;
+    let needed = cells
+        .checked_add(cols)
+        .and_then(|size| size.checked_add(rows))
+        .ok_or_else(extent)?;
+    if rows == 0
+        || cols == 0
+        || state.len() != cells
+        || scores.len() != rows
+        || input.readout.len() != cols
+        || (input.transition.len() != 1 && input.transition.len() != cols)
+    {
+        return Err(extent());
+    }
+    let (next, vectors) = scratch
+        .get_mut(..needed)
+        .ok_or_else(extent)?
+        .split_at_mut(cells);
+    let (factors, projected) = vectors.split_at_mut(cols);
+    let multiply = |a, b| evaluate_f32_scalar(crate::scalars::two_u64(), a, b);
+    let dt = softplus_f32(input.time_step)?;
+    let factor = |a| exponential_f32(multiply(dt, a)?);
+    if let [a] = input.transition {
+        factors.fill(factor(*a)?);
+    } else {
+        for (out, &a) in factors.iter_mut().zip(input.transition) {
+            *out = factor(a)?;
+        }
+    }
+    for ((prior, updated), &x) in state
+        .chunks_exact(cols)
+        .zip(next.chunks_exact_mut(cols))
+        .zip(input.drive)
+    {
+        let drive = multiply(x, dt)?;
+        for (((out, &s), &decay), &b) in updated
+            .iter_mut()
+            .zip(prior)
+            .zip(&*factors)
+            .zip(input.injection)
+        {
+            let decayed = multiply(s, decay)?;
+            *out = evaluate_f32_scalar(0, decayed, multiply(b, drive)?)?;
+        }
+    }
+    multiply_matrix_rows_f32(rows, cols, 1, next, input.readout, projected)?;
+    state.copy_from_slice(next);
+    scores.copy_from_slice(projected);
     Ok(())
 }

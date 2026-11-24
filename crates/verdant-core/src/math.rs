@@ -861,10 +861,9 @@ impl DeterministicRng {
     #[must_use]
     pub const fn new(seed: u64) -> Self {
         let two = 1_u64.wrapping_add(1_u64);
-        let odd_seed = if seed.wrapping_rem(two) == 0 {
-            seed.wrapping_add(1_u64)
-        } else {
-            seed
+        let odd_seed = match seed.checked_rem(two) {
+            Some(0) => seed.wrapping_add(1),
+            _ => seed,
         };
         DeterministicRng {
             state: odd_seed,
