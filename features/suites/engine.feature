@@ -843,3 +843,9 @@ Feature: engine
     Given finite weights and a nonlinear codebook representation
     When Verdant fits and packs the coefficients and scales
     Then the encoded blocks agree with their imported GGML reference
+
+  @VTK-54 @build
+  Scenario: Verdant evaluates the binary32 error function and its Gaussian activation against the imported GGML CPU
+    Given binary32 words at approximation boundaries and across the exponent range
+    When the verified scalar path evaluates the error function and Gaussian activation
+    Then the results agree with the error function used by the pinned GGML CPU kernel

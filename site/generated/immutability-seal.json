@@ -2,7 +2,7 @@
   "spec": "verdant/view-immutability-seal/1",
   "owningManager": "mgr-observer-executive",
   "managerKappaHex": "28737a197775fb8dec24f0af4df3bfd041964a4b82c96f8aa2bcecf9c236b58b",
-  "sealRootSha256Hex": "6180a5f7213f0dcc34d81709f7b32a9d5e5ea035d441b20483bfd2857f650577",
+  "sealRootSha256Hex": "705e478170d676502e9dd86f2e4c77e67d2df7df1a84e52bc94e717541d26d8e",
   "files": [
     {
       "path": "site/card.html",
@@ -16,7 +16,7 @@
       ],
       "bytes": 3741,
       "sha256Hex": "ef72c4fc98f86906f68900e350a42ce3e08db8fe34d61d4bb8f94cbd5a0cf21c",
-      "lastDirectiveKappaHex": "8a28064039f232fa86d46cbc062ab56adf459e85cdc9ee82cf8f5247b5a71244"
+      "lastDirectiveKappaHex": "422a0a6d6a16c1eddb49ce4296a1ad8e6049654704f08b71817e316950de1137"
     },
     {
       "path": "site/studio/index.html",
@@ -31,7 +31,7 @@
       ],
       "bytes": 50754,
       "sha256Hex": "9dcacd2509f5e14432e0a8081f0d0ee299a5cae519cea4363fd926cad48cecb6",
-      "lastDirectiveKappaHex": "8a28064039f232fa86d46cbc062ab56adf459e85cdc9ee82cf8f5247b5a71244"
+      "lastDirectiveKappaHex": "422a0a6d6a16c1eddb49ce4296a1ad8e6049654704f08b71817e316950de1137"
     },
     {
       "path": "site/catalogs/index.html",
@@ -45,7 +45,7 @@
       ],
       "bytes": 24632,
       "sha256Hex": "5146f724157b8017cf3c55c80463095ea3d49fd9ef99ed74586968378a61cee2",
-      "lastDirectiveKappaHex": "8a28064039f232fa86d46cbc062ab56adf459e85cdc9ee82cf8f5247b5a71244"
+      "lastDirectiveKappaHex": "422a0a6d6a16c1eddb49ce4296a1ad8e6049654704f08b71817e316950de1137"
     },
     {
       "path": "site/demo/index.html",
@@ -58,7 +58,7 @@
       ],
       "bytes": 23908,
       "sha256Hex": "47f8a3cfad9df9d5ca59ea91555d07c56d17fde9238641d1a99f1e7951fcc2fb",
-      "lastDirectiveKappaHex": "8a28064039f232fa86d46cbc062ab56adf459e85cdc9ee82cf8f5247b5a71244"
+      "lastDirectiveKappaHex": "422a0a6d6a16c1eddb49ce4296a1ad8e6049654704f08b71817e316950de1137"
     },
     {
       "path": "site/docs/index.html",
@@ -70,7 +70,7 @@
       ],
       "bytes": 48608,
       "sha256Hex": "b92c91212022c9cab1ae10a81717706da0c715342356b10997f6f080cf919be7",
-      "lastDirectiveKappaHex": "8a28064039f232fa86d46cbc062ab56adf459e85cdc9ee82cf8f5247b5a71244"
+      "lastDirectiveKappaHex": "422a0a6d6a16c1eddb49ce4296a1ad8e6049654704f08b71817e316950de1137"
     },
     {
       "path": "templates/browser-3d-starter/index.html",
@@ -83,7 +83,7 @@
       ],
       "bytes": 9867,
       "sha256Hex": "88cc179d3c52e038ecfce5a3d36342b61fb9dd8005bda7b3f80de2da5f4aabd6",
-      "lastDirectiveKappaHex": "8a28064039f232fa86d46cbc062ab56adf459e85cdc9ee82cf8f5247b5a71244"
+      "lastDirectiveKappaHex": "422a0a6d6a16c1eddb49ce4296a1ad8e6049654704f08b71817e316950de1137"
     },
     {
       "path": "site/generated/viewpoint-contracts.json",
@@ -96,7 +96,7 @@
       ],
       "bytes": 29812,
       "sha256Hex": "a40a9c543fe101cccf886a6f3a21c0251956c867948ac25403c6a4b120bf8025",
-      "lastDirectiveKappaHex": "8a28064039f232fa86d46cbc062ab56adf459e85cdc9ee82cf8f5247b5a71244"
+      "lastDirectiveKappaHex": "422a0a6d6a16c1eddb49ce4296a1ad8e6049654704f08b71817e316950de1137"
     },
     {
       "path": "site/generated/experience-design-system.json",
@@ -108,7 +108,7 @@
       ],
       "bytes": 3595,
       "sha256Hex": "fbda0451c17376450559c31d2a8f34daf4327ec4e1cf9f1e25cbdc5d2183cb01",
-      "lastDirectiveKappaHex": "8a28064039f232fa86d46cbc062ab56adf459e85cdc9ee82cf8f5247b5a71244"
+      "lastDirectiveKappaHex": "422a0a6d6a16c1eddb49ce4296a1ad8e6049654704f08b71817e316950de1137"
     },
     {
       "path": "site/generated/studio-experience.css",
@@ -120,7 +120,7 @@
       ],
       "bytes": 10344,
       "sha256Hex": "41753200567bbc6f449dbb755df54d105048ee85d57fb0a32746a6b9bb9c3351",
-      "lastDirectiveKappaHex": "8a28064039f232fa86d46cbc062ab56adf459e85cdc9ee82cf8f5247b5a71244"
+      "lastDirectiveKappaHex": "422a0a6d6a16c1eddb49ce4296a1ad8e6049654704f08b71817e316950de1137"
     },
     {
       "path": "site/generated/world-differentiation-profiles.json",
@@ -133,7 +133,7 @@
       ],
       "bytes": 4481,
       "sha256Hex": "71f99e05af173a5ac8c00e2739882c9efcca043bf2b84c80d338dea3e24dfb6d",
-      "lastDirectiveKappaHex": "8a28064039f232fa86d46cbc062ab56adf459e85cdc9ee82cf8f5247b5a71244"
+      "lastDirectiveKappaHex": "422a0a6d6a16c1eddb49ce4296a1ad8e6049654704f08b71817e316950de1137"
     },
     {
       "path": "site/generated/stitch-app-catalog.json",
@@ -147,7 +147,7 @@
       ],
       "bytes": 5493,
       "sha256Hex": "ba4b44ff0da7d8d9efd6cabb5c742bdee0a546883ee0c0809a9d126021add273",
-      "lastDirectiveKappaHex": "8a28064039f232fa86d46cbc062ab56adf459e85cdc9ee82cf8f5247b5a71244"
+      "lastDirectiveKappaHex": "422a0a6d6a16c1eddb49ce4296a1ad8e6049654704f08b71817e316950de1137"
     },
     {
       "path": "site/generated/tensor-scaling-contract.json",
@@ -161,7 +161,7 @@
       ],
       "bytes": 4118,
       "sha256Hex": "409462b3a8252ba4a0be504a5ab3a2eb93ffd498435ef9d96bd050a0d6278c5e",
-      "lastDirectiveKappaHex": "8a28064039f232fa86d46cbc062ab56adf459e85cdc9ee82cf8f5247b5a71244"
+      "lastDirectiveKappaHex": "422a0a6d6a16c1eddb49ce4296a1ad8e6049654704f08b71817e316950de1137"
     },
     {
       "path": "site/generated/release-ledger.json",
@@ -172,9 +172,9 @@
         "AUTH-STITCH-SELF-HOSTING",
         "AUTH-ISO-42010-VIEWPOINTS"
       ],
-      "bytes": 9637,
-      "sha256Hex": "1af48b33f21bd8f181fb2d1f80bacab0c0f2f111c62403f4b9cfee097a759ce6",
-      "lastDirectiveKappaHex": "8a28064039f232fa86d46cbc062ab56adf459e85cdc9ee82cf8f5247b5a71244"
+      "bytes": 9876,
+      "sha256Hex": "3b5d40e8077b4083f953e50677a8b435986838f9d74fdff1c895985242d8a8de",
+      "lastDirectiveKappaHex": "422a0a6d6a16c1eddb49ce4296a1ad8e6049654704f08b71817e316950de1137"
     },
     {
       "path": "site/generated/roadmap-kpi-report.json",
@@ -185,8 +185,8 @@
         "AUTH-ISO-42010-VIEWPOINTS"
       ],
       "bytes": 44656,
-      "sha256Hex": "f1529a14773f936f1b78c403f0e6a626cd1201ce62af3760d91052101ae0d9c2",
-      "lastDirectiveKappaHex": "8a28064039f232fa86d46cbc062ab56adf459e85cdc9ee82cf8f5247b5a71244"
+      "sha256Hex": "414b8e8b5695ea10dbaa541bfa6c7648c9c3422be40a8c6396ba85c9af745f9d",
+      "lastDirectiveKappaHex": "422a0a6d6a16c1eddb49ce4296a1ad8e6049654704f08b71817e316950de1137"
     },
     {
       "path": "site/generated/observer-refinement-agenda.json",
@@ -198,8 +198,8 @@
         "AUTH-SEMVER-CHANGE-KPI"
       ],
       "bytes": 8501,
-      "sha256Hex": "d54d9962b064138e92cc960cc11fba04ab72b962360743792e1c44e4582a636d",
-      "lastDirectiveKappaHex": "8a28064039f232fa86d46cbc062ab56adf459e85cdc9ee82cf8f5247b5a71244"
+      "sha256Hex": "abad4f6e7e0778ff58d409fa8b3c999137bdaff3008bb3b1d47cae1f586f120b",
+      "lastDirectiveKappaHex": "422a0a6d6a16c1eddb49ce4296a1ad8e6049654704f08b71817e316950de1137"
     },
     {
       "path": "site/generated/lifecycle-gate-report.json",
@@ -211,8 +211,8 @@
         "AUTH-SEMVER-CHANGE-KPI"
       ],
       "bytes": 2108,
-      "sha256Hex": "e3a951117ae7d94e7cc83a5b49d9f7cd1a604910c52a7dac547294ebf1e6ce13",
-      "lastDirectiveKappaHex": "8a28064039f232fa86d46cbc062ab56adf459e85cdc9ee82cf8f5247b5a71244"
+      "sha256Hex": "03169ceb7603f7cdf23f951e27541fa4d88bfe056feca018ac721c7578affea9",
+      "lastDirectiveKappaHex": "422a0a6d6a16c1eddb49ce4296a1ad8e6049654704f08b71817e316950de1137"
     }
   ]
 }

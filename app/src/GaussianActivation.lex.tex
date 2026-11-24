@@ -37,5 +37,102 @@ theorem{
   statement: ((evaluate false 0 false 0) = (ctor Action.hyperbolicTangent 0)),
   proof: reflexivity{}
 }
+inductive{
+  name: ErrorAction,
+  type_parameters: [],
+  parameters: [],
+  constructors: [
+    {name: errorWord, fields: [Nat]},
+    {name: scalar, fields: [Nat, Nat, Nat, Nat, Nat]},
+    {name: exponential, fields: [Nat, Nat, Nat]}
+  ]
+}
+
+definition{
+  name: tinyError,
+  parameters: [pc : Nat, absolute : Nat, temp : Nat, held : Nat],
+  result: ErrorAction,
+  body: (if (pc <? 12) then (if (pc <? 11) then (ctor ErrorAction.scalar 2 1090519040 absolute 4 11) else (ctor ErrorAction.scalar 2 1065579988 absolute 5 12)) else (if (pc <? 13) then (ctor ErrorAction.scalar 0 temp held 4 13) else (ctor ErrorAction.scalar 2 1040187392 temp 6 230))),
+  executable: true
+}
+
+definition{
+  name: smallError,
+  parameters: [pc : Nat, absolute : Nat, basis : Nat, numerator : Nat, denominator : Nat, temp : Nat],
+  result: ErrorAction,
+  body: (if (pc <? 31) then (if (pc <? 25) then (if (pc <? 22) then (if (pc <? 21) then (ctor ErrorAction.scalar 2 absolute absolute 1 21) else (ctor ErrorAction.scalar 2 basis 3083294385 2 22)) else (if (pc <? 23) then (ctor ErrorAction.scalar 0 numerator 3149730953 2 23) else (if (pc <? 24) then (ctor ErrorAction.scalar 2 basis numerator 2 24) else (ctor ErrorAction.scalar 0 numerator 3169407631 2 25)))) else (if (pc <? 28) then (if (pc <? 26) then (ctor ErrorAction.scalar 2 basis numerator 2 26) else (if (pc <? 27) then (ctor ErrorAction.scalar 0 numerator 3198577643 2 27) else (ctor ErrorAction.scalar 2 basis numerator 2 28))) else (if (pc <? 29) then (ctor ErrorAction.scalar 0 numerator 1040414164 2 29) else (if (pc <? 30) then (ctor ErrorAction.scalar 2 basis 3062161946 3 30) else (ctor ErrorAction.scalar 0 denominator 957017673 3 31))))) else (if (pc <? 36) then (if (pc <? 33) then (if (pc <? 32) then (ctor ErrorAction.scalar 2 basis denominator 3 32) else (ctor ErrorAction.scalar 0 denominator 1000767766 3 33)) else (if (pc <? 34) then (ctor ErrorAction.scalar 2 basis denominator 3 34) else (if (pc <? 35) then (ctor ErrorAction.scalar 0 denominator 1032137315 3 35) else (ctor ErrorAction.scalar 2 basis denominator 3 36)))) else (if (pc <? 39) then (if (pc <? 37) then (ctor ErrorAction.scalar 0 denominator 1053539278 3 37) else (if (pc <? 38) then (ctor ErrorAction.scalar 2 basis denominator 3 38) else (ctor ErrorAction.scalar 0 denominator 1065353216 3 39))) else (if (pc <? 40) then (ctor ErrorAction.scalar 3 numerator denominator 4 40) else (if (pc <? 41) then (ctor ErrorAction.scalar 2 absolute temp 4 41) else (ctor ErrorAction.scalar 0 absolute temp 6 230)))))),
+  executable: true
+}
+
+definition{
+  name: middleError,
+  parameters: [pc : Nat, absolute : Nat, basis : Nat, numerator : Nat, denominator : Nat, temp : Nat, held : Nat],
+  result: ErrorAction,
+  body: (if (pc <? 64) then (if (pc <? 57) then (if (pc <? 53) then (if (pc <? 51) then (ctor ErrorAction.scalar 1 absolute 1065353216 1 51) else (if (pc <? 52) then (ctor ErrorAction.scalar 2 basis 3138255296 2 52) else (ctor ErrorAction.scalar 0 numerator 1024545203 2 53))) else (if (pc <? 55) then (if (pc <? 54) then (ctor ErrorAction.scalar 2 basis numerator 2 54) else (ctor ErrorAction.scalar 0 numerator 3185777858 2 55)) else (if (pc <? 56) then (ctor ErrorAction.scalar 2 basis numerator 2 56) else (ctor ErrorAction.scalar 0 numerator 1050869332 2 57)))) else (if (pc <? 60) then (if (pc <? 58) then (ctor ErrorAction.scalar 2 basis numerator 2 58) else (if (pc <? 59) then (ctor ErrorAction.scalar 0 numerator 3200160264 2 59) else (ctor ErrorAction.scalar 2 basis numerator 2 60))) else (if (pc <? 62) then (if (pc <? 61) then (ctor ErrorAction.scalar 0 numerator 1054107653 2 61) else (ctor ErrorAction.scalar 2 basis numerator 2 62)) else (if (pc <? 63) then (ctor ErrorAction.scalar 0 numerator 3139096006 2 63) else (ctor ErrorAction.scalar 2 basis 1011112611 3 64))))) else (if (pc <? 71) then (if (pc <? 67) then (if (pc <? 65) then (ctor ErrorAction.scalar 0 denominator 1012887059 3 65) else (if (pc <? 66) then (ctor ErrorAction.scalar 2 basis denominator 3 66) else (ctor ErrorAction.scalar 0 denominator 1040265991 3 67))) else (if (pc <? 69) then (if (pc <? 68) then (ctor ErrorAction.scalar 2 basis denominator 3 68) else (ctor ErrorAction.scalar 0 denominator 1033050855 3 69)) else (if (pc <? 70) then (ctor ErrorAction.scalar 2 basis denominator 3 70) else (ctor ErrorAction.scalar 0 denominator 1057642373 3 71)))) else (if (pc <? 75) then (if (pc <? 73) then (if (pc <? 72) then (ctor ErrorAction.scalar 2 basis denominator 3 72) else (ctor ErrorAction.scalar 0 denominator 1037693745 3 73)) else (if (pc <? 74) then (ctor ErrorAction.scalar 2 basis denominator 3 74) else (ctor ErrorAction.scalar 0 denominator 1065353216 3 75))) else (if (pc <? 77) then (if (pc <? 76) then (ctor ErrorAction.scalar 3 numerator denominator 4 76) else (ctor ErrorAction.scalar 1 1065353216 1062753803 5 77)) else (if (pc <? 78) then (ctor ErrorAction.scalar 1 held temp 5 78) else (ctor ErrorAction.scalar 1 1065353216 held 6 230)))))),
+  executable: true
+}
+
+definition{
+  name: nearTailRatio,
+  parameters: [pc : Nat, absolute : Nat, basis : Nat, numerator : Nat, denominator : Nat],
+  result: ErrorAction,
+  body: (if (pc <? 106) then (if (pc <? 98) then (if (pc <? 94) then (if (pc <? 92) then (if (pc <? 91) then (ctor ErrorAction.scalar 2 absolute absolute 1 91) else (ctor ErrorAction.scalar 3 1065353216 basis 1 92)) else (if (pc <? 93) then (ctor ErrorAction.scalar 2 basis 3239905150 2 93) else (ctor ErrorAction.scalar 0 numerator 3265434411 2 94))) else (if (pc <? 96) then (if (pc <? 95) then (ctor ErrorAction.scalar 2 basis numerator 2 95) else (ctor ErrorAction.scalar 0 numerator 3275266791 2 96)) else (if (pc <? 97) then (ctor ErrorAction.scalar 2 basis numerator 2 97) else (ctor ErrorAction.scalar 0 numerator 3273811340 2 98)))) else (if (pc <? 102) then (if (pc <? 100) then (if (pc <? 99) then (ctor ErrorAction.scalar 2 basis numerator 2 99) else (ctor ErrorAction.scalar 0 numerator 3262742615 2 100)) else (if (pc <? 101) then (ctor ErrorAction.scalar 2 basis numerator 2 101) else (ctor ErrorAction.scalar 0 numerator 3240685602 2 102))) else (if (pc <? 104) then (if (pc <? 103) then (ctor ErrorAction.scalar 2 basis numerator 2 103) else (ctor ErrorAction.scalar 0 numerator 3207700663 2 104)) else (if (pc <? 105) then (ctor ErrorAction.scalar 2 basis numerator 2 105) else (ctor ErrorAction.scalar 0 numerator 3156320403 2 106))))) else (if (pc <? 114) then (if (pc <? 110) then (if (pc <? 108) then (if (pc <? 107) then (ctor ErrorAction.scalar 2 basis 3178725271 3 107) else (ctor ErrorAction.scalar 0 denominator 1087520636 3 108)) else (if (pc <? 109) then (ctor ErrorAction.scalar 2 basis denominator 3 109) else (ctor ErrorAction.scalar 0 denominator 1121535263 3 110))) else (if (pc <? 112) then (if (pc <? 111) then (ctor ErrorAction.scalar 2 basis denominator 3 111) else (ctor ErrorAction.scalar 0 denominator 1138131211 3 112)) else (if (pc <? 113) then (ctor ErrorAction.scalar 2 basis denominator 3 113) else (ctor ErrorAction.scalar 0 denominator 1143036105 3 114)))) else (if (pc <? 118) then (if (pc <? 116) then (if (pc <? 115) then (ctor ErrorAction.scalar 2 basis denominator 3 115) else (ctor ErrorAction.scalar 0 denominator 1138313327 3 116)) else (if (pc <? 117) then (ctor ErrorAction.scalar 2 basis denominator 3 117) else (ctor ErrorAction.scalar 0 denominator 1124706403 3 118))) else (if (pc <? 120) then (if (pc <? 119) then (ctor ErrorAction.scalar 2 basis denominator 3 119) else (ctor ErrorAction.scalar 0 denominator 1100821966 3 120)) else (if (pc <? 121) then (ctor ErrorAction.scalar 2 basis denominator 3 121) else (if (pc <? 122) then (ctor ErrorAction.scalar 0 denominator 1065353216 3 122) else (ctor ErrorAction.scalar 3 numerator denominator 4 200))))))),
+  executable: true
+}
+
+definition{
+  name: farTailRatio,
+  parameters: [pc : Nat, absolute : Nat, basis : Nat, numerator : Nat, denominator : Nat],
+  result: ErrorAction,
+  body: (if (pc <? 154) then (if (pc <? 147) then (if (pc <? 143) then (if (pc <? 141) then (ctor ErrorAction.scalar 2 absolute absolute 1 141) else (if (pc <? 142) then (ctor ErrorAction.scalar 3 1065353216 basis 1 142) else (ctor ErrorAction.scalar 2 basis 3287401077 2 143))) else (if (pc <? 145) then (if (pc <? 144) then (ctor ErrorAction.scalar 0 numerator 3296731915 2 144) else (ctor ErrorAction.scalar 2 basis numerator 2 145)) else (if (pc <? 146) then (ctor ErrorAction.scalar 0 numerator 3290391617 2 146) else (ctor ErrorAction.scalar 2 basis numerator 2 147)))) else (if (pc <? 150) then (if (pc <? 148) then (ctor ErrorAction.scalar 0 numerator 3273695978 2 148) else (if (pc <? 149) then (ctor ErrorAction.scalar 2 basis numerator 2 149) else (ctor ErrorAction.scalar 0 numerator 3247312971 2 150))) else (if (pc <? 152) then (if (pc <? 151) then (ctor ErrorAction.scalar 2 basis numerator 2 151) else (ctor ErrorAction.scalar 0 numerator 3209469396 2 152)) else (if (pc <? 153) then (ctor ErrorAction.scalar 2 basis numerator 2 153) else (ctor ErrorAction.scalar 0 numerator 3156320402 2 154))))) else (if (pc <? 161) then (if (pc <? 157) then (if (pc <? 155) then (ctor ErrorAction.scalar 2 basis 3249768210 3 155) else (if (pc <? 156) then (ctor ErrorAction.scalar 0 denominator 1139622823 3 156) else (ctor ErrorAction.scalar 2 basis denominator 3 157))) else (if (pc <? 159) then (if (pc <? 158) then (ctor ErrorAction.scalar 0 denominator 1159696590 3 158) else (ctor ErrorAction.scalar 2 basis denominator 3 159)) else (if (pc <? 160) then (ctor ErrorAction.scalar 0 denominator 1162345915 3 160) else (ctor ErrorAction.scalar 2 basis denominator 3 161)))) else (if (pc <? 165) then (if (pc <? 163) then (if (pc <? 162) then (ctor ErrorAction.scalar 0 denominator 1153439577 3 162) else (ctor ErrorAction.scalar 2 basis denominator 3 163)) else (if (pc <? 164) then (ctor ErrorAction.scalar 0 denominator 1134749041 3 164) else (ctor ErrorAction.scalar 2 basis denominator 3 165))) else (if (pc <? 167) then (if (pc <? 166) then (ctor ErrorAction.scalar 0 denominator 1106424921 3 166) else (ctor ErrorAction.scalar 2 basis denominator 3 167)) else (if (pc <? 168) then (ctor ErrorAction.scalar 0 denominator 1065353216 3 168) else (ctor ErrorAction.scalar 3 numerator denominator 4 200)))))),
+  executable: true
+}
+
+definition{
+  name: tailError,
+  parameters: [pc : Nat, absolute : Nat, high : Nat, negHigh : Nat, basis : Nat, numerator : Nat, temp : Nat, held : Nat],
+  result: ErrorAction,
+  body: (if (pc <? 205) then (if (pc <? 202) then (if (pc <? 201) then (ctor ErrorAction.scalar 2 negHigh high 5 201) else (ctor ErrorAction.scalar 1 held 1058013184 5 202)) else (if (pc <? 203) then (ctor ErrorAction.exponential held 5 203) else (if (pc <? 204) then (ctor ErrorAction.scalar 1 high absolute 1 204) else (ctor ErrorAction.scalar 0 high absolute 2 205)))) else (if (pc <? 208) then (if (pc <? 206) then (ctor ErrorAction.scalar 2 basis numerator 1 206) else (if (pc <? 207) then (ctor ErrorAction.scalar 0 basis temp 1 207) else (ctor ErrorAction.exponential basis 1 208))) else (if (pc <? 209) then (ctor ErrorAction.scalar 2 held basis 5 209) else (if (pc <? 210) then (ctor ErrorAction.scalar 3 held absolute 5 210) else (ctor ErrorAction.scalar 1 1065353216 held 6 230))))),
+  executable: true
+}
+
+definition{
+  name: gaussianFinish,
+  parameters: [pc : Nat, x : Nat, temp : Nat, held : Nat],
+  result: ErrorAction,
+  body: (if (pc <? 242) then (ctor ErrorAction.scalar 2 1056964608 x 4 242) else (ctor ErrorAction.scalar 2 temp held 6 250)),
+  executable: true
+}
+
+definition{
+  name: evaluateError,
+  parameters: [gelu : Bool, x : Nat, pc : Nat, argument : Nat, basis : Nat, numerator : Nat, denominator : Nat, temp : Nat, held : Nat, magnitude : Nat],
+  result: ErrorAction,
+  body: (let absolute : Nat := (prim remainder argument 2147483648 0 : Nat); (let high : Nat := (prim multiply (prim quotient absolute 8192 0 : Nat) 8192 : Nat); (let negHigh : Nat := (high + 2147483648); (if (pc <=? 1) then (if ((pc =? 0) && gelu) then (ctor ErrorAction.scalar 2 x 1060439283 0 1) else (if (2139095040 <? absolute) then (ctor ErrorAction.errorWord 2143289344) else (if (absolute <? 830472192) then (tinyError 10 absolute temp held) else (if (absolute <? 1062731776) then (smallError 20 absolute basis numerator denominator temp) else (if (absolute <? 1067450368) then (middleError 50 absolute basis numerator denominator temp held) else (if (absolute <? 1077336941) then (nearTailRatio 90 absolute basis numerator denominator) else (if (absolute <? 1086324736) then (farTailRatio 140 absolute basis numerator denominator) else (let signedValue : Nat := (if (argument <? 2147483648) then 1065353216 else (1065353216 + 2147483648)); (if gelu then (ctor ErrorAction.scalar 0 1065353216 signedValue 5 241) else (ctor ErrorAction.errorWord signedValue)))))))))) else (if (pc =? 230) then (let signedValue : Nat := (if (argument <? 2147483648) then magnitude else (magnitude + 2147483648)); (if gelu then (ctor ErrorAction.scalar 0 1065353216 signedValue 5 241) else (ctor ErrorAction.errorWord signedValue))) else (if ((10 <=? pc) && (pc <? 14)) then (tinyError pc absolute temp held) else (if ((20 <=? pc) && (pc <? 42)) then (smallError pc absolute basis numerator denominator temp) else (if ((50 <=? pc) && (pc <? 79)) then (middleError pc absolute basis numerator denominator temp held) else (if ((90 <=? pc) && (pc <? 123)) then (nearTailRatio pc absolute basis numerator denominator) else (if ((140 <=? pc) && (pc <? 169)) then (farTailRatio pc absolute basis numerator denominator) else (if ((200 <=? pc) && (pc <? 211)) then (tailError pc absolute high negHigh basis numerator temp held) else (if ((241 <=? pc) && (pc <? 243)) then (gaussianFinish pc x temp held) else (if (pc =? 250) then (ctor ErrorAction.errorWord magnitude) else (ctor ErrorAction.errorWord 2143289344)))))))))))))),
+  executable: true,
+  production: {effects: [overflow], targets: [rust-core]}
+}
+
+theorem{
+  name: positiveInfinityError,
+  parameters: [],
+  statement: ((evaluateError false 2139095040 0 2139095040 0 0 0 0 0 0) = (ctor ErrorAction.errorWord 1065353216)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: negativeInfinityError,
+  parameters: [],
+  statement: ((evaluateError false 4286578688 0 4286578688 0 0 0 0 0 0) = (ctor ErrorAction.errorWord 3212836864)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: negativeZeroEndsWithItsSign,
+  parameters: [],
+  statement: ((evaluateError false 2147483648 230 2147483648 0 0 0 0 0 0) = (ctor ErrorAction.errorWord 2147483648)),
+  proof: reflexivity{}
+}
+
 \end{semanticmodule}
 \end{lexlean}

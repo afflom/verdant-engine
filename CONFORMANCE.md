@@ -153,6 +153,7 @@ model does not sanction.
 | `VE-80` | `build` | Verdant modernizes onto LexLean 0.4.5, prism-code 0.11.1, template contract v2, unified three-scope tensor proofs, and offline-verifiable Holo v6 self-carrying proof records in Stitch shards and portable HTML envelopes |
 | `VTK-52` | `build` | Verdant fits grouped signed three-bit blocks by refining individual coefficients and emits the packed coefficients and scales |
 | `VTK-53` | `build` | Verdant encodes nonlinear four-bit codebook blocks with single or grouped scales against the imported GGML reference |
+| `VTK-54` | `build` | Verdant evaluates the binary32 error function and its Gaussian activation against the imported GGML CPU |
 
 ## fidelity
 

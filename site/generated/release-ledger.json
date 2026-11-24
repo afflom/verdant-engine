@@ -5,9 +5,9 @@
   "currentVersion": {
     "major": 2,
     "minor": 21,
-    "patch": 2
+    "patch": 3
   },
-  "releaseEpoch": 28,
+  "releaseEpoch": 29,
   "history": [
     {
       "version": "0.1.0",
@@ -224,6 +224,13 @@
       "releaseEpoch": 28,
       "bumpKind": "patch",
       "summary": "v2.21.2: certified nonlinear four-bit weight encoding (VTK-53)",
+      "citedAuthority": "AUTH-SEMVER-CHANGE-KPI"
+    },
+    {
+      "version": "2.21.3",
+      "releaseEpoch": 29,
+      "bumpKind": "patch",
+      "summary": "v2.21.3: certified binary32 error function for Gaussian activations (VTK-54)",
       "citedAuthority": "AUTH-SEMVER-CHANGE-KPI"
     }
   ]

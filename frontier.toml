@@ -4822,6 +4822,12 @@ reason = "type"
 detail = "type outside the lift: f32"
 
 [[residue]]
+kappa = "615fb81190289bd198c198218096a10063af80c5e9774193c3ed6fbd59c3fe30"
+function = "verdant_tensor::linear::activations::gaussian_error_f32"
+reason = "type"
+detail = "type outside the lift: f32"
+
+[[residue]]
 kappa = "b682c1f4d5ef86f2b5b556c525abe98578202b105ed892c35f39ec160448de30"
 function = "verdant_tensor::linear::activations::gelu_f32"
 reason = "type"
@@ -5068,7 +5074,7 @@ reason = "type"
 detail = "type outside the lift: f32"
 
 [[residue]]
-kappa = "781b5765606a06d68109d6157eb922c073d6d50ab8f08f2ff89515d7c42a9172"
+kappa = "c6aae5605d91697ca72c697f8f2b4eb13513ba8dfb234e3063a70adbf1382ee1"
 function = "verdant_tensor::linear::skin_vertices_linear_blend_into"
 reason = "type"
 detail = "type outside the lift: f32"
@@ -5102,12 +5108,6 @@ kappa = "1e3c6bad949b79374769ec8020a2f3bf123e9cd39897a5b26c7f4c7283b2f960"
 function = "verdant_tensor::linear::symmetric_product::dot_symmetric_q8_row"
 reason = "signature"
 detail = "signature outside the lift: generic, async, unsafe or variadic"
-
-[[residue]]
-kappa = "eda38a5f00c1afcdd6e32b96ae05d29ed51f8efde016f3817774e6448db558c6"
-function = "verdant_tensor::linear::transform_triple_exact"
-reason = "type"
-detail = "type outside the lift: f32"
 
 [[residue]]
 kappa = "111221dbda964f04af866e89fd2b3e78a808af44cf61516cf0916ede5eaf3aeb"
@@ -8651,7 +8651,7 @@ function = "verdant_cli::run_cli"
 effect = "Fs effect: std::fs::read"
 
 [[effect]]
-kappa = "ec1e0204ad10bacaffba1999c3d713fa268874e52c3be7b5d30f52912850f81d"
+kappa = "3588f7cdb0326321a87aeab365d15a0a24e3de0fe4448478c012f96c44cdff10"
 function = "verdant_core::build_ops::VerdantOperatorChannel::execute_native_build_op"
 effect = "Process effect: Command::new"
 

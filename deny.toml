@@ -589,3 +589,13 @@ name = "verdant_signed_truncation"
 version = "=2.44.0"
 expression = "MIT OR Apache-2.0"
 license-files = [{ path = "src/lib.rs", hash = 0x4ca32179 }]
+
+[[licenses.exceptions]]
+name = "verdant_error_function"
+allow = ["SunPro"]
+
+[[licenses.clarify]]
+name = "verdant_error_function"
+version = "=2.47.0"
+expression = "(MIT OR Apache-2.0) AND SunPro"
+license-files = [{ path = "src/lib.rs", hash = 0x67da5469 }]

@@ -2,12 +2,12 @@
   "spec": "verdant/observer-roadmap-kpi-report/1",
   "managerId": "mgr-roadmap-strategy",
   "authorityId": "AUTH-SEMVER-CHANGE-KPI",
-  "currentVersion": "2.21.2",
-  "releaseEpoch": 28,
+  "currentVersion": "2.21.3",
+  "releaseEpoch": 29,
   "totalManagers": 13,
   "totalPrismFacetsOwned": 9,
   "totalPrismFacetsRequired": 9,
-  "declaredCapabilitiesCount": 142,
+  "declaredCapabilitiesCount": 143,
   "minorProgressPct": 100,
   "majorProgressPct": 100,
   "kpiPassedCount": 13,
@@ -1167,7 +1167,7 @@
     "currentVersion": {
       "major": 2,
       "minor": 21,
-      "patch": 2
+      "patch": 3
     },
     "recommendedBump": "major",
     "nextVersion": {
@@ -1175,8 +1175,8 @@
       "minor": 0,
       "patch": 0
     },
-    "currentEpoch": 28,
-    "nextEpoch": 29,
+    "currentEpoch": 29,
+    "nextEpoch": 30,
     "versionIncremented": true,
     "gates": {
       "ratchetApplied": true,
@@ -1187,6 +1187,6 @@
       "pullThroughVerified": true
     },
     "blockingReasons": [],
-    "rationale": "Ratchet applied & 5/5 Release Gates passed: advancing v2.21.2 -> v3.0.0 (Major, epoch 29) — Observer roadmap evaluation: minor=100% major=100% managers=13"
+    "rationale": "Ratchet applied & 5/5 Release Gates passed: advancing v2.21.3 -> v3.0.0 (Major, epoch 30) — Observer roadmap evaluation: minor=100% major=100% managers=13"
   }
 }

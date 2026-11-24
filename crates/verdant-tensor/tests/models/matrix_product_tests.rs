@@ -394,6 +394,19 @@ int main(int argc, char **argv) {
     }
     return std::feof(stdin) ? 0 : 2;
   }
+  if (!std::strcmp(argv[1], "gaussian-error")) {
+    unsigned bits;
+    while (std::scanf("%u", &bits) == 1) {
+      float x, y;
+      std::memcpy(&x, &bits, sizeof(x));
+      ggml_vec_gelu_erf_f32(1, &y, &x);
+      for (float value : {std::erf(x), y}) {
+        std::memcpy(&bits, &value, sizeof(bits));
+        std::printf("%u\n", bits);
+      }
+    }
+    return std::feof(stdin) ? 0 : 2;
+  }
   if (!std::strcmp(argv[1], "gelu")) {
     unsigned bits;
     while (std::scanf("%u", &bits) == 1) {
@@ -1416,6 +1429,7 @@ fn verify_bundle(scope: &str, directory: &str) -> std::collections::BTreeMap<Str
                     "verdant_head_slope_limbs" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_head_slope_limbs/src/lib.rs"),
                     "verdant_head_slope" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_head_slope/src/lib.rs"),
                     "verdant_gelu" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_gelu/src/lib.rs"),
+                    "verdant_error_function" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_error_function/src/lib.rs"),
                     "verdant_logistic" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_logistic/src/lib.rs"),
                     "verdant_swiglu" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_swiglu/src/lib.rs"),
                     "verdant_packed_dot" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_packed_dot/src/lib.rs"),
@@ -1956,6 +1970,76 @@ fn attention_head_slopes_vtk_30() {
         (f32::INFINITY, 1, 0),
     ] {
         assert!(super::attention_head_slope_f32(bias, heads, head).is_err());
+    }
+}
+
+#[test]
+fn gaussian_error_vtk_54() {
+    use std::fmt::Write;
+    certified_model(
+        "verdant_error_function",
+        "VerdantEngine.GaussianActivation.evaluateError",
+    );
+    let mut words: Vec<u32> = (0..=u16::MAX).map(|word| u32::from(word) << 16).collect();
+    words.extend((-32768..=32768).map(|n| (n as f32 / 2048.0).to_bits()));
+    for pivot in [
+        0,
+        0x00800000,
+        0x31800000,
+        0x3f580000,
+        0x3fa00000,
+        0x4036db6d,
+        0x40c00000,
+        0x7f800000_u32,
+    ] {
+        for word in pivot.saturating_sub(32)..=pivot + 32 {
+            words.extend([word, word | 0x80000000]);
+        }
+    }
+    words.sort_unstable();
+    words.dedup();
+    let mut input = String::new();
+    for word in &words {
+        writeln!(input, "{word}").unwrap();
+    }
+    let expected = query_oracle("gaussian-error", input);
+    assert_eq!(expected.len(), words.len() * 2);
+    for (bits, pair) in words.into_iter().zip(expected.chunks_exact(2)) {
+        let x = f32::from_bits(bits);
+        for (kind, value) in [
+            super::gaussian_error_f32(x, false).unwrap(),
+            super::gaussian_error_f32(x, true).unwrap(),
+        ]
+        .into_iter()
+        .enumerate()
+        {
+            let want = f32::from_bits(pair[kind]);
+            if want.is_nan() {
+                assert!(value.is_nan(), "kind {kind}, input {bits:08x}");
+            } else if x == 0.0 || !x.is_finite() || x.abs() >= 9.0 {
+                assert_eq!(
+                    value.to_bits(),
+                    want.to_bits(),
+                    "kind {kind}, input {bits:08x}"
+                );
+            } else if kind == 0 {
+                assert_eq!(value.is_sign_negative(), want.is_sign_negative());
+                assert!(
+                    value.to_bits().abs_diff(want.to_bits()) <= 2,
+                    "erf {bits:08x}: {value} vs {want}"
+                );
+            } else {
+                // Two binary32 steps in erf propagate through half-x times (1+erf).
+                let allowance =
+                    f64::from(x.abs()) * f64::from(f32::EPSILON) + f64::from(f32::from_bits(1));
+                assert!(
+                    value.is_finite()
+                        && value.is_sign_negative() == want.is_sign_negative()
+                        && (f64::from(value) - f64::from(want)).abs() <= allowance,
+                    "GELU {bits:08x}: {value} vs {want}"
+                );
+            }
+        }
     }
 }
 
