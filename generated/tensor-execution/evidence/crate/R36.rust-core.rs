@@ -627,32 +627,49 @@ pub fn checked_neg_i64(p0: i64) -> Option<i64> {
     i64::checked_neg(p0)
 }
 
-pub fn f0(v0: u64, v1: u64) -> R<(u64, u64)> {
-    let a1 = v0;
+pub fn f0(v0: u64, v1: u64, v2: u64) -> Option<u64> {
+    let a1 = 0u64;
     let a2 = v1;
-    if nat_lt(a1, a2) {
-        Ok((v1, {
-            let a3 = v0;
-            let a4 = 1u64;
-            nat_add(a3, a4)?
-        }))
+    if if if if if nat_lt(a1, a2) {
+        let a3 = v1;
+        let a4 = 4294967295u64;
+        nat_le(a3, a4)
     } else {
-        Ok(({
-            let a5 = v1;
-            let a6 = 2u64;
-            nat_mul(a5, a6)?
-        }, {
-            let a11 = {
-                let a9 = {
-                    let a7 = v0;
-                    let a8 = v1;
-                    nat_sub(a7, a8)
-                };
-                let a10 = 2u64;
-                nat_mul(a9, a10)?
-            };
-            let a12 = 1u64;
-            nat_add(a11, a12)?
-        }))
+        false
+    } {
+        let a5 = v2;
+        let a6 = v1;
+        nat_lt(a5, a6)
+    } else {
+        false
+    } {
+        let a7 = v0;
+        let a8 = 4294967296u64;
+        nat_lt(a7, a8)
+    } else {
+        false
+    } {
+        let a12 = {
+            let a9 = v0;
+            let a10 = 2147483648u64;
+            let a11 = 0u64;
+            nat_rem(a9, a10, a11)
+        };
+        let a13 = 2139095040u64;
+        nat_lt(a12, a13)
+    } else {
+        false
+    } {
+        Some({
+            let a14 = 2147483648u64;
+            let a15 = v0;
+            if nat_le(a14, a15) {
+                0u64
+            } else {
+                v0
+            }
+        })
+    } else {
+        None::<u64>
     }
 }

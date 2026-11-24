@@ -627,49 +627,106 @@ pub fn checked_neg_i64(p0: i64) -> Option<i64> {
     i64::checked_neg(p0)
 }
 
-pub fn f0(v0: u64, v1: u64, v2: u64) -> Option<u64> {
-    let a1 = 0u64;
-    let a2 = v1;
-    if if if if if nat_lt(a1, a2) {
-        let a3 = v1;
-        let a4 = 4294967295u64;
-        nat_le(a3, a4)
+pub fn f0(v0: u64) -> R<u64> {
+    let a1 = v0;
+    let a2 = 16777216u64;
+    if nat_le(a1, a2) {
+        Ok(v0)
     } else {
-        false
-    } {
-        let a5 = v2;
-        let a6 = v1;
-        nat_lt(a5, a6)
-    } else {
-        false
-    } {
-        let a7 = v0;
-        let a8 = 4294967296u64;
-        nat_lt(a7, a8)
-    } else {
-        false
-    } {
-        let a12 = {
-            let a9 = v0;
-            let a10 = 2147483648u64;
-            let a11 = 0u64;
-            nat_rem(a9, a10, a11)
-        };
-        let a13 = 2139095040u64;
-        nat_lt(a12, a13)
-    } else {
-        false
-    } {
-        Some({
-            let a14 = 2147483648u64;
-            let a15 = v0;
-            if nat_le(a14, a15) {
-                0u64
+        let v1: u64 = {
+            let a3 = v0;
+            let a4 = 268435456u64;
+            if nat_lt(a3, a4) {
+                let a5 = v0;
+                let a6 = 67108864u64;
+                if nat_lt(a5, a6) {
+                    let a7 = v0;
+                    let a8 = 33554432u64;
+                    if nat_lt(a7, a8) {
+                        2u64
+                    } else {
+                        4u64
+                    }
+                } else {
+                    let a9 = v0;
+                    let a10 = 134217728u64;
+                    if nat_lt(a9, a10) {
+                        8u64
+                    } else {
+                        16u64
+                    }
+                }
             } else {
-                v0
+                let a11 = v0;
+                let a12 = 1073741824u64;
+                if nat_lt(a11, a12) {
+                    let a13 = v0;
+                    let a14 = 536870912u64;
+                    if nat_lt(a13, a14) {
+                        32u64
+                    } else {
+                        64u64
+                    }
+                } else {
+                    let a15 = v0;
+                    let a16 = 2147483648u64;
+                    if nat_lt(a15, a16) {
+                        128u64
+                    } else {
+                        256u64
+                    }
+                }
             }
-        })
-    } else {
-        None::<u64>
+        };
+        let a17 = f1(v0, v1)?;
+        let a18 = v1;
+        nat_mul(a17, a18)
     }
+}
+
+pub fn f1(v0: u64, v1: u64) -> R<u64> {
+    let v2: u64 = {
+        let a19 = v0;
+        let a20 = v1;
+        let a21 = 0u64;
+        nat_quot(a19, a20, a21)
+    };
+    let v3: u64 = {
+        let a25 = {
+            let a22 = v0;
+            let a23 = v1;
+            let a24 = 0u64;
+            nat_rem(a22, a23, a24)
+        };
+        let a26 = 2u64;
+        nat_mul(a25, a26)?
+    };
+    let a36 = v2;
+    let a37 = {
+        let a27 = v1;
+        let a28 = v3;
+        if if nat_lt(a27, a28) {
+            true
+        } else {
+            let a29 = v3;
+            let a30 = v1;
+            if nat_eq(a29, a30) {
+                let a34 = {
+                    let a31 = v2;
+                    let a32 = 2u64;
+                    let a33 = 0u64;
+                    nat_rem(a31, a32, a33)
+                };
+                let a35 = 1u64;
+                nat_eq(a34, a35)
+            } else {
+                false
+            }
+        } {
+            1u64
+        } else {
+            0u64
+        }
+    };
+    nat_add(a36, a37)
 }
