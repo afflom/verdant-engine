@@ -152,6 +152,7 @@ model does not sanction.
 | `VTK-51` | `build` | Verdant converts finite binary32 values to signed 32-bit storage words by truncating toward zero within the representable range |
 | `VE-80` | `build` | Verdant modernizes onto LexLean 0.4.5, prism-code 0.11.1, template contract v2, unified three-scope tensor proofs, and offline-verifiable Holo v6 self-carrying proof records in Stitch shards and portable HTML envelopes |
 | `VTK-52` | `build` | Verdant fits grouped signed three-bit blocks by refining individual coefficients and emits the packed coefficients and scales |
+| `VTK-53` | `build` | Verdant encodes nonlinear four-bit codebook blocks with single or grouped scales against the imported GGML reference |
 
 ## fidelity
 

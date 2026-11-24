@@ -896,3 +896,9 @@ id = "VTK-52"
 level = "build"
 suite = "engine"
 statement = "Verdant fits grouped signed three-bit blocks by refining individual coefficients and emits the packed coefficients and scales"
+
+[[id]]
+id = "VTK-53"
+level = "build"
+suite = "engine"
+statement = "Verdant encodes nonlinear four-bit codebook blocks with single or grouped scales against the imported GGML reference"
