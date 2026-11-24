@@ -1,41 +1,51 @@
 // Module workers have no document import map. Package the locked runtime with
-// the same explicit crypto adapter the page already selects. These are module
-// address changes only: no archive parser, verifier or guest loop is replaced.
+// its closed browser archive/verifier graph (Holo v4, v5, and v6).
 import { createHash } from "node:crypto";
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { dirname, join, posix } from "node:path";
 
-const MODULES = ["browser.mjs", "index.mjs", "archive.mjs", "view.mjs", "core.mjs", "closure.mjs", "errors.mjs", "canonical/index.js", "blake3.mjs", "sha256.mjs"];
+const PRISM_MODULES = [
+  "browser.mjs",
+  "archive.mjs",
+  "uorc.mjs",
+  "view.mjs",
+  "core.mjs",
+  "capabilities.mjs",
+  "session.mjs",
+  "closure.mjs",
+  "errors.mjs",
+  "blake3.mjs",
+  "sha256.mjs",
+];
+const ALL_MODULES = [...PRISM_MODULES, "index.mjs"];
 const digest = (bytes) => createHash("sha256").update(bytes).digest("hex");
 const refusal = (message) => Object.assign(new Error(`frame.worker.bundle: ${message}`), { code: "frame.worker.bundle" });
+
+export function compactWorkerSource(source) {
+  return source
+    .replace(/\/\*\*[\s\S]*?\*\//g, "")
+    .replace(/^[ \t]*\/\/.*$/gm, "")
+    .replace(/\n[ \t]+\n/g, "\n")
+    .replace(/\n{2,}/g, "\n")
+    .trim() + "\n";
+}
 
 export async function prepareWorkerRuntime(site, vendor) {
   const output = join(site, "worker-runtime");
   const files = [];
-  // Validate the whole graph before writing anything. Unknown imports are a
-  // dependency change to review, never permission to fall back to the UI thread.
-  for (const path of MODULES) {
-    const source = `prism-code/src/${path}`;
+  for (const path of ALL_MODULES) {
+    const source = path === "index.mjs" ? "worker-index.mjs" : `prism-code/src/${path}`;
     const before = await readFile(join(vendor, source), "utf8");
-    let after = before;
-    if (path === "canonical/index.js") {
-      const alias = "from 'node:crypto'";
-      if (before.split(alias).length !== 2) throw refusal("the canonical crypto import changed");
-      after = before.replace(alias, "from '../node-crypto-shim.mjs'");
-    }
-    // The locked package uses one-line static imports. Validate those edges;
-    // lazy Node/closure loaders retain their original code and are not linked
-    // by browser.loadArchive. The real module-link test checks this inventory.
-    const imports = [...after.matchAll(/^\s*(?:import\s+(?:[^;\n]*?\s+from\s+)?|export\s+[^;\n]*?\s+from\s+)(["'])([^"']+)\1/gm)];
+    const imports = [...before.matchAll(/^\s*(?:import\s+(?:[^;\n]*?\s+from\s+)?|export\s+[^;\n]*?\s+from\s+)(["'])([^"']+)\1/gm)];
     for (const [, , specifier] of imports) {
       if (!specifier.startsWith(".")) throw refusal(`unregistered import ${specifier} in ${path}`);
       const target = posix.normalize(posix.join(posix.dirname(path), specifier));
-      if (!MODULES.includes(target) && target !== "node-crypto-shim.mjs") throw refusal(`import ${specifier} in ${path} is outside the locked runtime`);
+      if (!ALL_MODULES.includes(target)) throw refusal(`import ${specifier} in ${path} is outside the locked runtime`);
     }
+    const after = compactWorkerSource(before);
     files.push({ path, source, before, after });
   }
-  const shim = await readFile(join(vendor, "node-crypto-shim.mjs"), "utf8");
-  files.push({ path: "node-crypto-shim.mjs", source: "node-crypto-shim.mjs", before: shim, after: shim });
+  await rm(output, { recursive: true, force: true });
   for (const file of files) {
     await mkdir(dirname(join(output, file.path)), { recursive: true });
     await writeFile(join(output, file.path), file.after);

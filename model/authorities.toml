@@ -104,7 +104,7 @@ citation = "afflom/stitch (identity/stitch.lock commit 68a9222a); RFC 2104 HMAC-
 artifact = "catalogs/governance/stitch-self-hosting.json"
 checksum = "06d6593e8d813a82ea1ca78e674e8d4224df0116bbdfb2e0685946d371b6c669"
 statement = "Zero-account Prism-ID boundary encryption, k-of-n systematic Reed-Solomon erasure coding across multiple independent origins and public-benefit Stitch carriers, reciprocal WebRTC peer seeding, monotonic quorum release pointers, budgeted peer admission, in-Verdant PROV-O Merkle revision control, live RFC 2789 Cargo Sparse Registry, and Zenodo archival provide uniform CIA guarantees without requiring external user accounts or non-GitHub commercial cloud registrations."
-realized_by = ["VE-43", "VE-44", "VE-46", "VE-47", "VE-48", "VE-49", "VE-51", "VE-54", "VE-60", "VE-70", "VE-72", "VE-74", "VE-77", "VE-78", "VE-79"]
+realized_by = ["VE-43", "VE-44", "VE-46", "VE-47", "VE-48", "VE-49", "VE-51", "VE-54", "VE-60", "VE-70", "VE-72", "VE-74", "VE-77", "VE-78", "VE-79", "VE-80"]
 
 [[authority]]
 id = "AUTH-SEMVER-CHANGE-KPI"
@@ -113,7 +113,7 @@ citation = "Semantic Versioning 2.0.0; ISO/IEC/IEEE 12207:2017 §6.3.5 Configura
 artifact = "catalogs/governance/change-roadmap-kpi.json"
 checksum = "a0d7a6ec7f4ed8e3ce6cecd4ef22516af05de2cebcbf7484356d6f80ec5737af"
 statement = "Accountable VSM Managers govern every Verdant and Prism facet including Knowledge, Change/Version, Security, Architecture, and Stakeholder Roadmap/KPIs across M1-M27, advancing SemVer Major/Minor/Patch versions exclusively when the Ratchet is applied and all Release Gates pass."
-realized_by = ["VE-45", "VE-46", "VE-47", "VE-48", "VE-49", "VE-50", "VE-51", "VE-52", "VE-53", "VE-54", "VE-55", "VE-56", "VE-57", "VE-58", "VE-59", "VE-60", "VE-61", "VE-62", "VE-63", "VE-64", "VE-65", "VE-66", "VE-67", "VE-68", "VE-69", "VE-70", "VE-71", "VE-72", "VE-73", "VE-74", "VE-75", "VE-76", "VE-77", "VE-78", "VE-79"]
+realized_by = ["VE-45", "VE-46", "VE-47", "VE-48", "VE-49", "VE-50", "VE-51", "VE-52", "VE-53", "VE-54", "VE-55", "VE-56", "VE-57", "VE-58", "VE-59", "VE-60", "VE-61", "VE-62", "VE-63", "VE-64", "VE-65", "VE-66", "VE-67", "VE-68", "VE-69", "VE-70", "VE-71", "VE-72", "VE-73", "VE-74", "VE-75", "VE-76", "VE-77", "VE-78", "VE-79", "VE-80"]
 
 [[authority]]
 id = "BERKELEY-SOFTFLOAT"

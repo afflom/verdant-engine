@@ -870,10 +870,10 @@ impl VerdantOperatorChannel {
             &fidelity_refresh_args,
         )?;
 
-        // 3. Kappa-memoized locked SDK `lexlean lock && lexlean fmt && lexlean lock`:
+        // 3. Kappa-memoized LexLean 0.4.5 `lexlean lock && lexlean fmt && lexlean lock`:
         let mut app_files = vec![
             repo_root.join("app/lexlean.toml"),
-            repo_root.join("app/prismpm.toml"),
+            repo_root.join("template.lock"),
         ];
         app_files.extend(collect_dir_files(
             &[repo_root.join("app/src")],
@@ -887,18 +887,24 @@ impl VerdantOperatorChannel {
             .to_string();
         let app_cache_hit = ratchet_stage_cache_hit(opts.force, app_kappa == prev_app_kappa, true);
         if ratchet_cycle_should_run_sdk(opts.run_sdk_docker, app_cache_hit) {
-            let sdk_img = std::fs::read_to_string(repo_root.join("prismpm.lock"))
-                .ok()
-                .and_then(|raw| {
-                    serde_json::from_str::<serde_json::Value>(&raw)
-                        .ok()
-                        .and_then(|v| {
-                            v.get("sdk_image")
-                                .and_then(|s| s.as_str())
-                                .map(str::to_string)
-                        })
-                });
-            if let Some(img) = sdk_img {
+            let host_lexlean_ok = std::process::Command::new("lexlean")
+                .arg("--version")
+                .output()
+                .map(|o| o.status.success())
+                .unwrap_or(false);
+            if host_lexlean_ok {
+                let app_wd = repo_root.join("app").to_string_lossy().to_string();
+                run_stage_cmd(
+                    &mut stages,
+                    "lexlean-fmt-lock",
+                    "bash",
+                    &[
+                        "-c",
+                        &format!("cd {app_wd:?} && lexlean lock && lexlean fmt && lexlean lock"),
+                    ],
+                )?;
+            } else {
+                let img = "ghcr.io/uor-foundation/lexlean@sha256:d391bfedd4eb97dc25c218628f94cd081436589c348797ebf13c47ab13d4ef30";
                 let root_abs =
                     std::fs::canonicalize(repo_root).unwrap_or_else(|_| repo_root.to_path_buf());
                 let mount_spec = format!("{}:{}", root_abs.display(), root_abs.display());
@@ -917,29 +923,23 @@ impl VerdantOperatorChannel {
                     mount_spec,
                     "-w".to_string(),
                     app_wd,
-                    img,
-                    "bash".to_string(),
+                    "--entrypoint".to_string(),
+                    "sh".to_string(),
+                    img.to_string(),
                     "-c".to_string(),
                     "lexlean lock && lexlean fmt && lexlean lock".to_string(),
                 ]);
                 let d_arg_refs: Vec<&str> = d_args.iter().map(String::as_str).collect();
                 run_stage_cmd(&mut stages, "lexlean-fmt-lock", "docker", &d_arg_refs)?;
-                run_stage_cmd(
-                    &mut stages,
-                    "prism-fidelity-post-fmt",
-                    "cargo",
-                    &fidelity_refresh_args,
-                )?;
-                let post_app_kappa = hash_tree(&app_files);
-                let _ = std::fs::write(&app_cache_path, format!("{post_app_kappa}\n"));
-            } else {
-                stages.push(RatchetCycleStageRecord {
-                    stage_id: "lexlean-fmt-lock".to_string(),
-                    status: "skip".to_string(),
-                    duration_ms: 0,
-                    detail: "no sdk_image in prismpm.lock".to_string(),
-                });
             }
+            run_stage_cmd(
+                &mut stages,
+                "prism-fidelity-post-fmt",
+                "cargo",
+                &fidelity_refresh_args,
+            )?;
+            let post_app_kappa = hash_tree(&app_files);
+            let _ = std::fs::write(&app_cache_path, format!("{post_app_kappa}\n"));
         } else {
             stages.push(RatchetCycleStageRecord {
                 stage_id: "lexlean-fmt-lock".to_string(),

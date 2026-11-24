@@ -324,15 +324,14 @@ pub fn paged_workload_step_json(raw_json: &str) -> String {
         telem.budget_bytes,
     );
     let contract_met = telem.invariant_held && decision.performance_contract_met;
-    serde_json::json!({
-        "ok": true,
-        "viewportW": viewport_w,
-        "viewportH": viewport_h,
-        "arena": telem,
-        "decision": decision,
-        "contractMet": contract_met,
-    })
-    .to_string()
+    format!(
+        "{{\"ok\":true,\"viewportW\":{},\"viewportH\":{},\"arena\":{},\"decision\":{},\"contractMet\":{}}}",
+        viewport_w,
+        viewport_h,
+        serde_json::to_string(&telem).unwrap_or_else(|_| "{}".to_string()),
+        serde_json::to_string(&decision).unwrap_or_else(|_| "{}".to_string()),
+        contract_met,
+    )
 }
 
 #[cfg(test)]

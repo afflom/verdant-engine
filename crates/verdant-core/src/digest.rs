@@ -1,4 +1,4 @@
-//! Canonical SHA-256 & lowercase hexadecimal encoding helpers shared across `verdant-core`.
+//! Canonical SHA-256 & lowercase hexadecimal helpers (`digest.rs`).
 //!
 //! Consolidates content-addressed digest formatting so `operator`, `vcs`, `standards`, `runtime`,
 //! `network`, and `ratchet_sync` share a single zero-magic-constants (`FI-08`) implementation.

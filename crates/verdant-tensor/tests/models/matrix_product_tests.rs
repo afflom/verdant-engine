@@ -117,6 +117,26 @@ int main(int argc, char **argv) {
     }
     return std::feof(stdin) ? 0 : 2;
   }
+  if (!std::strcmp(argv[1], "signed-truncation")) {
+    unsigned count;
+    while (std::scanf("%u", &count) == 1) {
+      if (!count || count > 4096) return 3;
+      auto *ctx = ggml_init({1024*1024, nullptr, false});
+      auto *src = ggml_new_tensor_1d(ctx, GGML_TYPE_F32, count);
+      auto *dst = ggml_new_tensor_1d(ctx, GGML_TYPE_I32, count);
+      for (unsigned i = 0; i < count; ++i) {
+        unsigned word;
+        if (std::scanf("%u", &word) != 1) return 2;
+        std::memcpy(static_cast<float *>(src->data) + i, &word, sizeof(word));
+      }
+      auto *copy = ggml_cpy(ctx, src, dst);
+      ggml_compute_params params{}; params.nth = 1;
+      ggml_compute_forward_cpy(&params, copy);
+      for (unsigned i = 0; i < count; ++i) std::printf("%u\n", static_cast<unsigned>(static_cast<int32_t *>(dst->data)[i]));
+      ggml_free(ctx);
+    }
+    return 0;
+  }
   if (!std::strcmp(argv[1], "unary-softplus")) {
     unsigned width;
     while (std::scanf("%u", &width) == 1) {
@@ -381,11 +401,25 @@ int main(int argc, char **argv) {
   if (!std::strcmp(argv[1], "iq2_xxs-dot")) return compare_grouped_rows<block_iq2_xxs>(GGML_TYPE_IQ2_XXS);
   if (!std::strcmp(argv[1], "iq2_xs-dot")) return compare_grouped_rows<block_iq2_xs>(GGML_TYPE_IQ2_XS);
   if (!std::strcmp(argv[1], "iq2_s-dot")) return compare_grouped_rows<block_iq2_s>(GGML_TYPE_IQ2_S);
+  if (!std::strcmp(argv[1], "tq1_0-dot")) return compare_grouped_rows<block_tq1_0>(GGML_TYPE_TQ1_0);
+  if (!std::strcmp(argv[1], "tq2_0-dot")) return compare_grouped_rows<block_tq2_0>(GGML_TYPE_TQ2_0);
+  if (!std::strcmp(argv[1], "iq3_xxs-dot")) return compare_grouped_rows<block_iq3_xxs>(GGML_TYPE_IQ3_XXS);
+  if (!std::strcmp(argv[1], "iq3_s-dot")) return compare_grouped_rows<block_iq3_s>(GGML_TYPE_IQ3_S);
+  if (!std::strcmp(argv[1], "iq1_s-dot")) return compare_grouped_rows<block_iq1_s>(GGML_TYPE_IQ1_S);
+  if (!std::strcmp(argv[1], "iq1_m-dot")) return compare_grouped_rows<block_iq1_m>(GGML_TYPE_IQ1_M);
   if (!std::strcmp(argv[1], "iq4_xs-dot")) return compare_grouped_rows<block_iq4_xs>(GGML_TYPE_IQ4_XS);
   if (!std::strcmp(argv[1], "grouped-q3-dot")) return compare_grouped_rows<block_q3_K>(GGML_TYPE_Q3_K);
   if (!std::strcmp(argv[1], "grouped-q6-dot")) return compare_grouped_rows<block_q6_K>(GGML_TYPE_Q6_K);
   if (!std::strcmp(argv[1], "grouped-q4-dot")) return compare_grouped_rows<block_q4_K>(GGML_TYPE_Q4_K);
   if (!std::strcmp(argv[1], "grouped-q5-dot")) return compare_grouped_rows<block_q5_K>(GGML_TYPE_Q5_K);
+  if (!std::strcmp(argv[1], "grouped-affine-2")) return encode_blocks<QK_K>(quantize_row_q2_K_ref);
+  if (!std::strcmp(argv[1], "grouped-affine-4")) return encode_blocks<QK_K>(quantize_row_q4_K_ref);
+  if (!std::strcmp(argv[1], "grouped-affine-5")) return encode_blocks<QK_K>(quantize_row_q5_K_ref);
+  if (!std::strcmp(argv[1], "signed-six-encode")) return encode_blocks<QK_K>(quantize_row_q6_K_ref);
+  if (!std::strcmp(argv[1], "mxfp4-encode")) return encode_blocks<QK_MXFP4>(quantize_row_mxfp4_ref);
+  if (!std::strcmp(argv[1], "nvfp4-encode")) return encode_blocks<QK_NVFP4>(quantize_row_nvfp4_ref);
+  if (!std::strcmp(argv[1], "tq1_0")) return encode_blocks<QK_K>(quantize_row_tq1_0_ref);
+  if (!std::strcmp(argv[1], "tq2_0")) return encode_blocks<QK_K>(quantize_row_tq2_0_ref);
   if (!std::strcmp(argv[1], "q1_0")) return encode_blocks<QK1_0>(quantize_row_q1_0_ref);
   if (!std::strcmp(argv[1], "q2_0")) return encode_blocks<QK2_0>(quantize_row_q2_0_ref);
   if (!std::strcmp(argv[1], "q4_0")) return encode_blocks<32>(quantize_row_q4_0_ref);
@@ -668,7 +702,8 @@ pub(crate) fn query_oracle(mode: &str, requests: String) -> Vec<u32> {
             identity.update(std::fs::read(inventory).unwrap());
         }
         identity.update(std::env::consts::ARCH);
-        identity.update(std::fs::read(root.join("prismpm.lock")).unwrap());
+        identity.update(std::fs::read(root.join("template.lock")).unwrap());
+        identity.update(std::fs::read(root.join("app/lean-toolchain")).unwrap());
         let common_key = format!("{:x}", identity.clone().finalize());
         identity.update(GGML_VECTOR_DRIVER);
         let base = std::env::var_os("CARGO_TARGET_DIR")
@@ -996,6 +1031,13 @@ fn verify_tensor_bundle() -> std::collections::BTreeMap<String, String> {
     verify_bundle("tensor", "tensor-execution")
 }
 
+pub(super) fn certified_encoding_model(package: &str, root_name: &str) {
+    static VERIFIED: std::sync::OnceLock<std::collections::BTreeMap<String, String>> =
+        std::sync::OnceLock::new();
+    let bindings = VERIFIED.get_or_init(|| verify_bundle("encoding", "tensor-encoding"));
+    assert_eq!(bindings.get(root_name).map(String::as_str), Some(package));
+}
+
 pub(super) fn certified_quotient_model() {
     static VERIFIED: std::sync::OnceLock<std::collections::BTreeMap<String, String>> =
         std::sync::OnceLock::new();
@@ -1017,8 +1059,148 @@ pub(super) fn certified_quotient_model() {
     }
 }
 
+fn blake3_hex(data: &[u8]) -> String {
+    const IV: [u32; 8] = [
+        0x6a09_e667,
+        0xbb67_ae85,
+        0x3c6e_f372,
+        0xa54f_f53a,
+        0x510e_527f,
+        0x9b05_688c,
+        0x1f83_d9ab,
+        0x5be0_cd19,
+    ];
+    const PERM: [usize; 16] = [2, 6, 3, 10, 7, 0, 4, 13, 1, 11, 12, 5, 9, 14, 15, 8];
+    fn g(s: &mut [u32; 16], a: usize, b: usize, c: usize, d: usize, mx: u32, my: u32) {
+        s[a] = s[a].wrapping_add(s[b]).wrapping_add(mx);
+        s[d] = (s[d] ^ s[a]).rotate_right(16);
+        s[c] = s[c].wrapping_add(s[d]);
+        s[b] = (s[b] ^ s[c]).rotate_right(12);
+        s[a] = s[a].wrapping_add(s[b]).wrapping_add(my);
+        s[d] = (s[d] ^ s[a]).rotate_right(8);
+        s[c] = s[c].wrapping_add(s[d]);
+        s[b] = (s[b] ^ s[c]).rotate_right(7);
+    }
+    fn compress(
+        cv: &[u32; 8],
+        block: &[u32; 16],
+        counter: u64,
+        block_len: u32,
+        flags: u32,
+    ) -> [u32; 16] {
+        let mut s = [
+            cv[0],
+            cv[1],
+            cv[2],
+            cv[3],
+            cv[4],
+            cv[5],
+            cv[6],
+            cv[7],
+            IV[0],
+            IV[1],
+            IV[2],
+            IV[3],
+            counter as u32,
+            (counter >> 32) as u32,
+            block_len,
+            flags,
+        ];
+        let mut m = *block;
+        for r in 0..7 {
+            g(&mut s, 0, 4, 8, 12, m[0], m[1]);
+            g(&mut s, 1, 5, 9, 13, m[2], m[3]);
+            g(&mut s, 2, 6, 10, 14, m[4], m[5]);
+            g(&mut s, 3, 7, 11, 15, m[6], m[7]);
+            g(&mut s, 0, 5, 10, 15, m[8], m[9]);
+            g(&mut s, 1, 6, 11, 12, m[10], m[11]);
+            g(&mut s, 2, 7, 8, 13, m[12], m[13]);
+            g(&mut s, 3, 4, 9, 14, m[14], m[15]);
+            if r < 6 {
+                let mut next = [0u32; 16];
+                for i in 0..16 {
+                    next[i] = m[PERM[i]];
+                }
+                m = next;
+            }
+        }
+        for i in 0..8 {
+            s[i] ^= s[i + 8];
+            s[i + 8] ^= cv[i];
+        }
+        s
+    }
+    fn words(bytes: &[u8]) -> [u32; 16] {
+        let mut buf = [0u8; 64];
+        buf[..bytes.len()].copy_from_slice(bytes);
+        std::array::from_fn(|i| u32::from_le_bytes(buf[i * 4..(i + 1) * 4].try_into().unwrap()))
+    }
+    fn chunk_out(chunk: &[u8], counter: u64) -> ([u32; 8], [u32; 16], u64, u32, u32) {
+        let mut cv = IV;
+        if chunk.is_empty() {
+            return (cv, [0u32; 16], counter, 0, 1 | 2);
+        }
+        let n = chunk.len().div_ceil(64);
+        for b in 0..n {
+            let slice = &chunk[b * 64..chunk.len().min((b + 1) * 64)];
+            let flags = (if b == 0 { 1 } else { 0 }) | (if b + 1 == n { 2 } else { 0 });
+            let w = words(slice);
+            if b + 1 == n {
+                return (cv, w, counter, slice.len() as u32, flags);
+            }
+            let out = compress(&cv, &w, counter, slice.len() as u32, flags);
+            cv.copy_from_slice(&out[..8]);
+        }
+        unreachable!()
+    }
+    let out_cv = |(cv, w, c, len, f): ([u32; 8], [u32; 16], u64, u32, u32)| -> [u32; 8] {
+        compress(&cv, &w, c, len, f)[..8].try_into().unwrap()
+    };
+    let parent = |l: [u32; 8], r: [u32; 8]| -> ([u32; 8], [u32; 16], u64, u32, u32) {
+        let mut w = [0u32; 16];
+        w[..8].copy_from_slice(&l);
+        w[8..].copy_from_slice(&r);
+        (IV, w, 0, 64, 4)
+    };
+    let root_node = if data.len() <= 1024 {
+        chunk_out(data, 0)
+    } else {
+        let mut stack: Vec<[u32; 8]> = Vec::new();
+        let total = data.len().div_ceil(1024);
+        let mut last = None;
+        for idx in 0..total {
+            let slice = &data[idx * 1024..data.len().min((idx + 1) * 1024)];
+            let co = chunk_out(slice, idx as u64);
+            if idx + 1 < total {
+                let mut cv = out_cv(co);
+                let mut t = idx + 1;
+                while t & 1 == 0 {
+                    cv = out_cv(parent(stack.pop().unwrap(), cv));
+                    t >>= 1;
+                }
+                stack.push(cv);
+            } else {
+                let mut node = co;
+                while let Some(left) = stack.pop() {
+                    node = parent(left, out_cv(node));
+                }
+                last = Some(node);
+            }
+        }
+        last.unwrap()
+    };
+    let root_words = compress(&root_node.0, &root_node.1, 0, root_node.3, root_node.4 | 8);
+    let mut hex = String::with_capacity(64);
+    for w in &root_words[..8] {
+        for b in w.to_le_bytes() {
+            use std::fmt::Write as _;
+            write!(hex, "{b:02x}").unwrap();
+        }
+    }
+    hex
+}
+
 fn verify_bundle(scope: &str, directory: &str) -> std::collections::BTreeMap<String, String> {
-    use sha2::{Digest, Sha256};
     use std::process::Command;
     let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent()
@@ -1057,10 +1239,10 @@ fn verify_bundle(scope: &str, directory: &str) -> std::collections::BTreeMap<Str
     }
     assert_eq!(
         format!(
-            "{:x}",
-            Sha256::digest(std::fs::read(root.join(format!("app/{scope}.lexlean.lock"))).unwrap())
+            "blake3:{}",
+            blake3_hex(&std::fs::read(root.join(format!("app/{scope}.lexlean.lock"))).unwrap())
         ),
-        result["source"]["lock_sha256"].as_str().unwrap()
+        result["source"]["lock_kappa"].as_str().unwrap()
     );
     let roots = result["roots"].as_array().unwrap();
     let request: serde_json::Value = serde_json::from_slice(
@@ -1088,11 +1270,12 @@ fn verify_bundle(scope: &str, directory: &str) -> std::collections::BTreeMap<Str
             let path = file["path"].as_str().unwrap();
             let actual = std::fs::read(bundle.join(path)).unwrap();
             assert_eq!(
-                format!("{:x}", Sha256::digest(&actual)),
-                file["sha256"].as_str().unwrap()
+                format!("blake3:{}", blake3_hex(&actual)),
+                file["kappa"].as_str().unwrap()
             );
             if path == format!("packages/rust-core/{package}/src/lib.rs") {
                 let compiled: &[u8] = match package {
+                    "verdant_signed_truncation" => include_bytes!("../../../../generated/tensor-encoding/packages/rust-core/verdant_signed_truncation/src/lib.rs"),
                     "verdant_matrix_shape" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_matrix_shape/src/lib.rs"),
                     "verdant_scalar_f32" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_scalar_f32/src/lib.rs"),
                     "verdant_storage_transfer" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_storage_transfer/src/lib.rs"),
@@ -1123,56 +1306,63 @@ fn verify_bundle(scope: &str, directory: &str) -> std::collections::BTreeMap<Str
                     "verdant_division_class" => include_bytes!("../../../../generated/tensor-quotient/packages/rust-core/verdant_division_class/src/lib.rs"),
                     "verdant_division_norm" => include_bytes!("../../../../generated/tensor-quotient/packages/rust-core/verdant_division_norm/src/lib.rs"),
                     "verdant_division_finish" => include_bytes!("../../../../generated/tensor-quotient/packages/rust-core/verdant_division_finish/src/lib.rs"),
-                    "verdant_symmetric_q8" => include_bytes!("../../../../generated/tensor-q8/packages/rust-core/verdant_symmetric_q8/src/lib.rs"),
-                    "verdant_exponential_f32" => include_bytes!("../../../../generated/tensor-exponential/packages/rust-core/verdant_exponential_f32/src/lib.rs"),
-                    "verdant_exponential_step" => include_bytes!("../../../../generated/tensor-exponential/packages/rust-core/verdant_exponential_step/src/lib.rs"),
-                    "verdant_exponential_scale" => include_bytes!("../../../../generated/tensor-exponential/packages/rust-core/verdant_exponential_scale/src/lib.rs"),
-                    "verdant_circular_magnitudes" => include_bytes!("../../../../generated/tensor-circular/packages/rust-core/verdant_circular_magnitudes/src/lib.rs"),
-                    "verdant_circular_orient" => include_bytes!("../../../../generated/tensor-circular/packages/rust-core/verdant_circular_orient/src/lib.rs"),
-                    "verdant_circular_prepare" => include_bytes!("../../../../generated/tensor-circular/packages/rust-core/verdant_circular_prepare/src/lib.rs"),
-                    "verdant_circular_reduce" => include_bytes!("../../../../generated/tensor-circular/packages/rust-core/verdant_circular_reduce/src/lib.rs"),
-                    "verdant_circular_square" => include_bytes!("../../../../generated/tensor-circular/packages/rust-core/verdant_circular_square/src/lib.rs"),
-                    "verdant_logarithmic_admit" => include_bytes!("../../../../generated/tensor-logscale/packages/rust-core/verdant_logarithmic_admit/src/lib.rs"),
-                    "verdant_logarithmic_inverse" => include_bytes!("../../../../generated/tensor-logscale/packages/rust-core/verdant_logarithmic_inverse/src/lib.rs"),
-                    "verdant_logarithmic_prepare" => include_bytes!("../../../../generated/tensor-logscale/packages/rust-core/verdant_logarithmic_prepare/src/lib.rs"),
-                    "verdant_logarithmic_product" => include_bytes!("../../../../generated/tensor-logscale/packages/rust-core/verdant_logarithmic_product/src/lib.rs"),
-                    "verdant_logarithmic_scale" => include_bytes!("../../../../generated/tensor-logscale/packages/rust-core/verdant_logarithmic_scale/src/lib.rs"),
-                    "verdant_logarithmic_series" => include_bytes!("../../../../generated/tensor-logscale/packages/rust-core/verdant_logarithmic_series/src/lib.rs"),
-                    "verdant_logarithmic_term" => include_bytes!("../../../../generated/tensor-logscale/packages/rust-core/verdant_logarithmic_term/src/lib.rs"),
-                    "verdant_logarithmic_word" => include_bytes!("../../../../generated/tensor-logscale/packages/rust-core/verdant_logarithmic_word/src/lib.rs"),
-                    "verdant_weighted_blend" => include_bytes!("../../../../generated/tensor-weighted/packages/rust-core/verdant_weighted_blend/src/lib.rs"),
-                    "verdant_weighted_pivot" => include_bytes!("../../../../generated/tensor-weighted/packages/rust-core/verdant_weighted_pivot/src/lib.rs"),
-                    "verdant_weighted_reciprocal" => include_bytes!("../../../../generated/tensor-weighted/packages/rust-core/verdant_weighted_reciprocal/src/lib.rs"),
-                    "verdant_rotation_geometry" => include_bytes!("../../../../generated/tensor-plane/packages/rust-core/verdant_rotation_geometry/src/lib.rs"),
-                    "verdant_rotation_limit" => include_bytes!("../../../../generated/tensor-plane/packages/rust-core/verdant_rotation_limit/src/lib.rs"),
-                    "verdant_rotation_signed" => include_bytes!("../../../../generated/tensor-plane/packages/rust-core/verdant_rotation_signed/src/lib.rs"),
-                    "verdant_rotation_step" => include_bytes!("../../../../generated/tensor-plane/packages/rust-core/verdant_rotation_step/src/lib.rs"),
-                    "verdant_grouped_dot" => include_bytes!("../../../../generated/tensor-groupeddot/packages/rust-core/verdant_grouped_dot/src/lib.rs"),
-                    "verdant_grouped_q8" => include_bytes!("../../../../generated/tensor-grouped/packages/rust-core/verdant_grouped_q8/src/lib.rs"),
-                    "verdant_tanh" => include_bytes!("../../../../generated/tensor-tanh/packages/rust-core/verdant_tanh/src/lib.rs"),
-                    "verdant_row_ranking" => include_bytes!("../../../../generated/tensor-rowrank/packages/rust-core/verdant_row_ranking/src/lib.rs"),
-                    "verdant_normalized_exponential" => include_bytes!("../../../../generated/tensor-softmax/packages/rust-core/verdant_normalized_exponential/src/lib.rs"),
-                    "verdant_grouped_affine" => include_bytes!("../../../../generated/tensor-affinedot/packages/rust-core/verdant_grouped_affine/src/lib.rs"),
-                    "verdant_softplus" => include_bytes!("../../../../generated/tensor-softplus/packages/rust-core/verdant_softplus/src/lib.rs"),
-                    "verdant_bitpacked_product" => include_bytes!("../../../../generated/tensor-bitrows/packages/rust-core/verdant_bitpacked_product/src/lib.rs"),
-                    "verdant_head_slope_index" => include_bytes!("../../../../generated/tensor-slopes/packages/rust-core/verdant_head_slope_index/src/lib.rs"),
-                    "verdant_head_slope_group" => include_bytes!("../../../../generated/tensor-slopes/packages/rust-core/verdant_head_slope_group/src/lib.rs"),
-                    "verdant_head_slope_exponent" => include_bytes!("../../../../generated/tensor-slopes/packages/rust-core/verdant_head_slope_exponent/src/lib.rs"),
-                    "verdant_head_slope_base" => include_bytes!("../../../../generated/tensor-slopes/packages/rust-core/verdant_head_slope_base/src/lib.rs"),
-                    "verdant_head_slope_power" => include_bytes!("../../../../generated/tensor-slopes/packages/rust-core/verdant_head_slope_power/src/lib.rs"),
-                    "verdant_head_slope_multiply" => include_bytes!("../../../../generated/tensor-slopes/packages/rust-core/verdant_head_slope_multiply/src/lib.rs"),
-                    "verdant_head_slope_term" => include_bytes!("../../../../generated/tensor-slopes/packages/rust-core/verdant_head_slope_term/src/lib.rs"),
-                    "verdant_head_slope_word" => include_bytes!("../../../../generated/tensor-slopes/packages/rust-core/verdant_head_slope_word/src/lib.rs"),
-                    "verdant_head_slope_normalize" => include_bytes!("../../../../generated/tensor-slopes/packages/rust-core/verdant_head_slope_normalize/src/lib.rs"),
-                    "verdant_head_slope_digit" => include_bytes!("../../../../generated/tensor-slopes/packages/rust-core/verdant_head_slope_digit/src/lib.rs"),
-                    "verdant_head_slope_limbs" => include_bytes!("../../../../generated/tensor-slopes/packages/rust-core/verdant_head_slope_limbs/src/lib.rs"),
-                    "verdant_head_slope" => include_bytes!("../../../../generated/tensor-slopes/packages/rust-core/verdant_head_slope/src/lib.rs"),
-                    "verdant_gelu" => include_bytes!("../../../../generated/tensor-gelu/packages/rust-core/verdant_gelu/src/lib.rs"),
-                    "verdant_logistic" => include_bytes!("../../../../generated/tensor-logistic/packages/rust-core/verdant_logistic/src/lib.rs"),
-                    "verdant_swiglu" => include_bytes!("../../../../generated/tensor-swiglu/packages/rust-core/verdant_swiglu/src/lib.rs"),
-                    "verdant_packed_dot" => include_bytes!("../../../../generated/tensor-packed/packages/rust-core/verdant_packed_dot/src/lib.rs"),
-                    "verdant_symmetric_dot" => include_bytes!("../../../../generated/tensor-dot/packages/rust-core/verdant_symmetric_dot/src/lib.rs"),
-                    "verdant_symmetric_dot_layout" => include_bytes!("../../../../generated/tensor-dot/packages/rust-core/verdant_symmetric_dot_layout/src/lib.rs"),
+                    "verdant_symmetric_q8" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_symmetric_q8/src/lib.rs"),
+                    "verdant_exponential_f32" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_exponential_f32/src/lib.rs"),
+                    "verdant_exponential_step" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_exponential_step/src/lib.rs"),
+                    "verdant_exponential_scale" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_exponential_scale/src/lib.rs"),
+                    "verdant_circular_magnitudes" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_circular_magnitudes/src/lib.rs"),
+                    "verdant_circular_orient" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_circular_orient/src/lib.rs"),
+                    "verdant_circular_prepare" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_circular_prepare/src/lib.rs"),
+                    "verdant_circular_reduce" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_circular_reduce/src/lib.rs"),
+                    "verdant_circular_square" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_circular_square/src/lib.rs"),
+                    "verdant_logarithmic_admit" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_logarithmic_admit/src/lib.rs"),
+                    "verdant_logarithmic_inverse" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_logarithmic_inverse/src/lib.rs"),
+                    "verdant_logarithmic_prepare" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_logarithmic_prepare/src/lib.rs"),
+                    "verdant_logarithmic_product" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_logarithmic_product/src/lib.rs"),
+                    "verdant_logarithmic_scale" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_logarithmic_scale/src/lib.rs"),
+                    "verdant_logarithmic_series" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_logarithmic_series/src/lib.rs"),
+                    "verdant_logarithmic_term" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_logarithmic_term/src/lib.rs"),
+                    "verdant_logarithmic_word" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_logarithmic_word/src/lib.rs"),
+                    "verdant_weighted_blend" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_weighted_blend/src/lib.rs"),
+                    "verdant_weighted_pivot" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_weighted_pivot/src/lib.rs"),
+                    "verdant_weighted_reciprocal" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_weighted_reciprocal/src/lib.rs"),
+                    "verdant_rotation_geometry" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_rotation_geometry/src/lib.rs"),
+                    "verdant_rotation_limit" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_rotation_limit/src/lib.rs"),
+                    "verdant_rotation_signed" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_rotation_signed/src/lib.rs"),
+                    "verdant_rotation_step" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_rotation_step/src/lib.rs"),
+                    "verdant_grouped_dot" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_grouped_dot/src/lib.rs"),
+                    "verdant_grouped_q8" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_grouped_q8/src/lib.rs"),
+                    "verdant_tanh" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_tanh/src/lib.rs"),
+                    "verdant_row_ranking" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_row_ranking/src/lib.rs"),
+                    "verdant_normalized_exponential" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_normalized_exponential/src/lib.rs"),
+                    "verdant_grouped_affine" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_grouped_affine/src/lib.rs"),
+                    "verdant_affine_finite" => include_bytes!("../../../../generated/tensor-encoding/packages/rust-core/verdant_affine_finite/src/lib.rs"),
+                    "verdant_affine_geometry" => include_bytes!("../../../../generated/tensor-encoding/packages/rust-core/verdant_affine_geometry/src/lib.rs"),
+                    "verdant_affine_insert_field" => include_bytes!("../../../../generated/tensor-encoding/packages/rust-core/verdant_affine_insert_field/src/lib.rs"),
+                    "verdant_affine_fit" => include_bytes!("../../../../generated/tensor-encoding/packages/rust-core/verdant_affine_fit/src/lib.rs"),
+                    "verdant_affine_weight_fields" => include_bytes!("../../../../generated/tensor-encoding/packages/rust-core/verdant_affine_weight_fields/src/lib.rs"),
+                    "verdant_affine_quantized" => include_bytes!("../../../../generated/tensor-encoding/packages/rust-core/verdant_affine_quantized/src/lib.rs"),
+                    "verdant_grouped_six_encoding" => include_bytes!("../../../../generated/tensor-encoding/packages/rust-core/verdant_grouped_six_encoding/src/lib.rs"),
+                    "verdant_softplus" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_softplus/src/lib.rs"),
+                    "verdant_bitpacked_product" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_bitpacked_product/src/lib.rs"),
+                    "verdant_head_slope_index" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_head_slope_index/src/lib.rs"),
+                    "verdant_head_slope_group" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_head_slope_group/src/lib.rs"),
+                    "verdant_head_slope_exponent" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_head_slope_exponent/src/lib.rs"),
+                    "verdant_head_slope_base" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_head_slope_base/src/lib.rs"),
+                    "verdant_head_slope_power" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_head_slope_power/src/lib.rs"),
+                    "verdant_head_slope_multiply" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_head_slope_multiply/src/lib.rs"),
+                    "verdant_head_slope_term" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_head_slope_term/src/lib.rs"),
+                    "verdant_head_slope_word" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_head_slope_word/src/lib.rs"),
+                    "verdant_head_slope_normalize" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_head_slope_normalize/src/lib.rs"),
+                    "verdant_head_slope_digit" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_head_slope_digit/src/lib.rs"),
+                    "verdant_head_slope_limbs" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_head_slope_limbs/src/lib.rs"),
+                    "verdant_head_slope" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_head_slope/src/lib.rs"),
+                    "verdant_gelu" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_gelu/src/lib.rs"),
+                    "verdant_logistic" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_logistic/src/lib.rs"),
+                    "verdant_swiglu" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_swiglu/src/lib.rs"),
+                    "verdant_packed_dot" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_packed_dot/src/lib.rs"),
+                    "verdant_symmetric_dot" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_symmetric_dot/src/lib.rs"),
+                    "verdant_symmetric_dot_layout" => include_bytes!("../../../../generated/tensor-execution/packages/rust-core/verdant_symmetric_dot_layout/src/lib.rs"),
                     _ => panic!("unknown certified dependency"),
                 };
                 assert_eq!(actual, compiled);
@@ -1235,11 +1425,7 @@ fn rectangular_product_vtk_01() {
 
 #[test]
 fn symmetric_block_encoding_vtk_16() {
-    let bindings = verify_bundle("q8", "tensor-q8");
-    assert_eq!(
-        bindings["VerdantEngine.SymmetricBlock.plan"],
-        "verdant_symmetric_q8"
-    );
+    certified_model("verdant_symmetric_q8", "VerdantEngine.SymmetricBlock.plan");
     use std::fmt::Write;
     let blocks = symmetric_encoding_inputs();
     let mut input = String::new();
@@ -1386,10 +1572,7 @@ fn affine_byte_products_vtk_37() {
 
 #[test]
 fn grouped_block_encoding_vtk_26() {
-    assert_eq!(
-        verify_bundle("grouped", "tensor-grouped")["VerdantEngine.GroupedBlock.plan"],
-        "verdant_grouped_q8"
-    );
+    certified_model("verdant_grouped_q8", "VerdantEngine.GroupedBlock.plan");
     use std::fmt::Write;
     let mut blocks = vec![[0.0; 256], [-0.0; 256]];
     for sign in [-1.0, 1.0] {
@@ -1436,10 +1619,7 @@ fn grouped_block_encoding_vtk_26() {
 
 #[test]
 fn grouped_row_product_vtk_27() {
-    assert_eq!(
-        verify_bundle("groupeddot", "tensor-groupeddot")["VerdantEngine.GroupedDot.plan"],
-        "verdant_grouped_dot"
-    );
+    certified_model("verdant_grouped_dot", "VerdantEngine.GroupedDot.plan");
     use std::fmt::Write;
     let mut input = String::new();
     let mut actual = Vec::new();
@@ -1494,19 +1674,15 @@ fn packed_row_dot_vtk_18() {
 
 fn check_symmetric_rows(packed: bool) {
     if packed {
-        assert_eq!(
-            verify_bundle("packed", "tensor-packed")["VerdantEngine.PackedDot.plan"],
-            "verdant_packed_dot"
-        );
+        certified_model("verdant_packed_dot", "VerdantEngine.PackedDot.plan");
     } else {
-        let bindings = verify_bundle("dot", "tensor-dot");
-        assert_eq!(
-            bindings["VerdantEngine.SymmetricDot.accumulate"],
-            "verdant_symmetric_dot"
+        certified_model(
+            "verdant_symmetric_dot",
+            "VerdantEngine.SymmetricDot.accumulate",
         );
-        assert_eq!(
-            bindings["VerdantEngine.SymmetricDot.rowBlockBytes"],
-            "verdant_symmetric_dot_layout"
+        certified_model(
+            "verdant_symmetric_dot_layout",
+            "VerdantEngine.SymmetricDot.rowBlockBytes",
         );
     }
     use std::fmt::Write;
@@ -1614,10 +1790,9 @@ fn check_symmetric_rows(packed: bool) {
 
 #[test]
 fn natural_exponential_vtk_19() {
-    assert_eq!(
-        verify_bundle("exponential", "tensor-exponential")
-            ["VerdantEngine.NaturalExponential.prepare"],
-        "verdant_exponential_f32"
+    certified_model(
+        "verdant_exponential_f32",
+        "VerdantEngine.NaturalExponential.prepare",
     );
     use std::fmt::Write;
     let mut words = Vec::new();
@@ -1669,10 +1844,7 @@ fn natural_exponential_vtk_19() {
 #[test]
 fn attention_head_slopes_vtk_30() {
     use std::fmt::Write;
-    assert_eq!(
-        verify_bundle("slopes", "tensor-slopes")["VerdantEngine.HeadSlope.evaluate"],
-        "verdant_head_slope"
-    );
+    certified_model("verdant_head_slope", "VerdantEngine.HeadSlope.evaluate");
     let mut cases = Vec::new();
     let mut input = String::new();
     for heads in [
@@ -1731,10 +1903,7 @@ fn attention_head_slopes_vtk_30() {
 
 #[test]
 fn gaussian_activations_vtk_29() {
-    assert_eq!(
-        verify_bundle("gelu", "tensor-gelu")["VerdantEngine.GaussianActivation.evaluate"],
-        "verdant_gelu"
-    );
+    certified_model("verdant_gelu", "VerdantEngine.GaussianActivation.evaluate");
     use std::fmt::Write;
     let mut words: Vec<u32> = (0..=u16::MAX).map(|word| u32::from(word) << 16).collect();
     words.extend((-32_768..=32_768).map(|n| (n as f32 / 2048.0).to_bits()));
@@ -1786,10 +1955,7 @@ fn gaussian_activations_vtk_29() {
 
 #[test]
 fn hyperbolic_tangent_vtk_28() {
-    assert_eq!(
-        verify_bundle("tanh", "tensor-tanh")["VerdantEngine.HyperbolicTangent.evaluate"],
-        "verdant_tanh"
-    );
+    certified_model("verdant_tanh", "VerdantEngine.HyperbolicTangent.evaluate");
     use std::fmt::Write;
     let mut words: Vec<u32> = (0u32..=u16::MAX.into()).map(|high| high << 16).collect();
     words.extend((-32768..=32768).map(|n| (n as f32 / 2048.0).to_bits()));
@@ -1829,10 +1995,7 @@ fn hyperbolic_tangent_vtk_28() {
 
 #[test]
 fn logistic_functions_vtk_25() {
-    assert_eq!(
-        verify_bundle("logistic", "tensor-logistic")["VerdantEngine.Logistic.step"],
-        "verdant_logistic"
-    );
+    certified_model("verdant_logistic", "VerdantEngine.Logistic.step");
     use std::fmt::Write;
     let mut words: Vec<u32> = (-4608..=4608)
         .map(|step| (step as f32 / 32.0).to_bits())
@@ -1873,10 +2036,7 @@ fn logistic_functions_vtk_25() {
 
 #[test]
 fn gated_product_vtk_20() {
-    assert_eq!(
-        verify_bundle("swiglu", "tensor-swiglu")["VerdantEngine.SwiGlu.step"],
-        "verdant_swiglu"
-    );
+    certified_model("verdant_swiglu", "VerdantEngine.SwiGlu.step");
     use std::fmt::Write;
     let gates = [
         0u32,
@@ -1928,7 +2088,30 @@ fn gated_product_vtk_20() {
 
 #[test]
 fn circular_functions_vtk_21() {
-    assert_eq!(verify_bundle("sincos", "tensor-circular").len(), 5);
+    for (pkg, root) in [
+        (
+            "verdant_circular_square",
+            "VerdantEngine.CircularFunctions.angleSquared",
+        ),
+        (
+            "verdant_circular_magnitudes",
+            "VerdantEngine.CircularFunctions.magnitudes",
+        ),
+        (
+            "verdant_circular_orient",
+            "VerdantEngine.CircularFunctions.orient",
+        ),
+        (
+            "verdant_circular_prepare",
+            "VerdantEngine.CircularFunctions.prepare",
+        ),
+        (
+            "verdant_circular_reduce",
+            "VerdantEngine.CircularFunctions.reduce",
+        ),
+    ] {
+        certified_model(pkg, root);
+    }
     use std::fmt::Write;
     let mut words = Vec::new();
     for exponent in 0..256u32 {
@@ -1993,7 +2176,42 @@ fn circular_functions_vtk_21() {
 
 #[test]
 fn logarithmic_frequency_vtk_22() {
-    assert_eq!(verify_bundle("logscale", "tensor-logscale").len(), 8);
+    for (pkg, root) in [
+        (
+            "verdant_logarithmic_term",
+            "VerdantEngine.LogarithmicScale.exponentialTerm",
+        ),
+        (
+            "verdant_logarithmic_scale",
+            "VerdantEngine.LogarithmicScale.exponentialWord",
+        ),
+        (
+            "verdant_logarithmic_admit",
+            "VerdantEngine.LogarithmicScale.inverseAdmitted",
+        ),
+        (
+            "verdant_logarithmic_word",
+            "VerdantEngine.LogarithmicScale.logWord",
+        ),
+        (
+            "verdant_logarithmic_prepare",
+            "VerdantEngine.LogarithmicScale.prepare",
+        ),
+        (
+            "verdant_logarithmic_product",
+            "VerdantEngine.LogarithmicScale.qMultiply",
+        ),
+        (
+            "verdant_logarithmic_inverse",
+            "VerdantEngine.LogarithmicScale.reduceInverse",
+        ),
+        (
+            "verdant_logarithmic_series",
+            "VerdantEngine.LogarithmicScale.series",
+        ),
+    ] {
+        certified_model(pkg, root);
+    }
     use std::fmt::Write;
     let mut words = vec![0x80000000, 0xbf800000, 0xff800000, 0x7fc00042];
     for exp in 0..=255u32 {
@@ -2071,7 +2289,23 @@ fn logarithmic_frequency_vtk_22() {
 
 #[test]
 fn plane_rotation_vtk_23() {
-    assert_eq!(verify_bundle("plane", "tensor-plane").len(), 4);
+    for (pkg, root) in [
+        (
+            "verdant_rotation_geometry",
+            "VerdantEngine.PlaneRotation.geometry",
+        ),
+        (
+            "verdant_rotation_limit",
+            "VerdantEngine.PlaneRotation.limit",
+        ),
+        (
+            "verdant_rotation_signed",
+            "VerdantEngine.PlaneRotation.signedMagnitude",
+        ),
+        ("verdant_rotation_step", "VerdantEngine.PlaneRotation.step"),
+    ] {
+        certified_model(pkg, root);
+    }
     use std::fmt::Write;
     let mut request = String::new();
     let mut cases = Vec::new();
@@ -2148,7 +2382,22 @@ fn plane_rotation_vtk_23() {
 
 #[test]
 fn online_weighted_mean_vtk_24() {
-    assert_eq!(verify_bundle("weighted", "tensor-weighted").len(), 3);
+    for (pkg, root) in [
+        (
+            "verdant_weighted_blend",
+            "VerdantEngine.OnlineWeightedMean.blend",
+        ),
+        (
+            "verdant_weighted_pivot",
+            "VerdantEngine.OnlineWeightedMean.pivot",
+        ),
+        (
+            "verdant_weighted_reciprocal",
+            "VerdantEngine.OnlineWeightedMean.reciprocalMass",
+        ),
+    ] {
+        certified_model(pkg, root);
+    }
     use std::fmt::Write;
     let mut input = String::new();
     let mut actual = Vec::new();
@@ -2208,10 +2457,7 @@ fn online_weighted_mean_vtk_24() {
 
 #[test]
 fn binary32_row_ranking_vtk_31() {
-    assert_eq!(
-        verify_bundle("rowrank", "tensor-rowrank")["VerdantEngine.RowRanking.evaluate"],
-        "verdant_row_ranking"
-    );
+    certified_model("verdant_row_ranking", "VerdantEngine.RowRanking.evaluate");
     use std::fmt::Write;
     let patterns = [f32::NEG_INFINITY, -2.0, -0.0, 0.0, 0.5, 9.0, f32::INFINITY];
     let mut queries = String::new();
@@ -2275,9 +2521,9 @@ fn binary32_row_ranking_vtk_31() {
 
 #[test]
 fn normalized_exponential_vtk_32() {
-    assert_eq!(
-        verify_bundle("softmax", "tensor-softmax")["VerdantEngine.NormalizedExponential.evaluate"],
-        "verdant_normalized_exponential"
+    certified_model(
+        "verdant_normalized_exponential",
+        "VerdantEngine.NormalizedExponential.evaluate",
     );
     use std::fmt::Write;
     let mut requests = String::new();
@@ -2330,10 +2576,9 @@ fn normalized_exponential_vtk_32() {
 
 #[test]
 fn grouped_affine_products_vtk_33() {
-    assert_eq!(
-        verify_bundle("affinedot", "tensor-affinedot")
-            ["VerdantEngine.GroupedAffineProduct.evaluate"],
-        "verdant_grouped_affine"
+    certified_model(
+        "verdant_grouped_affine",
+        "VerdantEngine.GroupedAffineProduct.evaluate",
     );
     compare_grouped_products(
         &[
@@ -2395,11 +2640,61 @@ fn grouped_nonlinear_product_vtk_43() {
     );
 }
 
+#[test]
+fn ternary_row_products_vtk_45() {
+    use super::GroupedWeightEncoding::{PackedTrits, TwoBitTernary};
+    compare_grouped_products(
+        &[
+            (54, "tq1_0-dot", |w, a| {
+                super::dot_grouped_weight_row(w, a, PackedTrits)
+            }),
+            (66, "tq2_0-dot", |w, a| {
+                super::dot_grouped_weight_row(w, a, TwoBitTernary)
+            }),
+        ],
+        GroupedScales::Trailing,
+    );
+}
+
+#[test]
+fn four_lane_codebook_products_vtk_46() {
+    use super::CodebookEncoding::{FourLaneExplicitSigns, FourLaneIndexedSigns};
+    compare_grouped_products(
+        &[
+            (98, "iq3_xxs-dot", |w, a| {
+                super::dot_codebook_row(w, a, FourLaneIndexedSigns)
+            }),
+            (110, "iq3_s-dot", |w, a| {
+                super::dot_codebook_row(w, a, FourLaneExplicitSigns)
+            }),
+        ],
+        GroupedScales::Leading,
+    );
+}
+
+#[test]
+fn shifted_codebook_products_vtk_47() {
+    use super::CodebookEncoding::{DistributedScale, ShiftedGrid};
+    compare_grouped_products(
+        &[(50, "iq1_s-dot", |w, a| {
+            super::dot_codebook_row(w, a, ShiftedGrid)
+        })],
+        GroupedScales::Leading,
+    );
+    compare_grouped_products(
+        &[(56, "iq1_m-dot", |w, a| {
+            super::dot_codebook_row(w, a, DistributedScale)
+        })],
+        GroupedScales::Distributed,
+    );
+}
+
 #[derive(Clone, Copy)]
 enum GroupedScales {
     Leading,
     LeadingPair,
     Trailing,
+    Distributed,
 }
 
 type GroupedProduct = fn(&[u8], &[super::GroupedQ8Block]) -> Result<f32, crate::TensorComputeError>;
@@ -2427,7 +2722,21 @@ fn compare_grouped_products(products: &[(usize, &str, GroupedProduct)], scales: 
                 } else {
                     0
                 };
-                block[at..at + 2].copy_from_slice(&halves[(row + i) % halves.len()].to_ne_bytes());
+                let scale = halves[(row + i) % halves.len()];
+                if matches!(scales, GroupedScales::Distributed) {
+                    for (part, bytes) in block[width - 8..]
+                        .as_chunks_mut::<2>()
+                        .0
+                        .iter_mut()
+                        .enumerate()
+                    {
+                        let groups = u16::from_ne_bytes(*bytes) & 0x0fff;
+                        let nibble = (scale >> (4 * part)) & 15;
+                        *bytes = (groups | (nibble << 12)).to_ne_bytes();
+                    }
+                } else {
+                    block[at..at + 2].copy_from_slice(&scale.to_ne_bytes());
+                }
                 if matches!(scales, GroupedScales::LeadingPair) {
                     block[2..4]
                         .copy_from_slice(&halves[(row * 3 + i + 1) % halves.len()].to_ne_bytes());
@@ -2456,10 +2765,7 @@ fn compare_grouped_products(products: &[(usize, &str, GroupedProduct)], scales: 
 
 #[test]
 fn softplus_vtk_34() {
-    assert_eq!(
-        verify_bundle("softplus", "tensor-softplus")["VerdantEngine.Softplus.evaluate"],
-        "verdant_softplus"
-    );
+    certified_model("verdant_softplus", "VerdantEngine.Softplus.evaluate");
     use std::fmt::Write;
     let mut words = Vec::new();
     for value in 0..=u16::MAX {
@@ -2512,9 +2818,9 @@ fn softplus_vtk_34() {
 
 #[test]
 fn bitpacked_row_products_vtk_35() {
-    assert_eq!(
-        verify_bundle("bitrows", "tensor-bitrows")["VerdantEngine.BitpackedProduct.evaluate"],
-        "verdant_bitpacked_product"
+    certified_model(
+        "verdant_bitpacked_product",
+        "VerdantEngine.BitpackedProduct.evaluate",
     );
     compare_packed_weight_products(&[
         (4, 16, "sign-dot", super::dot_binary_sign_row),
@@ -2731,5 +3037,234 @@ fn bitpacked_weight_encoding_vtk_41() {
         malformed[lanes - 1] = f32::NAN;
         assert!(super::encode_weight_block(&malformed, kind, &mut untouched).is_err());
         assert_eq!(untouched, [0xa5; 18]);
+    }
+}
+
+#[test]
+fn ternary_block_encoding_vtk_44() {
+    use super::PackedWeightEncoding::{PackedTrits, TwoBitTernary};
+    compare_weight_encoders::<256>(&[(PackedTrits, 54, "tq1_0"), (TwoBitTernary, 66, "tq2_0")]);
+}
+
+#[test]
+fn compact_float_weight_encoding_vtk_48() {
+    use super::PackedWeightEncoding::{ExponentOnlyFour, UnsignedScaleFour};
+    compare_weight_encoders::<32>(&[(ExponentOnlyFour, 17, "mxfp4-encode")]);
+    compare_weight_encoders::<64>(&[(UnsignedScaleFour, 36, "nvfp4-encode")]);
+}
+
+#[test]
+fn grouped_signed_six_encoding_vtk_49() {
+    use super::PackedWeightEncoding::GroupedSignedSix;
+    certified_encoding_model(
+        "verdant_grouped_six_encoding",
+        "VerdantEngine.GroupedSixEncoding.evaluate",
+    );
+    compare_weight_encoders::<256>(&[(GroupedSignedSix, 210, "signed-six-encode")]);
+}
+
+#[test]
+fn grouped_affine_encoding_vtk_50() {
+    use super::PackedWeightEncoding::{GroupedAffineFive, GroupedAffineFour, GroupedAffineTwo};
+    for (operation, package) in [
+        ("finite", "verdant_affine_finite"),
+        ("geometry", "verdant_affine_geometry"),
+        ("insertField", "verdant_affine_insert_field"),
+        ("instruction", "verdant_affine_fit"),
+        ("planFields", "verdant_affine_weight_fields"),
+        ("quantized", "verdant_affine_quantized"),
+    ] {
+        certified_encoding_model(
+            package,
+            &format!("VerdantEngine.GroupedAffineEncoding.{operation}"),
+        );
+    }
+    compare_weight_encoders::<256>(&[
+        (GroupedAffineTwo, 84, "grouped-affine-2"),
+        (GroupedAffineFour, 144, "grouped-affine-4"),
+        (GroupedAffineFive, 176, "grouped-affine-5"),
+    ]);
+}
+
+fn compare_weight_encoders<const N: usize>(formats: &[(super::PackedWeightEncoding, usize, &str)]) {
+    use std::fmt::Write;
+    let ties = [
+        0.0_f32,
+        -0.0,
+        1.0,
+        -1.0,
+        0.5,
+        -0.5,
+        0.5_f32.next_down(),
+        -0.5_f32.next_up(),
+    ];
+    let mut state = 12345_u32;
+    let mut rows = vec![
+        [0.0; N],
+        [-0.0; N],
+        std::array::from_fn(|i| ties[i % ties.len()]),
+    ];
+    for column in 0..N {
+        let mut impulse = [0.0; N];
+        impulse[column] = if column % 2 == 0 { 1.0 } else { -1.0 };
+        rows.push(impulse);
+    }
+    for exponent in -14..=14 {
+        rows.push(std::array::from_fn(|_| {
+            state = state.wrapping_mul(1664525).wrapping_add(1013904223);
+            (state as i32 as f32 / i32::MAX as f32) * 2.0_f32.powi(exponent)
+        }));
+    }
+    if N < 256 {
+        for exponent in [
+            -148, -132, -125, -64, -31, -16, -1, 0, 1, 8, 16, 31, 64, 126, 127,
+        ] {
+            let power = 2.0_f32.powi(exponent).to_bits();
+            for gap in [0, 1, 2, 3, 5, 6, 11, 12, 22, 23, 44, 45, 88, 89] {
+                let peak = f32::from_bits(power.saturating_sub(gap));
+                rows.push(std::array::from_fn(|lane| {
+                    if lane % 2 == 0 {
+                        peak
+                    } else {
+                        -peak
+                    }
+                }));
+            }
+        }
+        for peak in [0.0_f32, 0.09375, 6.0, 1488.0, 1536.0, 2688.0, f32::MAX] {
+            for magnitude in [
+                peak.next_down().max(0.0),
+                peak,
+                peak.next_up().min(f32::MAX),
+            ] {
+                rows.push(std::array::from_fn(|i| {
+                    if i % 8 == 0 {
+                        magnitude
+                    } else {
+                        magnitude * (ties[i % ties.len()] / 2.0)
+                    }
+                }));
+            }
+        }
+    }
+    if formats
+        .iter()
+        .any(|(kind, _, _)| *kind == super::PackedWeightEncoding::GroupedSignedSix)
+    {
+        for amplitude in [1.0e9_f32, 1.0e20, f32::MAX] {
+            rows.push([amplitude; N]);
+            rows.push([-amplitude; N]);
+        }
+        for amplitude in [1.0e-15_f32, 32.0e-15, 0.0001, 0.125, 1.0, 128.0] {
+            for peak in [amplitude.next_down(), amplitude, amplitude.next_up()] {
+                rows.push(std::array::from_fn(|i| {
+                    let signed = if i % 2 == 0 { peak } else { -peak };
+                    match i / 16 % 4 {
+                        0 => signed,
+                        1 => signed / 1024.0,
+                        2 => signed * ((i % 16) as f32 - 7.5) / 8.0,
+                        _ => 0.0,
+                    }
+                }));
+            }
+        }
+    }
+    if formats
+        .iter()
+        .any(|(_, _, mode)| mode.starts_with("grouped-affine-"))
+    {
+        for scale in [0.00000001_f32, 0.00001, 0.125, 1.0, 32.0, 4096.0] {
+            rows.extend([[scale; N], [-scale; N]]);
+            for shift in [0.0, 0.25, -0.375] {
+                rows.push(std::array::from_fn(|i| {
+                    let local = match i / 16 % 4 {
+                        0 => 0.0,
+                        1 => 1.0,
+                        2 => 1.0 / 128.0,
+                        _ => -0.25,
+                    };
+                    scale * (local * ((i % 16) as f32 - 6.0) / 8.0 + shift)
+                }));
+            }
+        }
+    }
+    let mut input = String::new();
+    for row in &rows {
+        for lane in row {
+            writeln!(input, "{}", lane.to_bits()).unwrap();
+        }
+    }
+    for &(kind, width, mode) in formats {
+        let expected = query_oracle(mode, input.clone());
+        assert_eq!(expected.len(), rows.len() * width);
+        for (i, (row, reference)) in rows.iter().zip(expected.chunks_exact(width)).enumerate() {
+            let mut output = vec![0xa5; width];
+            super::encode_weight_block(row, kind, &mut output).unwrap();
+            assert_eq!(
+                output.into_iter().map(u32::from).collect::<Vec<_>>(),
+                reference,
+                "{mode} row {i}"
+            );
+        }
+        let mut untouched = vec![0xa5; width];
+        let mut row = [1.0; N];
+        assert!(super::encode_weight_block(&row[..N - 1], kind, &mut untouched).is_err());
+        assert!(super::encode_weight_block(&row, kind, &mut untouched[1..]).is_err());
+        for invalid in [f32::NAN, f32::INFINITY, f32::NEG_INFINITY] {
+            row[N - 1] = invalid;
+            assert!(super::encode_weight_block(&row, kind, &mut untouched).is_err());
+            assert_eq!(untouched, vec![0xa5; width]);
+        }
+    }
+}
+
+#[test]
+fn binary32_signed_truncation_vtk_51() {
+    use std::fmt::Write as _;
+    certified_encoding_model(
+        "verdant_signed_truncation",
+        "VerdantEngine.SignedTruncation.signedWord",
+    );
+    let mut words = Vec::new();
+    for exponent in 0..158_u32 {
+        for fraction in [
+            0,
+            1,
+            0x003f_ffff,
+            0x0040_0000,
+            0x0040_0001,
+            0x007f_fffe,
+            0x007f_ffff,
+        ] {
+            let word = (exponent << 23) | fraction;
+            words.extend([word, word | 0x8000_0000]);
+        }
+    }
+    words.push((-2_147_483_648_f32).to_bits());
+    let mut requests = format!("{}\n", words.len());
+    for word in &words {
+        writeln!(requests, "{word}").unwrap();
+    }
+    let expected = query_oracle("signed-truncation", requests);
+    assert_eq!(expected.len(), words.len());
+    for (word, result) in words.into_iter().zip(expected) {
+        assert_eq!(
+            super::truncate_signed_word_f32(u64::from(word)).unwrap(),
+            Some(u64::from(result)),
+            "input {word:08x}"
+        );
+    }
+    for invalid in [
+        0x4f00_0000_u64,
+        0xcf00_0001,
+        0x7f7f_ffff,
+        0xff7f_ffff,
+        0x7f80_0000,
+        0xff80_0000,
+        0x7fc0_0001,
+        0xffa0_0000,
+        0x1_0000_0000,
+    ] {
+        assert_eq!(super::truncate_signed_word_f32(invalid).unwrap(), None);
     }
 }

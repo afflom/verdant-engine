@@ -202,6 +202,7 @@ try {
     error: window.__VERDANT_BLANK_FRAME__.error || null,
     version: window.__VERDANT_BLANK_FRAME__.version,
     capsuleSha256Hex: window.__VERDANT_BLANK_FRAME__.capsuleSha256Hex,
+    proofRecord: window.__VERDANT_BLANK_FRAME__.proofRecord || null,
     mountedFiles: window.__VERDANT_BLANK_FRAME__.mountedFiles,
     targetRoute: window.__VERDANT_BLANK_FRAME__.targetRoute,
     shardsUsed: window.__VERDANT_BLANK_FRAME__.shardsUsed,
@@ -213,6 +214,14 @@ try {
 
   if (bootState.status !== "mounted") {
     throw new Error(`Blank Frame Stitch pull-through failed: ${JSON.stringify(bootState)}`);
+  }
+  if (
+    !bootState.proofRecord ||
+    bootState.proofRecord.schema !== "prism/holo/6" ||
+    bootState.proofRecord.theoremsProved < 3 ||
+    bootState.proofRecord.holoKappa !== pinJson.proofHoloKappa
+  ) {
+    throw new Error(`Blank Frame missing verified Holo v6 self-carrying proofRecord: ${JSON.stringify(bootState.proofRecord)}`);
   }
   if (bootState.relayCount < 2 || !bootState.failedRelays[`${relayOrigin}/dead-primary-relay`]) {
     throw new Error(`Multi-origin relay failover not exercised: ${JSON.stringify(bootState)}`);

@@ -1,4 +1,4 @@
-spec = "lexlean/project/1"
+spec = "lexlean/project/2"
 name = "verdant-f64-quotient"
 language = "1.2"
 module_prefix = "VerdantEngine"
@@ -7,7 +7,7 @@ entrypoints = ["src/F64Quotient.lex.tex"]
 build_root = ".lexlean-quotient"
 lockfile = "quotient.lexlean.lock"
 lean_workspace = "."
-lean_toolchain = "leanprover/lean4:v4.32.1"
+lean_toolchain = "leanprover/lean4:v4.32.2"
 
 [[lexicon_source]]
 package = "lexlean.std.nat"

@@ -430,25 +430,22 @@ pub fn sovereign_authority_exec_json(raw_json: &str) -> String {
             }
         };
         match ledger.execute(cmd) {
-            Ok(outcome) => serde_json::json!({
-                "ok": true,
-                "ledger": ledger,
-                "outcome": outcome,
-            })
-            .to_string(),
-            Err(e) => serde_json::json!({
-                "ok": false,
-                "error": e.to_string(),
-                "ledger": ledger,
-            })
-            .to_string(),
+            Ok(outcome) => format!(
+                "{{\"ok\":true,\"ledger\":{},\"outcome\":{}}}",
+                serde_json::to_string(&ledger).unwrap_or_else(|_| "{}".to_string()),
+                serde_json::to_string(&outcome).unwrap_or_else(|_| "{}".to_string()),
+            ),
+            Err(e) => format!(
+                "{{\"ok\":false,\"error\":{},\"ledger\":{}}}",
+                serde_json::to_string(&e.to_string()).unwrap_or_else(|_| "\"err\"".to_string()),
+                serde_json::to_string(&ledger).unwrap_or_else(|_| "{}".to_string()),
+            ),
         }
     } else {
-        serde_json::json!({
-            "ok": true,
-            "ledger": ledger,
-        })
-        .to_string()
+        format!(
+            "{{\"ok\":true,\"ledger\":{}}}",
+            serde_json::to_string(&ledger).unwrap_or_else(|_| "{}".to_string()),
+        )
     }
 }
 

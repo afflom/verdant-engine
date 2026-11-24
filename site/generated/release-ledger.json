@@ -4,10 +4,10 @@
   "authorityId": "AUTH-SEMVER-CHANGE-KPI",
   "currentVersion": {
     "major": 2,
-    "minor": 20,
-    "patch": 1
+    "minor": 21,
+    "patch": 0
   },
-  "releaseEpoch": 25,
+  "releaseEpoch": 26,
   "history": [
     {
       "version": "0.1.0",
@@ -203,6 +203,13 @@
       "releaseEpoch": 25,
       "bumpKind": "patch",
       "summary": "Certify sign/two-bit weight encoders and grouped Q3_K/Q6_K row products (VTK-41, VTK-42)",
+      "citedAuthority": "AUTH-SEMVER-CHANGE-KPI"
+    },
+    {
+      "version": "2.21.0",
+      "releaseEpoch": 26,
+      "bumpKind": "minor",
+      "summary": "M29: lexlean 0.4.5, prism-code 0.11.1, template v2, unified tensor proof scopes, VTK-43..48, and Holo v6 self-carrying proof records",
       "citedAuthority": "AUTH-SEMVER-CHANGE-KPI"
     }
   ]

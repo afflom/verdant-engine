@@ -5,16 +5,11 @@
 \importmodule{FloatStorage}
 \title{Natural number}
 \begin{semanticmodule}
-
 definition{
   name: productLimbs,
   parameters: [a : Nat, b : Nat],
   result: (Nat * (Nat * Nat)),
-  body: (let ah : Nat := (prim quotient a 16777216 0 : Nat);
-    (let al : Nat := (prim remainder a 16777216 0 : Nat);
-    (let bh : Nat := (prim quotient b 16777216 0 : Nat);
-    (let bl : Nat := (prim remainder b 16777216 0 : Nat);
-    ((prim multiply ah bh : Nat), (((prim multiply ah bl : Nat) + (prim multiply al bh : Nat)), (prim multiply al bl : Nat))))))),
+  body: (let ah : Nat := (prim quotient a 16777216 0 : Nat); (let al : Nat := (prim remainder a 16777216 0 : Nat); (let bh : Nat := (prim quotient b 16777216 0 : Nat); (let bl : Nat := (prim remainder b 16777216 0 : Nat); ((prim multiply ah bh : Nat), (((prim multiply ah bl : Nat) + (prim multiply al bh : Nat)), (prim multiply al bl : Nat))))))),
   executable: true,
   production: {effects: [overflow], targets: [rust-core]}
 }
@@ -23,10 +18,7 @@ definition{
   name: fractionProduct,
   parameters: [high : Nat, cross : Nat, low : Nat],
   result: Nat,
-  body: (let middle : Nat := (cross + (prim quotient low 16777216 0 : Nat));
-    (let top : Nat := (high + (prim quotient middle 16777216 0 : Nat));
-    (let residue : Nat := (prim remainder middle 16777216 0 : Nat);
-    (top + (if ((8388608 <? residue) || ((residue =? 8388608) && ((0 <? (prim remainder low 16777216 0 : Nat)) || ((prim remainder top 2 0 : Nat) =? 1)))) then 1 else 0))))),
+  body: (let middle : Nat := (cross + (prim quotient low 16777216 0 : Nat)); (let top : Nat := (high + (prim quotient middle 16777216 0 : Nat)); (let residue : Nat := (prim remainder middle 16777216 0 : Nat); (top + (if ((8388608 <? residue) || ((residue =? 8388608) && ((0 <? (prim remainder low 16777216 0 : Nat)) || ((prim remainder top 2 0 : Nat) =? 1)))) then 1 else 0))))),
   executable: true,
   production: {effects: [overflow], targets: [rust-core]}
 }
@@ -35,9 +27,7 @@ definition{
   name: normalizeProduct,
   parameters: [fraction : Nat, left : Nat, right : Nat],
   result: (Nat * Nat),
-  body: (let down : Nat := (left + right);
-    (if (150 <=? down) then (0, 150) else
-    (if (fraction <? 140737488355328) then ((prim multiply fraction 2 : Nat), (down + 1)) else (fraction, down)))),
+  body: (let down : Nat := (left + right); (if (150 <=? down) then (0, 150) else (if (fraction <? 140737488355328) then ((prim multiply fraction 2 : Nat), (down + 1)) else (fraction, down)))),
   executable: true,
   production: {effects: [overflow], targets: [rust-core]}
 }
@@ -62,11 +52,7 @@ definition{
   name: negativePowerOfTwo,
   parameters: [x : Nat],
   result: Base,
-  body: (if (x <=? 838860800) then (ctor Base.exact 1065353216) else (if (1125515264 <=? x) then (ctor Base.exact 0) else
-    (let e : Nat := (ScalarF32::exponent x);
-    (let m : Nat := (ScalarF32::mantissa x);
-    (let fixed : Nat := (if (102 <=? e) then (prim multiply m (ScalarF32::power (prim subtract e 102 : Nat)) : Nat) else (FloatStorage::roundQuotient m (ScalarF32::power (prim subtract 102 e : Nat))));
-    (ctor Base.series (prim quotient fixed 281474976710656 0 : Nat) (prim remainder fixed 281474976710656 0 : Nat) 195103586505167 16 281474976710656)))))),
+  body: (if (x <=? 838860800) then (ctor Base.exact 1065353216) else (if (1125515264 <=? x) then (ctor Base.exact 0) else (let e : Nat := (ScalarF32::exponent x); (let m : Nat := (ScalarF32::mantissa x); (let fixed : Nat := (if (102 <=? e) then (prim multiply m (ScalarF32::power (prim subtract e 102 : Nat)) : Nat) else (FloatStorage::roundQuotient m (ScalarF32::power (prim subtract 102 e : Nat)))); (ctor Base.series (prim quotient fixed 281474976710656 0 : Nat) (prim remainder fixed 281474976710656 0 : Nat) 195103586505167 16 281474976710656)))))),
   executable: true,
   production: {effects: [overflow], targets: [rust-core]}
 }
@@ -91,10 +77,7 @@ definition{
   name: integerPower,
   parameters: [base : Nat, count : Nat],
   result: Power,
-  body: (if ((base =? 1065353216) || (count =? 0)) then (ctor Power.exact 1065353216) else
-    (if (count =? 1) then (ctor Power.exact base) else
-    (if (base <? 8388608) then (ctor Power.exact 0) else
-    (ctor Power.start (prim multiply (ScalarF32::mantissa base) 16777216 : Nat) (prim subtract 126 (ScalarF32::exponent base) : Nat) 281474976710656 0)))),
+  body: (if ((base =? 1065353216) || (count =? 0)) then (ctor Power.exact 1065353216) else (if (count =? 1) then (ctor Power.exact base) else (if (base <? 8388608) then (ctor Power.exact 0) else (ctor Power.start (prim multiply (ScalarF32::mantissa base) 16777216 : Nat) (prim subtract 126 (ScalarF32::exponent base) : Nat) 281474976710656 0)))),
   executable: true,
   production: {effects: [overflow], targets: [rust-core]}
 }
@@ -135,9 +118,7 @@ definition{
   name: binary32Index,
   parameters: [index : Nat],
   result: Nat,
-  body: (if (index <=? 16777216) then index else
-    (let unit : Nat := (if (index <? 268435456) then (if (index <? 67108864) then (if (index <? 33554432) then 2 else 4) else (if (index <? 134217728) then 8 else 16)) else (if (index <? 1073741824) then (if (index <? 536870912) then 32 else 64) else (if (index <? 2147483648) then 128 else 256)));
-    (prim multiply (FloatStorage::roundQuotient index unit) unit : Nat))),
+  body: (if (index <=? 16777216) then index else (let unit : Nat := (if (index <? 268435456) then (if (index <? 67108864) then (if (index <? 33554432) then 2 else 4) else (if (index <? 134217728) then 8 else 16)) else (if (index <? 1073741824) then (if (index <? 536870912) then 32 else 64) else (if (index <? 2147483648) then 128 else 256))); (prim multiply (FloatStorage::roundQuotient index unit) unit : Nat))),
   executable: true,
   production: {effects: [overflow], targets: [rust-core]}
 }
@@ -194,7 +175,6 @@ theorem{
   statement: ((groupPivot 3) = 2),
   proof: reflexivity{}
 }
-
 \end{semanticmodule}
 
 \end{lexlean}

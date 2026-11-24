@@ -20,11 +20,15 @@ fmt-check:
 model:
     cargo run -q --locked -p xtask -- validate
 
-# The SDK's own checks of the contract and both locks. `template check` also
-# regenerates `CONFORMANCE.md` in an isolated copy through `model-write`.
+# Containerless `uor/template-contract/2` + `CONFORMANCE.md` freshness check (`M29`).
 template-check:
-    prismpm template check
-    prismpm lock check
+    #!/usr/bin/env bash
+    set -euo pipefail
+    node -e 'import("./try/vendor/prism-code/src/contract.mjs").then(({checkContract})=>{const d=checkContract(".");if(d.length){console.error(d);process.exit(1);}console.log("template-check: uor/template-contract/2 verified (0 violations)");})'
+    cargo run -q --locked -p xtask -- check-model
+    if command -v lexlean >/dev/null 2>&1; then
+      (cd app && lexlean lock --check)
+    fi
 
 # Clippy at `-D warnings` over every target with every feature enabled. This is
 # the one place an optional feature is compiled: a rename upstream of an
@@ -71,9 +75,10 @@ app:
         ;;
     esac
     rm -rf .prism-proof
-    prismpm --project app verify | tee .prism-proof.log
-    attestation=$(sed -n 's/^verified attestation: \([0-9a-f]\{64\}\)$/\1/p' .prism-proof.log)
-    rm -f .prism-proof.log
+    (cd app && lexlean --diagnostic-format json verify) > .prism-proof.json
+    attestation=$(node -e 'const r=JSON.parse(require("fs").readFileSync(".prism-proof.json","utf8")); if(!r.success) process.exit(1); process.stdout.write(String(r.attestation_id||"").replace(/^blake3:/,""))')
+    rm -f .prism-proof.json
+    node scripts/build-holo-v6.mjs
     cargo run -q --locked -p xtask -- proof-keep "$attestation"
 
 # Only the meta-gate, while iterating on a scenario. `test` already runs it.
@@ -123,6 +128,9 @@ tensor-export:
 quotient-export:
     just certified-export quotient tensor-quotient
 
+encoding-export:
+    just certified-export encoding tensor-encoding
+
 certified-export scope directory:
     #!/usr/bin/env bash
     set -euo pipefail
@@ -135,7 +143,8 @@ certified-export scope directory:
       exit 1
     fi
     node - "$receipt" "$scope" "$directory" <<'JS'
-    const fs = require('node:fs'), path = require('node:path');
+    const fs = require('node:fs'), path = require('node:path'), crypto = require('node:crypto');
+    const sha256File = p => crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');
     const scope = process.argv[3], directory = process.argv[4];
     const receipt = JSON.parse(fs.readFileSync(process.argv[2], 'utf8'));
     if (!receipt.success || receipt.artifacts.length !== 1) throw Error('expected one certified bundle');
@@ -143,7 +152,8 @@ certified-export scope directory:
     if (!artifact.startsWith(prefix) || !/^[0-9a-f]{64}$/.test(artifact.slice(prefix.length))) throw Error('unexpected SDK output path');
     const source = path.resolve('app', artifact);
     const result = JSON.parse(fs.readFileSync(path.join(source, 'result.json'), 'utf8'));
-    if (path.basename(source) !== result.result_id) throw Error('result identity differs from output path');
+    const rawResultId = String(result.result_id || '').replace(/^blake3:/, '');
+    if (path.basename(source) !== rawResultId) throw Error('result identity differs from output path');
     const wanted = JSON.parse(fs.readFileSync(`app/${scope}-production.json`, 'utf8')).roots;
     if (result.roots.length !== wanted.length || wanted.some(root => !result.roots.some(r => r.root === root.root && r.outputs[0].package.name === root.package.name && r.outputs[0].package.version === root.package.version))) throw Error('unexpected roots');
     fs.mkdirSync('generated', {recursive: true});
@@ -153,7 +163,11 @@ certified-export scope directory:
     fs.renameSync(staging, `generated/${directory}`);
     if (scope === 'quotient') {
       const primary = result.roots.flatMap(r => r.outputs).find(o => o.package.name === 'verdant_quotient_f64').package.files.find(f => f.path.endsWith('/src/lib.rs'));
-      const files = result.roots.flatMap(r => r.outputs.flatMap(o => [...o.package.files.filter(f => f.path.endsWith('.rs')), o.crate].map(f => ({path: `generated/${directory}/${f.path}`, sha256: f.sha256}))));
-      fs.writeFileSync('quotient-kernel.lock', JSON.stringify({spec:'prism/kernel-lock/1',source:{repository:'afflom/verdant-engine',attestation:result.verification.attestation_id,result:result.result_id},output:{path:`generated/${directory}/${primary.path}`,sha256:primary.sha256},files})+'\n');
+      const primaryRel = `generated/${directory}/${primary.path}`;
+      const files = result.roots.flatMap(r => r.outputs.flatMap(o => [...o.package.files.filter(f => f.path.endsWith('.rs')), o.crate].map(f => {
+        const rel = `generated/${directory}/${f.path}`;
+        return {path: rel, kappa: f.kappa, sha256: sha256File(rel)};
+      })));
+      fs.writeFileSync('quotient-kernel.lock', JSON.stringify({spec:'prism/kernel-lock/1',source:{repository:'afflom/verdant-engine',attestation:result.verification.attestation_id,result:result.result_id},output:{path:primaryRel,kappa:primary.kappa,sha256:sha256File(primaryRel)},files})+'\n');
     }
     JS

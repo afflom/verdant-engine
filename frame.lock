@@ -35,7 +35,7 @@
     },
     {
       "path": "bootstrap/worker-runtime.mjs",
-      "sha256": "0f9fbb6ec4db48fb7f7c4b779a0494e95d5411e868b36e1e163e5173fcc34557"
+      "sha256": "739839e366bfa8a198d7d14869413def7959892012519dadaa2c4774b3757727"
     },
     {
       "path": "lighthouserc.json",

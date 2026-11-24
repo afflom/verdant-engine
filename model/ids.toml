@@ -836,3 +836,57 @@ id = "VTK-43"
 level = "build"
 suite = "engine"
 statement = "Verdant contracts grouped four-bit codebook weights with prepared signed-byte activations in reference group order"
+
+[[id]]
+id = "VTK-44"
+level = "build"
+suite = "engine"
+statement = "Verdant encodes 256-lane ternary blocks in packed-trit and two-bit-plane layouts with a trailing binary16 scale"
+
+[[id]]
+id = "VTK-45"
+level = "build"
+suite = "engine"
+statement = "Verdant contracts packed trit and two-bit ternary rows with prepared grouped signed-byte activations"
+
+[[id]]
+id = "VTK-46"
+level = "build"
+suite = "engine"
+statement = "Verdant contracts three-bit four-lane codebooks using indexed and explicit signs"
+
+[[id]]
+id = "VTK-47"
+level = "build"
+suite = "engine"
+statement = "Verdant contracts signed one-bit codebooks with shared and distributed block scales"
+
+[[id]]
+id = "VTK-48"
+level = "build"
+suite = "engine"
+statement = "Verdant encodes exponent-only and grouped unsigned-scale four-bit floating weight blocks"
+
+[[id]]
+id = "VTK-49"
+level = "build"
+suite = "engine"
+statement = "Verdant encodes grouped signed six-bit weight blocks with per-group scale selection and separate low and high bit planes"
+
+[[id]]
+id = "VTK-50"
+level = "build"
+suite = "engine"
+statement = "Verdant encodes grouped affine two-, four- and five-bit weights with weighted scale and minimum selection"
+
+[[id]]
+id = "VTK-51"
+level = "build"
+suite = "engine"
+statement = "Verdant converts finite binary32 values to signed 32-bit storage words by truncating toward zero within the representable range"
+
+[[id]]
+id = "VE-80"
+level = "build"
+suite = "engine"
+statement = "Verdant modernizes onto LexLean 0.4.5, prism-code 0.11.1, template contract v2, unified three-scope tensor proofs, and offline-verifiable Holo v6 self-carrying proof records in Stitch shards and portable HTML envelopes"

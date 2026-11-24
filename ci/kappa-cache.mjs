@@ -33,7 +33,7 @@ import { fileURLToPath } from "node:url";
 import { kappa, load } from "../try/vendor/prism-code/src/index.mjs";
 
 const SCHEMA = "prism/input-kappa/1";
-export const DEFAULT_INPUTS = ["app", "Justfile", "prismpm.lock"];
+export const DEFAULT_INPUTS = ["app", "Justfile", "template.lock"];
 const PACKAGE = "prism-holo";
 export const MEDIA = "application/vnd.uor.prism.holo.v1";
 const REGISTRY = process.env.PRISM_REGISTRY || "registry.uor.foundation";

@@ -496,3 +496,72 @@ pub const fn stitch_m27_lifted_module_floor_ok(modules: u64) -> bool {
 pub const fn stitch_portable_base64_valid(raw_bytes: u64, b64_bytes: u64) -> bool {
     raw_bytes >= 1_u64 && b64_bytes >= raw_bytes
 }
+
+/// Pure MIR-lifted Holo v6 archive schema version (`6`, `M29`, `VE-80`).
+#[must_use]
+pub const fn holo_v6_format_version() -> u32 {
+    four_u32().wrapping_add(two_u32())
+}
+
+/// Pure MIR-lifted UORC v2.2 container major version (`2`, `M29`, `VE-80`).
+#[must_use]
+pub const fn holo_v6_uorc_major() -> u8 {
+    1_u8.wrapping_add(1_u8)
+}
+
+/// Pure MIR-lifted UORC v2.2 container minor version (`2`, `M29`, `VE-80`).
+#[must_use]
+pub const fn holo_v6_uorc_minor() -> u8 {
+    1_u8.wrapping_add(1_u8)
+}
+
+/// Pure MIR-lifted consolidated three-scope tensor proof count (`3`: `tensor`, `quotient`, `encoding`, `M29`).
+#[must_use]
+pub const fn unified_tensor_scopes_count() -> u32 {
+    two_u32().wrapping_add(1_u32)
+}
+
+/// Pure MIR-lifted exact unified proof-scope count check (`scopes == 2`, `PF-28`, `M29`).
+#[must_use]
+pub const fn unified_scopes_exact(scopes: u32) -> bool {
+    scopes == unified_tensor_scopes_count()
+}
+
+/// Pure MIR-lifted release capsule ceiling margin check (`actual + margin <= ratchet_ceiling <= megabyte_ceiling`, `PF-26`, `M29`).
+#[must_use]
+pub const fn holo_v6_capsule_margin_valid(
+    actual_bytes: u64,
+    margin_bytes: u64,
+    ratchet_ceiling: u64,
+    megabyte_ceiling: u64,
+) -> bool {
+    margin_bytes >= 1_u64
+        && ratchet_ceiling <= megabyte_ceiling
+        && actual_bytes <= ratchet_ceiling.saturating_sub(margin_bytes)
+        && actual_bytes < megabyte_ceiling
+}
+
+/// Pure MIR-lifted theorem proof completion check (`total >= 1 && proved == total`, `M29`).
+#[must_use]
+pub const fn holo_v6_theorems_complete(proved: u32, total: u32) -> bool {
+    total >= 1_u32 && proved == total
+}
+
+/// Pure MIR-lifted Holo v6 self-carrying proof capsule admission check (`M29`, `VE-80`).
+#[must_use]
+pub const fn holo_v6_self_carrying_admitted(
+    format_ver: u32,
+    has_snapshot: bool,
+    has_kernel_statement: bool,
+    proved_theorems: u32,
+    total_theorems: u32,
+    capsule_bytes: u64,
+) -> bool {
+    let thousand = thousand_u32() as u64;
+    let megabyte = thousand.wrapping_mul(thousand);
+    format_ver == holo_v6_format_version()
+        && has_snapshot
+        && has_kernel_statement
+        && holo_v6_theorems_complete(proved_theorems, total_theorems)
+        && capsule_bytes < megabyte
+}

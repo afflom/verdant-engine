@@ -142,6 +142,15 @@ model does not sanction.
 | `VTK-41` | `build` | Verdant encodes packed sign and centered two-bit weight blocks byte for byte against the imported reference encoders |
 | `VTK-42` | `build` | Verdant contracts grouped signed three-bit and six-bit weights with prepared signed-byte activations in the reference accumulator order |
 | `VTK-43` | `build` | Verdant contracts grouped four-bit codebook weights with prepared signed-byte activations in reference group order |
+| `VTK-44` | `build` | Verdant encodes 256-lane ternary blocks in packed-trit and two-bit-plane layouts with a trailing binary16 scale |
+| `VTK-45` | `build` | Verdant contracts packed trit and two-bit ternary rows with prepared grouped signed-byte activations |
+| `VTK-46` | `build` | Verdant contracts three-bit four-lane codebooks using indexed and explicit signs |
+| `VTK-47` | `build` | Verdant contracts signed one-bit codebooks with shared and distributed block scales |
+| `VTK-48` | `build` | Verdant encodes exponent-only and grouped unsigned-scale four-bit floating weight blocks |
+| `VTK-49` | `build` | Verdant encodes grouped signed six-bit weight blocks with per-group scale selection and separate low and high bit planes |
+| `VTK-50` | `build` | Verdant encodes grouped affine two-, four- and five-bit weights with weighted scale and minimum selection |
+| `VTK-51` | `build` | Verdant converts finite binary32 values to signed 32-bit storage words by truncating toward zero within the representable range |
+| `VE-80` | `build` | Verdant modernizes onto LexLean 0.4.5, prism-code 0.11.1, template contract v2, unified three-scope tensor proofs, and offline-verifiable Holo v6 self-carrying proof records in Stitch shards and portable HTML envelopes |
 
 ## fidelity
 
@@ -178,8 +187,8 @@ An authority is cited, never re-derived, and never gated on: what it states is n
 | `AUTH-VSM-CYBERNETICS` | Stafford Beer, Brain of the Firm (2nd ed., Wiley, 1981) & Diagnosing the System for Organizations (Wiley, 1985); ISO/IEC/IEEE 15288:2023 | `VE-42` |
 | `AUTH-ISO-42010-VIEWPOINTS` | ISO/IEC/IEEE 42010:2022 Software, systems and enterprise — Architecture description; ISO/IEC/IEEE 12207:2017 Software life cycle processes; ISO 9241-210:2019; W3C DTCG 2025.10; WCAG 2.2 AA; afflom/stitch | `VE-42`, `VE-44`, `VE-45`, `VE-47`, `VE-52`, `VE-53`, `VE-54`, `VE-55`, `VE-61`, `VE-63`, `VE-65`, `VE-67`, `VE-68`, `VE-71`, `VE-72`, `VE-73`, `VE-75`, `VE-76`, `VE-77`, `VE-78`, `VE-79` |
 | `AUTH-ISO-25010-TENSOR-SCALING` | ISO/IEC 25010:2023 SQuaRE Performance Efficiency; ITU-R BT.2020-2 & BT.2100-2 UHDTV (4K/8K & Beyond); W3C WebGPU & WGSL; W3C WebNN; PagedAttention/FlashAttention Tiled Memory; UOR-Foundation uor-matmul CodedMatrix | `VE-41`, `VE-42`, `VE-50` |
-| `AUTH-STITCH-SELF-HOSTING` | afflom/stitch (identity/stitch.lock commit 68a9222a); RFC 2104 HMAC-SHA256 & RFC 7366 Encrypt-then-MAC AEAD; Systematic Reed-Solomon GF(2^8) k-of-n Erasure Coding; W3C Service Workers & OPFS; W3C PROV-O; OCI Artifact Distribution; RFC 2789 Cargo Sparse Registry; Zenodo Archive (https://zenodo.org/records/24383968) | `VE-43`, `VE-44`, `VE-46`, `VE-47`, `VE-48`, `VE-49`, `VE-51`, `VE-54`, `VE-60`, `VE-70`, `VE-72`, `VE-74`, `VE-77`, `VE-78`, `VE-79` |
-| `AUTH-SEMVER-CHANGE-KPI` | Semantic Versioning 2.0.0; ISO/IEC/IEEE 12207:2017 §6.3.5 Configuration Management & §6.3.7 Measurement; ISO/IEC/IEEE 15939:2017 Measurement process; Stafford Beer VSM S3/S4/S5 | `VE-45`, `VE-46`, `VE-47`, `VE-48`, `VE-49`, `VE-50`, `VE-51`, `VE-52`, `VE-53`, `VE-54`, `VE-55`, `VE-56`, `VE-57`, `VE-58`, `VE-59`, `VE-60`, `VE-61`, `VE-62`, `VE-63`, `VE-64`, `VE-65`, `VE-66`, `VE-67`, `VE-68`, `VE-69`, `VE-70`, `VE-71`, `VE-72`, `VE-73`, `VE-74`, `VE-75`, `VE-76`, `VE-77`, `VE-78`, `VE-79` |
+| `AUTH-STITCH-SELF-HOSTING` | afflom/stitch (identity/stitch.lock commit 68a9222a); RFC 2104 HMAC-SHA256 & RFC 7366 Encrypt-then-MAC AEAD; Systematic Reed-Solomon GF(2^8) k-of-n Erasure Coding; W3C Service Workers & OPFS; W3C PROV-O; OCI Artifact Distribution; RFC 2789 Cargo Sparse Registry; Zenodo Archive (https://zenodo.org/records/24383968) | `VE-43`, `VE-44`, `VE-46`, `VE-47`, `VE-48`, `VE-49`, `VE-51`, `VE-54`, `VE-60`, `VE-70`, `VE-72`, `VE-74`, `VE-77`, `VE-78`, `VE-79`, `VE-80` |
+| `AUTH-SEMVER-CHANGE-KPI` | Semantic Versioning 2.0.0; ISO/IEC/IEEE 12207:2017 §6.3.5 Configuration Management & §6.3.7 Measurement; ISO/IEC/IEEE 15939:2017 Measurement process; Stafford Beer VSM S3/S4/S5 | `VE-45`, `VE-46`, `VE-47`, `VE-48`, `VE-49`, `VE-50`, `VE-51`, `VE-52`, `VE-53`, `VE-54`, `VE-55`, `VE-56`, `VE-57`, `VE-58`, `VE-59`, `VE-60`, `VE-61`, `VE-62`, `VE-63`, `VE-64`, `VE-65`, `VE-66`, `VE-67`, `VE-68`, `VE-69`, `VE-70`, `VE-71`, `VE-72`, `VE-73`, `VE-74`, `VE-75`, `VE-76`, `VE-77`, `VE-78`, `VE-79`, `VE-80` |
 | `BERKELEY-SOFTFLOAT` | https://github.com/ucb-bar/berkeley-softfloat-3/tree/07ebd29db0cfb55723a79fbbffe99103ef38e305 | `VTK-07`, `VTK-08`, `VTK-15` |
 | `GGML-TENSOR-CPU` | https://github.com/ggml-org/llama.cpp/tree/9a080f44b503c64f66c84a6274b9d9ee5d5b09d5/ggml/src | `VTK-01`, `VTK-02`, `VTK-03`, `VTK-04`, `VTK-05`, `VTK-06`, `VTK-11`, `VTK-12`, `VTK-13`, `VTK-14`, `VTK-16`, `VTK-17`, `VTK-18`, `VTK-19`, `VTK-20`, `VTK-21`, `VTK-22`, `VTK-23`, `VTK-24` |
 

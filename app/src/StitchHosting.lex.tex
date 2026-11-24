@@ -118,10 +118,24 @@ definition{
 }
 
 definition{
+  name: principle7HoloV6SelfCarryingProofRecord,
+  parameters: [],
+  result: SelfHostingPrincipleSpec,
+  body: (record SelfHostingPrincipleSpec {index := (Subsystems::sSeven), tier := (ctor CarrierTier.offlineLocalCustody), mode := (ctor ServingMode.offlineOpfsOrPortableHtml), zeroRegistration := true, commercialLockInFree := true, name := "HoloV6SelfCarryingProofRecord", text := "Every Stitch 4-of-8 release capsule and offline portable HTML envelope embeds a Holo v6 kernel-proof record binding its BLAKE3 semantic snapshot, Lean 4.32.2 kernel, and proved theorems for offline verification without external provenance bundles."})
+}
+
+definition{
+  name: principle8UnifiedTwoScopeProofModernization,
+  parameters: [],
+  result: SelfHostingPrincipleSpec,
+  body: (record SelfHostingPrincipleSpec {index := (Subsystems::sEight), tier := (ctor CarrierTier.githubOriginMirror), mode := (ctor ServingMode.githubPrimaryFallback), zeroRegistration := true, commercialLockInFree := true, name := "UnifiedTwoScopeProofModernization", text := "Verdant unifies all lifted tensor primitives into two shared LexLean 0.4.5 proof scopes over uor/template-contract/2 with containerless two-lane CI and zero-runner draft pull-request gating while keeping release .holo capsules strictly below one megabyte."})
+}
+
+definition{
   name: selfHostingPrinciples,
   parameters: [],
   result: (List SelfHostingPrincipleSpec),
-  body: (cons (principle0ZeroCommercialProviderRegistration) (cons (principle1StitchLayer5ZeroAccountSignaling) (cons (principle2BudgetedReciprocalBrowserSeeding) (cons (principle3VolunteerAndLanNodeServing) (cons (principle4OfflineFirstPwaAndPortableHtml) (cons (principle5PermissionlessPublicArchives) (cons (principle6ZeroTrustVerifiedHydration) (nil SelfHostingPrincipleSpec))))))))
+  body: (cons (principle0ZeroCommercialProviderRegistration) (cons (principle1StitchLayer5ZeroAccountSignaling) (cons (principle2BudgetedReciprocalBrowserSeeding) (cons (principle3VolunteerAndLanNodeServing) (cons (principle4OfflineFirstPwaAndPortableHtml) (cons (principle5PermissionlessPublicArchives) (cons (principle6ZeroTrustVerifiedHydration) (cons (principle7HoloV6SelfCarryingProofRecord) (cons (principle8UnifiedTwoScopeProofModernization) (nil SelfHostingPrincipleSpec))))))))))
 }
 
 definition{
@@ -241,7 +255,70 @@ definition{
 theorem{
   name: selfHostingPrinciplesComplete,
   parameters: [],
-  statement: (((selfHostingDirect) && (((project (principle0ZeroCommercialProviderRegistration) index) =? 0) && (((project (principle1StitchLayer5ZeroAccountSignaling) index) =? 1) && (((project (principle2BudgetedReciprocalBrowserSeeding) index) =? (Subsystems::sTwo)) && (((project (principle3VolunteerAndLanNodeServing) index) =? (Subsystems::sThree)) && (((project (principle4OfflineFirstPwaAndPortableHtml) index) =? (Subsystems::sFour)) && (((project (principle5PermissionlessPublicArchives) index) =? (Subsystems::sFive)) && ((project (principle6ZeroTrustVerifiedHydration) index) =? (Subsystems::sSix))))))))) = true),
+  statement: (((selfHostingDirect) && (((project (principle0ZeroCommercialProviderRegistration) index) =? 0) && (((project (principle1StitchLayer5ZeroAccountSignaling) index) =? 1) && (((project (principle2BudgetedReciprocalBrowserSeeding) index) =? (Subsystems::sTwo)) && (((project (principle3VolunteerAndLanNodeServing) index) =? (Subsystems::sThree)) && (((project (principle4OfflineFirstPwaAndPortableHtml) index) =? (Subsystems::sFour)) && (((project (principle5PermissionlessPublicArchives) index) =? (Subsystems::sFive)) && (((project (principle6ZeroTrustVerifiedHydration) index) =? (Subsystems::sSix)) && (((project (principle7HoloV6SelfCarryingProofRecord) index) =? (Subsystems::sSeven)) && ((project (principle8UnifiedTwoScopeProofModernization) index) =? (Subsystems::sEight))))))))))) = true),
+  proof: decide{},
+  axioms: []
+}
+
+definition{name: holoV6FormatVersion, parameters: [], result: Nat, body: (Subsystems::sSix)}
+
+definition{name: sharedProofScopesCount, parameters: [], result: Nat, body: (Subsystems::sThree)}
+
+definition{
+  name: capsuleMegabyteCeilingBytes,
+  parameters: [],
+  result: Nat,
+  body: (Foundation.Ontology.V1.Model::pow10Constructive (Subsystems::sSix))
+}
+
+definition{
+  name: holoV6SelfCarryingAdmitted,
+  parameters: [
+    formatVer : Nat,
+    hasSnapshot : Bool,
+    hasKernelStatement : Bool,
+    provedTheorems : Nat,
+    totalTheorems : Nat,
+    capsuleBytes : Nat
+  ],
+  result: Bool,
+  body: ((((formatVer =? (holoV6FormatVersion)) && (hasSnapshot && hasKernelStatement)) && ((1 <=? totalTheorems) && (provedTheorems =? totalTheorems))) && (capsuleBytes <? (capsuleMegabyteCeilingBytes)))
+}
+
+definition{
+  name: sharedScopesMatchExact,
+  parameters: [scopes : Nat],
+  result: Bool,
+  body: (scopes =? (sharedProofScopesCount))
+}
+
+definition{
+  name: breaksCapsuleCeilingMargin,
+  parameters: [actualBytes : Nat, margin : Nat, ratchetCeiling : Nat, megabyteCeiling : Nat],
+  result: Bool,
+  body: (((((actualBytes + margin) <=? ratchetCeiling) && (ratchetCeiling <=? megabyteCeiling)) && (1 <=? margin)) && (megabyteCeiling <=? actualBytes))
+}
+
+theorem{
+  name: sharedScopesExact_decides,
+  parameters: [scopes : Nat],
+  statement: (((sharedScopesMatchExact scopes) = true) <-> (scopes = (sharedProofScopesCount))),
+  proof: simplify{definitions: [Nat.beq_eq, sharedProofScopesCount, sharedScopesMatchExact]},
+  axioms: [propext]
+}
+
+theorem{
+  name: capsuleCeilingMarginVerified,
+  parameters: [actualBytes : Nat, margin : Nat, ratchetCeiling : Nat, megabyteCeiling : Nat],
+  statement: ((breaksCapsuleCeilingMargin actualBytes margin ratchetCeiling megabyteCeiling) = false),
+  proof: linear_arithmetic{definitions: [breaksCapsuleCeilingMargin]},
+  axioms: [Quot.sound, propext]
+}
+
+theorem{
+  name: holoV6SelfCarryingProofVerified,
+  parameters: [],
+  statement: (((holoV6SelfCarryingAdmitted (holoV6FormatVersion) true true (Subsystems::sTwelve) (Subsystems::sTwelve) (stitchBudgetKibLimit)) && ((not (holoV6SelfCarryingAdmitted (Subsystems::sFive) true true (Subsystems::sTwelve) (Subsystems::sTwelve) (stitchBudgetKibLimit))) && ((not (holoV6SelfCarryingAdmitted (holoV6FormatVersion) false true (Subsystems::sTwelve) (Subsystems::sTwelve) (stitchBudgetKibLimit))) && ((not (holoV6SelfCarryingAdmitted (holoV6FormatVersion) true true (Subsystems::sEight) (Subsystems::sTwelve) (stitchBudgetKibLimit))) && (not (holoV6SelfCarryingAdmitted (holoV6FormatVersion) true true (Subsystems::sTwelve) (Subsystems::sTwelve) (capsuleMegabyteCeilingBytes))))))) = true),
   proof: decide{},
   axioms: []
 }

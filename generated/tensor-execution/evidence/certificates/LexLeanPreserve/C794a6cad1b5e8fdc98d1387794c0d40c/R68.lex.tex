@@ -1,0 +1,358 @@
+\begin{lexlean}{R68}
+\title{Certificate A LexLeanPreserve.C794a6cad1b5e8fdc98d1387794c0d40c.R68}
+\begin{coremodule}
+imports [
+  LexLeanPreservation.Core,
+  LexLeanPreservation.Values,
+  LexLeanPreservation.Primitives,
+  LexLeanPreservation.Fixed,
+  LexLeanPreservation.Keys,
+  LexLeanPreservation.Templates,
+  LexLeanPreservation.Validate,
+  VerdantEngine.BitpackedProduct,
+  VerdantEngine.CircularFunctions,
+  VerdantEngine.FloatStorage,
+  VerdantEngine.FloatTransform,
+  VerdantEngine.FloatUnary,
+  VerdantEngine.FloatWord64,
+  VerdantEngine.FloatWord64Exports,
+  VerdantEngine.GaussianActivation,
+  VerdantEngine.GroupedAffineProduct,
+  VerdantEngine.GroupedBlock,
+  VerdantEngine.GroupedDot,
+  VerdantEngine.HeadSlope,
+  VerdantEngine.HyperbolicTangent,
+  VerdantEngine.LogarithmicScale,
+  VerdantEngine.Logistic,
+  VerdantEngine.MatrixProduct,
+  VerdantEngine.NaturalExponential,
+  VerdantEngine.NormalizedExponential,
+  VerdantEngine.OnlineWeightedMean,
+  VerdantEngine.PackedDot,
+  VerdantEngine.PackedWord,
+  VerdantEngine.PlaneRotation,
+  VerdantEngine.RowRanking,
+  VerdantEngine.ScalarF32,
+  VerdantEngine.ScalarF64,
+  VerdantEngine.SmallFloat,
+  VerdantEngine.Softplus,
+  VerdantEngine.StorageBlock,
+  VerdantEngine.StorageTransfer,
+  VerdantEngine.SwiGlu,
+  VerdantEngine.SymmetricBlock,
+  VerdantEngine.SymmetricDot,
+  VerdantEngine.WordComparison
+]
+
+definition LexLeanPreserve.C794a6cad1b5e8fdc98d1387794c0d40c.R68.__prog : @0 := @107 {
+  all: [LexLeanPreserve.C794a6cad1b5e8fdc98d1387794c0d40c.R68.__prog],
+  class: false,
+  generated: false,
+  policy: exact{axioms: []},
+  reducibility: regular{height: 1},
+  transparency: semireducible
+}
+definition LexLeanPreserve.C794a6cad1b5e8fdc98d1387794c0d40c.R68.__enc_0 : @110 := @132 {
+  all: [LexLeanPreserve.C794a6cad1b5e8fdc98d1387794c0d40c.R68.__enc_0],
+  class: false,
+  compiled: true,
+  generated: false,
+  policy: exact{axioms: []},
+  reducibility: regular{height: 1},
+  transparency: semireducible
+}
+definition LexLeanPreserve.C794a6cad1b5e8fdc98d1387794c0d40c.R68.__fits_0 : @135 := @175 {
+  all: [LexLeanPreserve.C794a6cad1b5e8fdc98d1387794c0d40c.R68.__fits_0],
+  class: false,
+  compiled: true,
+  generated: false,
+  policy: exact{axioms: []},
+  reducibility: regular{height: 1},
+  transparency: semireducible
+}
+theorem LexLeanPreserve.C794a6cad1b5e8fdc98d1387794c0d40c.R68.__rel_0 : @197 := @500 {
+  all: [LexLeanPreserve.C794a6cad1b5e8fdc98d1387794c0d40c.R68.__rel_0],
+  class: false,
+  generated: false,
+  policy: exact{axioms: [Classical.choice, Quot.sound, propext]},
+  transparency: semireducible
+}
+definition LexLeanPreserve.C794a6cad1b5e8fdc98d1387794c0d40c.R68.denote : @503 := @513 {
+  all: [LexLeanPreserve.C794a6cad1b5e8fdc98d1387794c0d40c.R68.denote],
+  class: false,
+  compiled: true,
+  generated: false,
+  policy: exact{axioms: []},
+  reducibility: regular{height: 2},
+  transparency: semireducible
+}
+theorem LexLeanPreserve.C794a6cad1b5e8fdc98d1387794c0d40c.R68.root : @520 := @531 {
+  all: [LexLeanPreserve.C794a6cad1b5e8fdc98d1387794c0d40c.R68.root],
+  class: false,
+  generated: false,
+  policy: exact{axioms: [Classical.choice, Quot.sound, propext]},
+  transparency: semireducible
+}
+
+@0 := LexLeanTarget.TargetSyntax.Program
+@1 := LexLeanTarget.TargetSyntax.Program.mk
+@2 := List.cons.{0}
+@3 := LexLeanTarget.TargetSyntax.Adt
+@4 := @2 @3
+@5 := LexLeanTarget.TargetSyntax.Adt.mk
+@6 := List.{0}
+@7 := LexLeanTarget.TargetSyntax.Ty
+@8 := @6 @7
+@9 := @2 @8
+@10 := List.nil.{0}
+@11 := @10 @7
+@12 := @9 @11
+@13 := @2 @7
+@14 := LexLeanTarget.TargetSyntax.Ty.nat
+@15 := @13 @14
+@16 := @15 @11
+@26 := @1 (@4 (@5 (@12 (@12 (@9 @16 (@10 @8))))) (@10 @3))
+@27 := LexLeanTarget.TargetSyntax.Function
+@28 := @2 @27
+@29 := LexLeanTarget.TargetSyntax.Function.mk
+@30 := Nat
+@31 := @2 @30
+@33 := OfNat.ofNat.{0} @30
+@34 := 0
+@35 := @33 @34
+@36 := instOfNatNat
+@38 := @35 (@36 @34)
+@39 := @31 @38
+@40 := 1
+@43 := @33 @40 (@36 @40)
+@50 := @29 (@39 (@31 @43 (@10 @30))) (@15 @16)
+@52 := LexLeanTarget.TargetSyntax.Ty.adt @38
+@53 := @50 @52
+@54 := LexLeanTarget.TargetSyntax.Expr.cond
+@55 := LexLeanTarget.TargetSyntax.Expr.prim
+@56 := LexLeanTarget.TargetSyntax.Prim.natEq
+@57 := @55 @56
+@58 := LexLeanTarget.TargetSyntax.Expr
+@59 := @2 @58
+@60 := LexLeanTarget.TargetSyntax.Expr.var
+@61 := @60 @38
+@62 := @59 @61
+@63 := @60 @43
+@64 := @59 @63
+@65 := @10 @58
+@66 := @64 @65
+@67 := @62 @66
+@68 := @57 @67
+@69 := @54 @68
+@71 := LexLeanTarget.TargetSyntax.Expr.value @14
+@72 := LexLeanTarget.TargetSyntax.Value.nat
+@73 := @72 @38
+@74 := @71 @73
+@76 := @59 @74 @65
+@77 := @62 @76
+@78 := @57 @77
+@79 := @54 @78
+@80 := LexLeanTarget.TargetSyntax.Expr.build
+@81 := LexLeanTarget.TargetSyntax.Shape.adt
+@82 := @81 @43
+@85 := @80 @82 @52 @65
+@86 := @79 @85
+@87 := 2
+@90 := @33 @87 (@36 @87)
+@91 := @81 @90
+@93 := @80 @91 @52
+@94 := @62 @65
+@95 := @93 @94
+@96 := @86 @95
+@97 := @69 @96
+@98 := @81 @38
+@101 := @80 @98 @52 @65
+@103 := @53 (@97 @101)
+@107 := @26 (@28 @103 (@10 @27))
+@108 := VerdantEngine.StorageTransfer.TransferDecision
+@109 := LexLeanTarget.TargetSyntax.Value
+@110 := @108 -> @109
+@113 := VerdantEngine.StorageTransfer.TransferDecision.casesOn.{1} (fun ("_" : @108) => @109)
+@114 := #0
+@115 := @113 @114
+@116 := LexLeanTarget.TargetSyntax.Value.adt
+@117 := @116 @38
+@118 := @10 @109
+@119 := @117 @118
+@120 := @115 @119
+@122 := @116 @43 @118
+@123 := @120 @122
+@124 := @116 @90
+@125 := @2 @109
+@126 := @72 @114
+@128 := @125 @126 @118
+@132 := fun (__v : @108) => @123 (fun (__x0 : @30) => @124 @128)
+@133 := Bool
+@135 := (sourceBytes : @30) -> (destinationBytes : @30) -> @133
+@136 := Bool.and
+@137 := Bool.true
+@138 := @136 @137
+@139 := @138 @137
+@140 := @138 @139
+@142 := @136 @140 @137
+@143 := @136 @142
+@144 := ite.{1}
+@145 := @144 @133
+@147 := Eq.{1} @133
+@148 := Nat.beq
+@149 := #1
+@150 := @148 @149
+@151 := @150 @114
+@152 := @147 @151
+@153 := @152 @137
+@154 := @145 @153
+@155 := instDecidableEqBool
+@158 := @154 (@155 @151 @137)
+@159 := @150 @38
+@166 := @145 (@147 @159 @137) (@155 @159 @137) @139
+@168 := @136 @139 @137
+@175 := fun (sourceBytes : @30) =>
+  fun (destinationBytes : @30) => @143 (@158 (@143 (@166 @168)) @139)
+@176 := LexLeanPreservation.FunRel
+@177 := LexLeanPreserve.C794a6cad1b5e8fdc98d1387794c0d40c.R68.__prog
+@179 := @176 @177 @38
+@180 := @72 @149
+@182 := @125 @180 @128
+@183 := @179 @182
+@184 := LexLeanPreservation.Rel
+@187 := LexLeanPreserve.C794a6cad1b5e8fdc98d1387794c0d40c.R68.__fits_0 @149 @114
+@188 := @184 @187
+@189 := LexLeanPreserve.C794a6cad1b5e8fdc98d1387794c0d40c.R68.__enc_0
+@193 := @189 (VerdantEngine.StorageTransfer.transferLength @149 @114)
+@194 := @188 @193
+@197 := (sourceBytes : @30) -> (destinationBytes : @30) -> @183 @194
+@203 := LexLeanPreservation.funRel_intro @177 @38 @182 @194 @103
+@206 := Prod.{0, 0} @30 @109
+@207 := @2 @206
+@210 := Prod.mk.{0, 0} @30 @109
+@211 := @210 @43
+@213 := @207 (@211 @126)
+@214 := @210 @38
+@216 := @207 (@214 @180)
+@217 := @10 @206
+@219 := @213 (@216 @217)
+@220 := @203 @219
+@221 := Eq.refl.{1}
+@222 := Option.{0}
+@248 := @220
+    (@221
+      (@222 @27)
+      (LexLeanRuntime.index
+        (@6 @27)
+        @27
+        (LexLeanRuntime.instIndexableList @27)
+        (LexLeanTarget.TargetSyntax.Program.functions @177)
+        @38))
+    (@221
+      (@222 (@6 @206))
+      (LexLeanTarget.TargetSemantics.bindAll
+        (LexLeanTarget.TargetSyntax.Function.parameters @103)
+        @182
+        @217))
+@250 := LexLeanPreservation.conv_cond @177
+@255 := @250 @219 @68 @96 @101 @142
+@257 := @147 @114 @137
+@258 := @145 @257
+@260 := @155 @114 @137
+@261 := @258 @260
+@262 := #2
+@264 := @148 @262 @38
+@265 := @147 @264
+@266 := @265 @137
+@267 := @145 @266
+@269 := @155 @264 @137
+@277 := @255 (fun (__b : @133) => @261 (@143 (@267 @269 @139 @168)) @139)
+@278 := @144 @108
+@280 := @278 @257 @260
+@282 := @278 @266 @269
+@283 := VerdantEngine.StorageTransfer.TransferDecision.empty
+@284 := @282 @283
+@285 := VerdantEngine.StorageTransfer.TransferDecision.copy
+@294 := @277
+    (fun (__b : @133) =>
+    @189 (@280 (@284 (@285 @262)) VerdantEngine.StorageTransfer.TransferDecision.invalid))
+    @151
+@296 := LexLeanPreservation.conv_prim @177
+@302 := @296 @219 @56 @67 @140 @137 @182
+@303 := LexLeanTarget.TargetSyntax.Value.bool
+@305 := @302 (@303 @151)
+@307 := LexLeanPreservation.convL_cons @177
+@308 := @307 @219
+@314 := @308 @61 @66 @137 @139 @180 @128
+@316 := LexLeanPreservation.conv_var @177
+@317 := @316 @219
+@319 := @317 @38 @180
+@321 := @221 (@222 @109)
+@322 := LexLeanTarget.TargetSemantics.lookup
+@323 := @322 @219
+@327 := @314 (@319 (@321 (@323 @38)))
+@339 := @308 @63 @65 @137 @137 @126 @118 (@317 @43 @126 (@321 (@323 @43)))
+@341 := LexLeanPreservation.convL_nil @177
+@345 := @305 (@327 (@339 (@341 @219)))
+@346 := LexLeanPreservation.prim_natEq
+@350 := @294 (@345 (@346 @149 @114))
+@352 := @207 (@211 @180)
+@353 := @72 @262
+@357 := @352 (@207 (@214 @353) @217)
+@366 := @250 @357 @78 @85 @95 @142 (fun (__b : @133) => @261 @139 @168)
+@367 := @280 @283
+@368 := #3
+@374 := @366 (fun (__b : @133) => @189 (@367 (@285 @368))) @264
+@379 := @296 @357 @56 @77 @140 @137
+@380 := @125 @353
+@382 := @125 @73 @118
+@386 := @379 (@380 @382) (@303 @264)
+@387 := @307 @357
+@401 := @387 @61 @76 @137 @139 @353 @382 (@316 @357 @38 @353 (@321 (@322 @357 @38)))
+@413 := @387 @74 @65 @137 @137 @73 @118 (LexLeanPreservation.conv_value @177 @357 @14 @73)
+@414 := @341 @357
+@421 := @374 (@386 (@401 (@413 @414)) (@346 @262 @38))
+@423 := LexLeanPreservation.conv_build @177
+@425 := @207 (@211 @353)
+@426 := @72 @368
+@430 := @425 (@207 (@214 @426) @217)
+@431 := @423 @430
+@438 := @431 @82 @52 @65 @137 @137 @118 @122
+@439 := @341 @430
+@440 := @438 @439
+@441 := LexLeanPreservation.construct_adt
+@446 := @421 (fun ("_" : @266) => @440 (@441 @43 @118))
+@447 := Bool.false
+@448 := @265 @447
+@453 := @431 @91 @52 @94 @139 @137
+@455 := @125 @426 @118
+@500 := fun (sourceBytes : @30) =>
+  fun (destinationBytes : @30) =>
+  @248
+    (@350
+      (fun ("_" : @153) =>
+      @446
+        (fun ("_" : @448) =>
+        @453
+          @455
+          (@124 @455)
+          (@307 @430 @61 @65 @137 @137 @426 @118 (@316 @430 @38 @426 (@321 (@322 @430 @38))) @439)
+          (@441 @90 @455)))
+      (fun ("_" : @152 @447) => @423 @357 @98 @52 @65 @137 @137 @118 @119 @414 (@441 @38 @118)))
+@501 := LexLeanPreservation.Obs
+@503 := (sourceBytes : @30) -> (destinationBytes : @30) -> @501
+@513 := fun (sourceBytes : @30) =>
+  fun (destinationBytes : @30) =>
+  cond.{1} @501 @187 (LexLeanPreservation.Obs.value @193) LexLeanPreservation.Obs.overflow
+@520 := (sourceBytes : @30) ->
+  (destinationBytes : @30) -> LexLeanPreservation.RunConv @177 @38 @182 @194
+@531 := fun (sourceBytes : @30) =>
+  fun (destinationBytes : @30) =>
+  LexLeanPreservation.run_of_funRel
+    @177
+    @38
+    @182
+    @194
+    (LexLeanPreserve.C794a6cad1b5e8fdc98d1387794c0d40c.R68.__rel_0 @149 @114)
+\end{coremodule}
+\end{lexlean}

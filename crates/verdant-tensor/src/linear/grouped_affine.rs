@@ -171,6 +171,14 @@ pub enum CodebookEncoding {
     ExtendedIndex,
     /// Ten-bit grid index with separate high bits and an explicit sign byte.
     ExplicitSigns,
+    /// Four-lane eight-bit grids with packed seven-bit sign selectors.
+    FourLaneIndexedSigns,
+    /// Four-lane nine-bit grids with explicit signs.
+    FourLaneExplicitSigns,
+    /// Eight-lane signed grids with a shared half and per-group eighth shifts.
+    ShiftedGrid,
+    /// Eight-lane shifted grids with half-scale nibbles distributed across group words.
+    DistributedScale,
 }
 
 /// Packed weight formats accepted by the grouped product.
@@ -190,6 +198,10 @@ pub enum GroupedWeightEncoding {
     SignedSix,
     /// Nonlinear four-bit codewords with signed six-bit group scales.
     NonlinearFour,
+    /// Five packed trits per byte with a four-trit tail and a trailing scale.
+    PackedTrits,
+    /// Four two-bit ternary fields per byte with a trailing scale.
+    TwoBitTernary,
 }
 
 impl From<CodebookEncoding> for GroupedWeightEncoding {
@@ -217,6 +229,46 @@ pub fn dot_grouped_weight_row(
         GroupedWeightEncoding::AffineFour => return dot_grouped_q4_row(weights, activations),
         GroupedWeightEncoding::AffineFive => return dot_grouped_q5_row(weights, activations),
         GroupedWeightEncoding::Codebook(codebook) => Request::C5(codebook as u64, bytes, blocks),
+        GroupedWeightEncoding::PackedTrits | GroupedWeightEncoding::TwoBitTernary => {
+            use verdant_bitpacked_product::{run, Adt0 as Packed, Adt1 as Fields};
+            let trits = encoding == GroupedWeightEncoding::PackedTrits;
+            let plan = |request| run(request).map_err(|_| invalid());
+            let value = |request| match plan(request)? {
+                Fields::C2(word) => Ok(word),
+                _ => Err(invalid()),
+            };
+            let width = value(Packed::C19(trits, bytes, blocks))?;
+            let mut sum = 0;
+            for (block, activation) in weights.chunks_exact(width as usize).zip(activations) {
+                let (payload, scale) = block
+                    .split_last_chunk::<{ size_of::<u16>() }>()
+                    .ok_or_else(invalid)?;
+                let mut coefficients = activation.codes.map(|_| 0_i8);
+                for (slot, byte) in payload.iter().enumerate() {
+                    let Fields::C1(start, stride, count, _) =
+                        plan(Packed::C16(trits, slot as u64))?
+                    else {
+                        return Err(invalid());
+                    };
+                    let decoded = value(Packed::C20(trits, u64::from(*byte)))?.to_le_bytes();
+                    for (position, code) in decoded[..count as usize].iter().enumerate() {
+                        coefficients[start as usize + position * stride as usize] = *code as i8;
+                    }
+                }
+                let dot = uor_matmul::dot_ref(
+                    uor_matmul::as_alphabet_full(&coefficients),
+                    uor_matmul::as_alphabet_full(&activation.codes),
+                );
+                let dot = signed_word_f32(i32::try_from(dot).map_err(|_| invalid())?)?;
+                sum = value(Packed::C10(
+                    sum,
+                    dot.to_bits().into(),
+                    activation.scale.to_bits().into(),
+                    u16::from_ne_bytes(*scale).into(),
+                ))?;
+            }
+            return Ok(f32::from_bits(sum as u32));
+        }
         GroupedWeightEncoding::NonlinearFour => Request::C12(bytes, blocks),
         GroupedWeightEncoding::SignedThree | GroupedWeightEncoding::SignedSix => {
             return run_grouped_affine_row!(
@@ -228,10 +280,20 @@ pub fn dot_grouped_weight_row(
         }
     };
     let query = |request| run(request).map_err(|_| invalid());
-    let Step::C5(width, normalization) = query(layout)? else {
-        return Err(TensorComputeError::ZeroOrMismatchedExtents {
-            detail: "codebook weights and activation block counts differ".into(),
-        });
+    let (width, normalization, grid_width, grid_unit) = match query(layout)? {
+        Step::C5(width, normalization) => (width, normalization, ACCUMULATORS, None),
+        Step::C9(width, normalization, lanes) => (width, normalization, lanes as usize, None),
+        Step::C12(width, normalization, lanes, unit) => (
+            width,
+            normalization,
+            lanes as usize,
+            Some(f32::from_bits(unit as u32)),
+        ),
+        _ => {
+            return Err(TensorComputeError::ZeroOrMismatchedExtents {
+                detail: "codebook weights and activation block counts differ".into(),
+            })
+        }
     };
     let tables = super::GGML_QUANTIZED_TABLES;
     let mut total = 0.0;
@@ -249,7 +311,25 @@ pub fn dot_grouped_weight_row(
                 _ => Err(invalid()),
             }
         };
-        let half = convert_float_storage(1, 0, field(0, HALF_BYTES)?)
+        let stored_scale =
+            if encoding == GroupedWeightEncoding::Codebook(CodebookEncoding::DistributedScale) {
+                let Step::C8(a, b, c, d) = query(Request::C15)? else {
+                    return Err(invalid());
+                };
+                let Step::C1(word) = query(Request::C16(
+                    field(a, HALF_BYTES)?,
+                    field(b, HALF_BYTES)?,
+                    field(c, HALF_BYTES)?,
+                    field(d, HALF_BYTES)?,
+                ))?
+                else {
+                    return Err(invalid());
+                };
+                word
+            } else {
+                field(0, HALF_BYTES)?
+            };
+        let half = convert_float_storage(1, 0, stored_scale)
             .map_err(|_| invalid())?
             .ok_or_else(invalid)?;
         let scale = evaluate_f32_scalar(
@@ -295,23 +375,35 @@ pub fn dot_grouped_weight_row(
         };
         let kind = kind as u64;
         let mut coefficients = activation.codes.map(|_| 0_i16);
-        for (group, lanes) in coefficients.chunks_exact_mut(ACCUMULATORS).enumerate() {
+        for (group, lanes) in coefficients.chunks_exact_mut(grid_width).enumerate() {
             let group = group as u64;
             let Step::C6(code, code_width, control, control_width, scale, signs) =
                 query(Request::C6(kind, group))?
             else {
                 return Err(invalid());
             };
-            let Step::C7(grid, indexed, mask, multiplier) = query(Request::C7(
+            let lookup = query(Request::C7(
                 kind,
                 group,
                 field(code, code_width)?,
                 field(control, control_width)?,
                 field(scale, 1)?,
                 field(signs, 1)?,
-            ))?
-            else {
-                return Err(invalid());
+            ))?;
+            if let Step::C11(grid, scale, down) = lookup {
+                for (lane, dst) in lanes.iter_mut().enumerate() {
+                    let raw = tables[grid as usize + lane];
+                    let Step::C1(word) = query(Request::C17(raw.into(), scale, down))? else {
+                        return Err(invalid());
+                    };
+                    *dst = word as i16;
+                }
+                continue;
+            }
+            let (grid, indexed, mask, multiplier, sign_lane) = match lookup {
+                Step::C7(grid, indexed, mask, scale) => (grid, indexed, mask, scale, 0),
+                Step::C10(grid, indexed, mask, scale, start) => (grid, indexed, mask, scale, start),
+                _ => return Err(invalid()),
             };
             let mask = if indexed {
                 u64::from(tables[mask as usize])
@@ -320,8 +412,12 @@ pub fn dot_grouped_weight_row(
             };
             for (lane, dst) in lanes.iter_mut().enumerate() {
                 let magnitude = tables[grid as usize + lane];
-                let Step::C1(value) =
-                    query(Request::C8(lane as u64, mask, magnitude.into(), multiplier))?
+                let Step::C1(value) = query(Request::C8(
+                    sign_lane + lane as u64,
+                    mask,
+                    magnitude.into(),
+                    multiplier,
+                ))?
                 else {
                     return Err(invalid());
                 };
@@ -334,6 +430,10 @@ pub fn dot_grouped_weight_row(
             uor_matmul::as_alphabet_full(&codes),
         );
         let signed = signed_word_f32(i32::try_from(product).map_err(|_| invalid())?)?;
+        let signed = match grid_unit {
+            Some(unit) => evaluate_f32_scalar(scalars::two_u64(), signed, unit)?,
+            None => signed,
+        };
         let term = evaluate_f32_scalar(scalars::two_u64(), scale, signed)?;
         total = evaluate_f32_scalar(0, total, term)?;
     }

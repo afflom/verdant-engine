@@ -4,12 +4,22 @@
  * (hologram-live `hologram-view-surface`: `application.invoke`, at most 16
  * outputs).
  */
-import { readFile, readdir, stat } from 'node:fs/promises';
+import { mkdir, readFile, readdir, rename, rm, stat, writeFile } from 'node:fs/promises';
 import { createServer } from 'node:http';
+import { homedir } from 'node:os';
 import { resolve, join, extname } from 'node:path';
 import { pathToFileURL, fileURLToPath } from 'node:url';
-import { loadArchive, loadClosure } from './index.mjs';
+import { createPrism, loadArchive, loadClosure } from './index.mjs';
+import { createAuth } from './auth.mjs';
 import { fail } from './errors.mjs';
+import { fileImageStore, imagesDirectory } from './image-store.mjs';
+
+/** Whether anything is at this path; the client opens a stored image only when nothing is (#347). */
+export const pathExists = (path) => stat(path).then(() => true, () => false);
+import { parseManifest, manifestCapabilities, MANIFEST_FILE } from './manifest.mjs';
+import { parseCapabilities } from './capabilities.mjs';
+
+export { resolveProviders, releaseProviders, PROVIDER_MESSAGES, PROVIDER_MESSAGES_ENV, PROVIDER_TIMEOUT_MS } from './providers.mjs';
 
 const CONTENT_TYPES = {
   '.html': 'text/html; charset=utf-8',
@@ -37,17 +47,122 @@ export async function readClosureDirectory(directory) {
   return files;
 }
 
-/** Open a `.holo` file or a closure directory. */
+/**
+ * Open a `.holo` file or a closure directory. `options.capabilities` is a
+ * capability file, as a path or a parsed value, and `options.capabilitySet`
+ * the set to apply (#279); with no file the application is granted nothing.
+ */
 export async function fromFile(source, options = {}) {
   const path = toPath(source);
   const info = await stat(path).catch(() => fail('load.path', `${path} does not exist`));
+  let capabilities = options.capabilities ?? null;
+  if (typeof capabilities === 'string' || capabilities instanceof URL) {
+    const file = toPath(capabilities);
+    capabilities = new Uint8Array(await readFile(file).catch(() => fail('capabilities.path', `${file} does not exist`)));
+  }
+  const grant = { capabilities, capabilitySet: options.capabilitySet, allowUnverified: options.allowUnverified === true };
   if (info.isDirectory()) {
     const files = await readClosureDirectory(path);
     let model = options.model ?? null;
     if (typeof model === 'string') model = JSON.parse(await readFile(toPath(model), 'utf8'));
-    return loadClosure(files, (name) => import(pathToFileURL(join(path, name)).href), { model });
+    return loadClosure(files, (name) => import(pathToFileURL(join(path, name)).href), { model, ...grant });
   }
-  return loadArchive(new Uint8Array(await readFile(path)));
+  return loadArchive(new Uint8Array(await readFile(path)), grant);
+}
+
+/**
+ * Read `prism.toml` from a project directory (#280), with the overlay
+ * `prism.<target>.toml` merged when `options.target` is given and that file
+ * exists. A capability file the manifest names is read relative to the
+ * directory. Resolves to the result of `parseManifest` plus `directory`,
+ * `files` (the manifest files read, in merge order) and `grant`, the
+ * `{ capabilities, capabilitySet }` options `fromFile` and `load` take.
+ */
+export async function readManifest(directory = '.', options = {}) {
+  const root = toPath(directory);
+  const target = options.target ?? null;
+  const main = join(root, MANIFEST_FILE);
+  const text = await readFile(main).catch(() => fail('manifest.path', `${main} does not exist`));
+  const files = [MANIFEST_FILE];
+  let overlay = null;
+  if (target !== null) {
+    const name = `prism.${target}.toml`;
+    overlay = await readFile(join(root, name)).then(
+      (bytes) => {
+        files.push(name);
+        return new Uint8Array(bytes);
+      },
+      () => null,
+    );
+  }
+  const parsed = parseManifest(new Uint8Array(text), { target, overlay });
+  const { capabilities, capabilitySet, file } = manifestCapabilities(parsed.manifest);
+  let grant = { capabilities, capabilitySet };
+  if (file !== null) {
+    const path = join(root, file);
+    const bytes = await readFile(path).catch(() => fail('capabilities.path', `${path} does not exist; capabilities.file in ${MANIFEST_FILE} names it`));
+    grant = { capabilities: parseCapabilities(new Uint8Array(bytes)), capabilitySet };
+  }
+  return Object.freeze({ ...parsed, directory: root, files: Object.freeze(files), grant: Object.freeze(grant) });
+}
+
+/** The directory `prism-code run` keeps containers in: `$PRISM_HOME/containers`, by default `~/.prism/containers`. */
+export function containersDirectory(env = process.env) {
+  return join(env.PRISM_HOME || join(homedir(), '.prism'), 'containers');
+}
+
+export { fileImageStore, imagesDirectory, memoryImageStore } from './image-store.mjs';
+
+/**
+ * Rename `from` over `to`. On Windows a rename over a file that another reader
+ * has open at that instant fails with EPERM, EACCES or EBUSY, so those are
+ * retried for up to about a second; any other error is thrown at once.
+ */
+export async function renameReplacing(from, to, { rename: move = rename, wait = (ms) => new Promise((done) => setTimeout(done, ms)) } = {}) {
+  for (let attempt = 0; ; attempt++) {
+    try {
+      return await move(from, to);
+    } catch (error) {
+      if (attempt >= 8 || !['EPERM', 'EACCES', 'EBUSY'].includes(error?.code)) throw error;
+      await wait(10 * 2 ** Math.min(attempt, 5));
+    }
+  }
+}
+
+/**
+ * Records as one JSON file per container, readable only by this user. The
+ * record holds the output and never the input (docs/proposals/348-container-lifecycle.md).
+ */
+export function fileContainerStore(directory = containersDirectory()) {
+  const fileOf = (id) => join(directory, `${id}.json`);
+  const guarded = async (what, action) => {
+    try {
+      return await action();
+    } catch (cause) {
+      return fail('container.store', `${what} ${directory}: ${cause.message}; set PRISM_HOME to a directory you can write`, { cause: cause.code });
+    }
+  };
+  return Object.freeze({
+    put: (record) =>
+      guarded('cannot write a container to', async () => {
+        await mkdir(directory, { recursive: true, mode: 0o700 });
+        // Write beside the target and rename, so an interrupted run never leaves half a record. `system events` reads
+        // these files while they are written, which on Windows can briefly refuse the rename.
+        const scratch = `${fileOf(record.id)}.${process.pid}.tmp`;
+        await writeFile(scratch, JSON.stringify(record), { mode: 0o600 });
+        await renameReplacing(scratch, fileOf(record.id));
+      }),
+    get: (id) => guarded('cannot read a container from', async () => JSON.parse(await readFile(fileOf(id), 'utf8'))),
+    find: (prefix) =>
+      guarded('cannot list containers in', async () => {
+        const names = await readdir(directory).catch((error) => {
+          if (error.code === 'ENOENT') return [];
+          throw error;
+        });
+        return names.filter((name) => /^[0-9a-f]{64}\.json$/.test(name) && name.startsWith(prefix)).map((name) => name.slice(0, 64));
+      }),
+    remove: (id) => guarded('cannot remove a container from', () => rm(fileOf(id), { force: true })),
+  });
 }
 
 const INTENT_VERSION = 1;
@@ -130,4 +245,77 @@ export async function serve(app, { port = 0, host = '127.0.0.1' } = {}) {
     url: urlOf,
     close: () => new Promise((resolveClose) => server.close(() => resolveClose())),
   };
+}
+
+/**
+ * `Prism.fromEnv()`, docker-py's `docker.from_env()` (issue #441): the client of
+ * `createPrism` with this machine's configuration and no daemon.
+ *
+ * - `containers` keep their records in `$PRISM_HOME/containers` (`fileContainerStore`).
+ * - `images` keeps built and pulled images in `$PRISM_IMAGES`, else `$PRISM_HOME/images` (`fileImageStore`).
+ * - `images.build` starts no builder of its own: prism-code runs none. A caller that has one passes `docker`;
+ *   the CLI's `build` builds in this process instead (journey/engine.mjs).
+ * - `system.info({ path })` and `system.version({ path })` read `<path>/prismpm.lock`.
+ * - `auth` logs in and out through Docker's credential stores and holds signing identities.
+ *
+ * `options.env` replaces `process.env`. Any other option is `createPrism`'s and wins
+ * over these defaults, so a test can pass its own `store` or `docker`.
+ */
+function fromEnv(options = {}) {
+  const { env = process.env, ...rest } = options;
+  return createPrism({
+    store: fileContainerStore(containersDirectory(env)),
+    imageStore: fileImageStore(imagesDirectory(env)),
+    readLock: (directory) =>
+      readFile(join(toPath(directory), 'prismpm.lock'), 'utf8').catch((error) => {
+        if (error.code === 'ENOENT') return null;
+        return fail('system.lock', `cannot read ${join(toPath(directory), 'prismpm.lock')}: ${error.message}`);
+      }),
+    auth: createAuth({ env }),
+    ...rest,
+  });
+}
+
+/** The client entry point: `Prism.fromEnv()`. `Prism.create` is `createPrism`, for a client configured by hand. */
+export const Prism = Object.freeze({ fromEnv, create: createPrism });
+
+// Signing and checking attestations (#272). The sigstore packages they need are optional and load on first use.
+export { experimental_verifyAttestations, experimental_verifyBundle, GITHUB_ACTIONS_ISSUER } from './attest.mjs';
+export { experimental_attest, experimental_signStatements } from './attest-write.mjs';
+
+// Moving holos to and from a registry or a local store (#292).
+export { experimental_push, experimental_pull, openEndpoint, MAX_HOLO_BYTES, PUSH_SCHEMA, PULL_SCHEMA } from './push-pull.mjs';
+export { parseReference, formatReference } from './oci-reference.mjs';
+export { createRegistryClient, parseChallenge, isLoopback } from './oci-registry.mjs';
+export { dockerCredentials } from './oci-auth.mjs';
+export { openStore } from './oci-store.mjs';
+export {
+  holoManifest,
+  referrerManifest,
+  registryStatement,
+  registryStatements,
+  fingerprintTag,
+  referrersTag,
+  HOLO_MEDIA_TYPE,
+  MANIFEST_MEDIA_TYPE,
+  INDEX_MEDIA_TYPE,
+  EMPTY_DESCRIPTOR,
+  ANNOTATION,
+  CREATED,
+} from './oci-manifest.mjs';
+export { exportBrowser as experimental_exportBrowser, checkExport as experimental_checkExport } from './export.mjs';
+
+// The proof record of a holo, checked again on this machine (journey/reprove-here.mjs). The functions themselves,
+// which a page binds to its own kernel and LexLean, are `prism-code/reprove`.
+/**
+ * Experimental. The `reprove` function `check` and `experimental_verify` take, bound to Lean's kernel as this
+ * package ships it: `experimental_verify(holo, { reprove: experimental_reproveHere() })`. Nothing is opened until
+ * a holo that carries a proof record is given.
+ */
+export function experimental_reproveHere(options = {}) {
+  return async (holo) => (await import('./journey/reprove-here.mjs')).reproveHere(options)(holo);
+}
+/** Experimental. The `relex` function they take, bound to LexLean's front end as this package ships it. */
+export function experimental_relexHere(options = {}) {
+  return async (holo) => (await import('./journey/reprove-here.mjs')).relexHere(options)(holo);
 }

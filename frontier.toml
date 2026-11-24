@@ -5,25 +5,25 @@
 # stops the functions it counts (the detail their rows state, under its
 # cause), the one that stops the most first: the work queue.
 
-# Honesty report: 585 of 1893 functions of product code are lifted; 1150
-# are residue, 75 foreign and 83 effect rows.
+# Honesty report: 586 of 1888 functions of product code are lifted; 1150
+# are residue, 72 foreign and 80 effect rows.
 # Residue by cause:
-#   arithmetic: 24
-#   call: 211
+#   arithmetic: 25
+#   call: 210
 #   form: 338
 #   signature: 53
-#   statements: 21
-#   type: 497
+#   statements: 23
+#   type: 495
 #   width: 6
 
 spec = "uorust/register/1"
 
 [lift]
-functions = 1893
-lifted = 585
+functions = 1888
+lifted = 586
 residue = 1150
-foreign = 75
-effect = 83
+foreign = 72
+effect = 80
 
 [[construct]]
 construct = "expression form outside the lift: ? below the function's own statements"
@@ -58,7 +58,12 @@ functions = 27
 [[construct]]
 construct = "Fs effect: std::fs::read_to_string"
 cause = "effect"
-functions = 24
+functions = 25
+
+[[construct]]
+construct = "the body has statements other than let"
+cause = "statements"
+functions = 23
 
 [[construct]]
 construct = "type outside the lift: Vec3.x: f64"
@@ -66,14 +71,9 @@ cause = "type"
 functions = 23
 
 [[construct]]
-construct = "the body has statements other than let"
-cause = "statements"
-functions = 21
-
-[[construct]]
 construct = "type outside the lift: Self"
 cause = "type"
-functions = 21
+functions = 22
 
 [[construct]]
 construct = "calls new, which is not lifted"
@@ -111,11 +111,6 @@ cause = "type"
 functions = 12
 
 [[construct]]
-construct = "Fs effect: std::fs::read"
-cause = "effect"
-functions = 11
-
-[[construct]]
 construct = "type outside the lift: MeshBlas.triangles: BlasTriangle.v0: Vec3.x: f64"
 cause = "type"
 functions = 11
@@ -126,9 +121,19 @@ cause = "type"
 functions = 11
 
 [[construct]]
+construct = "Fs effect: std::fs::read"
+cause = "effect"
+functions = 10
+
+[[construct]]
 construct = "type outside the lift: Aabb.min: Vec3.x: f64"
 cause = "type"
 functions = 10
+
+[[construct]]
+construct = "usize + wraps or panics where its value leaves the pointer width: past 2^32 on wasm32-unknown-unknown and thumbv7em-none-eabihf, past 2^64 on x86_64-unknown-linux-gnu and aarch64-unknown-linux-gnu"
+cause = "arithmetic"
+functions = 9
 
 [[construct]]
 construct = "signature outside the lift: generic, async, unsafe or variadic"
@@ -144,11 +149,6 @@ functions = 9
 construct = "type outside the lift: ProceduralMesh.positions: f32"
 cause = "type"
 functions = 9
-
-[[construct]]
-construct = "usize + wraps or panics where its value leaves the pointer width: past 2^32 on wasm32-unknown-unknown and thumbv7em-none-eabihf, past 2^64 on x86_64-unknown-linux-gnu and aarch64-unknown-linux-gnu"
-cause = "arithmetic"
-functions = 8
 
 [[construct]]
 construct = "type outside the lift: ArticulatedCharacter.skeleton: Skeleton.joints: Joint.rest_translation: Vec3.x: f64"
@@ -286,11 +286,6 @@ cause = "arithmetic"
 functions = 4
 
 [[construct]]
-construct = "calls from_slice, which is not lifted"
-cause = "call"
-functions = 4
-
-[[construct]]
 construct = "calls identity, which is not lifted"
 cause = "call"
 functions = 4
@@ -376,6 +371,11 @@ cause = "arithmetic"
 functions = 3
 
 [[construct]]
+construct = "calls from_slice, which is not lifted"
+cause = "call"
+functions = 3
+
+[[construct]]
 construct = "calls pow2_u64, which is not lifted"
 cause = "call"
 functions = 3
@@ -388,11 +388,6 @@ functions = 3
 [[construct]]
 construct = "Env effect: std::env::args"
 cause = "effect"
-functions = 3
-
-[[construct]]
-construct = "takes or returns Value, a type of the serde_json crate with no LexLean model"
-cause = "foreign"
 functions = 3
 
 [[construct]]
@@ -457,11 +452,6 @@ functions = 3
 
 [[construct]]
 construct = "type outside the lift: WeightedMeanF32.maximum: f32"
-cause = "type"
-functions = 3
-
-[[construct]]
-construct = "type outside the lift: _"
 cause = "type"
 functions = 3
 
@@ -831,11 +821,6 @@ cause = "effect"
 functions = 1
 
 [[construct]]
-construct = "Env effect: std::env::var_os"
-cause = "effect"
-functions = 1
-
-[[construct]]
 construct = "Fs effect: Path::is_file"
 cause = "effect"
 functions = 1
@@ -902,16 +887,6 @@ functions = 1
 
 [[construct]]
 construct = "calls xtask::audit::audit_limits, which reaches an effect"
-cause = "effect"
-functions = 1
-
-[[construct]]
-construct = "calls xtask::proof::check, which reaches an effect"
-cause = "effect"
-functions = 1
-
-[[construct]]
-construct = "calls xtask::proof::observe, which performs a Fs effect: std::fs::read"
 cause = "effect"
 functions = 1
 
@@ -1709,7 +1684,7 @@ reason = "type"
 detail = "type outside the lift: Self"
 
 [[residue]]
-kappa = "90efa86a7e8346f633de00d05cca2ea0cc14d71f730bcce6b8e1fe009d7740b3"
+kappa = "6df91a9299d4d3faf66069834acd06bf18aaf383e3e5eeb10f1d2ff054efc293"
 function = "verdant_core::authority_cert::sovereign_authority_exec_json"
 reason = "call"
 detail = "calls from_slice, which is not lifted"
@@ -4409,7 +4384,7 @@ reason = "signature"
 detail = "signature outside the lift: takes &mut self of DynamicWorkloadGovernor: the lift reads self and &self as the value, and threads no other receiver"
 
 [[residue]]
-kappa = "a622204d6abcd053f2adbbcc7f4cf4977f3e764a8dc47cc82f61c70ca0ad70a4"
+kappa = "e68a9547c5bf28773bd86bcc578717858dd04343bb4d57bd203b4c58ae82085b"
 function = "verdant_core::uhd_workload::paged_workload_step_json"
 reason = "call"
 detail = "calls from_slice, which is not lifted"
@@ -4517,7 +4492,7 @@ reason = "type"
 detail = "type outside the lift: f64"
 
 [[residue]]
-kappa = "2028685514cb1ad09b65d7a12c3c8ff93ac1e10eae9dffc2c4aaadf20deb37c0"
+kappa = "8ae15a77c67fae9287e80888841cadc3f7691292aa0035208cc62dee2b9af27d"
 function = "verdant_core::vcs::VerdantReleaseCapsule::pack_from_files"
 reason = "type"
 detail = "type outside the lift: Self"
@@ -4529,19 +4504,19 @@ reason = "type"
 detail = "type outside the lift: &mut SovereignAuthorityLedger"
 
 [[residue]]
-kappa = "48ee1df5f890e2652c0ff697b8b429044134c216848ab0363a308e25e1bb1946"
+kappa = "64a6e5b5a049242eb8bdf38da52db18036184da7737c2b7bc9a16c940bfa46b0"
 function = "verdant_core::vcs::VerdantReleaseCapsule::recover_from_stitch"
 reason = "type"
 detail = "type outside the lift: Self"
 
 [[residue]]
-kappa = "198befcfc1d08ad8ae599743974b29590476349a2336ec1768dea23c2092e565"
+kappa = "1b21198462e2d1b2936e1221827d4c84f2dc89d3e500332d16e996ce29e46c6e"
 function = "verdant_core::vcs::VerdantReleaseCapsule::shard_for_stitch"
 reason = "call"
 detail = "calls sign_quorum, which is not lifted"
 
 [[residue]]
-kappa = "bd9a820a5f56254646b4decd26d27d955e3d239d7b4fdc4845bd1946cd2a73c4"
+kappa = "194c080ebe8b8131f39aa49d39c00a77837966f96b92afd71a514b0f5bd9d9c8"
 function = "verdant_core::vcs::VerdantReleaseCapsule::verify_and_unpack"
 reason = "type"
 detail = "type outside the lift: Self"
@@ -4613,13 +4588,19 @@ reason = "call"
 detail = "calls new, which is not lifted"
 
 [[residue]]
+kappa = "a36bef9a121b33bd0bc6aaf89817ea13de7e260b3d52100d03e400f433a5b01e"
+function = "verdant_core::vcs_studio::HoloV6ProofRecord::extract_and_verify"
+reason = "type"
+detail = "type outside the lift: Self"
+
+[[residue]]
 kappa = "f3e81a57690782d4b1d59826912b427fa07423dfb4db384053cb8ab5554a4d99"
 function = "verdant_core::vcs_studio::parse_stitch_deep_link_uri"
 reason = "call"
 detail = "calls thirty_two_u8, which is not lifted"
 
 [[residue]]
-kappa = "6e72353afa80eeb91c84981c718ca3e1d0f7832281f00e43fd68edcdccfa96fe"
+kappa = "b45650c8cf58c06e4f8fbaec7c211f824b59b30e3b529f68e7a83ef2313201bf"
 function = "verdant_core::vcs_studio::studio_vcs_commit_and_pack_holo_json"
 reason = "call"
 detail = "calls from_slice, which is not lifted"
@@ -5003,7 +4984,7 @@ reason = "type"
 detail = "type outside the lift: GroupedQ8Block.scale: f32"
 
 [[residue]]
-kappa = "f8a8124766c393a34ab61f7321ae4e0cb59bf88757d84b9d22a52856156d2ca7"
+kappa = "64a22d65462afb68c741e2b875de4786aaabf17ff05420df608a461e138e8d3b"
 function = "verdant_tensor::linear::grouped_affine::dot_grouped_weight_row"
 reason = "type"
 detail = "type outside the lift: GroupedQ8Block.scale: f32"
@@ -5129,7 +5110,7 @@ reason = "type"
 detail = "type outside the lift: f32"
 
 [[residue]]
-kappa = "600781e59500d0294c8ee7022bd87c405c5d3db9ccc202c0c4c4f425fd9a9909"
+kappa = "2e12f03f4d1808da518c3291a7066c317733dd15ccb287e78db6d6aae34187ca"
 function = "verdant_tensor::linear::weight_encoding::encode_weight_block"
 reason = "signature"
 detail = "signature outside the lift: generic, async, unsafe or variadic"
@@ -8153,28 +8134,16 @@ reason = "call"
 detail = "calls from_str, which is not lifted"
 
 [[residue]]
-kappa = "c7f465b417e31cda20c0b7774574c2145efdf8bcf484a6df7f79a49fc4d6d563"
-function = "xtask::bootstrap::docker_credentials_are_confined"
-reason = "type"
-detail = "type outside the lift: _"
-
-[[residue]]
 kappa = "33f9423e9537477066c28b505b50eeeb4c16d0664cc3d6eeb5bbf600c1874d61"
 function = "xtask::bootstrap::policy_boundary_is_canonical"
 reason = "statements"
 detail = "the body has statements other than let"
 
 [[residue]]
-kappa = "30bc8b508554437f91bacda73441e2580abdb952ee347bc781537f2a4d31dfeb"
-function = "xtask::bootstrap::private_scratch"
-reason = "type"
-detail = "type outside the lift: _"
-
-[[residue]]
-kappa = "53e1abe55473d185d38c0479f407160d3aac421fcecc6e38bd2d1349ba69b108"
+kappa = "8114cd72b78a549aa6dc6885a8930c33bc2528fe580fd6e3f0ce2129fb231310"
 function = "xtask::bootstrap::proof_reuse_is_confined"
-reason = "type"
-detail = "type outside the lift: _"
+reason = "arithmetic"
+detail = "usize + wraps or panics where its value leaves the pointer width: past 2^32 on wasm32-unknown-unknown and thumbv7em-none-eabihf, past 2^64 on x86_64-unknown-linux-gnu and aarch64-unknown-linux-gnu"
 
 [[residue]]
 kappa = "a5a6913a073db7bffcf47498cbb3da8576292a604ffc8b8da6f5f2e47ff97e85"
@@ -8183,10 +8152,16 @@ reason = "type"
 detail = "type outside the lift: repo_model::Authorities"
 
 [[residue]]
-kappa = "aa9f2e538cb4e3051647112fdf731e263aa73fa37a70bb0496078673fd9a31f7"
+kappa = "46e3e0f65c03a33bec7c36c3e11bef4144f76c65363f724dfe9bfc10b71ec848"
 function = "xtask::proof::binds"
-reason = "call"
-detail = "calls from_slice, which is not lifted"
+reason = "statements"
+detail = "the body has statements other than let"
+
+[[residue]]
+kappa = "1b11981267286a20449c96deaebbe762b9128b598703e50755e5784b667b379e"
+function = "xtask::proof::blake3_hex"
+reason = "statements"
+detail = "the body has statements other than let"
 
 [[residue]]
 kappa = "01d8e4f31fd96bd31df861c2e2e8db7c38a133d5d836e261458235a6bca1b377"
@@ -8556,24 +8531,9 @@ function = "verdant_tensor::tropical::contract_tropical_max_plus"
 detail = "takes or returns Trop<i32>, a type of the uor_matmul crate with no LexLean model"
 
 [[foreign]]
-kappa = "540ca4889f33ed9054727dce400ae758300dab2d48c9c078e5060ebca1967b6a"
-function = "xtask::bootstrap::compare_sdk_inventory"
+kappa = "6ed1a740c2300b1ac0a793200c49f7b89dc3b50ac43c1488e91a82bc3c5e1265"
+function = "xtask::bootstrap::is_canonical_json_bytes"
 detail = "takes or returns serde_json::Value, a type of the serde_json crate with no LexLean model"
-
-[[foreign]]
-kappa = "ed85948bba3898cdd257b8a3f3f45913e7fff3086b02573815c873b0fd9cdf34"
-function = "xtask::proof::acceptance_digest"
-detail = "takes or returns Value, a type of the serde_json crate with no LexLean model"
-
-[[foreign]]
-kappa = "ca7d36c763a9ca1ce36e41dfd1d72f0d4c444108626ac3470653b8bef1ae2b97"
-function = "xtask::proof::text"
-detail = "takes or returns Value, a type of the serde_json crate with no LexLean model"
-
-[[foreign]]
-kappa = "f996c99c865c15c91814ba724569c89e000f9368c01f0606ac67012165dc4519"
-function = "xtask::proof::workspace_paths"
-detail = "takes or returns Value, a type of the serde_json crate with no LexLean model"
 
 [[effect]]
 kappa = "95d808d6bf07fd8b3e4133386bd31da79eedbac8745116310d04fb1546905a37"
@@ -8696,7 +8656,7 @@ function = "verdant_core::build_ops::VerdantOperatorChannel::execute_native_buil
 effect = "Process effect: Command::new"
 
 [[effect]]
-kappa = "bfaad828fa4edee564abe44e7cc34265b55811817365db74324e82d34fe7d2e9"
+kappa = "89ee5a38763b1fb6922107acd5b218171febd23426b3529847b97e04375fa62b"
 function = "verdant_core::gateway_swarm::execute_gateway_op"
 effect = "Fs effect: std::fs::read_to_string"
 
@@ -8716,7 +8676,7 @@ function = "verdant_core::lifecycle::VerdantOperatorChannel::execute_lifecycle_g
 effect = "Fs effect: std::fs::read_to_string"
 
 [[effect]]
-kappa = "bbd4b08d80595b5a7150d58363e05337d785746c2ebf4742777710fc79776949"
+kappa = "cb5fca58105a0fac0c444986632e46f8192acbb03aa10cafeb3fb642e0e77a85"
 function = "verdant_core::lifecycle::VerdantOperatorChannel::execute_ratchet_cycle"
 effect = "Fs effect: std::fs::create_dir_all"
 
@@ -8806,7 +8766,7 @@ function = "verdant_core::operator_release::VerdantOperatorChannel::verify_relea
 effect = "Fs effect: std::fs::read_to_string"
 
 [[effect]]
-kappa = "e796fe324e76bff0ddc5d8740cee8f568061a1578bd6830bc0e886be3e497400"
+kappa = "975a2da9fff1ceac76bd12be88e67d8bbad6d04a1741ea503537f7f39495ab3e"
 function = "verdant_core::operator_seal::VerdantOperatorChannel::collect_distilled_site_tree"
 effect = "Fs effect: std::fs::read_dir"
 
@@ -8906,7 +8866,7 @@ function = "xtask::audit::shipped_sources"
 effect = "Fs effect: Path::exists"
 
 [[effect]]
-kappa = "a5271b17e2a24dde4e6cfd05957468c9c785ec0aba88674f66298117b7c3041c"
+kappa = "962695ae208843f1eb11e30232d5d33f122c4f971646deecaeab0073bb2e0802"
 function = "xtask::bootstrap::audit"
 effect = "Fs effect: Path::exists"
 
@@ -8916,14 +8876,9 @@ function = "xtask::bootstrap::audit_dependency_updates"
 effect = "calls repo_model::Model::load, which reaches an effect"
 
 [[effect]]
-kappa = "8d79cab07f7d9ed0ca73645146b1ebd2b3ef859a857e07bf28cd39cd5d107f84"
+kappa = "2e8b325b1c0d07fced7098f1aa690fdf7cac0449491eb58faeae3dc058671242"
 function = "xtask::bootstrap::audit_policy_files"
 effect = "Fs effect: std::fs::read"
-
-[[effect]]
-kappa = "1d403c51b030c8eae88b85b8a553d5b7f45a603b828fb30d9db11601967bfd8e"
-function = "xtask::bootstrap::audit_sdk_inventory"
-effect = "Env effect: std::env::var_os"
 
 [[effect]]
 kappa = "04758ae9755a95b9dcd6411b21297cc0e7ffb462f65e7b357f4c17fd8e7ad571"
@@ -8946,34 +8901,24 @@ function = "xtask::main"
 effect = "Env effect: std::env::args"
 
 [[effect]]
-kappa = "6d5c7898d04bb97d1ec6d3b65b0e6aa44f1cd42bb886ce93d9cf9d74189d32a3"
-function = "xtask::proof::check"
-effect = "calls xtask::proof::observe, which performs a Fs effect: std::fs::read"
-
-[[effect]]
-kappa = "fbe372c3248e9232301c35664c5c7e25c28a5229dc9c7cdad5c6183b7c23bb62"
+kappa = "3271f9c1c2b8edeb48daf64b54886aaee7788108c6513b77411962b7c4d401e7"
 function = "xtask::proof::inputs"
-effect = "Fs effect: std::fs::read"
+effect = "Fs effect: std::fs::read_to_string"
 
 [[effect]]
-kappa = "0dbaf98fdb57d67b997889ada05fc778982d93b92e3fe034a105afbd19377d5c"
+kappa = "f2819a3e7a1cfc8f66eb826faf0d9fafeb974ce552e8c12fcad1bdc6fca20edb"
 function = "xtask::proof::keep"
 effect = "Fs effect: Path::exists"
 
 [[effect]]
-kappa = "0d3e3f3c6dc66c99b80f39406572a4307557c127ffd6b8ea1e3196153783116c"
+kappa = "7d34acf3721a96f5ccf405db02e941b83f585758e157496fb9852cb4ebc0e1cb"
 function = "xtask::proof::observe"
 effect = "Fs effect: std::fs::read"
 
 [[effect]]
-kappa = "07c8cc1dff40bd9f29e46f249723481f23dffc7eef3843f4442d0245f515dde0"
-function = "xtask::proof::read_kept"
-effect = "Fs effect: std::fs::read"
-
-[[effect]]
-kappa = "80daff23e48bd07127887d37f666dfe124942fe70ae13eec71d19250f64f7ebf"
+kappa = "b1b6ffe51f164df96a1d56781acc7a5ad39f7dd1978bc7af87304791ba2c1ee5"
 function = "xtask::proof::reuse"
-effect = "calls xtask::proof::check, which reaches an effect"
+effect = "Fs effect: std::fs::read"
 
 [[effect]]
 kappa = "57a6a12b0378131070dfd4fdaf15276df9ad469585d7379576e79ba435831040"
@@ -10861,6 +10806,36 @@ function = "verdant_tensor::scalars_gateway::gateway_surviving_shards_recover_4_
 definition = "Behavior::gatewaySurvivingShardsRecover4Of8"
 
 [[lifted]]
+kappa = "b54f7dd0be394ea75b5cb87dd8af9591a1b8ca7bdcc7dfba03712454f19b91aa"
+function = "verdant_tensor::scalars_gateway::holo_v6_capsule_margin_valid"
+definition = "Behavior::holoV6CapsuleMarginValid"
+
+[[lifted]]
+kappa = "1409b2834a44982261fc1a7e26c4b579d93a068fff559c081a9b7af774f37475"
+function = "verdant_tensor::scalars_gateway::holo_v6_format_version"
+definition = "Behavior::holoV6FormatVersion"
+
+[[lifted]]
+kappa = "f7b425df02c740fb14b5606d54a9c7de9515077a2fc6156c89bbf105f1feb091"
+function = "verdant_tensor::scalars_gateway::holo_v6_self_carrying_admitted"
+definition = "Behavior::holoV6SelfCarryingAdmitted"
+
+[[lifted]]
+kappa = "88d416904365f9f4d276f1079dd0d05293ecdc820949fee98a34740de8d6c3aa"
+function = "verdant_tensor::scalars_gateway::holo_v6_theorems_complete"
+definition = "Behavior::holoV6TheoremsComplete"
+
+[[lifted]]
+kappa = "42aa47a4f76207f995f5b08f7f0cd9167943a150436c61ce6438cb3e86d27e43"
+function = "verdant_tensor::scalars_gateway::holo_v6_uorc_major"
+definition = "Behavior::holoV6UorcMajor"
+
+[[lifted]]
+kappa = "b30432ecbe47f50e4cda763b8384cd182ace9af5c61aa4cc79bd2155211ec545"
+function = "verdant_tensor::scalars_gateway::holo_v6_uorc_minor"
+definition = "Behavior::holoV6UorcMinor"
+
+[[lifted]]
 kappa = "0b735ccaab3fb0fd7b415a8fc8eb0382be0cdec99a35a8407b6872ce1f2fed07"
 function = "verdant_tensor::scalars_gateway::stitch_l5_budget_reserve_ok"
 definition = "Behavior::stitchL5BudgetReserveOk"
@@ -10984,6 +10959,16 @@ definition = "Behavior::stitchPublicBenefitCarrierOk"
 kappa = "4cf5e85d0396ce37835d7c45653bd13286deeba2d691e0db091b8a34450be4f7"
 function = "verdant_tensor::scalars_gateway::stitch_volunteer_swarm_ready"
 definition = "Behavior::stitchVolunteerSwarmReady"
+
+[[lifted]]
+kappa = "b47106703d1c510ef56ae6679ebf9f9412d069598480550c5592b9ae48f50f23"
+function = "verdant_tensor::scalars_gateway::unified_scopes_exact"
+definition = "Behavior::unifiedScopesExact"
+
+[[lifted]]
+kappa = "196772e061d70971fe5e19bbbf155ff6f69730396f21f9e43ce974b789be2b6f"
+function = "verdant_tensor::scalars_gateway::unified_tensor_scopes_count"
+definition = "Behavior::unifiedTensorScopesCount"
 
 [[lifted]]
 kappa = "fee180067fab8a64427b5cdd300e44cd695d50f8f5d156d7bbf2346260928b90"
@@ -11826,37 +11811,17 @@ function = "xtask::bootstrap::action_reference_is_pinned"
 definition = "Behavior::actionReferenceIsPinned"
 
 [[lifted]]
-kappa = "0963d69858d0ea5272be5cafd5f519e2a68e22ab8fefcbc6f967fbe862ee61ed"
-function = "xtask::bootstrap::content_matches"
-definition = "Behavior::contentMatches"
-
-[[lifted]]
 kappa = "c35a803fb333caca79a512c37a85551fd754049b9127f28dffaf5fb376a71f9b"
 function = "xtask::bootstrap::immutable_image"
 definition = "Behavior::immutableImage"
 
 [[lifted]]
-kappa = "d86f100a893bc87071052f82ff391060283e2391105eb1f7bcd96a1a2d21fed4"
+kappa = "19065686427b89b61141335cd03612f95449a97b7782cb25bb775bff04ebdfee"
 function = "xtask::bootstrap::native_coverage_is_complete"
 definition = "Behavior::nativeCoverageIsComplete"
 
 [[lifted]]
-kappa = "7d7f2ad74b020d00449e24f24145306579512c64d7e6487261aca7ac2916ef58"
-function = "xtask::bootstrap::pipeline_lifecycle_is_complete"
-definition = "Behavior::pipelineLifecycleIsComplete"
-
-[[lifted]]
-kappa = "dc8140c06bd6e5c4e035c93bc44cc9dff2a088cd30d687f5ad90700605e1988f"
-function = "xtask::bootstrap::sdk_image"
-definition = "Behavior::sdkImage"
-
-[[lifted]]
-kappa = "49d8095f8c935d6aaa81abdc14804b89608375168ec8493d5199b9eb3bb8f814"
-function = "xtask::bootstrap::sha256"
-definition = "Behavior::sha256"
-
-[[lifted]]
-kappa = "fd99727f4de2de3b499af9f7d029fce8d3af1a0978fd22f9038553c907fc2949"
+kappa = "a7856747c45cf7e9a14c93b1c884368aefae50be0093af9fdb4b36c48d629141"
 function = "xtask::bootstrap::update_preserves_project_content"
 definition = "Behavior::updatePreservesProjectContent"
 
@@ -11864,21 +11829,6 @@ definition = "Behavior::updatePreservesProjectContent"
 kappa = "30497fdb1dad1ab60d11b8b916e1755cd7b9afb0f4302bd74ceff27267db4d3c"
 function = "xtask::bootstrap::workflow_history_is_complete"
 definition = "Behavior::workflowHistoryIsComplete"
-
-[[lifted]]
-kappa = "767665080a8e832189946d379357baf73a8c2b905433fddfe1b9c00a7df9a52f"
-function = "xtask::proof::hex"
-definition = "Behavior::xtaskHex"
-
-[[lifted]]
-kappa = "033beba02e07198289969c4b79780b11434a6a1abbd0193d80812ab43520b2ca"
-function = "xtask::proof::is_id"
-definition = "Behavior::isId"
-
-[[lifted]]
-kappa = "e2d0a4cad842282e7677de54d82f8b1e6815ede10303f32e500aab1c5403e95a"
-function = "xtask::proof::same"
-definition = "Behavior::same"
 
 [[lifted]]
 kappa = "8f19c5063aee90357f93316cddddd4883fecfd9d02dfd33e95aa9f5134fe1e35"

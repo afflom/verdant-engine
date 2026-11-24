@@ -395,6 +395,8 @@ Verdant Engine is a universal commercial 3D browser, WebAssembly, and native gam
 - OfflineFirstPwaAndPortableHtml: After first verified hydration, OPFS ServiceWorker caching and self-contained offline portable HTML envelopes keep Verdant usable completely offline and shareable via local storage or LAN.
 - PermissionlessPublicArchives: Immutable .holo capsules, STCH2 shards, and source DAGs mirror to permissionless public-benefit archives including IPFS content-addressed roots and permanent Zenodo DOI records.
 - ZeroTrustVerifiedHydration: Every peer, volunteer gateway, or offline artifact is treated as untrusted transport; the Blank Frame verifies SHA-256 commitments, quorum signatures, and monotonic release epochs before ServiceWorker mounting.
+- HoloV6SelfCarryingProofRecord: Every Stitch 4-of-8 release capsule and offline portable HTML envelope embeds a Holo v6 kernel-proof record binding its BLAKE3 semantic snapshot, Lean 4.32.2 kernel, and proved theorems for offline verification without external provenance bundles.
+- UnifiedTwoScopeProofModernization: Verdant unifies all lifted tensor primitives into two shared LexLean 0.4.5 proof scopes over uor/template-contract/2 with containerless two-lane CI and zero-runner draft pull-request gating while keeping release .holo capsules strictly below one megabyte.
 - StitchLayer5CanonicalEnvelope: Canonical stitch/1 Layer-5 framing and ResourceAdmission seeder envelope: 4096-byte wire cap, 2700-byte chunk cap, 512 KiB message cap, 256 frames, 60-second signal lifetime, 1800-second warm lifetime, 4096 requests, 16384 KiB transfer, and 16384 KiB storage per epoch.
 
 ### Stakeholders, Concerns, Components, Release Channels, Features, Design Views, Quality, and Compliance

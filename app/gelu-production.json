@@ -1,1 +1,0 @@
-{"spec":"lexlean/production-request/1","roots":[{"root":"VerdantEngine.GaussianActivation.evaluate","package":{"name":"verdant_gelu","version":"2.28.0"},"targets":[{"id":"rust-core","digest":"62c2e726c8ecf9006db5cbb3f0b3eda35053adccf2c61dd259048077681c2779"}]}]}

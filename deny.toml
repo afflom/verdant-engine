@@ -526,9 +526,9 @@ license-files = [{ path = "src/lib.rs", hash = 0x8fd1c57a }]
 
 [[licenses.clarify]]
 name = "verdant_grouped_affine"
-version = "=2.36.0"
+version = "=2.40.0"
 expression = "MIT OR Apache-2.0"
-license-files = [{ path = "src/lib.rs", hash = 0x9ecfc923 }]
+license-files = [{ path = "src/lib.rs", hash = 0x2877efb6 }]
 
 [[licenses.clarify]]
 name = "verdant_softplus"
@@ -538,6 +538,54 @@ license-files = [{ path = "src/lib.rs", hash = 0x099b2b77 }]
 
 [[licenses.clarify]]
 name = "verdant_bitpacked_product"
-version = "=2.34.0"
+version = "=2.41.0"
 expression = "MIT OR Apache-2.0"
-license-files = [{ path = "src/lib.rs", hash = 0x67ca97b1 }]
+license-files = [{ path = "src/lib.rs", hash = 0xa3b940ff }]
+
+[[licenses.clarify]]
+name = "verdant_grouped_six_encoding"
+version = "=2.42.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0x0d3aebf4 }]
+
+[[licenses.clarify]]
+name = "verdant_affine_finite"
+version = "=2.43.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0x510609b9 }]
+
+[[licenses.clarify]]
+name = "verdant_affine_geometry"
+version = "=2.43.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0x8783ca60 }]
+
+[[licenses.clarify]]
+name = "verdant_affine_insert_field"
+version = "=2.43.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0xe2b3b275 }]
+
+[[licenses.clarify]]
+name = "verdant_affine_fit"
+version = "=2.43.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0x6376de8b }]
+
+[[licenses.clarify]]
+name = "verdant_affine_weight_fields"
+version = "=2.43.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0x69681bd9 }]
+
+[[licenses.clarify]]
+name = "verdant_affine_quantized"
+version = "=2.43.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0xb11fef40 }]
+
+[[licenses.clarify]]
+name = "verdant_signed_truncation"
+version = "=2.44.0"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0x4ca32179 }]

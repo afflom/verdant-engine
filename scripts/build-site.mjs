@@ -21,6 +21,7 @@ const siteDir = join(root, "site");
 const vendorSrc = join(root, "try", "vendor");
 const vendorDest = join(siteDir, "vendor");
 const holoDest = join(siteDir, "app.holo");
+const stitchProofDest = join(siteDir, "generated", "stitch-proof.holo");
 
 async function tryVerifyBuffer(buf) {
   if (!buf || buf.length < 64) return null;
@@ -58,10 +59,27 @@ async function findLocalBuildHolo() {
 
 async function ensureVerifiedHolo() {
   const existing = await readFile(holoDest).catch(() => null);
-  const existingOk = await tryVerifyBuffer(existing);
+  const existingProof = await readFile(stitchProofDest).catch(() => null);
+  const existingOk = existing && existingProof && existing[0] === 0x55 && existing[4] === 0x02 && existing[5] === 0x02
+    ? await tryVerifyBuffer(existing)
+    : null;
   if (existingOk) {
-    console.log(`build-site: present site/app.holo (${existingOk.fingerprint.slice(0, 12)}…)`);
+    console.log(`build-site: present Holo v6 site/app.holo (${existingOk.fingerprint.slice(0, 12)}…) + stitch-proof.holo`);
     return;
+  }
+
+  try {
+    const { buildVerifiedHoloV6 } = await import("./build-holo-v6.mjs");
+    const { appHolo, engineReproved, stitchProofHolo, stitchProofReproved } = await buildVerifiedHoloV6({ repoRoot: root });
+    await writeFile(holoDest, appHolo.bytes);
+    await mkdir(join(siteDir, "generated"), { recursive: true });
+    await writeFile(stitchProofDest, stitchProofHolo.bytes);
+    console.log(
+      `build-site: built and offline-reproved Holo v6 site/app.holo (${appHolo.bytes.length} B, ${engineReproved.theoremsProved} theorems) + stitch-proof.holo (${stitchProofHolo.bytes.length} B, ${stitchProofReproved.theoremsProved} theorems)`,
+    );
+    return;
+  } catch (error) {
+    console.warn(`build-site: local Holo v6 build fallback (${error?.message ?? error})`);
   }
 
   const localHolo = await findLocalBuildHolo();
@@ -112,6 +130,23 @@ await ensureVerifiedHolo();
 await syncVendor();
 await syncStarter();
 execFileSync(process.execPath, ["bootstrap/page.mjs", "site"], { cwd: root, stdio: "inherit" });
+{
+  const { minify } = await import("terser");
+  const wrDir = join(siteDir, "worker-runtime");
+  for (const name of await readdir(wrDir).catch(() => [])) {
+    if (!name.endsWith(".mjs")) continue;
+    const p = join(wrDir, name);
+    const src = await readFile(p, "utf8");
+    const out = await minify(src, { module: true, compress: { passes: 2 }, mangle: true });
+    if (out.code) await writeFile(p, out.code);
+  }
+  const starterGame = join(siteDir, "starter", "game.mjs");
+  const gameSrc = await readFile(starterGame, "utf8").catch(() => null);
+  if (gameSrc) {
+    const out = await minify(gameSrc, { module: true, compress: { passes: 2 }, mangle: true });
+    if (out.code) await writeFile(starterGame, out.code);
+  }
+}
 execFileSync(process.execPath, ["bootstrap/precache.mjs", "site"], { cwd: root, stdio: "inherit" });
 execFileSync(process.execPath, ["scripts/enforce-prism-contracts.mjs"], { cwd: root, stdio: "inherit" });
 

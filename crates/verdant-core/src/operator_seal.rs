@@ -526,10 +526,14 @@ impl VerdantOperatorChannel {
                 || rel_str == "page.template.html"
                 || rel_str == "sw.js"
                 || rel_str == "llms.txt"
+                || rel_str == "card.html"
+                || rel_str == "card.css"
+                || rel_str == "worker-runtime/packaging.json"
+                || rel_str.ends_with(".txt")
                 || rel_str.ends_with(".md")
                 || rel_str.ends_with(".d.ts")
-                || rel_str == "vendor/prism-code/src/docker.mjs"
-                || rel_str == "vendor/prism-code/src/node.mjs"
+                || rel_str == "vendor"
+                || rel_str.starts_with("vendor/")
             {
                 continue;
             }
@@ -537,9 +541,140 @@ impl VerdantOperatorChannel {
                 Self::collect_distilled_site_tree(site_root, &p, out);
             } else if p.is_file() {
                 if let Ok(bytes) = std::fs::read(&p) {
-                    out.insert(rel_str, bytes);
+                    let payload = if rel_str.ends_with(".json") || rel_str.ends_with(".webmanifest")
+                    {
+                        serde_json::from_slice::<serde_json::Value>(&bytes)
+                            .and_then(|v| serde_json::to_vec(&v))
+                            .unwrap_or(bytes)
+                    } else if let Ok(src) = std::str::from_utf8(&bytes) {
+                        let two = 1usize + 1usize;
+                        if rel_str.ends_with(".css") {
+                            let mut stripped = String::with_capacity(src.len());
+                            let raw = src.as_bytes();
+                            let mut i = 0usize;
+                            while i < raw.len() {
+                                if i + 1 < raw.len() && raw[i] == b'/' && raw[i + 1] == b'*' {
+                                    i += two;
+                                    while i + 1 < raw.len()
+                                        && !(raw[i] == b'*' && raw[i + 1] == b'/')
+                                    {
+                                        i += 1;
+                                    }
+                                    i = (i + two).min(raw.len());
+                                } else if let Some(ch) = src[i..].chars().next() {
+                                    stripped.push(ch);
+                                    i += ch.len_utf8();
+                                } else {
+                                    break;
+                                }
+                            }
+                            let lines: Vec<&str> = stripped
+                                .lines()
+                                .map(str::trim)
+                                .filter(|l| !l.is_empty())
+                                .collect();
+                            lines.join("\n").into_bytes()
+                        } else if rel_str.ends_with(".html") {
+                            let mut in_pre = false;
+                            let mut lines = Vec::new();
+                            for line in src.lines() {
+                                if line.contains("<pre") || line.contains("<textarea") {
+                                    in_pre = true;
+                                }
+                                let next = if in_pre { line } else { line.trim() };
+                                if !next.is_empty() {
+                                    lines.push(next);
+                                }
+                                if line.contains("</pre>") || line.contains("</textarea>") {
+                                    in_pre = false;
+                                }
+                            }
+                            lines.join("\n").into_bytes()
+                        } else if rel_str.ends_with(".mjs")
+                            && !rel_str.starts_with("worker-runtime/")
+                        {
+                            let mut out_lines = Vec::new();
+                            let mut in_block = false;
+                            let mut in_bt = false;
+                            for line in src.lines() {
+                                let trimmed = line.trim_start();
+                                if !in_block
+                                    && !in_bt
+                                    && (trimmed.is_empty() || trimmed.starts_with("//"))
+                                {
+                                    continue;
+                                }
+                                out_lines.push(if !in_block && !in_bt { trimmed } else { line });
+                                let raw = line.as_bytes();
+                                let mut i = 0usize;
+                                while i < raw.len() {
+                                    let c = raw[i];
+                                    let n = if i + 1 < raw.len() { raw[i + 1] } else { 0 };
+                                    if in_block {
+                                        if c == b'*' && n == b'/' {
+                                            in_block = false;
+                                            i += two;
+                                            continue;
+                                        }
+                                        i += 1;
+                                        continue;
+                                    }
+                                    if !in_bt {
+                                        if c == b'/' && n == b'/' {
+                                            break;
+                                        }
+                                        if c == b'/' && n == b'*' {
+                                            in_block = true;
+                                            i += two;
+                                            continue;
+                                        }
+                                        if c == b'"' || c == b'\'' {
+                                            let q = c;
+                                            i += 1;
+                                            while i < raw.len() && raw[i] != q {
+                                                if raw[i] == b'\\' {
+                                                    i += 1;
+                                                }
+                                                i += 1;
+                                            }
+                                            i += 1;
+                                            continue;
+                                        }
+                                        if c == b'`' {
+                                            in_bt = true;
+                                            i += 1;
+                                            continue;
+                                        }
+                                    } else {
+                                        if c == b'\\' {
+                                            i += two;
+                                            continue;
+                                        }
+                                        if c == b'`' {
+                                            in_bt = false;
+                                            i += 1;
+                                            continue;
+                                        }
+                                    }
+                                    i += 1;
+                                }
+                            }
+                            out_lines.join("\n").into_bytes()
+                        } else {
+                            bytes
+                        }
+                    } else {
+                        bytes
+                    };
+                    out.insert(rel_str, payload);
                 }
             }
+        }
+        if curr == site_root && out.contains_key("worker-runtime/browser.mjs") {
+            out.insert(
+                "vendor/prism-code/src/browser.mjs".to_string(),
+                b"export * from \"../../../worker-runtime/browser.mjs\";\n".to_vec(),
+            );
         }
     }
 

@@ -1,0 +1,37 @@
+\begin{lexlean}{SignedTruncation}
+\useglossary{lexlean.std.bool@1.2.0}
+\useglossary{lexlean.std.nat@1.2.0}
+\importmodule{ScalarF32}
+\title{Natural number}
+\begin{semanticmodule}
+definition{
+  name: signedWord,
+  parameters: [word : Nat],
+  result: (Option Nat),
+  body: (if (word <? 4294967296) then (let exponent : Nat := (ScalarF32::exponent word); (if (exponent <? 127) then (ctor Option.some [Nat] 0) else (if (exponent <? 158) then (let significand : Nat := (8388608 + (ScalarF32::fraction word)); (let magnitude : Nat := (if (exponent <? 150) then (prim quotient significand (ScalarF32::power (prim subtract 150 exponent : Nat)) 0 : Nat) else (prim multiply significand (ScalarF32::power (prim subtract exponent 150 : Nat)) : Nat)); (ctor Option.some [Nat] (if ((ScalarF32::sign word) =? 0) then magnitude else (prim subtract 4294967296 magnitude : Nat))))) else (if (word =? 3472883712) then (ctor Option.some [Nat] 2147483648) else (ctor Option.none [Nat]))))) else (ctor Option.none [Nat])),
+  executable: true,
+  production: {effects: [overflow], targets: [rust-core]}
+}
+
+theorem{
+  name: negativeFractionTruncatesTowardZero,
+  parameters: [],
+  statement: ((signedWord 3219128320) = (ctor Option.some [Nat] 4294967295)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: minimumSignedWord,
+  parameters: [],
+  statement: ((signedWord 3472883712) = (ctor Option.some [Nat] 2147483648)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: positiveLimitRefused,
+  parameters: [],
+  statement: ((signedWord 1325400064) = (ctor Option.none [Nat])),
+  proof: reflexivity{}
+}
+\end{semanticmodule}
+\end{lexlean}

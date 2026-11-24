@@ -1,13 +1,13 @@
-spec = "lexlean/project/1"
+spec = "lexlean/project/2"
 name = "verdant-tensor-execution"
 language = "1.2"
 module_prefix = "VerdantEngine"
 source_roots = ["src"]
-entrypoints = ["src/FloatStorage.lex.tex", "src/FloatTransform.lex.tex", "src/FloatUnary.lex.tex", "src/FloatWord64Exports.lex.tex", "src/MatrixProduct.lex.tex", "src/PackedWord.lex.tex", "src/ScalarF32.lex.tex", "src/ScalarF64.lex.tex", "src/SmallFloat.lex.tex", "src/StorageBlock.lex.tex", "src/StorageTransfer.lex.tex", "src/WordComparison.lex.tex"]
+entrypoints = ["src/BitpackedProduct.lex.tex", "src/CircularFunctions.lex.tex", "src/FloatStorage.lex.tex", "src/FloatTransform.lex.tex", "src/FloatUnary.lex.tex", "src/FloatWord64Exports.lex.tex", "src/GaussianActivation.lex.tex", "src/GroupedAffineProduct.lex.tex", "src/GroupedBlock.lex.tex", "src/GroupedDot.lex.tex", "src/HeadSlope.lex.tex", "src/HyperbolicTangent.lex.tex", "src/LogarithmicScale.lex.tex", "src/Logistic.lex.tex", "src/MatrixProduct.lex.tex", "src/NaturalExponential.lex.tex", "src/NormalizedExponential.lex.tex", "src/OnlineWeightedMean.lex.tex", "src/PackedDot.lex.tex", "src/PackedWord.lex.tex", "src/PlaneRotation.lex.tex", "src/RowRanking.lex.tex", "src/ScalarF32.lex.tex", "src/ScalarF64.lex.tex", "src/SmallFloat.lex.tex", "src/Softplus.lex.tex", "src/StorageBlock.lex.tex", "src/StorageTransfer.lex.tex", "src/SwiGlu.lex.tex", "src/SymmetricBlock.lex.tex", "src/SymmetricDot.lex.tex", "src/WordComparison.lex.tex"]
 build_root = ".lexlean-tensor"
 lockfile = "tensor.lexlean.lock"
 lean_workspace = "."
-lean_toolchain = "leanprover/lean4:v4.32.1"
+lean_toolchain = "leanprover/lean4:v4.32.2"
 
 [[lexicon_source]]
 package = "lexlean.std.nat"

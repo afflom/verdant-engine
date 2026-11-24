@@ -4,68 +4,74 @@
     {
       "path": "browser.mjs",
       "source": "prism-code/src/browser.mjs",
-      "source_sha256": "e8a443e711efdc904a22150b6b398aee6216ee1b89ae908e2c7433f64d710be4",
-      "output_sha256": "e8a443e711efdc904a22150b6b398aee6216ee1b89ae908e2c7433f64d710be4"
-    },
-    {
-      "path": "index.mjs",
-      "source": "prism-code/src/index.mjs",
-      "source_sha256": "89a014b42fd426f391a9150999fac91f0cdc7070dd8ee1705593d01b8f8de3a8",
-      "output_sha256": "89a014b42fd426f391a9150999fac91f0cdc7070dd8ee1705593d01b8f8de3a8"
+      "source_sha256": "3a4ad27d76f727191da470336ae058127233651f3897d5aa380dec328dc8e83a",
+      "output_sha256": "0dfe6cecfdf5974221a2f614e4e69977ef769430a0c8a3e2c339a4c056d825ce"
     },
     {
       "path": "archive.mjs",
       "source": "prism-code/src/archive.mjs",
-      "source_sha256": "afc9fb51bf17a314ce00b81ecd981fc263895175fe5e860781e600c30ec64162",
-      "output_sha256": "afc9fb51bf17a314ce00b81ecd981fc263895175fe5e860781e600c30ec64162"
+      "source_sha256": "06d68929111bf21f39a409547dadc31a4dcd883e9ea99a2271e10137a8548e08",
+      "output_sha256": "b8d495f54ec26bbd54323ebdab5df1ceab65c625928278460e241a80500e2ddb"
+    },
+    {
+      "path": "uorc.mjs",
+      "source": "prism-code/src/uorc.mjs",
+      "source_sha256": "b15360841eb348ff810fe5b4ff3371f20188c7ff16e018e8e1805655afc5be77",
+      "output_sha256": "c01afc09d7fd9e423a3bd08b97abbb88e54b5bceb054fe3513fd786682ef731e"
     },
     {
       "path": "view.mjs",
       "source": "prism-code/src/view.mjs",
       "source_sha256": "33f722d5b6a54880f68316e883b01677437cdf17270f6ee3253d2abf8e593c97",
-      "output_sha256": "33f722d5b6a54880f68316e883b01677437cdf17270f6ee3253d2abf8e593c97"
+      "output_sha256": "cceb38a4e297073ffb47ac467198f704f08de7dd1d018d902d67ec22d433f81e"
     },
     {
       "path": "core.mjs",
       "source": "prism-code/src/core.mjs",
-      "source_sha256": "43cf62813b635cd21b9461f06e3d46dec6b206c3a204478d3e95151c2ef72627",
-      "output_sha256": "43cf62813b635cd21b9461f06e3d46dec6b206c3a204478d3e95151c2ef72627"
+      "source_sha256": "876a36957a30e7fdc2f556974cd31bfd7865718f8507a47ff7c0e543ae6447fe",
+      "output_sha256": "364e2b17fa25158aabda68e8f2bf8a187a6818668f934bd0740d2489f681dc7a"
+    },
+    {
+      "path": "capabilities.mjs",
+      "source": "prism-code/src/capabilities.mjs",
+      "source_sha256": "918d4e00635f76a79947049f47427ac12afe2f1881dfdf849b4f91ee77b3a464",
+      "output_sha256": "e48dd3b4a635feb20ef7ac3c36e927d652e98f6b55194ae78ae68f6319a03225"
+    },
+    {
+      "path": "session.mjs",
+      "source": "prism-code/src/session.mjs",
+      "source_sha256": "61f76358c47d1fe58770f5313bbc1d1a2970ffed3804f42ffbcff882852989ef",
+      "output_sha256": "5c7caf5c6fa41befaf22f7bc9a614d153052ea63893a3012c663e88367c9db5e"
     },
     {
       "path": "closure.mjs",
       "source": "prism-code/src/closure.mjs",
-      "source_sha256": "ddbd77fb84aa02b6d13f15ebf410df3038908f00b33ff5f293f5d009052d4bb5",
-      "output_sha256": "ddbd77fb84aa02b6d13f15ebf410df3038908f00b33ff5f293f5d009052d4bb5"
+      "source_sha256": "88aefa6d63b4e2a7c921b41d9e626a679f783a7fc70ecabfab5502a6c735a8b1",
+      "output_sha256": "423b8ac59ed0762bb0041c12d08757a9b6f111dd065a3322c020a22752682b3f"
     },
     {
       "path": "errors.mjs",
       "source": "prism-code/src/errors.mjs",
-      "source_sha256": "0c381d817611440a444904b2d23fcba1dbd5321000a45a7710cfe926e307907a",
-      "output_sha256": "0c381d817611440a444904b2d23fcba1dbd5321000a45a7710cfe926e307907a"
-    },
-    {
-      "path": "canonical/index.js",
-      "source": "prism-code/src/canonical/index.js",
-      "source_sha256": "9dbf0d70f0a783329161d186a7ee0239f86e19e43c96b6199cdb940953045d6a",
-      "output_sha256": "e064dd364c58d3eb08f473473d6a99587b6bfff77b64b66987559a24b309bb05"
+      "source_sha256": "479aa3d08ac17aa86f3b0d85e26a564cf7a79e2ffdd11e92fe46009aa3505f64",
+      "output_sha256": "a0f6d0c439a148300b7178f9b80272913746a3d1b87e370806d40c98db4fe339"
     },
     {
       "path": "blake3.mjs",
       "source": "prism-code/src/blake3.mjs",
-      "source_sha256": "09a3fb461a9aba1b58baa17e39b64c17121d11ef2277dfb7c7e62093641cfcff",
-      "output_sha256": "09a3fb461a9aba1b58baa17e39b64c17121d11ef2277dfb7c7e62093641cfcff"
+      "source_sha256": "9c5edd9d6dc100f49a1009ae7900ceb8f042c4920312a2481a78c08bfa2eb279",
+      "output_sha256": "a374165c4f85ff003a38ba077c05d46ebf9391790a65ecfec8e638055942859f"
     },
     {
       "path": "sha256.mjs",
       "source": "prism-code/src/sha256.mjs",
-      "source_sha256": "f4eb3e9794278f5aeb136be120e457b3a373d0d26a80351257cc8a59f967ffab",
-      "output_sha256": "f4eb3e9794278f5aeb136be120e457b3a373d0d26a80351257cc8a59f967ffab"
+      "source_sha256": "db76486568f68112fb56690600a0c3646a57dd933439568e0ee8a30252273795",
+      "output_sha256": "bc4911b1795d506de8a94beb27611cb9ff83899e857298f1808c8477cd5a338e"
     },
     {
-      "path": "node-crypto-shim.mjs",
-      "source": "node-crypto-shim.mjs",
-      "source_sha256": "17e14ec711a69371ac44ec7e5b1a1138bf7f2a7a4d43e005931e6d47a238ea1d",
-      "output_sha256": "17e14ec711a69371ac44ec7e5b1a1138bf7f2a7a4d43e005931e6d47a238ea1d"
+      "path": "index.mjs",
+      "source": "worker-index.mjs",
+      "source_sha256": "40df86bde7fc425ba36ca6aa7eb19f85784d917fb7a834358c6cd5fa5f974586",
+      "output_sha256": "b7173c3b65446e78a13eb61f27a129bab7f859a78bcaaab14078e3135777258d"
     }
   ]
 }

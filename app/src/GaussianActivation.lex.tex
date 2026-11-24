@@ -19,10 +19,7 @@ definition{
   name: evaluate,
   parameters: [quick : Bool, x : Nat, ready : Bool, response : Nat],
   result: Action,
-  body: (if quick then (if ready then (ctor Action.resultWord (ScalarF32::multiply x response)) else (ctor Action.sigmoid (ScalarF32::multiply 1071242019 x))) else
-    (if ready then (ctor Action.resultWord (ScalarF32::multiply (ScalarF32::multiply 1056964608 x) (ScalarF32::add 1065353216 response))) else
-    (let cubic : Nat := (ScalarF32::multiply (ScalarF32::multiply 1027024659 x) x);
-    (ctor Action.hyperbolicTangent (ScalarF32::multiply (ScalarF32::multiply 1061962282 x) (ScalarF32::add 1065353216 cubic)))))),
+  body: (if quick then (if ready then (ctor Action.resultWord (ScalarF32::multiply x response)) else (ctor Action.sigmoid (ScalarF32::multiply 1071242019 x))) else (if ready then (ctor Action.resultWord (ScalarF32::multiply (ScalarF32::multiply 1056964608 x) (ScalarF32::add 1065353216 response))) else (let cubic : Nat := (ScalarF32::multiply (ScalarF32::multiply 1027024659 x) x); (ctor Action.hyperbolicTangent (ScalarF32::multiply (ScalarF32::multiply 1061962282 x) (ScalarF32::add 1065353216 cubic)))))),
   executable: true,
   production: {effects: [overflow], targets: [rust-core]}
 }

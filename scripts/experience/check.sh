@@ -5,7 +5,7 @@
 # and compare byte for byte. Run inside the locked SDK as `just experience-check`.
 set -euo pipefail
 root=$(cd "$(dirname "$0")/../.." && pwd)
-work=$(mktemp -d)
+work=$(mktemp -d "$root/.experience-check-XXXXXX")
 trap 'rm -rf "$work"' EXIT
 python3 -I "$root/scripts/experience/authority.py" "$root" --check
 tar -C "$root" --exclude=app/.lexlean --exclude=app/.prism --exclude=app/target --exclude=app/.lake -cf - app | tar -C "$work" -xf -

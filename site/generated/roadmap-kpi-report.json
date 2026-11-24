@@ -2,12 +2,12 @@
   "spec": "verdant/observer-roadmap-kpi-report/1",
   "managerId": "mgr-roadmap-strategy",
   "authorityId": "AUTH-SEMVER-CHANGE-KPI",
-  "currentVersion": "2.20.1",
-  "releaseEpoch": 25,
+  "currentVersion": "2.21.0",
+  "releaseEpoch": 26,
   "totalManagers": 13,
   "totalPrismFacetsOwned": 9,
   "totalPrismFacetsRequired": 9,
-  "declaredCapabilitiesCount": 130,
+  "declaredCapabilitiesCount": 140,
   "minorProgressPct": 100,
   "majorProgressPct": 100,
   "kpiPassedCount": 13,
@@ -16,8 +16,8 @@
     "managerId": "mgr-knowledge-provenance",
     "lockedAuthoritiesCount": 12,
     "provenanceSourcesCount": 23,
-    "charterBytes": 75242,
-    "governedLexModules": 64,
+    "charterBytes": 75816,
+    "governedLexModules": 67,
     "measuredClosed": 11,
     "measuredTotal": 11,
     "authorityCoveragePct": 100
@@ -83,7 +83,7 @@
       "name": "Immutable Composable Blank Frame Weight",
       "unit": "bytes",
       "direction": "atMost",
-      "actual": 29176,
+      "actual": 29630,
       "target": 30720,
       "passed": true,
       "owningManager": "mgr-change-release",
@@ -138,7 +138,7 @@
       "name": "uorust MIR-Lifted Rust Functions Floor",
       "unit": "functions",
       "direction": "atLeast",
-      "actual": 585,
+      "actual": 586,
       "target": 200,
       "passed": true,
       "owningManager": "mgr-verification-observatory",
@@ -1166,8 +1166,8 @@
     "governingAuthority": "AUTH-SEMVER-CHANGE-KPI",
     "currentVersion": {
       "major": 2,
-      "minor": 20,
-      "patch": 1
+      "minor": 21,
+      "patch": 0
     },
     "recommendedBump": "major",
     "nextVersion": {
@@ -1175,8 +1175,8 @@
       "minor": 0,
       "patch": 0
     },
-    "currentEpoch": 25,
-    "nextEpoch": 26,
+    "currentEpoch": 26,
+    "nextEpoch": 27,
     "versionIncremented": true,
     "gates": {
       "ratchetApplied": true,
@@ -1187,6 +1187,6 @@
       "pullThroughVerified": true
     },
     "blockingReasons": [],
-    "rationale": "Ratchet applied & 5/5 Release Gates passed: advancing v2.20.1 -> v3.0.0 (Major, epoch 26) — Observer roadmap evaluation: minor=100% major=100% managers=13"
+    "rationale": "Ratchet applied & 5/5 Release Gates passed: advancing v2.21.0 -> v3.0.0 (Major, epoch 27) — Observer roadmap evaluation: minor=100% major=100% managers=13"
   }
 }

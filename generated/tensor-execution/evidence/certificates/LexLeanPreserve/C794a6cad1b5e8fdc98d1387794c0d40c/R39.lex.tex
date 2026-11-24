@@ -1,0 +1,605 @@
+\begin{lexlean}{R39}
+\title{Certificate A LexLeanPreserve.C794a6cad1b5e8fdc98d1387794c0d40c.R39}
+\begin{coremodule}
+imports [
+  LexLeanPreservation.Core,
+  LexLeanPreservation.Values,
+  LexLeanPreservation.Primitives,
+  LexLeanPreservation.Fixed,
+  LexLeanPreservation.Keys,
+  LexLeanPreservation.Templates,
+  LexLeanPreservation.Validate,
+  VerdantEngine.BitpackedProduct,
+  VerdantEngine.CircularFunctions,
+  VerdantEngine.FloatStorage,
+  VerdantEngine.FloatTransform,
+  VerdantEngine.FloatUnary,
+  VerdantEngine.FloatWord64,
+  VerdantEngine.FloatWord64Exports,
+  VerdantEngine.GaussianActivation,
+  VerdantEngine.GroupedAffineProduct,
+  VerdantEngine.GroupedBlock,
+  VerdantEngine.GroupedDot,
+  VerdantEngine.HeadSlope,
+  VerdantEngine.HyperbolicTangent,
+  VerdantEngine.LogarithmicScale,
+  VerdantEngine.Logistic,
+  VerdantEngine.MatrixProduct,
+  VerdantEngine.NaturalExponential,
+  VerdantEngine.NormalizedExponential,
+  VerdantEngine.OnlineWeightedMean,
+  VerdantEngine.PackedDot,
+  VerdantEngine.PackedWord,
+  VerdantEngine.PlaneRotation,
+  VerdantEngine.RowRanking,
+  VerdantEngine.ScalarF32,
+  VerdantEngine.ScalarF64,
+  VerdantEngine.SmallFloat,
+  VerdantEngine.Softplus,
+  VerdantEngine.StorageBlock,
+  VerdantEngine.StorageTransfer,
+  VerdantEngine.SwiGlu,
+  VerdantEngine.SymmetricBlock,
+  VerdantEngine.SymmetricDot,
+  VerdantEngine.WordComparison
+]
+
+definition LexLeanPreserve.C794a6cad1b5e8fdc98d1387794c0d40c.R39.__prog : @0 := @160 {
+  all: [LexLeanPreserve.C794a6cad1b5e8fdc98d1387794c0d40c.R39.__prog],
+  class: false,
+  generated: false,
+  policy: exact{axioms: []},
+  reducibility: regular{height: 1},
+  transparency: semireducible
+}
+definition LexLeanPreserve.C794a6cad1b5e8fdc98d1387794c0d40c.R39.__fits_1 : @163 := @283 {
+  all: [LexLeanPreserve.C794a6cad1b5e8fdc98d1387794c0d40c.R39.__fits_1],
+  class: false,
+  compiled: true,
+  generated: false,
+  policy: exact{axioms: []},
+  reducibility: regular{height: 1},
+  transparency: semireducible
+}
+theorem LexLeanPreserve.C794a6cad1b5e8fdc98d1387794c0d40c.R39.__rel_1 : @310 := @947 {
+  all: [LexLeanPreserve.C794a6cad1b5e8fdc98d1387794c0d40c.R39.__rel_1],
+  class: false,
+  generated: false,
+  policy: exact{axioms: [Classical.choice, Quot.sound, propext]},
+  transparency: semireducible
+}
+definition LexLeanPreserve.C794a6cad1b5e8fdc98d1387794c0d40c.R39.__fits_0 : @949 := @961 {
+  all: [LexLeanPreserve.C794a6cad1b5e8fdc98d1387794c0d40c.R39.__fits_0],
+  class: false,
+  compiled: true,
+  generated: false,
+  policy: exact{axioms: []},
+  reducibility: regular{height: 2},
+  transparency: semireducible
+}
+theorem LexLeanPreserve.C794a6cad1b5e8fdc98d1387794c0d40c.R39.__rel_0 : @975 := @1052 {
+  all: [LexLeanPreserve.C794a6cad1b5e8fdc98d1387794c0d40c.R39.__rel_0],
+  class: false,
+  generated: false,
+  policy: exact{axioms: [Classical.choice, Quot.sound, propext]},
+  transparency: semireducible
+}
+definition LexLeanPreserve.C794a6cad1b5e8fdc98d1387794c0d40c.R39.denote : @1055 := @1065 {
+  all: [LexLeanPreserve.C794a6cad1b5e8fdc98d1387794c0d40c.R39.denote],
+  class: false,
+  compiled: true,
+  generated: false,
+  policy: exact{axioms: []},
+  reducibility: regular{height: 3},
+  transparency: semireducible
+}
+theorem LexLeanPreserve.C794a6cad1b5e8fdc98d1387794c0d40c.R39.root : @1072 := @1083 {
+  all: [LexLeanPreserve.C794a6cad1b5e8fdc98d1387794c0d40c.R39.root],
+  class: false,
+  generated: false,
+  policy: exact{axioms: [Classical.choice, Quot.sound, propext]},
+  transparency: semireducible
+}
+
+@0 := LexLeanTarget.TargetSyntax.Program
+@1 := LexLeanTarget.TargetSyntax.Program.mk
+@2 := List.nil.{0}
+@5 := @1 (@2 LexLeanTarget.TargetSyntax.Adt)
+@6 := List.cons.{0}
+@7 := LexLeanTarget.TargetSyntax.Function
+@8 := @6 @7
+@9 := LexLeanTarget.TargetSyntax.Function.mk
+@10 := Nat
+@11 := @6 @10
+@13 := OfNat.ofNat.{0} @10
+@14 := 0
+@15 := @13 @14
+@16 := instOfNatNat
+@18 := @15 (@16 @14)
+@19 := @11 @18
+@20 := 1
+@23 := @13 @20 (@16 @20)
+@28 := @9 (@19 (@11 @23 (@2 @10)))
+@29 := LexLeanTarget.TargetSyntax.Ty
+@30 := @6 @29
+@31 := LexLeanTarget.TargetSyntax.Ty.nat
+@32 := @30 @31
+@37 := @28 (@32 (@32 (@2 @29))) @31
+@38 := LexLeanTarget.TargetSyntax.Expr.prim
+@39 := LexLeanTarget.TargetSyntax.Prim.natAdd
+@40 := @38 @39
+@41 := LexLeanTarget.TargetSyntax.Expr
+@42 := @6 @41
+@44 := LexLeanTarget.TargetSyntax.Expr.value @31
+@45 := LexLeanTarget.TargetSyntax.Value.nat
+@46 := 36028797018963968
+@49 := @13 @46 (@16 @46)
+@50 := @45 @49
+@51 := @44 @50
+@52 := @42 @51
+@54 := LexLeanTarget.TargetSyntax.Expr.call @23
+@55 := LexLeanTarget.TargetSyntax.Expr.var
+@56 := @55 @18
+@57 := @42 @56
+@58 := @55 @23
+@59 := @42 @58
+@60 := @2 @41
+@61 := @59 @60
+@62 := @57 @61
+@63 := @54 @62
+@65 := @42 @63 @60
+@66 := @52 @65
+@68 := @37 (@40 @66)
+@69 := @8 @68
+@70 := LexLeanTarget.TargetSyntax.Expr.let
+@71 := 2
+@74 := @13 @71 (@16 @71)
+@76 := @70 @74 @31
+@77 := LexLeanTarget.TargetSyntax.Prim.natQuot
+@78 := @38 @77
+@79 := @45 @18
+@80 := @44 @79
+@82 := @42 @80 @60
+@83 := @59 @82
+@84 := @57 @83
+@85 := @78 @84
+@86 := @76 @85
+@87 := 3
+@90 := @13 @87 (@16 @87)
+@92 := @70 @90 @31
+@93 := LexLeanTarget.TargetSyntax.Prim.natMul
+@94 := @38 @93
+@95 := LexLeanTarget.TargetSyntax.Prim.natRem
+@96 := @38 @95
+@97 := @96 @84
+@98 := @42 @97
+@99 := @45 @74
+@100 := @44 @99
+@101 := @42 @100
+@102 := @101 @60
+@103 := @98 @102
+@104 := @94 @103
+@105 := @92 @104
+@106 := @55 @74
+@107 := @42 @106
+@108 := LexLeanTarget.TargetSyntax.Expr.cond
+@109 := LexLeanTarget.TargetSyntax.Prim.natLt
+@110 := @38 @109
+@111 := @55 @90
+@112 := @42 @111
+@113 := @112 @60
+@114 := @59 @113
+@115 := @110 @114
+@116 := @108 @115
+@117 := LexLeanTarget.TargetSyntax.Expr.build
+@118 := LexLeanTarget.TargetSyntax.Shape.true
+@119 := @117 @118
+@120 := LexLeanTarget.TargetSyntax.Ty.bool
+@122 := @119 @120 @60
+@123 := @116 @122
+@124 := LexLeanTarget.TargetSyntax.Prim.natEq
+@125 := @38 @124
+@126 := @112 @61
+@127 := @125 @126
+@128 := @108 @127
+@129 := @101 @82
+@130 := @107 @129
+@131 := @96 @130
+@132 := @42 @131
+@133 := @45 @23
+@134 := @44 @133
+@136 := @42 @134 @60
+@137 := @132 @136
+@138 := @125 @137
+@139 := @128 @138
+@140 := LexLeanTarget.TargetSyntax.Shape.false
+@143 := @117 @140 @120 @60
+@144 := @139 @143
+@145 := @123 @144
+@148 := @108 @145 @134 @80
+@150 := @42 @148 @60
+@151 := @107 @150
+@152 := @40 @151
+@153 := @105 @152
+@155 := @37 (@86 @153)
+@160 := @5 (@69 (@8 @155 (@2 @7)))
+@161 := Bool
+@163 := (value : @10) -> (divisor : @10) -> @161
+@164 := Bool.and
+@165 := Bool.true
+@166 := @164 @165
+@167 := @166 @165
+@168 := @166 @167
+@169 := @166 @168
+@171 := @164 @169 @165
+@172 := @164 @171
+@173 := @172 @167
+@174 := @164 @173
+@175 := Nat.blt
+@179 := LexLeanRuntime.multiply @10 instMulNat
+@181 := LexLeanRuntime.remainder @10
+@182 := LexLeanRuntime.instQuotientNat
+@183 := @181 @182
+@184 := #1
+@185 := @183 @184
+@186 := #0
+@188 := @185 @186 @18
+@190 := @179 @188 @74
+@191 := @175 @190
+@192 := 18446744073709551616
+@195 := @13 @192 (@16 @192)
+@196 := @191 @195
+@197 := @174 @196
+@198 := @164 @197
+@199 := @164 @168
+@200 := @199 @165
+@201 := @164 @200
+@202 := ite.{1}
+@203 := @202 @161
+@205 := Eq.{1} @161
+@207 := @175 @186 @190
+@208 := @205 @207
+@209 := @208 @165
+@210 := @203 @209
+@211 := instDecidableEqBool
+@215 := @210 (@211 @207 @165) @167
+@216 := Nat.beq
+@218 := @216 @190 @186
+@224 := @203 (@205 @218 @165) (@211 @218 @165)
+@225 := @174 @165
+@230 := @201 (@215 (@201 (@224 @225 @167)))
+@231 := @164 @230
+@232 := Bool.or
+@233 := @232 @207
+@234 := @164 @218
+@237 := LexLeanRuntime.quotient @10 @182
+@240 := @237 @184 @186 @18
+@247 := @233 (@234 (@216 (@183 @240 @74 @18) @23))
+@248 := @205 @247
+@249 := @248 @165
+@250 := @203 @249
+@252 := @211 @247 @165
+@256 := @231 (@250 @252 @165 @165)
+@258 := @164 @256 @165
+@259 := @166 @258
+@260 := @164 @259
+@269 := HAdd.hAdd.{0, 0, 0} @10 @10 @10 (instHAdd.{0} @10 instAddNat)
+@270 := @269 @240
+@271 := @202 @10
+@275 := @271 @249 @252 @23 @18
+@276 := @270 @275
+@278 := @175 @276 @195
+@279 := @260 @278
+@280 := @198 @279
+@283 := fun (value : @10) => fun (divisor : @10) => @172 @280
+@284 := LexLeanPreservation.FunRel
+@285 := LexLeanPreserve.C794a6cad1b5e8fdc98d1387794c0d40c.R39.__prog
+@286 := @284 @285
+@287 := @286 @23
+@288 := LexLeanTarget.TargetSyntax.Value
+@289 := @6 @288
+@290 := @45 @184
+@291 := @289 @290
+@292 := @45 @186
+@293 := @289 @292
+@294 := @2 @288
+@295 := @293 @294
+@296 := @291 @295
+@297 := @287 @296
+@298 := LexLeanPreservation.Rel
+@301 := LexLeanPreserve.C794a6cad1b5e8fdc98d1387794c0d40c.R39.__fits_1 @184 @186
+@302 := @298 @301
+@305 := VerdantEngine.FloatStorage.roundQuotient @184 @186
+@306 := @45 @305
+@307 := @302 @306
+@310 := (value : @10) -> (divisor : @10) -> @297 @307
+@312 := LexLeanPreservation.funRel_intro @285
+@316 := @312 @23 @296 @307 @155
+@319 := Prod.{0, 0} @10 @288
+@320 := @6 @319
+@323 := Prod.mk.{0, 0} @10 @288
+@324 := @323 @23
+@326 := @320 (@324 @292)
+@327 := @323 @18
+@329 := @320 (@327 @290)
+@330 := @2 @319
+@332 := @326 (@329 @330)
+@333 := @316 @332
+@334 := Eq.refl.{1}
+@335 := Option.{0}
+@337 := @334 (@335 @7)
+@338 := LexLeanRuntime.index
+@339 := List.{0}
+@348 := @338
+    (@339 @7)
+    @7
+    (LexLeanRuntime.instIndexableList @7)
+    (LexLeanTarget.TargetSyntax.Program.functions @285)
+@351 := @333 (@337 (@348 @23))
+@354 := @334 (@335 (@339 @319))
+@355 := LexLeanTarget.TargetSemantics.bindAll
+@356 := LexLeanTarget.TargetSyntax.Function.parameters
+@362 := @351 (@354 (@355 (@356 @155) @296 @330))
+@364 := LexLeanPreservation.conv_let @285
+@371 := @364 @332 @74 @31 @85 @153 @171 @280
+@372 := @45 @240
+@373 := @371 @372
+@374 := @45 @276
+@375 := @373 @374
+@377 := LexLeanPreservation.conv_prim @285
+@378 := @377 @332
+@382 := @378 @77 @84 @169 @165
+@384 := @289 @79 @294
+@385 := @293 @384
+@386 := @291 @385
+@388 := @382 @386 @372
+@390 := LexLeanPreservation.convL_cons @285
+@391 := @390 @332
+@392 := @391 @56
+@397 := @392 @83 @165 @168 @290 @385
+@399 := LexLeanPreservation.conv_var @285
+@400 := @399 @332
+@402 := @400 @18 @290
+@404 := @334 (@335 @288)
+@405 := LexLeanTarget.TargetSemantics.lookup
+@406 := @405 @332
+@409 := @402 (@404 (@406 @18))
+@410 := @397 @409
+@411 := @391 @58
+@416 := @411 @82 @165 @167 @292 @384
+@421 := @400 @23 @292 (@404 (@406 @23))
+@422 := @416 @421
+@428 := @391 @80 @60 @165 @165 @79 @294
+@430 := LexLeanPreservation.conv_value @285
+@432 := @430 @332 @31
+@434 := @428 (@432 @79)
+@436 := LexLeanPreservation.convL_nil @285
+@437 := @436 @332
+@447 := @375 (@388 (@410 (@422 (@434 @437))) (LexLeanPreservation.prim_natQuot @184 @186 @18))
+@448 := @323 @74
+@451 := @320 (@448 @372) @332
+@458 := @364 @451 @90 @31 @104 @152 @197 @279
+@459 := @45 @190
+@461 := @458 @459 @374
+@462 := @377 @451
+@466 := @462 @93 @103 @173 @196
+@467 := @45 @188
+@468 := @289 @467
+@469 := @289 @99
+@470 := @469 @294
+@473 := @466 (@468 @470) @459
+@474 := @390 @451
+@480 := @474 @97 @102 @171 @167 @467 @470
+@486 := @462 @95 @84 @169 @165 @386 @467
+@492 := @474 @56 @83 @165 @168 @290 @385
+@493 := @399 @451
+@495 := @493 @18 @290
+@496 := @405 @451
+@500 := @492 (@495 (@404 (@496 @18)))
+@512 := @474 @58 @82 @165 @167 @292 @384 (@493 @23 @292 (@404 (@496 @23)))
+@518 := @474 @80 @60 @165 @165 @79 @294
+@520 := @430 @451 @31
+@522 := @518 (@520 @79)
+@523 := @436 @451
+@527 := @486 (@500 (@512 (@522 @523)))
+@528 := LexLeanPreservation.prim_natRem
+@549 := @461
+    (@473
+      (@480 (@527 (@528 @184 @186 @18)) (@474 @100 @60 @165 @165 @99 @294 (@520 @99) @523))
+      (LexLeanPreservation.prim_natMul @188 @74))
+@550 := @323 @90
+@553 := @320 (@550 @459) @451
+@554 := @377 @553
+@558 := @554 @39 @151 @259 @278
+@559 := @289 @372
+@560 := @45 @275
+@562 := @289 @560 @294
+@565 := @558 (@559 @562) @374
+@566 := @390 @553
+@572 := @566 @106 @150 @165 @258 @372 @562
+@573 := @399 @553
+@575 := @573 @74 @372
+@576 := @405 @553
+@580 := @572 (@575 (@404 (@576 @74)))
+@586 := @566 @148 @60 @256 @165 @560 @294
+@588 := LexLeanPreservation.conv_cond @285
+@589 := @588 @553
+@593 := @589 @145 @134 @80 @230
+@595 := @205 @186 @165
+@596 := @203 @595
+@598 := @211 @186 @165
+@599 := @596 @598
+@611 := @593
+    (fun (__b : @161) => @599 @165 @165)
+    (fun (__b : @161) => @45 (@271 @595 @598 @23 @18))
+    @247
+@615 := @589 @115 @122 @144 @200
+@616 := @599 @167
+@617 := #2
+@622 := @179 (@183 @617 @184 @18) @74
+@624 := @216 @622 @184
+@625 := @205 @624
+@626 := @625 @165
+@636 := @615 (fun (__b : @161) => @616 (@201 (@203 @626 (@211 @624 @165) @225 @167)))
+@637 := LexLeanTarget.TargetSyntax.Value.bool
+@638 := @232 @186
+@639 := @164 @624
+@642 := @237 @617 @184 @18
+@653 := @636 (fun (__b : @161) => @637 (@638 (@639 (@216 (@183 @642 @74 @18) @23)))) @207
+@657 := @554 @109 @114 @168 @165
+@659 := @289 @459 @294
+@663 := @657 (@293 @659) (@637 @207)
+@675 := @566 @58 @113 @165 @167 @292 @659 (@573 @23 @292 (@404 (@576 @23)))
+@687 := @566 @111 @60 @165 @165 @459 @294 (@573 @90 @459 (@404 (@576 @90)))
+@688 := @436 @553
+@696 := @653 (@663 (@675 (@687 @688)) (LexLeanPreservation.prim_natLt @186 @190))
+@698 := LexLeanPreservation.conv_build @285
+@699 := @45 @622
+@701 := @320 (@550 @699)
+@704 := @320 (@448 (@45 @642))
+@706 := @320 (@324 @290)
+@707 := @45 @617
+@713 := @701 (@704 (@706 (@320 (@327 @707) @330)))
+@722 := @698 @713 @118 @120 @60 @165 @165 @294 (@637 @165)
+@723 := @436 @713
+@728 := @696 (fun ("_" : @209) => @722 @723 LexLeanPreservation.construct_true)
+@729 := Bool.false
+@730 := @208 @729
+@739 := @588 @713 @127 @138 @143 @200 (fun (__b : @161) => @599 @225 @167)
+@740 := @164 @186
+@741 := #3
+@744 := @237 @741 @617 @18
+@747 := @183 @744 @74 @18
+@749 := @216 @747 @23
+@754 := @739 (fun (__b : @161) => @637 (@740 @749)) @624
+@759 := @377 @713 @124 @126 @168 @165
+@760 := @289 @699
+@761 := @291 @294
+@765 := @759 (@760 @761) (@637 @624)
+@766 := @390 @713
+@772 := @766 @111 @61 @165 @167 @699 @761
+@773 := @399 @713
+@775 := @773 @90 @699
+@776 := @405 @713
+@795 := @765
+    (@772
+      (@775 (@404 (@776 @90)))
+      (@766 @58 @60 @165 @165 @290 @294 (@773 @23 @290 (@404 (@776 @23))) @723))
+@796 := LexLeanPreservation.prim_natEq
+@800 := @754 (@795 (@796 @622 @184))
+@808 := @320 (@550 (@45 (@179 (@183 @741 @617 @18) @74)))
+@809 := @45 @744
+@820 := @808 (@320 (@448 @809) (@320 (@324 @707) (@320 (@327 (@45 @741)) @330)))
+@821 := @377 @820
+@825 := @821 @124 @137 @173 @165
+@826 := @45 @747
+@827 := @289 @826
+@829 := @289 @133 @294
+@833 := @825 (@827 @829) (@637 @749)
+@834 := @390 @820
+@840 := @834 @131 @136 @171 @167 @826 @829
+@844 := @821 @95 @130 @169 @165
+@845 := @289 @809
+@846 := @469 @384
+@849 := @844 (@845 @846) @826
+@863 := @834 @106 @129 @165 @168 @809 @846 (@399 @820 @74 @809 (@404 (@405 @820 @74)))
+@869 := @834 @100 @82 @165 @167 @99 @384
+@871 := @430 @820 @31
+@873 := @869 (@871 @99)
+@881 := @834 @80 @60 @165 @165 @79 @294 (@871 @79)
+@882 := @436 @820
+@925 := @611
+    (@728
+      (fun ("_" : @730) =>
+      @800
+        (fun ("_" : @626) =>
+        @833
+          (@840
+            (@849 (@863 (@873 (@881 @882))) (@528 @744 @74 @18))
+            (@834 @134 @60 @165 @165 @133 @294 (@871 @133) @882))
+          (@796 @747 @23))
+        (fun ("_" : @625 @729) =>
+        @698
+          @820
+          @140
+          @120
+          @60
+          @165
+          @165
+          @294
+          (@637 @729)
+          @882
+          LexLeanPreservation.construct_false)))
+@927 := @430 @713 @31
+@938 := @565
+    (@580 (@586 (@925 (fun ("_" : @249) => @927 @133) (fun ("_" : @248 @729) => @927 @79)) @688))
+@939 := LexLeanPreservation.prim_natAdd
+@947 := fun (value : @10) => fun (divisor : @10) => @362 (@447 (@549 (@938 (@939 @240 @275))))
+@949 := (product : @10) -> (order : @10) -> @161
+@950 := @199 @301
+@952 := @164 @950 @165
+@953 := @166 @952
+@954 := @164 @953
+@956 := @269 @49 @305
+@958 := @175 @956 @195
+@961 := fun (product : @10) => fun (order : @10) => @954 @958
+@963 := @286 @18 @296
+@966 := LexLeanPreserve.C794a6cad1b5e8fdc98d1387794c0d40c.R39.__fits_0 @184 @186
+@967 := @298 @966
+@971 := @45 (VerdantEngine.LogarithmicScale.exponentialTerm @184 @186)
+@972 := @967 @971
+@975 := (product : @10) -> (order : @10) -> @963 @972
+@989 := @312 @18 @296 @972 @68 @332 (@337 (@348 @18)) (@354 (@355 (@356 @68) @296 @330))
+@993 := @378 @39 @66 @953 @958
+@994 := @289 @50
+@996 := @289 @306 @294
+@1052 := fun (product : @10) =>
+  fun (order : @10) =>
+  @989
+    (@993
+      (@994 @996)
+      (@45 @956)
+      (@391
+        @51
+        @65
+        @165
+        @952
+        @50
+        @996
+        (@432 @50)
+        (@391
+          @63
+          @60
+          @950
+          @165
+          @306
+          @294
+          (LexLeanPreservation.conv_call
+            @285
+            @332
+            @23
+            @62
+            @168
+            @301
+            @296
+            @306
+            (@392 @61 @165 @167 @290 @295 @409 (@411 @60 @165 @165 @292 @294 @421 @437))
+            (LexLeanPreserve.C794a6cad1b5e8fdc98d1387794c0d40c.R39.__rel_1 @184 @186))
+          @437))
+      (@939 @49 @305))
+@1053 := LexLeanPreservation.Obs
+@1055 := (product : @10) -> (order : @10) -> @1053
+@1065 := fun (product : @10) =>
+  fun (order : @10) =>
+  cond.{1} @1053 @966 (LexLeanPreservation.Obs.value @971) LexLeanPreservation.Obs.overflow
+@1072 := (product : @10) -> (order : @10) -> LexLeanPreservation.RunConv @285 @18 @296 @972
+@1083 := fun (product : @10) =>
+  fun (order : @10) =>
+  LexLeanPreservation.run_of_funRel
+    @285
+    @18
+    @296
+    @972
+    (LexLeanPreserve.C794a6cad1b5e8fdc98d1387794c0d40c.R39.__rel_0 @184 @186)
+\end{coremodule}
+\end{lexlean}

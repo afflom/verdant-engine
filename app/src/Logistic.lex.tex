@@ -6,7 +6,14 @@
 \begin{semanticmodule}
 definition{
   name: step,
-  parameters: [unitNumerator : Bool, gated : Bool, stage : Nat, x : Nat, gate : Nat, previous : Nat],
+  parameters: [
+    unitNumerator : Bool,
+    gated : Bool,
+    stage : Nat,
+    x : Nat,
+    gate : Nat,
+    previous : Nat
+  ],
   result: SwiGlu::Action,
   body: (if ((stage =? 3) && unitNumerator) then (ctor SwiGlu::Action.arithmetic 3 1065353216 previous) else (if ((stage =? 4) && (if gated then false else true)) then (ctor SwiGlu::Action.resultWord previous) else (SwiGlu::step stage x gate previous))),
   executable: true,

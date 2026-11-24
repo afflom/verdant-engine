@@ -14720,6 +14720,26 @@ record = "StitchHosting::principle6ZeroTrustVerifiedHydration"
 axis = "meant"
 
 [[closed]]
+kappa = "20e1d01de5aaab83e5083b59a46c81d867e35c9b4b001caed813ebeec1f86bba"
+record = "StitchHosting::principle7HoloV6SelfCarryingProofRecord"
+axis = "derived"
+
+[[closed]]
+kappa = "0258f99aee01289e2ad6480dae8b228cfbf11ce566a76230c26c275bee6e55a6"
+record = "StitchHosting::principle7HoloV6SelfCarryingProofRecord"
+axis = "meant"
+
+[[closed]]
+kappa = "26d2236bd59399fe73fd1a845bca8be3d1365958bc07e9d713429dd104a5e0c5"
+record = "StitchHosting::principle8UnifiedTwoScopeProofModernization"
+axis = "derived"
+
+[[closed]]
+kappa = "8f822ec7ff0ed3b099f96b406f5ce3339176be62b1de2079154e7c8996958b44"
+record = "StitchHosting::principle8UnifiedTwoScopeProofModernization"
+axis = "meant"
+
+[[closed]]
 kappa = "13029782ac2d7f2b51f91a08910cfec0dada8c78bc77ed99ea6f94b2f01875c3"
 record = "Subsystems::canonicalDimensions"
 axis = "derived"

@@ -99,7 +99,8 @@ fn program() -> &'static Path {
         for tool in ["gcc", "cc", "ar", "make"] {
             identity.update(checked(Command::new(tool).arg("--version")));
         }
-        identity.update(std::fs::read(root.join("prismpm.lock")).unwrap());
+        identity.update(std::fs::read(root.join("template.lock")).unwrap());
+        identity.update(std::fs::read(root.join("app/lean-toolchain")).unwrap());
         if let Some(inventory) = std::env::var_os("PRISMPM_SDK_INVENTORY") {
             identity.update(std::fs::read(inventory).unwrap());
         }

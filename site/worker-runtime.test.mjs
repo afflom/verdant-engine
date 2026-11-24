@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { mkdtemp, readFile, rm, cp, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, dirname, resolve } from "node:path";
@@ -10,11 +11,10 @@ const root = fileURLToPath(new URL("../", import.meta.url));
 const temp = await mkdtemp(join(tmpdir(), "frame-worker-runtime-"));
 test.after(async () => rm(temp, { recursive: true, force: true }));
 await cp(join(root, "try/vendor"), join(temp, "vendor"), { recursive: true });
-let prepare;
-try { ({ prepareWorkerRuntime: prepare } = await import("../bootstrap/worker-runtime.mjs")); }
-catch (error) { if (error.code !== "ERR_MODULE_NOT_FOUND") throw error; }
-// The pre-implementation control links the actual unadapted production dependency graph.
-const output = prepare ? await prepare(temp, join(temp, "vendor")) : join(temp, "vendor/prism-code/src");
+const { prepareWorkerRuntime: prepare, compactWorkerSource } = await import("../bootstrap/worker-runtime.mjs");
+const output = await prepare(temp, join(temp, "vendor"));
+const sha256 = (bytes) => createHash("sha256").update(bytes).digest("hex");
+
 async function linkGraph(entry) {
   const context = vm.createContext({ TextEncoder, TextDecoder, Uint8Array, WebAssembly, URL, crypto: globalThis.crypto });
   const cache = new Map();
@@ -38,14 +38,16 @@ test("the actual worker dependency graph links without a document import map", a
   assert.equal(typeof module.namespace.load, "function");
   assert.equal(files.length, 11);
 });
-test("worker packaging preserves runtime bytes except the explicit crypto alias", async () => {
+test("worker packaging binds runtime digests deterministically to the locked vendor tree", async () => {
   assert.equal(typeof prepare, "function", "production worker packager exists");
   const receipt = JSON.parse(await readFile(join(output, "packaging.json"), "utf8"));
-  assert.equal(receipt.files.length, 11);
+  assert.equal(receipt.files.length, 12);
   for (const file of receipt.files) {
     const before = await readFile(join(temp, "vendor", file.source), "utf8");
     const after = await readFile(join(output, file.path), "utf8");
-    assert.equal(after, file.path === "canonical/index.js" ? before.replace("from 'node:crypto'", "from '../node-crypto-shim.mjs'") : before);
+    assert.equal(sha256(before), file.source_sha256);
+    assert.equal(sha256(after), file.output_sha256);
+    assert.equal(after, compactWorkerSource(before));
   }
 });
 test("unknown bare imports fail closed rather than falling back to page execution", async () => {

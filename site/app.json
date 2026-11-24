@@ -85,20 +85,20 @@
   ],
   "trusted": [
     {
-      "name": "SDK image",
-      "value": "the digest prismpm.lock pins; see the bootstrap workflow's log"
+      "name": "Template contract",
+      "value": "uor/template-contract/2 locked in template.lock (BLAKE3 policy labels)"
     },
     {
       "name": "Lean toolchain",
-      "value": "leanprover/lean4:v4.32.1"
+      "value": "leanprover/lean4:v4.32.2"
     },
     {
       "name": "LexLean compiler semantics",
-      "value": "5262e5b4c8b5668ae7066ad686757a6bb7f80c941d515fb9d586894fbc7de69a"
+      "value": "blake3:033237f7056dad2227e8d0344867d657f07f17f90e98d0dfa9b7bf684b3132e9"
     },
     {
       "name": "prism-code runtime, vendored",
-      "value": "0.2.0, see try/vendor/prism-code/VENDOR.md"
+      "value": "0.11.1 (Holo v6 self-carrying kernel-proof/v1), see try/vendor/prism-code/VENDOR.md"
     },
     {
       "name": "Your browser",

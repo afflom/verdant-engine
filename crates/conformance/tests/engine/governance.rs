@@ -4428,3 +4428,209 @@ console.log('STITCH_L5_SWARM_OK');
         kpi_rep.kpis
     );
 }
+
+#[test]
+fn holo_v6_self_carrying_proof_and_unified_scopes_ve_80() {
+    use std::collections::BTreeMap;
+    use std::path::Path;
+    use std::process::Command;
+    use verdant_core::gateway::GatewayOp;
+    use verdant_core::gateway_swarm::execute_gateway_op;
+    use verdant_core::operator::VerdantOperatorChannel;
+    use verdant_core::vcs::{HoloV6ProofRecord, VerdantReleaseCapsule, STITCH_PROOF_HOLO_PATH};
+
+    let repo_root = repo_model::repo_root();
+
+    // 1. Verify uor/template-contract/2 + prism-code 0.11.1 contract checker & absence of prismpm.lock:
+    assert!(
+        !repo_root.join("prismpm.lock").exists(),
+        "prismpm.lock must be removed under uor/template-contract/2"
+    );
+    let contract_check = Command::new("node")
+        .current_dir(&repo_root)
+        .args([
+            "-e",
+            "import('./try/vendor/prism-code/src/contract.mjs').then(({checkContract})=>{const d=checkContract('.');if(d.length){console.error(d);process.exit(1);}})",
+        ])
+        .output()
+        .expect("run prism-code contract checker");
+    assert!(
+        contract_check.status.success(),
+        "uor/template-contract/2 check failed: {}",
+        String::from_utf8_lossy(&contract_check.stderr)
+    );
+
+    // 2. Verify unified two-scope tensor/quotient proof configs on Lean 4.32.2 + PF-26 & PF-28:
+    let lean_tc = std::fs::read_to_string(repo_root.join("app/lean-toolchain")).unwrap();
+    assert_eq!(lean_tc.trim(), "leanprover/lean4:v4.32.2");
+    let mut sorted_scopes: Vec<String> = std::fs::read_dir(repo_root.join("app"))
+        .unwrap()
+        .filter_map(Result::ok)
+        .map(|e| e.file_name().to_string_lossy().to_string())
+        .filter(|n| n.ends_with(".lexlean.toml"))
+        .collect();
+    sorted_scopes.sort();
+    assert_eq!(
+        sorted_scopes,
+        vec![
+            "encoding.lexlean.toml".to_string(),
+            "quotient.lexlean.toml".to_string(),
+            "tensor.lexlean.toml".to_string()
+        ],
+        "all fragmented tensor subscopes must be consolidated into encoding + quotient + tensor"
+    );
+    let stitch_hosting =
+        std::fs::read_to_string(repo_root.join("app/src/StitchHosting.lex.tex")).unwrap();
+    assert!(stitch_hosting.contains("linear_arithmetic{definitions: [breaksCapsuleCeilingMargin]}"));
+    assert!(stitch_hosting.contains(
+        "simplify{definitions: [Nat.beq_eq, sharedProofScopesCount, sharedScopesMatchExact]}"
+    ));
+
+    // 3. Offline re-prove + re-lex self-carrying Holo v6 (`site/generated/stitch-proof.holo`) via Wasm Lean 4.32.2 kernel:
+    let reprove_out = Command::new("node")
+        .current_dir(&repo_root)
+        .args([
+            "scripts/build-holo-v6.mjs",
+            "--reprove",
+            "site/generated/stitch-proof.holo",
+            "--require-sources",
+        ])
+        .output()
+        .expect("run build-holo-v6.mjs --reprove");
+    assert!(
+        reprove_out.status.success()
+            && String::from_utf8_lossy(&reprove_out.stdout).contains("reprove-holo-v6: VERIFIED"),
+        "offline Wasm Lean 4.32.2 reprove+relex failed: stdout={} stderr={}",
+        String::from_utf8_lossy(&reprove_out.stdout),
+        String::from_utf8_lossy(&reprove_out.stderr)
+    );
+
+    // 4. Positive + negative offline HoloV6ProofRecord verification across Stitch 4-of-8 shards & portable HTML:
+    let proof_bytes = std::fs::read(repo_root.join("site/generated/stitch-proof.holo")).unwrap();
+    let expected_record =
+        HoloV6ProofRecord::extract_and_verify(&proof_bytes).expect("offline Rust Holo v6 verify");
+    assert_eq!(expected_record.schema, "prism/holo/6");
+    assert!(expected_record.theorems_proved >= 3);
+
+    let mut files = BTreeMap::new();
+    files.insert(
+        "studio/index.html".to_string(),
+        b"<!DOCTYPE html><title>Verdant Studio</title>".to_vec(),
+    );
+    files.insert(STITCH_PROOF_HOLO_PATH.to_string(), proof_bytes.clone());
+    let capsule = VerdantReleaseCapsule::pack_from_files(
+        "2.21.0",
+        26,
+        "commit-ve80",
+        "seal-ve80",
+        "studio/index.html",
+        &files,
+    )
+    .expect("pack Holo v6 self-carrying release capsule");
+    assert!(
+        capsule.holo_bytes.len() < 1_000_000,
+        "release capsule must remain strictly < 1,000,000 B"
+    );
+    assert_eq!(
+        capsule.manifest.proof_record.as_ref(),
+        Some(&expected_record)
+    );
+
+    let signers: Vec<(&str, &[u8])> = vec![
+        ("prism:signer-a", b"secret-a-ve80"),
+        ("prism:signer-b", b"secret-b-ve80"),
+    ];
+    let (shards, pin) = capsule
+        .shard_for_stitch(
+            4,
+            8,
+            "genesis",
+            &signers,
+            2,
+            "stitch://verdant/studio",
+            vec!["https://example.org/shards".to_string()],
+        )
+        .expect("shard 4-of-8");
+    assert_eq!(
+        pin.proof_holo_kappa.as_deref(),
+        Some(expected_record.holo_kappa.as_str())
+    );
+    let mut trusted = BTreeMap::new();
+    trusted.insert("prism:signer-a".to_string(), b"secret-a-ve80".to_vec());
+    trusted.insert("prism:signer-b".to_string(), b"secret-b-ve80".to_vec());
+    let surviving = vec![
+        shards[1].clone(),
+        shards[3].clone(),
+        shards[5].clone(),
+        shards[7].clone(),
+    ];
+    let recovered =
+        VerdantReleaseCapsule::recover_from_stitch(&surviving, &pin, 0, Some("genesis"), &trusted)
+            .expect("recover 4-of-8 Stitch shards with self-carrying Holo v6 proof");
+    assert_eq!(
+        recovered.manifest.proof_record.as_ref(),
+        Some(&expected_record)
+    );
+
+    // Negative test: tampering with `pin.proof_holo_kappa` must fail closed during Stitch recovery!
+    let mut tampered_pin = pin.clone();
+    tampered_pin.proof_holo_kappa = Some(format!("blake3:{}", "0".repeat(64)));
+    assert!(VerdantReleaseCapsule::recover_from_stitch(
+        &surviving,
+        &tampered_pin,
+        0,
+        Some("genesis"),
+        &trusted
+    )
+    .is_err());
+
+    // Pack single-file portable HTML envelope via GatewayOp::PackBundle and verify embedded Holo v6 verifier!
+    let ch = VerdantOperatorChannel::new("sunspire-regatta").expect("load operator channel");
+    let tmp = std::env::temp_dir().join(format!("ve80-portable-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&tmp);
+    let rel_dir = tmp.join("rel");
+    let gw_dir = tmp.join("gw");
+    let packed_pin = ch
+        .pack_repo_release_capsule(
+            &repo_root,
+            "2.21.0",
+            26,
+            &rel_dir,
+            vec![
+                "https://afflom.github.io/verdant-engine/stitch/v2.21.0/shards".to_string(),
+                "https://cdn.jsdelivr.net/gh/afflom/verdant-engine@stitch-mirror/v2.21.0/shards"
+                    .to_string(),
+            ],
+            "stitch://verdant/studio",
+        )
+        .expect("pack isolated v2.21.0 release capsule");
+    assert_eq!(
+        packed_pin.proof_holo_kappa.as_deref(),
+        Some(expected_record.holo_kappa.as_str())
+    );
+    assert!(
+        packed_pin.capsule_byte_len < 987_136,
+        "packed repo release capsule {} B must stay strictly < 987,136 B",
+        packed_pin.capsule_byte_len
+    );
+    let _ = execute_gateway_op(&GatewayOp::PackBundle {
+        repo_root: repo_root.clone(),
+        release_dir: rel_dir,
+        out_dir: gw_dir.clone(),
+        extra_gateways: vec![],
+        crates_dir: None,
+    })
+    .expect("pack portable gateway bundle");
+    let portable_html =
+        std::fs::read_to_string(gw_dir.join("verdant-portable-v2.21.0.html")).unwrap();
+    assert!(portable_html.contains("verifyHoloV6"));
+    assert!(portable_html.contains("https://uor.foundation/prism/kernel-proof/v1"));
+    let _ = std::fs::remove_dir_all(&tmp);
+
+    let ratchet = prism_fidelity::ratchet::audit_parametric_ratchet(
+        &repo_root,
+        Path::new("model/parametric-ratchet.toml"),
+    )
+    .expect("parametric ratchet");
+    assert!(ratchet.observed_release_capsule_bytes < 1_000_000);
+}

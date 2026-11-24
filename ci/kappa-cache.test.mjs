@@ -25,9 +25,9 @@ function workspace(files) {
 const track = (dir) => execFileSync("git", ["add", "-A"], { cwd: dir });
 
 test("the input kappa is a function of the tracked input bytes and their paths", () => {
-  const dir = workspace({ "a.lex.tex": "model\n", "prismpm.lock": "{}\n" });
+  const dir = workspace({ "a.lex.tex": "model\n", "template.lock": "{}\n" });
   try {
-    const inputs = ["a.lex.tex", "prismpm.lock"];
+    const inputs = ["a.lex.tex", "template.lock"];
     const first = inputKappa(inputs, dir).kappa;
     assert.equal(inputKappa(inputs, dir).kappa, first, "the same bytes give the same kappa");
     writeFileSync(join(dir, "untracked.txt"), "noise\n");
@@ -41,7 +41,7 @@ test("the input kappa is a function of the tracked input bytes and their paths",
     writeFileSync(join(dir, "a.lex.tex"), "model\n");
     renameSync(join(dir, "a.lex.tex"), join(dir, "b.lex.tex"));
     track(dir);
-    assert.notEqual(inputKappa(["b.lex.tex", "prismpm.lock"], dir).kappa, first, "a renamed file changes the kappa");
+    assert.notEqual(inputKappa(["b.lex.tex", "template.lock"], dir).kappa, first, "a renamed file changes the kappa");
 
     assert.throws(() => inputKappa(["missing"], dir), /no tracked files/, "no inputs is refused, not hashed as empty");
   } finally {
@@ -61,14 +61,17 @@ test("a holo with one byte flipped is refused by its self-fingerprint", async ()
   await assert.rejects(verify(bad), /self-fingerprint fails/);
 });
 
-// The fingerprint is a checksum: a holo altered and fingerprinted again can
-// still load and replay every example. This is the defect that makes signed
-// provenance, not verify, the binding a hit requires.
-test("a holo altered and fingerprinted again can pass verify, so verify alone binds nothing", async () => {
+// Content blobs are bound to their inner κ-labels (#583), so altering a blob and
+// re-fingerprinting is refused by DigestMismatchError; meanwhile a genuine holo
+// built from other inputs still passes verify, so signed provenance (`attested`)
+// remains required to bind a cached holo to this repository's workflow.
+test("a holo altered and fingerprinted again is refused by inner blob verification, while another genuine holo passes verify", async () => {
   const body = Buffer.from(fixture.subarray(0, fixture.length - 32));
   body[Math.floor(body.length / 2)] ^= 1;
   const forged = Buffer.concat([body, Buffer.from(kappa(body).slice("blake3:".length), "hex")]);
-  const checked = await verify(forged);
+  await assert.rejects(verify(forged), /content blob does not hash to its label/);
+  const otherGenuine = readFileSync(new URL("../site/app.holo", import.meta.url));
+  const checked = await verify(otherGenuine);
   assert.notEqual(checked.fingerprint, fixture.subarray(fixture.length - 32).toString("hex"));
 });
 

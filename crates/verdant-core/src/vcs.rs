@@ -19,11 +19,10 @@ use flate2::write::GzEncoder;
 use flate2::Compression;
 use serde::{Deserialize, Serialize};
 
-use crate::digest::{
-    hex_encode as hex_encode_bytes, sha256_hex as sha256_hex_raw,
-    sha256_hex_tagged as digest_sha256_hex_tagged,
-};
+use crate::digest::{sha256_hex as sha256_hex_raw, sha256_hex_tagged as digest_sha256_hex_tagged};
 use crate::error::StitchCustodyError;
+#[cfg(not(target_arch = "wasm32"))]
+use crate::math::{eight_u32, four_u32, sixteen_u32, two_u32};
 use crate::network::{ReedSolomonStitchCodec, StitchMonotonicPointer, StitchRsShard, SHA256_BYTES};
 
 /// Structural change classification between two [`VerdantVcs`] commits.
@@ -688,6 +687,11 @@ pub struct VerdantReleaseManifest {
     /// `CutRelease` custody directly inside the `.holo` release manifest (`VE-72`).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub approval_certificate: Option<crate::authority::ApprovalCertificate>,
+    /// Optional self-carrying Holo v6 (`prism/holo/6`) proof record verified offline against
+    /// `generated/stitch-proof.holo` (`M29`, `VE-80`).
+    #[cfg(not(target_arch = "wasm32"))]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub proof_record: Option<HoloV6ProofRecord>,
 }
 
 /// Self-verifying portable Verdant Release `.holo` capsule (`VE-44`).
@@ -741,6 +745,12 @@ impl VerdantReleaseCapsule {
             total_payload_bytes = total_payload_bytes.saturating_add(bytes.len());
             payloads.insert(clean.to_string(), bytes.clone());
         }
+        #[cfg(feature = "capsule-gzip")]
+        entries.sort_by(|a, b| {
+            let ext_a = a.path.rsplit_once('.').map(|(_, e)| e).unwrap_or("");
+            let ext_b = b.path.rsplit_once('.').map(|(_, e)| e).unwrap_or("");
+            ext_a.cmp(ext_b).then_with(|| a.path.cmp(&b.path))
+        });
         let mut raw_body = Vec::with_capacity(total_payload_bytes);
         for entry in &entries {
             if let Some(bytes) = payloads.get(&entry.path) {
@@ -767,6 +777,12 @@ impl VerdantReleaseCapsule {
         };
         #[cfg(not(feature = "capsule-gzip"))]
         let (compression, body_bytes): (Option<String>, Vec<u8>) = (None, raw_body);
+        #[cfg(not(target_arch = "wasm32"))]
+        let proof_record = if let Some(proof_bytes) = payloads.get(STITCH_PROOF_HOLO_PATH) {
+            Some(HoloV6ProofRecord::extract_and_verify(proof_bytes)?)
+        } else {
+            None
+        };
         let manifest = VerdantReleaseManifest {
             spec: "verdant/release-capsule/1".to_string(),
             version: version.trim().to_string(),
@@ -778,6 +794,8 @@ impl VerdantReleaseCapsule {
             total_payload_bytes,
             compression,
             approval_certificate: None,
+            #[cfg(not(target_arch = "wasm32"))]
+            proof_record,
         };
         let manifest_json = serde_json::to_vec(&manifest).map_err(|e| {
             StitchCustodyError::PayloadDigestMismatch {
@@ -963,6 +981,36 @@ impl VerdantReleaseCapsule {
                     .to_string(),
             });
         }
+        #[cfg(not(target_arch = "wasm32"))]
+        match (
+            manifest.proof_record.as_ref(),
+            payloads.get(STITCH_PROOF_HOLO_PATH),
+        ) {
+            (Some(expected_record), Some(proof_bytes)) => {
+                let actual_record = HoloV6ProofRecord::extract_and_verify(proof_bytes)?;
+                if &actual_record != expected_record {
+                    return Err(StitchCustodyError::PayloadDigestMismatch {
+                        detail:
+                            "manifest HoloV6ProofRecord disagrees with embedded stitch-proof.holo"
+                                .to_string(),
+                    });
+                }
+            }
+            (Some(_), None) => {
+                return Err(StitchCustodyError::PayloadDigestMismatch {
+                    detail:
+                        "manifest declares HoloV6ProofRecord without embedded stitch-proof.holo"
+                            .to_string(),
+                });
+            }
+            (None, Some(_)) => {
+                return Err(StitchCustodyError::PayloadDigestMismatch {
+                    detail: "embedded stitch-proof.holo lacks manifest HoloV6ProofRecord binding"
+                        .to_string(),
+                });
+            }
+            (None, None) => {}
+        }
         Ok(Self {
             manifest,
             payloads,
@@ -999,6 +1047,12 @@ impl VerdantReleaseCapsule {
             .iter()
             .map(|s| format!("shard-{}.stch", s.index))
             .collect();
+        #[cfg(not(target_arch = "wasm32"))]
+        let proof_holo_kappa = self
+            .manifest
+            .proof_record
+            .as_ref()
+            .map(|r| r.holo_kappa.clone());
         let pin = FramePinManifest {
             spec: "verdant/frame-pin/1".to_string(),
             release_version: self.manifest.version.clone(),
@@ -1014,6 +1068,8 @@ impl VerdantReleaseCapsule {
             pointer,
             stitch_relays,
             shard_files,
+            #[cfg(not(target_arch = "wasm32"))]
+            proof_holo_kappa,
         };
         Ok((shards, pin))
     }
@@ -1039,6 +1095,21 @@ impl VerdantReleaseCapsule {
                 detail: "recovered .holo release kappa does not match signed FramePinManifest"
                     .to_string(),
             });
+        }
+        #[cfg(not(target_arch = "wasm32"))]
+        if let Some(ref expected_proof_kappa) = pin.proof_holo_kappa {
+            let actual_proof_kappa = capsule
+                .manifest
+                .proof_record
+                .as_ref()
+                .map(|r| r.holo_kappa.as_str());
+            if actual_proof_kappa != Some(expected_proof_kappa.as_str()) {
+                return Err(StitchCustodyError::PayloadDigestMismatch {
+                    detail:
+                        "recovered .holo Holo v6 proof_holo_kappa disagrees with FramePinManifest"
+                            .to_string(),
+                });
+            }
         }
         Ok(capsule)
     }

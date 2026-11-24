@@ -777,3 +777,57 @@ Feature: engine
     Given packed nonlinear coefficients with signed group scales
     When Verdant evaluates complete or truncated weight rows
     Then each complete product matches the pinned GGML CPU word and mismatched extents are refused
+
+  @VTK-44 @build
+  Scenario: Verdant encodes 256-lane ternary blocks in packed-trit and two-bit-plane layouts with a trailing binary16 scale
+    Given finite activation rows including signed half ties
+    When Verdant packs the ternary coefficients in either representation
+    Then every byte matches the pinned GGML reference encoder and malformed input leaves its destination intact
+
+  @VTK-45 @build
+  Scenario: Verdant contracts packed trit and two-bit ternary rows with prepared grouped signed-byte activations
+    Given packed ternary weights and independently prepared signed-byte activation blocks
+    When the engine evaluates a complete row
+    Then all output words reproduce the imported GGML CPU products and inconsistent extents are refused
+
+  @VTK-46 @build
+  Scenario: Verdant contracts three-bit four-lane codebooks using indexed and explicit signs
+    Given independently packed grid indices, signs and signed-byte activations
+    When the engine contracts zero or more complete blocks
+    Then every output word matches the pinned GGML CPU and mismatched extents are refused
+
+  @VTK-47 @build
+  Scenario: Verdant contracts signed one-bit codebooks with shared and distributed block scales
+    Given signed codebook weights, per-group shifts and independently prepared signed-byte activations
+    When the engine contracts zero or more complete blocks
+    Then every output word matches the pinned GGML CPU and mismatched extents are refused
+
+  @VTK-48 @build
+  Scenario: Verdant encodes exponent-only and grouped unsigned-scale four-bit floating weight blocks
+    Given signed scalar inputs, scale boundaries, signed zeros and tied nearest values
+    When Verdant encodes the complete block
+    Then every stored byte matches the original GGML encoder and rejected inputs preserve the destination
+
+  @VTK-49 @build
+  Scenario: Verdant encodes grouped signed six-bit weight blocks with per-group scale selection and separate low and high bit planes
+    Given signed binary32 rows bound to the imported six-bit weight encoder
+    When the certified quantizer chooses the group scales and packs its two bit planes
+    Then every output byte matches the original reference and failed encodings preserve the destination
+
+  @VTK-50 @build
+  Scenario: Verdant encodes grouped affine two-, four- and five-bit weights with weighted scale and minimum selection
+    Given complete binary32 rows, including tied and variably scaled groups
+    When Verdant fits each group and packs the coefficients and scale fields
+    Then every byte matches the imported encoder for its format and malformed inputs preserve the destination
+
+  @VTK-51 @build
+  Scenario: Verdant converts finite binary32 values to signed 32-bit storage words by truncating toward zero within the representable range
+    Given binary32 words across subnormal, fractional and integral exponents
+    When Verdant truncates them to signed 32-bit storage words
+    Then representable results match the imported GGML CPU copy and invalid values are refused
+
+  @VE-80 @build
+  Scenario: Verdant modernizes onto LexLean 0.4.5, prism-code 0.11.1, template contract v2, unified tensor scopes, and Holo v6 self-carrying proof records
+    Given the repository configured under uor/template-contract/2 with unified tensor, quotient, and encoding proof scopes on Lean 4.32.2
+    When Stitch 4-of-8 shards and single-file portable HTML envelopes pack and recover a release carrying generated/stitch-proof.holo
+    Then offline verifiers re-prove and validate the embedded Holo v6 kernel-proof/v1 record without external provenance bundles while tampered proof records fail closed

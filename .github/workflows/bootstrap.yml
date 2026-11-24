@@ -1,4 +1,11 @@
-# This is the minimal human-reviewed trust root. PrismPM does not generate it.
+# Minimal human-reviewed trust root (`uor/template-contract/2`, M29):
+#   1. Zero-runner draft PR gating (#600): draft pull requests skip runner allocation.
+#   2. Independent vs. proof-dependent CI lane splitting (#603):
+#      - `fast-gate`: containerless format, model, template v2 contract, experience,
+#        fidelity, clippy, cargo-deny, and JS/Prism contract checks.
+#      - `proof-and-test`: digest-pinned LexLean 0.4.5 (`leanprover/lean4:v4.32.2`)
+#        kernel proof + containerless Holo v6 offline reprove/relex + workspace test suite
+#        on amd64 for PRs/merge_group and both native amd64 + arm64 for main and tags.
 name: bootstrap
 
 on:
@@ -12,23 +19,66 @@ on:
 permissions:
   contents: read
 
-# A newer push to a pull request cancels its older run. Every other run (main,
-# a tag, a merge queue's) has a group of its own, so a main or tag run is never
-# cancelled, and never replaced while queued, and every merged or released
-# commit keeps its verdict.
 concurrency:
   group: ${{ github.event_name == 'pull_request' && format('bootstrap-pr-{0}', github.event.pull_request.number) || format('bootstrap-run-{0}', github.run_id) }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
-  template-gate:
+  fast-gate:
+    name: fast-gate / ubuntu-24.04
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - name: Check out the exact event revision
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Install Node 22
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version: 22
+      - name: Restore cached Cargo tools and dependencies
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        with:
+          path: |
+            ~/.cargo/bin/just
+            ~/.cargo/bin/cargo-deny
+            ~/.cargo/registry/index
+            ~/.cargo/registry/cache
+            ~/.cargo/git/db
+          key: fast-cargo-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('rust-toolchain.toml', 'Cargo.lock') }}
+      - name: Install locked Rust toolchain, just, and cargo-deny
+        shell: bash
+        run: |
+          set -euo pipefail
+          tc=$(sed -n 's/^channel = "\([^"]*\)"/\1/p' rust-toolchain.toml)
+          rustup toolchain install "$tc" --profile minimal --component rustfmt --component clippy
+          rustup default "$tc"
+          command -v just >/dev/null 2>&1 || cargo install --locked just@1.40.0
+          command -v cargo-deny >/dev/null 2>&1 || cargo install --locked cargo-deny@0.18.2
+      - name: Run containerless independent fast gate
+        shell: bash
+        env:
+          CARGO_PROFILE_DEV_DEBUG: "0"
+        run: |
+          set -euo pipefail
+          just fmt-check
+          just model
+          just template-check
+          python3 -I scripts/experience/authority.py . --check
+          just fidelity
+          just lint
+          just deny
+
+  proof-and-test:
     name: acceptance / ${{ matrix.runner }}
+    needs: fast-gate
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
     strategy:
       fail-fast: false
       matrix:
-        # A pull request, and a merge queue's run of it, run the complete gate
-        # once, natively on amd64. Main and tags run it on both native
-        # architectures before anything is published.
         runner: ${{ fromJSON((github.event_name == 'pull_request' || github.event_name == 'merge_group') && '["ubuntu-24.04"]' || '["ubuntu-24.04", "ubuntu-24.04-arm"]') }}
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 45
@@ -38,82 +88,66 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
-      # Proving the application is the slowest part of the gate. A run keeps the
-      # proof here, keyed by every proof input: the runner, the SDK image digest
-      # and the Lean toolchain by value, and every byte the proof reads. The key
-      # only finds a candidate. `just app` reuses it on a pull request, a merge
-      # queue run or a main push only after `xtask proof-reuse` has checked that
-      # its attestation resolves and binds these exact inputs. Tags prove in full.
-      - name: Name the SDK image digest and the Lean toolchain the proof runs on
+      - name: Install Node 22
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version: 22
+      - name: Name the LexLean image digest and the Lean toolchain the proof runs on
         id: proof-inputs
         shell: bash
         run: |
           set -euo pipefail
-          sdk=$(sed -n 's/.*"sdk_image":"[^"@]*@sha256:\([0-9a-f]\{64\}\)".*/\1/p' prismpm.lock)
+          lexlean_img=$(sed -n 's/.*"image": *"ghcr\.io\/uor-foundation\/lexlean@sha256:\([0-9a-f]\{64\}\)".*/\1/p' .devcontainer/devcontainer.json)
           lean=$(sed -n 's/^leanprover\/lean4:\(v[0-9A-Za-z.-]*\)$/\1/p' app/lean-toolchain)
-          test -n "$sdk"
+          test -n "$lexlean_img"
           test -n "$lean"
-          printf 'sdk=%s\nlean=%s\n' "$sdk" "$lean" >>"$GITHUB_OUTPUT"
+          printf 'lexlean=%s\nlean=%s\n' "$lexlean_img" "$lean" >>"$GITHUB_OUTPUT"
       - name: The proof of these exact proof inputs, kept by an earlier run
         uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
         with:
-          path: .prism-proof
-          key: prism-proof-${{ runner.os }}-${{ runner.arch }}-sdk-${{ steps.proof-inputs.outputs.sdk }}-lean-${{ steps.proof-inputs.outputs.lean }}-${{ hashFiles('app/**', 'prismpm.lock', 'Justfile', 'rust-toolchain.toml') }}
-
-      - name: Reserve disk for the locked SDK
+          path: |
+            .prism-proof
+            ~/.prism
+            ~/.cargo/bin/just
+            ~/.cargo/registry/index
+            ~/.cargo/registry/cache
+            ~/.cargo/git/db
+          key: prism-proof-${{ runner.os }}-${{ runner.arch }}-lexlean-${{ steps.proof-inputs.outputs.lexlean }}-lean-${{ steps.proof-inputs.outputs.lean }}-${{ hashFiles('app/**', 'template.lock', 'Justfile', 'rust-toolchain.toml', 'scripts/build-holo-v6.mjs') }}
+      - name: Install locked Rust toolchain, just, and digest-pinned LexLean 0.4.5 CLI
         shell: bash
         run: |
           set -euo pipefail
           if [[ ${RUNNER_ENVIRONMENT:-} == github-hosted && ${RUNNER_OS:-} == Linux ]]; then
             sudo rm -rf -- /usr/local/lib/android /usr/share/dotnet /opt/ghc /opt/hostedtoolcache/CodeQL
           fi
-          df -h / /var/lib/docker
-      - name: Run the template gate through the locked SDK
-        shell: bash
-        # A ref is passed through the environment, never spliced into the script.
-        env:
-          PRISM_PROOF_EVENT: ${{ github.event_name }}:${{ github.ref }}
-        run: |
-          set -euo pipefail
-          image=$(sed -n 's/.*"sdk_image":"\([^"]*\)".*/\1/p' prismpm.lock)
-          if [[ ! $image =~ ^[a-z0-9.-]+(:[0-9]{1,5})?/[a-z0-9./_-]+@sha256:[0-9a-f]{64}$ ]]; then
-            printf '%s\n' 'prismpm.lock does not select an immutable SDK image' >&2
+          tc=$(sed -n 's/^channel = "\([^"]*\)"/\1/p' rust-toolchain.toml)
+          rustup toolchain install "$tc" --profile minimal --target wasm32-unknown-unknown
+          rustup default "$tc"
+          command -v just >/dev/null 2>&1 || cargo install --locked just@1.40.0
+          image=$(sed -n 's/.*"image": *"\([^"]*\)".*/\1/p' .devcontainer/devcontainer.json)
+          if [[ ! $image =~ ^ghcr\.io/uor-foundation/lexlean@sha256:[0-9a-f]{64}$ ]]; then
+            printf '%s\n' '.devcontainer/devcontainer.json does not select an immutable LexLean image' >&2
             exit 64
           fi
-          docker_config=$(mktemp -d)
-          # The SDK's /tmp is a private directory on the runner's own disk, so the
-          # build's scratch space is bounded by the disk the runner has, not by a
-          # fixed size; it is removed with the credentials when the step ends.
-          scratch=$(mktemp -d)
-          mkdir -p "$scratch/prismpm-home/.docker"
-          trap 'rm -rf "$docker_config" "$scratch"' EXIT
-          if test -f "$HOME/.docker/config.json"; then
-            cp "$HOME/.docker/config.json" "$docker_config/config.json"
-          else
-            printf '{}\n' >"$docker_config/config.json"
-          fi
-          docker run --rm \
-            --user "$(id -u):$(id -g)" \
-            --group-add "$(stat -c '%g' /var/run/docker.sock)" \
-            --volume "$scratch:/tmp" \
-            --volume "$PWD:$PWD" \
-            --volume /var/run/docker.sock:/var/run/docker.sock \
-            --volume "$docker_config:/tmp/prismpm-home/.docker:ro" \
-            --workdir "$PWD" \
-            --env DOCKER_CONFIG=/tmp/prismpm-home/.docker \
-            --env BUILDX_CONFIG=/tmp/prismpm-buildx \
-            --env HOME=/tmp/prismpm-home \
-            --env PRISMPM_EPHEMERAL_HOME=1 \
-            --env PRISM_PROOF_EVENT \
-            --env SDK_IMAGE="$image" \
-            "$image" bash -c '
-              set -euo pipefail
-              umask 077
-              docker buildx version
-              docker buildx inspect --bootstrap
-              manifest=$(docker buildx imagetools inspect "$SDK_IMAGE")
-              grep -q "linux/amd64" <<< "$manifest"
-              grep -q "linux/arm64" <<< "$manifest"
-              devcontainer --version
-              exec just vv
-            '
+          docker pull "$image"
+          mkdir -p "$RUNNER_TEMP/bin"
+          cat > "$RUNNER_TEMP/bin/lexlean" <<EOF
+          #!/usr/bin/env bash
+          set -euo pipefail
+          scratch=\$(mktemp -d)
+          trap 'rm -rf "\$scratch"' EXIT
+          exec docker run --rm --network none -u "\$(id -u):\$(id -g)" -v "$PWD:$PWD" -v "\$scratch:/tmp" -w "\$PWD" -e HOME=/tmp "$image" "\$@"
+          EOF
+          chmod +x "$RUNNER_TEMP/bin/lexlean"
+          echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
+      - name: Run kernel proof gate, Holo v6 offline reprove/relex, and workspace test suite
+        shell: bash
+        env:
+          PRISM_PROOF_EVENT: ${{ github.event_name }}:${{ github.ref }}
+          CARGO_PROFILE_DEV_DEBUG: "0"
+        run: |
+          set -euo pipefail
+          lexlean --version
+          just experience-check
+          just app
+          just test

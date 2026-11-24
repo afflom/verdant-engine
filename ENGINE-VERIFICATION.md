@@ -429,3 +429,57 @@ The pinned GGML CPU type traits independently prepare the F32 activation and eva
 The grouped Prism model checks row extents, locates the eight groups and decodes their signed scales. The existing certified compact-pair model selects both coefficients from the imported nonlinear table. Each group contracts one 32-value activation segment and adds one rounded binary32 term in reference order. The signed export attestation is `125d57fe4d99b3105594bcf1c0eae4b2023ba29f75587396fe787f5fd2044ce6`.
 
 Using the low nibble for both codebook indices made `cargo test -p verdant-tensor --lib grouped_nonlinear_product_vtk_43` fail on row 1 with word 1211694456 against 3326743808. Restoring the upper nibble passed all 98 comparisons. The source lift retained 585 lifted functions and 1,150 residual functions.
+
+## VTK-44 ternary block encoding
+
+The unchanged GGML reference functions `quantize_row_tq1_0_ref` and `quantize_row_tq2_0_ref` produced all 34,560 expected bytes for 576 blocks. The inputs cover 256 separate impulse positions, signed zeros, positive and negative half ties and 29 scales of pseudorandom values. Each encoding also preserves the destination on truncated input, incorrect output width and nonfinite lanes.
+
+The BitpackedProduct certificate selects each code's source index and stride, rounds the signed coefficient, packs base-three digits or two-bit planes, and finalizes the byte before the binary16 scale is appended. It reuses the existing certified peak and scale operations. Attestation `ce1196f01544c9ee4f6d29f8ff614b08889676ec79031f22f4c2f9756bf8b43a` binds the production export.
+
+Reading adjacent values instead of applying the certified stride makes `cargo test -p verdant-tensor --lib ternary_block_encoding_vtk_44` fail on TQ1_0 row 2. Restoring the model-directed read passes both encoders and the previous compact encoders.
+
+## VTK-45 ternary row products
+
+The same certified ternary layout used by the encoders selects each physical lane. The packed-trit decoder recovers five signed coefficients and the two-bit decoder preserves every raw field, including code three. Each 256-lane block uses the existing exact integer contraction and the certified binary32 scaled accumulation. Attestation `6e4d44c9170897532a80e686638769430910ab5a0b10a8488d7c46bcd354eab8` binds the decoder.
+
+All 196 result words across zero to five blocks matched the original GGML CPU products. The CPU quantized its own activations. Both row formats reject truncated weights and mismatched activation counts. Removing the physical stride failed TQ1_0 row 1. Restoring it passed both products and the encoder and nonlinear-product regressions. The source lift retained 585 lifted and 1,150 residual functions.
+
+## VTK-46 four-lane codebook products
+
+Each four-lane grid is selected from the original imported IQ3_XXS or IQ3_S table. The certified instructions locate the low and high index bits, signed-byte mask, group scale and starting sign bit. The existing exact integer contraction and row accumulation serve both codebooks. Attestation `9e42f5dbdd07596113465bdcaba4e3e3a86cc9684b78daa6d9229a2e861f1bd0` binds the production export.
+
+The pinned GGML CPU independently prepared its activations and produced all 196 matching binary32 words across zero to five blocks. Both row formats reject partial weights and mismatched activation counts. Using the low four sign bits for both halves failed IQ3_XXS row 1. Restoring the certified sign position passed both new products and the existing two-bit codebook and ternary regressions. The source lift retained 585 lifted and 1,150 residual functions.
+
+## VTK-47 shifted signed-codebook products
+
+The Prism plan reconstructs a shared binary16 scale or its four distributed nibbles, selects the eight-lane grid and applies the signed one-eighth shift. The imported grid contains exactly −1, 0 and 1. Expressing each scaled coefficient in eighths bounds the integral product by 256 × 128 × 15 × 9, within binary32's exact integer range. Applying the certified one-eighth unit before each scaled block preserves the reference sum order. Attestation `3599877f41301c37e0a457a2ec904887919b3a89383794350226ef82e12384a4` binds the export.
+
+All 196 result words matched the original GGML CPU over zero to five blocks, including distributed scale nibbles with independently varied group scales. Both formats reject incomplete blocks and mismatched activation counts. Reversing the shift sign failed IQ1_S row 1. Restoring it passed both new products, the two-bit codebooks and the four-lane codebooks. The source lift retained 585 lifted and 1,150 residual functions.
+
+## VTK-48 compact four-bit block encoders
+
+The certified layout assigns one exponent-only scale to 32 lanes or four unsigned scales to groups of 16. Candidate selection follows the imported table order on ties. The destination is published after every group succeeds. Attestation `d982858873ba0e37afa86b778d4f7be7c5c69dbf9a1e65aac988a421f99966ea` binds the export.
+
+All 16,787 bytes in 622 blocks matched the two original GGML encoders. The cases include single-lane impulses, powers of two and their representable neighbors, and unsigned scale transitions. Short buffers and nonfinite lanes preserved the destination. Repeating the low nibble in both positions failed the MXFP4 byte comparison. The restored encoders and prior ternary contracts passed. The source lift retained 585 lifted and 1,150 residual functions.
+
+## VTK-49 grouped signed six-bit encoder
+
+For each group of 16 lanes the certified plan compares the initial inverse scale and 18 neighboring trials. It ranks the squared weighted correlation in binary32 order, preserves the winning provisional coefficients when the stored group scale decodes to zero, and joins the low nibbles with the separate two-bit planes. Attestation `8ad7829da0bfdc0d89dbd75e0ed6bfce4df3b7af8ccec72f486f3625fc4ad055` binds the export.
+
+All 65,520 bytes in 312 blocks matched the original GGML Q6_K reference. The inputs cover sign ties, each impulse position, varied group magnitudes, zeros, scale underflow and the small-group cutoff. Short blocks and nonfinite lanes preserved the destination. Clearing the upper plane failed the original byte comparison. The source lift retained 585 lifted and 1,150 residual functions.
+
+## VTK-50 grouped affine two-, four- and five-bit encoders
+
+The Prism model selects the weighted affine scale-fitting instructions, quantization rounding, and packed coefficient and scale bit-field placements for Q2_K, Q4_K, and Q5_K blocks. Verdant executes those certified programs through its existing binary32 scalar and half-precision storage primitives inside the unified `encoding` proof scope.
+
+All 318 blocks per format matched the pinned GGML Q2_K, Q4_K, and Q5_K reference encoders byte for byte across ties, impulses, signed zeros, and variably scaled groups, while malformed extents and nonfinite lanes preserved the destination buffer. Forcing output bytes to zero failed the third two-bit reference block; restoring the certified bit-field plan passed all three formats.
+
+## VTK-51 binary32 to signed integer conversion
+
+All 2,213 representable binary32 inputs matched the signed words written by the imported GGML CPU copy operation. Nine other inputs exercised the refusal boundary, including infinities, NaNs, overwide words and both sides of the signed range. Clearing the sign bit before conversion changed the result for −1. Restoring it passed the pinned comparison. Run `cargo test --locked -p verdant-tensor --lib binary32_signed_truncation_vtk_51`. [Conversion oracle](https://github.com/ggml-org/llama.cpp/blob/9a080f44b503c64f66c84a6274b9d9ee5d5b09d5/ggml/src/ggml-cpu/common.h)
+
+## VE-80 toolchain modernization, unified three-scope tensor proofs, and Holo v6 self-carrying proof records
+
+Verdant upgraded to `lexlean 0.4.5` (`leanprover/lean4:v4.32.2`, BLAKE3 κ-labels), vendored `prism-code@0.11.1` across `try/vendor/prism-code` and `site/worker-runtime`, adopted `uor/template-contract/2` (`template.lock` `uor/template-lock/2`), split `.github/workflows/bootstrap.yml` into containerless `fast-gate` and digest-pinned `proof-and-test` lanes with zero-runner draft PR skip (`#600`, `#603`), consolidated the 23 fragmented tensor proof configs into unified `app/tensor.lexlean.toml`, `app/quotient.lexlean.toml`, and `app/encoding.lexlean.toml` scopes (`PF-26` `linear_arithmetic` and `PF-28` `simplify`), and embedded self-carrying Holo v6 (`prism/holo/6`, `https://uor.foundation/prism/kernel-proof/v1`) proof records inside both Stitch 4-of-8 shards and single-file `verdant-portable` HTML envelopes while keeping release `.holo` weight strictly below 1,000,000 B.
+
+Flipping a single byte inside `generated/stitch-proof.holo` or incrementing `manifest.proofRecord.theoremsProved` caused `HoloV6ProofRecord::extract_and_verify` and `VerdantReleaseCapsule::verify_and_unpack` to reject the tampered capsule before Virtual FS mounting; restoring the genuine Lean `4.32.2` kernel-proved Holo v6 passed both `reproveHere` + `relexHere` and 4-of-8 Stitch shard recovery (`cargo test --locked -p repo-conformance ve_80`).
