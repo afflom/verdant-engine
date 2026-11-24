@@ -831,3 +831,9 @@ Feature: engine
     Given the repository configured under uor/template-contract/2 with unified tensor, quotient, and encoding proof scopes on Lean 4.32.2
     When Stitch 4-of-8 shards and single-file portable HTML envelopes pack and recover a release carrying generated/stitch-proof.holo
     Then offline verifiers re-prove and validate the embedded Holo v6 kernel-proof/v1 record without external provenance bundles while tampered proof records fail closed
+
+  @VTK-52 @build
+  Scenario: Verdant fits grouped signed three-bit blocks by refining individual coefficients and emits the packed coefficients and scales
+    Given complete binary32 blocks with ties, independent group scales and zero groups
+    When the grouped signed three-bit encoder packs its scale fields and coefficients
+    Then each byte matches the imported GGML encoder and a refused request preserves the output

@@ -5,9 +5,9 @@
   "currentVersion": {
     "major": 2,
     "minor": 21,
-    "patch": 0
+    "patch": 1
   },
-  "releaseEpoch": 26,
+  "releaseEpoch": 27,
   "history": [
     {
       "version": "0.1.0",
@@ -210,6 +210,13 @@
       "releaseEpoch": 26,
       "bumpKind": "minor",
       "summary": "M29: lexlean 0.4.5, prism-code 0.11.1, template v2, unified tensor proof scopes, VTK-43..48, and Holo v6 self-carrying proof records",
+      "citedAuthority": "AUTH-SEMVER-CHANGE-KPI"
+    },
+    {
+      "version": "2.21.1",
+      "releaseEpoch": 27,
+      "bumpKind": "patch",
+      "summary": "v2.21.1: certified grouped signed three-bit weight encoding (VTK-52)",
       "citedAuthority": "AUTH-SEMVER-CHANGE-KPI"
     }
   ]

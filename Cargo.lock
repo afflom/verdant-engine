@@ -473,7 +473,7 @@ dependencies = [
 
 [[package]]
 name = "prism-fidelity"
-version = "2.21.0"
+version = "2.21.1"
 dependencies = [
  "serde",
  "sha2 0.11.1",
@@ -506,7 +506,7 @@ dependencies = [
 
 [[package]]
 name = "repo-conformance"
-version = "2.21.0"
+version = "2.21.1"
 dependencies = [
  "prism-fidelity",
  "repo-model",
@@ -519,7 +519,7 @@ dependencies = [
 
 [[package]]
 name = "repo-model"
-version = "2.21.0"
+version = "2.21.1"
 dependencies = [
  "serde",
  "sha2 0.11.1",
@@ -794,14 +794,14 @@ checksum = "daf8dba3b7eb870caf1ddeed7bc9d2a049f3cfdfae7cb521b087cc33ae4c49da"
 
 [[package]]
 name = "verdant-cli"
-version = "2.21.0"
+version = "2.21.1"
 dependencies = [
  "verdant-core",
 ]
 
 [[package]]
 name = "verdant-core"
-version = "2.21.0"
+version = "2.21.1"
 dependencies = [
  "flate2",
  "gltf",
@@ -817,7 +817,7 @@ dependencies = [
 
 [[package]]
 name = "verdant-tensor"
-version = "2.21.0"
+version = "2.21.1"
 dependencies = [
  "proc-macro2",
  "serde",
@@ -915,7 +915,7 @@ dependencies = [
 
 [[package]]
 name = "verdant-wasm"
-version = "2.21.0"
+version = "2.21.1"
 dependencies = [
  "verdant-core",
 ]
@@ -1034,7 +1034,7 @@ version = "2.25.0"
 
 [[package]]
 name = "verdant_grouped_six_encoding"
-version = "2.42.0"
+version = "2.45.0"
 
 [[package]]
 name = "verdant_head_slope"
@@ -1282,7 +1282,7 @@ checksum = "8c3b93199df0ab874cdf0c6a94f0a0dc3423fe41f1cafb62b8bd7b1deb277aef"
 
 [[package]]
 name = "xtask"
-version = "2.21.0"
+version = "2.21.1"
 dependencies = [
  "repo-conformance",
  "repo-model",

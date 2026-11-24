@@ -1,6 +1,6 @@
 [package]
 name = "verdant_grouped_six_encoding"
-version = "2.42.0"
+version = "2.45.0"
 edition = "2021"
 publish = false
 

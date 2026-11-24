@@ -22,7 +22,7 @@ uorc-decoder = ["verdant-core/uorc-wasm-decode"]
 verdant-core.workspace = true
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
-verdant-core = { version = "2.21.0", path = "../verdant-core", default-features = false }
+verdant-core = { version = "2.21.1", path = "../verdant-core", default-features = false }
 
 [lints]
 workspace = true

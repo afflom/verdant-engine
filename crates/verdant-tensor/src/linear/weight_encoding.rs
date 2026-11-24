@@ -49,6 +49,8 @@ pub enum PackedWeightEncoding {
     UnsignedScaleFour,
     /// Signed six-bit coefficients with per-group multipliers and a binary16 block scale.
     GroupedSignedSix,
+    /// Sixteen signed three-bit groups with packed six-bit scales.
+    GroupedSignedThree,
     /// Sixteen groups of unsigned two-bit weights with scale and minimum.
     GroupedAffineTwo,
     /// Eight groups of unsigned four-bit weights with scale and minimum.
@@ -391,7 +393,7 @@ pub fn encode_weight_block<I: AsRef<[f32]> + ?Sized>(
         output.copy_from_slice(&packet[..output.len()]);
         return Ok(());
     }
-    if kind == GroupedSignedSix {
+    if matches!(kind, GroupedSignedSix | GroupedSignedThree) {
         use verdant_grouped_six_encoding::{run, Adt0 as Request, Adt1 as Frame, Adt2 as Step};
         let invalid = || TensorComputeError::InvalidKernelSpecification {
             kernel_name: "GroupedSixEncoding".into(),
@@ -443,6 +445,135 @@ pub fn encode_weight_block<I: AsRef<[f32]> + ?Sized>(
                 phase += 1;
             }
         };
+        if kind == GroupedSignedThree {
+            let Step::C1(width, passes, _, _) =
+                plan(Request::C10(input.len() as u64, output.len() as u64))?
+            else {
+                return Err(invalid());
+            };
+            let pair = |step| match step {
+                Step::C3(first, second) => Ok((first, second)),
+                _ => Err(invalid()),
+            };
+            let mut levels = [0; PAIRS * PAIRS];
+            let mut scales = [0; PAIRS];
+            let mut peak_scale = 0;
+            for ((xs, codes), scale) in input
+                .chunks_exact(width as usize)
+                .zip(levels.chunks_exact_mut(width as usize))
+                .zip(&mut scales)
+            {
+                let mut peak = 0;
+                for x in xs {
+                    peak = word(plan(Request::C1(true, peak, u64::from(x.to_bits())))?)?;
+                }
+                let inverse = word(calculate(Request::C11, peak, 0, 0, 0)?)?;
+                if inverse == 0 {
+                    continue;
+                }
+                let (mut xy, mut yy) = (0, 0);
+                for (x, code) in xs.iter().zip(codes.iter_mut()) {
+                    let x = u64::from(x.to_bits());
+                    *code = word(calculate(Request::C12, x, inverse, 0, 0)?)?;
+                    (xy, yy) = pair(calculate(Request::C14, x, *code, xy, yy)?)?;
+                }
+                for _ in 0..passes {
+                    let mut changed = false;
+                    for (x, code) in xs.iter().zip(codes.iter_mut()) {
+                        let x = u64::from(x.to_bits());
+                        let (remaining_xy, remaining_yy) =
+                            pair(calculate(Request::C15, x, *code, xy, yy)?)?;
+                        let proposal = word(calculate(
+                            Request::C16,
+                            x,
+                            remaining_xy,
+                            remaining_yy,
+                            *code,
+                        )?)?;
+                        if proposal == *code {
+                            continue;
+                        }
+                        let (next_xy, next_yy) = pair(calculate(
+                            Request::C14,
+                            x,
+                            proposal,
+                            remaining_xy,
+                            remaining_yy,
+                        )?)?;
+                        if word(calculate(Request::C17, next_xy, next_yy, xy, yy)?)? != 0 {
+                            (*code, xy, yy) = (proposal, next_xy, next_yy);
+                            changed = true;
+                        }
+                    }
+                    if !changed {
+                        break;
+                    }
+                }
+                *scale = word(calculate(Request::C18, xy, yy, 0, 0)?)?;
+                peak_scale = word(plan(Request::C1(false, peak_scale, *scale))?)?;
+            }
+            let Step::C1(inverse, half, unit, _) = calculate(Request::C19, peak_scale, 0, 0, 0)?
+            else {
+                return Err(invalid());
+            };
+            for ((xs, codes), scale) in input
+                .chunks_exact(width as usize)
+                .zip(levels.chunks_exact_mut(width as usize))
+                .zip(&mut scales)
+            {
+                let (header, local) = pair(calculate(Request::C20, inverse, unit, *scale, 0)?)?;
+                *scale = header;
+                if super::evaluate_encoded_word(0, local, 0)
+                    .map_err(|_| invalid())?
+                    .ok_or_else(invalid)?
+                    == 1
+                {
+                    continue;
+                }
+                for (x, code) in xs.iter().zip(codes) {
+                    *code = word(calculate(
+                        Request::C13,
+                        u64::from(x.to_bits()),
+                        local,
+                        0,
+                        0,
+                    )?)?;
+                }
+            }
+            let banks = [
+                levels.as_slice(),
+                scales.as_slice(),
+                std::slice::from_ref(&half),
+            ];
+            let mut packed = [0; PAIRS * PAIRS];
+            let packet = packed.get_mut(..output.len()).ok_or_else(invalid)?;
+            for (byte, out) in packet.iter_mut().enumerate() {
+                let mut accumulator = 0;
+                for phase in 0.. {
+                    match plan(Request::C21(byte as u64, phase))? {
+                        Step::C2(0) => break,
+                        Step::C10(bank, index, divisor, radix, place) => {
+                            let value = banks
+                                .get(bank as usize)
+                                .and_then(|b| b.get(index as usize))
+                                .ok_or_else(invalid)?;
+                            accumulator = verdant_affine_insert_field::run(
+                                accumulator,
+                                *value,
+                                divisor,
+                                radix,
+                                place,
+                            )
+                            .map_err(|_| invalid())?;
+                        }
+                        _ => return Err(invalid()),
+                    }
+                }
+                *out = u8::try_from(accumulator).map_err(|_| invalid())?;
+            }
+            output.copy_from_slice(packet);
+            return Ok(());
+        }
         let Step::C1(width, trials, stride, bank) =
             plan(Request::C0(input.len() as u64, output.len() as u64))?
         else {
