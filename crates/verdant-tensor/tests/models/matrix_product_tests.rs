@@ -450,6 +450,7 @@ int main(int argc, char **argv) {
   if (!std::strcmp(argv[1], "grouped-affine-2")) return encode_blocks<QK_K>(quantize_row_q2_K_ref);
   if (!std::strcmp(argv[1], "grouped-affine-4")) return encode_blocks<QK_K>(quantize_row_q4_K_ref);
   if (!std::strcmp(argv[1], "grouped-affine-5")) return encode_blocks<QK_K>(quantize_row_q5_K_ref);
+  if (!std::strcmp(argv[1], "signed-three-encode")) return encode_blocks<QK_K>(quantize_row_q3_K_ref);
   if (!std::strcmp(argv[1], "signed-six-encode")) return encode_blocks<QK_K>(quantize_row_q6_K_ref);
   if (!std::strcmp(argv[1], "mxfp4-encode")) return encode_blocks<QK_MXFP4>(reference_mxfp4);
   if (!std::strcmp(argv[1], "nvfp4-encode")) return encode_blocks<QK_NVFP4>(quantize_row_nvfp4_ref);
@@ -3089,6 +3090,19 @@ fn compact_float_weight_encoding_vtk_48() {
 }
 
 #[test]
+fn grouped_signed_three_encoding_vtk_52() {
+    certified_encoding_model(
+        "verdant_grouped_six_encoding",
+        "VerdantEngine.GroupedSixEncoding.evaluate",
+    );
+    compare_weight_encoders::<256>(&[(
+        super::PackedWeightEncoding::GroupedSignedThree,
+        110,
+        "signed-three-encode",
+    )]);
+}
+
+#[test]
 fn grouped_signed_six_encoding_vtk_49() {
     use super::PackedWeightEncoding::GroupedSignedSix;
     certified_encoding_model(
@@ -3196,6 +3210,14 @@ fn compare_weight_encoders<const N: usize>(formats: &[(super::PackedWeightEncodi
             rows.push([amplitude; N]);
             rows.push([-amplitude; N]);
         }
+    }
+    if formats.iter().any(|(kind, _, _)| {
+        matches!(
+            kind,
+            super::PackedWeightEncoding::GroupedSignedThree
+                | super::PackedWeightEncoding::GroupedSignedSix
+        )
+    }) {
         for amplitude in [1.0e-15_f32, 32.0e-15, 0.0001, 0.125, 1.0, 128.0] {
             for peak in [amplitude.next_down(), amplitude, amplitude.next_up()] {
                 rows.push(std::array::from_fn(|i| {

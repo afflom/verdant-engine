@@ -19,7 +19,7 @@ verdant_affine_quantized = { version = "=2.43.0", path = "../../generated/tensor
 verdant_affine_insert_field = { version = "=2.43.0", path = "../../generated/tensor-encoding/packages/rust-core/verdant_affine_insert_field" }
 verdant_affine_fit = { version = "=2.43.0", path = "../../generated/tensor-encoding/packages/rust-core/verdant_affine_fit" }
 verdant_affine_weight_fields = { version = "=2.43.0", path = "../../generated/tensor-encoding/packages/rust-core/verdant_affine_weight_fields" }
-verdant_grouped_six_encoding = { version = "=2.42.0", path = "../../generated/tensor-encoding/packages/rust-core/verdant_grouped_six_encoding" }
+verdant_grouped_six_encoding = { version = "=2.45.0", path = "../../generated/tensor-encoding/packages/rust-core/verdant_grouped_six_encoding" }
 verdant_bitpacked_product = { version = "=2.41.0", path = "../../generated/tensor-execution/packages/rust-core/verdant_bitpacked_product" }
 verdant_grouped_affine = { version = "=2.40.0", path = "../../generated/tensor-execution/packages/rust-core/verdant_grouped_affine" }
 verdant_softplus = { version = "=2.32.0", path = "../../generated/tensor-execution/packages/rust-core/verdant_softplus" }

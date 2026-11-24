@@ -33,7 +33,19 @@ inductive{
     {name: sixLocal, fields: [Nat, Frame]},
     {name: sixLane, fields: [Nat, Frame]},
     {name: sixPlaneBytes, fields: [Nat, Nat, Nat, Nat]},
-    {name: roundedCode, fields: [Nat, Nat]}
+    {name: roundedCode, fields: [Nat, Nat]},
+    {name: threeGeometry, fields: [Nat, Nat]},
+    {name: threeInverse, fields: [Nat, Frame]},
+    {name: threeInitialCode, fields: [Nat, Frame]},
+    {name: threeFinalCode, fields: [Nat, Frame]},
+    {name: threeAdd, fields: [Nat, Frame]},
+    {name: threeRemove, fields: [Nat, Frame]},
+    {name: threeProposal, fields: [Nat, Frame]},
+    {name: threeImproves, fields: [Nat, Frame]},
+    {name: threeScale, fields: [Nat, Frame]},
+    {name: threeBase, fields: [Nat, Frame]},
+    {name: threeLocal, fields: [Nat, Frame]},
+    {name: threeByteField, fields: [Nat, Nat]}
   ]
 }
 
@@ -51,7 +63,8 @@ inductive{
     {name: integer, fields: [Nat, Nat, Nat]},
     {name: storage, fields: [Bool, Nat, Nat]},
     {name: compareWords, fields: [Nat, Nat, Nat]},
-    {name: round, fields: [Nat, Nat, Nat]}
+    {name: round, fields: [Nat, Nat, Nat]},
+    {name: threeField, fields: [Nat, Nat, Nat, Nat, Nat]}
   ]
 }
 
@@ -112,6 +125,110 @@ definition{
 }
 
 definition{
+  name: threePositive,
+  parameters: [word : Nat],
+  result: Bool,
+  body: ((0 <? word) && (word <=? 2139095040)),
+  executable: true
+}
+
+definition{
+  name: threeMomentsStep,
+  parameters: [phase : Nat, frame : Frame, operation : Nat],
+  result: Step,
+  body: (if (phase <? 4) then (if (phase <? 2) then (if (phase <? 1) then (ctor Step.integer (project frame b) 4 0) else (ctor Step.arithmetic 2 (project frame a) (project frame a) 1)) else (if (phase <? 3) then (ctor Step.arithmetic 2 (project frame y) (project frame a) 2) else (ctor Step.arithmetic 2 (project frame z) (project frame x) 2))) else (if (phase <? 6) then (if (phase <? 5) then (ctor Step.arithmetic operation (project frame c) (project frame z) 2) else (ctor Step.arithmetic 2 (project frame y) (project frame x) 1)) else (if (phase <? 7) then (ctor Step.arithmetic 2 (project frame y) (project frame x) 1) else (if (phase <? 8) then (ctor Step.arithmetic operation (project frame d) (project frame y) 1) else (ctor Step.signedPair (project frame z) (project frame y)))))),
+  executable: true
+}
+
+definition{
+  name: threeInverseStep,
+  parameters: [phase : Nat, frame : Frame],
+  result: Step,
+  body: (if ((prim remainder (project frame a) 2147483648 0 : Nat) <? 646978941) then (ctor Step.value 0) else (if (phase <? 1) then (ctor Step.arithmetic 3 3229614080 (project frame a) 0) else (ctor Step.value (project frame x)))),
+  executable: true
+}
+
+definition{
+  name: threeInitialCodeStep,
+  parameters: [phase : Nat, frame : Frame],
+  result: Step,
+  body: (if (phase <? 2) then (if (phase <? 1) then (ctor Step.arithmetic 2 (project frame a) (project frame b) 0) else (ctor Step.arithmetic 0 1262485504 (project frame x) 0)) else (if (phase <? 3) then (ctor Step.round (project frame x) 4 0) else (ctor Step.value (project frame x)))),
+  executable: true
+}
+
+definition{
+  name: threeFinalCodeStep,
+  parameters: [phase : Nat, frame : Frame],
+  result: Step,
+  body: (if (phase <? 2) then (if (phase <? 1) then (ctor Step.arithmetic 3 (project frame a) (project frame b) 0) else (ctor Step.arithmetic 0 1262485504 (project frame x) 0)) else (if (phase <? 3) then (ctor Step.round (project frame x) 4 0) else (ctor Step.value (project frame x)))),
+  executable: true
+}
+
+definition{
+  name: threeAddStep,
+  parameters: [phase : Nat, frame : Frame],
+  result: Step,
+  body: (threeMomentsStep phase frame 0),
+  executable: true
+}
+
+definition{
+  name: threeRemoveStep,
+  parameters: [phase : Nat, frame : Frame],
+  result: Step,
+  body: (threeMomentsStep phase frame 1),
+  executable: true
+}
+
+definition{
+  name: threeProposalStep,
+  parameters: [phase : Nat, frame : Frame],
+  result: Step,
+  body: (if (threePositive (project frame b)) then (if (phase <? 2) then (if (phase <? 1) then (ctor Step.arithmetic 2 (project frame a) (project frame c) 0) else (ctor Step.arithmetic 3 (project frame x) (project frame b) 0)) else (if (phase <? 3) then (ctor Step.arithmetic 0 1262485504 (project frame x) 0) else (if (phase <? 4) then (ctor Step.round (project frame x) 4 0) else (ctor Step.value (project frame x))))) else (ctor Step.value (project frame d))),
+  executable: true
+}
+
+definition{
+  name: threeImprovesStep,
+  parameters: [phase : Nat, frame : Frame],
+  result: Step,
+  body: (if (threePositive (project frame b)) then (if (phase <? 3) then (if (phase <? 1) then (ctor Step.arithmetic 2 (project frame a) (project frame a) 0) else (if (phase <? 2) then (ctor Step.arithmetic 2 (project frame x) (project frame d) 0) else (ctor Step.arithmetic 2 (project frame c) (project frame c) 1))) else (if (phase <? 4) then (ctor Step.arithmetic 2 (project frame y) (project frame b) 1) else (if (phase <? 5) then (ctor Step.compareWords (project frame x) (project frame y) 2) else (ctor Step.value (if ((project frame z) =? 2) then 1 else 0))))) else (ctor Step.value 0)),
+  executable: true
+}
+
+definition{
+  name: threeScaleStep,
+  parameters: [phase : Nat, frame : Frame],
+  result: Step,
+  body: (if (threePositive (project frame b)) then (if (phase <? 1) then (ctor Step.arithmetic 3 (project frame a) (project frame b) 0) else (ctor Step.value (project frame x))) else (ctor Step.value 0)),
+  executable: true
+}
+
+definition{
+  name: threeBaseStep,
+  parameters: [phase : Nat, frame : Frame],
+  result: Step,
+  body: (if ((prim remainder (project frame a) 2147483648 0 : Nat) =? 0) then (ctor Step.row 0 0 0 0) else (if (phase <? 2) then (if (phase <? 1) then (ctor Step.arithmetic 3 3254779904 (project frame a) 0) else (ctor Step.arithmetic 3 1065353216 (project frame x) 1)) else (if (phase <? 3) then (ctor Step.storage true (project frame y) 2) else (if (phase <? 4) then (ctor Step.storage false (project frame z) 1) else (ctor Step.row (project frame x) (project frame z) (project frame y) 0))))),
+  executable: true
+}
+
+definition{
+  name: threeLocalStep,
+  parameters: [phase : Nat, frame : Frame],
+  result: Step,
+  body: (if ((prim remainder (project frame a) 2147483648 0 : Nat) =? 0) then (ctor Step.signedPair 0 0) else (if (phase <? 3) then (if (phase <? 1) then (ctor Step.arithmetic 2 (project frame a) (project frame c) 0) else (if (phase <? 2) then (ctor Step.arithmetic 0 1262485504 (project frame x) 0) else (ctor Step.round (project frame x) 32 0))) else (if (phase <? 4) then (ctor Step.integer (project frame x) 32 1) else (if (phase <? 5) then (ctor Step.arithmetic 2 (project frame b) (project frame y) 1) else (ctor Step.signedPair (project frame x) (project frame y)))))),
+  executable: true
+}
+
+definition{
+  name: threeFields,
+  parameters: [byte : Nat, phase : Nat],
+  result: Step,
+  body: (if (byte <? 32) then (if (phase <? 8) then (ctor Step.threeField 0 (byte + (prim multiply 32 phase : Nat)) 4 2 (if (phase <? 4) then (if (phase <? 2) then (if (phase =? 0) then 1 else 2) else (if (phase =? 2) then 4 else 8)) else (if (phase <? 6) then (if (phase =? 4) then 16 else 32) else (if (phase =? 6) then 64 else 128)))) else (ctor Step.value 0)) else (if (byte <? 96) then (if (phase <? 4) then (ctor Step.threeField 0 (((prim multiply (prim quotient (prim subtract byte 32 : Nat) 32 0 : Nat) 128 : Nat) + (prim remainder (prim subtract byte 32 : Nat) 32 0 : Nat)) + (prim multiply 32 phase : Nat)) 1 4 (if ((prim multiply 2 phase : Nat) <? 4) then (if ((prim multiply 2 phase : Nat) <? 2) then (if ((prim multiply 2 phase : Nat) =? 0) then 1 else 2) else (if ((prim multiply 2 phase : Nat) =? 2) then 4 else 8)) else (if ((prim multiply 2 phase : Nat) <? 6) then (if ((prim multiply 2 phase : Nat) =? 4) then 16 else 32) else (if ((prim multiply 2 phase : Nat) =? 6) then 64 else 128)))) else (ctor Step.value 0)) else (if (byte <? 104) then (if (phase <? 2) then (ctor Step.threeField 1 ((prim subtract byte 96 : Nat) + (prim multiply 8 phase : Nat)) 1 16 (if (phase =? 0) then 1 else 16)) else (ctor Step.value 0)) else (if (byte <? 108) then (if (phase <? 4) then (ctor Step.threeField 1 ((prim subtract byte 104 : Nat) + (prim multiply 4 phase : Nat)) 16 4 (if ((prim multiply 2 phase : Nat) <? 4) then (if ((prim multiply 2 phase : Nat) <? 2) then (if ((prim multiply 2 phase : Nat) =? 0) then 1 else 2) else (if ((prim multiply 2 phase : Nat) =? 2) then 4 else 8)) else (if ((prim multiply 2 phase : Nat) <? 6) then (if ((prim multiply 2 phase : Nat) =? 4) then 16 else 32) else (if ((prim multiply 2 phase : Nat) =? 6) then 64 else 128)))) else (ctor Step.value 0)) else (if (byte <? 110) then (if (phase =? 0) then (ctor Step.threeField 2 0 (if (byte =? 108) then 1 else 256) 256 1) else (ctor Step.value 0)) else (ctor Step.refuse)))))),
+  executable: true
+}
+
+definition{
   name: evaluate,
   parameters: [request : Request],
   result: Step,
@@ -125,9 +242,35 @@ definition{
     | Request.sixLocal phase frame => (sixLocalStep phase frame)
     | Request.sixLane phase frame => (sixLaneStep phase frame)
     | Request.sixPlaneBytes a b c d => (if (((a <? 64) && (b <? 64)) && ((c <? 64) && (d <? 64))) then (sixPlanes a b c d) else (ctor Step.refuse))
-    | Request.roundedCode word center => (if (center =? 32) then (ctor Step.value (if (word <=? 1262485472) then 0 else (if (1262485535 <=? word) then 63 else (prim remainder ((prim remainder word 64 0 : Nat) + 32) 64 0 : Nat)))) else (if (center =? 128) then (ctor Step.value (if (word <=? 1262485376) then 0 else (if (1262485631 <=? word) then 255 else (prim remainder ((prim remainder word 256 0 : Nat) + 128) 256 0 : Nat)))) else (ctor Step.refuse)))),
+    | Request.threeGeometry input output => (if ((input =? 256) && (output =? 110)) then (ctor Step.row 16 5 32 64) else (ctor Step.refuse))
+    | Request.threeInverse phase frame => (threeInverseStep phase frame)
+    | Request.threeInitialCode phase frame => (threeInitialCodeStep phase frame)
+    | Request.threeFinalCode phase frame => (threeFinalCodeStep phase frame)
+    | Request.threeAdd phase frame => (threeAddStep phase frame)
+    | Request.threeRemove phase frame => (threeRemoveStep phase frame)
+    | Request.threeProposal phase frame => (threeProposalStep phase frame)
+    | Request.threeImproves phase frame => (threeImprovesStep phase frame)
+    | Request.threeScale phase frame => (threeScaleStep phase frame)
+    | Request.threeBase phase frame => (threeBaseStep phase frame)
+    | Request.threeLocal phase frame => (threeLocalStep phase frame)
+    | Request.threeByteField byte phase => (threeFields byte phase)
+    | Request.roundedCode word center => (if (center =? 4) then (ctor Step.value (if (word <=? 1262485500) then 0 else (if (1262485507 <=? word) then 7 else (prim remainder ((prim remainder word 8 0 : Nat) + 4) 8 0 : Nat)))) else (if (center =? 32) then (ctor Step.value (if (word <=? 1262485472) then 0 else (if (1262485535 <=? word) then 63 else (prim remainder ((prim remainder word 64 0 : Nat) + 32) 64 0 : Nat)))) else (if (center =? 128) then (ctor Step.value (if (word <=? 1262485376) then 0 else (if (1262485631 <=? word) then 255 else (prim remainder ((prim remainder word 256 0 : Nat) + 128) 256 0 : Nat)))) else (ctor Step.refuse))))),
   executable: true,
   production: {effects: [overflow], targets: [rust-core]}
+}
+
+theorem{
+  name: threeCompleteBlock,
+  parameters: [],
+  statement: ((evaluate (ctor Request.threeGeometry 256 110)) = (ctor Step.row 16 5 32 64)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: threeHighMaskFinalLane,
+  parameters: [],
+  statement: ((evaluate (ctor Request.threeByteField 31 7)) = (ctor Step.threeField 0 255 4 2 128)),
+  proof: reflexivity{}
 }
 
 theorem{
