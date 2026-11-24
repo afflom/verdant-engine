@@ -170,6 +170,15 @@ jobs:
             git init -b stitch-mirror "$mirror_tmp"
             git -C "$mirror_tmp" remote add origin "$remote_url"
           fi
+          # Cargo caches each name/version by registry URL. Keep the checked release
+          # index at its own URL, with downloads bound to that GitHub release.
+          release_index="$mirror_tmp/v${VER}/crates/index"
+          if [[ -e "$release_index" ]]; then
+            diff -qr -- dist/crates/index "$release_index"
+          else
+            mkdir -p -- "$(dirname -- "$release_index")"
+            cp -R -- dist/crates/index "$release_index"
+          fi
           mkdir -p "$mirror_tmp/v${VER}/shards"
           cp dist/stitch-release/shards/*.stch "$mirror_tmp/v${VER}/shards/"
           cp dist/stitch-release/frame-pin.json "$mirror_tmp/v${VER}/frame-pin.json"
