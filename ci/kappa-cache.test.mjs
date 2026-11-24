@@ -70,7 +70,7 @@ test("a holo altered and fingerprinted again is refused by inner blob verificati
   body[Math.floor(body.length / 2)] ^= 1;
   const forged = Buffer.concat([body, Buffer.from(kappa(body).slice("blake3:".length), "hex")]);
   await assert.rejects(verify(forged), /content blob does not hash to its label/);
-  const otherGenuine = readFileSync(new URL("../site/app.holo", import.meta.url));
+  const otherGenuine = readFileSync(new URL("../site/generated/stitch-proof.holo", import.meta.url));
   const checked = await verify(otherGenuine);
   assert.notEqual(checked.fingerprint, fixture.subarray(fixture.length - 32).toString("hex"));
 });
