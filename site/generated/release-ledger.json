@@ -5,9 +5,9 @@
   "currentVersion": {
     "major": 2,
     "minor": 21,
-    "patch": 1
+    "patch": 2
   },
-  "releaseEpoch": 27,
+  "releaseEpoch": 28,
   "history": [
     {
       "version": "0.1.0",
@@ -217,6 +217,13 @@
       "releaseEpoch": 27,
       "bumpKind": "patch",
       "summary": "v2.21.1: certified grouped signed three-bit weight encoding (VTK-52)",
+      "citedAuthority": "AUTH-SEMVER-CHANGE-KPI"
+    },
+    {
+      "version": "2.21.2",
+      "releaseEpoch": 28,
+      "bumpKind": "patch",
+      "summary": "v2.21.2: certified nonlinear four-bit weight encoding (VTK-53)",
       "citedAuthority": "AUTH-SEMVER-CHANGE-KPI"
     }
   ]

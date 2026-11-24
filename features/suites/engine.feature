@@ -837,3 +837,9 @@ Feature: engine
     Given complete binary32 blocks with ties, independent group scales and zero groups
     When the grouped signed three-bit encoder packs its scale fields and coefficients
     Then each byte matches the imported GGML encoder and a refused request preserves the output
+
+  @VTK-53 @build
+  Scenario: Verdant encodes nonlinear four-bit codebook blocks with single or grouped scales against the imported GGML reference
+    Given finite weights and a nonlinear codebook representation
+    When Verdant fits and packs the coefficients and scales
+    Then the encoded blocks agree with their imported GGML reference

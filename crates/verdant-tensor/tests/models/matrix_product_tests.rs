@@ -9,6 +9,7 @@ const GGML_VECTOR_DRIVER: &str = r#"
 #include <cmath>
 #include <cstdio>
 #include <cstdint>
+#include <cstdlib>
 #include <cstring>
 #include <vector>
 #include <type_traits>
@@ -67,6 +68,25 @@ static int encode_blocks(void (*encode)(const float *, Block *, int64_t)) {
       for (size_t i = 0; i < sizeof(encoded); ++i) std::printf("%u\n", unsigned(bytes[i]));
     }
     return std::ferror(stdin) ? 3 : 0;
+}
+// The reference leaves the NL lane indices uninitialized below GROUP_MAX_EPS.
+// In that branch every code at its specified zero scale decodes to zero. Check
+// the canonical zero payload with GGML's decoder and compare all other bytes.
+static void reference_nonlinear_four(const float *x, block_iq4_nl *encoded, int64_t lanes) {
+    float peak = 0;
+    for (int64_t i = 0; i < lanes; ++i) peak = std::fmax(peak, std::fabs(x[i]));
+    if (peak >= 1e-15f) {
+        quantize_row_iq4_nl_ref(x, encoded, lanes);
+        // When finite weights overflow both moments, GGML emits identical
+        // coefficients and opposite NaN scale signs on x86-64 and AArch64.
+        // Preserve the payload and compare the portable sign for this NaN.
+        if (std::isnan(GGML_FP16_TO_FP32(encoded->d))) encoded->d &= 0x7fff;
+        return;
+    }
+    *encoded = {};
+    float decoded[QK4_NL];
+    dequantize_row_iq4_nl(encoded, decoded, lanes);
+    for (float value : decoded) if (value != 0) std::abort();
 }
 // GGML casts its exponent directly from float to uint8_t. A negative integer
 // is outside that conversion's domain. Verdant defines those finite inputs by
@@ -450,6 +470,8 @@ int main(int argc, char **argv) {
   if (!std::strcmp(argv[1], "grouped-affine-2")) return encode_blocks<QK_K>(quantize_row_q2_K_ref);
   if (!std::strcmp(argv[1], "grouped-affine-4")) return encode_blocks<QK_K>(quantize_row_q4_K_ref);
   if (!std::strcmp(argv[1], "grouped-affine-5")) return encode_blocks<QK_K>(quantize_row_q5_K_ref);
+  if (!std::strcmp(argv[1], "nonlinear-four-encode")) return encode_blocks<QK4_NL>(reference_nonlinear_four);
+  if (!std::strcmp(argv[1], "grouped-nonlinear-four-encode")) return encode_blocks<QK_K>(quantize_row_iq4_xs_ref);
   if (!std::strcmp(argv[1], "signed-three-encode")) return encode_blocks<QK_K>(quantize_row_q3_K_ref);
   if (!std::strcmp(argv[1], "signed-six-encode")) return encode_blocks<QK_K>(quantize_row_q6_K_ref);
   if (!std::strcmp(argv[1], "mxfp4-encode")) return encode_blocks<QK_MXFP4>(reference_mxfp4);
@@ -3090,6 +3112,17 @@ fn compact_float_weight_encoding_vtk_48() {
 }
 
 #[test]
+fn nonlinear_four_encoding_vtk_53() {
+    use super::PackedWeightEncoding::{GroupedNonlinearFour, NonlinearFour};
+    certified_encoding_model(
+        "verdant_grouped_six_encoding",
+        "VerdantEngine.GroupedSixEncoding.evaluate",
+    );
+    compare_weight_encoders::<32>(&[(NonlinearFour, 18, "nonlinear-four-encode")]);
+    compare_weight_encoders::<256>(&[(GroupedNonlinearFour, 136, "grouped-nonlinear-four-encode")]);
+}
+
+#[test]
 fn grouped_signed_three_encoding_vtk_52() {
     certified_encoding_model(
         "verdant_grouped_six_encoding",
@@ -3248,6 +3281,25 @@ fn compare_weight_encoders<const N: usize>(formats: &[(super::PackedWeightEncodi
                     };
                     scale * (local * ((i % 16) as f32 - 6.0) / 8.0 + shift)
                 }));
+            }
+        }
+    }
+    if formats
+        .iter()
+        .any(|(_, _, mode)| mode.contains("nonlinear-four-encode"))
+    {
+        for midpoint in [
+            -115.5_f32, -93.5, -74.0, -57.0, -42.0, -28.5, -16.0, -4.5, 7.0, 19.0, 31.5, 45.5,
+            61.0, 79.0, 101.0,
+        ] {
+            for candidate in [midpoint.next_down(), midpoint, midpoint.next_up()] {
+                for sign in [-1.0, 1.0] {
+                    rows.push(std::array::from_fn(|i| {
+                        let amplitude =
+                            [1.0, 0.0, 0.5, -0.125, 3.0, 0.0078125, -2.0, 1.0][(i / 32) % 8];
+                        sign * amplitude * (if i % 32 == 0 { -127.0 } else { candidate })
+                    }));
+                }
             }
         }
     }

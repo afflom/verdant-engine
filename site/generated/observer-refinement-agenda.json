@@ -1,13 +1,13 @@
 {
   "spec": "verdant/observer-refinement-agenda/1",
-  "releaseVersion": "2.21.1",
-  "releaseEpoch": 27,
+  "releaseVersion": "2.21.2",
+  "releaseEpoch": 28,
   "observerKappaHex": "6cd1e9dc15167b134d9887883bf06a5158c9b132f076e10a30e521ea62e0a17b",
   "overallRefinementScorePermille": 976,
   "liveMetrics": {
-    "wasmCoreBytes": 153490,
-    "wasmUorcBytes": 1713280,
-    "releaseCapsuleBytes": 968696,
+    "wasmCoreBytes": 153294,
+    "wasmUorcBytes": 1713276,
+    "releaseCapsuleBytes": 968733,
     "blankFrameBytes": 29630,
     "maxHandwrittenRustFileLines": 1247,
     "maxJsFileLines": 920,
@@ -67,7 +67,7 @@
       "vsmSystem": "VSM-S4",
       "viewpointId": "roadmap-kpi-strategy",
       "ownedFileCount": 7,
-      "maxFileLines": 839,
+      "maxFileLines": 845,
       "heaviestFile": "features/suites/engine.feature",
       "healthScorePermille": 1000
     },
@@ -222,15 +222,15 @@
       "citedAuthority": "AUTH-STITCH-SELF-HOSTING",
       "ratchetLayer": "surface-wasm",
       "priority": "medium",
-      "currentValue": "verdant-uorc.wasm 1713280 B · .holo 968696 B · Blank Frame 29630 B (1090 B headroom)",
+      "currentValue": "verdant-uorc.wasm 1713276 B · .holo 968733 B · Blank Frame 29630 B (1090 B headroom)",
       "targetValue": "verdant-uorc.wasm <= 1560576 B and gzipped .holo <= 1.0 MiB",
       "summary": "Keep browser verdant-uorc.wasm ultra-lean (< 1.5 MiB) and drive gzipped .holo release capsules below 1.0 MiB for instant Blank Frame cold boots.",
       "concreteActions": [
         "Keep uorc-ncm-decode native-only and audit gltf-json / serde_json monomorphizations inside verdant-uorc.wasm.",
         "Maintain Blank Frame strictly under 30720 B with DecompressionStream('gzip')."
       ],
-      "kappaHex": "7965255a288e970e6d354fdff90cb079c83468a465f4f46f933bcf786315a0d6"
+      "kappaHex": "40457804ac1f99fd3c559b8caaa9a3de0f166480a0a5fb58bd3be0317e374794"
     }
   ],
-  "agendaKappaHex": "3b0185784df030a76904e996cbac963346584d83616dc438747091a637538720"
+  "agendaKappaHex": "65bf7b2cb04bf62f6203e3ffa51606520bbb9a5669d4de40cdf2e90f1e5f134f"
 }

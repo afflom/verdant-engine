@@ -5110,7 +5110,7 @@ reason = "type"
 detail = "type outside the lift: f32"
 
 [[residue]]
-kappa = "d2b1a1cc5135e7b1c8cdef29563c417924f6b6d95fe0f08ade1679af1bcfbcc8"
+kappa = "111221dbda964f04af866e89fd2b3e78a808af44cf61516cf0916ede5eaf3aeb"
 function = "verdant_tensor::linear::weight_encoding::encode_weight_block"
 reason = "signature"
 detail = "signature outside the lift: generic, async, unsafe or variadic"

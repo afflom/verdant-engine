@@ -51,6 +51,10 @@ pub enum PackedWeightEncoding {
     GroupedSignedSix,
     /// Sixteen signed three-bit groups with packed six-bit scales.
     GroupedSignedThree,
+    /// A nonlinear four-bit codebook and a single binary16 scale.
+    NonlinearFour,
+    /// Eight nonlinear codebook groups with packed six-bit scale multipliers.
+    GroupedNonlinearFour,
     /// Sixteen groups of unsigned two-bit weights with scale and minimum.
     GroupedAffineTwo,
     /// Eight groups of unsigned four-bit weights with scale and minimum.
@@ -393,7 +397,10 @@ pub fn encode_weight_block<I: AsRef<[f32]> + ?Sized>(
         output.copy_from_slice(&packet[..output.len()]);
         return Ok(());
     }
-    if matches!(kind, GroupedSignedSix | GroupedSignedThree) {
+    if matches!(
+        kind,
+        GroupedSignedSix | GroupedSignedThree | NonlinearFour | GroupedNonlinearFour
+    ) {
         use verdant_grouped_six_encoding::{run, Adt0 as Request, Adt1 as Frame, Adt2 as Step};
         let invalid = || TensorComputeError::InvalidKernelSpecification {
             kernel_name: "GroupedSixEncoding".into(),
@@ -445,6 +452,129 @@ pub fn encode_weight_block<I: AsRef<[f32]> + ?Sized>(
                 phase += 1;
             }
         };
+        let pack_fields = |dest: &mut [u8], nonlinear: Option<bool>, banks: &[&[u64]]| {
+            let mut packed = [0; PAIRS * PAIRS];
+            let packet = packed.get_mut(..dest.len()).ok_or_else(invalid)?;
+            for (byte, out) in packet.iter_mut().enumerate() {
+                let mut accumulator = 0;
+                for phase in 0.. {
+                    let query = match nonlinear {
+                        None => Request::C21(byte as u64, phase),
+                        Some(grouped) => Request::C28(grouped, byte as u64, phase),
+                    };
+                    match plan(query)? {
+                        Step::C2(0) => break,
+                        Step::C10(bank, index, divisor, radix, place) => {
+                            let value = banks
+                                .get(bank as usize)
+                                .and_then(|b| b.get(index as usize))
+                                .ok_or_else(invalid)?;
+                            accumulator = verdant_affine_insert_field::run(
+                                accumulator,
+                                *value,
+                                divisor,
+                                radix,
+                                place,
+                            )
+                            .map_err(|_| invalid())?;
+                        }
+                        _ => return Err(invalid()),
+                    }
+                }
+                *out = u8::try_from(accumulator).map_err(|_| invalid())?;
+            }
+            dest.copy_from_slice(packet);
+            Ok(())
+        };
+        if matches!(kind, NonlinearFour | GroupedNonlinearFour) {
+            let grouped = kind == GroupedNonlinearFour;
+            let Step::C1(width, trials, groups, _) = plan(Request::C22(
+                grouped,
+                input.len() as u64,
+                output.len() as u64,
+            ))?
+            else {
+                return Err(invalid());
+            };
+            let width = width as usize;
+            let mut levels = [0; PAIRS * PAIRS];
+            let mut scales = [0; PAIRS];
+            let scales = scales.get_mut(..groups as usize).ok_or_else(invalid)?;
+            let mut peak_scale = 0;
+            for ((group, codes), scale) in input
+                .chunks_exact(width)
+                .zip(levels.chunks_exact_mut(width))
+                .zip(scales.iter_mut())
+            {
+                let peak = group.iter().try_fold(0, |peak, value| {
+                    word(plan(Request::C1(true, peak, value.to_bits().into()))?)
+                })?;
+                let mut best = 0;
+                for trial in 0..trials {
+                    let inverse =
+                        word(calculate(Request::C23, peak, trial, u64::from(grouped), 0)?)?;
+                    if inverse == 0 {
+                        break;
+                    }
+                    let (mut xy, mut yy) = (0, 0);
+                    for (lane, original) in group.iter().zip(codes.iter_mut()) {
+                        let Step::C1(next_xy, next_yy, level, _) =
+                            calculate(Request::C24, lane.to_bits().into(), inverse, xy, yy)?
+                        else {
+                            return Err(invalid());
+                        };
+                        (xy, yy) = (next_xy, next_yy);
+                        if !grouped {
+                            *original = level;
+                        }
+                    }
+                    match calculate(Request::C4, u64::from(trial == 0), xy, yy, best)? {
+                        Step::C4(candidate, score) => (*scale, best) = (candidate, score),
+                        Step::C2(0) => {}
+                        _ => return Err(invalid()),
+                    }
+                }
+                peak_scale = word(plan(Request::C1(false, peak_scale, *scale))?)?;
+            }
+            let half = if grouped {
+                let Step::C1(half, base, inverse, _) =
+                    calculate(Request::C26, peak_scale, 0, 0, 0)?
+                else {
+                    return Err(invalid());
+                };
+                for ((group, codes), scale) in input
+                    .chunks_exact(width)
+                    .zip(levels.chunks_exact_mut(width))
+                    .zip(scales.iter_mut())
+                {
+                    let Step::C3(header, local_inverse) =
+                        calculate(Request::C27, base, inverse, *scale, 0)?
+                    else {
+                        return Err(invalid());
+                    };
+                    *scale = header;
+                    for (lane, code) in group.iter().zip(codes) {
+                        *code = word(calculate(
+                            Request::C25,
+                            lane.to_bits().into(),
+                            local_inverse,
+                            0,
+                            0,
+                        )?)?;
+                    }
+                }
+                half
+            } else {
+                super::convert_float_storage(0, 1, scales[0])
+                    .map_err(|_| invalid())?
+                    .ok_or_else(invalid)?
+            };
+            return pack_fields(
+                output,
+                Some(grouped),
+                &[&levels, scales, std::slice::from_ref(&half)],
+            );
+        }
         if kind == GroupedSignedThree {
             let Step::C1(width, passes, _, _) =
                 plan(Request::C10(input.len() as u64, output.len() as u64))?
@@ -540,39 +670,11 @@ pub fn encode_weight_block<I: AsRef<[f32]> + ?Sized>(
                     )?)?;
                 }
             }
-            let banks = [
-                levels.as_slice(),
-                scales.as_slice(),
-                std::slice::from_ref(&half),
-            ];
-            let mut packed = [0; PAIRS * PAIRS];
-            let packet = packed.get_mut(..output.len()).ok_or_else(invalid)?;
-            for (byte, out) in packet.iter_mut().enumerate() {
-                let mut accumulator = 0;
-                for phase in 0.. {
-                    match plan(Request::C21(byte as u64, phase))? {
-                        Step::C2(0) => break,
-                        Step::C10(bank, index, divisor, radix, place) => {
-                            let value = banks
-                                .get(bank as usize)
-                                .and_then(|b| b.get(index as usize))
-                                .ok_or_else(invalid)?;
-                            accumulator = verdant_affine_insert_field::run(
-                                accumulator,
-                                *value,
-                                divisor,
-                                radix,
-                                place,
-                            )
-                            .map_err(|_| invalid())?;
-                        }
-                        _ => return Err(invalid()),
-                    }
-                }
-                *out = u8::try_from(accumulator).map_err(|_| invalid())?;
-            }
-            output.copy_from_slice(packet);
-            return Ok(());
+            return pack_fields(
+                output,
+                None,
+                &[&levels, &scales, std::slice::from_ref(&half)],
+            );
         }
         let Step::C1(width, trials, stride, bank) =
             plan(Request::C0(input.len() as u64, output.len() as u64))?
