@@ -627,53 +627,62 @@ pub fn checked_neg_i64(p0: i64) -> Option<i64> {
     i64::checked_neg(p0)
 }
 
-pub fn f0(v0: u64, v1: u64) -> R<(u64, u64)> {
-    Ok(({
-        let a1 = v1;
-        let a2 = 1u64;
-        nat_sub(a1, a2)
-    }, {
-        let a3 = 281474976710656u64;
-        let a4 = f1(v0, v1)?;
-        nat_sub(a3, a4)
-    }))
-}
-
-pub fn f1(v0: u64, v1: u64) -> R<u64> {
-    let v2: u64 = {
-        let a5 = v0;
-        let a6 = v1;
-        let a7 = 0u64;
-        nat_quot(a5, a6, a7)
-    };
+pub fn f0(v0: u64, v1: u64, v2: u64) -> R<u64> {
     let v3: u64 = {
-        let a11 = {
-            let a8 = v0;
-            let a9 = v1;
-            let a10 = 0u64;
-            nat_rem(a8, a9, a10)
+        let a4 = v1;
+        let a5 = {
+            let a1 = v2;
+            let a2 = 16777216u64;
+            let a3 = 0u64;
+            nat_quot(a1, a2, a3)
         };
-        let a12 = 2u64;
-        nat_mul(a11, a12)?
+        nat_add(a4, a5)?
     };
-    let a22 = v2;
-    let a23 = {
-        let a13 = v1;
-        let a14 = v3;
-        if if nat_lt(a13, a14) {
+    let v4: u64 = {
+        let a9 = v0;
+        let a10 = {
+            let a6 = v3;
+            let a7 = 16777216u64;
+            let a8 = 0u64;
+            nat_quot(a6, a7, a8)
+        };
+        nat_add(a9, a10)?
+    };
+    let v5: u64 = {
+        let a11 = v3;
+        let a12 = 16777216u64;
+        let a13 = 0u64;
+        nat_rem(a11, a12, a13)
+    };
+    let a28 = v4;
+    let a29 = {
+        let a14 = 8388608u64;
+        let a15 = v5;
+        if if nat_lt(a14, a15) {
             true
         } else {
-            let a15 = v3;
-            let a16 = v1;
-            if nat_eq(a15, a16) {
-                let a20 = {
-                    let a17 = v2;
-                    let a18 = 2u64;
-                    let a19 = 0u64;
-                    nat_rem(a17, a18, a19)
+            let a16 = v5;
+            let a17 = 8388608u64;
+            if nat_eq(a16, a17) {
+                let a21 = 0u64;
+                let a22 = {
+                    let a18 = v2;
+                    let a19 = 16777216u64;
+                    let a20 = 0u64;
+                    nat_rem(a18, a19, a20)
                 };
-                let a21 = 1u64;
-                nat_eq(a20, a21)
+                if nat_lt(a21, a22) {
+                    true
+                } else {
+                    let a26 = {
+                        let a23 = v4;
+                        let a24 = 2u64;
+                        let a25 = 0u64;
+                        nat_rem(a23, a24, a25)
+                    };
+                    let a27 = 1u64;
+                    nat_eq(a26, a27)
+                }
             } else {
                 false
             }
@@ -683,5 +692,5 @@ pub fn f1(v0: u64, v1: u64) -> R<u64> {
             0u64
         }
     };
-    nat_add(a22, a23)
+    nat_add(a28, a29)
 }

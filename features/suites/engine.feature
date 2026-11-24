@@ -849,3 +849,9 @@ Feature: engine
     Given binary32 words at approximation boundaries and across the exponent range
     When the verified scalar path evaluates the error function and Gaussian activation
     Then the results agree with the error function used by the pinned GGML CPU kernel
+
+  @VTK-55 @build
+  Scenario: A certified binary32 exponential increment preserves tiny signed operands and agrees with the C and GGML oracles
+    Given binary32 inputs around zero and across the exponential range
+    When the certified increment evaluates each input
+    Then the result agrees with the independent exponential-minus-one oracle

@@ -5,9 +5,9 @@
   "currentVersion": {
     "major": 2,
     "minor": 21,
-    "patch": 3
+    "patch": 4
   },
-  "releaseEpoch": 29,
+  "releaseEpoch": 30,
   "history": [
     {
       "version": "0.1.0",
@@ -231,6 +231,13 @@
       "releaseEpoch": 29,
       "bumpKind": "patch",
       "summary": "v2.21.3: certified binary32 error function for Gaussian activations (VTK-54)",
+      "citedAuthority": "AUTH-SEMVER-CHANGE-KPI"
+    },
+    {
+      "version": "2.21.4",
+      "releaseEpoch": 30,
+      "bumpKind": "patch",
+      "summary": "v2.21.4: certified binary32 exponential increment in unified tensor scope (VTK-55)",
       "citedAuthority": "AUTH-SEMVER-CHANGE-KPI"
     }
   ]

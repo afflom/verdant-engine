@@ -154,6 +154,7 @@ model does not sanction.
 | `VTK-52` | `build` | Verdant fits grouped signed three-bit blocks by refining individual coefficients and emits the packed coefficients and scales |
 | `VTK-53` | `build` | Verdant encodes nonlinear four-bit codebook blocks with single or grouped scales against the imported GGML reference |
 | `VTK-54` | `build` | Verdant evaluates the binary32 error function and its Gaussian activation against the imported GGML CPU |
+| `VTK-55` | `build` | A certified binary32 exponential increment preserves tiny signed operands and agrees with the C and GGML oracles |
 
 ## fidelity
 

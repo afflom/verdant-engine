@@ -650,7 +650,7 @@ pub fn f0(v0: u64, v1: u64) -> R<u64> {
         let a4 = 130u64;
         if nat_lt(a3, a4) {
             f1(v1, f2({
-                let a5 = 138u64;
+                let a5 = 162u64;
                 let a6 = v0;
                 nat_sub(a5, a6)
             })?)
@@ -669,7 +669,7 @@ pub fn f0(v0: u64, v1: u64) -> R<u64> {
                     let a12 = 8388608u64;
                     nat_mul(a11, a12)?
                 };
-                let a14 = f1(v1, 256u64)?;
+                let a14 = f1(v1, 4294967296u64)?;
                 nat_add(a13, a14)
             }
         }

@@ -340,7 +340,7 @@ fn float_unary_vtk_06() {
 #[test]
 fn float_unary_refusals_vtk_06() {
     for &(operation, source, destination, bits) in &[
-        (13, 0, 0, 0),
+        (14, 0, 0, 0),
         (0, 2, 0, 0),
         (0, 0, 1, 0),
         (0, 1, 30, 0),

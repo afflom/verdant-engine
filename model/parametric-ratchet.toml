@@ -58,7 +58,7 @@ max_unlifted_workspace_modules = 0
 
 [frontier_ratchet]
 frontier_register = "frontier.toml"
-frontier_rust_tree_sha256 = "bbd6a0459a5667439238476a452487479c87bfe029d99d9a8ecc851a1f802c1e"
+frontier_rust_tree_sha256 = "02d080803b0c287a44ba9ea9d578e6a239314a4a294c17e532e55fd42e68b35d"
 min_lifted_functions = 586
 max_residue_functions = 1150
 max_uncertified_functions = 1302
@@ -345,6 +345,11 @@ role = "Compose certified binary32 products with the tangent and logistic forms 
 path = "app/src/HyperbolicTangent.lex.tex"
 stratum = 1
 role = "Binary32 tangent range selection, odd-series coefficients, exponential reconstruction and signed saturation."
+
+[[stratum_module]]
+path = "app/src/ExponentialIncrement.lex.tex"
+stratum = 1
+role = "Binary32 exponential increment using signed fixed-point recurrence and rounded mantissa packing near zero."
 
 [[stratum_module]]
 path = "app/src/NaturalExponential.lex.tex"

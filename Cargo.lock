@@ -473,7 +473,7 @@ dependencies = [
 
 [[package]]
 name = "prism-fidelity"
-version = "2.21.3"
+version = "2.21.4"
 dependencies = [
  "serde",
  "sha2 0.11.1",
@@ -506,7 +506,7 @@ dependencies = [
 
 [[package]]
 name = "repo-conformance"
-version = "2.21.3"
+version = "2.21.4"
 dependencies = [
  "prism-fidelity",
  "repo-model",
@@ -519,7 +519,7 @@ dependencies = [
 
 [[package]]
 name = "repo-model"
-version = "2.21.3"
+version = "2.21.4"
 dependencies = [
  "serde",
  "sha2 0.11.1",
@@ -794,14 +794,14 @@ checksum = "daf8dba3b7eb870caf1ddeed7bc9d2a049f3cfdfae7cb521b087cc33ae4c49da"
 
 [[package]]
 name = "verdant-cli"
-version = "2.21.3"
+version = "2.21.4"
 dependencies = [
  "verdant-core",
 ]
 
 [[package]]
 name = "verdant-core"
-version = "2.21.3"
+version = "2.21.4"
 dependencies = [
  "flate2",
  "gltf",
@@ -817,7 +817,7 @@ dependencies = [
 
 [[package]]
 name = "verdant-tensor"
-version = "2.21.3"
+version = "2.21.4"
 dependencies = [
  "proc-macro2",
  "serde",
@@ -845,6 +845,7 @@ dependencies = [
  "verdant_encoded_word",
  "verdant_error_function",
  "verdant_exponential_f32",
+ "verdant_exponential_increment",
  "verdant_exponential_scale",
  "verdant_exponential_step",
  "verdant_float_storage",
@@ -867,6 +868,8 @@ dependencies = [
  "verdant_head_slope_term",
  "verdant_head_slope_word",
  "verdant_high_f64",
+ "verdant_increment_pack",
+ "verdant_increment_term",
  "verdant_integer_f32",
  "verdant_logarithmic_admit",
  "verdant_logarithmic_inverse",
@@ -904,6 +907,7 @@ dependencies = [
  "verdant_symmetric_q8",
  "verdant_tanh",
  "verdant_unary_activate",
+ "verdant_unary_dispatch",
  "verdant_unary_plan",
  "verdant_unary_round",
  "verdant_unary_select",
@@ -916,7 +920,7 @@ dependencies = [
 
 [[package]]
 name = "verdant-wasm"
-version = "2.21.3"
+version = "2.21.4"
 dependencies = [
  "verdant-core",
 ]
@@ -1006,6 +1010,10 @@ name = "verdant_exponential_f32"
 version = "2.19.0"
 
 [[package]]
+name = "verdant_exponential_increment"
+version = "2.48.0"
+
+[[package]]
 name = "verdant_exponential_scale"
 version = "2.19.0"
 
@@ -1092,6 +1100,14 @@ version = "2.29.0"
 [[package]]
 name = "verdant_high_f64"
 version = "2.9.0"
+
+[[package]]
+name = "verdant_increment_pack"
+version = "2.48.0"
+
+[[package]]
+name = "verdant_increment_term"
+version = "2.48.0"
 
 [[package]]
 name = "verdant_integer_f32"
@@ -1242,6 +1258,10 @@ name = "verdant_unary_activate"
 version = "2.9.0"
 
 [[package]]
+name = "verdant_unary_dispatch"
+version = "2.48.0"
+
+[[package]]
 name = "verdant_unary_plan"
 version = "2.9.0"
 
@@ -1287,7 +1307,7 @@ checksum = "8c3b93199df0ab874cdf0c6a94f0a0dc3423fe41f1cafb62b8bd7b1deb277aef"
 
 [[package]]
 name = "xtask"
-version = "2.21.3"
+version = "2.21.4"
 dependencies = [
  "repo-conformance",
  "repo-model",

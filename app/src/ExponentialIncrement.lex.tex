@@ -1,0 +1,145 @@
+\begin{lexlean}{ExponentialIncrement}
+\useglossary{lexlean.std.nat@1.2.0}
+\importmodule{FloatStorage}
+\importmodule{ScalarF32}
+\importmodule{FloatUnary}
+\importmodule{NaturalExponential}
+\title{Natural number}
+\begin{semanticmodule}
+inductive{
+  name: Dispatch,
+  type_parameters: [],
+  parameters: [],
+  constructors: [
+    {name: ordinary, fields: [FloatUnary::UnaryPlan]},
+    {name: incremental, fields: [Nat]}
+  ]
+}
+
+definition{
+  name: plan,
+  parameters: [operation : Nat, source : Nat, destination : Nat, bits : Nat],
+  result: (Option Dispatch),
+  body: (if (operation =? 13) then
+    (if ((FloatStorage::knownType source) && ((source =? destination) || (destination =? 0))) then
+      (match (FloatStorage::convert source 0 bits)
+        | Option.none => (ctor Option.none [Dispatch])
+        | Option.some word => (ctor Option.some [Dispatch] (ctor Dispatch.incremental word))) else (ctor Option.none [Dispatch]))
+    else (match (FloatUnary::plan operation source destination bits)
+      | Option.none => (ctor Option.none [Dispatch])
+      | Option.some command => (ctor Option.some [Dispatch] (ctor Dispatch.ordinary command)))),
+  executable: true,
+  production: {effects: [overflow], targets: [rust-core]}
+}
+
+definition{
+  name: incrementTerm,
+  parameters: [negative : Bool, unit : Nat, positive : Nat],
+  result: Nat,
+  body: (if negative then (prim subtract unit (prim subtract positive unit : Nat) : Nat) else positive),
+  executable: true,
+  production: {effects: [overflow], targets: [rust-core]}
+}
+
+definition{
+  name: packIncrement,
+  parameters: [sign : Nat, exponent : Nat, mantissa : Nat, factor : Nat],
+  result: Nat,
+  body: (let product : Nat := (prim multiply mantissa factor : Nat); (let biased : Nat := (if (product <? 18014398509481984) then (prim subtract exponent 1 : Nat) else (if (36028797018963968 <=? product) then (exponent + 1) else exponent)); (let divisor : Nat := (if (product <? 18014398509481984) then 1073741824 else (if (36028797018963968 <=? product) then 4294967296 else 2147483648)); (sign + ((prim multiply (prim subtract biased 1 : Nat) 8388608 : Nat) + (FloatStorage::roundQuotient product divisor)))))),
+  executable: true,
+  production: {effects: [overflow], targets: [rust-core]}
+}
+
+
+inductive{
+  name: IncrementResult,
+  type_parameters: [],
+  parameters: [],
+  constructors: [
+    {name: invalid, fields: []},
+    {name: value, fields: [Nat]},
+    {name: exponential, fields: [Nat, Nat]},
+    {name: series, fields: [Bool, Nat, Nat, Nat, Nat, Nat, Nat, Nat]}
+  ]
+}
+
+definition{
+  name: increment,
+  parameters: [word : Nat],
+  result: IncrementResult,
+  body: (if (4294967295 <? word) then (ctor IncrementResult.invalid) else
+    (let magnitude : Nat := (prim remainder word 2147483648 0 : Nat);
+      (if (magnitude <=? 855638016) then (ctor IncrementResult.value word) else
+        (if (1056964608 <? magnitude) then (ctor IncrementResult.exponential word 1065353216) else
+          (let negative : Bool := (2147483647 <? word);
+            (let exponent : Nat := (prim quotient magnitude 8388608 0 : Nat);
+              (let mantissa : Nat := (8388608 + (prim remainder magnitude 8388608 0 : Nat));
+                (let shift : Nat := (if (exponent <? 119) then (prim subtract 119 exponent : Nat) else (prim subtract exponent 119 : Nat));
+                  (let scale : Nat := (ScalarF32::power shift);
+                    (let argument : Nat := (if (exponent <? 119) then (FloatStorage::roundQuotient mantissa scale) else (prim multiply mantissa scale : Nat));
+                      (ctor IncrementResult.series negative (if negative then 2147483648 else 0) exponent mantissa argument 2 10 2147483648))))))))))),
+  executable: true,
+  production: {effects: [overflow], targets: [rust-core]}
+}
+
+definition{
+  name: incrementFactor,
+  parameters: [negative : Bool, argument : Nat, lowerOrder : Nat, remaining : Nat, factor : Nat],
+  result: Nat,
+  body: (match remaining
+    | Nat.zero => factor
+    | Nat.succ rest => (incrementFactor negative argument lowerOrder rest (incrementTerm negative 2147483648 (NaturalExponential::seriesStep argument (lowerOrder + rest) factor)))),
+  recursive_argument: remaining,
+  executable: true
+}
+
+definition{
+  name: exponentialFactor,
+  parameters: [residual : Nat, remaining : Nat, factor : Nat],
+  result: Nat,
+  body: (match remaining
+    | Nat.zero => factor
+    | Nat.succ rest => (exponentialFactor residual rest (NaturalExponential::seriesStep residual (rest + 1) factor))),
+  recursive_argument: remaining,
+  executable: true
+}
+
+definition{
+  name: incrementValue,
+  parameters: [word : Nat],
+  result: (Option Nat),
+  body: (match (increment word)
+    | IncrementResult.invalid => (ctor Option.none [Nat])
+    | IncrementResult.value result => (ctor Option.some [Nat] result)
+    | IncrementResult.exponential input one => (let exp : Nat := (match (NaturalExponential::prepare input)
+      | NaturalExponential::Reduction.exact bits => bits
+      | NaturalExponential::Reduction.series scale residual order initial => (NaturalExponential::scaleResult scale (exponentialFactor residual order initial)));
+      (ctor Option.some [Nat] (ScalarF32::add exp (ScalarF32::negate one))))
+    | IncrementResult.series negative sign exponent mantissa argument lowerOrder upperOrder initial =>
+      (ctor Option.some [Nat] (packIncrement sign exponent mantissa (incrementFactor negative argument lowerOrder ((prim subtract upperOrder lowerOrder : Nat) + 1) initial)))),
+  executable: true
+}
+
+theorem{
+  name: incrementNegativeZero,
+  parameters: [],
+  statement: ((incrementValue 2147483648) = (ctor Option.some [Nat] 2147483648)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: incrementSmallestWord,
+  parameters: [],
+  statement: ((incrementValue 1) = (ctor Option.some [Nat] 1)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: incrementRejectsWideWord,
+  parameters: [],
+  statement: ((incrementValue 4294967296) = (ctor Option.none [Nat])),
+  proof: reflexivity{}
+}
+
+\end{semanticmodule}
+\end{lexlean}
