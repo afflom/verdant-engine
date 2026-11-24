@@ -5,23 +5,23 @@
 # stops the functions it counts (the detail their rows state, under its
 # cause), the one that stops the most first: the work queue.
 
-# Honesty report: 586 of 1898 functions of product code are lifted; 1154
+# Honesty report: 586 of 1897 functions of product code are lifted; 1153
 # are residue, 75 foreign and 83 effect rows.
 # Residue by cause:
 #   arithmetic: 24
-#   call: 211
-#   form: 339
+#   call: 212
+#   form: 338
 #   signature: 53
 #   statements: 21
-#   type: 500
+#   type: 499
 #   width: 6
 
 spec = "uorust/register/1"
 
 [lift]
-functions = 1898
+functions = 1897
 lifted = 586
-residue = 1154
+residue = 1153
 foreign = 75
 effect = 83
 
@@ -486,6 +486,11 @@ cause = "call"
 functions = 2
 
 [[construct]]
+construct = "calls run, which is not lifted"
+cause = "call"
+functions = 2
+
+[[construct]]
 construct = "calls sha256_digest, which is not lifted"
 cause = "call"
 functions = 2
@@ -631,11 +636,6 @@ cause = "type"
 functions = 2
 
 [[construct]]
-construct = "type outside the lift: Program"
-cause = "type"
-functions = 2
-
-[[construct]]
 construct = "type outside the lift: Ray.origin: Vec3.x: f64"
 cause = "type"
 functions = 2
@@ -747,11 +747,6 @@ functions = 1
 
 [[construct]]
 construct = "calls recover_k_of_n, which is not lifted"
-cause = "call"
-functions = 1
-
-[[construct]]
-construct = "calls run, which is not lifted"
 cause = "call"
 functions = 1
 
@@ -1001,11 +996,6 @@ cause = "form"
 functions = 1
 
 [[construct]]
-construct = "expression form outside the lift: method call .calculate"
-cause = "form"
-functions = 1
-
-[[construct]]
 construct = "expression form outside the lift: method call .char_indices"
 cause = "form"
 functions = 1
@@ -1247,6 +1237,11 @@ functions = 1
 
 [[construct]]
 construct = "type outside the lift: PhysicsWorldConfig.environment: PhysicalEnvironment.gravity_mps2: f64"
+cause = "type"
+functions = 1
+
+[[construct]]
+construct = "type outside the lift: Program"
 cause = "type"
 functions = 1
 
@@ -5019,25 +5014,19 @@ reason = "type"
 detail = "type outside the lift: GroupedQ8Block.scale: f32"
 
 [[residue]]
-kappa = "71a1fc0ba175fc006319aea7ae0758d7fa6c2127fe5ad45718ed05bdfd7284c4"
-function = "verdant_tensor::linear::grouped_affine_encoding::Fit::calculate"
-reason = "type"
-detail = "type outside the lift: Program"
-
-[[residue]]
-kappa = "395a16877ea9ccfa46838b6922591d2b4b08d3f1a5ff3bfe3fccbb4460d9eb52"
+kappa = "b83204190fadb7f49678744400b5cc73006148fcbaa70544c7fc431b27e04857"
 function = "verdant_tensor::linear::grouped_affine_encoding::Fit::error"
-reason = "form"
-detail = "expression form outside the lift: method call .calculate"
+reason = "call"
+detail = "calls run, which is not lifted"
 
 [[residue]]
-kappa = "17147f3e1959e8ec637e7414bf90933fee59969fb6091720a8ebb4644a01ccdc"
+kappa = "1aeb4a4e8dcf76d3023f658a410d07fab77eaf2470e1d198e9b7f39c7a89319d"
 function = "verdant_tensor::linear::grouped_affine_encoding::Fit::group"
 reason = "type"
 detail = "type outside the lift: &mut [u64]"
 
 [[residue]]
-kappa = "f331448104804d2e1c8c99664793e989195a87059b1803e6f23167e600cf0081"
+kappa = "25df3c9c6014d8960a4accb034ee313e524a3baabd8dd397840c9e54f7010172"
 function = "verdant_tensor::linear::grouped_affine_encoding::encode"
 reason = "type"
 detail = "type outside the lift: f32"

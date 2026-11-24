@@ -627,19 +627,56 @@ pub fn checked_neg_i64(p0: i64) -> Option<i64> {
     i64::checked_neg(p0)
 }
 
-pub fn f0(v0: u64) -> bool {
-    let a1 = v0;
-    let a2 = 4294967296u64;
-    if nat_lt(a1, a2) {
-        let a6 = {
+#[derive(Clone)]
+pub enum Adt0 {
+    C0,
+    C1(u64, u64, u64, u64),
+}
+
+pub fn f0(v0: u64, v1: u64, v2: u64) -> Adt0 {
+    let a1 = v1;
+    let a2 = 256u64;
+    if if nat_eq(a1, a2) {
+        let a7 = v2;
+        let a8 = {
             let a3 = v0;
-            let a4 = 2147483648u64;
-            let a5 = 0u64;
-            nat_rem(a3, a4, a5)
+            let a4 = 2u64;
+            if nat_eq(a3, a4) {
+                84u64
+            } else {
+                let a5 = v0;
+                let a6 = 4u64;
+                if nat_eq(a5, a6) {
+                    144u64
+                } else {
+                    176u64
+                }
+            }
         };
-        let a7 = 2139095040u64;
-        nat_lt(a6, a7)
+        nat_eq(a7, a8)
     } else {
         false
+    } {
+        let a9 = v0;
+        let a10 = 2u64;
+        if nat_eq(a9, a10) {
+            Adt0::C1(16u64, 3u64, 15u64, 16u64)
+        } else {
+            let a11 = v0;
+            let a12 = 4u64;
+            if nat_eq(a11, a12) {
+                Adt0::C1(32u64, 15u64, 63u64, 21u64)
+            } else {
+                let a13 = v0;
+                let a14 = 5u64;
+                if nat_eq(a13, a14) {
+                    Adt0::C1(32u64, 31u64, 63u64, 16u64)
+                } else {
+                    Adt0::C0
+                }
+            }
+        }
+    } else {
+        Adt0::C0
     }
 }

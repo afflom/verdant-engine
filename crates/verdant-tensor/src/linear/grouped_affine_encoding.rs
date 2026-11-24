@@ -1,11 +1,10 @@
 //! Execute the certified grouped affine fitting and bit placement plans.
-use super::{convert_float_storage, encode_small_integer, evaluate_f32_scalar};
+use super::evaluate_f32_scalar;
 use crate::{scalars, TensorComputeError};
-use verdant_affine_fit::{Adt0 as Program, Adt1 as Instruction};
+use verdant_affine_fit::{Adt0 as Equation, Adt1::C0 as Terms};
 use verdant_affine_geometry::Adt0 as Format;
 use verdant_affine_less::run as less;
 
-const REGISTERS: usize = scalars::eight_u64() as usize + 1;
 const GROUPS: usize = scalars::sixteen_u64() as usize;
 const WIDTH: usize = scalars::thirty_two_u64() as usize;
 const LANES: usize = WIDTH * scalars::eight_u64() as usize;
@@ -23,58 +22,6 @@ struct Fit {
 }
 
 impl Fit {
-    fn calculate(
-        &self,
-        program: Program,
-        input: &[u64],
-    ) -> Result<[u64; REGISTERS], TensorComputeError> {
-        let mut registers = [0; REGISTERS];
-        registers
-            .get_mut(..input.len())
-            .ok_or_else(invalid)?
-            .copy_from_slice(input);
-        for phase in 0.. {
-            let read = |slot: u64| registers.get(slot as usize).copied().ok_or_else(invalid);
-            let instruction = verdant_affine_fit::run(program.clone(), self.bits, phase);
-            let (dst, result) = match instruction {
-                Instruction::C0(op, a, b, dst) => {
-                    let value = evaluate_f32_scalar(
-                        op,
-                        f32::from_bits(read(a)? as u32),
-                        f32::from_bits(read(b)? as u32),
-                    )?;
-                    (dst, u64::from(value.to_bits()))
-                }
-                Instruction::C1(value, dst) => (dst, value),
-                Instruction::C2(a, dst) => (
-                    dst,
-                    encode_small_integer(read(a)?, 0)
-                        .map_err(|_| invalid())?
-                        .ok_or_else(invalid)?,
-                ),
-                Instruction::C3(a, limit, bias, dst) => (
-                    dst,
-                    verdant_affine_quantized::run(read(a)?, read(limit)?, read(bias)?),
-                ),
-                Instruction::C4(a, dst) => (
-                    dst,
-                    convert_float_storage(0, 1, read(a)?)
-                        .map_err(|_| invalid())?
-                        .ok_or_else(invalid)?,
-                ),
-                Instruction::C5(a, dst) => (
-                    dst,
-                    convert_float_storage(1, 0, read(a)?)
-                        .map_err(|_| invalid())?
-                        .ok_or_else(invalid)?,
-                ),
-                Instruction::C6 => return Ok(registers),
-            };
-            *registers.get_mut(dst as usize).ok_or_else(invalid)? = result;
-        }
-        unreachable!()
-    }
-
     fn error(
         &self,
         values: &[u64],
@@ -85,8 +32,11 @@ impl Fit {
     ) -> Result<u64, TensorComputeError> {
         let mut error = 0;
         for ((&x, &w), &level) in values.iter().zip(weights).zip(codes) {
-            let [_, _, _, _, _, sum, ..] =
-                self.calculate(Program::C11, &[x, w, level, scale, minimum, error])?;
+            let Terms(sum, _, _) = verdant_affine_fit::run(
+                Equation::C10(x, w, level, scale, minimum, error),
+                self.bits,
+            )
+            .map_err(|_| invalid())?;
             error = sum;
         }
         Ok(error)
@@ -104,13 +54,23 @@ impl Fit {
                 maximum = x;
             }
             if self.bits != scalars::two_u64() {
-                sum_squares = self.calculate(Program::C0, &[x, sum_squares])?[1];
+                sum_squares = {
+                    let Terms(value, _, _) =
+                        verdant_affine_fit::run(Equation::C0(x, sum_squares), self.bits)
+                            .map_err(|_| invalid())?;
+                    value
+                };
             }
         }
         let rms = if self.bits == scalars::two_u64() {
             0
         } else {
-            self.calculate(Program::C1, &[sum_squares])?[0]
+            {
+                let Terms(value, _, _) =
+                    verdant_affine_fit::run(Equation::C1(sum_squares), self.bits)
+                        .map_err(|_| invalid())?;
+                value
+            }
         };
         if less(0, minimum) {
             minimum = 0;
@@ -127,12 +87,19 @@ impl Fit {
         let mut sum_w = 0;
         let mut sum_x = 0;
         for (&x, w) in values.iter().zip(&mut weights) {
-            *w = self.calculate(Program::C2, &[x, rms])?[0];
-            let [_, _, next_w, next_x, ..] = self.calculate(Program::C3, &[x, *w, sum_w, sum_x])?;
+            *w = {
+                let Terms(value, _, _) = verdant_affine_fit::run(Equation::C2(x, rms), self.bits)
+                    .map_err(|_| invalid())?;
+                value
+            };
+            let Terms(next_w, next_x, _) =
+                verdant_affine_fit::run(Equation::C3(x, *w, sum_w, sum_x), self.bits)
+                    .map_err(|_| invalid())?;
             (sum_w, sum_x) = (next_w, next_x);
         }
-        let [inverse, mut scale, ..] =
-            self.calculate(Program::C4, &[maximum, minimum, self.level_max])?;
+        let Terms(inverse, mut scale, _) =
+            verdant_affine_fit::run(Equation::C4(maximum, minimum, self.level_max), self.bits)
+                .map_err(|_| invalid())?;
         for (&x, code) in values.iter().zip(codes.iter_mut()) {
             *code = verdant_affine_lane_code::run(x, minimum, inverse, self.level_max)
                 .map_err(|_| invalid())?;
@@ -140,25 +107,41 @@ impl Fit {
         let mut best = self.error(values, &weights, codes, scale, minimum)?;
         let mut candidate = [0; WIDTH];
         for trial in 0..self.trials {
-            let [inverse, ..] =
-                self.calculate(Program::C5, &[maximum, minimum, trial, self.level_max])?;
+            let Terms(inverse, _, _) = verdant_affine_fit::run(
+                Equation::C5(maximum, minimum, trial, self.level_max),
+                self.bits,
+            )
+            .map_err(|_| invalid())?;
             let (mut sum_l, mut sum_l2, mut sum_xl) = (0, 0, 0);
             for ((&x, &w), slot) in values.iter().zip(&weights).zip(&mut candidate) {
                 *slot = verdant_affine_lane_code::run(x, minimum, inverse, self.level_max)
                     .map_err(|_| invalid())?;
-                let [_, _, _, l, ll, xl, ..] =
-                    self.calculate(Program::C7, &[x, w, *slot, sum_l, sum_l2, sum_xl])?;
+                let Terms(l, ll, xl) = verdant_affine_fit::run(
+                    Equation::C6(x, w, *slot, sum_l, sum_l2, sum_xl),
+                    self.bits,
+                )
+                .map_err(|_| invalid())?;
                 (sum_l, sum_l2, sum_xl) = (l, ll, xl);
             }
-            let [det, ..] = self.calculate(Program::C8, &[sum_w, sum_l, sum_l2])?;
+            let Terms(det, _, _) =
+                verdant_affine_fit::run(Equation::C7(sum_w, sum_l, sum_l2), self.bits)
+                    .map_err(|_| invalid())?;
             if !less(0, det) {
                 continue;
             }
-            let [_, _, _, _, _, _, mut slope, mut intercept, ..] =
-                self.calculate(Program::C9, &[sum_w, sum_x, sum_l, sum_l2, sum_xl, det])?;
+            let Terms(mut slope, mut intercept, _) = verdant_affine_fit::run(
+                Equation::C8(sum_w, sum_x, sum_l, sum_l2, sum_xl, det),
+                self.bits,
+            )
+            .map_err(|_| invalid())?;
             if less(0, intercept) {
                 intercept = 0;
-                slope = self.calculate(Program::C10, &[sum_xl, sum_l2])?[0];
+                slope = {
+                    let Terms(value, _, _) =
+                        verdant_affine_fit::run(Equation::C9(sum_xl, sum_l2), self.bits)
+                            .map_err(|_| invalid())?;
+                    value
+                };
             }
             let error = self.error(values, &weights, &candidate, slope, intercept)?;
             if less(error, best) {
@@ -229,7 +212,14 @@ pub(super) fn encode(
         *mn = code;
         if less(0, unit) {
             for (&x, c) in xs.iter().zip(codes) {
-                *c = fit.calculate(Program::C15, &[x, unit, offset, level_max])?[0];
+                *c = {
+                    let Terms(value, _, _) = verdant_affine_fit::run(
+                        Equation::C11(x, unit, offset, level_max),
+                        fit.bits,
+                    )
+                    .map_err(|_| invalid())?;
+                    value
+                };
             }
         }
     }

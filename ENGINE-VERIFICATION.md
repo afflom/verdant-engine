@@ -473,3 +473,5 @@ All 65,520 bytes in 312 blocks matched the original GGML Q6_K reference. The inp
 The Q2_K, Q4_K and Q5_K encoders matched all 128,472 bytes from 318 blocks per format. The test calls the three reference quantizers in the pinned GGML source. Run it with `cargo test --locked -p verdant-tensor --lib grouped_affine_encoding_vtk_50`. [GGML reference quantizers](https://github.com/ggml-org/llama.cpp/blob/9a080f44b503c64f66c84a6274b9d9ee5d5b09d5/ggml/src/ggml-quants.c)
 
 The test binds both Prism exports to their compiled packages. Forcing the group scale limit to zero first changed Q2_K row 2. Restoring the limit passed the same byte comparisons. [Fitting and packing](app/src/GroupedAffineEncoding.lex.tex) · [Scale calculations](app/src/GroupedAffineScales.lex.tex)
+
+The fitting equations run directly from their Prism export. Replacing the stored lane offset with its scale changed the quantized bytes in the reference comparison. Restoring the correct operand passed all 954 blocks.

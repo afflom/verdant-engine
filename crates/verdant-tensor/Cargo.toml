@@ -18,7 +18,6 @@ verdant_affine_lane_code = { version = "=2.43.0", path = "../../generated/tensor
 verdant_affine_less = { version = "=2.43.0", path = "../../generated/tensor-affinescales/packages/rust-core/verdant_affine_less" }
 verdant_affine_geometry = { version = "=2.43.0", path = "../../generated/tensor-affinepack/packages/rust-core/verdant_affine_geometry" }
 verdant_affine_finite = { version = "=2.43.0", path = "../../generated/tensor-affinepack/packages/rust-core/verdant_affine_finite" }
-verdant_affine_quantized = { version = "=2.43.0", path = "../../generated/tensor-affinepack/packages/rust-core/verdant_affine_quantized" }
 verdant_affine_insert_field = { version = "=2.43.0", path = "../../generated/tensor-affinepack/packages/rust-core/verdant_affine_insert_field" }
 verdant_affine_fit = { version = "=2.43.0", path = "../../generated/tensor-affinepack/packages/rust-core/verdant_affine_fit" }
 verdant_affine_weight_fields = { version = "=2.43.0", path = "../../generated/tensor-affinepack/packages/rust-core/verdant_affine_weight_fields" }

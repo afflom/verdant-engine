@@ -1176,7 +1176,6 @@ fn verify_bundle(scope: &str, directory: &str) -> std::collections::BTreeMap<Str
                     "verdant_affine_insert_field" => include_bytes!("../../../../generated/tensor-affinepack/packages/rust-core/verdant_affine_insert_field/src/lib.rs"),
                     "verdant_affine_fit" => include_bytes!("../../../../generated/tensor-affinepack/packages/rust-core/verdant_affine_fit/src/lib.rs"),
                     "verdant_affine_weight_fields" => include_bytes!("../../../../generated/tensor-affinepack/packages/rust-core/verdant_affine_weight_fields/src/lib.rs"),
-                    "verdant_affine_quantized" => include_bytes!("../../../../generated/tensor-affinepack/packages/rust-core/verdant_affine_quantized/src/lib.rs"),
                     "verdant_grouped_six_encoding" => include_bytes!("../../../../generated/tensor-sixpack/packages/rust-core/verdant_grouped_six_encoding/src/lib.rs"),
                     "verdant_softplus" => include_bytes!("../../../../generated/tensor-softplus/packages/rust-core/verdant_softplus/src/lib.rs"),
                     "verdant_bitpacked_product" => include_bytes!("../../../../generated/tensor-bitrows/packages/rust-core/verdant_bitpacked_product/src/lib.rs"),
@@ -2866,9 +2865,8 @@ fn grouped_affine_encoding_vtk_50() {
         ("finite", "verdant_affine_finite"),
         ("geometry", "verdant_affine_geometry"),
         ("insertField", "verdant_affine_insert_field"),
-        ("instruction", "verdant_affine_fit"),
+        ("evaluate", "verdant_affine_fit"),
         ("planFields", "verdant_affine_weight_fields"),
-        ("quantized", "verdant_affine_quantized"),
     ] {
         assert_eq!(
             roots[&format!("VerdantEngine.GroupedAffineEncoding.{operation}")],

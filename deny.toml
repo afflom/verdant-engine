@@ -570,7 +570,7 @@ license-files = [{ path = "src/lib.rs", hash = 0xe2b3b275 }]
 name = "verdant_affine_fit"
 version = "=2.43.0"
 expression = "MIT OR Apache-2.0"
-license-files = [{ path = "src/lib.rs", hash = 0x6376de8b }]
+license-files = [{ path = "src/lib.rs", hash = 0xce5236f8 }]
 
 [[licenses.clarify]]
 name = "verdant_affine_weight_fields"
@@ -578,11 +578,6 @@ version = "=2.43.0"
 expression = "MIT OR Apache-2.0"
 license-files = [{ path = "src/lib.rs", hash = 0x69681bd9 }]
 
-[[licenses.clarify]]
-name = "verdant_affine_quantized"
-version = "=2.43.0"
-expression = "MIT OR Apache-2.0"
-license-files = [{ path = "src/lib.rs", hash = 0xb11fef40 }]
 
 [[licenses.clarify]]
 name = "verdant_affine_block_scale"

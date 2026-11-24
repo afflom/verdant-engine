@@ -833,7 +833,6 @@ dependencies = [
  "verdant_affine_insert_field",
  "verdant_affine_lane_code",
  "verdant_affine_less",
- "verdant_affine_quantized",
  "verdant_affine_weight_fields",
  "verdant_bitpacked_product",
  "verdant_circular_magnitudes",
@@ -957,10 +956,6 @@ version = "2.43.0"
 
 [[package]]
 name = "verdant_affine_less"
-version = "2.43.0"
-
-[[package]]
-name = "verdant_affine_quantized"
 version = "2.43.0"
 
 [[package]]
