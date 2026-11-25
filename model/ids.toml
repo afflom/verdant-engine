@@ -998,3 +998,9 @@ id = "VTK-68"
 level = "build"
 suite = "engine"
 statement = "Verdant reproduces the Arm scalar binary32 table-reduced natural logarithm under nearest-even rounding"
+
+[[id]]
+id = "VTK-69"
+level = "build"
+suite = "engine"
+statement = "Verdant compares signed 64-bit integers and IEEE binary64 values exactly across both representations"

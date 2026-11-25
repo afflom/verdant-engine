@@ -627,96 +627,24 @@ pub fn checked_neg_i64(p0: i64) -> Option<i64> {
     i64::checked_neg(p0)
 }
 
-pub fn f0(v0: u64) -> Option<(u64, (u64, u64))> {
+pub fn f0(v0: u64) -> u64 {
     let a1 = v0;
-    let a2 = 8u64;
+    let a2 = 2u64;
     if nat_lt(a1, a2) {
         let a3 = v0;
-        let a4 = 4u64;
+        let a4 = 1u64;
         if nat_lt(a3, a4) {
-            let a5 = v0;
-            let a6 = 2u64;
-            if nat_lt(a5, a6) {
-                let a7 = v0;
-                let a8 = 1u64;
-                if nat_lt(a7, a8) {
-                    Some((1u64, (0u64, 0u64)))
-                } else {
-                    Some((5u64, (1u64, 0u64)))
-                }
-            } else {
-                let a9 = v0;
-                let a10 = 3u64;
-                if nat_lt(a9, a10) {
-                    Some((14u64, (10u64, 2u64)))
-                } else {
-                    Some((0u64, (4u64, 11u64)))
-                }
-            }
+            13830554455654793216u64
         } else {
-            let a11 = v0;
-            let a12 = 6u64;
-            if nat_lt(a11, a12) {
-                let a13 = v0;
-                let a14 = 5u64;
-                if nat_lt(a13, a14) {
-                    Some((14u64, (9u64, 3u64)))
-                } else {
-                    Some((0u64, (13u64, 5u64)))
-                }
-            } else {
-                let a15 = v0;
-                let a16 = 7u64;
-                if nat_lt(a15, a16) {
-                    Some((14u64, (14u64, 14u64)))
-                } else {
-                    Some((14u64, (7u64, 14u64)))
-                }
-            }
+            13821563350862562100u64
         }
     } else {
-        let a17 = v0;
-        let a18 = 12u64;
-        if nat_lt(a17, a18) {
-            let a19 = v0;
-            let a20 = 10u64;
-            if nat_lt(a19, a20) {
-                let a21 = v0;
-                let a22 = 9u64;
-                if nat_lt(a21, a22) {
-                    Some((0u64, (16u64, 8u64)))
-                } else {
-                    Some((14u64, (6u64, 15u64)))
-                }
-            } else {
-                let a23 = v0;
-                let a24 = 11u64;
-                if nat_lt(a23, a24) {
-                    Some((0u64, (18u64, 17u64)))
-                } else {
-                    Some((14u64, (19u64, 15u64)))
-                }
-            }
+        let a5 = v0;
+        let a6 = 3u64;
+        if nat_lt(a5, a6) {
+            4599678642981702506u64
         } else {
-            let a25 = v0;
-            let a26 = 14u64;
-            if nat_lt(a25, a26) {
-                let a27 = v0;
-                let a28 = 13u64;
-                if nat_lt(a27, a28) {
-                    Some((0u64, (12u64, 14u64)))
-                } else {
-                    Some((0u64, (20u64, 21u64)))
-                }
-            } else {
-                let a29 = v0;
-                let a30 = 15u64;
-                if nat_lt(a29, a30) {
-                    Some((2u64, (22u64, 0u64)))
-                } else {
-                    None::<(u64, (u64, u64))>
-                }
-            }
+            13826050851498246435u64
         }
     }
 }

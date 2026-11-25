@@ -939,3 +939,9 @@ Feature: engine
     Given binary32 words across every exponent and either side of reduction boundaries
     When Verdant evaluates the natural logarithm
     Then every output matches the pinned Arm scalar logarithm with nearest-even rounding
+
+  @VTK-69 @build
+  Scenario: Equality preserves the full precision of signed integers and binary64 values
+    Given signed integers and binary64 encodings across integral boundaries, both zeros, infinities and NaNs
+    When Verdant compares two values in either representation
+    Then the result equals Berkeley SoftFloat extended-precision equality after exact widening

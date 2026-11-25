@@ -285,6 +285,12 @@ expression = "MIT OR Apache-2.0"
 license-files = [{ path = "src/lib.rs", hash = 0x10983320 }]
 
 [[licenses.clarify]]
+name = "verdant_numeric_equality"
+version = "=2.22.4"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0xefc74e5d }]
+
+[[licenses.clarify]]
 name = "verdant_modular_word64"
 version = "=2.22.2"
 expression = "MIT OR Apache-2.0"

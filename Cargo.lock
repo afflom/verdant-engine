@@ -892,6 +892,7 @@ dependencies = [
  "verdant_narrow_f64",
  "verdant_normalize_f64",
  "verdant_normalized_exponential",
+ "verdant_numeric_equality",
  "verdant_pack_plan_f64",
  "verdant_packed_dot",
  "verdant_packed_field",
@@ -1213,6 +1214,10 @@ version = "2.9.0"
 [[package]]
 name = "verdant_normalized_exponential"
 version = "2.30.0"
+
+[[package]]
+name = "verdant_numeric_equality"
+version = "2.22.4"
 
 [[package]]
 name = "verdant_pack_plan_f64"

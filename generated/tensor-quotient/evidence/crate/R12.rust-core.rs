@@ -627,16 +627,49 @@ pub fn checked_neg_i64(p0: i64) -> Option<i64> {
     i64::checked_neg(p0)
 }
 
-pub fn f0(v0: u64, v1: bool) -> R<u64> {
-    let a3 = {
-        let a1 = v0;
-        let a2 = if v1 {
-            4102029312u64
+#[derive(Clone)]
+pub enum Adt0 {
+    C0(u64),
+    C1,
+    C2(u64),
+}
+
+pub fn f0(v0: u64) -> Adt0 {
+    let a1 = v0;
+    let a2 = 0u64;
+    if if nat_eq(a1, a2) {
+        true
+    } else {
+        let a3 = v0;
+        let a4 = 2147483648u64;
+        nat_eq(a3, a4)
+    } {
+        Adt0::C0(4286578688u64)
+    } else {
+        let a5 = v0;
+        let a6 = 2139095040u64;
+        if nat_eq(a5, a6) {
+            Adt0::C0(v0)
         } else {
-            4294967296u64
-        };
-        nat_add(a1, a2)?
-    };
-    let a4 = 1060306944u64;
-    Ok(nat_sub(a3, a4))
+            let a7 = 2139095040u64;
+            let a8 = v0;
+            if nat_lt(a7, a8) {
+                Adt0::C0(2143289344u64)
+            } else {
+                let a9 = v0;
+                let a10 = 1065353216u64;
+                if nat_eq(a9, a10) {
+                    Adt0::C0(0u64)
+                } else {
+                    let a11 = v0;
+                    let a12 = 8388608u64;
+                    if nat_lt(a11, a12) {
+                        Adt0::C2(1258291200u64)
+                    } else {
+                        Adt0::C1
+                    }
+                }
+            }
+        }
+    }
 }

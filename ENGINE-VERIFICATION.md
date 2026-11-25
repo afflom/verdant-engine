@@ -593,3 +593,9 @@ All 50 block patterns matched bit for bit at output strides 4, 8 and 12, includi
 The public `linear::natural_log_f32` runs the certified scalar classification, range reduction and ordered binary64 polynomial, then rounds once to binary32. The seven roots in `generated/tensor-quotient` carry attestation `3136699f2fe23198d517bc60de208a44c9c3e4bda8c426d88aaa25e5f82713ce`.
 
 `cargo test -p verdant-tensor --test arm_logarithm` compiles the archived original Arm implementation and compares 16,477 input words, including subnormals, interval boundaries, signed zero and infinities. Finite results match by bits and NaNs by class. The previous implementation failed at `0x3abbcd88`. Swapping the reciprocal center and logarithm center failed at `0x003779b1`. Restoring their modeled order passed.
+
+## VTK-69 mixed signed integer and binary64 equality
+
+The public `linear::equal_numeric_words` compares two signed I64 or binary64 encodings. It preserves integer precision beyond 2⁵³, treats the two floating zeros as equal and every NaN as unequal. The quotient proof exports `F64Quotient.equalNumericWords` under attestation `blake3:15cb8561b1d16a675865f7d5075e5c6e830e3ebd2c211903f86519c1d42b8cd5`.
+
+`cargo test -p verdant-tensor --lib numeric_equality_vtk_69` compares 32,992 results with pinned Berkeley SoftFloat. Its original converters widen both operands exactly before `extF80M_eq`. Reversing the two representation flags failed on integer 1 and binary64 1.0. Restoring the certified root passed.
