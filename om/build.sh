@@ -72,3 +72,4 @@ build_one() {
 
 build_one "$SCRIPT_DIR/verdant_neural.om" "verdant-neural"
 build_one "$SCRIPT_DIR/verdant_slm_jit.om" "verdant-slm-jit"
+build_one "$SCRIPT_DIR/verdant_raster.om" "verdant-raster"

@@ -14,12 +14,17 @@ use std::io::{self, Read, Write};
 use std::path::{Path, PathBuf};
 use std::process::{Child, ChildStdin, ChildStdout, Command, Stdio};
 
-use verdant_tensor::{prism_kernel, NeuromorphicStepOutput, TensorComputeError, CODED_TABLE_LEN};
+use verdant_tensor::{
+    prism_kernel, NeuromorphicStepOutput, RasterTriangle, SoftwareTileFramebuffer,
+    TensorComputeError, CODED_TABLE_LEN, DIM_HOMOGENEOUS, DIM_SPATIAL,
+};
 
 /// Wire protocol magic (`"VOM1"` little-endian).
 pub const WIRE_MAGIC: u32 = 0x564f_4d31;
 /// Wire protocol magic for the pure-Omega partial-evaluating SLM compiler (`"VOMJ"`).
 pub const JIT_MAGIC: u32 = 0x564f_4d4a;
+/// Wire protocol magic for the pure-Omega `16x16` tile PBR rasterizer (`"VOMR"`).
+pub const RASTER_MAGIC: u32 = 0x564f_4d52;
 /// Wire operation code for `step_neuromorphic_lif_ssm_ring` (`kernel10`).
 pub const OP_LIF_SSM: u32 = 1;
 /// Wire operation code for `infer_coded_slm_intent_logits` (`kernel11`).
@@ -99,6 +104,19 @@ pub fn default_slm_jit_binary_path() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../..")
         .join("om/bin/verdant-slm-jit")
+}
+
+/// Resolves the default pure-Omega `16x16` tile PBR rasterizer (`verdant-raster`).
+///
+/// Checks `VERDANT_OMEGA_RASTER` first, then `<workspace_root>/om/bin/verdant-raster`.
+#[must_use]
+pub fn default_raster_binary_path() -> PathBuf {
+    if let Ok(path) = std::env::var("VERDANT_OMEGA_RASTER") {
+        return PathBuf::from(path);
+    }
+    Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../..")
+        .join("om/bin/verdant-raster")
 }
 
 /// Resolves the native `omc` compiler binary path (`OMC`, `~/.local/bin/omc`, or Spark `~/canon/omega-mv/seed/out/omc`).
@@ -896,6 +914,210 @@ impl OmegaCompiledSlm {
 }
 
 impl Drop for OmegaCompiledSlm {
+    fn drop(&mut self) {
+        self.stdin.take();
+        let _ = self.child.wait();
+    }
+}
+
+/// Persistent handle to the pure-Omega (`OM-2`) `16x16` tile-aligned depth-buffered PBR rasterizer.
+pub struct OmegaRasterWorker {
+    child: Child,
+    stdin: Option<ChildStdin>,
+    stdout: ChildStdout,
+}
+
+impl OmegaRasterWorker {
+    /// Spawns `om/bin/verdant-raster` at `binary_path` and verifies it with a `PING` frame.
+    pub fn spawn(binary_path: impl AsRef<Path>) -> Result<Self, TensorComputeError> {
+        let mut child = Command::new(binary_path.as_ref())
+            .stdin(Stdio::piped())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::inherit())
+            .spawn()
+            .map_err(io_err)?;
+        let stdin = child
+            .stdin
+            .take()
+            .ok_or_else(|| io_err(io::Error::other("failed to capture omega raster stdin")))?;
+        let stdout = child
+            .stdout
+            .take()
+            .ok_or_else(|| io_err(io::Error::other("failed to capture omega raster stdout")))?;
+        let mut worker = Self {
+            child,
+            stdin: Some(stdin),
+            stdout,
+        };
+        let (st, _) = worker.send_raw_frame(RASTER_MAGIC, 0, &[])?;
+        if st != STATUS_OK {
+            return Err(status_err(st));
+        }
+        Ok(worker)
+    }
+
+    /// Spawns the rasterizer using [`default_raster_binary_path`].
+    pub fn spawn_default() -> Result<Self, TensorComputeError> {
+        Self::spawn(default_raster_binary_path())
+    }
+
+    fn send_raw_frame(
+        &mut self,
+        magic: u32,
+        op: u32,
+        payload: &[u8],
+    ) -> Result<(u32, Vec<u8>), TensorComputeError> {
+        let plen = u32::try_from(payload.len()).map_err(|_| {
+            TensorComputeError::ZeroOrMismatchedExtents {
+                detail: "omega_raster:payload_exceeds_u32".to_string(),
+            }
+        })?;
+        let mut hdr = [0_u8; HEADER_BYTES];
+        hdr[0..4].copy_from_slice(&magic.to_le_bytes());
+        hdr[4..8].copy_from_slice(&op.to_le_bytes());
+        hdr[8..12].copy_from_slice(&plen.to_le_bytes());
+
+        let stdin = self.stdin.as_mut().ok_or_else(|| {
+            io_err(io::Error::new(
+                io::ErrorKind::BrokenPipe,
+                "raster worker stdin closed",
+            ))
+        })?;
+        stdin.write_all(&hdr).map_err(io_err)?;
+        if !payload.is_empty() {
+            stdin.write_all(payload).map_err(io_err)?;
+        }
+        stdin.flush().map_err(io_err)?;
+
+        let mut reply_hdr = [0_u8; HEADER_BYTES];
+        self.stdout.read_exact(&mut reply_hdr).map_err(io_err)?;
+        let reply_magic =
+            u32::from_le_bytes([reply_hdr[0], reply_hdr[1], reply_hdr[2], reply_hdr[3]]);
+        if reply_magic != RASTER_MAGIC {
+            return Err(TensorComputeError::InvalidKernelSpecification {
+                kernel_name: format!("omega_raster:bad_reply_magic_0x{reply_magic:08x}"),
+            });
+        }
+        let status = u32::from_le_bytes([reply_hdr[4], reply_hdr[5], reply_hdr[6], reply_hdr[7]]);
+        let reply_len =
+            u32::from_le_bytes([reply_hdr[8], reply_hdr[9], reply_hdr[10], reply_hdr[11]]) as usize;
+        let mut reply_payload = vec![0_u8; reply_len];
+        if reply_len > 0 {
+            self.stdout.read_exact(&mut reply_payload).map_err(io_err)?;
+        }
+        Ok((status, reply_payload))
+    }
+
+    /// Renders world-space `triangles` into a deterministic `16x16`-tile-aligned RGBA8 + depth
+    /// framebuffer matching [`verdant_tensor::render_triangles_tile_framebuffer`].
+    pub fn render_triangles_tile_framebuffer(
+        &mut self,
+        width: u32,
+        height: u32,
+        view_proj_cols: &[[f64; DIM_HOMOGENEOUS]; DIM_HOMOGENEOUS],
+        sun_direction: [f64; DIM_SPATIAL],
+        lod_rank: u64,
+        triangles: &[RasterTriangle],
+    ) -> Result<SoftwareTileFramebuffer, TensorComputeError> {
+        let env = prism_kernel::lodEnvelopeByRank(lod_rank).map_err(|_| {
+            TensorComputeError::InvalidKernelSpecification {
+                kernel_name: format!("omega_raster:invalid_lod_rank_{lod_rank}"),
+            }
+        })?;
+        let ntris = u32::try_from(triangles.len()).map_err(|_| {
+            TensorComputeError::ZeroOrMismatchedExtents {
+                detail: "omega_raster:tri_count_exceeds_u32".to_string(),
+            }
+        })?;
+        let mut flags = 0_u32;
+        if env.shadowsActive {
+            flags |= 1;
+        }
+        if env.iblActive {
+            flags |= 2;
+        }
+
+        let mut payload = Vec::with_capacity(192 + triangles.len() * 60);
+        payload.extend_from_slice(&width.to_le_bytes());
+        payload.extend_from_slice(&height.to_le_bytes());
+        payload.extend_from_slice(&ntris.to_le_bytes());
+        payload.extend_from_slice(&flags.to_le_bytes());
+        payload.extend_from_slice(&(env.skyRedPercent as u32).to_le_bytes());
+        payload.extend_from_slice(&(env.skyGreenPercent as u32).to_le_bytes());
+        payload.extend_from_slice(&(env.skyBluePercent as u32).to_le_bytes());
+        payload.extend_from_slice(&(env.fogRedPercent as u32).to_le_bytes());
+        payload.extend_from_slice(&(env.fogGreenPercent as u32).to_le_bytes());
+        payload.extend_from_slice(&(env.fogBluePercent as u32).to_le_bytes());
+        for col in view_proj_cols {
+            for &v in col {
+                payload.extend_from_slice(&v.to_le_bytes());
+            }
+        }
+        for v in sun_direction {
+            payload.extend_from_slice(&v.to_le_bytes());
+        }
+        for tri in triangles {
+            for pos in tri.positions {
+                for v in pos {
+                    payload.extend_from_slice(&v.to_le_bytes());
+                }
+            }
+            for v in tri.normal {
+                payload.extend_from_slice(&v.to_le_bytes());
+            }
+            for v in tri.base_color {
+                payload.extend_from_slice(&v.to_le_bytes());
+            }
+        }
+
+        let (status, reply) = self.send_raw_frame(RASTER_MAGIC, 1, &payload)?;
+        if status == STATUS_INVALID_EXTENTS {
+            return Err(TensorComputeError::InvalidTileDimensions {
+                width,
+                height,
+                tile_edge: 16,
+            });
+        }
+        if status == STATUS_INVALID_PARAMS {
+            return Err(TensorComputeError::NonFiniteTensorEntry {
+                operand: "view_proj_or_sun",
+            });
+        }
+        if status != STATUS_OK {
+            return Err(status_err(status));
+        }
+
+        let px_count = (width as usize).saturating_mul(height as usize);
+        let expected = 8 + px_count * 8;
+        if reply.len() != expected {
+            return Err(TensorComputeError::ZeroOrMismatchedExtents {
+                detail: format!(
+                    "omega_raster:reply_len_mismatch expected={expected} actual={}",
+                    reply.len()
+                ),
+            });
+        }
+        let tiles_shaded = u32::from_le_bytes([reply[0], reply[1], reply[2], reply[3]]);
+        let rasterized_triangles = u32::from_le_bytes([reply[4], reply[5], reply[6], reply[7]]);
+        let rgba_end = 8 + px_count * 4;
+        let rgba8 = reply[8..rgba_end].to_vec();
+        let depth: Vec<f32> = reply[rgba_end..]
+            .chunks_exact(4)
+            .map(|c| f32::from_le_bytes([c[0], c[1], c[2], c[3]]))
+            .collect();
+
+        Ok(SoftwareTileFramebuffer {
+            width,
+            height,
+            rgba8,
+            depth,
+            tiles_shaded,
+            rasterized_triangles,
+        })
+    }
+}
+
+impl Drop for OmegaRasterWorker {
     fn drop(&mut self) {
         self.stdin.take();
         let _ = self.child.wait();

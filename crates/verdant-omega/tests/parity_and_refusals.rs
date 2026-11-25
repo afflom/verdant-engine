@@ -1,13 +1,15 @@
 //! Bit-exact parity and negative-control refusal tests for the pure-Omega neural worker.
 
 use verdant_omega::{
-    default_slm_jit_binary_path, default_worker_binary_path, OmegaCompiledSlm, OmegaNeuralWorker,
-    OP_LIF_SSM, OP_PING, STATUS_BAD_MAGIC, STATUS_PAYLOAD_MISMATCH, STATUS_UNKNOWN_OP, WIRE_MAGIC,
+    default_raster_binary_path, default_slm_jit_binary_path, default_worker_binary_path,
+    OmegaCompiledSlm, OmegaNeuralWorker, OmegaRasterWorker, OP_LIF_SSM, OP_PING, STATUS_BAD_MAGIC,
+    STATUS_PAYLOAD_MISMATCH, STATUS_UNKNOWN_OP, WIRE_MAGIC,
 };
 use verdant_tensor::{
     contract_coded_pair_lut_into, contract_packed_nibbles_lut_into, infer_coded_slm_intent_logits,
-    step_neuromorphic_lif_ssm_ring, tropical_min_plus_all_pairs_closure, CodebookProductLut,
-    TensorComputeError, CODED_TABLE_LEN,
+    render_triangles_tile_framebuffer, step_neuromorphic_lif_ssm_ring,
+    tropical_min_plus_all_pairs_closure, CodebookProductLut, RasterTriangle, TensorComputeError,
+    CODED_TABLE_LEN,
 };
 
 struct SplitMix64(u64);
@@ -507,4 +509,69 @@ fn partial_evaluating_omega_slm_jit_matches_verdant_tensor_bit_for_bit() {
 
     drop(jit);
     let _ = std::fs::remove_file(&tmp_bin);
+}
+
+#[test]
+fn raster_tile_pbr_matches_verdant_tensor_bit_for_bit() {
+    let raster_path = default_raster_binary_path();
+    if !raster_path.is_file() {
+        assert!(
+            !require_worker(),
+            "VERDANT_OMEGA_REQUIRE_WORKER=1 but verdant-raster binary is missing at {}; run `sh om/build.sh`",
+            raster_path.display()
+        );
+        eprintln!(
+            "SKIP: verdant-raster binary not built at {} (run `sh om/build.sh`)",
+            raster_path.display()
+        );
+        return;
+    }
+
+    let mut worker = OmegaRasterWorker::spawn(&raster_path).expect("spawn verdant-raster");
+    let vp: [[f64; 4]; 4] = [
+        [1.0, 0.0, 0.0, 0.0],
+        [0.0, 1.0, 0.0, 0.0],
+        [0.0, 0.0, 1.0, 0.0],
+        [0.0, 0.0, 0.0, 1.0],
+    ];
+    let sun = [0.4, 0.85, 0.35];
+    let tris = vec![
+        RasterTriangle {
+            positions: [[-0.6, -0.5, 0.2], [0.6, -0.4, 0.3], [0.0, 0.65, 0.1]],
+            normal: [0.0, 0.5, 0.866],
+            base_color: [0.82, 0.45, 0.22],
+        },
+        RasterTriangle {
+            positions: [[-0.3, -0.2, 0.05], [0.75, -0.1, 0.4], [0.15, 0.5, 0.15]],
+            normal: [0.25, 0.75, 0.6],
+            base_color: [0.2, 0.7, 0.85],
+        },
+    ];
+
+    for lod_rank in [0_u64, 2_u64, 4_u64] {
+        let expected =
+            render_triangles_tile_framebuffer(64, 64, &vp, sun, lod_rank, &tris).unwrap();
+        let actual = worker
+            .render_triangles_tile_framebuffer(64, 64, &vp, sun, lod_rank, &tris)
+            .unwrap();
+        assert_eq!(actual.tiles_shaded, expected.tiles_shaded);
+        assert_eq!(actual.rasterized_triangles, expected.rasterized_triangles);
+        assert_eq!(
+            actual.rgba8, expected.rgba8,
+            "RGBA8 drift at lod={lod_rank}"
+        );
+        assert_eq!(
+            actual.depth, expected.depth,
+            "depth drift at lod={lod_rank}"
+        );
+    }
+
+    // Negative control: non-multiple-of-16 dimensions must be refused.
+    let err = worker
+        .render_triangles_tile_framebuffer(30, 32, &vp, sun, 0, &tris)
+        .unwrap_err();
+    assert!(matches!(
+        err,
+        TensorComputeError::InvalidTileDimensions { .. }
+    ));
 }

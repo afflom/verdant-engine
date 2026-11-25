@@ -11,11 +11,13 @@ authors.workspace = true
 keywords.workspace = true
 categories.workspace = true
 
-[dependencies]
-verdant-tensor = { workspace = true }
+[[bin]]
+name = "verdant-omega"
+path = "src/bin/verdant-omega.rs"
 
-[dev-dependencies]
+[dependencies]
 verdant-core = { workspace = true }
+verdant-tensor = { workspace = true }
 
 [lints]
 workspace = true

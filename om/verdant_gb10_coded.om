@@ -1,0 +1,425 @@
+note Pure seeded-OM-2 Zero-CUDA NVIDIA GB10 (SM121) GPU Kernel & Benchmark
+note for Verdant Engine's exact integer `contract_coded_pair_lut_into` (512x512x512).
+note Composed on DGX Spark with omega-mv's pure-Omega Blackwell runtime & SM121 encoder:
+note   context.om + vector.om + launch.om + batch.om + bw_enc_sm121.om + emit_fast.om + this file.
+
+const V_ROWS ulong 512
+const V_K ulong 512
+const V_COLS ulong 512
+const V_TOTAL ulong 262144
+const V_BYTES ulong 1048576
+
+global vCodePos ulong 1
+global vCodeMap long 1
+global vCodeFail uint 1
+global vBind uint 32
+global vBindN ulong 1
+global vWork long 1
+global vWorkVa ulong 1
+global vPktLen ulong 1
+
+global vAHost uint 262144
+global vBHost uint 262144
+global vLutHost int 256
+global vCHost int 262144
+global vGpuOut uchar 1048576
+global vIoTmp uchar 1048576
+
+fn q36Write w view ulong 4 to void
+  p = get vCodePos 0
+  b = new uchar 16 0
+  if gt get vCodeMap 0 0
+    for i ulong 16
+      ww = get w div i 4
+      sh = mul rem i 4 8
+      put b i uchar and shr ww sh 255
+    end
+    if ne mapwrite get vCodeMap 0 p b 0 16 16
+      put vCodeFail 0 1
+    end
+  end
+  put vCodePos 0 add p 16
+end
+
+fn emitVerdantCodedPair to void
+  note 4 GPU pointers: R0/R1=A(u32), R2/R3=B(u32), R4/R5=LUT(i32[256]), R6/R7=C(i32)
+  note Params at +32=rows, +36=K, +40=cols
+  qStart 4
+  qParam 20 32
+  qParam 21 36
+  qParam 22 40
+  note c = ctaid.x * 128 + tid.x (R23), r = ctaid.y (R18)
+  qMad 23 15 128 14
+  note rowA_base = r * K (R25)
+  qMadReg 25 18 21 QZ
+  note acc = 0 (R24), p = 0 (R26), one = 1 (R27), idxB = c (R28)
+  qLit 24 0
+  qLit 26 0
+  qLit 27 1
+  qIadd 28 23 QZ
+
+  loopPc = get q36Pc 0
+  note idxA = rowA_base + p (R29)
+  qIadd 29 25 26
+  note addrA = ptrA + idxA * 4 -> (R16, R17)
+  qicImm 9 16 29 0 4 qAlu4
+  qic 11 30 16 QZ 0 qLd
+  qic 0 QZ QZ QZ 0 qW0
+
+  note addrB = ptrB + idxB * 4 -> (R16, R17)
+  qicImm 9 16 28 2 4 qAlu4
+  qic 11 31 16 QZ 0 qLd
+  qic 0 QZ QZ QZ 0 qW0
+
+  note lutIdx = ca * 16 + cb (R32)
+  qMad 32 30 16 31
+  note addrLut = ptrLut + lutIdx * 4 -> (R16, R17)
+  qicImm 9 16 32 4 4 qAlu4
+  qic 11 33 16 QZ 0 qLd
+  qic 0 QZ QZ QZ 0 qW0
+
+  note acc += prod; p += 1; idxB += cols
+  qIadd 24 24 33
+  qIadd 26 26 27
+  qIadd 28 28 22
+  qic 28 QZ 26 21 0 qCmp
+  put q36Guard 0 2
+  qic 46 QZ QZ QZ sub loopPc get q36Pc 0 qAlu4
+  put q36Guard 0 0
+
+  note outIdx = r * cols + c (R34)
+  qMadReg 34 18 22 23
+  qicImm 9 16 34 6 4 qAlu4
+  qic 12 QZ 16 24 0 qSt
+  qic 0 QZ QZ QZ 0 qW1
+  q36Done
+end
+
+fn vEmitKernel to void
+  put vCodePos 0 0
+  put q36Pc 0 0
+  put q36Guard 0 0
+  emitVerdantCodedPair
+end
+
+fn vArg u uint to void
+  n = get vBindN 0
+  put vBind n u
+  put vBindN 0 add n 1
+end
+
+fn vPtr va ulong to void
+  vArg gblo va
+  vArg gbhi va
+end
+
+fn vBuildPacket vaA ulong vaB ulong vaLut ulong vaC ulong to bool
+  put vBindN 0 0
+  vPtr vaA
+  vPtr vaB
+  vPtr vaLut
+  vPtr vaC
+  vArg uint V_ROWS
+  vArg uint V_K
+  vArg uint V_COLS
+
+  cb = mapaddr get gbmem 1
+  gbdriver cb
+
+  gbqmd 1
+  a = mapaddr get vCodeMap 0
+  put gbq1 32 gblo shr a 4
+  put gbq1 33 or uint and shr a 36 2097151 20971520
+  put gbq1 59 gblo shr a 8
+  put gbq1 34 or uint 65536 uint 128
+  put gbq1 35 or uint 131073 shl uint 64 8
+  put gbq1 36 uint 78923784
+  put gbq1 37 0
+  put gbq1 39 uint div V_COLS 128
+  put gbq1 40 uint V_ROWS
+  put gbq1 41 1
+  put gbcb 216 uint 128
+  put gbcb 220 uint div V_COLS 128
+  put gbcb 221 uint V_ROWS
+  put gbcb 222 1
+
+  words = get vBindN 0
+  endva = add cb add 896 mul words 4
+  put gbcb 212 gbhi endva
+  put gbcb 213 gblo endva
+
+  put gbused 0 0
+  gbsetup
+  gbmth 0 40 4
+  gbemit 0
+  gbemit 0
+  gbemit 0
+  gbemit 2281701376
+  gbdma cb 224
+  for j ulong 224
+    gbemit get gbcb j
+  end
+  gbdma add cb 896 uint words
+  for j ulong words
+    gbemit get vBind j
+  end
+  q = mapaddr get gbmem 2
+  gbinline q false
+  gbdma add q 8192 1
+  gbemit 1
+  gbinline add q 4096 true
+  gbtail
+
+  n = get gbused 0
+  if ne mapwrite get vWork 0 0 gbcmd 0 n long n
+    ret false
+  end
+  put vPktLen 0 n
+  ret true
+end
+
+fn vLaunchAndWait to bool
+  r0 = mapset get gbmem 2 8192 4 0
+  r1 = mapset get gbmem 3 0 4 0
+  r2 = mapset get gbmem 3 16 4 0
+  if not nvsend get vWork 0 0 uint div get vPktLen 0 4
+    ret false
+  end
+  for sp ulong 50000
+    if eq mapget get gbmem 3 16 4 1179010630
+      put nvret 0 get nvput 0
+      ret true
+    end
+  end
+  t0 = monons
+  while lt ulong sub monons t0 ulong 5000000000 bound 5000000
+    if eq mapget get gbmem 3 16 4 1179010630
+      put nvret 0 get nvput 0
+      ret true
+    end
+    r = sleepns long 5000
+  end
+  ret false
+end
+
+fn packU32A to void
+  i = ulong 0
+  while lt i V_TOTAL bound 300000
+    v = get vAHost i
+    o = mul i ulong 4
+    put vIoTmp o (uchar and v uint 255)
+    put vIoTmp (add o ulong 1) (uchar and (shr v uint 8) uint 255)
+    put vIoTmp (add o ulong 2) (uchar and (shr v uint 16) uint 255)
+    put vIoTmp (add o ulong 3) (uchar and (shr v uint 24) uint 255)
+    i = add i ulong 1
+  end
+end
+
+fn packU32B to void
+  i = ulong 0
+  while lt i V_TOTAL bound 300000
+    v = get vBHost i
+    o = mul i ulong 4
+    put vIoTmp o (uchar and v uint 255)
+    put vIoTmp (add o ulong 1) (uchar and (shr v uint 8) uint 255)
+    put vIoTmp (add o ulong 2) (uchar and (shr v uint 16) uint 255)
+    put vIoTmp (add o ulong 3) (uchar and (shr v uint 24) uint 255)
+    i = add i ulong 1
+  end
+end
+
+fn packLutArr to void
+  i = ulong 0
+  while lt i ulong 256 bound 512
+    v = bitcast uint (get vLutHost i)
+    o = mul i ulong 4
+    put vIoTmp o (uchar and v uint 255)
+    put vIoTmp (add o ulong 1) (uchar and (shr v uint 8) uint 255)
+    put vIoTmp (add o ulong 2) (uchar and (shr v uint 16) uint 255)
+    put vIoTmp (add o ulong 3) (uchar and (shr v uint 24) uint 255)
+    i = add i ulong 1
+  end
+end
+
+fn printU64 v ulong to void
+  buf = new uchar 24 0
+  if eq v ulong 0
+    put buf 0 uchar 48
+    k = write int 1 buf 0 1
+    ret
+  end
+  n = ulong 0
+  while gt v ulong 0 bound 24
+    put buf n (uchar add (rem v ulong 10) ulong 48)
+    v = div v ulong 10
+    n = add n ulong 1
+  end
+  rev = new uchar 24 0
+  i = ulong 0
+  while lt i n bound 24
+    put rev i (get buf (sub (sub n ulong 1) i))
+    i = add i ulong 1
+  end
+  k = write int 1 rev 0 n
+end
+
+text m_ok "GB10_VERDANT_CODED_GEMM PARITY=EXACT rows=512 k=512 cols=512 macs=134217728 mismatches=0 cpu_us="
+text m_gpu " gpu_us="
+text m_nl "\n"
+text m_fail "FAIL gb10 coded_gemm\n"
+
+fn initHostData to void
+  a = ulong 0
+  while lt a ulong 16 bound 32
+    la = mul (sub (int a) int 8) int 16
+    b = ulong 0
+    while lt b ulong 16 bound 32
+      rv = mul (sub (int b) int 7) int 12
+      put vLutHost (add (mul a ulong 16) b) (mul la rv)
+      b = add b ulong 1
+    end
+    a = add a ulong 1
+  end
+  i = ulong 0
+  while lt i V_TOTAL bound 300000
+    put vAHost i (uint and (add (mul i ulong 7) ulong 3) ulong 15)
+    put vBHost i (uint and (add (mul i ulong 13) ulong 5) ulong 15)
+    i = add i ulong 1
+  end
+end
+
+fn runCpuOracle to ulong
+  tc0 = monons
+  r = ulong 0
+  while lt r V_ROWS bound 1024
+    c = ulong 0
+    while lt c V_COLS bound 1024
+      acc = int 0
+      p = ulong 0
+      while lt p V_K bound 1024
+        ca = ulong get vAHost (add (mul r V_K) p)
+        cb = ulong get vBHost (add (mul p V_COLS) c)
+        acc = add acc (get vLutHost (add (shl ca ulong 4) cb))
+        p = add p ulong 1
+      end
+      put vCHost (add (mul r V_COLS) c) acc
+      c = add c ulong 1
+    end
+    r = add r ulong 1
+  end
+  ret div (ulong sub monons tc0) ulong 1000
+end
+
+fn verifyGpuOut to ulong
+  mism = ulong 0
+  j = ulong 0
+  while lt j V_TOTAL bound 300000
+    o = mul j ulong 4
+    b0 = uint get vGpuOut o
+    b1 = uint get vGpuOut (add o ulong 1)
+    b2 = uint get vGpuOut (add o ulong 2)
+    b3 = uint get vGpuOut (add o ulong 3)
+    gv = bitcast int (or (or b0 (shl b1 uint 8)) (or (shl b2 uint 16) (shl b3 uint 24)))
+    if ne gv (get vCHost j)
+      mism = add mism ulong 1
+    end
+    j = add j ulong 1
+  end
+  ret mism
+end
+
+fn main to int
+  initHostData
+  cpu_us = runCpuOracle
+
+  if not gbopen 1
+    k = write int 1 m_fail 0 len m_fail
+    ret 2
+  end
+  if not gbbopen
+    k = write int 1 m_fail 0 len m_fail
+    ret 3
+  end
+
+  put vCodeMap 0 0
+  vEmitKernel
+  csize = mul div add get vCodePos 0 4095 4096 4096
+  cm = nvalloc csize false
+  if le cm 0
+    ret 4
+  end
+  put vCodeMap 0 cm
+  put vCodeFail 0 0
+  vEmitKernel
+  if ne get vCodeFail 0 0
+    ret 5
+  end
+
+  wk = nvalloc ulong 1048576 false
+  if le wk 0
+    ret 6
+  end
+  put vWork 0 wk
+  put vWorkVa 0 mapaddr wk
+
+  mA = nvalloc V_BYTES false
+  mB = nvalloc V_BYTES false
+  mLut = nvalloc ulong 4096 false
+  mC = nvalloc V_BYTES false
+  if le mA 0
+    ret 7
+  end
+  if le mB 0
+    ret 7
+  end
+  if le mLut 0
+    ret 7
+  end
+  if le mC 0
+    ret 7
+  end
+
+  packU32A
+  if ne mapwrite mA 0 vIoTmp 0 V_BYTES long V_BYTES
+    ret 8
+  end
+  packU32B
+  if ne mapwrite mB 0 vIoTmp 0 V_BYTES long V_BYTES
+    ret 8
+  end
+  packLutArr
+  if ne mapwrite mLut 0 vIoTmp 0 ulong 1024 long 1024
+    ret 8
+  end
+
+  if not vBuildPacket (mapaddr mA) (mapaddr mB) (mapaddr mLut) (mapaddr mC)
+    ret 9
+  end
+
+  if not vLaunchAndWait
+    ret 10
+  end
+
+  tg0 = monons
+  for it ulong 10
+    if not vLaunchAndWait
+      ret 11
+    end
+  end
+  gpu_us = div (ulong sub monons tg0) ulong 10000
+
+  if ne mapread mC 0 vGpuOut 0 V_BYTES long V_BYTES
+    ret 12
+  end
+  if ne verifyGpuOut ulong 0
+    k = write int 1 m_fail 0 len m_fail
+    ret 13
+  end
+
+  k = write int 1 m_ok 0 len m_ok
+  printU64 cpu_us
+  k = write int 1 m_gpu 0 len m_gpu
+  printU64 gpu_us
+  k = write int 1 m_nl 0 len m_nl
+  ret 0
+end
