@@ -980,3 +980,9 @@ id = "VTK-66"
 level = "build"
 suite = "engine"
 statement = "Verdant multiplies binary64 words with a single nearest-even rounding"
+
+[[id]]
+id = "VTK-67"
+level = "build"
+suite = "engine"
+statement = "Verdant adds subtracts and multiplies raw words modulo two to the sixty-fourth power"

@@ -238,9 +238,15 @@ license-files = [{ path = "src/lib.rs", hash = 0xf1e15a93 }]
 
 [[licenses.clarify]]
 name = "verdant_quotient_route"
-version = "=2.22.1"
+version = "=2.22.2"
 expression = "MIT OR Apache-2.0"
-license-files = [{ path = "src/lib.rs", hash = 0xbadd4beb }]
+license-files = [{ path = "src/lib.rs", hash = 0xfcf7307c }]
+
+[[licenses.clarify]]
+name = "verdant_modular_word64"
+version = "=2.22.2"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0x491141c1 }]
 
 [[licenses.clarify]]
 name = "verdant_product_f64"

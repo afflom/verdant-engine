@@ -4964,7 +4964,7 @@ reason = "signature"
 detail = "signature outside the lift: generic, async, unsafe or variadic"
 
 [[residue]]
-kappa = "ea46dce07c910150a9f02a2258800c40ceea5663e8be4cc057dc1d2e79209802"
+kappa = "e21fe95bfdf5041d4f911a8068e1177ab42b1a53437752b4587e9c63923800f7"
 function = "verdant_tensor::linear::evaluate_wide"
 reason = "statements"
 detail = "the body has statements other than let"

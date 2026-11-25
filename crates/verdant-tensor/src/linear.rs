@@ -990,6 +990,7 @@ pub use verdant_float_transform::run as transform_float_storage;
 /// Modes 11 and 12 round F64 and signed I64 respectively to F32 at round-to-odd.
 /// Mode 13 truncates F64 to signed I32. Unrepresentable signed truncations return None.
 /// Mode 14 multiplies two binary64 words with nearest-even rounding.
+/// Modes 15, 16 and 17 add, subtract and multiply raw words modulo 2^64.
 /// Unknown operations and invalid F32 input widths return None.
 ///
 /// # Errors
@@ -1075,6 +1076,9 @@ pub fn evaluate_wide(operation: u64, a: u64, b: u64) -> Result<Option<u64>, Tens
                 }
             }
         },
+        verdant_quotient_route::Adt0::C4 => {
+            return Ok(checked!(verdant_modular_word64::run(operation, a, b)))
+        }
         verdant_quotient_route::Adt0::C3 => match checked!(verdant_product_f64::run(a, b)) {
             verdant_product_f64::Adt0::C0(bits) => return Ok(Some(bits)),
             verdant_product_f64::Adt0::C1(s, e, m) => (Some((s, e, m)), true),

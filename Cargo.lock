@@ -888,6 +888,7 @@ dependencies = [
  "verdant_logistic",
  "verdant_low_f64",
  "verdant_matrix_shape",
+ "verdant_modular_word64",
  "verdant_narrow_f64",
  "verdant_normalize_f64",
  "verdant_normalized_exponential",
@@ -1191,6 +1192,10 @@ name = "verdant_matrix_shape"
 version = "2.9.0"
 
 [[package]]
+name = "verdant_modular_word64"
+version = "2.22.2"
+
+[[package]]
 name = "verdant_narrow_f64"
 version = "2.9.0"
 
@@ -1224,7 +1229,7 @@ version = "2.12.0"
 
 [[package]]
 name = "verdant_quotient_route"
-version = "2.22.1"
+version = "2.22.2"
 
 [[package]]
 name = "verdant_rotation_geometry"

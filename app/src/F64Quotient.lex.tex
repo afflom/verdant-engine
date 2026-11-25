@@ -13,7 +13,8 @@ inductive{
     {name: legacy, fields: [Nat]},
     {name: division, fields: []},
     {name: count, fields: []},
-    {name: product, fields: []}
+    {name: product, fields: []},
+    {name: modular, fields: []}
   ]
 }
 
@@ -21,7 +22,7 @@ definition{
   name: route,
   parameters: [code : Nat],
   result: (Option Route),
-  body: (if (code <? 4) then (ctor Option.some [Route] (ctor Route.legacy code)) else (if (code =? 4) then (ctor Option.some [Route] (ctor Route.division)) else (if (code =? 5) then (ctor Option.some [Route] (ctor Route.count)) else (if (code =? 14) then (ctor Option.some [Route] (ctor Route.product)) else (ctor Option.none [Route]))))),
+  body: (if (code <? 4) then (ctor Option.some [Route] (ctor Route.legacy code)) else (if (code =? 4) then (ctor Option.some [Route] (ctor Route.division)) else (if (code =? 5) then (ctor Option.some [Route] (ctor Route.count)) else (if (code =? 14) then (ctor Option.some [Route] (ctor Route.product)) else (if ((15 <=? code) && (code <=? 17)) then (ctor Option.some [Route] (ctor Route.modular)) else (ctor Option.none [Route])))))),
   executable: true,
   production: {effects: [], targets: [rust-core]}
 }
@@ -503,6 +504,49 @@ definition{
 }
 
 definition{
+  name: wordLow,
+  parameters: [word : Nat],
+  result: Nat,
+  body: (prim remainder word 4294967296 0 : Nat),
+  executable: true
+}
+
+definition{
+  name: wordHigh,
+  parameters: [word : Nat],
+  result: Nat,
+  body: (prim quotient word 4294967296 0 : Nat),
+  executable: true
+}
+
+definition{
+  name: joinWord,
+  parameters: [high : Nat, low : Nat],
+  result: Nat,
+  body: ((prim multiply (wordLow high) 4294967296 : Nat) + (wordLow low)),
+  executable: true
+}
+
+definition{
+  name: modularWord,
+  parameters: [operation : Nat, a : Nat, b : Nat],
+  result: (Option Nat),
+  body: (let al : Nat := (wordLow a);
+    (let bl : Nat := (wordLow b);
+    (let ah : Nat := (wordHigh a);
+    (let bh : Nat := (wordHigh b);
+    (if (operation =? 15) then (let low : Nat := (al + bl);
+      (ctor Option.some [Nat] (joinWord ((ah + bh) + (wordHigh low)) low))) else
+    (if (operation =? 16) then (let borrowed : Nat := (if (al <? bl) then 1 else 0);
+      (ctor Option.some [Nat] (joinWord (prim subtract (4294967296 + ah) (bh + borrowed) : Nat) (prim subtract (4294967296 + al) bl : Nat)))) else
+    (if (operation =? 17) then (let low : Nat := (prim multiply al bl : Nat);
+      (ctor Option.some [Nat] (joinWord (((wordHigh low) + (wordLow (prim multiply ah bl : Nat))) + (wordLow (prim multiply al bh : Nat))) low)))
+      else (ctor Option.none [Nat])))))))),
+  executable: true,
+  production: {effects: [overflow], targets: [rust-core]}
+}
+
+definition{
   name: evaluate,
   parameters: [operation : Nat, a : Nat, b : Nat],
   result: (Option Nat),
@@ -514,7 +558,8 @@ definition{
       | Route.legacy code => (ScalarF64::evaluate code a b)
       | Route.division => (divide a b)
       | Route.count => (fromNatural a)
-      | Route.product => (multiply a b))),
+      | Route.product => (multiply a b)
+      | Route.modular => (modularWord operation a b))),
   executable: true
 }
 
@@ -648,6 +693,27 @@ theorem{
   name: minimumSubnormalProductTie,
   parameters: [],
   statement: ((multiply 3 4602678819172646912) = (ctor Option.some [Nat] 2)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: maximumPlusOneWraps,
+  parameters: [],
+  statement: ((modularWord 15 18446744073709551615 1) = (ctor Option.some [Nat] 0)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: zeroMinusOneWraps,
+  parameters: [],
+  statement: ((modularWord 16 0 1) = (ctor Option.some [Nat] 18446744073709551615)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: bothProductCrossTermsContribute,
+  parameters: [],
+  statement: ((modularWord 17 4294967299 4294967301) = (ctor Option.some [Nat] 34359738383)),
   proof: reflexivity{}
 }
 

@@ -570,6 +570,12 @@ The public wide-word operation 14 multiplies two binary64 values. The `F64Quotie
 
 The imported Berkeley SoftFloat `f64_mul` oracle matched 214,016 products across every exponent, both signs, boundary significands and 65,536 full-width sample words. The comparison preserves the sign of zero and accepts NaN results by IEEE class. Clearing the sticky bit returned zero for the minimum subnormal times the next binary64 word above one half. SoftFloat and the restored implementation both returned the minimum subnormal.
 
+## VTK-67 modular word arithmetic
+
+Wide-word operations 15, 16 and 17 return the low 64 bits of a sum, difference or product. The certified `F64Quotient.modularWord` root splits its operands into 32-bit limbs to retain carries, borrows and cross products. Three model theorems cover the wrapping sum, wrapping difference and product cross terms.
+
+The original Berkeley SoftFloat multiword primitives verified 12,588 results. The oracle reads the low words of `softfloat_add128`, `softfloat_sub128` and `softfloat_mul64To128` from the registered upstream source. Truncating the second operand to 32 bits failed the addition of 0 and 2³². Restoring the full operand passed all 97 tensor library tests on the VTK-66 base.
+
 ## VE-81 M30 modularity ceilings, Observatory health, and uorust MIR proof frontier
 
 Verdant decomposed all 16 hand-written Rust files exceeding 1,145 lines (`governance_kpi.rs`, `scalars_ratchet_m24.rs`, and focused companion splits across `verdant-core`, `verdant-tensor`, and `verdant-cli`) while preserving every lifted `uorust` function `κ`, decomposed all 5 shipped JavaScript files exceeding 850 lines (`site/demo/demo-uhd.mjs`, `site/engine-worker-codec.mjs`, `site/studio-gameplay-panel.mjs`, `site/catalog-streams-stitch.mjs`, `site/studio/studio-page.mjs`), decomposed `scripts/enforce-prism-contracts.mjs` below 1,400 lines via `scripts/enforce-prism-viewpoints.mjs` (raising `mgr-verification-observatory` health to 1,000 permille and `overallRefinementScorePermille` to 984), and expanded `frontier.toml` past 615 constructive MIR-lifted functions while eliminating in-place residues (`pow2_u64`, `Score::asked`, `proof_reuse_is_confined`, `bit_mask_u64`).

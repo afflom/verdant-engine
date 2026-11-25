@@ -5,6 +5,8 @@ use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 
 const SOFTFLOAT_DRIVER: &str = r#"#include "softfloat.h"
+#include "platform.h"
+#include "primitives.h"
 #include <inttypes.h>
 #include <stdio.h>
 #include <string.h>
@@ -18,6 +20,9 @@ while(scanf("%" SCNu64 " %" SCNu64,&a,&b)==2) {
     else if(!strcmp(argv[1],"widen"))result=f32_to_f64((float32_t){(uint32_t)a}).v;
     else if(!strcmp(argv[1],"narrow"))result=f64_to_f32((float64_t){a}).v;
     else if(!strcmp(argv[1],"count"))result=ui64_to_f32(a).v;
+    else if(!strcmp(argv[1],"word-add")) result=softfloat_add128(0,a,0,b).v0;
+    else if(!strcmp(argv[1],"word-subtract")) result=softfloat_sub128(0,a,0,b).v0;
+    else if(!strcmp(argv[1],"word-multiply")) result=softfloat_mul64To128(a,b).v0;
     else if(!strcmp(argv[1],"multiply"))result=f64_mul((float64_t){a},(float64_t){b}).v;
     else if(!strcmp(argv[1],"divide"))result=f64_div((float64_t){a},(float64_t){b}).v;
     else if(!strcmp(argv[1],"count64"))result=ui64_to_f64(a).v;
@@ -209,7 +214,14 @@ fn program() -> &'static Path {
             std::fs::write(&driver, SOFTFLOAT_DRIVER).unwrap();
             checked(
                 Command::new("cc")
-                    .args(["-O2", "-std=c11"])
+                    .args([
+                        "-O2",
+                        "-std=c11",
+                        "-DSOFTFLOAT_FAST_INT64",
+                        "-DINLINE_LEVEL=5",
+                    ])
+                    .arg("-I")
+                    .arg(common.join("softfloat/build/Linux-x86_64-GCC"))
                     .arg("-I")
                     .arg(common.join("softfloat/source/include"))
                     .arg(driver)
@@ -270,6 +282,9 @@ fn compare(mode: &str, inputs: &[(u64, u64)]) {
             "widen" => super::evaluate_wide(1, a, 0).map_err(|_| ()),
             "narrow" => super::evaluate_wide(2, a, 0).map_err(|_| ()),
             "count" => super::evaluate_wide(3, a, 0).map_err(|_| ()),
+            "word-add" => super::evaluate_wide(15, a, b).map_err(|_| ()),
+            "word-subtract" => super::evaluate_wide(16, a, b).map_err(|_| ()),
+            "word-multiply" => super::evaluate_wide(17, a, b).map_err(|_| ()),
             "multiply" => super::evaluate_wide(14, a, b).map_err(|_| ()),
             "divide" => super::evaluate_wide(4, a, b).map_err(|_| ()),
             "count64" => super::evaluate_wide(5, a, 0).map_err(|_| ()),
@@ -843,4 +858,31 @@ fn wide_product_vtk_66() {
         ));
     }
     compare("multiply", &pairs);
+}
+
+#[test]
+fn modular_word_arithmetic_vtk_67() {
+    super::matrix_product_tests::certified_quotient_model();
+    let limbs = [
+        0u64,
+        1,
+        2,
+        (1 << 32) - 1,
+        1 << 32,
+        (1 << 32) + 1,
+        i64::MAX as u64,
+        1 << 63,
+        u64::MAX - 1,
+        u64::MAX,
+    ];
+    let mut cases: Vec<_> = limbs
+        .iter()
+        .flat_map(|&a| limbs.iter().map(move |&b| (a, b)))
+        .collect();
+    for words in wide_words().chunks_exact(2).step_by(13) {
+        cases.push((words[0], words[1].rotate_left(31)));
+    }
+    for op in ["word-add", "word-subtract", "word-multiply"] {
+        compare(op, &cases);
+    }
 }

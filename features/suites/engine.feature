@@ -921,3 +921,9 @@ Feature: engine
     Given signed zeros, subnormals, finite significands, infinities and NaNs
     When the binary64 product is rounded to its stored word
     Then the result agrees with Berkeley SoftFloat across exponent and rounding boundaries
+
+  @VTK-67 @build
+  Scenario: Machine-word arithmetic retains the low 64 bits of each result
+    Given two 64-bit words spanning limb boundaries and both signs
+    When Verdant adds subtracts or multiplies their raw encodings
+    Then the stored low word agrees with the pinned SoftFloat multiword primitives
