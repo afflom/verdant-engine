@@ -202,9 +202,9 @@ license-files = [{ path = "src/lib.rs", hash = 0x6bb35d53 }]
 
 [[licenses.clarify]]
 name = "verdant_storage_block"
-version = "=2.9.0"
+version = "=2.10.0"
 expression = "MIT OR Apache-2.0"
-license-files = [{ path = "src/lib.rs", hash = 0xf77d0560 }]
+license-files = [{ path = "src/lib.rs", hash = 0xef4b926f }]
 
 [[licenses.clarify]]
 name = "verdant_count_f64"

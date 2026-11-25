@@ -915,3 +915,9 @@ Feature: engine
     Given the workspace Rust crates, shipped browser JavaScript modules, Observatory contract scripts, and uorust frontier register
     When Verdant audits its parametric ratchet and synthesizes the Observer self-refinement agenda
     Then every hand-written Rust file is at most 1145 lines, every shipped JS file is at most 850 lines, Observatory health reaches 1000 permille with overall score at least 984 permille, and at least 615 constructive Rust functions are MIR-lifted
+
+  @VTK-65 @build
+  Scenario: Verdant decodes affine and grouped signed activation blocks into strided binary32 lanes
+    Given the original GGML affine and grouped eight-bit activation storage layouts
+    When Verdant decodes one exact block into a bounded strided destination
+    Then every output word matches the original GGML dequantizer or unit-vector dot and all guard bytes remain intact

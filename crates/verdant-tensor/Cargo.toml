@@ -84,7 +84,7 @@ verdant_signed64_conversion = { version = "=2.21.8", path = "../../generated/ten
 verdant_count_f64 = { version = "2.12.0", path = "../../generated/tensor-quotient/packages/rust-core/verdant_count_f64" }
 verdant_quotient_f64 = { version = "2.12.0", path = "../../generated/tensor-quotient/packages/rust-core/verdant_quotient_f64" }
 verdant_quotient_route = { version = "2.12.0", path = "../../generated/tensor-quotient/packages/rust-core/verdant_quotient_route" }
-verdant_storage_block = { version = "2.9.0", path = "../../generated/tensor-execution/packages/rust-core/verdant_storage_block" }
+verdant_storage_block = { version = "2.10.0", path = "../../generated/tensor-execution/packages/rust-core/verdant_storage_block" }
 verdant_packed_field = { version = "2.9.0", path = "../../generated/tensor-execution/packages/rust-core/verdant_packed_field" }
 verdant_integer_f32 = { version = "2.9.0", path = "../../generated/tensor-execution/packages/rust-core/verdant_integer_f32" }
 verdant_small_float = { version = "2.9.0", path = "../../generated/tensor-execution/packages/rust-core/verdant_small_float" }

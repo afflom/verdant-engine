@@ -165,6 +165,7 @@ model does not sanction.
 | `VTK-63` | `build` | Verdant converts signed 64-bit words directly to binary32 and binary64 and truncates representable binary64 values to signed 64-bit words |
 | `VTK-64` | `build` | Verdant rounds binary64 and signed I64 directly to binary32 at round-to-odd and truncates representable binary64 values to signed I32 |
 | `VE-81` | `build` | Verdant enforces sub-1145-line hand-written Rust modularity, sub-850-line shipped JS modularity, sub-1400-line Observatory contract scripts, 984-permille Observer self-refinement health, and at least 615 uorust MIR-lifted functions |
+| `VTK-65` | `build` | Verdant decodes affine and grouped signed activation blocks into strided binary32 lanes |
 
 ## fidelity
 
@@ -204,7 +205,7 @@ An authority is cited, never re-derived, and never gated on: what it states is n
 | `AUTH-STITCH-SELF-HOSTING` | afflom/stitch (identity/stitch.lock commit 68a9222a); RFC 2104 HMAC-SHA256 & RFC 7366 Encrypt-then-MAC AEAD; Systematic Reed-Solomon GF(2^8) k-of-n Erasure Coding; W3C Service Workers & OPFS; W3C PROV-O; OCI Artifact Distribution; RFC 2789 Cargo Sparse Registry; Zenodo Archive (https://zenodo.org/records/24383968) | `VE-43`, `VE-44`, `VE-46`, `VE-47`, `VE-48`, `VE-49`, `VE-51`, `VE-54`, `VE-60`, `VE-70`, `VE-72`, `VE-74`, `VE-77`, `VE-78`, `VE-79`, `VE-80` |
 | `AUTH-SEMVER-CHANGE-KPI` | Semantic Versioning 2.0.0; ISO/IEC/IEEE 12207:2017 §6.3.5 Configuration Management & §6.3.7 Measurement; ISO/IEC/IEEE 15939:2017 Measurement process; Stafford Beer VSM S3/S4/S5 | `VE-45`, `VE-46`, `VE-47`, `VE-48`, `VE-49`, `VE-50`, `VE-51`, `VE-52`, `VE-53`, `VE-54`, `VE-55`, `VE-56`, `VE-57`, `VE-58`, `VE-59`, `VE-60`, `VE-61`, `VE-62`, `VE-63`, `VE-64`, `VE-65`, `VE-66`, `VE-67`, `VE-68`, `VE-69`, `VE-70`, `VE-71`, `VE-72`, `VE-73`, `VE-74`, `VE-75`, `VE-76`, `VE-77`, `VE-78`, `VE-79`, `VE-80`, `VE-81` |
 | `BERKELEY-SOFTFLOAT` | https://github.com/ucb-bar/berkeley-softfloat-3/tree/07ebd29db0cfb55723a79fbbffe99103ef38e305 | `VTK-07`, `VTK-08`, `VTK-15`, `VTK-63`, `VTK-64` |
-| `GGML-TENSOR-CPU` | https://github.com/ggml-org/llama.cpp/tree/9a080f44b503c64f66c84a6274b9d9ee5d5b09d5/ggml/src | `VTK-01`, `VTK-02`, `VTK-03`, `VTK-04`, `VTK-05`, `VTK-06`, `VTK-11`, `VTK-12`, `VTK-13`, `VTK-14`, `VTK-16`, `VTK-17`, `VTK-18`, `VTK-19`, `VTK-20`, `VTK-21`, `VTK-22`, `VTK-23`, `VTK-24` |
+| `GGML-TENSOR-CPU` | https://github.com/ggml-org/llama.cpp/tree/9a080f44b503c64f66c84a6274b9d9ee5d5b09d5/ggml/src | `VTK-01`, `VTK-02`, `VTK-03`, `VTK-04`, `VTK-05`, `VTK-06`, `VTK-11`, `VTK-12`, `VTK-13`, `VTK-14`, `VTK-65`, `VTK-16`, `VTK-17`, `VTK-18`, `VTK-19`, `VTK-20`, `VTK-21`, `VTK-22`, `VTK-23`, `VTK-24` |
 
 ## Claims that are not conformance IDs
 
