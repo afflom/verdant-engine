@@ -974,3 +974,21 @@ id = "VE-81"
 level = "build"
 suite = "engine"
 statement = "Verdant enforces sub-1145-line hand-written Rust modularity, sub-850-line shipped JS modularity, sub-1400-line Observatory contract scripts, 984-permille Observer self-refinement health, and at least 615 uorust MIR-lifted functions"
+
+[[id]]
+id = "VTK-65"
+level = "build"
+suite = "engine"
+statement = "Verdant decodes affine and grouped signed activation blocks into strided binary32 lanes"
+
+[[id]]
+id = "VTK-66"
+level = "build"
+suite = "engine"
+statement = "Verdant multiplies binary64 words with a single nearest-even rounding"
+
+[[id]]
+id = "VTK-67"
+level = "build"
+suite = "engine"
+statement = "Verdant adds subtracts and multiplies raw words modulo two to the sixty-fourth power"

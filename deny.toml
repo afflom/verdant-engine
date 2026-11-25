@@ -202,9 +202,9 @@ license-files = [{ path = "src/lib.rs", hash = 0x6bb35d53 }]
 
 [[licenses.clarify]]
 name = "verdant_storage_block"
-version = "=2.9.0"
+version = "=2.10.0"
 expression = "MIT OR Apache-2.0"
-license-files = [{ path = "src/lib.rs", hash = 0xf77d0560 }]
+license-files = [{ path = "src/lib.rs", hash = 0xef4b926f }]
 
 [[licenses.clarify]]
 name = "verdant_count_f64"
@@ -238,9 +238,21 @@ license-files = [{ path = "src/lib.rs", hash = 0xf1e15a93 }]
 
 [[licenses.clarify]]
 name = "verdant_quotient_route"
-version = "=2.12.0"
+version = "=2.22.2"
 expression = "MIT OR Apache-2.0"
-license-files = [{ path = "src/lib.rs", hash = 0x824c1aca }]
+license-files = [{ path = "src/lib.rs", hash = 0xfcf7307c }]
+
+[[licenses.clarify]]
+name = "verdant_modular_word64"
+version = "=2.22.2"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0x491141c1 }]
+
+[[licenses.clarify]]
+name = "verdant_product_f64"
+version = "=2.22.1"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0x8bace896 }]
 
 [[licenses.clarify]]
 name = "verdant_symmetric_q8"

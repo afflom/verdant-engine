@@ -473,7 +473,7 @@ dependencies = [
 
 [[package]]
 name = "prism-fidelity"
-version = "2.22.0"
+version = "2.22.1"
 dependencies = [
  "serde",
  "sha2 0.11.1",
@@ -506,7 +506,7 @@ dependencies = [
 
 [[package]]
 name = "repo-conformance"
-version = "2.22.0"
+version = "2.22.1"
 dependencies = [
  "prism-fidelity",
  "repo-model",
@@ -519,7 +519,7 @@ dependencies = [
 
 [[package]]
 name = "repo-model"
-version = "2.22.0"
+version = "2.22.1"
 dependencies = [
  "serde",
  "sha2 0.11.1",
@@ -794,14 +794,14 @@ checksum = "daf8dba3b7eb870caf1ddeed7bc9d2a049f3cfdfae7cb521b087cc33ae4c49da"
 
 [[package]]
 name = "verdant-cli"
-version = "2.22.0"
+version = "2.22.1"
 dependencies = [
  "verdant-core",
 ]
 
 [[package]]
 name = "verdant-core"
-version = "2.22.0"
+version = "2.22.1"
 dependencies = [
  "flate2",
  "gltf",
@@ -817,7 +817,7 @@ dependencies = [
 
 [[package]]
 name = "verdant-tensor"
-version = "2.22.0"
+version = "2.22.1"
 dependencies = [
  "proc-macro2",
  "serde",
@@ -888,12 +888,14 @@ dependencies = [
  "verdant_logistic",
  "verdant_low_f64",
  "verdant_matrix_shape",
+ "verdant_modular_word64",
  "verdant_narrow_f64",
  "verdant_normalize_f64",
  "verdant_normalized_exponential",
  "verdant_pack_plan_f64",
  "verdant_packed_dot",
  "verdant_packed_field",
+ "verdant_product_f64",
  "verdant_quotient_f64",
  "verdant_quotient_route",
  "verdant_rotation_geometry",
@@ -928,7 +930,7 @@ dependencies = [
 
 [[package]]
 name = "verdant-wasm"
-version = "2.22.0"
+version = "2.22.1"
 dependencies = [
  "verdant-core",
 ]
@@ -1190,6 +1192,10 @@ name = "verdant_matrix_shape"
 version = "2.9.0"
 
 [[package]]
+name = "verdant_modular_word64"
+version = "2.22.2"
+
+[[package]]
 name = "verdant_narrow_f64"
 version = "2.9.0"
 
@@ -1214,12 +1220,16 @@ name = "verdant_packed_field"
 version = "2.9.0"
 
 [[package]]
+name = "verdant_product_f64"
+version = "2.22.1"
+
+[[package]]
 name = "verdant_quotient_f64"
 version = "2.12.0"
 
 [[package]]
 name = "verdant_quotient_route"
-version = "2.12.0"
+version = "2.22.2"
 
 [[package]]
 name = "verdant_rotation_geometry"
@@ -1267,7 +1277,7 @@ version = "2.32.0"
 
 [[package]]
 name = "verdant_storage_block"
-version = "2.9.0"
+version = "2.10.0"
 
 [[package]]
 name = "verdant_storage_transfer"
@@ -1347,7 +1357,7 @@ checksum = "8c3b93199df0ab874cdf0c6a94f0a0dc3423fe41f1cafb62b8bd7b1deb277aef"
 
 [[package]]
 name = "xtask"
-version = "2.22.0"
+version = "2.22.1"
 dependencies = [
  "repo-conformance",
  "repo-model",

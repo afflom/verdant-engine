@@ -5,9 +5,9 @@
   "currentVersion": {
     "major": 2,
     "minor": 22,
-    "patch": 0
+    "patch": 1
   },
-  "releaseEpoch": 34,
+  "releaseEpoch": 35,
   "history": [
     {
       "version": "0.1.0",
@@ -266,6 +266,13 @@
       "releaseEpoch": 34,
       "bumpKind": "minor",
       "summary": "M30 (v2.22.0, VE-81, VTK-63..VTK-64): Sub-1145L Rust & sub-850L JS modularity, 984 permille Observer health, 620+ uorust MIR-lifted frontier, and certified signed64/round-to-odd wide conversions",
+      "citedAuthority": "AUTH-SEMVER-CHANGE-KPI"
+    },
+    {
+      "version": "2.22.1",
+      "releaseEpoch": 35,
+      "bumpKind": "patch",
+      "summary": "v2.22.1: certified Q8_1/Q8_K activation decoding, binary64 multiplication, and modular 64-bit word arithmetic (VTK-65, VTK-66, VTK-67)",
       "citedAuthority": "AUTH-SEMVER-CHANGE-KPI"
     }
   ]
