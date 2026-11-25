@@ -1,8 +1,8 @@
 //! Bit-exact parity and negative-control refusal tests for the pure-Omega neural worker.
 
 use verdant_omega::{
-    OmegaNeuralWorker, OP_LIF_SSM, OP_PING, STATUS_BAD_MAGIC, STATUS_PAYLOAD_MISMATCH,
-    STATUS_UNKNOWN_OP, WIRE_MAGIC,
+    OmegaCompiledSlm, OmegaNeuralWorker, OP_LIF_SSM, OP_PING, STATUS_BAD_MAGIC,
+    STATUS_PAYLOAD_MISMATCH, STATUS_UNKNOWN_OP, WIRE_MAGIC,
 };
 use verdant_tensor::{
     contract_coded_pair_lut_into, contract_packed_nibbles_lut_into, infer_coded_slm_intent_logits,
@@ -380,4 +380,84 @@ fn tropical_min_plus_all_pairs_closure_bit_exact_parity() {
         TensorComputeError::ZeroOrMismatchedExtents { ref detail }
             if detail == "omega_worker:invalid_extents"
     ));
+}
+
+#[test]
+fn partial_evaluating_omega_slm_jit_matches_verdant_tensor_bit_for_bit() {
+    // Exact Verdant CodedSlmDirector model (32x32x16, 93.75% sparse zeros erased at compile time).
+    let intent_count = CODED_TABLE_LEN;
+    let embed_dim = CODED_TABLE_LEN * 2;
+    let hidden_dim = CODED_TABLE_LEN * 2;
+    let codebook: [i32; CODED_TABLE_LEN] = core::array::from_fn(|i| ((i as i32) - 8) * 16);
+    let zero_code = 8_u8;
+    let pos_strong = 15_u8;
+    let pos_mild = 10_u8;
+
+    let half_cols = hidden_dim / 2;
+    let mut w1 = vec![0_u8; embed_dim * half_cols];
+    for r in 0..embed_dim {
+        for pair in 0..half_cols {
+            let c0 = pair * 2;
+            let c1 = c0 + 1;
+            let k0 = if r == c0 {
+                pos_strong
+            } else if (r % intent_count) == (c0 % intent_count) {
+                pos_mild
+            } else {
+                zero_code
+            };
+            let k1 = if r == c1 {
+                pos_strong
+            } else if (r % intent_count) == (c1 % intent_count) {
+                pos_mild
+            } else {
+                zero_code
+            };
+            w1[r * half_cols + pair] = k0 | (k1 << 4);
+        }
+    }
+    let mut w2 = vec![u16::from(zero_code); hidden_dim * intent_count];
+    for h in 0..hidden_dim {
+        for k in 0..intent_count {
+            if (h % intent_count) == k {
+                w2[h * intent_count + k] = u16::from(pos_strong);
+            }
+        }
+    }
+
+    let tmp_bin =
+        std::env::temp_dir().join(format!("verdant_omega_jit_test_{}", std::process::id()));
+    let mut jit = OmegaCompiledSlm::compile_and_spawn(
+        embed_dim,
+        hidden_dim,
+        intent_count,
+        &codebook,
+        &w1,
+        &w2,
+        &tmp_bin,
+    )
+    .expect("pure-Omega SLM JIT synthesis + omc compile failed");
+
+    let mut rng = SplitMix64::new(0x51a7_c0de_cafe_1234);
+    for batch_rows in [1, 8, 64] {
+        let feats: Vec<i32> = (0..batch_rows * embed_dim)
+            .map(|_| rng.next_i32_range(8192))
+            .collect();
+        let expected = infer_coded_slm_intent_logits(
+            &feats,
+            batch_rows,
+            embed_dim,
+            hidden_dim,
+            intent_count,
+            &codebook,
+            &w1,
+            &w2,
+        )
+        .unwrap();
+        let actual = jit.infer_batch(&feats, batch_rows).unwrap();
+        assert_eq!(actual, expected, "JIT SLM drift at batch_rows={batch_rows}");
+    }
+
+    drop(jit);
+    let _ = std::fs::remove_file(&tmp_bin);
 }

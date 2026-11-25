@@ -18,6 +18,8 @@ use verdant_tensor::{prism_kernel, NeuromorphicStepOutput, TensorComputeError, C
 
 /// Wire protocol magic (`"VOM1"` little-endian).
 pub const WIRE_MAGIC: u32 = 0x564f_4d31;
+/// Wire protocol magic for the pure-Omega partial-evaluating SLM compiler (`"VOMJ"`).
+pub const JIT_MAGIC: u32 = 0x564f_4d4a;
 /// Wire operation code for `step_neuromorphic_lif_ssm_ring` (`kernel10`).
 pub const OP_LIF_SSM: u32 = 1;
 /// Wire operation code for `infer_coded_slm_intent_logits` (`kernel11`).
@@ -84,6 +86,38 @@ pub fn default_worker_binary_path() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../..")
         .join("om/bin/verdant-neural")
+}
+
+/// Resolves the default pure-Omega partial-evaluating SLM compiler (`verdant-slm-jit`).
+///
+/// Checks `VERDANT_OMEGA_SLM_JIT` first, then `<workspace_root>/om/bin/verdant-slm-jit`.
+#[must_use]
+pub fn default_slm_jit_binary_path() -> PathBuf {
+    if let Ok(path) = std::env::var("VERDANT_OMEGA_SLM_JIT") {
+        return PathBuf::from(path);
+    }
+    Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../..")
+        .join("om/bin/verdant-slm-jit")
+}
+
+/// Resolves the native `omc` compiler binary path (`OMC`, `~/.local/bin/omc`, or Spark `~/canon/omega-mv/seed/out/omc`).
+#[must_use]
+pub fn default_omc_binary_path() -> PathBuf {
+    if let Ok(path) = std::env::var("OMC") {
+        return PathBuf::from(path);
+    }
+    if let Ok(home) = std::env::var("HOME") {
+        let mac = Path::new(&home).join(".local/bin/omc");
+        if mac.is_file() {
+            return mac;
+        }
+        let spark = Path::new(&home).join("canon/omega-mv/seed/out/omc");
+        if spark.is_file() {
+            return spark;
+        }
+    }
+    PathBuf::from("omc")
 }
 
 /// Persistent handle to the compiled pure-Omega (`OM-2`) neural worker process.
@@ -582,6 +616,286 @@ impl OmegaNeuralWorker {
 }
 
 impl Drop for OmegaNeuralWorker {
+    fn drop(&mut self) {
+        self.stdin.take();
+        let _ = self.child.wait();
+    }
+}
+
+/// Metadata and handle for a live, zero-weight-RAM native SLM executable synthesized by
+/// `om/bin/verdant-slm-jit` and compiled on the fly by `omc` (zero LLVM, zero `rustc`).
+pub struct OmegaCompiledSlm {
+    child: Child,
+    stdin: Option<ChildStdin>,
+    stdout: ChildStdout,
+    binary_path: PathBuf,
+    embed_dim: usize,
+    intent_count: usize,
+    synthesized_om_bytes: usize,
+    compiled_binary_bytes: usize,
+    synth_micros: u64,
+    compile_micros: u64,
+}
+
+impl OmegaCompiledSlm {
+    /// Synthesizes a zero-weight-RAM pure-Omega `.om` program from live `CodedSlmDirector`
+    /// weights (erasing every zero weight and baking non-zero weights into constant instructions),
+    /// compiles it natively with `omc`, and launches the resulting executable.
+    #[allow(clippy::too_many_arguments)]
+    pub fn compile_and_spawn(
+        embed_dim: usize,
+        hidden_dim: usize,
+        intent_count: usize,
+        codebook: &[i32; CODED_TABLE_LEN],
+        w1_packed_nibbles: &[u8],
+        w2_grid_codes: &[u16],
+        output_binary_path: impl AsRef<Path>,
+    ) -> Result<Self, TensorComputeError> {
+        let edim =
+            u32::try_from(embed_dim).map_err(|_| TensorComputeError::ZeroOrMismatchedExtents {
+                detail: "omega_slm_jit:embed_dim_exceeds_u32".to_string(),
+            })?;
+        let hdim =
+            u32::try_from(hidden_dim).map_err(|_| TensorComputeError::ZeroOrMismatchedExtents {
+                detail: "omega_slm_jit:hidden_dim_exceeds_u32".to_string(),
+            })?;
+        let icnt = u32::try_from(intent_count).map_err(|_| {
+            TensorComputeError::ZeroOrMismatchedExtents {
+                detail: "omega_slm_jit:intent_count_exceeds_u32".to_string(),
+            }
+        })?;
+        let flags: u32 = if cfg!(all(target_os = "macos", target_arch = "aarch64")) {
+            1
+        } else {
+            0
+        };
+
+        let mut model_bytes =
+            Vec::with_capacity(88 + w1_packed_nibbles.len() + w2_grid_codes.len() * 2);
+        model_bytes.extend_from_slice(&JIT_MAGIC.to_le_bytes());
+        model_bytes.extend_from_slice(&edim.to_le_bytes());
+        model_bytes.extend_from_slice(&hdim.to_le_bytes());
+        model_bytes.extend_from_slice(&icnt.to_le_bytes());
+        model_bytes.extend_from_slice(&SLM_RELU_SHIFT.to_le_bytes());
+        model_bytes.extend_from_slice(&flags.to_le_bytes());
+        for &v in codebook {
+            model_bytes.extend_from_slice(&v.to_le_bytes());
+        }
+        model_bytes.extend_from_slice(w1_packed_nibbles);
+        for &c in w2_grid_codes {
+            model_bytes.extend_from_slice(&c.to_le_bytes());
+        }
+
+        // Stage 1: Pure-Omega partial evaluator synthesizes specialized .om source.
+        let t0 = std::time::Instant::now();
+        let mut jit_child = Command::new(default_slm_jit_binary_path())
+            .stdin(Stdio::piped())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .spawn()
+            .map_err(io_err)?;
+        if let Some(mut stdin) = jit_child.stdin.take() {
+            stdin.write_all(&model_bytes).map_err(io_err)?;
+        }
+        let jit_out = jit_child.wait_with_output().map_err(io_err)?;
+        if !jit_out.status.success() {
+            return Err(TensorComputeError::ZeroOrMismatchedExtents {
+                detail: format!(
+                    "omega_slm_jit:synthesis_refused_exit_{:?}",
+                    jit_out.status.code()
+                ),
+            });
+        }
+        let synth_micros = t0.elapsed().as_micros() as u64;
+        let om_src = jit_out.stdout;
+
+        // Stage 2: Native omc compiles synthesized .om directly to Mach-O / ELF machine code.
+        let t1 = std::time::Instant::now();
+        let mut omc_child = Command::new(default_omc_binary_path())
+            .stdin(Stdio::piped())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .spawn()
+            .map_err(io_err)?;
+        if let Some(mut stdin) = omc_child.stdin.take() {
+            stdin.write_all(&om_src).map_err(io_err)?;
+        }
+        let omc_out = omc_child.wait_with_output().map_err(io_err)?;
+        if !omc_out.status.success() {
+            return Err(TensorComputeError::InvalidKernelSpecification {
+                kernel_name: format!(
+                    "omega_slm_jit:omc_failed_{:?}:{}",
+                    omc_out.status.code(),
+                    String::from_utf8_lossy(&omc_out.stderr).trim()
+                ),
+            });
+        }
+        let compile_micros = t1.elapsed().as_micros() as u64;
+        let bin_bytes = omc_out.stdout;
+
+        let bin_path = output_binary_path.as_ref().to_path_buf();
+        std::fs::write(&bin_path, &bin_bytes).map_err(io_err)?;
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+            let mut perms = std::fs::metadata(&bin_path).map_err(io_err)?.permissions();
+            perms.set_mode(0o755);
+            std::fs::set_permissions(&bin_path, perms).map_err(io_err)?;
+        }
+        #[cfg(all(target_os = "macos", target_arch = "aarch64"))]
+        {
+            let sign_status = Command::new("codesign")
+                .args(["-s", "-", "-f"])
+                .arg(&bin_path)
+                .stdout(Stdio::null())
+                .stderr(Stdio::null())
+                .status()
+                .map_err(io_err)?;
+            if !sign_status.success() {
+                return Err(TensorComputeError::InvalidKernelSpecification {
+                    kernel_name: "omega_slm_jit:codesign_failed".to_string(),
+                });
+            }
+        }
+
+        let mut child = Command::new(&bin_path)
+            .stdin(Stdio::piped())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::inherit())
+            .spawn()
+            .map_err(io_err)?;
+        let stdin = child
+            .stdin
+            .take()
+            .ok_or_else(|| io_err(io::Error::other("failed to capture compiled slm stdin")))?;
+        let stdout = child
+            .stdout
+            .take()
+            .ok_or_else(|| io_err(io::Error::other("failed to capture compiled slm stdout")))?;
+
+        Ok(Self {
+            child,
+            stdin: Some(stdin),
+            stdout,
+            binary_path: bin_path,
+            embed_dim,
+            intent_count,
+            synthesized_om_bytes: om_src.len(),
+            compiled_binary_bytes: bin_bytes.len(),
+            synth_micros,
+            compile_micros,
+        })
+    }
+
+    /// Size in bytes of the pure-Omega `.om` source synthesized by `verdant-slm-jit`.
+    #[must_use]
+    pub const fn synthesized_om_bytes(&self) -> usize {
+        self.synthesized_om_bytes
+    }
+
+    /// Size in bytes of the native executable emitted by `omc`.
+    #[must_use]
+    pub const fn compiled_binary_bytes(&self) -> usize {
+        self.compiled_binary_bytes
+    }
+
+    /// Elapsed microseconds spent in `verdant-slm-jit` partial evaluation.
+    #[must_use]
+    pub const fn synth_micros(&self) -> u64 {
+        self.synth_micros
+    }
+
+    /// Elapsed microseconds spent in native `omc` compilation.
+    #[must_use]
+    pub const fn compile_micros(&self) -> u64 {
+        self.compile_micros
+    }
+
+    /// Path to the synthesized native executable on disk.
+    #[must_use]
+    pub fn binary_path(&self) -> &Path {
+        &self.binary_path
+    }
+
+    /// Runs a batch of `batch_rows` feature vectors (`batch_rows * embed_dim` `i32`s) through the
+    /// weight-baked native executable and returns exact `i64` logits (`batch_rows * intent_count`).
+    pub fn infer_batch(
+        &mut self,
+        feature_activations_q: &[i32],
+        batch_rows: usize,
+    ) -> Result<Vec<i64>, TensorComputeError> {
+        if batch_rows == 0
+            || feature_activations_q.len() != batch_rows.saturating_mul(self.embed_dim)
+        {
+            return Err(TensorComputeError::ZeroOrMismatchedExtents {
+                detail: "omega_slm_jit:batch_feature_len_mismatch".to_string(),
+            });
+        }
+        let brows =
+            u32::try_from(batch_rows).map_err(|_| TensorComputeError::ZeroOrMismatchedExtents {
+                detail: "omega_slm_jit:batch_rows_exceeds_u32".to_string(),
+            })?;
+        let plen = u32::try_from(feature_activations_q.len() * 4).map_err(|_| {
+            TensorComputeError::ZeroOrMismatchedExtents {
+                detail: "omega_slm_jit:payload_exceeds_u32".to_string(),
+            }
+        })?;
+
+        let mut hdr = [0_u8; HEADER_BYTES];
+        hdr[0..4].copy_from_slice(&WIRE_MAGIC.to_le_bytes());
+        hdr[4..8].copy_from_slice(&brows.to_le_bytes());
+        hdr[8..12].copy_from_slice(&plen.to_le_bytes());
+
+        let mut payload = Vec::with_capacity(plen as usize);
+        for &v in feature_activations_q {
+            payload.extend_from_slice(&v.to_le_bytes());
+        }
+
+        let stdin = self.stdin.as_mut().ok_or_else(|| {
+            io_err(io::Error::new(
+                io::ErrorKind::BrokenPipe,
+                "compiled slm stdin closed",
+            ))
+        })?;
+        stdin.write_all(&hdr).map_err(io_err)?;
+        stdin.write_all(&payload).map_err(io_err)?;
+        stdin.flush().map_err(io_err)?;
+
+        let mut reply_hdr = [0_u8; HEADER_BYTES];
+        self.stdout.read_exact(&mut reply_hdr).map_err(io_err)?;
+        let reply_magic =
+            u32::from_le_bytes([reply_hdr[0], reply_hdr[1], reply_hdr[2], reply_hdr[3]]);
+        if reply_magic != WIRE_MAGIC {
+            return Err(TensorComputeError::InvalidKernelSpecification {
+                kernel_name: format!("omega_slm_jit:bad_reply_magic_0x{reply_magic:08x}"),
+            });
+        }
+        let status = u32::from_le_bytes([reply_hdr[4], reply_hdr[5], reply_hdr[6], reply_hdr[7]]);
+        if status != STATUS_OK {
+            return Err(status_err(status));
+        }
+        let reply_len =
+            u32::from_le_bytes([reply_hdr[8], reply_hdr[9], reply_hdr[10], reply_hdr[11]]) as usize;
+        let expected = batch_rows
+            .saturating_mul(self.intent_count)
+            .saturating_mul(8);
+        if reply_len != expected {
+            return Err(TensorComputeError::ZeroOrMismatchedExtents {
+                detail: format!(
+                    "omega_slm_jit:reply_len_mismatch expected={expected} actual={reply_len}"
+                ),
+            });
+        }
+        let mut reply = vec![0_u8; reply_len];
+        self.stdout.read_exact(&mut reply).map_err(io_err)?;
+        Ok(reply
+            .chunks_exact(8)
+            .map(|ch| i64::from_le_bytes([ch[0], ch[1], ch[2], ch[3], ch[4], ch[5], ch[6], ch[7]]))
+            .collect())
+    }
+}
+
+impl Drop for OmegaCompiledSlm {
     fn drop(&mut self) {
         self.stdin.take();
         let _ = self.child.wait();

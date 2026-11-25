@@ -1,0 +1,387 @@
+om2
+note Pure seeded OM-2 Partial-Evaluating Neural Compiler (Futamura Projection).
+note Reads a live Verdant CodedSlmDirector model (codebook + Packed<Grid<16>,2> w1 + Grid<16> w2)
+note from stdin, algebraically erases every zero weight, bakes every non-zero weight directly into
+note straight-line OM-2 arithmetic, and emits a standalone zero-weight-RAM native .om executable
+note to stdout — ready to be compiled by omc in milliseconds with zero LLVM and zero rustc.
+note
+note Input binary format on stdin (little-endian):
+note   u32 magic (0x564F4D4A = "VOMJ")
+note   u32 embed_dim (>= 1)
+note   u32 hidden_dim (>= 2, even)
+note   u32 intent_count (>= 1)
+note   u32 relu_shift (< 64)
+note   u32 flags (bit 0: emit target a64macos header)
+note   i32 codebook[16]
+note   u8  w1_packed_nibbles[embed_dim * (hidden_dim / 2)]
+note   u16 w2_grid_codes[hidden_dim * intent_count]
+
+const JIT_MAGIC uint 1448037706
+const FLAG_MACOS uint 1
+
+global in_buf uchar *
+global out_buf uchar *
+global out_len ulong 1
+global cb long 16
+global cfg ulong 8
+global dec_buf uchar 32
+
+text t_macos "target a64macos\n"
+text t_hdr "om2\nnote Auto-synthesized by pure-Omega verdant_slm_jit (zero weight RAM)\n"
+text t_consts "const I32_MAX long 2147483647\nconst MAGIC uint 1448037681\n"
+text t_globs "global hdr uchar 12\nglobal io_in uchar *\nglobal io_out uchar *\nglobal fv long "
+text t_g_hid "\nglobal hv long "
+text t_g_out "\nglobal lv long "
+text t_rt1 "\nfn rd_exact n ulong to long\n  g = ulong 0\n  while lt g n bound 1000000000\n    k = read int 0 io_in g (sub n g)\n    if lt k long 0\n      ret long -1\n    end\n    if eq k long 0\n      ret long -2\n    end\n    g = add g (ulong k)\n  end\n  ret long 1\nend\n"
+text t_rt2 "fn rd_hdr to long\n  g = ulong 0\n  while lt g ulong 12 bound 1000000000\n    k = read int 0 hdr g (sub ulong 12 g)\n    if lt k long 0\n      ret long -1\n    end\n    if eq k long 0\n      if eq g ulong 0\n        ret long 0\n      end\n      ret long -2\n    end\n    g = add g (ulong k)\n  end\n  ret long 1\nend\n"
+text t_rt3 "fn wr_hdr to long\n  s = ulong 0\n  while lt s ulong 12 bound 1000000000\n    k = write int 1 hdr s (sub ulong 12 s)\n    if le k long 0\n      ret long -1\n    end\n    s = add s (ulong k)\n  end\n  ret long 1\nend\n"
+text t_rt4 "fn wr_out n ulong to long\n  s = ulong 0\n  while lt s n bound 1000000000\n    k = write int 1 io_out s (sub n s)\n    if le k long 0\n      ret long -1\n    end\n    s = add s (ulong k)\n  end\n  ret long 1\nend\n"
+text t_rt5 "fn h_u32 o ulong to uint\n  b0 = uint get hdr o\n  b1 = uint get hdr (add o ulong 1)\n  b2 = uint get hdr (add o ulong 2)\n  b3 = uint get hdr (add o ulong 3)\n  ret or (or b0 (shl b1 uint 8)) (or (shl b2 uint 16) (shl b3 uint 24))\nend\n"
+text t_rt6 "fn h_wu32 o ulong v uint to void\n  put hdr o (uchar and v uint 255)\n  put hdr (add o ulong 1) (uchar and (shr v uint 8) uint 255)\n  put hdr (add o ulong 2) (uchar and (shr v uint 16) uint 255)\n  put hdr (add o ulong 3) (uchar and (shr v uint 24) uint 255)\nend\n"
+text t_rt7 "fn in_i32 o ulong to long\n  b0 = uint get io_in o\n  b1 = uint get io_in (add o ulong 1)\n  b2 = uint get io_in (add o ulong 2)\n  b3 = uint get io_in (add o ulong 3)\n  u = or (or b0 (shl b1 uint 8)) (or (shl b2 uint 16) (shl b3 uint 24))\n  ret long (bitcast int u)\nend\n"
+text t_rt8 "fn out_i64 o ulong v long to void\n  u = bitcast ulong v\n  put io_out o (uchar and u ulong 255)\n  put io_out (add o ulong 1) (uchar and (shr u ulong 8) ulong 255)\n  put io_out (add o ulong 2) (uchar and (shr u ulong 16) ulong 255)\n  put io_out (add o ulong 3) (uchar and (shr u ulong 24) ulong 255)\n  put io_out (add o ulong 4) (uchar and (shr u ulong 32) ulong 255)\n  put io_out (add o ulong 5) (uchar and (shr u ulong 40) ulong 255)\n  put io_out (add o ulong 6) (uchar and (shr u ulong 48) ulong 255)\n  put io_out (add o ulong 7) (uchar and (shr u ulong 56) ulong 255)\nend\n"
+text t_relu1 "fn relu_s a ulong to long\n  s = bitcast long a\n  if le s long 0\n    ret long 0\n  end\n  sh = shr s long "
+text t_relu2 "\n  if gt sh I32_MAX\n    ret I32_MAX\n  end\n  ret sh\nend\n"
+
+text t_fn_h "fn h_"
+text t_fn_i "fn i_"
+text t_to_void " to void\n"
+text t_acc0 "  a = ulong 0\n"
+text t_term_f "  a = add a (bitcast ulong (mul (get fv ulong "
+text t_term_h "  a = add a (bitcast ulong (mul (get hv ulong "
+text t_mid ") long "
+text t_close "))\n"
+text t_put_h "  put hv ulong "
+text t_relu_call " (relu_s a)\nend\n"
+text t_put_l "  put lv ulong "
+text t_cast_l " (bitcast long a)\nend\n"
+text t_infer_start "fn infer_one to void\n"
+text t_call_h "  h_"
+text t_call_i "  i_"
+text t_nl "\n"
+text t_end "end\n"
+
+text t_main1 "fn send_st st uint n uint to long\n  h_wu32 ulong 0 MAGIC\n  h_wu32 ulong 4 st\n  h_wu32 ulong 8 n\n  rc = wr_hdr\n  if lt rc long 0\n    ret long -1\n  end\n  if gt n uint 0\n    rc = wr_out (ulong n)\n    if lt rc long 0\n      ret long -1\n    end\n  end\n  ret long 0\nend\nfn run_batch brows ulong to void\n  r = ulong 0\n  while lt r brows bound 1000000000\n    k = ulong 0\n    base = mul r ulong "
+text t_main2 "\n    while lt k ulong "
+text t_main3 " bound 1000000000\n      put fv k (in_i32 (add base (mul k ulong 4)))\n      k = add k ulong 1\n    end\n    infer_one\n    k = ulong 0\n    base = mul r ulong "
+text t_main4 "\n    while lt k ulong "
+text t_main5 " bound 1000000000\n      out_i64 (add base (mul k ulong 8)) (get lv k)\n      k = add k ulong 1\n    end\n    r = add r ulong 1\n  end\nend\nfn main to int\n  while true bound 1000000000\n    rc = rd_hdr\n    if eq rc long 0\n      ret 0\n    end\n    if lt rc long 0\n      ret 1\n    end\n    m = h_u32 ulong 0\n    brows = ulong h_u32 ulong 4\n    plen = ulong h_u32 ulong 8\n    if gt plen (len io_in)\n      rc = enlarge io_in plen\n      if lt rc long 0\n        ret 2\n      end\n    end\n    if gt plen ulong 0\n      rc = rd_exact plen\n      if le rc long 0\n        ret 3\n      end\n    end\n    if ne m MAGIC\n      rc = send_st uint 1 uint 0\n      if lt rc long 0\n        ret 4\n      end\n      continue\n    end\n    if eq brows ulong 0\n      rc = send_st uint 0 uint 0\n      if lt rc long 0\n        ret 4\n      end\n      continue\n    end\n    if ne plen (mul brows ulong "
+text t_main6 ")\n      rc = send_st uint 5 uint 0\n      if lt rc long 0\n        ret 4\n      end\n      continue\n    end\n    out_b = mul brows ulong "
+text t_main7 "\n    if gt out_b (len io_out)\n      rc = enlarge io_out out_b\n      if lt rc long 0\n        ret 2\n      end\n    end\n    run_batch brows\n    rc = send_st uint 0 (uint out_b)\n    if lt rc long 0\n      ret 4\n    end\n  end\n  ret 0\nend\n"
+
+fn out_ensure add_n ulong to void
+  cur = get out_len ulong 0
+  need = add cur add_n
+  if gt need (len out_buf)
+    cap = mul (len out_buf) ulong 2
+    if lt cap ulong 65536
+      cap = ulong 65536
+    end
+    if lt cap need
+      cap = need
+    end
+    rc = enlarge out_buf cap
+    if lt rc long 0
+      exit 20
+    end
+  end
+end
+
+fn emit_byte b uchar to void
+  out_ensure ulong 1
+  pos = get out_len ulong 0
+  put out_buf pos b
+  put out_len ulong 0 (add pos ulong 1)
+end
+
+fn emit_txt src view uchar * to void
+  n = len src
+  out_ensure n
+  pos = get out_len ulong 0
+  i = ulong 0
+  while lt i n bound 1000000000
+    put out_buf (add pos i) (get src i)
+    i = add i ulong 1
+  end
+  put out_len ulong 0 (add pos n)
+end
+
+fn emit_u64 v ulong to void
+  if eq v ulong 0
+    emit_byte uchar 48
+    ret
+  end
+  n = ulong 0
+  while gt v ulong 0 bound 32
+    d = rem v ulong 10
+    put dec_buf n (uchar add d ulong 48)
+    v = div v ulong 10
+    n = add n ulong 1
+  end
+  while gt n ulong 0 bound 32
+    n = sub n ulong 1
+    emit_byte (get dec_buf n)
+  end
+end
+
+fn emit_i64 v long to void
+  if lt v long 0
+    emit_byte uchar 45
+    emit_u64 (sub ulong 0 (bitcast ulong v))
+    ret
+  end
+  emit_u64 (ulong v)
+end
+
+fn in_u16 o ulong to ushort
+  b0 = ushort get in_buf o
+  b1 = ushort get in_buf (add o ulong 1)
+  ret or b0 (shl b1 ushort 8)
+end
+
+fn in_u32 o ulong to uint
+  b0 = uint get in_buf o
+  b1 = uint get in_buf (add o ulong 1)
+  b2 = uint get in_buf (add o ulong 2)
+  b3 = uint get in_buf (add o ulong 3)
+  ret or (or b0 (shl b1 uint 8)) (or (shl b2 uint 16) (shl b3 uint 24))
+end
+
+fn read_all_stdin to ulong
+  cap = ulong 65536
+  rc = enlarge in_buf cap
+  if lt rc long 0
+    exit 21
+  end
+  got = ulong 0
+  while true bound 1000000000
+    if eq got (len in_buf)
+      ncap = mul (len in_buf) ulong 2
+      rc2 = enlarge in_buf ncap
+      if lt rc2 long 0
+        exit 21
+      end
+    end
+    k = read int 0 in_buf got (sub (len in_buf) got)
+    if lt k long 0
+      exit 22
+    end
+    if eq k long 0
+      ret got
+    end
+    got = add got (ulong k)
+  end
+  ret got
+end
+
+fn emit_hidden_fn c ulong to void
+  edim = get cfg ulong 0
+  half_h = shr (get cfg ulong 1) ulong 1
+  off_w1 = get cfg ulong 5
+  pair = shr c ulong 1
+  hi_nib = and c ulong 1
+
+  emit_txt view t_fn_h
+  emit_u64 c
+  emit_txt view t_to_void
+  emit_txt view t_acc0
+
+  k = ulong 0
+  while lt k edim bound 1000000000
+    pb = get in_buf (add off_w1 (add (mul k half_h) pair))
+    if eq hi_nib ulong 1
+      pb = shr pb uchar 4
+    end
+    w = get cb (ulong and pb uchar 15)
+    if ne w long 0
+      emit_txt view t_term_f
+      emit_u64 k
+      emit_txt view t_mid
+      emit_i64 w
+      emit_txt view t_close
+    end
+    k = add k ulong 1
+  end
+
+  emit_txt view t_put_h
+  emit_u64 c
+  emit_txt view t_relu_call
+end
+
+fn emit_intent_fn j ulong to void
+  hdim = get cfg ulong 1
+  icnt = get cfg ulong 2
+  off_w2 = get cfg ulong 6
+
+  emit_txt view t_fn_i
+  emit_u64 j
+  emit_txt view t_to_void
+  emit_txt view t_acc0
+
+  h = ulong 0
+  while lt h hdim bound 1000000000
+    wc = ulong in_u16 (add off_w2 (mul (add (mul h icnt) j) ulong 2))
+    w = get cb wc
+    if ne w long 0
+      emit_txt view t_term_h
+      emit_u64 h
+      emit_txt view t_mid
+      emit_i64 w
+      emit_txt view t_close
+    end
+    h = add h ulong 1
+  end
+
+  emit_txt view t_put_l
+  emit_u64 j
+  emit_txt view t_cast_l
+end
+
+fn emit_program to void
+  edim = get cfg ulong 0
+  hdim = get cfg ulong 1
+  icnt = get cfg ulong 2
+  rshift = get cfg ulong 3
+  flags = get cfg ulong 4
+
+  if ne (and flags (ulong FLAG_MACOS)) ulong 0
+    emit_txt view t_macos
+  end
+  emit_txt view t_hdr
+  emit_txt view t_consts
+  emit_txt view t_globs
+  emit_u64 edim
+  emit_txt view t_g_hid
+  emit_u64 hdim
+  emit_txt view t_g_out
+  emit_u64 icnt
+  emit_txt view t_rt1
+  emit_txt view t_rt2
+  emit_txt view t_rt3
+  emit_txt view t_rt4
+  emit_txt view t_rt5
+  emit_txt view t_rt6
+  emit_txt view t_rt7
+  emit_txt view t_rt8
+  emit_txt view t_relu1
+  emit_u64 rshift
+  emit_txt view t_relu2
+
+  c = ulong 0
+  while lt c hdim bound 1000000000
+    emit_hidden_fn c
+    c = add c ulong 1
+  end
+
+  j = ulong 0
+  while lt j icnt bound 1000000000
+    emit_intent_fn j
+    j = add j ulong 1
+  end
+
+  emit_txt view t_infer_start
+  c2 = ulong 0
+  while lt c2 hdim bound 1000000000
+    emit_txt view t_call_h
+    emit_u64 c2
+    emit_txt view t_nl
+    c2 = add c2 ulong 1
+  end
+  j2 = ulong 0
+  while lt j2 icnt bound 1000000000
+    emit_txt view t_call_i
+    emit_u64 j2
+    emit_txt view t_nl
+    j2 = add j2 ulong 1
+  end
+  emit_txt view t_end
+
+  emit_txt view t_main1
+  emit_u64 (mul edim ulong 4)
+  emit_txt view t_main2
+  emit_u64 edim
+  emit_txt view t_main3
+  emit_u64 (mul icnt ulong 8)
+  emit_txt view t_main4
+  emit_u64 icnt
+  emit_txt view t_main5
+  emit_u64 (mul edim ulong 4)
+  emit_txt view t_main6
+  emit_u64 (mul icnt ulong 8)
+  emit_txt view t_main7
+end
+
+fn parse_model total ulong to int
+  if lt total ulong 88
+    ret 10
+  end
+  if ne (in_u32 ulong 0) JIT_MAGIC
+    ret 11
+  end
+  put cfg ulong 0 (ulong in_u32 ulong 4)
+  put cfg ulong 1 (ulong in_u32 ulong 8)
+  put cfg ulong 2 (ulong in_u32 ulong 12)
+  put cfg ulong 3 (ulong in_u32 ulong 16)
+  put cfg ulong 4 (ulong in_u32 ulong 20)
+
+  if eq (get cfg ulong 0) ulong 0
+    ret 12
+  end
+  hdim = get cfg ulong 1
+  if eq hdim ulong 0
+    ret 12
+  end
+  if ne (and hdim ulong 1) ulong 0
+    ret 12
+  end
+  if eq (get cfg ulong 2) ulong 0
+    ret 12
+  end
+  if ge (get cfg ulong 3) ulong 64
+    ret 13
+  end
+
+  off_w1 = ulong 88
+  off_w2 = add off_w1 (mul (get cfg ulong 0) (shr hdim ulong 1))
+  expected = add off_w2 (mul (mul hdim (get cfg ulong 2)) ulong 2)
+  if ne total expected
+    ret 14
+  end
+  put cfg ulong 5 off_w1
+  put cfg ulong 6 off_w2
+
+  i = ulong 0
+  while lt i ulong 16 bound 16
+    put cb i (long bitcast int (in_u32 (add ulong 24 (mul i ulong 4))))
+    i = add i ulong 1
+  end
+
+  w2_n = mul hdim (get cfg ulong 2)
+  wi = ulong 0
+  while lt wi w2_n bound 1000000000
+    if ge (in_u16 (add off_w2 (mul wi ulong 2))) ushort 16
+      ret 15
+    end
+    wi = add wi ulong 1
+  end
+  ret 0
+end
+
+fn main to int
+  rc = parse_model read_all_stdin
+  if ne rc int 0
+    ret rc
+  end
+  emit_program
+
+  n_out = get out_len ulong 0
+  sent = ulong 0
+  while lt sent n_out bound 1000000000
+    k = write int 1 out_buf sent (sub n_out sent)
+    if le k long 0
+      ret 16
+    end
+    sent = add sent (ulong k)
+  end
+  ret 0
+end

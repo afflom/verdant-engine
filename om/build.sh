@@ -2,7 +2,6 @@
 set -eu
 
 SCRIPT_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
-SRC="$SCRIPT_DIR/verdant_neural.om"
 OUT_DIR="${OUT_DIR:-$SCRIPT_DIR/bin}"
 mkdir -p "$OUT_DIR"
 
@@ -20,48 +19,56 @@ else
   exit 1
 fi
 
-TMP_SRC="$OUT_DIR/verdant_neural.build.om"
-trap 'rm -f "$TMP_SRC"' EXIT
+build_one() {
+  src="$1"
+  base="$2"
+  tmp_src="$OUT_DIR/$base.build.om"
 
-case "$OS/$ARCH" in
-  Darwin/arm64)
-    OUT_BIN="$OUT_DIR/verdant-neural-macos"
-    { printf 'target a64macos\n'; cat "$SRC"; } > "$TMP_SRC"
-    ;;
-  Linux/aarch64)
-    OUT_BIN="$OUT_DIR/verdant-neural-linux-aarch64"
-    cp "$SRC" "$TMP_SRC"
-    ;;
-  Linux/x86_64)
-    OUT_BIN="$OUT_DIR/verdant-neural-linux-x86_64"
-    { printf 'target x86linux\n'; cat "$SRC"; } > "$TMP_SRC"
-    ;;
-  *)
-    echo "error: unsupported platform $OS/$ARCH" >&2
-    exit 1
-    ;;
-esac
+  case "$OS/$ARCH" in
+    Darwin/arm64)
+      out_bin="$OUT_DIR/$base-macos"
+      { printf 'target a64macos\n'; cat "$src"; } > "$tmp_src"
+      ;;
+    Linux/aarch64)
+      out_bin="$OUT_DIR/$base-linux-aarch64"
+      cp "$src" "$tmp_src"
+      ;;
+    Linux/x86_64)
+      out_bin="$OUT_DIR/$base-linux-x86_64"
+      { printf 'target x86linux\n'; cat "$src"; } > "$tmp_src"
+      ;;
+    *)
+      echo "error: unsupported platform $OS/$ARCH" >&2
+      rm -f "$tmp_src"
+      exit 1
+      ;;
+  esac
 
-TMP_BIN="$OUT_BIN.tmp"
-rm -f "$TMP_BIN"
-"$OMC_BIN" < "$TMP_SRC" > "$TMP_BIN"
-chmod +x "$TMP_BIN"
+  tmp_bin="$out_bin.tmp"
+  rm -f "$tmp_bin"
+  "$OMC_BIN" < "$tmp_src" > "$tmp_bin"
+  rm -f "$tmp_src"
+  chmod +x "$tmp_bin"
 
-if [ "$OS/$ARCH" = "Darwin/arm64" ]; then
-  codesign -s - -f "$TMP_BIN" >/dev/null 2>&1
-fi
+  if [ "$OS/$ARCH" = "Darwin/arm64" ]; then
+    codesign -s - -f "$tmp_bin" >/dev/null 2>&1
+  fi
 
-mv -f "$TMP_BIN" "$OUT_BIN"
-ln -sf "$(basename "$OUT_BIN")" "$OUT_DIR/verdant-neural"
+  mv -f "$tmp_bin" "$out_bin"
+  ln -sf "$(basename "$out_bin")" "$OUT_DIR/$base"
 
-if command -v shasum >/dev/null 2>&1; then
-  OMC_SHA="$(shasum -a 256 "$OMC_BIN" | awk '{print $1}')"
-  BIN_SHA="$(shasum -a 256 "$OUT_BIN" | awk '{print $1}')"
-else
-  OMC_SHA="$(sha256sum "$OMC_BIN" | awk '{print $1}')"
-  BIN_SHA="$(sha256sum "$OUT_BIN" | awk '{print $1}')"
-fi
+  if command -v shasum >/dev/null 2>&1; then
+    omc_sha="$(shasum -a 256 "$OMC_BIN" | awk '{print $1}')"
+    bin_sha="$(shasum -a 256 "$out_bin" | awk '{print $1}')"
+  else
+    omc_sha="$(sha256sum "$OMC_BIN" | awk '{print $1}')"
+    bin_sha="$(sha256sum "$out_bin" | awk '{print $1}')"
+  fi
 
-echo "BUILT $OUT_BIN"
-echo "  omc_sha256=$OMC_SHA"
-echo "  bin_sha256=$BIN_SHA"
+  echo "BUILT $out_bin"
+  echo "  omc_sha256=$omc_sha"
+  echo "  bin_sha256=$bin_sha"
+}
+
+build_one "$SCRIPT_DIR/verdant_neural.om" "verdant-neural"
+build_one "$SCRIPT_DIR/verdant_slm_jit.om" "verdant-slm-jit"
