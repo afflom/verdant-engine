@@ -1,0 +1,21 @@
+[package]
+name = "verdant-omega"
+description = "Safe Rust client and bit-exact parity harness for the pure seeded-Omega (OM-2) native neural worker."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+authors.workspace = true
+keywords.workspace = true
+categories.workspace = true
+
+[dependencies]
+verdant-tensor = { workspace = true }
+
+[dev-dependencies]
+verdant-core = { workspace = true }
+
+[lints]
+workspace = true

@@ -816,6 +816,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "verdant-omega"
+version = "2.22.4"
+dependencies = [
+ "verdant-core",
+ "verdant-tensor",
+]
+
+[[package]]
 name = "verdant-tensor"
 version = "2.22.4"
 dependencies = [
