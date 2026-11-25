@@ -590,6 +590,6 @@ All 50 block patterns matched bit for bit at output strides 4, 8 and 12, includi
 
 ## VTK-68 binary32 natural logarithm
 
-The public `linear::natural_log_f32` runs the certified scalar classification, range reduction and ordered binary64 polynomial, then rounds once to binary32. The seven roots in `generated/reference-log` carry attestation `298662b320503f406ce454df3a91ea97aacc8c2d47466f8c72fc98532644ce37`.
+The public `linear::natural_log_f32` runs the certified scalar classification, range reduction and ordered binary64 polynomial, then rounds once to binary32. The seven roots in `generated/tensor-quotient` carry attestation `3136699f2fe23198d517bc60de208a44c9c3e4bda8c426d88aaa25e5f82713ce`.
 
 `cargo test -p verdant-tensor --test arm_logarithm` compiles the archived original Arm implementation and compares 16,477 input words, including subnormals, interval boundaries, signed zero and infinities. Finite results match by bits and NaNs by class. The previous implementation failed at `0x3abbcd88`. Swapping the reciprocal center and logarithm center failed at `0x003779b1`. Restoring their modeled order passed.

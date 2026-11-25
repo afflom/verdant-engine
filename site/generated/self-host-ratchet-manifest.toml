@@ -4,10 +4,10 @@ spec = "verdant/self-host-ratchet-manifest/1"
 generator = "verdant-operator-ratchet-lift"
 version = "2.22.1"
 release_epoch = 35
-source_commit_kappa = "26e2716a6630c8778207d2b0fff708037739d6c455947801fb8e010c40c03d0b"
-source_tree_root_sha256 = "28db23ebd4c3464e718419433a932448a26ee89eb19872d597e6ed7af9584e08"
-immutability_seal_root_sha256 = "832b589c2edc6d81cd21ea76f61aafe57d8b7d842fd77678147bd62aa75916f6"
-release_capsule_sha256 = "119737bd05b5b99fcfb7312e9e98291b4d651622d7bfffac3d8e07f4e5807340"
+source_commit_kappa = "6a49210e5c0c78e4c505728fe5198e32622cdcf7871832d808298574ce415850"
+source_tree_root_sha256 = "9f61d77e537e0b7e1679dbb39531060b6c5ea2bf2b4726e96b8a9e97f4763ca8"
+immutability_seal_root_sha256 = "be072f43ff5912987f7116105382278d7981775e8bd2dffaacde6cd940b22e5d"
+release_capsule_sha256 = "59201efa4bdab33f424b2d0e3656785445e93ff06032740852c89c7bc269d087"
 unlifted_ui_files = 0
 unverified_frame_assets = 0
 user_required_external_accounts = 0
@@ -701,7 +701,7 @@ sha256 = "c807f771fe2477d9047f250aaed69ba24ab3ce7f072a9b08e96b3b4a763a8c62"
 [[lifted_module]]
 path = "app/src/F64Quotient.lex.tex"
 category = "lexlean"
-sha256 = "a2f04abe9ae0f7a80c10e1ad3b3f47820cb839d6622433b00b08e1fa99d6cf88"
+sha256 = "4c8f04bf00e380bfbfece4a2f617f5440e5c92be22faa26e2ef2c67783b8f792"
 
 [[lifted_module]]
 path = "app/src/Features.lex.tex"
@@ -906,7 +906,7 @@ sha256 = "e5b9af071563230b20ed999eb87ab8871b6e59ab85603c5994c6c7b0eff9931e"
 [[lifted_module]]
 path = "app/src/ReferenceLogarithm.lex.tex"
 category = "lexlean"
-sha256 = "18e116fcbf709f3bb9ee126aada2df3fc24198d8f433708a9ae0ad8d3b005f0d"
+sha256 = "a56a844e8968eaeebb7b902b50ba1e1b5d528bdd7fec90279d5a90a84e550f56"
 
 [[lifted_module]]
 path = "app/src/Release.lex.tex"

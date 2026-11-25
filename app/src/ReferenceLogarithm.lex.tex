@@ -27,10 +27,7 @@ definition{
   name: prepare,
   parameters: [word : Nat],
   result: Preparation,
-  body: (if ((word =? 0) || (word =? 2147483648)) then (ctor Preparation.exact 4286578688) else
-    (if (word =? 2139095040) then (ctor Preparation.exact word) else
-    (if (2139095040 <? word) then (ctor Preparation.exact 2143289344) else
-    (if (word =? 1065353216) then (ctor Preparation.exact 0) else (if (word <? 8388608) then (ctor Preparation.normalize 1258291200) else (ctor Preparation.finite)))))),
+  body: (if ((word =? 0) || (word =? 2147483648)) then (ctor Preparation.exact 4286578688) else (if (word =? 2139095040) then (ctor Preparation.exact word) else (if (2139095040 <? word) then (ctor Preparation.exact 2143289344) else (if (word =? 1065353216) then (ctor Preparation.exact 0) else (if (word <? 8388608) then (ctor Preparation.normalize 1258291200) else (ctor Preparation.finite)))))),
   executable: true,
   production: {effects: [], targets: [rust-core]}
 }
@@ -107,6 +104,5 @@ theorem{
   statement: ((prepare 1) = (ctor Preparation.normalize 1258291200)),
   proof: reflexivity{}
 }
-
 \end{semanticmodule}
 \end{lexlean}

@@ -1,7 +1,7 @@
 spec = "lexlean/lock/4"
 language = "1.2"
 compiler_semantics = "blake3:ccb147883807678b975239e2d603f2a296e8fae42223edbf0a7d9b1d1f893c6b"
-project_config_kappa = "blake3:6dba4ba2b5bb74f5571a47a66a4704ca6e6d4bbb626078364b638d11bb70154e"
+project_config_kappa = "blake3:c2c7b6b7b327b0c409656e9458e8c476346c0b0c11767040452c3bb2ae427165"
 lean_toolchain = "leanprover/lean4:v4.32.2"
 
 [[workspace_file]]
