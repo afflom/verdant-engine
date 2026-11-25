@@ -5,9 +5,9 @@
   "currentVersion": {
     "major": 2,
     "minor": 22,
-    "patch": 2
+    "patch": 3
   },
-  "releaseEpoch": 36,
+  "releaseEpoch": 37,
   "history": [
     {
       "version": "0.1.0",
@@ -280,6 +280,13 @@
       "releaseEpoch": 36,
       "bumpKind": "patch",
       "summary": "v2.22.2: certified Arm binary32 natural logarithm in unified quotient scope (VTK-68)",
+      "citedAuthority": "AUTH-SEMVER-CHANGE-KPI"
+    },
+    {
+      "version": "2.22.3",
+      "releaseEpoch": 37,
+      "bumpKind": "patch",
+      "summary": "v2.22.3: certified exact mixed I64 and binary64 word equality in unified quotient scope (VTK-69)",
       "citedAuthority": "AUTH-SEMVER-CHANGE-KPI"
     }
   ]

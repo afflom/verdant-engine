@@ -705,6 +705,9 @@ pub fn multiply_matrix_rows_f32(
     })
 }
 
+/// Compare signed I64 and binary64 encodings exactly. Each flag selects signed integer storage for that operand.
+pub use verdant_numeric_equality::run as equal_numeric_words;
+
 /// Classify F32 comparison (0), compare integer U32 words (1), add U64 words (2),
 /// or preserve an encoded word (3). Comparison returns less/equal/greater (0/1/2),
 /// right NaN (3), or left NaN with a non-NaN right operand (4).

@@ -46,6 +46,14 @@ while(scanf("%" SCNu64 " %" SCNu64,&a,&b)==2) {
         if(!strcmp(argv[1],"f64-signed32-invalid")) result=(softfloat_exceptionFlags & softfloat_flag_invalid)!=0;
     }
     else if(!strcmp(argv[1],"mean"))result=f64_to_f32(f64_div((float64_t){a},ui64_to_f64(b))).v;
+    else if(!strncmp(argv[1],"equal-",6)) {
+        extFloat80_t x,y;
+        int64_t ai,bi;
+        memcpy(&ai,&a,sizeof(a)); memcpy(&bi,&b,sizeof(b));
+        if(argv[1][6]=='i') i64_to_extF80M(ai,&x); else f64_to_extF80M((float64_t){a},&x);
+        if(argv[1][7]=='i') i64_to_extF80M(bi,&y); else f64_to_extF80M((float64_t){b},&y);
+        result=extF80M_eq(&x,&y);
+    }
     else if(!strcmp(argv[1],"compare")) {
         const float32_t x={(uint32_t)a},y={(uint32_t)b};
         result=!f32_eq(y,y)?3:!f32_eq(x,x)?4:f32_lt(x,y)?0:f32_eq(x,y)?1:2;
@@ -884,5 +892,62 @@ fn modular_word_arithmetic_vtk_67() {
     }
     for op in ["word-add", "word-subtract", "word-multiply"] {
         compare(op, &cases);
+    }
+}
+
+#[test]
+fn numeric_equality_vtk_69() {
+    super::matrix_product_tests::certified_quotient_model();
+    let mut words = vec![
+        0,
+        1,
+        u64::MAX,
+        i64::MAX as u64,
+        i64::MIN as u64,
+        f64::INFINITY.to_bits(),
+        f64::NEG_INFINITY.to_bits(),
+        f64::NAN.to_bits(),
+        0x7ff0000000000001,
+    ];
+    for exponent in 0..64 {
+        let unit = 1_u64 << exponent;
+        for value in [unit.wrapping_neg(), unit] {
+            words.extend([value.wrapping_sub(1), value, value.wrapping_add(1)]);
+            let bits = ((value as i64) as f64).to_bits();
+            words.extend([bits - 1, bits, bits + 1]);
+        }
+    }
+    words.sort_unstable();
+    words.dedup();
+    let mut cases = Vec::new();
+    for (index, &a) in words.iter().enumerate() {
+        let b = ((a as i64) as f64).to_bits();
+        for candidate in [
+            a,
+            a.wrapping_add(1),
+            b,
+            b.wrapping_sub(1),
+            b.wrapping_add(1),
+            words[(index * 31) % words.len()],
+        ] {
+            cases.extend([(a, candidate), (candidate, a)]);
+        }
+    }
+    cases.sort_unstable();
+    cases.dedup();
+    for (mode, left_signed, right_signed) in [
+        ("equal-ii", true, true),
+        ("equal-if", true, false),
+        ("equal-fi", false, true),
+        ("equal-ff", false, false),
+    ] {
+        let expected = query(mode, &cases);
+        for (&(a, b), answer) in cases.iter().zip(expected) {
+            assert_eq!(
+                crate::linear::equal_numeric_words(left_signed, right_signed, a, b).unwrap(),
+                answer != 0,
+                "{mode} {a:#018x} {b:#018x}"
+            );
+        }
     }
 }

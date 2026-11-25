@@ -657,5 +657,64 @@ theorem{
   statement: ((modularWord 17 4294967299 4294967301) = (ctor Option.some [Nat] 34359738383)),
   proof: reflexivity{}
 }
+definition{
+  name: equalIntegerFloat,
+  parameters: [integerWord : Nat, floatWord : Nat],
+  result: Bool,
+  body: (let exponent : Nat := (ScalarF64::exponent floatWord);
+    (if (exponent <? 1023) then ((integerWord =? 0) && ((ScalarF64::magnitude floatWord) =? 0))
+     else (if ((exponent <? 1075) && (0 <? (prim remainder (ScalarF64::fraction floatWord) (ScalarF64::power (prim subtract 1075 exponent : Nat)) 0 : Nat))) then false
+       else (match (truncateSigned64 floatWord)
+         | Option.none => false
+         | Option.some encoded => (encoded =? integerWord))))),
+  executable: true
+}
+
+definition{
+  name: equalNumericWords,
+  parameters: [leftSigned : Bool, rightSigned : Bool, a : Nat, b : Nat],
+  result: Bool,
+  body: (if leftSigned then (if rightSigned then (a =? b) else (equalIntegerFloat a b))
+    else (if rightSigned then (equalIntegerFloat b a)
+      else (if ((ScalarF64::isNaN a) || (ScalarF64::isNaN b)) then false
+        else ((a =? b) || (((ScalarF64::magnitude a) =? 0) && ((ScalarF64::magnitude b) =? 0)))))),
+  executable: true,
+  production: {effects: [overflow], targets: [rust-core]}
+}
+
+theorem{
+  name: mixedAdjacentInteger,
+  parameters: [],
+  statement: ((equalNumericWords true false 9007199254740993 4845873199050653696) = false),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: mixedSignedMinimum,
+  parameters: [],
+  statement: ((equalNumericWords true false 9223372036854775808 14114281232179134464) = true),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: mixedFractionalWord,
+  parameters: [],
+  statement: ((equalNumericWords false true 4609434218613702656 1) = false),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: bothZeroEncodings,
+  parameters: [],
+  statement: ((equalNumericWords false false 9223372036854775808 0) = true),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: quietNanUnequal,
+  parameters: [],
+  statement: ((equalNumericWords false false 9221120237041090560 9221120237041090560) = false),
+  proof: reflexivity{}
+}
 \end{semanticmodule}
 \end{lexlean}
