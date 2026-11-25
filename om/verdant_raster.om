@@ -1,0 +1,682 @@
+om2
+note Pure seeded OM-2 deterministic 16x16 tile-aligned depth-buffered PBR rasterizer.
+note Matches verdant-tensor::render_triangles_tile_framebuffer (RGBA8 + f32 depth)
+note over a persistent little-endian binary stdin/stdout pipe (magic VOMR).
+
+const MAGIC uint 1448037714
+const OP_PING uint 0
+const OP_RASTER uint 1
+
+const STATUS_OK uint 0
+const STATUS_BAD_MAGIC uint 1
+const STATUS_UNKNOWN_OP uint 2
+const STATUS_INVALID_TILE_DIMS uint 3
+const STATUS_PAYLOAD_MISMATCH uint 5
+const STATUS_NON_FINITE uint 6
+
+global hdr_in uchar 12
+global hdr_out uchar 12
+global req_buf uchar *
+global resp_buf uchar *
+
+global vp f64 16
+global sun f64 3
+global cfg_u ulong 12
+global cfg_f f32 10
+global poly_a f32 20
+global poly_b f32 20
+global tri_s f32 16
+global tri_u ulong 6
+global tri_c uchar 4
+global depth_buf f32 *
+
+fn rd_hdr to long
+  g = ulong 0
+  while lt g ulong 12 bound 1000000000
+    k = read int 0 hdr_in g (sub ulong 12 g)
+    if lt k long 0
+      ret long -1
+    end
+    if eq k long 0
+      if eq g ulong 0
+        ret long 0
+      end
+      ret long -2
+    end
+    g = add g (ulong k)
+  end
+  ret long 1
+end
+
+fn rd_req n ulong to long
+  g = ulong 0
+  while lt g n bound 1000000000
+    k = read int 0 req_buf g (sub n g)
+    if lt k long 0
+      ret long -1
+    end
+    if eq k long 0
+      ret long -2
+    end
+    g = add g (ulong k)
+  end
+  ret long 1
+end
+
+fn wr_hdr to long
+  s = ulong 0
+  while lt s ulong 12 bound 1000000000
+    k = write int 1 hdr_out s (sub ulong 12 s)
+    if le k long 0
+      ret long -1
+    end
+    s = add s (ulong k)
+  end
+  ret long 1
+end
+
+fn wr_resp n ulong to long
+  s = ulong 0
+  while lt s n bound 1000000000
+    k = write int 1 resp_buf s (sub n s)
+    if le k long 0
+      ret long -1
+    end
+    s = add s (ulong k)
+  end
+  ret long 1
+end
+
+fn hdr_u32 o ulong to uint
+  b0 = uint get hdr_in o
+  b1 = uint get hdr_in (add o ulong 1)
+  b2 = uint get hdr_in (add o ulong 2)
+  b3 = uint get hdr_in (add o ulong 3)
+  ret or (or b0 (shl b1 uint 8)) (or (shl b2 uint 16) (shl b3 uint 24))
+end
+
+fn hdr_wu32 o ulong v uint to void
+  put hdr_out o (uchar and v uint 255)
+  put hdr_out (add o ulong 1) (uchar and (shr v uint 8) uint 255)
+  put hdr_out (add o ulong 2) (uchar and (shr v uint 16) uint 255)
+  put hdr_out (add o ulong 3) (uchar and (shr v uint 24) uint 255)
+end
+
+fn req_u32 o ulong to uint
+  b0 = uint get req_buf o
+  b1 = uint get req_buf (add o ulong 1)
+  b2 = uint get req_buf (add o ulong 2)
+  b3 = uint get req_buf (add o ulong 3)
+  ret or (or b0 (shl b1 uint 8)) (or (shl b2 uint 16) (shl b3 uint 24))
+end
+
+fn req_f32 o ulong to f32
+  ret bitcast f32 (req_u32 o)
+end
+
+fn req_f64 o ulong to f64
+  lo = ulong req_u32 o
+  hi = ulong req_u32 (add o ulong 4)
+  ret bitcast f64 (or lo (shl hi ulong 32))
+end
+
+fn resp_wu32 o ulong v uint to void
+  put resp_buf o (uchar and v uint 255)
+  put resp_buf (add o ulong 1) (uchar and (shr v uint 8) uint 255)
+  put resp_buf (add o ulong 2) (uchar and (shr v uint 16) uint 255)
+  put resp_buf (add o ulong 3) (uchar and (shr v uint 24) uint 255)
+end
+
+fn send_reply st uint plen uint to long
+  hdr_wu32 ulong 0 MAGIC
+  hdr_wu32 ulong 4 st
+  hdr_wu32 ulong 8 plen
+  rc = wr_hdr
+  if lt rc long 0
+    ret long -1
+  end
+  if gt plen uint 0
+    rc = wr_resp (ulong plen)
+    if lt rc long 0
+      ret long -1
+    end
+  end
+  ret long 0
+end
+
+fn f32_clamp x f32 lo f32 hi f32 to f32
+  if lt x lo
+    ret lo
+  end
+  if gt x hi
+    ret hi
+  end
+  ret x
+end
+
+fn f32_to_u8 x f32 to uchar
+  c = mul (f32_clamp x 0.0f32 1.0f32) 255.0f32
+  ret uchar (int add c 0.5f32)
+end
+
+fn is_f64_finite x f64 to bool
+  u = bitcast ulong x
+  exp = and (shr u ulong 52) ulong 2047
+  ret lt exp ulong 2047
+end
+
+fn is_f32_finite x f32 to bool
+  u = bitcast uint x
+  exp = and (shr u uint 23) uint 255
+  ret lt exp uint 255
+end
+
+fn fill_sky_row y ulong r uchar g uchar b uchar to void
+  w = get cfg_u ulong 0
+  x = ulong 0
+  while lt x w bound 1000000000
+    pidx = add (mul y w) x
+    put depth_buf pidx 1.0f32
+    off = add ulong 8 (mul pidx ulong 4)
+    put resp_buf off r
+    put resp_buf (add off ulong 1) g
+    put resp_buf (add off ulong 2) b
+    put resp_buf (add off ulong 3) uchar 255
+    x = add x ulong 1
+  end
+end
+
+fn fill_sky_and_depth to void
+  h = get cfg_u ulong 1
+  hm = sub h ulong 1
+  if eq hm ulong 0
+    hm = ulong 1
+  end
+  y = ulong 0
+  while lt y h bound 1000000000
+    t = div (f32 y) (f32 hm)
+    omt = sub 1.0f32 t
+    r = f32_to_u8 (add (mul (get cfg_f ulong 0) omt) (mul (get cfg_f ulong 3) t))
+    g = f32_to_u8 (add (mul (get cfg_f ulong 1) omt) (mul (get cfg_f ulong 4) t))
+    b = f32_to_u8 (add (mul (get cfg_f ulong 2) omt) (mul (get cfg_f ulong 5) t))
+    fill_sky_row y r g b
+    y = add y ulong 1
+  end
+end
+
+fn xform_vert v_off ulong dst_slot ulong to void
+  x = f64 req_f32 v_off
+  y = f64 req_f32 (add v_off ulong 4)
+  z = f64 req_f32 (add v_off ulong 8)
+  base = mul dst_slot ulong 4
+  r = ulong 0
+  while lt r ulong 4 bound 4
+    v = mul (get vp r) x
+    v = add v (mul (get vp (add ulong 4 r)) y)
+    v = add v (mul (get vp (add ulong 8 r)) z)
+    v = add v (get vp (add ulong 12 r))
+    put poly_a (add base r) (f32 v)
+    r = add r ulong 1
+  end
+end
+
+fn clip_interp prev_i ulong cur_i ulong out_n ulong alpha f32 to void
+  k = ulong 0
+  while lt k ulong 4 bound 4
+    pv = get poly_a (add (mul prev_i ulong 4) k)
+    nv = get poly_a (add (mul cur_i ulong 4) k)
+    put poly_b (add (mul out_n ulong 4) k) (add pv (mul alpha (sub nv pv)))
+    k = add k ulong 1
+  end
+end
+
+fn clip_copy_vert src_i ulong out_n ulong to void
+  k = ulong 0
+  while lt k ulong 4 bound 4
+    put poly_b (add (mul out_n ulong 4) k) (get poly_a (add (mul src_i ulong 4) k))
+    k = add k ulong 1
+  end
+end
+
+fn clip_dist idx ulong sign f32 to f32
+  ret add (get poly_a (add (mul idx ulong 4) ulong 3)) (mul sign (get poly_a (add (mul idx ulong 4) ulong 2)))
+end
+
+fn clip_plane count ulong sign f32 to ulong
+  if lt count ulong 3
+    ret ulong 0
+  end
+  all_in = true
+  i = ulong 0
+  while lt i count bound 5
+    if lt (clip_dist i sign) 0.0f32
+      all_in = false
+    end
+    i = add i ulong 1
+  end
+  if all_in
+    ret count
+  end
+
+  out_n = ulong 0
+  prev_i = sub count ulong 1
+  dp = clip_dist prev_i sign
+  i = ulong 0
+  while lt i count bound 5
+    dn = clip_dist i sign
+    if lt (mul dp dn) 0.0f32
+      clip_interp prev_i i out_n (div dp (sub dp dn))
+      out_n = add out_n ulong 1
+    end
+    if ge dn 0.0f32
+      clip_copy_vert i out_n
+      out_n = add out_n ulong 1
+    end
+    prev_i = i
+    dp = dn
+    i = add i ulong 1
+  end
+
+  j = ulong 0
+  tot = mul out_n ulong 4
+  while lt j tot bound 20
+    put poly_a j (get poly_b j)
+    j = add j ulong 1
+  end
+  ret out_n
+end
+
+fn edge_tri a ulong b ulong px f32 py f32 to f32
+  ax = get tri_s (mul a ulong 3)
+  ay = get tri_s (add (mul a ulong 3) ulong 1)
+  bx = get tri_s (mul b ulong 3)
+  by = get tri_s (add (mul b ulong 3) ulong 1)
+  ret sub (mul (sub px ax) (sub by ay)) (mul (sub py ay) (sub bx ax))
+end
+
+fn clamp_floor_u32 v f32 max_v ulong to ulong
+  if le v 0.0f32
+    ret ulong 0
+  end
+  mf = f32 max_v
+  if ge v mf
+    ret max_v
+  end
+  ret ulong (int v)
+end
+
+fn clamp_ceil_u32 v f32 max_v ulong to ulong
+  if le v 0.0f32
+    ret ulong 0
+  end
+  mf = f32 max_v
+  if ge v mf
+    ret max_v
+  end
+  iv = int v
+  if gt v (f32 iv)
+    iv = add iv int 1
+  end
+  ret ulong iv
+end
+
+fn shade_tri_color tri_off ulong sh f32 to void
+  k = ulong 0
+  while lt k ulong 3 bound 3
+    c = f32_clamp (req_f32 (add tri_off (add ulong 48 (mul k ulong 4)))) 0.0f32 1.0f32
+    cs = mul c sh
+    put tri_c k (f32_to_u8 (mul (div cs (add 1.0f32 cs)) 2.0f32))
+    k = add k ulong 1
+  end
+  put tri_c ulong 3 uchar 255
+end
+
+fn shade_tri tri_off ulong to void
+  nx = f64 req_f32 (add tri_off ulong 36)
+  ny = f64 req_f32 (add tri_off ulong 40)
+  nz = f64 req_f32 (add tri_off ulong 44)
+  nlen = fsqrt (add (mul nx nx) (add (mul ny ny) (mul nz nz)))
+  if gt nlen 0.0000000000009094947017729282f64
+    nx = div nx nlen
+    ny = div ny nlen
+    nz = div nz nlen
+  else
+    nx = 0.0f64
+    ny = 1.0f64
+    nz = 0.0f64
+  end
+  nd = add (mul nx (get sun ulong 0)) (add (mul ny (get sun ulong 1)) (mul nz (get sun ulong 2)))
+  if lt nd 0.0f64
+    nd = 0.0f64
+  end
+  hemi = f32_clamp (f32 add (mul ny 0.5f64) 0.5f64) 0.0f32 1.0f32
+  amb = mul (add 0.25f32 (mul 0.25f32 hemi)) (get cfg_f ulong 7)
+  sh = fmin 2.0f32 (add amb (mul (mul 0.75f32 (f32 nd)) (get cfg_f ulong 6)))
+  shade_tri_color tri_off sh
+end
+
+fn raster_one_pixel px ulong py ulong to void
+  cx = add (f32 px) 0.5f32
+  cy = add (f32 py) 0.5f32
+  w0 = mul (edge_tri ulong 1 ulong 2 cx cy) (get tri_s ulong 9)
+  if lt w0 0.0f32
+    ret
+  end
+  w1 = mul (edge_tri ulong 2 ulong 0 cx cy) (get tri_s ulong 9)
+  if lt w1 0.0f32
+    ret
+  end
+  w2 = sub (sub 1.0f32 w0) w1
+  if lt w2 0.0f32
+    ret
+  end
+  z = mul w0 (get tri_s ulong 2)
+  z = add z (mul w1 (get tri_s ulong 5))
+  z = add z (mul w2 (get tri_s ulong 8))
+  pidx = add (mul py (get cfg_u ulong 0)) px
+  if lt z (get depth_buf pidx)
+    put depth_buf pidx z
+    off = add ulong 8 (mul pidx ulong 4)
+    put resp_buf off (get tri_c ulong 0)
+    put resp_buf (add off ulong 1) (get tri_c ulong 1)
+    put resp_buf (add off ulong 2) (get tri_c ulong 2)
+    put resp_buf (add off ulong 3) (get tri_c ulong 3)
+  end
+end
+
+fn raster_bbox to void
+  py = get tri_u ulong 2
+  max_y = get tri_u ulong 3
+  min_x = get tri_u ulong 0
+  max_x = get tri_u ulong 1
+  while le py max_y bound 1000000000
+    px = min_x
+    while le px max_x bound 1000000000
+      raster_one_pixel px py
+      px = add px ulong 1
+    end
+    py = add py ulong 1
+  end
+end
+
+fn project_poly_vert src_idx ulong dst_slot ulong to bool
+  cw = get poly_a (add (mul src_idx ulong 4) ulong 3)
+  if le cw 0.0f32
+    ret false
+  end
+  inv_w = div 1.0f32 cw
+  nx = mul (get poly_a (mul src_idx ulong 4)) inv_w
+  ny = mul (get poly_a (add (mul src_idx ulong 4) ulong 1)) inv_w
+  nz = f32_clamp (add (mul (mul (get poly_a (add (mul src_idx ulong 4) ulong 2)) inv_w) 0.5f32) 0.5f32) 0.0f32 1.0f32
+  sx = mul (add (mul nx 0.5f32) 0.5f32) (f32 get cfg_u ulong 0)
+  sy = mul (sub 1.0f32 (add (mul ny 0.5f32) 0.5f32)) (f32 get cfg_u ulong 1)
+  if not (is_f32_finite sx)
+    ret false
+  end
+  if not (is_f32_finite sy)
+    ret false
+  end
+  if not (is_f32_finite nz)
+    ret false
+  end
+  base = mul dst_slot ulong 3
+  put tri_s base sx
+  put tri_s (add base ulong 1) sy
+  put tri_s (add base ulong 2) nz
+  ret true
+end
+
+fn tri_compute_bbox to bool
+  lo_x = fmin (get tri_s ulong 0) (fmin (get tri_s ulong 3) (get tri_s ulong 6))
+  hi_x = fmax (get tri_s ulong 0) (fmax (get tri_s ulong 3) (get tri_s ulong 6))
+  if lt hi_x 0.0f32
+    ret false
+  end
+  if ge lo_x (f32 get cfg_u ulong 0)
+    ret false
+  end
+  min_x = clamp_floor_u32 lo_x (sub (get cfg_u ulong 0) ulong 1)
+  max_x = clamp_ceil_u32 hi_x (sub (get cfg_u ulong 0) ulong 1)
+  if gt min_x max_x
+    ret false
+  end
+  put tri_u ulong 0 min_x
+  put tri_u ulong 1 max_x
+
+  lo_y = fmin (get tri_s ulong 1) (fmin (get tri_s ulong 4) (get tri_s ulong 7))
+  hi_y = fmax (get tri_s ulong 1) (fmax (get tri_s ulong 4) (get tri_s ulong 7))
+  if lt hi_y 0.0f32
+    ret false
+  end
+  if ge lo_y (f32 get cfg_u ulong 1)
+    ret false
+  end
+  min_y = clamp_floor_u32 lo_y (sub (get cfg_u ulong 1) ulong 1)
+  max_y = clamp_ceil_u32 hi_y (sub (get cfg_u ulong 1) ulong 1)
+  if gt min_y max_y
+    ret false
+  end
+  put tri_u ulong 2 min_y
+  put tri_u ulong 3 max_y
+  ret true
+end
+
+fn emit_sub_tri tri_off ulong e ulong to ulong
+  if not (project_poly_vert ulong 0 ulong 0)
+    ret ulong 0
+  end
+  if not (project_poly_vert e ulong 1)
+    ret ulong 0
+  end
+  if not (project_poly_vert (add e ulong 1) ulong 2)
+    ret ulong 0
+  end
+  area = edge_tri ulong 0 ulong 1 (get tri_s ulong 6) (get tri_s ulong 7)
+  if not (is_f32_finite area)
+    ret ulong 0
+  end
+  if le (fabs area) 0.0000000000009094947017729282f32
+    ret ulong 0
+  end
+  if not tri_compute_bbox
+    ret ulong 0
+  end
+  put tri_s ulong 9 (div 1.0f32 area)
+  shade_tri tri_off
+  raster_bbox
+  ret ulong 1
+end
+
+fn raster_all_tris to ulong
+  n_tris = get cfg_u ulong 2
+  drawn = ulong 0
+  ti = ulong 0
+  while lt ti n_tris bound 1000000000
+    tri_off = add ulong 192 (mul ti ulong 60)
+    xform_vert tri_off ulong 0
+    xform_vert (add tri_off ulong 12) ulong 1
+    xform_vert (add tri_off ulong 24) ulong 2
+    cnt = clip_plane ulong 3 1.0f32
+    cnt = clip_plane cnt -1.0f32
+    if ge cnt ulong 3
+      e = ulong 1
+      lim = sub cnt ulong 1
+      while lt e lim bound 5
+        drawn = add drawn (emit_sub_tri tri_off e)
+        e = add e ulong 1
+      end
+    end
+    ti = add ti ulong 1
+  end
+  ret drawn
+end
+
+fn raster_parse_vp_sun to uint
+  i = ulong 0
+  while lt i ulong 16 bound 16
+    v = req_f64 (add ulong 40 (mul i ulong 8))
+    if not (is_f64_finite v)
+      ret STATUS_NON_FINITE
+    end
+    put vp i v
+    i = add i ulong 1
+  end
+
+  sx = req_f64 ulong 168
+  sy = req_f64 ulong 176
+  sz = req_f64 ulong 184
+  if not (is_f64_finite sx)
+    ret STATUS_NON_FINITE
+  end
+  if not (is_f64_finite sy)
+    ret STATUS_NON_FINITE
+  end
+  if not (is_f64_finite sz)
+    ret STATUS_NON_FINITE
+  end
+  slen = fsqrt (add (mul sx sx) (add (mul sy sy) (mul sz sz)))
+  if gt slen 0.0000000000009094947017729282f64
+    put sun ulong 0 (div sx slen)
+    put sun ulong 1 (div sy slen)
+    put sun ulong 2 (div sz slen)
+  else
+    put sun ulong 0 0.0f64
+    put sun ulong 1 1.0f64
+    put sun ulong 2 0.0f64
+  end
+  ret STATUS_OK
+end
+
+fn raster_parse plen uint to uint
+  if lt plen uint 192
+    ret STATUS_PAYLOAD_MISMATCH
+  end
+  w = ulong req_u32 ulong 0
+  h = ulong req_u32 ulong 4
+  ntris = ulong req_u32 ulong 8
+  flags = ulong req_u32 ulong 12
+  if eq w ulong 0
+    ret STATUS_INVALID_TILE_DIMS
+  end
+  if eq h ulong 0
+    ret STATUS_INVALID_TILE_DIMS
+  end
+  if ne (and w ulong 15) ulong 0
+    ret STATUS_INVALID_TILE_DIMS
+  end
+  if ne (and h ulong 15) ulong 0
+    ret STATUS_INVALID_TILE_DIMS
+  end
+  if ne (ulong plen) (add ulong 192 (mul ntris ulong 60))
+    ret STATUS_PAYLOAD_MISMATCH
+  end
+
+  put cfg_u ulong 0 w
+  put cfg_u ulong 1 h
+  put cfg_u ulong 2 ntris
+  put cfg_f ulong 0 (div (f32 req_u32 ulong 16) 100.0f32)
+  put cfg_f ulong 1 (div (f32 req_u32 ulong 20) 100.0f32)
+  put cfg_f ulong 2 (div (f32 req_u32 ulong 24) 100.0f32)
+  put cfg_f ulong 3 (div (f32 req_u32 ulong 28) 100.0f32)
+  put cfg_f ulong 4 (div (f32 req_u32 ulong 32) 100.0f32)
+  put cfg_f ulong 5 (div (f32 req_u32 ulong 36) 100.0f32)
+  if ne (and flags ulong 1) ulong 0
+    put cfg_f ulong 6 1.0f32
+  else
+    put cfg_f ulong 6 0.5f32
+  end
+  if ne (and flags ulong 2) ulong 0
+    put cfg_f ulong 7 1.0f32
+  else
+    put cfg_f ulong 7 0.5f32
+  end
+  ret raster_parse_vp_sun
+end
+
+fn handle_raster plen uint to long
+  st = raster_parse plen
+  if ne st STATUS_OK
+    ret send_reply st uint 0
+  end
+  px_cnt = mul (get cfg_u ulong 0) (get cfg_u ulong 1)
+  if gt px_cnt (len depth_buf)
+    rc_d = enlarge depth_buf px_cnt
+    if lt rc_d long 0
+      ret send_reply STATUS_INVALID_TILE_DIMS uint 0
+    end
+  end
+  out_b = add ulong 8 (mul px_cnt ulong 8)
+  if gt out_b (len resp_buf)
+    rc_r = enlarge resp_buf out_b
+    if lt rc_r long 0
+      ret send_reply STATUS_INVALID_TILE_DIMS uint 0
+    end
+  end
+
+  fill_sky_and_depth
+  drawn = raster_all_tris
+  tiles = mul (shr (get cfg_u ulong 0) ulong 4) (shr (get cfg_u ulong 1) ulong 4)
+  resp_wu32 ulong 0 (uint tiles)
+  resp_wu32 ulong 4 (uint drawn)
+
+  dbase = add ulong 8 (mul px_cnt ulong 4)
+  i = ulong 0
+  while lt i px_cnt bound 1000000000
+    resp_wu32 (add dbase (mul i ulong 4)) (bitcast uint (get depth_buf i))
+    i = add i ulong 1
+  end
+  ret send_reply STATUS_OK (uint out_b)
+end
+
+fn main to int
+  while true bound 1000000000
+    rc = rd_hdr
+    if eq rc long 0
+      ret 0
+    end
+    if lt rc long 0
+      ret 1
+    end
+    m = hdr_u32 ulong 0
+    op = hdr_u32 ulong 4
+    plen = hdr_u32 ulong 8
+    if gt (ulong plen) (len req_buf)
+      rc = enlarge req_buf (ulong plen)
+      if lt rc long 0
+        ret 2
+      end
+    end
+    if gt plen uint 0
+      rc = rd_req (ulong plen)
+      if le rc long 0
+        ret 3
+      end
+    end
+    if ne m MAGIC
+      rc = send_reply STATUS_BAD_MAGIC uint 0
+      if lt rc long 0
+        ret 4
+      end
+      continue
+    end
+    if eq op OP_PING
+      rc = send_reply STATUS_OK uint 0
+      if lt rc long 0
+        ret 4
+      end
+      continue
+    end
+    if eq op OP_RASTER
+      rc = handle_raster plen
+      if lt rc long 0
+        ret 4
+      end
+      continue
+    end
+    rc = send_reply STATUS_UNKNOWN_OP uint 0
+    if lt rc long 0
+      ret 4
+    end
+  end
+  ret 0
+end

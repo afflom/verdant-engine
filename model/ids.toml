@@ -1010,3 +1010,9 @@ id = "VTK-70"
 level = "build"
 suite = "engine"
 statement = "Verdant reproduces the Arm portable scalar sine on binary32 words with certified range reduction and ordered binary64 operations"
+
+[[id]]
+id = "VE-82"
+level = "open"
+suite = "engine"
+statement = "Verdant measures bit-exact parity and refusal compliance of the opt-in pure seeded-Omega native neural, tensor, raster, and partial-evaluating SLM compiler backend under a SHA-256-locked omc compiler"

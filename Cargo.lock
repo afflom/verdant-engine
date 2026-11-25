@@ -513,6 +513,7 @@ dependencies = [
  "serde_json",
  "verdant-cli",
  "verdant-core",
+ "verdant-omega",
  "verdant-tensor",
  "verdant-wasm",
 ]
@@ -812,6 +813,14 @@ dependencies = [
  "uor-matmul",
  "uorc",
  "uorc_decompress",
+ "verdant-tensor",
+]
+
+[[package]]
+name = "verdant-omega"
+version = "2.22.4"
+dependencies = [
+ "verdant-core",
  "verdant-tensor",
 ]
 

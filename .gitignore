@@ -45,3 +45,4 @@ site/stitch/
 /app/.lexlean-quotient/
 /app/.lexlean-encoding/
 /app/.lexlean-engine/
+/om/bin/

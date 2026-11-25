@@ -1,0 +1,1087 @@
+om2
+note Pure seeded OM-2 persistent neural & tensor worker for Verdant Engine.
+note Implements bit-exact:
+note   op 1: kernel10 (step_neuromorphic_lif_ssm_ring, exact 128-bit accumulation)
+note   op 2: kernel11 (infer_coded_slm_intent_logits, Packed<Grid<16>,2> + Grid<16>)
+note   op 3: ping
+note   op 4: contract_coded_pair_lut_into (16x16 codebook product LUT)
+note   op 5: contract_packed_nibbles_lut_into (4-bit packed nibble LUT)
+note   op 6: tropical_min_plus_all_pairs_closure (NavMesh / Chronicle min-plus)
+
+const MAGIC uint 1448037681
+const OP_LIF_SSM uint 1
+const OP_CODED_SLM uint 2
+const OP_PING uint 3
+const OP_CODED_PAIR_LUT uint 4
+const OP_PACKED_NIBBLES_LUT uint 5
+const OP_TROPICAL_MIN_PLUS uint 6
+
+const STATUS_OK uint 0
+const STATUS_BAD_MAGIC uint 1
+const STATUS_UNKNOWN_OP uint 2
+const STATUS_INVALID_EXTENTS uint 3
+const STATUS_INVALID_CODEBOOK uint 4
+const STATUS_PAYLOAD_MISMATCH uint 5
+const STATUS_INVALID_PARAMS uint 6
+
+const I32_MAX long 2147483647
+const I32_MIN_PLUS_1 long -2147483647
+const I64_MAX long 9223372036854775807
+const TROP_CAP long 1073741823
+const TROP_NONE_U64 ulong 18446744073709551615
+
+global hdr_in uchar 12
+global hdr_out uchar 12
+global req_buf uchar *
+global resp_buf uchar *
+
+global post_state long 64
+global lif_i32 int *
+global codebook long 16
+global codebook_rhs long 16
+global prod_lut ulong 256
+
+global feats_i32 int *
+global w1_vals long *
+global w2_vals long *
+global hidden_relu long *
+global trop_dist long *
+
+global acc_hi long 2
+global acc_lo ulong 2
+global lif_u ulong 10
+global lif_i long 4
+global slm_u ulong 10
+global lut_u ulong 8
+
+fn read_hdr_exact to long
+  got = ulong 0
+  while lt got ulong 12 bound 1000000000
+    k = read int 0 hdr_in got (sub ulong 12 got)
+    if lt k long 0
+      ret long -1
+    end
+    if eq k long 0
+      if eq got ulong 0
+        ret long 0
+      end
+      ret long -2
+    end
+    got = add got (ulong k)
+  end
+  ret long 1
+end
+
+fn read_req_exact n ulong to long
+  got = ulong 0
+  while lt got n bound 1000000000
+    k = read int 0 req_buf got (sub n got)
+    if lt k long 0
+      ret long -1
+    end
+    if eq k long 0
+      ret long -2
+    end
+    got = add got (ulong k)
+  end
+  ret long 1
+end
+
+fn write_hdr_exact to long
+  sent = ulong 0
+  while lt sent ulong 12 bound 1000000000
+    k = write int 1 hdr_out sent (sub ulong 12 sent)
+    if le k long 0
+      ret long -1
+    end
+    sent = add sent (ulong k)
+  end
+  ret long 1
+end
+
+fn write_resp_exact n ulong to long
+  sent = ulong 0
+  while lt sent n bound 1000000000
+    k = write int 1 resp_buf sent (sub n sent)
+    if le k long 0
+      ret long -1
+    end
+    sent = add sent (ulong k)
+  end
+  ret long 1
+end
+
+fn hdr_rd_u32 off ulong to uint
+  b0 = uint get hdr_in off
+  b1 = uint get hdr_in (add off ulong 1)
+  b2 = uint get hdr_in (add off ulong 2)
+  b3 = uint get hdr_in (add off ulong 3)
+  ret or (or b0 (shl b1 uint 8)) (or (shl b2 uint 16) (shl b3 uint 24))
+end
+
+fn hdr_wr_u32 off ulong v uint to void
+  put hdr_out off (uchar and v uint 255)
+  put hdr_out (add off ulong 1) (uchar and (shr v uint 8) uint 255)
+  put hdr_out (add off ulong 2) (uchar and (shr v uint 16) uint 255)
+  put hdr_out (add off ulong 3) (uchar and (shr v uint 24) uint 255)
+end
+
+fn req_rd_u16 off ulong to ushort
+  b0 = ushort get req_buf off
+  b1 = ushort get req_buf (add off ulong 1)
+  ret or b0 (shl b1 ushort 8)
+end
+
+fn req_rd_u32 off ulong to uint
+  b0 = uint get req_buf off
+  b1 = uint get req_buf (add off ulong 1)
+  b2 = uint get req_buf (add off ulong 2)
+  b3 = uint get req_buf (add off ulong 3)
+  ret or (or b0 (shl b1 uint 8)) (or (shl b2 uint 16) (shl b3 uint 24))
+end
+
+fn req_rd_i32 off ulong to int
+  ret bitcast int (req_rd_u32 off)
+end
+
+fn req_rd_u64 off ulong to ulong
+  lo = ulong req_rd_u32 off
+  hi = ulong req_rd_u32 (add off ulong 4)
+  ret or lo (shl hi ulong 32)
+end
+
+fn req_rd_i64 off ulong to long
+  ret bitcast long (req_rd_u64 off)
+end
+
+fn resp_wr_u32 off ulong v uint to void
+  put resp_buf off (uchar and v uint 255)
+  put resp_buf (add off ulong 1) (uchar and (shr v uint 8) uint 255)
+  put resp_buf (add off ulong 2) (uchar and (shr v uint 16) uint 255)
+  put resp_buf (add off ulong 3) (uchar and (shr v uint 24) uint 255)
+end
+
+fn resp_wr_u64 off ulong v ulong to void
+  resp_wr_u32 off (uint and v ulong 4294967295)
+  resp_wr_u32 (add off ulong 4) (uint and (shr v ulong 32) ulong 4294967295)
+end
+
+fn resp_wr_i64 off ulong v long to void
+  resp_wr_u64 off (bitcast ulong v)
+end
+
+fn send_reply status uint plen uint to long
+  hdr_wr_u32 ulong 0 MAGIC
+  hdr_wr_u32 ulong 4 status
+  hdr_wr_u32 ulong 8 plen
+  r1 = write_hdr_exact
+  if lt r1 long 0
+    ret long -1
+  end
+  if gt plen uint 0
+    r2 = write_resp_exact (ulong plen)
+    if lt r2 long 0
+      ret long -1
+    end
+  end
+  ret long 0
+end
+
+note Exact 128-bit signed accumulator helpers (slots 0 and 1).
+fn acc_zero idx ulong to void
+  put acc_hi idx long 0
+  put acc_lo idx ulong 0
+end
+
+fn acc_add_i64 idx ulong v long to void
+  lo = get acc_lo idx
+  nlo = add lo (bitcast ulong v)
+  carry = long 0
+  if lt nlo lo
+    carry = long 1
+  end
+  vhi = long 0
+  if lt v long 0
+    vhi = long -1
+  end
+  put acc_lo idx nlo
+  put acc_hi idx (add (get acc_hi idx) (add vhi carry))
+end
+
+fn acc_add_slot dst ulong src ulong to void
+  lo0 = get acc_lo dst
+  nlo = add lo0 (get acc_lo src)
+  carry = long 0
+  if lt nlo lo0
+    carry = long 1
+  end
+  put acc_lo dst nlo
+  put acc_hi dst (add (get acc_hi dst) (add (get acc_hi src) carry))
+end
+
+fn acc_shr idx ulong s ulong to void
+  if eq s ulong 0
+    ret
+  end
+  lo = get acc_lo idx
+  hi = get acc_hi idx
+  put acc_lo idx (or (shr lo s) (shl (bitcast ulong hi) (sub ulong 64 s)))
+  put acc_hi idx (shr hi (long s))
+end
+
+fn acc_clamp_i64 idx ulong min_v long max_v long to long
+  hi = get acc_hi idx
+  lo = get acc_lo idx
+  if gt hi long 0
+    ret max_v
+  end
+  if eq hi long 0
+    if lt max_v long 0
+      ret max_v
+    end
+    if gt lo (bitcast ulong max_v)
+      ret max_v
+    end
+    if ge min_v long 0
+      if lt lo (bitcast ulong min_v)
+        ret min_v
+      end
+    end
+    ret bitcast long lo
+  end
+  if lt hi long -1
+    ret min_v
+  end
+  if ge min_v long 0
+    ret min_v
+  end
+  if lt lo (bitcast ulong min_v)
+    ret min_v
+  end
+  if lt max_v long 0
+    if gt lo (bitcast ulong max_v)
+      ret max_v
+    end
+  end
+  ret bitcast long lo
+end
+
+note Zero-call inline 128-bit dot product over unpacked lif_i32 slices (writes acc slot 0 or 1).
+fn dot_lif_unpacked slot ulong idx_a ulong idx_b ulong count ulong to void
+  lo = ulong 0
+  hi = long 0
+  i = ulong 0
+  while lt i count bound 1000000000
+    va = long get lif_i32 (add idx_a i)
+    p = mul va (long get lif_i32 (add idx_b i))
+    va = bitcast long lo
+    lo = add lo (bitcast ulong p)
+    if lt lo (bitcast ulong va)
+      hi = add hi long 1
+    end
+    if lt p long 0
+      hi = sub hi long 1
+    end
+    i = add i ulong 1
+  end
+  put acc_lo slot lo
+  put acc_hi slot hi
+end
+
+fn dot_c_post_unpacked slot ulong idx_c ulong count ulong to void
+  lo = ulong 0
+  hi = long 0
+  i = ulong 0
+  while lt i count bound 1000000000
+    va = long get lif_i32 (add idx_c i)
+    p = mul va (get post_state i)
+    va = bitcast long lo
+    lo = add lo (bitcast ulong p)
+    if lt lo (bitcast ulong va)
+      hi = add hi long 1
+    end
+    if lt p long 0
+      hi = sub hi long 1
+    end
+    i = add i ulong 1
+  end
+  put acc_lo slot lo
+  put acc_hi slot hi
+end
+
+fn lif_unpack_i32 count ulong to void
+  i = ulong 0
+  while lt i count bound 1000000000
+    put lif_i32 i (req_rd_i32 (add ulong 40 (mul i ulong 4)))
+    i = add i ulong 1
+  end
+end
+
+fn lif_step_one_row row ulong to ulong
+  sdim = get lif_u ulong 0
+  odim = get lif_u ulong 1
+  sshift = get lif_u ulong 3
+
+  dot_lif_unpacked ulong 0 (add (get lif_u ulong 6) (mul row sdim)) (get lif_u ulong 4) sdim
+  acc_shr ulong 0 sshift
+
+  dot_lif_unpacked ulong 1 (add (get lif_u ulong 7) (mul row odim)) (get lif_u ulong 5) odim
+  acc_shr ulong 1 sshift
+
+  acc_add_slot ulong 0 ulong 1
+
+  prev_v = long get lif_i32 row
+  acc_add_i64 ulong 0 (div (mul prev_v (get lif_i ulong 0)) (get lif_i ulong 1))
+
+  thresh = get lif_i ulong 2
+  integrated = acc_clamp_i64 ulong 0 (neg thresh) I32_MAX
+
+  post_v = long 0
+  spiked = ulong 0
+  if ge integrated thresh
+    post_v = sub integrated thresh
+    spiked = ulong 1
+  else
+    if gt integrated long 0
+      post_v = integrated
+    end
+  end
+
+  resp_wr_i64 (add ulong 8 (mul row ulong 8)) post_v
+
+  acc_zero ulong 1
+  acc_add_i64 ulong 1 post_v
+  if eq spiked ulong 1
+    acc_add_i64 ulong 1 thresh
+  end
+  put post_state row (acc_clamp_i64 ulong 1 I32_MIN_PLUS_1 I32_MAX)
+
+  ret spiked
+end
+
+fn lif_run_rows to ulong
+  sdim = get lif_u ulong 0
+  spike_mask = ulong 0
+  row = ulong 0
+  while lt row sdim bound 64
+    sp = lif_step_one_row row
+    if eq sp ulong 1
+      spike_mask = or spike_mask (shl ulong 1 row)
+    end
+    row = add row ulong 1
+  end
+  ret spike_mask
+end
+
+fn lif_run_salience to void
+  sdim = get lif_u ulong 0
+  eslots = get lif_u ulong 2
+  sshift = get lif_u ulong 3
+  idx_c0 = get lif_u ulong 8
+  sal_base = add ulong 8 (mul sdim ulong 8)
+  slot = ulong 0
+  while lt slot eslots bound 1000000000
+    dot_c_post_unpacked ulong 0 (add idx_c0 (mul slot sdim)) sdim
+    acc_shr ulong 0 sshift
+    resp_wr_i64 (add sal_base (mul slot ulong 8)) (acc_clamp_i64 ulong 0 long 0 I64_MAX)
+    slot = add slot ulong 1
+  end
+end
+
+fn lif_parse_and_check plen uint to uint
+  if lt plen uint 40
+    ret STATUS_PAYLOAD_MISMATCH
+  end
+  put lif_u ulong 0 (ulong req_rd_u32 ulong 0)
+  put lif_u ulong 1 (ulong req_rd_u32 ulong 4)
+  put lif_u ulong 2 (ulong req_rd_u32 ulong 8)
+  put lif_u ulong 3 (ulong req_rd_u32 ulong 12)
+  put lif_i ulong 0 (req_rd_i64 ulong 16)
+  put lif_i ulong 1 (req_rd_i64 ulong 24)
+  put lif_i ulong 2 (req_rd_i64 ulong 32)
+
+  sdim = get lif_u ulong 0
+  if eq sdim ulong 0
+    ret STATUS_INVALID_EXTENTS
+  end
+  if gt sdim ulong 64
+    ret STATUS_INVALID_EXTENTS
+  end
+  if eq (get lif_u ulong 1) ulong 0
+    ret STATUS_INVALID_EXTENTS
+  end
+  if eq (get lif_u ulong 2) ulong 0
+    ret STATUS_INVALID_EXTENTS
+  end
+  if ge (get lif_u ulong 3) ulong 64
+    ret STATUS_INVALID_PARAMS
+  end
+  if le (get lif_i ulong 1) long 0
+    ret STATUS_INVALID_PARAMS
+  end
+  if le (get lif_i ulong 2) long 0
+    ret STATUS_INVALID_PARAMS
+  end
+  dnum = get lif_i ulong 0
+  if gt dnum I32_MAX
+    ret STATUS_INVALID_PARAMS
+  end
+  if lt dnum I32_MIN_PLUS_1
+    ret STATUS_INVALID_PARAMS
+  end
+
+  idx = ulong 0
+  put lif_u ulong 4 idx
+  idx = add idx sdim
+  put lif_u ulong 5 idx
+  idx = add idx (get lif_u ulong 1)
+  put lif_u ulong 6 idx
+  idx = add idx (mul sdim sdim)
+  put lif_u ulong 7 idx
+  idx = add idx (mul sdim (get lif_u ulong 1))
+  put lif_u ulong 8 idx
+  idx = add idx (mul (get lif_u ulong 2) sdim)
+  put lif_u ulong 9 idx
+  if ne (ulong plen) (add ulong 40 (mul idx ulong 4))
+    ret STATUS_PAYLOAD_MISMATCH
+  end
+  ret STATUS_OK
+end
+
+fn handle_lif_ssm plen uint to long
+  st = lif_parse_and_check plen
+  if ne st STATUS_OK
+    ret send_reply st uint 0
+  end
+
+  total_i32 = get lif_u ulong 9
+  if gt total_i32 (len lif_i32)
+    rc_l = enlarge lif_i32 total_i32
+    if lt rc_l long 0
+      ret send_reply STATUS_INVALID_EXTENTS uint 0
+    end
+  end
+  lif_unpack_i32 total_i32
+
+  out_bytes = add ulong 8 (mul (add (get lif_u ulong 0) (get lif_u ulong 2)) ulong 8)
+  if gt out_bytes (len resp_buf)
+    rc_e = enlarge resp_buf out_bytes
+    if lt rc_e long 0
+      ret send_reply STATUS_INVALID_EXTENTS uint 0
+    end
+  end
+
+  resp_wr_u64 ulong 0 lif_run_rows
+  lif_run_salience
+
+  ret send_reply STATUS_OK (uint out_bytes)
+end
+
+note Optimized kernel11: unpack feats once, pre-resolve & transpose w1/w2 once.
+fn slm_unpack_feats to void
+  total = mul (get slm_u ulong 0) (get slm_u ulong 1)
+  i = ulong 0
+  while lt i total bound 1000000000
+    put feats_i32 i (req_rd_i32 (add ulong 88 (mul i ulong 4)))
+    i = add i ulong 1
+  end
+end
+
+fn slm_unpack_w1_transposed to void
+  edim = get slm_u ulong 1
+  half_h = shr (get slm_u ulong 2) ulong 1
+  k = ulong 0
+  while lt k edim bound 1000000000
+    pair = ulong 0
+    while lt pair half_h bound 1000000000
+      pb = get req_buf (add (get slm_u ulong 6) (add (mul k half_h) pair))
+      base = add (mul (shl pair ulong 1) edim) k
+      put w1_vals base (get codebook (ulong and pb uchar 15))
+      put w1_vals (add base edim) (get codebook (ulong and (shr pb uchar 4) uchar 15))
+      pair = add pair ulong 1
+    end
+    k = add k ulong 1
+  end
+end
+
+fn slm_unpack_w2_transposed to void
+  hdim = get slm_u ulong 2
+  icnt = get slm_u ulong 3
+  off_w2 = get slm_u ulong 7
+  h = ulong 0
+  while lt h hdim bound 1000000000
+    j = ulong 0
+    while lt j icnt bound 1000000000
+      wc = ulong req_rd_u16 (add off_w2 (mul (add (mul h icnt) j) ulong 2))
+      put w2_vals (add (mul j hdim) h) (get codebook wc)
+      j = add j ulong 1
+    end
+    h = add h ulong 1
+  end
+end
+
+fn slm_dot_stage1 f_off ulong w_off ulong to long
+  rem_k = get slm_u ulong 1
+  acc = ulong 0
+  while ge rem_k ulong 4 bound 1000000000
+    acc = add acc (bitcast ulong (mul (long get feats_i32 f_off) (get w1_vals w_off)))
+    acc = add acc (bitcast ulong (mul (long get feats_i32 (add f_off ulong 1)) (get w1_vals (add w_off ulong 1))))
+    acc = add acc (bitcast ulong (mul (long get feats_i32 (add f_off ulong 2)) (get w1_vals (add w_off ulong 2))))
+    acc = add acc (bitcast ulong (mul (long get feats_i32 (add f_off ulong 3)) (get w1_vals (add w_off ulong 3))))
+    f_off = add f_off ulong 4
+    w_off = add w_off ulong 4
+    rem_k = sub rem_k ulong 4
+  end
+  while gt rem_k ulong 0 bound 4
+    acc = add acc (bitcast ulong (mul (long get feats_i32 f_off) (get w1_vals w_off)))
+    f_off = add f_off ulong 1
+    w_off = add w_off ulong 1
+    rem_k = sub rem_k ulong 1
+  end
+  s = bitcast long acc
+  if le s long 0
+    ret long 0
+  end
+  sh = shr s (long get slm_u ulong 4)
+  if gt sh I32_MAX
+    ret I32_MAX
+  end
+  ret sh
+end
+
+fn slm_stage1 to void
+  brows = get slm_u ulong 0
+  edim = get slm_u ulong 1
+  hdim = get slm_u ulong 2
+  r = ulong 0
+  while lt r brows bound 1000000000
+    f_off = mul r edim
+    h_off = mul r hdim
+    c = ulong 0
+    while lt c hdim bound 1000000000
+      put hidden_relu (add h_off c) (slm_dot_stage1 f_off (mul c edim))
+      c = add c ulong 1
+    end
+    r = add r ulong 1
+  end
+end
+
+fn slm_dot_stage2 h_off ulong w_off ulong to long
+  rem_h = get slm_u ulong 2
+  acc = ulong 0
+  while ge rem_h ulong 4 bound 1000000000
+    acc = add acc (bitcast ulong (mul (get hidden_relu h_off) (get w2_vals w_off)))
+    acc = add acc (bitcast ulong (mul (get hidden_relu (add h_off ulong 1)) (get w2_vals (add w_off ulong 1))))
+    acc = add acc (bitcast ulong (mul (get hidden_relu (add h_off ulong 2)) (get w2_vals (add w_off ulong 2))))
+    acc = add acc (bitcast ulong (mul (get hidden_relu (add h_off ulong 3)) (get w2_vals (add w_off ulong 3))))
+    h_off = add h_off ulong 4
+    w_off = add w_off ulong 4
+    rem_h = sub rem_h ulong 4
+  end
+  while gt rem_h ulong 0 bound 4
+    acc = add acc (bitcast ulong (mul (get hidden_relu h_off) (get w2_vals w_off)))
+    h_off = add h_off ulong 1
+    w_off = add w_off ulong 1
+    rem_h = sub rem_h ulong 1
+  end
+  ret bitcast long acc
+end
+
+fn slm_stage2 to void
+  brows = get slm_u ulong 0
+  hdim = get slm_u ulong 2
+  icnt = get slm_u ulong 3
+  r = ulong 0
+  while lt r brows bound 1000000000
+    h_off = mul r hdim
+    o_off = mul r icnt
+    j = ulong 0
+    while lt j icnt bound 1000000000
+      resp_wr_i64 (mul (add o_off j) ulong 8) (slm_dot_stage2 h_off (mul j hdim))
+      j = add j ulong 1
+    end
+    r = add r ulong 1
+  end
+end
+
+fn slm_parse_and_check plen uint to uint
+  if lt plen uint 88
+    ret STATUS_PAYLOAD_MISMATCH
+  end
+  put slm_u ulong 0 (ulong req_rd_u32 ulong 0)
+  put slm_u ulong 1 (ulong req_rd_u32 ulong 4)
+  put slm_u ulong 2 (ulong req_rd_u32 ulong 8)
+  put slm_u ulong 3 (ulong req_rd_u32 ulong 12)
+  put slm_u ulong 4 (ulong req_rd_u32 ulong 16)
+
+  if eq (get slm_u ulong 0) ulong 0
+    ret STATUS_INVALID_EXTENTS
+  end
+  if eq (get slm_u ulong 1) ulong 0
+    ret STATUS_INVALID_EXTENTS
+  end
+  hdim = get slm_u ulong 2
+  if eq hdim ulong 0
+    ret STATUS_INVALID_EXTENTS
+  end
+  if ne (and hdim ulong 1) ulong 0
+    ret STATUS_INVALID_EXTENTS
+  end
+  if eq (get slm_u ulong 3) ulong 0
+    ret STATUS_INVALID_EXTENTS
+  end
+  if ge (get slm_u ulong 4) ulong 64
+    ret STATUS_INVALID_PARAMS
+  end
+
+  off = ulong 88
+  put slm_u ulong 5 off
+  off = add off (mul (mul (get slm_u ulong 0) (get slm_u ulong 1)) ulong 4)
+  put slm_u ulong 6 off
+  off = add off (mul (get slm_u ulong 1) (shr hdim ulong 1))
+  put slm_u ulong 7 off
+  off = add off (mul (mul hdim (get slm_u ulong 3)) ulong 2)
+  if ne (ulong plen) off
+    ret STATUS_PAYLOAD_MISMATCH
+  end
+
+  i = ulong 0
+  while lt i ulong 16 bound 16
+    put codebook i (long req_rd_i32 (add ulong 24 (mul i ulong 4)))
+    i = add i ulong 1
+  end
+
+  w2_total = mul hdim (get slm_u ulong 3)
+  off_w2 = get slm_u ulong 7
+  wi = ulong 0
+  while lt wi w2_total bound 1000000000
+    if ge (req_rd_u16 (add off_w2 (mul wi ulong 2))) ushort 16
+      ret STATUS_INVALID_CODEBOOK
+    end
+    wi = add wi ulong 1
+  end
+  ret STATUS_OK
+end
+
+fn slm_ensure_bufs to long
+  rc = long 0
+  n = mul (get slm_u ulong 0) (get slm_u ulong 1)
+  if gt n (len feats_i32)
+    rc = enlarge feats_i32 n
+    if lt rc long 0
+      ret long -1
+    end
+  end
+  n = mul (get slm_u ulong 1) (get slm_u ulong 2)
+  if gt n (len w1_vals)
+    rc = enlarge w1_vals n
+    if lt rc long 0
+      ret long -1
+    end
+  end
+  n = mul (get slm_u ulong 2) (get slm_u ulong 3)
+  if gt n (len w2_vals)
+    rc = enlarge w2_vals n
+    if lt rc long 0
+      ret long -1
+    end
+  end
+  n = mul (get slm_u ulong 0) (get slm_u ulong 2)
+  if gt n (len hidden_relu)
+    rc = enlarge hidden_relu n
+    if lt rc long 0
+      ret long -1
+    end
+  end
+  n = mul (mul (get slm_u ulong 0) (get slm_u ulong 3)) ulong 8
+  if gt n (len resp_buf)
+    rc = enlarge resp_buf n
+    if lt rc long 0
+      ret long -1
+    end
+  end
+  ret long n
+end
+
+fn handle_coded_slm plen uint to long
+  st = slm_parse_and_check plen
+  if ne st STATUS_OK
+    ret send_reply st uint 0
+  end
+
+  out_bytes = slm_ensure_bufs
+  if lt out_bytes long 0
+    ret send_reply STATUS_INVALID_EXTENTS uint 0
+  end
+
+  slm_unpack_feats
+  slm_unpack_w1_transposed
+  slm_unpack_w2_transposed
+  slm_stage1
+  slm_stage2
+
+  ret send_reply STATUS_OK (uint out_bytes)
+end
+
+note OP 4 & OP 5: CodebookProductLut contractions (coded_pair_lut & packed_nibbles_lut).
+fn load_pair_lut to void
+  i = ulong 0
+  while lt i ulong 16 bound 16
+    put codebook i (long req_rd_i32 (add ulong 16 (mul i ulong 4)))
+    put codebook_rhs i (long req_rd_i32 (add ulong 80 (mul i ulong 4)))
+    i = add i ulong 1
+  end
+  a = ulong 0
+  while lt a ulong 16 bound 16
+    la = get codebook a
+    b = ulong 0
+    while lt b ulong 16 bound 16
+      put prod_lut (add (mul a ulong 16) b) (bitcast ulong (mul la (get codebook_rhs b)))
+      b = add b ulong 1
+    end
+    a = add a ulong 1
+  end
+end
+
+fn lut_pair_cell off_a ulong off_b ulong to long
+  kdim = get lut_u ulong 1
+  cols = get lut_u ulong 2
+  acc = ulong 0
+  p = ulong 0
+  while lt p kdim bound 1000000000
+    a = ulong and (get req_buf (add off_a p)) uchar 15
+    b = ulong and (get req_buf (add off_b (mul p cols))) uchar 15
+    acc = add acc (get prod_lut (add (shl a ulong 4) b))
+    p = add p ulong 1
+  end
+  ret bitcast long acc
+end
+
+fn lut_pair_run to void
+  rows = get lut_u ulong 0
+  kdim = get lut_u ulong 1
+  cols = get lut_u ulong 2
+  r = ulong 0
+  while lt r rows bound 1000000000
+    off_a = add (get lut_u ulong 3) (mul r kdim)
+    c = ulong 0
+    while lt c cols bound 1000000000
+      resp_wr_i64 (mul (add (mul r cols) c) ulong 8) (lut_pair_cell off_a (add (get lut_u ulong 4) c))
+      c = add c ulong 1
+    end
+    r = add r ulong 1
+  end
+end
+
+fn handle_coded_pair_lut plen uint to long
+  if lt plen uint 144
+    ret send_reply STATUS_PAYLOAD_MISMATCH uint 0
+  end
+  rows = ulong req_rd_u32 ulong 0
+  kdim = ulong req_rd_u32 ulong 4
+  cols = ulong req_rd_u32 ulong 8
+  if eq rows ulong 0
+    ret send_reply STATUS_INVALID_EXTENTS uint 0
+  end
+  if eq kdim ulong 0
+    ret send_reply STATUS_INVALID_EXTENTS uint 0
+  end
+  if eq cols ulong 0
+    ret send_reply STATUS_INVALID_EXTENTS uint 0
+  end
+  n_a = mul rows kdim
+  if ne (ulong plen) (add ulong 144 (add n_a (mul kdim cols)))
+    ret send_reply STATUS_PAYLOAD_MISMATCH uint 0
+  end
+
+  put lut_u ulong 0 rows
+  put lut_u ulong 1 kdim
+  put lut_u ulong 2 cols
+  put lut_u ulong 3 ulong 144
+  put lut_u ulong 4 (add ulong 144 n_a)
+  load_pair_lut
+
+  out_bytes = mul (mul rows cols) ulong 8
+  if gt out_bytes (len resp_buf)
+    rc_e = enlarge resp_buf out_bytes
+    if lt rc_e long 0
+      ret send_reply STATUS_INVALID_EXTENTS uint 0
+    end
+  end
+
+  lut_pair_run
+  ret send_reply STATUS_OK (uint out_bytes)
+end
+
+fn lut_packed_cell off_a ulong off_b ulong to long
+  kdim = get lut_u ulong 1
+  pk = get lut_u ulong 5
+  acc = ulong 0
+  b = ulong 0
+  while lt b pk bound 1000000000
+    ba = get req_buf (add off_a b)
+    bb = get req_buf (add off_b b)
+    idx = add (shl (ulong and ba uchar 15) ulong 4) (ulong and bb uchar 15)
+    acc = add acc (get prod_lut idx)
+    if lt (add (shl b ulong 1) ulong 1) kdim
+      idx = shl (ulong and (shr ba uchar 4) uchar 15) ulong 4
+      idx = add idx (ulong and (shr bb uchar 4) uchar 15)
+      acc = add acc (get prod_lut idx)
+    end
+    b = add b ulong 1
+  end
+  ret bitcast long acc
+end
+
+fn lut_packed_run to void
+  rows = get lut_u ulong 0
+  cols = get lut_u ulong 2
+  pk = get lut_u ulong 5
+  r = ulong 0
+  while lt r rows bound 1000000000
+    off_a = add (get lut_u ulong 3) (mul r pk)
+    c = ulong 0
+    while lt c cols bound 1000000000
+      resp_wr_i64 (mul (add (mul r cols) c) ulong 8) (lut_packed_cell off_a (add (get lut_u ulong 4) (mul c pk)))
+      c = add c ulong 1
+    end
+    r = add r ulong 1
+  end
+end
+
+fn handle_packed_nibbles_lut plen uint to long
+  if lt plen uint 144
+    ret send_reply STATUS_PAYLOAD_MISMATCH uint 0
+  end
+  rows = ulong req_rd_u32 ulong 0
+  kdim = ulong req_rd_u32 ulong 4
+  cols = ulong req_rd_u32 ulong 8
+  if eq rows ulong 0
+    ret send_reply STATUS_INVALID_EXTENTS uint 0
+  end
+  if eq kdim ulong 0
+    ret send_reply STATUS_INVALID_EXTENTS uint 0
+  end
+  if eq cols ulong 0
+    ret send_reply STATUS_INVALID_EXTENTS uint 0
+  end
+  pk = shr (add kdim ulong 1) ulong 1
+  n_a = mul rows pk
+  if ne (ulong plen) (add ulong 144 (add n_a (mul cols pk)))
+    ret send_reply STATUS_PAYLOAD_MISMATCH uint 0
+  end
+
+  put lut_u ulong 0 rows
+  put lut_u ulong 1 kdim
+  put lut_u ulong 2 cols
+  put lut_u ulong 3 ulong 144
+  put lut_u ulong 4 (add ulong 144 n_a)
+  put lut_u ulong 5 pk
+  load_pair_lut
+
+  out_bytes = mul (mul rows cols) ulong 8
+  if gt out_bytes (len resp_buf)
+    rc_e = enlarge resp_buf out_bytes
+    if lt rc_e long 0
+      ret send_reply STATUS_INVALID_EXTENTS uint 0
+    end
+  end
+
+  lut_packed_run
+  ret send_reply STATUS_OK (uint out_bytes)
+end
+
+note OP 6: tropical (min, +) all-pairs shortest-path closure.
+fn trop_relax_k n ulong k ulong to void
+  i = ulong 0
+  while lt i n bound 1000000000
+    dik = get trop_dist (add (mul i n) k)
+    if le dik TROP_CAP
+      j = ulong 0
+      while lt j n bound 1000000000
+        dkj = get trop_dist (add (mul k n) j)
+        if le dkj TROP_CAP
+          cand = add dik dkj
+          if gt cand TROP_CAP
+            cand = TROP_CAP
+          end
+          idx = add (mul i n) j
+          if lt cand (get trop_dist idx)
+            put trop_dist idx cand
+          end
+        end
+        j = add j ulong 1
+      end
+    end
+    i = add i ulong 1
+  end
+end
+
+fn handle_tropical_min_plus plen uint to long
+  if lt plen uint 8
+    ret send_reply STATUS_PAYLOAD_MISMATCH uint 0
+  end
+  n = ulong req_rd_u32 ulong 0
+  if eq n ulong 0
+    ret send_reply STATUS_INVALID_EXTENTS uint 0
+  end
+  total = mul n n
+  out_bytes = mul total ulong 8
+  if ne (ulong plen) (add ulong 8 out_bytes)
+    ret send_reply STATUS_PAYLOAD_MISMATCH uint 0
+  end
+
+  if gt total (len trop_dist)
+    rc_t = enlarge trop_dist total
+    if lt rc_t long 0
+      ret send_reply STATUS_INVALID_EXTENTS uint 0
+    end
+  end
+  if gt out_bytes (len resp_buf)
+    rc_r = enlarge resp_buf out_bytes
+    if lt rc_r long 0
+      ret send_reply STATUS_INVALID_EXTENTS uint 0
+    end
+  end
+
+  r = ulong 0
+  while lt r n bound 1000000000
+    c = ulong 0
+    while lt c n bound 1000000000
+      idx = add (mul r n) c
+      if eq r c
+        put trop_dist idx long 0
+      else
+        raw = req_rd_u64 (add ulong 8 (mul idx ulong 8))
+        if eq raw TROP_NONE_U64
+          put trop_dist idx I32_MAX
+        else
+          if gt raw (ulong TROP_CAP)
+            put trop_dist idx TROP_CAP
+          else
+            put trop_dist idx (long raw)
+          end
+        end
+      end
+      c = add c ulong 1
+    end
+    r = add r ulong 1
+  end
+
+  k = ulong 0
+  while lt k n bound 1000000000
+    trop_relax_k n k
+    k = add k ulong 1
+  end
+
+  idx = ulong 0
+  while lt idx total bound 1000000000
+    d = get trop_dist idx
+    if gt d TROP_CAP
+      resp_wr_u64 (mul idx ulong 8) TROP_NONE_U64
+    else
+      resp_wr_u64 (mul idx ulong 8) (ulong d)
+    end
+    idx = add idx ulong 1
+  end
+  ret send_reply STATUS_OK (uint out_bytes)
+end
+
+fn main to int
+  while true bound 1000000000
+    rc = read_hdr_exact
+    if eq rc long 0
+      ret 0
+    end
+    if lt rc long 0
+      ret 1
+    end
+
+    magic = hdr_rd_u32 ulong 0
+    op = hdr_rd_u32 ulong 4
+    plen = hdr_rd_u32 ulong 8
+
+    if gt (ulong plen) (len req_buf)
+      rc_g = enlarge req_buf (ulong plen)
+      if lt rc_g long 0
+        ret 2
+      end
+    end
+
+    if gt plen uint 0
+      rc_p = read_req_exact (ulong plen)
+      if le rc_p long 0
+        ret 3
+      end
+    end
+
+    if ne magic MAGIC
+      rc_m = send_reply STATUS_BAD_MAGIC uint 0
+      if lt rc_m long 0
+        ret 4
+      end
+      continue
+    end
+
+    if eq op OP_PING
+      if ne plen uint 0
+        rc_pm = send_reply STATUS_PAYLOAD_MISMATCH uint 0
+        if lt rc_pm long 0
+          ret 4
+        end
+      else
+        rc_ok = send_reply STATUS_OK uint 0
+        if lt rc_ok long 0
+          ret 4
+        end
+      end
+      continue
+    end
+
+    if eq op OP_LIF_SSM
+      rc_l = handle_lif_ssm plen
+      if lt rc_l long 0
+        ret 4
+      end
+      continue
+    end
+
+    if eq op OP_CODED_SLM
+      rc_s = handle_coded_slm plen
+      if lt rc_s long 0
+        ret 4
+      end
+      continue
+    end
+
+    if eq op OP_CODED_PAIR_LUT
+      rc_cp = handle_coded_pair_lut plen
+      if lt rc_cp long 0
+        ret 4
+      end
+      continue
+    end
+
+    if eq op OP_PACKED_NIBBLES_LUT
+      rc_pn = handle_packed_nibbles_lut plen
+      if lt rc_pn long 0
+        ret 4
+      end
+      continue
+    end
+
+    if eq op OP_TROPICAL_MIN_PLUS
+      rc_tp = handle_tropical_min_plus plen
+      if lt rc_tp long 0
+        ret 4
+      end
+      continue
+    end
+
+    rc_u = send_reply STATUS_UNKNOWN_OP uint 0
+    if lt rc_u long 0
+      ret 4
+    end
+  end
+  ret 0
+end

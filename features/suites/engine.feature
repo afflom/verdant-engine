@@ -951,3 +951,9 @@ Feature: engine
     Given finite binary32 angles of both signs across all exponent bins, quadrant boundaries, infinities and NaNs
     When Verdant evaluates their sine
     Then each finite word matches the original Arm scalar sine and each nonfinite angle returns NaN
+
+  @VE-82 @open
+  Scenario: Pure seeded-Omega backend measures bit-exact parity and locked-compiler refusals
+    Given a SHA-256-locked omc compiler digest in om/omc.lock and valid or malformed tensor, neural, raster, and SLM inputs
+    When Verdant evaluates kernels through the opt-in verdant-omega backend or partial-evaluating SLM compiler
+    Then valid inputs match verdant-tensor bit-for-bit across architectures while mismatched slices, unlocked compilers, and malformed frames are refused with TensorComputeError
