@@ -291,6 +291,60 @@ expression = "MIT OR Apache-2.0"
 license-files = [{ path = "src/lib.rs", hash = 0xefc74e5d }]
 
 [[licenses.clarify]]
+name = "verdant_reference_sine_input"
+version = "=2.22.5"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0x5774a96e }]
+
+[[licenses.clarify]]
+name = "verdant_reference_sine_constant"
+version = "=2.22.5"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0xd8f2edec }]
+
+[[licenses.clarify]]
+name = "verdant_reference_sine_decode"
+version = "=2.22.5"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0x22cda0bb }]
+
+[[licenses.clarify]]
+name = "verdant_reference_sine_instruction"
+version = "=2.22.5"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0x28fae59d }]
+
+[[licenses.clarify]]
+name = "verdant_reference_sine_large_stage"
+version = "=2.22.5"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0xbadf037f }]
+
+[[licenses.clarify]]
+name = "verdant_reference_sine_part"
+version = "=2.22.5"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0x8178a444 }]
+
+[[licenses.clarify]]
+name = "verdant_reference_sine_reciprocal_limb"
+version = "=2.22.5"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0xd55093c0 }]
+
+[[licenses.clarify]]
+name = "verdant_reference_sine_route"
+version = "=2.22.5"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0x20049205 }]
+
+[[licenses.clarify]]
+name = "verdant_reference_sine_shift_factor"
+version = "=2.22.5"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0x2126ee63 }]
+
+[[licenses.clarify]]
 name = "verdant_modular_word64"
 version = "=2.22.2"
 expression = "MIT OR Apache-2.0"

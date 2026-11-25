@@ -1254,6 +1254,22 @@ pub(super) fn certified_quotient_model() {
             Some(package)
         );
     }
+    for (root, package) in [
+        ("constant", "verdant_reference_sine_constant"),
+        ("decode", "verdant_reference_sine_decode"),
+        ("instruction", "verdant_reference_sine_instruction"),
+        ("unaryInput", "verdant_reference_sine_input"),
+        ("largeStage", "verdant_reference_sine_large_stage"),
+        ("part", "verdant_reference_sine_part"),
+        ("reciprocalLimb", "verdant_reference_sine_reciprocal_limb"),
+        ("route", "verdant_reference_sine_route"),
+        ("shiftFactor", "verdant_reference_sine_shift_factor"),
+    ] {
+        assert_eq!(
+            bindings.get(&format!("VerdantEngine.ReferenceSine.{root}")),
+            Some(&package.to_owned())
+        );
+    }
 }
 
 fn blake3_hex(data: &[u8]) -> String {
@@ -1503,6 +1519,15 @@ fn verify_bundle(scope: &str, directory: &str) -> std::collections::BTreeMap<Str
                     "verdant_count_f64" => include_bytes!("../../../../generated/tensor-quotient/packages/rust-core/verdant_count_f64/src/lib.rs"),
                     "verdant_quotient_f64" => include_bytes!("../../../../generated/tensor-quotient/packages/rust-core/verdant_quotient_f64/src/lib.rs"),
                     "verdant_numeric_equality" => include_bytes!("../../../../generated/tensor-quotient/packages/rust-core/verdant_numeric_equality/src/lib.rs"),
+                    "verdant_reference_sine_input" => include_bytes!("../../../../generated/tensor-quotient/packages/rust-core/verdant_reference_sine_input/src/lib.rs"),
+                    "verdant_reference_sine_constant" => include_bytes!("../../../../generated/tensor-quotient/packages/rust-core/verdant_reference_sine_constant/src/lib.rs"),
+                    "verdant_reference_sine_decode" => include_bytes!("../../../../generated/tensor-quotient/packages/rust-core/verdant_reference_sine_decode/src/lib.rs"),
+                    "verdant_reference_sine_instruction" => include_bytes!("../../../../generated/tensor-quotient/packages/rust-core/verdant_reference_sine_instruction/src/lib.rs"),
+                    "verdant_reference_sine_large_stage" => include_bytes!("../../../../generated/tensor-quotient/packages/rust-core/verdant_reference_sine_large_stage/src/lib.rs"),
+                    "verdant_reference_sine_part" => include_bytes!("../../../../generated/tensor-quotient/packages/rust-core/verdant_reference_sine_part/src/lib.rs"),
+                    "verdant_reference_sine_reciprocal_limb" => include_bytes!("../../../../generated/tensor-quotient/packages/rust-core/verdant_reference_sine_reciprocal_limb/src/lib.rs"),
+                    "verdant_reference_sine_route" => include_bytes!("../../../../generated/tensor-quotient/packages/rust-core/verdant_reference_sine_route/src/lib.rs"),
+                    "verdant_reference_sine_shift_factor" => include_bytes!("../../../../generated/tensor-quotient/packages/rust-core/verdant_reference_sine_shift_factor/src/lib.rs"),
                     "verdant_modular_word64" => include_bytes!("../../../../generated/tensor-quotient/packages/rust-core/verdant_modular_word64/src/lib.rs"),
                     "verdant_reference_log_center" => include_bytes!("../../../../generated/tensor-quotient/packages/rust-core/verdant_reference_log_center/src/lib.rs"),
                     "verdant_reference_log_coefficient" => include_bytes!("../../../../generated/tensor-quotient/packages/rust-core/verdant_reference_log_coefficient/src/lib.rs"),

@@ -906,6 +906,15 @@ dependencies = [
  "verdant_reference_log_power",
  "verdant_reference_log_prepare",
  "verdant_reference_log_segment",
+ "verdant_reference_sine_constant",
+ "verdant_reference_sine_decode",
+ "verdant_reference_sine_input",
+ "verdant_reference_sine_instruction",
+ "verdant_reference_sine_large_stage",
+ "verdant_reference_sine_part",
+ "verdant_reference_sine_reciprocal_limb",
+ "verdant_reference_sine_route",
+ "verdant_reference_sine_shift_factor",
  "verdant_rotation_geometry",
  "verdant_rotation_limit",
  "verdant_rotation_signed",
@@ -1270,6 +1279,42 @@ version = "2.22.3"
 [[package]]
 name = "verdant_reference_log_segment"
 version = "2.22.3"
+
+[[package]]
+name = "verdant_reference_sine_constant"
+version = "2.22.5"
+
+[[package]]
+name = "verdant_reference_sine_decode"
+version = "2.22.5"
+
+[[package]]
+name = "verdant_reference_sine_input"
+version = "2.22.5"
+
+[[package]]
+name = "verdant_reference_sine_instruction"
+version = "2.22.5"
+
+[[package]]
+name = "verdant_reference_sine_large_stage"
+version = "2.22.5"
+
+[[package]]
+name = "verdant_reference_sine_part"
+version = "2.22.5"
+
+[[package]]
+name = "verdant_reference_sine_reciprocal_limb"
+version = "2.22.5"
+
+[[package]]
+name = "verdant_reference_sine_route"
+version = "2.22.5"
+
+[[package]]
+name = "verdant_reference_sine_shift_factor"
+version = "2.22.5"
 
 [[package]]
 name = "verdant_rotation_geometry"

@@ -599,3 +599,9 @@ The public `linear::natural_log_f32` runs the certified scalar classification, r
 The public `linear::equal_numeric_words` compares two signed I64 or binary64 encodings. It preserves integer precision beyond 2⁵³, treats the two floating zeros as equal and every NaN as unequal. The quotient proof exports `F64Quotient.equalNumericWords` under attestation `blake3:15cb8561b1d16a675865f7d5075e5c6e830e3ebd2c211903f86519c1d42b8cd5`.
 
 `cargo test -p verdant-tensor --lib numeric_equality_vtk_69` compares 32,992 results with pinned Berkeley SoftFloat. Its original converters widen both operands exactly before `extF80M_eq`. Reversing the two representation flags failed on integer 1 and binary64 1.0. Restoring the certified root passed.
+
+## VTK-70 binary32 sine
+
+Operation 14 of the public `linear::evaluate_float_unary` evaluates the portable Arm scalar sine across the binary32 exponent range. The nine quotient roots for classification, reduction and polynomial evaluation carry attestation `blake3:2109fec51735fda67c26188dc8fbd9bb522d7565d3b75364d1a7ae3e82ae4527`.
+
+The test compiles Arm's pinned C sources and checks 16,448 input words. Finite outputs match bit for bit, including signed zero, and nonfinite results match the reference classification. Swapping the polynomial inputs fails at `0x39800000`.

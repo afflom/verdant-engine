@@ -1,0 +1,215 @@
+\begin{lexlean}{ReferenceSine}
+\useglossary{lexlean.std.bool@1.2.0}
+\useglossary{lexlean.std.nat@1.2.0}
+\title{Natural number}
+\begin{semanticmodule}
+inductive{
+  name: Operand,
+  type_parameters: [],
+  parameters: [],
+  constructors: [
+    {name: saved, fields: [Nat]},
+    {name: immediate, fields: [Nat]}
+  ]
+}
+
+inductive{
+  name: Instruction,
+  type_parameters: [],
+  parameters: [],
+  constructors: [
+    {name: finish, fields: []},
+    {name: evaluate, fields: [Nat, Operand, Operand]}
+  ]
+}
+
+inductive{
+  name: Route,
+  type_parameters: [],
+  parameters: [],
+  constructors: [
+    {name: done, fields: [Nat]},
+    {name: program, fields: [Nat, Nat, Nat, Nat]}
+  ]
+}
+
+definition{
+  name: reciprocalLimb,
+  parameters: [index : Nat],
+  result: Nat,
+  body: (if (index <? 12) then (if (index <? 6) then (if (index <? 3) then (if (index <? 1) then 162 else (if (index <? 2) then 41721 else 10680707)) else (if (index <? 4) then 2734261102 else (if (index <? 5) then 4186140238 else 2205044292))) else (if (index <? 9) then (if (index <? 7) then 1850622997 else (if (index <? 8) then 1313084713 else 1142237692)) else (if (index <? 10) then 355073063 else (if (index <? 11) then 704390999 else 4230436817)))) else (if (index <? 18) then (if (index <? 15) then (if (index <? 13) then 660066805 else (if (index <? 14) then 1473377588 else 3522507997)) else (if (index <? 16) then 4113882560 else (if (index <? 17) then 886948059 else 3720403810))) else (if (index <? 21) then (if (index <? 19) then 3235603093 else (if (index <? 20) then 3680671129 else 1653971260)) else (if (index <? 22) then 2509847619 else (if (index <? 23) then 2570863504 else 1011060801))))),
+  executable: true,
+  production: {effects: [], targets: [rust-core]}
+}
+
+definition{
+  name: polynomialStage,
+  parameters: [quadrant : Nat, orientation : Nat],
+  result: Nat,
+  body: (if ((prim remainder quadrant 2 0 : Nat) =? 0) then (if ((orientation =? 1) || (orientation =? 2)) then 3 else 2) else (if (orientation <? 2) then 4 else 5)),
+  executable: true
+}
+
+definition{
+  name: shiftFactor,
+  parameters: [shift : Nat],
+  result: Nat,
+  body: (if (shift <? 4) then (if (shift <? 2) then (if (shift <? 1) then 1 else 2) else (if (shift <? 3) then 4 else 8)) else (if (shift <? 6) then (if (shift <? 5) then 16 else 32) else (if (shift <? 7) then 64 else 128))),
+  executable: true,
+  production: {effects: [], targets: [rust-core]}
+}
+
+definition{
+  name: part,
+  parameters: [remainder : Bool, word : Nat, divisor : Nat],
+  result: Nat,
+  body: (if remainder then (prim remainder word divisor 0 : Nat) else (prim quotient word divisor 0 : Nat)),
+  executable: true,
+  production: {effects: [], targets: [rust-core]}
+}
+
+definition{
+  name: largeStage,
+  parameters: [word : Nat, residue : Nat],
+  result: Nat,
+  body: (let quadrant : Nat := (prim remainder (prim quotient ((prim quotient residue 2305843009213693952 0 : Nat) + 1) 2 0 : Nat) 4 0 : Nat);
+     (let orientation : Nat := (prim remainder (quadrant + (prim quotient word 2147483648 0 : Nat)) 4 0 : Nat);
+     (polynomialStage quadrant orientation))),
+  executable: true,
+  production: {effects: [overflow], targets: [rust-core]}
+}
+
+definition{
+  name: unaryInput,
+  parameters: [operation : Nat, source : Nat, destination : Nat, word : Nat],
+  result: (Option Nat),
+  body: (if ((((operation =? 14) && (source =? 0)) && (destination =? 0)) && (word <? 4294967296)) then (ctor Option.some [Nat] word) else (ctor Option.none [Nat])),
+  executable: true,
+  production: {effects: [], targets: [rust-core]}
+}
+
+definition{
+  name: route,
+  parameters: [stage : Nat, word : Nat, resultWord : Nat, largeNext : Nat],
+  result: Route,
+  body: (if (stage =? 0) then (let magnitude : Nat := (prim remainder word 2147483648 0 : Nat);
+     (if (magnitude <? 964689920) then (ctor Route.done word) else (if (magnitude <? 1061158912) then (ctor Route.program 0 word 0 2) else (if (magnitude <? 1123024896) then (ctor Route.program 1 word 0 1) else (if (magnitude <? 2139095040) then (ctor Route.program 8 word 0 7) else (ctor Route.done 2143289344)))))) else (if (stage =? 1) then (let quadrant : Nat := (prim remainder resultWord 4 0 : Nat); (ctor Route.program 2 word resultWord (polynomialStage quadrant quadrant))) else (if (stage =? 7) then (ctor Route.program 9 resultWord 0 largeNext) else (if (stage <? 6) then (ctor Route.program (stage + 2) resultWord 0 6) else (ctor Route.done resultWord))))),
+  executable: true,
+  production: {effects: [overflow], targets: [rust-core]}
+}
+
+definition{
+  name: widen,
+  parameters: [index : Nat],
+  result: Nat,
+  body: (if (index <? 1) then 65538 else 0),
+  executable: true
+}
+
+definition{
+  name: fastQuadrant,
+  parameters: [index : Nat],
+  result: Nat,
+  body: (if (index <? 3) then (if (index <? 1) then 65538 else (if (index <? 2) then 67663 else 65641)) else (if (index <? 5) then (if (index <? 4) then 69776 else 71860) else (if (index <? 6) then 73939 else 0))),
+  executable: true
+}
+
+definition{
+  name: fastResidual,
+  parameters: [index : Nat],
+  result: Nat,
+  body: (if (index <? 4) then (if (index <? 2) then (if (index <? 1) then 75824 else 73811) else (if (index <? 3) then 75889 else 65672)) else (if (index <? 6) then (if (index <? 5) then 77999 else 65538) else (if (index <? 7) then 12513 else 0))),
+  executable: true
+}
+
+definition{
+  name: largeBits,
+  parameters: [index : Nat],
+  result: Nat,
+  body: (if (index <? 10) then (if (index <? 5) then (if (index <? 2) then (if (index <? 1) then 79892 else 82003) else (if (index <? 3) then 69652 else (if (index <? 4) then 84115 else 65718))) else (if (index <? 7) then (if (index <? 6) then 69651 else 69872) else (if (index <? 8) then 12562 else (if (index <? 9) then 65653 else 86128)))) else (if (index <? 15) then (if (index <? 12) then (if (index <? 11) then 65909 else 84080) else (if (index <? 13) then 65973 else (if (index <? 14) then 20786 else 24882))) else (if (index <? 18) then (if (index <? 16) then 28978 else (if (index <? 17) then 88562 else 88628)) else (if (index <? 19) then 39504 else (if (index <? 20) then 33424 else 0))))),
+  executable: true
+}
+
+definition{
+  name: largeResidual,
+  parameters: [index : Nat],
+  result: Nat,
+  body: (if (index <? 3) then (if (index <? 1) then 90128 else (if (index <? 2) then 92244 else 92274)) else (if (index <? 5) then (if (index <? 4) then 8209 else 65704) else (if (index <? 6) then 94415 else 0))),
+  executable: true
+}
+
+definition{
+  name: sinePolynomial,
+  parameters: [index : Nat, negative : Bool],
+  result: Nat,
+  body: (if (index <? 6) then (if (index <? 3) then (if (index <? 1) then 15 else (if (index <? 2) then (if negative then 96272 else 65552) else 4207)) else (if (index <? 4) then 98383 else (if (index <? 5) then 11809 else 4239))) else (if (index <? 9) then (if (index <? 7) then 102543 else (if (index <? 8) then 16481 else 12527)) else (if (index <? 10) then 20769 else (if (index <? 11) then 65891 else 0)))),
+  executable: true
+}
+
+definition{
+  name: cosinePolynomial,
+  parameters: [index : Nat, negative : Bool],
+  result: Nat,
+  body: (if (index <? 6) then (if (index <? 3) then (if (index <? 1) then 15 else (if (index <? 2) then 4175 else (if negative then 106575 else 104527))) else (if (index <? 4) then (if negative then 9921 else 9889) else (if (index <? 5) then (if negative then 114767 else 112719) else (if negative then 14145 else 14113)))) else (if (index <? 9) then (if (index <? 7) then 4207 else (if (index <? 8) then (if negative then 122991 else 120943) else 18657)) else (if (index <? 11) then (if (index <? 10) then 10511 else 22849) else (if (index <? 12) then 65923 else 0)))),
+  executable: true
+}
+
+definition{
+  name: instruction,
+  parameters: [program : Nat, index : Nat],
+  result: Nat,
+  body: (if (program <? 3) then (if (program <? 1) then (widen index) else (if (program <? 2) then (fastQuadrant index) else (fastResidual index))) else (if (program <? 8) then (if (program <? 6) then (sinePolynomial index (program =? 5)) else (cosinePolynomial index (program =? 7))) else (if (program =? 8) then (largeBits index) else (largeResidual index)))),
+  executable: true,
+  production: {effects: [], targets: [rust-core]}
+}
+
+definition{
+  name: constant,
+  parameters: [index : Nat],
+  result: Nat,
+  body: (if (index <? 14) then (if (index <? 7) then (if (index <? 3) then (if (index <? 1) then 0 else (if (index <? 2) then 4711995771741390979 else 8388608)) else (if (index <? 5) then (if (index <? 4) then 16777216 else 256) else (if (index <? 6) then 128 else 13833125093779451160))) else (if (index <? 10) then (if (index <? 8) then 67108864 else (if (index <? 9) then 16 else 8)) else (if (index <? 12) then (if (index <? 11) then 4 else 4294967296) else (if (index <? 13) then 2305843009213693952 else 4611686018427387904)))) else (if (index <? 21) then (if (index <? 17) then (if (index <? 15) then 4330529880027704600 else (if (index <? 16) then 9223372036854775808 else 13774704673258000164)) else (if (index <? 19) then (if (index <? 18) then 4575956795463502788 else 13818544852424828419) else (if (index <? 20) then 4537820015566256323 else 13761192052421032131))) else (if (index <? 25) then (if (index <? 23) then (if (index <? 22) then 13787418999196890525 else 4564046962342114717) else (if (index <? 24) then 13826050855977902620 else 4602678819123126812)) else (if (index <? 27) then (if (index <? 26) then 4607182418800017408 else 13830554455654793216) else (if (index <? 28) then 4586165614292668185 else 13809537651147443993))))),
+  executable: true,
+  production: {effects: [], targets: [rust-core]}
+}
+
+definition{
+  name: operand,
+  parameters: [code : Nat],
+  result: Operand,
+  body: (if (code <? 32) then (ctor Operand.saved code) else (ctor Operand.immediate (prim subtract code 32 : Nat))),
+  executable: true
+}
+
+definition{
+  name: decode,
+  parameters: [encoded : Nat],
+  result: Instruction,
+  body: (if (encoded =? 0) then (ctor Instruction.finish) else (let payload : Nat := (prim subtract encoded 1 : Nat);
+     (ctor Instruction.evaluate (prim remainder payload 32 0 : Nat) (operand (prim remainder (prim quotient payload 32 0 : Nat) 64 0 : Nat)) (operand (prim quotient payload 2048 0 : Nat))))),
+  executable: true,
+  production: {effects: [overflow], targets: [rust-core]}
+}
+
+theorem{
+  name: negativeZeroPreserved,
+  parameters: [],
+  statement: ((route 0 2147483648 0 0) = (ctor Route.done 2147483648)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: infinityIsInvalid,
+  parameters: [],
+  statement: ((route 0 2139095040 0 0) = (ctor Route.done 2143289344)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: negativeFastQuadrant,
+  parameters: [],
+  statement: ((route 1 0 255 0) = (ctor Route.program 2 0 255 5)),
+  proof: reflexivity{}
+}
+
+\end{semanticmodule}
+\end{lexlean}
