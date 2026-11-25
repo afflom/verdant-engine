@@ -5,9 +5,9 @@
   "currentVersion": {
     "major": 2,
     "minor": 22,
-    "patch": 1
+    "patch": 2
   },
-  "releaseEpoch": 35,
+  "releaseEpoch": 36,
   "history": [
     {
       "version": "0.1.0",
@@ -273,6 +273,13 @@
       "releaseEpoch": 35,
       "bumpKind": "patch",
       "summary": "v2.22.1: certified Q8_1/Q8_K activation decoding, binary64 multiplication, and modular 64-bit word arithmetic (VTK-65, VTK-66, VTK-67)",
+      "citedAuthority": "AUTH-SEMVER-CHANGE-KPI"
+    },
+    {
+      "version": "2.22.2",
+      "releaseEpoch": 36,
+      "bumpKind": "patch",
+      "summary": "v2.22.2: certified Arm binary32 natural logarithm in unified quotient scope (VTK-68)",
       "citedAuthority": "AUTH-SEMVER-CHANGE-KPI"
     }
   ]

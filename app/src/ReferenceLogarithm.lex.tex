@@ -1,0 +1,108 @@
+\begin{lexlean}{ReferenceLogarithm}
+\useglossary{lexlean.std.bool@1.2.0}
+\useglossary{lexlean.std.nat@1.2.0}
+\title{Natural number}
+\begin{semanticmodule}
+inductive{
+  name: Preparation,
+  type_parameters: [],
+  parameters: [],
+  constructors: [
+    {name: exact, fields: [Nat]},
+    {name: finite, fields: []},
+    {name: normalize, fields: [Nat]}
+  ]
+}
+
+definition{
+  name: center,
+  parameters: [index : Nat],
+  result: (Nat * Nat),
+  body: (if (index <? 8) then (if (index <? 4) then (if (index <? 2) then (if (index <? 1) then (4608978936946815934, 13823090934227446494) else (4608715057657776189, 13822320147169308123)) else (if (index <? 3) then (4608472394794799280, 13821580991209224807) else (4608248488482308997, 13820194688092742889))) else (if (index <? 6) then (if (index <? 5) then (4608041244965758117, 13818828503627364184) else (4607848870939692704, 13817512236758630656)) else (if (index <? 7) then (4607669821521933375, 13815441079090810462) else (4607502758676456890, 13812987817592167628)))) else (if (index <? 12) then (if (index <? 10) then (if (index <? 9) then (4607346517716041895, 13808690616351132702) else (4607182418800017408, 0)) else (if (index <? 11) then (4606725627513030572, 4587661321569458564) else (4606237608119528096, 4592649433442037428))) else (if (index <? 14) then (if (index <? 13) then (4605810461683416294, 4595121761789467400) else (4605426298538535469, 4596981725663479664)) else (if (index <? 15) then (4605078941445145069, 4598462792446541537) else (4604763342715963490, 4599305725128666633))))),
+  executable: true,
+  production: {effects: [], targets: [rust-core]}
+}
+
+definition{
+  name: prepare,
+  parameters: [word : Nat],
+  result: Preparation,
+  body: (if ((word =? 0) || (word =? 2147483648)) then (ctor Preparation.exact 4286578688) else (if (word =? 2139095040) then (ctor Preparation.exact word) else (if (2139095040 <? word) then (ctor Preparation.exact 2143289344) else (if (word =? 1065353216) then (ctor Preparation.exact 0) else (if (word <? 8388608) then (ctor Preparation.normalize 1258291200) else (ctor Preparation.finite)))))),
+  executable: true,
+  production: {effects: [], targets: [rust-core]}
+}
+
+definition{
+  name: offset,
+  parameters: [word : Nat, normalized : Bool],
+  result: Nat,
+  body: (prim subtract (word + (if normalized then 4102029312 else 4294967296)) 1060306944 : Nat),
+  executable: true,
+  production: {effects: [overflow], targets: [rust-core]}
+}
+
+definition{
+  name: segment,
+  parameters: [distance : Nat],
+  result: (Nat * Nat),
+  body: ((1060306944 + (prim remainder distance 8388608 0 : Nat)), (prim remainder (prim quotient distance 524288 0 : Nat) 16 0 : Nat)),
+  executable: true,
+  production: {effects: [overflow], targets: [rust-core]}
+}
+
+definition{
+  name: power,
+  parameters: [distance : Nat],
+  result: (Nat * Nat),
+  body: (let exponent : Nat := (prim quotient distance 8388608 0 : Nat); (if (exponent <? 512) then ((prim subtract 512 exponent : Nat), 13827790571168217583) else ((prim subtract exponent 512 : Nat), 4604418534313441775))),
+  executable: true,
+  production: {effects: [], targets: [rust-core]}
+}
+
+definition{
+  name: coefficient,
+  parameters: [index : Nat],
+  result: Nat,
+  body: (if (index <? 2) then (if (index <? 1) then 13830554455654793216 else 13821563350862562100) else (if (index <? 3) then 4599678642981702506 else 13826050851498246435)),
+  executable: true,
+  production: {effects: [], targets: [rust-core]}
+}
+
+definition{
+  name: instruction,
+  parameters: [stage : Nat],
+  result: (Option (Nat * (Nat * Nat))),
+  body: (if (stage <? 8) then (if (stage <? 4) then (if (stage <? 2) then (if (stage <? 1) then (ctor Option.some [(Nat * (Nat * Nat))] (1, (0, 0))) else (ctor Option.some [(Nat * (Nat * Nat))] (5, (1, 0)))) else (if (stage <? 3) then (ctor Option.some [(Nat * (Nat * Nat))] (14, (10, 2))) else (ctor Option.some [(Nat * (Nat * Nat))] (0, (4, 11))))) else (if (stage <? 6) then (if (stage <? 5) then (ctor Option.some [(Nat * (Nat * Nat))] (14, (9, 3))) else (ctor Option.some [(Nat * (Nat * Nat))] (0, (13, 5)))) else (if (stage <? 7) then (ctor Option.some [(Nat * (Nat * Nat))] (14, (14, 14))) else (ctor Option.some [(Nat * (Nat * Nat))] (14, (7, 14)))))) else (if (stage <? 12) then (if (stage <? 10) then (if (stage <? 9) then (ctor Option.some [(Nat * (Nat * Nat))] (0, (16, 8))) else (ctor Option.some [(Nat * (Nat * Nat))] (14, (6, 15)))) else (if (stage <? 11) then (ctor Option.some [(Nat * (Nat * Nat))] (0, (18, 17))) else (ctor Option.some [(Nat * (Nat * Nat))] (14, (19, 15))))) else (if (stage <? 14) then (if (stage <? 13) then (ctor Option.some [(Nat * (Nat * Nat))] (0, (12, 14))) else (ctor Option.some [(Nat * (Nat * Nat))] (0, (20, 21)))) else (if (stage <? 15) then (ctor Option.some [(Nat * (Nat * Nat))] (2, (22, 0))) else (ctor Option.none [(Nat * (Nat * Nat))]))))),
+  executable: true,
+  production: {effects: [], targets: [rust-core]}
+}
+
+theorem{
+  name: logarithmOfOne,
+  parameters: [],
+  statement: ((prepare 1065353216) = (ctor Preparation.exact 0)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: logarithmOfNegativeZero,
+  parameters: [],
+  statement: ((prepare 2147483648) = (ctor Preparation.exact 4286578688)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: negativeInputIsInvalid,
+  parameters: [],
+  statement: ((prepare 3212836864) = (ctor Preparation.exact 2143289344)),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: smallestSubnormalRequestsExactScaling,
+  parameters: [],
+  statement: ((prepare 1) = (ctor Preparation.normalize 1258291200)),
+  proof: reflexivity{}
+}
+\end{semanticmodule}
+\end{lexlean}

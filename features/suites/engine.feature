@@ -933,3 +933,9 @@ Feature: engine
     Given two 64-bit words spanning limb boundaries and both signs
     When Verdant adds subtracts or multiplies their raw encodings
     Then the stored low word agrees with the pinned SoftFloat multiword primitives
+
+  @VTK-68 @build
+  Scenario: Binary32 logarithms reproduce the portable scalar operation
+    Given binary32 words across every exponent and either side of reduction boundaries
+    When Verdant evaluates the natural logarithm
+    Then every output matches the pinned Arm scalar logarithm with nearest-even rounding

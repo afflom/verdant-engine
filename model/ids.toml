@@ -992,3 +992,9 @@ id = "VTK-67"
 level = "build"
 suite = "engine"
 statement = "Verdant adds subtracts and multiplies raw words modulo two to the sixty-fourth power"
+
+[[id]]
+id = "VTK-68"
+level = "build"
+suite = "engine"
+statement = "Verdant reproduces the Arm scalar binary32 table-reduced natural logarithm under nearest-even rounding"

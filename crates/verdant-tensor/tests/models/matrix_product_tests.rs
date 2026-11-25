@@ -1502,6 +1502,13 @@ fn verify_bundle(scope: &str, directory: &str) -> std::collections::BTreeMap<Str
                     "verdant_count_f64" => include_bytes!("../../../../generated/tensor-quotient/packages/rust-core/verdant_count_f64/src/lib.rs"),
                     "verdant_quotient_f64" => include_bytes!("../../../../generated/tensor-quotient/packages/rust-core/verdant_quotient_f64/src/lib.rs"),
                     "verdant_modular_word64" => include_bytes!("../../../../generated/tensor-quotient/packages/rust-core/verdant_modular_word64/src/lib.rs"),
+                    "verdant_reference_log_center" => include_bytes!("../../../../generated/tensor-quotient/packages/rust-core/verdant_reference_log_center/src/lib.rs"),
+                    "verdant_reference_log_coefficient" => include_bytes!("../../../../generated/tensor-quotient/packages/rust-core/verdant_reference_log_coefficient/src/lib.rs"),
+                    "verdant_reference_log_instruction" => include_bytes!("../../../../generated/tensor-quotient/packages/rust-core/verdant_reference_log_instruction/src/lib.rs"),
+                    "verdant_reference_log_offset" => include_bytes!("../../../../generated/tensor-quotient/packages/rust-core/verdant_reference_log_offset/src/lib.rs"),
+                    "verdant_reference_log_power" => include_bytes!("../../../../generated/tensor-quotient/packages/rust-core/verdant_reference_log_power/src/lib.rs"),
+                    "verdant_reference_log_prepare" => include_bytes!("../../../../generated/tensor-quotient/packages/rust-core/verdant_reference_log_prepare/src/lib.rs"),
+                    "verdant_reference_log_segment" => include_bytes!("../../../../generated/tensor-quotient/packages/rust-core/verdant_reference_log_segment/src/lib.rs"),
                     "verdant_product_f64" => include_bytes!("../../../../generated/tensor-quotient/packages/rust-core/verdant_product_f64/src/lib.rs"),
                     "verdant_quotient_route" => include_bytes!("../../../../generated/tensor-quotient/packages/rust-core/verdant_quotient_route/src/lib.rs"),
                     "verdant_division_class" => include_bytes!("../../../../generated/tensor-quotient/packages/rust-core/verdant_division_class/src/lib.rs"),
@@ -2575,6 +2582,21 @@ fn circular_functions_vtk_21() {
 
 #[test]
 fn logarithmic_frequency_vtk_22() {
+    let bindings = verify_bundle("quotient", "tensor-quotient");
+    for name in [
+        "center",
+        "coefficient",
+        "instruction",
+        "offset",
+        "power",
+        "prepare",
+        "segment",
+    ] {
+        assert_eq!(
+            bindings.get(&format!("VerdantEngine.ReferenceLogarithm.{name}")),
+            Some(&format!("verdant_reference_log_{name}"))
+        );
+    }
     for (pkg, root) in [
         (
             "verdant_logarithmic_term",

@@ -4844,7 +4844,7 @@ reason = "type"
 detail = "type outside the lift: f32"
 
 [[residue]]
-kappa = "2ce0e393bf4674cd38ce374f4a2bd7b598d8b8a13b8d315b6abb609794059651"
+kappa = "19242164d91cfd21b225aa2c67c0f8dd8595b30c2a6e203fff2fed1d5f53af8e"
 function = "verdant_tensor::linear::activations::natural_log_f32"
 reason = "type"
 detail = "type outside the lift: f32"

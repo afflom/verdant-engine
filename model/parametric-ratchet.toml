@@ -58,7 +58,7 @@ max_unlifted_workspace_modules = 0
 
 [frontier_ratchet]
 frontier_register = "frontier.toml"
-frontier_rust_tree_sha256 = "2260d385f5484600f8df9f14787871b3ae98b4b2e128074b0feb66606b3938c8"
+frontier_rust_tree_sha256 = "e6f741c94500f54ab3e72c7c5069c33305a395aab5206364bcb904287ecc9357"
 min_lifted_functions = 621
 max_residue_functions = 1147
 max_uncertified_functions = 1301
@@ -260,6 +260,11 @@ role = "Prism typed float unary composition and exact integer rounding for the G
 path = "app/src/ScalarF64.lex.tex"
 stratum = 1
 role = "Prism nearest-even wide accumulation and F32 count storage conversion."
+
+[[stratum_module]]
+path = "app/src/ReferenceLogarithm.lex.tex"
+stratum = 1
+role = "Original Arm binary32 logarithm classification, range reduction, center table and ordered binary64 polynomial."
 
 [[stratum_module]]
 path = "app/src/FloatWord64.lex.tex"
