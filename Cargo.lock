@@ -473,7 +473,7 @@ dependencies = [
 
 [[package]]
 name = "prism-fidelity"
-version = "2.22.3"
+version = "2.22.4"
 dependencies = [
  "serde",
  "sha2 0.11.1",
@@ -506,7 +506,7 @@ dependencies = [
 
 [[package]]
 name = "repo-conformance"
-version = "2.22.3"
+version = "2.22.4"
 dependencies = [
  "prism-fidelity",
  "repo-model",
@@ -519,7 +519,7 @@ dependencies = [
 
 [[package]]
 name = "repo-model"
-version = "2.22.3"
+version = "2.22.4"
 dependencies = [
  "serde",
  "sha2 0.11.1",
@@ -794,14 +794,14 @@ checksum = "daf8dba3b7eb870caf1ddeed7bc9d2a049f3cfdfae7cb521b087cc33ae4c49da"
 
 [[package]]
 name = "verdant-cli"
-version = "2.22.3"
+version = "2.22.4"
 dependencies = [
  "verdant-core",
 ]
 
 [[package]]
 name = "verdant-core"
-version = "2.22.3"
+version = "2.22.4"
 dependencies = [
  "flate2",
  "gltf",
@@ -817,7 +817,7 @@ dependencies = [
 
 [[package]]
 name = "verdant-tensor"
-version = "2.22.3"
+version = "2.22.4"
 dependencies = [
  "proc-macro2",
  "serde",
@@ -906,6 +906,15 @@ dependencies = [
  "verdant_reference_log_power",
  "verdant_reference_log_prepare",
  "verdant_reference_log_segment",
+ "verdant_reference_sine_constant",
+ "verdant_reference_sine_decode",
+ "verdant_reference_sine_input",
+ "verdant_reference_sine_instruction",
+ "verdant_reference_sine_large_stage",
+ "verdant_reference_sine_part",
+ "verdant_reference_sine_reciprocal_limb",
+ "verdant_reference_sine_route",
+ "verdant_reference_sine_shift_factor",
  "verdant_rotation_geometry",
  "verdant_rotation_limit",
  "verdant_rotation_signed",
@@ -938,7 +947,7 @@ dependencies = [
 
 [[package]]
 name = "verdant-wasm"
-version = "2.22.3"
+version = "2.22.4"
 dependencies = [
  "verdant-core",
 ]
@@ -1272,6 +1281,42 @@ name = "verdant_reference_log_segment"
 version = "2.22.3"
 
 [[package]]
+name = "verdant_reference_sine_constant"
+version = "2.22.5"
+
+[[package]]
+name = "verdant_reference_sine_decode"
+version = "2.22.5"
+
+[[package]]
+name = "verdant_reference_sine_input"
+version = "2.22.5"
+
+[[package]]
+name = "verdant_reference_sine_instruction"
+version = "2.22.5"
+
+[[package]]
+name = "verdant_reference_sine_large_stage"
+version = "2.22.5"
+
+[[package]]
+name = "verdant_reference_sine_part"
+version = "2.22.5"
+
+[[package]]
+name = "verdant_reference_sine_reciprocal_limb"
+version = "2.22.5"
+
+[[package]]
+name = "verdant_reference_sine_route"
+version = "2.22.5"
+
+[[package]]
+name = "verdant_reference_sine_shift_factor"
+version = "2.22.5"
+
+[[package]]
 name = "verdant_rotation_geometry"
 version = "2.22.0"
 
@@ -1397,7 +1442,7 @@ checksum = "8c3b93199df0ab874cdf0c6a94f0a0dc3423fe41f1cafb62b8bd7b1deb277aef"
 
 [[package]]
 name = "xtask"
-version = "2.22.3"
+version = "2.22.4"
 dependencies = [
  "repo-conformance",
  "repo-model",

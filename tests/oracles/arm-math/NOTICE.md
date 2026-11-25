@@ -1,1 +1,3 @@
 The scalar logarithm, its reduction table and polynomial follow Arm optimized-routines commit `90f7e628875789235c1d97c3e2a738b9448c5424`. Copyright © 2017–2023 Arm Limited. Arm provides this implementation under the MIT license or Apache-2.0 with LLVM exception. The test archive includes the original source headers and license. The production constants and evaluation order are in `app/src/ReferenceLogarithm.lex.tex`.
+
+The scalar sine, its reduction table and polynomials follow the same Arm revision. Copyright © 2018–2021 Arm Limited. The sine archive includes the upstream license. The production sequence is in `app/src/ReferenceSine.lex.tex`.

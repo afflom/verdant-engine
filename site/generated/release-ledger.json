@@ -5,9 +5,9 @@
   "currentVersion": {
     "major": 2,
     "minor": 22,
-    "patch": 3
+    "patch": 4
   },
-  "releaseEpoch": 37,
+  "releaseEpoch": 38,
   "history": [
     {
       "version": "0.1.0",
@@ -287,6 +287,13 @@
       "releaseEpoch": 37,
       "bumpKind": "patch",
       "summary": "v2.22.3: certified exact mixed I64 and binary64 word equality in unified quotient scope (VTK-69)",
+      "citedAuthority": "AUTH-SEMVER-CHANGE-KPI"
+    },
+    {
+      "version": "2.22.4",
+      "releaseEpoch": 38,
+      "bumpKind": "patch",
+      "summary": "v2.22.4: certified Arm binary32 reference sine in unified quotient scope (VTK-70)",
       "citedAuthority": "AUTH-SEMVER-CHANGE-KPI"
     }
   ]

@@ -141,3 +141,12 @@ artifact = "tests/oracles/arm-math/logf-source.tar.gz"
 checksum = "d0dc89ba8516e7692a67f2059a37d3013e56a589d651aa99fa636245d9bf3371"
 statement = "Defines the sixteen-interval binary32 natural logarithm with binary64 polynomial evaluation and a final binary32 rounding."
 realized_by = ["VTK-68"]
+
+[[authority]]
+id = "ARM-SCALAR-SINF"
+name = "Arm optimized routines scalar sinf"
+citation = "https://github.com/ARM-software/optimized-routines/tree/90f7e628875789235c1d97c3e2a738b9448c5424/math"
+artifact = "tests/oracles/arm-math/sinf-source.tar.gz"
+checksum = "b14ff3e77b2eb1bc3fac6056f37f376524bb5e397056f2d6d35272f873eb4eaa"
+statement = "Defines the portable binary32 sine with fast and large-argument reduction and binary64 sine and cosine polynomials."
+realized_by = ["VTK-70"]

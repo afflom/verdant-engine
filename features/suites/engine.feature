@@ -945,3 +945,9 @@ Feature: engine
     Given signed integers and binary64 encodings across integral boundaries, both zeros, infinities and NaNs
     When Verdant compares two values in either representation
     Then the result equals Berkeley SoftFloat extended-precision equality after exact widening
+
+  @VTK-70 @build
+  Scenario: Sine preserves the reference binary32 result for all argument ranges
+    Given finite binary32 angles of both signs across all exponent bins, quadrant boundaries, infinities and NaNs
+    When Verdant evaluates their sine
+    Then each finite word matches the original Arm scalar sine and each nonfinite angle returns NaN

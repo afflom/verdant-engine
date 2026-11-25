@@ -170,6 +170,7 @@ model does not sanction.
 | `VTK-67` | `build` | Verdant adds subtracts and multiplies raw words modulo two to the sixty-fourth power |
 | `VTK-68` | `build` | Verdant reproduces the Arm scalar binary32 table-reduced natural logarithm under nearest-even rounding |
 | `VTK-69` | `build` | Verdant compares signed 64-bit integers and IEEE binary64 values exactly across both representations |
+| `VTK-70` | `build` | Verdant reproduces the Arm portable scalar sine on binary32 words with certified range reduction and ordered binary64 operations |
 
 ## fidelity
 
@@ -211,6 +212,7 @@ An authority is cited, never re-derived, and never gated on: what it states is n
 | `BERKELEY-SOFTFLOAT` | https://github.com/ucb-bar/berkeley-softfloat-3/tree/07ebd29db0cfb55723a79fbbffe99103ef38e305 | `VTK-07`, `VTK-08`, `VTK-15`, `VTK-63`, `VTK-64`, `VTK-66`, `VTK-67`, `VTK-69` |
 | `GGML-TENSOR-CPU` | https://github.com/ggml-org/llama.cpp/tree/9a080f44b503c64f66c84a6274b9d9ee5d5b09d5/ggml/src | `VTK-01`, `VTK-02`, `VTK-03`, `VTK-04`, `VTK-05`, `VTK-06`, `VTK-11`, `VTK-12`, `VTK-13`, `VTK-14`, `VTK-65`, `VTK-16`, `VTK-17`, `VTK-18`, `VTK-19`, `VTK-20`, `VTK-21`, `VTK-22`, `VTK-23`, `VTK-24` |
 | `ARM-SCALAR-LOGF` | https://github.com/ARM-software/optimized-routines/tree/90f7e628875789235c1d97c3e2a738b9448c5424/math | `VTK-68` |
+| `ARM-SCALAR-SINF` | https://github.com/ARM-software/optimized-routines/tree/90f7e628875789235c1d97c3e2a738b9448c5424/math | `VTK-70` |
 
 ## Claims that are not conformance IDs
 

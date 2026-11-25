@@ -92,6 +92,15 @@ verdant_reference_log_power = { version = "=2.22.3", path = "../../generated/ten
 verdant_reference_log_prepare = { version = "=2.22.3", path = "../../generated/tensor-quotient/packages/rust-core/verdant_reference_log_prepare" }
 verdant_reference_log_segment = { version = "=2.22.3", path = "../../generated/tensor-quotient/packages/rust-core/verdant_reference_log_segment" }
 verdant_numeric_equality = { version = "=2.22.4", path = "../../generated/tensor-quotient/packages/rust-core/verdant_numeric_equality" }
+verdant_reference_sine_constant = { version = "=2.22.5", path = "../../generated/tensor-quotient/packages/rust-core/verdant_reference_sine_constant" }
+verdant_reference_sine_decode = { version = "=2.22.5", path = "../../generated/tensor-quotient/packages/rust-core/verdant_reference_sine_decode" }
+verdant_reference_sine_instruction = { version = "=2.22.5", path = "../../generated/tensor-quotient/packages/rust-core/verdant_reference_sine_instruction" }
+verdant_reference_sine_large_stage = { version = "=2.22.5", path = "../../generated/tensor-quotient/packages/rust-core/verdant_reference_sine_large_stage" }
+verdant_reference_sine_part = { version = "=2.22.5", path = "../../generated/tensor-quotient/packages/rust-core/verdant_reference_sine_part" }
+verdant_reference_sine_reciprocal_limb = { version = "=2.22.5", path = "../../generated/tensor-quotient/packages/rust-core/verdant_reference_sine_reciprocal_limb" }
+verdant_reference_sine_route = { version = "=2.22.5", path = "../../generated/tensor-quotient/packages/rust-core/verdant_reference_sine_route" }
+verdant_reference_sine_shift_factor = { version = "=2.22.5", path = "../../generated/tensor-quotient/packages/rust-core/verdant_reference_sine_shift_factor" }
+verdant_reference_sine_input = { version = "=2.22.5", path = "../../generated/tensor-quotient/packages/rust-core/verdant_reference_sine_input" }
 verdant_modular_word64 = { version = "=2.22.2", path = "../../generated/tensor-quotient/packages/rust-core/verdant_modular_word64" }
 verdant_quotient_route = { version = "=2.22.2", path = "../../generated/tensor-quotient/packages/rust-core/verdant_quotient_route" }
 verdant_storage_block = { version = "2.10.0", path = "../../generated/tensor-execution/packages/rust-core/verdant_storage_block" }

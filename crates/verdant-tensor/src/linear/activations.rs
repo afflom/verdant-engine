@@ -477,6 +477,7 @@ pub fn inverse_root_f32(base: f32, degree: u32) -> Result<f32, TensorComputeErro
 /// Evaluate ABS, SGN, NEG, STEP, RELU, SQR, SQRT, HARDSIGMOID, HARDSWISH,
 /// FLOOR, CEIL, ROUND, TRUNC and EXPM1 (codes 0..13) on encoded float storage.
 /// Source/destination pairs are F32/F32, F16/F16, BF16/BF16, F16/F32 and BF16/F32.
+/// Code 14 evaluates the Arm reference sine for binary32 input and output.
 /// Unsupported codes/pairs and out-of-width words return `None`.
 ///
 /// # Errors
@@ -493,7 +494,57 @@ pub fn evaluate_float_unary(
     let Some(plan) =
         verdant_unary_dispatch::run(operation, source, destination, bits).map_err(|_| failure())?
     else {
-        return Ok(None);
+        use verdant_reference_sine_decode::{Adt0 as Instruction, Adt1 as Operand};
+        use verdant_reference_sine_route::Adt0 as Route;
+
+        let Some(word) = verdant_reference_sine_input::run(operation, source, destination, bits)
+        else {
+            return Ok(None);
+        };
+        const REMAINDER: u64 = crate::scalars::sixteen_u64() + crate::scalars::two_u64();
+        const QUOTIENT: u64 = REMAINDER + 1;
+        const RECIPROCAL_LIMB: u64 = QUOTIENT + 1;
+        const SHIFT_FACTOR: u64 = RECIPROCAL_LIMB + 1;
+        let mut stage = 0;
+        let mut result = 0;
+        loop {
+            let polynomial = if stage == crate::scalars::seven_u64() {
+                verdant_reference_sine_large_stage::run(word, result).map_err(|_| failure())?
+            } else {
+                0
+            };
+            let (program, left, right, next) =
+                match verdant_reference_sine_route::run(stage, word, result, polynomial)
+                    .map_err(|_| failure())?
+                {
+                    Route::C0(answer) => return Ok(Some(answer)),
+                    Route::C1(program, left, right, next) => (program, left, right, next),
+                };
+            let mut registers = [0; crate::scalars::thirty_two_u64() as usize];
+            registers[..crate::scalars::two_u64() as usize].copy_from_slice(&[left, right]);
+            for index in 0.. {
+                let code = verdant_reference_sine_instruction::run(program, index);
+                let Instruction::C1(op, a, b) = verdant_reference_sine_decode::run(code) else {
+                    break;
+                };
+                let (prior, rest) = registers
+                    .split_at_mut_checked(index as usize + crate::scalars::two_u64() as usize)
+                    .ok_or_else(failure)?;
+                let read = |operand| match operand {
+                    Operand::C0(slot) => prior.get(slot as usize).copied().ok_or_else(failure),
+                    Operand::C1(index) => Ok(verdant_reference_sine_constant::run(index)),
+                };
+                let (a, b) = (read(a)?, read(b)?);
+                result = match op {
+                    REMAINDER | QUOTIENT => verdant_reference_sine_part::run(op == REMAINDER, a, b),
+                    RECIPROCAL_LIMB => verdant_reference_sine_reciprocal_limb::run(a),
+                    SHIFT_FACTOR => verdant_reference_sine_shift_factor::run(a),
+                    _ => super::evaluate_wide(op, a, b)?.ok_or_else(failure)?,
+                };
+                *rest.first_mut().ok_or_else(failure)? = result;
+            }
+            stage = next;
+        }
     };
     let answer = match plan {
         verdant_unary_dispatch::Adt0::C0(ordinary) => match ordinary {

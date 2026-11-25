@@ -1004,3 +1004,9 @@ id = "VTK-69"
 level = "build"
 suite = "engine"
 statement = "Verdant compares signed 64-bit integers and IEEE binary64 values exactly across both representations"
+
+[[id]]
+id = "VTK-70"
+level = "build"
+suite = "engine"
+statement = "Verdant reproduces the Arm portable scalar sine on binary32 words with certified range reduction and ordered binary64 operations"
