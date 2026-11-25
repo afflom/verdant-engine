@@ -901,3 +901,39 @@ impl Drop for OmegaCompiledSlm {
         let _ = self.child.wait();
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn wire_constants_and_refusal_mappings_are_stable() {
+        assert_eq!(WIRE_MAGIC, u32::from_le_bytes(*b"1MOV"));
+        assert_eq!(JIT_MAGIC, u32::from_le_bytes(*b"JMOV"));
+
+        assert!(matches!(
+            status_err(STATUS_INVALID_EXTENTS),
+            TensorComputeError::ZeroOrMismatchedExtents { .. }
+        ));
+        assert!(matches!(
+            status_err(STATUS_INVALID_CODEBOOK),
+            TensorComputeError::ZeroOrMismatchedExtents { .. }
+        ));
+        assert!(matches!(
+            status_err(STATUS_PAYLOAD_MISMATCH),
+            TensorComputeError::ZeroOrMismatchedExtents { .. }
+        ));
+        assert!(matches!(
+            status_err(STATUS_BAD_MAGIC),
+            TensorComputeError::InvalidKernelSpecification { .. }
+        ));
+        assert!(matches!(
+            status_err(STATUS_UNKNOWN_OP),
+            TensorComputeError::InvalidKernelSpecification { .. }
+        ));
+        assert!(matches!(
+            status_err(STATUS_INVALID_PARAMS),
+            TensorComputeError::InvalidKernelSpecification { .. }
+        ));
+    }
+}

@@ -1,8 +1,8 @@
 //! Bit-exact parity and negative-control refusal tests for the pure-Omega neural worker.
 
 use verdant_omega::{
-    OmegaCompiledSlm, OmegaNeuralWorker, OP_LIF_SSM, OP_PING, STATUS_BAD_MAGIC,
-    STATUS_PAYLOAD_MISMATCH, STATUS_UNKNOWN_OP, WIRE_MAGIC,
+    default_slm_jit_binary_path, default_worker_binary_path, OmegaCompiledSlm, OmegaNeuralWorker,
+    OP_LIF_SSM, OP_PING, STATUS_BAD_MAGIC, STATUS_PAYLOAD_MISMATCH, STATUS_UNKNOWN_OP, WIRE_MAGIC,
 };
 use verdant_tensor::{
     contract_coded_pair_lut_into, contract_packed_nibbles_lut_into, infer_coded_slm_intent_logits,
@@ -32,15 +32,37 @@ impl SplitMix64 {
     }
 }
 
-fn worker_or_skip() -> OmegaNeuralWorker {
-    OmegaNeuralWorker::spawn_default().expect(
-        "pure-Omega worker binary missing; run `sh om/build.sh` before running verdant-omega tests",
+fn require_worker() -> bool {
+    std::env::var("VERDANT_OMEGA_REQUIRE_WORKER")
+        .map(|v| v == "1" || v.eq_ignore_ascii_case("true"))
+        .unwrap_or(false)
+}
+
+fn worker_or_skip() -> Option<OmegaNeuralWorker> {
+    let path = default_worker_binary_path();
+    if !path.is_file() {
+        assert!(
+            !require_worker(),
+            "VERDANT_OMEGA_REQUIRE_WORKER=1 but pure-Omega worker binary is missing at {}; run `sh om/build.sh`",
+            path.display()
+        );
+        eprintln!(
+            "SKIP: pure-Omega worker binary not built at {} (run `sh om/build.sh` to execute live Omega parity tests)",
+            path.display()
+        );
+        return None;
+    }
+    Some(
+        OmegaNeuralWorker::spawn(&path)
+            .expect("pure-Omega worker binary present but failed to spawn or answer OP_PING"),
     )
 }
 
 #[test]
 fn lif_ssm_bit_exact_parity_across_shapes_and_rollout() {
-    let mut worker = worker_or_skip();
+    let Some(mut worker) = worker_or_skip() else {
+        return;
+    };
     let mut rng = SplitMix64::new(0x1234_5678_9abc_def0);
 
     let shapes = [(1, 1, 1), (8, 6, 4), (16, 12, 24), (64, 16, 32)];
@@ -79,7 +101,9 @@ fn lif_ssm_bit_exact_parity_across_shapes_and_rollout() {
 
 #[test]
 fn lif_ssm_bit_exact_parity_at_i32_extremes_requiring_128bit_acc() {
-    let mut worker = worker_or_skip();
+    let Some(mut worker) = worker_or_skip() else {
+        return;
+    };
     let entity_slots = 3;
 
     // Products of i32::MIN * i32::MIN exceed i64::MAX when summed across >= 2 elements.
@@ -145,7 +169,9 @@ fn lif_ssm_bit_exact_parity_at_i32_extremes_requiring_128bit_acc() {
 
 #[test]
 fn coded_slm_bit_exact_parity_across_batches_and_real_shapes() {
-    let mut worker = worker_or_skip();
+    let Some(mut worker) = worker_or_skip() else {
+        return;
+    };
     let mut rng = SplitMix64::new(0xfeed_face_cafe_beef);
 
     let cases = [
@@ -200,7 +226,9 @@ fn coded_slm_bit_exact_parity_across_batches_and_real_shapes() {
 
 #[test]
 fn negative_controls_refuse_invalid_frames_and_keep_worker_alive() {
-    let mut worker = worker_or_skip();
+    let Some(mut worker) = worker_or_skip() else {
+        return;
+    };
 
     // 1. Bad magic
     let (st, payload) = worker.send_raw_frame(0xdead_beef, OP_PING, &[]).unwrap();
@@ -262,7 +290,9 @@ fn negative_controls_refuse_invalid_frames_and_keep_worker_alive() {
 
 #[test]
 fn planted_defect_control_detects_single_bit_drift() {
-    let mut worker = worker_or_skip();
+    let Some(mut worker) = worker_or_skip() else {
+        return;
+    };
     let codebook: [i32; CODED_TABLE_LEN] = core::array::from_fn(|i| ((i as i32) - 8) * 16);
     let feats = vec![128_i32; 32];
     let w1 = vec![0xf9_u8; 32 * 16];
@@ -282,7 +312,9 @@ fn planted_defect_control_detects_single_bit_drift() {
 
 #[test]
 fn coded_lut_and_packed_nibbles_bit_exact_parity() {
-    let mut worker = worker_or_skip();
+    let Some(mut worker) = worker_or_skip() else {
+        return;
+    };
     let mut rng = SplitMix64::new(0x0bad_c0de_1234_5678);
 
     let lhs_cb: [i32; CODED_TABLE_LEN] = core::array::from_fn(|i| ((i as i32) - 8) * 19 + 3);
@@ -349,7 +381,9 @@ fn coded_lut_and_packed_nibbles_bit_exact_parity() {
 
 #[test]
 fn tropical_min_plus_all_pairs_closure_bit_exact_parity() {
-    let mut worker = worker_or_skip();
+    let Some(mut worker) = worker_or_skip() else {
+        return;
+    };
     let mut rng = SplitMix64::new(0x7777_8888_9999_aaaa);
 
     for n in [1, 4, 12, 24] {
@@ -384,6 +418,19 @@ fn tropical_min_plus_all_pairs_closure_bit_exact_parity() {
 
 #[test]
 fn partial_evaluating_omega_slm_jit_matches_verdant_tensor_bit_for_bit() {
+    let jit_path = default_slm_jit_binary_path();
+    if !jit_path.is_file() {
+        assert!(
+            !require_worker(),
+            "VERDANT_OMEGA_REQUIRE_WORKER=1 but verdant-slm-jit binary is missing at {}; run `sh om/build.sh`",
+            jit_path.display()
+        );
+        eprintln!(
+            "SKIP: verdant-slm-jit binary not built at {} (run `sh om/build.sh` to execute live JIT parity tests)",
+            jit_path.display()
+        );
+        return;
+    }
     // Exact Verdant CodedSlmDirector model (32x32x16, 93.75% sparse zeros erased at compile time).
     let intent_count = CODED_TABLE_LEN;
     let embed_dim = CODED_TABLE_LEN * 2;
