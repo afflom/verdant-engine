@@ -292,7 +292,7 @@ fn storage_block_cases() -> &'static [StorageBlockCase] {
             let lanes = packet.next().unwrap() as usize;
             let bytes = packet.next().unwrap() as usize;
             let pattern = packet.next().unwrap();
-            assert!((1..=256).contains(&lanes) && (1..=256).contains(&bytes));
+            assert!((1..=256).contains(&lanes) && (1..=292).contains(&bytes));
             let packed = (0..bytes)
                 .map(|_| u8::try_from(packet.next().unwrap()).unwrap())
                 .collect();
@@ -305,7 +305,7 @@ fn storage_block_cases() -> &'static [StorageBlockCase] {
             });
         }
         assert!(packet.next().is_none(), "unconsumed reference data");
-        assert_eq!(cases.len(), 750);
+        assert_eq!(cases.len(), 800);
         cases
     })
 }
@@ -314,7 +314,7 @@ fn storage_block_cases() -> &'static [StorageBlockCase] {
 fn storage_block_reference_vtk_14() {
     let cases = storage_block_cases();
     let types: std::collections::BTreeSet<_> = cases.iter().map(|case| case.kind).collect();
-    assert_eq!(types.len(), 30);
+    assert_eq!(types.len(), 32);
     for kind in types {
         let cases: Vec<_> = cases.iter().filter(|case| case.kind == kind).collect();
         assert_eq!(
@@ -328,14 +328,31 @@ fn storage_block_reference_vtk_14() {
 }
 
 #[test]
+fn activation_storage_vtk_65() {
+    let cases = storage_block_cases();
+    for (kind, lanes, bytes) in [(9, 32, 36), (15, 256, 292)] {
+        let rows = cases.iter().filter(|case| case.kind == kind);
+        assert_eq!(rows.clone().count(), 25);
+        assert!(rows
+            .clone()
+            .all(|c| (c.expected.len(), c.packed.len()) == (lanes, bytes)));
+        compare_storage_blocks(rows);
+    }
+}
+
+#[test]
 fn storage_blocks_vtk_14() {
-    use super::decode_storage_block;
-    certified_model(
-        "verdant_storage_block",
-        "VerdantEngine.StorageBlock.evaluate",
+    compare_storage_blocks(
+        storage_block_cases()
+            .iter()
+            .filter(|case| !matches!(case.kind, 9 | 15)),
     );
+}
+
+fn compare_storage_blocks<'a>(cases: impl Iterator<Item = &'a StorageBlockCase>) {
+    use super::decode_storage_block;
     let mut failures = Vec::new();
-    for case in storage_block_cases() {
+    for case in cases {
         for stride in [4, 8, 12] {
             let mut actual = vec![0xa5; (case.expected.len() - 1) * stride + 15];
             let mut expected = actual.clone();
@@ -374,7 +391,8 @@ fn storage_blocks_vtk_14() {
                     .enumerate()
                     .filter(|(offset, (a, b))| a != b && (*offset >= span || *offset % stride >= 4))
                     .count();
-                if result.is_err() || other_words > 0 || padding > 0 {
+                if matches!(case.kind, 9 | 15) || result.is_err() || other_words > 0 || padding > 0
+                {
                     failures.push(format!(
                         "kind={} pattern={} stride={stride} result={result:?} first_byte={difference:?} words={word:?} nan_pairs={nan_pairs} other_words={other_words} padding={padding}",
                         case.kind, case.pattern
@@ -387,6 +405,10 @@ fn storage_blocks_vtk_14() {
         failures.is_empty(),
         "storage block mismatches:\n{}",
         failures.join("\n")
+    );
+    certified_model(
+        "verdant_storage_block",
+        "VerdantEngine.StorageBlock.evaluate",
     );
 }
 
@@ -423,24 +445,7 @@ fn storage_block_refusals_vtk_14() {
         ));
         assert!(output.iter().all(|byte| *byte == 0xa5));
     }
-    for kind in [
-        4,
-        5,
-        9,
-        15,
-        24,
-        25,
-        27,
-        28,
-        31,
-        32,
-        33,
-        36,
-        37,
-        38,
-        44,
-        u64::MAX,
-    ] {
+    for kind in [4, 5, 24, 25, 27, 28, 31, 32, 33, 36, 37, 38, 44, u64::MAX] {
         let mut output = [0xa5; 16];
         assert!(matches!(
             decode_storage_block(kind, &[0; 32], &mut output, 4),

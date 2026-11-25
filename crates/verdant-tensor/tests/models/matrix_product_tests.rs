@@ -616,13 +616,14 @@ int main(int argc, char **argv) {
     std::printf("1196705586\n");
     for (unsigned kind=0; kind<GGML_TYPE_COUNT; ++kind) {
       const auto type=(ggml_type)kind;
-      if (type!=GGML_TYPE_F32 && type!=GGML_TYPE_I32 && !ggml_get_type_traits(type)->to_float) continue;
+      const bool activation=type==GGML_TYPE_Q8_1 || type==GGML_TYPE_Q8_K;
+      if (!activation && type!=GGML_TYPE_F32 && type!=GGML_TYPE_I32 && !ggml_get_type_traits(type)->to_float) continue;
       ggml_init_params init={1024*1024,nullptr,false};
       ggml_context *ctx=ggml_init(init); if (!ctx) return 8;
       const auto lanes=ggml_blck_size(type);
       auto *source=ggml_new_tensor_2d(ctx,type,lanes,1);
       auto *indices=ggml_new_tensor_1d(ctx,GGML_TYPE_I32,1);
-      auto *result=ggml_get_rows(ctx,source,indices);
+      auto *result=activation?nullptr:ggml_get_rows(ctx,source,indices);
       *(int32_t *)indices->data=0;
       ggml_compute_params params={}; params.nth=1;
       const uint16_t exceptional[]={0x7c01,0xfc02,0x7e03,0xfe04,0x7c00,0xfc00,0,0x8000,0x3c00,0xbc00,0x0001,0x8001,0x7bff,0xfbff,0x3555,0xb555};
@@ -634,11 +635,29 @@ int main(int argc, char **argv) {
               (uint8_t)((j*(2*pattern+1)+kind*11+pattern*53)^((j+pattern)<<3));
           if (pattern>=9) input[j]=(uint8_t)(exceptional[(pattern-9+j/2)%16]>>(8*(j%2)));
         }
-        ggml_compute_forward_get_rows(&params,result);
+        float decoded[QK_K];
+        if (type==GGML_TYPE_Q8_K) {
+          dequantize_row_q8_K((const block_q8_K *)input,decoded,lanes);
+        } else if (type==GGML_TYPE_Q8_1) {
+          auto &block=*(block_q8_1 *)input;
+          block.d=ggml_fp32_to_fp16(float(pattern+1)/16);
+          block.s=ggml_fp32_to_fp16(float(pattern)-12);
+          const auto *trait=ggml_get_type_traits_cpu(GGML_TYPE_Q4_1);
+          if (!trait->vec_dot || trait->vec_dot_type!=type) return 12;
+          for (int lane=0;lane<QK8_1;++lane) {
+            block_q4_1 basis={}; basis.d=ggml_fp32_to_fp16(1);
+            basis.qs[lane%16]=lane<16?1:16;
+            float coordinates[QK8_1]; dequantize_row_q4_1(&basis,coordinates,QK8_1);
+            for(int j=0;j<QK8_1;++j) if(coordinates[j]!=(j==lane)) return 13;
+            trait->vec_dot(QK8_1,&decoded[lane],0,&basis,0,&block,0,1);
+          }
+        } else {
+          ggml_compute_forward_get_rows(&params,result);
+        }
         std::printf("%u\n%u\n%u\n%u\n",kind+1,(unsigned)lanes,(unsigned)bytes,pattern);
         for (size_t j=0; j<bytes; ++j) std::printf("%u\n",(unsigned)input[j]);
         for (int64_t lane=0; lane<lanes; ++lane) {
-          uint32_t word; std::memcpy(&word,(const uint8_t *)result->data+4*lane,4);
+          uint32_t word; std::memcpy(&word,(activation?(const uint8_t *)decoded:(const uint8_t *)result->data)+4*lane,4);
           std::printf("%u\n",word);
         }
       }

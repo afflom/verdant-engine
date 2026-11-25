@@ -4,8 +4,8 @@ spec = "verdant/self-host-ratchet-manifest/1"
 generator = "verdant-operator-ratchet-lift"
 version = "2.22.0"
 release_epoch = 34
-source_commit_kappa = "b1fba224688f2119771fafc966ea38c8361eb324ad80553d8d3cc52d9b921232"
-source_tree_root_sha256 = "f89a726be246cf207e3bdc9cf43ee1b225464f4197f0b38c908590091c5168f0"
+source_commit_kappa = "47b160d66d5dd1a94c70a1265b998eb1de5512e756f8529d371bdd4d80e9df6e"
+source_tree_root_sha256 = "abc6edf0a60eca7514a2e3afe22dbcedea2c26824edfa2a989a6a25846126773"
 immutability_seal_root_sha256 = "4622b10476797acc6d7c0380bc9f4d457096977db02b98fca9d3916f2d1122dc"
 release_capsule_sha256 = "65dc044993bdff201237b298b8f4f85f93e80a71d85e1f52dc41cd2a79ab26b1"
 unlifted_ui_files = 0
@@ -951,7 +951,7 @@ sha256 = "ff9ea8990a0864a4b6bbe64d37b594d5b1e19003dcd8c43671a79c47a3dbd8ce"
 [[lifted_module]]
 path = "app/src/StorageBlock.lex.tex"
 category = "lexlean"
-sha256 = "bcdc1e3223fce6248c12a82a5cc3bb74572361b27e10e92657242f690aa3b13a"
+sha256 = "55e8e5c23bd59ffae901792e27a8524f0fb4787aa08bc68ef1f45a6ec5d19750"
 
 [[lifted_module]]
 path = "app/src/StorageTransfer.lex.tex"
@@ -996,7 +996,7 @@ sha256 = "9d26ca3eaa7ccad7aaea3e2bc023f66d8dfeda7f8baa0690f64d52bd7068bcb9"
 [[lifted_module]]
 path = "features/suites/engine.feature"
 category = "feature-suite"
-sha256 = "8b552375d3202fe291a63f294f3ef5d0f94f3a6cf65262acd45443cc0383809c"
+sha256 = "0313f167ba2cb3ceb85fd50d547b8bdd9d28e9c08e20ec9589d273c65f7c539f"
 
 [[lifted_module]]
 path = "features/suites/fidelity.feature"
@@ -1061,7 +1061,7 @@ sha256 = "7d4e3c36e438491a505a85d5044e36074c67ce7948ea9cbf0d4480ec37d91df8"
 [[lifted_module]]
 path = "model/authorities.toml"
 category = "model-governance"
-sha256 = "a4d0f38903021e4a88ba40dc2e0de0d3957678f3a8eda727e6cfd43512189b47"
+sha256 = "2f67b05cedf6dc7cd2e7b39864c7123298837b8414be1b3e7bcc0839107d81e4"
 
 [[lifted_module]]
 path = "model/charter.md"
@@ -1071,7 +1071,7 @@ sha256 = "ffb9e3d60915570e6f34cdee81e0dd6a2ff965c70c39ea0ef11d41d479c462bb"
 [[lifted_module]]
 path = "model/ids.toml"
 category = "model-governance"
-sha256 = "95609a90174da53b527b50ec44152ff758543370f275e3dabd8253a509bb07c3"
+sha256 = "9fe14ed26cd6683d4059ba984515f2641b60336fe122ef90959efea5f15b6516"
 
 [[lifted_module]]
 path = "model/ledger.toml"
