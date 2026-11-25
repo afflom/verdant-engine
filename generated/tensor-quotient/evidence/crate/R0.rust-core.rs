@@ -632,6 +632,7 @@ pub enum Adt0 {
     C0(u64),
     C1,
     C2,
+    C3,
 }
 
 pub fn f0(v0: u64) -> Option<Adt0> {
@@ -650,7 +651,13 @@ pub fn f0(v0: u64) -> Option<Adt0> {
             if nat_eq(a5, a6) {
                 Some(Adt0::C2)
             } else {
-                None::<Adt0>
+                let a7 = v0;
+                let a8 = 14u64;
+                if nat_eq(a7, a8) {
+                    Some(Adt0::C3)
+                } else {
+                    None::<Adt0>
+                }
             }
         }
     }

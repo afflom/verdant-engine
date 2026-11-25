@@ -564,6 +564,12 @@ The original interpreter refused all three modes. Discarding the upper 32 magnit
 
 Certificate `blake3:d923116649d35f92b9c93a3f1c6250bed311895d8d355c51fdd3fcbd47fefca0` binds the round-to-odd and signed I32 conversions. VTK-64 compares 863 signed integer words and 20,624 binary64 encodings to the original Berkeley implementation in each applicable mode. Invalid binary64-to-I32 results follow its exception flag. Replacing round-to-odd with nearest-even failed on the smallest positive binary64 subnormal. Restoring the selected rounding mode passed the wide-word suite. [SoftFloat reference](https://github.com/ucb-bar/berkeley-softfloat-3/tree/07ebd29db0cfb55723a79fbbffe99103ef38e305)
 
+## VTK-66 binary64 multiplication
+
+The public wide-word operation 14 multiplies two binary64 values. The `F64Quotient.productPlan` certificate splits their significands into limbs, retains discarded bits for nearest-even rounding and shares the existing certified rounding stage. The theorem `minimumSubnormalProductTie` covers the subnormal halfway case.
+
+The imported Berkeley SoftFloat `f64_mul` oracle matched 214,016 products across every exponent, both signs, boundary significands and 65,536 full-width sample words. The comparison preserves the sign of zero and accepts NaN results by IEEE class. Clearing the sticky bit returned zero for the minimum subnormal times the next binary64 word above one half. SoftFloat and the restored implementation both returned the minimum subnormal.
+
 ## VE-81 M30 modularity ceilings, Observatory health, and uorust MIR proof frontier
 
 Verdant decomposed all 16 hand-written Rust files exceeding 1,145 lines (`governance_kpi.rs`, `scalars_ratchet_m24.rs`, and focused companion splits across `verdant-core`, `verdant-tensor`, and `verdant-cli`) while preserving every lifted `uorust` function `κ`, decomposed all 5 shipped JavaScript files exceeding 850 lines (`site/demo/demo-uhd.mjs`, `site/engine-worker-codec.mjs`, `site/studio-gameplay-panel.mjs`, `site/catalog-streams-stitch.mjs`, `site/studio/studio-page.mjs`), decomposed `scripts/enforce-prism-contracts.mjs` below 1,400 lines via `scripts/enforce-prism-viewpoints.mjs` (raising `mgr-verification-observatory` health to 1,000 permille and `overallRefinementScorePermille` to 984), and expanded `frontier.toml` past 615 constructive MIR-lifted functions while eliminating in-place residues (`pow2_u64`, `Score::asked`, `proof_reuse_is_confined`, `bit_mask_u64`).

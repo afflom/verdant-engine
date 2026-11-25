@@ -894,6 +894,7 @@ dependencies = [
  "verdant_pack_plan_f64",
  "verdant_packed_dot",
  "verdant_packed_field",
+ "verdant_product_f64",
  "verdant_quotient_f64",
  "verdant_quotient_route",
  "verdant_rotation_geometry",
@@ -1214,12 +1215,16 @@ name = "verdant_packed_field"
 version = "2.9.0"
 
 [[package]]
+name = "verdant_product_f64"
+version = "2.22.1"
+
+[[package]]
 name = "verdant_quotient_f64"
 version = "2.12.0"
 
 [[package]]
 name = "verdant_quotient_route"
-version = "2.12.0"
+version = "2.22.1"
 
 [[package]]
 name = "verdant_rotation_geometry"

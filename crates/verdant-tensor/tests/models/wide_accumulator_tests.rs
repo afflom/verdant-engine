@@ -18,6 +18,7 @@ while(scanf("%" SCNu64 " %" SCNu64,&a,&b)==2) {
     else if(!strcmp(argv[1],"widen"))result=f32_to_f64((float32_t){(uint32_t)a}).v;
     else if(!strcmp(argv[1],"narrow"))result=f64_to_f32((float64_t){a}).v;
     else if(!strcmp(argv[1],"count"))result=ui64_to_f32(a).v;
+    else if(!strcmp(argv[1],"multiply"))result=f64_mul((float64_t){a},(float64_t){b}).v;
     else if(!strcmp(argv[1],"divide"))result=f64_div((float64_t){a},(float64_t){b}).v;
     else if(!strcmp(argv[1],"count64"))result=ui64_to_f64(a).v;
     else if(!strcmp(argv[1],"signed64-f32") || !strcmp(argv[1],"signed64-f64")) {
@@ -269,6 +270,7 @@ fn compare(mode: &str, inputs: &[(u64, u64)]) {
             "widen" => super::evaluate_wide(1, a, 0).map_err(|_| ()),
             "narrow" => super::evaluate_wide(2, a, 0).map_err(|_| ()),
             "count" => super::evaluate_wide(3, a, 0).map_err(|_| ()),
+            "multiply" => super::evaluate_wide(14, a, b).map_err(|_| ()),
             "divide" => super::evaluate_wide(4, a, b).map_err(|_| ()),
             "count64" => super::evaluate_wide(5, a, 0).map_err(|_| ()),
             "mean" => super::evaluate_wide(5, b, 0)
@@ -281,7 +283,7 @@ fn compare(mode: &str, inputs: &[(u64, u64)]) {
         .expect("bounded arithmetic")
         .expect("admitted encoding");
         let nan = |word: u64| {
-            if matches!(mode, "add" | "widen" | "divide" | "count64") {
+            if matches!(mode, "add" | "widen" | "divide" | "multiply" | "count64") {
                 word & 0x7ff0000000000000 == 0x7ff0000000000000 && word & 0x000fffffffffffff != 0
             } else {
                 word & 0x7f800000 == 0x7f800000 && word & 0x007fffff != 0
@@ -800,4 +802,45 @@ fn wide_narrowing_vtk_64() {
             "f64 signed32 {word:016x}"
         );
     }
+}
+
+#[test]
+fn wide_product_vtk_66() {
+    super::matrix_product_tests::certified_quotient_model();
+    let edges = [
+        0,
+        1,
+        3,
+        (1 << 52) - 1,
+        1 << 52,
+        0x3e40_0000_0000_0000,
+        0x3fe0_0000_0000_0000,
+        0x3fe0_0000_0000_0001,
+        0x3ff0_0000_0000_0000,
+        0x3ff0_0000_0000_0001,
+        0x3ff8_0000_0000_0000,
+        0x4000_0000_0000_0000,
+        0x7fef_ffff_ffff_ffff,
+        0x7ff0_0000_0000_0000,
+        0x7ff0_0000_0000_0001,
+        0x7ff8_0000_0000_0000,
+    ];
+    let mut pairs = Vec::new();
+    for a in edges {
+        for b in edges {
+            for sign_a in [0, 1 << 63] {
+                for sign_b in [0, 1 << 63] {
+                    pairs.push((a | sign_a, b | sign_b));
+                }
+            }
+        }
+    }
+    for (index, &word) in wide_words().iter().enumerate() {
+        pairs.push((word, edges[index % edges.len()]));
+        pairs.push((
+            word,
+            wide_words()[(index * 65537 + 17) % wide_words().len()],
+        ));
+    }
+    compare("multiply", &pairs);
 }

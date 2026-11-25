@@ -12,7 +12,8 @@ inductive{
   constructors: [
     {name: legacy, fields: [Nat]},
     {name: division, fields: []},
-    {name: count, fields: []}
+    {name: count, fields: []},
+    {name: product, fields: []}
   ]
 }
 
@@ -20,7 +21,7 @@ definition{
   name: route,
   parameters: [code : Nat],
   result: (Option Route),
-  body: (if (code <? 4) then (ctor Option.some [Route] (ctor Route.legacy code)) else (if (code =? 4) then (ctor Option.some [Route] (ctor Route.division)) else (if (code =? 5) then (ctor Option.some [Route] (ctor Route.count)) else (ctor Option.none [Route])))),
+  body: (if (code <? 4) then (ctor Option.some [Route] (ctor Route.legacy code)) else (if (code =? 4) then (ctor Option.some [Route] (ctor Route.division)) else (if (code =? 5) then (ctor Option.some [Route] (ctor Route.count)) else (if (code =? 14) then (ctor Option.some [Route] (ctor Route.product)) else (ctor Option.none [Route]))))),
   executable: true,
   production: {effects: [], targets: [rust-core]}
 }
@@ -432,6 +433,76 @@ definition{
 }
 
 definition{
+  name: multiplySignificands,
+  parameters: [a : Nat, b : Nat],
+  result: (Nat * Nat),
+  body: (let ah : Nat := (prim quotient a 67108864 0 : Nat);
+    (let al : Nat := (prim remainder a 67108864 0 : Nat);
+    (let bh : Nat := (prim quotient b 67108864 0 : Nat);
+    (let bl : Nat := (prim remainder b 67108864 0 : Nat);
+    (let lowProduct : Nat := (prim multiply al bl : Nat);
+    (let cross : Nat := (((prim multiply ah bl : Nat) + (prim multiply al bh : Nat)) + (prim quotient lowProduct 67108864 0 : Nat));
+    (((prim multiply ah bh : Nat) + (prim quotient cross 67108864 0 : Nat)), ((prim multiply (prim remainder cross 67108864 0 : Nat) 67108864 : Nat) + (prim remainder lowProduct 67108864 0 : Nat))))))))),
+  executable: true
+}
+
+definition{
+  name: productRoundingWord,
+  parameters: [high : Nat, low : Nat, factor : Nat],
+  result: Nat,
+  body: (let unit : Nat := (prim quotient 4503599627370496 factor 0 : Nat);
+    (let whole : Nat := ((prim multiply high factor : Nat) + (prim quotient low unit 0 : Nat));
+    (whole + (if ((0 <? (prim remainder low unit 0 : Nat)) && ((prim remainder whole 2 0 : Nat) =? 0)) then 1 else 0)))),
+  executable: true
+}
+
+definition{
+  name: productFinish,
+  parameters: [negative : Nat, exponents : Nat, high : Nat, low : Nat],
+  result: ScalarF64::WideAddition,
+  body: (let carry : Bool := (9007199254740992 <=? high);
+    (let biased : Nat := (exponents + (if carry then 1 else 0));
+    (let word : Nat := (productRoundingWord high low (if carry then 4 else 8));
+    (if (11262 <=? biased) then (ctor ScalarF64::WideAddition.direct (signedInfinity negative)) else (ctor ScalarF64::WideAddition.finite negative (if (biased <=? 9215) then 1 else (prim subtract biased 9215 : Nat)) (ScalarF64::shiftJam word (if (biased <=? 9215) then (prim subtract 9216 biased : Nat) else 0))))))),
+  executable: true
+}
+
+definition{
+  name: productFinite,
+  parameters: [negative : Nat, a : Nat, b : Nat],
+  result: ScalarF64::WideAddition,
+  body: (let left : ScalarF64::Norm := (normalizedOperand a);
+    (let right : ScalarF64::Norm := (normalizedOperand b);
+    (let limbs : (Nat * Nat) := (multiplySignificands (project left m) (project right m));
+    (productFinish negative ((project left e) + (project right e)) (first limbs) (second limbs))))),
+  executable: true
+}
+
+definition{
+  name: productPlan,
+  parameters: [a : Nat, b : Nat],
+  result: ScalarF64::WideAddition,
+  body: (let negative : Nat := (quotientSign a b);
+    (let zero : Bool := (((ScalarF64::magnitude a) =? 0) || ((ScalarF64::magnitude b) =? 0));
+    (let infinite : Bool := ((ScalarF64::isInfinity a) || (ScalarF64::isInfinity b));
+    (if (((ScalarF64::isNaN a) || (ScalarF64::isNaN b)) || (zero && infinite)) then (ctor ScalarF64::WideAddition.direct 9221120237041090560) else
+    (if infinite then (ctor ScalarF64::WideAddition.direct (signedInfinity negative)) else
+    (if zero then (ctor ScalarF64::WideAddition.direct (if (negative =? 0) then 0 else 9223372036854775808)) else (productFinite negative a b))))))),
+  executable: true,
+  production: {effects: [overflow], targets: [rust-core]}
+}
+
+definition{
+  name: multiply,
+  parameters: [a : Nat, b : Nat],
+  result: (Option Nat),
+  body: (match (productPlan a b)
+    | ScalarF64::WideAddition.direct bits => (ctor Option.some [Nat] bits)
+    | ScalarF64::WideAddition.finite s e m => (ScalarF64::roundAddition s e m)),
+  executable: true
+}
+
+definition{
   name: evaluate,
   parameters: [operation : Nat, a : Nat, b : Nat],
   result: (Option Nat),
@@ -442,7 +513,8 @@ definition{
     | Option.some decision => (match decision
       | Route.legacy code => (ScalarF64::evaluate code a b)
       | Route.division => (divide a b)
-      | Route.count => (fromNatural a))),
+      | Route.count => (fromNatural a)
+      | Route.product => (multiply a b))),
   executable: true
 }
 
@@ -569,6 +641,13 @@ theorem{
   name: wideSigned32Overflow,
   parameters: [],
   statement: ((evaluate 13 4746794007248502784 0) = (ctor Option.none [Nat])),
+  proof: reflexivity{}
+}
+
+theorem{
+  name: minimumSubnormalProductTie,
+  parameters: [],
+  statement: ((multiply 3 4602678819172646912) = (ctor Option.some [Nat] 2)),
   proof: reflexivity{}
 }
 

@@ -915,3 +915,9 @@ Feature: engine
     Given the workspace Rust crates, shipped browser JavaScript modules, Observatory contract scripts, and uorust frontier register
     When Verdant audits its parametric ratchet and synthesizes the Observer self-refinement agenda
     Then every hand-written Rust file is at most 1145 lines, every shipped JS file is at most 850 lines, Observatory health reaches 1000 permille with overall score at least 984 permille, and at least 615 constructive Rust functions are MIR-lifted
+
+  @VTK-66 @build
+  Scenario: Verdant multiplies binary64 words with a single nearest-even rounding
+    Given signed zeros, subnormals, finite significands, infinities and NaNs
+    When the binary64 product is rounded to its stored word
+    Then the result agrees with Berkeley SoftFloat across exponent and rounding boundaries
