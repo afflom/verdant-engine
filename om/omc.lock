@@ -1,0 +1,5 @@
+# Locked pure seeded-Omega (`omc`) compiler binary SHA-256 digests (`R6`).
+# Both `om/build.sh` and `verdant_omega::OmegaCompiledSlm` verify the resolved
+# `omc` binary against this lock before compiling any native executable.
+darwin-arm64 = "68a590c37dfb1ec37a183f0032e02db1570db299266f574f65556edfc70feb9c"
+linux-aarch64 = "28fca13d44054e26f78c33d1753fd5c005d08e9144d95985c90bd75b60885072"

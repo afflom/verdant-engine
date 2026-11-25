@@ -56,6 +56,190 @@ pub const STATUS_INVALID_PARAMS: u32 = 6;
 const HEADER_BYTES: usize = 12;
 const LIF_SCALE_SHIFT: u32 = 10;
 const SLM_RELU_SHIFT: u32 = 6;
+const OMC_LOCK_TOML: &str = include_str!("../../../om/omc.lock");
+
+fn sha256_hex(data: &[u8]) -> String {
+    const K: [u32; 64] = [
+        0x428a_2f98,
+        0x7137_4491,
+        0xb5c0_fbcf,
+        0xe9b5_dba5,
+        0x3956_c25b,
+        0x59f1_11f1,
+        0x923f_82a4,
+        0xab1c_5ed5,
+        0xd807_aa98,
+        0x1283_5b01,
+        0x2431_85be,
+        0x550c_7dc3,
+        0x72be_5d74,
+        0x80de_b1fe,
+        0x9bdc_06a7,
+        0xc19b_f174,
+        0xe49b_69c1,
+        0xefbe_4786,
+        0x0fc1_9dc6,
+        0x240c_a1cc,
+        0x2de9_2c6f,
+        0x4a74_84aa,
+        0x5cb0_a9dc,
+        0x76f9_88da,
+        0x983e_5152,
+        0xa831_c66d,
+        0xb003_27c8,
+        0xbf59_7fc7,
+        0xc6e0_0bf3,
+        0xd5a7_9147,
+        0x06ca_6351,
+        0x1429_2967,
+        0x27b7_0a85,
+        0x2e1b_2138,
+        0x4d2c_6dfc,
+        0x5338_0d13,
+        0x650a_7354,
+        0x766a_0abb,
+        0x81c2_c92e,
+        0x9272_2c85,
+        0xa2bf_e8a1,
+        0xa81a_664b,
+        0xc24b_8b70,
+        0xc76c_51a3,
+        0xd192_e819,
+        0xd699_0624,
+        0xf40e_3585,
+        0x106a_a070,
+        0x19a4_c116,
+        0x1e37_6c08,
+        0x2748_774c,
+        0x34b0_bcb5,
+        0x391c_0cb3,
+        0x4ed8_aa4a,
+        0x5b9c_ca4f,
+        0x682e_6ff3,
+        0x748f_82ee,
+        0x78a5_636f,
+        0x84c8_7814,
+        0x8cc7_0208,
+        0x90be_fffa,
+        0xa450_6ceb,
+        0xbef9_a3f7,
+        0xc671_78f2,
+    ];
+    let mut h: [u32; 8] = [
+        0x6a09_e667,
+        0xbb67_ae85,
+        0x3c6e_f372,
+        0xa54f_f53a,
+        0x510e_527f,
+        0x9b05_688c,
+        0x1f83_d9ab,
+        0x5be0_cd19,
+    ];
+    let bit_len = (data.len() as u64).wrapping_mul(8);
+    let mut msg = data.to_vec();
+    msg.push(0x80);
+    while (msg.len() % 64) != 56 {
+        msg.push(0);
+    }
+    msg.extend_from_slice(&bit_len.to_be_bytes());
+    for block in msg.chunks_exact(64) {
+        let mut w = [0_u32; 64];
+        for i in 0..16 {
+            w[i] = u32::from_be_bytes([
+                block[i * 4],
+                block[i * 4 + 1],
+                block[i * 4 + 2],
+                block[i * 4 + 3],
+            ]);
+        }
+        for i in 16..64 {
+            let s0 = w[i - 15].rotate_right(7) ^ w[i - 15].rotate_right(18) ^ (w[i - 15] >> 3);
+            let s1 = w[i - 2].rotate_right(17) ^ w[i - 2].rotate_right(19) ^ (w[i - 2] >> 10);
+            w[i] = w[i - 16]
+                .wrapping_add(s0)
+                .wrapping_add(w[i - 7])
+                .wrapping_add(s1);
+        }
+        let [mut a, mut b, mut c, mut d, mut e, mut f, mut g, mut hh] = h;
+        for i in 0..64 {
+            let s1 = e.rotate_right(6) ^ e.rotate_right(11) ^ e.rotate_right(25);
+            let ch = (e & f) ^ ((!e) & g);
+            let t1 = hh
+                .wrapping_add(s1)
+                .wrapping_add(ch)
+                .wrapping_add(K[i])
+                .wrapping_add(w[i]);
+            let s0 = a.rotate_right(2) ^ a.rotate_right(13) ^ a.rotate_right(22);
+            let maj = (a & b) ^ (a & c) ^ (b & c);
+            let t2 = s0.wrapping_add(maj);
+            hh = g;
+            g = f;
+            f = e;
+            e = d.wrapping_add(t1);
+            d = c;
+            c = b;
+            b = a;
+            a = t1.wrapping_add(t2);
+        }
+        h[0] = h[0].wrapping_add(a);
+        h[1] = h[1].wrapping_add(b);
+        h[2] = h[2].wrapping_add(c);
+        h[3] = h[3].wrapping_add(d);
+        h[4] = h[4].wrapping_add(e);
+        h[5] = h[5].wrapping_add(f);
+        h[6] = h[6].wrapping_add(g);
+        h[7] = h[7].wrapping_add(hh);
+    }
+    let mut out = String::with_capacity(64);
+    for word in h {
+        use std::fmt::Write as _;
+        let _ = write!(&mut out, "{word:08x}");
+    }
+    out
+}
+
+fn locked_omc_digest_for_host() -> Result<&'static str, TensorComputeError> {
+    let key = if cfg!(all(target_os = "macos", target_arch = "aarch64")) {
+        "darwin-arm64"
+    } else if cfg!(all(target_os = "linux", target_arch = "aarch64")) {
+        "linux-aarch64"
+    } else if cfg!(all(target_os = "linux", target_arch = "x86_64")) {
+        "linux-x86_64"
+    } else {
+        return Err(TensorComputeError::InvalidKernelSpecification {
+            kernel_name: "omega_slm_jit:unsupported_host_for_omc_lock".to_string(),
+        });
+    };
+    for line in OMC_LOCK_TOML.lines() {
+        let trimmed = line.trim();
+        if let Some(rest) = trimmed.strip_prefix(key) {
+            if let Some(val) = rest.trim().strip_prefix('=') {
+                let unquoted = val.trim().trim_matches('"');
+                if unquoted.len() == 64 {
+                    return Ok(unquoted);
+                }
+            }
+        }
+    }
+    Err(TensorComputeError::InvalidKernelSpecification {
+        kernel_name: format!("omega_slm_jit:no_locked_omc_digest_for_{key}"),
+    })
+}
+
+/// Verifies that `omc_path` matches the locked SHA-256 digest in `om/omc.lock` (`R6`).
+pub fn verify_locked_omc(omc_path: &Path) -> Result<String, TensorComputeError> {
+    let expected = locked_omc_digest_for_host()?;
+    let bytes = std::fs::read(omc_path).map_err(io_err)?;
+    let actual = sha256_hex(&bytes);
+    if actual != expected {
+        return Err(TensorComputeError::InvalidKernelSpecification {
+            kernel_name: format!(
+                "omega_slm_jit:omc_digest_mismatch expected={expected} actual={actual}"
+            ),
+        });
+    }
+    Ok(actual)
+}
 
 fn io_err(err: io::Error) -> TensorComputeError {
     TensorComputeError::InvalidKernelSpecification {
@@ -282,16 +466,28 @@ impl OmegaNeuralWorker {
         decay_den: i64,
         threshold: i64,
     ) -> Result<NeuromorphicStepOutput, TensorComputeError> {
-        let state_dim = u32::try_from(prev_membrane_milli.len()).map_err(|_| {
-            TensorComputeError::ZeroOrMismatchedExtents {
+        let sdim = prev_membrane_milli.len();
+        let odim = observer_drive_milli.len();
+        if sdim == 0
+            || sdim > 64
+            || odim == 0
+            || entity_slots == 0
+            || sdim.checked_mul(sdim) != Some(a_recurrent_q.len())
+            || sdim.checked_mul(odim) != Some(b_observer_q.len())
+            || entity_slots.checked_mul(sdim) != Some(c_salience_q.len())
+        {
+            return Err(TensorComputeError::ZeroOrMismatchedExtents {
+                detail: "omega_worker:invalid_extents".to_string(),
+            });
+        }
+        let state_dim =
+            u32::try_from(sdim).map_err(|_| TensorComputeError::ZeroOrMismatchedExtents {
                 detail: "omega_worker:state_dim_exceeds_u32".to_string(),
-            }
-        })?;
-        let obs_dim = u32::try_from(observer_drive_milli.len()).map_err(|_| {
-            TensorComputeError::ZeroOrMismatchedExtents {
+            })?;
+        let obs_dim =
+            u32::try_from(odim).map_err(|_| TensorComputeError::ZeroOrMismatchedExtents {
                 detail: "omega_worker:obs_dim_exceeds_u32".to_string(),
-            }
-        })?;
+            })?;
         let eslots = u32::try_from(entity_slots).map_err(|_| {
             TensorComputeError::ZeroOrMismatchedExtents {
                 detail: "omega_worker:entity_slots_exceeds_u32".to_string(),
@@ -399,6 +595,19 @@ impl OmegaNeuralWorker {
         w1_packed_nibbles: &[u8],
         w2_grid_codes: &[u16],
     ) -> Result<Vec<i64>, TensorComputeError> {
+        if batch_rows == 0
+            || embed_dim == 0
+            || hidden_dim == 0
+            || !hidden_dim.is_multiple_of(2)
+            || intent_count == 0
+            || batch_rows.checked_mul(embed_dim) != Some(feature_activations_q.len())
+            || embed_dim.checked_mul(hidden_dim / 2) != Some(w1_packed_nibbles.len())
+            || hidden_dim.checked_mul(intent_count) != Some(w2_grid_codes.len())
+        {
+            return Err(TensorComputeError::ZeroOrMismatchedExtents {
+                detail: "omega_worker:invalid_extents".to_string(),
+            });
+        }
         let brows =
             u32::try_from(batch_rows).map_err(|_| TensorComputeError::ZeroOrMismatchedExtents {
                 detail: "omega_worker:batch_rows_exceeds_u32".to_string(),
@@ -478,6 +687,16 @@ impl OmegaNeuralWorker {
         lhs_codebook: &[i32; CODED_TABLE_LEN],
         rhs_codebook: &[i32; CODED_TABLE_LEN],
     ) -> Result<Vec<i64>, TensorComputeError> {
+        if rows == 0
+            || inner_k == 0
+            || cols == 0
+            || rows.checked_mul(inner_k) != Some(lhs_codes.len())
+            || inner_k.checked_mul(cols) != Some(rhs_codes.len())
+        {
+            return Err(TensorComputeError::ZeroOrMismatchedExtents {
+                detail: "omega_worker:invalid_extents".to_string(),
+            });
+        }
         let r = u32::try_from(rows).map_err(|_| TensorComputeError::ZeroOrMismatchedExtents {
             detail: "omega_worker:rows_exceeds_u32".to_string(),
         })?;
@@ -536,6 +755,17 @@ impl OmegaNeuralWorker {
         lhs_codebook: &[i32; CODED_TABLE_LEN],
         rhs_codebook: &[i32; CODED_TABLE_LEN],
     ) -> Result<Vec<i64>, TensorComputeError> {
+        let packed_k = inner_k.div_ceil(2);
+        if rows == 0
+            || inner_k == 0
+            || cols == 0
+            || rows.checked_mul(packed_k) != Some(lhs_packed_rows.len())
+            || cols.checked_mul(packed_k) != Some(rhs_packed_cols.len())
+        {
+            return Err(TensorComputeError::ZeroOrMismatchedExtents {
+                detail: "omega_worker:invalid_extents".to_string(),
+            });
+        }
         let r = u32::try_from(rows).map_err(|_| TensorComputeError::ZeroOrMismatchedExtents {
             detail: "omega_worker:rows_exceeds_u32".to_string(),
         })?;
@@ -588,6 +818,11 @@ impl OmegaNeuralWorker {
         edge_costs_milli: &[Option<u32>],
         node_count: usize,
     ) -> Result<Vec<Option<u64>>, TensorComputeError> {
+        if node_count == 0 || node_count.checked_mul(node_count) != Some(edge_costs_milli.len()) {
+            return Err(TensorComputeError::ZeroOrMismatchedExtents {
+                detail: "omega_worker:invalid_extents".to_string(),
+            });
+        }
         let n =
             u32::try_from(node_count).map_err(|_| TensorComputeError::ZeroOrMismatchedExtents {
                 detail: "omega_worker:node_count_exceeds_u32".to_string(),
@@ -658,7 +893,8 @@ pub struct OmegaCompiledSlm {
 impl OmegaCompiledSlm {
     /// Synthesizes a zero-weight-RAM pure-Omega `.om` program from live `CodedSlmDirector`
     /// weights (erasing every zero weight and baking non-zero weights into constant instructions),
-    /// compiles it natively with `omc`, and launches the resulting executable.
+    /// verifies the locked `omc` digest against `om/omc.lock` (`R6`), compiles it natively, and
+    /// launches the resulting executable.
     #[allow(clippy::too_many_arguments)]
     pub fn compile_and_spawn(
         embed_dim: usize,
@@ -669,6 +905,52 @@ impl OmegaCompiledSlm {
         w2_grid_codes: &[u16],
         output_binary_path: impl AsRef<Path>,
     ) -> Result<Self, TensorComputeError> {
+        Self::compile_and_spawn_with_omc(
+            embed_dim,
+            hidden_dim,
+            intent_count,
+            codebook,
+            w1_packed_nibbles,
+            w2_grid_codes,
+            output_binary_path,
+            default_omc_binary_path(),
+        )
+    }
+
+    /// Variant of [`Self::compile_and_spawn`] accepting an explicit `omc_path`, which is still
+    /// strictly verified against `om/omc.lock` before execution (`R6`).
+    #[allow(clippy::too_many_arguments)]
+    pub fn compile_and_spawn_with_omc(
+        embed_dim: usize,
+        hidden_dim: usize,
+        intent_count: usize,
+        codebook: &[i32; CODED_TABLE_LEN],
+        w1_packed_nibbles: &[u8],
+        w2_grid_codes: &[u16],
+        output_binary_path: impl AsRef<Path>,
+        omc_path: impl AsRef<Path>,
+    ) -> Result<Self, TensorComputeError> {
+        if embed_dim == 0
+            || hidden_dim == 0
+            || !hidden_dim.is_multiple_of(2)
+            || intent_count == 0
+            || embed_dim.checked_mul(hidden_dim / 2) != Some(w1_packed_nibbles.len())
+            || hidden_dim.checked_mul(intent_count) != Some(w2_grid_codes.len())
+        {
+            return Err(TensorComputeError::ZeroOrMismatchedExtents {
+                detail: "omega_slm_jit:invalid_extents".to_string(),
+            });
+        }
+        if w2_grid_codes
+            .iter()
+            .any(|&c| usize::from(c) >= CODED_TABLE_LEN)
+        {
+            return Err(TensorComputeError::ZeroOrMismatchedExtents {
+                detail: "omega_slm_jit:invalid_codebook_index".to_string(),
+            });
+        }
+        verify_locked_omc(omc_path.as_ref())?;
+
         let edim =
             u32::try_from(embed_dim).map_err(|_| TensorComputeError::ZeroOrMismatchedExtents {
                 detail: "omega_slm_jit:embed_dim_exceeds_u32".to_string(),
@@ -727,9 +1009,9 @@ impl OmegaCompiledSlm {
         let synth_micros = t0.elapsed().as_micros() as u64;
         let om_src = jit_out.stdout;
 
-        // Stage 2: Native omc compiles synthesized .om directly to Mach-O / ELF machine code.
+        // Stage 2: Verified locked `omc` compiles synthesized .om directly to Mach-O / ELF.
         let t1 = std::time::Instant::now();
-        let mut omc_child = Command::new(default_omc_binary_path())
+        let mut omc_child = Command::new(omc_path.as_ref())
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
             .stderr(Stdio::piped())
@@ -751,7 +1033,12 @@ impl OmegaCompiledSlm {
         let compile_micros = t1.elapsed().as_micros() as u64;
         let bin_bytes = omc_out.stdout;
 
-        let bin_path = output_binary_path.as_ref().to_path_buf();
+        let raw_path = output_binary_path.as_ref();
+        let bin_path = if raw_path.is_absolute() {
+            raw_path.to_path_buf()
+        } else {
+            std::env::current_dir().map_err(io_err)?.join(raw_path)
+        };
         std::fs::write(&bin_path, &bin_bytes).map_err(io_err)?;
         #[cfg(unix)]
         {
@@ -760,11 +1047,12 @@ impl OmegaCompiledSlm {
             perms.set_mode(0o755);
             std::fs::set_permissions(&bin_path, perms).map_err(io_err)?;
         }
+        let spawn_path = std::fs::canonicalize(&bin_path).map_err(io_err)?;
         #[cfg(all(target_os = "macos", target_arch = "aarch64"))]
         {
             let sign_status = Command::new("codesign")
                 .args(["-s", "-", "-f"])
-                .arg(&bin_path)
+                .arg(&spawn_path)
                 .stdout(Stdio::null())
                 .stderr(Stdio::null())
                 .status()
@@ -776,7 +1064,7 @@ impl OmegaCompiledSlm {
             }
         }
 
-        let mut child = Command::new(&bin_path)
+        let mut child = Command::new(&spawn_path)
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
             .stderr(Stdio::inherit())

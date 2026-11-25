@@ -513,6 +513,7 @@ dependencies = [
  "serde_json",
  "verdant-cli",
  "verdant-core",
+ "verdant-omega",
  "verdant-tensor",
  "verdant-wasm",
 ]

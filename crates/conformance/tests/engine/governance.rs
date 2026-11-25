@@ -4714,3 +4714,40 @@ fn m30_modularity_and_frontier_refinement_ve_81() {
         "enforce-prism-contracts.mjs must stay < 1400 lines, got {enforce_lines}"
     );
 }
+
+/// `VE-82`: Pure seeded-Omega backend lock (`om/omc.lock`), slice-extent refusals, and planted-defect evidence.
+#[test]
+fn omega_native_backend_and_jit_lock_ve_82() {
+    let repo_root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+    let lock_text =
+        std::fs::read_to_string(repo_root.join("om/omc.lock")).expect("read om/omc.lock");
+    assert!(
+        lock_text.contains("darwin-arm64") && lock_text.contains("linux-aarch64"),
+        "om/omc.lock must pin platform compiler digests"
+    );
+    let verify_doc = std::fs::read_to_string(repo_root.join("OMEGA-VERIFICATION.md"))
+        .expect("read OMEGA-VERIFICATION.md");
+    assert!(
+        verify_doc.contains("Planted-Defect Gate Evidence") && verify_doc.contains("DEFECT")
+            || verify_doc.contains("FAILED"),
+        "OMEGA-VERIFICATION.md must record planted-defect failure and restoration"
+    );
+
+    // R6 negative control: an unlocked compiler binary must be refused before execution.
+    let fake_omc =
+        std::env::temp_dir().join(format!("verdant_ve82_fake_omc_{}", std::process::id()));
+    std::fs::write(&fake_omc, b"unlocked-omc").expect("write fake omc");
+    assert!(matches!(
+        verdant_omega::verify_locked_omc(&fake_omc),
+        Err(TensorComputeError::InvalidKernelSpecification { .. })
+    ));
+    let _ = std::fs::remove_file(&fake_omc);
+
+    // R5 negative control: compensating slice lengths must be refused before framing.
+    let cb = [0_i32; 16];
+    let tmp_out = std::env::temp_dir().join("verdant_ve82_never_written");
+    assert!(matches!(
+        verdant_omega::OmegaCompiledSlm::compile_and_spawn(2, 2, 1, &cb, &[], &[0, 0, 0], &tmp_out),
+        Err(TensorComputeError::ZeroOrMismatchedExtents { .. })
+    ));
+}

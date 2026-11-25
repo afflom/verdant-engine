@@ -171,6 +171,7 @@ model does not sanction.
 | `VTK-68` | `build` | Verdant reproduces the Arm scalar binary32 table-reduced natural logarithm under nearest-even rounding |
 | `VTK-69` | `build` | Verdant compares signed 64-bit integers and IEEE binary64 values exactly across both representations |
 | `VTK-70` | `build` | Verdant reproduces the Arm portable scalar sine on binary32 words with certified range reduction and ordered binary64 operations |
+| `VE-82` | `open` | Verdant measures bit-exact parity and refusal compliance of the opt-in pure seeded-Omega native neural, tensor, raster, and partial-evaluating SLM compiler backend under a SHA-256-locked omc compiler |
 
 ## fidelity
 

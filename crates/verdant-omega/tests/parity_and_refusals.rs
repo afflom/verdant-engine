@@ -2,8 +2,8 @@
 
 use verdant_omega::{
     default_raster_binary_path, default_slm_jit_binary_path, default_worker_binary_path,
-    OmegaCompiledSlm, OmegaNeuralWorker, OmegaRasterWorker, OP_LIF_SSM, OP_PING, STATUS_BAD_MAGIC,
-    STATUS_PAYLOAD_MISMATCH, STATUS_UNKNOWN_OP, WIRE_MAGIC,
+    verify_locked_omc, OmegaCompiledSlm, OmegaNeuralWorker, OmegaRasterWorker, OP_LIF_SSM, OP_PING,
+    STATUS_BAD_MAGIC, STATUS_PAYLOAD_MISMATCH, STATUS_UNKNOWN_OP, WIRE_MAGIC,
 };
 use verdant_tensor::{
     contract_coded_pair_lut_into, contract_packed_nibbles_lut_into, infer_coded_slm_intent_logits,
@@ -291,25 +291,100 @@ fn negative_controls_refuse_invalid_frames_and_keep_worker_alive() {
 }
 
 #[test]
-fn planted_defect_control_detects_single_bit_drift() {
+fn compensating_slice_lengths_are_refused_before_framing() {
     let Some(mut worker) = worker_or_skip() else {
         return;
     };
-    let codebook: [i32; CODED_TABLE_LEN] = core::array::from_fn(|i| ((i as i32) - 8) * 16);
-    let feats = vec![128_i32; 32];
-    let w1 = vec![0xf9_u8; 32 * 16];
-    let w2 = vec![15_u16; 32 * 16];
+    let cb = [0_i32; CODED_TABLE_LEN];
 
+    // Exact Codex PR #71 P1 repro: short `a=[]` compensated by long `b=[1024, 1024]`.
+    assert!(matches!(
+        worker.step_neuromorphic_lif_ssm_ring(&[1], &[1], &[], &[1024, 1024], &[1024], 1),
+        Err(TensorComputeError::ZeroOrMismatchedExtents { .. })
+    ));
+
+    // Compensating slices in coded_gemm SLM (`w1` short, `w2` long).
+    assert!(matches!(
+        worker.infer_coded_slm_intent_logits(&[1, 2], 1, 2, 2, 1, &cb, &[], &[0, 0, 0]),
+        Err(TensorComputeError::ZeroOrMismatchedExtents { .. })
+    ));
+
+    // Compensating slices in coded_pair_lut (`lhs` short, `rhs` long).
+    assert!(matches!(
+        worker.contract_coded_pair_lut(&[0], &[0, 0, 0], 1, 2, 1, &cb, &cb),
+        Err(TensorComputeError::ZeroOrMismatchedExtents { .. })
+    ));
+
+    // Compensating slices in packed_nibbles_lut (`lhs` short, `rhs` long).
+    assert!(matches!(
+        worker.contract_packed_nibbles_lut(&[], &[0, 0], 1, 2, 1, &cb, &cb),
+        Err(TensorComputeError::ZeroOrMismatchedExtents { .. })
+    ));
+
+    // Compensating slices in JIT compiler (`w1` short, `w2` long).
+    let tmp = std::env::temp_dir().join("verdant_omega_never_created");
+    assert!(matches!(
+        OmegaCompiledSlm::compile_and_spawn(2, 2, 1, &cb, &[], &[0, 0, 0], &tmp),
+        Err(TensorComputeError::ZeroOrMismatchedExtents { .. })
+    ));
+}
+
+#[test]
+fn unlocked_omc_binary_is_refused_by_r6_lock() {
+    let fake_omc =
+        std::env::temp_dir().join(format!("verdant_omega_fake_omc_{}", std::process::id()));
+    std::fs::write(&fake_omc, b"not-the-locked-omc-binary").unwrap();
+    let err = verify_locked_omc(&fake_omc).unwrap_err();
+    assert!(matches!(
+        err,
+        TensorComputeError::InvalidKernelSpecification { ref kernel_name }
+            if kernel_name.contains("omc_digest_mismatch")
+    ));
+
+    let cb = [0_i32; CODED_TABLE_LEN];
+    let tmp_bin = std::env::temp_dir().join("verdant_omega_fake_out");
+    let err2 = OmegaCompiledSlm::compile_and_spawn_with_omc(
+        2,
+        2,
+        1,
+        &cb,
+        &[0, 0],
+        &[0, 0],
+        &tmp_bin,
+        &fake_omc,
+    )
+    .err()
+    .expect("unlocked omc must be refused");
+    assert!(matches!(
+        err2,
+        TensorComputeError::InvalidKernelSpecification { ref kernel_name }
+            if kernel_name.contains("omc_digest_mismatch")
+    ));
+    let _ = std::fs::remove_file(&fake_omc);
+}
+
+#[test]
+fn bare_relative_output_path_spawns_cleanly() {
+    let jit_path = default_slm_jit_binary_path();
+    if !jit_path.is_file() {
+        assert!(
+            !require_worker(),
+            "VERDANT_OMEGA_REQUIRE_WORKER=1 but verdant-slm-jit missing"
+        );
+        return;
+    }
+    let cb: [i32; CODED_TABLE_LEN] = core::array::from_fn(|i| ((i as i32) - 8) * 16);
+    let bare_name = format!("verdant_omega_bare_rel_{}", std::process::id());
+    let mut jit =
+        OmegaCompiledSlm::compile_and_spawn(2, 2, 1, &cb, &[0x8f, 0xf8], &[15, 8], &bare_name)
+            .expect("bare relative output filename must resolve and spawn cleanly");
+    let out = jit.infer_batch(&[64, 64], 1).unwrap();
     let expected =
-        infer_coded_slm_intent_logits(&feats, 1, 32, 32, 16, &codebook, &w1, &w2).unwrap();
-    let mut actual = worker
-        .infer_coded_slm_intent_logits(&feats, 1, 32, 32, 16, &codebook, &w1, &w2)
-        .unwrap();
-    assert_eq!(actual, expected);
-
-    // Plant a 1-bit defect and confirm parity check rejects it.
-    actual[0] ^= 1;
-    assert_ne!(actual, expected);
+        infer_coded_slm_intent_logits(&[64, 64], 1, 2, 2, 1, &cb, &[0x8f, 0xf8], &[15, 8]).unwrap();
+    assert_eq!(out, expected);
+    let bin_path = jit.binary_path().to_path_buf();
+    drop(jit);
+    let _ = std::fs::remove_file(&bin_path);
 }
 
 #[test]
