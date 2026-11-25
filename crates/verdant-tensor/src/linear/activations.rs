@@ -373,32 +373,57 @@ fn log_failure() -> TensorComputeError {
 /// # Errors
 /// Returns a typed kernel error if a certified word operation overflows.
 pub fn natural_log_f32(value: f32) -> Result<f32, TensorComputeError> {
-    use verdant_logarithmic_series::{Adt0 as State, Adt1 as Action};
-    let word = match verdant_logarithmic_prepare::run(u64::from(value.to_bits()))
-        .map_err(|_| log_failure())?
-    {
-        verdant_logarithmic_prepare::Adt0::C0(word) => word,
-        verdant_logarithmic_prepare::Adt0::C1(negative, whole, ratio) => {
-            let mut state = State::C0;
-            let mut product = 0;
-            let magnitude = loop {
-                match verdant_logarithmic_series::run(negative, whole, ratio, state, product)
-                    .map_err(|_| log_failure())?
-                {
-                    Action::C0(a, b, next) => {
-                        product =
-                            verdant_logarithmic_product::run(a, b).map_err(|_| log_failure())?;
-                        state = next;
-                    }
-                    Action::C1(v) => break v,
-                }
-            };
-            verdant_logarithmic_word::run(negative, magnitude).map_err(|_| log_failure())?
-        }
+    use verdant_reference_log_prepare::Adt0 as Preparation;
+    let decode = |word| {
+        u32::try_from(word)
+            .map(f32::from_bits)
+            .map_err(|_| log_failure())
     };
-    Ok(f32::from_bits(
-        u32::try_from(word).map_err(|_| log_failure())?,
-    ))
+    let mut value = value;
+    let mut normalized = false;
+    loop {
+        match verdant_reference_log_prepare::run(u64::from(value.to_bits())) {
+            Preparation::C0(bits) => return decode(bits),
+            Preparation::C1 => break,
+            Preparation::C2(factor) if !normalized => {
+                value = evaluate_f32_scalar(crate::scalars::two_u64(), value, decode(factor)?)?;
+                normalized = true;
+            }
+            Preparation::C2(_) => return Err(log_failure()),
+        }
+    }
+    let offset = verdant_reference_log_offset::run(u64::from(value.to_bits()), normalized)
+        .map_err(|_| log_failure())?;
+    let (reduced, index) = verdant_reference_log_segment::run(offset).map_err(|_| log_failure())?;
+    let (magnitude, signed_log_two) = verdant_reference_log_power::run(offset);
+    let (inverse_center, log_center) = verdant_reference_log_center::run(index);
+    let seeds = [
+        reduced,
+        magnitude,
+        signed_log_two,
+        inverse_center,
+        log_center,
+    ];
+    let mut words = [0; crate::scalars::thirty_two_u64() as usize];
+    let mut first_result = seeds.len();
+    words[..first_result].copy_from_slice(&seeds);
+    for index in 0..crate::scalars::four_u64() {
+        words[first_result] = verdant_reference_log_coefficient::run(index);
+        first_result += 1;
+    }
+    let mut stage = 0;
+    let mut result = 0;
+    while let Some((operation, (a, b))) = verdant_reference_log_instruction::run(stage) {
+        let (prior, slot) = words
+            .split_at_mut_checked(first_result + stage as usize)
+            .ok_or_else(log_failure)?;
+        let operand = |index: u64| prior.get(index as usize).copied().ok_or_else(log_failure);
+        result =
+            super::evaluate_wide(operation, operand(a)?, operand(b)?)?.ok_or_else(log_failure)?;
+        *slot.first_mut().ok_or_else(log_failure)? = result;
+        stage += 1;
+    }
+    decode(result)
 }
 
 /// Raise a positive finite base to the negative binary32 reciprocal of the root degree.

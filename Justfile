@@ -128,6 +128,9 @@ tensor-export:
 quotient-export:
     just certified-export quotient tensor-quotient
 
+reference-log-export:
+    just certified-export reference-log reference-log
+
 encoding-export:
     just certified-export encoding tensor-encoding
 

@@ -898,6 +898,13 @@ dependencies = [
  "verdant_product_f64",
  "verdant_quotient_f64",
  "verdant_quotient_route",
+ "verdant_reference_log_center",
+ "verdant_reference_log_coefficient",
+ "verdant_reference_log_instruction",
+ "verdant_reference_log_offset",
+ "verdant_reference_log_power",
+ "verdant_reference_log_prepare",
+ "verdant_reference_log_segment",
  "verdant_rotation_geometry",
  "verdant_rotation_limit",
  "verdant_rotation_signed",
@@ -1230,6 +1237,34 @@ version = "2.12.0"
 [[package]]
 name = "verdant_quotient_route"
 version = "2.22.2"
+
+[[package]]
+name = "verdant_reference_log_center"
+version = "2.22.3"
+
+[[package]]
+name = "verdant_reference_log_coefficient"
+version = "2.22.3"
+
+[[package]]
+name = "verdant_reference_log_instruction"
+version = "2.22.3"
+
+[[package]]
+name = "verdant_reference_log_offset"
+version = "2.22.3"
+
+[[package]]
+name = "verdant_reference_log_power"
+version = "2.22.3"
+
+[[package]]
+name = "verdant_reference_log_prepare"
+version = "2.22.3"
+
+[[package]]
+name = "verdant_reference_log_segment"
+version = "2.22.3"
 
 [[package]]
 name = "verdant_rotation_geometry"

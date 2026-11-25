@@ -243,6 +243,48 @@ expression = "MIT OR Apache-2.0"
 license-files = [{ path = "src/lib.rs", hash = 0xfcf7307c }]
 
 [[licenses.clarify]]
+name = "verdant_reference_log_center"
+version = "=2.22.3"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0x8087d160 }]
+
+[[licenses.clarify]]
+name = "verdant_reference_log_coefficient"
+version = "=2.22.3"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0xe56066c6 }]
+
+[[licenses.clarify]]
+name = "verdant_reference_log_instruction"
+version = "=2.22.3"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0x6e9ecc7c }]
+
+[[licenses.clarify]]
+name = "verdant_reference_log_offset"
+version = "=2.22.3"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0x93ef3664 }]
+
+[[licenses.clarify]]
+name = "verdant_reference_log_power"
+version = "=2.22.3"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0xf8af4925 }]
+
+[[licenses.clarify]]
+name = "verdant_reference_log_prepare"
+version = "=2.22.3"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0xc085a421 }]
+
+[[licenses.clarify]]
+name = "verdant_reference_log_segment"
+version = "=2.22.3"
+expression = "MIT OR Apache-2.0"
+license-files = [{ path = "src/lib.rs", hash = 0x10983320 }]
+
+[[licenses.clarify]]
 name = "verdant_modular_word64"
 version = "=2.22.2"
 expression = "MIT OR Apache-2.0"

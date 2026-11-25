@@ -587,3 +587,9 @@ Passing an inflated 1,247-line Rust ceiling or a 589-function lifted count to `m
 Certificate `blake3:8df676880552a195dd9bb37b053c603e32121fc044bce4bcbc0bb247fb4c37bf` binds Q8_1 and Q8_K storage reads to the tensor execution bundle. The pinned GGML Q8_K decoder supplies all 256 lanes. For Q8_1, the original Q4_1 × Q8_1 dot product against each of 32 independently decoded one-hot rows supplies the expected lane. The original GGML revision has no public Q8_1 row decoder.
 
 All 50 block patterns matched bit for bit at output strides 4, 8 and 12, including padding. The common extent tests check invalid source lengths, short outputs and overflowing strides before any write. The previous decoder rejected both activation formats. Reading each Q8_1 lane one byte early made the numerical test fail on pattern 0 at stride 4. Restoring the certified offsets passed the storage suite.
+
+## VTK-68 binary32 natural logarithm
+
+The public `linear::natural_log_f32` runs the certified scalar classification, range reduction and ordered binary64 polynomial, then rounds once to binary32. The seven roots in `generated/reference-log` carry attestation `298662b320503f406ce454df3a91ea97aacc8c2d47466f8c72fc98532644ce37`.
+
+`cargo test -p verdant-tensor --test arm_logarithm` compiles the archived original Arm implementation and compares 16,477 input words, including subnormals, interval boundaries, signed zero and infinities. Finite results match by bits and NaNs by class. The previous implementation failed at `0x3abbcd88`. Swapping the reciprocal center and logarithm center failed at `0x003779b1`. Restoring their modeled order passed.
