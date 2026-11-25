@@ -5,8 +5,9 @@ use verdant_omega::{
     STATUS_UNKNOWN_OP, WIRE_MAGIC,
 };
 use verdant_tensor::{
-    infer_coded_slm_intent_logits, step_neuromorphic_lif_ssm_ring, TensorComputeError,
-    CODED_TABLE_LEN,
+    contract_coded_pair_lut_into, contract_packed_nibbles_lut_into, infer_coded_slm_intent_logits,
+    step_neuromorphic_lif_ssm_ring, tropical_min_plus_all_pairs_closure, CodebookProductLut,
+    TensorComputeError, CODED_TABLE_LEN,
 };
 
 struct SplitMix64(u64);
@@ -277,4 +278,106 @@ fn planted_defect_control_detects_single_bit_drift() {
     // Plant a 1-bit defect and confirm parity check rejects it.
     actual[0] ^= 1;
     assert_ne!(actual, expected);
+}
+
+#[test]
+fn coded_lut_and_packed_nibbles_bit_exact_parity() {
+    let mut worker = worker_or_skip();
+    let mut rng = SplitMix64::new(0x0bad_c0de_1234_5678);
+
+    let lhs_cb: [i32; CODED_TABLE_LEN] = core::array::from_fn(|i| ((i as i32) - 8) * 19 + 3);
+    let rhs_cb: [i32; CODED_TABLE_LEN] = core::array::from_fn(|i| ((i as i32) - 7) * 23 - 5);
+    let lut = CodebookProductLut::new(&lhs_cb, &rhs_cb);
+
+    for (rows, inner_k, cols) in [(1, 1, 1), (7, 13, 5), (16, 64, 16), (8, 33, 12)] {
+        let lhs_codes: Vec<u8> = (0..rows * inner_k)
+            .map(|_| (rng.next_u64() & 0xff) as u8)
+            .collect();
+        let rhs_codes: Vec<u8> = (0..inner_k * cols)
+            .map(|_| (rng.next_u64() & 0xff) as u8)
+            .collect();
+        let mut expected_pair = vec![0_i64; rows * cols];
+        contract_coded_pair_lut_into(
+            &lhs_codes,
+            &rhs_codes,
+            rows,
+            inner_k,
+            cols,
+            &lut,
+            &mut expected_pair,
+        )
+        .unwrap();
+        let actual_pair = worker
+            .contract_coded_pair_lut(
+                &lhs_codes, &rhs_codes, rows, inner_k, cols, &lhs_cb, &rhs_cb,
+            )
+            .unwrap();
+        assert_eq!(actual_pair, expected_pair);
+
+        let packed_k = inner_k.div_ceil(2);
+        let lhs_packed: Vec<u8> = (0..rows * packed_k)
+            .map(|_| (rng.next_u64() & 0xff) as u8)
+            .collect();
+        let rhs_packed: Vec<u8> = (0..cols * packed_k)
+            .map(|_| (rng.next_u64() & 0xff) as u8)
+            .collect();
+        let mut expected_packed = vec![0_i64; rows * cols];
+        contract_packed_nibbles_lut_into(
+            &lhs_packed,
+            &rhs_packed,
+            rows,
+            inner_k,
+            cols,
+            &lut,
+            &mut expected_packed,
+        )
+        .unwrap();
+        let actual_packed = worker
+            .contract_packed_nibbles_lut(
+                &lhs_packed,
+                &rhs_packed,
+                rows,
+                inner_k,
+                cols,
+                &lhs_cb,
+                &rhs_cb,
+            )
+            .unwrap();
+        assert_eq!(actual_packed, expected_packed);
+    }
+}
+
+#[test]
+fn tropical_min_plus_all_pairs_closure_bit_exact_parity() {
+    let mut worker = worker_or_skip();
+    let mut rng = SplitMix64::new(0x7777_8888_9999_aaaa);
+
+    for n in [1, 4, 12, 24] {
+        let mut edges = Vec::with_capacity(n * n);
+        for _ in 0..n * n {
+            let roll = rng.next_u64() % 10;
+            if roll < 5 {
+                edges.push(None);
+            } else if roll == 9 {
+                edges.push(Some(u32::MAX));
+            } else {
+                edges.push(Some((rng.next_u64() % 50_000) as u32));
+            }
+        }
+        let expected = tropical_min_plus_all_pairs_closure(&edges, n).unwrap();
+        let actual = worker
+            .tropical_min_plus_all_pairs_closure(&edges, n)
+            .unwrap();
+        assert_eq!(actual, expected, "tropical min-plus drift at n={n}");
+    }
+
+    // Negative control: node_count = 0 must be refused.
+    let err = worker
+        .tropical_min_plus_all_pairs_closure(&[], 0)
+        .unwrap_err();
+    assert!(matches!(
+        err,
+        TensorComputeError::ZeroOrMismatchedExtents { ref detail }
+            if detail == "omega_worker:invalid_extents"
+    ));
 }

@@ -5,7 +5,9 @@ use std::time::Instant;
 
 use verdant_omega::OmegaNeuralWorker;
 use verdant_tensor::{
-    infer_coded_slm_intent_logits, step_neuromorphic_lif_ssm_ring, CODED_TABLE_LEN,
+    contract_packed_nibbles_lut_into, infer_coded_slm_intent_logits,
+    step_neuromorphic_lif_ssm_ring, tropical_min_plus_all_pairs_closure, CodebookProductLut,
+    CODED_TABLE_LEN,
 };
 
 fn main() {
@@ -131,11 +133,84 @@ fn main() {
     }
     let om_slm_us = t3.elapsed().as_secs_f64() * 1e6 / f64::from(slm_iters);
 
-    println!("PARITY=EXACT (LIF/SSM + coded_gemm SLM)");
+    println!("PARITY=EXACT (LIF/SSM + coded_gemm SLM + packed_lut + tropical_min_plus)");
     println!(
         "kernel10 LIF/SSM (16x16, 32 slots, {lif_iters} iters): verdant-tensor={rust_lif_us:.1} us/call | omega-worker={om_lif_us:.1} us/call"
     );
     println!(
         "kernel11 coded_gemm SLM (16x64x64x16, {slm_iters} iters): verdant-tensor={rust_slm_us:.1} us/call | omega-worker={om_slm_us:.1} us/call"
+    );
+
+    // 3. Packed nibble LUT contraction (32x128x32)
+    let (pr, pk_inner, pc) = (32, 128, 32);
+    let pk_bytes = pk_inner / 2;
+    let lhs_cb: [i32; CODED_TABLE_LEN] = core::array::from_fn(|i| ((i as i32) - 8) * 16);
+    let rhs_cb: [i32; CODED_TABLE_LEN] = core::array::from_fn(|i| ((i as i32) - 8) * 12);
+    let lut = CodebookProductLut::new(&lhs_cb, &rhs_cb);
+    let lhs_p: Vec<u8> = (0..pr * pk_bytes)
+        .map(|i| ((i * 37) & 0xff) as u8)
+        .collect();
+    let rhs_p: Vec<u8> = (0..pc * pk_bytes)
+        .map(|i| ((i * 53) & 0xff) as u8)
+        .collect();
+    let mut ref_lut = vec![0_i64; pr * pc];
+    contract_packed_nibbles_lut_into(&lhs_p, &rhs_p, pr, pk_inner, pc, &lut, &mut ref_lut).unwrap();
+    let om_lut = worker
+        .contract_packed_nibbles_lut(&lhs_p, &rhs_p, pr, pk_inner, pc, &lhs_cb, &rhs_cb)
+        .unwrap();
+    assert_eq!(om_lut, ref_lut, "packed LUT parity mismatch");
+    let lut_iters = 500_u32;
+    let t4 = Instant::now();
+    for _ in 0..lut_iters {
+        contract_packed_nibbles_lut_into(&lhs_p, &rhs_p, pr, pk_inner, pc, &lut, &mut ref_lut)
+            .unwrap();
+        std::hint::black_box(&ref_lut);
+    }
+    let rust_lut_us = t4.elapsed().as_secs_f64() * 1e6 / f64::from(lut_iters);
+    let t5 = Instant::now();
+    for _ in 0..lut_iters {
+        let out = worker
+            .contract_packed_nibbles_lut(&lhs_p, &rhs_p, pr, pk_inner, pc, &lhs_cb, &rhs_cb)
+            .unwrap();
+        std::hint::black_box(out);
+    }
+    let om_lut_us = t5.elapsed().as_secs_f64() * 1e6 / f64::from(lut_iters);
+    println!(
+        "coded packed_nibbles_lut (32x128x32, {lut_iters} iters): verdant-tensor={rust_lut_us:.1} us/call | omega-worker={om_lut_us:.1} us/call"
+    );
+
+    // 4. Tropical (min, +) all-pairs closure (32 nodes)
+    let tn = 32;
+    let edges: Vec<Option<u32>> = (0..tn * tn)
+        .map(|i| {
+            if i % 3 == 0 {
+                Some(((i * 19) % 5000) as u32)
+            } else {
+                None
+            }
+        })
+        .collect();
+    let ref_trop = tropical_min_plus_all_pairs_closure(&edges, tn).unwrap();
+    let om_trop = worker
+        .tropical_min_plus_all_pairs_closure(&edges, tn)
+        .unwrap();
+    assert_eq!(om_trop, ref_trop, "tropical min-plus parity mismatch");
+    let trop_iters = 200_u32;
+    let t6 = Instant::now();
+    for _ in 0..trop_iters {
+        let out = tropical_min_plus_all_pairs_closure(&edges, tn).unwrap();
+        std::hint::black_box(out);
+    }
+    let rust_trop_us = t6.elapsed().as_secs_f64() * 1e6 / f64::from(trop_iters);
+    let t7 = Instant::now();
+    for _ in 0..trop_iters {
+        let out = worker
+            .tropical_min_plus_all_pairs_closure(&edges, tn)
+            .unwrap();
+        std::hint::black_box(out);
+    }
+    let om_trop_us = t7.elapsed().as_secs_f64() * 1e6 / f64::from(trop_iters);
+    println!(
+        "tropical min-plus closure (32 nodes, {trop_iters} iters): verdant-tensor={rust_trop_us:.1} us/call | omega-worker={om_trop_us:.1} us/call"
     );
 }

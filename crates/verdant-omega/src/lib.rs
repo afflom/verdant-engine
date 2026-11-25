@@ -24,6 +24,12 @@ pub const OP_LIF_SSM: u32 = 1;
 pub const OP_CODED_SLM: u32 = 2;
 /// Wire operation code for a zero-payload liveness ping.
 pub const OP_PING: u32 = 3;
+/// Wire operation code for `contract_coded_pair_lut_into` (`16x16` codebook LUT contraction).
+pub const OP_CODED_PAIR_LUT: u32 = 4;
+/// Wire operation code for `contract_packed_nibbles_lut_into` (4-bit packed nibble LUT contraction).
+pub const OP_PACKED_NIBBLES_LUT: u32 = 5;
+/// Wire operation code for `tropical_min_plus_all_pairs_closure` (NavMesh/Chronicle min-plus closure).
+pub const OP_TROPICAL_MIN_PLUS: u32 = 6;
 
 /// Worker reply status: success.
 pub const STATUS_OK: u32 = 0;
@@ -406,6 +412,172 @@ impl OmegaNeuralWorker {
             ]));
         }
         Ok(logits)
+    }
+
+    /// Executes `contract_coded_pair_lut_into` (`16x16` codebook product LUT) on the pure-Omega worker.
+    #[allow(clippy::too_many_arguments)]
+    pub fn contract_coded_pair_lut(
+        &mut self,
+        lhs_codes: &[u8],
+        rhs_codes: &[u8],
+        rows: usize,
+        inner_k: usize,
+        cols: usize,
+        lhs_codebook: &[i32; CODED_TABLE_LEN],
+        rhs_codebook: &[i32; CODED_TABLE_LEN],
+    ) -> Result<Vec<i64>, TensorComputeError> {
+        let r = u32::try_from(rows).map_err(|_| TensorComputeError::ZeroOrMismatchedExtents {
+            detail: "omega_worker:rows_exceeds_u32".to_string(),
+        })?;
+        let k =
+            u32::try_from(inner_k).map_err(|_| TensorComputeError::ZeroOrMismatchedExtents {
+                detail: "omega_worker:inner_k_exceeds_u32".to_string(),
+            })?;
+        let c = u32::try_from(cols).map_err(|_| TensorComputeError::ZeroOrMismatchedExtents {
+            detail: "omega_worker:cols_exceeds_u32".to_string(),
+        })?;
+
+        let mut payload = Vec::with_capacity(144 + lhs_codes.len() + rhs_codes.len());
+        payload.extend_from_slice(&r.to_le_bytes());
+        payload.extend_from_slice(&k.to_le_bytes());
+        payload.extend_from_slice(&c.to_le_bytes());
+        payload.extend_from_slice(&0_u32.to_le_bytes());
+        for &v in lhs_codebook {
+            payload.extend_from_slice(&v.to_le_bytes());
+        }
+        for &v in rhs_codebook {
+            payload.extend_from_slice(&v.to_le_bytes());
+        }
+        payload.extend_from_slice(lhs_codes);
+        payload.extend_from_slice(rhs_codes);
+
+        let (status, reply) = self.send_raw_frame(WIRE_MAGIC, OP_CODED_PAIR_LUT, &payload)?;
+        if status != STATUS_OK {
+            return Err(status_err(status));
+        }
+
+        let out_count = rows.saturating_mul(cols);
+        let expected = out_count.saturating_mul(8);
+        if reply.len() != expected {
+            return Err(TensorComputeError::ZeroOrMismatchedExtents {
+                detail: format!(
+                    "omega_worker:pair_lut_reply_len expected={expected} actual={}",
+                    reply.len()
+                ),
+            });
+        }
+        Ok(reply
+            .chunks_exact(8)
+            .map(|ch| i64::from_le_bytes([ch[0], ch[1], ch[2], ch[3], ch[4], ch[5], ch[6], ch[7]]))
+            .collect())
+    }
+
+    /// Executes `contract_packed_nibbles_lut_into` (4-bit packed nibble LUT) on the pure-Omega worker.
+    #[allow(clippy::too_many_arguments)]
+    pub fn contract_packed_nibbles_lut(
+        &mut self,
+        lhs_packed_rows: &[u8],
+        rhs_packed_cols: &[u8],
+        rows: usize,
+        inner_k: usize,
+        cols: usize,
+        lhs_codebook: &[i32; CODED_TABLE_LEN],
+        rhs_codebook: &[i32; CODED_TABLE_LEN],
+    ) -> Result<Vec<i64>, TensorComputeError> {
+        let r = u32::try_from(rows).map_err(|_| TensorComputeError::ZeroOrMismatchedExtents {
+            detail: "omega_worker:rows_exceeds_u32".to_string(),
+        })?;
+        let k =
+            u32::try_from(inner_k).map_err(|_| TensorComputeError::ZeroOrMismatchedExtents {
+                detail: "omega_worker:inner_k_exceeds_u32".to_string(),
+            })?;
+        let c = u32::try_from(cols).map_err(|_| TensorComputeError::ZeroOrMismatchedExtents {
+            detail: "omega_worker:cols_exceeds_u32".to_string(),
+        })?;
+
+        let mut payload = Vec::with_capacity(144 + lhs_packed_rows.len() + rhs_packed_cols.len());
+        payload.extend_from_slice(&r.to_le_bytes());
+        payload.extend_from_slice(&k.to_le_bytes());
+        payload.extend_from_slice(&c.to_le_bytes());
+        payload.extend_from_slice(&0_u32.to_le_bytes());
+        for &v in lhs_codebook {
+            payload.extend_from_slice(&v.to_le_bytes());
+        }
+        for &v in rhs_codebook {
+            payload.extend_from_slice(&v.to_le_bytes());
+        }
+        payload.extend_from_slice(lhs_packed_rows);
+        payload.extend_from_slice(rhs_packed_cols);
+
+        let (status, reply) = self.send_raw_frame(WIRE_MAGIC, OP_PACKED_NIBBLES_LUT, &payload)?;
+        if status != STATUS_OK {
+            return Err(status_err(status));
+        }
+
+        let out_count = rows.saturating_mul(cols);
+        let expected = out_count.saturating_mul(8);
+        if reply.len() != expected {
+            return Err(TensorComputeError::ZeroOrMismatchedExtents {
+                detail: format!(
+                    "omega_worker:packed_lut_reply_len expected={expected} actual={}",
+                    reply.len()
+                ),
+            });
+        }
+        Ok(reply
+            .chunks_exact(8)
+            .map(|ch| i64::from_le_bytes([ch[0], ch[1], ch[2], ch[3], ch[4], ch[5], ch[6], ch[7]]))
+            .collect())
+    }
+
+    /// Executes `tropical_min_plus_all_pairs_closure` on the pure-Omega worker.
+    pub fn tropical_min_plus_all_pairs_closure(
+        &mut self,
+        edge_costs_milli: &[Option<u32>],
+        node_count: usize,
+    ) -> Result<Vec<Option<u64>>, TensorComputeError> {
+        let n =
+            u32::try_from(node_count).map_err(|_| TensorComputeError::ZeroOrMismatchedExtents {
+                detail: "omega_worker:node_count_exceeds_u32".to_string(),
+            })?;
+        let mut payload = Vec::with_capacity(8 + edge_costs_milli.len() * 8);
+        payload.extend_from_slice(&n.to_le_bytes());
+        payload.extend_from_slice(&0_u32.to_le_bytes());
+        for &entry in edge_costs_milli {
+            let encoded = match entry {
+                Some(cost) => u64::from(cost),
+                None => u64::MAX,
+            };
+            payload.extend_from_slice(&encoded.to_le_bytes());
+        }
+
+        let (status, reply) = self.send_raw_frame(WIRE_MAGIC, OP_TROPICAL_MIN_PLUS, &payload)?;
+        if status != STATUS_OK {
+            return Err(status_err(status));
+        }
+
+        let out_count = node_count.saturating_mul(node_count);
+        let expected = out_count.saturating_mul(8);
+        if reply.len() != expected {
+            return Err(TensorComputeError::ZeroOrMismatchedExtents {
+                detail: format!(
+                    "omega_worker:tropical_reply_len expected={expected} actual={}",
+                    reply.len()
+                ),
+            });
+        }
+        Ok(reply
+            .chunks_exact(8)
+            .map(|ch| {
+                let raw =
+                    u64::from_le_bytes([ch[0], ch[1], ch[2], ch[3], ch[4], ch[5], ch[6], ch[7]]);
+                if raw == u64::MAX {
+                    None
+                } else {
+                    Some(raw)
+                }
+            })
+            .collect())
     }
 }
 
