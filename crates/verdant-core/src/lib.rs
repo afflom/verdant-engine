@@ -76,6 +76,8 @@ pub mod uhd;
 pub mod ui;
 pub mod universe;
 pub mod vcs;
+#[cfg(feature = "capsule-gzip")]
+pub mod vcs_git;
 
 #[cfg(test)]
 mod tests {

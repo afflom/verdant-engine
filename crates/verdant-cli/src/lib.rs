@@ -49,6 +49,7 @@ use verdant_core::universe::UniverseManager;
 
 mod automate_cmd;
 mod operator_cmd;
+mod vcs_cmd;
 
 /// Refusal returned when a `verdant` CLI subcommand receives invalid arguments, unreadable paths,
 /// or a non-conformant asset/shader/snapshot/UORC payload.
@@ -114,6 +115,7 @@ verdant <subcommand> [options]
   operator <status|prompt|apply|synthesize|publish-app|verify-seal|audit|session>  Manage Verdant via VSM & ISO 42010 API
   release <pack|verify> [options]             Pack or 4-of-8 verify a self-hosted .holo Stitch release
   gateway <pack|serve|verify> [options]       Emit, serve, or failover-verify a multi-gateway Stitch bundle
+  vcs <git-host|git-fetch> [options]          Host a Git repository's full history on Stitch, or fetch it back
   mcp [--root <dir>]                          Run Model Context Protocol (JSON-RPC 2.0 stdio) server
   benchmark [frames]                          Run headless 60fps physics + BVH + GJK + NavMesh benchmark
   stress-benchmark [entities]                 Run 10k+ SoA bit-plane, TwoLevelBvh & monoid stress benchmark";
@@ -1136,6 +1138,7 @@ pub fn run_cli(args: &[String]) -> Result<String, CliCommandError> {
                 }),
             }
         }
+        "vcs" => vcs_cmd::run_vcs_command(args),
         "mcp" => automate_cmd::run_mcp_stdio_loop(&args[1..]),
         other => Err(CliCommandError::InvalidUsage {
             usage: format!("unknown subcommand `{other}`\n{CLI_USAGE}"),
